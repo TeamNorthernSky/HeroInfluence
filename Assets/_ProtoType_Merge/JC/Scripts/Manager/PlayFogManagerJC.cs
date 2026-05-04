@@ -108,7 +108,7 @@ public class PlayFogManagerJC : MonoBehaviour
         var decayShader = Shader.Find("Custom/JC/FogDecay");
         if (maskShader == null || decayShader == null)
         {
-            Debug.LogError("[PlayFogManagerJC] FogMask/FogDecay 셰이더를 찾을 수 없습니다. Assets_jc 폴더의 셰이더 확인 필요.");
+            Debug.LogError("[PlayFogManagerJC] FogMask/FogDecay 셰이더를 찾을 수 없습니다. _ProtoType_Merge/JC 하위 셰이더 확인 필요.");
             return;
         }
         maskMaterial = new Material(maskShader) { hideFlags = HideFlags.DontSave };

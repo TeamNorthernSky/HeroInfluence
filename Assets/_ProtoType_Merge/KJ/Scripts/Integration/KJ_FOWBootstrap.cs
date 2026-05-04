@@ -7,7 +7,7 @@ namespace KJ_Work.Integration
 {
     public static class KJ_FOWBootstrap
     {
-        private const string PrefabPath = "Assets/KJ_Work/Prefabs/[KJ_FOWManager].prefab";
+        private const string PrefabPath = "Assets/_ProtoType_Merge/KJ/Prefabs/[KJ_FOWManager].prefab";
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Execute()

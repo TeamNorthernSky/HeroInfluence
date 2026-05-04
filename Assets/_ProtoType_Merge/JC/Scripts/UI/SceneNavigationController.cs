@@ -4,7 +4,7 @@ using TMPro;
 
 public class SceneNavigationController : MonoBehaviour
 {
-    private const string FontPath = "Assets/JC_Work/Assets_jc/Maplestory Light SDF.asset";
+    private const string FontPath = "Assets/_SharedAsset/Maplestory Light SDF.asset";
 
     private SceneLoader sceneLoader;
     private TMP_FontAsset koreanFont;
