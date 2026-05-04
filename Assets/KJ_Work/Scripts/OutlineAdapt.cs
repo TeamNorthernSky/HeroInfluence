@@ -1,4 +1,4 @@
-using com.IvanMurzak.Unity.MCP.Runtime.Data;
+// using com.IvanMurzak.Unity.MCP.Runtime.Data;  // namespace 부재 (MCP 0.69.0에서 AIGD로 변경됨). KJ 확인 후 주석 처리 (260504, JC)
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
