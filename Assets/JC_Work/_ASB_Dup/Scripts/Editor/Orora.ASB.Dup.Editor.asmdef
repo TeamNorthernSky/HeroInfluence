@@ -1,0 +1,18 @@
+{
+    "name": "Orora.ASB.Dup.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Orora.ASB.Dup"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

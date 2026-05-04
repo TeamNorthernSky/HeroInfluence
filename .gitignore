@@ -1,0 +1,89 @@
+# Unity 자동 생성 폴더
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]serSettings/
+/[_]_[Bb]uild[Tt]est/
+
+# MemoryCaptures
+/[Mm]emoryCaptures/
+# Recordings
+/[Rr]ecordings/
+# Asset Store 다운로드 캐시
+/[Aa]sset[Ss]tore[Tt]ools/
+# IDE 자동 생성 파일
+/*.csproj
+/*.sln
+/*.suo
+/*.tmp
+/*.user
+/*.userprefs
+/*.pidb
+/*.booproj
+/*.svd
+/*.pdb
+/*.mdb
+/*.opendb
+/*.VC.db
+# VS / Rider
+/.vs/
+/.idea/
+.vscode/
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+# Crashlytics
+crashlytics-build.properties
+# Addressables
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/*
+# Addressables 자동 생성 IL2CPP link 파일 (팀원/빌드마다 갱신되어 노이즈 발생)
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/link.xml
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/link.xml.meta
+# TextMeshPro (자동 생성)
+/[Aa]ssets/TextMesh Pro/
+# Plastic SCM
+*.private.0
+*.private
+
+# Unity 패키지 (개인 환경별 패키지 상이 — 공용 변경 시에만 gitignore에서 제외 후 커밋)
+Packages/manifest.json
+Packages/packages-lock.json
+
+# 개인 환경별 차이 발생 가능
+ProjectSettings/PackageManagerSettings.asset
+ProjectSettings/BurstAotSettings_StandaloneWindows.json
+ProjectSettings/CommonBurstAotSettings.json
+
+# 씬 레지스트리 (개인 환경별 커스텀 씬 목록)
+Assets/SceneRegistry.json
+Assets/SceneRegistry.json.meta
+
+#AI 에이전트, MCP 관련
+.claude/
+.mcp.json
+node_modules/
+package.json
+package-lock.json
+.cursor/
+CLAUDE.md
+Docs/
+
+# MCP 의존성 (UPM이 로컬에 자동 배포하는 NuGet 산출물 — 팀원별 MCP 버전에 따라 달라짐)
+/Assets/Plugins/NuGet/
+/Assets/Plugins/NuGet.meta
+
+/.agent
+
+# JC 개인용 에셋/테스트 씬 (타 팀원과 공유 불필요)
+/Assets/JC_Work/_Personal/
+/Assets/JC_Work/_Personal.meta
+/.agents
+/.codex
+# DH 개인용 프로젝트 세팅 임시 무시
+ProjectSettings/GraphicsSettings.asset
+ProjectSettings/QualitySettings.asset
