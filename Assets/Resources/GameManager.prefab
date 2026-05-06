@@ -1932,7 +1932,7 @@ GameObject:
   - component: {fileID: 6406030997603731297}
   - component: {fileID: 4073967837919723351}
   m_Layer: 0
-  m_Name: CurrencyManager
+  m_Name: EconomyManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

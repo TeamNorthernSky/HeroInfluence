@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class LobbyMenuController : MonoBehaviour
 {
     private const string Prefix = "BTN_Lobby_";
-    private const string PlayScene = "TEST_PlayScene";
+    private const string PlayScene = "DHScene";
 
     [SerializeField] private GameObject _modalHQ;
     [SerializeField] private GameObject _modalBroadcast;

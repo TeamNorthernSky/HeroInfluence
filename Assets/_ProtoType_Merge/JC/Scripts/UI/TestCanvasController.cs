@@ -45,9 +45,9 @@ public class TestCanvasController : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (GameManager.Instance != null && GameManager.Instance.Currency != null)
+        if (GameManager.Instance != null && GameManager.Instance.Economy != null)
         {
-            GameManager.Instance.Currency.OnCurrencyChanged -= HandleCurrencyChanged;
+            GameManager.Instance.Economy.OnResourceChanged -= HandleResourceChanged;
         }
     }
 
@@ -68,22 +68,22 @@ public class TestCanvasController : MonoBehaviour
 
     private void BindButtons()
     {
-        goldAddButton.onClick.AddListener(() => GameManager.Instance.Currency.Add(CurrencyType.Gold, 100));
-        goldSubtractButton.onClick.AddListener(() => GameManager.Instance.Currency.Add(CurrencyType.Gold, -100));
-        goldResetButton.onClick.AddListener(() => GameManager.Instance.Currency.Reset(CurrencyType.Gold));
+        goldAddButton.onClick.AddListener(() => GameManager.Instance.Economy.Add(ResourceType.Money, 100));
+        goldSubtractButton.onClick.AddListener(() => GameManager.Instance.Economy.Add(ResourceType.Money, -100));
+        goldResetButton.onClick.AddListener(() => GameManager.Instance.Economy.Reset(ResourceType.Money));
 
         woodAddButton.onClick.AddListener(OnWoodAddClicked);
-        woodResetButton.onClick.AddListener(() => GameManager.Instance.Currency.Reset(CurrencyType.Wood));
+        woodResetButton.onClick.AddListener(() => GameManager.Instance.Economy.Reset(ResourceType.Chip));
 
         oreResetButton.onClick.AddListener(() =>
         {
-            GameManager.Instance.Currency.Reset(CurrencyType.Ore);
+            GameManager.Instance.Economy.Reset(ResourceType.Crystal);
             oreSlider.SetValueWithoutNotify(0);
         });
 
         resetAllButton.onClick.AddListener(() =>
         {
-            GameManager.Instance.Currency.ResetAll();
+            GameManager.Instance.Economy.ResetAll();
             oreSlider.SetValueWithoutNotify(0);
         });
     }
@@ -122,7 +122,7 @@ public class TestCanvasController : MonoBehaviour
 
     private void OnOreSliderReleased()
     {
-        GameManager.Instance.Currency.Set(CurrencyType.Ore, (int)oreSlider.value);
+        GameManager.Instance.Economy.Set(ResourceType.Crystal, (int)oreSlider.value);
     }
 
     private void OnWoodInputChanged(string value)
@@ -135,7 +135,7 @@ public class TestCanvasController : MonoBehaviour
     {
         if (int.TryParse(woodInput.text, out int amount) && amount != 0)
         {
-            GameManager.Instance.Currency.Add(CurrencyType.Wood, amount);
+            GameManager.Instance.Economy.Add(ResourceType.Chip, amount);
             woodInput.text = "";
         }
         else
@@ -146,37 +146,37 @@ public class TestCanvasController : MonoBehaviour
 
     private void SubscribeCurrencyEvents()
     {
-        GameManager.Instance.Currency.OnCurrencyChanged += HandleCurrencyChanged;
+        GameManager.Instance.Economy.OnResourceChanged += HandleResourceChanged;
     }
 
-    private void HandleCurrencyChanged(CurrencyType type, int newValue)
+    private void HandleResourceChanged(ResourceType type, int newValue)
     {
         switch (type)
         {
-            case CurrencyType.Gold:
+            case ResourceType.Money:
                 UpdateDisplay(goldDisplay, newValue, type);
                 break;
-            case CurrencyType.Wood:
+            case ResourceType.Chip:
                 UpdateDisplay(woodDisplay, newValue, type);
                 break;
-            case CurrencyType.Ore:
+            case ResourceType.Crystal:
                 UpdateDisplay(oreDisplay, newValue, type);
                 break;
         }
     }
 
-    private void UpdateDisplay(TMP_InputField display, int value, CurrencyType type)
+    private void UpdateDisplay(TMP_InputField display, int value, ResourceType type)
     {
         display.text = value.ToString();
-        display.textComponent.color = GameManager.Instance.Currency.IsNegative(type) ? negativeColor : normalColor;
+        display.textComponent.color = GameManager.Instance.Economy.IsNegative(type) ? negativeColor : normalColor;
     }
 
     private void RefreshAllDisplays()
     {
-        var currency = GameManager.Instance.Currency;
-        UpdateDisplay(goldDisplay, currency.Get(CurrencyType.Gold), CurrencyType.Gold);
-        UpdateDisplay(woodDisplay, currency.Get(CurrencyType.Wood), CurrencyType.Wood);
-        UpdateDisplay(oreDisplay, currency.Get(CurrencyType.Ore), CurrencyType.Ore);
+        var currency = GameManager.Instance.Economy;
+        UpdateDisplay(goldDisplay, currency.Get(ResourceType.Money), ResourceType.Money);
+        UpdateDisplay(woodDisplay, currency.Get(ResourceType.Chip), ResourceType.Chip);
+        UpdateDisplay(oreDisplay, currency.Get(ResourceType.Crystal), ResourceType.Crystal);
     }
 
     private void ToggleCanvasGroup()

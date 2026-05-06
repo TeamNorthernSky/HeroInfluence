@@ -11,7 +11,6 @@ public class TurnManager : MonoBehaviour
 
     [SerializeField] private int day = 1;
     [SerializeField] private PartyRegistry partyRegistry;
-    [SerializeField] private ResourceManager resourceManager;
     [SerializeField] private EnemyTurnController enemyTurnController;
     [SerializeField] private TMP_Text turnStateText;
     [FormerlySerializedAs("mineRegistry")]
@@ -98,7 +97,7 @@ public class TurnManager : MonoBehaviour
             if (outpost == null)
                 continue;
 
-            outpost.ProduceForTurn(resourceManager);
+            outpost.ProduceForTurn();
         }
     }
 

@@ -67,23 +67,24 @@ public class Outpost : MonoBehaviour
         ApplyStateMaterial();
     }
 
-    public void ProduceForTurn(ResourceManager resourceManager)
+    public void ProduceForTurn()
     {
         if (!IsPlayerClaimed)
             return;
 
-        if (resourceManager == null || resourcePerTurn <= 0)
+        var economy = Game.Economy;
+        if (economy == null || resourcePerTurn <= 0)
             return;
 
         switch (outpostType)
         {
             case OutpostType.Bank:
-                resourceManager.AddResource(ResourceType.Money, resourcePerTurn);
+                economy.Add(ResourceType.Money, resourcePerTurn);
                 break;
             case OutpostType.Composite:
-                resourceManager.AddResource(ResourceType.Chip, resourcePerTurn);
-                resourceManager.AddResource(ResourceType.Crystal, resourcePerTurn);
-                resourceManager.AddResource(ResourceType.Supply, resourcePerTurn);
+                economy.Add(ResourceType.Chip, resourcePerTurn);
+                economy.Add(ResourceType.Crystal, resourcePerTurn);
+                economy.Add(ResourceType.Supply, resourcePerTurn);
                 break;
         }
     }

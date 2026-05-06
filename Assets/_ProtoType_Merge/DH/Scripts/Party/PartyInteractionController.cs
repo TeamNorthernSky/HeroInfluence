@@ -5,7 +5,6 @@ using UnityEngine;
 public class PartyInteractionController
 {
     private readonly GridManager gridManager;
-    private readonly ResourceManager resourceManager;
     private readonly CombatEncounterManager combatEncounterManager;
     private readonly PartyGridMover ownerParty;
     private readonly float itemPickupDelay;
@@ -21,7 +20,6 @@ public class PartyInteractionController
 
     public PartyInteractionController(
         GridManager gridManager,
-        ResourceManager resourceManager,
         CombatEncounterManager combatEncounterManager,
         PartyGridMover ownerParty,
         float itemPickupDelay,
@@ -29,7 +27,6 @@ public class PartyInteractionController
         Func<Vector2Int> currentGridProvider)
     {
         this.gridManager = gridManager;
-        this.resourceManager = resourceManager;
         this.combatEncounterManager = combatEncounterManager;
         this.ownerParty = ownerParty;
         this.itemPickupDelay = itemPickupDelay;
@@ -145,7 +142,7 @@ public class PartyInteractionController
             yield break;
         }
 
-        itemObject.GetItem(resourceManager);
+        itemObject.GetItem();
         IsInputLocked = false;
     }
 

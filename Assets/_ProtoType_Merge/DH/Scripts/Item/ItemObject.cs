@@ -25,9 +25,9 @@ public class ItemObject : MonoBehaviour
         amount = nextAmount;
     }
 
-    public void GetItem(ResourceManager resourceManager)
+    public void GetItem()
     {
-        resourceManager.AddResource(resourceType, amount);
+        Game.Economy?.Add(resourceType, amount);
 
         Destroy(gameObject);
     }

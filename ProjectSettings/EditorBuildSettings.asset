@@ -5,12 +5,27 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/DHScene.unity
     guid: 489a3296119f6164e91b2d3553e06b76
   - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/BattleToolScene.unity
     guid: 3c8a429a1d0dae741bc18128bfba34c3
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/TEST_PlayScene.unity
+    guid: adb06916c011ded42a96bdc34f8a8e51
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/TitleScene.unity
+    guid: 42ddfa9ccea9cad428135e78213a51cb
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/LobbyScene.unity
+    guid: aa939e0e8a2588348a0be543ed5c3c9c
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/PTScene.unity
+    guid: 8be3a951057767d489ff1cedcc41c653
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/TestScene.unity
+    guid: 0d4ddae43ba93fd4399d6ec54f467fb9
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 51f1cead6f1010a489e8763571d663e2,
       type: 2}

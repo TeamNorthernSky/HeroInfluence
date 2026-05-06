@@ -1,13 +1,21 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public CurrencyManager Currency { get; private set; }
+    public EconomyManager Economy { get; private set; }
     public SceneLoader SceneLoader { get; private set; }
     public UIPrefabRegistry UIPrefabRegistry { get; private set; }
     public DebugManager Debug { get; private set; }
+
+    public GridManager Grid { get; private set; }
+    public TurnManager Turn { get; private set; }
+    public CombatEncounterManager Combat { get; private set; }
+    public FogGridManager FogGrid { get; private set; }
+    public FogRenderManager FogRender { get; private set; }
+    public LevelLoader Level { get; private set; }
 
     private void Awake()
     {
@@ -21,6 +29,15 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         InitializeManagers();
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        RefreshSceneManagers();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void Update()
@@ -33,8 +50,8 @@ public class GameManager : MonoBehaviour
 
     private void InitializeManagers()
     {
-        Currency = GetComponentInChildren<CurrencyManager>();
-        Currency.Initialize();
+        Economy = GetComponentInChildren<EconomyManager>();
+        Economy.Initialize();
 
         SceneLoader = GetComponentInChildren<SceneLoader>();
         if (SceneLoader != null) SceneLoader.Initialize();
@@ -43,5 +60,20 @@ public class GameManager : MonoBehaviour
 
         Debug = GetComponentInChildren<DebugManager>(true);
         if (Debug != null) Debug.Initialize();
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RefreshSceneManagers();
+    }
+
+    private void RefreshSceneManagers()
+    {
+        Grid = FindFirstObjectByType<GridManager>();
+        Turn = FindFirstObjectByType<TurnManager>();
+        Combat = FindFirstObjectByType<CombatEncounterManager>();
+        FogGrid = FindFirstObjectByType<FogGridManager>();
+        FogRender = FindFirstObjectByType<FogRenderManager>();
+        Level = FindFirstObjectByType<LevelLoader>();
     }
 }

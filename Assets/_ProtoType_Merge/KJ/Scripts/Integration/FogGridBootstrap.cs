@@ -46,7 +46,6 @@ public class FogGridBootstrap : MonoBehaviour
         builder.AppendLine($"- GridManager: {GetName(references.GridManager)}");
         builder.AppendLine($"- Pathfinder: {GetName(references.Pathfinder)}");
         builder.AppendLine($"- PartyRegistry: {GetName(references.PartyRegistry)}");
-        builder.AppendLine($"- ResourceManager: {GetName(references.ResourceManager)}");
         builder.AppendLine($"- TurnManager: {GetName(references.TurnManager)}");
         builder.AppendLine($"- FogManager: {GetName(references.FogManager)}");
         builder.AppendLine($"- PartyMovers: {(references.PartyMovers == null ? 0 : references.PartyMovers.Length)}");

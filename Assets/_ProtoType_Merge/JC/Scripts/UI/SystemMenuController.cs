@@ -21,6 +21,8 @@ public class SystemMenuController : MonoBehaviour
 
     private void Update()
     {
+        if (SceneManager.GetActiveScene().name == TitleScene) return;
+
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
 
         if (ModalRegistry.HasAny)
@@ -47,6 +49,7 @@ public class SystemMenuController : MonoBehaviour
 
     public void OnClickToTitle()
     {
+        if (_modal != null) _modal.SetActive(false);
         Debug.Log($"[SystemMenu] → {TitleScene}");
         SceneManager.LoadScene(TitleScene);
     }

@@ -8,7 +8,6 @@ public class PartyRuntime : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private ResourceManager resourceManager;
     [SerializeField] private CombatEncounterManager combatEncounterManager;
 
     [Header("Interaction Settings")]
@@ -27,7 +26,6 @@ public class PartyRuntime : MonoBehaviour
         partyGridMover = GetComponent<PartyGridMover>();
         interactionController = new PartyInteractionController(
             gridManager,
-            resourceManager,
             combatEncounterManager,
             partyGridMover,
             itemPickupDelay,

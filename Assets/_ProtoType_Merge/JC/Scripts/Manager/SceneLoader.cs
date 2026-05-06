@@ -28,7 +28,7 @@ public class SceneLoader : MonoBehaviour
     {
         new SceneEntry { sceneName = "TitleScene",  displayName = "타이틀 씬", isCircularNav = true },
         new SceneEntry { sceneName = "LobbyScene",  displayName = "로비 씬",   isCircularNav = true },
-        new SceneEntry { sceneName = "PlayScene",   displayName = "플레이 씬", isCircularNav = true },
+        new SceneEntry { sceneName = "DHScene",     displayName = "탐험 씬",   isCircularNav = true },
         new SceneEntry { sceneName = "EndingScene", displayName = "엔딩 씬",   isCircularNav = true },
     };
 
