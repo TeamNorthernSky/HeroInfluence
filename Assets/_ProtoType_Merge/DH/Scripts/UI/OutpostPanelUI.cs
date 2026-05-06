@@ -10,7 +10,6 @@ public class OutpostPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text outpostTypeText;
     [SerializeField] private TMP_Text productionText;
     [SerializeField] private Button okButton;
-    [SerializeField] private KeyCode closeKey = KeyCode.Escape;
 
     private void Awake()
     {
@@ -41,8 +40,12 @@ public class OutpostPanelUI : MonoBehaviour
         if (!IsPanelVisible())
             return;
 
-        if (Input.GetKeyDown(closeKey))
+        if (Input.GetKeyDown(KeyCode.Return)
+            || Input.GetKeyDown(KeyCode.KeypadEnter)
+            || Input.GetKeyDown(KeyCode.Space))
+        {
             HidePanel();
+        }
     }
 
     private void HandleOutpostClaimed(Outpost outpost)

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class SystemMenuController : MonoBehaviour
 {
     private const string TitleScene = "TitleScene";
+    private const string LobbyScene = "LobbyScene";
 
     [SerializeField] private GameObject _modal;
     [SerializeField] private Button _btnResume;
@@ -21,17 +22,19 @@ public class SystemMenuController : MonoBehaviour
 
     private void Update()
     {
-        if (SceneManager.GetActiveScene().name == TitleScene) return;
+        var sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName == TitleScene) return;
 
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
 
-        if (ModalRegistry.HasAny)
+        if (sceneName == LobbyScene)
         {
-            ModalRegistry.CloseTop();
+            if (ModalRegistry.HasAny) ModalRegistry.CloseTop();
+            else OpenModal();
         }
         else
         {
-            OpenModal();
+            TogglePause();
         }
     }
 
@@ -42,14 +45,33 @@ public class SystemMenuController : MonoBehaviour
         _modal.SetActive(true);
     }
 
+    private void TogglePause()
+    {
+        if (_modal == null) return;
+
+        if (_modal.activeSelf)
+        {
+            _modal.SetActive(false);
+            Time.timeScale = 1f;
+        }
+        else
+        {
+            transform.SetAsLastSibling();
+            _modal.SetActive(true);
+            Time.timeScale = 0f;
+        }
+    }
+
     public void OnClickResume()
     {
         if (_modal != null) _modal.SetActive(false);
+        Time.timeScale = 1f;
     }
 
     public void OnClickToTitle()
     {
         if (_modal != null) _modal.SetActive(false);
+        Time.timeScale = 1f;
         Debug.Log($"[SystemMenu] → {TitleScene}");
         SceneManager.LoadScene(TitleScene);
     }
