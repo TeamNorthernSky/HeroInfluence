@@ -1,8 +1,11 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CombatEncounterManager : MonoBehaviour
 {
+    private const string BattleSceneName = "BattleScene";
+
     public event Action<PartyGridMover, EnemyGridMover> CombatStarted;
 
     public bool IsCombatActive { get; private set; }
@@ -14,15 +17,13 @@ public class CombatEncounterManager : MonoBehaviour
         if (party == null || enemy == null)
             return false;
 
-        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
-        string partyLabel = partyIdentity != null ? partyIdentity.PartyId : party.name;
+        IsCombatActive = true;
+        ActiveParty = party;
+        ActiveEnemy = enemy;
 
-        Debug.Log(
-            $"Combat encounter requested between party '{partyLabel}' and enemy '{enemy.EnemyId}'. " +
-            "Combat flow is not implemented yet.",
-            this);
         CombatStarted?.Invoke(party, enemy);
-        return false;
+        SceneManager.LoadScene(BattleSceneName);
+        return true;
     }
 
     public void ClearCombatState()

@@ -12,9 +12,6 @@ EditorBuildSettings:
     path: Assets/_ProtoType_Merge/Scenes/BattleToolScene.unity
     guid: 3c8a429a1d0dae741bc18128bfba34c3
   - enabled: 1
-    path: Assets/_ProtoType_Merge/Scenes/TEST_PlayScene.unity
-    guid: adb06916c011ded42a96bdc34f8a8e51
-  - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/TitleScene.unity
     guid: 42ddfa9ccea9cad428135e78213a51cb
   - enabled: 1
@@ -26,6 +23,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/TestScene.unity
     guid: 0d4ddae43ba93fd4399d6ec54f467fb9
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/BattleScene.unity
+    guid: 0b45a56b1be33a3419ccd1866d4b00ca
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 51f1cead6f1010a489e8763571d663e2,
       type: 2}
