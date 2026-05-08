@@ -204,6 +204,9 @@ public class MoveCommandPreviewController
         if (gridManager.TryGetOutpostObjectAtGrid(clickedGrid, out Outpost outpost))
             return ResolveApproachGrid(activeMover, clickedGrid, outpost.GetAnchorGrid(gridManager), outpost.GetAdjacentInteractionCells(gridManager));
 
+        if (gridManager.TryGetVillainUnionBaseAtGrid(clickedGrid, out VillainUnionBase villainUnionBase))
+            return ResolveApproachGrid(activeMover, clickedGrid, villainUnionBase.GetAnchorGrid(), villainUnionBase.GetAdjacentOuterCells());
+
         if (!gridManager.TryGetCastleObjectAtGrid(clickedGrid, out CastleUnit castle))
             return clickedGrid;
 

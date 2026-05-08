@@ -210,6 +210,13 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
+        if (!HasEnoughInfluenceForAction(actor, actionType))
+        {
+            Debug.LogWarning("[InputHandler] Influence 부족 (선택 불가)");
+            ResetTargetingState();
+            return;
+        }
+
         HashSet<BattleCharactor> targets = TargetingHelper.GetValidTargets(actor, actionType);
         if (targets.Count == 0)
         {
@@ -303,6 +310,13 @@ public class InputHandler : MonoBehaviour
         {
             validTargets.Remove(hoverTarget);
             SetHoverTarget(null);
+            return;
+        }
+
+        if (!HasEnoughInfluenceForAction(actor, pendingAction))
+        {
+            Debug.LogWarning("[InputHandler] Influence 부족 (선택 불가)");
+            ResetTargetingState();
             return;
         }
 
@@ -480,6 +494,52 @@ public class InputHandler : MonoBehaviour
         }
 
         return pattern;
+    }
+
+    private bool HasEnoughInfluenceForAction(BattleCharactor actor, PendingActionType actionType)
+    {
+        if (actor == null || !actor.IsPlayer)
+        {
+            return true;
+        }
+
+        if (actionType == PendingActionType.BasicAttack)
+        {
+            return true;
+        }
+
+        if (!TryGetActionSkillData(actor, actionType, out SkillData skillData) || skillData == null)
+        {
+            return false;
+        }
+
+        return actor.CurrentInfluence >= Mathf.Max(0f, skillData.IPCost);
+    }
+
+    private bool TryGetActionSkillData(BattleCharactor actor, PendingActionType actionType, out SkillData skillData)
+    {
+        skillData = null;
+        if (actor == null)
+        {
+            return false;
+        }
+
+        switch (actionType)
+        {
+            case PendingActionType.ClassSkill:
+                return TryGetSelectedSkill(actor, out skillData);
+            case PendingActionType.WeaponSkill:
+                if (actor.EquippedWeaponData == null)
+                {
+                    return false;
+                }
+
+                skillData = actor.EquippedWeaponData.ToSkillData();
+                return skillData != null;
+            case PendingActionType.BasicAttack:
+            default:
+                return false;
+        }
     }
 
     private void ClearAoEPreview()

@@ -25,7 +25,7 @@ public class EnemyGridMover : MonoBehaviour
     private EnemyIdentity enemyIdentity;
     private EnemyComposition enemyComposition;
 
-    public int EnemyId => enemyIdentity != null ? enemyIdentity.EnemyId : 0;
+    public string EnemyId => enemyIdentity != null ? enemyIdentity.EnemyId : string.Empty;
     public int MovePointsPerTurn => Mathf.Max(0, movePointsPerTurn);
     public EnemyTargetType CurrentTargetType => currentTargetType;
     public Component CurrentTarget => currentTarget;
@@ -63,7 +63,7 @@ public class EnemyGridMover : MonoBehaviour
         return currentTarget != null && currentTargetType != EnemyTargetType.None;
     }
 
-    public void InitializePersistentIdentity(int nextEnemyId)
+    public void InitializePersistentIdentity(string nextEnemyId)
     {
         enemyIdentity ??= GetComponent<EnemyIdentity>();
         enemyIdentity?.SetEnemyId(nextEnemyId);

@@ -155,9 +155,8 @@ public static class TargetingHelper
         }
 
         // [2단계] 우선순위는 classSkillRangeLine만 사용합니다.
-        // baseTargets는 진영/생사 조건만 통과한 후보이며,
-        // 전열/후열 우선 필터는 여기서만 적용합니다.
-        List<BattleCharactor> baseTargets = GetAllValidTargets(stage1);
+        // 부활 스킬은 사망자가 필요하므로 생존 필터(GetAllValidTargets)를 패스합니다.
+        List<BattleCharactor> baseTargets = isRevive ? stage1 : GetAllValidTargets(stage1);
         List<BattleCharactor> finalTargets = ApplyPriorityFilter(actor, baseTargets, skill);
 
         for (int i = 0; i < finalTargets.Count; i++)
@@ -212,7 +211,7 @@ public static class TargetingHelper
 
                 // 시전자가 전열이면 전열 대상만 허용(없으면 fallback 전체).
                 // 시전자가 후열이면 전열/후열 구분 없이 전체 허용.
-                bool isCasterFront = actor.IsFrontRow();
+                bool isCasterFront = actor.IsInFrontRow;
                 if (!isCasterFront)
                 {
                     return baseTargets;
@@ -227,7 +226,7 @@ public static class TargetingHelper
                         continue;
                     }
 
-                    if (target.IsFrontRow())
+                    if (target.IsInFrontRow)
                     {
                         frontOnly.Add(target);
                     }

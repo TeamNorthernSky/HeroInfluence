@@ -10,12 +10,14 @@ public class PartyHeroUnitSeed : MonoBehaviour
     [SerializeField, HideInInspector] private int legacyJobIndex;
     [SerializeField] private int level = 1;
     [SerializeField] private int favorability;
-    [SerializeField] private StatBlock baseStats;
+    [SerializeField] private int initialSkillIndex;
+    [SerializeField] private int initialWeaponIndex;
 
     public string UnitTemplateKey => unitTemplateKey;
     public int Level => Mathf.Max(1, level);
     public int Favorability => Mathf.Max(0, favorability);
-    public StatBlock BaseStats => baseStats;
+    public int InitialSkillIndex => Mathf.Max(0, initialSkillIndex);
+    public int InitialWeaponIndex => Mathf.Max(0, initialWeaponIndex);
 
     private void OnValidate()
     {

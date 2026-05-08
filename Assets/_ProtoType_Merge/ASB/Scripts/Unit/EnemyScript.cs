@@ -87,6 +87,49 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         Debug.Log($"[EnemyScript] Initialize: name={nm}, id='{id}'");
     }
 
+    public void Initialize(EnemyUnitPersistentData persistentData, EnemyData fallbackData = null)
+    {
+        if (persistentData == null)
+        {
+            Initialize(fallbackData);
+            return;
+        }
+
+        enemyData = fallbackData;
+        BattleCharactor battle = GetComponent<BattleCharactor>();
+        if (battle == null)
+        {
+            return;
+        }
+
+        battle.BindPersistentEnemySourceData(persistentData);
+        battle.SetBaseStats(persistentData.BaseStats);
+        battle.SetLevelScaling(false);
+
+        if (!string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey))
+        {
+            battle.SetUnitNameForSkillMatching(persistentData.UnitTemplateKey);
+        }
+        else if (fallbackData != null)
+        {
+            battle.SetUnitNameForSkillMatching(fallbackData.Name);
+        }
+
+        int resolvedSkillIndex = ExtractSkillIndexFromPersistent(persistentData, fallbackData);
+        if (resolvedSkillIndex > 0)
+        {
+            battle.SetClassSkillIndex(resolvedSkillIndex);
+        }
+
+        battle.RecalculateStats();
+        battle.ResolveSelectedSkill();
+        battle.InitializeCurrentHpToMax();
+        battle.MarkInitializedFromDataPipeline();
+
+        enemyData = fallbackData;
+        EnsureAIReady();
+    }
+
     public IEnumerator RunAITurn(BattleManager battleManager, BattleFlowManager flowManager)
     {
         BattleCharactor self = GetComponent<BattleCharactor>();
@@ -215,6 +258,38 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         }
 
         return 20001;
+    }
+
+    private static int ExtractSkillIndexFromPersistent(EnemyUnitPersistentData persistentData, EnemyData fallbackData)
+    {
+        if (persistentData != null)
+        {
+            // EnemyUnitPersistentData 기본 구조에는 스킬 인덱스가 없으므로, 리플렉션으로 확장 필드를 탐색합니다.
+            System.Reflection.PropertyInfo skillIndexProperty = persistentData.GetType().GetProperty("CurrentSkillIndex");
+            if (skillIndexProperty != null && skillIndexProperty.GetValue(persistentData) is int reflectedSkillIndex && reflectedSkillIndex > 0)
+            {
+                return reflectedSkillIndex;
+            }
+
+            System.Reflection.FieldInfo skillIndexField = persistentData.GetType().GetField("currentSkillIndex", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            if (skillIndexField != null && skillIndexField.GetValue(persistentData) is int reflectedFieldSkillIndex && reflectedFieldSkillIndex > 0)
+            {
+                return reflectedFieldSkillIndex;
+            }
+
+            if (persistentData.UnitIndex > 0)
+            {
+                // 적 기본 슬롯은 1로 계산합니다.
+                return (persistentData.UnitIndex * 10) + 1;
+            }
+        }
+
+        if (fallbackData != null && !string.IsNullOrWhiteSpace(fallbackData.Index) && int.TryParse(fallbackData.Index.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int enemyIndexNum))
+        {
+            return (enemyIndexNum * 10) + 1;
+        }
+
+        return 0;
     }
 
     private static string FormatTargets(List<BattleCharactor> targets)

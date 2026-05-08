@@ -20,8 +20,15 @@ public class SkillData
     public string skillName;
     public string description;
     public int ipCost;
+    public int IPCost
+    {
+        get => ipCost;
+        set => ipCost = value;
+    }
     public int classSkillEffect;
     public int classSkillRange;
+    public int EnemySkill1Range = -1;
+    public int EnemySkill2Range = -1;
     public int classSkillRangeLine;
     public int classSkillTarget;
     /// <summary>

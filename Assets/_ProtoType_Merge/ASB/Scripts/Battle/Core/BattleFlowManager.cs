@@ -407,6 +407,16 @@ public class BattleFlowManager : MonoBehaviour
             .ToList();
     }
 
+    public int GetAlivePlayerCount()
+    {
+        return participants.Count(u => u != null && u.IsPlayer && !u.IsDead);
+    }
+
+    public int GetAliveEnemyCount()
+    {
+        return participants.Count(u => u != null && !u.IsPlayer && !u.IsDead);
+    }
+
     private void OnPlayerSkillActionResolved(BattleCharactor actor, BattleCharactor target)
     {
         if (CurrentUnit == null || actor == null)

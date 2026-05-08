@@ -41,6 +41,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private CastleRegistry castleRegistry;
     [FormerlySerializedAs("mineRegistry")]
     [SerializeField] private OutpostRegistry outpostRegistry;
+    [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
     [SerializeField] private MultiGridOccupantRegistry multiGridOccupantRegistry;
     [SerializeField] private bool restrictMovementToVisibleCells = true;
     [Tooltip("셀 워커블 검사 시, 셀 크기 대비 체크 박스 비율(너무 크면 오탐, 너무 작으면 통과).")]
@@ -88,6 +89,9 @@ public class GridManager : MonoBehaviour
         if (outpostRegistry == null)
             outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
 
+        if (villainUnionBaseRegistry == null)
+            villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();
+
         if (multiGridOccupantRegistry == null)
             multiGridOccupantRegistry = FindFirstObjectByType<MultiGridOccupantRegistry>();
     }
@@ -102,6 +106,9 @@ public class GridManager : MonoBehaviour
 
         if (outpostRegistry == null)
             outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
+
+        if (villainUnionBaseRegistry == null)
+            villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();
 
         if (multiGridOccupantRegistry == null)
             multiGridOccupantRegistry = FindFirstObjectByType<MultiGridOccupantRegistry>();
@@ -299,9 +306,14 @@ public class GridManager : MonoBehaviour
         return HasItem(grid) || HasOutpost(grid);
     }
 
+    public bool HasVillainUnionBase(Vector2Int grid)
+    {
+        return TryGetVillainUnionBaseAtGrid(grid, out _);
+    }
+
     public bool HasInteractionTarget(Vector2Int grid)
     {
-        return HasItem(grid) || HasOutpost(grid) || HasEnemy(grid) || HasCastle(grid);
+        return HasItem(grid) || HasOutpost(grid) || HasEnemy(grid) || HasCastle(grid) || HasVillainUnionBase(grid);
     }
 
     public bool IsVisibleCell(Vector2Int grid)
@@ -375,6 +387,38 @@ public class GridManager : MonoBehaviour
                 continue;
 
             castle = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryGetVillainUnionBaseAtGrid(Vector2Int grid, out VillainUnionBase villainUnionBase)
+    {
+        villainUnionBase = null;
+
+        IReadOnlyList<VillainUnionBase> bases = villainUnionBaseRegistry != null
+            ? villainUnionBaseRegistry.VillainUnionBases
+            : FindObjectsByType<VillainUnionBase>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < bases.Count; i++)
+        {
+            VillainUnionBase candidate = bases[i];
+            if (candidate == null)
+                continue;
+
+            MultiGridOccupant occupant = candidate.GetComponent<MultiGridOccupant>();
+            if (occupant != null)
+            {
+                if (!occupant.OccupiesCell(grid))
+                    continue;
+            }
+            else if (candidate.GetCurrentGrid() != grid)
+            {
+                continue;
+            }
+
+            villainUnionBase = candidate;
             return true;
         }
 

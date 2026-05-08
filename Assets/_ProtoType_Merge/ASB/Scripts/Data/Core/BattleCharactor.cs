@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
@@ -13,6 +14,7 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
 {
     public event Action<BattleCharactor> OnDied;
     public event Action<float, float> OnHpChanged;
+    public event Action<float, float> OnInfluenceChanged;
 
     [Header("Identity")]
     [SerializeField] private string unitName = "Unit";
@@ -28,6 +30,7 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
     [Tooltip("StatCalculator 결과. 인스펙터에서 결과 확인용.")]
     [SerializeField] private StatBlock finalStats;
     [SerializeField] private float currentHp;
+    [SerializeField] private float currentInfluence;
 
     [SerializeField] private List<StatusEffectInstance> activeStatusEffects = new List<StatusEffectInstance>();
     [HideInInspector] [SerializeField] private Skill activeSkill;
@@ -48,6 +51,8 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     [HideInInspector] public List<SkillData> availableSkills = new List<SkillData>();
     public SkillData SelectedSkillData { get; private set; }
+    public UnitPersistentData SourceData { get; private set; }
+    public EnemyUnitPersistentData SourceEnemyData { get; private set; }
 
     /// <summary>계산 원본. 래퍼에서 SetBaseStats로 주입합니다.</summary>
     private StatBlock runtimeBaseStats;
@@ -125,6 +130,12 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     public float CurrentHp => currentHp;
     public float MaxHp => finalStats.HP;
+    public float CurrentInfluence
+    {
+        get => currentInfluence;
+        private set => currentInfluence = value;
+    }
+    public float MaxInfluence => FinalStats.Influence;
     public IReadOnlyList<StatusEffectInstance> ActiveStatusEffects => activeStatusEffects;
 
     // [레거시] 인스펙터 스킬 선택 방식으로 전환 완료 후 제거 예정.
@@ -144,6 +155,7 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
     /// 기존 하드코딩(x==0) 의존 제거를 위해 TargetingHelper 공용 로직을 사용합니다.
     /// </summary>
     public bool IsInFrontRow => TargetingHelper.IsUnitInFrontRow(this);
+    public bool IsInBackRow => TargetingHelper.IsUnitInBackRow(this);
 
     /// <summary>
     /// 고정 좌표 기반 전열 판정.
@@ -296,6 +308,7 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
         // CSV 미연동 신규 스탯 안전장치
         finalStats.Influence = Mathf.Clamp(finalStats.Influence, 0f, 200f);
         ApplyStatusEffectStatModifiers();
+        ApplyFormationPassiveModifiers();
 
         if (applyCurrentHpClamp)
         {
@@ -308,6 +321,26 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
     {
         currentHp = finalStats.HP;
         OnHpChanged?.Invoke(CurrentHp, MaxHp);
+        CurrentInfluence = MaxInfluence;
+        OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
+    }
+
+    public bool TryConsumeInfluence(float amount)
+    {
+        if (!IsPlayer)
+        {
+            return true;
+        }
+
+        float required = Mathf.Max(0f, amount);
+        if (CurrentInfluence < required)
+        {
+            return false;
+        }
+
+        CurrentInfluence -= required;
+        OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
+        return true;
     }
 
     public void LevelUp(int amount = 1)
@@ -706,6 +739,8 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
             occupiedCell.SetOccupyingUnit(this);
             ASB.Work.BattleGrid.GridManager.Instance?.RegisterUnitToCell(this, occupiedCell);
         }
+
+        RefreshFormationPassiveStatsForAllUnits();
     }
 
     public void SyncOccupancy(GridCellRef cell)
@@ -796,6 +831,39 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
         finalStats.DEF = Mathf.Max(0f, finalStats.DEF * defMultiplier);
     }
 
+    private void ApplyFormationPassiveModifiers()
+    {
+        // CounterRate는 현재 0~1 스케일을 사용하므로 +30%는 +0.3으로 적용합니다.
+        if (IsInFrontRow)
+        {
+            finalStats.CounterRate += 0.3f;
+        }
+        else if (IsInBackRow)
+        {
+            finalStats.CriticalRate += 0.15f;
+        }
+    }
+
+    private static void RefreshFormationPassiveStatsForAllUnits()
+    {
+        BattleCharactor[] units = FindObjectsByType<BattleCharactor>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (units == null || units.Length == 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < units.Length; i++)
+        {
+            BattleCharactor unit = units[i];
+            if (unit == null)
+            {
+                continue;
+            }
+
+            unit.RecalculateStats(applyCurrentHpClamp: true);
+        }
+    }
+
     private static bool RequiresStatRecalculation(StatusEffectType effectType)
     {
         if (effectType == StatusEffectType.healBan)
@@ -827,6 +895,16 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
     public void SetClassSkillIndex(int globalSkillIndex)
     {
         classSkillIndex = Mathf.Max(0, globalSkillIndex);
+    }
+
+    public void BindPersistentSourceData(UnitPersistentData sourceData)
+    {
+        SourceData = sourceData;
+    }
+
+    public void BindPersistentEnemySourceData(EnemyUnitPersistentData sourceData)
+    {
+        SourceEnemyData = sourceData;
     }
 
     public void SetUnitNameForSkillMatching(string name)
@@ -1000,6 +1078,19 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     public void ResolveSelectedSkill(bool emitWarning = true)
     {
+        if (SourceData != null && SourceData.CurrentSkillIndex > 0)
+        {
+            classSkillIndex = SourceData.CurrentSkillIndex;
+        }
+        else if (SourceEnemyData != null)
+        {
+            int persistentEnemySkillIndex = TryReadPersistentEnemySkillIndex(SourceEnemyData);
+            if (persistentEnemySkillIndex > 0)
+            {
+                classSkillIndex = persistentEnemySkillIndex;
+            }
+        }
+
         if (availableSkills != null && availableSkills.Count > 0)
         {
             int localIndex = -1;
@@ -1054,5 +1145,33 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
         {
             Debug.LogWarning($"[BattleCharactor] 장착 가능한 스킬이 없습니다: unitName={unitName}");
         }
+    }
+
+    private static int TryReadPersistentEnemySkillIndex(EnemyUnitPersistentData persistentData)
+    {
+        if (persistentData == null)
+        {
+            return 0;
+        }
+
+        PropertyInfo skillProp = persistentData.GetType().GetProperty("CurrentSkillIndex", BindingFlags.Public | BindingFlags.Instance);
+        if (skillProp != null && skillProp.GetValue(persistentData) is int propIndex && propIndex > 0)
+        {
+            return propIndex;
+        }
+
+        FieldInfo skillField =
+            persistentData.GetType().GetField("currentSkillIndex", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (skillField != null && skillField.GetValue(persistentData) is int fieldIndex && fieldIndex > 0)
+        {
+            return fieldIndex;
+        }
+
+        if (persistentData.UnitIndex > 0)
+        {
+            return (persistentData.UnitIndex * 10) + 1;
+        }
+
+        return 0;
     }
 }

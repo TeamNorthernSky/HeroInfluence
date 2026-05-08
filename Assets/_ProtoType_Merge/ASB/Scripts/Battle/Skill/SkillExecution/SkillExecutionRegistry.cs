@@ -8,6 +8,8 @@ namespace ASB.Work.Battle.SkillExecution
     /// </summary>
     public static class SkillExecutionRegistry
     {
+        public const int DoubleAttackSkillIndex = 5040;
+        public const int DuelistSkillIndex = 201;
         private static readonly Dictionary<int, ISkillEffectHandler> Handlers = new Dictionary<int, ISkillEffectHandler>();
         private static bool s_initialized;
 
@@ -34,17 +36,17 @@ namespace ASB.Work.Battle.SkillExecution
             Register(1010, new TauntStrikeSkillHandler()); // 단일 도발
             Register(1020, new AoEDamageSkillHandler());   // 열 공격
             Register(1030, new AoEDamageSkillHandler());   // 후열 공격
-            Register(1040, new TauntStrikeSkillHandler()); // 일단 전체 도발만!!
+            Register(1040, new TauntStrikeSkillHandler()); // 전체 도발 + 한열 타격 -------- 한 열 타격 적용 안됨
             Register(1050, new DamageSkillHandler());      // 단일(전체타겟)공격
             Register(1060, new AoEDamageSkillHandler());   // 전체공격
-            Register(1070, new CasterLowHPMoreDmg());      // 
+            Register(1070, new CasterLowHPMoreDmg());      // 시전자 체력 낮을수록 데미지 증가
 
             // 아처
             Register(2010, new DamageSkillHandler());    // 단일 공격
             Register(2020, new TargetFrontPosMoreDmg()); // 단일 공격 + 전열 추가 피해
-            Register(2030, new DamageSkillHandler());    // 단일공격 + 후열 공격시 일시적으로 회피율 -20%
-            Register(2040, new AoEDamageSkillHandler()); // 전체 공격
-            Register(2050, new DamageSkillHandler());    // 단일 공격 + 체력 70%이하 일시적으로 치명타 20% 확률업
+            Register(2030, new TargetBackPosMoreCriticDmg()); // 단일공격 + 후열 공격시 일시적으로 회피율 -20% 
+            Register(2040, new DoubleAttackSkillHandler()); // 더블 어택
+            Register(2050, new TargetLowerHPMoreCriticDmg()); // 단일 공격 + 체력 70%이하 일시적으로 치명타 20% 확률업
             Register(2060, new AoEDamageSkillHandler()); //전체 공격
             Register(2070, new DamageSkillHandler());    // 단일, 전체 체력이 낮을 경우 큰 데미지
 
@@ -62,19 +64,19 @@ namespace ASB.Work.Battle.SkillExecution
             Register(4020, new DamageSkillHandler());    // 단일 공격
             Register(4030, new TargetLowerHPMoreHeal()); // 긴급 힐: 대상의 체력이 낮을수록 힐량 증가
             Register(4040, new TargetHealBanSkill());    // 단일공격 + 대상 힐 밴
-            Register(4050, new HealTargetAroundRandomHandler());    // 단일 공격 + 체력 70%이하 일시적으로 치명타 20% 확률업
+            Register(4050, new HealTargetAroundRandomHandler()); // 단일 힐 + 랜덤 주변 힐
             Register(4060, new AoEDamageSkillHandler()); //전체 공격
-            Register(4070, new RebirthSkillHandler());
+            Register(4070, new RebirthSkillHandler());   // 부활
+
 
             // 나이트 
             Register(5010, new TargetFrontPosMoreDmg()); // 단일 공격 + 전열 시 추가피해
-            Register(5020, new DamageSkillHandler());    // 단일 공격
+            Register(5020, new DamageSkillHandler());    // 단일 공격 ----- 
             Register(5030, new TargetBackPosMoreDmg());  // 단일 공격 + 후열 추가 피해
-            Register(5040, new DamageSkillHandler());    // 더블어택 
-            Register(5050, new DamageSkillHandler());    // 일시적 치명타 20% 확률업 + 전열우선
-            Register(5060, new AoEDamageSkillHandler()); //전체 공격
-            //Register(5070, new RebirthSkillHandler());
-
+            Register(5040, new DoubleAttackSkillHandler()); // 더블어택
+            Register(5050, new MoreCriticDmg());         // 일시적 치명타 20% 확률업 + 전열우선 ----- 치명타 20% 적용 안됨
+            Register(5060, new TargetLowerHPMoreDmg());  // 단일 공격 + 대상 체력 낮을수록 데미지 증가
+            Register(5070, new DuelistSkillHandler());   // (1v1 시 데미지 증폭)
 
 
 
@@ -86,18 +88,17 @@ namespace ASB.Work.Battle.SkillExecution
             Register(200022, new HealSkillHandler());      //단일 힐
 
             Register(200031, new DamageSkillHandler());    // 단일공격
-            Register(200032, new AoEDamageSkillHandler());   // 전체공격
-
+            Register(200032, new AoEDamageSkillHandler()); // 전체공격
 
 
             //------------------장비
-            Register(311010, new DamageSkillHandler()); // 단일 공격 
-            Register(311020, new DamageSkillHandler());    // 단일 공격
+            Register(311010, new DamageSkillHandler());  // 단일 공격 
+            Register(311020, new DamageSkillHandler());  // 단일 공격
             Register(311030, new DamageSkillHandler());  // 단일 공격 
 
             Register(312010, new DamageSkillHandler());    // 단일공격 
-            Register(312020, new AoEDamageSkillHandler());    // 열공격
-            Register(312030, new DamageSkillHandler()); // 단일공격
+            Register(312020, new AoEDamageSkillHandler()); // 열공격
+            Register(312030, new DamageSkillHandler());    // 단일공격
 
             Register(313010, new DamageSkillHandler());    // 단일공격 
             Register(313020, new HitTargetAroundRandomHandler());    // 단일 + 랜덤 주변공격
@@ -105,13 +106,13 @@ namespace ASB.Work.Battle.SkillExecution
 
             Register(314010, new DamageSkillHandler());    // 단일공격
             Register(314020, new DamageSkillHandler());    // 단일공격
-            Register(314030, new AoEDamageSkillHandler()); // 전체 + 흡혈  -> 구현 필요함므루웅
+            Register(314030, new AoEVampiricSkillHandler()); // 전체 + 흡혈  -> 구현 필요함
 
             Register(315010, new DamageSkillHandler());    // 단일공격 
             Register(315020, new DamageSkillHandler());    // 자신의 위치 후열 -> 후열 공격,  자신의 위치 전열 -> 전열 공격 
             Register(315030, new AoEDamageSkillHandler()); // 단일공격
         }
-
+       
         public static bool TryGetHandler(int skillIndex, out ISkillEffectHandler handler)
         {
             EnsureInitialized();

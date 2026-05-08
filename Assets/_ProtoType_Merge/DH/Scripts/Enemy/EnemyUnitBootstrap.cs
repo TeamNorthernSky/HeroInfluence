@@ -48,8 +48,15 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (!HasConfiguredUnitSeeds())
             return;
 
-        if (onlyWhenUninitialized && enemyIdentity.EnemyId > 0 && !AreAllSlotsEmpty())
+        if (onlyWhenUninitialized && !string.IsNullOrWhiteSpace(enemyIdentity.EnemyId) && !AreAllSlotsEmpty())
             return;
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (templateCatalog == null)
+        {
+            Debug.LogWarning("EnemyUnitBootstrap could not find a DHCsvTemplateCatalog in the scene.", this);
+            return;
+        }
 
         List<int> unitIndices = new List<int>(unitSeeds.Count);
         enemyComposition.EnsureSlotCount(unitSeeds.Count);
@@ -65,10 +72,16 @@ public class EnemyUnitBootstrap : MonoBehaviour
                 continue;
             }
 
+            if (!templateCatalog.TryGetEnemyTemplate(seed.UnitTemplateKey, out EnemyData template))
+            {
+                Debug.LogWarning($"Enemy unit seed on '{seed.name}' could not resolve CSV template '{seed.UnitTemplateKey}'.", seed);
+                continue;
+            }
+
             int unitIndex = enemyRepository.CreateUnit(
                 seed.UnitTemplateKey,
                 seed.Level,
-                seed.BaseStats);
+                template.baseStats);
             unitIndices.Add(unitIndex);
             enemyComposition.SetUnitIndexAt(i, unitIndex);
         }
@@ -76,7 +89,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (unitIndices.Count == 0)
             return;
 
-        int enemyId = enemyRepository.CreateEnemy(unitIndices);
+        string enemyId = enemyRepository.CreateEnemy(unitIndices);
         enemyIdentity.SetEnemyId(enemyId);
         enemyUnit.InitializePersistentIdentity(enemyId);
     }

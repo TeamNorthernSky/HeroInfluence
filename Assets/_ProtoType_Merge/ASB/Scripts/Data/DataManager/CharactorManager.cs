@@ -83,5 +83,7 @@ public class CharactorManager : MonoBehaviour
         }
 
         info.level = Mathf.Max(1, info.level + Mathf.Max(1, amount));
+
+        
     }
 }

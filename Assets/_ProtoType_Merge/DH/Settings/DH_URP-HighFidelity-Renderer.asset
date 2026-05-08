@@ -133,5 +133,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   settings:
-    fogMaterial: {fileID: 0}
+    fogMaterial: {fileID: 2100000, guid: 1e58dfbf2dbe4304a8f49072c89edc92, type: 2}
     renderPassEvent: 500

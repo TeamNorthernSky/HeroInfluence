@@ -3,6 +3,10 @@ using System.Linq;
 using UnityEngine;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
+/// <summary>
+/// 전투 진입 순서: ManualSpawn → SyncGridOccupancy → CollectParticipantsAfterInitialize → BattleFlowManager.Initialize.
+/// 각 스포너는 BattleSceneManager가 호출하기 전까지 Start에서 자동 스폰하지 않도록 유지합니다.
+/// </summary>
 public class BattleSceneManager : MonoBehaviour
 {
     [Header("Prototype Boot")]
@@ -11,9 +15,8 @@ public class BattleSceneManager : MonoBehaviour
     [SerializeField] private Transform playerPlace;
     [SerializeField] private Transform enemyPlace;
     [SerializeField] private BattleFlowManager battleFlowManager;
-
-    [Header("Boot")]
-    [SerializeField] private bool createOnStart = true;
+    [SerializeField] private PlayerSpawner playerSpawner;
+    [SerializeField] private EnemySpawner enemySpawner;
 
     private BattleCharactor playerBattleCharactor;
     private readonly List<BattleCharactor> playerBattleCharactors = new List<BattleCharactor>();
@@ -29,11 +32,6 @@ public class BattleSceneManager : MonoBehaviour
 
     private void Start()
     {
-        if (!createOnStart)
-        {
-            return;
-        }
-
         if (battleFlowManager == null)
         {
             Debug.LogError("[BattleSceneManager] battleFlowManager가 할당되지 않았습니다.");
@@ -43,6 +41,12 @@ public class BattleSceneManager : MonoBehaviour
         playerBattleCharactor = null;
         playerBattleCharactors.Clear();
         enemyBattleCharactors.Clear();
+
+        playerSpawner?.SetSpawnOnStart(false);
+        enemySpawner?.SetSpawnOnStart(false);
+
+        playerSpawner?.ManualSpawn();
+        enemySpawner?.ManualSpawn();
 
         var inactiveMode = includeInactiveUnits ? FindObjectsInactive.Include : FindObjectsInactive.Exclude;
         var sceneUnits = FindObjectsByType<BattleCharactor>(inactiveMode, FindObjectsSortMode.None).ToList();
@@ -78,20 +82,20 @@ public class BattleSceneManager : MonoBehaviour
                 continue;
             }
 
-            // 코어(BattleCharactor)의 필수 상태 초기화(IsPlayer, IsDead 등)는 항상 먼저 수행합니다.
-            battle.Initialize();
-
-            // 래퍼가 있으면 코어 기본 초기화 이후 인스펙터/튜닝 스탯을 덮어씁니다.
+            // 스포너가 persistent/CSV 주입으로 이미 초기화한 유닛은 재초기화로 값을 덮어쓰지 않습니다.
             CharactorScript playerWrapper = battle.GetComponent<CharactorScript>();
             EnemyScript enemyWrapper = battle.GetComponent<EnemyScript>();
 
-            if (playerWrapper != null)
+            if (!battle.IsInitialized)
             {
-                playerWrapper.Initialize(null);
-            }
-            else if (enemyWrapper != null)
-            {
-                enemyWrapper.Initialize(null);
+                // 코어(BattleCharactor)의 필수 상태 초기화(IsPlayer, IsDead 등)는 항상 먼저 수행합니다.
+                battle.Initialize();
+
+                // 래퍼가 있으면 코어 기본 초기화 이후 인스펙터/튜닝 스탯을 덮어씁니다.
+                if (playerWrapper != null)
+                    playerWrapper.Initialize(null);
+                else if (enemyWrapper != null)
+                    enemyWrapper.Initialize(null);
             }
 
             if (battle.OccupiedCell == null)

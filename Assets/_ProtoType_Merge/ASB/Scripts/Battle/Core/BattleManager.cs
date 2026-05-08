@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using ASB.Work.Battle.SkillExecution;
 using ASB.Work.Battle.Core;
@@ -49,11 +50,11 @@ public class BattleManager : MonoBehaviour
 
         float finalDamage = CombatCalculator.CalculateDamage(context);
         context.Target.TakeDamage(finalDamage);
-        Debug.Log($"[Combat] {context.Caster.UnitName} -> {context.Target.UnitName} dmg={finalDamage:F1}");
+        Debug.Log($"[Combat] {context.Caster.UnitName} -> {context.Target.UnitName} dmg={finalDamage:F1} (Crit: {context.IsCritical})");
         return finalDamage;
     }
 
-    public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null)
+    public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null, bool isCounter = false)
     {
         if (result == null || !result.Success)
         {
@@ -67,13 +68,56 @@ public class BattleManager : MonoBehaviour
             for (int i = 0; i < result.DamageContexts.Count; i++)
             {
                 DamageContext damageContext = result.DamageContexts[i];
+                if (damageContext == null)
+                {
+                    continue;
+                }
+
+                if (damageContext.Target == null || damageContext.Target.IsDead || damageContext.Target.CurrentHp <= 0f)
+                {
+                    continue;
+                }
+
+                if (!damageContext.IsCounterAttack && !damageContext.CanTriggerCounter)
+                {
+                    damageContext.CanTriggerCounter = CanTriggerCounterattack(damageContext);
+                }
+
                 totalDamageDealt += ApplyDamage(damageContext);
 
-                float delay = damageContext != null ? Mathf.Max(0f, damageContext.DelayAfter) : 0f;
+                float delay = Mathf.Max(0f, damageContext.DelayAfter);
                 if (delay > 0f)
                 {
                     yield return new WaitForSeconds(delay);
                 }
+            }
+        }
+
+        if (!isCounter && result.DamageContexts != null && result.DamageContexts.Any(ctx => ctx != null && ctx.CanTriggerCounter))
+        {
+            BattleCharactor originalCaster = result.DamageContexts[0].Caster;
+            var counterCandidates = result.DamageContexts
+                .Where(ctx => ctx != null && ctx.CanTriggerCounter)
+                .Select(ctx => ctx.Target)
+                .Distinct()
+                .Where(t => t != null && !t.IsDead && originalCaster != null && t.IsPlayer != originalCaster.IsPlayer)
+                .ToList();
+
+            foreach (BattleCharactor defender in counterCandidates)
+            {
+                if (originalCaster == null || originalCaster.IsDead)
+                {
+                    break;
+                }
+
+                if (!CombatCalculator.RollCounter(defender))
+                {
+                    continue;
+                }
+
+                Debug.Log($"[Combat] {defender.UnitName} 근접 반격 발동! (계수 0.5)");
+                bool counterDone = false;
+                yield return StartCoroutine(ExecuteBasicAttack(defender, originalCaster, success => counterDone = success, true));
             }
         }
 
@@ -130,6 +174,13 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
+        if (!TryConsumeSkillInfluence(actor, classSkillRow))
+        {
+            Debug.LogWarning("[BattleManager] Influence가 부족하여 스킬을 사용할 수 없습니다.");
+            onCompleted?.Invoke(false);
+            yield break;
+        }
+
         if (SkillExecutionRegistry.TryGetHandler(classSkillRow.skillIndex, out ISkillEffectHandler custom))
         {
             SkillExecutionResult result = custom.Execute(actor, target, classSkillRow, null);
@@ -150,6 +201,18 @@ public class BattleManager : MonoBehaviour
             OnActionExecuted?.Invoke(GetSkillDisplayName(classSkillRow));
         }
         onCompleted?.Invoke(executedByDefault);
+    }
+
+    private static bool TryConsumeSkillInfluence(BattleCharactor actor, SkillData skillData)
+    {
+        if (actor == null || skillData == null)
+        {
+            return false;
+        }
+
+        // 기본 공격은 ExecuteBasicAttack 경로로 분리되어 있어 여기로 들어오지 않습니다.
+        float cost = Mathf.Max(0f, skillData.IPCost);
+        return actor.TryConsumeInfluence(cost);
     }
 
     /// <summary>레지스트리에 없는 일반 스킬: 데이터만으로 힐/딜 처리.</summary>
@@ -190,8 +253,11 @@ public class BattleManager : MonoBehaviour
             Target = target,
             SkillMultiplier = multiplier,
             SkillIndex = skillData.skillIndex,
-            IsCritical = false
+            IsRangedAttack = IsRangedSkill(actor, skillData),
+            CanTriggerCounter = IsMeleeSkillRange(actor, skillData) && target.IsInFrontRow,
+            IsCounterAttack = false
         };
+        context.IsCritical = CombatCalculator.RollCritical(context);
         float dealt = ApplyDamage(context);
         if (context.DelayAfter > 0f)
         {
@@ -236,8 +302,11 @@ public class BattleManager : MonoBehaviour
             Target = target,
             SkillMultiplier = multiplier,
             SkillIndex = -2,
-            IsCritical = false
+            IsRangedAttack = false,
+            CanTriggerCounter = false,
+            IsCounterAttack = false
         };
+        context.IsCritical = CombatCalculator.RollCritical(context);
         float dealt = ApplyDamage(context);
         if (context.DelayAfter > 0f)
         {
@@ -248,7 +317,7 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>일반 공격: 피해 = max(1, 공격력×배율 - 방어력) 후 HP 감소.</summary>
-    public IEnumerator ExecuteBasicAttack(BattleCharactor actor, BattleCharactor target, Action<bool> onCompleted = null)
+    public IEnumerator ExecuteBasicAttack(BattleCharactor actor, BattleCharactor target, Action<bool> onCompleted = null, bool isCounterAttack = false)
     {
         if (actor == null || target == null)
         {
@@ -266,10 +335,13 @@ public class BattleManager : MonoBehaviour
         {
             Caster = actor,
             Target = target,
-            SkillMultiplier = 1.0f,
+            SkillMultiplier = isCounterAttack ? 0.5f : 1.0f,
             SkillIndex = -1,
-            IsCritical = false
+            IsRangedAttack = false,
+            CanTriggerCounter = !isCounterAttack && target.IsInFrontRow,
+            IsCounterAttack = isCounterAttack
         };
+        context.IsCritical = CombatCalculator.RollCritical(context);
         float dmg = ApplyDamage(context);
         if (context.DelayAfter > 0f)
         {
@@ -355,8 +427,11 @@ public class BattleManager : MonoBehaviour
             Target = target,
             SkillMultiplier = multiplier,
             SkillIndex = -3,
-            IsCritical = false
+            IsRangedAttack = false,
+            CanTriggerCounter = false,
+            IsCounterAttack = false
         };
+        context.IsCritical = CombatCalculator.RollCritical(context);
         float dealt = ApplyDamage(context);
         if (context.DelayAfter > 0f)
         {
@@ -436,6 +511,91 @@ public class BattleManager : MonoBehaviour
 
         float critMultiplier = Mathf.Max(1f, actor.FinalStats.CritMultiplier);
         return baseDmg * critMultiplier;
+    }
+
+    private static bool CanTriggerCounterattack(DamageContext context)
+    {
+        if (context == null || context.IsCounterAttack || context.Caster == null || context.Target == null)
+        {
+            return false;
+        }
+
+        if (context.Target.IsDead || !context.Target.IsInFrontRow)
+        {
+            return false;
+        }
+
+        if (context.SkillIndex == -1)
+        {
+            return true;
+        }
+
+        if (context.SkillIndex <= 0)
+        {
+            return false;
+        }
+
+        SkillData matchedSkill = context.Caster.availableSkills != null
+            ? context.Caster.availableSkills.FirstOrDefault(s => s != null && s.skillIndex == context.SkillIndex)
+            : null;
+        if (matchedSkill == null)
+        {
+            return false;
+        }
+
+
+        return IsMeleeSkillRange(context.Caster, matchedSkill);
+    }
+
+    private static bool IsMeleeSkillRange(BattleCharactor actor, SkillData skillData)
+    {
+        if (skillData == null)
+        {
+            return false;
+        }
+
+        if (actor != null && !actor.IsPlayer)
+        {
+            int enemyRange = ResolveEnemySkillRange(skillData);
+            if (enemyRange >= 0)
+            {
+                return enemyRange == 0;
+            }
+        }
+
+        return skillData.classSkillRange == 0;
+    }
+
+    private static bool IsRangedSkill(BattleCharactor actor, SkillData skillData)
+    {
+        return !IsMeleeSkillRange(actor, skillData);
+    }
+
+    private static int ResolveEnemySkillRange(SkillData skillData)
+    {
+        if (skillData == null)
+        {
+            return -1;
+        }
+
+        bool isEnemySkill = skillData.skillIndex >= 200000 && skillData.skillIndex < 300000;
+        if (!isEnemySkill)
+        {
+            return skillData.classSkillRange;
+        }
+
+        int slot = Mathf.Abs(skillData.skillIndex % 10);
+        if (slot == 1 && skillData.EnemySkill1Range >= 0)
+        {
+            return skillData.EnemySkill1Range;
+        }
+
+        if (slot == 2 && skillData.EnemySkill2Range >= 0)
+        {
+            return skillData.EnemySkill2Range;
+        }
+
+        return skillData.classSkillRange;
     }
 
     private bool CheckEvade(BattleCharactor target)

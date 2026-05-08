@@ -3,13 +3,13 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class EnemyIdentity : MonoBehaviour
 {
-    [SerializeField] private int enemyId;
+    [SerializeField] private string enemyId;
 
-    public int EnemyId => enemyId;
+    public string EnemyId => enemyId;
 
-    public void SetEnemyId(int nextEnemyId)
+    public void SetEnemyId(string nextEnemyId)
     {
-        if (nextEnemyId <= 0)
+        if (string.IsNullOrWhiteSpace(nextEnemyId))
             return;
 
         enemyId = nextEnemyId;

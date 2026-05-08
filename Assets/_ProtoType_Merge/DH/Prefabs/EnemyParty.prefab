@@ -118,7 +118,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3271b237ed64fe44c93e1441787dfce2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitTemplateKey: 10001
+  unitTemplateKey: 20001
   level: 1
   baseStats:
     HP: 0
@@ -249,7 +249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3271b237ed64fe44c93e1441787dfce2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitTemplateKey: 10004
+  unitTemplateKey: 20001
   level: 1
   baseStats:
     HP: 0
@@ -380,7 +380,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3271b237ed64fe44c93e1441787dfce2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitTemplateKey: 10002
+  unitTemplateKey: 20002
   level: 1
   baseStats:
     HP: 0
@@ -633,7 +633,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3271b237ed64fe44c93e1441787dfce2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitTemplateKey: 10003
+  unitTemplateKey: 20003
   level: 1
   baseStats:
     HP: 0

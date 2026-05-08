@@ -68,6 +68,51 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         battle.MarkInitializedFromDataPipeline();
     }
 
+    public void Initialize(UnitPersistentData persistentData, UnitData fallbackData = null)
+    {
+        if (persistentData == null)
+        {
+            Initialize(fallbackData);
+            return;
+        }
+
+        charactorData = fallbackData;
+        BattleCharactor battle = GetComponent<BattleCharactor>();
+        if (battle == null)
+        {
+            return;
+        }
+
+        battle.BindPersistentSourceData(persistentData);
+        battle.SetBaseStats(persistentData.BaseStats);
+        battle.SetLevelScaling(true);
+        battle.ApplyCombatTuning(Mathf.Max(1, persistentData.Level), levelWeight, classWeight);
+
+        if (!string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey))
+        {
+            battle.SetUnitNameForSkillMatching(persistentData.UnitTemplateKey);
+        }
+        else if (fallbackData != null)
+        {
+            battle.SetUnitNameForSkillMatching(fallbackData.Name);
+        }
+
+        if (persistentData.CurrentSkillIndex > 0)
+        {
+            battle.SetClassSkillIndex(persistentData.CurrentSkillIndex);
+        }
+
+        if (persistentData.CurrentWeaponIndex >= 0)
+        {
+            battle.SetEquippedWeaponIndex(persistentData.CurrentWeaponIndex);
+        }
+
+        battle.RecalculateStats();
+        battle.ResolveSelectedSkill();
+        battle.InitializeCurrentHpToMax();
+        battle.MarkInitializedFromDataPipeline();
+    }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {

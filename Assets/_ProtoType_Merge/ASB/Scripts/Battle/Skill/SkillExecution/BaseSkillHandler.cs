@@ -169,6 +169,8 @@ namespace ASB.Work.Battle.SkillExecution
         protected virtual void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result) { }
     }
 
+
+
     // 2개 이상의 광역 공격은 이걸 사용함!!
     public abstract class BaseAoESkillHandler : BaseSkillHandler
     {
@@ -277,7 +279,7 @@ namespace ASB.Work.Battle.SkillExecution
 
             var result = SkillExecutionResult.SuccessResult();
             // 메인 타격 데미지는 항상 result에 추가합니다.
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
 
             ASB.Work.BattleGrid.GridManager gridManager = ASB.Work.BattleGrid.GridManager.Instance;
             if (gridManager == null)
@@ -291,11 +293,12 @@ namespace ASB.Work.Battle.SkillExecution
                 return SkillExecutionResult.Failed();
             }
 
+            int range = Mathf.Max(0, skillData.multiTargetCount);
             List<BattleCharactor> validTargets = new List<BattleCharactor>();
 
-            for (int x = -1; x <= 1; x++)
+            for (int x = -range; x <= range; x++)
             {
-                for (int y = -1; y <= 1; y++)
+                for (int y = -range; y <= range; y++)
                 {
                     if (x == 0 && y == 0)
                     {

@@ -53,7 +53,7 @@ MonoBehaviour:
   tilemapGenerator: {fileID: 0}
   obstacleRoot: {fileID: 0}
   itemRoot: {fileID: 0}
-  mineRoot: {fileID: 0}
+  outpostRoot: {fileID: 0}
   loadOnStart: 1
   clearExistingBeforeLoad: 1
   applyInEditMode: 1
@@ -76,8 +76,8 @@ MonoBehaviour:
   inputCamera: {fileID: 0}
   brushType: 0
   itemPreset: {fileID: 0}
-  minePreset: {fileID: 0}
-  partyId: party_001
+  outpostPreset: {fileID: 0}
+  partyId: 1
   allowRuntimeEditing: 0
   applyLevelAfterEdit: 1
   groundMask:
@@ -87,7 +87,7 @@ MonoBehaviour:
   hoverColor: {r: 1, g: 1, b: 0, a: 0.75}
   obstacleColor: {r: 1, g: 0.3, b: 0.3, a: 0.75}
   itemColor: {r: 0.2, g: 0.9, b: 0.3, a: 0.75}
-  mineColor: {r: 0.2, g: 0.8, b: 1, a: 0.75}
+  outpostColor: {r: 0.2, g: 0.8, b: 1, a: 0.75}
   spawnColor: {r: 1, g: 0.6, b: 0.2, a: 0.75}
 --- !u!114 &5055261809470913485
 MonoBehaviour:
@@ -107,7 +107,7 @@ MonoBehaviour:
   - resourceType: 1
     prefab: {fileID: 9045655458605650039, guid: 599b03017ceb0324d83124fd592826ce,
       type: 3}
-  minePrefabs:
+  outpostPrefabs:
   - resourceType: 0
     prefab: {fileID: 4101029072486519584, guid: c729d96a6afdeb44c8d1d3f3c82f4375,
       type: 3}

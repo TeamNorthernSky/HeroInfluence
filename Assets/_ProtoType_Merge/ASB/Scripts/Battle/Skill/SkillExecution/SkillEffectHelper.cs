@@ -10,7 +10,16 @@ namespace ASB.Work.Battle.SkillExecution
     {
         // 데미지 적용/계산은 BattleManager에서만 수행합니다.
         // 이 메서드는 DamageContext(명세서)만 생성해 반환합니다.
-        public static DamageContext ApplyStandardDamage(BattleCharactor caster, BattleCharactor target, float skillValue)
+        public static DamageContext ApplyStandardDamage(
+            BattleCharactor caster,
+            BattleCharactor target,
+            float skillValue,
+            int skillIndex = 0,
+            int skillRange = -1,
+            bool isAdditionalHit = false,
+            bool isCounterAttack = false,
+            float bonusCritRate = 0f,
+            float targetAvoidRateReduction = 0f)
         {
             if (caster == null || target == null)
             {
@@ -23,13 +32,27 @@ namespace ASB.Work.Battle.SkillExecution
                 Target = target,
                 SkillMultiplier = 0f,
                 SkillValue = skillValue,
-                SkillIndex = 0,
-                IsCritical = false
+                SkillIndex = skillIndex,
+                IsRangedAttack = skillRange > 0,
+                BonusCritRate = bonusCritRate,
+                TargetAvoidRateReduction = targetAvoidRateReduction,
+                CanTriggerCounter = !isAdditionalHit && !isCounterAttack && skillRange == 0 && target.IsInFrontRow,
+                IsCounterAttack = isCounterAttack
             };
+            context.IsCritical = CombatCalculator.RollCritical(context);
             return context;
         }
 
-        public static DamageContext ApplySkillDamage(BattleCharactor caster, BattleCharactor target, float skillValue)
+        public static DamageContext ApplySkillDamage(
+            BattleCharactor caster,
+            BattleCharactor target,
+            float skillValue,
+            int skillIndex = 0,
+            int skillRange = -1,
+            bool isAdditionalHit = false,
+            bool isCounterAttack = false,
+            float bonusCritRate = 0f,
+            float targetAvoidRateReduction = 0f)
         {
             if (caster == null || target == null)
             {
@@ -42,9 +65,14 @@ namespace ASB.Work.Battle.SkillExecution
                 Target = target,
                 SkillMultiplier = 0f,
                 SkillValue = skillValue,
-                SkillIndex = 0,
-                IsCritical = false
+                SkillIndex = skillIndex,
+                IsRangedAttack = skillRange > 0,
+                BonusCritRate = bonusCritRate,
+                TargetAvoidRateReduction = targetAvoidRateReduction,
+                CanTriggerCounter = !isAdditionalHit && !isCounterAttack && skillRange == 0 && target.IsInFrontRow,
+                IsCounterAttack = isCounterAttack
             };
+            context.IsCritical = CombatCalculator.RollCritical(context);
             return context;
         }
 

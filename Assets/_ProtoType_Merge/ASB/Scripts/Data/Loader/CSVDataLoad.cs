@@ -141,7 +141,7 @@ public static class CSVLoader
     private const int DataStartLineWeaponIndex0Based = 13;
 
     /// <summary>EnemyDataSheet: 헤더·설명 43줄 스킵 후 데이터(44번째 줄부터, 0-based index 43).</summary>
-    private const int DataStartLineEnemySheetIndex0Based = 43;
+    private const int DataStartLineEnemySheetIndex0Based = 42;
 
     /// <summary>Index가 20000~29999이면 적으로 간주 (플레이어 10000~19999와 분리).</summary>
     public static bool IsEnemyUnitIndex(string index)
@@ -515,10 +515,10 @@ public static class CSVLoader
             float atk = ParseFloatSafe(GetField(fields, 4), 0f);
             float def = ParseFloatSafe(GetField(fields, 5), 0f);
             float luck = 0f;
-            float speed = ParseFloatPercentOrFloatSafe(GetField(fields, 13), 0f);
-            float criticalRate = ParseFloatPercentOrFloatSafe(GetField(fields, 10), 0f);
-            float counterRate = ParseFloatPercentOrFloatSafe(GetField(fields, 11), 0f);
-            float avoidRate = ParseFloatPercentOrFloatSafe(GetField(fields, 12), 0f);
+            float speed = ParseFloatPercentOrFloatSafe(GetField(fields, 9), 0f);
+            float criticalRate = ParseFloatPercentOrFloatSafe(GetField(fields, 6), 0f);
+            float counterRate = ParseFloatPercentOrFloatSafe(GetField(fields, 7), 0f);
+            float avoidRate = ParseFloatPercentOrFloatSafe(GetField(fields, 8), 0f);
 
             var enemy = new EnemyData
             {
@@ -545,7 +545,7 @@ public static class CSVLoader
 
     private static void TryAppendEnemySkill(List<SkillData> skills, List<string> fields, int enemyIndexNum, string enemyName, int slot)
     {
-        int baseCol = slot == 1 ? 14 : 23;
+        int baseCol = slot == 1 ? 10 : 20;
         if (fields.Count <= baseCol + 8)
         {
             return;
@@ -560,10 +560,12 @@ public static class CSVLoader
         string description = GetField(fields, baseCol + 1);
         int effect = ParseIntOrDefault(GetField(fields, baseCol + 2), 0);
         int range = ParseIntOrDefault(GetField(fields, baseCol + 3), 0);
-        int target = ParseIntOrDefault(GetField(fields, baseCol + 4), 0);
-        string multiRaw = GetField(fields, baseCol + 5);
-        int mtCount = ParseIntOrDefault(GetField(fields, baseCol + 7), 0);
-        float skillVal = ParseFloatSafe(GetField(fields, baseCol + 8), 0f);
+        int rangeTarget = ParseIntOrDefault(GetField(fields, baseCol + 4), 0);
+        int target = ParseIntOrDefault(GetField(fields, baseCol + 5), 0);
+        string multiRaw = GetField(fields, baseCol + 6);
+       
+        int mtCount = ParseIntOrDefault(GetField(fields, baseCol + 8), 0);
+        float skillVal = ParseFloatSafe(GetField(fields, baseCol + 9), 0f);
 
         var sd = new SkillData
         {
@@ -577,6 +579,8 @@ public static class CSVLoader
             ipCost = 0,
             classSkillEffect = effect,
             classSkillRange = range,
+            EnemySkill1Range = slot == 1 ? range : -1,
+            EnemySkill2Range = slot == 2 ? range : -1,
             // EnemyDataSheet에는 별도 우선순위 컬럼이 없으므로 기본값(Any=1)을 사용합니다.
             classSkillRangeLine = 1,
             classSkillTarget = target,

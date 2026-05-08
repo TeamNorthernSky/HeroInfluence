@@ -5,16 +5,16 @@ using UnityEngine.Serialization;
 [Serializable]
 public class EnemyPersistentData
 {
-    public int EnemyId => enemyId;
+    public string EnemyId => enemyId;
     public IReadOnlyList<int> UnitIndices => unitIndices;
 
-    [UnityEngine.SerializeField] private int enemyId;
+    [UnityEngine.SerializeField] private string enemyId;
     [FormerlySerializedAs("combatUnitIndices")]
     [UnityEngine.SerializeField] private List<int> unitIndices = new List<int>();
 
-    public EnemyPersistentData(int enemyId, IReadOnlyList<int> unitIndices)
+    public EnemyPersistentData(string enemyId, IReadOnlyList<int> unitIndices)
     {
-        this.enemyId = Math.Max(1, enemyId);
+        this.enemyId = string.IsNullOrWhiteSpace(enemyId) ? string.Empty : enemyId;
         SetUnitIndices(unitIndices);
     }
 

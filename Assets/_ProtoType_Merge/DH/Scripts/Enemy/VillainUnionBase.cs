@@ -31,6 +31,15 @@ public class VillainUnionBase : MonoBehaviour
         return gridManager != null ? gridManager.WorldToGrid(transform.position) : Vector2Int.zero;
     }
 
+    public Vector2Int GetAnchorGrid()
+    {
+        MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
+        if (occupant != null)
+            return occupant.AnchorGrid;
+
+        return GetCurrentGrid();
+    }
+
     public IReadOnlyList<Vector2Int> GetAdjacentOuterCells()
     {
         MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();

@@ -14,7 +14,7 @@ namespace ASB.Work.Battle.SkillExecution
 
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/BleedStrike] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
 
             // 데미지 적용 이후(사망 여부 포함)에 출혈을 부여합니다.
@@ -42,7 +42,7 @@ namespace ASB.Work.Battle.SkillExecution
 
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/TauntStrike] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
 
             // 도발 부여는 데미지 적용 이후(사망 여부 포함)에 결정합니다.
@@ -67,7 +67,7 @@ namespace ASB.Work.Battle.SkillExecution
     {
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/ColumnsStrike] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
         }
     }
@@ -79,7 +79,7 @@ namespace ASB.Work.Battle.SkillExecution
     {
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/AtkAfterRest] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
         }
 
@@ -98,7 +98,7 @@ namespace ASB.Work.Battle.SkillExecution
     {
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/TargetHealBanSkill] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
         }
 

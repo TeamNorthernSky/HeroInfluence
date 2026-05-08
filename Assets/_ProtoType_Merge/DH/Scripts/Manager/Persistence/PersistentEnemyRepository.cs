@@ -5,18 +5,22 @@ using UnityEngine;
 public class PersistentEnemyRepository : MonoBehaviour
 {
     public static PersistentEnemyRepository Instance { get; private set; }
+    private const string EnemyIdPrefix = "enemy_";
 
     [Header("Persistent Enemies")]
     [SerializeField] private int nextUnitIndex = 1;
-    [SerializeField] private int nextEnemyId = 1;
+    [SerializeField] private int nextEnemySequence = 1;
     [SerializeField] private List<EnemyUnitPersistentData> units = new List<EnemyUnitPersistentData>();
     [SerializeField] private List<EnemyPersistentData> enemies = new List<EnemyPersistentData>();
+    [Header("Combat Context")]
+    [SerializeField] private CombatEnemyPersistentData combatEnemy;
 
     private readonly Dictionary<int, EnemyUnitPersistentData> unitLookup = new Dictionary<int, EnemyUnitPersistentData>();
-    private readonly Dictionary<int, EnemyPersistentData> enemyLookup = new Dictionary<int, EnemyPersistentData>();
+    private readonly Dictionary<string, EnemyPersistentData> enemyLookup = new Dictionary<string, EnemyPersistentData>();
 
     public IReadOnlyList<EnemyUnitPersistentData> Units => units;
     public IReadOnlyList<EnemyPersistentData> Enemies => enemies;
+    public CombatEnemyPersistentData CombatEnemy => combatEnemy;
 
     private void Awake()
     {
@@ -47,10 +51,11 @@ public class PersistentEnemyRepository : MonoBehaviour
         return unitIndex;
     }
 
-    public int CreateEnemy(IReadOnlyList<int> unitIndices)
+    public string CreateEnemy(IReadOnlyList<int> unitIndices)
     {
-        int enemyId = Mathf.Max(1, nextEnemyId);
-        nextEnemyId = enemyId + 1;
+        int sequence = Mathf.Max(1, nextEnemySequence);
+        nextEnemySequence = sequence + 1;
+        string enemyId = FormatEnemyId(sequence);
 
         var newData = new EnemyPersistentData(enemyId, unitIndices);
         enemies.Add(newData);
@@ -58,9 +63,9 @@ public class PersistentEnemyRepository : MonoBehaviour
         return enemyId;
     }
 
-    public void RegisterOrUpdateEnemy(int enemyId, IReadOnlyList<int> unitIndices)
+    public void RegisterOrUpdateEnemy(string enemyId, IReadOnlyList<int> unitIndices)
     {
-        if (enemyId <= 0)
+        if (string.IsNullOrWhiteSpace(enemyId))
             return;
 
         if (enemyLookup.TryGetValue(enemyId, out EnemyPersistentData existingData))
@@ -72,8 +77,7 @@ public class PersistentEnemyRepository : MonoBehaviour
         EnemyPersistentData newData = new EnemyPersistentData(enemyId, unitIndices);
         enemies.Add(newData);
         enemyLookup[enemyId] = newData;
-        if (nextEnemyId <= enemyId)
-            nextEnemyId = enemyId + 1;
+        UpdateNextEnemySequence(enemyId);
     }
 
     public bool ContainsUnit(int unitIndex)
@@ -102,14 +106,14 @@ public class PersistentEnemyRepository : MonoBehaviour
         return true;
     }
 
-    public bool ContainsEnemy(int enemyId)
+    public bool ContainsEnemy(string enemyId)
     {
-        return enemyId > 0 && enemyLookup.ContainsKey(enemyId);
+        return !string.IsNullOrWhiteSpace(enemyId) && enemyLookup.ContainsKey(enemyId);
     }
 
-    public bool TryGetEnemy(int enemyId, out EnemyPersistentData data)
+    public bool TryGetEnemy(string enemyId, out EnemyPersistentData data)
     {
-        if (enemyId <= 0)
+        if (string.IsNullOrWhiteSpace(enemyId))
         {
             data = null;
             return false;
@@ -118,14 +122,34 @@ public class PersistentEnemyRepository : MonoBehaviour
         return enemyLookup.TryGetValue(enemyId, out data);
     }
 
-    public bool RemoveEnemy(int enemyId)
+    public bool RemoveEnemy(string enemyId)
     {
-        if (enemyId <= 0 || !enemyLookup.TryGetValue(enemyId, out EnemyPersistentData data))
+        if (string.IsNullOrWhiteSpace(enemyId) || !enemyLookup.TryGetValue(enemyId, out EnemyPersistentData data))
             return false;
 
         enemyLookup.Remove(enemyId);
         enemies.Remove(data);
         return true;
+    }
+
+    public void RegisterCombatEnemy(string enemyId, IReadOnlyList<int> unitIndices)
+    {
+        if (string.IsNullOrWhiteSpace(enemyId))
+            return;
+
+        if (combatEnemy == null)
+        {
+            combatEnemy = new CombatEnemyPersistentData(enemyId, unitIndices);
+            return;
+        }
+
+        combatEnemy.SetEnemyId(enemyId);
+        combatEnemy.SetUnitIndices(unitIndices);
+    }
+
+    public void ClearCombatEnemy()
+    {
+        combatEnemy = null;
     }
 
     public void ClearAllEnemies()
@@ -134,8 +158,9 @@ public class PersistentEnemyRepository : MonoBehaviour
         unitLookup.Clear();
         enemies.Clear();
         enemyLookup.Clear();
+        combatEnemy = null;
         nextUnitIndex = 1;
-        nextEnemyId = 1;
+        nextEnemySequence = 1;
     }
 
     private void RebuildLookup()
@@ -143,7 +168,7 @@ public class PersistentEnemyRepository : MonoBehaviour
         unitLookup.Clear();
         enemyLookup.Clear();
         int highestUnitIndex = 0;
-        int highestEnemyId = 0;
+        int highestEnemySequence = 0;
 
         for (int i = 0; i < units.Count; i++)
         {
@@ -169,7 +194,7 @@ public class PersistentEnemyRepository : MonoBehaviour
         for (int i = 0; i < enemies.Count; i++)
         {
             EnemyPersistentData data = enemies[i];
-            if (data == null || data.EnemyId <= 0)
+            if (data == null || string.IsNullOrWhiteSpace(data.EnemyId))
                 continue;
 
             if (enemyLookup.ContainsKey(data.EnemyId))
@@ -179,14 +204,35 @@ public class PersistentEnemyRepository : MonoBehaviour
             }
 
             enemyLookup.Add(data.EnemyId, data);
-            if (data.EnemyId > highestEnemyId)
-                highestEnemyId = data.EnemyId;
+            if (TryParseEnemySequence(data.EnemyId, out int sequence) && sequence > highestEnemySequence)
+                highestEnemySequence = sequence;
         }
 
         if (nextUnitIndex <= highestUnitIndex)
             nextUnitIndex = highestUnitIndex + 1;
 
-        if (nextEnemyId <= highestEnemyId)
-            nextEnemyId = highestEnemyId + 1;
+        if (nextEnemySequence <= highestEnemySequence)
+            nextEnemySequence = highestEnemySequence + 1;
+    }
+
+    private static string FormatEnemyId(int sequence)
+    {
+        return $"{EnemyIdPrefix}{Mathf.Max(1, sequence):000}";
+    }
+
+    private void UpdateNextEnemySequence(string enemyId)
+    {
+        if (TryParseEnemySequence(enemyId, out int sequence) && nextEnemySequence <= sequence)
+            nextEnemySequence = sequence + 1;
+    }
+
+    private static bool TryParseEnemySequence(string enemyId, out int sequence)
+    {
+        sequence = 0;
+        if (string.IsNullOrWhiteSpace(enemyId) ||
+            !enemyId.StartsWith(EnemyIdPrefix, System.StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return int.TryParse(enemyId.Substring(EnemyIdPrefix.Length), out sequence) && sequence > 0;
     }
 }

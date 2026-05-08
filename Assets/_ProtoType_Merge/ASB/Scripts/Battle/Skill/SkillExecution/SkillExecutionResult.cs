@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using ASB.Work.Battle.Core;
 
+#nullable enable // 코드 최상단에 추가
+
 namespace ASB.Work.Battle.SkillExecution
 {
     public class SkillExecutionResult
@@ -11,7 +13,8 @@ namespace ASB.Work.Battle.SkillExecution
 
         // 총 가해진 데미지(전투 계산 후 실제 적용된 값)를 전달합니다.
         // (예: 흡혈, 누적 반응 등 사후 처리)
-        public Action<float>? OnPostExecution { get; set; }
+
+        public Action<float>? OnPostExecution { get; set; } 
 
         public static SkillExecutionResult SuccessResult()
         {

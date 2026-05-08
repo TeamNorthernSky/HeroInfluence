@@ -243,6 +243,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 1, y: 1}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &56801847
 GameObject:
   m_ObjectHideFlags: 0
@@ -393,20 +396,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55641ff6ea58232498da66741bfe785b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  charactorManager: {fileID: 1002047753}
-  debugSpawnRequests:
-  - unitId: 10001
-    gridNumber: 0
-    isPlayer: 1
-  - unitId: 10002
-    gridNumber: 102
-    isPlayer: 1
-  - unitId: 10003
-    gridNumber: 1
-    isPlayer: 1
-  - unitId: 10004
-    gridNumber: 101
-    isPlayer: 1
 --- !u!1 &320332751
 GameObject:
   m_ObjectHideFlags: 0
@@ -437,10 +426,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 605e5315b8954e54989d5ce105aa9770, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitCsv: {fileID: 4900000, guid: d928a03962cf2d6429bfc8241c3ba7d1, type: 3}
-  playerUnitCsv: {fileID: 4900000, guid: 32fabe508b336cc4990e4bc88f1d78ee, type: 3}
-  enemyUnitCsv: {fileID: 4900000, guid: 75b7d0f12ff4976478d649b8bd8b2e44, type: 3}
-  classSkillSheetCsv: {fileID: 0}
 --- !u!4 &320332753
 Transform:
   m_ObjectHideFlags: 0
@@ -470,6 +455,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   csvLoader: {fileID: 320332752}
   skillDataLoader: {fileID: 0}
+  weaponDataLoader: {fileID: 0}
   charactorManager: {fileID: 1002047753}
   enemyManager: {fileID: 1002047755}
 --- !u!1 &503365170
@@ -630,6 +616,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 1, y: 0}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &621159265
 GameObject:
   m_ObjectHideFlags: 0
@@ -661,17 +650,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef8f49a24b514a84a9dba9788d741088, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  charactorManager: {fileID: 1002047753}
-  enemyManager: {fileID: 1002047755}
-  unitSpawner: {fileID: 173310004}
-  enemySpawner: {fileID: 912453334}
-  equipmentManager: {fileID: 0}
-  skillManager: {fileID: 0}
+  includeInactiveUnits: 1
+  playerPlace: {fileID: 0}
+  enemyPlace: {fileID: 0}
   battleFlowManager: {fileID: 621159268}
   createOnStart: 1
-  fallbackCharactorId: 
-  enemyUnitIds: []
-  enemyStartGridNumber: 2
 --- !u!4 &621159267
 Transform:
   m_ObjectHideFlags: 0
@@ -700,8 +683,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoStartOnInitialize: 1
-  enemyThinkSeconds: 3
   verboseLog: 1
+  inputHandler: {fileID: 0}
   includeInactiveUnitRootsInOutlineLookup: 1
   battleManager: {fileID: 621159269}
 --- !u!114 &621159269
@@ -837,6 +820,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 1, y: 1}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &912453329
 GameObject:
   m_ObjectHideFlags: 0
@@ -1011,6 +997,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 0, y: 1}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &1002047752
 GameObject:
   m_ObjectHideFlags: 0
@@ -1191,6 +1180,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 0, y: 2}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &1348185592
 GameObject:
   m_ObjectHideFlags: 0
@@ -1430,6 +1422,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 0, y: 1}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &1414445549
 GameObject:
   m_ObjectHideFlags: 0
@@ -1551,6 +1546,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 1, y: 2}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &1511189582
 GameObject:
   m_ObjectHideFlags: 0
@@ -1672,6 +1670,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 0, y: 0}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &1540026208
 GameObject:
   m_ObjectHideFlags: 0
@@ -1681,7 +1682,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1540026210}
-  - component: {fileID: 1540026209}
   m_Layer: 0
   m_Name: InputHandler
   m_TagString: Untagged
@@ -1689,29 +1689,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1540026209
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1540026208}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ecb51207f499464b973b518ef395db1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  raycastCamera: {fileID: 1956195431}
-  raycastMask:
-    serializedVersion: 2
-    m_Bits: 768
-  maxRayDistance: 200
-  tileMask:
-    serializedVersion: 2
-    m_Bits: 0
-  battleFlowManager: {fileID: 0}
-  battleManager: {fileID: 0}
-  skillDataLoader: {fileID: 0}
 --- !u!4 &1540026210
 Transform:
   m_ObjectHideFlags: 0
@@ -1848,6 +1825,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 1, y: 0}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &1710644039
 GameObject:
   m_ObjectHideFlags: 0
@@ -2000,6 +1980,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 0, y: 0}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &1853290217
 GameObject:
   m_ObjectHideFlags: 0
@@ -2121,6 +2104,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 0, y: 2}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &1926818295
 GameObject:
   m_ObjectHideFlags: 0
@@ -2279,6 +2265,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coords: {x: 1, y: 2}
   occupyingUnit: {fileID: 0}
+  cellRenderer: {fileID: 0}
+  transparentMat: {fileID: 0}
+  redHighlightMat: {fileID: 0}
 --- !u!1 &1956195429
 GameObject:
   m_ObjectHideFlags: 0
