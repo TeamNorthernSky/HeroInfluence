@@ -23,6 +23,8 @@ public class CombatEnemyPersistentData
 
     public void SetUnitIndices(IReadOnlyList<int> source)
     {
+        // [JC 수정 260511] Unity 직렬화 사이클로 필드가 null로 복원될 수 있어 가드
+        if (unitIndices == null) unitIndices = new List<int>();
         unitIndices.Clear();
 
         if (source == null)

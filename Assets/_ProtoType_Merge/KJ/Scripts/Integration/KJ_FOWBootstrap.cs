@@ -20,7 +20,7 @@ namespace KJ_Work.Integration
                 var go = Object.Instantiate(prefab);
                 go.name = "[KJ_FOWManager]";
                 Object.DontDestroyOnLoad(go);
-                Debug.Log("[KJ_FOWBootstrap] KJ_FOWManager가 자동 생성되었습니다.");
+                // Debug.Log("[KJ_FOWBootstrap] KJ_FOWManager가 자동 생성되었습니다.");
             }
             else
             {

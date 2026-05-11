@@ -34,6 +34,7 @@ public class BattleSceneExitController : MonoBehaviour
         if (exitScheduled) return;
         exitScheduled = true;
         Debug.Log($"[BattleSceneExitController] Battle ended ({result}). Returning to '{returnSceneName}' in {exitDelaySeconds:F1}s.");
+        PersistentStateDebugLogger.Dump($"BattleEnded ({result}, before ClearCombatState)");
         StartCoroutine(ExitAfterDelay());
     }
 

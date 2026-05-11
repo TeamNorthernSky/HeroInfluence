@@ -99,7 +99,15 @@ public class ClickSelectionController : MonoBehaviour
         if (turnManager != null && turnManager.IsEnemyTurnRunning)
             return;
 
-        if (activeMover.IsMoving || (activeRuntime != null && activeRuntime.IsInputLocked))
+        // [JC 추가 260511] 이동 중 클릭 → 정지. 마커는 유지하고 path를 현재 위치 기준 재계산
+        if (activeMover.IsMoving)
+        {
+            activeMover.StopMovement();
+            moveCommandPreviewController?.RecomputePathForCurrent(activeMover);
+            return;
+        }
+
+        if (activeRuntime != null && activeRuntime.IsInputLocked)
             return;
 
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);

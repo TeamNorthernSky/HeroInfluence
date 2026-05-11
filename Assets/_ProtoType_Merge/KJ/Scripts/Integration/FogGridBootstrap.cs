@@ -50,7 +50,7 @@ public class FogGridBootstrap : MonoBehaviour
         builder.AppendLine($"- FogManager: {GetName(references.FogManager)}");
         builder.AppendLine($"- PartyMovers: {(references.PartyMovers == null ? 0 : references.PartyMovers.Length)}");
 
-        Debug.Log(builder.ToString(), this);
+        // Debug.Log(builder.ToString(), this);
     }
 
     private static string GetName(Object target)

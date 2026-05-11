@@ -14,6 +14,9 @@ public class PartyGridMover : MonoBehaviour
     [SerializeField] private float arriveThreshold = 0.01f;
     [SerializeField] private int maxMovePoints = 10;
 
+    // [JC 추가 260511] 정지 시 진단 로그
+    [SerializeField] private bool logStopMovement = false;
+
     private readonly Queue<Vector2Int> pathQueue = new Queue<Vector2Int>();
     private bool isMoving;
     private Vector2Int currentGrid;
@@ -29,6 +32,22 @@ public class PartyGridMover : MonoBehaviour
         fixedY = transform.position.y;
         currentGrid = gridManager != null ? gridManager.WorldToGrid(transform.position) : Vector2Int.zero;
         movePointController = new PartyMovePointController(maxMovePoints);
+    }
+
+    // [JC 추가 260511] 위치 영속화: PartyPersistentData.LastGrid가 있으면 그 위치로 복원
+    // Start로 둔 이유: PersistentUnitRepository 및 PartyUnitBootstrap이 먼저 동작하도록 보장
+    private void Start()
+    {
+        var identity = GetComponent<PartyIdentity>();
+        if (identity == null) return;
+
+        var repo = PersistentUnitRepository.Instance;
+        if (repo == null) return;
+
+        if (!repo.TryGetParty(identity.PartyId, out var partyData) || partyData == null) return;
+        if (!partyData.HasLastGrid) return;
+
+        SnapToGridPosition(partyData.LastGrid);
     }
 
     private void Update()
@@ -50,6 +69,8 @@ public class PartyGridMover : MonoBehaviour
             bool reachedPathEnd = pathQueue.Count == 0;
 
             GridEntered?.Invoke(currentGrid);
+            // [JC 추가 260511] 한 칸 이동마다 위치 영속화 (이동 도중 정지 케이스 포함 안전 저장)
+            PersistLastGrid();
             NotifyPathUpdated();
 
             if (reachedPathEnd && pathQueue.Count == 0)
@@ -79,6 +100,39 @@ public class PartyGridMover : MonoBehaviour
         movePointController?.ResetToMax();
     }
 
+    // [JC 추가 260511] 이동 중 클릭 정지. 마커는 유지하되 path는 재계산되도록 외부에서 처리.
+    // 셀 사이에서 정지 시 가장 가까운 셀로 스냅. 1셀 진행으로 판정되면 이동력 1 차감 (무료 이동 방지).
+    public void StopMovement()
+    {
+        if (!isMoving && pathQueue.Count == 0) return;
+        pathQueue.Clear();
+        isMoving = false;
+
+        if (gridManager == null) return;
+
+        Vector2Int previousGrid = currentGrid;
+        int previousMP = movePointController != null ? movePointController.RemainingMovePoints : -1;
+
+        Vector2Int nearestGrid = gridManager.WorldToGrid(transform.position);
+        if (nearestGrid != previousGrid)
+        {
+            // 다음 셀로 80% 이상 진행한 상태에서 정지 → 한 셀 진행 처리
+            currentGrid = nearestGrid;
+            movePointController?.SpendStep();
+        }
+
+        Vector3 worldPos = gridManager.GridToWorldCenter(currentGrid);
+        worldPos.y = fixedY;
+        transform.position = worldPos;
+        PersistLastGrid();
+
+        if (logStopMovement)
+        {
+            int afterMP = movePointController != null ? movePointController.RemainingMovePoints : -1;
+            Debug.Log($"[PartyGridMover.StopMovement] prev={previousGrid} nearest={nearestGrid} snapped={currentGrid} MP {previousMP}→{afterMP}", this);
+        }
+    }
+
     public void SnapToGridPosition(Vector2Int grid)
     {
         pathQueue.Clear();
@@ -92,7 +146,22 @@ public class PartyGridMover : MonoBehaviour
         worldPosition.y = fixedY;
         transform.position = worldPosition;
         GridEntered?.Invoke(currentGrid);
+        // [JC 추가 260511] Snap도 영속화 (외부 위치 강제 변경 케이스 안전 처리)
+        PersistLastGrid();
         NotifyPathUpdated();
+    }
+
+    // [JC 추가 260511] 현재 위치를 PartyPersistentData.LastGrid로 저장
+    private void PersistLastGrid()
+    {
+        var identity = GetComponent<PartyIdentity>();
+        if (identity == null) return;
+
+        var repo = PersistentUnitRepository.Instance;
+        if (repo == null) return;
+
+        if (!repo.TryGetParty(identity.PartyId, out var partyData) || partyData == null) return;
+        partyData.SetLastGrid(currentGrid);
     }
 
     public List<Vector2Int> GetRemainingPath()

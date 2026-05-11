@@ -27,7 +27,7 @@ public class SceneLoader : MonoBehaviour
     private static readonly SceneEntry[] DefaultEntries =
     {
         new SceneEntry { sceneName = "TitleScene",  displayName = "타이틀 씬", isCircularNav = true },
-        new SceneEntry { sceneName = "LobbyScene",  displayName = "로비 씬",   isCircularNav = true },
+        new SceneEntry { sceneName = "LobbyScene_New", displayName = "로비 씬", isCircularNav = true },
         new SceneEntry { sceneName = "DHScene",     displayName = "탐험 씬",   isCircularNav = true },
         new SceneEntry { sceneName = "TmpBattleScene", displayName = "전투 씬", isCircularNav = false },
         new SceneEntry { sceneName = "EndingScene", displayName = "엔딩 씬",   isCircularNav = true },

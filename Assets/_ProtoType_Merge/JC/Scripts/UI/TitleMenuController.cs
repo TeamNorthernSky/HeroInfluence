@@ -5,8 +5,8 @@ public class TitleMenuController : MonoBehaviour
 {
     public void OnNewGameClicked()
     {
-        Debug.Log("[TitleMenu] 새 게임 → LobbyScene");
-        SceneManager.LoadScene("LobbyScene");
+        Debug.Log("[TitleMenu] 새 게임 → GameLoadScene (게이트씬)");
+        SceneManager.LoadScene("GameLoadScene");
     }
 
     public void OnLoadClicked()

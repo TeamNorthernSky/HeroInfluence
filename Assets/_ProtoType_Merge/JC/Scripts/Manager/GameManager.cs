@@ -17,6 +17,20 @@ public class GameManager : MonoBehaviour
     public FogRenderManager FogRender { get; private set; }
     public LevelLoader Level { get; private set; }
 
+    // [JC 추가 260511] 영속 매니저 참조 (각자 Singleton)
+    public PersistentUnitRepository UnitRepo => PersistentUnitRepository.Instance;
+    public PersistentEnemyRepository EnemyRepo => PersistentEnemyRepository.Instance;
+    public HQVisitState HQVisit => HQVisitState.Instance;
+
+    // [JC 추가 260511] 영속 상태 - 매니저 통합 (씬 종속 매니저들의 데이터 영속화)
+    [Header("Persistent State")]
+    [SerializeField] private int currentDay = 1;
+    public int CurrentDay
+    {
+        get => currentDay;
+        set => currentDay = Mathf.Max(1, value);
+    }
+
     private void Awake()
     {
         if (Instance != null)

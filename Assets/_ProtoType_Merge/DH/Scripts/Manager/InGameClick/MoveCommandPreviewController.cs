@@ -108,6 +108,15 @@ public class MoveCommandPreviewController
             GetDisplayReachableSegmentCount(previewPath, GetPathMoveCost(movePath)));
     }
 
+    // [JC 추가 260511] 정지 후 path 재계산. markerGrid 그대로 두고 현재 mover 위치 기준으로 path만 다시 그림.
+    public void RecomputePathForCurrent(PartyGridMover activeMover)
+    {
+        if (activeMover == null || !hasMarkerGrid)
+            return;
+
+        PreviewMoveToGrid(activeMover, markerGrid);
+    }
+
     public bool TryConfirmMove(Ray ray, PartyGridMover activeMover)
     {
         if (activeMover == null)

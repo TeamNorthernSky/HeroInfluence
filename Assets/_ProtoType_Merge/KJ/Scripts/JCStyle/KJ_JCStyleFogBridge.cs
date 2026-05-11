@@ -32,7 +32,7 @@ public class KJ_JCStyleFogBridge : MonoBehaviour
             lastTrackedDay = turnManager.GetDay();
             if (fogManager != null)
             {
-                Debug.Log($"[KJ_FogBridge] 초기 턴 동기화: {lastTrackedDay}");
+                // Debug.Log($"[KJ_FogBridge] 초기 턴 동기화: {lastTrackedDay}");
                 fogManager.AdvanceTurn(lastTrackedDay, decayTurns);
             }
         }
@@ -55,7 +55,7 @@ public class KJ_JCStyleFogBridge : MonoBehaviour
             int currentDay = turnManager.GetDay();
             if (currentDay != lastTrackedDay)
             {
-                Debug.Log($"[KJ_FogBridge] 날짜 변화 감지: {lastTrackedDay} -> {currentDay}");
+                // Debug.Log($"[KJ_FogBridge] 날짜 변화 감지: {lastTrackedDay} -> {currentDay}");
                 OnDayAdvanced(currentDay);
                 lastTrackedDay = currentDay;
             }
@@ -126,7 +126,7 @@ public class KJ_JCStyleFogBridge : MonoBehaviour
 
     private void OnDayAdvanced(int day)
     {
-        Debug.Log($"[KJ_FogBridge] OnDayAdvanced 발생! Day: {day}, 소멸턴: {decayTurns}");
+        // Debug.Log($"[KJ_FogBridge] OnDayAdvanced 발생! Day: {day}, 소멸턴: {decayTurns}");
         
         if (fogManager != null)
         {

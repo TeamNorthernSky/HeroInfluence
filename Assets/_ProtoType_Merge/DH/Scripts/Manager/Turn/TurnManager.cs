@@ -26,6 +26,10 @@ public class TurnManager : MonoBehaviour
         if (enemyTurnController == null)
             enemyTurnController = FindFirstObjectByType<EnemyTurnController>();
 
+        // [JC 수정 260511] GameManager.CurrentDay에서 day 복원 (DHScene 재로드 시 Day 리셋 방지)
+        if (GameManager.Instance != null)
+            day = GameManager.Instance.CurrentDay;
+
         UpdateTurnStateText("Player Turn");
     }
 
@@ -81,6 +85,9 @@ public class TurnManager : MonoBehaviour
     private void AdvanceDay()
     {
         day++;
+        // [JC 수정 260511] GameManager에 동기화
+        if (GameManager.Instance != null)
+            GameManager.Instance.CurrentDay = day;
         DayAdvanced?.Invoke(day);
     }
 

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class TestPlayController : MonoBehaviour
 {
-    private const string LobbyScene = "LobbyScene";
+    private const string LobbyScene = "LobbyScene_New";
 
     [SerializeField] private Button _backButton;
 

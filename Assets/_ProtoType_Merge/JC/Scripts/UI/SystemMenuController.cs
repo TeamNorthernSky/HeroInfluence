@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class SystemMenuController : MonoBehaviour
 {
     private const string TitleScene = "TitleScene";
-    private const string LobbyScene = "LobbyScene";
+    private const string LobbyScene = "LobbyScene_New";
 
     [SerializeField] private GameObject _modal;
     [SerializeField] private Button _btnResume;

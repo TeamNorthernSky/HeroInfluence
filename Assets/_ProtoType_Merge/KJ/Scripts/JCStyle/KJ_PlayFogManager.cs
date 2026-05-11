@@ -133,7 +133,7 @@ public class KJ_PlayFogManager : MonoBehaviour
         Shader.SetGlobalTexture(ExploredTexGlobalId, rtExplored);
 
         cmd = new CommandBuffer { name = "KJ_PlayFogManager" };
-        Debug.Log($"[KJ_PlayFogManager] 초기화 완료 ({w}x{h})");
+        // Debug.Log($"[KJ_PlayFogManager] 초기화 완료 ({w}x{h})");
     }
 
     private static RenderTexture CreateRT(int w, int h, RenderTextureFormat fmt, string name)
@@ -219,7 +219,7 @@ public class KJ_PlayFogManager : MonoBehaviour
 
     public void AdvanceTurn(int turn, int decayLimit)
     {
-        Debug.Log($"[KJ_PlayFogManager] AdvanceTurn 호출: Turn {currentTurn} -> {turn}, DecayLimit: {decayLimit}");
+        // Debug.Log($"[KJ_PlayFogManager] AdvanceTurn 호출: Turn {currentTurn} -> {turn}, DecayLimit: {decayLimit}");
         currentTurn = turn;
         maxDecayTurns = decayLimit;
         RefreshExploredTexture();

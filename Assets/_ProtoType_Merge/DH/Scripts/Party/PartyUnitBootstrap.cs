@@ -44,6 +44,22 @@ public class PartyUnitBootstrap : MonoBehaviour
         if (!HasConfiguredHeroSeeds())
             return;
 
+        // [JC 수정 260511] PartyComposition은 씬 라이프사이클이라 DHScene 재로드마다 비어있음.
+        // Repository(DontDestroyOnLoad)에 같은 PartyId가 이미 등록돼 있으면 PartyComposition을 그것으로 복원하고 종료.
+        // 미적용 시 DHScene 재로드마다 CreateUnit 8회씩 누적 → Units 8→16→24…
+        string partyId = partyIdentity != null ? partyIdentity.PartyId : gameObject.name;
+        if (repository.TryGetParty(partyId, out PartyPersistentData existingParty)
+            && existingParty != null
+            && existingParty.UnitIndices.Count > 0)
+        {
+            int existingCount = existingParty.UnitIndices.Count;
+            partyComposition.EnsureSlotCount(existingCount);
+            for (int i = 0; i < existingCount; i++)
+                partyComposition.SetUnitIndexAt(i, existingParty.UnitIndices[i]);
+            Debug.Log($"Party '{partyId}' restored from PersistentUnitRepository ({existingCount} units, no new seed).", this);
+            return;
+        }
+
         InitializeFromHeroSeeds(repository);
     }
 
