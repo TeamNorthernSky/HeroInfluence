@@ -57,11 +57,13 @@ public class LobbyMemberPanelBinder : MonoBehaviour
         if (string.IsNullOrEmpty(effectivePartyId))
             return false;
 
+        // [JC 수정 260512] 머지 사이클: 파티 책임이 PartyPersistentRepository로 이관됨
         PersistentUnitRepository repo = PersistentUnitRepository.Instance;
-        if (repo == null)
+        PartyPersistentRepository partyRepo = PartyPersistentRepository.Instance;
+        if (repo == null || partyRepo == null)
             return false;
 
-        if (!repo.TryGetParty(effectivePartyId, out PartyPersistentData party) || party == null)
+        if (!partyRepo.TryGetParty(effectivePartyId, out PartyPersistentData party) || party == null)
             return false;
 
         if (slotIndex < 0 || slotIndex >= party.UnitIndices.Count)

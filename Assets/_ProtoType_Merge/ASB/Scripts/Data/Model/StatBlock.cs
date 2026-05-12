@@ -45,10 +45,10 @@ public struct StatBlock
         float def,
         float luck,
         float speed,
-        float criticalRate = 0.1f,
-        float critMultiplier = 1.5f,
-        float counterRate = 0.1f,
-        float avoidRate = 0.05f,
+        float criticalRate = 0.0f,
+        float critMultiplier = 0.0f,
+        float counterRate = 0.0f,
+        float avoidRate = 0.0f,
         float influence = 0f)
     {
         HP = hp;

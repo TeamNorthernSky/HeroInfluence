@@ -233,7 +233,7 @@ namespace ASB.Work.Battle.SkillExecution
                 return SkillExecutionResult.Failed();
             }
 
-            float hitMultiplier = Mathf.Max(0.01f, skillData.skillValue * 0.5f);
+            float hitMultiplier = Mathf.Max(0.01f, skillData.skillValue);
 
             var hit1 = new DamageContext
             {

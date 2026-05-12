@@ -192,11 +192,31 @@ public static class CSVLoader
             return result;
         }
 
-        var headerFields = ParseCsvLine(lines[0]);
+
+
+
+
+
+        // 1. 파일 전체 텍스트(엔터 포함)를 한 번에 파싱합니다.
+        // csvText는 Resources.Load 등으로 읽어온 파일 전체 string입니다.
+        List<List<string>> allParsedData = ParseCsvTotal(csvText);
+
+        // 2. 파싱이 안전하게 끝난 2차원 리스트에서 0번 줄과 2번 줄을 가져옵니다.
+        // (이때는 이미 따옴표나 줄바꿈 처리가 완벽하게 끝난 상태입니다)
+        var headerFields = allParsedData[0];
+        var headerFields1 = allParsedData[2];
+
         var headerIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        for (int i = 0; i < headerFields.Count; i++)
+        // 1. 두 리스트를 순서대로 이어붙여 하나의 리스트로 만듭니다.
+        var combinedHeaders = new List<string>();
+        combinedHeaders.AddRange(headerFields);
+        combinedHeaders.AddRange(headerFields1);
+
+        // 2. 합쳐진 전체 리스트를 기준으로 0번부터 끝까지 인덱스를 매깁니다.
+        for (int i = 0; i < combinedHeaders.Count; i++)
         {
-            var key = NormalizeHeader(headerFields[i]);
+            var key = NormalizeHeader(combinedHeaders[i]);
+
             if (string.IsNullOrEmpty(key))
             {
                 continue;
@@ -213,6 +233,8 @@ public static class CSVLoader
             return headerIndex.TryGetValue(headerName, out var col) ? col : -1;
         }
 
+
+
         int hpCol = TryGetCol("UnitMaxHP");
         int atkCol = TryGetCol("UnitATK");
         int defCol = TryGetCol("UnitDEF");
@@ -228,6 +250,11 @@ public static class CSVLoader
         int indexCol = TryGetCol("Index");
         int unitTypeCol = TryGetCol("UnitType");
         int nameCol = TryGetCol("Name");
+
+        int levelGrowthMaxHPCol = TryGetCol("LevelGrowthMaxHP");
+        int levelGrowthMaxAtkCol = TryGetCol("LevelGrowthMaxAtk");
+        int levelGrowthMaxDefCol = TryGetCol("LevelGrowthMaxDef");
+
         if (nameCol < 0) nameCol = TryGetCol("UnitName");
         if (nameCol < 0) nameCol = TryGetCol("DisplayName");
 
@@ -282,12 +309,18 @@ public static class CSVLoader
             float counterRate = ParseFloatPercentOrFloat(GetField(fields, counterRateCol), 0f);
             float avoidRate = ParseFloatPercentOrFloat(GetField(fields, avoidRateCol), 0f);
 
+            float levelGrowthMaxHP = ParseFloatSafe(GetField(fields, levelGrowthMaxHPCol), 0f);
+            float levelGrowthMaxAtk = ParseFloatSafe(GetField(fields, levelGrowthMaxAtkCol), 0f);
+            float levelGrowthMaxDef = ParseFloatSafe(GetField(fields, levelGrowthMaxDefCol), 0f);
+
+
             var unit = new UnitData
             {
                 Index = index,
                 UnitType = unitType,
                 Name = name,
-                baseStats = new StatBlock(hp, atk, def, luck, speed, criticalRate, counterRate, avoidRate),
+                baseStats = new StatBlock(hp, atk, def, luck, speed, criticalRate,1.5f, counterRate, avoidRate, 100.0f),
+                levelupStats = new StatBlock(levelGrowthMaxHP, levelGrowthMaxAtk, levelGrowthMaxDef, 0, 0f, 0f, 0f, 0f, 0f),
                 IsEnemyRow = isEnemyRow
             };
 
@@ -964,4 +997,85 @@ public static class CSVLoader
         result.Add(sb.ToString());
         return result;
     }
+
+
+
+        public static List<List<string>> ParseCsvTotal(string csvText)
+        {
+            var grid = new List<List<string>>(); // 전체 표 (행들의 모음)
+            var row = new List<string>();        // 현재 읽고 있는 한 줄 (칸들의 모음)
+
+            if (string.IsNullOrEmpty(csvText))
+            {
+                return grid;
+            }
+
+            var sb = new StringBuilder();
+            bool inQuotes = false;
+
+            for (int i = 0; i < csvText.Length; i++)
+            {
+                char c = csvText[i];
+
+                // 1. 큰따옴표 처리
+                if (c == '"')
+                {
+                    // 따옴표 안에서 따옴표 2개가 연속으로("") 나오면 하나의 따옴표(")로 취급
+                    if (inQuotes && i + 1 < csvText.Length && csvText[i + 1] == '"')
+                    {
+                        sb.Append('"');
+                        i++; // 두 번째 따옴표는 건너뜀
+                    }
+                    else
+                    {
+                        // 따옴표 열림/닫힘 상태 전환
+                        inQuotes = !inQuotes;
+                    }
+                    continue;
+                }
+
+                // 2. 쉼표(,) 처리 - 칸 나누기
+                // 따옴표 밖일 때만 쉼표를 다음 칸으로 인식
+                if (c == ',' && !inQuotes)
+                {
+                    row.Add(sb.ToString());
+                    sb.Length = 0;
+                    continue;
+                }
+
+                // 3. 줄바꿈(\r, \n) 처리 - 행 나누기
+                // 따옴표 밖일 때만 엔터를 다음 줄로 인식
+                if ((c == '\r' || c == '\n') && !inQuotes)
+                {
+                    // 윈도우 환경의 줄바꿈(\r\n)이 연속으로 올 경우 한 번에 처리
+                    if (c == '\r' && i + 1 < csvText.Length && csvText[i + 1] == '\n')
+                    {
+                        i++;
+                    }
+
+                    // 빈 줄이 아닐 경우에만 표(grid)에 추가
+                    if (row.Count > 0 || sb.Length > 0)
+                    {
+                        row.Add(sb.ToString()); // 마지막 칸 데이터 추가
+                        grid.Add(row);          // 완성된 한 줄을 전체 표에 추가
+
+                        row = new List<string>(); // 다음 줄을 위해 리스트 초기화
+                        sb.Length = 0;
+                    }
+                    continue;
+                }
+
+                // 4. 일반 문자나 "따옴표 안의 엔터/쉼표"는 그대로 글자로 추가
+                sb.Append(c);
+            }
+
+            // 반복문이 끝난 후, 미처 들어가지 못한 마지막 줄 데이터가 있다면 추가
+            if (row.Count > 0 || sb.Length > 0)
+            {
+                row.Add(sb.ToString());
+                grid.Add(row);
+            }
+
+            return grid;
+        }
 }

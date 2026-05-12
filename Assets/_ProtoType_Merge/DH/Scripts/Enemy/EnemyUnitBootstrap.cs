@@ -9,7 +9,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
 {
     [Header("Bootstrap")]
     [SerializeField] private bool populateOnStart = true;
-    [SerializeField] private List<EnemyUnitSeed> unitSeeds = new List<EnemyUnitSeed>();
+    [SerializeField] private List<EnemyUnitState> unitStates = new List<EnemyUnitState>();
     [SerializeField] private bool onlyWhenUninitialized = true;
 
     private EnemyGridMover enemyUnit;
@@ -38,14 +38,15 @@ public class EnemyUnitBootstrap : MonoBehaviour
         enemyIdentity ??= GetComponent<EnemyIdentity>();
         enemyComposition ??= GetComponent<EnemyComposition>();
         PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
+        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
 
-        if (enemyUnit == null || enemyIdentity == null || enemyComposition == null || enemyRepository == null)
+        if (enemyUnit == null || enemyIdentity == null || enemyComposition == null || enemyRepository == null || enemyGroupRepository == null)
             return;
 
-        if (!HasConfiguredUnitSeeds())
-            CollectUnitSeedsFromChildren();
+        if (!HasConfiguredUnitStates())
+            CollectUnitStatesFromChildren();
 
-        if (!HasConfiguredUnitSeeds())
+        if (!HasConfiguredUnitStates())
             return;
 
         if (onlyWhenUninitialized && !string.IsNullOrWhiteSpace(enemyIdentity.EnemyId) && !AreAllSlotsEmpty())
@@ -58,54 +59,58 @@ public class EnemyUnitBootstrap : MonoBehaviour
             return;
         }
 
-        List<int> unitIndices = new List<int>(unitSeeds.Count);
-        enemyComposition.EnsureSlotCount(unitSeeds.Count);
-        for (int i = 0; i < unitSeeds.Count; i++)
+        List<int> unitIndices = new List<int>(unitStates.Count);
+        enemyComposition.EnsureSlotCount(unitStates.Count);
+        for (int i = 0; i < unitStates.Count; i++)
         {
-            EnemyUnitSeed seed = unitSeeds[i];
-            if (seed == null)
+            EnemyUnitState unitState = unitStates[i];
+            if (unitState == null)
                 continue;
 
-            if (string.IsNullOrWhiteSpace(seed.UnitTemplateKey))
+            if (string.IsNullOrWhiteSpace(unitState.UnitTemplateKey))
             {
-                Debug.LogWarning($"Enemy unit seed on '{seed.name}' is missing a unitTemplateKey.", seed);
+                Debug.LogWarning($"Enemy unit state on '{unitState.name}' is missing a unitTemplateKey.", unitState);
                 continue;
             }
 
-            if (!templateCatalog.TryGetEnemyTemplate(seed.UnitTemplateKey, out EnemyData template))
+            if (!templateCatalog.TryGetEnemyTemplate(unitState.UnitTemplateKey, out EnemyData template))
             {
-                Debug.LogWarning($"Enemy unit seed on '{seed.name}' could not resolve CSV template '{seed.UnitTemplateKey}'.", seed);
+                Debug.LogWarning($"Enemy unit state on '{unitState.name}' could not resolve CSV template '{unitState.UnitTemplateKey}'.", unitState);
                 continue;
             }
 
+            unitState.InitializeFromTemplate(template);
             int unitIndex = enemyRepository.CreateUnit(
-                seed.UnitTemplateKey,
-                seed.Level,
-                template.baseStats);
+                unitState.UnitTemplateKey,
+                unitState.Level,
+                unitState.BaseStats,
+                unitState.IngameStats,
+                unitState.CurrentHp);
             unitIndices.Add(unitIndex);
+            unitState.AssignUnitIndex(unitIndex);
             enemyComposition.SetUnitIndexAt(i, unitIndex);
         }
 
         if (unitIndices.Count == 0)
             return;
 
-        string enemyId = enemyRepository.CreateEnemy(unitIndices);
+        string enemyId = enemyGroupRepository.CreateEnemy(unitIndices);
         enemyIdentity.SetEnemyId(enemyId);
         enemyUnit.InitializePersistentIdentity(enemyId);
     }
 
-    [ContextMenu("Collect Unit Seeds From Children")]
-    public void CollectUnitSeedsFromChildren()
+    [ContextMenu("Collect Unit States From Children")]
+    public void CollectUnitStatesFromChildren()
     {
-        unitSeeds.Clear();
-        unitSeeds.AddRange(GetComponentsInChildren<EnemyUnitSeed>(true));
+        unitStates.Clear();
+        unitStates.AddRange(GetComponentsInChildren<EnemyUnitState>(true));
     }
 
-    private bool HasConfiguredUnitSeeds()
+    private bool HasConfiguredUnitStates()
     {
-        for (int i = 0; i < unitSeeds.Count; i++)
+        for (int i = 0; i < unitStates.Count; i++)
         {
-            if (unitSeeds[i] != null)
+            if (unitStates[i] != null)
                 return true;
         }
 

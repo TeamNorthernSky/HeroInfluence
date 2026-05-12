@@ -99,13 +99,13 @@ public class EnemySpawner : MonoBehaviour
 
     private GameObject FindPrefab(EnemyData data)
     {
-        if (data == null || string.IsNullOrWhiteSpace(data.UnitType))
+        if (data == null || string.IsNullOrWhiteSpace(data.Index))
         {
-            Debug.LogError("[EnemySpawner] UnitType이 비어 있거나 EnemyData가 없습니다.");
+            Debug.LogError("[EnemySpawner] Index가 비어 있거나 EnemyData가 없습니다.");
             return null;
         }
 
-        string path = $"prefab/Unit_{data.UnitType}";
+        string path = $"prefab/Unit_{data.Index}";
         var prefab = Resources.Load<GameObject>(path);
         if (prefab == null)
         {
@@ -201,7 +201,7 @@ public class EnemySpawner : MonoBehaviour
 
         spawnedByGrid[gridNumber] = go;
         Debug.Log(
-            $"[EnemySpawner] 적 스폰 완료: id={enemyId}, grid={gridNumber}, UnitType={data.UnitType}, place={gameObject.name}");
+            $"[EnemySpawner] 적 스폰 완료: id={enemyId}, grid={gridNumber}, Index={data.Index}, place={gameObject.name}");
         return go;
     }
 
@@ -213,7 +213,8 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        IReadOnlyList<int> combatUnitIndices = ResolveCombatUnitIndices(repository.CombatEnemy);
+        CombatContext combatContext = CombatContext.Instance;
+        IReadOnlyList<int> combatUnitIndices = ResolveCombatUnitIndices(combatContext != null ? combatContext.CombatEnemy : null);
         if (combatUnitIndices == null || combatUnitIndices.Count == 0)
         {
             return false;

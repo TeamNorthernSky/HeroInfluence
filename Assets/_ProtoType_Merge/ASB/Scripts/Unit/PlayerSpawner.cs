@@ -7,7 +7,8 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
 /// <summary>
 /// PlayerPlace 최상위에 부착. Grid/Grid_n에서 월드 위치만 참조하고, 유닛은 Units 자식으로 둡니다.
-/// 프리팹은 Resources/prefab/Unit_{UnitType} 에서 로드.
+/// 프리팹은 Resources/prefab/Unit_{Index} 에서 로드.
+
 /// </summary>
 public class PlayerSpawner : MonoBehaviour
 {
@@ -112,13 +113,13 @@ public class PlayerSpawner : MonoBehaviour
 
     private GameObject FindPrefab(UnitData unit)
     {
-        if (unit == null || string.IsNullOrWhiteSpace(unit.UnitType))
+        if (unit == null || string.IsNullOrWhiteSpace(unit.Index))
         {
-            Debug.LogError("[PlayerSpawner] UnitType이 비어 있거나 UnitData가 없습니다.");
+            Debug.LogError("[PlayerSpawner] Index가 비어 있거나 UnitData가 없습니다.");
             return null;
         }
 
-        string path = $"prefab/Unit_{unit.UnitType}";
+        string path = $"prefab/Unit_{unit.Index}";
         var prefab = Resources.Load<GameObject>(path);
         if (prefab == null)
         {
@@ -228,7 +229,8 @@ public class PlayerSpawner : MonoBehaviour
             return false;
         }
 
-        IReadOnlyList<int> combatUnitIndices = ResolveCombatUnitIndices(repository.CombatParty);
+        CombatContext combatContext = CombatContext.Instance;
+        IReadOnlyList<int> combatUnitIndices = ResolveCombatUnitIndices(combatContext != null ? combatContext.CombatParty : null);
         if (combatUnitIndices == null || combatUnitIndices.Count == 0)
         {
             return false;

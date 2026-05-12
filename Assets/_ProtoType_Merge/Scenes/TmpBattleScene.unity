@@ -457,7 +457,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55641ff6ea58232498da66741bfe785b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  charactorManager: {fileID: 0}
+  charactorManager: {fileID: 1002047753}
   debugSpawnRequests: []
   spawnOnStart: 0
 --- !u!1 &253823589
@@ -575,7 +575,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 320332753}
-  - component: {fileID: 320332752}
   - component: {fileID: 320332754}
   - component: {fileID: 320332755}
   - component: {fileID: 320332756}
@@ -587,18 +586,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &320332752
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 605e5315b8954e54989d5ce105aa9770, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &320332753
 Transform:
   m_ObjectHideFlags: 0
@@ -1537,8 +1524,8 @@ MonoBehaviour:
   playerPlace: {fileID: 173310003}
   enemyPlace: {fileID: 912453333}
   battleFlowManager: {fileID: 621159268}
-  playerSpawner: {fileID: 0}
-  enemySpawner: {fileID: 0}
+  playerSpawner: {fileID: 173310004}
+  enemySpawner: {fileID: 912453334}
 --- !u!4 &621159267
 Transform:
   m_ObjectHideFlags: 0
@@ -3264,7 +3251,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1847199438}
-  - component: {fileID: 1847199437}
   m_Layer: 0
   m_Name: BattleCharactorFactory
   m_TagString: Untagged
@@ -3272,18 +3258,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1847199437
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1847199436}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8bbd38d3da5764c428703a75db2620f9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1847199438
 Transform:
   m_ObjectHideFlags: 0

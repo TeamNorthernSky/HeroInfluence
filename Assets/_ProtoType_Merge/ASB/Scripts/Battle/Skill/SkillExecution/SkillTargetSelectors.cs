@@ -140,7 +140,7 @@ namespace ASB.Work.Battle.SkillExecution
 
             var candidates = new List<BattleCharactor>();
             BattleCharactor[] all = UnityEngine.Object.FindObjectsByType<BattleCharactor>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < all.Length; i++)
+            for (int i = 0; i < all.Length; i++) 
             {
                 BattleCharactor unit = all[i];
                 if (unit == null || unit.IsDead)

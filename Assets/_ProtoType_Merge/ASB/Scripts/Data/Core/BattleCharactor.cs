@@ -10,7 +10,7 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 /// - base 원본은 래퍼(CharactorScript/EnemyScript)에서 조립해 SetBaseStats로 주입합니다.
 /// Combat tuning(level, 가중치)의 최종 소유는 이 컴포넌트만 담당합니다.
 /// </summary>
-public class BattleCharactor : MonoBehaviour, IUnitIdentifier
+public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 {
     public event Action<BattleCharactor> OnDied;
     public event Action<float, float> OnHpChanged;
@@ -299,6 +299,8 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
         else
         {
+            // 영속 스냅샷: runtimeBaseStats에 이미 무기·장비·레벨 보정이 반영됨.
+            // EquippedWeaponData는 스킬/UI용으로만 유지하고 StatCalculator·무기 보너스는 합산하지 않습니다.
             finalStats = runtimeBaseStats;
             finalStats.HP = Mathf.Max(1f, finalStats.HP);
             finalStats.Atk = Mathf.Max(0f, finalStats.Atk);
@@ -779,14 +781,7 @@ public class BattleCharactor : MonoBehaviour, IUnitIdentifier
     }
 
     /// <summary>CSV 경로 초기화 완료 후 호출. BattleSceneManager.Initialize와 중복 초기화를 막습니다.</summary>
-    public void MarkInitializedFromDataPipeline()
-    {
-        RefreshAvailableSkillsForInspector(forceRefresh: true);
-        ResolveSelectedSkill(true);
-        RefreshAvailableWeapons(forceRefresh: true);
-        ResolveEquippedWeapon(true);
-        isInitialized = true;
-    }
+    // MarkInitializedFromDataPipeline 구현은 Assets/ASB_Work partial 에서 제공합니다.
 
     private void ApplyStatusEffectStatModifiers()
     {

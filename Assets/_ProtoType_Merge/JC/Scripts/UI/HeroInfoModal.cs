@@ -52,7 +52,9 @@ public class HeroInfoModal : MonoBehaviour
         template = null;
         partyId = null;
 
+        // [JC 수정 260512] 머지 사이클: 파티 책임이 PartyPersistentRepository로 이관됨
         var repo = PersistentUnitRepository.Instance;
+        var partyRepo = PartyPersistentRepository.Instance;
         if (repo == null) return false;
 
         if (!repo.TryGetUnit(unitIndex, out unit) || unit == null) return false;
@@ -62,14 +64,17 @@ public class HeroInfoModal : MonoBehaviour
             catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out template);
 
         // unit이 어느 파티에 속하는지 역조회
-        for (int i = 0; i < repo.Parties.Count; i++)
+        if (partyRepo != null)
         {
-            var party = repo.Parties[i];
-            if (party == null) continue;
-            if (party.UnitIndices.Contains(unitIndex))
+            for (int i = 0; i < partyRepo.Parties.Count; i++)
             {
-                partyId = party.PartyId;
-                break;
+                var party = partyRepo.Parties[i];
+                if (party == null) continue;
+                if (party.UnitIndices.Contains(unitIndex))
+                {
+                    partyId = party.PartyId;
+                    break;
+                }
             }
         }
 

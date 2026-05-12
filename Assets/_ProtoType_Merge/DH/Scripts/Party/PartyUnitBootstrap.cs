@@ -8,7 +8,7 @@ public class PartyUnitBootstrap : MonoBehaviour
 {
     [Header("Bootstrap")]
     [SerializeField] private bool populateOnStart = true;
-    [SerializeField] private List<PartyHeroUnitSeed> heroUnitSeeds = new List<PartyHeroUnitSeed>();
+    [SerializeField] private List<PartyUnitState> partyUnitStates = new List<PartyUnitState>();
     [SerializeField] private bool onlyWhenAllSlotsEmpty = true;
 
     private PartyComposition partyComposition;
@@ -38,50 +38,38 @@ public class PartyUnitBootstrap : MonoBehaviour
             partyIdentity = GetComponent<PartyIdentity>();
 
         PersistentUnitRepository repository = PersistentUnitRepository.Instance;
-        if (repository == null || partyComposition == null)
+        PartyPersistentRepository partyRepository = PartyPersistentRepository.Instance;
+        if (repository == null || partyRepository == null || partyComposition == null)
             return;
 
-        if (!HasConfiguredHeroSeeds())
+        if (!HasConfiguredUnitStates())
+            CollectPartyUnitStatesFromChildren();
+
+        if (!HasConfiguredUnitStates())
             return;
 
-        // [JC 수정 260511] PartyComposition은 씬 라이프사이클이라 DHScene 재로드마다 비어있음.
-        // Repository(DontDestroyOnLoad)에 같은 PartyId가 이미 등록돼 있으면 PartyComposition을 그것으로 복원하고 종료.
-        // 미적용 시 DHScene 재로드마다 CreateUnit 8회씩 누적 → Units 8→16→24…
-        string partyId = partyIdentity != null ? partyIdentity.PartyId : gameObject.name;
-        if (repository.TryGetParty(partyId, out PartyPersistentData existingParty)
-            && existingParty != null
-            && existingParty.UnitIndices.Count > 0)
-        {
-            int existingCount = existingParty.UnitIndices.Count;
-            partyComposition.EnsureSlotCount(existingCount);
-            for (int i = 0; i < existingCount; i++)
-                partyComposition.SetUnitIndexAt(i, existingParty.UnitIndices[i]);
-            Debug.Log($"Party '{partyId}' restored from PersistentUnitRepository ({existingCount} units, no new seed).", this);
-            return;
-        }
-
-        InitializeFromHeroSeeds(repository);
+        InitializeFromUnitStates(repository, partyRepository);
     }
 
-    [ContextMenu("Collect Hero Unit Seeds From Children")]
-    public void CollectHeroUnitSeedsFromChildren()
+    [ContextMenu("Collect Party Unit States From Children")]
+    public void CollectPartyUnitStatesFromChildren()
     {
-        heroUnitSeeds.Clear();
-        heroUnitSeeds.AddRange(GetComponentsInChildren<PartyHeroUnitSeed>(true));
+        partyUnitStates.Clear();
+        partyUnitStates.AddRange(GetComponentsInChildren<PartyUnitState>(true));
     }
 
-    private bool HasConfiguredHeroSeeds()
+    private bool HasConfiguredUnitStates()
     {
-        for (int i = 0; i < heroUnitSeeds.Count; i++)
+        for (int i = 0; i < partyUnitStates.Count; i++)
         {
-            if (heroUnitSeeds[i] != null)
+            if (partyUnitStates[i] != null)
                 return true;
         }
 
         return false;
     }
 
-    private void InitializeFromHeroSeeds(PersistentUnitRepository repository)
+    private void InitializeFromUnitStates(PersistentUnitRepository repository, PartyPersistentRepository partyRepository)
     {
         DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
         if (templateCatalog == null)
@@ -90,56 +78,67 @@ public class PartyUnitBootstrap : MonoBehaviour
             return;
         }
 
-        int slotCount = heroUnitSeeds.Count;
+        // [JC 수정 260512] 누적 방지 — 영속 저장소에 이미 파티가 등록되어 있으면 skip
+        // Orora의 PartyComposition 슬롯 가드는 씬 컴포넌트 리셋으로 매번 빈 상태가 되어 작동하지 않음
+        string partyId = partyIdentity != null ? partyIdentity.PartyId : gameObject.name;
+        if (partyRepository.ContainsParty(partyId))
+            return;
+
+        int slotCount = partyUnitStates.Count;
         partyComposition.EnsureSlotCount(slotCount);
 
-        if (onlyWhenAllSlotsEmpty && !AreAllHeroSeedSlotsEmpty(slotCount))
+        if (onlyWhenAllSlotsEmpty && !AreAllUnitSlotsEmpty(slotCount))
             return;
 
         int registeredCount = 0;
-        for (int i = 0; i < heroUnitSeeds.Count; i++)
+        for (int i = 0; i < partyUnitStates.Count; i++)
         {
-            PartyHeroUnitSeed seed = heroUnitSeeds[i];
-            if (seed == null)
+            PartyUnitState unitState = partyUnitStates[i];
+            if (unitState == null)
                 continue;
 
             if (partyComposition.GetUnitIndexAt(i) > 0)
                 continue;
 
-            if (string.IsNullOrWhiteSpace(seed.UnitTemplateKey))
+            if (string.IsNullOrWhiteSpace(unitState.UnitTemplateKey))
             {
-                Debug.LogWarning($"Party hero seed on '{seed.name}' is missing a unitTemplateKey.", seed);
+                Debug.LogWarning($"Party unit state on '{unitState.name}' is missing a unitTemplateKey.", unitState);
                 continue;
             }
 
-            if (!templateCatalog.TryGetPlayerTemplate(seed.UnitTemplateKey, out UnitData template))
+            if (!templateCatalog.TryGetPlayerTemplate(unitState.UnitTemplateKey, out UnitData template))
             {
-                Debug.LogWarning($"Party hero seed on '{seed.name}' could not resolve CSV template '{seed.UnitTemplateKey}'.", seed);
+                Debug.LogWarning($"Party unit state on '{unitState.name}' could not resolve CSV template '{unitState.UnitTemplateKey}'.", unitState);
                 continue;
             }
 
             EquipmentStatBlock currentWeaponStats = default;
-            if (seed.InitialWeaponIndex > 0)
-                templateCatalog.TryGetWeaponStats(seed.InitialWeaponIndex, out currentWeaponStats);
+            if (unitState.CurrentWeaponIndex > 0)
+                templateCatalog.TryGetWeaponStats(unitState.CurrentWeaponIndex, out currentWeaponStats);
+
+            unitState.InitializeFromTemplate(template, currentWeaponStats);
 
             int unitIndex = repository.CreateUnit(
-                seed.UnitTemplateKey,
-                seed.Level,
-                seed.Favorability,
-                template.baseStats,
-                seed.InitialSkillIndex,
-                seed.InitialWeaponIndex,
-                currentWeaponStats);
+                unitState.UnitTemplateKey,
+                unitState.Level,
+                unitState.Favorability,
+                unitState.BaseStats,
+                unitState.LevelupStats,
+                unitState.CurrentSkillIndex,
+                unitState.CurrentWeaponIndex,
+                unitState.CurrentWeaponStats,
+                unitState.IngameStats,
+                unitState.CurrentHp);
+            unitState.AssignUnitIndex(unitIndex);
             partyComposition.SetUnitIndexAt(i, unitIndex);
             registeredCount++;
         }
 
-        string partyId = partyIdentity != null ? partyIdentity.PartyId : gameObject.name;
-        repository.RegisterOrUpdateParty(partyId, partyComposition.UnitIndices);
-        Debug.Log($"Party '{partyId}' initialized from {registeredCount} hero unit seed(s).", this);
+        partyRepository.RegisterOrUpdateParty(partyId, partyComposition.UnitIndices);
+        Debug.Log($"Party '{partyId}' initialized from {registeredCount} party unit state(s).", this);
     }
 
-    private bool AreAllHeroSeedSlotsEmpty(int slotCount)
+    private bool AreAllUnitSlotsEmpty(int slotCount)
     {
         for (int i = 0; i < slotCount; i++)
         {

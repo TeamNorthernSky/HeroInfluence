@@ -194,9 +194,11 @@ public class LobbyMenuController : MonoBehaviour
     {
         if (string.IsNullOrEmpty(partyId)) return true;
 
+        // [JC 수정 260512] 머지 사이클: 파티 책임이 PartyPersistentRepository로 이관됨
         var repo = PersistentUnitRepository.Instance;
-        if (repo == null) return true;
-        if (!repo.TryGetParty(partyId, out var party) || party == null) return true;
+        var partyRepo = PartyPersistentRepository.Instance;
+        if (repo == null || partyRepo == null) return true;
+        if (!partyRepo.TryGetParty(partyId, out var party) || party == null) return true;
         if (slotIndex < 0 || slotIndex >= party.UnitIndices.Count) return true;
         int unitIndex = party.UnitIndices[slotIndex];
         if (unitIndex <= 0) return true;

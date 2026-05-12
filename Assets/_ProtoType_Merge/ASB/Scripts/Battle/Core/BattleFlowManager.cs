@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GridCellRef = ASB.Work.BattleGrid.GridCell;
 using System.Linq;
 using UnityEngine;
 
@@ -138,11 +139,68 @@ public class BattleFlowManager : MonoBehaviour
             .Where(u => u != null && !u.IsDead)
             .OrderByDescending(u => u.FinalStats.Speed)
             .ThenByDescending(u => u.IsPlayer)
+            .ThenByDescending(u => GetRowTurnPriority(u))
+            .ThenBy(u => GetGridYForTurnOrder(u))
+            .ThenBy(u => u != null ? u.GetInstanceID() : 0)
             .ToList();
 
         turnQueue = new Queue<BattleCharactor>(ordered);
         roundIndex++;
         Log($"[BattleFlow] Round {roundIndex} 시작. queue={turnQueue.Count}");
+
+        Log("[TurnOrder] New round order:");
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            BattleCharactor u = ordered[i];
+            if (u == null) continue;
+
+            Log(
+                $"[TurnOrder] #{i + 1} {u.UnitName} " +
+                $"Speed={u.FinalStats.Speed}, " +
+                $"IsPlayer={u.IsPlayer}, " +
+                $"RowPriority={GetRowTurnPriority(u)}, " +
+                $"GridY={GetGridYForTurnOrder(u)}, " +
+                $"InstanceID={u.GetInstanceID()}");
+        }
+    }
+
+    private int GetRowTurnPriority(BattleCharactor unit)
+    {
+        if (unit == null)
+        {
+            return 0;
+        }
+
+        // 요청 규칙: BackRow 우선 -> 더 높은 우선순위 값
+        if (unit.IsInBackRow)
+        {
+            return 2;
+        }
+
+        if (unit.IsInFrontRow)
+        {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    private int GetGridYForTurnOrder(BattleCharactor unit)
+    {
+        if (unit == null)
+        {
+            return int.MaxValue;
+        }
+
+        // 요청 규칙: GridCell의 y가 작은 유닛이 먼저.
+        // 셀이 없으면 뒤로 밀기 위해 큰 값.
+        GridCellRef cell = unit.OccupiedCell;
+        if (cell == null)
+        {
+            return int.MaxValue;
+        }
+
+        return cell.Coords.y;
     }
 
     /// <summary>
@@ -312,7 +370,7 @@ public class BattleFlowManager : MonoBehaviour
             OnBattleEnded?.Invoke(result);
         }
 
-        Log("[BattleFlow] 전투 즉시 종료(IsBattleOver 감지). BattleLoop 종료.");
+        Log("[BattleFlow] 전투 즉시 종료(IsBattleOver 감지). BattleLoop 종료."); 
         battleLoopRoutine = null;
         return true;
     }

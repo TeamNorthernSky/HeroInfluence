@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class CombatPartyPersistentData
 {
     public string PartyId => partyId;
-    public IReadOnlyList<int> UnitIndices => unitIndices;
+    public IReadOnlyList<int> UnitIndices => unitIndices ?? (unitIndices = new List<int>());
 
     [UnityEngine.SerializeField] private string partyId;
     [UnityEngine.SerializeField] private List<int> unitIndices = new List<int>();
@@ -23,8 +23,7 @@ public class CombatPartyPersistentData
 
     public void SetUnitIndices(IReadOnlyList<int> source)
     {
-        // [JC 수정 260511] Unity 직렬화 사이클로 필드가 null로 복원될 수 있어 가드
-        if (unitIndices == null) unitIndices = new List<int>();
+        EnsureInitialized();
         unitIndices.Clear();
 
         if (source == null)
@@ -35,5 +34,11 @@ public class CombatPartyPersistentData
             if (source[i] > 0)
                 unitIndices.Add(source[i]);
         }
+    }
+
+    private void EnsureInitialized()
+    {
+        if (unitIndices == null)
+            unitIndices = new List<int>();
     }
 }

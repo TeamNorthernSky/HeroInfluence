@@ -1,12 +1,6 @@
-using UnityEngine;
+using System;
 
-[DisallowMultipleComponent]
-public class EnemyUnitSeed : MonoBehaviour
+[Obsolete("EnemyUnitSeed is legacy. Use EnemyUnitState instead.")]
+public class EnemyUnitSeed : EnemyUnitState
 {
-    [Header("Initial Unit Data")]
-    [SerializeField] private string unitTemplateKey;
-    [SerializeField] private int level = 1;
-
-    public string UnitTemplateKey => unitTemplateKey;
-    public int Level => Mathf.Max(1, level);
 }

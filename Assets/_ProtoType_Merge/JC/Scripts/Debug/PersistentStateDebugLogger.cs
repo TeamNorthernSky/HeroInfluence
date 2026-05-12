@@ -57,16 +57,24 @@ public class PersistentStateDebugLogger : MonoBehaviour
         Debug.Log(sb.ToString());
     }
 
+    // [JC 수정 260512] 머지 사이클: 파티/적부대/전투컨텍스트 책임이 분리됨
+    //   - 파티 → PartyPersistentRepository
+    //   - 적 부대 → EnemyGroupPersistentRepository
+    //   - 전투 컨텍스트(CombatParty/CombatEnemy) → CombatContext
     private static void AppendUnitRepositoryState(StringBuilder sb)
     {
         PersistentUnitRepository repo = PersistentUnitRepository.Instance;
+        PartyPersistentRepository partyRepo = PartyPersistentRepository.Instance;
+        CombatContext combatContext = CombatContext.Instance;
+
         if (repo == null)
         {
             sb.AppendLine("[Unit] Repository is null");
             return;
         }
 
-        sb.AppendLine($"[Unit] units={repo.Units.Count}, parties={repo.Parties.Count}");
+        int partyCount = partyRepo != null ? partyRepo.Parties.Count : 0;
+        sb.AppendLine($"[Unit] units={repo.Units.Count}, parties={partyCount}");
 
         for (int i = 0; i < repo.Units.Count; i++)
         {
@@ -79,14 +87,21 @@ public class PersistentStateDebugLogger : MonoBehaviour
                 $"skill={u.CurrentSkillIndex} weapon={u.CurrentWeaponIndex}");
         }
 
-        for (int i = 0; i < repo.Parties.Count; i++)
+        if (partyRepo != null)
         {
-            PartyPersistentData p = repo.Parties[i];
-            if (p == null) continue;
-            sb.AppendLine($"  party[{p.PartyId}] units=[{FormatIndices(p.UnitIndices)}]");
+            for (int i = 0; i < partyRepo.Parties.Count; i++)
+            {
+                PartyPersistentData p = partyRepo.Parties[i];
+                if (p == null) continue;
+                sb.AppendLine($"  party[{p.PartyId}] units=[{FormatIndices(p.UnitIndices)}]");
+            }
+        }
+        else
+        {
+            sb.AppendLine("  (PartyPersistentRepository is null)");
         }
 
-        CombatPartyPersistentData cp = repo.CombatParty;
+        CombatPartyPersistentData cp = combatContext != null ? combatContext.CombatParty : null;
         if (cp != null)
             sb.AppendLine($"  combatParty=[{cp.PartyId}] units=[{FormatIndices(cp.UnitIndices)}]");
         else
@@ -96,13 +111,17 @@ public class PersistentStateDebugLogger : MonoBehaviour
     private static void AppendEnemyRepositoryState(StringBuilder sb)
     {
         PersistentEnemyRepository repo = PersistentEnemyRepository.Instance;
+        EnemyGroupPersistentRepository enemyGroupRepo = EnemyGroupPersistentRepository.Instance;
+        CombatContext combatContext = CombatContext.Instance;
+
         if (repo == null)
         {
             sb.AppendLine("[Enemy] Repository is null");
             return;
         }
 
-        sb.AppendLine($"[Enemy] units={repo.Units.Count}, enemies={repo.Enemies.Count}");
+        int enemyCount = enemyGroupRepo != null ? enemyGroupRepo.Enemies.Count : 0;
+        sb.AppendLine($"[Enemy] units={repo.Units.Count}, enemies={enemyCount}");
 
         for (int i = 0; i < repo.Units.Count; i++)
         {
@@ -114,14 +133,21 @@ public class PersistentStateDebugLogger : MonoBehaviour
                 $"HP{s.HP} Atk{s.Atk} DEF{s.DEF} Spd{s.Speed}");
         }
 
-        for (int i = 0; i < repo.Enemies.Count; i++)
+        if (enemyGroupRepo != null)
         {
-            EnemyPersistentData e = repo.Enemies[i];
-            if (e == null) continue;
-            sb.AppendLine($"  enemy[{e.EnemyId}] units=[{FormatIndices(e.UnitIndices)}]");
+            for (int i = 0; i < enemyGroupRepo.Enemies.Count; i++)
+            {
+                EnemyPersistentData e = enemyGroupRepo.Enemies[i];
+                if (e == null) continue;
+                sb.AppendLine($"  enemy[{e.EnemyId}] units=[{FormatIndices(e.UnitIndices)}]");
+            }
+        }
+        else
+        {
+            sb.AppendLine("  (EnemyGroupPersistentRepository is null)");
         }
 
-        CombatEnemyPersistentData ce = repo.CombatEnemy;
+        CombatEnemyPersistentData ce = combatContext != null ? combatContext.CombatEnemy : null;
         if (ce != null)
             sb.AppendLine($"  combatEnemy=[{ce.EnemyId}] units=[{FormatIndices(ce.UnitIndices)}]");
         else

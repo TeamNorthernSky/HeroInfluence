@@ -35,19 +35,30 @@ public class PartyGridMover : MonoBehaviour
     }
 
     // [JC 추가 260511] 위치 영속화: PartyPersistentData.LastGrid가 있으면 그 위치로 복원
-    // Start로 둔 이유: PersistentUnitRepository 및 PartyUnitBootstrap이 먼저 동작하도록 보장
+    // Start로 둔 이유: PartyPersistentRepository 및 PartyUnitBootstrap이 먼저 동작하도록 보장
+    // [JC 수정 260512] 머지 사이클: PartyPersistentRepository로 책임 이관됨
+    // [JC 수정 260512] LastGrid 없을 때 currentGrid 재계산 + GridEntered 발화 추가.
+    //   원인: Awake 시점에 transform.position 또는 GridManager 내부 상태가 부정확해 currentGrid가 (0,0)으로 박힘.
+    //   결과: 본부 방문 인디케이터가 새 게임 첫 진입 시 활성화 안 되는 버그 발생. 이 보정으로 첫 진입부터 정확.
     private void Start()
     {
         var identity = GetComponent<PartyIdentity>();
         if (identity == null) return;
 
-        var repo = PersistentUnitRepository.Instance;
+        var repo = PartyPersistentRepository.Instance;
         if (repo == null) return;
 
         if (!repo.TryGetParty(identity.PartyId, out var partyData) || partyData == null) return;
-        if (!partyData.HasLastGrid) return;
 
-        SnapToGridPosition(partyData.LastGrid);
+        if (partyData.HasLastGrid)
+        {
+            SnapToGridPosition(partyData.LastGrid);
+        }
+        else if (gridManager != null)
+        {
+            currentGrid = gridManager.WorldToGrid(transform.position);
+            GridEntered?.Invoke(currentGrid);
+        }
     }
 
     private void Update()
@@ -152,12 +163,13 @@ public class PartyGridMover : MonoBehaviour
     }
 
     // [JC 추가 260511] 현재 위치를 PartyPersistentData.LastGrid로 저장
+    // [JC 수정 260512] 머지 사이클: PartyPersistentRepository로 책임 이관됨
     private void PersistLastGrid()
     {
         var identity = GetComponent<PartyIdentity>();
         if (identity == null) return;
 
-        var repo = PersistentUnitRepository.Instance;
+        var repo = PartyPersistentRepository.Instance;
         if (repo == null) return;
 
         if (!repo.TryGetParty(identity.PartyId, out var partyData) || partyData == null) return;

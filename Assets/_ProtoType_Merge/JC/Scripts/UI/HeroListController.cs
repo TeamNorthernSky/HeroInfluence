@@ -144,17 +144,19 @@ public class HeroListController : MonoBehaviour, IBeginDragHandler, IEndDragHand
         lastValueChangeTime = -1f;
     }
 
+    // [JC 수정 260512] 머지 사이클: 파티 책임이 PartyPersistentRepository로 이관됨
     private static List<int> ResolveOrderedUnits(PersistentUnitRepository repo, HQVisitState visitState)
     {
         List<int> ordered = new List<int>();
         HashSet<int> seen = new HashSet<int>();
+        PartyPersistentRepository partyRepo = PartyPersistentRepository.Instance;
 
         // 1) 방문중 파티의 멤버 (파티 레지스트리 순)
-        if (visitState != null && visitState.HasVisitingParty)
+        if (partyRepo != null && visitState != null && visitState.HasVisitingParty)
         {
-            for (int p = 0; p < repo.Parties.Count; p++)
+            for (int p = 0; p < partyRepo.Parties.Count; p++)
             {
-                PartyPersistentData party = repo.Parties[p];
+                PartyPersistentData party = partyRepo.Parties[p];
                 if (party == null) continue;
                 if (!visitState.IsPartyVisiting(party.PartyId)) continue;
 
@@ -163,13 +165,16 @@ public class HeroListController : MonoBehaviour, IBeginDragHandler, IEndDragHand
         }
 
         // 2) 비방문 파티 멤버 (파티 등록 순)
-        for (int p = 0; p < repo.Parties.Count; p++)
+        if (partyRepo != null)
         {
-            PartyPersistentData party = repo.Parties[p];
-            if (party == null) continue;
-            if (visitState != null && visitState.IsPartyVisiting(party.PartyId)) continue;
+            for (int p = 0; p < partyRepo.Parties.Count; p++)
+            {
+                PartyPersistentData party = partyRepo.Parties[p];
+                if (party == null) continue;
+                if (visitState != null && visitState.IsPartyVisiting(party.PartyId)) continue;
 
-            AppendPartyUnits(party, repo, ordered, seen);
+                AppendPartyUnits(party, repo, ordered, seen);
+            }
         }
 
         // 3) 무소속 유닛 (등록 순, 추후 고용 흐름)
@@ -196,12 +201,15 @@ public class HeroListController : MonoBehaviour, IBeginDragHandler, IEndDragHand
         }
     }
 
+    // [JC 수정 260512] 머지 사이클: 파티 책임이 PartyPersistentRepository로 이관됨
     private static bool IsUnitVisiting(int unitIndex, PersistentUnitRepository repo, HQVisitState visitState)
     {
         if (visitState == null || !visitState.HasVisitingParty) return false;
-        for (int p = 0; p < repo.Parties.Count; p++)
+        PartyPersistentRepository partyRepo = PartyPersistentRepository.Instance;
+        if (partyRepo == null) return false;
+        for (int p = 0; p < partyRepo.Parties.Count; p++)
         {
-            PartyPersistentData party = repo.Parties[p];
+            PartyPersistentData party = partyRepo.Parties[p];
             if (party == null) continue;
             if (!visitState.IsPartyVisiting(party.PartyId)) continue;
             for (int u = 0; u < party.UnitIndices.Count; u++)

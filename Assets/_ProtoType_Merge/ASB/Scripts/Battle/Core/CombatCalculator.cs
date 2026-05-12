@@ -11,7 +11,7 @@ namespace ASB.Work.Battle.Core
                 return false;
             }
 
-            float roll = UnityEngine.Random.Range(0f, 100f);
+            float roll = UnityEngine.Random.Range(0f, 1f);
             return roll < caster.FinalStats.CriticalRate;
         }
 
@@ -23,8 +23,8 @@ namespace ASB.Work.Battle.Core
             }
 
             float finalCritRate = context.Caster.FinalStats.CriticalRate + context.BonusCritRate;
-            finalCritRate = Mathf.Clamp(finalCritRate, 0f, 100f);
-            float roll = UnityEngine.Random.Range(0f, 100f);
+            finalCritRate = Mathf.Clamp(finalCritRate, 0f, 1f);
+            float roll = UnityEngine.Random.Range(0f, 1f);
             return roll < finalCritRate;
         }
 
@@ -50,7 +50,7 @@ namespace ASB.Work.Battle.Core
                 : Mathf.Max(0.01f, context.SkillMultiplier);
 
             float effectiveAvoidRate = Mathf.Max(0f, context.Target.FinalStats.AvoidRate - context.TargetAvoidRateReduction);
-            float mitigationRate = Mathf.Clamp01(1f - (effectiveAvoidRate / 100f));
+            float mitigationRate = Mathf.Clamp01(1f - (effectiveAvoidRate ));
             if (context.Target.IsInFrontRow && context.IsRangedAttack)
             {
                 mitigationRate *= 0.9f;

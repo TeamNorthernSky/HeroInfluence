@@ -13,12 +13,13 @@ public class UnitData
     [SerializeField] public string Index;
     [SerializeField] public string UnitType;
     [SerializeField] public string Name;
-
+    
 
 
     [Header("Stats")]
     // 스펙: baseStats 필드에 HP/Atk/DEF/Luck + Speed/CriticalRate/CounterRate/AvoidRate 포함
     [SerializeField] public StatBlock baseStats;
+    public StatBlock levelupStats;
 
     /// <summary>CSV에 IsEnemy 열이 있으면 파싱. 없으면 false.</summary>
     [SerializeField] public bool IsEnemyRow;

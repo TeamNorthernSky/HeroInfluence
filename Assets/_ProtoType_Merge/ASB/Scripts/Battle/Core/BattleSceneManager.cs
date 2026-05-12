@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
 /// <summary>
@@ -18,6 +20,13 @@ public class BattleSceneManager : MonoBehaviour
     [SerializeField] private PlayerSpawner playerSpawner;
     [SerializeField] private EnemySpawner enemySpawner;
 
+    [Header("Scene Transition")]
+    [Tooltip("Build Settings에 등록된 씬 이름(확장자 제외). 예: DHScene")]
+    [SerializeField] private string returnSceneName = "DHScene";
+    [SerializeField] private float returnDelay = 3f;
+
+    private Coroutine returnSceneCoroutine;
+
     private BattleCharactor playerBattleCharactor;
     private readonly List<BattleCharactor> playerBattleCharactors = new List<BattleCharactor>();
     private readonly List<BattleCharactor> enemyBattleCharactors = new List<BattleCharactor>();
@@ -29,6 +38,64 @@ public class BattleSceneManager : MonoBehaviour
 
     /// <summary>소환된 적 전투체 목록.</summary>
     public IReadOnlyList<BattleCharactor> EnemyBattleCharactors => enemyBattleCharactors;
+
+    private void OnEnable()
+    {
+        if (battleFlowManager != null)
+        {
+            battleFlowManager.OnBattleEnded += HandleBattleEndedForTransition;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (battleFlowManager != null)
+        {
+            battleFlowManager.OnBattleEnded -= HandleBattleEndedForTransition;
+        }
+
+        if (returnSceneCoroutine != null)
+        {
+            StopCoroutine(returnSceneCoroutine);
+            returnSceneCoroutine = null;
+        }
+    }
+
+    private void HandleBattleEndedForTransition(BattleResult result)
+    {
+        if (returnSceneCoroutine != null)
+        {
+            return;
+        }
+
+        CombatContext combatContext = CombatContext.Instance;
+        if (combatContext != null)
+        {
+            CombatResult mappedResult = result == BattleResult.Victory
+                ? CombatResult.Victory
+                : CombatResult.Defeat;
+            combatContext.SetCombatResult(mappedResult);
+        }
+
+        if (string.IsNullOrWhiteSpace(returnSceneName))
+        {
+            Debug.LogWarning("[BattleSceneManager] returnSceneName이 비어 있어 씬 전환을 건너뜁니다.");
+            return;
+        }
+
+        returnSceneCoroutine = StartCoroutine(TransitionToSceneRoutine());
+    }
+
+    private IEnumerator TransitionToSceneRoutine()
+    {
+        if (returnDelay > 0f)
+        {
+            yield return new WaitForSeconds(returnDelay);
+        }
+
+        SceneManager.LoadScene(returnSceneName.Trim());
+        returnSceneCoroutine = null;
+    }
 
     private void Start()
     {

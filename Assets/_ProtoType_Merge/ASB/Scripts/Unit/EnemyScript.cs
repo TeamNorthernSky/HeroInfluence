@@ -116,15 +116,16 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         }
 
         int resolvedSkillIndex = ExtractSkillIndexFromPersistent(persistentData, fallbackData);
-        if (resolvedSkillIndex > 0)
-        {
-            battle.SetClassSkillIndex(resolvedSkillIndex);
-        }
+        int resolvedWeaponIndex = ExtractWeaponIndexFromPersistent(persistentData);
+        battle.LoadPersistentEquipment(resolvedSkillIndex, resolvedWeaponIndex);
 
         battle.RecalculateStats();
-        battle.ResolveSelectedSkill();
         battle.InitializeCurrentHpToMax();
-        battle.MarkInitializedFromDataPipeline();
+        battle.MarkInitializedFromDataPipeline(true);
+        Debug.Log(
+            $"[Stats/Persistent] {battle.UnitName} uses precomputed snapshot. " +
+            $"LevelScaling=false, " +
+            $"FinalStats HP={battle.FinalStats.HP}, Atk={battle.FinalStats.Atk}, DEF={battle.FinalStats.DEF}");
 
         enemyData = fallbackData;
         EnsureAIReady();
@@ -260,36 +261,34 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         return 20001;
     }
 
-    private static int ExtractSkillIndexFromPersistent(EnemyUnitPersistentData persistentData, EnemyData fallbackData)
+    private static int ExtractWeaponIndexFromPersistent(EnemyUnitPersistentData persistentData)
     {
-        if (persistentData != null)
+        if (persistentData == null)
         {
-            // EnemyUnitPersistentData 기본 구조에는 스킬 인덱스가 없으므로, 리플렉션으로 확장 필드를 탐색합니다.
-            System.Reflection.PropertyInfo skillIndexProperty = persistentData.GetType().GetProperty("CurrentSkillIndex");
-            if (skillIndexProperty != null && skillIndexProperty.GetValue(persistentData) is int reflectedSkillIndex && reflectedSkillIndex > 0)
-            {
-                return reflectedSkillIndex;
-            }
-
-            System.Reflection.FieldInfo skillIndexField = persistentData.GetType().GetField("currentSkillIndex", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
-            if (skillIndexField != null && skillIndexField.GetValue(persistentData) is int reflectedFieldSkillIndex && reflectedFieldSkillIndex > 0)
-            {
-                return reflectedFieldSkillIndex;
-            }
-
-            if (persistentData.UnitIndex > 0)
-            {
-                // 적 기본 슬롯은 1로 계산합니다.
-                return (persistentData.UnitIndex * 10) + 1;
-            }
+            return 0;
         }
 
-        if (fallbackData != null && !string.IsNullOrWhiteSpace(fallbackData.Index) && int.TryParse(fallbackData.Index.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int enemyIndexNum))
+        System.Reflection.PropertyInfo weaponProp =
+            persistentData.GetType().GetProperty("CurrentWeaponIndex", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        if (weaponProp != null && weaponProp.GetValue(persistentData) is int propWeapon && propWeapon > 0)
         {
-            return (enemyIndexNum * 10) + 1;
+            return propWeapon;
+        }
+
+        System.Reflection.FieldInfo weaponField = persistentData.GetType().GetField(
+            "currentWeaponIndex",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+        if (weaponField != null && weaponField.GetValue(persistentData) is int fieldWeapon && fieldWeapon > 0)
+        {
+            return fieldWeapon;
         }
 
         return 0;
+    }
+
+    private static int ExtractSkillIndexFromPersistent(EnemyUnitPersistentData persistentData, EnemyData fallbackData)
+    {
+        return EnemySkillIndexResolver.ResolveSkillIndexFromPersistent(persistentData, fallbackData);
     }
 
     private static string FormatTargets(List<BattleCharactor> targets)
