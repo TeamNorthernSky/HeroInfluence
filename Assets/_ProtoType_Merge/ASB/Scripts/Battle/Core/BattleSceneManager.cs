@@ -24,6 +24,9 @@ public class BattleSceneManager : MonoBehaviour
     [Tooltip("Build Settings에 등록된 씬 이름(확장자 제외). 예: DHScene")]
     [SerializeField] private string returnSceneName = "DHScene";
     [SerializeField] private float returnDelay = 3f;
+    // [JC 260513] 페이드 시간. fadeIn은 0(=즉시) — 검정 화면 유지 방지용 SceneFadeController 최소값 클램프.
+    [SerializeField] private float fadeOutDuration = 1f;
+    [SerializeField] private float fadeInDuration = 0f;
 
     private Coroutine returnSceneCoroutine;
 
@@ -71,10 +74,20 @@ public class BattleSceneManager : MonoBehaviour
         CombatContext combatContext = CombatContext.Instance;
         if (combatContext != null)
         {
-            CombatResult mappedResult = result == BattleResult.Victory
-                ? CombatResult.Victory
-                : CombatResult.Defeat;
+            // [JC 260513] BattleResult → CombatResult 명시적 1:1 매핑.
+            // 향후 Battle/Combat 명명 통일 시 BattleResult → CombatResult 일원화로 매핑 함수 자체 폐기 예정.
+            CombatResult mappedResult = result switch
+            {
+                BattleResult.Victory   => CombatResult.Victory,
+                BattleResult.Defeat    => CombatResult.Defeat,
+                BattleResult.Escape    => CombatResult.Escape,
+                BattleResult.Cancelled => CombatResult.Cancelled,
+                _                      => CombatResult.None,
+            };
             combatContext.SetCombatResult(mappedResult);
+
+            // [JC 260513] directive dispatch — CombatContext.EnemyDirective 우선, 없으면 BattleResult 기본 정책.
+            ApplyEnemyDirective(combatContext, result);
         }
 
         if (string.IsNullOrWhiteSpace(returnSceneName))
@@ -86,6 +99,33 @@ public class BattleSceneManager : MonoBehaviour
         returnSceneCoroutine = StartCoroutine(TransitionToSceneRoutine());
     }
 
+    // [JC 260513] directive 패턴 dispatch. 이벤트 시스템(미래)이 CombatContext.SetEnemyDirective로 주입 가능.
+    private static void ApplyEnemyDirective(CombatContext context, BattleResult result)
+    {
+        if (context == null || context.CombatEnemy == null) return;
+        string instanceId = context.CombatEnemy.InstanceId;
+        if (string.IsNullOrWhiteSpace(instanceId)) return;
+
+        PostCombatEnemyDirective directive = context.EnemyDirective ?? PostCombatEnemyDirective.DefaultFor(result);
+        EnemyPartyPool pool = EnemyPartyPool.Instance;
+        if (pool == null) return;
+
+        switch (directive.Action)
+        {
+            case PostCombatEnemyAction.KeepInPlace:
+                break;
+            case PostCombatEnemyAction.RemoveFromPool:
+                pool.UnregisterInstance(instanceId);
+                break;
+            case PostCombatEnemyAction.MoveToGrid:
+                pool.UpdateInstanceGrid(instanceId, directive.TargetGrid);
+                break;
+            case PostCombatEnemyAction.ReplaceWithPrefab:
+                pool.ReplaceInstancePrefab(instanceId, directive.PrefabKey);
+                break;
+        }
+    }
+
     private IEnumerator TransitionToSceneRoutine()
     {
         if (returnDelay > 0f)
@@ -93,7 +133,14 @@ public class BattleSceneManager : MonoBehaviour
             yield return new WaitForSeconds(returnDelay);
         }
 
-        SceneManager.LoadScene(returnSceneName.Trim());
+        string target = returnSceneName.Trim();
+        // [JC 260513] SceneFadeController 영속(GameManager 자식). 없으면 직접 LoadScene fallback.
+        SceneFadeController fade = SceneFadeController.Instance;
+        if (fade != null)
+            fade.FadeToScene(target, fadeOutDuration, fadeInDuration);
+        else
+            GameSceneManager.LoadScene(target);
+
         returnSceneCoroutine = null;
     }
 

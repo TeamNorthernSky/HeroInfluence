@@ -26,6 +26,7 @@ public class EnemyGridMover : MonoBehaviour
     private EnemyComposition enemyComposition;
 
     public string EnemyId => enemyIdentity != null ? enemyIdentity.EnemyId : string.Empty;
+    public string InstanceId => enemyIdentity != null ? enemyIdentity.InstanceId : string.Empty;
     public int MovePointsPerTurn => Mathf.Max(0, movePointsPerTurn);
     public EnemyTargetType CurrentTargetType => currentTargetType;
     public Component CurrentTarget => currentTarget;
@@ -67,6 +68,12 @@ public class EnemyGridMover : MonoBehaviour
     {
         enemyIdentity ??= GetComponent<EnemyIdentity>();
         enemyIdentity?.SetEnemyId(nextEnemyId);
+    }
+
+    public void InitializeInstanceId(string nextInstanceId)
+    {
+        enemyIdentity ??= GetComponent<EnemyIdentity>();
+        enemyIdentity?.SetInstanceId(nextInstanceId);
     }
 
     public void SetTarget(EnemyTargetType targetType, Component target)

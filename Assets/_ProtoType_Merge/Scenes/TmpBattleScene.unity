@@ -585,7 +585,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &320332753
 Transform:
   m_ObjectHideFlags: 0
@@ -631,10 +631,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitCsv: {fileID: 0}
-  playerUnitCsv: {fileID: 4900000, guid: 835e74d03f65bfe438d441c81a678e63, type: 3}
-  enemyUnitCsv: {fileID: 4900000, guid: 8221eccf2ff42694ea06270ffa4aaa3b, type: 3}
-  classSkillSheetCsv: {fileID: 4900000, guid: 0646140d7017c1447b2b35626d885ab8, type: 3}
-  weaponSheetCsv: {fileID: 4900000, guid: ea26b099547e06747b5254a226486eb9, type: 3}
+  playerUnitCsv: {fileID: 4900000, guid: 72d19cacbde78cd4abc7a562b005341d, type: 3}
+  enemyUnitCsv: {fileID: 4900000, guid: 36905d46ea2eb954cb4033a9fa0159c9, type: 3}
+  classSkillSheetCsv: {fileID: 4900000, guid: aa2b125060d14e740a9b7faadf9ffd5d, type: 3}
+  weaponSheetCsv: {fileID: 4900000, guid: e00fda7d4c4a4514ea045a2e506aab09, type: 3}
 --- !u!114 &320332756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1500,7 +1500,8 @@ GameObject:
   - component: {fileID: 621159268}
   - component: {fileID: 621159269}
   - component: {fileID: 621159271}
-  - component: {fileID: 621159272}
+  - component: {fileID: 621159273}
+  - component: {fileID: 621159274}
   m_Layer: 0
   m_Name: BattleSceneManager
   m_TagString: Untagged
@@ -1526,6 +1527,10 @@ MonoBehaviour:
   battleFlowManager: {fileID: 621159268}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
+  returnSceneName: DHScene
+  returnDelay: 3
+  fadeOutDuration: 1
+  fadeInDuration: 0
 --- !u!4 &621159267
 Transform:
   m_ObjectHideFlags: 0
@@ -1583,7 +1588,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponDataLoader: {fileID: 320332757}
---- !u!114 &621159272
+--- !u!114 &621159273
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1592,12 +1597,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 621159265}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f84562f930da1b346a1533bac58805b7, type: 3}
+  m_Script: {fileID: 11500000, guid: 4dfe52c4d54f54f498ca97813c73ee0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  battleFlowManager: {fileID: 621159268}
-  returnSceneName: DHScene
-  exitDelaySeconds: 1.5
+  installDelaySeconds: 0.5
+  logInstall: 1
+--- !u!114 &621159274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621159265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eff9ec9bfa0e304e9621c39696aaee1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logCheat: 1
 --- !u!1 &771919882
 GameObject:
   m_ObjectHideFlags: 0

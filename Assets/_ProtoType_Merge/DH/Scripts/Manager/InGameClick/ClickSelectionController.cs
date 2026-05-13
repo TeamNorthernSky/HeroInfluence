@@ -78,6 +78,9 @@ public class ClickSelectionController : MonoBehaviour
     {
         RefreshUILockState();
 
+        // [JC 260513] 모달 활성 등 World 입력 차단 조건 통합 가드.
+        if (WorldInputGate.IsBlocked) return;
+
         if (Input.GetMouseButtonDown(0))
             TryHandleClick();
 

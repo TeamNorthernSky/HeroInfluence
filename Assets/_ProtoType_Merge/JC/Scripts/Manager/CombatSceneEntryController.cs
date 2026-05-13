@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 // [JC 신설 260512]
 // 옵션 B 진입 트리거. CombatEncounterManager.BeginCombat이 더 이상 LoadScene을 호출하지 않으므로,
@@ -33,6 +32,6 @@ public class CombatSceneEntryController : MonoBehaviour
         if (string.IsNullOrWhiteSpace(battleSceneName))
             return;
 
-        SceneManager.LoadScene(battleSceneName);
+        GameSceneManager.LoadScene(battleSceneName);
     }
 }

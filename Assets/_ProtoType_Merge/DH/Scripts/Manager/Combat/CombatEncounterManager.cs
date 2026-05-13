@@ -10,6 +10,15 @@ public class CombatEncounterManager : MonoBehaviour
     public PartyGridMover ActiveParty { get; private set; }
     public EnemyGridMover ActiveEnemy { get; private set; }
 
+    // [JC 260513] DHScene 재진입 시 직전 전투 결과가 남아 있으면 self-clear.
+    // BattleFlowManager는 전투씬에 있어 OnBattleEnded 이벤트 직접 구독 불가 → Result 폴링 방식.
+    private void OnEnable()
+    {
+        CombatContext context = CombatContext.Instance;
+        if (context != null && context.Result != CombatResult.None)
+            ClearCombatState();
+    }
+
     public bool BeginCombat(PartyGridMover party, EnemyGridMover enemy)
     {
         if (party == null || enemy == null)
@@ -18,8 +27,13 @@ public class CombatEncounterManager : MonoBehaviour
         PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
         string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
         string enemyId = enemy.EnemyId;
+        string enemyInstanceId = enemy.InstanceId;
 
-        if (!TryRegisterCombatParticipants(party, partyId, enemy, enemyId))
+        // [JC 260513] 안 B — 전투 진입 직전 적 위치를 풀에 백업 갱신.
+        if (!string.IsNullOrWhiteSpace(enemyInstanceId))
+            EnemyPartyPool.Instance?.UpdateInstanceGrid(enemyInstanceId, enemy.GetCurrentGrid());
+
+        if (!TryRegisterCombatParticipants(party, partyId, enemy, enemyId, enemyInstanceId))
             return false;
 
         Debug.Log(
@@ -37,7 +51,7 @@ public class CombatEncounterManager : MonoBehaviour
         ActiveEnemy = null;
     }
 
-    private bool TryRegisterCombatParticipants(PartyGridMover party, string partyId, EnemyGridMover enemy, string enemyId)
+    private bool TryRegisterCombatParticipants(PartyGridMover party, string partyId, EnemyGridMover enemy, string enemyId, string enemyInstanceId)
     {
         CombatContext combatContext = CombatContext.Instance;
         PersistentUnitRepository unitRepository = PersistentUnitRepository.Instance;
@@ -62,7 +76,7 @@ public class CombatEncounterManager : MonoBehaviour
         }
 
         combatContext.RegisterCombatParty(partyId, partyUnitIndices);
-        combatContext.RegisterCombatEnemy(enemyId, enemyUnitIndices);
+        combatContext.RegisterCombatEnemy(enemyId, enemyInstanceId, enemyUnitIndices);
         combatContext.SetCombatResult(CombatResult.None);
         return true;
     }

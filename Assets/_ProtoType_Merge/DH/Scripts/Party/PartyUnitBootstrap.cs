@@ -82,7 +82,18 @@ public class PartyUnitBootstrap : MonoBehaviour
         // Orora의 PartyComposition 슬롯 가드는 씬 컴포넌트 리셋으로 매번 빈 상태가 되어 작동하지 않음
         string partyId = partyIdentity != null ? partyIdentity.PartyId : gameObject.name;
         if (partyRepository.ContainsParty(partyId))
+        {
+            // [JC 추가 260513] 씬 재진입 시 PartyComposition.unitIndices가 인스펙터 직렬화값(빈)으로 리셋됨.
+            // 영속 PartyPersistentData에서 인덱스를 복원해 UI/검색 로직이 정상 동작하도록 보장.
+            if (partyRepository.TryGetParty(partyId, out PartyPersistentData persistentData))
+            {
+                System.Collections.Generic.IReadOnlyList<int> persistentIndices = persistentData.UnitIndices;
+                partyComposition.EnsureSlotCount(persistentIndices.Count);
+                for (int i = 0; i < persistentIndices.Count; i++)
+                    partyComposition.SetUnitIndexAt(i, persistentIndices[i]);
+            }
             return;
+        }
 
         int slotCount = partyUnitStates.Count;
         partyComposition.EnsureSlotCount(slotCount);

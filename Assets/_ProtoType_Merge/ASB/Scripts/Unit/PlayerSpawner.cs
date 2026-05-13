@@ -121,6 +121,19 @@ public class PlayerSpawner : MonoBehaviour
 
         string path = $"prefab/Unit_{unit.Index}";
         var prefab = Resources.Load<GameObject>(path);
+
+        // [JC 임시 260512] Index 매칭(Unit_10005 등) 실패 시 ClassName→레거시 시각 명 fallback.
+        // ASB가 V4.5 명명 통일 + 정식 명명 흐름 도입하면 본 fallback 제거.
+        if (prefab == null)
+        {
+            string fallbackName = GetLegacyPlayerVisualName(unit.UnitType);
+            if (!string.IsNullOrEmpty(fallbackName))
+            {
+                path = $"prefab/Unit_{fallbackName}";
+                prefab = Resources.Load<GameObject>(path);
+            }
+        }
+
         if (prefab == null)
         {
             Debug.LogError($"[PlayerSpawner] 프리팹을 찾을 수 없습니다: {path}");
@@ -128,6 +141,21 @@ public class PlayerSpawner : MonoBehaviour
         }
 
         return prefab;
+    }
+
+    // [JC 임시 260512] V4.5 미반영 Resources/prefab/Unit_* 매핑. ASB 정식 명명 통일 시 제거
+    private static string GetLegacyPlayerVisualName(string className)
+    {
+        if (string.IsNullOrEmpty(className)) return null;
+        switch (className)
+        {
+            case "가디언":   return "Warrior";
+            case "블래스터": return "Archer";
+            case "스트라이커": return "Wizard";
+            case "서포터":   return "Cleric";
+            case "파이터":   return "Knight";
+            default: return null;
+        }
     }
 
     public GameObject SpawnUnit(string unitId, int gridNumber)

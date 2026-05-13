@@ -8,14 +8,7 @@ public class BootSceneController : MonoBehaviour
 
     private void Start()
     {
-        var sceneLoader = GameManager.Instance.SceneLoader;
-        if (sceneLoader != null)
-        {
-            sceneLoader.LoadScene(firstScene.ToString());
-        }
-        else
-        {
-            Debug.LogError("[BootSceneController] SceneLoader를 찾을 수 없습니다");
-        }
+        // [JC 수정 260512] SceneLoader 폐기 → GameSceneManager 단순 래퍼 사용
+        GameSceneManager.LoadScene(firstScene.ToString());
     }
 }

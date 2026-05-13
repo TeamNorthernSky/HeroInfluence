@@ -24,6 +24,12 @@ EditorBuildSettings:
     path: Assets/_ProtoType_Merge/Scenes/PTScene.unity
     guid: 8be3a951057767d489ff1cedcc41c653
   - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/Ending_Victory.unity
+    guid: 6c5137d4df0665a448bedc07f9a74422
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/Ending_Defeat.unity
+    guid: 42581ed139088784181c6610edc461e1
+  - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/TestScene.unity
     guid: 0d4ddae43ba93fd4399d6ec54f467fb9
   - enabled: 1

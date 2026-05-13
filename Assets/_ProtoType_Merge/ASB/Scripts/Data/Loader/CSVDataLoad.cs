@@ -247,16 +247,25 @@ public static class CSVLoader
         int counterRateCol = TryGetCol("CounterRate");
         int avoidRateCol = TryGetCol("AvoidRate");
 
-        int indexCol = TryGetCol("Index");
-        int unitTypeCol = TryGetCol("UnitType");
-        int nameCol = TryGetCol("Name");
+        // [JC 수정 260512] CSV 헤더 호환 매핑:
+        //   신본 (PlayerDataSheet_JC_merge_*): HeroIndex / HeroName / ClassName  (캐릭터 정보 시트)
+        //   구본 (PlayerDataSheet_20260508 등): ClassIndex / (Name 없음) / ClassName  (클래스 정보 시트)
+        //   둘 다 같은 로더로 처리되도록 헤더 별칭 fallback 체인을 둠.
+        int indexCol = TryGetCol("HeroIndex");
+        if (indexCol < 0) indexCol = TryGetCol("ClassIndex");
+        if (indexCol < 0) indexCol = TryGetCol("Index");
+
+        int unitTypeCol = TryGetCol("ClassName");
+        if (unitTypeCol < 0) unitTypeCol = TryGetCol("UnitType");
+
+        int nameCol = TryGetCol("HeroName");
+        if (nameCol < 0) nameCol = TryGetCol("Name");
+        if (nameCol < 0) nameCol = TryGetCol("UnitName");
+        if (nameCol < 0) nameCol = TryGetCol("DisplayName");
 
         int levelGrowthMaxHPCol = TryGetCol("LevelGrowthMaxHP");
         int levelGrowthMaxAtkCol = TryGetCol("LevelGrowthMaxAtk");
         int levelGrowthMaxDefCol = TryGetCol("LevelGrowthMaxDef");
-
-        if (nameCol < 0) nameCol = TryGetCol("UnitName");
-        if (nameCol < 0) nameCol = TryGetCol("DisplayName");
 
         int isEnemyCol = TryGetCol("IsEnemy");
 

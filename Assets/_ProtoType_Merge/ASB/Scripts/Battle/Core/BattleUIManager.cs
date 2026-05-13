@@ -110,6 +110,8 @@ public class BattleUIManager : MonoBehaviour
         }
         else
         {
+            // [JC 260513] 현재 ASB BattleFlowManager는 Victory/Defeat만 발화 → 이 분기는 사실상 Defeat 전용.
+            // BattleResult enum이 None/Escape/Cancelled로 확장되어 미래에 Escape 등이 발화되기 시작하면 분기 보완 필요.
             battleResultText.text = "전투 결과 : <color=red>패배...</color>";
         }
     }

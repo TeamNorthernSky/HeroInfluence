@@ -5,10 +5,18 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 using System.Linq;
 using UnityEngine;
 
+// [JC 260513] DH의 CombatResult와 명세 일치화. ASB BattleFlowManager는 현재 Victory/Defeat만 발화.
+// None/Escape/Cancelled는 미래 확장 슬롯 (ASB 발화 흐름 추가 또는 외부 시스템이 직접 set 가능).
+//
+// 향후 계획(미확정): Battle/Combat 명명 분리 전반을 Combat으로 통일 예정.
+//   - 그 시점에 본 enum과 DH CombatResult 통합 + ASB OnBattleEnded<CombatResult>로 시그니처 변경 + 매핑 함수 폐기.
 public enum BattleResult
 {
+    None,
     Victory,
-    Defeat
+    Defeat,
+    Escape,
+    Cancelled,
 }
 
 /// <summary>

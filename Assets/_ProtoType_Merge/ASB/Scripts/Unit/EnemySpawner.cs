@@ -107,6 +107,19 @@ public class EnemySpawner : MonoBehaviour
 
         string path = $"prefab/Unit_{data.Index}";
         var prefab = Resources.Load<GameObject>(path);
+
+        // [JC 임시 260512] Index 매칭(Unit_20001 등) 실패 시 레거시 UnitType 명으로 fallback.
+        // ASB가 V4.5 명명 통일 + 정식 명명 흐름 도입하면 본 fallback 제거.
+        if (prefab == null)
+        {
+            string fallbackName = GetLegacyEnemyVisualName(data.Index);
+            if (!string.IsNullOrEmpty(fallbackName))
+            {
+                path = $"prefab/Unit_{fallbackName}";
+                prefab = Resources.Load<GameObject>(path);
+            }
+        }
+
         if (prefab == null)
         {
             Debug.LogError($"[EnemySpawner] 프리팹을 찾을 수 없습니다: {path}");
@@ -114,6 +127,19 @@ public class EnemySpawner : MonoBehaviour
         }
 
         return prefab;
+    }
+
+    // [JC 임시 260512] V4.5 미반영 Resources/prefab/Unit_* 매핑. ASB 정식 명명 통일 시 제거
+    private static string GetLegacyEnemyVisualName(string index)
+    {
+        switch (index)
+        {
+            case "20001": return "LowerMonster";
+            case "20002": return "MiddleMonster";
+            case "20003": return "AdvancedMonster";
+            case "40001": return "AdvancedMonster"; // 브루트 시각 임시 재사용
+            default: return null;
+        }
     }
 
     public GameObject SpawnUnit(string enemyId, int gridNumber)

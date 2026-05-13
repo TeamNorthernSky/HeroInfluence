@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     public EconomyManager Economy { get; private set; }
-    public SceneLoader SceneLoader { get; private set; }
+    // [JC 폐기 260512] SceneLoader 폐기. UnityEngine.SceneManagement.SceneManager 래퍼 GameSceneManager(정적)로 대체
     public UIPrefabRegistry UIPrefabRegistry { get; private set; }
     public DebugManager Debug { get; private set; }
 
@@ -66,9 +66,6 @@ public class GameManager : MonoBehaviour
     {
         Economy = GetComponentInChildren<EconomyManager>();
         Economy.Initialize();
-
-        SceneLoader = GetComponentInChildren<SceneLoader>();
-        if (SceneLoader != null) SceneLoader.Initialize();
 
         UIPrefabRegistry = GetComponentInChildren<UIPrefabRegistry>(true);
 

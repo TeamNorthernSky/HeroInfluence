@@ -364,10 +364,10 @@ Transform:
   m_Children:
   - {fileID: 6406030997603731297}
   - {fileID: 8712120890473798406}
-  - {fileID: 2467091974538977977}
   - {fileID: 8062661041274536706}
   - {fileID: 5996219869934692149}
   - {fileID: 3228369455853739115}
+  - {fileID: 548650104053830886}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6892167157886770875
@@ -382,6 +382,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d17c2c437f96584d966b176e622b10f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentDay: 1
 --- !u!1 &1168482753684625109
 GameObject:
   m_ObjectHideFlags: 0
@@ -517,6 +518,57 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &1772636365764781261
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 548650104053830886}
+  - component: {fileID: 795860587115316316}
+  m_Layer: 0
+  m_Name: EnemyPartyPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &548650104053830886
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1772636365764781261}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4416921626792511709}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &795860587115316316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1772636365764781261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baf19caf6eda5e94cafd0b8ff61639a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyPartyPrefabs:
+  - {fileID: 3482099803903542441, guid: 803dbb0459f33c7489ae7c55df05d3cc, type: 3}
+  - {fileID: 3482099803903542441, guid: 58547377f4d1db640b9b4f9d1d9077d1, type: 3}
+  maxConcurrentInstances: 3
+  nextInstanceSequence: 1
+  liveInstances: []
+  lastSpawnTurn: 0
 --- !u!1 &2207615282674239069
 GameObject:
   m_ObjectHideFlags: 0
@@ -2273,50 +2325,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sceneHistoryPanel: {fileID: 4047100708146460590, guid: fd620092746e35d4dbd69d2bd89ca7f3,
     type: 3}
---- !u!1 &6815924838405603793
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2467091974538977977}
-  - component: {fileID: 4249427930121175126}
-  m_Layer: 0
-  m_Name: SceneLoader
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2467091974538977977
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6815924838405603793}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4416921626792511709}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4249427930121175126
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6815924838405603793}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f177df9923c3ace49b2538c02556be39, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &7122546699411998715
 GameObject:
   m_ObjectHideFlags: 0
@@ -3198,6 +3206,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: SystemMenuModal
+      objectReference: {fileID: 0}
+    - target: {fileID: 3438823638824112574, guid: f3320394e196a7a4baaf333f41b3e19c,
+        type: 3}
+      propertyPath: pausesGame
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4642787065181358876, guid: f3320394e196a7a4baaf333f41b3e19c,
         type: 3}
