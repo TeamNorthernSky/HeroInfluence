@@ -72,7 +72,7 @@ public class Outpost : MonoBehaviour
         ApplyStateMaterial();
     }
 
-    // [JC 260515 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 인자 폐기. Game.Economy 단축 접근자 사용.
+    // [JC 260514 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 인자 폐기. Game.Economy 단축 접근자 사용.
     public void ProduceForTurn()
     {
         if (!IsPlayerClaimed)

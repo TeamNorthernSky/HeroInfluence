@@ -8,7 +8,7 @@ public class PartyRuntime : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridManager gridManager;
-    // [JC 260515 머지후처리] ResourceManager 직접 의존 폐기 (Game.Economy 패턴 사용)
+    // [JC 260514 머지후처리] ResourceManager 직접 의존 폐기 (Game.Economy 패턴 사용)
     [SerializeField] private CombatEncounterManager combatEncounterManager;
 
     [Header("Interaction Settings")]

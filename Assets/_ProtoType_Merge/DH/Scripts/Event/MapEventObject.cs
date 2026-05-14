@@ -39,7 +39,7 @@ public class MapEventObject : MonoBehaviour
         EventInteracted?.Invoke(this);
     }
 
-    // [JC 260515 머지후처리] ResourceManager 직접 의존 폐기 → Game.Economy 사용
+    // [JC 260514 머지후처리] ResourceManager 직접 의존 폐기 → Game.Economy 사용
     public bool TryExecuteEvent()
     {
         if (Game.Economy == null) return false;
