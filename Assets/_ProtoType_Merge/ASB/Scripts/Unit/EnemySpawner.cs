@@ -7,10 +7,14 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
 /// <summary>
 /// EnemyPlace 최상위에 부착. Grid/Grid_n 월드 위치 참조, 소환 유닛은 Units 자식.
-/// 프리팹은 Resources/prefab/Unit_{UnitType} 에서 로드.
+/// 프리팹은 인스펙터 오버라이드(1순위) 또는 Resources/prefab/EnemyUnit/Unit_{Index} 에서 로드.
 /// </summary>
 public class EnemySpawner : MonoBehaviour
 {
+    [Header("Prefab Overrides (Index -> Prefab 매핑)")]
+    [SerializeField] private List<PrefabMapping> prefabOverrides = new List<PrefabMapping>();
+    private Dictionary<string, GameObject> _prefabOverrideDict;
+
     [Serializable]
     public struct SpawnRequest
     {
@@ -34,6 +38,8 @@ public class EnemySpawner : MonoBehaviour
 
     private void Awake()
     {
+        EnsurePrefabOverrideDictBuilt();
+
         gridSlots.Clear();
         gridRotations.Clear();
         gridCellsByNumber.Clear();
@@ -68,6 +74,43 @@ public class EnemySpawner : MonoBehaviour
         }
 
         hierarchyReady = true;
+    }
+
+    private void EnsurePrefabOverrideDictBuilt()
+    {
+        if (_prefabOverrideDict != null)
+        {
+            return;
+        }
+
+        _prefabOverrideDict = new Dictionary<string, GameObject>(StringComparer.Ordinal);
+        if (prefabOverrides == null || prefabOverrides.Count == 0)
+        {
+            return;
+        }
+
+        foreach (PrefabMapping mapping in prefabOverrides)
+        {
+            if (string.IsNullOrWhiteSpace(mapping.unitIndex))
+            {
+                continue;
+            }
+
+            if (mapping.prefab == null)
+            {
+                Debug.LogWarning($"[EnemySpawner] PrefabOverride: Index '{mapping.unitIndex}'에 프리팹이 연결되지 않았습니다.");
+                continue;
+            }
+
+            string key = mapping.unitIndex.Trim();
+            if (_prefabOverrideDict.ContainsKey(key))
+            {
+                Debug.LogWarning($"[EnemySpawner] PrefabOverride: Index '{key}' 중복 등록. 첫 번째 항목만 사용됩니다.");
+                continue;
+            }
+
+            _prefabOverrideDict.Add(key, mapping.prefab);
+        }
     }
 
     private void Start()
@@ -105,21 +148,18 @@ public class EnemySpawner : MonoBehaviour
             return null;
         }
 
-        string path = $"prefab/Unit_{data.Index}";
-        var prefab = Resources.Load<GameObject>(path);
+        EnsurePrefabOverrideDictBuilt();
 
-        // [JC 임시 260512] Index 매칭(Unit_20001 등) 실패 시 레거시 UnitType 명으로 fallback.
-        // ASB가 V4.5 명명 통일 + 정식 명명 흐름 도입하면 본 fallback 제거.
-        if (prefab == null)
+        string trimmedIndex = data.Index.Trim();
+
+        if (_prefabOverrideDict.TryGetValue(trimmedIndex, out GameObject overridePrefab) &&
+            overridePrefab != null)
         {
-            string fallbackName = GetLegacyEnemyVisualName(data.Index);
-            if (!string.IsNullOrEmpty(fallbackName))
-            {
-                path = $"prefab/Unit_{fallbackName}";
-                prefab = Resources.Load<GameObject>(path);
-            }
+            return overridePrefab;
         }
 
+        string path = $"prefab/EnemyUnit/Unit_{trimmedIndex}";
+        var prefab = Resources.Load<GameObject>(path);
         if (prefab == null)
         {
             Debug.LogError($"[EnemySpawner] 프리팹을 찾을 수 없습니다: {path}");
@@ -127,19 +167,6 @@ public class EnemySpawner : MonoBehaviour
         }
 
         return prefab;
-    }
-
-    // [JC 임시 260512] V4.5 미반영 Resources/prefab/Unit_* 매핑. ASB 정식 명명 통일 시 제거
-    private static string GetLegacyEnemyVisualName(string index)
-    {
-        switch (index)
-        {
-            case "20001": return "LowerMonster";
-            case "20002": return "MiddleMonster";
-            case "20003": return "AdvancedMonster";
-            case "40001": return "AdvancedMonster"; // 브루트 시각 임시 재사용
-            default: return null;
-        }
     }
 
     public GameObject SpawnUnit(string enemyId, int gridNumber)
@@ -194,7 +221,7 @@ public class EnemySpawner : MonoBehaviour
 
         // BattleSceneManager.SyncGridOccupancy가 cell 하위에서 유닛을 탐색하므로, 반드시 GridCell 아래에 붙입니다.
         var go = Instantiate(prefab, worldPos, worldRot, resolvedCell.transform);
-        go.name = $"Enemy_{data.Index}";
+        go.name = $"Enemy_{data.Index}_{go.GetInstanceID()}";
 
         // 적 인스턴스에서는 IUnitIdentifier를 EnemyScript만 담당하도록 CharactorScript 제거(클릭 식별 모호 방지).
         // 같은 프레임에 RebuildRuntimeLookup이 돌 수 있어 DestroyImmediate로 즉시 제거한다.
@@ -221,9 +248,9 @@ public class EnemySpawner : MonoBehaviour
         battle.AssignToCell(resolvedCell);
         resolvedCell.SetOccupyingUnit(battle);
 
-        // 디버그 확인용, 이후 제거 — 스폰 직후 UnitID가 battleById 키와 일치하는지 확인
+        // 디버그: battleById는 BattleCharactor.UnitId 기준. 래퍼 UnitID는 별도 문자열입니다.
         Debug.Log(
-            $"[EnemySpawner] 스폰 직후 EnemyScript.UnitID='{enemyScript.UnitID}' (enemyId={enemyId}, grid={gridNumber})");
+            $"[EnemySpawner] 스폰 직후 BattleCharactor.UnitId='{battle.UnitId}' EnemyScript.UnitID='{enemyScript.UnitID}' (enemyId={enemyId}, grid={gridNumber})");
 
         spawnedByGrid[gridNumber] = go;
         Debug.Log(
@@ -313,7 +340,7 @@ public class EnemySpawner : MonoBehaviour
 
         ClearGrid(gridNumber);
         var go = Instantiate(prefab, worldPos, worldRot, persistentCell.transform);
-        go.name = $"Enemy_{data.Index}";
+        go.name = $"Enemy_{data.Index}_{go.GetInstanceID()}";
 
         foreach (var legacy in go.GetComponentsInChildren<CharactorScript>(true))
         {

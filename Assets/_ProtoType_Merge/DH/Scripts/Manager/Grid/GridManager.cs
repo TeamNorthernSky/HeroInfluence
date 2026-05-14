@@ -34,6 +34,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private LayerMask itemLayerMask;
     [FormerlySerializedAs("mineLayerMask")]
     [SerializeField] private LayerMask outpostLayerMask;
+    [SerializeField] private LayerMask eventLayerMask;
     [SerializeField] private LayerMask playerLayerMask;
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private LayerMask castleLayerMask;
@@ -43,6 +44,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
     [SerializeField] private MultiGridOccupantRegistry multiGridOccupantRegistry;
+    [SerializeField] private MapEventRegistry mapEventRegistry;
     [SerializeField] private bool restrictMovementToVisibleCells = true;
     [Tooltip("셀 워커블 검사 시, 셀 크기 대비 체크 박스 비율(너무 크면 오탐, 너무 작으면 통과).")]
     [SerializeField, Range(0.1f, 1f)] private float obstacleCheckFill = 0.9f;
@@ -94,6 +96,9 @@ public class GridManager : MonoBehaviour
 
         if (multiGridOccupantRegistry == null)
             multiGridOccupantRegistry = FindFirstObjectByType<MultiGridOccupantRegistry>();
+
+        if (mapEventRegistry == null)
+            mapEventRegistry = FindFirstObjectByType<MapEventRegistry>();
     }
 
     private void OnValidate()
@@ -112,6 +117,9 @@ public class GridManager : MonoBehaviour
 
         if (multiGridOccupantRegistry == null)
             multiGridOccupantRegistry = FindFirstObjectByType<MultiGridOccupantRegistry>();
+
+        if (mapEventRegistry == null)
+            mapEventRegistry = FindFirstObjectByType<MapEventRegistry>();
     }
 
     public Vector2Int WorldToGrid(Vector3 worldPosition)
@@ -199,6 +207,11 @@ public class GridManager : MonoBehaviour
         return TryGetOutpostObjectAtGrid(grid, out _);
     }
 
+    public bool HasEvent(Vector2Int grid)
+    {
+        return TryGetEventObjectAtGrid(grid, out _);
+    }
+
     public bool HasEnemy(Vector2Int grid, Transform selfTransform = null)
     {
         return HasBlockingCollider(grid, enemyLayerMask, selfTransform);
@@ -247,6 +260,44 @@ public class GridManager : MonoBehaviour
 
             outpost = col.GetComponentInParent<Outpost>();
             if (outpost != null)
+                return true;
+        }
+
+        return false;
+    }
+
+    public bool TryGetEventObjectAtGrid(Vector2Int grid, out MapEventObject mapEvent)
+    {
+        mapEvent = null;
+
+        IReadOnlyList<MapEventObject> mapEvents = mapEventRegistry != null
+            ? mapEventRegistry.MapEvents
+            : FindObjectsByType<MapEventObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < mapEvents.Count; i++)
+        {
+            MapEventObject candidate = mapEvents[i];
+            if (candidate == null || !candidate.OccupiesGrid(grid, this))
+                continue;
+
+            mapEvent = candidate;
+            return true;
+        }
+
+        Vector3 center = GridToWorldCenter(grid);
+        center.y = GetLandSurfaceY() + 0.5f;
+
+        Vector3 halfExtents = new Vector3(cellSize * 0.5f * obstacleCheckFill, 0.5f, cellSize * 0.5f * obstacleCheckFill);
+        Collider[] cols = Physics.OverlapBox(center, halfExtents, Quaternion.identity, eventLayerMask);
+
+        for (int i = 0; i < cols.Length; i++)
+        {
+            Collider col = cols[i];
+            if (col == null)
+                continue;
+
+            mapEvent = col.GetComponentInParent<MapEventObject>();
+            if (mapEvent != null)
                 return true;
         }
 
@@ -306,6 +357,11 @@ public class GridManager : MonoBehaviour
         return HasItem(grid) || HasOutpost(grid);
     }
 
+    public bool HasItemOutpostOrEvent(Vector2Int grid)
+    {
+        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid);
+    }
+
     public bool HasVillainUnionBase(Vector2Int grid)
     {
         return TryGetVillainUnionBaseAtGrid(grid, out _);
@@ -313,7 +369,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasInteractionTarget(Vector2Int grid)
     {
-        return HasItem(grid) || HasOutpost(grid) || HasEnemy(grid) || HasCastle(grid) || HasVillainUnionBase(grid);
+        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasEnemy(grid) || HasCastle(grid) || HasVillainUnionBase(grid);
     }
 
     public bool IsVisibleCell(Vector2Int grid)
@@ -353,6 +409,22 @@ public class GridManager : MonoBehaviour
         }
 
         outpostGrid = grid;
+        return false;
+    }
+
+    public bool TryGetAdjacentEventGrid(Vector2Int grid, out Vector2Int eventGrid)
+    {
+        for (int i = 0; i < directions8.Length; i++)
+        {
+            Vector2Int candidate = grid + directions8[i];
+            if (TryGetEventObjectAtGrid(candidate, out _))
+            {
+                eventGrid = candidate;
+                return true;
+            }
+        }
+
+        eventGrid = grid;
         return false;
     }
 
@@ -460,7 +532,7 @@ public class GridManager : MonoBehaviour
         if (HasCastle(grid, selfTransform))
             return false;
 
-        return !HasItemOrOutpost(grid);
+        return !HasItemOutpostOrEvent(grid);
     }
 
     public bool CanOccupyCell(Vector2Int grid, Transform selfTransform = null, bool ignoreFogVisibility = false)
@@ -483,7 +555,7 @@ public class GridManager : MonoBehaviour
         if (HasCastle(grid, selfTransform))
             return false;
 
-        return !HasItemOrOutpost(grid);
+        return !HasItemOutpostOrEvent(grid);
     }
 
     private bool HasBlockingCollider(Vector2Int grid, LayerMask layerMask)

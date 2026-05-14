@@ -87,7 +87,11 @@ public class EndingSceneController : MonoBehaviour
             if (fade != null)
                 fade.FadeToScene(titleSceneName, fadeOutDuration, titleFadeInDuration);
             else
-                GameSceneManager.LoadScene(titleSceneName);
+                // [JC 260514] GameSceneManager 컴포넌트 격상 — Instance 경유 호출.
+                if (GameSceneManager.Instance != null)
+                    GameSceneManager.Instance.LoadScene(titleSceneName);
+                else
+                    UnityEngine.SceneManagement.SceneManager.LoadScene(titleSceneName);
         }
     }
 }

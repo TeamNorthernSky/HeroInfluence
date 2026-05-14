@@ -5,6 +5,40 @@ using UnityEngine;
 
 namespace EnemyAI
 {
+    /// <summary>BattleCharactor.UnitId가 런타임 접미사를 포함해도 적 CSV 인덱스를 역산할 수 있도록 합니다.</summary>
+    internal static class EnemyAiIndexHelper
+    {
+        /// <summary>EnemyScript 규칙: skillIndex = enemyIndex*10 + slot(1..9).</summary>
+        internal static int TryResolveEnemyIndexFromClassSkill(BattleCharactor self)
+        {
+            if (self == null)
+            {
+                return 0;
+            }
+
+            int csi = self.ClassSkillIndex;
+            if (csi < 11)
+            {
+                return 0;
+            }
+
+            for (int slot = 1; slot <= 9; slot++)
+            {
+                int diff = csi - slot;
+                if (diff > 0 && diff % 10 == 0)
+                {
+                    int enemyId = diff / 10;
+                    if (enemyId > 0)
+                    {
+                        return enemyId;
+                    }
+                }
+            }
+
+            return 0;
+        }
+    }
+
     public sealed class EAI_20001 : BaseEnemyAI
     {
         public override int Index => 20001;
@@ -170,10 +204,10 @@ namespace EnemyAI
                 return parsed;
             }
 
-            if (!string.IsNullOrWhiteSpace(self.UnitId)
-                && int.TryParse(self.UnitId.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int unitIdParsed))
+            int fromSkill = EnemyAiIndexHelper.TryResolveEnemyIndexFromClassSkill(self);
+            if (fromSkill > 0)
             {
-                return unitIdParsed;
+                return fromSkill;
             }
 
             return 20002;
@@ -291,13 +325,13 @@ namespace EnemyAI
                 return parsed;
             }
 
-            if (!string.IsNullOrWhiteSpace(self.UnitId)
-                && int.TryParse(self.UnitId.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int unitIdParsed))
+            int fromSkill = EnemyAiIndexHelper.TryResolveEnemyIndexFromClassSkill(self);
+            if (fromSkill > 0)
             {
-                return unitIdParsed;
+                return fromSkill;
             }
 
-            return 20002;
+            return 20003;
         }
     }
 }

@@ -12,7 +12,11 @@ using UnityEngine.SceneManagement;
 [DisallowMultipleComponent]
 public class GameLoadGate : MonoBehaviour
 {
-    [SerializeField] private string dhSceneName = "DHScene";
+    // [JC 260514] dhSceneName 인스펙터 필드 폐기 → 동적 property. GameSceneManager.Instance.ExplorationScene 토글 반영.
+    private string dhSceneName => GameSceneManager.Instance != null
+        ? GameSceneManager.Instance.ExplorationScene
+        : "DHScene";
+
     [SerializeField] private string lobbySceneName = "LobbyScene_New";
 
     [Tooltip("DHScene 부트스트랩 후 폴링 전 추가 대기 프레임 수. PartyUnitBootstrap의 Start 호출 보장")]
@@ -27,7 +31,10 @@ public class GameLoadGate : MonoBehaviour
     {
         Debug.Log("[GameLoadGate] Begin. Loading DHScene additive...");
 
-        var op = SceneManager.LoadSceneAsync(dhSceneName, LoadSceneMode.Additive);
+        // [JC 260514] GameSceneManager Instance 경유 (fallback SceneManager).
+        var op = GameSceneManager.Instance != null
+            ? GameSceneManager.Instance.LoadSceneAsync(dhSceneName, LoadSceneMode.Additive)
+            : SceneManager.LoadSceneAsync(dhSceneName, LoadSceneMode.Additive);
         if (op == null)
         {
             Debug.LogError($"[GameLoadGate] {dhSceneName} 로드 실패. Build Settings 확인");
@@ -57,7 +64,11 @@ public class GameLoadGate : MonoBehaviour
         if (hasVisiting)
         {
             Debug.Log($"[GameLoadGate] → {lobbySceneName} (Single)");
-            SceneManager.LoadScene(lobbySceneName, LoadSceneMode.Single);
+            // [JC 260514] GameSceneManager Instance 경유.
+            if (GameSceneManager.Instance != null)
+                GameSceneManager.Instance.LoadScene(lobbySceneName, LoadSceneMode.Single);
+            else
+                SceneManager.LoadScene(lobbySceneName, LoadSceneMode.Single);
         }
         else
         {

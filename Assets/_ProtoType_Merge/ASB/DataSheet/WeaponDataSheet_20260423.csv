@@ -1,4 +1,4 @@
-﻿WeaponIndex,Class,WeaponName,WaeponDescription,BonusMaxHP,BonusATK,BonusDEF,BonusCriticalRate,BonusCounterRate,BonusReduceRate,BonusSpeed,WeaponSkillIndex,WeaponSkillName,WeaponSkillDescription,IPCost,WeaponSkillEffect,WeaponSkillRange,WeaponSkillRangeLine,WeaponSkillTarget,WeaponSkillMultiTarget,"WeaponSkill
+WeaponIndex,Class,WeaponName,WaeponDescription,BonusMaxHP,BonusATK,BonusDEF,BonusCriticalRate,BonusCounterRate,BonusReduceRate,BonusSpeed,WeaponSkillIndex,WeaponSkillName,WeaponSkillDescription,IPCost,WeaponSkillEffect,WeaponSkillRange,WeaponSkillRangeLine,WeaponSkillTarget,WeaponSkillMultiTarget,"WeaponSkill
 MultiTargetType","WeaponSkill
 MultiTargetCount",WeaponSkillValue,WeaponSkillSubValue,,,,
 무기 인덱스,직업,무기명,무기 설명,최대 체력 증가량,공격력 증가량,방어력 증가량,치명타율 증가량,반격율 증가량,피해 경감 확률 증가량,스피드 증가량,무기 스킬 인덱스,무기 스킬명,무기 스킬 설명,IP 코스트,"무기 스킬 효과

@@ -15,7 +15,23 @@ public class LevelPrefabRegistry : MonoBehaviour
     [FormerlySerializedAs("minePrefabs")]
     [SerializeField] private List<OutpostPrefabEntry> outpostPrefabs = new List<OutpostPrefabEntry>();
 
+    [Header("Event Prefabs")]
+    [SerializeField] private MapEventObject defaultEventPrefab;
+    [SerializeField] private List<EventPrefabEntry> eventPrefabs = new List<EventPrefabEntry>();
+
+    [Header("Unique Building Prefabs")]
+    [SerializeField] private CastleUnit castlePrefab;
+    [SerializeField] private VillainUnionBase villainUnionBasePrefab;
+
     public GameObject ObstaclePrefab => obstaclePrefab;
+    public CastleUnit CastlePrefab => castlePrefab;
+    public VillainUnionBase VillainUnionBasePrefab => villainUnionBasePrefab;
+
+    private void OnValidate()
+    {
+        for (int i = 0; i < outpostPrefabs.Count; i++)
+            outpostPrefabs[i] = outpostPrefabs[i].Normalized();
+    }
 
     public bool TryGetItemPrefab(ResourceType resourceType, out ItemObject prefab)
     {
@@ -32,11 +48,13 @@ public class LevelPrefabRegistry : MonoBehaviour
         return false;
     }
 
-    public bool TryGetOutpostPrefab(ResourceType resourceType, out Outpost prefab)
+    public bool TryGetOutpostPrefab(OutpostType outpostType, out Outpost prefab)
     {
+        outpostType = OutpostTypeUtility.Normalize(outpostType);
+
         for (int i = 0; i < outpostPrefabs.Count; i++)
         {
-            if (outpostPrefabs[i].ResourceType != resourceType)
+            if (outpostPrefabs[i].OutpostType != outpostType)
                 continue;
 
             prefab = outpostPrefabs[i].Prefab;
@@ -45,6 +63,37 @@ public class LevelPrefabRegistry : MonoBehaviour
 
         prefab = null;
         return false;
+    }
+
+    public bool TryGetEventPrefab(string eventKey, out MapEventObject prefab)
+    {
+        if (!string.IsNullOrWhiteSpace(eventKey))
+        {
+            for (int i = 0; i < eventPrefabs.Count; i++)
+            {
+                EventPrefabEntry entry = eventPrefabs[i];
+                if (!string.Equals(entry.EventKey, eventKey, StringComparison.Ordinal))
+                    continue;
+
+                prefab = entry.Prefab;
+                return prefab != null;
+            }
+        }
+
+        prefab = defaultEventPrefab;
+        return prefab != null;
+    }
+
+    public bool TryGetCastlePrefab(out CastleUnit prefab)
+    {
+        prefab = castlePrefab;
+        return prefab != null;
+    }
+
+    public bool TryGetVillainUnionBasePrefab(out VillainUnionBase prefab)
+    {
+        prefab = villainUnionBasePrefab;
+        return prefab != null;
     }
 }
 
@@ -61,9 +110,27 @@ public struct ItemPrefabEntry
 [Serializable]
 public struct OutpostPrefabEntry
 {
-    [SerializeField] private ResourceType resourceType;
+    [FormerlySerializedAs("resourceType")]
+    [SerializeField] private OutpostType outpostType;
     [SerializeField] private Outpost prefab;
 
-    public ResourceType ResourceType => resourceType;
+    public OutpostType OutpostType => OutpostTypeUtility.Normalize(outpostType);
     public Outpost Prefab => prefab;
+
+    public OutpostPrefabEntry Normalized()
+    {
+        OutpostPrefabEntry entry = this;
+        entry.outpostType = OutpostType;
+        return entry;
+    }
+}
+
+[Serializable]
+public struct EventPrefabEntry
+{
+    [SerializeField] private string eventKey;
+    [SerializeField] private MapEventObject prefab;
+
+    public string EventKey => eventKey;
+    public MapEventObject Prefab => prefab;
 }

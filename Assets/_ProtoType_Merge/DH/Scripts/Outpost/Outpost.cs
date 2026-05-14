@@ -27,6 +27,11 @@ public class Outpost : MonoBehaviour
     public bool IsEnemyClaimed => outpostState == OutpostState.EnemyClaimed;
     public OutpostType OutpostType => outpostType;
 
+    private void OnValidate()
+    {
+        outpostType = OutpostTypeUtility.Normalize(outpostType);
+    }
+
     private void Awake()
     {
         multiGridOccupant = GetComponent<MultiGridOccupant>();
@@ -67,30 +72,36 @@ public class Outpost : MonoBehaviour
         ApplyStateMaterial();
     }
 
+    // [JC 260514 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 인자 폐기. Game.Economy 단축 접근자 사용.
     public void ProduceForTurn()
     {
         if (!IsPlayerClaimed)
             return;
 
-        var economy = Game.Economy;
-        if (economy == null || resourcePerTurn <= 0)
+        if (resourcePerTurn <= 0)
             return;
 
         switch (outpostType)
         {
             case OutpostType.Bank:
-                economy.Add(ResourceType.Money, resourcePerTurn);
+                Game.Economy?.Add(ResourceType.Money, resourcePerTurn);
                 break;
             case OutpostType.Composite:
-                economy.Add(ResourceType.Chip, resourcePerTurn);
-                economy.Add(ResourceType.Crystal, resourcePerTurn);
-                economy.Add(ResourceType.Supply, resourcePerTurn);
+                Game.Economy?.Add(ResourceType.Chip, resourcePerTurn);
+                Game.Economy?.Add(ResourceType.Crystal, resourcePerTurn);
+                Game.Economy?.Add(ResourceType.Supply, resourcePerTurn);
                 break;
         }
     }
 
     public void ApplyInitialData(int nextResourcePerTurn, OutpostState nextState)
     {
+        ApplyInitialData(outpostType, nextResourcePerTurn, nextState);
+    }
+
+    public void ApplyInitialData(OutpostType nextOutpostType, int nextResourcePerTurn, OutpostState nextState)
+    {
+        outpostType = OutpostTypeUtility.Normalize(nextOutpostType);
         resourcePerTurn = nextResourcePerTurn;
         outpostState = nextState;
         ApplyStateMaterial();

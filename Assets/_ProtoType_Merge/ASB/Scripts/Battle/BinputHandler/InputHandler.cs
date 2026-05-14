@@ -443,8 +443,9 @@ public class InputHandler : MonoBehaviour
         }
 
         bool singleTarget = currentSelectedSkill.classSkillTarget == 0 ||
-                            currentSelectedSkill.boundary == null ||
-                            currentSelectedSkill.boundary.Count == 0;
+                            (currentSelectedSkill.classSkillTarget != 2 &&
+                             (currentSelectedSkill.boundary == null ||
+                              currentSelectedSkill.boundary.Count == 0));
         if (singleTarget)
         {
             centerCell.SetHighlight();
@@ -452,8 +453,17 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
-        List<int> previewPattern = BuildPatternIncludingCenter(currentSelectedSkill.boundary);
-        HashSet<Vector2Int> hitCoords = SkillTargetingMapper.GetMultiTargetCoordinates(centerCell.Coords, previewPattern);
+        HashSet<Vector2Int> hitCoords;
+        if (currentSelectedSkill.classSkillTarget == 2)
+        {
+            hitCoords = SkillTargetingMapper.GetFullSideBoardCoordinates(centerCell.Coords);
+        }
+        else
+        {
+            List<int> previewPattern = BuildPatternIncludingCenter(currentSelectedSkill.boundary);
+            hitCoords = SkillTargetingMapper.GetMultiTargetCoordinates(centerCell.Coords, previewPattern);
+        }
+
         if (hitCoords == null || hitCoords.Count == 0)
         {
             return;

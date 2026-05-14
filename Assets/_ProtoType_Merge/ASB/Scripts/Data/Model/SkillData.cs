@@ -32,7 +32,7 @@ public class SkillData
     public int classSkillRangeLine;
     public int classSkillTarget;
     /// <summary>
-    /// SkillTargetingMapper 패턴 인덱스 목록(0=중심 셀, 9=열, 10=전체 등).
+    /// SkillTargetingMapper 패턴 인덱스 목록(0=중심 셀, 9=열 등). 전체 진영 타격은 classSkillTarget==2로 처리합니다.
     /// 기존 aoePatternIndices를 통합한 필드입니다.
     /// </summary>
     public List<int> boundary = new List<int>();

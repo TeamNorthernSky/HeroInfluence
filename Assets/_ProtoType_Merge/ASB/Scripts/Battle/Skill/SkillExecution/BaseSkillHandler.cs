@@ -186,8 +186,17 @@ namespace ASB.Work.Battle.SkillExecution
                 return;
             }
 
-            List<int> pattern = BuildPatternIncludingCenter(context.Skill.boundary);
-            HashSet<Vector2Int> coords = SkillTargetingMapper.GetMultiTargetCoordinates(context.PrimaryCell.Coords, pattern);
+            HashSet<Vector2Int> coords;
+            if (context.Skill.classSkillTarget == 2)
+            {
+                coords = SkillTargetingMapper.GetFullSideBoardCoordinates(context.PrimaryCell.Coords);
+            }
+            else
+            {
+                List<int> pattern = BuildPatternIncludingCenter(context.Skill.boundary);
+                coords = SkillTargetingMapper.GetMultiTargetCoordinates(context.PrimaryCell.Coords, pattern);
+            }
+
             if (coords == null || coords.Count == 0)
             {
                 return;

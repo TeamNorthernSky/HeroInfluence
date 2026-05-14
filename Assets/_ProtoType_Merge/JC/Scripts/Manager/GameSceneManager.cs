@@ -2,52 +2,104 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// [JC 신설 260512] UnityEngine.SceneManagement.SceneManager 래퍼 (정적).
-/// 기존 SceneLoader(자체 이력/레지스트리 운영)를 폐기하고 단순 래퍼로 격하.
-/// 향후 페이드·로딩 화면 등 부가 정책은 SceneFadeController 등 별도 컴포넌트가 담당.
+/// [JC 신설 260512 → 컴포넌트 격상 260514]
+/// GameManager 자식 영속 컴포넌트. 씬 카탈로그(인스펙터 토글) + SceneManager 호출 래퍼 + 엔딩 API를 통합.
+///
+/// 책임:
+/// - 씬 이름 카탈로그: 모든 주요 씬을 인스펙터 필드로 노출 (코드 하드코드 폐기)
+/// - 탐사씬 토글: Default / Legacy 두 슬롯 + bool 토글로 즉시 전환
+/// - LoadScene/LoadSceneAsync/SetActiveSceneByName: UnityEngine.SceneManagement.SceneManager 래퍼
+/// - 엔딩 헬퍼: LoadVictoryEnding/LoadDefeatEnding (기획 확정 시 트리거 연결)
+///
+/// 호출 패턴: <c>GameSceneManager.Instance.LoadScene(...)</c> 또는 <c>GameSceneManager.Instance.ExplorationScene</c>.
 /// </summary>
-public static class GameSceneManager
+[DisallowMultipleComponent]
+public class GameSceneManager : MonoBehaviour
 {
-    // [JC 260513] 엔딩 씬 상수. 트리거 조건은 기획 확정 시 외부에서 LoadVictoryEnding/LoadDefeatEnding을 호출하면 됨.
-    public const string VictoryEndingScene = "Ending_Victory";
-    public const string DefeatEndingScene = "Ending_Defeat";
+    public static GameSceneManager Instance { get; private set; }
 
-    public static string ActiveSceneName => SceneManager.GetActiveScene().name;
+    [Header("Scene Catalog")]
+    [SerializeField] private string titleScene = "TitleScene";
+    [SerializeField] private string lobbyScene = "LobbyScene_New";
+    [SerializeField] private string gameLoadScene = "GameLoadScene";
+    [SerializeField] private string victoryEndingScene = "Ending_Victory";
+    [SerializeField] private string defeatEndingScene = "Ending_Defeat";
 
-    public static void LoadVictoryEnding() => LoadScene(VictoryEndingScene);
-    public static void LoadDefeatEnding() => LoadScene(DefeatEndingScene);
+    [Header("Exploration Scene Toggle")]
+    [Tooltip("ON 시 ExplorationSceneLegacy 사용(옛 DHScene). OFF(기본) 시 ExplorationSceneDefault(=DHScene_2).")]
+    [SerializeField] private bool useLegacyExploration = false;
+    [SerializeField] private string explorationSceneDefault = "DHScene_2";
+    [SerializeField] private string explorationSceneLegacy = "DHScene";
 
-    public static void FadeToVictoryEnding(float fadeOut = 1f, float fadeIn = 0f)
+    public string TitleScene => titleScene;
+    public string LobbyScene => lobbyScene;
+    public string GameLoadScene => gameLoadScene;
+    public string VictoryEndingScene => victoryEndingScene;
+    public string DefeatEndingScene => defeatEndingScene;
+    public string ExplorationScene => useLegacyExploration ? explorationSceneLegacy : explorationSceneDefault;
+    public bool UseLegacyExploration => useLegacyExploration;
+
+    public string ActiveSceneName => SceneManager.GetActiveScene().name;
+
+    private void Awake()
     {
-        SceneFadeController fade = SceneFadeController.Instance;
-        if (fade != null) fade.FadeToScene(VictoryEndingScene, fadeOut, fadeIn);
-        else LoadScene(VictoryEndingScene);
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
     }
 
-    public static void FadeToDefeatEnding(float fadeOut = 1f, float fadeIn = 0f)
+    private void OnDestroy()
     {
-        SceneFadeController fade = SceneFadeController.Instance;
-        if (fade != null) fade.FadeToScene(DefeatEndingScene, fadeOut, fadeIn);
-        else LoadScene(DefeatEndingScene);
+        if (Instance == this)
+            Instance = null;
     }
 
-    public static void LoadScene(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
+    public void LoadScene(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
     {
-        if (string.IsNullOrWhiteSpace(sceneName)) return;
+        if (string.IsNullOrWhiteSpace(sceneName))
+            return;
         SceneManager.LoadScene(sceneName, mode);
     }
 
-    public static AsyncOperation LoadSceneAsync(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
+    public AsyncOperation LoadSceneAsync(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
     {
-        if (string.IsNullOrWhiteSpace(sceneName)) return null;
+        if (string.IsNullOrWhiteSpace(sceneName))
+            return null;
         return SceneManager.LoadSceneAsync(sceneName, mode);
     }
 
-    public static bool SetActiveSceneByName(string sceneName)
+    public bool SetActiveSceneByName(string sceneName)
     {
-        if (string.IsNullOrWhiteSpace(sceneName)) return false;
+        if (string.IsNullOrWhiteSpace(sceneName))
+            return false;
         var scene = SceneManager.GetSceneByName(sceneName);
-        if (!scene.IsValid() || !scene.isLoaded) return false;
+        if (!scene.IsValid() || !scene.isLoaded)
+            return false;
         return SceneManager.SetActiveScene(scene);
+    }
+
+    public void LoadExploration() => LoadScene(ExplorationScene);
+    public void LoadLobby() => LoadScene(lobbyScene);
+    public void LoadTitle() => LoadScene(titleScene);
+    public void LoadGameLoad() => LoadScene(gameLoadScene);
+    public void LoadVictoryEnding() => LoadScene(victoryEndingScene);
+    public void LoadDefeatEnding() => LoadScene(defeatEndingScene);
+
+    public void FadeToVictoryEnding(float fadeOut = 1f, float fadeIn = 0f)
+    {
+        SceneFadeController fade = SceneFadeController.Instance;
+        if (fade != null) fade.FadeToScene(victoryEndingScene, fadeOut, fadeIn);
+        else LoadScene(victoryEndingScene);
+    }
+
+    public void FadeToDefeatEnding(float fadeOut = 1f, float fadeIn = 0f)
+    {
+        SceneFadeController fade = SceneFadeController.Instance;
+        if (fade != null) fade.FadeToScene(defeatEndingScene, fadeOut, fadeIn);
+        else LoadScene(defeatEndingScene);
     }
 }

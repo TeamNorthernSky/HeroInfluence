@@ -17,8 +17,38 @@ MonoBehaviour:
   gridSize: {x: 50, y: 50}
   groundTilePlacements: []
   obstacleCells:
-  - {x: 28, y: 28}
-  - {x: 28, y: 29}
-  itemPlacements: []
-  minePlacements: []
-  partySpawns: []
+  - {x: 29, y: 23}
+  - {x: 29, y: 22}
+  - {x: 29, y: 21}
+  - {x: 22, y: 26}
+  - {x: 22, y: 24}
+  - {x: 22, y: 25}
+  itemPlacements:
+  - gridPosition: {x: 15, y: 26}
+    resourceType: 2
+    amount: 10
+  - gridPosition: {x: 28, y: 31}
+    resourceType: 0
+    amount: 1000
+  outpostPlacements:
+  - gridPosition: {x: 17, y: 30}
+    outpostType: 0
+    resourcePerTurn: 1000
+    initialState: 0
+  - gridPosition: {x: 31, y: 34}
+    outpostType: 1
+    resourcePerTurn: 10
+    initialState: 0
+  eventPlacements:
+  - gridPosition: {x: 28, y: 12}
+    eventKey: event_001
+  - gridPosition: {x: 20, y: 16}
+    eventKey: event_001
+  - gridPosition: {x: 14, y: 19}
+    eventKey: event_001
+  castlePlacement:
+    hasPlacement: 1
+    gridPosition: {x: 1, y: 2}
+  villainUnionPlacement:
+    hasPlacement: 1
+    gridPosition: {x: 41, y: 37}

@@ -20,6 +20,7 @@ public class CSVDataLoad : MonoBehaviour
     [SerializeField] private TextAsset enemyUnitCsv;
     [SerializeField] private TextAsset classSkillSheetCsv;
     [SerializeField] private TextAsset weaponSheetCsv;
+    [SerializeField] private TextAsset levelUpSheetCsv;
 
     /// <summary>레거시 호환: 플레이어 유닛 목록과 동일.</summary>
     public List<UnitData> LoadUnits()
@@ -123,6 +124,17 @@ public class CSVDataLoad : MonoBehaviour
         }
 
         return CSVLoader.LoadWeaponData(weaponSheetCsv.text);
+    }
+
+    public List<LevelUpData> LoadLevelUpData()
+    {
+        if (levelUpSheetCsv == null)
+        {
+            Debug.LogWarning("[CSVDataLoad] levelUpSheetCsv is not assigned.");
+            return new List<LevelUpData>();
+        }
+
+        return CSVLoader.LoadLevelUpData(levelUpSheetCsv.text);
     }
 }
 
@@ -247,25 +259,16 @@ public static class CSVLoader
         int counterRateCol = TryGetCol("CounterRate");
         int avoidRateCol = TryGetCol("AvoidRate");
 
-        // [JC 수정 260512] CSV 헤더 호환 매핑:
-        //   신본 (PlayerDataSheet_JC_merge_*): HeroIndex / HeroName / ClassName  (캐릭터 정보 시트)
-        //   구본 (PlayerDataSheet_20260508 등): ClassIndex / (Name 없음) / ClassName  (클래스 정보 시트)
-        //   둘 다 같은 로더로 처리되도록 헤더 별칭 fallback 체인을 둠.
-        int indexCol = TryGetCol("HeroIndex");
-        if (indexCol < 0) indexCol = TryGetCol("ClassIndex");
-        if (indexCol < 0) indexCol = TryGetCol("Index");
-
-        int unitTypeCol = TryGetCol("ClassName");
-        if (unitTypeCol < 0) unitTypeCol = TryGetCol("UnitType");
-
-        int nameCol = TryGetCol("HeroName");
-        if (nameCol < 0) nameCol = TryGetCol("Name");
-        if (nameCol < 0) nameCol = TryGetCol("UnitName");
-        if (nameCol < 0) nameCol = TryGetCol("DisplayName");
+        int indexCol = TryGetCol("Index");
+        int unitTypeCol = TryGetCol("UnitType");
+        int nameCol = TryGetCol("Name");
 
         int levelGrowthMaxHPCol = TryGetCol("LevelGrowthMaxHP");
         int levelGrowthMaxAtkCol = TryGetCol("LevelGrowthMaxAtk");
         int levelGrowthMaxDefCol = TryGetCol("LevelGrowthMaxDef");
+
+        if (nameCol < 0) nameCol = TryGetCol("UnitName");
+        if (nameCol < 0) nameCol = TryGetCol("DisplayName");
 
         int isEnemyCol = TryGetCol("IsEnemy");
 
@@ -732,7 +735,7 @@ public static class CSVLoader
                 // 파싱 실패/빈 값은 안전 기본값 1(Any)로 폴백합니다.
                 classSkillRangeLine = ParseIntOrDefault(GetField(fields, 8), 1),
                 classSkillTarget = ParseIntOrDefault(GetField(fields, 9), 0),
-                // boundary는 ClassSkillMultiTarget(10)을 SkillTargetingMapper 패턴 인덱스로 사용합니다.
+                // boundary: ClassSkillMultiTarget 컬럼 — 패턴 인덱스(0~9). 전체 진영은 classSkillTarget==2.
                 boundary = ParseIntListField(GetField(fields, 10)),
                 multiTargetCount = ParseIntOrDefault(GetField(fields, 12), 0),
                 skillValue = ParseFloatSafe(GetField(fields, 13), 1f),
@@ -743,6 +746,75 @@ public static class CSVLoader
         }
 
         return result;
+    }
+
+    public static List<LevelUpData> LoadLevelUpData(string csvText)
+    {
+        var result = new List<LevelUpData>();
+        if (string.IsNullOrWhiteSpace(csvText))
+        {
+            return result;
+        }
+
+        List<List<string>> rows = ParseCsvRowsPreserveQuotedNewlines(csvText);
+        if (!TryFindHeaderRow(
+                rows,
+                new[]
+                {
+                    "레벨",
+                    "랭크 표시",
+                    "유닛당 랭크업 필요 경험치",
+                    "스킬",
+                    "최대 I.P 추가",
+                    "신규 스킬 획득까지 필요한 전투 수",
+                    "무기 획득 추천 타이밍"
+                },
+                out int headerRowIndex,
+                out Dictionary<string, int> headerIndex))
+        {
+            return result;
+        }
+
+        for (int rowIndex = headerRowIndex + 1; rowIndex < rows.Count; rowIndex++)
+        {
+            if (TryParseLevelUpDataRow(rows[rowIndex], headerIndex, out LevelUpData row))
+            {
+                result.Add(row);
+            }
+        }
+
+        return result;
+    }
+
+    private static bool TryParseLevelUpDataRow(
+        IReadOnlyList<string> fields,
+        IReadOnlyDictionary<string, int> headerIndex,
+        out LevelUpData row)
+    {
+        row = null;
+        string levelRaw = GetFieldByHeader(fields, headerIndex, "레벨");
+        string rankRaw = GetFieldByHeader(fields, headerIndex, "랭크 표시");
+        string expRaw = GetFieldByHeader(fields, headerIndex, "유닛당 랭크업 필요 경험치");
+
+        if (string.IsNullOrWhiteSpace(levelRaw) &&
+            string.IsNullOrWhiteSpace(rankRaw) &&
+            string.IsNullOrWhiteSpace(expRaw))
+        {
+            return false;
+        }
+
+        row = new LevelUpData
+        {
+            level = ParseFloatSafe(levelRaw, 0f),
+            Rank = ParseRankChar(rankRaw),
+            expPerLevel = ParseIntOrDefault(expRaw, 0),
+            skill = ParseBoolMarker(GetFieldByHeader(fields, headerIndex, "스킬")),
+            MaxIP = ParseIntOrDefault(GetFieldByHeader(fields, headerIndex, "최대 I.P 추가"), 0),
+            newSkillneedNum = ParseIntOrDefault(GetFieldByHeader(fields, headerIndex, "신규 스킬 획득까지 필요한 전투 수"), 0),
+            weaponTiming = ParseBoolMarker(GetFieldByHeader(fields, headerIndex, "무기 획득 추천 타이밍"))
+        };
+
+        return true;
     }
 
     /// <summary>
@@ -903,6 +975,35 @@ public static class CSVLoader
         return defaultValue;
     }
 
+    private static char ParseRankChar(string raw)
+    {
+        raw = raw?.Trim() ?? string.Empty;
+        return string.IsNullOrEmpty(raw) ? '\0' : raw[0];
+    }
+
+    private static bool ParseBoolMarker(string raw)
+    {
+        raw = raw?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return false;
+        }
+
+        string normalized = raw.ToLowerInvariant();
+        if (normalized == "0" ||
+            normalized == "false" ||
+            normalized == "no" ||
+            normalized == "n" ||
+            normalized == "x" ||
+            normalized == "-" ||
+            normalized == "없음")
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private static string NormalizeHeader(string raw)
     {
         if (raw == null) return string.Empty;
@@ -1005,6 +1106,120 @@ public static class CSVLoader
 
         result.Add(sb.ToString());
         return result;
+    }
+
+    public static List<List<string>> ParseCsvRowsPreserveQuotedNewlines(string csvText)
+    {
+        return ParseCsvTotal(csvText);
+    }
+
+    public static string NormalizeHeaderKey(string raw)
+    {
+        if (raw == null)
+        {
+            return string.Empty;
+        }
+
+        raw = raw.Trim().Trim('"');
+        if (!string.IsNullOrEmpty(raw) && raw[0] == '\uFEFF')
+        {
+            raw = raw.Substring(1);
+        }
+
+        return raw
+            .Replace("\r", string.Empty)
+            .Replace("\n", string.Empty)
+            .Replace("\t", string.Empty)
+            .Replace(" ", string.Empty)
+            .Trim();
+    }
+
+    public static Dictionary<string, int> BuildHeaderIndex(IReadOnlyList<string> headerRow)
+    {
+        var headerIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        if (headerRow == null)
+        {
+            return headerIndex;
+        }
+
+        for (int i = 0; i < headerRow.Count; i++)
+        {
+            string key = NormalizeHeaderKey(headerRow[i]);
+            if (string.IsNullOrEmpty(key) || headerIndex.ContainsKey(key))
+            {
+                continue;
+            }
+
+            headerIndex.Add(key, i);
+        }
+
+        return headerIndex;
+    }
+
+    public static bool TryFindHeaderRow(
+        IReadOnlyList<List<string>> rows,
+        IReadOnlyList<string> requiredHeaderNames,
+        out int headerRowIndex,
+        out Dictionary<string, int> headerIndex)
+    {
+        headerRowIndex = -1;
+        headerIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        if (rows == null || requiredHeaderNames == null || requiredHeaderNames.Count == 0)
+        {
+            return false;
+        }
+
+        for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
+        {
+            Dictionary<string, int> candidateIndex = BuildHeaderIndex(rows[rowIndex]);
+            bool hasAllRequiredHeaders = true;
+
+            for (int i = 0; i < requiredHeaderNames.Count; i++)
+            {
+                string requiredKey = NormalizeHeaderKey(requiredHeaderNames[i]);
+                if (string.IsNullOrEmpty(requiredKey) || !candidateIndex.ContainsKey(requiredKey))
+                {
+                    hasAllRequiredHeaders = false;
+                    break;
+                }
+            }
+
+            if (!hasAllRequiredHeaders)
+            {
+                continue;
+            }
+
+            headerRowIndex = rowIndex;
+            headerIndex = candidateIndex;
+            return true;
+        }
+
+        return false;
+    }
+
+    public static string GetFieldByHeader(
+        IReadOnlyList<string> row,
+        IReadOnlyDictionary<string, int> headerIndex,
+        string headerName)
+    {
+        if (row == null || headerIndex == null)
+        {
+            return string.Empty;
+        }
+
+        string key = NormalizeHeaderKey(headerName);
+        if (string.IsNullOrEmpty(key) || !headerIndex.TryGetValue(key, out int colIndex))
+        {
+            return string.Empty;
+        }
+
+        if (colIndex < 0 || colIndex >= row.Count)
+        {
+            return string.Empty;
+        }
+
+        return row[colIndex]?.Trim() ?? string.Empty;
     }
 
 

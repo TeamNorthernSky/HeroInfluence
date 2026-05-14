@@ -29,9 +29,17 @@ public class CombatSceneEntryController : MonoBehaviour
 
     private void HandleCombatStarted(PartyGridMover party, EnemyGridMover enemy)
     {
+        Debug.Log($"[CombatSceneEntryController] HandleCombatStarted: party={(party != null ? party.name : "null")} enemy={(enemy != null ? enemy.name : "null")} battleSceneName='{battleSceneName}' instanceOk={GameSceneManager.Instance != null}");
         if (string.IsNullOrWhiteSpace(battleSceneName))
+        {
+            Debug.LogWarning("[CombatSceneEntryController] battleSceneName 빈 값 — 씬 전환 건너뜀");
             return;
+        }
 
-        GameSceneManager.LoadScene(battleSceneName);
+        // [JC 260514] GameSceneManager 컴포넌트 격상 — Instance 경유 호출.
+        if (GameSceneManager.Instance != null)
+            GameSceneManager.Instance.LoadScene(battleSceneName);
+        else
+            UnityEngine.SceneManagement.SceneManager.LoadScene(battleSceneName);
     }
 }

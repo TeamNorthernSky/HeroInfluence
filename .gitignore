@@ -6,8 +6,6 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]serSettings/
-/[_]_[Bb]uild[Tt]est/
-
 # MemoryCaptures
 /[Mm]emoryCaptures/
 # Recordings
@@ -70,6 +68,10 @@ node_modules/
 package.json
 package-lock.json
 .cursor/
+Assets/RPGTinyHeroWavePBR/
+Assets/JC_LP_MegaCity/
+Assets/JC_LP_MegaCity.meta
+Assets/RPGTinyHeroWavePBR.meta
 CLAUDE.md
 Docs/
 

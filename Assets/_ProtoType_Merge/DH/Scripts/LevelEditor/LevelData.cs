@@ -21,7 +21,9 @@ public class LevelData : ScriptableObject
     [SerializeField] private List<ItemPlacementData> itemPlacements = new List<ItemPlacementData>();
     [FormerlySerializedAs("minePlacements")]
     [SerializeField] private List<OutpostPlacementData> outpostPlacements = new List<OutpostPlacementData>();
-    [SerializeField] private List<PartySpawnData> partySpawns = new List<PartySpawnData>();
+    [SerializeField] private List<EventPlacementData> eventPlacements = new List<EventPlacementData>();
+    [SerializeField] private UniqueBuildingPlacementData castlePlacement;
+    [SerializeField] private UniqueBuildingPlacementData villainUnionPlacement;
 
     public string LevelId => levelId;
     public string DisplayName => displayName;
@@ -32,7 +34,9 @@ public class LevelData : ScriptableObject
     public IReadOnlyList<Vector2Int> ObstacleCells => obstacleCells;
     public IReadOnlyList<ItemPlacementData> ItemPlacements => itemPlacements;
     public IReadOnlyList<OutpostPlacementData> OutpostPlacements => outpostPlacements;
-    public IReadOnlyList<PartySpawnData> PartySpawns => partySpawns;
+    public IReadOnlyList<EventPlacementData> EventPlacements => eventPlacements;
+    public UniqueBuildingPlacementData CastlePlacement => castlePlacement;
+    public UniqueBuildingPlacementData VillainUnionPlacement => villainUnionPlacement;
 
     public bool IsInsideGrid(Vector2Int grid)
     {
@@ -77,15 +81,25 @@ public class LevelData : ScriptableObject
         return false;
     }
 
-    public bool HasPartySpawnAt(Vector2Int grid)
+    public bool HasEventAt(Vector2Int grid)
     {
-        for (int i = 0; i < partySpawns.Count; i++)
+        for (int i = 0; i < eventPlacements.Count; i++)
         {
-            if (partySpawns[i].GridPosition == grid)
+            if (eventPlacements[i].GridPosition == grid)
                 return true;
         }
 
         return false;
+    }
+
+    public bool HasCastleAt(Vector2Int grid)
+    {
+        return castlePlacement.IsAt(grid);
+    }
+
+    public bool HasVillainUnionAt(Vector2Int grid)
+    {
+        return villainUnionPlacement.IsAt(grid);
     }
 
     public bool TryGetGroundTileAt(Vector2Int grid, out TilePlacementData tilePlacement)
@@ -135,26 +149,40 @@ public class LevelData : ScriptableObject
         itemPlacements.Add(new ItemPlacementData(grid, resourceType, amount));
     }
 
-    public void SetOutpost(Vector2Int grid, ResourceType resourceType, int resourcePerTurn, OutpostState initialState)
+    public void SetOutpost(Vector2Int grid, OutpostType outpostType, int resourcePerTurn, OutpostState initialState)
     {
         if (!IsInsideGrid(grid))
             return;
 
         RemoveAllPlacementsAt(grid);
-        outpostPlacements.Add(new OutpostPlacementData(grid, resourceType, resourcePerTurn, initialState));
+        outpostPlacements.Add(new OutpostPlacementData(grid, outpostType, resourcePerTurn, initialState));
     }
 
-    public void SetPartySpawn(Vector2Int grid, string partyId)
+    public void SetEvent(Vector2Int grid, string eventKey)
     {
         if (!IsInsideGrid(grid))
             return;
 
         RemoveAllPlacementsAt(grid);
+        eventPlacements.Add(new EventPlacementData(grid, eventKey));
+    }
 
-        if (!string.IsNullOrWhiteSpace(partyId))
-            partySpawns.RemoveAll(x => string.Equals(x.PartyId, partyId, StringComparison.Ordinal));
+    public void SetCastle(Vector2Int grid)
+    {
+        if (!IsInsideGrid(grid))
+            return;
 
-        partySpawns.Add(new PartySpawnData(partyId, grid));
+        RemoveAllPlacementsAt(grid);
+        castlePlacement = new UniqueBuildingPlacementData(grid);
+    }
+
+    public void SetVillainUnion(Vector2Int grid)
+    {
+        if (!IsInsideGrid(grid))
+            return;
+
+        RemoveAllPlacementsAt(grid);
+        villainUnionPlacement = new UniqueBuildingPlacementData(grid);
     }
 
     public void EraseAt(Vector2Int grid)
@@ -163,14 +191,16 @@ public class LevelData : ScriptableObject
         obstacleCells.Remove(grid);
         itemPlacements.RemoveAll(x => x.GridPosition == grid);
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
-        partySpawns.RemoveAll(x => x.GridPosition == grid);
+        eventPlacements.RemoveAll(x => x.GridPosition == grid);
+        ClearUniquePlacementsAt(grid);
     }
 
     private void RemoveNonObstaclePlacementsAt(Vector2Int grid)
     {
         itemPlacements.RemoveAll(x => x.GridPosition == grid);
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
-        partySpawns.RemoveAll(x => x.GridPosition == grid);
+        eventPlacements.RemoveAll(x => x.GridPosition == grid);
+        ClearUniquePlacementsAt(grid);
     }
 
     private void RemoveAllPlacementsAt(Vector2Int grid)
@@ -178,7 +208,17 @@ public class LevelData : ScriptableObject
         obstacleCells.Remove(grid);
         itemPlacements.RemoveAll(x => x.GridPosition == grid);
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
-        partySpawns.RemoveAll(x => x.GridPosition == grid);
+        eventPlacements.RemoveAll(x => x.GridPosition == grid);
+        ClearUniquePlacementsAt(grid);
+    }
+
+    private void ClearUniquePlacementsAt(Vector2Int grid)
+    {
+        if (castlePlacement.IsAt(grid))
+            castlePlacement = default;
+
+        if (villainUnionPlacement.IsAt(grid))
+            villainUnionPlacement = default;
     }
 
     private static void SetTilePlacement(List<TilePlacementData> placements, Vector2Int grid, string tileKey)
@@ -194,6 +234,15 @@ public class LevelData : ScriptableObject
     private void OnValidate()
     {
         gridSize = NormalizeGridSize(gridSize);
+
+        for (int i = 0; i < outpostPlacements.Count; i++)
+            outpostPlacements[i] = outpostPlacements[i].Normalized();
+
+        if (castlePlacement.HasPlacement && !IsInsideGrid(castlePlacement.GridPosition))
+            castlePlacement = default;
+
+        if (villainUnionPlacement.HasPlacement && !IsInsideGrid(villainUnionPlacement.GridPosition))
+            villainUnionPlacement = default;
     }
 
     private static Vector2Int NormalizeGridSize(Vector2Int value)
@@ -243,36 +292,67 @@ public struct ItemPlacementData
 public struct OutpostPlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
-    [SerializeField] private ResourceType resourceType;
+    [FormerlySerializedAs("resourceType")]
+    [SerializeField] private OutpostType outpostType;
     [SerializeField] private int resourcePerTurn;
     [SerializeField] private OutpostState initialState;
 
-    public OutpostPlacementData(Vector2Int gridPosition, ResourceType resourceType, int resourcePerTurn, OutpostState initialState)
+    public OutpostPlacementData(Vector2Int gridPosition, OutpostType outpostType, int resourcePerTurn, OutpostState initialState)
     {
         this.gridPosition = gridPosition;
-        this.resourceType = resourceType;
+        this.outpostType = OutpostTypeUtility.Normalize(outpostType);
         this.resourcePerTurn = resourcePerTurn;
         this.initialState = initialState;
     }
 
     public Vector2Int GridPosition => gridPosition;
-    public ResourceType ResourceType => resourceType;
+    public OutpostType OutpostType => OutpostTypeUtility.Normalize(outpostType);
     public int ResourcePerTurn => resourcePerTurn;
     public OutpostState InitialState => initialState;
+
+    public OutpostPlacementData Normalized()
+    {
+        return new OutpostPlacementData(
+            gridPosition,
+            OutpostType,
+            Mathf.Max(1, resourcePerTurn),
+            initialState);
+    }
 }
 
 [Serializable]
-public struct PartySpawnData
+public struct EventPlacementData
 {
-    [SerializeField] private string partyId;
+    [SerializeField] private Vector2Int gridPosition;
+    [SerializeField] private string eventKey;
+
+    public EventPlacementData(Vector2Int gridPosition, string eventKey)
+    {
+        this.gridPosition = gridPosition;
+        this.eventKey = eventKey;
+    }
+
+    public Vector2Int GridPosition => gridPosition;
+    public string EventKey => eventKey;
+}
+
+[Serializable]
+public struct UniqueBuildingPlacementData
+{
+    [SerializeField] private bool hasPlacement;
     [SerializeField] private Vector2Int gridPosition;
 
-    public PartySpawnData(string partyId, Vector2Int gridPosition)
+    public UniqueBuildingPlacementData(Vector2Int gridPosition)
     {
-        this.partyId = partyId;
+        hasPlacement = true;
         this.gridPosition = gridPosition;
     }
 
-    public string PartyId => partyId;
+    public bool HasPlacement => hasPlacement;
     public Vector2Int GridPosition => gridPosition;
+
+    public bool IsAt(Vector2Int grid)
+    {
+        return hasPlacement && gridPosition == grid;
+    }
 }

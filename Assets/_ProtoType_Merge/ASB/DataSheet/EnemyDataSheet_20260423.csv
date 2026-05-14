@@ -1,4 +1,4 @@
-﻿EnemyIndex,EnemyName,EnemyConcept,UnitMaxHP,UnitATK,UnitDEF,CriticalRate,CounterRate,ReduceRate,Speed,"EnemySkill1
+EnemyIndex,EnemyName,EnemyConcept,UnitMaxHP,UnitATK,UnitDEF,CriticalRate,CounterRate,ReduceRate,Speed,"EnemySkill1
 Name","EnemySkill1
 Description",EnemySkill1Effect,EnemySkill1Range,EnemySkill1RangeLine,EnemySkill1Target,EnemySkill1MultiTarget,"EnemySkill1
 MultiTargetType","EnemySkill1

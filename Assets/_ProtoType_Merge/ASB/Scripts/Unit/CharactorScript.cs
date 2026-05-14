@@ -25,16 +25,17 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         set => charactorData = value;
     }
 
+    /// <summary>런타임 전투 식별자. 영속 저장소 키로 사용하지 마세요(인스턴스마다 달라짐).</summary>
     public string UnitID
     {
         get
         {
             if (charactorData == null || string.IsNullOrWhiteSpace(charactorData.Index))
             {
-                return string.Empty;
+                return gameObject.GetInstanceID().ToString();
             }
 
-            return charactorData.Index.Trim();
+            return $"{charactorData.Index.Trim()}_{gameObject.GetInstanceID()}";
         }
     }
 

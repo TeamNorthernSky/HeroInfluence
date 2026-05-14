@@ -38,6 +38,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/GameLoadScene.unity
     guid: a01ad3d45f8c09244ae9de5a4ba9eafe
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/DHScene_2.unity
+    guid: c2d5662e7cca94040b19ebdfb34dba09
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 51f1cead6f1010a489e8763571d663e2,
       type: 2}

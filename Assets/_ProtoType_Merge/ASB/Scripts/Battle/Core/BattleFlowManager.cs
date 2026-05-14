@@ -102,6 +102,8 @@ public class BattleFlowManager : MonoBehaviour
         SubscribeAllUnitDeathEvents();
         inputHandler?.BindUnitDeathEvents(participants);
 
+        // RebuildRuntimeLookup: 참가자 목록 확정 + 각 BattleCharactor.Awake(런타임 키 할당) 이후이므로
+        // BattleSceneManager가 CollectParticipantsAfterInitialize까지 마친 뒤 Initialize를 호출하는 순서와 일치합니다.
         RebuildRuntimeLookup();
         CurrentUnit = null;
         roundIndex = 0;
@@ -557,15 +559,27 @@ public class BattleFlowManager : MonoBehaviour
         battleById.Clear();
         outlineByBattle.Clear();
 
+        int duplicateUnitIdKeys = 0;
         foreach (var battle in participants)
         {
             if (battle == null) continue;
             string key = battle.UnitId != null ? battle.UnitId.Trim() : string.Empty;
             if (string.IsNullOrWhiteSpace(key)) continue;
-            if (!battleById.ContainsKey(key))
+            // 인스턴스별 고유 UnitId 가정. 동일 키가 있으면 최신 참가자로 덮어써 조용히 누락되지 않게 합니다.
+            if (battleById.ContainsKey(key))
             {
-                battleById.Add(key, battle);
+                duplicateUnitIdKeys++;
+                Log(
+                    $"[BattleFlow/UnitIdDebug] Duplicate UnitId key before overwrite: '{key}' " +
+                    $"existingGo='{battleById[key].gameObject.name}' newGo='{battle.gameObject.name}'");
             }
+
+            battleById[key] = battle;
+        }
+
+        if (duplicateUnitIdKeys > 0)
+        {
+            Log($"[BattleFlow/UnitIdDebug] RebuildRuntimeLookup: {duplicateUnitIdKeys} duplicate key(s) (expected 0 after unique spawn names).");
         }
 
         var inactiveMode = includeInactiveUnitRootsInOutlineLookup
@@ -586,12 +600,12 @@ public class BattleFlowManager : MonoBehaviour
     private void TryRegisterOutline(IUnitIdentifier id)
     {
         if (id == null || string.IsNullOrWhiteSpace(id.UnitID)) return;
-        if (!battleById.TryGetValue(id.UnitID, out var battle)) return;
+        if (!battleById.TryGetValue(id.UnitID, out BattleCharactor participant)) return;
 
         var comp = id as Component;
         if (comp == null) return;
 
-        if (outlineByBattle.ContainsKey(battle)) return;
+        if (outlineByBattle.ContainsKey(participant)) return;
 
         var allOutlines = comp.GetComponentsInChildren<Outline>(true);
         if (allOutlines == null || allOutlines.Length == 0)
@@ -612,7 +626,7 @@ public class BattleFlowManager : MonoBehaviour
             return;
         }
 
-        outlineByBattle.Add(battle, outline);
+        outlineByBattle.Add(participant, outline);
         outline.OutlineMode = Outline.Mode.OutlineHidden;
     }
 

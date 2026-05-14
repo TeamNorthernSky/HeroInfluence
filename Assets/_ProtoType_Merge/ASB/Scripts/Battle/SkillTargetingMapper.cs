@@ -4,7 +4,8 @@ using UnityEngine;
 namespace ASB.Work.BattleGrid
 {
     /// <summary>
-    /// 절대 좌표 보드 기준: 패턴 인덱스(0~8, 9, 10)를 좌표 집합으로 변환합니다.
+    /// 절대 좌표 보드 기준: 패턴 인덱스(0~8, 9)를 좌표 집합으로 변환합니다.
+    /// 전체 진영 타격은 <c>SkillData.classSkillTarget == 2</c>일 때 별도로 <see cref="GetFullSideBoardCoordinates"/>를 사용합니다.
     /// 방향 반전 없이 월드 절대 방향(+X 전방)을 사용합니다.
     /// </summary>
     public static class SkillTargetingMapper
@@ -27,6 +28,35 @@ namespace ASB.Work.BattleGrid
             new Vector2Int(-1, 0),
             new Vector2Int(-1, -1),
         };
+
+        /// <summary>
+        /// 중심 셀이 속한 진영 보드(아군 x 0~1 / 적군 x 2~3)의 모든 좌표. <c>classSkillTarget == 2</c>(전체)일 때 사용합니다.
+        /// </summary>
+        public static HashSet<Vector2Int> GetFullSideBoardCoordinates(Vector2Int centerCoords)
+        {
+            var result = new HashSet<Vector2Int>();
+            GridManager gridManager = GridManager.Instance;
+            if (gridManager == null)
+            {
+                return result;
+            }
+
+            List<Vector2Int> coords = gridManager.GetAllCoordsSnapshot();
+            bool isEnemySide = centerCoords.x >= 2;
+            for (int i = 0; i < coords.Count; i++)
+            {
+                Vector2Int c = coords[i];
+                bool isCellEnemySide = c.x >= 2;
+                if (isEnemySide != isCellEnemySide)
+                {
+                    continue;
+                }
+
+                result.Add(c);
+            }
+
+            return result;
+        }
 
         public static HashSet<Vector2Int> GetMultiTargetCoordinates(Vector2Int centerCoords, IEnumerable<int> patternIndices)
         {
@@ -59,22 +89,9 @@ namespace ASB.Work.BattleGrid
                     continue;
                 }
 
+                // 레거시 패턴 10: 전체 진영 타격은 classSkillTarget==2 + GetFullSideBoardCoordinates로 이전됨.
                 if (idx == 10)
                 {
-                    // 전체 공격(10): 중심 타겟이 속한 진영 보드(아군 0~1 / 적군 2~3)만 포함
-                    List<Vector2Int> coords = gridManager.GetAllCoordsSnapshot();
-                    bool isEnemySide = centerCoords.x >= 2;
-                    for (int i = 0; i < coords.Count; i++)
-                    {
-                        Vector2Int c = coords[i];
-                        bool isCellEnemySide = c.x >= 2;
-                        if (isEnemySide != isCellEnemySide)
-                        {
-                            continue;
-                        }
-
-                        result.Add(c);
-                    }
                     continue;
                 }
 

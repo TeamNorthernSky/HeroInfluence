@@ -6,7 +6,11 @@ using UnityEngine.UI;
 public class LobbyMenuController : MonoBehaviour
 {
     private const string Prefix = "BTN_Lobby_";
-    private const string PlayScene = "DHScene";
+
+    // [JC 260514] PlayScene const 폐기 → 동적 property. GameSceneManager.Instance.ExplorationScene 토글 반영.
+    private string PlayScene => GameSceneManager.Instance != null
+        ? GameSceneManager.Instance.ExplorationScene
+        : "DHScene";
 
     [SerializeField] private GameObject _modalHQ;
     [SerializeField] private GameObject _modalBroadcast;
@@ -214,13 +218,21 @@ public class LobbyMenuController : MonoBehaviour
     {
         Debug.Log($"[Lobby] Exit → {PlayScene}");
         PersistentStateDebugLogger.Dump("Lobby Exit (before LoadScene DHScene)");
-        SceneManager.LoadScene(PlayScene);
+        // [JC 260514] GameSceneManager Instance 경유.
+        if (GameSceneManager.Instance != null)
+            GameSceneManager.Instance.LoadScene(PlayScene);
+        else
+            SceneManager.LoadScene(PlayScene);
     }
 
     public void OnClickEndTurn()
     {
         Debug.Log($"[Lobby] EndTurn → {PlayScene}");
         PersistentStateDebugLogger.Dump("Lobby EndTurn (before LoadScene DHScene)");
-        SceneManager.LoadScene(PlayScene);
+        // [JC 260514] GameSceneManager Instance 경유.
+        if (GameSceneManager.Instance != null)
+            GameSceneManager.Instance.LoadScene(PlayScene);
+        else
+            SceneManager.LoadScene(PlayScene);
     }
 }

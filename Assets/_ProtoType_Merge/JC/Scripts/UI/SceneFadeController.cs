@@ -90,7 +90,11 @@ public class SceneFadeController : MonoBehaviour
         yield return FadeOut(outDur);
         pendingFadeInDuration = inDur;
         pendingFadeInOnSceneLoad = true;
-        GameSceneManager.LoadScene(sceneName);
+        // [JC 260514] GameSceneManager 컴포넌트 격상 — Instance 경유 호출.
+        if (GameSceneManager.Instance != null)
+            GameSceneManager.Instance.LoadScene(sceneName);
+        else
+            UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

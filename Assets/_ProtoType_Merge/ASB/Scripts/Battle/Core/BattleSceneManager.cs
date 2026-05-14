@@ -90,9 +90,11 @@ public class BattleSceneManager : MonoBehaviour
             ApplyEnemyDirective(combatContext, result);
         }
 
-        if (string.IsNullOrWhiteSpace(returnSceneName))
+        // [JC 260514] returnSceneName 빈 값이라도 GameSceneManager.Instance.ExplorationScene fallback이 있으면 통과.
+        // TransitionToSceneRoutine 안에서 최종 target 결정 + fallback 처리.
+        if (string.IsNullOrWhiteSpace(returnSceneName) && GameSceneManager.Instance == null)
         {
-            Debug.LogWarning("[BattleSceneManager] returnSceneName이 비어 있어 씬 전환을 건너뜁니다.");
+            Debug.LogWarning("[BattleSceneManager] returnSceneName + GameSceneManager.Instance 모두 없음 — 씬 전환을 건너뜁니다.");
             return;
         }
 
@@ -133,13 +135,27 @@ public class BattleSceneManager : MonoBehaviour
             yield return new WaitForSeconds(returnDelay);
         }
 
-        string target = returnSceneName.Trim();
+        // [JC 260514] target 결정 흐름:
+        //   1) returnSceneName 인스펙터 값 우선 (인스펙터 명시 시)
+        //   2) 빈 값이면 GameSceneManager.Instance.ExplorationScene 토글
+        //   3) Instance도 null이면 최후 fallback "DHScene_2"
+        string target;
+        if (!string.IsNullOrWhiteSpace(returnSceneName))
+            target = returnSceneName.Trim();
+        else if (GameSceneManager.Instance != null)
+            target = GameSceneManager.Instance.ExplorationScene;
+        else
+            target = "DHScene_2";
+        Debug.Log($"[BattleSceneManager] TransitionTo target='{target}' returnSceneName='{returnSceneName}' instanceOk={GameSceneManager.Instance != null} fadeOk={SceneFadeController.Instance != null}");
         // [JC 260513] SceneFadeController 영속(GameManager 자식). 없으면 직접 LoadScene fallback.
         SceneFadeController fade = SceneFadeController.Instance;
         if (fade != null)
             fade.FadeToScene(target, fadeOutDuration, fadeInDuration);
+        // [JC 260514] GameSceneManager 컴포넌트 격상 — Instance 경유 호출.
+        else if (GameSceneManager.Instance != null)
+            GameSceneManager.Instance.LoadScene(target);
         else
-            GameSceneManager.LoadScene(target);
+            UnityEngine.SceneManagement.SceneManager.LoadScene(target);
 
         returnSceneCoroutine = null;
     }
@@ -178,6 +194,8 @@ public class BattleSceneManager : MonoBehaviour
         allUnits.AddRange(playerBattleCharactors);
         allUnits.AddRange(enemyBattleCharactors);
 
+        // BattleFlowManager.Initialize → RebuildRuntimeLookup: 스포너/CollectParticipantsAfterInitialize 이후이며
+        // 각 인스턴스의 BattleCharactor.Awake에서 런타임 키가 이미 할당된 상태입니다.
         battleFlowManager.Initialize(allUnits);
     }
 

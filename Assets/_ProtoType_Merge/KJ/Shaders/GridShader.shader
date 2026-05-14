@@ -50,14 +50,14 @@ Shader "Unlit/GridShader"
             float gridLine(float2 uv, float width)
             {
                 float2 grid = abs(frac(uv - 0.5) - 0.5) / fwidth(uv);
-                float line = min(grid.x, grid.y);
-                return 1.0 - smoothstep(0.0, width, line);
+                float _line = min(grid.x, grid.y);
+                return 1.0 - smoothstep(0.0, width, _line);
             }
 
             float4 frag (v2f i) : SV_Target
             {
-                float line = gridLine(i.uv, _LineWidth);
-                float4 color = lerp(_BaseColor, _LineColor, line);
+                float _line = gridLine(i.uv, _LineWidth);
+                float4 color = lerp(_BaseColor, _LineColor, _line);
                 return color;
             }
             ENDHLSL

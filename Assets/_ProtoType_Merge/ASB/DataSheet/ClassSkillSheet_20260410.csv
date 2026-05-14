@@ -1,4 +1,4 @@
-﻿ClassSkillIndex,Class,"ClassSkill
+ClassSkillIndex,Class,"ClassSkill
 AcquireLevel",ClassSkillName,ClassSkillDescription,ClassSkillEffect,ClassSkillRange,ClassSkillTarget,ClassSkillMultiTarget,"ClassSkill
 MultiTargetType","ClassSkill
 MultiTargetCount",ClassSkillValue,ClassSkillSubValue

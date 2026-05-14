@@ -7,11 +7,14 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
 /// <summary>
 /// PlayerPlace 최상위에 부착. Grid/Grid_n에서 월드 위치만 참조하고, 유닛은 Units 자식으로 둡니다.
-/// 프리팹은 Resources/prefab/Unit_{Index} 에서 로드.
-
+/// 프리팹은 인스펙터 오버라이드(1순위) 또는 Resources/prefab/PlayerUnit/Unit_{Index} 에서 로드.
 /// </summary>
 public class PlayerSpawner : MonoBehaviour
 {
+    [Header("Prefab Overrides (Index -> Prefab 매핑)")]
+    [SerializeField] private List<PrefabMapping> prefabOverrides = new List<PrefabMapping>();
+    private Dictionary<string, GameObject> _prefabOverrideDict;
+
     [Serializable]
     public struct SpawnRequest
     {
@@ -37,6 +40,8 @@ public class PlayerSpawner : MonoBehaviour
 
     private void Awake()
     {
+        EnsurePrefabOverrideDictBuilt();
+
         gridSlots.Clear();
         gridRotations.Clear();
         gridCellsByNumber.Clear();
@@ -73,6 +78,43 @@ public class PlayerSpawner : MonoBehaviour
         }
 
         hierarchyReady = true;
+    }
+
+    private void EnsurePrefabOverrideDictBuilt()
+    {
+        if (_prefabOverrideDict != null)
+        {
+            return;
+        }
+
+        _prefabOverrideDict = new Dictionary<string, GameObject>(StringComparer.Ordinal);
+        if (prefabOverrides == null || prefabOverrides.Count == 0)
+        {
+            return;
+        }
+
+        foreach (PrefabMapping mapping in prefabOverrides)
+        {
+            if (string.IsNullOrWhiteSpace(mapping.unitIndex))
+            {
+                continue;
+            }
+
+            if (mapping.prefab == null)
+            {
+                Debug.LogWarning($"[PlayerSpawner] PrefabOverride: Index '{mapping.unitIndex}'에 프리팹이 연결되지 않았습니다.");
+                continue;
+            }
+
+            string key = mapping.unitIndex.Trim();
+            if (_prefabOverrideDict.ContainsKey(key))
+            {
+                Debug.LogWarning($"[PlayerSpawner] PrefabOverride: Index '{key}' 중복 등록. 첫 번째 항목만 사용됩니다.");
+                continue;
+            }
+
+            _prefabOverrideDict.Add(key, mapping.prefab);
+        }
     }
 
     private void Start()
@@ -119,21 +161,18 @@ public class PlayerSpawner : MonoBehaviour
             return null;
         }
 
-        string path = $"prefab/Unit_{unit.Index}";
-        var prefab = Resources.Load<GameObject>(path);
+        EnsurePrefabOverrideDictBuilt();
 
-        // [JC 임시 260512] Index 매칭(Unit_10005 등) 실패 시 ClassName→레거시 시각 명 fallback.
-        // ASB가 V4.5 명명 통일 + 정식 명명 흐름 도입하면 본 fallback 제거.
-        if (prefab == null)
+        string trimmedIndex = unit.Index.Trim();
+
+        if (_prefabOverrideDict.TryGetValue(trimmedIndex, out GameObject overridePrefab) &&
+            overridePrefab != null)
         {
-            string fallbackName = GetLegacyPlayerVisualName(unit.UnitType);
-            if (!string.IsNullOrEmpty(fallbackName))
-            {
-                path = $"prefab/Unit_{fallbackName}";
-                prefab = Resources.Load<GameObject>(path);
-            }
+            return overridePrefab;
         }
 
+        string path = $"prefab/PlayerUnit/Unit_{trimmedIndex}";
+        var prefab = Resources.Load<GameObject>(path);
         if (prefab == null)
         {
             Debug.LogError($"[PlayerSpawner] 프리팹을 찾을 수 없습니다: {path}");
@@ -141,21 +180,6 @@ public class PlayerSpawner : MonoBehaviour
         }
 
         return prefab;
-    }
-
-    // [JC 임시 260512] V4.5 미반영 Resources/prefab/Unit_* 매핑. ASB 정식 명명 통일 시 제거
-    private static string GetLegacyPlayerVisualName(string className)
-    {
-        if (string.IsNullOrEmpty(className)) return null;
-        switch (className)
-        {
-            case "가디언":   return "Warrior";
-            case "블래스터": return "Archer";
-            case "스트라이커": return "Wizard";
-            case "서포터":   return "Cleric";
-            case "파이터":   return "Knight";
-            default: return null;
-        }
     }
 
     public GameObject SpawnUnit(string unitId, int gridNumber)
@@ -209,7 +233,7 @@ public class PlayerSpawner : MonoBehaviour
 
         // BattleSceneManager.SyncGridOccupancy가 cell 하위에서 유닛을 탐색하므로, 반드시 GridCell 아래에 붙입니다.
         var go = Instantiate(prefab, worldPos, worldRot, resolvedCell.transform);
-        go.name = $"Charactor_{unit.Index}";
+        go.name = $"Charactor_{unit.Index}_{go.GetInstanceID()}";
 
         var script = go.GetComponent<CharactorScript>();
         if (script == null)
@@ -312,7 +336,7 @@ public class PlayerSpawner : MonoBehaviour
         if (prefab == null) return null;
 
         var go = Instantiate(prefab, persistentCell.transform.position, persistentCell.transform.rotation, persistentCell.transform);
-        go.name = $"Charactor_{unitData.Index}";
+        go.name = $"Charactor_{unitData.Index}_{go.GetInstanceID()}";
 
         var script = go.GetComponent<CharactorScript>();
         if (script == null)

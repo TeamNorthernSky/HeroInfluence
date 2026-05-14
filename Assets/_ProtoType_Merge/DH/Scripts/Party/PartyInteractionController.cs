@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PartyInteractionController
 {
+    // [JC 260514 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 의존 폐기. Game.Economy 단축 접근자 사용.
     private readonly GridManager gridManager;
     private readonly CombatEncounterManager combatEncounterManager;
     private readonly PartyGridMover ownerParty;
@@ -17,6 +18,7 @@ public class PartyInteractionController
 
     public event Action<Vector2Int> AdjacentItemCellEntered;
     public event Action<CastleUnit> AdjacentCastleDetected;
+    public event Action<MapEventObject> AdjacentMapEventDetected;
 
     public PartyInteractionController(
         GridManager gridManager,
@@ -45,6 +47,7 @@ public class PartyInteractionController
         HandleAdjacentCastleProximity(enteredGrid);
         HandleAdjacentItemProximity(enteredGrid);
         HandleAdjacentOutpostProximity(enteredGrid);
+        HandleAdjacentEventProximity(enteredGrid);
     }
 
     public void Dispose()
@@ -73,6 +76,18 @@ public class PartyInteractionController
             return;
 
         BeginAdjacentOutpostClaim(outpostGrid);
+    }
+
+    private void HandleAdjacentEventProximity(Vector2Int enteredGrid)
+    {
+        if (!gridManager.TryGetAdjacentEventGrid(enteredGrid, out Vector2Int eventGrid))
+            return;
+
+        if (!gridManager.TryGetEventObjectAtGrid(eventGrid, out MapEventObject mapEvent))
+            return;
+
+        mapEvent.Interact();
+        AdjacentMapEventDetected?.Invoke(mapEvent);
     }
 
     private bool HandleAdjacentEnemyProximity(Vector2Int enteredGrid)
@@ -142,6 +157,7 @@ public class PartyInteractionController
             yield break;
         }
 
+        // [JC 260514 머지후처리] ItemObject가 GameManager 통합 패턴(Game.Economy)을 내부 사용하므로 인자 없이 호출.
         itemObject.GetItem();
         IsInputLocked = false;
     }

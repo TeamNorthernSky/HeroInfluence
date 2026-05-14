@@ -20,7 +20,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private ItemPlacementPreset itemPreset;
     [FormerlySerializedAs("minePreset")]
     [SerializeField] private OutpostPlacementPreset outpostPreset;
-    [SerializeField] private string partyId = "party_001";
+    [SerializeField] private EventPlacementPreset eventPreset;
 
     [Header("Behaviour")]
     [SerializeField] private bool allowRuntimeEditing;
@@ -34,13 +34,26 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private Color itemColor = new Color(0.2f, 0.9f, 0.3f, 0.75f);
     [FormerlySerializedAs("mineColor")]
     [SerializeField] private Color outpostColor = new Color(0.2f, 0.8f, 1f, 0.75f);
-    [SerializeField] private Color spawnColor = new Color(1f, 0.6f, 0.2f, 0.75f);
+    [SerializeField] private Color eventColor = new Color(0.75f, 0.45f, 1f, 0.75f);
+    [SerializeField] private Color castleColor = new Color(0.95f, 0.85f, 0.25f, 0.75f);
+    [SerializeField] private Color villainUnionColor = new Color(0.95f, 0.25f, 0.55f, 0.75f);
 
     private Vector2Int? hoveredGrid;
 
+    public LevelData LevelData => levelData;
+    public LevelLoader LevelLoader => levelLoader;
+    public GridManager GridManager => gridManager;
+    public Camera InputCamera => inputCamera;
+    public LevelEditorBrushType BrushType => brushType;
+    public ItemPlacementPreset ItemPreset => itemPreset;
+    public OutpostPlacementPreset OutpostPreset => outpostPreset;
+    public EventPlacementPreset EventPreset => eventPreset;
+    public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
+    public LayerMask GroundMask => groundMask;
+
     private void Update()
     {
-        if (!allowRuntimeEditing && Application.isPlaying)
+        if (!Application.isPlaying || !allowRuntimeEditing)
             return;
 
         if (levelData == null || gridManager == null)
@@ -108,12 +121,21 @@ public class LevelEditorController : MonoBehaviour
 
                 levelData.SetOutpost(
                     grid,
-                    outpostPreset.ResourceType,
+                    outpostPreset.OutpostType,
                     Mathf.Max(1, outpostPreset.ResourcePerTurn),
                     outpostPreset.InitialState);
                 break;
-            case LevelEditorBrushType.PartySpawn:
-                levelData.SetPartySpawn(grid, partyId);
+            case LevelEditorBrushType.Event:
+                if (eventPreset == null)
+                    return;
+
+                levelData.SetEvent(grid, eventPreset.EventKey);
+                break;
+            case LevelEditorBrushType.Castle:
+                levelData.SetCastle(grid);
+                break;
+            case LevelEditorBrushType.VillainUnion:
+                levelData.SetVillainUnion(grid);
                 break;
             case LevelEditorBrushType.Erase:
                 levelData.EraseAt(grid);
@@ -161,8 +183,14 @@ public class LevelEditorController : MonoBehaviour
         for (int i = 0; i < levelData.OutpostPlacements.Count; i++)
             DrawCell(levelData.OutpostPlacements[i].GridPosition, outpostColor, y, size);
 
-        for (int i = 0; i < levelData.PartySpawns.Count; i++)
-            DrawCell(levelData.PartySpawns[i].GridPosition, spawnColor, y, size);
+        for (int i = 0; i < levelData.EventPlacements.Count; i++)
+            DrawCell(levelData.EventPlacements[i].GridPosition, eventColor, y, size);
+
+        if (levelData.CastlePlacement.HasPlacement)
+            DrawCell(levelData.CastlePlacement.GridPosition, castleColor, y, size);
+
+        if (levelData.VillainUnionPlacement.HasPlacement)
+            DrawCell(levelData.VillainUnionPlacement.GridPosition, villainUnionColor, y, size);
     }
 
     private void DrawHoveredCell()

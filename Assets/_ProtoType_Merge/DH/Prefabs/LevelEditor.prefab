@@ -48,12 +48,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelData: {fileID: 11400000, guid: 2035004e0e73b4644bd0715be9bc93a3, type: 2}
   gridManager: {fileID: 0}
-  partyRegistry: {fileID: 0}
   prefabRegistry: {fileID: 5055261809470913485}
   tilemapGenerator: {fileID: 0}
   obstacleRoot: {fileID: 0}
   itemRoot: {fileID: 0}
   outpostRoot: {fileID: 0}
+  eventRoot: {fileID: 0}
   loadOnStart: 1
   clearExistingBeforeLoad: 1
   applyInEditMode: 1
@@ -77,7 +77,7 @@ MonoBehaviour:
   brushType: 0
   itemPreset: {fileID: 0}
   outpostPreset: {fileID: 0}
-  partyId: 1
+  eventPreset: {fileID: 11400000, guid: 37bb98cd07b44d7e96b1e21bc7c1ea29, type: 2}
   allowRuntimeEditing: 0
   applyLevelAfterEdit: 1
   groundMask:
@@ -88,7 +88,7 @@ MonoBehaviour:
   obstacleColor: {r: 1, g: 0.3, b: 0.3, a: 0.75}
   itemColor: {r: 0.2, g: 0.9, b: 0.3, a: 0.75}
   outpostColor: {r: 0.2, g: 0.8, b: 1, a: 0.75}
-  spawnColor: {r: 1, g: 0.6, b: 0.2, a: 0.75}
+  eventColor: {r: 0.75, g: 0.45, b: 1, a: 0.75}
 --- !u!114 &5055261809470913485
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111,3 +111,6 @@ MonoBehaviour:
   - resourceType: 0
     prefab: {fileID: 4101029072486519584, guid: c729d96a6afdeb44c8d1d3f3c82f4375,
       type: 3}
+  defaultEventPrefab: {fileID: 6643902457070112037, guid: 467aab8252184bcbb7f6977740bc7e1f,
+    type: 3}
+  eventPrefabs: []

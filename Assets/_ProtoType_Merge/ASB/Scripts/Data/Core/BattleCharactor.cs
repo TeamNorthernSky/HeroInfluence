@@ -20,6 +20,13 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     [SerializeField] private string unitName = "Unit";
     [SerializeField] private TeamType teamType = TeamType.Player;
 
+    /// <summary>
+    /// 전투 씬 런타임 전용 키(battleById 등). 씬/인스턴스마다 고유.
+    /// 영속 저장소(UnitPersistentData 등)에 기록하지 마세요.
+    /// </summary>
+    [NonSerialized]
+    private string runtimeInstanceKey;
+
     [Header("Combat tuning (StatCalculator 가중치 · 최종 소유)")]
     private int level = 1;
     private StatWeights levelWeight = new StatWeights(1f, 1f, 1f);
@@ -120,9 +127,30 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     }
 
     public IUnitData UnitData => null;
-    public string UnitId => string.IsNullOrWhiteSpace(unitName) || unitName == "Unit" ? gameObject.name : unitName;
+
+    /// <summary>
+    /// 딕셔너리/Outline 등 런타임 조회용 고유 ID. 스킬 CSV 매칭용 <see cref="unitName"/>에는 포함되지 않습니다.
+    /// 스포너가 <c>gameObject.name</c>에 Index와 GetInstanceID를 붙인 뒤에는 그 이름을 그대로 씁니다(이중 접미사 방지).
+    /// </summary>
+    public string UnitId
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(unitName) || unitName == "Unit")
+            {
+                return gameObject.name;
+            }
+
+            return $"{unitName}_{gameObject.GetInstanceID()}";
+        }
+    }
+
+    /// <summary>표시·로그용. 스킬/무기 매칭 원본(접미사 없음).</summary>
     public string UnitName => string.IsNullOrWhiteSpace(unitName) ? gameObject.name : unitName;
+
     public TeamType TeamType => teamType;
+
+    /// <summary><see cref="UnitId"/>와 동일. IUnitIdentifier 및 레거시 호환.</summary>
     public string UnitID => UnitId;
     public int Level => level;
 
@@ -186,8 +214,21 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     /// <summary>디버그용: 현재 계산에 쓰는 base 원본.</summary>
     public StatBlock RuntimeBaseStats => runtimeBaseStats;
 
+    private void EnsureRuntimeInstanceKey()
+    {
+        if (!string.IsNullOrEmpty(runtimeInstanceKey))
+        {
+            return;
+        }
+
+        string full = Guid.NewGuid().ToString("N");
+        runtimeInstanceKey = full.Length >= 8 ? full.Substring(0, 8) : full;
+    }
+
     private void Awake()
     {
+        EnsureRuntimeInstanceKey();
+
         if (EquippedEquipments == null)
         {
             EquippedEquipments = new List<EquipmentData>();
@@ -329,11 +370,6 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     public bool TryConsumeInfluence(float amount)
     {
-        if (!IsPlayer)
-        {
-            return true;
-        }
-
         float required = Mathf.Max(0f, amount);
         if (CurrentInfluence < required)
         {
