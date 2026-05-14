@@ -23,6 +23,9 @@ public class LevelPrefabRegistry : MonoBehaviour
     [SerializeField] private CastleUnit castlePrefab;
     [SerializeField] private VillainUnionBase villainUnionBasePrefab;
 
+    [Header("Enemy Prefabs")]
+    [SerializeField] private EnemyGridMover stayEnemyPrefab;
+
     public GameObject ObstaclePrefab => obstaclePrefab;
     public CastleUnit CastlePrefab => castlePrefab;
     public VillainUnionBase VillainUnionBasePrefab => villainUnionBasePrefab;
@@ -93,6 +96,12 @@ public class LevelPrefabRegistry : MonoBehaviour
     public bool TryGetVillainUnionBasePrefab(out VillainUnionBase prefab)
     {
         prefab = villainUnionBasePrefab;
+        return prefab != null;
+    }
+
+    public bool TryGetStayEnemyPrefab(out EnemyGridMover prefab)
+    {
+        prefab = stayEnemyPrefab;
         return prefab != null;
     }
 }

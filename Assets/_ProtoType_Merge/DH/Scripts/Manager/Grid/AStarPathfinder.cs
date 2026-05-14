@@ -1,18 +1,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum EnemyEncounterPathMode
+{
+    Ignore,
+    BlockEncounterZones,
+    AllowSingleEncounterZonePassage
+}
+
 public class AStarPathfinder : MonoBehaviour
 {
     [SerializeField] private GridManager gridManager;
 
-    public List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal, Transform selfTransform = null, bool ignoreFogVisibility = false)
+    public List<Vector2Int> FindPath(
+        Vector2Int start,
+        Vector2Int goal,
+        Transform selfTransform = null,
+        bool ignoreFogVisibility = false,
+        EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore)
     {
         if (start == goal)
             return new List<Vector2Int> { start };
 
         if (gridManager != null)
         {
-            if (!gridManager.CanEnterCell(goal, goal, selfTransform, ignoreFogVisibility))
+            if (!CanEnterPathCell(goal, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode))
                 return null;
         }
 
@@ -39,7 +51,7 @@ public class AStarPathfinder : MonoBehaviour
                 if (closedSet.Contains(neighbor))
                     continue;
 
-                if (gridManager != null && !gridManager.CanEnterCell(neighbor, goal, selfTransform, ignoreFogVisibility))
+                if (gridManager != null && !CanEnterPathCell(neighbor, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode))
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
@@ -55,6 +67,36 @@ public class AStarPathfinder : MonoBehaviour
         }
 
         return null;
+    }
+
+    private bool CanEnterPathCell(
+        Vector2Int grid,
+        Vector2Int goal,
+        Transform selfTransform,
+        bool ignoreFogVisibility,
+        EnemyEncounterPathMode enemyEncounterPathMode)
+    {
+        if (gridManager == null)
+            return true;
+
+        if (enemyEncounterPathMode != EnemyEncounterPathMode.Ignore)
+        {
+            EnemyEncounterZoneState zoneState = gridManager.GetEnemyEncounterZoneState(grid, out _);
+            if (zoneState == EnemyEncounterZoneState.EnemyOccupied
+                || zoneState == EnemyEncounterZoneState.OverlappedEnemyZone)
+            {
+                return false;
+            }
+
+            if (zoneState == EnemyEncounterZoneState.SingleEnemyZone
+                && enemyEncounterPathMode == EnemyEncounterPathMode.BlockEncounterZones
+                && grid != goal)
+            {
+                return false;
+            }
+        }
+
+        return gridManager.CanEnterCell(grid, goal, selfTransform, ignoreFogVisibility);
     }
 
     private static Vector2Int[] GetOrderedDirections(Vector2Int current, Vector2Int goal)

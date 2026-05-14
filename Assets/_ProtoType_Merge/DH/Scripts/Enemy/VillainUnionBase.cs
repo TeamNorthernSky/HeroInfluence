@@ -54,11 +54,32 @@ public class VillainUnionBase : MonoBehaviour
         return adjacentCells;
     }
 
+    public IReadOnlyList<Vector2Int> GetInteractionCells()
+    {
+        MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
+        if (occupant != null)
+        {
+            if (occupant.IsTwoByTwo())
+                return occupant.GetBottomOuterCells();
+
+            return occupant.GetAdjacentOuterCells();
+        }
+
+        Vector2Int origin = GetCurrentGrid();
+        List<Vector2Int> adjacentCells = new List<Vector2Int>(GridManager.Directions8.Length);
+        for (int i = 0; i < GridManager.Directions8.Length; i++)
+            adjacentCells.Add(origin + GridManager.Directions8[i]);
+
+        return adjacentCells;
+    }
+
     public bool IsAdjacentCell(Vector2Int grid)
     {
         MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
         if (occupant != null)
-            return occupant.IsAdjacentOuterCell(grid);
+            return occupant.IsTwoByTwo()
+                ? occupant.IsBottomOuterCell(grid)
+                : occupant.IsAdjacentOuterCell(grid);
 
         Vector2Int origin = GetCurrentGrid();
         int dx = Mathf.Abs(grid.x - origin.x);

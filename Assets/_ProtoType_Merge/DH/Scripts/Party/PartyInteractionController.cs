@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PartyInteractionController
 {
-    // [JC 260514 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 의존 폐기. Game.Economy 단축 접근자 사용.
+    // [JC 260515 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 의존 폐기. Game.Economy 단축 접근자 사용.
     private readonly GridManager gridManager;
     private readonly CombatEncounterManager combatEncounterManager;
     private readonly PartyGridMover ownerParty;
@@ -34,6 +34,11 @@ public class PartyInteractionController
         this.itemPickupDelay = itemPickupDelay;
         this.coroutineOwner = coroutineOwner;
         this.currentGridProvider = currentGridProvider;
+
+        if (this.ownerParty != null)
+        {
+            this.ownerParty.PathUpdated += HandlePathUpdated;
+        }
     }
 
     public void HandleGridEntered(Vector2Int enteredGrid)
@@ -41,27 +46,64 @@ public class PartyInteractionController
         if (gridManager == null)
             return;
 
-        if (HandleAdjacentEnemyProximity(enteredGrid))
+        HandleAdjacentCastleProximity(enteredGrid);
+        HandleAdjacentOutpostProximity(enteredGrid);
+    }
+
+    public void HandleMoveCompleted()
+    {
+        if (gridManager == null || combatEncounterManager == null || ownerParty == null)
             return;
 
-        HandleAdjacentCastleProximity(enteredGrid);
-        HandleAdjacentItemProximity(enteredGrid);
-        HandleAdjacentOutpostProximity(enteredGrid);
-        HandleAdjacentEventProximity(enteredGrid);
+        if (!gridManager.TryGetEnemyEncounterZoneOwner(ownerParty.GetCurrentGrid(), out EnemyGridMover enemy))
+            return;
+
+        CancelPendingInteraction();
+        bool combatStarted = combatEncounterManager.BeginCombat(ownerParty, enemy);
+        IsInputLocked = combatStarted;
     }
 
     public void Dispose()
     {
         CancelPendingInteraction();
         IsInputLocked = false;
+        
+        if (ownerParty != null)
+        {
+            ownerParty.PathUpdated -= HandlePathUpdated;
+        }
     }
 
-    private void HandleAdjacentItemProximity(Vector2Int enteredGrid)
+    private void HandlePathUpdated(System.Collections.Generic.List<Vector2Int> remainingPath)
     {
-        if (!gridManager.TryGetAdjacentItemGrid(enteredGrid, out Vector2Int itemGrid))
+        if (remainingPath == null || remainingPath.Count == 0) return;
+        if (gridManager == null || ownerParty == null) return;
+        
+        Vector2Int currentGrid = ownerParty.GetCurrentGrid();
+        
+        if (!ownerParty.TargetInteractionGrid.HasValue)
             return;
 
-        OnAdjacentItemCellEntered(itemGrid);
+        Vector2Int targetInteractionGrid = ownerParty.TargetInteractionGrid.Value;
+
+        bool isItem = gridManager.TryGetItemObjectAtGrid(targetInteractionGrid, out ItemObject item);
+        bool isEvent = gridManager.TryGetEventObjectAtGrid(targetInteractionGrid, out MapEventObject mapEvent);
+
+        if (!isItem && !isEvent) return;
+
+        if (IsAdjacentOrSame(currentGrid, targetInteractionGrid) && currentGrid != targetInteractionGrid)
+        {
+            ownerParty.SnapToGridPosition(currentGrid);
+            
+            if (isItem)
+            {
+                OnAdjacentItemCellEntered(targetInteractionGrid);
+            }
+            else if (isEvent)
+            {
+                OnAdjacentEventCellEntered(targetInteractionGrid);
+            }
+        }
     }
 
     private void HandleAdjacentOutpostProximity(Vector2Int enteredGrid)
@@ -78,33 +120,42 @@ public class PartyInteractionController
         BeginAdjacentOutpostClaim(outpostGrid);
     }
 
-    private void HandleAdjacentEventProximity(Vector2Int enteredGrid)
+    private void OnAdjacentEventCellEntered(Vector2Int eventGrid)
     {
-        if (!gridManager.TryGetAdjacentEventGrid(enteredGrid, out Vector2Int eventGrid))
-            return;
+        CancelPendingInteraction();
+
+        IsInputLocked = true;
+        pendingInteractionCoroutine = coroutineOwner.StartCoroutine(InvokeDelayedEventInteraction(eventGrid));
+    }
+
+    private IEnumerator InvokeDelayedEventInteraction(Vector2Int eventGrid)
+    {
+        yield return new WaitForSeconds(itemPickupDelay);
+
+        pendingInteractionCoroutine = null;
+
+        if (gridManager == null)
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
+        Vector2Int currentGrid = currentGridProvider != null ? currentGridProvider() : eventGrid;
+        if (!IsAdjacentOrSame(currentGrid, eventGrid))
+        {
+            IsInputLocked = false;
+            yield break;
+        }
 
         if (!gridManager.TryGetEventObjectAtGrid(eventGrid, out MapEventObject mapEvent))
-            return;
+        {
+            IsInputLocked = false;
+            yield break;
+        }
 
         mapEvent.Interact();
         AdjacentMapEventDetected?.Invoke(mapEvent);
-    }
-
-    private bool HandleAdjacentEnemyProximity(Vector2Int enteredGrid)
-    {
-        if (combatEncounterManager == null || ownerParty == null)
-            return false;
-
-        if (!gridManager.TryGetAdjacentEnemyGrid(enteredGrid, out Vector2Int enemyGrid))
-            return false;
-
-        if (!gridManager.TryGetEnemyObjectAtGrid(enemyGrid, out EnemyGridMover enemy))
-            return false;
-
-        CancelPendingInteraction();
-        bool combatStarted = combatEncounterManager.BeginCombat(ownerParty, enemy);
-        IsInputLocked = combatStarted;
-        return combatStarted;
+        IsInputLocked = false;
     }
 
     private void HandleAdjacentCastleProximity(Vector2Int enteredGrid)
@@ -157,7 +208,7 @@ public class PartyInteractionController
             yield break;
         }
 
-        // [JC 260514 머지후처리] ItemObject가 GameManager 통합 패턴(Game.Economy)을 내부 사용하므로 인자 없이 호출.
+        // [JC 260515 머지후처리] ItemObject가 GameManager 통합 패턴(Game.Economy)을 내부 사용하므로 인자 없이 호출.
         itemObject.GetItem();
         IsInputLocked = false;
     }

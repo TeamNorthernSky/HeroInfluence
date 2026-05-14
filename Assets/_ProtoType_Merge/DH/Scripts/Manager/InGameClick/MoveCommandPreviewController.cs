@@ -79,13 +79,28 @@ public class MoveCommandPreviewController
         if (activeMover == null || gridManager == null || pathfinder == null || marker == null)
             return;
 
-        Vector2Int destinationGrid = ResolveDestinationGrid(activeMover, clickedGrid);
+        if (!TryResolveDestinationGrid(activeMover, clickedGrid, out Vector2Int requestedDestinationGrid))
+        {
+            ClearPreview();
+            return;
+        }
+
+        Vector2Int partyGrid = activeMover.GetCurrentGrid();
+        List<Vector2Int> path = FindPlayerPreviewPath(
+            activeMover,
+            partyGrid,
+            requestedDestinationGrid,
+            out Vector2Int destinationGrid);
+
+        if (path == null || path.Count == 0)
+        {
+            ClearPreview();
+            return;
+        }
+
         Vector3 markerWorld = gridManager.GridToWorldCenter(destinationGrid);
         markerWorld.y = gridManager.GetLandSurfaceY();
         PlaceMarker(destinationGrid, markerWorld);
-
-        Vector2Int partyGrid = activeMover.GetCurrentGrid();
-        List<Vector2Int> path = pathfinder.FindPath(partyGrid, markerGrid, activeMover.transform);
         previewPath = path;
 
         List<Vector2Int> fullMoveCandidate = AdjustPathForSpecialDestination(ClonePath(path));
@@ -96,7 +111,7 @@ public class MoveCommandPreviewController
         int selectedMoveCost = GetPathMoveCost(movePath);
         int fullMoveCost = GetPathMoveCost(fullMoveCandidate);
 
-        canMoveToMarker = selectedMoveCost > 0;
+        canMoveToMarker = selectedMoveCost > 0 || CanConfirmZeroStepInteraction(activeMover);
         isDestinationFullyReachable = hasPreviewPath && activeMover.CanSpendMovePoints(fullMoveCost);
         hasOverLimitTail = hasPreviewPath && fullMoveCost > activeMover.RemainingMovePoints;
 
@@ -125,7 +140,16 @@ public class MoveCommandPreviewController
         if (!TryHandleMarkerClick(ray))
             return false;
 
-        activeMover.MoveByGridPath(movePath);
+        Vector2Int? interactionTarget = null;
+        if (hasMarkerGrid
+            && gridManager != null
+            && gridManager.HasInteractionTarget(markerGrid)
+            && !IsSingleEnemyEncounterZone(markerGrid))
+        {
+            interactionTarget = markerGrid;
+        }
+
+        activeMover.MoveByGridPath(movePath, interactionTarget);
         return true;
     }
 
@@ -194,6 +218,26 @@ public class MoveCommandPreviewController
         return hitMarker;
     }
 
+    private bool CanConfirmZeroStepInteraction(PartyGridMover activeMover)
+    {
+        if (activeMover == null || gridManager == null || !hasMarkerGrid)
+            return false;
+
+        int selectedMoveCost = GetPathMoveCost(movePath);
+        if (selectedMoveCost != 0)
+            return false;
+
+        Vector2Int currentGrid = activeMover.GetCurrentGrid();
+        if (currentGrid == markerGrid)
+            return false;
+
+        if (GridManager.GridDistance(currentGrid, markerGrid) > 1)
+            return false;
+
+        return gridManager.TryGetItemObjectAtGrid(markerGrid, out _)
+            || gridManager.TryGetEventObjectAtGrid(markerGrid, out _);
+    }
+
     private void PlaceMarker(Vector2Int grid, Vector3 worldPosition)
     {
         markerGrid = grid;
@@ -205,47 +249,107 @@ public class MoveCommandPreviewController
             marker.gameObject.SetActive(true);
     }
 
-    private Vector2Int ResolveDestinationGrid(PartyGridMover activeMover, Vector2Int clickedGrid)
+    private bool TryResolveDestinationGrid(PartyGridMover activeMover, Vector2Int clickedGrid, out Vector2Int destinationGrid)
     {
+        destinationGrid = clickedGrid;
+
         if (activeMover == null || gridManager == null)
-            return clickedGrid;
+            return true;
 
         if (gridManager.TryGetOutpostObjectAtGrid(clickedGrid, out Outpost outpost))
-            return ResolveApproachGrid(activeMover, clickedGrid, outpost.GetAnchorGrid(gridManager), outpost.GetAdjacentInteractionCells(gridManager));
+            return TryResolveApproachGrid(
+                activeMover,
+                outpost.GetAnchorGrid(gridManager),
+                outpost.GetAdjacentInteractionCells(gridManager),
+                out destinationGrid);
 
         if (gridManager.TryGetVillainUnionBaseAtGrid(clickedGrid, out VillainUnionBase villainUnionBase))
-            return ResolveApproachGrid(activeMover, clickedGrid, villainUnionBase.GetAnchorGrid(), villainUnionBase.GetAdjacentOuterCells());
+            return TryResolveApproachGrid(
+                activeMover,
+                villainUnionBase.GetAnchorGrid(),
+                villainUnionBase.GetInteractionCells(),
+                out destinationGrid);
 
         if (!gridManager.TryGetCastleObjectAtGrid(clickedGrid, out CastleUnit castle))
-            return clickedGrid;
+            return true;
 
         MultiGridOccupant occupant = castle.GetComponent<MultiGridOccupant>();
         if (occupant == null)
-            return clickedGrid;
+            return true;
 
-        return ResolveApproachGrid(activeMover, clickedGrid, castle.GetCurrentGrid(), occupant.GetAdjacentOuterCells());
+        return TryResolveApproachGrid(
+            activeMover,
+            occupant.AnchorGrid,
+            castle.GetInteractionCells(),
+            out destinationGrid);
     }
 
-    private Vector2Int ResolveApproachGrid(
+    private List<Vector2Int> FindPlayerPreviewPath(
         PartyGridMover activeMover,
-        Vector2Int fallbackGrid,
+        Vector2Int partyGrid,
+        Vector2Int requestedDestinationGrid,
+        out Vector2Int destinationGrid)
+    {
+        destinationGrid = requestedDestinationGrid;
+
+        List<Vector2Int> strictPath = pathfinder.FindPath(
+            partyGrid,
+            requestedDestinationGrid,
+            activeMover.transform,
+            false,
+            EnemyEncounterPathMode.BlockEncounterZones);
+        if (strictPath != null && strictPath.Count > 0)
+            return strictPath;
+
+        List<Vector2Int> fallbackPath = pathfinder.FindPath(
+            partyGrid,
+            requestedDestinationGrid,
+            activeMover.transform,
+            false,
+            EnemyEncounterPathMode.AllowSingleEncounterZonePassage);
+        if (fallbackPath == null || fallbackPath.Count == 0)
+            return null;
+
+        for (int i = 1; i < fallbackPath.Count; i++)
+        {
+            if (gridManager.GetEnemyEncounterZoneState(fallbackPath[i], out _) != EnemyEncounterZoneState.SingleEnemyZone)
+                continue;
+
+            destinationGrid = fallbackPath[i];
+            return fallbackPath.GetRange(0, i + 1);
+        }
+
+        return null;
+    }
+
+    private bool TryResolveApproachGrid(
+        PartyGridMover activeMover,
         Vector2Int targetGrid,
-        IReadOnlyList<Vector2Int> approachCandidates)
+        IReadOnlyList<Vector2Int> approachCandidates,
+        out Vector2Int destinationGrid)
     {
         Vector2Int moverGrid = activeMover.GetCurrentGrid();
         for (int i = 0; i < approachCandidates.Count; i++)
         {
             if (approachCandidates[i] == moverGrid)
-                return moverGrid;
+            {
+                destinationGrid = moverGrid;
+                return true;
+            }
         }
 
-        Vector2Int bestGrid = fallbackGrid;
+        Vector2Int bestGrid = moverGrid;
         List<Vector2Int> bestPath = null;
 
         for (int i = 0; i < approachCandidates.Count; i++)
         {
             Vector2Int candidate = approachCandidates[i];
-            List<Vector2Int> candidatePath = pathfinder.FindPath(moverGrid, candidate, activeMover.transform);
+            List<Vector2Int> candidatePath = pathfinder.FindPath(
+                moverGrid,
+                candidate,
+                activeMover.transform,
+                false,
+                EnemyEncounterPathMode.BlockEncounterZones);
             if (candidatePath == null || candidatePath.Count == 0)
                 continue;
 
@@ -265,12 +369,16 @@ public class MoveCommandPreviewController
             }
         }
 
-        return bestPath != null ? bestGrid : fallbackGrid;
+        destinationGrid = bestGrid;
+        return bestPath != null;
     }
 
     private List<Vector2Int> AdjustPathForSpecialDestination(List<Vector2Int> path)
     {
         if (path == null || path.Count == 0 || gridManager == null || !hasMarkerGrid)
+            return path;
+
+        if (IsSingleEnemyEncounterZone(markerGrid))
             return path;
 
         if (!gridManager.HasInteractionTarget(markerGrid))
@@ -348,6 +456,12 @@ public class MoveCommandPreviewController
     private static int GetPathMoveCost(List<Vector2Int> path)
     {
         return path == null ? 0 : Mathf.Max(0, path.Count - 1);
+    }
+
+    private bool IsSingleEnemyEncounterZone(Vector2Int grid)
+    {
+        return gridManager != null
+            && gridManager.GetEnemyEncounterZoneState(grid, out _) == EnemyEncounterZoneState.SingleEnemyZone;
     }
 
     private static bool IsBetterCastleApproach(

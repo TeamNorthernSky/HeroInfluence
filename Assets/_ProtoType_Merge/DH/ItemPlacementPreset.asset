@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cd870622cdb96d4c89243af01f82aa1, type: 3}
   m_Name: ItemPlacementPreset
   m_EditorClassIdentifier: 
-  resourceType: 0
-  amount: 1000
+  resourceType: 3
+  amount: 5

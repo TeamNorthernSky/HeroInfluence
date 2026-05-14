@@ -16,6 +16,7 @@ public class LevelEditorWindow : EditorWindow
         LevelEditorBrushType.Event,
         LevelEditorBrushType.Castle,
         LevelEditorBrushType.VillainUnion,
+        LevelEditorBrushType.StayEnemy,
         LevelEditorBrushType.Erase
     };
 
@@ -27,6 +28,7 @@ public class LevelEditorWindow : EditorWindow
         "Event",
         "Castle",
         "Villain",
+        "StayEnemy",
         "Erase"
     };
 
@@ -378,6 +380,13 @@ public class LevelEditorWindow : EditorWindow
             DrawFootprint(context, BuildFootprint(GetEventPrefab(context, placement.EventKey), placement.GridPosition), new Color(0.75f, 0.35f, 1f, 0.10f), new Color(0.75f, 0.35f, 1f, 0.65f));
         }
 
+        for (int i = 0; i < levelData.StayEnemyCells.Count; i++)
+        {
+            Vector2Int stayEnemyGrid = levelData.StayEnemyCells[i];
+            DrawStayEnemyEncounterZone(context, stayEnemyGrid, new Color(1f, 0.1f, 0.1f, 0.06f), new Color(1f, 0.1f, 0.1f, 0.28f));
+            DrawFootprint(context, BuildFootprint(GetStayEnemyPrefab(context), stayEnemyGrid), new Color(1f, 0.1f, 0.1f, 0.14f), new Color(1f, 0.1f, 0.1f, 0.75f));
+        }
+
         if (levelData.CastlePlacement.HasPlacement)
             DrawFootprint(context, BuildFootprint(GetCastlePrefab(context), levelData.CastlePlacement.GridPosition), new Color(1f, 0.85f, 0.1f, 0.12f), new Color(1f, 0.85f, 0.1f, 0.75f));
 
@@ -412,6 +421,15 @@ public class LevelEditorWindow : EditorWindow
         bool canPlace = CanPlaceFootprint(context, footprint, out reason);
         Color fill = canPlace ? new Color(0.2f, 1f, 0.3f, 0.18f) : new Color(1f, 0f, 0f, 0.20f);
         Color outline = canPlace ? new Color(0.2f, 1f, 0.3f, 1f) : new Color(1f, 0f, 0f, 1f);
+
+        if (context.BrushType == LevelEditorBrushType.StayEnemy)
+        {
+            DrawStayEnemyEncounterZone(
+                context,
+                anchor,
+                canPlace ? new Color(1f, 0.1f, 0.1f, 0.08f) : new Color(1f, 0f, 0f, 0.12f),
+                canPlace ? new Color(1f, 0.1f, 0.1f, 0.45f) : new Color(1f, 0f, 0f, 0.75f));
+        }
 
         DrawFootprint(context, footprint, fill, outline);
 
@@ -448,6 +466,9 @@ public class LevelEditorWindow : EditorWindow
                 break;
             case LevelEditorBrushType.Event:
                 context.LevelData.SetEvent(anchor, context.EventPreset.EventKey);
+                break;
+            case LevelEditorBrushType.StayEnemy:
+                context.LevelData.SetStayEnemy(anchor);
                 break;
             case LevelEditorBrushType.Castle:
                 context.LevelData.SetCastle(anchor);
@@ -626,6 +647,10 @@ public class LevelEditorWindow : EditorWindow
                 prefab = GetVillainUnionPrefab(context);
                 reason = prefab == null ? "VillainUnion prefab is missing." : null;
                 return prefab != null;
+            case LevelEditorBrushType.StayEnemy:
+                prefab = GetStayEnemyPrefab(context);
+                reason = prefab == null ? "StayEnemy prefab is missing." : null;
+                return prefab != null;
             default:
                 reason = "This brush cannot place objects.";
                 return false;
@@ -701,6 +726,15 @@ public class LevelEditorWindow : EditorWindow
             if (FootprintsOverlap(footprint, BuildFootprint(GetEventPrefab(context, placement.EventKey), placement.GridPosition)))
             {
                 reason = "Event overlaps this footprint.";
+                return true;
+            }
+        }
+
+        for (int i = 0; i < levelData.StayEnemyCells.Count; i++)
+        {
+            if (FootprintsOverlap(footprint, BuildFootprint(GetStayEnemyPrefab(context), levelData.StayEnemyCells[i])))
+            {
+                reason = "StayEnemy overlaps this footprint.";
                 return true;
             }
         }
@@ -786,6 +820,17 @@ public class LevelEditorWindow : EditorWindow
             if (footprint.Contains(grid))
             {
                 label = "Item";
+                return true;
+            }
+        }
+
+        for (int i = 0; i < levelData.StayEnemyCells.Count; i++)
+        {
+            anchor = levelData.StayEnemyCells[i];
+            footprint = BuildFootprint(GetStayEnemyPrefab(context), anchor);
+            if (footprint.Contains(grid))
+            {
+                label = "StayEnemy";
                 return true;
             }
         }
@@ -895,13 +940,44 @@ public class LevelEditorWindow : EditorWindow
                 : null;
     }
 
+    private static GameObject GetStayEnemyPrefab(LevelEditorContext context)
+    {
+        return context.PrefabRegistry != null
+            && context.PrefabRegistry.TryGetStayEnemyPrefab(out EnemyGridMover prefab)
+            && prefab != null
+                ? prefab.gameObject
+                : null;
+    }
+
+    private static void DrawStayEnemyEncounterZone(LevelEditorContext context, Vector2Int anchor, Color fill, Color outline)
+    {
+        DrawFootprint(context, BuildEncounterZone(anchor), fill, outline);
+    }
+
+    private static List<Vector2Int> BuildEncounterZone(Vector2Int anchor)
+    {
+        List<Vector2Int> footprint = new List<Vector2Int>(9);
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int x = -1; x <= 1; x++)
+                footprint.Add(new Vector2Int(anchor.x + x, anchor.y + y));
+        }
+
+        return footprint;
+    }
+
     private static void DrawFootprint(LevelEditorContext context, List<Vector2Int> footprint, Color fill, Color outline)
     {
         if (footprint == null)
             return;
 
         for (int i = 0; i < footprint.Count; i++)
+        {
+            if (!context.LevelData.IsInsideGrid(footprint[i]))
+                continue;
+
             DrawCell(context, footprint[i], fill, outline);
+        }
     }
 
     private static void DrawCell(LevelEditorContext context, Vector2Int grid, Color fill, Color outline)

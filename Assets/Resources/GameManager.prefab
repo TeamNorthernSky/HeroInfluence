@@ -864,7 +864,7 @@ MonoBehaviour:
   victoryEndingScene: Ending_Victory
   defeatEndingScene: Ending_Defeat
   useLegacyExploration: 0
-  explorationSceneDefault: DHScene_2
+  explorationSceneDefault: DHScene_3
   explorationSceneLegacy: DHScene
 --- !u!1 &3859882495497568627
 GameObject:

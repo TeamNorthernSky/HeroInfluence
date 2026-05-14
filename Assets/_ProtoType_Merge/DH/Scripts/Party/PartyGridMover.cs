@@ -23,6 +23,8 @@ public class PartyGridMover : MonoBehaviour
     private float fixedY;
     private PartyMovePointController movePointController;
 
+    public Vector2Int? TargetInteractionGrid { get; private set; }
+
     public event Action<List<Vector2Int>> PathUpdated;
     public event Action<Vector2Int> GridEntered;
     public event Action MoveCompleted;
@@ -40,6 +42,7 @@ public class PartyGridMover : MonoBehaviour
     // [JC 수정 260512] LastGrid 없을 때 currentGrid 재계산 + GridEntered 발화 추가.
     //   원인: Awake 시점에 transform.position 또는 GridManager 내부 상태가 부정확해 currentGrid가 (0,0)으로 박힘.
     //   결과: 본부 방문 인디케이터가 새 게임 첫 진입 시 활성화 안 되는 버그 발생. 이 보정으로 첫 진입부터 정확.
+    // [JC 수정 260515 R-1] SnapToGridPosition을 notifyMoveCompleted=false로 호출 — Start 시점 자동 전투 트리거 방지.
     private void Start()
     {
         var identity = GetComponent<PartyIdentity>();
@@ -52,7 +55,7 @@ public class PartyGridMover : MonoBehaviour
 
         if (partyData.HasLastGrid)
         {
-            SnapToGridPosition(partyData.LastGrid);
+            SnapToGridPosition(partyData.LastGrid, notifyMoveCompleted: false);
         }
         else if (gridManager != null)
         {
@@ -87,6 +90,7 @@ public class PartyGridMover : MonoBehaviour
             if (reachedPathEnd && pathQueue.Count == 0)
             {
                 isMoving = false;
+                TargetInteractionGrid = null;
                 MoveCompleted?.Invoke();
             }
         }
@@ -111,13 +115,38 @@ public class PartyGridMover : MonoBehaviour
         movePointController?.ResetToMax();
     }
 
+    // [JC 추가 260511] Snap도 영속화 (외부 위치 강제 변경 케이스 안전 처리)
+    // [JC 추가 260515 R-1] notifyMoveCompleted 인자 — Start 영속 복원 시 MoveCompleted 발화 회피용 (false)
+    public void SnapToGridPosition(Vector2Int grid, bool notifyMoveCompleted = true)
+    {
+        pathQueue.Clear();
+        isMoving = false;
+        TargetInteractionGrid = null;
+        currentGrid = grid;
+
+        if (gridManager == null)
+            return;
+
+        Vector3 worldPosition = gridManager.GridToWorldCenter(grid);
+        worldPosition.y = fixedY;
+        transform.position = worldPosition;
+        GridEntered?.Invoke(currentGrid);
+        PersistLastGrid();
+        NotifyPathUpdated();
+        if (notifyMoveCompleted)
+            MoveCompleted?.Invoke();
+    }
+
     // [JC 추가 260511] 이동 중 클릭 정지. 마커는 유지하되 path는 재계산되도록 외부에서 처리.
     // 셀 사이에서 정지 시 가장 가까운 셀로 스냅. 1셀 진행으로 판정되면 이동력 1 차감 (무료 이동 방지).
+    // [JC 추가 260515 R-2] TargetInteractionGrid 리셋 — StopMovement 후 PathUpdated 발화 시
+    //   HandlePathUpdated가 우연히 자동 상호작용 트리거하는 위험 차단. Orora SnapToGridPosition/MoveByGridPath 패턴과 일치.
     public void StopMovement()
     {
         if (!isMoving && pathQueue.Count == 0) return;
         pathQueue.Clear();
         isMoving = false;
+        TargetInteractionGrid = null;
 
         if (gridManager == null) return;
 
@@ -144,24 +173,6 @@ public class PartyGridMover : MonoBehaviour
         }
     }
 
-    public void SnapToGridPosition(Vector2Int grid)
-    {
-        pathQueue.Clear();
-        isMoving = false;
-        currentGrid = grid;
-
-        if (gridManager == null)
-            return;
-
-        Vector3 worldPosition = gridManager.GridToWorldCenter(grid);
-        worldPosition.y = fixedY;
-        transform.position = worldPosition;
-        GridEntered?.Invoke(currentGrid);
-        // [JC 추가 260511] Snap도 영속화 (외부 위치 강제 변경 케이스 안전 처리)
-        PersistLastGrid();
-        NotifyPathUpdated();
-    }
-
     // [JC 추가 260511] 현재 위치를 PartyPersistentData.LastGrid로 저장
     // [JC 수정 260512] 머지 사이클: PartyPersistentRepository로 책임 이관됨
     private void PersistLastGrid()
@@ -183,8 +194,9 @@ public class PartyGridMover : MonoBehaviour
         return remainingPath;
     }
 
-    public void MoveByGridPath(List<Vector2Int> fullPath)
+    public void MoveByGridPath(List<Vector2Int> fullPath, Vector2Int? interactionTarget = null)
     {
+        TargetInteractionGrid = interactionTarget;
         pathQueue.Clear();
         isMoving = false;
 
@@ -194,6 +206,11 @@ public class PartyGridMover : MonoBehaviour
         if (fullPath == null || fullPath.Count <= 1)
         {
             NotifyPathUpdated();
+
+            if (interactionTarget.HasValue && !TargetInteractionGrid.HasValue)
+                return;
+
+            TargetInteractionGrid = null;
             MoveCompleted?.Invoke();
             return;
         }

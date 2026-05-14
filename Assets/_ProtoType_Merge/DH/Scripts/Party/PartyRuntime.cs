@@ -8,6 +8,7 @@ public class PartyRuntime : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridManager gridManager;
+    // [JC 260515 머지후처리] ResourceManager 직접 의존 폐기 (Game.Economy 패턴 사용)
     [SerializeField] private CombatEncounterManager combatEncounterManager;
 
     [Header("Interaction Settings")]
@@ -35,12 +36,16 @@ public class PartyRuntime : MonoBehaviour
         interactionController.AdjacentItemCellEntered += HandleAdjacentItemCellEntered;
         interactionController.AdjacentCastleDetected += HandleAdjacentCastleDetected;
         partyGridMover.GridEntered += HandleGridEntered;
+        partyGridMover.MoveCompleted += HandleMoveCompleted;
     }
 
     private void OnDestroy()
     {
         if (partyGridMover != null)
+        {
             partyGridMover.GridEntered -= HandleGridEntered;
+            partyGridMover.MoveCompleted -= HandleMoveCompleted;
+        }
 
         if (interactionController == null)
             return;
@@ -53,6 +58,11 @@ public class PartyRuntime : MonoBehaviour
     private void HandleGridEntered(Vector2Int enteredGrid)
     {
         interactionController?.HandleGridEntered(enteredGrid);
+    }
+
+    private void HandleMoveCompleted()
+    {
+        interactionController?.HandleMoveCompleted();
     }
 
     private void HandleAdjacentItemCellEntered(Vector2Int itemGrid)

@@ -24,6 +24,9 @@ public class CombatEncounterManager : MonoBehaviour
         if (party == null || enemy == null)
             return false;
 
+        // [JC 추가 260515 R-4] 중복 트리거 가드 — PartyInteractionController·EnemyTurnController 양쪽에서 같은 프레임 호출 시 CombatStarted 이중 발화 방지
+        if (IsCombatActive) return false;
+
         PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
         string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
         string enemyId = enemy.EnemyId;
@@ -36,12 +39,17 @@ public class CombatEncounterManager : MonoBehaviour
         if (!TryRegisterCombatParticipants(party, partyId, enemy, enemyId, enemyInstanceId))
             return false;
 
+        // [Orora 260515] IsCombatActive 활성 흐름 + true 반환 (직전 사이클 대비 변경)
+        IsCombatActive = true;
+        ActiveParty = party;
+        ActiveEnemy = enemy;
+
         Debug.Log(
             $"Combat encounter requested between party '{partyId}' and enemy '{enemyId}'. " +
             "Combat flow is not implemented yet.",
             this);
         CombatStarted?.Invoke(party, enemy);
-        return false;
+        return true;
     }
 
     public void ClearCombatState()

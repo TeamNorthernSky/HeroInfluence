@@ -35,6 +35,8 @@ public class LevelEditorController : MonoBehaviour
     [FormerlySerializedAs("mineColor")]
     [SerializeField] private Color outpostColor = new Color(0.2f, 0.8f, 1f, 0.75f);
     [SerializeField] private Color eventColor = new Color(0.75f, 0.45f, 1f, 0.75f);
+    [SerializeField] private Color stayEnemyColor = new Color(1f, 0.15f, 0.15f, 0.75f);
+    [SerializeField] private Color stayEnemyEncounterZoneColor = new Color(1f, 0.15f, 0.15f, 0.25f);
     [SerializeField] private Color castleColor = new Color(0.95f, 0.85f, 0.25f, 0.75f);
     [SerializeField] private Color villainUnionColor = new Color(0.95f, 0.25f, 0.55f, 0.75f);
 
@@ -131,6 +133,9 @@ public class LevelEditorController : MonoBehaviour
 
                 levelData.SetEvent(grid, eventPreset.EventKey);
                 break;
+            case LevelEditorBrushType.StayEnemy:
+                levelData.SetStayEnemy(grid);
+                break;
             case LevelEditorBrushType.Castle:
                 levelData.SetCastle(grid);
                 break;
@@ -186,6 +191,9 @@ public class LevelEditorController : MonoBehaviour
         for (int i = 0; i < levelData.EventPlacements.Count; i++)
             DrawCell(levelData.EventPlacements[i].GridPosition, eventColor, y, size);
 
+        for (int i = 0; i < levelData.StayEnemyCells.Count; i++)
+            DrawStayEnemyCells(levelData.StayEnemyCells[i], y, size);
+
         if (levelData.CastlePlacement.HasPlacement)
             DrawCell(levelData.CastlePlacement.GridPosition, castleColor, y, size);
 
@@ -210,6 +218,23 @@ public class LevelEditorController : MonoBehaviour
 
         Gizmos.color = color;
         Gizmos.DrawWireCube(center, new Vector3(size, 0.02f, size));
+    }
+
+    private void DrawStayEnemyCells(Vector2Int grid, float y, float size)
+    {
+        for (int offsetY = -1; offsetY <= 1; offsetY++)
+        {
+            for (int offsetX = -1; offsetX <= 1; offsetX++)
+            {
+                Vector2Int zoneGrid = new Vector2Int(grid.x + offsetX, grid.y + offsetY);
+                if (!levelData.IsInsideGrid(zoneGrid))
+                    continue;
+
+                DrawCell(zoneGrid, stayEnemyEncounterZoneColor, y, size);
+            }
+        }
+
+        DrawCell(grid, stayEnemyColor, y, size);
     }
 
     private void MarkLevelDataDirty()

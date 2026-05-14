@@ -72,7 +72,7 @@ public class Outpost : MonoBehaviour
         ApplyStateMaterial();
     }
 
-    // [JC 260514 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 인자 폐기. Game.Economy 단축 접근자 사용.
+    // [JC 260515 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 인자 폐기. Game.Economy 단축 접근자 사용.
     public void ProduceForTurn()
     {
         if (!IsPlayerClaimed)
@@ -151,7 +151,12 @@ public class Outpost : MonoBehaviour
     public IReadOnlyList<Vector2Int> GetAdjacentInteractionCells(GridManager gridManager)
     {
         if (multiGridOccupant != null)
+        {
+            if (multiGridOccupant.IsTwoByTwo())
+                return multiGridOccupant.GetBottomOuterCells();
+
             return multiGridOccupant.GetAdjacentOuterCells();
+        }
 
         Vector2Int anchorGrid = GetAnchorGrid(gridManager);
         List<Vector2Int> adjacentCells = new List<Vector2Int>(GridManager.Directions8.Length);

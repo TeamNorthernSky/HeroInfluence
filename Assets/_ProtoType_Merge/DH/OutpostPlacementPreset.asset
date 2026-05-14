@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13cec5ad61753cc4eb394c1fd06eb548, type: 3}
   m_Name: OutpostPlacementPreset
   m_EditorClassIdentifier: 
-  outpostType: 1
-  resourcePerTurn: 10
+  outpostType: 0
+  resourcePerTurn: 1000
   initialState: 0

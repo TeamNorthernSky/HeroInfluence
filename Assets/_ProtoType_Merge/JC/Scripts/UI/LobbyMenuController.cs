@@ -18,6 +18,8 @@ public class LobbyMenuController : MonoBehaviour
     [SerializeField] private GameObject _modalEnhancement;
     [SerializeField] private GameObject _modalResearch;
     [SerializeField] private GameObject _modalReplace;
+    [SerializeField] private GameObject _modalTraining;       // [JC 260515] 트레이닝 임시 placeholder 모달
+    [SerializeField] private GameObject _modalEndTurnConfirm; // [JC 260515] 턴 종료 확인 모달 (Yes/No)
     [SerializeField] private GameObject _modalCurrentParty;   // 명단 패널 역할로 재정의 (다키스트 던전 스타일, 항상 활성)
     [SerializeField] private GameObject _modalHeroInfo;       // 공용 히어로 정보 모달 (HeroProfileButton 클릭 시 표시)
     [SerializeField] private GameObject _modalMember1;        // (레거시, 폐기 후보 — HeroInfoModal로 대체)
@@ -120,16 +122,19 @@ public class LobbyMenuController : MonoBehaviour
 
     private bool TryGetHandler(string key, out UnityAction handler)
     {
-        switch (key)
+        // [JC 260515] case-insensitive 매칭 — 기존 "replace"/"member1~4" 케이스가 대소문자 불일치로 미작동하던 버그 보정
+        string normalized = key != null ? key.ToLowerInvariant() : string.Empty;
+        switch (normalized)
         {
-            case "HQ":           handler = OnClickHQ;          return true;
-            case "Broadcast":    handler = OnClickBroadcast;   return true;
-            case "Enhancement":  handler = OnClickEnhancement; return true;
-            case "Research":     handler = OnClickResearch;    return true;
-            case "Recruitment":  handler = OnClickRecruitment; return true;
-            case "Go":           handler = OnClickGo;          return true;
-            case "Exit":         handler = OnClickExit;        return true;
-            case "EndTurn":      handler = OnClickEndTurn;     return true;
+            case "hq":           handler = OnClickHQ;          return true;
+            case "broadcast":    handler = OnClickBroadcast;   return true;
+            case "enhancement":  handler = OnClickEnhancement; return true;
+            case "research":     handler = OnClickResearch;    return true;
+            case "recruitment":  handler = OnClickRecruitment; return true;
+            case "go":           handler = OnClickGo;          return true;
+            case "exit":         handler = OnClickExit;        return true;
+            case "endturn":      handler = OnClickEndTurn;     return true;
+            case "training":     handler = OnClickTraining;    return true;
             case "member1":      handler = OnClickMember1;     return true;
             case "member2":      handler = OnClickMember2;     return true;
             case "member3":      handler = OnClickMember3;     return true;
@@ -147,6 +152,7 @@ public class LobbyMenuController : MonoBehaviour
         BindCloseFor(_modalEnhancement);
         BindCloseFor(_modalResearch);
         BindCloseFor(_modalReplace);
+        BindCloseFor(_modalTraining);
         BindCloseFor(_modalCurrentParty);
         BindCloseFor(_modalHeroInfo);
         BindCloseFor(_modalMember1);
@@ -178,6 +184,7 @@ public class LobbyMenuController : MonoBehaviour
     public void OnClickResearch()     { Debug.Log("[Lobby] Research");    OpenModal(_modalResearch); }
     public void OnClickRecruitment()  { Debug.Log("[Lobby] Recruitment"); OpenModal(_modalRecruitment); }
     public void OnClickReplace()      { Debug.Log("[Lobby] Replace");     OpenModal(_modalReplace); }
+    public void OnClickTraining()     { Debug.Log("[Lobby] Training");    OpenModal(_modalTraining); }
     public void OnClickMember1()      { Debug.Log("[Lobby] Member1");     OpenMemberModal(_modalMember1, 0); }
     public void OnClickMember2()      { Debug.Log("[Lobby] Member2");     OpenMemberModal(_modalMember2, 1); }
     public void OnClickMember3()      { Debug.Log("[Lobby] Member3");     OpenMemberModal(_modalMember3, 2); }
@@ -225,11 +232,41 @@ public class LobbyMenuController : MonoBehaviour
             SceneManager.LoadScene(PlayScene);
     }
 
+    // [JC 260515] 턴 종료 흐름 변경 — 확인 모달(Yes/No) 거쳐 진행.
+    //   Yes  → CurrentDay++ + 로비 아웃(LoadScene PlayScene)
+    //   No / ESC → 모달 닫기 (close 버튼 자동 바인딩 + ESC는 SystemMenuController.ModalRegistry 정책)
     public void OnClickEndTurn()
     {
-        Debug.Log($"[Lobby] EndTurn → {PlayScene}");
+        Debug.Log("[Lobby] EndTurn → 확인 모달 표시");
+        if (_modalEndTurnConfirm != null)
+            OpenModal(_modalEndTurnConfirm);
+        else
+            ConfirmEndTurnYes(); // fallback (모달 미연결 시 직접 진행)
+    }
+
+    public void OnClickEndTurnConfirmYes() => ConfirmEndTurnYes();
+    public void OnClickEndTurnConfirmNo()
+    {
+        if (_modalEndTurnConfirm != null)
+            _modalEndTurnConfirm.SetActive(false);
+    }
+
+    private void ConfirmEndTurnYes()
+    {
+        if (_modalEndTurnConfirm != null)
+            _modalEndTurnConfirm.SetActive(false);
+
+        // 턴 진행 — TurnManager는 씬 종속이라 로비에서 직접 호출 불가.
+        // GameManager.CurrentDay 영속 데이터를 직접 증가 → 탐사씬 재진입 시 TurnManager.Awake가 복원.
+        var gm = GameManager.Instance;
+        if (gm != null)
+        {
+            gm.CurrentDay = gm.CurrentDay + 1;
+            Debug.Log($"[Lobby] EndTurn 확정 → Day={gm.CurrentDay}");
+        }
+
+        Debug.Log($"[Lobby] LoadScene → {PlayScene}");
         PersistentStateDebugLogger.Dump("Lobby EndTurn (before LoadScene DHScene)");
-        // [JC 260514] GameSceneManager Instance 경유.
         if (GameSceneManager.Instance != null)
             GameSceneManager.Instance.LoadScene(PlayScene);
         else

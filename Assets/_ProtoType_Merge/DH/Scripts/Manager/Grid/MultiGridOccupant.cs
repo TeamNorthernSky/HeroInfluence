@@ -76,6 +76,17 @@ public class MultiGridOccupant : MonoBehaviour
         return adjacentOuterCells;
     }
 
+    public IReadOnlyList<Vector2Int> GetBottomOuterCells()
+    {
+        Vector2Int clampedSize = Size;
+        List<Vector2Int> bottomCells = new List<Vector2Int>(clampedSize.x);
+        int bottomY = anchorGrid.y - 1;
+        for (int x = 0; x < clampedSize.x; x++)
+            bottomCells.Add(new Vector2Int(anchorGrid.x + x, bottomY));
+
+        return bottomCells;
+    }
+
     public bool OccupiesCell(Vector2Int grid)
     {
         for (int i = 0; i < occupiedCells.Count; i++)
@@ -96,6 +107,21 @@ public class MultiGridOccupant : MonoBehaviour
         }
 
         return false;
+    }
+
+    public bool IsBottomOuterCell(Vector2Int grid)
+    {
+        Vector2Int clampedSize = Size;
+        if (grid.y != anchorGrid.y - 1)
+            return false;
+
+        return grid.x >= anchorGrid.x && grid.x < anchorGrid.x + clampedSize.x;
+    }
+
+    public bool IsTwoByTwo()
+    {
+        Vector2Int clampedSize = Size;
+        return clampedSize.x == 2 && clampedSize.y == 2;
     }
 
     public Vector3 GetWorldCenter()

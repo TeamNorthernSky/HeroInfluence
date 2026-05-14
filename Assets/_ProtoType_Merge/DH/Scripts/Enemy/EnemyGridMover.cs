@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum EnemyBehaviorType
+{
+    Mobile,
+    StayEnemy
+}
+
 [RequireComponent(typeof(EnemyIdentity))]
 [RequireComponent(typeof(EnemyComposition))]
 public class EnemyGridMover : MonoBehaviour
@@ -16,6 +22,7 @@ public class EnemyGridMover : MonoBehaviour
     [SerializeField] private float moveSpeed = 4f;
     [SerializeField] private float arriveThreshold = 0.01f;
     [SerializeField] private int movePointsPerTurn = 5;
+    [SerializeField] private EnemyBehaviorType behaviorType = EnemyBehaviorType.Mobile;
 
     private Vector2Int currentGrid;
     private float fixedY;
@@ -26,8 +33,11 @@ public class EnemyGridMover : MonoBehaviour
     private EnemyComposition enemyComposition;
 
     public string EnemyId => enemyIdentity != null ? enemyIdentity.EnemyId : string.Empty;
+    // [JC 추가 260513 / 260515 머지후처리] EnemyPartyPool 인스턴스 식별자 wrapping (CombatEncounterManager·BattleSceneManager 사용)
     public string InstanceId => enemyIdentity != null ? enemyIdentity.InstanceId : string.Empty;
     public int MovePointsPerTurn => Mathf.Max(0, movePointsPerTurn);
+    public EnemyBehaviorType BehaviorType => behaviorType;
+    public bool IsStayEnemy => behaviorType == EnemyBehaviorType.StayEnemy;
     public EnemyTargetType CurrentTargetType => currentTargetType;
     public Component CurrentTarget => currentTarget;
 
@@ -70,10 +80,16 @@ public class EnemyGridMover : MonoBehaviour
         enemyIdentity?.SetEnemyId(nextEnemyId);
     }
 
+    // [JC 추가 260513 / 260515 머지후처리] EnemyPartyPool 인스턴스 ID 주입 (외부 호출처 없을 수도 — 보존)
     public void InitializeInstanceId(string nextInstanceId)
     {
         enemyIdentity ??= GetComponent<EnemyIdentity>();
         enemyIdentity?.SetInstanceId(nextInstanceId);
+    }
+
+    public void SetBehaviorType(EnemyBehaviorType nextBehaviorType)
+    {
+        behaviorType = nextBehaviorType;
     }
 
     public void SetTarget(EnemyTargetType targetType, Component target)

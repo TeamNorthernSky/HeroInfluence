@@ -24,6 +24,7 @@ public class LevelLoader : MonoBehaviour
     [FormerlySerializedAs("mineRoot")]
     [SerializeField] private Transform outpostRoot;
     [SerializeField] private Transform eventRoot;
+    [SerializeField] private Transform stayEnemyRoot;
 
     [Header("Load Options")]
     [SerializeField] private bool loadOnStart;
@@ -82,6 +83,7 @@ public class LevelLoader : MonoBehaviour
         SpawnItems();
         SpawnOutposts();
         SpawnEvents();
+        SpawnStayEnemies();
         SpawnUniqueBuildings();
     }
 
@@ -217,6 +219,35 @@ public class LevelLoader : MonoBehaviour
         }
     }
 
+    private void SpawnStayEnemies()
+    {
+        var stayEnemyCells = levelData.StayEnemyCells;
+        if (stayEnemyCells.Count == 0)
+            return;
+
+        if (prefabRegistry == null || !prefabRegistry.TryGetStayEnemyPrefab(out EnemyGridMover stayEnemyPrefab))
+        {
+            Debug.LogWarning("LevelLoader could not find a stay enemy prefab.", this);
+            return;
+        }
+
+        Transform parent = stayEnemyRoot != null ? stayEnemyRoot : transform;
+        for (int i = 0; i < stayEnemyCells.Count; i++)
+        {
+            EnemyGridMover stayEnemy = SpawnComponent(stayEnemyPrefab, stayEnemyCells[i], parent);
+            if (stayEnemy == null)
+                continue;
+
+            stayEnemy.SetBehaviorType(EnemyBehaviorType.StayEnemy);
+
+            if (Application.isPlaying)
+            {
+                EnemyUnitBootstrap enemyBootstrap = stayEnemy.GetComponent<EnemyUnitBootstrap>();
+                enemyBootstrap?.InitializeEnemyUnits();
+            }
+        }
+    }
+
     private void SpawnUniqueBuildings()
     {
         if (prefabRegistry == null)
@@ -265,6 +296,7 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(itemRoot);
         ClearChildren(outpostRoot);
         ClearChildren(GetEventRoot(false));
+        ClearStayEnemies();
         ClearDirectChildrenWithComponent<CastleUnit>();
         ClearDirectChildrenWithComponent<VillainUnionBase>();
     }
@@ -291,6 +323,14 @@ public class LevelLoader : MonoBehaviour
             else
                 DestroyImmediate(child);
         }
+    }
+
+    private void ClearStayEnemies()
+    {
+        if (stayEnemyRoot != null && stayEnemyRoot != transform)
+            ClearChildren(stayEnemyRoot);
+
+        ClearDirectChildrenWithComponent<EnemyGridMover>();
     }
 
     private void ClearDirectChildrenWithComponent<T>() where T : Component
