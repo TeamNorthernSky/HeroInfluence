@@ -5,29 +5,20 @@ using System.Collections.Generic;
 public class CombatEnemyPersistentData
 {
     public string EnemyId => enemyId;
-    // [JC 추가 260513] 전투 진입 시점 EnemyPartyPool 인스턴스 식별자 보존
-    public string InstanceId => instanceId;
     public IReadOnlyList<int> UnitIndices => unitIndices ?? (unitIndices = new List<int>());
 
     [UnityEngine.SerializeField] private string enemyId;
-    [UnityEngine.SerializeField] private string instanceId;
     [UnityEngine.SerializeField] private List<int> unitIndices = new List<int>();
 
-    public CombatEnemyPersistentData(string enemyId, string instanceId, IReadOnlyList<int> unitIndices)
+    public CombatEnemyPersistentData(string enemyId, IReadOnlyList<int> unitIndices)
     {
         this.enemyId = string.IsNullOrWhiteSpace(enemyId) ? string.Empty : enemyId;
-        this.instanceId = string.IsNullOrWhiteSpace(instanceId) ? string.Empty : instanceId;
         SetUnitIndices(unitIndices);
     }
 
     public void SetEnemyId(string nextEnemyId)
     {
         enemyId = string.IsNullOrWhiteSpace(nextEnemyId) ? string.Empty : nextEnemyId;
-    }
-
-    public void SetInstanceId(string nextInstanceId)
-    {
-        instanceId = string.IsNullOrWhiteSpace(nextInstanceId) ? string.Empty : nextInstanceId;
     }
 
     public void SetUnitIndices(IReadOnlyList<int> source)

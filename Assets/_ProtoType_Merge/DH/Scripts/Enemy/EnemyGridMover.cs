@@ -33,8 +33,6 @@ public class EnemyGridMover : MonoBehaviour
     private EnemyComposition enemyComposition;
 
     public string EnemyId => enemyIdentity != null ? enemyIdentity.EnemyId : string.Empty;
-    // [JC 추가 260513 / 260514 머지후처리] EnemyPartyPool 인스턴스 식별자 wrapping (CombatEncounterManager·BattleSceneManager 사용)
-    public string InstanceId => enemyIdentity != null ? enemyIdentity.InstanceId : string.Empty;
     public int MovePointsPerTurn => Mathf.Max(0, movePointsPerTurn);
     public EnemyBehaviorType BehaviorType => behaviorType;
     public bool IsStayEnemy => behaviorType == EnemyBehaviorType.StayEnemy;
@@ -78,13 +76,6 @@ public class EnemyGridMover : MonoBehaviour
     {
         enemyIdentity ??= GetComponent<EnemyIdentity>();
         enemyIdentity?.SetEnemyId(nextEnemyId);
-    }
-
-    // [JC 추가 260513 / 260514 머지후처리] EnemyPartyPool 인스턴스 ID 주입 (외부 호출처 없을 수도 — 보존)
-    public void InitializeInstanceId(string nextInstanceId)
-    {
-        enemyIdentity ??= GetComponent<EnemyIdentity>();
-        enemyIdentity?.SetInstanceId(nextInstanceId);
     }
 
     public void SetBehaviorType(EnemyBehaviorType nextBehaviorType)

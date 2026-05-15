@@ -85,9 +85,6 @@ public class BattleSceneManager : MonoBehaviour
                 _                      => CombatResult.None,
             };
             combatContext.SetCombatResult(mappedResult);
-
-            // [JC 260513] directive dispatch — CombatContext.EnemyDirective 우선, 없으면 BattleResult 기본 정책.
-            ApplyEnemyDirective(combatContext, result);
         }
 
         // [JC 260514] returnSceneName 빈 값이라도 GameSceneManager.Instance.ExplorationScene fallback이 있으면 통과.
@@ -99,33 +96,6 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         returnSceneCoroutine = StartCoroutine(TransitionToSceneRoutine());
-    }
-
-    // [JC 260513] directive 패턴 dispatch. 이벤트 시스템(미래)이 CombatContext.SetEnemyDirective로 주입 가능.
-    private static void ApplyEnemyDirective(CombatContext context, BattleResult result)
-    {
-        if (context == null || context.CombatEnemy == null) return;
-        string instanceId = context.CombatEnemy.InstanceId;
-        if (string.IsNullOrWhiteSpace(instanceId)) return;
-
-        PostCombatEnemyDirective directive = context.EnemyDirective ?? PostCombatEnemyDirective.DefaultFor(result);
-        EnemyPartyPool pool = EnemyPartyPool.Instance;
-        if (pool == null) return;
-
-        switch (directive.Action)
-        {
-            case PostCombatEnemyAction.KeepInPlace:
-                break;
-            case PostCombatEnemyAction.RemoveFromPool:
-                pool.UnregisterInstance(instanceId);
-                break;
-            case PostCombatEnemyAction.MoveToGrid:
-                pool.UpdateInstanceGrid(instanceId, directive.TargetGrid);
-                break;
-            case PostCombatEnemyAction.ReplaceWithPrefab:
-                pool.ReplaceInstancePrefab(instanceId, directive.PrefabKey);
-                break;
-        }
     }
 
     private IEnumerator TransitionToSceneRoutine()

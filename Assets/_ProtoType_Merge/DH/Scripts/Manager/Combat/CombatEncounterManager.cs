@@ -30,13 +30,8 @@ public class CombatEncounterManager : MonoBehaviour
         PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
         string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
         string enemyId = enemy.EnemyId;
-        string enemyInstanceId = enemy.InstanceId;
 
-        // [JC 260513] 안 B — 전투 진입 직전 적 위치를 풀에 백업 갱신.
-        if (!string.IsNullOrWhiteSpace(enemyInstanceId))
-            EnemyPartyPool.Instance?.UpdateInstanceGrid(enemyInstanceId, enemy.GetCurrentGrid());
-
-        if (!TryRegisterCombatParticipants(party, partyId, enemy, enemyId, enemyInstanceId))
+        if (!TryRegisterCombatParticipants(party, partyId, enemy, enemyId))
             return false;
 
         // [Orora 260514] IsCombatActive 활성 흐름 + true 반환 (직전 사이클 대비 변경)
@@ -59,7 +54,7 @@ public class CombatEncounterManager : MonoBehaviour
         ActiveEnemy = null;
     }
 
-    private bool TryRegisterCombatParticipants(PartyGridMover party, string partyId, EnemyGridMover enemy, string enemyId, string enemyInstanceId)
+    private bool TryRegisterCombatParticipants(PartyGridMover party, string partyId, EnemyGridMover enemy, string enemyId)
     {
         CombatContext combatContext = CombatContext.Instance;
         PersistentUnitRepository unitRepository = PersistentUnitRepository.Instance;
@@ -84,7 +79,7 @@ public class CombatEncounterManager : MonoBehaviour
         }
 
         combatContext.RegisterCombatParty(partyId, partyUnitIndices);
-        combatContext.RegisterCombatEnemy(enemyId, enemyInstanceId, enemyUnitIndices);
+        combatContext.RegisterCombatEnemy(enemyId, enemyUnitIndices);
         combatContext.SetCombatResult(CombatResult.None);
         return true;
     }

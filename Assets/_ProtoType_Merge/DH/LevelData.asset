@@ -747,7 +747,8 @@ MonoBehaviour:
     eventKey: event_001
   - gridPosition: {x: 42, y: 14}
     eventKey: event_001
-  stayEnemyCells: []
+  stayEnemyCells:
+  - {x: 9, y: 4}
   castlePlacement:
     hasPlacement: 1
     gridPosition: {x: 3, y: 3}
