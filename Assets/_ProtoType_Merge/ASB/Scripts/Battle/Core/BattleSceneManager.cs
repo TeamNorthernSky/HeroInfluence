@@ -66,6 +66,8 @@ public class BattleSceneManager : MonoBehaviour
 
     private void HandleBattleEndedForTransition(BattleResult result)
     {
+        BattleResultPersistenceHandler.PersistAtBattleEnd(playerBattleCharactors, enemyBattleCharactors, result);
+
         if (returnSceneCoroutine != null)
         {
             return;

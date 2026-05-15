@@ -22,6 +22,21 @@ public class CSVDataLoad : MonoBehaviour
     [SerializeField] private TextAsset weaponSheetCsv;
     [SerializeField] private TextAsset levelUpSheetCsv;
 
+    public TextAsset GetUnitCsv() => unitCsv;
+
+    public TextAsset GetPlayerUnitCsv() => playerUnitCsv;
+
+    public TextAsset GetEnemyUnitCsv() => enemyUnitCsv;
+
+    public TextAsset GetClassSkillSheetCsv() => classSkillSheetCsv;
+
+    public TextAsset GetWeaponSheetCsv() => weaponSheetCsv;
+
+    public TextAsset GetLevelUpSheetCsv() => levelUpSheetCsv;
+
+    /// <summary>LoadPlayerUnits와 동일: playerUnitCsv가 없으면 unitCsv.</summary>
+    public TextAsset GetEffectivePlayerUnitCsv() => playerUnitCsv != null ? playerUnitCsv : unitCsv;
+
     /// <summary>레거시 호환: 플레이어 유닛 목록과 동일.</summary>
     public List<UnitData> LoadUnits()
     {

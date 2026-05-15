@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -153,5 +154,44 @@ public class PersistentUnitRepository : MonoBehaviour
 
         if (nextUnitIndex <= highestIndex)
             nextUnitIndex = highestIndex + 1;
+    }
+
+    private const string DiskFileName = "persistent_units_repo.json";
+
+    [System.Serializable]
+    private class UnitRepositoryDiskPayload
+    {
+        public int nextUnitIndex;
+        public UnitPersistentDataDiskRow[] units;
+    }
+
+    /// <summary>메모리상 유닛 목록을 Application.persistentDataPath JSON으로 저장합니다.</summary>
+    public void SaveRuntimeStateToDisk()
+    {
+        try
+        {
+            UnitPersistentDataDiskRow[] rows;
+            if (units == null || units.Count == 0)
+                rows = System.Array.Empty<UnitPersistentDataDiskRow>();
+            else
+            {
+                rows = new UnitPersistentDataDiskRow[units.Count];
+                for (int i = 0; i < units.Count; i++)
+                    rows[i] = UnitPersistentDataDiskRow.From(units[i]);
+            }
+
+            var payload = new UnitRepositoryDiskPayload
+            {
+                nextUnitIndex = nextUnitIndex,
+                units = rows
+            };
+
+            string path = Path.Combine(Application.persistentDataPath, DiskFileName);
+            File.WriteAllText(path, JsonUtility.ToJson(payload));
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[PersistentUnitRepository] SaveRuntimeStateToDisk 실패: {ex.Message}", this);
+        }
     }
 }
