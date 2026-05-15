@@ -15,6 +15,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
     private EnemyGridMover enemyUnit;
     private EnemyIdentity enemyIdentity;
     private EnemyComposition enemyComposition;
+    private bool hasInitialized;
 
     private void Awake()
     {
@@ -34,6 +35,9 @@ public class EnemyUnitBootstrap : MonoBehaviour
     [ContextMenu("Initialize Enemy Units")]
     public void InitializeEnemyUnits()
     {
+        if (hasInitialized)
+            return;
+
         enemyUnit ??= GetComponent<EnemyGridMover>();
         enemyIdentity ??= GetComponent<EnemyIdentity>();
         enemyComposition ??= GetComponent<EnemyComposition>();
@@ -97,6 +101,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
         string enemyId = enemyGroupRepository.CreateEnemy(unitIndices);
         enemyIdentity.SetEnemyId(enemyId);
         enemyUnit.InitializePersistentIdentity(enemyId);
+        hasInitialized = true;
     }
 
     [ContextMenu("Collect Unit States From Children")]

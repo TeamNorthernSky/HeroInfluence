@@ -32,13 +32,6 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private bool applyInEditMode = true;
     [SerializeField] private bool autoReloadOnValidate = true;
 
-    // [JC 260514 추가] 옛 사양 호환 토글.
-    // 같은 LevelData.asset을 공유하는 여러 씬(DHScene / DHScene_2)에서
-    // 일부 씬만 Obstacle 생성을 건너뛰기 위한 인스펙터 가드.
-    // false 시 ObstacleCells 무시. DH 영역 코드 수정이라 다음 머지 사이클에서
-    // 본 필드 + SpawnObstacles 가드가 누락되면 재적용 필요.
-    [SerializeField] private bool useObstacles = true;
-
     public LevelData LevelData => levelData;
     public GridManager GridManager => gridManager;
     public LevelPrefabRegistry PrefabRegistry => prefabRegistry;
@@ -46,6 +39,14 @@ public class LevelLoader : MonoBehaviour
 #if UNITY_EDITOR
     private bool queuedEditorReload;
 #endif
+
+    private void Awake()
+    {
+        if (!Application.isPlaying || !clearExistingBeforeLoad)
+            return;
+
+        ClearSpawnedObjects();
+    }
 
     private void Start()
     {
@@ -124,11 +125,6 @@ public class LevelLoader : MonoBehaviour
 
     private void SpawnObstacles()
     {
-        // [JC 260514 추가] useObstacles 토글이 false인 씬은 Obstacle GO 생성을 건너뜀.
-        // LevelData.asset 자체는 공용으로 유지하면서 씬별로 Obstacle 표시 여부를 분리.
-        if (!useObstacles)
-            return;
-
         GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
         if (obstaclePrefab == null)
             return;
@@ -328,9 +324,28 @@ public class LevelLoader : MonoBehaviour
     private void ClearStayEnemies()
     {
         if (stayEnemyRoot != null && stayEnemyRoot != transform)
-            ClearChildren(stayEnemyRoot);
+            ClearStayEnemyChildren(stayEnemyRoot);
 
-        ClearDirectChildrenWithComponent<EnemyGridMover>();
+        ClearStayEnemyChildren(transform);
+    }
+
+    private void ClearStayEnemyChildren(Transform root)
+    {
+        if (root == null)
+            return;
+
+        for (int i = root.childCount - 1; i >= 0; i--)
+        {
+            Transform child = root.GetChild(i);
+            EnemyGridMover enemy = child.GetComponent<EnemyGridMover>();
+            if (enemy == null || !enemy.IsStayEnemy)
+                continue;
+
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
+        }
     }
 
     private void ClearDirectChildrenWithComponent<T>() where T : Component

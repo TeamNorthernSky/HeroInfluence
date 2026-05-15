@@ -16,7 +16,8 @@ public class EnemySpawnController : MonoBehaviour
     [SerializeField] private EnemyGridMover enemyPrefab;
     [SerializeField, Min(1)] private int spawnInterval = 3;
     [SerializeField, Min(1)] private int maxActiveEnemies = 3;
-    [SerializeField] private bool spawnOneEnemyOnStart = true;
+    [SerializeField] private bool spawnOneEnemyOnStart;
+    [SerializeField] private bool skipInitialSpawnWhenSceneHasMobileEnemy = true;
 
     private readonly List<ProductionBaseCandidate> productionBaseCandidates = new List<ProductionBaseCandidate>();
     private bool hasSpawnedInitialEnemy;
@@ -42,7 +43,10 @@ public class EnemySpawnController : MonoBehaviour
 
         if (spawnOneEnemyOnStart && !hasSpawnedInitialEnemy)
         {
-            TrySpawnOneEnemy();
+            enemyRegistry?.RefreshSceneEnemies();
+            if (!skipInitialSpawnWhenSceneHasMobileEnemy || GetActiveEnemyCount() == 0)
+                TrySpawnOneEnemy();
+
             hasSpawnedInitialEnemy = true;
         }
     }
