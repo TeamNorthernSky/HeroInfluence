@@ -16,7 +16,10 @@ public class CombatEncounterManager : MonoBehaviour
     {
         CombatContext context = CombatContext.Instance;
         if (context != null && context.Result != CombatResult.None)
+        {
+            ProcessCompletedCombat(context);
             ClearCombatState();
+        }
     }
 
     public bool BeginCombat(PartyGridMover party, EnemyGridMover enemy)
@@ -79,9 +82,31 @@ public class CombatEncounterManager : MonoBehaviour
         }
 
         combatContext.RegisterCombatParty(partyId, partyUnitIndices);
-        combatContext.RegisterCombatEnemy(enemyId, enemyUnitIndices);
+        combatContext.RegisterCombatEnemy(enemyId, ResolveEnemyPlacementKey(enemy), enemyUnitIndices);
         combatContext.SetCombatResult(CombatResult.None);
         return true;
+    }
+
+    private void ProcessCompletedCombat(CombatContext context)
+    {
+        if (context == null || context.Result != CombatResult.Victory)
+            return;
+
+        CombatEnemyPersistentData combatEnemy = context.CombatEnemy;
+        if (combatEnemy == null)
+            return;
+
+        string placementKey = combatEnemy.PlacementKey;
+        if (string.IsNullOrWhiteSpace(placementKey))
+            placementKey = FindPlacementKeyByEnemyId(combatEnemy.EnemyId);
+
+        if (string.IsNullOrWhiteSpace(placementKey))
+            return;
+
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+        progressRepository?.MarkEnemyDefeated(placementKey);
+        RemoveDefeatedEnemyGroup(combatEnemy.EnemyId);
+        DestroyMatchingSceneEnemy(placementKey, combatEnemy.EnemyId);
     }
 
     private static IReadOnlyList<int> ResolvePartyUnitIndices(PartyPersistentRepository repository, PartyGridMover party, string partyId)
@@ -108,6 +133,69 @@ public class CombatEncounterManager : MonoBehaviour
 
         EnemyComposition composition = enemy != null ? enemy.GetComponent<EnemyComposition>() : null;
         return FilterValidUnitIndices(composition != null ? composition.UnitIndices : Array.Empty<int>());
+    }
+
+    private static string ResolveEnemyPlacementKey(EnemyGridMover enemy)
+    {
+        EnemyIdentity identity = enemy != null ? enemy.GetComponent<EnemyIdentity>() : null;
+        return identity != null ? identity.PlacementKey : string.Empty;
+    }
+
+    private static void RemoveDefeatedEnemyGroup(string enemyId)
+    {
+        if (string.IsNullOrWhiteSpace(enemyId))
+            return;
+
+        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
+        enemyGroupRepository?.RemoveEnemy(enemyId);
+    }
+
+    private static string FindPlacementKeyByEnemyId(string enemyId)
+    {
+        if (string.IsNullOrWhiteSpace(enemyId))
+            return string.Empty;
+
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+        if (progressRepository == null)
+            return string.Empty;
+
+        IReadOnlyList<EnemyWorldState> enemyStates = progressRepository.EnemyWorldStates;
+        for (int i = 0; i < enemyStates.Count; i++)
+        {
+            EnemyWorldState state = enemyStates[i];
+            if (state == null)
+                continue;
+
+            if (string.Equals(state.EnemyId, enemyId, StringComparison.Ordinal))
+                return state.PlacementKey;
+        }
+
+        return string.Empty;
+    }
+
+    private static void DestroyMatchingSceneEnemy(string placementKey, string enemyId)
+    {
+        EnemyGridMover[] enemies = FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None);
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            EnemyGridMover enemy = enemies[i];
+            if (enemy == null)
+                continue;
+
+            EnemyIdentity identity = enemy.GetComponent<EnemyIdentity>();
+            if (identity == null)
+                continue;
+
+            bool placementMatches = !string.IsNullOrWhiteSpace(placementKey) &&
+                string.Equals(identity.PlacementKey, placementKey, StringComparison.Ordinal);
+            bool enemyIdMatches = !string.IsNullOrWhiteSpace(enemyId) &&
+                string.Equals(identity.EnemyId, enemyId, StringComparison.Ordinal);
+
+            if (!placementMatches && !enemyIdMatches)
+                continue;
+
+            Destroy(enemy.gameObject);
+        }
     }
 
     private static IReadOnlyList<int> FilterValidUnitIndices(IReadOnlyList<int> source)

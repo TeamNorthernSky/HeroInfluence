@@ -54,11 +54,14 @@ public class EnemyGridMover : MonoBehaviour
     private void OnEnable()
     {
         ResolveRegistry();
+        GridChanged -= HandleGridChanged;
+        GridChanged += HandleGridChanged;
         enemyRegistry?.Register(this);
     }
 
     private void OnDisable()
     {
+        GridChanged -= HandleGridChanged;
         enemyRegistry?.Unregister(this);
     }
 
@@ -76,6 +79,12 @@ public class EnemyGridMover : MonoBehaviour
     {
         enemyIdentity ??= GetComponent<EnemyIdentity>();
         enemyIdentity?.SetEnemyId(nextEnemyId);
+    }
+
+    public void InitializePlacementIdentity(string nextPlacementKey)
+    {
+        enemyIdentity ??= GetComponent<EnemyIdentity>();
+        enemyIdentity?.SetPlacementKey(nextPlacementKey);
     }
 
     public void SetBehaviorType(EnemyBehaviorType nextBehaviorType)
@@ -150,5 +159,18 @@ public class EnemyGridMover : MonoBehaviour
 
         if (enemyComposition == null)
             enemyComposition = GetComponent<EnemyComposition>();
+    }
+
+    private void HandleGridChanged(EnemyGridMover enemy, Vector2Int grid)
+    {
+        if (!Application.isPlaying || enemy != this)
+            return;
+
+        enemyIdentity ??= GetComponent<EnemyIdentity>();
+        if (enemyIdentity == null || string.IsNullOrWhiteSpace(enemyIdentity.PlacementKey))
+            return;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        repository?.SetEnemyGrid(enemyIdentity.PlacementKey, grid);
     }
 }

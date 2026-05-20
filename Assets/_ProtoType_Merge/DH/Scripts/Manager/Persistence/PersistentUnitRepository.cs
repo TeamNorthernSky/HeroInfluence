@@ -50,7 +50,12 @@ public class PersistentUnitRepository : MonoBehaviour
 
     public int CreateUnit(string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats)
     {
-        StatBlock ingameStats = UnitStatCalculator.CalculateIngameStats(baseStats, levelupStats, level, currentWeaponStats);
+        StatBlock ingameStats = UnitStatCalculator.CalculateIngameStats(
+            baseStats,
+            levelupStats,
+            level,
+            currentWeaponStats,
+            ResolveLevelUpTemplates());
         return CreateUnit(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, ingameStats.HP);
     }
 
@@ -104,7 +109,12 @@ public class PersistentUnitRepository : MonoBehaviour
             return true;
 
         int nextLevel = Mathf.Max(1, data.Level + safeAmount);
-        StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(data.BaseStats, data.LevelupStats, nextLevel, data.CurrentWeaponStats);
+        StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
+            data.BaseStats,
+            data.LevelupStats,
+            nextLevel,
+            data.CurrentWeaponStats,
+            ResolveLevelUpTemplates());
         data.ApplyRuntimeState(
             data.UnitTemplateKey,
             nextLevel,
@@ -117,6 +127,12 @@ public class PersistentUnitRepository : MonoBehaviour
             nextIngameStats,
             nextIngameStats.HP);
         return true;
+    }
+
+    private static IReadOnlyList<LevelUpData> ResolveLevelUpTemplates()
+    {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        return catalog != null ? catalog.GetLevelUpTemplates() : null;
     }
 
     public void ClearAllUnits()
