@@ -18,6 +18,8 @@ public class EnemySpawnController : MonoBehaviour
     [SerializeField, Min(1)] private int maxActiveEnemies = 3;
     [SerializeField] private bool spawnOneEnemyOnStart;
     [SerializeField] private bool skipInitialSpawnWhenSceneHasMobileEnemy = true;
+    [SerializeField] private string runtimeSpawnSourceKey;
+    [SerializeField, Min(1)] private int nextRuntimeEnemySequence = 1;
 
     private readonly List<ProductionBaseCandidate> productionBaseCandidates = new List<ProductionBaseCandidate>();
     private bool hasSpawnedInitialEnemy;
@@ -37,6 +39,7 @@ public class EnemySpawnController : MonoBehaviour
     private void OnEnable()
     {
         ResolveReferences();
+        RestoreRuntimeEnemies();
 
         if (turnManager != null)
             turnManager.DayAdvanced += HandleDayAdvanced;
@@ -163,10 +166,157 @@ public class EnemySpawnController : MonoBehaviour
             return false;
 
         EnemyGridMover spawnedEnemy = Instantiate(enemyPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
+        string placementKey = CreateRuntimeEnemyPlacementKey();
+        EnemyIdentity enemyIdentity = spawnedEnemy.GetComponent<EnemyIdentity>();
+        if (enemyIdentity != null)
+        {
+            enemyIdentity.SetPlacementSource(EnemyPlacementSource.Runtime);
+            enemyIdentity.SetPlacementKey(placementKey);
+        }
+
+        spawnedEnemy.InitializePlacementIdentity(placementKey);
+        spawnedEnemy.SnapToGridPosition(spawnGrid);
+
         EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
         enemyBootstrap?.InitializeEnemyUnits();
-        spawnedEnemy.SnapToGridPosition(spawnGrid);
         return true;
+    }
+
+    private void RestoreRuntimeEnemies()
+    {
+        if (enemyPrefab == null)
+            return;
+
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
+        if (progressRepository == null || enemyGroupRepository == null)
+            return;
+
+        SyncRuntimeEnemySequence(progressRepository);
+
+        IReadOnlyList<EnemyWorldState> enemyStates = progressRepository.EnemyWorldStates;
+        for (int i = 0; i < enemyStates.Count; i++)
+        {
+            EnemyWorldState state = enemyStates[i];
+            if (!ShouldRestoreRuntimeEnemy(state, enemyGroupRepository))
+                continue;
+
+            if (HasMatchingEnemyInScene(state.PlacementKey, state.EnemyId))
+                continue;
+
+            RestoreRuntimeEnemy(state);
+        }
+
+        enemyRegistry?.RefreshSceneEnemies();
+    }
+
+    private static bool ShouldRestoreRuntimeEnemy(EnemyWorldState state, EnemyGroupPersistentRepository enemyGroupRepository)
+    {
+        if (state == null ||
+            state.Defeated ||
+            string.IsNullOrWhiteSpace(state.PlacementKey) ||
+            string.IsNullOrWhiteSpace(state.EnemyId))
+            return false;
+
+        if (!IsRuntimeEnemyState(state))
+            return false;
+
+        return enemyGroupRepository != null && enemyGroupRepository.ContainsEnemy(state.EnemyId);
+    }
+
+    private static bool IsRuntimeEnemyState(EnemyWorldState state)
+    {
+        if (state.PlacementSource == EnemyPlacementSource.Runtime)
+            return true;
+
+        return !string.IsNullOrWhiteSpace(state.PlacementKey) &&
+            state.PlacementKey.StartsWith("runtime_enemy_", System.StringComparison.Ordinal);
+    }
+
+    private static bool HasMatchingEnemyInScene(string placementKey, string enemyId)
+    {
+        EnemyGridMover[] enemies = FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None);
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            EnemyGridMover enemy = enemies[i];
+            if (enemy == null)
+                continue;
+
+            EnemyIdentity identity = enemy.GetComponent<EnemyIdentity>();
+            if (identity == null)
+                continue;
+
+            bool placementMatches = !string.IsNullOrWhiteSpace(placementKey) &&
+                string.Equals(identity.PlacementKey, placementKey, System.StringComparison.Ordinal);
+            bool enemyIdMatches = !string.IsNullOrWhiteSpace(enemyId) &&
+                string.Equals(identity.EnemyId, enemyId, System.StringComparison.Ordinal);
+
+            if (placementMatches || enemyIdMatches)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void RestoreRuntimeEnemy(EnemyWorldState state)
+    {
+        EnemyGridMover restoredEnemy = Instantiate(enemyPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
+        EnemyIdentity enemyIdentity = restoredEnemy.GetComponent<EnemyIdentity>();
+        if (enemyIdentity != null)
+        {
+            enemyIdentity.SetPlacementSource(EnemyPlacementSource.Runtime);
+            enemyIdentity.SetPlacementKey(state.PlacementKey);
+            enemyIdentity.SetEnemyId(state.EnemyId);
+        }
+
+        restoredEnemy.InitializePlacementIdentity(state.PlacementKey);
+        restoredEnemy.InitializePersistentIdentity(state.EnemyId);
+        restoredEnemy.SnapToGridPosition(state.Grid);
+
+        EnemyUnitBootstrap enemyBootstrap = restoredEnemy.GetComponent<EnemyUnitBootstrap>();
+        enemyBootstrap?.InitializeEnemyUnits();
+    }
+
+    private void SyncRuntimeEnemySequence(MapProgressRepository progressRepository)
+    {
+        if (progressRepository == null)
+            return;
+
+        string sourceKey = MapProgressKey.NormalizeSegment(ResolveRuntimeSpawnSourceKey());
+        string keyPrefix = $"runtime_enemy_{sourceKey}_";
+        int highestSequence = 0;
+
+        IReadOnlyList<EnemyWorldState> enemyStates = progressRepository.EnemyWorldStates;
+        for (int i = 0; i < enemyStates.Count; i++)
+        {
+            EnemyWorldState state = enemyStates[i];
+            if (state == null || string.IsNullOrWhiteSpace(state.PlacementKey))
+                continue;
+
+            if (!state.PlacementKey.StartsWith(keyPrefix, System.StringComparison.Ordinal))
+                continue;
+
+            string sequenceText = state.PlacementKey.Substring(keyPrefix.Length);
+            if (int.TryParse(sequenceText, out int sequence) && sequence > highestSequence)
+                highestSequence = sequence;
+        }
+
+        if (nextRuntimeEnemySequence <= highestSequence)
+            nextRuntimeEnemySequence = highestSequence + 1;
+    }
+
+    private string CreateRuntimeEnemyPlacementKey()
+    {
+        int sequence = Mathf.Max(1, nextRuntimeEnemySequence);
+        nextRuntimeEnemySequence = sequence + 1;
+        return MapProgressKey.ForRuntimeEnemy(ResolveRuntimeSpawnSourceKey(), sequence);
+    }
+
+    private string ResolveRuntimeSpawnSourceKey()
+    {
+        return !string.IsNullOrWhiteSpace(runtimeSpawnSourceKey)
+            ? runtimeSpawnSourceKey
+            : $"{gameObject.scene.name}_{name}";
     }
 
     private List<Vector2Int> GetBottomSpawnCells(Transform originTransform, Vector2Int baseGrid)

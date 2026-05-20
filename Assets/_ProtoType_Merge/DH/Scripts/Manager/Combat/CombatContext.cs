@@ -43,16 +43,22 @@ public class CombatContext : MonoBehaviour
 
     public void RegisterCombatEnemy(string enemyId, System.Collections.Generic.IReadOnlyList<int> unitIndices)
     {
+        RegisterCombatEnemy(enemyId, string.Empty, unitIndices);
+    }
+
+    public void RegisterCombatEnemy(string enemyId, string placementKey, System.Collections.Generic.IReadOnlyList<int> unitIndices)
+    {
         if (string.IsNullOrWhiteSpace(enemyId))
             return;
 
         if (combatEnemy == null)
         {
-            combatEnemy = new CombatEnemyPersistentData(enemyId, unitIndices);
+            combatEnemy = new CombatEnemyPersistentData(enemyId, placementKey, unitIndices);
             return;
         }
 
         combatEnemy.SetEnemyId(enemyId);
+        combatEnemy.SetPlacementKey(placementKey);
         combatEnemy.SetUnitIndices(unitIndices);
     }
 

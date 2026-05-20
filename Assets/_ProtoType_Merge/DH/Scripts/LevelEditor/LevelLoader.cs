@@ -145,6 +145,9 @@ public class LevelLoader : MonoBehaviour
         for (int i = 0; i < itemPlacements.Count; i++)
         {
             ItemPlacementData placement = itemPlacements[i];
+            if (Application.isPlaying && IsItemCollected(placement.GridPosition))
+                continue;
+
             if (!prefabRegistry.TryGetItemPrefab(placement.ResourceType, out ItemObject itemPrefab))
             {
                 Debug.LogWarning(
@@ -159,6 +162,12 @@ public class LevelLoader : MonoBehaviour
 
             item.ApplyInitialAmount(placement.Amount);
         }
+    }
+
+    private static bool IsItemCollected(Vector2Int grid)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.IsItemCollected(MapProgressKey.ForItem(grid));
     }
 
     private void SpawnOutposts()
@@ -182,11 +191,24 @@ public class LevelLoader : MonoBehaviour
             if (outpost == null)
                 continue;
 
+            OutpostState initialState = GetOutpostInitialState(placement.GridPosition, placement.InitialState);
             outpost.ApplyInitialData(
                 placement.OutpostType,
                 placement.ResourcePerTurn,
-                placement.InitialState);
+                initialState);
         }
+    }
+
+    private static OutpostState GetOutpostInitialState(Vector2Int grid, OutpostState fallbackState)
+    {
+        if (!Application.isPlaying)
+            return fallbackState;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository != null && repository.TryGetOutpostState(MapProgressKey.ForOutpost(grid), out OutpostState state))
+            return state;
+
+        return fallbackState;
     }
 
     private void SpawnEvents()
@@ -199,6 +221,9 @@ public class LevelLoader : MonoBehaviour
         for (int i = 0; i < eventPlacements.Count; i++)
         {
             EventPlacementData placement = eventPlacements[i];
+            if (Application.isPlaying && IsEventCompleted(placement.GridPosition, placement.EventKey))
+                continue;
+
             if (!prefabRegistry.TryGetEventPrefab(placement.EventKey, out MapEventObject eventPrefab))
             {
                 Debug.LogWarning(
@@ -213,6 +238,12 @@ public class LevelLoader : MonoBehaviour
 
             mapEvent.ApplyInitialData(placement.EventKey);
         }
+    }
+
+    private static bool IsEventCompleted(Vector2Int grid, string eventKey)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.IsEventCompleted(MapProgressKey.ForEvent(grid, eventKey));
     }
 
     private void SpawnStayEnemies()
