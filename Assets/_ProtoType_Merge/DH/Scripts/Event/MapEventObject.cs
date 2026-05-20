@@ -46,6 +46,7 @@ public class MapEventObject : MonoBehaviour
 
         if (Game.Economy.Spend(requireResource, requireAmount))
         {
+            MarkEventCompleted();
             ExecuteEvent();
             Destroy(gameObject);
             return true;
@@ -57,6 +58,16 @@ public class MapEventObject : MonoBehaviour
     {
         // TODO: 실제 이벤트 로직 구현
         Debug.Log($"[MapEvent] Executing event '{eventKey}'... Consumed {requireAmount} {requireResource}");
+    }
+
+    private void MarkEventCompleted()
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null)
+            return;
+
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        repository.MarkEventCompleted(MapProgressKey.ForEvent(GetCurrentGrid(gridManager), eventKey));
     }
 
     public Vector2Int GetCurrentGrid(GridManager gridManager)
