@@ -18,8 +18,8 @@ public class LobbyMenuController : MonoBehaviour
     [SerializeField] private GameObject _modalEnhancement;
     [SerializeField] private GameObject _modalResearch;
     [SerializeField] private GameObject _modalReplace;
-    [SerializeField] private GameObject _modalTraining;       // [JC 260515] 트레이닝 임시 placeholder 모달
-    [SerializeField] private GameObject _modalEndTurnConfirm; // [JC 260515] 턴 종료 확인 모달 (Yes/No)
+    [SerializeField] private GameObject _modalTraining;       // [JC 260514] 트레이닝 임시 placeholder 모달
+    [SerializeField] private GameObject _modalEndTurnConfirm; // [JC 260514] 턴 종료 확인 모달 (Yes/No)
     [SerializeField] private GameObject _modalCurrentParty;   // 명단 패널 역할로 재정의 (다키스트 던전 스타일, 항상 활성)
     [SerializeField] private GameObject _modalHeroInfo;       // 공용 히어로 정보 모달 (HeroProfileButton 클릭 시 표시)
     [SerializeField] private GameObject _modalMember1;        // (레거시, 폐기 후보 — HeroInfoModal로 대체)
@@ -122,7 +122,7 @@ public class LobbyMenuController : MonoBehaviour
 
     private bool TryGetHandler(string key, out UnityAction handler)
     {
-        // [JC 260515] case-insensitive 매칭 — 기존 "replace"/"member1~4" 케이스가 대소문자 불일치로 미작동하던 버그 보정
+        // [JC 260514] case-insensitive 매칭 — 기존 "replace"/"member1~4" 케이스가 대소문자 불일치로 미작동하던 버그 보정
         string normalized = key != null ? key.ToLowerInvariant() : string.Empty;
         switch (normalized)
         {
@@ -232,7 +232,7 @@ public class LobbyMenuController : MonoBehaviour
             SceneManager.LoadScene(PlayScene);
     }
 
-    // [JC 260515] 턴 종료 흐름 변경 — 확인 모달(Yes/No) 거쳐 진행.
+    // [JC 260514] 턴 종료 흐름 변경 — 확인 모달(Yes/No) 거쳐 진행.
     //   Yes  → CurrentDay++ + 로비 아웃(LoadScene PlayScene)
     //   No / ESC → 모달 닫기 (close 버튼 자동 바인딩 + ESC는 SystemMenuController.ModalRegistry 정책)
     public void OnClickEndTurn()

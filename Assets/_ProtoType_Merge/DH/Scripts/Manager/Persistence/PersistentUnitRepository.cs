@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -49,7 +50,12 @@ public class PersistentUnitRepository : MonoBehaviour
 
     public int CreateUnit(string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats)
     {
-        StatBlock ingameStats = UnitStatCalculator.CalculateIngameStats(baseStats, levelupStats, level, currentWeaponStats);
+        StatBlock ingameStats = UnitStatCalculator.CalculateIngameStats(
+            baseStats,
+            levelupStats,
+            level,
+            currentWeaponStats,
+            ResolveLevelUpTemplates());
         return CreateUnit(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, ingameStats.HP);
     }
 
@@ -103,7 +109,12 @@ public class PersistentUnitRepository : MonoBehaviour
             return true;
 
         int nextLevel = Mathf.Max(1, data.Level + safeAmount);
-        StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(data.BaseStats, data.LevelupStats, nextLevel, data.CurrentWeaponStats);
+        StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
+            data.BaseStats,
+            data.LevelupStats,
+            nextLevel,
+            data.CurrentWeaponStats,
+            ResolveLevelUpTemplates());
         data.ApplyRuntimeState(
             data.UnitTemplateKey,
             nextLevel,
@@ -116,6 +127,12 @@ public class PersistentUnitRepository : MonoBehaviour
             nextIngameStats,
             nextIngameStats.HP);
         return true;
+    }
+
+    private static IReadOnlyList<LevelUpData> ResolveLevelUpTemplates()
+    {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        return catalog != null ? catalog.GetLevelUpTemplates() : null;
     }
 
     public void ClearAllUnits()
@@ -153,5 +170,44 @@ public class PersistentUnitRepository : MonoBehaviour
 
         if (nextUnitIndex <= highestIndex)
             nextUnitIndex = highestIndex + 1;
+    }
+
+    private const string DiskFileName = "persistent_units_repo.json";
+
+    [System.Serializable]
+    private class UnitRepositoryDiskPayload
+    {
+        public int nextUnitIndex;
+        public UnitPersistentDataDiskRow[] units;
+    }
+
+    /// <summary>메모리상 유닛 목록을 Application.persistentDataPath JSON으로 저장합니다.</summary>
+    public void SaveRuntimeStateToDisk()
+    {
+        try
+        {
+            UnitPersistentDataDiskRow[] rows;
+            if (units == null || units.Count == 0)
+                rows = System.Array.Empty<UnitPersistentDataDiskRow>();
+            else
+            {
+                rows = new UnitPersistentDataDiskRow[units.Count];
+                for (int i = 0; i < units.Count; i++)
+                    rows[i] = UnitPersistentDataDiskRow.From(units[i]);
+            }
+
+            var payload = new UnitRepositoryDiskPayload
+            {
+                nextUnitIndex = nextUnitIndex,
+                units = rows
+            };
+
+            string path = Path.Combine(Application.persistentDataPath, DiskFileName);
+            File.WriteAllText(path, JsonUtility.ToJson(payload));
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[PersistentUnitRepository] SaveRuntimeStateToDisk 실패: {ex.Message}", this);
+        }
     }
 }

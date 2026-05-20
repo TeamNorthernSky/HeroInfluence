@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// [JC 단독 규격, 260515 DH 정문 정책으로 일원화]
+/// [JC 단독 규격, 260514 DH 정문 정책으로 일원화]
 /// Castle GO에 부착. PartyGridMover.GridEntered 이벤트를 구독해
 /// CastleUnit.IsInteractionCell(partyGrid) 매칭으로 방문 판정 → HQVisitState에 방문 파티 ID 등록.
 /// 매프레임 폴링이 아니라 그리드 진입 이벤트 시점에만 재평가하므로 성능 부담이 없고 즉시 반응한다.
 ///
 /// 변경 이력:
 /// - 260513 신설: castleGrid + targetGridOffsets 매칭 방식
-/// - 260515 일원화: DH IsInteractionCell 호출로 변경. targetGridOffsets·gridManager·castleGrid 계산 폐기.
+/// - 260514 일원화: DH IsInteractionCell 호출로 변경. targetGridOffsets·gridManager·castleGrid 계산 폐기.
 ///   사유: DH 5차 신본에서 2×2 건물 정문(하단 1줄) 진입 정책 도입. HI 방문 판정도 동일 위치로 통일하여
 ///   "정문 도착 = 방문중" 자연 흐름 + DH 정책 변경 자동 추종.
 ///
@@ -104,7 +104,7 @@ public class CastleHQVisitDetector : MonoBehaviour
             var mover = subscribedMovers[i];
             if (mover == null) continue;
 
-            // [JC 260515 일원화] DH 정문 정책(IsInteractionCell)에 위임. 본부의 진입 셀 = 방문 위치.
+            // [JC 260514 일원화] DH 정문 정책(IsInteractionCell)에 위임. 본부의 진입 셀 = 방문 위치.
             if (!castleUnit.IsInteractionCell(mover.GetCurrentGrid())) continue;
 
             PartyIdentity identity = mover.GetComponent<PartyIdentity>();

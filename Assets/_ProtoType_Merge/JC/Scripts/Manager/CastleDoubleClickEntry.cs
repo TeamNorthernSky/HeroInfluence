@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-// [JC 신설 260515] DHScene_3 본부 더블클릭 로비 진입 트리거.
+// [JC 신설 260514] DHScene_3 본부 더블클릭 로비 진입 트리거.
 // 부착 위치: Castle GO (CastleUnit + Collider 보유한 prefab 인스턴스).
 // 조건: HQVisitState.HasVisitingParty=true (방문 중인 파티 존재) + ModalRegistry.HasAny=false + MapEventPanel 비활성 + UI 위가 아닐 때.
 // 동작: 좌클릭 더블클릭 감지 → GameSceneManager.Instance.LoadLobby() 호출.

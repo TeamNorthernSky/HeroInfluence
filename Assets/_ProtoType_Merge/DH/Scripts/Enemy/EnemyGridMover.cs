@@ -33,8 +33,6 @@ public class EnemyGridMover : MonoBehaviour
     private EnemyComposition enemyComposition;
 
     public string EnemyId => enemyIdentity != null ? enemyIdentity.EnemyId : string.Empty;
-    // [JC 추가 260513 / 260515 머지후처리] EnemyPartyPool 인스턴스 식별자 wrapping (CombatEncounterManager·BattleSceneManager 사용)
-    public string InstanceId => enemyIdentity != null ? enemyIdentity.InstanceId : string.Empty;
     public int MovePointsPerTurn => Mathf.Max(0, movePointsPerTurn);
     public EnemyBehaviorType BehaviorType => behaviorType;
     public bool IsStayEnemy => behaviorType == EnemyBehaviorType.StayEnemy;
@@ -56,11 +54,14 @@ public class EnemyGridMover : MonoBehaviour
     private void OnEnable()
     {
         ResolveRegistry();
+        GridChanged -= HandleGridChanged;
+        GridChanged += HandleGridChanged;
         enemyRegistry?.Register(this);
     }
 
     private void OnDisable()
     {
+        GridChanged -= HandleGridChanged;
         enemyRegistry?.Unregister(this);
     }
 
@@ -80,11 +81,10 @@ public class EnemyGridMover : MonoBehaviour
         enemyIdentity?.SetEnemyId(nextEnemyId);
     }
 
-    // [JC 추가 260513 / 260515 머지후처리] EnemyPartyPool 인스턴스 ID 주입 (외부 호출처 없을 수도 — 보존)
-    public void InitializeInstanceId(string nextInstanceId)
+    public void InitializePlacementIdentity(string nextPlacementKey)
     {
         enemyIdentity ??= GetComponent<EnemyIdentity>();
-        enemyIdentity?.SetInstanceId(nextInstanceId);
+        enemyIdentity?.SetPlacementKey(nextPlacementKey);
     }
 
     public void SetBehaviorType(EnemyBehaviorType nextBehaviorType)
@@ -159,5 +159,18 @@ public class EnemyGridMover : MonoBehaviour
 
         if (enemyComposition == null)
             enemyComposition = GetComponent<EnemyComposition>();
+    }
+
+    private void HandleGridChanged(EnemyGridMover enemy, Vector2Int grid)
+    {
+        if (!Application.isPlaying || enemy != this)
+            return;
+
+        enemyIdentity ??= GetComponent<EnemyIdentity>();
+        if (enemyIdentity == null || string.IsNullOrWhiteSpace(enemyIdentity.PlacementKey))
+            return;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        repository?.SetEnemyGrid(enemyIdentity.PlacementKey, grid);
     }
 }

@@ -59,6 +59,7 @@ public class Outpost : MonoBehaviour
         {
             outpostState = OutpostState.Claimed;
             ApplyStateMaterial();
+            SaveProgressState();
             OutpostClaimed?.Invoke(this);
         }
     }
@@ -70,9 +71,10 @@ public class Outpost : MonoBehaviour
 
         outpostState = OutpostState.EnemyClaimed;
         ApplyStateMaterial();
+        SaveProgressState();
     }
 
-    // [JC 260515 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 인자 폐기. Game.Economy 단축 접근자 사용.
+    // [JC 260514 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 인자 폐기. Game.Economy 단축 접근자 사용.
     public void ProduceForTurn()
     {
         if (!IsPlayerClaimed)
@@ -122,6 +124,20 @@ public class Outpost : MonoBehaviour
             return;
 
         targetRenderer.material = nextMaterial;
+    }
+
+    private void SaveProgressState()
+    {
+        if (!Application.isPlaying)
+            return;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null)
+            return;
+
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        Vector2Int anchorGrid = GetAnchorGrid(gridManager);
+        repository.SetOutpostState(MapProgressKey.ForOutpost(anchorGrid), outpostState);
     }
 
     private void ResolveOutpostRegistry()

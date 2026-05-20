@@ -39,13 +39,14 @@ public class MapEventObject : MonoBehaviour
         EventInteracted?.Invoke(this);
     }
 
-    // [JC 260515 머지후처리] ResourceManager 직접 의존 폐기 → Game.Economy 사용
+    // [JC 260514 머지후처리] ResourceManager 직접 의존 폐기 → Game.Economy 사용
     public bool TryExecuteEvent()
     {
         if (Game.Economy == null) return false;
 
         if (Game.Economy.Spend(requireResource, requireAmount))
         {
+            MarkEventCompleted();
             ExecuteEvent();
             Destroy(gameObject);
             return true;
@@ -57,6 +58,16 @@ public class MapEventObject : MonoBehaviour
     {
         // TODO: 실제 이벤트 로직 구현
         Debug.Log($"[MapEvent] Executing event '{eventKey}'... Consumed {requireAmount} {requireResource}");
+    }
+
+    private void MarkEventCompleted()
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null)
+            return;
+
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        repository.MarkEventCompleted(MapProgressKey.ForEvent(GetCurrentGrid(gridManager), eventKey));
     }
 
     public Vector2Int GetCurrentGrid(GridManager gridManager)

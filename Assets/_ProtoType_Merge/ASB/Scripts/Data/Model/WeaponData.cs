@@ -65,7 +65,13 @@ public class WeaponData
             skillSubValue = WeaponSkillSubValue,
             boundary = WeaponSkillMultiTarget != null
                 ? new List<int>(WeaponSkillMultiTarget)
-                : new List<int>()
+                : new List<int>(),
+            AnimationTrigger = "Attack",
+            StateName = string.Empty,
+            UseAnimEvent = false,
+            HitDelay = 0.25f,
+            TotalDelay = 0.5f,
+            TargetAnimationTrigger = string.Empty
         };
 
         return result;

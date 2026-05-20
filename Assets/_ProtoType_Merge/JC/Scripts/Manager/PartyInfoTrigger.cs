@@ -21,7 +21,7 @@ public class PartyInfoTrigger : MonoBehaviour
     {
         if (!Input.GetMouseButtonDown(1)) return;
         if (WorldInputGate.IsBlocked) return;
-        // [JC 260515 추가] MapEventPanel 활성 중엔 파티 정보 모달 출력 차단 (사용자 요구)
+        // [JC 260514 추가] MapEventPanel 활성 중엔 파티 정보 모달 출력 차단 (사용자 요구)
         if (MapEventPanelUI.IsAnyActive) return;
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
         if (worldCamera == null) return;
