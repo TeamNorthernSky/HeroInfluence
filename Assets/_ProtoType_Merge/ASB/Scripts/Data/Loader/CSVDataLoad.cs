@@ -754,8 +754,18 @@ public static class CSVLoader
                 boundary = ParseIntListField(GetField(fields, 10)),
                 multiTargetCount = ParseIntOrDefault(GetField(fields, 12), 0),
                 skillValue = ParseFloatSafe(GetField(fields, 13), 1f),
-                skillSubValue = ParseFloatSafe(GetField(fields, 14), 0f)
+                skillSubValue = ParseFloatSafe(GetField(fields, 14), 0f),
+                AnimationTrigger = fields.Count > 15 ? GetField(fields, 15) : "Attack",
+                StateName = fields.Count > 16 ? GetField(fields, 16) : string.Empty,
+                UseAnimEvent = fields.Count > 17 && ParseBoolMarker(GetField(fields, 17)),
+                HitDelay = fields.Count > 18 ? ParseFloatSafe(GetField(fields, 18), 0.25f) : 0.25f,
+                TotalDelay = fields.Count > 19 ? ParseFloatSafe(GetField(fields, 19), 0.5f) : 0.5f
             };
+
+            if (string.IsNullOrWhiteSpace(row.AnimationTrigger))
+            {
+                row.AnimationTrigger = "Attack";
+            }
 
             result.Add(row);
         }
