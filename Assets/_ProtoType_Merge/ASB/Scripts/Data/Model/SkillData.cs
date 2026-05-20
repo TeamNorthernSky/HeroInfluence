@@ -40,4 +40,32 @@ public class SkillData
     public int multiTargetCount;
     public float skillValue;
     public float skillSubValue;
+
+    [Header("Animation (Hybrid)")]
+    public string AnimationTrigger = "Attack";
+    public string StateName;
+    public bool UseAnimEvent;
+    public float HitDelay = 0.25f;
+    public float TotalDelay = 0.5f;
+    public string TargetAnimationTrigger;
+
+    /// <summary>비어 있으면 classSkillEffect 기준: 딜(0)→Hit, 힐/부활(1·2)→HealReceive.</summary>
+    public string ResolvedTargetAnimationTrigger
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(TargetAnimationTrigger))
+            {
+                return TargetAnimationTrigger.Trim();
+            }
+
+            return IsHealOrBuffSkill() ? "HealReceive" : "Hit";
+        }
+    }
+
+    private bool IsHealOrBuffSkill()
+    {
+        // classSkillEffect: 0=공격, 1=힐, 2=부활 (TargetingHelper·BattleManager와 동일)
+        return classSkillEffect == 1 || classSkillEffect == 2;
+    }
 }

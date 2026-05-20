@@ -228,6 +228,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     private void Awake()
     {
         EnsureRuntimeInstanceKey();
+        EnsureAnimationController();
 
         if (EquippedEquipments == null)
         {
@@ -619,6 +620,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
         IsDead = true;
         currentHp = 0f;
+        EnsureAnimationController();
+        Anim?.PlayGenericAnimation("Die");
         OnDied?.Invoke(this);
         DisableVisuals();
     }
@@ -674,11 +677,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         currentHp = Mathf.Clamp(MaxHp * ratio, 1f, MaxHp);
         EnableVisuals();
 
-        var animator = GetComponentInChildren<Animator>(true);
-        if (animator != null && animator.isActiveAndEnabled)
-        {
-            animator.SetTrigger("Revive");
-        }
+        EnsureAnimationController();
+        Anim?.PlayGenericAnimation("Revive");
 
         Debug.Log($"[Battle] Revive: {UnitName} HP={currentHp:F1}/{MaxHp:F1} (ratio={ratio:0.##})");
     }
