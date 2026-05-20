@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Serialization;
+using System.Collections.Generic;
 
 [DisallowMultipleComponent]
 public class PartyUnitState : MonoBehaviour
@@ -149,7 +150,18 @@ public class PartyUnitState : MonoBehaviour
 
     public void RecalculateIngameStats()
     {
-        ingameStats = UnitStatCalculator.CalculateIngameStats(baseStats, levelupStats, Level, currentWeaponStats);
+        ingameStats = UnitStatCalculator.CalculateIngameStats(
+            baseStats,
+            levelupStats,
+            Level,
+            currentWeaponStats,
+            ResolveLevelUpTemplates());
+    }
+
+    private static IReadOnlyList<LevelUpData> ResolveLevelUpTemplates()
+    {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        return catalog != null ? catalog.GetLevelUpTemplates() : null;
     }
 
     private void OnValidate()
