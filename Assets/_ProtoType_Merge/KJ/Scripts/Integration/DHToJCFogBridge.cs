@@ -127,8 +127,8 @@ public class DHToJCFogBridge : MonoBehaviour
         if (activeMover != null)
             lastFogGrid = activeMover.GetCurrentGrid();
 
-        // if (logResolutionState)
-        //     Debug.Log($"[DHToJCFogBridge] RefreshFog activeMover={(activeMover != null ? activeMover.name : "null")} parties={partyMovers.Length} radius={sightRadiusCells}", this);
+        if (logResolutionState)
+            Debug.Log($"[DHToJCFogBridge] RefreshFog activeMover={(activeMover != null ? activeMover.name : "null")} parties={partyMovers.Length} radius={sightRadiusCells}", this);
     }
 
     private void Subscribe()
@@ -249,6 +249,6 @@ public class DHToJCFogBridge : MonoBehaviour
         string fogName = fogManager == null ? "null" : fogManager.name;
         string moverName = activeMover == null ? "null" : activeMover.name;
         int moverCount = partyMovers == null ? 0 : partyMovers.Length;
-        // Debug.Log($"[DHToJCFogBridge] {context} fogManager={fogName} activeMover={moverName} partyMovers={moverCount}", this);
+        Debug.Log($"[DHToJCFogBridge] {context} fogManager={fogName} activeMover={moverName} partyMovers={moverCount}", this);
     }
 }

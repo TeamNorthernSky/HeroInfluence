@@ -1,5 +1,10 @@
 Shader "Custom/KJ/StencilWrite"
 {
+    Properties
+    {
+        _StencilRef ("Stencil Ref", Float) = 1
+    }
+
     SubShader
     {
         Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" }
@@ -19,7 +24,7 @@ Shader "Custom/KJ/StencilWrite"
 
             Stencil
             {
-                Ref 1
+                Ref [_StencilRef]
                 Comp Always   // 항상 통과
                 Pass Replace  // 스텐실 버퍼에 Ref(1) 기록
             }
