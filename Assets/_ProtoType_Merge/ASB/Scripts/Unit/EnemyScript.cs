@@ -201,7 +201,8 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
                 SkillData classSkill = decision != null ? decision.SelectedSkill : self.SelectedSkillData;
                 if (classSkill != null)
                 {
-                    yield return StartCoroutine(battleManager.ExecuteGridSkill(self, target, classSkill));
+                    SkillData classSkillForExecution = PrepareEnemySkillExecutionCopy(classSkill);
+                    yield return StartCoroutine(battleManager.ExecuteGridSkill(self, target, classSkillForExecution));
                 }
                 else
                 {
@@ -213,7 +214,7 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             case EnemyActionType.WeaponSkill:
                 if (self.EquippedWeaponData != null)
                 {
-                    SkillData converted = self.EquippedWeaponData.ToSkillData();
+                    SkillData converted = PrepareEnemySkillExecutionCopy(self.EquippedWeaponData.ToSkillData());
                     yield return StartCoroutine(battleManager.ExecuteGridSkill(self, target, converted));
                 }
                 else
@@ -313,6 +314,86 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         }
 
         return string.Join(", ", labels);
+    }
+
+    /// <summary>적 스킬 실행용 복사본. 애니 필드가 비어 있으면 EnemyDataSheet 폴백 기본값을 채웁니다(원본 SkillData는 변경하지 않음).</summary>
+    private static SkillData PrepareEnemySkillExecutionCopy(SkillData source)
+    {
+        if (source == null)
+        {
+            return null;
+        }
+
+        SkillData copy = CloneSkillData(source);
+        if (!NeedsEnemyAnimationFallback(copy))
+        {
+            return copy;
+        }
+
+        if (string.IsNullOrWhiteSpace(copy.AnimationTrigger))
+        {
+            copy.AnimationTrigger = "Attack";
+        }
+
+        if (copy.HitDelay <= 0f)
+        {
+            copy.HitDelay = 0.25f;
+        }
+
+        if (copy.TotalDelay <= 0f)
+        {
+            copy.TotalDelay = 0.5f;
+        }
+
+        if (string.IsNullOrWhiteSpace(copy.TargetAnimationTrigger))
+        {
+            copy.TargetAnimationTrigger = "Hit";
+        }
+
+        copy.UseAnimEvent = false;
+        return copy;
+    }
+
+    private static bool NeedsEnemyAnimationFallback(SkillData skill)
+    {
+        if (skill == null)
+        {
+            return false;
+        }
+
+        return string.IsNullOrWhiteSpace(skill.AnimationTrigger)
+               || string.IsNullOrWhiteSpace(skill.TargetAnimationTrigger)
+               || skill.HitDelay <= 0f
+               || skill.TotalDelay <= 0f;
+    }
+
+    private static SkillData CloneSkillData(SkillData source)
+    {
+        return new SkillData
+        {
+            skillIndex = source.skillIndex,
+            skillClass = source.skillClass,
+            acquireLevel = source.acquireLevel,
+            skillName = source.skillName,
+            description = source.description,
+            ipCost = source.ipCost,
+            classSkillEffect = source.classSkillEffect,
+            classSkillRange = source.classSkillRange,
+            EnemySkill1Range = source.EnemySkill1Range,
+            EnemySkill2Range = source.EnemySkill2Range,
+            classSkillRangeLine = source.classSkillRangeLine,
+            classSkillTarget = source.classSkillTarget,
+            boundary = source.boundary != null ? new List<int>(source.boundary) : new List<int>(),
+            multiTargetCount = source.multiTargetCount,
+            skillValue = source.skillValue,
+            skillSubValue = source.skillSubValue,
+            AnimationTrigger = source.AnimationTrigger,
+            StateName = source.StateName,
+            UseAnimEvent = source.UseAnimEvent,
+            HitDelay = source.HitDelay,
+            TotalDelay = source.TotalDelay,
+            TargetAnimationTrigger = source.TargetAnimationTrigger
+        };
     }
 
 #if UNITY_EDITOR

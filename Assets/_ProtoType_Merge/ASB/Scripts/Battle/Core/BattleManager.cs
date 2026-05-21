@@ -16,6 +16,9 @@ public class BattleManager : MonoBehaviour
 
     private const int ClassSkillEffect_Heal = 1;
     private const int ClassSkillEffect_Revive = 2;
+    private const int ClassSkillEffect_Buff = 3;
+
+    private const float AnimEventTimeoutSeconds = 2f;
 
     private void Awake()
     {
@@ -83,7 +86,14 @@ public class BattleManager : MonoBehaviour
                     damageContext.CanTriggerCounter = CanTriggerCounterattack(damageContext);
                 }
 
-                totalDamageDealt += ApplyDamage(damageContext);
+                SkillData hitAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(damageContext));
+                yield return RunSkillSequenceCore(
+                    damageContext.Caster,
+                    damageContext.Target,
+                    hitAnimSkill,
+                    playBasicAttackAnimation: false,
+                    playTargetHitAnimation: true,
+                    () => { totalDamageDealt += ApplyDamage(damageContext); });
 
                 float delay = Mathf.Max(0f, damageContext.DelayAfter);
                 if (delay > 0f)
@@ -241,8 +251,29 @@ public class BattleManager : MonoBehaviour
         if (skillData.classSkillEffect == ClassSkillEffect_Heal)
         {
             float heal = Mathf.Max(0f, actor.FinalStats.Atk * multiplier);
-            target.ApplyHeal(heal);
+            SkillData healAnimSkill = ResolveSkillAnimationData(skillData);
+            yield return RunSkillSequenceCore(
+                actor,
+                target,
+                healAnimSkill,
+                playBasicAttackAnimation: false,
+                playTargetHitAnimation: false,
+                () => target.ApplyHeal(heal));
             Debug.Log($"[Battle] GridHeal: {GetLabel(actor)} -> {GetLabel(target)} heal={heal:F1} (×{multiplier:0.##})");
+            onCompleted?.Invoke(true);
+            yield break;
+        }
+
+        if (skillData.classSkillEffect == ClassSkillEffect_Buff)
+        {
+            SkillData buffAnimSkill = ResolveSkillAnimationData(skillData);
+            yield return RunSkillSequenceCore(
+                actor,
+                target,
+                buffAnimSkill,
+                playBasicAttackAnimation: false,
+                playTargetHitAnimation: false,
+                () => ApplyBuff(actor, target, skillData));
             onCompleted?.Invoke(true);
             yield break;
         }
@@ -258,13 +289,34 @@ public class BattleManager : MonoBehaviour
             IsCounterAttack = false
         };
         context.IsCritical = CombatCalculator.RollCritical(context);
-        float dealt = ApplyDamage(context);
+
+        float dealt = 0f;
+        SkillData damageAnimSkill = ResolveSkillAnimationData(skillData);
+        yield return RunSkillSequenceCore(
+            actor,
+            target,
+            damageAnimSkill,
+            playBasicAttackAnimation: false,
+            playTargetHitAnimation: true,
+            () => { dealt = ApplyDamage(context); });
+
         if (context.DelayAfter > 0f)
         {
             yield return new WaitForSeconds(context.DelayAfter);
         }
         Debug.Log($"[Battle] GridSkill: {GetLabel(actor)} -> {GetLabel(target)} dmg={dealt:F1} (×{multiplier:0.##})");
         onCompleted?.Invoke(true);
+    }
+
+    private static void ApplyBuff(BattleCharactor actor, BattleCharactor target, SkillData skillData)
+    {
+        if (actor == null || target == null || skillData == null)
+        {
+            return;
+        }
+
+        Debug.Log(
+            $"[Battle] GridBuff: {GetLabel(actor)} -> {GetLabel(target)} (×{Mathf.Max(0.01f, skillData.skillValue):0.##})");
     }
 
     public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, float skillPercent, Action<bool> onCompleted = null)
@@ -342,7 +394,17 @@ public class BattleManager : MonoBehaviour
             IsCounterAttack = isCounterAttack
         };
         context.IsCritical = CombatCalculator.RollCritical(context);
-        float dmg = ApplyDamage(context);
+
+        float dmg = 0f;
+        SkillData basicAttackAnim = ResolveSkillAnimationData(null);
+        yield return RunSkillSequenceCore(
+            actor,
+            target,
+            basicAttackAnim,
+            playBasicAttackAnimation: true,
+            playTargetHitAnimation: true,
+            () => { dmg = ApplyDamage(context); });
+
         if (context.DelayAfter > 0f)
         {
             yield return new WaitForSeconds(context.DelayAfter);
@@ -432,7 +494,17 @@ public class BattleManager : MonoBehaviour
             IsCounterAttack = false
         };
         context.IsCritical = CombatCalculator.RollCritical(context);
-        float dealt = ApplyDamage(context);
+
+        float dealt = 0f;
+        SkillData assetAnimSkill = ResolveSkillAnimationData(SkillDataFromAsset(skillData));
+        yield return RunSkillSequenceCore(
+            actor,
+            target,
+            assetAnimSkill,
+            playBasicAttackAnimation: false,
+            playTargetHitAnimation: true,
+            () => { dealt = ApplyDamage(context); });
+
         if (context.DelayAfter > 0f)
         {
             yield return new WaitForSeconds(context.DelayAfter);
@@ -444,6 +516,174 @@ public class BattleManager : MonoBehaviour
         {
             Debug.Log($"[Battle] 처치: {GetLabel(target)}");
         }
+    }
+
+    private static SkillData CreateDefaultAnimationSkillData()
+    {
+        return new SkillData
+        {
+            AnimationTrigger = "Attack",
+            HitDelay = 0.25f,
+            TotalDelay = 0.5f,
+            TargetAnimationTrigger = "Hit",
+            UseAnimEvent = false
+        };
+    }
+
+    private static SkillData ResolveSkillAnimationData(SkillData source)
+    {
+        if (source == null || string.IsNullOrWhiteSpace(source.AnimationTrigger))
+        {
+            SkillData defaults = CreateDefaultAnimationSkillData();
+            if (source == null)
+            {
+                return defaults;
+            }
+
+            SkillData copy = CloneSkillDataForAnimation(source);
+            copy.AnimationTrigger = defaults.AnimationTrigger;
+            copy.HitDelay = defaults.HitDelay;
+            copy.TotalDelay = defaults.TotalDelay;
+            copy.TargetAnimationTrigger = defaults.TargetAnimationTrigger;
+            copy.UseAnimEvent = defaults.UseAnimEvent;
+            return copy;
+        }
+
+        return source;
+    }
+
+    private static SkillData SkillDataFromAsset(SkillDataAsset asset)
+    {
+        if (asset == null)
+        {
+            return null;
+        }
+
+        return new SkillData
+        {
+            AnimationTrigger = asset.AnimationTrigger,
+            StateName = asset.StateName,
+            UseAnimEvent = asset.UseAnimEvent,
+            HitDelay = asset.HitDelay,
+            TotalDelay = asset.TotalDelay
+        };
+    }
+
+    private static SkillData CloneSkillDataForAnimation(SkillData source)
+    {
+        return new SkillData
+        {
+            skillIndex = source.skillIndex,
+            skillClass = source.skillClass,
+            acquireLevel = source.acquireLevel,
+            skillName = source.skillName,
+            description = source.description,
+            ipCost = source.ipCost,
+            classSkillEffect = source.classSkillEffect,
+            classSkillRange = source.classSkillRange,
+            EnemySkill1Range = source.EnemySkill1Range,
+            EnemySkill2Range = source.EnemySkill2Range,
+            classSkillRangeLine = source.classSkillRangeLine,
+            classSkillTarget = source.classSkillTarget,
+            boundary = source.boundary != null ? new System.Collections.Generic.List<int>(source.boundary) : new System.Collections.Generic.List<int>(),
+            multiTargetCount = source.multiTargetCount,
+            skillValue = source.skillValue,
+            skillSubValue = source.skillSubValue,
+            AnimationTrigger = source.AnimationTrigger,
+            StateName = source.StateName,
+            UseAnimEvent = source.UseAnimEvent,
+            HitDelay = source.HitDelay,
+            TotalDelay = source.TotalDelay,
+            TargetAnimationTrigger = source.TargetAnimationTrigger
+        };
+    }
+
+    private static SkillData TryGetSkillDataForDamageContext(DamageContext damageContext)
+    {
+        if (damageContext == null)
+        {
+            return null;
+        }
+
+        if (damageContext.Caster != null && damageContext.Caster.availableSkills != null)
+        {
+            for (int i = 0; i < damageContext.Caster.availableSkills.Count; i++)
+            {
+                SkillData skill = damageContext.Caster.availableSkills[i];
+                if (skill != null && skill.skillIndex == damageContext.SkillIndex)
+                {
+                    return skill;
+                }
+            }
+        }
+
+        SkillDataLoader loader = UnityEngine.Object.FindFirstObjectByType<SkillDataLoader>(FindObjectsInactive.Include);
+        if (loader != null && loader.TryGetSkill(damageContext.SkillIndex, out SkillData loaded) && loaded != null)
+        {
+            return loaded;
+        }
+
+        return null;
+    }
+
+    private IEnumerator RunSkillSequenceCore(
+        BattleCharactor actor,
+        BattleCharactor target,
+        SkillData skill,
+        bool playBasicAttackAnimation,
+        bool playTargetHitAnimation,
+        Action onHitCallback)
+    {
+        if (actor == null)
+        {
+            onHitCallback?.Invoke();
+            yield break;
+        }
+
+        skill = ResolveSkillAnimationData(skill);
+        actor.EnsureAnimationController();
+        CharactorAnimationController actorAnim = actor.Anim;
+
+        float startTime = Time.time;
+        actorAnim?.ResetHitEvent();
+        actorAnim?.PlaySkillAnimation(playBasicAttackAnimation ? null : skill);
+
+        if (skill.UseAnimEvent)
+        {
+            yield return new WaitUntil(() =>
+                actorAnim != null && actorAnim.IsHitEventReached
+                || Time.time - startTime > AnimEventTimeoutSeconds);
+        }
+        else
+        {
+            yield return new WaitForSeconds(Mathf.Max(0f, skill.HitDelay));
+        }
+
+        onHitCallback?.Invoke();
+
+        if (playTargetHitAnimation && target != null)
+        {
+            target.EnsureAnimationController();
+            target.Anim?.PlayGenericAnimation("Hit");
+        }
+
+        float elapsed = Time.time - startTime;
+        float remainingDelay = Mathf.Max(0f, skill.TotalDelay - elapsed);
+        yield return new WaitForSeconds(remainingDelay);
+
+        ReturnToIdleIfAlive(actor);
+        ReturnToIdleIfAlive(target);
+    }
+
+    private static void ReturnToIdleIfAlive(BattleCharactor unit)
+    {
+        if (unit == null || unit.IsDead)
+        {
+            return;
+        }
+
+        unit.EnsureAnimationController();
+        unit.Anim?.PlayIdleAnimation();
     }
 
     public float CalculateBasicAttackDamage(BattleCharactor actor, BattleCharactor target)
