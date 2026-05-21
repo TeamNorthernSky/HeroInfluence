@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: KJ_OutlineMaterial_UV
-  m_Shader: {fileID: 4800000, guid: 5ca0daf45723a8a44938a0e4f36551ae, type: 3}
+  m_Shader: {fileID: 4800000, guid: 5ff816aa1cdde4e468593feffe5d7267, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -29,7 +29,7 @@ Material:
     m_Floats:
     - _DepthBias: 0.001
     - _NormalSource: 2
-    - _OutlineWidth: 0.008
+    - _OutlineWidth: 0.017
     - _StencilRef: 1
     - _UseVertexAlphaWidth: 0
     - _WidthMode: 0

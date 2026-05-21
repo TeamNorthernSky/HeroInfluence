@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: KJ_OutlineMaterial
-  m_Shader: {fileID: 4800000, guid: af49605b03b190b4c9027e5fdf7eeba3, type: 3}
+  m_Shader: {fileID: 4800000, guid: 9e99820d5e342b84695194894c804398, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -117,7 +117,7 @@ Material:
     - _Metallic: 0
     - _NormalSource: 0
     - _OcclusionStrength: 1
-    - _OutlineWidth: 0.02
+    - _OutlineWidth: 0.01
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
