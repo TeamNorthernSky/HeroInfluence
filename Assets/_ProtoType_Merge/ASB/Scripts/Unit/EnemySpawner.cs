@@ -11,6 +11,8 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 /// </summary>
 public class EnemySpawner : MonoBehaviour
 {
+    private static readonly Quaternion FacingPlayerYawOffset = Quaternion.Euler(0f, 180f, 0f);
+
     [Header("Prefab Overrides (Index -> Prefab 매핑)")]
     [SerializeField] private List<PrefabMapping> prefabOverrides = new List<PrefabMapping>();
     private Dictionary<string, GameObject> _prefabOverrideDict;
@@ -220,7 +222,8 @@ public class EnemySpawner : MonoBehaviour
         }
 
         // BattleSceneManager.SyncGridOccupancy가 cell 하위에서 유닛을 탐색하므로, 반드시 GridCell 아래에 붙입니다.
-        var go = Instantiate(prefab, worldPos, worldRot, resolvedCell.transform);
+        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
+        var go = Instantiate(prefab, worldPos, facingPlayerRot, resolvedCell.transform);
         go.name = $"Enemy_{data.Index}_{go.GetInstanceID()}";
 
         // 적 인스턴스에서는 IUnitIdentifier를 EnemyScript만 담당하도록 CharactorScript 제거(클릭 식별 모호 방지).
@@ -339,7 +342,8 @@ public class EnemySpawner : MonoBehaviour
         }
 
         ClearGrid(gridNumber);
-        var go = Instantiate(prefab, worldPos, worldRot, persistentCell.transform);
+        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
+        var go = Instantiate(prefab, worldPos, facingPlayerRot, persistentCell.transform);
         go.name = $"Enemy_{data.Index}_{go.GetInstanceID()}";
 
         foreach (var legacy in go.GetComponentsInChildren<CharactorScript>(true))
@@ -418,6 +422,11 @@ public class EnemySpawner : MonoBehaviour
 
             SpawnUnit(req.unitId, req.gridNumber);
         }
+    }
+
+    private static Quaternion ApplyFacingPlayerRotation(Quaternion gridRotation)
+    {
+        return gridRotation * FacingPlayerYawOffset;
     }
 
     private static bool TryResolveGridNumber(Transform slotTransform, out int gridNumber)

@@ -397,13 +397,36 @@ public class BattleManager : MonoBehaviour
 
         float dmg = 0f;
         SkillData basicAttackAnim = ResolveSkillAnimationData(null);
-        yield return RunSkillSequenceCore(
-            actor,
-            target,
-            basicAttackAnim,
-            playBasicAttackAnimation: true,
-            playTargetHitAnimation: true,
-            () => { dmg = ApplyDamage(context); });
+
+        if (isCounterAttack)
+        {
+            // skillIndex=10 → (10/10)%10=1 → ClassSkill_1 CrossFade, WaitForSkillClipEnd 정상 동작
+            var counterSkillData = new SkillData
+            {
+                skillIndex = 10,
+                HitDelay = basicAttackAnim?.HitDelay ?? 0.25f,
+                TotalDelay = basicAttackAnim?.TotalDelay ?? 0.5f,
+                UseAnimEvent = basicAttackAnim?.UseAnimEvent ?? false
+            };
+
+            yield return RunSkillSequenceCore(
+                actor,
+                target,
+                counterSkillData,
+                playBasicAttackAnimation: false,
+                playTargetHitAnimation: true,
+                () => { dmg = ApplyDamage(context); });
+        }
+        else
+        {
+            yield return RunSkillSequenceCore(
+                actor,
+                target,
+                basicAttackAnim,
+                playBasicAttackAnimation: true,
+                playTargetHitAnimation: true,
+                () => { dmg = ApplyDamage(context); });
+        }
 
         if (context.DelayAfter > 0f)
         {
@@ -645,9 +668,14 @@ public class BattleManager : MonoBehaviour
         CharactorAnimationController actorAnim = actor.Anim;
 
         float startTime = Time.time;
+        string targetState = actorAnim != null
+            ? actorAnim.GetTargetStateName(playBasicAttackAnimation ? null : skill)
+            : string.Empty;
+
         actorAnim?.ResetHitEvent();
         actorAnim?.PlaySkillAnimation(playBasicAttackAnimation ? null : skill);
 
+        float elapsedSoFar = Time.time - startTime;
         if (skill.UseAnimEvent)
         {
             yield return new WaitUntil(() =>
@@ -656,7 +684,8 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            yield return new WaitForSeconds(Mathf.Max(0f, skill.HitDelay));
+            float remainingHitDelay = Mathf.Max(0f, skill.HitDelay - elapsedSoFar);
+            yield return new WaitForSeconds(remainingHitDelay);
         }
 
         onHitCallback?.Invoke();
@@ -667,11 +696,18 @@ public class BattleManager : MonoBehaviour
             target.Anim?.PlayGenericAnimation("Hit");
         }
 
-        float elapsed = Time.time - startTime;
-        float remainingDelay = Mathf.Max(0f, skill.TotalDelay - elapsed);
-        yield return new WaitForSeconds(remainingDelay);
+        if (actorAnim != null && !string.IsNullOrEmpty(targetState))
+        {
+            yield return StartCoroutine(actorAnim.WaitForSkillClipEnd(targetState));
+        }
 
         ReturnToIdleIfAlive(actor);
+
+        float currentElapsed = Time.time - startTime;
+        float remainingTotal = Mathf.Max(0f, skill.TotalDelay - currentElapsed);
+        float targetIdleDelay = Mathf.Max(remainingTotal, 0.2f);
+        yield return new WaitForSeconds(targetIdleDelay);
+
         ReturnToIdleIfAlive(target);
     }
 

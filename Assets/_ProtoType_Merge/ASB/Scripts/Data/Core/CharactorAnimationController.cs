@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -6,12 +7,15 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class CharactorAnimationController : MonoBehaviour
 {
-    private const string ModelChildName = "model";
+    private const string ModelChildName = "Model";
     private const string StateIdle = "Idle";
     private const string TriggerAttack = "Attack";
     private const string TriggerHit = "Hit";
     private const string BoolIsDead = "isDead";
     private const float CrossFadeDuration = 0.1f;
+    private const float StateEnterWaitTimeoutSeconds = 0.1f;
+    private const float SkillClipEndNormalizedThreshold = 0.95f;
+    private const float SkillClipEndLoopGuardSeconds = 5f;
 
     [SerializeField] private Animator _animator;
 
@@ -51,6 +55,25 @@ public class CharactorAnimationController : MonoBehaviour
             return;
         }
 
+        string stateName = ResolveSkillStateName(skill);
+        if (string.IsNullOrEmpty(stateName))
+        {
+            return;
+        }
+
+        _animator.CrossFade(stateName, CrossFadeDuration);
+    }
+
+    /// <summary>
+    /// CrossFade 스킬 상태 이름만 반환합니다. 기본 공격(SetTrigger)은 빈 문자열을 반환합니다.
+    /// </summary>
+    public string GetTargetStateName(SkillData skill)
+    {
+        if (skill == null)
+        {
+            return string.Empty;
+        }
+
         int skillIdx = skill.skillIndex;
         int animNumber = (skillIdx / 10) % 10;
         if (animNumber == 0)
@@ -58,11 +81,76 @@ public class CharactorAnimationController : MonoBehaviour
             animNumber = 1;
         }
 
-        string stateName = skillIdx >= 300000
+        return skillIdx >= 300000
             ? $"WeaponSkill_{animNumber}"
             : $"ClassSkill_{animNumber}";
+    }
 
-        _animator.CrossFade(stateName, CrossFadeDuration);
+    /// <summary>근접 반격 연출용 CrossFade 상태명 (ClassSkill_1).</summary>
+    public string GetCounterAttackStateName()
+    {
+        return "ClassSkill_1";
+    }
+
+    /// <summary>
+    /// 대상 상태 진입 후 normalizedTime이 임계값에 도달할 때까지 대기합니다.
+    /// </summary>
+    public IEnumerator WaitForSkillClipEnd(string stateName)
+    {
+        if (_animator == null || string.IsNullOrEmpty(stateName))
+        {
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (!_animator.GetCurrentAnimatorStateInfo(0).IsName(stateName)
+               && elapsed < StateEnterWaitTimeoutSeconds)
+        {
+            yield return null;
+            elapsed += Time.deltaTime;
+        }
+
+        if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(stateName))
+        {
+            yield break;
+        }
+
+        float waited = 0f;
+        while (waited < SkillClipEndLoopGuardSeconds)
+        {
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            if (!stateInfo.IsName(stateName))
+            {
+                yield break;
+            }
+
+            if (stateInfo.normalizedTime >= SkillClipEndNormalizedThreshold)
+            {
+                yield break;
+            }
+
+            yield return null;
+            waited += Time.deltaTime;
+        }
+    }
+
+    private static string ResolveSkillStateName(SkillData skill)
+    {
+        if (skill == null)
+        {
+            return TriggerAttack;
+        }
+
+        int skillIdx = skill.skillIndex;
+        int animNumber = (skillIdx / 10) % 10;
+        if (animNumber == 0)
+        {
+            animNumber = 1;
+        }
+
+        return skillIdx >= 300000
+            ? $"WeaponSkill_{animNumber}"
+            : $"ClassSkill_{animNumber}";
     }
 
     /// <summary>코루틴 종료 시점 등에서 Transition 없이 Idle로 강제 복귀합니다.</summary>
