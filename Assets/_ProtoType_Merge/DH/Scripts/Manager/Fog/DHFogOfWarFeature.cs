@@ -7,6 +7,7 @@ public class DHFogOfWarFeature : ScriptableRendererFeature
     [System.Serializable]
     public class Settings
     {
+        public bool renderFog = true;
         public Material fogMaterial;
         public RenderPassEvent renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
     }
@@ -21,6 +22,9 @@ public class DHFogOfWarFeature : ScriptableRendererFeature
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
+        if (!settings.renderFog)
+            return;
+
         if (settings.fogMaterial == null)
             return;
 

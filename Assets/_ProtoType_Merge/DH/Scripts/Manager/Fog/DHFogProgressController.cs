@@ -25,7 +25,6 @@ public class DHFogProgressController : MonoBehaviour
     private sealed class FeatureBinding
     {
         public DHFogOfWarFeature Feature;
-        public Material OriginalMaterial;
     }
 
     private void Awake()
@@ -116,7 +115,7 @@ public class DHFogProgressController : MonoBehaviour
             if (binding == null || binding.Feature == null || binding.Feature.settings == null)
                 continue;
 
-            binding.Feature.settings.fogMaterial = shouldRenderFog ? binding.OriginalMaterial : null;
+            binding.Feature.settings.renderFog = shouldRenderFog;
         }
 
         if (!shouldRenderFog)
@@ -161,18 +160,12 @@ public class DHFogProgressController : MonoBehaviour
         for (int i = 0; i < featureBindings.Count; i++)
         {
             if (featureBindings[i].Feature == feature)
-            {
-                if (featureBindings[i].OriginalMaterial == null && feature.settings != null && feature.settings.fogMaterial != null)
-                    featureBindings[i].OriginalMaterial = feature.settings.fogMaterial;
-
                 return;
-            }
         }
 
         featureBindings.Add(new FeatureBinding
         {
-            Feature = feature,
-            OriginalMaterial = feature.settings != null ? feature.settings.fogMaterial : null
+            Feature = feature
         });
     }
 
