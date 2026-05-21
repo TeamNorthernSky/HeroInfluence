@@ -115,7 +115,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0fe93d3d7e2efc4eb9ceb724b6af319, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  toggleKey: 96
+  activationKey: 96
+  activationCount: 5
+  activationWindow: 1.5
+  deactivationKey: 9
+  deactivationCount: 2
+  deactivationWindow: 1
 --- !u!1 &354756904386263571
 GameObject:
   m_ObjectHideFlags: 0
@@ -368,6 +373,7 @@ Transform:
   - {fileID: 5996219869934692149}
   - {fileID: 3228369455853739115}
   - {fileID: 8517374847922809313}
+  - {fileID: 7145529987966115601}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6892167157886770875
@@ -762,6 +768,76 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &3304956294269195362
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7145529987966115601}
+  - component: {fileID: 1802055884505800513}
+  m_Layer: 0
+  m_Name: HQStateManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7145529987966115601
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3304956294269195362}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4416921626792511709}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1802055884505800513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3304956294269195362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 082f48f7f367fdc4ba05e64e215061b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxLevel: 3
+  hqInitialLevel: 1
+  defaultCostMoney: 1000
+  defaultCostChip: 1000
+  defaultCostCrystal: 1000
+  defaultCostSupply: 1000
+  upgradeCosts:
+  - department: 0
+    fromLevel: 1
+    money: 5000
+    chip: 1000
+    crystal: 2000
+    supply: 2000
+  - department: 0
+    fromLevel: 2
+    money: 20000
+    chip: 5000
+    crystal: 10000
+    supply: 10000
+  - department: 1
+    fromLevel: 0
+    money: 1000
+    chip: 1000
+    crystal: 1000
+    supply: 1000
+  hqTurnIncome: e8030000dc050000b80b0000
 --- !u!1 &3499498562176619435
 GameObject:
   m_ObjectHideFlags: 0

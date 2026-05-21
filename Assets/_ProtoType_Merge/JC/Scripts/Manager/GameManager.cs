@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     // [JC 폐기 260512] SceneLoader 폐기. UnityEngine.SceneManagement.SceneManager 래퍼 GameSceneManager(정적)로 대체
     public UIPrefabRegistry UIPrefabRegistry { get; private set; }
     public DebugManager Debug { get; private set; }
+    public HQStateManager HQ { get; private set; }
 
     public GridManager Grid { get; private set; }
     public TurnManager Turn { get; private set; }
@@ -28,7 +29,21 @@ public class GameManager : MonoBehaviour
     public int CurrentDay
     {
         get => currentDay;
-        set => currentDay = Mathf.Max(1, value);
+        set
+        {
+            int newDay = Mathf.Max(1, value);
+            bool advanced = newDay > currentDay;
+            currentDay = newDay;
+            if (advanced)
+            {
+                if (HQ != null) HQ.OnTurnAdvanced();
+                if (HQ != null && Economy != null)
+                {
+                    int income = HQ.GetTurnIncome(HQDepartment.Headquarters);
+                    if (income > 0) Economy.Add(ResourceType.Money, income);
+                }
+            }
+        }
     }
 
     private void Awake()
@@ -56,16 +71,16 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Debug != null && Input.GetKeyDown(Debug.ToggleKey))
-        {
-            Debug.TogglePanel();
-        }
+        if (Debug != null) Debug.Tick();
     }
 
     private void InitializeManagers()
     {
         Economy = GetComponentInChildren<EconomyManager>();
         Economy.Initialize();
+
+        HQ = GetComponentInChildren<HQStateManager>(true);
+        if (HQ != null) HQ.Initialize();
 
         UIPrefabRegistry = GetComponentInChildren<UIPrefabRegistry>(true);
 

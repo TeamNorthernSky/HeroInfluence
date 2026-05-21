@@ -587,6 +587,7 @@ GameObject:
   m_Component:
   - component: {fileID: 997802605495702676}
   - component: {fileID: 4837752115359528216}
+  - component: {fileID: 2985718936010794224}
   m_Layer: 0
   m_Name: ResourceHUD
   m_TagString: Untagged
@@ -625,6 +626,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1862038354165714371}
   m_CullTransparentMesh: 1
+--- !u!114 &2985718936010794224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862038354165714371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd902ef36bc32724b982114dbb774234, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  countMoney: {fileID: 3525478508733929292}
+  countChip: {fileID: 8952336587653350275}
+  countCrystal: {fileID: 2310527159042162650}
+  countSupply: {fileID: 6368313880324155924}
 --- !u!1 &1921390799897669789
 GameObject:
   m_ObjectHideFlags: 0
