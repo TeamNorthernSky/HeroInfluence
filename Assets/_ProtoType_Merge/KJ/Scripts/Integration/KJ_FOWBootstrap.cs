@@ -7,7 +7,7 @@ namespace KJ_Work.Integration
 {
     public static class KJ_FOWBootstrap
     {
-        private const string PrefabPath = "Assets/_ProtoType_Merge/KJ/Prefabs/[KJ_FOWManager].prefab";
+        private const string PrefabPath = "Assets/KJ_Work/Prefabs/[KJ_FOWManager].prefab";
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Execute()
@@ -20,7 +20,7 @@ namespace KJ_Work.Integration
                 var go = Object.Instantiate(prefab);
                 go.name = "[KJ_FOWManager]";
                 Object.DontDestroyOnLoad(go);
-                // Debug.Log("[KJ_FOWBootstrap] KJ_FOWManager가 자동 생성되었습니다.");
+                Debug.Log("[KJ_FOWBootstrap] KJ_FOWManager가 자동 생성되었습니다.");
             }
             else
             {

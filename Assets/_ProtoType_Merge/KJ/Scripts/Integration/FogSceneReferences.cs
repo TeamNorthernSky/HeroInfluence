@@ -8,6 +8,7 @@ public class FogSceneReferences : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private AStarPathfinder pathfinder;
     [SerializeField] private PartyRegistry partyRegistry;
+    [SerializeField] private ResourceManager resourceManager;
     [SerializeField] private TurnManager turnManager;
     [SerializeField] private KJ_DHCompatibleFogManager fogManager;
     [SerializeField] private PartyGridMover[] partyMovers;
@@ -16,6 +17,7 @@ public class FogSceneReferences : MonoBehaviour
     public GridManager GridManager => gridManager;
     public AStarPathfinder Pathfinder => pathfinder;
     public PartyRegistry PartyRegistry => partyRegistry;
+    public ResourceManager ResourceManager => resourceManager;
     public TurnManager TurnManager => turnManager;
     public KJ_DHCompatibleFogManager FogManager => fogManager;
     public PartyGridMover[] PartyMovers => partyMovers;
@@ -53,6 +55,9 @@ public class FogSceneReferences : MonoBehaviour
 
         if (partyRegistry == null)
             partyRegistry = FindFirstObjectByType<PartyRegistry>();
+
+        if (resourceManager == null)
+            resourceManager = FindFirstObjectByType<ResourceManager>();
 
         if (turnManager == null)
             turnManager = FindFirstObjectByType<TurnManager>();

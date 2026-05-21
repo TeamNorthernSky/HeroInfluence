@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -9,87 +10,34 @@ namespace KJ_Work.Scripts
         [System.Serializable]
         public class OutlineSettings
         {
-            [Header("=== Stencil Pre-pass ===")]
-            [Tooltip("캐릭터 실루엣을 스텐실 버퍼에 기록할 머티리얼 (KJ_StencilWrite 셰이더)")]
+            [Header("Stencil Pre-pass")]
+            [Tooltip("Material that writes target objects into the stencil buffer.")]
             public Material stencilWriteMaterial;
 
-            [Header("=== Outline Pass ===")]
-            [Tooltip("외곽선을 그릴 머티리얼 (KJ_Outline 셰이더)")]
+            [Header("Outline Pass")]
+            [Tooltip("Material that renders the inverted-hull outline.")]
             public Material outlineMaterial;
 
-            [Header("=== 공통 설정 ===")]
-            [Tooltip("외곽선을 적용할 레이어를 선택합니다.")]
+            [Header("Common Settings")]
+            [Tooltip("Layers that should receive the outline pass.")]
             public LayerMask layerMask = -1;
+
+            [Header("Root Object Separation")]
+            [Tooltip("Use one stencil reference per root object. Meshes under the same root are merged, but different roots can draw outlines against each other.")]
+            public bool usePerRootStencil = true;
         }
 
         public OutlineSettings settings = new OutlineSettings();
 
-        // ──────────────────────────────────────────────
-        // 단일 Pass 안에서 Stencil Write와 Outline Draw를 순차적으로 실행
-        // ──────────────────────────────────────────────
-        class OutlineRenderPass : ScriptableRenderPass
-        {
-            private Material stencilMaterial;
-            private Material outlineMaterial;
-            private FilteringSettings filteringSettings;
-            private ProfilingSampler profilingSampler;
-
-            // URP에서 Lit/Toon 머티리얼을 포함하는 모든 패스 태그
-            private static readonly ShaderTagId[] shaderTagIds =
-            {
-                new ShaderTagId("UniversalForward"),
-                new ShaderTagId("UniversalForwardOnly"),
-                new ShaderTagId("LightweightForward"),
-                new ShaderTagId("SRPDefaultUnlit")
-            };
-
-            public OutlineRenderPass(Material stencilMat, Material outlineMat, LayerMask layerMask)
-            {
-                // 불투명 오브젝트 렌더링이 끝난 직후 (Skybox 렌더링 이후)
-                this.renderPassEvent = RenderPassEvent.AfterRenderingSkybox;
-                this.stencilMaterial = stencilMat;
-                this.outlineMaterial = outlineMat;
-                this.filteringSettings = new FilteringSettings(RenderQueueRange.opaque, layerMask);
-                this.profilingSampler = new ProfilingSampler("KJ Stencil & Outline Pass");
-            }
-
-            public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-            {
-                if (stencilMaterial == null || outlineMaterial == null) return;
-
-                // 커맨드 버퍼 할당
-                CommandBuffer cmd = CommandBufferPool.Get();
-                using (new ProfilingScope(cmd, profilingSampler))
-                {
-                    var sortFlags = renderingData.cameraData.defaultOpaqueSortFlags;
-                    var drawSettings = CreateDrawingSettings(shaderTagIds[0], ref renderingData, sortFlags);
-                    for (int i = 1; i < shaderTagIds.Length; i++)
-                        drawSettings.SetShaderPassName(i, shaderTagIds[i]);
-
-                    // 1번 패스 (Stencil Write)
-                    // ColorMask 0 설정으로 화면에는 보이지 않지만 스텐실 버퍼에 Ref 1을 기록
-                    drawSettings.overrideMaterial = stencilMaterial;
-                    drawSettings.overrideMaterialPassIndex = 0;
-                    context.DrawRenderers(renderingData.cullResults, ref drawSettings, ref filteringSettings);
-
-                    // 2번 패스 (Outline Draw)
-                    // 스텐실 1이 없는 영역(캐릭터 바깥)에만 외곽선을 기록
-                    drawSettings.overrideMaterial = outlineMaterial;
-                    drawSettings.overrideMaterialPassIndex = 0;
-                    context.DrawRenderers(renderingData.cullResults, ref drawSettings, ref filteringSettings);
-                }
-
-                // 버퍼 실행 및 해제
-                context.ExecuteCommandBuffer(cmd);
-                CommandBufferPool.Release(cmd);
-            }
-        }
-
-        OutlineRenderPass m_OutlinePass;
+        private OutlineRenderPass outlinePass;
 
         public override void Create()
         {
-            m_OutlinePass = new OutlineRenderPass(settings.stencilWriteMaterial, settings.outlineMaterial, settings.layerMask);
+            outlinePass = new OutlineRenderPass(
+                settings.stencilWriteMaterial,
+                settings.outlineMaterial,
+                settings.layerMask,
+                settings.usePerRootStencil);
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -101,7 +49,260 @@ namespace KJ_Work.Scripts
                 renderingData.cameraData.cameraType == CameraType.Reflection)
                 return;
 
-            renderer.EnqueuePass(m_OutlinePass);
+            renderer.EnqueuePass(outlinePass);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            outlinePass?.Dispose();
+        }
+
+        private class OutlineRenderPass : ScriptableRenderPass
+        {
+            private static readonly ShaderTagId[] ShaderTagIds =
+            {
+                new ShaderTagId("UniversalForward"),
+                new ShaderTagId("UniversalForwardOnly"),
+                new ShaderTagId("LightweightForward"),
+                new ShaderTagId("SRPDefaultUnlit")
+            };
+
+            private readonly Material stencilMaterial;
+            private readonly Material outlineMaterial;
+            private readonly LayerMask layerMask;
+            private readonly bool usePerRootStencil;
+            private FilteringSettings filteringSettings;
+            private readonly ProfilingSampler profilingSampler;
+            private readonly List<OutlineGroup> outlineGroups = new List<OutlineGroup>();
+            private readonly Dictionary<Transform, int> groupLookup = new Dictionary<Transform, int>();
+            private readonly Dictionary<int, Material> stencilMaterialByRef = new Dictionary<int, Material>();
+            private readonly Dictionary<int, Material> outlineMaterialByRef = new Dictionary<int, Material>();
+
+            public OutlineRenderPass(Material stencilMaterial, Material outlineMaterial, LayerMask layerMask, bool usePerRootStencil)
+            {
+                renderPassEvent = RenderPassEvent.AfterRenderingSkybox;
+                this.stencilMaterial = stencilMaterial;
+                this.outlineMaterial = outlineMaterial;
+                this.layerMask = layerMask;
+                this.usePerRootStencil = usePerRootStencil;
+                filteringSettings = new FilteringSettings(RenderQueueRange.opaque, layerMask);
+                profilingSampler = new ProfilingSampler("KJ Stencil & Outline Pass");
+            }
+
+            public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+            {
+                if (stencilMaterial == null || outlineMaterial == null)
+                    return;
+
+                CommandBuffer cmd = CommandBufferPool.Get();
+
+                using (new ProfilingScope(cmd, profilingSampler))
+                {
+                    if (usePerRootStencil)
+                    {
+                        DrawPerRootStencilOutlines(cmd, renderingData.cameraData.camera);
+                    }
+                    else
+                    {
+                        DrawSingleStencilOutline(context, ref renderingData);
+                    }
+                }
+
+                context.ExecuteCommandBuffer(cmd);
+                CommandBufferPool.Release(cmd);
+            }
+
+            public void Dispose()
+            {
+                DestroyCachedMaterials(stencilMaterialByRef);
+                DestroyCachedMaterials(outlineMaterialByRef);
+            }
+
+            private void DrawSingleStencilOutline(ScriptableRenderContext context, ref RenderingData renderingData)
+            {
+                SortingCriteria sortFlags = renderingData.cameraData.defaultOpaqueSortFlags;
+                DrawingSettings drawSettings = CreateDrawingSettings(ShaderTagIds[0], ref renderingData, sortFlags);
+                for (int i = 1; i < ShaderTagIds.Length; i++)
+                    drawSettings.SetShaderPassName(i, ShaderTagIds[i]);
+
+                drawSettings.overrideMaterial = stencilMaterial;
+                drawSettings.overrideMaterialPassIndex = 0;
+                context.DrawRenderers(renderingData.cullResults, ref drawSettings, ref filteringSettings);
+
+                drawSettings.overrideMaterial = outlineMaterial;
+                drawSettings.overrideMaterialPassIndex = 0;
+                context.DrawRenderers(renderingData.cullResults, ref drawSettings, ref filteringSettings);
+            }
+
+            private void DrawPerRootStencilOutlines(CommandBuffer cmd, Camera camera)
+            {
+                if (camera == null)
+                    return;
+
+                CollectOutlineGroups(camera);
+
+                for (int i = 0; i < outlineGroups.Count; i++)
+                {
+                    int stencilRef = (i % 255) + 1;
+                    Material stencilRefMaterial = GetMaterialForStencilRef(stencilMaterialByRef, stencilMaterial, stencilRef);
+                    Material outlineRefMaterial = GetMaterialForStencilRef(outlineMaterialByRef, outlineMaterial, stencilRef);
+
+                    DrawGroup(cmd, outlineGroups[i], stencilRefMaterial);
+                    DrawGroup(cmd, outlineGroups[i], outlineRefMaterial);
+                }
+            }
+
+            private void CollectOutlineGroups(Camera camera)
+            {
+                outlineGroups.Clear();
+                groupLookup.Clear();
+
+                Plane[] frustumPlanes = GeometryUtility.CalculateFrustumPlanes(camera);
+                Renderer[] renderers = UnityEngine.Object.FindObjectsByType<Renderer>(
+                    FindObjectsInactive.Exclude,
+                    FindObjectsSortMode.None);
+
+                foreach (Renderer targetRenderer in renderers)
+                {
+                    if (!ShouldDrawRenderer(targetRenderer, frustumPlanes))
+                        continue;
+
+                    Transform root = FindOutlineRoot(targetRenderer.transform);
+                    if (!groupLookup.TryGetValue(root, out int groupIndex))
+                    {
+                        groupIndex = outlineGroups.Count;
+                        groupLookup.Add(root, groupIndex);
+                        outlineGroups.Add(new OutlineGroup(root));
+                    }
+
+                    outlineGroups[groupIndex].Add(targetRenderer);
+                }
+
+                outlineGroups.Sort((a, b) =>
+                {
+                    float aDepth = Vector3.Dot(camera.transform.forward, a.Bounds.center - camera.transform.position);
+                    float bDepth = Vector3.Dot(camera.transform.forward, b.Bounds.center - camera.transform.position);
+                    return bDepth.CompareTo(aDepth);
+                });
+            }
+
+            private bool ShouldDrawRenderer(Renderer targetRenderer, Plane[] frustumPlanes)
+            {
+                return targetRenderer != null &&
+                       targetRenderer.enabled &&
+                       targetRenderer.gameObject.activeInHierarchy &&
+                       IsLayerIncluded(targetRenderer.gameObject.layer) &&
+                       GeometryUtility.TestPlanesAABB(frustumPlanes, targetRenderer.bounds);
+            }
+
+            private Transform FindOutlineRoot(Transform target)
+            {
+                Transform root = target;
+                while (root.parent != null && IsLayerIncluded(root.parent.gameObject.layer))
+                    root = root.parent;
+
+                return root;
+            }
+
+            private bool IsLayerIncluded(int layer)
+            {
+                return (layerMask.value & (1 << layer)) != 0;
+            }
+
+            private static void DrawGroup(CommandBuffer cmd, OutlineGroup group, Material material)
+            {
+                foreach (Renderer targetRenderer in group.Renderers)
+                {
+                    int subMeshCount = GetSubMeshCount(targetRenderer);
+                    for (int subMeshIndex = 0; subMeshIndex < subMeshCount; subMeshIndex++)
+                        cmd.DrawRenderer(targetRenderer, material, subMeshIndex, 0);
+                }
+            }
+
+            private static int GetSubMeshCount(Renderer targetRenderer)
+            {
+                Mesh mesh = null;
+
+                if (targetRenderer is SkinnedMeshRenderer skinnedMeshRenderer)
+                {
+                    mesh = skinnedMeshRenderer.sharedMesh;
+                }
+                else
+                {
+                    MeshFilter meshFilter = targetRenderer.GetComponent<MeshFilter>();
+                    if (meshFilter != null)
+                        mesh = meshFilter.sharedMesh;
+                }
+
+                if (mesh != null)
+                    return Mathf.Max(1, mesh.subMeshCount);
+
+                return Mathf.Max(1, targetRenderer.sharedMaterials.Length);
+            }
+
+            private static Material GetMaterialForStencilRef(Dictionary<int, Material> cache, Material sourceMaterial, int stencilRef)
+            {
+                if (!cache.TryGetValue(stencilRef, out Material material) || material == null)
+                {
+                    material = new Material(sourceMaterial)
+                    {
+                        hideFlags = HideFlags.HideAndDontSave,
+                        name = $"{sourceMaterial.name}_StencilRef{stencilRef}"
+                    };
+                    cache[stencilRef] = material;
+                }
+                else
+                {
+                    material.CopyPropertiesFromMaterial(sourceMaterial);
+                    material.renderQueue = sourceMaterial.renderQueue;
+                }
+
+                material.SetFloat("_StencilRef", stencilRef);
+                return material;
+            }
+
+            private static void DestroyCachedMaterials(Dictionary<int, Material> cache)
+            {
+                foreach (Material material in cache.Values)
+                {
+                    if (material == null)
+                        continue;
+
+                    if (Application.isPlaying)
+                        Destroy(material);
+                    else
+                        DestroyImmediate(material);
+                }
+
+                cache.Clear();
+            }
+
+            private class OutlineGroup
+            {
+                public readonly List<Renderer> Renderers = new List<Renderer>();
+                public Bounds Bounds { get; private set; }
+                private bool hasBounds;
+
+                public OutlineGroup(Transform root)
+                {
+                    Bounds = new Bounds(root.position, Vector3.zero);
+                }
+
+                public void Add(Renderer targetRenderer)
+                {
+                    Renderers.Add(targetRenderer);
+
+                    if (hasBounds)
+                    {
+                        Bounds.Encapsulate(targetRenderer.bounds);
+                    }
+                    else
+                    {
+                        Bounds = targetRenderer.bounds;
+                        hasBounds = true;
+                    }
+                }
+            }
         }
     }
 }

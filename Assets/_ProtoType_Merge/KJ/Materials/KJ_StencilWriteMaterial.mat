@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: KJ_StencilWriteMaterial
-  m_Shader: {fileID: 4800000, guid: 547f6963138e8fd448e187afb9b34774, type: 3}
+  m_Shader: {fileID: 4800000, guid: 1204c9e7f4670454480499d18da47953, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -24,6 +24,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs: []
     m_Ints: []
-    m_Floats: []
+    m_Floats:
+    - _StencilRef: 1
     m_Colors: []
   m_BuildTextureStacks: []
