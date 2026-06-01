@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -24,6 +26,18 @@ public class HeroListController : MonoBehaviour, IBeginDragHandler, IEndDragHand
     [SerializeField] private RectTransform content;
     [SerializeField] private HeroProfileButton itemPrefab;
     [SerializeField] private HeroInfoModal infoModal;
+
+    [Header("Selection Mode (옵션 — 영웅 선택 모달용)")]
+    [Tooltip("true면 클릭 시 infoModal.Open 대신 OnUnitSelected 이벤트만 발화")]
+    [SerializeField] private bool selectionMode;
+    [SerializeField] private UnityEvent<int> onUnitSelected;
+
+    public event Action<int> UnitSelected; // 코드 결합용
+
+    public void SetSelectionMode(bool enabled)
+    {
+        selectionMode = enabled;
+    }
 
     [Header("Layout (Content 크기 수동 계산용)")]
     [Tooltip("아이템 1개 높이. 프리팹의 실제 RectTransform 높이와 일치시킬 것")]
@@ -130,7 +144,10 @@ public class HeroListController : MonoBehaviour, IBeginDragHandler, IEndDragHand
 
             HeroProfileButton item = Instantiate(itemPrefab, content);
             item.gameObject.SetActive(true);
-            item.Bind(unitIndex, infoModal, unit, template, isVisiting);
+            if (selectionMode)
+                item.BindForSelect(unitIndex, InvokeSelection, unit, template, isVisiting);
+            else
+                item.Bind(unitIndex, infoModal, unit, template, isVisiting);
             spawnedItems.Add(item);
         }
 
@@ -142,6 +159,12 @@ public class HeroListController : MonoBehaviour, IBeginDragHandler, IEndDragHand
             scrollRect.verticalNormalizedPosition = 1f; // 최상단에서 시작
         }
         lastValueChangeTime = -1f;
+    }
+
+    private void InvokeSelection(int unitIndex)
+    {
+        UnitSelected?.Invoke(unitIndex);
+        onUnitSelected?.Invoke(unitIndex);
     }
 
     // [JC 수정 260512] 머지 사이클: 파티 책임이 PartyPersistentRepository로 이관됨

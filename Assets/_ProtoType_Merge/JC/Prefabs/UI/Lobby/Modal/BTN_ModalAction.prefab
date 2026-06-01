@@ -13,6 +13,31 @@ PrefabInstance:
       propertyPath: m_Name
       value: BTN_ModalAction
       objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_text
+      value: "\uBCF8\uBD80 \uC5C5\uADF8\uB808\uC774\uB4DC"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 26
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontSizeBase
+      value: 26
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4278190080
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
       propertyPath: m_Pivot.x
@@ -46,12 +71,12 @@ PrefabInstance:
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 480
+      value: 220
       objectReference: {fileID: 0}
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 128
+      value: 230.02
       objectReference: {fileID: 0}
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
@@ -91,7 +116,7 @@ PrefabInstance:
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: -340
       objectReference: {fileID: 0}
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
@@ -116,5 +141,32 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2121307353171050079, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1564215661656017715}
   m_SourcePrefab: {fileID: 100100000, guid: 1835db66e0427de429b7849b4cb27d31, type: 3}
+--- !u!1 &3434769585058343830 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2121307353171050079, guid: 1835db66e0427de429b7849b4cb27d31,
+    type: 3}
+  m_PrefabInstance: {fileID: 3664423152233534921}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1564215661656017715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3434769585058343830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b24ad0e4609a35643a8c168c09afd885, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  department: 0
+  lockedOverlay: {fileID: 0}
+  targetModalRoot: {fileID: 0}
+  lvBgRoot: {fileID: 0}
+  levelText: {fileID: 0}

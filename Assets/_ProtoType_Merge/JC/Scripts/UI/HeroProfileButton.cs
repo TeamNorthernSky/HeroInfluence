@@ -1,10 +1,12 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// 보유 히어로 명단의 1명 프로필 버튼. 프리팹용. HeroListController가 동적 생성.
-/// 클릭 시 공용 HeroInfoModal.Open(unitIndex) 호출.
+/// 기본 모드: 클릭 시 공용 HeroInfoModal.Open(unitIndex).
+/// 선택 모드: BindForSelect로 외부 콜백 결합 시 클릭 → 콜백 호출 (홍보 영웅 선택 등).
 /// </summary>
 [DisallowMultipleComponent]
 public class HeroProfileButton : MonoBehaviour
@@ -22,6 +24,7 @@ public class HeroProfileButton : MonoBehaviour
 
     private int unitIndex;
     private HeroInfoModal infoModal;
+    private Action<int> selectCallback;
 
     private void Awake()
     {
@@ -33,7 +36,20 @@ public class HeroProfileButton : MonoBehaviour
     {
         this.unitIndex = unitIndex;
         this.infoModal = infoModal;
+        this.selectCallback = null;
+        ApplyDisplay(unit, template, isVisiting);
+    }
 
+    public void BindForSelect(int unitIndex, Action<int> onSelected, UnitPersistentData unit, UnitData template, bool isVisiting)
+    {
+        this.unitIndex = unitIndex;
+        this.infoModal = null;
+        this.selectCallback = onSelected;
+        ApplyDisplay(unit, template, isVisiting);
+    }
+
+    private void ApplyDisplay(UnitPersistentData unit, UnitData template, bool isVisiting)
+    {
         string displayName = template != null && !string.IsNullOrWhiteSpace(template.Name)
             ? template.Name
             : (unit != null ? unit.UnitTemplateKey : $"unit_{unitIndex}");
@@ -50,6 +66,11 @@ public class HeroProfileButton : MonoBehaviour
 
     private void OnClick()
     {
+        if (selectCallback != null)
+        {
+            selectCallback.Invoke(unitIndex);
+            return;
+        }
         if (infoModal == null)
         {
             Debug.LogWarning($"[HeroProfileButton] infoModal 미바인딩 (unitIndex={unitIndex})");

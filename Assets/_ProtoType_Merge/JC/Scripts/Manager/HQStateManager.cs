@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -7,40 +8,64 @@ public class HQStateManager : MonoBehaviour
 {
     public event Action OnStateChanged;
 
-    [Header("단계 상한 (본부 기준 3. 추후 CSV 가능)")]
-    [SerializeField] private int maxLevel = 3;
+    [Header("단계 상한 (부서별. List에 없으면 defaultMaxLevel 적용)")]
+    [SerializeField] private int defaultMaxLevel = 3;
+    [SerializeField] private List<MaxLevelEntry> maxLevels = new List<MaxLevelEntry>();
 
     [Header("초기 단계 — 본부만 1, 나머지 0(미해금)")]
     [SerializeField] private int hqInitialLevel = 1;
 
     [Header("업그레이드 비용 폴백 (List 엔트리 없는 부서·단계에 적용)")]
     [SerializeField] private int defaultCostMoney = 1000;
-    [SerializeField] private int defaultCostChip = 1000;
-    [SerializeField] private int defaultCostCrystal = 1000;
-    [SerializeField] private int defaultCostSupply = 1000;
+    [SerializeField] private int defaultCostChip;
+    [SerializeField] private int defaultCostCrystal;
+    [SerializeField] private int defaultCostSupply;
 
     [Header("부서·단계별 업그레이드 비용 (추후 CSV 로드 갈아끼움)")]
     [SerializeField] private List<UpgradeCostEntry> upgradeCosts = new List<UpgradeCostEntry>();
+
+    [Header("부서별 선행 조건 (부서 N이 1단계 되려면 의존 부서들이 모두 충족)")]
+    [SerializeField] private List<PrerequisiteEntry> prerequisites = new List<PrerequisiteEntry>();
 
     [Header("본부 매턴 자금 (단계별, 1단계부터). 추후 CSV 가능")]
     [SerializeField] private int[] hqTurnIncome = new[] { 1000, 1500, 3000 };
 
     [Serializable]
+    public class MaxLevelEntry
+    {
+        public HQDepartment department;
+        public int maxLevel = 3;
+    }
+
+    [Serializable]
     public class UpgradeCostEntry
     {
         public HQDepartment department;
-        [Tooltip("이 단계에서 다음 단계로 강화할 때의 비용. 1이면 1→2 강화")]
-        public int fromLevel = 1;
+        [Tooltip("이 단계에서 다음 단계로 강화할 때의 비용. 0이면 0→1 해금")]
+        public int fromLevel;
         public int money;
         public int chip;
         public int crystal;
         public int supply;
     }
 
+    [Serializable]
+    public class PrerequisiteEntry
+    {
+        public HQDepartment department;
+        public List<RequirementItem> requirements = new List<RequirementItem>();
+    }
+
+    [Serializable]
+    public class RequirementItem
+    {
+        public HQDepartment dependsOn;
+        public int requiredLevel = 1;
+    }
+
     private readonly Dictionary<HQDepartment, int> levels = new Dictionary<HQDepartment, int>();
     private bool upgradedThisTurn;
 
-    public int MaxLevel => maxLevel;
     public bool UpgradedThisTurn => upgradedThisTurn;
 
     public void Initialize()
@@ -55,15 +80,20 @@ public class HQStateManager : MonoBehaviour
 
     public int GetLevel(HQDepartment d) => levels.TryGetValue(d, out int v) ? v : 0;
 
-    /// <summary>
-    /// 매턴 시작 시 자동 적립되는 income. 현 단계: 본부만 자금 income.
-    /// level=0(미해금)일 땐 0 반환. 단계 인덱스 [1..maxLevel].
-    /// 추후 CSV 로드 시 본 메서드만 갈아끼우면 됨.
-    /// </summary>
-    public int GetTurnIncome(HQDepartment d)
+    public int GetMaxLevel(HQDepartment d)
     {
-        return GetTurnIncomeAt(d, GetLevel(d));
+        if (maxLevels != null)
+        {
+            for (int i = 0; i < maxLevels.Count; i++)
+            {
+                var e = maxLevels[i];
+                if (e != null && e.department == d) return Mathf.Max(1, e.maxLevel);
+            }
+        }
+        return defaultMaxLevel;
     }
+
+    public int GetTurnIncome(HQDepartment d) => GetTurnIncomeAt(d, GetLevel(d));
 
     public int GetTurnIncomeAt(HQDepartment d, int level)
     {
@@ -73,10 +103,6 @@ public class HQStateManager : MonoBehaviour
         return hqTurnIncome[idx];
     }
 
-    /// <summary>
-    /// 업그레이드 비용. upgradeCosts List를 (부서, fromLevel=currentLevel)로 검색.
-    /// 엔트리 없으면 폴백(defaultCost*) 적용. 추후 CSV 로더가 List를 채우는 형태로 확장 가능.
-    /// </summary>
     public IReadOnlyDictionary<ResourceType, int> GetUpgradeCost(HQDepartment d, int currentLevel)
     {
         var entry = FindCostEntry(d, currentLevel);
@@ -100,16 +126,78 @@ public class HQStateManager : MonoBehaviour
         return null;
     }
 
-    public bool CanUpgrade(HQDepartment d)
+    public bool ArePrerequisitesMet(HQDepartment d)
     {
-        if (upgradedThisTurn) return false;
-        if (GetLevel(d) >= maxLevel) return false;
+        var entry = FindPrerequisiteEntry(d);
+        if (entry == null || entry.requirements == null) return true;
+        for (int i = 0; i < entry.requirements.Count; i++)
+        {
+            var req = entry.requirements[i];
+            if (req == null) continue;
+            if (GetLevel(req.dependsOn) < req.requiredLevel) return false;
+        }
         return true;
     }
 
     /// <summary>
-    /// 비용 차감은 호출자(HQUpgradeFlowController) 책임. 본 메서드는 단계 증가 + 턴 플래그만 처리.
+    /// 미충족 사유 텍스트. 예: "홍보 1단계 필요", "공방 1단계, 연구소 1단계 필요".
+    /// 모두 충족 또는 항목 없음이면 빈 문자열.
     /// </summary>
+    public string GetUnmetReasonText(HQDepartment d)
+    {
+        var entry = FindPrerequisiteEntry(d);
+        if (entry == null || entry.requirements == null) return string.Empty;
+        var sb = new StringBuilder();
+        for (int i = 0; i < entry.requirements.Count; i++)
+        {
+            var req = entry.requirements[i];
+            if (req == null) continue;
+            if (GetLevel(req.dependsOn) >= req.requiredLevel) continue;
+            if (sb.Length > 0) sb.Append(", ");
+            sb.Append(GetDepartmentKoreanName(req.dependsOn));
+            sb.Append(' ');
+            sb.Append(req.requiredLevel);
+            sb.Append("단계");
+        }
+        if (sb.Length == 0) return string.Empty;
+        sb.Append(" 필요");
+        return sb.ToString();
+    }
+
+    private PrerequisiteEntry FindPrerequisiteEntry(HQDepartment d)
+    {
+        if (prerequisites == null) return null;
+        for (int i = 0; i < prerequisites.Count; i++)
+        {
+            var e = prerequisites[i];
+            if (e != null && e.department == d) return e;
+        }
+        return null;
+    }
+
+    public static string GetDepartmentKoreanName(HQDepartment d)
+    {
+        switch (d)
+        {
+            case HQDepartment.Headquarters: return "본부";
+            case HQDepartment.Broadcast:    return "홍보";
+            case HQDepartment.Workshop:     return "공방";
+            case HQDepartment.Research:     return "연구소";
+            case HQDepartment.Training:     return "트레이닝 센터";
+            case HQDepartment.Recruit:      return "모집 센터";
+            case HQDepartment.Exchange:     return "교환소";
+            default: return d.ToString();
+        }
+    }
+
+    public bool CanUpgrade(HQDepartment d)
+    {
+        if (upgradedThisTurn) return false;
+        if (GetLevel(d) >= GetMaxLevel(d)) return false;
+        if (!ArePrerequisitesMet(d)) return false;
+        return true;
+    }
+
     public bool TryUpgrade(HQDepartment d, out int beforeLevel, out int afterLevel)
     {
         beforeLevel = GetLevel(d);

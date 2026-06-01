@@ -45,12 +45,20 @@ public class HQUpgradeFlowController : MonoBehaviour
     {
         public HQDepartment department;
         public string progressTitle;
+        [Tooltip("해금 이후(level>=1) 진입 시 사용할 Title. 빈값이면 progressTitle 폴백")]
+        public string progressTitleUpgrade;
         public Sprite iconSprite;
         public bool showHqLevel = true;
         [TextArea] public string upgradeInfoStaticText; // 빈값이면 부서별 동적 텍스트 (현재: 본부만)
+        [TextArea]
+        [Tooltip("해금 이후(level>=1) 진입 시 사용. 빈값이면 upgradeInfoStaticText 폴백")]
+        public string upgradeInfoStaticTextUpgrade;
         public string resultTitle;
         public bool showResultLevel = true;
         [TextArea] public string resultBodyStaticText;  // 빈값이면 부서별 동적 텍스트 (현재: 본부만)
+        [TextArea]
+        [Tooltip("업그레이드(before>=1) 시 사용. 빈값이면 resultBodyStaticText 폴백")]
+        public string resultBodyStaticTextUpgrade;
         [Tooltip("'현재 본부의 업그레이드 상태가 최고 단계입니다.' 등 안내. 본부=true, 활성화 흐름=false")]
         public bool useMaxLevelStateInfo = true;
     }
@@ -129,6 +137,8 @@ public class HQUpgradeFlowController : MonoBehaviour
         return null;
     }
 
+    public DepartmentModalContent GetContent(HQDepartment d) => FindContent(d);
+
     public void ShowProgress(HQDepartment dept)
     {
         var gm = GameManager.Instance;
@@ -139,8 +149,14 @@ public class HQUpgradeFlowController : MonoBehaviour
         int currentLevel = gm.HQ.GetLevel(dept);
         currentCost = gm.HQ.GetUpgradeCost(dept, currentLevel);
 
-        // Title
-        if (titleText != null) titleText.text = currentContent?.progressTitle ?? string.Empty;
+        // Title — 해금 전(level=0)은 progressTitle, 해금 후(level>=1)는 progressTitleUpgrade (빈값이면 progressTitle 폴백)
+        if (titleText != null)
+        {
+            string title = currentContent?.progressTitle ?? string.Empty;
+            if (currentContent != null && currentLevel >= 1 && !string.IsNullOrEmpty(currentContent.progressTitleUpgrade))
+                title = currentContent.progressTitleUpgrade;
+            titleText.text = title;
+        }
         // Icon
         if (iconBuilding != null && currentContent != null && currentContent.iconSprite != null)
             iconBuilding.sprite = currentContent.iconSprite;
@@ -155,12 +171,15 @@ public class HQUpgradeFlowController : MonoBehaviour
             if (showHqLevel) hqLevelText.text = BuildHQLevelText(gm.HQ, dept, currentLevel);
         }
 
-        // UpgradeInfo
+        // UpgradeInfo — 해금 후(level>=1)는 upgradeInfoStaticTextUpgrade 우선, 폴백은 기존 흐름
         if (upgradeInfoText != null)
         {
-            bool maxed = currentLevel >= gm.HQ.MaxLevel;
+            bool maxed = currentLevel >= gm.HQ.GetMaxLevel(dept);
+            bool unlocked = currentLevel >= 1;
             string text;
             if (maxed) text = string.Empty;
+            else if (unlocked && currentContent != null && !string.IsNullOrEmpty(currentContent.upgradeInfoStaticTextUpgrade))
+                text = currentContent.upgradeInfoStaticTextUpgrade;
             else if (currentContent != null && !string.IsNullOrEmpty(currentContent.upgradeInfoStaticText))
                 text = currentContent.upgradeInfoStaticText;
             else
@@ -175,7 +194,8 @@ public class HQUpgradeFlowController : MonoBehaviour
         if (costCrystalText != null) costCrystalText.text = currentCost[ResourceType.Crystal].ToString("N0");
         if (costSupplyText != null) costSupplyText.text = currentCost[ResourceType.Supply].ToString("N0");
 
-        if (modalHQRoot != null) modalHQRoot.SetActive(false);
+        // Modal_HQ는 닫지 않음 — Progress가 같은 캔버스 형제로 위에 떠 오버레이.
+        // 닫기 후 사용자가 즉시 다른 부서를 선택할 수 있음.
         if (modalProgressRoot != null) modalProgressRoot.SetActive(true);
 
         ApplyProgressButtonState();
@@ -187,27 +207,27 @@ public class HQUpgradeFlowController : MonoBehaviour
         if (gm == null) return;
 
         bool turnUsed = gm.HQ != null && gm.HQ.UpgradedThisTurn;
-        bool maxed = gm.HQ != null && gm.HQ.GetLevel(currentDept) >= gm.HQ.MaxLevel;
+        bool maxed = gm.HQ != null && gm.HQ.GetLevel(currentDept) >= gm.HQ.GetMaxLevel(currentDept);
         bool canAfford = CheckAfford(gm.Economy);
 
         bool enabled = !turnUsed && canAfford && !maxed;
 
         if (btnConfirm != null) btnConfirm.interactable = enabled;
         if (disabledOverlay != null) disabledOverlay.SetActive(!enabled);
-        if (turnWarningGo != null) turnWarningGo.SetActive(turnUsed);
+        // turnWarningGo는 stateInfoText로 통합 — 항상 비활성
+        if (turnWarningGo != null) turnWarningGo.SetActive(false);
 
         ApplyCostColors(gm.Economy);
 
         if (stateInfoText != null)
         {
             string msg = null;
-            if (!turnUsed)
-            {
-                if (maxed && currentContent != null && currentContent.useMaxLevelStateInfo)
-                    msg = "현재 본부의 업그레이드 상태가 최고 단계입니다.";
-                else if (!canAfford)
-                    msg = "자원이 부족해 업그레이드를 할 수 없습니다.";
-            }
+            if (turnUsed)
+                msg = "이번 턴에 이미 건설, 또는 업그레이드를 진행했습니다.";
+            else if (maxed && currentContent != null && currentContent.useMaxLevelStateInfo)
+                msg = "업그레이드 상태가 최고 단계입니다.";
+            else if (!canAfford)
+                msg = "자원이 부족합니다.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;
         }
@@ -248,6 +268,7 @@ public class HQUpgradeFlowController : MonoBehaviour
 
         foreach (var kv in currentCost)
         {
+            if (kv.Value <= 0) continue;
             if (!gm.Economy.Spend(kv.Key, kv.Value))
             {
                 Debug.LogError($"[HQUpgrade] Spend 실패: {kv.Key} {kv.Value}");
@@ -284,11 +305,14 @@ public class HQUpgradeFlowController : MonoBehaviour
             if (showLevel) resultLevelText.text = $"{before}단계 → {after}단계";
         }
 
-        // Body
+        // Body — before==0(해금) vs before>=1(업그레이드) 분기. 폴백: upgrade→static→dynamic
         if (resultBodyText != null)
         {
             string body;
-            if (currentContent != null && !string.IsNullOrEmpty(currentContent.resultBodyStaticText))
+            bool isUpgrade = before >= 1;
+            if (isUpgrade && currentContent != null && !string.IsNullOrEmpty(currentContent.resultBodyStaticTextUpgrade))
+                body = currentContent.resultBodyStaticTextUpgrade;
+            else if (currentContent != null && !string.IsNullOrEmpty(currentContent.resultBodyStaticText))
                 body = currentContent.resultBodyStaticText;
             else
                 body = BuildDynamicResultBody(after);
@@ -315,7 +339,7 @@ public class HQUpgradeFlowController : MonoBehaviour
 
     private static string BuildHQLevelText(HQStateManager hq, HQDepartment dept, int currentLevel)
     {
-        bool isMax = currentLevel >= hq.MaxLevel;
+        bool isMax = currentLevel >= hq.GetMaxLevel(dept);
         return isMax
             ? $"{currentLevel}단계(최고 단계)"
             : $"{currentLevel}단계 → {currentLevel + 1}단계";

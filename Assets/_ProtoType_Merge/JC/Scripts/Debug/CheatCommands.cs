@@ -10,6 +10,7 @@ public static class CheatCommands
     {
         CheatCommandRegistry.Register("Tetra Anax", TetraAnax);
         CheatCommandRegistry.Register("Ain Soph Aur", AinSophAur);
+        CheatCommandRegistry.Register("Logos", Logos);
     }
 
     private static string TetraAnax(string[] args)
@@ -36,5 +37,15 @@ public static class CheatCommands
 
         economy.ResetAll();
         return "Ain Soph Aur → all resources reset to 0";
+    }
+
+    private static string Logos(string[] args)
+    {
+        var bc = GameManager.Instance != null ? GameManager.Instance.Broadcast : null;
+        if (bc == null) return "[err] BroadcastManager unavailable";
+
+        const int delta = 100;
+        bc.AddIPToAllHeroes(delta);
+        return $"Logos → all heroes IP +{delta}";
     }
 }
