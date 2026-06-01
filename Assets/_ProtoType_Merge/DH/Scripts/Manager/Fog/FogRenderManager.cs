@@ -235,6 +235,9 @@ public class FogRenderManager : MonoBehaviour
             return false;
 
         Vector2Int nextGridSize = levelData.GridSize;
+        if (fogGridManager != null)
+            fogGridManager.SetGridSize(nextGridSize);
+
         if (nextGridSize == gridSize)
             return false;
 

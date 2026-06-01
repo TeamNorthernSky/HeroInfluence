@@ -13,8 +13,12 @@ public class PartyPersistentData
     // [JC 추가 260511] 위치 영속화. DHScene Single 재로드 시 transform.position이 씬 시작값으로 복귀하는 문제 해결용
     [UnityEngine.SerializeField] private UnityEngine.Vector2Int lastGrid;
     [UnityEngine.SerializeField] private bool hasLastGrid;
+    [UnityEngine.SerializeField] private int remainingMovePoints;
+    [UnityEngine.SerializeField] private bool hasRemainingMovePoints;
     public UnityEngine.Vector2Int LastGrid => lastGrid;
     public bool HasLastGrid => hasLastGrid;
+    public int RemainingMovePoints => remainingMovePoints;
+    public bool HasRemainingMovePoints => hasRemainingMovePoints;
 
     public void SetLastGrid(UnityEngine.Vector2Int grid)
     {
@@ -26,6 +30,18 @@ public class PartyPersistentData
     {
         lastGrid = default;
         hasLastGrid = false;
+    }
+
+    public void SetRemainingMovePoints(int value)
+    {
+        remainingMovePoints = Math.Max(0, value);
+        hasRemainingMovePoints = true;
+    }
+
+    public void ClearRemainingMovePoints()
+    {
+        remainingMovePoints = 0;
+        hasRemainingMovePoints = false;
     }
 
     public PartyPersistentData(string partyId, IReadOnlyList<int> unitIndices)
