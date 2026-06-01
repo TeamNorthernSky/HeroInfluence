@@ -13,6 +13,7 @@ public class MapProgressRepository : MonoBehaviour
     [SerializeField] private List<PartyWorldState> partyWorldStates = new List<PartyWorldState>();
     [SerializeField] private List<EnemyWorldState> enemyWorldStates = new List<EnemyWorldState>();
     [SerializeField] private List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
+    [SerializeField] private List<FogProgressCell> fogCells = new List<FogProgressCell>();
 
     private readonly HashSet<string> collectedItemLookup = new HashSet<string>();
     private readonly HashSet<string> completedEventLookup = new HashSet<string>();
@@ -26,6 +27,7 @@ public class MapProgressRepository : MonoBehaviour
     public IReadOnlyList<PartyWorldState> PartyWorldStates => partyWorldStates;
     public IReadOnlyList<EnemyWorldState> EnemyWorldStates => enemyWorldStates;
     public IReadOnlyList<OutpostProgressState> OutpostStates => outpostStates;
+    public IReadOnlyList<FogProgressCell> FogCells => fogCells;
 
     private void Awake()
     {
@@ -209,6 +211,32 @@ public class MapProgressRepository : MonoBehaviour
             state.SetDefeated(false);
     }
 
+    public void ReplaceFogCells(IEnumerable<FogGridManager.FogCellSnapshot> snapshots)
+    {
+        fogCells.Clear();
+
+        if (snapshots == null)
+            return;
+
+        foreach (FogGridManager.FogCellSnapshot snapshot in snapshots)
+        {
+            if (snapshot.Visibility == FogVisibilityState.Unexplored)
+                continue;
+
+            fogCells.Add(new FogProgressCell(snapshot.Grid, snapshot.Visibility, snapshot.LastRevealedDay));
+        }
+    }
+
+    public bool HasFogProgress()
+    {
+        return fogCells.Count > 0;
+    }
+
+    public void ClearFogProgress()
+    {
+        fogCells.Clear();
+    }
+
     public void ClearAllProgress()
     {
         collectedItemKeys.Clear();
@@ -216,6 +244,7 @@ public class MapProgressRepository : MonoBehaviour
         partyWorldStates.Clear();
         enemyWorldStates.Clear();
         outpostStates.Clear();
+        fogCells.Clear();
         RebuildLookups();
     }
 
