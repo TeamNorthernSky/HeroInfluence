@@ -89,4 +89,8 @@ Docs/
 # DH 개인용 프로젝트 세팅 임시 무시
 ProjectSettings/GraphicsSettings.asset
 ProjectSettings/QualitySettings.asset
+
+#툰 쉐이더 샘플(유니티짱)
 /Assets/Samples
+/Assets/_ProtoType_Merge/Samples
+
