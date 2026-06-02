@@ -26,6 +26,9 @@
 /*.mdb
 /*.opendb
 /*.VC.db
+/*.dll
+/*.pdb
+/*.nupkg
 # VS / Rider
 /.vs/
 /.idea/
@@ -91,7 +94,9 @@ ProjectSettings/GraphicsSettings.asset
 ProjectSettings/QualitySettings.asset
 /Assets/Samples
 
-#ASB
+
+#ASB 
+
 # -----------------------------
 # NuGet / NuGetForUnity 관련
 # -----------------------------
