@@ -24,6 +24,11 @@ public class PartyMovePointController
         remainingMovePoints = Mathf.Max(0, remainingMovePoints - 1);
     }
 
+    public void SetRemaining(int amount)
+    {
+        remainingMovePoints = Mathf.Clamp(amount, 0, maxMovePoints);
+    }
+
     public void ResetToMax()
     {
         remainingMovePoints = maxMovePoints;

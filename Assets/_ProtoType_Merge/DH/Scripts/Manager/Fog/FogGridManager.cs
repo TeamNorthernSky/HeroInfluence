@@ -6,6 +6,8 @@ public class FogGridManager : MonoBehaviour
 {
     [Header("Fog Rules")]
     [SerializeField, Min(1)] private int refogDelayDays = 3;
+    [SerializeField] private bool restrictToGridBounds = true;
+    [SerializeField] private Vector2Int gridSize = new Vector2Int(20, 20);
 
     private readonly Dictionary<Vector2Int, FogCellData> fogCells = new Dictionary<Vector2Int, FogCellData>();
     private int currentDay = 1;
@@ -15,6 +17,7 @@ public class FogGridManager : MonoBehaviour
 
     public int CurrentDay => currentDay;
     public int RefogDelayDays => refogDelayDays;
+    public Vector2Int GridSize => gridSize;
 
     public readonly struct FogCellSnapshot
     {
@@ -41,8 +44,17 @@ public class FogGridManager : MonoBehaviour
         currentDay = Mathf.Max(1, day);
     }
 
+    public void SetGridSize(Vector2Int size)
+    {
+        gridSize = new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
+        RemoveOutOfBoundsCells();
+    }
+
     public FogVisibilityState GetVisibility(Vector2Int grid)
     {
+        if (!IsInBounds(grid))
+            return FogVisibilityState.Unexplored;
+
         if (!fogCells.TryGetValue(grid, out FogCellData cell))
             return FogVisibilityState.Unexplored;
 
@@ -116,6 +128,30 @@ public class FogGridManager : MonoBehaviour
             yield return new FogCellSnapshot(pair.Key, pair.Value.Visibility, pair.Value.LastRevealedDay);
     }
 
+    public void ApplySnapshot(IEnumerable<FogCellSnapshot> snapshots)
+    {
+        fogCells.Clear();
+
+        if (snapshots != null)
+        {
+            foreach (FogCellSnapshot snapshot in snapshots)
+            {
+                if (snapshot.Visibility == FogVisibilityState.Unexplored)
+                    continue;
+
+                fogCells[snapshot.Grid] = new FogCellData
+                {
+                    Visibility = snapshot.Visibility,
+                    LastRevealedDay = Mathf.Max(1, snapshot.LastRevealedDay)
+                };
+
+                CellVisibilityChanged?.Invoke(snapshot.Grid, snapshot.Visibility);
+            }
+        }
+
+        FogChanged?.Invoke();
+    }
+
     public void ClearFogData()
     {
         if (fogCells.Count == 0)
@@ -127,6 +163,9 @@ public class FogGridManager : MonoBehaviour
 
     private bool RevealCell(Vector2Int grid)
     {
+        if (!IsInBounds(grid))
+            return false;
+
         if (!fogCells.TryGetValue(grid, out FogCellData cell))
         {
             cell = new FogCellData();
@@ -141,6 +180,38 @@ public class FogGridManager : MonoBehaviour
             CellVisibilityChanged?.Invoke(grid, cell.Visibility);
 
         return changed;
+    }
+
+    private bool IsInBounds(Vector2Int grid)
+    {
+        if (!restrictToGridBounds)
+            return true;
+
+        return grid.x >= 0 && grid.y >= 0 && grid.x < gridSize.x && grid.y < gridSize.y;
+    }
+
+    private void RemoveOutOfBoundsCells()
+    {
+        if (!restrictToGridBounds || fogCells.Count == 0)
+            return;
+
+        List<Vector2Int> keysToRemove = null;
+        foreach (KeyValuePair<Vector2Int, FogCellData> pair in fogCells)
+        {
+            if (IsInBounds(pair.Key))
+                continue;
+
+            keysToRemove ??= new List<Vector2Int>();
+            keysToRemove.Add(pair.Key);
+        }
+
+        if (keysToRemove == null)
+            return;
+
+        for (int i = 0; i < keysToRemove.Count; i++)
+            fogCells.Remove(keysToRemove[i]);
+
+        FogChanged?.Invoke();
     }
 
 }

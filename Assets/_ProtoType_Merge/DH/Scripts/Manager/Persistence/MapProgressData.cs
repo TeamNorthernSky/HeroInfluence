@@ -39,6 +39,31 @@ public class PartyWorldState
 }
 
 [Serializable]
+public class FogProgressCell
+{
+    [SerializeField] private Vector2Int grid;
+    [SerializeField] private FogVisibilityState visibility;
+    [SerializeField] private int lastRevealedDay;
+
+    public Vector2Int Grid => grid;
+    public FogVisibilityState Visibility => visibility;
+    public int LastRevealedDay => lastRevealedDay;
+
+    public FogProgressCell(Vector2Int grid, FogVisibilityState visibility, int lastRevealedDay)
+    {
+        this.grid = grid;
+        this.visibility = visibility;
+        this.lastRevealedDay = Mathf.Max(1, lastRevealedDay);
+    }
+
+    public void Apply(FogVisibilityState nextVisibility, int nextLastRevealedDay)
+    {
+        visibility = nextVisibility;
+        lastRevealedDay = Mathf.Max(1, nextLastRevealedDay);
+    }
+}
+
+[Serializable]
 public class EnemyWorldState
 {
     public const string DefaultPrefabKey = "default";

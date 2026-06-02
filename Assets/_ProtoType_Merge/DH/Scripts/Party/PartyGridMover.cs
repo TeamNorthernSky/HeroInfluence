@@ -53,6 +53,11 @@ public class PartyGridMover : MonoBehaviour
 
         if (!repo.TryGetParty(identity.PartyId, out var partyData) || partyData == null) return;
 
+        if (partyData.HasRemainingMovePoints)
+            movePointController?.SetRemaining(partyData.RemainingMovePoints);
+        else
+            partyData.SetRemainingMovePoints(RemainingMovePoints);
+
         if (partyData.HasLastGrid)
         {
             SnapToGridPosition(partyData.LastGrid, notifyMoveCompleted: false);
@@ -113,6 +118,7 @@ public class PartyGridMover : MonoBehaviour
     public void ResetMovePointsToMax()
     {
         movePointController?.ResetToMax();
+        PersistLastGrid();
     }
 
     // [JC 추가 260511] Snap도 영속화 (외부 위치 강제 변경 케이스 안전 처리)
@@ -185,6 +191,7 @@ public class PartyGridMover : MonoBehaviour
 
         if (!repo.TryGetParty(identity.PartyId, out var partyData) || partyData == null) return;
         partyData.SetLastGrid(currentGrid);
+        partyData.SetRemainingMovePoints(RemainingMovePoints);
     }
 
     public List<Vector2Int> GetRemainingPath()
