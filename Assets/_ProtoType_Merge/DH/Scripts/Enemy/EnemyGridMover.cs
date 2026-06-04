@@ -14,6 +14,7 @@ public class EnemyGridMover : MonoBehaviour
 {
     public event System.Action<EnemyGridMover, Vector2Int> GridChanged;
     public event System.Action<EnemyGridMover, Vector2Int> MoveStepStarted;
+    public event System.Action<EnemyGridMover, bool> MovementStateChanged;
 
     [Header("References")]
     [SerializeField] private GridManager gridManager;
@@ -31,11 +32,13 @@ public class EnemyGridMover : MonoBehaviour
     private EnemyRegistry enemyRegistry;
     private EnemyIdentity enemyIdentity;
     private EnemyComposition enemyComposition;
+    private bool isMoving;
 
     public string EnemyId => enemyIdentity != null ? enemyIdentity.EnemyId : string.Empty;
     public int MovePointsPerTurn => Mathf.Max(0, movePointsPerTurn);
     public EnemyBehaviorType BehaviorType => behaviorType;
     public bool IsStayEnemy => behaviorType == EnemyBehaviorType.StayEnemy;
+    public bool IsMoving => isMoving;
     public EnemyTargetType CurrentTargetType => currentTargetType;
     public Component CurrentTarget => currentTarget;
 
@@ -129,24 +132,41 @@ public class EnemyGridMover : MonoBehaviour
         if (path == null || path.Count <= 1 || gridManager == null)
             yield break;
 
-        for (int i = 1; i < path.Count; i++)
+        SetMoving(true);
+        try
         {
-            Vector2Int nextGrid = path[i];
-            MoveStepStarted?.Invoke(this, nextGrid);
-
-            Vector3 target = gridManager.GridToWorldCenter(nextGrid);
-            target.y = fixedY;
-
-            while ((transform.position - target).sqrMagnitude > arriveThreshold * arriveThreshold)
+            for (int i = 1; i < path.Count; i++)
             {
-                transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
-                yield return null;
-            }
+                Vector2Int nextGrid = path[i];
+                MoveStepStarted?.Invoke(this, nextGrid);
 
-            transform.position = target;
-            currentGrid = nextGrid;
-            GridChanged?.Invoke(this, currentGrid);
+                Vector3 target = gridManager.GridToWorldCenter(nextGrid);
+                target.y = fixedY;
+
+                while ((transform.position - target).sqrMagnitude > arriveThreshold * arriveThreshold)
+                {
+                    transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
+                    yield return null;
+                }
+
+                transform.position = target;
+                currentGrid = nextGrid;
+                GridChanged?.Invoke(this, currentGrid);
+            }
         }
+        finally
+        {
+            SetMoving(false);
+        }
+    }
+
+    private void SetMoving(bool moving)
+    {
+        if (isMoving == moving)
+            return;
+
+        isMoving = moving;
+        MovementStateChanged?.Invoke(this, isMoving);
     }
 
     private void ResolveRegistry()

@@ -59,6 +59,8 @@ public class UnitPersistentDataDiskRow
     public int level;
     public int favorability;
     public float currentHp;
+    public int exp;
+    public int maxExp;
     public int currentSkillIndex;
     public int currentWeaponIndex;
     public EquipmentStatBlock currentWeaponStats;
@@ -78,6 +80,8 @@ public class UnitPersistentDataDiskRow
             level = u.Level,
             favorability = u.Favorability,
             currentHp = u.CurrentHp,
+            exp = u.Exp,
+            maxExp = u.MaxExp,
             currentSkillIndex = u.CurrentSkillIndex,
             currentWeaponIndex = u.CurrentWeaponIndex,
             currentWeaponStats = u.CurrentWeaponStats,
@@ -100,7 +104,9 @@ public class UnitPersistentDataDiskRow
             currentWeaponIndex,
             currentWeaponStats,
             ingameStats.ToStatBlock(),
-            currentHp);
+            currentHp,
+            exp,
+            maxExp);
     }
 }
 

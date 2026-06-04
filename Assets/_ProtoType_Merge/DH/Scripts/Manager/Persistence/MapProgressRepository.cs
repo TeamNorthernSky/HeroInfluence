@@ -119,12 +119,24 @@ public class MapProgressRepository : MonoBehaviour
 
     public void BindParty(string placementKey, string partyId, Vector2Int grid)
     {
+        BindParty(placementKey, partyId, grid, PartyPlacementSource.Scene, PartyWorldState.DefaultPrefabKey);
+    }
+
+    public void BindParty(
+        string placementKey,
+        string partyId,
+        Vector2Int grid,
+        PartyPlacementSource placementSource,
+        string prefabKey)
+    {
         if (!IsValidKey(placementKey) || string.IsNullOrWhiteSpace(partyId))
             return;
 
-        PartyWorldState state = GetOrCreatePartyState(NormalizeKey(placementKey), partyId, grid);
+        PartyWorldState state = GetOrCreatePartyState(NormalizeKey(placementKey), partyId, grid, placementSource, prefabKey);
         state.SetPartyId(partyId);
         state.SetGrid(grid);
+        state.SetPlacementSource(placementSource);
+        state.SetPrefabKey(prefabKey);
         state.SetRemoved(false);
     }
 
@@ -250,10 +262,20 @@ public class MapProgressRepository : MonoBehaviour
 
     private PartyWorldState GetOrCreatePartyState(string placementKey, string partyId, Vector2Int grid)
     {
+        return GetOrCreatePartyState(placementKey, partyId, grid, PartyPlacementSource.Scene, PartyWorldState.DefaultPrefabKey);
+    }
+
+    private PartyWorldState GetOrCreatePartyState(
+        string placementKey,
+        string partyId,
+        Vector2Int grid,
+        PartyPlacementSource placementSource,
+        string prefabKey)
+    {
         if (partyWorldLookup.TryGetValue(placementKey, out PartyWorldState state))
             return state;
 
-        state = new PartyWorldState(placementKey, partyId, grid);
+        state = new PartyWorldState(placementKey, partyId, grid, placementSource, prefabKey);
         partyWorldStates.Add(state);
         partyWorldLookup[placementKey] = state;
         return state;

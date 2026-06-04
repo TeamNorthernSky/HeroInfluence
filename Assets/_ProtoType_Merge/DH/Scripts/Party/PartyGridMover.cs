@@ -22,12 +22,14 @@ public class PartyGridMover : MonoBehaviour
     private Vector2Int currentGrid;
     private float fixedY;
     private PartyMovePointController movePointController;
+    private const string ScenePartyPrefabKey = "scene";
 
     public Vector2Int? TargetInteractionGrid { get; private set; }
 
     public event Action<List<Vector2Int>> PathUpdated;
     public event Action<Vector2Int> GridEntered;
     public event Action MoveCompleted;
+    public event Action<bool> MovementStateChanged;
 
     private void Awake()
     {
@@ -58,7 +60,17 @@ public class PartyGridMover : MonoBehaviour
         else
             partyData.SetRemainingMovePoints(RemainingMovePoints);
 
-        if (partyData.HasLastGrid)
+        string placementKey = ResolvePlacementKey(identity);
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+
+        if (progressRepository != null &&
+            progressRepository.TryGetPartyState(placementKey, out PartyWorldState worldState) &&
+            worldState != null &&
+            !worldState.Removed)
+        {
+            SnapToGridPosition(worldState.Grid, notifyMoveCompleted: false);
+        }
+        else if (partyData.HasLastGrid)
         {
             SnapToGridPosition(partyData.LastGrid, notifyMoveCompleted: false);
         }
@@ -66,6 +78,7 @@ public class PartyGridMover : MonoBehaviour
         {
             currentGrid = gridManager.WorldToGrid(transform.position);
             GridEntered?.Invoke(currentGrid);
+            PersistPartyWorldState(identity, currentGrid);
         }
     }
 
@@ -94,7 +107,7 @@ public class PartyGridMover : MonoBehaviour
 
             if (reachedPathEnd && pathQueue.Count == 0)
             {
-                isMoving = false;
+                SetMoving(false);
                 TargetInteractionGrid = null;
                 MoveCompleted?.Invoke();
             }
@@ -126,7 +139,7 @@ public class PartyGridMover : MonoBehaviour
     public void SnapToGridPosition(Vector2Int grid, bool notifyMoveCompleted = true)
     {
         pathQueue.Clear();
-        isMoving = false;
+        SetMoving(false);
         TargetInteractionGrid = null;
         currentGrid = grid;
 
@@ -151,7 +164,7 @@ public class PartyGridMover : MonoBehaviour
     {
         if (!isMoving && pathQueue.Count == 0) return;
         pathQueue.Clear();
-        isMoving = false;
+        SetMoving(false);
         TargetInteractionGrid = null;
 
         if (gridManager == null) return;
@@ -192,6 +205,38 @@ public class PartyGridMover : MonoBehaviour
         if (!repo.TryGetParty(identity.PartyId, out var partyData) || partyData == null) return;
         partyData.SetLastGrid(currentGrid);
         partyData.SetRemainingMovePoints(RemainingMovePoints);
+        PersistPartyWorldState(identity, currentGrid);
+    }
+
+    private string ResolvePlacementKey(PartyIdentity identity)
+    {
+        if (identity == null)
+            return string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(identity.PlacementKey))
+            return identity.PlacementKey;
+
+        string placementKey = MapProgressKey.ForSceneParty(identity.PartyId);
+        identity.SetPlacementKey(placementKey);
+        return placementKey;
+    }
+
+    private void PersistPartyWorldState(PartyIdentity identity, Vector2Int grid)
+    {
+        if (identity == null)
+            return;
+
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+        if (progressRepository == null)
+            return;
+
+        string placementKey = ResolvePlacementKey(identity);
+        progressRepository.BindParty(
+            placementKey,
+            identity.PartyId,
+            grid,
+            identity.PlacementSource,
+            ScenePartyPrefabKey);
     }
 
     public List<Vector2Int> GetRemainingPath()
@@ -205,7 +250,7 @@ public class PartyGridMover : MonoBehaviour
     {
         TargetInteractionGrid = interactionTarget;
         pathQueue.Clear();
-        isMoving = false;
+        SetMoving(false);
 
         if (fullPath != null && fullPath.Count > 0)
             currentGrid = fullPath[0];
@@ -233,8 +278,17 @@ public class PartyGridMover : MonoBehaviour
         for (int i = 1; i < fullPath.Count; i++)
             pathQueue.Enqueue(fullPath[i]);
 
-        isMoving = pathQueue.Count > 0;
+        SetMoving(pathQueue.Count > 0);
         NotifyPathUpdated();
+    }
+
+    private void SetMoving(bool moving)
+    {
+        if (isMoving == moving)
+            return;
+
+        isMoving = moving;
+        MovementStateChanged?.Invoke(isMoving);
     }
 
     private void NotifyPathUpdated()

@@ -12754,7 +12754,7 @@ GameObject:
   - component: {fileID: 8490994272152972881}
   - component: {fileID: 5975973827853075186}
   m_Layer: 0
-  m_Name: CommonModel_Suporter
+  m_Name: CommonModel_Supporter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12808,8 +12808,8 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5586524480614718165}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 1b563cd76791a5743ae5ad3ad0b187bb, type: 3}
-  m_Controller: {fileID: 22100000, guid: 664e131def67dab4ab573b2aa3f0fd1c, type: 2}
+  m_Avatar: {fileID: 9000000, guid: 0308cf4e83cf517488b60af58b290fe0, type: 3}
+  m_Controller: {fileID: 22100000, guid: 3ff1c165924d8f44db86fe8f66478a66, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
