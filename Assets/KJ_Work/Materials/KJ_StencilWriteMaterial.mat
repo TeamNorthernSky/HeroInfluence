@@ -7,13 +7,11 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: KJ_OutlineMaterial_UV
-  m_Shader: {fileID: 4800000, guid: 5ff816aa1cdde4e468593feffe5d7267, type: 3}
+  m_Name: KJ_StencilWriteMaterial
+  m_Shader: {fileID: 4800000, guid: 1204c9e7f4670454480499d18da47953, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - _NORMALSOURCE_UV2
-  - _WIDTHMODE_SCREEN
+  m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -27,13 +25,6 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _DepthBias: 0.001
-    - _NormalSource: 2
-    - _OutlineWidth: 0.007
     - _StencilRef: 1
-    - _UseVertexAlphaWidth: 0
-    - _WidthMode: 0
-    m_Colors:
-    - _CameraPos: {r: 0, g: 0, b: 0, a: 0}
-    - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
+    m_Colors: []
   m_BuildTextureStacks: []

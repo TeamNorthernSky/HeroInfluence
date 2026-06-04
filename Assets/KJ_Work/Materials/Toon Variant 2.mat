@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Toon Variant
+  m_Name: Toon Variant 2
   m_Shader: {fileID: 4800000, guid: be891319084e9d147b09d89e80ce60e0, type: 3}
   m_Parent: {fileID: 2100000, guid: 73053cf6d024e844a9da3974932d64df, type: 2}
   m_ModifiedSerializedProperties: 0
@@ -29,7 +29,7 @@ Material:
   - _IS_ANGELRING_OFF
   - _IS_CLIPPING_OFF
   - _IS_OUTLINE_CLIPPING_NO
-  - _OUTLINE_NML
+  - _OUTLINE_POS
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -45,11 +45,12 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _1st_ShadeColor_Step: 0.467
-    - _2nd_ShadeColor_Step: 0
-    - _BaseColor_Step: 0.467
-    - _ShadeColor_Step: 0
-    - _Use_1stAs2nd: 1
+    - _1st_ShadeColor_Step: 0.8
+    - _2nd_ShadeColor_Step: 0.4
+    - _BaseColor_Step: 0.8
+    - _Is_BlendBaseColor: 1
+    - _OUTLINE: 1
+    - _ShadeColor_Step: 0.4
     m_Colors:
-    - _1st_ShadeColor: {r: 0.4716981, g: 0.39420247, b: 0.35748187, a: 1}
+    - _Outline_Color: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

@@ -1,5 +1,26 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-6545653572556781360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2b063f36ca243548b45381a889d0349, type: 3}
+  m_Name: KJOutlineRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    stencilWriteMaterial: {fileID: 2100000, guid: c17c34d772895ca46896e87914a54d23,
+      type: 2}
+    outlineMaterial: {fileID: 2100000, guid: 52b0d372a0830264f8b245b0ff2b97bc, type: 2}
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 7936
+    usePerRootStencil: 1
 --- !u!114 &-6428635142711169201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62,7 +83,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de640fe3d0db1804a85f9fc8f5cadab6, type: 3}
-  m_Name: DH_URP-HighFidelity-Renderer
+  m_Name: KJ DH_URP-HighFidelity-Renderer
   m_EditorClassIdentifier: 
   debugShaders:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7,
@@ -71,8 +92,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: -1878332245247344467}
   - {fileID: 8411988601495310957}
-  - {fileID: 1207587327972486412}
-  m_RendererFeatureMap: adc0de57c6d2eee56d52c37e1063bd740c2d10d74636c210
+  - {fileID: -6545653572556781360}
+  m_RendererFeatureMap: adc0de57c6d2eee56d52c37e1063bd74d088fc90c12a29a5
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -121,27 +142,6 @@ MonoBehaviour:
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
---- !u!114 &1207587327972486412
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2b063f36ca243548b45381a889d0349, type: 3}
-  m_Name: KJOutlineRendererFeature
-  m_EditorClassIdentifier: 
-  m_Active: 1
-  settings:
-    stencilWriteMaterial: {fileID: 2100000, guid: c17c34d772895ca46896e87914a54d23,
-      type: 2}
-    outlineMaterial: {fileID: 2100000, guid: 35774f1ee3409fb4c843d4e53e5d159a, type: 2}
-    layerMask:
-      serializedVersion: 2
-      m_Bits: 8128
-    usePerRootStencil: 1
 --- !u!114 &8411988601495310957
 MonoBehaviour:
   m_ObjectHideFlags: 0
