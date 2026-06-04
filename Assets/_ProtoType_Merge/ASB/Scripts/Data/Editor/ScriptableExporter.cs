@@ -12,7 +12,7 @@ namespace ASB.ExcelImport.Editor
 {
     public static class ScriptableExporter
     {
-        public static void ExportAll(IReadOnlyList<ExcelSheetParseResult> sheets)
+        public static void ExportAll(IReadOnlyList<ExcelSheetParseResult> sheets, bool useDictionary = false)
         {
             if (sheets == null || sheets.Count == 0)
             {

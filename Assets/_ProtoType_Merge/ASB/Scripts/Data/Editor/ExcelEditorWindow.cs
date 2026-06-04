@@ -8,13 +8,16 @@ namespace ASB.ExcelImport.Editor
 {
     public class ExcelEditorWindow : EditorWindow
     {
+        private const string PendingUseDictKey = "ExcelParser_PendingUseDict";
+        private bool _useDictionary = false;
+
         private string _selectedExcelPath = string.Empty;
         private List<ExcelSheetParseResult> _previewSheets = new List<ExcelSheetParseResult>();
         private Vector2 _sheetScroll;
         private Vector2 _logScroll;
         private readonly List<string> _logs = new List<string>();
 
-        [MenuItem("Tools/Excel Importer")]
+        [MenuItem("Tools/Excel Importer/Open Window")]
         public static void ShowWindow()
         {
             ExcelEditorWindow window = GetWindow<ExcelEditorWindow>("Excel Importer");
@@ -61,6 +64,8 @@ namespace ASB.ExcelImport.Editor
             }
 
             EditorPrefs.DeleteKey(ExcelImportPaths.PendingFilePathKey);
+            bool useDictionary = EditorPrefs.GetBool(PendingUseDictKey, false);
+            EditorPrefs.DeleteKey(PendingUseDictKey);
 
             if (!File.Exists(pendingPath))
             {
@@ -74,7 +79,7 @@ namespace ASB.ExcelImport.Editor
                 ExcelImportDebugLog.Write("H2", "ExcelEditorWindow.OnScriptsReloaded", "step2_start", "{\"path\":\"" + pendingPath + "\"}");
                 // #endregion
                 List<ExcelSheetParseResult> sheets = ExcelParser.Parse(pendingPath);
-                ScriptableExporter.ExportAll(sheets);
+                ScriptableExporter.ExportAll(sheets, useDictionary);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
                 Debug.Log($"[Excel Importer] Step 2 complete: exported {sheets.Count} sheet(s) from {pendingPath}");
@@ -123,6 +128,27 @@ namespace ASB.ExcelImport.Editor
             }
             EditorGUILayout.EndScrollView();
 
+            EditorGUILayout.Space(8f);
+
+            EditorGUILayout.LabelField("Data Structure", EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+            GUI.backgroundColor = !_useDictionary ? Color.cyan : Color.white;
+            if (GUILayout.Button("List", GUILayout.Height(24f))) _useDictionary = false;
+            GUI.backgroundColor = _useDictionary ? Color.cyan : Color.white;
+            if (GUILayout.Button("Dictionary", GUILayout.Height(24f))) _useDictionary = true;
+            GUI.backgroundColor = Color.white;
+            EditorGUILayout.EndHorizontal();
+
+            if (_useDictionary && _previewSheets.Count > 0)
+            {
+                for (int i = 0; i < _previewSheets.Count; i++)
+                {
+                    var s = _previewSheets[i];
+                    string keyField = s.Names.Count > 0 ? s.Names[0] : "?";
+                    string keyType  = s.Types.Count > 0 ? s.Types[0] : "?";
+                    EditorGUILayout.HelpBox($"Key: {keyField} ({keyType})  —  {s.SheetName}", MessageType.None);
+                }
+            }
             EditorGUILayout.Space(8f);
 
             using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(_selectedExcelPath)))
@@ -194,9 +220,10 @@ namespace ASB.ExcelImport.Editor
                 _previewSheets = sheets;
 
                 AddLog("[Step 1] Generating C# scripts...");
-                CodeGenerator.GenerateAll(sheets);
+                CodeGenerator.GenerateAll(sheets, _useDictionary);
 
                 EditorPrefs.SetString(ExcelImportPaths.PendingFilePathKey, _selectedExcelPath);
+                EditorPrefs.SetBool(PendingUseDictKey, _useDictionary);
                 AddLog("[Step 1] Pending asset export registered. Refreshing assets...");
 
                 AssetDatabase.Refresh();
