@@ -1,3 +1,4 @@
+/*
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,3 +37,4 @@ public class WeaponDataLoader : MonoBehaviour
 
     public int Count => weaponsByIndex.Count;
 }
+*/

@@ -679,10 +679,10 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        SkillDataLoader loader = UnityEngine.Object.FindFirstObjectByType<SkillDataLoader>(FindObjectsInactive.Include);
-        if (loader != null && loader.TryGetSkill(damageContext.SkillIndex, out SkillData loaded) && loaded != null)
+        if (DHCsvTemplateCatalog.Instance != null)
         {
-            return loaded;
+            SkillData loaded = DHCsvTemplateCatalog.Instance.GetSkillTemplate(damageContext.SkillIndex);
+            if (loaded != null) return loaded;
         }
 
         return null;

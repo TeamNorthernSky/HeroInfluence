@@ -27,11 +27,16 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     [SerializeField] private List<EnemyData>  cachedEnemyTemplates  = new List<EnemyData>();
     [SerializeField] private List<WeaponData> cachedWeapons         = new List<WeaponData>();
 
-    private readonly Dictionary<string, UnitData>   playerTemplateLookup = new Dictionary<string, UnitData>();
-    private readonly Dictionary<string, EnemyData>  enemyTemplateLookup  = new Dictionary<string, EnemyData>();
-    private readonly Dictionary<int,    WeaponData> weaponLookup         = new Dictionary<int, WeaponData>();
-    private readonly Dictionary<int,    SkillData>  skillTemplates       = new Dictionary<int, SkillData>();
-    private readonly List<LevelUpData>              levelUpTemplates     = new List<LevelUpData>();
+    private readonly Dictionary<string, UnitData>          playerTemplateLookup = new Dictionary<string, UnitData>();
+    private readonly Dictionary<string, EnemyData>         enemyTemplateLookup  = new Dictionary<string, EnemyData>();
+    private readonly Dictionary<int,    WeaponData>        weaponLookup         = new Dictionary<int, WeaponData>();
+    private readonly Dictionary<int,    SkillData>         skillTemplates       = new Dictionary<int, SkillData>();
+    private readonly List<LevelUpData>                     levelUpTemplates     = new List<LevelUpData>();
+
+    // 레벨별 수치 조회용 마스터 캐시 (SO 원본 보관)
+    private readonly Dictionary<int, PlayerWeaponData> weaponMasterMap    = new Dictionary<int, PlayerWeaponData>();
+    private readonly Dictionary<int, ClassSkillData>   classSkillMasterMap = new Dictionary<int, ClassSkillData>();
+
     private bool isLoaded;
 
     public bool IsLoaded => isLoaded;
@@ -117,6 +122,119 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────────────────
+    // 레벨별 수치 조회 API
+    // ─────────────────────────────────────────────────────────
+
+    /// <summary>무기 강화 레벨 기준 스탯 보너스 반환 (HP/ATK/DEF)</summary>
+    public bool TryGetWeaponBonusAtLevel(int weaponIndex, int level, out StatBlock bonus)
+    {
+        EnsureLoaded();
+        if (!weaponMasterMap.TryGetValue(weaponIndex, out PlayerWeaponData m))
+        {
+            bonus = default;
+            return false;
+        }
+
+        bonus = new StatBlock(
+            hp:  LeveledInt(m.BonusMaxHPLv1, m.BonusMaxHPLv2, m.BonusMaxHPLv3, m.BonusMaxHPLv4, m.BonusMaxHPLv5, level),
+            atk: LeveledInt(m.BonusATKLv1,   m.BonusATKLv2,   m.BonusATKLv3,   m.BonusATKLv4,   m.BonusATKLv5,   level),
+            def: LeveledInt(m.BonusDEFLv1,   m.BonusDEFLv2,   m.BonusDEFLv3,   m.BonusDEFLv4,   m.BonusDEFLv5,   level),
+            luck: 0f, speed: 0f,
+            criticalRate: m.BonusCriticalRate,
+            counterRate:  m.BonusCounterRate,
+            avoidRate:    m.BonusReduceRate
+        );
+        return true;
+    }
+
+    /// <summary>무기 스킬 강화 레벨 기준 Value 반환</summary>
+    public float GetWeaponSkillValueAtLevel(int weaponIndex, int level)
+    {
+        EnsureLoaded();
+        return weaponMasterMap.TryGetValue(weaponIndex, out PlayerWeaponData m)
+            ? LeveledFloat(m.WeaponSkillValueLv1, m.WeaponSkillValueLv2, m.WeaponSkillValueLv3,
+                           m.WeaponSkillValueLv4, m.WeaponSkillValueLv5, level)
+            : 0f;
+    }
+
+    /// <summary>무기 스킬 강화 레벨 기준 SubValue 반환</summary>
+    public float GetWeaponSkillSubValueAtLevel(int weaponIndex, int level)
+    {
+        EnsureLoaded();
+        return weaponMasterMap.TryGetValue(weaponIndex, out PlayerWeaponData m)
+            ? LeveledFloat(m.WeaponSkillSubValueLv1, m.WeaponSkillSubValueLv2, m.WeaponSkillSubValueLv3,
+                           m.WeaponSkillSubValueLv4, m.WeaponSkillSubValueLv5, level)
+            : 0f;
+    }
+
+    /// <summary>캐릭터 스킬 강화 레벨 기준 Value 반환</summary>
+    public float GetClassSkillValueAtLevel(int skillIndex, int level)
+    {
+        EnsureLoaded();
+        return classSkillMasterMap.TryGetValue(skillIndex, out ClassSkillData m)
+            ? LeveledFloat(m.ClassSkillValueLv1, m.ClassSkillValueLv2, m.ClassSkillValueLv3,
+                           m.ClassSkillValueLv4, m.ClassSkillValueLv5, level)
+            : 0f;
+    }
+
+    /// <summary>캐릭터 스킬 강화 레벨 기준 SubValue 반환</summary>
+    public float GetClassSkillSubValueAtLevel(int skillIndex, int level)
+    {
+        EnsureLoaded();
+        return classSkillMasterMap.TryGetValue(skillIndex, out ClassSkillData m)
+            ? LeveledFloat(m.ClassSkillSubValueLv1, m.ClassSkillSubValueLv2, m.ClassSkillSubValueLv3,
+                           m.ClassSkillSubValueLv4, m.ClassSkillSubValueLv5, level)
+            : 0f;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // 레벨 매핑 헬퍼 (switch 로직을 한 곳에만 작성)
+    // ─────────────────────────────────────────────────────────
+
+    private static float LeveledFloat(float lv1, float lv2, float lv3, float lv4, float lv5, int level)
+    {
+        return level switch { 2 => lv2, 3 => lv3, 4 => lv4, 5 => lv5, _ => lv1 };
+    }
+
+    private static float LeveledInt(int lv1, int lv2, int lv3, int lv4, int lv5, int level)
+    {
+        return level switch { 2 => lv2, 3 => lv3, 4 => lv4, 5 => lv5, _ => lv1 };
+    }
+
+    public List<WeaponData> GetAllWeapons()
+    {
+        EnsureLoaded();
+        return new List<WeaponData>(cachedWeapons);
+    }
+
+    public List<SkillData> GetAllSkills()
+    {
+        EnsureLoaded();
+        var result = new List<SkillData>(skillTemplates.Values);
+        result.Sort((a, b) => (a?.skillIndex ?? 0).CompareTo(b?.skillIndex ?? 0));
+        return result;
+    }
+
+    public List<SkillData> GetSkillsByClass(string className)
+    {
+        EnsureLoaded();
+        if (string.IsNullOrWhiteSpace(className)) return new List<SkillData>();
+        string normalized = className.Trim();
+        var result = new List<SkillData>();
+        foreach (var skill in skillTemplates.Values)
+        {
+            if (skill != null &&
+                !string.IsNullOrWhiteSpace(skill.skillClass) &&
+                string.Equals(skill.skillClass.Trim(), normalized, System.StringComparison.OrdinalIgnoreCase))
+            {
+                result.Add(skill);
+            }
+        }
+        result.Sort((a, b) => a.acquireLevel.CompareTo(b.acquireLevel));
+        return result;
+    }
+
+    // ─────────────────────────────────────────────────────────
     // SO DataTable 로드 경로
     // ─────────────────────────────────────────────────────────
 
@@ -176,7 +294,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             for (int i = 0; i < classSkillTable.DataList.Count; i++)
             {
-                SkillData skill = ConvertClassSkill(classSkillTable.DataList[i]);
+                ClassSkillData src = classSkillTable.DataList[i];
+                SkillData skill = ConvertClassSkill(src);
                 if (skill == null) continue;
 
                 if (skillTemplates.ContainsKey(skill.skillIndex))
@@ -185,6 +304,9 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                     continue;
                 }
                 skillTemplates.Add(skill.skillIndex, skill);
+
+                // 레벨별 수치 조회용 마스터 보관
+                classSkillMasterMap[skill.skillIndex] = src;
             }
         }
         else
@@ -197,7 +319,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             for (int i = 0; i < weaponTable.DataList.Count; i++)
             {
-                WeaponData weapon = ConvertWeapon(weaponTable.DataList[i]);
+                PlayerWeaponData src = weaponTable.DataList[i];
+                WeaponData weapon = ConvertWeapon(src);
                 if (weapon == null || weapon.WeaponIndex <= 0) continue;
 
                 if (weaponLookup.ContainsKey(weapon.WeaponIndex))
@@ -207,6 +330,9 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 }
                 weaponLookup.Add(weapon.WeaponIndex, weapon);
                 cachedWeapons.Add(weapon);
+
+                // 레벨별 수치 조회용 마스터 보관
+                weaponMasterMap[weapon.WeaponIndex] = src;
             }
         }
         else
@@ -506,6 +632,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         cachedPlayerTemplates.Clear();
         cachedEnemyTemplates.Clear();
         cachedWeapons.Clear();
+        weaponMasterMap.Clear();
+        classSkillMasterMap.Clear();
         isLoaded = false;
     }
 

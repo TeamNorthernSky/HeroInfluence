@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,8 +5,6 @@ using UnityEngine;
 public class SkillManager : MonoBehaviour
 {
     public static SkillManager Instance { get; private set; }
-
-    [SerializeField] private SkillDataLoader skillDataLoader;
 
     private void Awake()
     {
@@ -21,29 +18,24 @@ public class SkillManager : MonoBehaviour
 
     public List<SkillData> GetSkillsForCharacter(string characterName)
     {
-        if (skillDataLoader == null || string.IsNullOrWhiteSpace(characterName))
+        if (DHCsvTemplateCatalog.Instance == null || string.IsNullOrWhiteSpace(characterName))
         {
             return new List<SkillData>();
         }
 
-        return skillDataLoader.GetSkillsByClass(characterName);
+        return DHCsvTemplateCatalog.Instance.GetSkillsByClass(characterName);
     }
 
     public List<SkillData> GetAvailableSkillsForCharacter(string characterName, int currentLevel)
     {
         var classSkills = GetSkillsForCharacter(characterName);
-        if (classSkills.Count == 0)
-        {
-            return classSkills;
-        }
+        if (classSkills.Count == 0) return classSkills;
 
         int safeLevel = Mathf.Max(1, currentLevel);
-        var result = classSkills
+        return classSkills
             .Where(x => x != null && x.acquireLevel <= safeLevel)
             .OrderBy(x => x.acquireLevel)
             .ThenBy(x => x.skillIndex)
             .ToList();
-
-        return result;
     }
 }

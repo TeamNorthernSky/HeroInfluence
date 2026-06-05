@@ -41,7 +41,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     [SerializeField] private List<StatusEffectInstance> activeStatusEffects = new List<StatusEffectInstance>();
     [HideInInspector] [SerializeField] private Skill activeSkill;
-    [SerializeField] private SkillDataLoader skillDataLoader;
+    // skillDataLoader 제거 — DHCsvTemplateCatalog.Instance 로 대체
     /// <summary>availableWeapons 목록 내 로컬 인덱스(0..Count-1). 인스펙터에서는 BattleCharactorEditor 드롭다운으로만 설정합니다.</summary>
     [HideInInspector] [SerializeField] private int equippedWeaponIndex;
     [HideInInspector] public List<WeaponData> availableWeapons = new List<WeaponData>();
@@ -1007,10 +1007,10 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             return;
         }
 
-        if (skillDataLoader != null)
+        if (DHCsvTemplateCatalog.Instance != null)
         {
             availableSkills.Clear();
-            availableSkills.AddRange(skillDataLoader.GetSkillsByClass(trimmed));
+            availableSkills.AddRange(DHCsvTemplateCatalog.Instance.GetSkillsByClass(trimmed));
             prototypeSkillsCacheKey = cacheKey;
             return;
         }

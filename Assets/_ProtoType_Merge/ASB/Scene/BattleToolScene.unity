@@ -1696,6 +1696,81 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 2123682894}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &705273423
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 705273426}
+  - component: {fileID: 705273425}
+  - component: {fileID: 705273424}
+  m_Layer: 0
+  m_Name: CsvData
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &705273424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705273423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 407c923e952858047875ef90f3fb4584, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitCsv: {fileID: 0}
+  playerUnitCsv: {fileID: 4900000, guid: f41b9a24bf1e4194b826bf1733be0f41, type: 3}
+  enemyUnitCsv: {fileID: 4900000, guid: dad7e36fb4d28bc4d9d5fc1ae6eae029, type: 3}
+  classSkillSheetCsv: {fileID: 4900000, guid: 6715d7221fa149942b60589cae0dece6, type: 3}
+  weaponSheetCsv: {fileID: 4900000, guid: 6828b0fb66bebb34e84cf5bfd9a023aa, type: 3}
+  levelUpSheetCsv: {fileID: 4900000, guid: 55988bef05c7c4f4494b81cea55ff09e, type: 3}
+--- !u!114 &705273425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705273423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  csvDataLoad: {fileID: 0}
+  playerUnitTable: {fileID: 11400000, guid: 90c4628412cf66c4da1900fe2a85c25f, type: 2}
+  enemyUnitTable: {fileID: 11400000, guid: 1945ee8241da66e45b55e407be613258, type: 2}
+  weaponTable: {fileID: 11400000, guid: d889acf92290c1b4986df18dbce5c742, type: 2}
+  classSkillTable: {fileID: 11400000, guid: 113495fdb7b44f34bbfc28dc293f4fe4, type: 2}
+  levelUpTable: {fileID: 11400000, guid: 3d44f3331f94c6540a5aa5cb38104748, type: 2}
+  useSOTables: 0
+  loadOnAwake: 0
+  dontDestroyOnLoad: 1
+  cachedPlayerTemplates: []
+  cachedEnemyTemplates: []
+  cachedWeapons: []
+--- !u!4 &705273426
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705273423}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &747992314 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4383120895684230713, guid: 8e839b26f24666340915ba452e52ad0e,
@@ -4488,3 +4563,4 @@ SceneRoots:
   - {fileID: 1336593381}
   - {fileID: 1283565777}
   - {fileID: 615091262}
+  - {fileID: 705273426}

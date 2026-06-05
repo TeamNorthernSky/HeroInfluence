@@ -7,8 +7,6 @@ public class WeaponManager : MonoBehaviour
 {
     public static WeaponManager Instance { get; private set; }
 
-    [SerializeField] private WeaponDataLoader weaponDataLoader;
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -21,13 +19,13 @@ public class WeaponManager : MonoBehaviour
 
     public List<WeaponData> GetWeaponsForClass(string className)
     {
-        if (weaponDataLoader == null || string.IsNullOrWhiteSpace(className))
+        if (DHCsvTemplateCatalog.Instance == null || string.IsNullOrWhiteSpace(className))
         {
             return new List<WeaponData>();
         }
 
         string normalized = className.Trim();
-        return weaponDataLoader.GetAllWeapons()
+        return DHCsvTemplateCatalog.Instance.GetAllWeapons()
             .Where(x =>
                 x != null &&
                 !string.IsNullOrWhiteSpace(x.weaponClass) &&

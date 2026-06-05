@@ -25,7 +25,7 @@ public class EnemySpawner : MonoBehaviour
     }
 
     [Header("Dependencies")]
-    [SerializeField] private EnemyManager enemyManager;
+    // enemyManager 제거 — DHCsvTemplateCatalog.Instance 로 대체
 
     [Header("Inspector / Battle debug spawn")]
     public List<SpawnRequest> debugSpawnRequests = new List<SpawnRequest>();
@@ -185,12 +185,6 @@ public class EnemySpawner : MonoBehaviour
             return null;
         }
 
-        if (enemyManager == null)
-        {
-            Debug.LogError("[EnemySpawner] enemyManager가 할당되지 않았습니다.");
-            return null;
-        }
-
         if (!gridSlots.TryGetValue(gridNumber, out Vector3 worldPos) ||
             !gridRotations.TryGetValue(gridNumber, out Quaternion worldRot))
         {
@@ -207,11 +201,11 @@ public class EnemySpawner : MonoBehaviour
 
         ClearGrid(gridNumber);
 
-        EnemyData data = enemyManager.GetEnemyData(enemyId);
+        DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(enemyId, out EnemyData data);
         if (data == null)
         {
             Debug.LogError(
-                $"[EnemySpawner] EnemyManager에서 UnitData(EnemyData)를 찾지 못했습니다. enemyId='{enemyId}' — 스폰을 중단합니다.");
+                $"[EnemySpawner] DHCsvTemplateCatalog에서 EnemyData를 찾지 못했습니다. enemyId='{enemyId}' — 스폰을 중단합니다.");
             return null;
         }
 
@@ -276,7 +270,7 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        if (!hierarchyReady || unitParent == null || enemyManager == null || gridSlots.Count == 0)
+        if (!hierarchyReady || unitParent == null || DHCsvTemplateCatalog.Instance == null || gridSlots.Count == 0)
         {
             return false;
         }
@@ -299,11 +293,11 @@ public class EnemySpawner : MonoBehaviour
                 continue;
             }
 
-            EnemyData csvEnemyData = enemyManager.GetEnemyData(persistentData.UnitTemplateKey);
+            DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(persistentData.UnitTemplateKey, out EnemyData csvEnemyData);
             if (csvEnemyData == null)
             {
                 // unitTemplateKey 미매핑 시 인덱스 문자열 폴백
-                csvEnemyData = enemyManager.GetEnemyData(persistentUnitIndex.ToString());
+                DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(persistentUnitIndex.ToString(), out csvEnemyData);
             }
             if (csvEnemyData == null)
             {
