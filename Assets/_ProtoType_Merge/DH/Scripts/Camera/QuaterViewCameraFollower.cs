@@ -28,9 +28,13 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     [Header("Edge Scrolling")]
     [SerializeField] private bool edgeScrollEnabled = true;
-    [SerializeField] private float edgeThreshold = 40f;
-    [SerializeField] private float edgeScrollSpeed = 30f;
+    [SerializeField] private float edgeThresholdX = 40f;
+    [SerializeField] private float edgeThresholdY = 40f;
+    [SerializeField] private float edgeMinSpeed = 5f;
+    [SerializeField] private float edgeMaxSpeed = 30f;
     [SerializeField] private float edgeAcceleration = 10f;
+    [SerializeField] private float edgeDeceleration = 35f;
+    [SerializeField] private bool snapStopWhenLeavingEdge = false;
     [SerializeField] private float edgeLimitRange = 50f;
     [SerializeField] private bool invertVerticalEdgeScroll = false;
 
@@ -38,9 +42,11 @@ public class QuarterViewCameraFollower : MonoBehaviour
     [SerializeField] private KeyCode resetKey = KeyCode.Y;
 
     private Vector3 followVelocity;
+    private Vector3 smoothedFollowAnchor;
     private Vector3 panOffset;
     private Vector3 edgeScrollVelocity;
     private float defaultZoomY;
+    private bool hasSmoothedFollowAnchor;
 
     public void SetFollowTarget(Transform target)
     {
@@ -77,16 +83,30 @@ public class QuarterViewCameraFollower : MonoBehaviour
             return;
 
         Vector3 followAnchor = followTarget.position;
-        Vector3 desiredPos = followAnchor + panOffset + positionOffset;
-        desiredPos.x = followAnchor.x + panOffset.x;
-        desiredPos.y = positionOffset.y;
-        desiredPos.z = followAnchor.z + panOffset.z + positionOffset.z;
+        Vector3 targetFollowAnchor = new Vector3(followAnchor.x, 0f, followAnchor.z);
+
+        if (!hasSmoothedFollowAnchor)
+        {
+            smoothedFollowAnchor = targetFollowAnchor;
+            hasSmoothedFollowAnchor = true;
+        }
 
         // 스무딩 (프레임 독립 느낌)
         float smoothTime = Mathf.Max(0.01f, followDelay);
         float tRot = 1f - Mathf.Exp(-rotationLerp * Time.deltaTime);
 
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPos, ref followVelocity, smoothTime);
+        smoothedFollowAnchor = Vector3.SmoothDamp(
+            smoothedFollowAnchor,
+            targetFollowAnchor,
+            ref followVelocity,
+            smoothTime);
+
+        Vector3 desiredPos = smoothedFollowAnchor + panOffset + positionOffset;
+        desiredPos.x = smoothedFollowAnchor.x + panOffset.x;
+        desiredPos.y = positionOffset.y;
+        desiredPos.z = smoothedFollowAnchor.z + panOffset.z + positionOffset.z;
+
+        transform.position = desiredPos;
 
         Quaternion desiredFixedRot = Quaternion.Euler(fixedEulerAngles);
         transform.rotation = Quaternion.Slerp(transform.rotation, desiredFixedRot, tRot);
@@ -107,12 +127,14 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (edgeScrollEnabled && IsMouseInsideScreen())
         {
             Vector3 mousePosition = Input.mousePosition;
-            edgeInput.x = EvaluateEdgeInput(mousePosition.x, Screen.width);
-            edgeInput.y = EvaluateEdgeInput(mousePosition.y, Screen.height);
+            edgeInput.x = EvaluateEdgeInput(mousePosition.x, Screen.width, edgeThresholdX);
+            edgeInput.y = EvaluateEdgeInput(mousePosition.y, Screen.height, edgeThresholdY);
         }
 
         if (invertVerticalEdgeScroll)
             edgeInput.y *= -1f;
+
+        float inputStrength = Mathf.Clamp01(edgeInput.magnitude);
 
         Vector3 right = transform.right;
         right.y = 0f;
@@ -126,10 +148,24 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (desiredVelocity.sqrMagnitude > 1f)
             desiredVelocity.Normalize();
 
-        desiredVelocity *= edgeScrollSpeed;
+        float minSpeed = Mathf.Max(0f, edgeMinSpeed);
+        float maxSpeed = Mathf.Max(minSpeed, edgeMaxSpeed);
+        float speed = inputStrength > 0f
+            ? Mathf.Lerp(minSpeed, maxSpeed, inputStrength)
+            : 0f;
+        desiredVelocity *= speed;
 
-        float blend = 1f - Mathf.Exp(-Mathf.Max(0.01f, edgeAcceleration) * Time.deltaTime);
-        edgeScrollVelocity = Vector3.Lerp(edgeScrollVelocity, desiredVelocity, blend);
+        if (snapStopWhenLeavingEdge && inputStrength <= 0f)
+        {
+            edgeScrollVelocity = Vector3.zero;
+        }
+        else
+        {
+            float response = inputStrength > 0f ? edgeAcceleration : edgeDeceleration;
+            float blend = 1f - Mathf.Exp(-Mathf.Max(0.01f, response) * Time.deltaTime);
+            edgeScrollVelocity = Vector3.Lerp(edgeScrollVelocity, desiredVelocity, blend);
+        }
+
         edgeScrollVelocity.y = 0f;
 
         panOffset += edgeScrollVelocity * Time.deltaTime;
@@ -147,9 +183,9 @@ public class QuarterViewCameraFollower : MonoBehaviour
         positionOffset = new Vector3(0f, defaultZoomY, positionOffset.z);
     }
 
-    private float EvaluateEdgeInput(float mouseAxis, float screenSize)
+    private float EvaluateEdgeInput(float mouseAxis, float screenSize, float threshold)
     {
-        float safeThreshold = Mathf.Max(1f, edgeThreshold);
+        float safeThreshold = Mathf.Max(1f, threshold);
 
         if (mouseAxis <= safeThreshold)
             return -Mathf.Clamp01((safeThreshold - mouseAxis) / safeThreshold);
