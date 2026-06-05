@@ -12,7 +12,7 @@ namespace ASB.ExcelImport.Editor
 {
     public static class ScriptableExporter
     {
-        public static void ExportAll(IReadOnlyList<ExcelSheetParseResult> sheets, bool useDictionary = false)
+        public static void ExportAll(IReadOnlyList<ExcelSheetParseResult> sheets, Dictionary<string, bool> useDictMap = null)
         {
             if (sheets == null || sheets.Count == 0)
             {
@@ -21,7 +21,7 @@ namespace ASB.ExcelImport.Editor
             }
 
             string assetFolder = ExcelImportPaths.TableAssetFolder;
-            Directory.CreateDirectory(ToAbsoluteAssetPath(assetFolder));
+            EnsureAssetFolderExists(assetFolder);
 
             for (int i = 0; i < sheets.Count; i++)
             {
@@ -51,8 +51,23 @@ namespace ASB.ExcelImport.Editor
             }
 
             ScriptableObject tableAsset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
+
+            // 로드 실패(타입 변경 등)로 null이 됐지만 파일은 남아있는 경우 삭제 후 재생성
             if (tableAsset == null)
             {
+                string absolutePath = ToAbsoluteAssetPath(assetPath);
+                if (File.Exists(absolutePath))
+                {
+                    AssetDatabase.DeleteAsset(assetPath);
+                }
+
+                tableAsset = ScriptableObject.CreateInstance(tableType);
+                AssetDatabase.CreateAsset(tableAsset, assetPath);
+            }
+            // 타입이 바뀐 경우(로드는 됐지만 실제 타입이 다른 경우) 교체
+            else if (tableAsset.GetType() != tableType)
+            {
+                AssetDatabase.DeleteAsset(assetPath);
                 tableAsset = ScriptableObject.CreateInstance(tableType);
                 AssetDatabase.CreateAsset(tableAsset, assetPath);
             }
@@ -103,6 +118,25 @@ namespace ASB.ExcelImport.Editor
 
             EditorUtility.SetDirty(tableAsset);
             Debug.Log($"[ScriptableExporter] Exported {sheet.Rows.Count} rows -> {assetPath}");
+        }
+
+        private static IList ConvertToList(string value, Type elementType)
+        {
+            IList list = CreateListInstance(elementType);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return list;
+            }
+
+            string[] tokens = value.Split(',');
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                string token = tokens[i].Trim();
+                object element = ConvertCellValue(token, elementType);
+                list.Add(element);
+            }
+
+            return list;
         }
 
         private static IList CreateListInstance(Type elementType)
@@ -162,6 +196,13 @@ namespace ASB.ExcelImport.Editor
                 return Enum.Parse(targetType, value, true);
             }
 
+            // List<int> / List<float> / List<string> / List<bool>
+            // 셀 값 "1,2,3" → new List<int> { 1, 2, 3 }
+            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                return ConvertToList(value, targetType.GetGenericArguments()[0]);
+            }
+
             return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
 
@@ -192,7 +233,19 @@ namespace ASB.ExcelImport.Editor
                 return 0f;
             }
 
-            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
+            // "25%", "25 %" → 0.25f
+            string trimmed = value.Trim();
+            if (trimmed.EndsWith("%"))
+            {
+                string numPart = trimmed.Substring(0, trimmed.Length - 1).Trim();
+                if (float.TryParse(numPart, NumberStyles.Float, CultureInfo.InvariantCulture, out float pct))
+                {
+                    return pct / 100f;
+                }
+                return 0f;
+            }
+
+            if (float.TryParse(trimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
             {
                 return result;
             }
@@ -224,6 +277,33 @@ namespace ASB.ExcelImport.Editor
             }
 
             return ConvertToInt(value) != 0;
+        }
+
+        /// <summary>
+        /// 폴더가 없으면 디스크와 AssetDatabase 양쪽에 모두 생성한 뒤 Refresh 한다.
+        /// </summary>
+        private static void EnsureAssetFolderExists(string assetFolderPath)
+        {
+            // 이미 AssetDatabase가 인식하는 폴더면 아무것도 안 해도 됨
+            if (AssetDatabase.IsValidFolder(assetFolderPath))
+            {
+                return;
+            }
+
+            // 디스크에 물리 폴더 생성 후 AssetDatabase에 알림
+            Directory.CreateDirectory(ToAbsoluteAssetPath(assetFolderPath));
+            AssetDatabase.Refresh();
+
+            // Refresh 후에도 인식이 안 되면 CreateFolder로 강제 등록
+            if (!AssetDatabase.IsValidFolder(assetFolderPath))
+            {
+                string parent = System.IO.Path.GetDirectoryName(assetFolderPath)?.Replace('\\', '/');
+                string folderName = System.IO.Path.GetFileName(assetFolderPath);
+                if (!string.IsNullOrEmpty(parent) && !string.IsNullOrEmpty(folderName))
+                {
+                    AssetDatabase.CreateFolder(parent, folderName);
+                }
+            }
         }
 
         private static string ToAbsoluteAssetPath(string unityAssetPath)

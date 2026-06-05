@@ -8,11 +8,15 @@ namespace ASB.ExcelImport.Editor
 {
     public class ExcelEditorWindow : EditorWindow
     {
-        private const string PendingUseDictKey = "ExcelParser_PendingUseDict";
-        private bool _useDictionary = false;
+        // EditorPrefs key: "SheetA=true|SheetB=false" 형태로 직렬화
+        private const string PendingUseDictMapKey = "ExcelParser_PendingUseDictMap";
 
         private string _selectedExcelPath = string.Empty;
         private List<ExcelSheetParseResult> _previewSheets = new List<ExcelSheetParseResult>();
+
+        // 시트 이름 → Dictionary 사용 여부
+        private readonly Dictionary<string, bool> _sheetUseDictionary = new Dictionary<string, bool>();
+
         private Vector2 _sheetScroll;
         private Vector2 _logScroll;
         private readonly List<string> _logs = new List<string>();
@@ -64,8 +68,8 @@ namespace ASB.ExcelImport.Editor
             }
 
             EditorPrefs.DeleteKey(ExcelImportPaths.PendingFilePathKey);
-            bool useDictionary = EditorPrefs.GetBool(PendingUseDictKey, false);
-            EditorPrefs.DeleteKey(PendingUseDictKey);
+            Dictionary<string, bool> useDictMap = DeserializeDictMap(EditorPrefs.GetString(PendingUseDictMapKey, string.Empty));
+            EditorPrefs.DeleteKey(PendingUseDictMapKey);
 
             if (!File.Exists(pendingPath))
             {
@@ -79,7 +83,7 @@ namespace ASB.ExcelImport.Editor
                 ExcelImportDebugLog.Write("H2", "ExcelEditorWindow.OnScriptsReloaded", "step2_start", "{\"path\":\"" + pendingPath + "\"}");
                 // #endregion
                 List<ExcelSheetParseResult> sheets = ExcelParser.Parse(pendingPath);
-                ScriptableExporter.ExportAll(sheets, useDictionary);
+                ScriptableExporter.ExportAll(sheets, useDictMap);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
                 Debug.Log($"[Excel Importer] Step 2 complete: exported {sheets.Count} sheet(s) from {pendingPath}");
@@ -112,7 +116,7 @@ namespace ASB.ExcelImport.Editor
             EditorGUILayout.Space(8f);
 
             EditorGUILayout.LabelField("Detected Sheets", EditorStyles.boldLabel);
-            _sheetScroll = EditorGUILayout.BeginScrollView(_sheetScroll, GUILayout.Height(120f));
+            _sheetScroll = EditorGUILayout.BeginScrollView(_sheetScroll, GUILayout.Height(160f));
             if (_previewSheets.Count == 0)
             {
                 EditorGUILayout.HelpBox("Select an .xlsx file to preview sheets.", MessageType.Info);
@@ -122,33 +126,43 @@ namespace ASB.ExcelImport.Editor
                 for (int i = 0; i < _previewSheets.Count; i++)
                 {
                     ExcelSheetParseResult sheet = _previewSheets[i];
+                    if (!_sheetUseDictionary.ContainsKey(sheet.SheetName))
+                    {
+                        _sheetUseDictionary[sheet.SheetName] = false;
+                    }
+
+                    bool useDict = _sheetUseDictionary[sheet.SheetName];
+
                     EditorGUILayout.LabelField(
                         $"• {sheet.SheetName}  (columns: {sheet.Names.Count}, rows: {sheet.Rows.Count})");
+
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Space(16f);
+                    GUI.backgroundColor = !useDict ? Color.cyan : Color.white;
+                    if (GUILayout.Button("List", GUILayout.Height(20f), GUILayout.Width(80f)))
+                    {
+                        _sheetUseDictionary[sheet.SheetName] = false;
+                    }
+                    GUI.backgroundColor = useDict ? Color.cyan : Color.white;
+                    if (GUILayout.Button("Dictionary", GUILayout.Height(20f), GUILayout.Width(80f)))
+                    {
+                        _sheetUseDictionary[sheet.SheetName] = true;
+                    }
+                    GUI.backgroundColor = Color.white;
+
+                    if (useDict)
+                    {
+                        string keyField = sheet.Names.Count > 0 ? sheet.Names[0] : "?";
+                        string keyType  = sheet.Types.Count > 0 ? sheet.Types[0] : "?";
+                        GUILayout.Label($"  Key: {keyField} ({keyType})", EditorStyles.miniLabel);
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.Space(4f);
                 }
             }
             EditorGUILayout.EndScrollView();
 
-            EditorGUILayout.Space(8f);
-
-            EditorGUILayout.LabelField("Data Structure", EditorStyles.boldLabel);
-            EditorGUILayout.BeginHorizontal();
-            GUI.backgroundColor = !_useDictionary ? Color.cyan : Color.white;
-            if (GUILayout.Button("List", GUILayout.Height(24f))) _useDictionary = false;
-            GUI.backgroundColor = _useDictionary ? Color.cyan : Color.white;
-            if (GUILayout.Button("Dictionary", GUILayout.Height(24f))) _useDictionary = true;
-            GUI.backgroundColor = Color.white;
-            EditorGUILayout.EndHorizontal();
-
-            if (_useDictionary && _previewSheets.Count > 0)
-            {
-                for (int i = 0; i < _previewSheets.Count; i++)
-                {
-                    var s = _previewSheets[i];
-                    string keyField = s.Names.Count > 0 ? s.Names[0] : "?";
-                    string keyType  = s.Types.Count > 0 ? s.Types[0] : "?";
-                    EditorGUILayout.HelpBox($"Key: {keyField} ({keyType})  —  {s.SheetName}", MessageType.None);
-                }
-            }
             EditorGUILayout.Space(8f);
 
             using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(_selectedExcelPath)))
@@ -220,10 +234,10 @@ namespace ASB.ExcelImport.Editor
                 _previewSheets = sheets;
 
                 AddLog("[Step 1] Generating C# scripts...");
-                CodeGenerator.GenerateAll(sheets, _useDictionary);
+                CodeGenerator.GenerateAll(sheets, _sheetUseDictionary);
 
                 EditorPrefs.SetString(ExcelImportPaths.PendingFilePathKey, _selectedExcelPath);
-                EditorPrefs.SetBool(PendingUseDictKey, _useDictionary);
+                EditorPrefs.SetString(PendingUseDictMapKey, SerializeDictMap(_sheetUseDictionary));
                 AddLog("[Step 1] Pending asset export registered. Refreshing assets...");
 
                 AssetDatabase.Refresh();
@@ -244,6 +258,34 @@ namespace ASB.ExcelImport.Editor
             string line = $"[{DateTime.Now:HH:mm:ss}] {message}";
             _logs.Add(line);
             Debug.Log("[Excel Importer] " + message);
+        }
+
+        // "SheetA=true|SheetB=false" 형태로 직렬화
+        private static string SerializeDictMap(Dictionary<string, bool> map)
+        {
+            var parts = new List<string>();
+            foreach (var kv in map)
+            {
+                parts.Add($"{kv.Key}={kv.Value}");
+            }
+            return string.Join("|", parts);
+        }
+
+        private static Dictionary<string, bool> DeserializeDictMap(string raw)
+        {
+            var result = new Dictionary<string, bool>();
+            if (string.IsNullOrEmpty(raw)) return result;
+
+            string[] entries = raw.Split('|');
+            foreach (string entry in entries)
+            {
+                int idx = entry.IndexOf('=');
+                if (idx < 0) continue;
+                string key = entry.Substring(0, idx);
+                bool val = entry.Substring(idx + 1).Trim().ToLower() == "true";
+                result[key] = val;
+            }
+            return result;
         }
 
         private static string ScriptableExporterFindAbsoluteFolder(string unityAssetPath)
