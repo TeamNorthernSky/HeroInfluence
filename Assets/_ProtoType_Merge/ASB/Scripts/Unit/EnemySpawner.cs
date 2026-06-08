@@ -11,6 +11,8 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 /// </summary>
 public class EnemySpawner : MonoBehaviour
 {
+    private static readonly Quaternion FacingPlayerYawOffset = Quaternion.Euler(0f, 180f, 0f);
+
     [Header("Prefab Overrides (Index -> Prefab 매핑)")]
     [SerializeField] private List<PrefabMapping> prefabOverrides = new List<PrefabMapping>();
     private Dictionary<string, GameObject> _prefabOverrideDict;
@@ -23,7 +25,7 @@ public class EnemySpawner : MonoBehaviour
     }
 
     [Header("Dependencies")]
-    [SerializeField] private EnemyManager enemyManager;
+    // enemyManager 제거 — DHCsvTemplateCatalog.Instance 로 대체
 
     [Header("Inspector / Battle debug spawn")]
     public List<SpawnRequest> debugSpawnRequests = new List<SpawnRequest>();
@@ -183,12 +185,6 @@ public class EnemySpawner : MonoBehaviour
             return null;
         }
 
-        if (enemyManager == null)
-        {
-            Debug.LogError("[EnemySpawner] enemyManager가 할당되지 않았습니다.");
-            return null;
-        }
-
         if (!gridSlots.TryGetValue(gridNumber, out Vector3 worldPos) ||
             !gridRotations.TryGetValue(gridNumber, out Quaternion worldRot))
         {
@@ -205,11 +201,11 @@ public class EnemySpawner : MonoBehaviour
 
         ClearGrid(gridNumber);
 
-        EnemyData data = enemyManager.GetEnemyData(enemyId);
+        DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(enemyId, out EnemyData data);
         if (data == null)
         {
             Debug.LogError(
-                $"[EnemySpawner] EnemyManager에서 UnitData(EnemyData)를 찾지 못했습니다. enemyId='{enemyId}' — 스폰을 중단합니다.");
+                $"[EnemySpawner] DHCsvTemplateCatalog에서 EnemyData를 찾지 못했습니다. enemyId='{enemyId}' — 스폰을 중단합니다.");
             return null;
         }
 
@@ -220,7 +216,8 @@ public class EnemySpawner : MonoBehaviour
         }
 
         // BattleSceneManager.SyncGridOccupancy가 cell 하위에서 유닛을 탐색하므로, 반드시 GridCell 아래에 붙입니다.
-        var go = Instantiate(prefab, worldPos, worldRot, resolvedCell.transform);
+        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
+        var go = Instantiate(prefab, worldPos, facingPlayerRot, resolvedCell.transform);
         go.name = $"Enemy_{data.Index}_{go.GetInstanceID()}";
 
         // 적 인스턴스에서는 IUnitIdentifier를 EnemyScript만 담당하도록 CharactorScript 제거(클릭 식별 모호 방지).
@@ -273,7 +270,7 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        if (!hierarchyReady || unitParent == null || enemyManager == null || gridSlots.Count == 0)
+        if (!hierarchyReady || unitParent == null || DHCsvTemplateCatalog.Instance == null || gridSlots.Count == 0)
         {
             return false;
         }
@@ -296,11 +293,11 @@ public class EnemySpawner : MonoBehaviour
                 continue;
             }
 
-            EnemyData csvEnemyData = enemyManager.GetEnemyData(persistentData.UnitTemplateKey);
+            DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(persistentData.UnitTemplateKey, out EnemyData csvEnemyData);
             if (csvEnemyData == null)
             {
                 // unitTemplateKey 미매핑 시 인덱스 문자열 폴백
-                csvEnemyData = enemyManager.GetEnemyData(persistentUnitIndex.ToString());
+                DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(persistentUnitIndex.ToString(), out csvEnemyData);
             }
             if (csvEnemyData == null)
             {
@@ -339,7 +336,8 @@ public class EnemySpawner : MonoBehaviour
         }
 
         ClearGrid(gridNumber);
-        var go = Instantiate(prefab, worldPos, worldRot, persistentCell.transform);
+        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
+        var go = Instantiate(prefab, worldPos, facingPlayerRot, persistentCell.transform);
         go.name = $"Enemy_{data.Index}_{go.GetInstanceID()}";
 
         foreach (var legacy in go.GetComponentsInChildren<CharactorScript>(true))
@@ -418,6 +416,11 @@ public class EnemySpawner : MonoBehaviour
 
             SpawnUnit(req.unitId, req.gridNumber);
         }
+    }
+
+    private static Quaternion ApplyFacingPlayerRotation(Quaternion gridRotation)
+    {
+        return gridRotation * FacingPlayerYawOffset;
     }
 
     private static bool TryResolveGridNumber(Transform slotTransform, out int gridNumber)

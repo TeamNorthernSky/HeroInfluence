@@ -2,67 +2,51 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 영속 전투 입장: SkillDataLoader / WeaponDataLoader 인덱스로 장착 주입,
+/// 영속 전투 입장: DHCsvTemplateCatalog 인덱스로 장착 주입,
 /// MarkInitializedFromDataPipeline(preserve:true)로 문자열 기반 재탐색으로 덮어쓰지 않습니다.
 /// </summary>
 public partial class BattleCharactor
 {
     /// <summary>
-    /// 로더 인덱스로 스킬·무기 데이터를 직접 주입합니다.
+    /// 카탈로그 인덱스로 스킬·무기 데이터를 직접 주입합니다.
     /// </summary>
     public void LoadPersistentEquipment(int skillIdx, int weaponIdx)
     {
-        bool skillLoaded = false;
+        bool skillLoaded  = false;
         bool weaponLoaded = false;
 
-        SkillDataLoader skillLoader = skillDataLoader != null
-            ? skillDataLoader
-            : Object.FindObjectOfType<SkillDataLoader>(true);
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
 
-        WeaponDataLoader weaponLoader = Object.FindObjectOfType<WeaponDataLoader>(true);
-
-        if (skillLoader != null && skillIdx > 0)
+        if (catalog != null && skillIdx > 0)
         {
-            SkillData resolved = null;
-            if (skillLoader.TryGetSkill(skillIdx, out SkillData direct) && direct != null)
+            SkillData resolved = catalog.GetSkillTemplate(skillIdx);
+            if (resolved == null)
             {
-                resolved = direct;
-            }
-            else
-            {
-                resolved = TryResolveSkillDataForPlayerPattern(skillLoader, skillIdx);
+                resolved = TryResolveSkillDataForPlayerPattern(catalog, skillIdx);
             }
 
             if (resolved != null)
             {
-                if (availableSkills == null)
-                {
-                    availableSkills = new List<SkillData>();
-                }
-
+                if (availableSkills == null) availableSkills = new List<SkillData>();
                 availableSkills.Clear();
                 availableSkills.Add(resolved);
-                SelectedSkillData = resolved;
-                classSkillIndex = resolved.skillIndex;
-                selectedSkillIndex = 0;
-                skillLoaded = true;
+                SelectedSkillData    = resolved;
+                classSkillIndex      = resolved.skillIndex;
+                selectedSkillIndex   = 0;
+                skillLoaded          = true;
             }
         }
 
-        if (weaponLoader != null && weaponIdx > 0)
+        if (catalog != null && weaponIdx > 0)
         {
-            if (weaponLoader.TryGetWeapon(weaponIdx, out WeaponData weaponData) && weaponData != null)
+            if (catalog.TryGetWeapon(weaponIdx, out WeaponData weaponData) && weaponData != null)
             {
-                if (availableWeapons == null)
-                {
-                    availableWeapons = new List<WeaponData>();
-                }
-
+                if (availableWeapons == null) availableWeapons = new List<WeaponData>();
                 availableWeapons.Clear();
                 availableWeapons.Add(weaponData);
-                EquippedWeaponData = weaponData;
+                EquippedWeaponData  = weaponData;
                 equippedWeaponIndex = 0;
-                weaponLoaded = true;
+                weaponLoaded        = true;
             }
         }
 
@@ -79,7 +63,7 @@ public partial class BattleCharactor
     public void MarkInitializedFromDataPipeline(bool preserveInjectedEquipment = false)
     {
         IsPlayer = teamType == TeamType.Player;
-        IsDead = false;
+        IsDead   = false;
 
         if (!preserveInjectedEquipment)
         {
@@ -92,30 +76,24 @@ public partial class BattleCharactor
         isInitialized = true;
     }
 
-    private static SkillData TryResolveSkillDataForPlayerPattern(SkillDataLoader skillLoader, int skillIdx)
+    private static SkillData TryResolveSkillDataForPlayerPattern(DHCsvTemplateCatalog catalog, int skillIdx)
     {
-        List<SkillData> all = skillLoader.GetAllSkills();
+        List<SkillData> all = catalog.GetAllSkills();
         for (int i = 0; i < all.Count; i++)
         {
             SkillData s = all[i];
-            if (s != null && s.skillIndex == skillIdx)
-            {
-                return s;
-            }
+            if (s != null && s.skillIndex == skillIdx) return s;
         }
 
         const int pattern010 = 10;
         for (int i = 0; i < all.Count; i++)
         {
             SkillData s = all[i];
-            if (s == null)
-            {
-                continue;
-            }
+            if (s == null) continue;
 
             if (skillIdx % 1000 == pattern010 && s.skillIndex % 1000 == pattern010)
             {
-                int hi = skillIdx / 1000;
+                int hi  = skillIdx / 1000;
                 int shi = s.skillIndex / 1000;
                 if (hi == 0 || shi == hi || (hi > 0 && s.skillIndex % 1000000 == skillIdx % 1000000))
                 {

@@ -9,7 +9,8 @@ namespace KJ_Work.Scripts.Editor
 {
     public static class KJ_OutlineSmoothNormalBaker
     {
-        private const string OutputRoot = "Assets/KJ_Work/Generated";
+        //string OutputFilepath = File.
+        private const string OutputRoot = "Assets/_ProtoType_Merge/KJ/Generated";
         private const string OutputFolder = OutputRoot + "/SmoothOutlineMeshes";
         private const float PositionTolerance = 0.0001f;
 
@@ -74,7 +75,7 @@ namespace KJ_Work.Scripts.Editor
         [MenuItem("KJ Work/Outline/Set KJ Outline Material Normal Source To UV2")]
         public static void SetKjOutlineMaterialToUv2()
         {
-            const string materialPath = "Assets/KJ_Work/Materials/KJ_OutlineMaterial.mat";
+            const string materialPath = "Assets/_ProtoType_Merge/KJ/Materials/KJ_OutlineMaterial.mat";
             Material material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
             if (material == null)
             {

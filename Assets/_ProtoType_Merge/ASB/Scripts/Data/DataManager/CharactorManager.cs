@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 플레이어 캐릭터 게임 상태 관리 (소유 여부, 레벨, 선택).
+/// 마스터 데이터 조회는 DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate() 을 사용합니다.
+/// </summary>
 public class CharactorManager : MonoBehaviour
 {
     [System.Serializable]
@@ -11,47 +15,9 @@ public class CharactorManager : MonoBehaviour
         public bool isOwned = true;
     }
 
-    // CSV 파싱 결과 캐시
-    private readonly Dictionary<string, UnitData> unitTable = new Dictionary<string, UnitData>();
-
-    [Header("Player Data (Temporary In-Memory)")]
+    [Header("Player Game State")]
     [SerializeField] private List<OwnedCharactorInfo> ownedCharactors = new List<OwnedCharactorInfo>();
     [SerializeField] private string selectedCharactorId;
-
-    // 스펙: DataManager가 CSVLoader로부터 받은 List<UnitData>를 전달하면 캐싱합니다.
-    public void SetUnitData(List<UnitData> units)
-    {
-        unitTable.Clear();
-        if (units == null)
-        {
-            return;
-        }
-
-        int added = 0;
-        for (int i = 0; i < units.Count; i++)
-        {
-            var unit = units[i];
-            if (unit == null || string.IsNullOrWhiteSpace(unit.Index))
-            {
-                continue;
-            }
-
-            unitTable[unit.Index] = unit;
-            added++;
-        }
-
-        Debug.Log($"[CharactorManager] 플레이어 유닛 데이터 {added}건 캐시 (입력 행 {units.Count}).");
-    }
-
-    public UnitData GetCharactorData(string charactorId)
-    {
-        if (string.IsNullOrWhiteSpace(charactorId))
-        {
-            return null;
-        }
-
-        return unitTable.TryGetValue(charactorId, out var unit) ? unit : null;
-    }
 
     public OwnedCharactorInfo GetOwnedCharactorInfo(string charactorId)
     {
@@ -77,13 +43,7 @@ public class CharactorManager : MonoBehaviour
     public void LevelUp(string charactorId, int amount = 1)
     {
         var info = GetOwnedCharactorInfo(charactorId);
-        if (info == null)
-        {
-            return;
-        }
-
+        if (info == null) return;
         info.level = Mathf.Max(1, info.level + Mathf.Max(1, amount));
-
-        
     }
 }

@@ -29,7 +29,7 @@ Material:
     m_Floats:
     - _DepthBias: 0.001
     - _NormalSource: 2
-    - _OutlineWidth: 0.017
+    - _OutlineWidth: 0.007
     - _StencilRef: 1
     - _UseVertexAlphaWidth: 0
     - _WidthMode: 0

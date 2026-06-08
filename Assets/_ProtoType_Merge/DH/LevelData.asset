@@ -636,6 +636,7 @@ MonoBehaviour:
   - {x: 44, y: 20}
   - {x: 45, y: 20}
   - {x: 46, y: 20}
+  - {x: 31, y: 6}
   itemPlacements:
   - gridPosition: {x: 7, y: 14}
     resourceType: 0

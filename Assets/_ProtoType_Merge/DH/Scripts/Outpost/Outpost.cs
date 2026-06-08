@@ -93,6 +93,15 @@ public class Outpost : MonoBehaviour
                 Game.Economy?.Add(ResourceType.Crystal, resourcePerTurn);
                 Game.Economy?.Add(ResourceType.Supply, resourcePerTurn);
                 break;
+            case OutpostType.Library:
+                Game.Economy?.Add(ResourceType.Chip, resourcePerTurn);
+                break;
+            case OutpostType.JewelryShop:
+                Game.Economy?.Add(ResourceType.Crystal, resourcePerTurn);
+                break;
+            case OutpostType.BlockStore:
+                Game.Economy?.Add(ResourceType.Supply, resourcePerTurn);
+                break;
         }
     }
 
@@ -188,6 +197,9 @@ public class Outpost : MonoBehaviour
         {
             OutpostType.Bank => "Bank",
             OutpostType.Composite => "Composite",
+            OutpostType.Library => "Library",
+            OutpostType.JewelryShop => "Jewelry Shop",
+            OutpostType.BlockStore => "Block Store",
             _ => outpostType.ToString()
         };
     }
@@ -198,6 +210,9 @@ public class Outpost : MonoBehaviour
         {
             OutpostType.Bank => $"Money +{resourcePerTurn} / turn",
             OutpostType.Composite => $"Chip +{resourcePerTurn}, Crystal +{resourcePerTurn}, Supply +{resourcePerTurn} / turn",
+            OutpostType.Library => $"Chip +{resourcePerTurn} / turn",
+            OutpostType.JewelryShop => $"Crystal +{resourcePerTurn} / turn",
+            OutpostType.BlockStore => $"Supply +{resourcePerTurn} / turn",
             _ => string.Empty
         };
     }

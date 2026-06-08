@@ -24,7 +24,7 @@ public class PlayerSpawner : MonoBehaviour
     }
 
     [Header("Dependencies")]
-    [SerializeField] private CharactorManager charactorManager;
+    // charactorManager 제거 — DHCsvTemplateCatalog.Instance 로 대체
 
     [Header("Inspector Test / Battle debug spawn")]
     public List<SpawnRequest> debugSpawnRequests = new List<SpawnRequest>();
@@ -196,12 +196,6 @@ public class PlayerSpawner : MonoBehaviour
             return null;
         }
 
-        if (charactorManager == null)
-        {
-            Debug.LogError("[PlayerSpawner] charactorManager가 할당되지 않았습니다.");
-            return null;
-        }
-
         if (!gridSlots.TryGetValue(gridNumber, out Vector3 worldPos) ||
             !gridRotations.TryGetValue(gridNumber, out Quaternion worldRot))
         {
@@ -212,7 +206,7 @@ public class PlayerSpawner : MonoBehaviour
 
         ClearGrid(gridNumber);
 
-        UnitData unit = charactorManager.GetCharactorData(unitId);
+        DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(unitId, out UnitData unit);
         if (unit == null)
         {
             Debug.LogError($"[PlayerSpawner] UnitData를 찾지 못했습니다. unitId={unitId}");
@@ -288,7 +282,7 @@ public class PlayerSpawner : MonoBehaviour
             return false;
         }
 
-        if (!hierarchyReady || charactorManager == null || gridSlots.Count == 0)
+        if (!hierarchyReady || DHCsvTemplateCatalog.Instance == null || gridSlots.Count == 0)
         {
             return false;
         }
@@ -308,11 +302,11 @@ public class PlayerSpawner : MonoBehaviour
                 continue;
             }
 
-            UnitData csvUnitData = charactorManager.GetCharactorData(persistentData.UnitTemplateKey);
+            DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(persistentData.UnitTemplateKey, out UnitData csvUnitData);
             if (csvUnitData == null)
             {
                 // unitTemplateKey 미매핑 시 인덱스 문자열 폴백
-                csvUnitData = charactorManager.GetCharactorData(persistentUnitIndex.ToString());
+                DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(persistentUnitIndex.ToString(), out csvUnitData);
             }
 
             if (csvUnitData == null) continue;

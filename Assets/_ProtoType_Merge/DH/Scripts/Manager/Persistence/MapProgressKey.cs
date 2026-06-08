@@ -53,6 +53,24 @@ public static class MapProgressKey
         return ForGrid("party", grid);
     }
 
+    public static string ForSceneParty(string partyId)
+    {
+        string normalizedPartyId = NormalizeSegment(partyId);
+        if (string.IsNullOrWhiteSpace(normalizedPartyId))
+            normalizedPartyId = "party";
+
+        return $"scene_party_{normalizedPartyId}";
+    }
+
+    public static string ForRuntimeParty(string sourceKey, int sequence)
+    {
+        string normalizedSourceKey = NormalizeSegment(sourceKey);
+        if (string.IsNullOrWhiteSpace(normalizedSourceKey))
+            normalizedSourceKey = "spawn";
+
+        return $"runtime_party_{normalizedSourceKey}_{Mathf.Max(1, sequence):000}";
+    }
+
     public static string NormalizeSegment(string value)
     {
         if (string.IsNullOrWhiteSpace(value))

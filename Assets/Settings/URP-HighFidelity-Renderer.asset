@@ -16,6 +16,27 @@ MonoBehaviour:
   settings:
     fogMaterial: {fileID: 0}
     renderPassEvent: 500
+--- !u!114 &-7070252392523603137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2b063f36ca243548b45381a889d0349, type: 3}
+  m_Name: KJOutlineRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    stencilWriteMaterial: {fileID: 2100000, guid: 33937333170de934787b4433f8ecc2c1,
+      type: 2}
+    outlineMaterial: {fileID: 2100000, guid: d06d788deb702174cb7f94f83075500d, type: 2}
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 512
+    usePerRootStencil: 1
 --- !u!114 &-1878332245247344467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51,6 +72,48 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 3302065f671a8450b82c9ddf07426f3a, type: 3}
   - {fileID: 2800000, guid: 56a77a3e8d64f47b6afe9e3c95cb57d5, type: 3}
   m_Shader: {fileID: 4800000, guid: 0849e84e3d62649e8882e9d6f056a017, type: 3}
+--- !u!114 &-1566880368605855631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2b063f36ca243548b45381a889d0349, type: 3}
+  m_Name: KJOutlineRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    stencilWriteMaterial: {fileID: 2100000, guid: c17c34d772895ca46896e87914a54d23,
+      type: 2}
+    outlineMaterial: {fileID: 2100000, guid: 35774f1ee3409fb4c843d4e53e5d159a, type: 2}
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 256
+    usePerRootStencil: 1
+--- !u!114 &-925160644108482457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2b063f36ca243548b45381a889d0349, type: 3}
+  m_Name: KJOutlineRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    stencilWriteMaterial: {fileID: 2100000, guid: c17c34d772895ca46896e87914a54d23,
+      type: 2}
+    outlineMaterial: {fileID: 2100000, guid: 52b0d372a0830264f8b245b0ff2b97bc, type: 2}
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 4096
+    usePerRootStencil: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69,8 +132,10 @@ MonoBehaviour:
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
   - {fileID: -1878332245247344467}
-  - {fileID: -9152688244207490017}
-  m_RendererFeatureMap: adc0de57c6d2eee51f6c1ef0881efb80
+  - {fileID: -1566880368605855631}
+  - {fileID: -925160644108482457}
+  - {fileID: -7070252392523603137}
+  m_RendererFeatureMap: adc0de57c6d2eee57100b73f9b5241ea6708bebf4b2b29f33f6346a7e86ae19d
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -119,3 +184,24 @@ MonoBehaviour:
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
+--- !u!114 &5078100909132352143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2b063f36ca243548b45381a889d0349, type: 3}
+  m_Name: KJOutlineRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    stencilWriteMaterial: {fileID: 2100000, guid: c17c34d772895ca46896e87914a54d23,
+      type: 2}
+    outlineMaterial: {fileID: 2100000, guid: f3ebf6e406f5e1947b8961afa0ad386f, type: 2}
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    usePerRootStencil: 1

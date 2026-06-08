@@ -211,3 +211,16 @@ Recommended follow-up:
 - In the current workspace, no `Prototype_Merge` directory and no `Prototype_Merge/KJ` directory were found under the project root or `Assets`.
 - Closest similarly named existing folder is `Assets/JC_Work/__ProtoType`, which contains Prefabs, Scenes, Scripts, and Sprites, but it is not `Prototype_Merge/KJ`.
 - Therefore, a direct `Assets/KJ_Work` vs `Prototype_Merge/KJ` file diff still could not be performed until the destination folder/path is available.
+
+## 2026-05-21
+
+### Notion daily work log update
+
+- User added `D:/Project_ORORA/CLAUDE.md` and `D:/Project_ORORA/AGENTS.md` as context files.
+- `CLAUDE.md` confirms cautious, minimal, assumption-explicit workflow.
+- `AGENTS.md` confirms Korean responses, environment/render-pipeline checks during symptom analysis, and daily work logging under the Notion `유니티 졸업 프로젝트` page.
+- Current workspace does not have `Assets/KJ_Work/final_handover_report.md`; the active handover context is this file at `Assets/_ProtoType_Merge/KJ/final_handover_report.md`.
+- Notion parent page found: `유니티 졸업 프로젝트`.
+- Existing daily Notion pages were found for 2026-05-13, 2026-05-14, 2026-05-15, 2026-05-19, and 2026-05-20.
+- Created new Notion page: `2026-05-21 KJ Outline/GitHub 복구 분석 작업 기록`.
+- New page records today's ASB vs KJ outline comparison, ASBStyle Mask/Fill shader/material creation, four outline approaches in `ToonShading_Test`, and the GitHub/main branch round-trip breakage analysis.

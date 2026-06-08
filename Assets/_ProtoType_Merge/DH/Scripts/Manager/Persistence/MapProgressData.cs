@@ -4,21 +4,39 @@ using UnityEngine;
 [Serializable]
 public class PartyWorldState
 {
+    public const string DefaultPrefabKey = "default";
+
     [SerializeField] private string placementKey;
     [SerializeField] private string partyId;
     [SerializeField] private Vector2Int grid;
     [SerializeField] private bool removed;
+    [SerializeField] private PartyPlacementSource placementSource = PartyPlacementSource.Scene;
+    [SerializeField] private string prefabKey = DefaultPrefabKey;
 
     public string PlacementKey => placementKey;
     public string PartyId => partyId;
     public Vector2Int Grid => grid;
     public bool Removed => removed;
+    public PartyPlacementSource PlacementSource => placementSource;
+    public string PrefabKey => prefabKey;
 
     public PartyWorldState(string placementKey, string partyId, Vector2Int grid)
+        : this(placementKey, partyId, grid, PartyPlacementSource.Scene, DefaultPrefabKey)
+    {
+    }
+
+    public PartyWorldState(
+        string placementKey,
+        string partyId,
+        Vector2Int grid,
+        PartyPlacementSource placementSource,
+        string prefabKey)
     {
         this.placementKey = placementKey;
         this.partyId = partyId;
         this.grid = grid;
+        this.placementSource = placementSource;
+        this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? DefaultPrefabKey : prefabKey;
         removed = false;
     }
 
@@ -35,6 +53,16 @@ public class PartyWorldState
     public void SetRemoved(bool nextRemoved)
     {
         removed = nextRemoved;
+    }
+
+    public void SetPlacementSource(PartyPlacementSource nextPlacementSource)
+    {
+        placementSource = nextPlacementSource;
+    }
+
+    public void SetPrefabKey(string nextPrefabKey)
+    {
+        prefabKey = string.IsNullOrWhiteSpace(nextPrefabKey) ? DefaultPrefabKey : nextPrefabKey;
     }
 }
 

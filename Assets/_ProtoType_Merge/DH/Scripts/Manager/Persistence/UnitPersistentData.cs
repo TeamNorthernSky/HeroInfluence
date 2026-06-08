@@ -11,6 +11,8 @@ public class UnitPersistentData
     public StatBlock LevelupStats => levelupStats;
     public StatBlock IngameStats => ingameStats;
     public float CurrentHp => currentHp;
+    public int Exp => exp;
+    public int MaxExp => maxExp;
     public int CurrentSkillIndex => currentSkillIndex;
     public int CurrentWeaponIndex => currentWeaponIndex;
     public EquipmentStatBlock CurrentWeaponStats => currentWeaponStats;
@@ -23,6 +25,8 @@ public class UnitPersistentData
     [UnityEngine.SerializeField] private StatBlock levelupStats;
     [UnityEngine.SerializeField] private StatBlock ingameStats;
     [UnityEngine.SerializeField] private float currentHp;
+    [UnityEngine.SerializeField] private int exp;
+    [UnityEngine.SerializeField] private int maxExp;
     [UnityEngine.SerializeField] private int currentSkillIndex;
     [UnityEngine.SerializeField] private int currentWeaponIndex;
     [UnityEngine.SerializeField] private EquipmentStatBlock currentWeaponStats;
@@ -32,7 +36,7 @@ public class UnitPersistentData
     {
     }
 
-    public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp)
+    public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0)
     {
         this.unitIndex = unitIndex;
         this.unitTemplateKey = unitTemplateKey ?? string.Empty;
@@ -42,12 +46,14 @@ public class UnitPersistentData
         this.levelupStats = levelupStats;
         this.ingameStats = ingameStats;
         this.currentHp = Math.Max(0f, currentHp);
+        this.exp = Math.Max(0, exp);
+        this.maxExp = Math.Max(0, maxExp);
         this.currentSkillIndex = Math.Max(0, currentSkillIndex);
         this.currentWeaponIndex = Math.Max(0, currentWeaponIndex);
         this.currentWeaponStats = currentWeaponStats;
     }
 
-    public void ApplyRuntimeState(string nextUnitTemplateKey, int nextLevel, int nextFavorability, StatBlock nextBaseStats, StatBlock nextLevelupStats, int nextCurrentSkillIndex, int nextCurrentWeaponIndex, EquipmentStatBlock nextCurrentWeaponStats, StatBlock nextIngameStats, float nextCurrentHp)
+    public void ApplyRuntimeState(string nextUnitTemplateKey, int nextLevel, int nextFavorability, StatBlock nextBaseStats, StatBlock nextLevelupStats, int nextCurrentSkillIndex, int nextCurrentWeaponIndex, EquipmentStatBlock nextCurrentWeaponStats, StatBlock nextIngameStats, float nextCurrentHp, int nextExp = -1, int nextMaxExp = -1)
     {
         unitTemplateKey = nextUnitTemplateKey ?? string.Empty;
         level = Math.Max(1, nextLevel);
@@ -59,5 +65,11 @@ public class UnitPersistentData
         currentWeaponStats = nextCurrentWeaponStats;
         ingameStats = nextIngameStats;
         currentHp = Math.Max(0f, nextCurrentHp);
+
+        if (nextExp >= 0)
+            exp = Math.Max(0, nextExp);
+
+        if (nextMaxExp >= 0)
+            maxExp = Math.Max(0, nextMaxExp);
     }
 }

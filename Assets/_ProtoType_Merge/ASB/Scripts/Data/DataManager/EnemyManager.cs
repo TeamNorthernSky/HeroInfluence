@@ -1,3 +1,4 @@
+/*
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -48,3 +49,4 @@ public class EnemyManager : MonoBehaviour
         return 1;
     }
 }
+*/
