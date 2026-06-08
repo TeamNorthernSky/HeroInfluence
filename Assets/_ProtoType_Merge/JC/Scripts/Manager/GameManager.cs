@@ -9,6 +9,12 @@ public class GameManager : MonoBehaviour
     // [JC 폐기 260512] SceneLoader 폐기. UnityEngine.SceneManagement.SceneManager 래퍼 GameSceneManager(정적)로 대체
     public UIPrefabRegistry UIPrefabRegistry { get; private set; }
     public DebugManager Debug { get; private set; }
+    public HQStateManager HQ { get; private set; }
+    public BroadcastManager Broadcast { get; private set; }
+    public TurnIncomeModalController TurnIncomeModal { get; private set; }
+
+    [Header("매턴 income 모달 트리거 씬 (기본: PlayScene = DH씬)")]
+    [SerializeField] private string turnIncomeTriggerScene = "DHScene_3";
 
     public GridManager Grid { get; private set; }
     public TurnManager Turn { get; private set; }
@@ -28,8 +34,28 @@ public class GameManager : MonoBehaviour
     public int CurrentDay
     {
         get => currentDay;
-        set => currentDay = Mathf.Max(1, value);
+        set
+        {
+            int newDay = Mathf.Max(1, value);
+            bool advanced = newDay > currentDay;
+            currentDay = newDay;
+            if (advanced)
+            {
+                if (HQ != null) HQ.OnTurnAdvanced();
+                if (HQ != null && Economy != null)
+                {
+                    int income = HQ.GetTurnIncome(HQDepartment.Headquarters);
+                    if (income > 0) Economy.Add(ResourceType.Money, income);
+                    pendingTurnIncomeAmount = income;
+                    hasPendingTurnIncome = true;
+                }
+                if (Broadcast != null) Broadcast.OnTurnAdvanced(currentDay);
+            }
+        }
     }
+
+    private int pendingTurnIncomeAmount;
+    private bool hasPendingTurnIncome;
 
     private void Awake()
     {
@@ -56,10 +82,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Debug != null && Input.GetKeyDown(Debug.ToggleKey))
-        {
-            Debug.TogglePanel();
-        }
+        if (Debug != null) Debug.Tick();
     }
 
     private void InitializeManagers()
@@ -67,15 +90,39 @@ public class GameManager : MonoBehaviour
         Economy = GetComponentInChildren<EconomyManager>();
         Economy.Initialize();
 
+        HQ = GetComponentInChildren<HQStateManager>(true);
+        if (HQ != null) HQ.Initialize();
+
+        Broadcast = GetComponentInChildren<BroadcastManager>(true);
+        if (Broadcast != null)
+        {
+            Broadcast.Initialize();
+            Broadcast.SubscribeHQ(HQ);
+        }
+
         UIPrefabRegistry = GetComponentInChildren<UIPrefabRegistry>(true);
 
         Debug = GetComponentInChildren<DebugManager>(true);
         if (Debug != null) Debug.Initialize();
+
+        TurnIncomeModal = GetComponentInChildren<TurnIncomeModalController>(true);
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         RefreshSceneManagers();
+        TryShowPendingTurnIncome(scene.name);
+    }
+
+    private void TryShowPendingTurnIncome(string sceneName)
+    {
+        if (!hasPendingTurnIncome) return;
+        if (string.IsNullOrEmpty(turnIncomeTriggerScene)) return;
+        if (sceneName != turnIncomeTriggerScene) return;
+        if (TurnIncomeModal == null) return;
+        TurnIncomeModal.Show(currentDay, pendingTurnIncomeAmount);
+        hasPendingTurnIncome = false;
+        pendingTurnIncomeAmount = 0;
     }
 
     private void RefreshSceneManagers()
