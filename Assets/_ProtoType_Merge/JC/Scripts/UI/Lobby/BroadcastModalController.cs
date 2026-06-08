@@ -139,19 +139,24 @@ public class BroadcastModalController : MonoBehaviour
 
     private void SetCount(int newCount)
     {
-        var gm = GameManager.Instance;
-        if (gm == null || gm.Broadcast == null) return;
-        int max = gm.Broadcast.CurrentPool;
-        progressCount = Mathf.Clamp(newCount, 0, Mathf.Max(0, max));
+        progressCount = Mathf.Clamp(newCount, 0, EffectiveMaxCount());
         Refresh();
     }
 
     private void SetCountToMax()
     {
-        var gm = GameManager.Instance;
-        if (gm == null || gm.Broadcast == null) return;
-        progressCount = Mathf.Max(0, gm.Broadcast.CurrentPool);
+        progressCount = EffectiveMaxCount();
         Refresh();
+    }
+
+    /// <summary>진행 가능 최대 횟수 = min(풀 잔여, 선택 영웅의 IP 잔여 용량). 미선택 시 풀만.</summary>
+    private int EffectiveMaxCount()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null || gm.Broadcast == null) return 0;
+        int byPool = Mathf.Max(0, gm.Broadcast.CurrentPool);
+        if (selectedUnitIndex < 0) return byPool;
+        return Mathf.Min(byPool, gm.Broadcast.GetRemainingCapacity(selectedUnitIndex));
     }
 
     // ─── 진행 확정 ──────────────────────────────────────────
@@ -162,7 +167,7 @@ public class BroadcastModalController : MonoBehaviour
         if (selectedUnitIndex < 0) return;
         if (progressCount <= 0) return;
         int total = gm.Broadcast.GetProgressCost() * progressCount;
-        if (!gm.Broadcast.CanProgress(progressCount)) return;
+        if (!gm.Broadcast.CanProgress(selectedUnitIndex, progressCount)) return;
         if (!gm.Economy.Has(ResourceType.Money, total)) return;
         if (!gm.Economy.Spend(ResourceType.Money, total))
         {
@@ -203,19 +208,24 @@ public class BroadcastModalController : MonoBehaviour
         if (countValueText != null) countValueText.text = $"{progressCount}";
         if (totalCostValueText != null) totalCostValueText.text = $"{total:N0}";
 
-        // Slider — 최소 0 고정 (사용자가 명시적으로 늘려야 진행)
+        // 선택 영웅의 IP 잔여 용량(MaxIP까지) — 진행 횟수 상한 산정에 사용.
+        int capacity = hasSelection ? gm.Broadcast.GetRemainingCapacity(unit.UnitIndex) : pool;
+        int maxCount = EffectiveMaxCount();
+
+        // Slider — 최소 0 고정 (사용자가 명시적으로 늘려야 진행). 상한은 풀·용량 중 작은 값.
         if (progressSlider != null)
         {
             progressSlider.wholeNumbers = true;
             progressSlider.minValue = 0;
-            progressSlider.maxValue = Mathf.Max(1, pool);
+            progressSlider.maxValue = Mathf.Max(1, maxCount);
             progressSlider.SetValueWithoutNotify(progressCount);
         }
 
         // Confirm 가능 여부
         bool poolOk = pool >= progressCount && progressCount > 0;
+        bool capacityOk = !hasSelection || progressCount <= capacity;
         bool moneyOk = gm.Economy.Has(ResourceType.Money, total);
-        bool canConfirm = unlocked && hasSelection && poolOk && moneyOk;
+        bool canConfirm = unlocked && hasSelection && poolOk && capacityOk && moneyOk;
         if (btnConfirm != null) btnConfirm.interactable = canConfirm;
         if (disabledOverlay != null) disabledOverlay.SetActive(!canConfirm);
 
@@ -226,6 +236,7 @@ public class BroadcastModalController : MonoBehaviour
             if (!unlocked) msg = "홍보 기능이 활성화되지 않았습니다.";
             else if (!hasSelection) msg = "영웅을 선택해 주세요.";
             else if (pool <= 0) msg = "이번 주 진행 가능 횟수를 모두 사용했습니다.";
+            else if (capacity <= 0) msg = $"이미 최대 I.P({BroadcastManager.MaxIP})에 도달했습니다.";
             else if (!moneyOk) msg = "자원이 부족합니다.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;

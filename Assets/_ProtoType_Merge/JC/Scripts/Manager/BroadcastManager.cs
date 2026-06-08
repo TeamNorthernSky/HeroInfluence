@@ -26,6 +26,12 @@ public class BroadcastManager : MonoBehaviour
     public const int WeekTurnInterval = 7;
     public const int MaxLevel = 5;
 
+    // 영웅별 IP 한계 — 모든 유닛은 초기 IP DefaultIP, [MinIP, MaxIP]로 clamp.
+    // 전투 중 소모(AddIP 음수)도 MinIP 미만으로 내려가지 않고, 홍보 충전도 MaxIP를 넘지 않음.
+    public const int DefaultIP = 100;
+    public const int MaxIP = 200;
+    public const int MinIP = 0;
+
     [Serializable]
     public class HeroIPEntry
     {
@@ -109,7 +115,14 @@ public class BroadcastManager : MonoBehaviour
 
     public int GetIP(int unitIndex)
     {
-        return heroIPLookup.TryGetValue(unitIndex, out var e) ? e.ip : 0;
+        // 미등록 유닛은 초기 IP(DefaultIP)를 가진 것으로 간주.
+        return heroIPLookup.TryGetValue(unitIndex, out var e) ? e.ip : DefaultIP;
+    }
+
+    /// <summary>해당 영웅이 MaxIP까지 더 받을 수 있는 IP 잔여 용량.</summary>
+    public int GetRemainingCapacity(int unitIndex)
+    {
+        return Mathf.Max(0, MaxIP - GetIP(unitIndex));
     }
 
     public void AddIP(int unitIndex, int amount)
@@ -117,12 +130,13 @@ public class BroadcastManager : MonoBehaviour
         if (amount == 0) return;
         if (!heroIPLookup.TryGetValue(unitIndex, out var e))
         {
-            e = new HeroIPEntry { unitIndex = unitIndex, ip = 0 };
+            // 신규 엔트리는 초기 IP(DefaultIP)에서 시작.
+            e = new HeroIPEntry { unitIndex = unitIndex, ip = DefaultIP };
             heroIPEntries.Add(e);
             heroIPLookup[unitIndex] = e;
         }
-        try { e.ip = checked(e.ip + amount); }
-        catch (OverflowException) { e.ip = amount > 0 ? int.MaxValue : 0; }
+        // 증가는 MaxIP 상한, 감소(전투 소모)는 MinIP 하한.
+        e.ip = Mathf.Clamp(e.ip + amount, MinIP, MaxIP);
         OnStateChanged?.Invoke();
     }
 
@@ -134,12 +148,21 @@ public class BroadcastManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>풀 + 해당 영웅의 IP 잔여 용량(MaxIP까지)을 모두 만족하는지.</summary>
+    public bool CanProgress(int unitIndex, int count)
+    {
+        if (!CanProgress(count)) return false;
+        if (count > GetRemainingCapacity(unitIndex)) return false;
+        return true;
+    }
+
     /// <summary>
     /// 횟수 차감 + IP 적립. 자금 차감은 호출자(BroadcastModalController)가 별도 처리.
+    /// MaxIP를 넘는 진행은 거부(풀·자금 낭비 방지) — 호출자가 횟수를 잔여 용량으로 제한할 것.
     /// </summary>
     public bool TryProgress(int unitIndex, int count)
     {
-        if (!CanProgress(count)) return false;
+        if (!CanProgress(unitIndex, count)) return false;
         currentPool -= count;
         AddIP(unitIndex, count); // AddIP가 OnStateChanged 발화하므로 중복 발화 없음
         return true;
