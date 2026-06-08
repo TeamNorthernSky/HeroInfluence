@@ -9,43 +9,29 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: KJ_FogOfWarMaterialJC
   m_Shader: {fileID: 4800000, guid: 97b9046a6bdb195418e50880c003ee9b, type: 3}
-  m_Parent: {fileID: 0}
+  m_Parent: {fileID: 2100000, guid: 4c1a68d92b4834e4eb3e82ca104eb5f9, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _EMISSIVE_SIMPLE
+  - _OUTLINE_NML
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties:
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BrightnessHigh: 1.339
-    - _BrightnessLow: 0.602
-    - _BrightnessMid: 1
-    - _CloudContrast: 0.15
-    - _DebugMode: 0
-    - _DistortionStrength: 0.3
-    - _EdgeSoftness: 0.05
-    - _FlowSpeed1: 0.15
-    - _FlowSpeed2: 0.25
-    - _FlowSpeed3: 0.08
-    - _FogCeilingY: 2
-    - _FogDensityHigh: 0
-    - _FogDensityLow: 0.7
-    - _FogDensityLowUnexplored: 1
-    - _FogDensityMid: 0.85
-    - _HeightTransition: 0.5
-    - _NoiseContrast: 8
-    - _NoiseScale1: 6
-    - _NoiseScale2: 18
-    - _NoiseScale3: 3
-    - _VisibleThreshold: 0.7
+    - _StencilComp: 8
+    - _Use_1stAs2nd: 0
     m_Colors:
-    - _FogColor: {r: 0.75, g: 0.78, b: 0.85, a: 1}
+    - _1st_ShadeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

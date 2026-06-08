@@ -1,4 +1,4 @@
-﻿//Unity Toon Shader/Universal
+//Unity Toon Shader/Universal
 //nobuyuki@unity3d.com
 //toshiyuki@unity3d.com (Universal RP/HDRP) 
 
@@ -477,9 +477,24 @@
 #endif
 
                 //Final Composition#if
+                float kjIBLNdotL = dot(lerp(i.normalDir, normalDirection, _Is_NormalMapToBase), lightDirection);
+                float kjIBLNdotLMask = step(0.0001, kjIBLNdotL);
                 float kjIBLFresnel = pow(saturate(1.0 - dot(normalDirection, viewDirection)), _KJ_IBLFresnelPower);
-                float3 kjIBLColor = envLightColor * _KJ_IBLColor.rgb * (_KJ_IBLDiffuseIntensity + kjIBLFresnel * _KJ_IBLSpecularIntensity);
+                //float3 kjIBLColor = envLightColor * _KJ_IBLColor.rgb * (_KJ_IBLDiffuseIntensity + kjIBLFresnel * _KJ_IBLSpecularIntensity) * kjIBLNdotLMask;
+                float fresnelRaw = saturate(1.0-dot(normalDirection, viewDirection));
+                float fresnelStep = step(0.5, fresnelRaw);
+                float fresnelRampU = pow(fresnelRaw, _KJ_IBLFresnelPower);
+    
+                float3 fresnelRampColor = tex2D(_KJ_IBLFresnelRamp, float2(fresnelRampU, 0.5)).rgb;
+    
+                float3 kjIBLDiffuse = envLightColor * _KJ_IBLColor.rgb * _KJ_IBLDiffuseIntensity;
+                //float3 kjIBLSpecular = envLightColor * _KJ_IBLColor.rgb * fresnelRampColor * _KJ_IBLSpecularIntensity;
+                float3 kjIBLSpecular = envLightColor * _KJ_IBLColor.rgb * _KJ_IBLSpecularIntensity * fresnelStep;
+    
+                float3 kjIBLColor = (kjIBLDiffuse + kjIBLSpecular) * kjIBLNdotLMask;           
+    
                 finalColor = SATURATE_IF_SDR(finalColor) + (envLightColor*envLightIntensity*_GI_Intensity*smoothstep(1,0,envLightIntensity/2)) + kjIBLColor + emissive;
+               
 
 
                 finalColor += pointLightColor;

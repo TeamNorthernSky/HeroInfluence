@@ -187,11 +187,13 @@ Shader "KJToon" {
         [Toggle(_)] _Is_BakedNormal ("Is_BakedNormal", Float ) = 0
         _BakedNormal ("Baked Normal for Outline", 2D) = "white" {}
         //GI Intensity
+        
         _GI_Intensity ("GI_Intensity", Range(0, 1)) = 0
-        _KJ_IBLColor ("KJ IBL Color", Color) = (1,1,1,1)
-        _KJ_IBLDiffuseIntensity ("KJ IBL Diffuse Intensity", Range(0, 1)) = 0
-        _KJ_IBLSpecularIntensity ("KJ IBL Specular Intensity", Range(0, 1)) = 0
-        _KJ_IBLFresnelPower ("KJ IBL Fresnel Power", Range(0.1, 8)) = 4
+        [Toggle(_)] _KJ_IBLColor ("KJ IBL Color", Color) = (1,1,1,1)
+        [Toggle(_)] _KJ_IBLDiffuseIntensity ("KJ IBL Diffuse Intensity", Range(0, 1)) = 1
+        [Toggle(_)] _KJ_IBLSpecularIntensity ("KJ IBL Specular Intensity", Range(0, 1)) = 1
+        [Toggle(_)] _KJ_IBLFresnelPower ("KJ IBL Fresnel Power", Range(0.1, 8)) = 4
+        [NoScaleOffset] _KJ_IBLFresnelRamp("KJ IBL Fresnel Ramp", 2D) = "white" {}
         //For VR Chat under No effective light objects
         _Unlit_Intensity ("Unlit_Intensity", Range(0, 4)) = 0
         //v.2.0.5 
