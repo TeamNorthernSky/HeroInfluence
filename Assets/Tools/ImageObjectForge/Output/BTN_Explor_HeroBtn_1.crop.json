@@ -5,13 +5,13 @@
         "height": 1080
     },
     "cropBounds": {
-        "x": 732,
-        "y": 78,
-        "width": 107,
-        "height": 109
+        "x": 729,
+        "y": 14,
+        "width": 115,
+        "height": 173
     },
     "yConvention": "up",
-    "createdAt": "2026-06-08T05:35:43Z",
+    "createdAt": "2026-06-08T05:52:14Z",
     "toolVersion": "ImageObjectForge 0.3",
     "sourceSize": {
         "width": 0,

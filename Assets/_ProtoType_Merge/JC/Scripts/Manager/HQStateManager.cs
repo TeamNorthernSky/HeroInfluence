@@ -28,7 +28,7 @@ public class HQStateManager : MonoBehaviour
     [SerializeField] private List<PrerequisiteEntry> prerequisites = new List<PrerequisiteEntry>();
 
     [Header("본부 매턴 자금 (단계별, 1단계부터). 추후 CSV 가능")]
-    [SerializeField] private int[] hqTurnIncome = new[] { 1000, 1500, 3000 };
+    [SerializeField] private int[] hqTurnIncome = new[] { 1000, 1500, 2000 };
 
     [Serializable]
     public class MaxLevelEntry
