@@ -53,6 +53,10 @@ public class BattleFlowManager : MonoBehaviour
     private int roundIndex = 0;
 
     private bool playerActionResolved;
+    private bool battleEnded;
+    private bool battleEndRequested;
+    private BattleResult requestedBattleResult = BattleResult.Defeat;
+
     private bool IsBattleOver
     {
         get
@@ -65,6 +69,7 @@ public class BattleFlowManager : MonoBehaviour
     }
 
     public BattleCharactor CurrentUnit { get; private set; }
+    public IReadOnlyList<BattleCharactor> Participants => participants;
     public event Action<int, BattleCharactor> OnTurnStarted;
     public event Action<BattleResult> OnBattleEnded;
 
@@ -107,6 +112,8 @@ public class BattleFlowManager : MonoBehaviour
         RebuildRuntimeLookup();
         CurrentUnit = null;
         roundIndex = 0;
+        battleEnded = false;
+        battleEndRequested = false;
         RefreshQueue();
 
         Log($"[BattleFlow] Initialize 완료. participants={participants.Count}, queue={turnQueue.Count}");
@@ -264,19 +271,50 @@ public class BattleFlowManager : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// 플레이어 턴 중 도주 UI 등에서 호출. 적 턴·이미 행동 완료 시 무시됩니다.
+    /// </summary>
+    public void RequestFlee()
+    {
+        if (playerActionResolved || CurrentUnit == null || !CurrentUnit.IsPlayer)
+        {
+            return;
+        }
+
+        battleEndRequested = true;
+        requestedBattleResult = BattleResult.Defeat;
+        playerActionResolved = true;
+    }
+
+    private void CompleteBattle(BattleResult result)
+    {
+        if (battleEnded)
+        {
+            return;
+        }
+
+        battleEnded = true;
+        battleLoopRoutine = null;
+        OnBattleEnded?.Invoke(result);
+    }
+
     private IEnumerator BattleLoop()
     {
         while (true)
         {
+            if (battleEndRequested || battleEnded)
+            {
+                yield break;
+            }
+
             BattleCharactor unit = GetNextUnit();
             if (unit == null)
             {
                 if (TryEvaluateBattleResult(out BattleResult result))
                 {
-                    OnBattleEnded?.Invoke(result);
+                    CompleteBattle(result);
                 }
                 Log("[BattleFlow] 전투 종료(생존 진영 없음 또는 참가자 전멸). BattleLoop 종료.");
-                battleLoopRoutine = null;
                 yield break;
             }
 
@@ -319,6 +357,12 @@ public class BattleFlowManager : MonoBehaviour
                     || CurrentUnit == null
                     || CurrentUnit.IsDead
                     || IsBattleOver);
+
+                if (battleEndRequested)
+                {
+                    CompleteBattle(requestedBattleResult);
+                    yield break;
+                }
 
                 if (TryEndBattleImmediately())
                 {
@@ -377,11 +421,10 @@ public class BattleFlowManager : MonoBehaviour
 
         if (TryEvaluateBattleResult(out BattleResult result))
         {
-            OnBattleEnded?.Invoke(result);
+            CompleteBattle(result);
         }
 
-        Log("[BattleFlow] 전투 즉시 종료(IsBattleOver 감지). BattleLoop 종료."); 
-        battleLoopRoutine = null;
+        Log("[BattleFlow] 전투 즉시 종료(IsBattleOver 감지). BattleLoop 종료.");
         return true;
     }
 
@@ -483,6 +526,31 @@ public class BattleFlowManager : MonoBehaviour
     public int GetAliveEnemyCount()
     {
         return participants.Count(u => u != null && !u.IsPlayer && !u.IsDead);
+    }
+
+    /// <summary>
+    /// UI용 예측 턴 순서 반환.
+    /// 현재 유닛 → 남은 큐 → 이미 행동한 유닛(다음 라운드 예측, RefreshQueue와 동일 정렬)
+    /// </summary>
+    public List<BattleCharactor> GetPredictedTurnOrder()
+    {
+        var result = new List<BattleCharactor>();
+
+        if (CurrentUnit != null && !CurrentUnit.IsDead)
+            result.Add(CurrentUnit);
+
+        result.AddRange(turnQueue.Where(u => u != null && !u.IsDead));
+
+        var acted = participants
+            .Where(u => u != null && !u.IsDead && !result.Contains(u))
+            .OrderByDescending(u => u.FinalStats.Speed)
+            .ThenByDescending(u => u.IsPlayer)
+            .ThenByDescending(u => GetRowTurnPriority(u))
+            .ThenBy(u => GetGridYForTurnOrder(u))
+            .ThenBy(u => u.GetInstanceID());
+
+        result.AddRange(acted);
+        return result;
     }
 
     private void OnPlayerSkillActionResolved(BattleCharactor actor, BattleCharactor target)
