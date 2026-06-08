@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     public DebugManager Debug { get; private set; }
     public HQStateManager HQ { get; private set; }
     public BroadcastManager Broadcast { get; private set; }
+    public TrainingManager Training { get; private set; }
     public TurnIncomeModalController TurnIncomeModal { get; private set; }
 
     [Header("매턴 income 모달 트리거 씬 (기본: PlayScene = DH씬)")]
@@ -99,6 +100,9 @@ public class GameManager : MonoBehaviour
             Broadcast.Initialize();
             Broadcast.SubscribeHQ(HQ);
         }
+
+        Training = GetComponentInChildren<TrainingManager>(true);
+        if (Training != null) Training.Initialize();
 
         UIPrefabRegistry = GetComponentInChildren<UIPrefabRegistry>(true);
 

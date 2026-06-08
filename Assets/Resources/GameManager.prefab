@@ -646,6 +646,7 @@ Transform:
   - {fileID: 7145529987966115601}
   - {fileID: 3072044046408013387}
   - {fileID: 7873298964396770285}
+  - {fileID: 8801001001001001002}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6892167157886770875
@@ -709,6 +710,51 @@ MonoBehaviour:
   heroIPEntries: []
   currentPool: 0
   lastChargeDay: 0
+--- !u!1 &8801001001001001001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8801001001001001002}
+  - component: {fileID: 8801001001001001003}
+  m_Layer: 0
+  m_Name: TrainingManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8801001001001001002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8801001001001001001}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4416921626792511709}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8801001001001001003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8801001001001001001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4bbe2208c56404782dcf88faf7e8ca5, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  entries: []
 --- !u!1 &1168482753684625109
 GameObject:
   m_ObjectHideFlags: 0
@@ -1400,100 +1446,100 @@ MonoBehaviour:
   upgradeCosts:
   - department: 0
     fromLevel: 1
-    money: 5000
-    chip: 1000
-    crystal: 2000
-    supply: 2000
+    money: 3000
+    chip: 0
+    crystal: 0
+    supply: 10
   - department: 0
     fromLevel: 2
-    money: 20000
-    chip: 5000
-    crystal: 10000
-    supply: 10000
+    money: 3500
+    chip: 0
+    crystal: 0
+    supply: 15
   - department: 1
     fromLevel: 0
-    money: 100
+    money: 2000
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 10
   - department: 1
     fromLevel: 1
-    money: 90
+    money: 2500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 10
   - department: 1
     fromLevel: 2
-    money: 80
+    money: 2500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 1
     fromLevel: 3
-    money: 70
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 1
     fromLevel: 4
-    money: 60
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 20
   - department: 2
     fromLevel: 0
-    money: 1000
+    money: 2500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 2
     fromLevel: 1
-    money: 1200
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 2
     fromLevel: 2
-    money: 1400
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 20
   - department: 3
     fromLevel: 0
-    money: 1000
+    money: 2500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 3
     fromLevel: 1
-    money: 1200
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 3
     fromLevel: 2
-    money: 1400
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 20
   - department: 4
     fromLevel: 0
-    money: 1000
+    money: 2500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 4
     fromLevel: 1
-    money: 1200
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 4
     fromLevel: 2
-    money: 1400
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 20
   - department: 5
     fromLevel: 0
     money: 1000
@@ -1514,22 +1560,22 @@ MonoBehaviour:
     supply: 0
   - department: 6
     fromLevel: 0
-    money: 1000
+    money: 2500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 6
     fromLevel: 1
-    money: 1200
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 15
   - department: 6
     fromLevel: 2
-    money: 1400
+    money: 3500
     chip: 0
     crystal: 0
-    supply: 0
+    supply: 20
   prerequisites:
   - department: 2
     requirements:
@@ -1553,7 +1599,7 @@ MonoBehaviour:
     requirements:
     - dependsOn: 4
       requiredLevel: 1
-  hqTurnIncome: e8030000dc050000b80b0000
+  hqTurnIncome: e8030000dc050000d0070000
 --- !u!1 &3348784288217457795
 GameObject:
   m_ObjectHideFlags: 0

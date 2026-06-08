@@ -1,0 +1,20 @@
+{
+    "version": 3,
+    "canvasSize": {
+        "width": 1920,
+        "height": 1080
+    },
+    "cropBounds": {
+        "x": 195,
+        "y": 470,
+        "width": 295,
+        "height": 291
+    },
+    "yConvention": "up",
+    "createdAt": "2026-05-11T03:18:31Z",
+    "toolVersion": "ImageObjectForge 0.3",
+    "sourceSize": {
+        "width": 0,
+        "height": 0
+    }
+}
