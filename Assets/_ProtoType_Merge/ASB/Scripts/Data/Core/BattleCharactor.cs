@@ -60,6 +60,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     public SkillData SelectedSkillData { get; private set; }
     public UnitPersistentData SourceData { get; private set; }
     public EnemyUnitPersistentData SourceEnemyData { get; private set; }
+    public float ExperienceReward { get; private set; }
 
     /// <summary>계산 원본. 래퍼에서 SetBaseStats로 주입합니다.</summary>
     private StatBlock runtimeBaseStats;
@@ -380,6 +381,13 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         CurrentInfluence -= required;
         OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
         return true;
+    }
+
+    /// <summary>전투 결과에 따른 Influence 비율 보정. ratio 1.1 = +10%, 0.9 = -10%</summary>
+    public void ApplyInfluenceModifier(float ratio)
+    {
+        CurrentInfluence = Mathf.Clamp(CurrentInfluence * ratio, 0f, MaxInfluence);
+        OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
     }
 
     public void LevelUp(int amount = 1)
@@ -936,6 +944,11 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     public void BindPersistentEnemySourceData(EnemyUnitPersistentData sourceData)
     {
         SourceEnemyData = sourceData;
+    }
+
+    public void SetExperienceReward(float exp)
+    {
+        ExperienceReward = Mathf.Max(0f, exp);
     }
 
     public void SetUnitNameForSkillMatching(string name)
