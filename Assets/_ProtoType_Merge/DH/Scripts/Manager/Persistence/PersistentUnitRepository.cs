@@ -116,6 +116,32 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
+    public bool HealUnitToIngameMaxHp(int unitIndex, out float healedHp)
+    {
+        healedHp = 0f;
+
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
+            return false;
+
+        float maxHp = Mathf.Max(0f, data.IngameStats.HP);
+        healedHp = maxHp;
+
+        data.ApplyRuntimeState(
+            data.UnitTemplateKey,
+            data.Level,
+            data.Favorability,
+            data.BaseStats,
+            data.LevelupStats,
+            data.CurrentSkillIndex,
+            data.CurrentWeaponIndex,
+            data.CurrentWeaponStats,
+            data.IngameStats,
+            maxHp,
+            data.Exp,
+            data.MaxExp);
+        return true;
+    }
+
     public bool AddExp(int unitIndex, int amount)
     {
         if (amount <= 0)

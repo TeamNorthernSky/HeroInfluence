@@ -89,7 +89,16 @@ public class CombatEncounterManager : MonoBehaviour
 
     private void ProcessCompletedCombat(CombatContext context)
     {
-        if (context == null || context.Result != CombatResult.Victory)
+        if (context == null)
+            return;
+
+        if (context.Result == CombatResult.Defeat)
+        {
+            ReturnDefeatedPartyToCastle(context.CombatParty);
+            return;
+        }
+
+        if (context.Result != CombatResult.Victory)
             return;
 
         CombatEnemyPersistentData combatEnemy = context.CombatEnemy;
@@ -107,6 +116,119 @@ public class CombatEncounterManager : MonoBehaviour
         progressRepository?.MarkEnemyDefeated(placementKey);
         RemoveDefeatedEnemyGroup(combatEnemy.EnemyId);
         DestroyMatchingSceneEnemy(placementKey, combatEnemy.EnemyId);
+    }
+
+    private static void ReturnDefeatedPartyToCastle(CombatPartyPersistentData combatParty)
+    {
+        if (combatParty == null || string.IsNullOrWhiteSpace(combatParty.PartyId))
+            return;
+
+        if (!TryFindParty(combatParty.PartyId, out PartyGridMover party))
+            return;
+
+        CastleUnit castle = FindFirstObjectByType<CastleUnit>();
+        if (castle == null)
+            return;
+
+        IReadOnlyList<Vector2Int> interactionCells = castle.GetInteractionCells();
+        if (interactionCells == null || interactionCells.Count == 0)
+            return;
+
+        Vector2Int leftCell = GetLeftmostCell(interactionCells);
+        Vector2Int targetCell = leftCell;
+        if (IsOccupiedByOtherParty(leftCell, party) &&
+            TryGetAlternativeCell(interactionCells, leftCell, party, out Vector2Int alternativeCell))
+        {
+            targetCell = alternativeCell;
+        }
+
+        party.SnapToGridPosition(targetCell, notifyMoveCompleted: false);
+    }
+
+    private static bool TryFindParty(string partyId, out PartyGridMover party)
+    {
+        party = null;
+
+        PartyRegistry partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        if (partyRegistry != null && partyRegistry.TryGetPartyById(partyId, out party))
+            return true;
+
+        PartyGridMover[] parties = FindObjectsByType<PartyGridMover>(FindObjectsSortMode.None);
+        for (int i = 0; i < parties.Length; i++)
+        {
+            PartyGridMover candidate = parties[i];
+            if (candidate == null)
+                continue;
+
+            PartyIdentity identity = candidate.GetComponent<PartyIdentity>();
+            if (identity == null)
+                continue;
+
+            if (!string.Equals(identity.PartyId, partyId, StringComparison.Ordinal))
+                continue;
+
+            party = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static Vector2Int GetLeftmostCell(IReadOnlyList<Vector2Int> cells)
+    {
+        Vector2Int bestCell = cells[0];
+        for (int i = 1; i < cells.Count; i++)
+        {
+            Vector2Int cell = cells[i];
+            if (cell.x < bestCell.x || cell.x == bestCell.x && cell.y < bestCell.y)
+                bestCell = cell;
+        }
+
+        return bestCell;
+    }
+
+    private static bool TryGetAlternativeCell(
+        IReadOnlyList<Vector2Int> cells,
+        Vector2Int excludedCell,
+        PartyGridMover movingParty,
+        out Vector2Int alternativeCell)
+    {
+        alternativeCell = default;
+        bool hasCandidate = false;
+
+        for (int i = 0; i < cells.Count; i++)
+        {
+            Vector2Int cell = cells[i];
+            if (cell == excludedCell)
+                continue;
+
+            if (IsOccupiedByOtherParty(cell, movingParty))
+                continue;
+
+            if (!hasCandidate || cell.x < alternativeCell.x || cell.x == alternativeCell.x && cell.y < alternativeCell.y)
+            {
+                alternativeCell = cell;
+                hasCandidate = true;
+            }
+        }
+
+        return hasCandidate;
+    }
+
+    private static bool IsOccupiedByOtherParty(Vector2Int grid, PartyGridMover movingParty)
+    {
+        PartyGridMover[] parties = FindObjectsByType<PartyGridMover>(FindObjectsSortMode.None);
+        for (int i = 0; i < parties.Length; i++)
+        {
+            PartyGridMover party = parties[i];
+            if (party == null || party == movingParty)
+                continue;
+
+            if (party.GetCurrentGrid() == grid)
+                return true;
+        }
+
+        return false;
     }
 
     private static IReadOnlyList<int> ResolvePartyUnitIndices(PartyPersistentRepository repository, PartyGridMover party, string partyId)
