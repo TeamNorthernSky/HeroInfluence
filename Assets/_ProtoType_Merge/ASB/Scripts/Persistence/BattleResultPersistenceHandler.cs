@@ -15,10 +15,15 @@ public static class BattleResultPersistenceHandler
         IReadOnlyList<BattleCharactor> enemyUnits,
         BattleResult result)
     {
+        float influenceRatio = (result == BattleResult.Victory) ? 1.1f : 0.9f;
+
         if (playerUnits != null)
         {
             for (int i = 0; i < playerUnits.Count; i++)
+            {
+                playerUnits[i]?.ApplyInfluenceModifier(influenceRatio);
                 TryPersistPlayerUnit(playerUnits[i]);
+            }
         }
 
         if (enemyUnits != null)
@@ -26,6 +31,9 @@ public static class BattleResultPersistenceHandler
             for (int i = 0; i < enemyUnits.Count; i++)
                 TryPersistEnemyUnit(enemyUnits[i], result);
         }
+
+        if (result == BattleResult.Victory)
+            DistributeExpToSurvivors(playerUnits, enemyUnits);
 
         PersistentUnitRepository unitRepo = PersistentUnitRepository.Instance;
         if (unitRepo != null)
@@ -107,6 +115,43 @@ public static class BattleResultPersistenceHandler
 
         if (!ok)
             Debug.LogWarning($"[BattleResultPersistenceHandler] 적 unitIndex={src.UnitIndex} UpdateUnitRuntimeState 실패.", battle);
+    }
+
+    private static void DistributeExpToSurvivors(
+        IReadOnlyList<BattleCharactor> playerUnits,
+        IReadOnlyList<BattleCharactor> enemyUnits)
+    {
+        if (playerUnits == null || enemyUnits == null)
+            return;
+
+        float totalExp = 0f;
+        foreach (var enemy in enemyUnits)
+        {
+            if (enemy != null && enemy.IsDead)
+                totalExp += enemy.ExperienceReward;
+        }
+
+        if (totalExp <= 0f)
+            return;
+
+        var survivors = new System.Collections.Generic.List<BattleCharactor>();
+        foreach (var player in playerUnits)
+        {
+            if (player != null && !player.IsDead && player.SourceData != null)
+                survivors.Add(player);
+        }
+
+        if (survivors.Count == 0)
+            return;
+
+        int expPerUnit = Mathf.CeilToInt(totalExp / survivors.Count);
+
+        PersistentUnitRepository repo = PersistentUnitRepository.Instance;
+        if (repo == null)
+            return;
+
+        foreach (var player in survivors)
+            repo.AddExp(player.SourceData.UnitIndex, expPerUnit);
     }
 
     /// <summary>사망 시 0, 생존 시 0 이하 HP는 최소 1로 올려 저장합니다.</summary>

@@ -81,6 +81,8 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
 
         EnemyData typedEnemyData = data as EnemyData;
         enemyData = typedEnemyData ?? data;
+        if (typedEnemyData != null)
+            battle.SetExperienceReward(typedEnemyData.ExperiencePoint);
         EnsureAIReady();
 
         string id = UnitID;
@@ -104,6 +106,7 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         }
 
         battle.BindPersistentEnemySourceData(persistentData);
+        battle.SetExperienceReward(fallbackData != null ? fallbackData.ExperiencePoint : 0f);
         battle.SetBaseStats(persistentData.BaseStats);
         battle.SetLevelScaling(false);
 

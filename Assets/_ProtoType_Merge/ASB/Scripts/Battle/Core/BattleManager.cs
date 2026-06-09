@@ -21,6 +21,12 @@ public class BattleManager : MonoBehaviour
 
     private const float AnimEventTimeoutSeconds = 2f;
 
+    [Header("Battle Speed")]
+    [SerializeField] private float _currentBattleSpeed = 1.0f;
+    [SerializeField] private BattleFlowManager battleFlowManager;
+
+    public float CurrentBattleSpeed => _currentBattleSpeed;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -29,6 +35,107 @@ public class BattleManager : MonoBehaviour
         }
 
         Instance = this;
+
+        if (battleFlowManager == null)
+        {
+            battleFlowManager = FindObjectOfType<BattleFlowManager>();
+        }
+    }
+
+    public void ChangeBattleSpeed(float newSpeed)
+    {
+        _currentBattleSpeed = Mathf.Max(0.01f, newSpeed);
+        ApplyBattleSpeedToAllActiveUnits();
+    }
+
+    public void ApplyBattleSpeedToUnit(BattleCharactor unit)
+    {
+        if (unit == null || unit.IsDead || !unit.gameObject.activeInHierarchy)
+        {
+            return;
+        }
+
+        unit.EnsureAnimationController();
+        unit.Anim?.SetAnimationSpeed(_currentBattleSpeed);
+    }
+
+    private void ApplyBattleSpeedToAllActiveUnits()
+    {
+        if (battleFlowManager == null)
+        {
+            battleFlowManager = FindObjectOfType<BattleFlowManager>();
+        }
+
+        if (battleFlowManager != null)
+        {
+            IReadOnlyList<BattleCharactor> participants = battleFlowManager.Participants;
+            for (int i = 0; i < participants.Count; i++)
+            {
+                ApplyBattleSpeedToUnit(participants[i]);
+            }
+
+            return;
+        }
+
+        BattleCharactor[] fallbackUnits = FindObjectsByType<BattleCharactor>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < fallbackUnits.Length; i++)
+        {
+            ApplyBattleSpeedToUnit(fallbackUnits[i]);
+        }
+    }
+
+    private IEnumerator WaitForBattleSeconds(float seconds)
+    {
+        if (seconds <= 0f)
+        {
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < seconds)
+        {
+            elapsed += Time.deltaTime * _currentBattleSpeed;
+            yield return null;
+        }
+    }
+
+    private IEnumerator WaitUntilHitEventOrBattleTimeout(
+        CharactorAnimationController anim,
+        float timeoutSeconds,
+        System.Action<float> onBattleElapsed = null)
+    {
+        float elapsed = 0f;
+
+        while (anim != null && !anim.IsHitEventReached && elapsed < timeoutSeconds)
+        {
+            elapsed += Time.deltaTime * _currentBattleSpeed;
+            yield return null;
+        }
+
+        onBattleElapsed?.Invoke(Mathf.Min(elapsed, timeoutSeconds));
+    }
+
+    // TODO: 전투 VFX Instantiate 경로가 추가되면 생성 직후 ApplyBattleSpeedToVfx(vfxInstance)를 호출하세요.
+    // 현재 TmpBattleScene 전투 스크립트에는 ParticleSystem 스킬 이펙트 Instantiate 코드가 없습니다.
+    private void ApplyBattleSpeedToVfx(GameObject vfxInstance)
+    {
+        if (vfxInstance == null)
+        {
+            return;
+        }
+
+        ParticleSystem[] particleSystems = vfxInstance.GetComponentsInChildren<ParticleSystem>(true);
+        for (int i = 0; i < particleSystems.Length; i++)
+        {
+            ParticleSystem ps = particleSystems[i];
+            if (ps == null)
+            {
+                continue;
+            }
+
+            ParticleSystem.MainModule main = ps.main;
+            main.simulationSpeed *= _currentBattleSpeed;
+        }
     }
 
     private void OnDestroy()
@@ -135,7 +242,7 @@ public class BattleManager : MonoBehaviour
                     float delay = Mathf.Max(0f, damageContext.DelayAfter);
                     if (delay > 0f)
                     {
-                        yield return new WaitForSeconds(delay);
+                        yield return WaitForBattleSeconds(delay);
                     }
                 }
             }
@@ -341,7 +448,7 @@ public class BattleManager : MonoBehaviour
 
         if (context.DelayAfter > 0f)
         {
-            yield return new WaitForSeconds(context.DelayAfter);
+            yield return WaitForBattleSeconds(context.DelayAfter);
         }
         Debug.Log($"[Battle] GridSkill: {GetLabel(actor)} -> {GetLabel(target)} dmg={dealt:F1} (×{multiplier:0.##})");
         onCompleted?.Invoke(true);
@@ -401,7 +508,7 @@ public class BattleManager : MonoBehaviour
         float dealt = ApplyDamage(context);
         if (context.DelayAfter > 0f)
         {
-            yield return new WaitForSeconds(context.DelayAfter);
+            yield return WaitForBattleSeconds(context.DelayAfter);
         }
         Debug.Log($"[Battle] GridSkill: {GetLabel(actor)} -> {GetLabel(target)} dmg={dealt:F1} ({skillPercent:0.##}%)");
         onCompleted?.Invoke(true);
@@ -469,7 +576,7 @@ public class BattleManager : MonoBehaviour
 
         if (context.DelayAfter > 0f)
         {
-            yield return new WaitForSeconds(context.DelayAfter);
+            yield return WaitForBattleSeconds(context.DelayAfter);
         }
         string actorName = actor.UnitName;
         string targetName = target.UnitName;
@@ -569,7 +676,7 @@ public class BattleManager : MonoBehaviour
 
         if (context.DelayAfter > 0f)
         {
-            yield return new WaitForSeconds(context.DelayAfter);
+            yield return WaitForBattleSeconds(context.DelayAfter);
         }
 
         Debug.Log($"[Battle] 스킬({skillData.DisplayName}): {GetLabel(actor)} -> {GetLabel(target)} dmg={dealt:F1}");
@@ -705,8 +812,9 @@ public class BattleManager : MonoBehaviour
         skill = ResolveSkillAnimationData(skill);
         actor.EnsureAnimationController();
         CharactorAnimationController actorAnim = actor.Anim;
+        actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
 
-        float startTime = Time.time;
+        float sequenceBattleElapsed = 0f;
         string targetState = actorAnim != null
             ? actorAnim.GetTargetStateName(playBasicAttackAnimation ? null : skill)
             : string.Empty;
@@ -714,17 +822,20 @@ public class BattleManager : MonoBehaviour
         actorAnim?.ResetHitEvent();
         actorAnim?.PlaySkillAnimation(playBasicAttackAnimation ? null : skill);
 
-        float elapsedSoFar = Time.time - startTime;
         if (skill.UseAnimEvent)
         {
-            yield return new WaitUntil(() =>
-                actorAnim != null && actorAnim.IsHitEventReached
-                || Time.time - startTime > AnimEventTimeoutSeconds);
+            float hitWaitBattleSeconds = 0f;
+            yield return WaitUntilHitEventOrBattleTimeout(
+                actorAnim,
+                AnimEventTimeoutSeconds,
+                elapsed => hitWaitBattleSeconds = elapsed);
+            sequenceBattleElapsed += hitWaitBattleSeconds;
         }
         else
         {
-            float remainingHitDelay = Mathf.Max(0f, skill.HitDelay - elapsedSoFar);
-            yield return new WaitForSeconds(remainingHitDelay);
+            float remainingHitDelay = Mathf.Max(0f, skill.HitDelay);
+            yield return WaitForBattleSeconds(remainingHitDelay);
+            sequenceBattleElapsed += remainingHitDelay;
         }
 
         onHitCallback?.Invoke();
@@ -732,20 +843,21 @@ public class BattleManager : MonoBehaviour
         if (playTargetHitAnimation && target != null)
         {
             target.EnsureAnimationController();
+            target.Anim?.SetAnimationSpeed(_currentBattleSpeed);
             target.Anim?.PlayGenericAnimation("Hit");
         }
 
         if (actorAnim != null && !string.IsNullOrEmpty(targetState))
         {
             yield return StartCoroutine(actorAnim.WaitForSkillClipEnd(targetState));
+            sequenceBattleElapsed += actorAnim.LastClipWaitBattleSeconds;
         }
 
         ReturnToIdleIfAlive(actor);
 
-        float currentElapsed = Time.time - startTime;
-        float remainingTotal = Mathf.Max(0f, skill.TotalDelay - currentElapsed);
+        float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
         float targetIdleDelay = Mathf.Max(remainingTotal, 0.2f);
-        yield return new WaitForSeconds(targetIdleDelay);
+        yield return WaitForBattleSeconds(targetIdleDelay);
 
         ReturnToIdleIfAlive(target);
     }
@@ -776,8 +888,9 @@ public class BattleManager : MonoBehaviour
         SkillData skill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(leadContext));
         actor.EnsureAnimationController();
         CharactorAnimationController actorAnim = actor.Anim;
+        actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
 
-        float startTime = Time.time;
+        float sequenceBattleElapsed = 0f;
         string targetState = actorAnim != null
             ? actorAnim.GetTargetStateName(skill)
             : string.Empty;
@@ -785,17 +898,20 @@ public class BattleManager : MonoBehaviour
         actorAnim?.ResetHitEvent();
         actorAnim?.PlaySkillAnimation(skill);
 
-        float elapsedSoFar = Time.time - startTime;
         if (skill.UseAnimEvent)
         {
-            yield return new WaitUntil(() =>
-                actorAnim != null && actorAnim.IsHitEventReached
-                || Time.time - startTime > AnimEventTimeoutSeconds);
+            float hitWaitBattleSeconds = 0f;
+            yield return WaitUntilHitEventOrBattleTimeout(
+                actorAnim,
+                AnimEventTimeoutSeconds,
+                elapsed => hitWaitBattleSeconds = elapsed);
+            sequenceBattleElapsed += hitWaitBattleSeconds;
         }
         else
         {
-            float remainingHitDelay = Mathf.Max(0f, skill.HitDelay - elapsedSoFar);
-            yield return new WaitForSeconds(remainingHitDelay);
+            float remainingHitDelay = Mathf.Max(0f, skill.HitDelay);
+            yield return WaitForBattleSeconds(remainingHitDelay);
+            sequenceBattleElapsed += remainingHitDelay;
         }
 
         for (int i = 0; i < pairCount; i++)
@@ -807,6 +923,7 @@ public class BattleManager : MonoBehaviour
             if (hitTarget != null)
             {
                 hitTarget.EnsureAnimationController();
+                hitTarget.Anim?.SetAnimationSpeed(_currentBattleSpeed);
                 hitTarget.Anim?.PlayGenericAnimation("Hit");
             }
         }
@@ -814,14 +931,14 @@ public class BattleManager : MonoBehaviour
         if (actorAnim != null && !string.IsNullOrEmpty(targetState))
         {
             yield return StartCoroutine(actorAnim.WaitForSkillClipEnd(targetState));
+            sequenceBattleElapsed += actorAnim.LastClipWaitBattleSeconds;
         }
 
         ReturnToIdleIfAlive(actor);
 
-        float currentElapsed = Time.time - startTime;
-        float remainingTotal = Mathf.Max(0f, skill.TotalDelay - currentElapsed);
+        float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
         float targetIdleDelay = Mathf.Max(remainingTotal, 0.2f);
-        yield return new WaitForSeconds(targetIdleDelay);
+        yield return WaitForBattleSeconds(targetIdleDelay);
 
         for (int i = 0; i < pairCount; i++)
         {
