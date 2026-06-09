@@ -13,6 +13,8 @@ public class UnitRewardPreview
     public int OldLevel;
     public int NewLevel;
     public int GainedExp;
+    public List<int> UnlockCandidateSkillIds = new List<int>();
 
     public bool HasLevelUp => NewLevel > OldLevel;
+    public bool HasSkillSelection => UnlockCandidateSkillIds != null && UnlockCandidateSkillIds.Count > 0;
 }

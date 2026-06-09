@@ -12,10 +12,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
     [Header("SO DataTables (Excel Importer)")]
     [SerializeField] private PlayerUnitDataTable    playerUnitTable;
-    [SerializeField] private EnemyUnitDataTable     enemyUnitTable;
+    [SerializeField] private EnemyUnitInfoDataTable enemyUnitInfoTable;
     [SerializeField] private PlayerWeaponDataTable  weaponTable;
     [SerializeField] private ClassSkillDataTable    classSkillTable;
-    [SerializeField] private UnitGrowthPerLevelDataTable levelUpTable;
+    [SerializeField] private UnitGrowthExpDataTable levelUpTable;
+    [SerializeField] private EnemyGroupDataTable    enemyGroupTable;
 
     [Header("Settings")]
     [SerializeField] private bool useSOTables      = false;
@@ -32,10 +33,25 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<int,    WeaponData>        weaponLookup         = new Dictionary<int, WeaponData>();
     private readonly Dictionary<int,    SkillData>         skillTemplates       = new Dictionary<int, SkillData>();
     private readonly List<LevelUpData>                     levelUpTemplates     = new List<LevelUpData>();
+    private readonly Dictionary<int,    EnemyGroupData>    enemyGroupLookup     = new Dictionary<int, EnemyGroupData>();
 
     // 레벨별 수치 조회용 마스터 캐시 (SO 원본 보관)
     private readonly Dictionary<int, PlayerWeaponData> weaponMasterMap    = new Dictionary<int, PlayerWeaponData>();
     private readonly Dictionary<int, ClassSkillData>   classSkillMasterMap = new Dictionary<int, ClassSkillData>();
+
+    // classIndex → (level → skillIndex)
+    private readonly Dictionary<int, Dictionary<int, int>> skillUnlockByClassIndex
+        = new Dictionary<int, Dictionary<int, int>>();
+
+    private static readonly Dictionary<int, System.Func<UnitGrowthExpData, int>> ClassUnlockAccessors
+        = new Dictionary<int, System.Func<UnitGrowthExpData, int>>
+    {
+        { 10001, d => d.GuardianStudySkill  },
+        { 10002, d => d.BlasterStudySkill   },
+        { 10003, d => d.StrikerStudySkill   },
+        { 10004, d => d.SuppoterStudySkill  },
+        { 10005, d => d.FighterStudySkill   },
+    };
 
     private bool isLoaded;
 
@@ -215,6 +231,51 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return result;
     }
 
+    public bool TryGetEnemyGroup(int groupIndex, out EnemyGroupData group)
+    {
+        EnsureLoaded();
+        return enemyGroupLookup.TryGetValue(groupIndex, out group);
+    }
+
+    /// <summary>classIndex 유닛이 currentLevel 이하에서 해금한 skillIndex 전체 목록.</summary>
+    public List<int> GetAvailableStudySkills(int classIndex, int currentLevel)
+    {
+        EnsureLoaded();
+        var result = new List<int>();
+        if (!skillUnlockByClassIndex.TryGetValue(classIndex, out var map))
+            return result;
+
+        foreach (var kvp in map)
+        {
+            if (kvp.Key <= currentLevel)
+                result.Add(kvp.Value);
+        }
+        return result;
+    }
+
+    /// <summary>oldLevel 초과 ~ newLevel 이하 구간에서 새로 해금되는 skillIndex 목록.</summary>
+    public List<int> GetNewlyUnlockedStudySkills(int classIndex, int oldLevel, int newLevel)
+    {
+        EnsureLoaded();
+        var result = new List<int>();
+        if (newLevel <= oldLevel) return result;
+        if (!skillUnlockByClassIndex.TryGetValue(classIndex, out var map))
+            return result;
+
+        foreach (var kvp in map)
+        {
+            if (kvp.Key > oldLevel && kvp.Key <= newLevel)
+                result.Add(kvp.Value);
+        }
+        return result;
+    }
+
+    public List<EnemyGroupData> GetAllEnemyGroups()
+    {
+        EnsureLoaded();
+        return new List<EnemyGroupData>(enemyGroupLookup.Values);
+    }
+
     public List<SkillData> GetSkillsByClass(string className)
     {
         EnsureLoaded();
@@ -263,11 +324,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         // ── 적 유닛 + 적 스킬 ─────────────────────────────────
-        if (enemyUnitTable != null)
+        if (enemyUnitInfoTable != null)
         {
-            for (int i = 0; i < enemyUnitTable.DataList.Count; i++)
+            for (int i = 0; i < enemyUnitInfoTable.DataList.Count; i++)
             {
-                EnemyUnitData src = enemyUnitTable.DataList[i];
+                EnemyUnitInfoData src = enemyUnitInfoTable.DataList[i];
                 EnemyData enemy = ConvertEnemyUnit(src);
                 if (enemy == null || string.IsNullOrWhiteSpace(enemy.Index)) continue;
 
@@ -286,7 +347,23 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[DHCsvTemplateCatalog] enemyUnitTable이 할당되지 않았습니다.", this);
+            Debug.LogWarning("[DHCsvTemplateCatalog] enemyUnitInfoTable이 할당되지 않았습니다.", this);
+        }
+
+        // ── 적 그룹 ────────────────────────────────────────────
+        if (enemyGroupTable != null)
+        {
+            for (int i = 0; i < enemyGroupTable.DataList.Count; i++)
+            {
+                EnemyGroupData group = enemyGroupTable.DataList[i];
+                if (group == null) continue;
+                if (enemyGroupLookup.ContainsKey(group.EnemyIndex))
+                {
+                    Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 적 그룹 인덱스 {group.EnemyIndex} 건너뜀.", this);
+                    continue;
+                }
+                enemyGroupLookup.Add(group.EnemyIndex, group);
+            }
         }
 
         // ── 직업 스킬 ──────────────────────────────────────────
@@ -340,13 +417,33 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             Debug.LogWarning("[DHCsvTemplateCatalog] weaponTable이 할당되지 않았습니다.", this);
         }
 
-        // ── 레벨업 ─────────────────────────────────────────────
+        // ── 레벨업 + 클래스별 스터디 스킬 ────────────────────────
         if (levelUpTable != null)
         {
             for (int i = 0; i < levelUpTable.DataList.Count; i++)
             {
-                LevelUpData row = ConvertLevelUp(levelUpTable.DataList[i]);
+                UnitGrowthExpData src = levelUpTable.DataList[i];
+                if (src == null) continue;
+
+                LevelUpData row = ConvertLevelUp(src);
                 if (row != null) levelUpTemplates.Add(row);
+
+                foreach (var kvp in ClassUnlockAccessors)
+                {
+                    int classIndex = kvp.Key;
+                    int skillIndex = kvp.Value(src);
+                    if (skillIndex <= 0) continue;
+
+                    if (!skillUnlockByClassIndex.TryGetValue(classIndex, out var map))
+                        skillUnlockByClassIndex[classIndex] = map = new Dictionary<int, int>();
+
+                    if (map.ContainsKey(src.Level))
+                    {
+                        Debug.LogWarning($"[DHCsvTemplateCatalog] classIndex={classIndex} level={src.Level} 스터디 스킬 중복 건너뜀.", this);
+                        continue;
+                    }
+                    map[src.Level] = skillIndex;
+                }
             }
         }
 
@@ -389,7 +486,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    private static EnemyData ConvertEnemyUnit(EnemyUnitData src)
+    private static EnemyData ConvertEnemyUnit(EnemyUnitInfoData src)
     {
         if (src == null) return null;
         return new EnemyData
@@ -413,7 +510,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    private void TryAddEnemySkill(EnemyUnitData src, int slot)
+    private void TryAddEnemySkill(EnemyUnitInfoData src, int slot)
     {
         string skillName = slot == 1 ? src.EnemySkill1_Name : src.EnemySkill2_Name;
         if (string.IsNullOrWhiteSpace(skillName)) return;
@@ -530,7 +627,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    private static LevelUpData ConvertLevelUp(UnitGrowthPerLevelData src)
+    private static LevelUpData ConvertLevelUp(UnitGrowthExpData src)
     {
         if (src == null) return null;
         return new LevelUpData
@@ -538,7 +635,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             level        = src.Level,
             Rank         = string.IsNullOrEmpty(src.Rank) ? '\0' : src.Rank[0],
             expPerLevel  = src.NeedExpieriencePoint,
-            MaxIP        = src.AddIP
+            MaxIP        = src.AddMaxIP
         };
     }
 
@@ -634,6 +731,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         cachedWeapons.Clear();
         weaponMasterMap.Clear();
         classSkillMasterMap.Clear();
+        enemyGroupLookup.Clear();
+        skillUnlockByClassIndex.Clear();
         isLoaded = false;
     }
 
