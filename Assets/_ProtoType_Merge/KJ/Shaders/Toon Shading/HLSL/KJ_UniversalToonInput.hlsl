@@ -217,7 +217,7 @@ sampler2D _AngelRing_Sampler;
 sampler2D _Outline_Sampler;
 sampler2D _OutlineTex;
 sampler2D _BakedNormal;
-sampler2D _KJ_IBLFresnelRamp;
+
 
 
 TEXTURE2D(_OcclusionMap);       SAMPLER(sampler_OcclusionMap);
