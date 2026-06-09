@@ -1511,6 +1511,7 @@ GameObject:
   - component: {fileID: 621159269}
   - component: {fileID: 621159271}
   - component: {fileID: 621159272}
+  - component: {fileID: 621159273}
   m_Layer: 0
   m_Name: BattleSceneManager
   m_TagString: Untagged
@@ -1536,6 +1537,7 @@ MonoBehaviour:
   battleFlowManager: {fileID: 621159268}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
+  battleUIManager: {fileID: 0}
   returnSceneName: DHScene
   returnDelay: 3
   fadeOutDuration: 1
@@ -1615,6 +1617,19 @@ MonoBehaviour:
   inputHandler: {fileID: 1540026209}
   isAutoBattle: 0
   thinkDelay: 0.5
+--- !u!114 &621159273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621159265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eff9ec9bfa0e304e9621c39696aaee1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logCheat: 1
 --- !u!1 &771919882
 GameObject:
   m_ObjectHideFlags: 0
