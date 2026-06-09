@@ -49,13 +49,22 @@ public static class BattleResultPersistenceHandler
             UnitPersistentData src = player.SourceData;
             int newLevel = PersistentUnitRepository.SimulateFinalLevel(src, expPerUnit);
 
+            // 임시: UnitGrowthExpData 기반 스터디 스킬 경로 사용
+            // TODO: LevelUpData.skill + SkillData.acquireLevel 데이터 정비 후 아래로 교체
+            // candidates = SkillUnlockResolver.GetUnlockCandidates(player.UnitName, src.Level, newLevel, src.CurrentSkillIndex);
+            int classIndex = int.TryParse(src.UnitTemplateKey, out int parsed) ? parsed : -1;
+            List<int> candidates = classIndex > 0
+                ? DHCsvTemplateCatalog.Instance?.GetNewlyUnlockedStudySkills(classIndex, src.Level, newLevel) ?? new List<int>()
+                : new List<int>();
+
             plan.UnitPreviews.Add(new UnitRewardPreview
             {
-                UnitIndex  = src.UnitIndex,
-                UnitName   = player.UnitName,
-                OldLevel   = src.Level,
-                NewLevel   = newLevel,
-                GainedExp  = expPerUnit,
+                UnitIndex               = src.UnitIndex,
+                UnitName                = player.UnitName,
+                OldLevel                = src.Level,
+                NewLevel                = newLevel,
+                GainedExp               = expPerUnit,
+                UnlockCandidateSkillIds = candidates,
             });
         }
 
@@ -64,12 +73,14 @@ public static class BattleResultPersistenceHandler
 
     /// <summary>
     /// plan과 실제 전투체 목록을 받아 Repository에 반영하고 디스크에 저장합니다.
+    /// skillResults가 있으면 선택한 스킬을 CurrentSkillIndex에 반영합니다.
     /// </summary>
     public static void CommitBattleRewardPlan(
         BattleRewardPlan plan,
         IReadOnlyList<BattleCharactor> playerUnits,
         IReadOnlyList<BattleCharactor> enemyUnits,
-        BattleResult result)
+        BattleResult result,
+        IReadOnlyList<SkillSelectionResult> skillResults = null)
     {
         float influenceRatio = (result == BattleResult.Victory) ? 1.1f : 0.9f;
 
@@ -95,6 +106,35 @@ public static class BattleResultPersistenceHandler
             {
                 foreach (var preview in plan.UnitPreviews)
                     repo.AddExp(preview.UnitIndex, preview.GainedExp);
+            }
+        }
+
+        // 스킬 선택 결과 반영
+        if (skillResults != null && skillResults.Count > 0)
+        {
+            PersistentUnitRepository repo = PersistentUnitRepository.Instance;
+            if (repo != null)
+            {
+                foreach (var selection in skillResults)
+                {
+                    if (!repo.TryGetUnit(selection.UnitIndex, out UnitPersistentData data))
+                        continue;
+
+                    repo.UpdateUnitRuntimeState(
+                        data.UnitIndex,
+                        data.UnitTemplateKey,
+                        data.Level,
+                        data.Favorability,
+                        data.BaseStats,
+                        data.LevelupStats,
+                        selection.SelectedSkillId,   // CurrentSkillIndex 갱신
+                        data.CurrentWeaponIndex,
+                        data.CurrentWeaponStats,
+                        data.IngameStats,
+                        data.CurrentHp,
+                        data.Exp,
+                        data.MaxExp);
+                }
             }
         }
 
