@@ -43,6 +43,9 @@ public class PartyInteractionController
 
     public void HandleGridEntered(Vector2Int enteredGrid)
     {
+        if (DHGameEndState.IsEnding)
+            return;
+
         if (gridManager == null)
             return;
 
@@ -52,6 +55,9 @@ public class PartyInteractionController
 
     public void HandleMoveCompleted()
     {
+        if (DHGameEndState.IsEnding)
+            return;
+
         if (gridManager == null || combatEncounterManager == null || ownerParty == null)
             return;
 
@@ -76,6 +82,9 @@ public class PartyInteractionController
 
     private void HandlePathUpdated(System.Collections.Generic.List<Vector2Int> remainingPath)
     {
+        if (DHGameEndState.IsEnding)
+            return;
+
         if (remainingPath == null || remainingPath.Count == 0) return;
         if (gridManager == null || ownerParty == null) return;
         
@@ -134,6 +143,12 @@ public class PartyInteractionController
 
         pendingInteractionCoroutine = null;
 
+        if (DHGameEndState.IsEnding)
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
         if (gridManager == null)
         {
             IsInputLocked = false;
@@ -189,6 +204,12 @@ public class PartyInteractionController
 
         pendingInteractionCoroutine = null;
 
+        if (DHGameEndState.IsEnding)
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
         if (gridManager == null)
         {
             IsInputLocked = false;
@@ -222,6 +243,12 @@ public class PartyInteractionController
         yield return new WaitForSeconds(itemPickupDelay);
 
         pendingInteractionCoroutine = null;
+
+        if (DHGameEndState.IsEnding)
+        {
+            IsInputLocked = false;
+            yield break;
+        }
 
         if (gridManager == null)
         {
