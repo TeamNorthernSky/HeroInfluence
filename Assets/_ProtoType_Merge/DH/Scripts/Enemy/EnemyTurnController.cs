@@ -33,6 +33,9 @@ public class EnemyTurnController : MonoBehaviour
 
     public IEnumerator ExecuteEnemyTurn()
     {
+        if (DHGameEndState.IsEnding)
+            yield break;
+
         ResolveReferences();
 
         if (enemyRegistry == null || partyRegistry == null || pathfinder == null)
@@ -41,6 +44,9 @@ public class EnemyTurnController : MonoBehaviour
         IReadOnlyList<EnemyGridMover> enemies = enemyRegistry.Enemies;
         for (int i = 0; i < enemies.Count; i++)
         {
+            if (DHGameEndState.IsEnding)
+                yield break;
+
             EnemyGridMover enemy = enemies[i];
             if (enemy == null)
                 continue;
@@ -194,6 +200,9 @@ public class EnemyTurnController : MonoBehaviour
 
     private bool TryBeginCombat(PartyGridMover party, EnemyGridMover enemy)
     {
+        if (DHGameEndState.IsEnding)
+            return false;
+
         if (combatEncounterManager == null)
             return false;
 
@@ -325,6 +334,9 @@ public class EnemyTurnController : MonoBehaviour
 
     private bool HandleAdjacentOutpostInteraction(EnemyGridMover enemy)
     {
+        if (DHGameEndState.IsEnding)
+            return false;
+
         if (enemy == null || gridManager == null)
             return false;
 
