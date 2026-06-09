@@ -226,6 +226,27 @@ public class PersistentUnitRepository : MonoBehaviour
         return nextExp;
     }
 
+    /// <summary>Repository 상태를 변경하지 않고 expAmount를 더했을 때 도달하는 레벨을 반환합니다.</summary>
+    public static int SimulateFinalLevel(UnitPersistentData data, int expAmount)
+    {
+        if (data == null || expAmount <= 0)
+            return data?.Level ?? 1;
+
+        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        int level = Mathf.Max(1, data.Level);
+        int exp = Mathf.Max(0, data.Exp) + expAmount;
+        int maxExp = data.MaxExp > 0 ? data.MaxExp : ResolveMaxExp(level, levelUpTemplates);
+
+        while (maxExp > 0 && exp >= maxExp)
+        {
+            exp -= maxExp;
+            level++;
+            maxExp = ResolveMaxExp(level, levelUpTemplates);
+        }
+
+        return level;
+    }
+
     private static void ApplyExpWithLevelUps(UnitPersistentData data, int amount)
     {
         if (data == null || amount <= 0)

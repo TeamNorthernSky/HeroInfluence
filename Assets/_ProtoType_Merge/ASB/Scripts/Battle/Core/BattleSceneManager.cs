@@ -20,6 +20,9 @@ public class BattleSceneManager : MonoBehaviour
     [SerializeField] private PlayerSpawner playerSpawner;
     [SerializeField] private EnemySpawner enemySpawner;
 
+    [Header("UI")]
+    [SerializeField] private BattleUIManager battleUIManager;
+
     [Header("Scene Transition")]
     [Tooltip("Build Settings에 등록된 씬 이름(확장자 제외). 예: DHScene")]
     [SerializeField] private string returnSceneName = "DHScene";
@@ -66,13 +69,29 @@ public class BattleSceneManager : MonoBehaviour
 
     private void HandleBattleEndedForTransition(BattleResult result)
     {
-        BattleResultPersistenceHandler.PersistAtBattleEnd(playerBattleCharactors, enemyBattleCharactors, result);
-
         if (returnSceneCoroutine != null)
-        {
             return;
-        }
 
+        returnSceneCoroutine = StartCoroutine(PostBattleSequence(result));
+    }
+
+    private IEnumerator PostBattleSequence(BattleResult result)
+    {
+        // 1. 보상 계산 (Repository/JSON 변경 없음)
+        BattleRewardPlan plan = BattleResultPersistenceHandler.BuildBattleRewardPlan(
+            playerBattleCharactors, enemyBattleCharactors, result);
+
+        // 2. 레벨업 UI (TODO: 레벨업 UI가 생기면 여기서 yield return)
+        // if (plan.UnitPreviews.Exists(u => u.HasLevelUp))
+        //     yield return battleUIManager.ShowLevelUpSequence(plan);
+
+        // 3. 스킬 선택 UI (TODO: 스킬 선택 UI가 생기면 여기서 yield return)
+
+        // 4. 저장 (UI 완료 후)
+        BattleResultPersistenceHandler.CommitBattleRewardPlan(
+            plan, playerBattleCharactors, enemyBattleCharactors, result);
+
+        // 5. CombatContext 결과 설정
         CombatContext combatContext = CombatContext.Instance;
         if (combatContext != null)
         {
@@ -89,15 +108,19 @@ public class BattleSceneManager : MonoBehaviour
             combatContext.SetCombatResult(mappedResult);
         }
 
+        // 6. 승패 결과 UI
+        battleUIManager?.ShowBattleResultUI(result);
+
+        // 7. 씬 전환
         // [JC 260514] returnSceneName 빈 값이라도 GameSceneManager.Instance.ExplorationScene fallback이 있으면 통과.
-        // TransitionToSceneRoutine 안에서 최종 target 결정 + fallback 처리.
         if (string.IsNullOrWhiteSpace(returnSceneName) && GameSceneManager.Instance == null)
         {
             Debug.LogWarning("[BattleSceneManager] returnSceneName + GameSceneManager.Instance 모두 없음 — 씬 전환을 건너뜁니다.");
-            return;
+            returnSceneCoroutine = null;
+            yield break;
         }
 
-        returnSceneCoroutine = StartCoroutine(TransitionToSceneRoutine());
+        yield return StartCoroutine(TransitionToSceneRoutine());
     }
 
     private IEnumerator TransitionToSceneRoutine()
