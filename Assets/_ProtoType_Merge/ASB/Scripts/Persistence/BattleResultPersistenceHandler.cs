@@ -2,15 +2,71 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 전투 종료 시점에 <see cref="BattleCharactor"/> 런타임 HP/IP를
-/// <see cref="PersistentUnitRepository"/> / <see cref="PersistentEnemyRepository"/>에 반영하고 디스크에 저장합니다.
+/// 전투 종료 시 보상 계산(Preview)과 실제 저장(Commit)을 분리해서 처리합니다.
 /// </summary>
 public static class BattleResultPersistenceHandler
 {
     /// <summary>
-    /// 플레이어·적 전투체 목록을 순회해 영속 데이터를 갱신한 뒤 리포지토리 Save를 호출합니다.
+    /// Repository와 JSON을 변경하지 않고 보상/레벨업 결과만 계산해서 반환합니다.
     /// </summary>
-    public static void PersistAtBattleEnd(
+    public static BattleRewardPlan BuildBattleRewardPlan(
+        IReadOnlyList<BattleCharactor> playerUnits,
+        IReadOnlyList<BattleCharactor> enemyUnits,
+        BattleResult result)
+    {
+        var plan = new BattleRewardPlan { Result = result };
+
+        if (result != BattleResult.Victory)
+            return plan;
+
+        if (playerUnits == null || enemyUnits == null)
+            return plan;
+
+        float totalExp = 0f;
+        foreach (var enemy in enemyUnits)
+        {
+            if (enemy != null && enemy.IsDead)
+                totalExp += enemy.ExperienceReward;
+        }
+
+        if (totalExp <= 0f)
+            return plan;
+
+        var survivors = new List<BattleCharactor>();
+        foreach (var player in playerUnits)
+        {
+            if (player != null && !player.IsDead && player.SourceData != null)
+                survivors.Add(player);
+        }
+
+        if (survivors.Count == 0)
+            return plan;
+
+        int expPerUnit = Mathf.CeilToInt(totalExp / (float)survivors.Count);
+
+        foreach (var player in survivors)
+        {
+            UnitPersistentData src = player.SourceData;
+            int newLevel = PersistentUnitRepository.SimulateFinalLevel(src, expPerUnit);
+
+            plan.UnitPreviews.Add(new UnitRewardPreview
+            {
+                UnitIndex  = src.UnitIndex,
+                UnitName   = player.UnitName,
+                OldLevel   = src.Level,
+                NewLevel   = newLevel,
+                GainedExp  = expPerUnit,
+            });
+        }
+
+        return plan;
+    }
+
+    /// <summary>
+    /// plan과 실제 전투체 목록을 받아 Repository에 반영하고 디스크에 저장합니다.
+    /// </summary>
+    public static void CommitBattleRewardPlan(
+        BattleRewardPlan plan,
         IReadOnlyList<BattleCharactor> playerUnits,
         IReadOnlyList<BattleCharactor> enemyUnits,
         BattleResult result)
@@ -32,8 +88,15 @@ public static class BattleResultPersistenceHandler
                 TryPersistEnemyUnit(enemyUnits[i], result);
         }
 
-        if (result == BattleResult.Victory)
-            DistributeExpToSurvivors(playerUnits, enemyUnits);
+        if (result == BattleResult.Victory && plan != null)
+        {
+            PersistentUnitRepository repo = PersistentUnitRepository.Instance;
+            if (repo != null)
+            {
+                foreach (var preview in plan.UnitPreviews)
+                    repo.AddExp(preview.UnitIndex, preview.GainedExp);
+            }
+        }
 
         PersistentUnitRepository unitRepo = PersistentUnitRepository.Instance;
         if (unitRepo != null)
@@ -117,44 +180,6 @@ public static class BattleResultPersistenceHandler
             Debug.LogWarning($"[BattleResultPersistenceHandler] 적 unitIndex={src.UnitIndex} UpdateUnitRuntimeState 실패.", battle);
     }
 
-    private static void DistributeExpToSurvivors(
-        IReadOnlyList<BattleCharactor> playerUnits,
-        IReadOnlyList<BattleCharactor> enemyUnits)
-    {
-        if (playerUnits == null || enemyUnits == null)
-            return;
-
-        float totalExp = 0f;
-        foreach (var enemy in enemyUnits)
-        {
-            if (enemy != null && enemy.IsDead)
-                totalExp += enemy.ExperienceReward;
-        }
-
-        if (totalExp <= 0f)
-            return;
-
-        var survivors = new System.Collections.Generic.List<BattleCharactor>();
-        foreach (var player in playerUnits)
-        {
-            if (player != null && !player.IsDead && player.SourceData != null)
-                survivors.Add(player);
-        }
-
-        if (survivors.Count == 0)
-            return;
-
-        int expPerUnit = Mathf.CeilToInt(totalExp / survivors.Count);
-
-        PersistentUnitRepository repo = PersistentUnitRepository.Instance;
-        if (repo == null)
-            return;
-
-        foreach (var player in survivors)
-            repo.AddExp(player.SourceData.UnitIndex, expPerUnit);
-    }
-
-    /// <summary>사망 시 0, 생존 시 0 이하 HP는 최소 1로 올려 저장합니다.</summary>
     private static float ResolvePersistedHp(BattleCharactor battle)
     {
         if (battle == null)
