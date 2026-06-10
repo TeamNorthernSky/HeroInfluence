@@ -63,7 +63,7 @@ public class HQUpgradeFlowController : MonoBehaviour
         public bool useMaxLevelStateInfo = true;
     }
 
-    private static readonly Color costAffordColor = Color.black;
+    private static readonly Color costAffordColor = Color.white;
     private static readonly Color costShortColor = new Color(0.85f, 0.15f, 0.15f, 1f);
 
     private HQDepartment currentDept;
@@ -222,10 +222,11 @@ public class HQUpgradeFlowController : MonoBehaviour
         if (stateInfoText != null)
         {
             string msg = null;
-            if (turnUsed)
-                msg = "이번 턴에 이미 건설, 또는 업그레이드를 진행했습니다.";
-            else if (maxed && currentContent != null && currentContent.useMaxLevelStateInfo)
+            // 최고 단계는 턴 사용 여부와 무관하게 항상 최우선 안내
+            if (maxed && currentContent != null && currentContent.useMaxLevelStateInfo)
                 msg = "업그레이드 상태가 최고 단계입니다.";
+            else if (turnUsed)
+                msg = "이번 턴에 이미 건설, 또는 업그레이드를 진행했습니다.";
             else if (!canAfford)
                 msg = "자원이 부족합니다.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
