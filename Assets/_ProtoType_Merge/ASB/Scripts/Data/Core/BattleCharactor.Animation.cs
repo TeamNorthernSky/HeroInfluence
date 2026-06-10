@@ -18,6 +18,11 @@ public partial class BattleCharactor
         {
             Anim = gameObject.AddComponent<CharactorAnimationController>();
         }
+
+        if (Anim != null && BattleManager.Instance != null)
+        {
+            Anim.SetAnimationSpeed(BattleManager.Instance.CurrentBattleSpeed);
+        }
     }
 
     /// <summary>레거시 클립 이벤트가 BattleCharactor에 걸려 있어도 컨트롤러로 전달합니다.</summary>

@@ -35,11 +35,17 @@ public class TurnManager : MonoBehaviour
 
     public void EndPlayerTurn()
     {
+        if (DHGameEndState.IsEnding)
+            return;
+
         StartEnemyTurn();
     }
 
     private void StartEnemyTurn()
     {
+        if (DHGameEndState.IsEnding)
+            return;
+
         if (enemyTurnRunning)
             return;
 
@@ -59,6 +65,13 @@ public class TurnManager : MonoBehaviour
 
     private void EndEnemyTurn()
     {
+        if (DHGameEndState.IsEnding)
+        {
+            enemyTurnRunning = false;
+            EnemyTurnStateChanged?.Invoke(false);
+            return;
+        }
+
         AdvanceDay();
         ProduceClaimedOutposts();
         StartPlayerTurn();
@@ -66,6 +79,9 @@ public class TurnManager : MonoBehaviour
 
     private void StartPlayerTurn()
     {
+        if (DHGameEndState.IsEnding)
+            return;
+
         UpdateTurnStateText("Player Turn");
 
         if (partyRegistry == null)
@@ -116,6 +132,14 @@ public class TurnManager : MonoBehaviour
     private IEnumerator RunEnemyTurn()
     {
         yield return enemyTurnController.ExecuteEnemyTurn();
+
+        if (DHGameEndState.IsEnding)
+        {
+            enemyTurnRunning = false;
+            EnemyTurnStateChanged?.Invoke(false);
+            yield break;
+        }
+
         enemyTurnRunning = false;
         EnemyTurnStateChanged?.Invoke(false);
         EndEnemyTurn();

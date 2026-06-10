@@ -39,6 +39,7 @@ public class InputHandler : MonoBehaviour
 
     [SerializeField] private BattleFlowManager battleFlowManager;
     [SerializeField] private BattleManager battleManager;
+    [SerializeField] private TargetingVisualController targetingVisualController;
 
     private PlayerActionState currentState = PlayerActionState.Idle;
     private PendingActionType pendingAction = PendingActionType.None;
@@ -49,12 +50,17 @@ public class InputHandler : MonoBehaviour
     private readonly List<ASBGridCell> highlightedCells = new List<ASBGridCell>();
     private bool isProcessingAction;
 
+    public bool IsAutoBattleActive { get; set; }
+
     private void Awake()
     {
         if (raycastCamera == null)
         {
             raycastCamera = Camera.main;
         }
+
+        if (targetingVisualController == null)
+            targetingVisualController = FindFirstObjectByType<TargetingVisualController>();
     }
 
     private void OnEnable()
@@ -69,12 +75,14 @@ public class InputHandler : MonoBehaviour
         ClearAoEPreview();
     }
 
+    public void ResolveAutoBattleAction(BattleCharactor actor, BattleCharactor target)
+    {
+        PlayerSkillActionResolved?.Invoke(actor, target);
+    }
+
     private void Update()
     {
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
+        if (IsAutoBattleActive) return;
 
         if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
         {
@@ -128,6 +136,11 @@ public class InputHandler : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
             TryExecutePendingAction(actor);
         }
     }
@@ -197,6 +210,7 @@ public class InputHandler : MonoBehaviour
     private void RemoveDeadUnitFromTargets(BattleCharactor deadUnit)
     {
         validTargets.Remove(deadUnit);
+        targetingVisualController?.RemoveSelectableTarget(deadUnit);
         if (deadUnit == hoverTarget)
         {
             SetHoverTarget(null);
@@ -208,7 +222,7 @@ public class InputHandler : MonoBehaviour
         }
     }
 
-    private void BeginPendingAction(PendingActionType actionType)
+    public void BeginPendingAction(PendingActionType actionType)
     {
         if (!TryGetCurrentActor(out BattleCharactor actor))
         {
@@ -245,6 +259,7 @@ public class InputHandler : MonoBehaviour
         pendingAction = actionType;
         validTargets = targets;
         currentState = PlayerActionState.WaitingForTarget;
+        targetingVisualController?.ShowSelectableTargets(validTargets);
         SetHoverTarget(null);
         OnActionSelected?.Invoke(BuildSelectedActionLabel(actor, actionType));
     }
@@ -309,6 +324,7 @@ public class InputHandler : MonoBehaviour
         if (!TargetingHelper.IsStillValidTarget(actor, pendingAction, hitUnit))
         {
             validTargets.Remove(hitUnit);
+            targetingVisualController?.RemoveSelectableTarget(hitUnit);
             SetHoverTarget(null);
             return;
         }
@@ -619,6 +635,7 @@ public class InputHandler : MonoBehaviour
         }
 
         hoverTarget = newTarget;
+        targetingVisualController?.SetHoveredTarget(hoverTarget);
         if (hoverTarget == null)
         {
             return;
@@ -633,6 +650,7 @@ public class InputHandler : MonoBehaviour
 
     private void ResetTargetingState()
     {
+        targetingVisualController?.ClearAll();
         ClearAoEPreview();
         SetHoverTarget(null);
         validTargets.Clear();

@@ -19,7 +19,22 @@ public class CharactorAnimationController : MonoBehaviour
 
     [SerializeField] private Animator _animator;
 
+    public float CurrentAnimSpeed { get; private set; } = 1.0f;
+
+    /// <summary>마지막 <see cref="WaitForSkillClipEnd"/> 호출에서 누적된 전투 배속 기준 대기 시간(초).</summary>
+    public float LastClipWaitBattleSeconds { get; private set; }
+
     public bool IsHitEventReached { get; private set; }
+
+    public void SetAnimationSpeed(float speedMultiplier)
+    {
+        CurrentAnimSpeed = Mathf.Max(0.01f, speedMultiplier);
+
+        if (_animator != null)
+        {
+            _animator.speed = CurrentAnimSpeed;
+        }
+    }
 
     private void Awake()
     {
@@ -97,17 +112,19 @@ public class CharactorAnimationController : MonoBehaviour
     /// </summary>
     public IEnumerator WaitForSkillClipEnd(string stateName)
     {
+        LastClipWaitBattleSeconds = 0f;
+
         if (_animator == null || string.IsNullOrEmpty(stateName))
         {
             yield break;
         }
 
-        float elapsed = 0f;
+        float elapsedBattleAnimTime = 0f;
         while (!_animator.GetCurrentAnimatorStateInfo(0).IsName(stateName)
-               && elapsed < StateEnterWaitTimeoutSeconds)
+               && elapsedBattleAnimTime < StateEnterWaitTimeoutSeconds)
         {
             yield return null;
-            elapsed += Time.deltaTime;
+            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed;
         }
 
         if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(stateName))
@@ -115,23 +132,26 @@ public class CharactorAnimationController : MonoBehaviour
             yield break;
         }
 
-        float waited = 0f;
-        while (waited < SkillClipEndLoopGuardSeconds)
+        while (elapsedBattleAnimTime < SkillClipEndLoopGuardSeconds)
         {
             AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
             if (!stateInfo.IsName(stateName))
             {
+                LastClipWaitBattleSeconds = elapsedBattleAnimTime;
                 yield break;
             }
 
             if (stateInfo.normalizedTime >= SkillClipEndNormalizedThreshold)
             {
+                LastClipWaitBattleSeconds = elapsedBattleAnimTime;
                 yield break;
             }
 
             yield return null;
-            waited += Time.deltaTime;
+            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed;
         }
+
+        LastClipWaitBattleSeconds = elapsedBattleAnimTime;
     }
 
     private static string ResolveSkillStateName(SkillData skill)
@@ -217,6 +237,7 @@ public class CharactorAnimationController : MonoBehaviour
             return;
         }
 
+        _animator.speed = CurrentAnimSpeed;
         EnsureAnimationEventBridge();
     }
 

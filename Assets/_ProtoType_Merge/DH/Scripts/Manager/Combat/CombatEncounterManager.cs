@@ -24,6 +24,9 @@ public class CombatEncounterManager : MonoBehaviour
 
     public bool BeginCombat(PartyGridMover party, EnemyGridMover enemy)
     {
+        if (DHGameEndState.IsEnding)
+            return false;
+
         if (party == null || enemy == null)
             return false;
 

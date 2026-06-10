@@ -14,50 +14,57 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentSkillText;
     [SerializeField] private TextMeshProUGUI battleResultText;
 
+    [Header("Turn Arrow")]
+    [SerializeField] private TurnArrow turnArrow;
+    [SerializeField] private Vector3 turnArrowWorldOffset = new Vector3(0f, 100f, 0f);
+    [SerializeField] private Camera worldCamera;
+
     private void Awake()
     {
+        if (worldCamera == null)
+        {
+            worldCamera = Camera.main;
+        }
+
+        if (turnArrow == null)
+        {
+            GameObject turnArrowObject = GameObject.Find("TurnArrow");
+            if (turnArrowObject != null)
+            {
+                turnArrow = turnArrowObject.GetComponent<TurnArrow>();
+            }
+        }
+
         if (battleResultText != null)
         {
             battleResultText.gameObject.SetActive(false);
         }
+
+        turnArrow?.SetEnabled(false);
     }
 
     private void OnEnable()
     {
         if (flowManager != null)
-        {
             flowManager.OnTurnStarted += HandleTurnStarted;
-            flowManager.OnBattleEnded += HandleBattleEnded;
-        }
 
         if (battleManager != null)
-        {
             battleManager.OnActionExecuted += HandleActionExecuted;
-        }
 
         if (inputHandler != null)
-        {
             inputHandler.OnActionSelected += HandleActionSelected;
-        }
     }
 
     private void OnDisable()
     {
         if (flowManager != null)
-        {
             flowManager.OnTurnStarted -= HandleTurnStarted;
-            flowManager.OnBattleEnded -= HandleBattleEnded;
-        }
 
         if (battleManager != null)
-        {
             battleManager.OnActionExecuted -= HandleActionExecuted;
-        }
 
         if (inputHandler != null)
-        {
             inputHandler.OnActionSelected -= HandleActionSelected;
-        }
     }
 
     private void HandleTurnStarted(int roundIndex, BattleCharactor unit)
@@ -96,12 +103,11 @@ public class BattleUIManager : MonoBehaviour
         }
     }
 
-    private void HandleBattleEnded(BattleResult result)
+    /// <summary>PostBattleSequence에서 명시적으로 호출됩니다. OnBattleEnded 직접 구독 불필요.</summary>
+    public void ShowBattleResultUI(BattleResult result)
     {
         if (battleResultText == null)
-        {
             return;
-        }
 
         battleResultText.gameObject.SetActive(true);
         if (result == BattleResult.Victory)
@@ -110,10 +116,42 @@ public class BattleUIManager : MonoBehaviour
         }
         else
         {
-            // [JC 260513] 현재 ASB BattleFlowManager는 Victory/Defeat만 발화 → 이 분기는 사실상 Defeat 전용.
-            // BattleResult enum이 None/Escape/Cancelled로 확장되어 미래에 Escape 등이 발화되기 시작하면 분기 보완 필요.
+            // [JC 260513] Victory 외(Defeat/Escape/Cancelled)는 패배 표시.
+            // Escape 전용 UI가 필요해지면 분기 추가.
             battleResultText.text = "전투 결과 : <color=red>패배...</color>";
         }
+    }
+
+    private void Update()
+    {
+        UpdateTurnArrowPosition();
+    }
+
+    private void UpdateTurnArrowPosition()
+    {
+        if (flowManager == null || turnArrow == null || worldCamera == null)
+        {
+            turnArrow?.SetEnabled(false);
+            return;
+        }
+
+        BattleCharactor currentBattleCharacter = flowManager.CurrentUnit;
+        if (currentBattleCharacter == null || currentBattleCharacter.IsDead)
+        {
+            turnArrow.SetEnabled(false);
+            return;
+        }
+
+        Vector3 screenPosition = worldCamera.WorldToScreenPoint(
+            currentBattleCharacter.transform.position )+ turnArrowWorldOffset;
+        if (screenPosition.z <= 0f)
+        {
+            turnArrow.SetEnabled(false);
+            return;
+        }
+
+        turnArrow.SetScreenPosition(screenPosition);
+        turnArrow.SetEnabled(true);
     }
 
 #if UNITY_EDITOR

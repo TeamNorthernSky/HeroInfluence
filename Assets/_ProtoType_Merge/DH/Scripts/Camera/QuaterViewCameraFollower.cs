@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
 /// 카메라를 대상(플레이어 등) 기준으로 쿼터뷰 오프셋만큼 유지하며 계속 따라가는 컴포넌트.
@@ -25,6 +28,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     [SerializeField] private float minZoomY = 5f;
     [SerializeField] private float maxZoomY = 30f;
     [SerializeField] private float zoomSpeed = 200f;
+    [SerializeField] private bool keepTargetCenteredOnZoom = true;
 
     [Header("Edge Scrolling")]
     [SerializeField] private bool edgeScrollEnabled = true;
@@ -38,14 +42,21 @@ public class QuarterViewCameraFollower : MonoBehaviour
     [SerializeField] private float edgeLimitRange = 50f;
     [SerializeField] private bool invertVerticalEdgeScroll = false;
 
+    [Header("UI Blocking")]
+    [SerializeField] private bool blockEdgeScrollOverButtons = true;
+
     [Header("Reset")]
     [SerializeField] private KeyCode resetKey = KeyCode.Y;
+
+    private static readonly List<RaycastResult> UiRaycastResults = new List<RaycastResult>();
 
     private Vector3 followVelocity;
     private Vector3 smoothedFollowAnchor;
     private Vector3 panOffset;
     private Vector3 edgeScrollVelocity;
     private float defaultZoomY;
+    private float defaultZoomZ;
+    private float zoomZPerY;
     private bool hasSmoothedFollowAnchor;
 
     public void SetFollowTarget(Transform target)
@@ -68,6 +79,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
     {
         positionOffset.x = 0f;
         defaultZoomY = positionOffset.y;
+        defaultZoomZ = positionOffset.z;
+        zoomZPerY = Mathf.Abs(defaultZoomY) > 0.001f ? defaultZoomZ / defaultZoomY : 0f;
     }
 
     private void Update()
@@ -119,10 +132,17 @@ public class QuarterViewCameraFollower : MonoBehaviour
             return;
 
         positionOffset.y = Mathf.Clamp(positionOffset.y - scroll * zoomSpeed * Time.deltaTime, minZoomY, maxZoomY);
+        ApplyZoomDepthOffset();
     }
 
     private void HandleEdgeScrolling()
     {
+        if (blockEdgeScrollOverButtons && IsPointerOverButton())
+        {
+            edgeScrollVelocity = Vector3.zero;
+            return;
+        }
+
         Vector2 edgeInput = Vector2.zero;
         if (edgeScrollEnabled && IsMouseInsideScreen())
         {
@@ -180,7 +200,15 @@ public class QuarterViewCameraFollower : MonoBehaviour
             return;
 
         RecenterOnFollowTarget();
-        positionOffset = new Vector3(0f, defaultZoomY, positionOffset.z);
+        positionOffset = new Vector3(0f, defaultZoomY, defaultZoomZ);
+    }
+
+    private void ApplyZoomDepthOffset()
+    {
+        if (!keepTargetCenteredOnZoom)
+            return;
+
+        positionOffset.z = positionOffset.y * zoomZPerY;
     }
 
     private float EvaluateEdgeInput(float mouseAxis, float screenSize, float threshold)
@@ -203,6 +231,30 @@ public class QuarterViewCameraFollower : MonoBehaviour
             && mousePosition.x <= Screen.width
             && mousePosition.y >= 0f
             && mousePosition.y <= Screen.height;
+    }
+
+    private static bool IsPointerOverButton()
+    {
+        EventSystem eventSystem = EventSystem.current;
+        if (eventSystem == null)
+            return false;
+
+        PointerEventData pointerEventData = new PointerEventData(eventSystem)
+        {
+            position = Input.mousePosition
+        };
+
+        UiRaycastResults.Clear();
+        eventSystem.RaycastAll(pointerEventData, UiRaycastResults);
+
+        for (int i = 0; i < UiRaycastResults.Count; i++)
+        {
+            GameObject hitObject = UiRaycastResults[i].gameObject;
+            if (hitObject != null && hitObject.GetComponentInParent<Button>() != null)
+                return true;
+        }
+
+        return false;
     }
 }
 

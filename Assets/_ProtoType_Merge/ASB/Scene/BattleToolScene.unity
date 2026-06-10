@@ -464,7 +464,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabOverrides: []
-  charactorManager: {fileID: 0}
   debugSpawnRequests: []
   spawnOnStart: 0
 --- !u!1001 &192012561
@@ -1598,6 +1597,7 @@ GameObject:
   - component: {fileID: 621159268}
   - component: {fileID: 621159269}
   - component: {fileID: 621159271}
+  - component: {fileID: 621159272}
   m_Layer: 0
   m_Name: BattleSceneManager
   m_TagString: Untagged
@@ -1623,6 +1623,7 @@ MonoBehaviour:
   battleFlowManager: {fileID: 621159268}
   playerSpawner: {fileID: 0}
   enemySpawner: {fileID: 0}
+  battleUIManager: {fileID: 0}
   returnSceneName: DHScene
   returnDelay: 3
   fadeOutDuration: 1
@@ -1671,6 +1672,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53194c5e2822cc44993d83d47a0fc12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _currentBattleSpeed: 1
+  battleFlowManager: {fileID: 621159268}
 --- !u!114 &621159271
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1683,7 +1686,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c4b6ece18e890a44951552dc2661adc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weaponDataLoader: {fileID: 320332757}
+--- !u!114 &621159272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621159265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eff9ec9bfa0e304e9621c39696aaee1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logCheat: 1
 --- !u!4 &642550474 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6551610242319550290, guid: 0794eea0d06dda54f921e3c87af19cd5,
@@ -2165,7 +2180,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabOverrides: []
-  enemyManager: {fileID: 1002047755}
   debugSpawnRequests: []
   spawnOnStart: 1
 --- !u!114 &912453335
@@ -3611,6 +3625,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   battleFlowManager: {fileID: 621159268}
   battleManager: {fileID: 621159269}
+  targetingVisualController: {fileID: 0}
 --- !u!4 &1540026210
 Transform:
   m_ObjectHideFlags: 0
