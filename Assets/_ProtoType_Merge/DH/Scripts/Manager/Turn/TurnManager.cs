@@ -33,6 +33,14 @@ public class TurnManager : MonoBehaviour
         UpdateTurnStateText("Player Turn");
     }
 
+    private void Start()
+    {
+        // [JC 260610] 로비에서 위임된 턴종료 요청 처리.
+        // 로비 턴종료 = "나가기 + 탐사 턴종료" 이므로, 탐사 진입 직후 정상 EndPlayerTurn(적 턴 진행)을 실행한다.
+        if (GameManager.Instance != null && GameManager.Instance.ConsumePendingEndTurn())
+            EndPlayerTurn();
+    }
+
     public void EndPlayerTurn()
     {
         if (DHGameEndState.IsEnding)

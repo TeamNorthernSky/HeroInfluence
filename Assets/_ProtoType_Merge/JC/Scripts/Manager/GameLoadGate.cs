@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 /// [JC 단독] GameLoadScene에 부착. 새 게임 진입 시 데이터 부트스트랩 후 분기.
 /// 흐름: DHScene Additive 로드 → 1프레임 대기(PartyUnitBootstrap.Start 완료)
 ///       → CastleHQVisitDetector.ReevaluateNow → 방문 파티 체크
-///       → 있음: DHScene Unload + LobbyScene_New Single 로드
+///       → 있음: DHScene Unload + 로비 씬(GameSceneManager.LobbyScene) Single 로드
 ///       → 없음: DHScene Active 전환 + GameLoadScene Unload
 /// </summary>
 [DisallowMultipleComponent]
@@ -17,7 +17,10 @@ public class GameLoadGate : MonoBehaviour
         ? GameSceneManager.Instance.ExplorationScene
         : "DHScene";
 
-    [SerializeField] private string lobbySceneName = "LobbyScene_New";
+    // [JC 260610] 인스펙터 필드 폐기 → 동적 property. GameSceneManager.Instance.LobbyScene 단일 정본 반영.
+    private string lobbySceneName => GameSceneManager.Instance != null
+        ? GameSceneManager.Instance.LobbyScene
+        : "HQLobbyScene";
 
     [Tooltip("DHScene 부트스트랩 후 폴링 전 추가 대기 프레임 수. PartyUnitBootstrap의 Start 호출 보장")]
     [SerializeField] private int bootstrapWaitFrames = 2;
