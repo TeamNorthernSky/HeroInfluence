@@ -30,6 +30,13 @@ public class EnemyUnitState : MonoBehaviour
         currentHp = Mathf.Max(0f, ingameStats.HP);
     }
 
+    public void SetUnitTemplateKey(string nextUnitTemplateKey)
+    {
+        unitTemplateKey = string.IsNullOrWhiteSpace(nextUnitTemplateKey)
+            ? string.Empty
+            : nextUnitTemplateKey.Trim();
+    }
+
     public void AssignUnitIndex(int nextUnitIndex)
     {
         unitIndex = Mathf.Max(1, nextUnitIndex);

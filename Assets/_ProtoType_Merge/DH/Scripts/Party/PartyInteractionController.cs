@@ -46,16 +46,23 @@ public class PartyInteractionController
         if (DHGameEndState.IsEnding)
             return;
 
+        if (HasPendingCombatResult())
+            return;
+
         if (gridManager == null)
             return;
 
         HandleAdjacentCastleProximity(enteredGrid);
         HandleAdjacentOutpostProximity(enteredGrid);
+        HandleVillainUnionProximity(enteredGrid);
     }
 
     public void HandleMoveCompleted()
     {
         if (DHGameEndState.IsEnding)
+            return;
+
+        if (HasPendingCombatResult())
             return;
 
         if (gridManager == null || combatEncounterManager == null || ownerParty == null)
@@ -83,6 +90,9 @@ public class PartyInteractionController
     private void HandlePathUpdated(System.Collections.Generic.List<Vector2Int> remainingPath)
     {
         if (DHGameEndState.IsEnding)
+            return;
+
+        if (HasPendingCombatResult())
             return;
 
         if (remainingPath == null || remainingPath.Count == 0) return;
@@ -129,6 +139,17 @@ public class PartyInteractionController
         BeginAdjacentOutpostClaim(outpostGrid);
     }
 
+    private void HandleVillainUnionProximity(Vector2Int enteredGrid)
+    {
+        if (!TryGetVillainUnionAtInteractionCell(enteredGrid, out VillainUnionBase villainUnionBase))
+            return;
+
+        CancelPendingInteraction();
+        bool combatStarted = combatEncounterManager != null &&
+            combatEncounterManager.BeginVillainUnionDefenderCombat(ownerParty, villainUnionBase);
+        IsInputLocked = combatStarted;
+    }
+
     private void OnAdjacentEventCellEntered(Vector2Int eventGrid)
     {
         CancelPendingInteraction();
@@ -168,7 +189,7 @@ public class PartyInteractionController
             yield break;
         }
 
-        mapEvent.Interact();
+        mapEvent.Interact(ownerParty);
         AdjacentMapEventDetected?.Invoke(mapEvent);
         IsInputLocked = false;
     }
@@ -269,7 +290,20 @@ public class PartyInteractionController
             yield break;
         }
 
-        if (outpost.IsClaimableByPlayer)
+        if (outpost.RequiresDefenderCombat)
+        {
+            if (combatEncounterManager != null &&
+                combatEncounterManager.BeginOutpostDefenderCombat(ownerParty, outpost))
+            {
+                IsInputLocked = false;
+                yield break;
+            }
+
+            IsInputLocked = false;
+            yield break;
+        }
+
+        if (outpost.CanClaimDirectlyByPlayer)
             outpost.Claim();
 
         IsInputLocked = false;
@@ -289,5 +323,39 @@ public class PartyInteractionController
         int dx = Mathf.Abs(a.x - b.x);
         int dy = Mathf.Abs(a.y - b.y);
         return dx <= 1 && dy <= 1;
+    }
+
+    private static bool TryGetVillainUnionAtInteractionCell(Vector2Int grid, out VillainUnionBase villainUnionBase)
+    {
+        villainUnionBase = null;
+
+        VillainUnionBase[] bases = UnityEngine.Object.FindObjectsByType<VillainUnionBase>(FindObjectsSortMode.None);
+        for (int i = 0; i < bases.Length; i++)
+        {
+            VillainUnionBase candidate = bases[i];
+            if (candidate == null)
+                continue;
+
+            System.Collections.Generic.IReadOnlyList<Vector2Int> interactionCells = candidate.GetInteractionCells();
+            if (interactionCells == null)
+                continue;
+
+            for (int j = 0; j < interactionCells.Count; j++)
+            {
+                if (interactionCells[j] != grid)
+                    continue;
+
+                villainUnionBase = candidate;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasPendingCombatResult()
+    {
+        CombatContext context = CombatContext.Instance;
+        return context != null && context.Result != CombatResult.None;
     }
 }

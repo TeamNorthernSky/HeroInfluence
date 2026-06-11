@@ -64,6 +64,9 @@ public class OutpostPanelUI : MonoBehaviour
 
     private void ShowPanel()
     {
+        if (okButton != null)
+            okButton.interactable = true;
+
         if (panelRoot != null)
             panelRoot.SetActive(true);
     }

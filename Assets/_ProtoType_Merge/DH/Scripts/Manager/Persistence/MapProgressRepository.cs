@@ -89,6 +89,16 @@ public class MapProgressRepository : MonoBehaviour
         return true;
     }
 
+    public bool TryGetOutpostProgress(string outpostKey, out OutpostProgressState progressState)
+    {
+        progressState = null;
+
+        if (!IsValidKey(outpostKey))
+            return false;
+
+        return outpostStateLookup.TryGetValue(NormalizeKey(outpostKey), out progressState);
+    }
+
     public void SetOutpostState(string outpostKey, OutpostState state)
     {
         if (!IsValidKey(outpostKey))
@@ -96,6 +106,52 @@ public class MapProgressRepository : MonoBehaviour
 
         OutpostProgressState progressState = GetOrCreateOutpostState(NormalizeKey(outpostKey), state);
         progressState.SetState(state);
+    }
+
+    public void SetOutpostState(
+        string outpostKey,
+        OutpostState state,
+        int enemyDefenderGroupIndex,
+        string defenderEnemyId)
+    {
+        if (!IsValidKey(outpostKey))
+            return;
+
+        OutpostProgressState progressState = GetOrCreateOutpostState(NormalizeKey(outpostKey), state);
+        progressState.SetState(state);
+        progressState.SetEnemyDefender(enemyDefenderGroupIndex, defenderEnemyId);
+    }
+
+    public void SetOutpostDefender(string outpostKey, int enemyDefenderGroupIndex, string defenderEnemyId)
+    {
+        if (!IsValidKey(outpostKey))
+            return;
+
+        OutpostProgressState progressState = GetOrCreateOutpostState(NormalizeKey(outpostKey), OutpostState.EnemyClaimed);
+        progressState.SetEnemyDefender(enemyDefenderGroupIndex, defenderEnemyId);
+    }
+
+    public bool TryFindOutpostByDefenderEnemyId(string defenderEnemyId, out OutpostProgressState progressState)
+    {
+        progressState = null;
+
+        if (string.IsNullOrWhiteSpace(defenderEnemyId))
+            return false;
+
+        for (int i = 0; i < outpostStates.Count; i++)
+        {
+            OutpostProgressState candidate = outpostStates[i];
+            if (candidate == null)
+                continue;
+
+            if (!string.Equals(candidate.DefenderEnemyId, defenderEnemyId, System.StringComparison.Ordinal))
+                continue;
+
+            progressState = candidate;
+            return true;
+        }
+
+        return false;
     }
 
     public bool TryGetPartyState(string placementKey, out PartyWorldState state)

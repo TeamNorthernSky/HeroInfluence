@@ -16,6 +16,7 @@ public class MapEventPanelUI : MonoBehaviour
     [SerializeField] private Button noButton;
 
     private MapEventObject currentMapEvent;
+    private PartyGridMover currentParty;
     private bool isPanelActive = false;
 
     private void Awake()
@@ -43,12 +44,13 @@ public class MapEventPanelUI : MonoBehaviour
             noButton.onClick.RemoveListener(OnNoButtonClicked);
     }
 
-    private void HandleEventInteracted(MapEventObject mapEvent)
+    private void HandleEventInteracted(MapEventObject mapEvent, PartyGridMover party)
     {
-        if (mapEvent == null)
+        if (mapEvent == null || party == null)
             return;
 
         currentMapEvent = mapEvent;
+        currentParty = party;
 
         if (eventPromptText != null)
             eventPromptText.text = $"Will you try this {mapEvent.EventKey}?";
@@ -69,7 +71,7 @@ public class MapEventPanelUI : MonoBehaviour
     {
         if (currentMapEvent == null) return;
 
-        bool success = currentMapEvent.TryExecuteEvent();
+        bool success = currentMapEvent.TryExecuteEvent(currentParty);
         if (success)
         {
             HidePanel();
@@ -103,11 +105,14 @@ public class MapEventPanelUI : MonoBehaviour
         }
 
         currentMapEvent = null;
+        currentParty = null;
     }
 
     private void OnDisable()
     {
         MapEventObject.EventInteracted -= HandleEventInteracted;
+        currentMapEvent = null;
+        currentParty = null;
         // 컴포넌트가 disable되어도 activeCount 누락 방지
         if (isPanelActive)
         {

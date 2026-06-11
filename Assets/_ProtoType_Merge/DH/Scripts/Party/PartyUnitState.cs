@@ -22,6 +22,7 @@ public class PartyUnitState : MonoBehaviour
     [SerializeField] private int currentWeaponIndex;
     [SerializeField] private StatBlock baseStats;
     [SerializeField] private StatBlock levelupStats;
+    [SerializeField] private StatBlock eventBonusStats;
     [SerializeField] private EquipmentStatBlock currentWeaponStats;
     [SerializeField] private StatBlock ingameStats;
     [SerializeField] private float currentHp;
@@ -36,6 +37,7 @@ public class PartyUnitState : MonoBehaviour
     public int CurrentWeaponIndex => Mathf.Max(0, currentWeaponIndex);
     public StatBlock BaseStats => baseStats;
     public StatBlock LevelupStats => levelupStats;
+    public StatBlock EventBonusStats => eventBonusStats;
     public EquipmentStatBlock CurrentWeaponStats => currentWeaponStats;
     public StatBlock IngameStats => ingameStats;
     public float CurrentHp => currentHp;
@@ -47,6 +49,7 @@ public class PartyUnitState : MonoBehaviour
 
         baseStats = template.baseStats;
         levelupStats = template.levelupStats;
+        eventBonusStats = default;
         currentWeaponStats = weaponStats;
         RecalculateIngameStats();
         exp = 0;
@@ -72,6 +75,7 @@ public class PartyUnitState : MonoBehaviour
         exp = Mathf.Clamp(data.Exp, 0, MaxExp);
         baseStats = data.BaseStats;
         levelupStats = data.LevelupStats;
+        eventBonusStats = data.EventBonusStats;
         currentSkillIndex = Mathf.Max(0, data.CurrentSkillIndex);
         currentWeaponIndex = Mathf.Max(0, data.CurrentWeaponIndex);
         currentWeaponStats = data.CurrentWeaponStats;
@@ -193,6 +197,7 @@ public class PartyUnitState : MonoBehaviour
             levelupStats,
             Level,
             currentWeaponStats,
+            eventBonusStats,
             ResolveLevelUpTemplates());
     }
 

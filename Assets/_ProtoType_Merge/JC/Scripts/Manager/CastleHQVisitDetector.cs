@@ -103,6 +103,8 @@ public class CastleHQVisitDetector : MonoBehaviour
         {
             var mover = subscribedMovers[i];
             if (mover == null) continue;
+            if (!mover.gameObject.activeInHierarchy) continue;
+            if (DefeatedPartyReturnController.IsPartyWaiting(mover)) continue;
 
             // [JC 260514 일원화] DH 정문 정책(IsInteractionCell)에 위임. 본부의 진입 셀 = 방문 위치.
             if (!castleUnit.IsInteractionCell(mover.GetCurrentGrid())) continue;

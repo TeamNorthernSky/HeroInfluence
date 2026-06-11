@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f867a6b2d08d457ab63a6deecdd5c29b, type: 3}
   m_Name: EventPlacementPreset
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
+  requireAmount: 100
+  effectAmount: 3
