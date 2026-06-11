@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     public UIPrefabRegistry UIPrefabRegistry { get; private set; }
     public DebugManager Debug { get; private set; }
     public HQStateManager HQ { get; private set; }
-    public BroadcastManager Broadcast { get; private set; }
+    public PublicityManager Publicity { get; private set; }
     public TrainingManager Training { get; private set; }
     public TurnIncomeModalController TurnIncomeModal { get; private set; }
 
@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
                     income = HQ.GetTurnIncome(HQDepartment.Headquarters);
                     if (income > 0) Economy.Add(ResourceType.Money, income);
                 }
-                if (Broadcast != null) Broadcast.OnTurnAdvanced(currentDay);
+                if (Publicity != null) Publicity.OnTurnAdvanced(currentDay);
                 // [JC 260610] income 모달은 영속 모달을 직접 표시(씬 로드 의존 제거).
                 // 턴 진행은 항상 탐사씬 TurnManager.AdvanceDay에서 일어나므로 이 시점은 탐사씬 안이다.
                 if (TurnIncomeModal != null) TurnIncomeModal.Show(currentDay, income);
@@ -105,11 +105,11 @@ public class GameManager : MonoBehaviour
         HQ = GetComponentInChildren<HQStateManager>(true);
         if (HQ != null) HQ.Initialize();
 
-        Broadcast = GetComponentInChildren<BroadcastManager>(true);
-        if (Broadcast != null)
+        Publicity = GetComponentInChildren<PublicityManager>(true);
+        if (Publicity != null)
         {
-            Broadcast.Initialize();
-            Broadcast.SubscribeHQ(HQ);
+            Publicity.Initialize();
+            Publicity.SubscribeHQ(HQ);
         }
 
         Training = GetComponentInChildren<TrainingManager>(true);

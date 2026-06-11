@@ -89,8 +89,8 @@ public class HeroInfoModal : MonoBehaviour
         SetText(nameText, displayName);
         SetText(classText, displayClass);
         SetText(rankText, $"RANK : {unit.Level}");
-        int ipValue = GameManager.Instance != null && GameManager.Instance.Broadcast != null
-            ? GameManager.Instance.Broadcast.GetIP(unit.UnitIndex)
+        int ipValue = GameManager.Instance != null && GameManager.Instance.Publicity != null
+            ? GameManager.Instance.Publicity.GetIP(unit.UnitIndex)
             : 0;
         SetText(ipText, $"I.P : {ipValue}");
         SetText(hpText, $"체력 : {s.HP:F0}");

@@ -209,8 +209,9 @@ public class HQUpgradeFlowController : MonoBehaviour
         bool turnUsed = gm.HQ != null && gm.HQ.UpgradedThisTurn;
         bool maxed = gm.HQ != null && gm.HQ.GetLevel(currentDept) >= gm.HQ.GetMaxLevel(currentDept);
         bool canAfford = CheckAfford(gm.Economy);
+        bool prereqMet = gm.HQ == null || gm.HQ.ArePrerequisitesMet(currentDept);
 
-        bool enabled = !turnUsed && canAfford && !maxed;
+        bool enabled = !turnUsed && canAfford && !maxed && prereqMet;
 
         if (btnConfirm != null) btnConfirm.interactable = enabled;
         if (disabledOverlay != null) disabledOverlay.SetActive(!enabled);
@@ -225,6 +226,8 @@ public class HQUpgradeFlowController : MonoBehaviour
             // 최고 단계는 턴 사용 여부와 무관하게 항상 최우선 안내
             if (maxed && currentContent != null && currentContent.useMaxLevelStateInfo)
                 msg = "업그레이드 상태가 최고 단계입니다.";
+            else if (!prereqMet)
+                msg = gm.HQ != null ? gm.HQ.GetUnmetReasonText(currentDept) : "선행 조건이 필요합니다.";
             else if (turnUsed)
                 msg = "이번 턴에 이미 건설, 또는 업그레이드를 진행했습니다.";
             else if (!canAfford)

@@ -1458,10 +1458,10 @@ MonoBehaviour:
     supply: 15
   - department: 1
     fromLevel: 0
-    money: 2000
+    money: 900
     chip: 0
     crystal: 0
-    supply: 10
+    supply: 2
   - department: 1
     fromLevel: 1
     money: 2500
@@ -1488,10 +1488,10 @@ MonoBehaviour:
     supply: 20
   - department: 2
     fromLevel: 0
-    money: 2500
+    money: 900
     chip: 0
     crystal: 0
-    supply: 15
+    supply: 2
   - department: 2
     fromLevel: 1
     money: 3500
@@ -1506,10 +1506,10 @@ MonoBehaviour:
     supply: 20
   - department: 3
     fromLevel: 0
-    money: 2500
+    money: 900
     chip: 0
     crystal: 0
-    supply: 15
+    supply: 2
   - department: 3
     fromLevel: 1
     money: 3500
@@ -1524,10 +1524,10 @@ MonoBehaviour:
     supply: 20
   - department: 4
     fromLevel: 0
-    money: 2500
+    money: 900
     chip: 0
     crystal: 0
-    supply: 15
+    supply: 2
   - department: 4
     fromLevel: 1
     money: 3500
@@ -1560,10 +1560,10 @@ MonoBehaviour:
     supply: 0
   - department: 6
     fromLevel: 0
-    money: 2500
+    money: 900
     chip: 0
     crystal: 0
-    supply: 15
+    supply: 2
   - department: 6
     fromLevel: 1
     money: 3500
@@ -1587,7 +1587,9 @@ MonoBehaviour:
       requiredLevel: 1
   - department: 6
     requirements:
-    - dependsOn: 1
+    - dependsOn: 2
+      requiredLevel: 1
+    - dependsOn: 3
       requiredLevel: 1
   - department: 4
     requirements:

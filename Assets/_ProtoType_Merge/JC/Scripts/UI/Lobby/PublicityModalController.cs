@@ -3,14 +3,14 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 홍보 모달 컨트롤러. 단일 Modal_Broadcast 안에서 영웅 정보+진행 횟수+비용+슬라이더+확정/취소.
-/// 영웅 선택 sub-modal은 별도 신설(Modal_BroadcastHeroSelect, HeroListController 재활용).
+/// 홍보 모달 컨트롤러. 단일 Modal_Publicity 안에서 영웅 정보+진행 횟수+비용+슬라이더+확정/취소.
+/// 영웅 선택 sub-modal은 별도 신설(Modal_PublicityHeroSelect, HeroListController 재활용).
 /// </summary>
 [DisallowMultipleComponent]
-public class BroadcastModalController : MonoBehaviour
+public class PublicityModalController : MonoBehaviour
 {
-    [Header("Modal_Broadcast 본체")]
-    [SerializeField] private GameObject modalBroadcastRoot;
+    [Header("Modal_Publicity 본체")]
+    [SerializeField] private GameObject modalPublicityRoot;
     [SerializeField] private Button btnClose;
 
     [Header("영웅 영역")]
@@ -46,7 +46,7 @@ public class BroadcastModalController : MonoBehaviour
 
     private int selectedUnitIndex = -1;
     private int progressCount;
-    private BroadcastManager subscribedBC;
+    private PublicityManager subscribedBC;
     private EconomyManager subscribedEco;
 
     private void Awake()
@@ -75,9 +75,9 @@ public class BroadcastModalController : MonoBehaviour
     {
         var gm = GameManager.Instance;
         if (gm == null) return;
-        if (subscribedBC == null && gm.Broadcast != null)
+        if (subscribedBC == null && gm.Publicity != null)
         {
-            subscribedBC = gm.Broadcast;
+            subscribedBC = gm.Publicity;
             subscribedBC.OnStateChanged += Refresh;
             if (heroSelectListController != null)
                 heroSelectListController.UnitSelected += OnHeroSelected;
@@ -111,7 +111,7 @@ public class BroadcastModalController : MonoBehaviour
     public void CloseModal()
     {
         if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(false);
-        if (modalBroadcastRoot != null) modalBroadcastRoot.SetActive(false);
+        if (modalPublicityRoot != null) modalPublicityRoot.SetActive(false);
     }
 
     // ─── 영웅 선택 ──────────────────────────────────────────
@@ -153,30 +153,30 @@ public class BroadcastModalController : MonoBehaviour
     private int EffectiveMaxCount()
     {
         var gm = GameManager.Instance;
-        if (gm == null || gm.Broadcast == null) return 0;
-        int byPool = Mathf.Max(0, gm.Broadcast.CurrentPool);
+        if (gm == null || gm.Publicity == null) return 0;
+        int byPool = Mathf.Max(0, gm.Publicity.CurrentPool);
         if (selectedUnitIndex < 0) return byPool;
-        return Mathf.Min(byPool, gm.Broadcast.GetRemainingCapacity(selectedUnitIndex));
+        return Mathf.Min(byPool, gm.Publicity.GetRemainingCapacity(selectedUnitIndex));
     }
 
     // ─── 진행 확정 ──────────────────────────────────────────
     private void OnConfirm()
     {
         var gm = GameManager.Instance;
-        if (gm == null || gm.Broadcast == null || gm.Economy == null) return;
+        if (gm == null || gm.Publicity == null || gm.Economy == null) return;
         if (selectedUnitIndex < 0) return;
         if (progressCount <= 0) return;
-        int total = gm.Broadcast.GetProgressCost() * progressCount;
-        if (!gm.Broadcast.CanProgress(selectedUnitIndex, progressCount)) return;
+        int total = gm.Publicity.GetProgressCost() * progressCount;
+        if (!gm.Publicity.CanProgress(selectedUnitIndex, progressCount)) return;
         if (!gm.Economy.Has(ResourceType.Money, total)) return;
         if (!gm.Economy.Spend(ResourceType.Money, total))
         {
-            Debug.LogError($"[Broadcast] Spend 실패: Money {total}");
+            Debug.LogError($"[Publicity] Spend 실패: Money {total}");
             return;
         }
-        if (!gm.Broadcast.TryProgress(selectedUnitIndex, progressCount))
+        if (!gm.Publicity.TryProgress(selectedUnitIndex, progressCount))
         {
-            Debug.LogError("[Broadcast] TryProgress 실패");
+            Debug.LogError("[Publicity] TryProgress 실패");
             return;
         }
         progressCount = 0;
@@ -187,19 +187,19 @@ public class BroadcastModalController : MonoBehaviour
     private void Refresh()
     {
         var gm = GameManager.Instance;
-        if (gm == null || gm.Broadcast == null || gm.Economy == null) return;
+        if (gm == null || gm.Publicity == null || gm.Economy == null) return;
 
         bool hasSelection = TryResolveSelected(out var unit, out var template);
-        int pool = gm.Broadcast.CurrentPool;
-        int costPer = gm.Broadcast.GetProgressCost();
+        int pool = gm.Publicity.CurrentPool;
+        int costPer = gm.Publicity.GetProgressCost();
         int total = costPer * progressCount;
-        bool unlocked = gm.Broadcast.IsUnlocked();
+        bool unlocked = gm.Publicity.IsUnlocked();
 
         // 영웅 영역
         if (heroSilhouette != null) heroSilhouette.SetActive(!hasSelection);
         if (heroProfileImage != null) heroProfileImage.enabled = hasSelection;
         if (currentIPText != null)
-            currentIPText.text = hasSelection ? $"I.P : {gm.Broadcast.GetIP(unit.UnitIndex)}" : "I.P : —";
+            currentIPText.text = hasSelection ? $"I.P : {gm.Publicity.GetIP(unit.UnitIndex)}" : "I.P : —";
         if (selectPromptGo != null) selectPromptGo.SetActive(!hasSelection);
 
         // Info Value 4종
@@ -209,7 +209,7 @@ public class BroadcastModalController : MonoBehaviour
         if (totalCostValueText != null) totalCostValueText.text = $"{total:N0}";
 
         // 선택 영웅의 IP 잔여 용량(MaxIP까지) — 진행 횟수 상한 산정에 사용.
-        int capacity = hasSelection ? gm.Broadcast.GetRemainingCapacity(unit.UnitIndex) : pool;
+        int capacity = hasSelection ? gm.Publicity.GetRemainingCapacity(unit.UnitIndex) : pool;
         int maxCount = EffectiveMaxCount();
 
         // Slider — 최소 0 고정 (사용자가 명시적으로 늘려야 진행). 상한은 풀·용량 중 작은 값.
@@ -236,7 +236,7 @@ public class BroadcastModalController : MonoBehaviour
             if (!unlocked) msg = "홍보 기능이 활성화되지 않았습니다.";
             else if (!hasSelection) msg = "영웅을 선택해 주세요.";
             else if (pool <= 0) msg = "이번 주 진행 가능 횟수를 모두 사용했습니다.";
-            else if (capacity <= 0) msg = $"이미 최대 I.P({BroadcastManager.MaxIP})에 도달했습니다.";
+            else if (capacity <= 0) msg = $"이미 최대 I.P({PublicityManager.MaxIP})에 도달했습니다.";
             else if (!moneyOk) msg = "자원이 부족합니다.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;
