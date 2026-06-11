@@ -89,6 +89,13 @@ public class CastleHQVisitDetector : MonoBehaviour
         HQVisitState state = HQVisitState.Instance;
         if (state == null) return;
 
+        if (DHGameEndState.IsEnding)
+        {
+            state.ClearVisitingParties();
+            ApplyVisitorIndicator(false);
+            return;
+        }
+
         if (castleUnit == null) castleUnit = GetComponent<CastleUnit>();
         if (castleUnit == null)
         {

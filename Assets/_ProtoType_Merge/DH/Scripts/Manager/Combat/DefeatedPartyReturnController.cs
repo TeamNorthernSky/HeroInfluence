@@ -20,7 +20,7 @@ public class DefeatedPartyReturnController : MonoBehaviour
 
     public static void ScheduleReturn(PartyGridMover party)
     {
-        if (party == null)
+        if (party == null || DHGameEndState.IsEnding)
             return;
 
         EnsureInstance();
@@ -82,6 +82,9 @@ public class DefeatedPartyReturnController : MonoBehaviour
 
     private void SchedulePartyReturn(PartyGridMover party)
     {
+        if (DHGameEndState.IsEnding)
+            return;
+
         string partyId = ResolvePartyId(party);
         if (string.IsNullOrWhiteSpace(partyId))
             return;
@@ -124,6 +127,13 @@ public class DefeatedPartyReturnController : MonoBehaviour
     {
         if (waitingParties.Count == 0)
             return;
+
+        if (DHGameEndState.IsEnding)
+        {
+            waitingParties.Clear();
+            HQVisitState.Instance?.ClearVisitingParties();
+            return;
+        }
 
         List<string> partyIds = new List<string>(waitingParties.Keys);
         for (int i = 0; i < partyIds.Count; i++)
