@@ -535,7 +535,7 @@ public class BattleManager : MonoBehaviour
             IsCounterAttack = false
         };
         context.IsCritical = CombatCalculator.RollCritical(context);
-        float dealt = ApplyDamage(context);
+        float dealt = ApplyDamage(context)?.Damage ?? 0f;
         if (context.DelayAfter > 0f)
         {
             yield return WaitForBattleSeconds(context.DelayAfter);
