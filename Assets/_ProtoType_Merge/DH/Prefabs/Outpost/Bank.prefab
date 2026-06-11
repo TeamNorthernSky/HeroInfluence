@@ -50,6 +50,8 @@ MonoBehaviour:
   outpostType: 0
   resourcePerTurn: 1000
   outpostState: 0
+  enemyDefenderGroupIndex: 30001
+  defenderEnemyId: 
   targetRenderer: {fileID: 5564329399348837744}
   unclaimedMaterial: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9,

@@ -21,6 +21,7 @@ public class CastleDoubleClickEntry : MonoBehaviour
 
     private void Update()
     {
+        if (DHGameEndState.IsEnding) return;
         if (!Input.GetMouseButtonDown(0)) return;
 
         // 입력 차단 가드 (Modal/WorldInputGate)
@@ -58,6 +59,9 @@ public class CastleDoubleClickEntry : MonoBehaviour
 
     private void EnterLobby()
     {
+        if (DHGameEndState.IsEnding)
+            return;
+
         if (GameSceneManager.Instance != null)
         {
             GameSceneManager.Instance.LoadLobby();

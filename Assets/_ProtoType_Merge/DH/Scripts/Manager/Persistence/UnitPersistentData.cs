@@ -9,6 +9,7 @@ public class UnitPersistentData
     public int Favorability => favorability;
     public StatBlock BaseStats => baseStats;
     public StatBlock LevelupStats => levelupStats;
+    public StatBlock EventBonusStats => eventBonusStats;
     public StatBlock IngameStats => ingameStats;
     public float CurrentHp => currentHp;
     public int Exp => exp;
@@ -23,6 +24,7 @@ public class UnitPersistentData
     [UnityEngine.SerializeField] private int favorability;
     [UnityEngine.SerializeField] private StatBlock baseStats;
     [UnityEngine.SerializeField] private StatBlock levelupStats;
+    [UnityEngine.SerializeField] private StatBlock eventBonusStats;
     [UnityEngine.SerializeField] private StatBlock ingameStats;
     [UnityEngine.SerializeField] private float currentHp;
     [UnityEngine.SerializeField] private int exp;
@@ -36,7 +38,7 @@ public class UnitPersistentData
     {
     }
 
-    public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0)
+    public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, StatBlock eventBonusStats = default)
     {
         this.unitIndex = unitIndex;
         this.unitTemplateKey = unitTemplateKey ?? string.Empty;
@@ -44,6 +46,7 @@ public class UnitPersistentData
         this.favorability = Math.Max(0, favorability);
         this.baseStats = baseStats;
         this.levelupStats = levelupStats;
+        this.eventBonusStats = eventBonusStats;
         this.ingameStats = ingameStats;
         this.currentHp = Math.Max(0f, currentHp);
         this.exp = Math.Max(0, exp);
@@ -71,5 +74,10 @@ public class UnitPersistentData
 
         if (nextMaxExp >= 0)
             maxExp = Math.Max(0, nextMaxExp);
+    }
+
+    public void SetEventBonusStats(StatBlock nextEventBonusStats)
+    {
+        eventBonusStats = nextEventBonusStats;
     }
 }

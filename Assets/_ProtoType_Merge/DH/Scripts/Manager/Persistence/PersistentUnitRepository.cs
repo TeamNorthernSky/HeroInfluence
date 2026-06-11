@@ -61,6 +61,7 @@ public class PersistentUnitRepository : MonoBehaviour
             levelupStats,
             level,
             currentWeaponStats,
+            default,
             levelUpTemplates);
         return CreateUnit(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, levelUpTemplates));
     }
@@ -142,6 +143,42 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
+    public bool AddEventBonusStats(int unitIndex, float hpBonus, float atkBonus)
+    {
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
+            return false;
+
+        StatBlock nextEventBonusStats = data.EventBonusStats;
+        nextEventBonusStats.HP += hpBonus;
+        nextEventBonusStats.Atk += atkBonus;
+
+        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
+            data.BaseStats,
+            data.LevelupStats,
+            data.Level,
+            data.CurrentWeaponStats,
+            nextEventBonusStats,
+            levelUpTemplates);
+
+        float nextCurrentHp = Mathf.Clamp(data.CurrentHp, 0f, Mathf.Max(0f, nextIngameStats.HP));
+        data.SetEventBonusStats(nextEventBonusStats);
+        data.ApplyRuntimeState(
+            data.UnitTemplateKey,
+            data.Level,
+            data.Favorability,
+            data.BaseStats,
+            data.LevelupStats,
+            data.CurrentSkillIndex,
+            data.CurrentWeaponIndex,
+            data.CurrentWeaponStats,
+            nextIngameStats,
+            nextCurrentHp,
+            data.Exp,
+            data.MaxExp);
+        return true;
+    }
+
     public bool AddExp(int unitIndex, int amount)
     {
         if (amount <= 0)
@@ -171,6 +208,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.LevelupStats,
             nextLevel,
             data.CurrentWeaponStats,
+            data.EventBonusStats,
             levelUpTemplates);
         int nextMaxExp = ResolveMaxExp(nextLevel, levelUpTemplates);
         data.ApplyRuntimeState(
@@ -268,6 +306,7 @@ public class PersistentUnitRepository : MonoBehaviour
                 data.LevelupStats,
                 nextLevel,
                 data.CurrentWeaponStats,
+                data.EventBonusStats,
                 levelUpTemplates);
             nextCurrentHp = nextIngameStats.HP;
             nextMaxExp = ResolveMaxExp(nextLevel, levelUpTemplates);

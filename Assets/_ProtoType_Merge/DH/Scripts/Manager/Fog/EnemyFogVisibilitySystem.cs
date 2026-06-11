@@ -72,6 +72,22 @@ public class EnemyFogVisibilitySystem : MonoBehaviour
         }
     }
 
+    public void RefreshEnemyBinding(EnemyGridMover enemy)
+    {
+        if (enemy == null)
+            return;
+
+        if (bindings.ContainsKey(enemy))
+        {
+            enemy.GridChanged -= HandleEnemyGridChanged;
+            enemy.MoveStepStarted -= HandleEnemyMoveStepStarted;
+            bindings.Remove(enemy);
+        }
+
+        RegisterEnemy(enemy);
+        RefreshEnemy(enemy);
+    }
+
     private void RegisterExistingEnemies()
     {
         if (enemyRegistry == null)

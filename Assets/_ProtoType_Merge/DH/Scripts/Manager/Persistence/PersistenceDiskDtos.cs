@@ -66,6 +66,7 @@ public class UnitPersistentDataDiskRow
     public EquipmentStatBlock currentWeaponStats;
     public StatBlockDisk baseStats;
     public StatBlockDisk levelupStats;
+    public StatBlockDisk eventBonusStats;
     public StatBlockDisk ingameStats;
 
     public static UnitPersistentDataDiskRow From(UnitPersistentData u)
@@ -87,6 +88,7 @@ public class UnitPersistentDataDiskRow
             currentWeaponStats = u.CurrentWeaponStats,
             baseStats = StatBlockDisk.From(u.BaseStats),
             levelupStats = StatBlockDisk.From(u.LevelupStats),
+            eventBonusStats = StatBlockDisk.From(u.EventBonusStats),
             ingameStats = StatBlockDisk.From(u.IngameStats)
         };
     }
@@ -106,7 +108,8 @@ public class UnitPersistentDataDiskRow
             ingameStats.ToStatBlock(),
             currentHp,
             exp,
-            maxExp);
+            maxExp,
+            eventBonusStats.ToStatBlock());
     }
 }
 

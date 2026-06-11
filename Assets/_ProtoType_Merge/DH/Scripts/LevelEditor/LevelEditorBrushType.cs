@@ -7,5 +7,6 @@ public enum LevelEditorBrushType
     Erase,
     Castle,
     VillainUnion,
-    StayEnemy
+    StayEnemy,
+    EnemyGroup
 }

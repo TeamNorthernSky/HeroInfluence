@@ -69,6 +69,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseId: villain_union_base_001
+  defenderEnemyGroupIndex: 30005
+  defenderEnemyId: 
   gridManager: {fileID: 0}
 --- !u!114 &8712180153613904357
 MonoBehaviour:

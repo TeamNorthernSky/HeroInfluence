@@ -68,7 +68,10 @@ public class PartyMovePointWorldBillboardGauge : MonoBehaviour
 
     private void UpdateWorldTransform()
     {
-        if (targetParty == null || targetCamera == null)
+        if (targetParty == null ||
+            targetCamera == null ||
+            !targetParty.gameObject.activeInHierarchy ||
+            DefeatedPartyReturnController.IsPartyWaiting(targetParty))
         {
             SetVisible(false);
             return;

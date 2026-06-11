@@ -25,6 +25,8 @@ public class LevelPrefabRegistry : MonoBehaviour
 
     [Header("Enemy Prefabs")]
     [SerializeField] private EnemyGridMover stayEnemyPrefab;
+    [SerializeField] private EnemyGridMover enemyGroupPrefab;
+    [SerializeField] private List<EnemyUnitPrefabEntry> enemyUnitPrefabs = new List<EnemyUnitPrefabEntry>();
 
     public GameObject ObstaclePrefab => obstaclePrefab;
     public CastleUnit CastlePrefab => castlePrefab;
@@ -68,19 +70,16 @@ public class LevelPrefabRegistry : MonoBehaviour
         return false;
     }
 
-    public bool TryGetEventPrefab(string eventKey, out MapEventObject prefab)
+    public bool TryGetEventPrefab(MapEventType eventType, out MapEventObject prefab)
     {
-        if (!string.IsNullOrWhiteSpace(eventKey))
+        for (int i = 0; i < eventPrefabs.Count; i++)
         {
-            for (int i = 0; i < eventPrefabs.Count; i++)
-            {
-                EventPrefabEntry entry = eventPrefabs[i];
-                if (!string.Equals(entry.EventKey, eventKey, StringComparison.Ordinal))
-                    continue;
+            EventPrefabEntry entry = eventPrefabs[i];
+            if (entry.EventType != eventType)
+                continue;
 
-                prefab = entry.Prefab;
-                return prefab != null;
-            }
+            prefab = entry.Prefab;
+            return prefab != null;
         }
 
         prefab = defaultEventPrefab;
@@ -103,6 +102,27 @@ public class LevelPrefabRegistry : MonoBehaviour
     {
         prefab = stayEnemyPrefab;
         return prefab != null;
+    }
+
+    public bool TryGetEnemyGroupPrefab(out EnemyGridMover prefab)
+    {
+        prefab = enemyGroupPrefab != null ? enemyGroupPrefab : stayEnemyPrefab;
+        return prefab != null;
+    }
+
+    public bool TryGetEnemyUnitPrefab(int enemyUnitIndex, out EnemyUnitState prefab)
+    {
+        for (int i = 0; i < enemyUnitPrefabs.Count; i++)
+        {
+            if (enemyUnitPrefabs[i].EnemyUnitIndex != enemyUnitIndex)
+                continue;
+
+            prefab = enemyUnitPrefabs[i].Prefab;
+            return prefab != null;
+        }
+
+        prefab = null;
+        return false;
     }
 }
 
@@ -137,9 +157,20 @@ public struct OutpostPrefabEntry
 [Serializable]
 public struct EventPrefabEntry
 {
-    [SerializeField] private string eventKey;
+    [SerializeField] private MapEventType eventType;
     [SerializeField] private MapEventObject prefab;
 
-    public string EventKey => eventKey;
+    public MapEventType EventType => eventType;
+    public string EventKey => MapEventTypeUtility.ToEventKey(eventType);
     public MapEventObject Prefab => prefab;
+}
+
+[Serializable]
+public struct EnemyUnitPrefabEntry
+{
+    [SerializeField] private int enemyUnitIndex;
+    [SerializeField] private EnemyUnitState prefab;
+
+    public int EnemyUnitIndex => enemyUnitIndex;
+    public EnemyUnitState Prefab => prefab;
 }

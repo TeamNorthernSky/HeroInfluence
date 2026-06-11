@@ -3,17 +3,20 @@ using UnityEngine;
 
 public class MapEventObject : MonoBehaviour
 {
-    public static event Action<MapEventObject> EventInteracted;
+    public static event Action<MapEventObject, PartyGridMover> EventInteracted;
 
-    [SerializeField] private string eventKey = "event_001";
+    [SerializeField] private MapEventType eventType = MapEventType.TrainingHp;
     [SerializeField] private ResourceType requireResource = ResourceType.Money;
     [SerializeField] private int requireAmount = 100;
+    [SerializeField] private int effectAmount = 3;
 
     private MapEventRegistry eventRegistry;
 
-    public string EventKey => eventKey;
+    public MapEventType EventType => eventType;
+    public string EventKey => MapEventTypeUtility.ToEventKey(eventType);
     public ResourceType RequireResource => requireResource;
     public int RequireAmount => requireAmount;
+    public int EffectAmount => effectAmount;
 
     private void OnEnable()
     {
@@ -26,38 +29,45 @@ public class MapEventObject : MonoBehaviour
         eventRegistry?.Unregister(this);
     }
 
-    public void ApplyInitialData(string nextEventKey)
+    public void ApplyInitialData(MapEventType nextEventType, int nextRequireAmount, int nextEffectAmount)
     {
-        if (string.IsNullOrWhiteSpace(nextEventKey))
-            return;
-
-        eventKey = nextEventKey;
+        eventType = nextEventType;
+        requireResource = ResourceType.Money;
+        requireAmount = Mathf.Max(1, nextRequireAmount);
+        effectAmount = Mathf.Max(0, nextEffectAmount);
     }
 
-    public void Interact()
+    public void Interact(PartyGridMover party)
     {
-        EventInteracted?.Invoke(this);
+        EventInteracted?.Invoke(this, party);
     }
 
-    // [JC 260514 머지후처리] ResourceManager 직접 의존 폐기 → Game.Economy 사용
-    public bool TryExecuteEvent()
+    public bool TryExecuteEvent(PartyGridMover party)
     {
-        if (Game.Economy == null) return false;
+        if (Game.Economy == null || party == null)
+            return false;
 
-        if (Game.Economy.Spend(requireResource, requireAmount))
-        {
-            MarkEventCompleted();
-            ExecuteEvent();
-            Destroy(gameObject);
-            return true;
-        }
-        return false;
+        if (!Game.Economy.Has(requireResource, requireAmount))
+            return false;
+
+        if (!CanApplyEventEffect(party))
+            return false;
+
+        if (!Game.Economy.Spend(requireResource, requireAmount))
+            return false;
+
+        if (!ApplyEventEffect(party))
+            return false;
+
+        MarkEventCompleted();
+        ExecuteEvent();
+        Destroy(gameObject);
+        return true;
     }
 
     private void ExecuteEvent()
     {
-        // TODO: 실제 이벤트 로직 구현
-        Debug.Log($"[MapEvent] Executing event '{eventKey}'... Consumed {requireAmount} {requireResource}");
+        Debug.Log($"[MapEvent] Executed event '{EventKey}'. Consumed {requireAmount} {requireResource}.", this);
     }
 
     private void MarkEventCompleted()
@@ -67,7 +77,7 @@ public class MapEventObject : MonoBehaviour
             return;
 
         GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
-        repository.MarkEventCompleted(MapProgressKey.ForEvent(GetCurrentGrid(gridManager), eventKey));
+        repository.MarkEventCompleted(MapProgressKey.ForEvent(GetCurrentGrid(gridManager), EventKey));
     }
 
     public Vector2Int GetCurrentGrid(GridManager gridManager)
@@ -86,5 +96,81 @@ public class MapEventObject : MonoBehaviour
     {
         if (eventRegistry == null)
             eventRegistry = FindFirstObjectByType<MapEventRegistry>();
+    }
+
+    private bool CanApplyEventEffect(PartyGridMover party)
+    {
+        if (!TryGetPartyUnitIndices(party, out int[] unitIndices))
+            return false;
+
+        PersistentUnitRepository repository = PersistentUnitRepository.Instance;
+        if (repository == null)
+            return false;
+
+        for (int i = 0; i < unitIndices.Length; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (unitIndex > 0 && repository.ContainsUnit(unitIndex))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool ApplyEventEffect(PartyGridMover party)
+    {
+        if (!TryGetPartyUnitIndices(party, out int[] unitIndices))
+            return false;
+
+        PersistentUnitRepository repository = PersistentUnitRepository.Instance;
+        if (repository == null)
+            return false;
+
+        bool appliedAny = false;
+        for (int i = 0; i < unitIndices.Length; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (unitIndex <= 0)
+                continue;
+
+            bool applied = eventType switch
+            {
+                MapEventType.TrainingHp => repository.AddEventBonusStats(unitIndex, Mathf.Max(0, effectAmount), 0f),
+                MapEventType.TrainingAtk => repository.AddEventBonusStats(unitIndex, 0f, Mathf.Max(0, effectAmount)),
+                MapEventType.Heal => repository.HealUnitToIngameMaxHp(unitIndex, out _),
+                _ => false
+            };
+
+            appliedAny |= applied;
+        }
+
+        if (appliedAny)
+            RefreshPartyUnitStates(party);
+
+        return appliedAny;
+    }
+
+    private static bool TryGetPartyUnitIndices(PartyGridMover party, out int[] unitIndices)
+    {
+        unitIndices = Array.Empty<int>();
+        if (party == null)
+            return false;
+
+        PartyComposition composition = party.GetComponent<PartyComposition>();
+        if (composition == null)
+            return false;
+
+        unitIndices = composition.UnitIndices;
+        return unitIndices != null && unitIndices.Length > 0;
+    }
+
+    private static void RefreshPartyUnitStates(PartyGridMover party)
+    {
+        if (party == null)
+            return;
+
+        PartyUnitState[] unitStates = party.GetComponentsInChildren<PartyUnitState>(true);
+        for (int i = 0; i < unitStates.Length; i++)
+            unitStates[i]?.RefreshFromRepository();
     }
 }

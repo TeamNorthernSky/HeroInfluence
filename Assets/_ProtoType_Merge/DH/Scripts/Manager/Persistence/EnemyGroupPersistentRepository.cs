@@ -35,11 +35,16 @@ public class EnemyGroupPersistentRepository : MonoBehaviour
 
     public string CreateEnemy(IReadOnlyList<int> unitIndices)
     {
+        return CreateEnemy(unitIndices, null);
+    }
+
+    public string CreateEnemy(IReadOnlyList<int> unitIndices, IReadOnlyList<int> unitSlots)
+    {
         int sequence = Mathf.Max(1, nextEnemySequence);
         nextEnemySequence = sequence + 1;
         string enemyId = FormatEnemyId(sequence);
 
-        var newData = new EnemyPersistentData(enemyId, unitIndices);
+        var newData = new EnemyPersistentData(enemyId, unitIndices, unitSlots);
         enemies.Add(newData);
         enemyLookup[enemyId] = newData;
         return enemyId;
@@ -47,16 +52,22 @@ public class EnemyGroupPersistentRepository : MonoBehaviour
 
     public void RegisterOrUpdateEnemy(string enemyId, IReadOnlyList<int> unitIndices)
     {
+        RegisterOrUpdateEnemy(enemyId, unitIndices, null);
+    }
+
+    public void RegisterOrUpdateEnemy(string enemyId, IReadOnlyList<int> unitIndices, IReadOnlyList<int> unitSlots)
+    {
         if (string.IsNullOrWhiteSpace(enemyId))
             return;
 
         if (enemyLookup.TryGetValue(enemyId, out EnemyPersistentData existingData))
         {
             existingData.SetUnitIndices(unitIndices);
+            existingData.SetUnitSlots(unitSlots);
             return;
         }
 
-        EnemyPersistentData newData = new EnemyPersistentData(enemyId, unitIndices);
+        EnemyPersistentData newData = new EnemyPersistentData(enemyId, unitIndices, unitSlots);
         enemies.Add(newData);
         enemyLookup[enemyId] = newData;
         UpdateNextEnemySequence(enemyId);
@@ -105,6 +116,8 @@ public class EnemyGroupPersistentRepository : MonoBehaviour
             EnemyPersistentData data = enemies[i];
             if (data == null || string.IsNullOrWhiteSpace(data.EnemyId))
                 continue;
+
+            data.SetUnitSlots(data.UnitSlots);
 
             if (enemyLookup.ContainsKey(data.EnemyId))
             {
