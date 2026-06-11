@@ -1,4 +1,5 @@
 using System.Collections;
+using PrimeTween;
 using UnityEngine;
 
 /// <summary>
@@ -7,7 +8,6 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class CharactorAnimationController : MonoBehaviour
 {
-    private const string ModelChildName = "Model";
     private const string StateIdle = "Idle";
     private const string TriggerAttack = "Attack";
     private const string TriggerHit = "Hit";
@@ -213,26 +213,52 @@ public class CharactorAnimationController : MonoBehaviour
     /// <summary>레거시 호출 호환.</summary>
     public void PlayLegacyTrigger(string triggerName) => PlayGenericAnimation(triggerName);
 
+    public IEnumerator MoveToTarget(Transform target, float approachDistance, float duration)
+    {
+        if (_animator != null)
+        {
+            _animator.CrossFade("MoveForward", CrossFadeDuration);
+        }
+
+        Vector3 dir = (transform.position - target.position);
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f)
+        {
+            dir = transform.forward;
+        }
+        dir.Normalize();
+
+        Vector3 destination = target.position + dir * approachDistance;
+        destination.y = transform.position.y;
+
+        Quaternion targetRotation = Quaternion.Euler(0f, Quaternion.LookRotation(-dir).eulerAngles.y, 0f);
+
+        yield return Tween.Rotation(transform, targetRotation, 0.1f).ToYieldInstruction();
+        yield return Tween.Position(transform, destination, duration).ToYieldInstruction();
+    }
+
+    public IEnumerator MoveToOrigin(Vector3 origin, Quaternion originalRotation, float duration)
+    {
+        if (_animator != null)
+        {
+            _animator.CrossFade("MoveReturn", CrossFadeDuration);
+        }
+
+        Tween.Rotation(transform, Quaternion.Euler(0f, originalRotation.eulerAngles.y, 0f), duration);
+        yield return Tween.Position(transform, origin, duration).ToYieldInstruction();
+    }
+
     private void CacheAnimator()
     {
         if (_animator == null)
         {
-            Transform model = transform.Find(ModelChildName);
-            if (model != null)
-            {
-                _animator = model.GetComponent<Animator>();
-            }
-
-            if (_animator == null)
-            {
-                _animator = GetComponentInChildren<Animator>(true);
-            }
+            _animator = GetComponentInChildren<Animator>(true);
         }
 
         if (_animator == null)
         {
             Debug.LogWarning(
-                $"[CharactorAnimationController] Animator not found on '{name}' (expected child '{ModelChildName}').",
+                $"[CharactorAnimationController] Animator not found on '{name}' or its children.",
                 this);
             return;
         }
@@ -243,12 +269,7 @@ public class CharactorAnimationController : MonoBehaviour
 
     private void EnsureAnimationEventBridge()
     {
-        Transform model = transform.Find(ModelChildName);
-        GameObject eventHost = model != null
-            ? model.gameObject
-            : _animator != null
-                ? _animator.gameObject
-                : null;
+        GameObject eventHost = _animator != null ? _animator.gameObject : null;
 
         if (eventHost == null)
         {

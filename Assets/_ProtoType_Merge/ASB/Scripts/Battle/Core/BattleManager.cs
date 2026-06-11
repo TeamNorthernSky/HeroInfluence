@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using ASB.Work.Battle.SkillExecution;
 using ASB.Work.Battle.Core;
+using ASB.Work.Battle.Sequence;
 
 /// <summary>
 /// BattleAction 및 플레이어 입력에 의한 전투 실행. 데미지는 항상 target.TakeDamage로 적용합니다.
@@ -24,6 +25,9 @@ public class BattleManager : MonoBehaviour
     [Header("Battle Speed")]
     [SerializeField] private float _currentBattleSpeed = 1.0f;
     [SerializeField] private BattleFlowManager battleFlowManager;
+
+    [Header("Visual")]
+    [SerializeField] private BattleVisualDirector _visualDirector;
 
     public float CurrentBattleSpeed => _currentBattleSpeed;
 
@@ -146,23 +150,31 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private float ApplyDamage(DamageContext context)
+    private BattleHitResult ApplyDamage(DamageContext context)
     {
         if (context.Caster == null || context.Target == null)
         {
-            return 0f;
+            return BattleHitResult.Empty(context?.Target);
         }
 
         // 다단 히트 진행 중 사망 타겟에 대한 후속 타격은 무시합니다.
         if (context.Target.IsDead)
         {
-            return 0f;
+            return BattleHitResult.Empty(context.Target);
         }
 
         float finalDamage = CombatCalculator.CalculateDamage(context);
         context.Target.TakeDamage(finalDamage);
         Debug.Log($"[Combat] {context.Caster.UnitName} -> {context.Target.UnitName} dmg={finalDamage:F1} (Crit: {context.IsCritical})");
-        return finalDamage;
+
+        return new BattleHitResult
+        {
+            Target = context.Target,
+            Damage = finalDamage,
+            IsCritical = context.IsCritical,
+            TargetDied = context.Target.IsDead,
+            SkillIndex = context.SkillIndex
+        };
     }
 
     public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null, bool isCounter = false)
@@ -181,7 +193,7 @@ public class BattleManager : MonoBehaviour
             if (isAoE)
             {
                 var aoeContexts = new List<DamageContext>();
-                var damageCallbacks = new List<Action>();
+                var hitCallbacks = new List<Func<BattleHitResult>>();
 
                 for (int i = 0; i < result.DamageContexts.Count; i++)
                 {
@@ -202,12 +214,17 @@ public class BattleManager : MonoBehaviour
                     }
 
                     aoeContexts.Add(damageContext);
-                    damageCallbacks.Add(() => { totalDamageDealt += ApplyDamage(damageContext); });
+                    hitCallbacks.Add(() =>
+                    {
+                        BattleHitResult r = ApplyDamage(damageContext);
+                        totalDamageDealt += r?.Damage ?? 0f;
+                        return r;
+                    });
                 }
 
                 if (aoeContexts.Count > 0)
                 {
-                    yield return RunAoESkillSequence(aoeContexts, damageCallbacks);
+                    yield return RunAoESkillSequence(aoeContexts, hitCallbacks);
                 }
             }
             else
@@ -237,7 +254,12 @@ public class BattleManager : MonoBehaviour
                         hitAnimSkill,
                         playBasicAttackAnimation: false,
                         playTargetHitAnimation: true,
-                        () => { totalDamageDealt += ApplyDamage(damageContext); });
+                        () =>
+                        {
+                            BattleHitResult r = ApplyDamage(damageContext);
+                            totalDamageDealt += r?.Damage ?? 0f;
+                            return r;
+                        });
 
                     float delay = Mathf.Max(0f, damageContext.DelayAfter);
                     if (delay > 0f)
@@ -404,7 +426,11 @@ public class BattleManager : MonoBehaviour
                 healAnimSkill,
                 playBasicAttackAnimation: false,
                 playTargetHitAnimation: false,
-                () => target.ApplyHeal(heal));
+                () =>
+                {
+                    target.ApplyHeal(heal);
+                    return new BattleHitResult { Target = target, Damage = heal, IsHeal = true };
+                });
             Debug.Log($"[Battle] GridHeal: {GetLabel(actor)} -> {GetLabel(target)} heal={heal:F1} (×{multiplier:0.##})");
             onCompleted?.Invoke(true);
             yield break;
@@ -419,7 +445,11 @@ public class BattleManager : MonoBehaviour
                 buffAnimSkill,
                 playBasicAttackAnimation: false,
                 playTargetHitAnimation: false,
-                () => ApplyBuff(actor, target, skillData));
+                () =>
+                {
+                    ApplyBuff(actor, target, skillData);
+                    return BattleHitResult.Empty(target);
+                });
             onCompleted?.Invoke(true);
             yield break;
         }
@@ -444,7 +474,7 @@ public class BattleManager : MonoBehaviour
             damageAnimSkill,
             playBasicAttackAnimation: false,
             playTargetHitAnimation: true,
-            () => { dealt = ApplyDamage(context); });
+            () => { BattleHitResult r = ApplyDamage(context); dealt = r?.Damage ?? 0f; return r; });
 
         if (context.DelayAfter > 0f)
         {
@@ -561,7 +591,7 @@ public class BattleManager : MonoBehaviour
                 counterSkillData,
                 playBasicAttackAnimation: false,
                 playTargetHitAnimation: true,
-                () => { dmg = ApplyDamage(context); });
+                () => { BattleHitResult r = ApplyDamage(context); dmg = r?.Damage ?? 0f; return r; });
         }
         else
         {
@@ -571,7 +601,7 @@ public class BattleManager : MonoBehaviour
                 basicAttackAnim,
                 playBasicAttackAnimation: true,
                 playTargetHitAnimation: true,
-                () => { dmg = ApplyDamage(context); });
+                () => { BattleHitResult r = ApplyDamage(context); dmg = r?.Damage ?? 0f; return r; });
         }
 
         if (context.DelayAfter > 0f)
@@ -672,7 +702,7 @@ public class BattleManager : MonoBehaviour
             assetAnimSkill,
             playBasicAttackAnimation: false,
             playTargetHitAnimation: true,
-            () => { dealt = ApplyDamage(context); });
+            () => { BattleHitResult r = ApplyDamage(context); dealt = r?.Damage ?? 0f; return r; });
 
         if (context.DelayAfter > 0f)
         {
@@ -801,7 +831,7 @@ public class BattleManager : MonoBehaviour
         SkillData skill,
         bool playBasicAttackAnimation,
         bool playTargetHitAnimation,
-        Action onHitCallback)
+        Func<BattleHitResult> onHitCallback)
     {
         if (actor == null)
         {
@@ -814,50 +844,49 @@ public class BattleManager : MonoBehaviour
         CharactorAnimationController actorAnim = actor.Anim;
         actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
 
-        float sequenceBattleElapsed = 0f;
         string targetState = actorAnim != null
             ? actorAnim.GetTargetStateName(playBasicAttackAnimation ? null : skill)
             : string.Empty;
 
-        actorAnim?.ResetHitEvent();
-        actorAnim?.PlaySkillAnimation(playBasicAttackAnimation ? null : skill);
+        Vector3 originPosition = actor.transform.position;
+        float originRotationY = actor.transform.eulerAngles.y;
+        UnitMovementProfile movement = actor.GetComponent<UnitMovementProfile>();
+        bool shouldMove   = movement != null && !movement.RotateOnly && target != null && IsMeleeSkillRange(actor, skill);
+        bool shouldRotate = movement != null && movement.RotateOnly  && target != null;
 
-        if (skill.UseAnimEvent)
-        {
-            float hitWaitBattleSeconds = 0f;
-            yield return WaitUntilHitEventOrBattleTimeout(
-                actorAnim,
-                AnimEventTimeoutSeconds,
-                elapsed => hitWaitBattleSeconds = elapsed);
-            sequenceBattleElapsed += hitWaitBattleSeconds;
-        }
-        else
-        {
-            float remainingHitDelay = Mathf.Max(0f, skill.HitDelay);
-            yield return WaitForBattleSeconds(remainingHitDelay);
-            sequenceBattleElapsed += remainingHitDelay;
-        }
+        string targetAnimTrigger = playTargetHitAnimation
+            ? (skill?.ResolvedTargetAnimationTrigger ?? "Hit")
+            : null;
 
-        onHitCallback?.Invoke();
+        float sequenceBattleElapsed = 0f;
+        var runner = new ActionSequenceRunner();
 
-        if (playTargetHitAnimation && target != null)
-        {
-            target.EnsureAnimationController();
-            target.Anim?.SetAnimationSpeed(_currentBattleSpeed);
-            target.Anim?.PlayGenericAnimation("Hit");
-        }
+        if (shouldMove)
+            runner.Enqueue(new MoveToTargetAction(actorAnim, target.transform, movement.ApproachDistance, movement.MoveDuration / _currentBattleSpeed));
+        else if (shouldRotate)
+            runner.Enqueue(new RotateToTargetAction(actor.transform, target.transform, movement.RotateDuration / _currentBattleSpeed));
 
-        if (actorAnim != null && !string.IsNullOrEmpty(targetState))
-        {
-            yield return StartCoroutine(actorAnim.WaitForSkillClipEnd(targetState));
-            sequenceBattleElapsed += actorAnim.LastClipWaitBattleSeconds;
-        }
+        if (_visualDirector != null && skill != null)
+            runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
 
-        ReturnToIdleIfAlive(actor);
+        runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation));
+        runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
+        runner.Enqueue(new ResolveHitAction(target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector));
+
+        if (!string.IsNullOrEmpty(targetState))
+            runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
+
+        if (shouldMove)
+            runner.Enqueue(new MoveToOriginAction(actorAnim, originPosition, Quaternion.Euler(0f, originRotationY, 0f), movement.ReturnDuration / _currentBattleSpeed));
+        else if (shouldRotate)
+            runner.Enqueue(new MoveToOriginAction(actorAnim, originPosition, Quaternion.Euler(0f, originRotationY, 0f), movement.RotateReturnDuration / _currentBattleSpeed));
+
+        runner.Enqueue(new ReturnToIdleAction(actor));
+
+        yield return StartCoroutine(runner.RunAll(this));
 
         float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
-        float targetIdleDelay = Mathf.Max(remainingTotal, 0.2f);
-        yield return WaitForBattleSeconds(targetIdleDelay);
+        yield return WaitForBattleSeconds(Mathf.Max(remainingTotal, 0.2f));
 
         ReturnToIdleIfAlive(target);
     }
@@ -865,21 +894,21 @@ public class BattleManager : MonoBehaviour
     /// <summary>
     /// 광역 스킬: 시전 애니 1회, HitDelay 시점에 전 타겟 동시 피격·데미지, 이후 전원 Idle 복귀.
     /// </summary>
-    private IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Action> damageCallbacks)
+    private IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks)
     {
-        if (contexts == null || contexts.Count == 0 || damageCallbacks == null || damageCallbacks.Count == 0)
+        if (contexts == null || contexts.Count == 0 || hitCallbacks == null || hitCallbacks.Count == 0)
         {
             yield break;
         }
 
-        int pairCount = Mathf.Min(contexts.Count, damageCallbacks.Count);
+        int pairCount = Mathf.Min(contexts.Count, hitCallbacks.Count);
         DamageContext leadContext = contexts[0];
         BattleCharactor actor = leadContext?.Caster;
         if (actor == null)
         {
             for (int i = 0; i < pairCount; i++)
             {
-                damageCallbacks[i]?.Invoke();
+                hitCallbacks[i]?.Invoke();
             }
 
             yield break;
@@ -890,55 +919,29 @@ public class BattleManager : MonoBehaviour
         CharactorAnimationController actorAnim = actor.Anim;
         actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
 
-        float sequenceBattleElapsed = 0f;
         string targetState = actorAnim != null
             ? actorAnim.GetTargetStateName(skill)
             : string.Empty;
 
-        actorAnim?.ResetHitEvent();
-        actorAnim?.PlaySkillAnimation(skill);
+        float sequenceBattleElapsed = 0f;
+        var runner = new ActionSequenceRunner();
 
-        if (skill.UseAnimEvent)
-        {
-            float hitWaitBattleSeconds = 0f;
-            yield return WaitUntilHitEventOrBattleTimeout(
-                actorAnim,
-                AnimEventTimeoutSeconds,
-                elapsed => hitWaitBattleSeconds = elapsed);
-            sequenceBattleElapsed += hitWaitBattleSeconds;
-        }
-        else
-        {
-            float remainingHitDelay = Mathf.Max(0f, skill.HitDelay);
-            yield return WaitForBattleSeconds(remainingHitDelay);
-            sequenceBattleElapsed += remainingHitDelay;
-        }
+        if (_visualDirector != null && skill != null)
+            runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
 
-        for (int i = 0; i < pairCount; i++)
-        {
-            damageCallbacks[i]?.Invoke();
+        runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, false));
+        runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
+        runner.Enqueue(new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector));
 
-            DamageContext ctx = contexts[i];
-            BattleCharactor hitTarget = ctx?.Target;
-            if (hitTarget != null)
-            {
-                hitTarget.EnsureAnimationController();
-                hitTarget.Anim?.SetAnimationSpeed(_currentBattleSpeed);
-                hitTarget.Anim?.PlayGenericAnimation("Hit");
-            }
-        }
+        if (!string.IsNullOrEmpty(targetState))
+            runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
 
-        if (actorAnim != null && !string.IsNullOrEmpty(targetState))
-        {
-            yield return StartCoroutine(actorAnim.WaitForSkillClipEnd(targetState));
-            sequenceBattleElapsed += actorAnim.LastClipWaitBattleSeconds;
-        }
+        runner.Enqueue(new ReturnToIdleAction(actor));
 
-        ReturnToIdleIfAlive(actor);
+        yield return StartCoroutine(runner.RunAll(this));
 
         float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
-        float targetIdleDelay = Mathf.Max(remainingTotal, 0.2f);
-        yield return WaitForBattleSeconds(targetIdleDelay);
+        yield return WaitForBattleSeconds(Mathf.Max(remainingTotal, 0.2f));
 
         for (int i = 0; i < pairCount; i++)
         {

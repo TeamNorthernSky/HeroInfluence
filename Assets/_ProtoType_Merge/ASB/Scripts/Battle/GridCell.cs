@@ -12,6 +12,7 @@ namespace ASB.Work.BattleGrid
         [SerializeField] private Renderer cellRenderer;
         [SerializeField] private Material transparentMat;
         [SerializeField] private Material redHighlightMat;
+        [SerializeField] private Material mainTargetHighlightMat;
 
         public Vector2Int Coords => coords;
         public bool IsFrontRow => coords.x == 1 || coords.x == 2;
@@ -77,6 +78,16 @@ namespace ASB.Work.BattleGrid
             }
 
             cellRenderer.sharedMaterial = redHighlightMat;
+        }
+
+        public void SetMainTargetHighlight()
+        {
+            if (cellRenderer == null || mainTargetHighlightMat == null)
+            {
+                return;
+            }
+
+            cellRenderer.sharedMaterial = mainTargetHighlightMat;
         }
 
         public void ClearHighlight()

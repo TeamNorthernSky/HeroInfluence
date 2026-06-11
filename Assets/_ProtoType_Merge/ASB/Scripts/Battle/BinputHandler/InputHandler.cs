@@ -48,6 +48,7 @@ public class InputHandler : MonoBehaviour
     private Outline hoverTargetOutline;
     private readonly HashSet<BattleCharactor> deathSubscribedUnits = new HashSet<BattleCharactor>();
     private readonly List<ASBGridCell> highlightedCells = new List<ASBGridCell>();
+    private ASBGridCell highlightedMainTargetCell;
     private bool isProcessingAction;
 
     public bool IsAutoBattleActive { get; set; }
@@ -464,8 +465,8 @@ public class InputHandler : MonoBehaviour
                               currentSelectedSkill.boundary.Count == 0));
         if (singleTarget)
         {
-            centerCell.SetHighlight();
-            highlightedCells.Add(centerCell);
+            centerCell.SetMainTargetHighlight();
+            highlightedMainTargetCell = centerCell;
             return;
         }
 
@@ -491,8 +492,12 @@ public class InputHandler : MonoBehaviour
             if (gridManager.TryGetCell(coord, out ASBGridCell cell) && cell != null)
             {
                 bool isSplashEnemySide = cell.Coords.x >= 2;
-                // 프리뷰도 중심 타겟과 같은 진영 보드만 표시합니다.
                 if (isTargetEnemySide != isSplashEnemySide)
+                {
+                    continue;
+                }
+
+                if (cell == centerCell)
                 {
                     continue;
                 }
@@ -501,6 +506,9 @@ public class InputHandler : MonoBehaviour
                 highlightedCells.Add(cell);
             }
         }
+
+        centerCell.SetMainTargetHighlight();
+        highlightedMainTargetCell = centerCell;
     }
 
     private bool TryGetPendingSkillData(BattleCharactor actor, out SkillData skillData)
@@ -597,6 +605,12 @@ public class InputHandler : MonoBehaviour
         }
 
         highlightedCells.Clear();
+
+        if (highlightedMainTargetCell != null)
+        {
+            highlightedMainTargetCell.ClearHighlight();
+            highlightedMainTargetCell = null;
+        }
     }
 
     private BattleCharactor RaycastUnitUnderCursor()

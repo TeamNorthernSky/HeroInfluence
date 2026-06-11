@@ -313,6 +313,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 324998229}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1 &56801847
 GameObject:
   m_ObjectHideFlags: 0
@@ -702,11 +703,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1213a2ec935c07c4183b16fa65cfc702, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  csvLoader: {fileID: 320332755}
-  skillDataLoader: {fileID: 320332756}
-  weaponDataLoader: {fileID: 320332757}
-  charactorManager: {fileID: 1002047753}
-  enemyManager: {fileID: 1002047755}
 --- !u!114 &320332755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1155,6 +1151,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 1458468679}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!4 &546059362 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1934206247234255701, guid: dc4a5e6c8a95e4b4aac8a40d823c76ca,
@@ -1761,10 +1758,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   csvDataLoad: {fileID: 0}
   playerUnitTable: {fileID: 11400000, guid: 90c4628412cf66c4da1900fe2a85c25f, type: 2}
-  enemyUnitTable: {fileID: 11400000, guid: 1945ee8241da66e45b55e407be613258, type: 2}
+  enemyUnitInfoTable: {fileID: 0}
   weaponTable: {fileID: 11400000, guid: d889acf92290c1b4986df18dbce5c742, type: 2}
   classSkillTable: {fileID: 11400000, guid: 113495fdb7b44f34bbfc28dc293f4fe4, type: 2}
-  levelUpTable: {fileID: 11400000, guid: 3d44f3331f94c6540a5aa5cb38104748, type: 2}
+  levelUpTable: {fileID: 0}
+  enemyGroupTable: {fileID: 0}
   useSOTables: 0
   loadOnAwake: 0
   dontDestroyOnLoad: 1
@@ -1843,6 +1841,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 253823592}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1 &829707869
 GameObject:
   m_ObjectHideFlags: 0
@@ -2262,10 +2261,19 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8073002527096589785, guid: 8e839b26f24666340915ba452e52ad0e,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1742596684811356356, guid: 8e839b26f24666340915ba452e52ad0e,
+        type: 3}
+      insertIndex: 3
+      addedObject: {fileID: 1762839722}
     - targetCorrespondingSourceObject: {fileID: 1742596684811356356, guid: 8e839b26f24666340915ba452e52ad0e,
         type: 3}
       insertIndex: -1
@@ -2322,6 +2330,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 499124197}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1 &1002047752
 GameObject:
   m_ObjectHideFlags: 0
@@ -2601,6 +2610,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1853290218}
     m_Modifications:
+    - target: {fileID: 2846799762774296194, guid: e540557cd11514240aafdf2c329798cb,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2900768675364931409, guid: e540557cd11514240aafdf2c329798cb,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2721,6 +2735,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 1437186621}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1 &1283565775
 GameObject:
   m_ObjectHideFlags: 0
@@ -3034,6 +3049,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 1004892103}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1 &1414445549
 GameObject:
   m_ObjectHideFlags: 0
@@ -3085,6 +3101,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 611677453}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1 &1437186618
 GameObject:
   m_ObjectHideFlags: 0
@@ -3482,6 +3499,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 829707872}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1001 &1535783869
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3691,6 +3709,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 1055051271}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1 &1738284055
 GameObject:
   m_ObjectHideFlags: 0
@@ -3766,6 +3785,21 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &1762839722
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762839710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbcf83309758ba54faeafff8f9c53e19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ApproachDistance: 1.2
+  MoveDuration: 0.25
+  ReturnDuration: 0.3
 --- !u!1 &1832740940
 GameObject:
   m_ObjectHideFlags: 0
@@ -3816,6 +3850,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 390142420}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1 &1832908803 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6290960558266015020, guid: e540557cd11514240aafdf2c329798cb,
@@ -3892,6 +3927,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 587211056}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1001 &1889075798
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3960,6 +3996,11 @@ PrefabInstance:
       propertyPath: skillDataLoader
       value: 
       objectReference: {fileID: 320332756}
+    - target: {fileID: 2436971512463497434, guid: dc4a5e6c8a95e4b4aac8a40d823c76ca,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4060,6 +4101,7 @@ MonoBehaviour:
   cellRenderer: {fileID: 603017061}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
+  mainTargetHighlightMat: {fileID: 0}
 --- !u!1001 &1935789554
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4078,6 +4120,11 @@ PrefabInstance:
       propertyPath: skillDataLoader
       value: 
       objectReference: {fileID: 320332756}
+    - target: {fileID: 4770589583017596640, guid: 0794eea0d06dda54f921e3c87af19cd5,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6551610242319550290, guid: 0794eea0d06dda54f921e3c87af19cd5,
         type: 3}
       propertyPath: m_LocalPosition.x
