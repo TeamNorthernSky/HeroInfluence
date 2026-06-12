@@ -9,7 +9,7 @@ using UnityEngine;
 /// 추후 UnitPersistentData에 influencePoint 필드를 추가하는 마이그레이션이 단순 transfer로 끝나도록 설계.
 /// </summary>
 [DisallowMultipleComponent]
-public class BroadcastManager : MonoBehaviour
+public class PublicityManager : MonoBehaviour
 {
     public event Action OnStateChanged;
 
@@ -53,25 +53,25 @@ public class BroadcastManager : MonoBehaviour
     {
         if (hq == null) return;
         hq.OnStateChanged += OnHQStateChanged;
-        cachedBroadcastLevel = hq.GetLevel(HQDepartment.Broadcast);
+        cachedPublicityLevel = hq.GetLevel(HQDepartment.Publicity);
     }
 
-    private int cachedBroadcastLevel = -1;
+    private int cachedPublicityLevel = -1;
 
     private void OnHQStateChanged()
     {
         var gm = GameManager.Instance;
         if (gm == null || gm.HQ == null) return;
-        int level = gm.HQ.GetLevel(HQDepartment.Broadcast);
-        if (cachedBroadcastLevel <= 0 && level >= 1)
+        int level = gm.HQ.GetLevel(HQDepartment.Publicity);
+        if (cachedPublicityLevel <= 0 && level >= 1)
         {
             // 0 → 1: 해금. 초기 충전 = 1단계 weeklyMax (50).
-            OnBroadcastUnlocked();
+            OnPublicityUnlocked();
         }
-        cachedBroadcastLevel = level;
+        cachedPublicityLevel = level;
     }
 
-    private void OnBroadcastUnlocked()
+    private void OnPublicityUnlocked()
     {
         var gm = GameManager.Instance;
         int day = gm != null ? gm.CurrentDay : 1;
@@ -87,7 +87,7 @@ public class BroadcastManager : MonoBehaviour
     {
         var gm = GameManager.Instance;
         if (gm == null || gm.HQ == null) return;
-        int level = gm.HQ.GetLevel(HQDepartment.Broadcast);
+        int level = gm.HQ.GetLevel(HQDepartment.Publicity);
         if (level <= 0) return;
         if (currentDay < lastChargeDay + WeekTurnInterval) return;
 
@@ -101,7 +101,7 @@ public class BroadcastManager : MonoBehaviour
     public int GetCurrentLevel()
     {
         var gm = GameManager.Instance;
-        return gm != null && gm.HQ != null ? gm.HQ.GetLevel(HQDepartment.Broadcast) : 0;
+        return gm != null && gm.HQ != null ? gm.HQ.GetLevel(HQDepartment.Publicity) : 0;
     }
 
     public bool IsUnlocked() => GetCurrentLevel() >= 1;
@@ -157,7 +157,7 @@ public class BroadcastManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 횟수 차감 + IP 적립. 자금 차감은 호출자(BroadcastModalController)가 별도 처리.
+    /// 횟수 차감 + IP 적립. 자금 차감은 호출자(PublicityModalController)가 별도 처리.
     /// MaxIP를 넘는 진행은 거부(풀·자금 낭비 방지) — 호출자가 횟수를 잔여 용량으로 제한할 것.
     /// </summary>
     public bool TryProgress(int unitIndex, int count)
@@ -189,7 +189,7 @@ public class BroadcastManager : MonoBehaviour
             if (e == null || e.unitIndex <= 0) continue;
             if (heroIPLookup.ContainsKey(e.unitIndex))
             {
-                Debug.LogWarning($"[BroadcastManager] duplicate unitIndex {e.unitIndex}", this);
+                Debug.LogWarning($"[PublicityManager] duplicate unitIndex {e.unitIndex}", this);
                 continue;
             }
             heroIPLookup.Add(e.unitIndex, e);

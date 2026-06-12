@@ -41,8 +41,8 @@ public static class CheatCommands
 
     private static string Logos(string[] args)
     {
-        var bc = GameManager.Instance != null ? GameManager.Instance.Broadcast : null;
-        if (bc == null) return "[err] BroadcastManager unavailable";
+        var bc = GameManager.Instance != null ? GameManager.Instance.Publicity : null;
+        if (bc == null) return "[err] PublicityManager unavailable";
 
         const int delta = 100;
         bc.AddIPToAllHeroes(delta);

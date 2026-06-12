@@ -5,7 +5,7 @@ using UnityEngine.UI;
 /// <summary>
 /// 트레이닝 모달 컨트롤러. 영웅 선택 후 공격력(칼)/체력(하트) 두 스탯을 각각 강화.
 /// 강화 시 TrainingManager가 영웅 BaseStats를 영구 가산(전투·HeroInfo 즉시 반영).
-/// 영웅 선택 sub-modal은 HeroListController(selectionMode) 재활용 — BroadcastModalController와 동일 패턴.
+/// 영웅 선택 sub-modal은 HeroListController(selectionMode) 재활용 — PublicityModalController와 동일 패턴.
 /// 레이아웃/비주얼은 추후 공식 리소스로 개편 예정 — 본 컨트롤러는 기능 로직 결선만 담당.
 /// </summary>
 [DisallowMultipleComponent]

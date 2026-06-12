@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     public UIPrefabRegistry UIPrefabRegistry { get; private set; }
     public DebugManager Debug { get; private set; }
     public HQStateManager HQ { get; private set; }
-    public BroadcastManager Broadcast { get; private set; }
+    public PublicityManager Publicity { get; private set; }
     public TrainingManager Training { get; private set; }
     public TurnIncomeModalController TurnIncomeModal { get; private set; }
 
@@ -43,20 +43,31 @@ public class GameManager : MonoBehaviour
             if (advanced)
             {
                 if (HQ != null) HQ.OnTurnAdvanced();
+                int income = 0;
                 if (HQ != null && Economy != null)
                 {
-                    int income = HQ.GetTurnIncome(HQDepartment.Headquarters);
+                    income = HQ.GetTurnIncome(HQDepartment.Headquarters);
                     if (income > 0) Economy.Add(ResourceType.Money, income);
-                    pendingTurnIncomeAmount = income;
-                    hasPendingTurnIncome = true;
                 }
-                if (Broadcast != null) Broadcast.OnTurnAdvanced(currentDay);
+                if (Publicity != null) Publicity.OnTurnAdvanced(currentDay);
+                // [JC 260610] income 모달은 영속 모달을 직접 표시(씬 로드 의존 제거).
+                // 턴 진행은 항상 탐사씬 TurnManager.AdvanceDay에서 일어나므로 이 시점은 탐사씬 안이다.
+                if (TurnIncomeModal != null) TurnIncomeModal.Show(currentDay, income);
             }
         }
     }
 
-    private int pendingTurnIncomeAmount;
-    private bool hasPendingTurnIncome;
+    // [JC 260610] 로비 턴종료 → "나가기 + 탐사 턴종료" 위임 플래그.
+    // 로비에서 CurrentDay를 직접 올리면 적 턴(EndPlayerTurn)을 건너뛰는 버그가 있어,
+    // 탐사 진입 후 TurnManager.Start가 정상 EndPlayerTurn 하도록 위임한다.
+    private bool pendingEndTurnOnExploration;
+    public void RequestEndTurnViaExploration() => pendingEndTurnOnExploration = true;
+    public bool ConsumePendingEndTurn()
+    {
+        if (!pendingEndTurnOnExploration) return false;
+        pendingEndTurnOnExploration = false;
+        return true;
+    }
 
     private void Awake()
     {
@@ -94,11 +105,11 @@ public class GameManager : MonoBehaviour
         HQ = GetComponentInChildren<HQStateManager>(true);
         if (HQ != null) HQ.Initialize();
 
-        Broadcast = GetComponentInChildren<BroadcastManager>(true);
-        if (Broadcast != null)
+        Publicity = GetComponentInChildren<PublicityManager>(true);
+        if (Publicity != null)
         {
-            Broadcast.Initialize();
-            Broadcast.SubscribeHQ(HQ);
+            Publicity.Initialize();
+            Publicity.SubscribeHQ(HQ);
         }
 
         Training = GetComponentInChildren<TrainingManager>(true);
@@ -115,18 +126,6 @@ public class GameManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         RefreshSceneManagers();
-        TryShowPendingTurnIncome(scene.name);
-    }
-
-    private void TryShowPendingTurnIncome(string sceneName)
-    {
-        if (!hasPendingTurnIncome) return;
-        if (string.IsNullOrEmpty(turnIncomeTriggerScene)) return;
-        if (sceneName != turnIncomeTriggerScene) return;
-        if (TurnIncomeModal == null) return;
-        TurnIncomeModal.Show(currentDay, pendingTurnIncomeAmount);
-        hasPendingTurnIncome = false;
-        pendingTurnIncomeAmount = 0;
     }
 
     private void RefreshSceneManagers()

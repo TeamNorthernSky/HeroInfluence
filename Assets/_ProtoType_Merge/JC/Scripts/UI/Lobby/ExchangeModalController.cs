@@ -16,6 +16,7 @@ public class ExchangeModalController : MonoBehaviour
     [Serializable]
     public class TargetRowUI
     {
+        public GameObject root;              // 행 전체 루트(무효 수령 행 숨김용, 선택)
         public Image icon;
         public TextMeshProUGUI nameText;     // 수령 재화 이름(선택)
         public TextMeshProUGUI receiveText;  // 수령량(예: "+12")
@@ -162,6 +163,7 @@ public class ExchangeModalController : MonoBehaviour
         int batches = Mathf.Max(1, amountPaid / unit);
         int perBatch = ExchangeData.GetReceivePerBatch(src, target, level);
         if (perBatch <= 0) return;
+        if (gm.Economy.IsAtMax(target)) return; // 수령 자원이 상한 — 교환 불가(phase6 ②)
         int received = batches * perBatch;
         int cost = batches * unit;
 
@@ -216,19 +218,22 @@ public class ExchangeModalController : MonoBehaviour
         {
             var row = targetRows[r];
             if (row == null) continue;
-            if (!TryGetTarget(r, out ResourceType target))
+            bool valid = TryGetTarget(r, out ResourceType target);
+            if (row.root != null) row.root.SetActive(valid); // 무효 행(타자원 지불 시 자금-수령 등) 숨김
+            if (!valid)
             {
                 if (row.exchangeButton != null) row.exchangeButton.interactable = false;
                 continue;
             }
             int perBatch = ExchangeData.GetReceivePerBatch(src, target, level);
             int received = batches * perBatch;
+            bool atMax = gm.Economy.IsAtMax(target); // phase6 ② 수령 자원이 상한이면 교환 불가
 
             if (row.icon != null) { row.icon.sprite = GetIcon(target); row.icon.enabled = row.icon.sprite != null; }
             if (row.nameText != null) row.nameText.text = GetKoreanName(target);
             if (row.receiveText != null) row.receiveText.text = $"{received:N0}";
             if (row.exchangeButton != null)
-                row.exchangeButton.interactable = unlocked && affordable && received > 0;
+                row.exchangeButton.interactable = unlocked && affordable && received > 0 && !atMax;
         }
 
         // 안내

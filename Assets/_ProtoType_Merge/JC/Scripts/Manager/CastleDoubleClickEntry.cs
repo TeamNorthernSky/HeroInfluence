@@ -69,7 +69,7 @@ public class CastleDoubleClickEntry : MonoBehaviour
         else
         {
             Debug.LogWarning("[CastleDoubleClickEntry] GameSceneManager.Instance == null — 폴백 호출", this);
-            UnityEngine.SceneManagement.SceneManager.LoadScene("LobbyScene_New");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("HQLobbyScene");
         }
     }
 }

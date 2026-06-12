@@ -1,7 +1,7 @@
 public enum HQDepartment
 {
     Headquarters = 0,
-    Broadcast = 1,
+    Publicity = 1,
     Workshop = 2,
     Research = 3,
     Training = 4,
