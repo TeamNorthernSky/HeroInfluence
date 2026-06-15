@@ -11,7 +11,7 @@ namespace ASB.Work.Battle.Sequence
     {
         private readonly BattleCharactor _actor;
         private readonly BattleCharactor _target;
-        private readonly MonoBehaviour _host;
+        private readonly float _battleSpeed;
 
         private readonly Gradient _gradient = new Gradient();
         private readonly GradientColorKey[] _colorKeys = new GradientColorKey[]
@@ -21,11 +21,11 @@ namespace ASB.Work.Battle.Sequence
         };
         private readonly GradientAlphaKey[] _alphaKeys = new GradientAlphaKey[2];
 
-        public ArrowImpactAction(BattleCharactor actor, BattleCharactor target, MonoBehaviour host)
+        public ArrowImpactAction(BattleCharactor actor, BattleCharactor target, float battleSpeed)
         {
             _actor = actor;
             _target = target;
-            _host = host;
+            _battleSpeed = Mathf.Max(0.01f, battleSpeed);
         }
 
         public override IEnumerator ExecuteRoutine()
@@ -40,53 +40,66 @@ namespace ASB.Work.Battle.Sequence
 
             Transform hitPoint = targetProfile?.ArrowHitPoint ?? _target.transform;
 
-            // 라인 렌더러가 있으면 포물선 궤적 연출 (비동기)
-            if (actorProfile?.ArrowTrailLine != null && _actor != null)
-            {
-                _host.StartCoroutine(RunTrailAndSpawn(actorProfile, hitPoint));
-            }
+            if (actorProfile?.ArrowTrailPrefab != null && _actor != null)
+                yield return RunTrailAndSpawn(actorProfile, hitPoint);
             else
-            {
                 SpawnArrow(actorProfile, hitPoint.position, hitPoint.rotation);
-            }
-
-            // 데미지 딜레이 대기 후 ResolveHitAction으로 넘어감
-            float damageDelay = actorProfile?.DamageDelay ?? 0f;
-            if (damageDelay > 0f)
-                yield return new WaitForSeconds(damageDelay);
-            else
-                yield break;
         }
 
         private IEnumerator RunTrailAndSpawn(UnitVisualProfile profile, Transform hitPoint)
         {
-            LineRenderer lr = profile.ArrowTrailLine;
+            if (!TryInstantiateTrailLine(profile, out LineRenderer lr, out GameObject trailInstance))
+            {
+                SpawnArrow(profile, hitPoint.position, hitPoint.rotation);
+                yield break;
+            }
+
             Vector3 start = _actor.transform.position;
             Vector3 end   = hitPoint.position;
 
-            // 포물선 그리기
             DrawArc(lr, start, end, profile.ArcHeight);
             lr.enabled = true;
 
-            // 페이드아웃
             float elapsed = 0f;
             float duration = Mathf.Max(0.01f, profile.TrailFadeDuration);
             while (elapsed < duration)
             {
-                elapsed += Time.deltaTime;
+                elapsed += Time.deltaTime * _battleSpeed;
                 SetAlpha(lr, Mathf.Lerp(1f, 0f, elapsed / duration));
                 yield return null;
             }
 
-            lr.enabled = false;
-
-            // 끝점 기울기로 화살 회전 계산
             Vector3 lastPos = lr.GetPosition(lr.positionCount - 1);
             Vector3 prevPos = lr.GetPosition(lr.positionCount - 2);
             Vector3 dir     = (lastPos - prevPos).normalized;
             Quaternion rot  = dir != Vector3.zero ? Quaternion.LookRotation(dir) : hitPoint.rotation;
 
+            Object.Destroy(trailInstance);
             SpawnArrow(profile, lastPos, rot);
+        }
+
+        private static bool TryInstantiateTrailLine(
+            UnitVisualProfile profile,
+            out LineRenderer lineRenderer,
+            out GameObject trailInstance)
+        {
+            lineRenderer = null;
+            trailInstance = null;
+
+            if (profile?.ArrowTrailPrefab == null)
+                return false;
+
+            trailInstance = Object.Instantiate(profile.ArrowTrailPrefab);
+            lineRenderer = trailInstance.GetComponent<LineRenderer>();
+            if (lineRenderer == null)
+            {
+                Object.Destroy(trailInstance);
+                trailInstance = null;
+                return false;
+            }
+
+            lineRenderer.useWorldSpace = true;
+            return true;
         }
 
         private static void DrawArc(LineRenderer lr, Vector3 start, Vector3 end, float arcHeight)

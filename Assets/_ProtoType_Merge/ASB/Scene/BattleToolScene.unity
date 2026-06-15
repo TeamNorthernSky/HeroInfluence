@@ -2144,13 +2144,15 @@ MonoBehaviour:
   AttackEffectSocket: {fileID: 0}
   HitEffectSocket: {fileID: 0}
   DamagePopupSocket: {fileID: 0}
-  DamageDelay: 0.1
+  ArrowDamagePopupDelay: 0.1
+  ArrowHitAnimationDelay: 0.1
   HoldArrow: {fileID: 1443483359}
   TargetArrowPrefab: {fileID: 6341818806498125037, guid: 96476541362745d49b89d901bc518f96,
     type: 3}
   ArrowHitPoint: {fileID: 0}
   ArrowLifetime: 1.5
-  ArrowTrailLine: {fileID: 1534965716}
+  ArrowTrailPrefab: {fileID: 3471406637623551261, guid: a977fa498402a9d49840a7a71f416f1d,
+    type: 3}
   ArcHeight: 2
   TrailFadeDuration: 0.3
 --- !u!1 &879215615 stripped
@@ -3309,13 +3311,15 @@ MonoBehaviour:
   AttackEffectSocket: {fileID: 0}
   HitEffectSocket: {fileID: 0}
   DamagePopupSocket: {fileID: 0}
-  DamageDelay: 0.1
+  ArrowDamagePopupDelay: 0.1
+  ArrowHitAnimationDelay: 0.1
   HoldArrow: {fileID: 1443483359}
   TargetArrowPrefab: {fileID: 6341818806498125037, guid: 96476541362745d49b89d901bc518f96,
     type: 3}
   ArrowHitPoint: {fileID: 0}
   ArrowLifetime: 1.5
-  ArrowTrailLine: {fileID: 1534965716}
+  ArrowTrailPrefab: {fileID: 3471406637623551261, guid: a977fa498402a9d49840a7a71f416f1d,
+    type: 3}
   ArcHeight: 2
   TrailFadeDuration: 0.3
 --- !u!114 &1362151049
@@ -4514,13 +4518,15 @@ MonoBehaviour:
   AttackEffectSocket: {fileID: 0}
   HitEffectSocket: {fileID: 0}
   DamagePopupSocket: {fileID: 0}
-  DamageDelay: 0.1
+  ArrowDamagePopupDelay: 0.1
+  ArrowHitAnimationDelay: 0.1
   HoldArrow: {fileID: 363310540}
   TargetArrowPrefab: {fileID: 6341818806498125037, guid: 96476541362745d49b89d901bc518f96,
     type: 3}
   ArrowHitPoint: {fileID: 0}
   ArrowLifetime: 1.5
-  ArrowTrailLine: {fileID: 1534965716}
+  ArrowTrailPrefab: {fileID: 3471406637623551261, guid: a977fa498402a9d49840a7a71f416f1d,
+    type: 3}
   ArcHeight: 2
   TrailFadeDuration: 0.3
 --- !u!1 &1853290217

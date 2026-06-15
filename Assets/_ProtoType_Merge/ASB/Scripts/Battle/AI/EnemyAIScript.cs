@@ -54,7 +54,7 @@ namespace EnemyAI
             }
 
             // 1) 행동 유형을 먼저 결정합니다.
-            EnemyActionType actionType = EnemyActionType.BasicAttack;
+            EnemyActionType actionType = EnemyActionType.ClassSkill;
             SkillData selectedSkill = null;
             if (canUseSkill && self.SelectedSkillData != null)
             {
@@ -73,9 +73,7 @@ namespace EnemyAI
                 effectiveSkill = self.EquippedWeaponData.ToSkillData();
             }
 
-            List<BattleCharactor> skillValidTargets = actionType == EnemyActionType.BasicAttack
-                ? TargetingHelper.GetAllValidTargets(validTargets)
-                : TargetingHelper.GetValidTargetsForSkillData(self, effectiveSkill);
+            List<BattleCharactor> skillValidTargets = TargetingHelper.GetValidTargetsForSkillData(self, effectiveSkill);
 
             // 3) 부모에서 처리된 강제 타겟/공통 필터(validTargets)와 교집합합니다.
             var finalCandidates = new List<BattleCharactor>();
@@ -163,17 +161,7 @@ namespace EnemyAI
                 finalCandidates = new List<BattleCharactor>();
             }
 
-            // 2) 스킬 경로 모두 실패 -> 평타 폴백
-            if (finalCandidates.Count == 0)
-            {
-                finalSkill = null;
-                finalAction = EnemyActionType.BasicAttack;
-
-                HashSet<BattleCharactor> basicTargets = TargetingHelper.GetValidTargets(self, PendingActionType.BasicAttack);
-                finalCandidates = basicTargets.Intersect(validTargets).ToList();
-            }
-
-            // 3) 평타도 불가 -> 스킵
+            // 2) 스킬 경로 모두 실패 -> 스킵
             if (finalCandidates.Count == 0)
             {
                 return EnemyActionDecision.SkipTurn();
@@ -290,24 +278,7 @@ namespace EnemyAI
                 }
             }
 
-            // 스킬 실패 시 평타 폴백. 평타 후보도 validTargets 교집합만 허용합니다.
-            HashSet<BattleCharactor> basicTargets = TargetingHelper.GetValidTargets(self, PendingActionType.BasicAttack);
-            List<BattleCharactor> basicCandidates = basicTargets
-                .Where(t => t != null && validTargets.Contains(t))
-                .ToList();
-
-            if (basicCandidates.Count == 0)
-            {
-                return EnemyActionDecision.SkipTurn();
-            }
-
-            BattleCharactor basicTarget = PickRandomTarget(basicCandidates);
-            if (basicTarget == null)
-            {
-                return EnemyActionDecision.SkipTurn();
-            }
-
-            return EnemyActionDecision.Create(basicTarget, EnemyActionType.BasicAttack, null);
+            return EnemyActionDecision.SkipTurn();
         }
         private static int ResolveEnemyIndex(BattleCharactor self)
         {

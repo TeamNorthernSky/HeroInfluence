@@ -443,16 +443,8 @@ public class BattleFlowManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[BattleFlow] EnemyScript가 없어 기본 공격 fallback 실행: {GetUnitLabel(enemyUnit)}");
-            BattleCharactor fallbackTarget = participants.FirstOrDefault(p => p != null && p.IsPlayer && !p.IsDead);
-            if (fallbackTarget != null && battleManager != null)
-            {
-                yield return StartCoroutine(battleManager.ExecuteBasicAttack(enemyUnit, fallbackTarget));
-            }
-            else
-            {
-                yield return null;
-            }
+            Debug.LogWarning($"[BattleFlow] EnemyScript가 없어 턴을 스킵합니다: {GetUnitLabel(enemyUnit)}");
+            yield return null;
         }
     }
 
@@ -503,7 +495,7 @@ public class BattleFlowManager : MonoBehaviour
         var action = new BattleAction(
             CurrentUnit,
             autoTarget,
-            BattleActionType.BasicAttack
+            BattleActionType.Skill
         );
 
         battleManager.ExecuteAction(action);

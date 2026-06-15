@@ -15,7 +15,6 @@ public enum PlayerActionState
 public enum PendingActionType
 {
     None,
-    BasicAttack,
     ClassSkill,
     WeaponSkill
 }
@@ -87,18 +86,14 @@ public class InputHandler : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
         {
-            BeginPendingAction(PendingActionType.BasicAttack);
+            BeginPendingAction(PendingActionType.ClassSkill);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
         {
-            BeginPendingAction(PendingActionType.ClassSkill);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
-        {
             BeginPendingAction(PendingActionType.WeaponSkill);
         }
+
 
         // [JC 260513] 키 4: 아무 행동 없이 턴 종료(스킵). hover/선택 상태 자동 해제.
         if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4))
@@ -269,9 +264,6 @@ public class InputHandler : MonoBehaviour
     {
         switch (actionType)
         {
-            case PendingActionType.BasicAttack:
-                return "준비 중: 기본 공격";
-
             case PendingActionType.ClassSkill:
                 if (TryGetSelectedSkill(actor, out SkillData classSkill) && classSkill != null)
                 {
@@ -365,10 +357,6 @@ public class InputHandler : MonoBehaviour
 
         switch (actionType)
         {
-            case PendingActionType.BasicAttack:
-                yield return StartCoroutine(battleManager.ExecuteBasicAttack(actor, target, success => executed = success));
-                break;
-
             case PendingActionType.ClassSkill:
                 if (!TryGetSelectedSkill(actor, out SkillData classSkill))
                 {
@@ -516,9 +504,6 @@ public class InputHandler : MonoBehaviour
         skillData = null;
         switch (pendingAction)
         {
-            case PendingActionType.BasicAttack:
-                return false;
-
             case PendingActionType.ClassSkill:
                 return TryGetSelectedSkill(actor, out skillData);
 
@@ -554,11 +539,6 @@ public class InputHandler : MonoBehaviour
             return true;
         }
 
-        if (actionType == PendingActionType.BasicAttack)
-        {
-            return true;
-        }
-
         if (!TryGetActionSkillData(actor, actionType, out SkillData skillData) || skillData == null)
         {
             return false;
@@ -587,7 +567,6 @@ public class InputHandler : MonoBehaviour
 
                 skillData = actor.EquippedWeaponData.ToSkillData();
                 return skillData != null;
-            case PendingActionType.BasicAttack:
             default:
                 return false;
         }

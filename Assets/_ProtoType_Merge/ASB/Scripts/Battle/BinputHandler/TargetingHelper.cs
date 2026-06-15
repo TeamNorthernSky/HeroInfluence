@@ -17,9 +17,6 @@ public static class TargetingHelper
 
         switch (actionType)
         {
-            case PendingActionType.BasicAttack:
-                return GetAliveEnemyUnits(actor);
-
             case PendingActionType.ClassSkill:
                 actor.ResolveSelectedSkill(false);
                 return new HashSet<BattleCharactor>(GetValidTargetsForSkillData(actor, actor.SelectedSkillData));
@@ -45,39 +42,6 @@ public static class TargetingHelper
 
         HashSet<BattleCharactor> latest = GetValidTargets(actor, actionType);
         return latest.Contains(target);
-    }
-
-    private static HashSet<BattleCharactor> GetAliveEnemyUnits(BattleCharactor actor)
-    {
-        var result = new HashSet<BattleCharactor>();
-        if (actor == null || actor.IsDead)
-        {
-            return result;
-        }
-
-        BattleCharactor[] all = Object.FindObjectsByType<BattleCharactor>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        if (all == null || all.Length == 0)
-        {
-            return result;
-        }
-
-        for (int i = 0; i < all.Length; i++)
-        {
-            BattleCharactor unit = all[i];
-            if (unit == null || unit == actor || unit.IsDead || unit.CurrentHp <= 0f)
-            {
-                continue;
-            }
-
-            if (unit.IsPlayer == actor.IsPlayer)
-            {
-                continue;
-            }
-
-            result.Add(unit);
-        }
-
-        return result;
     }
 
     public static List<BattleCharactor> GetValidTargetsForSkillData(BattleCharactor actor, SkillData skill)

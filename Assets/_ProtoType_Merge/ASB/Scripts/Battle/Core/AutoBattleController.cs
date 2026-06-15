@@ -97,12 +97,6 @@ public class AutoBattleController : MonoBehaviour
         // 유효한 액션 후보 수집 (타겟 존재 + Influence 충분)
         var candidates = new List<(PendingActionType actionType, List<BattleCharactor> targets)>();
 
-        // BasicAttack
-        var basicTargets = new List<BattleCharactor>(
-            TargetingHelper.GetValidTargets(actor, PendingActionType.BasicAttack));
-        if (basicTargets.Count > 0)
-            candidates.Add((PendingActionType.BasicAttack, basicTargets));
-
         // ClassSkill
         actor.ResolveSelectedSkill();
         if (actor.SelectedSkillData != null &&
@@ -152,11 +146,6 @@ public class AutoBattleController : MonoBehaviour
         bool executed = false;
         switch (actionType)
         {
-            case PendingActionType.BasicAttack:
-                yield return StartCoroutine(
-                    battleManager.ExecuteBasicAttack(actor, target, success => executed = success));
-                break;
-
             case PendingActionType.ClassSkill:
                 yield return StartCoroutine(
                     battleManager.ExecuteGridSkill(actor, target, actor.SelectedSkillData,

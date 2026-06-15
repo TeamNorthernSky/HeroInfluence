@@ -10,7 +10,6 @@ namespace EnemyAI
 
     public enum EnemyActionType
     {
-        BasicAttack,
         ClassSkill,
         WeaponSkill
     }
@@ -29,7 +28,7 @@ namespace EnemyAI
             {
                 Skip = true,
                 Target = null,
-                ActionType = EnemyActionType.BasicAttack,
+                ActionType = EnemyActionType.ClassSkill,
                 SelectedSkill = null
             };
         }

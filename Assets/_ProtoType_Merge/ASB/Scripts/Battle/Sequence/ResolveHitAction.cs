@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using ASB.Work.Battle.Core;
+using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
@@ -10,6 +11,7 @@ namespace ASB.Work.Battle.Sequence
     /// </summary>
     public class ResolveHitAction : BattleSequenceAction
     {
+        private readonly BattleCharactor _actor;
         private readonly BattleCharactor _target;
         private readonly Func<BattleHitResult> _onHit;
         private readonly string _targetAnimTrigger;
@@ -18,32 +20,88 @@ namespace ASB.Work.Battle.Sequence
 
         /// <param name="targetAnimTrigger">타겟에 재생할 애니메이션 트리거. null이면 피격 애니 생략.</param>
         public ResolveHitAction(
+            BattleCharactor actor,
             BattleCharactor target,
             Func<BattleHitResult> onHit,
             string targetAnimTrigger,
             float battleSpeed,
             BattleVisualDirector visual = null)
         {
+            _actor = actor;
             _target = target;
             _onHit = onHit;
             _targetAnimTrigger = targetAnimTrigger;
-            _battleSpeed = battleSpeed;
+            _battleSpeed = Mathf.Max(0.01f, battleSpeed);
             _visual = visual;
         }
 
         public override IEnumerator ExecuteRoutine()
         {
-            BattleHitResult result = _onHit?.Invoke();
+            GetHitDelays(out float damagePopupDelay, out float hitAnimationDelay);
 
-            if (result != null)
+            float elapsed = 0f;
+            bool damageResolved = false;
+            bool hitAnimationPlayed = !ShouldPlayHitAnimation();
+
+            while (!damageResolved || !hitAnimationPlayed)
             {
-                _visual?.PlayHitEffect(_target, result.SkillIndex);
-                _visual?.ShowDamagePopup(result);
+                elapsed += Time.deltaTime * _battleSpeed;
+
+                if (!damageResolved && elapsed >= damagePopupDelay)
+                {
+                    ResolveDamageAndPresentation();
+                    damageResolved = true;
+                }
+
+                if (!hitAnimationPlayed && ShouldPlayHitAnimation() && elapsed >= hitAnimationDelay)
+                {
+                    PlayHitAnimation();
+                    hitAnimationPlayed = true;
+                }
+
+                yield return null;
+            }
+        }
+
+        private void GetHitDelays(out float damagePopupDelay, out float hitAnimationDelay)
+        {
+            UnitVisualProfile actorProfile = _actor?.GetComponent<UnitVisualProfile>();
+            bool isArcher = actorProfile?.HoldArrow != null;
+
+            if (isArcher)
+            {
+                damagePopupDelay = actorProfile?.ArrowDamagePopupDelay ?? 0f;
+                hitAnimationDelay = 0f;
+                return;
             }
 
-            if (_target == null || string.IsNullOrEmpty(_targetAnimTrigger))
+            UnitVisualProfile targetProfile = _target?.GetComponent<UnitVisualProfile>();
+            damagePopupDelay = targetProfile?.HitDamagePopupDelay ?? 0f;
+            hitAnimationDelay = targetProfile?.HitAnimationDelay ?? 0f;
+        }
+
+        private bool ShouldPlayHitAnimation()
+        {
+            return _target != null && !string.IsNullOrEmpty(_targetAnimTrigger);
+        }
+
+        private void ResolveDamageAndPresentation()
+        {
+            BattleHitResult result = _onHit?.Invoke();
+            if (result == null)
             {
-                yield break;
+                return;
+            }
+
+            _visual?.PlayHitEffect(_target, result.SkillIndex);
+            _visual?.ShowDamagePopup(result);
+        }
+
+        private void PlayHitAnimation()
+        {
+            if (_target == null)
+            {
+                return;
             }
 
             _target.EnsureAnimationController();

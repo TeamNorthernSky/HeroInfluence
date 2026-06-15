@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// 이펙트·팝업 소켓 위치 정의. BattleVisualDirector가 이펙트 생성 시 참조합니다.
@@ -14,8 +15,12 @@ public class UnitVisualProfile : MonoBehaviour
     [Header("Popup")]
     [Tooltip("데미지 팝업 앵커 위치 (없으면 unit root + offset 사용)")]
     public Transform DamagePopupSocket;
-    [Tooltip("화살 발사 후 데미지가 들어가기까지 추가 딜레이(초).")]
-    public float DamageDelay = 0.2f;
+
+    [Header("Hit Timing")]
+    [Tooltip("피격 처리 시작 후 데미지·피격 이펙트·데미지 팝업까지 대기(초). (근접/비화살)")]
+    public float HitDamagePopupDelay;
+    [Tooltip("피격 처리 시작 후 Hit 애니 시작까지 대기(초). (근접/비화살)")]
+    public float HitAnimationDelay;
 
     [Header("Arrow (Archer)")]
     [Tooltip("평소 손에 들고 있는 화살. 발사 시 비활성화됩니다.")]
@@ -26,10 +31,15 @@ public class UnitVisualProfile : MonoBehaviour
     public Transform ArrowHitPoint;
     [Tooltip("꽂힌 화살이 사라지기까지 대기 시간(초).")]
     public float ArrowLifetime = 1.5f;
+    [FormerlySerializedAs("ArrowHitDelay")]
+    [Tooltip("화살 스폰 후 데미지·피격 이펙트·데미지 팝업까지 대기(초).")]
+    public float ArrowDamagePopupDelay = 0.2f;
+    [Tooltip("화살 스폰 후 Hit 애니 시작까지 대기(초).")]
+    public float ArrowHitAnimationDelay = 0.2f;
 
-    [Header("Arrow Trail (LineRenderer)")]
-    [Tooltip("포물선 궤적을 그릴 LineRenderer. 없으면 궤적 연출을 건너뜁니다.")]
-    public LineRenderer ArrowTrailLine;
+    [Header("Arrow Trail")]
+    [Tooltip("포물선 궤적 LineRenderer 프리팹. 발사 시 Instantiate 후 자동 Destroy됩니다.")]
+    public GameObject ArrowTrailPrefab;
     [Tooltip("포물선 호의 최고 높이.")]
     public float ArcHeight = 2f;
     [Tooltip("라인이 페이드아웃되는 시간(초).")]
