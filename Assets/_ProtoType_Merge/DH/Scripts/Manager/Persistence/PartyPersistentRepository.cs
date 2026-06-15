@@ -33,16 +33,22 @@ public class PartyPersistentRepository : MonoBehaviour
 
     public void RegisterOrUpdateParty(string partyId, IReadOnlyList<int> unitIndices)
     {
+        RegisterOrUpdateParty(partyId, unitIndices, null);
+    }
+
+    public void RegisterOrUpdateParty(string partyId, IReadOnlyList<int> unitIndices, IReadOnlyList<int> unitSlots)
+    {
         if (string.IsNullOrWhiteSpace(partyId))
             return;
 
         if (partyLookup.TryGetValue(partyId, out PartyPersistentData existingData))
         {
             existingData.SetUnitIndices(unitIndices);
+            existingData.SetUnitSlots(unitSlots);
             return;
         }
 
-        PartyPersistentData newData = new PartyPersistentData(partyId, unitIndices);
+        PartyPersistentData newData = new PartyPersistentData(partyId, unitIndices, unitSlots);
         parties.Add(newData);
         partyLookup[partyId] = newData;
     }
@@ -88,6 +94,8 @@ public class PartyPersistentRepository : MonoBehaviour
             PartyPersistentData data = parties[i];
             if (data == null || string.IsNullOrWhiteSpace(data.PartyId))
                 continue;
+
+            data.SetUnitSlots(data.UnitSlots);
 
             if (partyLookup.ContainsKey(data.PartyId))
             {

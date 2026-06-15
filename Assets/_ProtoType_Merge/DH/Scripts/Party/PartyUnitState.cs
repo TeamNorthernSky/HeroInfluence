@@ -18,6 +18,7 @@ public class PartyUnitState : MonoBehaviour
     [SerializeField] private int maxExp;
     [FormerlySerializedAs("initialSkillIndex")]
     [SerializeField] private int currentSkillIndex;
+    [SerializeField] private int skillLevel = 1;
     [FormerlySerializedAs("initialWeaponIndex")]
     [SerializeField] private int currentWeaponIndex;
     [SerializeField] private StatBlock baseStats;
@@ -34,6 +35,7 @@ public class PartyUnitState : MonoBehaviour
     public int Exp => Mathf.Max(0, exp);
     public int MaxExp => Mathf.Max(0, maxExp);
     public int CurrentSkillIndex => Mathf.Max(0, currentSkillIndex);
+    public int SkillLevel => Mathf.Max(1, skillLevel);
     public int CurrentWeaponIndex => Mathf.Max(0, currentWeaponIndex);
     public StatBlock BaseStats => baseStats;
     public StatBlock LevelupStats => levelupStats;
@@ -51,6 +53,7 @@ public class PartyUnitState : MonoBehaviour
         levelupStats = template.levelupStats;
         eventBonusStats = default;
         currentWeaponStats = weaponStats;
+        skillLevel = Mathf.Max(1, skillLevel);
         RecalculateIngameStats();
         exp = 0;
         maxExp = ResolveMaxExp(Level);
@@ -77,6 +80,7 @@ public class PartyUnitState : MonoBehaviour
         levelupStats = data.LevelupStats;
         eventBonusStats = data.EventBonusStats;
         currentSkillIndex = Mathf.Max(0, data.CurrentSkillIndex);
+        skillLevel = Mathf.Max(1, data.SkillLevel);
         currentWeaponIndex = Mathf.Max(0, data.CurrentWeaponIndex);
         currentWeaponStats = data.CurrentWeaponStats;
         ingameStats = data.IngameStats;
@@ -105,7 +109,8 @@ public class PartyUnitState : MonoBehaviour
             ingameStats,
             currentHp,
             Exp,
-            MaxExp);
+            MaxExp,
+            SkillLevel);
     }
 
     public bool RefreshFromRepository()
@@ -156,6 +161,11 @@ public class PartyUnitState : MonoBehaviour
     public void SetCurrentSkillIndex(int nextSkillIndex)
     {
         currentSkillIndex = Mathf.Max(0, nextSkillIndex);
+    }
+
+    public void SetSkillLevel(int nextSkillLevel)
+    {
+        skillLevel = Mathf.Max(1, nextSkillLevel);
     }
 
     public void SetCurrentWeapon(int nextWeaponIndex, EquipmentStatBlock weaponStats)
@@ -243,6 +253,7 @@ public class PartyUnitState : MonoBehaviour
         favorability = Mathf.Max(0, favorability);
         exp = Mathf.Max(0, exp);
         currentSkillIndex = Mathf.Max(0, currentSkillIndex);
+        skillLevel = Mathf.Max(1, skillLevel);
         currentWeaponIndex = Mathf.Max(0, currentWeaponIndex);
 
         RecalculateIngameStats();
