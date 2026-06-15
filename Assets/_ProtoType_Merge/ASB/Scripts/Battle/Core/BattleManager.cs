@@ -16,6 +16,9 @@ public class BattleManager : MonoBehaviour
     public static BattleManager Instance { get; private set; }
     public event Action<string> OnActionExecuted;
 
+    /// <summary>UI 등 외부에서 배속 변경을 요청할 때 발생시킵니다. AutoBattleController.OnAutoBattleToggleRequested와 동일한 패턴.</summary>
+    public static event Action<float> OnBattleSpeedChangeRequested;
+
     private const int ClassSkillEffect_Heal = 1;
     private const int ClassSkillEffect_Revive = 2;
     private const int ClassSkillEffect_Buff = 3;
@@ -28,6 +31,11 @@ public class BattleManager : MonoBehaviour
 
     [Header("Visual")]
     [SerializeField] private BattleVisualDirector _visualDirector;
+
+    // [CSV 미지원 임시] CSV에 UseAnimEvent / HitDelay 컬럼이 없어 Presentation 카탈로그에서 덮어씁니다.
+    // CSV 스키마 추가 후 이 필드와 ApplyPresentationOverride 메서드를 제거하세요.
+    [Header("Hit Timing Override (CSV 미지원 임시)")]
+    [SerializeField] private SkillPresentationCatalog _presentationCatalog;
 
     public float CurrentBattleSpeed => _currentBattleSpeed;
 
@@ -44,6 +52,8 @@ public class BattleManager : MonoBehaviour
         {
             battleFlowManager = FindObjectOfType<BattleFlowManager>();
         }
+
+        OnBattleSpeedChangeRequested += ChangeBattleSpeed;
     }
 
     public void ChangeBattleSpeed(float newSpeed)
@@ -144,6 +154,8 @@ public class BattleManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        OnBattleSpeedChangeRequested -= ChangeBattleSpeed;
+
         if (Instance == this)
         {
             Instance = null;
@@ -729,6 +741,18 @@ public class BattleManager : MonoBehaviour
         };
     }
 
+    // [CSV 미지원 임시] SkillPresentationCatalog에서 UseAnimEvent / HitDelay를 읽어 SkillData에 덮어씁니다.
+    // CSV 스키마에 컬럼이 추가되면 이 메서드 호출부와 메서드 자체를 제거하세요.
+    private void ApplyPresentationOverride(SkillData skill)
+    {
+        if (skill == null || _presentationCatalog == null) return;
+        SkillPresentationData presentation = _presentationCatalog.Get(skill.skillIndex);
+        if (presentation == null) return;
+
+        skill.UseAnimEvent = presentation.UseAnimEvent;
+        skill.HitDelay     = presentation.HitDelay;
+    }
+
     private static SkillData ResolveSkillAnimationData(SkillData source)
     {
         if (source == null || string.IsNullOrWhiteSpace(source.AnimationTrigger))
@@ -840,6 +864,7 @@ public class BattleManager : MonoBehaviour
         }
 
         skill = ResolveSkillAnimationData(skill);
+        ApplyPresentationOverride(skill); // [CSV 미지원 임시]
         actor.EnsureAnimationController();
         CharactorAnimationController actorAnim = actor.Anim;
         actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
@@ -869,8 +894,13 @@ public class BattleManager : MonoBehaviour
         if (_visualDirector != null && skill != null)
             runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
 
-        runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation));
+        runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
         runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
+
+        bool isArcher = actor.GetComponent<UnitVisualProfile>()?.HoldArrow != null;
+        if (isArcher && target != null)
+            runner.Enqueue(new ArrowImpactAction(actor, target));
+
         runner.Enqueue(new ResolveHitAction(target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector));
 
         if (!string.IsNullOrEmpty(targetState))
@@ -888,7 +918,8 @@ public class BattleManager : MonoBehaviour
         float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
         yield return WaitForBattleSeconds(Mathf.Max(remainingTotal, 0.2f));
 
-        ReturnToIdleIfAlive(target);
+        if (target != null)
+            yield return StartCoroutine(new WaitTargetReactionAction(target, _currentBattleSpeed).ExecuteRoutine());
     }
 
     /// <summary>

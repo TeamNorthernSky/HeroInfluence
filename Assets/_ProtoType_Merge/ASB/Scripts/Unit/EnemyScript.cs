@@ -193,9 +193,17 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
 
             Debug.LogWarning(
                 $"[EnemyScript] AI 결정 실패. 기본 공격으로 대체합니다: unit={self.UnitName}, aiNull={currentAI == null}, aliveTargets={targets.Count}, targetList=[{FormatTargets(targets)}]");
+
+            flowManager?.ShowTargetHighlight(target);
+            yield return new WaitForSeconds(0.5f);
             yield return StartCoroutine(battleManager.ExecuteBasicAttack(self, target));
+            flowManager?.ClearTargetHighlight();
             yield break;
         }
+
+        // 타겟 발판 하이라이트 표시 후 0.5초 대기
+        flowManager?.ShowTargetHighlight(target);
+        yield return new WaitForSeconds(0.5f);
 
         EnemyActionType actionType = decision != null ? decision.ActionType : EnemyActionType.BasicAttack;
         switch (actionType)
@@ -232,6 +240,8 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
                 yield return StartCoroutine(battleManager.ExecuteBasicAttack(self, target));
                 break;
         }
+
+        flowManager?.ClearTargetHighlight();
     }
 
     public bool EnsureAIReady()

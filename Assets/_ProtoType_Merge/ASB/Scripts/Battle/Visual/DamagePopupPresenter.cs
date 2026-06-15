@@ -44,5 +44,7 @@ public class DamagePopupPresenter : MonoBehaviour
             label.text = result.IsCritical ? $"<b>{result.Damage:F0}!</b>" : $"{result.Damage:F0}";
             label.color = result.IsCritical ? Color.yellow : Color.red;
         }
+
+        instance.GetComponent<DamagePopupEffect>()?.Play(result.IsCritical);
     }
 }

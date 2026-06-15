@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
+using GridManagerRef = ASB.Work.BattleGrid.GridManager;
 using System.Linq;
 using UnityEngine;
 
@@ -703,6 +704,29 @@ public class BattleFlowManager : MonoBehaviour
         if (battle == null) return;
         if (!outlineByBattle.TryGetValue(battle, out var outline) || outline == null) return;
         outline.OutlineMode = visible ? Outline.Mode.OutlineVisible : Outline.Mode.OutlineHidden;
+    }
+
+    private GridCellRef _highlightedTargetCell;
+
+    /// <summary>자동전투·적 공격 시 타겟 발판 하이라이트 표시.</summary>
+    public void ShowTargetHighlight(BattleCharactor target)
+    {
+        ClearTargetHighlight();
+        if (target == null) return;
+        GridManagerRef gridManager = GridManagerRef.Instance;
+        if (gridManager == null) return;
+        GridCellRef cell = target.OccupiedCell ?? gridManager.FindCellByUnit(target);
+        if (cell == null) return;
+        cell.SetMainTargetHighlight();
+        _highlightedTargetCell = cell;
+    }
+
+    /// <summary>타겟 발판 하이라이트 제거.</summary>
+    public void ClearTargetHighlight()
+    {
+        if (_highlightedTargetCell == null) return;
+        _highlightedTargetCell.ClearHighlight();
+        _highlightedTargetCell = null;
     }
 
     private string GetUnitLabel(BattleCharactor unit)

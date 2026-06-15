@@ -21,6 +21,11 @@ namespace ASB.Work.Battle.Sequence
                 yield break;
             }
 
+            // 화살 오브젝트 초기화 (궁수 유닛)
+            UnitVisualProfile profile = _unit.GetComponent<UnitVisualProfile>();
+            profile?.TargetArrow?.SetActive(false);
+            profile?.HoldArrow?.SetActive(false);
+
             _unit.EnsureAnimationController();
             _unit.Anim?.PlayIdleAnimation();
             yield break;

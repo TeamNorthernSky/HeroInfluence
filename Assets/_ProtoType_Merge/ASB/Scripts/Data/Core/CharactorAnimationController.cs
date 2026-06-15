@@ -184,7 +184,7 @@ public class CharactorAnimationController : MonoBehaviour
         _animator.CrossFade(StateIdle, CrossFadeDuration);
     }
 
-    /// <summary>피격·사망·부활 등 범용 연출 (Hit 트리거 / isDead Bool).</summary>
+    /// <summary>피격·사망·부활 등 범용 연출. Has Exit Time 영향을 받지 않도록 CrossFade로 즉시 전환합니다.</summary>
     public void PlayGenericAnimation(string actionType)
     {
         if (_animator == null || string.IsNullOrWhiteSpace(actionType))
@@ -195,19 +195,38 @@ public class CharactorAnimationController : MonoBehaviour
         switch (actionType.Trim())
         {
             case "Hit":
-                _animator.SetTrigger(TriggerHit);
+                _animator.ResetTrigger(TriggerHit);
+                _animator.CrossFade("Hit", 0.03f, 0, 0f);
                 break;
             case "Die":
                 _animator.SetBool(BoolIsDead, true);
+                _animator.CrossFade("Die", 0.05f, 0, 0f);
                 break;
             case "Revive":
                 _animator.SetBool(BoolIsDead, false);
                 _animator.CrossFade(StateIdle, CrossFadeDuration);
                 break;
             default:
-                _animator.SetTrigger(actionType);
+                _animator.CrossFade(actionType.Trim(), 0.05f, 0, 0f);
                 break;
         }
+    }
+
+    /// <summary>현재 또는 다음 전환 중인 상태가 stateName인지 확인합니다.</summary>
+    public bool IsInState(string stateName)
+    {
+        if (_animator == null) return false;
+        return _animator.GetCurrentAnimatorStateInfo(0).IsName(stateName)
+            || _animator.GetNextAnimatorStateInfo(0).IsName(stateName);
+    }
+
+    /// <summary>현재 상태가 stateName이고 normalizedTime이 threshold 이상인지 확인합니다. 상태가 아니면 true 반환(이미 지남).</summary>
+    public bool IsStateNearEnd(string stateName, float threshold = 0.9f)
+    {
+        if (_animator == null) return true;
+        AnimatorStateInfo info = _animator.GetCurrentAnimatorStateInfo(0);
+        if (!info.IsName(stateName)) return true;
+        return info.normalizedTime >= threshold;
     }
 
     /// <summary>레거시 호출 호환.</summary>

@@ -11,15 +11,21 @@ namespace ASB.Work.Battle.Sequence
         private readonly SkillData _skill;
         private readonly bool _playBasicAttack;
 
-        public PlaySkillAnimAction(CharactorAnimationController anim, SkillData skill, bool playBasicAttack)
+        private readonly BattleCharactor _actor;
+
+        public PlaySkillAnimAction(CharactorAnimationController anim, SkillData skill, bool playBasicAttack, BattleCharactor actor = null)
         {
             _anim = anim;
             _skill = skill;
             _playBasicAttack = playBasicAttack;
+            _actor = actor;
         }
 
         public override IEnumerator ExecuteRoutine()
         {
+            // 궁수라면 애니 시작 전 HoldArrow 활성화
+            _actor?.GetComponent<UnitVisualProfile>()?.HoldArrow?.SetActive(true);
+
             _anim?.ResetHitEvent();
             _anim?.PlaySkillAnimation(_playBasicAttack ? null : _skill);
             yield break;
