@@ -90,7 +90,10 @@ public class PartyUnitBootstrap : MonoBehaviour
                 System.Collections.Generic.IReadOnlyList<int> persistentIndices = persistentData.UnitIndices;
                 partyComposition.EnsureSlotCount(persistentIndices.Count);
                 for (int i = 0; i < persistentIndices.Count; i++)
+                {
                     partyComposition.SetUnitIndexAt(i, persistentIndices[i]);
+                    ApplyPersistentUnitStateAt(i, persistentIndices[i]);
+                }
             }
             return;
         }
@@ -158,5 +161,18 @@ public class PartyUnitBootstrap : MonoBehaviour
         }
 
         return true;
+    }
+
+    private void ApplyPersistentUnitStateAt(int slotIndex, int unitIndex)
+    {
+        if (unitIndex <= 0 || slotIndex < 0 || slotIndex >= partyUnitStates.Count)
+            return;
+
+        PartyUnitState unitState = partyUnitStates[slotIndex];
+        if (unitState == null)
+            return;
+
+        unitState.AssignUnitIndex(unitIndex);
+        unitState.RefreshFromRepository();
     }
 }
