@@ -5,7 +5,10 @@ using UnityEngine.UI;
 public class SystemMenuController : MonoBehaviour
 {
     private const string TitleScene = "TitleScene";
-    private const string LobbyScene = "LobbyScene_New";
+    // [JC 260610] 중앙값(GameSceneManager.LobbyScene) 참조. ESC가 로비에서 메뉴 모달을 열도록 분기.
+    private static string LobbyScene => GameSceneManager.Instance != null
+        ? GameSceneManager.Instance.LobbyScene
+        : "HQLobbyScene";
 
     [SerializeField] private GameObject _modal;
     [SerializeField] private Button _btnResume;

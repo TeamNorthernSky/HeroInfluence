@@ -224,7 +224,6 @@ MonoBehaviour:
   - {x: 9, y: 7}
   - {x: 8, y: 6}
   - {x: 9, y: 6}
-  - {x: 13, y: 6}
   - {x: 14, y: 6}
   - {x: 9, y: 10}
   - {x: 8, y: 10}
@@ -717,14 +716,14 @@ MonoBehaviour:
     resourceType: 3
     amount: 5
   outpostPlacements:
-  - gridPosition: {x: 28, y: 6}
-    outpostType: 1
-    resourcePerTurn: 10
-    initialState: 0
   - gridPosition: {x: 19, y: 23}
     outpostType: 0
     resourcePerTurn: 1000
     initialState: 0
+  - gridPosition: {x: 28, y: 6}
+    outpostType: 1
+    resourcePerTurn: 1000
+    initialState: 1
   eventPlacements:
   - gridPosition: {x: 11, y: 19}
     eventKey: event_001
@@ -740,27 +739,50 @@ MonoBehaviour:
     eventKey: event_001
   - gridPosition: {x: 5, y: 12}
     eventKey: event_001
-  - gridPosition: {x: 16, y: 7}
-    eventKey: event_001
   - gridPosition: {x: 27, y: 4}
     eventKey: event_001
   - gridPosition: {x: 37, y: 17}
     eventKey: event_001
   - gridPosition: {x: 42, y: 14}
     eventKey: event_001
-  stayEnemyCells:
-  - {x: 11, y: 4}
-  - {x: 11, y: 9}
-  - {x: 21, y: 4}
-  - {x: 21, y: 9}
-  - {x: 16, y: 14}
-  - {x: 28, y: 14}
-  - {x: 28, y: 19}
-  - {x: 34, y: 17}
-  - {x: 34, y: 6}
-  - {x: 37, y: 11}
-  - {x: 42, y: 11}
-  - {x: 47, y: 11}
+  stayEnemyCells: []
+  enemyPlacements:
+  - gridPosition: {x: 11, y: 4}
+    enemyGroupIndex: 30001
+    behaviorType: 1
+  - gridPosition: {x: 11, y: 9}
+    enemyGroupIndex: 30001
+    behaviorType: 1
+  - gridPosition: {x: 16, y: 14}
+    enemyGroupIndex: 30001
+    behaviorType: 1
+  - gridPosition: {x: 21, y: 9}
+    enemyGroupIndex: 30002
+    behaviorType: 1
+  - gridPosition: {x: 21, y: 4}
+    enemyGroupIndex: 30002
+    behaviorType: 1
+  - gridPosition: {x: 28, y: 19}
+    enemyGroupIndex: 30002
+    behaviorType: 1
+  - gridPosition: {x: 28, y: 14}
+    enemyGroupIndex: 30002
+    behaviorType: 1
+  - gridPosition: {x: 34, y: 17}
+    enemyGroupIndex: 30003
+    behaviorType: 1
+  - gridPosition: {x: 34, y: 6}
+    enemyGroupIndex: 30003
+    behaviorType: 1
+  - gridPosition: {x: 42, y: 11}
+    enemyGroupIndex: 30004
+    behaviorType: 1
+  - gridPosition: {x: 47, y: 11}
+    enemyGroupIndex: 30004
+    behaviorType: 1
+  - gridPosition: {x: 37, y: 11}
+    enemyGroupIndex: 30004
+    behaviorType: 1
   castlePlacement:
     hasPlacement: 1
     gridPosition: {x: 3, y: 3}

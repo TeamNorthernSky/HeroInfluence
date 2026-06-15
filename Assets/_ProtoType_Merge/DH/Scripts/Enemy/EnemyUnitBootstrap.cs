@@ -7,6 +7,18 @@ using UnityEngine;
 [RequireComponent(typeof(EnemyComposition))]
 public class EnemyUnitBootstrap : MonoBehaviour
 {
+    private const int MinCombatSlot = 1;
+    private const int MaxCombatSlot = 6;
+
+    private static readonly Vector3[] ExplorationUnitLocalPositions =
+    {
+        new Vector3(-0.3f, 0f, 0f),
+        new Vector3(0f, 0f, 0.3f),
+        new Vector3(0f, 0f, -0.3f),
+        new Vector3(0.3f, 0f, 0f),
+        Vector3.zero
+    };
+
     [Header("Bootstrap")]
     [SerializeField] private bool populateOnStart = true;
     [SerializeField] private List<EnemyUnitState> unitStates = new List<EnemyUnitState>();
@@ -116,6 +128,134 @@ public class EnemyUnitBootstrap : MonoBehaviour
         enemyUnit.InitializePersistentIdentity(enemyId);
         BindEnemyProgress(mapProgressRepository, placementKey, enemyId);
         hasInitialized = true;
+    }
+
+    public bool InitializeEnemyGroupFromCsv(
+        EnemyGroupData groupData,
+        LevelPrefabRegistry prefabRegistry,
+        Vector2Int initialGrid,
+        EnemyBehaviorType behaviorType,
+        string placementKey)
+    {
+        return InitializeEnemyGroupFromCsv(
+            groupData,
+            prefabRegistry,
+            initialGrid,
+            behaviorType,
+            placementKey,
+            EnemyPlacementSource.Scene,
+            groupData != null ? groupData.EnemyIndex.ToString() : EnemyWorldState.DefaultPrefabKey);
+    }
+
+    public bool InitializeEnemyGroupFromCsv(
+        EnemyGroupData groupData,
+        LevelPrefabRegistry prefabRegistry,
+        Vector2Int initialGrid,
+        EnemyBehaviorType behaviorType,
+        string placementKey,
+        EnemyPlacementSource placementSource,
+        string prefabKey)
+    {
+        if (hasInitialized)
+            return true;
+
+        enemyUnit ??= GetComponent<EnemyGridMover>();
+        enemyIdentity ??= GetComponent<EnemyIdentity>();
+        enemyComposition ??= GetComponent<EnemyComposition>();
+
+        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
+        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
+        MapProgressRepository mapProgressRepository = MapProgressRepository.Instance;
+
+        if (groupData == null || prefabRegistry == null || enemyUnit == null || enemyIdentity == null ||
+            enemyComposition == null || enemyRepository == null || enemyGroupRepository == null)
+            return false;
+
+        enemyUnit.SetBehaviorType(behaviorType);
+        enemyIdentity.SetPlacementSource(placementSource);
+
+        placementKey = string.IsNullOrWhiteSpace(placementKey)
+            ? MapProgressKey.ForSceneEnemy(initialGrid)
+            : placementKey;
+
+        enemyIdentity.SetPlacementKey(placementKey);
+        enemyUnit.InitializePlacementIdentity(placementKey);
+
+        if (TryHandleDefeatedEnemy(mapProgressRepository, placementKey))
+            return true;
+
+        if (TryRestoreExistingCsvEnemy(
+                mapProgressRepository,
+                enemyGroupRepository,
+                enemyRepository,
+                prefabRegistry,
+                placementKey,
+                initialGrid))
+            return true;
+
+        if (!TryBuildCsvGroupMembers(groupData, out List<CsvEnemyGroupMember> members))
+            return false;
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (templateCatalog == null)
+        {
+            Debug.LogWarning("EnemyUnitBootstrap could not find a DHCsvTemplateCatalog in the scene.", this);
+            return false;
+        }
+
+        if (!ValidateCsvMembers(groupData.EnemyIndex, members, templateCatalog, prefabRegistry))
+            return false;
+
+        ClearUnitStateChildren();
+
+        List<int> unitIndices = new List<int>(members.Count);
+        List<int> unitSlots = new List<int>(members.Count);
+        enemyComposition.EnsureSlotCount(members.Count);
+
+        for (int i = 0; i < members.Count; i++)
+        {
+            CsvEnemyGroupMember member = members[i];
+            string templateKey = member.EnemyUnitIndex.ToString();
+            templateCatalog.TryGetEnemyTemplate(templateKey, out EnemyData template);
+            prefabRegistry.TryGetEnemyUnitPrefab(member.EnemyUnitIndex, out EnemyUnitState unitPrefab);
+
+            EnemyUnitState unitState = Instantiate(unitPrefab, transform);
+            unitState.transform.localPosition = GetExplorationUnitLocalPosition(i);
+            unitState.transform.localRotation = Quaternion.identity;
+            unitState.SetUnitTemplateKey(templateKey);
+            unitState.InitializeFromTemplate(template);
+
+            int unitIndex = enemyRepository.CreateUnit(
+                templateKey,
+                unitState.Level,
+                unitState.BaseStats,
+                unitState.IngameStats,
+                unitState.CurrentHp);
+
+            unitState.AssignUnitIndex(unitIndex);
+            unitStates.Add(unitState);
+            unitIndices.Add(unitIndex);
+            unitSlots.Add(member.CombatSlot);
+            enemyComposition.SetUnitIndexAt(i, unitIndex);
+        }
+
+        if (unitIndices.Count == 0)
+            return false;
+
+        string enemyId = enemyGroupRepository.CreateEnemy(unitIndices, unitSlots);
+        enemyIdentity.SetEnemyId(enemyId);
+        enemyUnit.InitializePersistentIdentity(enemyId);
+        enemyUnit.SnapToGridPosition(initialGrid);
+        mapProgressRepository?.BindEnemy(
+            placementKey,
+            enemyId,
+            initialGrid,
+            placementSource,
+            string.IsNullOrWhiteSpace(prefabKey) ? groupData.EnemyIndex.ToString() : prefabKey);
+
+        RefreshFogVisibilityBinding();
+        hasInitialized = true;
+        return true;
     }
 
     [ContextMenu("Collect Unit States From Children")]
@@ -228,6 +368,181 @@ public class EnemyUnitBootstrap : MonoBehaviour
         return true;
     }
 
+    private bool TryRestoreExistingCsvEnemy(
+        MapProgressRepository mapProgressRepository,
+        EnemyGroupPersistentRepository enemyGroupRepository,
+        PersistentEnemyRepository enemyRepository,
+        LevelPrefabRegistry prefabRegistry,
+        string placementKey,
+        Vector2Int initialGrid)
+    {
+        if (mapProgressRepository == null ||
+            enemyGroupRepository == null ||
+            enemyRepository == null ||
+            prefabRegistry == null ||
+            string.IsNullOrWhiteSpace(placementKey))
+            return false;
+
+        if (!mapProgressRepository.TryGetEnemyState(placementKey, out EnemyWorldState worldState))
+            return false;
+
+        if (worldState == null || worldState.Defeated || string.IsNullOrWhiteSpace(worldState.EnemyId))
+            return false;
+
+        if (!enemyGroupRepository.TryGetEnemy(worldState.EnemyId, out EnemyPersistentData persistentData) ||
+            persistentData == null)
+            return false;
+
+        enemyIdentity.SetEnemyId(worldState.EnemyId);
+        enemyUnit.InitializePersistentIdentity(worldState.EnemyId);
+        ApplyPersistentUnitIndices(persistentData.UnitIndices);
+        RebuildCsvUnitStateChildren(persistentData.UnitIndices, enemyRepository, prefabRegistry);
+
+        if (worldState.Grid != initialGrid)
+            enemyUnit.SnapToGridPosition(worldState.Grid);
+        else
+            mapProgressRepository.SetEnemyGrid(placementKey, initialGrid);
+
+        RefreshFogVisibilityBinding();
+        hasInitialized = true;
+        return true;
+    }
+
+    private void RebuildCsvUnitStateChildren(
+        IReadOnlyList<int> persistentUnitIndices,
+        PersistentEnemyRepository enemyRepository,
+        LevelPrefabRegistry prefabRegistry)
+    {
+        ClearUnitStateChildren();
+
+        if (persistentUnitIndices == null)
+            return;
+
+        for (int i = 0; i < persistentUnitIndices.Count; i++)
+        {
+            int unitIndex = persistentUnitIndices[i];
+            if (!enemyRepository.TryGetUnit(unitIndex, out EnemyUnitPersistentData persistentUnit) ||
+                persistentUnit == null)
+            {
+                Debug.LogWarning($"EnemyUnitBootstrap could not restore missing enemy unit index '{unitIndex}'.", this);
+                continue;
+            }
+
+            if (!int.TryParse(persistentUnit.UnitTemplateKey, out int enemyUnitIndex) ||
+                !prefabRegistry.TryGetEnemyUnitPrefab(enemyUnitIndex, out EnemyUnitState unitPrefab))
+            {
+                Debug.LogWarning(
+                    $"EnemyUnitBootstrap could not find an enemy unit prefab for restored template '{persistentUnit.UnitTemplateKey}'.",
+                    this);
+                continue;
+            }
+
+            EnemyUnitState unitState = Instantiate(unitPrefab, transform);
+            unitState.transform.localPosition = GetExplorationUnitLocalPosition(i);
+            unitState.transform.localRotation = Quaternion.identity;
+            unitState.ApplyPersistentData(persistentUnit);
+            unitStates.Add(unitState);
+        }
+    }
+
+    private void ClearUnitStateChildren()
+    {
+        unitStates.Clear();
+
+        EnemyUnitState[] existingStates = GetComponentsInChildren<EnemyUnitState>(true);
+        for (int i = existingStates.Length - 1; i >= 0; i--)
+        {
+            EnemyUnitState unitState = existingStates[i];
+            if (unitState == null || unitState.transform == transform)
+                continue;
+
+            if (Application.isPlaying)
+                Destroy(unitState.gameObject);
+            else
+                DestroyImmediate(unitState.gameObject);
+        }
+    }
+
+    private static Vector3 GetExplorationUnitLocalPosition(int index)
+    {
+        if (index < 0 || index >= ExplorationUnitLocalPositions.Length)
+            return Vector3.zero;
+
+        return ExplorationUnitLocalPositions[index];
+    }
+
+    private static bool TryBuildCsvGroupMembers(EnemyGroupData groupData, out List<CsvEnemyGroupMember> members)
+    {
+        members = new List<CsvEnemyGroupMember>(5);
+
+        if (groupData == null)
+            return false;
+
+        if (!TryAddCsvMember(members, groupData.Enemy1, groupData.Enemy1Slot) ||
+            !TryAddCsvMember(members, groupData.Enemy2, groupData.Enemy2Slot) ||
+            !TryAddCsvMember(members, groupData.Enemy3, groupData.Enemy3Slot) ||
+            !TryAddCsvMember(members, groupData.Enemy4, groupData.Enemy4Slot) ||
+            !TryAddCsvMember(members, groupData.Enemy5, groupData.Enemy5Slot))
+            return false;
+
+        return members.Count > 0;
+    }
+
+    private static bool TryAddCsvMember(List<CsvEnemyGroupMember> members, int enemyUnitIndex, int combatSlot)
+    {
+        if (enemyUnitIndex <= 0)
+            return true;
+
+        if (combatSlot < MinCombatSlot || combatSlot > MaxCombatSlot)
+            return false;
+
+        for (int i = 0; i < members.Count; i++)
+        {
+            if (members[i].CombatSlot == combatSlot)
+                return false;
+        }
+
+        members.Add(new CsvEnemyGroupMember(enemyUnitIndex, combatSlot));
+        return true;
+    }
+
+    private bool ValidateCsvMembers(
+        int enemyGroupIndex,
+        IReadOnlyList<CsvEnemyGroupMember> members,
+        DHCsvTemplateCatalog templateCatalog,
+        LevelPrefabRegistry prefabRegistry)
+    {
+        if (members == null || members.Count == 0)
+        {
+            Debug.LogWarning($"Enemy group '{enemyGroupIndex}' has no valid enemy units.", this);
+            return false;
+        }
+
+        for (int i = 0; i < members.Count; i++)
+        {
+            int enemyUnitIndex = members[i].EnemyUnitIndex;
+            string templateKey = enemyUnitIndex.ToString();
+
+            if (!templateCatalog.TryGetEnemyTemplate(templateKey, out _))
+            {
+                Debug.LogWarning(
+                    $"Enemy group '{enemyGroupIndex}' references missing enemy unit CSV index '{enemyUnitIndex}'.",
+                    this);
+                return false;
+            }
+
+            if (!prefabRegistry.TryGetEnemyUnitPrefab(enemyUnitIndex, out _))
+            {
+                Debug.LogWarning(
+                    $"Enemy group '{enemyGroupIndex}' references missing enemy unit prefab index '{enemyUnitIndex}'.",
+                    this);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private void ApplyPersistentUnitIndices(IReadOnlyList<int> unitIndices)
     {
         if (unitIndices == null)
@@ -236,5 +551,26 @@ public class EnemyUnitBootstrap : MonoBehaviour
         enemyComposition.EnsureSlotCount(unitIndices.Count);
         for (int i = 0; i < unitIndices.Count; i++)
             enemyComposition.SetUnitIndexAt(i, unitIndices[i]);
+    }
+
+    private void RefreshFogVisibilityBinding()
+    {
+        if (enemyUnit == null)
+            return;
+
+        EnemyFogVisibilitySystem fogVisibilitySystem = FindFirstObjectByType<EnemyFogVisibilitySystem>();
+        fogVisibilitySystem?.RefreshEnemyBinding(enemyUnit);
+    }
+
+    private readonly struct CsvEnemyGroupMember
+    {
+        public CsvEnemyGroupMember(int enemyUnitIndex, int combatSlot)
+        {
+            EnemyUnitIndex = enemyUnitIndex;
+            CombatSlot = combatSlot;
+        }
+
+        public int EnemyUnitIndex { get; }
+        public int CombatSlot { get; }
     }
 }

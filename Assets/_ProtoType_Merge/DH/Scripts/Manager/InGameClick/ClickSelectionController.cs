@@ -89,6 +89,11 @@ public class ClickSelectionController : MonoBehaviour
             moveCommandPreviewController?.UpdateRealtimePathPreview(activeMover);
     }
 
+    public void ClearMovePreview()
+    {
+        moveCommandPreviewController?.ClearPreview();
+    }
+
     private void TryHandleClick()
     {
         PartyGridMover activeMover = partySelectionController != null ? partySelectionController.ActiveMover : null;

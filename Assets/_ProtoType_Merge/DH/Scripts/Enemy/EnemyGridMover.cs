@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public enum EnemyBehaviorType
@@ -127,7 +128,9 @@ public class EnemyGridMover : MonoBehaviour
             GridChanged?.Invoke(this, currentGrid);
     }
 
-    public IEnumerator MoveAlongPath(List<Vector2Int> path)
+    public IEnumerator MoveAlongPath(
+        List<Vector2Int> path,
+        Func<EnemyGridMover, Vector2Int, int, bool> onStepArrived = null)
     {
         if (path == null || path.Count <= 1 || gridManager == null)
             yield break;
@@ -152,6 +155,10 @@ public class EnemyGridMover : MonoBehaviour
                 transform.position = target;
                 currentGrid = nextGrid;
                 GridChanged?.Invoke(this, currentGrid);
+
+                bool shouldContinue = onStepArrived == null || onStepArrived(this, currentGrid, i);
+                if (!shouldContinue)
+                    yield break;
             }
         }
         finally

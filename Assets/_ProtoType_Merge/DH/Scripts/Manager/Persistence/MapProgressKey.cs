@@ -29,6 +29,11 @@ public static class MapProgressKey
         return ForGrid("outpost", grid);
     }
 
+    public static string ForVillainUnion(Vector2Int grid)
+    {
+        return ForGrid("villain_union", grid);
+    }
+
     public static string ForEnemy(Vector2Int grid)
     {
         return ForGrid("enemy", grid);

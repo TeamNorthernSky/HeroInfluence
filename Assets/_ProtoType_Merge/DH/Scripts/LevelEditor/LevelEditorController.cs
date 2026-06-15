@@ -21,6 +21,8 @@ public class LevelEditorController : MonoBehaviour
     [FormerlySerializedAs("minePreset")]
     [SerializeField] private OutpostPlacementPreset outpostPreset;
     [SerializeField] private EventPlacementPreset eventPreset;
+    [SerializeField, Min(1)] private int enemyGroupIndex = 30001;
+    [SerializeField] private EnemyBehaviorType enemyBehaviorType = EnemyBehaviorType.Mobile;
 
     [Header("Behaviour")]
     [SerializeField] private bool allowRuntimeEditing;
@@ -50,6 +52,8 @@ public class LevelEditorController : MonoBehaviour
     public ItemPlacementPreset ItemPreset => itemPreset;
     public OutpostPlacementPreset OutpostPreset => outpostPreset;
     public EventPlacementPreset EventPreset => eventPreset;
+    public int EnemyGroupIndex => Mathf.Max(1, enemyGroupIndex);
+    public EnemyBehaviorType EnemyBehaviorType => enemyBehaviorType;
     public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
     public LayerMask GroundMask => groundMask;
 
@@ -131,10 +135,17 @@ public class LevelEditorController : MonoBehaviour
                 if (eventPreset == null)
                     return;
 
-                levelData.SetEvent(grid, eventPreset.EventKey);
+                levelData.SetEvent(
+                    grid,
+                    eventPreset.EventType,
+                    eventPreset.RequireAmount,
+                    eventPreset.EffectAmount);
                 break;
             case LevelEditorBrushType.StayEnemy:
                 levelData.SetStayEnemy(grid);
+                break;
+            case LevelEditorBrushType.EnemyGroup:
+                levelData.SetEnemyPlacement(grid, EnemyGroupIndex, enemyBehaviorType);
                 break;
             case LevelEditorBrushType.Castle:
                 levelData.SetCastle(grid);
@@ -193,6 +204,9 @@ public class LevelEditorController : MonoBehaviour
 
         for (int i = 0; i < levelData.StayEnemyCells.Count; i++)
             DrawStayEnemyCells(levelData.StayEnemyCells[i], y, size);
+
+        for (int i = 0; i < levelData.EnemyPlacements.Count; i++)
+            DrawStayEnemyCells(levelData.EnemyPlacements[i].GridPosition, y, size);
 
         if (levelData.CastlePlacement.HasPlacement)
             DrawCell(levelData.CastlePlacement.GridPosition, castleColor, y, size);

@@ -33,6 +33,18 @@ public class TurnManager : MonoBehaviour
         UpdateTurnStateText("Player Turn");
     }
 
+    private void Start()
+    {
+        // [JC 260610] 로비에서 위임된 턴종료 요청 처리.
+        // 로비 턴종료 = "나가기 + 탐사 턴종료" 이므로, 탐사 진입 직후 정상 EndPlayerTurn(적 턴 진행)을 실행한다.
+        if (GameManager.Instance != null && GameManager.Instance.ConsumePendingEndTurn())
+            EndPlayerTurn();
+
+        EnemyTurnSessionRepository sessionRepository = EnemyTurnSessionRepository.Instance;
+        if (sessionRepository != null && sessionRepository.ShouldResumeAfterCombat)
+            StartCoroutine(ResumeEnemyTurnAfterSceneReady());
+    }
+
     public void EndPlayerTurn()
     {
         if (DHGameEndState.IsEnding)
@@ -140,9 +152,43 @@ public class TurnManager : MonoBehaviour
             yield break;
         }
 
+        EnemyTurnSessionRepository sessionRepository = EnemyTurnSessionRepository.Instance;
+        if (sessionRepository != null && sessionRepository.ShouldResumeAfterCombat)
+        {
+            enemyTurnRunning = false;
+            EnemyTurnStateChanged?.Invoke(false);
+            yield break;
+        }
+
         enemyTurnRunning = false;
         EnemyTurnStateChanged?.Invoke(false);
         EndEnemyTurn();
+    }
+
+    private IEnumerator ResumeEnemyTurnAfterSceneReady()
+    {
+        yield return null;
+
+        while (CombatContext.Instance != null && CombatContext.Instance.Result != CombatResult.None)
+            yield return null;
+
+        if (DHGameEndState.IsEnding || enemyTurnRunning)
+            yield break;
+
+        if (enemyTurnController == null)
+            enemyTurnController = FindFirstObjectByType<EnemyTurnController>();
+
+        if (enemyTurnController == null)
+            yield break;
+
+        EnemyTurnSessionRepository sessionRepository = EnemyTurnSessionRepository.Instance;
+        if (sessionRepository == null || !sessionRepository.ShouldResumeAfterCombat)
+            yield break;
+
+        enemyTurnRunning = true;
+        EnemyTurnStateChanged?.Invoke(true);
+        UpdateTurnStateText("Enemy Turn");
+        StartCoroutine(RunEnemyTurn());
     }
 
     private void UpdateTurnStateText(string nextText)

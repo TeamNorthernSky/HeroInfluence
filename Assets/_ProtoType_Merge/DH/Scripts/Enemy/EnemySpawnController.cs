@@ -10,10 +10,12 @@ public class EnemySpawnController : MonoBehaviour
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private EnemyRegistry enemyRegistry;
+    [SerializeField] private LevelPrefabRegistry prefabRegistry;
     [SerializeField] private Transform enemyRoot;
 
     [Header("Spawn Rules")]
     [SerializeField] private EnemyGridMover enemyPrefab;
+    [SerializeField, Min(1)] private int runtimeEnemyGroupIndex = 30002;
     [SerializeField, Min(1)] private int spawnInterval = 3;
     [SerializeField, Min(1)] private int maxActiveEnemies = 3;
     [SerializeField] private bool spawnOneEnemyOnStart;
@@ -178,7 +180,12 @@ public class EnemySpawnController : MonoBehaviour
         spawnedEnemy.SnapToGridPosition(spawnGrid);
 
         EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
-        enemyBootstrap?.InitializeEnemyUnits();
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, spawnGrid, placementKey, runtimeEnemyGroupIndex))
+        {
+            Destroy(spawnedEnemy.gameObject);
+            return false;
+        }
+
         return true;
     }
 
@@ -274,7 +281,61 @@ public class EnemySpawnController : MonoBehaviour
         restoredEnemy.SnapToGridPosition(state.Grid);
 
         EnemyUnitBootstrap enemyBootstrap = restoredEnemy.GetComponent<EnemyUnitBootstrap>();
-        enemyBootstrap?.InitializeEnemyUnits();
+        int groupIndex = ResolveRuntimeEnemyGroupIndex(state);
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, restoredEnemy, state.Grid, state.PlacementKey, groupIndex))
+        {
+            Destroy(restoredEnemy.gameObject);
+        }
+    }
+
+    private bool TryInitializeRuntimeEnemyGroup(
+        EnemyUnitBootstrap enemyBootstrap,
+        EnemyGridMover enemy,
+        Vector2Int grid,
+        string placementKey,
+        int enemyGroupIndex)
+    {
+        if (enemyBootstrap == null || enemy == null)
+            return false;
+
+        if (prefabRegistry == null)
+        {
+            Debug.LogWarning("EnemySpawnController could not find a LevelPrefabRegistry.", this);
+            return false;
+        }
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (templateCatalog == null)
+        {
+            Debug.LogWarning("EnemySpawnController could not find a DHCsvTemplateCatalog in the scene.", this);
+            return false;
+        }
+
+        if (!templateCatalog.TryGetEnemyGroup(enemyGroupIndex, out EnemyGroupData groupData))
+        {
+            Debug.LogWarning($"EnemySpawnController could not find an enemy group CSV index '{enemyGroupIndex}'.", this);
+            return false;
+        }
+
+        return enemyBootstrap.InitializeEnemyGroupFromCsv(
+            groupData,
+            prefabRegistry,
+            grid,
+            EnemyBehaviorType.Mobile,
+            placementKey,
+            EnemyPlacementSource.Runtime,
+            enemyGroupIndex.ToString());
+    }
+
+    private int ResolveRuntimeEnemyGroupIndex(EnemyWorldState state)
+    {
+        if (state != null &&
+            !string.IsNullOrWhiteSpace(state.PrefabKey) &&
+            int.TryParse(state.PrefabKey, out int savedGroupIndex) &&
+            savedGroupIndex > 0)
+            return savedGroupIndex;
+
+        return Mathf.Max(1, runtimeEnemyGroupIndex);
     }
 
     private void SyncRuntimeEnemySequence(MapProgressRepository progressRepository)
@@ -396,5 +457,8 @@ public class EnemySpawnController : MonoBehaviour
 
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
+
+        if (prefabRegistry == null)
+            prefabRegistry = FindFirstObjectByType<LevelPrefabRegistry>();
     }
 }

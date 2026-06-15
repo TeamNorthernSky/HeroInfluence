@@ -12,7 +12,10 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Button))]
 public class DHLobbyEntryButton : MonoBehaviour
 {
-    private const string LobbyScene = "LobbyScene_New";
+    // [JC 260610] 중앙값(GameSceneManager.LobbyScene) 참조. 폴백 HQLobbyScene.
+    private static string LobbyScene => GameSceneManager.Instance != null
+        ? GameSceneManager.Instance.LobbyScene
+        : "HQLobbyScene";
 
     [Tooltip("PartyGridMover 캐시 재탐색 주기(초). 파티 생성/소멸 빈도 따라 조정")]
     [SerializeField] private float moverRefreshInterval = 0.5f;

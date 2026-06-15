@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 public class DHGameEndConditionController : MonoBehaviour
@@ -17,6 +18,7 @@ public class DHGameEndConditionController : MonoBehaviour
     private readonly List<PartyGridMover> subscribedParties = new List<PartyGridMover>();
     private readonly List<EnemyGridMover> subscribedEnemies = new List<EnemyGridMover>();
     private bool isEnding;
+    private Coroutine pendingGameEndCoroutine;
 
     private void Start()
     {
@@ -42,11 +44,7 @@ public class DHGameEndConditionController : MonoBehaviour
 
     private void HandlePartyGridEntered(Vector2Int grid)
     {
-        if (isEnding)
-            return;
-
-        if (IsVillainUnionInteractionCell(grid))
-            BeginGameEnd(DHGameEndResult.Clear);
+        // VillainUnion clear is handled only after final defender combat victory.
     }
 
     private void HandleEnemyGridChanged(EnemyGridMover enemy, Vector2Int grid)
@@ -76,6 +74,43 @@ public class DHGameEndConditionController : MonoBehaviour
 
         if (logGameEnd)
             Debug.Log($"[DHGameEndConditionController] Game end result: {result}", this);
+
+        if (uiController != null)
+            uiController.ShowResult(result);
+        else
+            DHGameProgressResetService.ResetDHProgress();
+    }
+
+    public void BeginGameClearAfterDelay(float delaySeconds)
+    {
+        BeginGameEndAfterDelay(DHGameEndResult.Clear, delaySeconds);
+    }
+
+    private void BeginGameEndAfterDelay(DHGameEndResult result, float delaySeconds)
+    {
+        if (isEnding)
+            return;
+
+        if (delaySeconds <= 0f)
+        {
+            BeginGameEnd(result);
+            return;
+        }
+
+        isEnding = true;
+        DHGameEndState.BeginEnding();
+
+        if (logGameEnd)
+            Debug.Log($"[DHGameEndConditionController] Game end result scheduled: {result}", this);
+
+        pendingGameEndCoroutine = StartCoroutine(ShowGameEndAfterDelay(result, delaySeconds));
+    }
+
+    private IEnumerator ShowGameEndAfterDelay(DHGameEndResult result, float delaySeconds)
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, delaySeconds));
+
+        pendingGameEndCoroutine = null;
 
         if (uiController != null)
             uiController.ShowResult(result);

@@ -49,7 +49,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outpostType: 1
   resourcePerTurn: 5
-  outpostState: 0
+  outpostState: 1
+  enemyDefenderGroupIndex: 30003
+  defenderEnemyId: 
   targetRenderer: {fileID: 6573462692588238153}
   unclaimedMaterial: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9,
@@ -156,17 +158,17 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 26cd3492f77035340b1e699159facfcd, type: 2}
+      objectReference: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9, type: 2}
     - target: {fileID: -7511558181221131132, guid: dfef713d671470448b67f82182d6a36a,
         type: 3}
       propertyPath: m_Materials.Array.data[1]
       value: 
-      objectReference: {fileID: 2100000, guid: 26cd3492f77035340b1e699159facfcd, type: 2}
+      objectReference: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9, type: 2}
     - target: {fileID: -7511558181221131132, guid: dfef713d671470448b67f82182d6a36a,
         type: 3}
       propertyPath: m_Materials.Array.data[2]
       value: 
-      objectReference: {fileID: 2100000, guid: 26cd3492f77035340b1e699159facfcd, type: 2}
+      objectReference: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9, type: 2}
     - target: {fileID: 919132149155446097, guid: dfef713d671470448b67f82182d6a36a,
         type: 3}
       propertyPath: m_Name

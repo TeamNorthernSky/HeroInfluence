@@ -256,16 +256,12 @@ public class LobbyMenuController : MonoBehaviour
         if (_modalEndTurnConfirm != null)
             _modalEndTurnConfirm.SetActive(false);
 
-        // 턴 진행 — TurnManager는 씬 종속이라 로비에서 직접 호출 불가.
-        // GameManager.CurrentDay 영속 데이터를 직접 증가 → 탐사씬 재진입 시 TurnManager.Awake가 복원.
+        // [JC 260610] 턴종료 = "나가기 + 탐사 턴종료" 위임. (구) CurrentDay 직접 증가는
+        // 적 턴(EndPlayerTurn)을 건너뛰는 버그가 있어 제거 → 탐사 진입 후 TurnManager.Start가 정상 진행.
         var gm = GameManager.Instance;
-        if (gm != null)
-        {
-            gm.CurrentDay = gm.CurrentDay + 1;
-            Debug.Log($"[Lobby] EndTurn 확정 → Day={gm.CurrentDay}");
-        }
+        if (gm != null) gm.RequestEndTurnViaExploration();
 
-        Debug.Log($"[Lobby] LoadScene → {PlayScene}");
+        Debug.Log($"[Lobby] EndTurn → 탐사 위임 후 LoadScene → {PlayScene}");
         PersistentStateDebugLogger.Dump("Lobby EndTurn (before LoadScene DHScene)");
         if (GameSceneManager.Instance != null)
             GameSceneManager.Instance.LoadScene(PlayScene);

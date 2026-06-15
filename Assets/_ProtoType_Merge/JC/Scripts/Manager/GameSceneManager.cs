@@ -20,7 +20,7 @@ public class GameSceneManager : MonoBehaviour
 
     [Header("Scene Catalog")]
     [SerializeField] private string titleScene = "TitleScene";
-    [SerializeField] private string lobbyScene = "LobbyScene_New";
+    [SerializeField] private string lobbyScene = "HQLobbyScene";
     [SerializeField] private string gameLoadScene = "GameLoadScene";
     [SerializeField] private string victoryEndingScene = "Ending_Victory";
     [SerializeField] private string defeatEndingScene = "Ending_Defeat";

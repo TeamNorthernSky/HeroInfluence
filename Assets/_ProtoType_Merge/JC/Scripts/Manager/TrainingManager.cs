@@ -13,7 +13,7 @@ public enum TrainingStat
 /// 트레이닝 시스템 영속 매니저. GameManager 영속 자식.
 /// 영웅별·스탯별 강화 레벨(0~3)을 추적하고, 강화 시 실제 영웅의 BaseStats(공격력/체력)를 영구 가산한다.
 /// 스탯 원천은 DH PersistentUnitRepository.BaseStats(전투·HeroInfo 공통). DH 코어는 공개 API만 사용(비침습).
-/// 강화 레벨은 BroadcastManager 패턴을 따라 int unitIndex 키 + List+Dictionary lookup으로 보관.
+/// 강화 레벨은 PublicityManager 패턴을 따라 int unitIndex 키 + List+Dictionary lookup으로 보관.
 /// 현재 in-memory(세션 내 영속). 앱 재시작 시 BaseStats(CSV 재생성)·레벨 모두 리셋되어 일관됨.
 /// 추후 UnitPersistentData/GameSession 영속 트랙에 단순 transfer로 합류 가능하도록 설계.
 /// </summary>

@@ -14,12 +14,33 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentSkillText;
     [SerializeField] private TextMeshProUGUI battleResultText;
 
+    [Header("Turn Arrow")]
+    [SerializeField] private TurnArrow turnArrow;
+    [SerializeField] private Vector3 turnArrowWorldOffset = new Vector3(0f, 100f, 0f);
+    [SerializeField] private Camera worldCamera;
+
     private void Awake()
     {
+        if (worldCamera == null)
+        {
+            worldCamera = Camera.main;
+        }
+
+        if (turnArrow == null)
+        {
+            GameObject turnArrowObject = GameObject.Find("TurnArrow");
+            if (turnArrowObject != null)
+            {
+                turnArrow = turnArrowObject.GetComponent<TurnArrow>();
+            }
+        }
+
         if (battleResultText != null)
         {
             battleResultText.gameObject.SetActive(false);
         }
+
+        turnArrow?.SetEnabled(false);
     }
 
     private void OnEnable()
@@ -99,6 +120,38 @@ public class BattleUIManager : MonoBehaviour
             // Escape 전용 UI가 필요해지면 분기 추가.
             battleResultText.text = "전투 결과 : <color=red>패배...</color>";
         }
+    }
+
+    private void Update()
+    {
+        UpdateTurnArrowPosition();
+    }
+
+    private void UpdateTurnArrowPosition()
+    {
+        if (flowManager == null || turnArrow == null || worldCamera == null)
+        {
+            turnArrow?.SetEnabled(false);
+            return;
+        }
+
+        BattleCharactor currentBattleCharacter = flowManager.CurrentUnit;
+        if (currentBattleCharacter == null || currentBattleCharacter.IsDead)
+        {
+            turnArrow.SetEnabled(false);
+            return;
+        }
+
+        Vector3 screenPosition = worldCamera.WorldToScreenPoint(
+            currentBattleCharacter.transform.position )+ turnArrowWorldOffset;
+        if (screenPosition.z <= 0f)
+        {
+            turnArrow.SetEnabled(false);
+            return;
+        }
+
+        turnArrow.SetScreenPosition(screenPosition);
+        turnArrow.SetEnabled(true);
     }
 
 #if UNITY_EDITOR

@@ -17,7 +17,7 @@ public static class UnitStatCalculator
 
     public static StatBlock CalculateIngameStats(StatBlock templateBaseStats, StatBlock levelupStats, int level, EquipmentStatBlock weaponStats)
     {
-        return CalculateIngameStats(templateBaseStats, levelupStats, level, weaponStats, null);
+        return CalculateIngameStats(templateBaseStats, levelupStats, level, weaponStats, default, null);
     }
 
     public static StatBlock CalculateIngameStats(
@@ -27,8 +27,19 @@ public static class UnitStatCalculator
         EquipmentStatBlock weaponStats,
         IReadOnlyList<LevelUpData> levelUpTable)
     {
+        return CalculateIngameStats(templateBaseStats, levelupStats, level, weaponStats, default, levelUpTable);
+    }
+
+    public static StatBlock CalculateIngameStats(
+        StatBlock templateBaseStats,
+        StatBlock levelupStats,
+        int level,
+        EquipmentStatBlock weaponStats,
+        StatBlock eventBonusStats,
+        IReadOnlyList<LevelUpData> levelUpTable)
+    {
         StatBlock adjustedBaseStats = CalculateLevelAdjustedBaseStats(templateBaseStats, levelupStats, level);
-        StatBlock result = adjustedBaseStats + weaponStats.ToStatBlock();
+        StatBlock result = adjustedBaseStats + weaponStats.ToStatBlock() + eventBonusStats;
         result.Influence += CalculateLevelInfluenceBonus(level, levelUpTable);
         result.ClampToMinimumOne();
         return result;

@@ -62,7 +62,11 @@ public class PartyMovePointScreenGauge : MonoBehaviour
 
     private void UpdateScreenPosition()
     {
-        if (targetParty == null || targetCamera == null || rectTransform == null)
+        if (targetParty == null ||
+            targetCamera == null ||
+            rectTransform == null ||
+            !targetParty.gameObject.activeInHierarchy ||
+            DefeatedPartyReturnController.IsPartyWaiting(targetParty))
         {
             SetVisible(false);
             return;

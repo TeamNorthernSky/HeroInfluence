@@ -1,14 +1,18 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class CombatEncounterManager : MonoBehaviour
 {
+    private const float FinalCombatClearDelaySeconds = 0.5f;
+
     public event Action<PartyGridMover, EnemyGridMover> CombatStarted;
 
     public bool IsCombatActive { get; private set; }
     public PartyGridMover ActiveParty { get; private set; }
     public EnemyGridMover ActiveEnemy { get; private set; }
+    private Coroutine pendingCombatResultCoroutine;
 
     // [JC 260513] DHScene 재진입 시 직전 전투 결과가 남아 있으면 self-clear.
     // BattleFlowManager는 전투씬에 있어 OnBattleEnded 이벤트 직접 구독 불가 → Result 폴링 방식.
@@ -17,14 +21,25 @@ public class CombatEncounterManager : MonoBehaviour
         CombatContext context = CombatContext.Instance;
         if (context != null && context.Result != CombatResult.None)
         {
-            ProcessCompletedCombat(context);
-            ClearCombatState();
+            pendingCombatResultCoroutine = StartCoroutine(ProcessCompletedCombatAfterSceneReady());
         }
+    }
+
+    private void OnDisable()
+    {
+        if (pendingCombatResultCoroutine == null)
+            return;
+
+        StopCoroutine(pendingCombatResultCoroutine);
+        pendingCombatResultCoroutine = null;
     }
 
     public bool BeginCombat(PartyGridMover party, EnemyGridMover enemy)
     {
         if (DHGameEndState.IsEnding)
+            return false;
+
+        if (HasPendingCombatResult())
             return false;
 
         if (party == null || enemy == null)
@@ -53,6 +68,80 @@ public class CombatEncounterManager : MonoBehaviour
         return true;
     }
 
+    public bool BeginOutpostDefenderCombat(PartyGridMover party, Outpost outpost)
+    {
+        if (DHGameEndState.IsEnding)
+            return false;
+
+        if (HasPendingCombatResult())
+            return false;
+
+        if (party == null || outpost == null || !outpost.RequiresDefenderCombat)
+            return false;
+
+        if (IsCombatActive)
+            return false;
+
+        if (!outpost.EnsureDefenderParty())
+            return false;
+
+        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
+        string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
+        string enemyId = outpost.DefenderEnemyId;
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        string outpostKey = outpost.GetProgressKey(gridManager);
+
+        if (!TryRegisterCombatParticipants(party, partyId, enemyId, outpostKey))
+            return false;
+
+        IsCombatActive = true;
+        ActiveParty = party;
+        ActiveEnemy = null;
+
+        Debug.Log(
+            $"Outpost defender combat requested. party='{partyId}', outpost='{outpostKey}', enemy='{enemyId}'.",
+            this);
+        CombatStarted?.Invoke(party, null);
+        return true;
+    }
+
+    public bool BeginVillainUnionDefenderCombat(PartyGridMover party, VillainUnionBase villainUnionBase)
+    {
+        if (DHGameEndState.IsEnding)
+            return false;
+
+        if (HasPendingCombatResult())
+            return false;
+
+        if (party == null || villainUnionBase == null)
+            return false;
+
+        if (IsCombatActive)
+            return false;
+
+        if (!villainUnionBase.EnsureDefenderParty())
+            return false;
+
+        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
+        string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
+        string enemyId = villainUnionBase.DefenderEnemyId;
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        string villainUnionKey = villainUnionBase.GetProgressKey(gridManager);
+
+        if (!TryRegisterCombatParticipants(party, partyId, enemyId, villainUnionKey))
+            return false;
+
+        IsCombatActive = true;
+        ActiveParty = party;
+        ActiveEnemy = null;
+
+        Debug.Log(
+            $"VillainUnion final combat requested. party='{partyId}', base='{villainUnionKey}', enemy='{enemyId}'.",
+            this);
+        CombatStarted?.Invoke(party, null);
+        return true;
+    }
+
     public void ClearCombatState()
     {
         IsCombatActive = false;
@@ -61,6 +150,16 @@ public class CombatEncounterManager : MonoBehaviour
     }
 
     private bool TryRegisterCombatParticipants(PartyGridMover party, string partyId, EnemyGridMover enemy, string enemyId)
+    {
+        return TryRegisterCombatParticipants(party, partyId, enemyId, ResolveEnemyPlacementKey(enemy), enemy);
+    }
+
+    private bool TryRegisterCombatParticipants(
+        PartyGridMover party,
+        string partyId,
+        string enemyId,
+        string enemyPlacementKey,
+        EnemyGridMover enemy = null)
     {
         CombatContext combatContext = CombatContext.Instance;
         PersistentUnitRepository unitRepository = PersistentUnitRepository.Instance;
@@ -72,6 +171,9 @@ public class CombatEncounterManager : MonoBehaviour
             Debug.LogWarning("CombatContext is missing, so combat participants could not be registered.", this);
             return false;
         }
+
+        if (combatContext.Result != CombatResult.None)
+            return false;
 
         IReadOnlyList<int> partyUnitIndices = ResolvePartyUnitIndices(partyRepository, party, partyId);
         IReadOnlyList<int> enemyUnitIndices = ResolveEnemyUnitIndices(enemyGroupRepository, enemy, enemyId);
@@ -85,9 +187,15 @@ public class CombatEncounterManager : MonoBehaviour
         }
 
         combatContext.RegisterCombatParty(partyId, partyUnitIndices);
-        combatContext.RegisterCombatEnemy(enemyId, ResolveEnemyPlacementKey(enemy), enemyUnitIndices);
+        combatContext.RegisterCombatEnemy(enemyId, enemyPlacementKey, enemyUnitIndices);
         combatContext.SetCombatResult(CombatResult.None);
         return true;
+    }
+
+    private static bool HasPendingCombatResult()
+    {
+        CombatContext context = CombatContext.Instance;
+        return context != null && context.Result != CombatResult.None;
     }
 
     private void ProcessCompletedCombat(CombatContext context)
@@ -108,6 +216,12 @@ public class CombatEncounterManager : MonoBehaviour
         if (combatEnemy == null)
             return;
 
+        if (TryCompleteOutpostDefenderCombat(combatEnemy))
+            return;
+
+        if (TryCompleteVillainUnionDefenderCombat(combatEnemy))
+            return;
+
         string placementKey = combatEnemy.PlacementKey;
         if (string.IsNullOrWhiteSpace(placementKey))
             placementKey = FindPlacementKeyByEnemyId(combatEnemy.EnemyId);
@@ -119,6 +233,122 @@ public class CombatEncounterManager : MonoBehaviour
         progressRepository?.MarkEnemyDefeated(placementKey);
         RemoveDefeatedEnemyGroup(combatEnemy.EnemyId);
         DestroyMatchingSceneEnemy(placementKey, combatEnemy.EnemyId);
+    }
+
+    private IEnumerator ProcessCompletedCombatAfterSceneReady()
+    {
+        yield return null;
+        yield return null;
+
+        pendingCombatResultCoroutine = null;
+
+        CombatContext context = CombatContext.Instance;
+        if (context == null || context.Result == CombatResult.None)
+            yield break;
+
+        ProcessCompletedCombat(context);
+        context.Clear();
+        ClearCombatState();
+    }
+
+    private static bool TryCompleteOutpostDefenderCombat(CombatEnemyPersistentData combatEnemy)
+    {
+        if (combatEnemy == null || string.IsNullOrWhiteSpace(combatEnemy.EnemyId))
+            return false;
+
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+        if (progressRepository == null ||
+            !progressRepository.TryFindOutpostByDefenderEnemyId(combatEnemy.EnemyId, out OutpostProgressState progressState) ||
+            progressState == null)
+            return false;
+
+        string outpostKey = progressState.OutpostKey;
+        if (!ForceClaimMatchingOutposts(outpostKey))
+            progressRepository.SetOutpostState(outpostKey, OutpostState.Claimed, 0, string.Empty);
+
+        OutpostDefenderService.RemoveDefenderParty(combatEnemy.EnemyId);
+        return true;
+    }
+
+    private static bool TryCompleteVillainUnionDefenderCombat(CombatEnemyPersistentData combatEnemy)
+    {
+        if (combatEnemy == null || string.IsNullOrWhiteSpace(combatEnemy.EnemyId))
+            return false;
+
+        string normalizedCombatPlacementKey = MapProgressKey.NormalizeSegment(combatEnemy.PlacementKey);
+        string normalizedCombatEnemyId = MapProgressKey.NormalizeSegment(combatEnemy.EnemyId);
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        VillainUnionBase[] bases = FindObjectsByType<VillainUnionBase>(FindObjectsSortMode.None);
+        for (int i = 0; i < bases.Length; i++)
+        {
+            VillainUnionBase villainUnionBase = bases[i];
+            if (villainUnionBase == null)
+                continue;
+
+            string villainUnionKey = villainUnionBase.GetProgressKey(gridManager);
+            string normalizedVillainUnionKey = MapProgressKey.NormalizeSegment(villainUnionKey);
+            string expectedDefenderId = VillainUnionDefenderService.CreateDefenderEnemyId(villainUnionKey);
+            bool defenderIdMatches = !string.IsNullOrWhiteSpace(villainUnionBase.DefenderEnemyId) &&
+                string.Equals(villainUnionBase.DefenderEnemyId, combatEnemy.EnemyId, StringComparison.Ordinal);
+            bool expectedIdMatches = string.Equals(expectedDefenderId, combatEnemy.EnemyId, StringComparison.Ordinal);
+            bool placementKeyMatches = !string.IsNullOrWhiteSpace(normalizedCombatPlacementKey) &&
+                string.Equals(normalizedVillainUnionKey, normalizedCombatPlacementKey, StringComparison.Ordinal);
+
+            if (!defenderIdMatches && !expectedIdMatches && !placementKeyMatches)
+                continue;
+
+            CompleteVillainUnionVictory(combatEnemy.EnemyId);
+            return true;
+        }
+
+        if (normalizedCombatPlacementKey.StartsWith("villain_union_", StringComparison.Ordinal) ||
+            normalizedCombatEnemyId.StartsWith("villain_union_defender_", StringComparison.Ordinal))
+        {
+            CompleteVillainUnionVictory(combatEnemy.EnemyId);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void CompleteVillainUnionVictory(string enemyId)
+    {
+        VillainUnionDefenderService.RemoveDefenderParty(enemyId);
+
+        DHGameEndConditionController gameEndConditionController = FindFirstObjectByType<DHGameEndConditionController>();
+        if (gameEndConditionController != null)
+        {
+            gameEndConditionController.BeginGameClearAfterDelay(FinalCombatClearDelaySeconds);
+            return;
+        }
+
+        DHGameProgressResetService.ResetDHProgress();
+    }
+
+    private static bool ForceClaimMatchingOutposts(string outpostKey)
+    {
+        if (string.IsNullOrWhiteSpace(outpostKey))
+            return false;
+
+        bool claimedAny = false;
+        string normalizedOutpostKey = MapProgressKey.NormalizeSegment(outpostKey);
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        Outpost[] outposts = FindObjectsByType<Outpost>(FindObjectsSortMode.None);
+        for (int i = 0; i < outposts.Length; i++)
+        {
+            Outpost candidate = outposts[i];
+            if (candidate == null)
+                continue;
+
+            string candidateKey = MapProgressKey.NormalizeSegment(candidate.GetProgressKey(gridManager));
+            if (!string.Equals(candidateKey, normalizedOutpostKey, StringComparison.Ordinal))
+                continue;
+
+            candidate.ForceClaimFromCombatResult();
+            claimedAny = true;
+        }
+
+        return claimedAny;
     }
 
     private static void ReturnDefeatedPartyToCastle(CombatPartyPersistentData combatParty)
@@ -146,6 +376,7 @@ public class CombatEncounterManager : MonoBehaviour
         }
 
         party.SnapToGridPosition(targetCell, notifyMoveCompleted: false);
+        DefeatedPartyReturnController.ScheduleReturn(party);
     }
 
     private static bool TryFindParty(string partyId, out PartyGridMover party)

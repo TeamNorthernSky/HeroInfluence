@@ -85,6 +85,7 @@ public class LevelLoader : MonoBehaviour
         SpawnOutposts();
         SpawnEvents();
         SpawnStayEnemies();
+        SpawnEnemyPlacements();
         SpawnUniqueBuildings();
     }
 
@@ -196,6 +197,7 @@ public class LevelLoader : MonoBehaviour
                 placement.OutpostType,
                 placement.ResourcePerTurn,
                 initialState);
+            ApplyOutpostProgressData(outpost, placement.GridPosition);
         }
     }
 
@@ -211,6 +213,25 @@ public class LevelLoader : MonoBehaviour
         return fallbackState;
     }
 
+    private static void ApplyOutpostProgressData(Outpost outpost, Vector2Int grid)
+    {
+        if (!Application.isPlaying || outpost == null)
+            return;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null)
+            return;
+
+        if (!repository.TryGetOutpostProgress(MapProgressKey.ForOutpost(grid), out OutpostProgressState progressState) ||
+            progressState == null)
+            return;
+
+        outpost.ApplyProgressData(
+            progressState.State,
+            progressState.EnemyDefenderGroupIndex,
+            progressState.DefenderEnemyId);
+    }
+
     private void SpawnEvents()
     {
         if (prefabRegistry == null)
@@ -221,10 +242,10 @@ public class LevelLoader : MonoBehaviour
         for (int i = 0; i < eventPlacements.Count; i++)
         {
             EventPlacementData placement = eventPlacements[i];
-            if (Application.isPlaying && IsEventCompleted(placement.GridPosition, placement.EventKey))
+            if (Application.isPlaying && IsEventCompleted(placement.GridPosition, placement.EventType))
                 continue;
 
-            if (!prefabRegistry.TryGetEventPrefab(placement.EventKey, out MapEventObject eventPrefab))
+            if (!prefabRegistry.TryGetEventPrefab(placement.EventType, out MapEventObject eventPrefab))
             {
                 Debug.LogWarning(
                     $"LevelLoader could not find an event prefab for event key '{placement.EventKey}'.",
@@ -236,14 +257,17 @@ public class LevelLoader : MonoBehaviour
             if (mapEvent == null)
                 continue;
 
-            mapEvent.ApplyInitialData(placement.EventKey);
+            mapEvent.ApplyInitialData(
+                placement.EventType,
+                placement.RequireAmount,
+                placement.EffectAmount);
         }
     }
 
-    private static bool IsEventCompleted(Vector2Int grid, string eventKey)
+    private static bool IsEventCompleted(Vector2Int grid, MapEventType eventType)
     {
         MapProgressRepository repository = MapProgressRepository.Instance;
-        return repository != null && repository.IsEventCompleted(MapProgressKey.ForEvent(grid, eventKey));
+        return repository != null && repository.IsEventCompleted(MapProgressKey.ForEvent(grid, MapEventTypeUtility.ToEventKey(eventType)));
     }
 
     private void SpawnStayEnemies()
@@ -273,6 +297,77 @@ public class LevelLoader : MonoBehaviour
                 enemyBootstrap?.InitializeEnemyUnits();
             }
         }
+    }
+
+    private void SpawnEnemyPlacements()
+    {
+        var enemyPlacements = levelData.EnemyPlacements;
+        if (enemyPlacements.Count == 0)
+            return;
+
+        if (prefabRegistry == null || !prefabRegistry.TryGetEnemyGroupPrefab(out EnemyGridMover enemyGroupPrefab))
+        {
+            Debug.LogWarning("LevelLoader could not find an enemy group prefab.", this);
+            return;
+        }
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (Application.isPlaying && templateCatalog == null)
+        {
+            Debug.LogWarning("LevelLoader could not find a DHCsvTemplateCatalog in the scene.", this);
+            return;
+        }
+
+        Transform parent = stayEnemyRoot != null ? stayEnemyRoot : transform;
+        for (int i = 0; i < enemyPlacements.Count; i++)
+        {
+            EnemyPlacementData placement = enemyPlacements[i];
+            string placementKey = MapProgressKey.ForSceneEnemy(placement.GridPosition);
+
+            if (Application.isPlaying && IsEnemyDefeated(placementKey))
+                continue;
+
+            EnemyGroupData groupData = null;
+            if (Application.isPlaying &&
+                !templateCatalog.TryGetEnemyGroup(placement.EnemyGroupIndex, out groupData))
+            {
+                Debug.LogWarning(
+                    $"LevelLoader could not find an enemy group CSV index '{placement.EnemyGroupIndex}'.",
+                    this);
+                continue;
+            }
+
+            EnemyGridMover enemy = SpawnComponent(enemyGroupPrefab, placement.GridPosition, parent);
+            if (enemy == null)
+                continue;
+
+            enemy.gameObject.AddComponent<LevelSpawnedEnemyMarker>();
+            enemy.SetBehaviorType(placement.BehaviorType);
+
+            if (!Application.isPlaying)
+                continue;
+
+            EnemyUnitBootstrap enemyBootstrap = enemy.GetComponent<EnemyUnitBootstrap>();
+            if (enemyBootstrap == null ||
+                !enemyBootstrap.InitializeEnemyGroupFromCsv(
+                    groupData,
+                    prefabRegistry,
+                    placement.GridPosition,
+                    placement.BehaviorType,
+                    placementKey))
+            {
+                Debug.LogWarning(
+                    $"LevelLoader failed to spawn enemy group '{placement.EnemyGroupIndex}' at {placement.GridPosition}.",
+                    this);
+                Destroy(enemy.gameObject);
+            }
+        }
+    }
+
+    private static bool IsEnemyDefeated(string placementKey)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.IsEnemyDefeated(placementKey);
     }
 
     private void SpawnUniqueBuildings()
@@ -323,6 +418,7 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(itemRoot);
         ClearChildren(outpostRoot);
         ClearChildren(GetEventRoot(false));
+        ClearLevelSpawnedEnemies();
         ClearStayEnemies();
         ClearDirectChildrenWithComponent<CastleUnit>();
         ClearDirectChildrenWithComponent<VillainUnionBase>();
@@ -376,6 +472,33 @@ public class LevelLoader : MonoBehaviour
                 Destroy(child.gameObject);
             else
                 DestroyImmediate(child.gameObject);
+        }
+    }
+
+    private void ClearLevelSpawnedEnemies()
+    {
+        if (stayEnemyRoot != null && stayEnemyRoot != transform)
+            ClearLevelSpawnedEnemyChildren(stayEnemyRoot);
+
+        ClearLevelSpawnedEnemyChildren(transform);
+    }
+
+    private void ClearLevelSpawnedEnemyChildren(Transform root)
+    {
+        if (root == null)
+            return;
+
+        LevelSpawnedEnemyMarker[] markers = root.GetComponentsInChildren<LevelSpawnedEnemyMarker>(true);
+        for (int i = markers.Length - 1; i >= 0; i--)
+        {
+            LevelSpawnedEnemyMarker marker = markers[i];
+            if (marker == null)
+                continue;
+
+            if (Application.isPlaying)
+                Destroy(marker.gameObject);
+            else
+                DestroyImmediate(marker.gameObject);
         }
     }
 
@@ -484,4 +607,9 @@ public class LevelLoader : MonoBehaviour
         if (occupant != null)
             occupant.SetAnchorGrid(grid);
     }
+}
+
+[DisallowMultipleComponent]
+public class LevelSpawnedEnemyMarker : MonoBehaviour
+{
 }

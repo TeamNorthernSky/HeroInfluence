@@ -6,7 +6,17 @@ public class EconomyManager : MonoBehaviour
 {
     public event Action<ResourceType, int> OnResourceChanged;
 
+    [Header("자원 상한 (임시 — 교환소 수령 Max 판정 등)")]
+    [Tooltip("전 자원 공통 상한. 추후 자원별로 분기 가능. 기본 99,999.")]
+    [SerializeField] private int resourceMax = 99999;
+
     private readonly Dictionary<ResourceType, int> resources = new Dictionary<ResourceType, int>();
+
+    /// <summary>자원별 상한. 현재는 전 자원 공통값(resourceMax). 추후 자원별 분기 가능.</summary>
+    public int GetMax(ResourceType type) => resourceMax;
+
+    /// <summary>해당 자원이 상한에 도달했는지.</summary>
+    public bool IsAtMax(ResourceType type) => Get(type) >= GetMax(type);
 
     public void Initialize()
     {
