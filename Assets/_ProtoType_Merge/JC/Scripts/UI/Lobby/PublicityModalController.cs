@@ -196,8 +196,15 @@ public class PublicityModalController : MonoBehaviour
         bool unlocked = gm.Publicity.IsUnlocked();
 
         // 영웅 영역
-        if (heroSilhouette != null) heroSilhouette.SetActive(!hasSelection);
-        if (heroProfileImage != null) heroProfileImage.enabled = hasSelection;
+        if (heroSilhouette != null) heroSilhouette.SetActive(false); // 빈 프로필은 기본(00) 이미지로 대체
+        if (heroProfileImage != null)
+        {
+            heroProfileImage.gameObject.SetActive(true);
+            heroProfileImage.enabled = true;
+            heroProfileImage.sprite = hasSelection
+                ? HeroProfileCatalog.GetByUnitIndex(selectedUnitIndex)
+                : HeroProfileCatalog.Default;
+        }
         if (currentIPText != null)
             currentIPText.text = hasSelection ? $"I.P : {gm.Publicity.GetIP(unit.UnitIndex)}" : "I.P : —";
         if (selectPromptGo != null) selectPromptGo.SetActive(!hasSelection);

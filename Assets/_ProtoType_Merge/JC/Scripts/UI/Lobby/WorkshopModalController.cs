@@ -5,12 +5,13 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 공방 모달 컨트롤러. 영웅 선택 후 클래스 무기(하급/중급/상급)를 슬롯에 표시하고
-///   - 비장착 보유 무기 클릭 "즉시" 장착 (WorkshopManager.EquipWeapon, 실결선)
-///   - 미보유·제작가능 무기 선택 후 진행 → 제작+자동장착 (TryCraft)
-///   - 장착중 무기 선택 후 진행 → 강화 (TryEnhance, 스탯 실반영)
-/// 을 수행한다. LabModalController와 동형. 무기 스킬 계수 강화의 전투 반영은 보류(더미).
-/// 비용 출처: H.I 자원 데이터 테이블 V1.4 협회-공방(제작/강화). 소모 = 자금 + 수정.
+/// 공방 모달 컨트롤러 (기획서 공방 레이아웃 V2: 1무기=1행).
+/// 좌측 영웅 프로필, 우측 무기 3행(하급/중급/상급). 각 행 = [대표 아이콘] + [4 강화단계 칸(Lv2~5)].
+///   - 대표 아이콘 클릭: 보유+미장착 → 즉시 장착 / 미보유+제작가능 → 제작 선택(진행으로 확정)
+///   - 강화 칸 클릭: "다음 강화 가능 칸"만 선택 가능 → 진행 버튼으로 1단계 강화
+///   - 비용(자금/수정)은 우하단 표시, 진행/취소는 하단.
+/// 무기 스킬 계수 전투 반영은 보류(더미). 무기 스탯은 currentWeaponStats 경유 실반영.
+/// 비용 출처: H.I 자원 데이터 테이블 V1.4 협회-공방(제작/강화).
 /// </summary>
 [DisallowMultipleComponent]
 public class WorkshopModalController : MonoBehaviour
@@ -18,16 +19,22 @@ public class WorkshopModalController : MonoBehaviour
     private enum SlotAction { None, Craft, Enhance }
 
     [Serializable]
-    public class WeaponSlot
+    public class StageCell
     {
-        public Button button;
-        public Image icon;
-        public GameObject usingMark;      // 장착중 마크
-        public GameObject selectedFrame;  // 선택 프레임
-        public GameObject lockedOverlay;  // 사용 불가(미해금/제작 선행조건 미충족) 프레임
-        public GameObject finishedMark;   // 강화 완료(Max)
-        public GameObject lockMark;       // 미보유 자물쇠 마크
-        public TextMeshProUGUI levelText; // Lv.n / 미보유 표시
+        public Button button;   // 강화 단계 칸 버튼
+        public Image frame;      // 상태별 프레임(빈/달성/선택/잠금)
+    }
+
+    [Serializable]
+    public class WeaponRow
+    {
+        public GameObject rowRoot;       // 행 전체 토글(없으면 weaponButton 기준)
+        public Button weaponButton;      // 대표 무기 아이콘 버튼(장착/제작 선택)
+        public Image weaponIcon;         // 대표 무기 아이콘
+        public GameObject usingMark;     // 장착중 마크
+        public GameObject lockMark;      // 미보유 자물쇠
+        public GameObject selectedFrame; // 제작 선택 프레임(대표)
+        public StageCell[] stages = new StageCell[4]; // Lv2~5
     }
 
     [Header("Modal_Workshop 본체")]
@@ -43,40 +50,51 @@ public class WorkshopModalController : MonoBehaviour
     [SerializeField] private GameObject selectPromptGo;
     [SerializeField] private TextMeshProUGUI heroNameText;
 
-    [Header("무기 슬롯 (고정 배열, 씬 배치)")]
-    [SerializeField] private List<WeaponSlot> slots = new List<WeaponSlot>();
+    [Header("무기 행 (하급/중급/상급)")]
+    [SerializeField] private List<WeaponRow> rows = new List<WeaponRow>();
 
-    [Header("필요 자원 표시")]
+    [Header("필요 자원 표시 (우하단)")]
     [SerializeField] private TextMeshProUGUI costMoneyText;
     [SerializeField] private TextMeshProUGUI costCrystalText;
     [SerializeField] private TextMeshProUGUI stateInfoText;
-
-    [Header("무기 아이콘 (임시 리소스, tier 매핑 + 강화레벨)")]
-    [Tooltip("{0}=tier(1~3), {1}=강화레벨(1~5)")]
-    [SerializeField] private string weaponIconPathFormat = "UI_Sprite/UI_Icon/Weapon_temp/weapon {0:00} level {1}";
 
     [Header("영웅 선택 sub-modal")]
     [SerializeField] private GameObject heroSelectModalRoot;
     [SerializeField] private HeroListController heroSelectListController;
     [SerializeField] private Button btnHeroSelectClose;
 
+    [Header("무기 아이콘 (tier 매핑 + 강화레벨)")]
+    [SerializeField] private string weaponIconPathFormat = "UI_Sprite/UI_Icon/Weapon_temp/weapon {0:00} level {1}";
+
+    [Header("강화 칸 프레임 스프라이트 (Resources)")]
+    [SerializeField] private string cellEmptyPath    = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame";
+    [SerializeField] private string cellSelectedPath = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Selected)";
+    [SerializeField] private string cellLockedPath   = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Locked)";
+    [SerializeField] private string cellFilledPath   = "UI_Sprite/UI_HQLobby/Popup/UI_,mark_finished";
+
     private int selectedUnitIndex = -1;
-    private int selectedWeaponIndex = -1;
+    private int selectedRow = -1;
     private SlotAction selectedAction = SlotAction.None;
+    private int selectedTargetLevel = -1;
     private readonly List<int> boundWeapons = new List<int>();
 
     private WorkshopManager subWs;
     private EconomyManager subEco;
-    private readonly Dictionary<string, Sprite> iconCache = new Dictionary<string, Sprite>();
+    private readonly Dictionary<string, Sprite> spriteCache = new Dictionary<string, Sprite>();
 
-    // 무기 tier(1~3) + 강화레벨(1~5)로 아이콘 선택. 미보유(level 0)는 level 1 아이콘으로 표시.
+    private Sprite Load(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return null;
+        if (!spriteCache.TryGetValue(path, out var s)) { s = Resources.Load<Sprite>(path); spriteCache[path] = s; }
+        return s;
+    }
+
+    // 무기 tier(1~3) + 강화레벨(1~5)로 아이콘. 미보유(level 0)는 level 1 아이콘.
     private Sprite GetWeaponIcon(int weaponIndex, int level)
     {
         int tier = Mathf.Clamp(WorkshopManager.TierOf(weaponIndex), 1, 3);
         int lv = Mathf.Clamp(level < 1 ? 1 : level, 1, 5);
-        string path = string.Format(weaponIconPathFormat, tier, lv);
-        if (!iconCache.TryGetValue(path, out var s)) { s = Resources.Load<Sprite>(path); iconCache[path] = s; }
-        return s;
+        return Load(string.Format(weaponIconPathFormat, tier, lv));
     }
 
     private void Awake()
@@ -87,11 +105,21 @@ public class WorkshopModalController : MonoBehaviour
         if (btnHeroSlot != null) btnHeroSlot.onClick.AddListener(OpenHeroSelect);
         if (btnHeroSelectClose != null) btnHeroSelectClose.onClick.AddListener(CloseHeroSelect);
 
-        for (int i = 0; i < slots.Count; i++)
+        for (int r = 0; r < rows.Count; r++)
         {
-            int captured = i;
-            if (slots[i]?.button != null)
-                slots[i].button.onClick.AddListener(() => OnSlotClicked(captured));
+            int cr = r;
+            var row = rows[r];
+            if (row?.weaponButton != null)
+                row.weaponButton.onClick.AddListener(() => OnWeaponClicked(cr));
+            if (row?.stages != null)
+            {
+                for (int k = 0; k < row.stages.Length; k++)
+                {
+                    int ck = k;
+                    if (row.stages[k]?.button != null)
+                        row.stages[k].button.onClick.AddListener(() => OnStageClicked(cr, ck));
+                }
+            }
         }
 
         if (heroSelectListController != null) heroSelectListController.SetSelectionMode(true);
@@ -153,23 +181,23 @@ public class WorkshopModalController : MonoBehaviour
         Refresh();
     }
 
-    private void ClearSelection() { selectedWeaponIndex = -1; selectedAction = SlotAction.None; }
+    private void ClearSelection() { selectedRow = -1; selectedAction = SlotAction.None; selectedTargetLevel = -1; }
 
-    private void OnSlotClicked(int slotIdx)
+    // ─── 대표 무기 아이콘 클릭 ─────────────────────────────────
+    private void OnWeaponClicked(int r)
     {
         var gm = GameManager.Instance;
         if (gm == null || gm.Workshop == null) return;
-        if (selectedUnitIndex < 0) return;
-        if (slotIdx < 0 || slotIdx >= boundWeapons.Count) return;
+        if (selectedUnitIndex < 0 || r < 0 || r >= boundWeapons.Count) return;
 
-        int w = boundWeapons[slotIdx];
+        int w = boundWeapons[r];
         var ws = gm.Workshop;
         bool owned = ws.IsOwned(selectedUnitIndex, w);
         int equipped = ws.GetEquippedWeaponIndex(selectedUnitIndex);
 
         if (!owned)
         {
-            if (ws.CanCraft(selectedUnitIndex, w)) Select(w, SlotAction.Craft);
+            if (ws.CanCraft(selectedUnitIndex, w)) { selectedRow = r; selectedAction = SlotAction.Craft; selectedTargetLevel = -1; }
             else ClearSelection();
         }
         else if (w != equipped)
@@ -179,14 +207,33 @@ public class WorkshopModalController : MonoBehaviour
         }
         else
         {
-            // 장착중 무기 → 강화 선택 토글
-            if (selectedWeaponIndex == w && selectedAction == SlotAction.Enhance) ClearSelection();
-            else Select(w, SlotAction.Enhance);
+            ClearSelection(); // 장착중 대표 클릭 → 선택 해제
         }
         Refresh();
     }
 
-    private void Select(int weaponIndex, SlotAction action) { selectedWeaponIndex = weaponIndex; selectedAction = action; }
+    // ─── 강화 단계 칸 클릭 ─────────────────────────────────────
+    private void OnStageClicked(int r, int k)
+    {
+        var gm = GameManager.Instance;
+        if (gm == null || gm.Workshop == null) return;
+        if (selectedUnitIndex < 0 || r < 0 || r >= boundWeapons.Count) return;
+
+        int w = boundWeapons[r];
+        var ws = gm.Workshop;
+        if (!ws.IsOwned(selectedUnitIndex, w)) return;
+
+        int level = ws.GetWeaponLevel(selectedUnitIndex, w);
+        if (level >= WorkshopManager.MaxWeaponLevel) return;
+        int stageLevel = k + 2;          // 칸 k → 도달 레벨(2~5)
+        if (level + 1 != stageLevel) return; // 다음 강화 가능 칸만 선택
+
+        // 토글
+        if (selectedAction == SlotAction.Enhance && selectedRow == r && selectedTargetLevel == stageLevel)
+            ClearSelection();
+        else { selectedRow = r; selectedAction = SlotAction.Enhance; selectedTargetLevel = stageLevel; }
+        Refresh();
+    }
 
     private void OnCancel()
     {
@@ -198,30 +245,32 @@ public class WorkshopModalController : MonoBehaviour
     {
         var gm = GameManager.Instance;
         if (gm == null || gm.Workshop == null || gm.Economy == null) return;
-        if (selectedUnitIndex < 0 || selectedWeaponIndex < 0 || selectedAction == SlotAction.None) return;
+        if (selectedUnitIndex < 0 || selectedRow < 0 || selectedRow >= boundWeapons.Count) return;
 
+        int w = boundWeapons[selectedRow];
+        var ws = gm.Workshop;
         int money, crystal;
-        bool ok;
+
         if (selectedAction == SlotAction.Craft)
         {
-            if (!gm.Workshop.CanCraft(selectedUnitIndex, selectedWeaponIndex)) return;
-            if (!gm.Workshop.GetCraftCost(selectedWeaponIndex, out _, out money, out crystal)) return;
+            if (!ws.CanCraft(selectedUnitIndex, w)) return;
+            if (!ws.GetCraftCost(w, out _, out money, out crystal)) return;
         }
-        else
+        else if (selectedAction == SlotAction.Enhance)
         {
-            if (!gm.Workshop.CanEnhance(selectedUnitIndex, selectedWeaponIndex)) return;
-            int level = gm.Workshop.GetWeaponLevel(selectedUnitIndex, selectedWeaponIndex);
-            if (!gm.Workshop.GetEnhanceCost(selectedWeaponIndex, level, out _, out money, out crystal)) return;
+            if (!ws.CanEnhance(selectedUnitIndex, w)) return;
+            int level = ws.GetWeaponLevel(selectedUnitIndex, w);
+            if (!ws.GetEnhanceCost(w, level, out _, out money, out crystal)) return;
         }
+        else return;
 
         if (!gm.Economy.Has(ResourceType.Money, money) || !gm.Economy.Has(ResourceType.Crystal, crystal)) return;
         if (!gm.Economy.Spend(ResourceType.Money, money)) return;
         if (!gm.Economy.Spend(ResourceType.Crystal, crystal)) { gm.Economy.Add(ResourceType.Money, money); return; }
 
-        ok = selectedAction == SlotAction.Craft
-            ? gm.Workshop.TryCraft(selectedUnitIndex, selectedWeaponIndex)
-            : gm.Workshop.TryEnhance(selectedUnitIndex, selectedWeaponIndex);
-
+        bool ok = selectedAction == SlotAction.Craft
+            ? ws.TryCraft(selectedUnitIndex, w)
+            : ws.TryEnhance(selectedUnitIndex, w);
         if (!ok)
         {
             gm.Economy.Add(ResourceType.Money, money);
@@ -232,6 +281,7 @@ public class WorkshopModalController : MonoBehaviour
         Refresh();
     }
 
+    // ─── Refresh ───────────────────────────────────────────────
     private void Refresh()
     {
         var gm = GameManager.Instance;
@@ -241,54 +291,70 @@ public class WorkshopModalController : MonoBehaviour
         bool unlocked = ws.IsUnlocked();
         bool hasSelection = selectedUnitIndex >= 0;
 
-        if (heroSilhouette != null) heroSilhouette.SetActive(!hasSelection);
-        if (heroProfileImage != null) heroProfileImage.enabled = hasSelection;
+        // 영웅 영역
+        if (heroSilhouette != null) heroSilhouette.SetActive(false);
+        if (heroProfileImage != null)
+        {
+            heroProfileImage.gameObject.SetActive(true);
+            heroProfileImage.enabled = true;
+            heroProfileImage.sprite = hasSelection
+                ? HeroProfileCatalog.GetByUnitIndex(selectedUnitIndex)
+                : HeroProfileCatalog.Default;
+        }
         if (selectPromptGo != null) selectPromptGo.SetActive(!hasSelection);
         if (heroNameText != null)
             heroNameText.text = hasSelection
-                ? (ws.TryResolveClass(selectedUnitIndex, out string c, out _) ? c : "—") : "";
+                ? (ws.TryResolveClass(selectedUnitIndex, out string cn, out _) ? cn : "—") : "";
 
         boundWeapons.Clear();
         if (hasSelection) boundWeapons.AddRange(ws.GetClassWeaponIndices(selectedUnitIndex));
         int equipped = hasSelection ? ws.GetEquippedWeaponIndex(selectedUnitIndex) : 0;
 
-        for (int i = 0; i < slots.Count; i++)
+        Sprite sEmpty = Load(cellEmptyPath), sSel = Load(cellSelectedPath), sLock = Load(cellLockedPath), sFill = Load(cellFilledPath);
+
+        for (int r = 0; r < rows.Count; r++)
         {
-            var slot = slots[i];
-            if (slot == null) continue;
-            bool active = i < boundWeapons.Count;
-            if (slot.button != null) slot.button.gameObject.SetActive(active);
+            var row = rows[r];
+            if (row == null) continue;
+            bool active = r < boundWeapons.Count;
+            if (row.rowRoot != null) row.rowRoot.SetActive(active);
+            else if (row.weaponButton != null) row.weaponButton.gameObject.SetActive(active);
             if (!active) continue;
 
-            int w = boundWeapons[i];
+            int w = boundWeapons[r];
             bool owned = ws.IsOwned(selectedUnitIndex, w);
             int level = ws.GetWeaponLevel(selectedUnitIndex, w);
             bool isEquipped = owned && w == equipped;
-            bool isSelected = w == selectedWeaponIndex;
-            bool maxed = owned && level >= WorkshopManager.MaxWeaponLevel;
-            // 잠금 표시: 미해금이거나, 미보유+제작불가
-            bool locked = !unlocked || (!owned && !ws.CanCraft(selectedUnitIndex, w));
 
-            if (slot.usingMark != null) slot.usingMark.SetActive(isEquipped);
-            if (slot.selectedFrame != null) slot.selectedFrame.SetActive(isSelected);
-            if (slot.lockedOverlay != null) slot.lockedOverlay.SetActive(locked);
-            if (slot.lockMark != null) slot.lockMark.SetActive(!owned);
-            if (slot.finishedMark != null) slot.finishedMark.SetActive(maxed);
-            if (slot.levelText != null) slot.levelText.text = owned ? $"Lv.{level}" : "미보유";
-            if (slot.icon != null) { var sp = GetWeaponIcon(w, level); slot.icon.sprite = sp; slot.icon.enabled = sp != null; }
+            if (row.weaponIcon != null) { var sp = GetWeaponIcon(w, level); row.weaponIcon.sprite = sp; row.weaponIcon.enabled = sp != null; }
+            if (row.usingMark != null) row.usingMark.SetActive(isEquipped);
+            if (row.lockMark != null) row.lockMark.SetActive(!owned);
+            if (row.selectedFrame != null) row.selectedFrame.SetActive(selectedAction == SlotAction.Craft && selectedRow == r);
+
+            if (row.stages != null)
+            {
+                for (int k = 0; k < row.stages.Length; k++)
+                {
+                    var cell = row.stages[k];
+                    if (cell == null) continue;
+                    int stageLevel = k + 2;
+                    bool filled = owned && level >= stageLevel;
+                    bool isNext = owned && level + 1 == stageLevel && level < WorkshopManager.MaxWeaponLevel;
+                    bool isSel = selectedAction == SlotAction.Enhance && selectedRow == r && selectedTargetLevel == stageLevel;
+                    Sprite fs = isSel ? sSel : (filled ? sFill : (isNext ? sEmpty : sLock));
+                    if (cell.frame != null) { cell.frame.sprite = fs; cell.frame.enabled = fs != null; }
+                    if (cell.button != null) cell.button.interactable = isNext;
+                }
+            }
         }
 
-        // 필요 자원
+        // 비용 (우하단)
         int reqM = 0, reqC = 0; bool showCost = false;
-        if (hasSelection && selectedWeaponIndex >= 0 && selectedAction != SlotAction.None)
+        if (hasSelection && selectedRow >= 0 && selectedRow < boundWeapons.Count && selectedAction != SlotAction.None)
         {
-            if (selectedAction == SlotAction.Craft)
-                showCost = ws.GetCraftCost(selectedWeaponIndex, out _, out reqM, out reqC);
-            else
-            {
-                int lv = ws.GetWeaponLevel(selectedUnitIndex, selectedWeaponIndex);
-                showCost = ws.GetEnhanceCost(selectedWeaponIndex, lv, out _, out reqM, out reqC);
-            }
+            int w = boundWeapons[selectedRow];
+            if (selectedAction == SlotAction.Craft) showCost = ws.GetCraftCost(w, out _, out reqM, out reqC);
+            else { int lv = ws.GetWeaponLevel(selectedUnitIndex, w); showCost = ws.GetEnhanceCost(w, lv, out _, out reqM, out reqC); }
         }
         if (costMoneyText != null) costMoneyText.text = showCost ? $"{reqM:N0}" : "—";
         if (costCrystalText != null) costCrystalText.text = showCost ? $"{reqC:N0}" : "—";

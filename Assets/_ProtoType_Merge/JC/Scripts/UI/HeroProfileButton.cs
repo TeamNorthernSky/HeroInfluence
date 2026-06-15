@@ -63,6 +63,14 @@ public class HeroProfileButton : MonoBehaviour
         if (classText != null) classText.text = displayClass;
         if (levelText != null) levelText.text = $"Lv {level}";
 
+        if (profileImage != null)
+        {
+            var sp = HeroProfileCatalog.GetByName(template != null ? template.Name : null);
+            profileImage.gameObject.SetActive(true);
+            profileImage.enabled = true;
+            if (sp != null) profileImage.sprite = sp;
+        }
+
         if (visitIndicator != null && visitIndicator.activeSelf != isVisiting)
             visitIndicator.SetActive(isVisiting);
     }

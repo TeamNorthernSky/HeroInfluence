@@ -216,8 +216,15 @@ public class LabModalController : MonoBehaviour
         bool unlocked = gm.Lab.IsUnlocked();
         bool hasSelection = selectedUnitIndex >= 0;
 
-        if (heroSilhouette != null) heroSilhouette.SetActive(!hasSelection);
-        if (heroProfileImage != null) heroProfileImage.enabled = hasSelection;
+        if (heroSilhouette != null) heroSilhouette.SetActive(false); // 빈 프로필은 기본(00) 이미지로 대체
+        if (heroProfileImage != null)
+        {
+            heroProfileImage.gameObject.SetActive(true);
+            heroProfileImage.enabled = true;
+            heroProfileImage.sprite = hasSelection
+                ? HeroProfileCatalog.GetByUnitIndex(selectedUnitIndex)
+                : HeroProfileCatalog.Default;
+        }
         if (selectPromptGo != null) selectPromptGo.SetActive(!hasSelection);
 
         boundSkills.Clear();

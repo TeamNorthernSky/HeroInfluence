@@ -100,7 +100,15 @@ public class HeroInfoModal : MonoBehaviour
         SetText(counterRateText, $"반격율 : {s.CounterRate:F0}%");
         SetText(damageReductionText, "피해경감률 : —");
         SetText(speedText, $"속도 : {s.Speed:F0}");
-        // portraitImage / classSkillIcon / weaponSkillIcon — 데이터 원천 미정. Sprite 미할당
+
+        if (portraitImage != null)
+        {
+            var sp = HeroProfileCatalog.GetByName(template != null ? template.Name : null);
+            portraitImage.gameObject.SetActive(true);
+            portraitImage.enabled = true;
+            if (sp != null) portraitImage.sprite = sp;
+        }
+        // classSkillIcon / weaponSkillIcon — 데이터 원천 미정. Sprite 미할당
     }
 
     private static void SetText(TMP_Text target, string value)
