@@ -15,6 +15,10 @@ public class UnitRewardPreview
     public int GainedExp;
     public List<int> UnlockCandidateSkillIds = new List<int>();
 
+    public float OldInfluence;
+    public float NewInfluence;
+    public float InfluenceDelta => NewInfluence - OldInfluence;
+
     public bool HasLevelUp => NewLevel > OldLevel;
     public bool HasSkillSelection => UnlockCandidateSkillIds != null && UnlockCandidateSkillIds.Count > 0;
 }

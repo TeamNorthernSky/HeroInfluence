@@ -5,6 +5,12 @@ public class UnitHPBar : MonoBehaviour
 {
     [SerializeField] private BattleCharactor battleCharactor;
     [SerializeField] private Image fillImage;
+    [SerializeField] private RectTransform hpBarRect;
+    [SerializeField] private Canvas hpCanvas;
+    [SerializeField] private Camera targetCamera;
+    [SerializeField] private Vector2 screenOffset = new Vector2(0f, 100f);
+    [SerializeField] private RawImage HPFrame;
+    public float YaxisValue = 0.0f;
 
     private void Awake()
     {
@@ -12,6 +18,8 @@ public class UnitHPBar : MonoBehaviour
         {
             battleCharactor = GetComponentInParent<BattleCharactor>();
         }
+        
+        ResolveReferences();
     }
 
     private void OnEnable()
@@ -21,6 +29,7 @@ public class UnitHPBar : MonoBehaviour
             battleCharactor.OnHpChanged += UpdateHPBar;
             // 초기값까지 즉시 반영
             UpdateHPBar(battleCharactor.CurrentHp, battleCharactor.MaxHp);
+            screenOffset = new Vector2(0f, 100f);
         }
     }
 
@@ -32,6 +41,11 @@ public class UnitHPBar : MonoBehaviour
         }
     }
 
+    private void LateUpdate()
+    {
+        UpdateScreenPosition();
+    }
+
     private void UpdateHPBar(float currentHp, float maxHp)
     {
         if (fillImage == null)
@@ -39,6 +53,12 @@ public class UnitHPBar : MonoBehaviour
             Debug.LogWarning($"[HPBar] fillImage is null on {gameObject.name}");
             return;
         }
+
+        //if(HPGauge == null)
+        //{
+        //    Debug.LogWarning($"[HPBar] HPGauge is null on {gameObject.name}");
+        //    return;
+        //}
 
         if (maxHp <= 0f)
         {
@@ -48,6 +68,77 @@ public class UnitHPBar : MonoBehaviour
         }
 
         fillImage.fillAmount = Mathf.Clamp01(currentHp / maxHp);
+    }
+
+    private void UpdateScreenPosition()
+    {
+        if (battleCharactor == null || hpBarRect == null)
+        {
+            SetVisible(false);
+            return;
+        }
+
+        if (targetCamera == null)
+        {
+            targetCamera = Camera.main;
+        }
+
+        if (targetCamera == null)
+        {
+            SetVisible(false);
+            return;
+        }
+
+        Vector3 screenPosition = targetCamera.WorldToScreenPoint(battleCharactor.transform.position);
+        if (screenPosition.z <= 0f)
+        {
+            SetVisible(false);
+            return;
+        }
+
+        screenPosition.x += screenOffset.x;
+        screenPosition.y += screenOffset.y;
+
+        //hpBarRect.position = targetCamera.ScreenToWorldPoint(screenPosition);
+        hpBarRect.position = new Vector3 (targetCamera.ScreenToWorldPoint(screenPosition).x, targetCamera.ScreenToWorldPoint(screenPosition).y+ YaxisValue, targetCamera.ScreenToWorldPoint(screenPosition).z);
+        hpBarRect.rotation = targetCamera.transform.rotation;
+        SetVisible(true);
+    }
+
+    private void ResolveReferences()
+    {
+        if (hpBarRect == null)
+        {
+            Transform existingCanvas = transform.Find("HPCanvas");
+            if (existingCanvas != null)
+            {
+                hpBarRect = existingCanvas as RectTransform;
+            }
+        }
+
+        if (hpBarRect == null)
+        {
+            hpBarRect = transform as RectTransform;
+        }
+
+        if (hpCanvas == null && hpBarRect != null)
+        {
+            hpCanvas = hpBarRect.GetComponent<Canvas>();
+        }
+    }
+
+    private void SetVisible(bool isVisible)
+    {
+        if (hpCanvas != null)
+        {
+            hpCanvas.enabled = isVisible;
+            return;
+        }
+
+        if (fillImage != null)
+        {
+            fillImage.enabled = isVisible;
+        }
     }
 
 #if UNITY_EDITOR
@@ -81,7 +172,9 @@ public class UnitHPBar : MonoBehaviour
         RectTransform canvasRect = canvasObj.GetComponent<RectTransform>();
         canvasRect.sizeDelta = new Vector2(100f, 15f);
         canvasRect.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-        canvasRect.localPosition = new Vector3(0f, 2f, 0f);
+        canvasRect.localPosition = Vector3.zero;
+        hpBarRect = canvasRect;
+        hpCanvas = canvas;
 
         Transform existingBg = canvasObj.transform.Find("Background");
         GameObject bgObj = existingBg != null ? existingBg.gameObject : new GameObject("Background");

@@ -1,3 +1,4 @@
+using com.IvanMurzak.Unity.MCP.Runtime.Extensions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,18 +86,10 @@ public class BattleSceneManager : MonoBehaviour
         // if (plan.UnitPreviews.Exists(u => u.HasLevelUp))
         //     yield return battleUIManager.ShowLevelUpSequence(plan);
 
-        // 3. 스킬 선택 UI (TODO: 스킬 선택 UI가 생기면 여기서 yield return)
-
-        // 4. 저장 (UI 완료 후)
-        BattleResultPersistenceHandler.CommitBattleRewardPlan(
-            plan, playerBattleCharactors, enemyBattleCharactors, result);
-
-        // 5. CombatContext 결과 설정
+        // 3. CombatContext 결과 설정
         CombatContext combatContext = CombatContext.Instance;
         if (combatContext != null)
         {
-            // [JC 260513] BattleResult → CombatResult 명시적 1:1 매핑.
-            // 향후 Battle/Combat 명명 통일 시 BattleResult → CombatResult 일원화로 매핑 함수 자체 폐기 예정.
             CombatResult mappedResult = result switch
             {
                 BattleResult.Victory   => CombatResult.Victory,
@@ -108,10 +101,23 @@ public class BattleSceneManager : MonoBehaviour
             combatContext.SetCombatResult(mappedResult);
         }
 
-        // 6. 승패 결과 UI
-        battleUIManager?.ShowBattleResultUI(result);
+        // 4. 승패 결과 UI (레벨업 스킬 슬롯 포함, Accept 버튼은 슬롯 모두 처리 후 활성화)
+        BattleResultPanel resultPanel = battleUIManager?.ShowBattleResultUI(result, plan);
 
-        // 7. 씬 전환
+        // 5. Accept 버튼 대기
+        if (resultPanel != null)
+        {
+            bool accepted = false;
+            resultPanel.OnAccepted += () => accepted = true;
+            yield return new WaitUntil(() => accepted);
+        }
+
+        // 6. 저장 (스킬 선택 결과 포함)
+        var skillResults = resultPanel?.GetSkillResults() ?? new System.Collections.Generic.List<SkillSelectionResult>();
+        BattleResultPersistenceHandler.CommitBattleRewardPlan(
+            plan, playerBattleCharactors, enemyBattleCharactors, result, skillResults);
+
+        // 8. 씬 전환
         // [JC 260514] returnSceneName 빈 값이라도 GameSceneManager.Instance.ExplorationScene fallback이 있으면 통과.
         if (string.IsNullOrWhiteSpace(returnSceneName) && GameSceneManager.Instance == null)
         {

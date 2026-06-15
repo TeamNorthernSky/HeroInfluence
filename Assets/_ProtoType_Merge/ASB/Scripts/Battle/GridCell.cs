@@ -72,12 +72,12 @@ namespace ASB.Work.BattleGrid
 
         public void SetHighlight()
         {
-            if (cellRenderer == null || redHighlightMat == null)
+            if (cellRenderer == null || targetMat == null)
             {
                 return;
             }
 
-            cellRenderer.sharedMaterial = redHighlightMat;
+            cellRenderer.sharedMaterial = targetMat;
         }
 
         public void SetMainTargetHighlight()
@@ -98,6 +98,46 @@ namespace ASB.Work.BattleGrid
             }
 
             cellRenderer.sharedMaterial = transparentMat;
+        }
+
+        public void SetMaterial(Material mat)
+        {
+            if (cellRenderer == null || mat == null)
+            {
+                return;
+            }
+
+            cellRenderer.sharedMaterial = mat;
+        }
+
+        public void SetTransparentTargetMaterial(Material mat)
+        {
+            if(cellRenderer == null || mat == null)
+            {
+                return;
+            }
+
+            transparentMat = mat;
+        }
+
+        public void SetTargetMaterial(Material mat)
+        {
+            if(cellRenderer == null || mat == null)
+            {
+                return;
+            }
+
+            targetMat = mat;
+        }
+        
+        public void SetAdditionalTargetMaterial(Material mat)
+        {
+            if(cellRenderer == null || mat == null)
+            {
+                return;
+            }
+
+            additionalTargetMat = mat;
         }
 
         private static bool TryParseCoordsFromName(string objectName, out Vector2Int parsed)

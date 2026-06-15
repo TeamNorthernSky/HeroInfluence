@@ -27,17 +27,37 @@ public class RunButton : MonoBehaviour
     private void OnEnable()
     {
         if (button != null)
-        {
             button.onClick.AddListener(OnRunButtonClicked);
+
+        if (battleFlowManager != null)
+        {
+            battleFlowManager.OnTurnStarted += OnTurnStarted;
+            battleFlowManager.OnBattleEnded += OnBattleEnded;
         }
+
+        //button.interactable = false;
     }
 
     private void OnDisable()
     {
         if (button != null)
-        {
             button.onClick.RemoveListener(OnRunButtonClicked);
+
+        if (battleFlowManager != null)
+        {
+            battleFlowManager.OnTurnStarted -= OnTurnStarted;
+            battleFlowManager.OnBattleEnded -= OnBattleEnded;
         }
+    }
+
+    private void OnTurnStarted(int round, BattleCharactor unit)
+    {
+        button.interactable = unit != null && unit.IsPlayer;
+    }
+
+    private void OnBattleEnded(BattleResult result)
+    {
+        button.interactable = false;
     }
 
     private void OnRunButtonClicked()
