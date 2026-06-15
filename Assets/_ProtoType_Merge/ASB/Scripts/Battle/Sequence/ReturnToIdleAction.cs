@@ -21,10 +21,9 @@ namespace ASB.Work.Battle.Sequence
                 yield break;
             }
 
-            // 화살 오브젝트 초기화 (궁수 유닛)
+            // HoldArrow 복원 (TargetArrowPrefab은 Instantiate 후 자동 Destroy됨)
             UnitVisualProfile profile = _unit.GetComponent<UnitVisualProfile>();
-            profile?.TargetArrow?.SetActive(false);
-            profile?.HoldArrow?.SetActive(false);
+            profile?.HoldArrow?.SetActive(true);
 
             _unit.EnsureAnimationController();
             _unit.Anim?.PlayIdleAnimation();

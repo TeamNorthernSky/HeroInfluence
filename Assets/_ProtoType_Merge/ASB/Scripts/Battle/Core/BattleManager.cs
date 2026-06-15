@@ -899,7 +899,7 @@ public class BattleManager : MonoBehaviour
 
         bool isArcher = actor.GetComponent<UnitVisualProfile>()?.HoldArrow != null;
         if (isArcher && target != null)
-            runner.Enqueue(new ArrowImpactAction(actor, target));
+            runner.Enqueue(new ArrowImpactAction(actor, target, this));
 
         runner.Enqueue(new ResolveHitAction(target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector));
 
