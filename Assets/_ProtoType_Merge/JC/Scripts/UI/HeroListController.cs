@@ -39,6 +39,8 @@ public class HeroListController : MonoBehaviour, IBeginDragHandler, IEndDragHand
         selectionMode = enabled;
     }
 
+    public bool GetSelectionMode() => selectionMode;
+
     [Header("Layout (Content 크기 수동 계산용)")]
     [Tooltip("아이템 1개 높이. 프리팹의 실제 RectTransform 높이와 일치시킬 것")]
     [SerializeField] private float itemHeight = 100f;

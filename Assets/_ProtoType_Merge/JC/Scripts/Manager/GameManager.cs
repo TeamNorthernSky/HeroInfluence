@@ -12,6 +12,8 @@ public class GameManager : MonoBehaviour
     public HQStateManager HQ { get; private set; }
     public PublicityManager Publicity { get; private set; }
     public TrainingManager Training { get; private set; }
+    public LabManager Lab { get; private set; }
+    public WorkshopManager Workshop { get; private set; }
     public TurnIncomeModalController TurnIncomeModal { get; private set; }
 
     [Header("매턴 income 모달 트리거 씬 (기본: PlayScene = DH씬)")]
@@ -114,6 +116,12 @@ public class GameManager : MonoBehaviour
 
         Training = GetComponentInChildren<TrainingManager>(true);
         if (Training != null) Training.Initialize();
+
+        Lab = GetComponentInChildren<LabManager>(true);
+        if (Lab != null) Lab.Initialize();
+
+        Workshop = GetComponentInChildren<WorkshopManager>(true);
+        if (Workshop != null) Workshop.Initialize();
 
         UIPrefabRegistry = GetComponentInChildren<UIPrefabRegistry>(true);
 

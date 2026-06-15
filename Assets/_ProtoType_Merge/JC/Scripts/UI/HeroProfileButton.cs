@@ -26,6 +26,9 @@ public class HeroProfileButton : MonoBehaviour
     private HeroInfoModal infoModal;
     private Action<int> selectCallback;
 
+    /// <summary>바인딩된 영웅 인덱스(출전 드래그 등 외부 결합용).</summary>
+    public int UnitIndex => unitIndex;
+
     private void Awake()
     {
         if (button == null) button = GetComponent<Button>();
