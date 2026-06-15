@@ -53,7 +53,7 @@ public class SkillButtonController : MonoBehaviour
     private void OnTurnStarted(int round, BattleCharactor unit)
     {
         if (unit == null || !unit.IsPlayer) return;
-        Debug.Log(unit.UnitData.unitName);
+        Debug.Log(unit.UnitName);
 
         toggle2.SetState(false, false);
         toggle1.SetState(false, false);

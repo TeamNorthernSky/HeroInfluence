@@ -171,7 +171,7 @@ public class PlayerSpawner : MonoBehaviour
             return overridePrefab;
         }
 
-        string path = $"prefab/PlayerUnit/Unit_{trimmedIndex}";
+        string path = $"prefab/BattlePrefab/PlayerUnit/Unit_{trimmedIndex}";
         var prefab = Resources.Load<GameObject>(path);
         if (prefab == null)
         {

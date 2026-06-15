@@ -11,8 +11,10 @@ namespace ASB.Work.BattleGrid
         [Header("Visuals (Material Swap)")]
         [SerializeField] private Renderer cellRenderer;
         [SerializeField] private Material transparentMat;
-        [SerializeField] private Material redHighlightMat;
-        [SerializeField] private Material mainTargetHighlightMat;
+        [SerializeField] private Material targetMat;
+        [SerializeField] private Material additionalTargetMat;
+
+
 
         public Vector2Int Coords => coords;
         public bool IsFrontRow => coords.x == 1 || coords.x == 2;
@@ -82,12 +84,13 @@ namespace ASB.Work.BattleGrid
 
         public void SetMainTargetHighlight()
         {
-            if (cellRenderer == null || mainTargetHighlightMat == null)
+            var mat = GridManager.Instance?.MainTargetHighlightMat;
+            if (cellRenderer == null || mat == null)
             {
                 return;
             }
 
-            cellRenderer.sharedMaterial = mainTargetHighlightMat;
+            cellRenderer.sharedMaterial = mat;
         }
 
         public void ClearHighlight()

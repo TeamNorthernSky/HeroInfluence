@@ -2017,6 +2017,7 @@ GameObject:
   - component: {fileID: 621159271}
   - component: {fileID: 621159272}
   - component: {fileID: 621159273}
+  - component: {fileID: 621159275}
   - component: {fileID: 621159274}
   m_Layer: 0
   m_Name: BattleSceneManager
@@ -2094,6 +2095,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _currentBattleSpeed: 1
   battleFlowManager: {fileID: 0}
+  _visualDirector: {fileID: 0}
+  _presentationCatalog: {fileID: 0}
 --- !u!114 &621159271
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2152,6 +2155,21 @@ MonoBehaviour:
   toggle2: {fileID: 888000039}
   inputHandler: {fileID: 1540026209}
   battleFlowManager: {fileID: 621159268}
+--- !u!114 &621159275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621159265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68f6cd0754ed4bc4ead79605623650fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _catalog: {fileID: 11400000, guid: 99e1bc13888047f4ea436fbc4eaf9856, type: 2}
+  _popupPresenter: {fileID: 2717163431547817391, guid: 7fce9a6c8cecfa84193fd19e5b1b423a,
+    type: 3}
 --- !u!1 &658894164
 GameObject:
   m_ObjectHideFlags: 0
@@ -5571,6 +5589,8 @@ MonoBehaviour:
   AdditionalTargetMaterial: {fileID: 2100000, guid: 9ffc1d572b0414a48a54294b2ad61660,
     type: 2}
   ClearMaterial: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
+  MainTargetHighlightMaterial: {fileID: 2100000, guid: e8e86b2d9652a0240b76abafde055fa9,
+    type: 2}
 --- !u!4 &1738284057
 Transform:
   m_ObjectHideFlags: 0

@@ -3767,6 +3767,7 @@ MonoBehaviour:
   targetCamera: {fileID: 0}
   screenOffset: {x: 0, y: 60}
   HPFrame: {fileID: 0}
+  YaxisValue: 0
 --- !u!136 &5439104218825130105
 CapsuleCollider:
   m_ObjectHideFlags: 0

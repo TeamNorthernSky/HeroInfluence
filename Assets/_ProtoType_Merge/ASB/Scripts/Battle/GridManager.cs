@@ -11,7 +11,10 @@ namespace ASB.Work.BattleGrid
         [SerializeField] private Material TargetMaterial;
         [SerializeField] private Material AdditionalTargetMaterial;
         [SerializeField] private Material ClearMaterial;
+        [SerializeField] private Material MainTargetHighlightMaterial;
         public static GridManager Instance { get; private set; }
+
+        public Material MainTargetHighlightMat => MainTargetHighlightMaterial;
 
         private void Awake()
         {
