@@ -95,7 +95,11 @@ public class LabModalController : MonoBehaviour
                 slots[i].button.onClick.AddListener(() => OnSlotClicked(captured));
         }
 
-        if (heroSelectListController != null) heroSelectListController.SetSelectionMode(true);
+        if (heroSelectListController != null)
+        {
+            heroSelectListController.SetSelectionMode(true);
+            heroSelectListController.SetVisitingOnlyMode(true); // 본부 상주(방문) 파티 영웅만 연구소 사용
+        }
     }
 
     private void OnEnable() { TrySubscribe(); Refresh(); }

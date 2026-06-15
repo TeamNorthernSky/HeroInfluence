@@ -344,10 +344,10 @@ public class SortieController : MonoBehaviour
     }
 
     /// <summary>
-    /// 진형을 저장한다. 전열(0~2)/후열(3~5) 위치 보존을 위해 빈칸(0)을 포함한 배열로 저장한다
-    /// (마지막 채워진 슬롯까지). PlayerSpawner는 unitIndex&lt;=0인 그리드 셀을 건너뛰므로 위치가 보존된다.
-    /// ※ 단 현재 DH CombatEncounterManager.FilterValidUnitIndices가 빈칸을 제거하므로, 전열/후열이
-    ///   전투까지 도달하려면 DH측 보존 수정이 선행되어야 한다(별도 조율 과제). [[project_sortie_formation_seam]]
+    /// 진형을 저장한다. 전열(0~2)/후열(3~5) 위치 보존을 위해 빈칸(0)을 포함한 배열(unitIndices)과
+    /// 각 원소의 슬롯 번호(unitSlots)를 함께 저장한다. DH PartyPersistentRepository가 unitSlots를
+    /// 지원하고, CombatEncounterManager.BuildPartyCombatSlotUnitIndices가 unitSlots로 6칸 위치를
+    /// 보존하므로 전열/후열이 전투까지 도달한다. [[project_sortie_formation_seam]]
     /// </summary>
     private void SaveFormation()
     {
@@ -356,8 +356,15 @@ public class SortieController : MonoBehaviour
         int last = -1;
         for (int i = 0; i < formation.Count; i++) if (formation[i] > 0) last = i;
         var ordered = new List<int>();
-        for (int i = 0; i <= last; i++) ordered.Add(formation[i]); // 내부 빈칸(0) 보존, 후미 빈칸은 절삭
-        repo.RegisterOrUpdateParty(ResolvePartyId(repo), ordered);
+        var unitSlots = new List<int>();
+        for (int i = 0; i <= last; i++)
+        {
+            ordered.Add(formation[i]);  // 내부 빈칸(0) 보존, 후미 빈칸은 절삭
+            // DH는 슬롯을 1-base(1~6)로 기대. + 진형 UI 좌열(0~2)=후열, 우열(3~5)=전열을
+            // 전투 슬롯 전/후열 그룹에 맞추기 위해 그룹 교환: 좌열→슬롯4~6, 우열→슬롯1~3 (상중하 순서 유지)
+            unitSlots.Add(i < 3 ? i + 4 : i - 2);
+        }
+        repo.RegisterOrUpdateParty(ResolvePartyId(repo), ordered, unitSlots);
     }
 
     private string ResolvePartyId(PartyPersistentRepository repo)

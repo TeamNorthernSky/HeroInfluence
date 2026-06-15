@@ -92,14 +92,15 @@ public class HeroInfoModal : MonoBehaviour
         int ipValue = GameManager.Instance != null && GameManager.Instance.Publicity != null
             ? GameManager.Instance.Publicity.GetIP(unit.UnitIndex)
             : 0;
-        SetText(ipText, $"I.P : {ipValue}");
-        SetText(hpText, $"체력 : {s.HP:F0}");
-        SetText(atkText, $"공격력 : {s.Atk:F0}");
-        SetText(defText, $"방어력 : {s.DEF:F0}");
-        SetText(critRateText, $"치명타율 : {s.CriticalRate:F0}%");
-        SetText(counterRateText, $"반격율 : {s.CounterRate:F0}%");
-        SetText(damageReductionText, "피해경감률 : —");
-        SetText(speedText, $"속도 : {s.Speed:F0}");
+        // 명칭은 씬의 고정 라벨로 분리됨. 값 텍스트는 값만 출력(값필드 박스 안).
+        SetText(ipText, $"{ipValue}");
+        SetText(hpText, $"{s.HP:F0}");
+        SetText(atkText, $"{s.Atk:F0}");
+        SetText(defText, $"{s.DEF:F0}");
+        SetText(critRateText, $"{s.CriticalRate:F0}%");
+        SetText(counterRateText, $"{s.CounterRate:F0}%");
+        SetText(damageReductionText, "—");
+        SetText(speedText, $"{s.Speed:F0}");
 
         if (portraitImage != null)
         {

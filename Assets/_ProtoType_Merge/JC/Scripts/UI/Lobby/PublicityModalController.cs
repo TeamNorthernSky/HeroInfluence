@@ -61,7 +61,11 @@ public class PublicityModalController : MonoBehaviour
         if (btnMax != null) btnMax.onClick.AddListener(SetCountToMax);
         if (progressSlider != null) progressSlider.onValueChanged.AddListener(OnSliderChanged);
 
-        if (heroSelectListController != null) heroSelectListController.SetSelectionMode(true);
+        if (heroSelectListController != null)
+        {
+            heroSelectListController.SetSelectionMode(true);
+            heroSelectListController.SetVisitingOnlyMode(true); // 본부 상주(방문) 파티 영웅만 홍보 사용
+        }
     }
 
     private void OnEnable() { TrySubscribe(); progressCount = 0; Refresh(); }

@@ -122,7 +122,11 @@ public class WorkshopModalController : MonoBehaviour
             }
         }
 
-        if (heroSelectListController != null) heroSelectListController.SetSelectionMode(true);
+        if (heroSelectListController != null)
+        {
+            heroSelectListController.SetSelectionMode(true);
+            heroSelectListController.SetVisitingOnlyMode(true); // 본부 상주(방문) 파티 영웅만 공방 사용
+        }
     }
 
     private void OnEnable() { TrySubscribe(); Refresh(); }
