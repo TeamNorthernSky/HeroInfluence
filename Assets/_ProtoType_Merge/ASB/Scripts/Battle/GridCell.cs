@@ -11,7 +11,8 @@ namespace ASB.Work.BattleGrid
         [Header("Visuals (Material Swap)")]
         [SerializeField] private Renderer cellRenderer;
         [SerializeField] private Material transparentMat;
-        [SerializeField] private Material redHighlightMat;
+        [SerializeField] private Material targetMat;
+        [SerializeField] private Material additionalTargetMat;
 
         public Vector2Int Coords => coords;
         public bool IsFrontRow => coords.x == 1 || coords.x == 2;
@@ -71,12 +72,12 @@ namespace ASB.Work.BattleGrid
 
         public void SetHighlight()
         {
-            if (cellRenderer == null || redHighlightMat == null)
+            if (cellRenderer == null || targetMat == null)
             {
                 return;
             }
 
-            cellRenderer.sharedMaterial = redHighlightMat;
+            cellRenderer.sharedMaterial = targetMat;
         }
 
         public void ClearHighlight()
@@ -87,6 +88,46 @@ namespace ASB.Work.BattleGrid
             }
 
             cellRenderer.sharedMaterial = transparentMat;
+        }
+
+        public void SetMaterial(Material mat)
+        {
+            if (cellRenderer == null || mat == null)
+            {
+                return;
+            }
+
+            cellRenderer.sharedMaterial = mat;
+        }
+
+        public void SetTransparentTargetMaterial(Material mat)
+        {
+            if(cellRenderer == null || mat == null)
+            {
+                return;
+            }
+
+            transparentMat = mat;
+        }
+
+        public void SetTargetMaterial(Material mat)
+        {
+            if(cellRenderer == null || mat == null)
+            {
+                return;
+            }
+
+            targetMat = mat;
+        }
+        
+        public void SetAdditionalTargetMaterial(Material mat)
+        {
+            if(cellRenderer == null || mat == null)
+            {
+                return;
+            }
+
+            additionalTargetMat = mat;
         }
 
         private static bool TryParseCoordsFromName(string objectName, out Vector2Int parsed)

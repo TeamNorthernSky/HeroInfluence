@@ -14,18 +14,17 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentSkillText;
     [SerializeField] private TextMeshProUGUI battleResultText;
 
+    [Header("Result Panel")]
+    [SerializeField] private BattleResultPanel battleResultPanel;
+
     [Header("Turn Arrow")]
     [SerializeField] private TurnArrow turnArrow;
-    [SerializeField] private Vector3 turnArrowWorldOffset = new Vector3(0f, 100f, 0f);
-    [SerializeField] private Camera worldCamera;
+    [SerializeField] private Vector2 turnArrowScreenOffset = new Vector2(0f, 120f);
+    public Material ClearMaterial;
+    public Material TargetMaterial;
 
     private void Awake()
     {
-        if (worldCamera == null)
-        {
-            worldCamera = Camera.main;
-        }
-
         if (turnArrow == null)
         {
             GameObject turnArrowObject = GameObject.Find("TurnArrow");
@@ -41,6 +40,8 @@ public class BattleUIManager : MonoBehaviour
         }
 
         turnArrow?.SetEnabled(false);
+
+        turnArrowScreenOffset = new Vector2(0f, 150f);
     }
 
     private void OnEnable()
@@ -67,11 +68,11 @@ public class BattleUIManager : MonoBehaviour
             inputHandler.OnActionSelected -= HandleActionSelected;
     }
 
-    private void HandleTurnStarted(int roundIndex, BattleCharactor unit)
+    private void HandleTurnStarted(int currentTurn, BattleCharactor unit)
     {
         if (totalTurnText != null)
         {
-            totalTurnText.text = $"Round : {roundIndex}";
+            totalTurnText.text = $"Turn : {currentTurn}";
         }
 
         if (currentTurnText != null)
@@ -104,22 +105,20 @@ public class BattleUIManager : MonoBehaviour
     }
 
     /// <summary>PostBattleSequence에서 명시적으로 호출됩니다. OnBattleEnded 직접 구독 불필요.</summary>
-    public void ShowBattleResultUI(BattleResult result)
+    public BattleResultPanel ShowBattleResultUI(BattleResult result, BattleRewardPlan plan = null)
     {
-        if (battleResultText == null)
-            return;
+        if (battleResultText != null)
+        {
+            battleResultText.gameObject.SetActive(true);
+            battleResultText.text = result == BattleResult.Victory
+                ? "전투 결과 : <color=yellow>승리!</color>"
+                : "전투 결과 : <color=red>패배...</color>";
+        }
 
-        battleResultText.gameObject.SetActive(true);
-        if (result == BattleResult.Victory)
-        {
-            battleResultText.text = "전투 결과 : <color=yellow>승리!</color>";
-        }
-        else
-        {
-            // [JC 260513] Victory 외(Defeat/Escape/Cancelled)는 패배 표시.
-            // Escape 전용 UI가 필요해지면 분기 추가.
-            battleResultText.text = "전투 결과 : <color=red>패배...</color>";
-        }
+        if (battleResultPanel != null)
+            battleResultPanel.Show(result, plan);
+
+        return battleResultPanel;
     }
 
     private void Update()
@@ -129,29 +128,20 @@ public class BattleUIManager : MonoBehaviour
 
     private void UpdateTurnArrowPosition()
     {
-        if (flowManager == null || turnArrow == null || worldCamera == null)
+        if (flowManager == null || turnArrow == null)
         {
-            turnArrow?.SetEnabled(false);
+            turnArrow?.Follow(null);
             return;
         }
 
         BattleCharactor currentBattleCharacter = flowManager.CurrentUnit;
         if (currentBattleCharacter == null || currentBattleCharacter.IsDead)
         {
-            turnArrow.SetEnabled(false);
+            turnArrow.Follow(null);
             return;
         }
 
-        Vector3 screenPosition = worldCamera.WorldToScreenPoint(
-            currentBattleCharacter.transform.position )+ turnArrowWorldOffset;
-        if (screenPosition.z <= 0f)
-        {
-            turnArrow.SetEnabled(false);
-            return;
-        }
-
-        turnArrow.SetScreenPosition(screenPosition);
-        turnArrow.SetEnabled(true);
+        turnArrow.Follow(currentBattleCharacter.transform, turnArrowScreenOffset);
     }
 
 #if UNITY_EDITOR
@@ -168,9 +158,9 @@ public class BattleUIManager : MonoBehaviour
             canvasGo.AddComponent<GraphicRaycaster>();
         }
 
-        totalTurnText = CreateOrReplaceText(canvas.transform, "TotalTurnText", new Vector2(30f, 110f));
-        currentTurnText = CreateOrReplaceText(canvas.transform, "CurrentTurnText", new Vector2(30f, 70f));
-        currentSkillText = CreateOrReplaceText(canvas.transform, "CurrentSkillText", new Vector2(30f, 30f));
+        totalTurnText    = CreateOrReplaceText(canvas.transform, "TotalTurnText"   , new Vector2(30f, 110f));
+        currentTurnText  = CreateOrReplaceText(canvas.transform, "CurrentTurnText" , new Vector2(30f,  70f));
+        currentSkillText = CreateOrReplaceText(canvas.transform, "CurrentSkillText", new Vector2(30f,  30f));
         battleResultText = CreateOrReplaceText(canvas.transform, "BattleResultText", new Vector2(30f, 150f));
         battleResultText.fontSize = 30f;
         battleResultText.text = "전투 결과 : -";

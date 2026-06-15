@@ -6,7 +6,7 @@ public class TurnOrderUI : MonoBehaviour
     [SerializeField] private BattleFlowManager flowManager;
     [SerializeField] private TurnSlotUI slotPrefab;
     [SerializeField] private Transform slotParent;
-    [SerializeField] private int maxDisplayCount = 8;
+    [SerializeField] private int maxDisplayCount = 5;
 
     private readonly List<TurnSlotUI> slots = new List<TurnSlotUI>();
 
@@ -15,6 +15,7 @@ public class TurnOrderUI : MonoBehaviour
         if (flowManager == null) return;
         flowManager.OnTurnStarted += OnTurnStarted;
         flowManager.OnBattleEnded += OnBattleEnded;
+        Refresh();
     }
 
     private void OnDisable()
@@ -30,6 +31,9 @@ public class TurnOrderUI : MonoBehaviour
 
     private void Refresh()
     {
+        if (flowManager == null || slotPrefab == null || slotParent == null)
+            return;
+
         List<BattleCharactor> order = flowManager.GetPredictedTurnOrder();
         int displayCount = Mathf.Min(order.Count, maxDisplayCount);
 

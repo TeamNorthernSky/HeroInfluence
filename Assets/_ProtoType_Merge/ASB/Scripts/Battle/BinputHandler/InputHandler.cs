@@ -55,12 +55,16 @@ public class InputHandler : MonoBehaviour
     private void Awake()
     {
         if (raycastCamera == null)
-        {
             raycastCamera = Camera.main;
-        }
 
         if (targetingVisualController == null)
             targetingVisualController = FindFirstObjectByType<TargetingVisualController>();
+
+        if (battleFlowManager == null)
+            battleFlowManager = FindFirstObjectByType<BattleFlowManager>();
+
+        if (battleManager == null)
+            battleManager = FindFirstObjectByType<BattleManager>();
     }
 
     private void OnEnable()
@@ -660,7 +664,14 @@ public class InputHandler : MonoBehaviour
 
     private bool TryGetCurrentActor(out BattleCharactor actor)
     {
-        actor = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
+        if (battleFlowManager == null)
+        {
+            Debug.LogError("[InputHandler] battleFlowManager가 null입니다! Inspector에서 연결하거나 씬에 BattleFlowManager가 있는지 확인하세요.");
+            actor = null;
+            return false;
+        }
+
+        actor = battleFlowManager.CurrentUnit;
         if (actor == null || !actor.IsPlayer || actor.IsDead)
         {
             actor = null;

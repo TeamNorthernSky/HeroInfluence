@@ -3,7 +3,11 @@ guid: f6503417cfad2fb479ddf77f08b2b0ab
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - occupyingUnit: {instanceID: 0}
+  - cellRenderer: {instanceID: 0}
+  - transparentMat: {instanceID: 0}
+  - redHighlightMat: {fileID: 2100000, guid: 7a5c5c59bb937c8408febeeeb2178ef7, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

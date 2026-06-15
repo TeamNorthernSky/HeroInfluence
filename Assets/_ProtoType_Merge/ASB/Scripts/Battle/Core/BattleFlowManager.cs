@@ -116,7 +116,7 @@ public class BattleFlowManager : MonoBehaviour
         battleEndRequested = false;
         RefreshQueue();
 
-        Log($"[BattleFlow] Initialize 완료. participants={participants.Count}, queue={turnQueue.Count}");
+        Debug.Log($"[BattleFlow] Initialize 완료. participants={participants.Count}, queue={turnQueue.Count}");
 
         BeginPlayerTurnSelectionCleanup();
 
@@ -163,7 +163,7 @@ public class BattleFlowManager : MonoBehaviour
 
         turnQueue = new Queue<BattleCharactor>(ordered);
         roundIndex++;
-        Log($"[BattleFlow] Round {roundIndex} 시작. queue={turnQueue.Count}");
+        Debug.Log($"[BattleFlow] Round {roundIndex} 시작. queue={turnQueue.Count}");
 
         Log("[TurnOrder] New round order:");
         for (int i = 0; i < ordered.Count; i++)
@@ -357,6 +357,8 @@ public class BattleFlowManager : MonoBehaviour
                     || CurrentUnit == null
                     || CurrentUnit.IsDead
                     || IsBattleOver);
+
+                Debug.Log($"[BattleFlow] 플레이어 턴 종료: resolved={playerActionResolved}, currentUnit={CurrentUnit?.UnitName ?? "null"}, isDead={CurrentUnit?.IsDead}, battleOver={IsBattleOver}");
 
                 if (battleEndRequested)
                 {
@@ -557,13 +559,17 @@ public class BattleFlowManager : MonoBehaviour
     {
         if (CurrentUnit == null || actor == null)
         {
+            Debug.LogWarning($"[BattleFlow] PlayerSkillActionResolved 무시: CurrentUnit={CurrentUnit?.UnitName ?? "null"}, actor={actor?.UnitName ?? "null"}");
             return;
         }
 
         if (actor != CurrentUnit || !CurrentUnit.IsPlayer)
         {
+            Debug.LogWarning($"[BattleFlow] PlayerSkillActionResolved 무시: actor={actor.UnitName}, CurrentUnit={CurrentUnit.UnitName}, IsPlayer={CurrentUnit.IsPlayer}");
             return;
         }
+
+        Debug.Log($"[BattleFlow] PlayerSkillActionResolved 수신: actor={actor.UnitName}");
         playerActionResolved = true;
     }
 

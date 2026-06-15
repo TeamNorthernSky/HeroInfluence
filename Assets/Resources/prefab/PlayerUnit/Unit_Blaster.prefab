@@ -3135,7 +3135,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ece0c42e99d094241987f09ff85888de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
   unitName: "\uBE14\uB798\uC2A4\uD130"
   teamType: 0
   finalStats:
@@ -3156,7 +3155,6 @@ MonoBehaviour:
     skillId: 
     skillPercent: 100
     skillBoundary: []
-  skillDataLoader: {fileID: 0}
   equippedWeaponIndex: 0
   availableWeapons: []
   classSkillIndex: 1010
@@ -3176,6 +3174,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   battleCharactor: {fileID: 2337814053015336450}
   fillImage: {fileID: 1088342935622579134}
+  hpBarRect: {fileID: 0}
+  hpCanvas: {fileID: 0}
+  targetCamera: {fileID: 0}
+  screenOffset: {x: 0, y: 60}
+  HPFrame: {fileID: 0}
 --- !u!136 &8243022134652499765
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -6064,7 +6067,7 @@ RectTransform:
   m_GameObject: {fileID: 2901803568935159367}
   m_LocalRotation: {x: 0.5, y: 0.5, z: -0.5, w: 0.5}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
+  m_LocalScale: {x: 0.02, y: 0.02, z: 0.02}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8577088171249926228}
@@ -8719,14 +8722,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: ed318ff8e81410640a55299c58738dc8, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 30d79d5dba5708141bf89e7f8a979ac7, type: 3}
   m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -11321,14 +11324,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.8}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 009ef48e2886ed540865618449315ed1, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

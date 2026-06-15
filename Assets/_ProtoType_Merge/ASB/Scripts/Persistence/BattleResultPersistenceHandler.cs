@@ -16,46 +16,58 @@ public static class BattleResultPersistenceHandler
     {
         var plan = new BattleRewardPlan { Result = result };
 
-        if (result != BattleResult.Victory)
+        if (playerUnits == null)
             return plan;
 
-        if (playerUnits == null || enemyUnits == null)
-            return plan;
+        float influenceRatio = result == BattleResult.Victory ? 1.1f : 0.9f;
 
-        float totalExp = 0f;
-        foreach (var enemy in enemyUnits)
+        // Victory: EXP 계산
+        int expPerUnit = 0;
+        var survivors = new List<BattleCharactor>();
+
+        if (result == BattleResult.Victory && enemyUnits != null)
         {
-            if (enemy != null && enemy.IsDead)
-                totalExp += enemy.ExperienceReward;
+            float totalExp = 0f;
+            foreach (var enemy in enemyUnits)
+            {
+                if (enemy != null && enemy.IsDead)
+                    totalExp += enemy.ExperienceReward;
+            }
+
+            foreach (var player in playerUnits)
+            {
+                if (player != null && !player.IsDead && player.SourceData != null)
+                    survivors.Add(player);
+            }
+
+            if (totalExp > 0f && survivors.Count > 0)
+                expPerUnit = Mathf.CeilToInt(totalExp / (float)survivors.Count);
         }
 
-        if (totalExp <= 0f)
-            return plan;
-
-        var survivors = new List<BattleCharactor>();
+        // 전체 플레이어 유닛 순회 — EXP는 생존자에게만, IP는 전원에게 적용
         foreach (var player in playerUnits)
         {
-            if (player != null && !player.IsDead && player.SourceData != null)
-                survivors.Add(player);
-        }
+            if (player == null || player.SourceData == null)
+                continue;
 
-        if (survivors.Count == 0)
-            return plan;
-
-        int expPerUnit = Mathf.CeilToInt(totalExp / (float)survivors.Count);
-
-        foreach (var player in survivors)
-        {
             UnitPersistentData src = player.SourceData;
-            int newLevel = PersistentUnitRepository.SimulateFinalLevel(src, expPerUnit);
+            bool isSurvivor = survivors.Contains(player);
+            int gainedExp = isSurvivor ? expPerUnit : 0;
+            int newLevel = gainedExp > 0
+                ? PersistentUnitRepository.SimulateFinalLevel(src, gainedExp)
+                : src.Level;
 
             // 임시: UnitGrowthExpData 기반 스터디 스킬 경로 사용
             // TODO: LevelUpData.skill + SkillData.acquireLevel 데이터 정비 후 아래로 교체
             // candidates = SkillUnlockResolver.GetUnlockCandidates(player.UnitName, src.Level, newLevel, src.CurrentSkillIndex);
             int classIndex = int.TryParse(src.UnitTemplateKey, out int parsed) ? parsed : -1;
-            List<int> candidates = classIndex > 0
+            List<int> candidates = (gainedExp > 0 && classIndex > 0)
                 ? DHCsvTemplateCatalog.Instance?.GetNewlyUnlockedStudySkills(classIndex, src.Level, newLevel) ?? new List<int>()
                 : new List<int>();
+            Debug.Log($"[BattleRewardPlan] {player.UnitName} | templateKey={src.UnitTemplateKey} classIndex={classIndex} oldLv={src.Level} newLv={newLevel} gainedExp={gainedExp} candidates={candidates.Count}");
+
+            float oldInfluence = player.CurrentInfluence;
+            float newInfluence = Mathf.Clamp(oldInfluence * influenceRatio, 0f, player.MaxInfluence);
 
             plan.UnitPreviews.Add(new UnitRewardPreview
             {
@@ -63,7 +75,9 @@ public static class BattleResultPersistenceHandler
                 UnitName                = player.UnitName,
                 OldLevel                = src.Level,
                 NewLevel                = newLevel,
-                GainedExp               = expPerUnit,
+                GainedExp               = gainedExp,
+                OldInfluence            = oldInfluence,
+                NewInfluence            = newInfluence,
                 UnlockCandidateSkillIds = candidates,
             });
         }
