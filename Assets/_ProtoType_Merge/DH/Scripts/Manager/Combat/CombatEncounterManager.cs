@@ -6,6 +6,10 @@ using UnityEngine;
 public class CombatEncounterManager : MonoBehaviour
 {
     private const float FinalCombatClearDelaySeconds = 0.5f;
+    private const int MinPartyCombatSlot = 1;
+    private const int MaxPartyCombatSlot = 6;
+    private const int MinEnemyCombatSlot = 1;
+    private const int MaxEnemyCombatSlot = 6;
 
     public event Action<PartyGridMover, EnemyGridMover> CombatStarted;
 
@@ -177,10 +181,12 @@ public class CombatEncounterManager : MonoBehaviour
 
         IReadOnlyList<int> partyUnitIndices = ResolvePartyUnitIndices(partyRepository, party, partyId);
         IReadOnlyList<int> enemyUnitIndices = ResolveEnemyUnitIndices(enemyGroupRepository, enemy, enemyId);
-        if (partyUnitIndices.Count == 0 || enemyUnitIndices.Count == 0)
+        int partyUnitCount = CountValidUnitIndices(partyUnitIndices);
+        int enemyUnitCount = CountValidUnitIndices(enemyUnitIndices);
+        if (partyUnitCount == 0 || enemyUnitCount == 0)
         {
             Debug.LogWarning(
-                $"Combat participant registration failed. partyId='{partyId}' units={partyUnitIndices.Count}, enemyId='{enemyId}' units={enemyUnitIndices.Count}.",
+                $"Combat participant registration failed. partyId='{partyId}' units={partyUnitCount}, enemyId='{enemyId}' units={enemyUnitCount}.",
                 this);
             combatContext.Clear();
             return false;
@@ -469,26 +475,34 @@ public class CombatEncounterManager : MonoBehaviour
     {
         if (repository != null && repository.TryGetParty(partyId, out PartyPersistentData partyData))
         {
-            IReadOnlyList<int> filteredRepositoryIndices = FilterValidUnitIndices(partyData.UnitIndices);
-            if (filteredRepositoryIndices.Count > 0)
-                return filteredRepositoryIndices;
+            IReadOnlyList<int> slotOrderedRepositoryIndices = BuildPartyCombatSlotUnitIndices(
+                partyData.UnitIndices,
+                partyData.UnitSlots);
+            if (CountValidUnitIndices(slotOrderedRepositoryIndices) > 0)
+                return slotOrderedRepositoryIndices;
         }
 
         PartyComposition composition = party != null ? party.GetComponent<PartyComposition>() : null;
-        return FilterValidUnitIndices(composition != null ? composition.UnitIndices : Array.Empty<int>());
+        return BuildPartyCombatSlotUnitIndices(
+            composition != null ? composition.UnitIndices : Array.Empty<int>(),
+            null);
     }
 
     private static IReadOnlyList<int> ResolveEnemyUnitIndices(EnemyGroupPersistentRepository repository, EnemyGridMover enemy, string enemyId)
     {
         if (repository != null && repository.TryGetEnemy(enemyId, out EnemyPersistentData enemyData))
         {
-            IReadOnlyList<int> filteredRepositoryIndices = FilterValidUnitIndices(enemyData.UnitIndices);
-            if (filteredRepositoryIndices.Count > 0)
-                return filteredRepositoryIndices;
+            IReadOnlyList<int> slotOrderedRepositoryIndices = BuildEnemyCombatSlotUnitIndices(
+                enemyData.UnitIndices,
+                enemyData.UnitSlots);
+            if (CountValidUnitIndices(slotOrderedRepositoryIndices) > 0)
+                return slotOrderedRepositoryIndices;
         }
 
         EnemyComposition composition = enemy != null ? enemy.GetComponent<EnemyComposition>() : null;
-        return FilterValidUnitIndices(composition != null ? composition.UnitIndices : Array.Empty<int>());
+        return BuildEnemyCombatSlotUnitIndices(
+            composition != null ? composition.UnitIndices : Array.Empty<int>(),
+            null);
     }
 
     private static string ResolveEnemyPlacementKey(EnemyGridMover enemy)
@@ -554,18 +568,106 @@ public class CombatEncounterManager : MonoBehaviour
         }
     }
 
-    private static IReadOnlyList<int> FilterValidUnitIndices(IReadOnlyList<int> source)
+    private static IReadOnlyList<int> BuildPartyCombatSlotUnitIndices(
+        IReadOnlyList<int> unitIndices,
+        IReadOnlyList<int> unitSlots)
     {
-        List<int> validUnitIndices = new List<int>();
-        if (source == null)
-            return validUnitIndices;
+        int[] slotUnitIndices = new int[MaxPartyCombatSlot];
+        if (unitIndices == null)
+            return slotUnitIndices;
 
+        bool[] occupiedSlots = new bool[MaxPartyCombatSlot];
+        for (int i = 0; i < unitIndices.Count; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (unitIndex <= 0)
+                continue;
+
+            int slot = ResolvePartyCombatSlot(unitSlots, i);
+            if (slot < MinPartyCombatSlot || slot > MaxPartyCombatSlot)
+            {
+                Debug.LogWarning($"Party combat slot '{slot}' is out of range. unitIndex={unitIndex}");
+                return Array.Empty<int>();
+            }
+
+            int slotArrayIndex = slot - 1;
+            if (occupiedSlots[slotArrayIndex])
+            {
+                Debug.LogWarning($"Party combat slot '{slot}' is duplicated.");
+                return Array.Empty<int>();
+            }
+
+            slotUnitIndices[slotArrayIndex] = unitIndex;
+            occupiedSlots[slotArrayIndex] = true;
+        }
+
+        return slotUnitIndices;
+    }
+
+    private static int ResolvePartyCombatSlot(IReadOnlyList<int> unitSlots, int unitIndexPosition)
+    {
+        if (unitSlots != null && unitIndexPosition >= 0 && unitIndexPosition < unitSlots.Count)
+            return unitSlots[unitIndexPosition];
+
+        return unitIndexPosition + 1;
+    }
+
+    private static IReadOnlyList<int> BuildEnemyCombatSlotUnitIndices(
+        IReadOnlyList<int> unitIndices,
+        IReadOnlyList<int> unitSlots)
+    {
+        int[] slotUnitIndices = new int[MaxEnemyCombatSlot];
+        if (unitIndices == null)
+            return slotUnitIndices;
+
+        bool[] occupiedSlots = new bool[MaxEnemyCombatSlot];
+        for (int i = 0; i < unitIndices.Count; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (unitIndex <= 0)
+                continue;
+
+            int slot = ResolveEnemyCombatSlot(unitSlots, i);
+            if (slot < MinEnemyCombatSlot || slot > MaxEnemyCombatSlot)
+            {
+                Debug.LogWarning($"Enemy combat slot '{slot}' is out of range. unitIndex={unitIndex}");
+                return Array.Empty<int>();
+            }
+
+            int slotArrayIndex = slot - 1;
+            if (occupiedSlots[slotArrayIndex])
+            {
+                Debug.LogWarning($"Enemy combat slot '{slot}' is duplicated.");
+                return Array.Empty<int>();
+            }
+
+            slotUnitIndices[slotArrayIndex] = unitIndex;
+            occupiedSlots[slotArrayIndex] = true;
+        }
+
+        return slotUnitIndices;
+    }
+
+    private static int ResolveEnemyCombatSlot(IReadOnlyList<int> unitSlots, int unitIndexPosition)
+    {
+        if (unitSlots != null && unitIndexPosition >= 0 && unitIndexPosition < unitSlots.Count)
+            return unitSlots[unitIndexPosition];
+
+        return unitIndexPosition + 1;
+    }
+
+    private static int CountValidUnitIndices(IReadOnlyList<int> source)
+    {
+        if (source == null)
+            return 0;
+
+        int count = 0;
         for (int i = 0; i < source.Count; i++)
         {
             if (source[i] > 0)
-                validUnitIndices.Add(source[i]);
+                count++;
         }
 
-        return validUnitIndices;
+        return count;
     }
 }

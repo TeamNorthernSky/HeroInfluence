@@ -43,10 +43,7 @@ public class CombatEnemyPersistentData
             return;
 
         for (int i = 0; i < source.Count; i++)
-        {
-            if (source[i] > 0)
-                unitIndices.Add(source[i]);
-        }
+            unitIndices.Add(Math.Max(0, source[i]));
     }
 
     private void EnsureInitialized()
