@@ -76,6 +76,7 @@ public static class BattleResultPersistenceHandler
                 OldLevel                = src.Level,
                 NewLevel                = newLevel,
                 GainedExp               = gainedExp,
+                CurrentClassSkillId     = player.ClassSkillIndex > 0 ? player.ClassSkillIndex : src.CurrentSkillIndex,
                 OldInfluence            = oldInfluence,
                 NewInfluence            = newInfluence,
                 UnlockCandidateSkillIds = candidates,

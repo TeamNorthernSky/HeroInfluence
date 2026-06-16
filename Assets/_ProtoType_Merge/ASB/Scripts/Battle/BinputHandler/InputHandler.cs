@@ -70,6 +70,8 @@ public class InputHandler : MonoBehaviour
     private void OnEnable()
     {
         BindUnitDeathEvents(FindObjectsByType<BattleCharactor>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+        if (battleFlowManager != null)
+            battleFlowManager.OnTurnStarted += OnTurnStarted;
     }
 
     private void OnDisable()
@@ -77,6 +79,14 @@ public class InputHandler : MonoBehaviour
         UnbindAllUnitDeathEvents();
         ResetTargetingState();
         ClearAoEPreview();
+        if (battleFlowManager != null)
+            battleFlowManager.OnTurnStarted -= OnTurnStarted;
+    }
+
+    private void OnTurnStarted(int round, BattleCharactor unit)
+    {
+        if (unit == null || !unit.IsPlayer) return;
+        BeginPendingAction(PendingActionType.ClassSkill);
     }
 
     public void ResolveAutoBattleAction(BattleCharactor actor, BattleCharactor target)

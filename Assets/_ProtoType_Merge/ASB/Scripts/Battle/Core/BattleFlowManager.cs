@@ -350,7 +350,6 @@ public class BattleFlowManager : MonoBehaviour
             if (unit.IsPlayer)
             {
                 Log("[BattleFlow] 플레이어 턴: 적 선택 후 숫자키(1/2) 입력 대기");
-                BeginPlayerTurnSelectionCleanup();
                 playerActionResolved = false;
                 yield return new WaitUntil(() =>
                     playerActionResolved

@@ -13,6 +13,7 @@ public class UnitRewardPreview
     public int OldLevel;
     public int NewLevel;
     public int GainedExp;
+    public int CurrentClassSkillId;
     public List<int> UnlockCandidateSkillIds = new List<int>();
 
     public float OldInfluence;
