@@ -312,9 +312,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 324998229}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1 &56801847
 GameObject:
   m_ObjectHideFlags: 0
@@ -1193,9 +1192,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 1458468679}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!4 &546059362 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1934206247234255701, guid: dc4a5e6c8a95e4b4aac8a40d823c76ca,
@@ -1863,12 +1861,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   csvDataLoad: {fileID: 0}
   playerUnitTable: {fileID: 11400000, guid: 90c4628412cf66c4da1900fe2a85c25f, type: 2}
-  enemyUnitInfoTable: {fileID: 0}
+  enemyUnitInfoTable: {fileID: 11400000, guid: c69dc64d915c7d649a74eb4956de39c4, type: 2}
   weaponTable: {fileID: 11400000, guid: d889acf92290c1b4986df18dbce5c742, type: 2}
   classSkillTable: {fileID: 11400000, guid: 113495fdb7b44f34bbfc28dc293f4fe4, type: 2}
-  levelUpTable: {fileID: 0}
-  enemyGroupTable: {fileID: 0}
-  useSOTables: 0
+  levelUpTable: {fileID: 11400000, guid: 8ce123a7e58ed5545a5e338c988c414f, type: 2}
+  enemyGroupTable: {fileID: 11400000, guid: b40a620d3f8f57f4a8f46c6395a329f7, type: 2}
+  useSOTables: 1
   loadOnAwake: 0
   dontDestroyOnLoad: 1
   cachedPlayerTemplates: []
@@ -1945,9 +1943,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 253823592}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1 &829707869
 GameObject:
   m_ObjectHideFlags: 0
@@ -2144,13 +2141,15 @@ MonoBehaviour:
   AttackEffectSocket: {fileID: 0}
   HitEffectSocket: {fileID: 0}
   DamagePopupSocket: {fileID: 0}
-  ArrowDamagePopupDelay: 0.1
-  ArrowHitAnimationDelay: 0.1
+  HitDamagePopupDelay: 0
+  HitAnimationDelay: 0
   HoldArrow: {fileID: 1443483359}
   TargetArrowPrefab: {fileID: 6341818806498125037, guid: 96476541362745d49b89d901bc518f96,
     type: 3}
   ArrowHitPoint: {fileID: 0}
   ArrowLifetime: 1.5
+  ArrowDamagePopupDelay: 0.1
+  ArrowHitAnimationDelay: 0.1
   ArrowTrailPrefab: {fileID: 3471406637623551261, guid: a977fa498402a9d49840a7a71f416f1d,
     type: 3}
   ArcHeight: 2
@@ -2574,9 +2573,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 499124197}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1 &1002047752
 GameObject:
   m_ObjectHideFlags: 0
@@ -3031,9 +3029,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 1437186621}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1 &1283565775
 GameObject:
   m_ObjectHideFlags: 0
@@ -3070,6 +3067,11 @@ MonoBehaviour:
   currentTurnText: {fileID: 2023049971}
   currentSkillText: {fileID: 1455369010}
   battleResultText: {fileID: 882786790}
+  battleResultPanel: {fileID: 0}
+  turnArrow: {fileID: 0}
+  turnArrowScreenOffset: {x: 0, y: 120}
+  ClearMaterial: {fileID: 0}
+  TargetMaterial: {fileID: 0}
 --- !u!4 &1283565777
 Transform:
   m_ObjectHideFlags: 0
@@ -3311,13 +3313,15 @@ MonoBehaviour:
   AttackEffectSocket: {fileID: 0}
   HitEffectSocket: {fileID: 0}
   DamagePopupSocket: {fileID: 0}
-  ArrowDamagePopupDelay: 0.1
-  ArrowHitAnimationDelay: 0.1
+  HitDamagePopupDelay: 0
+  HitAnimationDelay: 0
   HoldArrow: {fileID: 1443483359}
   TargetArrowPrefab: {fileID: 6341818806498125037, guid: 96476541362745d49b89d901bc518f96,
     type: 3}
   ArrowHitPoint: {fileID: 0}
   ArrowLifetime: 1.5
+  ArrowDamagePopupDelay: 0.1
+  ArrowHitAnimationDelay: 0.1
   ArrowTrailPrefab: {fileID: 3471406637623551261, guid: a977fa498402a9d49840a7a71f416f1d,
     type: 3}
   ArcHeight: 2
@@ -3427,9 +3431,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 1004892103}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1 &1414445549
 GameObject:
   m_ObjectHideFlags: 0
@@ -3480,9 +3483,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 611677453}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1 &1437186618
 GameObject:
   m_ObjectHideFlags: 0
@@ -3885,9 +3887,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 829707872}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1 &1534965715
 GameObject:
   m_ObjectHideFlags: 0
@@ -4262,9 +4263,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 1055051271}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1 &1738284055
 GameObject:
   m_ObjectHideFlags: 0
@@ -4294,6 +4294,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04e68369a46b3cb42851d2ec83a867fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  TargetMaterial: {fileID: 0}
+  AdditionalTargetMaterial: {fileID: 0}
+  ClearMaterial: {fileID: 0}
+  MainTargetHighlightMaterial: {fileID: 0}
 --- !u!4 &1738284057
 Transform:
   m_ObjectHideFlags: 0
@@ -4444,9 +4448,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 390142420}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1 &1832908803 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6290960558266015020, guid: e540557cd11514240aafdf2c329798cb,
@@ -4518,13 +4521,15 @@ MonoBehaviour:
   AttackEffectSocket: {fileID: 0}
   HitEffectSocket: {fileID: 0}
   DamagePopupSocket: {fileID: 0}
-  ArrowDamagePopupDelay: 0.1
-  ArrowHitAnimationDelay: 0.1
+  HitDamagePopupDelay: 0
+  HitAnimationDelay: 0
   HoldArrow: {fileID: 363310540}
   TargetArrowPrefab: {fileID: 6341818806498125037, guid: 96476541362745d49b89d901bc518f96,
     type: 3}
   ArrowHitPoint: {fileID: 0}
   ArrowLifetime: 1.5
+  ArrowDamagePopupDelay: 0.1
+  ArrowHitAnimationDelay: 0.1
   ArrowTrailPrefab: {fileID: 3471406637623551261, guid: a977fa498402a9d49840a7a71f416f1d,
     type: 3}
   ArcHeight: 2
@@ -4579,9 +4584,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 587211056}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1001 &1889075798
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4775,9 +4779,8 @@ MonoBehaviour:
   occupyingUnit: {fileID: 0}
   cellRenderer: {fileID: 603017061}
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
-  redHighlightMat: {fileID: 2100000, guid: b5139a5571ce2bd469500b8581c5d0cc, type: 2}
-  mainTargetHighlightMat: {fileID: 2100000, guid: a0521cc3bd6227e43aedad24c615f7ca,
-    type: 2}
+  targetMat: {fileID: 0}
+  additionalTargetMat: {fileID: 0}
 --- !u!1001 &1935789554
 PrefabInstance:
   m_ObjectHideFlags: 0

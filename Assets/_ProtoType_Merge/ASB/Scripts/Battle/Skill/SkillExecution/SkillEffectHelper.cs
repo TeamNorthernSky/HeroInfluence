@@ -85,11 +85,27 @@ namespace ASB.Work.Battle.SkillExecution
                 return 0f;
             }
 
-            float multiplier = Mathf.Max(0.01f, skillValue);
-            float heal = Mathf.Max(0f, caster.FinalStats.Atk * multiplier);
+            float heal = Mathf.Max(0.01f, skillValue);
             target.ApplyHeal(heal);
             return heal;
         }
+
+
+        // 타겟 HP 비례 회복: skillValue가 0.2면 20% HP 회복, 50이면 50% HP 회복
+        public static float ApplyTargetHPPerHeal(BattleCharactor caster, BattleCharactor target, float skillValue)
+        {
+            if (caster == null || target == null)
+            {
+                return 0f;
+            }
+
+            float multiplier = Mathf.Max(0.01f, skillValue);
+            float heal = Mathf.Max(0f, target.FinalStats.HP * multiplier);
+            target.ApplyHeal(heal);
+            return heal;
+        }
+
+
 
         public static bool TryApplyStatusEffect(BattleCharactor target, string effectType, float chance)
         {
