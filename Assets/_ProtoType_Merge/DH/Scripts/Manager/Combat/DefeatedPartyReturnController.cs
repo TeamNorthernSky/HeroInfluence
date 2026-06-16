@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 public class DefeatedPartyReturnController : MonoBehaviour
 {
     private const string GameObjectName = "[DefeatedPartyReturnController]";
-    private const string FallbackLobbySceneName = "LobbyScene_New";
+    private const string FallbackLobbySceneName = "HQLobbyScene"; // [JC 260616] LobbyScene_New 폐기 → 정본 HQLobbyScene으로 폴백 교체
 
     public static DefeatedPartyReturnController Instance { get; private set; }
 

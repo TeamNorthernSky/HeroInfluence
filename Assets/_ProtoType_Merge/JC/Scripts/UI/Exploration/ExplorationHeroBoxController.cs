@@ -41,6 +41,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
     private int selectedPartyIndex;
     private readonly int[] boundUnits = new int[4];
     private EconomyManager subEco; // 갱신 트리거(자원/IP 변동) 용
+    private float nextRefresh;     // [JC 260616] 스탯/HP/IP 변동 주기적 재반영 타이머
 
     private void Awake()
     {
@@ -55,9 +56,13 @@ public class ExplorationHeroBoxController : MonoBehaviour
 
     private void Update()
     {
-        // 영속 매니저가 늦게 준비되거나 파티/HP가 바뀔 수 있어 가볍게 재바인딩 보강
-        if (GameManager.Instance != null && boundUnits[0] == 0)
-            Refresh();
+        if (GameManager.Instance == null) return;
+        // 영속 매니저가 늦게 준비되면 즉시 보강
+        if (boundUnits[0] == 0) { Refresh(); return; }
+        // [JC 260616] HP/스탯/IP 변동(맵 이벤트·트레이닝 등)은 통지 이벤트가 없어 주기적으로 재반영
+        if (Time.unscaledTime < nextRefresh) return;
+        nextRefresh = Time.unscaledTime + 0.3f;
+        Refresh();
     }
 
     /// <summary>파티 탭 전환(③-1). index가 파티 레지스트리 순서.</summary>
@@ -168,13 +173,15 @@ public class ExplorationHeroBoxController : MonoBehaviour
             if (slot.hpText != null)
             {
                 float cur = unit != null ? unit.CurrentHp : 0f;
-                float max = unit != null ? unit.BaseStats.HP : 0f;
+                float max = unit != null ? unit.IngameStats.HP : 0f; // [JC 260616] 표시는 인게임 스탯(베이스는 내부 연산용)
                 slot.hpText.text = $"{cur:F0}/{max:F0}";
             }
             if (slot.ipText != null)
             {
-                int ip = gm != null && gm.Publicity != null ? gm.Publicity.GetIP(unitIndex) : 0;
-                slot.ipText.text = $"{ip}/{PublicityManager.MaxIP}";
+                // [JC 260616] IP 표기 = 유닛 CurrentInfluence/IngameStats.Influence 일원화(PublicityManager 의존 제거)
+                float ip = unit != null ? unit.CurrentInfluence : 0f;
+                float maxIp = unit != null ? unit.IngameStats.Influence : 0f;
+                slot.ipText.text = $"{ip:F0}/{maxIp:F0}";
             }
         }
     }

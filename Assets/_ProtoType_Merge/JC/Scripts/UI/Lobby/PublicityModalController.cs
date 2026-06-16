@@ -247,7 +247,7 @@ public class PublicityModalController : MonoBehaviour
             if (!unlocked) msg = "홍보 기능이 활성화되지 않았습니다.";
             else if (!hasSelection) msg = "영웅을 선택해 주세요.";
             else if (pool <= 0) msg = "이번 주 진행 가능 횟수를 모두 사용했습니다.";
-            else if (capacity <= 0) msg = $"이미 최대 I.P({PublicityManager.MaxIP})에 도달했습니다.";
+            else if (capacity <= 0) msg = $"이미 최대 I.P({(hasSelection ? Mathf.RoundToInt(unit.IngameStats.Influence) : PublicityManager.MaxIP)})에 도달했습니다.";
             else if (!moneyOk) msg = "자원이 부족합니다.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;

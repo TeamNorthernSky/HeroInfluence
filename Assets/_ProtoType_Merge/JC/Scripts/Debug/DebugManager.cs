@@ -64,6 +64,7 @@ public class DebugManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha4)) RunCheat("Tetra Anax");
         else if (Input.GetKeyDown(KeyCode.Alpha3)) RunCheat("Ain Soph Aur");
         else if (Input.GetKeyDown(KeyCode.Alpha1)) RunCheat("Logos");
+        else if (Input.GetKeyDown(KeyCode.Alpha6)) RunCheat("Malkuth");
     }
 
     private static void RunCheat(string command)

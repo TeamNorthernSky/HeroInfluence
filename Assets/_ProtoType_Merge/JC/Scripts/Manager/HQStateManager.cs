@@ -216,4 +216,18 @@ public class HQStateManager : MonoBehaviour
         upgradedThisTurn = false;
         OnStateChanged?.Invoke();
     }
+
+    /// <summary>[JC 260617] 디버그 치트: 본부를 제외한 모든 시설(부서)을 최소 1레벨로 즉시 해금.
+    /// 비용·선행조건·턴 1회 제한을 모두 무시한다. 신규로 해금된 부서 수를 반환.</summary>
+    public int DebugUnlockAllFacilities()
+    {
+        int changed = 0;
+        foreach (HQDepartment d in Enum.GetValues(typeof(HQDepartment)))
+        {
+            if (d == HQDepartment.Headquarters) continue;
+            if (GetLevel(d) < 1) { levels[d] = 1; changed++; }
+        }
+        if (changed > 0) OnStateChanged?.Invoke();
+        return changed;
+    }
 }

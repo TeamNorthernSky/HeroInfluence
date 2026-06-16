@@ -711,7 +711,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7dad7f4ca8fe3504e96756c06f50c18d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heroIPEntries: []
   currentPool: 0
   lastChargeDay: 0
 --- !u!1 &1168482753684625109
@@ -1856,6 +1855,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b781ad959f8f4e747945effa942fef27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  upgradeCostMoney: 900100005802000020030000e8030000
+  upgradeCostChip: 0500000006000000080000000a000000
   entries: []
 --- !u!1 &3859882495497568627
 GameObject:
@@ -4381,6 +4382,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entries: []
+  atkGainPerLevel:
+  - 5
+  - 10
+  - 15
+  hpGainPerLevel:
+  - 5
+  - 10
+  - 15
+  costPerLevel: e8030000b004000078050000
 --- !u!1 &8923151490137973143
 GameObject:
   m_ObjectHideFlags: 0
@@ -4570,7 +4580,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Modal_HeroInfo
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 9005327078424705820, guid: b414138efa1e54e4f8b664b3a12aa70c, type: 3}
+    - {fileID: 3317732253873841655, guid: b414138efa1e54e4f8b664b3a12aa70c, type: 3}
+    - {fileID: 1334423892407465762, guid: b414138efa1e54e4f8b664b3a12aa70c, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -4823,7 +4836,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Modal_HeroStatus
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8724888144461502731, guid: 47b98b5d30022cc42a71d97eb0038889, type: 3}
+    - {fileID: 5577325755412939895, guid: 47b98b5d30022cc42a71d97eb0038889, type: 3}
+    - {fileID: 5908417777068199135, guid: 47b98b5d30022cc42a71d97eb0038889, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

@@ -8,11 +8,10 @@ using UnityEngine;
 ///   1) 스킬 장착 변경 — 영웅의 CurrentSkillIndex를 DH PersistentUnitRepository.UpdateUnitRuntimeState로 writeback (실결선/비침습).
 ///   2) 스킬 강화 레벨(1~5) — 영웅별·스킬별 강화 레벨을 JC측 in-memory로 보관.
 ///
-/// ※ seam 정책([[feedback_seam_interface_policy]]): 스킬 강화 레벨의 "전투 대미지 계수 반영"은
-///   ASB BattleCharactor.LoadPersistentEquipment가 스킬 레벨 인자를 받지 않아 현재 비침습 결선 불가.
-///   → 레벨 저장·표시·비용차감까지는 실제 동작하되, 전투 반영은 보류(더미). 데이터 원천은
-///   DHCsvTemplateCatalog.GetClassSkillValueAtLevel(skillIndex, level)로 이미 준비되어 있어,
-///   추후 ASB가 유닛별 스킬 레벨을 받는 seam만 열리면 즉시 결선 가능.
+/// ※ [JC 260616] seam 열림: ASB BattleCharactor.LoadPersistentEquipment가 SkillLevel 인자를 받아
+///   전투 위력에 반영함(GetClassSkillValueAtLevel). → 강화/장착 시 "장착 스킬"의 강화 레벨을
+///   DH PersistentUnitRepository.SetSkillLevel(유닛당 단일 SkillLevel)로 writeback해 전투에 반영한다.
+///   LabManager는 (unit,skill)별 레벨을 보관하되, DH 동기는 현재 장착 스킬에 한정(모델 정합).
 ///
 /// 비용·조건 출처: H.I 자원 데이터 테이블 V1.4 '협회-연구소' 시트.
 /// </summary>
@@ -25,9 +24,15 @@ public class LabManager : MonoBehaviour
     public const int MaxSkillLevel = 5;
 
     // 협회-연구소 시트: to_skill_level 2/3/4/5 도달 시 비용. 인덱스 = toLevel - 2.
-    // 소모 자원: 자금(Money) + 히어로 메달(Chip).
-    public static readonly int[] UpgradeCostMoney = { 1000, 1500, 2000, 2500 };
-    public static readonly int[] UpgradeCostChip  = {   30,   60,   90,  120 };
+    // 소모 자원: 자금(Money) + 히어로 메달(Chip). [JC 260617] 인스펙터 편집 가능하도록 직렬화.
+    [Header("스킬 강화 비용 (인스펙터 편집 — 레벨 2/3/4/5 도달 기준)")]
+    // [JC 260617] V1.0 프로토타입 자원 밸런스 '협회-연구소' 시트 기준.
+    [Tooltip("필요 자금 (레벨 2/3/4/5 도달)")]
+    [SerializeField] private int[] upgradeCostMoney = { 400, 600, 800, 1000 };
+    [Tooltip("필요 히어로 메달 (레벨 2/3/4/5 도달)")]
+    [SerializeField] private int[] upgradeCostChip  = {   5,   6,   8,  10 };
+    public IReadOnlyList<int> UpgradeCostMoney => upgradeCostMoney;
+    public IReadOnlyList<int> UpgradeCostChip => upgradeCostChip;
 
     // 클래스명 → 클래스 인덱스(스킬 인덱스 첫 자리 체계와 동일).
     private static readonly Dictionary<string, int> ClassNameToIndex = new Dictionary<string, int>
@@ -97,6 +102,27 @@ public class LabManager : MonoBehaviour
         return result;
     }
 
+    /// <summary>[JC 260617] 해당 영웅의 클래스 스킬 전체(미습득 포함). 그리드 행 표시용.</summary>
+    public List<SkillData> GetClassSkills(int unitIndex)
+    {
+        var result = new List<SkillData>();
+        var catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog == null) return result;
+        if (!TryResolveClass(unitIndex, out var className, out _)) return result;
+        foreach (var s in catalog.GetSkillsByClass(className))
+            if (s != null) result.Add(s);
+        return result;
+    }
+
+    /// <summary>스킬 습득 여부(acquireLevel ≤ 영웅 레벨).</summary>
+    public bool IsSkillLearned(int unitIndex, SkillData skill)
+    {
+        if (skill == null) return false;
+        var repo = PersistentUnitRepository.Instance;
+        if (repo == null || !repo.TryGetUnit(unitIndex, out var unit) || unit == null) return false;
+        return skill.acquireLevel <= Mathf.Max(1, unit.Level);
+    }
+
     // ─── 스킬 강화 레벨 조회 ───────────────────────────────────
     public int GetSkillLevel(int unitIndex, int skillIndex)
     {
@@ -110,9 +136,9 @@ public class LabManager : MonoBehaviour
         int level = GetSkillLevel(unitIndex, skillIndex);
         if (level >= MaxSkillLevel) return false;
         int idx = level - 1; // 현재 level→level+1 비용 인덱스 (level1→idx0 = toLevel2)
-        if (idx < 0 || idx >= UpgradeCostMoney.Length) return false;
-        money = UpgradeCostMoney[idx];
-        chip = UpgradeCostChip[idx];
+        if (idx < 0 || idx >= upgradeCostMoney.Length) return false;
+        money = upgradeCostMoney[idx];
+        chip = idx < upgradeCostChip.Length ? upgradeCostChip[idx] : 0;
         return true;
     }
 
@@ -133,6 +159,7 @@ public class LabManager : MonoBehaviour
         if (!CanUpgradeSkill(unitIndex, skillIndex)) return false;
         var e = GetOrCreateEntry(unitIndex, skillIndex);
         e.level = Mathf.Min(MaxSkillLevel, e.level + 1);
+        SyncEquippedSkillLevel(unitIndex); // [JC 260616] 장착 스킬이면 DH로 writeback해 전투 반영
         OnStateChanged?.Invoke();
         return true;
     }
@@ -149,8 +176,23 @@ public class LabManager : MonoBehaviour
             d.BaseStats, d.LevelupStats, skillIndex, d.CurrentWeaponIndex,
             d.CurrentWeaponStats, d.IngameStats, d.CurrentHp, d.Exp, d.MaxExp);
 
-        if (ok) OnStateChanged?.Invoke();
+        if (ok)
+        {
+            SyncEquippedSkillLevel(unitIndex); // [JC 260616] 새 장착 스킬의 강화 레벨을 DH로 writeback
+            OnStateChanged?.Invoke();
+        }
         return ok;
+    }
+
+    /// <summary>현재 장착 스킬(CurrentSkillIndex)의 강화 레벨을 DH UnitPersistentData.SkillLevel로 동기.
+    /// DH는 유닛당 단일 SkillLevel이므로 장착 스킬에 한정해 push한다(전투 LoadPersistentEquipment가 소비).</summary>
+    private void SyncEquippedSkillLevel(int unitIndex)
+    {
+        var repo = PersistentUnitRepository.Instance;
+        if (repo == null) return;
+        int equipped = GetEquippedSkillIndex(unitIndex);
+        if (equipped <= 0) return;
+        repo.SetSkillLevel(unitIndex, GetSkillLevel(unitIndex, equipped));
     }
 
     public int GetEquippedSkillIndex(int unitIndex)
