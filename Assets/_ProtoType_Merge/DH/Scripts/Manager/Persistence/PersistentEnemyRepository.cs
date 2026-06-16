@@ -75,12 +75,29 @@ public class PersistentEnemyRepository : MonoBehaviour
         return true;
     }
 
-    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock ingameStats, float currentHp, float currentInfluence = -1f)
+    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock ingameStats, float currentHp, float currentInfluence = -1f, bool? isIncapacitated = null)
     {
         if (unitIndex <= 0 || !unitLookup.TryGetValue(unitIndex, out EnemyUnitPersistentData data))
             return false;
 
-        data.ApplyRuntimeState(unitTemplateKey, level, baseStats, ingameStats, currentHp, currentInfluence);
+        data.ApplyRuntimeState(unitTemplateKey, level, baseStats, ingameStats, currentHp, currentInfluence, isIncapacitated);
+        return true;
+    }
+
+    public bool SetIncapacitated(int unitIndex, bool isIncapacitated)
+    {
+        if (unitIndex <= 0 || !unitLookup.TryGetValue(unitIndex, out EnemyUnitPersistentData data))
+            return false;
+
+        float nextHp = isIncapacitated ? 0f : data.CurrentHp;
+        data.ApplyRuntimeState(
+            data.UnitTemplateKey,
+            data.Level,
+            data.BaseStats,
+            data.IngameStats,
+            nextHp,
+            data.CurrentInfluence,
+            isIncapacitated);
         return true;
     }
 

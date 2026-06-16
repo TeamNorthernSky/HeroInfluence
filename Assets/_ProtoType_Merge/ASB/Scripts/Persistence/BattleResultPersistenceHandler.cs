@@ -213,14 +213,9 @@ public static class BattleResultPersistenceHandler
         if (repo == null || !repo.ContainsUnit(src.UnitIndex))
             return;
 
-        if (battle.IsDead && result == BattleResult.Victory)
-        {
-            repo.RemoveUnit(src.UnitIndex);
-            return;
-        }
-
         float hp = ResolvePersistedHp(battle);
         float influence = Mathf.Clamp(battle.CurrentInfluence, 0f, battle.MaxInfluence);
+        bool isIncapacitated = battle.IsDead;
 
         StatBlock ingame = src.IngameStats;
 
@@ -231,7 +226,8 @@ public static class BattleResultPersistenceHandler
             src.BaseStats,
             ingame,
             hp,
-            currentInfluence: influence);
+            currentInfluence: influence,
+            isIncapacitated: isIncapacitated);
 
         if (!ok)
             Debug.LogWarning($"[BattleResultPersistenceHandler] 적 unitIndex={src.UnitIndex} UpdateUnitRuntimeState 실패.", battle);

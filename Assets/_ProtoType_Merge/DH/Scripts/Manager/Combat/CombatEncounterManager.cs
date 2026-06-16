@@ -168,6 +168,7 @@ public class CombatEncounterManager : MonoBehaviour
         CombatContext combatContext = CombatContext.Instance;
         PersistentUnitRepository unitRepository = PersistentUnitRepository.Instance;
         PartyPersistentRepository partyRepository = PartyPersistentRepository.Instance;
+        PersistentEnemyRepository enemyUnitRepository = PersistentEnemyRepository.Instance;
         EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
 
         if (combatContext == null)
@@ -182,7 +183,9 @@ public class CombatEncounterManager : MonoBehaviour
         IReadOnlyList<int> partyUnitIndices = FilterCombatReadyPartyUnits(
             ResolvePartyUnitIndices(partyRepository, party, partyId),
             unitRepository);
-        IReadOnlyList<int> enemyUnitIndices = ResolveEnemyUnitIndices(enemyGroupRepository, enemy, enemyId);
+        IReadOnlyList<int> enemyUnitIndices = FilterCombatReadyEnemyUnits(
+            ResolveEnemyUnitIndices(enemyGroupRepository, enemy, enemyId),
+            enemyUnitRepository);
         int partyUnitCount = CountValidUnitIndices(partyUnitIndices);
         int enemyUnitCount = CountValidUnitIndices(enemyUnitIndices);
         if (partyUnitCount == 0 || enemyUnitCount == 0)
@@ -691,6 +694,36 @@ public class CombatEncounterManager : MonoBehaviour
                 continue;
 
             if (repository.TryGetUnit(unitIndex, out UnitPersistentData data) &&
+                data != null &&
+                data.IsIncapacitated)
+            {
+                continue;
+            }
+
+            filtered[i] = unitIndex;
+        }
+
+        return filtered;
+    }
+
+    private static IReadOnlyList<int> FilterCombatReadyEnemyUnits(
+        IReadOnlyList<int> source,
+        PersistentEnemyRepository repository)
+    {
+        if (source == null)
+            return Array.Empty<int>();
+
+        if (repository == null)
+            return source;
+
+        int[] filtered = new int[source.Count];
+        for (int i = 0; i < source.Count; i++)
+        {
+            int unitIndex = source[i];
+            if (unitIndex <= 0)
+                continue;
+
+            if (repository.TryGetUnit(unitIndex, out EnemyUnitPersistentData data) &&
                 data != null &&
                 data.IsIncapacitated)
             {

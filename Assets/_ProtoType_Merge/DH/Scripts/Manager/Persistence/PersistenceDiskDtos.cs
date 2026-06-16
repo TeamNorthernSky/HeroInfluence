@@ -137,6 +137,7 @@ public class EnemyUnitPersistentDataDiskRow
     public float currentHp;
     public float currentInfluence;
     public bool hasCurrentInfluence;
+    public bool isIncapacitated;
     public StatBlockDisk baseStats;
     public StatBlockDisk ingameStats;
 
@@ -153,6 +154,7 @@ public class EnemyUnitPersistentDataDiskRow
             currentHp = u.CurrentHp,
             currentInfluence = u.CurrentInfluence,
             hasCurrentInfluence = true,
+            isIncapacitated = u.IsIncapacitated,
             baseStats = StatBlockDisk.From(u.BaseStats),
             ingameStats = StatBlockDisk.From(u.IngameStats)
         };
@@ -168,6 +170,7 @@ public class EnemyUnitPersistentDataDiskRow
             ingameStats.ToStatBlock(),
             currentHp,
             currentInfluence,
-            hasCurrentInfluence);
+            hasCurrentInfluence,
+            isIncapacitated);
     }
 }
