@@ -374,6 +374,17 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     {
         currentHp = Mathf.Clamp(hp, 0f, MaxHp);
         CurrentInfluence = Mathf.Clamp(influence, 0f, MaxInfluence);
+        IsDead = currentHp <= 0f;
+
+        if (IsDead)
+        {
+            DisableVisuals();
+        }
+        else
+        {
+            EnableVisuals();
+        }
+
         OnHpChanged?.Invoke(CurrentHp, MaxHp);
         OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
     }

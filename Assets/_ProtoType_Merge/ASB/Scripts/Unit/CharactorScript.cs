@@ -52,7 +52,8 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         if (data != null)
         {
             baseStats = data.baseStats;
-            battle.SetUnitNameForSkillMatching(data.Name);
+            string skillMatchKey = ResolveSkillMatchKey(data);
+            battle.SetUnitNameForSkillMatching(skillMatchKey);
         }
         else
         {
@@ -90,16 +91,21 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         // 추가 스케일링(StatCalculator 경로)을 비활성화합니다.
         battle.SetLevelScaling(false);
 
-        if (!string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey))
+        string persistentSkillMatchKey = ResolvePersistentSkillMatchKey(persistentData, fallbackData);
+        if (!string.IsNullOrWhiteSpace(persistentSkillMatchKey))
         {
-            battle.SetUnitNameForSkillMatching(persistentData.UnitTemplateKey);
+            battle.SetUnitNameForSkillMatching(persistentSkillMatchKey);
         }
         else if (fallbackData != null)
         {
-            battle.SetUnitNameForSkillMatching(fallbackData.Name);
+            battle.SetUnitNameForSkillMatching(ResolveSkillMatchKey(fallbackData));
         }
 
-        battle.LoadPersistentEquipment(persistentData.CurrentSkillIndex, persistentData.CurrentWeaponIndex);
+        battle.LoadPersistentEquipment(
+            persistentData.CurrentSkillIndex,
+            persistentData.CurrentWeaponIndex,
+            persistentData.SkillLevel,
+            persistentData.EquippedWeaponInstanceIndex);
 
         battle.RecalculateStats();
         battle.InitializeCurrentState(persistentData.CurrentHp, persistentData.CurrentInfluence);
@@ -108,6 +114,65 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
             $"[Stats/Persistent] {battle.UnitName} uses precomputed snapshot. " +
             $"LevelScaling=false, " +
             $"FinalStats HP={battle.FinalStats.HP}, Atk={battle.FinalStats.Atk}, DEF={battle.FinalStats.DEF}");
+    }
+
+    private static string ResolveSkillMatchKey(UnitData data)
+    {
+        if (data == null)
+        {
+            return string.Empty;
+        }
+
+        if (!string.IsNullOrWhiteSpace(data.UnitType))
+        {
+            return data.UnitType.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(data.Name))
+        {
+            return data.Name.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(data.Index))
+        {
+            return data.Index.Trim();
+        }
+
+        return string.Empty;
+    }
+
+    private static string ResolvePersistentSkillMatchKey(UnitPersistentData persistentData, UnitData fallbackData)
+    {
+        if (persistentData == null)
+        {
+            return ResolveSkillMatchKey(fallbackData);
+        }
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null &&
+            !string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey) &&
+            catalog.TryGetPlayerTemplate(persistentData.UnitTemplateKey, out UnitData template) &&
+            template != null)
+        {
+            string fromTemplate = ResolveSkillMatchKey(template);
+            if (!string.IsNullOrWhiteSpace(fromTemplate))
+            {
+                return fromTemplate;
+            }
+        }
+
+        string fromFallback = ResolveSkillMatchKey(fallbackData);
+        if (!string.IsNullOrWhiteSpace(fromFallback))
+        {
+            return fromFallback;
+        }
+
+        if (!string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey))
+        {
+            return persistentData.UnitTemplateKey.Trim();
+        }
+
+        return string.Empty;
     }
 
 #if UNITY_EDITOR

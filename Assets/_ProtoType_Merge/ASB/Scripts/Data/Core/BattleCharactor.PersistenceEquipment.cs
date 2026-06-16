@@ -10,12 +10,14 @@ public partial class BattleCharactor
     /// <summary>
     /// 카탈로그 인덱스로 스킬·무기 데이터를 직접 주입합니다.
     /// </summary>
-    public void LoadPersistentEquipment(int skillIdx, int weaponIdx)
+    public void LoadPersistentEquipment(int skillIdx, int weaponIdx, int skillLevel = 1, int equippedWeaponInstanceIndex = 0)
     {
         bool skillLoaded  = false;
         bool weaponLoaded = false;
 
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        int safeSkillLevel = Mathf.Max(1, skillLevel);
+        int resolvedWeaponLevel = ResolveWeaponLevel(equippedWeaponInstanceIndex);
 
         if (catalog != null && skillIdx > 0)
         {
@@ -27,11 +29,15 @@ public partial class BattleCharactor
 
             if (resolved != null)
             {
+                SkillData leveledSkill = CloneSkillData(resolved);
+                leveledSkill.skillValue = catalog.GetClassSkillValueAtLevel(skillIdx, safeSkillLevel);
+                leveledSkill.skillSubValue = catalog.GetClassSkillSubValueAtLevel(skillIdx, safeSkillLevel);
+
                 if (availableSkills == null) availableSkills = new List<SkillData>();
                 availableSkills.Clear();
-                availableSkills.Add(resolved);
-                SelectedSkillData    = resolved;
-                classSkillIndex      = resolved.skillIndex;
+                availableSkills.Add(leveledSkill);
+                SelectedSkillData    = leveledSkill;
+                classSkillIndex      = leveledSkill.skillIndex;
                 selectedSkillIndex   = 0;
                 skillLoaded          = true;
             }
@@ -41,10 +47,14 @@ public partial class BattleCharactor
         {
             if (catalog.TryGetWeapon(weaponIdx, out WeaponData weaponData) && weaponData != null)
             {
+                WeaponData leveledWeapon = CloneWeaponData(weaponData);
+                leveledWeapon.WeaponSkillValue = catalog.GetWeaponSkillValueAtLevel(weaponIdx, resolvedWeaponLevel);
+                leveledWeapon.WeaponSkillSubValue = catalog.GetWeaponSkillSubValueAtLevel(weaponIdx, resolvedWeaponLevel);
+
                 if (availableWeapons == null) availableWeapons = new List<WeaponData>();
                 availableWeapons.Clear();
-                availableWeapons.Add(weaponData);
-                EquippedWeaponData  = weaponData;
+                availableWeapons.Add(leveledWeapon);
+                EquippedWeaponData  = leveledWeapon;
                 equippedWeaponIndex = 0;
                 weaponLoaded        = true;
             }
@@ -103,5 +113,96 @@ public partial class BattleCharactor
         }
 
         return null;
+    }
+
+    private static int ResolveWeaponLevel(int equippedWeaponInstanceIndex)
+    {
+        const int baseLevel = 1;
+        if (equippedWeaponInstanceIndex <= 0)
+        {
+            return baseLevel;
+        }
+
+        WeaponPersistentRepository weaponRepository = WeaponPersistentRepository.Instance;
+        if (weaponRepository != null &&
+            weaponRepository.TryGetWeapon(equippedWeaponInstanceIndex, out WeaponPersistentData persistentWeapon) &&
+            persistentWeapon != null)
+        {
+            return Mathf.Max(baseLevel, persistentWeapon.Level);
+        }
+
+        return baseLevel;
+    }
+
+    private static SkillData CloneSkillData(SkillData source)
+    {
+        if (source == null)
+        {
+            return null;
+        }
+
+        return new SkillData
+        {
+            skillIndex = source.skillIndex,
+            skillClass = source.skillClass,
+            acquireLevel = source.acquireLevel,
+            skillName = source.skillName,
+            description = source.description,
+            ipCost = source.ipCost,
+            classSkillEffect = source.classSkillEffect,
+            classSkillRange = source.classSkillRange,
+            EnemySkill1Range = source.EnemySkill1Range,
+            EnemySkill2Range = source.EnemySkill2Range,
+            classSkillRangeLine = source.classSkillRangeLine,
+            classSkillTarget = source.classSkillTarget,
+            boundary = source.boundary != null ? new List<int>(source.boundary) : new List<int>(),
+            multiTargetCount = source.multiTargetCount,
+            skillValue = source.skillValue,
+            skillSubValue = source.skillSubValue,
+            AnimationTrigger = source.AnimationTrigger,
+            StateName = source.StateName,
+            UseAnimEvent = source.UseAnimEvent,
+            HitDelay = source.HitDelay,
+            TotalDelay = source.TotalDelay,
+            TargetAnimationTrigger = source.TargetAnimationTrigger
+        };
+    }
+
+    private static WeaponData CloneWeaponData(WeaponData source)
+    {
+        if (source == null)
+        {
+            return null;
+        }
+
+        return new WeaponData
+        {
+            WeaponIndex = source.WeaponIndex,
+            weaponClass = source.weaponClass,
+            WeaponName = source.WeaponName,
+            WeaponDescription = source.WeaponDescription,
+            BonusHP = source.BonusHP,
+            BonusATK = source.BonusATK,
+            BonusDEF = source.BonusDEF,
+            BonusCriticalRate = source.BonusCriticalRate,
+            BonusCounterRate = source.BonusCounterRate,
+            BonusReduceRate = source.BonusReduceRate,
+            BonusSpeed = source.BonusSpeed,
+            WeaponSkillIndex = source.WeaponSkillIndex,
+            WeaponSkillName = source.WeaponSkillName,
+            WeaponSkillDescription = source.WeaponSkillDescription,
+            IPCost = source.IPCost,
+            WeaponSkillEffect = source.WeaponSkillEffect,
+            WeaponSkillRange = source.WeaponSkillRange,
+            WeaponSkillRangeLine = source.WeaponSkillRangeLine,
+            WeaponSkillTarget = source.WeaponSkillTarget,
+            WeaponSkillMultiTarget = source.WeaponSkillMultiTarget != null
+                ? new List<int>(source.WeaponSkillMultiTarget)
+                : new List<int>(),
+            WeaponSkillMultiTargetType = source.WeaponSkillMultiTargetType,
+            WeaponSkillMultiTargetCount = source.WeaponSkillMultiTargetCount,
+            WeaponSkillValue = source.WeaponSkillValue,
+            WeaponSkillSubValue = source.WeaponSkillSubValue
+        };
     }
 }
