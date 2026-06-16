@@ -11,6 +11,7 @@ public static class CheatCommands
         CheatCommandRegistry.Register("Tetra Anax", TetraAnax);
         CheatCommandRegistry.Register("Ain Soph Aur", AinSophAur);
         CheatCommandRegistry.Register("Logos", Logos);
+        CheatCommandRegistry.Register("Malkuth", Malkuth);
     }
 
     private static string TetraAnax(string[] args)
@@ -47,5 +48,14 @@ public static class CheatCommands
         const int delta = 100;
         bc.AddIPToAllHeroes(delta);
         return $"Logos → all heroes IP +{delta}";
+    }
+
+    private static string Malkuth(string[] args)
+    {
+        var hq = GameManager.Instance != null ? GameManager.Instance.HQ : null;
+        if (hq == null) return "[err] HQStateManager unavailable";
+
+        int n = hq.DebugUnlockAllFacilities();
+        return $"Malkuth → 모든 시설 해금 (신규 {n}개)";
     }
 }

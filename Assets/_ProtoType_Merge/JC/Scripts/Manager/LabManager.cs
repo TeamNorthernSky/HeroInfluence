@@ -24,9 +24,15 @@ public class LabManager : MonoBehaviour
     public const int MaxSkillLevel = 5;
 
     // 협회-연구소 시트: to_skill_level 2/3/4/5 도달 시 비용. 인덱스 = toLevel - 2.
-    // 소모 자원: 자금(Money) + 히어로 메달(Chip).
-    public static readonly int[] UpgradeCostMoney = { 1000, 1500, 2000, 2500 };
-    public static readonly int[] UpgradeCostChip  = {   30,   60,   90,  120 };
+    // 소모 자원: 자금(Money) + 히어로 메달(Chip). [JC 260617] 인스펙터 편집 가능하도록 직렬화.
+    [Header("스킬 강화 비용 (인스펙터 편집 — 레벨 2/3/4/5 도달 기준)")]
+    // [JC 260617] V1.0 프로토타입 자원 밸런스 '협회-연구소' 시트 기준.
+    [Tooltip("필요 자금 (레벨 2/3/4/5 도달)")]
+    [SerializeField] private int[] upgradeCostMoney = { 400, 600, 800, 1000 };
+    [Tooltip("필요 히어로 메달 (레벨 2/3/4/5 도달)")]
+    [SerializeField] private int[] upgradeCostChip  = {   5,   6,   8,  10 };
+    public IReadOnlyList<int> UpgradeCostMoney => upgradeCostMoney;
+    public IReadOnlyList<int> UpgradeCostChip => upgradeCostChip;
 
     // 클래스명 → 클래스 인덱스(스킬 인덱스 첫 자리 체계와 동일).
     private static readonly Dictionary<string, int> ClassNameToIndex = new Dictionary<string, int>
@@ -96,6 +102,27 @@ public class LabManager : MonoBehaviour
         return result;
     }
 
+    /// <summary>[JC 260617] 해당 영웅의 클래스 스킬 전체(미습득 포함). 그리드 행 표시용.</summary>
+    public List<SkillData> GetClassSkills(int unitIndex)
+    {
+        var result = new List<SkillData>();
+        var catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog == null) return result;
+        if (!TryResolveClass(unitIndex, out var className, out _)) return result;
+        foreach (var s in catalog.GetSkillsByClass(className))
+            if (s != null) result.Add(s);
+        return result;
+    }
+
+    /// <summary>스킬 습득 여부(acquireLevel ≤ 영웅 레벨).</summary>
+    public bool IsSkillLearned(int unitIndex, SkillData skill)
+    {
+        if (skill == null) return false;
+        var repo = PersistentUnitRepository.Instance;
+        if (repo == null || !repo.TryGetUnit(unitIndex, out var unit) || unit == null) return false;
+        return skill.acquireLevel <= Mathf.Max(1, unit.Level);
+    }
+
     // ─── 스킬 강화 레벨 조회 ───────────────────────────────────
     public int GetSkillLevel(int unitIndex, int skillIndex)
     {
@@ -109,9 +136,9 @@ public class LabManager : MonoBehaviour
         int level = GetSkillLevel(unitIndex, skillIndex);
         if (level >= MaxSkillLevel) return false;
         int idx = level - 1; // 현재 level→level+1 비용 인덱스 (level1→idx0 = toLevel2)
-        if (idx < 0 || idx >= UpgradeCostMoney.Length) return false;
-        money = UpgradeCostMoney[idx];
-        chip = UpgradeCostChip[idx];
+        if (idx < 0 || idx >= upgradeCostMoney.Length) return false;
+        money = upgradeCostMoney[idx];
+        chip = idx < upgradeCostChip.Length ? upgradeCostChip[idx] : 0;
         return true;
     }
 
