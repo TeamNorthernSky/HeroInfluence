@@ -10,6 +10,7 @@ namespace ASB.Work.Battle.SkillExecution
     {
         public bool Success { get; private set; }
         public List<DamageContext> DamageContexts { get; private set; } = new List<DamageContext>();
+        public List<HealContext> HealContexts { get; private set; } = new List<HealContext>();
 
         /// <summary>스킬 실행에 사용된 핸들러. 광역(AoE) 연출 분기 등에 사용합니다.</summary>
         public ISkillEffectHandler Handler { get; set; }
@@ -34,6 +35,23 @@ namespace ASB.Work.Battle.SkillExecution
             if (context.Caster != null && context.Target != null)
             {
                 DamageContexts.Add(context);
+                Success = true;
+            }
+
+            return this;
+        }
+
+        public SkillExecutionResult AddHeal(BattleCharactor caster, BattleCharactor target, float amount, int skillIndex = 0)
+        {
+            if (caster != null && target != null && amount > 0f)
+            {
+                HealContexts.Add(new HealContext
+                {
+                    Caster = caster,
+                    Target = target,
+                    HealAmount = amount,
+                    SkillIndex = skillIndex
+                });
                 Success = true;
             }
 

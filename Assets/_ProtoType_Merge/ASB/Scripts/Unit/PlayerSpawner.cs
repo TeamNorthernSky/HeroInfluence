@@ -291,6 +291,7 @@ public class PlayerSpawner : MonoBehaviour
         sortedGrids.Sort();
 
         bool spawnedAny = false;
+        bool skippedDeadUnit = false;
         int spawnCount = Mathf.Min(combatUnitIndices.Count, sortedGrids.Count);
         for (int i = 0; i < spawnCount; i++)
         {
@@ -299,6 +300,12 @@ public class PlayerSpawner : MonoBehaviour
 
             if (!repository.TryGetUnit(persistentUnitIndex, out UnitPersistentData persistentData) || persistentData == null)
             {
+                continue;
+            }
+
+            if (persistentData.CurrentHp <= 0f)
+            {
+                skippedDeadUnit = true;
                 continue;
             }
 
@@ -316,7 +323,7 @@ public class PlayerSpawner : MonoBehaviour
             spawnedAny = true;
         }
 
-        return spawnedAny;
+        return spawnedAny || skippedDeadUnit;
     }
 
     private GameObject SpawnPersistentUnit(UnitData unitData, UnitPersistentData persistentData, int gridNumber)

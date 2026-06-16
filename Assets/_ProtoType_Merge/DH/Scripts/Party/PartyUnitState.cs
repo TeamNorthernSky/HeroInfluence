@@ -27,6 +27,7 @@ public class PartyUnitState : MonoBehaviour
     [SerializeField] private EquipmentStatBlock currentWeaponStats;
     [SerializeField] private StatBlock ingameStats;
     [SerializeField] private float currentHp;
+    [SerializeField] private bool isIncapacitated;
 
     public int UnitIndex => unitIndex;
     public string UnitTemplateKey => unitTemplateKey;
@@ -43,6 +44,7 @@ public class PartyUnitState : MonoBehaviour
     public EquipmentStatBlock CurrentWeaponStats => currentWeaponStats;
     public StatBlock IngameStats => ingameStats;
     public float CurrentHp => currentHp;
+    public bool IsIncapacitated => isIncapacitated;
 
     public void InitializeFromTemplate(UnitData template, EquipmentStatBlock weaponStats)
     {
@@ -58,6 +60,7 @@ public class PartyUnitState : MonoBehaviour
         exp = 0;
         maxExp = ResolveMaxExp(Level);
         currentHp = Mathf.Max(0f, ingameStats.HP);
+        SetIncapacitated(false);
     }
 
     public void AssignUnitIndex(int nextUnitIndex)
@@ -85,6 +88,7 @@ public class PartyUnitState : MonoBehaviour
         currentWeaponStats = data.CurrentWeaponStats;
         ingameStats = data.IngameStats;
         currentHp = Mathf.Max(0f, data.CurrentHp);
+        SetIncapacitated(data.IsIncapacitated);
     }
 
     public bool SyncToRepository()
@@ -110,7 +114,8 @@ public class PartyUnitState : MonoBehaviour
             currentHp,
             Exp,
             MaxExp,
-            SkillLevel);
+            SkillLevel,
+            isIncapacitated: isIncapacitated);
     }
 
     public bool RefreshFromRepository()
@@ -181,6 +186,12 @@ public class PartyUnitState : MonoBehaviour
         currentHp = Mathf.Clamp(nextCurrentHp, 0f, Mathf.Max(0f, ingameStats.HP));
     }
 
+    public void SetIncapacitated(bool nextIsIncapacitated)
+    {
+        isIncapacitated = nextIsIncapacitated;
+        ApplyIncapacitatedVisualState();
+    }
+
     public void ApplyLevelUp(int amount = 1)
     {
         ApplyLevelUp(amount, true);
@@ -242,6 +253,25 @@ public class PartyUnitState : MonoBehaviour
         }
 
         return nextExp;
+    }
+
+    private void ApplyIncapacitatedVisualState()
+    {
+        bool visible = !isIncapacitated;
+
+        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null)
+                renderers[i].enabled = visible;
+        }
+
+        Animator[] animators = GetComponentsInChildren<Animator>(true);
+        for (int i = 0; i < animators.Length; i++)
+        {
+            if (animators[i] != null)
+                animators[i].enabled = visible;
+        }
     }
 
     private void OnValidate()

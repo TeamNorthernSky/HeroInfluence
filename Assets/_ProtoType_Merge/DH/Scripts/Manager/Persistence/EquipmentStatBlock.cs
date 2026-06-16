@@ -44,6 +44,18 @@ public struct EquipmentStatBlock
             weaponData.BonusSpeed);
     }
 
+    public static EquipmentStatBlock FromStatBlock(StatBlock stats)
+    {
+        return new EquipmentStatBlock(
+            stats.HP,
+            stats.Atk,
+            stats.DEF,
+            stats.CriticalRate,
+            stats.CounterRate,
+            stats.AvoidRate,
+            stats.Speed);
+    }
+
     public StatBlock ToStatBlock()
     {
         return new StatBlock(

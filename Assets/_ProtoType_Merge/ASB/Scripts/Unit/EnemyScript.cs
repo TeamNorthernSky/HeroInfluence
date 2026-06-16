@@ -124,7 +124,7 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         battle.LoadPersistentEquipment(resolvedSkillIndex, resolvedWeaponIndex);
 
         battle.RecalculateStats();
-        battle.InitializeCurrentHpToMax();
+        battle.InitializeCurrentState(persistentData.CurrentHp, persistentData.CurrentInfluence);
         battle.MarkInitializedFromDataPipeline(true);
         Debug.Log(
             $"[Stats/Persistent] {battle.UnitName} uses precomputed snapshot. " +

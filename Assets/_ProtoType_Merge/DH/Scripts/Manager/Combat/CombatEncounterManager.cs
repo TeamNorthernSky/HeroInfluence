@@ -179,7 +179,9 @@ public class CombatEncounterManager : MonoBehaviour
         if (combatContext.Result != CombatResult.None)
             return false;
 
-        IReadOnlyList<int> partyUnitIndices = ResolvePartyUnitIndices(partyRepository, party, partyId);
+        IReadOnlyList<int> partyUnitIndices = FilterCombatReadyPartyUnits(
+            ResolvePartyUnitIndices(partyRepository, party, partyId),
+            unitRepository);
         IReadOnlyList<int> enemyUnitIndices = ResolveEnemyUnitIndices(enemyGroupRepository, enemy, enemyId);
         int partyUnitCount = CountValidUnitIndices(partyUnitIndices);
         int enemyUnitCount = CountValidUnitIndices(enemyUnitIndices);
@@ -669,5 +671,35 @@ public class CombatEncounterManager : MonoBehaviour
         }
 
         return count;
+    }
+
+    private static IReadOnlyList<int> FilterCombatReadyPartyUnits(
+        IReadOnlyList<int> source,
+        PersistentUnitRepository repository)
+    {
+        if (source == null)
+            return Array.Empty<int>();
+
+        if (repository == null)
+            return source;
+
+        int[] filtered = new int[source.Count];
+        for (int i = 0; i < source.Count; i++)
+        {
+            int unitIndex = source[i];
+            if (unitIndex <= 0)
+                continue;
+
+            if (repository.TryGetUnit(unitIndex, out UnitPersistentData data) &&
+                data != null &&
+                data.IsIncapacitated)
+            {
+                continue;
+            }
+
+            filtered[i] = unitIndex;
+        }
+
+        return filtered;
     }
 }

@@ -23,7 +23,21 @@ public class SkillManager : MonoBehaviour
             return new List<SkillData>();
         }
 
-        return DHCsvTemplateCatalog.Instance.GetSkillsByClass(characterName);
+        string normalized = characterName.Trim();
+        List<SkillData> skills = DHCsvTemplateCatalog.Instance.GetSkillsByClass(normalized);
+        if (skills.Count > 0)
+        {
+            return skills;
+        }
+
+        if (DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(normalized, out UnitData unitTemplate) &&
+            unitTemplate != null &&
+            !string.IsNullOrWhiteSpace(unitTemplate.UnitType))
+        {
+            return DHCsvTemplateCatalog.Instance.GetSkillsByClass(unitTemplate.UnitType.Trim());
+        }
+
+        return skills;
     }
 
     public List<SkillData> GetAvailableSkillsForCharacter(string characterName, int currentLevel)

@@ -370,6 +370,25 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
     }
 
+    public void InitializeCurrentState(float hp, float influence)
+    {
+        currentHp = Mathf.Clamp(hp, 0f, MaxHp);
+        CurrentInfluence = Mathf.Clamp(influence, 0f, MaxInfluence);
+        IsDead = currentHp <= 0f;
+
+        if (IsDead)
+        {
+            DisableVisuals();
+        }
+        else
+        {
+            EnableVisuals();
+        }
+
+        OnHpChanged?.Invoke(CurrentHp, MaxHp);
+        OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
+    }
+
     public bool TryConsumeInfluence(float amount)
     {
         float required = Mathf.Max(0f, amount);

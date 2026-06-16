@@ -38,12 +38,12 @@ public class PersistentEnemyRepository : MonoBehaviour
         return CreateUnit(unitTemplateKey, level, baseStats, baseStats, baseStats.HP);
     }
 
-    public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock ingameStats, float currentHp)
+    public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock ingameStats, float currentHp, float currentInfluence = -1f)
     {
         int unitIndex = Mathf.Max(1, nextUnitIndex);
         nextUnitIndex = unitIndex + 1;
 
-        EnemyUnitPersistentData newData = new EnemyUnitPersistentData(unitIndex, unitTemplateKey, level, baseStats, ingameStats, currentHp);
+        EnemyUnitPersistentData newData = new EnemyUnitPersistentData(unitIndex, unitTemplateKey, level, baseStats, ingameStats, currentHp, currentInfluence);
         units.Add(newData);
         unitLookup[unitIndex] = newData;
         return unitIndex;
@@ -75,12 +75,12 @@ public class PersistentEnemyRepository : MonoBehaviour
         return true;
     }
 
-    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock ingameStats, float currentHp)
+    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock ingameStats, float currentHp, float currentInfluence = -1f)
     {
         if (unitIndex <= 0 || !unitLookup.TryGetValue(unitIndex, out EnemyUnitPersistentData data))
             return false;
 
-        data.ApplyRuntimeState(unitTemplateKey, level, baseStats, ingameStats, currentHp);
+        data.ApplyRuntimeState(unitTemplateKey, level, baseStats, ingameStats, currentHp, currentInfluence);
         return true;
     }
 
