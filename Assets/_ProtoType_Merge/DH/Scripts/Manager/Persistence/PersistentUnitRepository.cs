@@ -64,10 +64,10 @@ public class PersistentUnitRepository : MonoBehaviour
             currentWeaponStats,
             default,
             levelUpTemplates);
-        return CreateUnit(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, levelUpTemplates));
+        return CreateUnit(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, levelUpTemplates), ingameStats.Influence);
     }
 
-    public int CreateUnit(string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0)
+    public int CreateUnit(string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, float currentInfluence = -1f)
     {
         int unitIndex = Mathf.Max(1, nextUnitIndex);
         nextUnitIndex = unitIndex + 1;
@@ -75,7 +75,7 @@ public class PersistentUnitRepository : MonoBehaviour
         if (maxExp <= 0)
             maxExp = ResolveMaxExp(level);
 
-        var data = new UnitPersistentData(unitIndex, unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, maxExp);
+        var data = new UnitPersistentData(unitIndex, unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, maxExp, currentInfluence: currentInfluence);
         units.Add(data);
         unitLookup[unitIndex] = data;
         EnsureDefaultWeaponInstance(unitIndex);
@@ -106,7 +106,7 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
-    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = -1, int maxExp = -1, int skillLevel = -1, int equippedWeaponInstanceIndex = -1)
+    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = -1, int maxExp = -1, int skillLevel = -1, int equippedWeaponInstanceIndex = -1, float currentInfluence = -1f)
     {
         if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
             return false;
@@ -115,7 +115,7 @@ public class PersistentUnitRepository : MonoBehaviour
         if (effectiveMaxExp < 0 && data.MaxExp <= 0)
             effectiveMaxExp = ResolveMaxExp(level);
 
-        data.ApplyRuntimeState(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, effectiveMaxExp, skillLevel, equippedWeaponInstanceIndex);
+        data.ApplyRuntimeState(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, effectiveMaxExp, skillLevel, equippedWeaponInstanceIndex, currentInfluence);
         return true;
     }
 

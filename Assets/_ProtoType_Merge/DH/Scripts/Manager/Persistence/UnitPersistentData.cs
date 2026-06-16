@@ -12,6 +12,7 @@ public class UnitPersistentData
     public StatBlock EventBonusStats => eventBonusStats;
     public StatBlock IngameStats => ingameStats;
     public float CurrentHp => currentHp;
+    public float CurrentInfluence => hasCurrentInfluence ? currentInfluence : Math.Max(0f, ingameStats.Influence);
     public int Exp => exp;
     public int MaxExp => maxExp;
     public int CurrentSkillIndex => currentSkillIndex;
@@ -29,6 +30,8 @@ public class UnitPersistentData
     [UnityEngine.SerializeField] private StatBlock eventBonusStats;
     [UnityEngine.SerializeField] private StatBlock ingameStats;
     [UnityEngine.SerializeField] private float currentHp;
+    [UnityEngine.SerializeField] private float currentInfluence;
+    [UnityEngine.SerializeField] private bool hasCurrentInfluence;
     [UnityEngine.SerializeField] private int exp;
     [UnityEngine.SerializeField] private int maxExp;
     [UnityEngine.SerializeField] private int currentSkillIndex;
@@ -42,7 +45,7 @@ public class UnitPersistentData
     {
     }
 
-    public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, StatBlock eventBonusStats = default, int skillLevel = 1, int equippedWeaponInstanceIndex = 0)
+    public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, StatBlock eventBonusStats = default, int skillLevel = 1, int equippedWeaponInstanceIndex = 0, float currentInfluence = -1f, bool hasCurrentInfluence = true)
     {
         this.unitIndex = unitIndex;
         this.unitTemplateKey = unitTemplateKey ?? string.Empty;
@@ -53,6 +56,8 @@ public class UnitPersistentData
         this.eventBonusStats = eventBonusStats;
         this.ingameStats = ingameStats;
         this.currentHp = Math.Max(0f, currentHp);
+        this.hasCurrentInfluence = hasCurrentInfluence;
+        this.currentInfluence = hasCurrentInfluence ? ResolveInitialInfluence(ingameStats, currentInfluence) : 0f;
         this.exp = Math.Max(0, exp);
         this.maxExp = Math.Max(0, maxExp);
         this.currentSkillIndex = Math.Max(0, currentSkillIndex);
@@ -62,7 +67,7 @@ public class UnitPersistentData
         this.currentWeaponStats = currentWeaponStats;
     }
 
-    public void ApplyRuntimeState(string nextUnitTemplateKey, int nextLevel, int nextFavorability, StatBlock nextBaseStats, StatBlock nextLevelupStats, int nextCurrentSkillIndex, int nextCurrentWeaponIndex, EquipmentStatBlock nextCurrentWeaponStats, StatBlock nextIngameStats, float nextCurrentHp, int nextExp = -1, int nextMaxExp = -1, int nextSkillLevel = -1, int nextEquippedWeaponInstanceIndex = -1)
+    public void ApplyRuntimeState(string nextUnitTemplateKey, int nextLevel, int nextFavorability, StatBlock nextBaseStats, StatBlock nextLevelupStats, int nextCurrentSkillIndex, int nextCurrentWeaponIndex, EquipmentStatBlock nextCurrentWeaponStats, StatBlock nextIngameStats, float nextCurrentHp, int nextExp = -1, int nextMaxExp = -1, int nextSkillLevel = -1, int nextEquippedWeaponInstanceIndex = -1, float nextCurrentInfluence = -1f)
     {
         unitTemplateKey = nextUnitTemplateKey ?? string.Empty;
         level = Math.Max(1, nextLevel);
@@ -78,6 +83,11 @@ public class UnitPersistentData
         currentWeaponStats = nextCurrentWeaponStats;
         ingameStats = nextIngameStats;
         currentHp = Math.Max(0f, nextCurrentHp);
+        if (nextCurrentInfluence >= 0f)
+        {
+            currentInfluence = ResolveInitialInfluence(nextIngameStats, nextCurrentInfluence);
+            hasCurrentInfluence = true;
+        }
 
         if (nextExp >= 0)
             exp = Math.Max(0, nextExp);
@@ -89,5 +99,14 @@ public class UnitPersistentData
     public void SetEventBonusStats(StatBlock nextEventBonusStats)
     {
         eventBonusStats = nextEventBonusStats;
+    }
+
+    private static float ResolveInitialInfluence(StatBlock stats, float requestedCurrentInfluence)
+    {
+        float maxInfluence = Math.Max(0f, stats.Influence);
+        if (requestedCurrentInfluence < 0f)
+            return maxInfluence;
+
+        return Math.Min(Math.Max(0f, requestedCurrentInfluence), maxInfluence);
     }
 }

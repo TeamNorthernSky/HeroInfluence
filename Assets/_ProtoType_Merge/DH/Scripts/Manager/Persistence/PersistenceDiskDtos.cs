@@ -59,6 +59,8 @@ public class UnitPersistentDataDiskRow
     public int level;
     public int favorability;
     public float currentHp;
+    public float currentInfluence;
+    public bool hasCurrentInfluence;
     public int exp;
     public int maxExp;
     public int currentSkillIndex;
@@ -83,6 +85,8 @@ public class UnitPersistentDataDiskRow
             level = u.Level,
             favorability = u.Favorability,
             currentHp = u.CurrentHp,
+            currentInfluence = u.CurrentInfluence,
+            hasCurrentInfluence = true,
             exp = u.Exp,
             maxExp = u.MaxExp,
             currentSkillIndex = u.CurrentSkillIndex,
@@ -115,7 +119,9 @@ public class UnitPersistentDataDiskRow
             maxExp,
             eventBonusStats.ToStatBlock(),
             skillLevel,
-            equippedWeaponInstanceIndex);
+            equippedWeaponInstanceIndex,
+            currentInfluence,
+            hasCurrentInfluence);
     }
 }
 
@@ -126,6 +132,8 @@ public class EnemyUnitPersistentDataDiskRow
     public string unitTemplateKey;
     public int level;
     public float currentHp;
+    public float currentInfluence;
+    public bool hasCurrentInfluence;
     public StatBlockDisk baseStats;
     public StatBlockDisk ingameStats;
 
@@ -140,6 +148,8 @@ public class EnemyUnitPersistentDataDiskRow
             unitTemplateKey = u.UnitTemplateKey ?? string.Empty,
             level = u.Level,
             currentHp = u.CurrentHp,
+            currentInfluence = u.CurrentInfluence,
+            hasCurrentInfluence = true,
             baseStats = StatBlockDisk.From(u.BaseStats),
             ingameStats = StatBlockDisk.From(u.IngameStats)
         };
@@ -153,6 +163,8 @@ public class EnemyUnitPersistentDataDiskRow
             level,
             baseStats.ToStatBlock(),
             ingameStats.ToStatBlock(),
-            currentHp);
+            currentHp,
+            currentInfluence,
+            hasCurrentInfluence);
     }
 }
