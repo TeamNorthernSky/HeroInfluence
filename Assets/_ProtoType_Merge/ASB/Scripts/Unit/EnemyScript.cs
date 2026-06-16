@@ -107,7 +107,7 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
 
         battle.BindPersistentEnemySourceData(persistentData);
         battle.SetExperienceReward(fallbackData != null ? fallbackData.ExperiencePoint : 0f);
-        battle.SetBaseStats(persistentData.BaseStats);
+        battle.SetBaseStats(persistentData.IngameStats);
         battle.SetLevelScaling(false);
 
         if (!string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey))
@@ -129,7 +129,8 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         Debug.Log(
             $"[Stats/Persistent] {battle.UnitName} uses precomputed snapshot. " +
             $"LevelScaling=false, " +
-            $"FinalStats HP={battle.FinalStats.HP}, Atk={battle.FinalStats.Atk}, DEF={battle.FinalStats.DEF}");
+            $"FinalStats HP={battle.FinalStats.HP}, Atk={battle.FinalStats.Atk}, DEF={battle.FinalStats.DEF}, " +
+            $"MaxIP={battle.MaxInfluence:0.#}, CurrentIP={battle.CurrentInfluence:0.#}");
 
         enemyData = fallbackData;
         EnsureAIReady();

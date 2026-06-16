@@ -164,7 +164,23 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         get => currentInfluence;
         private set => currentInfluence = value;
     }
-    public float MaxInfluence => FinalStats.Influence;
+    /// <summary>전투 IP 상한. 영속 유닛은 IngameStats.Influence(레벨·무기·성장 반영), 그 외는 FinalStats.</summary>
+    public float MaxInfluence => ResolveMaxInfluenceCap();
+
+    private float ResolveMaxInfluenceCap()
+    {
+        if (SourceData != null)
+        {
+            return Mathf.Clamp(SourceData.IngameStats.Influence, 0f, 200f);
+        }
+
+        if (SourceEnemyData != null)
+        {
+            return Mathf.Clamp(SourceEnemyData.IngameStats.Influence, 0f, 200f);
+        }
+
+        return FinalStats.Influence;
+    }
     public IReadOnlyList<StatusEffectInstance> ActiveStatusEffects => activeStatusEffects;
 
     // [레거시] 인스펙터 스킬 선택 방식으로 전환 완료 후 제거 예정.
