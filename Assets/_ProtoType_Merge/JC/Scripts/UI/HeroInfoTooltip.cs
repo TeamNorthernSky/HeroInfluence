@@ -4,11 +4,11 @@ using UnityEngine.EventSystems;
 
 /// <summary>
 /// 마우스 호버 시 자식 툴팁 GO를 표시하는 단순 컴포넌트(클릭 동작 없음).
-/// HeroInfo 모달의 정보 버튼(캐릭터 스킬/장비/장비 스킬) 등에 부착.
-/// 툴팁 본문 텍스트는 SetBody로 동적 설정하거나 인스펙터에서 고정.
+/// HeroInfo/HeroStatus 모달의 정보 버튼(캐릭터 스킬/장비/장비 스킬) 등에 부착.
+/// (KJ의 HoverTooltip과 클래스명 충돌을 피하기 위해 HeroInfoTooltip으로 분리)
 /// </summary>
 [DisallowMultipleComponent]
-public class HoverTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class HeroInfoTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Tooltip("호버 시 켤 툴팁 GO(평소 비활성). 보통 버튼 자식 패널")]
     [SerializeField] private GameObject tooltip;

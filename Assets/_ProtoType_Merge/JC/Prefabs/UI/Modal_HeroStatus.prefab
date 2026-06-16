@@ -934,7 +934,7 @@ GameObject:
   - component: {fileID: 769495587258783666}
   - component: {fileID: 4343662975313690118}
   - component: {fileID: 4593378944526668370}
-  - component: {fileID: 3554248538283824276}
+  - component: {fileID: 5577325755412939895}
   m_Layer: 0
   m_Name: Btn_WeaponSkill
   m_TagString: Untagged
@@ -1090,7 +1090,7 @@ MonoBehaviour:
   toggleOnClick: 0
   clickObjects: []
   clickActiveDuration: 0.15
---- !u!114 &3554248538283824276
+--- !u!114 &5577325755412939895
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1099,11 +1099,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 730492500964482666}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c29a3c7cf7aed374a8ed71eaf3d508dd, type: 3}
+  m_Script: {fileID: 0}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltip: {fileID: 622244811923074410}
-  bodyText: {fileID: 6061829542799378029}
+  tooltipPanel: {fileID: 622244811923074410}
+  titleText: {fileID: 0}
+  descriptionText: {fileID: 6061829542799378029}
+  title: 
+  description: "\uC7A5\uCC29 \uC7A5\uBE44 \uC815\uBCF4 (\uC900\uBE44 \uC911)"
 --- !u!1 &1157078838054945403
 GameObject:
   m_ObjectHideFlags: 0
@@ -4754,7 +4757,7 @@ GameObject:
   - component: {fileID: 4398607085207937319}
   - component: {fileID: 790624090143475773}
   - component: {fileID: 2436721028005067033}
-  - component: {fileID: 1594535576844288241}
+  - component: {fileID: 8724888144461502731}
   m_Layer: 0
   m_Name: Btn_ClassSkill
   m_TagString: Untagged
@@ -4910,7 +4913,7 @@ MonoBehaviour:
   toggleOnClick: 0
   clickObjects: []
   clickActiveDuration: 0.15
---- !u!114 &1594535576844288241
+--- !u!114 &8724888144461502731
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4919,11 +4922,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 6802184240801377124}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c29a3c7cf7aed374a8ed71eaf3d508dd, type: 3}
+  m_Script: {fileID: 0}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltip: {fileID: 190104775801699224}
-  bodyText: {fileID: 5218667794796002205}
+  tooltipPanel: {fileID: 190104775801699224}
+  titleText: {fileID: 0}
+  descriptionText: {fileID: 5218667794796002205}
+  title: 
+  description: "\uCE90\uB9AD\uD130 \uC2A4\uD0AC \uC815\uBCF4 (\uC900\uBE44 \uC911)"
 --- !u!1 &6825426550973294717
 GameObject:
   m_ObjectHideFlags: 0
@@ -5963,7 +5969,7 @@ GameObject:
   - component: {fileID: 8692233518656775578}
   - component: {fileID: 3388734672880000849}
   - component: {fileID: 9186491394021701632}
-  - component: {fileID: 2767731129504780807}
+  - component: {fileID: 5908417777068199135}
   m_Layer: 0
   m_Name: Btn_EquipSkill
   m_TagString: Untagged
@@ -6119,7 +6125,7 @@ MonoBehaviour:
   toggleOnClick: 0
   clickObjects: []
   clickActiveDuration: 0.15
---- !u!114 &2767731129504780807
+--- !u!114 &5908417777068199135
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6128,8 +6134,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 9018745771210130270}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c29a3c7cf7aed374a8ed71eaf3d508dd, type: 3}
+  m_Script: {fileID: 0}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltip: {fileID: 6405745938859132248}
-  bodyText: {fileID: 8492229628367041325}
+  tooltipPanel: {fileID: 6405745938859132248}
+  titleText: {fileID: 0}
+  descriptionText: {fileID: 8492229628367041325}
+  title: 
+  description: "\uC7A5\uBE44 \uC2A4\uD0AC \uC815\uBCF4 (\uC900\uBE44 \uC911)"
