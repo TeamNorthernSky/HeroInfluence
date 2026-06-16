@@ -319,12 +319,12 @@ public class BattleFlowManager : MonoBehaviour
             }
 
             CurrentUnit = unit;
-            OnTurnStarted?.Invoke(roundIndex, CurrentUnit);
 
-            // 턴 전환 시 입력 상태(타겟팅/아웃라인)가 남지 않도록 항상 정리
+            // 이전 턴 입력 상태 먼저 정리 후 OnTurnStarted 발행 (UI의 BeginPendingAction이 덮어쓰이지 않도록)
             inputHandler?.ClearSelectionState();
             Log(FormatTurnStartLog(unit));
             SetOutline(unit, true);
+            OnTurnStarted?.Invoke(roundIndex, CurrentUnit);
 
             CurrentUnit.ProcessTurnStartStatusEffects();
             if (CurrentUnit == null || CurrentUnit.IsDead)
@@ -503,6 +503,28 @@ public class BattleFlowManager : MonoBehaviour
 
         // TODO: 턴 종료 흐름 연결
         yield return null;
+    }
+
+    /// <summary>
+    /// 현재 플레이어 유닛의 스킬 데이터를 반환합니다. 플레이어 턴이 아니거나 스킬이 없으면 null.
+    /// </summary>
+    public SkillData GetCurrentUnitSkill(PendingActionType actionType)
+    {
+        if (CurrentUnit == null || !CurrentUnit.IsPlayer || CurrentUnit.IsDead)
+            return null;
+
+        switch (actionType)
+        {
+            case PendingActionType.ClassSkill:
+                CurrentUnit.ResolveSelectedSkill();
+                return CurrentUnit.SelectedSkillData;
+
+            case PendingActionType.WeaponSkill:
+                return CurrentUnit.EquippedWeaponData?.ToSkillData();
+
+            default:
+                return null;
+        }
     }
 
     public List<BattleCharactor> GetAlivePlayerUnits()

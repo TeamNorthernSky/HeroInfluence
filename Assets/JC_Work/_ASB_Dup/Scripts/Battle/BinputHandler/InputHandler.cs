@@ -175,7 +175,7 @@ public class InputHandler : MonoBehaviour
         }
     }
 
-    private void BeginPendingAction(PendingActionType actionType)
+    public void BeginPendingAction(PendingActionType actionType)
     {
         if (!TryGetCurrentActor(out BattleCharactor actor))
         {
