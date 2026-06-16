@@ -312,7 +312,8 @@ public class PersistentUnitRepository : MonoBehaviour
             nextEventBonusStats,
             levelUpTemplates);
 
-        float nextCurrentHp = Mathf.Clamp(data.CurrentHp, 0f, Mathf.Max(0f, nextIngameStats.HP));
+        float hpRecovery = Mathf.Max(0f, hpBonus);
+        float nextCurrentHp = Mathf.Clamp(data.CurrentHp + hpRecovery, 0f, Mathf.Max(0f, nextIngameStats.HP));
         data.SetEventBonusStats(nextEventBonusStats);
         data.ApplyRuntimeState(
             data.UnitTemplateKey,
