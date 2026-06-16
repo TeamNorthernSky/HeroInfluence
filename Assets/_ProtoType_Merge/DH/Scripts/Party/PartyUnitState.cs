@@ -13,7 +13,6 @@ public class PartyUnitState : MonoBehaviour
 
     [Header("Runtime State")]
     [SerializeField] private int level = 1;
-    [SerializeField] private int favorability;
     [SerializeField] private int exp;
     [SerializeField] private int maxExp;
     [FormerlySerializedAs("initialSkillIndex")]
@@ -32,7 +31,6 @@ public class PartyUnitState : MonoBehaviour
     public int UnitIndex => unitIndex;
     public string UnitTemplateKey => unitTemplateKey;
     public int Level => Mathf.Max(1, level);
-    public int Favorability => Mathf.Max(0, favorability);
     public int Exp => Mathf.Max(0, exp);
     public int MaxExp => Mathf.Max(0, maxExp);
     public int CurrentSkillIndex => Mathf.Max(0, currentSkillIndex);
@@ -76,7 +74,6 @@ public class PartyUnitState : MonoBehaviour
         unitIndex = data.UnitIndex;
         unitTemplateKey = data.UnitTemplateKey;
         level = Mathf.Max(1, data.Level);
-        favorability = Mathf.Max(0, data.Favorability);
         maxExp = data.MaxExp > 0 ? data.MaxExp : ResolveMaxExp(data.Level);
         exp = Mathf.Clamp(data.Exp, 0, MaxExp);
         baseStats = data.BaseStats;
@@ -104,7 +101,6 @@ public class PartyUnitState : MonoBehaviour
             unitIndex,
             unitTemplateKey,
             Level,
-            Favorability,
             baseStats,
             levelupStats,
             CurrentSkillIndex,
@@ -156,11 +152,6 @@ public class PartyUnitState : MonoBehaviour
             exp -= MaxExp;
             ApplyLevelUp(1, false);
         }
-    }
-
-    public void SetFavorability(int nextFavorability)
-    {
-        favorability = Mathf.Max(0, nextFavorability);
     }
 
     public void SetCurrentSkillIndex(int nextSkillIndex)
@@ -280,7 +271,6 @@ public class PartyUnitState : MonoBehaviour
             unitTemplateKey = legacyJobIndex.ToString();
 
         level = Mathf.Max(1, level);
-        favorability = Mathf.Max(0, favorability);
         exp = Mathf.Max(0, exp);
         currentSkillIndex = Mathf.Max(0, currentSkillIndex);
         skillLevel = Mathf.Max(1, skillLevel);

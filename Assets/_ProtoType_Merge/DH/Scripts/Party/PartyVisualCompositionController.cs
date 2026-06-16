@@ -118,7 +118,6 @@ public class PartyVisualCompositionController : MonoBehaviour
             unitIndices[i] = unitRepository.CreateUnit(
                 template.Index,
                 1,
-                0,
                 template.baseStats,
                 template.levelupStats,
                 0,

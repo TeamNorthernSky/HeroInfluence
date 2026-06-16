@@ -145,7 +145,7 @@ public class LabManager : MonoBehaviour
         if (!repo.TryGetUnit(unitIndex, out var d) || d == null) return false;
 
         bool ok = repo.UpdateUnitRuntimeState(
-            unitIndex, d.UnitTemplateKey, d.Level, d.Favorability,
+            unitIndex, d.UnitTemplateKey, d.Level,
             d.BaseStats, d.LevelupStats, skillIndex, d.CurrentWeaponIndex,
             d.CurrentWeaponStats, d.IngameStats, d.CurrentHp, d.Exp, d.MaxExp);
 

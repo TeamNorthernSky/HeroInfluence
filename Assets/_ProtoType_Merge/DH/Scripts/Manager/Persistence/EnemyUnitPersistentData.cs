@@ -9,7 +9,7 @@ public class EnemyUnitPersistentData
     public StatBlock BaseStats => baseStats;
     public StatBlock IngameStats => ingameStats;
     public float CurrentHp => currentHp;
-    public float CurrentInfluence => hasCurrentInfluence ? currentInfluence : Math.Max(0f, ingameStats.Influence);
+    public float CurrentInfluence => currentInfluence;
     public bool IsIncapacitated => isIncapacitated;
 
     [UnityEngine.SerializeField] private int unitIndex;
@@ -19,10 +19,9 @@ public class EnemyUnitPersistentData
     [UnityEngine.SerializeField] private StatBlock ingameStats;
     [UnityEngine.SerializeField] private float currentHp;
     [UnityEngine.SerializeField] private float currentInfluence;
-    [UnityEngine.SerializeField] private bool hasCurrentInfluence;
     [UnityEngine.SerializeField] private bool isIncapacitated;
 
-    public EnemyUnitPersistentData(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock ingameStats, float currentHp, float currentInfluence = -1f, bool hasCurrentInfluence = true, bool isIncapacitated = false)
+    public EnemyUnitPersistentData(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock ingameStats, float currentHp, float currentInfluence = -1f, bool isIncapacitated = false)
     {
         this.unitIndex = Math.Max(1, unitIndex);
         this.unitTemplateKey = unitTemplateKey ?? string.Empty;
@@ -30,8 +29,7 @@ public class EnemyUnitPersistentData
         this.baseStats = baseStats;
         this.ingameStats = ingameStats;
         this.currentHp = Math.Max(0f, currentHp);
-        this.hasCurrentInfluence = hasCurrentInfluence;
-        this.currentInfluence = hasCurrentInfluence ? ResolveInitialInfluence(ingameStats, currentInfluence) : 0f;
+        this.currentInfluence = ResolveInitialInfluence(ingameStats, currentInfluence);
         this.isIncapacitated = isIncapacitated;
     }
 
@@ -45,7 +43,6 @@ public class EnemyUnitPersistentData
         if (nextCurrentInfluence >= 0f)
         {
             currentInfluence = ResolveInitialInfluence(nextIngameStats, nextCurrentInfluence);
-            hasCurrentInfluence = true;
         }
 
         if (nextIsIncapacitated.HasValue)

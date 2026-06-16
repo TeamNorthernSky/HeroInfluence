@@ -82,7 +82,7 @@ public class PersistentStateDebugLogger : MonoBehaviour
             if (u == null) continue;
             StatBlock s = u.BaseStats;
             sb.AppendLine(
-                $"  unit[{u.UnitIndex}] tpl='{u.UnitTemplateKey}' Lv{u.Level} Fav{u.Favorability} " +
+                $"  unit[{u.UnitIndex}] tpl='{u.UnitTemplateKey}' Lv{u.Level} IP{u.CurrentInfluence:0.#} " +
                 $"HP{s.HP} Atk{s.Atk} DEF{s.DEF} Spd{s.Speed} " +
                 $"skill={u.CurrentSkillIndex} weapon={u.CurrentWeaponIndex}");
         }

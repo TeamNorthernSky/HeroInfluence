@@ -138,7 +138,6 @@ public static class BattleResultPersistenceHandler
                         data.UnitIndex,
                         data.UnitTemplateKey,
                         data.Level,
-                        data.Favorability,
                         data.BaseStats,
                         data.LevelupStats,
                         selection.SelectedSkillId,   // CurrentSkillIndex 갱신
@@ -176,7 +175,6 @@ public static class BattleResultPersistenceHandler
 
         float hp = ResolvePersistedHp(battle);
         float influence = Mathf.Clamp(battle.CurrentInfluence, 0f, battle.MaxInfluence);
-        int syncedFavorability = Mathf.Max(0, Mathf.RoundToInt(influence));
         bool isIncapacitated = battle.IsDead;
 
         StatBlock ingame = src.IngameStats;
@@ -185,7 +183,6 @@ public static class BattleResultPersistenceHandler
             src.UnitIndex,
             src.UnitTemplateKey,
             src.Level,
-            syncedFavorability,
             src.BaseStats,
             src.LevelupStats,
             src.CurrentSkillIndex,

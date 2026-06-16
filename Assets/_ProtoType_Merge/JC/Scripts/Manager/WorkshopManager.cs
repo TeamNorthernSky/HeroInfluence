@@ -214,7 +214,7 @@ public class WorkshopManager : MonoBehaviour
         float newHp = Mathf.Min(d.CurrentHp, newIngame.HP);
 
         bool ok = repo.UpdateUnitRuntimeState(
-            unitIndex, d.UnitTemplateKey, d.Level, d.Favorability,
+            unitIndex, d.UnitTemplateKey, d.Level,
             d.BaseStats, d.LevelupStats, d.CurrentSkillIndex, weaponIndex,
             weaponStats, newIngame, newHp, d.Exp, d.MaxExp);
 

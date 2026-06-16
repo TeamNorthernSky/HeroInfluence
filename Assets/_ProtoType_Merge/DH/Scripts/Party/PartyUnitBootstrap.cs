@@ -135,7 +135,6 @@ public class PartyUnitBootstrap : MonoBehaviour
             int unitIndex = repository.CreateUnit(
                 unitState.UnitTemplateKey,
                 unitState.Level,
-                unitState.Favorability,
                 unitState.BaseStats,
                 unitState.LevelupStats,
                 unitState.CurrentSkillIndex,
