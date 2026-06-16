@@ -561,15 +561,15 @@ MonoBehaviour:
     ClassSkillMultiTarget: 
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 0
-    ClassSkillValueLv1: 0
+    ClassSkillValueLv1: 0.3
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0
+    ClassSkillValueLv2: 0.3
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 0
+    ClassSkillValueLv3: 0.3
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 0
+    ClassSkillValueLv4: 0.3
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 0
+    ClassSkillValueLv5: 0.3
     ClassSkillSubValueLv5: 0
   - ClassSkillIndex: 4020
     Class: "\uC11C\uD3EC\uD130"
@@ -662,16 +662,16 @@ MonoBehaviour:
     ClassSkillMultiTarget: 
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 0
-    ClassSkillValueLv1: 0
-    ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0
-    ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 0
-    ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 0
-    ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 0
-    ClassSkillSubValueLv5: 0
+    ClassSkillValueLv1: 0.1
+    ClassSkillSubValueLv1: 0.1
+    ClassSkillValueLv2: 0.1
+    ClassSkillSubValueLv2: 0.1
+    ClassSkillValueLv3: 0.1
+    ClassSkillSubValueLv3: 0.1
+    ClassSkillValueLv4: 0.1
+    ClassSkillSubValueLv4: 0.1
+    ClassSkillValueLv5: 0.1
+    ClassSkillSubValueLv5: 0.1
   - ClassSkillIndex: 4060
     Class: "\uC11C\uD3EC\uD130"
     ClassSkill_AcquireRank: 12
@@ -711,15 +711,15 @@ MonoBehaviour:
     ClassSkillMultiTarget: 
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 0
-    ClassSkillValueLv1: 0
+    ClassSkillValueLv1: 0.2
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0
+    ClassSkillValueLv2: 0.2
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 0
+    ClassSkillValueLv3: 0.2
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 0
+    ClassSkillValueLv4: 0.2
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 0
+    ClassSkillValueLv5: 0.2
     ClassSkillSubValueLv5: 0
   - ClassSkillIndex: 5010
     Class: "\uD30C\uC774\uD130"

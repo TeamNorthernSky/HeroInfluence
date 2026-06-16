@@ -29,6 +29,19 @@ namespace ASB.Work.Battle.SkillExecution
     }
 
 
+
+    // 타겟 HP 비례 힐: 타깃에 HP에 비례해서 힐을 함
+    public sealed class TargetHPPerHeal : BaseSingleSkillHandler
+    {
+        protected override void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
+        {
+            float totalSkillValue = Mathf.Ceil( target.FinalStats.HP * Mathf.Clamp01(skillData.skillValue)); 
+            float heal = SkillEffectHelper.ApplyStandardHeal(caster, target, totalSkillValue);
+            Debug.Log($"[Skill/DefaultHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
+        }
+    }
+
+
     //부활 스킬
     public sealed class RebirthSkillHandler : BaseSingleSkillHandler
     {

@@ -192,12 +192,15 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             }
 
             Debug.LogWarning(
-                $"[EnemyScript] AI 결정 실패. 기본 공격으로 대체합니다: unit={self.UnitName}, aiNull={currentAI == null}, aliveTargets={targets.Count}, targetList=[{FormatTargets(targets)}]");
-            yield return StartCoroutine(battleManager.ExecuteBasicAttack(self, target));
+                $"[EnemyScript] AI 결정 실패. 턴을 스킵합니다: unit={self.UnitName}, aiNull={currentAI == null}, aliveTargets={targets.Count}, targetList=[{FormatTargets(targets)}]");
             yield break;
         }
 
-        EnemyActionType actionType = decision != null ? decision.ActionType : EnemyActionType.BasicAttack;
+        // 타겟 발판 하이라이트 표시 후 0.5초 대기
+        flowManager?.ShowTargetHighlight(target);
+        yield return new WaitForSeconds(0.5f);
+
+        EnemyActionType actionType = decision != null ? decision.ActionType : EnemyActionType.ClassSkill;
         switch (actionType)
         {
             case EnemyActionType.ClassSkill:
@@ -209,8 +212,7 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
                 }
                 else
                 {
-                    Debug.LogWarning($"[EnemyScript] ClassSkill 선택이지만 스킬이 없어 기본 공격으로 대체: unit={self.UnitName}");
-                    yield return StartCoroutine(battleManager.ExecuteBasicAttack(self, target));
+                    Debug.LogWarning($"[EnemyScript] ClassSkill 선택이지만 스킬이 없어 턴을 스킵합니다: unit={self.UnitName}");
                 }
                 break;
 
@@ -222,16 +224,16 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
                 }
                 else
                 {
-                    Debug.LogWarning($"[EnemyScript] WeaponSkill 선택이지만 무기가 없어 기본 공격으로 대체: unit={self.UnitName}");
-                    yield return StartCoroutine(battleManager.ExecuteBasicAttack(self, target));
+                    Debug.LogWarning($"[EnemyScript] WeaponSkill 선택이지만 무기가 없어 턴을 스킵합니다: unit={self.UnitName}");
                 }
                 break;
 
-            case EnemyActionType.BasicAttack:
             default:
-                yield return StartCoroutine(battleManager.ExecuteBasicAttack(self, target));
+                Debug.LogWarning($"[EnemyScript] 알 수 없는 액션 타입으로 턴을 스킵합니다: unit={self.UnitName}");
                 break;
         }
+
+        flowManager?.ClearTargetHighlight();
     }
 
     public bool EnsureAIReady()

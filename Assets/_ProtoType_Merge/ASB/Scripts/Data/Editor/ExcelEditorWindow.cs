@@ -10,12 +10,14 @@ namespace ASB.ExcelImport.Editor
     {
         // EditorPrefs key: "SheetA=true|SheetB=false" 형태로 직렬화
         private const string PendingUseDictMapKey = "ExcelParser_PendingUseDictMap";
+        private const string PendingSheetNamesKey = "ExcelParser_PendingSheetNames";
 
         private string _selectedExcelPath = string.Empty;
         private List<ExcelSheetParseResult> _previewSheets = new List<ExcelSheetParseResult>();
 
         // 시트 이름 → Dictionary 사용 여부
         private readonly Dictionary<string, bool> _sheetUseDictionary = new Dictionary<string, bool>();
+        private readonly Dictionary<string, bool> _sheetSelectedForUpdate = new Dictionary<string, bool>();
 
         private Vector2 _sheetScroll;
         private Vector2 _logScroll;
@@ -70,6 +72,8 @@ namespace ASB.ExcelImport.Editor
             EditorPrefs.DeleteKey(ExcelImportPaths.PendingFilePathKey);
             Dictionary<string, bool> useDictMap = DeserializeDictMap(EditorPrefs.GetString(PendingUseDictMapKey, string.Empty));
             EditorPrefs.DeleteKey(PendingUseDictMapKey);
+            List<string> pendingSheetNames = DeserializeSheetNames(EditorPrefs.GetString(PendingSheetNamesKey, string.Empty));
+            EditorPrefs.DeleteKey(PendingSheetNamesKey);
 
             if (!File.Exists(pendingPath))
             {
@@ -83,10 +87,11 @@ namespace ASB.ExcelImport.Editor
                 ExcelImportDebugLog.Write("H2", "ExcelEditorWindow.OnScriptsReloaded", "step2_start", "{\"path\":\"" + pendingPath + "\"}");
                 // #endregion
                 List<ExcelSheetParseResult> sheets = ExcelParser.Parse(pendingPath);
-                ScriptableExporter.ExportAll(sheets, useDictMap);
+                List<ExcelSheetParseResult> exportSheets = FilterSheets(sheets, pendingSheetNames);
+                ScriptableExporter.ExportAll(exportSheets, useDictMap);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
-                Debug.Log($"[Excel Importer] Step 2 complete: exported {sheets.Count} sheet(s) from {pendingPath}");
+                Debug.Log($"[Excel Importer] Step 2 complete: exported {exportSheets.Count} sheet(s) from {pendingPath}");
             }
             catch (Exception ex)
             {
@@ -126,12 +131,11 @@ namespace ASB.ExcelImport.Editor
                 for (int i = 0; i < _previewSheets.Count; i++)
                 {
                     ExcelSheetParseResult sheet = _previewSheets[i];
-                    if (!_sheetUseDictionary.ContainsKey(sheet.SheetName))
-                    {
-                        _sheetUseDictionary[sheet.SheetName] = false;
-                    }
+                    EnsureSheetState(sheet);
 
                     bool useDict = _sheetUseDictionary[sheet.SheetName];
+                    bool selected = _sheetSelectedForUpdate[sheet.SheetName];
+                    _sheetSelectedForUpdate[sheet.SheetName] = EditorGUILayout.ToggleLeft("Update", selected);
 
                     EditorGUILayout.LabelField(
                         $"• {sheet.SheetName}  (columns: {sheet.Names.Count}, rows: {sheet.Rows.Count})");
@@ -171,6 +175,18 @@ namespace ASB.ExcelImport.Editor
                 {
                     BakeData();
                 }
+
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Update Selected Sheet Data", GUILayout.Height(28f)))
+                {
+                    UpdateSelectedSheetData();
+                }
+
+                if (GUILayout.Button("Rebake Selected Sheets", GUILayout.Height(28f)))
+                {
+                    RebakeSelectedSheets();
+                }
+                EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.Space(8f);
@@ -199,11 +215,13 @@ namespace ASB.ExcelImport.Editor
 
             _selectedExcelPath = path;
             _logs.Clear();
+            _sheetSelectedForUpdate.Clear();
             AddLog($"Selected: {path}");
 
             try
             {
                 _previewSheets = ExcelParser.Parse(path);
+                InitializeSheetSelection(_previewSheets);
                 AddLog($"Preview: {_previewSheets.Count} sheet(s) parsed.");
             }
             catch (Exception ex)
@@ -232,12 +250,14 @@ namespace ASB.ExcelImport.Editor
                 AddLog("[Step 1] Parsing excel...");
                 List<ExcelSheetParseResult> sheets = ExcelParser.Parse(_selectedExcelPath);
                 _previewSheets = sheets;
+                PreserveSheetSelection(sheets);
 
                 AddLog("[Step 1] Generating C# scripts...");
                 CodeGenerator.GenerateAll(sheets, _sheetUseDictionary);
 
                 EditorPrefs.SetString(ExcelImportPaths.PendingFilePathKey, _selectedExcelPath);
                 EditorPrefs.SetString(PendingUseDictMapKey, SerializeDictMap(_sheetUseDictionary));
+                EditorPrefs.DeleteKey(PendingSheetNamesKey);
                 AddLog("[Step 1] Pending asset export registered. Refreshing assets...");
 
                 AssetDatabase.Refresh();
@@ -253,11 +273,139 @@ namespace ASB.ExcelImport.Editor
             }
         }
 
+        private void UpdateSelectedSheetData()
+        {
+            _logs.Clear();
+
+            if (string.IsNullOrEmpty(_selectedExcelPath) || !File.Exists(_selectedExcelPath))
+            {
+                AddLog("Update failed: invalid excel path.");
+                return;
+            }
+
+            try
+            {
+                AddLog("Parsing excel...");
+                List<ExcelSheetParseResult> sheets = ExcelParser.Parse(_selectedExcelPath);
+                _previewSheets = sheets;
+                PreserveSheetSelection(sheets);
+
+                List<string> selectedNames = GetSelectedSheetNames();
+                List<ExcelSheetParseResult> selectedSheets = FilterSheets(sheets, selectedNames);
+                if (selectedSheets.Count == 0)
+                {
+                    AddLog("Update failed: no sheet selected.");
+                    return;
+                }
+
+                ScriptableExporter.ExportAll(selectedSheets, _sheetUseDictionary);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                AddLog($"Updated data asset(s): {selectedSheets.Count} sheet(s).");
+            }
+            catch (Exception ex)
+            {
+                AddLog($"Update failed: {ex.Message}");
+                Debug.LogError($"[Excel Importer] Update failed: {ex}\n{ex.StackTrace}");
+            }
+        }
+
+        private void RebakeSelectedSheets()
+        {
+            _logs.Clear();
+
+            if (string.IsNullOrEmpty(_selectedExcelPath) || !File.Exists(_selectedExcelPath))
+            {
+                AddLog("Rebake failed: invalid excel path.");
+                return;
+            }
+
+            try
+            {
+                AddLog("[Step 1] Parsing excel...");
+                List<ExcelSheetParseResult> sheets = ExcelParser.Parse(_selectedExcelPath);
+                _previewSheets = sheets;
+                PreserveSheetSelection(sheets);
+
+                List<string> selectedNames = GetSelectedSheetNames();
+                List<ExcelSheetParseResult> selectedSheets = FilterSheets(sheets, selectedNames);
+                if (selectedSheets.Count == 0)
+                {
+                    AddLog("Rebake failed: no sheet selected.");
+                    return;
+                }
+
+                AddLog("[Step 1] Generating selected C# scripts...");
+                CodeGenerator.GenerateAll(selectedSheets, _sheetUseDictionary);
+
+                EditorPrefs.SetString(ExcelImportPaths.PendingFilePathKey, _selectedExcelPath);
+                EditorPrefs.SetString(PendingUseDictMapKey, SerializeDictMap(_sheetUseDictionary));
+                EditorPrefs.SetString(PendingSheetNamesKey, SerializeSheetNames(selectedNames));
+                AddLog("[Step 1] Pending selected asset export registered. Refreshing assets...");
+
+                AssetDatabase.Refresh();
+                AddLog($"[Step 1] Done. Script compile will run Step 2 for {selectedSheets.Count} selected sheet(s).");
+            }
+            catch (Exception ex)
+            {
+                AddLog($"Rebake failed: {ex.Message}");
+                Debug.LogError($"[Excel Importer] Rebake failed: {ex}\n{ex.StackTrace}");
+            }
+        }
+
         private void AddLog(string message)
         {
             string line = $"[{DateTime.Now:HH:mm:ss}] {message}";
             _logs.Add(line);
             Debug.Log("[Excel Importer] " + message);
+        }
+
+        private void EnsureSheetState(ExcelSheetParseResult sheet)
+        {
+            if (sheet == null) return;
+
+            if (!_sheetUseDictionary.ContainsKey(sheet.SheetName))
+            {
+                _sheetUseDictionary[sheet.SheetName] = false;
+            }
+
+            if (!_sheetSelectedForUpdate.ContainsKey(sheet.SheetName))
+            {
+                _sheetSelectedForUpdate[sheet.SheetName] = true;
+            }
+        }
+
+        private void InitializeSheetSelection(IReadOnlyList<ExcelSheetParseResult> sheets)
+        {
+            _sheetSelectedForUpdate.Clear();
+            PreserveSheetSelection(sheets);
+        }
+
+        private void PreserveSheetSelection(IReadOnlyList<ExcelSheetParseResult> sheets)
+        {
+            if (sheets == null) return;
+
+            for (int i = 0; i < sheets.Count; i++)
+            {
+                EnsureSheetState(sheets[i]);
+            }
+        }
+
+        private List<string> GetSelectedSheetNames()
+        {
+            var selected = new List<string>();
+            for (int i = 0; i < _previewSheets.Count; i++)
+            {
+                ExcelSheetParseResult sheet = _previewSheets[i];
+                if (sheet == null) continue;
+
+                if (_sheetSelectedForUpdate.TryGetValue(sheet.SheetName, out bool isSelected) && isSelected)
+                {
+                    selected.Add(sheet.SheetName);
+                }
+            }
+
+            return selected;
         }
 
         // "SheetA=true|SheetB=false" 형태로 직렬화
@@ -285,6 +433,63 @@ namespace ASB.ExcelImport.Editor
                 bool val = entry.Substring(idx + 1).Trim().ToLower() == "true";
                 result[key] = val;
             }
+            return result;
+        }
+
+        private static string SerializeSheetNames(IReadOnlyList<string> names)
+        {
+            if (names == null || names.Count == 0) return string.Empty;
+            return string.Join("|", names);
+        }
+
+        private static List<string> DeserializeSheetNames(string raw)
+        {
+            var result = new List<string>();
+            if (string.IsNullOrEmpty(raw)) return result;
+
+            string[] entries = raw.Split('|');
+            for (int i = 0; i < entries.Length; i++)
+            {
+                string name = entries[i]?.Trim();
+                if (!string.IsNullOrEmpty(name))
+                {
+                    result.Add(name);
+                }
+            }
+
+            return result;
+        }
+
+        private static List<ExcelSheetParseResult> FilterSheets(
+            IReadOnlyList<ExcelSheetParseResult> sheets,
+            IReadOnlyList<string> sheetNames)
+        {
+            var result = new List<ExcelSheetParseResult>();
+            if (sheets == null) return result;
+
+            if (sheetNames == null || sheetNames.Count == 0)
+            {
+                for (int i = 0; i < sheets.Count; i++)
+                {
+                    if (sheets[i] != null)
+                    {
+                        result.Add(sheets[i]);
+                    }
+                }
+
+                return result;
+            }
+
+            var selected = new HashSet<string>(sheetNames, StringComparer.Ordinal);
+            for (int i = 0; i < sheets.Count; i++)
+            {
+                ExcelSheetParseResult sheet = sheets[i];
+                if (sheet != null && selected.Contains(sheet.SheetName))
+                {
+                    result.Add(sheet);
+                }
+            }
+
             return result;
         }
 

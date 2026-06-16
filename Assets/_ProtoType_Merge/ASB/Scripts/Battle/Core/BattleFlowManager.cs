@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
+using GridManagerRef = ASB.Work.BattleGrid.GridManager;
 using System.Linq;
 using UnityEngine;
 
@@ -116,7 +117,7 @@ public class BattleFlowManager : MonoBehaviour
         battleEndRequested = false;
         RefreshQueue();
 
-        Log($"[BattleFlow] Initialize 완료. participants={participants.Count}, queue={turnQueue.Count}");
+        Debug.Log($"[BattleFlow] Initialize 완료. participants={participants.Count}, queue={turnQueue.Count}");
 
         BeginPlayerTurnSelectionCleanup();
 
@@ -132,7 +133,6 @@ public class BattleFlowManager : MonoBehaviour
         {
             StopCoroutine(battleLoopRoutine);
         }
-
         battleLoopRoutine = StartCoroutine(BattleLoop());
         Log("[BattleFlow] BattleLoop 시작");
     }
@@ -163,7 +163,7 @@ public class BattleFlowManager : MonoBehaviour
 
         turnQueue = new Queue<BattleCharactor>(ordered);
         roundIndex++;
-        Log($"[BattleFlow] Round {roundIndex} 시작. queue={turnQueue.Count}");
+        Debug.Log($"[BattleFlow] Round {roundIndex} 시작. queue={turnQueue.Count}");
 
         Log("[TurnOrder] New round order:");
         for (int i = 0; i < ordered.Count; i++)
@@ -319,12 +319,12 @@ public class BattleFlowManager : MonoBehaviour
             }
 
             CurrentUnit = unit;
-            OnTurnStarted?.Invoke(roundIndex, CurrentUnit);
 
-            // 턴 전환 시 입력 상태(타겟팅/아웃라인)가 남지 않도록 항상 정리
+            // 이전 턴 입력 상태 먼저 정리 후 OnTurnStarted 발행 (UI의 BeginPendingAction이 덮어쓰이지 않도록)
             inputHandler?.ClearSelectionState();
             Log(FormatTurnStartLog(unit));
             SetOutline(unit, true);
+            OnTurnStarted?.Invoke(roundIndex, CurrentUnit);
 
             CurrentUnit.ProcessTurnStartStatusEffects();
             if (CurrentUnit == null || CurrentUnit.IsDead)
@@ -357,6 +357,8 @@ public class BattleFlowManager : MonoBehaviour
                     || CurrentUnit == null
                     || CurrentUnit.IsDead
                     || IsBattleOver);
+
+                Debug.Log($"[BattleFlow] 플레이어 턴 종료: resolved={playerActionResolved}, currentUnit={CurrentUnit?.UnitName ?? "null"}, isDead={CurrentUnit?.IsDead}, battleOver={IsBattleOver}");
 
                 if (battleEndRequested)
                 {
@@ -442,16 +444,8 @@ public class BattleFlowManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[BattleFlow] EnemyScript가 없어 기본 공격 fallback 실행: {GetUnitLabel(enemyUnit)}");
-            BattleCharactor fallbackTarget = participants.FirstOrDefault(p => p != null && p.IsPlayer && !p.IsDead);
-            if (fallbackTarget != null && battleManager != null)
-            {
-                yield return StartCoroutine(battleManager.ExecuteBasicAttack(enemyUnit, fallbackTarget));
-            }
-            else
-            {
-                yield return null;
-            }
+            Debug.LogWarning($"[BattleFlow] EnemyScript가 없어 턴을 스킵합니다: {GetUnitLabel(enemyUnit)}");
+            yield return null;
         }
     }
 
@@ -502,13 +496,35 @@ public class BattleFlowManager : MonoBehaviour
         var action = new BattleAction(
             CurrentUnit,
             autoTarget,
-            BattleActionType.BasicAttack
+            BattleActionType.Skill
         );
 
         battleManager.ExecuteAction(action);
 
         // TODO: 턴 종료 흐름 연결
         yield return null;
+    }
+
+    /// <summary>
+    /// 현재 플레이어 유닛의 스킬 데이터를 반환합니다. 플레이어 턴이 아니거나 스킬이 없으면 null.
+    /// </summary>
+    public SkillData GetCurrentUnitSkill(PendingActionType actionType)
+    {
+        if (CurrentUnit == null || !CurrentUnit.IsPlayer || CurrentUnit.IsDead)
+            return null;
+
+        switch (actionType)
+        {
+            case PendingActionType.ClassSkill:
+                CurrentUnit.ResolveSelectedSkill();
+                return CurrentUnit.SelectedSkillData;
+
+            case PendingActionType.WeaponSkill:
+                return CurrentUnit.EquippedWeaponData?.ToSkillData();
+
+            default:
+                return null;
+        }
     }
 
     public List<BattleCharactor> GetAlivePlayerUnits()
@@ -557,13 +573,17 @@ public class BattleFlowManager : MonoBehaviour
     {
         if (CurrentUnit == null || actor == null)
         {
+            Debug.LogWarning($"[BattleFlow] PlayerSkillActionResolved 무시: CurrentUnit={CurrentUnit?.UnitName ?? "null"}, actor={actor?.UnitName ?? "null"}");
             return;
         }
 
         if (actor != CurrentUnit || !CurrentUnit.IsPlayer)
         {
+            Debug.LogWarning($"[BattleFlow] PlayerSkillActionResolved 무시: actor={actor.UnitName}, CurrentUnit={CurrentUnit.UnitName}, IsPlayer={CurrentUnit.IsPlayer}");
             return;
         }
+
+        Debug.Log($"[BattleFlow] PlayerSkillActionResolved 수신: actor={actor.UnitName}");
         playerActionResolved = true;
     }
 
@@ -703,6 +723,29 @@ public class BattleFlowManager : MonoBehaviour
         if (battle == null) return;
         if (!outlineByBattle.TryGetValue(battle, out var outline) || outline == null) return;
         outline.OutlineMode = visible ? Outline.Mode.OutlineVisible : Outline.Mode.OutlineHidden;
+    }
+
+    private GridCellRef _highlightedTargetCell;
+
+    /// <summary>자동전투·적 공격 시 타겟 발판 하이라이트 표시.</summary>
+    public void ShowTargetHighlight(BattleCharactor target)
+    {
+        ClearTargetHighlight();
+        if (target == null) return;
+        GridManagerRef gridManager = GridManagerRef.Instance;
+        if (gridManager == null) return;
+        GridCellRef cell = target.OccupiedCell ?? gridManager.FindCellByUnit(target);
+        if (cell == null) return;
+        cell.SetMainTargetHighlight();
+        _highlightedTargetCell = cell;
+    }
+
+    /// <summary>타겟 발판 하이라이트 제거.</summary>
+    public void ClearTargetHighlight()
+    {
+        if (_highlightedTargetCell == null) return;
+        _highlightedTargetCell.ClearHighlight();
+        _highlightedTargetCell = null;
     }
 
     private string GetUnitLabel(BattleCharactor unit)

@@ -8,16 +8,62 @@ public class TurnSlotUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private GameObject highlightFrame;
 
-    [Header("Colors")]
-    [SerializeField] private Color playerColor = Color.cyan;
-    [SerializeField] private Color enemyColor = Color.red;
+    [Header("Sprites")]
+    [SerializeField] private Sprite playerTurnSprite;
+    [SerializeField] private Sprite enemyTurnSprite;
+    [SerializeField] private Image playerFrame;
+    [SerializeField] private Image enemyFrame;
+
+    private void Awake()
+    {
+        if (playerTurnSprite == null)
+        {
+            playerTurnSprite = Resources.Load<Sprite>("UI_Sprite/UI_Battle/UI_HUD_playerTurn");
+        }
+
+        if (enemyTurnSprite == null)
+        {
+            enemyTurnSprite = Resources.Load<Sprite>("UI_Sprite/UI_Battle/UI_HUD_enemyTurn");
+        }
+    }
 
     public void Setup(BattleCharactor unit, bool isCurrentTurn)
     {
-        if (unit == null) return;
+        if (unit == null)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
 
-        nameText.text = unit.UnitName;
-        portrait.color = unit.IsPlayer ? playerColor : enemyColor;
-        highlightFrame.SetActive(isCurrentTurn);
+        gameObject.SetActive(true);
+
+        bool isPlayer = unit.IsPlayer;
+
+        if (nameText != null)
+        {
+            nameText.text = unit.UnitName;
+        }
+
+        if (portrait != null)
+        {
+            portrait.sprite = isPlayer ? playerTurnSprite : enemyTurnSprite;
+            portrait.color = Color.white;
+            portrait.enabled = portrait.sprite != null;
+        }
+
+        if (playerFrame != null)
+        {
+            playerFrame.gameObject.SetActive(isPlayer);
+        }
+
+        if (enemyFrame != null)
+        {
+            enemyFrame.gameObject.SetActive(!isPlayer);
+        }
+
+        if (highlightFrame != null)
+        {
+            highlightFrame.SetActive(isCurrentTurn);
+        }
     }
 }

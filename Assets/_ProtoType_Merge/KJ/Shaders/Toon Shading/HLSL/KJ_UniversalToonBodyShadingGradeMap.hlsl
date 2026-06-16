@@ -1,4 +1,4 @@
-﻿//Unity Toon Shader/Universal
+//Unity Toon Shader/Universal
 //nobuyuki@unity3d.com
 //toshiyuki@unity3d.com (Universal RP/HDRP) 
 
@@ -561,8 +561,12 @@
                 //
                 //Final Composition
 
-                float kjIBLFresnel = pow(saturate(1.0 - dot(normalDirection, viewDirection)), _KJ_IBLFresnelPower);
-                float3 kjIBLColor = envLightColor * _KJ_IBLColor.rgb * (_KJ_IBLDiffuseIntensity + kjIBLFresnel * _KJ_IBLSpecularIntensity);
+                float kjIBLNdotL = dot(lerp(i.normalDir, normalDirection, _Is_NormalMapToBase), lightDirection);
+                float kjIBLNdotLMask = step(0.0001, kjIBLNdotL);
+                float kjIBLFresnelRaw = saturate(1.0 - dot(normalDirection, viewDirection));
+                float kjIBLFresnelPower = pow(kjIBLFresnelRaw, _KJ_IBLFresnelPower);
+                float kjIBLFresnel = step(0.3, kjIBLFresnelPower) * 0.5 + step(0.6, kjIBLFresnelPower) * 0.5;
+                float3 kjIBLColor = envLightColor * _KJ_IBLColor.rgb * (_KJ_IBLDiffuseIntensity + kjIBLFresnel * _KJ_IBLSpecularIntensity) * kjIBLNdotLMask;
                 finalColor = SATURATE_IF_SDR(finalColor) + (envLightColor*envLightIntensity*_GI_Intensity*smoothstep(1,0,envLightIntensity/2)) + kjIBLColor + emissive;
 
 

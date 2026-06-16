@@ -254,8 +254,8 @@ Material:
     - _Is_ViewCoord_Scroll: 0
     - _Is_ViewShift: 0
     - _KJ_IBLDiffuseIntensity: 0.2
-    - _KJ_IBLFresnelPower: 4
-    - _KJ_IBLSpecularIntensity: 4
+    - _KJ_IBLFresnelPower: 1.16
+    - _KJ_IBLSpecularIntensity: 0.68
     - _LightDirection_MaskOn: 0
     - _MatCap: 0
     - _Metallic: 0
@@ -319,7 +319,7 @@ Material:
     - _utsVersionY: 11
     - _utsVersionZ: 0
     m_Colors:
-    - _1st_ShadeColor: {r: 0.7169812, g: 0.5913141, b: 0.5749377, a: 1}
+    - _1st_ShadeColor: {r: 0.7798742, g: 0.7798742, b: 0.7798742, a: 1}
     - _2nd_ShadeColor: {r: 1, g: 1, b: 1, a: 1}
     - _AngelRing_Color: {r: 1, g: 1, b: 1, a: 1}
     - _Ap_RimLightColor: {r: 1, g: 1, b: 1, a: 1}

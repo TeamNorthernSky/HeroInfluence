@@ -60,7 +60,7 @@ namespace ASB.Work.Battle.SkillExecution
             Register(3070, new HitNumLowerDamageHandler());    // 전제!!! 공격 대상 수에 따라 피해량 감소
 
             // 클레릭
-            Register(4010, new HealSkillHandler());      // 단일 힐
+            Register(4010, new TargetHPPerHeal());      // 대상 체력 비례 힐 
             Register(4020, new DamageSkillHandler());    // 단일 공격
             Register(4030, new TargetLowerHPMoreHeal()); // 긴급 힐: 대상의 체력이 낮을수록 힐량 증가
             Register(4040, new TargetHealBanSkill());    // 단일공격 + 대상 힐 밴

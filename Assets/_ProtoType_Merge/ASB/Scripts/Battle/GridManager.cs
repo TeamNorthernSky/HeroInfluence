@@ -8,8 +8,13 @@ namespace ASB.Work.BattleGrid
     {
         private readonly Dictionary<Vector2Int, GridCell> cellsByCoords = new Dictionary<Vector2Int, GridCell>();
         private readonly Dictionary<BattleCharactor, GridCell> cellByUnit = new Dictionary<BattleCharactor, GridCell>();
-
+        [SerializeField] private Material TargetMaterial;
+        [SerializeField] private Material AdditionalTargetMaterial;
+        [SerializeField] private Material ClearMaterial;
+        [SerializeField] private Material MainTargetHighlightMaterial;
         public static GridManager Instance { get; private set; }
+
+        public Material MainTargetHighlightMat => MainTargetHighlightMaterial;
 
         private void Awake()
         {
@@ -20,6 +25,7 @@ namespace ASB.Work.BattleGrid
 
             Instance = this;
             RebuildCache();
+            SetAllMaterial();
         }
 
         public void RebuildCache()
@@ -89,6 +95,34 @@ namespace ASB.Work.BattleGrid
         {
             return new List<Vector2Int>(cellsByCoords.Keys);
         }
+
+        public IReadOnlyCollection<GridCell> AllCells => cellsByCoords.Values;
+
+        public void SetAllHighlight()
+        {
+            foreach (GridCell cell in cellsByCoords.Values)
+                cell.SetHighlight();
+        }
+
+        public void ClearAllHighlight()
+        {
+            foreach (GridCell cell in cellsByCoords.Values)
+                cell.ClearHighlight();
+        }
+
+        public void SetAllMaterial()
+        {
+            //foreach (GridCell cell in cellsByCoords.Values)
+            //    cell.SetMaterial(mat);
+
+            foreach(GridCell cell in cellsByCoords.Values)
+            {
+                cell.SetTargetMaterial(TargetMaterial);
+                cell.SetAdditionalTargetMaterial(AdditionalTargetMaterial);
+                cell.SetTransparentTargetMaterial(ClearMaterial);
+            }
+        }
+
 
         public GridCell FindCellByUnit(BattleCharactor unit)
         {

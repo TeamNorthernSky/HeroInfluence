@@ -160,7 +160,7 @@ public class EnemySpawner : MonoBehaviour
             return overridePrefab;
         }
 
-        string path = $"prefab/EnemyUnit/Unit_{trimmedIndex}";
+        string path = $"prefab/BattlePrefab/EnemyUnit/Unit_{trimmedIndex}";
         var prefab = Resources.Load<GameObject>(path);
         if (prefab == null)
         {

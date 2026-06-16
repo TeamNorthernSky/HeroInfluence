@@ -15,7 +15,6 @@ public enum PlayerActionState
 public enum PendingActionType
 {
     None,
-    BasicAttack,
     ClassSkill,
     WeaponSkill
 }
@@ -48,6 +47,7 @@ public class InputHandler : MonoBehaviour
     private Outline hoverTargetOutline;
     private readonly HashSet<BattleCharactor> deathSubscribedUnits = new HashSet<BattleCharactor>();
     private readonly List<ASBGridCell> highlightedCells = new List<ASBGridCell>();
+    private ASBGridCell highlightedMainTargetCell;
     private bool isProcessingAction;
 
     public bool IsAutoBattleActive { get; set; }
@@ -55,12 +55,16 @@ public class InputHandler : MonoBehaviour
     private void Awake()
     {
         if (raycastCamera == null)
-        {
             raycastCamera = Camera.main;
-        }
 
         if (targetingVisualController == null)
             targetingVisualController = FindFirstObjectByType<TargetingVisualController>();
+
+        if (battleFlowManager == null)
+            battleFlowManager = FindFirstObjectByType<BattleFlowManager>();
+
+        if (battleManager == null)
+            battleManager = FindFirstObjectByType<BattleManager>();
     }
 
     private void OnEnable()
@@ -86,18 +90,14 @@ public class InputHandler : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
         {
-            BeginPendingAction(PendingActionType.BasicAttack);
+            BeginPendingAction(PendingActionType.ClassSkill);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
         {
-            BeginPendingAction(PendingActionType.ClassSkill);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3))
-        {
             BeginPendingAction(PendingActionType.WeaponSkill);
         }
+
 
         // [JC 260513] 키 4: 아무 행동 없이 턴 종료(스킵). hover/선택 상태 자동 해제.
         if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4))
@@ -268,9 +268,6 @@ public class InputHandler : MonoBehaviour
     {
         switch (actionType)
         {
-            case PendingActionType.BasicAttack:
-                return "준비 중: 기본 공격";
-
             case PendingActionType.ClassSkill:
                 if (TryGetSelectedSkill(actor, out SkillData classSkill) && classSkill != null)
                 {
@@ -364,10 +361,6 @@ public class InputHandler : MonoBehaviour
 
         switch (actionType)
         {
-            case PendingActionType.BasicAttack:
-                yield return StartCoroutine(battleManager.ExecuteBasicAttack(actor, target, success => executed = success));
-                break;
-
             case PendingActionType.ClassSkill:
                 if (!TryGetSelectedSkill(actor, out SkillData classSkill))
                 {
@@ -464,8 +457,8 @@ public class InputHandler : MonoBehaviour
                               currentSelectedSkill.boundary.Count == 0));
         if (singleTarget)
         {
-            centerCell.SetHighlight();
-            highlightedCells.Add(centerCell);
+            centerCell.SetMainTargetHighlight();
+            highlightedMainTargetCell = centerCell;
             return;
         }
 
@@ -491,8 +484,12 @@ public class InputHandler : MonoBehaviour
             if (gridManager.TryGetCell(coord, out ASBGridCell cell) && cell != null)
             {
                 bool isSplashEnemySide = cell.Coords.x >= 2;
-                // 프리뷰도 중심 타겟과 같은 진영 보드만 표시합니다.
                 if (isTargetEnemySide != isSplashEnemySide)
+                {
+                    continue;
+                }
+
+                if (cell == centerCell)
                 {
                     continue;
                 }
@@ -501,6 +498,9 @@ public class InputHandler : MonoBehaviour
                 highlightedCells.Add(cell);
             }
         }
+
+        centerCell.SetMainTargetHighlight();
+        highlightedMainTargetCell = centerCell;
     }
 
     private bool TryGetPendingSkillData(BattleCharactor actor, out SkillData skillData)
@@ -508,9 +508,6 @@ public class InputHandler : MonoBehaviour
         skillData = null;
         switch (pendingAction)
         {
-            case PendingActionType.BasicAttack:
-                return false;
-
             case PendingActionType.ClassSkill:
                 return TryGetSelectedSkill(actor, out skillData);
 
@@ -546,11 +543,6 @@ public class InputHandler : MonoBehaviour
             return true;
         }
 
-        if (actionType == PendingActionType.BasicAttack)
-        {
-            return true;
-        }
-
         if (!TryGetActionSkillData(actor, actionType, out SkillData skillData) || skillData == null)
         {
             return false;
@@ -579,7 +571,6 @@ public class InputHandler : MonoBehaviour
 
                 skillData = actor.EquippedWeaponData.ToSkillData();
                 return skillData != null;
-            case PendingActionType.BasicAttack:
             default:
                 return false;
         }
@@ -597,6 +588,12 @@ public class InputHandler : MonoBehaviour
         }
 
         highlightedCells.Clear();
+
+        if (highlightedMainTargetCell != null)
+        {
+            highlightedMainTargetCell.ClearHighlight();
+            highlightedMainTargetCell = null;
+        }
     }
 
     private BattleCharactor RaycastUnitUnderCursor()
@@ -660,7 +657,14 @@ public class InputHandler : MonoBehaviour
 
     private bool TryGetCurrentActor(out BattleCharactor actor)
     {
-        actor = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
+        if (battleFlowManager == null)
+        {
+            Debug.LogError("[InputHandler] battleFlowManager가 null입니다! Inspector에서 연결하거나 씬에 BattleFlowManager가 있는지 확인하세요.");
+            actor = null;
+            return false;
+        }
+
+        actor = battleFlowManager.CurrentUnit;
         if (actor == null || !actor.IsPlayer || actor.IsDead)
         {
             actor = null;
