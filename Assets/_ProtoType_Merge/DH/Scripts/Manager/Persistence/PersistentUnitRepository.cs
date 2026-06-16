@@ -539,6 +539,7 @@ public class PersistentUnitRepository : MonoBehaviour
         {
             nextExp -= nextMaxExp;
             nextLevel++;
+            float previousMaxHp = Mathf.Max(0f, nextIngameStats.HP);
             nextIngameStats = UnitStatCalculator.CalculateIngameStats(
                 data.BaseStats,
                 data.LevelupStats,
@@ -546,7 +547,9 @@ public class PersistentUnitRepository : MonoBehaviour
                 data.CurrentWeaponStats,
                 data.EventBonusStats,
                 levelUpTemplates);
-            nextCurrentHp = nextIngameStats.HP;
+            float nextMaxHp = Mathf.Max(0f, nextIngameStats.HP);
+            float maxHpDelta = Mathf.Max(0f, nextMaxHp - previousMaxHp);
+            nextCurrentHp = Mathf.Clamp(nextCurrentHp + maxHpDelta, 0f, nextMaxHp);
             nextMaxExp = ResolveMaxExp(nextLevel, levelUpTemplates);
         }
 
