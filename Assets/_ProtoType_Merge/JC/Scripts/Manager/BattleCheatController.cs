@@ -50,7 +50,58 @@ public class BattleCheatController : MonoBehaviour
         }
 
         if (logCheat)
-            Debug.Log($"[BattleCheat] Shift+{(enemySide ? "9" : "0")} 발동. {(enemySide ? "적" : "아군")} {killed}체 사망. 다음 턴 자동 판정 대기.");
+            Debug.Log($"[BattleCheat] Shift+{(enemySide ? "9" : "0")} 발동. {(enemySide ? "적" : "아군")} {killed}체 사망.");
+
+        // [JC 260616] 치트 사망은 BattleManager 정상 데미지 파이프라인을 우회(TakeDamage 직접 호출)하므로,
+        // 턴 경계 밖(적 행동 중 / 플레이어 행동 resolved 직후 등)에서 죽이면 BattleFlowManager가
+        // 승리·패배 판정 체크포인트(GetNextUnit==null / TryEndBattleImmediately)를 놓쳐 전투가 동결될 수 있다.
+        // 사망(IsDead) 반영 직후 강제로 종료 평가를 한 번 트리거해 보강한다. (ASB 코어 비침습 — reflection)
+        if (killed > 0)
+            StartCoroutine(ForceBattleEndEvaluationNextFrame());
+    }
+
+    /// <summary>
+    /// 한 프레임 양보(사망 OnDied 정리 대기) 후 BattleFlowManager의 종료 평가를 강제 호출한다.
+    /// 이미 한쪽 진영이 전멸(IsBattleOver)이면 내부적으로 CompleteBattle → OnBattleEnded가 발화되어
+    /// 정상 종료/씬 복귀 흐름을 탄다. 전멸이 아니면 아무 일도 하지 않는다(가드 내장).
+    /// </summary>
+    private System.Collections.IEnumerator ForceBattleEndEvaluationNextFrame()
+    {
+        yield return null;
+
+        var bfm = FindBattleFlowManager();
+        if (bfm == null)
+        {
+            if (logCheat) Debug.LogWarning("[BattleCheat] BattleFlowManager 미발견 — 강제 종료 평가 생략");
+            yield break;
+        }
+
+        const System.Reflection.BindingFlags flags =
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public;
+
+        var method = bfm.GetType().GetMethod("TryEndBattleImmediately", flags, null, System.Type.EmptyTypes, null);
+        if (method != null)
+        {
+            object ended = method.Invoke(bfm, null);
+            if (logCheat) Debug.Log($"[BattleCheat] 강제 종료 평가 트리거 → battleEnded={ended}");
+        }
+        else if (logCheat)
+        {
+            Debug.LogWarning("[BattleCheat] BattleFlowManager.TryEndBattleImmediately 미발견 — 강제 종료 평가 실패");
+        }
+    }
+
+    private static MonoBehaviour FindBattleFlowManager()
+    {
+        var all = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < all.Length; i++)
+        {
+            var mb = all[i];
+            if (mb != null && mb.GetType().FullName == "BattleFlowManager") return mb;
+        }
+        return null;
     }
 
     private static bool IsOnSide(Transform t, bool enemySide)

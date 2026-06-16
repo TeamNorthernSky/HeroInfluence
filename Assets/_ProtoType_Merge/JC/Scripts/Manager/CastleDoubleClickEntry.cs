@@ -29,9 +29,8 @@ public class CastleDoubleClickEntry : MonoBehaviour
         if (MapEventPanelUI.IsAnyActive) return;
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
-        // 방문 중인 파티가 있을 때만 입장 허용
-        HQVisitState visitState = HQVisitState.Instance;
-        if (visitState == null || !visitState.HasVisitingParty) return;
+        // [JC 260615] 파티 상주 여부와 무관하게 본부 진입 허용(기획 변경).
+        // HQVisitState(방문 파티)는 본부 내 연구/홍보/공방의 영웅 선택 제한에서만 사용.
 
         // 카메라 캐시 + raycast
         if (worldCamera == null) worldCamera = Camera.main;

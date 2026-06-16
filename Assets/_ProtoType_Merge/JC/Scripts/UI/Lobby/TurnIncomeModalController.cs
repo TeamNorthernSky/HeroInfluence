@@ -31,5 +31,7 @@ public class TurnIncomeModalController : MonoBehaviour
     public void Close()
     {
         if (modalRoot != null) modalRoot.SetActive(false);
+        // [JC 260615] 다음 턴 income 모달 확인 = 턴 전환 시퀀스 종료 → 월드 입력 차단 해제.
+        WorldInputGate.IsTurnResolving = false;
     }
 }
