@@ -52,7 +52,7 @@ MonoBehaviour:
     ClassSkillRange: 0
     ClassSkillRangeLine: 0
     ClassSkillTarget: 1
-    ClassSkillMultiTarget: 00000000
+    ClassSkillMultiTarget: 09000000
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.8
@@ -79,8 +79,8 @@ MonoBehaviour:
     ClassSkillEffect: 0
     ClassSkillRange: 0
     ClassSkillRangeLine: 0
-    ClassSkillTarget: 0
-    ClassSkillMultiTarget: 00000000
+    ClassSkillTarget: 1
+    ClassSkillMultiTarget: 03000000
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 1
     ClassSkillValueLv1: 0.6
@@ -107,7 +107,7 @@ MonoBehaviour:
     ClassSkillRange: 0
     ClassSkillRangeLine: 0
     ClassSkillTarget: 1
-    ClassSkillMultiTarget: 00000000
+    ClassSkillMultiTarget: 09000000
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1.2
@@ -231,7 +231,7 @@ MonoBehaviour:
     ClassSkillRange: 1
     ClassSkillRangeLine: 1
     ClassSkillTarget: 1
-    ClassSkillMultiTarget: 00000000
+    ClassSkillMultiTarget: 09000000
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.6
@@ -281,7 +281,7 @@ MonoBehaviour:
     ClassSkillRange: 1
     ClassSkillRangeLine: 1
     ClassSkillTarget: 0
-    ClassSkillMultiTarget: 000000000300000000000000
+    ClassSkillMultiTarget: 010000000300000005000000
     ClassSkill_MultiTargetType: 1
     ClassSkill_MultiTargetCount: 1
     ClassSkillValueLv1: 0.6
@@ -784,7 +784,7 @@ MonoBehaviour:
     ClassSkillRange: 0
     ClassSkillRangeLine: 2
     ClassSkillTarget: 1
-    ClassSkillMultiTarget: 00000000
+    ClassSkillMultiTarget: 09000000
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1.2

@@ -128,15 +128,45 @@ namespace ASB.ExcelImport.Editor
                 return list;
             }
 
-            string[] tokens = value.Split(',');
+            string normalized = NormalizeListCellValue(value);
+            if (string.IsNullOrWhiteSpace(normalized))
+            {
+                return list;
+            }
+
+            string[] tokens = normalized.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < tokens.Length; i++)
             {
                 string token = tokens[i].Trim();
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    continue;
+                }
+
                 object element = ConvertCellValue(token, elementType);
                 list.Add(element);
             }
 
             return list;
+        }
+
+        /// <summary>
+        /// 리스트 셀 전처리. "1,2,3", "{1,2,3}", "\"{9}\"" 형태를 CSVDataLoad.ParseIntListField와 동일하게 정규화합니다.
+        /// </summary>
+        private static string NormalizeListCellValue(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return string.Empty;
+            }
+
+            string value = raw.Trim().Trim('"').Trim();
+            if (value.Length >= 2 && value[0] == '{' && value[value.Length - 1] == '}')
+            {
+                value = value.Substring(1, value.Length - 2).Trim();
+            }
+
+            return value;
         }
 
         private static IList CreateListInstance(Type elementType)
@@ -197,7 +227,7 @@ namespace ASB.ExcelImport.Editor
             }
 
             // List<int> / List<float> / List<string> / List<bool>
-            // 셀 값 "1,2,3" → new List<int> { 1, 2, 3 }
+            // 셀 값 "1,2,3" 또는 "{1,2,3}" → new List<int> { 1, 2, 3 }
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
             {
                 return ConvertToList(value, targetType.GetGenericArguments()[0]);

@@ -32,9 +32,9 @@ public class UnitVisualProfile : MonoBehaviour
     [Tooltip("꽂힌 화살이 사라지기까지 대기 시간(초).")]
     public float ArrowLifetime = 1.5f;
     [FormerlySerializedAs("ArrowHitDelay")]
-    [Tooltip("화살 스폰 후 데미지·피격 이펙트·데미지 팝업까지 대기(초).")]
+    [Tooltip("ArrowImpactAction 종료 후 데미지·피격 이펙트·데미지 팝업까지 대기(초).")]
     public float ArrowDamagePopupDelay = 0.2f;
-    [Tooltip("화살 스폰 후 Hit 애니 시작까지 대기(초).")]
+    [Tooltip("트레일 시작(또는 트레일 없을 때 화살 스폰) 후 타겟 Hit 애니까지 대기(초).")]
     public float ArrowHitAnimationDelay = 0.2f;
 
     [Header("Arrow Trail")]

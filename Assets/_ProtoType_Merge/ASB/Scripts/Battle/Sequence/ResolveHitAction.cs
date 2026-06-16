@@ -88,13 +88,21 @@ namespace ASB.Work.Battle.Sequence
         private void ResolveDamageAndPresentation()
         {
             BattleHitResult result = _onHit?.Invoke();
-            if (result == null)
+            if (result == null || ShouldSkipHitPresentation(result))
             {
                 return;
             }
 
             _visual?.PlayHitEffect(_target, result.SkillIndex);
             _visual?.ShowDamagePopup(result);
+        }
+
+        private bool ShouldSkipHitPresentation(BattleHitResult result)
+        {
+            return _target != null
+                   && _target.IsDead
+                   && result.Damage <= 0f
+                   && !result.IsHeal;
         }
 
         private void PlayHitAnimation()
