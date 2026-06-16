@@ -7,8 +7,8 @@ public class EconomyManager : MonoBehaviour
     public event Action<ResourceType, int> OnResourceChanged;
 
     [Header("자원 상한 (임시 — 교환소 수령 Max 판정 등)")]
-    [Tooltip("전 자원 공통 상한. 추후 자원별로 분기 가능. 기본 99,999.")]
-    [SerializeField] private int resourceMax = 99999;
+    [Tooltip("전 자원 공통 상한. 추후 자원별로 분기 가능. 기본 999,999.")]
+    [SerializeField] private int resourceMax = 999999;
 
     private readonly Dictionary<ResourceType, int> resources = new Dictionary<ResourceType, int>();
 

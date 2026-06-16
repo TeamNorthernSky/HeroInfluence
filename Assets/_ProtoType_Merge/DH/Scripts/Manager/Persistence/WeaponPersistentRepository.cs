@@ -5,6 +5,8 @@ using UnityEngine;
 public class WeaponPersistentRepository : MonoBehaviour
 {
     public static WeaponPersistentRepository Instance { get; private set; }
+    public const int BaseWeaponLevel = 1;
+    public const int MaxWeaponLevel = 5;
 
     [Header("Persistent Weapons")]
     [SerializeField] private int nextWeaponIndex = 1;
@@ -41,9 +43,15 @@ public class WeaponPersistentRepository : MonoBehaviour
         nextWeaponIndex = weaponIndex + 1;
 
         WeaponPersistentData newData = new WeaponPersistentData(weaponIndex, weaponTemplateKey);
+        RefreshWeaponStats(newData);
         weapons.Add(newData);
         weaponLookup[weaponIndex] = newData;
         return weaponIndex;
+    }
+
+    public int CreateWeapon(int weaponTemplateKey)
+    {
+        return CreateWeapon(weaponTemplateKey.ToString());
     }
 
     public bool ContainsWeapon(int weaponIndex)
@@ -70,6 +78,56 @@ public class WeaponPersistentRepository : MonoBehaviour
         weaponLookup.Remove(weaponIndex);
         weapons.Remove(data);
         return true;
+    }
+
+    public bool TryGetWeaponTemplateKey(int weaponIndex, out int weaponTemplateKey)
+    {
+        weaponTemplateKey = 0;
+
+        if (!TryGetWeapon(weaponIndex, out WeaponPersistentData data) || data == null)
+            return false;
+
+        return TryParseWeaponTemplateKey(data.WeaponTemplateKey, out weaponTemplateKey);
+    }
+
+    public bool TryGetWeaponStats(int weaponIndex, out EquipmentStatBlock weaponStats)
+    {
+        weaponStats = default;
+
+        if (!TryGetWeapon(weaponIndex, out WeaponPersistentData data) || data == null)
+            return false;
+
+        if (IsDefault(data.CachedWeaponStats))
+            RefreshWeaponStats(data);
+
+        weaponStats = data.CachedWeaponStats;
+        return true;
+    }
+
+    public bool TryEnhanceWeapon(int weaponIndex, int amount = 1)
+    {
+        if (amount <= 0)
+            return false;
+
+        if (!TryGetWeapon(weaponIndex, out WeaponPersistentData data) || data == null)
+            return false;
+
+        if (data.Level >= MaxWeaponLevel)
+            return false;
+
+        int nextLevel = Mathf.Clamp(data.Level + amount, BaseWeaponLevel, MaxWeaponLevel);
+        if (nextLevel == data.Level)
+            return false;
+
+        data.SetLevel(nextLevel);
+        RefreshWeaponStats(data);
+        PersistentUnitRepository.Instance?.RefreshUnitsEquippedWithWeapon(weaponIndex);
+        return true;
+    }
+
+    public bool RefreshWeaponStats(int weaponIndex)
+    {
+        return TryGetWeapon(weaponIndex, out WeaponPersistentData data) && RefreshWeaponStats(data);
     }
 
     public void ClearAllWeapons()
@@ -103,9 +161,59 @@ public class WeaponPersistentRepository : MonoBehaviour
             weaponLookup.Add(weaponIndex, data);
             if (weaponIndex > highestWeaponIndex)
                 highestWeaponIndex = weaponIndex;
+
+            if (data.Level < BaseWeaponLevel)
+                data.SetLevel(BaseWeaponLevel);
+
+            if (IsDefault(data.CachedWeaponStats))
+                RefreshWeaponStats(data);
         }
 
         if (nextWeaponIndex <= highestWeaponIndex)
             nextWeaponIndex = highestWeaponIndex + 1;
+    }
+
+    private bool RefreshWeaponStats(WeaponPersistentData data)
+    {
+        if (data == null)
+            return false;
+
+        EquipmentStatBlock stats = ResolveWeaponStats(data);
+        data.SetCachedWeaponStats(stats);
+        return !IsDefault(stats);
+    }
+
+    private static EquipmentStatBlock ResolveWeaponStats(WeaponPersistentData data)
+    {
+        if (data == null || !TryParseWeaponTemplateKey(data.WeaponTemplateKey, out int weaponTemplateKey))
+            return default;
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog == null)
+            return default;
+
+        int level = Mathf.Clamp(data.Level, BaseWeaponLevel, MaxWeaponLevel);
+        if (catalog.TryGetWeaponBonusAtLevel(weaponTemplateKey, level, out StatBlock leveledStats))
+            return EquipmentStatBlock.FromStatBlock(leveledStats);
+
+        return catalog.TryGetWeaponStats(weaponTemplateKey, out EquipmentStatBlock baseStats)
+            ? baseStats
+            : default;
+    }
+
+    private static bool TryParseWeaponTemplateKey(string weaponTemplateKey, out int parsedKey)
+    {
+        return int.TryParse(weaponTemplateKey, out parsedKey) && parsedKey > 0;
+    }
+
+    private static bool IsDefault(EquipmentStatBlock stats)
+    {
+        return stats.HP == 0f &&
+               stats.Atk == 0f &&
+               stats.DEF == 0f &&
+               stats.CriticalRate == 0f &&
+               stats.CounterRate == 0f &&
+               stats.AvoidRate == 0f &&
+               stats.Speed == 0f;
     }
 }

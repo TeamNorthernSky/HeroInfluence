@@ -36,6 +36,7 @@ public class PersistentUnitRepository : MonoBehaviour
     private void Start()
     {
         RepairAllMaxExpIfNeeded();
+        EnsureDefaultWeaponInstances();
     }
 
     public int CreateUnit()
@@ -77,6 +78,7 @@ public class PersistentUnitRepository : MonoBehaviour
         var data = new UnitPersistentData(unitIndex, unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, maxExp);
         units.Add(data);
         unitLookup[unitIndex] = data;
+        EnsureDefaultWeaponInstance(unitIndex);
         return unitIndex;
     }
 
@@ -104,7 +106,7 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
-    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = -1, int maxExp = -1, int skillLevel = -1)
+    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = -1, int maxExp = -1, int skillLevel = -1, int equippedWeaponInstanceIndex = -1)
     {
         if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
             return false;
@@ -113,8 +115,105 @@ public class PersistentUnitRepository : MonoBehaviour
         if (effectiveMaxExp < 0 && data.MaxExp <= 0)
             effectiveMaxExp = ResolveMaxExp(level);
 
-        data.ApplyRuntimeState(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, effectiveMaxExp, skillLevel);
+        data.ApplyRuntimeState(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, effectiveMaxExp, skillLevel, equippedWeaponInstanceIndex);
         return true;
+    }
+
+    public bool EquipWeaponInstance(int unitIndex, int weaponInstanceIndex)
+    {
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
+            return false;
+
+        WeaponPersistentRepository weaponRepository = WeaponPersistentRepository.Instance;
+        if (weaponRepository == null || !weaponRepository.TryGetWeaponTemplateKey(weaponInstanceIndex, out int weaponTemplateKey))
+            return false;
+
+        if (!weaponRepository.TryGetWeaponStats(weaponInstanceIndex, out EquipmentStatBlock weaponStats))
+            weaponStats = default;
+
+        return ApplyWeaponState(data, weaponInstanceIndex, weaponTemplateKey, weaponStats);
+    }
+
+    public bool UnequipWeaponInstance(int unitIndex)
+    {
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
+            return false;
+
+        return ApplyWeaponState(data, 0, 0, default);
+    }
+
+    public bool RefreshEquippedWeaponStats(int unitIndex)
+    {
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
+            return false;
+
+        int weaponInstanceIndex = data.EquippedWeaponInstanceIndex;
+        if (weaponInstanceIndex <= 0)
+            return ApplyWeaponState(data, 0, 0, default);
+
+        WeaponPersistentRepository weaponRepository = WeaponPersistentRepository.Instance;
+        if (weaponRepository == null || !weaponRepository.TryGetWeaponTemplateKey(weaponInstanceIndex, out int weaponTemplateKey))
+            return false;
+
+        if (!weaponRepository.RefreshWeaponStats(weaponInstanceIndex))
+            return false;
+
+        if (!weaponRepository.TryGetWeaponStats(weaponInstanceIndex, out EquipmentStatBlock weaponStats))
+            weaponStats = default;
+
+        return ApplyWeaponState(data, weaponInstanceIndex, weaponTemplateKey, weaponStats);
+    }
+
+    public void RefreshUnitsEquippedWithWeapon(int weaponInstanceIndex)
+    {
+        if (weaponInstanceIndex <= 0 || units == null)
+            return;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            UnitPersistentData data = units[i];
+            if (data == null || data.EquippedWeaponInstanceIndex != weaponInstanceIndex)
+                continue;
+
+            RefreshEquippedWeaponStats(data.UnitIndex);
+        }
+    }
+
+    public bool EnsureDefaultWeaponInstance(int unitIndex)
+    {
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data) || data == null)
+            return false;
+
+        if (data.EquippedWeaponInstanceIndex > 0)
+            return true;
+
+        if (!TryResolveDefaultWeaponTemplateKey(data, out int weaponTemplateKey))
+            return false;
+
+        WeaponPersistentRepository weaponRepository = WeaponPersistentRepository.Instance;
+        if (weaponRepository == null)
+            return false;
+
+        int weaponInstanceIndex = weaponRepository.CreateWeapon(weaponTemplateKey);
+        if (weaponInstanceIndex <= 0)
+            return false;
+
+        return EquipWeaponInstance(unitIndex, weaponInstanceIndex);
+    }
+
+    public void EnsureDefaultWeaponInstances()
+    {
+        if (units == null)
+            return;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            UnitPersistentData data = units[i];
+            if (data == null)
+                continue;
+
+            EnsureDefaultWeaponInstance(data.UnitIndex);
+        }
     }
 
     public bool SetSkillLevel(int unitIndex, int skillLevel)
@@ -253,6 +352,93 @@ public class PersistentUnitRepository : MonoBehaviour
     {
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
         return catalog != null ? catalog.GetLevelUpTemplates() : null;
+    }
+
+    private bool ApplyWeaponState(UnitPersistentData data, int weaponInstanceIndex, int weaponTemplateKey, EquipmentStatBlock weaponStats)
+    {
+        if (data == null)
+            return false;
+
+        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
+            data.BaseStats,
+            data.LevelupStats,
+            data.Level,
+            weaponStats,
+            data.EventBonusStats,
+            levelUpTemplates);
+
+        float nextCurrentHp = Mathf.Clamp(data.CurrentHp, 0f, Mathf.Max(0f, nextIngameStats.HP));
+        data.ApplyRuntimeState(
+            data.UnitTemplateKey,
+            data.Level,
+            data.Favorability,
+            data.BaseStats,
+            data.LevelupStats,
+            data.CurrentSkillIndex,
+            weaponTemplateKey,
+            weaponStats,
+            nextIngameStats,
+            nextCurrentHp,
+            data.Exp,
+            data.MaxExp,
+            data.SkillLevel,
+            weaponInstanceIndex);
+        return true;
+    }
+
+    private static bool TryResolveDefaultWeaponTemplateKey(UnitPersistentData data, out int weaponTemplateKey)
+    {
+        weaponTemplateKey = 0;
+
+        if (data == null)
+            return false;
+
+        if (data.CurrentWeaponIndex > 0)
+        {
+            weaponTemplateKey = data.CurrentWeaponIndex;
+            return true;
+        }
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog == null ||
+            !catalog.TryGetPlayerTemplate(data.UnitTemplateKey, out UnitData unitTemplate) ||
+            unitTemplate == null ||
+            string.IsNullOrWhiteSpace(unitTemplate.UnitType))
+        {
+            return false;
+        }
+
+        string unitClass = unitTemplate.UnitType.Trim();
+        List<WeaponData> weapons = catalog.GetAllWeapons();
+        int bestWeaponIndex = 0;
+
+        for (int i = 0; i < weapons.Count; i++)
+        {
+            WeaponData weapon = weapons[i];
+            if (weapon == null || weapon.WeaponIndex <= 0)
+                continue;
+
+            if (!string.Equals(weapon.weaponClass?.Trim(), unitClass, System.StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (GetWeaponTier(weapon.WeaponIndex) != WeaponPersistentRepository.BaseWeaponLevel)
+                continue;
+
+            if (bestWeaponIndex <= 0 || weapon.WeaponIndex < bestWeaponIndex)
+                bestWeaponIndex = weapon.WeaponIndex;
+        }
+
+        if (bestWeaponIndex <= 0)
+            return false;
+
+        weaponTemplateKey = bestWeaponIndex;
+        return true;
+    }
+
+    private static int GetWeaponTier(int weaponIndex)
+    {
+        return Mathf.Abs(weaponIndex % 100);
     }
 
     private static int ResolveMaxExp(int level)

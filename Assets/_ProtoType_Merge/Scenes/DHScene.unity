@@ -51311,7 +51311,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1412590606}
-  - component: {fileID: 1412590605}
   - component: {fileID: 1412590604}
   - component: {fileID: 1412590607}
   m_Layer: 0
@@ -51339,18 +51338,6 @@ MonoBehaviour:
   cachedPlayerTemplates: []
   cachedEnemyTemplates: []
   cachedWeapons: []
---- !u!114 &1412590605
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1412590603}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c1a9fa61bd01c94191bce627cd71b58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1412590606
 Transform:
   m_ObjectHideFlags: 0
