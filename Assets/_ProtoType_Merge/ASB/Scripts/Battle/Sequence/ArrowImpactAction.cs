@@ -5,6 +5,7 @@ namespace ASB.Work.Battle.Sequence
 {
     /// <summary>
     /// 궁수 전용: 포물선 라인을 즉시 그린 뒤 페이드아웃하고, 끝점 기울기에 맞춰 화살을 꽂습니다.
+    /// 트레일 시작(또는 트레일 없을 때 화살 스폰) 시점에 타겟 Hit 애니를 재생합니다.
     /// WaitHitAction과 ResolveHitAction 사이에 삽입됩니다.
     /// </summary>
     public class ArrowImpactAction : BattleSequenceAction
@@ -12,6 +13,7 @@ namespace ASB.Work.Battle.Sequence
         private readonly BattleCharactor _actor;
         private readonly BattleCharactor _target;
         private readonly float _battleSpeed;
+        private readonly string _targetAnimTrigger;
 
         private readonly Gradient _gradient = new Gradient();
         private readonly GradientColorKey[] _colorKeys = new GradientColorKey[]
@@ -21,17 +23,24 @@ namespace ASB.Work.Battle.Sequence
         };
         private readonly GradientAlphaKey[] _alphaKeys = new GradientAlphaKey[2];
 
-        public ArrowImpactAction(BattleCharactor actor, BattleCharactor target, float battleSpeed)
+        public ArrowImpactAction(
+            BattleCharactor actor,
+            BattleCharactor target,
+            float battleSpeed,
+            string targetAnimTrigger = null)
         {
             _actor = actor;
             _target = target;
             _battleSpeed = Mathf.Max(0.01f, battleSpeed);
+            _targetAnimTrigger = targetAnimTrigger;
         }
 
         public override IEnumerator ExecuteRoutine()
         {
             if (_target == null || _target.IsDead)
+            {
                 yield break;
+            }
 
             UnitVisualProfile actorProfile = _actor?.GetComponent<UnitVisualProfile>();
             UnitVisualProfile targetProfile = _target.GetComponent<UnitVisualProfile>();
@@ -41,9 +50,14 @@ namespace ASB.Work.Battle.Sequence
             Transform hitPoint = targetProfile?.ArrowHitPoint ?? _target.transform;
 
             if (actorProfile?.ArrowTrailPrefab != null && _actor != null)
+            {
                 yield return RunTrailAndSpawn(actorProfile, hitPoint);
+            }
             else
+            {
                 SpawnArrow(actorProfile, hitPoint.position, hitPoint.rotation);
+                yield return WaitAndPlayTargetHitAnimation(actorProfile);
+            }
         }
 
         private IEnumerator RunTrailAndSpawn(UnitVisualProfile profile, Transform hitPoint)
@@ -51,14 +65,17 @@ namespace ASB.Work.Battle.Sequence
             if (!TryInstantiateTrailLine(profile, out LineRenderer lr, out GameObject trailInstance))
             {
                 SpawnArrow(profile, hitPoint.position, hitPoint.rotation);
+                yield return WaitAndPlayTargetHitAnimation(profile);
                 yield break;
             }
 
             Vector3 start = _actor.transform.position;
-            Vector3 end   = hitPoint.position;
+            Vector3 end = hitPoint.position;
 
             DrawArc(lr, start, end, profile.ArcHeight);
             lr.enabled = true;
+
+            yield return WaitAndPlayTargetHitAnimation(profile);
 
             float elapsed = 0f;
             float duration = Mathf.Max(0.01f, profile.TrailFadeDuration);
@@ -71,11 +88,39 @@ namespace ASB.Work.Battle.Sequence
 
             Vector3 lastPos = lr.GetPosition(lr.positionCount - 1);
             Vector3 prevPos = lr.GetPosition(lr.positionCount - 2);
-            Vector3 dir     = (lastPos - prevPos).normalized;
-            Quaternion rot  = dir != Vector3.zero ? Quaternion.LookRotation(dir) : hitPoint.rotation;
+            Vector3 dir = (lastPos - prevPos).normalized;
+            Quaternion rot = dir != Vector3.zero ? Quaternion.LookRotation(dir) : hitPoint.rotation;
 
             Object.Destroy(trailInstance);
             SpawnArrow(profile, lastPos, rot);
+        }
+
+        private IEnumerator WaitAndPlayTargetHitAnimation(UnitVisualProfile actorProfile)
+        {
+            float delay = Mathf.Max(0f, actorProfile?.ArrowHitAnimationDelay ?? 0f);
+            if (delay > 0f)
+            {
+                float waited = 0f;
+                while (waited < delay)
+                {
+                    waited += Time.deltaTime * _battleSpeed;
+                    yield return null;
+                }
+            }
+
+            PlayTargetHitAnimation();
+        }
+
+        private void PlayTargetHitAnimation()
+        {
+            if (_target == null || _target.IsDead || string.IsNullOrEmpty(_targetAnimTrigger))
+            {
+                return;
+            }
+
+            _target.EnsureAnimationController();
+            _target.Anim?.SetAnimationSpeed(_battleSpeed);
+            _target.Anim?.PlayGenericAnimation(_targetAnimTrigger);
         }
 
         private static bool TryInstantiateTrailLine(
@@ -87,7 +132,9 @@ namespace ASB.Work.Battle.Sequence
             trailInstance = null;
 
             if (profile?.ArrowTrailPrefab == null)
+            {
                 return false;
+            }
 
             trailInstance = Object.Instantiate(profile.ArrowTrailPrefab);
             lineRenderer = trailInstance.GetComponent<LineRenderer>();
@@ -105,11 +152,14 @@ namespace ASB.Work.Battle.Sequence
         private static void DrawArc(LineRenderer lr, Vector3 start, Vector3 end, float arcHeight)
         {
             int count = lr.positionCount;
-            if (count < 2) return;
+            if (count < 2)
+            {
+                return;
+            }
 
             for (int i = 0; i < count; i++)
             {
-                float t   = i / (float)(count - 1);
+                float t = i / (float)(count - 1);
                 Vector3 p = Vector3.Lerp(start, end, t);
                 p.y += arcHeight * (1f - (2f * t - 1f) * (2f * t - 1f));
                 lr.SetPosition(i, p);
@@ -126,7 +176,11 @@ namespace ASB.Work.Battle.Sequence
 
         private static void SpawnArrow(UnitVisualProfile profile, Vector3 position, Quaternion rotation)
         {
-            if (profile?.TargetArrowPrefab == null) return;
+            if (profile?.TargetArrowPrefab == null)
+            {
+                return;
+            }
+
             GameObject arrow = Object.Instantiate(profile.TargetArrowPrefab, position, rotation);
             Object.Destroy(arrow, profile.ArrowLifetime);
         }

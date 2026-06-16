@@ -59,19 +59,9 @@ MonoBehaviour:
     Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
   - SkillIndex: 5020
     Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
-  - SkillIndex: 5010
+  - SkillIndex: 5030
     Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
-  - SkillIndex: 5010
+  - SkillIndex: 5040
     Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
-  - SkillIndex: 5010
-    Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
-  - SkillIndex: 5010
-    Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
-  - SkillIndex: 5010
-    Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
-  - SkillIndex: 5010
-    Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
-  - SkillIndex: 5010
-    Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
-  - SkillIndex: 5010
+  - SkillIndex: 5050
     Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}

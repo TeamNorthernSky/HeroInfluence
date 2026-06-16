@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class UnitHPBar : MonoBehaviour
 {
     [SerializeField] private BattleCharactor battleCharactor;
+    [SerializeField] private Quaternion rotateOffset;
     [SerializeField] private Image hpFillImage;
     [SerializeField] private Image ipFillImage;
     [SerializeField] private RectTransform hpBarRect;
@@ -13,6 +15,8 @@ public class UnitHPBar : MonoBehaviour
     [SerializeField] private Camera targetCamera;
     [SerializeField] private Vector2 screenOffset = new Vector2(0f, 100f);
     [SerializeField] private RawImage HPFrame;
+    [SerializeField] private TMP_Text hpGaugeText;
+    [SerializeField] private TMP_Text ipGaugeText;
     public float YaxisValue = 0.0f;
 
     private void Awake()
@@ -23,6 +27,7 @@ public class UnitHPBar : MonoBehaviour
         }
         
         ResolveReferences();
+        
     }
 
     private void OnEnable()
@@ -33,6 +38,7 @@ public class UnitHPBar : MonoBehaviour
             battleCharactor.OnInfluenceChanged += UpdateIPBar;
             UpdateHPBar(battleCharactor.CurrentHp, battleCharactor.MaxHp);
             UpdateIPBar(battleCharactor.CurrentInfluence, battleCharactor.MaxInfluence);
+            rotateOffset = hpCanvas.transform.rotation;
             screenOffset = new Vector2(0f, 100f);
         }
     }
@@ -67,6 +73,9 @@ public class UnitHPBar : MonoBehaviour
         }
 
         hpFillImage.fillAmount = Mathf.Clamp01(currentHp / maxHp);
+
+        if (hpGaugeText != null)
+            hpGaugeText.text = $"{Mathf.CeilToInt(currentHp)} / {Mathf.CeilToInt(maxHp)}";
     }
 
     private void UpdateIPBar(float currentIP, float maxIP)
@@ -76,10 +85,15 @@ public class UnitHPBar : MonoBehaviour
         if (maxIP <= 0f)
         {
             ipFillImage.fillAmount = 0f;
+            if (ipGaugeText != null)
+                ipGaugeText.text = $"0 / 0";
             return;
         }
 
         ipFillImage.fillAmount = Mathf.Clamp01(currentIP / maxIP);
+
+        if (ipGaugeText != null)
+            ipGaugeText.text = $"{(int)currentIP} / {(int)maxIP}";
     }
 
     private void UpdateScreenPosition()
@@ -113,7 +127,8 @@ public class UnitHPBar : MonoBehaviour
 
         //hpBarRect.position = targetCamera.ScreenToWorldPoint(screenPosition);
         hpBarRect.position = new Vector3 (targetCamera.ScreenToWorldPoint(screenPosition).x, targetCamera.ScreenToWorldPoint(screenPosition).y+ YaxisValue, targetCamera.ScreenToWorldPoint(screenPosition).z);
-        hpBarRect.rotation = targetCamera.transform.rotation;
+        //hpBarRect.rotation = targetCamera.transform.rotation;
+        hpCanvas.transform.rotation = rotateOffset;
         SetVisible(true);
     }
 

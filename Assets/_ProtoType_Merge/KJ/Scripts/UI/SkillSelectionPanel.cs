@@ -10,6 +10,8 @@ public class SkillSelectionPanel : MonoBehaviour
     [SerializeField] private TMP_Dropdown skillDropdown;
     [SerializeField] private Button confirmButton;
     [SerializeField] private Button cancelButton;
+    [SerializeField] private TextMeshProUGUI prevSkillText;
+    [SerializeField] private TextMeshProUGUI nextSkillText;
 
     private List<int> candidateSkillIds = new List<int>();
 
@@ -17,8 +19,21 @@ public class SkillSelectionPanel : MonoBehaviour
 
     private void Awake()
     {
+        if (prevSkillText == null)
+        {
+            Transform t = transform.Find("PrevSkill/Explanation/Text");
+            if (t != null) prevSkillText = t.GetComponent<TextMeshProUGUI>();
+        }
+
+        if (nextSkillText == null)
+        {
+            Transform t = transform.Find("NextSkill/Explanation/Text");
+            if (t != null) nextSkillText = t.GetComponent<TextMeshProUGUI>();
+        }
+
         confirmButton?.onClick.AddListener(OnConfirm);
         cancelButton?.onClick.AddListener(OnCancel);
+        skillDropdown?.onValueChanged.AddListener(OnDropdownChanged);
     }
 
     public void Setup(UnitRewardPreview preview)
@@ -28,6 +43,11 @@ public class SkillSelectionPanel : MonoBehaviour
 
         if (levelUpText != null)
             levelUpText.text = $"Lv.{preview.OldLevel} → {preview.NewLevel}";
+
+        // 현재 ClassSkill 정보 표시
+        SkillData currentSkill = DHCsvTemplateCatalog.Instance?.GetSkillTemplate(preview.CurrentClassSkillId);
+        if (prevSkillText != null)
+            prevSkillText.text = currentSkill != null ? SkillDescriptionBuilder.Build(currentSkill) : "-";
 
         candidateSkillIds.Clear();
         var options = new List<TMP_Dropdown.OptionData>();
@@ -46,6 +66,22 @@ public class SkillSelectionPanel : MonoBehaviour
             skillDropdown.value = 0;
             skillDropdown.RefreshShownValue();
         }
+
+        // 첫 번째 후보 스킬 정보 표시
+        UpdateNextSkillText(0);
+    }
+
+    private void OnDropdownChanged(int index)
+    {
+        UpdateNextSkillText(index);
+    }
+
+    private void UpdateNextSkillText(int index)
+    {
+        if (nextSkillText == null || index < 0 || index >= candidateSkillIds.Count) return;
+
+        SkillData nextSkill = DHCsvTemplateCatalog.Instance?.GetSkillTemplate(candidateSkillIds[index]);
+        nextSkillText.text = nextSkill != null ? SkillDescriptionBuilder.Build(nextSkill) : "-";
     }
 
     private void OnConfirm()

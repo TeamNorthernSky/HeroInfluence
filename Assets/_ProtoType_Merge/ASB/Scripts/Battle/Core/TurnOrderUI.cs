@@ -35,18 +35,18 @@ public class TurnOrderUI : MonoBehaviour
             return;
 
         List<BattleCharactor> order = flowManager.GetPredictedTurnOrder();
-        int displayCount = Mathf.Min(order.Count, maxDisplayCount);
+        if (order.Count == 0) return;
 
         // 슬롯 부족하면 추가 생성
-        while (slots.Count < displayCount)
+        while (slots.Count < maxDisplayCount)
             slots.Add(Instantiate(slotPrefab, slotParent));
 
         for (int i = 0; i < slots.Count; i++)
         {
-            if (i < displayCount)
+            if (i < maxDisplayCount)
             {
                 slots[i].gameObject.SetActive(true);
-                slots[i].Setup(order[i], isCurrentTurn: i == 0);
+                slots[i].Setup(order[i % order.Count], isCurrentTurn: i == 0);
             }
             else
             {

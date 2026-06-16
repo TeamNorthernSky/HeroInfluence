@@ -318,12 +318,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   battleCharactor: {fileID: 7942295052033001349}
-  fillImage: {fileID: 0}
+  hpFillImage: {fileID: 4312058042705805045}
+  ipFillImage: {fileID: 0}
   hpBarRect: {fileID: 0}
   hpCanvas: {fileID: 0}
+  ipBarRect: {fileID: 0}
+  ipCanvas: {fileID: 0}
   targetCamera: {fileID: 0}
-  screenOffset: {x: 0, y: 100}
+  screenOffset: {x: 0, y: 60}
   HPFrame: {fileID: 0}
+  hpGaugeText: {fileID: 0}
+  ipGaugeText: {fileID: 0}
   YaxisValue: 0
 --- !u!136 &3398796345175814161
 CapsuleCollider:

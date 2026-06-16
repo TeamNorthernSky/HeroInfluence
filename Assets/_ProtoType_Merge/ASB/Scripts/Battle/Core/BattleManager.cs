@@ -858,11 +858,7 @@ public class BattleManager : MonoBehaviour
             ? actorAnim.GetTargetStateName(playBasicAttackAnimation ? null : skill)
             : string.Empty;
 
-        Vector3 originPosition = actor.transform.position;
-        float originRotationY = actor.transform.eulerAngles.y;
-        UnitMovementProfile movement = actor.GetComponent<UnitMovementProfile>();
-        bool shouldMove   = movement != null && !movement.RotateOnly && target != null && IsMeleeSkillRange(actor, skill);
-        bool shouldRotate = movement != null && movement.RotateOnly  && target != null;
+        ResolveSkillMovement(actor, target, skill, out UnitMovementProfile movement, out bool shouldMove, out bool shouldRotate, out Vector3 originPosition, out float originRotationY);
 
         string targetAnimTrigger = playTargetHitAnimation
             ? (skill?.ResolvedTargetAnimationTrigger ?? "Hit")
@@ -871,10 +867,7 @@ public class BattleManager : MonoBehaviour
         float sequenceBattleElapsed = 0f;
         var runner = new ActionSequenceRunner();
 
-        if (shouldMove)
-            runner.Enqueue(new MoveToTargetAction(actorAnim, target.transform, movement.ApproachDistance, movement.MoveDuration / _currentBattleSpeed));
-        else if (shouldRotate)
-            runner.Enqueue(new RotateToTargetAction(actor.transform, target.transform, movement.RotateDuration / _currentBattleSpeed));
+        EnqueueSkillApproach(runner, actor, target, actorAnim, movement, shouldMove, shouldRotate);
 
         if (_visualDirector != null && skill != null)
             runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
@@ -885,17 +878,17 @@ public class BattleManager : MonoBehaviour
         bool isArcher = actor.GetComponent<UnitVisualProfile>()?.HoldArrow != null;
         bool shouldSpawnArrowImpact = playTargetHitAnimation && skill != null && skill.classSkillEffect == 0;
         if (isArcher && target != null && shouldSpawnArrowImpact)
-            runner.Enqueue(new ArrowImpactAction(actor, target, _currentBattleSpeed));
+        {
+            runner.Enqueue(new ArrowImpactAction(actor, target, _currentBattleSpeed, targetAnimTrigger));
+            targetAnimTrigger = null;
+        }
 
         runner.Enqueue(new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector));
 
         if (!string.IsNullOrEmpty(targetState))
             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
 
-        if (shouldMove)
-            runner.Enqueue(new MoveToOriginAction(actorAnim, originPosition, Quaternion.Euler(0f, originRotationY, 0f), movement.ReturnDuration / _currentBattleSpeed));
-        else if (shouldRotate)
-            runner.Enqueue(new MoveToOriginAction(actorAnim, originPosition, Quaternion.Euler(0f, originRotationY, 0f), movement.RotateReturnDuration / _currentBattleSpeed));
+        EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
 
         runner.Enqueue(new ReturnToIdleAction(actor));
 
@@ -906,6 +899,72 @@ public class BattleManager : MonoBehaviour
 
         if (target != null)
             yield return StartCoroutine(new WaitTargetReactionAction(target, _currentBattleSpeed).ExecuteRoutine());
+    }
+
+    private static void ResolveSkillMovement(
+        BattleCharactor actor,
+        BattleCharactor target,
+        SkillData skill,
+        out UnitMovementProfile movement,
+        out bool shouldMove,
+        out bool shouldRotate,
+        out Vector3 originPosition,
+        out float originRotationY)
+    {
+        originPosition = actor != null ? actor.transform.position : Vector3.zero;
+        originRotationY = actor != null ? actor.transform.eulerAngles.y : 0f;
+        movement = actor != null ? actor.GetComponent<UnitMovementProfile>() : null;
+        shouldMove = movement != null && !movement.RotateOnly && target != null && IsMeleeSkillRange(actor, skill);
+        shouldRotate = movement != null && movement.RotateOnly && target != null;
+    }
+
+    private void EnqueueSkillApproach(
+        ActionSequenceRunner runner,
+        BattleCharactor actor,
+        BattleCharactor target,
+        CharactorAnimationController actorAnim,
+        UnitMovementProfile movement,
+        bool shouldMove,
+        bool shouldRotate)
+    {
+        if (target == null || movement == null)
+        {
+            return;
+        }
+
+        if (shouldMove)
+        {
+            runner.Enqueue(new MoveToTargetAction(actorAnim, target.transform, movement.ApproachDistance, movement.MoveDuration / _currentBattleSpeed));
+        }
+        else if (shouldRotate)
+        {
+            runner.Enqueue(new RotateToTargetAction(actor.transform, target.transform, movement.RotateDuration / _currentBattleSpeed));
+        }
+    }
+
+    private void EnqueueSkillReturn(
+        ActionSequenceRunner runner,
+        CharactorAnimationController actorAnim,
+        UnitMovementProfile movement,
+        bool shouldMove,
+        bool shouldRotate,
+        Vector3 originPosition,
+        float originRotationY)
+    {
+        if (movement == null)
+        {
+            return;
+        }
+
+        Quaternion originRotation = Quaternion.Euler(0f, originRotationY, 0f);
+        if (shouldMove)
+        {
+            runner.Enqueue(new MoveToOriginAction(actorAnim, originPosition, originRotation, movement.ReturnDuration / _currentBattleSpeed));
+        }
+        else if (shouldRotate)
+        {
+            runner.Enqueue(new MoveToOriginAction(actorAnim, originPosition, originRotation, movement.RotateReturnDuration / _currentBattleSpeed));
+        }
     }
 
     /// <summary>
@@ -931,7 +990,9 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
+        BattleCharactor primaryTarget = leadContext.Target;
         SkillData skill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(leadContext));
+        ApplyPresentationOverride(skill); // [CSV 미지원 임시]
         actor.EnsureAnimationController();
         CharactorAnimationController actorAnim = actor.Anim;
         actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
@@ -940,8 +1001,12 @@ public class BattleManager : MonoBehaviour
             ? actorAnim.GetTargetStateName(skill)
             : string.Empty;
 
+        ResolveSkillMovement(actor, primaryTarget, skill, out UnitMovementProfile movement, out bool shouldMove, out bool shouldRotate, out Vector3 originPosition, out float originRotationY);
+
         float sequenceBattleElapsed = 0f;
         var runner = new ActionSequenceRunner();
+
+        EnqueueSkillApproach(runner, actor, primaryTarget, actorAnim, movement, shouldMove, shouldRotate);
 
         if (_visualDirector != null && skill != null)
             runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
@@ -952,6 +1017,8 @@ public class BattleManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(targetState))
             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
+
+        EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
 
         runner.Enqueue(new ReturnToIdleAction(actor));
 
