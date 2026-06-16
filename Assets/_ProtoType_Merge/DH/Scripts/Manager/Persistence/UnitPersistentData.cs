@@ -3,6 +3,8 @@ using System;
 [Serializable]
 public class UnitPersistentData
 {
+    private const float DefaultCurrentInfluence = 100f;
+
     public int UnitIndex => unitIndex;
     public string UnitTemplateKey => unitTemplateKey;
     public int Level => level;
@@ -44,7 +46,7 @@ public class UnitPersistentData
     {
     }
 
-    public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, StatBlock eventBonusStats = default, int skillLevel = 1, int equippedWeaponInstanceIndex = 0, float currentInfluence = -1f, bool isIncapacitated = false)
+    public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, StatBlock eventBonusStats = default, int skillLevel = 1, int equippedWeaponInstanceIndex = 0, float currentInfluence = DefaultCurrentInfluence, bool isIncapacitated = false)
     {
         this.unitIndex = unitIndex;
         this.unitTemplateKey = unitTemplateKey ?? string.Empty;
@@ -104,7 +106,7 @@ public class UnitPersistentData
     {
         float maxInfluence = Math.Max(0f, stats.Influence);
         if (requestedCurrentInfluence < 0f)
-            return maxInfluence;
+            return Math.Min(DefaultCurrentInfluence, maxInfluence);
 
         return Math.Min(Math.Max(0f, requestedCurrentInfluence), maxInfluence);
     }
