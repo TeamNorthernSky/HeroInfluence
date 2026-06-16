@@ -44,6 +44,7 @@ public class HeroListController : MonoBehaviour, IBeginDragHandler, IEndDragHand
     // [JC 260615] true면 방문(본부 상주) 파티 영웅만 표시 — 연구/홍보/공방의 영웅 선택 제한용
     private bool visitingOnly;
     public void SetVisitingOnlyMode(bool on) => visitingOnly = on;
+    public bool GetVisitingOnlyMode() => visitingOnly;
 
     [Header("Layout (Content 크기 수동 계산용)")]
     [Tooltip("아이템 1개 높이. 프리팹의 실제 RectTransform 높이와 일치시킬 것")]

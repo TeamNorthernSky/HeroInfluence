@@ -30926,6 +30926,7 @@ MonoBehaviour:
   countText: {fileID: 508921612}
   maxOnField: 4
   stateInfoText: {fileID: 0}
+  hangulFont: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   rosterController: {fileID: 2119339424}
   rosterPanelRoot: {fileID: 72495994}
   sortieButtonRoot: {fileID: 1314195696}
@@ -36845,7 +36846,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1314195703
+--- !u!114 &1314195700
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -36854,11 +36855,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 211036033}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 208ef3673b4acaf4db19f25c830d3d34, type: 3}
+  m_Script: {fileID: 11500000, guid: 47c43b057e1471a47b8eea017ee32952, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   button: {fileID: 1314195699}
-  target: {fileID: 1128945064}
+  controller: {fileID: 1128945066}
+  modalRoot: {fileID: 1128945064}
+  disabledOverlayColor: {r: 0.35, g: 0.35, b: 0.35, a: 0.6}
+  singlePartyMessage: "\uD604\uC7AC \uBC84\uC804\uC5D0\uC11C\uB294 1\uAC1C \uD30C\uD2F0\uB9CC
+    \uC0DD\uC131\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
+  hangulFont: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
 --- !u!1001 &1314525669
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37679,7 +37685,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6227137237747484878, guid: 33372d1f5d1f9da47ba0fa81cb0dff61,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1314195703}
+      addedObject: {fileID: 1314195700}
   m_SourcePrefab: {fileID: 100100000, guid: 33372d1f5d1f9da47ba0fa81cb0dff61, type: 3}
 --- !u!1 &1353626592
 GameObject:
@@ -43367,8 +43373,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c29a3c7cf7aed374a8ed71eaf3d508dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltip: {fileID: 1634502672}
-  bodyText: {fileID: 2126395030}
 --- !u!1001 &1617592099
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -46496,8 +46500,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c29a3c7cf7aed374a8ed71eaf3d508dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltip: {fileID: 1636179479}
-  bodyText: {fileID: 1958680144}
 --- !u!114 &1739315644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54300,8 +54302,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c29a3c7cf7aed374a8ed71eaf3d508dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltip: {fileID: 1154242534}
-  bodyText: {fileID: 906761727}
 --- !u!1 &2058522273
 GameObject:
   m_ObjectHideFlags: 0
