@@ -284,6 +284,37 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        if (result.HealContexts != null && result.HealContexts.Count > 0)
+        {
+            for (int i = 0; i < result.HealContexts.Count; i++)
+            {
+                HealContext healContext = result.HealContexts[i];
+                if (healContext == null || healContext.Caster == null || healContext.Target == null || healContext.Target.IsDead)
+                {
+                    continue;
+                }
+
+                SkillData healAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForHealContext(healContext));
+                yield return RunSkillSequenceCore(
+                    healContext.Caster,
+                    healContext.Target,
+                    healAnimSkill,
+                    playBasicAttackAnimation: false,
+                    playTargetHitAnimation: false,
+                    () =>
+                    {
+                        healContext.Target.ApplyHeal(healContext.HealAmount);
+                        return new BattleHitResult
+                        {
+                            Target = healContext.Target,
+                            Damage = healContext.HealAmount,
+                            IsHeal = true,
+                            SkillIndex = healContext.SkillIndex
+                        };
+                    });
+            }
+        }
+
         if (!isCounter && result.DamageContexts != null && result.DamageContexts.Any(ctx => ctx != null && ctx.CanTriggerCounter))
         {
             BattleCharactor originalCaster = result.DamageContexts[0].Caster;
@@ -775,6 +806,34 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
+    private static SkillData TryGetSkillDataForHealContext(HealContext healContext)
+    {
+        if (healContext == null)
+        {
+            return null;
+        }
+
+        if (healContext.Caster != null && healContext.Caster.availableSkills != null)
+        {
+            for (int i = 0; i < healContext.Caster.availableSkills.Count; i++)
+            {
+                SkillData skill = healContext.Caster.availableSkills[i];
+                if (skill != null && skill.skillIndex == healContext.SkillIndex)
+                {
+                    return skill;
+                }
+            }
+        }
+
+        if (DHCsvTemplateCatalog.Instance != null)
+        {
+            SkillData loaded = DHCsvTemplateCatalog.Instance.GetSkillTemplate(healContext.SkillIndex);
+            if (loaded != null) return loaded;
+        }
+
+        return null;
+    }
+
     private IEnumerator RunSkillSequenceCore(
         BattleCharactor actor,
         BattleCharactor target,
@@ -824,7 +883,8 @@ public class BattleManager : MonoBehaviour
         runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
 
         bool isArcher = actor.GetComponent<UnitVisualProfile>()?.HoldArrow != null;
-        if (isArcher && target != null)
+        bool shouldSpawnArrowImpact = playTargetHitAnimation && skill != null && skill.classSkillEffect == 0;
+        if (isArcher && target != null && shouldSpawnArrowImpact)
             runner.Enqueue(new ArrowImpactAction(actor, target, _currentBattleSpeed));
 
         runner.Enqueue(new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector));

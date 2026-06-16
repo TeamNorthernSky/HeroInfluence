@@ -555,8 +555,8 @@ MonoBehaviour:
       10 \uACE0\uC815 \uD68C\uBCF5"
     IPCost: 0
     ClassSkillEffect: 1
-    ClassSkillRange: 0
-    ClassSkillRangeLine: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
     ClassSkillTarget: 0
     ClassSkillMultiTarget: 
     ClassSkill_MultiTargetType: 0
@@ -606,8 +606,8 @@ MonoBehaviour:
       50)"
     IPCost: 0
     ClassSkillEffect: 1
-    ClassSkillRange: 0
-    ClassSkillRangeLine: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
     ClassSkillTarget: 0
     ClassSkillMultiTarget: 
     ClassSkill_MultiTargetType: 0
@@ -656,8 +656,8 @@ MonoBehaviour:
       \uD68C\uBCF5\uD55C\uB2E4."
     IPCost: 0
     ClassSkillEffect: 1
-    ClassSkillRange: 0
-    ClassSkillRangeLine: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
     ClassSkillTarget: 0
     ClassSkillMultiTarget: 
     ClassSkill_MultiTargetType: 0

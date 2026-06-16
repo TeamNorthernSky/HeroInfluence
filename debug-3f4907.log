@@ -107,3 +107,5 @@
 {"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1780623301668}
 {"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1780644391304}
 {"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1780648331338}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1781593876487}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1781593885806}

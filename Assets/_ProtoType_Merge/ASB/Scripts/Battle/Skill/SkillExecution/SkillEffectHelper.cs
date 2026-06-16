@@ -85,9 +85,14 @@ namespace ASB.Work.Battle.SkillExecution
                 return 0f;
             }
 
-            float heal = Mathf.Max(0.01f, skillValue);
+            float heal = CalculateStandardHealAmount(skillValue);
             target.ApplyHeal(heal);
             return heal;
+        }
+
+        public static float CalculateStandardHealAmount(float skillValue)
+        {
+            return Mathf.Max(0.01f, skillValue);
         }
 
 
@@ -99,10 +104,20 @@ namespace ASB.Work.Battle.SkillExecution
                 return 0f;
             }
 
-            float multiplier = Mathf.Max(0.01f, skillValue);
-            float heal = Mathf.Max(0f, target.FinalStats.HP * multiplier);
+            float heal = CalculateTargetHPPerHealAmount(target, skillValue);
             target.ApplyHeal(heal);
             return heal;
+        }
+
+        public static float CalculateTargetHPPerHealAmount(BattleCharactor target, float skillValue)
+        {
+            if (target == null)
+            {
+                return 0f;
+            }
+
+            float multiplier = Mathf.Max(0.01f, skillValue);
+            return Mathf.Max(0f, target.FinalStats.HP * multiplier);
         }
 
 
