@@ -60,11 +60,15 @@ public class SkillButtonController : MonoBehaviour
         toggle1.SetState(true);
     }
 
+    public SkillData CurrentSkillData { get; private set; }
+
     private void OnToggleChanged(bool isOn, ToggleButton other, PendingActionType skillAction)
     {
         if (!isOn) return;
 
         other.SetState(false, false);
+
+        CurrentSkillData = battleFlowManager?.GetCurrentUnitSkill(skillAction);
         inputHandler?.BeginPendingAction(skillAction);
     }
 }

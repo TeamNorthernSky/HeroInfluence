@@ -2094,9 +2094,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _currentBattleSpeed: 1
-  battleFlowManager: {fileID: 0}
-  _visualDirector: {fileID: 0}
-  _presentationCatalog: {fileID: 0}
+  battleFlowManager: {fileID: 621159268}
+  _visualDirector: {fileID: 621159275}
+  _presentationCatalog: {fileID: 11400000, guid: 99e1bc13888047f4ea436fbc4eaf9856,
+    type: 2}
 --- !u!114 &621159271
 MonoBehaviour:
   m_ObjectHideFlags: 0

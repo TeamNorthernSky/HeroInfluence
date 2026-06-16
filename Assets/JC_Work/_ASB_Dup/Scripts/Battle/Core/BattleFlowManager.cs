@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,8 @@ public class BattleFlowManager : MonoBehaviour
     private int roundIndex = 0;
 
     private bool playerActionResolved;
+
+    public event Action<int, BattleCharactor> OnTurnStarted;
 
     public BattleCharactor CurrentUnit { get; private set; }
 
@@ -206,6 +209,7 @@ public class BattleFlowManager : MonoBehaviour
             inputHandler?.ClearSelectionState();
             Log(FormatTurnStartLog(unit));
             SetOutline(unit, true);
+            OnTurnStarted?.Invoke(roundIndex, unit);
 
             CurrentUnit.ProcessTurnStartStatusEffects();
             if (CurrentUnit == null || CurrentUnit.IsDead)
@@ -321,6 +325,28 @@ public class BattleFlowManager : MonoBehaviour
 
         // TODO: 턴 종료 흐름 연결
         yield return null;
+    }
+
+    /// <summary>
+    /// 현재 플레이어 유닛의 스킬 데이터를 반환합니다. 플레이어 턴이 아니거나 스킬이 없으면 null.
+    /// </summary>
+    public SkillData GetCurrentUnitSkill(PendingActionType actionType)
+    {
+        if (CurrentUnit == null || !CurrentUnit.IsPlayer || CurrentUnit.IsDead)
+            return null;
+
+        switch (actionType)
+        {
+            case PendingActionType.ClassSkill:
+                CurrentUnit.ResolveSelectedSkill();
+                return CurrentUnit.SelectedSkillData;
+
+            case PendingActionType.WeaponSkill:
+                return CurrentUnit.EquippedWeaponData?.ToSkillData();
+
+            default:
+                return null;
+        }
     }
 
     public List<BattleCharactor> GetAlivePlayerUnits()
