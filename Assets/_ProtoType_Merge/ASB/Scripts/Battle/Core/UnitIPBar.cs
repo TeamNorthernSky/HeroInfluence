@@ -89,9 +89,9 @@ public class UnitIPBar : MonoBehaviour
     {
         if (ipBarRect == null)
         {
-            Transform existingCanvas = transform.Find("IPCanvas");
-            if (existingCanvas != null)
-                ipBarRect = existingCanvas as RectTransform;
+            Transform found = transform.Find("HPCanvas") ?? transform.Find("IPCanvas");
+            if (found != null)
+                ipBarRect = found as RectTransform;
         }
 
         if (ipBarRect == null)
@@ -99,6 +99,13 @@ public class UnitIPBar : MonoBehaviour
 
         if (ipCanvas == null && ipBarRect != null)
             ipCanvas = ipBarRect.GetComponent<Canvas>();
+
+        if (fillImage == null && ipBarRect != null)
+        {
+            Transform ipFill = ipBarRect.Find("IPFill");
+            if (ipFill != null)
+                fillImage = ipFill.GetComponent<Image>();
+        }
     }
 
     private void SetVisible(bool isVisible)
@@ -114,52 +121,40 @@ public class UnitIPBar : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    [ContextMenu("머리 위 IP 바 생성")]
+    [ContextMenu("HPCanvas 하위에 IP Fill 생성")]
     private void GenerateIPBarInEditor()
     {
         if (battleCharactor == null)
             battleCharactor = GetComponentInParent<BattleCharactor>();
 
-        Transform existingCanvas = transform.Find("IPCanvas");
-        GameObject canvasObj = existingCanvas != null ? existingCanvas.gameObject : new GameObject("IPCanvas");
-        if (existingCanvas == null)
-            canvasObj.transform.SetParent(transform, false);
+        // HPCanvas를 부모로 사용
+        Transform hpCanvasTransform = transform.Find("HPCanvas");
+        if (hpCanvasTransform == null)
+        {
+            Debug.LogError("[UnitIPBar] HPCanvas를 찾을 수 없습니다. UnitHPBar의 HPCanvas가 먼저 생성되어야 합니다.");
+            return;
+        }
 
-        Canvas canvas = canvasObj.GetComponent<Canvas>();
-        if (canvas == null)
-            canvas = canvasObj.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.WorldSpace;
+        ipBarRect = hpCanvasTransform as RectTransform;
+        ipCanvas = hpCanvasTransform.GetComponent<Canvas>();
 
-        if (canvasObj.GetComponent<CanvasScaler>() == null)
-            canvasObj.AddComponent<CanvasScaler>();
-
-        RectTransform canvasRect = canvasObj.GetComponent<RectTransform>();
-        canvasRect.sizeDelta = new Vector2(100f, 15f);
-        canvasRect.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-        canvasRect.localPosition = Vector3.zero;
-        ipBarRect = canvasRect;
-        ipCanvas = canvas;
-
-        Transform existingBg = canvasObj.transform.Find("Background");
-        GameObject bgObj = existingBg != null ? existingBg.gameObject : new GameObject("Background");
-        if (existingBg == null)
-            bgObj.transform.SetParent(canvasObj.transform, false);
-        Image bgImage = bgObj.GetComponent<Image>() ?? bgObj.AddComponent<Image>();
-        bgImage.color = new Color(0f, 0f, 0f, 0.8f);
-        RectTransform bgRect = bgObj.GetComponent<RectTransform>();
-        bgRect.anchorMin = Vector2.zero;
-        bgRect.anchorMax = Vector2.one;
-        bgRect.offsetMin = bgRect.offsetMax = Vector2.zero;
-
-        Transform existingFill = canvasObj.transform.Find("Fill");
-        GameObject fillObj = existingFill != null ? existingFill.gameObject : new GameObject("Fill");
+        // HPCanvas 하위에 IP Fill만 생성
+        Transform existingFill = hpCanvasTransform.Find("IPFill");
+        GameObject fillObj = existingFill != null ? existingFill.gameObject : new GameObject("IPFill");
         if (existingFill == null)
-            fillObj.transform.SetParent(canvasObj.transform, false);
+            fillObj.transform.SetParent(hpCanvasTransform, false);
+
         fillImage = fillObj.GetComponent<Image>() ?? fillObj.AddComponent<Image>();
+
+        Sprite ipSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(
+            "Assets/Resources/UI_Sprite/UI_Battle/UI_chracter_barIP.png");
+        if (ipSprite != null)
+            fillImage.sprite = ipSprite;
+
         fillImage.type = Image.Type.Filled;
         fillImage.fillMethod = Image.FillMethod.Horizontal;
         fillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
-        fillImage.color = new Color(0.2f, 0.5f, 1f);
+        fillImage.color = Color.white;
 
         RectTransform fillRect = fillObj.GetComponent<RectTransform>();
         fillRect.anchorMin = Vector2.zero;
@@ -170,7 +165,7 @@ public class UnitIPBar : MonoBehaviour
             UpdateIPBar(battleCharactor.CurrentInfluence, battleCharactor.MaxInfluence);
 
         UnityEditor.EditorUtility.SetDirty(this);
-        Debug.Log("[UnitIPBar] IP 바 UI 생성 완료!");
+        Debug.Log("[UnitIPBar] HPCanvas 하위에 IP Fill 생성 완료!");
     }
 #endif
 }

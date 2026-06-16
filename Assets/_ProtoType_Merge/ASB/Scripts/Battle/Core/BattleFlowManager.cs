@@ -133,7 +133,6 @@ public class BattleFlowManager : MonoBehaviour
         {
             StopCoroutine(battleLoopRoutine);
         }
-
         battleLoopRoutine = StartCoroutine(BattleLoop());
         Log("[BattleFlow] BattleLoop 시작");
     }
