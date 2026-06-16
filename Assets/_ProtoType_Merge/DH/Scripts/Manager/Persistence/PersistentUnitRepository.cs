@@ -106,7 +106,7 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
-    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = -1, int maxExp = -1, int skillLevel = -1, int equippedWeaponInstanceIndex = -1, float currentInfluence = -1f)
+    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, int favorability, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = -1, int maxExp = -1, int skillLevel = -1, int equippedWeaponInstanceIndex = -1, float currentInfluence = -1f, bool? isIncapacitated = null)
     {
         if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
             return false;
@@ -115,7 +115,33 @@ public class PersistentUnitRepository : MonoBehaviour
         if (effectiveMaxExp < 0 && data.MaxExp <= 0)
             effectiveMaxExp = ResolveMaxExp(level);
 
-        data.ApplyRuntimeState(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, effectiveMaxExp, skillLevel, equippedWeaponInstanceIndex, currentInfluence);
+        data.ApplyRuntimeState(unitTemplateKey, level, favorability, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, effectiveMaxExp, skillLevel, equippedWeaponInstanceIndex, currentInfluence, isIncapacitated);
+        return true;
+    }
+
+    public bool SetIncapacitated(int unitIndex, bool isIncapacitated)
+    {
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
+            return false;
+
+        float nextHp = isIncapacitated ? 0f : data.CurrentHp;
+        data.ApplyRuntimeState(
+            data.UnitTemplateKey,
+            data.Level,
+            data.Favorability,
+            data.BaseStats,
+            data.LevelupStats,
+            data.CurrentSkillIndex,
+            data.CurrentWeaponIndex,
+            data.CurrentWeaponStats,
+            data.IngameStats,
+            nextHp,
+            data.Exp,
+            data.MaxExp,
+            data.SkillLevel,
+            data.EquippedWeaponInstanceIndex,
+            data.CurrentInfluence,
+            isIncapacitated);
         return true;
     }
 
@@ -260,7 +286,11 @@ public class PersistentUnitRepository : MonoBehaviour
             data.IngameStats,
             maxHp,
             data.Exp,
-            data.MaxExp);
+            data.MaxExp,
+            data.SkillLevel,
+            data.EquippedWeaponInstanceIndex,
+            data.CurrentInfluence,
+            false);
         return true;
     }
 

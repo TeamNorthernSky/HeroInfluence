@@ -177,6 +177,7 @@ public static class BattleResultPersistenceHandler
         float hp = ResolvePersistedHp(battle);
         float influence = Mathf.Clamp(battle.CurrentInfluence, 0f, battle.MaxInfluence);
         int syncedFavorability = Mathf.Max(0, Mathf.RoundToInt(influence));
+        bool isIncapacitated = battle.IsDead;
 
         StatBlock ingame = src.IngameStats;
 
@@ -192,7 +193,8 @@ public static class BattleResultPersistenceHandler
             src.CurrentWeaponStats,
             ingame,
             hp,
-            currentInfluence: influence);
+            currentInfluence: influence,
+            isIncapacitated: isIncapacitated);
 
         if (!ok)
             Debug.LogWarning($"[BattleResultPersistenceHandler] 플레이어 unitIndex={src.UnitIndex} UpdateUnitRuntimeState 실패.", battle);

@@ -163,6 +163,7 @@ public class PartyRecoveryAreaController : MonoBehaviour
                 continue;
 
             unitState.SetCurrentHp(healedHp);
+            unitState.SetIncapacitated(false);
         }
     }
 

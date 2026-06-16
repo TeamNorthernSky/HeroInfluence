@@ -68,6 +68,7 @@ public class UnitPersistentDataDiskRow
     public int currentWeaponIndex;
     public int equippedWeaponInstanceIndex;
     public EquipmentStatBlock currentWeaponStats;
+    public bool isIncapacitated;
     public StatBlockDisk baseStats;
     public StatBlockDisk levelupStats;
     public StatBlockDisk eventBonusStats;
@@ -94,6 +95,7 @@ public class UnitPersistentDataDiskRow
             currentWeaponIndex = u.CurrentWeaponIndex,
             equippedWeaponInstanceIndex = u.EquippedWeaponInstanceIndex,
             currentWeaponStats = u.CurrentWeaponStats,
+            isIncapacitated = u.IsIncapacitated,
             baseStats = StatBlockDisk.From(u.BaseStats),
             levelupStats = StatBlockDisk.From(u.LevelupStats),
             eventBonusStats = StatBlockDisk.From(u.EventBonusStats),
@@ -121,7 +123,8 @@ public class UnitPersistentDataDiskRow
             skillLevel,
             equippedWeaponInstanceIndex,
             currentInfluence,
-            hasCurrentInfluence);
+            hasCurrentInfluence,
+            isIncapacitated);
     }
 }
 
