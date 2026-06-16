@@ -86,9 +86,9 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         }
 
         battle.BindPersistentSourceData(persistentData);
-        battle.SetBaseStats(persistentData.BaseStats);
-        // persistentData.BaseStats는 레벨/장비/무기 보정이 끝난 전투 스냅샷이므로
-        // 추가 스케일링(StatCalculator 경로)을 비활성화합니다.
+        battle.SetBaseStats(persistentData.IngameStats);
+        // IngameStats = 레벨·무기·성장 보너스가 반영된 전투 스냅샷(Max IP 포함).
+        // 추가 스케일링(StatCalculator 경로)은 비활성화합니다.
         battle.SetLevelScaling(false);
 
         string persistentSkillMatchKey = ResolvePersistentSkillMatchKey(persistentData, fallbackData);
@@ -113,7 +113,8 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         Debug.Log(
             $"[Stats/Persistent] {battle.UnitName} uses precomputed snapshot. " +
             $"LevelScaling=false, " +
-            $"FinalStats HP={battle.FinalStats.HP}, Atk={battle.FinalStats.Atk}, DEF={battle.FinalStats.DEF}");
+            $"FinalStats HP={battle.FinalStats.HP}, Atk={battle.FinalStats.Atk}, DEF={battle.FinalStats.DEF}, " +
+            $"MaxIP={battle.MaxInfluence:0.#}, CurrentIP={battle.CurrentInfluence:0.#}");
     }
 
     private static string ResolveSkillMatchKey(UnitData data)

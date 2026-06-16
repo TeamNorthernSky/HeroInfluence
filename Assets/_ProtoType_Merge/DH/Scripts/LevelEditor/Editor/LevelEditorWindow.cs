@@ -28,7 +28,7 @@ public class LevelEditorWindow : EditorWindow
         "Outpost",
         "Event",
         "Castle",
-        "Villain",
+        "VillainUnion",
         "StayEnemy",
         "EnemyGroup",
         "Erase"
