@@ -85,6 +85,13 @@ public class ClickSelectionController : MonoBehaviour
             TryHandleClick();
 
         PartyGridMover activeMover = partySelectionController != null ? partySelectionController.ActiveMover : null;
+        if (activeMover != null && !IsMoverUsable(activeMover))
+        {
+            partySelectionController?.ClearActiveMover();
+            moveCommandPreviewController?.ClearPreview();
+            activeMover = null;
+        }
+
         if (activeMover != null && activeMover.IsMoving)
             moveCommandPreviewController?.UpdateRealtimePathPreview(activeMover);
     }
@@ -94,12 +101,31 @@ public class ClickSelectionController : MonoBehaviour
         moveCommandPreviewController?.ClearPreview();
     }
 
+    public void ClearActiveMoverIf(PartyGridMover party)
+    {
+        if (party == null || partySelectionController == null)
+            return;
+
+        if (partySelectionController.ActiveMover != party)
+            return;
+
+        partySelectionController.ClearActiveMover();
+        moveCommandPreviewController?.ClearPreview();
+    }
+
     private void TryHandleClick()
     {
         PartyGridMover activeMover = partySelectionController != null ? partySelectionController.ActiveMover : null;
         PartyRuntime activeRuntime = activeMover != null ? activeMover.GetComponent<PartyRuntime>() : null;
         if (mainCamera == null || gridManager == null || activeMover == null || pathfinder == null || marker == null)
             return;
+
+        if (!IsMoverUsable(activeMover))
+        {
+            partySelectionController?.ClearActiveMover();
+            moveCommandPreviewController?.ClearPreview();
+            return;
+        }
 
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
             return;
@@ -143,6 +169,13 @@ public class ClickSelectionController : MonoBehaviour
             return;
 
         moveCommandPreviewController.PreviewMoveToGrid(activeMover, clickedGrid);
+    }
+
+    private static bool IsMoverUsable(PartyGridMover mover)
+    {
+        return mover != null
+            && mover.gameObject.activeInHierarchy
+            && !DefeatedPartyReturnController.IsPartyWaiting(mover);
     }
 
     private bool TryGetClosestLandHit(Ray ray, out RaycastHit landHit)

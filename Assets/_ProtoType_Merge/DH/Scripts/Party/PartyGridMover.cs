@@ -125,7 +125,7 @@ public class PartyGridMover : MonoBehaviour
 
     public bool CanSpendMovePoints(int amount)
     {
-        return movePointController != null && movePointController.CanSpend(amount);
+        return HasAnyValidPartyUnit() && movePointController != null && movePointController.CanSpend(amount);
     }
 
     public void ResetMovePointsToMax()
@@ -252,6 +252,13 @@ public class PartyGridMover : MonoBehaviour
         pathQueue.Clear();
         SetMoving(false);
 
+        if (!HasAnyValidPartyUnit())
+        {
+            TargetInteractionGrid = null;
+            NotifyPathUpdated();
+            return;
+        }
+
         if (fullPath != null && fullPath.Count > 0)
             currentGrid = fullPath[0];
 
@@ -301,6 +308,28 @@ public class PartyGridMover : MonoBehaviour
     private static int GetPathMoveCost(List<Vector2Int> path)
     {
         return path == null ? 0 : Mathf.Max(0, path.Count - 1);
+    }
+
+    private bool HasAnyValidPartyUnit()
+    {
+        PartyComposition composition = GetComponent<PartyComposition>();
+        if (composition == null)
+            return false;
+
+        int[] unitIndices = composition.UnitIndices;
+        PersistentUnitRepository repository = PersistentUnitRepository.Instance;
+
+        for (int i = 0; i < unitIndices.Length; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (unitIndex <= 0)
+                continue;
+
+            if (repository == null || repository.ContainsUnit(unitIndex))
+                return true;
+        }
+
+        return false;
     }
 }
 

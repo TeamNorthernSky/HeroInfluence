@@ -162,8 +162,11 @@ public class DefeatedPartyReturnController : MonoBehaviour
         for (int i = 0; i < clickControllers.Length; i++)
         {
             ClickSelectionController clickController = clickControllers[i];
-            if (clickController != null)
-                clickController.ClearMovePreview();
+            if (clickController == null)
+                continue;
+
+            clickController.ClearActiveMoverIf(party);
+            clickController.ClearMovePreview();
         }
     }
 

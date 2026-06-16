@@ -29,12 +29,30 @@ public class PartySelectionController
         if (partyMovers.Length == 0)
             return;
 
-        SetActiveMoverInternal(partyMovers[0], false);
+        for (int i = 0; i < partyMovers.Length; i++)
+        {
+            PartyGridMover mover = partyMovers[i];
+            if (!CanSelectMover(mover))
+                continue;
+
+            SetActiveMoverInternal(mover, false);
+            return;
+        }
     }
 
     public void Dispose()
     {
         UnsubscribeFromActiveMover();
+    }
+
+    public void ClearActiveMover()
+    {
+        if (activeMover == null)
+            return;
+
+        UnsubscribeFromActiveMover();
+        activeMover = null;
+        ActiveMoverChanged?.Invoke(null);
     }
 
     public bool TryHandleSelectionClick(Ray ray)
@@ -50,7 +68,7 @@ public class PartySelectionController
                 continue;
 
             PartyGridMover mover = hitTransform.GetComponentInParent<PartyGridMover>();
-            if (mover == null || !IsRegisteredMover(mover))
+            if (!CanSelectMover(mover))
                 continue;
 
             if (hits[i].distance < bestDist)
@@ -87,6 +105,14 @@ public class PartySelectionController
         }
 
         return false;
+    }
+
+    private bool CanSelectMover(PartyGridMover mover)
+    {
+        return mover != null
+            && mover.gameObject.activeInHierarchy
+            && !DefeatedPartyReturnController.IsPartyWaiting(mover)
+            && IsRegisteredMover(mover);
     }
 
     private PartyGridMover[] GetPartyMovers()
