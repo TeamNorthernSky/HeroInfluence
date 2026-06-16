@@ -8,11 +8,10 @@ using UnityEngine;
 ///   1) 스킬 장착 변경 — 영웅의 CurrentSkillIndex를 DH PersistentUnitRepository.UpdateUnitRuntimeState로 writeback (실결선/비침습).
 ///   2) 스킬 강화 레벨(1~5) — 영웅별·스킬별 강화 레벨을 JC측 in-memory로 보관.
 ///
-/// ※ seam 정책([[feedback_seam_interface_policy]]): 스킬 강화 레벨의 "전투 대미지 계수 반영"은
-///   ASB BattleCharactor.LoadPersistentEquipment가 스킬 레벨 인자를 받지 않아 현재 비침습 결선 불가.
-///   → 레벨 저장·표시·비용차감까지는 실제 동작하되, 전투 반영은 보류(더미). 데이터 원천은
-///   DHCsvTemplateCatalog.GetClassSkillValueAtLevel(skillIndex, level)로 이미 준비되어 있어,
-///   추후 ASB가 유닛별 스킬 레벨을 받는 seam만 열리면 즉시 결선 가능.
+/// ※ [JC 260616] seam 열림: ASB BattleCharactor.LoadPersistentEquipment가 SkillLevel 인자를 받아
+///   전투 위력에 반영함(GetClassSkillValueAtLevel). → 강화/장착 시 "장착 스킬"의 강화 레벨을
+///   DH PersistentUnitRepository.SetSkillLevel(유닛당 단일 SkillLevel)로 writeback해 전투에 반영한다.
+///   LabManager는 (unit,skill)별 레벨을 보관하되, DH 동기는 현재 장착 스킬에 한정(모델 정합).
 ///
 /// 비용·조건 출처: H.I 자원 데이터 테이블 V1.4 '협회-연구소' 시트.
 /// </summary>
@@ -133,6 +132,7 @@ public class LabManager : MonoBehaviour
         if (!CanUpgradeSkill(unitIndex, skillIndex)) return false;
         var e = GetOrCreateEntry(unitIndex, skillIndex);
         e.level = Mathf.Min(MaxSkillLevel, e.level + 1);
+        SyncEquippedSkillLevel(unitIndex); // [JC 260616] 장착 스킬이면 DH로 writeback해 전투 반영
         OnStateChanged?.Invoke();
         return true;
     }
@@ -149,8 +149,23 @@ public class LabManager : MonoBehaviour
             d.BaseStats, d.LevelupStats, skillIndex, d.CurrentWeaponIndex,
             d.CurrentWeaponStats, d.IngameStats, d.CurrentHp, d.Exp, d.MaxExp);
 
-        if (ok) OnStateChanged?.Invoke();
+        if (ok)
+        {
+            SyncEquippedSkillLevel(unitIndex); // [JC 260616] 새 장착 스킬의 강화 레벨을 DH로 writeback
+            OnStateChanged?.Invoke();
+        }
         return ok;
+    }
+
+    /// <summary>현재 장착 스킬(CurrentSkillIndex)의 강화 레벨을 DH UnitPersistentData.SkillLevel로 동기.
+    /// DH는 유닛당 단일 SkillLevel이므로 장착 스킬에 한정해 push한다(전투 LoadPersistentEquipment가 소비).</summary>
+    private void SyncEquippedSkillLevel(int unitIndex)
+    {
+        var repo = PersistentUnitRepository.Instance;
+        if (repo == null) return;
+        int equipped = GetEquippedSkillIndex(unitIndex);
+        if (equipped <= 0) return;
+        repo.SetSkillLevel(unitIndex, GetSkillLevel(unitIndex, equipped));
     }
 
     public int GetEquippedSkillIndex(int unitIndex)

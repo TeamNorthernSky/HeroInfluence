@@ -89,11 +89,10 @@ public class HeroInfoModal : MonoBehaviour
         SetText(nameText, displayName);
         SetText(classText, displayClass);
         SetText(rankText, $"RANK : {unit.Level}");
-        int ipValue = GameManager.Instance != null && GameManager.Instance.Publicity != null
-            ? GameManager.Instance.Publicity.GetIP(unit.UnitIndex)
-            : 0;
+        // [JC 260616] IP 표기 = 유닛 CurrentInfluence 일원화(PublicityManager 의존 제거)
+        float ipValue = unit != null ? unit.CurrentInfluence : 0f;
         // 명칭은 씬의 고정 라벨로 분리됨. 값 텍스트는 값만 출력(값필드 박스 안).
-        SetText(ipText, $"{ipValue}");
+        SetText(ipText, $"{ipValue:F0}");
         SetText(hpText, $"{s.HP:F0}");
         SetText(atkText, $"{s.Atk:F0}");
         SetText(defText, $"{s.DEF:F0}");

@@ -178,8 +178,10 @@ public class ExplorationHeroBoxController : MonoBehaviour
             }
             if (slot.ipText != null)
             {
-                int ip = gm != null && gm.Publicity != null ? gm.Publicity.GetIP(unitIndex) : 0;
-                slot.ipText.text = $"{ip}/{PublicityManager.MaxIP}";
+                // [JC 260616] IP 표기 = 유닛 CurrentInfluence/IngameStats.Influence 일원화(PublicityManager 의존 제거)
+                float ip = unit != null ? unit.CurrentInfluence : 0f;
+                float maxIp = unit != null ? unit.IngameStats.Influence : 0f;
+                slot.ipText.text = $"{ip:F0}/{maxIp:F0}";
             }
         }
     }
