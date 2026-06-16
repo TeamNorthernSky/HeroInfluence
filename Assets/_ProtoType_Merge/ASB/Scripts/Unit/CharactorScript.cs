@@ -102,7 +102,7 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         battle.LoadPersistentEquipment(persistentData.CurrentSkillIndex, persistentData.CurrentWeaponIndex);
 
         battle.RecalculateStats();
-        battle.InitializeCurrentHpToMax();
+        battle.InitializeCurrentState(persistentData.CurrentHp, persistentData.CurrentInfluence);
         battle.MarkInitializedFromDataPipeline(true);
         Debug.Log(
             $"[Stats/Persistent] {battle.UnitName} uses precomputed snapshot. " +
