@@ -27,7 +27,7 @@ public class PartyComposition : MonoBehaviour
 
     public void ClearSlot(int slotIndex)
     {
-        SetUnitIndexAt(slotIndex, -1);
+        SetUnitIndexAt(slotIndex, 0);
     }
 
     public void EnsureSlotCount(int slotCount)
@@ -43,6 +43,6 @@ public class PartyComposition : MonoBehaviour
         int oldLength = unitIndices.Length;
         Array.Resize(ref unitIndices, slotCount);
         for (int i = oldLength; i < unitIndices.Length; i++)
-            unitIndices[i] = -1;
+            unitIndices[i] = 0;
     }
 }

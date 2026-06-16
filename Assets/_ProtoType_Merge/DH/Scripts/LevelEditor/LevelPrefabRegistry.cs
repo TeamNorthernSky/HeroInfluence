@@ -28,6 +28,9 @@ public class LevelPrefabRegistry : MonoBehaviour
     [SerializeField] private EnemyGridMover enemyGroupPrefab;
     [SerializeField] private List<EnemyUnitPrefabEntry> enemyUnitPrefabs = new List<EnemyUnitPrefabEntry>();
 
+    [Header("Player Unit Prefabs")]
+    [SerializeField] private List<PlayerUnitPrefabEntry> playerUnitPrefabs = new List<PlayerUnitPrefabEntry>();
+
     public GameObject ObstaclePrefab => obstaclePrefab;
     public CastleUnit CastlePrefab => castlePrefab;
     public VillainUnionBase VillainUnionBasePrefab => villainUnionBasePrefab;
@@ -124,6 +127,22 @@ public class LevelPrefabRegistry : MonoBehaviour
         prefab = null;
         return false;
     }
+
+    public bool TryGetPlayerUnitPrefab(string unitTemplateKey, out PartyUnitState prefab)
+    {
+        string normalizedKey = string.IsNullOrWhiteSpace(unitTemplateKey) ? string.Empty : unitTemplateKey.Trim();
+        for (int i = 0; i < playerUnitPrefabs.Count; i++)
+        {
+            if (!string.Equals(playerUnitPrefabs[i].UnitTemplateKey, normalizedKey, StringComparison.Ordinal))
+                continue;
+
+            prefab = playerUnitPrefabs[i].Prefab;
+            return prefab != null;
+        }
+
+        prefab = null;
+        return false;
+    }
 }
 
 [Serializable]
@@ -173,4 +192,14 @@ public struct EnemyUnitPrefabEntry
 
     public int EnemyUnitIndex => enemyUnitIndex;
     public EnemyUnitState Prefab => prefab;
+}
+
+[Serializable]
+public struct PlayerUnitPrefabEntry
+{
+    [SerializeField] private string unitTemplateKey;
+    [SerializeField] private PartyUnitState prefab;
+
+    public string UnitTemplateKey => string.IsNullOrWhiteSpace(unitTemplateKey) ? string.Empty : unitTemplateKey.Trim();
+    public PartyUnitState Prefab => prefab;
 }

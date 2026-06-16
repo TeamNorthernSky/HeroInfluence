@@ -76,8 +76,11 @@ public class MoveCommandPreviewController
 
     public void PreviewMoveToGrid(PartyGridMover activeMover, Vector2Int clickedGrid)
     {
-        if (activeMover == null || gridManager == null || pathfinder == null || marker == null)
+        if (!CanPreviewForMover(activeMover) || gridManager == null || pathfinder == null || marker == null)
+        {
+            ClearPreview();
             return;
+        }
 
         if (!TryResolveDestinationGrid(activeMover, clickedGrid, out Vector2Int requestedDestinationGrid))
         {
@@ -126,7 +129,7 @@ public class MoveCommandPreviewController
     // [JC 추가 260511] 정지 후 path 재계산. markerGrid 그대로 두고 현재 mover 위치 기준으로 path만 다시 그림.
     public void RecomputePathForCurrent(PartyGridMover activeMover)
     {
-        if (activeMover == null || !hasMarkerGrid)
+        if (!CanPreviewForMover(activeMover) || !hasMarkerGrid)
             return;
 
         PreviewMoveToGrid(activeMover, markerGrid);
@@ -134,7 +137,7 @@ public class MoveCommandPreviewController
 
     public bool TryConfirmMove(Ray ray, PartyGridMover activeMover)
     {
-        if (activeMover == null)
+        if (!CanPreviewForMover(activeMover))
             return false;
 
         if (!TryHandleMarkerClick(ray))
@@ -174,7 +177,7 @@ public class MoveCommandPreviewController
 
     public void UpdateRealtimePathPreview(PartyGridMover activeMover)
     {
-        if (pathPreviewRenderer == null || activeMover == null || gridManager == null)
+        if (pathPreviewRenderer == null || !CanPreviewForMover(activeMover) || gridManager == null)
             return;
 
         List<Vector2Int> remainingPath = activeMover.GetRemainingPath();
@@ -513,5 +516,12 @@ public class MoveCommandPreviewController
             markerPropertyBlock.SetColor("_BaseColor", color);
             renderer.SetPropertyBlock(markerPropertyBlock);
         }
+    }
+
+    private static bool CanPreviewForMover(PartyGridMover mover)
+    {
+        return mover != null
+            && mover.gameObject.activeInHierarchy
+            && !DefeatedPartyReturnController.IsPartyWaiting(mover);
     }
 }

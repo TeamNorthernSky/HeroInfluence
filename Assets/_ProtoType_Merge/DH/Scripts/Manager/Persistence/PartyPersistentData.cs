@@ -12,7 +12,7 @@ public class PartyPersistentData
     [UnityEngine.SerializeField] private List<int> unitIndices = new List<int>();
     [UnityEngine.SerializeField] private List<int> unitSlots = new List<int>();
 
-    // [JC 추가 260511] 위치 영속화. DHScene Single 재로드 시 transform.position이 씬 시작값으로 복귀하는 문제 해결용
+    // [JC 260511] Keeps runtime party grid/move state stable across DHScene reloads.
     [UnityEngine.SerializeField] private UnityEngine.Vector2Int lastGrid;
     [UnityEngine.SerializeField] private bool hasLastGrid;
     [UnityEngine.SerializeField] private int remainingMovePoints;
@@ -60,7 +60,7 @@ public class PartyPersistentData
 
     public void SetUnitIndices(IReadOnlyList<int> source)
     {
-        // [JC 수정 260511] Unity 직렬화 사이클로 필드가 null로 복원될 수 있어 가드
+        // [JC 260511] Unity serialization can restore this field as null.
         if (unitIndices == null) unitIndices = new List<int>();
         unitIndices.Clear();
 

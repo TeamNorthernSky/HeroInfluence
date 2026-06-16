@@ -61,7 +61,11 @@ public class PublicityModalController : MonoBehaviour
         if (btnMax != null) btnMax.onClick.AddListener(SetCountToMax);
         if (progressSlider != null) progressSlider.onValueChanged.AddListener(OnSliderChanged);
 
-        if (heroSelectListController != null) heroSelectListController.SetSelectionMode(true);
+        if (heroSelectListController != null)
+        {
+            heroSelectListController.SetSelectionMode(true);
+            heroSelectListController.SetVisitingOnlyMode(true); // 본부 상주(방문) 파티 영웅만 홍보 사용
+        }
     }
 
     private void OnEnable() { TrySubscribe(); progressCount = 0; Refresh(); }
@@ -196,8 +200,15 @@ public class PublicityModalController : MonoBehaviour
         bool unlocked = gm.Publicity.IsUnlocked();
 
         // 영웅 영역
-        if (heroSilhouette != null) heroSilhouette.SetActive(!hasSelection);
-        if (heroProfileImage != null) heroProfileImage.enabled = hasSelection;
+        if (heroSilhouette != null) heroSilhouette.SetActive(false); // 빈 프로필은 기본(00) 이미지로 대체
+        if (heroProfileImage != null)
+        {
+            heroProfileImage.gameObject.SetActive(true);
+            heroProfileImage.enabled = true;
+            heroProfileImage.sprite = hasSelection
+                ? HeroProfileCatalog.GetByUnitIndex(selectedUnitIndex)
+                : HeroProfileCatalog.Default;
+        }
         if (currentIPText != null)
             currentIPText.text = hasSelection ? $"I.P : {gm.Publicity.GetIP(unit.UnitIndex)}" : "I.P : —";
         if (selectPromptGo != null) selectPromptGo.SetActive(!hasSelection);

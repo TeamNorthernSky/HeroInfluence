@@ -10,7 +10,8 @@ namespace ASB.Work.Battle.SkillExecution
     {
         protected override void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            float heal = SkillEffectHelper.ApplyStandardHeal(caster, target, skillData.skillValue);
+            float heal = SkillEffectHelper.CalculateStandardHealAmount(skillData.skillValue);
+            result.AddHeal(caster, target, heal, skillData != null ? skillData.skillIndex : 0);
             Debug.Log($"[Skill/DefaultHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
         }
     }
@@ -23,7 +24,8 @@ namespace ASB.Work.Battle.SkillExecution
             float hpRatio = (1.0f - target.CurrentHp / (float)target.MaxHp);
             float snapped = Mathf.Round(hpRatio / 0.2f) * 0.2f;
             float totalSkillValue = Mathf.Clamp(snapped * 15 + 5, 5, 50);
-            float heal = SkillEffectHelper.ApplyStandardHeal(caster, target, totalSkillValue);
+            float heal = SkillEffectHelper.CalculateStandardHealAmount(totalSkillValue);
+            result.AddHeal(caster, target, heal, skillData != null ? skillData.skillIndex : 0);
             Debug.Log($"[Skill/DefaultHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
         }
     }
@@ -35,8 +37,9 @@ namespace ASB.Work.Battle.SkillExecution
     {
         protected override void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            float totalSkillValue = Mathf.Ceil( target.FinalStats.HP * Mathf.Clamp01(skillData.skillValue)); 
-            float heal = SkillEffectHelper.ApplyStandardHeal(caster, target, totalSkillValue);
+            float totalSkillValue = Mathf.Ceil(target.FinalStats.HP * Mathf.Clamp01(skillData.skillValue));
+            float heal = SkillEffectHelper.CalculateStandardHealAmount(totalSkillValue);
+            result.AddHeal(caster, target, heal, skillData != null ? skillData.skillIndex : 0);
             Debug.Log($"[Skill/DefaultHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
         }
     }
@@ -62,7 +65,8 @@ namespace ASB.Work.Battle.SkillExecution
     {
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            float heal = SkillEffectHelper.ApplyStandardHeal(caster, target, skillData.skillValue);
+            float heal = SkillEffectHelper.CalculateStandardHealAmount(skillData.skillValue);
+            result.AddHeal(caster, target, heal, skillData != null ? skillData.skillIndex : 0);
             Debug.Log($"[Skill/DefaultHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
         }
     }

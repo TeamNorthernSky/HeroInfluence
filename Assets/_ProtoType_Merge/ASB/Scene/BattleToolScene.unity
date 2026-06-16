@@ -534,7 +534,7 @@ PrefabInstance:
         type: 3}
       propertyPath: skillDataLoader
       value: 
-      objectReference: {fileID: 320332756}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -668,95 +668,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 253823589}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &320332751
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 320332753}
-  - component: {fileID: 320332754}
-  - component: {fileID: 320332755}
-  - component: {fileID: 320332756}
-  - component: {fileID: 320332757}
-  m_Layer: 0
-  m_Name: DataManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &320332753
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &320332754
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1213a2ec935c07c4183b16fa65cfc702, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &320332755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 407c923e952858047875ef90f3fb4584, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  unitCsv: {fileID: 0}
-  playerUnitCsv: {fileID: 4900000, guid: f41b9a24bf1e4194b826bf1733be0f41, type: 3}
-  enemyUnitCsv: {fileID: 4900000, guid: dad7e36fb4d28bc4d9d5fc1ae6eae029, type: 3}
-  classSkillSheetCsv: {fileID: 4900000, guid: 6715d7221fa149942b60589cae0dece6, type: 3}
-  weaponSheetCsv: {fileID: 4900000, guid: 6828b0fb66bebb34e84cf5bfd9a023aa, type: 3}
-  levelUpSheetCsv: {fileID: 4900000, guid: 55988bef05c7c4f4494b81cea55ff09e, type: 3}
---- !u!114 &320332756
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e8feb2d358f17e468926fe84f593747, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &320332757
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16209b6b3ff36dc4cafd7db1c4ac6180, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &324998226
 GameObject:
   m_ObjectHideFlags: 0
@@ -2446,7 +2357,7 @@ PrefabInstance:
         type: 3}
       propertyPath: skillDataLoader
       value: 
-      objectReference: {fileID: 320332756}
+      objectReference: {fileID: 0}
     - target: {fileID: 4383120895684230713, guid: 8e839b26f24666340915ba452e52ad0e,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2913,7 +2824,7 @@ PrefabInstance:
         type: 3}
       propertyPath: skillDataLoader
       value: 
-      objectReference: {fileID: 320332756}
+      objectReference: {fileID: 0}
     - target: {fileID: 5410920066129232746, guid: e540557cd11514240aafdf2c329798cb,
         type: 3}
       propertyPath: m_IsActive
@@ -4653,7 +4564,7 @@ PrefabInstance:
         type: 3}
       propertyPath: skillDataLoader
       value: 
-      objectReference: {fileID: 320332756}
+      objectReference: {fileID: 0}
     - target: {fileID: 2436971512463497434, guid: dc4a5e6c8a95e4b4aac8a40d823c76ca,
         type: 3}
       propertyPath: m_ApplyRootMotion
@@ -4798,7 +4709,7 @@ PrefabInstance:
         type: 3}
       propertyPath: skillDataLoader
       value: 
-      objectReference: {fileID: 320332756}
+      objectReference: {fileID: 0}
     - target: {fileID: 2991630842497690247, guid: 0794eea0d06dda54f921e3c87af19cd5,
         type: 3}
       propertyPath: m_IsActive
@@ -5322,7 +5233,7 @@ PrefabInstance:
         type: 3}
       propertyPath: skillDataLoader
       value: 
-      objectReference: {fileID: 320332756}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5387,7 +5298,6 @@ SceneRoots:
   - {fileID: 56801851}
   - {fileID: 173310003}
   - {fileID: 912453333}
-  - {fileID: 320332753}
   - {fileID: 1002047754}
   - {fileID: 621159267}
   - {fileID: 1540026210}

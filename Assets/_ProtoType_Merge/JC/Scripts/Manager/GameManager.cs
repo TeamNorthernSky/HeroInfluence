@@ -12,7 +12,11 @@ public class GameManager : MonoBehaviour
     public HQStateManager HQ { get; private set; }
     public PublicityManager Publicity { get; private set; }
     public TrainingManager Training { get; private set; }
+    public LabManager Lab { get; private set; }
+    public WorkshopManager Workshop { get; private set; }
     public TurnIncomeModalController TurnIncomeModal { get; private set; }
+    public HeroInfoModal HeroInfoModal { get; private set; }
+    public HeroInfoModal HeroStatusModal { get; private set; } // 탐사 멤버 클릭용(스킬 우측 레이아웃, Modal_HeroStatus)
 
     [Header("매턴 income 모달 트리거 씬 (기본: PlayScene = DH씬)")]
     [SerializeField] private string turnIncomeTriggerScene = "DHScene_3";
@@ -115,12 +119,23 @@ public class GameManager : MonoBehaviour
         Training = GetComponentInChildren<TrainingManager>(true);
         if (Training != null) Training.Initialize();
 
+        Lab = GetComponentInChildren<LabManager>(true);
+        if (Lab != null) Lab.Initialize();
+
+        Workshop = GetComponentInChildren<WorkshopManager>(true);
+        if (Workshop != null) Workshop.Initialize();
+
         UIPrefabRegistry = GetComponentInChildren<UIPrefabRegistry>(true);
 
         Debug = GetComponentInChildren<DebugManager>(true);
         if (Debug != null) Debug.Initialize();
 
         TurnIncomeModal = GetComponentInChildren<TurnIncomeModalController>(true);
+        foreach (var m in GetComponentsInChildren<HeroInfoModal>(true))
+        {
+            if (m.gameObject.name.Contains("Status")) HeroStatusModal = m;
+            else HeroInfoModal = m;
+        }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)

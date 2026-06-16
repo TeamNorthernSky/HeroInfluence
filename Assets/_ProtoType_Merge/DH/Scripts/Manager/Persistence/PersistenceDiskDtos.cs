@@ -59,13 +59,12 @@ public class UnitPersistentDataDiskRow
     public int level;
     public int favorability;
     public float currentHp;
-    public float currentInfluence;
-    public bool hasCurrentInfluence;
     public int exp;
     public int maxExp;
     public int currentSkillIndex;
     public int skillLevel;
     public int currentWeaponIndex;
+    public int equippedWeaponInstanceIndex;
     public EquipmentStatBlock currentWeaponStats;
     public StatBlockDisk baseStats;
     public StatBlockDisk levelupStats;
@@ -84,13 +83,12 @@ public class UnitPersistentDataDiskRow
             level = u.Level,
             favorability = u.Favorability,
             currentHp = u.CurrentHp,
-            currentInfluence = u.CurrentInfluence,
-            hasCurrentInfluence = true,
             exp = u.Exp,
             maxExp = u.MaxExp,
             currentSkillIndex = u.CurrentSkillIndex,
             skillLevel = u.SkillLevel,
             currentWeaponIndex = u.CurrentWeaponIndex,
+            equippedWeaponInstanceIndex = u.EquippedWeaponInstanceIndex,
             currentWeaponStats = u.CurrentWeaponStats,
             baseStats = StatBlockDisk.From(u.BaseStats),
             levelupStats = StatBlockDisk.From(u.LevelupStats),
@@ -117,8 +115,7 @@ public class UnitPersistentDataDiskRow
             maxExp,
             eventBonusStats.ToStatBlock(),
             skillLevel,
-            currentInfluence,
-            hasCurrentInfluence);
+            equippedWeaponInstanceIndex);
     }
 }
 
@@ -129,8 +126,6 @@ public class EnemyUnitPersistentDataDiskRow
     public string unitTemplateKey;
     public int level;
     public float currentHp;
-    public float currentInfluence;
-    public bool hasCurrentInfluence;
     public StatBlockDisk baseStats;
     public StatBlockDisk ingameStats;
 
@@ -145,8 +140,6 @@ public class EnemyUnitPersistentDataDiskRow
             unitTemplateKey = u.UnitTemplateKey ?? string.Empty,
             level = u.Level,
             currentHp = u.CurrentHp,
-            currentInfluence = u.CurrentInfluence,
-            hasCurrentInfluence = true,
             baseStats = StatBlockDisk.From(u.BaseStats),
             ingameStats = StatBlockDisk.From(u.IngameStats)
         };
@@ -160,8 +153,6 @@ public class EnemyUnitPersistentDataDiskRow
             level,
             baseStats.ToStatBlock(),
             ingameStats.ToStatBlock(),
-            currentHp,
-            currentInfluence,
-            hasCurrentInfluence);
+            currentHp);
     }
 }

@@ -50,6 +50,10 @@ public class TurnManager : MonoBehaviour
         if (DHGameEndState.IsEnding)
             return;
 
+        // [JC 260615] 턴 전환 시작 → 월드 입력 차단(다음 턴 income 모달 확인 시 해제).
+        // 적 턴 진행 중은 물론, 씬 전환 직후·모달 표시 전의 틈에도 탐사 오브젝트 인터랙션(본부 더블클릭 등)을 막는다.
+        WorldInputGate.IsTurnResolving = true;
+
         StartEnemyTurn();
     }
 
@@ -81,6 +85,7 @@ public class TurnManager : MonoBehaviour
         {
             enemyTurnRunning = false;
             EnemyTurnStateChanged?.Invoke(false);
+            WorldInputGate.IsTurnResolving = false; // [JC 260615] 게임 종료 시 게이트 해제(누수 방지)
             return;
         }
 
@@ -149,6 +154,7 @@ public class TurnManager : MonoBehaviour
         {
             enemyTurnRunning = false;
             EnemyTurnStateChanged?.Invoke(false);
+            WorldInputGate.IsTurnResolving = false; // [JC 260615] 게임 종료 시 게이트 해제(누수 방지)
             yield break;
         }
 
