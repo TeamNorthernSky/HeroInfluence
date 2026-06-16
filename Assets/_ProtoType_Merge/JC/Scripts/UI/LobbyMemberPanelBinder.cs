@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// 로비 Member1~4 모달 각각에 부착. slotIndex(0~3)에 해당하는 본부 상주 파티 멤버 1명을 표시.
@@ -25,7 +26,8 @@ public class LobbyMemberPanelBinder : MonoBehaviour
     [SerializeField] private TMP_Text atkText;
     [SerializeField] private TMP_Text defText;
     [SerializeField] private TMP_Text speedText;
-    [SerializeField] private TMP_Text favorabilityText;
+    [FormerlySerializedAs("favorabilityText")]
+    [SerializeField] private TMP_Text influenceText;
 
     [Header("Empty Slot Handling")]
     [Tooltip("슬롯이 비었을 때 활성화할 GameObject (예: '빈 슬롯' 텍스트, placeholder 이미지)")]
@@ -105,7 +107,7 @@ public class LobbyMemberPanelBinder : MonoBehaviour
         SetText(atkText, $"ATK {s.Atk:F0}");
         SetText(defText, $"DEF {s.DEF:F0}");
         SetText(speedText, $"SPD {s.Speed:F0}");
-        SetText(favorabilityText, $"IP {unit.Favorability}");
+        SetText(influenceText, $"IP {unit.CurrentInfluence:0.#}");
     }
 
     private void ApplyEmpty()
@@ -120,7 +122,7 @@ public class LobbyMemberPanelBinder : MonoBehaviour
         SetText(atkText, string.Empty);
         SetText(defText, string.Empty);
         SetText(speedText, string.Empty);
-        SetText(favorabilityText, string.Empty);
+        SetText(influenceText, string.Empty);
     }
 
     private static void SetText(TMP_Text target, string value)

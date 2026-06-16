@@ -140,7 +140,7 @@ public class TrainingManager : MonoBehaviour
         float newHp = Mathf.Min(data.CurrentHp + hpDelta, newIngame.HP);
 
         return repo.UpdateUnitRuntimeState(
-            unitIndex, data.UnitTemplateKey, data.Level, data.Favorability,
+            unitIndex, data.UnitTemplateKey, data.Level,
             newBase, data.LevelupStats, data.CurrentSkillIndex, data.CurrentWeaponIndex,
             data.CurrentWeaponStats, newIngame, newHp, data.Exp, data.MaxExp);
     }

@@ -4,6 +4,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class DHCsvTemplateCatalog : MonoBehaviour
 {
+    private const float DefaultPlayerBaseInfluence = 100f;
+
     public static DHCsvTemplateCatalog Instance { get; private set; }
 
     [Header("CSV Source (기존)")]
@@ -476,7 +478,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 criticalRate: src.CriticalRate,
                 critMultiplier: 1.5f,
                 counterRate:  src.CounterRate,
-                avoidRate:    src.ReduceRate),
+                avoidRate:    src.ReduceRate,
+                influence:    DefaultPlayerBaseInfluence),
             levelupStats = new StatBlock(
                 hp:  src.LevelGrowthMaxHP,
                 atk: src.LevelGrowthMaxAtk,
