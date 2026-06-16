@@ -58,7 +58,11 @@ public class TrainingModalController : MonoBehaviour
         if (btnTrainAttack != null) btnTrainAttack.onClick.AddListener(() => TrainStat(TrainingStat.Attack));
         if (btnTrainHealth != null) btnTrainHealth.onClick.AddListener(() => TrainStat(TrainingStat.Health));
 
-        if (heroSelectListController != null) heroSelectListController.SetSelectionMode(true);
+        if (heroSelectListController != null)
+        {
+            heroSelectListController.SetSelectionMode(true);
+            heroSelectListController.SetVisitingOnlyMode(true); // [JC 260616] 본부 상주 파티 + 무소속만 트레이닝 대상
+        }
     }
 
     private void OnEnable() { TrySubscribe(); Refresh(); }
@@ -196,7 +200,7 @@ public class TrainingModalController : MonoBehaviour
 
         float currentValue = 0f;
         if (hasSelection && unit != null)
-            currentValue = stat == TrainingStat.Attack ? unit.BaseStats.Atk : unit.BaseStats.HP;
+            currentValue = stat == TrainingStat.Attack ? unit.IngameStats.Atk : unit.IngameStats.HP; // [JC 260616] 표시는 인게임 스탯
 
         int level = hasSelection ? gm.Training.GetLevel(idx, stat) : 0;
         int maxLv = gm.Training.GetMaxTrainableLevel();

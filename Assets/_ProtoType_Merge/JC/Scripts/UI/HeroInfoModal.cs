@@ -84,7 +84,7 @@ public class HeroInfoModal : MonoBehaviour
         string displayClass = template != null && !string.IsNullOrWhiteSpace(template.UnitType)
             ? template.UnitType : "-";
 
-        StatBlock s = unit.BaseStats;
+        StatBlock s = unit.IngameStats; // [JC 260616] 표시는 인게임 스탯(베이스는 내부 연산용·비공개)
 
         SetText(nameText, displayName);
         SetText(classText, displayClass);
