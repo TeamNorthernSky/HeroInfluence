@@ -54,6 +54,9 @@ public class SystemMenuController : MonoBehaviour
         _modal.SetActive(true);
     }
 
+    /// <summary>[JC 260617] 외부(로비 옵션 버튼 등)에서 시스템 메뉴 모달을 연다.</summary>
+    public void OpenMenu() => OpenModal();
+
     private void TogglePause()
     {
         if (_modal == null) return;

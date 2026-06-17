@@ -180,10 +180,10 @@ public class HQStateManager : MonoBehaviour
         switch (d)
         {
             case HQDepartment.Headquarters: return "본부";
-            case HQDepartment.Publicity:    return "홍보";
+            case HQDepartment.Publicity:    return "홍보부";
             case HQDepartment.Workshop:     return "공방";
             case HQDepartment.Research:     return "연구소";
-            case HQDepartment.Training:     return "트레이닝 센터";
+            case HQDepartment.Training:     return "훈련실";
             case HQDepartment.Recruit:      return "모집 센터";
             case HQDepartment.Exchange:     return "교환소";
             default: return d.ToString();
