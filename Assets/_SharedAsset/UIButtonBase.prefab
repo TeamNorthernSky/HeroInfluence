@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 8978035978409982843}
   - component: {fileID: 1554267031488875825}
   - component: {fileID: 5017415554421773883}
+  - component: {fileID: 8584424440380705086}
   m_Layer: 0
   m_Name: UIButtonBase
   m_TagString: Untagged
@@ -169,6 +170,22 @@ MonoBehaviour:
   toggleOnClick: 0
   clickObjects: []
   clickActiveDuration: 0.15
+--- !u!114 &8584424440380705086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2121307353171050079}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 243c345c6c8d8914ebc791a5736387ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  overlay: {fileID: 0}
+  source: {fileID: 0}
+  tint: {r: 1, g: 1, b: 1, a: 0.3}
+  overlayMaterial: {fileID: 2100000, guid: b207aa8211db7f045b2ab901ae937ab8, type: 2}
 --- !u!1 &6191081968033439135
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,8 +243,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.8352941, b: 0.30980393, a: 0.3}
+  m_Material: {fileID: 2100000, guid: b207aa8211db7f045b2ab901ae937ab8, type: 2}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.3}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

@@ -22,10 +22,9 @@ public class TurnIncomeModalController : MonoBehaviour
 
     public void Show(int day, int incomeAmount)
     {
-        if (modalRoot == null) return;
-        if (titleText != null) titleText.text = string.Format(titleFormat, day);
-        if (incomeText != null) incomeText.text = string.Format(incomeFormat, incomeAmount.ToString("N0"));
-        modalRoot.SetActive(true);
+        // [JC 260617] 기획 변경 — 매 턴 시작 자금획득 안내 모달 비표시.
+        //   자금 가산은 호출부(GameManager)에서 이미 처리됨. 여기선 턴 전환 시퀀스만 즉시 종료(월드 입력 차단 해제).
+        WorldInputGate.IsTurnResolving = false;
     }
 
     public void Close()

@@ -12,10 +12,12 @@ using UnityEngine;
 ///   - tier1(기본 제공)은 DH EnsureDefaultWeaponInstance가 부여한 인스턴스를 채택(없으면 fallback 생성).
 ///   - 제작 = WeaponPersistentRepository.CreateWeapon + 자동 장착. 강화 = TryEnhanceWeapon(장착 유닛 ingame 자동 갱신).
 ///
-/// 무기 "스킬 계수"의 전투 반영은 ASB가 단일 WeaponData를 로드하므로 보류(더미). 무기 스탯(HP/ATK/DEF 등)은
-/// 인스턴스 경유로 ingame에 실제 반영된다.
+/// [JC 260617 확인] 전투 실반영 결선 완료: 장착/제작 시 EquipWeaponInstance가 CurrentWeaponIndex(템플릿)+
+///   EquippedWeaponInstanceIndex+IngameStats(레벨별 스탯)를 갱신하고, 전투 진입(CharactorScript)이
+///   LoadPersistentEquipment(…, CurrentWeaponIndex, …, EquippedWeaponInstanceIndex)로 넘기면 ASB가
+///   ResolveWeaponLevel+GetWeaponSkillValueAtLevel로 스킬 계수까지 레벨별 적용한다. (별도 JC 작업 불필요)
 ///
-/// 비용·조건 출처: H.I 자원 데이터 테이블 V1.4 '협회-공방(제작)'/'협회-공방(강화)'.
+/// 비용·조건 출처: H.I 자원 밸런스 데이터 테이블 V1.0 '협회-공방(제작)'/'협회-공방(강화)'.
 /// 무기 인덱스 체계: 310000 + classIndex*100 + tier (tier 1 하급 / 2 중급 / 3 상급).
 /// </summary>
 [DisallowMultipleComponent]
@@ -33,22 +35,23 @@ public class WorkshopManager : MonoBehaviour
     };
 
     // 협회-공방(제작): tier(2 중급 / 3 상급)별 (필요 공방레벨, 자금, 수정). tier1 하급은 기본 보유.
+    // 출처: 자원 밸런스 V1.0 '협회-공방(제작)'.
     private struct CraftCost { public int reqLevel, money, crystal; public CraftCost(int r,int m,int c){reqLevel=r;money=m;crystal=c;} }
     private static readonly Dictionary<int, CraftCost> CraftTable = new Dictionary<int, CraftCost>
     {
-        { 2, new CraftCost(2, 1000,  50) },
-        { 3, new CraftCost(3, 2000, 100) },
+        { 2, new CraftCost(2,  800, 10) },
+        { 3, new CraftCost(3, 1200, 15) },
     };
 
-    // 협회-공방(강화): [tier-1][toLevel-2] → (필요 공방레벨, 자금, 수정).
+    // 협회-공방(강화): [tier-1][toLevel-2] → (필요 공방레벨, 자금, 수정). 출처: 자원 밸런스 V1.0 '협회-공방(강화)'.
     private static readonly int[,,] EnhanceTable =
     {
         // 하급(tier1): toLv2/3/4/5
-        { {1,1000,30}, {2,1500,60}, {3,2000, 90}, {4,2500,120} },
+        { {1,400,5}, {2,600,6}, {3,800, 8}, {4,1000,10} },
         // 중급(tier2)
-        { {2,1500,45}, {2,2000,75}, {3,2500,105}, {4,3000,135} },
+        { {2,600,5}, {2,800,6}, {3,1000,8}, {4,1200,10} },
         // 상급(tier3)
-        { {3,2000,60}, {3,2500,90}, {3,3000,120}, {4,3500,150} },
+        { {3,800,5}, {3,1000,6}, {3,1200,8}, {4,1400,10} },
     };
 
     [Serializable]
@@ -230,6 +233,16 @@ public class WorkshopManager : MonoBehaviour
         bool ok = repo.EquipWeaponInstance(unitIndex, inst);
         if (ok) OnStateChanged?.Invoke();
         return ok;
+    }
+
+    /// <summary>장착 무기가 없으면 기본(tier1)을 장착 — 진입 즉시 장착표시가 뜨도록. (연구소 EnsureDefaultEquipped 대응)</summary>
+    public void EnsureDefaultEquipped(int unitIndex)
+    {
+        if (!TryResolveClass(unitIndex, out _, out int classIndex)) return;
+        int tier1 = WeaponIndexOf(classIndex, 1);
+        EnsureTier1Registered(unitIndex);
+        if (GetEquippedWeaponIndex(unitIndex) == 0)
+            EquipWeapon(unitIndex, tier1);
     }
 
     // ─── 내부 ──────────────────────────────────────────────────

@@ -26,6 +26,13 @@ public class HQLobbyMenuController : MonoBehaviour
     [Header("버튼 (비우면 이름 자동 탐색)")]
     [SerializeField] private Button exitButton;     // BTN_HQLobby_Exit
     [SerializeField] private Button nextTurnButton; // BTN_HQLobby_NextTurn
+    [SerializeField] private Button optionButton;   // BTN_HQLobby_Option → 시스템 메뉴 모달
+    [SerializeField] private Button tooltipButton;  // BTN_HQLobby_Tooltip → 팁&가이드 안내 모달
+
+    [Header("팁&가이드 안내 모달 (비우면 이름 자동 탐색)")]
+    [SerializeField] private GameObject tooltipModal;       // Modal_HQLobby_Tooltip
+    [SerializeField] private string tooltipModalName = "Modal_HQLobby_Tooltip";
+    [SerializeField] private Button tooltipCloseButton;     // 모달 내 나가기 버튼
 
     [Header("턴종료 확인 모달 (편의 기능 — 추후 제거 가능. 비우면 즉시 종료)")]
     [Tooltip("씬 시작 시 active 상태여야 이름 탐색이 됨. Awake에서 자동으로 비활성화함.")]
@@ -47,10 +54,14 @@ public class HQLobbyMenuController : MonoBehaviour
 
         if (exitButton != null) exitButton.onClick.AddListener(OnClickExit);
         if (nextTurnButton != null) nextTurnButton.onClick.AddListener(OnClickNextTurn);
+        if (optionButton != null) optionButton.onClick.AddListener(OnClickOption);
+        if (tooltipButton != null) tooltipButton.onClick.AddListener(OnClickTooltip);
         if (confirmYesButton != null) confirmYesButton.onClick.AddListener(OnClickConfirmYes);
         if (confirmNoButton != null) confirmNoButton.onClick.AddListener(OnClickConfirmNo);
+        if (tooltipCloseButton != null) tooltipCloseButton.onClick.AddListener(OnClickTooltipClose);
 
         if (endTurnConfirmModal != null) endTurnConfirmModal.SetActive(false);
+        if (tooltipModal != null) tooltipModal.SetActive(false);
     }
 
     private void OnEnable() { TrySubscribe(); Refresh(); }
@@ -68,6 +79,13 @@ public class HQLobbyMenuController : MonoBehaviour
 
         if (exitButton == null) exitButton = FindButton("BTN_HQLobby_Exit");
         if (nextTurnButton == null) nextTurnButton = FindButton("BTN_HQLobby_NextTurn");
+        if (optionButton == null) optionButton = FindButton("BTN_HQLobby_Option");
+        if (tooltipButton == null) tooltipButton = FindButton("BTN_HQLobby_Tooltip");
+
+        if (tooltipModal == null && !string.IsNullOrEmpty(tooltipModalName))
+            tooltipModal = GameObject.Find(tooltipModalName);
+        if (tooltipModal != null && tooltipCloseButton == null)
+            tooltipCloseButton = FindChildButton(tooltipModal, "Exit") ?? FindChildButton(tooltipModal, "Close") ?? FindChildButton(tooltipModal, "Cancel");
 
         if (endTurnConfirmModal == null && !string.IsNullOrEmpty(endTurnConfirmModalName))
             endTurnConfirmModal = GameObject.Find(endTurnConfirmModalName);
@@ -120,6 +138,23 @@ public class HQLobbyMenuController : MonoBehaviour
 
     // ─── 버튼 동작 ──────────────────────────────────────────
     private void OnClickExit() => LoadExploration();
+
+    private void OnClickOption()
+    {
+        // 영속 SystemMenuModal(SystemMenuController) 호출.
+        var sys = FindObjectOfType<SystemMenuController>(true);
+        if (sys != null) sys.OpenMenu();
+    }
+
+    private void OnClickTooltip()
+    {
+        if (tooltipModal != null) { tooltipModal.transform.SetAsLastSibling(); tooltipModal.SetActive(true); }
+    }
+
+    private void OnClickTooltipClose()
+    {
+        if (tooltipModal != null) tooltipModal.SetActive(false);
+    }
 
     private void OnClickNextTurn()
     {
