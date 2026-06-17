@@ -12753,6 +12753,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8490994272152972881}
   - component: {fileID: 5975973827853075186}
+  - component: {fileID: 1848067567332158497}
   m_Layer: 0
   m_Name: CommonModel_Supporter
   m_TagString: Untagged
@@ -12820,6 +12821,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1848067567332158497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5586524480614718165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 161a0cce26e60f2408371f6111da8af2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rightWeaponSocketObject: {fileID: 1720290555837367191}
+  leftWeaponSocketObject: {fileID: 8867184021952367170}
+  hitSocketObject: {fileID: 8328088820547745235}
 --- !u!1 &5605972723169788517
 GameObject:
   m_ObjectHideFlags: 0
@@ -19258,6 +19274,38 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8328088820547745235
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2004823936315920561}
+  m_Layer: 0
+  m_Name: HitTargetBone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2004823936315920561
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8328088820547745235}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.0000000063099805, y: 0.000000012738893, z: -0.000000048428763,
+    w: 1}
+  m_LocalPosition: {x: 0, y: -0.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6660898188994277990}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8401466654649857053
 GameObject:
   m_ObjectHideFlags: 0
@@ -19541,6 +19589,7 @@ Transform:
   - {fileID: 4225289561303141206}
   - {fileID: 7484691545072099958}
   - {fileID: 2057170748412693541}
+  - {fileID: 2004823936315920561}
   m_Father: {fileID: 1144853549694664001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8435589810826872625
