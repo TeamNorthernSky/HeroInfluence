@@ -16,7 +16,6 @@ public class LevelEditorWindow : EditorWindow
         LevelEditorBrushType.Event,
         LevelEditorBrushType.Castle,
         LevelEditorBrushType.VillainUnion,
-        LevelEditorBrushType.StayEnemy,
         LevelEditorBrushType.EnemyGroup,
         LevelEditorBrushType.Erase
     };
@@ -29,7 +28,6 @@ public class LevelEditorWindow : EditorWindow
         "Event",
         "Castle",
         "VillainUnion",
-        "StayEnemy",
         "EnemyGroup",
         "Erase"
     };
