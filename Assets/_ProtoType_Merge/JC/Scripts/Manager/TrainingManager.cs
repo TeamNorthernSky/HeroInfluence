@@ -25,14 +25,21 @@ public class TrainingManager : MonoBehaviour
     [Header("영웅별·스탯별 강화 레벨 (영속)")]
     [SerializeField] private List<TrainingEntry> entries = new List<TrainingEntry>();
 
-    // 단계별 수치 — 기획서 H.I_협회 시스템 2.0v 'DB' 시트 기준. 추후 CSV로 갈아끼움.
-    // 트레이닝 레벨 L(0→1, 1→2, 2→3) 진행 시 인덱스 L 사용.
-    // 능력치 증가량(레벨 1/2/3 도달 시): 공격력 +5/+10/+15, 체력 +5/+10/+15 (해당 단계 증가분).
-    public static readonly float[] AtkGainPerLevel = { 5f, 10f, 15f };
-    public static readonly float[] HpGainPerLevel = { 5f, 10f, 15f };
-    // 1회 비용(자금): 레벨 1/2/3 도달.
-    public static readonly int[] CostPerLevel = { 1000, 1200, 1400 };
+    // 단계별 수치 — 기획서(옛 트레이닝 'DB' 시트) 기준. [JC 260617] 인스펙터 편집 가능하도록 직렬화 필드로 전환
+    //   (기획자 확인 후 인스펙터에서 바로 수정). 트레이닝 레벨 L(0→1, 1→2, 2→3) 진행 시 인덱스 L 사용.
+    [Header("단계별 수치 (인스펙터 편집 — 레벨 1/2/3 도달 기준)")]
+    [Tooltip("공격력 강화 증가량 (레벨 1/2/3 도달 시 가산분)")]
+    [SerializeField] private float[] atkGainPerLevel = { 5f, 10f, 15f };
+    [Tooltip("체력 강화 증가량 (레벨 1/2/3 도달 시 가산분)")]
+    [SerializeField] private float[] hpGainPerLevel = { 5f, 10f, 15f };
+    [Tooltip("1회 강화 비용 — 자금 (레벨 1/2/3 도달 시)")]
+    [SerializeField] private int[] costPerLevel = { 1000, 1200, 1400 };
     public const int MaxTrainingLevel = 3;
+
+    // 외부 읽기 접근(표시/툴팁용). 편집은 인스펙터에서.
+    public IReadOnlyList<float> AtkGainPerLevel => atkGainPerLevel;
+    public IReadOnlyList<float> HpGainPerLevel => hpGainPerLevel;
+    public IReadOnlyList<int> CostPerLevel => costPerLevel;
 
     [Serializable]
     public class TrainingEntry
@@ -73,8 +80,8 @@ public class TrainingManager : MonoBehaviour
     {
         int level = GetLevel(unitIndex, stat);
         if (level >= GetMaxTrainableLevel()) return -1;
-        if (level >= CostPerLevel.Length) return -1;
-        return CostPerLevel[level];
+        if (level >= costPerLevel.Length) return -1;
+        return costPerLevel[level];
     }
 
     /// <summary>다음 단계 진행 시 해당 스탯 증가량. 더 못 올리면 0.</summary>
@@ -82,7 +89,7 @@ public class TrainingManager : MonoBehaviour
     {
         int level = GetLevel(unitIndex, stat);
         if (level >= GetMaxTrainableLevel()) return 0f;
-        var table = stat == TrainingStat.Attack ? AtkGainPerLevel : HpGainPerLevel;
+        var table = stat == TrainingStat.Attack ? atkGainPerLevel : hpGainPerLevel;
         if (level >= table.Length) return 0f;
         return table[level];
     }

@@ -45,6 +45,12 @@ public class SortieController : MonoBehaviour
     [SerializeField] private int maxOnField = 4;   // 인스펙터 가변
     [SerializeField] private TextMeshProUGUI stateInfoText;
 
+    [Header("한글 기본 폰트 (런타임 생성 텍스트용. 비우면 슬롯 라벨에서 복사)")]
+    [SerializeField] private TMP_FontAsset hangulFont; // = NotoSansKR-Regular SDF
+
+    [Header("새 파티(무-상주) 모드 상태 안내")]
+    [SerializeField] private string singlePartyStateMessage = "현재 버전에서는 1개 파티만 생성할 수 있습니다.";
+
     [Header("로스터 = 로비 우측 영웅창 (공유)")]
     [SerializeField] private HeroListController rosterController;
     [Tooltip("출전 모달 활성 동안 모달 위로 올릴 영웅창 루트(PNL_Lobby_CurrentParty)")]
@@ -64,8 +70,12 @@ public class SortieController : MonoBehaviour
     // 로스터(영웅창) 임시 전환 상태 복원용
     private bool rosterEngaged;
     private bool rosterOrigSelectionMode;
+    private bool rosterOrigVisitingOnly;
     private int rosterOrigSibling = -1;
     private int sortieBtnOrigSibling = -1;
+
+    // [JC 260616] 진형 편집 모달 활성 동안 로비 나머지를 가리는 반투명 검정 dim
+    private RectTransform dimOverlay;
 
     // 드래그 상태
     private int draggedUnitIndex = -1;
@@ -77,7 +87,9 @@ public class SortieController : MonoBehaviour
 
     private void Awake()
     {
-        if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
+        // [JC 260616] X 닫기도 빈 파티 게이트 경유 (멤버 0명이면 닫기 차단)
+        if (btnClose != null) btnClose.onClick.AddListener(() => TryClose());
+        EnsureStateText();
 
         for (int i = 0; i < slots.Count; i++)
         {
@@ -123,18 +135,17 @@ public class SortieController : MonoBehaviour
         if (rosterController == null || rosterEngaged) return;
         rosterEngaged = true;
         rosterOrigSelectionMode = rosterController.GetSelectionMode();
+        rosterOrigVisitingOnly = rosterController.GetVisitingOnlyMode();
         rosterController.SetSelectionMode(true);
+        // [JC 260616] 출전 로스터 = 본부 상주(방문 파티 + 무소속)만. 탐사 나간 파티 멤버 제외.
+        rosterController.SetVisitingOnlyMode(true);
         rosterController.UnitSelected += OnRosterClicked;
-        if (rosterPanelRoot != null)
-        {
-            rosterOrigSibling = rosterPanelRoot.GetSiblingIndex();
-            rosterPanelRoot.SetAsLastSibling(); // 모달 dim 위로 올려 활성 유지
-        }
-        if (sortieButtonRoot != null)
-        {
-            sortieBtnOrigSibling = sortieButtonRoot.GetSiblingIndex();
-            sortieButtonRoot.SetAsLastSibling(); // 출전 버튼 재클릭(닫기) 가능하도록 위로
-        }
+        // 원래 시블링 인덱스는 재배치 전에 캡처(복원 정확도)
+        if (rosterPanelRoot != null) rosterOrigSibling = rosterPanelRoot.GetSiblingIndex();
+        if (sortieButtonRoot != null) sortieBtnOrigSibling = sortieButtonRoot.GetSiblingIndex();
+        ShowDim(); // 모달 외부를 가리는 dim → 모달은 dim 위로 (로스터/출전버튼은 그 위로 올라감)
+        if (rosterPanelRoot != null) rosterPanelRoot.SetAsLastSibling(); // 모달 dim 위로 올려 활성 유지
+        if (sortieButtonRoot != null) sortieButtonRoot.SetAsLastSibling(); // 출전 버튼 재클릭(닫기) 가능하도록 위로
         rosterController.Rebuild();
         AttachRosterDragItems();
     }
@@ -143,10 +154,12 @@ public class SortieController : MonoBehaviour
     {
         if (!rosterEngaged) return;
         rosterEngaged = false;
+        HideDim();
         if (rosterController != null)
         {
             rosterController.UnitSelected -= OnRosterClicked;
             rosterController.SetSelectionMode(rosterOrigSelectionMode);
+            rosterController.SetVisitingOnlyMode(rosterOrigVisitingOnly);
             rosterController.Rebuild(); // 일반 동작(영웅 정보)로 복귀
         }
         if (rosterPanelRoot != null && rosterOrigSibling >= 0)
@@ -337,7 +350,10 @@ public class SortieController : MonoBehaviour
         for (int i = 0; i < formation.Count; i++) formation[i] = 0;
         var repo = PartyPersistentRepository.Instance;
         if (repo == null) return;
-        if (!repo.TryGetParty(ResolvePartyId(repo), out var party) || party == null) return;
+        string partyId = ResolvePartyId(repo);
+        // [JC 260616] 상주(방문) 파티가 없으면 진형을 로드하지 않는다 → 탐사 나간 파티 진형이 보이지 않음
+        if (string.IsNullOrWhiteSpace(partyId)) return;
+        if (!repo.TryGetParty(partyId, out var party) || party == null) return;
         var src = party.UnitIndices;
         for (int i = 0; i < formation.Count && i < src.Count; i++)
             formation[i] = src[i];
@@ -353,8 +369,13 @@ public class SortieController : MonoBehaviour
     {
         var repo = PartyPersistentRepository.Instance;
         if (repo == null) return;
+        string partyId = ResolvePartyId(repo);
+        // [JC 260616] 상주 파티가 없으면 저장하지 않는다(빈 파티/새 파티 자동 생성 차단)
+        if (string.IsNullOrWhiteSpace(partyId)) return;
         int last = -1;
         for (int i = 0; i < formation.Count; i++) if (formation[i] > 0) last = i;
+        // [JC 260616] 멤버 0명이면 빈 파티를 등록하지 않는다(닫기 게이트로 도달 불가하나 방어적 차단)
+        if (last < 0) return;
         var ordered = new List<int>();
         var unitSlots = new List<int>();
         for (int i = 0; i <= last; i++)
@@ -364,14 +385,93 @@ public class SortieController : MonoBehaviour
             // 전투 슬롯 전/후열 그룹에 맞추기 위해 그룹 교환: 좌열→슬롯4~6, 우열→슬롯1~3 (상중하 순서 유지)
             unitSlots.Add(i < 3 ? i + 4 : i - 2);
         }
-        repo.RegisterOrUpdateParty(ResolvePartyId(repo), ordered, unitSlots);
+        repo.RegisterOrUpdateParty(partyId, ordered, unitSlots);
     }
 
+    // [JC 260616] 출전 메뉴는 "본부 상주(방문중) 파티"만 다룬다. 폴백으로 Parties[0]을 잡던
+    // 이전 동작은 탐사 나간 파티 진형을 그대로 노출하던 버그였으므로 제거.
     private string ResolvePartyId(PartyPersistentRepository repo)
     {
-        if (!string.IsNullOrWhiteSpace(targetPartyId)) return targetPartyId;
-        if (repo.Parties != null && repo.Parties.Count > 0) return repo.Parties[0].PartyId;
-        return "player_party";
+        if (!string.IsNullOrWhiteSpace(targetPartyId) && IsPartyVisiting(targetPartyId))
+            return targetPartyId;
+        return ResolveResidentPartyId();
+    }
+
+    private static bool IsPartyVisiting(string id)
+    {
+        var v = HQVisitState.Instance;
+        return v != null && v.IsPartyVisiting(id);
+    }
+
+    /// <summary>본부에 상주(방문중)인 첫 파티 ID. 없으면 null. 현재 버전은 파티 1개 한정이라 사실상 유일.</summary>
+    public static string ResolveResidentPartyId()
+    {
+        var partyRepo = PartyPersistentRepository.Instance;
+        var visit = HQVisitState.Instance;
+        if (partyRepo == null || visit == null) return null;
+        for (int p = 0; p < partyRepo.Parties.Count; p++)
+        {
+            var party = partyRepo.Parties[p];
+            if (party == null) continue;
+            if (visit.IsPartyVisiting(party.PartyId)) return party.PartyId;
+        }
+        return null;
+    }
+
+    /// <summary>출전 가능 영웅 수 = 상주 파티 멤버 + 무소속(어느 파티에도 없는 본부 잔류). 출전 버튼 활성/메시지 분기에 사용.</summary>
+    public static int CountDeployableHeroes()
+    {
+        var unitRepo = PersistentUnitRepository.Instance;
+        if (unitRepo == null) return 0;
+        var partyRepo = PartyPersistentRepository.Instance;
+
+        var allMembers = new HashSet<int>();
+        if (partyRepo != null)
+            for (int p = 0; p < partyRepo.Parties.Count; p++)
+            {
+                var party = partyRepo.Parties[p];
+                if (party == null) continue;
+                for (int u = 0; u < party.UnitIndices.Count; u++)
+                    if (party.UnitIndices[u] > 0) allMembers.Add(party.UnitIndices[u]);
+            }
+
+        int count = 0;
+        // 상주 파티 멤버
+        string resident = ResolveResidentPartyId();
+        if (resident != null && partyRepo != null && partyRepo.TryGetParty(resident, out var rp) && rp != null)
+            for (int u = 0; u < rp.UnitIndices.Count; u++)
+                if (rp.UnitIndices[u] > 0) count++;
+        // 무소속(어느 파티에도 편성되지 않은 영웅)
+        for (int u = 0; u < unitRepo.Units.Count; u++)
+        {
+            var unit = unitRepo.Units[u];
+            if (unit == null) continue;
+            if (!allMembers.Contains(unit.UnitIndex)) count++;
+        }
+        return count;
+    }
+
+    /// <summary>본부 상주(방문중) 파티가 있는지. 없으면 출전=새 파티 생성에 해당(현재 버전 차단 대상).</summary>
+    public bool HasResidentParty => !string.IsNullOrEmpty(ResolveResidentPartyId());
+
+    /// <summary>현재 진형에 편성된 인원 수(외부 게이트 판정용).</summary>
+    public int FilledCount => CountFilled();
+
+    /// <summary>외부(출전 버튼 게이트)에서 상태 메시지(붉은색)를 띄운다.</summary>
+    public void ShowStateMessage(string msg) => ShowWarning(msg);
+
+    /// <summary>외부(출전 버튼 게이트)에서 닫기 요청. 상주 파티가 있을 때 멤버 0명이면 닫지 않고 false 반환.</summary>
+    public bool TryClose()
+    {
+        // [JC 260616] 상주 파티가 있을 때만 빈 파티(0명) 닫기 차단. 무-상주(새 파티 편성) 모드는
+        // 저장이 no-op이라 빈 파티가 생기지 않으므로 자유롭게 닫기(취소) 허용.
+        if (HasResidentParty && CountFilled() == 0)
+        {
+            ShowWarning("최소 1명 이상 편성해야 합니다.");
+            return false;
+        }
+        CloseModal();
+        return true;
     }
 
     // ─── Refresh ────────────────────────────────────────────
@@ -398,7 +498,10 @@ public class SortieController : MonoBehaviour
         }
         UpdateSlotColors();
 
-        if (stateInfoText != null && count == 0)
+        // [JC 260616] 무-상주(새 파티 생성) 모드는 진입 시점부터 추가생성 불가 안내를 상시 표시
+        if (!HasResidentParty)
+            ShowWarning(singlePartyStateMessage);
+        else if (count == 0)
             ShowState("영웅창에서 영웅을 선택해 편성하세요.");
         else if (stateInfoText != null)
             stateInfoText.gameObject.SetActive(false);
@@ -411,11 +514,91 @@ public class SortieController : MonoBehaviour
         return c;
     }
 
-    private void ShowState(string msg)
+    private void ShowState(string msg) => ShowState(msg, Color.white);
+
+    private void ShowState(string msg, Color color)
     {
+        EnsureStateText();
         if (stateInfoText == null) return;
         stateInfoText.gameObject.SetActive(true);
+        stateInfoText.color = color;
         stateInfoText.text = msg;
+    }
+
+    // [JC 260616] 빈 파티 닫기 차단 등 경고는 붉은색으로 강조
+    private void ShowWarning(string msg) => ShowState(msg, new Color(0.95f, 0.27f, 0.27f, 1f));
+
+    // [JC 260616] stateInfoText 미바인딩 시 모달 하단에 런타임 안내/경고 텍스트 생성
+    private void EnsureStateText()
+    {
+        if (stateInfoText != null) return;
+        Transform parent = modalRoot != null ? modalRoot.transform : transform;
+        var go = new GameObject("SortieStateText", typeof(RectTransform));
+        go.transform.SetParent(parent, false);
+        var rt = (RectTransform)go.transform;
+        rt.anchorMin = new Vector2(0.5f, 0f);
+        rt.anchorMax = new Vector2(0.5f, 0f);
+        rt.pivot = new Vector2(0.5f, 0f);
+        rt.anchoredPosition = new Vector2(0f, 24f);
+        rt.sizeDelta = new Vector2(560f, 44f);
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.fontSize = 20f;
+        tmp.color = Color.white;
+        tmp.raycastTarget = false;
+        var f = ResolveHangulFont();
+        if (f != null) tmp.font = f;
+        rt.SetAsLastSibling();
+        stateInfoText = tmp;
+    }
+
+    // [JC 260616] 런타임 생성 텍스트용 한글 기본 폰트(NotoSansKR-Regular SDF). 미바인딩이면 슬롯 라벨에서 복사.
+    private TMP_FontAsset ResolveHangulFont()
+    {
+        if (hangulFont != null) return hangulFont;
+        for (int i = 0; i < slots.Count; i++)
+            if (slots[i] != null && slots[i].label != null && slots[i].label.font != null) return slots[i].label.font;
+        return null;
+    }
+
+    // [JC 260616] 모달 외부를 가리는 반투명 검정 dim. 모달 바로 아래 시블링에 둔다.
+    private void EnsureDim()
+    {
+        if (dimOverlay != null || modalRoot == null) return;
+        Transform parent = modalRoot.transform.parent != null
+            ? modalRoot.transform.parent
+            : (rootCanvas != null ? rootCanvas.transform : transform);
+        var go = new GameObject("SortieDimOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        dimOverlay = go.GetComponent<RectTransform>();
+        dimOverlay.SetParent(parent, false);
+        dimOverlay.anchorMin = Vector2.zero;
+        dimOverlay.anchorMax = Vector2.one;
+        dimOverlay.offsetMin = Vector2.zero;
+        dimOverlay.offsetMax = Vector2.zero;
+        var img = go.GetComponent<Image>();
+        img.color = new Color(0f, 0f, 0f, 0.6f);
+        img.raycastTarget = true; // 외부 클릭 차단(모달 강제 포커스)
+        go.SetActive(false);
+    }
+
+    private void ShowDim()
+    {
+        EnsureDim();
+        if (dimOverlay == null || modalRoot == null) return;
+        dimOverlay.gameObject.SetActive(true);
+        // [JC 260616 fix] 결정적 레이어링: dim을 맨 위로 올린 뒤 모달을 그 위로 → [dim][modal].
+        // (SetSiblingIndex 중간삽입은 재오픈 시 dim이 모달 위로 올라가 편집을 가리던 버그)
+        // 이후 EngageRoster가 로스터/출전버튼을 모달 위로 올린다.
+        if (dimOverlay.parent == modalRoot.transform.parent)
+        {
+            dimOverlay.SetAsLastSibling();
+            modalRoot.transform.SetAsLastSibling();
+        }
+    }
+
+    private void HideDim()
+    {
+        if (dimOverlay != null) dimOverlay.gameObject.SetActive(false);
     }
 
     private static string ResolveHeroName(int unitIndex)

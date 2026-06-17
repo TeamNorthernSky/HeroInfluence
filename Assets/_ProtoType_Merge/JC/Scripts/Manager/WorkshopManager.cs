@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 공방(Workshop) 시스템 영속 매니저. GameManager 영속 자식. TrainingManager 패턴 복제.
-/// 무기(코어) 제작 / 강화 / 장착을 다룬다.
-///   1) 무기 장착 — CurrentWeaponIndex + CurrentWeaponStats(레벨 반영) writeback + ingame 재계산 (실결선/비침습).
-///   2) 무기 스탯 강화 — DHCsvTemplateCatalog.TryGetWeaponBonusAtLevel로 레벨별 스탯 적용 (실결선).
-///   3) 무기 제작 — 영웅별 보유 무기 집합에 추가 (JC측 in-memory).
+/// 공방(Workshop) 시스템 영속 매니저. GameManager 영속 자식.
 ///
-/// ※ seam 정책([[feedback_seam_interface_policy]]): 무기 "스킬 계수"의 전투 반영은 ASB가 단일 WeaponData를
-///   로드하므로 보류(더미). 무기 스탯(HP/ATK/DEF 등)은 currentWeaponStats 경유로 실제 반영된다.
+/// [JC 260616] 무기 보유/강화를 DH 신규 WeaponPersistentRepository "인스턴스" 모델로 결선(레거시 CurrentWeaponStats 제거).
+///   - 무기 인스턴스(레벨·스탯)는 WeaponPersistentRepository가 보유. 유닛은 EquippedWeaponInstanceIndex로 장착 참조.
+///   - 무기 소유는 "히어로 종속"(같은 클래스라도 공유 안 함): (unitIndex, weaponTemplate)→instanceIndex 임시 매핑.
+///     ※ 임시 — 추후 DH 영속(PersistentUnitRepository 계열)으로 소유권 이관 예정.
+///   - tier1(기본 제공)은 DH EnsureDefaultWeaponInstance가 부여한 인스턴스를 채택(없으면 fallback 생성).
+///   - 제작 = WeaponPersistentRepository.CreateWeapon + 자동 장착. 강화 = TryEnhanceWeapon(장착 유닛 ingame 자동 갱신).
 ///
-/// 비용·조건 출처: H.I 자원 데이터 테이블 V1.4 '협회-공방(제작)'/'협회-공방(강화)' 시트.
+/// 무기 "스킬 계수"의 전투 반영은 ASB가 단일 WeaponData를 로드하므로 보류(더미). 무기 스탯(HP/ATK/DEF 등)은
+/// 인스턴스 경유로 ingame에 실제 반영된다.
+///
+/// 비용·조건 출처: H.I 자원 데이터 테이블 V1.4 '협회-공방(제작)'/'협회-공방(강화)'.
 /// 무기 인덱스 체계: 310000 + classIndex*100 + tier (tier 1 하급 / 2 중급 / 3 상급).
 /// </summary>
 [DisallowMultipleComponent]
@@ -52,11 +55,11 @@ public class WorkshopManager : MonoBehaviour
     public class WeaponEntry
     {
         public int unitIndex;
-        public int weaponIndex;
-        public int level = BaseWeaponLevel; // 강화 레벨 1~5
+        public int weaponIndex;    // 무기 템플릿 인덱스(310101 등)
+        public int instanceIndex;  // WeaponPersistentRepository 인스턴스 인덱스
     }
 
-    [Header("영웅별 보유 무기 + 강화 레벨 (영속)")]
+    [Header("영웅별 보유 무기 → 인스턴스 매핑 (임시, 세션 영속)")]
     [SerializeField] private List<WeaponEntry> entries = new List<WeaponEntry>();
 
     private readonly Dictionary<long, WeaponEntry> lookup = new Dictionary<long, WeaponEntry>();
@@ -107,11 +110,18 @@ public class WorkshopManager : MonoBehaviour
     }
 
     // ─── 보유 여부 ─────────────────────────────────────────────
-    /// <summary>하급(tier1)은 기본 보유. 그 외는 제작해야 보유.</summary>
+    /// <summary>하급(tier1)은 기본 보유(DH 기본 무기 인스턴스). 그 외는 제작해야 보유.</summary>
     public bool IsOwned(int unitIndex, int weaponIndex)
     {
-        if (TierOf(weaponIndex) == 1) return true;
+        if (TierOf(weaponIndex) == 1) { EnsureTier1Registered(unitIndex); return true; }
         return lookup.ContainsKey(Key(unitIndex, weaponIndex));
+    }
+
+    /// <summary>해당 (영웅,무기템플릿)의 무기 인스턴스 인덱스. 미보유면 0.</summary>
+    private int GetInstanceIndex(int unitIndex, int weaponIndex)
+    {
+        if (TierOf(weaponIndex) == 1) EnsureTier1Registered(unitIndex);
+        return lookup.TryGetValue(Key(unitIndex, weaponIndex), out var e) ? e.instanceIndex : 0;
     }
 
     // ─── 제작 ──────────────────────────────────────────────────
@@ -132,12 +142,18 @@ public class WorkshopManager : MonoBehaviour
         return GetDepartmentLevel() >= reqLevel;
     }
 
-    /// <summary>무기 제작: 보유 집합에 추가(레벨 1). 자원 차감은 호출자 별도. 제작 후 자동 장착(기획서).</summary>
+    /// <summary>무기 제작: 인스턴스 생성 + 보유 등록 + 자동 장착(기획서). 자원 차감은 호출자 별도.</summary>
     public bool TryCraft(int unitIndex, int weaponIndex)
     {
         if (!CanCraft(unitIndex, weaponIndex)) return false;
-        GetOrCreateEntry(unitIndex, weaponIndex); // 레벨 1로 보유 등록
-        EquipWeapon(unitIndex, weaponIndex);      // 기획서: 제작한 무기 자동 장착
+        var weaponRepo = WeaponPersistentRepository.Instance;
+        if (weaponRepo == null) return false;
+
+        int inst = weaponRepo.CreateWeapon(weaponIndex);
+        if (inst <= 0) return false;
+
+        RegisterEntry(unitIndex, weaponIndex, inst);
+        EquipWeapon(unitIndex, weaponIndex); // 기획서: 제작한 무기 자동 장착
         OnStateChanged?.Invoke();
         return true;
     }
@@ -145,8 +161,11 @@ public class WorkshopManager : MonoBehaviour
     // ─── 강화 ──────────────────────────────────────────────────
     public int GetWeaponLevel(int unitIndex, int weaponIndex)
     {
-        return lookup.TryGetValue(Key(unitIndex, weaponIndex), out var e) ? e.level
-             : (TierOf(weaponIndex) == 1 ? BaseWeaponLevel : 0); // 미보유는 0
+        int inst = GetInstanceIndex(unitIndex, weaponIndex);
+        var weaponRepo = WeaponPersistentRepository.Instance;
+        if (inst > 0 && weaponRepo != null && weaponRepo.TryGetWeapon(inst, out var data) && data != null)
+            return data.Level;
+        return TierOf(weaponIndex) == 1 ? BaseWeaponLevel : 0; // tier1은 기본 보유, 그 외 미보유=0
     }
 
     public bool GetEnhanceCost(int weaponIndex, int currentLevel, out int reqLevel, out int money, out int crystal)
@@ -172,74 +191,80 @@ public class WorkshopManager : MonoBehaviour
         return GetDepartmentLevel() >= reqLevel;
     }
 
-    /// <summary>무기 강화 한 단계: 레벨 +1. 장착 중이면 currentWeaponStats 즉시 재적용(실 스탯 반영).</summary>
+    /// <summary>무기 강화 한 단계: 인스턴스 레벨 +1. 장착 유닛 ingame은 WeaponPersistentRepository가 자동 갱신.</summary>
     public bool TryEnhance(int unitIndex, int weaponIndex)
     {
         if (!CanEnhance(unitIndex, weaponIndex)) return false;
-        var e = GetOrCreateEntry(unitIndex, weaponIndex);
-        e.level = Mathf.Min(MaxWeaponLevel, e.level + 1);
+        int inst = GetInstanceIndex(unitIndex, weaponIndex);
+        var weaponRepo = WeaponPersistentRepository.Instance;
+        if (inst <= 0 || weaponRepo == null) return false;
 
-        if (GetEquippedWeaponIndex(unitIndex) == weaponIndex)
-            EquipWeapon(unitIndex, weaponIndex); // 스탯 재적용
-
+        if (!weaponRepo.TryEnhanceWeapon(inst)) return false;
         OnStateChanged?.Invoke();
         return true;
     }
 
     // ─── 장착 ──────────────────────────────────────────────────
+    /// <summary>현재 장착 무기의 "템플릿 인덱스"(UI 강조용). 미장착/불명이면 0.</summary>
     public int GetEquippedWeaponIndex(int unitIndex)
     {
         var repo = PersistentUnitRepository.Instance;
-        if (repo != null && repo.TryGetUnit(unitIndex, out var d) && d != null) return d.CurrentWeaponIndex;
+        var weaponRepo = WeaponPersistentRepository.Instance;
+        if (repo == null || weaponRepo == null) return 0;
+        if (!repo.TryGetUnit(unitIndex, out var d) || d == null) return 0;
+        int inst = d.EquippedWeaponInstanceIndex;
+        if (inst > 0 && weaponRepo.TryGetWeaponTemplateKey(inst, out int templateKey))
+            return templateKey;
         return 0;
     }
 
-    /// <summary>장착 무기 변경 — currentWeaponIndex + 레벨 반영 currentWeaponStats writeback + ingame 재계산.</summary>
+    /// <summary>장착 무기 변경 — 해당 무기 인스턴스를 유닛에 장착(ingame은 DH가 재계산).</summary>
     public bool EquipWeapon(int unitIndex, int weaponIndex)
     {
-        var repo = PersistentUnitRepository.Instance;
-        var catalog = DHCsvTemplateCatalog.Instance;
-        if (repo == null || catalog == null) return false;
-        if (!repo.TryGetUnit(unitIndex, out var d) || d == null) return false;
         if (!IsOwned(unitIndex, weaponIndex)) return false;
+        int inst = GetInstanceIndex(unitIndex, weaponIndex);
+        if (inst <= 0) return false;
+        var repo = PersistentUnitRepository.Instance;
+        if (repo == null) return false;
 
-        int level = Mathf.Max(BaseWeaponLevel, GetWeaponLevel(unitIndex, weaponIndex));
-        EquipmentStatBlock weaponStats = ResolveWeaponStats(weaponIndex, level);
-
-        var levelUpTemplates = catalog.GetLevelUpTemplates();
-        StatBlock newIngame = UnitStatCalculator.CalculateIngameStats(
-            d.BaseStats, d.LevelupStats, d.Level, weaponStats, levelUpTemplates);
-
-        // 최대 체력 변화에 맞춰 현재 HP 클램프(상한만; 협회 방문은 회복 보장).
-        float newHp = Mathf.Min(d.CurrentHp, newIngame.HP);
-
-        bool ok = repo.UpdateUnitRuntimeState(
-            unitIndex, d.UnitTemplateKey, d.Level,
-            d.BaseStats, d.LevelupStats, d.CurrentSkillIndex, weaponIndex,
-            weaponStats, newIngame, newHp, d.Exp, d.MaxExp);
-
+        bool ok = repo.EquipWeaponInstance(unitIndex, inst);
         if (ok) OnStateChanged?.Invoke();
         return ok;
     }
 
-    private EquipmentStatBlock ResolveWeaponStats(int weaponIndex, int level)
+    // ─── 내부 ──────────────────────────────────────────────────
+    /// <summary>tier1(기본 무기) 인스턴스를 보유 매핑에 등록. DH 기본 인스턴스를 채택, 없으면 생성.</summary>
+    private void EnsureTier1Registered(int unitIndex)
     {
-        var catalog = DHCsvTemplateCatalog.Instance;
-        if (catalog != null && catalog.TryGetWeaponBonusAtLevel(weaponIndex, level, out StatBlock b))
+        if (!TryResolveClass(unitIndex, out _, out int classIndex)) return;
+        int tier1 = WeaponIndexOf(classIndex, 1);
+        if (lookup.ContainsKey(Key(unitIndex, tier1))) return;
+
+        var repo = PersistentUnitRepository.Instance;
+        var weaponRepo = WeaponPersistentRepository.Instance;
+        if (repo == null || weaponRepo == null) return;
+
+        repo.EnsureDefaultWeaponInstance(unitIndex); // 기본 무기 인스턴스 보장(idempotent)
+        if (repo.TryGetUnit(unitIndex, out var d) && d != null)
         {
-            return new EquipmentStatBlock(b.HP, b.Atk, b.DEF, b.CriticalRate, b.CounterRate, b.AvoidRate, b.Speed);
+            int equipped = d.EquippedWeaponInstanceIndex;
+            if (equipped > 0 && weaponRepo.TryGetWeaponTemplateKey(equipped, out int tk) && tk == tier1)
+            {
+                RegisterEntry(unitIndex, tier1, equipped); // DH 기본 인스턴스 채택
+                return;
+            }
         }
-        if (catalog != null && catalog.TryGetWeaponStats(weaponIndex, out EquipmentStatBlock eq))
-            return eq;
-        return default;
+
+        // fallback: 기본 인스턴스를 못 찾으면(이미 다른 무기 장착 등) tier1 인스턴스 생성
+        int created = weaponRepo.CreateWeapon(tier1);
+        if (created > 0) RegisterEntry(unitIndex, tier1, created);
     }
 
-    // ─── 내부 ──────────────────────────────────────────────────
-    private WeaponEntry GetOrCreateEntry(int unitIndex, int weaponIndex)
+    private WeaponEntry RegisterEntry(int unitIndex, int weaponIndex, int instanceIndex)
     {
         long k = Key(unitIndex, weaponIndex);
-        if (lookup.TryGetValue(k, out var e)) return e;
-        e = new WeaponEntry { unitIndex = unitIndex, weaponIndex = weaponIndex, level = BaseWeaponLevel };
+        if (lookup.TryGetValue(k, out var e)) { e.instanceIndex = instanceIndex; return e; }
+        e = new WeaponEntry { unitIndex = unitIndex, weaponIndex = weaponIndex, instanceIndex = instanceIndex };
         entries.Add(e);
         lookup[k] = e;
         return e;
