@@ -73,6 +73,28 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// [JC 260617] 새 게임 전체 초기화 — 첫 실행과 동일 상태로.
+    /// 호출 시점: 새 게임 시작(GameLoadGate) + 타이틀 복귀(시스템메뉴/엔딩). 두 경로 모두에서 안전하게 멱등 호출.
+    /// JC 영속(턴/자원/본부/홍보/훈련/연구소/공방) + DH 영속(유닛/적/파티/무기/맵진행/방문/전투컨텍스트)을 모두 리셋.
+    /// </summary>
+    public void ResetForNewGame()
+    {
+        currentDay = 1;
+        pendingEndTurnOnExploration = false;
+
+        if (Economy != null) Economy.ResetAll();
+        if (HQ != null) HQ.Reset();
+        if (Publicity != null) Publicity.Reset();
+        if (Training != null) Training.Reset();
+        if (Lab != null) Lab.Reset();
+        if (Workshop != null) Workshop.Reset();
+
+        DHGameProgressResetService.ResetDHProgress(); // DH 레포 + HQVisit + CombatContext + MapProgress + DHGameEndState
+
+        UnityEngine.Debug.Log("[GameManager] ResetForNewGame — 전체 영속 상태를 첫 실행값으로 초기화");
+    }
+
     private void Awake()
     {
         if (Instance != null)

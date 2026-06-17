@@ -34,6 +34,9 @@ public class GameLoadGate : MonoBehaviour
     {
         Debug.Log("[GameLoadGate] Begin. Loading DHScene additive...");
 
+        // [JC 260617] 새 게임 시작 시 전체 영속 상태 초기화(첫 실행과 동일). DHScene 부트스트랩 전에 클리어.
+        if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
+
         // [JC 260514] GameSceneManager Instance 경유 (fallback SceneManager).
         var op = GameSceneManager.Instance != null
             ? GameSceneManager.Instance.LoadSceneAsync(dhSceneName, LoadSceneMode.Additive)
