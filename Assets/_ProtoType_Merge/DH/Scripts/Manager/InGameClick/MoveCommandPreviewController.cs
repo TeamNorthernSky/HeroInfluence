@@ -158,6 +158,12 @@ public class MoveCommandPreviewController
 
     public void HandlePathUpdated(List<Vector2Int> remainingPath)
     {
+        if (remainingPath == null || remainingPath.Count <= 1)
+        {
+            ClearPreview();
+            return;
+        }
+
         if (pathPreviewRenderer == null)
             return;
 

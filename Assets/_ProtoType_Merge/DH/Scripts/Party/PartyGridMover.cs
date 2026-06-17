@@ -19,6 +19,7 @@ public class PartyGridMover : MonoBehaviour
 
     private readonly Queue<Vector2Int> pathQueue = new Queue<Vector2Int>();
     private bool isMoving;
+    private bool stopRequested;
     private Vector2Int currentGrid;
     private float fixedY;
     private PartyMovePointController movePointController;
@@ -107,6 +108,7 @@ public class PartyGridMover : MonoBehaviour
 
             if (reachedPathEnd && pathQueue.Count == 0)
             {
+                stopRequested = false;
                 SetMoving(false);
                 TargetInteractionGrid = null;
                 MoveCompleted?.Invoke();
@@ -140,6 +142,7 @@ public class PartyGridMover : MonoBehaviour
     {
         pathQueue.Clear();
         SetMoving(false);
+        stopRequested = false;
         TargetInteractionGrid = null;
         currentGrid = grid;
 
@@ -163,27 +166,41 @@ public class PartyGridMover : MonoBehaviour
     public void StopMovement()
     {
         if (!isMoving && pathQueue.Count == 0) return;
-        pathQueue.Clear();
-        SetMoving(false);
-        TargetInteractionGrid = null;
+        if (stopRequested) return;
 
-        if (gridManager == null) return;
+        if (gridManager == null)
+        {
+            pathQueue.Clear();
+            SetMoving(false);
+            TargetInteractionGrid = null;
+            NotifyPathUpdated();
+            return;
+        }
 
         Vector2Int previousGrid = currentGrid;
         int previousMP = movePointController != null ? movePointController.RemainingMovePoints : -1;
-
         Vector2Int nearestGrid = gridManager.WorldToGrid(transform.position);
-        if (nearestGrid != previousGrid)
+        if (nearestGrid != previousGrid && pathQueue.Count > 0)
         {
             // 다음 셀로 80% 이상 진행한 상태에서 정지 → 한 셀 진행 처리
-            currentGrid = nearestGrid;
-            movePointController?.SpendStep();
+            Vector2Int stopGrid = pathQueue.Peek();
+            pathQueue.Clear();
+            pathQueue.Enqueue(stopGrid);
+            TargetInteractionGrid = null;
+            stopRequested = true;
+            NotifyPathUpdated();
+            return;
         }
+
+        pathQueue.Clear();
+        SetMoving(false);
+        TargetInteractionGrid = null;
 
         Vector3 worldPos = gridManager.GridToWorldCenter(currentGrid);
         worldPos.y = fixedY;
         transform.position = worldPos;
         PersistLastGrid();
+        NotifyPathUpdated();
 
         if (logStopMovement)
         {
@@ -251,6 +268,7 @@ public class PartyGridMover : MonoBehaviour
         TargetInteractionGrid = interactionTarget;
         pathQueue.Clear();
         SetMoving(false);
+        stopRequested = false;
 
         if (!HasAnyValidPartyUnit())
         {
