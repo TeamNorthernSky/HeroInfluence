@@ -6,12 +6,14 @@ using UnityEngine.UI;
 public class SkillSelectionPanel : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI unitNameText;
+    [SerializeField] private TextMeshProUGUI rankText;
     [SerializeField] private TextMeshProUGUI levelUpText;
     [SerializeField] private TMP_Dropdown skillDropdown;
     [SerializeField] private Button confirmButton;
     [SerializeField] private Button cancelButton;
     [SerializeField] private TextMeshProUGUI prevSkillText;
     [SerializeField] private TextMeshProUGUI nextSkillText;
+    [SerializeField] private Transform portrait;
 
     private List<int> candidateSkillIds = new List<int>();
 
@@ -41,8 +43,29 @@ public class SkillSelectionPanel : MonoBehaviour
         if (unitNameText != null)
             unitNameText.text = preview.UnitName;
 
+        if (rankText != null)
+            rankText.text = GetRank(preview.NewLevel).ToString();
+
         if (levelUpText != null)
             levelUpText.text = $"Lv.{preview.OldLevel} → {preview.NewLevel}";
+
+        // 초상화
+        if (portrait != null)
+        {
+            Sprite sp = HeroInfoResult.LoadPortraitByPartySlot(preview.UnitIndex);
+            if (sp != null)
+            {
+                GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(RawImage));
+                rawObj.transform.SetParent(portrait, false);
+                rawObj.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
+                RectTransform rt = rawObj.GetComponent<RectTransform>();
+                rt.anchorMin = Vector2.zero;
+                rt.anchorMax = Vector2.one;
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                rawObj.GetComponent<RawImage>().texture = sp.texture;
+            }
+        }
 
         // 현재 ClassSkill 정보 표시
         SkillData currentSkill = DHCsvTemplateCatalog.Instance?.GetSkillTemplate(preview.CurrentClassSkillId);
@@ -82,6 +105,21 @@ public class SkillSelectionPanel : MonoBehaviour
 
         SkillData nextSkill = DHCsvTemplateCatalog.Instance?.GetSkillTemplate(candidateSkillIds[index]);
         nextSkillText.text = nextSkill != null ? SkillDescriptionBuilder.Build(nextSkill) : "-";
+    }
+
+    private static char GetRank(int level)
+    {
+        var templates = DHCsvTemplateCatalog.Instance?.GetLevelUpTemplates();
+        if (templates == null) return '-';
+
+        LevelUpData match = null;
+        foreach (var row in templates)
+        {
+            if (row.level <= level) match = row;
+            else break;
+        }
+
+        return match != null && match.Rank != '\0' ? match.Rank : '-';
     }
 
     private void OnConfirm()
