@@ -56,6 +56,14 @@ public class TrainingManager : MonoBehaviour
         RebuildLookup();
     }
 
+    /// <summary>[JC 260617] 새 게임 초기화 — 영웅별 강화 레벨 전체 제거(첫 실행=빈 상태).</summary>
+    public void Reset()
+    {
+        entries.Clear();
+        lookup.Clear();
+        OnStateChanged?.Invoke();
+    }
+
     // ─── 부서(트레이닝 센터) 상태 ─────────────────────────────
     public int GetDepartmentLevel()
     {

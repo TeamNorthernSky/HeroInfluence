@@ -69,6 +69,14 @@ public class WorkshopManager : MonoBehaviour
 
     public void Initialize() => RebuildLookup();
 
+    /// <summary>[JC 260617] 새 게임 초기화 — 영웅별 무기 보유 매핑 전체 제거(첫 실행=하급 코어만 기본).</summary>
+    public void Reset()
+    {
+        entries.Clear();
+        lookup.Clear();
+        OnStateChanged?.Invoke();
+    }
+
     private static long Key(int unitIndex, int weaponIndex) => ((long)unitIndex << 32) | (uint)weaponIndex;
 
     public static int TierOf(int weaponIndex) => weaponIndex % 100; // 1/2/3
