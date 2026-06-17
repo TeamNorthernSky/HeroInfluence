@@ -19,18 +19,27 @@ public class BattleSpeedToggleButton : MonoBehaviour
 
     private void OnEnable()
     {
+        if (toggleButton == null)
+            toggleButton = GetComponent<ToggleButton>();
+
+        bool isFast = Mathf.Approximately(BattleRuntimeSettings.BattleSpeed, fastSpeed);
+        toggleButton.SetState(isFast, false);
         toggleButton.OnValueChanged += OnToggled;
     }
 
     private void OnDisable()
     {
         toggleButton.OnValueChanged -= OnToggled;
-        battleManager?.ChangeBattleSpeed(normalSpeed);
     }
 
     private void OnToggled(bool isOn)
     {
-        if (battleManager == null) return;
-        battleManager.ChangeBattleSpeed(isOn ? fastSpeed : normalSpeed);
+        float speed = isOn ? fastSpeed : normalSpeed;
+        BattleRuntimeSettings.SetBattleSpeed(speed);
+
+        if (battleManager == null)
+            battleManager = FindFirstObjectByType<BattleManager>();
+
+        battleManager?.ChangeBattleSpeed(speed);
     }
 }
