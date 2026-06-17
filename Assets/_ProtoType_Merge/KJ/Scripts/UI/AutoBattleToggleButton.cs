@@ -17,6 +17,10 @@ public class AutoBattleToggleButton : MonoBehaviour
 
     private void OnEnable()
     {
+        if (toggleButton == null)
+            toggleButton = GetComponent<ToggleButton>();
+
+        toggleButton.SetState(BattleRuntimeSettings.IsAutoBattle, false);
         toggleButton.OnValueChanged += OnToggled;
     }
 
@@ -27,7 +31,12 @@ public class AutoBattleToggleButton : MonoBehaviour
 
     private void OnToggled(bool isOn)
     {
-        if (autoBattleController == null) return;
-        autoBattleController.IsAutoBattle = isOn;
+        BattleRuntimeSettings.SetAutoBattle(isOn);
+
+        if (autoBattleController == null)
+            autoBattleController = FindFirstObjectByType<AutoBattleController>();
+
+        if (autoBattleController != null)
+            autoBattleController.IsAutoBattle = isOn;
     }
 }

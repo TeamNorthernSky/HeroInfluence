@@ -28,8 +28,16 @@ public class AutoBattleController : MonoBehaviour
         get => isAutoBattle;
         set
         {
-            if (isAutoBattle == value) return;
+            if (isAutoBattle == value)
+            {
+                BattleRuntimeSettings.SetAutoBattle(value);
+                if (inputHandler != null)
+                    inputHandler.IsAutoBattleActive = value;
+                return;
+            }
+
             isAutoBattle = value;
+            BattleRuntimeSettings.SetAutoBattle(value);
 
             if (inputHandler != null)
                 inputHandler.IsAutoBattleActive = value;
@@ -57,6 +65,7 @@ public class AutoBattleController : MonoBehaviour
             flowManager.OnTurnStarted += OnTurnStarted;
 
         OnAutoBattleToggleRequested += HandleToggleRequest;
+        IsAutoBattle = BattleRuntimeSettings.IsAutoBattle;
     }
 
     private void OnDisable()

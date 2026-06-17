@@ -56,11 +56,13 @@ public class BattleManager : MonoBehaviour
         }
 
         OnBattleSpeedChangeRequested += ChangeBattleSpeed;
+        ChangeBattleSpeed(BattleRuntimeSettings.BattleSpeed);
     }
 
     public void ChangeBattleSpeed(float newSpeed)
     {
-        _currentBattleSpeed = Mathf.Max(0.01f, newSpeed);
+        BattleRuntimeSettings.SetBattleSpeed(newSpeed);
+        _currentBattleSpeed = BattleRuntimeSettings.BattleSpeed;
         ApplyBattleSpeedToAllActiveUnits();
     }
 
