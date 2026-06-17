@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -30,6 +31,13 @@ public class HQFacilityButtonController : MonoBehaviour
         public Button unlockedButton;
         [Tooltip("건설 후 버튼 클릭 시 열 방 기능 모달")]
         public GameObject facilityModal;
+
+        [Header("안내 문구 (건설/업그레이드 텍스트 오버레이)")]
+        [TextArea] public string buildInfo;       // "○○를 건설합니다."
+        [TextArea] public string buildDesc;        // 효과 설명
+        [TextArea] public string buildCondition;   // "필요 조건: ..." (비우면 미표시)
+        [TextArea] public string upgradeInfo;      // "○○를 업그레이드 합니다." (비우면 업그레이드 상태에서 미표시)
+        [TextArea] public string upgradeDesc;      // 업그레이드 효과 설명
     }
 
     [Header("건설/업그레이드 팝업 흐름")]
@@ -46,9 +54,21 @@ public class HQFacilityButtonController : MonoBehaviour
     [Header("건설/업그레이드 가능 강조 색 (테두리 아트 적용 전 임시 틴트)")]
     [SerializeField] private Color highlightColor = new Color(0.35f, 1f, 0.45f, 1f);
 
+    [Header("안내 프리팹 (ConstructInfoText) + 본부/공통 문구")]
+    [Tooltip("ConstructInfoText.prefab — 내부 Panel/Info·Describtion·Preconditions(TMP)")]
+    [SerializeField] private GameObject constructInfoPrefab;
+    [TextArea] [SerializeField] private string hqUpgradeInfo = "본부를 업그레이드 합니다.";
+    [TextArea] [SerializeField] private string hqUpgradeDesc = "매 턴 얻는 자금이 증가합니다.";
+    [TextArea] [SerializeField] private string maxLevelMessage = "업그레이드가 최고 단계입니다.";
+    [Tooltip("각 위치 버튼 기준 안내 프리팹 오프셋")]
+    [SerializeField] private Vector2 infoOffset = Vector2.zero;
+    [Tooltip("건설 불가(선행조건 미충족) 위치 안내의 알파(패널+텍스트 일괄). 0.3 ≈ 70% 투명")]
+    [Range(0f, 1f)] [SerializeField] private float unbuildableAlpha = 0.3f;
+
     private HQStateManager subscribedHQ;
     private bool buildMode;
     private readonly Dictionary<Graphic, Color> savedColors = new Dictionary<Graphic, Color>();
+    private readonly List<GameObject> infoInstances = new List<GameObject>();
 
     private void Awake()
     {
@@ -165,6 +185,7 @@ public class HQFacilityButtonController : MonoBehaviour
         buildMode = true;
         if (buildModePrompt != null) buildModePrompt.SetActive(true);
         ApplyHighlights();
+        SpawnInfos();
     }
 
     private void ExitBuildMode()
@@ -173,6 +194,89 @@ public class HQFacilityButtonController : MonoBehaviour
         buildMode = false;
         if (buildModePrompt != null) buildModePrompt.SetActive(false);
         RestoreHighlights();
+        ClearInfos();
+    }
+
+    // ─── 건설/업그레이드 안내 프리팹 ───────────────────────────
+    private void SpawnInfos()
+    {
+        ClearInfos();
+        if (constructInfoPrefab == null) return;
+        var gm = GameManager.Instance;
+        if (gm == null || gm.HQ == null) return;
+
+        // 본부(건설 없음, 업그레이드/최고단계만 — 항상 건설 가능 영역 아님 → dim 없음)
+        SpawnInfo(hqButton, ResolveText(HQDepartment.Headquarters, null), false);
+
+        for (int i = 0; i < facilities.Count; i++)
+        {
+            FacilityEntry f = facilities[i];
+            if (f == null) continue;
+            int lv = gm.HQ.GetLevel(f.department);
+            bool unlocked = lv >= 1;
+            Button pos = unlocked ? f.unlockedButton : f.lockedButton;
+            bool dim = lv == 0 && !IsBuildable(f.department); // 건설 불가(선행조건 미충족) → 흐리게
+            SpawnInfo(pos, ResolveText(f.department, f), dim);
+        }
+    }
+
+    /// <summary>위치 상태(level)에 따라 (info, desc, condition) 결정.</summary>
+    private (string info, string desc, string cond) ResolveText(HQDepartment d, FacilityEntry f)
+    {
+        var gm = GameManager.Instance;
+        int lv = gm.HQ.GetLevel(d);
+        int max = gm.HQ.GetMaxLevel(d);
+
+        if (d == HQDepartment.Headquarters)
+            return lv >= max ? (maxLevelMessage, "", "") : (hqUpgradeInfo, hqUpgradeDesc, "");
+
+        if (f == null) return ("", "", "");
+        if (lv == 0) return (f.buildInfo, f.buildDesc, f.buildCondition);          // 건설
+        if (lv >= max) return (maxLevelMessage, "", "");                            // 최고단계
+        return (f.upgradeInfo, f.upgradeDesc, "");                                  // 업그레이드
+    }
+
+    private void SpawnInfo(Button posBtn, (string info, string desc, string cond) t, bool dim)
+    {
+        if (posBtn == null || constructInfoPrefab == null) return;
+        GameObject go = Instantiate(constructInfoPrefab, posBtn.transform);
+        var rt = go.transform as RectTransform;
+        if (rt != null) rt.anchoredPosition += infoOffset;
+        go.transform.SetAsLastSibling();
+
+        SetTmp(go.transform, "Info", t.info, true);
+        SetTmp(go.transform, "Describtion", t.desc, true);
+        SetTmp(go.transform, "Preconditions", t.cond, !string.IsNullOrWhiteSpace(t.cond));
+
+        // 건설 불가 위치 → 패널+텍스트 일괄 흐리게(CanvasGroup, 기존 패널 알파 위에 곱연산)
+        var cg = go.GetComponent<CanvasGroup>();
+        if (cg == null) cg = go.AddComponent<CanvasGroup>();
+        cg.alpha = dim ? unbuildableAlpha : 1f;
+
+        infoInstances.Add(go);
+    }
+
+    private static void SetTmp(Transform root, string childName, string text, bool active)
+    {
+        Transform t = FindDeep(root, childName);
+        if (t == null) return;
+        var tmp = t.GetComponent<TMP_Text>();
+        if (tmp != null) tmp.text = text ?? "";
+        t.gameObject.SetActive(active);
+    }
+
+    private static Transform FindDeep(Transform root, string name)
+    {
+        foreach (var t in root.GetComponentsInChildren<Transform>(true))
+            if (t.name == name) return t;
+        return null;
+    }
+
+    private void ClearInfos()
+    {
+        for (int i = infoInstances.Count - 1; i >= 0; i--)
+            if (infoInstances[i] != null) Destroy(infoInstances[i]);
+        infoInstances.Clear();
     }
 
     private void ApplyHighlights()
@@ -235,6 +339,6 @@ public class HQFacilityButtonController : MonoBehaviour
             if (f.lockedButton != null) f.lockedButton.gameObject.SetActive(!unlocked);
             if (f.unlockedButton != null) f.unlockedButton.gameObject.SetActive(unlocked);
         }
-        if (buildMode) { RestoreHighlights(); ApplyHighlights(); }
+        if (buildMode) { RestoreHighlights(); ApplyHighlights(); SpawnInfos(); }
     }
 }

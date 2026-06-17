@@ -34,6 +34,8 @@ public class ExplorationHeroBoxController : MonoBehaviour
     [Header("파티 선택 탭 (③-1)")]
     [Tooltip("탭이 생성될 컨테이너(HorizontalLayoutGroup 권장). 파티 수만큼 동적 생성")]
     [SerializeField] private RectTransform tabContainer;
+    [Tooltip("탭 1개 템플릿 프리팹(PartyTab.prefab). 루트 Image+Button + 자식 Label(TMP). 양식/높이/폰트/이미지는 이 프리팹에서 편집")]
+    [SerializeField] private GameObject tabPrefab;
     [SerializeField] private Color tabSelectedColor = new Color(0.30f, 0.65f, 1f, 1f);
     [SerializeField] private Color tabNormalColor = new Color(0.16f, 0.20f, 0.30f, 0.85f);
     private readonly List<GameObject> tabObjects = new List<GameObject>();
@@ -76,31 +78,24 @@ public class ExplorationHeroBoxController : MonoBehaviour
     // ─── 파티 선택 탭 ───────────────────────────────────────
     private void RebuildTabs()
     {
-        if (tabContainer == null) return;
+        if (tabContainer == null || tabPrefab == null) return;
         for (int i = tabObjects.Count - 1; i >= 0; i--)
             if (tabObjects[i] != null) Destroy(tabObjects[i]);
         tabObjects.Clear();
 
         int count = PartyCount;
-        var font = slots != null && slots.Length > 0 && slots[0] != null && slots[0].nameText != null
-            ? slots[0].nameText.font : null;
-
+        // [JC 260617] 탭은 PartyTab.prefab 템플릿을 인스턴스화. 양식/높이/폰트/이미지는 프리팹에서 편집.
         for (int i = 0; i < count; i++)
         {
             int ci = i;
-            var go = new GameObject("PartyTab" + (i + 1), typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-            go.transform.SetParent(tabContainer, false);
-            var le = go.AddComponent<LayoutElement>(); le.preferredWidth = 90; le.preferredHeight = 40;
-            go.GetComponent<Image>().color = tabNormalColor;
-            go.GetComponent<Button>().onClick.AddListener(() => SelectParty(ci));
+            var go = Instantiate(tabPrefab, tabContainer);
+            go.name = "PartyTab" + (i + 1);
 
-            var txtGo = new GameObject("Label", typeof(RectTransform));
-            txtGo.transform.SetParent(go.transform, false);
-            var trt = (RectTransform)txtGo.transform;
-            trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one; trt.offsetMin = Vector2.zero; trt.offsetMax = Vector2.zero;
-            var tmp = txtGo.AddComponent<TextMeshProUGUI>();
-            tmp.text = $"파티 {i + 1}"; tmp.alignment = TextAlignmentOptions.Center; tmp.fontSize = 18; tmp.color = Color.white; tmp.raycastTarget = false;
-            if (font != null) tmp.font = font;
+            var btn = go.GetComponent<Button>();
+            if (btn != null) btn.onClick.AddListener(() => SelectParty(ci));
+
+            var label = go.GetComponentInChildren<TMP_Text>(true);
+            if (label != null) label.text = $"파티 {i + 1}";
 
             tabObjects.Add(go);
         }
