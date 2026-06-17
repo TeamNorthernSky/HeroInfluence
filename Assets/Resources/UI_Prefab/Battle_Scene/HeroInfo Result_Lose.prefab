@@ -76,7 +76,7 @@ PrefabInstance:
     - target: {fileID: 2093741919818618972, guid: 24bc3b24b118e894885028296a0b4fb0,
         type: 3}
       propertyPath: m_Name
-      value: HeroInfo Result_Win_Lose
+      value: HeroInfo Result_Lose
       objectReference: {fileID: 0}
     - target: {fileID: 3130918597785417065, guid: 24bc3b24b118e894885028296a0b4fb0,
         type: 3}
@@ -128,6 +128,11 @@ PrefabInstance:
       propertyPath: m_LocalScale.y
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7040371474324257134, guid: 24bc3b24b118e894885028296a0b4fb0,
+        type: 3}
+      propertyPath: portrait
+      value: 
+      objectReference: {fileID: 8947529967986744880}
     - target: {fileID: 7040371474324257134, guid: 24bc3b24b118e894885028296a0b4fb0,
         type: 3}
       propertyPath: expValueText
@@ -280,3 +285,9 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 24bc3b24b118e894885028296a0b4fb0, type: 3}
+--- !u!224 &8947529967986744880 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8892384336861319807, guid: 24bc3b24b118e894885028296a0b4fb0,
+    type: 3}
+  m_PrefabInstance: {fileID: 523573595740228687}
+  m_PrefabAsset: {fileID: 0}
