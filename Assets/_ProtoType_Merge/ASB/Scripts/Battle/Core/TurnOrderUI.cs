@@ -29,6 +29,12 @@ public class TurnOrderUI : MonoBehaviour
 
     private void OnBattleEnded(BattleResult result) => gameObject.SetActive(false);
 
+    private static Sprite ResolvePortrait(BattleCharactor unit)
+    {
+        if (unit == null || !unit.IsPlayer || unit.SourceData == null) return null;
+        return HeroInfoResult.LoadPortraitByPartySlot(unit.SourceData.UnitIndex);
+    }
+
     private void Refresh()
     {
         if (flowManager == null || slotPrefab == null || slotParent == null)
@@ -45,8 +51,10 @@ public class TurnOrderUI : MonoBehaviour
         {
             if (i < maxDisplayCount)
             {
+                BattleCharactor unit = order[i % order.Count];
+                Sprite portrait = ResolvePortrait(unit);
                 slots[i].gameObject.SetActive(true);
-                slots[i].Setup(order[i % order.Count], isCurrentTurn: i == 0);
+                slots[i].Setup(unit, isCurrentTurn: i == 0, portraitSprite: portrait);
             }
             else
             {

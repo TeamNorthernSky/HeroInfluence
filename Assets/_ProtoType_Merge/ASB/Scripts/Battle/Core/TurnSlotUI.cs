@@ -4,30 +4,25 @@ using UnityEngine.UI;
 
 public class TurnSlotUI : MonoBehaviour
 {
-    [SerializeField] private Image portrait;
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private GameObject highlightFrame;
+    [SerializeField] private RawImage Portrait;
+    [SerializeField] private RawImage Frame;
 
-    [Header("Sprites")]
+    [Header("Frame Sprites")]
     [SerializeField] private Sprite playerTurnSprite;
     [SerializeField] private Sprite enemyTurnSprite;
-    [SerializeField] private Image playerFrame;
-    [SerializeField] private Image enemyFrame;
 
     private void Awake()
     {
         if (playerTurnSprite == null)
-        {
             playerTurnSprite = Resources.Load<Sprite>("UI_Sprite/UI_Battle/UI_HUD_playerTurn");
-        }
 
         if (enemyTurnSprite == null)
-        {
             enemyTurnSprite = Resources.Load<Sprite>("UI_Sprite/UI_Battle/UI_HUD_enemyTurn");
-        }
     }
 
-    public void Setup(BattleCharactor unit, bool isCurrentTurn)
+    public void Setup(BattleCharactor unit, bool isCurrentTurn, Sprite portraitSprite = null)
     {
         if (unit == null)
         {
@@ -40,30 +35,22 @@ public class TurnSlotUI : MonoBehaviour
         bool isPlayer = unit.IsPlayer;
 
         if (nameText != null)
-        {
             nameText.text = unit.UnitName;
+
+        if (Frame != null)
+        {
+            Sprite frameSprite = isPlayer ? playerTurnSprite : enemyTurnSprite;
+            Frame.texture = frameSprite != null ? frameSprite.texture : null;
+            Frame.enabled = frameSprite != null;
         }
 
-        if (portrait != null)
+        if (Portrait != null)
         {
-            portrait.sprite = isPlayer ? playerTurnSprite : enemyTurnSprite;
-            portrait.color = Color.white;
-            portrait.enabled = portrait.sprite != null;
-        }
-
-        if (playerFrame != null)
-        {
-            playerFrame.gameObject.SetActive(isPlayer);
-        }
-
-        if (enemyFrame != null)
-        {
-            enemyFrame.gameObject.SetActive(!isPlayer);
+            Portrait.texture = portraitSprite != null ? portraitSprite.texture : null;
+            Portrait.enabled = portraitSprite != null;
         }
 
         if (highlightFrame != null)
-        {
             highlightFrame.SetActive(isCurrentTurn);
-        }
     }
 }
