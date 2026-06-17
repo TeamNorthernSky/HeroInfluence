@@ -74,8 +74,8 @@ public class MapEventPanelUI : MonoBehaviour
 
         if (effectAmountText != null)
             effectAmountText.text = mapEvent.EventType == MapEventType.Heal
-                ? "Full"
-                : Mathf.Max(0, mapEvent.EffectAmount).ToString();
+                ? $"{Mathf.Max(0, mapEvent.EffectAmount)} 만큼 회복"
+                : $"+ {Mathf.Max(0, mapEvent.EffectAmount)}";
 
         if (costAmountText != null)
             costAmountText.text = Mathf.Max(0, mapEvent.RequireAmount).ToString();
