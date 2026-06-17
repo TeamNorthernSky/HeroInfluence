@@ -45,6 +45,41 @@ namespace ASB.Work.Battle.SkillExecution
             return result;
         }
 
+        /// <summary>데미지 적용 없이 최종 타격 대상만 해석합니다. 발판 프리뷰용.</summary>
+        public bool TryResolvePreviewContext(
+            BattleCharactor caster,
+            BattleCharactor target,
+            SkillData skillData,
+            out SkillExecutionContext context)
+        {
+            context = null;
+            if (caster == null || target == null || skillData == null || caster.IsDead)
+            {
+                return false;
+            }
+
+            ASBGridManager gm = ASBGridManager.Instance;
+            ASBGridCell selectedCell = target.OccupiedCell;
+            if (selectedCell == null && gm != null)
+            {
+                selectedCell = gm.FindCellByUnit(target);
+            }
+
+            context = new SkillExecutionContext
+            {
+                Caster = caster,
+                Skill = skillData,
+                SelectedTarget = target,
+                SelectedCell = selectedCell
+            };
+
+            ResolvePrimaryTarget(context);
+            ResolveAffectedArea(context);
+            ResolveFinalTargets(context);
+
+            return context.ResolvedTargets != null && context.ResolvedTargets.Count > 0;
+        }
+
         // [1] 중심 타겟 해석
         protected virtual void ResolvePrimaryTarget(SkillExecutionContext context)
         {
