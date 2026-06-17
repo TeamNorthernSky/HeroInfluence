@@ -37,6 +37,14 @@ public class PublicityManager : MonoBehaviour
         // HQ 상태 변화 구독은 GameManager가 InitializeManagers 후 호출
     }
 
+    /// <summary>[JC 260617] 새 게임 초기화 — 공유 예산/충전 상태를 첫 실행값으로.</summary>
+    public void Reset()
+    {
+        currentPool = 0;
+        lastChargeDay = 0;
+        OnStateChanged?.Invoke();
+    }
+
     public void SubscribeHQ(HQStateManager hq)
     {
         if (hq == null) return;

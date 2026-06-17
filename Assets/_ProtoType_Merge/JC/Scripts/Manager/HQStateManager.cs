@@ -78,6 +78,13 @@ public class HQStateManager : MonoBehaviour
         upgradedThisTurn = false;
     }
 
+    /// <summary>[JC 260617] 새 게임 초기화 — 첫 실행과 동일(본부=초기레벨, 나머지 0).</summary>
+    public void Reset()
+    {
+        Initialize();
+        OnStateChanged?.Invoke();
+    }
+
     public int GetLevel(HQDepartment d) => levels.TryGetValue(d, out int v) ? v : 0;
 
     public int GetMaxLevel(HQDepartment d)

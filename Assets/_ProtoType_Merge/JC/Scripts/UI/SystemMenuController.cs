@@ -84,6 +84,8 @@ public class SystemMenuController : MonoBehaviour
     {
         if (_modal != null) _modal.SetActive(false);
         Time.timeScale = 1f;
+        // [JC 260617] 타이틀 복귀 시 전체 영속 상태 초기화(새 게임이 첫 실행과 동일하도록).
+        if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
         Debug.Log($"[SystemMenu] → {TitleScene}");
         SceneManager.LoadScene(TitleScene);
     }

@@ -52,7 +52,9 @@ public class DHGameEndUIController : MonoBehaviour
         while (Time.unscaledTime < waitUntil)
             yield return null;
 
-        DHGameProgressResetService.ResetDHProgress();
+        // [JC 260617] 엔딩→타이틀 복귀 시에도 전체 영속 초기화(JC 매니저 포함). GameManager 없으면 DH만 리셋 폴백.
+        if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
+        else DHGameProgressResetService.ResetDHProgress();
 
         if (pauseTimeDuringDisplay)
             Time.timeScale = previousTimeScale > 0f ? previousTimeScale : 1f;

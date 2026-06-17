@@ -71,16 +71,22 @@ public static class OutpostDoubleClickEntryBootstrap
     private static void Init()
     {
         SceneManager.sceneLoaded += (_, __) => AttachAll();
+        // [JC 260617] 거점은 런타임 생성(Clone)이라 sceneLoaded 시점엔 없을 수 있음 →
+        //   점령 시점(더블클릭이 유효해지는 바로 그 때)에 확실히 부착. 중복 부착 가드 포함.
+        Outpost.OutpostClaimed += AttachTo;
         AttachAll();
+    }
+
+    private static void AttachTo(Outpost outpost)
+    {
+        if (outpost != null && outpost.GetComponent<OutpostDoubleClickEntry>() == null)
+            outpost.gameObject.AddComponent<OutpostDoubleClickEntry>();
     }
 
     private static void AttachAll()
     {
         var outposts = Object.FindObjectsByType<Outpost>(FindObjectsSortMode.None);
         for (int i = 0; i < outposts.Length; i++)
-        {
-            if (outposts[i] != null && outposts[i].GetComponent<OutpostDoubleClickEntry>() == null)
-                outposts[i].gameObject.AddComponent<OutpostDoubleClickEntry>();
-        }
+            AttachTo(outposts[i]);
     }
 }

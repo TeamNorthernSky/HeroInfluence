@@ -56,6 +56,14 @@ public class LabManager : MonoBehaviour
 
     public void Initialize() => RebuildLookup();
 
+    /// <summary>[JC 260617] 새 게임 초기화 — (영웅,스킬) 강화 레벨 전체 제거(첫 실행=빈 상태).</summary>
+    public void Reset()
+    {
+        entries.Clear();
+        lookup.Clear();
+        OnStateChanged?.Invoke();
+    }
+
     private static long Key(int unitIndex, int skillIndex) => ((long)unitIndex << 32) | (uint)skillIndex;
 
     // ─── 부서(연구소) 상태 ─────────────────────────────────────

@@ -151,6 +151,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b781ad959f8f4e747945effa942fef27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  upgradeCostMoney: e8030000dc050000d0070000c4090000
+  upgradeCostChip: 1e0000003c0000005a00000078000000
   entries: []
 --- !u!4 &1075467811
 Transform:

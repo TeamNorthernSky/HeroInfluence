@@ -17,7 +17,11 @@ public class MapEventPanelUI : MonoBehaviour
     [FormerlySerializedAs("costText")]
     [SerializeField] private TMP_Text effectAmountText;
     [SerializeField] private TMP_Text costAmountText;
-    [SerializeField] private Image eventImage;
+    [SerializeField] private Image eventImage; // [JC 260617] 고정 "?" 포트레이트(런타임 미교체) — 스크립트가 건드리지 않음.
+    [Tooltip("비용 자원 아이콘(동적, UI_HQLobby/Resources)")]
+    [SerializeField] private Image resourceIcon;
+    [Tooltip("효과 아이콘(동적, UI_Icon/Status — 공격/체력)")]
+    [SerializeField] private Image effectIcon;
     [SerializeField] private Button yesButton;
     [SerializeField] private Button noButton;
 
@@ -76,7 +80,10 @@ public class MapEventPanelUI : MonoBehaviour
         if (costAmountText != null)
             costAmountText.text = Mathf.Max(0, mapEvent.RequireAmount).ToString();
 
-        ApplyImage(eventImage, displayEntry.EventSprite);
+        // [JC 260617] eventImage(? 포트레이트)는 고정 — 런타임 교체 제거.
+        //   대신 하단 행의 자원 아이콘(비용 자원)·효과 아이콘(공격/체력)을 동적 설정.
+        ApplyImage(resourceIcon, LoadResourceIcon(mapEvent.RequireResource));
+        ApplyImage(effectIcon, LoadEffectIcon(mapEvent.EventType));
 
         if (yesButton != null)
         {
@@ -154,6 +161,33 @@ public class MapEventPanelUI : MonoBehaviour
         }
 
         return default;
+    }
+
+    // [JC 260617] 비용 자원 아이콘(UI_HQLobby/Resources).
+    private static Sprite LoadResourceIcon(ResourceType resourceType)
+    {
+        string n = resourceType switch
+        {
+            ResourceType.Money => "UI_icon_money",
+            ResourceType.Chip => "UI_icon_medal",
+            ResourceType.Crystal => "UI_icon_crystal",
+            ResourceType.Supply => "UI_icon_block",
+            _ => null
+        };
+        return n != null ? Resources.Load<Sprite>("UI_Sprite/UI_HQLobby/Resources/" + n) : null;
+    }
+
+    // [JC 260617] 효과 아이콘(UI_Icon/Status). 공격력=ATK, 최대체력·회복=HP.
+    private static Sprite LoadEffectIcon(MapEventType eventType)
+    {
+        string n = eventType switch
+        {
+            MapEventType.TrainingAtk => "UI_icon_ATK",
+            MapEventType.TrainingHp => "UI_icon_HP",
+            MapEventType.Heal => "UI_icon_HP",
+            _ => null
+        };
+        return n != null ? Resources.Load<Sprite>("UI_Sprite/UI_Icon/Status/" + n) : null;
     }
 
     private static string GetEffectDisplayText(MapEventType eventType, int effectAmount)
