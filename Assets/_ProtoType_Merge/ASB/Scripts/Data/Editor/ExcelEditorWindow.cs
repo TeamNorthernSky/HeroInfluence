@@ -121,7 +121,7 @@ namespace ASB.ExcelImport.Editor
             EditorGUILayout.Space(8f);
 
             EditorGUILayout.LabelField("Detected Sheets", EditorStyles.boldLabel);
-            _sheetScroll = EditorGUILayout.BeginScrollView(_sheetScroll, GUILayout.Height(160f));
+            _sheetScroll = EditorGUILayout.BeginScrollView(_sheetScroll, GUILayout.Height(260f));
             if (_previewSheets.Count == 0)
             {
                 EditorGUILayout.HelpBox("Select an .xlsx file to preview sheets.", MessageType.Info);
@@ -135,10 +135,12 @@ namespace ASB.ExcelImport.Editor
 
                     bool useDict = _sheetUseDictionary[sheet.SheetName];
                     bool selected = _sheetSelectedForUpdate[sheet.SheetName];
-                    _sheetSelectedForUpdate[sheet.SheetName] = EditorGUILayout.ToggleLeft("Update", selected);
+                    EditorGUILayout.BeginHorizontal();
+                    _sheetSelectedForUpdate[sheet.SheetName] = EditorGUILayout.Toggle(selected, GUILayout.Width(18f));
 
                     EditorGUILayout.LabelField(
-                        $"• {sheet.SheetName}  (columns: {sheet.Names.Count}, rows: {sheet.Rows.Count})");
+                        $"{sheet.SheetName}  (columns: {sheet.Names.Count}, rows: {sheet.Rows.Count})");
+                    EditorGUILayout.EndHorizontal();
 
                     EditorGUILayout.BeginHorizontal();
                     GUILayout.Space(16f);
@@ -252,17 +254,25 @@ namespace ASB.ExcelImport.Editor
                 _previewSheets = sheets;
                 PreserveSheetSelection(sheets);
 
+                List<string> selectedNames = GetSelectedSheetNames();
+                List<ExcelSheetParseResult> selectedSheets = FilterSheets(sheets, selectedNames);
+                if (selectedSheets.Count == 0)
+                {
+                    AddLog("Bake failed: no sheet selected.");
+                    return;
+                }
+
                 AddLog("[Step 1] Generating C# scripts...");
-                CodeGenerator.GenerateAll(sheets, _sheetUseDictionary);
+                CodeGenerator.GenerateAll(selectedSheets, _sheetUseDictionary);
 
                 EditorPrefs.SetString(ExcelImportPaths.PendingFilePathKey, _selectedExcelPath);
                 EditorPrefs.SetString(PendingUseDictMapKey, SerializeDictMap(_sheetUseDictionary));
-                EditorPrefs.DeleteKey(PendingSheetNamesKey);
+                EditorPrefs.SetString(PendingSheetNamesKey, SerializeSheetNames(selectedNames));
                 AddLog("[Step 1] Pending asset export registered. Refreshing assets...");
 
                 AssetDatabase.Refresh();
                 // #region agent log
-                ExcelImportDebugLog.Write("H1", "ExcelEditorWindow.BakeData", "step1_done", "{\"sheetCount\":" + sheets.Count + "}");
+                ExcelImportDebugLog.Write("H1", "ExcelEditorWindow.BakeData", "step1_done", "{\"sheetCount\":" + selectedSheets.Count + "}");
                 // #endregion
                 AddLog("[Step 1] Done. Script compile 후 Step 2(asset)가 자동 실행됩니다.");
             }

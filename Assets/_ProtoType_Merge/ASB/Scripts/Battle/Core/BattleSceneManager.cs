@@ -78,6 +78,8 @@ public class BattleSceneManager : MonoBehaviour
 
     private IEnumerator PostBattleSequence(BattleResult result)
     {
+        yield return WaitDeadUnitDeathAnimations();
+
         // 1. 보상 계산 (Repository/JSON 변경 없음)
         BattleRewardPlan plan = BattleResultPersistenceHandler.BuildBattleRewardPlan(
             playerBattleCharactors, enemyBattleCharactors, result);
@@ -127,6 +129,57 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         yield return StartCoroutine(TransitionToSceneRoutine());
+    }
+
+    private IEnumerator WaitDeadUnitDeathAnimations()
+    {
+        const float maxWait = 1.2f;
+        const float endThreshold = 0.95f;
+
+        float elapsed = 0f;
+        HashSet<BattleCharactor> observedDeathAnimations = new HashSet<BattleCharactor>();
+        while (elapsed < maxWait)
+        {
+            bool waitingForDeathAnimation = false;
+
+            foreach (BattleCharactor unit in playerBattleCharactors.Concat(enemyBattleCharactors))
+            {
+                if (unit == null || !unit.IsDead)
+                {
+                    continue;
+                }
+
+                unit.EnsureAnimationController();
+                CharactorAnimationController anim = unit.Anim;
+                if (anim == null)
+                {
+                    continue;
+                }
+
+                if (anim.IsInState("Die"))
+                {
+                    observedDeathAnimations.Add(unit);
+                    if (!anim.IsStateNearEnd("Die", endThreshold))
+                    {
+                        waitingForDeathAnimation = true;
+                        break;
+                    }
+                }
+                else if (!observedDeathAnimations.Contains(unit))
+                {
+                    waitingForDeathAnimation = true;
+                    break;
+                }
+            }
+
+            if (!waitingForDeathAnimation)
+            {
+                yield break;
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
     }
 
     private IEnumerator TransitionToSceneRoutine()

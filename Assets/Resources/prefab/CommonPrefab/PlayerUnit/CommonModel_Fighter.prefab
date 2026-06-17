@@ -546,6 +546,38 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &341051339072617961
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8222564951863355949}
+  m_Layer: 0
+  m_Name: HitTargetBone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8222564951863355949
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 341051339072617961}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.000000065318325, y: 0.00000010327637, z: -0.000000022351735,
+    w: 1}
+  m_LocalPosition: {x: 0, y: -0.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1457618182741306153}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &398259890933356412
 GameObject:
   m_ObjectHideFlags: 0
@@ -8582,6 +8614,7 @@ Transform:
   - {fileID: 7781679541202878336}
   - {fileID: 7528428636040593801}
   - {fileID: 2378921959550513062}
+  - {fileID: 8222564951863355949}
   m_Father: {fileID: 2584966000575448552}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3493750257756940834
@@ -19431,6 +19464,7 @@ GameObject:
   m_Component:
   - component: {fileID: 57126021108809757}
   - component: {fileID: 8602729532803273730}
+  - component: {fileID: 533773478135281612}
   m_Layer: 0
   m_Name: CommonModel_Fighter
   m_TagString: Untagged
@@ -19498,6 +19532,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &533773478135281612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8253066254181847947}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 161a0cce26e60f2408371f6111da8af2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rightWeaponSocketObject: {fileID: 63220141677019216}
+  leftWeaponSocketObject: {fileID: 3546401445267888921}
+  hitSocketObject: {fileID: 341051339072617961}
 --- !u!1 &8284416257600035579
 GameObject:
   m_ObjectHideFlags: 0

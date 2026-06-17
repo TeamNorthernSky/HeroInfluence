@@ -4,7 +4,7 @@ using UnityEngine;
 namespace ASB.Work.Battle.Sequence
 {
     /// <summary>
-    /// 궁수 전용: 포물선 라인을 즉시 그린 뒤 페이드아웃하고, 끝점 기울기에 맞춰 화살을 꽂습니다.
+    /// 궁수 전용: 포물선 라인과 화살을 동시에 표시한 뒤 라인만 페이드아웃합니다.
     /// 트레일 시작(또는 트레일 없을 때 화살 스폰) 시점에 타겟 Hit 애니를 재생합니다.
     /// WaitHitAction과 ResolveHitAction 사이에 삽입됩니다.
     /// </summary>
@@ -47,7 +47,7 @@ namespace ASB.Work.Battle.Sequence
 
             actorProfile?.HoldArrow?.SetActive(false);
 
-            Transform hitPoint = targetProfile?.ArrowHitPoint ?? _target.transform;
+            Transform hitPoint = ResolveArrowHitPoint(_target, targetProfile);
 
             if (actorProfile?.ArrowTrailPrefab != null && _actor != null)
             {
@@ -69,11 +69,24 @@ namespace ASB.Work.Battle.Sequence
                 yield break;
             }
 
-            Vector3 start = _actor.transform.position;
+            Transform firePoint = ResolveArrowFirePoint(_actor);
+            Vector3 start = firePoint != null ? firePoint.position : _actor.transform.position;
             Vector3 end = hitPoint.position;
 
             DrawArc(lr, start, end, profile.ArcHeight);
             lr.enabled = true;
+
+            int lastIndex = lr.positionCount - 1;
+            Vector3 lastPos = lr.GetPosition(lastIndex);
+            Vector3 prevPos = lr.GetPosition(lastIndex - 1);
+            Vector3 dir = (lastPos - prevPos).normalized;
+            if (dir == Vector3.zero)
+            {
+                dir = (end - start).normalized;
+            }
+
+            Quaternion rot = dir != Vector3.zero ? Quaternion.LookRotation(dir) : hitPoint.rotation;
+            SpawnArrow(profile, lastPos, rot);
 
             yield return WaitAndPlayTargetHitAnimation(profile);
 
@@ -86,13 +99,7 @@ namespace ASB.Work.Battle.Sequence
                 yield return null;
             }
 
-            Vector3 lastPos = lr.GetPosition(lr.positionCount - 1);
-            Vector3 prevPos = lr.GetPosition(lr.positionCount - 2);
-            Vector3 dir = (lastPos - prevPos).normalized;
-            Quaternion rot = dir != Vector3.zero ? Quaternion.LookRotation(dir) : hitPoint.rotation;
-
             Object.Destroy(trailInstance);
-            SpawnArrow(profile, lastPos, rot);
         }
 
         private IEnumerator WaitAndPlayTargetHitAnimation(UnitVisualProfile actorProfile)
@@ -172,6 +179,33 @@ namespace ASB.Work.Battle.Sequence
             _alphaKeys[1] = new GradientAlphaKey(alpha, 1f);
             _gradient.SetKeys(_colorKeys, _alphaKeys);
             lr.colorGradient = _gradient;
+        }
+
+        private static Transform ResolveArrowFirePoint(BattleCharactor actor)
+        {
+            UnitSocketHolder socketHolder = actor?.GetComponentInChildren<UnitSocketHolder>();
+            if (socketHolder?.LeftWeaponSocket != null)
+            {
+                return socketHolder.LeftWeaponSocket;
+            }
+
+            return actor != null ? actor.transform : null;
+        }
+
+        private static Transform ResolveArrowHitPoint(BattleCharactor target, UnitVisualProfile profile)
+        {
+            if (profile?.ArrowHitPoint != null)
+            {
+                return profile.ArrowHitPoint;
+            }
+
+            UnitSocketHolder socketHolder = target?.GetComponentInChildren<UnitSocketHolder>();
+            if (socketHolder?.HitSocket != null)
+            {
+                return socketHolder.HitSocket;
+            }
+
+            return target != null ? target.transform : null;
         }
 
         private static void SpawnArrow(UnitVisualProfile profile, Vector3 position, Quaternion rotation)

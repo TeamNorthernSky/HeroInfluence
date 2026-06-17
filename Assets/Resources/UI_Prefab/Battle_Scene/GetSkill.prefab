@@ -1063,7 +1063,7 @@ GameObject:
   - component: {fileID: 1925165631900087535}
   - component: {fileID: 5489957082739474969}
   m_Layer: 5
-  m_Name: CharacterExplanation
+  m_Name: Hero Name
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1118,8 +1118,9 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
+  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1627,13 +1628,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be933a7624c4e184293aedfb18858bb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitNameText: {fileID: 0}
+  unitNameText: {fileID: 5489957082739474969}
+  rankText: {fileID: 0}
   levelUpText: {fileID: 0}
   skillDropdown: {fileID: 6462505845640769205}
   confirmButton: {fileID: 3267443247641246879}
   cancelButton: {fileID: 7212224803347253592}
   prevSkillText: {fileID: 2556010399774251398}
   nextSkillText: {fileID: 1784468065302793051}
+  portrait: {fileID: 8039478955222350133}
 --- !u!1 &5376349196418222340
 GameObject:
   m_ObjectHideFlags: 0
