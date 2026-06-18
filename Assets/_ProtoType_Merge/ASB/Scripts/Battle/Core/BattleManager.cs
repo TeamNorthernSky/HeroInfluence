@@ -768,6 +768,7 @@ public class BattleManager : MonoBehaviour
             classSkillRangeLine = source.classSkillRangeLine,
             classSkillTarget = source.classSkillTarget,
             boundary = source.boundary != null ? new System.Collections.Generic.List<int>(source.boundary) : new System.Collections.Generic.List<int>(),
+            multiTargetType = source.multiTargetType,
             multiTargetCount = source.multiTargetCount,
             skillValue = source.skillValue,
             skillSubValue = source.skillSubValue,

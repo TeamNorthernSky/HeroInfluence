@@ -272,6 +272,13 @@ namespace ASB.Work.Battle.SkillExecution
                 return;
             }
 
+            bool? sharedCrit = null;
+            if (context.Skill.classSkillEffect == 0)
+            {
+                var rollCtx = new DamageContext { Caster = context.Caster };
+                sharedCrit = CombatCalculator.RollCritical(rollCtx);
+            }
+
             int count = context.ResolvedTargets.Count;
             for (int i = 0; i < count; i++)
             {
@@ -283,7 +290,7 @@ namespace ASB.Work.Battle.SkillExecution
 
                 if (context.Skill.classSkillEffect == 0)
                 {
-                    ApplyAdditionaDamage(context.Caster, target, context.Skill, count, result);
+                    ApplyAdditionaDamage(context.Caster, target, context.Skill, count, result, sharedCrit);
                 }
                 else if (context.Skill.classSkillEffect == 1 || context.Skill.classSkillEffect == 2)
                 {
@@ -295,7 +302,7 @@ namespace ASB.Work.Battle.SkillExecution
         }
 
         protected virtual void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count) { }
-        protected virtual void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result) { }
+        protected virtual void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result, bool? sharedIsCritical = null) { }
         protected virtual void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result) { }
 
         private static List<int> BuildPatternIncludingCenter(List<int> sourcePattern)
@@ -311,7 +318,7 @@ namespace ASB.Work.Battle.SkillExecution
     }
 
 
-    // 메인 타겟 타격 후 주변 1칸 랜덤 1명 타깃
+    // 메인 타겟 타격 후 boundary(ClassSkillMultiTarget) 패턴 내 추가 타겟
     public abstract class TargetAroundRandom : ISkillEffectHandler
     {
         public SkillExecutionResult Execute(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillData additionalSkillData)
@@ -322,8 +329,7 @@ namespace ASB.Work.Battle.SkillExecution
             }
 
             var result = SkillExecutionResult.SuccessResult();
-            // 메인 타격 데미지는 항상 result에 추가합니다.
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
+            ApplyMainEffect(caster, target, skillData, result);
 
             ASB.Work.BattleGrid.GridManager gridManager = ASB.Work.BattleGrid.GridManager.Instance;
             if (gridManager == null)
@@ -337,54 +343,48 @@ namespace ASB.Work.Battle.SkillExecution
                 return SkillExecutionResult.Failed();
             }
 
-            int range = Mathf.Max(0, skillData.multiTargetCount);
-            List<BattleCharactor> validTargets = new List<BattleCharactor>();
-
-            for (int x = -range; x <= range; x++)
+            List<BattleCharactor> candidates = TargetAroundRandomHelper.CollectValidAdditionalTargets(
+                caster, target, skillData, centerCell);
+            List<BattleCharactor> selectedTargets = TargetAroundRandomHelper.SelectAdditionalTargets(candidates, skillData);
+            for (int i = 0; i < selectedTargets.Count; i++)
             {
-                for (int y = -range; y <= range; y++)
+                BattleCharactor extraTarget = selectedTargets[i];
+                if (extraTarget == null)
                 {
-                    if (x == 0 && y == 0)
-                    {
-                        continue;
-                    }
-
-                    Vector2Int checkCoord = centerCell.Coords + new Vector2Int(x, y);
-                    if (!gridManager.TryGetCell(checkCoord, out ASB.Work.BattleGrid.GridCell cell) || cell == null)
-                    {
-                        continue;
-                    }
-
-                    BattleCharactor aroundUnit = cell.OccupyingUnit;
-                    if (aroundUnit == null || aroundUnit.IsDead || aroundUnit.TeamType == caster.TeamType || aroundUnit == target)
-                    {
-                        continue;
-                    }
-
-                    // 리스트에 담기
-                    validTargets.Add(aroundUnit);
+                    continue;
                 }
-            }
-            if (validTargets.Count > 0)
-            {
-                int randomIndex = UnityEngine.Random.Range(0, validTargets.Count);
-                BattleCharactor luckyTarget = validTargets[randomIndex];
 
                 if (skillData.classSkillEffect == 0)
                 {
-                    ApplyAdditionaDamage(caster, luckyTarget, skillData, result);
+                    ApplyAdditionaDamage(caster, extraTarget, skillData, result);
                 }
-                if (skillData.classSkillEffect == 1)
+                else if (skillData.classSkillEffect == 1)
                 {
-                    ApplyHeal(caster, luckyTarget, skillData, result);
+                    ApplyHeal(caster, extraTarget, skillData, result);
                 }
 
-                ApplyAdditionalEffect(caster, luckyTarget, skillData);
+                ApplyAdditionalEffect(caster, extraTarget, skillData);
             }
 
             return result;
         }
 
+        protected virtual void ApplyMainEffect(
+            BattleCharactor caster,
+            BattleCharactor target,
+            SkillData skillData,
+            SkillExecutionResult result)
+        {
+            if (skillData.classSkillEffect == 0)
+            {
+                result.AddDamage(SkillEffectHelper.ApplyStandardDamage(
+                    caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
+            }
+            else if (skillData.classSkillEffect == 1)
+            {
+                ApplyHeal(caster, target, skillData, result);
+            }
+        }
 
         // 추가 효과 구현
         protected virtual void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData)
@@ -396,7 +396,7 @@ namespace ASB.Work.Battle.SkillExecution
         {
         }
 
-        // 힐 구현
+        // 메인/추가 힐 구현
         protected virtual void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
         }

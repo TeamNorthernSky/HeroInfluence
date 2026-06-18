@@ -60,6 +60,7 @@ public class WeaponData
             classSkillRange = WeaponSkillRange,
             classSkillRangeLine = WeaponSkillRangeLine,
             classSkillTarget = WeaponSkillTarget,
+            multiTargetType = WeaponSkillMultiTargetType,
             multiTargetCount = WeaponSkillMultiTargetCount,
             skillValue = WeaponSkillValue,
             skillSubValue = WeaponSkillSubValue,

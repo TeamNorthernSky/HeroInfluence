@@ -131,6 +131,7 @@ namespace ASB.Work.Battle.SkillExecution
 
             if (target.IsInFrontRow)
                 totalSkillValue += 0.2f; // 예: 전방 위치에 있을 경우 50% 추가 데미지
+                totalSkillValue += 0.2f; // 예: 전방 위치에 있을 경우 50% 추가 데미지
 
             result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, totalSkillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (skillValue={totalSkillValue:F2})");
@@ -274,9 +275,9 @@ namespace ASB.Work.Battle.SkillExecution
     // 광역 공격
     public sealed class AoEDamageSkillHandler : BaseAoESkillHandler
     {
-        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result)
+        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result, bool? sharedIsCritical = null)
         {
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange, sharedIsCritical: sharedIsCritical));
             Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
         }
     }
@@ -285,11 +286,10 @@ namespace ASB.Work.Battle.SkillExecution
     // 피격된 적 수에 따라 데미지 감소
     public sealed class HitNumLowerDamageHandler : BaseAoESkillHandler
     {
-
-        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result)
+        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result, bool? sharedIsCritical = null)
         {
             float totalSkillValue = skillData.skillValue + 0.2f * Count;
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, totalSkillValue, skillData.skillIndex, skillData.classSkillRange));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, totalSkillValue, skillData.skillIndex, skillData.classSkillRange, sharedIsCritical: sharedIsCritical));
             Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (skillValue={totalSkillValue:F2})");
         }
     }

@@ -623,6 +623,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             classSkillRangeLine = src.ClassSkillRangeLine,
             classSkillTarget    = src.ClassSkillTarget,
             boundary            = new List<int>(src.ClassSkillMultiTarget ?? new List<int>()),
+            multiTargetType     = src.ClassSkill_MultiTargetType,
             multiTargetCount    = src.ClassSkill_MultiTargetCount,
             skillValue          = src.ClassSkillValueLv1,
             skillSubValue       = src.ClassSkillSubValueLv1,

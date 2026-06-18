@@ -82,6 +82,17 @@ namespace ASB.Work.BattleGrid
             cellRenderer.sharedMaterial = targetMat;
         }
 
+        /// <summary>광역 스킬 범위(메인 타깃 제외) 하이라이트.</summary>
+        public void SetAdditionalHighlight()
+        {
+            if (cellRenderer == null || additionalTargetMat == null)
+            {
+                return;
+            }
+
+            cellRenderer.sharedMaterial = additionalTargetMat;
+        }
+
         public void SetMainTargetHighlight()
         {
             var mat = GridManager.Instance?.MainTargetHighlightMat;

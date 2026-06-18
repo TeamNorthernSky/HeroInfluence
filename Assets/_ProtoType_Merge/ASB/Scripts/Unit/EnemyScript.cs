@@ -412,6 +412,7 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             classSkillRangeLine = source.classSkillRangeLine,
             classSkillTarget = source.classSkillTarget,
             boundary = source.boundary != null ? new List<int>(source.boundary) : new List<int>(),
+            multiTargetType = source.multiTargetType,
             multiTargetCount = source.multiTargetCount,
             skillValue = source.skillValue,
             skillSubValue = source.skillSubValue,

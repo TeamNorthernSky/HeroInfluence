@@ -645,6 +645,7 @@ public static class CSVLoader
             classSkillRangeLine = 1,
             classSkillTarget = target,
             boundary = BuildEnemySkillBoundaryPatterns(multiRaw),
+            multiTargetType = ParseIntOrDefault(GetField(fields, baseCol + 7), 0),
             multiTargetCount = mtCount,
             skillValue = skillVal,
             skillSubValue = 0f
@@ -752,6 +753,7 @@ public static class CSVLoader
                 classSkillTarget = ParseIntOrDefault(GetField(fields, 9), 0),
                 // boundary: ClassSkillMultiTarget 컬럼 — 패턴 인덱스(0~9). 전체 진영은 classSkillTarget==2.
                 boundary = ParseIntListField(GetField(fields, 10)),
+                multiTargetType = ParseIntOrDefault(GetField(fields, 11), 0),
                 multiTargetCount = ParseIntOrDefault(GetField(fields, 12), 0),
                 skillValue = ParseFloatSafe(GetField(fields, 13), 1f),
                 skillSubValue = ParseFloatSafe(GetField(fields, 14), 0f),

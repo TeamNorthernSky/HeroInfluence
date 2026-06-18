@@ -270,6 +270,13 @@ public class MoveCommandPreviewController
         if (activeMover == null || gridManager == null)
             return true;
 
+        if (gridManager.TryGetEnemyObjectAtGrid(clickedGrid, out EnemyGridMover enemy))
+            return TryResolveApproachGrid(
+                activeMover,
+                enemy.GetCurrentGrid(),
+                GetEnemyEncounterCandidates(enemy),
+                out destinationGrid);
+
         if (gridManager.TryGetOutpostObjectAtGrid(clickedGrid, out Outpost outpost))
             return TryResolveApproachGrid(
                 activeMover,
@@ -296,6 +303,28 @@ public class MoveCommandPreviewController
             occupant.AnchorGrid,
             castle.GetInteractionCells(),
             out destinationGrid);
+    }
+
+    private List<Vector2Int> GetEnemyEncounterCandidates(EnemyGridMover enemy)
+    {
+        List<Vector2Int> candidates = new List<Vector2Int>();
+        if (enemy == null || gridManager == null)
+            return candidates;
+
+        Vector2Int enemyGrid = enemy.GetCurrentGrid();
+        for (int i = 0; i < GridManager.Directions8.Length; i++)
+        {
+            Vector2Int candidate = enemyGrid + GridManager.Directions8[i];
+            if (gridManager.GetEnemyEncounterZoneState(candidate, out EnemyGridMover owner) != EnemyEncounterZoneState.SingleEnemyZone)
+                continue;
+
+            if (owner != enemy)
+                continue;
+
+            candidates.Add(candidate);
+        }
+
+        return candidates;
     }
 
     private List<Vector2Int> FindPlayerPreviewPath(
@@ -374,6 +403,21 @@ public class MoveCommandPreviewController
                 continue;
             }
 
+            if (bestPath != null && candidatePath.Count == bestPath.Count)
+            {
+                int candidateDiagonalSteps = CountDiagonalSteps(candidatePath);
+                int bestDiagonalSteps = CountDiagonalSteps(bestPath);
+                if (candidateDiagonalSteps < bestDiagonalSteps)
+                {
+                    bestPath = candidatePath;
+                    bestGrid = candidate;
+                    continue;
+                }
+
+                if (candidateDiagonalSteps > bestDiagonalSteps)
+                    continue;
+            }
+
             if (bestPath != null
                 && candidatePath.Count == bestPath.Count
                 && IsBetterCastleApproach(moverGrid, targetGrid, candidate, bestGrid))
@@ -385,6 +429,22 @@ public class MoveCommandPreviewController
 
         destinationGrid = bestGrid;
         return bestPath != null;
+    }
+
+    private static int CountDiagonalSteps(List<Vector2Int> path)
+    {
+        if (path == null || path.Count <= 1)
+            return 0;
+
+        int count = 0;
+        for (int i = 1; i < path.Count; i++)
+        {
+            Vector2Int delta = path[i] - path[i - 1];
+            if (delta.x != 0 && delta.y != 0)
+                count++;
+        }
+
+        return count;
     }
 
     private List<Vector2Int> AdjustPathForSpecialDestination(List<Vector2Int> path)
