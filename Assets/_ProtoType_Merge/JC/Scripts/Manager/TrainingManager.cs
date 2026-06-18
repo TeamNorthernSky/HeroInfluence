@@ -145,19 +145,19 @@ public class TrainingManager : MonoBehaviour
         newBase.HP += hpDelta;
         newBase.ClampToMinimumOne();
 
-        var levelUpTemplates = DHCsvTemplateCatalog.Instance != null
-            ? DHCsvTemplateCatalog.Instance.GetLevelUpTemplates()
-            : null;
-        StatBlock newIngame = UnitStatCalculator.CalculateIngameStats(
-            newBase, data.LevelupStats, data.Level, data.CurrentWeaponStats, levelUpTemplates);
-
-        // 최대 체력 증가분만큼 현재 HP도 함께 상향(협회는 방문 시 회복되므로 무난).
-        float newHp = Mathf.Min(data.CurrentHp + hpDelta, newIngame.HP);
-
-        return repo.UpdateUnitRuntimeState(
+        // [JC 260618] ingame(무기분 포함) 재계산은 RefreshEquippedWeaponStats에 위임 → CurrentWeaponStats 비의존
+        //   (DH가 코어에서 currentWeaponStats 제거 예정. 무기 스탯은 장착 인스턴스에서 레포가 직접 조회).
+        //   현재 HP를 hpDelta만큼 미리 올려두면, Refresh의 Clamp(currentHp, 0, 새 최대체력)가
+        //   "최대 체력 증가분만큼 현재 체력도 증가"를 자연 충족한다(팀 합의). 공격력 강화 시 hpDelta=0이라 불변.
+        float bumpedHp = data.CurrentHp + hpDelta;
+        bool ok = repo.UpdateUnitRuntimeState(
             unitIndex, data.UnitTemplateKey, data.Level,
             newBase, data.LevelupStats, data.CurrentSkillIndex, data.CurrentWeaponIndex,
-            data.CurrentWeaponStats, newIngame, newHp, data.Exp, data.MaxExp);
+            data.CurrentWeaponStats, data.IngameStats, bumpedHp, data.Exp, data.MaxExp);
+        if (!ok) return false;
+
+        // 장착 무기 인스턴스 스탯 기준으로 ingameStats 재계산 + currentHp를 새 최대치로 Clamp.
+        return repo.RefreshEquippedWeaponStats(unitIndex);
     }
 
     private TrainingEntry GetOrCreateEntry(int unitIndex)

@@ -143,11 +143,16 @@ public class MoveCommandPreviewController
         if (!TryHandleMarkerClick(ray))
             return false;
 
+        bool isItemOrEventTarget = hasMarkerGrid
+            && gridManager != null
+            && (gridManager.TryGetItemObjectAtGrid(markerGrid, out _)
+                || gridManager.TryGetEventObjectAtGrid(markerGrid, out _));
+
         Vector2Int? interactionTarget = null;
         if (hasMarkerGrid
             && gridManager != null
             && gridManager.HasInteractionTarget(markerGrid)
-            && !IsSingleEnemyEncounterZone(markerGrid))
+            && (isItemOrEventTarget || !IsSingleEnemyEncounterZone(markerGrid)))
         {
             interactionTarget = markerGrid;
         }

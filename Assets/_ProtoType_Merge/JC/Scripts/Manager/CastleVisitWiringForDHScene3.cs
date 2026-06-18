@@ -16,6 +16,14 @@ public class CastleVisitWiringForDHScene3 : MonoBehaviour
     [SerializeField] private Vector3 visitorIndicatorLocalEulerAngles = new Vector3(36.23f, 0f, 0f);
     [SerializeField] private Vector3 visitorIndicatorLocalScale = Vector3.one;
 
+    // [JC 260618] 거점 인디케이터(OutpostVisitIndicator)가 동일 스프라이트·배치를 재사용하도록 노출.
+    //   컴포넌트는 씬에 항상 존재하므로(wire 타이밍 무관) 거점이 안전하게 읽을 수 있다.
+    public Sprite VisitorIndicatorSprite => visitorIndicatorSprite;
+    public int VisitorIndicatorSortingOrder => visitorIndicatorSortingOrder;
+    public Vector3 VisitorIndicatorLocalPosition => visitorIndicatorLocalPosition;
+    public Vector3 VisitorIndicatorLocalEulerAngles => visitorIndicatorLocalEulerAngles;
+    public Vector3 VisitorIndicatorLocalScale => visitorIndicatorLocalScale;
+
     // [JC 260514 일원화] gridManager / targetGridOffsets 슬롯 폐기. 검사 위치는 CastleUnit.IsInteractionCell 위임.
     [Header("Debug")]
     [SerializeField] private bool logWireOnce = true;
