@@ -25,6 +25,8 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private Transform outpostRoot;
     [SerializeField] private Transform eventRoot;
     [SerializeField] private Transform stayEnemyRoot;
+    [SerializeField] private Transform castleRoot;
+    [SerializeField] private Transform villainUnionRoot;
 
     [Header("Load Options")]
     [SerializeField] private bool loadOnStart;
@@ -391,7 +393,8 @@ public class LevelLoader : MonoBehaviour
             return;
         }
 
-        SpawnComponent(castlePrefab, placement.GridPosition, transform);
+        Transform parent = castleRoot != null ? castleRoot : transform;
+        SpawnComponent(castlePrefab, placement.GridPosition, parent);
     }
 
     private void SpawnVillainUnionBase()
@@ -406,7 +409,8 @@ public class LevelLoader : MonoBehaviour
             return;
         }
 
-        SpawnComponent(villainUnionBasePrefab, placement.GridPosition, transform);
+        Transform parent = villainUnionRoot != null ? villainUnionRoot : transform;
+        SpawnComponent(villainUnionBasePrefab, placement.GridPosition, parent);
     }
 
     private void ClearSpawnedObjects()
@@ -418,6 +422,8 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(itemRoot);
         ClearChildren(outpostRoot);
         ClearChildren(GetEventRoot(false));
+        ClearChildren(castleRoot);
+        ClearChildren(villainUnionRoot);
         ClearLevelSpawnedEnemies();
         ClearStayEnemies();
         ClearDirectChildrenWithComponent<CastleUnit>();
