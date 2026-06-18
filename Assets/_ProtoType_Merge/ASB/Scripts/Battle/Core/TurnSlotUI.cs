@@ -1,13 +1,15 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 using UnityEngine.UI;
 
 public class TurnSlotUI : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI nameText;
+    //[SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private GameObject highlightFrame;
     [SerializeField] private RawImage Portrait;
     [SerializeField] private RawImage Frame;
+    [SerializeField] private RawImage PortraitMask;
 
     [Header("Frame Sprites")]
     [SerializeField] private Sprite playerTurnSprite;
@@ -20,6 +22,11 @@ public class TurnSlotUI : MonoBehaviour
 
         if (enemyTurnSprite == null)
             enemyTurnSprite = Resources.Load<Sprite>("UI_Sprite/UI_Battle/UI_HUD_enemyTurn");
+        
+        if(Portrait == null)
+        {
+            Portrait.color = new Color (1,1,1,0);
+        }
     }
 
     public void Setup(BattleCharactor unit, bool isCurrentTurn, Sprite portraitSprite = null)
@@ -34,8 +41,8 @@ public class TurnSlotUI : MonoBehaviour
 
         bool isPlayer = unit.IsPlayer;
 
-        if (nameText != null)
-            nameText.text = unit.UnitName;
+        //if (nameText != null)
+        //    nameText.text = unit.UnitName;
 
         if (Frame != null)
         {
@@ -48,9 +55,15 @@ public class TurnSlotUI : MonoBehaviour
         {
             Portrait.texture = portraitSprite != null ? portraitSprite.texture : null;
             Portrait.enabled = portraitSprite != null;
+            //if(Portrait.texture == null)
+            //{
+            //    PortraitMask.color = new Color(1, 1, 1, 0);
+            //}
         }
 
         if (highlightFrame != null)
             highlightFrame.SetActive(isCurrentTurn);
+
+
     }
 }
