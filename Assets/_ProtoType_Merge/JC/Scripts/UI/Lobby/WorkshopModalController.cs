@@ -67,8 +67,7 @@ public class WorkshopModalController : MonoBehaviour
     [SerializeField] private HeroListController heroSelectListController;
     [SerializeField] private Button btnHeroSelectClose;
 
-    [Header("무기 아이콘 (tier 매핑 + 강화레벨)")]
-    [SerializeField] private string weaponIconPathFormat = "UI_Sprite/UI_Icon/Weapon_temp/weapon {0:00} level {1}";
+    // [JC 260618] 무기 아이콘 경로는 HeroIconLibrary(SO)로 이관됨. tier 폴백 규약도 SO가 보유.
 
     [Header("강화 칸 프레임 스프라이트 (Resources)")]
     [SerializeField] private string cellEmptyPath    = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame";
@@ -98,12 +97,10 @@ public class WorkshopModalController : MonoBehaviour
         return s;
     }
 
-    // 무기 tier(1~3) + 강화레벨(1~5)로 아이콘. 미보유(level 0)는 level 1 아이콘.
+    // [JC 260618] 아이콘 해석을 HeroIconLibrary로 이관(키=weaponIndex, tier 폴백은 SO가 처리).
     private Sprite GetWeaponIcon(int weaponIndex, int level)
     {
-        int tier = Mathf.Clamp(WorkshopManager.TierOf(weaponIndex), 1, 3);
-        int lv = Mathf.Clamp(level < 1 ? 1 : level, 1, 5);
-        return Load(string.Format(weaponIconPathFormat, tier, lv));
+        return HeroIcons.GetWeaponIcon(weaponIndex, level);
     }
 
     private void Awake()
@@ -483,40 +480,8 @@ public class WorkshopModalController : MonoBehaviour
         }
     }
 
-    /// <summary>무기 스킬 효과 + 스탯 보너스를 레벨별로 조합한 설명 텍스트(무기 시트 V6.0 기준).</summary>
+    /// <summary>무기 스킬 효과 + 스탯 보너스를 레벨별로 조합한 설명 텍스트(무기 시트 V6.0 기준).
+    /// [JC 260619] 본문은 공유 헬퍼 WeaponTooltipText로 이관(HeroInfo 모달과 공용).</summary>
     private string BuildLevelDesc(WeaponData wd, int weaponIndex, int level)
-    {
-        var catalog = DHCsvTemplateCatalog.Instance;
-        var sb = new System.Text.StringBuilder();
-
-        // 무기 스킬: {WeaponSkillValue}/{WeaponSkillSubValue}를 레벨별 계수로 치환(공격은 ×계수 표기).
-        float v = catalog.GetWeaponSkillValueAtLevel(weaponIndex, level);
-        float sv = catalog.GetWeaponSkillSubValueAtLevel(weaponIndex, level);
-        string valStr = wd.WeaponSkillEffect == 0 ? $"×{v:0.##}" : $"{v:0.##}";
-        string subStr = wd.WeaponSkillEffect == 0 ? $"×{sv:0.##}" : $"{sv:0.##}";
-        string skillDesc = (wd.WeaponSkillDescription ?? string.Empty)
-            .Replace("{WeaponSkillValue}", valStr)
-            .Replace("{WeaponSkillSubValue}", subStr);
-        sb.AppendLine($"<b>[스킬] {wd.WeaponSkillName}</b>  (IP {wd.IPCost})");
-        sb.Append(skillDesc);
-
-        // 스탯 보너스(0이 아닌 항목만).
-        if (catalog.TryGetWeaponBonusAtLevel(weaponIndex, level, out var st))
-        {
-            var parts = new System.Collections.Generic.List<string>();
-            if (st.Atk != 0f) parts.Add($"공격 +{st.Atk:0.##}");
-            if (st.HP != 0f) parts.Add($"체력 +{st.HP:0.##}");
-            if (st.DEF != 0f) parts.Add($"방어 +{st.DEF:0.##}");
-            if (st.CriticalRate != 0f) parts.Add($"치명 +{st.CriticalRate * 100f:0.#}%");
-            if (st.CounterRate != 0f) parts.Add($"반격 +{st.CounterRate * 100f:0.#}%");
-            if (st.AvoidRate != 0f) parts.Add($"경감 +{st.AvoidRate * 100f:0.#}%");
-            if (parts.Count > 0)
-            {
-                sb.AppendLine();
-                sb.AppendLine();
-                sb.Append("<b>[스탯]</b> " + string.Join("  ", parts));
-            }
-        }
-        return sb.ToString();
-    }
+        => WeaponTooltipText.BuildWeaponLevelDesc(wd, weaponIndex, level);
 }

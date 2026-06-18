@@ -29,11 +29,15 @@ public class ExplorationHUDController : MonoBehaviour
     [SerializeField] private Button nextTurnButton;       // BTN_Explor_NextTurn
     [SerializeField] private TurnManager turnManager;
 
+    [Header("옵션(시스템 메뉴) 버튼 (비우면 이름으로 자동 탐색)")]
+    [SerializeField] private Button optionButton;         // BTN_Explor_Option → 영속 SystemMenuModal
+
     private const int DaysPerWeek = 7;
 
     private EconomyManager subscribedEco;
     private TurnManager subscribedTM;
     private bool listenerHooked;
+    private bool optionHooked;
     private Canvas canvas;
     private GraphicRaycaster graphicRaycaster;
 
@@ -90,6 +94,11 @@ public class ExplorationHUDController : MonoBehaviour
             var go = GameObject.Find("BTN_Explor_NextTurn");
             if (go != null) nextTurnButton = go.GetComponentInChildren<Button>(true);
         }
+        if (optionButton == null)
+        {
+            var go = GameObject.Find("BTN_Explor_Option");
+            if (go != null) optionButton = go.GetComponent<Button>() ?? go.GetComponentInChildren<Button>(true);
+        }
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
     }
 
@@ -101,9 +110,24 @@ public class ExplorationHUDController : MonoBehaviour
 
     private void HookButton()
     {
-        if (listenerHooked || nextTurnButton == null) return;
-        nextTurnButton.onClick.AddListener(OnClickNextTurn);
-        listenerHooked = true;
+        if (!listenerHooked && nextTurnButton != null)
+        {
+            nextTurnButton.onClick.AddListener(OnClickNextTurn);
+            listenerHooked = true;
+        }
+        if (!optionHooked && optionButton != null)
+        {
+            optionButton.onClick.AddListener(OnClickOption);
+            optionHooked = true;
+        }
+    }
+
+    // [JC 260619] 탐사 옵션 버튼 → 영속 SystemMenuModal 열기(로비 HQLobbyMenuController.OnClickOption과 동일 패턴).
+    private void OnClickOption()
+    {
+        var sys = FindObjectOfType<SystemMenuController>(true);
+        if (sys != null) sys.OpenMenu();
+        else Debug.LogWarning("[ExplorationHUD] SystemMenuController 없음 — 시스템 메뉴를 열 수 없음");
     }
 
     // ─── 구독 ───────────────────────────────────────────────

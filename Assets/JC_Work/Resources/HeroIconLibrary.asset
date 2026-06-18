@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1babb448c4c2a546aec47135eb98863, type: 3}
+  m_Name: HeroIconLibrary
+  m_EditorClassIdentifier: 
+  characters:
+  - heroName: "\uC544\uC774\uC5B8 \uAC78"
+    profile: {fileID: 21300000, guid: 4ffbcb293ed6fc64286a5f91a2e188ca, type: 3}
+  - heroName: "\uBC45"
+    profile: {fileID: 21300000, guid: 2cb75df9482497e4e91fae9bdc0f1993, type: 3}
+  - heroName: "\uC2A4\uCF5C\uD53C\uC628 \uC544\uC774\uC988"
+    profile: {fileID: 21300000, guid: 4e7782a21a5c14547b08d66abdc98fcb, type: 3}
+  - heroName: "\uC544\uCFE0\uC544 \uBE14\uB8E8"
+    profile: {fileID: 21300000, guid: b35573774b6f8824299840b7bc903a2a, type: 3}
+  skills: []
+  weapons: []
+  profileFolder: UI_Sprite/UI_Icon/CharacterProfile_temp/
+  profileDefaultFile: character icon sample 00
+  skillIconPathFormat: UI_Sprite/UI_Icon/ClassSkill_temp/skill {0:00} level {1}
+  skillIconVariants: 2
+  weaponIconPathFormat: UI_Sprite/UI_Icon/Weapon_temp/weapon {0:00} level {1}
