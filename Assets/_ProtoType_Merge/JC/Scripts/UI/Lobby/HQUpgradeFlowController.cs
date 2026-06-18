@@ -269,20 +269,31 @@ public class HQUpgradeFlowController : MonoBehaviour
         var gm = GameManager.Instance;
         if (gm == null || gm.HQ == null || gm.Economy == null) return;
         if (!CheckAfford(gm.Economy)) return;
+        // [JC 260618] CanUpgrade 사전 가드 — 차감 전에 업그레이드 가능 여부 확정(턴 사용/선행조건/최고단계 레이스 차단).
+        if (!gm.HQ.CanUpgrade(currentDept))
+        {
+            Debug.LogError("[HQUpgrade] CanUpgrade=false — 차감 중단");
+            return;
+        }
 
+        // [JC 260618] 차감 성공분을 기억해, 이후 단계 실패 시 전체 롤백(자원 유실 방지). Training/Lab 롤백 패턴과 정합.
+        var spent = new List<KeyValuePair<ResourceType, int>>();
         foreach (var kv in currentCost)
         {
             if (kv.Value <= 0) continue;
             if (!gm.Economy.Spend(kv.Key, kv.Value))
             {
-                Debug.LogError($"[HQUpgrade] Spend 실패: {kv.Key} {kv.Value}");
+                Debug.LogError($"[HQUpgrade] Spend 실패: {kv.Key} {kv.Value} — 롤백");
+                foreach (var s in spent) gm.Economy.Add(s.Key, s.Value);
                 return;
             }
+            spent.Add(kv);
         }
 
         if (!gm.HQ.TryUpgrade(currentDept, out int beforeLevel, out int afterLevel))
         {
-            Debug.LogError("[HQUpgrade] TryUpgrade 실패");
+            Debug.LogError("[HQUpgrade] TryUpgrade 실패 — 차감 롤백");
+            foreach (var s in spent) gm.Economy.Add(s.Key, s.Value);
             return;
         }
 
