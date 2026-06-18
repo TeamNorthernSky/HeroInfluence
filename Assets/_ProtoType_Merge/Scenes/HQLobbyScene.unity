@@ -1880,7 +1880,6 @@ MonoBehaviour:
   heroSelectModalRoot: {fileID: 832957957}
   heroSelectListController: {fileID: 1042998040}
   btnHeroSelectClose: {fileID: 186772684}
-  weaponIconPathFormat: UI_Sprite/UI_Icon/Weapon_temp/weapon {0:00} level {1}
   cellEmptyPath: UI_Sprite/UI_HQLobby/Popup/UI_box_Frame
   cellSelectedPath: UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Selected)
   cellLockedPath: UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Locked)
@@ -39362,8 +39361,6 @@ MonoBehaviour:
   cellSelectedPath: UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Selected)
   cellLockedPath: UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Locked)
   cellFinishedPath: UI_Sprite/UI_HQLobby/Popup/UI_,mark_finished
-  skillIconPathFormat: UI_Sprite/UI_Icon/ClassSkill_temp/skill {0:00} level {1}
-  skillIconVariants: 2
   lockedStageTip: "\uC5F0\uAD6C\uC18C \uC5C5\uADF8\uB808\uC774\uB4DC \uD544\uC694"
   notLearnedTip: "\uC544\uC9C1 \uC2B5\uB4DD\uD558\uC9C0 \uC54A\uC740 \uC2A4\uD0AC"
   heroSelectModalRoot: {fileID: 786876723}
@@ -48845,8 +48842,9 @@ MonoBehaviour:
   m_text: "\uAC74\uC124 \uB610\uB294 \uC5C5\uADF8\uB808\uC774\uB4DC\uD560 \uACF5\uAC04\uC744
     \uC120\uD0DD\uD558\uC138\uC694."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
+  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -48865,7 +48863,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -48936,7 +48934,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 110}
+  m_AnchoredPosition: {x: -222, y: 915}
   m_SizeDelta: {x: 760, y: 50}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!1 &1594808623

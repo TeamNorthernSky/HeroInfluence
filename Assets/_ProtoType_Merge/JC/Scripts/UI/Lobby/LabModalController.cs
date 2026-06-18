@@ -67,10 +67,7 @@ public class LabModalController : MonoBehaviour
     [SerializeField] private string cellLockedPath   = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Locked)";
     [SerializeField] private string cellFinishedPath = "UI_Sprite/UI_HQLobby/Popup/UI_,mark_finished";
 
-    [Header("스킬 아이콘 (ClassSkill_temp, 순서 매핑 + 레벨)")]
-    [Tooltip("{0}=종류(01~), {1}=레벨(1~5)")]
-    [SerializeField] private string skillIconPathFormat = "UI_Sprite/UI_Icon/ClassSkill_temp/skill {0:00} level {1}";
-    [SerializeField] private int skillIconVariants = 2;
+    // [JC 260618] 스킬 아이콘 경로/변형 수는 HeroIconLibrary(SO)로 이관됨. 폴백 규약도 SO가 보유.
 
     [Header("툴팁 문구")]
     [SerializeField] private string lockedStageTip = "연구소 업그레이드 필요";
@@ -103,10 +100,10 @@ public class LabModalController : MonoBehaviour
 
     private Sprite GetSkillIcon(int order, int level)
     {
-        int variants = Mathf.Max(1, skillIconVariants);
-        int v = (order % variants + variants) % variants + 1;
-        int lv = Mathf.Clamp(level, 1, 5);
-        return Load(string.Format(skillIconPathFormat, v, lv));
+        // [JC 260618] 아이콘 해석을 HeroIconLibrary로 이관. 정체성 키=skillIndex, order는 폴백(시각 동등)용.
+        int skillIndex = (order >= 0 && order < boundSkills.Count && boundSkills[order] != null)
+            ? boundSkills[order].skillIndex : -1;
+        return HeroIcons.GetClassSkillIcon(skillIndex, level, order);
     }
 
     private void Awake()

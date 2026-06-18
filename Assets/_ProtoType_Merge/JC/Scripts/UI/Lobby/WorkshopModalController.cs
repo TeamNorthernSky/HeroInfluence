@@ -67,8 +67,7 @@ public class WorkshopModalController : MonoBehaviour
     [SerializeField] private HeroListController heroSelectListController;
     [SerializeField] private Button btnHeroSelectClose;
 
-    [Header("무기 아이콘 (tier 매핑 + 강화레벨)")]
-    [SerializeField] private string weaponIconPathFormat = "UI_Sprite/UI_Icon/Weapon_temp/weapon {0:00} level {1}";
+    // [JC 260618] 무기 아이콘 경로는 HeroIconLibrary(SO)로 이관됨. tier 폴백 규약도 SO가 보유.
 
     [Header("강화 칸 프레임 스프라이트 (Resources)")]
     [SerializeField] private string cellEmptyPath    = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame";
@@ -98,12 +97,10 @@ public class WorkshopModalController : MonoBehaviour
         return s;
     }
 
-    // 무기 tier(1~3) + 강화레벨(1~5)로 아이콘. 미보유(level 0)는 level 1 아이콘.
+    // [JC 260618] 아이콘 해석을 HeroIconLibrary로 이관(키=weaponIndex, tier 폴백은 SO가 처리).
     private Sprite GetWeaponIcon(int weaponIndex, int level)
     {
-        int tier = Mathf.Clamp(WorkshopManager.TierOf(weaponIndex), 1, 3);
-        int lv = Mathf.Clamp(level < 1 ? 1 : level, 1, 5);
-        return Load(string.Format(weaponIconPathFormat, tier, lv));
+        return HeroIcons.GetWeaponIcon(weaponIndex, level);
     }
 
     private void Awake()
