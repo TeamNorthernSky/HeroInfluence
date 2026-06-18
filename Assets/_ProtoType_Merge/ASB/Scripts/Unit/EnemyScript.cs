@@ -197,19 +197,19 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             yield break;
         }
 
+        EnemyActionType actionType = decision != null ? decision.ActionType : EnemyActionType.ClassSkill;
+        SkillData highlightSkill = ResolveEnemyExecutionSkill(self, decision, actionType);
+
         // 타겟 발판 하이라이트 표시 후 0.5초 대기
-        flowManager?.ShowTargetHighlight(target);
+        flowManager?.ShowTargetHighlight(self, target, highlightSkill);
         yield return new WaitForSeconds(0.5f);
 
-        EnemyActionType actionType = decision != null ? decision.ActionType : EnemyActionType.ClassSkill;
         switch (actionType)
         {
             case EnemyActionType.ClassSkill:
-                SkillData classSkill = decision != null ? decision.SelectedSkill : self.SelectedSkillData;
-                if (classSkill != null)
+                if (highlightSkill != null)
                 {
-                    SkillData classSkillForExecution = PrepareEnemySkillExecutionCopy(classSkill);
-                    yield return StartCoroutine(battleManager.ExecuteGridSkill(self, target, classSkillForExecution));
+                    yield return StartCoroutine(battleManager.ExecuteGridSkill(self, target, highlightSkill));
                 }
                 else
                 {
@@ -218,10 +218,9 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
                 break;
 
             case EnemyActionType.WeaponSkill:
-                if (self.EquippedWeaponData != null)
+                if (highlightSkill != null)
                 {
-                    SkillData converted = PrepareEnemySkillExecutionCopy(self.EquippedWeaponData.ToSkillData());
-                    yield return StartCoroutine(battleManager.ExecuteGridSkill(self, target, converted));
+                    yield return StartCoroutine(battleManager.ExecuteGridSkill(self, target, highlightSkill));
                 }
                 else
                 {
@@ -320,6 +319,29 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         }
 
         return string.Join(", ", labels);
+    }
+
+    private static SkillData ResolveEnemyExecutionSkill(
+        BattleCharactor self,
+        EnemyActionDecision decision,
+        EnemyActionType actionType)
+    {
+        switch (actionType)
+        {
+            case EnemyActionType.ClassSkill:
+            {
+                SkillData classSkill = decision != null ? decision.SelectedSkill : self.SelectedSkillData;
+                return classSkill != null ? PrepareEnemySkillExecutionCopy(classSkill) : null;
+            }
+
+            case EnemyActionType.WeaponSkill:
+                return self.EquippedWeaponData != null
+                    ? PrepareEnemySkillExecutionCopy(self.EquippedWeaponData.ToSkillData())
+                    : null;
+
+            default:
+                return null;
+        }
     }
 
     /// <summary>적 스킬 실행용 복사본. 애니 필드가 비어 있으면 EnemyDataSheet 폴백 기본값을 채웁니다(원본 SkillData는 변경하지 않음).</summary>

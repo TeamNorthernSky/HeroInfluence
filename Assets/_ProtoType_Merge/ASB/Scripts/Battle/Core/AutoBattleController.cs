@@ -146,8 +146,13 @@ public class AutoBattleController : MonoBehaviour
 
         Debug.Log($"[AutoBattle] {actor.UnitName}: {actionType} → {target.UnitName}");
 
+        actor.ResolveSelectedSkill();
+        SkillData highlightSkill = actionType == PendingActionType.ClassSkill
+            ? actor.SelectedSkillData
+            : actor.EquippedWeaponData?.ToSkillData();
+
         // 타겟 발판 하이라이트 표시 후 대기
-        flowManager?.ShowTargetHighlight(target);
+        flowManager?.ShowTargetHighlight(actor, target, highlightSkill);
         float speed = BattleManager.Instance != null ? BattleManager.Instance.CurrentBattleSpeed : 1f;
         yield return new WaitForSeconds(thinkDelay / Mathf.Max(0.01f, speed));
 
@@ -157,14 +162,13 @@ public class AutoBattleController : MonoBehaviour
         {
             case PendingActionType.ClassSkill:
                 yield return StartCoroutine(
-                    battleManager.ExecuteGridSkill(actor, target, actor.SelectedSkillData,
+                    battleManager.ExecuteGridSkill(actor, target, highlightSkill,
                         success => executed = success));
                 break;
 
             case PendingActionType.WeaponSkill:
-                var skill = actor.EquippedWeaponData.ToSkillData();
                 yield return StartCoroutine(
-                    battleManager.ExecuteGridSkill(actor, target, skill,
+                    battleManager.ExecuteGridSkill(actor, target, highlightSkill,
                         success => executed = success));
                 break;
         }

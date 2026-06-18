@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
 using GridManagerRef = ASB.Work.BattleGrid.GridManager;
 using System.Linq;
+using ASB.Work.Battle.SkillExecution;
 using UnityEngine;
 
 // [JC 260513] DH의 CombatResult와 명세 일치화. ASB BattleFlowManager는 현재 Victory/Defeat만 발화.
@@ -724,27 +725,81 @@ public class BattleFlowManager : MonoBehaviour
         outline.OutlineMode = visible ? Outline.Mode.OutlineVisible : Outline.Mode.OutlineHidden;
     }
 
-    private GridCellRef _highlightedTargetCell;
+    private readonly List<GridCellRef> _highlightedCells = new List<GridCellRef>();
+    private GridCellRef _highlightedMainTargetCell;
 
-    /// <summary>자동전투·적 공격 시 타겟 발판 하이라이트 표시.</summary>
-    public void ShowTargetHighlight(BattleCharactor target)
+    /// <summary>자동전투·적 공격 시 실제 타격 대상 유닛 발판을 표시합니다.</summary>
+    public void ShowTargetHighlight(BattleCharactor caster, BattleCharactor target, SkillData skill)
     {
         ClearTargetHighlight();
-        if (target == null) return;
+        if (target == null)
+        {
+            return;
+        }
+
         GridManagerRef gridManager = GridManagerRef.Instance;
-        if (gridManager == null) return;
-        GridCellRef cell = target.OccupiedCell ?? gridManager.FindCellByUnit(target);
-        if (cell == null) return;
-        cell.SetMainTargetHighlight();
-        _highlightedTargetCell = cell;
+        if (gridManager == null)
+        {
+            return;
+        }
+
+        if (!SkillHitPreviewResolver.TryGetHitUnitCells(caster, target, skill, out GridCellRef mainCell, out List<GridCellRef> splashCells))
+        {
+            GridCellRef fallbackCell = target.OccupiedCell ?? gridManager.FindCellByUnit(target);
+            if (fallbackCell == null)
+            {
+                return;
+            }
+
+            fallbackCell.SetMainTargetHighlight();
+            _highlightedMainTargetCell = fallbackCell;
+            return;
+        }
+
+        for (int i = 0; i < splashCells.Count; i++)
+        {
+            GridCellRef cell = splashCells[i];
+            if (cell == null)
+            {
+                continue;
+            }
+
+            cell.SetHighlight();
+            _highlightedCells.Add(cell);
+        }
+
+        if (mainCell != null)
+        {
+            mainCell.SetMainTargetHighlight();
+            _highlightedMainTargetCell = mainCell;
+        }
+    }
+
+    /// <summary>스킬 정보 없이 선택 대상 1칸만 표시합니다.</summary>
+    public void ShowTargetHighlight(BattleCharactor target)
+    {
+        ShowTargetHighlight(null, target, null);
     }
 
     /// <summary>타겟 발판 하이라이트 제거.</summary>
     public void ClearTargetHighlight()
     {
-        if (_highlightedTargetCell == null) return;
-        _highlightedTargetCell.ClearHighlight();
-        _highlightedTargetCell = null;
+        for (int i = 0; i < _highlightedCells.Count; i++)
+        {
+            GridCellRef cell = _highlightedCells[i];
+            if (cell != null)
+            {
+                cell.ClearHighlight();
+            }
+        }
+
+        _highlightedCells.Clear();
+
+        if (_highlightedMainTargetCell != null)
+        {
+            _highlightedMainTargetCell.ClearHighlight();
+            _highlightedMainTargetCell = null;
+        }
     }
 
     private string GetUnitLabel(BattleCharactor unit)
