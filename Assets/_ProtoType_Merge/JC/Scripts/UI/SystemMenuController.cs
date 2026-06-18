@@ -30,6 +30,9 @@ public class SystemMenuController : MonoBehaviour
 
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
 
+        // [JC 260619] DH 엔딩 시퀀스(대형 아이콘 출력) 진행 중에는 ESC로 시스템 메뉴를 열지 않는다.
+        if (DHGameEndState.IsEnding) return;
+
         // [JC 260513] ESC 정책 통일 — 모든 씬 공통: Top 모달이 있으면 그것 닫고, 없으면 시스템 메뉴 토글.
         // 기존 정책(LobbyScene만 Top닫기, 그 외 무조건 TogglePause) 폐기.
         // SystemMenuModal 자신이 Top일 때는 자기를 닫는 ModalRegistry.CloseTop이 작동 — 별도 가드 불필요.
