@@ -180,7 +180,8 @@ public class PublicityModalController : MonoBehaviour
         }
         if (!gm.Publicity.TryProgress(selectedUnitIndex, progressCount))
         {
-            Debug.LogError("[Publicity] TryProgress 실패");
+            Debug.LogError("[Publicity] TryProgress 실패 — 차감 롤백");
+            gm.Economy.Add(ResourceType.Money, total); // [JC 260618] 자원 유실 방지 롤백
             return;
         }
         progressCount = 0;
