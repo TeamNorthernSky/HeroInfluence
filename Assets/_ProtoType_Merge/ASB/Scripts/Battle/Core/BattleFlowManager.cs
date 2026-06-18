@@ -728,7 +728,7 @@ public class BattleFlowManager : MonoBehaviour
     private readonly List<GridCellRef> _highlightedCells = new List<GridCellRef>();
     private GridCellRef _highlightedMainTargetCell;
 
-    /// <summary>자동전투·적 공격 시 실제 타격 대상 유닛 발판을 표시합니다.</summary>
+    /// <summary>자동전투·적 공격 시 스킬 공격 범위 발판을 표시합니다.</summary>
     public void ShowTargetHighlight(BattleCharactor caster, BattleCharactor target, SkillData skill)
     {
         ClearTargetHighlight();
@@ -743,7 +743,7 @@ public class BattleFlowManager : MonoBehaviour
             return;
         }
 
-        if (!SkillHitPreviewResolver.TryGetHitUnitCells(caster, target, skill, out GridCellRef mainCell, out List<GridCellRef> splashCells))
+        if (!SkillAreaPreviewHelper.TryGetAreaCells(caster, target, skill, out GridCellRef mainCell, out List<GridCellRef> splashCells))
         {
             GridCellRef fallbackCell = target.OccupiedCell ?? gridManager.FindCellByUnit(target);
             if (fallbackCell == null)
@@ -764,7 +764,7 @@ public class BattleFlowManager : MonoBehaviour
                 continue;
             }
 
-            cell.SetHighlight();
+            cell.SetAdditionalHighlight();
             _highlightedCells.Add(cell);
         }
 

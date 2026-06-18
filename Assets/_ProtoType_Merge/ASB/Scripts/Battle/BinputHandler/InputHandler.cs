@@ -436,81 +436,28 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
-        ASBGridManager gridManager = ASBGridManager.Instance;
-        if (gridManager == null)
+        if (!SkillAreaPreviewHelper.TryGetAreaCells(actor, hoverUnit, currentSelectedSkill, out ASBGridCell centerCell, out List<ASBGridCell> splashCells))
         {
             return;
         }
 
-        // 실행 파이프라인과 동일한 selector를 사용해 중심 타겟을 먼저 해석합니다.
-        var previewContext = new SkillExecutionContext
+        for (int i = 0; i < splashCells.Count; i++)
         {
-            Caster = actor,
-            Skill = currentSelectedSkill,
-            SelectedTarget = hoverUnit,
-            SelectedCell = hoverUnit.OccupiedCell ?? gridManager.FindCellByUnit(hoverUnit)
-        };
-        ITargetSelector selector = SkillTargetSelectorRegistry.GetSelector(currentSelectedSkill.skillIndex);
-        BattleCharactor primaryTarget = selector.SelectTarget(previewContext) ?? hoverUnit;
+            ASBGridCell cell = splashCells[i];
+            if (cell == null)
+            {
+                continue;
+            }
 
-        ASBGridCell centerCell = primaryTarget != null
-            ? primaryTarget.OccupiedCell ?? gridManager.FindCellByUnit(primaryTarget)
-            : null;
-        if (centerCell == null)
-        {
-            return;
+            cell.SetAdditionalHighlight();
+            highlightedCells.Add(cell);
         }
 
-        bool singleTarget = currentSelectedSkill.classSkillTarget == 0 ||
-                            (currentSelectedSkill.classSkillTarget != 2 &&
-                             (currentSelectedSkill.boundary == null ||
-                              currentSelectedSkill.boundary.Count == 0));
-        if (singleTarget)
+        if (centerCell != null)
         {
             centerCell.SetMainTargetHighlight();
             highlightedMainTargetCell = centerCell;
-            return;
         }
-
-        HashSet<Vector2Int> hitCoords;
-        if (currentSelectedSkill.classSkillTarget == 2)
-        {
-            hitCoords = SkillTargetingMapper.GetFullSideBoardCoordinates(centerCell.Coords);
-        }
-        else
-        {
-            List<int> previewPattern = BuildPatternIncludingCenter(currentSelectedSkill.boundary);
-            hitCoords = SkillTargetingMapper.GetMultiTargetCoordinates(centerCell.Coords, previewPattern);
-        }
-
-        if (hitCoords == null || hitCoords.Count == 0)
-        {
-            return;
-        }
-
-        bool isTargetEnemySide = centerCell.Coords.x >= 2;
-        foreach (Vector2Int coord in hitCoords)
-        {
-            if (gridManager.TryGetCell(coord, out ASBGridCell cell) && cell != null)
-            {
-                bool isSplashEnemySide = cell.Coords.x >= 2;
-                if (isTargetEnemySide != isSplashEnemySide)
-                {
-                    continue;
-                }
-
-                if (cell == centerCell)
-                {
-                    continue;
-                }
-
-                cell.SetHighlight();
-                highlightedCells.Add(cell);
-            }
-        }
-
-        centerCell.SetMainTargetHighlight();
-        highlightedMainTargetCell = centerCell;
     }
 
     private bool TryGetPendingSkillData(BattleCharactor actor, out SkillData skillData)
@@ -533,17 +480,6 @@ public class InputHandler : MonoBehaviour
             default:
                 return false;
         }
-    }
-
-    private static List<int> BuildPatternIncludingCenter(List<int> sourcePattern)
-    {
-        List<int> pattern = sourcePattern != null ? new List<int>(sourcePattern) : new List<int>();
-        if (!pattern.Contains(0))
-        {
-            pattern.Insert(0, 0);
-        }
-
-        return pattern;
     }
 
     private bool HasEnoughInfluenceForAction(BattleCharactor actor, PendingActionType actionType)

@@ -272,6 +272,13 @@ namespace ASB.Work.Battle.SkillExecution
                 return;
             }
 
+            bool? sharedCrit = null;
+            if (context.Skill.classSkillEffect == 0)
+            {
+                var rollCtx = new DamageContext { Caster = context.Caster };
+                sharedCrit = CombatCalculator.RollCritical(rollCtx);
+            }
+
             int count = context.ResolvedTargets.Count;
             for (int i = 0; i < count; i++)
             {
@@ -283,7 +290,7 @@ namespace ASB.Work.Battle.SkillExecution
 
                 if (context.Skill.classSkillEffect == 0)
                 {
-                    ApplyAdditionaDamage(context.Caster, target, context.Skill, count, result);
+                    ApplyAdditionaDamage(context.Caster, target, context.Skill, count, result, sharedCrit);
                 }
                 else if (context.Skill.classSkillEffect == 1 || context.Skill.classSkillEffect == 2)
                 {
@@ -295,7 +302,7 @@ namespace ASB.Work.Battle.SkillExecution
         }
 
         protected virtual void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count) { }
-        protected virtual void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result) { }
+        protected virtual void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result, bool? sharedIsCritical = null) { }
         protected virtual void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result) { }
 
         private static List<int> BuildPatternIncludingCenter(List<int> sourcePattern)

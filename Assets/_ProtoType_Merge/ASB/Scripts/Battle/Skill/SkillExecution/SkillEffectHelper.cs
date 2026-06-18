@@ -19,7 +19,8 @@ namespace ASB.Work.Battle.SkillExecution
             bool isAdditionalHit = false,
             bool isCounterAttack = false,
             float bonusCritRate = 0f,
-            float targetAvoidRateReduction = 0f)
+            float targetAvoidRateReduction = 0f,
+            bool? sharedIsCritical = null)
         {
             if (caster == null || target == null)
             {
@@ -39,7 +40,7 @@ namespace ASB.Work.Battle.SkillExecution
                 CanTriggerCounter = !isAdditionalHit && !isCounterAttack && skillRange == 0 && target.IsInFrontRow,
                 IsCounterAttack = isCounterAttack
             };
-            context.IsCritical = CombatCalculator.RollCritical(context);
+            context.IsCritical = sharedIsCritical ?? CombatCalculator.RollCritical(context);
             return context;
         }
 

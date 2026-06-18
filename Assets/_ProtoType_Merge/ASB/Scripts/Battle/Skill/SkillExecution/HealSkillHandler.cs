@@ -78,10 +78,10 @@ namespace ASB.Work.Battle.SkillExecution
     /// </summary>
     public sealed class AoEVampiricSkillHandler : BaseAoESkillHandler
     {
-        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result)
+        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result, bool? sharedIsCritical = null)
         {
             // 데미지 적용/계산은 BattleManager로만 중앙화합니다.
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange, sharedIsCritical: sharedIsCritical));
             Debug.Log($"[Skill/AoEVampiric] hit {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
 
             // 모든 DamageContext 적용이 끝난 직후, 총 피해량만큼 흡혈 회복합니다.
