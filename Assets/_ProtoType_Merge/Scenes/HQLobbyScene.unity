@@ -14694,7 +14694,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   modalRoot: {fileID: 443005623}
-  portraitImage: {fileID: 0}
+  portraitImage: {fileID: 933683948}
   nameText: {fileID: 1339625369}
   classText: {fileID: 2044144521}
   rankText: {fileID: 149153027}
