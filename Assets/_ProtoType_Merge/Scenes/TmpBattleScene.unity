@@ -3468,8 +3468,8 @@ MonoBehaviour:
   rankText: {fileID: 693883186}
   hpText: {fileID: 5472067415206608567}
   ipText: {fileID: 5472067415206608565}
-  hpGauge: {fileID: 0}
-  ipGauge: {fileID: 0}
+  hpGauge: {fileID: 1519606261}
+  ipGauge: {fileID: 1063730099}
 --- !u!1 &829707869
 GameObject:
   m_ObjectHideFlags: 0
@@ -7412,6 +7412,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 126344095}
     m_Modifications:
+    - target: {fileID: 866794406459650299, guid: 7e96c7e9e79862c42a9f7aaf258c6da4,
+        type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 931448103530888973, guid: 7e96c7e9e79862c42a9f7aaf258c6da4,
         type: 3}
       propertyPath: m_fontAsset

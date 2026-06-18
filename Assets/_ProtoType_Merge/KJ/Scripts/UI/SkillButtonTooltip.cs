@@ -46,6 +46,6 @@ public class SkillButtonTooltip : MonoBehaviour
         }
 
         if (skill == null) return;
-        hoverTooltip.SetContent(skill.skillName, SkillDescriptionBuilder.Build(skill));
+        hoverTooltip.SetContent(skill.skillName, SkillDescriptionBuilder.Resolve(skill));
     }
 }

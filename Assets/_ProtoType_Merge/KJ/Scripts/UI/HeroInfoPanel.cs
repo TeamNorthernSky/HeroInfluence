@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,6 +37,10 @@ public class HeroInfoPanel : MonoBehaviour
         if (flowManager == null) flowManager = FindFirstObjectByType<BattleFlowManager>();
         if (flowManager != null)
             flowManager.OnTurnStarted += OnTurnStarted;
+        if(hpGauge == null)
+        {
+
+        }
     }
 
     private void OnDisable()
@@ -98,7 +103,11 @@ public class HeroInfoPanel : MonoBehaviour
         if (hpText != null)
             hpText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
         if (hpGauge != null)
+        {
             hpGauge.fillAmount = max > 0f ? Mathf.Clamp01(current / max) : 0f;
+            Debug.Log($" HpGauge Percent : { hpGauge.fillAmount}");
+        }
+        
     }
 
     private void UpdateIpText(float current, float max)
