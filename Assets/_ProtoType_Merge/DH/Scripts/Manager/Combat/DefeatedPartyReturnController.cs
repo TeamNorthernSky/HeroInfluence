@@ -148,7 +148,7 @@ public class DefeatedPartyReturnController : MonoBehaviour
             party.gameObject.SetActive(true);
         }
 
-        HQVisitState.Instance?.SetVisitingParties(partyIds);
+        HQVisitState.Instance?.SetVisitingParties(HQVisitState.SourceHQ, partyIds);
         waitingParties.Clear();
         LoadLobbyScene();
     }

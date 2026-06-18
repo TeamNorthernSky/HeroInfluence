@@ -26,6 +26,9 @@ public class CastleHQVisitDetector : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool logVisitChanges = false;
 
+    // [JC 260618] HQVisitState 일반화: 본부는 고정 source 키로 자기 방문 파티만 갱신(거점 source와 분리).
+    private const string HqSource = HQVisitState.SourceHQ;
+
     private CastleUnit castleUnit;
     private readonly List<PartyGridMover> subscribedMovers = new List<PartyGridMover>();
 
@@ -91,7 +94,7 @@ public class CastleHQVisitDetector : MonoBehaviour
 
         if (DHGameEndState.IsEnding)
         {
-            state.ClearVisitingParties();
+            state.ClearSource(HqSource);
             ApplyVisitorIndicator(false);
             return;
         }
@@ -99,7 +102,7 @@ public class CastleHQVisitDetector : MonoBehaviour
         if (castleUnit == null) castleUnit = GetComponent<CastleUnit>();
         if (castleUnit == null)
         {
-            state.ClearVisitingParties();
+            state.ClearSource(HqSource);
             ApplyVisitorIndicator(false);
             return;
         }
@@ -123,7 +126,7 @@ public class CastleHQVisitDetector : MonoBehaviour
         }
 
         int prevCount = state.VisitingPartyIds.Count;
-        state.SetVisitingParties(detected);
+        state.SetVisitingParties(HqSource, detected);
         ApplyVisitorIndicator(state.HasVisitingParty);
 
         if (logVisitChanges && prevCount != state.VisitingPartyIds.Count)

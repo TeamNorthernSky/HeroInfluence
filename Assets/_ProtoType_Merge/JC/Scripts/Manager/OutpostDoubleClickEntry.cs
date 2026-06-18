@@ -165,35 +165,65 @@ public class OutpostVisitIndicator : MonoBehaviour
         if (indicator != null) indicator.SetActive(false);
     }
 
+    private static readonly List<string> visitBuffer = new List<string>();
+
     private void Update()
     {
+        if (Time.unscaledTime < nextEvalTime) return;
+        nextEvalTime = Time.unscaledTime + EvalInterval;
+
         if (DHGameEndState.IsEnding)
         {
             if (indicator != null && indicator.activeSelf) indicator.SetActive(false);
+            RegisterVisit(null); // 엔딩 중에는 방문 등록 해제
             return;
         }
-        if (Time.unscaledTime < nextEvalTime) return;
-        nextEvalTime = Time.unscaledTime + EvalInterval;
         Evaluate();
     }
 
     private void Evaluate()
     {
         if (outpost == null) return;
-        EnsureIndicator();
-        if (indicator == null) return; // 본부 인디케이터 미생성 등으로 아직 스프라이트 확보 전 — 다음 평가 재시도
+        EnsureIndicator(); // 스프라이트 미확보 시 indicator==null일 수 있으나 방문 등록은 진행
 
-        bool visiting = outpost.IsPlayerClaimed && HasPartyAtInteractionCell();
-        if (indicator.activeSelf != visiting) indicator.SetActive(visiting);
+        // 점령 거점에 한해 인접 상호작용 셀의 방문 파티를 수집.
+        List<string> visitingParties = outpost.IsPlayerClaimed ? CollectVisitingParties() : null;
+
+        // [JC 260618] HQVisitState에 거점별 source로 등록 → 시설(visitingOnly)·출전이 본부 방문과 동일하게 다룬다.
+        RegisterVisit(visitingParties);
+
+        bool visiting = visitingParties != null && visitingParties.Count > 0;
+        if (indicator != null && indicator.activeSelf != visiting) indicator.SetActive(visiting);
     }
 
-    private bool HasPartyAtInteractionCell()
+    /// <summary>거점별 안정적 source 키(progressKey)로 방문 파티 집합을 HQVisitState에 등록/해제.</summary>
+    private void RegisterVisit(List<string> partyIds)
     {
+        HQVisitState state = HQVisitState.Instance;
+        if (state == null) return;
+        string sourceKey = ResolveSourceKey();
+        if (string.IsNullOrEmpty(sourceKey)) return;
+
+        if (partyIds == null || partyIds.Count == 0) state.ClearSource(sourceKey);
+        else state.SetVisitingParties(sourceKey, partyIds);
+    }
+
+    private string ResolveSourceKey()
+    {
+        if (outpost == null) return null;
         GridManager grid = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
-        if (grid == null) return false;
+        return grid != null ? outpost.GetProgressKey(grid) : null;
+    }
+
+    /// <summary>인접 상호작용 셀에 위치한 파티들의 PartyId 목록(공유 버퍼 반환 — 호출 즉시 소비할 것).</summary>
+    private List<string> CollectVisitingParties()
+    {
+        visitBuffer.Clear();
+        GridManager grid = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        if (grid == null) return visitBuffer;
 
         IReadOnlyList<Vector2Int> cells = outpost.GetAdjacentInteractionCells(grid);
-        if (cells == null || cells.Count == 0) return false;
+        if (cells == null || cells.Count == 0) return visitBuffer;
 
         var movers = FindObjectsByType<PartyGridMover>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         for (int i = 0; i < movers.Length; i++)
@@ -203,10 +233,16 @@ public class OutpostVisitIndicator : MonoBehaviour
             if (DefeatedPartyReturnController.IsPartyWaiting(mover)) continue;
 
             Vector2Int g = mover.GetCurrentGrid();
+            bool atCell = false;
             for (int c = 0; c < cells.Count; c++)
-                if (cells[c] == g) return true;
+                if (cells[c] == g) { atCell = true; break; }
+            if (!atCell) continue;
+
+            PartyIdentity identity = mover.GetComponent<PartyIdentity>();
+            string partyId = identity != null ? identity.PartyId : mover.gameObject.name;
+            if (!string.IsNullOrWhiteSpace(partyId)) visitBuffer.Add(partyId);
         }
-        return false;
+        return visitBuffer;
     }
 
     /// <summary>인디케이터 GO를 1회 생성. 스프라이트·배치는 본부 와이어링(CastleVisitWiringForDHScene3)에서 읽어 본부와 일관.
