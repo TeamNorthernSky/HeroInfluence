@@ -128,6 +128,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: HPCanvas Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 8542359968682125884, guid: d07888b54c5d332419e78a6358a6427b,
+        type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
