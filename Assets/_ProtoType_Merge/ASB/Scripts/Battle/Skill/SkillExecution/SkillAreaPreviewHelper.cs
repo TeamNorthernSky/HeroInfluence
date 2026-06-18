@@ -12,6 +12,67 @@ namespace ASB.Work.Battle.SkillExecution
     /// </summary>
     public static class SkillAreaPreviewHelper
     {
+        public static bool IsFullSideAttack(SkillData skill) =>
+            skill != null && skill.classSkillTarget == 2;
+
+        /// <summary>
+        /// 범위 공격: 중심 Main + 범위 Additional.
+        /// 전체 공격(classSkillTarget==2): 범위 전체 Main.
+        /// </summary>
+        public static void ApplyAreaHighlights(
+            SkillData skill,
+            ASBGridCell mainCell,
+            List<ASBGridCell> splashCells,
+            List<ASBGridCell> highlightedCellsOut,
+            ref ASBGridCell highlightedMainTargetCellOut)
+        {
+            if (highlightedCellsOut == null)
+            {
+                return;
+            }
+
+            if (IsFullSideAttack(skill))
+            {
+                highlightedMainTargetCellOut = null;
+                ApplyMainHighlight(mainCell, highlightedCellsOut);
+                for (int i = 0; i < splashCells.Count; i++)
+                {
+                    ApplyMainHighlight(splashCells[i], highlightedCellsOut);
+                }
+
+                return;
+            }
+
+            for (int i = 0; i < splashCells.Count; i++)
+            {
+                ASBGridCell cell = splashCells[i];
+                if (cell == null)
+                {
+                    continue;
+                }
+
+                cell.SetAdditionalHighlight();
+                highlightedCellsOut.Add(cell);
+            }
+
+            if (mainCell != null)
+            {
+                mainCell.SetMainTargetHighlight();
+                highlightedMainTargetCellOut = mainCell;
+            }
+        }
+
+        private static void ApplyMainHighlight(ASBGridCell cell, List<ASBGridCell> highlightedCellsOut)
+        {
+            if (cell == null)
+            {
+                return;
+            }
+
+            cell.SetMainTargetHighlight();
+            highlightedCellsOut.Add(cell);
+        }
+
         public static bool TryGetAreaCells(
             BattleCharactor caster,
             BattleCharactor selectedTarget,
@@ -151,34 +212,7 @@ namespace ASB.Work.Battle.SkillExecution
                 return false;
             }
 
-            int range = Mathf.Max(0, skill.multiTargetCount);
-            bool isTargetEnemySide = mainCell.Coords.x >= 2;
-
-            for (int x = -range; x <= range; x++)
-            {
-                for (int y = -range; y <= range; y++)
-                {
-                    if (x == 0 && y == 0)
-                    {
-                        continue;
-                    }
-
-                    Vector2Int checkCoord = mainCell.Coords + new Vector2Int(x, y);
-                    if (!gridManager.TryGetCell(checkCoord, out ASBGridCell cell) || cell == null)
-                    {
-                        continue;
-                    }
-
-                    bool isSplashEnemySide = cell.Coords.x >= 2;
-                    if (isTargetEnemySide != isSplashEnemySide)
-                    {
-                        continue;
-                    }
-
-                    splashCells.Add(cell);
-                }
-            }
-
+            TargetAroundRandomHelper.CollectSplashCells(mainCell.Coords, skill, gridManager, mainCell, splashCells);
             return true;
         }
 

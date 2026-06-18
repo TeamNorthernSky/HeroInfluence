@@ -131,6 +131,7 @@ namespace ASB.Work.Battle.SkillExecution
 
             if (target.IsInFrontRow)
                 totalSkillValue += 0.2f; // 예: 전방 위치에 있을 경우 50% 추가 데미지
+                totalSkillValue += 0.2f; // 예: 전방 위치에 있을 경우 50% 추가 데미지
 
             result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, totalSkillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (skillValue={totalSkillValue:F2})");

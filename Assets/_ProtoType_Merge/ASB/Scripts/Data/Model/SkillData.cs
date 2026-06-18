@@ -38,6 +38,8 @@ public class SkillData
     public List<int> boundary = new List<int>();
 
     public int multiTargetCount;
+    /// <summary>0=후보 전체, 1=multiTargetCount명 랜덤 (classSkillTarget==1·TargetAroundRandom).</summary>
+    public int multiTargetType;
     public float skillValue;
     public float skillSubValue;
 

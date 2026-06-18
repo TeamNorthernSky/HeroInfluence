@@ -756,23 +756,12 @@ public class BattleFlowManager : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < splashCells.Count; i++)
-        {
-            GridCellRef cell = splashCells[i];
-            if (cell == null)
-            {
-                continue;
-            }
-
-            cell.SetAdditionalHighlight();
-            _highlightedCells.Add(cell);
-        }
-
-        if (mainCell != null)
-        {
-            mainCell.SetMainTargetHighlight();
-            _highlightedMainTargetCell = mainCell;
-        }
+        SkillAreaPreviewHelper.ApplyAreaHighlights(
+            skill,
+            mainCell,
+            splashCells,
+            _highlightedCells,
+            ref _highlightedMainTargetCell);
     }
 
     /// <summary>스킬 정보 없이 선택 대상 1칸만 표시합니다.</summary>

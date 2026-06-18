@@ -441,23 +441,12 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < splashCells.Count; i++)
-        {
-            ASBGridCell cell = splashCells[i];
-            if (cell == null)
-            {
-                continue;
-            }
-
-            cell.SetAdditionalHighlight();
-            highlightedCells.Add(cell);
-        }
-
-        if (centerCell != null)
-        {
-            centerCell.SetMainTargetHighlight();
-            highlightedMainTargetCell = centerCell;
-        }
+        SkillAreaPreviewHelper.ApplyAreaHighlights(
+            currentSelectedSkill,
+            centerCell,
+            splashCells,
+            highlightedCells,
+            ref highlightedMainTargetCell);
     }
 
     private bool TryGetPendingSkillData(BattleCharactor actor, out SkillData skillData)
