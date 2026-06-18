@@ -23,10 +23,9 @@ public class InteractionCellOverlayController : MonoBehaviour
     [SerializeField] private GameObject overlayPrefab;
 
     [Header("Display")]
-    [SerializeField] private bool showOverlappedZones;
     [SerializeField] private bool hideFoggedCells = true;
     [SerializeField] private Color singleZoneColor = new Color(1f, 0f, 0f, 0.28f);
-    [SerializeField] private Color overlappedZoneColor = new Color(1f, 0f, 0f, 0.12f);
+    [SerializeField] private Color overlappedZoneColor = new Color(0.55f, 0f, 0f, 0.55f);
     [SerializeField] private Color playerInteractionColor = new Color(0f, 0.35f, 1f, 0.28f);
     [SerializeField] private Color neutralInteractionColor = new Color(1f, 0.85f, 0f, 0.28f);
     [SerializeField, Range(0.1f, 1.2f)] private float cellScale = 0.92f;
@@ -141,7 +140,7 @@ public class InteractionCellOverlayController : MonoBehaviour
                     Vector2Int grid = enemyGrid + new Vector2Int(x, y);
                     EnemyEncounterZoneState state = gridManager.GetEnemyEncounterZoneState(grid, out _);
                     if (state != EnemyEncounterZoneState.SingleEnemyZone
-                        && (!showOverlappedZones || state != EnemyEncounterZoneState.OverlappedEnemyZone))
+                        && state != EnemyEncounterZoneState.OverlappedEnemyZone)
                     {
                         continue;
                     }
@@ -567,6 +566,8 @@ public class InteractionCellOverlayController : MonoBehaviour
     {
         cellScale = Mathf.Clamp(cellScale, 0.1f, 1.2f);
         refreshInterval = Mathf.Max(0.02f, refreshInterval);
+        if (overlappedZoneColor.a < 0.35f)
+            overlappedZoneColor.a = 0.55f;
     }
 
     private sealed class OverlayInstance
