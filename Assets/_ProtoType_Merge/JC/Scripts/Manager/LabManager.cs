@@ -210,6 +210,33 @@ public class LabManager : MonoBehaviour
         return 0;
     }
 
+    /// <summary>[JC 260619] 장착 스킬 미지정(CurrentSkillIndex=0) 또는 미습득 스킬이면 첫 습득 스킬(최저 acquireLevel)을 자동 장착.
+    /// 무기의 EnsureDefaultWeaponInstance에 대응하는 스킬 기본장착. (LabModalController에서 이관)</summary>
+    public void EnsureDefaultEquipped(int unitIndex)
+    {
+        if (unitIndex < 0) return;
+        var learned = GetLearnedSkills(unitIndex);
+        if (learned == null || learned.Count == 0) return;
+        int eq = GetEquippedSkillIndex(unitIndex);
+        bool valid = false;
+        if (eq != 0)
+            for (int i = 0; i < learned.Count; i++)
+                if (learned[i] != null && learned[i].skillIndex == eq) { valid = true; break; }
+        if (!valid) EquipSkill(unitIndex, learned[0].skillIndex);
+    }
+
+    /// <summary>[JC 260619] 전 플레이어 유닛에 기본 클래스 스킬을 보장 장착(게임 시작 시 1회용, 멱등).</summary>
+    public void EnsureAllDefaultEquipped()
+    {
+        var repo = PersistentUnitRepository.Instance;
+        if (repo == null) return;
+        for (int i = 0; i < repo.Units.Count; i++)
+        {
+            var u = repo.Units[i];
+            if (u != null) EnsureDefaultEquipped(u.UnitIndex);
+        }
+    }
+
     // ─── 내부 ──────────────────────────────────────────────────
     private SkillLevelEntry GetOrCreateEntry(int unitIndex, int skillIndex)
     {

@@ -163,6 +163,15 @@ public class GameManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         RefreshSceneManagers();
+        // [JC 260619] 유닛 시딩(PartyUnitBootstrap.Start 등) 완료 후 기본 클래스 스킬 자동장착(멱등).
+        // 무기는 유닛 생성 시 자동장착되지만 스킬은 미장착이라, 시작 시 보장한다.
+        if (Lab != null) StartCoroutine(EnsureDefaultSkillsNextFrame());
+    }
+
+    private System.Collections.IEnumerator EnsureDefaultSkillsNextFrame()
+    {
+        yield return null; // 씬 오브젝트 Start 완료(유닛 시딩) 이후로 1프레임 지연
+        if (Lab != null) Lab.EnsureAllDefaultEquipped();
     }
 
     private void RefreshSceneManagers()

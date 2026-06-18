@@ -206,16 +206,9 @@ public class LabModalController : MonoBehaviour
     /// 장착 스킬이 없거나 미습득이면 첫 습득 스킬(최저 acquireLevel)을 자동 장착해 영속 기록·표시.</summary>
     private void EnsureDefaultEquipped(int unitIndex)
     {
+        // [JC 260619] 로직을 LabManager로 이관(게임 시작 시 전역 자동장착과 공용). 여기선 위임.
         var gm = GameManager.Instance;
-        if (gm == null || gm.Lab == null || unitIndex < 0) return;
-        var learned = gm.Lab.GetLearnedSkills(unitIndex);
-        if (learned == null || learned.Count == 0) return;
-        int eq = gm.Lab.GetEquippedSkillIndex(unitIndex);
-        bool valid = false;
-        if (eq != 0)
-            for (int i = 0; i < learned.Count; i++)
-                if (learned[i] != null && learned[i].skillIndex == eq) { valid = true; break; }
-        if (!valid) gm.Lab.EquipSkill(unitIndex, learned[0].skillIndex);
+        if (gm != null && gm.Lab != null) gm.Lab.EnsureDefaultEquipped(unitIndex);
     }
 
     // ─── rep 스킬 클릭 → 장착 변경 ──────────────────────────────
@@ -298,17 +291,8 @@ public class LabModalController : MonoBehaviour
     }
 
     /// <summary>[JC 260617] 스킬 설명에 레벨별 계수 치환(효과타입별). 공격(0)=배율("1.2배"), 그 외=원문 수치.</summary>
-    private static string EffectText(SkillData s, int level)
-    {
-        if (s == null) return "";
-        string d = s.description ?? "";
-        float v = SkillValueAt(s.skillIndex, level);
-        float sub = SkillSubValueAt(s.skillIndex, level);
-        bool atk = s.classSkillEffect == 0;
-        string vStr = atk ? $"기본 피해량 × {v:0.##}" : $"{v:0.##}";
-        string subStr = atk ? $"기본 피해량 × {sub:0.##}" : $"{sub:0.##}";
-        return d.Replace("{ClassSkillValue}", vStr).Replace("{ClassSkillSubValue}", subStr);
-    }
+    // [JC 260619] 본문은 공유 헬퍼 ClassSkillTooltipText로 이관(HeroInfo 모달과 공용).
+    private static string EffectText(SkillData s, int level) => ClassSkillTooltipText.BuildDesc(s, level);
 
     /// <summary>[JC 260617] 리치 스킬 툴팁 호버 콜백. stageIndex -1=rep(1레벨 정보), 0~3=단계(현재↔다음 비교).</summary>
     public void OnSkillHover(int rowIndex, int stageIndex, bool enter)

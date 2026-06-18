@@ -727,8 +727,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 400, y: -30}
-  m_SizeDelta: {x: 300, y: 58}
+  m_AnchoredPosition: {x: 373, y: -30}
+  m_SizeDelta: {x: 242.7, y: 58}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &862524972781303084
 CanvasRenderer:
@@ -902,14 +902,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.8352941, b: 0.30980393, a: 0.3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.3}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 1a56b864daafd064d862746aa5a16dc2, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -934,7 +934,6 @@ GameObject:
   - component: {fileID: 769495587258783666}
   - component: {fileID: 4343662975313690118}
   - component: {fileID: 4593378944526668370}
-  - component: {fileID: 3317732253873841655}
   m_Layer: 0
   m_Name: Btn_WeaponSkill
   m_TagString: Untagged
@@ -1090,23 +1089,6 @@ MonoBehaviour:
   toggleOnClick: 0
   clickObjects: []
   clickActiveDuration: 0.15
---- !u!114 &3317732253873841655
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 730492500964482666}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tooltipPanel: {fileID: 622244811923074410}
-  titleText: {fileID: 0}
-  descriptionText: {fileID: 6061829542799378029}
-  title: 
-  description: "\uC7A5\uCC29 \uC7A5\uBE44 \uC815\uBCF4 (\uC900\uBE44 \uC911)"
 --- !u!1 &1157078838054945403
 GameObject:
   m_ObjectHideFlags: 0
@@ -1142,8 +1124,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 400, y: 140}
-  m_SizeDelta: {x: 300, y: 58}
+  m_AnchoredPosition: {x: 373, y: 140}
+  m_SizeDelta: {x: 242.7, y: 58}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1061686677737338142
 CanvasRenderer:
@@ -1200,7 +1182,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &495111847459088157
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1511,14 +1493,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.8352941, b: 0.30980393, a: 0.3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.3}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 1a56b864daafd064d862746aa5a16dc2, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2178,7 +2160,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 398, y: 225}
+  m_AnchoredPosition: {x: 97, y: 202}
   m_SizeDelta: {x: 260, y: 44}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4292760947584521326
@@ -3200,8 +3182,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 400, y: 55}
-  m_SizeDelta: {x: 300, y: 58}
+  m_AnchoredPosition: {x: 373, y: 55}
+  m_SizeDelta: {x: 242.7, y: 58}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3281293720779847805
 CanvasRenderer:
@@ -3545,8 +3527,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -12}
+  m_SizeDelta: {x: 13.499915, y: 35.389965}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6847196766392203252
 CanvasRenderer:
@@ -4015,14 +3997,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.8352941, b: 0.30980393, a: 0.3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.3}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 1a56b864daafd064d862746aa5a16dc2, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4355,8 +4337,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 400, y: -115}
-  m_SizeDelta: {x: 300, y: 58}
+  m_AnchoredPosition: {x: 373, y: -115}
+  m_SizeDelta: {x: 242.7, y: 58}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1249591450417534334
 CanvasRenderer:
@@ -4757,7 +4739,6 @@ GameObject:
   - component: {fileID: 4398607085207937319}
   - component: {fileID: 790624090143475773}
   - component: {fileID: 2436721028005067033}
-  - component: {fileID: 9005327078424705820}
   m_Layer: 0
   m_Name: Btn_ClassSkill
   m_TagString: Untagged
@@ -4913,23 +4894,6 @@ MonoBehaviour:
   toggleOnClick: 0
   clickObjects: []
   clickActiveDuration: 0.15
---- !u!114 &9005327078424705820
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6802184240801377124}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tooltipPanel: {fileID: 190104775801699224}
-  titleText: {fileID: 0}
-  descriptionText: {fileID: 5218667794796002205}
-  title: 
-  description: "\uCE90\uB9AD\uD130 \uC2A4\uD0AC \uC815\uBCF4 (\uC900\uBE44 \uC911)"
 --- !u!1 &6825426550973294717
 GameObject:
   m_ObjectHideFlags: 0
@@ -4964,7 +4928,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 135, y: 231}
+  m_AnchoredPosition: {x: 161, y: 263}
   m_SizeDelta: {x: 420, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &467515895366248456
@@ -5265,7 +5229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.5}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.75}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5324,6 +5288,9 @@ MonoBehaviour:
   speedText: {fileID: 397261805152083396}
   classSkillIcon: {fileID: 7009575775344874861}
   weaponSkillIcon: {fileID: 3910325532293073270}
+  classSkillButton: {fileID: 0}
+  weaponButton: {fileID: 0}
+  weaponSkillButton: {fileID: 0}
 --- !u!114 &3322480236130672240
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5570,7 +5537,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 457, y: 233}
+  m_AnchoredPosition: {x: 424, y: 223}
   m_SizeDelta: {x: 72, y: 72}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1269978583712997730
@@ -5857,8 +5824,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -10, y: -10}
-  m_SizeDelta: {x: 80, y: 60}
+  m_AnchoredPosition: {x: 37, y: 26}
+  m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &1702184434369309720
 CanvasRenderer:
@@ -5881,14 +5848,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 33554115aeb4ac94ebb53bc61b277298, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5969,7 +5936,6 @@ GameObject:
   - component: {fileID: 8692233518656775578}
   - component: {fileID: 3388734672880000849}
   - component: {fileID: 9186491394021701632}
-  - component: {fileID: 1334423892407465762}
   m_Layer: 0
   m_Name: Btn_EquipSkill
   m_TagString: Untagged
@@ -6125,20 +6091,3 @@ MonoBehaviour:
   toggleOnClick: 0
   clickObjects: []
   clickActiveDuration: 0.15
---- !u!114 &1334423892407465762
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9018745771210130270}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tooltipPanel: {fileID: 6405745938859132248}
-  titleText: {fileID: 0}
-  descriptionText: {fileID: 8492229628367041325}
-  title: 
-  description: "\uC7A5\uBE44 \uC2A4\uD0AC \uC815\uBCF4 (\uC900\uBE44 \uC911)"
