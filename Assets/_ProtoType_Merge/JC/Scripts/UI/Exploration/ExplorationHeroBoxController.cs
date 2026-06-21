@@ -158,7 +158,8 @@ public class ExplorationHeroBoxController : MonoBehaviour
 
             if (slot.profile != null)
             {
-                var sp = HeroProfileCatalog.GetByName(template != null ? template.Name : null);
+                // [JC 260621] 포트레이트 = unitIndex(=HeroIndex) 기준 PortraitLibrary 해석.
+                var sp = HeroProfileCatalog.GetByUnitIndex(unitIndex);
                 slot.profile.enabled = sp != null;
                 if (sp != null) slot.profile.sprite = sp;
             }

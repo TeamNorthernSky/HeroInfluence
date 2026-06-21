@@ -122,7 +122,8 @@ public class HeroInfoModal : MonoBehaviour
 
         if (portraitImage != null)
         {
-            var sp = HeroProfileCatalog.GetByName(template != null ? template.Name : null);
+            // [JC 260621] 포트레이트 = unitIndex(=HeroIndex) 기준 PortraitLibrary 해석.
+            var sp = HeroProfileCatalog.GetByUnitIndex(currentUnitIndex);
             portraitImage.gameObject.SetActive(true);
             portraitImage.enabled = true;
             if (sp != null) portraitImage.sprite = sp;
