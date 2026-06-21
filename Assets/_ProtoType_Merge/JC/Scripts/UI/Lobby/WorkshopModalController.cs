@@ -103,6 +103,22 @@ public class WorkshopModalController : MonoBehaviour
         return HeroIcons.GetWeaponIcon(weaponIndex, level);
     }
 
+    // [JC 260621] 공방 표시 규약: 레벨1 = 무기 아이콘(무기스킬 1레벨 자리를 대체·생략), 레벨2~5 = 무기스킬 아이콘.
+    //  무기스킬 1레벨 아이콘 자체는 예비 인프라로 존재하나 공방 UI는 결선하지 않음(HeroInfo 모달에서만 실사용).
+    private Sprite WorkshopStageIcon(int weaponIndex, int level)
+    {
+        if (level <= 1) return GetWeaponIcon(weaponIndex, level);
+        int wsi = WeaponSkillIndexOf(weaponIndex);
+        if (wsi > 0) return HeroIcons.GetWeaponSkillIcon(wsi, level);
+        return GetWeaponIcon(weaponIndex, level); // wd 조회 실패 시 폴백
+    }
+
+    private static int WeaponSkillIndexOf(int weaponIndex)
+    {
+        var catalog = DHCsvTemplateCatalog.Instance;
+        return (catalog != null && catalog.TryGetWeapon(weaponIndex, out var wd) && wd != null) ? wd.WeaponSkillIndex : 0;
+    }
+
     private void Awake()
     {
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
@@ -396,7 +412,7 @@ public class WorkshopModalController : MonoBehaviour
                     bool stageLocked = !filled && !isNext; // 강화 불가 단계(미보유 포함)
                     Sprite fs = isSel ? sSel : sEmpty; // 테두리 전용
                     if (cell.frame != null) { cell.frame.sprite = fs; cell.frame.enabled = fs != null; }
-                    if (cell.contentIcon != null) { var ic = GetWeaponIcon(w, stageLevel); cell.contentIcon.sprite = ic; cell.contentIcon.enabled = ic != null; }
+                    if (cell.contentIcon != null) { var ic = WorkshopStageIcon(w, stageLevel); cell.contentIcon.sprite = ic; cell.contentIcon.enabled = ic != null; }
                     if (cell.finishedMark != null) cell.finishedMark.SetActive(filled);   // 완료(아이콘 앞)
                     if (cell.lockMark != null) cell.lockMark.SetActive(stageLocked);       // 잠금(아이콘 앞)
                     if (cell.button != null) cell.button.interactable = isNext;
@@ -475,8 +491,8 @@ public class WorkshopModalController : MonoBehaviour
             if (cell == null) return;
             var rt = (cell.frame != null ? cell.frame.transform : (cell.button != null ? cell.button.transform : null)) as RectTransform;
             SkillTooltip.Instance.ShowCompare(
-                GetWeaponIcon(w, fromLevel), $"Lv.{fromLevel}", BuildLevelDesc(wd, w, fromLevel),
-                GetWeaponIcon(w, toLevel),   $"Lv.{toLevel}",   BuildLevelDesc(wd, w, toLevel), rt);
+                WorkshopStageIcon(w, fromLevel), $"Lv.{fromLevel}", BuildLevelDesc(wd, w, fromLevel),
+                WorkshopStageIcon(w, toLevel),   $"Lv.{toLevel}",   BuildLevelDesc(wd, w, toLevel), rt);
         }
     }
 
