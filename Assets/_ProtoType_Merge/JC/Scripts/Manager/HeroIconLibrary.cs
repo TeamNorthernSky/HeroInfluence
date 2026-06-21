@@ -41,10 +41,15 @@ public class HeroIconLibrary : ScriptableObject
     [Tooltip("{0}=tier(01~03), {1}=레벨(1~5)")]
     [SerializeField] private string weaponIconPathFormat = "UI_Sprite/UI_Icon/Weapon_temp/weapon {0:00} level {1}";
 
+    [Header("클래스 스킬 아이콘 CSV (Resources TextAsset, 컬럼=ClassSkillIndex,Level,IconResourcePath)")]
+    [Tooltip("직업별 스킬 아이콘 경로표. 테이블(skills) 미지정 시 레거시 폴백보다 우선 적용.")]
+    [SerializeField] private string classSkillIconCsvPath = "Icon_Skill_Sprite/ClassSkillIconSheet";
+
     private readonly Dictionary<string, Sprite> _resCache = new Dictionary<string, Sprite>();
     private Dictionary<string, Sprite> _charLut;
     private Dictionary<int, Sprite[]> _skillLut;
     private Dictionary<int, Sprite[]> _weaponLut;
+    private Dictionary<long, string> _csvPathLut;
 
     private Sprite LoadRes(string path)
     {
@@ -58,6 +63,31 @@ public class HeroIconLibrary : ScriptableObject
         if (arr == null || arr.Length == 0) return null;
         int i = Mathf.Clamp(level, 1, arr.Length) - 1;
         return arr[i];
+    }
+
+    // ── CSV 경로표 (ClassSkillIndex,Level → Resources 경로) ───────
+    private static long CsvKey(int skillIndex, int level) => ((long)skillIndex << 8) | (uint)Mathf.Clamp(level, 1, 5);
+
+    private void EnsureCsvLut()
+    {
+        if (_csvPathLut != null) return;
+        _csvPathLut = new Dictionary<long, string>();
+        if (string.IsNullOrEmpty(classSkillIconCsvPath)) return;
+        var ta = Resources.Load<TextAsset>(classSkillIconCsvPath);
+        if (ta == null) return;
+        var lines = ta.text.Split('\n');
+        for (int i = 1; i < lines.Length; i++) // 0행=헤더
+        {
+            string line = lines[i].Trim();
+            if (string.IsNullOrEmpty(line)) continue;
+            var c = line.Split(',');
+            if (c.Length < 3) continue;
+            if (!int.TryParse(c[0].Trim(), out int idx)) continue;
+            if (!int.TryParse(c[1].Trim(), out int lv)) continue;
+            string path = c[2].Trim();
+            if (string.IsNullOrEmpty(path)) continue;
+            _csvPathLut[CsvKey(idx, lv)] = path;
+        }
     }
 
     // ── Character profile ─────────────────────────────────────
@@ -81,7 +111,7 @@ public class HeroIconLibrary : ScriptableObject
     }
 
     // ── Class skill icon (key = skillIndex) ───────────────────
-    /// <summary>스킬 아이콘. 테이블 미지정 시 레거시 경로 폴백.
+    /// <summary>스킬 아이콘. 우선순위: 직접참조 테이블(skills) → CSV 경로표 → 레거시 경로 폴백.
     /// fallbackOrder(모달 행 순서)가 주어지면 기존 위치 기반과 동일 결과(시각 동등) 유지.</summary>
     public Sprite GetClassSkillIcon(int skillIndex, int level, int fallbackOrder = -1)
     {
@@ -96,6 +126,15 @@ public class HeroIconLibrary : ScriptableObject
             var sp = AtLevel(arr, level);
             if (sp != null) return sp;
         }
+
+        // [JC 260620] CSV 경로표(직업별 스킬 아이콘) — 직접참조 테이블 미지정 시 우선. CSV 미수록(예: 무기스킬)은 아래 레거시 폴백.
+        EnsureCsvLut();
+        if (_csvPathLut.TryGetValue(CsvKey(skillIndex, level), out var csvPath))
+        {
+            var csp = LoadRes(csvPath);
+            if (csp != null) return csp;
+        }
+
         int variants = Mathf.Max(1, skillIconVariants);
         int basis = fallbackOrder >= 0 ? fallbackOrder : Mathf.Max(0, skillIndex);
         int v = (basis % variants + variants) % variants + 1;
