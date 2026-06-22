@@ -1,20 +1,32 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public enum SkillButtonType { ClassSkill, WeaponSkill }
 
-[RequireComponent(typeof(HoverTooltip))]
-public class SkillButtonTooltip : MonoBehaviour
+/// <summary>
+/// [JC 260622] 전투 스킬버튼(클래스/무기스킬) 호버 툴팁.
+/// 기존 KJ HoverTooltip(단순 title+desc) 대신, HeroInfoModal과 "동일한" 리치 SkillTooltip
+/// (아이콘 + 이름 Lv.n + 계수 치환 desc)을 표시한다.
+/// SkillTooltip은 영속 싱글턴 — 배틀 씬에 SkillTooltip.prefab을 배치해 두어야 동작(없으면 no-op).
+/// </summary>
+public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private SkillButtonType skillType = SkillButtonType.ClassSkill;
     [SerializeField] private BattleFlowManager battleFlowManager;
 
-    private HoverTooltip hoverTooltip;
+    [Tooltip("[JC 260622] 툴팁 표시 위치 오프셋(버튼 중앙 기준, X 우+/Y 상+). 전투 스킬버튼이 화면 우하단이라 위로 띄우려면 X 음수·Y 양수. 에디터에서 직접 조정.")]
+    [SerializeField] private Vector2 tooltipOffset = new Vector2(-250f, 350f);
+
+    private BattleCharactor currentUnit;
 
     private void Awake()
     {
-        hoverTooltip = GetComponent<HoverTooltip>();
         if (battleFlowManager == null)
             battleFlowManager = FindFirstObjectByType<BattleFlowManager>();
+
+        // [JC 260622] 옛 KJ HoverTooltip이 같은 버튼에 남아 자체 호버로 빈 툴팁을 띄우는 것 방지(비활성화).
+        var legacy = GetComponent<HoverTooltip>();
+        if (legacy != null) legacy.enabled = false;
     }
 
     private void OnEnable()
@@ -27,25 +39,63 @@ public class SkillButtonTooltip : MonoBehaviour
     {
         if (battleFlowManager != null)
             battleFlowManager.OnTurnStarted -= OnTurnStarted;
+        HideTip();
     }
 
     private void OnTurnStarted(int round, BattleCharactor unit)
     {
-        if (unit == null || !unit.IsPlayer) return;
+        currentUnit = (unit != null && unit.IsPlayer) ? unit : null;
+    }
 
-        SkillData skill = null;
+    public void OnPointerEnter(PointerEventData eventData) => ShowTip();
+    public void OnPointerExit(PointerEventData eventData) => HideTip();
+
+    private void ShowTip()
+    {
+        var tip = SkillTooltip.Instance;
+        if (tip == null || currentUnit == null) return;
+
+        RectTransform target = transform as RectTransform;
+        var gm = GameManager.Instance;
+        int uIdx = currentUnit.SourceData != null ? currentUnit.SourceData.UnitIndex : 0;
 
         if (skillType == SkillButtonType.ClassSkill)
         {
-            unit.ResolveSelectedSkill();
-            skill = unit.SelectedSkillData;
+            // HeroInfoModal slot0과 동일: 장착 클래스 스킬 아이콘 + Lv + 계수치환 desc.
+            currentUnit.ResolveSelectedSkill();
+            SkillData sd = currentUnit.SelectedSkillData;
+            if (sd == null) return;
+            int lv = (gm != null && gm.Lab != null && uIdx > 0)
+                ? gm.Lab.GetSkillLevel(uIdx, sd.skillIndex)
+                : (currentUnit.SourceData != null ? currentUnit.SourceData.SkillLevel : 1);
+            tip.ShowInfo(
+                HeroIcons.GetClassSkillIcon(sd.skillIndex, lv),
+                $"{sd.skillName} Lv.{lv}",
+                ClassSkillTooltipText.BuildDesc(sd, lv),
+                target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
         }
         else
         {
-            skill = unit.EquippedWeaponData?.ToSkillData();
+            // HeroInfoModal slot2와 동일: 무기스킬 아이콘 + 무기 레벨 Lv + BuildWeaponSkillDesc.
+            WeaponData wd = currentUnit.EquippedWeaponData;
+            if (wd == null || wd.WeaponSkillIndex <= 0) return;
+            int wIdx = currentUnit.EquippedWeaponIndex > 0
+                ? currentUnit.EquippedWeaponIndex
+                : (currentUnit.SourceData != null ? currentUnit.SourceData.CurrentWeaponIndex : 0);
+            int wl = (gm != null && gm.Workshop != null && uIdx > 0)
+                ? gm.Workshop.GetWeaponLevel(uIdx, wIdx)
+                : 1;
+            tip.ShowInfo(
+                HeroIcons.GetWeaponSkillIcon(wd.WeaponSkillIndex, wl),
+                $"{wd.WeaponSkillName} Lv.{wl}",
+                WeaponTooltipText.BuildWeaponSkillDesc(wd, wIdx, wl),
+                target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
         }
+    }
 
-        if (skill == null) return;
-        hoverTooltip.SetContent(skill.skillName, SkillDescriptionBuilder.Resolve(skill));
+    private void HideTip()
+    {
+        var tip = SkillTooltip.Instance;
+        if (tip != null) tip.Hide();
     }
 }

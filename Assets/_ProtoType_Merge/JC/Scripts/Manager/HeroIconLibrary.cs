@@ -41,10 +41,23 @@ public class HeroIconLibrary : ScriptableObject
     [Tooltip("{0}=tier(01~03), {1}=레벨(1~5)")]
     [SerializeField] private string weaponIconPathFormat = "UI_Sprite/UI_Icon/Weapon_temp/weapon {0:00} level {1}";
 
+    [Header("클래스 스킬 아이콘 CSV (Resources TextAsset, 컬럼=ClassSkillIndex,Level,IconResourcePath)")]
+    [Tooltip("직업별 스킬 아이콘 경로표. 테이블(skills) 미지정 시 레거시 폴백보다 우선 적용.")]
+    [SerializeField] private string classSkillIconCsvPath = "Icon_Skill_Sprite/ClassSkillIconSheet";
+
+    [Header("무기 아이콘 CSV (컬럼=WeaponIndex,IconResourcePath — 레벨 무관)")]
+    [SerializeField] private string weaponIconCsvPath = "Icon_Weapon_Sprite/WeaponIconSheet";
+
+    [Header("무기스킬 아이콘 CSV (컬럼=WeaponSkillIndex,Level,IconResourcePath)")]
+    [SerializeField] private string weaponSkillIconCsvPath = "Icon_WeaponSkill_Sprite/WeaponSkillIconSheet";
+
     private readonly Dictionary<string, Sprite> _resCache = new Dictionary<string, Sprite>();
     private Dictionary<string, Sprite> _charLut;
     private Dictionary<int, Sprite[]> _skillLut;
     private Dictionary<int, Sprite[]> _weaponLut;
+    private Dictionary<long, string> _csvPathLut;
+    private Dictionary<int, string> _weaponCsvLut;
+    private Dictionary<long, string> _weaponSkillCsvLut;
 
     private Sprite LoadRes(string path)
     {
@@ -58,6 +71,74 @@ public class HeroIconLibrary : ScriptableObject
         if (arr == null || arr.Length == 0) return null;
         int i = Mathf.Clamp(level, 1, arr.Length) - 1;
         return arr[i];
+    }
+
+    // ── CSV 경로표 (ClassSkillIndex,Level → Resources 경로) ───────
+    private static long CsvKey(int skillIndex, int level) => ((long)skillIndex << 8) | (uint)Mathf.Clamp(level, 1, 5);
+
+    private void EnsureCsvLut()
+    {
+        if (_csvPathLut != null) return;
+        _csvPathLut = new Dictionary<long, string>();
+        if (string.IsNullOrEmpty(classSkillIconCsvPath)) return;
+        var ta = Resources.Load<TextAsset>(classSkillIconCsvPath);
+        if (ta == null) return;
+        var lines = ta.text.Split('\n');
+        for (int i = 1; i < lines.Length; i++) // 0행=헤더
+        {
+            string line = lines[i].Trim();
+            if (string.IsNullOrEmpty(line)) continue;
+            var c = line.Split(',');
+            if (c.Length < 3) continue;
+            if (!int.TryParse(c[0].Trim(), out int idx)) continue;
+            if (!int.TryParse(c[1].Trim(), out int lv)) continue;
+            string path = c[2].Trim();
+            if (string.IsNullOrEmpty(path)) continue;
+            _csvPathLut[CsvKey(idx, lv)] = path;
+        }
+    }
+
+    private void EnsureWeaponCsvLut()
+    {
+        if (_weaponCsvLut != null) return;
+        _weaponCsvLut = new Dictionary<int, string>();
+        if (string.IsNullOrEmpty(weaponIconCsvPath)) return;
+        var ta = Resources.Load<TextAsset>(weaponIconCsvPath);
+        if (ta == null) return;
+        var lines = ta.text.Split('\n');
+        for (int i = 1; i < lines.Length; i++) // 0행=헤더 (WeaponIndex,IconResourcePath)
+        {
+            string line = lines[i].Trim();
+            if (string.IsNullOrEmpty(line)) continue;
+            var c = line.Split(',');
+            if (c.Length < 2) continue;
+            if (!int.TryParse(c[0].Trim(), out int wi)) continue;
+            string path = c[1].Trim();
+            if (string.IsNullOrEmpty(path)) continue;
+            _weaponCsvLut[wi] = path;
+        }
+    }
+
+    private void EnsureWeaponSkillCsvLut()
+    {
+        if (_weaponSkillCsvLut != null) return;
+        _weaponSkillCsvLut = new Dictionary<long, string>();
+        if (string.IsNullOrEmpty(weaponSkillIconCsvPath)) return;
+        var ta = Resources.Load<TextAsset>(weaponSkillIconCsvPath);
+        if (ta == null) return;
+        var lines = ta.text.Split('\n');
+        for (int i = 1; i < lines.Length; i++) // 0행=헤더 (WeaponSkillIndex,Level,IconResourcePath)
+        {
+            string line = lines[i].Trim();
+            if (string.IsNullOrEmpty(line)) continue;
+            var c = line.Split(',');
+            if (c.Length < 3) continue;
+            if (!int.TryParse(c[0].Trim(), out int wsi)) continue;
+            if (!int.TryParse(c[1].Trim(), out int lv)) continue;
+            string path = c[2].Trim();
+            if (string.IsNullOrEmpty(path)) continue;
+            _weaponSkillCsvLut[CsvKey(wsi, lv)] = path;
+        }
     }
 
     // ── Character profile ─────────────────────────────────────
@@ -81,7 +162,7 @@ public class HeroIconLibrary : ScriptableObject
     }
 
     // ── Class skill icon (key = skillIndex) ───────────────────
-    /// <summary>스킬 아이콘. 테이블 미지정 시 레거시 경로 폴백.
+    /// <summary>스킬 아이콘. 우선순위: 직접참조 테이블(skills) → CSV 경로표 → 레거시 경로 폴백.
     /// fallbackOrder(모달 행 순서)가 주어지면 기존 위치 기반과 동일 결과(시각 동등) 유지.</summary>
     public Sprite GetClassSkillIcon(int skillIndex, int level, int fallbackOrder = -1)
     {
@@ -96,6 +177,15 @@ public class HeroIconLibrary : ScriptableObject
             var sp = AtLevel(arr, level);
             if (sp != null) return sp;
         }
+
+        // [JC 260620] CSV 경로표(직업별 스킬 아이콘) — 직접참조 테이블 미지정 시 우선. CSV 미수록(예: 무기스킬)은 아래 레거시 폴백.
+        EnsureCsvLut();
+        if (_csvPathLut.TryGetValue(CsvKey(skillIndex, level), out var csvPath))
+        {
+            var csp = LoadRes(csvPath);
+            if (csp != null) return csp;
+        }
+
         int variants = Mathf.Max(1, skillIconVariants);
         int basis = fallbackOrder >= 0 ? fallbackOrder : Mathf.Max(0, skillIndex);
         int v = (basis % variants + variants) % variants + 1;
@@ -104,7 +194,7 @@ public class HeroIconLibrary : ScriptableObject
     }
 
     // ── Weapon icon (key = weaponIndex) ───────────────────────
-    /// <summary>무기 아이콘. 테이블 미지정 시 tier 기반 레거시 경로 폴백.</summary>
+    /// <summary>무기 아이콘. 우선순위: 직접참조 테이블(weapons) → CSV 경로표(직업별, 레벨 무관) → tier 레거시 폴백.</summary>
     public Sprite GetWeaponIcon(int weaponIndex, int level)
     {
         if (_weaponLut == null)
@@ -118,8 +208,31 @@ public class HeroIconLibrary : ScriptableObject
             var sp = AtLevel(arr, level);
             if (sp != null) return sp;
         }
+
+        // [JC 260621] CSV 경로표(직업별 무기 아이콘) — 무기 아이콘은 레벨 무관(키=weaponIndex).
+        EnsureWeaponCsvLut();
+        if (_weaponCsvLut.TryGetValue(weaponIndex, out var wpath))
+        {
+            var wsp = LoadRes(wpath);
+            if (wsp != null) return wsp;
+        }
+
         int tier = Mathf.Clamp(WorkshopManager.TierOf(weaponIndex), 1, 3);
         int lv = Mathf.Clamp(level < 1 ? 1 : level, 1, 5);
         return LoadRes(string.Format(weaponIconPathFormat, tier, lv));
+    }
+
+    // ── Weapon skill icon (key = weaponSkillIndex, level) ─────
+    /// <summary>무기스킬 아이콘. CSV 경로표 우선, 미수록 시 레거시(클래스스킬 경로 규약) 폴백.</summary>
+    public Sprite GetWeaponSkillIcon(int weaponSkillIndex, int level)
+    {
+        EnsureWeaponSkillCsvLut();
+        if (_weaponSkillCsvLut.TryGetValue(CsvKey(weaponSkillIndex, level), out var path))
+        {
+            var sp = LoadRes(path);
+            if (sp != null) return sp;
+        }
+        // 폴백: 기존 무기스킬 아이콘 해석(클래스스킬 경로 규약 재사용)
+        return GetClassSkillIcon(weaponSkillIndex, level);
     }
 }

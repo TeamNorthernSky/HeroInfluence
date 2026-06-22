@@ -117,7 +117,7 @@ public class SkillTooltip : MonoBehaviour
         panel.sizeDelta = new Vector2(sd.x, Mathf.Max(floor, maxH * descHeightScale + descPadding * 2f));
     }
 
-    public void ShowInfo(Sprite icon, string skillName, string desc, RectTransform target, float extraY = 0f, float extraWidth = 0f, float iconDeltaX = 0f)
+    public void ShowInfo(Sprite icon, string skillName, string desc, RectTransform target, float extraY = 0f, float extraWidth = 0f, float iconDeltaX = 0f, float extraX = 0f)
     {
         Hide();
         if (tipBRoot == null || target == null) return;
@@ -139,7 +139,8 @@ public class SkillTooltip : MonoBehaviour
         var ctr = Center(target);
         tipBRect.pivot = new Vector2(0f, 1f); // 좌상단 모서리
         // [JC 260619] extraY: 호출처별 추가 Y 오프셋(HeroInfo 모달은 +250로 위로 올림).
-        tipBRect.position = new Vector3(ctr.x + infoOffset.x, ctr.y + infoOffset.y + extraY, tipBRect.position.z);
+        // [JC 260622] extraX: 호출처별 추가 X 오프셋(전투 스킬버튼은 인스펙터 tooltipOffset으로 위치 조정).
+        tipBRect.position = new Vector3(ctr.x + infoOffset.x + extraX, ctr.y + infoOffset.y + extraY, tipBRect.position.z);
     }
 
     public void ShowCompare(Sprite curIcon, string curName, string curEffect,

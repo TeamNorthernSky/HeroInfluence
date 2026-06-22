@@ -122,7 +122,8 @@ public class HeroInfoModal : MonoBehaviour
 
         if (portraitImage != null)
         {
-            var sp = HeroProfileCatalog.GetByName(template != null ? template.Name : null);
+            // [JC 260621] 포트레이트 = unitIndex(=HeroIndex) 기준 PortraitLibrary 해석.
+            var sp = HeroProfileCatalog.GetByUnitIndex(currentUnitIndex);
             portraitImage.gameObject.SetActive(true);
             portraitImage.enabled = true;
             if (sp != null) portraitImage.sprite = sp;
@@ -219,8 +220,9 @@ public class HeroInfoModal : MonoBehaviour
                     wName, wd != null ? WeaponTooltipText.BuildWeaponLevelDesc(wd, w, wl) : string.Empty);
 
                 // 3번째(무기스킬) 툴팁 = B타입, 현재 무기스킬 정보만(비교 없음). 이름 뒤 Lv.n(무기 레벨).
+                // [JC 260621] 무기스킬 전용 아이콘(무기 레벨 wl 따라감). wl=1도 실사용(전용 1레벨 아이콘).
                 if (wd != null && wd.WeaponSkillIndex > 0)
-                    slotWeaponSkill = MakeSlot(weaponSkillButton, HeroIcons.GetClassSkillIcon(wd.WeaponSkillIndex, 1),
+                    slotWeaponSkill = MakeSlot(weaponSkillButton, HeroIcons.GetWeaponSkillIcon(wd.WeaponSkillIndex, wl),
                         wd.WeaponSkillName + $" Lv.{wl}", WeaponTooltipText.BuildWeaponSkillDesc(wd, w, wl));
             }
         }

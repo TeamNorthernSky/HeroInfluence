@@ -146,8 +146,13 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
     }
 
-    /// <summary>표시·로그용. 스킬/무기 매칭 원본(접미사 없음).</summary>
+    /// <summary>스킬/무기 매칭 원본(접미사 없음). 플레이어는 클래스명(UnitType)이 들어감 — 표시엔 <see cref="DisplayName"/> 사용.</summary>
     public string UnitName => string.IsNullOrWhiteSpace(unitName) ? gameObject.name : unitName;
+
+    // [JC 260621] 표시 전용 이름(히어로명). 스킬매칭키(unitName=클래스명)와 분리. 비면 UnitName 폴백(적 유닛 호환).
+    private string displayName;
+    /// <summary>UI 표시·로그용 히어로명. 미설정 시 UnitName 폴백.</summary>
+    public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? UnitName : displayName;
 
     public TeamType TeamType => teamType;
 
@@ -999,6 +1004,12 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         InvalidatePrototypeSkillWeaponCache();
         RefreshAvailableSkillsForInspector(forceRefresh: true);
         RefreshAvailableWeapons(forceRefresh: true);
+    }
+
+    /// <summary>[JC 260621] UI 표시용 히어로명 설정(스킬매칭 unitName과 별개). 비면 UnitName 폴백.</summary>
+    public void SetDisplayName(string name)
+    {
+        displayName = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
     }
 
     private void InvalidatePrototypeSkillWeaponCache()

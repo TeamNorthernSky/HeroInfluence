@@ -32,8 +32,14 @@ public class TurnOrderUI : MonoBehaviour
 
     private static Sprite ResolvePortrait(BattleCharactor unit)
     {
-        if (unit == null || !unit.IsPlayer || unit.SourceData == null) return null;
-        return HeroInfoResult.LoadPortraitByPartySlot(unit.SourceData.UnitIndex);
+        if (unit == null) return null;
+        // [JC 260621] 플레이어 = PortraitLibrary Hero(키=HeroIndex).
+        if (unit.IsPlayer && unit.SourceData != null)
+            return EntityPortraits.Hero(unit.SourceData.UnitTemplateKey);
+        // [JC 260622] 적 = PortraitLibrary Enemy(키=적 UnitTemplateKey, 미수록/키없음 시 범용 zako).
+        if (!unit.IsPlayer)
+            return EntityPortraits.Enemy(unit.SourceEnemyData != null ? unit.SourceEnemyData.UnitTemplateKey : null);
+        return null;
     }
 
     private void Refresh()

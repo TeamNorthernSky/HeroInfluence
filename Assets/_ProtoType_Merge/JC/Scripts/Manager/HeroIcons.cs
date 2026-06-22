@@ -57,4 +57,7 @@ public static class HeroIcons
 
     public static Sprite GetWeaponIcon(int weaponIndex, int level)
         => Library.GetWeaponIcon(weaponIndex, level);
+
+    public static Sprite GetWeaponSkillIcon(int weaponSkillIndex, int level)
+        => Library.GetWeaponSkillIcon(weaponSkillIndex, level);
 }

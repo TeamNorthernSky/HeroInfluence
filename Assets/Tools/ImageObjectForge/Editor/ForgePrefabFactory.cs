@@ -11,8 +11,8 @@ namespace Orora.ImageObjectForge
     internal static class ForgePrefabFactory
     {
         public const string PrefabsDir = ForgeIO.ToolRoot + "/Prefabs";
-        public const string DefaultFontAssetPath = "Assets/JC_Work/Assets_jc/Maplestory Light SDF.asset";
-        public const string BasePrefabPath = "Assets/JC_Work/__ProtoType/Prefabs/UI/UIButtonBase.prefab";
+        public const string DefaultFontAssetPath = "Assets/_SharedAsset/Maplestory Light SDF.asset";
+        public const string BasePrefabPath = "Assets/_SharedAsset/UIButtonBase.prefab";
 
         public enum PrefabKind { Button, Label, SpriteRenderer, Modal }
 

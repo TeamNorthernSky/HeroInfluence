@@ -54,6 +54,7 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
             baseStats = data.baseStats;
             string skillMatchKey = ResolveSkillMatchKey(data);
             battle.SetUnitNameForSkillMatching(skillMatchKey);
+            battle.SetDisplayName(data.Name); // [JC 260621] 표시명=히어로명(스킬매칭키=클래스명과 분리)
         }
         else
         {
@@ -101,6 +102,9 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
             battle.SetUnitNameForSkillMatching(ResolveSkillMatchKey(fallbackData));
         }
 
+        // [JC 260621] 표시명=히어로명(template.Name). 스킬매칭키(클래스명/UnitType)와 분리.
+        battle.SetDisplayName(ResolveDisplayName(persistentData, fallbackData));
+
         battle.LoadPersistentEquipment(
             persistentData.CurrentSkillIndex,
             persistentData.CurrentWeaponIndex,
@@ -140,6 +144,26 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         }
 
         return string.Empty;
+    }
+
+    // [JC 260621] UI 표시용 히어로명 해석(스킬매칭키=UnitType과 별개로 항상 Name 우선).
+    private static string ResolveDisplayName(UnitPersistentData persistentData, UnitData fallbackData)
+    {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (persistentData != null && catalog != null &&
+            !string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey) &&
+            catalog.TryGetPlayerTemplate(persistentData.UnitTemplateKey, out UnitData template) &&
+            template != null && !string.IsNullOrWhiteSpace(template.Name))
+        {
+            return template.Name.Trim();
+        }
+
+        if (fallbackData != null && !string.IsNullOrWhiteSpace(fallbackData.Name))
+        {
+            return fallbackData.Name.Trim();
+        }
+
+        return null;
     }
 
     private static string ResolvePersistentSkillMatchKey(UnitPersistentData persistentData, UnitData fallbackData)

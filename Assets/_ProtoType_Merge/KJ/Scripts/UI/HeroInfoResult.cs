@@ -16,10 +16,11 @@ public class HeroInfoResult : MonoBehaviour
         Debug.Log($"[HeroInfoResult] Apply called | UnitIndex={preview.UnitIndex} | portrait={(portrait != null ? portrait.name : "NULL")}");
         if (portrait != null)
         {
-            Sprite sp = LoadPortraitByPartySlot(preview.UnitIndex);
+            // [JC 260621] 포트레이트 = PortraitLibrary(키=HeroIndex). 함수 LoadPortraitByPartySlot은 존치(미사용).
+            Sprite sp = EntityPortraits.HeroByUnit(preview.UnitIndex);
             if (sp != null)
             {
-                GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(RawImage));
+                GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(Image));
                 rawObj.transform.SetParent(portrait, false);
                 rawObj.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
                 RectTransform rt = rawObj.GetComponent<RectTransform>();
@@ -27,7 +28,7 @@ public class HeroInfoResult : MonoBehaviour
                 rt.anchorMax = Vector2.one;
                 rt.offsetMin = Vector2.zero;
                 rt.offsetMax = Vector2.zero;
-                rawObj.GetComponent<RawImage>().texture = sp.texture;
+                rawObj.GetComponent<Image>().sprite = sp;
             }
         }
 

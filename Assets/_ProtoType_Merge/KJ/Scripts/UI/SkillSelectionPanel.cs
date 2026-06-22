@@ -52,10 +52,11 @@ public class SkillSelectionPanel : MonoBehaviour
         // 초상화
         if (portrait != null)
         {
-            Sprite sp = HeroInfoResult.LoadPortraitByPartySlot(preview.UnitIndex);
+            // [JC 260621] 포트레이트 = PortraitLibrary(키=HeroIndex).
+            Sprite sp = EntityPortraits.HeroByUnit(preview.UnitIndex);
             if (sp != null)
             {
-                GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(RawImage));
+                GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(Image));
                 rawObj.transform.SetParent(portrait, false);
                 rawObj.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
                 RectTransform rt = rawObj.GetComponent<RectTransform>();
@@ -63,7 +64,7 @@ public class SkillSelectionPanel : MonoBehaviour
                 rt.anchorMax = Vector2.one;
                 rt.offsetMin = Vector2.zero;
                 rt.offsetMax = Vector2.zero;
-                rawObj.GetComponent<RawImage>().texture = sp.texture;
+                rawObj.GetComponent<Image>().sprite = sp;
             }
         }
 
