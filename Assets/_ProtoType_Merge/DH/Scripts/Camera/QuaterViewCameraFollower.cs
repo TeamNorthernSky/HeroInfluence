@@ -75,6 +75,16 @@ public class QuarterViewCameraFollower : MonoBehaviour
         edgeScrollVelocity = Vector3.zero;
     }
 
+    public void FocusWorldPosition(Vector3 worldPosition)
+    {
+        Vector3 anchor = GetCurrentFollowAnchor();
+        panOffset.x = worldPosition.x - anchor.x;
+        panOffset.z = worldPosition.z - anchor.z;
+        panOffset.y = 0f;
+        edgeScrollVelocity = Vector3.zero;
+        ClampPanOffset();
+    }
+
     private void Awake()
     {
         positionOffset.x = 0f;
@@ -189,9 +199,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         edgeScrollVelocity.y = 0f;
 
         panOffset += edgeScrollVelocity * Time.deltaTime;
-        panOffset.x = Mathf.Clamp(panOffset.x, -edgeLimitRange, edgeLimitRange);
-        panOffset.z = Mathf.Clamp(panOffset.z, -edgeLimitRange, edgeLimitRange);
-        panOffset.y = 0f;
+        ClampPanOffset();
     }
 
     private void HandleResetInput()
@@ -209,6 +217,25 @@ public class QuarterViewCameraFollower : MonoBehaviour
             return;
 
         positionOffset.z = positionOffset.y * zoomZPerY;
+    }
+
+    private Vector3 GetCurrentFollowAnchor()
+    {
+        if (hasSmoothedFollowAnchor)
+            return smoothedFollowAnchor;
+
+        if (followTarget == null)
+            return Vector3.zero;
+
+        Vector3 followAnchor = followTarget.position;
+        return new Vector3(followAnchor.x, 0f, followAnchor.z);
+    }
+
+    private void ClampPanOffset()
+    {
+        panOffset.x = Mathf.Clamp(panOffset.x, -edgeLimitRange, edgeLimitRange);
+        panOffset.z = Mathf.Clamp(panOffset.z, -edgeLimitRange, edgeLimitRange);
+        panOffset.y = 0f;
     }
 
     private float EvaluateEdgeInput(float mouseAxis, float screenSize, float threshold)
