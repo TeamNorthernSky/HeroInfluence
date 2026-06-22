@@ -1,34 +1,19 @@
-Shader "UI/HoverGlowSweep"
+Shader "UI/HoverOutlineSelected"
 {
-    // [JC 260622] 버튼 호버 오버레이 — 외곽선 글로우(알파+휘도엣지) + 스윕(회전 밴드) + 블룸(sprite 색).
-    //   글로우: sprite 알파 실루엣 + RGB 휘도 엣지(불투명 타일 아이콘도 외곽선) / 폭은 UV 비율(해상도 독립).
-    //   스윕: 기울어진 띠, 좌->우 수평 진행, 각도 위치보간(-30..+45), 3페이즈(두께/투명도 보간).
-    //   블룸: 복사된 sprite RGB의 밝은 영역을 블러해 가산(청색 혼합 + soft-knee).
-    //   가산(additive) 블렌딩. 아틀라스 미사용 전제.
-    //   주의: ShaderLab [Header()]/표시명에 하이픈/괄호 등 특수문자 금지(파스 에러).
+    // [JC 260622] UIHoverGlowSweep의 "선택 표시용" 변형: 스윕 제거 + 외곽선 글로우 강조 + 블룸 유지.
+    //   현재 선택된 스킬 버튼에 상시 표시(호버 토글 아님). 글로우=알파 실루엣+RGB 휘도엣지.
+    //   주의: ShaderLab [Header()]/표시명에 하이픈/괄호 등 특수문자 금지.
     Properties
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         _Color ("Master Tint (Image.color)", Color) = (1,1,1,1)
 
-        [Header(Outline Glow)]
-        _GlowColor ("Glow Color", Color) = (0.25, 0.55, 1.0, 1)
-        _GlowWidth ("Glow Outer Width (UV frac of height)", Range(0,0.2)) = 0.008
-        _GlowInnerWidth ("Glow Inner Width (UV frac of height)", Range(0,0.4)) = 0.025
-        _GlowIntensity ("Glow Intensity", Range(0,8)) = 1.0
-        _GlowLumEdge ("Glow Luminance Edge", Range(0,3)) = 1.0
-
-        [Header(Sweep rotating band)]
-        _SweepColor ("Sweep Color", Color) = (1.0, 0.93, 0.80, 1)
-        _SweepIntensity ("Sweep Intensity", Range(0,8)) = 1.3
-        _SweepWidth ("Sweep Band Width (UV)", Range(0.01,1)) = 0.18
-        _SweepFalloff ("Sweep Edge Falloff Power", Range(1,12)) = 4
-        _SweepAngleStart ("Sweep Angle Start deg", Range(-90,90)) = -30
-        _SweepAngleEnd ("Sweep Angle End deg", Range(-90,90)) = 45
-        _SweepDelay ("Sweep Start Delay (s)", Range(0,10)) = 0.5
-        _SweepDuration ("Sweep Duration (s)", Range(0.05,10)) = 0.4
-        _SweepCycle ("Sweep Cycle (s)", Range(0.1,30)) = 1.4
-        _SweepTime ("Sweep Time (driven by SweepCooldownReset)", Float) = 0
+        [Header(Outline Glow emphasized)]
+        _GlowColor ("Glow Color", Color) = (0.10, 0.45, 1.0, 1)
+        _GlowWidth ("Glow Outer Width (UV frac of height)", Range(0,0.2)) = 0.012
+        _GlowInnerWidth ("Glow Inner Width (UV frac of height)", Range(0,0.4)) = 0.045
+        _GlowIntensity ("Glow Intensity", Range(0,8)) = 2.6
+        _GlowLumEdge ("Glow Luminance Edge", Range(0,3)) = 1.4
 
         [Header(Bloom on copied SPRITE color)]
         _BloomColor ("Bloom Tint Color", Color) = (0.439, 0.671, 0.918, 1)
@@ -56,7 +41,6 @@ Shader "UI/HoverGlowSweep"
             "PreviewType"="Plane"
             "CanUseSpriteAtlas"="True"
         }
-
         Stencil
         {
             Ref [_Stencil]
@@ -65,7 +49,6 @@ Shader "UI/HoverGlowSweep"
             ReadMask [_StencilReadMask]
             WriteMask [_StencilWriteMask]
         }
-
         Cull Off
         Lighting Off
         ZWrite Off
@@ -86,24 +69,11 @@ Shader "UI/HoverGlowSweep"
             sampler2D _MainTex;
             float4 _MainTex_TexelSize;
             fixed4 _Color;
-
             fixed4 _GlowColor;
             float _GlowWidth;
             float _GlowInnerWidth;
             float _GlowIntensity;
             float _GlowLumEdge;
-
-            fixed4 _SweepColor;
-            float _SweepIntensity;
-            float _SweepWidth;
-            float _SweepFalloff;
-            float _SweepDelay;
-            float _SweepAngleStart;
-            float _SweepAngleEnd;
-            float _SweepDuration;
-            float _SweepCycle;
-            float _SweepTime;
-
             fixed4 _BloomColor;
             float _BloomTint;
             float _BloomThreshold;
@@ -146,7 +116,6 @@ Shader "UI/HoverGlowSweep"
                 a = min(a, tex2D(_MainTex, uv + float2(-texel.x, -texel.y)).a);
                 return a;
             }
-            // 휘도(알파 가중) — 글로우 휘도엣지/블룸 공용
             float LumA(float2 uv)
             {
                 float4 c = tex2D(_MainTex, uv);
@@ -189,9 +158,9 @@ Shader "UI/HoverGlowSweep"
             {
                 float2 uv = i.texcoord;
                 float baseA = tex2D(_MainTex, uv).a;
-                float aspect = _MainTex_TexelSize.y / _MainTex_TexelSize.x; // texW/texH
+                float aspect = _MainTex_TexelSize.y / _MainTex_TexelSize.x;
 
-                // ===== 글로우: 알파 실루엣(외/내측) + 휘도 엣지 =====
+                // 외곽선 글로우(알파 실루엣 + 휘도 엣지) — 강조
                 float2 texO = float2(_GlowWidth / aspect, _GlowWidth);
                 float2 texI = float2(_GlowInnerWidth / aspect, _GlowInnerWidth);
                 float dil = max(RingAvg(uv, texO), RingAvg(uv, texO * 0.5));
@@ -201,36 +170,9 @@ Shader "UI/HoverGlowSweep"
                 float lumEdge = max(abs(lumC - LumRing(uv, texO)), abs(lumC - LumRing(uv, texI)));
                 float glow = (alphaGlow + lumEdge * _GlowLumEdge) * _GlowIntensity;
 
-                // ===== 스윕: 회전 밴드, 3페이즈(위치/두께/투명도) =====
-                float t = max(_SweepTime, 0.0);   // C#(SweepCooldownReset)이 호버 시작 0부터 먹여줌
-                float phase = fmod(max(t, 0), _SweepCycle);
-                float st = phase - _SweepDelay;   // 호버 후 지연 뒤 스윕 시작
-                float active = (st >= 0.0 && st <= _SweepDuration) ? 1.0 : 0.0;
-                float u = saturate(st / _SweepDuration); // 0..1
-                // 2페이즈: P1(u<0.6667=0.2s) 위치0->1/3·두께0.5->4.0·투명0.1->0.5 / P2(u>=0.6667=0.1s) 위치1/3->1·두께4.0->1.0·투명0.5->0.2
-                float pos, opacity, thickMul;
-                if (u < 0.66667) { float f = u / 0.66667;            pos = f * (1.0/3.0);             thickMul = lerp(0.5, 2.5, f); opacity = lerp(0.1, 0.5, f); }
-                else             { float f = (u - 0.66667) / 0.33333; pos = (1.0/3.0) + f * (2.0/3.0); thickMul = lerp(2.5, 1.0, f); opacity = lerp(0.5, 0.2, f); }
+                float3 outRGB = _GlowColor.rgb * glow;
 
-                float tilt = radians(lerp(_SweepAngleStart, _SweepAngleEnd, pos));
-                float tA = tan(tilt);
-                float bw = _SweepWidth * thickMul;
-                float s = (uv.x - 0.5) - tA * (uv.y - 0.5) + 0.5;
-                float center = lerp(0.0, 1.0, pos);
-                // 중앙 기준 비대칭 falloff: 왼쪽=지수감소(1 - x^p), 오른쪽=선형감소(1 - x)
-                float sd = (s - center) / bw;                          // 음수=왼쪽, 양수=오른쪽
-                float bandL = 1.0 - pow(saturate(-sd), _SweepFalloff); // 왼쪽 지수
-                float bandR = 1.0 - saturate(sd);                      // 오른쪽 선형
-                float band = saturate(sd < 0.0 ? bandL : bandR);
-                float sweep = band * active * opacity * _SweepIntensity * baseA;
-
-                // ===== 글로우+스윕 색 합성(가산) =====
-                float gsAmount = glow + sweep;
-                float gsDenom = max(glow + sweep, 1e-4);
-                float3 gsCol = (_GlowColor.rgb * glow + _SweepColor.rgb * sweep) / gsDenom;
-                float3 outRGB = gsCol * gsAmount;
-
-                // ===== 블룸: sprite 밝은 색 블러 + 청색 혼합 + soft-knee =====
+                // 블룸(sprite 밝은 색) — 유지
                 float2 texB = _MainTex_TexelSize.xy * _BloomRadius;
                 float3 raw = (BrightAt(uv) * 0.34 + RingBright(uv, texB) * 0.33 + RingBright(uv, texB * 0.5) * 0.33) * _BloomIntensity;
                 float bl = max(raw.r, max(raw.g, raw.b));
@@ -240,7 +182,7 @@ Shader "UI/HoverGlowSweep"
 
                 float master = i.color.a;
                 outRGB *= i.color.rgb * master;
-                float a = saturate(max(gsAmount, max(bloom.r, max(bloom.g, bloom.b))) * master);
+                float a = saturate(max(glow, max(bloom.r, max(bloom.g, bloom.b))) * master);
                 return fixed4(outRGB, a);
             }
             ENDCG

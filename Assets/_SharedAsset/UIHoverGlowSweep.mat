@@ -37,10 +37,10 @@ Material:
     - _BloomTint: 0.85
     - _ColorMask: 15
     - _GlowInnerWidth: 0.025
-    - _GlowIntensity: 1
+    - _GlowIntensity: 1.6
     - _GlowLumEdge: 1
     - _GlowWidth: 0.008
-    - _StartTime: 0
+    - _StartTime: 11.005989
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -49,14 +49,17 @@ Material:
     - _SweepAngleDeg: 0
     - _SweepAngleEnd: 7
     - _SweepAngleStart: 7
-    - _SweepCycle: 1.5
-    - _SweepDuration: 0.5
+    - _SweepCycle: 2.8
+    - _SweepDelay: 0.5
+    - _SweepDuration: 0.3
+    - _SweepFalloff: 4
     - _SweepIntensity: 1.3
     - _SweepTiltDeg: 15
+    - _SweepTime: 0.9263973
     - _SweepWidth: 0.18
     m_Colors:
     - _BloomColor: {r: 0.439, g: 0.671, b: 0.918, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _GlowColor: {r: 0.25, g: 0.55, b: 1, a: 1}
-    - _SweepColor: {r: 1, g: 0.93, b: 0.8, a: 1}
+    - _GlowColor: {r: 0.1, g: 0.45, b: 1, a: 1}
+    - _SweepColor: {r: 1, g: 0.98, b: 0.95, a: 1}
   m_BuildTextureStacks: []
