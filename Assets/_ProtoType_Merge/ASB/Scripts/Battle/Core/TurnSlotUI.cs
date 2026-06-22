@@ -7,7 +7,7 @@ public class TurnSlotUI : MonoBehaviour
 {
     //[SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private GameObject highlightFrame;
-    [SerializeField] private RawImage Portrait;
+    [SerializeField] private Image Portrait;          // [JC 260621] RawImage→Image 전환(포트레이트 라이브러리 Sprite 직접 사용)
     [SerializeField] private RawImage Frame;
     [SerializeField] private RawImage PortraitMask;
 
@@ -53,7 +53,7 @@ public class TurnSlotUI : MonoBehaviour
 
         if (Portrait != null)
         {
-            Portrait.texture = portraitSprite != null ? portraitSprite.texture : null;
+            Portrait.sprite = portraitSprite;          // [JC 260621] Image.sprite 직접 결선
             Portrait.enabled = portraitSprite != null;
             //if(Portrait.texture == null)
             //{

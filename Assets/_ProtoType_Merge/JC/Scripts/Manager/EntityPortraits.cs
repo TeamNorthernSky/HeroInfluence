@@ -32,6 +32,9 @@ public static class EntityPortraits
     /// <summary>HeroIndex(문자열)로 히어로 포트레이트.</summary>
     public static Sprite Hero(string heroKey) => Library.GetHeroPortrait(heroKey);
 
+    /// <summary>[JC 260622] 적 포트레이트(키=적 UnitTemplateKey). 미수록/키없음 시 범용 기본(zako).</summary>
+    public static Sprite Enemy(string enemyKey) => Library.GetEnemyPortrait(enemyKey);
+
     /// <summary>런타임 unitIndex로 히어로 포트레이트. 해석 실패 시 Unselected.</summary>
     public static Sprite HeroByUnit(int unitIndex)
     {

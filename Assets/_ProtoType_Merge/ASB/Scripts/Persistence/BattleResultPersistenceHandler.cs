@@ -72,7 +72,8 @@ public static class BattleResultPersistenceHandler
             plan.UnitPreviews.Add(new UnitRewardPreview
             {
                 UnitIndex               = src.UnitIndex,
-                UnitName                = player.UnitName,
+                UnitName                = player.DisplayName, // [JC 260621] 결과 표시명=히어로명
+
                 OldLevel                = src.Level,
                 NewLevel                = newLevel,
                 GainedExp               = gainedExp,

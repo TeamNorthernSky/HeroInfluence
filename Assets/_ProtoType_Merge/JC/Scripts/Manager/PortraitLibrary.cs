@@ -23,6 +23,9 @@ public class PortraitLibrary : ScriptableObject
     [Header("미선택/기본 포트레이트")]
     [SerializeField] private string unselectedPortraitPath = "Portrait_Hero_Sprite/UI_profile_hero_unselected";
 
+    [Header("적 기본 포트레이트 (CSV Enemy 미수록 시 범용 폴백)")]
+    [SerializeField] private string defaultEnemyPortraitPath = "Portrait_Zako_Sprite/UI_profile_villian_zako";
+
     private readonly Dictionary<string, Sprite> _resCache = new Dictionary<string, Sprite>();
     private Dictionary<string, string> _csvLut; // "Category:Id" → resource path
 
@@ -74,4 +77,20 @@ public class PortraitLibrary : ScriptableObject
 
     /// <summary>히어로 포트레이트(키=HeroIndex 문자열, 예 "10001").</summary>
     public Sprite GetHeroPortrait(string heroKey) => GetPortrait(PortraitCategory.Hero, heroKey);
+
+    /// <summary>[JC 260622] 적 기본 포트레이트(범용 zako).</summary>
+    public Sprite DefaultEnemy => LoadRes(defaultEnemyPortraitPath);
+
+    /// <summary>적 포트레이트(키=적 UnitTemplateKey). CSV Enemy 행 매칭 우선, 없으면 범용 기본(zako), 그것도 없으면 Unselected.</summary>
+    public Sprite GetEnemyPortrait(string enemyKey)
+    {
+        EnsureCsvLut();
+        if (!string.IsNullOrWhiteSpace(enemyKey) && _csvLut.TryGetValue(Key(PortraitCategory.Enemy, enemyKey), out var path))
+        {
+            var sp = LoadRes(path);
+            if (sp != null) return sp;
+        }
+        var d = DefaultEnemy;
+        return d != null ? d : Unselected;
+    }
 }
