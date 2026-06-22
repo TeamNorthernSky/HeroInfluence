@@ -147,8 +147,9 @@ public class MinimapController : MonoBehaviour
         Outpost[] fallbackOutposts = null;
         IReadOnlyList<Outpost> outposts = outpostRegistry != null ? outpostRegistry.Outposts : null;
         int count = outposts != null ? outposts.Count : 0;
+        bool useFallback = count == 0;
 
-        if (count == 0)
+        if (useFallback)
         {
             fallbackOutposts = FindObjectsByType<Outpost>(FindObjectsSortMode.None);
             count = fallbackOutposts.Length;
@@ -156,7 +157,7 @@ public class MinimapController : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            Outpost outpost = outposts != null ? outposts[i] : fallbackOutposts[i];
+            Outpost outpost = useFallback ? fallbackOutposts[i] : outposts[i];
             if (outpost == null || !outpost.isActiveAndEnabled)
                 continue;
 
@@ -173,8 +174,9 @@ public class MinimapController : MonoBehaviour
         CastleUnit[] fallbackCastles = null;
         IReadOnlyList<CastleUnit> castles = castleRegistry != null ? castleRegistry.Castles : null;
         int count = castles != null ? castles.Count : 0;
+        bool useFallback = count == 0;
 
-        if (count == 0)
+        if (useFallback)
         {
             fallbackCastles = FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
             count = fallbackCastles.Length;
@@ -182,7 +184,7 @@ public class MinimapController : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            CastleUnit castle = castles != null ? castles[i] : fallbackCastles[i];
+            CastleUnit castle = useFallback ? fallbackCastles[i] : castles[i];
             if (castle == null || !castle.isActiveAndEnabled)
                 continue;
 
@@ -195,8 +197,9 @@ public class MinimapController : MonoBehaviour
         VillainUnionBase[] fallbackBases = null;
         IReadOnlyList<VillainUnionBase> bases = villainUnionBaseRegistry != null ? villainUnionBaseRegistry.VillainUnionBases : null;
         int count = bases != null ? bases.Count : 0;
+        bool useFallback = count == 0;
 
-        if (count == 0)
+        if (useFallback)
         {
             fallbackBases = FindObjectsByType<VillainUnionBase>(FindObjectsSortMode.None);
             count = fallbackBases.Length;
@@ -204,7 +207,7 @@ public class MinimapController : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            VillainUnionBase villainUnionBase = bases != null ? bases[i] : fallbackBases[i];
+            VillainUnionBase villainUnionBase = useFallback ? fallbackBases[i] : bases[i];
             if (villainUnionBase == null || !villainUnionBase.isActiveAndEnabled)
                 continue;
 
