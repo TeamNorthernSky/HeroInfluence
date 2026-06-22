@@ -184,8 +184,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   overlay: {fileID: 0}
   source: {fileID: 0}
-  tint: {r: 1, g: 1, b: 1, a: 0.3}
-  overlayMaterial: {fileID: 2100000, guid: b207aa8211db7f045b2ab901ae937ab8, type: 2}
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  overlayMaterial: {fileID: 2100000, guid: 548745c9c6cc78745ad25ee680047187, type: 2}
 --- !u!1 &6191081968033439135
 GameObject:
   m_ObjectHideFlags: 0
