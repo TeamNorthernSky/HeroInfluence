@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a20425fef52153b43bcae28f15b05cbc, type: 3}
+  m_Name: LevelZoneLayoutData
+  m_EditorClassIdentifier: 
+  layoutId: layout_001
+  displayName: New Zone Layout
+  totalGridSize: {x: 130, y: 100}
+  zones:
+  - zoneId: zone_001
+    zoneType: 0
+    anchor: {x: 0, y: 0}
+    size: {x: 50, y: 40}
+    optional: 0
+    candidates:
+    - {fileID: 11400000, guid: 2035004e0e73b4644bd0715be9bc93a3, type: 2}
+  - zoneId: zone_002
+    zoneType: 0
+    anchor: {x: 80, y: 0}
+    size: {x: 50, y: 40}
+    optional: 0
+    candidates:
+    - {fileID: 11400000, guid: 757873fc1450a2c42b1f966c4d87f10e, type: 2}
+    - {fileID: 11400000, guid: f87535cc1dfa43a419a24a3a51fa37f0, type: 2}
+    - {fileID: 11400000, guid: 2f188831bb3807249941c05e642c9f3a, type: 2}
+  - zoneId: zone_003
+    zoneType: 0
+    anchor: {x: 0, y: 60}
+    size: {x: 50, y: 40}
+    optional: 0
+    candidates:
+    - {fileID: 11400000, guid: 757873fc1450a2c42b1f966c4d87f10e, type: 2}
+    - {fileID: 11400000, guid: f87535cc1dfa43a419a24a3a51fa37f0, type: 2}
+    - {fileID: 11400000, guid: 2f188831bb3807249941c05e642c9f3a, type: 2}
+  - zoneId: zone_004
+    zoneType: 0
+    anchor: {x: 80, y: 60}
+    size: {x: 50, y: 40}
+    optional: 0
+    candidates:
+    - {fileID: 11400000, guid: 757873fc1450a2c42b1f966c4d87f10e, type: 2}
+    - {fileID: 11400000, guid: f87535cc1dfa43a419a24a3a51fa37f0, type: 2}
+    - {fileID: 11400000, guid: 2f188831bb3807249941c05e642c9f3a, type: 2}

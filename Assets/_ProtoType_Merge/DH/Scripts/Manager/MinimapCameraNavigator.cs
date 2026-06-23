@@ -9,6 +9,8 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler
     [SerializeField] private RawImage minimapImage;
     [SerializeField] private LevelData levelData;
     [SerializeField] private LevelLoader levelLoader;
+    [SerializeField] private LevelZoneLayoutData levelZoneLayoutData;
+    [SerializeField] private LevelZoneLayoutLoader levelZoneLayoutLoader;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private QuarterViewCameraFollower cameraFollower;
 
@@ -74,6 +76,18 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler
 
     private bool TryGetGridSize(out Vector2Int gridSize)
     {
+        if (levelZoneLayoutData != null)
+        {
+            gridSize = levelZoneLayoutData.TotalGridSize;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
+        if (levelZoneLayoutLoader != null && levelZoneLayoutLoader.LayoutData != null)
+        {
+            gridSize = levelZoneLayoutLoader.LayoutData.TotalGridSize;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
         if (levelData != null)
         {
             gridSize = levelData.GridSize;
@@ -97,8 +111,17 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler
         if (levelLoader == null)
             levelLoader = FindFirstObjectByType<LevelLoader>();
 
+        if (levelZoneLayoutLoader == null)
+            levelZoneLayoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+
+        if (levelZoneLayoutData == null && levelZoneLayoutLoader != null)
+            levelZoneLayoutData = levelZoneLayoutLoader.LayoutData;
+
         if (levelData == null && levelLoader != null)
             levelData = levelLoader.LevelData;
+
+        if (gridManager == null && levelZoneLayoutLoader != null)
+            gridManager = levelZoneLayoutLoader.GridManager;
 
         if (gridManager == null && levelLoader != null)
             gridManager = levelLoader.GridManager;

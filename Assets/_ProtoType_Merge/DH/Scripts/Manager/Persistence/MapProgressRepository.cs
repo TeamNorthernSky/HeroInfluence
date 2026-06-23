@@ -14,12 +14,14 @@ public class MapProgressRepository : MonoBehaviour
     [SerializeField] private List<EnemyWorldState> enemyWorldStates = new List<EnemyWorldState>();
     [SerializeField] private List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
     [SerializeField] private List<FogProgressCell> fogCells = new List<FogProgressCell>();
+    [SerializeField] private List<LevelZoneSelectionState> levelZoneSelections = new List<LevelZoneSelectionState>();
 
     private readonly HashSet<string> collectedItemLookup = new HashSet<string>();
     private readonly HashSet<string> completedEventLookup = new HashSet<string>();
     private readonly Dictionary<string, PartyWorldState> partyWorldLookup = new Dictionary<string, PartyWorldState>();
     private readonly Dictionary<string, EnemyWorldState> enemyWorldLookup = new Dictionary<string, EnemyWorldState>();
     private readonly Dictionary<string, OutpostProgressState> outpostStateLookup = new Dictionary<string, OutpostProgressState>();
+    private readonly Dictionary<string, LevelZoneSelectionState> levelZoneSelectionLookup = new Dictionary<string, LevelZoneSelectionState>();
 
     public string MapId => mapId;
     public IReadOnlyList<string> CollectedItemKeys => collectedItemKeys;
@@ -28,6 +30,7 @@ public class MapProgressRepository : MonoBehaviour
     public IReadOnlyList<EnemyWorldState> EnemyWorldStates => enemyWorldStates;
     public IReadOnlyList<OutpostProgressState> OutpostStates => outpostStates;
     public IReadOnlyList<FogProgressCell> FogCells => fogCells;
+    public IReadOnlyList<LevelZoneSelectionState> LevelZoneSelections => levelZoneSelections;
 
     private void Awake()
     {
@@ -305,6 +308,37 @@ public class MapProgressRepository : MonoBehaviour
         fogCells.Clear();
     }
 
+    public bool TryGetLevelZoneSelection(string layoutId, string zoneId, out int selectedCandidateIndex)
+    {
+        selectedCandidateIndex = -1;
+
+        string selectionKey = LevelZoneSelectionState.BuildSelectionKey(layoutId, zoneId);
+        if (!IsValidKey(selectionKey))
+            return false;
+
+        if (!levelZoneSelectionLookup.TryGetValue(selectionKey, out LevelZoneSelectionState state))
+            return false;
+
+        selectedCandidateIndex = state.SelectedCandidateIndex;
+        return true;
+    }
+
+    public void SetLevelZoneSelection(string layoutId, string zoneId, int selectedCandidateIndex)
+    {
+        string selectionKey = LevelZoneSelectionState.BuildSelectionKey(layoutId, zoneId);
+        if (!IsValidKey(selectionKey))
+            return;
+
+        LevelZoneSelectionState state = GetOrCreateLevelZoneSelection(layoutId, zoneId, selectedCandidateIndex);
+        state.SetSelectedCandidateIndex(selectedCandidateIndex);
+    }
+
+    public void ClearLevelZoneSelections()
+    {
+        levelZoneSelections.Clear();
+        levelZoneSelectionLookup.Clear();
+    }
+
     public void ClearAllProgress()
     {
         collectedItemKeys.Clear();
@@ -313,6 +347,7 @@ public class MapProgressRepository : MonoBehaviour
         enemyWorldStates.Clear();
         outpostStates.Clear();
         fogCells.Clear();
+        levelZoneSelections.Clear();
         RebuildLookups();
     }
 
@@ -369,6 +404,21 @@ public class MapProgressRepository : MonoBehaviour
         return progressState;
     }
 
+    private LevelZoneSelectionState GetOrCreateLevelZoneSelection(
+        string layoutId,
+        string zoneId,
+        int selectedCandidateIndex)
+    {
+        string selectionKey = LevelZoneSelectionState.BuildSelectionKey(layoutId, zoneId);
+        if (levelZoneSelectionLookup.TryGetValue(selectionKey, out LevelZoneSelectionState state))
+            return state;
+
+        state = new LevelZoneSelectionState(layoutId, zoneId, selectedCandidateIndex);
+        levelZoneSelections.Add(state);
+        levelZoneSelectionLookup[selectionKey] = state;
+        return state;
+    }
+
     private void RebuildLookups()
     {
         collectedItemLookup.Clear();
@@ -376,6 +426,7 @@ public class MapProgressRepository : MonoBehaviour
         partyWorldLookup.Clear();
         enemyWorldLookup.Clear();
         outpostStateLookup.Clear();
+        levelZoneSelectionLookup.Clear();
 
         RebuildKeyLookup(collectedItemKeys, collectedItemLookup, "collected item key");
         RebuildKeyLookup(completedEventKeys, completedEventLookup, "completed event key");
@@ -426,6 +477,22 @@ public class MapProgressRepository : MonoBehaviour
             }
 
             outpostStateLookup.Add(key, state);
+        }
+
+        for (int i = 0; i < levelZoneSelections.Count; i++)
+        {
+            LevelZoneSelectionState state = levelZoneSelections[i];
+            if (state == null || !IsValidKey(state.SelectionKey))
+                continue;
+
+            string key = NormalizeKey(state.SelectionKey);
+            if (levelZoneSelectionLookup.ContainsKey(key))
+            {
+                Debug.LogWarning($"MapProgressRepository has duplicate level zone selection key '{key}'.", this);
+                continue;
+            }
+
+            levelZoneSelectionLookup.Add(key, state);
         }
     }
 
