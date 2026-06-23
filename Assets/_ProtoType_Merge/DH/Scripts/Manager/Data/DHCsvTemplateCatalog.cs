@@ -12,10 +12,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
     [Header("SO DataTables (Excel Importer)")]
     [SerializeField] private PlayerUnitDataTable    playerUnitDataTable;
-    [SerializeField] private EnemyUnitInfoDataTable enemyUnitInfoDataTable;
+    [SerializeField] private EnemyUnitDataTable enemyUnitInfoDataTable;
     [SerializeField] private PlayerWeaponDataTable  playerWeaponDataTable;
     [SerializeField] private ClassSkillDataTable    classSkillDataTable;
-    [SerializeField] private UnitGrowthExpDataTable unitGrowthExpDataTable;
+    [SerializeField] private UnitGrowthPerLevelDataTable unitGrowthExpDataTable;
     [SerializeField] private EnemyGroupDataTable    enemyGroupDataTable;
 
     [Header("Settings")]
@@ -43,8 +43,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<int, Dictionary<int, int>> skillUnlockByClassIndex
         = new Dictionary<int, Dictionary<int, int>>();
 
-    private static readonly Dictionary<int, System.Func<UnitGrowthExpData, int>> ClassUnlockAccessors
-        = new Dictionary<int, System.Func<UnitGrowthExpData, int>>
+    private static readonly Dictionary<int, System.Func<UnitGrowthPerLevelData, int>> ClassUnlockAccessors
+        = new Dictionary<int, System.Func<UnitGrowthPerLevelData, int>>
     {
         { 10001, d => d.GuardianStudySkill  },
         { 10002, d => d.BlasterStudySkill   },
@@ -328,7 +328,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             for (int i = 0; i < enemyUnitInfoDataTable.DataList.Count; i++)
             {
-                EnemyUnitInfoData src = enemyUnitInfoDataTable.DataList[i];
+                EnemyUnitData src = enemyUnitInfoDataTable.DataList[i];
                 EnemyData enemy = ConvertEnemyUnit(src);
                 if (enemy == null || string.IsNullOrWhiteSpace(enemy.Index)) continue;
 
@@ -422,7 +422,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             for (int i = 0; i < unitGrowthExpDataTable.DataList.Count; i++)
             {
-                UnitGrowthExpData src = unitGrowthExpDataTable.DataList[i];
+                UnitGrowthPerLevelData src = unitGrowthExpDataTable.DataList[i];
                 if (src == null) continue;
 
                 LevelUpData row = ConvertLevelUp(src);
@@ -487,7 +487,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    private static EnemyData ConvertEnemyUnit(EnemyUnitInfoData src)
+    private static EnemyData ConvertEnemyUnit(EnemyUnitData src)
     {
         if (src == null) return null;
         return new EnemyData
@@ -511,7 +511,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    private void TryAddEnemySkill(EnemyUnitInfoData src, int slot)
+    private void TryAddEnemySkill(EnemyUnitData src, int slot)
     {
         string skillName = slot == 1 ? src.EnemySkill1_Name : src.EnemySkill2_Name;
         if (string.IsNullOrWhiteSpace(skillName)) return;
@@ -629,7 +629,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    private static LevelUpData ConvertLevelUp(UnitGrowthExpData src)
+    private static LevelUpData ConvertLevelUp(UnitGrowthPerLevelData src)
     {
         if (src == null) return null;
         return new LevelUpData
@@ -637,7 +637,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             level        = src.Level,
             Rank         = string.IsNullOrEmpty(src.Rank) ? '\0' : src.Rank[0],
             expPerLevel  = src.NeedExpieriencePoint,
-            MaxIP        = src.AddMaxIP
+            MaxIP        = src.AddIP
         };
     }
 
