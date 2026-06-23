@@ -581,15 +581,26 @@ namespace ASB.ExcelImport.Editor
         {
             _assets.Clear();
 
+            string[] guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { ExcelImportPaths.TableAssetFolder });
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                ScriptableObject so = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+                if (so != null) _assets.Add(so);
+            }
+
+            // Excel 파일이 선택된 경우 해당 시트 순서로 정렬
             if (!string.IsNullOrEmpty(_selectedExcelPath) && File.Exists(_selectedExcelPath))
             {
                 List<string> sheetNames = GetDataSheetNames(_selectedExcelPath);
-                for (int i = 0; i < sheetNames.Count; i++)
+                _assets.Sort((a, b) =>
                 {
-                    string assetPath = $"{ExcelImportPaths.TableAssetFolder}/{sheetNames[i]}DataTable.asset";
-                    ScriptableObject so = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
-                    if (so != null) _assets.Add(so);
-                }
+                    int ia = sheetNames.IndexOf(a.name.Replace("DataTable", string.Empty));
+                    int ib = sheetNames.IndexOf(b.name.Replace("DataTable", string.Empty));
+                    if (ia < 0) ia = int.MaxValue;
+                    if (ib < 0) ib = int.MaxValue;
+                    return ia.CompareTo(ib);
+                });
             }
 
             bool hasItems = _assets.Count > 0;

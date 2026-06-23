@@ -102,32 +102,27 @@ ProjectSettings/QualitySettings.asset
 #ASB 
 /Assets/_ProtoType_Merge/ASB/Animation/TmpModel
 /Assets/GabrielAguiarProductions
-# -----------------------------
-# NuGet / NuGetForUnity 관련
-# -----------------------------
 
-# NuGet 패키지 압축 파일 / 캐시 파일
-*.nupkg
-*.snupkg
-
-# NuGet 복원 캐시 폴더
+///////////// Nuget///////////////
+# NuGet cache
 .nuget/packages/
 .nuget/NuGetFallbackFolder/
 
-# Unity 런타임에서는 보통 필요 없는 패키지
-# SourceLink / MSBuild Git 패키지는 빌드·디버깅 메타데이터용입니다.
-**/Microsoft.Build.Tasks.Git.8.0.0/
-**/Microsoft.SourceLink.Common.8.0.0/
-**/Microsoft.SourceLink.GitHub.8.0.0/
-
-# 저장소 안에서 패키지명이 소문자로 들어온 경우
-**/microsoft.build.tasks.git/8.0.0/
-**/microsoft.sourcelink.common/8.0.0/
-**/microsoft.sourcelink.github/8.0.0/
-
-# NuGet 임시/생성 파일
+# NuGet generated files
 project.assets.json
 *.nuget.g.props
 *.nuget.g.targets
+
+# Unity runtime에 필요 없는 SourceLink / MSBuild Git 패키지
+**/Microsoft.Build.Tasks.Git.*/
+**/Microsoft.SourceLink.Common.*/
+**/Microsoft.SourceLink.GitHub.*/
+**/microsoft.build.tasks.git/*/
+**/microsoft.sourcelink.common/*/
+**/microsoft.sourcelink.github/*/
+
+/////////////////////////////////////
+
+
 Assets/_ProtoType_Merge/CLAUDE.md.meta
 /.github
