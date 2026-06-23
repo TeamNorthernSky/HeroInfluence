@@ -18,13 +18,13 @@ Shader "UI/HoverGlowSweep"
         _GlowIntensity ("Glow Intensity", Range(0,8)) = 1.0
         _GlowLumEdge ("Glow Luminance Edge", Range(0,3)) = 1.0
 
-        [Header(Sweep rotating band)]
+        [Header(Sweep gleam texture)]
+        [NoScaleOffset] _GleamTex ("Gleam Texture (alpha streak)", 2D) = "black" {}
         _SweepColor ("Sweep Color", Color) = (1.0, 0.93, 0.80, 1)
         _SweepIntensity ("Sweep Intensity", Range(0,8)) = 1.3
-        _SweepWidth ("Sweep Band Width (UV)", Range(0.01,1)) = 0.18
-        _SweepFalloff ("Sweep Edge Falloff Power", Range(1,12)) = 4
-        _SweepAngleStart ("Sweep Angle Start deg", Range(-90,90)) = -30
-        _SweepAngleEnd ("Sweep Angle End deg", Range(-90,90)) = 45
+        _GleamTilt ("Gleam Tilt deg", Range(-90,90)) = 18
+        _GleamScale ("Gleam Travel Scale", Range(0.2,3)) = 1.2
+        _GleamWidth ("Gleam UV Width", Range(0.05,2)) = 1.0
         _SweepDelay ("Sweep Start Delay (s)", Range(0,10)) = 0.5
         _SweepDuration ("Sweep Duration (s)", Range(0.05,10)) = 0.4
         _SweepCycle ("Sweep Cycle (s)", Range(0.1,30)) = 1.4
@@ -93,13 +93,13 @@ Shader "UI/HoverGlowSweep"
             float _GlowIntensity;
             float _GlowLumEdge;
 
+            sampler2D _GleamTex;
             fixed4 _SweepColor;
             float _SweepIntensity;
-            float _SweepWidth;
-            float _SweepFalloff;
+            float _GleamTilt;
+            float _GleamScale;
+            float _GleamWidth;
             float _SweepDelay;
-            float _SweepAngleStart;
-            float _SweepAngleEnd;
             float _SweepDuration;
             float _SweepCycle;
             float _SweepTime;
@@ -201,28 +201,21 @@ Shader "UI/HoverGlowSweep"
                 float lumEdge = max(abs(lumC - LumRing(uv, texO)), abs(lumC - LumRing(uv, texI)));
                 float glow = (alphaGlow + lumEdge * _GlowLumEdge) * _GlowIntensity;
 
-                // ===== 스윕: 회전 밴드, 3페이즈(위치/두께/투명도) =====
+                // ===== 스윕: gleam 텍스처 스크롤 + 형상 마스킹 =====
+                // 타이밍(_SweepDelay/_SweepDuration/_SweepCycle/_SweepTime)·쿨다운(SweepCooldownReset)은 그대로 재사용.
+                // 차이: 절차적 밴드 대신 _GleamTex(알파 광택)를 기울인 UV로 스크롤 샘플 → falloff/두께/곡률/색을 텍스처로 페인팅.
                 float t = max(_SweepTime, 0.0);   // C#(SweepCooldownReset)이 호버 시작 0부터 먹여줌
-                float phase = fmod(max(t, 0), _SweepCycle);
+                float phase = fmod(t, _SweepCycle);
                 float st = phase - _SweepDelay;   // 호버 후 지연 뒤 스윕 시작
                 float active = (st >= 0.0 && st <= _SweepDuration) ? 1.0 : 0.0;
-                float u = saturate(st / _SweepDuration); // 0..1
-                // 2페이즈: P1(u<0.6667=0.2s) 위치0->1/3·두께0.5->4.0·투명0.1->0.5 / P2(u>=0.6667=0.1s) 위치1/3->1·두께4.0->1.0·투명0.5->0.2
-                float pos, opacity, thickMul;
-                if (u < 0.66667) { float f = u / 0.66667;            pos = f * (1.0/3.0);             thickMul = lerp(0.5, 2.5, f); opacity = lerp(0.1, 0.5, f); }
-                else             { float f = (u - 0.66667) / 0.33333; pos = (1.0/3.0) + f * (2.0/3.0); thickMul = lerp(2.5, 1.0, f); opacity = lerp(0.5, 0.2, f); }
-
-                float tilt = radians(lerp(_SweepAngleStart, _SweepAngleEnd, pos));
-                float tA = tan(tilt);
-                float bw = _SweepWidth * thickMul;
-                float s = (uv.x - 0.5) - tA * (uv.y - 0.5) + 0.5;
-                float center = lerp(0.0, 1.0, pos);
-                // 중앙 기준 비대칭 falloff: 왼쪽=지수감소(1 - x^p), 오른쪽=선형감소(1 - x)
-                float sd = (s - center) / bw;                          // 음수=왼쪽, 양수=오른쪽
-                float bandL = 1.0 - pow(saturate(-sd), _SweepFalloff); // 왼쪽 지수
-                float bandR = 1.0 - saturate(sd);                      // 오른쪽 선형
-                float band = saturate(sd < 0.0 ? bandL : bandR);
-                float sweep = band * active * opacity * _SweepIntensity * baseA;
+                float u = saturate(st / _SweepDuration); // 0..1 진행
+                // 좌->우 스크롤 오프셋. 텍스처 가장자리 알파 0(Clamp)이 진입/이탈 페이드 담당.
+                float off = lerp(-0.6, 0.6, u) * _GleamScale;
+                float tA = tan(radians(_GleamTilt));
+                // 버튼 uv를 기울이고(_GleamTilt) 폭 보정(_GleamWidth) 후 스크롤 → gleam 텍스처 좌표
+                float gx = ((uv.x - 0.5) - tA * (uv.y - 0.5)) / _GleamWidth - off + 0.5;
+                float gleamA = tex2D(_GleamTex, float2(gx, uv.y)).a; // Clamp wrap = 텍스처 밖 알파 0
+                float sweep = gleamA * active * _SweepIntensity * baseA;
 
                 // ===== 글로우+스윕 색 합성(가산) =====
                 float gsAmount = glow + sweep;
