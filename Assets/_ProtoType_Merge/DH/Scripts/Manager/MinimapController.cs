@@ -21,7 +21,7 @@ public class MinimapController : MonoBehaviour
     [Header("Draw Options")]
     [SerializeField] private bool drawOnEnable = true;
     [SerializeField] private bool useFogVisibility = true;
-    [SerializeField, Min(0f)] private float refreshInterval = 0.25f;
+    [SerializeField, Min(0f)] private float partyIconRefreshInterval = 0.1f;
     [SerializeField] private FilterMode filterMode = FilterMode.Point;
 
     [Header("Cell Colors")]
@@ -44,7 +44,8 @@ public class MinimapController : MonoBehaviour
 
     private Texture2D minimapTexture;
     private Vector2Int textureSize;
-    private float nextRefreshTime;
+    private Vector2Int currentGridSize;
+    private float nextPartyIconRefreshTime;
     private readonly List<Image> partyIconPool = new List<Image>();
     private readonly HashSet<Vector2Int> obstacleCellCache = new HashSet<Vector2Int>();
 
@@ -82,11 +83,11 @@ public class MinimapController : MonoBehaviour
 
     private void Update()
     {
-        if (refreshInterval <= 0f || Time.unscaledTime < nextRefreshTime)
+        if (partyIconRefreshInterval <= 0f || Time.unscaledTime < nextPartyIconRefreshTime)
             return;
 
-        nextRefreshTime = Time.unscaledTime + refreshInterval;
-        Refresh();
+        nextPartyIconRefreshTime = Time.unscaledTime + partyIconRefreshInterval;
+        RefreshPartyIconsOnly();
     }
 
     [ContextMenu("Refresh Minimap")]
@@ -97,12 +98,38 @@ public class MinimapController : MonoBehaviour
         if (targetImage == null || !TryGetGridSize(out Vector2Int gridSize))
             return;
 
+        currentGridSize = gridSize;
         EnsureTexture(gridSize);
         RebuildObstacleCellCache();
         DrawCells(gridSize);
         DrawStrategicObjects(gridSize);
         minimapTexture.Apply(false);
         targetImage.texture = minimapTexture;
+
+        DrawPartyIcons(gridSize);
+    }
+
+    public void RefreshPartyIconsOnly()
+    {
+        if (!showPartyIcons)
+        {
+            HidePartyIcons(0);
+            return;
+        }
+
+        ResolveReferences();
+
+        Vector2Int gridSize = currentGridSize;
+        if (gridSize.x <= 0 || gridSize.y <= 0)
+        {
+            if (!TryGetGridSize(out gridSize))
+            {
+                HidePartyIcons(0);
+                return;
+            }
+
+            currentGridSize = gridSize;
+        }
 
         DrawPartyIcons(gridSize);
     }
