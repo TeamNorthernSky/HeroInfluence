@@ -55,7 +55,7 @@ Material:
     - _SweepFalloff: 4
     - _SweepIntensity: 1.3
     - _SweepTiltDeg: 15
-    - _SweepTime: 0.9263973
+    - _SweepTime: 0.020000458
     - _SweepWidth: 0.18
     m_Colors:
     - _BloomColor: {r: 0.439, g: 0.671, b: 0.918, a: 1}
