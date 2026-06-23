@@ -9,7 +9,7 @@ public class UnitGrowthExpData
     public int Level;
     public string Rank;
     public int NeedExpieriencePoint;
-    public int AddMaxIP;
+    public int AddIP;
     public int GuardianStudySkill;
     public int BlasterStudySkill;
     public int StrikerStudySkill;

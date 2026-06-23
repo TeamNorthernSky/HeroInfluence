@@ -637,7 +637,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             level        = src.Level,
             Rank         = string.IsNullOrEmpty(src.Rank) ? '\0' : src.Rank[0],
             expPerLevel  = src.NeedExpieriencePoint,
-            MaxIP        = src.AddMaxIP
+            MaxIP        = src.AddIP
         };
     }
 
