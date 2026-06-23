@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class FogRenderManager : MonoBehaviour
 {
@@ -12,12 +14,14 @@ public class FogRenderManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private GridManager gridManager;
+    [SerializeField] private LevelZoneLayoutData levelZoneLayoutData;
     [SerializeField] private LevelData levelData;
 
     [Header("Render Bounds")]
     [SerializeField] private Vector2Int gridSize = new Vector2Int(20, 20);
     [SerializeField] private bool rebuildOnEnable = true;
-    [SerializeField] private bool syncGridSizeWithLevelData = true;
+    [FormerlySerializedAs("syncGridSizeWithLevelData")]
+    [SerializeField] private bool syncGridSizeWithLevelSource = true;
 
     [Header("Texture Values")]
     [SerializeField, Range(0f, 1f)] private float unexploredValue = 0f;
@@ -27,6 +31,7 @@ public class FogRenderManager : MonoBehaviour
 
     private Texture2D fogTexture;
     private bool isDirty = true;
+    private readonly HashSet<Vector2Int> dirtyCells = new HashSet<Vector2Int>();
 
     public Vector2Int GridMin => Vector2Int.zero;
     public Vector2Int GridMax => new Vector2Int(gridSize.x - 1, gridSize.y - 1);
@@ -35,7 +40,7 @@ public class FogRenderManager : MonoBehaviour
     private void OnEnable()
     {
         TryAutoAssignLevelData();
-        SyncGridSizeFromLevelData();
+        SyncGridSizeFromLevelSource();
         EnsureValidGridSize();
         CreateTextureIfNeeded();
         SubscribeToFogChanges();
@@ -59,7 +64,7 @@ public class FogRenderManager : MonoBehaviour
     private void OnValidate()
     {
         TryAutoAssignLevelData();
-        SyncGridSizeFromLevelData();
+        SyncGridSizeFromLevelSource();
         EnsureValidGridSize();
         isDirty = true;
 
@@ -73,11 +78,14 @@ public class FogRenderManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (SyncGridSizeFromLevelData())
+        if (SyncGridSizeFromLevelSource())
             CreateTextureIfNeeded();
 
         if (!isDirty)
+        {
+            ApplyDirtyCells();
             return;
+        }
 
         RebuildFogTexture();
     }
@@ -110,16 +118,27 @@ public class FogRenderManager : MonoBehaviour
         fogTexture.Apply(false, false);
         ApplyShaderGlobals();
         isDirty = false;
+        dirtyCells.Clear();
     }
 
     public void MarkDirty()
     {
         isDirty = true;
+        dirtyCells.Clear();
     }
 
     private void HandleFogChanged()
     {
-        MarkDirty();
+        if (dirtyCells.Count == 0)
+            MarkDirty();
+    }
+
+    private void HandleCellVisibilityChanged(Vector2Int grid, FogVisibilityState visibility)
+    {
+        if (isDirty)
+            return;
+
+        dirtyCells.Add(grid);
     }
 
     private void SubscribeToFogChanges()
@@ -129,6 +148,8 @@ public class FogRenderManager : MonoBehaviour
 
         fogGridManager.FogChanged -= HandleFogChanged;
         fogGridManager.FogChanged += HandleFogChanged;
+        fogGridManager.CellVisibilityChanged -= HandleCellVisibilityChanged;
+        fogGridManager.CellVisibilityChanged += HandleCellVisibilityChanged;
     }
 
     private void UnsubscribeFromFogChanges()
@@ -137,6 +158,7 @@ public class FogRenderManager : MonoBehaviour
             return;
 
         fogGridManager.FogChanged -= HandleFogChanged;
+        fogGridManager.CellVisibilityChanged -= HandleCellVisibilityChanged;
     }
 
     private void CreateTextureIfNeeded()
@@ -169,6 +191,29 @@ public class FogRenderManager : MonoBehaviour
 
         fogTexture.filterMode = fogTextureFilterMode;
         fogTexture.wrapMode = TextureWrapMode.Clamp;
+    }
+
+    private void ApplyDirtyCells()
+    {
+        if (fogTexture == null || dirtyCells.Count == 0)
+            return;
+
+        foreach (Vector2Int grid in dirtyCells)
+        {
+            if (grid.x < 0 || grid.y < 0 || grid.x >= gridSize.x || grid.y >= gridSize.y)
+                continue;
+
+            FogVisibilityState visibility = fogGridManager != null
+                ? fogGridManager.GetVisibility(grid)
+                : FogVisibilityState.Unexplored;
+
+            float value = GetVisibilityValue(visibility);
+            fogTexture.SetPixel(grid.x, grid.y, new Color(value, value, value, 1f));
+        }
+
+        dirtyCells.Clear();
+        fogTexture.Apply(false, false);
+        ApplyShaderGlobals();
     }
 
     private void ApplyShaderGlobals()
@@ -221,20 +266,29 @@ public class FogRenderManager : MonoBehaviour
 
     private void TryAutoAssignLevelData()
     {
-        if (levelData != null)
-            return;
+        if (levelZoneLayoutData == null)
+        {
+            LevelZoneLayoutLoader zoneLayoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+            if (zoneLayoutLoader != null)
+                levelZoneLayoutData = zoneLayoutLoader.LayoutData;
+        }
 
-        LevelLoader levelLoader = FindFirstObjectByType<LevelLoader>();
-        if (levelLoader != null)
-            levelData = levelLoader.LevelData;
+        if (levelData == null)
+        {
+            LevelLoader levelLoader = FindFirstObjectByType<LevelLoader>();
+            if (levelLoader != null)
+                levelData = levelLoader.LevelData;
+        }
     }
 
-    private bool SyncGridSizeFromLevelData()
+    private bool SyncGridSizeFromLevelSource()
     {
-        if (!syncGridSizeWithLevelData || levelData == null)
+        if (!syncGridSizeWithLevelSource)
             return false;
 
-        Vector2Int nextGridSize = levelData.GridSize;
+        if (!TryGetLevelSourceGridSize(out Vector2Int nextGridSize))
+            return false;
+
         if (fogGridManager != null)
             fogGridManager.SetGridSize(nextGridSize);
 
@@ -245,5 +299,23 @@ public class FogRenderManager : MonoBehaviour
         EnsureValidGridSize();
         MarkDirty();
         return true;
+    }
+
+    private bool TryGetLevelSourceGridSize(out Vector2Int sourceGridSize)
+    {
+        if (levelZoneLayoutData != null)
+        {
+            sourceGridSize = levelZoneLayoutData.TotalGridSize;
+            return true;
+        }
+
+        if (levelData != null)
+        {
+            sourceGridSize = levelData.GridSize;
+            return true;
+        }
+
+        sourceGridSize = default;
+        return false;
     }
 }

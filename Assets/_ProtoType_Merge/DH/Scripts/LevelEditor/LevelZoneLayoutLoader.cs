@@ -1,12 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 [ExecuteAlways]
-public class LevelLoader : MonoBehaviour
+public class LevelZoneLayoutLoader : MonoBehaviour
 {
     private const string ObstacleRootName = "ObstacleRoot";
     private const string ItemRootName = "ItemRoot";
@@ -17,7 +17,7 @@ public class LevelLoader : MonoBehaviour
     private const string VillainUnionRootName = "VillainUnionRoot";
 
     [Header("Data")]
-    [SerializeField] private LevelData levelData;
+    [SerializeField] private LevelZoneLayoutData layoutData;
 
     [Header("Runtime References")]
     [SerializeField] private GridManager gridManager;
@@ -27,10 +27,9 @@ public class LevelLoader : MonoBehaviour
     [Header("Spawn Roots")]
     [SerializeField] private Transform obstacleRoot;
     [SerializeField] private Transform itemRoot;
-    [FormerlySerializedAs("mineRoot")]
     [SerializeField] private Transform outpostRoot;
     [SerializeField] private Transform eventRoot;
-    [SerializeField] private Transform stayEnemyRoot;
+    [SerializeField] private Transform enemyRoot;
     [SerializeField] private Transform castleRoot;
     [SerializeField] private Transform villainUnionRoot;
 
@@ -39,10 +38,21 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private bool clearExistingBeforeLoad = true;
     [SerializeField] private bool applyInEditMode = true;
     [SerializeField] private bool autoReloadOnValidate = true;
+    [SerializeField] private bool stopOnValidationErrors = true;
+    [SerializeField] private bool randomizeInEditMode;
+    [SerializeField] private int randomSeed;
 
-    public LevelData LevelData => levelData;
+    [Header("Zone Options")]
+    [SerializeField] private bool generateTilemaps = true;
+    [SerializeField] private bool spawnUniqueBuildingsFromZones;
+
+    private readonly List<string> validationErrors = new List<string>();
+    private readonly List<LoadedLevelZoneData> loadedZones = new List<LoadedLevelZoneData>();
+
+    public LevelZoneLayoutData LayoutData => layoutData;
     public GridManager GridManager => gridManager;
     public LevelPrefabRegistry PrefabRegistry => prefabRegistry;
+    public IReadOnlyList<LoadedLevelZoneData> LoadedZones => loadedZones;
 
 #if UNITY_EDITOR
     private bool queuedEditorReload;
@@ -59,7 +69,7 @@ public class LevelLoader : MonoBehaviour
     private void Start()
     {
         if (loadOnStart)
-            LoadLevel();
+            LoadLayout();
     }
 
     private void OnValidate()
@@ -78,23 +88,37 @@ public class LevelLoader : MonoBehaviour
         QueueEditorReload();
     }
 
-    [ContextMenu("Load Level")]
-    public void LoadLevel()
+    [ContextMenu("Load Zone Layout")]
+    public void LoadLayout()
     {
-        if (levelData == null || gridManager == null)
+        if (layoutData == null || gridManager == null)
+            return;
+
+        if (!ValidateLayout())
             return;
 
         if (clearExistingBeforeLoad)
             ClearSpawnedObjects();
 
-        GenerateTilemaps();
-        SpawnObstacles();
-        SpawnItems();
-        SpawnOutposts();
-        SpawnEvents();
-        SpawnStayEnemies();
-        SpawnEnemyPlacements();
-        SpawnUniqueBuildings();
+        loadedZones.Clear();
+        IReadOnlyList<LevelZoneSlot> zones = layoutData.Zones;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            LevelZoneSlot zone = zones[i];
+            if (zone == null)
+                continue;
+
+            if (!TrySelectCandidate(zone, i, out LevelData levelData, out int selectedCandidateIndex))
+                continue;
+
+            loadedZones.Add(new LoadedLevelZoneData(
+                zone.ZoneId,
+                zone.Anchor,
+                zone.Size,
+                selectedCandidateIndex,
+                levelData));
+            LoadZoneLevelData(zone, levelData);
+        }
     }
 
     private void TryLoadInEditMode()
@@ -102,10 +126,10 @@ public class LevelLoader : MonoBehaviour
         if (!applyInEditMode)
             return;
 
-        if (levelData == null || gridManager == null)
+        if (layoutData == null || gridManager == null)
             return;
 
-        LoadLevel();
+        LoadLayout();
     }
 
     private void QueueEditorReload()
@@ -132,7 +156,112 @@ public class LevelLoader : MonoBehaviour
     }
 #endif
 
-    private void SpawnObstacles()
+    private bool ValidateLayout()
+    {
+        validationErrors.Clear();
+        bool valid = layoutData.ValidateLayout(validationErrors);
+        if (valid)
+            return true;
+
+        for (int i = 0; i < validationErrors.Count; i++)
+            Debug.LogWarning(validationErrors[i], this);
+
+        return !stopOnValidationErrors;
+    }
+
+    private bool TrySelectCandidate(
+        LevelZoneSlot zone,
+        int zoneIndex,
+        out LevelData selectedLevelData,
+        out int selectedCandidateIndex)
+    {
+        selectedLevelData = null;
+        selectedCandidateIndex = -1;
+
+        IReadOnlyList<LevelData> candidates = zone.Candidates;
+        if (candidates == null || candidates.Count == 0)
+            return false;
+
+        MapProgressRepository progressRepository = Application.isPlaying ? MapProgressRepository.Instance : null;
+        if (progressRepository != null &&
+            progressRepository.TryGetLevelZoneSelection(layoutData.LayoutId, zone.ZoneId, out int savedCandidateIndex) &&
+            zone.TryGetCandidate(savedCandidateIndex, out LevelData savedCandidate))
+        {
+            selectedLevelData = savedCandidate;
+            selectedCandidateIndex = savedCandidateIndex;
+            return true;
+        }
+
+        List<int> validCandidateIndices = null;
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            LevelData candidate = candidates[i];
+            if (candidate == null)
+                continue;
+
+            validCandidateIndices ??= new List<int>();
+            validCandidateIndices.Add(i);
+        }
+
+        if (validCandidateIndices == null || validCandidateIndices.Count == 0)
+        {
+            if (!zone.Optional)
+                Debug.LogWarning($"LevelZoneLayoutLoader could not find candidates for zone '{zone.ZoneId}'.", this);
+
+            return false;
+        }
+
+        if (zone.ZoneType == LevelZoneType.Fixed || validCandidateIndices.Count == 1)
+        {
+            selectedCandidateIndex = validCandidateIndices[0];
+            selectedLevelData = candidates[selectedCandidateIndex];
+            progressRepository?.SetLevelZoneSelection(layoutData.LayoutId, zone.ZoneId, selectedCandidateIndex);
+            return true;
+        }
+
+        int selectedIndex = GetRandomIndex(zoneIndex, validCandidateIndices.Count);
+        selectedCandidateIndex = validCandidateIndices[selectedIndex];
+        selectedLevelData = candidates[selectedCandidateIndex];
+        progressRepository?.SetLevelZoneSelection(layoutData.LayoutId, zone.ZoneId, selectedCandidateIndex);
+        return true;
+    }
+
+    private int GetRandomIndex(int zoneIndex, int count)
+    {
+        if (count <= 1)
+            return 0;
+
+        if (Application.isPlaying || randomizeInEditMode)
+            return Random.Range(0, count);
+
+        unchecked
+        {
+            int value = randomSeed;
+            value = (value * 397) ^ zoneIndex;
+            value = Mathf.Abs(value);
+            return value % count;
+        }
+    }
+
+    private void LoadZoneLevelData(LevelZoneSlot zone, LevelData levelData)
+    {
+        Vector2Int offset = zone.Anchor;
+
+        if (generateTilemaps && tilemapGenerator != null)
+            tilemapGenerator.Generate(levelData, offset, false);
+
+        SpawnObstacles(levelData, offset);
+        SpawnItems(levelData, offset);
+        SpawnOutposts(levelData, offset);
+        SpawnEvents(levelData, offset);
+        SpawnStayEnemies(levelData, offset);
+        SpawnEnemyPlacements(levelData, offset);
+
+        if (spawnUniqueBuildingsFromZones)
+            SpawnUniqueBuildings(levelData, offset);
+    }
+
+    private void SpawnObstacles(LevelData levelData, Vector2Int offset)
     {
         GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
         if (obstaclePrefab == null)
@@ -141,12 +270,10 @@ public class LevelLoader : MonoBehaviour
         var obstacleCells = levelData.ObstacleCells;
         Transform parent = GetObstacleRoot(true);
         for (int i = 0; i < obstacleCells.Count; i++)
-        {
-            SpawnGameObject(obstaclePrefab, obstacleCells[i], parent);
-        }
+            SpawnGameObject(obstaclePrefab, obstacleCells[i] + offset, parent);
     }
 
-    private void SpawnItems()
+    private void SpawnItems(LevelData levelData, Vector2Int offset)
     {
         if (prefabRegistry == null)
             return;
@@ -156,22 +283,21 @@ public class LevelLoader : MonoBehaviour
         for (int i = 0; i < itemPlacements.Count; i++)
         {
             ItemPlacementData placement = itemPlacements[i];
-            if (Application.isPlaying && IsItemCollected(placement.GridPosition))
+            Vector2Int grid = placement.GridPosition + offset;
+            if (Application.isPlaying && IsItemCollected(grid))
                 continue;
 
             if (!prefabRegistry.TryGetItemPrefab(placement.ResourceType, out ItemObject itemPrefab))
             {
                 Debug.LogWarning(
-                    $"LevelLoader could not find an item prefab for resource type '{placement.ResourceType}'.",
+                    $"LevelZoneLayoutLoader could not find an item prefab for resource type '{placement.ResourceType}'.",
                     this);
                 continue;
             }
 
-            ItemObject item = SpawnComponent(itemPrefab, placement.GridPosition, parent);
-            if (item == null)
-                continue;
-
-            item.ApplyInitialAmount(placement.Amount);
+            ItemObject item = SpawnComponent(itemPrefab, grid, parent);
+            if (item != null)
+                item.ApplyInitialAmount(placement.Amount);
         }
     }
 
@@ -181,7 +307,7 @@ public class LevelLoader : MonoBehaviour
         return repository != null && repository.IsItemCollected(MapProgressKey.ForItem(grid));
     }
 
-    private void SpawnOutposts()
+    private void SpawnOutposts(LevelData levelData, Vector2Int offset)
     {
         if (prefabRegistry == null)
             return;
@@ -191,24 +317,25 @@ public class LevelLoader : MonoBehaviour
         for (int i = 0; i < outpostPlacements.Count; i++)
         {
             OutpostPlacementData placement = outpostPlacements[i];
+            Vector2Int grid = placement.GridPosition + offset;
             if (!prefabRegistry.TryGetOutpostPrefab(placement.OutpostType, out Outpost outpostPrefab))
             {
                 Debug.LogWarning(
-                    $"LevelLoader could not find an outpost prefab for outpost type '{placement.OutpostType}'.",
+                    $"LevelZoneLayoutLoader could not find an outpost prefab for outpost type '{placement.OutpostType}'.",
                     this);
                 continue;
             }
 
-            Outpost outpost = SpawnComponent(outpostPrefab, placement.GridPosition, parent);
+            Outpost outpost = SpawnComponent(outpostPrefab, grid, parent);
             if (outpost == null)
                 continue;
 
-            OutpostState initialState = GetOutpostInitialState(placement.GridPosition, placement.InitialState);
+            OutpostState initialState = GetOutpostInitialState(grid, placement.InitialState);
             outpost.ApplyInitialData(
                 placement.OutpostType,
                 placement.ResourcePerTurn,
                 initialState);
-            ApplyOutpostProgressData(outpost, placement.GridPosition);
+            ApplyOutpostProgressData(outpost, grid);
         }
     }
 
@@ -243,7 +370,7 @@ public class LevelLoader : MonoBehaviour
             progressState.DefenderEnemyId);
     }
 
-    private void SpawnEvents()
+    private void SpawnEvents(LevelData levelData, Vector2Int offset)
     {
         if (prefabRegistry == null)
             return;
@@ -253,18 +380,19 @@ public class LevelLoader : MonoBehaviour
         for (int i = 0; i < eventPlacements.Count; i++)
         {
             EventPlacementData placement = eventPlacements[i];
-            if (Application.isPlaying && IsEventCompleted(placement.GridPosition, placement.EventType))
+            Vector2Int grid = placement.GridPosition + offset;
+            if (Application.isPlaying && IsEventCompleted(grid, placement.EventType))
                 continue;
 
             if (!prefabRegistry.TryGetEventPrefab(placement.EventType, out MapEventObject eventPrefab))
             {
                 Debug.LogWarning(
-                    $"LevelLoader could not find an event prefab for event key '{placement.EventKey}'.",
+                    $"LevelZoneLayoutLoader could not find an event prefab for event key '{placement.EventKey}'.",
                     this);
                 continue;
             }
 
-            MapEventObject mapEvent = SpawnComponent(eventPrefab, placement.GridPosition, resolvedEventRoot);
+            MapEventObject mapEvent = SpawnComponent(eventPrefab, grid, resolvedEventRoot);
             if (mapEvent == null)
                 continue;
 
@@ -281,7 +409,7 @@ public class LevelLoader : MonoBehaviour
         return repository != null && repository.IsEventCompleted(MapProgressKey.ForEvent(grid, MapEventTypeUtility.ToEventKey(eventType)));
     }
 
-    private void SpawnStayEnemies()
+    private void SpawnStayEnemies(LevelData levelData, Vector2Int offset)
     {
         var stayEnemyCells = levelData.StayEnemyCells;
         if (stayEnemyCells.Count == 0)
@@ -289,14 +417,14 @@ public class LevelLoader : MonoBehaviour
 
         if (prefabRegistry == null || !prefabRegistry.TryGetStayEnemyPrefab(out EnemyGridMover stayEnemyPrefab))
         {
-            Debug.LogWarning("LevelLoader could not find a stay enemy prefab.", this);
+            Debug.LogWarning("LevelZoneLayoutLoader could not find a stay enemy prefab.", this);
             return;
         }
 
         Transform parent = GetEnemyRoot(true);
         for (int i = 0; i < stayEnemyCells.Count; i++)
         {
-            EnemyGridMover stayEnemy = SpawnComponent(stayEnemyPrefab, stayEnemyCells[i], parent);
+            EnemyGridMover stayEnemy = SpawnComponent(stayEnemyPrefab, stayEnemyCells[i] + offset, parent);
             if (stayEnemy == null)
                 continue;
 
@@ -310,7 +438,7 @@ public class LevelLoader : MonoBehaviour
         }
     }
 
-    private void SpawnEnemyPlacements()
+    private void SpawnEnemyPlacements(LevelData levelData, Vector2Int offset)
     {
         var enemyPlacements = levelData.EnemyPlacements;
         if (enemyPlacements.Count == 0)
@@ -318,14 +446,14 @@ public class LevelLoader : MonoBehaviour
 
         if (prefabRegistry == null || !prefabRegistry.TryGetEnemyGroupPrefab(out EnemyGridMover enemyGroupPrefab))
         {
-            Debug.LogWarning("LevelLoader could not find an enemy group prefab.", this);
+            Debug.LogWarning("LevelZoneLayoutLoader could not find an enemy group prefab.", this);
             return;
         }
 
         DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
         if (Application.isPlaying && templateCatalog == null)
         {
-            Debug.LogWarning("LevelLoader could not find a DHCsvTemplateCatalog in the scene.", this);
+            Debug.LogWarning("LevelZoneLayoutLoader could not find a DHCsvTemplateCatalog in the scene.", this);
             return;
         }
 
@@ -333,7 +461,8 @@ public class LevelLoader : MonoBehaviour
         for (int i = 0; i < enemyPlacements.Count; i++)
         {
             EnemyPlacementData placement = enemyPlacements[i];
-            string placementKey = MapProgressKey.ForSceneEnemy(placement.GridPosition);
+            Vector2Int grid = placement.GridPosition + offset;
+            string placementKey = MapProgressKey.ForSceneEnemy(grid);
 
             if (Application.isPlaying && IsEnemyDefeated(placementKey))
                 continue;
@@ -343,12 +472,12 @@ public class LevelLoader : MonoBehaviour
                 !templateCatalog.TryGetEnemyGroup(placement.EnemyGroupIndex, out groupData))
             {
                 Debug.LogWarning(
-                    $"LevelLoader could not find an enemy group CSV index '{placement.EnemyGroupIndex}'.",
+                    $"LevelZoneLayoutLoader could not find an enemy group CSV index '{placement.EnemyGroupIndex}'.",
                     this);
                 continue;
             }
 
-            EnemyGridMover enemy = SpawnComponent(enemyGroupPrefab, placement.GridPosition, parent);
+            EnemyGridMover enemy = SpawnComponent(enemyGroupPrefab, grid, parent);
             if (enemy == null)
                 continue;
 
@@ -363,12 +492,12 @@ public class LevelLoader : MonoBehaviour
                 !enemyBootstrap.InitializeEnemyGroupFromCsv(
                     groupData,
                     prefabRegistry,
-                    placement.GridPosition,
+                    grid,
                     placement.BehaviorType,
                     placementKey))
             {
                 Debug.LogWarning(
-                    $"LevelLoader failed to spawn enemy group '{placement.EnemyGroupIndex}' at {placement.GridPosition}.",
+                    $"LevelZoneLayoutLoader failed to spawn enemy group '{placement.EnemyGroupIndex}' at {grid}.",
                     this);
                 Destroy(enemy.gameObject);
             }
@@ -381,16 +510,16 @@ public class LevelLoader : MonoBehaviour
         return repository != null && repository.IsEnemyDefeated(placementKey);
     }
 
-    private void SpawnUniqueBuildings()
+    private void SpawnUniqueBuildings(LevelData levelData, Vector2Int offset)
     {
         if (prefabRegistry == null)
             return;
 
-        SpawnCastle();
-        SpawnVillainUnionBase();
+        SpawnCastle(levelData, offset);
+        SpawnVillainUnionBase(levelData, offset);
     }
 
-    private void SpawnCastle()
+    private void SpawnCastle(LevelData levelData, Vector2Int offset)
     {
         UniqueBuildingPlacementData placement = levelData.CastlePlacement;
         if (!placement.HasPlacement)
@@ -398,15 +527,15 @@ public class LevelLoader : MonoBehaviour
 
         if (!prefabRegistry.TryGetCastlePrefab(out CastleUnit castlePrefab))
         {
-            Debug.LogWarning("LevelLoader could not find a castle prefab.", this);
+            Debug.LogWarning("LevelZoneLayoutLoader could not find a castle prefab.", this);
             return;
         }
 
         Transform parent = GetCastleRoot(true);
-        SpawnComponent(castlePrefab, placement.GridPosition, parent);
+        SpawnComponent(castlePrefab, placement.GridPosition + offset, parent);
     }
 
-    private void SpawnVillainUnionBase()
+    private void SpawnVillainUnionBase(LevelData levelData, Vector2Int offset)
     {
         UniqueBuildingPlacementData placement = levelData.VillainUnionPlacement;
         if (!placement.HasPlacement)
@@ -414,12 +543,12 @@ public class LevelLoader : MonoBehaviour
 
         if (!prefabRegistry.TryGetVillainUnionBasePrefab(out VillainUnionBase villainUnionBasePrefab))
         {
-            Debug.LogWarning("LevelLoader could not find a villain union base prefab.", this);
+            Debug.LogWarning("LevelZoneLayoutLoader could not find a villain union base prefab.", this);
             return;
         }
 
         Transform parent = GetVillainUnionRoot(true);
-        SpawnComponent(villainUnionBasePrefab, placement.GridPosition, parent);
+        SpawnComponent(villainUnionBasePrefab, placement.GridPosition + offset, parent);
     }
 
     private void ClearSpawnedObjects()
@@ -437,14 +566,6 @@ public class LevelLoader : MonoBehaviour
         ClearStayEnemies();
         ClearDirectChildrenWithComponent<CastleUnit>();
         ClearDirectChildrenWithComponent<VillainUnionBase>();
-    }
-
-    private void GenerateTilemaps()
-    {
-        if (tilemapGenerator == null)
-            return;
-
-        tilemapGenerator.Generate(levelData);
     }
 
     private void ClearChildren(Transform root)
@@ -547,7 +668,7 @@ public class LevelLoader : MonoBehaviour
         GetSpawnRoot(ref eventRoot, EventRootName, createIfMissing);
 
     private Transform GetEnemyRoot(bool createIfMissing) =>
-        GetSpawnRoot(ref stayEnemyRoot, EnemyRootName, createIfMissing);
+        GetSpawnRoot(ref enemyRoot, EnemyRootName, createIfMissing);
 
     private Transform GetCastleRoot(bool createIfMissing) =>
         GetSpawnRoot(ref castleRoot, CastleRootName, createIfMissing);
@@ -608,7 +729,8 @@ public class LevelLoader : MonoBehaviour
         {
             for (int x = 0; x < size.x; x++)
             {
-                if (!levelData.IsInsideGrid(new Vector2Int(grid.x + x, grid.y + y)))
+                Vector2Int cell = new Vector2Int(grid.x + x, grid.y + y);
+                if (!layoutData.IsInsideGrid(cell))
                     return false;
             }
         }
@@ -647,7 +769,25 @@ public class LevelLoader : MonoBehaviour
     }
 }
 
-[DisallowMultipleComponent]
-public class LevelSpawnedEnemyMarker : MonoBehaviour
+public readonly struct LoadedLevelZoneData
 {
+    public LoadedLevelZoneData(
+        string zoneId,
+        Vector2Int anchor,
+        Vector2Int size,
+        int selectedCandidateIndex,
+        LevelData levelData)
+    {
+        ZoneId = zoneId;
+        Anchor = anchor;
+        Size = size;
+        SelectedCandidateIndex = selectedCandidateIndex;
+        LevelData = levelData;
+    }
+
+    public string ZoneId { get; }
+    public Vector2Int Anchor { get; }
+    public Vector2Int Size { get; }
+    public int SelectedCandidateIndex { get; }
+    public LevelData LevelData { get; }
 }
