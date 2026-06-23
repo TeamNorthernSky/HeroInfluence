@@ -15,7 +15,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     [SerializeField] private EnemyUnitDataTable enemyUnitInfoDataTable;
     [SerializeField] private PlayerWeaponDataTable  playerWeaponDataTable;
     [SerializeField] private ClassSkillDataTable    classSkillDataTable;
-    [SerializeField] private UnitGrowthPerLevelDataTable unitGrowthExpDataTable;
+    [SerializeField] private UnitGrowthExpDataTable unitGrowthExpDataTable;
     [SerializeField] private EnemyGroupDataTable    enemyGroupDataTable;
 
     [Header("Settings")]
@@ -43,8 +43,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<int, Dictionary<int, int>> skillUnlockByClassIndex
         = new Dictionary<int, Dictionary<int, int>>();
 
-    private static readonly Dictionary<int, System.Func<UnitGrowthPerLevelData, int>> ClassUnlockAccessors
-        = new Dictionary<int, System.Func<UnitGrowthPerLevelData, int>>
+    private static readonly Dictionary<int, System.Func<UnitGrowthExpData, int>> ClassUnlockAccessors
+        = new Dictionary<int, System.Func<UnitGrowthExpData, int>>
     {
         { 10001, d => d.GuardianStudySkill  },
         { 10002, d => d.BlasterStudySkill   },
@@ -422,7 +422,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             for (int i = 0; i < unitGrowthExpDataTable.DataList.Count; i++)
             {
-                UnitGrowthPerLevelData src = unitGrowthExpDataTable.DataList[i];
+                UnitGrowthExpData src = unitGrowthExpDataTable.DataList[i];
                 if (src == null) continue;
 
                 LevelUpData row = ConvertLevelUp(src);
@@ -629,7 +629,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    private static LevelUpData ConvertLevelUp(UnitGrowthPerLevelData src)
+    private static LevelUpData ConvertLevelUp(UnitGrowthExpData src)
     {
         if (src == null) return null;
         return new LevelUpData
@@ -637,7 +637,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             level        = src.Level,
             Rank         = string.IsNullOrEmpty(src.Rank) ? '\0' : src.Rank[0],
             expPerLevel  = src.NeedExpieriencePoint,
-            MaxIP        = src.AddIP
+            MaxIP        = src.AddMaxIP
         };
     }
 
