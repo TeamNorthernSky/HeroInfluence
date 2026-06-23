@@ -40,10 +40,10 @@ public class DebugManager : MonoBehaviour
     {
         if (panelController == null) return;
 
-        UpdateGlobalShortcuts();
-
         if (panelController.IsCanvasActive)
         {
+            // [JC 260619] Shift+숫자 치트는 디버그 패널이 열려 있을 때만 작동(백쿼트 5연타로 활성화한 상태).
+            UpdateGlobalShortcuts();
             UpdateDeactivationSequence();
             UpdateInputToggle();
         }

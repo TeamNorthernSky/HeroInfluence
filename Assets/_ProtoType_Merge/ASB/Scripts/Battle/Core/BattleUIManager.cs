@@ -78,7 +78,7 @@ public class BattleUIManager : MonoBehaviour
         if (currentTurnText != null)
         {
             string colorHex = (unit != null && unit.IsPlayer) ? "#00FF00" : "#FF0000";
-            string unitName = unit != null ? unit.UnitName : "Unknown";
+            string unitName = unit != null ? unit.DisplayName : "Unknown"; // [JC 260621] 클래스명 아닌 히어로명
             currentTurnText.text = $"현재 턴 : <color={colorHex}>{unitName}</color>";
         }
 

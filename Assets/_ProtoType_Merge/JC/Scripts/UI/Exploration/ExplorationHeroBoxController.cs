@@ -158,7 +158,8 @@ public class ExplorationHeroBoxController : MonoBehaviour
 
             if (slot.profile != null)
             {
-                var sp = HeroProfileCatalog.GetByName(template != null ? template.Name : null);
+                // [JC 260621] 포트레이트 = unitIndex(=HeroIndex) 기준 PortraitLibrary 해석.
+                var sp = HeroProfileCatalog.GetByUnitIndex(unitIndex);
                 slot.profile.enabled = sp != null;
                 if (sp != null) slot.profile.sprite = sp;
             }
@@ -186,8 +187,8 @@ public class ExplorationHeroBoxController : MonoBehaviour
         if (i < 0 || i >= boundUnits.Length || boundUnits[i] <= 0) return;
         var gm = GameManager.Instance;
         if (gm == null) return;
-        // 탐사 멤버 클릭 → 스테이터스 모달(스킬 우측). 없으면 일반 HeroInfo로 폴백.
-        var modal = gm.HeroStatusModal != null ? gm.HeroStatusModal : gm.HeroInfoModal;
+        // [JC 260619] 탐사 멤버 클릭 → 로비와 동일 레이아웃(Modal_HeroInfo)으로 통일. HeroStatusModal 우선선택 폐기.
+        var modal = gm.HeroInfoModal;
         if (modal != null) modal.Open(boundUnits[i]);
     }
 }

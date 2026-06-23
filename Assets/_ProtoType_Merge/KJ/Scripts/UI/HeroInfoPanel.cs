@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,20 +15,20 @@ public class HeroInfoPanel : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Image ipGauge;
 
     private BattleCharactor currentUnit;
-    private RawImage portraitImage;
+    private Image portraitImage; // [JC 260621] RawImage→Image (PortraitLibrary Sprite 직접 사용)
 
     private void Awake()
     {
         if (portrait != null)
         {
-            GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(RawImage));
+            GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(Image));
             rawObj.transform.SetParent(portrait, false);
             RectTransform rt = rawObj.GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
-            portraitImage = rawObj.GetComponent<RawImage>();
+            portraitImage = rawObj.GetComponent<Image>();
         }
     }
 
@@ -36,6 +37,10 @@ public class HeroInfoPanel : MonoBehaviour
         if (flowManager == null) flowManager = FindFirstObjectByType<BattleFlowManager>();
         if (flowManager != null)
             flowManager.OnTurnStarted += OnTurnStarted;
+        if(hpGauge == null)
+        {
+
+        }
     }
 
     private void OnDisable()
@@ -78,15 +83,19 @@ public class HeroInfoPanel : MonoBehaviour
             if (rankText != null) rankText.text = "-";
             if (hpText != null) hpText.text = "-";
             if (ipText != null) ipText.text = "-";
-            if (portraitImage != null) portraitImage.texture = null;
+            if (portraitImage != null) portraitImage.sprite = null;
             return;
         }
 
         if (nameText != null)
-            nameText.text = currentUnit.UnitName;
+            nameText.text = currentUnit.DisplayName; // [JC 260621] 클래스명 아닌 히어로명
 
         if (rankText != null)
-            rankText.text = GetRank(currentUnit).ToString();
+        {
+            // [JC 260622] 로비/HeroInfoModal과 동일 랭크 체계(RankUtil, 성장 V6.0). 레벨 파생.
+            int rankLevel = currentUnit.SourceData != null ? currentUnit.SourceData.Level : currentUnit.Level;
+            rankText.text = RankUtil.FromLevel(rankLevel);
+        }
 
         UpdateHpText(currentUnit.CurrentHp, currentUnit.MaxHp);
         UpdateIpText(currentUnit.CurrentInfluence, currentUnit.MaxInfluence);
@@ -98,7 +107,11 @@ public class HeroInfoPanel : MonoBehaviour
         if (hpText != null)
             hpText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
         if (hpGauge != null)
+        {
             hpGauge.fillAmount = max > 0f ? Mathf.Clamp01(current / max) : 0f;
+            Debug.Log($" HpGauge Percent : { hpGauge.fillAmount}");
+        }
+        
     }
 
     private void UpdateIpText(float current, float max)
@@ -113,25 +126,12 @@ public class HeroInfoPanel : MonoBehaviour
     {
         if (portraitImage == null || currentUnit == null) return;
 
-        int unitIndex = currentUnit.SourceData != null ? currentUnit.SourceData.UnitIndex : 0;
-        Sprite sp = HeroInfoResult.LoadPortraitByPartySlot(unitIndex);
-        portraitImage.texture = sp != null ? sp.texture : null;
+        // [JC 260621] 포트레이트 = PortraitLibrary(키=HeroIndex). 적/빌런은 SourceData null → Unselected.
+        Sprite sp = currentUnit.SourceData != null
+            ? EntityPortraits.Hero(currentUnit.SourceData.UnitTemplateKey)
+            : EntityPortraits.Unselected;
+        portraitImage.sprite = sp;
         portraitImage.enabled = sp != null;
     }
 
-    private static char GetRank(BattleCharactor unit)
-    {
-        int level = unit.SourceData != null ? unit.SourceData.Level : unit.Level;
-        var templates = DHCsvTemplateCatalog.Instance?.GetLevelUpTemplates();
-        if (templates == null) return '-';
-
-        LevelUpData match = null;
-        foreach (var row in templates)
-        {
-            if (row.level <= level) match = row;
-            else break;
-        }
-
-        return match != null && match.Rank != '\0' ? match.Rank : '-';
-    }
 }

@@ -10,7 +10,6 @@ public class ToggleButton : MonoBehaviour
 
     [SerializeField] private bool isOn;
     public bool IsOn => isOn;
-
     private void Reset()
     {
         button = GetComponent<Button>();

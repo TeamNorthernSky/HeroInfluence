@@ -23,8 +23,9 @@ public class BattleResultPanel : MonoBehaviour
 
     private void Awake()
     {
-        if (resultPanel != null)
-            resultPanel.SetActive(false);
+        // [JC 260622] 자기-비활성화 제거: 이 컴포넌트는 resultPanel(부모) 하위에 있고 resultPanel이 씬에 비활성 저장됨.
+        // Awake가 resultPanel을 끄면, Show()가 resultPanel을 켜는 순간 비로소 Awake가 돌며 즉시 다시 꺼버려
+        // 결과패널이 표시되지 않는 버그가 있었음. 시작 숨김은 씬의 비활성 저장으로 대체.
 
         if (acceptButton != null)
         {

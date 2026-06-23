@@ -29,11 +29,21 @@ public class ExplorationHUDController : MonoBehaviour
     [SerializeField] private Button nextTurnButton;       // BTN_Explor_NextTurn
     [SerializeField] private TurnManager turnManager;
 
+    [Header("옵션(시스템 메뉴) 버튼 (비우면 이름으로 자동 탐색)")]
+    [SerializeField] private Button optionButton;         // BTN_Explor_Option → 영속 SystemMenuModal
+
+    [Header("툴팁(사용 불가 안내) 버튼 (비우면 이름으로 자동 탐색)")]
+    [SerializeField] private Button tooltipButton;        // BTN_Explor_Tooltip → 로비와 동일 안내 모달
+    private const string TooltipModalResource = "UI_Prefab/Modal_Tooltip_Notice"; // Resources 경로
+    private GameObject tooltipModalInstance;
+    private bool tooltipHooked;
+
     private const int DaysPerWeek = 7;
 
     private EconomyManager subscribedEco;
     private TurnManager subscribedTM;
     private bool listenerHooked;
+    private bool optionHooked;
     private Canvas canvas;
     private GraphicRaycaster graphicRaycaster;
 
@@ -90,6 +100,16 @@ public class ExplorationHUDController : MonoBehaviour
             var go = GameObject.Find("BTN_Explor_NextTurn");
             if (go != null) nextTurnButton = go.GetComponentInChildren<Button>(true);
         }
+        if (optionButton == null)
+        {
+            var go = GameObject.Find("BTN_Explor_Option");
+            if (go != null) optionButton = go.GetComponent<Button>() ?? go.GetComponentInChildren<Button>(true);
+        }
+        if (tooltipButton == null)
+        {
+            var go = GameObject.Find("BTN_Explor_Tooltip");
+            if (go != null) tooltipButton = go.GetComponent<Button>() ?? go.GetComponentInChildren<Button>(true);
+        }
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
     }
 
@@ -101,9 +121,67 @@ public class ExplorationHUDController : MonoBehaviour
 
     private void HookButton()
     {
-        if (listenerHooked || nextTurnButton == null) return;
-        nextTurnButton.onClick.AddListener(OnClickNextTurn);
-        listenerHooked = true;
+        if (!listenerHooked && nextTurnButton != null)
+        {
+            nextTurnButton.onClick.AddListener(OnClickNextTurn);
+            listenerHooked = true;
+        }
+        if (!optionHooked && optionButton != null)
+        {
+            optionButton.onClick.AddListener(OnClickOption);
+            optionHooked = true;
+        }
+        if (!tooltipHooked && tooltipButton != null)
+        {
+            tooltipButton.onClick.AddListener(OnClickTooltip);
+            tooltipHooked = true;
+        }
+    }
+
+    // [JC 260619] 탐사 옵션 버튼 → 영속 SystemMenuModal 열기(로비 HQLobbyMenuController.OnClickOption과 동일 패턴).
+    private void OnClickOption()
+    {
+        var sys = FindObjectOfType<SystemMenuController>(true);
+        if (sys != null) sys.OpenMenu();
+        else Debug.LogWarning("[ExplorationHUD] SystemMenuController 없음 — 시스템 메뉴를 열 수 없음");
+    }
+
+    // [JC 260619] 탐사 툴팁 버튼 → 로비와 동일한 "사용 불가 안내" 모달(Modal_Tooltip_Notice 프리팹)을 런타임 인스턴스화해 표시.
+    // 닫기: 백드롭 외곽클릭(프리팹 ModalBackgroundCloser 자체) + BTN_Exit(보조 결선).
+    private void OnClickTooltip()
+    {
+        EnsureTooltipModal();
+        if (tooltipModalInstance != null)
+        {
+            tooltipModalInstance.transform.SetAsLastSibling();
+            tooltipModalInstance.SetActive(true);
+        }
+    }
+
+    private void EnsureTooltipModal()
+    {
+        if (tooltipModalInstance != null) return;
+        var prefab = Resources.Load<GameObject>(TooltipModalResource);
+        if (prefab == null) { Debug.LogWarning($"[ExplorationHUD] '{TooltipModalResource}' 프리팹 없음"); return; }
+        tooltipModalInstance = Instantiate(prefab, transform); // HUD 캔버스 하위
+        tooltipModalInstance.SetActive(false);
+        var exit = FindDeep(tooltipModalInstance.transform, "BTN_Exit");
+        if (exit != null)
+        {
+            var b = exit.GetComponent<Button>();
+            if (b != null) b.onClick.AddListener(() => { if (tooltipModalInstance != null) tooltipModalInstance.SetActive(false); });
+        }
+    }
+
+    private static Transform FindDeep(Transform node, string name)
+    {
+        if (node.name == name) return node;
+        for (int i = 0; i < node.childCount; i++)
+        {
+            var r = FindDeep(node.GetChild(i), name);
+            if (r != null) return r;
+        }
+        return null;
     }
 
     // ─── 구독 ───────────────────────────────────────────────

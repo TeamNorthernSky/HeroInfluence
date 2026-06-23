@@ -116,6 +116,16 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
+        // [JC 260622] Ctrl+Shift+8: 아군(현재 플레이어) 턴 스킵. 키4와 동일 경로(오입력 방지 조합).
+        // 적 턴엔 BattleFlowManager의 IsPlayer 가드로 무시됨.
+        bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        if (ctrlHeld && shiftHeld && (Input.GetKeyDown(KeyCode.Alpha8) || Input.GetKeyDown(KeyCode.Keypad8)))
+        {
+            SkipCurrentTurn();
+            return;
+        }
+
         if (currentState != PlayerActionState.WaitingForTarget)
         {
             ClearAoEPreview();

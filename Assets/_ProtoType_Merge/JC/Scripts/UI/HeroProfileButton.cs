@@ -85,7 +85,8 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
 
         if (profileImage != null)
         {
-            var sp = HeroProfileCatalog.GetByName(template != null ? template.Name : null);
+            // [JC 260621] 포트레이트 = unitIndex(=HeroIndex) 기준 PortraitLibrary 해석.
+            var sp = HeroProfileCatalog.GetByUnitIndex(unitIndex);
             profileImage.gameObject.SetActive(true);
             profileImage.enabled = true;
             if (sp != null) profileImage.sprite = sp;
