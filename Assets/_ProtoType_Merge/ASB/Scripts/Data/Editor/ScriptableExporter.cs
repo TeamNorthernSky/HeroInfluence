@@ -38,7 +38,7 @@ namespace ASB.ExcelImport.Editor
 
         private static void ExportSheet(ExcelSheetParseResult sheet, string assetFolder)
         {
-            string baseName = CodeGenerator.ToTypeBaseName(sheet.SheetName);
+            string baseName = CodeGenerator.ToTypeBaseName(sheet.ClassName);
             string rowTypeName = baseName + "Data";
             string tableTypeName = baseName + "DataTable";
             string assetPath = $"{assetFolder}/{tableTypeName}.asset";
@@ -315,25 +315,18 @@ namespace ASB.ExcelImport.Editor
         /// </summary>
         private static void EnsureAssetFolderExists(string assetFolderPath)
         {
-            // 이미 AssetDatabase가 인식하는 폴더면 아무것도 안 해도 됨
-            if (AssetDatabase.IsValidFolder(assetFolderPath))
-            {
-                return;
-            }
+            if (AssetDatabase.IsValidFolder(assetFolderPath)) return;
 
-            // 디스크에 물리 폴더 생성 후 AssetDatabase에 알림
-            Directory.CreateDirectory(ToAbsoluteAssetPath(assetFolderPath));
-            AssetDatabase.Refresh();
-
-            // Refresh 후에도 인식이 안 되면 CreateFolder로 강제 등록
-            if (!AssetDatabase.IsValidFolder(assetFolderPath))
+            // 경로 각 레벨을 순차적으로 AssetDatabase.CreateFolder로 생성
+            // Refresh 없이 동기적으로 등록되므로 바로 CreateAsset 가능
+            string[] parts = assetFolderPath.Split('/');
+            string current = parts[0];
+            for (int i = 1; i < parts.Length; i++)
             {
-                string parent = System.IO.Path.GetDirectoryName(assetFolderPath)?.Replace('\\', '/');
-                string folderName = System.IO.Path.GetFileName(assetFolderPath);
-                if (!string.IsNullOrEmpty(parent) && !string.IsNullOrEmpty(folderName))
-                {
-                    AssetDatabase.CreateFolder(parent, folderName);
-                }
+                string next = current + "/" + parts[i];
+                if (!AssetDatabase.IsValidFolder(next))
+                    AssetDatabase.CreateFolder(current, parts[i]);
+                current = next;
             }
         }
 

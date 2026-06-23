@@ -581,13 +581,22 @@ namespace ASB.ExcelImport.Editor
         {
             _assets.Clear();
 
-            string scanFolder = ExcelImportPaths.TableAssetFolder;
+            string scanFolder = null;
             if (!string.IsNullOrEmpty(_selectedExcelPath) && File.Exists(_selectedExcelPath))
             {
                 string excelName = Path.GetFileNameWithoutExtension(_selectedExcelPath);
                 string subFolder = ExcelImportPaths.GetTableAssetFolder(excelName);
                 if (AssetDatabase.IsValidFolder(subFolder))
                     scanFolder = subFolder;
+            }
+
+            if (scanFolder == null)
+            {
+                _emptyLabel.style.display = DisplayStyle.Flex;
+                _listView.style.display   = DisplayStyle.None;
+                _listView.itemsSource     = _assets;
+                _listView.Rebuild();
+                return;
             }
 
             string[] guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { scanFolder });
@@ -655,6 +664,11 @@ namespace ASB.ExcelImport.Editor
         }
 
         // ─── Event Handlers ───────────────────────────────────────────────────
+
+        public void RefreshAssets()
+        {
+            ScanExcelFolder();
+        }
 
         private void OnRefreshClicked()
         {

@@ -23,6 +23,9 @@ namespace ASB.ExcelImport.Editor
     public sealed class ExcelSheetParseResult
     {
         public string SheetName;
+        public string CustomClassName;
+        /// <summary>#DataName이 있으면 그 값, 없으면 SheetName을 클래스명 기준으로 사용합니다.</summary>
+        public string ClassName => string.IsNullOrEmpty(CustomClassName) ? SheetName : CustomClassName;
         public List<string> Types = new List<string>();
         public List<string> Names = new List<string>();
         public List<List<string>> Rows = new List<List<string>>();
@@ -79,6 +82,7 @@ namespace ASB.ExcelImport.Editor
             int typeRowIndex = -1;
             int nameRowIndex = -1;
             int dataStartRowIndex = -1;
+            string customClassName = null;
 
             for (int rowIndex = sheet.FirstRowNum; rowIndex <= sheet.LastRowNum; rowIndex++)
             {
@@ -91,6 +95,9 @@ namespace ASB.ExcelImport.Editor
                 string marker = NormalizeMarker(GetCellString(row, MarkerColumnIndex));
                 switch (marker)
                 {
+                    case "#dataname":
+                        customClassName = GetCellString(row, FirstDataColumnIndex).Trim();
+                        break;
                     case "#type":
                         typeRowIndex = rowIndex;
                         break;
@@ -148,9 +155,10 @@ namespace ASB.ExcelImport.Editor
 
             var parsed = new ExcelSheetParseResult
             {
-                SheetName = sheet.SheetName,
-                Types = types,
-                Names = names
+                SheetName       = sheet.SheetName,
+                CustomClassName = customClassName,
+                Types           = types,
+                Names           = names
             };
 
             for (int rowIndex = dataStartRowIndex; rowIndex <= sheet.LastRowNum; rowIndex++)
