@@ -12,7 +12,7 @@ namespace ASB.ExcelImport.Editor
 {
     public static class ScriptableExporter
     {
-        public static void ExportAll(IReadOnlyList<ExcelSheetParseResult> sheets, Dictionary<string, bool> useDictMap = null)
+        public static void ExportAll(IReadOnlyList<ExcelSheetParseResult> sheets, Dictionary<string, bool> useDictMap = null, string assetFolder = null)
         {
             if (sheets == null || sheets.Count == 0)
             {
@@ -20,7 +20,8 @@ namespace ASB.ExcelImport.Editor
                 return;
             }
 
-            string assetFolder = ExcelImportPaths.TableAssetFolder;
+            if (string.IsNullOrEmpty(assetFolder))
+                assetFolder = ExcelImportPaths.TableAssetFolder;
             EnsureAssetFolderExists(assetFolder);
 
             for (int i = 0; i < sheets.Count; i++)

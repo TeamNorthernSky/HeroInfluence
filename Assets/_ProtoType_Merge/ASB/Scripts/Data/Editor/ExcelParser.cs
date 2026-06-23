@@ -14,6 +14,9 @@ namespace ASB.ExcelImport.Editor
         public const string TableAssetFolder = "Assets/_ProtoType_Merge/ASB/Data/Tables";
         public const string DefaultExcelFolder = "Assets/_ProtoType_Merge/ASB/Data/Excel";
         public const string PendingFilePathKey = "ExcelParser_PendingFilePath";
+
+        public static string GetTableAssetFolder(string excelFileName) =>
+            $"{TableAssetFolder}/{excelFileName}";
     }
 
     /// <summary>에디터 파서 전용 DTO. Generated 데이터 클래스와 이름이 겹치지 않도록 Editor 네임스페이스에 둡니다.</summary>

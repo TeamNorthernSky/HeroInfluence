@@ -581,7 +581,16 @@ namespace ASB.ExcelImport.Editor
         {
             _assets.Clear();
 
-            string[] guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { ExcelImportPaths.TableAssetFolder });
+            string scanFolder = ExcelImportPaths.TableAssetFolder;
+            if (!string.IsNullOrEmpty(_selectedExcelPath) && File.Exists(_selectedExcelPath))
+            {
+                string excelName = Path.GetFileNameWithoutExtension(_selectedExcelPath);
+                string subFolder = ExcelImportPaths.GetTableAssetFolder(excelName);
+                if (AssetDatabase.IsValidFolder(subFolder))
+                    scanFolder = subFolder;
+            }
+
+            string[] guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { scanFolder });
             for (int i = 0; i < guids.Length; i++)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guids[i]);
@@ -589,7 +598,6 @@ namespace ASB.ExcelImport.Editor
                 if (so != null) _assets.Add(so);
             }
 
-            // Excel 파일이 선택된 경우 해당 시트 순서로 정렬
             if (!string.IsNullOrEmpty(_selectedExcelPath) && File.Exists(_selectedExcelPath))
             {
                 List<string> sheetNames = GetDataSheetNames(_selectedExcelPath);
