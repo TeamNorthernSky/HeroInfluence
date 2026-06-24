@@ -14,12 +14,18 @@ namespace ASB.ExcelImport.Editor
         public const string TableAssetFolder = "Assets/_ProtoType_Merge/ASB/Data/Tables";
         public const string DefaultExcelFolder = "Assets/_ProtoType_Merge/ASB/Data/Excel";
         public const string PendingFilePathKey = "ExcelParser_PendingFilePath";
+
+        public static string GetTableAssetFolder(string excelFileName) =>
+            $"{TableAssetFolder}/{excelFileName}";
     }
 
     /// <summary>에디터 파서 전용 DTO. Generated 데이터 클래스와 이름이 겹치지 않도록 Editor 네임스페이스에 둡니다.</summary>
     public sealed class ExcelSheetParseResult
     {
         public string SheetName;
+        public string CustomClassName;
+        /// <summary>#DataName이 있으면 그 값, 없으면 SheetName을 클래스명 기준으로 사용합니다.</summary>
+        public string ClassName => string.IsNullOrEmpty(CustomClassName) ? SheetName : CustomClassName;
         public List<string> Types = new List<string>();
         public List<string> Names = new List<string>();
         public List<List<string>> Rows = new List<List<string>>();
@@ -76,6 +82,7 @@ namespace ASB.ExcelImport.Editor
             int typeRowIndex = -1;
             int nameRowIndex = -1;
             int dataStartRowIndex = -1;
+            string customClassName = null;
 
             for (int rowIndex = sheet.FirstRowNum; rowIndex <= sheet.LastRowNum; rowIndex++)
             {
@@ -88,6 +95,9 @@ namespace ASB.ExcelImport.Editor
                 string marker = NormalizeMarker(GetCellString(row, MarkerColumnIndex));
                 switch (marker)
                 {
+                    case "#dataname":
+                        customClassName = GetCellString(row, FirstDataColumnIndex).Trim();
+                        break;
                     case "#type":
                         typeRowIndex = rowIndex;
                         break;
@@ -145,9 +155,10 @@ namespace ASB.ExcelImport.Editor
 
             var parsed = new ExcelSheetParseResult
             {
-                SheetName = sheet.SheetName,
-                Types = types,
-                Names = names
+                SheetName       = sheet.SheetName,
+                CustomClassName = customClassName,
+                Types           = types,
+                Names           = names
             };
 
             for (int rowIndex = dataStartRowIndex; rowIndex <= sheet.LastRowNum; rowIndex++)

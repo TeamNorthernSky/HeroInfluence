@@ -92,6 +92,41 @@ public class FogProgressCell
 }
 
 [Serializable]
+public class LevelZoneSelectionState
+{
+    [SerializeField] private string layoutId;
+    [SerializeField] private string zoneId;
+    [SerializeField] private int selectedCandidateIndex;
+
+    public string LayoutId => layoutId;
+    public string ZoneId => zoneId;
+    public int SelectedCandidateIndex => selectedCandidateIndex;
+    public string SelectionKey => BuildSelectionKey(layoutId, zoneId);
+
+    public LevelZoneSelectionState(string layoutId, string zoneId, int selectedCandidateIndex)
+    {
+        this.layoutId = MapProgressKey.NormalizeSegment(layoutId);
+        this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
+        this.selectedCandidateIndex = Mathf.Max(0, selectedCandidateIndex);
+    }
+
+    public void SetSelectedCandidateIndex(int nextSelectedCandidateIndex)
+    {
+        selectedCandidateIndex = Mathf.Max(0, nextSelectedCandidateIndex);
+    }
+
+    public static string BuildSelectionKey(string layoutId, string zoneId)
+    {
+        string normalizedLayoutId = MapProgressKey.NormalizeSegment(layoutId);
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedLayoutId) || string.IsNullOrWhiteSpace(normalizedZoneId))
+            return string.Empty;
+
+        return $"{normalizedLayoutId}_{normalizedZoneId}";
+    }
+}
+
+[Serializable]
 public class EnemyWorldState
 {
     public const string DefaultPrefabKey = "default";

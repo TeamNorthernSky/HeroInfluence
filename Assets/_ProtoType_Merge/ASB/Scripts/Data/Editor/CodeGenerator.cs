@@ -52,7 +52,7 @@ namespace ASB.ExcelImport.Editor
 
         private static void GenerateSheetScript(ExcelSheetParseResult sheet, string outputFolder, bool useDictionary)
         {
-            string baseName       = ToTypeBaseName(sheet.SheetName);
+            string baseName       = ToTypeBaseName(sheet.ClassName);
             string rowClassName   = baseName + "Data";
             string tableClassName = baseName + "DataTable";
 

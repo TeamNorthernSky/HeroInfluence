@@ -10,6 +10,8 @@ public class MinimapController : MonoBehaviour
     [SerializeField] private Image iconPrefab;
     [SerializeField] private LevelData levelData;
     [SerializeField] private LevelLoader levelLoader;
+    [SerializeField] private LevelZoneLayoutData levelZoneLayoutData;
+    [SerializeField] private LevelZoneLayoutLoader levelZoneLayoutLoader;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private OutpostRegistry outpostRegistry;
@@ -19,7 +21,7 @@ public class MinimapController : MonoBehaviour
     [Header("Draw Options")]
     [SerializeField] private bool drawOnEnable = true;
     [SerializeField] private bool useFogVisibility = true;
-    [SerializeField, Min(0f)] private float refreshInterval = 0.25f;
+    [SerializeField, Min(0f)] private float partyIconRefreshInterval = 0.1f;
     [SerializeField] private FilterMode filterMode = FilterMode.Point;
 
     [Header("Cell Colors")]
@@ -42,8 +44,15 @@ public class MinimapController : MonoBehaviour
 
     private Texture2D minimapTexture;
     private Vector2Int textureSize;
-    private float nextRefreshTime;
+    private Vector2Int currentGridSize;
+    private float nextPartyIconRefreshTime;
     private readonly List<Image> partyIconPool = new List<Image>();
+    private readonly HashSet<Vector2Int> obstacleCellCache = new HashSet<Vector2Int>();
+
+    private bool HasLoadedZoneData =>
+        levelZoneLayoutLoader != null
+        && levelZoneLayoutLoader.LoadedZones != null
+        && levelZoneLayoutLoader.LoadedZones.Count > 0;
 
     private void Awake()
     {
@@ -74,11 +83,11 @@ public class MinimapController : MonoBehaviour
 
     private void Update()
     {
-        if (refreshInterval <= 0f || Time.unscaledTime < nextRefreshTime)
+        if (partyIconRefreshInterval <= 0f || Time.unscaledTime < nextPartyIconRefreshTime)
             return;
 
-        nextRefreshTime = Time.unscaledTime + refreshInterval;
-        Refresh();
+        nextPartyIconRefreshTime = Time.unscaledTime + partyIconRefreshInterval;
+        RefreshPartyIconsOnly();
     }
 
     [ContextMenu("Refresh Minimap")]
@@ -89,11 +98,38 @@ public class MinimapController : MonoBehaviour
         if (targetImage == null || !TryGetGridSize(out Vector2Int gridSize))
             return;
 
+        currentGridSize = gridSize;
         EnsureTexture(gridSize);
+        RebuildObstacleCellCache();
         DrawCells(gridSize);
         DrawStrategicObjects(gridSize);
         minimapTexture.Apply(false);
         targetImage.texture = minimapTexture;
+
+        DrawPartyIcons(gridSize);
+    }
+
+    public void RefreshPartyIconsOnly()
+    {
+        if (!showPartyIcons)
+        {
+            HidePartyIcons(0);
+            return;
+        }
+
+        ResolveReferences();
+
+        Vector2Int gridSize = currentGridSize;
+        if (gridSize.x <= 0 || gridSize.y <= 0)
+        {
+            if (!TryGetGridSize(out gridSize))
+            {
+                HidePartyIcons(0);
+                return;
+            }
+
+            currentGridSize = gridSize;
+        }
 
         DrawPartyIcons(gridSize);
     }
@@ -379,17 +415,37 @@ public class MinimapController : MonoBehaviour
 
     private bool IsObstacleCell(Vector2Int grid)
     {
+        return obstacleCellCache.Contains(grid);
+    }
+
+    private void RebuildObstacleCellCache()
+    {
+        obstacleCellCache.Clear();
+
+        if (HasLoadedZoneData)
+        {
+            IReadOnlyList<LoadedLevelZoneData> loadedZones = levelZoneLayoutLoader.LoadedZones;
+            for (int zoneIndex = 0; zoneIndex < loadedZones.Count; zoneIndex++)
+            {
+                LoadedLevelZoneData zone = loadedZones[zoneIndex];
+                LevelData zoneLevelData = zone.LevelData;
+                if (zoneLevelData == null)
+                    continue;
+
+                IReadOnlyList<Vector2Int> zoneObstacleCells = zoneLevelData.ObstacleCells;
+                for (int i = 0; i < zoneObstacleCells.Count; i++)
+                    obstacleCellCache.Add(zone.Anchor + zoneObstacleCells[i]);
+            }
+
+            return;
+        }
+
         if (levelData == null)
-            return false;
+            return;
 
         IReadOnlyList<Vector2Int> obstacleCells = levelData.ObstacleCells;
         for (int i = 0; i < obstacleCells.Count; i++)
-        {
-            if (obstacleCells[i] == grid)
-                return true;
-        }
-
-        return false;
+            obstacleCellCache.Add(obstacleCells[i]);
     }
 
     private bool IsUnexplored(Vector2Int grid)
@@ -407,6 +463,18 @@ public class MinimapController : MonoBehaviour
 
     private bool TryGetGridSize(out Vector2Int gridSize)
     {
+        if (levelZoneLayoutData != null)
+        {
+            gridSize = levelZoneLayoutData.TotalGridSize;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
+        if (levelZoneLayoutLoader != null && levelZoneLayoutLoader.LayoutData != null)
+        {
+            gridSize = levelZoneLayoutLoader.LayoutData.TotalGridSize;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
         if (levelData != null)
         {
             gridSize = levelData.GridSize;
@@ -466,8 +534,17 @@ public class MinimapController : MonoBehaviour
         if (levelLoader == null)
             levelLoader = FindFirstObjectByType<LevelLoader>();
 
+        if (levelZoneLayoutLoader == null)
+            levelZoneLayoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+
+        if (levelZoneLayoutData == null && levelZoneLayoutLoader != null)
+            levelZoneLayoutData = levelZoneLayoutLoader.LayoutData;
+
         if (levelData == null && levelLoader != null)
             levelData = levelLoader.LevelData;
+
+        if (gridManager == null && levelZoneLayoutLoader != null)
+            gridManager = levelZoneLayoutLoader.GridManager;
 
         if (gridManager == null && levelLoader != null)
             gridManager = levelLoader.GridManager;

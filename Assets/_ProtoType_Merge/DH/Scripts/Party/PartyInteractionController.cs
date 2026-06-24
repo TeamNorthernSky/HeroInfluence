@@ -7,6 +7,7 @@ public class PartyInteractionController
     // [JC 260514 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 의존 폐기. Game.Economy 단축 접근자 사용.
     private readonly GridManager gridManager;
     private readonly CombatEncounterManager combatEncounterManager;
+    private readonly CombatPromptService combatPromptService;
     private readonly PartyGridMover ownerParty;
     private readonly float itemPickupDelay;
     private readonly MonoBehaviour coroutineOwner;
@@ -23,6 +24,7 @@ public class PartyInteractionController
     public PartyInteractionController(
         GridManager gridManager,
         CombatEncounterManager combatEncounterManager,
+        CombatPromptService combatPromptService,
         PartyGridMover ownerParty,
         float itemPickupDelay,
         MonoBehaviour coroutineOwner,
@@ -30,6 +32,7 @@ public class PartyInteractionController
     {
         this.gridManager = gridManager;
         this.combatEncounterManager = combatEncounterManager;
+        this.combatPromptService = combatPromptService;
         this.ownerParty = ownerParty;
         this.itemPickupDelay = itemPickupDelay;
         this.coroutineOwner = coroutineOwner;
@@ -72,6 +75,13 @@ public class PartyInteractionController
             return;
 
         CancelPendingInteraction();
+        if (combatPromptService != null &&
+            combatPromptService.TryOpenEnemyCombatPrompt(ownerParty, enemy, combatEncounterManager, HandleCombatPromptClosed))
+        {
+            IsInputLocked = true;
+            return;
+        }
+
         bool combatStarted = combatEncounterManager.BeginCombat(ownerParty, enemy);
         IsInputLocked = combatStarted;
     }
@@ -316,6 +326,11 @@ public class PartyInteractionController
 
         coroutineOwner.StopCoroutine(pendingInteractionCoroutine);
         pendingInteractionCoroutine = null;
+    }
+
+    private void HandleCombatPromptClosed(bool startedCombat)
+    {
+        IsInputLocked = startedCombat;
     }
 
     private static bool IsAdjacentOrSame(Vector2Int a, Vector2Int b)

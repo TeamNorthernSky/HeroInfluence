@@ -10,6 +10,7 @@ public class PartyRuntime : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     // [JC 260514 머지후처리] ResourceManager 직접 의존 폐기 (Game.Economy 패턴 사용)
     [SerializeField] private CombatEncounterManager combatEncounterManager;
+    [SerializeField] private CombatPromptService combatPromptService;
 
     [Header("Interaction Settings")]
     [SerializeField] private float itemPickupDelay = 0.5f;
@@ -25,9 +26,13 @@ public class PartyRuntime : MonoBehaviour
     private void Awake()
     {
         partyGridMover = GetComponent<PartyGridMover>();
+        if (combatPromptService == null)
+            combatPromptService = FindFirstObjectByType<CombatPromptService>();
+
         interactionController = new PartyInteractionController(
             gridManager,
             combatEncounterManager,
+            combatPromptService,
             partyGridMover,
             itemPickupDelay,
             this,

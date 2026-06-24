@@ -81,22 +81,35 @@ namespace ASB.ExcelImport.Editor
                 return;
             }
 
-            try
+            // DidReloadScripts 중에는 AssetDatabase가 완전히 준비되지 않으므로
+            // delayCall로 한 프레임 뒤에 asset 생성 실행
+            string capturedPath      = pendingPath;
+            Dictionary<string, bool> capturedDictMap    = useDictMap;
+            List<string>             capturedSheetNames  = pendingSheetNames;
+
+            EditorApplication.delayCall += () =>
             {
-                // #region agent log
-                ExcelImportDebugLog.Write("H2", "ExcelEditorWindow.OnScriptsReloaded", "step2_start", "{\"path\":\"" + pendingPath + "\"}");
-                // #endregion
-                List<ExcelSheetParseResult> sheets = ExcelParser.Parse(pendingPath);
-                List<ExcelSheetParseResult> exportSheets = FilterSheets(sheets, pendingSheetNames);
-                ScriptableExporter.ExportAll(exportSheets, useDictMap);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-                Debug.Log($"[Excel Importer] Step 2 complete: exported {exportSheets.Count} sheet(s) from {pendingPath}");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[Excel Importer] Step 2 failed: {ex.Message}\n{ex.StackTrace}");
-            }
+                try
+                {
+                    // #region agent log
+                    ExcelImportDebugLog.Write("H2", "ExcelEditorWindow.OnScriptsReloaded", "step2_start", "{\"path\":\"" + capturedPath + "\"}");
+                    // #endregion
+                    string excelName = Path.GetFileNameWithoutExtension(capturedPath);
+                    List<ExcelSheetParseResult> sheets      = ExcelParser.Parse(capturedPath);
+                    List<ExcelSheetParseResult> exportSheets = FilterSheets(sheets, capturedSheetNames);
+                    ScriptableExporter.ExportAll(exportSheets, capturedDictMap, ExcelImportPaths.GetTableAssetFolder(excelName));
+                    AssetDatabase.SaveAssets();
+                    AssetDatabase.Refresh();
+                    Debug.Log($"[Excel Importer] Step 2 complete: exported {exportSheets.Count} sheet(s) from {capturedPath}");
+
+                    if (HasOpenInstances<ExcelDataViewerWindow>())
+                        GetWindow<ExcelDataViewerWindow>().RefreshAssets();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[Excel Importer] Step 2 failed: {ex.Message}\n{ex.StackTrace}");
+                }
+            };
         }
 
         private void OnGUI()
@@ -265,16 +278,34 @@ namespace ASB.ExcelImport.Editor
                 AddLog("[Step 1] Generating C# scripts...");
                 CodeGenerator.GenerateAll(selectedSheets, _sheetUseDictionary);
 
-                EditorPrefs.SetString(ExcelImportPaths.PendingFilePathKey, _selectedExcelPath);
-                EditorPrefs.SetString(PendingUseDictMapKey, SerializeDictMap(_sheetUseDictionary));
-                EditorPrefs.SetString(PendingSheetNamesKey, SerializeSheetNames(selectedNames));
-                AddLog("[Step 1] Pending asset export registered. Refreshing assets...");
+                // 타입이 이미 메모리에 있으면 즉시 Export (재컴파일 없이도 동작)
+                string excelName = Path.GetFileNameWithoutExtension(_selectedExcelPath);
+                bool allTypesReady = selectedSheets.TrueForAll(s =>
+                    ScriptableExporter.FindTypeByName(CodeGenerator.ToTypeBaseName(s.ClassName) + "Data") != null);
+
+                if (allTypesReady)
+                {
+                    AddLog("[Step 1] 타입 확인됨 → 즉시 Export 실행.");
+                    ScriptableExporter.ExportAll(selectedSheets, _sheetUseDictionary, ExcelImportPaths.GetTableAssetFolder(excelName));
+                    AssetDatabase.SaveAssets();
+                    if (HasOpenInstances<ExcelDataViewerWindow>())
+                        GetWindow<ExcelDataViewerWindow>().RefreshAssets();
+                    AddLog("[Step 1] Export 완료.");
+                }
+                else
+                {
+                    // 새 타입이 있어 컴파일 필요 → Step 2에서 처리
+                    EditorPrefs.SetString(ExcelImportPaths.PendingFilePathKey, _selectedExcelPath);
+                    EditorPrefs.SetString(PendingUseDictMapKey, SerializeDictMap(_sheetUseDictionary));
+                    EditorPrefs.SetString(PendingSheetNamesKey, SerializeSheetNames(selectedNames));
+                    AddLog("[Step 1] 새 타입 감지 → 컴파일 후 Step 2 자동 실행.");
+                }
 
                 AssetDatabase.Refresh();
                 // #region agent log
                 ExcelImportDebugLog.Write("H1", "ExcelEditorWindow.BakeData", "step1_done", "{\"sheetCount\":" + selectedSheets.Count + "}");
                 // #endregion
-                AddLog("[Step 1] Done. Script compile 후 Step 2(asset)가 자동 실행됩니다.");
+                AddLog("[Step 1] Done.");
             }
             catch (Exception ex)
             {
@@ -308,7 +339,20 @@ namespace ASB.ExcelImport.Editor
                     return;
                 }
 
-                ScriptableExporter.ExportAll(selectedSheets, _sheetUseDictionary);
+                // 스키마 검증 — 컬럼 구조가 바뀐 시트가 있으면 차단
+                for (int i = 0; i < selectedSheets.Count; i++)
+                {
+                    if (!IsSchemaCompatible(selectedSheets[i], out string mismatch))
+                    {
+                        string msg = $"[{selectedSheets[i].SheetName}] 시트 구조가 변경되었습니다.\n{mismatch}\nBakeData 또는 Rebake Selected를 실행하세요.";
+                        EditorUtility.DisplayDialog("스키마 변경 감지", msg, "확인");
+                        AddLog($"Update blocked: {selectedSheets[i].SheetName} — {mismatch}");
+                        return;
+                    }
+                }
+
+                string excelName = Path.GetFileNameWithoutExtension(_selectedExcelPath);
+                ScriptableExporter.ExportAll(selectedSheets, _sheetUseDictionary, ExcelImportPaths.GetTableAssetFolder(excelName));
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
                 AddLog($"Updated data asset(s): {selectedSheets.Count} sheet(s).");
@@ -318,6 +362,52 @@ namespace ASB.ExcelImport.Editor
                 AddLog($"Update failed: {ex.Message}");
                 Debug.LogError($"[Excel Importer] Update failed: {ex}\n{ex.StackTrace}");
             }
+        }
+
+        private static bool IsSchemaCompatible(ExcelSheetParseResult sheet, out string mismatch)
+        {
+            mismatch = string.Empty;
+            string rowTypeName = CodeGenerator.ToTypeBaseName(sheet.ClassName) + "Data";
+            System.Type rowType = ScriptableExporter.FindTypeByName(rowTypeName);
+
+            if (rowType == null)
+            {
+                mismatch = $"'{rowTypeName}' 클래스를 찾을 수 없습니다. BakeData를 먼저 실행하세요.";
+                return false;
+            }
+
+            var existingFields = new Dictionary<string, string>();
+            foreach (System.Reflection.FieldInfo f in rowType.GetFields(
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
+            {
+                existingFields[f.Name] = f.FieldType.Name;
+            }
+
+            var added   = new List<string>();
+            var removed = new List<string>();
+
+            var excelFieldNames = new HashSet<string>();
+            for (int i = 0; i < sheet.Names.Count; i++)
+            {
+                string fieldName = CodeGenerator.SanitizeFieldName(sheet.Names[i]);
+                excelFieldNames.Add(fieldName);
+                if (!existingFields.ContainsKey(fieldName))
+                    added.Add(fieldName);
+            }
+
+            foreach (string existing in existingFields.Keys)
+            {
+                if (!excelFieldNames.Contains(existing))
+                    removed.Add(existing);
+            }
+
+            if (added.Count == 0 && removed.Count == 0) return true;
+
+            var sb = new System.Text.StringBuilder();
+            if (added.Count   > 0) sb.AppendLine($"추가된 컬럼: {string.Join(", ", added)}");
+            if (removed.Count > 0) sb.AppendLine($"제거된 컬럼: {string.Join(", ", removed)}");
+            mismatch = sb.ToString().Trim();
+            return false;
         }
 
         private void RebakeSelectedSheets()

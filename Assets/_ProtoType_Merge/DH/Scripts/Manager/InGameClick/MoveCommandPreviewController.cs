@@ -163,6 +163,9 @@ public class MoveCommandPreviewController
 
     public void HandlePathUpdated(List<Vector2Int> remainingPath)
     {
+        if (!hasPreviewPath)
+            return;
+
         if (remainingPath == null || remainingPath.Count <= 1)
         {
             ClearPreview();
@@ -450,9 +453,6 @@ public class MoveCommandPreviewController
     private List<Vector2Int> AdjustPathForSpecialDestination(List<Vector2Int> path)
     {
         if (path == null || path.Count == 0 || gridManager == null || !hasMarkerGrid)
-            return path;
-
-        if (IsSingleEnemyEncounterZone(markerGrid))
             return path;
 
         if (!gridManager.HasInteractionTarget(markerGrid))

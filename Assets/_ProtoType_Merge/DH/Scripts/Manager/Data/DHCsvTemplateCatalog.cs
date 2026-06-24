@@ -8,17 +8,15 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
     public static DHCsvTemplateCatalog Instance { get; private set; }
 
-    [Header("CSV Source (기존)")]
-    [Tooltip("씬의 CSVDataLoad. 비어 있으면 같은 GameObject 또는 씬에서 자동 탐색합니다.")]
-    [SerializeField] private CSVDataLoad csvDataLoad;
+    private CSVDataLoad csvDataLoad;
 
     [Header("SO DataTables (Excel Importer)")]
-    [SerializeField] private PlayerUnitDataTable    playerUnitTable;
-    [SerializeField] private EnemyUnitInfoDataTable enemyUnitInfoTable;
-    [SerializeField] private PlayerWeaponDataTable  weaponTable;
-    [SerializeField] private ClassSkillDataTable    classSkillTable;
-    [SerializeField] private UnitGrowthExpDataTable levelUpTable;
-    [SerializeField] private EnemyGroupDataTable    enemyGroupTable;
+    [SerializeField] private PlayerUnitDataTable    playerUnitDataTable;
+    [SerializeField] private EnemyUnitDataTable enemyUnitInfoDataTable;
+    [SerializeField] private PlayerWeaponDataTable  playerWeaponDataTable;
+    [SerializeField] private ClassSkillDataTable    classSkillDataTable;
+    [SerializeField] private UnitGrowthExpDataTable unitGrowthExpDataTable;
+    [SerializeField] private EnemyGroupDataTable    enemyGroupDataTable;
 
     [Header("Settings")]
     [SerializeField] private bool useSOTables      = false;
@@ -304,11 +302,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private void ReloadFromSOTables()
     {
         // ── 플레이어 유닛 ──────────────────────────────────────
-        if (playerUnitTable != null)
+        if (playerUnitDataTable != null)
         {
-            for (int i = 0; i < playerUnitTable.DataList.Count; i++)
+            for (int i = 0; i < playerUnitDataTable.DataList.Count; i++)
             {
-                UnitData unit = ConvertPlayerUnit(playerUnitTable.DataList[i]);
+                UnitData unit = ConvertPlayerUnit(playerUnitDataTable.DataList[i]);
                 if (unit == null || string.IsNullOrWhiteSpace(unit.Index)) continue;
 
                 if (playerTemplateLookup.ContainsKey(unit.Index))
@@ -326,11 +324,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         // ── 적 유닛 + 적 스킬 ─────────────────────────────────
-        if (enemyUnitInfoTable != null)
+        if (enemyUnitInfoDataTable != null)
         {
-            for (int i = 0; i < enemyUnitInfoTable.DataList.Count; i++)
+            for (int i = 0; i < enemyUnitInfoDataTable.DataList.Count; i++)
             {
-                EnemyUnitInfoData src = enemyUnitInfoTable.DataList[i];
+                EnemyUnitData src = enemyUnitInfoDataTable.DataList[i];
                 EnemyData enemy = ConvertEnemyUnit(src);
                 if (enemy == null || string.IsNullOrWhiteSpace(enemy.Index)) continue;
 
@@ -353,11 +351,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         // ── 적 그룹 ────────────────────────────────────────────
-        if (enemyGroupTable != null)
+        if (enemyGroupDataTable != null)
         {
-            for (int i = 0; i < enemyGroupTable.DataList.Count; i++)
+            for (int i = 0; i < enemyGroupDataTable.DataList.Count; i++)
             {
-                EnemyGroupData group = enemyGroupTable.DataList[i];
+                EnemyGroupData group = enemyGroupDataTable.DataList[i];
                 if (group == null) continue;
                 if (enemyGroupLookup.ContainsKey(group.EnemyIndex))
                 {
@@ -369,11 +367,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         // ── 직업 스킬 ──────────────────────────────────────────
-        if (classSkillTable != null)
+        if (classSkillDataTable != null)
         {
-            for (int i = 0; i < classSkillTable.DataList.Count; i++)
+            for (int i = 0; i < classSkillDataTable.DataList.Count; i++)
             {
-                ClassSkillData src = classSkillTable.DataList[i];
+                ClassSkillData src = classSkillDataTable.DataList[i];
                 SkillData skill = ConvertClassSkill(src);
                 if (skill == null) continue;
 
@@ -394,11 +392,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         // ── 무기 ───────────────────────────────────────────────
-        if (weaponTable != null)
+        if (playerWeaponDataTable != null)
         {
-            for (int i = 0; i < weaponTable.DataList.Count; i++)
+            for (int i = 0; i < playerWeaponDataTable.DataList.Count; i++)
             {
-                PlayerWeaponData src = weaponTable.DataList[i];
+                PlayerWeaponData src = playerWeaponDataTable.DataList[i];
                 WeaponData weapon = ConvertWeapon(src);
                 if (weapon == null || weapon.WeaponIndex <= 0) continue;
 
@@ -420,11 +418,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         // ── 레벨업 + 클래스별 스터디 스킬 ────────────────────────
-        if (levelUpTable != null)
+        if (unitGrowthExpDataTable != null)
         {
-            for (int i = 0; i < levelUpTable.DataList.Count; i++)
+            for (int i = 0; i < unitGrowthExpDataTable.DataList.Count; i++)
             {
-                UnitGrowthExpData src = levelUpTable.DataList[i];
+                UnitGrowthExpData src = unitGrowthExpDataTable.DataList[i];
                 if (src == null) continue;
 
                 LevelUpData row = ConvertLevelUp(src);
@@ -489,7 +487,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    private static EnemyData ConvertEnemyUnit(EnemyUnitInfoData src)
+    private static EnemyData ConvertEnemyUnit(EnemyUnitData src)
     {
         if (src == null) return null;
         return new EnemyData
@@ -513,7 +511,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    private void TryAddEnemySkill(EnemyUnitInfoData src, int slot)
+    private void TryAddEnemySkill(EnemyUnitData src, int slot)
     {
         string skillName = slot == 1 ? src.EnemySkill1_Name : src.EnemySkill2_Name;
         if (string.IsNullOrWhiteSpace(skillName)) return;
@@ -639,7 +637,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             level        = src.Level,
             Rank         = string.IsNullOrEmpty(src.Rank) ? '\0' : src.Rank[0],
             expPerLevel  = src.NeedExpieriencePoint,
-            MaxIP        = src.AddMaxIP
+            MaxIP        = src.AddIP
         };
     }
 
