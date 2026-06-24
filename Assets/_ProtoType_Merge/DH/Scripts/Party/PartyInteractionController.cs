@@ -155,6 +155,17 @@ public class PartyInteractionController
             return;
 
         CancelPendingInteraction();
+        if (combatPromptService != null &&
+            combatPromptService.TryOpenVillainUnionDefenderCombatPrompt(
+                ownerParty,
+                villainUnionBase,
+                combatEncounterManager,
+                HandleCombatPromptClosed))
+        {
+            IsInputLocked = true;
+            return;
+        }
+
         bool combatStarted = combatEncounterManager != null &&
             combatEncounterManager.BeginVillainUnionDefenderCombat(ownerParty, villainUnionBase);
         IsInputLocked = combatStarted;
@@ -302,14 +313,20 @@ public class PartyInteractionController
 
         if (outpost.RequiresDefenderCombat)
         {
-            if (combatEncounterManager != null &&
-                combatEncounterManager.BeginOutpostDefenderCombat(ownerParty, outpost))
+            if (combatPromptService != null &&
+                combatPromptService.TryOpenOutpostDefenderCombatPrompt(
+                    ownerParty,
+                    outpost,
+                    combatEncounterManager,
+                    HandleCombatPromptClosed))
             {
-                IsInputLocked = false;
+                IsInputLocked = true;
                 yield break;
             }
 
-            IsInputLocked = false;
+            bool combatStarted = combatEncounterManager != null &&
+                combatEncounterManager.BeginOutpostDefenderCombat(ownerParty, outpost);
+            IsInputLocked = combatStarted;
             yield break;
         }
 

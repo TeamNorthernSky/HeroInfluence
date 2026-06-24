@@ -6,9 +6,11 @@ public class CombatPromptPanelController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Button startBattleButton;
+    [SerializeField] private Button fleeButton;
     [SerializeField] private CanvasGroup panelCanvasGroup;
 
     private Action startBattleHandler;
+    private Action fleeHandler;
 
     private void Awake()
     {
@@ -21,17 +23,24 @@ public class CombatPromptPanelController : MonoBehaviour
 
         if (startBattleButton != null)
             startBattleButton.onClick.AddListener(HandleStartBattleClicked);
+
+        if (fleeButton != null)
+            fleeButton.onClick.AddListener(HandleFleeClicked);
     }
 
     private void OnDisable()
     {
         if (startBattleButton != null)
             startBattleButton.onClick.RemoveListener(HandleStartBattleClicked);
+
+        if (fleeButton != null)
+            fleeButton.onClick.RemoveListener(HandleFleeClicked);
     }
 
-    public void Open(Action onStartBattle)
+    public void Open(Action onStartBattle, Action onFlee)
     {
         startBattleHandler = onStartBattle;
+        fleeHandler = onFlee;
         gameObject.SetActive(true);
         PrepareInteractableState();
     }
@@ -39,6 +48,7 @@ public class CombatPromptPanelController : MonoBehaviour
     public void Close()
     {
         startBattleHandler = null;
+        fleeHandler = null;
         gameObject.SetActive(false);
     }
 
@@ -46,6 +56,13 @@ public class CombatPromptPanelController : MonoBehaviour
     {
         Action handler = startBattleHandler;
         startBattleHandler = null;
+        handler?.Invoke();
+    }
+
+    private void HandleFleeClicked()
+    {
+        Action handler = fleeHandler;
+        fleeHandler = null;
         handler?.Invoke();
     }
 
@@ -61,18 +78,36 @@ public class CombatPromptPanelController : MonoBehaviour
             panelCanvasGroup.ignoreParentGroups = true;
         }
 
-        if (startBattleButton == null)
+        PrepareButton(startBattleButton);
+        PrepareButton(fleeButton);
+    }
+
+    private static void PrepareButton(Button button)
+    {
+        if (button == null)
             return;
 
-        startBattleButton.gameObject.SetActive(true);
-        startBattleButton.enabled = true;
-        startBattleButton.interactable = true;
+        button.gameObject.SetActive(true);
+        button.enabled = true;
+        button.interactable = true;
     }
 
     private void ResolveReferences()
     {
+        Button[] buttons = null;
         if (startBattleButton == null)
-            startBattleButton = GetComponentInChildren<Button>(true);
+        {
+            buttons = GetComponentsInChildren<Button>(true);
+            if (buttons.Length > 0)
+                startBattleButton = buttons[0];
+        }
+
+        if (fleeButton == null)
+        {
+            buttons ??= GetComponentsInChildren<Button>(true);
+            if (buttons.Length > 1)
+                fleeButton = buttons[1];
+        }
 
         if (panelCanvasGroup == null)
             panelCanvasGroup = GetComponent<CanvasGroup>();
