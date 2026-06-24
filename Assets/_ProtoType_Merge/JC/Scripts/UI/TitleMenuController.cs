@@ -114,8 +114,8 @@ public class TitleMenuController : MonoBehaviour
     {
         Debug.Log("[TitleMenu] 새 게임 → GameLoadScene (게이트씬)");
         
-        //GameSlotPanel.SetActive(true);
-        SceneManager.LoadScene("GameLoadScene");
+        GameSlotPanel.SetActive(true);
+        //SceneManager.LoadScene("GameLoadScene");
     }
 
     public void OnLoadClicked()
