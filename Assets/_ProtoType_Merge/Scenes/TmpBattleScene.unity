@@ -5438,18 +5438,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resultPanel: {fileID: 1116769678}
-  victoryImage: {fileID: 1076765495}
-  defeatImage: {fileID: 2079154452}
-  heroIndex: {fileID: 485784168}
-  heroInfoResultWinPrefab: {fileID: 7417560410204484897, guid: 4883666fd3776a442be743c7ebc5df07,
-    type: 3}
-  heroInfoResultLosePrefab: {fileID: 7417560410204484897, guid: cca75077525544747a4b33ac2ff82ba9,
-    type: 3}
-  acceptButton: {fileID: 1060976674}
   getSkillSlotPrefab: {fileID: 7315995258910151229, guid: 4c20afa88e7c0204f8067d01c275fb5f,
     type: 3}
-  getSkillSlotParent: {fileID: 743192806}
 --- !u!1 &1149157796
 GameObject:
   m_ObjectHideFlags: 0
@@ -5858,7 +5848,11 @@ MonoBehaviour:
   currentTurnText: {fileID: 0}
   currentSkillText: {fileID: 0}
   battleResultText: {fileID: 0}
-  battleResultPanel: {fileID: 1116769682}
+  victoryResultPrefab: {fileID: 3602089886626745560, guid: 864c0d1b390537b4ea95deb0076f1121,
+    type: 3}
+  defeatResultPrefab: {fileID: 1126212822778769652, guid: 68771df5e33891b4ea255d3c72c89505,
+    type: 3}
+  resultPanelParent: {fileID: 1116769679}
   turnArrow: {fileID: 2022967791}
   turnArrowScreenOffset: {x: 0, y: 150}
   ClearMaterial: {fileID: 0}
