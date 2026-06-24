@@ -54,6 +54,7 @@ crashlytics-build.properties
 # Unity 패키지 (개인 환경별 패키지 상이 — 공용 변경 시에만 gitignore에서 제외 후 커밋)
 Packages/manifest.json
 Packages/packages-lock.json
+Packages/manifest.json.*.bak
 
 # 개인 환경별 차이 발생 가능
 ProjectSettings/PackageManagerSettings.asset
@@ -102,6 +103,8 @@ ProjectSettings/QualitySettings.asset
 #ASB 
 /Assets/_ProtoType_Merge/ASB/Animation/TmpModel
 /Assets/GabrielAguiarProductions
+/packageTool/build
+/packageTool/dist
 
 ///////////// Nuget///////////////
 # NuGet cache
