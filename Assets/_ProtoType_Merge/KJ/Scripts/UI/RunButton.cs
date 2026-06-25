@@ -52,12 +52,12 @@ public class RunButton : MonoBehaviour
 
     private void OnTurnStarted(int round, BattleCharactor unit)
     {
-        button.interactable = unit != null && unit.IsPlayer;
+        if (button != null) button.interactable = unit != null && unit.IsPlayer;
     }
 
     private void OnBattleEnded(BattleResult result)
     {
-        button.interactable = false;
+        if (button != null) button.interactable = false;
     }
 
     private void OnRunButtonClicked()

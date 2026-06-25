@@ -24,7 +24,7 @@ public class SkillButtonController : MonoBehaviour
     private void Start()
     {
         toggle2.SetState(false, false);
-        toggle1.SetState(true);
+        toggle1.SetState(true, false);
     }
 
     private System.Action<bool> onToggle1;
