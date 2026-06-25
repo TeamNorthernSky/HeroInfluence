@@ -55,6 +55,9 @@ public class TurnSlotUI : MonoBehaviour
         {
             Portrait.sprite = portraitSprite;          // [JC 260621] Image.sprite 직접 결선
             Portrait.enabled = portraitSprite != null;
+            // [JC 260625] Awake가 알파 0(투명)으로 초기화하므로 sprite 결선 시 알파 복구 필수.
+            // (커밋 ecdff91이 Awake 가드 ==null→!=null 교정으로 투명화 코드를 활성화시킨 회귀 봉합)
+            Portrait.color = new Color(1, 1, 1, portraitSprite != null ? 1f : 0f);
             //if(Portrait.texture == null)
             //{
             //    PortraitMask.color = new Color(1, 1, 1, 0);

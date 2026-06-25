@@ -32,8 +32,8 @@ public class SkillButtonController : MonoBehaviour
 
     private void OnEnable()
     {
-        onToggle1 = isOn => OnToggleChanged(isOn, toggle2, PendingActionType.ClassSkill);
-        onToggle2 = isOn => OnToggleChanged(isOn, toggle1, PendingActionType.WeaponSkill);
+        onToggle1 = isOn => OnToggleChanged(isOn, toggle1, toggle2, PendingActionType.ClassSkill);
+        onToggle2 = isOn => OnToggleChanged(isOn, toggle2, toggle1, PendingActionType.WeaponSkill);
         toggle1.OnValueChanged += onToggle1;
         toggle2.OnValueChanged += onToggle2;
 
@@ -60,9 +60,15 @@ public class SkillButtonController : MonoBehaviour
 
     public SkillData CurrentSkillData { get; private set; }
 
-    private void OnToggleChanged(bool isOn, ToggleButton other, PendingActionType skillAction)
+    private void OnToggleChanged(bool isOn, ToggleButton self, ToggleButton other, PendingActionType skillAction)
     {
-        if (!isOn) return;
+        // [JC 260625] 라디오 동작: 현재 선택된 스킬 버튼을 다시 클릭해도 해제되지 않도록 즉시 재점등한다.
+        // (ToggleButton.OnClick은 무조건 isOn을 반전하므로, 활성 항목 재클릭 시 토글이 풀려버리는 것을 봉합)
+        if (!isOn)
+        {
+            self.SetState(true, false);
+            return;
+        }
 
         other.SetState(false, false);
 
