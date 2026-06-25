@@ -23,10 +23,6 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _GleamTex:
-        m_Texture: {fileID: 2800000, guid: fa1ad0058cb602442924be7412b31a34, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -40,9 +36,6 @@ Material:
     - _BloomThreshold: 0.5
     - _BloomTint: 0.85
     - _ColorMask: 15
-    - _GleamScale: 1.2
-    - _GleamTilt: 18
-    - _GleamWidth: 1
     - _GlowInnerWidth: 0.025
     - _GlowIntensity: 1.6
     - _GlowLumEdge: 1
@@ -62,7 +55,7 @@ Material:
     - _SweepFalloff: 4
     - _SweepIntensity: 1.3
     - _SweepTiltDeg: 15
-    - _SweepTime: 1.229362
+    - _SweepTime: 0.0757637
     - _SweepWidth: 0.18
     m_Colors:
     - _BloomColor: {r: 0.439, g: 0.671, b: 0.918, a: 1}

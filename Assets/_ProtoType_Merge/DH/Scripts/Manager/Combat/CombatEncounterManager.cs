@@ -72,6 +72,33 @@ public class CombatEncounterManager : MonoBehaviour
         return true;
     }
 
+    public bool PrepareEnemyCombatContext(PartyGridMover party, EnemyGridMover enemy)
+    {
+        if (DHGameEndState.IsEnding)
+            return false;
+
+        if (HasPendingCombatResult())
+            return false;
+
+        if (party == null || enemy == null)
+            return false;
+
+        if (IsCombatActive)
+            return false;
+
+        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
+        string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
+        string enemyId = enemy.EnemyId;
+
+        if (!TryRegisterCombatParticipants(party, partyId, enemy, enemyId))
+            return false;
+
+        IsCombatActive = true;
+        ActiveParty = party;
+        ActiveEnemy = enemy;
+        return true;
+    }
+
     public bool BeginOutpostDefenderCombat(PartyGridMover party, Outpost outpost)
     {
         if (DHGameEndState.IsEnding)
@@ -106,6 +133,38 @@ public class CombatEncounterManager : MonoBehaviour
             $"Outpost defender combat requested. party='{partyId}', outpost='{outpostKey}', enemy='{enemyId}'.",
             this);
         CombatStarted?.Invoke(party, null);
+        return true;
+    }
+
+    public bool PrepareOutpostDefenderCombatContext(PartyGridMover party, Outpost outpost)
+    {
+        if (DHGameEndState.IsEnding)
+            return false;
+
+        if (HasPendingCombatResult())
+            return false;
+
+        if (party == null || outpost == null || !outpost.RequiresDefenderCombat)
+            return false;
+
+        if (IsCombatActive)
+            return false;
+
+        if (!outpost.EnsureDefenderParty())
+            return false;
+
+        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
+        string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
+        string enemyId = outpost.DefenderEnemyId;
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        string outpostKey = outpost.GetProgressKey(gridManager);
+
+        if (!TryRegisterCombatParticipants(party, partyId, enemyId, outpostKey))
+            return false;
+
+        IsCombatActive = true;
+        ActiveParty = party;
+        ActiveEnemy = null;
         return true;
     }
 
@@ -144,6 +203,49 @@ public class CombatEncounterManager : MonoBehaviour
             this);
         CombatStarted?.Invoke(party, null);
         return true;
+    }
+
+    public bool PrepareVillainUnionDefenderCombatContext(PartyGridMover party, VillainUnionBase villainUnionBase)
+    {
+        if (DHGameEndState.IsEnding)
+            return false;
+
+        if (HasPendingCombatResult())
+            return false;
+
+        if (party == null || villainUnionBase == null)
+            return false;
+
+        if (IsCombatActive)
+            return false;
+
+        if (!villainUnionBase.EnsureDefenderParty())
+            return false;
+
+        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
+        string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
+        string enemyId = villainUnionBase.DefenderEnemyId;
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        string villainUnionKey = villainUnionBase.GetProgressKey(gridManager);
+
+        if (!TryRegisterCombatParticipants(party, partyId, enemyId, villainUnionKey))
+            return false;
+
+        IsCombatActive = true;
+        ActiveParty = party;
+        ActiveEnemy = null;
+        return true;
+    }
+
+    public void ApplyCurrentCombatResultAndClear()
+    {
+        CombatContext context = CombatContext.Instance;
+        if (context == null || context.Result == CombatResult.None)
+            return;
+
+        ProcessCompletedCombat(context);
+        context.Clear();
+        ClearCombatState();
     }
 
     public void ClearCombatState()

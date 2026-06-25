@@ -5,6 +5,7 @@ using UnityEngine;
 public class FogGridManager : MonoBehaviour
 {
     [Header("Fog Rules")]
+    [SerializeField] private bool enableRefogByDay;
     [SerializeField, Min(1)] private int refogDelayDays = 3;
     [SerializeField] private bool restrictToGridBounds = true;
     [SerializeField] private Vector2Int gridSize = new Vector2Int(20, 20);
@@ -16,6 +17,7 @@ public class FogGridManager : MonoBehaviour
     public event Action<Vector2Int, FogVisibilityState> CellVisibilityChanged;
 
     public int CurrentDay => currentDay;
+    public bool EnableRefogByDay => enableRefogByDay;
     public int RefogDelayDays => refogDelayDays;
     public Vector2Int GridSize => gridSize;
 
@@ -100,7 +102,7 @@ public class FogGridManager : MonoBehaviour
 
     public void ApplyDayProgression()
     {
-        if (refogDelayDays <= 0)
+        if (!enableRefogByDay || refogDelayDays <= 0)
             return;
 
         bool anyChanged = false;

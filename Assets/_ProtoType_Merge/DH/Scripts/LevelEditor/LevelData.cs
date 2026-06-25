@@ -306,21 +306,15 @@ public class LevelData : ScriptableObject
             outpostPlacements[i] = outpostPlacements[i].Normalized();
 
         EnsureStayEnemyCells();
-        stayEnemyCells.RemoveAll(x => !IsInsideGrid(x));
 
         EnsureEnemyPlacements();
-        enemyPlacements.RemoveAll(x => !IsInsideGrid(x.GridPosition) || x.EnemyGroupIndex <= 0);
+        enemyPlacements.RemoveAll(x => x.EnemyGroupIndex <= 0);
         for (int i = 0; i < enemyPlacements.Count; i++)
             enemyPlacements[i] = enemyPlacements[i].Normalized();
 
         for (int i = 0; i < eventPlacements.Count; i++)
             eventPlacements[i] = eventPlacements[i].Normalized();
 
-        if (castlePlacement.HasPlacement && !IsInsideGrid(castlePlacement.GridPosition))
-            castlePlacement = default;
-
-        if (villainUnionPlacement.HasPlacement && !IsInsideGrid(villainUnionPlacement.GridPosition))
-            villainUnionPlacement = default;
     }
 
     private static Vector2Int NormalizeGridSize(Vector2Int value)

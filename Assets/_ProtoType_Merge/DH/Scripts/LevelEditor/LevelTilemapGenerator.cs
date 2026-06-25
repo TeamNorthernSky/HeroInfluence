@@ -17,8 +17,19 @@ public class LevelTilemapGenerator : MonoBehaviour
             return;
 
         ClearTilemaps();
-        GenerateGroundTiles(levelData);
-        GenerateObstacleTiles(levelData);
+        Generate(levelData, Vector2Int.zero, false);
+    }
+
+    public void Generate(LevelData levelData, Vector2Int offset, bool clearBeforeGenerate)
+    {
+        if (levelData == null || tileRegistry == null)
+            return;
+
+        if (clearBeforeGenerate)
+            ClearTilemaps();
+
+        GenerateGroundTiles(levelData, offset);
+        GenerateObstacleTiles(levelData, offset);
     }
 
     public void ClearTilemaps()
@@ -30,7 +41,7 @@ public class LevelTilemapGenerator : MonoBehaviour
             obstacleTilemap.ClearAllTiles();
     }
 
-    private void GenerateGroundTiles(LevelData levelData)
+    private void GenerateGroundTiles(LevelData levelData, Vector2Int offset)
     {
         if (groundTilemap == null)
             return;
@@ -42,11 +53,11 @@ public class LevelTilemapGenerator : MonoBehaviour
             if (!tileRegistry.TryGetTile(placement.TileKey, out TileBase tile))
                 continue;
 
-            groundTilemap.SetTile(ToTileCell(placement.GridPosition), tile);
+            groundTilemap.SetTile(ToTileCell(placement.GridPosition + offset), tile);
         }
     }
 
-    private void GenerateObstacleTiles(LevelData levelData)
+    private void GenerateObstacleTiles(LevelData levelData, Vector2Int offset)
     {
         if (obstacleTilemap == null)
             return;
@@ -56,7 +67,7 @@ public class LevelTilemapGenerator : MonoBehaviour
 
         var obstacleCells = levelData.ObstacleCells;
         for (int i = 0; i < obstacleCells.Count; i++)
-            obstacleTilemap.SetTile(ToTileCell(obstacleCells[i]), obstacleTile);
+            obstacleTilemap.SetTile(ToTileCell(obstacleCells[i] + offset), obstacleTile);
     }
 
     private static Vector3Int ToTileCell(Vector2Int grid)

@@ -14,8 +14,11 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI currentSkillText;
     [SerializeField] private TextMeshProUGUI battleResultText;
 
+
     [Header("Result Panel")]
-    [SerializeField] private BattleResultPanel battleResultPanel;
+    [SerializeField] private BattleResultPanel victoryResultPrefab;
+    [SerializeField] private BattleResultPanel defeatResultPrefab;
+    [SerializeField] private Transform resultPanelParent;
 
     [Header("Turn Arrow")]
     [SerializeField] private TurnArrow turnArrow;
@@ -42,6 +45,11 @@ public class BattleUIManager : MonoBehaviour
         turnArrow?.SetEnabled(false);
 
         turnArrowScreenOffset = new Vector2(0f, 150f);
+
+        if (resultPanelParent != null)
+        {
+            resultPanelParent.gameObject.SetActive(false);
+        }
     }
 
     private void OnEnable()
@@ -115,10 +123,15 @@ public class BattleUIManager : MonoBehaviour
                 : "전투 결과 : <color=red>패배...</color>";
         }
 
-        if (battleResultPanel != null)
-            battleResultPanel.Show(result, plan);
+        resultPanelParent.gameObject.SetActive(true);
 
-        return battleResultPanel;
+        BattleResultPanel prefab = result == BattleResult.Victory ? victoryResultPrefab : defeatResultPrefab;
+        if (prefab == null || resultPanelParent == null) return null;
+
+
+        BattleResultPanel instance = Instantiate(prefab, resultPanelParent, false);
+        instance.Show(result, plan);
+        return instance;
     }
 
     private void Update()

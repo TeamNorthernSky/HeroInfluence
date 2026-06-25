@@ -8,7 +8,13 @@ using UnityEditor;
 [ExecuteAlways]
 public class LevelLoader : MonoBehaviour
 {
+    private const string ObstacleRootName = "ObstacleRoot";
+    private const string ItemRootName = "ItemRoot";
+    private const string OutpostRootName = "OutpostRoot";
     private const string EventRootName = "EventRoot";
+    private const string EnemyRootName = "EnemyRoot";
+    private const string CastleRootName = "CastleRoot";
+    private const string VillainUnionRootName = "VillainUnionRoot";
 
     [Header("Data")]
     [SerializeField] private LevelData levelData;
@@ -133,9 +139,10 @@ public class LevelLoader : MonoBehaviour
             return;
 
         var obstacleCells = levelData.ObstacleCells;
+        Transform parent = GetObstacleRoot(true);
         for (int i = 0; i < obstacleCells.Count; i++)
         {
-            SpawnGameObject(obstaclePrefab, obstacleCells[i], obstacleRoot);
+            SpawnGameObject(obstaclePrefab, obstacleCells[i], parent);
         }
     }
 
@@ -145,6 +152,7 @@ public class LevelLoader : MonoBehaviour
             return;
 
         var itemPlacements = levelData.ItemPlacements;
+        Transform parent = GetItemRoot(true);
         for (int i = 0; i < itemPlacements.Count; i++)
         {
             ItemPlacementData placement = itemPlacements[i];
@@ -159,7 +167,7 @@ public class LevelLoader : MonoBehaviour
                 continue;
             }
 
-            ItemObject item = SpawnComponent(itemPrefab, placement.GridPosition, itemRoot);
+            ItemObject item = SpawnComponent(itemPrefab, placement.GridPosition, parent);
             if (item == null)
                 continue;
 
@@ -179,6 +187,7 @@ public class LevelLoader : MonoBehaviour
             return;
 
         var outpostPlacements = levelData.OutpostPlacements;
+        Transform parent = GetOutpostRoot(true);
         for (int i = 0; i < outpostPlacements.Count; i++)
         {
             OutpostPlacementData placement = outpostPlacements[i];
@@ -190,7 +199,7 @@ public class LevelLoader : MonoBehaviour
                 continue;
             }
 
-            Outpost outpost = SpawnComponent(outpostPrefab, placement.GridPosition, outpostRoot);
+            Outpost outpost = SpawnComponent(outpostPrefab, placement.GridPosition, parent);
             if (outpost == null)
                 continue;
 
@@ -284,7 +293,7 @@ public class LevelLoader : MonoBehaviour
             return;
         }
 
-        Transform parent = stayEnemyRoot != null ? stayEnemyRoot : transform;
+        Transform parent = GetEnemyRoot(true);
         for (int i = 0; i < stayEnemyCells.Count; i++)
         {
             EnemyGridMover stayEnemy = SpawnComponent(stayEnemyPrefab, stayEnemyCells[i], parent);
@@ -320,7 +329,7 @@ public class LevelLoader : MonoBehaviour
             return;
         }
 
-        Transform parent = stayEnemyRoot != null ? stayEnemyRoot : transform;
+        Transform parent = GetEnemyRoot(true);
         for (int i = 0; i < enemyPlacements.Count; i++)
         {
             EnemyPlacementData placement = enemyPlacements[i];
@@ -393,7 +402,7 @@ public class LevelLoader : MonoBehaviour
             return;
         }
 
-        Transform parent = castleRoot != null ? castleRoot : transform;
+        Transform parent = GetCastleRoot(true);
         SpawnComponent(castlePrefab, placement.GridPosition, parent);
     }
 
@@ -409,7 +418,7 @@ public class LevelLoader : MonoBehaviour
             return;
         }
 
-        Transform parent = villainUnionRoot != null ? villainUnionRoot : transform;
+        Transform parent = GetVillainUnionRoot(true);
         SpawnComponent(villainUnionBasePrefab, placement.GridPosition, parent);
     }
 
@@ -418,12 +427,12 @@ public class LevelLoader : MonoBehaviour
         if (tilemapGenerator != null)
             tilemapGenerator.ClearTilemaps();
 
-        ClearChildren(obstacleRoot);
-        ClearChildren(itemRoot);
-        ClearChildren(outpostRoot);
+        ClearChildren(GetObstacleRoot(false));
+        ClearChildren(GetItemRoot(false));
+        ClearChildren(GetOutpostRoot(false));
         ClearChildren(GetEventRoot(false));
-        ClearChildren(castleRoot);
-        ClearChildren(villainUnionRoot);
+        ClearChildren(GetCastleRoot(false));
+        ClearChildren(GetVillainUnionRoot(false));
         ClearLevelSpawnedEnemies();
         ClearStayEnemies();
         ClearDirectChildrenWithComponent<CastleUnit>();
@@ -456,8 +465,9 @@ public class LevelLoader : MonoBehaviour
 
     private void ClearStayEnemies()
     {
-        if (stayEnemyRoot != null && stayEnemyRoot != transform)
-            ClearStayEnemyChildren(stayEnemyRoot);
+        Transform enemyRootTransform = GetEnemyRoot(false);
+        if (enemyRootTransform != null && enemyRootTransform != transform)
+            ClearStayEnemyChildren(enemyRootTransform);
 
         ClearStayEnemyChildren(transform);
     }
@@ -483,8 +493,9 @@ public class LevelLoader : MonoBehaviour
 
     private void ClearLevelSpawnedEnemies()
     {
-        if (stayEnemyRoot != null && stayEnemyRoot != transform)
-            ClearLevelSpawnedEnemyChildren(stayEnemyRoot);
+        Transform enemyRootTransform = GetEnemyRoot(false);
+        if (enemyRootTransform != null && enemyRootTransform != transform)
+            ClearLevelSpawnedEnemyChildren(enemyRootTransform);
 
         ClearLevelSpawnedEnemyChildren(transform);
     }
@@ -523,28 +534,49 @@ public class LevelLoader : MonoBehaviour
         }
     }
 
-    private Transform GetEventRoot(bool createIfMissing)
-    {
-        if (eventRoot != null)
-            return eventRoot;
+    private Transform GetObstacleRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref obstacleRoot, ObstacleRootName, createIfMissing);
 
-        Transform existingRoot = transform.Find(EventRootName);
+    private Transform GetItemRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref itemRoot, ItemRootName, createIfMissing);
+
+    private Transform GetOutpostRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref outpostRoot, OutpostRootName, createIfMissing);
+
+    private Transform GetEventRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref eventRoot, EventRootName, createIfMissing);
+
+    private Transform GetEnemyRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref stayEnemyRoot, EnemyRootName, createIfMissing);
+
+    private Transform GetCastleRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref castleRoot, CastleRootName, createIfMissing);
+
+    private Transform GetVillainUnionRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref villainUnionRoot, VillainUnionRootName, createIfMissing);
+
+    private Transform GetSpawnRoot(ref Transform root, string rootName, bool createIfMissing)
+    {
+        if (root != null)
+            return root;
+
+        Transform existingRoot = transform.Find(rootName);
         if (existingRoot != null)
         {
-            eventRoot = existingRoot;
-            return eventRoot;
+            root = existingRoot;
+            return root;
         }
 
         if (!createIfMissing)
             return null;
 
-        GameObject createdRoot = new GameObject(EventRootName);
+        GameObject createdRoot = new GameObject(rootName);
         createdRoot.transform.SetParent(transform);
         createdRoot.transform.localPosition = Vector3.zero;
         createdRoot.transform.localRotation = Quaternion.identity;
         createdRoot.transform.localScale = Vector3.one;
-        eventRoot = createdRoot.transform;
-        return eventRoot;
+        root = createdRoot.transform;
+        return root;
     }
 
     private GameObject SpawnGameObject(GameObject prefab, Vector2Int grid, Transform parent)

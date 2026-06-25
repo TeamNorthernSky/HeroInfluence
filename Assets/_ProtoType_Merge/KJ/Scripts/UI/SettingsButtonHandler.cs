@@ -13,14 +13,11 @@ public class SettingsButtonHandler : MonoBehaviour
 
     private void OnClick()
     {
-        if (toBeContinueObject != null)
-            StartCoroutine(ShowAndHide());
+        ShowAndHide();
     }
 
-    private IEnumerator ShowAndHide()
+    private /*IEnumerator */ void ShowAndHide()
     {
         toBeContinueObject.SetActive(true);
-        yield return new WaitForSeconds(3f);
-        toBeContinueObject.SetActive(false);
     }
 }

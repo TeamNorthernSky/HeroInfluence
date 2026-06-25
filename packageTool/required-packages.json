@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "com.unity.toonshader": "0.12.0-preview",
+    "com.kyrylokuzyk.primetween": "file:../Assets/Plugins/PrimeTween/internal/com.kyrylokuzyk.primetween.tgz",
+    "com.unity.render-pipelines.universal": "14.0.12",
+    "com.unity.textmeshpro": "3.0.9",
+    "com.unity.ugui": "1.0.0"
+  }
+}
