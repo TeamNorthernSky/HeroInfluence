@@ -52,7 +52,7 @@ public class BattleResultPanel : MonoBehaviour
             HeroInfoResult slot = Instantiate(view.heroInfoResultPrefab, view.heroIndex, false);
 
             UnitRewardPreview preview = null;
-            if (plan != null)
+            if (plan != null && plan.UnitPreviews != null)
                 preview = plan.UnitPreviews.Find(p => p.UnitIndex == unitIndices[i])
                           ?? (i < plan.UnitPreviews.Count ? plan.UnitPreviews[i] : null);
 
@@ -63,7 +63,7 @@ public class BattleResultPanel : MonoBehaviour
 
     private void BuildSkillSlots(BattleRewardPlan plan, BattleResult result, BattleResultView view)
     {
-        if (result != BattleResult.Victory || plan == null) return;
+        if (result != BattleResult.Victory || plan == null || plan.UnitPreviews == null) return;
         if (getSkillSlotPrefab == null || view.skillSlotParent == null) return;
 
         foreach (var preview in plan.UnitPreviews)

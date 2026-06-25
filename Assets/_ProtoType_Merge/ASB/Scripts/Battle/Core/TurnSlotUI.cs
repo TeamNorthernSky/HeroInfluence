@@ -23,7 +23,7 @@ public class TurnSlotUI : MonoBehaviour
         if (enemyTurnSprite == null)
             enemyTurnSprite = Resources.Load<Sprite>("UI_Sprite/UI_Battle/UI_HUD_enemyTurn");
         
-        if(Portrait == null)
+        if(Portrait != null)
         {
             Portrait.color = new Color (1,1,1,0);
         }

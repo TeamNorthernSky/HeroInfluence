@@ -25,6 +25,9 @@ public class TitleMenuController : MonoBehaviour
     [SerializeField] private TMP_Dropdown ResolutionDropdown;
     [SerializeField] private TMP_Dropdown ScreenModeDropdown;
 
+    [Header("Exit Popup")]
+    [SerializeField] private GameObject ExitPopup;
+
     private static readonly (int width, int height)[] Resolutions =
     {
         (1280, 720),
@@ -47,12 +50,11 @@ public class TitleMenuController : MonoBehaviour
             CurrentPanel = ControlPanel;
         }
 
-        BindSliderToValueText(MasterVolume);
-        BindSliderToValueText(BackGroundVolume);
-        BindSliderToValueText(EffectVolume);
+        GameSettings.LoadAndApplyAll();
 
         InitResolutionDropdown();
         InitScreenModeDropdown();
+        InitVolumeSliders();
     }
 
     private void InitResolutionDropdown()
@@ -61,16 +63,13 @@ public class TitleMenuController : MonoBehaviour
 
         ResolutionDropdown.ClearOptions();
         var options = new System.Collections.Generic.List<string>();
-        int currentIndex = 0;
         for (int i = 0; i < Resolutions.Length; i++)
         {
             var r = Resolutions[i];
             options.Add($"{r.width} x {r.height}");
-            if (Screen.width == r.width && Screen.height == r.height)
-                currentIndex = i;
         }
         ResolutionDropdown.AddOptions(options);
-        ResolutionDropdown.value = currentIndex;
+        ResolutionDropdown.value = GameSettings.ResolutionIndex;
         ResolutionDropdown.RefreshShownValue();
         ResolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
     }
@@ -81,35 +80,55 @@ public class TitleMenuController : MonoBehaviour
 
         ScreenModeDropdown.ClearOptions();
         ScreenModeDropdown.AddOptions(new System.Collections.Generic.List<string> { "창 모드", "전체 화면" });
-        ScreenModeDropdown.value = Screen.fullScreen ? 1 : 0;
+        ScreenModeDropdown.value = GameSettings.IsFullScreen ? 1 : 0;
         ScreenModeDropdown.RefreshShownValue();
         ScreenModeDropdown.onValueChanged.AddListener(OnScreenModeChanged);
     }
 
+    private void InitVolumeSliders()
+    {
+        InitSlider(MasterVolume,     GameSettings.MasterVolume,  GameSettings.ApplyMasterVolume);
+        InitSlider(BackGroundVolume, GameSettings.BGMVolume,     GameSettings.ApplyBGMVolume);
+        InitSlider(EffectVolume,     GameSettings.EffectVolume,  GameSettings.ApplyEffectVolume);
+    }
+
+    private static void InitSlider(Slider slider, float savedValue, System.Action<float> onChanged)
+    {
+        if (slider == null) return;
+
+        slider.value = savedValue;
+
+        TMP_Text valueText = slider.transform.parent?.Find("Value")?.GetComponent<TMP_Text>();
+        if (valueText != null)
+            valueText.text = Mathf.RoundToInt(savedValue * 100f).ToString();
+
+        slider.onValueChanged.AddListener(v =>
+        {
+            if (valueText != null)
+                valueText.text = Mathf.RoundToInt(v * 100f).ToString();
+            onChanged(v);
+        });
+    }
+
     private void OnResolutionChanged(int index)
     {
-        var r = Resolutions[index];
-        Screen.SetResolution(r.width, r.height, Screen.fullScreen);
+        GameSettings.ApplyResolution(index, Resolutions);
     }
 
     private void OnScreenModeChanged(int index)
     {
-        Screen.fullScreen = index == 1;
+        GameSettings.ApplyFullScreen(index == 1);
     }
-
-    private static void BindSliderToValueText(Slider slider)
+    private void Update()
     {
-        if (slider == null) return;
+        if (!Input.GetKeyDown(KeyCode.Escape)) return;
 
-        Transform parent = slider.transform.parent;
-        if (parent == null) return;
-
-        TMP_Text valueText = parent.Find("Value")?.GetComponent<TMP_Text>();
-        if (valueText == null) return;
-
-        valueText.text = Mathf.RoundToInt(slider.value * 100f).ToString();
-        slider.onValueChanged.AddListener(v => valueText.text = Mathf.RoundToInt(v * 100f).ToString());
+        if (ModalRegistry.HasAny)
+            ModalRegistry.CloseTop();
+        else
+            OnQuitClicked();
     }
+
     public void OnNewGameClicked()
     {
         Debug.Log("[TitleMenu] 새 게임 → GameLoadScene (게이트씬)");
@@ -120,7 +139,7 @@ public class TitleMenuController : MonoBehaviour
 
     public void OnLoadClicked()
     {
-        Debug.Log("[TitleMenu] 불러오기 클릭 (미구현)");
+        //Debug.Log("[TitleMenu] 불러오기 클릭 (미구현)");
     }
 
     public void OnSettingsClicked()
@@ -162,10 +181,21 @@ public class TitleMenuController : MonoBehaviour
 
     public void OnQuitClicked()
     {
+        ExitPopup.SetActive(true);
+
+    }
+
+    public void OnClickedQuitPopupAccept()
+    {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
 #endif
+    }
+
+    public void OnClickedQuitPopupDeny()
+    {
+        ExitPopup.SetActive(false);
     }
 }

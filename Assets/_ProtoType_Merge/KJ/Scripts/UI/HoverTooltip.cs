@@ -28,7 +28,7 @@ public class HoverTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         if (titleText != null) titleText.text = title;
         if (descriptionText != null) descriptionText.text = description;
         //OnHoverChanged?.Invoke(true);
-        tooltipPanel.SetActive(true);
+        tooltipPanel?.SetActive(true);
 
     }
 
@@ -36,7 +36,7 @@ public class HoverTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     {
         IsHovering = false;
         OnHoverChanged?.Invoke(false);
-        tooltipPanel.SetActive(false);
+        tooltipPanel?.SetActive(false);
     }
 
     public void SetVisible(bool visible)
