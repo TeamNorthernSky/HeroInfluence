@@ -41,12 +41,14 @@ public class ExplorationHeroBoxController : MonoBehaviour
     private readonly List<GameObject> tabObjects = new List<GameObject>();
 
     private int selectedPartyIndex;
-    private readonly int[] boundUnits = new int[4];
+    // [JC 260625] slots 길이에 맞춰 Awake에서 할당(고정 4 → IndexOutOfRange 방지). slots 5+ 설정해도 안전.
+    private int[] boundUnits = System.Array.Empty<int>();
     private EconomyManager subEco; // 갱신 트리거(자원/IP 변동) 용
     private float nextRefresh;     // [JC 260616] 스탯/HP/IP 변동 주기적 재반영 타이머
 
     private void Awake()
     {
+        boundUnits = new int[slots != null ? slots.Length : 0];
         for (int i = 0; i < slots.Length; i++)
         {
             int ci = i;
@@ -59,6 +61,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
     private void Update()
     {
         if (GameManager.Instance == null) return;
+        if (boundUnits.Length == 0) return;
         // 영속 매니저가 늦게 준비되면 즉시 보강
         if (boundUnits[0] == 0) { Refresh(); return; }
         // [JC 260616] HP/스탯/IP 변동(맵 이벤트·트레이닝 등)은 통지 이벤트가 없어 주기적으로 재반영
