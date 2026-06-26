@@ -48,6 +48,8 @@ public class MinimapController : MonoBehaviour
     private float nextPartyIconRefreshTime;
     private readonly List<Image> partyIconPool = new List<Image>();
     private readonly HashSet<Vector2Int> obstacleCellCache = new HashSet<Vector2Int>();
+    private readonly HashSet<Vector2Int> dirtyCells = new HashSet<Vector2Int>();
+    private bool hasPendingTextureApply;
 
     private bool HasLoadedZoneData =>
         levelZoneLayoutLoader != null
@@ -63,8 +65,7 @@ public class MinimapController : MonoBehaviour
     {
         ResolveReferences();
 
-        if (fogGridManager != null)
-            fogGridManager.FogChanged += Refresh;
+        SubscribeToFogGridManager();
 
         if (drawOnEnable)
             Refresh();
@@ -72,8 +73,7 @@ public class MinimapController : MonoBehaviour
 
     private void OnDisable()
     {
-        if (fogGridManager != null)
-            fogGridManager.FogChanged -= Refresh;
+        UnsubscribeFromFogGridManager();
     }
 
     private void OnDestroy()
@@ -88,6 +88,11 @@ public class MinimapController : MonoBehaviour
 
         nextPartyIconRefreshTime = Time.unscaledTime + partyIconRefreshInterval;
         RefreshPartyIconsOnly();
+    }
+
+    private void LateUpdate()
+    {
+        ApplyDirtyCells();
     }
 
     [ContextMenu("Refresh Minimap")]
@@ -105,6 +110,8 @@ public class MinimapController : MonoBehaviour
         DrawStrategicObjects(gridSize);
         minimapTexture.Apply(false);
         targetImage.texture = minimapTexture;
+        dirtyCells.Clear();
+        hasPendingTextureApply = false;
 
         DrawPartyIcons(gridSize);
     }
@@ -146,12 +153,12 @@ public class MinimapController : MonoBehaviour
             return;
 
         if (isActiveAndEnabled && fogGridManager != null)
-            fogGridManager.FogChanged -= Refresh;
+            UnsubscribeFromFogGridManager();
 
         fogGridManager = nextFogGridManager;
 
         if (isActiveAndEnabled && fogGridManager != null)
-            fogGridManager.FogChanged += Refresh;
+            SubscribeToFogGridManager();
 
         Refresh();
     }
@@ -278,6 +285,135 @@ public class MinimapController : MonoBehaviour
             return;
 
         minimapTexture.SetPixel(grid.x, grid.y, color);
+    }
+
+    private bool TryGetStrategicCellColor(Vector2Int grid, out Color color)
+    {
+        if (showStrategicObjects)
+        {
+            if (TryGetOutpostColorAtGrid(grid, out color))
+                return true;
+
+            if (TryGetCastleColorAtGrid(grid, out color))
+                return true;
+
+            if (TryGetVillainUnionColorAtGrid(grid, out color))
+                return true;
+        }
+
+        color = default;
+        return false;
+    }
+
+    private bool TryGetOutpostColorAtGrid(Vector2Int grid, out Color color)
+    {
+        Outpost[] fallbackOutposts = null;
+        IReadOnlyList<Outpost> outposts = outpostRegistry != null ? outpostRegistry.Outposts : null;
+        int count = outposts != null ? outposts.Count : 0;
+        bool useFallback = count == 0;
+
+        if (useFallback)
+        {
+            fallbackOutposts = FindObjectsByType<Outpost>(FindObjectsSortMode.None);
+            count = fallbackOutposts.Length;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            Outpost outpost = useFallback ? fallbackOutposts[i] : outposts[i];
+            if (outpost == null || !outpost.isActiveAndEnabled)
+                continue;
+
+            if (!ComponentContainsGrid(outpost, grid, outpost.GetAnchorGrid(gridManager)))
+                continue;
+
+            color = GetOutpostMinimapColor(outpost.outpostState);
+            return true;
+        }
+
+        color = default;
+        return false;
+    }
+
+    private bool TryGetCastleColorAtGrid(Vector2Int grid, out Color color)
+    {
+        CastleUnit[] fallbackCastles = null;
+        IReadOnlyList<CastleUnit> castles = castleRegistry != null ? castleRegistry.Castles : null;
+        int count = castles != null ? castles.Count : 0;
+        bool useFallback = count == 0;
+
+        if (useFallback)
+        {
+            fallbackCastles = FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
+            count = fallbackCastles.Length;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            CastleUnit castle = useFallback ? fallbackCastles[i] : castles[i];
+            if (castle == null || !castle.isActiveAndEnabled)
+                continue;
+
+            if (!ComponentContainsGrid(castle, grid, castle.GetCurrentGrid()))
+                continue;
+
+            color = playerBuildingColor;
+            return true;
+        }
+
+        color = default;
+        return false;
+    }
+
+    private bool TryGetVillainUnionColorAtGrid(Vector2Int grid, out Color color)
+    {
+        VillainUnionBase[] fallbackBases = null;
+        IReadOnlyList<VillainUnionBase> bases = villainUnionBaseRegistry != null
+            ? villainUnionBaseRegistry.VillainUnionBases
+            : null;
+        int count = bases != null ? bases.Count : 0;
+        bool useFallback = count == 0;
+
+        if (useFallback)
+        {
+            fallbackBases = FindObjectsByType<VillainUnionBase>(FindObjectsSortMode.None);
+            count = fallbackBases.Length;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            VillainUnionBase villainUnionBase = useFallback ? fallbackBases[i] : bases[i];
+            if (villainUnionBase == null || !villainUnionBase.isActiveAndEnabled)
+                continue;
+
+            if (!ComponentContainsGrid(villainUnionBase, grid, villainUnionBase.GetAnchorGrid()))
+                continue;
+
+            color = enemyBuildingColor;
+            return true;
+        }
+
+        color = default;
+        return false;
+    }
+
+    private static bool ComponentContainsGrid(Component component, Vector2Int grid, Vector2Int fallbackGrid)
+    {
+        if (component == null)
+            return false;
+
+        MultiGridOccupant occupant = component.GetComponent<MultiGridOccupant>();
+        if (occupant == null)
+            return grid == fallbackGrid;
+
+        IReadOnlyList<Vector2Int> occupiedCells = occupant.GetOccupiedCells();
+        for (int i = 0; i < occupiedCells.Count; i++)
+        {
+            if (occupiedCells[i] == grid)
+                return true;
+        }
+
+        return false;
     }
 
     private Color GetOutpostMinimapColor(OutpostState state)
@@ -522,6 +658,74 @@ public class MinimapController : MonoBehaviour
 
         minimapTexture = null;
         textureSize = Vector2Int.zero;
+        dirtyCells.Clear();
+        hasPendingTextureApply = false;
+    }
+
+    private void HandleFogChanged()
+    {
+        if (dirtyCells.Count > 0)
+            return;
+
+        Refresh();
+    }
+
+    private void HandleFogCellVisibilityChanged(Vector2Int grid, FogVisibilityState visibility)
+    {
+        if (!IsGridInMinimap(grid, currentGridSize))
+            return;
+
+        dirtyCells.Add(grid);
+    }
+
+    private void ApplyDirtyCells()
+    {
+        if (minimapTexture == null || dirtyCells.Count == 0)
+            return;
+
+        foreach (Vector2Int grid in dirtyCells)
+            RedrawCell(grid);
+
+        dirtyCells.Clear();
+
+        if (!hasPendingTextureApply)
+            return;
+
+        minimapTexture.Apply(false);
+        hasPendingTextureApply = false;
+    }
+
+    private void RedrawCell(Vector2Int grid)
+    {
+        if (minimapTexture == null || !IsGridInMinimap(grid, currentGridSize))
+            return;
+
+        Color color = GetCellColor(grid);
+        if (!IsUnexplored(grid) && TryGetStrategicCellColor(grid, out Color strategicColor))
+            color = strategicColor;
+
+        minimapTexture.SetPixel(grid.x, grid.y, color);
+        hasPendingTextureApply = true;
+    }
+
+    private void SubscribeToFogGridManager()
+    {
+        if (fogGridManager == null)
+            return;
+
+        fogGridManager.FogChanged -= HandleFogChanged;
+        fogGridManager.FogChanged += HandleFogChanged;
+        fogGridManager.CellVisibilityChanged -= HandleFogCellVisibilityChanged;
+        fogGridManager.CellVisibilityChanged += HandleFogCellVisibilityChanged;
+    }
+
+    private void UnsubscribeFromFogGridManager()
+    {
+        if (fogGridManager == null)
+            return;
+
+        fogGridManager.FogChanged -= HandleFogChanged;
+        fogGridManager.CellVisibilityChanged -= HandleFogCellVisibilityChanged;
     }
 
     private void ResolveReferences()
