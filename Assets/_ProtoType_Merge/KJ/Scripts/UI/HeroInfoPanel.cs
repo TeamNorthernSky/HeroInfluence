@@ -37,10 +37,6 @@ public class HeroInfoPanel : MonoBehaviour
         if (flowManager == null) flowManager = FindFirstObjectByType<BattleFlowManager>();
         if (flowManager != null)
             flowManager.OnTurnStarted += OnTurnStarted;
-        if(hpGauge == null)
-        {
-
-        }
     }
 
     private void OnDisable()
