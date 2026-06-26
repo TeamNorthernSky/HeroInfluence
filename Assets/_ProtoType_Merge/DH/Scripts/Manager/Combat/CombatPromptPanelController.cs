@@ -1,16 +1,46 @@
 using System;
-using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CombatPromptPanelController : MonoBehaviour
 {
+    [Serializable]
+    private class AdvantageImageSlot
+    {
+        public CombatAdvantageState state = CombatAdvantageState.Close;
+        public Image image = null;
+        public Sprite activeSprite = null;
+        public Sprite inactiveSprite = null;
+
+        public void Apply(CombatAdvantageState currentState)
+        {
+            if (image == null)
+                return;
+
+            bool active = state == currentState;
+            Sprite nextSprite = active ? activeSprite : inactiveSprite;
+            if (nextSprite != null)
+                image.sprite = nextSprite;
+
+            image.enabled = nextSprite != null || image.sprite != null;
+        }
+    }
+
     [Header("References")]
     [SerializeField] private Button startBattleButton;
     [SerializeField] private Button fleeButton;
     [SerializeField] private Button skipBattleButton;
-    [SerializeField] private TextMeshProUGUI advantageText;
     [SerializeField] private CanvasGroup panelCanvasGroup;
+
+    [Header("Advantage Images")]
+    [SerializeField] private AdvantageImageSlot[] advantageImages;
+
+    [Header("Combat Portraits")]
+    [SerializeField] private Image[] heroPortraitImages;
+    [SerializeField] private Image[] enemyPortraitImages;
+    [SerializeField] private Sprite emptyHeroPortraitSprite;
+    [SerializeField] private Sprite emptyEnemyPortraitSprite;
 
     private Action startBattleHandler;
     private Action fleeHandler;
@@ -47,14 +77,21 @@ public class CombatPromptPanelController : MonoBehaviour
             skipBattleButton.onClick.RemoveListener(HandleSkipBattleClicked);
     }
 
-    public void Open(Action onStartBattle, Action onFlee, Action onSkipBattle, string advantageLabel)
+    public void Open(
+        Action onStartBattle,
+        Action onFlee,
+        Action onSkipBattle,
+        CombatAdvantageState advantageState,
+        IReadOnlyList<int> heroUnitIndices,
+        IReadOnlyList<int> enemyUnitIndices)
     {
         startBattleHandler = onStartBattle;
         fleeHandler = onFlee;
         skipBattleHandler = onSkipBattle;
         gameObject.SetActive(true);
         PrepareInteractableState();
-        SetAdvantageLabel(advantageLabel);
+        SetAdvantageState(advantageState);
+        SetCombatPortraits(heroUnitIndices, enemyUnitIndices);
     }
 
     public void Close()
@@ -103,12 +140,78 @@ public class CombatPromptPanelController : MonoBehaviour
         PrepareButton(skipBattleButton);
     }
 
-    private void SetAdvantageLabel(string label)
+    private void SetAdvantageState(CombatAdvantageState state)
     {
-        if (advantageText == null)
+        if (advantageImages == null)
             return;
 
-        advantageText.text = string.IsNullOrWhiteSpace(label) ? string.Empty : label;
+        for (int i = 0; i < advantageImages.Length; i++)
+            advantageImages[i]?.Apply(state);
+    }
+
+    private void SetCombatPortraits(
+        IReadOnlyList<int> heroUnitIndices,
+        IReadOnlyList<int> enemyUnitIndices)
+    {
+        ApplyPortraits(
+            heroPortraitImages,
+            heroUnitIndices,
+            emptyHeroPortraitSprite,
+            ResolveHeroPortrait);
+
+        ApplyPortraits(
+            enemyPortraitImages,
+            enemyUnitIndices,
+            emptyEnemyPortraitSprite,
+            ResolveEnemyPortrait);
+    }
+
+    private static void ApplyPortraits(
+        Image[] images,
+        IReadOnlyList<int> unitIndices,
+        Sprite emptySprite,
+        Func<int, Sprite> portraitResolver)
+    {
+        if (images == null)
+            return;
+
+        for (int i = 0; i < images.Length; i++)
+        {
+            Image image = images[i];
+            if (image == null)
+                continue;
+
+            int unitIndex = unitIndices != null && i < unitIndices.Count ? unitIndices[i] : 0;
+            Sprite sprite = unitIndex > 0 && portraitResolver != null
+                ? portraitResolver.Invoke(unitIndex)
+                : null;
+
+            image.sprite = sprite != null ? sprite : emptySprite;
+            image.enabled = image.sprite != null;
+            image.gameObject.SetActive(true);
+        }
+    }
+
+    private static Sprite ResolveHeroPortrait(int unitIndex)
+    {
+        return unitIndex > 0 ? EntityPortraits.HeroByUnit(unitIndex) : null;
+    }
+
+    private static Sprite ResolveEnemyPortrait(int unitIndex)
+    {
+        if (unitIndex <= 0)
+            return null;
+
+        PersistentEnemyRepository repository = PersistentEnemyRepository.Instance;
+        if (repository != null &&
+            repository.TryGetUnit(unitIndex, out EnemyUnitPersistentData data) &&
+            data != null &&
+            !string.IsNullOrWhiteSpace(data.UnitTemplateKey))
+        {
+            return EntityPortraits.Enemy(data.UnitTemplateKey);
+        }
+
+        return EntityPortraits.Enemy(unitIndex.ToString());
     }
 
     private static void PrepareButton(Button button)
@@ -143,20 +246,6 @@ public class CombatPromptPanelController : MonoBehaviour
             buttons ??= GetComponentsInChildren<Button>(true);
             if (buttons.Length > 2)
                 skipBattleButton = buttons[2];
-        }
-
-        if (advantageText == null)
-        {
-            TextMeshProUGUI[] texts = GetComponentsInChildren<TextMeshProUGUI>(true);
-            for (int i = 0; i < texts.Length; i++)
-            {
-                TextMeshProUGUI text = texts[i];
-                if (text != null && text.name.IndexOf("Advantage", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    advantageText = text;
-                    break;
-                }
-            }
         }
 
         if (panelCanvasGroup == null)

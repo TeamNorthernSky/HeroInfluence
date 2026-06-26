@@ -1,15 +1,38 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CombatPromptService : MonoBehaviour
 {
+    private readonly struct CombatPromptPreview
+    {
+        public CombatPromptPreview(
+            CombatAdvantageEvaluation evaluation,
+            IReadOnlyList<int> heroUnitIndices,
+            IReadOnlyList<int> enemyUnitIndices)
+        {
+            Evaluation = evaluation;
+            HeroUnitIndices = heroUnitIndices;
+            EnemyUnitIndices = enemyUnitIndices;
+        }
+
+        public CombatAdvantageEvaluation Evaluation { get; }
+        public IReadOnlyList<int> HeroUnitIndices { get; }
+        public IReadOnlyList<int> EnemyUnitIndices { get; }
+    }
+
     [Header("References")]
     [SerializeField] private CombatPromptPanelController promptPrefab;
     [SerializeField] private Transform promptRoot;
     [SerializeField] private BattleResultPanel victoryResultPrefab;
     [SerializeField] private BattleResultPanel defeatResultPrefab;
     [SerializeField] private Transform resultRoot;
+
+    [Header("Modal Backdrop")]
+    [SerializeField] private Image combatPanelModal;
+    [SerializeField] private Color modalColor = new Color(0f, 0f, 0f, 0.6f);
 
     private CombatPromptPanelController promptInstance;
     private BattleResultPanel resultInstance;
@@ -42,7 +65,7 @@ public class CombatPromptService : MonoBehaviour
             return true;
 
         Func<bool> prepareContext = () => combatEncounterManager.PrepareEnemyCombatContext(party, enemy);
-        CombatAdvantageEvaluation evaluation = PreviewAdvantage(prepareContext, combatEncounterManager);
+        CombatPromptPreview preview = BuildPromptPreview(prepareContext, combatEncounterManager);
 
         pendingClosed = onClosed;
         pendingStartBattle = () =>
@@ -63,7 +86,11 @@ public class CombatPromptService : MonoBehaviour
             HandleStartBattleClicked,
             HandleFleeClicked,
             HandleSkipBattleClicked,
-            CombatSkipCalculator.GetDisplayText(evaluation.State));
+            preview.Evaluation.State,
+            preview.HeroUnitIndices,
+            preview.EnemyUnitIndices);
+        ShowModalBackdrop();
+        promptInstance.transform.SetAsLastSibling();
         return true;
     }
 
@@ -83,7 +110,7 @@ public class CombatPromptService : MonoBehaviour
             return true;
 
         Func<bool> prepareContext = () => combatEncounterManager.PrepareOutpostDefenderCombatContext(party, outpost);
-        CombatAdvantageEvaluation evaluation = PreviewAdvantage(prepareContext, combatEncounterManager);
+        CombatPromptPreview preview = BuildPromptPreview(prepareContext, combatEncounterManager);
 
         pendingClosed = onClosed;
         pendingStartBattle = () =>
@@ -104,7 +131,11 @@ public class CombatPromptService : MonoBehaviour
             HandleStartBattleClicked,
             HandleFleeClicked,
             HandleSkipBattleClicked,
-            CombatSkipCalculator.GetDisplayText(evaluation.State));
+            preview.Evaluation.State,
+            preview.HeroUnitIndices,
+            preview.EnemyUnitIndices);
+        ShowModalBackdrop();
+        promptInstance.transform.SetAsLastSibling();
         return true;
     }
 
@@ -124,7 +155,7 @@ public class CombatPromptService : MonoBehaviour
             return true;
 
         Func<bool> prepareContext = () => combatEncounterManager.PrepareVillainUnionDefenderCombatContext(party, villainUnionBase);
-        CombatAdvantageEvaluation evaluation = PreviewAdvantage(prepareContext, combatEncounterManager);
+        CombatPromptPreview preview = BuildPromptPreview(prepareContext, combatEncounterManager);
 
         pendingClosed = onClosed;
         pendingStartBattle = () =>
@@ -145,7 +176,11 @@ public class CombatPromptService : MonoBehaviour
             HandleStartBattleClicked,
             HandleFleeClicked,
             HandleSkipBattleClicked,
-            CombatSkipCalculator.GetDisplayText(evaluation.State));
+            preview.Evaluation.State,
+            preview.HeroUnitIndices,
+            preview.EnemyUnitIndices);
+        ShowModalBackdrop();
+        promptInstance.transform.SetAsLastSibling();
         return true;
     }
 
@@ -184,22 +219,44 @@ public class CombatPromptService : MonoBehaviour
         skipBattle?.Invoke();
     }
 
-    private CombatAdvantageEvaluation PreviewAdvantage(
+    private CombatPromptPreview BuildPromptPreview(
         Func<bool> prepareCombatContext,
         CombatEncounterManager combatEncounterManager)
     {
         if (prepareCombatContext == null || combatEncounterManager == null)
-            return new CombatAdvantageEvaluation(CombatAdvantageState.Close, 0f, 0f);
+            return CreateEmptyPreview();
 
         bool prepared = prepareCombatContext.Invoke();
         if (!prepared)
-            return new CombatAdvantageEvaluation(CombatAdvantageState.Close, 0f, 0f);
+            return CreateEmptyPreview();
 
         CombatContext context = CombatContext.Instance;
         CombatAdvantageEvaluation evaluation = CombatSkipCalculator.EvaluateAdvantage(context);
+        int[] heroUnitIndices = CopyUnitIndices(context != null ? context.CombatParty?.UnitIndices : null);
+        int[] enemyUnitIndices = CopyUnitIndices(context != null ? context.CombatEnemy?.UnitIndices : null);
         context?.Clear();
         combatEncounterManager.ClearCombatState();
-        return evaluation;
+        return new CombatPromptPreview(evaluation, heroUnitIndices, enemyUnitIndices);
+    }
+
+    private static CombatPromptPreview CreateEmptyPreview()
+    {
+        return new CombatPromptPreview(
+            new CombatAdvantageEvaluation(CombatAdvantageState.Close, 0f, 0f),
+            Array.Empty<int>(),
+            Array.Empty<int>());
+    }
+
+    private static int[] CopyUnitIndices(IReadOnlyList<int> source)
+    {
+        if (source == null || source.Count == 0)
+            return Array.Empty<int>();
+
+        int[] copy = new int[source.Count];
+        for (int i = 0; i < source.Count; i++)
+            copy[i] = Mathf.Max(0, source[i]);
+
+        return copy;
     }
 
     private void BeginFleeDefeat(Func<bool> prepareCombatContext, CombatEncounterManager combatEncounterManager)
@@ -263,6 +320,8 @@ public class CombatPromptService : MonoBehaviour
 
         resultInstance = Instantiate(defeatResultPrefab, root, false);
         PrepareResultPanelInteraction(resultInstance);
+        ShowModalBackdrop();
+        resultInstance.transform.SetAsLastSibling();
         bool accepted = false;
         resultInstance.OnAccepted += () => accepted = true;
         resultInstance.Show(BattleResult.Defeat, plan);
@@ -312,6 +371,8 @@ public class CombatPromptService : MonoBehaviour
 
         resultInstance = Instantiate(prefab, root, false);
         PrepareResultPanelInteraction(resultInstance);
+        ShowModalBackdrop();
+        resultInstance.transform.SetAsLastSibling();
         bool accepted = false;
         resultInstance.OnAccepted += () => accepted = true;
         BattleResult battleResult = decision == CombatSkipDecision.Victory
@@ -382,11 +443,58 @@ public class CombatPromptService : MonoBehaviour
 
     private void FinishPrompt(bool keepInputLocked)
     {
+        HideModalBackdrop();
         Action<bool> closed = pendingClosed;
         pendingClosed = null;
         pendingStartBattle = null;
         pendingFlee = null;
         pendingSkipBattle = null;
         closed?.Invoke(keepInputLocked);
+    }
+
+    private void ShowModalBackdrop()
+    {
+        Image modal = ResolveModalBackdrop();
+        if (modal == null)
+            return;
+
+        modal.color = modalColor;
+        modal.raycastTarget = true;
+        modal.gameObject.SetActive(true);
+        modal.transform.SetAsLastSibling();
+    }
+
+    private void HideModalBackdrop()
+    {
+        if (combatPanelModal == null)
+            return;
+
+        combatPanelModal.gameObject.SetActive(false);
+    }
+
+    private Image ResolveModalBackdrop()
+    {
+        if (combatPanelModal != null)
+            return combatPanelModal;
+
+        GameObject modalObject = GameObject.Find("CombatPanelModal");
+        if (modalObject != null)
+        {
+            combatPanelModal = modalObject.GetComponent<Image>();
+            return combatPanelModal;
+        }
+
+        Image[] images = FindObjectsByType<Image>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < images.Length; i++)
+        {
+            Image image = images[i];
+            if (image != null && image.name == "CombatPanelModal")
+            {
+                combatPanelModal = image;
+                return combatPanelModal;
+            }
+        }
+
+        return null;
     }
 }
