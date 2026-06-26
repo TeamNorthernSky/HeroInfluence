@@ -22,7 +22,12 @@ public class SkillButtonIcon : MonoBehaviour
 
     private void OnEnable()
     {
-        if (battleFlowManager != null) battleFlowManager.OnTurnStarted += OnTurnStarted;
+        if (battleFlowManager != null)
+        {
+            battleFlowManager.OnTurnStarted += OnTurnStarted;
+            // [JC 260625] 턴 도중 활성화돼도 이전 아이콘이 남지 않도록 현재 턴 유닛으로 즉시 갱신
+            ApplyIcon(battleFlowManager.CurrentUnit);
+        }
     }
 
     private void OnDisable()
@@ -30,7 +35,9 @@ public class SkillButtonIcon : MonoBehaviour
         if (battleFlowManager != null) battleFlowManager.OnTurnStarted -= OnTurnStarted;
     }
 
-    private void OnTurnStarted(int round, BattleCharactor unit)
+    private void OnTurnStarted(int round, BattleCharactor unit) => ApplyIcon(unit);
+
+    private void ApplyIcon(BattleCharactor unit)
     {
         if (iconImage == null || unit == null || !unit.IsPlayer) return;
         Sprite sp = Resolve(unit);

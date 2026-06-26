@@ -84,6 +84,8 @@ public class HeroInfoPanel : MonoBehaviour
             if (hpText != null) hpText.text = "-";
             if (ipText != null) ipText.text = "-";
             if (portraitImage != null) portraitImage.sprite = null;
+            if (hpGauge != null) hpGauge.fillAmount = 0f;
+            if (ipGauge != null) ipGauge.fillAmount = 0f;
             return;
         }
 

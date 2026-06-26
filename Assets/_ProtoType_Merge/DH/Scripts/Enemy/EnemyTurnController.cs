@@ -11,6 +11,7 @@ public class EnemyTurnController : MonoBehaviour
     [SerializeField] private CastleRegistry castleRegistry;
     [SerializeField] private AStarPathfinder pathfinder;
     [SerializeField] private CombatEncounterManager combatEncounterManager;
+    [SerializeField] private CombatPromptService combatPromptService;
     [SerializeField] private GridManager gridManager;
     [FormerlySerializedAs("mineRegistry")]
     [SerializeField] private OutpostRegistry outpostRegistry;
@@ -113,8 +114,13 @@ public class EnemyTurnController : MonoBehaviour
             yield break;
 
         PartyGridMover adjacentParty = FindAdjacentParty(enemy.GetCurrentGrid());
-        if (adjacentParty != null && TryBeginCombat(adjacentParty, enemy, movePoints))
-            yield break;
+        if (adjacentParty != null)
+        {
+            bool combatHandled = false;
+            yield return TryBeginCombat(adjacentParty, enemy, movePoints, handled => combatHandled = handled);
+            if (combatHandled)
+                yield break;
+        }
 
         Vector2Int targetGrid = GetTargetGrid(enemy.CurrentTargetType, enemy.CurrentTarget);
         List<Vector2Int> fullPath = FindApproachPath(
@@ -126,6 +132,9 @@ public class EnemyTurnController : MonoBehaviour
         int totalMoveSteps = GetPathMoveCost(movePath);
         int usedSteps = 0;
         bool interruptedDuringMove = false;
+        PartyGridMover pendingCombatParty = null;
+        EnemyGridMover pendingCombatEnemy = null;
+        int pendingCombatRemainingMovePoints = 0;
 
         if (movePath != null && movePath.Count > 1)
         {
@@ -148,15 +157,28 @@ public class EnemyTurnController : MonoBehaviour
                     if (partyOnRoute == null)
                         return true;
 
-                    interruptedDuringMove = TryBeginCombat(
-                        partyOnRoute,
-                        movingEnemy,
-                        remainingMovePointsDuringMove);
-                    return !interruptedDuringMove;
+                    interruptedDuringMove = true;
+                    pendingCombatParty = partyOnRoute;
+                    pendingCombatEnemy = movingEnemy;
+                    pendingCombatRemainingMovePoints = remainingMovePointsDuringMove;
+                    return false;
                 });
         }
 
         if (interruptedDuringMove)
+        {
+            bool combatHandled = false;
+            yield return TryBeginCombat(
+                pendingCombatParty,
+                pendingCombatEnemy,
+                pendingCombatRemainingMovePoints,
+                handled => combatHandled = handled);
+
+            if (combatHandled)
+                yield break;
+        }
+
+        if (interruptedByCombat)
             yield break;
 
         int remainingMovePoints = Mathf.Max(0, movePoints - usedSteps);
@@ -170,7 +192,12 @@ public class EnemyTurnController : MonoBehaviour
 
         adjacentParty = FindAdjacentParty(enemy.GetCurrentGrid());
         if (adjacentParty != null)
-            TryBeginCombat(adjacentParty, enemy, remainingMovePoints);
+        {
+            bool combatHandled = false;
+            yield return TryBeginCombat(adjacentParty, enemy, remainingMovePoints, handled => combatHandled = handled);
+            if (combatHandled)
+                yield break;
+        }
     }
 
     private void ValidateCurrentTarget(EnemyGridMover enemy)
@@ -285,27 +312,77 @@ public class EnemyTurnController : MonoBehaviour
         return null;
     }
 
-    private bool TryBeginCombat(PartyGridMover party, EnemyGridMover enemy, int remainingMovePoints)
+    private IEnumerator TryBeginCombat(
+        PartyGridMover party,
+        EnemyGridMover enemy,
+        int remainingMovePoints,
+        System.Action<bool> onComplete)
     {
         if (DHGameEndState.IsEnding)
-            return false;
+        {
+            onComplete?.Invoke(false);
+            yield break;
+        }
 
         if (combatEncounterManager == null)
-            return false;
+        {
+            onComplete?.Invoke(false);
+            yield break;
+        }
 
-        if (!IsAdjacent(party.GetCurrentGrid(), enemy.GetCurrentGrid()))
-            return false;
+        if (party == null || enemy == null || !IsAdjacent(party.GetCurrentGrid(), enemy.GetCurrentGrid()))
+        {
+            onComplete?.Invoke(false);
+            yield break;
+        }
+
+        if (combatPromptService != null && !combatPromptService.IsOpen)
+        {
+            bool promptClosed = false;
+            bool startedCombat = false;
+            bool promptOpened = combatPromptService.TryOpenEnemyCombatPrompt(
+                party,
+                enemy,
+                combatEncounterManager,
+                keepInputLocked =>
+                {
+                    startedCombat = keepInputLocked;
+                    promptClosed = true;
+                });
+
+            if (promptOpened)
+            {
+                yield return new WaitUntil(() =>
+                    promptClosed ||
+                    combatPromptService == null ||
+                    !combatPromptService.IsOpen);
+
+                if (startedCombat)
+                    InterruptForCombat(enemy, remainingMovePoints);
+
+                onComplete?.Invoke(true);
+                yield break;
+            }
+        }
 
         bool combatStarted = combatEncounterManager.BeginCombat(party, enemy);
         if (!combatStarted)
-            return false;
+        {
+            onComplete?.Invoke(false);
+            yield break;
+        }
 
+        InterruptForCombat(enemy, remainingMovePoints);
+        onComplete?.Invoke(true);
+    }
+
+    private void InterruptForCombat(EnemyGridMover enemy, int remainingMovePoints)
+    {
         interruptedByCombat = true;
         turnSessionRepository?.InterruptForCombat(
             ResolveEnemyPlacementKey(enemy),
-            enemy.EnemyId,
+            enemy != null ? enemy.EnemyId : string.Empty,
             remainingMovePoints);
-        return true;
     }
 
     private List<Vector2Int> FindApproachPath(
@@ -578,6 +655,9 @@ public class EnemyTurnController : MonoBehaviour
 
         if (combatEncounterManager == null)
             combatEncounterManager = FindFirstObjectByType<CombatEncounterManager>();
+
+        if (combatPromptService == null)
+            combatPromptService = FindFirstObjectByType<CombatPromptService>();
 
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();

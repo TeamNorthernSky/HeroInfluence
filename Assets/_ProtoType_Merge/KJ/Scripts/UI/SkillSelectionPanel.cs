@@ -123,8 +123,14 @@ public class SkillSelectionPanel : MonoBehaviour
         return match != null && match.Rank != '\0' ? match.Rank : '-';
     }
 
+    private bool completed = false;
+
     private void OnConfirm()
     {
+        if (completed) return;
+        completed = true;
+        confirmButton?.gameObject.SetActive(false);
+        cancelButton?.gameObject.SetActive(false);
         int selectedId = (skillDropdown != null && skillDropdown.value < candidateSkillIds.Count)
             ? candidateSkillIds[skillDropdown.value]
             : -1;
@@ -134,6 +140,10 @@ public class SkillSelectionPanel : MonoBehaviour
 
     private void OnCancel()
     {
+        if (completed) return;
+        completed = true;
+        confirmButton?.gameObject.SetActive(false);
+        cancelButton?.gameObject.SetActive(false);
         OnCompleted?.Invoke(-1);
         Destroy(gameObject);
     }

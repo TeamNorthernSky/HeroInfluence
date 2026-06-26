@@ -123,10 +123,10 @@ public class BattleUIManager : MonoBehaviour
                 : "전투 결과 : <color=red>패배...</color>";
         }
 
-        resultPanelParent.gameObject.SetActive(true);
-
         BattleResultPanel prefab = result == BattleResult.Victory ? victoryResultPrefab : defeatResultPrefab;
         if (prefab == null || resultPanelParent == null) return null;
+
+        resultPanelParent.gameObject.SetActive(true);
 
 
         BattleResultPanel instance = Instantiate(prefab, resultPanelParent, false);

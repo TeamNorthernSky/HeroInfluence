@@ -20,8 +20,8 @@ public class ToggleButton : MonoBehaviour
     {
         if (button == null) button = GetComponent<Button>();
         if (image == null) image = GetComponent<Image>();
-        if (normalSprite == null) normalSprite = GetComponent<Image>().sprite;
-        if (activeSprite == null) activeSprite = GetComponent<Image>().sprite;
+        if (normalSprite == null) normalSprite = image != null ? image.sprite : null;
+        if (activeSprite == null) activeSprite = image != null ? image.sprite : null;
     }
 
     private void OnEnable()

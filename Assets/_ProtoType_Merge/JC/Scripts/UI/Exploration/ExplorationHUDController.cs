@@ -245,7 +245,11 @@ public class ExplorationHUDController : MonoBehaviour
     private void OnClickNextTurn()
     {
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
-        if (turnManager != null) turnManager.EndPlayerTurn();
+        if (turnManager == null) return;
+        // [JC 260625] 연속 클릭/적턴 중 중복 EndPlayerTurn 방지: 적턴이면 무시 + 버튼 즉시 비활성(적턴 상태 이벤트에서 복구)
+        if (turnManager.IsEnemyTurnRunning) return;
+        if (nextTurnButton != null) nextTurnButton.interactable = false;
+        turnManager.EndPlayerTurn();
     }
 
     // ─── 갱신 ───────────────────────────────────────────────
