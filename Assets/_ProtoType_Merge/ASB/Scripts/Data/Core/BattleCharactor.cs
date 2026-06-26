@@ -217,7 +217,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         GridCellRef cell = occupiedCell;
         if (cell == null)
         {
-            cell = ASB.Work.BattleGrid.GridManager.Instance?.FindCellByUnit(this);
+            cell = ASB.Work.BattleGrid.BattleGridManager.Instance?.FindCellByUnit(this);
         }
 
         if (cell == null)
@@ -800,7 +800,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             if (cell != null)
             {
                 cell.SetOccupyingUnit(this);
-                ASB.Work.BattleGrid.GridManager.Instance?.RegisterUnitToCell(this, cell);
+                ASB.Work.BattleGrid.BattleGridManager.Instance?.RegisterUnitToCell(this, cell);
             }
 
             return;
@@ -815,7 +815,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
         if (occupiedCell != null)
         {
-            ASB.Work.BattleGrid.GridManager.Instance?.UnregisterUnit(this);
+            ASB.Work.BattleGrid.BattleGridManager.Instance?.UnregisterUnit(this);
             occupiedCell.ClearIfOccupying(this);
         }
 
@@ -823,7 +823,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         if (occupiedCell != null)
         {
             occupiedCell.SetOccupyingUnit(this);
-            ASB.Work.BattleGrid.GridManager.Instance?.RegisterUnitToCell(this, occupiedCell);
+            ASB.Work.BattleGrid.BattleGridManager.Instance?.RegisterUnitToCell(this, occupiedCell);
         }
 
         RefreshFormationPassiveStatsForAllUnits();
@@ -836,7 +836,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     public void ClearOccupiedCell()
     {
-        ASB.Work.BattleGrid.GridManager.Instance?.UnregisterUnit(this);
+        ASB.Work.BattleGrid.BattleGridManager.Instance?.UnregisterUnit(this);
         if (occupiedCell != null)
         {
             occupiedCell.ClearIfOccupying(this);

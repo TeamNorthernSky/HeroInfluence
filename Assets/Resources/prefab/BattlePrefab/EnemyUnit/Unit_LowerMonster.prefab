@@ -311,7 +311,6 @@ GameObject:
   - component: {fileID: 5945071885560297354}
   - component: {fileID: 8418450612678522997}
   - component: {fileID: 3398796345175814161}
-  - component: {fileID: 2688699396124529134}
   m_Layer: 9
   m_Name: Unit_LowerMonster
   m_TagString: Untagged
@@ -539,25 +538,6 @@ CapsuleCollider:
   m_Height: 1.6
   m_Direction: 1
   m_Center: {x: 0, y: 0.7, z: 0}
---- !u!114 &2688699396124529134
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3556432788587944534}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outlineMode: 0
-  outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 10
-  includeChildren: 1
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
 --- !u!1 &3619612165388717632
 GameObject:
   m_ObjectHideFlags: 0

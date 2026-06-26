@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ASBGridCell = ASB.Work.BattleGrid.GridCell;
-using ASBGridManager = ASB.Work.BattleGrid.GridManager;
+using ASBGridManager = ASB.Work.BattleGrid.BattleGridManager;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using ASB.Work.BattleGrid;

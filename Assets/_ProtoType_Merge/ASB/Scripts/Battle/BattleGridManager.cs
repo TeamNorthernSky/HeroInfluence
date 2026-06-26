@@ -4,7 +4,7 @@ using UnityEngine;
 namespace ASB.Work.BattleGrid
 {
     [DisallowMultipleComponent]
-    public class GridManager : MonoBehaviour
+    public class BattleGridManager : MonoBehaviour
     {
         private readonly Dictionary<Vector2Int, GridCell> cellsByCoords = new Dictionary<Vector2Int, GridCell>();
         private readonly Dictionary<BattleCharactor, GridCell> cellByUnit = new Dictionary<BattleCharactor, GridCell>();
@@ -12,7 +12,7 @@ namespace ASB.Work.BattleGrid
         [SerializeField] private Material AdditionalTargetMaterial;
         [SerializeField] private Material ClearMaterial;
         [SerializeField] private Material MainTargetHighlightMaterial;
-        public static GridManager Instance { get; private set; }
+        public static BattleGridManager Instance { get; private set; }
 
         public Material MainTargetHighlightMat => MainTargetHighlightMaterial;
 
@@ -20,7 +20,7 @@ namespace ASB.Work.BattleGrid
         {
             if (Instance != null && Instance != this)
             {
-                Debug.LogWarning("[GridManager] 중복 인스턴스가 감지되었습니다.");
+                Debug.LogWarning("[BattleGridManager] 중복 인스턴스가 감지되었습니다.");
             }
 
             Instance = this;
@@ -44,7 +44,7 @@ namespace ASB.Work.BattleGrid
                 Vector2Int key = cell.Coords;
                 if (cellsByCoords.ContainsKey(key))
                 {
-                    Debug.LogWarning($"[GridManager] 중복 좌표 감지: {key}");
+                    Debug.LogWarning($"[BattleGridManager] 중복 좌표 감지: {key}");
                     continue;
                 }
 

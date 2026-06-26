@@ -2870,7 +2870,6 @@ GameObject:
   - component: {fileID: 2337814053015336450}
   - component: {fileID: 7601110002510587678}
   - component: {fileID: 8243022134652499765}
-  - component: {fileID: 2887222158844151230}
   - component: {fileID: 3864417382258605738}
   - component: {fileID: 6207889040856470142}
   - component: {fileID: 2382002667043095403}
@@ -3008,6 +3007,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   battleCharactor: {fileID: 2337814053015336450}
+  rotateOffset: {x: 0, y: 0, z: 0, w: 0}
   hpFillImage: {fileID: 1088342935622579134}
   ipFillImage: {fileID: 982248228608328829}
   hpBarRect: {fileID: 0}
@@ -3043,25 +3043,6 @@ CapsuleCollider:
   m_Height: 1.6
   m_Direction: 1
   m_Center: {x: 0, y: 0.7, z: 0}
---- !u!114 &2887222158844151230
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1210115611748303271}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outlineMode: 0
-  outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 10
-  includeChildren: 1
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
 --- !u!320 &3864417382258605738
 PlayableDirector:
   m_ObjectHideFlags: 0
