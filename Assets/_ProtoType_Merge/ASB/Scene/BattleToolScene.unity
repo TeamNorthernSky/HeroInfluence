@@ -1770,13 +1770,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  csvDataLoad: {fileID: 0}
-  playerUnitTable: {fileID: 11400000, guid: 90c4628412cf66c4da1900fe2a85c25f, type: 2}
-  enemyUnitInfoTable: {fileID: 11400000, guid: c69dc64d915c7d649a74eb4956de39c4, type: 2}
-  weaponTable: {fileID: 11400000, guid: d889acf92290c1b4986df18dbce5c742, type: 2}
-  classSkillTable: {fileID: 11400000, guid: 113495fdb7b44f34bbfc28dc293f4fe4, type: 2}
-  levelUpTable: {fileID: 11400000, guid: 8ce123a7e58ed5545a5e338c988c414f, type: 2}
-  enemyGroupTable: {fileID: 11400000, guid: b40a620d3f8f57f4a8f46c6395a329f7, type: 2}
+  playerUnitDataTable: {fileID: 0}
+  enemyUnitInfoDataTable: {fileID: 0}
+  playerWeaponDataTable: {fileID: 0}
+  classSkillDataTable: {fileID: 0}
+  unitGrowthExpDataTable: {fileID: 0}
+  enemyGroupDataTable: {fileID: 0}
   useSOTables: 1
   loadOnAwake: 0
   dontDestroyOnLoad: 1
@@ -2978,7 +2977,9 @@ MonoBehaviour:
   currentTurnText: {fileID: 2023049971}
   currentSkillText: {fileID: 1455369010}
   battleResultText: {fileID: 882786790}
-  battleResultPanel: {fileID: 0}
+  victoryResultPrefab: {fileID: 0}
+  defeatResultPrefab: {fileID: 0}
+  resultPanelParent: {fileID: 0}
   turnArrow: {fileID: 0}
   turnArrowScreenOffset: {x: 0, y: 120}
   ClearMaterial: {fileID: 0}
@@ -4202,13 +4203,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1738284055}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04e68369a46b3cb42851d2ec83a867fe, type: 3}
+  m_Script: {fileID: 11500000, guid: 3c9464837839d0b46aa6e62daff9dee3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetMaterial: {fileID: 0}
-  AdditionalTargetMaterial: {fileID: 0}
-  ClearMaterial: {fileID: 0}
-  MainTargetHighlightMaterial: {fileID: 0}
+  TargetMaterial: {fileID: 2100000, guid: e8e86b2d9652a0240b76abafde055fa9, type: 2}
+  AdditionalTargetMaterial: {fileID: 2100000, guid: 9ffc1d572b0414a48a54294b2ad61660,
+    type: 2}
+  ClearMaterial: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
+  MainTargetHighlightMaterial: {fileID: 2100000, guid: e8e86b2d9652a0240b76abafde055fa9,
+    type: 2}
 --- !u!4 &1738284057
 Transform:
   m_ObjectHideFlags: 0
