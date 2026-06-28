@@ -1655,7 +1655,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36400f5b130684b4786b46bbf98625fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  btnUpgradeHQ: {fileID: 4790853838476786304}
+  btnUpgradeHQ: {fileID: 0}
   modalHQRoot: {fileID: 0}
   modalProgressRoot: {fileID: 4371812502366379019}
   titleText: {fileID: 938791448854629599}
