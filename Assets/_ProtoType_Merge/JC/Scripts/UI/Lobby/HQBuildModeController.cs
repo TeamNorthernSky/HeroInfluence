@@ -65,6 +65,13 @@ public class HQBuildModeController : MonoBehaviour
         subscribedHQ.OnStateChanged += OnHQState;
     }
 
+    /// <summary>[JC 260629] unlockFlow가 비결선(UI_HQUpgrade 번들 분리)일 때 런타임 단일 인스턴스를 Find로 해석.</summary>
+    private HQUpgradeFlowController ResolveFlow()
+    {
+        if (unlockFlow == null) unlockFlow = FindObjectOfType<HQUpgradeFlowController>(true);
+        return unlockFlow;
+    }
+
     private void OnHQState()
     {
         foreach (var f in LobbyUIRegistry.Facilities) if (f != null) f.Refresh();
@@ -77,7 +84,8 @@ public class HQBuildModeController : MonoBehaviour
         if (!IsBuildMode) { EnterBuildMode(); return; }
         bool eligible = IsUpgradeable(HQDepartment.Headquarters);
         ExitBuildMode();
-        if (eligible && unlockFlow != null) unlockFlow.ShowProgress(HQDepartment.Headquarters);
+        var flow = ResolveFlow();
+        if (eligible && flow != null) flow.ShowProgress(HQDepartment.Headquarters);
     }
 
     /// <summary>FacilityModule이 잠금 placeholder 클릭 시 호출.</summary>
@@ -86,7 +94,8 @@ public class HQBuildModeController : MonoBehaviour
         if (f == null || !IsBuildMode) return;
         bool eligible = IsBuildable(f.Department);
         ExitBuildMode();
-        if (eligible && unlockFlow != null) unlockFlow.ShowProgress(f.Department);
+        var flow = ResolveFlow();
+        if (eligible && flow != null) flow.ShowProgress(f.Department);
     }
 
     /// <summary>FacilityModule이 해금된 버튼 클릭 시 호출.</summary>
@@ -97,7 +106,8 @@ public class HQBuildModeController : MonoBehaviour
         {
             bool eligible = IsUpgradeable(f.Department);
             ExitBuildMode();
-            if (eligible && unlockFlow != null) unlockFlow.ShowProgress(f.Department);
+            var flow = ResolveFlow();
+            if (eligible && flow != null) flow.ShowProgress(f.Department);
             return;
         }
         if (f.FacilityModal != null) f.FacilityModal.SetActive(true);
