@@ -60,6 +60,10 @@ public class SortieEntryGate : MonoBehaviour
 
     private void RefreshGate()
     {
+        // [JC 260629] 크로스번들 — controller를 사용 시점에 레지스트리에서 해석.
+        if (controller == null) controller = LobbyUIRegistry.Sortie;
+        if (modalRoot == null && controller != null) modalRoot = controller.gameObject;
+
         bool hasHeroes = SortieController.CountDeployableHeroes() > 0;
         if (button != null) button.interactable = hasHeroes;
         EnsureGreyOverlay();
@@ -68,6 +72,10 @@ public class SortieEntryGate : MonoBehaviour
 
     private void OnClick()
     {
+        // [JC 260629] 크로스번들 — controller를 클릭 시점에 레지스트리에서 해석.
+        if (controller == null) controller = LobbyUIRegistry.Sortie;
+        if (modalRoot == null && controller != null) modalRoot = controller.gameObject;
+
         bool open = modalRoot != null && modalRoot.activeSelf;
         if (open)
         {

@@ -120,6 +120,12 @@ public class SortieController : MonoBehaviour
 
     private void OnEnable()
     {
+        // [JC 260629] 번들 분리 — 크로스번들 참조를 레지스트리에서 폴백 해석.
+        // 자기 자신 등록은 SortieRegistrar(상시 active 번들 루트)가 담당 — Modal_Sortie는 비활성 시작.
+        if (rosterController == null) rosterController = LobbyUIRegistry.Roster;
+        if (rosterPanelRoot == null && LobbyUIRegistry.RosterPanelRoot != null) rosterPanelRoot = LobbyUIRegistry.RosterPanelRoot;
+        if (sortieButtonRoot == null && LobbyUIRegistry.GoButton != null) sortieButtonRoot = LobbyUIRegistry.GoButton;
+
         LoadFromRepository();
         EngageRoster();
         Refresh();
