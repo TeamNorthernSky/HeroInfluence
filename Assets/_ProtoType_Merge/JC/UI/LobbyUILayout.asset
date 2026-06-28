@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6167095294d40664ab0b8492b2ae2894, type: 3}
   m_Name: LobbyUILayout
   m_EditorClassIdentifier: 
-  prefabs: []
+  prefabs:
+  - {fileID: 2394911003404565127, guid: a58a0c5fe8cbbe94393f4b9849de6e55, type: 3}
