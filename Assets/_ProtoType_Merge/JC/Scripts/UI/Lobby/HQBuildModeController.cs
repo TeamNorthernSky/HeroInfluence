@@ -208,6 +208,7 @@ public class HQBuildModeController : MonoBehaviour
     private (string, string, string) ResolveHqText()
     {
         var gm = GameManager.Instance;
+        if (gm == null || gm.HQ == null) return (maxLevelMessage, "", ""); // [JC 260629] null 가드(타 헬퍼와 정합)
         int lv = gm.HQ.GetLevel(HQDepartment.Headquarters);
         int max = gm.HQ.GetMaxLevel(HQDepartment.Headquarters);
         return lv >= max ? (maxLevelMessage, "", "") : (hqUpgradeInfo, hqUpgradeDesc, "");
