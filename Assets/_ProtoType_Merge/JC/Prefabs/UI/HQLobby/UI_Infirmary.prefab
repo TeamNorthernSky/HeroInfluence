@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uACE0\uC6A9 \uC13C\uD130 Lv.1"
+  m_text: "\uC758\uBB34\uC2E4 Lv.1"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   department: 5
-  prefix: "\uACE0\uC6A9 \uC13C\uD130"
+  prefix: "\uC758\uBB34\uC2E4"
   label: {fileID: 4909246624876545727}
   showWhenLocked: 0
 --- !u!1 &5176467631627593014
