@@ -35,10 +35,10 @@ public class TurnOrderUI : MonoBehaviour
         if (unit == null) return null;
         // [JC 260621] 플레이어 = PortraitLibrary Hero(키=HeroIndex).
         if (unit.IsPlayer && unit.SourceData != null)
-            return EntityPortraits.Hero(unit.SourceData.UnitTemplateKey);
+            return Sprites.Portrait.Hero(unit.SourceData.UnitTemplateKey);
         // [JC 260622] 적 = PortraitLibrary Enemy(키=적 UnitTemplateKey, 미수록/키없음 시 범용 zako).
         if (!unit.IsPlayer)
-            return EntityPortraits.Enemy(unit.SourceEnemyData != null ? unit.SourceEnemyData.UnitTemplateKey : null);
+            return Sprites.Portrait.Enemy(unit.SourceEnemyData != null ? unit.SourceEnemyData.UnitTemplateKey : null);
         return null;
     }
 

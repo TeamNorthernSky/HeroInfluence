@@ -10,12 +10,12 @@ using UnityEngine;
 public static class HeroProfileCatalog
 {
     /// <summary>기본(미선택) 포트레이트.</summary>
-    public static Sprite Default => EntityPortraits.Unselected;
+    public static Sprite Default => Sprites.Portrait.Unselected;
 
     /// <summary>unitIndex로 히어로 포트레이트. 해석 실패 시 기본.</summary>
-    public static Sprite GetByUnitIndex(int unitIndex) => EntityPortraits.HeroByUnit(unitIndex);
+    public static Sprite GetByUnitIndex(int unitIndex) => Sprites.Portrait.HeroByUnit(unitIndex);
 
     /// <summary>[레거시] 영웅명 기반 조회. 현 포트레이트 체계는 unitIndex(=HeroIndex) 기준 →
     /// GetByUnitIndex 사용 권장. 호환 위해 구 아이콘 경로(HeroIcons)로 폴백 유지.</summary>
-    public static Sprite GetByName(string heroName) => HeroIcons.GetCharacterProfile(heroName);
+    public static Sprite GetByName(string heroName) => Sprites.Icon.Character(heroName);
 }

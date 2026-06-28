@@ -61,6 +61,11 @@ public class SortieController : MonoBehaviour
     [Header("진형 파티 ID")]
     [SerializeField] private string targetPartyId = "";
 
+    // [JC 260628] 기획: 파티원 4명 고정. 진형(위치) 편집은 허용, 인원 추가/제거 트리거만 차단.
+    // 추가/제거 인프라(드래그·클릭·PlaceHero 등)는 보존 — 추후 기획 변경 시 이 값만 true로.
+    [Header("파티 인원 변동 허용 (기획: 4명 고정 → false)")]
+    [SerializeField] private bool allowPartySizeChange = false;
+
     [Header("슬롯 색 (드래그 강조)")]
     [SerializeField] private Color slotNormalColor = new Color(0.10f, 0.16f, 0.32f, 0.7f);
     [SerializeField] private Color slotHighlightColor = new Color(0.35f, 1f, 0.45f, 0.85f);
@@ -186,6 +191,7 @@ public class SortieController : MonoBehaviour
     // ─── 클릭 추가 / 해제 ────────────────────────────────────
     private void OnRosterClicked(int unitIndex)
     {
+        if (!allowPartySizeChange) return; // [JC 260628] 파티원 고정: 추가/해제 토글 차단
         if (unitIndex <= 0) return;
         // 이미 배치된 영웅이면 배치 취소(토글)
         int existing = formation.IndexOf(unitIndex);
@@ -200,6 +206,7 @@ public class SortieController : MonoBehaviour
     /// <summary>좌/우클릭 해제 (SortieSlotInput에서 호출).</summary>
     public void RemoveSlot(int slotIdx)
     {
+        if (!allowPartySizeChange) return; // [JC 260628] 파티원 고정: 클릭 해제 차단
         if (slotIdx < 0 || slotIdx >= formation.Count) return;
         if (formation[slotIdx] != 0) { formation[slotIdx] = 0; Refresh(); }
     }
@@ -208,6 +215,7 @@ public class SortieController : MonoBehaviour
     // 로스터 영웅 드래그 시작 (SortieDragItem)
     public void BeginDrag(int unitIndex, PointerEventData e)
     {
+        if (!allowPartySizeChange) return; // [JC 260628] 파티원 고정: 영웅창→진형 추가 드래그 차단 (슬롯 간 이동은 BeginSlotDrag)
         BeginDragInternal(unitIndex, -1, e);
     }
 
@@ -246,12 +254,12 @@ public class SortieController : MonoBehaviour
         {
             if (hoveredSlot >= 0)
             {
-                if (draggedSourceSlot >= 0) MoveOrSwap(draggedSourceSlot, hoveredSlot); // 진형 내 이동/교환
-                else PlaceHero(draggedUnitIndex, hoveredSlot);                          // 로스터 → 배치
+                if (draggedSourceSlot >= 0) MoveOrSwap(draggedSourceSlot, hoveredSlot); // 진형 내 이동/교환 — 항상 허용
+                else if (allowPartySizeChange) PlaceHero(draggedUnitIndex, hoveredSlot); // 로스터 → 배치(추가) — 파티원 고정 시 차단
             }
-            else if (draggedSourceSlot >= 0)
+            else if (draggedSourceSlot >= 0 && allowPartySizeChange)
             {
-                formation[draggedSourceSlot] = 0; // 진형 밖으로 드래그 → 배치 취소
+                formation[draggedSourceSlot] = 0; // 진형 밖으로 드래그 → 해제 — 파티원 고정 시 차단(제자리 복귀)
             }
         }
         CancelDrag();
@@ -345,6 +353,7 @@ public class SortieController : MonoBehaviour
     }
 
     // ─── 저장/로드 ───────────────────────────────────────────
+    // [JC 260628] 진형 grid ↔ 전투 슬롯 매핑은 공용 PartyFormation 규약 사용(일원화).
     private void LoadFromRepository()
     {
         for (int i = 0; i < formation.Count; i++) formation[i] = 0;
@@ -355,8 +364,17 @@ public class SortieController : MonoBehaviour
         if (string.IsNullOrWhiteSpace(partyId)) return;
         if (!repo.TryGetParty(partyId, out var party) || party == null) return;
         var src = party.UnitIndices;
-        for (int i = 0; i < formation.Count && i < src.Count; i++)
-            formation[i] = src[i];
+        var slots = party.UnitSlots;
+        // [JC 260628] 저장된 전투 슬롯(1-base) 기준으로 진형 grid에 복원(SaveFormation 역매핑).
+        // 슬롯 정보가 없으면 위치+1을 슬롯으로 간주(레거시 폴백).
+        for (int i = 0; i < src.Count; i++)
+        {
+            int unit = src[i];
+            if (unit <= 0) continue;
+            int slot = (slots != null && i < slots.Count) ? slots[i] : (i + 1);
+            int grid = PartyFormation.SlotToGrid(slot);
+            if (grid >= 0 && grid < formation.Count) formation[grid] = unit;
+        }
     }
 
     /// <summary>
@@ -381,9 +399,9 @@ public class SortieController : MonoBehaviour
         for (int i = 0; i <= last; i++)
         {
             ordered.Add(formation[i]);  // 내부 빈칸(0) 보존, 후미 빈칸은 절삭
-            // DH는 슬롯을 1-base(1~6)로 기대. + 진형 UI 좌열(0~2)=후열, 우열(3~5)=전열을
-            // 전투 슬롯 전/후열 그룹에 맞추기 위해 그룹 교환: 좌열→슬롯4~6, 우열→슬롯1~3 (상중하 순서 유지)
-            unitSlots.Add(i < 3 ? i + 4 : i - 2);
+            // [JC 260628] 진형 grid → 전투 슬롯. 전투 규약(슬롯1-3=후열, 4-6=전열)에 맞춰
+            // 전열 프레임(grid0-2)→슬롯4-6, 후열(grid3-5)→슬롯1-3. LoadFromRepository와 역대칭.
+            unitSlots.Add(PartyFormation.GridToSlot(i));
         }
         repo.RegisterOrUpdateParty(partyId, ordered, unitSlots);
     }
@@ -484,7 +502,12 @@ public class SortieController : MonoBehaviour
             bool filled = i < formation.Count && formation[i] > 0;
             if (slot.emptyState != null) slot.emptyState.SetActive(!filled);
             if (slot.filledState != null) slot.filledState.SetActive(filled);
-            if (slot.icon != null) slot.icon.enabled = filled;
+            if (slot.icon != null)
+            {
+                // [JC 260628] 프로필 이미지 = unitIndex 기준 SpriteLibrary 포트레이트(텍스트 단독 → 이미지+텍스트)
+                slot.icon.sprite = filled ? Sprites.Portrait.HeroByUnit(formation[i]) : null;
+                slot.icon.enabled = filled && slot.icon.sprite != null;
+            }
             if (slot.label != null) slot.label.text = filled ? ResolveHeroName(formation[i]) : string.Empty;
         }
 

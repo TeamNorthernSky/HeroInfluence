@@ -63,7 +63,7 @@ public class TrainingModalController : MonoBehaviour
     [SerializeField] private string cellLockedPath   = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Locked)";
     [SerializeField] private string cellFinishedPath = "UI_Sprite/UI_HQLobby/Popup/UI_,mark_finished";
 
-    // [JC 260625] 분류 아이콘은 UIIcons.Status(UIStatusIconType)로 일원화 — 옛 경로 필드 제거
+    // [JC 260625] 분류 아이콘은 Sprites.UI.Status(UIStatusIconType)로 일원화 — 옛 경로 필드 제거
 
     [Header("툴팁 문구")]
     [SerializeField] private string atkCategoryTip = "공격력을 강화합니다.";
@@ -113,7 +113,7 @@ public class TrainingModalController : MonoBehaviour
             if (row.categoryIcon != null)
             {
                 // [JC 260625] 분류 아이콘 = UIIconLibrary facade로 일원화(옛 직접 경로 로드 폐지)
-                var sp = UIIcons.Status(row.stat == TrainingStat.Attack ? UIStatusIconType.ATK : UIStatusIconType.HP);
+                var sp = Sprites.UI.Status(row.stat == TrainingStat.Attack ? UIStatusIconType.ATK : UIStatusIconType.HP);
                 row.categoryIcon.sprite = sp; row.categoryIcon.enabled = sp != null;
             }
             if (row.categoryTooltip != null)

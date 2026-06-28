@@ -100,7 +100,7 @@ public class WorkshopModalController : MonoBehaviour
     // [JC 260618] 아이콘 해석을 HeroIconLibrary로 이관(키=weaponIndex, tier 폴백은 SO가 처리).
     private Sprite GetWeaponIcon(int weaponIndex, int level)
     {
-        return HeroIcons.GetWeaponIcon(weaponIndex, level);
+        return Sprites.Icon.Weapon(weaponIndex, level);
     }
 
     // [JC 260621] 공방 표시 규약: 레벨1 = 무기 아이콘(무기스킬 1레벨 자리를 대체·생략), 레벨2~5 = 무기스킬 아이콘.
@@ -109,7 +109,7 @@ public class WorkshopModalController : MonoBehaviour
     {
         if (level <= 1) return GetWeaponIcon(weaponIndex, level);
         int wsi = WeaponSkillIndexOf(weaponIndex);
-        if (wsi > 0) return HeroIcons.GetWeaponSkillIcon(wsi, level);
+        if (wsi > 0) return Sprites.Icon.WeaponSkill(wsi, level);
         return GetWeaponIcon(weaponIndex, level); // wd 조회 실패 시 폴백
     }
 
