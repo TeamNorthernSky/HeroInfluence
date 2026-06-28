@@ -138,10 +138,10 @@ public class ExplorationHeroBoxController : MonoBehaviour
         var catalog = DHCsvTemplateCatalog.Instance;
         var gm = GameManager.Instance;
 
-        var members = new List<int>();
-        if (party != null)
-            for (int u = 0; u < party.UnitIndices.Count; u++)
-                if (party.UnitIndices[u] > 0) members.Add(party.UnitIndices[u]);
+        // [JC 260628] 전열→후열 순(PartyFormation 공용 규약)으로 표시 — 전력평가·전투결과와 일치
+        var members = party != null
+            ? PartyFormation.OrderFrontFirst(party.UnitIndices, party.UnitSlots)
+            : new List<int>();
 
         for (int i = 0; i < slots.Length; i++)
         {

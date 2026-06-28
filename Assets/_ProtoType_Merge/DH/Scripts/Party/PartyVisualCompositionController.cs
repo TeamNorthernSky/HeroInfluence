@@ -125,7 +125,12 @@ public class PartyVisualCompositionController : MonoBehaviour
                 default);
         }
 
-        partyRepository.RegisterOrUpdateParty(partyId, unitIndices);
+        // [JC 260628] 기본 진형 명시. 전투 슬롯 규약: 1-3=후열, 4-6=전열.
+        // initialUnitTemplateKeys = [10001,10002,10003,10004]이고 10004=아쿠아블루(후열) 이므로
+        // 10001/02/03 → 전열(슬롯4·5·6), 10004(아쿠아) → 후열(슬롯1). (슬롯 미전달 시 자동 [1,2,3,4]가
+        // 전열3+후열1로 어긋나 출전/전력평가 진형이 잘못 표시되던 문제 교정.)
+        int[] unitSlots = { 4, 5, 6, 1 };
+        partyRepository.RegisterOrUpdateParty(partyId, unitIndices, unitSlots);
     }
 
     private string GetInitialTemplateKey(int index)

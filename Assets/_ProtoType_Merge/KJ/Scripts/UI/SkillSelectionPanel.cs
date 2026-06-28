@@ -53,7 +53,7 @@ public class SkillSelectionPanel : MonoBehaviour
         if (portrait != null)
         {
             // [JC 260621] 포트레이트 = PortraitLibrary(키=HeroIndex).
-            Sprite sp = EntityPortraits.HeroByUnit(preview.UnitIndex);
+            Sprite sp = Sprites.Portrait.HeroByUnit(preview.UnitIndex);
             if (sp != null)
             {
                 GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(Image));
