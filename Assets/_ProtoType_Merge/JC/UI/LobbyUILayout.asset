@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6167095294d40664ab0b8492b2ae2894, type: 3}
+  m_Name: LobbyUILayout
+  m_EditorClassIdentifier: 
+  prefabs:
+  - {fileID: 2394911003404565127, guid: a58a0c5fe8cbbe94393f4b9849de6e55, type: 3}
+  - {fileID: 4547048351624947989, guid: 95f8a66f09e30fa4da2373bf035b6371, type: 3}
+  - {fileID: 4190179895367986342, guid: 944504ccb45585548b5ddd7104ba865b, type: 3}
+  - {fileID: 2706618283794492847, guid: 0b20532bb19c3f94280a92ae75e736f0, type: 3}
+  - {fileID: 5848094218187305405, guid: 5429ee234f800a643a1eafcbd7655e3f, type: 3}
+  - {fileID: 8581051832571939832, guid: 4b864287b8d7a1049b3bf6ff4e57194a, type: 3}
+  - {fileID: 5350926626572101624, guid: 993cb696a8a1cd7469fa92f26e0284bb, type: 3}
+  - {fileID: 3710972191531651428, guid: 452eee8056cc02544b9f4542c39e5d35, type: 3}
+  - {fileID: 6157097362877191110, guid: d4d77c30b93f1264bb441026f1b6155e, type: 3}
+  - {fileID: 8295820490475908038, guid: 1cdb1cf284b43de4da3045d2d1a4eae6, type: 3}
+  - {fileID: 2743081571299822572, guid: 97cdb6fe3cbb8274aa64e29ac79d8543, type: 3}

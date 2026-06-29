@@ -43,6 +43,10 @@ public class SystemMenuController : MonoBehaviour
         }
         else
         {
+            // [JC 260629] 본부 빌드모드 중이면 ESC = 빌드모드 나가기(시스템 메뉴/일시정지보다 우선). 로비 외에서는 BuildMode=null이라 무영향.
+            if (LobbyUIRegistry.BuildMode != null && LobbyUIRegistry.BuildMode.HandleEscape())
+                return;
+
             if (sceneName == LobbyScene)
                 OpenModal();
             else
