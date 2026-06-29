@@ -1,8 +1,29 @@
 using UnityEngine;
 
-public class DebugManager : MonoBehaviour
+public class DebugPanelManager : MonoBehaviour
 {
-    public static DebugManager Instance { get; private set; }
+    public static DebugPanelManager Instance { get; private set; }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Bootstrap()
+    {
+        if (Instance != null) return; // 이미 존재(분리 전엔 GameManager 자식 Awake가 설정)
+        var prefab = Resources.Load<GameObject>("DebugPanelManager");
+        if (prefab == null) return;   // 프리팹 분리 전 중간 상태 → 무동작
+        var go = Object.Instantiate(prefab);
+        go.name = "DebugPanelManager";
+        DontDestroyOnLoad(go);
+    }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+        if (transform.parent == null) DontDestroyOnLoad(gameObject); // 루트일 때만(자식 시 경고 회피)
+        Initialize();
+    }
+
+    private void Update() => Tick();
 
     [Header("활성화 시퀀스 (백쿼트 N연타)")]
     [SerializeField] private KeyCode activationKey = KeyCode.BackQuote;
@@ -23,7 +44,6 @@ public class DebugManager : MonoBehaviour
 
     public void Initialize()
     {
-        Instance = this;
         panelController = GetComponentInChildren<DebugPanelController>(true);
         if (panelController != null)
         {
