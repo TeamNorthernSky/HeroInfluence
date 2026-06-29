@@ -609,7 +609,7 @@ public class SortieController : MonoBehaviour
         dimOverlay.offsetMin = Vector2.zero;
         dimOverlay.offsetMax = Vector2.zero;
         var img = go.GetComponent<Image>();
-        img.color = new Color(0f, 0f, 0f, 0.6f);
+        img.color = new Color(0f, 0f, 0f, 0.75f); // [JC 260629] 원래 모달 dim 농도(0.75)로 복구. 단일 dim을 Layer_Base에서 담당.
         img.raycastTarget = true; // 외부 클릭 차단(모달 강제 포커스)
         go.SetActive(false);
     }
