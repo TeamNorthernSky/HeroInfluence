@@ -60,14 +60,25 @@ public class SortieEntryGate : MonoBehaviour
 
     private void RefreshGate()
     {
-        bool hasHeroes = SortieController.CountDeployableHeroes() > 0;
-        if (button != null) button.interactable = hasHeroes;
+        // [JC 260629] 크로스번들 — controller를 사용 시점에 레지스트리에서 해석.
+        if (controller == null) controller = LobbyUIRegistry.Sortie;
+        if (modalRoot == null && controller != null) modalRoot = controller.gameObject;
+
+        // [JC 260629] 모달이 열려 있으면 출전 버튼은 '편성완료(닫기)' 역할을 겸하므로 항상 활성이어야 한다.
+        // (0명 비활성 게이트는 모달 진입 전에만 적용 — 열린 상태에서 비활성화되면 닫을 수 없게 됨.)
+        bool modalOpen = modalRoot != null && modalRoot.activeSelf;
+        bool active = modalOpen || SortieController.CountDeployableHeroes() > 0;
+        if (button != null) button.interactable = active;
         EnsureGreyOverlay();
-        if (greyOverlay != null) greyOverlay.gameObject.SetActive(!hasHeroes);
+        if (greyOverlay != null) greyOverlay.gameObject.SetActive(!active);
     }
 
     private void OnClick()
     {
+        // [JC 260629] 크로스번들 — controller를 클릭 시점에 레지스트리에서 해석.
+        if (controller == null) controller = LobbyUIRegistry.Sortie;
+        if (modalRoot == null && controller != null) modalRoot = controller.gameObject;
+
         bool open = modalRoot != null && modalRoot.activeSelf;
         if (open)
         {

@@ -1,0 +1,19 @@
+name: Discord Branch Notify
+
+on:
+  push:
+    branches:
+      - main
+      - Sub
+      - master
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send GitHub Payload to Discord
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+               -H "X-GitHub-Event: ${{ github.event_name }}" \
+               -d @"$GITHUB_EVENT_PATH" \
+               ${{ secrets.DISCORD_WEBHOOK_URL }}
