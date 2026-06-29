@@ -112,7 +112,7 @@ public static class BattleResultPersistenceHandler
         if (enemyUnits != null)
         {
             for (int i = 0; i < enemyUnits.Count; i++)
-                TryPersistEnemyUnit(enemyUnits[i], result);
+                TryPersistEnemyUnit(enemyUnits[i], result, isBattleDefeat: result == BattleResult.Defeat);
         }
 
         if (result == BattleResult.Victory && plan != null)
@@ -199,7 +199,7 @@ public static class BattleResultPersistenceHandler
             Debug.LogWarning($"[BattleResultPersistenceHandler] 플레이어 unitIndex={src.UnitIndex} UpdateUnitRuntimeState 실패.", battle);
     }
 
-    private static void TryPersistEnemyUnit(BattleCharactor battle, BattleResult result)
+    private static void TryPersistEnemyUnit(BattleCharactor battle, BattleResult result, bool isBattleDefeat = false)
     {
         if (battle == null || battle.TeamType == TeamType.Player)
             return;
@@ -212,7 +212,8 @@ public static class BattleResultPersistenceHandler
         if (repo == null || !repo.ContainsUnit(src.UnitIndex))
             return;
 
-        float hp = ResolvePersistedHp(battle);
+        // 패배 시 적 HP를 최대 체력으로 복원
+        float hp = isBattleDefeat ? battle.MaxHp : ResolvePersistedHp(battle);
         float influence = Mathf.Clamp(battle.CurrentInfluence, 0f, battle.MaxInfluence);
         bool isIncapacitated = battle.IsDead;
 
