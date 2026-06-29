@@ -14,9 +14,6 @@ public class PartyGridMover : MonoBehaviour
     [SerializeField] private float arriveThreshold = 0.01f;
     [SerializeField] private int maxMovePoints = 10;
 
-    // [JC 추가 260511] 정지 시 진단 로그
-    [SerializeField] private bool logStopMovement = false;
-
     private readonly Queue<Vector2Int> pathQueue = new Queue<Vector2Int>();
     private bool isMoving;
     private bool stopRequested;
@@ -202,11 +199,6 @@ public class PartyGridMover : MonoBehaviour
         PersistLastGrid();
         NotifyPathUpdated();
 
-        if (logStopMovement)
-        {
-            int afterMP = movePointController != null ? movePointController.RemainingMovePoints : -1;
-            Debug.Log($"[PartyGridMover.StopMovement] prev={previousGrid} nearest={nearestGrid} snapped={currentGrid} MP {previousMP}→{afterMP}", this);
-        }
     }
 
     // [JC 추가 260511] 현재 위치를 PartyPersistentData.LastGrid로 저장

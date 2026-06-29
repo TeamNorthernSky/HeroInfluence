@@ -12,10 +12,7 @@ public class PartyRecoveryAreaController : MonoBehaviour
     [SerializeField] private bool recoverAtCastle = false;
     [SerializeField] private bool recoverAtClaimedOutpost = false;
 
-    [Header("Debug")]
-    [SerializeField] private bool logRecovery;
-
-    private readonly List<PartyGridMover> subscribedParties = new List<PartyGridMover>();
+    private PartyGridMover subscribedParty;
 
     private void OnEnable()
     {
@@ -38,36 +35,26 @@ public class PartyRecoveryAreaController : MonoBehaviour
 
     private void SubscribeParties()
     {
-        PartyGridMover[] parties = ResolveParties();
-        for (int i = 0; i < parties.Length; i++)
-        {
-            PartyGridMover party = parties[i];
-            if (party == null || subscribedParties.Contains(party))
-                continue;
+        PartyGridMover party = ResolveParty();
+        if (party == null || subscribedParty == party)
+            return;
 
-            party.GridEntered += HandlePartyGridEntered;
-            subscribedParties.Add(party);
-        }
+        UnsubscribeParties();
+        subscribedParty = party;
+        subscribedParty.GridEntered += HandlePartyGridEntered;
     }
 
     private void UnsubscribeParties()
     {
-        for (int i = 0; i < subscribedParties.Count; i++)
-        {
-            PartyGridMover party = subscribedParties[i];
-            if (party != null)
-                party.GridEntered -= HandlePartyGridEntered;
-        }
+        if (subscribedParty != null)
+            subscribedParty.GridEntered -= HandlePartyGridEntered;
 
-        subscribedParties.Clear();
+        subscribedParty = null;
     }
 
-    private PartyGridMover[] ResolveParties()
+    private PartyGridMover ResolveParty()
     {
-        if (partyRegistry != null && partyRegistry.PartyMovers.Length > 0)
-            return partyRegistry.PartyMovers;
-
-        return FindObjectsByType<PartyGridMover>(FindObjectsSortMode.None);
+        return partyRegistry != null ? partyRegistry.PlayerParty : null;
     }
 
     private void HandlePartyGridEntered(Vector2Int enteredGrid)
@@ -78,14 +65,8 @@ public class PartyRecoveryAreaController : MonoBehaviour
         if (!IsRecoveryCell(enteredGrid))
             return;
 
-        for (int i = 0; i < subscribedParties.Count; i++)
-        {
-            PartyGridMover party = subscribedParties[i];
-            if (party == null || party.GetCurrentGrid() != enteredGrid)
-                continue;
-
-            RecoverParty(party);
-        }
+        if (subscribedParty != null && subscribedParty.GetCurrentGrid() == enteredGrid)
+            RecoverParty(subscribedParty);
     }
 
     private bool IsRecoveryCell(Vector2Int grid)
@@ -134,9 +115,6 @@ public class PartyRecoveryAreaController : MonoBehaviour
             ApplySceneUnitHp(party, unitIndex, healedHp);
             recoveredCount++;
         }
-
-        if (logRecovery && recoveredCount > 0)
-            Debug.Log($"[PartyRecoveryAreaController] Recovered {recoveredCount} unit(s) for party '{party.name}'.", party);
     }
 
     private static IReadOnlyList<int> ResolvePartyUnitIndices(PartyGridMover party)

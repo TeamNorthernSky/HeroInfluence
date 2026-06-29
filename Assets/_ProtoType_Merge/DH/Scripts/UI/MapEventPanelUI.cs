@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Serialization;
 
-// [JC 260514 머지후처리] ResourceManager 직접 의존 폐기 → Game.Economy(=GameManager.Economy) 사용
 // [JC 260514 추가] IsAnyActive 정적 추적 — PartyInfoTrigger 등 외부에서 MapEventPanel 활성 여부 가드용
 public class MapEventPanelUI : MonoBehaviour
 {

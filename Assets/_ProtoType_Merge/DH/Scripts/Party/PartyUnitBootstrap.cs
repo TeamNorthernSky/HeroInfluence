@@ -148,7 +148,6 @@ public class PartyUnitBootstrap : MonoBehaviour
         }
 
         partyRepository.RegisterOrUpdateParty(partyId, partyComposition.UnitIndices);
-        Debug.Log($"Party '{partyId}' initialized from {registeredCount} party unit state(s).", this);
     }
 
     private bool AreAllUnitSlotsEmpty(int slotCount)

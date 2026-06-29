@@ -43,9 +43,7 @@ public class PartyMovePointGaugeManager : MonoBehaviour
         ResolveReferences();
         RemoveMissingParties();
 
-        PartyGridMover[] parties = ResolveExistingParties();
-        for (int i = 0; i < parties.Length; i++)
-            RegisterParty(parties[i]);
+        RegisterParty(ResolveExistingParty());
     }
 
     public void RegisterParty(PartyGridMover party)
@@ -103,12 +101,9 @@ public class PartyMovePointGaugeManager : MonoBehaviour
             UnregisterParty(missingParties[i]);
     }
 
-    private PartyGridMover[] ResolveExistingParties()
+    private PartyGridMover ResolveExistingParty()
     {
-        if (partyRegistry != null && partyRegistry.PartyMovers.Length > 0)
-            return partyRegistry.PartyMovers;
-
-        return FindObjectsByType<PartyGridMover>(FindObjectsSortMode.None);
+        return partyRegistry != null ? partyRegistry.PlayerParty : null;
     }
 
     private void ResolveReferences()

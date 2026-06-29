@@ -13,9 +13,8 @@ public class DHGameEndConditionController : MonoBehaviour
 
     [Header("Options")]
     [SerializeField] private bool evaluateCurrentPositionsOnStart = true;
-    [SerializeField] private bool logGameEnd;
 
-    private readonly List<PartyGridMover> subscribedParties = new List<PartyGridMover>();
+    private PartyGridMover subscribedParty;
     private readonly List<EnemyGridMover> subscribedEnemies = new List<EnemyGridMover>();
     private bool isEnding;
     private Coroutine pendingGameEndCoroutine;
@@ -72,9 +71,6 @@ public class DHGameEndConditionController : MonoBehaviour
         isEnding = true;
         DHGameEndState.BeginEnding();
 
-        if (logGameEnd)
-            Debug.Log($"[DHGameEndConditionController] Game end result: {result}", this);
-
         if (uiController != null)
             uiController.ShowResult(result);
         else
@@ -99,9 +95,6 @@ public class DHGameEndConditionController : MonoBehaviour
 
         isEnding = true;
         DHGameEndState.BeginEnding();
-
-        if (logGameEnd)
-            Debug.Log($"[DHGameEndConditionController] Game end result scheduled: {result}", this);
 
         pendingGameEndCoroutine = StartCoroutine(ShowGameEndAfterDelay(result, delaySeconds));
     }
@@ -156,13 +149,9 @@ public class DHGameEndConditionController : MonoBehaviour
 
     private void EvaluateCurrentPositions()
     {
-        PartyGridMover[] parties = ResolveParties();
-        for (int i = 0; i < parties.Length; i++)
-        {
-            PartyGridMover party = parties[i];
-            if (party != null)
-                HandlePartyGridEntered(party.GetCurrentGrid());
-        }
+        PartyGridMover party = ResolveParty();
+        if (party != null)
+            HandlePartyGridEntered(party.GetCurrentGrid());
 
         if (isEnding)
             return;
@@ -181,30 +170,25 @@ public class DHGameEndConditionController : MonoBehaviour
 
     private void SubscribeParties()
     {
-        PartyGridMover[] parties = ResolveParties();
-        for (int i = 0; i < parties.Length; i++)
-            SubscribeParty(parties[i]);
+        SubscribeParty(ResolveParty());
     }
 
     private void SubscribeParty(PartyGridMover party)
     {
-        if (party == null || subscribedParties.Contains(party))
+        if (party == null || subscribedParty == party)
             return;
 
+        UnsubscribeParties();
         party.GridEntered += HandlePartyGridEntered;
-        subscribedParties.Add(party);
+        subscribedParty = party;
     }
 
     private void UnsubscribeParties()
     {
-        for (int i = 0; i < subscribedParties.Count; i++)
-        {
-            PartyGridMover party = subscribedParties[i];
-            if (party != null)
-                party.GridEntered -= HandlePartyGridEntered;
-        }
+        if (subscribedParty != null)
+            subscribedParty.GridEntered -= HandlePartyGridEntered;
 
-        subscribedParties.Clear();
+        subscribedParty = null;
     }
 
     private void SubscribeEnemies()
@@ -238,12 +222,9 @@ public class DHGameEndConditionController : MonoBehaviour
         subscribedEnemies.Clear();
     }
 
-    private PartyGridMover[] ResolveParties()
+    private PartyGridMover ResolveParty()
     {
-        if (partyRegistry != null && partyRegistry.PartyMovers.Length > 0)
-            return partyRegistry.PartyMovers;
-
-        return FindObjectsByType<PartyGridMover>(FindObjectsSortMode.None);
+        return partyRegistry != null ? partyRegistry.PlayerParty : null;
     }
 
     private void ResolveReferences()

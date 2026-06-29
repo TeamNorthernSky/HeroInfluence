@@ -30,7 +30,8 @@ public class LevelLoader : MonoBehaviour
     [FormerlySerializedAs("mineRoot")]
     [SerializeField] private Transform outpostRoot;
     [SerializeField] private Transform eventRoot;
-    [SerializeField] private Transform stayEnemyRoot;
+    [FormerlySerializedAs("stayEnemyRoot")]
+    [SerializeField] private Transform enemyRoot;
     [SerializeField] private Transform castleRoot;
     [SerializeField] private Transform villainUnionRoot;
 
@@ -92,7 +93,6 @@ public class LevelLoader : MonoBehaviour
         SpawnItems();
         SpawnOutposts();
         SpawnEvents();
-        SpawnStayEnemies();
         SpawnEnemyPlacements();
         SpawnUniqueBuildings();
     }
@@ -281,35 +281,6 @@ public class LevelLoader : MonoBehaviour
         return repository != null && repository.IsEventCompleted(MapProgressKey.ForEvent(grid, MapEventTypeUtility.ToEventKey(eventType)));
     }
 
-    private void SpawnStayEnemies()
-    {
-        var stayEnemyCells = levelData.StayEnemyCells;
-        if (stayEnemyCells.Count == 0)
-            return;
-
-        if (prefabRegistry == null || !prefabRegistry.TryGetStayEnemyPrefab(out EnemyGridMover stayEnemyPrefab))
-        {
-            Debug.LogWarning("LevelLoader could not find a stay enemy prefab.", this);
-            return;
-        }
-
-        Transform parent = GetEnemyRoot(true);
-        for (int i = 0; i < stayEnemyCells.Count; i++)
-        {
-            EnemyGridMover stayEnemy = SpawnComponent(stayEnemyPrefab, stayEnemyCells[i], parent);
-            if (stayEnemy == null)
-                continue;
-
-            stayEnemy.SetBehaviorType(EnemyBehaviorType.StayEnemy);
-
-            if (Application.isPlaying)
-            {
-                EnemyUnitBootstrap enemyBootstrap = stayEnemy.GetComponent<EnemyUnitBootstrap>();
-                enemyBootstrap?.InitializeEnemyUnits();
-            }
-        }
-    }
-
     private void SpawnEnemyPlacements()
     {
         var enemyPlacements = levelData.EnemyPlacements;
@@ -434,7 +405,6 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(GetCastleRoot(false));
         ClearChildren(GetVillainUnionRoot(false));
         ClearLevelSpawnedEnemies();
-        ClearStayEnemies();
         ClearDirectChildrenWithComponent<CastleUnit>();
         ClearDirectChildrenWithComponent<VillainUnionBase>();
     }
@@ -463,34 +433,6 @@ public class LevelLoader : MonoBehaviour
         }
     }
 
-    private void ClearStayEnemies()
-    {
-        Transform enemyRootTransform = GetEnemyRoot(false);
-        if (enemyRootTransform != null && enemyRootTransform != transform)
-            ClearStayEnemyChildren(enemyRootTransform);
-
-        ClearStayEnemyChildren(transform);
-    }
-
-    private void ClearStayEnemyChildren(Transform root)
-    {
-        if (root == null)
-            return;
-
-        for (int i = root.childCount - 1; i >= 0; i--)
-        {
-            Transform child = root.GetChild(i);
-            EnemyGridMover enemy = child.GetComponent<EnemyGridMover>();
-            if (enemy == null || !enemy.IsStayEnemy)
-                continue;
-
-            if (Application.isPlaying)
-                Destroy(child.gameObject);
-            else
-                DestroyImmediate(child.gameObject);
-        }
-    }
-
     private void ClearLevelSpawnedEnemies()
     {
         Transform enemyRootTransform = GetEnemyRoot(false);
@@ -504,6 +446,18 @@ public class LevelLoader : MonoBehaviour
     {
         if (root == null)
             return;
+
+        for (int i = root.childCount - 1; i >= 0; i--)
+        {
+            Transform child = root.GetChild(i);
+            if (child.GetComponent<EnemyGridMover>() == null)
+                continue;
+
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
+        }
 
         LevelSpawnedEnemyMarker[] markers = root.GetComponentsInChildren<LevelSpawnedEnemyMarker>(true);
         for (int i = markers.Length - 1; i >= 0; i--)
@@ -547,7 +501,7 @@ public class LevelLoader : MonoBehaviour
         GetSpawnRoot(ref eventRoot, EventRootName, createIfMissing);
 
     private Transform GetEnemyRoot(bool createIfMissing) =>
-        GetSpawnRoot(ref stayEnemyRoot, EnemyRootName, createIfMissing);
+        GetSpawnRoot(ref enemyRoot, EnemyRootName, createIfMissing);
 
     private Transform GetCastleRoot(bool createIfMissing) =>
         GetSpawnRoot(ref castleRoot, CastleRootName, createIfMissing);
