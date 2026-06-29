@@ -4,6 +4,7 @@ using UnityEngine;
 public static class ExplorationDefeatResultHandler
 {
     private const float DefeatInfluenceRatio = 0.9f;
+    private const float DefeatRecoveryHpRatio = 0.3f;
 
     public static BattleRewardPlan BuildDefeatPlan(CombatContext context)
     {
@@ -51,6 +52,7 @@ public static class ExplorationDefeatResultHandler
             if (unitIndex <= 0 || !repository.TryGetUnit(unitIndex, out UnitPersistentData data) || data == null)
                 continue;
 
+            float recoveredHp = CalculateDefeatRecoveryHp(data);
             repository.UpdateUnitRuntimeState(
                 data.UnitIndex,
                 data.UnitTemplateKey,
@@ -61,13 +63,13 @@ public static class ExplorationDefeatResultHandler
                 data.CurrentWeaponIndex,
                 data.CurrentWeaponStats,
                 data.IngameStats,
-                0f,
+                recoveredHp,
                 data.Exp,
                 data.MaxExp,
                 data.SkillLevel,
                 data.EquippedWeaponInstanceIndex,
                 CalculateDefeatInfluence(data),
-                true);
+                recoveredHp <= 0f);
         }
 
         repository.SaveRuntimeStateToDisk();
@@ -81,6 +83,18 @@ public static class ExplorationDefeatResultHandler
 
         float maxInfluence = Mathf.Max(0f, data.IngameStats.Influence);
         return Mathf.Clamp(data.CurrentInfluence * DefeatInfluenceRatio, 0f, maxInfluence);
+    }
+
+    private static float CalculateDefeatRecoveryHp(UnitPersistentData data)
+    {
+        if (data == null)
+            return 0f;
+
+        float maxHp = Mathf.Max(0f, data.IngameStats.HP);
+        if (maxHp <= 0f)
+            return 0f;
+
+        return Mathf.Clamp(Mathf.Ceil(maxHp * DefeatRecoveryHpRatio), 1f, maxHp);
     }
 
     private static string ResolveUnitDisplayName(UnitPersistentData data)
