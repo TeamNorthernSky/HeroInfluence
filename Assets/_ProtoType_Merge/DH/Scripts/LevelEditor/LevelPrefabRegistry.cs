@@ -24,7 +24,6 @@ public class LevelPrefabRegistry : MonoBehaviour
     [SerializeField] private VillainUnionBase villainUnionBasePrefab;
 
     [Header("Enemy Prefabs")]
-    [SerializeField] private EnemyGridMover stayEnemyPrefab;
     [SerializeField] private EnemyGridMover enemyGroupPrefab;
     [SerializeField] private List<EnemyUnitPrefabEntry> enemyUnitPrefabs = new List<EnemyUnitPrefabEntry>();
 
@@ -101,15 +100,9 @@ public class LevelPrefabRegistry : MonoBehaviour
         return prefab != null;
     }
 
-    public bool TryGetStayEnemyPrefab(out EnemyGridMover prefab)
-    {
-        prefab = stayEnemyPrefab;
-        return prefab != null;
-    }
-
     public bool TryGetEnemyGroupPrefab(out EnemyGridMover prefab)
     {
-        prefab = enemyGroupPrefab != null ? enemyGroupPrefab : stayEnemyPrefab;
+        prefab = enemyGroupPrefab;
         return prefab != null;
     }
 

@@ -1,12 +1,11 @@
 public enum LevelEditorBrushType
 {
-    Obstacle,
-    Item,
-    Outpost,
-    Event,
-    Erase,
-    Castle,
-    VillainUnion,
-    StayEnemy,
-    EnemyGroup
+    Obstacle = 0,
+    Item = 1,
+    Outpost = 2,
+    Event = 3,
+    Erase = 4,
+    Castle = 5,
+    VillainUnion = 6,
+    EnemyGroup = 8
 }

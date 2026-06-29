@@ -104,15 +104,9 @@ public class TurnManager : MonoBehaviour
         if (partyRegistry == null)
             return;
 
-        PartyGridMover[] partyMovers = partyRegistry.PartyMovers;
-        for (int i = 0; i < partyMovers.Length; i++)
-        {
-            PartyGridMover partyMover = partyMovers[i];
-            if (partyMover == null)
-                continue;
-
+        PartyGridMover partyMover = partyRegistry.PlayerParty;
+        if (partyMover != null)
             partyMover.ResetMovePointsToMax();
-        }
     }
 
     private void AdvanceDay()

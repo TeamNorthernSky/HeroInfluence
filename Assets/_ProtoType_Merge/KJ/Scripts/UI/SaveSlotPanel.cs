@@ -15,10 +15,10 @@ public class SaveSlotPanel : MonoBehaviour
 
     [SerializeField] private Button backButton;
 
-    [Header("덮어쓰기 팝업")]
-    [SerializeField] private GameObject overwritePopup;
-    [SerializeField] private Button overwriteConfirmButton;
-    [SerializeField] private Button overwriteCancelButton;
+    //[Header("덮어쓰기 팝업")]
+    //[SerializeField] private GameObject overwritePopup;
+    //[SerializeField] private Button overwriteConfirmButton;
+    //[SerializeField] private Button overwriteCancelButton;
 
     [Header("튜토리얼 팝업")]
     [SerializeField] private GameObject tutorialPopup;
@@ -52,13 +52,13 @@ public class SaveSlotPanel : MonoBehaviour
 
         backButton?.onClick.AddListener(() => gameObject.SetActive(false));
 
-        overwriteConfirmButton?.onClick.AddListener(OnOverwriteConfirm);
-        overwriteCancelButton?.onClick.AddListener(OnOverwriteCancel);
+        //overwriteConfirmButton?.onClick.AddListener(OnOverwriteConfirm);
+        //overwriteCancelButton?.onClick.AddListener(OnOverwriteCancel);
         tutorialYesButton?.onClick.AddListener(OnTutorialYes);
         tutorialNoButton?.onClick.AddListener(OnTutorialNo);
         tutorialCancleButton?.onClick.AddListener(OnTutorialCancle);
 
-        overwritePopup?.SetActive(false);
+        //overwritePopup?.SetActive(false);
         tutorialPopup?.SetActive(false);
     }
 
@@ -102,21 +102,26 @@ public class SaveSlotPanel : MonoBehaviour
 
         SaveSlotData data = SaveSlotRepository.Load(pendingSlotIndex);
         if (data.hasData)
-            overwritePopup?.SetActive(true);
+        {
+            //overwritePopup?.SetActive(true);
+            SceneManager.LoadScene(GameScene);
+        }
         else
+        {
             tutorialPopup?.SetActive(true);
+        }
     }
 
 
     private void OnOverwriteConfirm()
     {
-        overwritePopup?.SetActive(false);
+        //overwritePopup?.SetActive(false);
         tutorialPopup?.SetActive(true);
     }
 
     private void OnOverwriteCancel()
     {
-        overwritePopup?.SetActive(false);
+        //overwritePopup?.SetActive(false);
         pendingSlotIndex = -1;
     }
 

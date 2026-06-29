@@ -8,14 +8,11 @@ public class PartyMovementVisualController : MonoBehaviour
     [Header("References")]
     [SerializeField] private PartyGridMover partyGridMover;
     [SerializeField] private List<UnitVisualMotionController> unitTurnControllers = new List<UnitVisualMotionController>();
-    [SerializeField] private bool logMovementVisualChanges;
 
     private Vector2Int lastDirection;
     private bool hasLastDirection;
     private bool lastMoving;
     private bool hasMovingState;
-
-    private bool ShouldLog => logMovementVisualChanges;
 
     private void Awake()
     {
@@ -36,8 +33,6 @@ public class PartyMovementVisualController : MonoBehaviour
             partyGridMover.MovementStateChanged += HandleMovementStateChanged;
         }
 
-        if (ShouldLog)
-            Debug.Log($"[PartyMovementVisualController] {name} enabled. mover={(partyGridMover != null ? partyGridMover.name : "null")}", this);
     }
 
     private void Start()
@@ -87,32 +82,17 @@ public class PartyMovementVisualController : MonoBehaviour
     private void HandlePathUpdated(List<Vector2Int> remainingPath)
     {
         if (remainingPath == null || remainingPath.Count < 2)
-        {
-            if (ShouldLog)
-                Debug.Log($"[PartyMovementVisualController] {name} path ignored. count={(remainingPath != null ? remainingPath.Count : 0)}", this);
             return;
-        }
 
         Vector2Int direction = remainingPath[1] - remainingPath[0];
         if (direction == Vector2Int.zero)
-        {
-            if (ShouldLog)
-                Debug.Log($"[PartyMovementVisualController] {name} zero direction ignored. from={remainingPath[0]} to={remainingPath[1]}", this);
             return;
-        }
 
         if (hasLastDirection && direction == lastDirection)
-        {
-            if (ShouldLog)
-                Debug.Log($"[PartyMovementVisualController] {name} direction skipped. direction={direction}", this);
             return;
-        }
 
         lastDirection = direction;
         hasLastDirection = true;
-        if (ShouldLog)
-            Debug.Log($"[PartyMovementVisualController] {name} direction={direction} units={unitTurnControllers.Count}", this);
-
         ApplyLookDirection(direction);
     }
 
@@ -132,9 +112,6 @@ public class PartyMovementVisualController : MonoBehaviour
 
     private void HandleMovementStateChanged(bool moving)
     {
-        if (ShouldLog)
-            Debug.Log($"[PartyMovementVisualController] {name} movement event. moving={moving}", this);
-
         ApplyMovingState(moving);
     }
 
@@ -146,9 +123,6 @@ public class PartyMovementVisualController : MonoBehaviour
         lastMoving = moving;
         hasMovingState = true;
         CollectUnitTurnControllersIfEmpty();
-
-        if (ShouldLog)
-            Debug.Log($"[PartyMovementVisualController] {name} moving={moving} units={unitTurnControllers.Count}", this);
 
         for (int i = 0; i < unitTurnControllers.Count; i++)
         {

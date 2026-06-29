@@ -431,7 +431,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 149696674}
-  - component: {fileID: 149696673}
   m_Layer: 0
   m_Name: ResourceSystems
   m_TagString: Untagged
@@ -439,21 +438,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &149696673
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 149696672}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6282fa11bb19a0941bda90065f08c6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gold: 0
-  wood: 0
-  ore: 0
 --- !u!4 &149696674
 Transform:
   m_ObjectHideFlags: 0
@@ -500,7 +484,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   day: 1
   partyRegistry: {fileID: 1919126566}
-  resourceManager: {fileID: 149696673}
 --- !u!4 &207868835
 Transform:
   m_ObjectHideFlags: 0
@@ -1709,7 +1692,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82c393105e213314a8f800c3e1e7281f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resourceManager: {fileID: 149696673}
   goldText: {fileID: 444096205}
   woodText: {fileID: 1085809264}
   oreText: {fileID: 760436001}
@@ -1776,7 +1758,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1870279752}
-  resourceManager: {fileID: 149696673}
   moveSpeed: 4
   arriveThreshold: 0.01
   itemPickupDelay: 0.5
@@ -3514,7 +3495,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1870279752}
-  resourceManager: {fileID: 149696673}
   moveSpeed: 4
   arriveThreshold: 0.01
   itemPickupDelay: 0.5

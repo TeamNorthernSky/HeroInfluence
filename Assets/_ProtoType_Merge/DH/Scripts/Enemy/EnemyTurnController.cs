@@ -66,7 +66,7 @@ public class EnemyTurnController : MonoBehaviour
             turnSessionRepository.RemainingMovePoints > 0)
         {
             EnemyGridMover currentEnemy = FindSessionCurrentEnemy();
-            if (currentEnemy != null && !currentEnemy.IsStayEnemy && !IsEnemyDefeated(currentEnemy))
+            if (currentEnemy != null && !currentEnemy.IsStatic && !IsEnemyDefeated(currentEnemy))
             {
                 yield return ProcessEnemy(currentEnemy, turnSessionRepository.RemainingMovePoints);
                 if (interruptedByCombat)
@@ -99,7 +99,7 @@ public class EnemyTurnController : MonoBehaviour
 
     private IEnumerator ProcessEnemy(EnemyGridMover enemy, int movePoints)
     {
-        if (enemy == null || enemy.IsStayEnemy || movePoints < 0)
+        if (enemy == null || enemy.IsStatic || movePoints < 0)
             yield break;
 
         if (HandleAdjacentOutpostInteraction(enemy))
@@ -295,21 +295,14 @@ public class EnemyTurnController : MonoBehaviour
 
     private PartyGridMover FindAdjacentParty(Vector2Int enemyGrid)
     {
-        PartyGridMover[] parties = partyRegistry.PartyMovers;
-        for (int i = 0; i < parties.Length; i++)
-        {
-            PartyGridMover party = parties[i];
-            if (party == null)
-                continue;
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == null)
+            return null;
 
-            if (DefeatedPartyReturnController.IsPartyWaiting(party))
-                continue;
+        if (DefeatedPartyReturnController.IsPartyWaiting(party))
+            return null;
 
-            if (IsAdjacent(enemyGrid, party.GetCurrentGrid()))
-                return party;
-        }
-
-        return null;
+        return IsAdjacent(enemyGrid, party.GetCurrentGrid()) ? party : null;
     }
 
     private IEnumerator TryBeginCombat(
@@ -514,7 +507,7 @@ public class EnemyTurnController : MonoBehaviour
         for (int i = 0; i < enemies.Count; i++)
         {
             EnemyGridMover enemy = enemies[i];
-            if (enemy == null || enemy.IsStayEnemy || IsEnemyDefeated(enemy))
+            if (enemy == null || enemy.IsStatic || IsEnemyDefeated(enemy))
                 continue;
 
             string placementKey = ResolveEnemyPlacementKey(enemy);
