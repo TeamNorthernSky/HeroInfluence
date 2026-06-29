@@ -10,6 +10,7 @@ using UnityEngine;
 public class HQLobbyUIComposer : MonoBehaviour
 {
     [SerializeField] private LobbyUILayout layout;
+    [SerializeField] private Transform backgroundLayer;
     [SerializeField] private Transform baseLayer;
     [SerializeField] private Transform modalLayer;
     [SerializeField] private Transform tooltipLayer;
@@ -30,7 +31,7 @@ public class HQLobbyUIComposer : MonoBehaviour
             var inst = Instantiate(prefab, transform); // 캔버스 자식
             inst.name = prefab.name;                   // (Clone) 접미 제거 — 검증/탐색 일관
             var placer = inst.GetComponent<LobbyUIModulePlacer>();
-            if (placer != null) placer.Place(baseLayer, modalLayer, tooltipLayer);
+            if (placer != null) placer.Place(backgroundLayer, baseLayer, modalLayer, tooltipLayer);
             spawned.Add(inst);
         }
         done = true;

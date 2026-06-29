@@ -8,12 +8,15 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class LobbyUIModulePlacer : MonoBehaviour
 {
+    [Tooltip("backdrop(배경 프레임 등) — 최하단 Layer_Background로. 보통 UI_Shell만 사용.")]
+    [SerializeField] private Transform backgroundGroup;
     [SerializeField] private Transform buttonsGroup;
     [SerializeField] private Transform modalsGroup;
     [SerializeField] private Transform tooltipsGroup;
 
-    public void Place(Transform baseLayer, Transform modalLayer, Transform tooltipLayer)
+    public void Place(Transform backgroundLayer, Transform baseLayer, Transform modalLayer, Transform tooltipLayer)
     {
+        Move(backgroundGroup, backgroundLayer);
         Move(buttonsGroup, baseLayer);
         Move(modalsGroup, modalLayer);
         Move(tooltipsGroup, tooltipLayer);
