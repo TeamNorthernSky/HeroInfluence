@@ -139,6 +139,14 @@ public class HQBuildModeController : MonoBehaviour
         ClearInfos();
     }
 
+    /// <summary>[JC 260629] ESC 처리 위임용. 빌드모드였으면 나가고 true(=ESC 소비). SystemMenuController가 호출.</summary>
+    public bool HandleEscape()
+    {
+        if (!IsBuildMode) return false;
+        ExitBuildMode();
+        return true;
+    }
+
     private bool IsPointerOverBuildTarget()
     {
         if (RectContainsPointer(hqButton)) return true;
