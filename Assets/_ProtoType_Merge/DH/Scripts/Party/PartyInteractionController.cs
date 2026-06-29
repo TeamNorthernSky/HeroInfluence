@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PartyInteractionController
 {
-    // [JC 260514 머지후처리] GameManager 통합 (a 방식)으로 ResourceManager 직접 의존 폐기. Game.Economy 단축 접근자 사용.
     private readonly GridManager gridManager;
     private readonly CombatEncounterManager combatEncounterManager;
     private readonly CombatPromptService combatPromptService;

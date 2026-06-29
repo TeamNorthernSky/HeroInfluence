@@ -46,8 +46,6 @@ public class InputHandler : MonoBehaviour
     private BattleCharactor hoverTarget = null;
     private Outline hoverTargetOutline;
     private readonly HashSet<BattleCharactor> deathSubscribedUnits = new HashSet<BattleCharactor>();
-    private readonly List<ASBGridCell> highlightedCells = new List<ASBGridCell>();
-    private ASBGridCell highlightedMainTargetCell;
     private bool isProcessingAction;
 
     public bool IsAutoBattleActive { get; set; }
@@ -145,7 +143,7 @@ public class InputHandler : MonoBehaviour
         }
 
         UpdateHoverTarget(actor);
-        if (hoverTarget != null && TryGetPendingSkillData(actor, out SkillData currentSelectedSkill))
+        if (hoverTarget != null && TryResolveSkillData(actor, pendingAction, out SkillData currentSelectedSkill))
         {
             UpdateAoEPreview(hoverTarget, currentSelectedSkill);
         }
@@ -422,53 +420,34 @@ public class InputHandler : MonoBehaviour
 
     private void UpdateAoEPreview(BattleCharactor hoverUnit, SkillData currentSelectedSkill)
     {
-        // 진입 시 이전 프리뷰를 항상 정리하고 다시 그립니다.
-        ClearAoEPreview();
+        ASBGridManager.Instance?.ClearPreviewHighlight();
 
-        if (hoverUnit == null || currentSelectedSkill == null)
-        {
-            return;
-        }
+        if (hoverUnit == null || currentSelectedSkill == null) return;
+        if (!TryGetCurrentActor(out BattleCharactor actor)) return;
+        if (!validTargets.Contains(hoverUnit)) return;
+        if (!TargetingHelper.IsStillValidTarget(actor, pendingAction, hoverUnit)) return;
 
-        if (!TryGetCurrentActor(out BattleCharactor actor))
-        {
-            return;
-        }
+        if (!SkillAreaPreviewHelper.TryGetAreaCells(actor, hoverUnit, currentSelectedSkill,
+                out ASBGridCell centerCell, out List<ASBGridCell> splashCells)) return;
 
-        if (!validTargets.Contains(hoverUnit))
-        {
-            return;
-        }
-
-        // boundary 포함 유효 타겟 판정 재확인
-        if (!TargetingHelper.IsStillValidTarget(actor, pendingAction, hoverUnit))
-        {
-            return;
-        }
-
-        if (!SkillAreaPreviewHelper.TryGetAreaCells(actor, hoverUnit, currentSelectedSkill, out ASBGridCell centerCell, out List<ASBGridCell> splashCells))
-        {
-            return;
-        }
-
-        SkillAreaPreviewHelper.ApplyAreaHighlights(
-            currentSelectedSkill,
-            centerCell,
-            splashCells,
-            highlightedCells,
-            ref highlightedMainTargetCell);
+        ASBGridManager.Instance?.ShowPreviewHighlight(currentSelectedSkill, centerCell, splashCells);
     }
 
-    private bool TryGetPendingSkillData(BattleCharactor actor, out SkillData skillData)
+    private bool TryResolveSkillData(BattleCharactor actor, PendingActionType actionType, out SkillData skillData)
     {
         skillData = null;
-        switch (pendingAction)
+        if (actor == null)
+        {
+            return false;
+        }
+
+        switch (actionType)
         {
             case PendingActionType.ClassSkill:
                 return TryGetSelectedSkill(actor, out skillData);
 
             case PendingActionType.WeaponSkill:
-                if (actor == null || actor.EquippedWeaponData == null)
+                if (actor.EquippedWeaponData == null)
                 {
                     return false;
                 }
@@ -488,7 +467,7 @@ public class InputHandler : MonoBehaviour
             return true;
         }
 
-        if (!TryGetActionSkillData(actor, actionType, out SkillData skillData) || skillData == null)
+        if (!TryResolveSkillData(actor, actionType, out SkillData skillData) || skillData == null)
         {
             return false;
         }
@@ -496,49 +475,9 @@ public class InputHandler : MonoBehaviour
         return actor.CurrentInfluence >= Mathf.Max(0f, skillData.IPCost);
     }
 
-    private bool TryGetActionSkillData(BattleCharactor actor, PendingActionType actionType, out SkillData skillData)
-    {
-        skillData = null;
-        if (actor == null)
-        {
-            return false;
-        }
-
-        switch (actionType)
-        {
-            case PendingActionType.ClassSkill:
-                return TryGetSelectedSkill(actor, out skillData);
-            case PendingActionType.WeaponSkill:
-                if (actor.EquippedWeaponData == null)
-                {
-                    return false;
-                }
-
-                skillData = actor.EquippedWeaponData.ToSkillData();
-                return skillData != null;
-            default:
-                return false;
-        }
-    }
-
     private void ClearAoEPreview()
     {
-        for (int i = 0; i < highlightedCells.Count; i++)
-        {
-            ASBGridCell cell = highlightedCells[i];
-            if (cell != null)
-            {
-                cell.ClearHighlight();
-            }
-        }
-
-        highlightedCells.Clear();
-
-        if (highlightedMainTargetCell != null)
-        {
-            highlightedMainTargetCell.ClearHighlight();
-            highlightedMainTargetCell = null;
-        }
+        ASBGridManager.Instance?.ClearPreviewHighlight();
     }
 
     private BattleCharactor RaycastUnitUnderCursor()

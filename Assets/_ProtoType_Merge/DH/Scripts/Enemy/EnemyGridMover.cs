@@ -5,8 +5,8 @@ using UnityEngine;
 
 public enum EnemyBehaviorType
 {
-    Mobile,
-    StayEnemy
+    Mobile = 0,
+    Static = 1
 }
 
 [RequireComponent(typeof(EnemyIdentity))]
@@ -38,7 +38,7 @@ public class EnemyGridMover : MonoBehaviour
     public string EnemyId => enemyIdentity != null ? enemyIdentity.EnemyId : string.Empty;
     public int MovePointsPerTurn => Mathf.Max(0, movePointsPerTurn);
     public EnemyBehaviorType BehaviorType => behaviorType;
-    public bool IsStayEnemy => behaviorType == EnemyBehaviorType.StayEnemy;
+    public bool IsStatic => behaviorType == EnemyBehaviorType.Static;
     public bool IsMoving => isMoving;
     public EnemyTargetType CurrentTargetType => currentTargetType;
     public Component CurrentTarget => currentTarget;

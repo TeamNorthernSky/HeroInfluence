@@ -16,13 +16,10 @@ public class UnitVisualMotionController : MonoBehaviour
     [SerializeField] private string moveStateName = "MoveForward";
     [SerializeField] private float animationFadeTime = 0.1f;
     [SerializeField] private bool disableRootMotion = true;
-    [SerializeField] private bool logAnimationChanges;
 
     private Quaternion targetRotation;
     private bool hasTargetRotation;
     private bool isMoving;
-
-    private bool ShouldLog => logAnimationChanges;
 
     private void Awake()
     {
@@ -37,13 +34,6 @@ public class UnitVisualMotionController : MonoBehaviour
             hasTargetRotation = true;
         }
 
-        if (ShouldLog)
-        {
-            RuntimeAnimatorController controller = animator != null ? animator.runtimeAnimatorController : null;
-            Debug.Log(
-                $"[UnitVisualMotionController] {name} awake. visualRoot={(visualRoot != null ? visualRoot.name : "null")} animator={(animator != null ? animator.name : "null")} controller={(controller != null ? controller.name : "null")}",
-                this);
-        }
     }
 
     private void Update()
@@ -80,18 +70,13 @@ public class UnitVisualMotionController : MonoBehaviour
     public void SetMoving(bool moving)
     {
         if (isMoving == moving)
-        {
-            if (ShouldLog)
-                Debug.Log($"[UnitVisualMotionController] {name} SetMoving skipped. moving={moving}", this);
             return;
-        }
 
         isMoving = moving;
         ResolveAnimatorIfNeeded();
         if (animator == null)
         {
-            if (ShouldLog)
-                Debug.LogWarning($"[UnitVisualMotionController] {name} has no Animator. moving={moving}", this);
+            Debug.LogWarning($"[UnitVisualMotionController] {name} has no Animator. moving={moving}", this);
             return;
         }
 
@@ -101,17 +86,8 @@ public class UnitVisualMotionController : MonoBehaviour
         string stateName = moving ? moveStateName : idleStateName;
         if (string.IsNullOrWhiteSpace(stateName))
         {
-            if (ShouldLog)
-                Debug.LogWarning($"[UnitVisualMotionController] {name} animation state name is empty. moving={moving}", this);
+            Debug.LogWarning($"[UnitVisualMotionController] {name} animation state name is empty. moving={moving}", this);
             return;
-        }
-
-        if (ShouldLog)
-        {
-            RuntimeAnimatorController controller = animator.runtimeAnimatorController;
-            Debug.Log(
-                $"[UnitVisualMotionController] {name} CrossFade state='{stateName}' moving={moving} animator='{animator.name}' controller='{(controller != null ? controller.name : "null")}'",
-                this);
         }
 
         animator.CrossFade(stateName, Mathf.Max(0f, animationFadeTime));

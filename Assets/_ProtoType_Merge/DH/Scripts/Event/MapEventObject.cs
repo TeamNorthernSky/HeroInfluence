@@ -60,14 +60,8 @@ public class MapEventObject : MonoBehaviour
             return false;
 
         MarkEventCompleted();
-        ExecuteEvent();
         Destroy(gameObject);
         return true;
-    }
-
-    private void ExecuteEvent()
-    {
-        Debug.Log($"[MapEvent] Executed event '{EventKey}'. Consumed {requireAmount} {requireResource}.", this);
     }
 
     private void MarkEventCompleted()

@@ -10,8 +10,8 @@ public class PartyFogRevealer : MonoBehaviour
     [SerializeField] private bool useRoundedMask = true;
     [SerializeField] private bool revealCurrentPositionsOnEnable = true;
 
-    private readonly HashSet<PartyGridMover> subscribedMovers = new HashSet<PartyGridMover>();
     private readonly List<Vector2Int> revealBuffer = new List<Vector2Int>(81);
+    private PartyGridMover subscribedMover;
     private Coroutine initialRevealCoroutine;
 
     private void OnEnable()
@@ -39,15 +39,9 @@ public class PartyFogRevealer : MonoBehaviour
         if (fogGridManager == null || partyRegistry == null)
             return;
 
-        PartyGridMover[] movers = partyRegistry.PartyMovers;
-        for (int i = 0; i < movers.Length; i++)
-        {
-            PartyGridMover mover = movers[i];
-            if (mover == null)
-                continue;
-
+        PartyGridMover mover = partyRegistry.PlayerParty;
+        if (mover != null)
             RevealAround(mover.GetCurrentGrid());
-        }
     }
 
     public void RevealAround(Vector2Int centerGrid)
@@ -89,29 +83,21 @@ public class PartyFogRevealer : MonoBehaviour
         if (partyRegistry == null)
             return;
 
-        PartyGridMover[] movers = partyRegistry.PartyMovers;
-        for (int i = 0; i < movers.Length; i++)
-        {
-            PartyGridMover mover = movers[i];
-            if (mover == null || subscribedMovers.Contains(mover))
-                continue;
+        PartyGridMover mover = partyRegistry.PlayerParty;
+        if (mover == null || subscribedMover == mover)
+            return;
 
-            mover.GridEntered += HandlePartyGridEntered;
-            subscribedMovers.Add(mover);
-        }
+        UnsubscribeFromRegisteredParties();
+        subscribedMover = mover;
+        subscribedMover.GridEntered += HandlePartyGridEntered;
     }
 
     private void UnsubscribeFromRegisteredParties()
     {
-        foreach (PartyGridMover mover in subscribedMovers)
-        {
-            if (mover == null)
-                continue;
+        if (subscribedMover != null)
+            subscribedMover.GridEntered -= HandlePartyGridEntered;
 
-            mover.GridEntered -= HandlePartyGridEntered;
-        }
-
-        subscribedMovers.Clear();
+        subscribedMover = null;
     }
 
     private void HandlePartyGridEntered(Vector2Int currentGrid)

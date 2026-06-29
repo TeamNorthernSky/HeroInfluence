@@ -25,19 +25,9 @@ public class PartySelectionController
 
     public void Initialize()
     {
-        PartyGridMover[] partyMovers = GetPartyMovers();
-        if (partyMovers.Length == 0)
-            return;
-
-        for (int i = 0; i < partyMovers.Length; i++)
-        {
-            PartyGridMover mover = partyMovers[i];
-            if (!CanSelectMover(mover))
-                continue;
-
+        PartyGridMover mover = GetPlayerParty();
+        if (CanSelectMover(mover))
             SetActiveMoverInternal(mover, false);
-            return;
-        }
     }
 
     public void Dispose()
@@ -97,14 +87,7 @@ public class PartySelectionController
 
     private bool IsRegisteredMover(PartyGridMover mover)
     {
-        PartyGridMover[] partyMovers = GetPartyMovers();
-        for (int i = 0; i < partyMovers.Length; i++)
-        {
-            if (partyMovers[i] == mover)
-                return true;
-        }
-
-        return false;
+        return mover != null && partyRegistry != null && partyRegistry.PlayerParty == mover;
     }
 
     private bool CanSelectMover(PartyGridMover mover)
@@ -115,9 +98,9 @@ public class PartySelectionController
             && IsRegisteredMover(mover);
     }
 
-    private PartyGridMover[] GetPartyMovers()
+    private PartyGridMover GetPlayerParty()
     {
-        return partyRegistry != null ? partyRegistry.PartyMovers : Array.Empty<PartyGridMover>();
+        return partyRegistry != null ? partyRegistry.PlayerParty : null;
     }
 
     private void SetActiveMoverInternal(PartyGridMover mover, bool notifyChange)

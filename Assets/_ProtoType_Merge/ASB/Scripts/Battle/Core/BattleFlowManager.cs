@@ -59,16 +59,7 @@ public class BattleFlowManager : MonoBehaviour
     private bool battleEndRequested;
     private BattleResult requestedBattleResult = BattleResult.Defeat;
 
-    private bool IsBattleOver
-    {
-        get
-        {
-            List<BattleCharactor> aliveUnits = participants.Where(u => u != null && !u.IsDead).ToList();
-            bool anyPlayerAlive = aliveUnits.Exists(u => u.IsPlayer);
-            bool anyEnemyAlive = aliveUnits.Exists(u => !u.IsPlayer);
-            return !anyEnemyAlive || !anyPlayerAlive;
-        }
-    }
+    private bool IsBattleOver => !CheckSideAlive(true) || !CheckSideAlive(false);
 
     public BattleCharactor CurrentUnit { get; private set; }
     public IReadOnlyList<BattleCharactor> Participants => participants;
@@ -116,6 +107,7 @@ public class BattleFlowManager : MonoBehaviour
         roundIndex = 0;
         battleEnded = false;
         battleEndRequested = false;
+        requestedBattleResult = BattleResult.Defeat;
         RefreshQueue();
 
         Debug.Log($"[BattleFlow] Initialize 완료. participants={participants.Count}, queue={turnQueue.Count}");
@@ -235,15 +227,7 @@ public class BattleFlowManager : MonoBehaviour
             }
         }
 
-        List<BattleCharactor> aliveUnits = participants.Where(u => u != null && !u.IsDead).ToList();
-        if (aliveUnits.Count == 0)
-        {
-            return null;
-        }
-
-        bool anyPlayerAlive = aliveUnits.Exists(u => u.IsPlayer);
-        bool anyEnemyAlive = aliveUnits.Exists(u => !u.IsPlayer);
-        if (!anyPlayerAlive || !anyEnemyAlive)
+        if (!CheckSideAlive(true) || !CheckSideAlive(false))
         {
             return null;
         }
@@ -287,6 +271,51 @@ public class BattleFlowManager : MonoBehaviour
         playerActionResolved = true;
     }
 
+    private bool CheckSideAlive(bool isPlayer)
+    {
+        for (int i = 0; i < participants.Count; i++)
+        {
+            BattleCharactor unit = participants[i];
+            if (unit != null && !unit.IsDead && unit.IsPlayer == isPlayer)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool ShouldEndBattle()
+    {
+        return battleEnded || battleEndRequested || IsBattleOver;
+    }
+
+    private void CleanupTurn(BattleCharactor unit)
+    {
+        SetOutline(unit, false);
+        CurrentUnit = null;
+        EndTurnSelectionCleanup();
+    }
+
+    private void HandleBattleCompletion()
+    {
+        if (battleEnded) return;
+
+        if (battleEndRequested)
+        {
+            CompleteBattle(requestedBattleResult);
+            return;
+        }
+
+        if (TryEvaluateBattleResult(out BattleResult result))
+        {
+            CompleteBattle(result);
+            return;
+        }
+
+        CompleteBattle(BattleResult.Defeat);
+    }
+
     private void CompleteBattle(BattleResult result)
     {
         if (battleEnded)
@@ -301,22 +330,13 @@ public class BattleFlowManager : MonoBehaviour
 
     private IEnumerator BattleLoop()
     {
-        while (true)
+        while (!ShouldEndBattle())
         {
-            if (battleEndRequested || battleEnded)
-            {
-                yield break;
-            }
-
             BattleCharactor unit = GetNextUnit();
             if (unit == null)
             {
-                if (TryEvaluateBattleResult(out BattleResult result))
-                {
-                    CompleteBattle(result);
-                }
-                Log("[BattleFlow] 전투 종료(생존 진영 없음 또는 참가자 전멸). BattleLoop 종료.");
-                yield break;
+                Log("[BattleFlow] GetNextUnit() == null. BattleLoop 종료.");
+                break;
             }
 
             CurrentUnit = unit;
@@ -330,9 +350,7 @@ public class BattleFlowManager : MonoBehaviour
             CurrentUnit.ProcessTurnStartStatusEffects();
             if (CurrentUnit == null || CurrentUnit.IsDead)
             {
-                SetOutline(unit, false);
-                CurrentUnit = null;
-                EndTurnSelectionCleanup();
+                CleanupTurn(unit);
                 yield return null;
                 continue;
             }
@@ -341,9 +359,7 @@ public class BattleFlowManager : MonoBehaviour
             {
                 Debug.Log($"[Stun] {CurrentUnit.UnitName}은(는) 기절 상태여서 턴을 건너뜁니다!");
                 CurrentUnit.AdvanceStatusEffectDuration();
-                SetOutline(unit, false);
-                CurrentUnit = null;
-                EndTurnSelectionCleanup();
+                CleanupTurn(unit);
                 yield return null;
                 continue;
             }
@@ -356,56 +372,50 @@ public class BattleFlowManager : MonoBehaviour
                     playerActionResolved
                     || CurrentUnit == null
                     || CurrentUnit.IsDead
-                    || IsBattleOver);
+                    || ShouldEndBattle());
 
                 Debug.Log($"[BattleFlow] 플레이어 턴 종료: resolved={playerActionResolved}, currentUnit={CurrentUnit?.UnitName ?? "null"}, isDead={CurrentUnit?.IsDead}, battleOver={IsBattleOver}");
 
-                if (battleEndRequested)
+                if (ShouldEndBattle())
                 {
-                    CompleteBattle(requestedBattleResult);
-                    yield break;
-                }
-
-                if (TryEndBattleImmediately())
-                {
-                    yield break;
+                    CleanupTurn(unit);
+                    break;
                 }
             }
             else
             {
                 yield return RunEnemyTurn(CurrentUnit);
-                if (TryEndBattleImmediately())
+
+                if (ShouldEndBattle())
                 {
-                    yield break;
+                    CleanupTurn(unit);
+                    break;
                 }
             }
 
-            SetOutline(unit, false);
+            CleanupTurn(unit);
             if (!unit.IsDead)
             {
                 unit.AdvanceStatusEffectDuration();
             }
 
-            CurrentUnit = null;
-            EndTurnSelectionCleanup();
             yield return null;
         }
+
+        HandleBattleCompletion();
     }
 
     private bool TryEvaluateBattleResult(out BattleResult result)
     {
         result = BattleResult.Defeat;
-        List<BattleCharactor> aliveUnits = participants.Where(u => u != null && !u.IsDead).ToList();
-        bool anyPlayerAlive = aliveUnits.Exists(u => u.IsPlayer);
-        bool anyEnemyAlive = aliveUnits.Exists(u => !u.IsPlayer);
 
-        if (!anyEnemyAlive)
+        if (!CheckSideAlive(false))
         {
             result = BattleResult.Victory;
             return true;
         }
 
-        if (!anyPlayerAlive)
+        if (!CheckSideAlive(true))
         {
             result = BattleResult.Defeat;
             return true;
@@ -725,43 +735,21 @@ public class BattleFlowManager : MonoBehaviour
         outline.OutlineMode = visible ? Outline.Mode.OutlineVisible : Outline.Mode.OutlineHidden;
     }
 
-    private readonly List<GridCellRef> _highlightedCells = new List<GridCellRef>();
-    private GridCellRef _highlightedMainTargetCell;
-
     /// <summary>자동전투·적 공격 시 스킬 공격 범위 발판을 표시합니다.</summary>
     public void ShowTargetHighlight(BattleCharactor caster, BattleCharactor target, SkillData skill)
     {
-        ClearTargetHighlight();
-        if (target == null)
-        {
-            return;
-        }
-
-        GridManagerRef gridManager = GridManagerRef.Instance;
-        if (gridManager == null)
-        {
-            return;
-        }
+        GridManagerRef.Instance?.ClearPreviewHighlight();
+        if (target == null) return;
 
         if (!SkillAreaPreviewHelper.TryGetAreaCells(caster, target, skill, out GridCellRef mainCell, out List<GridCellRef> splashCells))
         {
-            GridCellRef fallbackCell = target.OccupiedCell ?? gridManager.FindCellByUnit(target);
-            if (fallbackCell == null)
-            {
-                return;
-            }
-
-            fallbackCell.SetMainTargetHighlight();
-            _highlightedMainTargetCell = fallbackCell;
+            GridCellRef fallbackCell = target.OccupiedCell ?? GridManagerRef.Instance?.FindCellByUnit(target);
+            if (fallbackCell == null) return;
+            GridManagerRef.Instance?.ShowPreviewHighlight(null, fallbackCell, null);
             return;
         }
 
-        SkillAreaPreviewHelper.ApplyAreaHighlights(
-            skill,
-            mainCell,
-            splashCells,
-            _highlightedCells,
-            ref _highlightedMainTargetCell);
+        GridManagerRef.Instance?.ShowPreviewHighlight(skill, mainCell, splashCells);
     }
 
     /// <summary>스킬 정보 없이 선택 대상 1칸만 표시합니다.</summary>
@@ -773,22 +761,7 @@ public class BattleFlowManager : MonoBehaviour
     /// <summary>타겟 발판 하이라이트 제거.</summary>
     public void ClearTargetHighlight()
     {
-        for (int i = 0; i < _highlightedCells.Count; i++)
-        {
-            GridCellRef cell = _highlightedCells[i];
-            if (cell != null)
-            {
-                cell.ClearHighlight();
-            }
-        }
-
-        _highlightedCells.Clear();
-
-        if (_highlightedMainTargetCell != null)
-        {
-            _highlightedMainTargetCell.ClearHighlight();
-            _highlightedMainTargetCell = null;
-        }
+        GridManagerRef.Instance?.ClearPreviewHighlight();
     }
 
     private string GetUnitLabel(BattleCharactor unit)

@@ -59,6 +59,10 @@ public class GridManager : MonoBehaviour
     [SerializeField, Range(0.1f, 1f)] private float obstacleCheckFill = 0.9f;
 
     [Header("Debug Gizmos")]
+    [SerializeField] private bool drawDebugGizmos = true;
+    [SerializeField] private bool drawGizmosOnlyWhenSelected = false;
+    [SerializeField] private bool drawDebugCenterSpheres = true;
+    [SerializeField] private bool drawDebugCellOutlines = true;
     [SerializeField] private int debugQMin = -15;
     [SerializeField] private int debugQMax = 15;
     [SerializeField] private int debugRMin = -15;
@@ -781,7 +785,29 @@ public class GridManager : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (drawGizmosOnlyWhenSelected)
+            return;
+
+        DrawDebugGizmos();
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (!drawGizmosOnlyWhenSelected)
+            return;
+
+        DrawDebugGizmos();
+    }
+
+    private void DrawDebugGizmos()
+    {
         if (cellSize <= 0f)
+            return;
+
+        if (!drawDebugGizmos)
+            return;
+
+        if (!drawDebugCenterSpheres && !drawDebugCellOutlines)
             return;
 
         float y = GetLandSurfaceY();
@@ -793,10 +819,14 @@ public class GridManager : MonoBehaviour
                 Vector3 center = GridToWorldCenter(new Vector2Int(q, r));
                 center.y = y;
 
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawSphere(center, debugCenterSphereRadius);
+                if (drawDebugCenterSpheres)
+                {
+                    Gizmos.color = Color.yellow;
+                    Gizmos.DrawSphere(center, debugCenterSphereRadius);
+                }
 
-                DrawSquareOutlineGizmo(center);
+                if (drawDebugCellOutlines)
+                    DrawSquareOutlineGizmo(center);
             }
         }
     }

@@ -26,6 +26,40 @@ public class BattleManager : MonoBehaviour
 
     private const float AnimEventTimeoutSeconds = 2f;
 
+    private readonly struct SkillExecutionOptions
+    {
+        public readonly float ExtraMultiplier;
+        public readonly bool IsCounterAttack;
+        public readonly bool CanTriggerCounter;
+
+        public SkillExecutionOptions(float extraMultiplier, bool isCounterAttack, bool canTriggerCounter)
+        {
+            ExtraMultiplier = extraMultiplier;
+            IsCounterAttack = isCounterAttack;
+            CanTriggerCounter = canTriggerCounter;
+        }
+
+        public static SkillExecutionOptions Normal =>
+            new SkillExecutionOptions(1f, false, true);
+
+        public static SkillExecutionOptions CounterDefault =>
+            new SkillExecutionOptions(0.5f, true, false);
+    }
+
+    private readonly struct CounterAttackRequest
+    {
+        public readonly BattleCharactor Defender;
+        public readonly BattleCharactor OriginalCaster;
+        public readonly SkillData Skill;
+
+        public CounterAttackRequest(BattleCharactor defender, BattleCharactor originalCaster, SkillData skill)
+        {
+            Defender = defender;
+            OriginalCaster = originalCaster;
+            Skill = skill;
+        }
+    }
+
     [Header("Battle Speed")]
     [SerializeField] private float _currentBattleSpeed = 1.0f;
     [SerializeField] private BattleFlowManager battleFlowManager;
@@ -193,7 +227,7 @@ public class BattleManager : MonoBehaviour
         };
     }
 
-    public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null, bool isCounter = false)
+    public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null)
     {
         if (result == null || !result.Success)
         {
@@ -317,36 +351,10 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        if (!isCounter && result.DamageContexts != null && result.DamageContexts.Any(ctx => ctx != null && ctx.CanTriggerCounter))
+        var counterRequests = CollectCounterAttackRequests(result);
+        if (counterRequests.Count > 0)
         {
-            BattleCharactor originalCaster = result.DamageContexts[0].Caster;
-            var counterCandidates = result.DamageContexts
-                .Where(ctx => ctx != null && ctx.CanTriggerCounter)
-                .Select(ctx => ctx.Target)
-                .Distinct()
-                .Where(t => t != null && !t.IsDead && originalCaster != null && t.IsPlayer != originalCaster.IsPlayer)
-                .ToList();
-
-            foreach (BattleCharactor defender in counterCandidates)
-            {
-                if (originalCaster == null || originalCaster.IsDead)
-                {
-                    break;
-                }
-
-                if (!CombatCalculator.RollCounter(defender))
-                {
-                    continue;
-                }
-
-                Debug.Log($"[Combat] {defender.UnitName} 근접 반격 발동! (계수 0.5)");
-                SkillData counterSkill = defender.SelectedSkillData;
-                if (counterSkill != null)
-                {
-                    bool counterDone = false;
-                    yield return StartCoroutine(ExecuteGridSkill(defender, originalCaster, counterSkill, success => counterDone = success, isCounterAttack: true));
-                }
-            }
+            yield return StartCoroutine(FlushCounterAttacks(counterRequests));
         }
 
         result.OnPostExecution?.Invoke(totalDamageDealt);
@@ -375,7 +383,7 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>ClassSkillSheet 행의 skillValue(예: 1.2 = 120%)로 그리드 스킬 피해를 계산합니다.</summary>
-    public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted = null, bool isCounterAttack = false)
+    public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted = null)
     {
         if (classSkillRow == null || actor == null || target == null)
         {
@@ -402,35 +410,152 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        // 반격은 Influence 소모 없이 실행, 일반 스킬은 Influence 확인
-        if (!isCounterAttack && !TryConsumeSkillInfluence(actor, classSkillRow))
+        if (!TryConsumeSkillInfluence(actor, classSkillRow))
         {
             Debug.LogWarning("[BattleManager] Influence가 부족하여 스킬을 사용할 수 없습니다.");
             onCompleted?.Invoke(false);
             yield break;
         }
 
+        SkillExecutionResult result;
         if (SkillExecutionRegistry.TryGetHandler(classSkillRow.skillIndex, out ISkillEffectHandler custom))
         {
-            SkillExecutionResult result = custom.Execute(actor, target, classSkillRow, null);
+            result = custom.Execute(actor, target, classSkillRow, null);
             result.Handler = custom;
-            bool executedByCustom = false;
-            yield return StartCoroutine(ApplySkillExecutionResultRoutine(result, success => executedByCustom = success));
-            if (executedByCustom)
-            {
-                OnActionExecuted?.Invoke(GetSkillDisplayName(classSkillRow));
-            }
-            onCompleted?.Invoke(executedByCustom);
-            yield break;
+        }
+        else
+        {
+            result = BuildDefaultSkillResult(actor, target, classSkillRow, SkillExecutionOptions.Normal);
         }
 
-        bool executedByDefault = false;
-        yield return StartCoroutine(ExecuteDefaultSkill(actor, target, classSkillRow, success => executedByDefault = success, isCounterAttack ? 0.5f : 1f));
-        if (executedByDefault)
+        bool executed = false;
+        yield return StartCoroutine(ApplySkillExecutionResultRoutine(result, success => executed = success));
+
+        if (executed)
         {
             OnActionExecuted?.Invoke(GetSkillDisplayName(classSkillRow));
         }
-        onCompleted?.Invoke(executedByDefault);
+
+        onCompleted?.Invoke(executed);
+    }
+
+    private List<CounterAttackRequest> CollectCounterAttackRequests(SkillExecutionResult result)
+    {
+        var requests = new List<CounterAttackRequest>();
+        if (result.DamageContexts == null) return requests;
+
+        BattleCharactor originalCaster = result.DamageContexts
+            .FirstOrDefault(ctx => ctx?.Caster != null)
+            ?.Caster;
+        if (originalCaster == null) return requests;
+
+        var candidates = result.DamageContexts
+            .Where(ctx => ctx != null && ctx.CanTriggerCounter)
+            .Select(ctx => ctx.Target)
+            .Distinct()
+            .Where(t => t != null && !t.IsDead && t.IsPlayer != originalCaster.IsPlayer);
+
+        foreach (BattleCharactor defender in candidates)
+        {
+            SkillData skill = defender.SelectedSkillData;
+            if (skill == null) continue;
+
+            if (skill.classSkillEffect == ClassSkillEffect_Heal
+                || skill.classSkillEffect == ClassSkillEffect_Revive
+                || skill.classSkillEffect == ClassSkillEffect_Buff)
+            {
+                Debug.Log($"[Combat] {defender.UnitName} 반격 스킬({skill.skillIndex})이 데미지 스킬이 아니어서 반격 제외");
+                continue;
+            }
+
+            if (!CombatCalculator.RollCounter(defender)) continue;
+
+            requests.Add(new CounterAttackRequest(defender, originalCaster, skill));
+        }
+
+        return requests;
+    }
+
+    private IEnumerator ExecuteCounterSkill(CounterAttackRequest req)
+    {
+        if (req.Skill == null
+            || req.Defender == null || req.Defender.IsDead
+            || req.OriginalCaster == null || req.OriginalCaster.IsDead)
+        {
+            yield break;
+        }
+
+        if (req.Skill.classSkillEffect == ClassSkillEffect_Heal
+            || req.Skill.classSkillEffect == ClassSkillEffect_Revive
+            || req.Skill.classSkillEffect == ClassSkillEffect_Buff)
+        {
+            yield break;
+        }
+
+        Debug.Log($"[Combat] {req.Defender.UnitName} 근접 반격 발동! (계수 0.5)");
+
+        // 반격은 커스텀 핸들러를 무시하고 기본 데미지 경로만 사용합니다.
+        // Influence 소모 없음, 데미지 계수 0.5, 반격은 반격을 유발하지 않습니다.
+        SkillExecutionResult result = BuildDefaultSkillResult(
+            req.Defender,
+            req.OriginalCaster,
+            req.Skill,
+            SkillExecutionOptions.CounterDefault);
+
+        bool executed = false;
+        yield return StartCoroutine(ApplySkillExecutionResultRoutine(result, success => executed = success));
+
+        if (!executed)
+        {
+            Debug.LogWarning($"[BattleManager] {req.Defender.UnitName} 반격 실행 실패.");
+        }
+    }
+
+    private IEnumerator FlushCounterAttacks(List<CounterAttackRequest> requests)
+    {
+        foreach (CounterAttackRequest req in requests)
+        {
+            if (req.OriginalCaster == null || req.OriginalCaster.IsDead) break;
+            if (req.Defender == null || req.Defender.IsDead) continue;
+
+            yield return StartCoroutine(ExecuteCounterSkill(req));
+        }
+    }
+
+    private SkillExecutionResult BuildDefaultSkillResult(
+        BattleCharactor actor,
+        BattleCharactor target,
+        SkillData skillData,
+        SkillExecutionOptions options)
+    {
+        float multiplier = Mathf.Max(0.01f, skillData.skillValue) * options.ExtraMultiplier;
+
+        if (skillData.classSkillEffect == ClassSkillEffect_Heal)
+        {
+            float healAmount = Mathf.Max(0f, actor.FinalStats.Atk * multiplier);
+            return SkillExecutionResult
+                .SuccessResult()
+                .AddHeal(actor, target, healAmount, skillData.skillIndex);
+        }
+
+        var context = new DamageContext
+        {
+            Caster = actor,
+            Target = target,
+            SkillMultiplier = multiplier,
+            SkillIndex = skillData.skillIndex,
+            IsRangedAttack = IsRangedSkill(actor, skillData),
+            CanTriggerCounter = options.CanTriggerCounter
+                && !options.IsCounterAttack
+                && IsMeleeSkillRange(actor, skillData)
+                && target.IsInFrontRow,
+            IsCounterAttack = options.IsCounterAttack
+        };
+        context.IsCritical = CombatCalculator.RollCritical(context);
+
+        return SkillExecutionResult
+            .SuccessResult()
+            .AddDamage(context);
     }
 
     private static bool TryConsumeSkillInfluence(BattleCharactor actor, SkillData skillData)
@@ -445,96 +570,6 @@ public class BattleManager : MonoBehaviour
         return actor.TryConsumeInfluence(cost);
     }
 
-    /// <summary>레지스트리에 없는 일반 스킬: 데이터만으로 힐/딜 처리.</summary>
-    private IEnumerator ExecuteDefaultSkill(BattleCharactor actor, BattleCharactor target, SkillData skillData, Action<bool> onCompleted = null, float extraMultiplier = 1f)
-    {
-        if (skillData == null || actor == null || target == null)
-        {
-            onCompleted?.Invoke(false);
-            yield break;
-        }
-
-        if (actor.IsDead)
-        {
-            onCompleted?.Invoke(false);
-            yield break;
-        }
-
-        if (target.IsDead && skillData.classSkillEffect != ClassSkillEffect_Revive)
-        {
-            onCompleted?.Invoke(false);
-            yield break;
-        }
-
-        float multiplier = Mathf.Max(0.01f, skillData.skillValue) * extraMultiplier;
-
-        if (skillData.classSkillEffect == ClassSkillEffect_Heal)
-        {
-            float heal = Mathf.Max(0f, actor.FinalStats.Atk * multiplier);
-            SkillData healAnimSkill = ResolveSkillAnimationData(skillData);
-            yield return RunSkillSequenceCore(
-                actor,
-                target,
-                healAnimSkill,
-                playBasicAttackAnimation: false,
-                playTargetHitAnimation: false,
-                () =>
-                {
-                    target.ApplyHeal(heal);
-                    return new BattleHitResult { Target = target, Damage = heal, IsHeal = true };
-                });
-            Debug.Log($"[Battle] GridHeal: {GetLabel(actor)} -> {GetLabel(target)} heal={heal:F1} (×{multiplier:0.##})");
-            onCompleted?.Invoke(true);
-            yield break;
-        }
-
-        if (skillData.classSkillEffect == ClassSkillEffect_Buff)
-        {
-            SkillData buffAnimSkill = ResolveSkillAnimationData(skillData);
-            yield return RunSkillSequenceCore(
-                actor,
-                target,
-                buffAnimSkill,
-                playBasicAttackAnimation: false,
-                playTargetHitAnimation: false,
-                () =>
-                {
-                    ApplyBuff(actor, target, skillData);
-                    return BattleHitResult.Empty(target);
-                });
-            onCompleted?.Invoke(true);
-            yield break;
-        }
-
-        var context = new DamageContext
-        {
-            Caster = actor,
-            Target = target,
-            SkillMultiplier = multiplier,
-            SkillIndex = skillData.skillIndex,
-            IsRangedAttack = IsRangedSkill(actor, skillData),
-            CanTriggerCounter = IsMeleeSkillRange(actor, skillData) && target.IsInFrontRow && extraMultiplier >= 1f,
-            IsCounterAttack = extraMultiplier < 1f
-        };
-        context.IsCritical = CombatCalculator.RollCritical(context);
-
-        float dealt = 0f;
-        SkillData damageAnimSkill = ResolveSkillAnimationData(skillData);
-        yield return RunSkillSequenceCore(
-            actor,
-            target,
-            damageAnimSkill,
-            playBasicAttackAnimation: false,
-            playTargetHitAnimation: true,
-            () => { BattleHitResult r = ApplyDamage(context); dealt = r?.Damage ?? 0f; return r; });
-
-        if (context.DelayAfter > 0f)
-        {
-            yield return WaitForBattleSeconds(context.DelayAfter);
-        }
-        Debug.Log($"[Battle] GridSkill: {GetLabel(actor)} -> {GetLabel(target)} dmg={dealt:F1} (×{multiplier:0.##})");
-        onCompleted?.Invoke(true);
-    }
 
     private static void ApplyBuff(BattleCharactor actor, BattleCharactor target, SkillData skillData)
     {

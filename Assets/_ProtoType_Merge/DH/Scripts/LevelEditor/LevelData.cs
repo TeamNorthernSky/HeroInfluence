@@ -8,7 +8,6 @@ using UnityEngine.Serialization;
     menuName = "DH Work/Level Editor/Level Data")]
 public class LevelData : ScriptableObject
 {
-    private static readonly IReadOnlyList<Vector2Int> EmptyStayEnemyCells = Array.Empty<Vector2Int>();
     private static readonly IReadOnlyList<EnemyPlacementData> EmptyEnemyPlacements = Array.Empty<EnemyPlacementData>();
 
     [Header("Meta")]
@@ -25,7 +24,6 @@ public class LevelData : ScriptableObject
     [FormerlySerializedAs("minePlacements")]
     [SerializeField] private List<OutpostPlacementData> outpostPlacements = new List<OutpostPlacementData>();
     [SerializeField] private List<EventPlacementData> eventPlacements = new List<EventPlacementData>();
-    [SerializeField] private List<Vector2Int> stayEnemyCells = new List<Vector2Int>();
     [SerializeField] private List<EnemyPlacementData> enemyPlacements = new List<EnemyPlacementData>();
     [SerializeField] private UniqueBuildingPlacementData castlePlacement;
     [SerializeField] private UniqueBuildingPlacementData villainUnionPlacement;
@@ -40,7 +38,6 @@ public class LevelData : ScriptableObject
     public IReadOnlyList<ItemPlacementData> ItemPlacements => itemPlacements;
     public IReadOnlyList<OutpostPlacementData> OutpostPlacements => outpostPlacements;
     public IReadOnlyList<EventPlacementData> EventPlacements => eventPlacements;
-    public IReadOnlyList<Vector2Int> StayEnemyCells => stayEnemyCells != null ? stayEnemyCells : EmptyStayEnemyCells;
     public IReadOnlyList<EnemyPlacementData> EnemyPlacements => enemyPlacements != null ? enemyPlacements : EmptyEnemyPlacements;
     public UniqueBuildingPlacementData CastlePlacement => castlePlacement;
     public UniqueBuildingPlacementData VillainUnionPlacement => villainUnionPlacement;
@@ -97,11 +94,6 @@ public class LevelData : ScriptableObject
         }
 
         return false;
-    }
-
-    public bool HasStayEnemyAt(Vector2Int grid)
-    {
-        return stayEnemyCells != null && stayEnemyCells.Contains(grid);
     }
 
     public bool HasEnemyPlacementAt(Vector2Int grid)
@@ -202,17 +194,6 @@ public class LevelData : ScriptableObject
         eventPlacements.Add(new EventPlacementData(grid, eventType, requireAmount, effectAmount));
     }
 
-    public void SetStayEnemy(Vector2Int grid)
-    {
-        if (!IsInsideGrid(grid))
-            return;
-
-        EnsureStayEnemyCells();
-        RemoveAllPlacementsAt(grid);
-        if (!stayEnemyCells.Contains(grid))
-            stayEnemyCells.Add(grid);
-    }
-
     public void SetEnemyPlacement(Vector2Int grid, int enemyGroupIndex, EnemyBehaviorType behaviorType)
     {
         if (!IsInsideGrid(grid) || enemyGroupIndex <= 0)
@@ -253,7 +234,6 @@ public class LevelData : ScriptableObject
         itemPlacements.RemoveAll(x => x.GridPosition == grid);
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
-        stayEnemyCells?.Remove(grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
         ClearUniquePlacementsAt(grid);
     }
@@ -263,7 +243,6 @@ public class LevelData : ScriptableObject
         itemPlacements.RemoveAll(x => x.GridPosition == grid);
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
-        stayEnemyCells?.Remove(grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
         ClearUniquePlacementsAt(grid);
     }
@@ -274,7 +253,6 @@ public class LevelData : ScriptableObject
         itemPlacements.RemoveAll(x => x.GridPosition == grid);
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
-        stayEnemyCells?.Remove(grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
         ClearUniquePlacementsAt(grid);
     }
@@ -305,8 +283,6 @@ public class LevelData : ScriptableObject
         for (int i = 0; i < outpostPlacements.Count; i++)
             outpostPlacements[i] = outpostPlacements[i].Normalized();
 
-        EnsureStayEnemyCells();
-
         EnsureEnemyPlacements();
         enemyPlacements.RemoveAll(x => x.EnemyGroupIndex <= 0);
         for (int i = 0; i < enemyPlacements.Count; i++)
@@ -322,11 +298,6 @@ public class LevelData : ScriptableObject
         return new Vector2Int(
             Mathf.Max(1, value.x),
             Mathf.Max(1, value.y));
-    }
-
-    private void EnsureStayEnemyCells()
-    {
-        stayEnemyCells ??= new List<Vector2Int>();
     }
 
     private void EnsureEnemyPlacements()

@@ -14,6 +14,7 @@ public class MinimapController : MonoBehaviour
     [SerializeField] private LevelZoneLayoutLoader levelZoneLayoutLoader;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private FogGridManager fogGridManager;
+    [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private CastleRegistry castleRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
@@ -436,21 +437,17 @@ public class MinimapController : MonoBehaviour
 
         ResolveIconRoot();
 
-        PartyGridMover[] parties = FindObjectsByType<PartyGridMover>(FindObjectsSortMode.None);
         int iconIndex = 0;
-        for (int i = 0; i < parties.Length; i++)
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party != null && party.isActiveAndEnabled)
         {
-            PartyGridMover party = parties[i];
-            if (party == null || !party.isActiveAndEnabled)
-                continue;
-
             Vector2Int grid = party.GetCurrentGrid();
-            if (!IsGridInMinimap(grid, gridSize))
-                continue;
-
-            Image icon = GetPartyIcon(iconIndex);
-            ApplyIcon(icon, grid, gridSize, partyIconColor, GetCellIconSize(gridSize, partyIconScale));
-            iconIndex++;
+            if (IsGridInMinimap(grid, gridSize))
+            {
+                Image icon = GetPartyIcon(iconIndex);
+                ApplyIcon(icon, grid, gridSize, partyIconColor, GetCellIconSize(gridSize, partyIconScale));
+                iconIndex++;
+            }
         }
 
         HidePartyIcons(iconIndex);
@@ -758,6 +755,9 @@ public class MinimapController : MonoBehaviour
 
         if (fogGridManager == null)
             fogGridManager = FindFirstObjectByType<FogGridManager>();
+
+        if (partyRegistry == null)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
 
         if (outpostRegistry == null)
             outpostRegistry = FindFirstObjectByType<OutpostRegistry>();

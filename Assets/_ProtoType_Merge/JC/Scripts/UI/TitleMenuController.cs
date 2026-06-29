@@ -137,11 +137,6 @@ public class TitleMenuController : MonoBehaviour
         //SceneManager.LoadScene("GameLoadScene");
     }
 
-    public void OnLoadClicked()
-    {
-        //Debug.Log("[TitleMenu] 불러오기 클릭 (미구현)");
-    }
-
     public void OnSettingsClicked()
     {
         SettingModal.SetActive(true);

@@ -8,6 +8,8 @@ namespace ASB.Work.BattleGrid
     {
         private readonly Dictionary<Vector2Int, GridCell> cellsByCoords = new Dictionary<Vector2Int, GridCell>();
         private readonly Dictionary<BattleCharactor, GridCell> cellByUnit = new Dictionary<BattleCharactor, GridCell>();
+        private readonly List<GridCell> _previewHighlightedCells = new List<GridCell>();
+        private GridCell _previewMainTargetCell;
         [SerializeField] private Material TargetMaterial;
         [SerializeField] private Material AdditionalTargetMaterial;
         [SerializeField] private Material ClearMaterial;
@@ -123,6 +125,59 @@ namespace ASB.Work.BattleGrid
             }
         }
 
+
+        public void ShowPreviewHighlight(SkillData skill, GridCell mainCell, List<GridCell> splashCells)
+        {
+            ClearPreviewHighlight();
+            if (mainCell == null) return;
+
+            bool isFullSide = skill != null && skill.classSkillTarget == 2;
+
+            if (isFullSide)
+            {
+                mainCell.SetMainTargetHighlight();
+                _previewHighlightedCells.Add(mainCell);
+                if (splashCells != null)
+                {
+                    for (int i = 0; i < splashCells.Count; i++)
+                    {
+                        if (splashCells[i] == null) continue;
+                        splashCells[i].SetMainTargetHighlight();
+                        _previewHighlightedCells.Add(splashCells[i]);
+                    }
+                }
+                return;
+            }
+
+            mainCell.SetMainTargetHighlight();
+            _previewMainTargetCell = mainCell;
+
+            if (splashCells != null)
+            {
+                for (int i = 0; i < splashCells.Count; i++)
+                {
+                    if (splashCells[i] == null) continue;
+                    splashCells[i].SetAdditionalHighlight();
+                    _previewHighlightedCells.Add(splashCells[i]);
+                }
+            }
+        }
+
+        public void ClearPreviewHighlight()
+        {
+            for (int i = 0; i < _previewHighlightedCells.Count; i++)
+            {
+                if (_previewHighlightedCells[i] != null)
+                    _previewHighlightedCells[i].ClearHighlight();
+            }
+            _previewHighlightedCells.Clear();
+
+            if (_previewMainTargetCell != null)
+            {
+                _previewMainTargetCell.ClearHighlight();
+                _previewMainTargetCell = null;
+            }
+        }
 
         public GridCell FindCellByUnit(BattleCharactor unit)
         {

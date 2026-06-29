@@ -64,10 +64,6 @@ public class CombatEncounterManager : MonoBehaviour
         ActiveParty = party;
         ActiveEnemy = enemy;
 
-        Debug.Log(
-            $"Combat encounter requested between party '{partyId}' and enemy '{enemyId}'. " +
-            "Combat flow is not implemented yet.",
-            this);
         CombatStarted?.Invoke(party, enemy);
         return true;
     }
@@ -129,9 +125,6 @@ public class CombatEncounterManager : MonoBehaviour
         ActiveParty = party;
         ActiveEnemy = null;
 
-        Debug.Log(
-            $"Outpost defender combat requested. party='{partyId}', outpost='{outpostKey}', enemy='{enemyId}'.",
-            this);
         CombatStarted?.Invoke(party, null);
         return true;
     }
@@ -198,9 +191,6 @@ public class CombatEncounterManager : MonoBehaviour
         ActiveParty = party;
         ActiveEnemy = null;
 
-        Debug.Log(
-            $"VillainUnion final combat requested. party='{partyId}', base='{villainUnionKey}', enemy='{enemyId}'.",
-            this);
         CombatStarted?.Invoke(party, null);
         return true;
     }
@@ -500,24 +490,6 @@ public class CombatEncounterManager : MonoBehaviour
         if (partyRegistry != null && partyRegistry.TryGetPartyById(partyId, out party))
             return true;
 
-        PartyGridMover[] parties = FindObjectsByType<PartyGridMover>(FindObjectsSortMode.None);
-        for (int i = 0; i < parties.Length; i++)
-        {
-            PartyGridMover candidate = parties[i];
-            if (candidate == null)
-                continue;
-
-            PartyIdentity identity = candidate.GetComponent<PartyIdentity>();
-            if (identity == null)
-                continue;
-
-            if (!string.Equals(identity.PartyId, partyId, StringComparison.Ordinal))
-                continue;
-
-            party = candidate;
-            return true;
-        }
-
         return false;
     }
 
@@ -564,18 +536,9 @@ public class CombatEncounterManager : MonoBehaviour
 
     private static bool IsOccupiedByOtherParty(Vector2Int grid, PartyGridMover movingParty)
     {
-        PartyGridMover[] parties = FindObjectsByType<PartyGridMover>(FindObjectsSortMode.None);
-        for (int i = 0; i < parties.Length; i++)
-        {
-            PartyGridMover party = parties[i];
-            if (party == null || party == movingParty)
-                continue;
-
-            if (party.GetCurrentGrid() == grid)
-                return true;
-        }
-
-        return false;
+        PartyRegistry partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        return party != null && party != movingParty && party.GetCurrentGrid() == grid;
     }
 
     private static IReadOnlyList<int> ResolvePartyUnitIndices(PartyPersistentRepository repository, PartyGridMover party, string partyId)

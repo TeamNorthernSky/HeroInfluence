@@ -758,7 +758,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82c393105e213314a8f800c3e1e7281f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resourceManager: {fileID: 543385088}
   goldText: {fileID: 1419230901}
   woodText: {fileID: 597216515}
   oreText: {fileID: 1516044701}
@@ -1054,7 +1053,6 @@ MonoBehaviour:
   gridManager: {fileID: 0}
   pathfinder: {fileID: 0}
   partyRegistry: {fileID: 0}
-  resourceManager: {fileID: 0}
   turnManager: {fileID: 0}
   fogManager: {fileID: 0}
   partyMovers: []
@@ -1462,7 +1460,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 543385089}
-  - component: {fileID: 543385088}
   m_Layer: 0
   m_Name: ResourceSystem
   m_TagString: Untagged
@@ -1470,21 +1467,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &543385088
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 543385087}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6282fa11bb19a0941bda90065f08c6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gold: 0
-  wood: 0
-  ore: 0
 --- !u!4 &543385089
 Transform:
   m_ObjectHideFlags: 0
@@ -2135,7 +2117,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   day: 2
   partyRegistry: {fileID: 474693649}
-  resourceManager: {fileID: 543385088}
   enemyTurnController: {fileID: 0}
   turnStateText: {fileID: 0}
 --- !u!4 &606626277

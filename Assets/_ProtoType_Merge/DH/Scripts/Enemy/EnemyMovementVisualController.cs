@@ -8,14 +8,11 @@ public class EnemyMovementVisualController : MonoBehaviour
     [Header("References")]
     [SerializeField] private EnemyGridMover enemyGridMover;
     [SerializeField] private List<UnitVisualMotionController> unitMotionControllers = new List<UnitVisualMotionController>();
-    [SerializeField] private bool logMovementVisualChanges;
 
     private Vector2Int lastDirection;
     private bool hasLastDirection;
     private bool lastMoving;
     private bool hasMovingState;
-
-    private bool ShouldLog => logMovementVisualChanges;
 
     private void Awake()
     {
@@ -85,24 +82,13 @@ public class EnemyMovementVisualController : MonoBehaviour
 
         Vector2Int direction = nextGrid - enemyGridMover.GetCurrentGrid();
         if (direction == Vector2Int.zero)
-        {
-            if (ShouldLog)
-                Debug.Log($"[EnemyMovementVisualController] {name} zero direction ignored. nextGrid={nextGrid}", this);
             return;
-        }
 
         if (hasLastDirection && direction == lastDirection)
-        {
-            if (ShouldLog)
-                Debug.Log($"[EnemyMovementVisualController] {name} direction skipped. direction={direction}", this);
             return;
-        }
 
         lastDirection = direction;
         hasLastDirection = true;
-
-        if (ShouldLog)
-            Debug.Log($"[EnemyMovementVisualController] {name} direction={direction} units={unitMotionControllers.Count}", this);
 
         ApplyLookDirection(direction);
     }
@@ -111,9 +97,6 @@ public class EnemyMovementVisualController : MonoBehaviour
     {
         if (enemy != enemyGridMover)
             return;
-
-        if (ShouldLog)
-            Debug.Log($"[EnemyMovementVisualController] {name} movement event. moving={moving}", this);
 
         ApplyMovingState(moving);
     }
@@ -140,9 +123,6 @@ public class EnemyMovementVisualController : MonoBehaviour
         lastMoving = moving;
         hasMovingState = true;
         CollectUnitMotionControllersIfEmpty();
-
-        if (ShouldLog)
-            Debug.Log($"[EnemyMovementVisualController] {name} moving={moving} units={unitMotionControllers.Count}", this);
 
         for (int i = 0; i < unitMotionControllers.Count; i++)
         {

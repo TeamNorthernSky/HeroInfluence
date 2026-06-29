@@ -410,7 +410,7 @@ public class EnemySpawnController : MonoBehaviour
         IReadOnlyList<EnemyGridMover> enemies = enemyRegistry.Enemies;
         for (int i = 0; i < enemies.Count; i++)
         {
-            if (enemies[i] != null && !enemies[i].IsStayEnemy)
+            if (enemies[i] != null && !enemies[i].IsStatic)
                 activeEnemyCount++;
         }
 
