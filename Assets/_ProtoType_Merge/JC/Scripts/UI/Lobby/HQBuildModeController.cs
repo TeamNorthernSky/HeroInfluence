@@ -223,7 +223,9 @@ public class HQBuildModeController : MonoBehaviour
         SetTmp(go.transform, "Info", t.info, true);
         SetTmp(go.transform, "Describtion", t.desc, true);
         SetTmp(go.transform, "Preconditions", t.cond, !string.IsNullOrWhiteSpace(t.cond));
-        var cg = go.GetComponent<CanvasGroup>() ?? go.AddComponent<CanvasGroup>();
+        // [JC 260629] ??(null병합)은 Unity의 fake-null을 무시해 MissingComponentException 유발 → 명시적 null 체크.
+        var cg = go.GetComponent<CanvasGroup>();
+        if (cg == null) cg = go.AddComponent<CanvasGroup>();
         cg.alpha = dim ? unbuildableAlpha : 1f;
         infoInstances.Add(go);
     }

@@ -22,8 +22,9 @@ public class LobbyUIModulePlacer : MonoBehaviour
     private static void Move(Transform group, Transform layer)
     {
         if (group == null || layer == null) return;
-        // 자식들을 레이어로 옮긴다(그룹 컨테이너 자체는 빈 채로 남아 무해). full-stretch 동일 → 위치 보존.
-        for (int i = group.childCount - 1; i >= 0; i--)
-            group.GetChild(i).SetParent(layer, false);
+        // [JC 260629] 자식들을 레이어로 순서 보존하며 이동. GetChild(0)를 반복 이동(append)해야 원래 형제 순서가 유지됨.
+        // (역순 for + SetParent는 순서를 뒤집어 Background가 최상단으로 와 다른 UI를 가리는 버그가 있었음.)
+        while (group.childCount > 0)
+            group.GetChild(0).SetParent(layer, false);
     }
 }
