@@ -7,19 +7,13 @@ public class GameManager : MonoBehaviour
 
     public EconomyManager Economy { get; private set; }
     // [JC 폐기 260512] SceneLoader 폐기. UnityEngine.SceneManagement.SceneManager 래퍼 GameSceneManager(정적)로 대체
-    public UIPrefabRegistry UIPrefabRegistry { get; private set; }
-    public DebugManager Debug { get; private set; }
     public HQStateManager HQ { get; private set; }
     public PublicityManager Publicity { get; private set; }
     public TrainingManager Training { get; private set; }
     public LabManager Lab { get; private set; }
     public WorkshopManager Workshop { get; private set; }
-    public TurnIncomeModalController TurnIncomeModal { get; private set; }
-    public HeroInfoModal HeroInfoModal { get; private set; }
-    public HeroInfoModal HeroStatusModal { get; private set; } // 탐사 멤버 클릭용(스킬 우측 레이아웃, Modal_HeroStatus)
-
-    [Header("매턴 income 모달 트리거 씬 (기본: PlayScene = DH씬)")]
-    [SerializeField] private string turnIncomeTriggerScene = "DHScene_3";
+    // [JC 260629] 영속 UI 모달은 CommonUIManager로 분리. 파사드 유지로 기존 호출부(HeroProfileButton/ExplorationHeroBox) 무변경.
+    public HeroInfoModal HeroInfoModal => CommonUIManager.Instance != null ? CommonUIManager.Instance.HeroInfoModal : null;
 
     public GridManager Grid { get; private set; }
     public TurnManager Turn { get; private set; }
@@ -54,9 +48,8 @@ public class GameManager : MonoBehaviour
                     if (income > 0) Economy.Add(ResourceType.Money, income);
                 }
                 if (Publicity != null) Publicity.OnTurnAdvanced(currentDay);
-                // [JC 260610] income 모달은 영속 모달을 직접 표시(씬 로드 의존 제거).
-                // 턴 진행은 항상 탐사씬 TurnManager.AdvanceDay에서 일어나므로 이 시점은 탐사씬 안이다.
-                if (TurnIncomeModal != null) TurnIncomeModal.Show(currentDay, income);
+                // [JC 260629] 턴 전환 시퀀스 종료 → 월드 입력 차단 해제. (구 TurnIncomeModal.Show 대체 — 인컴 모달 제거, 자금 가산은 위에서 처리됨)
+                WorldInputGate.IsTurnResolving = false;
             }
         }
     }
@@ -118,11 +111,6 @@ public class GameManager : MonoBehaviour
             SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
-    private void Update()
-    {
-        if (Debug != null) Debug.Tick();
-    }
-
     private void InitializeManagers()
     {
         Economy = GetComponentInChildren<EconomyManager>();
@@ -146,18 +134,6 @@ public class GameManager : MonoBehaviour
 
         Workshop = GetComponentInChildren<WorkshopManager>(true);
         if (Workshop != null) Workshop.Initialize();
-
-        UIPrefabRegistry = GetComponentInChildren<UIPrefabRegistry>(true);
-
-        Debug = GetComponentInChildren<DebugManager>(true);
-        if (Debug != null) Debug.Initialize();
-
-        TurnIncomeModal = GetComponentInChildren<TurnIncomeModalController>(true);
-        foreach (var m in GetComponentsInChildren<HeroInfoModal>(true))
-        {
-            if (m.gameObject.name.Contains("Status")) HeroStatusModal = m;
-            else HeroInfoModal = m;
-        }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
