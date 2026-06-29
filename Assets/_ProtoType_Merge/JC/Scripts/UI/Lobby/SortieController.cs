@@ -594,9 +594,13 @@ public class SortieController : MonoBehaviour
     private void EnsureDim()
     {
         if (dimOverlay != null || modalRoot == null) return;
-        Transform parent = modalRoot.transform.parent != null
-            ? modalRoot.transform.parent
-            : (rootCanvas != null ? rootCanvas.transform : transform);
+        // [JC 260629] dim은 출전버튼/로스터와 '같은 레이어'(프리팹화 후 Layer_Base)에 둬야 한다.
+        // 그래야 EngageRoster의 SetAsLastSibling이 로스터/출전버튼을 dim 위로 올려 보이게/클릭 가능하게 만든다.
+        // (과거엔 modalRoot.parent에 뒀으나, 프리팹화로 modalRoot=Layer_Modals·출전버튼/로스터=Layer_Base로 분리되어 못 넘던 버그.)
+        Transform parent = sortieButtonRoot != null ? sortieButtonRoot.parent
+            : (rosterPanelRoot != null ? rosterPanelRoot.parent
+            : (modalRoot.transform.parent != null ? modalRoot.transform.parent
+            : (rootCanvas != null ? rootCanvas.transform : transform)));
         var go = new GameObject("SortieDimOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         dimOverlay = go.GetComponent<RectTransform>();
         dimOverlay.SetParent(parent, false);
@@ -615,14 +619,11 @@ public class SortieController : MonoBehaviour
         EnsureDim();
         if (dimOverlay == null || modalRoot == null) return;
         dimOverlay.gameObject.SetActive(true);
-        // [JC 260616 fix] 결정적 레이어링: dim을 맨 위로 올린 뒤 모달을 그 위로 → [dim][modal].
-        // (SetSiblingIndex 중간삽입은 재오픈 시 dim이 모달 위로 올라가 편집을 가리던 버그)
-        // 이후 EngageRoster가 로스터/출전버튼을 모달 위로 올린다.
-        if (dimOverlay.parent == modalRoot.transform.parent)
-        {
-            dimOverlay.SetAsLastSibling();
-            modalRoot.transform.SetAsLastSibling();
-        }
+        // [JC 260629] dim과 modal은 이제 서로 다른 레이어(Layer_Base vs Layer_Modals)에 있으므로 각자 자기 부모 안에서 최상단으로.
+        // - dim: Layer_Base 내 맨 위(시설/네비를 가림). 이후 EngageRoster가 로스터/출전버튼을 dim 위로 다시 올림.
+        // - modal: Layer_Modals 내 맨 위(상위 레이어라 dim보다 항상 위에 그려짐).
+        dimOverlay.SetAsLastSibling();
+        if (modalRoot != null) modalRoot.transform.SetAsLastSibling();
     }
 
     private void HideDim()
