@@ -3,7 +3,7 @@ using ASB.Work.BattleGrid;
 using UnityEngine;
 using ASB.Work.Battle.Core;
 using ASBGridCell = ASB.Work.BattleGrid.GridCell;
-using ASBGridManager = ASB.Work.BattleGrid.GridManager;
+using ASBGridManager = ASB.Work.BattleGrid.BattleGridManager;
 
 namespace ASB.Work.Battle.SkillExecution
 {
@@ -331,7 +331,7 @@ namespace ASB.Work.Battle.SkillExecution
             var result = SkillExecutionResult.SuccessResult();
             ApplyMainEffect(caster, target, skillData, result);
 
-            ASB.Work.BattleGrid.GridManager gridManager = ASB.Work.BattleGrid.GridManager.Instance;
+            ASB.Work.BattleGrid.BattleGridManager gridManager = ASB.Work.BattleGrid.BattleGridManager.Instance;
             if (gridManager == null)
             {
                 return SkillExecutionResult.Failed();

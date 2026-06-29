@@ -95,7 +95,7 @@ namespace ASB.Work.BattleGrid
 
         public void SetMainTargetHighlight()
         {
-            var mat = GridManager.Instance?.MainTargetHighlightMat;
+            var mat = BattleGridManager.Instance?.MainTargetHighlightMat;
             if (cellRenderer == null || mat == null)
             {
                 return;

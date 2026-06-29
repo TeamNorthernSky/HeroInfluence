@@ -126,8 +126,8 @@ public class HeroInfoPanel : MonoBehaviour
 
         // [JC 260621] 포트레이트 = PortraitLibrary(키=HeroIndex). 적/빌런은 SourceData null → Unselected.
         Sprite sp = currentUnit.SourceData != null
-            ? EntityPortraits.Hero(currentUnit.SourceData.UnitTemplateKey)
-            : EntityPortraits.Unselected;
+            ? Sprites.Portrait.Hero(currentUnit.SourceData.UnitTemplateKey)
+            : Sprites.Portrait.Unselected;
         portraitImage.sprite = sp;
         portraitImage.enabled = sp != null;
     }

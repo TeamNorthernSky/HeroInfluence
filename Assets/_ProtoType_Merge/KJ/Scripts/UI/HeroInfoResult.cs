@@ -17,7 +17,7 @@ public class HeroInfoResult : MonoBehaviour
         if (portrait != null)
         {
             // [JC 260621] 포트레이트 = PortraitLibrary(키=HeroIndex). 함수 LoadPortraitByPartySlot은 존치(미사용).
-            Sprite sp = EntityPortraits.HeroByUnit(preview.UnitIndex);
+            Sprite sp = Sprites.Portrait.HeroByUnit(preview.UnitIndex);
             if (sp != null)
             {
                 GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(Image));

@@ -103,7 +103,7 @@ public class LabModalController : MonoBehaviour
         // [JC 260618] 아이콘 해석을 HeroIconLibrary로 이관. 정체성 키=skillIndex, order는 폴백(시각 동등)용.
         int skillIndex = (order >= 0 && order < boundSkills.Count && boundSkills[order] != null)
             ? boundSkills[order].skillIndex : -1;
-        return HeroIcons.GetClassSkillIcon(skillIndex, level, order);
+        return Sprites.Icon.ClassSkill(skillIndex, level, order);
     }
 
     private void Awake()

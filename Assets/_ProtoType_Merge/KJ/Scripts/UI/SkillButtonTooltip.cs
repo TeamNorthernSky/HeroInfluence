@@ -69,7 +69,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
                 ? gm.Lab.GetSkillLevel(uIdx, sd.skillIndex)
                 : (currentUnit.SourceData != null ? currentUnit.SourceData.SkillLevel : 1);
             tip.ShowInfo(
-                HeroIcons.GetClassSkillIcon(sd.skillIndex, lv),
+                Sprites.Icon.ClassSkill(sd.skillIndex, lv),
                 $"{sd.skillName} Lv.{lv}",
                 ClassSkillTooltipText.BuildDesc(sd, lv),
                 target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
@@ -86,7 +86,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
                 ? gm.Workshop.GetWeaponLevel(uIdx, wIdx)
                 : 1;
             tip.ShowInfo(
-                HeroIcons.GetWeaponSkillIcon(wd.WeaponSkillIndex, wl),
+                Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl),
                 $"{wd.WeaponSkillName} Lv.{wl}",
                 WeaponTooltipText.BuildWeaponSkillDesc(wd, wIdx, wl),
                 target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);

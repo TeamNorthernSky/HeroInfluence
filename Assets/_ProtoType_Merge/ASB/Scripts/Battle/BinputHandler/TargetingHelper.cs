@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
-using GridManagerRef = ASB.Work.BattleGrid.GridManager;
+using GridManagerRef = ASB.Work.BattleGrid.BattleGridManager;
 
 public static class TargetingHelper
 {

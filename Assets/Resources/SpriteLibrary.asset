@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e1babb448c4c2a546aec47135eb98863, type: 3}
-  m_Name: HeroIconLibrary
+  m_Name: SpriteLibrary
   m_EditorClassIdentifier: 
   characters:
   - heroName: "\uC544\uC774\uC5B8 \uAC78"

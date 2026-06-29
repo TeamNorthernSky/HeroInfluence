@@ -375,7 +375,7 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         // 씬의 절대 좌표를 기준으로 캐시를 재구성해 좌표 조회 일관성을 보장합니다.
-        ASB.Work.BattleGrid.GridManager.Instance?.RebuildCache();
+        ASB.Work.BattleGrid.BattleGridManager.Instance?.RebuildCache();
     }
 
     private void CollectCells(Transform root, List<GridCellRef> buffer)

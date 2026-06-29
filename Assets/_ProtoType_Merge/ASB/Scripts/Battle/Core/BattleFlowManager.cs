@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
-using GridManagerRef = ASB.Work.BattleGrid.GridManager;
+using GridManagerRef = ASB.Work.BattleGrid.BattleGridManager;
 using System.Linq;
 using ASB.Work.Battle.SkillExecution;
 using UnityEngine;

@@ -35,7 +35,7 @@ namespace ASB.Work.BattleGrid
         public static HashSet<Vector2Int> GetFullSideBoardCoordinates(Vector2Int centerCoords)
         {
             var result = new HashSet<Vector2Int>();
-            GridManager gridManager = GridManager.Instance;
+            BattleGridManager gridManager = BattleGridManager.Instance;
             if (gridManager == null)
             {
                 return result;
@@ -66,7 +66,7 @@ namespace ASB.Work.BattleGrid
                 return result;
             }
 
-            GridManager gridManager = GridManager.Instance;
+            BattleGridManager gridManager = BattleGridManager.Instance;
             if (gridManager == null)
             {
                 return result;

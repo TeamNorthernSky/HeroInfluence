@@ -194,7 +194,7 @@ public class CombatPromptPanelController : MonoBehaviour
 
     private static Sprite ResolveHeroPortrait(int unitIndex)
     {
-        return unitIndex > 0 ? EntityPortraits.HeroByUnit(unitIndex) : null;
+        return unitIndex > 0 ? Sprites.Portrait.HeroByUnit(unitIndex) : null;
     }
 
     private static Sprite ResolveEnemyPortrait(int unitIndex)
@@ -208,10 +208,10 @@ public class CombatPromptPanelController : MonoBehaviour
             data != null &&
             !string.IsNullOrWhiteSpace(data.UnitTemplateKey))
         {
-            return EntityPortraits.Enemy(data.UnitTemplateKey);
+            return Sprites.Portrait.Enemy(data.UnitTemplateKey);
         }
 
-        return EntityPortraits.Enemy(unitIndex.ToString());
+        return Sprites.Portrait.Enemy(unitIndex.ToString());
     }
 
     private static void PrepareButton(Button button)

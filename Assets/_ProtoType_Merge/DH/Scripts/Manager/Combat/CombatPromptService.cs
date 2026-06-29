@@ -232,7 +232,9 @@ public class CombatPromptService : MonoBehaviour
 
         CombatContext context = CombatContext.Instance;
         CombatAdvantageEvaluation evaluation = CombatSkipCalculator.EvaluateAdvantage(context);
-        int[] heroUnitIndices = CopyUnitIndices(context != null ? context.CombatParty?.UnitIndices : null);
+        // [JC 260628] 전력평가 아군 = 전열→후열 압축(PartyFormation 공용 규약). 포트레이트 4칸에
+        // 희소 슬롯배열을 그대로 쓰면 후열 유닛이 잘려 2명 누락되던 문제 교정.
+        int[] heroUnitIndices = PartyFormation.PackFrontFirst(context != null ? context.CombatParty?.UnitIndices : null).ToArray();
         int[] enemyUnitIndices = CopyUnitIndices(context != null ? context.CombatEnemy?.UnitIndices : null);
         context?.Clear();
         combatEncounterManager.ClearCombatState();

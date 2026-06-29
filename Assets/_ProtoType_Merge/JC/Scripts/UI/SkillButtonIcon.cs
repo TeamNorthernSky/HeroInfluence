@@ -57,7 +57,7 @@ public class SkillButtonIcon : MonoBehaviour
             int lv = (gm != null && gm.Lab != null && uIdx > 0)
                 ? gm.Lab.GetSkillLevel(uIdx, sd.skillIndex)
                 : (unit.SourceData != null ? unit.SourceData.SkillLevel : 1);
-            return HeroIcons.GetClassSkillIcon(sd.skillIndex, lv);
+            return Sprites.Icon.ClassSkill(sd.skillIndex, lv);
         }
 
         WeaponData wd = unit.EquippedWeaponData;
@@ -68,6 +68,6 @@ public class SkillButtonIcon : MonoBehaviour
         int wl = (gm != null && gm.Workshop != null && uIdx > 0)
             ? gm.Workshop.GetWeaponLevel(uIdx, wIdx)
             : 1;
-        return HeroIcons.GetWeaponSkillIcon(wd.WeaponSkillIndex, wl);
+        return Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl);
     }
 }

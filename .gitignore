@@ -105,6 +105,9 @@ ProjectSettings/QualitySettings.asset
 /Assets/GabrielAguiarProductions
 /packageTool/build
 /packageTool/dist
+/Assets/Resources/FBXModel
+/Assets/Resources/FBXModel.meta
+
 
 ///////////// Nuget///////////////
 # NuGet cache
