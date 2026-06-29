@@ -8,8 +8,9 @@ public class PartyRecoveryAreaController : MonoBehaviour
     [SerializeField] private PartyRegistry partyRegistry;
 
     [Header("Recovery Sources")]
-    [SerializeField] private bool recoverAtCastle = true;
-    [SerializeField] private bool recoverAtClaimedOutpost = true;
+    [SerializeField] private bool enableRecoveryAreas = false;
+    [SerializeField] private bool recoverAtCastle = false;
+    [SerializeField] private bool recoverAtClaimedOutpost = false;
 
     [Header("Debug")]
     [SerializeField] private bool logRecovery;
@@ -71,6 +72,9 @@ public class PartyRecoveryAreaController : MonoBehaviour
 
     private void HandlePartyGridEntered(Vector2Int enteredGrid)
     {
+        if (!enableRecoveryAreas)
+            return;
+
         if (!IsRecoveryCell(enteredGrid))
             return;
 

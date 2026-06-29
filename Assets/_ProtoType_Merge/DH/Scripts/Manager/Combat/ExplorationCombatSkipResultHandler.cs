@@ -129,31 +129,6 @@ public static class ExplorationCombatSkipResultHandler
     public static void CommitDefeat(CombatContext context, CombatSkipHpResult hpResult)
     {
         ExplorationDefeatResultHandler.CommitDefeat(context);
-
-        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
-        IReadOnlyList<int> enemyUnitIndices = context != null ? context.CombatEnemy?.UnitIndices : null;
-        if (enemyRepository == null || enemyUnitIndices == null)
-            return;
-
-        for (int i = 0; i < enemyUnitIndices.Count; i++)
-        {
-            int unitIndex = enemyUnitIndices[i];
-            if (unitIndex <= 0 || !enemyRepository.TryGetUnit(unitIndex, out EnemyUnitPersistentData data) || data == null)
-                continue;
-
-            float nextHp = ResolveVillainHpAfter(hpResult, data.UnitIndex, data.CurrentHp);
-            enemyRepository.UpdateUnitRuntimeState(
-                data.UnitIndex,
-                data.UnitTemplateKey,
-                data.Level,
-                data.BaseStats,
-                data.IngameStats,
-                nextHp,
-                data.CurrentInfluence,
-                nextHp <= 0f);
-        }
-
-        enemyRepository.SaveRuntimeStateToDisk();
     }
 
     private static int CalculateExpPerSurvivor(
