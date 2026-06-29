@@ -1033,8 +1033,6 @@ GameObject:
   - component: {fileID: 320332753}
   - component: {fileID: 320332754}
   - component: {fileID: 320332755}
-  - component: {fileID: 320332756}
-  - component: {fileID: 320332757}
   m_Layer: 0
   m_Name: DataManager
   m_TagString: Untagged
@@ -1087,30 +1085,6 @@ MonoBehaviour:
   classSkillSheetCsv: {fileID: 4900000, guid: 0646140d7017c1447b2b35626d885ab8, type: 3}
   weaponSheetCsv: {fileID: 4900000, guid: ea26b099547e06747b5254a226486eb9, type: 3}
   levelUpSheetCsv: {fileID: 0}
---- !u!114 &320332756
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e8feb2d358f17e468926fe84f593747, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &320332757
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16209b6b3ff36dc4cafd7db1c4ac6180, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &324998226
 GameObject:
   m_ObjectHideFlags: 0
@@ -4869,65 +4843,6 @@ MonoBehaviour:
   slotPrefab: {fileID: 114001, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 3}
   slotParent: {fileID: 999000002}
   maxDisplayCount: 5
---- !u!1 &1002047752
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1002047754}
-  - component: {fileID: 1002047753}
-  - component: {fileID: 1002047755}
-  m_Layer: 0
-  m_Name: CharactorManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1002047753
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1002047752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c0c6a8dc5e16a84b864afb4ae1c7236, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ownedCharactors: []
-  selectedCharactorId: 
---- !u!4 &1002047754
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1002047752}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1002047755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1002047752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c74ad23e6c625534498e80075edecc28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1004892100
 GameObject:
   m_ObjectHideFlags: 0
@@ -5768,12 +5683,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   flowManager: {fileID: 621159268}
-  battleManager: {fileID: 621159269}
-  inputHandler: {fileID: 1540026209}
-  totalTurnText: {fileID: 0}
-  currentTurnText: {fileID: 0}
-  currentSkillText: {fileID: 0}
-  battleResultText: {fileID: 0}
   victoryResultPrefab: {fileID: 3602089886626745560, guid: 864c0d1b390537b4ea95deb0076f1121,
     type: 3}
   defeatResultPrefab: {fileID: 1126212822778769652, guid: 68771df5e33891b4ea255d3c72c89505,
