@@ -55,13 +55,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5118108452359518206}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.702904, y: -0.07698047, z: 0.07698047, w: 0.702904}
+  m_LocalRotation: {x: -0.702904, y: -0.07698047, z: -0.07698047, w: 0.702904}
   m_LocalPosition: {x: 0.000168, y: 0.000988, z: 0.000042}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3523075134046597757}
-  m_LocalEulerAnglesHint: {x: 90, y: -12.5, z: 0}
+  m_LocalEulerAnglesHint: {x: -90, y: -12.5, z: 0}
 --- !u!1001 &6768536064776639816
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -125,10 +125,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: Fighter.001
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: ce021b58f955e434096b89340035c70a,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: b1d80523b65e900459642895ab242825,
+        type: 2}
     - target: {fileID: 7036213049465896255, guid: ce021b58f955e434096b89340035c70a,
         type: 3}
       propertyPath: m_Name
-      value: Bone
+      value: Armature
       objectReference: {fileID: 0}
     - target: {fileID: 8138707221281661786, guid: ce021b58f955e434096b89340035c70a,
         type: 3}
