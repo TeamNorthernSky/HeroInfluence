@@ -48,13 +48,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitIndex: -1
-  unitTemplateKey: 10001
+  unitTemplateKey: 10005
   legacyJobIndex: 0
   level: 1
-  favorability: 0
   exp: 0
   maxExp: 0
   currentSkillIndex: 1010
+  skillLevel: 1
   currentWeaponIndex: 310101
   baseStats:
     HP: 0
@@ -68,6 +68,17 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   levelupStats:
+    HP: 0
+    Atk: 0
+    DEF: 0
+    Luck: 0
+    Speed: 0
+    CriticalRate: 0
+    CritMultiplier: 0
+    CounterRate: 0
+    AvoidRate: 0
+    influence: 0
+  eventBonusStats:
     HP: 0
     Atk: 0
     DEF: 0
@@ -98,6 +109,7 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   currentHp: 0
+  isIncapacitated: 0
 --- !u!136 &1159454488117913130
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -134,8 +146,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   visualRoot: {fileID: 0}
+  animator: {fileID: 0}
   turnSpeed: 900
   yawOffset: 0
+  idleStateName: Idle
+  moveStateName: MoveForward
+  animationFadeTime: 0.1
+  disableRootMotion: 1
 --- !u!1001 &5596029303211686437
 PrefabInstance:
   m_ObjectHideFlags: 0
