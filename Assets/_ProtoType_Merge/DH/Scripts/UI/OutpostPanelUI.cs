@@ -1,107 +1,35 @@
 using System;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.Serialization;
 
+// [DH/JC seam 260630] 거점 점령 알림 발행자. UI 직접조작 제거 → 표시 payload 발행.
+// displayEntries(스프라이트/이름 프리셋)는 DH 보유 유지. JC OutpostNoticeModalController가 표시.
 public class OutpostPanelUI : MonoBehaviour
 {
-    [SerializeField] private GameObject panelRoot;
-    [FormerlySerializedAs("mineTypeText")]
-    [FormerlySerializedAs("outpostTypeText")]
-    [SerializeField] private TMP_Text titleText;
-    [FormerlySerializedAs("productionText")]
-    [SerializeField] private TMP_Text descriptionText;
-    [SerializeField] private TMP_Text amountText;
-    [SerializeField] private Image buildingImage;
-    [SerializeField] private Image resourceImage;
-    [SerializeField] private Button okButton;
-
     [Header("Display Presets")]
     [SerializeField] private OutpostUnlockDisplayEntry[] displayEntries = Array.Empty<OutpostUnlockDisplayEntry>();
 
-    private void Awake()
-    {
-        if (okButton != null)
-            okButton.onClick.AddListener(HidePanel);
-
-        HidePanel();
-    }
-
-    private void OnEnable()
-    {
-        Outpost.OutpostClaimed += HandleOutpostClaimed;
-    }
-
-    private void OnDisable()
-    {
-        Outpost.OutpostClaimed -= HandleOutpostClaimed;
-    }
-
-    private void OnDestroy()
-    {
-        if (okButton != null)
-            okButton.onClick.RemoveListener(HidePanel);
-    }
-
-    private void Update()
-    {
-        if (!IsPanelVisible())
-            return;
-
-        if (Input.GetKeyDown(KeyCode.Return)
-            || Input.GetKeyDown(KeyCode.KeypadEnter)
-            || Input.GetKeyDown(KeyCode.Space))
-        {
-            HidePanel();
-        }
-    }
+    private void OnEnable()  => Outpost.OutpostClaimed += HandleOutpostClaimed;
+    private void OnDisable() => Outpost.OutpostClaimed -= HandleOutpostClaimed;
 
     private void HandleOutpostClaimed(Outpost outpost)
     {
-        if (outpost == null)
-            return;
+        if (outpost == null) return;
 
-        OutpostUnlockDisplayEntry displayEntry = GetDisplayEntry(outpost.OutpostType);
-        string outpostName = GetOutpostDisplayName(displayEntry, outpost.OutpostType);
-        string resourceName = GetResourceDisplayName(displayEntry, outpost.OutpostType);
+        OutpostUnlockDisplayEntry entry = GetDisplayEntry(outpost.OutpostType);
+        string name = GetOutpostDisplayName(entry, outpost.OutpostType);
+        string resourceName = GetResourceDisplayName(entry, outpost.OutpostType);
         int amount = Mathf.Max(0, outpost.resourcePerTurn);
 
-        if (titleText != null)
-            titleText.text = $"{outpostName} 해방";
-
-        if (descriptionText != null)
-            descriptionText.text = $"빌런에게서 '{outpostName}' 해방\n매턴 '{resourceName}' '{amount}' 지급";
-
-        if (amountText != null)
-            amountText.text = amount.ToString();
-
-        ApplyImage(buildingImage, displayEntry.BuildingSprite);
-        ApplyImage(resourceImage, displayEntry.ResourceSprite);
-
-        ShowPanel();
+        ExplorationModalEvents.RaiseOutpostNotice(new OutpostNoticeRequest {
+            title       = $"{name} 해방",
+            description = $"빌런에게서 '{name}' 해방\n매턴 '{resourceName}' '{amount}' 지급",
+            amount         = amount,
+            buildingSprite = entry.BuildingSprite,
+            resourceSprite = entry.ResourceSprite,
+        });
     }
 
-    private void ShowPanel()
-    {
-        if (okButton != null)
-            okButton.interactable = true;
-
-        if (panelRoot != null)
-            panelRoot.SetActive(true);
-    }
-
-    private void HidePanel()
-    {
-        if (panelRoot != null)
-            panelRoot.SetActive(false);
-    }
-
-    private bool IsPanelVisible()
-    {
-        return panelRoot != null && panelRoot.activeSelf;
-    }
-
+    // ── 표시명/프리셋 해석 (기존 로직 보존) ─────────────────────────────
     private OutpostUnlockDisplayEntry GetDisplayEntry(OutpostType outpostType)
     {
         OutpostType normalizedType = NormalizeDisplayType(outpostType);
@@ -132,11 +60,11 @@ public class OutpostPanelUI : MonoBehaviour
 
         return NormalizeDisplayType(outpostType) switch
         {
-            OutpostType.Bank => "은행",
-            OutpostType.Library => "도서관",
+            OutpostType.Bank        => "은행",
+            OutpostType.Library     => "도서관",
             OutpostType.JewelryShop => "보석상",
-            OutpostType.BlockStore => "공구상",
-            _ => "거점"
+            OutpostType.BlockStore  => "공구상",
+            _                       => "거점"
         };
     }
 
@@ -147,21 +75,12 @@ public class OutpostPanelUI : MonoBehaviour
 
         return NormalizeDisplayType(outpostType) switch
         {
-            OutpostType.Bank => "자금",
-            OutpostType.Library => "히어로 메달",
+            OutpostType.Bank        => "자금",
+            OutpostType.Library     => "히어로 메달",
             OutpostType.JewelryShop => "아티펙트 수정",
-            OutpostType.BlockStore => "건설 자재",
-            _ => "자원"
+            OutpostType.BlockStore  => "건설 자재",
+            _                       => "자원"
         };
-    }
-
-    private static void ApplyImage(Image targetImage, Sprite sprite)
-    {
-        if (targetImage == null)
-            return;
-
-        targetImage.sprite = sprite;
-        targetImage.enabled = sprite != null;
     }
 }
 
@@ -175,8 +94,8 @@ public struct OutpostUnlockDisplayEntry
     [SerializeField] private Sprite resourceSprite;
 
     public OutpostType OutpostType => outpostType;
-    public string OutpostName => outpostName;
-    public string ResourceName => resourceName;
-    public Sprite BuildingSprite => buildingSprite;
-    public Sprite ResourceSprite => resourceSprite;
+    public string OutpostName      => outpostName;
+    public string ResourceName     => resourceName;
+    public Sprite BuildingSprite   => buildingSprite;
+    public Sprite ResourceSprite   => resourceSprite;
 }

@@ -7,8 +7,8 @@ using UnityEngine.UI;
 /// <summary>
 /// [JC 260615] 탐사씬 하단 HeroBox(BTN_Explor_HeroBtn_1~4) 컨트롤러. (탐사 기획 ③-2/③-3)
 /// 선택된 파티의 멤버를 버튼에 바인딩: 프로필 / 이름 / 현재HP·최대HP / 현재IP·최대IP.
-/// 버튼 클릭 → 영속 HeroInfoModal.Open(추후 B: 스킬 우측 레이아웃 스테이터스 모달로 교체).
-/// 파티 선택 탭(③-1)은 SelectParty로 전환(탭 UI는 별도 결선).
+/// 버튼 클릭 → 영속 HeroInfoModal.Open.
+/// [JC 260630] 파티 선택 탭(③-1) 코드 전면 제거 — PartyTabBar GO 삭제에 대응.
 /// </summary>
 [DisallowMultipleComponent]
 public class ExplorationHeroBoxController : MonoBehaviour
@@ -31,15 +31,6 @@ public class ExplorationHeroBoxController : MonoBehaviour
     [Tooltip("빈칸이면 selectedPartyIndex로 선택. 보통 빈칸")]
     [SerializeField] private string targetPartyId = "";
 
-    [Header("파티 선택 탭 (③-1)")]
-    [Tooltip("탭이 생성될 컨테이너(HorizontalLayoutGroup 권장). 파티 수만큼 동적 생성")]
-    [SerializeField] private RectTransform tabContainer;
-    [Tooltip("탭 1개 템플릿 프리팹(PartyTab.prefab). 루트 Image+Button + 자식 Label(TMP). 양식/높이/폰트/이미지는 이 프리팹에서 편집")]
-    [SerializeField] private GameObject tabPrefab;
-    [SerializeField] private Color tabSelectedColor = new Color(0.30f, 0.65f, 1f, 1f);
-    [SerializeField] private Color tabNormalColor = new Color(0.16f, 0.20f, 0.30f, 0.85f);
-    private readonly List<GameObject> tabObjects = new List<GameObject>();
-
     private int selectedPartyIndex;
     // [JC 260625] slots 길이에 맞춰 Awake에서 할당(고정 4 → IndexOutOfRange 방지). slots 5+ 설정해도 안전.
     private int[] boundUnits = System.Array.Empty<int>();
@@ -56,7 +47,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
         }
     }
 
-    private void OnEnable() { RebuildTabs(); Refresh(); }
+    private void OnEnable() { Refresh(); }
 
     private void Update()
     {
@@ -68,56 +59,6 @@ public class ExplorationHeroBoxController : MonoBehaviour
         if (Time.unscaledTime < nextRefresh) return;
         nextRefresh = Time.unscaledTime + 0.3f;
         Refresh();
-    }
-
-    /// <summary>파티 탭 전환(③-1). index가 파티 레지스트리 순서.</summary>
-    public void SelectParty(int index)
-    {
-        selectedPartyIndex = index;
-        Refresh();
-        UpdateTabVisual();
-    }
-
-    // ─── 파티 선택 탭 ───────────────────────────────────────
-    private void RebuildTabs()
-    {
-        if (tabContainer == null || tabPrefab == null) return;
-        for (int i = tabObjects.Count - 1; i >= 0; i--)
-            if (tabObjects[i] != null) Destroy(tabObjects[i]);
-        tabObjects.Clear();
-
-        int count = PartyCount;
-        // [JC 260617] 탭은 PartyTab.prefab 템플릿을 인스턴스화. 양식/높이/폰트/이미지는 프리팹에서 편집.
-        for (int i = 0; i < count; i++)
-        {
-            int ci = i;
-            var go = Instantiate(tabPrefab, tabContainer);
-            go.name = "PartyTab" + (i + 1);
-
-            var btn = go.GetComponent<Button>();
-            if (btn != null) btn.onClick.AddListener(() => SelectParty(ci));
-
-            var label = go.GetComponentInChildren<TMP_Text>(true);
-            if (label != null) label.text = $"파티 {i + 1}";
-
-            tabObjects.Add(go);
-        }
-        UpdateTabVisual();
-    }
-
-    private void UpdateTabVisual()
-    {
-        for (int i = 0; i < tabObjects.Count; i++)
-        {
-            if (tabObjects[i] == null) continue;
-            var img = tabObjects[i].GetComponent<Image>();
-            if (img != null) img.color = i == selectedPartyIndex ? tabSelectedColor : tabNormalColor;
-        }
-    }
-
-    public int PartyCount
-    {
-        get { var repo = PartyPersistentRepository.Instance; return repo != null ? repo.Parties.Count : 0; }
     }
 
     private PartyPersistentData ResolveParty()
