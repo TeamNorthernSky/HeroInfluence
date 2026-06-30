@@ -34,7 +34,7 @@ public class OutpostDoubleClickEntry : MonoBehaviour
         if (outpost == null || !outpost.IsPlayerClaimed) return;
 
         if (WorldInputGate.IsBlocked) return;
-        if (MapEventPanelUI.IsAnyActive) return;
+        if (ExplorationModalEvents.MapEventModalActive) return;
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
         if (worldCamera == null) worldCamera = Camera.main;
