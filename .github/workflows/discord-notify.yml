@@ -16,4 +16,4 @@ jobs:
           curl -X POST -H "Content-Type: application/json" \
                -H "X-GitHub-Event: ${{ github.event_name }}" \
                -d @"$GITHUB_EVENT_PATH" \
-               ${{ secrets.DISCORD_WEBHOOK_URL }}
+               ${{ secrets.DISCORD_WEBHOOK_URL }}/github
