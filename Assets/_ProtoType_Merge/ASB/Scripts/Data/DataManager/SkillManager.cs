@@ -40,6 +40,16 @@ public class SkillManager : MonoBehaviour
         return skills;
     }
 
+    public List<SkillData> GetSkillsForCharacter(int classIndex)
+    {
+        if (DHCsvTemplateCatalog.Instance == null || classIndex <= 0)
+        {
+            return new List<SkillData>();
+        }
+
+        return DHCsvTemplateCatalog.Instance.GetSkillsByClassIndex(classIndex);
+    }
+
     public List<SkillData> GetAvailableSkillsForCharacter(string characterName, int currentLevel)
     {
         var classSkills = GetSkillsForCharacter(characterName);
@@ -51,5 +61,15 @@ public class SkillManager : MonoBehaviour
             .OrderBy(x => x.acquireLevel)
             .ThenBy(x => x.skillIndex)
             .ToList();
+    }
+
+    public List<SkillData> GetAvailableSkillsForCharacter(int classIndex, int currentLevel)
+    {
+        if (DHCsvTemplateCatalog.Instance == null || classIndex <= 0)
+        {
+            return new List<SkillData>();
+        }
+
+        return DHCsvTemplateCatalog.Instance.GetAvailableSkillsByClassIndex(classIndex, currentLevel);
     }
 }

@@ -36,6 +36,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<int,    EnemyGroupData>    enemyGroupLookup     = new Dictionary<int, EnemyGroupData>();
 
     // 레벨별 수치 조회용 마스터 캐시 (SO 원본 보관)
+    private readonly Dictionary<int, PlayerUnitData>   playerUnitMasterMap = new Dictionary<int, PlayerUnitData>();
     private readonly Dictionary<int, PlayerWeaponData> weaponMasterMap    = new Dictionary<int, PlayerWeaponData>();
     private readonly Dictionary<int, ClassSkillData>   classSkillMasterMap = new Dictionary<int, ClassSkillData>();
 
@@ -231,6 +232,55 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return result;
     }
 
+    public List<SkillData> GetSkillsByClassIndex(int classIndex)
+    {
+        EnsureLoaded();
+        var result = new List<SkillData>();
+
+        if (classIndex <= 0 ||
+            !playerUnitMasterMap.TryGetValue(classIndex, out PlayerUnitData unitData) ||
+            unitData == null ||
+            unitData.ClassSkillIndexList == null)
+        {
+            return result;
+        }
+
+        for (int i = 0; i < unitData.ClassSkillIndexList.Count; i++)
+        {
+            int skillIndex = unitData.ClassSkillIndexList[i];
+            if (skillIndex <= 0)
+            {
+                continue;
+            }
+
+            SkillData skill = GetSkillTemplate(skillIndex);
+            if (skill != null)
+            {
+                result.Add(skill);
+            }
+        }
+
+        return result;
+    }
+
+    public List<SkillData> GetAvailableSkillsByClassIndex(int classIndex, int level)
+    {
+        int safeLevel = Mathf.Max(1, level);
+        List<SkillData> allSkills = GetSkillsByClassIndex(classIndex);
+        var result = new List<SkillData>();
+
+        for (int i = 0; i < allSkills.Count; i++)
+        {
+            SkillData skill = allSkills[i];
+            if (skill != null && skill.acquireLevel <= safeLevel)
+            {
+                result.Add(skill);
+            }
+        }
+
+        return result;
+    }
+
     public bool TryGetEnemyGroup(int groupIndex, out EnemyGroupData group)
     {
         EnsureLoaded();
@@ -306,7 +356,13 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             for (int i = 0; i < playerUnitDataTable.DataList.Count; i++)
             {
-                UnitData unit = ConvertPlayerUnit(playerUnitDataTable.DataList[i]);
+                PlayerUnitData src = playerUnitDataTable.DataList[i];
+                if (src != null && src.ClassIndex > 0 && !playerUnitMasterMap.ContainsKey(src.ClassIndex))
+                {
+                    playerUnitMasterMap.Add(src.ClassIndex, src);
+                }
+
+                UnitData unit = ConvertPlayerUnit(src);
                 if (unit == null || string.IsNullOrWhiteSpace(unit.Index)) continue;
 
                 if (playerTemplateLookup.ContainsKey(unit.Index))
@@ -731,6 +787,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         cachedPlayerTemplates.Clear();
         cachedEnemyTemplates.Clear();
         cachedWeapons.Clear();
+        playerUnitMasterMap.Clear();
         weaponMasterMap.Clear();
         classSkillMasterMap.Clear();
         enemyGroupLookup.Clear();
