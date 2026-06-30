@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class UnitGrowthExpData
+public class UnitGruothExpData
 {
     public int Level;
     public string Rank;
@@ -16,8 +16,8 @@ public class UnitGrowthExpData
     public int SuppoterStudySkill;
 }
 
-[CreateAssetMenu(fileName="UnitGrowthExpDataTable", menuName="DataTable/UnitGrowthExp")]
-public class UnitGrowthExpDataTable : ScriptableObject
+[CreateAssetMenu(fileName="UnitGruothExpDataTable", menuName="DataTable/UnitGruothExp")]
+public class UnitGruothExpDataTable : ScriptableObject
 {
-    public List<UnitGrowthExpData> DataList = new List<UnitGrowthExpData>();
+    public List<UnitGruothExpData> DataList = new List<UnitGruothExpData>();
 }

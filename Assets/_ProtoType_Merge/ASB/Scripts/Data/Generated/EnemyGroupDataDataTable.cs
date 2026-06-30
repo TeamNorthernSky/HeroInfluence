@@ -1,0 +1,26 @@
+﻿// Auto Generated. Do not modify.
+
+using System.Collections.Generic;
+using UnityEngine;
+
+[System.Serializable]
+public class EnemyGroupDataData
+{
+    public int EnemyIndex;
+    public int Enemy1;
+    public int Enemy1Slot;
+    public int Enemy2;
+    public int Enemy2Slot;
+    public int Enemy3;
+    public int Enemy3Slot;
+    public int Enemy4;
+    public int Enemy4Slot;
+    public int Enemy5;
+    public int Enemy5Slot;
+}
+
+[CreateAssetMenu(fileName="EnemyGroupDataDataTable", menuName="DataTable/EnemyGroupData")]
+public class EnemyGroupDataDataTable : ScriptableObject
+{
+    public List<EnemyGroupDataData> DataList = new List<EnemyGroupDataData>();
+}
