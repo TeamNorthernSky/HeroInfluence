@@ -15,7 +15,297 @@ MonoBehaviour:
   levelId: level_003
   displayName: New Level
   gridSize: {x: 50, y: 40}
-  groundTilePlacements: []
+  groundTilePlacements:
+  - gridPosition: {x: 24, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 24, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 34, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 33, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 26, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 29, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 35, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 31, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 27, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 22, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 23, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 29, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 27, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 23, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 20, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 21, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 26, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 32, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 31, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 24, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 22, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 20, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 27, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 30, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 35, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 36, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 35, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 34, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 31, y: 15}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 15}
+    tileKey: tilemap_06
+  - gridPosition: {x: 24, y: 15}
+    tileKey: tilemap_06
+  - gridPosition: {x: 21, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 21, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 22, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 20, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 23, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 15}
+    tileKey: tilemap_06
+  - gridPosition: {x: 17, y: 15}
+    tileKey: tilemap_06
+  - gridPosition: {x: 17, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 20, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 17, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 17, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 25}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 25}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 21, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 26, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 27, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 27, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 26, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 24, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 23, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 23, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 22, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 22, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 22, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 22, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 23, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 24, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 24, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 27, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 29, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 30, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 32, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 33, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 33, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 34, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 35, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 34, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 33, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 32, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 29, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 29, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 30, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 30, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 31, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 31, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 32, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 32, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 31, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 31, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 31, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 30, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 29, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 27, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 26, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 24, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 24, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 23, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 22, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 21, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 20, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 24}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 20, y: 23}
+    tileKey: tilemap_06
+  - gridPosition: {x: 20, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 22}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 21}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 18, y: 20}
+    tileKey: tilemap_06
+  - gridPosition: {x: 19, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 20, y: 19}
+    tileKey: tilemap_06
+  - gridPosition: {x: 20, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 21, y: 18}
+    tileKey: tilemap_06
+  - gridPosition: {x: 21, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 22, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 23, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 24, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 26, y: 17}
+    tileKey: tilemap_06
+  - gridPosition: {x: 27, y: 15}
+    tileKey: tilemap_06
+  - gridPosition: {x: 26, y: 15}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 15}
+    tileKey: tilemap_06
+  - gridPosition: {x: 25, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 26, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 27, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 28, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 29, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 30, y: 16}
+    tileKey: tilemap_06
+  - gridPosition: {x: 30, y: 15}
+    tileKey: tilemap_06
+  - gridPosition: {x: 29, y: 15}
+    tileKey: tilemap_06
   obstacleCells:
   - {x: 34, y: 20}
   - {x: 33, y: 20}
@@ -47,7 +337,6 @@ MonoBehaviour:
   itemPlacements: []
   outpostPlacements: []
   eventPlacements: []
-  stayEnemyCells: []
   enemyPlacements: []
   castlePlacement:
     hasPlacement: 0

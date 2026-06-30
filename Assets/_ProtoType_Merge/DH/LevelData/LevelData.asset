@@ -15,7 +15,63 @@ MonoBehaviour:
   levelId: level_001
   displayName: New Level
   gridSize: {x: 50, y: 40}
-  groundTilePlacements: []
+  groundTilePlacements:
+  - gridPosition: {x: 31, y: 24}
+    tileKey: tilemap_01
+  - gridPosition: {x: 31, y: 23}
+    tileKey: tilemap_01
+  - gridPosition: {x: 31, y: 22}
+    tileKey: tilemap_01
+  - gridPosition: {x: 32, y: 22}
+    tileKey: tilemap_01
+  - gridPosition: {x: 32, y: 23}
+    tileKey: tilemap_01
+  - gridPosition: {x: 31, y: 21}
+    tileKey: tilemap_01
+  - gridPosition: {x: 32, y: 21}
+    tileKey: tilemap_01
+  - gridPosition: {x: 32, y: 24}
+    tileKey: tilemap_01
+  - gridPosition: {x: 31, y: 19}
+    tileKey: tilemap_01
+  - gridPosition: {x: 31, y: 20}
+    tileKey: tilemap_01
+  - gridPosition: {x: 31, y: 18}
+    tileKey: tilemap_01
+  - gridPosition: {x: 32, y: 18}
+    tileKey: tilemap_01
+  - gridPosition: {x: 32, y: 19}
+    tileKey: tilemap_01
+  - gridPosition: {x: 31, y: 25}
+    tileKey: tilemap_03
+  - gridPosition: {x: 32, y: 25}
+    tileKey: tilemap_03
+  - gridPosition: {x: 32, y: 26}
+    tileKey: tilemap_03
+  - gridPosition: {x: 31, y: 26}
+    tileKey: tilemap_03
+  - gridPosition: {x: 34, y: 18}
+    tileKey: tilemap_03
+  - gridPosition: {x: 35, y: 18}
+    tileKey: tilemap_03
+  - gridPosition: {x: 33, y: 18}
+    tileKey: tilemap_03
+  - gridPosition: {x: 32, y: 17}
+    tileKey: tilemap_03
+  - gridPosition: {x: 35, y: 17}
+    tileKey: tilemap_03
+  - gridPosition: {x: 36, y: 19}
+    tileKey: tilemap_03
+  - gridPosition: {x: 36, y: 18}
+    tileKey: tilemap_03
+  - gridPosition: {x: 36, y: 17}
+    tileKey: tilemap_03
+  - gridPosition: {x: 44, y: 14}
+    tileKey: tilemap_03
+  - gridPosition: {x: 33, y: 17}
+    tileKey: tilemap_03
+  - gridPosition: {x: 34, y: 17}
+    tileKey: tilemap_03
   obstacleCells:
   - {x: 0, y: 0}
   - {x: 0, y: 1}
@@ -765,7 +821,6 @@ MonoBehaviour:
     eventType: 0
     requireAmount: 100
     effectAmount: 3
-  stayEnemyCells: []
   enemyPlacements:
   - gridPosition: {x: 11, y: 4}
     enemyGroupIndex: 30001
