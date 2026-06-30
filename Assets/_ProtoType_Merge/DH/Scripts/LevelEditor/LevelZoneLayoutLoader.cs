@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -22,7 +23,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
     [Header("Runtime References")]
     [SerializeField] private GridManager gridManager;
     [SerializeField] private LevelPrefabRegistry prefabRegistry;
-    [SerializeField] private LevelTilemapGenerator tilemapGenerator;
+    [FormerlySerializedAs("tilemapGenerator")]
+    [SerializeField] private LevelTileMeshGenerator tileMeshGenerator;
 
     [Header("Spawn Roots")]
     [SerializeField] private Transform obstacleRoot;
@@ -43,7 +45,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
     [SerializeField] private int randomSeed;
 
     [Header("Zone Options")]
-    [SerializeField] private bool generateTilemaps = true;
+    [FormerlySerializedAs("generateTilemaps")]
+    [SerializeField] private bool generateTileMeshes = true;
     [SerializeField] private bool spawnUniqueBuildingsFromZones;
 
     private readonly List<string> validationErrors = new List<string>();
@@ -247,8 +250,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
     {
         Vector2Int offset = zone.Anchor;
 
-        if (generateTilemaps && tilemapGenerator != null)
-            tilemapGenerator.Generate(levelData, offset, false);
+        if (generateTileMeshes && tileMeshGenerator != null)
+            tileMeshGenerator.Generate(levelData, offset, false);
 
         SpawnObstacles(levelData, offset);
         SpawnItems(levelData, offset);
@@ -523,8 +526,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
     private void ClearSpawnedObjects()
     {
-        if (tilemapGenerator != null)
-            tilemapGenerator.ClearTilemaps();
+        if (tileMeshGenerator != null)
+            tileMeshGenerator.ClearTileMeshes();
 
         ClearChildren(GetObstacleRoot(false));
         ClearChildren(GetItemRoot(false));

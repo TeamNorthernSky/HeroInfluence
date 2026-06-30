@@ -14,4 +14,86 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileEntries:
   - tileKey: 
-    tile: {fileID: 0}
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}
+  - tileKey: 
+    sprite: {fileID: 0}

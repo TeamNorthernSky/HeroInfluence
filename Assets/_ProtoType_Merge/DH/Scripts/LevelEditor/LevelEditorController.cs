@@ -23,6 +23,8 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private EventPlacementPreset eventPreset;
     [SerializeField, Min(1)] private int enemyGroupIndex = 30001;
     [SerializeField] private EnemyBehaviorType enemyBehaviorType = EnemyBehaviorType.Mobile;
+    [SerializeField] private LevelTileRegistry tileRegistry;
+    [SerializeField] private string selectedTileKey;
 
     [Header("Behaviour")]
     [SerializeField] private bool allowRuntimeEditing;
@@ -56,6 +58,8 @@ public class LevelEditorController : MonoBehaviour
     public EventPlacementPreset EventPreset => eventPreset;
     public int EnemyGroupIndex => Mathf.Max(1, enemyGroupIndex);
     public EnemyBehaviorType EnemyBehaviorType => enemyBehaviorType;
+    public LevelTileRegistry TileRegistry => tileRegistry;
+    public string SelectedTileKey => selectedTileKey;
     public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
     public LayerMask GroundMask => groundMask;
 
@@ -145,6 +149,12 @@ public class LevelEditorController : MonoBehaviour
                 break;
             case LevelEditorBrushType.EnemyGroup:
                 levelData.SetEnemyPlacement(grid, EnemyGroupIndex, enemyBehaviorType);
+                break;
+            case LevelEditorBrushType.GroundTile:
+                if (string.IsNullOrWhiteSpace(selectedTileKey))
+                    return;
+
+                levelData.SetGroundTile(grid, selectedTileKey);
                 break;
             case LevelEditorBrushType.Castle:
                 levelData.SetCastle(grid);

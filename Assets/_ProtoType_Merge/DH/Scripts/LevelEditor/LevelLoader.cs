@@ -22,7 +22,8 @@ public class LevelLoader : MonoBehaviour
     [Header("Runtime References")]
     [SerializeField] private GridManager gridManager;
     [SerializeField] private LevelPrefabRegistry prefabRegistry;
-    [SerializeField] private LevelTilemapGenerator tilemapGenerator;
+    [FormerlySerializedAs("tilemapGenerator")]
+    [SerializeField] private LevelTileMeshGenerator tileMeshGenerator;
 
     [Header("Spawn Roots")]
     [SerializeField] private Transform obstacleRoot;
@@ -88,7 +89,7 @@ public class LevelLoader : MonoBehaviour
         if (clearExistingBeforeLoad)
             ClearSpawnedObjects();
 
-        GenerateTilemaps();
+        GenerateTileMeshes();
         SpawnObstacles();
         SpawnItems();
         SpawnOutposts();
@@ -395,8 +396,8 @@ public class LevelLoader : MonoBehaviour
 
     private void ClearSpawnedObjects()
     {
-        if (tilemapGenerator != null)
-            tilemapGenerator.ClearTilemaps();
+        if (tileMeshGenerator != null)
+            tileMeshGenerator.ClearTileMeshes();
 
         ClearChildren(GetObstacleRoot(false));
         ClearChildren(GetItemRoot(false));
@@ -409,12 +410,12 @@ public class LevelLoader : MonoBehaviour
         ClearDirectChildrenWithComponent<VillainUnionBase>();
     }
 
-    private void GenerateTilemaps()
+    private void GenerateTileMeshes()
     {
-        if (tilemapGenerator == null)
+        if (tileMeshGenerator == null)
             return;
 
-        tilemapGenerator.Generate(levelData);
+        tileMeshGenerator.Generate(levelData);
     }
 
     private void ClearChildren(Transform root)

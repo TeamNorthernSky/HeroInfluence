@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
-using UnityEngine.Tilemaps;
 
 public enum EnemyEncounterZoneState
 {
@@ -31,10 +30,6 @@ public class GridManager : MonoBehaviour
     [Header("Grid Settings")]
     [FormerlySerializedAs("hexRadius")]
     [SerializeField] private float cellSize = 1f;
-    [SerializeField] private bool useTilemapGrid;
-    [SerializeField] private GridLayout tilemapGridLayout;
-    [SerializeField] private Tilemap referenceTilemap;
-    [SerializeField] private bool tilemapUsesXZPlane = true;
 
     [Header("Obstacle Settings")]
     [Tooltip("이 레이어에 있는 콜라이더는 장애물로 간주합니다.")]
@@ -75,25 +70,13 @@ public class GridManager : MonoBehaviour
 
     public float CellSize => cellSize;
     public Transform LandTransform => landTransform;
-    public Transform GroundRaycastTransform
-        => landTransform != null
-            ? landTransform
-            : referenceTilemap != null
-                ? referenceTilemap.transform
-                : tilemapGridLayout != null
-                    ? tilemapGridLayout.transform
-                    : null;
-    public bool UsesTilemapGrid => useTilemapGrid && tilemapGridLayout != null;
+    public Transform GroundRaycastTransform => landTransform;
     public static Vector2Int[] Directions8 => directions8;
 
     private void Awake()
     {
-        ResolveTilemapReferences();
-
         if (cellSize <= 0f)
             cellSize = 1f;
-
-        SyncCellSizeFromTilemap();
 
         if (fogGridManager == null)
             fogGridManager = FindFirstObjectByType<FogGridManager>();
@@ -119,8 +102,8 @@ public class GridManager : MonoBehaviour
 
     private void OnValidate()
     {
-        ResolveTilemapReferences();
-        SyncCellSizeFromTilemap();
+        if (cellSize <= 0f)
+            cellSize = 1f;
 
         if (castleRegistry == null)
             castleRegistry = FindFirstObjectByType<CastleRegistry>();
@@ -143,14 +126,6 @@ public class GridManager : MonoBehaviour
 
     public Vector2Int WorldToGrid(Vector3 worldPosition)
     {
-        if (UsesTilemapGrid)
-        {
-            Vector3Int cell = tilemapGridLayout.WorldToCell(worldPosition);
-            return tilemapUsesXZPlane
-                ? new Vector2Int(cell.x, cell.z)
-                : new Vector2Int(cell.x, cell.y);
-        }
-
         float localX = worldPosition.x - gridOrigin.x;
         float localZ = worldPosition.z - gridOrigin.z;
 
@@ -161,16 +136,6 @@ public class GridManager : MonoBehaviour
 
     public Vector3 GridToWorldCenter(Vector2Int grid)
     {
-        if (UsesTilemapGrid)
-        {
-            Vector3Int cell = tilemapUsesXZPlane
-                ? new Vector3Int(grid.x, 0, grid.y)
-                : new Vector3Int(grid.x, grid.y, 0);
-
-            if (referenceTilemap != null)
-                return referenceTilemap.GetCellCenterWorld(cell);
-        }
-
         float x = gridOrigin.x + cellSize * grid.x;
         float z = gridOrigin.z + cellSize * grid.y;
 
@@ -769,12 +734,7 @@ public class GridManager : MonoBehaviour
     public float GetLandSurfaceY()
     {
         if (landTransform == null)
-        {
-            if (UsesTilemapGrid && tilemapGridLayout != null)
-                return tilemapGridLayout.transform.position.y + 0.01f;
-
             return 0.01f;
-        }
 
         // BoxCollider가 있으면 bounds 상단 사용
         if (landTransform.TryGetComponent<Collider>(out var col))
@@ -846,29 +806,5 @@ public class GridManager : MonoBehaviour
         Gizmos.DrawLine(d, a);
     }
 
-    private void ResolveTilemapReferences()
-    {
-        if (tilemapGridLayout == null && referenceTilemap != null)
-            tilemapGridLayout = referenceTilemap.layoutGrid;
-
-        if (referenceTilemap == null && tilemapGridLayout != null)
-            referenceTilemap = tilemapGridLayout.GetComponentInChildren<Tilemap>();
-    }
-
-    private void SyncCellSizeFromTilemap()
-    {
-        if (!UsesTilemapGrid)
-            return;
-
-        Vector3 tilemapCellSize = tilemapGridLayout.cellSize;
-        float xSize = Mathf.Abs(tilemapCellSize.x);
-        float secondAxisSize = tilemapUsesXZPlane
-            ? Mathf.Abs(tilemapCellSize.y > 0f ? tilemapCellSize.y : tilemapCellSize.z)
-            : Mathf.Abs(tilemapCellSize.y);
-
-        float resolvedCellSize = Mathf.Max(xSize, secondAxisSize);
-        if (resolvedCellSize > 0f)
-            cellSize = resolvedCellSize;
-    }
 }
 

@@ -139,7 +139,7 @@ public class MapEventObject : MonoBehaviour
         }
 
         if (appliedAny)
-            RefreshPartyUnitStates(party);
+            PartyRepositorySync.ApplyUnitsToScene(unitIndices);
 
         return appliedAny;
     }
@@ -158,13 +158,4 @@ public class MapEventObject : MonoBehaviour
         return unitIndices != null && unitIndices.Length > 0;
     }
 
-    private static void RefreshPartyUnitStates(PartyGridMover party)
-    {
-        if (party == null)
-            return;
-
-        PartyUnitState[] unitStates = party.GetComponentsInChildren<PartyUnitState>(true);
-        for (int i = 0; i < unitStates.Length; i++)
-            unitStates[i]?.RefreshFromRepository();
-    }
 }
