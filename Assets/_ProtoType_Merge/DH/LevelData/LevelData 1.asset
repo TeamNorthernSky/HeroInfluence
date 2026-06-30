@@ -15,7 +15,39 @@ MonoBehaviour:
   levelId: level_002
   displayName: New Level
   gridSize: {x: 50, y: 40}
-  groundTilePlacements: []
+  groundTilePlacements:
+  - gridPosition: {x: 38, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 36, y: 27}
+    tileKey: tilemap_02
+  - gridPosition: {x: 37, y: 24}
+    tileKey: tilemap_02
+  - gridPosition: {x: 33, y: 21}
+    tileKey: tilemap_02
+  - gridPosition: {x: 33, y: 23}
+    tileKey: tilemap_02
+  - gridPosition: {x: 30, y: 28}
+    tileKey: tilemap_02
+  - gridPosition: {x: 34, y: 31}
+    tileKey: tilemap_02
+  - gridPosition: {x: 34, y: 25}
+    tileKey: tilemap_02
+  - gridPosition: {x: 38, y: 18}
+    tileKey: tilemap_04
+  - gridPosition: {x: 38, y: 19}
+    tileKey: tilemap_04
+  - gridPosition: {x: 38, y: 20}
+    tileKey: tilemap_04
+  - gridPosition: {x: 38, y: 21}
+    tileKey: tilemap_04
+  - gridPosition: {x: 38, y: 22}
+    tileKey: tilemap_04
+  - gridPosition: {x: 38, y: 23}
+    tileKey: tilemap_04
+  - gridPosition: {x: 38, y: 24}
+    tileKey: tilemap_04
+  - gridPosition: {x: 38, y: 25}
+    tileKey: tilemap_04
   obstacleCells:
   - {x: 25, y: 31}
   - {x: 25, y: 30}
@@ -41,7 +73,6 @@ MonoBehaviour:
   itemPlacements: []
   outpostPlacements: []
   eventPlacements: []
-  stayEnemyCells: []
   enemyPlacements: []
   castlePlacement:
     hasPlacement: 0
