@@ -34664,6 +34664,8 @@ GameObject:
   - component: {fileID: 718570356}
   - component: {fileID: 718570358}
   - component: {fileID: 718570357}
+  - component: {fileID: 718570360}
+  - component: {fileID: 718570359}
   m_Layer: 5
   m_Name: CombatPanelModal
   m_TagString: Untagged
@@ -34728,6 +34730,46 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 718570355}
   m_CullTransparentMesh: 1
+--- !u!114 &718570359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 718570355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!223 &718570360
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 718570355}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 1
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 19
+  m_TargetDisplay: 0
 --- !u!1 &722448921
 GameObject:
   m_ObjectHideFlags: 0
@@ -92084,10 +92126,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   landTransform: {fileID: 1757180168}
   cellSize: 1
-  useTilemapGrid: 0
-  tilemapGridLayout: {fileID: 0}
-  referenceTilemap: {fileID: 0}
-  tilemapUsesXZPlane: 1
   obstacleLayerMask:
     serializedVersion: 2
     m_Bits: 8
@@ -106476,6 +106514,8 @@ MonoBehaviour:
   eventPreset: {fileID: 11400000, guid: 37bb98cd07b44d7e96b1e21bc7c1ea29, type: 2}
   enemyGroupIndex: 30004
   enemyBehaviorType: 1
+  tileRegistry: {fileID: 0}
+  selectedTileKey: 
   allowRuntimeEditing: 0
   applyLevelAfterEdit: 1
   groundMask:
@@ -106526,7 +106566,7 @@ MonoBehaviour:
   levelData: {fileID: 11400000, guid: 2035004e0e73b4644bd0715be9bc93a3, type: 2}
   gridManager: {fileID: 1870279752}
   prefabRegistry: {fileID: 5055261808975925387}
-  tilemapGenerator: {fileID: 0}
+  tileMeshGenerator: {fileID: 0}
   obstacleRoot: {fileID: 1944337207}
   itemRoot: {fileID: 1628434449}
   outpostRoot: {fileID: 337973924}
@@ -106817,7 +106857,7 @@ MonoBehaviour:
   layoutData: {fileID: 11400000, guid: 6f9c3b27fcb728143b933f1f43ec8527, type: 2}
   gridManager: {fileID: 1870279752}
   prefabRegistry: {fileID: 5055261808975925387}
-  tilemapGenerator: {fileID: 0}
+  tileMeshGenerator: {fileID: 0}
   obstacleRoot: {fileID: 1944337207}
   itemRoot: {fileID: 1628434449}
   outpostRoot: {fileID: 337973924}
@@ -106832,7 +106872,7 @@ MonoBehaviour:
   stopOnValidationErrors: 1
   randomizeInEditMode: 0
   randomSeed: 0
-  generateTilemaps: 1
+  generateTileMeshes: 1
   spawnUniqueBuildingsFromZones: 1
 --- !u!114 &8802002002002002002
 MonoBehaviour:
