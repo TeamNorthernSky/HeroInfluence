@@ -26,7 +26,7 @@ public class CastleDoubleClickEntry : MonoBehaviour
 
         // 입력 차단 가드 (Modal/WorldInputGate)
         if (WorldInputGate.IsBlocked) return;
-        if (MapEventPanelUI.IsAnyActive) return;
+        if (ExplorationModalEvents.MapEventModalActive) return;
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
         // [JC 260615] 파티 상주 여부와 무관하게 본부 진입 허용(기획 변경).

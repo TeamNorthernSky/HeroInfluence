@@ -99,7 +99,7 @@ public static class ExplorationCombatSkipResultHandler
 
             ApplySkillSelections(unitRepository, skillResults);
             unitRepository.SaveRuntimeStateToDisk();
-            RefreshScenePartyUnitStates(partyUnitIndices, unitRepository);
+            PartyRepositorySync.ApplyUnitsToScene(partyUnitIndices);
         }
 
         if (enemyRepository != null && enemyUnitIndices != null)
@@ -272,31 +272,4 @@ public static class ExplorationCombatSkipResultHandler
             : data.UnitTemplateKey;
     }
 
-    private static void RefreshScenePartyUnitStates(IReadOnlyList<int> unitIndices, PersistentUnitRepository repository)
-    {
-        PartyUnitState[] sceneUnitStates = Object.FindObjectsByType<PartyUnitState>(FindObjectsSortMode.None);
-        for (int i = 0; i < sceneUnitStates.Length; i++)
-        {
-            PartyUnitState state = sceneUnitStates[i];
-            if (state == null || state.UnitIndex <= 0 || !ContainsUnitIndex(unitIndices, state.UnitIndex))
-                continue;
-
-            if (repository.TryGetUnit(state.UnitIndex, out UnitPersistentData data))
-                state.ApplyPersistentData(data);
-        }
-    }
-
-    private static bool ContainsUnitIndex(IReadOnlyList<int> unitIndices, int unitIndex)
-    {
-        if (unitIndices == null || unitIndex <= 0)
-            return false;
-
-        for (int i = 0; i < unitIndices.Count; i++)
-        {
-            if (unitIndices[i] == unitIndex)
-                return true;
-        }
-
-        return false;
-    }
 }

@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// [JC 260628] HQLobbyScene UI 컴포저. Awake에 LobbyUILayout의 프리팹을 캔버스에 Instantiate하고
-/// 각 번들의 LobbyUIModulePlacer로 레이어 분산. 씬 골격(캔버스+레이어)만 두고 UI는 전부 런타임 스폰.
+/// [JC 260628 / 일반화 260630] 씬-무관 UI 컴포저. Awake에 UILayout의 프리팹을 캔버스에 Instantiate하고
+/// 각 번들의 UIModulePlacer로 레이어 분산. 씬 골격(캔버스+레이어)만 두고 UI는 전부 런타임 스폰.
 /// </summary>
 [DefaultExecutionOrder(-100)]
 [DisallowMultipleComponent]
-public class HQLobbyUIComposer : MonoBehaviour
+public class UIComposer : MonoBehaviour
 {
-    [SerializeField] private LobbyUILayout layout;
+    [SerializeField] private UILayout layout;
     [SerializeField] private Transform backgroundLayer;
     [SerializeField] private Transform baseLayer;
     [SerializeField] private Transform modalLayer;
@@ -20,7 +20,6 @@ public class HQLobbyUIComposer : MonoBehaviour
 
     private void Awake() => SpawnNow();
 
-    /// <summary>에디트모드 검증/런타임 공용. 이미 스폰했으면 무동작(중복 가드).</summary>
     public void SpawnNow()
     {
         if (done) return;
@@ -28,9 +27,9 @@ public class HQLobbyUIComposer : MonoBehaviour
         foreach (var prefab in layout.prefabs)
         {
             if (prefab == null) continue;
-            var inst = Instantiate(prefab, transform); // 캔버스 자식
-            inst.name = prefab.name;                   // (Clone) 접미 제거 — 검증/탐색 일관
-            var placer = inst.GetComponent<LobbyUIModulePlacer>();
+            var inst = Instantiate(prefab, transform);
+            inst.name = prefab.name;
+            var placer = inst.GetComponent<UIModulePlacer>();
             if (placer != null) placer.Place(backgroundLayer, baseLayer, modalLayer, tooltipLayer);
             spawned.Add(inst);
         }

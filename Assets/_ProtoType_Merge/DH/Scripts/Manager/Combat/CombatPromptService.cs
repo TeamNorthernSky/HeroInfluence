@@ -42,6 +42,9 @@ public class CombatPromptService : MonoBehaviour
     private Action<bool> pendingClosed;
     private Coroutine pendingFleeCoroutine;
     private Coroutine pendingSkipCoroutine;
+    private GraphicRaycaster promptRaycaster;
+    private bool capturedPromptRaycasterState;
+    private bool previousPromptRaycasterEnabled;
 
     public bool IsOpen =>
         promptInstance != null && promptInstance.gameObject.activeInHierarchy ||
@@ -66,6 +69,7 @@ public class CombatPromptService : MonoBehaviour
 
         Func<bool> prepareContext = () => combatEncounterManager.PrepareEnemyCombatContext(party, enemy);
         CombatPromptPreview preview = BuildPromptPreview(prepareContext, combatEncounterManager);
+        EnablePromptRaycaster();
 
         pendingClosed = onClosed;
         pendingStartBattle = () =>
@@ -111,6 +115,7 @@ public class CombatPromptService : MonoBehaviour
 
         Func<bool> prepareContext = () => combatEncounterManager.PrepareOutpostDefenderCombatContext(party, outpost);
         CombatPromptPreview preview = BuildPromptPreview(prepareContext, combatEncounterManager);
+        EnablePromptRaycaster();
 
         pendingClosed = onClosed;
         pendingStartBattle = () =>
@@ -156,6 +161,7 @@ public class CombatPromptService : MonoBehaviour
 
         Func<bool> prepareContext = () => combatEncounterManager.PrepareVillainUnionDefenderCombatContext(party, villainUnionBase);
         CombatPromptPreview preview = BuildPromptPreview(prepareContext, combatEncounterManager);
+        EnablePromptRaycaster();
 
         pendingClosed = onClosed;
         pendingStartBattle = () =>
@@ -446,6 +452,7 @@ public class CombatPromptService : MonoBehaviour
     private void FinishPrompt(bool keepInputLocked)
     {
         HideModalBackdrop();
+        RestorePromptRaycaster();
         Action<bool> closed = pendingClosed;
         pendingClosed = null;
         pendingStartBattle = null;
@@ -498,5 +505,44 @@ public class CombatPromptService : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void EnablePromptRaycaster()
+    {
+        GraphicRaycaster raycaster = ResolvePromptRaycaster();
+        if (raycaster == null)
+            return;
+
+        if (!capturedPromptRaycasterState || promptRaycaster != raycaster)
+        {
+            promptRaycaster = raycaster;
+            previousPromptRaycasterEnabled = raycaster.enabled;
+            capturedPromptRaycasterState = true;
+        }
+
+        raycaster.enabled = true;
+    }
+
+    private void RestorePromptRaycaster()
+    {
+        if (!capturedPromptRaycasterState)
+            return;
+
+        if (promptRaycaster != null)
+            promptRaycaster.enabled = previousPromptRaycasterEnabled;
+
+        promptRaycaster = null;
+        previousPromptRaycasterEnabled = false;
+        capturedPromptRaycasterState = false;
+    }
+
+    private GraphicRaycaster ResolvePromptRaycaster()
+    {
+        Transform root = promptRoot != null ? promptRoot : transform;
+        Canvas canvas = root != null ? root.GetComponentInParent<Canvas>() : null;
+        if (canvas == null && promptInstance != null)
+            canvas = promptInstance.GetComponentInParent<Canvas>();
+
+        return canvas != null ? canvas.GetComponent<GraphicRaycaster>() : null;
     }
 }

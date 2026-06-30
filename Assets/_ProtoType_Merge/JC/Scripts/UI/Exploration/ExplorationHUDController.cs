@@ -4,46 +4,22 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// 탐사씬(DHScene_3) HUD 컨트롤러. Canvas에 부착.
-/// 자원 4종(자금/메달/수정/자재) 텍스트를 EconomyManager와 실시간 연동하고,
-/// 턴/주/일 텍스트를 TurnManager.DayAdvanced + GameManager.CurrentDay와 연동한다.
-/// BTN_Explor_NextTurn → TurnManager.EndPlayerTurn(기존 TurnButton 대체). 적 턴 동안은 버튼 interactable=false.
-/// SerializedField를 비워두면 이름으로 자동 탐색(공식 UI 개편 시 재바인딩 용이).
-/// 가시성 게이팅: 이 Canvas는 DHScene_3이 active 씬일 때만 렌더(canvas.enabled). GameLoadGate가
-/// DHScene_3을 Additive 로드 후 로비 진입 판정을 내리는 동안(GameLoadScene active)에는 숨겨져,
-/// 판정 전 탐사 HUD가 깜빡이지 않는다. 잔류 분기(SetActiveScene) 또는 일반 Single 진입 시 표시.
+/// [JC 260608 / 정리 260630] 탐사씬 턴 HUD. 자원 HUD·옵션·툴팁은 공유 TopBar(ResourceHUDController)로 이관됨.
+/// 본 컨트롤러는 턴/주/일 표시 + NextTurn(EndPlayerTurn) + 적턴 입력 게이팅 + 가시성 게이팅 전담.
 /// </summary>
 [DisallowMultipleComponent]
 public class ExplorationHUDController : MonoBehaviour
 {
-    [Header("자원 텍스트 (비우면 이름으로 자동 탐색)")]
-    [SerializeField] private TextMeshProUGUI moneyText;   // Text_Money   → ResourceType.Money
-    [SerializeField] private TextMeshProUGUI medalText;   // Text_Medal   → ResourceType.Chip (메달)
-    [SerializeField] private TextMeshProUGUI crystalText; // Text_Crystal → ResourceType.Crystal
-    [SerializeField] private TextMeshProUGUI supplyText;  // Text_Supply  → ResourceType.Supply
-
-    [Header("턴/주/일 텍스트")]
+    [Header("턴/주/일 텍스트 (비우면 이름 자동 탐색)")]
     [SerializeField] private TextMeshProUGUI turnWeekDayText; // Text_TurnWeekDay
 
     [Header("턴 종료 버튼 / TurnManager (비우면 자동 탐색)")]
-    [SerializeField] private Button nextTurnButton;       // BTN_Explor_NextTurn
+    [SerializeField] private Button nextTurnButton;           // BTN_Explor_NextTurn
     [SerializeField] private TurnManager turnManager;
 
-    [Header("옵션(시스템 메뉴) 버튼 (비우면 이름으로 자동 탐색)")]
-    [SerializeField] private Button optionButton;         // BTN_Explor_Option → 영속 SystemMenuModal
-
-    [Header("툴팁(사용 불가 안내) 버튼 (비우면 이름으로 자동 탐색)")]
-    [SerializeField] private Button tooltipButton;        // BTN_Explor_Tooltip → 로비와 동일 안내 모달
-    private const string TooltipModalResource = "UI_Prefab/Modal_Tooltip_Notice"; // Resources 경로
-    private GameObject tooltipModalInstance;
-    private bool tooltipHooked;
-
     private const int DaysPerWeek = 7;
-
-    private EconomyManager subscribedEco;
     private TurnManager subscribedTM;
     private bool listenerHooked;
-    private bool optionHooked;
     private Canvas canvas;
     private GraphicRaycaster graphicRaycaster;
 
@@ -51,7 +27,7 @@ public class ExplorationHUDController : MonoBehaviour
     {
         canvas = GetComponent<Canvas>();
         graphicRaycaster = GetComponent<GraphicRaycaster>();
-        ResolveMissingReferences();
+        ResolveMissing();
         HookButton();
     }
 
@@ -60,7 +36,7 @@ public class ExplorationHUDController : MonoBehaviour
         SceneManager.activeSceneChanged += OnActiveSceneChanged;
         UpdateVisibility();
         TrySubscribe();
-        Refresh();
+        RefreshTurn();
     }
 
     private void OnDisable()
@@ -69,54 +45,29 @@ public class ExplorationHUDController : MonoBehaviour
         Unsubscribe();
     }
 
-    // ─── 가시성 게이팅 (로비 진입 판정 전 탐사 UI 숨김) ──────────
-    private void OnActiveSceneChanged(Scene previous, Scene next) => UpdateVisibility();
+    private void OnActiveSceneChanged(Scene a, Scene b) => UpdateVisibility();
 
     private void UpdateVisibility()
     {
         if (canvas == null) return;
-        // 이 Canvas가 속한 씬이 active 씬일 때만 렌더. GameLoadGate의 Additive 로드·판정 동안은
-        // GameLoadScene이 active이므로 숨겨진다.
         canvas.enabled = gameObject.scene == SceneManager.GetActiveScene();
     }
 
-    private void Update()
-    {
-        // GameManager/TurnManager가 늦게 준비될 수 있어 구독 완료 전까지 재시도.
-        if (subscribedEco == null || subscribedTM == null) TrySubscribe();
-    }
+    private void Update() { if (subscribedTM == null) TrySubscribe(); }
 
-    // ─── 참조 해석 ──────────────────────────────────────────
-    private void ResolveMissingReferences()
+    private void ResolveMissing()
     {
-        if (moneyText == null) moneyText = FindText("Text_Money");
-        if (medalText == null) medalText = FindText("Text_Medal");
-        if (crystalText == null) crystalText = FindText("Text_Crystal");
-        if (supplyText == null) supplyText = FindText("Text_Supply");
-        if (turnWeekDayText == null) turnWeekDayText = FindText("Text_TurnWeekDay");
-
+        if (turnWeekDayText == null)
+        {
+            var go = GameObject.Find("Text_TurnWeekDay");
+            if (go != null) turnWeekDayText = go.GetComponent<TextMeshProUGUI>();
+        }
         if (nextTurnButton == null)
         {
             var go = GameObject.Find("BTN_Explor_NextTurn");
             if (go != null) nextTurnButton = go.GetComponentInChildren<Button>(true);
         }
-        if (optionButton == null)
-        {
-            var go = GameObject.Find("BTN_Explor_Option");
-            if (go != null) optionButton = go.GetComponent<Button>() ?? go.GetComponentInChildren<Button>(true);
-        }
-        if (tooltipButton == null)
-        {
-            var go = GameObject.Find("BTN_Explor_Tooltip");
-            if (go != null) tooltipButton = go.GetComponent<Button>() ?? go.GetComponentInChildren<Button>(true);
-        }
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
-    }
-
-    private static TextMeshProUGUI FindText(string goName)
-    {
-        var go = GameObject.Find(goName);
-        return go != null ? go.GetComponent<TextMeshProUGUI>() : null;
     }
 
     private void HookButton()
@@ -126,157 +77,58 @@ public class ExplorationHUDController : MonoBehaviour
             nextTurnButton.onClick.AddListener(OnClickNextTurn);
             listenerHooked = true;
         }
-        if (!optionHooked && optionButton != null)
-        {
-            optionButton.onClick.AddListener(OnClickOption);
-            optionHooked = true;
-        }
-        if (!tooltipHooked && tooltipButton != null)
-        {
-            tooltipButton.onClick.AddListener(OnClickTooltip);
-            tooltipHooked = true;
-        }
     }
 
-    // [JC 260619] 탐사 옵션 버튼 → 영속 SystemMenuModal 열기(로비 HQLobbyMenuController.OnClickOption과 동일 패턴).
-    private void OnClickOption()
-    {
-        var sys = FindObjectOfType<SystemMenuController>(true);
-        if (sys != null) sys.OpenMenu();
-        else Debug.LogWarning("[ExplorationHUD] SystemMenuController 없음 — 시스템 메뉴를 열 수 없음");
-    }
-
-    // [JC 260619] 탐사 툴팁 버튼 → 로비와 동일한 "사용 불가 안내" 모달(Modal_Tooltip_Notice 프리팹)을 런타임 인스턴스화해 표시.
-    // 닫기: 백드롭 외곽클릭(프리팹 ModalBackgroundCloser 자체) + BTN_Exit(보조 결선).
-    private void OnClickTooltip()
-    {
-        EnsureTooltipModal();
-        if (tooltipModalInstance != null)
-        {
-            tooltipModalInstance.transform.SetAsLastSibling();
-            tooltipModalInstance.SetActive(true);
-        }
-    }
-
-    private void EnsureTooltipModal()
-    {
-        if (tooltipModalInstance != null) return;
-        var prefab = Resources.Load<GameObject>(TooltipModalResource);
-        if (prefab == null) { Debug.LogWarning($"[ExplorationHUD] '{TooltipModalResource}' 프리팹 없음"); return; }
-        tooltipModalInstance = Instantiate(prefab, transform); // HUD 캔버스 하위
-        tooltipModalInstance.SetActive(false);
-        var exit = FindDeep(tooltipModalInstance.transform, "BTN_Exit");
-        if (exit != null)
-        {
-            var b = exit.GetComponent<Button>();
-            if (b != null) b.onClick.AddListener(() => { if (tooltipModalInstance != null) tooltipModalInstance.SetActive(false); });
-        }
-    }
-
-    private static Transform FindDeep(Transform node, string name)
-    {
-        if (node.name == name) return node;
-        for (int i = 0; i < node.childCount; i++)
-        {
-            var r = FindDeep(node.GetChild(i), name);
-            if (r != null) return r;
-        }
-        return null;
-    }
-
-    // ─── 구독 ───────────────────────────────────────────────
     private void TrySubscribe()
     {
-        var gm = GameManager.Instance;
-        if (gm != null && subscribedEco == null && gm.Economy != null)
-        {
-            subscribedEco = gm.Economy;
-            subscribedEco.OnResourceChanged += OnResourceChanged;
-        }
-
-        if (subscribedTM == null)
-        {
-            if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
-            if (turnManager != null)
-            {
-                subscribedTM = turnManager;
-                subscribedTM.DayAdvanced += OnDayAdvanced;
-                subscribedTM.EnemyTurnStateChanged += OnEnemyTurnStateChanged;
-                HookButton(); // 버튼이 늦게 해석된 경우 보강
-                RefreshNextTurnInteractable();
-            }
-        }
-
-        Refresh();
+        if (subscribedTM != null) return;
+        if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
+        if (turnManager == null) return;
+        subscribedTM = turnManager;
+        subscribedTM.DayAdvanced += OnDayAdvanced;
+        subscribedTM.EnemyTurnStateChanged += OnEnemyTurnStateChanged;
+        HookButton();
+        RefreshNextTurnInteractable();
+        RefreshTurn();
     }
 
     private void Unsubscribe()
     {
-        if (subscribedEco != null) { subscribedEco.OnResourceChanged -= OnResourceChanged; subscribedEco = null; }
-        if (subscribedTM != null)
-        {
-            subscribedTM.DayAdvanced -= OnDayAdvanced;
-            subscribedTM.EnemyTurnStateChanged -= OnEnemyTurnStateChanged;
-            subscribedTM = null;
-        }
+        if (subscribedTM == null) return;
+        subscribedTM.DayAdvanced -= OnDayAdvanced;
+        subscribedTM.EnemyTurnStateChanged -= OnEnemyTurnStateChanged;
+        subscribedTM = null;
     }
 
-    private void OnResourceChanged(ResourceType _, int __) => RefreshResources();
     private void OnDayAdvanced(int _) => RefreshTurn();
+    private void OnEnemyTurnStateChanged(bool enemyRunning) => ApplyEnemyTurnUIState(enemyRunning);
 
-    private void OnEnemyTurnStateChanged(bool enemyTurnRunning) => ApplyEnemyTurnUIState(enemyTurnRunning);
-
-    /// <summary>
-    /// 적 턴 동안: NextTurn 버튼 interactable=false + 탐사 Canvas의 GraphicRaycaster 비활성
-    /// (모든 버튼 hover·클릭 무반응, 외형은 정상색 유지). 플레이어 턴에 복구.
-    /// </summary>
-    private void ApplyEnemyTurnUIState(bool enemyTurnRunning)
+    private void ApplyEnemyTurnUIState(bool enemyRunning)
     {
-        bool playerTurn = !enemyTurnRunning;
+        bool playerTurn = !enemyRunning;
         if (nextTurnButton != null) nextTurnButton.interactable = playerTurn;
         if (graphicRaycaster != null) graphicRaycaster.enabled = playerTurn;
     }
 
     private void RefreshNextTurnInteractable()
-    {
-        ApplyEnemyTurnUIState(turnManager != null && turnManager.IsEnemyTurnRunning);
-    }
+        => ApplyEnemyTurnUIState(turnManager != null && turnManager.IsEnemyTurnRunning);
 
     private void OnClickNextTurn()
     {
         if (turnManager == null) turnManager = FindFirstObjectByType<TurnManager>();
         if (turnManager == null) return;
-        // [JC 260625] 연속 클릭/적턴 중 중복 EndPlayerTurn 방지: 적턴이면 무시 + 버튼 즉시 비활성(적턴 상태 이벤트에서 복구)
         if (turnManager.IsEnemyTurnRunning) return;
         if (nextTurnButton != null) nextTurnButton.interactable = false;
         turnManager.EndPlayerTurn();
-    }
-
-    // ─── 갱신 ───────────────────────────────────────────────
-    private void Refresh()
-    {
-        RefreshResources();
-        RefreshTurn();
-    }
-
-    private void RefreshResources()
-    {
-        var gm = GameManager.Instance;
-        if (gm == null || gm.Economy == null) return;
-        if (moneyText != null) moneyText.text = gm.Economy.Get(ResourceType.Money).ToString("N0");
-        if (medalText != null) medalText.text = gm.Economy.Get(ResourceType.Chip).ToString("N0");
-        if (crystalText != null) crystalText.text = gm.Economy.Get(ResourceType.Crystal).ToString("N0");
-        if (supplyText != null) supplyText.text = gm.Economy.Get(ResourceType.Supply).ToString("N0");
     }
 
     private void RefreshTurn()
     {
         if (turnWeekDayText == null) return;
         int day = ResolveCurrentDay();
-        int turn = day;                                   // 1턴 = 1일 (누적 일수)
         int week = (day - 1) / DaysPerWeek + 1;
         int dayInWeek = (day - 1) % DaysPerWeek + 1;
-        turnWeekDayText.text = $"{turn}턴  {week}주  {dayInWeek}일";
+        turnWeekDayText.text = $"{day}턴  {week}주  {dayInWeek}일";
     }
 
     private int ResolveCurrentDay()
