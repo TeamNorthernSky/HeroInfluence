@@ -156,6 +156,9 @@ public class LevelEditorController : MonoBehaviour
 
                 levelData.SetGroundTile(grid, selectedTileKey);
                 break;
+            case LevelEditorBrushType.GroundTileErase:
+                levelData.EraseGroundTileAt(grid);
+                break;
             case LevelEditorBrushType.Castle:
                 levelData.SetCastle(grid);
                 break;

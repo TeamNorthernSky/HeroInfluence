@@ -11,6 +11,7 @@ public class LevelEditorWindow : EditorWindow
     private static readonly LevelEditorBrushType[] BrushOrder =
     {
         LevelEditorBrushType.GroundTile,
+        LevelEditorBrushType.GroundTileErase,
         LevelEditorBrushType.Obstacle,
         LevelEditorBrushType.Item,
         LevelEditorBrushType.Outpost,
@@ -24,6 +25,7 @@ public class LevelEditorWindow : EditorWindow
     private static readonly string[] BrushLabels =
     {
         "GroundTile",
+        "TileErase",
         "Obstacle",
         "Item",
         "Outpost",
@@ -38,7 +40,7 @@ public class LevelEditorWindow : EditorWindow
     private Vector2 scrollPosition;
     private bool sceneEditingEnabled = true;
     private string sceneStatus;
-    private Vector2Int? lastPaintedGroundTileGrid;
+    private Vector2Int? lastEditedGroundTileGrid;
 
     [MenuItem("Window/DH Work/Level Editor")]
     public static void Open()
@@ -335,9 +337,9 @@ public class LevelEditorWindow : EditorWindow
                 EditorGUILayout.HelpBox($"Tile key '{context.SelectedTileKey}' was not found in the LevelTileRegistry.", MessageType.Warning);
         }
 
-        if (context.BrushType != LevelEditorBrushType.GroundTile && context.PrefabRegistry == null)
+        if (!IsGroundTileBrush(context.BrushType) && context.PrefabRegistry == null)
             EditorGUILayout.HelpBox("LevelLoader needs a LevelPrefabRegistry.", MessageType.Warning);
-        else if (context.BrushType != LevelEditorBrushType.GroundTile && !HasBrushPrefab(context, out string prefabWarning))
+        else if (!IsGroundTileBrush(context.BrushType) && !HasBrushPrefab(context, out string prefabWarning))
             EditorGUILayout.HelpBox(prefabWarning, MessageType.Warning);
 
         EditorGUILayout.HelpBox(
@@ -379,27 +381,29 @@ public class LevelEditorWindow : EditorWindow
 
         if (currentEvent.type == EventType.MouseUp)
         {
-            lastPaintedGroundTileGrid = null;
+            lastEditedGroundTileGrid = null;
             return;
         }
 
+        bool isTileBrush = context.BrushType == LevelEditorBrushType.GroundTile ||
+            context.BrushType == LevelEditorBrushType.GroundTileErase;
         bool leftPaintEvent = currentEvent.button == 0 &&
             (currentEvent.type == EventType.MouseDown ||
-             (currentEvent.type == EventType.MouseDrag && context.BrushType == LevelEditorBrushType.GroundTile));
+             (currentEvent.type == EventType.MouseDrag && isTileBrush));
         bool rightEraseEvent = currentEvent.button == 1 && currentEvent.type == EventType.MouseDown;
 
         if (leftPaintEvent)
         {
             if (currentEvent.type == EventType.MouseDown)
-                lastPaintedGroundTileGrid = null;
+                lastEditedGroundTileGrid = null;
 
             if (context.BrushType == LevelEditorBrushType.Erase)
                 EraseAtGrid(context, hoveredGrid);
             else
                 PlaceAtGrid(context, hoveredGrid);
 
-            if (context.BrushType == LevelEditorBrushType.GroundTile)
-                lastPaintedGroundTileGrid = hoveredGrid;
+            if (isTileBrush)
+                lastEditedGroundTileGrid = hoveredGrid;
 
             currentEvent.Use();
         }
@@ -509,6 +513,19 @@ public class LevelEditorWindow : EditorWindow
             return;
         }
 
+        if (context.BrushType == LevelEditorBrushType.GroundTileErase)
+        {
+            bool hasTile = context.LevelData.HasGroundTileAt(anchor);
+            DrawFootprint(
+                context,
+                BuildFootprint(null, anchor),
+                hasTile ? new Color(1f, 0.6f, 0.1f, 0.20f) : new Color(1f, 1f, 1f, 0.08f),
+                hasTile ? new Color(1f, 0.6f, 0.1f, 1f) : new Color(1f, 1f, 1f, 0.65f));
+
+            DrawSceneLabel(context, anchor, hasTile ? "Erase GroundTile" : "No GroundTile");
+            return;
+        }
+
         if (context.BrushType == LevelEditorBrushType.Erase)
         {
             if (TryFindPlacementAtGrid(context, anchor, out _, out List<Vector2Int> deleteFootprint, out string deleteLabel))
@@ -552,9 +569,21 @@ public class LevelEditorWindow : EditorWindow
 
     private void PlaceAtGrid(LevelEditorContext context, Vector2Int anchor)
     {
+        if (context.BrushType == LevelEditorBrushType.GroundTileErase)
+        {
+            if (lastEditedGroundTileGrid.HasValue && lastEditedGroundTileGrid.Value == anchor)
+                return;
+
+            Undo.RecordObject(context.LevelData, "Erase GroundTile");
+            context.LevelData.EraseGroundTileAt(anchor);
+            sceneStatus = $"Erased GroundTile at {anchor}.";
+            CommitLevelDataChange(context);
+            return;
+        }
+
         if (context.BrushType == LevelEditorBrushType.GroundTile)
         {
-            if (lastPaintedGroundTileGrid.HasValue && lastPaintedGroundTileGrid.Value == anchor)
+            if (lastEditedGroundTileGrid.HasValue && lastEditedGroundTileGrid.Value == anchor)
                 return;
 
             if (!CanPaintGroundTile(context, out string tileReason))
@@ -709,13 +738,19 @@ public class LevelEditorWindow : EditorWindow
     private static bool HasBrushPrefab(LevelEditorContext context, out string reason)
     {
         if (context.BrushType == LevelEditorBrushType.Erase ||
-            context.BrushType == LevelEditorBrushType.GroundTile)
+            IsGroundTileBrush(context.BrushType))
         {
             reason = null;
             return true;
         }
 
         return TryGetBrushPrefab(context, out _, out reason);
+    }
+
+    private static bool IsGroundTileBrush(LevelEditorBrushType brushType)
+    {
+        return brushType == LevelEditorBrushType.GroundTile ||
+            brushType == LevelEditorBrushType.GroundTileErase;
     }
 
     private static bool CanPaintGroundTile(LevelEditorContext context, out string reason)

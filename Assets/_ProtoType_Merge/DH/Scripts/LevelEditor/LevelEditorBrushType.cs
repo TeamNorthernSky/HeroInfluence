@@ -8,5 +8,6 @@ public enum LevelEditorBrushType
     Castle = 5,
     VillainUnion = 6,
     EnemyGroup = 8,
-    GroundTile = 9
+    GroundTile = 9,
+    GroundTileErase = 10
 }
