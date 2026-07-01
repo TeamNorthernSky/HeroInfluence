@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
@@ -25,7 +26,7 @@ namespace ASB.Work.Battle.Sequence
             _battleSpeed = battleSpeed;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             _onHitCallback?.Invoke();
 

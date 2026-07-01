@@ -7,15 +7,11 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
 /// <summary>
 /// EnemyPlace 최상위에 부착. Grid/Grid_n 월드 위치 참조, 소환 유닛은 Units 자식.
-/// 프리팹은 인스펙터 오버라이드(1순위) 또는 Resources/prefab/EnemyUnit/Unit_{Index} 에서 로드.
+/// 프리팹은 Resources/prefab/BattlePrefab/EnemyUnit 아래에서 Unit_{UnitType}_{Index} 규칙으로 로드합니다.
 /// </summary>
 public class EnemySpawner : MonoBehaviour
 {
     private static readonly Quaternion FacingPlayerYawOffset = Quaternion.Euler(0f, 180f, 0f);
-
-    [Header("Prefab Overrides (Index -> Prefab 매핑)")]
-    [SerializeField] private List<PrefabMapping> prefabOverrides = new List<PrefabMapping>();
-    private Dictionary<string, GameObject> _prefabOverrideDict;
 
     [Serializable]
     public struct SpawnRequest
@@ -40,8 +36,6 @@ public class EnemySpawner : MonoBehaviour
 
     private void Awake()
     {
-        EnsurePrefabOverrideDictBuilt();
-
         gridSlots.Clear();
         gridRotations.Clear();
         gridCellsByNumber.Clear();
@@ -76,43 +70,6 @@ public class EnemySpawner : MonoBehaviour
         }
 
         hierarchyReady = true;
-    }
-
-    private void EnsurePrefabOverrideDictBuilt()
-    {
-        if (_prefabOverrideDict != null)
-        {
-            return;
-        }
-
-        _prefabOverrideDict = new Dictionary<string, GameObject>(StringComparer.Ordinal);
-        if (prefabOverrides == null || prefabOverrides.Count == 0)
-        {
-            return;
-        }
-
-        foreach (PrefabMapping mapping in prefabOverrides)
-        {
-            if (string.IsNullOrWhiteSpace(mapping.unitIndex))
-            {
-                continue;
-            }
-
-            if (mapping.prefab == null)
-            {
-                Debug.LogWarning($"[EnemySpawner] PrefabOverride: Index '{mapping.unitIndex}'에 프리팹이 연결되지 않았습니다.");
-                continue;
-            }
-
-            string key = mapping.unitIndex.Trim();
-            if (_prefabOverrideDict.ContainsKey(key))
-            {
-                Debug.LogWarning($"[EnemySpawner] PrefabOverride: Index '{key}' 중복 등록. 첫 번째 항목만 사용됩니다.");
-                continue;
-            }
-
-            _prefabOverrideDict.Add(key, mapping.prefab);
-        }
     }
 
     private void Start()
@@ -150,25 +107,18 @@ public class EnemySpawner : MonoBehaviour
             return null;
         }
 
-        EnsurePrefabOverrideDictBuilt();
-
         string trimmedIndex = data.Index.Trim();
+        string suffix = $"_{trimmedIndex}";
 
-        if (_prefabOverrideDict.TryGetValue(trimmedIndex, out GameObject overridePrefab) &&
-            overridePrefab != null)
+        GameObject[] all = Resources.LoadAll<GameObject>("prefab/BattlePrefab/EnemyUnit");
+        foreach (GameObject prefab in all)
         {
-            return overridePrefab;
+            if (prefab.name.EndsWith(suffix))
+                return prefab;
         }
 
-        string path = $"prefab/BattlePrefab/EnemyUnit/Unit_{trimmedIndex}";
-        var prefab = Resources.Load<GameObject>(path);
-        if (prefab == null)
-        {
-            Debug.LogError($"[EnemySpawner] 프리팹을 찾을 수 없습니다: {path}");
-            return null;
-        }
-
-        return prefab;
+        Debug.LogError($"[EnemySpawner] Prefab not found. Index={trimmedIndex}");
+        return null;
     }
 
     public GameObject SpawnUnit(string enemyId, int gridNumber)

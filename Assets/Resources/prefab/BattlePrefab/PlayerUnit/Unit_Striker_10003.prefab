@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 5445362780020678662}
   - component: {fileID: 5228365362810406605}
   m_Layer: 8
-  m_Name: Unit_Striker
+  m_Name: Unit_Striker_10003
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

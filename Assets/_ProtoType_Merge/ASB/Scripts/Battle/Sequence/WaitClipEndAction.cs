@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
@@ -23,7 +24,7 @@ namespace ASB.Work.Battle.Sequence
             _onElapsed = onElapsed;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             if (_anim == null || string.IsNullOrEmpty(_stateName))
             {

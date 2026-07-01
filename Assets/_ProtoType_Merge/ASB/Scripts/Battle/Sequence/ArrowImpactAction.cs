@@ -35,7 +35,7 @@ namespace ASB.Work.Battle.Sequence
             _targetAnimTrigger = targetAnimTrigger;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             if (_target == null || _target.IsDead)
             {

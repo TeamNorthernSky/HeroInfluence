@@ -8,6 +8,6 @@ namespace ASB.Work.Battle.Sequence
     /// </summary>
     public abstract class BattleSequenceAction
     {
-        public abstract IEnumerator ExecuteRoutine();
+        public abstract IEnumerator ExecuteRoutine(MonoBehaviour host);
     }
 }

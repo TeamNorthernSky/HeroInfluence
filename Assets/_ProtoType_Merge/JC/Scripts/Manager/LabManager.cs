@@ -88,6 +88,16 @@ public class LabManager : MonoBehaviour
         if (!repo.TryGetUnit(unitIndex, out var unit) || unit == null) return false;
         if (!catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out var template) || template == null) return false;
         className = template.UnitType;
+        if (!string.IsNullOrWhiteSpace(unit.UnitTemplateKey) && int.TryParse(unit.UnitTemplateKey.Trim(), out classIndex))
+        {
+            return classIndex > 0;
+        }
+
+        if (!string.IsNullOrWhiteSpace(template.Index) && int.TryParse(template.Index.Trim(), out classIndex))
+        {
+            return classIndex > 0;
+        }
+
         return !string.IsNullOrWhiteSpace(className)
                && ClassNameToIndex.TryGetValue(className.Trim(), out classIndex);
     }
@@ -100,11 +110,11 @@ public class LabManager : MonoBehaviour
         var catalog = DHCsvTemplateCatalog.Instance;
         if (repo == null || catalog == null) return result;
         if (!repo.TryGetUnit(unitIndex, out var unit) || unit == null) return result;
-        if (!TryResolveClass(unitIndex, out var className, out _)) return result;
+        if (!TryResolveClass(unitIndex, out _, out int classIndex)) return result;
 
-        foreach (var s in catalog.GetSkillsByClass(className))
+        foreach (var s in catalog.GetAvailableSkillsByClassIndex(classIndex, unit.Level))
         {
-            if (s != null && s.acquireLevel <= Mathf.Max(1, unit.Level))
+            if (s != null)
                 result.Add(s);
         }
         return result;
@@ -116,8 +126,8 @@ public class LabManager : MonoBehaviour
         var result = new List<SkillData>();
         var catalog = DHCsvTemplateCatalog.Instance;
         if (catalog == null) return result;
-        if (!TryResolveClass(unitIndex, out var className, out _)) return result;
-        foreach (var s in catalog.GetSkillsByClass(className))
+        if (!TryResolveClass(unitIndex, out _, out int classIndex)) return result;
+        foreach (var s in catalog.GetSkillsByClassIndex(classIndex))
             if (s != null) result.Add(s);
         return result;
     }
@@ -127,8 +137,23 @@ public class LabManager : MonoBehaviour
     {
         if (skill == null) return false;
         var repo = PersistentUnitRepository.Instance;
+        var catalog = DHCsvTemplateCatalog.Instance;
         if (repo == null || !repo.TryGetUnit(unitIndex, out var unit) || unit == null) return false;
-        return skill.acquireLevel <= Mathf.Max(1, unit.Level);
+        if (catalog == null || !TryResolveClass(unitIndex, out _, out int classIndex)) return false;
+
+        List<SkillData> classSkills = catalog.GetSkillsByClassIndex(classIndex);
+        bool belongsToClass = false;
+        for (int i = 0; i < classSkills.Count; i++)
+        {
+            SkillData candidate = classSkills[i];
+            if (candidate != null && candidate.skillIndex == skill.skillIndex)
+            {
+                belongsToClass = true;
+                break;
+            }
+        }
+
+        return belongsToClass && skill.acquireLevel <= Mathf.Max(1, unit.Level);
     }
 
     // ─── 스킬 강화 레벨 조회 ───────────────────────────────────

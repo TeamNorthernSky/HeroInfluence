@@ -29,7 +29,7 @@ namespace ASB.Work.Battle.Sequence
             while (_queue.Count > 0)
             {
                 BattleSequenceAction action = _queue.Dequeue();
-                yield return host.StartCoroutine(action.ExecuteRoutine());
+                yield return host.StartCoroutine(action.ExecuteRoutine(host));
             }
         }
     }

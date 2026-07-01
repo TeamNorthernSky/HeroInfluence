@@ -936,7 +936,7 @@ public class BattleManager : MonoBehaviour
         yield return WaitForBattleSeconds(Mathf.Max(remainingTotal, 0.2f));
 
         if (target != null)
-            yield return StartCoroutine(new WaitTargetReactionAction(target, _currentBattleSpeed).ExecuteRoutine());
+            yield return StartCoroutine(new WaitTargetReactionAction(target, _currentBattleSpeed).ExecuteRoutine(this));
     }
 
     private static void ResolveSkillMovement(

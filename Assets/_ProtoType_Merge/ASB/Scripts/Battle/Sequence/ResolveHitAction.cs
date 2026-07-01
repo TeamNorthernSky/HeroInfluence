@@ -35,7 +35,7 @@ namespace ASB.Work.Battle.Sequence
             _visual = visual;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             GetHitDelays(out float damagePopupDelay, out float hitAnimationDelay);
 

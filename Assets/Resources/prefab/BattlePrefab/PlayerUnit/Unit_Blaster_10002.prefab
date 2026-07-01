@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 2382002667043095403}
   - component: {fileID: 5130905012270186966}
   m_Layer: 8
-  m_Name: Unit_Blaster
+  m_Name: Unit_Blaster_10002
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1023,6 +1023,41 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         return $"{trimmedUnitName}\u001f{Mathf.Max(1, characterLevel)}";
     }
 
+    private static string BuildPrototypeSkillCacheKey(int classIndex, int characterLevel)
+    {
+        return $"class:{classIndex}\u001f{Mathf.Max(1, characterLevel)}";
+    }
+
+    private bool TryResolvePlayerClassIndex(string trimmedUnitName, out int classIndex)
+    {
+        classIndex = 0;
+
+        if (SourceEnemyData != null)
+        {
+            return false;
+        }
+
+        if (SourceData != null &&
+            !string.IsNullOrWhiteSpace(SourceData.UnitTemplateKey) &&
+            int.TryParse(SourceData.UnitTemplateKey.Trim(), out classIndex))
+        {
+            return classIndex > 0;
+        }
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null &&
+            !string.IsNullOrWhiteSpace(trimmedUnitName) &&
+            catalog.TryGetPlayerTemplate(trimmedUnitName, out UnitData template) &&
+            template != null &&
+            !string.IsNullOrWhiteSpace(template.Index) &&
+            int.TryParse(template.Index.Trim(), out classIndex))
+        {
+            return classIndex > 0;
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// SkillManager(우선) 또는 skillDataLoader로 후보를 채웁니다. 매니저/로더가 없으면 목록을 덮어쓰지 않습니다.
     /// </summary>
@@ -1046,7 +1081,10 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
 
         hasLoggedEmptyUnitNameWarning = false;
-        string cacheKey = BuildPrototypeSkillCacheKey(trimmed, level);
+        bool hasPlayerClassIndex = TryResolvePlayerClassIndex(trimmed, out int playerClassIndex);
+        string cacheKey = hasPlayerClassIndex
+            ? BuildPrototypeSkillCacheKey(playerClassIndex, level)
+            : BuildPrototypeSkillCacheKey(trimmed, level);
         if (!forceRefresh && prototypeSkillsCacheKey == cacheKey && availableSkills.Count > 0)
         {
             return;
@@ -1061,7 +1099,16 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         if (skillManager != null)
         {
             availableSkills.Clear();
-            availableSkills.AddRange(skillManager.GetAvailableSkillsForCharacter(trimmed, level));
+            if (hasPlayerClassIndex)
+            {
+                availableSkills.AddRange(skillManager.GetAvailableSkillsForCharacter(playerClassIndex, level));
+            }
+
+            if (availableSkills.Count == 0)
+            {
+                availableSkills.AddRange(skillManager.GetAvailableSkillsForCharacter(trimmed, level));
+            }
+
             prototypeSkillsCacheKey = cacheKey;
             return;
         }
@@ -1069,7 +1116,16 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         if (DHCsvTemplateCatalog.Instance != null)
         {
             availableSkills.Clear();
-            availableSkills.AddRange(DHCsvTemplateCatalog.Instance.GetSkillsByClass(trimmed));
+            if (hasPlayerClassIndex)
+            {
+                availableSkills.AddRange(DHCsvTemplateCatalog.Instance.GetAvailableSkillsByClassIndex(playerClassIndex, level));
+            }
+
+            if (availableSkills.Count == 0)
+            {
+                availableSkills.AddRange(DHCsvTemplateCatalog.Instance.GetSkillsByClass(trimmed));
+            }
+
             prototypeSkillsCacheKey = cacheKey;
             return;
         }

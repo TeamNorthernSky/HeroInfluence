@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
@@ -14,7 +15,7 @@ namespace ASB.Work.Battle.Sequence
             _unit = unit;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             if (_unit == null || _unit.IsDead)
             {

@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
@@ -21,7 +22,7 @@ namespace ASB.Work.Battle.Sequence
             _actor = actor;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             // 궁수라면 애니 시작 전 HoldArrow 활성화
             _actor?.GetComponent<UnitVisualProfile>()?.HoldArrow?.SetActive(true);

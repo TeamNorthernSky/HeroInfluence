@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
@@ -30,7 +31,7 @@ namespace ASB.Work.Battle.Sequence
             _animEventTimeout = animEventTimeout;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             float elapsed = 0f;
 
