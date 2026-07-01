@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
@@ -19,7 +20,7 @@ namespace ASB.Work.Battle.Sequence
             _visual = visual;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             _visual?.PlayAttackEffect(_actor, _skillIndex);
             yield break;

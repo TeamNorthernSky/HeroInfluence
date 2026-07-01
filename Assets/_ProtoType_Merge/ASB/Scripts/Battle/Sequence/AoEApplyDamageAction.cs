@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using ASB.Work.Battle.Core;
+using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
@@ -30,7 +31,7 @@ namespace ASB.Work.Battle.Sequence
             _visual = visual;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             for (int i = 0; i < _pairCount; i++)
             {

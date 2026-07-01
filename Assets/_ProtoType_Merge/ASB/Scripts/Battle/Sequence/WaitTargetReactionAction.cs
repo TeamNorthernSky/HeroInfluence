@@ -28,7 +28,7 @@ namespace ASB.Work.Battle.Sequence
             _maxWait = maxWait;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             if (_target == null) yield break;
 

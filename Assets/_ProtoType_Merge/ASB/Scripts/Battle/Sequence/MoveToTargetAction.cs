@@ -25,7 +25,7 @@ namespace ASB.Work.Battle.Sequence
             _duration = duration;
         }
 
-        public override IEnumerator ExecuteRoutine()
+        public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             if (_anim == null || _target == null)
             {
