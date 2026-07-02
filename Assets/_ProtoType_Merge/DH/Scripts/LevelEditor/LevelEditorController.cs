@@ -175,7 +175,7 @@ public class LevelEditorController : MonoBehaviour
                 levelData.SetVillainUnion(grid);
                 break;
             case LevelEditorBrushType.Erase:
-                levelData.EraseAt(grid);
+                levelData.EraseNonGroundTileAt(grid);
                 break;
             case LevelEditorBrushType.TileSelection:
                 return;
@@ -192,7 +192,7 @@ public class LevelEditorController : MonoBehaviour
         if (!hoveredGrid.HasValue)
             return;
 
-        levelData.EraseAt(hoveredGrid.Value);
+        levelData.EraseNonGroundTileAt(hoveredGrid.Value);
         MarkLevelDataDirty();
 
         if (applyLevelAfterEdit)

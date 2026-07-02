@@ -21,6 +21,9 @@ public class PartyGridMover : MonoBehaviour
     private Vector2Int currentGrid;
     private float fixedY;
     private PartyMovePointController movePointController;
+    private PartyIdentity cachedIdentity;
+    private bool restoredPersistentPosition;
+    private bool canRefreshCastleStartAfterLevelLoad;
     private const string ScenePartyPrefabKey = "scene";
 
     public Vector2Int? TargetInteractionGrid { get; private set; }
@@ -33,8 +36,23 @@ public class PartyGridMover : MonoBehaviour
     private void Awake()
     {
         fixedY = transform.position.y;
+        cachedIdentity = GetComponent<PartyIdentity>();
         currentGrid = gridManager != null ? gridManager.WorldToGrid(transform.position) : Vector2Int.zero;
         movePointController = new PartyMovePointController(maxMovePoints);
+    }
+
+    private void OnEnable()
+    {
+        LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
+        LevelLoader.RuntimeLevelLoaded += HandleRuntimeLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded += HandleRuntimeLayoutLoaded;
+    }
+
+    private void OnDisable()
+    {
+        LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
     }
 
     // [JC 추가 260511] 위치 영속화: PartyPersistentData.LastGrid가 있으면 그 위치로 복원
@@ -46,8 +64,9 @@ public class PartyGridMover : MonoBehaviour
     // [JC 수정 260514 R-1] SnapToGridPosition을 notifyMoveCompleted=false로 호출 — Start 시점 자동 전투 트리거 방지.
     private void Start()
     {
-        var identity = GetComponent<PartyIdentity>();
+        var identity = cachedIdentity != null ? cachedIdentity : GetComponent<PartyIdentity>();
         if (identity == null) return;
+        cachedIdentity = identity;
 
         var repo = PartyPersistentRepository.Instance;
         PartyPersistentData partyData = null;
@@ -69,14 +88,19 @@ public class PartyGridMover : MonoBehaviour
         {
             SnapToGridPosition(worldState.Grid, notifyMoveCompleted: false);
             restoredPosition = true;
+            restoredPersistentPosition = true;
+            canRefreshCastleStartAfterLevelLoad = false;
         }
         else if (partyData != null && partyData.HasLastGrid)
         {
             SnapToGridPosition(partyData.LastGrid, notifyMoveCompleted: false);
             restoredPosition = true;
+            restoredPersistentPosition = true;
+            canRefreshCastleStartAfterLevelLoad = false;
         }
         else if (gridManager != null)
         {
+            canRefreshCastleStartAfterLevelLoad = true;
             if (TryResolveCastleStartGrid(out Vector2Int startGrid))
             {
                 SnapToGridPosition(startGrid, notifyMoveCompleted: false);
@@ -90,6 +114,35 @@ public class PartyGridMover : MonoBehaviour
 
         if (restoredPosition && partyData == null)
             StartCoroutine(PersistCurrentGridWhenPartyDataReady(identity));
+    }
+
+    private void HandleRuntimeLevelLoaded(LevelLoader _)
+    {
+        RefreshCastleStartAfterLevelLoad();
+    }
+
+    private void HandleRuntimeLayoutLoaded(LevelZoneLayoutLoader _)
+    {
+        RefreshCastleStartAfterLevelLoad();
+    }
+
+    private void RefreshCastleStartAfterLevelLoad()
+    {
+        if (!Application.isPlaying ||
+            restoredPersistentPosition ||
+            !canRefreshCastleStartAfterLevelLoad ||
+            gridManager == null ||
+            cachedIdentity == null)
+        {
+            return;
+        }
+
+        if (!TryResolveCastleStartGrid(out Vector2Int startGrid))
+            return;
+
+        SnapToGridPosition(startGrid, notifyMoveCompleted: false);
+        canRefreshCastleStartAfterLevelLoad = false;
+        StartCoroutine(PersistCurrentGridWhenPartyDataReady(cachedIdentity));
     }
 
     private void Update()

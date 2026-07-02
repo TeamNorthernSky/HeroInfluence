@@ -58,6 +58,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
     public GridManager GridManager => gridManager;
     public LevelPrefabRegistry PrefabRegistry => prefabRegistry;
     public IReadOnlyList<LoadedLevelZoneData> LoadedZones => loadedZones;
+    public static event System.Action<LevelZoneLayoutLoader> RuntimeLayoutLoaded;
 
 #if UNITY_EDITOR
     private bool queuedEditorReload;
@@ -124,6 +125,9 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 levelData));
             LoadZoneLevelData(zone, levelData);
         }
+
+        if (Application.isPlaying)
+            RuntimeLayoutLoaded?.Invoke(this);
     }
 
     private void TryLoadInEditMode()

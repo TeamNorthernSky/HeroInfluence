@@ -62,6 +62,7 @@ public class LevelEditorWindow : EditorWindow
     private bool sceneEditingEnabled = true;
     private string sceneStatus;
     private Vector2Int? lastEditedGroundTileGrid;
+    private Vector2Int? lastEditedObstacleGrid;
     private Vector2Int? tileSelectionStart;
     private Vector2Int? tileSelectionEnd;
     private bool isSelectingTiles;
@@ -502,6 +503,7 @@ public class LevelEditorWindow : EditorWindow
         if (currentEvent.type == EventType.MouseUp)
         {
             lastEditedGroundTileGrid = null;
+            lastEditedObstacleGrid = null;
             if (isSelectingTiles && context.BrushType == LevelEditorBrushType.TileSelection)
             {
                 if (hasHoveredGrid)
@@ -524,9 +526,10 @@ public class LevelEditorWindow : EditorWindow
 
         bool isTileBrush = context.BrushType == LevelEditorBrushType.GroundTile ||
             context.BrushType == LevelEditorBrushType.GroundTileErase;
+        bool isObstacleBrush = context.BrushType == LevelEditorBrushType.Obstacle;
         bool leftPaintEvent = currentEvent.button == 0 &&
             (currentEvent.type == EventType.MouseDown ||
-             (currentEvent.type == EventType.MouseDrag && (isTileBrush || isTileSelectionBrush)));
+             (currentEvent.type == EventType.MouseDrag && (isTileBrush || isTileSelectionBrush || isObstacleBrush)));
         bool rightEraseEvent = currentEvent.button == 1 && currentEvent.type == EventType.MouseDown;
 
         if (leftPaintEvent)
@@ -543,6 +546,8 @@ public class LevelEditorWindow : EditorWindow
 
             if (isTileBrush)
                 lastEditedGroundTileGrid = hoveredGrid;
+            if (isObstacleBrush)
+                lastEditedObstacleGrid = hoveredGrid;
 
             currentEvent.Use();
         }
@@ -756,6 +761,13 @@ public class LevelEditorWindow : EditorWindow
             return;
         }
 
+        if (context.BrushType == LevelEditorBrushType.Obstacle &&
+            lastEditedObstacleGrid.HasValue &&
+            lastEditedObstacleGrid.Value == anchor)
+        {
+            return;
+        }
+
         if (!TryBuildBrushFootprint(context, anchor, out List<Vector2Int> footprint, out string reason)
             || !CanPlaceFootprint(context, footprint, out reason))
         {
@@ -821,7 +833,7 @@ public class LevelEditorWindow : EditorWindow
         if (label == "DecorativeBuilding")
             context.LevelData.RemoveDecorativeBuildingAt(anchor);
         else
-            context.LevelData.EraseAt(anchor);
+            context.LevelData.EraseNonGroundTileAt(anchor);
         sceneStatus = $"Erased {label} at {anchor}.";
         CommitLevelDataChange(context);
     }
@@ -1484,14 +1496,6 @@ public class LevelEditorWindow : EditorWindow
                 label = "Obstacle";
                 return true;
             }
-        }
-
-        if (levelData.TryGetGroundTileAt(grid, out TilePlacementData tilePlacement))
-        {
-            anchor = tilePlacement.GridPosition;
-            footprint = BuildFootprint(null, anchor);
-            label = $"GroundTile {tilePlacement.TileKey}";
-            return true;
         }
 
         anchor = Vector2Int.zero;

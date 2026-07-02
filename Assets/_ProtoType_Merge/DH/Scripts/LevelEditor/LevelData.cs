@@ -254,6 +254,17 @@ public class LevelData : ScriptableObject
         decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
     }
 
+    public void EraseNonGroundTileAt(Vector2Int grid)
+    {
+        obstacleCells.Remove(grid);
+        itemPlacements.RemoveAll(x => x.GridPosition == grid);
+        outpostPlacements.RemoveAll(x => x.GridPosition == grid);
+        eventPlacements.RemoveAll(x => x.GridPosition == grid);
+        enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
+        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        ClearUniquePlacementsAt(grid);
+    }
+
     public void SetCastle(Vector2Int grid)
     {
         if (!IsInsideGrid(grid))
