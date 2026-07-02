@@ -497,7 +497,15 @@ public class InputHandler : MonoBehaviour
                 continue;
             }
 
+            // 캐릭터 모델 콜라이더를 먼저 시도하고, 없으면 그리드 셀 콜라이더의 점유 유닛으로 폴백합니다.
+            // 거리순 정렬이므로 카메라에 더 가까운 쪽(대개 캐릭터 모델)이 자연스럽게 우선됩니다.
             BattleCharactor hitUnit = hits[i].collider.GetComponentInParent<BattleCharactor>();
+            if (hitUnit == null)
+            {
+                ASBGridCell hitCell = hits[i].collider.GetComponentInParent<ASBGridCell>();
+                hitUnit = hitCell?.OccupyingUnit;
+            }
+
             if (hitUnit != null)
             {
                 return hitUnit;
