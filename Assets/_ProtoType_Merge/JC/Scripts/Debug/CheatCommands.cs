@@ -12,6 +12,7 @@ public static class CheatCommands
         CheatCommandRegistry.Register("Ain Soph Aur", AinSophAur);
         CheatCommandRegistry.Register("Logos", Logos);
         CheatCommandRegistry.Register("Malkuth", Malkuth);
+        CheatCommandRegistry.Register("Asmoday", Asmoday);
     }
 
     private static string TetraAnax(string[] args)
@@ -48,6 +49,14 @@ public static class CheatCommands
         const int delta = 100;
         bc.AddIPToAllHeroes(delta);
         return $"Logos → all heroes IP +{delta}";
+    }
+
+    private static string Asmoday(string[] args)
+    {
+        bool enabled = DHExplorationCheatState.ToggleUnlimitedMovePoints();
+        return enabled
+            ? "Asmoday -> exploration move points unlimited ON"
+            : "Asmoday -> exploration move points unlimited OFF";
     }
 
     private static string Malkuth(string[] args)
