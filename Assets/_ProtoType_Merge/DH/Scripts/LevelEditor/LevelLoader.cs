@@ -15,6 +15,7 @@ public class LevelLoader : MonoBehaviour
     private const string EnemyRootName = "EnemyRoot";
     private const string CastleRootName = "CastleRoot";
     private const string VillainUnionRootName = "VillainUnionRoot";
+    private const string DecorativeBuildingRootName = "DecorativeBuildingRoot";
 
     [Header("Data")]
     [SerializeField] private LevelData levelData;
@@ -35,6 +36,7 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private Transform enemyRoot;
     [SerializeField] private Transform castleRoot;
     [SerializeField] private Transform villainUnionRoot;
+    [SerializeField] private Transform decorativeBuildingRoot;
 
     [Header("Load Options")]
     [SerializeField] private bool loadOnStart;
@@ -96,6 +98,7 @@ public class LevelLoader : MonoBehaviour
         SpawnEvents();
         SpawnEnemyPlacements();
         SpawnUniqueBuildings();
+        SpawnDecorativeBuildings();
     }
 
     private void TryLoadInEditMode()
@@ -394,6 +397,28 @@ public class LevelLoader : MonoBehaviour
         SpawnComponent(villainUnionBasePrefab, placement.GridPosition, parent);
     }
 
+    private void SpawnDecorativeBuildings()
+    {
+        if (prefabRegistry == null)
+            return;
+
+        var placements = levelData.DecorativeBuildingPlacements;
+        Transform parent = GetDecorativeBuildingRoot(true);
+        for (int i = 0; i < placements.Count; i++)
+        {
+            DecorativeBuildingPlacementData placement = placements[i];
+            if (!prefabRegistry.TryGetDecorativeBuildingPrefab(placement.PrefabKey, out GameObject prefab))
+            {
+                Debug.LogWarning(
+                    $"LevelLoader could not find a decorative building prefab for key '{placement.PrefabKey}'.",
+                    this);
+                continue;
+            }
+
+            SpawnDecorativeGameObject(prefab, placement.GridPosition, parent);
+        }
+    }
+
     private void ClearSpawnedObjects()
     {
         if (tileMeshGenerator != null)
@@ -405,6 +430,7 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(GetEventRoot(false));
         ClearChildren(GetCastleRoot(false));
         ClearChildren(GetVillainUnionRoot(false));
+        ClearChildren(GetDecorativeBuildingRoot(false));
         ClearLevelSpawnedEnemies();
         ClearDirectChildrenWithComponent<CastleUnit>();
         ClearDirectChildrenWithComponent<VillainUnionBase>();
@@ -510,6 +536,9 @@ public class LevelLoader : MonoBehaviour
     private Transform GetVillainUnionRoot(bool createIfMissing) =>
         GetSpawnRoot(ref villainUnionRoot, VillainUnionRootName, createIfMissing);
 
+    private Transform GetDecorativeBuildingRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref decorativeBuildingRoot, DecorativeBuildingRootName, createIfMissing);
+
     private Transform GetSpawnRoot(ref Transform root, string rootName, bool createIfMissing)
     {
         if (root != null)
@@ -554,6 +583,26 @@ public class LevelLoader : MonoBehaviour
         T instance = Instantiate(prefab, worldPosition, Quaternion.identity, parent);
         ApplyMultiGridAnchor(instance.gameObject, grid);
         return instance;
+    }
+
+    private GameObject SpawnDecorativeGameObject(GameObject prefab, Vector2Int grid, Transform parent)
+    {
+        if (prefab == null || !levelData.IsInsideGrid(grid))
+            return null;
+
+        DecorativeBuildingPlacement placement = prefab.GetComponent<DecorativeBuildingPlacement>();
+        if (placement == null)
+        {
+            Debug.LogWarning(
+                $"Decorative building prefab '{prefab.name}' needs a DecorativeBuildingPlacement component.",
+                this);
+            return null;
+        }
+
+        Vector3 anchorWorldPosition = gridManager.GridToWorldCenter(grid);
+        anchorWorldPosition.y = gridManager.GetLandSurfaceY();
+        Vector3 worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
+        return Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
     }
 
     private bool IsPrefabFootprintInside(GameObject prefab, Vector2Int grid)
