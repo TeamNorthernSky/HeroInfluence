@@ -11,6 +11,9 @@ namespace ASB.Work.Battle.Core
         public bool IsHeal;
         public bool IsMiss;
         public bool TargetDied;
+        public bool WasDeadBefore;
+        public bool IsDeadAfter;
+        public bool CausedDeath;
         public int SkillIndex;
 
         public static BattleHitResult Empty(BattleCharactor target) =>

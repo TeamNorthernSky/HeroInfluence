@@ -17,20 +17,12 @@ namespace ASB.Work.Battle.SkillExecution
             result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/BleedStrike] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
 
-            // 데미지 적용 이후(사망 여부 포함)에 출혈을 부여합니다.
-            result.OnPostExecution += (totalDamage) =>
+            bool bleedApplied = SkillEffectHelper.TryApplyStatusEffect(target, StatusEffectType.bleed, BleedChance);
+            if (bleedApplied)
             {
-                if (target == null || target.IsDead)
-                {
-                    return;
-                }
-
-                bool bleedApplied = SkillEffectHelper.TryApplyStatusEffect(target, "Bleed", BleedChance);
-                if (bleedApplied)
-                {
-                    Debug.Log($"[Skill/BleedStrike] 출혈 부여 시도 (성공, 대상={target.UnitName})");
-                }
-            };
+                result.AddStatusEffect(caster, target, StatusEffectType.bleed, 1);
+                Debug.Log($"[Skill/BleedStrike] 출혈 부여 예약 (성공, 대상={target.UnitName})");
+            }
         }
     }
 
@@ -45,17 +37,8 @@ namespace ASB.Work.Battle.SkillExecution
             result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/TauntStrike] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
 
-            // 도발 부여는 데미지 적용 이후(사망 여부 포함)에 결정합니다.
-            result.OnPostExecution += (totalDamage) =>
-            {
-                if (target == null || target.IsDead)
-                {
-                    return;
-                }
-
-                SkillEffectHelper.SetTaunt(caster, target, TauntDurationTurns);
-                Debug.Log($"[Skill/TauntStrike] Taunt applied: target={target.UnitName}, source={caster.UnitName}, turns={TauntDurationTurns}");
-            };
+            result.AddStatusEffect(caster, target, StatusEffectType.taunt, TauntDurationTurns);
+            Debug.Log($"[Skill/TauntStrike] Taunt reserved: target={target.UnitName}, source={caster.UnitName}, turns={TauntDurationTurns}");
         }
 
     }
@@ -85,10 +68,10 @@ namespace ASB.Work.Battle.SkillExecution
 
 
         // 추가 효과 구현
-        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData)
+        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            SkillEffectHelper.SetStun(caster, caster, 1); // 자신에게 1턴 스턴 적용
-            Debug.Log($"[Skill/AtkAfterRest] Stun applied: target={caster.UnitName}, source={caster.UnitName}, turns=1");
+            result?.AddStatusEffect(caster, caster, StatusEffectType.stun, 1);
+            Debug.Log($"[Skill/AtkAfterRest] Stun reserved: target={caster.UnitName}, source={caster.UnitName}, turns=1");
         }
     }
 
@@ -104,10 +87,10 @@ namespace ASB.Work.Battle.SkillExecution
 
 
         // 추가 효과 구현
-        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData)
+        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            SkillEffectHelper.SetHealBan(caster, target, 100); // 대상에게 1턴 힐 밴 적용
-            Debug.Log($"[Skill/TargetHealBanSkill] applied: target={caster.UnitName}, source={caster.UnitName}");
+            result?.AddStatusEffect(caster, target, StatusEffectType.healBan, 100);
+            Debug.Log($"[Skill/TargetHealBanSkill] reserved: target={target.UnitName}, source={caster.UnitName}");
         }
     }
 
@@ -121,10 +104,10 @@ namespace ASB.Work.Battle.SkillExecution
         private const int TauntDurationTurns = 1;
 
         // 추가 효과: 타겟에게 도발 부여
-        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count)
+        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result)
         {
-            SkillEffectHelper.SetTaunt(caster, target, TauntDurationTurns);
-            Debug.Log($"[Skill/TauntStrike] Taunt applied: target={target.UnitName}, source={caster.UnitName}, turns={TauntDurationTurns}");
+            result?.AddStatusEffect(caster, target, StatusEffectType.taunt, TauntDurationTurns);
+            Debug.Log($"[Skill/TauntStrike] Taunt reserved: target={target.UnitName}, source={caster.UnitName}, turns={TauntDurationTurns}");
         }
     }
 

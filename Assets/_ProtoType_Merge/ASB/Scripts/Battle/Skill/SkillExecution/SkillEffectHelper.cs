@@ -123,22 +123,80 @@ namespace ASB.Work.Battle.SkillExecution
 
 
 
-        public static bool TryApplyStatusEffect(BattleCharactor target, string effectType, float chance)
+        public static bool TryApplyStatusEffect(BattleCharactor target, StatusEffectType effectType, float chance)
         {
             if (target == null || target.IsDead)
             {
                 return false;
             }
 
-            string safeEffectType = string.IsNullOrWhiteSpace(effectType) ? "Unknown" : effectType.Trim();
             float safeChance = Mathf.Clamp01(chance);
             bool success = Random.value < safeChance;
             if (success)
             {
-                Debug.Log($"[SkillEffect] 상태이상 부여 성공: target={target.UnitName}, effect={safeEffectType}, chance={safeChance:0.##}");
+                Debug.Log($"[SkillEffect] 상태이상 부여 성공: target={target.UnitName}, effect={effectType}, chance={safeChance:0.##}");
             }
 
             return success;
+        }
+
+        public static void ApplyStatusEffect(StatusEffectContext context)
+        {
+            if (context.Caster == null || context.Target == null || context.Target.IsDead)
+            {
+                return;
+            }
+
+            switch (context.EffectType)
+            {
+                case StatusEffectType.taunt:
+                    SetTaunt(context.Caster, context.Target, context.DurationTurn);
+                    break;
+                case StatusEffectType.stun:
+                    SetStun(context.Caster, context.Target, context.DurationTurn);
+                    break;
+                case StatusEffectType.healBan:
+                    SetHealBan(context.Caster, context.Target, context.DurationTurn);
+                    break;
+                case StatusEffectType.bleed:
+                case StatusEffectType.poison:
+                case StatusEffectType.attack_up:
+                case StatusEffectType.attack_down:
+                case StatusEffectType.defense_up:
+                case StatusEffectType.defense_down:
+                    context.Target.ApplyStatusEffect(CreateStatusEffectInstance(context));
+                    break;
+                default:
+                    Debug.LogWarning($"[SkillEffect] 지원하지 않는 상태이상 타입: {context.EffectType}");
+                    break;
+            }
+        }
+
+        private static StatusEffectInstance CreateStatusEffectInstance(StatusEffectContext context)
+        {
+            return new StatusEffectInstance
+            {
+                effectType = context.EffectType,
+                category = ResolveStatusEffectCategory(context.EffectType),
+                value = 0f,
+                remainingTurns = Mathf.Max(1, context.DurationTurn),
+                source = context.Caster
+            };
+        }
+
+        private static StatusEffectCategory ResolveStatusEffectCategory(StatusEffectType effectType)
+        {
+            switch (effectType)
+            {
+                case StatusEffectType.attack_up:
+                case StatusEffectType.defense_up:
+                    return StatusEffectCategory.buff;
+                case StatusEffectType.poison:
+                case StatusEffectType.bleed:
+                    return StatusEffectCategory.dot;
+                default:
+                    return StatusEffectCategory.debuff;
+            }
         }
 
 

@@ -4,7 +4,7 @@ namespace ASB.Work.Battle.Core
     {
         public BattleCharactor Caster;
         public BattleCharactor Target;
-        public string EffectType;
+        public StatusEffectType EffectType;
         public int DurationTurn;
     }
 }

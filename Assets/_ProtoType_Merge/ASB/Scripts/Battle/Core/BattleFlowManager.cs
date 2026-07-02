@@ -503,16 +503,21 @@ public class BattleFlowManager : MonoBehaviour
             yield break;
         }
 
-        var action = new BattleAction(
-            CurrentUnit,
-            autoTarget,
-            BattleActionType.Skill
-        );
+        CurrentUnit.ResolveSelectedSkill();
+        SkillData selectedSkill = CurrentUnit.SelectedSkillData
+                                  ?? CurrentUnit.availableSkills?.FirstOrDefault(s => s != null);
+        if (selectedSkill == null)
+        {
+            Debug.LogWarning($"[BattleFlow] 실행 가능한 스킬이 없습니다: {GetUnitLabel(CurrentUnit)}");
+            yield break;
+        }
 
-        battleManager.ExecuteAction(action);
-
-        // TODO: 턴 종료 흐름 연결
-        yield return null;
+        bool executed = false;
+        yield return StartCoroutine(battleManager.ExecuteGridSkill(CurrentUnit, autoTarget, selectedSkill, success => executed = success));
+        if (!executed)
+        {
+            Debug.LogWarning($"[BattleFlow] 자동 행동 실행 실패: actor={GetUnitLabel(CurrentUnit)}, target={GetUnitLabel(autoTarget)}");
+        }
     }
 
     /// <summary>
