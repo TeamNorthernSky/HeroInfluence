@@ -50,36 +50,46 @@ public class PartyGridMover : MonoBehaviour
         if (identity == null) return;
 
         var repo = PartyPersistentRepository.Instance;
-        if (repo == null) return;
+        PartyPersistentData partyData = null;
+        repo?.TryGetParty(identity.PartyId, out partyData);
 
-        if (!repo.TryGetParty(identity.PartyId, out var partyData) || partyData == null) return;
-
-        if (partyData.HasRemainingMovePoints)
+        if (partyData != null && partyData.HasRemainingMovePoints)
             movePointController?.SetRemaining(partyData.RemainingMovePoints);
-        else
+        else if (partyData != null)
             partyData.SetRemainingMovePoints(RemainingMovePoints);
 
         string placementKey = ResolvePlacementKey(identity);
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
 
+        bool restoredPosition = false;
         if (progressRepository != null &&
             progressRepository.TryGetPartyState(placementKey, out PartyWorldState worldState) &&
             worldState != null &&
             !worldState.Removed)
         {
             SnapToGridPosition(worldState.Grid, notifyMoveCompleted: false);
+            restoredPosition = true;
         }
-        else if (partyData.HasLastGrid)
+        else if (partyData != null && partyData.HasLastGrid)
         {
             SnapToGridPosition(partyData.LastGrid, notifyMoveCompleted: false);
+            restoredPosition = true;
         }
         else if (gridManager != null)
         {
             if (TryResolveCastleStartGrid(out Vector2Int startGrid))
+            {
                 SnapToGridPosition(startGrid, notifyMoveCompleted: false);
+                restoredPosition = true;
+            }
             else
+            {
                 StartCoroutine(SnapToCastleStartOrCurrentNextFrame(identity));
+            }
         }
+
+        if (restoredPosition && partyData == null)
+            StartCoroutine(PersistCurrentGridWhenPartyDataReady(identity));
     }
 
     private void Update()
@@ -265,12 +275,35 @@ public class PartyGridMover : MonoBehaviour
         if (TryResolveCastleStartGrid(out Vector2Int startGrid))
         {
             SnapToGridPosition(startGrid, notifyMoveCompleted: false);
+            StartCoroutine(PersistCurrentGridWhenPartyDataReady(identity));
             yield break;
         }
 
         currentGrid = gridManager.WorldToGrid(transform.position);
         GridEntered?.Invoke(currentGrid);
         PersistPartyWorldState(identity, currentGrid);
+        StartCoroutine(PersistCurrentGridWhenPartyDataReady(identity));
+    }
+
+    private IEnumerator PersistCurrentGridWhenPartyDataReady(PartyIdentity identity)
+    {
+        const int maxAttempts = 5;
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            yield return null;
+
+            if (identity == null)
+                yield break;
+
+            PartyPersistentRepository repo = PartyPersistentRepository.Instance;
+            if (repo == null || !repo.TryGetParty(identity.PartyId, out PartyPersistentData partyData) || partyData == null)
+                continue;
+
+            partyData.SetLastGrid(currentGrid);
+            partyData.SetRemainingMovePoints(RemainingMovePoints);
+            PersistPartyWorldState(identity, currentGrid);
+            yield break;
+        }
     }
 
     private bool TryResolveCastleStartGrid(out Vector2Int startGrid)
