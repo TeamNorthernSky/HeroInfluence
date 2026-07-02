@@ -35,10 +35,10 @@ public class SystemMenuController : MonoBehaviour
 
         // [JC 260513] ESC 정책 통일 — 모든 씬 공통: Top 모달이 있으면 그것 닫고, 없으면 시스템 메뉴 토글.
         // 기존 정책(LobbyScene만 Top닫기, 그 외 무조건 TogglePause) 폐기.
-        // SystemMenuModal 자신이 Top일 때는 자기를 닫는 ModalRegistry.CloseTop이 작동 — 별도 가드 불필요.
-        if (ModalRegistry.HasAny)
+        // SystemMenuModal 자신이 Top일 때는 자기를 닫는 ModalManager.CloseTop이 작동 — 별도 가드 불필요.
+        if (ModalManager.HasAny)
         {
-            ModalRegistry.CloseTop();
+            ModalManager.CloseTop();
             // SystemMenuModal이 닫힌 경우 timeScale 복원은 ModalPauseGate.Refresh가 처리 (Modal.OnDisable에서 자동 호출).
         }
         else

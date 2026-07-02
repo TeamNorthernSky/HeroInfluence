@@ -123,8 +123,8 @@ public class TitleMenuController : MonoBehaviour
     {
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
 
-        if (ModalRegistry.HasAny)
-            ModalRegistry.CloseTop();
+        if (ModalManager.HasAny)
+            ModalManager.CloseTop();
         else
             OnQuitClicked();
     }
