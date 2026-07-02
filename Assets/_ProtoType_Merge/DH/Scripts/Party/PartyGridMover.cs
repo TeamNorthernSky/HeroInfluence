@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -74,9 +75,10 @@ public class PartyGridMover : MonoBehaviour
         }
         else if (gridManager != null)
         {
-            currentGrid = gridManager.WorldToGrid(transform.position);
-            GridEntered?.Invoke(currentGrid);
-            PersistPartyWorldState(identity, currentGrid);
+            if (TryResolveCastleStartGrid(out Vector2Int startGrid))
+                SnapToGridPosition(startGrid, notifyMoveCompleted: false);
+            else
+                StartCoroutine(SnapToCastleStartOrCurrentNextFrame(identity));
         }
     }
 
@@ -95,7 +97,8 @@ public class PartyGridMover : MonoBehaviour
             transform.position = target;
             pathQueue.Dequeue();
             currentGrid = nextGrid;
-            movePointController?.SpendStep();
+            if (!DHExplorationCheatState.UnlimitedMovePoints)
+                movePointController?.SpendStep();
             bool reachedPathEnd = pathQueue.Count == 0;
 
             GridEntered?.Invoke(currentGrid);
@@ -119,12 +122,16 @@ public class PartyGridMover : MonoBehaviour
     }
 
     public bool IsMoving => isMoving;
-    public int RemainingMovePoints => movePointController != null ? movePointController.RemainingMovePoints : 0;
+    public int RemainingMovePoints => DHExplorationCheatState.UnlimitedMovePoints
+        ? maxMovePoints
+        : movePointController != null ? movePointController.RemainingMovePoints : 0;
     public int MaxMovePoints => maxMovePoints;
 
     public bool CanSpendMovePoints(int amount)
     {
-        return HasAnyValidPartyUnit() && movePointController != null && movePointController.CanSpend(amount);
+        return HasAnyValidPartyUnit() &&
+            (DHExplorationCheatState.UnlimitedMovePoints ||
+             movePointController != null && movePointController.CanSpend(amount));
     }
 
     public void ResetMovePointsToMax()
@@ -246,6 +253,67 @@ public class PartyGridMover : MonoBehaviour
             grid,
             identity.PlacementSource,
             ScenePartyPrefabKey);
+    }
+
+    private IEnumerator SnapToCastleStartOrCurrentNextFrame(PartyIdentity identity)
+    {
+        yield return null;
+
+        if (identity == null || gridManager == null)
+            yield break;
+
+        if (TryResolveCastleStartGrid(out Vector2Int startGrid))
+        {
+            SnapToGridPosition(startGrid, notifyMoveCompleted: false);
+            yield break;
+        }
+
+        currentGrid = gridManager.WorldToGrid(transform.position);
+        GridEntered?.Invoke(currentGrid);
+        PersistPartyWorldState(identity, currentGrid);
+    }
+
+    private bool TryResolveCastleStartGrid(out Vector2Int startGrid)
+    {
+        startGrid = Vector2Int.zero;
+
+        CastleUnit castle = ResolveStartCastle();
+        if (castle == null)
+            return false;
+
+        IReadOnlyList<Vector2Int> interactionCells = castle.GetInteractionCells();
+        if (interactionCells == null || interactionCells.Count == 0)
+            return false;
+
+        startGrid = interactionCells[0];
+        for (int i = 1; i < interactionCells.Count; i++)
+        {
+            Vector2Int candidate = interactionCells[i];
+            if (candidate.x < startGrid.x ||
+                (candidate.x == startGrid.x && candidate.y < startGrid.y))
+            {
+                startGrid = candidate;
+            }
+        }
+
+        return true;
+    }
+
+    private static CastleUnit ResolveStartCastle()
+    {
+        CastleRegistry registry = FindFirstObjectByType<CastleRegistry>();
+        if (registry != null)
+        {
+            IReadOnlyList<CastleUnit> castles = registry.Castles;
+            for (int i = 0; i < castles.Count; i++)
+            {
+                if (castles[i] != null)
+                    return castles[i];
+            }
+        }
+
+        CastleUnit[] sceneCastles = FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
+        return sceneCastles != null && sceneCastles.Length > 0 ? sceneCastles[0] : null;
     }
 
     public List<Vector2Int> GetRemainingPath()

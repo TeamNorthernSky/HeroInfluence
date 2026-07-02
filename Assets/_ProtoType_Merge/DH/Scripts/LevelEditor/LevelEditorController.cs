@@ -25,6 +25,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private EnemyBehaviorType enemyBehaviorType = EnemyBehaviorType.Mobile;
     [SerializeField] private LevelTileRegistry tileRegistry;
     [SerializeField] private string selectedTileKey;
+    [SerializeField] private string selectedDecorativeBuildingKey;
 
     [Header("Behaviour")]
     [SerializeField] private bool allowRuntimeEditing;
@@ -45,6 +46,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private Color enemyGroupEncounterZoneColor = new Color(1f, 0.15f, 0.15f, 0.25f);
     [SerializeField] private Color castleColor = new Color(0.95f, 0.85f, 0.25f, 0.75f);
     [SerializeField] private Color villainUnionColor = new Color(0.95f, 0.25f, 0.55f, 0.75f);
+    [SerializeField] private Color decorativeBuildingColor = new Color(0.95f, 0.65f, 0.25f, 0.75f);
 
     private Vector2Int? hoveredGrid;
 
@@ -60,6 +62,7 @@ public class LevelEditorController : MonoBehaviour
     public EnemyBehaviorType EnemyBehaviorType => enemyBehaviorType;
     public LevelTileRegistry TileRegistry => tileRegistry;
     public string SelectedTileKey => selectedTileKey;
+    public string SelectedDecorativeBuildingKey => selectedDecorativeBuildingKey;
     public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
     public LayerMask GroundMask => groundMask;
 
@@ -159,6 +162,12 @@ public class LevelEditorController : MonoBehaviour
             case LevelEditorBrushType.GroundTileErase:
                 levelData.EraseGroundTileAt(grid);
                 break;
+            case LevelEditorBrushType.DecorativeBuilding:
+                if (string.IsNullOrWhiteSpace(selectedDecorativeBuildingKey))
+                    return;
+
+                levelData.SetDecorativeBuilding(grid, selectedDecorativeBuildingKey);
+                break;
             case LevelEditorBrushType.Castle:
                 levelData.SetCastle(grid);
                 break;
@@ -168,6 +177,8 @@ public class LevelEditorController : MonoBehaviour
             case LevelEditorBrushType.Erase:
                 levelData.EraseAt(grid);
                 break;
+            case LevelEditorBrushType.TileSelection:
+                return;
         }
 
         MarkLevelDataDirty();
@@ -216,6 +227,9 @@ public class LevelEditorController : MonoBehaviour
 
         for (int i = 0; i < levelData.EnemyPlacements.Count; i++)
             DrawEnemyGroupCells(levelData.EnemyPlacements[i].GridPosition, y, size);
+
+        for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
+            DrawCell(levelData.DecorativeBuildingPlacements[i].GridPosition, decorativeBuildingColor, y, size);
 
         if (levelData.CastlePlacement.HasPlacement)
             DrawCell(levelData.CastlePlacement.GridPosition, castleColor, y, size);

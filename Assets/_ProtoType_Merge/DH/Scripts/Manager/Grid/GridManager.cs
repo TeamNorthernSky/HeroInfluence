@@ -793,7 +793,7 @@ public class GridManager : MonoBehaviour
 
     private void DrawSquareOutlineGizmo(Vector3 center)
     {
-        Gizmos.color = Color.cyan;
+        Gizmos.color = Color.gray;
         float half = cellSize * 0.5f;
         Vector3 a = new Vector3(center.x - half, center.y, center.z - half);
         Vector3 b = new Vector3(center.x + half, center.y, center.z - half);
