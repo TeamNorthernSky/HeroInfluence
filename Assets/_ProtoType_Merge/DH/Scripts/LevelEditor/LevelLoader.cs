@@ -47,6 +47,7 @@ public class LevelLoader : MonoBehaviour
     public LevelData LevelData => levelData;
     public GridManager GridManager => gridManager;
     public LevelPrefabRegistry PrefabRegistry => prefabRegistry;
+    public static event System.Action<LevelLoader> RuntimeLevelLoaded;
 
 #if UNITY_EDITOR
     private bool queuedEditorReload;
@@ -99,6 +100,9 @@ public class LevelLoader : MonoBehaviour
         SpawnEnemyPlacements();
         SpawnUniqueBuildings();
         SpawnDecorativeBuildings();
+
+        if (Application.isPlaying)
+            RuntimeLevelLoaded?.Invoke(this);
     }
 
     private void TryLoadInEditMode()

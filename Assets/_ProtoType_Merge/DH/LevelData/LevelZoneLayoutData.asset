@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   layoutId: layout_001
   displayName: New Zone Layout
-  totalGridSize: {x: 130, y: 100}
+  totalGridSize: {x: 100, y: 80}
   zones:
   - zoneId: zone_001
     zoneType: 0
@@ -22,10 +22,10 @@ MonoBehaviour:
     size: {x: 50, y: 40}
     optional: 0
     candidates:
-    - {fileID: 11400000, guid: 2035004e0e73b4644bd0715be9bc93a3, type: 2}
+    - {fileID: 11400000, guid: 6aaa930035050784e85cccc6030f4e86, type: 2}
   - zoneId: zone_002
     zoneType: 0
-    anchor: {x: 80, y: 0}
+    anchor: {x: 50, y: 0}
     size: {x: 50, y: 40}
     optional: 0
     candidates:
@@ -34,7 +34,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 2f188831bb3807249941c05e642c9f3a, type: 2}
   - zoneId: zone_003
     zoneType: 0
-    anchor: {x: 0, y: 60}
+    anchor: {x: 0, y: 40}
     size: {x: 50, y: 40}
     optional: 0
     candidates:
@@ -43,7 +43,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 2f188831bb3807249941c05e642c9f3a, type: 2}
   - zoneId: zone_004
     zoneType: 0
-    anchor: {x: 80, y: 60}
+    anchor: {x: 50, y: 40}
     size: {x: 50, y: 40}
     optional: 0
     candidates:
