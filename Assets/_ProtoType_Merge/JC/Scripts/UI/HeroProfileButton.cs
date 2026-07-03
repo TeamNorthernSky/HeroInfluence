@@ -120,10 +120,10 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
             selectCallback.Invoke(unitIndex);
             return;
         }
-        // 인스펙터 결선이 없으면 영속 모달(GameManager.HeroInfoModal) 사용
+        // 인스펙터 결선이 없으면 영속 모달(CommonUIManager.HeroInfoModal) 사용
         var modal = infoModal != null
             ? infoModal
-            : (GameManager.Instance != null ? GameManager.Instance.HeroInfoModal : null);
+            : (CommonUIManager.Instance != null ? CommonUIManager.Instance.HeroInfoModal : null);
         if (modal == null)
         {
             Debug.LogWarning($"[HeroProfileButton] HeroInfoModal 없음 (unitIndex={unitIndex})");
