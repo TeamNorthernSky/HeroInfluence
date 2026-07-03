@@ -4800,6 +4800,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 892247254}
+  wantsDim: 1
+  dimClosesModal: 0
+  dimAlpha: 0.75
 --- !u!1001 &800781293
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6120,6 +6123,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 892247254}
+  wantsDim: 1
+  dimClosesModal: 0
+  dimAlpha: 0.75
 --- !u!1 &931546792
 GameObject:
   m_ObjectHideFlags: 0
@@ -9678,6 +9684,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 892247254}
+  wantsDim: 1
+  dimClosesModal: 0
+  dimAlpha: 0.75
 --- !u!1 &1533528155
 GameObject:
   m_ObjectHideFlags: 0
@@ -11776,9 +11785,6 @@ MonoBehaviour:
   deleteConfirmButton: {fileID: 3110000014}
   deleteCancelButton: {fileID: 3110000019}
   backButton: {fileID: 477999491}
-  overwritePopup: {fileID: 930827228}
-  overwriteConfirmButton: {fileID: 459610447}
-  overwriteCancelButton: {fileID: 1704061463}
   tutorialPopup: {fileID: 786395664}
   tutorialYesButton: {fileID: 1601865428}
   tutorialNoButton: {fileID: 2087908249}
@@ -11798,6 +11804,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 892247254}
+  wantsDim: 0
+  dimClosesModal: 0
+  dimAlpha: 0.75
 --- !u!1 &1778028130
 GameObject:
   m_ObjectHideFlags: 0
@@ -12196,6 +12205,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 892247254}
+  wantsDim: 1
+  dimClosesModal: 0
+  dimAlpha: 0.75
 --- !u!1 &1872093016
 GameObject:
   m_ObjectHideFlags: 0
@@ -12874,6 +12886,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 892247254}
+  wantsDim: 1
+  dimClosesModal: 0
+  dimAlpha: 0.75
 --- !u!1 &1956189885
 GameObject:
   m_ObjectHideFlags: 0

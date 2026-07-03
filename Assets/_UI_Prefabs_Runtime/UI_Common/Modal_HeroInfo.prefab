@@ -5177,7 +5177,6 @@ GameObject:
   - component: {fileID: 6604451957024619443}
   - component: {fileID: 789129652101924944}
   - component: {fileID: 3842167595219755624}
-  - component: {fileID: 3322480236130672240}
   - component: {fileID: 4781739885228317014}
   - component: {fileID: 3685019391495010582}
   - component: {fileID: 8015170460799302857}
@@ -5223,7 +5222,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6830269695436935952}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -5259,8 +5258,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pausesGame: 0
-  closeOnOutsideClick: 1
+  closeOnOutsideClick: 0
   contentRect: {fileID: 6011291815547145118}
+  wantsDim: 1
+  dimClosesModal: 1
+  dimAlpha: 0.75
 --- !u!114 &3842167595219755624
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5291,19 +5293,7 @@ MonoBehaviour:
   classSkillButton: {fileID: 0}
   weaponButton: {fileID: 0}
   weaponSkillButton: {fileID: 0}
---- !u!114 &3322480236130672240
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6830269695436935952}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1463031161a4ff746ac28abb4d9a7cf2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  gradeText: {fileID: 0}
 --- !u!223 &4781739885228317014
 Canvas:
   m_ObjectHideFlags: 0

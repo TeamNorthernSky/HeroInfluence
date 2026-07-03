@@ -253,6 +253,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 0}
+  wantsDim: 1
+  dimClosesModal: 1
+  dimAlpha: 0.75
 --- !u!1 &7159984622437401743
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,7 +402,6 @@ GameObject:
   - component: {fileID: 3784674470958478446}
   - component: {fileID: 4680793638767061256}
   - component: {fileID: 2552069360955416264}
-  - component: {fileID: 2622829796023715529}
   m_Layer: 0
   m_Name: Backdrop
   m_TagString: Untagged
@@ -441,7 +443,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8815147538633293555}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -464,19 +466,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &2622829796023715529
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8815147538633293555}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1463031161a4ff746ac28abb4d9a7cf2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 5701997414918198179}
 --- !u!1001 &1133445416559846837
 PrefabInstance:
   m_ObjectHideFlags: 0
