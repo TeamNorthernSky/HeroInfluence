@@ -102,7 +102,7 @@ public class MoveCommandPreviewController
         }
 
         Vector3 markerWorld = gridManager.GridToWorldCenter(destinationGrid);
-        markerWorld.y = gridManager.GetLandSurfaceY();
+        markerWorld.y = gridManager.GetLandSurfaceY() + 0.02f;
         PlaceMarker(destinationGrid, markerWorld);
         previewPath = path;
 

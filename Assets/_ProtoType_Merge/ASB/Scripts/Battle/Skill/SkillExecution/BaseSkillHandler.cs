@@ -40,7 +40,7 @@ namespace ASB.Work.Battle.SkillExecution
                 return SkillExecutionResult.Failed();
             }
 
-            var result = SkillExecutionResult.SuccessResult();
+            var result = SkillExecutionResult.SuccessResult(context.Caster, context.Skill);
             ApplySkill(context, result);
             return result;
         }
@@ -192,12 +192,12 @@ namespace ASB.Work.Battle.SkillExecution
                     ApplyHeal(context.Caster, target, context.Skill, result);
                 }
 
-                ApplyAdditionalEffect(context.Caster, target, context.Skill);
+                ApplyAdditionalEffect(context.Caster, target, context.Skill, result);
             }
         }
 
         // 추가 효과 구현
-        protected virtual void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData) { }
+        protected virtual void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result) { }
         // 추가 데미지 구현
         protected virtual void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result) { }
         // 힐 구현
@@ -297,11 +297,11 @@ namespace ASB.Work.Battle.SkillExecution
                     ApplyHeal(context.Caster, target, context.Skill, count, result);
                 }
 
-                ApplyAdditionalEffect(context.Caster, target, context.Skill, count);
+                ApplyAdditionalEffect(context.Caster, target, context.Skill, count, result);
             }
         }
 
-        protected virtual void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count) { }
+        protected virtual void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result) { }
         protected virtual void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result, bool? sharedIsCritical = null) { }
         protected virtual void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result) { }
 
@@ -328,7 +328,7 @@ namespace ASB.Work.Battle.SkillExecution
                 return SkillExecutionResult.Failed();
             }
 
-            var result = SkillExecutionResult.SuccessResult();
+            var result = SkillExecutionResult.SuccessResult(caster, skillData);
             ApplyMainEffect(caster, target, skillData, result);
 
             ASB.Work.BattleGrid.BattleGridManager gridManager = ASB.Work.BattleGrid.BattleGridManager.Instance;
@@ -363,7 +363,7 @@ namespace ASB.Work.Battle.SkillExecution
                     ApplyHeal(caster, extraTarget, skillData, result);
                 }
 
-                ApplyAdditionalEffect(caster, extraTarget, skillData);
+                ApplyAdditionalEffect(caster, extraTarget, skillData, result);
             }
 
             return result;
@@ -387,7 +387,7 @@ namespace ASB.Work.Battle.SkillExecution
         }
 
         // 추가 효과 구현
-        protected virtual void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData)
+        protected virtual void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
         }
 

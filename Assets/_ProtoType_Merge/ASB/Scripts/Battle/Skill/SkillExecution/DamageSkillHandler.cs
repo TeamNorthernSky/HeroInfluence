@@ -262,7 +262,7 @@ namespace ASB.Work.Battle.SkillExecution
             };
             hit2.IsCritical = CombatCalculator.RollCritical(hit2);
 
-            return SkillExecutionResult.SuccessResult()
+            return SkillExecutionResult.SuccessResult(caster, skillData)
                 .AddDamage(hit1)
                 .AddDamage(hit2);
         }

@@ -8,6 +8,25 @@ public class LevelEditorWindow : EditorWindow
 {
     private const string MenuPath = "DH Work/Level Editor";
 
+    private sealed class TileClipboard
+    {
+        public LevelData SourceLevelData;
+        public Vector2Int Size;
+        public readonly List<CopiedTile> Tiles = new List<CopiedTile>();
+    }
+
+    private readonly struct CopiedTile
+    {
+        public readonly Vector2Int Offset;
+        public readonly string TileKey;
+
+        public CopiedTile(Vector2Int offset, string tileKey)
+        {
+            Offset = offset;
+            TileKey = tileKey;
+        }
+    }
+
     private static readonly LevelEditorBrushType[] BrushOrder =
     {
         LevelEditorBrushType.GroundTile,
@@ -19,6 +38,7 @@ public class LevelEditorWindow : EditorWindow
         LevelEditorBrushType.Castle,
         LevelEditorBrushType.VillainUnion,
         LevelEditorBrushType.EnemyGroup,
+        LevelEditorBrushType.DecorativeBuilding,
         LevelEditorBrushType.Erase
     };
 
@@ -33,6 +53,7 @@ public class LevelEditorWindow : EditorWindow
         "Castle",
         "VillainUnion",
         "EnemyGroup",
+        "Decorative",
         "Erase"
     };
 
@@ -41,6 +62,11 @@ public class LevelEditorWindow : EditorWindow
     private bool sceneEditingEnabled = true;
     private string sceneStatus;
     private Vector2Int? lastEditedGroundTileGrid;
+    private Vector2Int? lastEditedObstacleGrid;
+    private Vector2Int? tileSelectionStart;
+    private Vector2Int? tileSelectionEnd;
+    private bool isSelectingTiles;
+    private TileClipboard tileClipboard;
 
     [MenuItem("Window/DH Work/Level Editor")]
     public static void Open()
@@ -170,6 +196,11 @@ public class LevelEditorWindow : EditorWindow
         if (brushType == LevelEditorBrushType.GroundTile)
             DrawGroundTileSelector(serializedController);
 
+        if (brushType == LevelEditorBrushType.DecorativeBuilding)
+            DrawDecorativeBuildingSelector(serializedController);
+
+        DrawTileClipboardControls(serializedController, brushType);
+
         EditorGUILayout.Space(6f);
         EditorGUILayout.LabelField("Behaviour", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(serializedController.FindProperty("allowRuntimeEditing"));
@@ -185,6 +216,37 @@ public class LevelEditorWindow : EditorWindow
             EditorUtility.SetDirty(controller);
             SceneView.RepaintAll();
         }
+    }
+
+    private void DrawTileClipboardControls(SerializedObject serializedController, LevelEditorBrushType brushType)
+    {
+        SerializedProperty brushTypeProperty = serializedController.FindProperty("brushType");
+
+        EditorGUILayout.Space(6f);
+        EditorGUILayout.LabelField("Tile Clipboard", EditorStyles.boldLabel);
+
+        bool selectionMode = brushType == LevelEditorBrushType.TileSelection;
+        using (new EditorGUILayout.HorizontalScope())
+        {
+            if (GUILayout.Toggle(selectionMode, "Selection Brush", "Button") != selectionMode)
+                brushTypeProperty.intValue = selectionMode
+                    ? (int)LevelEditorBrushType.GroundTile
+                    : (int)LevelEditorBrushType.TileSelection;
+
+            if (GUILayout.Button("Clear Selection"))
+                ClearTileSelection();
+        }
+
+        string selectionText = HasTileSelection()
+            ? $"Selection : {GetSelectionMin()} ~ {GetSelectionMax()}"
+            : "Selection : None";
+        EditorGUILayout.LabelField(selectionText, EditorStyles.miniLabel);
+
+        string clipboardText = tileClipboard != null
+            ? $"Clipboard : {tileClipboard.Size.x}x{tileClipboard.Size.y}, Tiles {tileClipboard.Tiles.Count}"
+            : "Clipboard : Empty";
+        EditorGUILayout.LabelField(clipboardText, EditorStyles.miniLabel);
+        EditorGUILayout.HelpBox("Tile selection uses Ctrl+C to copy, Ctrl+V to paste at the hovered cell, Esc to clear selection.", MessageType.Info);
     }
 
     private void DrawGroundTileSelector(SerializedObject serializedController)
@@ -243,6 +305,48 @@ public class LevelEditorWindow : EditorWindow
             else
                 EditorGUI.DrawRect(rect, new Color(0f, 0f, 0f, 0.15f));
         }
+    }
+
+    private void DrawDecorativeBuildingSelector(SerializedObject serializedController)
+    {
+        SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedDecorativeBuildingKey");
+
+        LevelPrefabRegistry registry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
+        if (registry == null)
+        {
+            EditorGUILayout.HelpBox("Decorative brush needs a LevelPrefabRegistry on the LevelLoader.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        IReadOnlyList<DecorativeBuildingPrefabEntry> entries = registry.DecorativeBuildingPrefabs;
+        if (entries == null || entries.Count == 0)
+        {
+            EditorGUILayout.HelpBox("LevelPrefabRegistry has no decorative building entries.", MessageType.Info);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        List<string> keys = new List<string>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            DecorativeBuildingPrefabEntry entry = entries[i];
+            if (string.IsNullOrWhiteSpace(entry.PrefabKey))
+                continue;
+
+            keys.Add(entry.PrefabKey);
+        }
+
+        if (keys.Count == 0)
+        {
+            EditorGUILayout.HelpBox("Decorative building entries do not have prefab keys.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        int selectedIndex = Mathf.Max(0, keys.IndexOf(selectedKeyProperty.stringValue));
+        int nextIndex = EditorGUILayout.Popup("Prefab Key", selectedIndex, keys.ToArray());
+        selectedKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
     }
 
     private void DrawBrushSelector(SerializedProperty brushTypeProperty)
@@ -337,9 +441,21 @@ public class LevelEditorWindow : EditorWindow
                 EditorGUILayout.HelpBox($"Tile key '{context.SelectedTileKey}' was not found in the LevelTileRegistry.", MessageType.Warning);
         }
 
-        if (!IsGroundTileBrush(context.BrushType) && context.PrefabRegistry == null)
+        if (context.BrushType == LevelEditorBrushType.DecorativeBuilding)
+        {
+            if (context.PrefabRegistry == null)
+                EditorGUILayout.HelpBox("Decorative brush needs a LevelPrefabRegistry.", MessageType.Warning);
+            else if (string.IsNullOrWhiteSpace(context.SelectedDecorativeBuildingKey))
+                EditorGUILayout.HelpBox("Decorative brush needs a selected Prefab Key.", MessageType.Warning);
+            else if (!context.PrefabRegistry.TryGetDecorativeBuildingPrefab(context.SelectedDecorativeBuildingKey, out GameObject decorativePrefab))
+                EditorGUILayout.HelpBox($"Decorative prefab key '{context.SelectedDecorativeBuildingKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
+            else if (decorativePrefab.GetComponent<DecorativeBuildingPlacement>() == null)
+                EditorGUILayout.HelpBox($"Decorative prefab '{context.SelectedDecorativeBuildingKey}' needs a DecorativeBuildingPlacement component.", MessageType.Warning);
+        }
+
+        if (!IsPrefablessBrush(context.BrushType) && context.PrefabRegistry == null)
             EditorGUILayout.HelpBox("LevelLoader needs a LevelPrefabRegistry.", MessageType.Warning);
-        else if (!IsGroundTileBrush(context.BrushType) && !HasBrushPrefab(context, out string prefabWarning))
+        else if (!IsPrefablessBrush(context.BrushType) && !HasBrushPrefab(context, out string prefabWarning))
             EditorGUILayout.HelpBox(prefabWarning, MessageType.Warning);
 
         EditorGUILayout.HelpBox(
@@ -371,7 +487,36 @@ public class LevelEditorWindow : EditorWindow
         if (currentEvent.alt)
             return;
 
-        if (!TryGetMouseGrid(context, currentEvent.mousePosition, out Vector2Int hoveredGrid))
+        bool hasHoveredGrid = TryGetMouseGrid(context, currentEvent.mousePosition, out Vector2Int hoveredGrid);
+        if (HandleTileClipboardShortcuts(context, currentEvent, hasHoveredGrid, hoveredGrid))
+        {
+            sceneView.Repaint();
+            return;
+        }
+
+        bool isTileSelectionBrush = context.BrushType == LevelEditorBrushType.TileSelection;
+        if (isTileSelectionBrush)
+            DrawTileSelection(context);
+        if (isTileSelectionBrush && hasHoveredGrid)
+            DrawClipboardPreview(context, hoveredGrid);
+
+        if (currentEvent.type == EventType.MouseUp)
+        {
+            lastEditedGroundTileGrid = null;
+            lastEditedObstacleGrid = null;
+            if (isSelectingTiles && context.BrushType == LevelEditorBrushType.TileSelection)
+            {
+                if (hasHoveredGrid)
+                    tileSelectionEnd = hoveredGrid;
+
+                isSelectingTiles = false;
+                currentEvent.Use();
+            }
+
+            return;
+        }
+
+        if (!hasHoveredGrid)
             return;
 
         DrawHoverPreview(context, hoveredGrid);
@@ -379,17 +524,12 @@ public class LevelEditorWindow : EditorWindow
         if (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.MouseDrag)
             sceneView.Repaint();
 
-        if (currentEvent.type == EventType.MouseUp)
-        {
-            lastEditedGroundTileGrid = null;
-            return;
-        }
-
         bool isTileBrush = context.BrushType == LevelEditorBrushType.GroundTile ||
             context.BrushType == LevelEditorBrushType.GroundTileErase;
+        bool isObstacleBrush = context.BrushType == LevelEditorBrushType.Obstacle;
         bool leftPaintEvent = currentEvent.button == 0 &&
             (currentEvent.type == EventType.MouseDown ||
-             (currentEvent.type == EventType.MouseDrag && isTileBrush));
+             (currentEvent.type == EventType.MouseDrag && (isTileBrush || isTileSelectionBrush || isObstacleBrush)));
         bool rightEraseEvent = currentEvent.button == 1 && currentEvent.type == EventType.MouseDown;
 
         if (leftPaintEvent)
@@ -397,13 +537,17 @@ public class LevelEditorWindow : EditorWindow
             if (currentEvent.type == EventType.MouseDown)
                 lastEditedGroundTileGrid = null;
 
-            if (context.BrushType == LevelEditorBrushType.Erase)
+            if (context.BrushType == LevelEditorBrushType.TileSelection)
+                BeginOrUpdateTileSelection(hoveredGrid, currentEvent.type == EventType.MouseDown);
+            else if (context.BrushType == LevelEditorBrushType.Erase)
                 EraseAtGrid(context, hoveredGrid);
             else
                 PlaceAtGrid(context, hoveredGrid);
 
             if (isTileBrush)
                 lastEditedGroundTileGrid = hoveredGrid;
+            if (isObstacleBrush)
+                lastEditedObstacleGrid = hoveredGrid;
 
             currentEvent.Use();
         }
@@ -491,6 +635,12 @@ public class LevelEditorWindow : EditorWindow
             DrawFootprint(context, BuildFootprint(GetEnemyGroupPrefab(context), placement.GridPosition), new Color(1f, 0.3f, 0.05f, 0.14f), new Color(1f, 0.3f, 0.05f, 0.75f));
         }
 
+        for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
+        {
+            DecorativeBuildingPlacementData placement = levelData.DecorativeBuildingPlacements[i];
+            DrawFootprint(context, BuildFootprint(null, placement.GridPosition), new Color(1f, 0.65f, 0.2f, 0.10f), new Color(1f, 0.65f, 0.2f, 0.65f));
+        }
+
         if (levelData.CastlePlacement.HasPlacement)
             DrawFootprint(context, BuildFootprint(GetCastlePrefab(context), levelData.CastlePlacement.GridPosition), new Color(1f, 0.85f, 0.1f, 0.12f), new Color(1f, 0.85f, 0.1f, 0.75f));
 
@@ -523,6 +673,17 @@ public class LevelEditorWindow : EditorWindow
                 hasTile ? new Color(1f, 0.6f, 0.1f, 1f) : new Color(1f, 1f, 1f, 0.65f));
 
             DrawSceneLabel(context, anchor, hasTile ? "Erase GroundTile" : "No GroundTile");
+            return;
+        }
+
+        if (context.BrushType == LevelEditorBrushType.TileSelection)
+        {
+            DrawFootprint(
+                context,
+                BuildFootprint(null, anchor),
+                new Color(0.15f, 0.45f, 1f, 0.12f),
+                new Color(0.15f, 0.45f, 1f, 0.8f));
+            DrawSceneLabel(context, anchor, "Drag Tile Selection");
             return;
         }
 
@@ -600,6 +761,13 @@ public class LevelEditorWindow : EditorWindow
             return;
         }
 
+        if (context.BrushType == LevelEditorBrushType.Obstacle &&
+            lastEditedObstacleGrid.HasValue &&
+            lastEditedObstacleGrid.Value == anchor)
+        {
+            return;
+        }
+
         if (!TryBuildBrushFootprint(context, anchor, out List<Vector2Int> footprint, out string reason)
             || !CanPlaceFootprint(context, footprint, out reason))
         {
@@ -635,6 +803,11 @@ public class LevelEditorWindow : EditorWindow
             case LevelEditorBrushType.EnemyGroup:
                 context.LevelData.SetEnemyPlacement(anchor, context.EnemyGroupIndex, context.EnemyBehaviorType);
                 break;
+            case LevelEditorBrushType.DecorativeBuilding:
+                context.LevelData.SetDecorativeBuilding(
+                    anchor,
+                    context.SelectedDecorativeBuildingKey);
+                break;
             case LevelEditorBrushType.Castle:
                 context.LevelData.SetCastle(anchor);
                 break;
@@ -657,7 +830,10 @@ public class LevelEditorWindow : EditorWindow
         }
 
         Undo.RecordObject(context.LevelData, $"Erase {label}");
-        context.LevelData.EraseAt(anchor);
+        if (label == "DecorativeBuilding")
+            context.LevelData.RemoveDecorativeBuildingAt(anchor);
+        else
+            context.LevelData.EraseNonGroundTileAt(anchor);
         sceneStatus = $"Erased {label} at {anchor}.";
         CommitLevelDataChange(context);
     }
@@ -704,6 +880,7 @@ public class LevelEditorWindow : EditorWindow
         context.EnemyBehaviorType = controller.EnemyBehaviorType;
         context.TileRegistry = controller.TileRegistry;
         context.SelectedTileKey = controller.SelectedTileKey;
+        context.SelectedDecorativeBuildingKey = controller.SelectedDecorativeBuildingKey;
         context.ApplyLevelAfterEdit = controller.ApplyLevelAfterEdit;
         context.GroundMask = controller.GroundMask;
 
@@ -735,10 +912,228 @@ public class LevelEditorWindow : EditorWindow
         return false;
     }
 
+    private bool HandleTileClipboardShortcuts(
+        LevelEditorContext context,
+        Event currentEvent,
+        bool hasHoveredGrid,
+        Vector2Int hoveredGrid)
+    {
+        if (currentEvent.type != EventType.KeyDown)
+            return false;
+
+        bool modifierPressed = currentEvent.control || currentEvent.command;
+        if (modifierPressed && currentEvent.keyCode == KeyCode.C)
+        {
+            CopySelectedTiles(context);
+            currentEvent.Use();
+            return true;
+        }
+
+        if (modifierPressed && currentEvent.keyCode == KeyCode.V)
+        {
+            if (hasHoveredGrid)
+                PasteTilesAt(context, hoveredGrid);
+            else
+                sceneStatus = "Move the mouse over the grid to paste tiles.";
+
+            currentEvent.Use();
+            return true;
+        }
+
+        if (currentEvent.keyCode == KeyCode.Escape)
+        {
+            ClearTileSelection();
+            sceneStatus = "Tile selection cleared.";
+            currentEvent.Use();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void BeginOrUpdateTileSelection(Vector2Int grid, bool begin)
+    {
+        if (begin || !tileSelectionStart.HasValue)
+            tileSelectionStart = grid;
+
+        tileSelectionEnd = grid;
+        isSelectingTiles = true;
+        sceneStatus = $"Tile selection : {GetSelectionMin()} ~ {GetSelectionMax()}";
+        Repaint();
+        SceneView.RepaintAll();
+    }
+
+    private void CopySelectedTiles(LevelEditorContext context)
+    {
+        if (!HasTileSelection())
+        {
+            sceneStatus = "Select a tile area before copying.";
+            Repaint();
+            return;
+        }
+
+        Vector2Int min = GetSelectionMin();
+        Vector2Int max = GetSelectionMax();
+        TileClipboard clipboard = new TileClipboard
+        {
+            SourceLevelData = context.LevelData,
+            Size = new Vector2Int(max.x - min.x + 1, max.y - min.y + 1)
+        };
+
+        IReadOnlyList<TilePlacementData> placements = context.LevelData.GroundTilePlacements;
+        for (int i = 0; i < placements.Count; i++)
+        {
+            TilePlacementData placement = placements[i];
+            Vector2Int grid = placement.GridPosition;
+            if (grid.x < min.x || grid.x > max.x || grid.y < min.y || grid.y > max.y)
+                continue;
+
+            if (string.IsNullOrWhiteSpace(placement.TileKey))
+                continue;
+
+            clipboard.Tiles.Add(new CopiedTile(grid - min, placement.TileKey));
+        }
+
+        tileClipboard = clipboard;
+        sceneStatus = $"Copied tile area {clipboard.Size.x}x{clipboard.Size.y}. Tiles : {clipboard.Tiles.Count}.";
+        Repaint();
+    }
+
+    private void PasteTilesAt(LevelEditorContext context, Vector2Int anchor)
+    {
+        if (tileClipboard == null)
+        {
+            sceneStatus = "Tile clipboard is empty.";
+            Repaint();
+            return;
+        }
+
+        if (tileClipboard.SourceLevelData != context.LevelData)
+        {
+            sceneStatus = "Tile clipboard can only paste into the source LevelData.";
+            Repaint();
+            return;
+        }
+
+        int pastedCount = 0;
+        Undo.RecordObject(context.LevelData, "Paste GroundTiles");
+
+        for (int i = 0; i < tileClipboard.Tiles.Count; i++)
+        {
+            CopiedTile copiedTile = tileClipboard.Tiles[i];
+            Vector2Int targetGrid = anchor + copiedTile.Offset;
+            if (!context.LevelData.IsInsideGrid(targetGrid))
+                continue;
+
+            context.LevelData.SetGroundTile(targetGrid, copiedTile.TileKey);
+            pastedCount++;
+        }
+
+        if (pastedCount == 0)
+        {
+            sceneStatus = "No copied tiles were inside the grid.";
+            Repaint();
+            return;
+        }
+
+        sceneStatus = $"Pasted {pastedCount} tile(s) at {anchor}.";
+        CommitLevelDataChange(context);
+    }
+
+    private void DrawTileSelection(LevelEditorContext context)
+    {
+        if (!HasTileSelection())
+            return;
+
+        DrawBounds(
+            context,
+            GetSelectionMin(),
+            GetSelectionMax(),
+            new Color(0.15f, 0.45f, 1f, 0.12f),
+            new Color(0.15f, 0.45f, 1f, 1f));
+    }
+
+    private void DrawClipboardPreview(LevelEditorContext context, Vector2Int anchor)
+    {
+        if (tileClipboard == null || tileClipboard.SourceLevelData != context.LevelData)
+            return;
+
+        bool hasInsideCell = false;
+        bool hasOutsideCell = false;
+
+        for (int y = 0; y < tileClipboard.Size.y; y++)
+        {
+            for (int x = 0; x < tileClipboard.Size.x; x++)
+            {
+                Vector2Int grid = anchor + new Vector2Int(x, y);
+                if (context.LevelData.IsInsideGrid(grid))
+                    hasInsideCell = true;
+                else
+                    hasOutsideCell = true;
+            }
+        }
+
+        if (!hasInsideCell)
+        {
+            DrawCell(context, anchor, new Color(1f, 0f, 0f, 0.16f), new Color(1f, 0f, 0f, 1f));
+            DrawSceneLabel(context, anchor, "Paste outside grid");
+            return;
+        }
+
+        Color fill = hasOutsideCell
+            ? new Color(1f, 0.85f, 0.15f, 0.12f)
+            : new Color(0.2f, 1f, 0.3f, 0.12f);
+        Color outline = hasOutsideCell
+            ? new Color(1f, 0.85f, 0.15f, 1f)
+            : new Color(0.2f, 1f, 0.3f, 1f);
+
+        for (int y = 0; y < tileClipboard.Size.y; y++)
+        {
+            for (int x = 0; x < tileClipboard.Size.x; x++)
+            {
+                Vector2Int grid = anchor + new Vector2Int(x, y);
+                if (!context.LevelData.IsInsideGrid(grid))
+                    continue;
+
+                DrawCell(context, grid, fill, outline);
+            }
+        }
+
+        DrawSceneLabel(context, anchor, hasOutsideCell ? "Paste Tiles Partial" : "Paste Tiles");
+    }
+
+    private void ClearTileSelection()
+    {
+        tileSelectionStart = null;
+        tileSelectionEnd = null;
+        isSelectingTiles = false;
+        Repaint();
+        SceneView.RepaintAll();
+    }
+
+    private bool HasTileSelection()
+    {
+        return tileSelectionStart.HasValue && tileSelectionEnd.HasValue;
+    }
+
+    private Vector2Int GetSelectionMin()
+    {
+        Vector2Int start = tileSelectionStart ?? Vector2Int.zero;
+        Vector2Int end = tileSelectionEnd ?? start;
+        return new Vector2Int(Mathf.Min(start.x, end.x), Mathf.Min(start.y, end.y));
+    }
+
+    private Vector2Int GetSelectionMax()
+    {
+        Vector2Int start = tileSelectionStart ?? Vector2Int.zero;
+        Vector2Int end = tileSelectionEnd ?? start;
+        return new Vector2Int(Mathf.Max(start.x, end.x), Mathf.Max(start.y, end.y));
+    }
+
     private static bool HasBrushPrefab(LevelEditorContext context, out string reason)
     {
         if (context.BrushType == LevelEditorBrushType.Erase ||
-            IsGroundTileBrush(context.BrushType))
+            IsPrefablessBrush(context.BrushType))
         {
             reason = null;
             return true;
@@ -751,6 +1146,12 @@ public class LevelEditorWindow : EditorWindow
     {
         return brushType == LevelEditorBrushType.GroundTile ||
             brushType == LevelEditorBrushType.GroundTileErase;
+    }
+
+    private static bool IsPrefablessBrush(LevelEditorBrushType brushType)
+    {
+        return IsGroundTileBrush(brushType) ||
+            brushType == LevelEditorBrushType.TileSelection;
     }
 
     private static bool CanPaintGroundTile(LevelEditorContext context, out string reason)
@@ -784,6 +1185,15 @@ public class LevelEditorWindow : EditorWindow
         out string reason)
     {
         footprint = null;
+
+        if (context.BrushType == LevelEditorBrushType.DecorativeBuilding)
+        {
+            if (!TryGetBrushPrefab(context, out _, out reason))
+                return false;
+
+            footprint = BuildFootprint(null, anchor);
+            return true;
+        }
 
         if (!TryGetBrushPrefab(context, out GameObject prefab, out reason))
             return false;
@@ -851,6 +1261,28 @@ public class LevelEditorWindow : EditorWindow
                 prefab = GetEnemyGroupPrefab(context);
                 reason = prefab == null ? "EnemyGroup prefab is missing." : null;
                 return prefab != null;
+            case LevelEditorBrushType.DecorativeBuilding:
+                if (string.IsNullOrWhiteSpace(context.SelectedDecorativeBuildingKey))
+                {
+                    reason = "Decorative prefab key is missing.";
+                    return false;
+                }
+
+                prefab = GetDecorativeBuildingPrefab(context, context.SelectedDecorativeBuildingKey);
+                if (prefab == null)
+                {
+                    reason = $"Decorative prefab is missing for {context.SelectedDecorativeBuildingKey}.";
+                    return false;
+                }
+
+                if (prefab.GetComponent<DecorativeBuildingPlacement>() == null)
+                {
+                    reason = $"Decorative prefab '{context.SelectedDecorativeBuildingKey}' needs a DecorativeBuildingPlacement component.";
+                    return false;
+                }
+
+                reason = null;
+                return true;
             default:
                 reason = "This brush cannot place objects.";
                 return false;
@@ -878,6 +1310,12 @@ public class LevelEditorWindow : EditorWindow
         {
             reason = "VillainUnion is already placed. Erase it first.";
             return false;
+        }
+
+        if (context.BrushType == LevelEditorBrushType.DecorativeBuilding)
+        {
+            reason = null;
+            return true;
         }
 
         if (TryFindBlockingPlacement(context, footprint, out reason))
@@ -1037,6 +1475,18 @@ public class LevelEditorWindow : EditorWindow
             }
         }
 
+        for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
+        {
+            DecorativeBuildingPlacementData placement = levelData.DecorativeBuildingPlacements[i];
+            anchor = placement.GridPosition;
+            footprint = BuildFootprint(null, anchor);
+            if (footprint.Contains(grid))
+            {
+                label = "DecorativeBuilding";
+                return true;
+            }
+        }
+
         for (int i = 0; i < levelData.ObstacleCells.Count; i++)
         {
             anchor = levelData.ObstacleCells[i];
@@ -1046,14 +1496,6 @@ public class LevelEditorWindow : EditorWindow
                 label = "Obstacle";
                 return true;
             }
-        }
-
-        if (levelData.TryGetGroundTileAt(grid, out TilePlacementData tilePlacement))
-        {
-            anchor = tilePlacement.GridPosition;
-            footprint = BuildFootprint(null, anchor);
-            label = $"GroundTile {tilePlacement.TileKey}";
-            return true;
         }
 
         anchor = Vector2Int.zero;
@@ -1159,6 +1601,14 @@ public class LevelEditorWindow : EditorWindow
                 : null;
     }
 
+    private static GameObject GetDecorativeBuildingPrefab(LevelEditorContext context, string prefabKey)
+    {
+        return context.PrefabRegistry != null
+            && context.PrefabRegistry.TryGetDecorativeBuildingPrefab(prefabKey, out GameObject prefab)
+                ? prefab
+                : null;
+    }
+
     private static void DrawEnemyEncounterZone(LevelEditorContext context, Vector2Int anchor, Color fill, Color outline)
     {
         DrawFootprint(context, BuildEncounterZone(anchor), fill, outline);
@@ -1187,6 +1637,22 @@ public class LevelEditorWindow : EditorWindow
                 continue;
 
             DrawCell(context, footprint[i], fill, outline);
+        }
+    }
+
+    private static void DrawBounds(LevelEditorContext context, Vector2Int min, Vector2Int max, Color fill, Color outline)
+    {
+        for (int y = min.y; y <= max.y; y++)
+        {
+            for (int x = min.x; x <= max.x; x++)
+            {
+                Vector2Int grid = new Vector2Int(x, y);
+                if (!context.LevelData.IsInsideGrid(grid))
+                    continue;
+
+                bool edge = x == min.x || x == max.x || y == min.y || y == max.y;
+                DrawCell(context, grid, fill, edge ? outline : new Color(outline.r, outline.g, outline.b, outline.a * 0.35f));
+            }
         }
     }
 
@@ -1249,7 +1715,7 @@ public class LevelEditorWindow : EditorWindow
                 return i;
         }
 
-        return 0;
+        return -1;
     }
 
     private struct LevelEditorContext
@@ -1267,6 +1733,7 @@ public class LevelEditorWindow : EditorWindow
         public EnemyBehaviorType EnemyBehaviorType;
         public LevelTileRegistry TileRegistry;
         public string SelectedTileKey;
+        public string SelectedDecorativeBuildingKey;
         public bool ApplyLevelAfterEdit;
         public LayerMask GroundMask;
     }

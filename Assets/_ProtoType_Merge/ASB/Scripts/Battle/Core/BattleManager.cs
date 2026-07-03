@@ -9,7 +9,7 @@ using ASB.Work.Battle.Sequence;
 using PrimeTween;
 
 /// <summary>
-/// BattleAction 및 플레이어 입력에 의한 전투 실행. 데미지는 항상 target.TakeDamage로 적용합니다.
+/// ?꾪닾 ?ㅽ뻾怨??ㅽ궗 寃곌낵 ?곸슜???대떦?⑸땲?? ?곕?吏????긽 target.TakeDamage濡??곸슜?⑸땲??
 /// </summary>
 [DisallowMultipleComponent]
 public class BattleManager : MonoBehaviour
@@ -17,7 +17,7 @@ public class BattleManager : MonoBehaviour
     public static BattleManager Instance { get; private set; }
     public event Action<string> OnActionExecuted;
 
-    /// <summary>UI 등 외부에서 배속 변경을 요청할 때 발생시킵니다. AutoBattleController.OnAutoBattleToggleRequested와 동일한 패턴.</summary>
+    /// <summary>UI ???紐??癒?퐣 獄쏄퀣??癰궰野껋럩???遺욧퍕????獄쏆뮇源??쀪땁??덈뼄. AutoBattleController.OnAutoBattleToggleRequested?? ??덉뵬?????쉘.</summary>
     public static event Action<float> OnBattleSpeedChangeRequested;
 
     private const int ClassSkillEffect_Heal = 1;
@@ -46,7 +46,7 @@ public class BattleManager : MonoBehaviour
             new SkillExecutionOptions(0.5f, true, false);
     }
 
-    private readonly struct CounterAttackRequest
+    internal readonly struct CounterAttackRequest
     {
         public readonly BattleCharactor Defender;
         public readonly BattleCharactor OriginalCaster;
@@ -67,9 +67,9 @@ public class BattleManager : MonoBehaviour
     [Header("Visual")]
     [SerializeField] private BattleVisualDirector _visualDirector;
 
-    // [CSV 미지원 임시] CSV에 UseAnimEvent / HitDelay 컬럼이 없어 Presentation 카탈로그에서 덮어씁니다.
-    // CSV 스키마 추가 후 이 필드와 ApplyPresentationOverride 메서드를 제거하세요.
-    [Header("Hit Timing Override (CSV 미지원 임시)")]
+    // [CSV 沃섎챷????袁⑸뻻] CSV??UseAnimEvent / HitDelay ?뚎됱쓥????곷선 Presentation 燁삳똾源됪에?볥젃?癒?퐣 ??堉?怨룸빍??
+    // CSV ??쎄텕筌??곕떽? ?????袁⑤굡?? ApplyPresentationOverride 筌롫뗄苑??? ??볤탢??뤾쉭??
+    [Header("Hit Timing Override (CSV 沃섎챷????袁⑸뻻)")]
     [SerializeField] private SkillPresentationCatalog _presentationCatalog;
 
     public float CurrentBattleSpeed => _currentBattleSpeed;
@@ -78,7 +78,7 @@ public class BattleManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("[BattleManager] 중복 인스턴스가 감지되었습니다.");
+            Debug.LogWarning("[BattleManager] 餓λ쵎???紐꾨뮞??곷뮞揶쎛 揶쏅Ŋ???뤿???щ빍??");
         }
 
         Instance = this;
@@ -167,8 +167,8 @@ public class BattleManager : MonoBehaviour
         onBattleElapsed?.Invoke(Mathf.Min(elapsed, timeoutSeconds));
     }
 
-    // TODO: 전투 VFX Instantiate 경로가 추가되면 생성 직후 ApplyBattleSpeedToVfx(vfxInstance)를 호출하세요.
-    // 현재 TmpBattleScene 전투 스크립트에는 ParticleSystem 스킬 이펙트 Instantiate 코드가 없습니다.
+    // TODO: ?袁る떮 VFX Instantiate 野껋럥以덂첎? ?곕떽???롢늺 ??밴쉐 筌욊낱??ApplyBattleSpeedToVfx(vfxInstance)???紐꾪뀱??뤾쉭??
+    // ?袁⑹삺 TmpBattleScene ?袁る떮 ??쎄쾿?깆???癒?뮉 ParticleSystem ??쎄텢 ??꾨읃??Instantiate ?꾨뗀諭뜹첎? ??곷뮸??덈뼄.
     private void ApplyBattleSpeedToVfx(GameObject vfxInstance)
     {
         if (vfxInstance == null)
@@ -207,14 +207,16 @@ public class BattleManager : MonoBehaviour
             return BattleHitResult.Empty(context?.Target);
         }
 
-        // 다단 히트 진행 중 사망 타겟에 대한 후속 타격은 무시합니다.
+        // ??삳뼊 ??딅뱜 筌욊쑵六?餓???彛???野껋옕肉??????袁⑸꺗 ??野꺿뫗? ?얜똻???몃빍??
         if (context.Target.IsDead)
         {
             return BattleHitResult.Empty(context.Target);
         }
 
+        bool wasDeadBefore = context.Target.IsDead;
         float finalDamage = CombatCalculator.CalculateDamage(context);
         context.Target.TakeDamage(finalDamage);
+        bool isDeadAfter = context.Target.IsDead;
         Debug.Log($"[Combat] {context.Caster.UnitName} -> {context.Target.UnitName} dmg={finalDamage:F1} (Crit: {context.IsCritical})");
 
         return new BattleHitResult
@@ -222,9 +224,65 @@ public class BattleManager : MonoBehaviour
             Target = context.Target,
             Damage = finalDamage,
             IsCritical = context.IsCritical,
-            TargetDied = context.Target.IsDead,
+            TargetDied = isDeadAfter,
+            WasDeadBefore = wasDeadBefore,
+            IsDeadAfter = isDeadAfter,
+            CausedDeath = !wasDeadBefore && isDeadAfter,
             SkillIndex = context.SkillIndex
         };
+    }
+
+    /// <summary>
+    /// 데미지 수치/치명타/사망 여부만 순수 계산합니다. target.TakeDamage를 호출하지 않아 HP를 건드리지 않습니다.
+    /// 연출 큐 조립 전에 이벤트(DamageEvent/DeathEvent)를 먼저 기록하기 위해 사용합니다.
+    /// </summary>
+    private BattleHitResult PredictDamage(DamageContext context)
+    {
+        if (context.Caster == null || context.Target == null)
+        {
+            return BattleHitResult.Empty(context?.Target);
+        }
+
+        if (context.Target.IsDead)
+        {
+            return BattleHitResult.Empty(context.Target);
+        }
+
+        float finalDamage = CombatCalculator.CalculateDamage(context);
+        bool isDeadAfterPredicted = context.Target.CurrentHp - finalDamage <= 0f;
+
+        return new BattleHitResult
+        {
+            Target = context.Target,
+            Damage = finalDamage,
+            IsCritical = context.IsCritical,
+            TargetDied = isDeadAfterPredicted,
+            WasDeadBefore = false,
+            IsDeadAfter = isDeadAfterPredicted,
+            CausedDeath = isDeadAfterPredicted,
+            SkillIndex = context.SkillIndex
+        };
+    }
+
+    /// <summary>
+    /// PredictDamage로 미리 계산된 수치를 실제 target.TakeDamage로 반영합니다.
+    /// 연출 타이밍(ResolveHitAction/AoEApplyDamageAction 콜백)에서 호출되어 HP바 갱신 시점을 유지합니다.
+    /// </summary>
+    private BattleHitResult CommitDamage(DamageContext context, BattleHitResult predicted)
+    {
+        if (context?.Target == null || predicted == null)
+        {
+            return predicted;
+        }
+
+        if (context.Target.IsDead)
+        {
+            return predicted;
+        }
+
+        context.Target.TakeDamage(predicted.Damage);
+        Debug.Log($"[Combat] {context.Caster?.UnitName} -> {context.Target.UnitName} dmg={predicted.Damage:F1} (Crit: {predicted.IsCritical})");
+        return predicted;
     }
 
     public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null)
@@ -263,10 +321,13 @@ public class BattleManager : MonoBehaviour
                         damageContext.CanTriggerCounter = CanTriggerCounterattack(damageContext);
                     }
 
+                    BattleHitResult predicted = PredictDamage(damageContext);
+                    result.RecordDamageResult(damageContext, predicted);
+
                     aoeContexts.Add(damageContext);
                     hitCallbacks.Add(() =>
                     {
-                        BattleHitResult r = ApplyDamage(damageContext);
+                        BattleHitResult r = CommitDamage(damageContext, predicted);
                         totalDamageDealt += r?.Damage ?? 0f;
                         return r;
                     });
@@ -274,7 +335,9 @@ public class BattleManager : MonoBehaviour
 
                 if (aoeContexts.Count > 0)
                 {
-                    yield return RunAoESkillSequence(aoeContexts, hitCallbacks);
+                    var aoeQueue = new ASB.Work.Battle.Command.BattleActionQueue();
+                    aoeQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(aoeContexts, hitCallbacks));
+                    yield return StartCoroutine(aoeQueue.RunAll(this));
                 }
             }
             else
@@ -297,19 +360,24 @@ public class BattleManager : MonoBehaviour
                         damageContext.CanTriggerCounter = CanTriggerCounterattack(damageContext);
                     }
 
+                    BattleHitResult predicted = PredictDamage(damageContext);
+                    result.RecordDamageResult(damageContext, predicted);
+
                     SkillData hitAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(damageContext));
-                    yield return RunSkillSequenceCore(
+                    var actionQueue = new ASB.Work.Battle.Command.BattleActionQueue();
+                    actionQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
                         damageContext.Caster,
                         damageContext.Target,
                         hitAnimSkill,
                         playBasicAttackAnimation: false,
                         playTargetHitAnimation: true,
-                        () =>
+                        onHitCallback: () =>
                         {
-                            BattleHitResult r = ApplyDamage(damageContext);
+                            BattleHitResult r = CommitDamage(damageContext, predicted);
                             totalDamageDealt += r?.Damage ?? 0f;
                             return r;
-                        });
+                        }));
+                    yield return StartCoroutine(actionQueue.RunAll(this));
 
                     float delay = Mathf.Max(0f, damageContext.DelayAfter);
                     if (delay > 0f)
@@ -331,13 +399,14 @@ public class BattleManager : MonoBehaviour
                 }
 
                 SkillData healAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForHealContext(healContext));
-                yield return RunSkillSequenceCore(
+                var healQueue = new ASB.Work.Battle.Command.BattleActionQueue();
+                healQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
                     healContext.Caster,
                     healContext.Target,
                     healAnimSkill,
                     playBasicAttackAnimation: false,
                     playTargetHitAnimation: false,
-                    () =>
+                    onHitCallback: () =>
                     {
                         healContext.Target.ApplyHeal(healContext.HealAmount);
                         return new BattleHitResult
@@ -347,7 +416,22 @@ public class BattleManager : MonoBehaviour
                             IsHeal = true,
                             SkillIndex = healContext.SkillIndex
                         };
-                    });
+                    }));
+                yield return StartCoroutine(healQueue.RunAll(this));
+            }
+        }
+
+        if (result.StatusEffectContexts != null && result.StatusEffectContexts.Count > 0)
+        {
+            for (int i = 0; i < result.StatusEffectContexts.Count; i++)
+            {
+                StatusEffectContext statusContext = result.StatusEffectContexts[i];
+                if (statusContext.Target == null || statusContext.Target.IsDead)
+                {
+                    continue;
+                }
+
+                ApplyStatusEffect(statusContext);
             }
         }
 
@@ -358,6 +442,9 @@ public class BattleManager : MonoBehaviour
         }
 
         result.OnPostExecution?.Invoke(totalDamageDealt);
+#if UNITY_EDITOR
+        result.LogEventTrackingSummary();
+#endif
         onCompleted?.Invoke(true);
     }
 
@@ -368,21 +455,15 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        if (string.IsNullOrEmpty(context.EffectType))
+        if (context.EffectType == StatusEffectType.none)
         {
             return;
         }
 
-        if (context.EffectType.Equals("Taunt", StringComparison.OrdinalIgnoreCase))
-        {
-            SkillEffectHelper.SetTaunt(context.Caster, context.Target, context.DurationTurn);
-            return;
-        }
-
-        Debug.LogWarning($"[BattleManager] ApplyStatusEffect: 지원하지 않는 EffectType={context.EffectType}");
+        SkillEffectHelper.ApplyStatusEffect(context);
     }
 
-    /// <summary>ClassSkillSheet 행의 skillValue(예: 1.2 = 120%)로 그리드 스킬 피해를 계산합니다.</summary>
+    /// <summary>ClassSkillSheet ??깆벥 skillValue(?? 1.2 = 120%)嚥?域밸챶?????쎄텢 ??노퉸???④쑴沅??몃빍??</summary>
     public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted = null)
     {
         if (classSkillRow == null || actor == null || target == null)
@@ -412,7 +493,7 @@ public class BattleManager : MonoBehaviour
 
         if (!TryConsumeSkillInfluence(actor, classSkillRow))
         {
-            Debug.LogWarning("[BattleManager] Influence가 부족하여 스킬을 사용할 수 없습니다.");
+            Debug.LogWarning("[BattleManager] Influence揶쎛 ?봔鈺곌퉲釉????쎄텢???????????곷뮸??덈뼄.");
             onCompleted?.Invoke(false);
             yield break;
         }
@@ -464,7 +545,7 @@ public class BattleManager : MonoBehaviour
                 || skill.classSkillEffect == ClassSkillEffect_Revive
                 || skill.classSkillEffect == ClassSkillEffect_Buff)
             {
-                Debug.Log($"[Combat] {defender.UnitName} 반격 스킬({skill.skillIndex})이 데미지 스킬이 아니어서 반격 제외");
+                Debug.Log($"[Combat] {defender.UnitName} 獄쏆꼵爰???쎄텢({skill.skillIndex})???怨?筌왖 ??쎄텢???袁⑤빍??곴퐣 獄쏆꼵爰???뽰뇚");
                 continue;
             }
 
@@ -476,7 +557,7 @@ public class BattleManager : MonoBehaviour
         return requests;
     }
 
-    private IEnumerator ExecuteCounterSkill(CounterAttackRequest req)
+    internal IEnumerator ExecuteCounterSkill(CounterAttackRequest req)
     {
         if (req.Skill == null
             || req.Defender == null || req.Defender.IsDead
@@ -492,10 +573,10 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"[Combat] {req.Defender.UnitName} 근접 반격 발동! (계수 0.5)");
+        Debug.Log($"[Combat] {req.Defender.UnitName} 域뱀눘??獄쏆꼵爰?獄쏆뮆猷? (?④쑴??0.5)");
 
-        // 반격은 커스텀 핸들러를 무시하고 기본 데미지 경로만 사용합니다.
-        // Influence 소모 없음, 데미지 계수 0.5, 반격은 반격을 유발하지 않습니다.
+        // 獄쏆꼵爰?? ?뚣끉??? ?紐껊굶??? ?얜똻???랁?疫꿸퀡???怨?筌왖 野껋럥以덌쭕??????몃빍??
+        // Influence ???걟 ??곸벉, ?怨?筌왖 ?④쑴??0.5, 獄쏆꼵爰?? 獄쏆꼵爰???醫딆뻣??? ??녿뮸??덈뼄.
         SkillExecutionResult result = BuildDefaultSkillResult(
             req.Defender,
             req.OriginalCaster,
@@ -507,19 +588,22 @@ public class BattleManager : MonoBehaviour
 
         if (!executed)
         {
-            Debug.LogWarning($"[BattleManager] {req.Defender.UnitName} 반격 실행 실패.");
+            Debug.LogWarning($"[BattleManager] {req.Defender.UnitName} 獄쏆꼵爰???쎈뻬 ??쎈솭.");
         }
     }
 
     private IEnumerator FlushCounterAttacks(List<CounterAttackRequest> requests)
     {
+        var counterQueue = new ASB.Work.Battle.Command.BattleActionQueue();
         foreach (CounterAttackRequest req in requests)
         {
             if (req.OriginalCaster == null || req.OriginalCaster.IsDead) break;
             if (req.Defender == null || req.Defender.IsDead) continue;
 
-            yield return StartCoroutine(ExecuteCounterSkill(req));
+            counterQueue.Enqueue(new ASB.Work.Battle.Command.CounterAttackActionCommand(req));
         }
+
+        yield return StartCoroutine(counterQueue.RunAll(this));
     }
 
     private SkillExecutionResult BuildDefaultSkillResult(
@@ -534,7 +618,7 @@ public class BattleManager : MonoBehaviour
         {
             float healAmount = Mathf.Max(0f, actor.FinalStats.Atk * multiplier);
             return SkillExecutionResult
-                .SuccessResult()
+                .SuccessResult(actor, skillData)
                 .AddHeal(actor, target, healAmount, skillData.skillIndex);
         }
 
@@ -554,7 +638,7 @@ public class BattleManager : MonoBehaviour
         context.IsCritical = CombatCalculator.RollCritical(context);
 
         return SkillExecutionResult
-            .SuccessResult()
+            .SuccessResult(actor, skillData)
             .AddDamage(context);
     }
 
@@ -565,7 +649,7 @@ public class BattleManager : MonoBehaviour
             return false;
         }
 
-        // 기본 공격은 ExecuteBasicAttack 경로로 분리되어 있어 여기로 들어오지 않습니다.
+        // 疫꿸퀡???⑤벀爰?? ExecuteBasicAttack 野껋럥以덃에??브쑬???뤿선 ??됰선 ??由경에???쇰선??? ??녿뮸??덈뼄.
         float cost = Mathf.Max(0f, skillData.IPCost);
         return actor.TryConsumeInfluence(cost);
     }
@@ -579,7 +663,7 @@ public class BattleManager : MonoBehaviour
         }
 
         Debug.Log(
-            $"[Battle] GridBuff: {GetLabel(actor)} -> {GetLabel(target)} (×{Mathf.Max(0.01f, skillData.skillValue):0.##})");
+            $"[Battle] GridBuff: {GetLabel(actor)} -> {GetLabel(target)} (x{Mathf.Max(0.01f, skillData.skillValue):0.##})");
     }
 
     public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, float skillPercent, Action<bool> onCompleted = null)
@@ -636,7 +720,7 @@ public class BattleManager : MonoBehaviour
     {
         if (skillData == null)
         {
-            return "스킬 사용";
+            return "Use Skill";
         }
 
         if (!string.IsNullOrWhiteSpace(skillData.skillName))
@@ -644,83 +728,7 @@ public class BattleManager : MonoBehaviour
             return skillData.skillName;
         }
 
-        return $"스킬 사용 (ID: {skillData.skillIndex})";
-    }
-
-    public void ExecuteAction(BattleAction action)
-    {
-        if (action == null)
-        {
-            Debug.LogWarning("[BattleManager] ExecuteAction: action이 null입니다.");
-            return;
-        }
-
-        if (action.Actor == null)
-        {
-            Debug.LogWarning("[BattleManager] ExecuteAction: Actor가 null입니다.");
-            return;
-        }
-
-        if (action.Actor.IsDead)
-        {
-            Debug.Log($"[BattleManager] 행동 취소: Actor가 사망 상태입니다. ({GetLabel(action.Actor)})");
-            return;
-        }
-
-        switch (action.ActionType)
-        {
-            case BattleActionType.Skill:
-                StartCoroutine(ExecuteSkill(action.Actor, action.Target, action.SkillData));
-                break;
-
-            default:
-                Debug.LogWarning($"[BattleManager] 알 수 없는 ActionType: {action.ActionType}");
-                break;
-        }
-    }
-
-    private IEnumerator ExecuteSkill(BattleCharactor actor, BattleCharactor target, SkillDataAsset skillData)
-    {
-        if (skillData == null)
-        {
-            Debug.LogWarning($"[Battle] 스킬 사용 실패: SkillDataAsset이 null입니다. actor={GetLabel(actor)}");
-            yield break;
-        }
-
-        float multiplier = Mathf.Max(0.01f, skillData.Power / 100f);
-        var context = new DamageContext
-        {
-            Caster = actor,
-            Target = target,
-            SkillMultiplier = multiplier,
-            SkillIndex = -3,
-            IsRangedAttack = false,
-            CanTriggerCounter = false,
-            IsCounterAttack = false
-        };
-        context.IsCritical = CombatCalculator.RollCritical(context);
-
-        float dealt = 0f;
-        SkillData assetAnimSkill = ResolveSkillAnimationData(SkillDataFromAsset(skillData));
-        yield return RunSkillSequenceCore(
-            actor,
-            target,
-            assetAnimSkill,
-            playBasicAttackAnimation: false,
-            playTargetHitAnimation: true,
-            () => { BattleHitResult r = ApplyDamage(context); dealt = r?.Damage ?? 0f; return r; });
-
-        if (context.DelayAfter > 0f)
-        {
-            yield return WaitForBattleSeconds(context.DelayAfter);
-        }
-
-        Debug.Log($"[Battle] 스킬({skillData.DisplayName}): {GetLabel(actor)} -> {GetLabel(target)} dmg={dealt:F1}");
-
-        if (target.IsDead)
-        {
-            Debug.Log($"[Battle] 처치: {GetLabel(target)}");
-        }
+        return $"Use Skill (ID: {skillData.skillIndex})";
     }
 
     private static SkillData CreateDefaultAnimationSkillData()
@@ -735,8 +743,8 @@ public class BattleManager : MonoBehaviour
         };
     }
 
-    // [CSV 미지원 임시] SkillPresentationCatalog에서 UseAnimEvent / HitDelay를 읽어 SkillData에 덮어씁니다.
-    // CSV 스키마에 컬럼이 추가되면 이 메서드 호출부와 메서드 자체를 제거하세요.
+    // [CSV 沃섎챷????袁⑸뻻] SkillPresentationCatalog?癒?퐣 UseAnimEvent / HitDelay????뚮선 SkillData????堉?怨룸빍??
+    // CSV ??쎄텕筌띾뜆肉??뚎됱쓥???곕떽???롢늺 ??筌롫뗄苑???紐꾪뀱?봔?? 筌롫뗄苑???癒?퍥????볤탢??뤾쉭??
     private void ApplyPresentationOverride(SkillData skill)
     {
         if (skill == null || _presentationCatalog == null) return;
@@ -767,23 +775,6 @@ public class BattleManager : MonoBehaviour
         }
 
         return source;
-    }
-
-    private static SkillData SkillDataFromAsset(SkillDataAsset asset)
-    {
-        if (asset == null)
-        {
-            return null;
-        }
-
-        return new SkillData
-        {
-            AnimationTrigger = asset.AnimationTrigger,
-            StateName = asset.StateName,
-            UseAnimEvent = asset.UseAnimEvent,
-            HitDelay = asset.HitDelay,
-            TotalDelay = asset.TotalDelay
-        };
     }
 
     private static SkillData CloneSkillDataForAnimation(SkillData source)
@@ -872,7 +863,7 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
-    private IEnumerator RunSkillSequenceCore(
+    internal IEnumerator RunSkillSequenceCore(
         BattleCharactor actor,
         BattleCharactor target,
         SkillData skill,
@@ -887,7 +878,7 @@ public class BattleManager : MonoBehaviour
         }
 
         skill = ResolveSkillAnimationData(skill);
-        ApplyPresentationOverride(skill); // [CSV 미지원 임시]
+        ApplyPresentationOverride(skill); // [CSV 沃섎챷????袁⑸뻻]
         actor.EnsureAnimationController();
         CharactorAnimationController actorAnim = actor.Anim;
         actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
@@ -1006,9 +997,9 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 광역 스킬: 시전 애니 1회, HitDelay 시점에 전 타겟 동시 피격·데미지, 이후 전원 Idle 복귀.
+    /// ?용쵐肉???쎄텢: ??뽰읈 ?醫딅빍 1?? HitDelay ??뽰젎??????野???덈뻻 ??④봄夷?怨?筌왖, ??꾩뜎 ?袁⑹뜚 Idle 癰귣벀?.
     /// </summary>
-    private IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks)
+    internal IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks)
     {
         if (contexts == null || contexts.Count == 0 || hitCallbacks == null || hitCallbacks.Count == 0)
         {
@@ -1030,7 +1021,7 @@ public class BattleManager : MonoBehaviour
 
         BattleCharactor primaryTarget = leadContext.Target;
         SkillData skill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(leadContext));
-        ApplyPresentationOverride(skill); // [CSV 미지원 임시]
+        ApplyPresentationOverride(skill); // [CSV 沃섎챷????袁⑸뻻]
         actor.EnsureAnimationController();
         CharactorAnimationController actorAnim = actor.Anim;
         actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
@@ -1250,7 +1241,7 @@ public class BattleManager : MonoBehaviour
 
         float counterRate = Mathf.Clamp01(target.FinalStats.CounterRate);
         return UnityEngine.Random.value < counterRate;
-        // (선택) 사거리 체크: actor/target의 GridCell 거리 등이 필요하면 여기에 추가
+        // (?醫뤾문) ??援끿뵳?筌ｋ똾寃? actor/target??GridCell 椰꾧퀡???源놁뵠 ?袁⑹뒄??롢늺 ??由???곕떽?
     }
 
     private static string GetLabel(BattleCharactor unit)

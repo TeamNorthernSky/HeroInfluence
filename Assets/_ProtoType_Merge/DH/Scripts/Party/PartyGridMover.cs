@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,6 +21,9 @@ public class PartyGridMover : MonoBehaviour
     private Vector2Int currentGrid;
     private float fixedY;
     private PartyMovePointController movePointController;
+    private PartyIdentity cachedIdentity;
+    private bool restoredPersistentPosition;
+    private bool canRefreshCastleStartAfterLevelLoad;
     private const string ScenePartyPrefabKey = "scene";
 
     public Vector2Int? TargetInteractionGrid { get; private set; }
@@ -32,8 +36,23 @@ public class PartyGridMover : MonoBehaviour
     private void Awake()
     {
         fixedY = transform.position.y;
+        cachedIdentity = GetComponent<PartyIdentity>();
         currentGrid = gridManager != null ? gridManager.WorldToGrid(transform.position) : Vector2Int.zero;
         movePointController = new PartyMovePointController(maxMovePoints);
+    }
+
+    private void OnEnable()
+    {
+        LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
+        LevelLoader.RuntimeLevelLoaded += HandleRuntimeLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded += HandleRuntimeLayoutLoaded;
+    }
+
+    private void OnDisable()
+    {
+        LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
     }
 
     // [JC 추가 260511] 위치 영속화: PartyPersistentData.LastGrid가 있으면 그 위치로 복원
@@ -45,39 +64,85 @@ public class PartyGridMover : MonoBehaviour
     // [JC 수정 260514 R-1] SnapToGridPosition을 notifyMoveCompleted=false로 호출 — Start 시점 자동 전투 트리거 방지.
     private void Start()
     {
-        var identity = GetComponent<PartyIdentity>();
+        var identity = cachedIdentity != null ? cachedIdentity : GetComponent<PartyIdentity>();
         if (identity == null) return;
+        cachedIdentity = identity;
 
         var repo = PartyPersistentRepository.Instance;
-        if (repo == null) return;
+        PartyPersistentData partyData = null;
+        repo?.TryGetParty(identity.PartyId, out partyData);
 
-        if (!repo.TryGetParty(identity.PartyId, out var partyData) || partyData == null) return;
-
-        if (partyData.HasRemainingMovePoints)
+        if (partyData != null && partyData.HasRemainingMovePoints)
             movePointController?.SetRemaining(partyData.RemainingMovePoints);
-        else
+        else if (partyData != null)
             partyData.SetRemainingMovePoints(RemainingMovePoints);
 
         string placementKey = ResolvePlacementKey(identity);
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
 
+        bool restoredPosition = false;
         if (progressRepository != null &&
             progressRepository.TryGetPartyState(placementKey, out PartyWorldState worldState) &&
             worldState != null &&
             !worldState.Removed)
         {
             SnapToGridPosition(worldState.Grid, notifyMoveCompleted: false);
+            restoredPosition = true;
+            restoredPersistentPosition = true;
+            canRefreshCastleStartAfterLevelLoad = false;
         }
-        else if (partyData.HasLastGrid)
+        else if (partyData != null && partyData.HasLastGrid)
         {
             SnapToGridPosition(partyData.LastGrid, notifyMoveCompleted: false);
+            restoredPosition = true;
+            restoredPersistentPosition = true;
+            canRefreshCastleStartAfterLevelLoad = false;
         }
         else if (gridManager != null)
         {
-            currentGrid = gridManager.WorldToGrid(transform.position);
-            GridEntered?.Invoke(currentGrid);
-            PersistPartyWorldState(identity, currentGrid);
+            canRefreshCastleStartAfterLevelLoad = true;
+            if (TryResolveCastleStartGrid(out Vector2Int startGrid))
+            {
+                SnapToGridPosition(startGrid, notifyMoveCompleted: false);
+                restoredPosition = true;
+            }
+            else
+            {
+                StartCoroutine(SnapToCastleStartOrCurrentNextFrame(identity));
+            }
         }
+
+        if (restoredPosition && partyData == null)
+            StartCoroutine(PersistCurrentGridWhenPartyDataReady(identity));
+    }
+
+    private void HandleRuntimeLevelLoaded(LevelLoader _)
+    {
+        RefreshCastleStartAfterLevelLoad();
+    }
+
+    private void HandleRuntimeLayoutLoaded(LevelZoneLayoutLoader _)
+    {
+        RefreshCastleStartAfterLevelLoad();
+    }
+
+    private void RefreshCastleStartAfterLevelLoad()
+    {
+        if (!Application.isPlaying ||
+            restoredPersistentPosition ||
+            !canRefreshCastleStartAfterLevelLoad ||
+            gridManager == null ||
+            cachedIdentity == null)
+        {
+            return;
+        }
+
+        if (!TryResolveCastleStartGrid(out Vector2Int startGrid))
+            return;
+
+        SnapToGridPosition(startGrid, notifyMoveCompleted: false);
+        canRefreshCastleStartAfterLevelLoad = false;
+        StartCoroutine(PersistCurrentGridWhenPartyDataReady(cachedIdentity));
     }
 
     private void Update()
@@ -95,7 +160,8 @@ public class PartyGridMover : MonoBehaviour
             transform.position = target;
             pathQueue.Dequeue();
             currentGrid = nextGrid;
-            movePointController?.SpendStep();
+            if (!DHExplorationCheatState.UnlimitedMovePoints)
+                movePointController?.SpendStep();
             bool reachedPathEnd = pathQueue.Count == 0;
 
             GridEntered?.Invoke(currentGrid);
@@ -119,12 +185,16 @@ public class PartyGridMover : MonoBehaviour
     }
 
     public bool IsMoving => isMoving;
-    public int RemainingMovePoints => movePointController != null ? movePointController.RemainingMovePoints : 0;
+    public int RemainingMovePoints => DHExplorationCheatState.UnlimitedMovePoints
+        ? maxMovePoints
+        : movePointController != null ? movePointController.RemainingMovePoints : 0;
     public int MaxMovePoints => maxMovePoints;
 
     public bool CanSpendMovePoints(int amount)
     {
-        return HasAnyValidPartyUnit() && movePointController != null && movePointController.CanSpend(amount);
+        return HasAnyValidPartyUnit() &&
+            (DHExplorationCheatState.UnlimitedMovePoints ||
+             movePointController != null && movePointController.CanSpend(amount));
     }
 
     public void ResetMovePointsToMax()
@@ -246,6 +316,90 @@ public class PartyGridMover : MonoBehaviour
             grid,
             identity.PlacementSource,
             ScenePartyPrefabKey);
+    }
+
+    private IEnumerator SnapToCastleStartOrCurrentNextFrame(PartyIdentity identity)
+    {
+        yield return null;
+
+        if (identity == null || gridManager == null)
+            yield break;
+
+        if (TryResolveCastleStartGrid(out Vector2Int startGrid))
+        {
+            SnapToGridPosition(startGrid, notifyMoveCompleted: false);
+            StartCoroutine(PersistCurrentGridWhenPartyDataReady(identity));
+            yield break;
+        }
+
+        currentGrid = gridManager.WorldToGrid(transform.position);
+        GridEntered?.Invoke(currentGrid);
+        PersistPartyWorldState(identity, currentGrid);
+        StartCoroutine(PersistCurrentGridWhenPartyDataReady(identity));
+    }
+
+    private IEnumerator PersistCurrentGridWhenPartyDataReady(PartyIdentity identity)
+    {
+        const int maxAttempts = 5;
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            yield return null;
+
+            if (identity == null)
+                yield break;
+
+            PartyPersistentRepository repo = PartyPersistentRepository.Instance;
+            if (repo == null || !repo.TryGetParty(identity.PartyId, out PartyPersistentData partyData) || partyData == null)
+                continue;
+
+            partyData.SetLastGrid(currentGrid);
+            partyData.SetRemainingMovePoints(RemainingMovePoints);
+            PersistPartyWorldState(identity, currentGrid);
+            yield break;
+        }
+    }
+
+    private bool TryResolveCastleStartGrid(out Vector2Int startGrid)
+    {
+        startGrid = Vector2Int.zero;
+
+        CastleUnit castle = ResolveStartCastle();
+        if (castle == null)
+            return false;
+
+        IReadOnlyList<Vector2Int> interactionCells = castle.GetInteractionCells();
+        if (interactionCells == null || interactionCells.Count == 0)
+            return false;
+
+        startGrid = interactionCells[0];
+        for (int i = 1; i < interactionCells.Count; i++)
+        {
+            Vector2Int candidate = interactionCells[i];
+            if (candidate.x < startGrid.x ||
+                (candidate.x == startGrid.x && candidate.y < startGrid.y))
+            {
+                startGrid = candidate;
+            }
+        }
+
+        return true;
+    }
+
+    private static CastleUnit ResolveStartCastle()
+    {
+        CastleRegistry registry = FindFirstObjectByType<CastleRegistry>();
+        if (registry != null)
+        {
+            IReadOnlyList<CastleUnit> castles = registry.Castles;
+            for (int i = 0; i < castles.Count; i++)
+            {
+                if (castles[i] != null)
+                    return castles[i];
+            }
+        }
+
+        CastleUnit[] sceneCastles = FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
+        return sceneCastles != null && sceneCastles.Length > 0 ? sceneCastles[0] : null;
     }
 
     public List<Vector2Int> GetRemainingPath()

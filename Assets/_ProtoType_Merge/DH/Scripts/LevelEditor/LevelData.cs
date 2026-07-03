@@ -9,6 +9,7 @@ using UnityEngine.Serialization;
 public class LevelData : ScriptableObject
 {
     private static readonly IReadOnlyList<EnemyPlacementData> EmptyEnemyPlacements = Array.Empty<EnemyPlacementData>();
+    private static readonly IReadOnlyList<DecorativeBuildingPlacementData> EmptyDecorativeBuildingPlacements = Array.Empty<DecorativeBuildingPlacementData>();
 
     [Header("Meta")]
     [SerializeField] private string levelId = "level_001";
@@ -25,6 +26,7 @@ public class LevelData : ScriptableObject
     [SerializeField] private List<OutpostPlacementData> outpostPlacements = new List<OutpostPlacementData>();
     [SerializeField] private List<EventPlacementData> eventPlacements = new List<EventPlacementData>();
     [SerializeField] private List<EnemyPlacementData> enemyPlacements = new List<EnemyPlacementData>();
+    [SerializeField] private List<DecorativeBuildingPlacementData> decorativeBuildingPlacements = new List<DecorativeBuildingPlacementData>();
     [SerializeField] private UniqueBuildingPlacementData castlePlacement;
     [SerializeField] private UniqueBuildingPlacementData villainUnionPlacement;
 
@@ -39,6 +41,8 @@ public class LevelData : ScriptableObject
     public IReadOnlyList<OutpostPlacementData> OutpostPlacements => outpostPlacements;
     public IReadOnlyList<EventPlacementData> EventPlacements => eventPlacements;
     public IReadOnlyList<EnemyPlacementData> EnemyPlacements => enemyPlacements != null ? enemyPlacements : EmptyEnemyPlacements;
+    public IReadOnlyList<DecorativeBuildingPlacementData> DecorativeBuildingPlacements =>
+        decorativeBuildingPlacements != null ? decorativeBuildingPlacements : EmptyDecorativeBuildingPlacements;
     public UniqueBuildingPlacementData CastlePlacement => castlePlacement;
     public UniqueBuildingPlacementData VillainUnionPlacement => villainUnionPlacement;
 
@@ -101,6 +105,11 @@ public class LevelData : ScriptableObject
         return TryGetEnemyPlacementAt(grid, out _);
     }
 
+    public bool HasDecorativeBuildingAt(Vector2Int grid)
+    {
+        return TryGetDecorativeBuildingAt(grid, out _);
+    }
+
     public bool HasCastleAt(Vector2Int grid)
     {
         return castlePlacement.IsAt(grid);
@@ -141,6 +150,27 @@ public class LevelData : ScriptableObject
         }
 
         enemyPlacement = default;
+        return false;
+    }
+
+    public bool TryGetDecorativeBuildingAt(Vector2Int grid, out DecorativeBuildingPlacementData decorativeBuildingPlacement)
+    {
+        if (decorativeBuildingPlacements == null)
+        {
+            decorativeBuildingPlacement = default;
+            return false;
+        }
+
+        for (int i = 0; i < decorativeBuildingPlacements.Count; i++)
+        {
+            if (decorativeBuildingPlacements[i].GridPosition != grid)
+                continue;
+
+            decorativeBuildingPlacement = decorativeBuildingPlacements[i];
+            return true;
+        }
+
+        decorativeBuildingPlacement = default;
         return false;
     }
 
@@ -204,9 +234,35 @@ public class LevelData : ScriptableObject
         enemyPlacements.Add(new EnemyPlacementData(grid, enemyGroupIndex, behaviorType));
     }
 
+    public void SetDecorativeBuilding(Vector2Int grid, string prefabKey)
+    {
+        if (!IsInsideGrid(grid) || string.IsNullOrWhiteSpace(prefabKey))
+            return;
+
+        EnsureDecorativeBuildingPlacements();
+        decorativeBuildingPlacements.RemoveAll(x => x.GridPosition == grid);
+        decorativeBuildingPlacements.Add(new DecorativeBuildingPlacementData(grid, prefabKey));
+    }
+
     public void RemoveEnemyPlacementAt(Vector2Int grid)
     {
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
+    }
+
+    public void RemoveDecorativeBuildingAt(Vector2Int grid)
+    {
+        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+    }
+
+    public void EraseNonGroundTileAt(Vector2Int grid)
+    {
+        obstacleCells.Remove(grid);
+        itemPlacements.RemoveAll(x => x.GridPosition == grid);
+        outpostPlacements.RemoveAll(x => x.GridPosition == grid);
+        eventPlacements.RemoveAll(x => x.GridPosition == grid);
+        enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
+        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        ClearUniquePlacementsAt(grid);
     }
 
     public void SetCastle(Vector2Int grid)
@@ -235,6 +291,7 @@ public class LevelData : ScriptableObject
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
+        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
         ClearUniquePlacementsAt(grid);
     }
 
@@ -291,6 +348,9 @@ public class LevelData : ScriptableObject
         for (int i = 0; i < eventPlacements.Count; i++)
             eventPlacements[i] = eventPlacements[i].Normalized();
 
+        EnsureDecorativeBuildingPlacements();
+        for (int i = 0; i < decorativeBuildingPlacements.Count; i++)
+            decorativeBuildingPlacements[i] = decorativeBuildingPlacements[i].Normalized();
     }
 
     private static Vector2Int NormalizeGridSize(Vector2Int value)
@@ -303,6 +363,11 @@ public class LevelData : ScriptableObject
     private void EnsureEnemyPlacements()
     {
         enemyPlacements ??= new List<EnemyPlacementData>();
+    }
+
+    private void EnsureDecorativeBuildingPlacements()
+    {
+        decorativeBuildingPlacements ??= new List<DecorativeBuildingPlacementData>();
     }
 }
 
@@ -433,6 +498,27 @@ public struct EnemyPlacementData
             gridPosition,
             Mathf.Max(1, enemyGroupIndex),
             behaviorType);
+    }
+}
+
+[Serializable]
+public struct DecorativeBuildingPlacementData
+{
+    [SerializeField] private Vector2Int gridPosition;
+    [SerializeField] private string prefabKey;
+
+    public DecorativeBuildingPlacementData(Vector2Int gridPosition, string prefabKey)
+    {
+        this.gridPosition = gridPosition;
+        this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
+    }
+
+    public Vector2Int GridPosition => gridPosition;
+    public string PrefabKey => string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
+
+    public DecorativeBuildingPlacementData Normalized()
+    {
+        return new DecorativeBuildingPlacementData(gridPosition, PrefabKey);
     }
 }
 
