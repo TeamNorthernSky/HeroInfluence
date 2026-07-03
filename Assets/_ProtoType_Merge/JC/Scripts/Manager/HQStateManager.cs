@@ -191,7 +191,7 @@ public class HQStateManager : MonoBehaviour
             case HQDepartment.Workshop:     return "공방";
             case HQDepartment.Research:     return "연구소";
             case HQDepartment.Training:     return "훈련실";
-            case HQDepartment.Recruit:      return "모집 센터";
+            case HQDepartment.Recruit:      return "의무실";
             case HQDepartment.Exchange:     return "교환소";
             default: return d.ToString();
         }

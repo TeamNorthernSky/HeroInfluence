@@ -294,6 +294,38 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
+    // [KJ 260701] 의무실(Infirmary) 회복/부활 공용. percent = 최대HP 대비 회복 비율.
+    // reviveIfDown=false → 순수 회복(incapacitated 유지) / true → 부활(incapacitated 해제).
+    public bool HealUnitByPercent(int unitIndex, int percent, bool reviveIfDown, out float newHp)
+    {
+        newHp = 0f;
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
+            return false;
+
+        float maxHp = Mathf.Max(0f, data.IngameStats.HP);
+        float heal = maxHp * Mathf.Max(0, percent) / 100f;
+        newHp = Mathf.Clamp(data.CurrentHp + heal, 0f, maxHp);
+        bool nextIncapacitated = reviveIfDown ? false : data.IsIncapacitated;
+
+        data.ApplyRuntimeState(
+            data.UnitTemplateKey,
+            data.Level,
+            data.BaseStats,
+            data.LevelupStats,
+            data.CurrentSkillIndex,
+            data.CurrentWeaponIndex,
+            data.CurrentWeaponStats,
+            data.IngameStats,
+            newHp,
+            data.Exp,
+            data.MaxExp,
+            data.SkillLevel,
+            data.EquippedWeaponInstanceIndex,
+            data.CurrentInfluence,
+            nextIncapacitated);
+        return true;
+    }
+
     public bool AddEventBonusStats(int unitIndex, float hpBonus, float atkBonus)
     {
         if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))

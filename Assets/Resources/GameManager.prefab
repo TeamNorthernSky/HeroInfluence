@@ -37,6 +37,7 @@ Transform:
   - {fileID: 8801001001001001002}
   - {fileID: 7393189682312312018}
   - {fileID: 3834778109094505785}
+  - {fileID: 4769286075930351187}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6892167157886770875
@@ -98,6 +99,74 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentPool: 0
   lastChargeDay: 0
+--- !u!1 &1981618313298347465
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4769286075930351187}
+  - component: {fileID: 8769308098240311297}
+  - component: {fileID: 3549887790545994653}
+  m_Layer: 0
+  m_Name: InfirmaryManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4769286075930351187
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981618313298347465}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4416921626792511709}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8769308098240311297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981618313298347465}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c94d4741c466984c97c095dcd79e13e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healPercent: 1e0000002800000032000000
+  healCost: 2c010000fa000000c8000000
+  reviveHpPercent: 1e0000002800000032000000
+  reviveCost: e803000052030000bc020000
+--- !u!114 &3549887790545994653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1981618313298347465}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3f49f841eea0fc43b22a8d76ae658ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  modalRoot: {fileID: 0}
+  btnClose: {fileID: 0}
+  content: {fileID: 0}
+  rowTemplate: {fileID: 0}
+  btnHealAll: {fileID: 0}
+  healAllDisabledOverlay: {fileID: 0}
+  stateInfoText: {fileID: 0}
 --- !u!1 &3304956294269195362
 GameObject:
   m_ObjectHideFlags: 0
