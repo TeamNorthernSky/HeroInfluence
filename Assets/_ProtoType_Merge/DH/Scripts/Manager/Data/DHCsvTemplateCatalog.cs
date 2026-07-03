@@ -47,11 +47,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private static readonly Dictionary<int, System.Func<UnitGrowthExpData, int>> ClassUnlockAccessors
         = new Dictionary<int, System.Func<UnitGrowthExpData, int>>
     {
-        //{ 10001, d => d.GuardianStudySkill  },
+        { 10001, d => d.FighterStudySkill   },
         { 10002, d => d.BlasterStudySkill   },
         { 10003, d => d.StrikerStudySkill   },
         { 10004, d => d.SuppoterStudySkill  },
-        { 10005, d => d.FighterStudySkill   },
     };
 
     private bool isLoaded;
