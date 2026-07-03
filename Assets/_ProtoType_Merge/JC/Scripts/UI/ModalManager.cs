@@ -127,24 +127,40 @@ public class ModalManager : MonoBehaviour
             return;
         }
 
-        dimGo.transform.SetParent(parent, false);
-        dimRt.anchorMin = Vector2.zero;
-        dimRt.anchorMax = Vector2.one;
-        dimRt.offsetMin = Vector2.zero;
-        dimRt.offsetMax = Vector2.zero;
-        dimRt.localScale = Vector3.one;
-        // [JC 260702] dim을 top 바로 아래(뒤)에 확정 배치.
-        // 주의: SetSiblingIndex(top.index) 단독은 버그 — dim이 이미 같은 부모에 있고 top보다 아래
-        // 인덱스일 때(2번째 모달이 같은 레이어에 열릴 때) dim이 top '위'로 올라가 히어로선택 패널을 덮음.
-        // → dim을 맨 앞으로 올린 뒤 top을 다시 맨 앞으로 = dim이 top 직전 형제로 확정(인덱스 산술·SetParent 모호성 무관).
-        dimGo.transform.SetAsLastSibling();
-        top.transform.SetAsLastSibling();
+        // [JC 260703] 모달 루트가 자체 Canvas를 호스팅하면(예: Modal_HeroInfo — 부모 CommonUIManager엔 캔버스 없음)
+        // 형제 co-locate로는 dim이 캔버스 밖이라 렌더되지 않음 → 모달의 '첫 자식'으로 삽입(콘텐츠 뒤, 같은 캔버스 안).
+        if (top.GetComponent<Canvas>() != null)
+        {
+            dimGo.transform.SetParent(top.transform, false);
+            StretchDim();
+            dimGo.transform.SetAsFirstSibling();
+        }
+        else
+        {
+            dimGo.transform.SetParent(parent, false);
+            StretchDim();
+            // [JC 260702] dim을 top 바로 아래(뒤)에 확정 배치.
+            // 주의: SetSiblingIndex(top.index) 단독은 버그 — dim이 이미 같은 부모에 있고 top보다 아래
+            // 인덱스일 때(2번째 모달이 같은 레이어에 열릴 때) dim이 top '위'로 올라가 히어로선택 패널을 덮음.
+            // → dim을 맨 앞으로 올린 뒤 top을 다시 맨 앞으로 = dim이 top 직전 형제로 확정(인덱스 산술·SetParent 모호성 무관).
+            dimGo.transform.SetAsLastSibling();
+            top.transform.SetAsLastSibling();
+        }
 
         Color c = dimImage.color;
         c.a = modal.DimAlpha;
         dimImage.color = c;
 
         dimGo.SetActive(true);
+    }
+
+    private void StretchDim()
+    {
+        dimRt.anchorMin = Vector2.zero;
+        dimRt.anchorMax = Vector2.one;
+        dimRt.offsetMin = Vector2.zero;
+        dimRt.offsetMax = Vector2.zero;
+        dimRt.localScale = Vector3.one;
     }
 
     private void Park()

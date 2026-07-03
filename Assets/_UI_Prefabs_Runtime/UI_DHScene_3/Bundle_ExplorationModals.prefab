@@ -188,6 +188,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   backgroundGroup: {fileID: 0}
   buttonsGroup: {fileID: 0}
+  overlayGroup: {fileID: 0}
   modalsGroup: {fileID: 1005647035087952245}
   tooltipsGroup: {fileID: 0}
 --- !u!114 &1530407139640582269
@@ -1675,7 +1676,7 @@ MonoBehaviour:
   pausesGame: 1
   closeOnOutsideClick: 1
   contentRect: {fileID: 801811955780663193}
-  wantsDim: 0
+  wantsDim: 1
   dimClosesModal: 0
   dimAlpha: 0.75
 --- !u!1 &4972344295978427846
@@ -2606,7 +2607,7 @@ MonoBehaviour:
   pausesGame: 1
   closeOnOutsideClick: 1
   contentRect: {fileID: 8724708774392816784}
-  wantsDim: 0
+  wantsDim: 1
   dimClosesModal: 0
   dimAlpha: 0.75
 --- !u!1 &9182126937392432944

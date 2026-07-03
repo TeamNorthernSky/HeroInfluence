@@ -325,6 +325,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   backgroundGroup: {fileID: 0}
   buttonsGroup: {fileID: 4427842620735328785}
+  overlayGroup: {fileID: 0}
   modalsGroup: {fileID: 5477388712628806463}
   tooltipsGroup: {fileID: 0}
 --- !u!114 &2774469316419668498
@@ -846,8 +847,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pausesGame: 0
-  closeOnOutsideClick: 1
+  closeOnOutsideClick: 0
   contentRect: {fileID: 4914510981269526952}
+  wantsDim: 1
+  dimClosesModal: 1
+  dimAlpha: 0.75
 --- !u!224 &3902644311340401660 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3413951385747045226, guid: 521774ff5c9fca346a768c7da6bd47b2,
