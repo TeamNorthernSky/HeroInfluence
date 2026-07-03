@@ -18,6 +18,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
     [SerializeField] private Vector2 tooltipOffset = new Vector2(-250f, 350f);
 
     private BattleCharactor currentUnit;
+    private bool isHovering;
 
     private void Awake()
     {
@@ -39,16 +40,23 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         if (battleFlowManager != null)
             battleFlowManager.OnTurnStarted -= OnTurnStarted;
+        isHovering = false;
         HideTip();
     }
 
     private void OnTurnStarted(int round, BattleCharactor unit)
     {
         currentUnit = (unit != null && unit.IsPlayer) ? unit : null;
+        // [JC 260703] 호버 유지 중 턴 전환 시 이전 유닛 툴팁 잔존 방지 — 숨긴 뒤 새 유닛으로 재표시(적 턴이면 숨김 유지).
+        if (isHovering)
+        {
+            HideTip();
+            if (currentUnit != null) ShowTip();
+        }
     }
 
-    public void OnPointerEnter(PointerEventData eventData) => ShowTip();
-    public void OnPointerExit(PointerEventData eventData) => HideTip();
+    public void OnPointerEnter(PointerEventData eventData) { isHovering = true; ShowTip(); }
+    public void OnPointerExit(PointerEventData eventData) { isHovering = false; HideTip(); }
 
     private void ShowTip()
     {
