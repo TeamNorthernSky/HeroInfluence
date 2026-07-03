@@ -24,15 +24,16 @@ public static class LobbyUIRegistry
     public static SortieController Sortie { get; set; }
     public static HeroListController Roster { get; set; }
     public static RectTransform RosterPanelRoot { get; set; }
-    public static RectTransform GoButton { get; set; }
+    // [JC 260703] GoButton 슬롯 제거 — 출전 열기버튼이 UI_Sortie 번들 내부로 이동해 SortieController가 직접 결선(sortieButtonRoot). GoButtonRegistrar도 삭제.
     public static Button HqButton { get; set; }
     public static HQBuildModeController BuildMode { get; set; }
+    public static GameObject LobbyRosterRoot { get; set; } // [JC 260703] 로비 로스터 뷰 루트(출전 중 SortieController가 비활성 토글)
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Clear()
     {
         facilities.Clear();
         Sortie = null; Roster = null; RosterPanelRoot = null;
-        GoButton = null; HqButton = null; BuildMode = null;
+        HqButton = null; BuildMode = null; LobbyRosterRoot = null;
     }
 }

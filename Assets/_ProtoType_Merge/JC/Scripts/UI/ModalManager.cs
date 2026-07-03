@@ -133,8 +133,12 @@ public class ModalManager : MonoBehaviour
         dimRt.offsetMin = Vector2.zero;
         dimRt.offsetMax = Vector2.zero;
         dimRt.localScale = Vector3.one;
-        // dim을 top의 현재 인덱스에 삽입 → top이 한 칸 뒤로 밀려 dim이 top 바로 아래(뒤)에 위치.
-        dimGo.transform.SetSiblingIndex(top.transform.GetSiblingIndex());
+        // [JC 260702] dim을 top 바로 아래(뒤)에 확정 배치.
+        // 주의: SetSiblingIndex(top.index) 단독은 버그 — dim이 이미 같은 부모에 있고 top보다 아래
+        // 인덱스일 때(2번째 모달이 같은 레이어에 열릴 때) dim이 top '위'로 올라가 히어로선택 패널을 덮음.
+        // → dim을 맨 앞으로 올린 뒤 top을 다시 맨 앞으로 = dim이 top 직전 형제로 확정(인덱스 산술·SetParent 모호성 무관).
+        dimGo.transform.SetAsLastSibling();
+        top.transform.SetAsLastSibling();
 
         Color c = dimImage.color;
         c.a = modal.DimAlpha;
@@ -147,6 +151,9 @@ public class ModalManager : MonoBehaviour
     {
         if (dimGo == null) return;
         dimGo.SetActive(false);
-        dimGo.transform.SetParent(transform, false);
+        // [JC 260703] 재부모화(→ModalManager) 생략. Park는 Modal.OnDisable에서도 호출되는데, 이때 부모 레이어(Layer_Modals)가
+        // 활성/비활성 전환 중이면 SetParent가 "Cannot set the parent ... while activating/deactivating" 에러를 낸다.
+        // dim은 비활성만 하고 현 위치에 둔다 — 다음 dim-모달 오픈 시 HandleStackChanged가 올바른 레이어로 재슬롯하고,
+        // 씬 언로드로 파괴되면 OnSceneLoaded/EnsureDim가 재생성한다. (재부모화는 불필요한 최적화였고 이 에러의 원인.)
     }
 }

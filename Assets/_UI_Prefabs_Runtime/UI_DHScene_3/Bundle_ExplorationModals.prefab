@@ -1673,9 +1673,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pausesGame: 1
-  closeOnOutsideClick: 0
+  closeOnOutsideClick: 1
   contentRect: {fileID: 801811955780663193}
-  wantsDim: 1
+  wantsDim: 0
   dimClosesModal: 0
   dimAlpha: 0.75
 --- !u!1 &4972344295978427846
@@ -2604,9 +2604,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pausesGame: 1
-  closeOnOutsideClick: 0
+  closeOnOutsideClick: 1
   contentRect: {fileID: 8724708774392816784}
-  wantsDim: 1
+  wantsDim: 0
   dimClosesModal: 0
   dimAlpha: 0.75
 --- !u!1 &9182126937392432944

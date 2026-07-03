@@ -19,6 +19,12 @@ using UnityEngine.UI;
 ///
 /// ※ 최대 인원(maxOnField)은 인스펙터 가변. 현재 영속 데이터 파티=4명 기준 4. 추후 DH가 파티를
 ///   3명으로 줄이면 이 값만 3으로 변경.
+///
+/// [JC 260703 · dim 일원화] 자체 dim 제거 → 공유 dim(ModalManager, Modal_Sortie.wantsDim=1) 단일화.
+/// 공유 dim은 범용이라 외부 요소를 dim 위로 못 올린다. 그래서 편성 로스터/편성완료 버튼을 Modal_Sortie
+/// 자식(=Layer_Modals, dim 위)에 복제로 두고, 원본(로비 로스터 패널/출전 열기버튼)은 모달 중 비활성한다.
+/// 이 복제+원본비활성 구조는 의도된 트레이드오프(범용 ModalManager 단순성 유지) — 최적화로 걷어내지 말 것.
+/// 모달 로스터는 표시전용 LobbyRosterView(파티 4명 고정 + 드래그-추가 dormant). [[project_sortie_layer_refactor]]
 /// </summary>
 [DisallowMultipleComponent]
 public class SortieController : MonoBehaviour
@@ -51,12 +57,17 @@ public class SortieController : MonoBehaviour
     [Header("새 파티(무-상주) 모드 상태 안내")]
     [SerializeField] private string singlePartyStateMessage = "현재 버전에서는 1개 파티만 생성할 수 있습니다.";
 
-    [Header("로스터 = 로비 우측 영웅창 (공유)")]
+    [Header("로스터(편성 selection) — dormant. 현재 모달 로스터는 표시전용 LobbyRosterView 사용")]
+    [Tooltip("[JC 260703] 편성 드래그-추가 기획 재활성 시 HeroListController(selection)를 여기 결선. 현재는 null.")]
     [SerializeField] private HeroListController rosterController;
-    [Tooltip("출전 모달 활성 동안 모달 위로 올릴 영웅창 루트(PNL_Lobby_CurrentParty)")]
+
+    [Header("[JC 260703] 원본(로비) 토글 — 모달 열림 동안 비활성(모달이 자체 복제본 표시)")]
+    [Tooltip("로비 상시 로스터 패널(PNL_Lobby_CurrentParty). 타 번들(UI_PartyPanel) → 런타임 레지스트리 폴백.")]
     [SerializeField] private Transform rosterPanelRoot;
-    [Tooltip("출전 모달 활성 동안 모달 위로 올릴 출전 버튼(재클릭으로 닫기). 보통 BTN_HQLobby_Go")]
+    [Tooltip("출전 열기 버튼(BTN_HQLobby_Go). 같은 UI_Sortie 번들 → 직접 결선.")]
     [SerializeField] private Transform sortieButtonRoot;
+    [Tooltip("[JC 260703] 편성완료(저장+닫기) 버튼. Modal_Sortie 자식(공유 dim 위). 클릭→TryClose.")]
+    [SerializeField] private Button confirmButton;
 
     [Header("진형 파티 ID")]
     [SerializeField] private string targetPartyId = "";
@@ -72,15 +83,12 @@ public class SortieController : MonoBehaviour
 
     private readonly List<int> formation = new List<int>(); // 슬롯 순서대로 unitIndex (0=빈칸)
 
-    // 로스터(영웅창) 임시 전환 상태 복원용
+    // 로스터(영웅창) 임시 전환 상태 복원용 (dormant selection 로스터용)
     private bool rosterEngaged;
     private bool rosterOrigSelectionMode;
     private bool rosterOrigVisitingOnly;
-    private int rosterOrigSibling = -1;
-    private int sortieBtnOrigSibling = -1;
 
-    // [JC 260616] 진형 편집 모달 활성 동안 로비 나머지를 가리는 반투명 검정 dim
-    private RectTransform dimOverlay;
+    // [JC 260703] 자체 dim 제거 — 공유 dim(ModalManager, Modal_Sortie.wantsDim=1)이 대체.
 
     // 드래그 상태
     private int draggedUnitIndex = -1;
@@ -94,6 +102,7 @@ public class SortieController : MonoBehaviour
     {
         // [JC 260616] X 닫기도 빈 파티 게이트 경유 (멤버 0명이면 닫기 차단)
         if (btnClose != null) btnClose.onClick.AddListener(() => TryClose());
+        if (confirmButton != null) confirmButton.onClick.AddListener(() => TryClose()); // [JC 260703] 편성완료 = 저장(OnDisable)+닫기
         EnsureStateText();
 
         for (int i = 0; i < slots.Count; i++)
@@ -122,9 +131,18 @@ public class SortieController : MonoBehaviour
     {
         // [JC 260629] 번들 분리 — 크로스번들 참조를 레지스트리에서 폴백 해석.
         // 자기 자신 등록은 SortieRegistrar(상시 active 번들 루트)가 담당 — Modal_Sortie는 비활성 시작.
-        if (rosterController == null) rosterController = LobbyUIRegistry.Roster;
+        if (rosterController == null) rosterController = LobbyUIRegistry.Roster; // dormant selection 로스터(현재 null)
+        // [JC 260703] rosterPanelRoot(로비 PNL)는 PartyPanelRegistrar가 씬 로드 시 RosterPanelRoot로 등록 → 그것만 사용.
+        //  ※ LobbyRosterRoot는 폴백으로 쓰지 않는다: 모달 자신의 LobbyRosterView도 OnEnable에 LobbyRosterRoot를 자기로
+        //    덮으므로, 폴백 시 '모달 자신의 로스터'를 비활성화할 위험이 있다.
         if (rosterPanelRoot == null && LobbyUIRegistry.RosterPanelRoot != null) rosterPanelRoot = LobbyUIRegistry.RosterPanelRoot;
-        if (sortieButtonRoot == null && LobbyUIRegistry.GoButton != null) sortieButtonRoot = LobbyUIRegistry.GoButton;
+        // [JC 260703] sortieButtonRoot는 UI_Sortie 번들 내부(BTN_HQLobby_Go) 직접 결선 — 레지스트리 폴백 불필요(GoButton 슬롯 제거됨).
+
+        // [JC 260703] 모달 열림 = 로비 원본(로스터 패널/열기버튼) 비활성. 모달은 자체 복제본(LobbyRosterView/편성완료 버튼)을
+        // Modal_Sortie 자식(공유 dim 위)으로 표시한다. 범용 ModalManager 공유 dim은 외부요소를 위로 못 올리므로
+        // '복제본을 dim 위로' 대신 '원본을 비활성'으로 통일. [[project_sortie_layer_refactor]]
+        if (rosterPanelRoot != null) rosterPanelRoot.gameObject.SetActive(false);
+        if (sortieButtonRoot != null) sortieButtonRoot.gameObject.SetActive(false);
 
         LoadFromRepository();
         EngageRoster();
@@ -135,12 +153,18 @@ public class SortieController : MonoBehaviour
     {
         SaveFormation();
         DisengageRoster();
+        // [JC 260703] 모달 닫힘 = 로비 원본 복귀(비활성 역토글). LobbyRosterView가 OnEnable에 순서 재읽기.
+        if (rosterPanelRoot != null) rosterPanelRoot.gameObject.SetActive(true);
+        if (sortieButtonRoot != null) sortieButtonRoot.gameObject.SetActive(true);
         CancelDrag();
     }
 
     public void CloseModal() { if (modalRoot != null) modalRoot.SetActive(false); }
 
     // ─── 로스터(영웅창) 전환 ─────────────────────────────────
+    // [JC 260703] dormant: 편성 드래그-추가 기획 재활성 시 rosterController(HeroListController selection)를 결선하면 동작.
+    // 현재 모달 로스터는 표시전용 LobbyRosterView라 rosterController=null → 이 메서드는 no-op.
+    // (자체 dim/끌어올리기는 제거 — 공유 dim + 원본 비활성 방식으로 통일)
     private void EngageRoster()
     {
         if (rosterController == null || rosterEngaged) return;
@@ -151,12 +175,6 @@ public class SortieController : MonoBehaviour
         // [JC 260616] 출전 로스터 = 본부 상주(방문 파티 + 무소속)만. 탐사 나간 파티 멤버 제외.
         rosterController.SetVisitingOnlyMode(true);
         rosterController.UnitSelected += OnRosterClicked;
-        // 원래 시블링 인덱스는 재배치 전에 캡처(복원 정확도)
-        if (rosterPanelRoot != null) rosterOrigSibling = rosterPanelRoot.GetSiblingIndex();
-        if (sortieButtonRoot != null) sortieBtnOrigSibling = sortieButtonRoot.GetSiblingIndex();
-        ShowDim(); // 모달 외부를 가리는 dim → 모달은 dim 위로 (로스터/출전버튼은 그 위로 올라감)
-        if (rosterPanelRoot != null) rosterPanelRoot.SetAsLastSibling(); // 모달 dim 위로 올려 활성 유지
-        if (sortieButtonRoot != null) sortieButtonRoot.SetAsLastSibling(); // 출전 버튼 재클릭(닫기) 가능하도록 위로
         rosterController.Rebuild();
         AttachRosterDragItems();
     }
@@ -165,7 +183,6 @@ public class SortieController : MonoBehaviour
     {
         if (!rosterEngaged) return;
         rosterEngaged = false;
-        HideDim();
         if (rosterController != null)
         {
             rosterController.UnitSelected -= OnRosterClicked;
@@ -173,10 +190,6 @@ public class SortieController : MonoBehaviour
             rosterController.SetVisitingOnlyMode(rosterOrigVisitingOnly);
             rosterController.Rebuild(); // 일반 동작(영웅 정보)로 복귀
         }
-        if (rosterPanelRoot != null && rosterOrigSibling >= 0)
-            rosterPanelRoot.SetSiblingIndex(rosterOrigSibling);
-        if (sortieButtonRoot != null && sortieBtnOrigSibling >= 0)
-            sortieButtonRoot.SetSiblingIndex(sortieBtnOrigSibling);
     }
 
     private void AttachRosterDragItems()
@@ -487,9 +500,18 @@ public class SortieController : MonoBehaviour
     /// <summary>외부(출전 버튼 게이트)에서 닫기 요청. 상주 파티가 있을 때 멤버 0명이면 닫지 않고 false 반환.</summary>
     public bool TryClose()
     {
-        // [JC 260616] 상주 파티가 있을 때만 빈 파티(0명) 닫기 차단. 무-상주(새 파티 편성) 모드는
-        // 저장이 no-op이라 빈 파티가 생기지 않으므로 자유롭게 닫기(취소) 허용.
-        if (HasResidentParty && CountFilled() == 0)
+        // [JC 260703] 편성완료/취소(X) 닫기 게이트 일원화. 구 SortieEntryGate의 재클릭-닫기 분기를 여기로 이관
+        //             (열기버튼은 이제 열기 전용 + 모달 중 비활성).
+        if (!HasResidentParty)
+        {
+            // 무-상주(새 파티 편성) 모드: 1명 이상 편성 시 "1개 파티만" 안내(닫지 않음).
+            // 0명이면 저장 no-op이라 자유 닫기(취소). ※ 파티 4명 고정 중엔 추가 불가라 사실상 항상 0명.
+            if (CountFilled() > 0) { ShowWarning(singlePartyStateMessage); return false; }
+            CloseModal();
+            return true;
+        }
+        // [JC 260616] 상주 파티가 있을 때 빈 파티(0명) 닫기(=출전) 차단.
+        if (CountFilled() == 0)
         {
             ShowWarning("최소 1명 이상 편성해야 합니다.");
             return false;
@@ -588,47 +610,6 @@ public class SortieController : MonoBehaviour
         for (int i = 0; i < slots.Count; i++)
             if (slots[i] != null && slots[i].label != null && slots[i].label.font != null) return slots[i].label.font;
         return null;
-    }
-
-    // [JC 260616] 모달 외부를 가리는 반투명 검정 dim. 모달 바로 아래 시블링에 둔다.
-    private void EnsureDim()
-    {
-        if (dimOverlay != null || modalRoot == null) return;
-        // [JC 260629] dim은 출전버튼/로스터와 '같은 레이어'(프리팹화 후 Layer_Base)에 둬야 한다.
-        // 그래야 EngageRoster의 SetAsLastSibling이 로스터/출전버튼을 dim 위로 올려 보이게/클릭 가능하게 만든다.
-        // (과거엔 modalRoot.parent에 뒀으나, 프리팹화로 modalRoot=Layer_Modals·출전버튼/로스터=Layer_Base로 분리되어 못 넘던 버그.)
-        Transform parent = sortieButtonRoot != null ? sortieButtonRoot.parent
-            : (rosterPanelRoot != null ? rosterPanelRoot.parent
-            : (modalRoot.transform.parent != null ? modalRoot.transform.parent
-            : (rootCanvas != null ? rootCanvas.transform : transform)));
-        var go = new GameObject("SortieDimOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-        dimOverlay = go.GetComponent<RectTransform>();
-        dimOverlay.SetParent(parent, false);
-        dimOverlay.anchorMin = Vector2.zero;
-        dimOverlay.anchorMax = Vector2.one;
-        dimOverlay.offsetMin = Vector2.zero;
-        dimOverlay.offsetMax = Vector2.zero;
-        var img = go.GetComponent<Image>();
-        img.color = new Color(0f, 0f, 0f, 0.75f); // [JC 260629] 원래 모달 dim 농도(0.75)로 복구. 단일 dim을 Layer_Base에서 담당.
-        img.raycastTarget = true; // 외부 클릭 차단(모달 강제 포커스)
-        go.SetActive(false);
-    }
-
-    private void ShowDim()
-    {
-        EnsureDim();
-        if (dimOverlay == null || modalRoot == null) return;
-        dimOverlay.gameObject.SetActive(true);
-        // [JC 260629] dim과 modal은 이제 서로 다른 레이어(Layer_Base vs Layer_Modals)에 있으므로 각자 자기 부모 안에서 최상단으로.
-        // - dim: Layer_Base 내 맨 위(시설/네비를 가림). 이후 EngageRoster가 로스터/출전버튼을 dim 위로 다시 올림.
-        // - modal: Layer_Modals 내 맨 위(상위 레이어라 dim보다 항상 위에 그려짐).
-        dimOverlay.SetAsLastSibling();
-        if (modalRoot != null) modalRoot.transform.SetAsLastSibling();
-    }
-
-    private void HideDim()
-    {
-        if (dimOverlay != null) dimOverlay.gameObject.SetActive(false);
     }
 
     private static string ResolveHeroName(int unitIndex)
