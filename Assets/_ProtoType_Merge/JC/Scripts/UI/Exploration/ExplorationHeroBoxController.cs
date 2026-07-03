@@ -77,7 +77,6 @@ public class ExplorationHeroBoxController : MonoBehaviour
         var party = ResolveParty();
         var unitRepo = PersistentUnitRepository.Instance;
         var catalog = DHCsvTemplateCatalog.Instance;
-        var gm = GameManager.Instance;
 
         // [JC 260628] 전열→후열 순(PartyFormation 공용 규약)으로 표시 — 전력평가·전투결과와 일치
         var members = party != null
@@ -129,10 +128,10 @@ public class ExplorationHeroBoxController : MonoBehaviour
     private void OnSlotClicked(int i)
     {
         if (i < 0 || i >= boundUnits.Length || boundUnits[i] <= 0) return;
-        var gm = GameManager.Instance;
-        if (gm == null) return;
+        var cui = CommonUIManager.Instance;
+        if (cui == null) return;
         // [JC 260619] 탐사 멤버 클릭 → 로비와 동일 레이아웃(Modal_HeroInfo)으로 통일. HeroStatusModal 우선선택 폐기.
-        var modal = gm.HeroInfoModal;
+        var modal = cui.HeroInfoModal;
         if (modal != null) modal.Open(boundUnits[i]);
     }
 }

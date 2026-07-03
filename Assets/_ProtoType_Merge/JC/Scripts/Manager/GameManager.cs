@@ -12,20 +12,8 @@ public class GameManager : MonoBehaviour
     public TrainingManager Training { get; private set; }
     public LabManager Lab { get; private set; }
     public WorkshopManager Workshop { get; private set; }
-    // [JC 260629] 영속 UI 모달은 CommonUIManager로 분리. 파사드 유지로 기존 호출부(HeroProfileButton/ExplorationHeroBox) 무변경.
-    public HeroInfoModal HeroInfoModal => CommonUIManager.Instance != null ? CommonUIManager.Instance.HeroInfoModal : null;
-
+    // [JC 260703] 씬 로케이터는 Grid만 유지(Game.Grid 소비처用). 타 씬 매니저·영속 레포는 각자 .Instance 직접 접근.
     public GridManager Grid { get; private set; }
-    public TurnManager Turn { get; private set; }
-    public CombatEncounterManager Combat { get; private set; }
-    public FogGridManager FogGrid { get; private set; }
-    public FogRenderManager FogRender { get; private set; }
-    public LevelLoader Level { get; private set; }
-
-    // [JC 추가 260511] 영속 매니저 참조 (각자 Singleton)
-    public PersistentUnitRepository UnitRepo => PersistentUnitRepository.Instance;
-    public PersistentEnemyRepository EnemyRepo => PersistentEnemyRepository.Instance;
-    public HQVisitState HQVisit => HQVisitState.Instance;
 
     // [JC 추가 260511] 영속 상태 - 매니저 통합 (씬 종속 매니저들의 데이터 영속화)
     [Header("Persistent State")]
@@ -153,10 +141,5 @@ public class GameManager : MonoBehaviour
     private void RefreshSceneManagers()
     {
         Grid = FindFirstObjectByType<GridManager>();
-        Turn = FindFirstObjectByType<TurnManager>();
-        Combat = FindFirstObjectByType<CombatEncounterManager>();
-        FogGrid = FindFirstObjectByType<FogGridManager>();
-        FogRender = FindFirstObjectByType<FogRenderManager>();
-        Level = FindFirstObjectByType<LevelLoader>();
     }
 }
