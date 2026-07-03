@@ -2007,6 +2007,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7edb775d22469f44a9eb8534a18d9dfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  backgroundGroup: {fileID: 0}
   buttonsGroup: {fileID: 929074671261907799}
   modalsGroup: {fileID: 4154897897829759837}
   tooltipsGroup: {fileID: 0}
@@ -4333,7 +4334,6 @@ GameObject:
   - component: {fileID: 8925929086609416612}
   - component: {fileID: 7210365977981536901}
   - component: {fileID: 2545058265670105997}
-  - component: {fileID: 5182419901386403819}
   m_Layer: 0
   m_Name: Modal_Publicity
   m_TagString: Untagged
@@ -4376,7 +4376,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6996265483053847483}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -4448,19 +4448,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 4962902832980678867}
---- !u!114 &5182419901386403819
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6996265483053847483}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1463031161a4ff746ac28abb4d9a7cf2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  wantsDim: 1
+  dimClosesModal: 1
+  dimAlpha: 0.75
 --- !u!1 &7006012467448109117
 GameObject:
   m_ObjectHideFlags: 0
@@ -4976,7 +4966,6 @@ GameObject:
   - component: {fileID: 5874846817719643438}
   - component: {fileID: 8847701128479827709}
   - component: {fileID: 8468891580047488390}
-  - component: {fileID: 3329809614611950598}
   m_Layer: 0
   m_Name: Modal_PublicityHeroSelect
   m_TagString: Untagged
@@ -5019,7 +5008,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8226731314305715303}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -5055,21 +5044,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pausesGame: 0
-  closeOnOutsideClick: 1
+  closeOnOutsideClick: 0
   contentRect: {fileID: 3520020127163106726}
---- !u!114 &3329809614611950598
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8226731314305715303}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1463031161a4ff746ac28abb4d9a7cf2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  wantsDim: 1
+  dimClosesModal: 1
+  dimAlpha: 0.75
 --- !u!1 &8282425270634174761
 GameObject:
   m_ObjectHideFlags: 0

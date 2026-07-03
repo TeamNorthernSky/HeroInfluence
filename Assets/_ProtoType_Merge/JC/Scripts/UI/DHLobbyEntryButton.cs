@@ -53,7 +53,7 @@ public class DHLobbyEntryButton : MonoBehaviour
 
     private bool CanEnter()
     {
-        if (ModalRegistry.HasAny) return false;
+        if (ModalManager.HasAny) return false;
 
         // 본부 앞 그리드에 파티가 있을 때만 활성화 (사용자 명세)
         HQVisitState state = HQVisitState.Instance;

@@ -9,13 +9,15 @@ public class UIModulePlacer : MonoBehaviour
 {
     [SerializeField] private Transform backgroundGroup;
     [SerializeField] private Transform buttonsGroup;
+    [SerializeField] private Transform overlayGroup;   // [JC 260703] Base↔Modals 사이 상시 오버레이(로비 로스터 등). 미사용 번들은 null.
     [SerializeField] private Transform modalsGroup;
     [SerializeField] private Transform tooltipsGroup;
 
-    public void Place(Transform backgroundLayer, Transform baseLayer, Transform modalLayer, Transform tooltipLayer)
+    public void Place(Transform backgroundLayer, Transform baseLayer, Transform overlayLayer, Transform modalLayer, Transform tooltipLayer)
     {
         Move(backgroundGroup, backgroundLayer);
         Move(buttonsGroup, baseLayer);
+        Move(overlayGroup, overlayLayer);
         Move(modalsGroup, modalLayer);
         Move(tooltipsGroup, tooltipLayer);
     }
