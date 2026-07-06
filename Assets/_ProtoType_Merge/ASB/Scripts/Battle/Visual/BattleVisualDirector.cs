@@ -10,6 +10,9 @@ public class BattleVisualDirector : MonoBehaviour
     [SerializeField] private SkillPresentationCatalog _catalog;
     [SerializeField] private DamagePopupPresenter _popupPresenter;
 
+    /// <summary>투사체 등 연출 실행부가 skillIndex로 프리젠테이션 데이터를 직접 조회할 때 사용합니다.</summary>
+    public SkillPresentationData GetPresentation(int skillIndex) => _catalog?.Get(skillIndex);
+
     public void PlayAttackEffect(BattleCharactor actor, int skillIndex)
     {
         SkillPresentationData presentation = _catalog?.Get(skillIndex);
@@ -44,6 +47,42 @@ public class BattleVisualDirector : MonoBehaviour
         }
 
         Instantiate(presentation.HitEffectPrefab, socket.position, socket.rotation);
+    }
+
+    public void PlayAttackSfx(BattleCharactor actor, int skillIndex)
+    {
+        SkillPresentationData presentation = _catalog?.Get(skillIndex);
+        if (presentation?.AttackSfxClip == null)
+        {
+            return;
+        }
+
+        var profile = actor?.GetComponent<UnitVisualProfile>();
+        Transform socket = profile?.AttackEffectSocket ?? actor?.transform;
+        if (socket == null)
+        {
+            return;
+        }
+
+        AudioSource.PlayClipAtPoint(presentation.AttackSfxClip, socket.position, presentation.SfxVolume);
+    }
+
+    public void PlayHitSfx(BattleCharactor target, int skillIndex)
+    {
+        SkillPresentationData presentation = _catalog?.Get(skillIndex);
+        if (presentation?.HitSfxClip == null)
+        {
+            return;
+        }
+
+        var profile = target?.GetComponent<UnitVisualProfile>();
+        Transform socket = profile?.HitEffectSocket ?? target?.transform;
+        if (socket == null)
+        {
+            return;
+        }
+
+        AudioSource.PlayClipAtPoint(presentation.HitSfxClip, socket.position, presentation.SfxVolume);
     }
 
     public void ShowDamagePopup(BattleHitResult result)

@@ -46,6 +46,7 @@ namespace ASB.Work.Battle.Sequence
                 if (result != null)
                 {
                     _visual?.PlayHitEffect(hitTarget, result.SkillIndex);
+                    _visual?.PlayHitSfx(hitTarget, result.SkillIndex);
                     _visual?.ShowDamagePopup(result);
                 }
 

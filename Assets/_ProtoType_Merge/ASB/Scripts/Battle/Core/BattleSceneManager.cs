@@ -24,6 +24,8 @@ public class BattleSceneManager : MonoBehaviour
     [SerializeField] private BattleUIManager battleUIManager;
 
     [Header("Scene Transition")]
+    [Tooltip("false면 전투 종료 후 씬 전환을 시도하지 않습니다. 테스트/툴 씬(BattleToolScene 등)에서 false로 둡니다.")]
+    [SerializeField] private bool autoReturnOnBattleEnd = true;
     [Tooltip("Build Settings에 등록된 씬 이름(확장자 제외). 예: DHScene")]
     [SerializeField] private string returnSceneName = "DHScene";
     [SerializeField] private float returnDelay = 3f;
@@ -65,10 +67,14 @@ public class BattleSceneManager : MonoBehaviour
             StopCoroutine(returnSceneCoroutine);
             returnSceneCoroutine = null;
         }
+
+        ASB.Work.Battle.Sequence.ProjectileController.DestroyAllActive();
     }
 
     private void HandleBattleEndedForTransition(BattleResult result)
     {
+        ASB.Work.Battle.Sequence.ProjectileController.DestroyAllActive();
+
         if (returnSceneCoroutine != null)
             return;
 
@@ -119,6 +125,13 @@ public class BattleSceneManager : MonoBehaviour
             plan, playerBattleCharactors, enemyBattleCharactors, result, skillResults);
 
         // 8. 씬 전환
+        if (!autoReturnOnBattleEnd)
+        {
+            Debug.Log("[BattleSceneManager] autoReturnOnBattleEnd=false — 씬 전환을 건너뜁니다.");
+            returnSceneCoroutine = null;
+            yield break;
+        }
+
         // [JC 260514] returnSceneName 빈 값이라도 GameSceneManager.Instance.ExplorationScene fallback이 있으면 통과.
         if (string.IsNullOrWhiteSpace(returnSceneName) && GameSceneManager.Instance == null)
         {
