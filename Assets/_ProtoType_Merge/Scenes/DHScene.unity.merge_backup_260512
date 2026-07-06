@@ -272,7 +272,7 @@ GameObject:
   - component: {fileID: 84482963}
   - component: {fileID: 84482964}
   m_Layer: 10
-  m_Name: Castle
+  m_Name: HeroUnion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -377,7 +377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89f9b6bdc53b5cf489bf7dfb98b2ea78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  castleId: castle_001
+  heroUnionId: heroUnion_001
   gridManager: {fileID: 1870279752}
 --- !u!114 &84482963
 MonoBehaviour:
@@ -2681,7 +2681,7 @@ MonoBehaviour:
   fogGridManager: {fileID: 964046517}
   partyFogRevealer: {fileID: 964046516}
   outpostFogRevealer: {fileID: 964046520}
-  castleFogRevealer: {fileID: 964046522}
+  heroUnionFogRevealer: {fileID: 964046522}
 --- !u!114 &964046516
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2795,9 +2795,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fogGridManager: {fileID: 964046517}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   revealRadius: 1
-  revealCastlesOnEnable: 1
+  revealHeroUnionsOnEnable: 1
 --- !u!1 &1021807296
 GameObject:
   m_ObjectHideFlags: 0
@@ -5217,11 +5217,11 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
-  castleLayerMask:
+  heroUnionLayerMask:
     serializedVersion: 2
     m_Bits: 1024
   fogGridManager: {fileID: 964046517}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   outpostRegistry: {fileID: 337973925}
   villainUnionBaseRegistry: {fileID: 106732308}
   multiGridOccupantRegistry: {fileID: 162291186}
@@ -5258,7 +5258,7 @@ GameObject:
   - component: {fileID: 1889454947}
   - component: {fileID: 1889454946}
   m_Layer: 0
-  m_Name: CastleSystem
+  m_Name: HeroUnionSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5715,7 +5715,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyRegistry: {fileID: 2000643499}
   partyRegistry: {fileID: 1919126566}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   pathfinder: {fileID: 1870279751}
   combatEncounterManager: {fileID: 408417867}
   gridManager: {fileID: 1870279752}
@@ -5749,7 +5749,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   turnManager: {fileID: 207868834}
   gridManager: {fileID: 1870279752}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   villainUnionBaseRegistry: {fileID: 106732308}
   outpostRegistry: {fileID: 337973925}
   enemyRegistry: {fileID: 2000643499}

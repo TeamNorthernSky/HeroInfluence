@@ -7,7 +7,7 @@ public class DHGameEndConditionController : MonoBehaviour
     [Header("References")]
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private EnemyRegistry enemyRegistry;
-    [SerializeField] private CastleRegistry castleRegistry;
+    [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
     [SerializeField] private DHGameEndUIController uiController;
 
@@ -51,7 +51,7 @@ public class DHGameEndConditionController : MonoBehaviour
         if (isEnding)
             return;
 
-        if (IsCastleInteractionCell(grid))
+        if (IsHeroUnionInteractionCell(grid))
             BeginGameEnd(DHGameEndResult.GameOver);
     }
 
@@ -59,7 +59,7 @@ public class DHGameEndConditionController : MonoBehaviour
     {
         SubscribeEnemy(enemy);
 
-        if (!isEnding && enemy != null && IsCastleInteractionCell(enemy.GetCurrentGrid()))
+        if (!isEnding && enemy != null && IsHeroUnionInteractionCell(enemy.GetCurrentGrid()))
             BeginGameEnd(DHGameEndResult.GameOver);
     }
 
@@ -131,16 +131,16 @@ public class DHGameEndConditionController : MonoBehaviour
         return false;
     }
 
-    private bool IsCastleInteractionCell(Vector2Int grid)
+    private bool IsHeroUnionInteractionCell(Vector2Int grid)
     {
-        IReadOnlyList<CastleUnit> castles = castleRegistry != null
-            ? castleRegistry.Castles
-            : FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
+        IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry != null
+            ? heroUnionRegistry.HeroUnions
+            : FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
 
-        for (int i = 0; i < castles.Count; i++)
+        for (int i = 0; i < heroUnions.Count; i++)
         {
-            CastleUnit castle = castles[i];
-            if (castle != null && castle.IsInteractionCell(grid))
+            HeroUnionUnit heroUnion = heroUnions[i];
+            if (heroUnion != null && heroUnion.IsInteractionCell(grid))
                 return true;
         }
 
@@ -235,8 +235,8 @@ public class DHGameEndConditionController : MonoBehaviour
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
 
-        if (castleRegistry == null)
-            castleRegistry = FindFirstObjectByType<CastleRegistry>();
+        if (heroUnionRegistry == null)
+            heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
 
         if (villainUnionBaseRegistry == null)
             villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();

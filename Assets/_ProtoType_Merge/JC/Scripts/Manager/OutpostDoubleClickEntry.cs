@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// [JC 260615] 점령(Claimed)한 거점 건물 더블클릭 → 본부(HQLobbyScene) 진입. (탐사 기획: 점령 건물도 본부와 동일 기능)
-/// CastleDoubleClickEntry 패턴 복제. 모든 Outpost에 부트스트랩이 자동 부착(씬/프리팹 수정 불필요).
+/// HeroUnionDoubleClickEntry 패턴 복제. 모든 Outpost에 부트스트랩이 자동 부착(씬/프리팹 수정 불필요).
 /// 조건: outpost.IsPlayerClaimed(점령 완료) + 더블클릭 + 입력 차단 가드 통과.
 /// 동일 로비 씬을 본부와 공유한다.
 /// </summary>
@@ -107,7 +107,7 @@ public static class OutpostDoubleClickEntryBootstrap
 /// <summary>
 /// [JC 260618] 거점은 LevelLoader.Start(SpawnOutposts)에서 동적 생성되므로 sceneLoaded 콜백(=Start 이전) 1회로는
 /// 부착 타이밍을 놓친다(재진입 시 더블클릭 진입 불가 버그의 원인). 본 호스트가 씬 로드마다 몇 프레임 폴링하며
-/// AttachAll을 재시도해 거점 등장 직후 확실히 부착한다(Castle wiring의 LateUpdate 폴링과 동일 취지). DontDestroyOnLoad.
+/// AttachAll을 재시도해 거점 등장 직후 확실히 부착한다(HeroUnion wiring의 LateUpdate 폴링과 동일 취지). DontDestroyOnLoad.
 /// </summary>
 public class OutpostFeatureAttachHost : MonoBehaviour
 {
@@ -141,8 +141,8 @@ public class OutpostFeatureAttachHost : MonoBehaviour
 
 /// <summary>
 /// [JC 260618] 점령(Claimed)한 거점에 파티가 인접 상호작용 셀에 있으면 방문 인디케이터를 표시한다.
-/// CastleHQVisitDetector 패턴의 거점 축약판 — 전역 HQVisitState 대신 거점별 인디케이터만 토글.
-/// 인디케이터 스프라이트/배치는 런타임에 본부(Castle)의 "VisitorIndicator"에서 복사해 본부와 일관성 유지.
+/// HeroUnionHQVisitDetector 패턴의 거점 축약판 — 전역 HQVisitState 대신 거점별 인디케이터만 토글.
+/// 인디케이터 스프라이트/배치는 런타임에 본부(HeroUnion)의 "VisitorIndicator"에서 복사해 본부와 일관성 유지.
 /// 부트스트랩이 자동 부착(씬/프리팹 비침습). 동적 mover/타이밍 회피 위해 폴링 평가(0.25s).
 /// </summary>
 [DisallowMultipleComponent]
@@ -245,13 +245,13 @@ public class OutpostVisitIndicator : MonoBehaviour
         return visitBuffer;
     }
 
-    /// <summary>인디케이터 GO를 1회 생성. 스프라이트·배치는 본부 와이어링(CastleVisitWiringForDHScene3)에서 읽어 본부와 일관.
+    /// <summary>인디케이터 GO를 1회 생성. 스프라이트·배치는 본부 와이어링(HeroUnionVisitWiringForDHScene3)에서 읽어 본부와 일관.
     /// 컴포넌트는 씬에 항상 존재하므로 wire 타이밍과 무관(없으면 보류 후 다음 평가 재시도).</summary>
     private void EnsureIndicator()
     {
         if (indicator != null) return;
 
-        CastleVisitWiringForDHScene3 wiring = FindFirstObjectByType<CastleVisitWiringForDHScene3>();
+        HeroUnionVisitWiringForDHScene3 wiring = FindFirstObjectByType<HeroUnionVisitWiringForDHScene3>();
         if (wiring == null || wiring.VisitorIndicatorSprite == null) return;
 
         indicator = new GameObject("OutpostVisitorIndicator");

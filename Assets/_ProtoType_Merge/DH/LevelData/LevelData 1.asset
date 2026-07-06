@@ -74,7 +74,7 @@ MonoBehaviour:
   outpostPlacements: []
   eventPlacements: []
   enemyPlacements: []
-  castlePlacement:
+  heroUnionPlacement:
     hasPlacement: 0
     gridPosition: {x: 0, y: 0}
   villainUnionPlacement:

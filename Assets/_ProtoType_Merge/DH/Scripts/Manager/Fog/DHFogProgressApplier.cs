@@ -179,8 +179,8 @@ public class DHFogProgressApplier : MonoBehaviour
         OutpostFogRevealer outpostFogRevealer = FindFirstObjectByType<OutpostFogRevealer>();
         outpostFogRevealer?.RevealAllClaimedOutposts();
 
-        CastleFogRevealer castleFogRevealer = FindFirstObjectByType<CastleFogRevealer>();
-        castleFogRevealer?.RevealAllCastles();
+        HeroUnionFogRevealer heroUnionFogRevealer = FindFirstObjectByType<HeroUnionFogRevealer>();
+        heroUnionFogRevealer?.RevealAllHeroUnions();
     }
 
     private void UnsubscribeCurrentFogGrid()

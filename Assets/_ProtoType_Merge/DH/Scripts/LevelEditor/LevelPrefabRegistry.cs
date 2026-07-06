@@ -20,7 +20,7 @@ public class LevelPrefabRegistry : MonoBehaviour
     [SerializeField] private List<EventPrefabEntry> eventPrefabs = new List<EventPrefabEntry>();
 
     [Header("Unique Building Prefabs")]
-    [SerializeField] private CastleUnit castlePrefab;
+    [SerializeField] private HeroUnionUnit heroUnionPrefab;
     [SerializeField] private VillainUnionBase villainUnionBasePrefab;
 
     [Header("Decorative Building Prefabs")]
@@ -34,7 +34,7 @@ public class LevelPrefabRegistry : MonoBehaviour
     [SerializeField] private List<PlayerUnitPrefabEntry> playerUnitPrefabs = new List<PlayerUnitPrefabEntry>();
 
     public GameObject ObstaclePrefab => obstaclePrefab;
-    public CastleUnit CastlePrefab => castlePrefab;
+    public HeroUnionUnit HeroUnionPrefab => heroUnionPrefab;
     public VillainUnionBase VillainUnionBasePrefab => villainUnionBasePrefab;
     public IReadOnlyList<DecorativeBuildingPrefabEntry> DecorativeBuildingPrefabs =>
         decorativeBuildingPrefabs != null
@@ -99,9 +99,9 @@ public class LevelPrefabRegistry : MonoBehaviour
         return prefab != null;
     }
 
-    public bool TryGetCastlePrefab(out CastleUnit prefab)
+    public bool TryGetHeroUnionPrefab(out HeroUnionUnit prefab)
     {
-        prefab = castlePrefab;
+        prefab = heroUnionPrefab;
         return prefab != null;
     }
 

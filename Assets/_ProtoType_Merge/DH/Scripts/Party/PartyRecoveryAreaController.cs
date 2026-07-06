@@ -9,7 +9,7 @@ public class PartyRecoveryAreaController : MonoBehaviour
 
     [Header("Recovery Sources")]
     [SerializeField] private bool enableRecoveryAreas = false;
-    [SerializeField] private bool recoverAtCastle = false;
+    [SerializeField] private bool recoverAtHeroUnion = false;
     [SerializeField] private bool recoverAtClaimedOutpost = false;
 
     private PartyGridMover subscribedParty;
@@ -74,7 +74,7 @@ public class PartyRecoveryAreaController : MonoBehaviour
         if (gridManager == null)
             return false;
 
-        if (recoverAtCastle && gridManager.TryGetAdjacentCastleObject(grid, out _))
+        if (recoverAtHeroUnion && gridManager.TryGetAdjacentHeroUnionObject(grid, out _))
             return true;
 
         if (!recoverAtClaimedOutpost)

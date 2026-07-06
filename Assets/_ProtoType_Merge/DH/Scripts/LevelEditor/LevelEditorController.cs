@@ -44,7 +44,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private Color enemyGroupColor = new Color(1f, 0.15f, 0.15f, 0.75f);
     [FormerlySerializedAs("stayEnemyEncounterZoneColor")]
     [SerializeField] private Color enemyGroupEncounterZoneColor = new Color(1f, 0.15f, 0.15f, 0.25f);
-    [SerializeField] private Color castleColor = new Color(0.95f, 0.85f, 0.25f, 0.75f);
+    [SerializeField] private Color heroUnionColor = new Color(0.95f, 0.85f, 0.25f, 0.75f);
     [SerializeField] private Color villainUnionColor = new Color(0.95f, 0.25f, 0.55f, 0.75f);
     [SerializeField] private Color decorativeBuildingColor = new Color(0.95f, 0.65f, 0.25f, 0.75f);
 
@@ -168,8 +168,8 @@ public class LevelEditorController : MonoBehaviour
 
                 levelData.SetDecorativeBuilding(grid, selectedDecorativeBuildingKey);
                 break;
-            case LevelEditorBrushType.Castle:
-                levelData.SetCastle(grid);
+            case LevelEditorBrushType.HeroUnion:
+                levelData.SetHeroUnion(grid);
                 break;
             case LevelEditorBrushType.VillainUnion:
                 levelData.SetVillainUnion(grid);
@@ -231,8 +231,8 @@ public class LevelEditorController : MonoBehaviour
         for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
             DrawCell(levelData.DecorativeBuildingPlacements[i].GridPosition, decorativeBuildingColor, y, size);
 
-        if (levelData.CastlePlacement.HasPlacement)
-            DrawCell(levelData.CastlePlacement.GridPosition, castleColor, y, size);
+        if (levelData.HeroUnionPlacement.HasPlacement)
+            DrawCell(levelData.HeroUnionPlacement.GridPosition, heroUnionColor, y, size);
 
         if (levelData.VillainUnionPlacement.HasPlacement)
             DrawCell(levelData.VillainUnionPlacement.GridPosition, villainUnionColor, y, size);

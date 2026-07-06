@@ -6,7 +6,7 @@ public class EnemySpawnController : MonoBehaviour
     [Header("References")]
     [SerializeField] private TurnManager turnManager;
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private CastleRegistry castleRegistry;
+    [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private EnemyRegistry enemyRegistry;
@@ -71,17 +71,17 @@ public class EnemySpawnController : MonoBehaviour
         if (GetActiveEnemyCount() >= maxActiveEnemies)
             return;
 
-        if (!TryGetPlayerMainCastle(out CastleUnit playerMainCastle))
+        if (!TryGetPlayerMainHeroUnion(out HeroUnionUnit playerMainHeroUnion))
             return;
 
-        Vector2Int playerCastleGrid = playerMainCastle.GetCurrentGrid();
+        Vector2Int playerHeroUnionGrid = playerMainHeroUnion.GetCurrentGrid();
         CollectProductionBaseCandidates();
-        SortCandidatesByDistanceToPlayerCastle(playerCastleGrid);
+        SortCandidatesByDistanceToPlayerHeroUnion(playerHeroUnionGrid);
 
         for (int i = 0; i < productionBaseCandidates.Count; i++)
         {
             ProductionBaseCandidate candidate = productionBaseCandidates[i];
-            if (TrySpawnFromCandidate(candidate, playerCastleGrid))
+            if (TrySpawnFromCandidate(candidate, playerHeroUnionGrid))
                 return;
         }
     }
@@ -130,14 +130,14 @@ public class EnemySpawnController : MonoBehaviour
         }
     }
 
-    private void SortCandidatesByDistanceToPlayerCastle(Vector2Int playerCastleGrid)
+    private void SortCandidatesByDistanceToPlayerHeroUnion(Vector2Int playerHeroUnionGrid)
     {
         productionBaseCandidates.Sort((a, b) =>
-            GridManager.GridDistance(a.BaseGrid, playerCastleGrid).CompareTo(
-                GridManager.GridDistance(b.BaseGrid, playerCastleGrid)));
+            GridManager.GridDistance(a.BaseGrid, playerHeroUnionGrid).CompareTo(
+                GridManager.GridDistance(b.BaseGrid, playerHeroUnionGrid)));
     }
 
-    private bool TrySpawnFromCandidate(ProductionBaseCandidate candidate, Vector2Int playerCastleGrid)
+    private bool TrySpawnFromCandidate(ProductionBaseCandidate candidate, Vector2Int playerHeroUnionGrid)
     {
         if (candidate.SpawnCells == null || candidate.SpawnCells.Count == 0)
             return false;
@@ -147,8 +147,8 @@ public class EnemySpawnController : MonoBehaviour
 
         if (candidate.SpawnCells.Count > 1)
         {
-            int firstDistance = GridManager.GridDistance(candidate.SpawnCells[0], playerCastleGrid);
-            int secondDistance = GridManager.GridDistance(candidate.SpawnCells[1], playerCastleGrid);
+            int firstDistance = GridManager.GridDistance(candidate.SpawnCells[0], playerHeroUnionGrid);
+            int secondDistance = GridManager.GridDistance(candidate.SpawnCells[1], playerHeroUnionGrid);
             if (secondDistance < firstDistance)
             {
                 primaryIndex = 1;
@@ -417,21 +417,21 @@ public class EnemySpawnController : MonoBehaviour
         return activeEnemyCount;
     }
 
-    private bool TryGetPlayerMainCastle(out CastleUnit playerMainCastle)
+    private bool TryGetPlayerMainHeroUnion(out HeroUnionUnit playerMainHeroUnion)
     {
-        playerMainCastle = null;
+        playerMainHeroUnion = null;
 
-        if (castleRegistry == null)
+        if (heroUnionRegistry == null)
             return false;
 
-        IReadOnlyList<CastleUnit> castles = castleRegistry.Castles;
-        for (int i = 0; i < castles.Count; i++)
+        IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry.HeroUnions;
+        for (int i = 0; i < heroUnions.Count; i++)
         {
-            CastleUnit castle = castles[i];
-            if (castle == null)
+            HeroUnionUnit heroUnion = heroUnions[i];
+            if (heroUnion == null)
                 continue;
 
-            playerMainCastle = castle;
+            playerMainHeroUnion = heroUnion;
             return true;
         }
 
@@ -446,8 +446,8 @@ public class EnemySpawnController : MonoBehaviour
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
 
-        if (castleRegistry == null)
-            castleRegistry = FindFirstObjectByType<CastleRegistry>();
+        if (heroUnionRegistry == null)
+            heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
 
         if (villainUnionBaseRegistry == null)
             villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();

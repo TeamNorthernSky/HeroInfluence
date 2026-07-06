@@ -294,17 +294,17 @@ public class MoveCommandPreviewController
                 villainUnionBase.GetInteractionCells(),
                 out destinationGrid);
 
-        if (!gridManager.TryGetCastleObjectAtGrid(clickedGrid, out CastleUnit castle))
+        if (!gridManager.TryGetHeroUnionObjectAtGrid(clickedGrid, out HeroUnionUnit heroUnion))
             return true;
 
-        MultiGridOccupant occupant = castle.GetComponent<MultiGridOccupant>();
+        MultiGridOccupant occupant = heroUnion.GetComponent<MultiGridOccupant>();
         if (occupant == null)
             return true;
 
         return TryResolveApproachGrid(
             activeMover,
             occupant.AnchorGrid,
-            castle.GetInteractionCells(),
+            heroUnion.GetInteractionCells(),
             out destinationGrid);
     }
 
@@ -423,7 +423,7 @@ public class MoveCommandPreviewController
 
             if (bestPath != null
                 && candidatePath.Count == bestPath.Count
-                && IsBetterCastleApproach(moverGrid, targetGrid, candidate, bestGrid))
+                && IsBetterHeroUnionApproach(moverGrid, targetGrid, candidate, bestGrid))
             {
                 bestPath = candidatePath;
                 bestGrid = candidate;
@@ -538,14 +538,14 @@ public class MoveCommandPreviewController
             && gridManager.GetEnemyEncounterZoneState(grid, out _) == EnemyEncounterZoneState.SingleEnemyZone;
     }
 
-    private static bool IsBetterCastleApproach(
+    private static bool IsBetterHeroUnionApproach(
         Vector2Int moverGrid,
-        Vector2Int castleGrid,
+        Vector2Int heroUnionGrid,
         Vector2Int candidateApproachGrid,
         Vector2Int currentBestApproachGrid)
     {
-        int candidateAlignment = GetApproachAlignmentScore(moverGrid, castleGrid, candidateApproachGrid);
-        int currentAlignment = GetApproachAlignmentScore(moverGrid, castleGrid, currentBestApproachGrid);
+        int candidateAlignment = GetApproachAlignmentScore(moverGrid, heroUnionGrid, candidateApproachGrid);
+        int currentAlignment = GetApproachAlignmentScore(moverGrid, heroUnionGrid, currentBestApproachGrid);
         if (candidateAlignment != currentAlignment)
             return candidateAlignment > currentAlignment;
 

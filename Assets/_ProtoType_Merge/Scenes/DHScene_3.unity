@@ -4574,7 +4574,7 @@ GameObject:
   - component: {fileID: 75379398}
   - component: {fileID: 75379399}
   m_Layer: 0
-  m_Name: CastleVisitWiring
+  m_Name: HeroUnionVisitWiring
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40878,7 +40878,7 @@ MonoBehaviour:
   gridManager: {fileID: 1870279752}
   enemyRegistry: {fileID: 2000643499}
   outpostRegistry: {fileID: 337973925}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   villainUnionBaseRegistry: {fileID: 106732308}
   fogGridManager: {fileID: 964046517}
   overlayRoot: {fileID: 639429862}
@@ -63951,7 +63951,7 @@ MonoBehaviour:
   fogGridManager: {fileID: 964046517}
   partyFogRevealer: {fileID: 964046516}
   outpostFogRevealer: {fileID: 964046520}
-  castleFogRevealer: {fileID: 964046522}
+  heroUnionFogRevealer: {fileID: 964046522}
 --- !u!114 &964046516
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64070,9 +64070,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fogGridManager: {fileID: 964046517}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   revealRadius: 1
-  revealCastlesOnEnable: 1
+  revealHeroUnionsOnEnable: 1
 --- !u!1 &964279098
 GameObject:
   m_ObjectHideFlags: 0
@@ -98032,7 +98032,7 @@ MonoBehaviour:
   fogGridManager: {fileID: 964046517}
   partyRegistry: {fileID: 1919126566}
   outpostRegistry: {fileID: 337973925}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   villainUnionBaseRegistry: {fileID: 106732308}
   drawOnEnable: 1
   useFogVisibility: 1
@@ -116380,7 +116380,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89f9b6bdc53b5cf489bf7dfb98b2ea78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  castleId: castle_001
+  heroUnionId: heroUnion_001
   gridManager: {fileID: 0}
 --- !u!65 &1687728439
 BoxCollider:
@@ -128862,12 +128862,12 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
-  castleLayerMask:
+  heroUnionLayerMask:
     serializedVersion: 2
     m_Bits: 1024
   fogGridManager: {fileID: 964046517}
   enemyRegistry: {fileID: 2000643499}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   outpostRegistry: {fileID: 337973925}
   villainUnionBaseRegistry: {fileID: 106732308}
   multiGridOccupantRegistry: {fileID: 162291186}
@@ -128913,7 +128913,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   partyRegistry: {fileID: 1919126566}
   enemyRegistry: {fileID: 2000643499}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   villainUnionBaseRegistry: {fileID: 106732308}
   uiController: {fileID: 778878701}
   evaluateCurrentPositionsOnStart: 1
@@ -130210,7 +130210,7 @@ GameObject:
   - component: {fileID: 1889454947}
   - component: {fileID: 1889454946}
   m_Layer: 0
-  m_Name: CastleSystem
+  m_Name: HeroUnionSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -132405,7 +132405,7 @@ MonoBehaviour:
   gridManager: {fileID: 1870279752}
   partyRegistry: {fileID: 1919126566}
   enableRecoveryAreas: 0
-  recoverAtCastle: 1
+  recoverAtHeroUnion: 1
   recoverAtClaimedOutpost: 1
 --- !u!1 &1922295496
 GameObject:
@@ -139652,7 +139652,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyRegistry: {fileID: 2000643499}
   partyRegistry: {fileID: 1919126566}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   pathfinder: {fileID: 1870279751}
   combatEncounterManager: {fileID: 408417867}
   combatPromptService: {fileID: 0}
@@ -139692,7 +139692,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   turnManager: {fileID: 207868834}
   gridManager: {fileID: 1870279752}
-  castleRegistry: {fileID: 1889454946}
+  heroUnionRegistry: {fileID: 1889454946}
   villainUnionBaseRegistry: {fileID: 106732308}
   outpostRegistry: {fileID: 337973925}
   enemyRegistry: {fileID: 2000643499}
@@ -151447,7 +151447,7 @@ MonoBehaviour:
   eventColor: {r: 0.75, g: 0.45, b: 1, a: 0.75}
   enemyGroupColor: {r: 1, g: 0.15, b: 0.15, a: 0.75}
   enemyGroupEncounterZoneColor: {r: 1, g: 0.15, b: 0.15, a: 0.25}
-  castleColor: {r: 0.95, g: 0.85, b: 0.25, a: 0.75}
+  heroUnionColor: {r: 0.95, g: 0.85, b: 0.25, a: 0.75}
   villainUnionColor: {r: 0.95, g: 0.25, b: 0.55, a: 0.75}
   decorativeBuildingColor: {r: 0.95, g: 0.65, b: 0.25, a: 0.75}
 --- !u!1 &3329179828163350298
@@ -151492,7 +151492,7 @@ MonoBehaviour:
   outpostRoot: {fileID: 337973924}
   eventRoot: {fileID: 962885884}
   enemyRoot: {fileID: 2000643501}
-  castleRoot: {fileID: 1889454947}
+  heroUnionRoot: {fileID: 1889454947}
   villainUnionRoot: {fileID: 106732309}
   decorativeBuildingRoot: {fileID: 0}
   loadOnStart: 1
@@ -151551,7 +151551,7 @@ MonoBehaviour:
   - eventType: 2
     prefab: {fileID: 3258722379827126897, guid: 1147d50ffe774cb4b9174becb64b64a8,
       type: 3}
-  castlePrefab: {fileID: 8521844722801733158, guid: d187a60df42daa64fbe3039120472881,
+  heroUnionPrefab: {fileID: 8521844722801733158, guid: d187a60df42daa64fbe3039120472881,
     type: 3}
   villainUnionBasePrefab: {fileID: 7581908882623703925, guid: f21b9a302e7e7d946a5552b6e362f64c,
     type: 3}
@@ -151787,7 +151787,7 @@ MonoBehaviour:
   outpostRoot: {fileID: 337973924}
   eventRoot: {fileID: 962885884}
   enemyRoot: {fileID: 2000643501}
-  castleRoot: {fileID: 1889454947}
+  heroUnionRoot: {fileID: 1889454947}
   villainUnionRoot: {fileID: 106732309}
   decorativeBuildingRoot: {fileID: 226562606}
   loadOnStart: 1

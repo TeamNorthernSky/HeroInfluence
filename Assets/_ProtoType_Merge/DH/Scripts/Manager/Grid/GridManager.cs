@@ -40,10 +40,10 @@ public class GridManager : MonoBehaviour
     [SerializeField] private LayerMask eventLayerMask;
     [SerializeField] private LayerMask playerLayerMask;
     [SerializeField] private LayerMask enemyLayerMask;
-    [SerializeField] private LayerMask castleLayerMask;
+    [SerializeField] private LayerMask heroUnionLayerMask;
     [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private EnemyRegistry enemyRegistry;
-    [SerializeField] private CastleRegistry castleRegistry;
+    [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [FormerlySerializedAs("mineRegistry")]
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
@@ -84,8 +84,8 @@ public class GridManager : MonoBehaviour
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
 
-        if (castleRegistry == null)
-            castleRegistry = FindFirstObjectByType<CastleRegistry>();
+        if (heroUnionRegistry == null)
+            heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
 
         if (outpostRegistry == null)
             outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
@@ -105,8 +105,8 @@ public class GridManager : MonoBehaviour
         if (cellSize <= 0f)
             cellSize = 1f;
 
-        if (castleRegistry == null)
-            castleRegistry = FindFirstObjectByType<CastleRegistry>();
+        if (heroUnionRegistry == null)
+            heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
 
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
@@ -206,10 +206,10 @@ public class GridManager : MonoBehaviour
         return TryGetMultiGridOccupantAtGrid(grid, out _, selfTransform);
     }
 
-    public bool HasCastle(Vector2Int grid, Transform selfTransform = null)
+    public bool HasHeroUnion(Vector2Int grid, Transform selfTransform = null)
     {
-        return HasBlockingCollider(grid, castleLayerMask, selfTransform)
-            || TryGetCastleByMultiGrid(grid, out _, selfTransform);
+        return HasBlockingCollider(grid, heroUnionLayerMask, selfTransform)
+            || TryGetHeroUnionByMultiGrid(grid, out _, selfTransform);
     }
 
     public bool TryGetOutpostObjectAtGrid(Vector2Int grid, out Outpost outpost)
@@ -383,15 +383,15 @@ public class GridManager : MonoBehaviour
         return GetEnemyEncounterZoneState(grid, out enemy) == EnemyEncounterZoneState.SingleEnemyZone;
     }
 
-    public bool TryGetCastleObjectAtGrid(Vector2Int grid, out CastleUnit castle)
+    public bool TryGetHeroUnionObjectAtGrid(Vector2Int grid, out HeroUnionUnit heroUnion)
     {
-        castle = null;
+        heroUnion = null;
 
         Vector3 center = GridToWorldCenter(grid);
         center.y = GetLandSurfaceY() + 0.5f;
 
         Vector3 halfExtents = new Vector3(cellSize * 0.5f * obstacleCheckFill, 0.5f, cellSize * 0.5f * obstacleCheckFill);
-        Collider[] cols = Physics.OverlapBox(center, halfExtents, Quaternion.identity, castleLayerMask);
+        Collider[] cols = Physics.OverlapBox(center, halfExtents, Quaternion.identity, heroUnionLayerMask);
 
         for (int i = 0; i < cols.Length; i++)
         {
@@ -399,12 +399,12 @@ public class GridManager : MonoBehaviour
             if (col == null)
                 continue;
 
-            castle = col.GetComponentInParent<CastleUnit>();
-            if (castle != null)
+            heroUnion = col.GetComponentInParent<HeroUnionUnit>();
+            if (heroUnion != null)
                 return true;
         }
 
-        return TryGetCastleByMultiGrid(grid, out castle);
+        return TryGetHeroUnionByMultiGrid(grid, out heroUnion);
     }
 
     public bool HasItemOrOutpost(Vector2Int grid)
@@ -424,7 +424,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasInteractionTarget(Vector2Int grid)
     {
-        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasEnemy(grid) || HasCastle(grid) || HasVillainUnionBase(grid);
+        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasEnemy(grid) || HasHeroUnion(grid) || HasVillainUnionBase(grid);
     }
 
     public bool IsVisibleCell(Vector2Int grid)
@@ -510,21 +510,21 @@ public class GridManager : MonoBehaviour
         return false;
     }
 
-    public bool TryGetAdjacentCastleObject(Vector2Int grid, out CastleUnit castle)
+    public bool TryGetAdjacentHeroUnionObject(Vector2Int grid, out HeroUnionUnit heroUnion)
     {
-        castle = null;
+        heroUnion = null;
 
-        CastleUnit[] castles = FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
-        for (int i = 0; i < castles.Length; i++)
+        HeroUnionUnit[] heroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
+        for (int i = 0; i < heroUnions.Length; i++)
         {
-            CastleUnit candidate = castles[i];
+            HeroUnionUnit candidate = heroUnions[i];
             if (candidate == null)
                 continue;
 
-            if (!IsAdjacentToCastle(grid, candidate))
+            if (!IsAdjacentToHeroUnion(grid, candidate))
                 continue;
 
-            castle = candidate;
+            heroUnion = candidate;
             return true;
         }
 
@@ -563,12 +563,12 @@ public class GridManager : MonoBehaviour
         return false;
     }
 
-    public bool IsAdjacentToCastle(Vector2Int grid, CastleUnit castle)
+    public bool IsAdjacentToHeroUnion(Vector2Int grid, HeroUnionUnit heroUnion)
     {
-        if (castle == null)
+        if (heroUnion == null)
             return false;
 
-        return castle.IsInteractionCell(grid);
+        return heroUnion.IsInteractionCell(grid);
     }
 
     public bool CanEnterCell(Vector2Int grid, Vector2Int destination, Transform selfTransform = null, bool ignoreFogVisibility = false)
@@ -591,7 +591,7 @@ public class GridManager : MonoBehaviour
         if (HasMultiGridOccupant(grid, selfTransform))
             return false;
 
-        if (HasCastle(grid, selfTransform))
+        if (HasHeroUnion(grid, selfTransform))
             return false;
 
         return !HasItemOutpostOrEvent(grid);
@@ -614,7 +614,7 @@ public class GridManager : MonoBehaviour
         if (HasMultiGridOccupant(grid, selfTransform))
             return false;
 
-        if (HasCastle(grid, selfTransform))
+        if (HasHeroUnion(grid, selfTransform))
             return false;
 
         return !HasItemOutpostOrEvent(grid);
@@ -682,17 +682,17 @@ public class GridManager : MonoBehaviour
         return false;
     }
 
-    private bool TryGetCastleByMultiGrid(Vector2Int grid, out CastleUnit castle, Transform ignoredTransform = null)
+    private bool TryGetHeroUnionByMultiGrid(Vector2Int grid, out HeroUnionUnit heroUnion, Transform ignoredTransform = null)
     {
-        castle = null;
+        heroUnion = null;
 
-        IReadOnlyList<CastleUnit> castles = castleRegistry != null
-            ? castleRegistry.Castles
-            : FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
+        IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry != null
+            ? heroUnionRegistry.HeroUnions
+            : FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
 
-        for (int i = 0; i < castles.Count; i++)
+        for (int i = 0; i < heroUnions.Count; i++)
         {
-            CastleUnit candidate = castles[i];
+            HeroUnionUnit candidate = heroUnions[i];
             if (candidate == null)
                 continue;
 
@@ -709,14 +709,14 @@ public class GridManager : MonoBehaviour
                 if (!occupant.OccupiesCell(grid))
                     continue;
 
-                castle = candidate;
+                heroUnion = candidate;
                 return true;
             }
 
             if (candidate.GetCurrentGrid() != grid)
                 continue;
 
-            castle = candidate;
+            heroUnion = candidate;
             return true;
         }
 
@@ -786,12 +786,12 @@ public class GridManager : MonoBehaviour
                 }
 
                 if (drawDebugCellOutlines)
-                    DrawSquareOutlineGizmo(center);
+                    DrawSquareOutlineGizmo(center, q == debugQMin, r == debugRMin);
             }
         }
     }
 
-    private void DrawSquareOutlineGizmo(Vector3 center)
+    private void DrawSquareOutlineGizmo(Vector3 center, bool drawLeftEdge, bool drawBottomEdge)
     {
         Gizmos.color = Color.gray;
         float half = cellSize * 0.5f;
@@ -800,10 +800,14 @@ public class GridManager : MonoBehaviour
         Vector3 c = new Vector3(center.x + half, center.y, center.z + half);
         Vector3 d = new Vector3(center.x - half, center.y, center.z + half);
 
-        Gizmos.DrawLine(a, b);
         Gizmos.DrawLine(b, c);
         Gizmos.DrawLine(c, d);
-        Gizmos.DrawLine(d, a);
+
+        if (drawBottomEdge)
+            Gizmos.DrawLine(a, b);
+
+        if (drawLeftEdge)
+            Gizmos.DrawLine(d, a);
     }
 
 }

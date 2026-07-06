@@ -16,7 +16,7 @@ public class InteractionCellOverlayController : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private EnemyRegistry enemyRegistry;
     [SerializeField] private OutpostRegistry outpostRegistry;
-    [SerializeField] private CastleRegistry castleRegistry;
+    [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
     [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private Transform overlayRoot;
@@ -113,7 +113,7 @@ public class InteractionCellOverlayController : MonoBehaviour
         desiredCells.Clear();
         AddEnemyEncounterCells();
         AddOutpostInteractionCells();
-        AddCastleInteractionCells();
+        AddHeroUnionInteractionCells();
         AddVillainUnionInteractionCells();
     }
 
@@ -182,19 +182,19 @@ public class InteractionCellOverlayController : MonoBehaviour
         }
     }
 
-    private void AddCastleInteractionCells()
+    private void AddHeroUnionInteractionCells()
     {
-        if (castleRegistry == null)
+        if (heroUnionRegistry == null)
             return;
 
-        IReadOnlyList<CastleUnit> castles = castleRegistry.Castles;
-        for (int i = 0; i < castles.Count; i++)
+        IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry.HeroUnions;
+        for (int i = 0; i < heroUnions.Count; i++)
         {
-            CastleUnit castle = castles[i];
-            if (castle == null || !castle.gameObject.activeInHierarchy)
+            HeroUnionUnit heroUnion = heroUnions[i];
+            if (heroUnion == null || !heroUnion.gameObject.activeInHierarchy)
                 continue;
 
-            IReadOnlyList<Vector2Int> interactionCells = castle.GetInteractionCells();
+            IReadOnlyList<Vector2Int> interactionCells = heroUnion.GetInteractionCells();
             for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
             {
                 Vector2Int grid = interactionCells[cellIndex];
@@ -465,8 +465,8 @@ public class InteractionCellOverlayController : MonoBehaviour
         if (outpostRegistry == null)
             outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
 
-        if (castleRegistry == null)
-            castleRegistry = FindFirstObjectByType<CastleRegistry>();
+        if (heroUnionRegistry == null)
+            heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
 
         if (villainUnionBaseRegistry == null)
             villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();

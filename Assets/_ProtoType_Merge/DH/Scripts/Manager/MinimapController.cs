@@ -16,7 +16,7 @@ public class MinimapController : MonoBehaviour
     [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private OutpostRegistry outpostRegistry;
-    [SerializeField] private CastleRegistry castleRegistry;
+    [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
 
     [Header("Draw Options")]
@@ -66,6 +66,7 @@ public class MinimapController : MonoBehaviour
     {
         ResolveReferences();
 
+        SubscribeToLevelLoaders();
         SubscribeToFogGridManager();
 
         if (drawOnEnable)
@@ -74,6 +75,7 @@ public class MinimapController : MonoBehaviour
 
     private void OnDisable()
     {
+        UnsubscribeFromLevelLoaders();
         UnsubscribeFromFogGridManager();
     }
 
@@ -182,7 +184,7 @@ public class MinimapController : MonoBehaviour
             return;
 
         DrawOutposts(gridSize);
-        DrawCastles(gridSize);
+        DrawHeroUnions(gridSize);
         DrawVillainUnionBases(gridSize);
     }
 
@@ -213,26 +215,26 @@ public class MinimapController : MonoBehaviour
         }
     }
 
-    private void DrawCastles(Vector2Int gridSize)
+    private void DrawHeroUnions(Vector2Int gridSize)
     {
-        CastleUnit[] fallbackCastles = null;
-        IReadOnlyList<CastleUnit> castles = castleRegistry != null ? castleRegistry.Castles : null;
-        int count = castles != null ? castles.Count : 0;
+        HeroUnionUnit[] fallbackHeroUnions = null;
+        IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry != null ? heroUnionRegistry.HeroUnions : null;
+        int count = heroUnions != null ? heroUnions.Count : 0;
         bool useFallback = count == 0;
 
         if (useFallback)
         {
-            fallbackCastles = FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
-            count = fallbackCastles.Length;
+            fallbackHeroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
+            count = fallbackHeroUnions.Length;
         }
 
         for (int i = 0; i < count; i++)
         {
-            CastleUnit castle = useFallback ? fallbackCastles[i] : castles[i];
-            if (castle == null || !castle.isActiveAndEnabled)
+            HeroUnionUnit heroUnion = useFallback ? fallbackHeroUnions[i] : heroUnions[i];
+            if (heroUnion == null || !heroUnion.isActiveAndEnabled)
                 continue;
 
-            DrawComponentFootprint(castle, playerBuildingColor, gridSize, castle.GetCurrentGrid());
+            DrawComponentFootprint(heroUnion, playerBuildingColor, gridSize, heroUnion.GetCurrentGrid());
         }
     }
 
@@ -295,7 +297,7 @@ public class MinimapController : MonoBehaviour
             if (TryGetOutpostColorAtGrid(grid, out color))
                 return true;
 
-            if (TryGetCastleColorAtGrid(grid, out color))
+            if (TryGetHeroUnionColorAtGrid(grid, out color))
                 return true;
 
             if (TryGetVillainUnionColorAtGrid(grid, out color))
@@ -336,26 +338,26 @@ public class MinimapController : MonoBehaviour
         return false;
     }
 
-    private bool TryGetCastleColorAtGrid(Vector2Int grid, out Color color)
+    private bool TryGetHeroUnionColorAtGrid(Vector2Int grid, out Color color)
     {
-        CastleUnit[] fallbackCastles = null;
-        IReadOnlyList<CastleUnit> castles = castleRegistry != null ? castleRegistry.Castles : null;
-        int count = castles != null ? castles.Count : 0;
+        HeroUnionUnit[] fallbackHeroUnions = null;
+        IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry != null ? heroUnionRegistry.HeroUnions : null;
+        int count = heroUnions != null ? heroUnions.Count : 0;
         bool useFallback = count == 0;
 
         if (useFallback)
         {
-            fallbackCastles = FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
-            count = fallbackCastles.Length;
+            fallbackHeroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
+            count = fallbackHeroUnions.Length;
         }
 
         for (int i = 0; i < count; i++)
         {
-            CastleUnit castle = useFallback ? fallbackCastles[i] : castles[i];
-            if (castle == null || !castle.isActiveAndEnabled)
+            HeroUnionUnit heroUnion = useFallback ? fallbackHeroUnions[i] : heroUnions[i];
+            if (heroUnion == null || !heroUnion.isActiveAndEnabled)
                 continue;
 
-            if (!ComponentContainsGrid(castle, grid, castle.GetCurrentGrid()))
+            if (!ComponentContainsGrid(heroUnion, grid, heroUnion.GetCurrentGrid()))
                 continue;
 
             color = playerBuildingColor;
@@ -725,6 +727,54 @@ public class MinimapController : MonoBehaviour
         fogGridManager.CellVisibilityChanged -= HandleFogCellVisibilityChanged;
     }
 
+    private void SubscribeToLevelLoaders()
+    {
+        LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
+        LevelLoader.RuntimeLevelLoaded += HandleRuntimeLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded += HandleRuntimeLayoutLoaded;
+    }
+
+    private void UnsubscribeFromLevelLoaders()
+    {
+        LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
+    }
+
+    private void HandleRuntimeLevelLoaded(LevelLoader loader)
+    {
+        if (loader == null)
+            return;
+
+        if (levelLoader != null && levelLoader != loader)
+            return;
+
+        levelLoader = loader;
+        levelData = loader.LevelData;
+
+        if (gridManager == null)
+            gridManager = loader.GridManager;
+
+        Refresh();
+    }
+
+    private void HandleRuntimeLayoutLoaded(LevelZoneLayoutLoader loader)
+    {
+        if (loader == null)
+            return;
+
+        if (levelZoneLayoutLoader != null && levelZoneLayoutLoader != loader)
+            return;
+
+        levelZoneLayoutLoader = loader;
+        levelZoneLayoutData = loader.LayoutData;
+
+        if (gridManager == null)
+            gridManager = loader.GridManager;
+
+        Refresh();
+    }
+
     private void ResolveReferences()
     {
         if (targetImage == null)
@@ -762,8 +812,8 @@ public class MinimapController : MonoBehaviour
         if (outpostRegistry == null)
             outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
 
-        if (castleRegistry == null)
-            castleRegistry = FindFirstObjectByType<CastleRegistry>();
+        if (heroUnionRegistry == null)
+            heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
 
         if (villainUnionBaseRegistry == null)
             villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();

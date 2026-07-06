@@ -858,7 +858,7 @@ MonoBehaviour:
   - gridPosition: {x: 37, y: 11}
     enemyGroupIndex: 30004
     behaviorType: 1
-  castlePlacement:
+  heroUnionPlacement:
     hasPlacement: 1
     gridPosition: {x: 3, y: 3}
   villainUnionPlacement:

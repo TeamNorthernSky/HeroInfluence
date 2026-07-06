@@ -13,7 +13,7 @@ public class LevelLoader : MonoBehaviour
     private const string OutpostRootName = "OutpostRoot";
     private const string EventRootName = "EventRoot";
     private const string EnemyRootName = "EnemyRoot";
-    private const string CastleRootName = "CastleRoot";
+    private const string HeroUnionRootName = "HeroUnionRoot";
     private const string VillainUnionRootName = "VillainUnionRoot";
     private const string DecorativeBuildingRootName = "DecorativeBuildingRoot";
 
@@ -34,7 +34,7 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private Transform eventRoot;
     [FormerlySerializedAs("stayEnemyRoot")]
     [SerializeField] private Transform enemyRoot;
-    [SerializeField] private Transform castleRoot;
+    [SerializeField] private Transform heroUnionRoot;
     [SerializeField] private Transform villainUnionRoot;
     [SerializeField] private Transform decorativeBuildingRoot;
 
@@ -365,24 +365,24 @@ public class LevelLoader : MonoBehaviour
         if (prefabRegistry == null)
             return;
 
-        SpawnCastle();
+        SpawnHeroUnion();
         SpawnVillainUnionBase();
     }
 
-    private void SpawnCastle()
+    private void SpawnHeroUnion()
     {
-        UniqueBuildingPlacementData placement = levelData.CastlePlacement;
+        UniqueBuildingPlacementData placement = levelData.HeroUnionPlacement;
         if (!placement.HasPlacement)
             return;
 
-        if (!prefabRegistry.TryGetCastlePrefab(out CastleUnit castlePrefab))
+        if (!prefabRegistry.TryGetHeroUnionPrefab(out HeroUnionUnit heroUnionPrefab))
         {
-            Debug.LogWarning("LevelLoader could not find a castle prefab.", this);
+            Debug.LogWarning("LevelLoader could not find a heroUnion prefab.", this);
             return;
         }
 
-        Transform parent = GetCastleRoot(true);
-        SpawnComponent(castlePrefab, placement.GridPosition, parent);
+        Transform parent = GetHeroUnionRoot(true);
+        SpawnComponent(heroUnionPrefab, placement.GridPosition, parent);
     }
 
     private void SpawnVillainUnionBase()
@@ -432,11 +432,11 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(GetItemRoot(false));
         ClearChildren(GetOutpostRoot(false));
         ClearChildren(GetEventRoot(false));
-        ClearChildren(GetCastleRoot(false));
+        ClearChildren(GetHeroUnionRoot(false));
         ClearChildren(GetVillainUnionRoot(false));
         ClearChildren(GetDecorativeBuildingRoot(false));
         ClearLevelSpawnedEnemies();
-        ClearDirectChildrenWithComponent<CastleUnit>();
+        ClearDirectChildrenWithComponent<HeroUnionUnit>();
         ClearDirectChildrenWithComponent<VillainUnionBase>();
     }
 
@@ -534,8 +534,8 @@ public class LevelLoader : MonoBehaviour
     private Transform GetEnemyRoot(bool createIfMissing) =>
         GetSpawnRoot(ref enemyRoot, EnemyRootName, createIfMissing);
 
-    private Transform GetCastleRoot(bool createIfMissing) =>
-        GetSpawnRoot(ref castleRoot, CastleRootName, createIfMissing);
+    private Transform GetHeroUnionRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref heroUnionRoot, HeroUnionRootName, createIfMissing);
 
     private Transform GetVillainUnionRoot(bool createIfMissing) =>
         GetSpawnRoot(ref villainUnionRoot, VillainUnionRootName, createIfMissing);

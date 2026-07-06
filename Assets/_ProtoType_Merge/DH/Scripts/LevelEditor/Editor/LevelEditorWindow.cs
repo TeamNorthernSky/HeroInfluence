@@ -35,7 +35,7 @@ public class LevelEditorWindow : EditorWindow
         LevelEditorBrushType.Item,
         LevelEditorBrushType.Outpost,
         LevelEditorBrushType.Event,
-        LevelEditorBrushType.Castle,
+        LevelEditorBrushType.HeroUnion,
         LevelEditorBrushType.VillainUnion,
         LevelEditorBrushType.EnemyGroup,
         LevelEditorBrushType.DecorativeBuilding,
@@ -50,7 +50,7 @@ public class LevelEditorWindow : EditorWindow
         "Item",
         "Outpost",
         "Event",
-        "Castle",
+        "HeroUnion",
         "VillainUnion",
         "EnemyGroup",
         "Decorative",
@@ -641,8 +641,8 @@ public class LevelEditorWindow : EditorWindow
             DrawFootprint(context, BuildFootprint(null, placement.GridPosition), new Color(1f, 0.65f, 0.2f, 0.10f), new Color(1f, 0.65f, 0.2f, 0.65f));
         }
 
-        if (levelData.CastlePlacement.HasPlacement)
-            DrawFootprint(context, BuildFootprint(GetCastlePrefab(context), levelData.CastlePlacement.GridPosition), new Color(1f, 0.85f, 0.1f, 0.12f), new Color(1f, 0.85f, 0.1f, 0.75f));
+        if (levelData.HeroUnionPlacement.HasPlacement)
+            DrawFootprint(context, BuildFootprint(GetHeroUnionPrefab(context), levelData.HeroUnionPlacement.GridPosition), new Color(1f, 0.85f, 0.1f, 0.12f), new Color(1f, 0.85f, 0.1f, 0.75f));
 
         if (levelData.VillainUnionPlacement.HasPlacement)
             DrawFootprint(context, BuildFootprint(GetVillainUnionPrefab(context), levelData.VillainUnionPlacement.GridPosition), new Color(1f, 0.2f, 0.55f, 0.12f), new Color(1f, 0.2f, 0.55f, 0.75f));
@@ -808,8 +808,8 @@ public class LevelEditorWindow : EditorWindow
                     anchor,
                     context.SelectedDecorativeBuildingKey);
                 break;
-            case LevelEditorBrushType.Castle:
-                context.LevelData.SetCastle(anchor);
+            case LevelEditorBrushType.HeroUnion:
+                context.LevelData.SetHeroUnion(anchor);
                 break;
             case LevelEditorBrushType.VillainUnion:
                 context.LevelData.SetVillainUnion(anchor);
@@ -1249,9 +1249,9 @@ public class LevelEditorWindow : EditorWindow
                 prefab = GetEventPrefab(context, context.EventPreset.EventType);
                 reason = prefab == null ? $"Event prefab is missing for {context.EventPreset.EventKey}." : null;
                 return prefab != null;
-            case LevelEditorBrushType.Castle:
-                prefab = GetCastlePrefab(context);
-                reason = prefab == null ? "Castle prefab is missing." : null;
+            case LevelEditorBrushType.HeroUnion:
+                prefab = GetHeroUnionPrefab(context);
+                reason = prefab == null ? "HeroUnion prefab is missing." : null;
                 return prefab != null;
             case LevelEditorBrushType.VillainUnion:
                 prefab = GetVillainUnionPrefab(context);
@@ -1300,9 +1300,9 @@ public class LevelEditorWindow : EditorWindow
             }
         }
 
-        if (context.BrushType == LevelEditorBrushType.Castle && context.LevelData.CastlePlacement.HasPlacement)
+        if (context.BrushType == LevelEditorBrushType.HeroUnion && context.LevelData.HeroUnionPlacement.HasPlacement)
         {
-            reason = "Castle is already placed. Erase it first.";
+            reason = "HeroUnion is already placed. Erase it first.";
             return false;
         }
 
@@ -1378,10 +1378,10 @@ public class LevelEditorWindow : EditorWindow
             }
         }
 
-        if (levelData.CastlePlacement.HasPlacement
-            && FootprintsOverlap(footprint, BuildFootprint(GetCastlePrefab(context), levelData.CastlePlacement.GridPosition)))
+        if (levelData.HeroUnionPlacement.HasPlacement
+            && FootprintsOverlap(footprint, BuildFootprint(GetHeroUnionPrefab(context), levelData.HeroUnionPlacement.GridPosition)))
         {
-            reason = "Castle overlaps this footprint.";
+            reason = "HeroUnion overlaps this footprint.";
             return true;
         }
 
@@ -1405,13 +1405,13 @@ public class LevelEditorWindow : EditorWindow
     {
         LevelData levelData = context.LevelData;
 
-        if (levelData.CastlePlacement.HasPlacement)
+        if (levelData.HeroUnionPlacement.HasPlacement)
         {
-            anchor = levelData.CastlePlacement.GridPosition;
-            footprint = BuildFootprint(GetCastlePrefab(context), anchor);
+            anchor = levelData.HeroUnionPlacement.GridPosition;
+            footprint = BuildFootprint(GetHeroUnionPrefab(context), anchor);
             if (footprint.Contains(grid))
             {
-                label = "Castle";
+                label = "HeroUnion";
                 return true;
             }
         }
@@ -1574,10 +1574,10 @@ public class LevelEditorWindow : EditorWindow
         return null;
     }
 
-    private static GameObject GetCastlePrefab(LevelEditorContext context)
+    private static GameObject GetHeroUnionPrefab(LevelEditorContext context)
     {
         return context.PrefabRegistry != null
-            && context.PrefabRegistry.TryGetCastlePrefab(out CastleUnit prefab)
+            && context.PrefabRegistry.TryGetHeroUnionPrefab(out HeroUnionUnit prefab)
             && prefab != null
                 ? prefab.gameObject
                 : null;

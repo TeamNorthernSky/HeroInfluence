@@ -16,7 +16,7 @@ TagManager:
   - Outpost
   - Player
   - Enemy
-  - Castle
+  - HeroUnion
   - VillainUnion
   - EventObject
   - 

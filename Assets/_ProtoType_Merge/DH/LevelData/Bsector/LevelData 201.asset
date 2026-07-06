@@ -10,65 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 32c85a751bc5cae49b745737f78b633e, type: 3}
-  m_Name: LevelData 4
+  m_Name: LevelData 201
   m_EditorClassIdentifier: 
-  levelId: level_001
-  displayName: New Level
+  levelId: 201
+  displayName: "2\uAD6C\uC5ED 1\uBC88"
   gridSize: {x: 50, y: 40}
   groundTilePlacements:
-  - gridPosition: {x: 10, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 10, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 11, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 11, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 12, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 12, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 13, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 15, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 14, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 14, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 15, y: 6}
-    tileKey: tilemap_02
   - gridPosition: {x: 16, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 16, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 17, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 17, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 18, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 18, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 19, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 19, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 20, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 20, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 21, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 21, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 22, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 22, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 23, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 23, y: 6}
     tileKey: tilemap_02
   - gridPosition: {x: 24, y: 7}
     tileKey: tilemap_02
@@ -90,101 +38,7 @@ MonoBehaviour:
     tileKey: tilemap_02
   - gridPosition: {x: 29, y: 7}
     tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 8}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 8}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 9}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 9}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 10}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 10}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 11}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 11}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 12}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 12}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 14}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 13}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 13}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 14}
-    tileKey: tilemap_02
   - gridPosition: {x: 9, y: 15}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 15}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 16}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 16}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 17}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 17}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 18}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 18}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 21}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 21}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 22}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 22}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 23}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 23}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 24}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 24}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 25}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 25}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 26}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 26}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 27}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 27}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 28}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 28}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 29}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 29}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 8, y: 30}
     tileKey: tilemap_02
   - gridPosition: {x: 8, y: 31}
     tileKey: tilemap_02
@@ -192,55 +46,25 @@ MonoBehaviour:
     tileKey: tilemap_02
   - gridPosition: {x: 10, y: 31}
     tileKey: tilemap_02
-  - gridPosition: {x: 10, y: 30}
-    tileKey: tilemap_02
   - gridPosition: {x: 11, y: 31}
-    tileKey: tilemap_02
-  - gridPosition: {x: 12, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 11, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 12, y: 31}
     tileKey: tilemap_02
   - gridPosition: {x: 13, y: 31}
     tileKey: tilemap_02
-  - gridPosition: {x: 13, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 14, y: 30}
-    tileKey: tilemap_02
   - gridPosition: {x: 15, y: 31}
-    tileKey: tilemap_02
-  - gridPosition: {x: 15, y: 30}
     tileKey: tilemap_02
   - gridPosition: {x: 16, y: 31}
     tileKey: tilemap_02
-  - gridPosition: {x: 16, y: 30}
-    tileKey: tilemap_02
   - gridPosition: {x: 17, y: 31}
-    tileKey: tilemap_02
-  - gridPosition: {x: 17, y: 30}
     tileKey: tilemap_02
   - gridPosition: {x: 18, y: 31}
     tileKey: tilemap_02
-  - gridPosition: {x: 18, y: 30}
-    tileKey: tilemap_02
   - gridPosition: {x: 19, y: 31}
-    tileKey: tilemap_02
-  - gridPosition: {x: 19, y: 30}
     tileKey: tilemap_02
   - gridPosition: {x: 20, y: 31}
     tileKey: tilemap_02
-  - gridPosition: {x: 20, y: 30}
-    tileKey: tilemap_02
   - gridPosition: {x: 21, y: 31}
     tileKey: tilemap_02
-  - gridPosition: {x: 21, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 22, y: 30}
-    tileKey: tilemap_02
   - gridPosition: {x: 22, y: 31}
-    tileKey: tilemap_02
-  - gridPosition: {x: 23, y: 30}
     tileKey: tilemap_02
   - gridPosition: {x: 23, y: 31}
     tileKey: tilemap_02
@@ -254,53 +78,27 @@ MonoBehaviour:
     tileKey: tilemap_02
   - gridPosition: {x: 26, y: 30}
     tileKey: tilemap_02
-  - gridPosition: {x: 26, y: 31}
-    tileKey: tilemap_02
-  - gridPosition: {x: 28, y: 31}
-    tileKey: tilemap_02
-  - gridPosition: {x: 27, y: 31}
-    tileKey: tilemap_02
   - gridPosition: {x: 27, y: 30}
     tileKey: tilemap_02
   - gridPosition: {x: 28, y: 30}
     tileKey: tilemap_02
-  - gridPosition: {x: 29, y: 31}
-    tileKey: tilemap_02
   - gridPosition: {x: 29, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 30, y: 31}
     tileKey: tilemap_02
   - gridPosition: {x: 30, y: 30}
     tileKey: tilemap_02
-  - gridPosition: {x: 31, y: 31}
-    tileKey: tilemap_02
   - gridPosition: {x: 31, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 32, y: 31}
     tileKey: tilemap_02
   - gridPosition: {x: 32, y: 30}
     tileKey: tilemap_02
-  - gridPosition: {x: 33, y: 31}
-    tileKey: tilemap_02
   - gridPosition: {x: 33, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 34, y: 31}
     tileKey: tilemap_02
   - gridPosition: {x: 34, y: 30}
     tileKey: tilemap_02
-  - gridPosition: {x: 35, y: 31}
-    tileKey: tilemap_02
   - gridPosition: {x: 35, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 36, y: 31}
     tileKey: tilemap_02
   - gridPosition: {x: 36, y: 30}
     tileKey: tilemap_02
-  - gridPosition: {x: 37, y: 31}
-    tileKey: tilemap_02
   - gridPosition: {x: 37, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 38, y: 31}
     tileKey: tilemap_02
   - gridPosition: {x: 38, y: 30}
     tileKey: tilemap_02
@@ -342,81 +140,33 @@ MonoBehaviour:
     tileKey: tilemap_02
   - gridPosition: {x: 39, y: 6}
     tileKey: tilemap_02
-  - gridPosition: {x: 40, y: 7}
-    tileKey: tilemap_02
   - gridPosition: {x: 40, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 6}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 7}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 8}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 8}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 9}
     tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 9}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 11}
-    tileKey: tilemap_02
   - gridPosition: {x: 40, y: 11}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 10}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 10}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 12}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 12}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 13}
     tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 13}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 14}
-    tileKey: tilemap_02
   - gridPosition: {x: 40, y: 14}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 15}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 15}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 16}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 16}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 17}
     tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 17}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 18}
-    tileKey: tilemap_02
-  - gridPosition: {x: 40, y: 18}
-    tileKey: tilemap_02
-  - gridPosition: {x: 40, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 40, y: 20}
-    tileKey: tilemap_02
   - gridPosition: {x: 40, y: 21}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 21}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 22}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 22}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 23}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 23}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 25}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 24}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 24}
     tileKey: tilemap_02
@@ -424,35 +174,17 @@ MonoBehaviour:
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 26}
     tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 26}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 27}
-    tileKey: tilemap_02
   - gridPosition: {x: 40, y: 27}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 28}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 28}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 29}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 29}
     tileKey: tilemap_02
   - gridPosition: {x: 40, y: 30}
     tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 30}
-    tileKey: tilemap_02
-  - gridPosition: {x: 41, y: 31}
-    tileKey: tilemap_02
-  - gridPosition: {x: 40, y: 31}
-    tileKey: tilemap_02
-  - gridPosition: {x: 39, y: 31}
-    tileKey: tilemap_02
   - gridPosition: {x: 39, y: 30}
     tileKey: tilemap_02
   - gridPosition: {x: 10, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 10, y: 19}
     tileKey: tilemap_02
   - gridPosition: {x: 11, y: 20}
     tileKey: tilemap_02
@@ -508,67 +240,11 @@ MonoBehaviour:
     tileKey: tilemap_02
   - gridPosition: {x: 24, y: 20}
     tileKey: tilemap_02
-  - gridPosition: {x: 24, y: 19}
-    tileKey: tilemap_02
   - gridPosition: {x: 25, y: 19}
     tileKey: tilemap_02
   - gridPosition: {x: 25, y: 20}
     tileKey: tilemap_02
-  - gridPosition: {x: 26, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 26, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 27, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 27, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 28, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 28, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 29, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 29, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 30, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 30, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 31, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 31, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 32, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 32, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 33, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 33, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 34, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 34, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 35, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 35, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 36, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 37, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 36, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 37, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 38, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 38, y: 19}
-    tileKey: tilemap_02
   - gridPosition: {x: 39, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 39, y: 20}
     tileKey: tilemap_02
   - gridPosition: {x: 24, y: 8}
     tileKey: tilemap_02
@@ -646,8 +322,6 @@ MonoBehaviour:
     tileKey: tilemap_02
   - gridPosition: {x: 25, y: 28}
     tileKey: tilemap_02
-  - gridPosition: {x: 25, y: 29}
-    tileKey: tilemap_02
   - gridPosition: {x: 24, y: 29}
     tileKey: tilemap_02
   - gridPosition: {x: 24, y: 32}
@@ -678,38 +352,6 @@ MonoBehaviour:
     tileKey: tilemap_02
   - gridPosition: {x: 25, y: 38}
     tileKey: tilemap_02
-  - gridPosition: {x: 42, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 42, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 43, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 43, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 44, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 44, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 45, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 45, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 46, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 46, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 47, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 47, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 48, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 48, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 49, y: 19}
-    tileKey: tilemap_02
-  - gridPosition: {x: 49, y: 20}
-    tileKey: tilemap_02
   - gridPosition: {x: 25, y: 39}
     tileKey: tilemap_02
   - gridPosition: {x: 24, y: 39}
@@ -717,8 +359,6 @@ MonoBehaviour:
   - gridPosition: {x: 35, y: 7}
     tileKey: tilemap_02
   - gridPosition: {x: 9, y: 20}
-    tileKey: tilemap_02
-  - gridPosition: {x: 9, y: 19}
     tileKey: tilemap_02
   - gridPosition: {x: 29, y: 6}
     tileKey: tilemap_02
@@ -728,11 +368,315 @@ MonoBehaviour:
     tileKey: tilemap_02
   - gridPosition: {x: 14, y: 31}
     tileKey: tilemap_02
+  - gridPosition: {x: 40, y: 7}
+    tileKey: tilemap_02
+  - gridPosition: {x: 24, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 6, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 0, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 1, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 4, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 5, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 0, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 1, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 8, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 7, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 4, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 10, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 9, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 5, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 6, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 7, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 26, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 28, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 29, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 30, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 31, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 32, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 33, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 34, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 35, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 37, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 38, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 36, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 28}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 27}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 26}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 25}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 24}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 23}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 22}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 21}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 18}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 17}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 11}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 10}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 8}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 9}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 12}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 13}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 14}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 15}
+    tileKey: tilemap_02
+  - gridPosition: {x: 39, y: 16}
+    tileKey: tilemap_02
+  - gridPosition: {x: 40, y: 18}
+    tileKey: tilemap_02
+  - gridPosition: {x: 40, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 40, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 0, y: 38}
+    tileKey: tilemap_02
+  - gridPosition: {x: 0, y: 39}
+    tileKey: tilemap_02
+  - gridPosition: {x: 1, y: 39}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 39}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 38}
+    tileKey: tilemap_02
+  - gridPosition: {x: 1, y: 38}
+    tileKey: tilemap_02
+  - gridPosition: {x: 1, y: 37}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 37}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 37}
+    tileKey: tilemap_02
+  - gridPosition: {x: 1, y: 36}
+    tileKey: tilemap_02
+  - gridPosition: {x: 1, y: 35}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 36}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 36}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 35}
+    tileKey: tilemap_02
+  - gridPosition: {x: 1, y: 34}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 35}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 34}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 33}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 34}
+    tileKey: tilemap_02
+  - gridPosition: {x: 4, y: 34}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 33}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 32}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 32}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 31}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 31}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 2, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 3, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 4, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 5, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 4, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 5, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 6, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 6, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 8, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 7, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 7, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 12, y: 31}
+    tileKey: tilemap_02
+  - gridPosition: {x: 8, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 9, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 10, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 11, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 9, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 10, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 12, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 13, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 11, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 12, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 15, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 16, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 25, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 14, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 23, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 23, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 22, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 16, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 15, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 13, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 14, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 19, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 21, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 20, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 22, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 21, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 17, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 17, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 18, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 20, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 18, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 19, y: 30}
+    tileKey: tilemap_02
+  - gridPosition: {x: 27, y: 29}
+    tileKey: tilemap_02
+  - gridPosition: {x: 8, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 37, y: 22}
+    tileKey: tilemap_02
+  - gridPosition: {x: 38, y: 22}
+    tileKey: tilemap_02
+  - gridPosition: {x: 37, y: 21}
+    tileKey: tilemap_02
+  - gridPosition: {x: 38, y: 21}
+    tileKey: tilemap_02
+  - gridPosition: {x: 38, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 37, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 37, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 38, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 38, y: 18}
+    tileKey: tilemap_02
+  - gridPosition: {x: 37, y: 18}
+    tileKey: tilemap_02
+  - gridPosition: {x: 37, y: 17}
+    tileKey: tilemap_02
+  - gridPosition: {x: 38, y: 17}
+    tileKey: tilemap_02
+  - gridPosition: {x: 41, y: 17}
+    tileKey: tilemap_02
+  - gridPosition: {x: 42, y: 17}
+    tileKey: tilemap_02
+  - gridPosition: {x: 42, y: 18}
+    tileKey: tilemap_02
+  - gridPosition: {x: 41, y: 18}
+    tileKey: tilemap_02
+  - gridPosition: {x: 41, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 42, y: 19}
+    tileKey: tilemap_02
+  - gridPosition: {x: 42, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 41, y: 20}
+    tileKey: tilemap_02
+  - gridPosition: {x: 41, y: 21}
+    tileKey: tilemap_02
+  - gridPosition: {x: 42, y: 21}
+    tileKey: tilemap_02
+  - gridPosition: {x: 42, y: 22}
+    tileKey: tilemap_02
+  - gridPosition: {x: 41, y: 22}
+    tileKey: tilemap_02
   obstacleCells:
-  - {x: 0, y: 39}
-  - {x: 1, y: 39}
-  - {x: 2, y: 39}
-  - {x: 3, y: 39}
   - {x: 4, y: 39}
   - {x: 5, y: 39}
   - {x: 6, y: 39}
@@ -775,18 +719,12 @@ MonoBehaviour:
   - {x: 47, y: 39}
   - {x: 48, y: 39}
   - {x: 49, y: 39}
-  - {x: 0, y: 38}
-  - {x: 1, y: 38}
-  - {x: 2, y: 38}
   - {x: 3, y: 38}
   - {x: 4, y: 38}
   - {x: 5, y: 38}
   - {x: 6, y: 38}
   - {x: 49, y: 38}
   - {x: 0, y: 37}
-  - {x: 1, y: 37}
-  - {x: 2, y: 37}
-  - {x: 3, y: 37}
   - {x: 4, y: 37}
   - {x: 5, y: 37}
   - {x: 6, y: 37}
@@ -826,7 +764,6 @@ MonoBehaviour:
   - {x: 49, y: 37}
   - {x: 0, y: 36}
   - {x: 1, y: 36}
-  - {x: 2, y: 36}
   - {x: 8, y: 36}
   - {x: 9, y: 36}
   - {x: 10, y: 36}
@@ -863,7 +800,6 @@ MonoBehaviour:
   - {x: 49, y: 36}
   - {x: 0, y: 35}
   - {x: 1, y: 35}
-  - {x: 2, y: 35}
   - {x: 4, y: 35}
   - {x: 5, y: 35}
   - {x: 6, y: 35}
@@ -901,7 +837,6 @@ MonoBehaviour:
   - {x: 49, y: 35}
   - {x: 0, y: 34}
   - {x: 1, y: 34}
-  - {x: 2, y: 34}
   - {x: 4, y: 34}
   - {x: 5, y: 34}
   - {x: 6, y: 34}
@@ -922,7 +857,6 @@ MonoBehaviour:
   - {x: 49, y: 34}
   - {x: 0, y: 33}
   - {x: 1, y: 33}
-  - {x: 2, y: 33}
   - {x: 4, y: 33}
   - {x: 5, y: 33}
   - {x: 6, y: 33}
@@ -957,7 +891,6 @@ MonoBehaviour:
   - {x: 49, y: 33}
   - {x: 0, y: 32}
   - {x: 1, y: 32}
-  - {x: 2, y: 32}
   - {x: 4, y: 32}
   - {x: 5, y: 32}
   - {x: 6, y: 32}
@@ -987,7 +920,6 @@ MonoBehaviour:
   - {x: 49, y: 32}
   - {x: 0, y: 31}
   - {x: 1, y: 31}
-  - {x: 2, y: 31}
   - {x: 42, y: 31}
   - {x: 43, y: 31}
   - {x: 44, y: 31}
@@ -997,10 +929,6 @@ MonoBehaviour:
   - {x: 49, y: 31}
   - {x: 0, y: 30}
   - {x: 1, y: 30}
-  - {x: 2, y: 30}
-  - {x: 4, y: 30}
-  - {x: 5, y: 30}
-  - {x: 6, y: 30}
   - {x: 42, y: 30}
   - {x: 43, y: 30}
   - {x: 44, y: 30}
@@ -1010,36 +938,6 @@ MonoBehaviour:
   - {x: 49, y: 30}
   - {x: 0, y: 29}
   - {x: 1, y: 29}
-  - {x: 2, y: 29}
-  - {x: 4, y: 29}
-  - {x: 5, y: 29}
-  - {x: 6, y: 29}
-  - {x: 10, y: 29}
-  - {x: 11, y: 29}
-  - {x: 12, y: 29}
-  - {x: 13, y: 29}
-  - {x: 14, y: 29}
-  - {x: 15, y: 29}
-  - {x: 16, y: 29}
-  - {x: 18, y: 29}
-  - {x: 19, y: 29}
-  - {x: 20, y: 29}
-  - {x: 21, y: 29}
-  - {x: 22, y: 29}
-  - {x: 23, y: 29}
-  - {x: 26, y: 29}
-  - {x: 27, y: 29}
-  - {x: 28, y: 29}
-  - {x: 29, y: 29}
-  - {x: 30, y: 29}
-  - {x: 31, y: 29}
-  - {x: 32, y: 29}
-  - {x: 33, y: 29}
-  - {x: 34, y: 29}
-  - {x: 35, y: 29}
-  - {x: 36, y: 29}
-  - {x: 38, y: 29}
-  - {x: 39, y: 29}
   - {x: 42, y: 29}
   - {x: 43, y: 29}
   - {x: 44, y: 29}
@@ -1073,7 +971,6 @@ MonoBehaviour:
   - {x: 35, y: 28}
   - {x: 36, y: 28}
   - {x: 38, y: 28}
-  - {x: 39, y: 28}
   - {x: 42, y: 28}
   - {x: 43, y: 28}
   - {x: 44, y: 28}
@@ -1112,7 +1009,6 @@ MonoBehaviour:
   - {x: 35, y: 27}
   - {x: 36, y: 27}
   - {x: 38, y: 27}
-  - {x: 39, y: 27}
   - {x: 42, y: 27}
   - {x: 43, y: 27}
   - {x: 44, y: 27}
@@ -1164,7 +1060,6 @@ MonoBehaviour:
   - {x: 36, y: 25}
   - {x: 37, y: 25}
   - {x: 38, y: 25}
-  - {x: 39, y: 25}
   - {x: 42, y: 25}
   - {x: 43, y: 25}
   - {x: 44, y: 25}
@@ -1203,7 +1098,6 @@ MonoBehaviour:
   - {x: 36, y: 24}
   - {x: 37, y: 24}
   - {x: 38, y: 24}
-  - {x: 39, y: 24}
   - {x: 49, y: 24}
   - {x: 0, y: 23}
   - {x: 2, y: 23}
@@ -1236,7 +1130,6 @@ MonoBehaviour:
   - {x: 36, y: 23}
   - {x: 37, y: 23}
   - {x: 38, y: 23}
-  - {x: 39, y: 23}
   - {x: 42, y: 23}
   - {x: 43, y: 23}
   - {x: 44, y: 23}
@@ -1268,10 +1161,6 @@ MonoBehaviour:
   - {x: 34, y: 22}
   - {x: 35, y: 22}
   - {x: 36, y: 22}
-  - {x: 37, y: 22}
-  - {x: 38, y: 22}
-  - {x: 39, y: 22}
-  - {x: 42, y: 22}
   - {x: 43, y: 22}
   - {x: 44, y: 22}
   - {x: 45, y: 22}
@@ -1307,27 +1196,11 @@ MonoBehaviour:
   - {x: 34, y: 21}
   - {x: 35, y: 21}
   - {x: 36, y: 21}
-  - {x: 37, y: 21}
-  - {x: 38, y: 21}
-  - {x: 39, y: 21}
-  - {x: 42, y: 21}
   - {x: 43, y: 21}
   - {x: 44, y: 21}
   - {x: 45, y: 21}
   - {x: 46, y: 21}
   - {x: 47, y: 21}
-  - {x: 0, y: 20}
-  - {x: 1, y: 20}
-  - {x: 2, y: 20}
-  - {x: 4, y: 20}
-  - {x: 5, y: 20}
-  - {x: 6, y: 20}
-  - {x: 0, y: 19}
-  - {x: 1, y: 19}
-  - {x: 2, y: 19}
-  - {x: 4, y: 19}
-  - {x: 5, y: 19}
-  - {x: 6, y: 19}
   - {x: 0, y: 18}
   - {x: 1, y: 18}
   - {x: 2, y: 18}
@@ -1356,10 +1229,6 @@ MonoBehaviour:
   - {x: 33, y: 18}
   - {x: 34, y: 18}
   - {x: 36, y: 18}
-  - {x: 37, y: 18}
-  - {x: 38, y: 18}
-  - {x: 39, y: 18}
-  - {x: 42, y: 18}
   - {x: 43, y: 18}
   - {x: 44, y: 18}
   - {x: 45, y: 18}
@@ -1393,10 +1262,6 @@ MonoBehaviour:
   - {x: 33, y: 17}
   - {x: 34, y: 17}
   - {x: 36, y: 17}
-  - {x: 37, y: 17}
-  - {x: 38, y: 17}
-  - {x: 39, y: 17}
-  - {x: 42, y: 17}
   - {x: 43, y: 17}
   - {x: 44, y: 17}
   - {x: 45, y: 17}
@@ -1433,7 +1298,6 @@ MonoBehaviour:
   - {x: 36, y: 16}
   - {x: 37, y: 16}
   - {x: 38, y: 16}
-  - {x: 39, y: 16}
   - {x: 42, y: 16}
   - {x: 43, y: 16}
   - {x: 44, y: 16}
@@ -1465,7 +1329,6 @@ MonoBehaviour:
   - {x: 36, y: 15}
   - {x: 37, y: 15}
   - {x: 38, y: 15}
-  - {x: 39, y: 15}
   - {x: 42, y: 15}
   - {x: 43, y: 15}
   - {x: 44, y: 15}
@@ -1494,7 +1357,6 @@ MonoBehaviour:
   - {x: 36, y: 14}
   - {x: 37, y: 14}
   - {x: 38, y: 14}
-  - {x: 39, y: 14}
   - {x: 42, y: 14}
   - {x: 43, y: 14}
   - {x: 44, y: 14}
@@ -1549,7 +1411,6 @@ MonoBehaviour:
   - {x: 36, y: 12}
   - {x: 37, y: 12}
   - {x: 38, y: 12}
-  - {x: 39, y: 12}
   - {x: 42, y: 12}
   - {x: 43, y: 12}
   - {x: 44, y: 12}
@@ -1578,11 +1439,9 @@ MonoBehaviour:
   - {x: 31, y: 11}
   - {x: 32, y: 11}
   - {x: 33, y: 11}
-  - {x: 34, y: 11}
   - {x: 36, y: 11}
   - {x: 37, y: 11}
   - {x: 38, y: 11}
-  - {x: 39, y: 11}
   - {x: 49, y: 11}
   - {x: 0, y: 10}
   - {x: 2, y: 10}
@@ -1614,7 +1473,6 @@ MonoBehaviour:
   - {x: 36, y: 10}
   - {x: 37, y: 10}
   - {x: 38, y: 10}
-  - {x: 39, y: 10}
   - {x: 43, y: 10}
   - {x: 44, y: 10}
   - {x: 45, y: 10}
@@ -1649,7 +1507,6 @@ MonoBehaviour:
   - {x: 36, y: 9}
   - {x: 37, y: 9}
   - {x: 38, y: 9}
-  - {x: 39, y: 9}
   - {x: 43, y: 9}
   - {x: 44, y: 9}
   - {x: 45, y: 9}
@@ -1662,8 +1519,6 @@ MonoBehaviour:
   - {x: 4, y: 8}
   - {x: 5, y: 8}
   - {x: 6, y: 8}
-  - {x: 12, y: 8}
-  - {x: 13, y: 8}
   - {x: 14, y: 8}
   - {x: 15, y: 8}
   - {x: 16, y: 8}
@@ -1683,7 +1538,6 @@ MonoBehaviour:
   - {x: 36, y: 8}
   - {x: 37, y: 8}
   - {x: 38, y: 8}
-  - {x: 39, y: 8}
   - {x: 43, y: 8}
   - {x: 44, y: 8}
   - {x: 45, y: 8}
@@ -1965,76 +1819,646 @@ MonoBehaviour:
   - {x: 19, y: 4}
   - {x: 19, y: 3}
   - {x: 28, y: 8}
+  - {x: 1, y: 0}
+  - {x: 34, y: 11}
+  - {x: 17, y: 18}
+  - {x: 17, y: 17}
+  - {x: 17, y: 16}
+  - {x: 17, y: 14}
+  - {x: 17, y: 13}
+  - {x: 17, y: 12}
+  - {x: 17, y: 11}
+  - {x: 17, y: 10}
+  - {x: 17, y: 9}
+  - {x: 17, y: 8}
+  - {x: 17, y: 15}
+  - {x: 10, y: 13}
+  - {x: 11, y: 13}
+  - {x: 12, y: 13}
+  - {x: 13, y: 13}
+  - {x: 15, y: 13}
+  - {x: 16, y: 13}
+  - {x: 14, y: 13}
+  - {x: 10, y: 25}
+  - {x: 11, y: 25}
+  - {x: 13, y: 25}
+  - {x: 15, y: 25}
+  - {x: 16, y: 25}
+  - {x: 17, y: 25}
+  - {x: 12, y: 25}
+  - {x: 14, y: 25}
+  - {x: 17, y: 28}
+  - {x: 17, y: 27}
+  - {x: 17, y: 26}
+  - {x: 17, y: 24}
+  - {x: 17, y: 23}
+  - {x: 17, y: 22}
+  - {x: 17, y: 21}
+  - {x: 18, y: 26}
+  - {x: 19, y: 26}
+  - {x: 20, y: 26}
+  - {x: 21, y: 26}
+  - {x: 22, y: 26}
+  - {x: 23, y: 26}
+  - {x: 26, y: 26}
+  - {x: 27, y: 26}
+  - {x: 30, y: 26}
+  - {x: 31, y: 26}
+  - {x: 33, y: 26}
+  - {x: 34, y: 26}
+  - {x: 35, y: 26}
+  - {x: 36, y: 26}
+  - {x: 37, y: 26}
+  - {x: 38, y: 26}
+  - {x: 32, y: 26}
+  - {x: 29, y: 26}
+  - {x: 28, y: 26}
+  - {x: 37, y: 28}
+  - {x: 37, y: 27}
+  - {x: 32, y: 25}
+  - {x: 32, y: 24}
+  - {x: 32, y: 23}
+  - {x: 32, y: 22}
+  - {x: 32, y: 21}
+  - {x: 26, y: 13}
+  - {x: 27, y: 13}
+  - {x: 29, y: 13}
+  - {x: 31, y: 13}
+  - {x: 32, y: 13}
+  - {x: 33, y: 13}
+  - {x: 34, y: 13}
+  - {x: 35, y: 13}
+  - {x: 36, y: 13}
+  - {x: 30, y: 13}
+  - {x: 28, y: 13}
+  - {x: 37, y: 13}
+  - {x: 38, y: 13}
+  - {x: 32, y: 18}
+  - {x: 32, y: 17}
+  - {x: 32, y: 16}
+  - {x: 32, y: 15}
+  - {x: 32, y: 14}
+  - {x: 35, y: 18}
+  - {x: 35, y: 17}
+  - {x: 35, y: 16}
+  - {x: 35, y: 15}
+  - {x: 35, y: 14}
+  - {x: 35, y: 12}
+  - {x: 35, y: 11}
+  - {x: 35, y: 10}
+  - {x: 35, y: 9}
+  - {x: 35, y: 8}
+  - {x: 42, y: 11}
+  - {x: 43, y: 11}
+  - {x: 44, y: 11}
+  - {x: 45, y: 11}
+  - {x: 46, y: 11}
+  - {x: 47, y: 11}
+  - {x: 48, y: 11}
+  - {x: 48, y: 12}
+  - {x: 48, y: 13}
+  - {x: 48, y: 14}
+  - {x: 48, y: 15}
+  - {x: 48, y: 16}
+  - {x: 48, y: 17}
+  - {x: 48, y: 18}
+  - {x: 49, y: 18}
+  - {x: 49, y: 21}
+  - {x: 48, y: 21}
+  - {x: 48, y: 22}
+  - {x: 48, y: 23}
+  - {x: 48, y: 24}
+  - {x: 47, y: 24}
+  - {x: 46, y: 24}
+  - {x: 45, y: 24}
+  - {x: 44, y: 24}
+  - {x: 43, y: 24}
+  - {x: 42, y: 24}
+  - {x: 42, y: 10}
+  - {x: 42, y: 9}
+  - {x: 42, y: 6}
+  - {x: 42, y: 5}
+  - {x: 42, y: 4}
+  - {x: 42, y: 3}
+  - {x: 42, y: 7}
+  - {x: 42, y: 8}
+  - {x: 46, y: 9}
+  - {x: 46, y: 10}
+  - {x: 46, y: 8}
+  - {x: 46, y: 7}
+  - {x: 46, y: 6}
+  - {x: 46, y: 5}
+  - {x: 46, y: 4}
+  - {x: 46, y: 3}
+  - {x: 46, y: 2}
+  - {x: 45, y: 2}
+  - {x: 44, y: 2}
+  - {x: 43, y: 2}
+  - {x: 42, y: 2}
+  - {x: 41, y: 2}
+  - {x: 40, y: 2}
+  - {x: 39, y: 2}
+  - {x: 38, y: 2}
+  - {x: 37, y: 2}
+  - {x: 36, y: 2}
+  - {x: 36, y: 3}
+  - {x: 36, y: 4}
+  - {x: 36, y: 5}
+  - {x: 35, y: 2}
+  - {x: 34, y: 2}
+  - {x: 33, y: 2}
+  - {x: 32, y: 2}
+  - {x: 31, y: 2}
+  - {x: 30, y: 2}
+  - {x: 30, y: 3}
+  - {x: 30, y: 4}
+  - {x: 30, y: 5}
+  - {x: 29, y: 2}
+  - {x: 28, y: 2}
+  - {x: 27, y: 2}
+  - {x: 26, y: 2}
+  - {x: 25, y: 2}
+  - {x: 24, y: 2}
+  - {x: 23, y: 2}
+  - {x: 22, y: 2}
+  - {x: 21, y: 2}
+  - {x: 20, y: 2}
+  - {x: 19, y: 2}
+  - {x: 18, y: 2}
+  - {x: 18, y: 3}
+  - {x: 18, y: 4}
+  - {x: 18, y: 5}
+  - {x: 17, y: 5}
+  - {x: 16, y: 5}
+  - {x: 15, y: 5}
+  - {x: 14, y: 5}
+  - {x: 14, y: 4}
+  - {x: 14, y: 3}
+  - {x: 13, y: 2}
+  - {x: 14, y: 2}
+  - {x: 12, y: 2}
+  - {x: 11, y: 2}
+  - {x: 10, y: 2}
+  - {x: 9, y: 2}
+  - {x: 8, y: 2}
+  - {x: 7, y: 2}
+  - {x: 6, y: 2}
+  - {x: 5, y: 2}
+  - {x: 4, y: 2}
+  - {x: 4, y: 3}
+  - {x: 3, y: 3}
+  - {x: 2, y: 3}
+  - {x: 1, y: 3}
+  - {x: 1, y: 4}
+  - {x: 1, y: 5}
+  - {x: 1, y: 6}
+  - {x: 1, y: 7}
+  - {x: 1, y: 9}
+  - {x: 1, y: 8}
+  - {x: 1, y: 10}
+  - {x: 1, y: 11}
+  - {x: 2, y: 11}
+  - {x: 3, y: 11}
+  - {x: 4, y: 11}
+  - {x: 5, y: 11}
+  - {x: 6, y: 11}
+  - {x: 7, y: 11}
+  - {x: 7, y: 10}
+  - {x: 7, y: 9}
+  - {x: 7, y: 8}
+  - {x: 7, y: 7}
+  - {x: 7, y: 6}
+  - {x: 7, y: 5}
+  - {x: 8, y: 5}
+  - {x: 9, y: 5}
+  - {x: 10, y: 5}
+  - {x: 11, y: 5}
+  - {x: 12, y: 5}
+  - {x: 13, y: 5}
+  - {x: 1, y: 12}
+  - {x: 1, y: 13}
+  - {x: 1, y: 14}
+  - {x: 1, y: 15}
+  - {x: 2, y: 15}
+  - {x: 3, y: 15}
+  - {x: 4, y: 15}
+  - {x: 5, y: 15}
+  - {x: 6, y: 15}
+  - {x: 7, y: 38}
+  - {x: 7, y: 37}
+  - {x: 7, y: 36}
+  - {x: 7, y: 35}
+  - {x: 7, y: 34}
+  - {x: 7, y: 33}
+  - {x: 7, y: 32}
+  - {x: 7, y: 31}
+  - {x: 7, y: 28}
+  - {x: 7, y: 27}
+  - {x: 7, y: 26}
+  - {x: 7, y: 25}
+  - {x: 7, y: 23}
+  - {x: 7, y: 24}
+  - {x: 7, y: 22}
+  - {x: 7, y: 21}
+  - {x: 7, y: 18}
+  - {x: 7, y: 17}
+  - {x: 7, y: 16}
+  - {x: 7, y: 15}
+  - {x: 7, y: 14}
+  - {x: 7, y: 13}
+  - {x: 7, y: 12}
+  - {x: 3, y: 16}
+  - {x: 3, y: 17}
+  - {x: 3, y: 18}
+  - {x: 3, y: 21}
+  - {x: 3, y: 22}
+  - {x: 4, y: 22}
+  - {x: 5, y: 22}
+  - {x: 6, y: 22}
+  - {x: 2, y: 22}
+  - {x: 1, y: 22}
+  - {x: 1, y: 23}
+  - {x: 1, y: 24}
+  - {x: 1, y: 25}
+  - {x: 1, y: 26}
+  - {x: 1, y: 27}
+  - {x: 1, y: 28}
+  - {x: 2, y: 28}
+  - {x: 3, y: 28}
+  - {x: 4, y: 28}
+  - {x: 5, y: 28}
+  - {x: 6, y: 28}
+  - {x: 6, y: 31}
+  - {x: 5, y: 31}
+  - {x: 4, y: 31}
+  - {x: 4, y: 36}
+  - {x: 5, y: 36}
+  - {x: 6, y: 36}
+  - {x: 8, y: 38}
+  - {x: 9, y: 38}
+  - {x: 10, y: 38}
+  - {x: 12, y: 38}
+  - {x: 13, y: 38}
+  - {x: 14, y: 38}
+  - {x: 11, y: 38}
+  - {x: 11, y: 37}
+  - {x: 11, y: 36}
+  - {x: 11, y: 35}
+  - {x: 11, y: 34}
+  - {x: 11, y: 33}
+  - {x: 11, y: 32}
+  - {x: 12, y: 34}
+  - {x: 13, y: 34}
+  - {x: 14, y: 34}
+  - {x: 15, y: 34}
+  - {x: 16, y: 34}
+  - {x: 17, y: 34}
+  - {x: 18, y: 34}
+  - {x: 19, y: 34}
+  - {x: 19, y: 33}
+  - {x: 19, y: 32}
+  - {x: 19, y: 35}
+  - {x: 19, y: 36}
+  - {x: 19, y: 37}
+  - {x: 19, y: 38}
+  - {x: 18, y: 38}
+  - {x: 17, y: 38}
+  - {x: 16, y: 38}
+  - {x: 15, y: 38}
+  - {x: 20, y: 38}
+  - {x: 21, y: 38}
+  - {x: 22, y: 38}
+  - {x: 23, y: 38}
+  - {x: 23, y: 39}
+  - {x: 26, y: 39}
+  - {x: 26, y: 38}
+  - {x: 27, y: 38}
+  - {x: 28, y: 38}
+  - {x: 29, y: 38}
+  - {x: 30, y: 38}
+  - {x: 31, y: 38}
+  - {x: 32, y: 38}
+  - {x: 33, y: 38}
+  - {x: 34, y: 38}
+  - {x: 35, y: 38}
+  - {x: 36, y: 38}
+  - {x: 37, y: 38}
+  - {x: 38, y: 38}
+  - {x: 39, y: 38}
+  - {x: 40, y: 38}
+  - {x: 41, y: 38}
+  - {x: 42, y: 38}
+  - {x: 43, y: 38}
+  - {x: 44, y: 38}
+  - {x: 45, y: 38}
+  - {x: 46, y: 38}
+  - {x: 47, y: 38}
+  - {x: 48, y: 38}
+  - {x: 48, y: 37}
+  - {x: 48, y: 36}
+  - {x: 48, y: 35}
+  - {x: 48, y: 34}
+  - {x: 48, y: 33}
+  - {x: 48, y: 32}
+  - {x: 48, y: 31}
+  - {x: 48, y: 30}
+  - {x: 48, y: 29}
+  - {x: 48, y: 28}
+  - {x: 48, y: 27}
+  - {x: 48, y: 26}
+  - {x: 48, y: 25}
+  - {x: 47, y: 32}
+  - {x: 45, y: 32}
+  - {x: 46, y: 32}
+  - {x: 44, y: 32}
+  - {x: 43, y: 32}
+  - {x: 42, y: 32}
+  - {x: 42, y: 33}
+  - {x: 42, y: 34}
+  - {x: 42, y: 35}
+  - {x: 42, y: 37}
+  - {x: 42, y: 36}
+  - {x: 35, y: 37}
+  - {x: 35, y: 36}
+  - {x: 35, y: 35}
+  - {x: 35, y: 34}
+  - {x: 35, y: 32}
+  - {x: 35, y: 33}
+  - {x: 36, y: 34}
+  - {x: 37, y: 34}
+  - {x: 38, y: 34}
+  - {x: 39, y: 34}
+  - {x: 40, y: 34}
+  - {x: 41, y: 34}
+  - {x: 39, y: 33}
+  - {x: 39, y: 32}
+  - {x: 34, y: 34}
+  - {x: 33, y: 34}
+  - {x: 32, y: 34}
+  - {x: 31, y: 34}
+  - {x: 30, y: 34}
+  - {x: 30, y: 35}
+  - {x: 30, y: 36}
+  - {x: 30, y: 37}
+  - {x: 30, y: 33}
+  - {x: 30, y: 32}
+  - {x: 9, y: 18}
+  - {x: 9, y: 17}
+  - {x: 8, y: 17}
+  - {x: 9, y: 16}
+  - {x: 8, y: 16}
+  - {x: 8, y: 15}
+  - {x: 9, y: 14}
+  - {x: 8, y: 14}
+  - {x: 9, y: 15}
+  - {x: 8, y: 13}
+  - {x: 8, y: 12}
+  - {x: 8, y: 11}
+  - {x: 9, y: 11}
+  - {x: 9, y: 10}
+  - {x: 8, y: 10}
+  - {x: 9, y: 9}
+  - {x: 10, y: 9}
+  - {x: 11, y: 9}
+  - {x: 11, y: 8}
+  - {x: 8, y: 7}
+  - {x: 8, y: 8}
+  - {x: 9, y: 12}
+  - {x: 14, y: 7}
+  - {x: 10, y: 8}
+  - {x: 13, y: 7}
+  - {x: 12, y: 7}
+  - {x: 14, y: 6}
+  - {x: 15, y: 7}
+  - {x: 19, y: 7}
+  - {x: 18, y: 7}
+  - {x: 16, y: 7}
+  - {x: 16, y: 6}
+  - {x: 19, y: 6}
+  - {x: 12, y: 8}
+  - {x: 13, y: 8}
+  - {x: 9, y: 13}
+  - {x: 23, y: 7}
+  - {x: 23, y: 6}
+  - {x: 22, y: 6}
+  - {x: 21, y: 6}
+  - {x: 21, y: 7}
+  - {x: 22, y: 7}
+  - {x: 20, y: 7}
+  - {x: 20, y: 6}
+  - {x: 18, y: 6}
+  - {x: 17, y: 7}
+  - {x: 15, y: 6}
+  - {x: 17, y: 6}
+  - {x: 13, y: 6}
+  - {x: 12, y: 6}
+  - {x: 11, y: 6}
+  - {x: 10, y: 6}
+  - {x: 9, y: 6}
+  - {x: 8, y: 6}
+  - {x: 11, y: 7}
+  - {x: 10, y: 7}
+  - {x: 9, y: 7}
+  - {x: 9, y: 8}
+  - {x: 8, y: 9}
+  - {x: 40, y: 33}
+  - {x: 40, y: 32}
+  - {x: 41, y: 32}
+  - {x: 41, y: 33}
+  - {x: 43, y: 19}
+  - {x: 43, y: 20}
+  - {x: 44, y: 20}
+  - {x: 45, y: 20}
+  - {x: 45, y: 19}
+  - {x: 44, y: 19}
+  - {x: 46, y: 20}
+  - {x: 47, y: 20}
+  - {x: 47, y: 19}
+  - {x: 46, y: 19}
+  - {x: 48, y: 19}
+  - {x: 49, y: 19}
+  - {x: 48, y: 20}
+  - {x: 49, y: 20}
+  - {x: 8, y: 18}
+  - {x: 3, y: 39}
+  - {x: 8, y: 31}
+  - {x: 9, y: 31}
+  - {x: 8, y: 28}
+  - {x: 10, y: 31}
+  - {x: 11, y: 31}
+  - {x: 9, y: 28}
+  - {x: 8, y: 27}
+  - {x: 8, y: 26}
+  - {x: 9, y: 27}
+  - {x: 9, y: 26}
+  - {x: 8, y: 25}
+  - {x: 8, y: 24}
+  - {x: 9, y: 25}
+  - {x: 9, y: 24}
+  - {x: 9, y: 23}
+  - {x: 9, y: 22}
+  - {x: 8, y: 22}
+  - {x: 8, y: 23}
+  - {x: 9, y: 21}
+  - {x: 8, y: 21}
+  - {x: 14, y: 31}
+  - {x: 12, y: 31}
+  - {x: 13, y: 31}
+  - {x: 16, y: 31}
+  - {x: 18, y: 31}
+  - {x: 17, y: 31}
+  - {x: 15, y: 31}
+  - {x: 19, y: 31}
+  - {x: 23, y: 31}
+  - {x: 22, y: 31}
+  - {x: 21, y: 31}
+  - {x: 20, y: 31}
+  - {x: 26, y: 31}
+  - {x: 27, y: 31}
+  - {x: 29, y: 31}
+  - {x: 30, y: 31}
+  - {x: 31, y: 31}
+  - {x: 32, y: 31}
+  - {x: 33, y: 31}
+  - {x: 28, y: 31}
+  - {x: 34, y: 31}
+  - {x: 35, y: 31}
+  - {x: 36, y: 31}
+  - {x: 37, y: 31}
+  - {x: 38, y: 31}
+  - {x: 39, y: 31}
+  - {x: 40, y: 31}
+  - {x: 41, y: 31}
+  - {x: 41, y: 30}
+  - {x: 41, y: 29}
+  - {x: 41, y: 28}
+  - {x: 41, y: 27}
+  - {x: 41, y: 26}
+  - {x: 41, y: 25}
+  - {x: 41, y: 24}
+  - {x: 41, y: 23}
+  - {x: 41, y: 16}
+  - {x: 41, y: 15}
+  - {x: 41, y: 14}
+  - {x: 41, y: 13}
+  - {x: 41, y: 12}
+  - {x: 41, y: 11}
+  - {x: 41, y: 10}
+  - {x: 41, y: 9}
+  - {x: 41, y: 8}
+  - {x: 41, y: 7}
+  - {x: 41, y: 6}
+  - {x: 27, y: 20}
+  - {x: 26, y: 20}
+  - {x: 26, y: 19}
+  - {x: 27, y: 19}
+  - {x: 28, y: 20}
+  - {x: 28, y: 19}
+  - {x: 29, y: 19}
+  - {x: 30, y: 20}
+  - {x: 29, y: 20}
+  - {x: 30, y: 19}
+  - {x: 31, y: 20}
+  - {x: 32, y: 20}
+  - {x: 32, y: 19}
+  - {x: 31, y: 19}
+  - {x: 33, y: 20}
+  - {x: 35, y: 20}
+  - {x: 34, y: 19}
+  - {x: 34, y: 20}
+  - {x: 35, y: 19}
+  - {x: 36, y: 20}
+  - {x: 33, y: 19}
+  - {x: 36, y: 19}
   itemPlacements:
-  - gridPosition: {x: 17, y: 7}
-    resourceType: 3
+  - gridPosition: {x: 3, y: 20}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 8, y: 9}
-    resourceType: 3
+  - gridPosition: {x: 16, y: 20}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 12, y: 6}
-    resourceType: 3
+  - gridPosition: {x: 25, y: 24}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 8, y: 18}
-    resourceType: 3
+  - gridPosition: {x: 24, y: 14}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 14, y: 20}
-    resourceType: 3
+  - gridPosition: {x: 26, y: 6}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 9, y: 25}
-    resourceType: 3
+  - gridPosition: {x: 40, y: 6}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 15, y: 31}
-    resourceType: 3
+  - gridPosition: {x: 39, y: 14}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 25, y: 31}
-    resourceType: 3
+  - gridPosition: {x: 40, y: 22}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 29, y: 7}
-    resourceType: 3
+  - gridPosition: {x: 37, y: 20}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 37, y: 6}
-    resourceType: 3
+  - gridPosition: {x: 30, y: 30}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 40, y: 11}
-    resourceType: 3
+  - gridPosition: {x: 18, y: 29}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 34, y: 19}
-    resourceType: 3
+  - gridPosition: {x: 11, y: 30}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 46, y: 20}
-    resourceType: 3
+  - gridPosition: {x: 2, y: 29}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 41, y: 25}
-    resourceType: 3
+  - gridPosition: {x: 2, y: 37}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 39, y: 30}
-    resourceType: 3
+  - gridPosition: {x: 25, y: 36}
+    resourceType: 1
     amount: 5
-  - gridPosition: {x: 24, y: 37}
-    resourceType: 3
-    amount: 5
-  outpostPlacements: []
-  eventPlacements: []
+  outpostPlacements:
+  - gridPosition: {x: 39, y: 19}
+    outpostType: 3
+    resourcePerTurn: 1000
+    initialState: 1
+  eventPlacements:
+  - gridPosition: {x: 9, y: 19}
+    eventType: 1
+    requireAmount: 100
+    effectAmount: 3
+  - gridPosition: {x: 25, y: 20}
+    eventType: 1
+    requireAmount: 100
+    effectAmount: 3
+  - gridPosition: {x: 40, y: 27}
+    eventType: 1
+    requireAmount: 100
+    effectAmount: 3
+  - gridPosition: {x: 24, y: 30}
+    eventType: 1
+    requireAmount: 100
+    effectAmount: 3
+  - gridPosition: {x: 35, y: 30}
+    eventType: 1
+    requireAmount: 100
+    effectAmount: 3
   enemyPlacements:
-  - gridPosition: {x: 24, y: 7}
+  - gridPosition: {x: 24, y: 20}
     enemyGroupIndex: 30004
     behaviorType: 1
-  - gridPosition: {x: 24, y: 19}
+  - gridPosition: {x: 32, y: 6}
     enemyGroupIndex: 30004
     behaviorType: 1
-  - gridPosition: {x: 9, y: 30}
+  - gridPosition: {x: 33, y: 29}
     enemyGroupIndex: 30004
     behaviorType: 1
-  - gridPosition: {x: 40, y: 7}
+  - gridPosition: {x: 10, y: 29}
     enemyGroupIndex: 30004
     behaviorType: 1
-  - gridPosition: {x: 9, y: 20}
-    enemyGroupIndex: 30004
-    behaviorType: 1
+  decorativeBuildingPlacements: []
   heroUnionPlacement:
-    hasPlacement: 1
-    gridPosition: {x: 10, y: 8}
+    hasPlacement: 0
+    gridPosition: {x: 0, y: 0}
   villainUnionPlacement:
-    hasPlacement: 1
-    gridPosition: {x: 40, y: 32}
+    hasPlacement: 0
+    gridPosition: {x: 0, y: 0}

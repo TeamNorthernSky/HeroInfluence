@@ -2936,11 +2936,11 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 0
-  castleLayerMask:
+  heroUnionLayerMask:
     serializedVersion: 2
     m_Bits: 0
   fogGridManager: {fileID: 270445751}
-  castleRegistry: {fileID: 0}
+  heroUnionRegistry: {fileID: 0}
   multiGridOccupantRegistry: {fileID: 0}
   restrictMovementToVisibleCells: 1
   obstacleCheckFill: 0.9

@@ -2,11 +2,11 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 // [JC 신설 260514] DHScene_3 본부 더블클릭 로비 진입 트리거.
-// 부착 위치: Castle GO (CastleUnit + Collider 보유한 prefab 인스턴스).
+// 부착 위치: HeroUnion GO (HeroUnionUnit + Collider 보유한 prefab 인스턴스).
 // 조건: HQVisitState.HasVisitingParty=true (방문 중인 파티 존재) + ModalRegistry.HasAny=false + MapEventPanel 비활성 + UI 위가 아닐 때.
 // 동작: 좌클릭 더블클릭 감지 → GameSceneManager.Instance.LoadLobby() 호출.
 [DisallowMultipleComponent]
-public class CastleDoubleClickEntry : MonoBehaviour
+public class HeroUnionDoubleClickEntry : MonoBehaviour
 {
     [SerializeField] private Camera worldCamera;
     [SerializeField] private float doubleClickThreshold = 0.3f;
@@ -40,8 +40,8 @@ public class CastleDoubleClickEntry : MonoBehaviour
         if (!Physics.Raycast(ray, out RaycastHit hit, rayDistance)) return;
 
         // 자기 본부 GO hit 여부 (자식 콜라이더 hit 포함)
-        CastleUnit hitCastle = hit.collider != null ? hit.collider.GetComponentInParent<CastleUnit>() : null;
-        if (hitCastle == null || hitCastle.gameObject != gameObject) return;
+        HeroUnionUnit hitHeroUnion = hit.collider != null ? hit.collider.GetComponentInParent<HeroUnionUnit>() : null;
+        if (hitHeroUnion == null || hitHeroUnion.gameObject != gameObject) return;
 
         // 더블클릭 임계값 검사
         float now = Time.unscaledTime;
@@ -67,7 +67,7 @@ public class CastleDoubleClickEntry : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[CastleDoubleClickEntry] GameSceneManager.Instance == null — 폴백 호출", this);
+            Debug.LogWarning("[HeroUnionDoubleClickEntry] GameSceneManager.Instance == null — 폴백 호출", this);
             UnityEngine.SceneManagement.SceneManager.LoadScene("HQLobbyScene");
         }
     }

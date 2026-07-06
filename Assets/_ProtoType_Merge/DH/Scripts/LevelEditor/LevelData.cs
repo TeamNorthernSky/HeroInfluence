@@ -27,7 +27,7 @@ public class LevelData : ScriptableObject
     [SerializeField] private List<EventPlacementData> eventPlacements = new List<EventPlacementData>();
     [SerializeField] private List<EnemyPlacementData> enemyPlacements = new List<EnemyPlacementData>();
     [SerializeField] private List<DecorativeBuildingPlacementData> decorativeBuildingPlacements = new List<DecorativeBuildingPlacementData>();
-    [SerializeField] private UniqueBuildingPlacementData castlePlacement;
+    [SerializeField] private UniqueBuildingPlacementData heroUnionPlacement;
     [SerializeField] private UniqueBuildingPlacementData villainUnionPlacement;
 
     public string LevelId => levelId;
@@ -43,7 +43,7 @@ public class LevelData : ScriptableObject
     public IReadOnlyList<EnemyPlacementData> EnemyPlacements => enemyPlacements != null ? enemyPlacements : EmptyEnemyPlacements;
     public IReadOnlyList<DecorativeBuildingPlacementData> DecorativeBuildingPlacements =>
         decorativeBuildingPlacements != null ? decorativeBuildingPlacements : EmptyDecorativeBuildingPlacements;
-    public UniqueBuildingPlacementData CastlePlacement => castlePlacement;
+    public UniqueBuildingPlacementData HeroUnionPlacement => heroUnionPlacement;
     public UniqueBuildingPlacementData VillainUnionPlacement => villainUnionPlacement;
 
     public bool IsInsideGrid(Vector2Int grid)
@@ -110,9 +110,9 @@ public class LevelData : ScriptableObject
         return TryGetDecorativeBuildingAt(grid, out _);
     }
 
-    public bool HasCastleAt(Vector2Int grid)
+    public bool HasHeroUnionAt(Vector2Int grid)
     {
-        return castlePlacement.IsAt(grid);
+        return heroUnionPlacement.IsAt(grid);
     }
 
     public bool HasVillainUnionAt(Vector2Int grid)
@@ -265,13 +265,13 @@ public class LevelData : ScriptableObject
         ClearUniquePlacementsAt(grid);
     }
 
-    public void SetCastle(Vector2Int grid)
+    public void SetHeroUnion(Vector2Int grid)
     {
         if (!IsInsideGrid(grid))
             return;
 
         RemoveAllPlacementsAt(grid);
-        castlePlacement = new UniqueBuildingPlacementData(grid);
+        heroUnionPlacement = new UniqueBuildingPlacementData(grid);
     }
 
     public void SetVillainUnion(Vector2Int grid)
@@ -316,8 +316,8 @@ public class LevelData : ScriptableObject
 
     private void ClearUniquePlacementsAt(Vector2Int grid)
     {
-        if (castlePlacement.IsAt(grid))
-            castlePlacement = default;
+        if (heroUnionPlacement.IsAt(grid))
+            heroUnionPlacement = default;
 
         if (villainUnionPlacement.IsAt(grid))
             villainUnionPlacement = default;

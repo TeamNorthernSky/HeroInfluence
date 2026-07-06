@@ -308,7 +308,7 @@ public class CombatEncounterManager : MonoBehaviour
 
         if (context.Result == CombatResult.Defeat)
         {
-            ReturnDefeatedPartyToCastle(context.CombatParty);
+            ReturnDefeatedPartyToHeroUnion(context.CombatParty);
             return;
         }
 
@@ -454,7 +454,7 @@ public class CombatEncounterManager : MonoBehaviour
         return claimedAny;
     }
 
-    private static void ReturnDefeatedPartyToCastle(CombatPartyPersistentData combatParty)
+    private static void ReturnDefeatedPartyToHeroUnion(CombatPartyPersistentData combatParty)
     {
         if (combatParty == null || string.IsNullOrWhiteSpace(combatParty.PartyId))
             return;
@@ -462,11 +462,11 @@ public class CombatEncounterManager : MonoBehaviour
         if (!TryFindParty(combatParty.PartyId, out PartyGridMover party))
             return;
 
-        CastleUnit castle = FindFirstObjectByType<CastleUnit>();
-        if (castle == null)
+        HeroUnionUnit heroUnion = FindFirstObjectByType<HeroUnionUnit>();
+        if (heroUnion == null)
             return;
 
-        IReadOnlyList<Vector2Int> interactionCells = castle.GetInteractionCells();
+        IReadOnlyList<Vector2Int> interactionCells = heroUnion.GetInteractionCells();
         if (interactionCells == null || interactionCells.Count == 0)
             return;
 
