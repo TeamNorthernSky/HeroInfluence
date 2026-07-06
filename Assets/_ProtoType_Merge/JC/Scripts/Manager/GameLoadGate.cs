@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// [JC 단독] GameLoadScene에 부착. 새 게임 진입 시 데이터 부트스트랩 후 분기.
 /// 흐름: DHScene Additive 로드 → 1프레임 대기(PartyUnitBootstrap.Start 완료)
-///       → CastleHQVisitDetector.ReevaluateNow → 방문 파티 체크
+///       → HeroUnionHQVisitDetector.ReevaluateNow → 방문 파티 체크
 ///       → 있음: DHScene Unload + 로비 씬(GameSceneManager.LobbyScene) Single 로드
 ///       → 없음: DHScene Active 전환 + GameLoadScene Unload
 /// </summary>
@@ -52,16 +52,16 @@ public class GameLoadGate : MonoBehaviour
         for (int i = 0; i < bootstrapWaitFrames; i++)
             yield return null;
 
-        // CastleHQVisitDetector 즉시 재평가 (이벤트 기반 전환 후)
-        var detector = FindFirstObjectByType<CastleHQVisitDetector>();
+        // HeroUnionHQVisitDetector 즉시 재평가 (이벤트 기반 전환 후)
+        var detector = FindFirstObjectByType<HeroUnionHQVisitDetector>();
         if (detector != null)
         {
             detector.ReevaluateNow();
-            Debug.Log("[GameLoadGate] CastleHQVisitDetector.ReevaluateNow 호출");
+            Debug.Log("[GameLoadGate] HeroUnionHQVisitDetector.ReevaluateNow 호출");
         }
         else
         {
-            Debug.LogWarning("[GameLoadGate] CastleHQVisitDetector를 DHScene에서 찾지 못함. 방문 체크 불가");
+            Debug.LogWarning("[GameLoadGate] HeroUnionHQVisitDetector를 DHScene에서 찾지 못함. 방문 체크 불가");
         }
 
         bool hasVisiting = HQVisitState.Instance != null && HQVisitState.Instance.HasVisitingParty;

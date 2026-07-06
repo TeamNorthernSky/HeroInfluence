@@ -8,7 +8,7 @@ public class TurnFogController : MonoBehaviour
     [SerializeField] private PartyFogRevealer partyFogRevealer;
     [FormerlySerializedAs("mineFogRevealer")]
     [SerializeField] private OutpostFogRevealer outpostFogRevealer;
-    [SerializeField] private CastleFogRevealer castleFogRevealer;
+    [SerializeField] private HeroUnionFogRevealer heroUnionFogRevealer;
 
     private void OnEnable()
     {
@@ -42,6 +42,6 @@ public class TurnFogController : MonoBehaviour
         fogGridManager.ApplyDayProgression();
         partyFogRevealer?.RevealAllCurrentPartyPositions();
         outpostFogRevealer?.RevealAllClaimedOutposts();
-        castleFogRevealer?.RevealAllCastles();
+        heroUnionFogRevealer?.RevealAllHeroUnions();
     }
 }

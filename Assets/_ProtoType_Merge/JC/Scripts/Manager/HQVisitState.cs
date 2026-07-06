@@ -7,7 +7,7 @@ using UnityEngine;
 /// [JC 260618 일반화] source별(본부="HQ" / 거점=progressKey 등) 방문 집합을 분리 보관하고, 외부에는 합집합을 노출한다.
 ///   → 본부와 거점이 서로의 방문 정보를 덮어쓰지 않는다(과거 SetVisitingParties 전체교체 충돌 해소).
 ///   읽는 쪽(시설 visitingOnly·출전 등)은 합집합만 보므로 거점 방문 파티도 자동으로 동일하게 다뤄진다.
-/// 데이터 채움: CastleHQVisitDetector(본부, source="HQ") + OutpostVisitIndicator(거점, source=거점 progressKey).
+/// 데이터 채움: HeroUnionHQVisitDetector(본부, source="HQ") + OutpostVisitIndicator(거점, source=거점 progressKey).
 /// 데이터 읽음: HeroListController·SortieController·LobbyMemberPanelBinder 등 로비 UI.
 /// 추후 DH 정식 구현 도입 시 폐기 가능.
 /// </summary>
@@ -17,7 +17,7 @@ public class HQVisitState : MonoBehaviour
 
     public static HQVisitState Instance { get; private set; }
 
-    /// <summary>본부(Castle) 방문의 고정 source 키. 거점은 progressKey를 source로 사용.</summary>
+    /// <summary>본부(HeroUnion) 방문의 고정 source 키. 거점은 progressKey를 source로 사용.</summary>
     public const string SourceHQ = "HQ";
 
     // [JC 260618] source key → 그 source가 감지한 방문 파티 집합. 합집합(unionCache)이 외부 노출값.

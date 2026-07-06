@@ -94,10 +94,10 @@ public class DefeatedPartyReturnController : MonoBehaviour
         party.gameObject.SetActive(false);
         HQVisitState.Instance?.ClearVisitingParties();
 
-        CastleHQVisitDetector[] detectors = FindObjectsByType<CastleHQVisitDetector>(FindObjectsSortMode.None);
+        HeroUnionHQVisitDetector[] detectors = FindObjectsByType<HeroUnionHQVisitDetector>(FindObjectsSortMode.None);
         for (int i = 0; i < detectors.Length; i++)
         {
-            CastleHQVisitDetector detector = detectors[i];
+            HeroUnionHQVisitDetector detector = detectors[i];
             if (detector != null)
                 detector.ReevaluateNow();
         }

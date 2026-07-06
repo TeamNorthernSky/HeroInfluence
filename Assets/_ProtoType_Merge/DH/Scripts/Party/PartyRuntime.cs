@@ -20,7 +20,7 @@ public class PartyRuntime : MonoBehaviour
     public bool IsInputLocked => interactionController != null && interactionController.IsInputLocked;
 
     public event Action<Vector2Int> AdjacentItemCellEntered;
-    public event Action<CastleUnit> AdjacentCastleDetected;
+    public event Action<HeroUnionUnit> AdjacentHeroUnionDetected;
 
     private void Awake()
     {
@@ -38,7 +38,7 @@ public class PartyRuntime : MonoBehaviour
             partyGridMover.GetCurrentGrid);
 
         interactionController.AdjacentItemCellEntered += HandleAdjacentItemCellEntered;
-        interactionController.AdjacentCastleDetected += HandleAdjacentCastleDetected;
+        interactionController.AdjacentHeroUnionDetected += HandleAdjacentHeroUnionDetected;
         partyGridMover.GridEntered += HandleGridEntered;
         partyGridMover.MoveCompleted += HandleMoveCompleted;
     }
@@ -55,7 +55,7 @@ public class PartyRuntime : MonoBehaviour
             return;
 
         interactionController.AdjacentItemCellEntered -= HandleAdjacentItemCellEntered;
-        interactionController.AdjacentCastleDetected -= HandleAdjacentCastleDetected;
+        interactionController.AdjacentHeroUnionDetected -= HandleAdjacentHeroUnionDetected;
         interactionController.Dispose();
     }
 
@@ -74,8 +74,8 @@ public class PartyRuntime : MonoBehaviour
         AdjacentItemCellEntered?.Invoke(itemGrid);
     }
 
-    private void HandleAdjacentCastleDetected(CastleUnit castle)
+    private void HandleAdjacentHeroUnionDetected(HeroUnionUnit heroUnion)
     {
-        AdjacentCastleDetected?.Invoke(castle);
+        AdjacentHeroUnionDetected?.Invoke(heroUnion);
     }
 }

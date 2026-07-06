@@ -23,7 +23,7 @@ public class PartyGridMover : MonoBehaviour
     private PartyMovePointController movePointController;
     private PartyIdentity cachedIdentity;
     private bool restoredPersistentPosition;
-    private bool canRefreshCastleStartAfterLevelLoad;
+    private bool canRefreshHeroUnionStartAfterLevelLoad;
     private const string ScenePartyPrefabKey = "scene";
 
     public Vector2Int? TargetInteractionGrid { get; private set; }
@@ -89,26 +89,26 @@ public class PartyGridMover : MonoBehaviour
             SnapToGridPosition(worldState.Grid, notifyMoveCompleted: false);
             restoredPosition = true;
             restoredPersistentPosition = true;
-            canRefreshCastleStartAfterLevelLoad = false;
+            canRefreshHeroUnionStartAfterLevelLoad = false;
         }
         else if (partyData != null && partyData.HasLastGrid)
         {
             SnapToGridPosition(partyData.LastGrid, notifyMoveCompleted: false);
             restoredPosition = true;
             restoredPersistentPosition = true;
-            canRefreshCastleStartAfterLevelLoad = false;
+            canRefreshHeroUnionStartAfterLevelLoad = false;
         }
         else if (gridManager != null)
         {
-            canRefreshCastleStartAfterLevelLoad = true;
-            if (TryResolveCastleStartGrid(out Vector2Int startGrid))
+            canRefreshHeroUnionStartAfterLevelLoad = true;
+            if (TryResolveHeroUnionStartGrid(out Vector2Int startGrid))
             {
                 SnapToGridPosition(startGrid, notifyMoveCompleted: false);
                 restoredPosition = true;
             }
             else
             {
-                StartCoroutine(SnapToCastleStartOrCurrentNextFrame(identity));
+                StartCoroutine(SnapToHeroUnionStartOrCurrentNextFrame(identity));
             }
         }
 
@@ -118,30 +118,30 @@ public class PartyGridMover : MonoBehaviour
 
     private void HandleRuntimeLevelLoaded(LevelLoader _)
     {
-        RefreshCastleStartAfterLevelLoad();
+        RefreshHeroUnionStartAfterLevelLoad();
     }
 
     private void HandleRuntimeLayoutLoaded(LevelZoneLayoutLoader _)
     {
-        RefreshCastleStartAfterLevelLoad();
+        RefreshHeroUnionStartAfterLevelLoad();
     }
 
-    private void RefreshCastleStartAfterLevelLoad()
+    private void RefreshHeroUnionStartAfterLevelLoad()
     {
         if (!Application.isPlaying ||
             restoredPersistentPosition ||
-            !canRefreshCastleStartAfterLevelLoad ||
+            !canRefreshHeroUnionStartAfterLevelLoad ||
             gridManager == null ||
             cachedIdentity == null)
         {
             return;
         }
 
-        if (!TryResolveCastleStartGrid(out Vector2Int startGrid))
+        if (!TryResolveHeroUnionStartGrid(out Vector2Int startGrid))
             return;
 
         SnapToGridPosition(startGrid, notifyMoveCompleted: false);
-        canRefreshCastleStartAfterLevelLoad = false;
+        canRefreshHeroUnionStartAfterLevelLoad = false;
         StartCoroutine(PersistCurrentGridWhenPartyDataReady(cachedIdentity));
     }
 
@@ -318,14 +318,14 @@ public class PartyGridMover : MonoBehaviour
             ScenePartyPrefabKey);
     }
 
-    private IEnumerator SnapToCastleStartOrCurrentNextFrame(PartyIdentity identity)
+    private IEnumerator SnapToHeroUnionStartOrCurrentNextFrame(PartyIdentity identity)
     {
         yield return null;
 
         if (identity == null || gridManager == null)
             yield break;
 
-        if (TryResolveCastleStartGrid(out Vector2Int startGrid))
+        if (TryResolveHeroUnionStartGrid(out Vector2Int startGrid))
         {
             SnapToGridPosition(startGrid, notifyMoveCompleted: false);
             StartCoroutine(PersistCurrentGridWhenPartyDataReady(identity));
@@ -359,15 +359,15 @@ public class PartyGridMover : MonoBehaviour
         }
     }
 
-    private bool TryResolveCastleStartGrid(out Vector2Int startGrid)
+    private bool TryResolveHeroUnionStartGrid(out Vector2Int startGrid)
     {
         startGrid = Vector2Int.zero;
 
-        CastleUnit castle = ResolveStartCastle();
-        if (castle == null)
+        HeroUnionUnit heroUnion = ResolveStartHeroUnion();
+        if (heroUnion == null)
             return false;
 
-        IReadOnlyList<Vector2Int> interactionCells = castle.GetInteractionCells();
+        IReadOnlyList<Vector2Int> interactionCells = heroUnion.GetInteractionCells();
         if (interactionCells == null || interactionCells.Count == 0)
             return false;
 
@@ -385,21 +385,21 @@ public class PartyGridMover : MonoBehaviour
         return true;
     }
 
-    private static CastleUnit ResolveStartCastle()
+    private static HeroUnionUnit ResolveStartHeroUnion()
     {
-        CastleRegistry registry = FindFirstObjectByType<CastleRegistry>();
+        HeroUnionRegistry registry = FindFirstObjectByType<HeroUnionRegistry>();
         if (registry != null)
         {
-            IReadOnlyList<CastleUnit> castles = registry.Castles;
-            for (int i = 0; i < castles.Count; i++)
+            IReadOnlyList<HeroUnionUnit> heroUnions = registry.HeroUnions;
+            for (int i = 0; i < heroUnions.Count; i++)
             {
-                if (castles[i] != null)
-                    return castles[i];
+                if (heroUnions[i] != null)
+                    return heroUnions[i];
             }
         }
 
-        CastleUnit[] sceneCastles = FindObjectsByType<CastleUnit>(FindObjectsSortMode.None);
-        return sceneCastles != null && sceneCastles.Length > 0 ? sceneCastles[0] : null;
+        HeroUnionUnit[] sceneHeroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
+        return sceneHeroUnions != null && sceneHeroUnions.Length > 0 ? sceneHeroUnions[0] : null;
     }
 
     public List<Vector2Int> GetRemainingPath()

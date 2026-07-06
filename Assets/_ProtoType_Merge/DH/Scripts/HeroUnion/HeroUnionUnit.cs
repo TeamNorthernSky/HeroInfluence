@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CastleUnit : MonoBehaviour
+public class HeroUnionUnit : MonoBehaviour
 {
-    [SerializeField] private string castleId = "castle_001";
+    [SerializeField] private string heroUnionId = "heroUnion_001";
     [SerializeField] private GridManager gridManager;
-    private CastleRegistry castleRegistry;
+    private HeroUnionRegistry heroUnionRegistry;
 
-    public string CastleId => castleId;
+    public string HeroUnionId => heroUnionId;
 
     private void Awake()
     {
@@ -18,12 +18,12 @@ public class CastleUnit : MonoBehaviour
     private void OnEnable()
     {
         ResolveReferences();
-        castleRegistry?.Register(this);
+        heroUnionRegistry?.Register(this);
     }
 
     private void OnDisable()
     {
-        castleRegistry?.Unregister(this);
+        heroUnionRegistry?.Unregister(this);
     }
 
     public Vector2Int GetCurrentGrid()
@@ -69,7 +69,7 @@ public class CastleUnit : MonoBehaviour
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
 
-        if (castleRegistry == null)
-            castleRegistry = FindFirstObjectByType<CastleRegistry>();
+        if (heroUnionRegistry == null)
+            heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
     }
 }

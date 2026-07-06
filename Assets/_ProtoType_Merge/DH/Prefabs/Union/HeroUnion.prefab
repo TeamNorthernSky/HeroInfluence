@@ -68,7 +68,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89f9b6bdc53b5cf489bf7dfb98b2ea78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  castleId: castle_001
+  heroUnionId: heroUnion_001
   gridManager: {fileID: 0}
 --- !u!114 &3579854251900779421
 MonoBehaviour:

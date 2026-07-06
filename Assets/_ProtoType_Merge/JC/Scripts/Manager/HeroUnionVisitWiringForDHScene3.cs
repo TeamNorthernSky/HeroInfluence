@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// [JC 신설 260514] DHScene_3 전용 Castle wiring 후처리.
-// LevelLoader.SpawnCastle 후 Castle GO에 CastleHQVisitDetector + CastleDoubleClickEntry 동적 부착 +
+// [JC 신설 260514] DHScene_3 전용 HeroUnion wiring 후처리.
+// LevelLoader.SpawnHeroUnion 후 HeroUnion GO에 HeroUnionHQVisitDetector + HeroUnionDoubleClickEntry 동적 부착 +
 // VisitorIndicator 자식 GameObject 생성·연결. 인스펙터 슬롯은 본 컴포넌트에 미리 채워서 Reflection으로 주입.
 // 다른 씬(DHScene/DHScene_2)에는 본 컴포넌트를 두지 않으므로 격리됨.
 [DisallowMultipleComponent]
-public class CastleVisitWiringForDHScene3 : MonoBehaviour
+public class HeroUnionVisitWiringForDHScene3 : MonoBehaviour
 {
-    [Header("Visitor Indicator (Castle 자식으로 동적 생성)")]
+    [Header("Visitor Indicator (HeroUnion 자식으로 동적 생성)")]
     [SerializeField] private Sprite visitorIndicatorSprite;
     [SerializeField] private int visitorIndicatorSortingOrder = 32000;
     // [JC 260514 보정] 사용자가 플레이모드에서 직접 맞춘 값. 카메라 방향 X 로테이션 포함.
@@ -24,7 +24,7 @@ public class CastleVisitWiringForDHScene3 : MonoBehaviour
     public Vector3 VisitorIndicatorLocalEulerAngles => visitorIndicatorLocalEulerAngles;
     public Vector3 VisitorIndicatorLocalScale => visitorIndicatorLocalScale;
 
-    // [JC 260514 일원화] gridManager / targetGridOffsets 슬롯 폐기. 검사 위치는 CastleUnit.IsInteractionCell 위임.
+    // [JC 260514 일원화] gridManager / targetGridOffsets 슬롯 폐기. 검사 위치는 HeroUnionUnit.IsInteractionCell 위임.
     [Header("Debug")]
     [SerializeField] private bool logWireOnce = true;
 
@@ -34,18 +34,18 @@ public class CastleVisitWiringForDHScene3 : MonoBehaviour
     {
         if (wired) return;
 
-        CastleUnit castle = FindFirstObjectByType<CastleUnit>();
-        if (castle == null) return;
+        HeroUnionUnit heroUnion = FindFirstObjectByType<HeroUnionUnit>();
+        if (heroUnion == null) return;
 
-        Wire(castle.gameObject);
+        Wire(heroUnion.gameObject);
         wired = true;
     }
 
-    private void Wire(GameObject castleGO)
+    private void Wire(GameObject heroUnionGO)
     {
         // 1) VisitorIndicator 자식 GO 생성
         GameObject indicator = new GameObject("VisitorIndicator");
-        indicator.transform.SetParent(castleGO.transform, false);
+        indicator.transform.SetParent(heroUnionGO.transform, false);
         indicator.transform.localPosition = visitorIndicatorLocalPosition;
         indicator.transform.localEulerAngles = visitorIndicatorLocalEulerAngles;
         indicator.transform.localScale = visitorIndicatorLocalScale;
@@ -56,24 +56,24 @@ public class CastleVisitWiringForDHScene3 : MonoBehaviour
 
         indicator.SetActive(false);
 
-        // 2) CastleHQVisitDetector 부착 + visitorIndicator 슬롯만 채움
-        //    [JC 260514 일원화] gridManager / targetGridOffsets 슬롯 폐기. CastleUnit.IsInteractionCell 위임.
-        CastleHQVisitDetector detector = castleGO.GetComponent<CastleHQVisitDetector>();
+        // 2) HeroUnionHQVisitDetector 부착 + visitorIndicator 슬롯만 채움
+        //    [JC 260514 일원화] gridManager / targetGridOffsets 슬롯 폐기. HeroUnionUnit.IsInteractionCell 위임.
+        HeroUnionHQVisitDetector detector = heroUnionGO.GetComponent<HeroUnionHQVisitDetector>();
         if (detector == null)
-            detector = castleGO.AddComponent<CastleHQVisitDetector>();
+            detector = heroUnionGO.AddComponent<HeroUnionHQVisitDetector>();
 
         SetPrivateField(detector, "visitorIndicator", indicator);
 
         // 즉시 재평가 (현재 mover 위치 기반 인디케이터 갱신)
         detector.ReevaluateNow();
 
-        // 3) CastleDoubleClickEntry 부착 (인스펙터 슬롯은 default — Camera.main + threshold 0.3)
-        CastleDoubleClickEntry entry = castleGO.GetComponent<CastleDoubleClickEntry>();
+        // 3) HeroUnionDoubleClickEntry 부착 (인스펙터 슬롯은 default — Camera.main + threshold 0.3)
+        HeroUnionDoubleClickEntry entry = heroUnionGO.GetComponent<HeroUnionDoubleClickEntry>();
         if (entry == null)
-            entry = castleGO.AddComponent<CastleDoubleClickEntry>();
+            entry = heroUnionGO.AddComponent<HeroUnionDoubleClickEntry>();
 
         if (logWireOnce)
-            Debug.Log($"[CastleVisitWiringForDHScene3] Wired to Castle GO '{castleGO.name}' — detector + entry + indicator", this);
+            Debug.Log($"[HeroUnionVisitWiringForDHScene3] Wired to HeroUnion GO '{heroUnionGO.name}' — detector + entry + indicator", this);
     }
 
     private static void SetPrivateField(object target, string fieldName, object value)

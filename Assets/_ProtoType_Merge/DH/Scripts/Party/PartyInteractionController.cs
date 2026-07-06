@@ -17,7 +17,7 @@ public class PartyInteractionController
     public bool IsInputLocked { get; private set; }
 
     public event Action<Vector2Int> AdjacentItemCellEntered;
-    public event Action<CastleUnit> AdjacentCastleDetected;
+    public event Action<HeroUnionUnit> AdjacentHeroUnionDetected;
     public event Action<MapEventObject> AdjacentMapEventDetected;
 
     public PartyInteractionController(
@@ -54,7 +54,7 @@ public class PartyInteractionController
         if (gridManager == null)
             return;
 
-        HandleAdjacentCastleProximity(enteredGrid);
+        HandleAdjacentHeroUnionProximity(enteredGrid);
         HandleAdjacentOutpostProximity(enteredGrid);
         HandleVillainUnionProximity(enteredGrid);
     }
@@ -214,12 +214,12 @@ public class PartyInteractionController
         IsInputLocked = false;
     }
 
-    private void HandleAdjacentCastleProximity(Vector2Int enteredGrid)
+    private void HandleAdjacentHeroUnionProximity(Vector2Int enteredGrid)
     {
-        if (!gridManager.TryGetAdjacentCastleObject(enteredGrid, out CastleUnit castle))
+        if (!gridManager.TryGetAdjacentHeroUnionObject(enteredGrid, out HeroUnionUnit heroUnion))
             return;
 
-        AdjacentCastleDetected?.Invoke(castle);
+        AdjacentHeroUnionDetected?.Invoke(heroUnion);
     }
 
     private void OnAdjacentItemCellEntered(Vector2Int itemGrid)

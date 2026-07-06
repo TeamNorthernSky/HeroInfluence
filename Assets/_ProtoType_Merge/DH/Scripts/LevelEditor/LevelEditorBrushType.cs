@@ -5,7 +5,7 @@ public enum LevelEditorBrushType
     Outpost = 2,
     Event = 3,
     Erase = 4,
-    Castle = 5,
+    HeroUnion = 5,
     VillainUnion = 6,
     EnemyGroup = 8,
     GroundTile = 9,

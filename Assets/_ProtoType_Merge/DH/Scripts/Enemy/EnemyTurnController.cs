@@ -8,7 +8,7 @@ public class EnemyTurnController : MonoBehaviour
     [Header("References")]
     [SerializeField] private EnemyRegistry enemyRegistry;
     [SerializeField] private PartyRegistry partyRegistry;
-    [SerializeField] private CastleRegistry castleRegistry;
+    [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [SerializeField] private AStarPathfinder pathfinder;
     [SerializeField] private CombatEncounterManager combatEncounterManager;
     [SerializeField] private CombatPromptService combatPromptService;
@@ -256,19 +256,19 @@ public class EnemyTurnController : MonoBehaviour
             }
         }
 
-        if (castleRegistry != null)
+        if (heroUnionRegistry != null)
         {
-            IReadOnlyList<CastleUnit> castles = castleRegistry.Castles;
-            for (int i = 0; i < castles.Count; i++)
+            IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry.HeroUnions;
+            for (int i = 0; i < heroUnions.Count; i++)
             {
-                CastleUnit castle = castles[i];
-                if (castle == null)
+                HeroUnionUnit heroUnion = heroUnions[i];
+                if (heroUnion == null)
                     continue;
 
                 targetCandidates.Add(new TargetCandidate(
-                    EnemyTargetType.Castle,
-                    castle,
-                    castle.GetCurrentGrid()));
+                    EnemyTargetType.HeroUnion,
+                    heroUnion,
+                    heroUnion.GetCurrentGrid()));
             }
         }
     }
@@ -424,8 +424,8 @@ public class EnemyTurnController : MonoBehaviour
 
     private List<Vector2Int> GetApproachCandidates(EnemyTargetType targetType, Component target, Vector2Int targetGrid)
     {
-        if (targetType == EnemyTargetType.Castle && target is CastleUnit castle && gridManager != null)
-            return new List<Vector2Int>(castle.GetInteractionCells());
+        if (targetType == EnemyTargetType.HeroUnion && target is HeroUnionUnit heroUnion && gridManager != null)
+            return new List<Vector2Int>(heroUnion.GetInteractionCells());
 
         if (targetType == EnemyTargetType.Outpost && target is Outpost outpost)
             return new List<Vector2Int>(outpost.GetAdjacentInteractionCells(gridManager));
@@ -445,9 +445,9 @@ public class EnemyTurnController : MonoBehaviour
                 if (target is Outpost outpost)
                     return gridManager != null ? outpost.GetAnchorGrid(gridManager) : Vector2Int.zero;
                 break;
-            case EnemyTargetType.Castle:
-                if (target is CastleUnit castle)
-                    return castle.GetCurrentGrid();
+            case EnemyTargetType.HeroUnion:
+                if (target is HeroUnionUnit heroUnion)
+                    return heroUnion.GetCurrentGrid();
                 break;
         }
 
@@ -469,8 +469,8 @@ public class EnemyTurnController : MonoBehaviour
         Component target,
         Vector2Int targetGrid)
     {
-        if (targetType == EnemyTargetType.Castle && target is CastleUnit castle && gridManager != null)
-            return gridManager.IsAdjacentToCastle(enemyGrid, castle);
+        if (targetType == EnemyTargetType.HeroUnion && target is HeroUnionUnit heroUnion && gridManager != null)
+            return gridManager.IsAdjacentToHeroUnion(enemyGrid, heroUnion);
 
         if (targetType == EnemyTargetType.Outpost && target is Outpost outpost)
         {
@@ -640,8 +640,8 @@ public class EnemyTurnController : MonoBehaviour
         if (partyRegistry == null)
             partyRegistry = FindFirstObjectByType<PartyRegistry>();
 
-        if (castleRegistry == null)
-            castleRegistry = FindFirstObjectByType<CastleRegistry>();
+        if (heroUnionRegistry == null)
+            heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
 
         if (pathfinder == null)
             pathfinder = FindFirstObjectByType<AStarPathfinder>();
