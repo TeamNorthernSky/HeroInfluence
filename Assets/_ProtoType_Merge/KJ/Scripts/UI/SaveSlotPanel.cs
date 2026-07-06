@@ -96,6 +96,7 @@ public class SaveSlotPanel : MonoBehaviour
         SaveSlotData data = SaveSlotRepository.Load(pendingSlotIndex);
         if (data.hasData)
         {
+            SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
             SceneManager.LoadScene(GameScene);
         }
         else
@@ -107,6 +108,7 @@ public class SaveSlotPanel : MonoBehaviour
     private void OnTutorialYes()
     {
         SaveSlotRepository.Save(pendingSlotIndex);
+        SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
         tutorialPopup?.SetActive(false);
         //SceneManager.LoadScene(TutorialScene);
         SceneManager.LoadScene(GameScene);
@@ -115,6 +117,7 @@ public class SaveSlotPanel : MonoBehaviour
     private void OnTutorialNo()
     {
         SaveSlotRepository.Save(pendingSlotIndex);
+        SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
         tutorialPopup?.SetActive(false);
         SceneManager.LoadScene(GameScene);
     }

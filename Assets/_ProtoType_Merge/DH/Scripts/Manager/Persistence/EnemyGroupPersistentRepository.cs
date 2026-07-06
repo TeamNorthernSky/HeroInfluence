@@ -15,6 +15,9 @@ public class EnemyGroupPersistentRepository : MonoBehaviour
 
     public IReadOnlyList<EnemyPersistentData> Enemies => enemies;
 
+    // [KJ 260703] 저장 기능(GameSaveService)용 읽기 노출
+    public int NextEnemySequence => nextEnemySequence;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

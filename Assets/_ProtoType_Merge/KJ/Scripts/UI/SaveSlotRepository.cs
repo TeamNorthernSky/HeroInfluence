@@ -3,6 +3,9 @@ using UnityEngine;
 
 public static class SaveSlotRepository
 {
+    // [KJ 260703] 타이틀에서 고른 슬롯 번호. 게임 씬의 저장(GameSaveService)이 대상 슬롯으로 사용. 미설정 -1.
+    public static int CurrentSlot = -1;
+
     private static string GetPath(int slotIndex) =>
         Path.Combine(Application.persistentDataPath, $"save_slot_{slotIndex}.json");
 

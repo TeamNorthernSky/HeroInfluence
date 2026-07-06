@@ -51,6 +51,9 @@ public class LabManager : MonoBehaviour
     [Header("영웅별·스킬별 강화 레벨 (영속)")]
     [SerializeField] private List<SkillLevelEntry> entries = new List<SkillLevelEntry>();
 
+    // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출
+    public IReadOnlyList<SkillLevelEntry> Entries => entries;
+
     // (unitIndex, skillIndex) → entry
     private readonly Dictionary<long, SkillLevelEntry> lookup = new Dictionary<long, SkillLevelEntry>();
 

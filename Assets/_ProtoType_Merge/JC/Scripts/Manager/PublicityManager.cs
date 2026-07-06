@@ -31,6 +31,9 @@ public class PublicityManager : MonoBehaviour
 
     public int CurrentPool => currentPool;
 
+    // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출
+    public int LastChargeDay => lastChargeDay;
+
     public void Initialize()
     {
         // 영웅별 IP는 DH CurrentInfluence가 보관 → 별도 lookup 재구성 불필요.

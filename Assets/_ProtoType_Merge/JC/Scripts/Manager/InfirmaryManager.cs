@@ -13,6 +13,9 @@ public class InfirmaryManager : MonoBehaviour
     [SerializeField] private int[] reviveCost  = { 1000, 850, 700 };
 
     private readonly HashSet<int> healedThisTurn = new HashSet<int>();
+
+    // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출
+    public IEnumerable<int> HealedUnitsThisTurn => healedThisTurn;
     private HQStateManager hq;
     public event Action OnStateChanged;
 
