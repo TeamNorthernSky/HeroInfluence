@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -15,12 +16,16 @@ public class SystemMenuController : MonoBehaviour
     [SerializeField] private Button _btnToTitle;
     [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnQuit;
+    // [KJ 260703] 저장 기능 — 로비에서만 노출
+    [SerializeField] private Button _btnSave;
+    [SerializeField] private TMP_Text _saveLabel;
 
     private void Awake()
     {
         if (_btnResume != null) _btnResume.onClick.AddListener(OnClickResume);
         if (_btnToTitle != null) _btnToTitle.onClick.AddListener(OnClickToTitle);
         if (_btnQuit != null) _btnQuit.onClick.AddListener(OnClickQuit);
+        if (_btnSave != null) _btnSave.onClick.AddListener(OnClickSave);
     }
 
     private void Update()
@@ -35,10 +40,10 @@ public class SystemMenuController : MonoBehaviour
 
         // [JC 260513] ESC 정책 통일 — 모든 씬 공통: Top 모달이 있으면 그것 닫고, 없으면 시스템 메뉴 토글.
         // 기존 정책(LobbyScene만 Top닫기, 그 외 무조건 TogglePause) 폐기.
-        // SystemMenuModal 자신이 Top일 때는 자기를 닫는 ModalRegistry.CloseTop이 작동 — 별도 가드 불필요.
-        if (ModalRegistry.HasAny)
+        // SystemMenuModal 자신이 Top일 때는 자기를 닫는 ModalManager.CloseTop이 작동 — 별도 가드 불필요.
+        if (ModalManager.HasAny)
         {
-            ModalRegistry.CloseTop();
+            ModalManager.CloseTop();
             // SystemMenuModal이 닫힌 경우 timeScale 복원은 ModalPauseGate.Refresh가 처리 (Modal.OnDisable에서 자동 호출).
         }
         else
@@ -58,6 +63,7 @@ public class SystemMenuController : MonoBehaviour
     {
         if (_modal == null) return;
         transform.SetAsLastSibling();
+        RefreshSaveButton();
         _modal.SetActive(true);
     }
 
@@ -76,9 +82,25 @@ public class SystemMenuController : MonoBehaviour
         else
         {
             transform.SetAsLastSibling();
+            RefreshSaveButton();
             _modal.SetActive(true);
             Time.timeScale = 0f;
         }
+    }
+
+    // [KJ 260703] 저장 버튼은 로비에서만 노출. 모달이 열릴 때마다 라벨도 "저장"으로 원복.
+    private void RefreshSaveButton()
+    {
+        if (_btnSave == null) return;
+        bool isLobby = SceneManager.GetActiveScene().name == LobbyScene;
+        _btnSave.gameObject.SetActive(isLobby);
+        if (_saveLabel != null) _saveLabel.text = "저장";
+    }
+
+    private void OnClickSave()
+    {
+        bool ok = GameSaveService.SaveToSlot(SaveSlotRepository.CurrentSlot);
+        if (_saveLabel != null) _saveLabel.text = ok ? "저장 완료" : "저장 실패";
     }
 
     public void OnClickResume()

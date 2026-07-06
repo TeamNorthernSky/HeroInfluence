@@ -16,6 +16,9 @@ public class WeaponPersistentRepository : MonoBehaviour
 
     public IReadOnlyList<WeaponPersistentData> Weapons => weapons;
 
+    // [KJ 260703] 저장 기능(GameSaveService)용 읽기 노출
+    public int NextWeaponIndex => nextWeaponIndex;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

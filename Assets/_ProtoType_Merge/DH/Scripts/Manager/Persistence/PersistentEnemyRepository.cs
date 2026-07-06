@@ -15,6 +15,9 @@ public class PersistentEnemyRepository : MonoBehaviour
 
     public IReadOnlyList<EnemyUnitPersistentData> Units => units;
 
+    // [KJ 260703] 저장 기능(GameSaveService)용 읽기 노출
+    public int NextUnitIndex => nextUnitIndex;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

@@ -12,6 +12,7 @@ public class UIComposer : MonoBehaviour
     [SerializeField] private UILayout layout;
     [SerializeField] private Transform backgroundLayer;
     [SerializeField] private Transform baseLayer;
+    [SerializeField] private Transform overlayLayer;   // [JC 260703] 신설(HQLobby만 결선, DHScene_3는 null)
     [SerializeField] private Transform modalLayer;
     [SerializeField] private Transform tooltipLayer;
 
@@ -30,7 +31,7 @@ public class UIComposer : MonoBehaviour
             var inst = Instantiate(prefab, transform);
             inst.name = prefab.name;
             var placer = inst.GetComponent<UIModulePlacer>();
-            if (placer != null) placer.Place(backgroundLayer, baseLayer, modalLayer, tooltipLayer);
+            if (placer != null) placer.Place(backgroundLayer, baseLayer, overlayLayer, modalLayer, tooltipLayer);
             spawned.Add(inst);
         }
         done = true;

@@ -12,20 +12,12 @@ public class GameManager : MonoBehaviour
     public TrainingManager Training { get; private set; }
     public LabManager Lab { get; private set; }
     public WorkshopManager Workshop { get; private set; }
+    public InfirmaryManager Infirmary { get; private set; }
     // [JC 260629] 영속 UI 모달은 CommonUIManager로 분리. 파사드 유지로 기존 호출부(HeroProfileButton/ExplorationHeroBox) 무변경.
     public HeroInfoModal HeroInfoModal => CommonUIManager.Instance != null ? CommonUIManager.Instance.HeroInfoModal : null;
 
+    // [JC 260703] 씬 로케이터는 Grid만 유지(Game.Grid 소비처用). 타 씬 매니저·영속 레포는 각자 .Instance 직접 접근.
     public GridManager Grid { get; private set; }
-    public TurnManager Turn { get; private set; }
-    public CombatEncounterManager Combat { get; private set; }
-    public FogGridManager FogGrid { get; private set; }
-    public FogRenderManager FogRender { get; private set; }
-    public LevelLoader Level { get; private set; }
-
-    // [JC 추가 260511] 영속 매니저 참조 (각자 Singleton)
-    public PersistentUnitRepository UnitRepo => PersistentUnitRepository.Instance;
-    public PersistentEnemyRepository EnemyRepo => PersistentEnemyRepository.Instance;
-    public HQVisitState HQVisit => HQVisitState.Instance;
 
     // [JC 추가 260511] 영속 상태 - 매니저 통합 (씬 종속 매니저들의 데이터 영속화)
     [Header("Persistent State")]
@@ -48,6 +40,7 @@ public class GameManager : MonoBehaviour
                     if (income > 0) Economy.Add(ResourceType.Money, income);
                 }
                 if (Publicity != null) Publicity.OnTurnAdvanced(currentDay);
+                if (Infirmary != null) Infirmary.OnTurnAdvanced(); // [KJ 260701] 턴당 회복 제한 리셋
                 // [JC 260629] 턴 전환 시퀀스 종료 → 월드 입력 차단 해제. (구 TurnIncomeModal.Show 대체 — 인컴 모달 제거, 자금 가산은 위에서 처리됨)
                 WorldInputGate.IsTurnResolving = false;
             }
@@ -134,6 +127,10 @@ public class GameManager : MonoBehaviour
 
         Workshop = GetComponentInChildren<WorkshopManager>(true);
         if (Workshop != null) Workshop.Initialize();
+
+        // [KJ 260701] 의무실 — HQ 수집 이후여야 SubscribeHQ 정상. Initialize() 없음(무상태).
+        Infirmary = GetComponentInChildren<InfirmaryManager>(true);
+        if (Infirmary != null) Infirmary.SubscribeHQ(HQ);
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -153,10 +150,5 @@ public class GameManager : MonoBehaviour
     private void RefreshSceneManagers()
     {
         Grid = FindFirstObjectByType<GridManager>();
-        Turn = FindFirstObjectByType<TurnManager>();
-        Combat = FindFirstObjectByType<CombatEncounterManager>();
-        FogGrid = FindFirstObjectByType<FogGridManager>();
-        FogRender = FindFirstObjectByType<FogRenderManager>();
-        Level = FindFirstObjectByType<LevelLoader>();
     }
 }

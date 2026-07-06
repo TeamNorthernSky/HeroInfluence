@@ -7,15 +7,9 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class HQUpgradeFlowController : MonoBehaviour
 {
-    [Header("Modal_HQ — 부서 진입 버튼")]
-    [SerializeField] private Button btnUpgradeHQ;
-    [SerializeField] private GameObject modalHQRoot;
-
     [Header("Modal_HQ_Progress 결합")]
     [SerializeField] private GameObject modalProgressRoot;
     [SerializeField] private TextMeshProUGUI titleText;
-    [SerializeField] private Image iconBuilding;
-    [SerializeField] private TextMeshProUGUI functionText;
     [SerializeField] private TextMeshProUGUI upgradeInfoText;
     [SerializeField] private TextMeshProUGUI hqLevelText;
     [SerializeField] private TextMeshProUGUI stateInfoText;
@@ -24,11 +18,9 @@ public class HQUpgradeFlowController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI costCrystalText;
     [SerializeField] private TextMeshProUGUI costSupplyText;
     [SerializeField] private Button btnConfirm;
-    [SerializeField] private TextMeshProUGUI btnConfirmLabel;
     [SerializeField] private GameObject disabledOverlay;
     [SerializeField] private Button btnCancel;
     [SerializeField] private Button btnClose;
-    [SerializeField] private GameObject turnWarningGo;
 
     [Header("Modal_UpgradeResult 결합")]
     [SerializeField] private GameObject modalResultRoot;
@@ -47,7 +39,6 @@ public class HQUpgradeFlowController : MonoBehaviour
         public string progressTitle;
         [Tooltip("해금 이후(level>=1) 진입 시 사용할 Title. 빈값이면 progressTitle 폴백")]
         public string progressTitleUpgrade;
-        public Sprite iconSprite;
         public bool showHqLevel = true;
         [TextArea] public string upgradeInfoStaticText; // 빈값이면 부서별 동적 텍스트 (현재: 본부만)
         [TextArea]
@@ -74,7 +65,6 @@ public class HQUpgradeFlowController : MonoBehaviour
 
     private void Awake()
     {
-        if (btnUpgradeHQ != null) btnUpgradeHQ.onClick.AddListener(() => ShowProgress(HQDepartment.Headquarters));
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
         if (btnCancel != null) btnCancel.onClick.AddListener(CloseProgress);
         if (btnClose != null) btnClose.onClick.AddListener(CloseProgress);
@@ -157,11 +147,6 @@ public class HQUpgradeFlowController : MonoBehaviour
                 title = currentContent.progressTitleUpgrade;
             titleText.text = title;
         }
-        // Icon
-        if (iconBuilding != null && currentContent != null && currentContent.iconSprite != null)
-            iconBuilding.sprite = currentContent.iconSprite;
-        // (예전 functionText는 비활성 정책 유지 — 텍스트만 비우기)
-        if (functionText != null) functionText.text = string.Empty;
 
         // HQLevel (showHqLevel=false면 공란)
         bool showHqLevel = currentContent != null && currentContent.showHqLevel;
@@ -215,8 +200,6 @@ public class HQUpgradeFlowController : MonoBehaviour
 
         if (btnConfirm != null) btnConfirm.interactable = enabled;
         if (disabledOverlay != null) disabledOverlay.SetActive(!enabled);
-        // turnWarningGo는 stateInfoText로 통합 — 항상 비활성
-        if (turnWarningGo != null) turnWarningGo.SetActive(false);
 
         ApplyCostColors(gm.Economy);
 

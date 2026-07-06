@@ -15,11 +15,7 @@ public class SaveSlotPanel : MonoBehaviour
 
     [SerializeField] private Button backButton;
 
-    //[Header("덮어쓰기 팝업")]
-    //[SerializeField] private GameObject overwritePopup;
-    //[SerializeField] private Button overwriteConfirmButton;
-    //[SerializeField] private Button overwriteCancelButton;
-
+    
     [Header("튜토리얼 팝업")]
     [SerializeField] private GameObject tutorialPopup;
     [SerializeField] private Button tutorialYesButton;
@@ -52,13 +48,10 @@ public class SaveSlotPanel : MonoBehaviour
 
         backButton?.onClick.AddListener(() => gameObject.SetActive(false));
 
-        //overwriteConfirmButton?.onClick.AddListener(OnOverwriteConfirm);
-        //overwriteCancelButton?.onClick.AddListener(OnOverwriteCancel);
         tutorialYesButton?.onClick.AddListener(OnTutorialYes);
         tutorialNoButton?.onClick.AddListener(OnTutorialNo);
         tutorialCancleButton?.onClick.AddListener(OnTutorialCancle);
 
-        //overwritePopup?.SetActive(false);
         tutorialPopup?.SetActive(false);
     }
 
@@ -103,7 +96,7 @@ public class SaveSlotPanel : MonoBehaviour
         SaveSlotData data = SaveSlotRepository.Load(pendingSlotIndex);
         if (data.hasData)
         {
-            //overwritePopup?.SetActive(true);
+            SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
             SceneManager.LoadScene(GameScene);
         }
         else
@@ -112,29 +105,19 @@ public class SaveSlotPanel : MonoBehaviour
         }
     }
 
-
-    private void OnOverwriteConfirm()
-    {
-        //overwritePopup?.SetActive(false);
-        tutorialPopup?.SetActive(true);
-    }
-
-    private void OnOverwriteCancel()
-    {
-        //overwritePopup?.SetActive(false);
-        pendingSlotIndex = -1;
-    }
-
     private void OnTutorialYes()
     {
         SaveSlotRepository.Save(pendingSlotIndex);
+        SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
         tutorialPopup?.SetActive(false);
-        SceneManager.LoadScene(TutorialScene);
+        //SceneManager.LoadScene(TutorialScene);
+        SceneManager.LoadScene(GameScene);
     }
 
     private void OnTutorialNo()
     {
         SaveSlotRepository.Save(pendingSlotIndex);
+        SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
         tutorialPopup?.SetActive(false);
         SceneManager.LoadScene(GameScene);
     }

@@ -25,6 +25,9 @@ public class TrainingManager : MonoBehaviour
     [Header("영웅별·스탯별 강화 레벨 (영속)")]
     [SerializeField] private List<TrainingEntry> entries = new List<TrainingEntry>();
 
+    // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출
+    public IReadOnlyList<TrainingEntry> Entries => entries;
+
     // 단계별 수치 — 기획서(옛 트레이닝 'DB' 시트) 기준. [JC 260617] 인스펙터 편집 가능하도록 직렬화 필드로 전환
     //   (기획자 확인 후 인스펙터에서 바로 수정). 트레이닝 레벨 L(0→1, 1→2, 2→3) 진행 시 인덱스 L 사용.
     [Header("단계별 수치 (인스펙터 편집 — 레벨 1/2/3 도달 기준)")]
