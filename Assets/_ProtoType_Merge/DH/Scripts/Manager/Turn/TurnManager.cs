@@ -101,12 +101,15 @@ public class TurnManager : MonoBehaviour
 
         UpdateTurnStateText("Player Turn");
 
-        if (partyRegistry == null)
-            return;
+        if (partyRegistry != null)
+        {
+            PartyGridMover partyMover = partyRegistry.PlayerParty;
+            if (partyMover != null)
+                partyMover.ResetMovePointsToMax();
+        }
 
-        PartyGridMover partyMover = partyRegistry.PlayerParty;
-        if (partyMover != null)
-            partyMover.ResetMovePointsToMax();
+        // [KJ 260706] 플레이어 턴 시작마다 자동 저장 — AdvanceDay·거점 생산·이동력 리셋 반영 후 시점.
+        GameSaveService.SaveToSlot(SaveSlotRepository.CurrentSlot);
     }
 
     private void AdvanceDay()

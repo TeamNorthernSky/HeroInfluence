@@ -27,6 +27,10 @@ public class HQVisitState : MonoBehaviour
     /// <summary>방문중 파티 ID 집합 (모든 source 합집합, 읽기 전용).</summary>
     public IReadOnlyCollection<string> VisitingPartyIds => unionCache;
 
+    // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출 — source별 방문 집합.
+    // 복원(로드)은 탐사씬 진입 시에만 수행하기로 협의(DH) — 감지기가 탐사씬에서 재검증하므로.
+    public IReadOnlyDictionary<string, HashSet<string>> VisitingBySource => sourceToParties;
+
     /// <summary>방문중인 파티가 1개 이상인지.</summary>
     public bool HasVisitingParty => unionCache.Count > 0;
 

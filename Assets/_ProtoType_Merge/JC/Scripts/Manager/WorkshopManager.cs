@@ -65,6 +65,9 @@ public class WorkshopManager : MonoBehaviour
     [Header("영웅별 보유 무기 → 인스턴스 매핑 (임시, 세션 영속)")]
     [SerializeField] private List<WeaponEntry> entries = new List<WeaponEntry>();
 
+    // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출 — 보유 매핑이 없으면 로드 시 제작 무기가 미보유로 보임
+    public IReadOnlyList<WeaponEntry> Entries => entries;
+
     private readonly Dictionary<long, WeaponEntry> lookup = new Dictionary<long, WeaponEntry>();
 
     public void Initialize() => RebuildLookup();
