@@ -427,7 +427,6 @@ GameObject:
   - component: {fileID: 427276368270532111}
   - component: {fileID: 1716297670514093324}
   - component: {fileID: 4159606026888928762}
-  - component: {fileID: 945360148218703465}
   m_Layer: 0
   m_Name: Modal_WorkshopHeroSelect
   m_TagString: Untagged
@@ -470,7 +469,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 249622178617279318}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -506,21 +505,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pausesGame: 0
-  closeOnOutsideClick: 1
+  closeOnOutsideClick: 0
   contentRect: {fileID: 2047236026461882899}
---- !u!114 &945360148218703465
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 249622178617279318}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1463031161a4ff746ac28abb4d9a7cf2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  wantsDim: 1
+  dimClosesModal: 1
+  dimAlpha: 0.75
 --- !u!1 &286388706618976762
 GameObject:
   m_ObjectHideFlags: 0
@@ -2886,7 +2875,6 @@ GameObject:
   - component: {fileID: 3356254070155478470}
   - component: {fileID: 586319644581427156}
   - component: {fileID: 919454005808629600}
-  - component: {fileID: 7714500597277890185}
   m_Layer: 0
   m_Name: Modal_Workshop
   m_TagString: Untagged
@@ -2929,7 +2917,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2409200406903537437}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -3080,19 +3068,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 4593585316769994017}
---- !u!114 &7714500597277890185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2409200406903537437}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1463031161a4ff746ac28abb4d9a7cf2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  wantsDim: 1
+  dimClosesModal: 1
+  dimAlpha: 0.75
 --- !u!1 &2556953402864332505
 GameObject:
   m_ObjectHideFlags: 0
@@ -6581,6 +6559,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7edb775d22469f44a9eb8534a18d9dfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  backgroundGroup: {fileID: 0}
   buttonsGroup: {fileID: 938579963796227139}
   modalsGroup: {fileID: 4184423622097214550}
   tooltipsGroup: {fileID: 0}

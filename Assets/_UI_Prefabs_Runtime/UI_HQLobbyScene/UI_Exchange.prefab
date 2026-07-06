@@ -1800,6 +1800,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7edb775d22469f44a9eb8534a18d9dfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  backgroundGroup: {fileID: 0}
   buttonsGroup: {fileID: 3156880069289394101}
   modalsGroup: {fileID: 8506958858812634133}
   tooltipsGroup: {fileID: 0}
@@ -4948,7 +4949,6 @@ GameObject:
   - component: {fileID: 2654499158197307256}
   - component: {fileID: 2029040191734424059}
   - component: {fileID: 5112287126533568239}
-  - component: {fileID: 7957829244815690310}
   m_Layer: 0
   m_Name: Modal_HQLobby_Exchange
   m_TagString: Untagged
@@ -4991,7 +4991,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8764276205412261622}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -5081,21 +5081,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pausesGame: 0
-  closeOnOutsideClick: 1
+  closeOnOutsideClick: 0
   contentRect: {fileID: 8483203024738985663}
---- !u!114 &7957829244815690310
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8764276205412261622}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1463031161a4ff746ac28abb4d9a7cf2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  target: {fileID: 0}
+  wantsDim: 1
+  dimClosesModal: 1
+  dimAlpha: 0.75
 --- !u!1 &8783656592854816349
 GameObject:
   m_ObjectHideFlags: 0

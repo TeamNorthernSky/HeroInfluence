@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 536608255190272762}
   - component: {fileID: 1713340972463854715}
   m_Layer: 0
-  m_Name: PNL_Explor_TopBar
+  m_Name: PNL_Shell_TopBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
