@@ -28,6 +28,10 @@ public class DHFogOfWarFeature : ScriptableRendererFeature
         if (settings.fogMaterial == null)
             return;
 
+        // [JC 260706 협의] 전역 fog 게이트 — 씬에 FogRenderManager가 없거나 Shift+F로 꺼진 동안 패스 생략
+        if (!FogRenderGate.ShouldRender)
+            return;
+
         renderer.EnqueuePass(renderPass);
     }
 

@@ -37,6 +37,23 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 512
     usePerRootStencil: 1
+--- !u!114 &-3995959122043560547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebb9973147d34284c852d73298699646, type: 3}
+  m_Name: DHFogOfWarFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    renderFog: 0
+    fogMaterial: {fileID: 2100000, guid: d916019a810e45143a55da2442e04f66, type: 2}
+    renderPassEvent: 500
 --- !u!114 &-1878332245247344467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,7 +152,8 @@ MonoBehaviour:
   - {fileID: -1566880368605855631}
   - {fileID: -925160644108482457}
   - {fileID: -7070252392523603137}
-  m_RendererFeatureMap: adc0de57c6d2eee57100b73f9b5241ea6708bebf4b2b29f33f6346a7e86ae19d
+  - {fileID: -3995959122043560547}
+  m_RendererFeatureMap: adc0de57c6d2eee57100b73f9b5241ea6708bebf4b2b29f33f6346a7e86ae19d9d9d9c9959808bc8
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
