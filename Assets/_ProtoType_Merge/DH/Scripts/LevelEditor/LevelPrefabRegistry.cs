@@ -21,6 +21,7 @@ public class LevelPrefabRegistry : MonoBehaviour
 
     [Header("Unique Building Prefabs")]
     [SerializeField] private HeroUnionUnit heroUnionPrefab;
+    [SerializeField] private List<HeroUnionPrefabEntry> heroUnionPrefabs = new List<HeroUnionPrefabEntry>();
     [SerializeField] private VillainUnionBase villainUnionBasePrefab;
 
     [Header("Decorative Building Prefabs")]
@@ -36,6 +37,10 @@ public class LevelPrefabRegistry : MonoBehaviour
     public GameObject ObstaclePrefab => obstaclePrefab;
     public HeroUnionUnit HeroUnionPrefab => heroUnionPrefab;
     public VillainUnionBase VillainUnionBasePrefab => villainUnionBasePrefab;
+    public IReadOnlyList<HeroUnionPrefabEntry> HeroUnionPrefabs =>
+        heroUnionPrefabs != null
+            ? heroUnionPrefabs
+            : Array.Empty<HeroUnionPrefabEntry>();
     public IReadOnlyList<DecorativeBuildingPrefabEntry> DecorativeBuildingPrefabs =>
         decorativeBuildingPrefabs != null
             ? decorativeBuildingPrefabs
@@ -45,6 +50,10 @@ public class LevelPrefabRegistry : MonoBehaviour
     {
         for (int i = 0; i < outpostPrefabs.Count; i++)
             outpostPrefabs[i] = outpostPrefabs[i].Normalized();
+
+        heroUnionPrefabs ??= new List<HeroUnionPrefabEntry>();
+        for (int i = 0; i < heroUnionPrefabs.Count; i++)
+            heroUnionPrefabs[i] = heroUnionPrefabs[i].Normalized();
 
         decorativeBuildingPrefabs ??= new List<DecorativeBuildingPrefabEntry>();
         for (int i = 0; i < decorativeBuildingPrefabs.Count; i++)
@@ -101,6 +110,24 @@ public class LevelPrefabRegistry : MonoBehaviour
 
     public bool TryGetHeroUnionPrefab(out HeroUnionUnit prefab)
     {
+        return TryGetHeroUnionPrefab(string.Empty, out prefab);
+    }
+
+    public bool TryGetHeroUnionPrefab(string prefabKey, out HeroUnionUnit prefab)
+    {
+        string normalizedKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
+        if (!string.IsNullOrEmpty(normalizedKey) && heroUnionPrefabs != null)
+        {
+            for (int i = 0; i < heroUnionPrefabs.Count; i++)
+            {
+                if (!string.Equals(heroUnionPrefabs[i].PrefabKey, normalizedKey, StringComparison.Ordinal))
+                    continue;
+
+                prefab = heroUnionPrefabs[i].Prefab;
+                return prefab != null;
+            }
+        }
+
         prefab = heroUnionPrefab;
         return prefab != null;
     }
@@ -208,6 +235,33 @@ public struct EventPrefabEntry
     public MapEventType EventType => eventType;
     public string EventKey => MapEventTypeUtility.ToEventKey(eventType);
     public MapEventObject Prefab => prefab;
+}
+
+[Serializable]
+public struct HeroUnionPrefabEntry
+{
+    [SerializeField] private string prefabKey;
+    [SerializeField] private HeroUnionUnit prefab;
+
+    public string PrefabKey
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(prefabKey))
+                return prefabKey.Trim();
+
+            return prefab != null ? prefab.name : string.Empty;
+        }
+    }
+
+    public HeroUnionUnit Prefab => prefab;
+
+    public HeroUnionPrefabEntry Normalized()
+    {
+        HeroUnionPrefabEntry entry = this;
+        entry.prefabKey = PrefabKey;
+        return entry;
+    }
 }
 
 [Serializable]

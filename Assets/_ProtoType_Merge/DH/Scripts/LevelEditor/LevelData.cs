@@ -267,11 +267,16 @@ public class LevelData : ScriptableObject
 
     public void SetHeroUnion(Vector2Int grid)
     {
+        SetHeroUnion(grid, string.Empty);
+    }
+
+    public void SetHeroUnion(Vector2Int grid, string prefabKey)
+    {
         if (!IsInsideGrid(grid))
             return;
 
         RemoveAllPlacementsAt(grid);
-        heroUnionPlacement = new UniqueBuildingPlacementData(grid);
+        heroUnionPlacement = new UniqueBuildingPlacementData(grid, prefabKey);
     }
 
     public void SetVillainUnion(Vector2Int grid)
@@ -527,15 +532,23 @@ public struct UniqueBuildingPlacementData
 {
     [SerializeField] private bool hasPlacement;
     [SerializeField] private Vector2Int gridPosition;
+    [SerializeField] private string prefabKey;
 
     public UniqueBuildingPlacementData(Vector2Int gridPosition)
+        : this(gridPosition, string.Empty)
+    {
+    }
+
+    public UniqueBuildingPlacementData(Vector2Int gridPosition, string prefabKey)
     {
         hasPlacement = true;
         this.gridPosition = gridPosition;
+        this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
     }
 
     public bool HasPlacement => hasPlacement;
     public Vector2Int GridPosition => gridPosition;
+    public string PrefabKey => string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
 
     public bool IsAt(Vector2Int grid)
     {

@@ -140,7 +140,7 @@ public class DHGameEndConditionController : MonoBehaviour
         for (int i = 0; i < heroUnions.Count; i++)
         {
             HeroUnionUnit heroUnion = heroUnions[i];
-            if (heroUnion != null && heroUnion.IsInteractionCell(grid))
+            if (heroUnion != null && heroUnion.IsClaimedByHero && heroUnion.IsInteractionCell(grid))
                 return true;
         }
 

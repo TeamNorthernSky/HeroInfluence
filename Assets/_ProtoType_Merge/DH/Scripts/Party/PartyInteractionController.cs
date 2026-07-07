@@ -219,6 +219,12 @@ public class PartyInteractionController
         if (!gridManager.TryGetAdjacentHeroUnionObject(enteredGrid, out HeroUnionUnit heroUnion))
             return;
 
+        if (!heroUnion.IsClaimedByHero)
+        {
+            heroUnion.ClaimByHero();
+            return;
+        }
+
         AdjacentHeroUnionDetected?.Invoke(heroUnion);
     }
 

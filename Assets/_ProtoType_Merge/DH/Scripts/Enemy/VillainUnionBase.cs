@@ -6,12 +6,14 @@ public class VillainUnionBase : MonoBehaviour
     [SerializeField] private string baseId = "villain_union_base_001";
     [SerializeField, Min(0)] private int defenderEnemyGroupIndex = 30001;
     [SerializeField] private string defenderEnemyId;
+    [SerializeField] private string zoneId;
     [SerializeField] private GridManager gridManager;
     private VillainUnionBaseRegistry villainUnionBaseRegistry;
 
     public string BaseId => baseId;
     public int DefenderEnemyGroupIndex => defenderEnemyGroupIndex;
     public string DefenderEnemyId => defenderEnemyId;
+    public string ZoneId => NormalizeZoneId(zoneId);
 
     private void Awake()
     {
@@ -30,6 +32,11 @@ public class VillainUnionBase : MonoBehaviour
         villainUnionBaseRegistry?.Unregister(this);
     }
 
+    public void ApplyZoneIdFromLoader(string loaderZoneId)
+    {
+        if (!string.IsNullOrWhiteSpace(loaderZoneId))
+            zoneId = NormalizeZoneId(loaderZoneId);
+    }
     public Vector2Int GetCurrentGrid()
     {
         return gridManager != null ? gridManager.WorldToGrid(transform.position) : Vector2Int.zero;
@@ -114,6 +121,10 @@ public class VillainUnionBase : MonoBehaviour
         defenderEnemyId = string.IsNullOrWhiteSpace(enemyId) ? string.Empty : enemyId;
     }
 
+    private static string NormalizeZoneId(string value)
+    {
+        return MapProgressKey.NormalizeSegment(value);
+    }
     private void ResolveReferences()
     {
         if (gridManager == null)

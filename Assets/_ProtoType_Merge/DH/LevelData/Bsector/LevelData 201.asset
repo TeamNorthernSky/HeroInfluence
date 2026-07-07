@@ -1171,8 +1171,6 @@ MonoBehaviour:
   - {x: 1, y: 21}
   - {x: 2, y: 21}
   - {x: 4, y: 21}
-  - {x: 5, y: 21}
-  - {x: 6, y: 21}
   - {x: 10, y: 21}
   - {x: 11, y: 21}
   - {x: 12, y: 21}
@@ -2073,8 +2071,6 @@ MonoBehaviour:
   - {x: 3, y: 21}
   - {x: 3, y: 22}
   - {x: 4, y: 22}
-  - {x: 5, y: 22}
-  - {x: 6, y: 22}
   - {x: 2, y: 22}
   - {x: 1, y: 22}
   - {x: 1, y: 23}
@@ -2457,8 +2453,10 @@ MonoBehaviour:
     behaviorType: 1
   decorativeBuildingPlacements: []
   heroUnionPlacement:
-    hasPlacement: 0
-    gridPosition: {x: 0, y: 0}
+    hasPlacement: 1
+    gridPosition: {x: 5, y: 21}
+    prefabKey: HeroUnion 1
   villainUnionPlacement:
     hasPlacement: 0
     gridPosition: {x: 0, y: 0}
+    prefabKey: 

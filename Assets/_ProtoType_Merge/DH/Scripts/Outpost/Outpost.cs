@@ -18,6 +18,7 @@ public class Outpost : MonoBehaviour
     public OutpostState outpostState = OutpostState.Unclaimed;
     [SerializeField, Min(0)] private int enemyDefenderGroupIndex = 30001;
     [SerializeField] private string defenderEnemyId;
+    [SerializeField] private string zoneId;
 
     [Header("Visual")]
     [SerializeField] private Renderer targetRenderer;
@@ -35,6 +36,7 @@ public class Outpost : MonoBehaviour
     public OutpostType OutpostType => outpostType;
     public int EnemyDefenderGroupIndex => enemyDefenderGroupIndex;
     public string DefenderEnemyId => defenderEnemyId;
+    public string ZoneId => NormalizeZoneId(zoneId);
 
     private void OnValidate()
     {
@@ -129,6 +131,11 @@ public class Outpost : MonoBehaviour
         }
     }
 
+    public void ApplyZoneIdFromLoader(string loaderZoneId)
+    {
+        if (!string.IsNullOrWhiteSpace(loaderZoneId))
+            zoneId = NormalizeZoneId(loaderZoneId);
+    }
     public void ApplyInitialData(int nextResourcePerTurn, OutpostState nextState)
     {
         ApplyInitialData(outpostType, nextResourcePerTurn, nextState);
@@ -259,6 +266,10 @@ public class Outpost : MonoBehaviour
         defenderEnemyId = OutpostDefenderService.CreateDefenderEnemyId(GetProgressKey(gridManager));
     }
 
+    private static string NormalizeZoneId(string value)
+    {
+        return MapProgressKey.NormalizeSegment(value);
+    }
     private void ResolveOutpostRegistry()
     {
         if (outpostRegistry == null)

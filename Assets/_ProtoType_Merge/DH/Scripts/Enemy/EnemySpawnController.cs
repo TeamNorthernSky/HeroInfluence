@@ -18,6 +18,7 @@ public class EnemySpawnController : MonoBehaviour
     [SerializeField, Min(1)] private int runtimeEnemyGroupIndex = 30002;
     [SerializeField, Min(1)] private int spawnInterval = 3;
     [SerializeField, Min(1)] private int maxActiveEnemies = 3;
+    [SerializeField] private bool enableBaseEnemyProduction;
     [SerializeField] private bool spawnOneEnemyOnStart;
     [SerializeField] private bool skipInitialSpawnWhenSceneHasMobileEnemy = true;
     [SerializeField] private string runtimeSpawnSourceKey;
@@ -98,13 +99,16 @@ public class EnemySpawnController : MonoBehaviour
     {
         productionBaseCandidates.Clear();
 
+        if (!enableBaseEnemyProduction)
+            return;
+
         if (villainUnionBaseRegistry != null)
         {
             IReadOnlyList<VillainUnionBase> villainUnionBases = villainUnionBaseRegistry.VillainUnionBases;
             for (int i = 0; i < villainUnionBases.Count; i++)
             {
                 VillainUnionBase villainUnionBase = villainUnionBases[i];
-                if (villainUnionBase == null)
+                if (villainUnionBase == null || !IsProductionZoneActive(villainUnionBase.ZoneId))
                     continue;
 
                 productionBaseCandidates.Add(new ProductionBaseCandidate(
@@ -120,7 +124,7 @@ public class EnemySpawnController : MonoBehaviour
         for (int i = 0; i < outposts.Count; i++)
         {
             Outpost outpost = outposts[i];
-            if (outpost == null || !outpost.IsEnemyClaimed)
+            if (outpost == null || !outpost.IsEnemyClaimed || !IsProductionZoneActive(outpost.ZoneId))
                 continue;
 
             Vector2Int outpostGrid = outpost.GetAnchorGrid(gridManager);
@@ -130,6 +134,14 @@ public class EnemySpawnController : MonoBehaviour
         }
     }
 
+    private bool IsProductionZoneActive(string zoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return true;
+
+        return heroUnionRegistry != null && heroUnionRegistry.TryGetClaimedByZoneId(normalizedZoneId, out _);
+    }
     private void SortCandidatesByDistanceToPlayerHeroUnion(Vector2Int playerHeroUnionGrid)
     {
         productionBaseCandidates.Sort((a, b) =>
@@ -424,18 +436,7 @@ public class EnemySpawnController : MonoBehaviour
         if (heroUnionRegistry == null)
             return false;
 
-        IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry.HeroUnions;
-        for (int i = 0; i < heroUnions.Count; i++)
-        {
-            HeroUnionUnit heroUnion = heroUnions[i];
-            if (heroUnion == null)
-                continue;
-
-            playerMainHeroUnion = heroUnion;
-            return true;
-        }
-
-        return false;
+        return heroUnionRegistry.TryGetFirstClaimed(out playerMainHeroUnion);
     }
 
     private void ResolveReferences()
