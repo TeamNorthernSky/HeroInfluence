@@ -31,8 +31,14 @@ Material:
     - _CloudContrast: 0.15
     - _DebugMode: 0
     - _DistortionStrength: 0.3
+    - _EdgeFadeWidth: 3
     - _EdgeLayerSpread: 0.15
+    - _EdgeLayerSpreadWorld: 1
+    - _EdgeNoiseScale: 0.35
+    - _EdgeNoiseSpeed: 0.1
+    - _EdgeNoiseStrength: 0.5
     - _EdgeSoftness: 0.18
+    - _EdgeWidthWorld: 1
     - _FlowSpeed1: 0.15
     - _FlowSpeed2: 0.25
     - _FlowSpeed3: 0.08
@@ -40,13 +46,24 @@ Material:
     - _FogDensityHigh: 0
     - _FogDensityLow: 1
     - _FogDensityMid: 0.85
+    - _FogHighStartY: 2
+    - _FogLowTopY: 2
     - _HeightTransition: 0.5
     - _NoiseContrast: 8
     - _NoiseScale1: 6
     - _NoiseScale2: 18
     - _NoiseScale3: 3
+    - _SheetEdgeShiftWorld: 0
+    - _SheetFadeWidthWorld: 1
+    - _SheetGroundAlign: 0.5
+    - _SheetHeightY: 2
+    - _SheetOpacity: 0
+    - _SightBoostWorld: 0
     - _TrimStrength: 0.65
     - _VisibilitySoftness: 0.18
     m_Colors:
     - _FogColor: {r: 0.75, g: 0.78, b: 0.85, a: 1}
+    - _FogColorHigh: {r: 0.75, g: 0.78, b: 0.85, a: 1}
+    - _FogColorMid: {r: 0.75, g: 0.78, b: 0.85, a: 1}
+    - _SheetColor: {r: 0.75, g: 0.78, b: 0.85, a: 1}
   m_BuildTextureStacks: []
