@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 923c0e863bf03024fae7b831ac4ca070, type: 3}
+  m_Name: FogPreset_Default
+  m_EditorClassIdentifier: 
+  fogColor: {r: 0.75, g: 0.78, b: 0.85, a: 1}
+  fogDensityLow: 1
+  fogDensityMid: 0.9998
+  fogDensityHigh: 0.407
+  noiseScaleBase: 6
+  noiseScaleDetail: 18
+  noiseScaleDistortion: 3
+  flowSpeedBase: 0.15
+  flowSpeedDetail: 0.25
+  flowSpeedDistortion: 0.08
+  distortionStrength: 8.29
+  noiseContrast: 8
+  heightTransition: 0.89
+  fogCeilingY: 2
+  brightnessLow: 0.7130121
+  brightnessMid: 1
+  brightnessHigh: 1.3805654
+  cloudContrast: 0.15682966
+  edgeSoftness: 0.48999998
+  trimStrength: 0.7528606
+  edgeLayerSpread: 0.45
+  debugMode: 0
+  unexploredValue: 0
+  foggedValue: 0.63
+  visibleValue: 1
+  enableRefogByDay: 0
+  refogDelayDays: 3
