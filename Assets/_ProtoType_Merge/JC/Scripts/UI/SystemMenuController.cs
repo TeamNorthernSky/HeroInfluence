@@ -88,13 +88,32 @@ public class SystemMenuController : MonoBehaviour
         }
     }
 
-    // [KJ 260703] 저장 버튼은 로비에서만 노출. 모달이 열릴 때마다 라벨도 "저장"으로 원복.
+    // [KJ 260706] 저장 버튼 상시 노출로 변경(DH 협업 정책). 활성 = 로비 / 탐사씬 플레이어 턴.
+    // 탐사 EnemyTurn·전투 등 그 외 씬은 회색(interactable=false). 모달이 열릴 때마다 라벨 "저장" 원복.
     private void RefreshSaveButton()
     {
         if (_btnSave == null) return;
-        bool isLobby = SceneManager.GetActiveScene().name == LobbyScene;
-        _btnSave.gameObject.SetActive(isLobby);
+        _btnSave.gameObject.SetActive(true);
+        _btnSave.interactable = IsSaveAllowed();
         if (_saveLabel != null) _saveLabel.text = "저장";
+    }
+
+    // [KJ 260706] 화이트리스트 판정 — 전투 씬 이름이 중앙화되어 있지 않아(TmpBattleScene 등)
+    // 허용 씬(로비/탐사)만 명시하고 나머지는 전부 저장 불가로 처리.
+    private static bool IsSaveAllowed()
+    {
+        string scene = SceneManager.GetActiveScene().name;
+        if (scene == LobbyScene) return true;
+
+        var gsm = GameSceneManager.Instance;
+        if (gsm != null && scene == gsm.ExplorationScene)
+        {
+            // [KJ 260706] GameManager 씬 로케이터 정리(JC 260703)로 Turn 프로퍼티 없음 — 씬에서 직접 조회(메뉴 열 때만 호출).
+            var turn = FindFirstObjectByType<TurnManager>();
+            return turn == null || !turn.IsEnemyTurnRunning;
+        }
+
+        return false;
     }
 
     private void OnClickSave()

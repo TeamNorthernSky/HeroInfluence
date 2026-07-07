@@ -34,6 +34,8 @@ public class RenderFXManager : MonoBehaviour
     private Material fogMaterialBackup;
 
     private static readonly int FogColorId = Shader.PropertyToID("_FogColor");
+    private static readonly int FogColorMidId = Shader.PropertyToID("_FogColorMid");
+    private static readonly int FogColorHighId = Shader.PropertyToID("_FogColorHigh");
     private static readonly int FogDensityLowId = Shader.PropertyToID("_FogDensityLow");
     private static readonly int FogDensityMidId = Shader.PropertyToID("_FogDensityMid");
     private static readonly int FogDensityHighId = Shader.PropertyToID("_FogDensityHigh");
@@ -46,20 +48,37 @@ public class RenderFXManager : MonoBehaviour
     private static readonly int DistortionStrengthId = Shader.PropertyToID("_DistortionStrength");
     private static readonly int NoiseContrastId = Shader.PropertyToID("_NoiseContrast");
     private static readonly int HeightTransitionId = Shader.PropertyToID("_HeightTransition");
-    private static readonly int FogCeilingYId = Shader.PropertyToID("_FogCeilingY");
+    private static readonly int FogCeilingYId = Shader.PropertyToID("_FogCeilingY");   // 구 DH 셰이더 폴백용
+    private static readonly int FogLowTopYId = Shader.PropertyToID("_FogLowTopY");
+    private static readonly int FogHighStartYId = Shader.PropertyToID("_FogHighStartY");
     private static readonly int BrightnessLowId = Shader.PropertyToID("_BrightnessLow");
     private static readonly int BrightnessMidId = Shader.PropertyToID("_BrightnessMid");
     private static readonly int BrightnessHighId = Shader.PropertyToID("_BrightnessHigh");
     private static readonly int CloudContrastId = Shader.PropertyToID("_CloudContrast");
     private static readonly int EdgeSoftnessId = Shader.PropertyToID("_EdgeSoftness");
-    private static readonly int TrimStrengthId = Shader.PropertyToID("_TrimStrength");
-    private static readonly int EdgeLayerSpreadId = Shader.PropertyToID("_EdgeLayerSpread");
+    private static readonly int EdgeWidthWorldId = Shader.PropertyToID("_EdgeWidthWorld");
+    private static readonly int EdgeNoiseStrengthId = Shader.PropertyToID("_EdgeNoiseStrength");
+    private static readonly int EdgeNoiseScaleId = Shader.PropertyToID("_EdgeNoiseScale");
+    private static readonly int EdgeNoiseSpeedId = Shader.PropertyToID("_EdgeNoiseSpeed");
+    private static readonly int EdgeFadeWidthId = Shader.PropertyToID("_EdgeFadeWidth");
+    private static readonly int EdgeLayerSpreadWorldId = Shader.PropertyToID("_EdgeLayerSpreadWorld");
+    private static readonly int SightBoostWorldId = Shader.PropertyToID("_SightBoostWorld");
+    private static readonly int SheetOpacityId = Shader.PropertyToID("_SheetOpacity");
+    private static readonly int SheetHeightYId = Shader.PropertyToID("_SheetHeightY");
+    private static readonly int SheetColorId = Shader.PropertyToID("_SheetColor");
+    private static readonly int SheetEdgeShiftWorldId = Shader.PropertyToID("_SheetEdgeShiftWorld");
+    private static readonly int SheetFadeWidthWorldId = Shader.PropertyToID("_SheetFadeWidthWorld");
+    private static readonly int SheetGroundAlignId = Shader.PropertyToID("_SheetGroundAlign");
     private static readonly int DebugModeId = Shader.PropertyToID("_DebugMode");
     private const string DebugModeKeyword = "_DEBUGMODE_ON";
 
     private static readonly int FogZoneTexId = Shader.PropertyToID("_FogZoneTex");
     private static readonly int FogZoneTexBoundId = Shader.PropertyToID("_FogZoneTexBound");
+    private static readonly int FogCellSizeId = Shader.PropertyToID("_FogCellSize");
     private Texture2D fogZoneTexture;
+
+    // 가시성 경계 SDF — 씬에 FogGridManager가 있는 동안만 활성 (FogOfWarHI 등고선 경계의 데이터원)
+    private readonly FogDistanceField distanceField = new FogDistanceField();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
@@ -111,6 +130,7 @@ public class RenderFXManager : MonoBehaviour
         SceneManager.sceneUnloaded -= HandleSceneUnloaded;
         FogRenderGate.SceneHasFog = false;
 
+        distanceField.Detach();
         ClearFogZones();
         RestoreFogMaterial();
     }
@@ -120,6 +140,8 @@ public class RenderFXManager : MonoBehaviour
         bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         if (shiftHeld && Input.GetKeyDown(KeyCode.F))
             ToggleFog();
+
+        distanceField.RebuildIfDirty();
     }
 
     public void ToggleFog()
@@ -139,6 +161,40 @@ public class RenderFXManager : MonoBehaviour
         activePreset = preset;
         ApplyToMaterial(preset);
         ApplyToSceneManagers(preset);
+        ApplyToDistanceField(preset);
+    }
+
+    /// <summary>
+    /// 파티 시야반경(월드) — PartyFogRevealer.revealRadius 리플렉션 조회(DH 무수정 seam), 부재 시 기본 4셀.
+    /// sightRangeMultiplier/sheetRangeMultiplier의 (계수−1)×반경 환산 공용 기반.
+    /// </summary>
+    private float GetSightRadiusWorld()
+    {
+        float radiusCells = 4f;
+        var revealer = FindFirstObjectByType<PartyFogRevealer>();
+        if (revealer != null)
+        {
+            var field = typeof(PartyFogRevealer).GetField("revealRadius", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (field != null) radiusCells = (int)field.GetValue(revealer);
+        }
+
+        float cellSize = Shader.GetGlobalFloat(FogCellSizeId);
+        if (cellSize <= 0.0001f) cellSize = 1f;
+        return radiusCells * cellSize;
+    }
+
+    private float ComputeSightBoostWorld(FogPreset p)
+    {
+        if (Mathf.Approximately(p.sightRangeMultiplier, 1f)) return 0f;
+        return (p.sightRangeMultiplier - 1f) * GetSightRadiusWorld();
+    }
+
+    /// <summary>경계 라운딩(월드)을 셀 단위로 환산해 SDF 빌더에 전달. 셀 크기는 FogRenderManager가 푸시한 전역값 사용.</summary>
+    private void ApplyToDistanceField(FogPreset p)
+    {
+        float cellSize = Shader.GetGlobalFloat(FogCellSizeId);
+        if (cellSize <= 0.0001f) cellSize = 1f;
+        distanceField.SetRounding(p.edgeRoundingWorld / cellSize);
     }
 
     private void ApplyToMaterial(FogPreset p)
@@ -146,6 +202,11 @@ public class RenderFXManager : MonoBehaviour
         if (fogMaterial == null) return;
 
         fogMaterial.SetColor(FogColorId, p.fogColor);
+        if (fogMaterial.HasProperty(FogColorMidId))
+        {
+            fogMaterial.SetColor(FogColorMidId, p.fogColorMid);
+            fogMaterial.SetColor(FogColorHighId, p.fogColorHigh);
+        }
         fogMaterial.SetFloat(FogDensityLowId, p.fogDensityLow);
         fogMaterial.SetFloat(FogDensityMidId, p.fogDensityMid);
         fogMaterial.SetFloat(FogDensityHighId, p.fogDensityHigh);
@@ -158,17 +219,42 @@ public class RenderFXManager : MonoBehaviour
         fogMaterial.SetFloat(DistortionStrengthId, p.distortionStrength);
         fogMaterial.SetFloat(NoiseContrastId, p.noiseContrast);
         fogMaterial.SetFloat(HeightTransitionId, p.heightTransition);
-        fogMaterial.SetFloat(FogCeilingYId, p.fogCeilingY);
+        if (fogMaterial.HasProperty(FogLowTopYId))
+        {
+            fogMaterial.SetFloat(FogLowTopYId, p.fogLowTopY);
+            fogMaterial.SetFloat(FogHighStartYId, p.fogHighStartY);
+        }
+        else if (fogMaterial.HasProperty(FogCeilingYId))
+        {
+            // 구 DH 셰이더 폴백: 단일 ceiling에 Low 상단 경계를 매핑
+            fogMaterial.SetFloat(FogCeilingYId, p.fogLowTopY);
+        }
         fogMaterial.SetFloat(BrightnessLowId, p.brightnessLow);
         fogMaterial.SetFloat(BrightnessMidId, p.brightnessMid);
         fogMaterial.SetFloat(BrightnessHighId, p.brightnessHigh);
         fogMaterial.SetFloat(CloudContrastId, p.cloudContrast);
-        fogMaterial.SetFloat(EdgeSoftnessId, p.edgeSoftness);
+        fogMaterial.SetFloat(EdgeSoftnessId, p.fallbackEdgeSoftness);
         // 셰이더 세대별 전용 프로퍼티 — 미보유 머티리얼에 유령 프로퍼티가 쌓이지 않게 가드
-        if (fogMaterial.HasProperty(TrimStrengthId))
-            fogMaterial.SetFloat(TrimStrengthId, p.trimStrength);
-        if (fogMaterial.HasProperty(EdgeLayerSpreadId))
-            fogMaterial.SetFloat(EdgeLayerSpreadId, p.edgeLayerSpread);
+        if (fogMaterial.HasProperty(EdgeWidthWorldId))
+        {
+            fogMaterial.SetFloat(EdgeWidthWorldId, p.edgeWidthWorld);
+            fogMaterial.SetFloat(EdgeNoiseStrengthId, p.edgeNoiseStrength);
+            fogMaterial.SetFloat(EdgeNoiseScaleId, p.edgeNoiseScale);
+            fogMaterial.SetFloat(EdgeNoiseSpeedId, p.edgeNoiseSpeed);
+            fogMaterial.SetFloat(EdgeFadeWidthId, p.edgeFadeWidth);
+            fogMaterial.SetFloat(EdgeLayerSpreadWorldId, p.edgeLayerSpreadWorld);
+            fogMaterial.SetFloat(SightBoostWorldId, ComputeSightBoostWorld(p));
+        }
+        if (fogMaterial.HasProperty(SheetOpacityId))
+        {
+            fogMaterial.SetFloat(SheetOpacityId, p.sheetOpacity);
+            fogMaterial.SetFloat(SheetHeightYId, p.sheetHeightY);
+            fogMaterial.SetColor(SheetColorId, p.sheetColor);
+            fogMaterial.SetFloat(SheetEdgeShiftWorldId,
+                Mathf.Approximately(p.sheetRangeMultiplier, 1f) ? 0f : (p.sheetRangeMultiplier - 1f) * GetSightRadiusWorld());
+            fogMaterial.SetFloat(SheetFadeWidthWorldId, p.sheetFadeWidthWorld);
+            fogMaterial.SetFloat(SheetGroundAlignId, p.sheetGroundAlign);
+        }
 
         fogMaterial.SetFloat(DebugModeId, p.debugMode ? 1f : 0f);
         if (p.debugMode) fogMaterial.EnableKeyword(DebugModeKeyword);
@@ -218,6 +304,7 @@ public class RenderFXManager : MonoBehaviour
 
         ApplyToMaterial(changed);
         ApplyToSceneManagers(changed);
+        ApplyToDistanceField(changed);
     }
 
     // ================= 영역 지정 안개 제어 (FogZone) =================
@@ -324,6 +411,9 @@ public class RenderFXManager : MonoBehaviour
         // zone은 씬 종속 데이터 — 씬 구성이 바뀌면 해제 (필요 씬에서 재설정)
         ClearFogZones();
 
+        // 경계 SDF: fog 씬에서만 활성. Attach가 기존 구독 해제 후 재구독 + 초기 빌드 예약
+        distanceField.Attach(FogRenderGate.SceneHasFog ? FindFirstObjectByType<FogGridManager>() : null);
+
         if (FogRenderGate.SceneHasFog && applyPresetOnSceneLoad)
             ApplyPreset(activePreset);
     }
@@ -347,6 +437,11 @@ public class RenderFXManager : MonoBehaviour
 
         var p = activePreset;
         p.fogColor = fogMaterial.GetColor(FogColorId);
+        if (fogMaterial.HasProperty(FogColorMidId))
+        {
+            p.fogColorMid = fogMaterial.GetColor(FogColorMidId);
+            p.fogColorHigh = fogMaterial.GetColor(FogColorHighId);
+        }
         p.fogDensityLow = fogMaterial.GetFloat(FogDensityLowId);
         p.fogDensityMid = fogMaterial.GetFloat(FogDensityMidId);
         p.fogDensityHigh = fogMaterial.GetFloat(FogDensityHighId);
@@ -359,14 +454,34 @@ public class RenderFXManager : MonoBehaviour
         p.distortionStrength = fogMaterial.GetFloat(DistortionStrengthId);
         p.noiseContrast = fogMaterial.GetFloat(NoiseContrastId);
         p.heightTransition = fogMaterial.GetFloat(HeightTransitionId);
-        p.fogCeilingY = fogMaterial.GetFloat(FogCeilingYId);
+        if (fogMaterial.HasProperty(FogLowTopYId))
+        {
+            p.fogLowTopY = fogMaterial.GetFloat(FogLowTopYId);
+            p.fogHighStartY = fogMaterial.GetFloat(FogHighStartYId);
+        }
         p.brightnessLow = fogMaterial.GetFloat(BrightnessLowId);
         p.brightnessMid = fogMaterial.GetFloat(BrightnessMidId);
         p.brightnessHigh = fogMaterial.GetFloat(BrightnessHighId);
         p.cloudContrast = fogMaterial.GetFloat(CloudContrastId);
-        p.edgeSoftness = fogMaterial.GetFloat(EdgeSoftnessId);
-        p.trimStrength = fogMaterial.HasProperty(TrimStrengthId) ? fogMaterial.GetFloat(TrimStrengthId) : p.trimStrength;
-        p.edgeLayerSpread = fogMaterial.HasProperty(EdgeLayerSpreadId) ? fogMaterial.GetFloat(EdgeLayerSpreadId) : p.edgeLayerSpread;
+        p.fallbackEdgeSoftness = fogMaterial.GetFloat(EdgeSoftnessId);
+        if (fogMaterial.HasProperty(EdgeWidthWorldId))
+        {
+            p.edgeWidthWorld = fogMaterial.GetFloat(EdgeWidthWorldId);
+            p.edgeNoiseStrength = fogMaterial.GetFloat(EdgeNoiseStrengthId);
+            p.edgeNoiseScale = fogMaterial.GetFloat(EdgeNoiseScaleId);
+            p.edgeNoiseSpeed = fogMaterial.GetFloat(EdgeNoiseSpeedId);
+            p.edgeFadeWidth = fogMaterial.GetFloat(EdgeFadeWidthId);
+            p.edgeLayerSpreadWorld = fogMaterial.GetFloat(EdgeLayerSpreadWorldId);
+        }
+        if (fogMaterial.HasProperty(SheetOpacityId))
+        {
+            p.sheetOpacity = fogMaterial.GetFloat(SheetOpacityId);
+            p.sheetHeightY = fogMaterial.GetFloat(SheetHeightYId);
+            p.sheetColor = fogMaterial.GetColor(SheetColorId);
+            p.sheetFadeWidthWorld = fogMaterial.GetFloat(SheetFadeWidthWorldId);
+            p.sheetGroundAlign = fogMaterial.GetFloat(SheetGroundAlignId);
+            // sheetRangeMultiplier는 시야반경 환산값이라 역산 생략 (sightRangeMultiplier와 동일 정책)
+        }
         p.debugMode = fogMaterial.GetFloat(DebugModeId) > 0.5f;
 
         UnityEditor.EditorUtility.SetDirty(p);

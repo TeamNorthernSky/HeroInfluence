@@ -212,5 +212,25 @@ public static class GameSaveService
             data.infirmaryHealedThisTurn.AddRange(gm.Infirmary.HealedUnitsThisTurn);
         else
             Debug.LogWarning("[GameSaveService] InfirmaryManager 없음 — 의무실 구역 생략");
+
+        // [KJ 260706] 공방 보유 매핑 — 무기 인스턴스/장착과 별개인 소유권 정보.
+        if (gm.Workshop != null)
+            data.workshopWeaponEntries.AddRange(gm.Workshop.Entries);
+        else
+            Debug.LogWarning("[GameSaveService] WorkshopManager 없음 — 공방 보유 구역 생략");
+
+        // [KJ 260706] 거점 방문 상태 — 복원은 탐사씬 한정(DH 협의).
+        HQVisitState visit = HQVisitState.Instance;
+        if (visit != null)
+        {
+            foreach (KeyValuePair<string, HashSet<string>> pair in visit.VisitingBySource)
+                data.hqVisitSources.Add(new GameSaveData.VisitEntry
+                {
+                    source = pair.Key,
+                    partyIds = new List<string>(pair.Value)
+                });
+        }
+        else
+            Debug.LogWarning("[GameSaveService] HQVisitState 없음 — 방문 상태 구역 생략");
     }
 }

@@ -71,6 +71,18 @@ public class GameSaveData : ScriptableObject
     public List<TrainingManager.TrainingEntry> trainingEntries = new List<TrainingManager.TrainingEntry>();
     // 의무실: 이번 턴 회복/부활 사용한 유닛
     public List<int> infirmaryHealedThisTurn = new List<int>();
+    // 공방: (유닛, 무기템플릿)→인스턴스 보유 매핑 — 없으면 로드 시 제작 무기가 미보유로 보임 [KJ 260706]
+    public List<WorkshopManager.WeaponEntry> workshopWeaponEntries = new List<WorkshopManager.WeaponEntry>();
+
+    // ── 거점 방문 상태 [KJ 260706] ──
+    // 복원(로드)은 탐사씬 진입 시에만 수행(DH 협의 — 감지기가 탐사씬에서 재검증).
+    [Serializable]
+    public struct VisitEntry
+    {
+        public string source;
+        public List<string> partyIds;
+    }
+    public List<VisitEntry> hqVisitSources = new List<VisitEntry>();
 
     // ── 턴 ──
     public int currentDay;
