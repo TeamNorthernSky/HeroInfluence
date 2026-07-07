@@ -28,7 +28,7 @@ public class BattleVisualDirector : MonoBehaviour
             return;
         }
 
-        Instantiate(presentation.AttackEffectPrefab, socket.position, socket.rotation);
+        EffectManager.Instance?.SpawnPrefab(presentation.AttackEffectPrefab, socket.position, socket.rotation);
     }
 
     public void PlayHitEffect(BattleCharactor target, int skillIndex)
@@ -46,7 +46,7 @@ public class BattleVisualDirector : MonoBehaviour
             return;
         }
 
-        Instantiate(presentation.HitEffectPrefab, socket.position, socket.rotation);
+        EffectManager.Instance?.SpawnPrefab(presentation.HitEffectPrefab, socket.position, socket.rotation);
     }
 
     public void PlayAttackSfx(BattleCharactor actor, int skillIndex)
@@ -64,7 +64,7 @@ public class BattleVisualDirector : MonoBehaviour
             return;
         }
 
-        AudioSource.PlayClipAtPoint(presentation.AttackSfxClip, socket.position, presentation.SfxVolume);
+        SoundManager.Instance?.PlayClip(presentation.AttackSfxClip, socket.position, presentation.SfxVolume);
     }
 
     public void PlayHitSfx(BattleCharactor target, int skillIndex)
@@ -82,7 +82,7 @@ public class BattleVisualDirector : MonoBehaviour
             return;
         }
 
-        AudioSource.PlayClipAtPoint(presentation.HitSfxClip, socket.position, presentation.SfxVolume);
+        SoundManager.Instance?.PlayClip(presentation.HitSfxClip, socket.position, presentation.SfxVolume);
     }
 
     public void ShowDamagePopup(BattleHitResult result)

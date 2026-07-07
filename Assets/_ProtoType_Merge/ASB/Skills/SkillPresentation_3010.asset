@@ -15,7 +15,7 @@ MonoBehaviour:
   SkillIndex: 3010
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
-  AttackSfxClip: {fileID: 0}
+  AttackSfxClip: {fileID: 8300000, guid: aa82d1d64dc984b4c97628b17894648f, type: 3}
   HitSfxClip: {fileID: 0}
   SfxVolume: 1
   AttackEffectPrefab: {fileID: 0}
