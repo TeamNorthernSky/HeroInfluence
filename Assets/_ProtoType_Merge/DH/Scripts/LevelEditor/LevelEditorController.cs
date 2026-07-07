@@ -25,6 +25,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private EnemyBehaviorType enemyBehaviorType = EnemyBehaviorType.Mobile;
     [SerializeField] private LevelTileRegistry tileRegistry;
     [SerializeField] private string selectedTileKey;
+    [SerializeField] private string selectedHeroUnionPrefabKey;
     [SerializeField] private string selectedDecorativeBuildingKey;
 
     [Header("Behaviour")]
@@ -62,6 +63,7 @@ public class LevelEditorController : MonoBehaviour
     public EnemyBehaviorType EnemyBehaviorType => enemyBehaviorType;
     public LevelTileRegistry TileRegistry => tileRegistry;
     public string SelectedTileKey => selectedTileKey;
+    public string SelectedHeroUnionPrefabKey => string.IsNullOrWhiteSpace(selectedHeroUnionPrefabKey) ? string.Empty : selectedHeroUnionPrefabKey.Trim();
     public string SelectedDecorativeBuildingKey => selectedDecorativeBuildingKey;
     public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
     public LayerMask GroundMask => groundMask;
@@ -169,7 +171,7 @@ public class LevelEditorController : MonoBehaviour
                 levelData.SetDecorativeBuilding(grid, selectedDecorativeBuildingKey);
                 break;
             case LevelEditorBrushType.HeroUnion:
-                levelData.SetHeroUnion(grid);
+                levelData.SetHeroUnion(grid, SelectedHeroUnionPrefabKey);
                 break;
             case LevelEditorBrushType.VillainUnion:
                 levelData.SetVillainUnion(grid);

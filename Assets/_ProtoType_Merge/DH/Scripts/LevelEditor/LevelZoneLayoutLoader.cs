@@ -261,13 +261,13 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
         SpawnObstacles(levelData, offset);
         SpawnItems(levelData, offset);
-        SpawnOutposts(levelData, offset);
+        SpawnOutposts(zone, levelData, offset);
         SpawnEvents(levelData, offset);
         SpawnEnemyPlacements(levelData, offset);
         SpawnDecorativeBuildings(levelData, offset);
 
         if (spawnUniqueBuildingsFromZones)
-            SpawnUniqueBuildings(levelData, offset);
+            SpawnUniqueBuildings(zone, levelData, offset);
     }
 
     private void SpawnObstacles(LevelData levelData, Vector2Int offset)
@@ -316,7 +316,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         return repository != null && repository.IsItemCollected(MapProgressKey.ForItem(grid));
     }
 
-    private void SpawnOutposts(LevelData levelData, Vector2Int offset)
+    private void SpawnOutposts(LevelZoneSlot zone, LevelData levelData, Vector2Int offset)
     {
         if (prefabRegistry == null)
             return;
@@ -338,6 +338,9 @@ public class LevelZoneLayoutLoader : MonoBehaviour
             Outpost outpost = SpawnComponent(outpostPrefab, grid, parent);
             if (outpost == null)
                 continue;
+
+            if (zone != null)
+                outpost.ApplyZoneIdFromLoader(zone.ZoneId);
 
             OutpostState initialState = GetOutpostInitialState(grid, placement.InitialState);
             outpost.ApplyInitialData(
@@ -490,32 +493,34 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         return repository != null && repository.IsEnemyDefeated(placementKey);
     }
 
-    private void SpawnUniqueBuildings(LevelData levelData, Vector2Int offset)
+    private void SpawnUniqueBuildings(LevelZoneSlot zone, LevelData levelData, Vector2Int offset)
     {
         if (prefabRegistry == null)
             return;
 
-        SpawnHeroUnion(levelData, offset);
-        SpawnVillainUnionBase(levelData, offset);
+        SpawnHeroUnion(zone, levelData, offset);
+        SpawnVillainUnionBase(zone, levelData, offset);
     }
 
-    private void SpawnHeroUnion(LevelData levelData, Vector2Int offset)
+    private void SpawnHeroUnion(LevelZoneSlot zone, LevelData levelData, Vector2Int offset)
     {
         UniqueBuildingPlacementData placement = levelData.HeroUnionPlacement;
         if (!placement.HasPlacement)
             return;
 
-        if (!prefabRegistry.TryGetHeroUnionPrefab(out HeroUnionUnit heroUnionPrefab))
+        if (!prefabRegistry.TryGetHeroUnionPrefab(placement.PrefabKey, out HeroUnionUnit heroUnionPrefab))
         {
             Debug.LogWarning("LevelZoneLayoutLoader could not find a heroUnion prefab.", this);
             return;
         }
 
         Transform parent = GetHeroUnionRoot(true);
-        SpawnComponent(heroUnionPrefab, placement.GridPosition + offset, parent);
+        HeroUnionUnit heroUnion = SpawnComponent(heroUnionPrefab, placement.GridPosition + offset, parent);
+        if (heroUnion != null && zone != null)
+            heroUnion.ApplyZoneIdFromLoader(zone.ZoneId);
     }
 
-    private void SpawnVillainUnionBase(LevelData levelData, Vector2Int offset)
+    private void SpawnVillainUnionBase(LevelZoneSlot zone, LevelData levelData, Vector2Int offset)
     {
         UniqueBuildingPlacementData placement = levelData.VillainUnionPlacement;
         if (!placement.HasPlacement)
@@ -528,7 +533,9 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         }
 
         Transform parent = GetVillainUnionRoot(true);
-        SpawnComponent(villainUnionBasePrefab, placement.GridPosition + offset, parent);
+        VillainUnionBase villainUnionBase = SpawnComponent(villainUnionBasePrefab, placement.GridPosition + offset, parent);
+        if (villainUnionBase != null && zone != null)
+            villainUnionBase.ApplyZoneIdFromLoader(zone.ZoneId);
     }
 
     private void SpawnDecorativeBuildings(LevelData levelData, Vector2Int offset)

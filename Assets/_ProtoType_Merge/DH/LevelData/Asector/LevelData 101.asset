@@ -2465,6 +2465,8 @@ MonoBehaviour:
   heroUnionPlacement:
     hasPlacement: 1
     gridPosition: {x: 10, y: 8}
+    prefabKey: HeroUnion
   villainUnionPlacement:
     hasPlacement: 0
     gridPosition: {x: 0, y: 0}
+    prefabKey: 

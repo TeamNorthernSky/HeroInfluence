@@ -68,6 +68,7 @@ public class MinimapController : MonoBehaviour
 
         SubscribeToLevelLoaders();
         SubscribeToFogGridManager();
+        SubscribeToHeroUnionStateChanges();
 
         if (drawOnEnable)
             Refresh();
@@ -77,6 +78,7 @@ public class MinimapController : MonoBehaviour
     {
         UnsubscribeFromLevelLoaders();
         UnsubscribeFromFogGridManager();
+        UnsubscribeFromHeroUnionStateChanges();
     }
 
     private void OnDestroy()
@@ -234,7 +236,7 @@ public class MinimapController : MonoBehaviour
             if (heroUnion == null || !heroUnion.isActiveAndEnabled)
                 continue;
 
-            DrawComponentFootprint(heroUnion, playerBuildingColor, gridSize, heroUnion.GetCurrentGrid());
+            DrawComponentFootprint(heroUnion, GetHeroUnionMinimapColor(heroUnion), gridSize, heroUnion.GetCurrentGrid());
         }
     }
 
@@ -360,12 +362,17 @@ public class MinimapController : MonoBehaviour
             if (!ComponentContainsGrid(heroUnion, grid, heroUnion.GetCurrentGrid()))
                 continue;
 
-            color = playerBuildingColor;
+            color = GetHeroUnionMinimapColor(heroUnion);
             return true;
         }
 
         color = default;
         return false;
+    }
+
+    private Color GetHeroUnionMinimapColor(HeroUnionUnit heroUnion)
+    {
+        return heroUnion != null && heroUnion.IsClaimedByHero ? playerBuildingColor : neutralOutpostColor;
     }
 
     private bool TryGetVillainUnionColorAtGrid(Vector2Int grid, out Color color)
@@ -758,6 +765,21 @@ public class MinimapController : MonoBehaviour
         Refresh();
     }
 
+    private void SubscribeToHeroUnionStateChanges()
+    {
+        HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionStateChanged;
+        HeroUnionUnit.HeroUnionStateChanged += HandleHeroUnionStateChanged;
+    }
+
+    private void UnsubscribeFromHeroUnionStateChanges()
+    {
+        HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionStateChanged;
+    }
+
+    private void HandleHeroUnionStateChanged(HeroUnionUnit heroUnion)
+    {
+        Refresh();
+    }
     private void HandleRuntimeLayoutLoaded(LevelZoneLayoutLoader loader)
     {
         if (loader == null)

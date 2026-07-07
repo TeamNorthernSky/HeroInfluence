@@ -25,6 +25,7 @@ public class PartyGridMover : MonoBehaviour
     private bool restoredPersistentPosition;
     private bool canRefreshHeroUnionStartAfterLevelLoad;
     private const string ScenePartyPrefabKey = "scene";
+    private const string DefaultStartHeroUnionZoneId = "zone_001";
 
     public Vector2Int? TargetInteractionGrid { get; private set; }
 
@@ -390,6 +391,15 @@ public class PartyGridMover : MonoBehaviour
         HeroUnionRegistry registry = FindFirstObjectByType<HeroUnionRegistry>();
         if (registry != null)
         {
+            if (registry.TryGetClaimedByZoneId(DefaultStartHeroUnionZoneId, out HeroUnionUnit claimedStartHeroUnion))
+                return claimedStartHeroUnion;
+
+            if (registry.TryGetByZoneId(DefaultStartHeroUnionZoneId, out HeroUnionUnit startHeroUnion))
+                return startHeroUnion;
+
+            if (registry.TryGetFirstClaimed(out HeroUnionUnit claimedHeroUnion))
+                return claimedHeroUnion;
+
             IReadOnlyList<HeroUnionUnit> heroUnions = registry.HeroUnions;
             for (int i = 0; i < heroUnions.Count; i++)
             {
@@ -399,7 +409,24 @@ public class PartyGridMover : MonoBehaviour
         }
 
         HeroUnionUnit[] sceneHeroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
-        return sceneHeroUnions != null && sceneHeroUnions.Length > 0 ? sceneHeroUnions[0] : null;
+        if (sceneHeroUnions == null || sceneHeroUnions.Length == 0)
+            return null;
+
+        HeroUnionUnit firstClaimed = null;
+        for (int i = 0; i < sceneHeroUnions.Length; i++)
+        {
+            HeroUnionUnit heroUnion = sceneHeroUnions[i];
+            if (heroUnion == null)
+                continue;
+
+            if (string.Equals(heroUnion.ZoneId, DefaultStartHeroUnionZoneId, StringComparison.Ordinal))
+                return heroUnion;
+
+            if (firstClaimed == null && heroUnion.IsClaimedByHero)
+                firstClaimed = heroUnion;
+        }
+
+        return firstClaimed != null ? firstClaimed : sceneHeroUnions[0];
     }
 
     public List<Vector2Int> GetRemainingPath()

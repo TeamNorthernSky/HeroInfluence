@@ -375,7 +375,7 @@ public class LevelLoader : MonoBehaviour
         if (!placement.HasPlacement)
             return;
 
-        if (!prefabRegistry.TryGetHeroUnionPrefab(out HeroUnionUnit heroUnionPrefab))
+        if (!prefabRegistry.TryGetHeroUnionPrefab(placement.PrefabKey, out HeroUnionUnit heroUnionPrefab))
         {
             Debug.LogWarning("LevelLoader could not find a heroUnion prefab.", this);
             return;

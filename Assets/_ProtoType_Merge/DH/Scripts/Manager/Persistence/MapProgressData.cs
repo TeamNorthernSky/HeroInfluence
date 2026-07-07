@@ -127,6 +127,40 @@ public class LevelZoneSelectionState
 }
 
 [Serializable]
+public class HeroUnionProgressState
+{
+    [SerializeField] private string zoneId;
+    [SerializeField] private HeroUnionState state;
+
+    public string ZoneId => zoneId;
+    public HeroUnionState State => state;
+    public string ProgressKey => BuildProgressKey(zoneId);
+
+    public HeroUnionProgressState(string zoneId, HeroUnionState state)
+    {
+        this.zoneId = NormalizeZoneId(zoneId);
+        this.state = state;
+    }
+
+    public void SetState(HeroUnionState nextState)
+    {
+        state = nextState;
+    }
+
+    public static string BuildProgressKey(string zoneId)
+    {
+        string normalizedZoneId = NormalizeZoneId(zoneId);
+        return string.IsNullOrWhiteSpace(normalizedZoneId) ? string.Empty : $"hero_union_{normalizedZoneId}";
+    }
+
+    private static string NormalizeZoneId(string zoneId)
+    {
+        string normalized = MapProgressKey.NormalizeSegment(zoneId);
+        return string.IsNullOrWhiteSpace(normalized) ? "zone_001" : normalized;
+    }
+}
+
+[Serializable]
 public class EnemyWorldState
 {
     public const string DefaultPrefabKey = "default";

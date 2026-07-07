@@ -211,6 +211,14 @@ public class EnemyTurnController : MonoBehaviour
             return;
         }
 
+        if (enemy.CurrentTargetType == EnemyTargetType.HeroUnion &&
+            enemy.CurrentTarget is HeroUnionUnit heroUnion &&
+            !heroUnion.IsClaimedByHero)
+        {
+            enemy.ClearTarget();
+            return;
+        }
+
         Vector2Int enemyGrid = enemy.GetCurrentGrid();
         Vector2Int targetGrid = GetTargetGrid(enemy.CurrentTargetType, enemy.CurrentTarget);
 
@@ -262,7 +270,7 @@ public class EnemyTurnController : MonoBehaviour
             for (int i = 0; i < heroUnions.Count; i++)
             {
                 HeroUnionUnit heroUnion = heroUnions[i];
-                if (heroUnion == null)
+                if (heroUnion == null || !heroUnion.IsClaimedByHero)
                     continue;
 
                 targetCandidates.Add(new TargetCandidate(

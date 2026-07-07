@@ -22,31 +22,25 @@ MonoBehaviour:
     size: {x: 50, y: 40}
     optional: 0
     candidates:
-    - {fileID: 11400000, guid: 6aaa930035050784e85cccc6030f4e86, type: 2}
+    - {fileID: 11400000, guid: 322e857ea6585cd468c24fa929db34dd, type: 2}
   - zoneId: zone_002
     zoneType: 0
     anchor: {x: 50, y: 0}
     size: {x: 50, y: 40}
     optional: 0
     candidates:
-    - {fileID: 11400000, guid: 757873fc1450a2c42b1f966c4d87f10e, type: 2}
-    - {fileID: 11400000, guid: f87535cc1dfa43a419a24a3a51fa37f0, type: 2}
-    - {fileID: 11400000, guid: 2f188831bb3807249941c05e642c9f3a, type: 2}
+    - {fileID: 11400000, guid: 4d8d2dd217d74fc4785806ac6a3aeced, type: 2}
   - zoneId: zone_003
     zoneType: 0
     anchor: {x: 0, y: 40}
     size: {x: 50, y: 40}
     optional: 0
     candidates:
-    - {fileID: 11400000, guid: 757873fc1450a2c42b1f966c4d87f10e, type: 2}
-    - {fileID: 11400000, guid: f87535cc1dfa43a419a24a3a51fa37f0, type: 2}
-    - {fileID: 11400000, guid: 2f188831bb3807249941c05e642c9f3a, type: 2}
+    - {fileID: 11400000, guid: 8cf10374e743bb444ba8ac71437e71dd, type: 2}
   - zoneId: zone_004
     zoneType: 0
     anchor: {x: 50, y: 40}
     size: {x: 50, y: 40}
     optional: 0
     candidates:
-    - {fileID: 11400000, guid: 757873fc1450a2c42b1f966c4d87f10e, type: 2}
-    - {fileID: 11400000, guid: f87535cc1dfa43a419a24a3a51fa37f0, type: 2}
-    - {fileID: 11400000, guid: 2f188831bb3807249941c05e642c9f3a, type: 2}
+    - {fileID: 11400000, guid: 1fd33efec80471642b3b5dff8bee4f05, type: 2}

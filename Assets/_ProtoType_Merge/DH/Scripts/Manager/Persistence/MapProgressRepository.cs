@@ -15,6 +15,7 @@ public class MapProgressRepository : MonoBehaviour
     [SerializeField] private List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
     [SerializeField] private List<FogProgressCell> fogCells = new List<FogProgressCell>();
     [SerializeField] private List<LevelZoneSelectionState> levelZoneSelections = new List<LevelZoneSelectionState>();
+    [SerializeField] private List<HeroUnionProgressState> heroUnionStates = new List<HeroUnionProgressState>();
 
     private readonly HashSet<string> collectedItemLookup = new HashSet<string>();
     private readonly HashSet<string> completedEventLookup = new HashSet<string>();
@@ -22,6 +23,7 @@ public class MapProgressRepository : MonoBehaviour
     private readonly Dictionary<string, EnemyWorldState> enemyWorldLookup = new Dictionary<string, EnemyWorldState>();
     private readonly Dictionary<string, OutpostProgressState> outpostStateLookup = new Dictionary<string, OutpostProgressState>();
     private readonly Dictionary<string, LevelZoneSelectionState> levelZoneSelectionLookup = new Dictionary<string, LevelZoneSelectionState>();
+    private readonly Dictionary<string, HeroUnionProgressState> heroUnionStateLookup = new Dictionary<string, HeroUnionProgressState>();
 
     public string MapId => mapId;
     public IReadOnlyList<string> CollectedItemKeys => collectedItemKeys;
@@ -31,6 +33,7 @@ public class MapProgressRepository : MonoBehaviour
     public IReadOnlyList<OutpostProgressState> OutpostStates => outpostStates;
     public IReadOnlyList<FogProgressCell> FogCells => fogCells;
     public IReadOnlyList<LevelZoneSelectionState> LevelZoneSelections => levelZoneSelections;
+    public IReadOnlyList<HeroUnionProgressState> HeroUnionStates => heroUnionStates;
 
     private void Awake()
     {
@@ -338,6 +341,30 @@ public class MapProgressRepository : MonoBehaviour
         levelZoneSelections.Clear();
         levelZoneSelectionLookup.Clear();
     }
+    public bool TryGetHeroUnionState(string zoneId, out HeroUnionState state)
+    {
+        state = HeroUnionState.Neutral;
+
+        string progressKey = HeroUnionProgressState.BuildProgressKey(zoneId);
+        if (!IsValidKey(progressKey))
+            return false;
+
+        if (!heroUnionStateLookup.TryGetValue(progressKey, out HeroUnionProgressState progressState))
+            return false;
+
+        state = progressState.State;
+        return true;
+    }
+
+    public void SetHeroUnionState(string zoneId, HeroUnionState state)
+    {
+        string progressKey = HeroUnionProgressState.BuildProgressKey(zoneId);
+        if (!IsValidKey(progressKey))
+            return;
+
+        HeroUnionProgressState progressState = GetOrCreateHeroUnionState(zoneId, state);
+        progressState.SetState(state);
+    }
 
     public void ClearAllProgress()
     {
@@ -348,9 +375,21 @@ public class MapProgressRepository : MonoBehaviour
         outpostStates.Clear();
         fogCells.Clear();
         levelZoneSelections.Clear();
+        heroUnionStates.Clear();
         RebuildLookups();
     }
 
+    private HeroUnionProgressState GetOrCreateHeroUnionState(string zoneId, HeroUnionState state)
+    {
+        string progressKey = HeroUnionProgressState.BuildProgressKey(zoneId);
+        if (heroUnionStateLookup.TryGetValue(progressKey, out HeroUnionProgressState progressState))
+            return progressState;
+
+        progressState = new HeroUnionProgressState(zoneId, state);
+        heroUnionStates.Add(progressState);
+        heroUnionStateLookup[progressKey] = progressState;
+        return progressState;
+    }
     private PartyWorldState GetOrCreatePartyState(string placementKey, string partyId, Vector2Int grid)
     {
         return GetOrCreatePartyState(placementKey, partyId, grid, PartyPlacementSource.Scene, PartyWorldState.DefaultPrefabKey);
@@ -427,6 +466,7 @@ public class MapProgressRepository : MonoBehaviour
         enemyWorldLookup.Clear();
         outpostStateLookup.Clear();
         levelZoneSelectionLookup.Clear();
+        heroUnionStateLookup.Clear();
 
         RebuildKeyLookup(collectedItemKeys, collectedItemLookup, "collected item key");
         RebuildKeyLookup(completedEventKeys, completedEventLookup, "completed event key");
@@ -479,6 +519,22 @@ public class MapProgressRepository : MonoBehaviour
             outpostStateLookup.Add(key, state);
         }
 
+
+        for (int i = 0; i < heroUnionStates.Count; i++)
+        {
+            HeroUnionProgressState state = heroUnionStates[i];
+            if (state == null || !IsValidKey(state.ProgressKey))
+                continue;
+
+            string key = NormalizeKey(state.ProgressKey);
+            if (heroUnionStateLookup.ContainsKey(key))
+            {
+                Debug.LogWarning($"MapProgressRepository has duplicate hero union progress key '{key}'.", this);
+                continue;
+            }
+
+            heroUnionStateLookup.Add(key, state);
+        }
         for (int i = 0; i < levelZoneSelections.Count; i++)
         {
             LevelZoneSelectionState state = levelZoneSelections[i];

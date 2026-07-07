@@ -196,6 +196,9 @@ public class LevelEditorWindow : EditorWindow
         if (brushType == LevelEditorBrushType.GroundTile)
             DrawGroundTileSelector(serializedController);
 
+        if (brushType == LevelEditorBrushType.HeroUnion)
+            DrawHeroUnionPrefabSelector(serializedController);
+
         if (brushType == LevelEditorBrushType.DecorativeBuilding)
             DrawDecorativeBuildingSelector(serializedController);
 
@@ -305,6 +308,43 @@ public class LevelEditorWindow : EditorWindow
             else
                 EditorGUI.DrawRect(rect, new Color(0f, 0f, 0f, 0.15f));
         }
+    }
+
+    private void DrawHeroUnionPrefabSelector(SerializedObject serializedController)
+    {
+        SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedHeroUnionPrefabKey");
+
+        LevelPrefabRegistry registry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
+        if (registry == null)
+        {
+            EditorGUILayout.HelpBox("HeroUnion brush needs a LevelPrefabRegistry on the LevelLoader.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        IReadOnlyList<HeroUnionPrefabEntry> entries = registry.HeroUnionPrefabs;
+        if (entries == null || entries.Count == 0)
+        {
+            EditorGUILayout.HelpBox("LevelPrefabRegistry has no extra HeroUnion entries. The default HeroUnion prefab will be used.", MessageType.Info);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        List<string> keys = new List<string> { string.Empty };
+        List<string> labels = new List<string> { "Default" };
+        for (int i = 0; i < entries.Count; i++)
+        {
+            HeroUnionPrefabEntry entry = entries[i];
+            if (string.IsNullOrWhiteSpace(entry.PrefabKey))
+                continue;
+
+            keys.Add(entry.PrefabKey);
+            labels.Add(entry.PrefabKey);
+        }
+
+        int selectedIndex = Mathf.Max(0, keys.IndexOf(selectedKeyProperty.stringValue));
+        int nextIndex = EditorGUILayout.Popup("Prefab Key", selectedIndex, labels.ToArray());
+        selectedKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
     }
 
     private void DrawDecorativeBuildingSelector(SerializedObject serializedController)
@@ -642,7 +682,7 @@ public class LevelEditorWindow : EditorWindow
         }
 
         if (levelData.HeroUnionPlacement.HasPlacement)
-            DrawFootprint(context, BuildFootprint(GetHeroUnionPrefab(context), levelData.HeroUnionPlacement.GridPosition), new Color(1f, 0.85f, 0.1f, 0.12f), new Color(1f, 0.85f, 0.1f, 0.75f));
+            DrawFootprint(context, BuildFootprint(GetHeroUnionPrefab(context, levelData.HeroUnionPlacement.PrefabKey), levelData.HeroUnionPlacement.GridPosition), new Color(1f, 0.85f, 0.1f, 0.12f), new Color(1f, 0.85f, 0.1f, 0.75f));
 
         if (levelData.VillainUnionPlacement.HasPlacement)
             DrawFootprint(context, BuildFootprint(GetVillainUnionPrefab(context), levelData.VillainUnionPlacement.GridPosition), new Color(1f, 0.2f, 0.55f, 0.12f), new Color(1f, 0.2f, 0.55f, 0.75f));
@@ -809,7 +849,7 @@ public class LevelEditorWindow : EditorWindow
                     context.SelectedDecorativeBuildingKey);
                 break;
             case LevelEditorBrushType.HeroUnion:
-                context.LevelData.SetHeroUnion(anchor);
+                context.LevelData.SetHeroUnion(anchor, context.SelectedHeroUnionPrefabKey);
                 break;
             case LevelEditorBrushType.VillainUnion:
                 context.LevelData.SetVillainUnion(anchor);
@@ -880,6 +920,7 @@ public class LevelEditorWindow : EditorWindow
         context.EnemyBehaviorType = controller.EnemyBehaviorType;
         context.TileRegistry = controller.TileRegistry;
         context.SelectedTileKey = controller.SelectedTileKey;
+        context.SelectedHeroUnionPrefabKey = controller.SelectedHeroUnionPrefabKey;
         context.SelectedDecorativeBuildingKey = controller.SelectedDecorativeBuildingKey;
         context.ApplyLevelAfterEdit = controller.ApplyLevelAfterEdit;
         context.GroundMask = controller.GroundMask;
@@ -1250,7 +1291,7 @@ public class LevelEditorWindow : EditorWindow
                 reason = prefab == null ? $"Event prefab is missing for {context.EventPreset.EventKey}." : null;
                 return prefab != null;
             case LevelEditorBrushType.HeroUnion:
-                prefab = GetHeroUnionPrefab(context);
+                prefab = GetHeroUnionPrefab(context, context.SelectedHeroUnionPrefabKey);
                 reason = prefab == null ? "HeroUnion prefab is missing." : null;
                 return prefab != null;
             case LevelEditorBrushType.VillainUnion:
@@ -1379,7 +1420,7 @@ public class LevelEditorWindow : EditorWindow
         }
 
         if (levelData.HeroUnionPlacement.HasPlacement
-            && FootprintsOverlap(footprint, BuildFootprint(GetHeroUnionPrefab(context), levelData.HeroUnionPlacement.GridPosition)))
+            && FootprintsOverlap(footprint, BuildFootprint(GetHeroUnionPrefab(context, levelData.HeroUnionPlacement.PrefabKey), levelData.HeroUnionPlacement.GridPosition)))
         {
             reason = "HeroUnion overlaps this footprint.";
             return true;
@@ -1408,7 +1449,7 @@ public class LevelEditorWindow : EditorWindow
         if (levelData.HeroUnionPlacement.HasPlacement)
         {
             anchor = levelData.HeroUnionPlacement.GridPosition;
-            footprint = BuildFootprint(GetHeroUnionPrefab(context), anchor);
+            footprint = BuildFootprint(GetHeroUnionPrefab(context, levelData.HeroUnionPlacement.PrefabKey), anchor);
             if (footprint.Contains(grid))
             {
                 label = "HeroUnion";
@@ -1574,10 +1615,10 @@ public class LevelEditorWindow : EditorWindow
         return null;
     }
 
-    private static GameObject GetHeroUnionPrefab(LevelEditorContext context)
+    private static GameObject GetHeroUnionPrefab(LevelEditorContext context, string prefabKey)
     {
         return context.PrefabRegistry != null
-            && context.PrefabRegistry.TryGetHeroUnionPrefab(out HeroUnionUnit prefab)
+            && context.PrefabRegistry.TryGetHeroUnionPrefab(prefabKey, out HeroUnionUnit prefab)
             && prefab != null
                 ? prefab.gameObject
                 : null;
@@ -1733,6 +1774,7 @@ public class LevelEditorWindow : EditorWindow
         public EnemyBehaviorType EnemyBehaviorType;
         public LevelTileRegistry TileRegistry;
         public string SelectedTileKey;
+        public string SelectedHeroUnionPrefabKey;
         public string SelectedDecorativeBuildingKey;
         public bool ApplyLevelAfterEdit;
         public LayerMask GroundMask;

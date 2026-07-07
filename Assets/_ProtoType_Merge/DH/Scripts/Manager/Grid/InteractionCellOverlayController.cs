@@ -57,6 +57,8 @@ public class InteractionCellOverlayController : MonoBehaviour
         SubscribeSceneEnemies();
         Outpost.OutpostClaimed -= HandleOutpostChanged;
         Outpost.OutpostClaimed += HandleOutpostChanged;
+        HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionChanged;
+        HeroUnionUnit.HeroUnionStateChanged += HandleHeroUnionChanged;
         RequestRefresh();
     }
 
@@ -65,6 +67,7 @@ public class InteractionCellOverlayController : MonoBehaviour
         UnsubscribeRegistry();
         UnsubscribeEnemies();
         Outpost.OutpostClaimed -= HandleOutpostChanged;
+        HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionChanged;
         ClearActiveOverlays();
     }
 
@@ -201,7 +204,7 @@ public class InteractionCellOverlayController : MonoBehaviour
                 if (hideFoggedCells && fogGridManager != null && !fogGridManager.IsVisible(grid))
                     continue;
 
-                TrySetDesiredCell(grid, OverlayCellType.Player);
+                TrySetDesiredCell(grid, heroUnion.IsClaimedByHero ? OverlayCellType.Player : OverlayCellType.Neutral);
             }
         }
     }
@@ -418,6 +421,11 @@ public class InteractionCellOverlayController : MonoBehaviour
     }
 
     private void HandleOutpostChanged(Outpost outpost)
+    {
+        RequestRefresh();
+    }
+
+    private void HandleHeroUnionChanged(HeroUnionUnit heroUnion)
     {
         RequestRefresh();
     }
