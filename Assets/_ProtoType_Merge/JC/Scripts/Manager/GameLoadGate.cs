@@ -3,11 +3,12 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// [JC 단독] GameLoadScene에 부착. 새 게임 진입 시 데이터 부트스트랩 후 분기.
-/// 흐름: DHScene Additive 로드 → 1프레임 대기(PartyUnitBootstrap.Start 완료)
-///       → HeroUnionHQVisitDetector.ReevaluateNow → 방문 파티 체크
-///       → 있음: DHScene Unload + 로비 씬(GameSceneManager.LobbyScene) Single 로드
-///       → 없음: DHScene Active 전환 + GameLoadScene Unload
+/// [JC 단독] GameLoadScene에 부착. 새 게임 진입 시 데이터 부트스트랩 후 탐사씬 진입.
+/// 흐름: DHScene Additive 로드 → 대기(PartyUnitBootstrap.Start 완료)
+///       → HeroUnionHQVisitDetector.ReevaluateNow(방문 상태 계산)
+///       → DHScene Active 전환 + GameLoadScene Unload
+/// [KJ 260707] 기획 확정: 새 게임/이어하기 모두 탐사씬에서 시작 — 방문 파티 로비 분기 제거.
+///             로비는 탐사씬에서 HQ/점령 거점 더블클릭으로만 진입.
 /// </summary>
 [DisallowMultipleComponent]
 public class GameLoadGate : MonoBehaviour
@@ -16,11 +17,6 @@ public class GameLoadGate : MonoBehaviour
     private string dhSceneName => GameSceneManager.Instance != null
         ? GameSceneManager.Instance.ExplorationScene
         : "DHScene";
-
-    // [JC 260610] 인스펙터 필드 폐기 → 동적 property. GameSceneManager.Instance.LobbyScene 단일 정본 반영.
-    private string lobbySceneName => GameSceneManager.Instance != null
-        ? GameSceneManager.Instance.LobbyScene
-        : "HQLobbyScene";
 
     [Tooltip("DHScene 부트스트랩 후 폴링 전 추가 대기 프레임 수. PartyUnitBootstrap의 Start 호출 보장")]
     [SerializeField] private int bootstrapWaitFrames = 2;
@@ -64,25 +60,11 @@ public class GameLoadGate : MonoBehaviour
             Debug.LogWarning("[GameLoadGate] HeroUnionHQVisitDetector를 DHScene에서 찾지 못함. 방문 체크 불가");
         }
 
-        bool hasVisiting = HQVisitState.Instance != null && HQVisitState.Instance.HasVisitingParty;
-        Debug.Log($"[GameLoadGate] HasVisitingParty = {hasVisiting}");
-
-        if (hasVisiting)
-        {
-            Debug.Log($"[GameLoadGate] → {lobbySceneName} (Single)");
-            // [JC 260514] GameSceneManager Instance 경유.
-            if (GameSceneManager.Instance != null)
-                GameSceneManager.Instance.LoadScene(lobbySceneName, LoadSceneMode.Single);
-            else
-                SceneManager.LoadScene(lobbySceneName, LoadSceneMode.Single);
-        }
-        else
-        {
-            Debug.Log($"[GameLoadGate] 방문 파티 없음 → {dhSceneName} Active 전환 + GameLoadScene Unload");
-            Scene dh = SceneManager.GetSceneByName(dhSceneName);
-            if (dh.IsValid())
-                SceneManager.SetActiveScene(dh);
-            yield return SceneManager.UnloadSceneAsync(gameObject.scene);
-        }
+        // [KJ 260707] 방문 파티 여부와 무관하게 항상 탐사씬 시작(기획 확정). 로비 분기 제거.
+        Debug.Log($"[GameLoadGate] → {dhSceneName} Active 전환 + GameLoadScene Unload");
+        Scene dh = SceneManager.GetSceneByName(dhSceneName);
+        if (dh.IsValid())
+            SceneManager.SetActiveScene(dh);
+        yield return SceneManager.UnloadSceneAsync(gameObject.scene);
     }
 }

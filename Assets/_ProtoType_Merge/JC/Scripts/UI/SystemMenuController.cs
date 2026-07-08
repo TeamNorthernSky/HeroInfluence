@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -16,16 +15,12 @@ public class SystemMenuController : MonoBehaviour
     [SerializeField] private Button _btnToTitle;
     [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnQuit;
-    // [KJ 260703] 저장 기능 — 로비에서만 노출
-    [SerializeField] private Button _btnSave;
-    [SerializeField] private TMP_Text _saveLabel;
 
     private void Awake()
     {
         if (_btnResume != null) _btnResume.onClick.AddListener(OnClickResume);
         if (_btnToTitle != null) _btnToTitle.onClick.AddListener(OnClickToTitle);
         if (_btnQuit != null) _btnQuit.onClick.AddListener(OnClickQuit);
-        if (_btnSave != null) _btnSave.onClick.AddListener(OnClickSave);
     }
 
     private void Update()
@@ -63,7 +58,6 @@ public class SystemMenuController : MonoBehaviour
     {
         if (_modal == null) return;
         transform.SetAsLastSibling();
-        RefreshSaveButton();
         _modal.SetActive(true);
     }
 
@@ -82,44 +76,9 @@ public class SystemMenuController : MonoBehaviour
         else
         {
             transform.SetAsLastSibling();
-            RefreshSaveButton();
             _modal.SetActive(true);
             Time.timeScale = 0f;
         }
-    }
-
-    // [KJ 260706] 저장 버튼 상시 노출로 변경(DH 협업 정책). 활성 = 로비 / 탐사씬 플레이어 턴.
-    // 탐사 EnemyTurn·전투 등 그 외 씬은 회색(interactable=false). 모달이 열릴 때마다 라벨 "저장" 원복.
-    private void RefreshSaveButton()
-    {
-        if (_btnSave == null) return;
-        _btnSave.gameObject.SetActive(true);
-        _btnSave.interactable = IsSaveAllowed();
-        if (_saveLabel != null) _saveLabel.text = "저장";
-    }
-
-    // [KJ 260706] 화이트리스트 판정 — 전투 씬 이름이 중앙화되어 있지 않아(TmpBattleScene 등)
-    // 허용 씬(로비/탐사)만 명시하고 나머지는 전부 저장 불가로 처리.
-    private static bool IsSaveAllowed()
-    {
-        string scene = SceneManager.GetActiveScene().name;
-        if (scene == LobbyScene) return true;
-
-        var gsm = GameSceneManager.Instance;
-        if (gsm != null && scene == gsm.ExplorationScene)
-        {
-            // [KJ 260706] GameManager 씬 로케이터 정리(JC 260703)로 Turn 프로퍼티 없음 — 씬에서 직접 조회(메뉴 열 때만 호출).
-            var turn = FindFirstObjectByType<TurnManager>();
-            return turn == null || !turn.IsEnemyTurnRunning;
-        }
-
-        return false;
-    }
-
-    private void OnClickSave()
-    {
-        bool ok = GameSaveService.SaveToSlot(SaveSlotRepository.CurrentSlot);
-        if (_saveLabel != null) _saveLabel.text = ok ? "저장 완료" : "저장 실패";
     }
 
     public void OnClickResume()

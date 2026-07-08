@@ -1492,7 +1492,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &768025203239283894
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1566,6 +1566,9 @@ MonoBehaviour:
   pausesGame: 0
   closeOnOutsideClick: 1
   contentRect: {fileID: 828901351606754670}
+  wantsDim: 0
+  dimClosesModal: 0
+  dimAlpha: 0.75
 --- !u!114 &6741107894352679639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1842,7 +1845,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5160381627317148384
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1878,6 +1881,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   backgroundGroup: {fileID: 0}
   buttonsGroup: {fileID: 411801415154464164}
+  overlayGroup: {fileID: 0}
   modalsGroup: {fileID: 7363748580610781406}
   tooltipsGroup: {fileID: 0}
 --- !u!114 &8925855699632103478

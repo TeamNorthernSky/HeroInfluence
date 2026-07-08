@@ -78,6 +78,8 @@ public class GameManager : MonoBehaviour
 
         DHGameProgressResetService.ResetDHProgress(); // DH 레포 + HQVisit + CombatContext + MapProgress + DHGameEndState
 
+        initialAutoSaveDone = false; // [KJ 260707] 다음 새 게임의 첫 로비 도착 자동 저장 재활성화
+
         UnityEngine.Debug.Log("[GameManager] ResetForNewGame — 전체 영속 상태를 첫 실행값으로 초기화");
     }
 
@@ -139,6 +141,25 @@ public class GameManager : MonoBehaviour
         // [JC 260619] 유닛 시딩(PartyUnitBootstrap.Start 등) 완료 후 기본 클래스 스킬 자동장착(멱등).
         // 무기는 유닛 생성 시 자동장착되지만 스킬은 미장착이라, 시작 시 보장한다.
         if (Lab != null) StartCoroutine(EnsureDefaultSkillsNextFrame());
+
+        // [KJ 260707] 게임 진입(세션 첫 탐사씬 도착) 시 1회 자동 저장 — day 1 "첫 턴 시작 스냅샷" 보장.
+        // 게임 시작 씬이 로비→탐사씬으로 변경(GameLoadGate 분기 제거)되어 트리거 씬도 함께 이동.
+        // 이후 턴들은 TurnManager.StartPlayerTurn의 자동 저장이 담당(수동 저장 버튼은 기획 결정으로 제거됨).
+        if (!initialAutoSaveDone && GameSceneManager.Instance != null && scene.name == GameSceneManager.Instance.ExplorationScene)
+            StartCoroutine(InitialAutoSaveAfterSeeding());
+    }
+
+    // [KJ 260707] 세션당 1회. 타이틀 복귀(ResetForNewGame) 시 리셋되어 다음 새 게임에서도 첫 스냅샷 보장.
+    private bool initialAutoSaveDone;
+
+    private System.Collections.IEnumerator InitialAutoSaveAfterSeeding()
+    {
+        // 유닛 시딩(씬 Start)과 기본 스킬 장착(EnsureDefaultSkillsNextFrame, 1프레임 지연) 이후로 2프레임 지연
+        yield return null;
+        yield return null;
+        if (initialAutoSaveDone) yield break;
+        initialAutoSaveDone = true;
+        GameSaveService.SaveToSlot(SaveSlotRepository.CurrentSlot);
     }
 
     private System.Collections.IEnumerator EnsureDefaultSkillsNextFrame()
