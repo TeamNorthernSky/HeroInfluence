@@ -129,3 +129,24 @@ project.assets.json
 
 Assets/_ProtoType_Merge/CLAUDE.md.meta
 # /.github
+/Assets/Editor
+
+# 머지 임시파일 — 점 스타일 (UnityYAMLMerge: foo.prefab.BASE.prefab 형태)
+# 주의: Windows에서 git은 대소문자 무시하므로 *.BASE.* 같은 광역 패턴은
+#       정상 파일(예: Unity.Recorder.Base.dll)까지 잡음 → 확장자로 한정
+*.BASE.prefab*
+*.LOCAL.prefab*
+*.REMOTE.prefab*
+*.BASE.unity*
+*.LOCAL.unity*
+*.REMOTE.unity*
+*.BASE.asset*
+*.LOCAL.asset*
+*.REMOTE.asset*
+# 머지 임시파일 — 밑줄 스타일 (git mergetool 기본)
+*_BASE_*
+*_LOCAL_*
+*_REMOTE_*
+# mergetool 백업
+*.orig
+*_BACKUP_*
