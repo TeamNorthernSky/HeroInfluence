@@ -28,29 +28,39 @@ public class HeroUnionVisitWiringForDHScene3 : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool logWireOnce = true;
 
-    private bool wired;
+    private readonly HashSet<HeroUnionUnit> wiredHeroUnions = new HashSet<HeroUnionUnit>();
 
     private void LateUpdate()
     {
-        if (wired) return;
+        RemoveDestroyedReferences();
 
-        HeroUnionUnit heroUnion = FindFirstObjectByType<HeroUnionUnit>();
-        if (heroUnion == null) return;
+        HeroUnionUnit[] heroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
+        for (int i = 0; i < heroUnions.Length; i++)
+        {
+            HeroUnionUnit heroUnion = heroUnions[i];
+            if (heroUnion == null || wiredHeroUnions.Contains(heroUnion))
+                continue;
 
-        Wire(heroUnion.gameObject);
-        wired = true;
+            Wire(heroUnion.gameObject);
+            wiredHeroUnions.Add(heroUnion);
+        }
     }
 
     private void Wire(GameObject heroUnionGO)
     {
         // 1) VisitorIndicator 자식 GO 생성
-        GameObject indicator = new GameObject("VisitorIndicator");
+        Transform existingIndicator = heroUnionGO.transform.Find("VisitorIndicator");
+        GameObject indicator = existingIndicator != null
+            ? existingIndicator.gameObject
+            : new GameObject("VisitorIndicator");
         indicator.transform.SetParent(heroUnionGO.transform, false);
         indicator.transform.localPosition = visitorIndicatorLocalPosition;
         indicator.transform.localEulerAngles = visitorIndicatorLocalEulerAngles;
         indicator.transform.localScale = visitorIndicatorLocalScale;
 
-        SpriteRenderer sr = indicator.AddComponent<SpriteRenderer>();
+        SpriteRenderer sr = indicator.GetComponent<SpriteRenderer>();
+        if (sr == null)
+            sr = indicator.AddComponent<SpriteRenderer>();
         sr.sprite = visitorIndicatorSprite;
         sr.sortingOrder = visitorIndicatorSortingOrder;
 
@@ -74,6 +84,28 @@ public class HeroUnionVisitWiringForDHScene3 : MonoBehaviour
 
         if (logWireOnce)
             Debug.Log($"[HeroUnionVisitWiringForDHScene3] Wired to HeroUnion GO '{heroUnionGO.name}' — detector + entry + indicator", this);
+    }
+
+    private void RemoveDestroyedReferences()
+    {
+        if (wiredHeroUnions.Count == 0)
+            return;
+
+        List<HeroUnionUnit> destroyed = null;
+        foreach (HeroUnionUnit heroUnion in wiredHeroUnions)
+        {
+            if (heroUnion != null)
+                continue;
+
+            destroyed ??= new List<HeroUnionUnit>();
+            destroyed.Add(heroUnion);
+        }
+
+        if (destroyed == null)
+            return;
+
+        for (int i = 0; i < destroyed.Count; i++)
+            wiredHeroUnions.Remove(destroyed[i]);
     }
 
     private static void SetPrivateField(object target, string fieldName, object value)
