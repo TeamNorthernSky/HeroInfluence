@@ -10,6 +10,8 @@ public class LevelData : ScriptableObject
 {
     private static readonly IReadOnlyList<EnemyPlacementData> EmptyEnemyPlacements = Array.Empty<EnemyPlacementData>();
     private static readonly IReadOnlyList<DecorativeBuildingPlacementData> EmptyDecorativeBuildingPlacements = Array.Empty<DecorativeBuildingPlacementData>();
+    private static readonly IReadOnlyList<GatePlacementData> EmptyGatePlacements = Array.Empty<GatePlacementData>();
+    private static readonly IReadOnlyList<EnemySpawnPointPlacementData> EmptyEnemySpawnPointPlacements = Array.Empty<EnemySpawnPointPlacementData>();
 
     [Header("Meta")]
     [SerializeField] private string levelId = "level_001";
@@ -27,6 +29,8 @@ public class LevelData : ScriptableObject
     [SerializeField] private List<EventPlacementData> eventPlacements = new List<EventPlacementData>();
     [SerializeField] private List<EnemyPlacementData> enemyPlacements = new List<EnemyPlacementData>();
     [SerializeField] private List<DecorativeBuildingPlacementData> decorativeBuildingPlacements = new List<DecorativeBuildingPlacementData>();
+    [SerializeField] private List<GatePlacementData> gatePlacements = new List<GatePlacementData>();
+    [SerializeField] private List<EnemySpawnPointPlacementData> enemySpawnPointPlacements = new List<EnemySpawnPointPlacementData>();
     [SerializeField] private UniqueBuildingPlacementData heroUnionPlacement;
     [SerializeField] private UniqueBuildingPlacementData villainUnionPlacement;
 
@@ -43,6 +47,9 @@ public class LevelData : ScriptableObject
     public IReadOnlyList<EnemyPlacementData> EnemyPlacements => enemyPlacements != null ? enemyPlacements : EmptyEnemyPlacements;
     public IReadOnlyList<DecorativeBuildingPlacementData> DecorativeBuildingPlacements =>
         decorativeBuildingPlacements != null ? decorativeBuildingPlacements : EmptyDecorativeBuildingPlacements;
+    public IReadOnlyList<GatePlacementData> GatePlacements => gatePlacements != null ? gatePlacements : EmptyGatePlacements;
+    public IReadOnlyList<EnemySpawnPointPlacementData> EnemySpawnPointPlacements =>
+        enemySpawnPointPlacements != null ? enemySpawnPointPlacements : EmptyEnemySpawnPointPlacements;
     public UniqueBuildingPlacementData HeroUnionPlacement => heroUnionPlacement;
     public UniqueBuildingPlacementData VillainUnionPlacement => villainUnionPlacement;
 
@@ -174,6 +181,43 @@ public class LevelData : ScriptableObject
         return false;
     }
 
+    public bool TryGetGateBlockerAt(Vector2Int grid, out GatePlacementData gatePlacement)
+    {
+        if (gatePlacements != null)
+        {
+            for (int i = 0; i < gatePlacements.Count; i++)
+            {
+                GatePlacementData placement = gatePlacements[i];
+                if (!placement.ContainsBlockerCell(grid))
+                    continue;
+
+                gatePlacement = placement;
+                return true;
+            }
+        }
+
+        gatePlacement = default;
+        return false;
+    }
+
+    public bool TryGetEnemySpawnPointAt(Vector2Int grid, out EnemySpawnPointPlacementData spawnPointPlacement)
+    {
+        if (enemySpawnPointPlacements != null)
+        {
+            for (int i = 0; i < enemySpawnPointPlacements.Count; i++)
+            {
+                if (enemySpawnPointPlacements[i].GridPosition != grid)
+                    continue;
+
+                spawnPointPlacement = enemySpawnPointPlacements[i];
+                return true;
+            }
+        }
+
+        spawnPointPlacement = default;
+        return false;
+    }
+
     public void SetGroundTile(Vector2Int grid, string tileKey)
     {
         if (!IsInsideGrid(grid))
@@ -244,6 +288,53 @@ public class LevelData : ScriptableObject
         decorativeBuildingPlacements.Add(new DecorativeBuildingPlacementData(grid, prefabKey));
     }
 
+    public void AddGateBlockerCell(
+        string gateId,
+        string firstZoneId,
+        string secondZoneId,
+        Vector2Int grid,
+        int openDurationTurns)
+    {
+        if (!IsInsideGrid(grid))
+            return;
+
+        EnsureGatePlacements();
+        string normalizedGateId = GatePlacementData.NormalizeId(gateId);
+        if (string.IsNullOrWhiteSpace(normalizedGateId))
+            normalizedGateId = $"gate_{grid.x}_{grid.y}";
+
+        for (int i = 0; i < gatePlacements.Count; i++)
+        {
+            GatePlacementData placement = gatePlacements[i];
+            if (placement.GateId != normalizedGateId)
+                continue;
+
+            placement.AddBlockerCell(grid);
+            placement.SetConnectedZones(firstZoneId, secondZoneId);
+            placement.SetOpenDurationTurns(openDurationTurns);
+            gatePlacements[i] = placement.Normalized();
+            return;
+        }
+
+        GatePlacementData nextPlacement = new GatePlacementData(
+            normalizedGateId,
+            firstZoneId,
+            secondZoneId,
+            openDurationTurns);
+        nextPlacement.AddBlockerCell(grid);
+        gatePlacements.Add(nextPlacement.Normalized());
+    }
+
+    public void SetEnemySpawnPoint(Vector2Int grid, string zoneId)
+    {
+        if (!IsInsideGrid(grid))
+            return;
+
+        EnsureEnemySpawnPointPlacements();
+        enemySpawnPointPlacements.RemoveAll(x => x.GridPosition == grid);
+        enemySpawnPointPlacements.Add(new EnemySpawnPointPlacementData(grid, zoneId));
+    }
+
     public void RemoveEnemyPlacementAt(Vector2Int grid)
     {
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
@@ -254,6 +345,29 @@ public class LevelData : ScriptableObject
         decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
     }
 
+    public void RemoveGateBlockerAt(Vector2Int grid)
+    {
+        if (gatePlacements == null)
+            return;
+
+        for (int i = gatePlacements.Count - 1; i >= 0; i--)
+        {
+            GatePlacementData placement = gatePlacements[i];
+            if (!placement.RemoveBlockerCell(grid))
+                continue;
+
+            if (placement.BlockerCells.Count == 0)
+                gatePlacements.RemoveAt(i);
+            else
+                gatePlacements[i] = placement.Normalized();
+        }
+    }
+
+    public void RemoveEnemySpawnPointAt(Vector2Int grid)
+    {
+        enemySpawnPointPlacements?.RemoveAll(x => x.GridPosition == grid);
+    }
+
     public void EraseNonGroundTileAt(Vector2Int grid)
     {
         obstacleCells.Remove(grid);
@@ -262,6 +376,8 @@ public class LevelData : ScriptableObject
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
         decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        RemoveGateBlockerAt(grid);
+        enemySpawnPointPlacements?.RemoveAll(x => x.GridPosition == grid);
         ClearUniquePlacementsAt(grid);
     }
 
@@ -297,6 +413,8 @@ public class LevelData : ScriptableObject
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
         decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        RemoveGateBlockerAt(grid);
+        enemySpawnPointPlacements?.RemoveAll(x => x.GridPosition == grid);
         ClearUniquePlacementsAt(grid);
     }
 
@@ -306,6 +424,9 @@ public class LevelData : ScriptableObject
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
+        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        RemoveGateBlockerAt(grid);
+        enemySpawnPointPlacements?.RemoveAll(x => x.GridPosition == grid);
         ClearUniquePlacementsAt(grid);
     }
 
@@ -316,6 +437,9 @@ public class LevelData : ScriptableObject
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
+        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        RemoveGateBlockerAt(grid);
+        enemySpawnPointPlacements?.RemoveAll(x => x.GridPosition == grid);
         ClearUniquePlacementsAt(grid);
     }
 
@@ -356,6 +480,20 @@ public class LevelData : ScriptableObject
         EnsureDecorativeBuildingPlacements();
         for (int i = 0; i < decorativeBuildingPlacements.Count; i++)
             decorativeBuildingPlacements[i] = decorativeBuildingPlacements[i].Normalized();
+
+        EnsureGatePlacements();
+        for (int i = gatePlacements.Count - 1; i >= 0; i--)
+        {
+            GatePlacementData normalized = gatePlacements[i].Normalized();
+            if (string.IsNullOrWhiteSpace(normalized.GateId) || normalized.BlockerCells.Count == 0)
+                gatePlacements.RemoveAt(i);
+            else
+                gatePlacements[i] = normalized;
+        }
+
+        EnsureEnemySpawnPointPlacements();
+        for (int i = 0; i < enemySpawnPointPlacements.Count; i++)
+            enemySpawnPointPlacements[i] = enemySpawnPointPlacements[i].Normalized();
     }
 
     private static Vector2Int NormalizeGridSize(Vector2Int value)
@@ -373,6 +511,16 @@ public class LevelData : ScriptableObject
     private void EnsureDecorativeBuildingPlacements()
     {
         decorativeBuildingPlacements ??= new List<DecorativeBuildingPlacementData>();
+    }
+
+    private void EnsureGatePlacements()
+    {
+        gatePlacements ??= new List<GatePlacementData>();
+    }
+
+    private void EnsureEnemySpawnPointPlacements()
+    {
+        enemySpawnPointPlacements ??= new List<EnemySpawnPointPlacementData>();
     }
 }
 
@@ -524,6 +672,109 @@ public struct DecorativeBuildingPlacementData
     public DecorativeBuildingPlacementData Normalized()
     {
         return new DecorativeBuildingPlacementData(gridPosition, PrefabKey);
+    }
+}
+
+[Serializable]
+public struct GatePlacementData
+{
+    [SerializeField] private string gateId;
+    [SerializeField] private string firstZoneId;
+    [SerializeField] private string secondZoneId;
+    [SerializeField, Min(1)] private int openDurationTurns;
+    [SerializeField] private List<Vector2Int> blockerCells;
+
+    public GatePlacementData(string gateId, string firstZoneId, string secondZoneId, int openDurationTurns)
+    {
+        this.gateId = NormalizeId(gateId);
+        this.firstZoneId = NormalizeId(firstZoneId);
+        this.secondZoneId = NormalizeId(secondZoneId);
+        this.openDurationTurns = Mathf.Max(1, openDurationTurns);
+        blockerCells = new List<Vector2Int>();
+    }
+
+    public string GateId => NormalizeId(gateId);
+    public string FirstZoneId => NormalizeId(firstZoneId);
+    public string SecondZoneId => NormalizeId(secondZoneId);
+    public int OpenDurationTurns => Mathf.Max(1, openDurationTurns);
+    public IReadOnlyList<Vector2Int> BlockerCells => blockerCells != null ? blockerCells : Array.Empty<Vector2Int>();
+
+    public void SetConnectedZones(string firstZoneId, string secondZoneId)
+    {
+        this.firstZoneId = NormalizeId(firstZoneId);
+        this.secondZoneId = NormalizeId(secondZoneId);
+    }
+
+    public void SetOpenDurationTurns(int nextOpenDurationTurns)
+    {
+        openDurationTurns = Mathf.Max(1, nextOpenDurationTurns);
+    }
+
+    public void AddBlockerCell(Vector2Int grid)
+    {
+        blockerCells ??= new List<Vector2Int>();
+        if (!blockerCells.Contains(grid))
+            blockerCells.Add(grid);
+    }
+
+    public bool RemoveBlockerCell(Vector2Int grid)
+    {
+        return blockerCells != null && blockerCells.Remove(grid);
+    }
+
+    public bool ContainsBlockerCell(Vector2Int grid)
+    {
+        return blockerCells != null && blockerCells.Contains(grid);
+    }
+
+    public bool ContainsZone(string zoneId)
+    {
+        string normalizedZoneId = NormalizeId(zoneId);
+        return !string.IsNullOrWhiteSpace(normalizedZoneId) &&
+            (FirstZoneId == normalizedZoneId || SecondZoneId == normalizedZoneId);
+    }
+
+    public GatePlacementData Normalized()
+    {
+        GatePlacementData normalized = new GatePlacementData(
+            GateId,
+            FirstZoneId,
+            SecondZoneId,
+            OpenDurationTurns);
+
+        if (blockerCells != null)
+        {
+            for (int i = 0; i < blockerCells.Count; i++)
+                normalized.AddBlockerCell(blockerCells[i]);
+        }
+
+        return normalized;
+    }
+
+    public static string NormalizeId(string value)
+    {
+        return MapProgressKey.NormalizeSegment(value);
+    }
+}
+
+[Serializable]
+public struct EnemySpawnPointPlacementData
+{
+    [SerializeField] private Vector2Int gridPosition;
+    [SerializeField] private string zoneId;
+
+    public EnemySpawnPointPlacementData(Vector2Int gridPosition, string zoneId)
+    {
+        this.gridPosition = gridPosition;
+        this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
+    }
+
+    public Vector2Int GridPosition => gridPosition;
+    public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+
+    public EnemySpawnPointPlacementData Normalized()
+    {
+        return new EnemySpawnPointPlacementData(gridPosition, ZoneId);
     }
 }
 

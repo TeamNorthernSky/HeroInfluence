@@ -39,6 +39,8 @@ public class LevelEditorWindow : EditorWindow
         LevelEditorBrushType.VillainUnion,
         LevelEditorBrushType.EnemyGroup,
         LevelEditorBrushType.DecorativeBuilding,
+        LevelEditorBrushType.GateBlocker,
+        LevelEditorBrushType.EnemySpawnPoint,
         LevelEditorBrushType.Erase
     };
 
@@ -54,6 +56,8 @@ public class LevelEditorWindow : EditorWindow
         "VillainUnion",
         "EnemyGroup",
         "Decorative",
+        "Gate",
+        "EnemySpawn",
         "Erase"
     };
 
@@ -201,6 +205,17 @@ public class LevelEditorWindow : EditorWindow
 
         if (brushType == LevelEditorBrushType.DecorativeBuilding)
             DrawDecorativeBuildingSelector(serializedController);
+
+        if (brushType == LevelEditorBrushType.GateBlocker)
+        {
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateId"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateFirstZoneId"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateSecondZoneId"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateOpenDurationTurns"));
+        }
+
+        if (brushType == LevelEditorBrushType.EnemySpawnPoint)
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnZoneId"));
 
         DrawTileClipboardControls(serializedController, brushType);
 
@@ -567,9 +582,10 @@ public class LevelEditorWindow : EditorWindow
         bool isTileBrush = context.BrushType == LevelEditorBrushType.GroundTile ||
             context.BrushType == LevelEditorBrushType.GroundTileErase;
         bool isObstacleBrush = context.BrushType == LevelEditorBrushType.Obstacle;
+        bool isGateBlockerBrush = context.BrushType == LevelEditorBrushType.GateBlocker;
         bool leftPaintEvent = currentEvent.button == 0 &&
             (currentEvent.type == EventType.MouseDown ||
-             (currentEvent.type == EventType.MouseDrag && (isTileBrush || isTileSelectionBrush || isObstacleBrush)));
+             (currentEvent.type == EventType.MouseDrag && (isTileBrush || isTileSelectionBrush || isObstacleBrush || isGateBlockerBrush)));
         bool rightEraseEvent = currentEvent.button == 1 && currentEvent.type == EventType.MouseDown;
 
         if (leftPaintEvent)
@@ -586,8 +602,10 @@ public class LevelEditorWindow : EditorWindow
 
             if (isTileBrush)
                 lastEditedGroundTileGrid = hoveredGrid;
-            if (isObstacleBrush)
-                lastEditedObstacleGrid = hoveredGrid;
+        if (isObstacleBrush)
+            lastEditedObstacleGrid = hoveredGrid;
+        if (isGateBlockerBrush)
+            lastEditedObstacleGrid = hoveredGrid;
 
             currentEvent.Use();
         }
@@ -681,6 +699,20 @@ public class LevelEditorWindow : EditorWindow
             DrawFootprint(context, BuildFootprint(null, placement.GridPosition), new Color(1f, 0.65f, 0.2f, 0.10f), new Color(1f, 0.65f, 0.2f, 0.65f));
         }
 
+        for (int i = 0; i < levelData.GatePlacements.Count; i++)
+        {
+            GatePlacementData placement = levelData.GatePlacements[i];
+            IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
+            for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
+                DrawFootprint(context, BuildFootprint(null, blockerCells[cellIndex]), new Color(0.45f, 0.15f, 1f, 0.12f), new Color(0.45f, 0.15f, 1f, 0.75f));
+        }
+
+        for (int i = 0; i < levelData.EnemySpawnPointPlacements.Count; i++)
+        {
+            EnemySpawnPointPlacementData placement = levelData.EnemySpawnPointPlacements[i];
+            DrawFootprint(context, BuildFootprint(null, placement.GridPosition), new Color(1f, 0.55f, 0.05f, 0.12f), new Color(1f, 0.55f, 0.05f, 0.75f));
+        }
+
         if (levelData.HeroUnionPlacement.HasPlacement)
             DrawFootprint(context, BuildFootprint(GetHeroUnionPrefab(context, levelData.HeroUnionPlacement.PrefabKey), levelData.HeroUnionPlacement.GridPosition), new Color(1f, 0.85f, 0.1f, 0.12f), new Color(1f, 0.85f, 0.1f, 0.75f));
 
@@ -739,6 +771,30 @@ public class LevelEditorWindow : EditorWindow
                 DrawFootprint(context, BuildFootprint(null, anchor), new Color(1f, 1f, 1f, 0.08f), new Color(1f, 1f, 1f, 0.65f));
             }
 
+            return;
+        }
+
+        if (context.BrushType == LevelEditorBrushType.GateBlocker)
+        {
+            bool canPlaceGateBlocker = context.LevelData.IsInsideGrid(anchor) && !string.IsNullOrWhiteSpace(context.SelectedGateId);
+            DrawFootprint(
+                context,
+                BuildFootprint(null, anchor),
+                canPlaceGateBlocker ? new Color(0.45f, 0.15f, 1f, 0.20f) : new Color(1f, 0f, 0f, 0.20f),
+                canPlaceGateBlocker ? new Color(0.45f, 0.15f, 1f, 1f) : new Color(1f, 0f, 0f, 1f));
+            DrawSceneLabel(context, anchor, canPlaceGateBlocker ? context.SelectedGateId : "Gate Id is missing.");
+            return;
+        }
+
+        if (context.BrushType == LevelEditorBrushType.EnemySpawnPoint)
+        {
+            bool canPlaceEnemySpawnPoint = context.LevelData.IsInsideGrid(anchor) && !string.IsNullOrWhiteSpace(context.SelectedEnemySpawnZoneId);
+            DrawFootprint(
+                context,
+                BuildFootprint(null, anchor),
+                canPlaceEnemySpawnPoint ? new Color(1f, 0.55f, 0.05f, 0.20f) : new Color(1f, 0f, 0f, 0.20f),
+                canPlaceEnemySpawnPoint ? new Color(1f, 0.55f, 0.05f, 1f) : new Color(1f, 0f, 0f, 1f));
+            DrawSceneLabel(context, anchor, canPlaceEnemySpawnPoint ? context.SelectedEnemySpawnZoneId : "Spawn Zone Id is missing.");
             return;
         }
 
@@ -805,6 +861,46 @@ public class LevelEditorWindow : EditorWindow
             lastEditedObstacleGrid.HasValue &&
             lastEditedObstacleGrid.Value == anchor)
         {
+            return;
+        }
+
+        if (context.BrushType == LevelEditorBrushType.GateBlocker)
+        {
+            if (lastEditedObstacleGrid.HasValue && lastEditedObstacleGrid.Value == anchor)
+                return;
+
+            if (string.IsNullOrWhiteSpace(context.SelectedGateId))
+            {
+                sceneStatus = "Gate Id is missing.";
+                Repaint();
+                return;
+            }
+
+            Undo.RecordObject(context.LevelData, "Place Gate Blocker");
+            context.LevelData.AddGateBlockerCell(
+                context.SelectedGateId,
+                context.SelectedGateFirstZoneId,
+                context.SelectedGateSecondZoneId,
+                anchor,
+                context.SelectedGateOpenDurationTurns);
+            sceneStatus = $"Placed GateBlocker '{context.SelectedGateId}' at {anchor}.";
+            CommitLevelDataChange(context);
+            return;
+        }
+
+        if (context.BrushType == LevelEditorBrushType.EnemySpawnPoint)
+        {
+            if (string.IsNullOrWhiteSpace(context.SelectedEnemySpawnZoneId))
+            {
+                sceneStatus = "Enemy spawn Zone Id is missing.";
+                Repaint();
+                return;
+            }
+
+            Undo.RecordObject(context.LevelData, "Place Enemy Spawn Point");
+            context.LevelData.SetEnemySpawnPoint(anchor, context.SelectedEnemySpawnZoneId);
+            sceneStatus = $"Placed EnemySpawnPoint '{context.SelectedEnemySpawnZoneId}' at {anchor}.";
+            CommitLevelDataChange(context);
             return;
         }
 
@@ -922,6 +1018,11 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedTileKey = controller.SelectedTileKey;
         context.SelectedHeroUnionPrefabKey = controller.SelectedHeroUnionPrefabKey;
         context.SelectedDecorativeBuildingKey = controller.SelectedDecorativeBuildingKey;
+        context.SelectedGateId = controller.SelectedGateId;
+        context.SelectedGateFirstZoneId = controller.SelectedGateFirstZoneId;
+        context.SelectedGateSecondZoneId = controller.SelectedGateSecondZoneId;
+        context.SelectedGateOpenDurationTurns = controller.SelectedGateOpenDurationTurns;
+        context.SelectedEnemySpawnZoneId = controller.SelectedEnemySpawnZoneId;
         context.ApplyLevelAfterEdit = controller.ApplyLevelAfterEdit;
         context.GroundMask = controller.GroundMask;
 
@@ -1192,7 +1293,9 @@ public class LevelEditorWindow : EditorWindow
     private static bool IsPrefablessBrush(LevelEditorBrushType brushType)
     {
         return IsGroundTileBrush(brushType) ||
-            brushType == LevelEditorBrushType.TileSelection;
+            brushType == LevelEditorBrushType.TileSelection ||
+            brushType == LevelEditorBrushType.GateBlocker ||
+            brushType == LevelEditorBrushType.EnemySpawnPoint;
     }
 
     private static bool CanPaintGroundTile(LevelEditorContext context, out string reason)
@@ -1528,6 +1631,34 @@ public class LevelEditorWindow : EditorWindow
             }
         }
 
+        for (int i = 0; i < levelData.GatePlacements.Count; i++)
+        {
+            GatePlacementData placement = levelData.GatePlacements[i];
+            IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
+            for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
+            {
+                anchor = blockerCells[cellIndex];
+                footprint = BuildFootprint(null, anchor);
+                if (footprint.Contains(grid))
+                {
+                    label = $"GateBlocker {placement.GateId}";
+                    return true;
+                }
+            }
+        }
+
+        for (int i = 0; i < levelData.EnemySpawnPointPlacements.Count; i++)
+        {
+            EnemySpawnPointPlacementData placement = levelData.EnemySpawnPointPlacements[i];
+            anchor = placement.GridPosition;
+            footprint = BuildFootprint(null, anchor);
+            if (footprint.Contains(grid))
+            {
+                label = $"EnemySpawnPoint {placement.ZoneId}";
+                return true;
+            }
+        }
+
         for (int i = 0; i < levelData.ObstacleCells.Count; i++)
         {
             anchor = levelData.ObstacleCells[i];
@@ -1776,6 +1907,11 @@ public class LevelEditorWindow : EditorWindow
         public string SelectedTileKey;
         public string SelectedHeroUnionPrefabKey;
         public string SelectedDecorativeBuildingKey;
+        public string SelectedGateId;
+        public string SelectedGateFirstZoneId;
+        public string SelectedGateSecondZoneId;
+        public int SelectedGateOpenDurationTurns;
+        public string SelectedEnemySpawnZoneId;
         public bool ApplyLevelAfterEdit;
         public LayerMask GroundMask;
     }

@@ -334,6 +334,7 @@ public class CombatEncounterManager : MonoBehaviour
 
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
         progressRepository?.MarkEnemyDefeated(placementKey);
+        GateThreatController.NotifyEnemyDefeated(placementKey);
         RemoveDefeatedEnemyGroup(combatEnemy.EnemyId);
         DestroyMatchingSceneEnemy(placementKey, combatEnemy.EnemyId);
     }
@@ -462,7 +463,7 @@ public class CombatEncounterManager : MonoBehaviour
         if (!TryFindParty(combatParty.PartyId, out PartyGridMover party))
             return;
 
-        HeroUnionUnit heroUnion = FindFirstObjectByType<HeroUnionUnit>();
+        HeroUnionUnit heroUnion = ResolveReturnHeroUnion(party);
         if (heroUnion == null)
             return;
 
@@ -480,6 +481,60 @@ public class CombatEncounterManager : MonoBehaviour
 
         party.SnapToGridPosition(targetCell, notifyMoveCompleted: false);
         DefeatedPartyReturnController.ScheduleReturn(party);
+    }
+
+    private static HeroUnionUnit ResolveReturnHeroUnion(PartyGridMover party)
+    {
+        if (party == null)
+            return null;
+
+        Vector2Int partyGrid = party.GetCurrentGrid();
+        HeroUnionRegistry registry = FindFirstObjectByType<HeroUnionRegistry>();
+        if (registry != null)
+        {
+            if (TryResolveZoneId(partyGrid, out string zoneId) &&
+                registry.TryGetClaimedByZoneId(zoneId, out HeroUnionUnit zoneHeroUnion))
+            {
+                return zoneHeroUnion;
+            }
+
+            HeroUnionUnit closestClaimedHeroUnion = registry.GetClosestClaimedHeroUnion(partyGrid);
+            if (closestClaimedHeroUnion != null)
+                return closestClaimedHeroUnion;
+
+            if (registry.TryGetFirstClaimed(out HeroUnionUnit firstClaimedHeroUnion))
+                return firstClaimedHeroUnion;
+
+            HeroUnionUnit closestHeroUnion = registry.GetClosestHeroUnion(partyGrid);
+            if (closestHeroUnion != null)
+                return closestHeroUnion;
+        }
+
+        return FindFirstObjectByType<HeroUnionUnit>();
+    }
+
+    private static bool TryResolveZoneId(Vector2Int grid, out string zoneId)
+    {
+        zoneId = string.Empty;
+
+        LevelZoneLayoutLoader layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+        if (layoutLoader == null)
+            return false;
+
+        IReadOnlyList<LoadedLevelZoneData> zones = layoutLoader.LoadedZones;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            LoadedLevelZoneData zone = zones[i];
+            Vector2Int min = zone.Anchor;
+            Vector2Int max = zone.Anchor + zone.Size - Vector2Int.one;
+            if (grid.x < min.x || grid.x > max.x || grid.y < min.y || grid.y > max.y)
+                continue;
+
+            zoneId = MapProgressKey.NormalizeSegment(zone.ZoneId);
+            return !string.IsNullOrWhiteSpace(zoneId);
+        }
+
+        return false;
     }
 
     private static bool TryFindParty(string partyId, out PartyGridMover party)

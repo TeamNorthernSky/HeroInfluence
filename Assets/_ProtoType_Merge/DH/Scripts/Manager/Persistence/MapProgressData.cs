@@ -161,6 +161,76 @@ public class HeroUnionProgressState
 }
 
 [Serializable]
+public class GateProgressState
+{
+    [SerializeField] private string gateId;
+    [SerializeField] private bool open;
+    [SerializeField] private int openedDay;
+
+    public string GateId => MapProgressKey.NormalizeSegment(gateId);
+    public bool Open => open;
+    public int OpenedDay => Mathf.Max(1, openedDay);
+
+    public GateProgressState(string gateId, bool open, int openedDay)
+    {
+        this.gateId = MapProgressKey.NormalizeSegment(gateId);
+        this.open = open;
+        this.openedDay = Mathf.Max(1, openedDay);
+    }
+
+    public void Apply(bool nextOpen, int nextOpenedDay)
+    {
+        open = nextOpen;
+        openedDay = Mathf.Max(1, nextOpenedDay);
+    }
+}
+
+[Serializable]
+public class ZoneThreatProgressState
+{
+    [SerializeField] private string zoneId;
+    [SerializeField] private bool active;
+    [SerializeField] private int enteredDay;
+    [SerializeField] private string activeEnemyPlacementKey;
+
+    public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+    public bool Active => active;
+    public int EnteredDay => Mathf.Max(1, enteredDay);
+    public string ActiveEnemyPlacementKey => MapProgressKey.NormalizeSegment(activeEnemyPlacementKey);
+
+    public ZoneThreatProgressState(string zoneId, bool active, int enteredDay, string activeEnemyPlacementKey)
+    {
+        this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
+        this.active = active;
+        this.enteredDay = Mathf.Max(1, enteredDay);
+        this.activeEnemyPlacementKey = MapProgressKey.NormalizeSegment(activeEnemyPlacementKey);
+    }
+
+    public void Begin(int nextEnteredDay)
+    {
+        active = true;
+        enteredDay = Mathf.Max(1, nextEnteredDay);
+        activeEnemyPlacementKey = string.Empty;
+    }
+
+    public void End()
+    {
+        active = false;
+        activeEnemyPlacementKey = string.Empty;
+    }
+
+    public void SetActiveEnemy(string placementKey)
+    {
+        activeEnemyPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
+    }
+
+    public void ClearActiveEnemy()
+    {
+        activeEnemyPlacementKey = string.Empty;
+    }
+}
+
+[Serializable]
 public class EnemyWorldState
 {
     public const string DefaultPrefabKey = "default";

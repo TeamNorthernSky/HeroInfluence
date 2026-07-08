@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -16,6 +17,8 @@ public class LevelLoader : MonoBehaviour
     private const string HeroUnionRootName = "HeroUnionRoot";
     private const string VillainUnionRootName = "VillainUnionRoot";
     private const string DecorativeBuildingRootName = "DecorativeBuildingRoot";
+    private const string GateRootName = "GateRoot";
+    private const string EnemySpawnPointRootName = "EnemySpawnPointRoot";
 
     [Header("Data")]
     [SerializeField] private LevelData levelData;
@@ -37,6 +40,8 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private Transform heroUnionRoot;
     [SerializeField] private Transform villainUnionRoot;
     [SerializeField] private Transform decorativeBuildingRoot;
+    [SerializeField] private Transform gateRoot;
+    [SerializeField] private Transform enemySpawnPointRoot;
 
     [Header("Load Options")]
     [SerializeField] private bool loadOnStart;
@@ -94,10 +99,12 @@ public class LevelLoader : MonoBehaviour
 
         GenerateTileMeshes();
         SpawnObstacles();
+        SpawnGates();
         SpawnItems();
         SpawnOutposts();
         SpawnEvents();
         SpawnEnemyPlacements();
+        SpawnEnemySpawnPoints();
         SpawnUniqueBuildings();
         SpawnDecorativeBuildings();
 
@@ -151,6 +158,45 @@ public class LevelLoader : MonoBehaviour
         for (int i = 0; i < obstacleCells.Count; i++)
         {
             SpawnGameObject(obstaclePrefab, obstacleCells[i], parent);
+        }
+    }
+
+    private void SpawnGates()
+    {
+        GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
+        if (obstaclePrefab == null)
+            return;
+
+        var gatePlacements = levelData.GatePlacements;
+        if (gatePlacements.Count == 0)
+            return;
+
+        Transform parent = GetGateRoot(true);
+        for (int i = 0; i < gatePlacements.Count; i++)
+        {
+            GatePlacementData placement = gatePlacements[i];
+            GameObject gateRootObject = new GameObject($"Gate_{placement.GateId}");
+            gateRootObject.transform.SetParent(parent);
+            gateRootObject.transform.localPosition = Vector3.zero;
+            gateRootObject.transform.localRotation = Quaternion.identity;
+            gateRootObject.transform.localScale = Vector3.one;
+
+            var blockers = new System.Collections.Generic.List<GameObject>();
+            IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
+            for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
+            {
+                GameObject blocker = SpawnGameObject(obstaclePrefab, blockerCells[cellIndex], gateRootObject.transform);
+                if (blocker != null)
+                    blockers.Add(blocker);
+            }
+
+            GateRuntimeController gate = gateRootObject.AddComponent<GateRuntimeController>();
+            gate.Initialize(
+                placement.GateId,
+                placement.FirstZoneId,
+                placement.SecondZoneId,
+                blockers,
+                placement.OpenDurationTurns);
         }
     }
 
@@ -354,6 +400,24 @@ public class LevelLoader : MonoBehaviour
         }
     }
 
+    private void SpawnEnemySpawnPoints()
+    {
+        var spawnPointPlacements = levelData.EnemySpawnPointPlacements;
+        if (spawnPointPlacements.Count == 0)
+            return;
+
+        Transform parent = GetEnemySpawnPointRoot(true);
+        for (int i = 0; i < spawnPointPlacements.Count; i++)
+        {
+            EnemySpawnPointPlacementData placement = spawnPointPlacements[i];
+            GameObject spawnObject = new GameObject($"EnemySpawnPoint_{placement.GridPosition.x}_{placement.GridPosition.y}");
+            spawnObject.transform.SetParent(parent);
+            spawnObject.transform.position = GetMarkerWorldPosition(placement.GridPosition);
+            EnemySpawnPoint spawnPoint = spawnObject.AddComponent<EnemySpawnPoint>();
+            spawnPoint.Initialize(placement.ZoneId, placement.GridPosition);
+        }
+    }
+
     private static bool IsEnemyDefeated(string placementKey)
     {
         MapProgressRepository repository = MapProgressRepository.Instance;
@@ -435,6 +499,8 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(GetHeroUnionRoot(false));
         ClearChildren(GetVillainUnionRoot(false));
         ClearChildren(GetDecorativeBuildingRoot(false));
+        ClearChildren(GetGateRoot(false));
+        ClearChildren(GetEnemySpawnPointRoot(false));
         ClearLevelSpawnedEnemies();
         ClearDirectChildrenWithComponent<HeroUnionUnit>();
         ClearDirectChildrenWithComponent<VillainUnionBase>();
@@ -543,6 +609,12 @@ public class LevelLoader : MonoBehaviour
     private Transform GetDecorativeBuildingRoot(bool createIfMissing) =>
         GetSpawnRoot(ref decorativeBuildingRoot, DecorativeBuildingRootName, createIfMissing);
 
+    private Transform GetGateRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref gateRoot, GateRootName, createIfMissing);
+
+    private Transform GetEnemySpawnPointRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref enemySpawnPointRoot, EnemySpawnPointRootName, createIfMissing);
+
     private Transform GetSpawnRoot(ref Transform root, string rootName, bool createIfMissing)
     {
         if (root != null)
@@ -607,6 +679,13 @@ public class LevelLoader : MonoBehaviour
         anchorWorldPosition.y = gridManager.GetLandSurfaceY();
         Vector3 worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
         return Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
+    }
+
+    private Vector3 GetMarkerWorldPosition(Vector2Int grid)
+    {
+        Vector3 worldPosition = gridManager.GridToWorldCenter(grid);
+        worldPosition.y = gridManager.GetLandSurfaceY() + 0.05f;
+        return worldPosition;
     }
 
     private bool IsPrefabFootprintInside(GameObject prefab, Vector2Int grid)

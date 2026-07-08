@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
@@ -27,6 +28,11 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedTileKey;
     [SerializeField] private string selectedHeroUnionPrefabKey;
     [SerializeField] private string selectedDecorativeBuildingKey;
+    [SerializeField] private string selectedGateId = "gate_001";
+    [SerializeField] private string selectedGateFirstZoneId = "zone_001";
+    [SerializeField] private string selectedGateSecondZoneId = "zone_002";
+    [SerializeField, Min(1)] private int selectedGateOpenDurationTurns = 3;
+    [SerializeField] private string selectedEnemySpawnZoneId = "zone_002";
 
     [Header("Behaviour")]
     [SerializeField] private bool allowRuntimeEditing;
@@ -48,6 +54,8 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private Color heroUnionColor = new Color(0.95f, 0.85f, 0.25f, 0.75f);
     [SerializeField] private Color villainUnionColor = new Color(0.95f, 0.25f, 0.55f, 0.75f);
     [SerializeField] private Color decorativeBuildingColor = new Color(0.95f, 0.65f, 0.25f, 0.75f);
+    [SerializeField] private Color gateBlockerColor = new Color(0.45f, 0.15f, 1f, 0.75f);
+    [SerializeField] private Color enemySpawnPointColor = new Color(1f, 0.55f, 0.05f, 0.75f);
 
     private Vector2Int? hoveredGrid;
 
@@ -65,6 +73,11 @@ public class LevelEditorController : MonoBehaviour
     public string SelectedTileKey => selectedTileKey;
     public string SelectedHeroUnionPrefabKey => string.IsNullOrWhiteSpace(selectedHeroUnionPrefabKey) ? string.Empty : selectedHeroUnionPrefabKey.Trim();
     public string SelectedDecorativeBuildingKey => selectedDecorativeBuildingKey;
+    public string SelectedGateId => selectedGateId;
+    public string SelectedGateFirstZoneId => selectedGateFirstZoneId;
+    public string SelectedGateSecondZoneId => selectedGateSecondZoneId;
+    public int SelectedGateOpenDurationTurns => Mathf.Max(1, selectedGateOpenDurationTurns);
+    public string SelectedEnemySpawnZoneId => selectedEnemySpawnZoneId;
     public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
     public LayerMask GroundMask => groundMask;
 
@@ -170,6 +183,17 @@ public class LevelEditorController : MonoBehaviour
 
                 levelData.SetDecorativeBuilding(grid, selectedDecorativeBuildingKey);
                 break;
+            case LevelEditorBrushType.GateBlocker:
+                levelData.AddGateBlockerCell(
+                    selectedGateId,
+                    selectedGateFirstZoneId,
+                    selectedGateSecondZoneId,
+                    grid,
+                    SelectedGateOpenDurationTurns);
+                break;
+            case LevelEditorBrushType.EnemySpawnPoint:
+                levelData.SetEnemySpawnPoint(grid, selectedEnemySpawnZoneId);
+                break;
             case LevelEditorBrushType.HeroUnion:
                 levelData.SetHeroUnion(grid, SelectedHeroUnionPrefabKey);
                 break;
@@ -232,6 +256,16 @@ public class LevelEditorController : MonoBehaviour
 
         for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
             DrawCell(levelData.DecorativeBuildingPlacements[i].GridPosition, decorativeBuildingColor, y, size);
+
+        for (int i = 0; i < levelData.GatePlacements.Count; i++)
+        {
+            IReadOnlyList<Vector2Int> blockerCells = levelData.GatePlacements[i].BlockerCells;
+            for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
+                DrawCell(blockerCells[cellIndex], gateBlockerColor, y, size);
+        }
+
+        for (int i = 0; i < levelData.EnemySpawnPointPlacements.Count; i++)
+            DrawCell(levelData.EnemySpawnPointPlacements[i].GridPosition, enemySpawnPointColor, y, size);
 
         if (levelData.HeroUnionPlacement.HasPlacement)
             DrawCell(levelData.HeroUnionPlacement.GridPosition, heroUnionColor, y, size);

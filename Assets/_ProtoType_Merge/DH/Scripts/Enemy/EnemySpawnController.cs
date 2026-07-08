@@ -174,13 +174,33 @@ public class EnemySpawnController : MonoBehaviour
         return secondaryIndex >= 0 && TrySpawnAtGrid(candidate.SpawnCells[secondaryIndex]);
     }
 
+    public bool TrySpawnGateThreatEnemy(string zoneId, Vector2Int spawnGrid, out string placementKey)
+    {
+        placementKey = string.Empty;
+
+        if (enemyPrefab == null || gridManager == null)
+            return false;
+
+        string sourceKey = $"gate_threat_{MapProgressKey.NormalizeSegment(zoneId)}";
+        placementKey = CreateRuntimeEnemyPlacementKey(sourceKey);
+        if (TrySpawnAtGrid(spawnGrid, placementKey))
+            return true;
+
+        placementKey = string.Empty;
+        return false;
+    }
+
     private bool TrySpawnAtGrid(Vector2Int spawnGrid)
+    {
+        return TrySpawnAtGrid(spawnGrid, CreateRuntimeEnemyPlacementKey());
+    }
+
+    private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey)
     {
         if (!gridManager.CanOccupyCell(spawnGrid, null, true))
             return false;
 
         EnemyGridMover spawnedEnemy = Instantiate(enemyPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
-        string placementKey = CreateRuntimeEnemyPlacementKey();
         EnemyIdentity enemyIdentity = spawnedEnemy.GetComponent<EnemyIdentity>();
         if (enemyIdentity != null)
         {
@@ -355,8 +375,6 @@ public class EnemySpawnController : MonoBehaviour
         if (progressRepository == null)
             return;
 
-        string sourceKey = MapProgressKey.NormalizeSegment(ResolveRuntimeSpawnSourceKey());
-        string keyPrefix = $"runtime_enemy_{sourceKey}_";
         int highestSequence = 0;
 
         IReadOnlyList<EnemyWorldState> enemyStates = progressRepository.EnemyWorldStates;
@@ -366,10 +384,16 @@ public class EnemySpawnController : MonoBehaviour
             if (state == null || string.IsNullOrWhiteSpace(state.PlacementKey))
                 continue;
 
-            if (!state.PlacementKey.StartsWith(keyPrefix, System.StringComparison.Ordinal))
+            string placementKey = MapProgressKey.NormalizeSegment(state.PlacementKey);
+            const string keyPrefix = "runtime_enemy_";
+            if (!placementKey.StartsWith(keyPrefix, System.StringComparison.Ordinal))
                 continue;
 
-            string sequenceText = state.PlacementKey.Substring(keyPrefix.Length);
+            int lastUnderscoreIndex = placementKey.LastIndexOf('_');
+            if (lastUnderscoreIndex < keyPrefix.Length || lastUnderscoreIndex >= placementKey.Length - 1)
+                continue;
+
+            string sequenceText = placementKey.Substring(lastUnderscoreIndex + 1);
             if (int.TryParse(sequenceText, out int sequence) && sequence > highestSequence)
                 highestSequence = sequence;
         }
@@ -380,9 +404,14 @@ public class EnemySpawnController : MonoBehaviour
 
     private string CreateRuntimeEnemyPlacementKey()
     {
+        return CreateRuntimeEnemyPlacementKey(ResolveRuntimeSpawnSourceKey());
+    }
+
+    private string CreateRuntimeEnemyPlacementKey(string sourceKey)
+    {
         int sequence = Mathf.Max(1, nextRuntimeEnemySequence);
         nextRuntimeEnemySequence = sequence + 1;
-        return MapProgressKey.ForRuntimeEnemy(ResolveRuntimeSpawnSourceKey(), sequence);
+        return MapProgressKey.ForRuntimeEnemy(sourceKey, sequence);
     }
 
     private string ResolveRuntimeSpawnSourceKey()
