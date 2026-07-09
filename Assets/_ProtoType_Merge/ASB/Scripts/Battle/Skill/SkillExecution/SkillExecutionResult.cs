@@ -23,7 +23,7 @@ namespace ASB.Work.Battle.SkillExecution
         public SkillData? Skill { get; private set; }
 
         /// <summary>스킬 실행에 사용된 핸들러. 광역(AoE) 연출 분기 등에 사용합니다.</summary>
-        public ISkillEffectHandler? Handler { get; set; }
+        public ISkillEffectHandler Handler { get; set; }
 
         // 총 가해진 데미지(전투 계산 후 실제 적용된 값)를 전달합니다.
         // (예: 흡혈, 누적 반응 등 사후 처리)

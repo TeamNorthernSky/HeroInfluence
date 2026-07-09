@@ -44,6 +44,7 @@ public class InputHandler : MonoBehaviour
     private PendingActionType pendingAction = PendingActionType.None;
     private HashSet<BattleCharactor> validTargets = new HashSet<BattleCharactor>();
     private BattleCharactor hoverTarget = null;
+    private Outline hoverTargetOutline;
     private readonly HashSet<BattleCharactor> deathSubscribedUnits = new HashSet<BattleCharactor>();
     private bool isProcessingAction;
 
@@ -516,8 +517,24 @@ public class InputHandler : MonoBehaviour
 
     private void SetHoverTarget(BattleCharactor newTarget)
     {
+        if (hoverTargetOutline != null)
+        {
+            hoverTargetOutline.OutlineMode = Outline.Mode.OutlineHidden;
+            hoverTargetOutline = null;
+        }
+
         hoverTarget = newTarget;
         targetingVisualController?.SetHoveredTarget(hoverTarget);
+        if (hoverTarget == null)
+        {
+            return;
+        }
+
+        hoverTargetOutline = hoverTarget.GetComponentInChildren<Outline>(true);
+        if (hoverTargetOutline != null)
+        {
+            hoverTargetOutline.OutlineMode = Outline.Mode.OutlineVisible;
+        }
     }
 
     private void ResetTargetingState()

@@ -753,11 +753,6 @@ public class BattleManager : MonoBehaviour
 
         skill.UseAnimEvent = presentation.UseAnimEvent;
         skill.HitDelay     = presentation.HitDelay;
-
-        if (!string.IsNullOrWhiteSpace(presentation.AnimationTriggerOverride))
-            skill.AnimationTrigger = presentation.AnimationTriggerOverride;
-        if (!string.IsNullOrWhiteSpace(presentation.TargetAnimationTriggerOverride))
-            skill.TargetAnimationTrigger = presentation.TargetAnimationTriggerOverride;
     }
 
     private static SkillData ResolveSkillAnimationData(SkillData source)
@@ -909,15 +904,15 @@ public class BattleManager : MonoBehaviour
         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
         runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
 
-        SkillPresentationData presentation = _visualDirector?.GetPresentation(skill?.skillIndex ?? 0);
-        if (presentation?.ProjectilePrefab != null && target != null)
+        bool isArcher = actor.GetComponent<UnitVisualProfile>()?.HoldArrow != null;
+        bool shouldSpawnArrowImpact = playTargetHitAnimation && skill != null && skill.classSkillEffect == 0;
+        if (isArcher && target != null && shouldSpawnArrowImpact)
         {
-            runner.Enqueue(new SpawnProjectileAction(actor, target, skill.skillIndex, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector, presentation));
+            runner.Enqueue(new ArrowImpactAction(actor, target, _currentBattleSpeed, targetAnimTrigger));
+            targetAnimTrigger = null;
         }
-        else
-        {
-            runner.Enqueue(new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector));
-        }
+
+        runner.Enqueue(new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector));
 
         if (!string.IsNullOrEmpty(targetState))
             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));

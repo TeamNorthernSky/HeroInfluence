@@ -41,12 +41,15 @@ public class BattleFlowManager : MonoBehaviour
     [SerializeField] private InputHandler inputHandler;
 
     [Header("Runtime lookup")]
+    [Tooltip("Outline 등록 시 비활성 BattleCharactor도 FindObjects에 포함할지 여부")]
+    [SerializeField] private bool includeInactiveUnitRootsInOutlineLookup = true;
     [SerializeField] private BattleManager battleManager;
 
     private readonly List<BattleCharactor> participants = new List<BattleCharactor>();
     private Queue<BattleCharactor> turnQueue = new Queue<BattleCharactor>();
 
     private readonly Dictionary<string, BattleCharactor> battleById = new Dictionary<string, BattleCharactor>();
+    private readonly Dictionary<BattleCharactor, Outline> outlineByBattle = new Dictionary<BattleCharactor, Outline>();
 
     private Coroutine battleLoopRoutine;
     private int roundIndex = 0;
@@ -289,6 +292,7 @@ public class BattleFlowManager : MonoBehaviour
 
     private void CleanupTurn(BattleCharactor unit)
     {
+        SetOutline(unit, false);
         CurrentUnit = null;
         EndTurnSelectionCleanup();
     }
@@ -340,6 +344,7 @@ public class BattleFlowManager : MonoBehaviour
             // 이전 턴 입력 상태 먼저 정리 후 OnTurnStarted 발행 (UI의 BeginPendingAction이 덮어쓰이지 않도록)
             inputHandler?.ClearSelectionState();
             Log(FormatTurnStartLog(unit));
+            SetOutline(unit, true);
             OnTurnStarted?.Invoke(roundIndex, CurrentUnit);
 
             CurrentUnit.ProcessTurnStartStatusEffects();
@@ -637,6 +642,7 @@ public class BattleFlowManager : MonoBehaviour
             return;
         }
 
+        SetOutline(deadUnit, false);
         if (CurrentUnit == deadUnit)
         {
             if (deadUnit.IsPlayer)
@@ -649,11 +655,12 @@ public class BattleFlowManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 참가자 ID 맵을 재구성한다.
+    /// 참가자 ID 맵을 만든 뒤, 씬의 BattleCharactor 루트를 수집해 Outline을 캐싱한다.
     /// </summary>
     private void RebuildRuntimeLookup()
     {
         battleById.Clear();
+        outlineByBattle.Clear();
 
         int duplicateUnitIdKeys = 0;
         foreach (var battle in participants)
@@ -678,7 +685,59 @@ public class BattleFlowManager : MonoBehaviour
             Log($"[BattleFlow/UnitIdDebug] RebuildRuntimeLookup: {duplicateUnitIdKeys} duplicate key(s) (expected 0 after unique spawn names).");
         }
 
-        Log($"[BattleFlow] Lookup 재구성: id={battleById.Count}");
+        var inactiveMode = includeInactiveUnitRootsInOutlineLookup
+            ? FindObjectsInactive.Include
+            : FindObjectsInactive.Exclude;
+
+        foreach (var battle in FindObjectsByType<BattleCharactor>(inactiveMode, FindObjectsSortMode.None))
+        {
+            TryRegisterOutline(battle);
+        }
+
+        Log($"[BattleFlow] Lookup 재구성: id={battleById.Count}, outline={outlineByBattle.Count}");
+    }
+
+    /// <summary>
+    /// 유닛 루트(데이터 스크립트) 기준 하향 탐색으로만 Outline을 찾아 등록한다(타 유닛 Outline 오참조 방지).
+    /// </summary>
+    private void TryRegisterOutline(IUnitIdentifier id)
+    {
+        if (id == null || string.IsNullOrWhiteSpace(id.UnitID)) return;
+        if (!battleById.TryGetValue(id.UnitID, out BattleCharactor participant)) return;
+
+        var comp = id as Component;
+        if (comp == null) return;
+
+        if (outlineByBattle.ContainsKey(participant)) return;
+
+        var allOutlines = comp.GetComponentsInChildren<Outline>(true);
+        if (allOutlines == null || allOutlines.Length == 0)
+        {
+            Debug.LogWarning($"[BattleFlow] UnitID={id.UnitID} 유닛 루트 하위에서 Outline을 찾지 못했습니다.");
+            return;
+        }
+
+        if (allOutlines.Length > 1)
+        {
+            Debug.LogWarning(
+                $"[BattleFlow] UnitID={id.UnitID}에 Outline이 {allOutlines.Length}개 있습니다. 첫 번째만 사용합니다.");
+        }
+
+        Outline outline = comp.GetComponent<Outline>() ?? allOutlines[0];
+        if (outline == null)
+        {
+            return;
+        }
+
+        outlineByBattle.Add(participant, outline);
+        outline.OutlineMode = Outline.Mode.OutlineHidden;
+    }
+
+    private void SetOutline(BattleCharactor battle, bool visible)
+    {
+        if (battle == null) return;
+        if (!outlineByBattle.TryGetValue(battle, out var outline) || outline == null) return;
+        outline.OutlineMode = visible ? Outline.Mode.OutlineVisible : Outline.Mode.OutlineHidden;
     }
 
     /// <summary>자동전투·적 공격 시 스킬 공격 범위 발판을 표시합니다.</summary>

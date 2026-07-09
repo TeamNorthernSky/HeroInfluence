@@ -10,10 +10,10 @@ public class UnitGrowthExpData
     public string Rank;
     public int NeedExpieriencePoint;
     public int AddIP;
-    public int Character1StudySkill;
-    public int Character2StudySkill;
-    public int Character3StudySkill;
-    public int Character4StudySkill;
+    public int FighterStudySkill;
+    public int BlasterStudySkill;
+    public int StrikerStudySkill;
+    public int SuppoterStudySkill;
 }
 
 [CreateAssetMenu(fileName="UnitGrowthExpDataTable", menuName="DataTable/UnitGrowthExp")]
