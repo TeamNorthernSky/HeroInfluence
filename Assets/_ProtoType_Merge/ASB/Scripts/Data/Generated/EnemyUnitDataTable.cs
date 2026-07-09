@@ -26,6 +26,7 @@ public class EnemyUnitData
     public int EnemySkill1_MultiTargetType;
     public int EnemySkill1_MultiTargetCount;
     public float EnemySkill1Value;
+    public float EnemySkill1SubValue;
     public string EnemySkill2_Name;
     public string EnemySkill2_Description;
     public int EnemySkill2Effect;
@@ -36,8 +37,13 @@ public class EnemyUnitData
     public int EnemySkill2_MultiTargetType;
     public int EnemySkill2_MultiTargetCount;
     public float EnemySkill2Value;
+    public float EnemySkill2SubValue;
     public string UnitAI;
     public int ExperiencePoint;
+    public int LevelGrowthExperiencePoint;
+    public int LevelGrowthMaxHP;
+    public int LevelGrowthAtk;
+    public int LevelGrowthDef;
 }
 
 [CreateAssetMenu(fileName="EnemyUnitDataTable", menuName="DataTable/EnemyUnit")]

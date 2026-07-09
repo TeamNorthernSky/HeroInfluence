@@ -16,7 +16,7 @@ public class BattleVisualDirector : MonoBehaviour
     public void PlayAttackEffect(BattleCharactor actor, int skillIndex)
     {
         SkillPresentationData presentation = _catalog?.Get(skillIndex);
-        if (presentation?.AttackEffectPrefab == null)
+        if (presentation == null || !presentation.EnableAttackEffect || presentation.AttackEffectPrefab == null)
         {
             return;
         }
@@ -28,13 +28,16 @@ public class BattleVisualDirector : MonoBehaviour
             return;
         }
 
-        EffectManager.Instance?.SpawnPrefab(presentation.AttackEffectPrefab, socket.position, socket.rotation);
+        Vector3 position = socket.position + socket.TransformDirection(presentation.AttackEffectPositionOffset);
+        Quaternion rotation = socket.rotation * Quaternion.Euler(presentation.AttackEffectRotationOffset);
+
+        EffectManager.Instance?.SpawnPrefab(presentation.AttackEffectPrefab, position, rotation);
     }
 
     public void PlayHitEffect(BattleCharactor target, int skillIndex)
     {
         SkillPresentationData presentation = _catalog?.Get(skillIndex);
-        if (presentation?.HitEffectPrefab == null)
+        if (presentation == null || !presentation.EnableHitEffect || presentation.HitEffectPrefab == null)
         {
             return;
         }
@@ -46,7 +49,10 @@ public class BattleVisualDirector : MonoBehaviour
             return;
         }
 
-        EffectManager.Instance?.SpawnPrefab(presentation.HitEffectPrefab, socket.position, socket.rotation);
+        Vector3 position = socket.position + socket.TransformDirection(presentation.HitEffectPositionOffset);
+        Quaternion rotation = socket.rotation * Quaternion.Euler(presentation.HitEffectRotationOffset);
+
+        EffectManager.Instance?.SpawnPrefab(presentation.HitEffectPrefab, position, rotation);
     }
 
     public void PlayAttackSfx(BattleCharactor actor, int skillIndex)

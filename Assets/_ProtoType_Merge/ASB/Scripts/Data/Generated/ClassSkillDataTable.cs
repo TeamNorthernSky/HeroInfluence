@@ -29,6 +29,8 @@ public class ClassSkillData
     public float ClassSkillSubValueLv4;
     public float ClassSkillValueLv5;
     public float ClassSkillSubValueLv5;
+    public int ReplaceSkillIndex;
+    public int SkillRiskIndex;
 }
 
 [CreateAssetMenu(fileName="ClassSkillDataTable", menuName="DataTable/ClassSkill")]

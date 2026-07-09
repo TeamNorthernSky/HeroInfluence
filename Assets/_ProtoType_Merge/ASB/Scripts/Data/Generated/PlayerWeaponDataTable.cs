@@ -7,7 +7,6 @@ using UnityEngine;
 public class PlayerWeaponData
 {
     public int WeaponIndex;
-    public string Class;
     public string WeaponName;
     public string WaeponDescription;
     public int BonusMaxHPLv1;

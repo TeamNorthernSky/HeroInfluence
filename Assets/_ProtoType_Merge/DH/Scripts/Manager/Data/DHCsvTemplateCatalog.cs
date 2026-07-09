@@ -47,10 +47,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private static readonly Dictionary<int, System.Func<UnitGrowthExpData, int>> ClassUnlockAccessors
         = new Dictionary<int, System.Func<UnitGrowthExpData, int>>
     {
-        { 10001, d => d.FighterStudySkill   },
-        { 10002, d => d.BlasterStudySkill   },
-        { 10003, d => d.StrikerStudySkill   },
-        { 10004, d => d.SuppoterStudySkill  },
+        { 10001, d => d.Character1StudySkill },
+        { 10002, d => d.Character2StudySkill },
+        { 10003, d => d.Character3StudySkill },
+        { 10004, d => d.Character4StudySkill },
     };
 
     private bool isLoaded;
@@ -633,7 +633,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return new WeaponData
         {
             WeaponIndex          = src.WeaponIndex,
-            weaponClass          = src.Class,
+            weaponClass          = ResolveWeaponClass(src.WeaponIndex),
             WeaponName           = src.WeaponName,
             WeaponDescription    = src.WaeponDescription,
             // Lv1 스탯을 기본값으로 사용
@@ -658,6 +658,20 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             WeaponSkillValue     = src.WeaponSkillValueLv1,
             WeaponSkillSubValue  = src.WeaponSkillSubValueLv1
         };
+    }
+
+    private static string ResolveWeaponClass(int weaponIndex)
+    {
+        int classCode = (weaponIndex / 100) % 100;
+        switch (classCode)
+        {
+            case 1: return "가디언";
+            case 2: return "블래스터";
+            case 3: return "스트라이커";
+            case 4: return "서포터";
+            case 5: return "파이터";
+            default: return string.Empty;
+        }
     }
 
     private static SkillData ConvertClassSkill(ClassSkillData src)
