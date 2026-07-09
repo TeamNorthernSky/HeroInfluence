@@ -25,8 +25,21 @@ MonoBehaviour:
     CounterRate: 0.15
     ReduceRate: 0.15
     Speed: 1
-    ClassSkillIndexList: 0000000000000000000000000000000000000000000000000000000000000000
-    WeaponIndexList: 0000000000000000000000000000000000000000
+    ClassSkillIndexList:
+    - HS1010
+    - HS1020
+    - HS1030
+    - HS1040
+    - HS1011
+    - HS1021
+    - HS1031
+    - HS1041
+    WeaponIndexList:
+    - HC001
+    - HC002
+    - HC003
+    - HC004
+    - HC005
     LevelGrowthMaxHP: 4
     LevelGrowthMaxAtk: 4
     LevelGrowthMaxDef: 2
@@ -42,8 +55,21 @@ MonoBehaviour:
     CounterRate: 0.1
     ReduceRate: 0.2
     Speed: 3
-    ClassSkillIndexList: 0000000000000000000000000000000000000000000000000000000000000000
-    WeaponIndexList: 0000000000000000000000000000000000000000
+    ClassSkillIndexList:
+    - HS2020
+    - HS2020
+    - HS2030
+    - HS2040
+    - HS2011
+    - HS2021
+    - HS2031
+    - HS2041
+    WeaponIndexList:
+    - HC001
+    - HC002
+    - HC003
+    - HC004
+    - HC005
     LevelGrowthMaxHP: 4
     LevelGrowthMaxAtk: 4
     LevelGrowthMaxDef: 2
@@ -59,8 +85,21 @@ MonoBehaviour:
     CounterRate: 0.05
     ReduceRate: 0.1
     Speed: 2
-    ClassSkillIndexList: 0000000000000000000000000000000000000000000000000000000000000000
-    WeaponIndexList: 0000000000000000000000000000000000000000
+    ClassSkillIndexList:
+    - HS3030
+    - HS3020
+    - HS3030
+    - HS3040
+    - HS3011
+    - HS3021
+    - HS3031
+    - HS3041
+    WeaponIndexList:
+    - HC001
+    - HC002
+    - HC003
+    - HC004
+    - HC005
     LevelGrowthMaxHP: 2
     LevelGrowthMaxAtk: 6
     LevelGrowthMaxDef: 2
@@ -75,8 +114,21 @@ MonoBehaviour:
     CounterRate: 0.1
     ReduceRate: 0.15
     Speed: 2
-    ClassSkillIndexList: 0000000000000000000000000000000000000000000000000000000000000000
-    WeaponIndexList: 0000000000000000000000000000000000000000
+    ClassSkillIndexList:
+    - HS4040
+    - HS4020
+    - HS4030
+    - HS4040
+    - HS4011
+    - HS4021
+    - HS4031
+    - HS4041
+    WeaponIndexList:
+    - HC001
+    - HC002
+    - HC003
+    - HC004
+    - HC005
     LevelGrowthMaxHP: 5
     LevelGrowthMaxAtk: 4
     LevelGrowthMaxDef: 1

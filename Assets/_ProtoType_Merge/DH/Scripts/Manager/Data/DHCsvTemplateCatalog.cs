@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -44,8 +45,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<int, Dictionary<int, int>> skillUnlockByClassIndex
         = new Dictionary<int, Dictionary<int, int>>();
 
-    private static readonly Dictionary<int, System.Func<UnitGrowthExpData, int>> ClassUnlockAccessors
-        = new Dictionary<int, System.Func<UnitGrowthExpData, int>>
+    private static readonly Dictionary<int, System.Func<UnitGrowthExpData, string>> ClassUnlockAccessors
+        = new Dictionary<int, System.Func<UnitGrowthExpData, string>>
     {
         { 10001, d => d.Character1StudySkill },
         { 10002, d => d.Character2StudySkill },
@@ -246,7 +247,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
         for (int i = 0; i < unitData.ClassSkillIndexList.Count; i++)
         {
-            int skillIndex = unitData.ClassSkillIndexList[i];
+            int skillIndex = ExtractNumericId(unitData.ClassSkillIndexList[i]);
             if (skillIndex <= 0)
             {
                 continue;
@@ -356,9 +357,9 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             for (int i = 0; i < playerUnitDataTable.DataList.Count; i++)
             {
                 PlayerUnitData src = playerUnitDataTable.DataList[i];
-                if (src != null && src.ClassIndex > 0 && !playerUnitMasterMap.ContainsKey(src.ClassIndex))
+                if (src != null && int.TryParse(src.ClassIndex, out int classIndex) && classIndex > 0 && !playerUnitMasterMap.ContainsKey(classIndex))
                 {
-                    playerUnitMasterMap.Add(src.ClassIndex, src);
+                    playerUnitMasterMap.Add(classIndex, src);
                 }
 
                 UnitData unit = ConvertPlayerUnit(src);
@@ -486,7 +487,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 foreach (var kvp in ClassUnlockAccessors)
                 {
                     int classIndex = kvp.Key;
-                    int skillIndex = kvp.Value(src);
+                    int skillIndex = ExtractNumericId(kvp.Value(src));
                     if (skillIndex <= 0) continue;
 
                     if (!skillUnlockByClassIndex.TryGetValue(classIndex, out var map))
@@ -571,7 +572,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         string skillName = slot == 1 ? src.EnemySkill1_Name : src.EnemySkill2_Name;
         if (string.IsNullOrWhiteSpace(skillName)) return;
 
-        int skillIndex = (src.EnemyIndex * 10) + slot;
+        int enemyIndex = ExtractNumericId(src.EnemyIndex);
+        if (enemyIndex <= 0) return;
+
+        int skillIndex = (enemyIndex * 10) + slot;
         if (skillTemplates.ContainsKey(skillIndex))
         {
             Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 적 스킬 인덱스 {skillIndex} 건너뜀.", this);
@@ -630,10 +634,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private static WeaponData ConvertWeapon(PlayerWeaponData src)
     {
         if (src == null) return null;
+        int weaponIndex = ExtractNumericId(src.WeaponIndex);
         return new WeaponData
         {
-            WeaponIndex          = src.WeaponIndex,
-            weaponClass          = ResolveWeaponClass(src.WeaponIndex),
+            WeaponIndex          = weaponIndex,
+            weaponClass          = ResolveWeaponClass(weaponIndex),
             WeaponName           = src.WeaponName,
             WeaponDescription    = src.WaeponDescription,
             // Lv1 스탯을 기본값으로 사용
@@ -660,6 +665,14 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
+    /// <summary>시트 ID가 "HS1010", "FV20001" 같은 접두어+숫자 코드로 바뀌어도 내부 로직은 숫자만 사용하도록 추출합니다.</summary>
+    private static int ExtractNumericId(string code)
+    {
+        if (string.IsNullOrEmpty(code)) return 0;
+        Match match = Regex.Match(code, @"\d+");
+        return match.Success ? int.Parse(match.Value) : 0;
+    }
+
     private static string ResolveWeaponClass(int weaponIndex)
     {
         int classCode = (weaponIndex / 100) % 100;
@@ -677,9 +690,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private static SkillData ConvertClassSkill(ClassSkillData src)
     {
         if (src == null) return null;
+        int classSkillIndex = ExtractNumericId(src.ClassSkillIndex);
         return new SkillData
         {
-            skillIndex          = src.ClassSkillIndex,
+            skillIndex          = classSkillIndex,
             skillClass          = src.Class,
             acquireLevel        = src.ClassSkill_AcquireRank,
             skillName           = src.ClassSkillName,

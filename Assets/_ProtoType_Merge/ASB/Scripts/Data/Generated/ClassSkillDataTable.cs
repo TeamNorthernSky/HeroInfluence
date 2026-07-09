@@ -6,7 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class ClassSkillData
 {
-    public int ClassSkillIndex;
+    public string ClassSkillIndex;
     public string Class;
     public int ClassSkill_AcquireRank;
     public string ClassSkillName;

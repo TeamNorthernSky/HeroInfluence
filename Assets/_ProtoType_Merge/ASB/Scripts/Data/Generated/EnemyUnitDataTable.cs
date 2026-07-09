@@ -6,7 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class EnemyUnitData
 {
-    public int EnemyIndex;
+    public string EnemyIndex;
     public string EnemyName;
     public string EnemyConcept;
     public int UnitMaxHP;

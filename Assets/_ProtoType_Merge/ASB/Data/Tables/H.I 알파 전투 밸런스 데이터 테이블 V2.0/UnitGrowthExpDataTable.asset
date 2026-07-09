@@ -17,63 +17,63 @@ MonoBehaviour:
     Rank: F
     NeedExpieriencePoint: 0
     AddIP: 0
-    FighterStudySkill: 0
-    BlasterStudySkill: 0
-    StrikerStudySkill: 0
-    SuppoterStudySkill: 0
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
   - Level: 2
     Rank: D
     NeedExpieriencePoint: 40
     AddIP: 10
-    FighterStudySkill: 0
-    BlasterStudySkill: 0
-    StrikerStudySkill: 0
-    SuppoterStudySkill: 0
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
   - Level: 3
     Rank: C
     NeedExpieriencePoint: 80
     AddIP: 10
-    FighterStudySkill: 0
-    BlasterStudySkill: 0
-    StrikerStudySkill: 0
-    SuppoterStudySkill: 0
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
   - Level: 4
     Rank: B
     NeedExpieriencePoint: 150
     AddIP: 10
-    FighterStudySkill: 0
-    BlasterStudySkill: 0
-    StrikerStudySkill: 0
-    SuppoterStudySkill: 0
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
   - Level: 5
     Rank: A
     NeedExpieriencePoint: 240
     AddIP: 10
-    FighterStudySkill: 0
-    BlasterStudySkill: 0
-    StrikerStudySkill: 0
-    SuppoterStudySkill: 0
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
   - Level: 6
     Rank: S
     NeedExpieriencePoint: 330
     AddIP: 10
-    FighterStudySkill: 0
-    BlasterStudySkill: 0
-    StrikerStudySkill: 0
-    SuppoterStudySkill: 0
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
   - Level: 7
     Rank: SS
     NeedExpieriencePoint: 450
     AddIP: 10
-    FighterStudySkill: 0
-    BlasterStudySkill: 0
-    StrikerStudySkill: 0
-    SuppoterStudySkill: 0
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
   - Level: 8
     Rank: SSS
     NeedExpieriencePoint: 570
     AddIP: 20
-    FighterStudySkill: 0
-    BlasterStudySkill: 0
-    StrikerStudySkill: 0
-    SuppoterStudySkill: 0
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0

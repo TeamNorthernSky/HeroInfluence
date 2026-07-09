@@ -6,7 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class PlayerUnitData
 {
-    public int ClassIndex;
+    public string ClassIndex;
     public string UnitName;
     public string ClassName;
     public string ClassConcept;
@@ -17,8 +17,8 @@ public class PlayerUnitData
     public float CounterRate;
     public float ReduceRate;
     public int Speed;
-    public List<int> ClassSkillIndexList;
-    public List<int> WeaponIndexList;
+    public List<string> ClassSkillIndexList;
+    public List<string> WeaponIndexList;
     public int LevelGrowthMaxHP;
     public int LevelGrowthMaxAtk;
     public int LevelGrowthMaxDef;
