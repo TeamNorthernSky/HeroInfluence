@@ -170,6 +170,9 @@ public class GateThreatController : MonoBehaviour
             }
 
             repository.ClearZoneThreatEnemy(state.ZoneId);
+            if (HasLiveThreatEnemyInZone(state.ZoneId, normalizedPlacementKey))
+                continue;
+
             repository.BeginZoneThreat(state.ZoneId, ResolveCurrentDay());
             OpenGatesForZone(state.ZoneId);
         }
@@ -252,6 +255,39 @@ public class GateThreatController : MonoBehaviour
 
         MapProgressRepository repository = MapProgressRepository.Instance;
         return repository == null || !repository.IsEnemyDefeated(state.ActiveEnemyPlacementKey);
+    }
+
+    private static bool HasLiveThreatEnemyInZone(string zoneId, string ignoredPlacementKey)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return false;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null)
+            return false;
+
+        string ignoredKey = MapProgressKey.NormalizeSegment(ignoredPlacementKey);
+        string threatPrefix = $"runtime_enemy_gate_threat_{normalizedZoneId}_";
+        IReadOnlyList<EnemyWorldState> enemyStates = repository.EnemyWorldStates;
+        for (int i = 0; i < enemyStates.Count; i++)
+        {
+            EnemyWorldState enemyState = enemyStates[i];
+            if (enemyState == null || enemyState.Defeated)
+                continue;
+
+            string placementKey = MapProgressKey.NormalizeSegment(enemyState.PlacementKey);
+            if (string.IsNullOrWhiteSpace(placementKey) ||
+                string.Equals(placementKey, ignoredKey, System.StringComparison.Ordinal) ||
+                !placementKey.StartsWith(threatPrefix, System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private bool TrySpawnThreatEnemy(string zoneId, out string placementKey)

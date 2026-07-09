@@ -1,0 +1,195 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GateTeleportController : MonoBehaviour
+{
+    private readonly List<GateRuntimeController> gates = new List<GateRuntimeController>();
+    private PartyGridMover observedParty;
+    private bool teleporting;
+    private int suppressUntilFrame;
+
+    public static GateTeleportController Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+            return;
+
+        Instance = this;
+    }
+
+    private void OnEnable()
+    {
+        if (Instance == null)
+            Instance = this;
+
+        ResolvePartySubscription();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeParty();
+
+        if (Instance == this)
+            Instance = null;
+    }
+
+    private void Update()
+    {
+        ResolvePartySubscription();
+    }
+
+    public static GateTeleportController EnsureSceneInstance()
+    {
+        if (Instance != null)
+            return Instance;
+
+        GateTeleportController existing = FindFirstObjectByType<GateTeleportController>();
+        if (existing != null)
+        {
+            Instance = existing;
+            return existing;
+        }
+
+        if (!Application.isPlaying)
+            return null;
+
+        GameObject created = new GameObject(nameof(GateTeleportController));
+        Instance = created.AddComponent<GateTeleportController>();
+        return Instance;
+    }
+
+    public static bool IsOpenGateTeleportCell(Vector2Int grid)
+    {
+        GateTeleportController controller = Instance;
+        if (controller == null)
+            return false;
+
+        return controller.TryFindOpenGateAtCell(grid, out _, out _);
+    }
+
+    public void RegisterGate(GateRuntimeController gate)
+    {
+        if (gate == null || gates.Contains(gate))
+            return;
+
+        gates.Add(gate);
+    }
+
+    public void UnregisterGate(GateRuntimeController gate)
+    {
+        if (gate == null)
+            return;
+
+        gates.Remove(gate);
+    }
+
+    private void ResolvePartySubscription()
+    {
+        PartyRegistry partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == observedParty)
+            return;
+
+        UnsubscribeParty();
+        observedParty = party;
+        if (observedParty != null)
+            observedParty.MoveCompleted += HandlePartyMoveCompleted;
+    }
+
+    private void UnsubscribeParty()
+    {
+        if (observedParty != null)
+            observedParty.MoveCompleted -= HandlePartyMoveCompleted;
+
+        observedParty = null;
+    }
+
+    private void HandlePartyMoveCompleted()
+    {
+        if (teleporting || Time.frameCount <= suppressUntilFrame || observedParty == null)
+            return;
+
+        Vector2Int currentGrid = observedParty.GetCurrentGrid();
+        if (!TryFindOpenGateAtCell(currentGrid, out GateRuntimeController sourceGate, out int sourceCellIndex))
+            return;
+
+        if (!TryFindDestinationGate(sourceGate, out GateRuntimeController destinationGate))
+            return;
+
+        if (!destinationGate.TryGetTeleportCellByIndex(sourceCellIndex, out Vector2Int destinationGrid))
+            return;
+
+        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        if (gridManager != null && !gridManager.CanOccupyCell(destinationGrid, observedParty.transform, true))
+        {
+            Debug.LogWarning(
+                $"GateTeleportController could not teleport party to occupied gate cell '{destinationGrid}' for gate '{sourceGate.GateId}'.",
+                this);
+            return;
+        }
+
+        teleporting = true;
+        suppressUntilFrame = Time.frameCount + 1;
+        observedParty.SnapToGridPosition(destinationGrid, notifyMoveCompleted: false);
+        teleporting = false;
+    }
+
+    private bool TryFindOpenGateAtCell(Vector2Int grid, out GateRuntimeController gate, out int cellIndex)
+    {
+        gate = null;
+        cellIndex = -1;
+
+        for (int i = 0; i < gates.Count; i++)
+        {
+            GateRuntimeController candidate = gates[i];
+            if (candidate == null || !candidate.IsOpen)
+                continue;
+
+            if (!candidate.TryGetTeleportCellIndex(grid, out int candidateIndex))
+                continue;
+
+            gate = candidate;
+            cellIndex = candidateIndex;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool TryFindDestinationGate(GateRuntimeController sourceGate, out GateRuntimeController destinationGate)
+    {
+        destinationGate = null;
+        if (sourceGate == null || string.IsNullOrWhiteSpace(sourceGate.GateId))
+            return false;
+
+        int matchCount = 0;
+        for (int i = 0; i < gates.Count; i++)
+        {
+            GateRuntimeController candidate = gates[i];
+            if (candidate == null || candidate == sourceGate || !candidate.IsOpen)
+                continue;
+
+            if (!string.Equals(candidate.GateId, sourceGate.GateId, System.StringComparison.Ordinal))
+                continue;
+
+            destinationGate = candidate;
+            matchCount++;
+        }
+
+        if (matchCount == 1)
+            return true;
+
+        if (matchCount == 0)
+        {
+            Debug.LogWarning($"GateTeleportController could not find a destination gate for '{sourceGate.GateId}'.", this);
+            return false;
+        }
+
+        Debug.LogWarning(
+            $"GateTeleportController found multiple destination gates for '{sourceGate.GateId}'. GateId teleport requires exactly two gates.",
+            this);
+        destinationGate = null;
+        return false;
+    }
+}

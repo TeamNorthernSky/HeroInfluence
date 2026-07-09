@@ -102,9 +102,6 @@ public class EnemyTurnController : MonoBehaviour
         if (enemy == null || enemy.IsStatic || movePoints < 0)
             yield break;
 
-        if (HandleAdjacentOutpostInteraction(enemy))
-            yield break;
-
         ValidateCurrentTarget(enemy);
 
         if (!enemy.HasTarget())
@@ -187,9 +184,6 @@ public class EnemyTurnController : MonoBehaviour
             enemy.EnemyId,
             remainingMovePoints);
 
-        if (HandleAdjacentOutpostInteraction(enemy))
-            yield break;
-
         adjacentParty = FindAdjacentParty(enemy.GetCurrentGrid());
         if (adjacentParty != null)
         {
@@ -247,22 +241,6 @@ public class EnemyTurnController : MonoBehaviour
     {
         if (gridManager == null)
             return;
-
-        if (outpostRegistry != null)
-        {
-            IReadOnlyList<Outpost> outposts = outpostRegistry.Outposts;
-            for (int i = 0; i < outposts.Count; i++)
-            {
-                Outpost outpost = outposts[i];
-                if (outpost == null || outpost.IsEnemyClaimed)
-                    continue;
-
-                targetCandidates.Add(new TargetCandidate(
-                    EnemyTargetType.Outpost,
-                    outpost,
-                    outpost.GetAnchorGrid(gridManager)));
-            }
-        }
 
         if (heroUnionRegistry != null)
         {

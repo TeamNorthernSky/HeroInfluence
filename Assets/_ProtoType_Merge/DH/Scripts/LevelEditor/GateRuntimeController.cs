@@ -10,7 +10,8 @@ public class GateRuntimeController : MonoBehaviour
     [SerializeField] private List<GameObject> blockerObjects = new List<GameObject>();
     [SerializeField] private bool isOpen;
 
-    private bool registered;
+    private bool registeredThreat;
+    private bool registeredTeleport;
 
     public string GateId => NormalizeId(gateId);
     public string FirstZoneId => NormalizeId(firstZoneId);
@@ -25,11 +26,14 @@ public class GateRuntimeController : MonoBehaviour
 
     private void OnDisable()
     {
-        if (!registered || GateThreatController.Instance == null)
-            return;
+        if (registeredThreat && GateThreatController.Instance != null)
+            GateThreatController.Instance.UnregisterGate(this);
 
-        GateThreatController.Instance.UnregisterGate(this);
-        registered = false;
+        if (registeredTeleport && GateTeleportController.Instance != null)
+            GateTeleportController.Instance.UnregisterGate(this);
+
+        registeredThreat = false;
+        registeredTeleport = false;
     }
 
     public void Initialize(
@@ -64,6 +68,62 @@ public class GateRuntimeController : MonoBehaviour
         return !string.IsNullOrWhiteSpace(normalizedZoneId) &&
             (string.Equals(FirstZoneId, normalizedZoneId, System.StringComparison.Ordinal) ||
              string.Equals(SecondZoneId, normalizedZoneId, System.StringComparison.Ordinal));
+    }
+
+    public void CollectTeleportCells(List<Vector2Int> results)
+    {
+        if (results == null)
+            return;
+
+        GridManager gridManager = ResolveGridManager();
+        if (gridManager == null)
+            return;
+
+        for (int i = 0; i < blockerObjects.Count; i++)
+        {
+            GameObject blocker = blockerObjects[i];
+            if (blocker == null)
+                continue;
+
+            Vector2Int cell = gridManager.WorldToGrid(blocker.transform.position);
+            if (!results.Contains(cell))
+                results.Add(cell);
+        }
+
+        results.Sort(CompareGridCells);
+    }
+
+    public bool TryGetTeleportCellIndex(Vector2Int grid, out int index)
+    {
+        List<Vector2Int> cells = new List<Vector2Int>();
+        CollectTeleportCells(cells);
+
+        for (int i = 0; i < cells.Count; i++)
+        {
+            if (cells[i] != grid)
+                continue;
+
+            index = i;
+            return true;
+        }
+
+        index = -1;
+        return false;
+    }
+
+    public bool TryGetTeleportCellByIndex(int index, out Vector2Int cell)
+    {
+        List<Vector2Int> cells = new List<Vector2Int>();
+        CollectTeleportCells(cells);
+        if (cells.Count == 0)
+        {
+            cell = default;
+            return false;
+        }
+
+        int clampedIndex = Mathf.Clamp(index, 0, cells.Count - 1);
+        cell = cells[clampedIndex];
+        return true;
     }
 
     public void OpenGate(int day)
@@ -107,15 +167,39 @@ public class GateRuntimeController : MonoBehaviour
 
     private void TryRegister()
     {
-        if (registered || string.IsNullOrWhiteSpace(GateId))
+        if (string.IsNullOrWhiteSpace(GateId))
             return;
 
-        GateThreatController controller = GateThreatController.EnsureSceneInstance();
-        if (controller == null)
-            return;
+        if (!registeredThreat)
+        {
+            GateThreatController controller = GateThreatController.EnsureSceneInstance();
+            if (controller != null)
+            {
+                controller.RegisterGate(this);
+                registeredThreat = true;
+            }
+        }
 
-        controller.RegisterGate(this);
-        registered = true;
+        if (!registeredTeleport)
+        {
+            GateTeleportController controller = GateTeleportController.EnsureSceneInstance();
+            if (controller != null)
+            {
+                controller.RegisterGate(this);
+                registeredTeleport = true;
+            }
+        }
+    }
+
+    private static int CompareGridCells(Vector2Int first, Vector2Int second)
+    {
+        int xCompare = first.x.CompareTo(second.x);
+        return xCompare != 0 ? xCompare : first.y.CompareTo(second.y);
+    }
+
+    private static GridManager ResolveGridManager()
+    {
+        return Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
     }
 
     private static int ResolveCurrentDay()
