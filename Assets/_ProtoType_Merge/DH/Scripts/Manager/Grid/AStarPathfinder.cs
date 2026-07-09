@@ -79,6 +79,9 @@ public class AStarPathfinder : MonoBehaviour
         if (gridManager == null)
             return true;
 
+        if (grid != goal && GateTeleportController.IsOpenGateTeleportCell(grid))
+            return false;
+
         if (enemyEncounterPathMode != EnemyEncounterPathMode.Ignore)
         {
             EnemyEncounterZoneState zoneState = gridManager.GetEnemyEncounterZoneState(grid, out _);

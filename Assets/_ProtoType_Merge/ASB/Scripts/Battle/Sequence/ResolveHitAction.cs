@@ -94,7 +94,6 @@ namespace ASB.Work.Battle.Sequence
             }
 
             _visual?.PlayHitEffect(_target, result.SkillIndex);
-            _visual?.PlayHitSfx(_target, result.SkillIndex);
             _visual?.ShowDamagePopup(result);
         }
 

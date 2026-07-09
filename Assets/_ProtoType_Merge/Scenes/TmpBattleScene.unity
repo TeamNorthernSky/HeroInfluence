@@ -2674,7 +2674,6 @@ MonoBehaviour:
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
   battleUIManager: {fileID: 1283565776}
-  autoReturnOnBattleEnd: 1
   returnSceneName: DHScene_3
   returnDelay: 0.5
   fadeOutDuration: 1
@@ -2709,6 +2708,7 @@ MonoBehaviour:
   autoStartOnInitialize: 1
   verboseLog: 1
   inputHandler: {fileID: 1540026209}
+  includeInactiveUnitRootsInOutlineLookup: 1
   battleManager: {fileID: 621159269}
 --- !u!114 &621159269
 MonoBehaviour:

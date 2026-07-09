@@ -52,6 +52,42 @@ public static class ExplorationDefeatResultHandler
             if (unitIndex <= 0 || !repository.TryGetUnit(unitIndex, out UnitPersistentData data) || data == null)
                 continue;
 
+            repository.UpdateUnitRuntimeState(
+                data.UnitIndex,
+                data.UnitTemplateKey,
+                data.Level,
+                data.BaseStats,
+                data.LevelupStats,
+                data.CurrentSkillIndex,
+                data.CurrentWeaponIndex,
+                data.CurrentWeaponStats,
+                data.IngameStats,
+                0f,
+                data.Exp,
+                data.MaxExp,
+                data.SkillLevel,
+                data.EquippedWeaponInstanceIndex,
+                CalculateDefeatInfluence(data),
+                true);
+        }
+
+        repository.SaveRuntimeStateToDisk();
+        PartyRepositorySync.ApplyUnitsToScene(unitIndices);
+    }
+
+    public static int RecoverDefeatedUnitsForReturn(IReadOnlyList<int> unitIndices)
+    {
+        PersistentUnitRepository repository = PersistentUnitRepository.Instance;
+        if (repository == null || unitIndices == null)
+            return 0;
+
+        int recoveredCount = 0;
+        for (int i = 0; i < unitIndices.Count; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (unitIndex <= 0 || !repository.TryGetUnit(unitIndex, out UnitPersistentData data) || data == null)
+                continue;
+
             float recoveredHp = CalculateDefeatRecoveryHp(data);
             repository.UpdateUnitRuntimeState(
                 data.UnitIndex,
@@ -68,12 +104,19 @@ public static class ExplorationDefeatResultHandler
                 data.MaxExp,
                 data.SkillLevel,
                 data.EquippedWeaponInstanceIndex,
-                CalculateDefeatInfluence(data),
-                recoveredHp <= 0f);
+                data.CurrentInfluence,
+                false);
+
+            recoveredCount++;
         }
 
-        repository.SaveRuntimeStateToDisk();
-        PartyRepositorySync.ApplyUnitsToScene(unitIndices);
+        if (recoveredCount > 0)
+        {
+            repository.SaveRuntimeStateToDisk();
+            PartyRepositorySync.ApplyUnitsToScene(unitIndices);
+        }
+
+        return recoveredCount;
     }
 
     private static float CalculateDefeatInfluence(UnitPersistentData data)

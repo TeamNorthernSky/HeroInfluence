@@ -699,6 +699,16 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             }
         }
 
+        var outlines = GetComponentsInChildren<Outline>(true);
+        for (int i = 0; i < outlines.Length; i++)
+        {
+            if (outlines[i] != null)
+            {
+                outlines[i].enabled = false;
+                outlines[i].OutlineMode = Outline.Mode.OutlineHidden;
+            }
+        }
+
         StopAllCoroutines();
     }
 
@@ -766,6 +776,15 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             }
         }
 
+        var outlines = GetComponentsInChildren<Outline>(true);
+        for (int i = 0; i < outlines.Length; i++)
+        {
+            if (outlines[i] != null)
+            {
+                outlines[i].enabled = true;
+                outlines[i].OutlineMode = Outline.Mode.OutlineHidden;
+            }
+        }
     }
 
     public void ReviveToFull()

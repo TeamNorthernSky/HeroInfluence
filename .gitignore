@@ -101,20 +101,10 @@ Docs/
 /Assets/_ProtoType_Merge/ASB/Animation/TmpModel
 /Assets/GabrielAguiarProductions
 /packageTool/build
-/PromptFile
-/Assets/Hovl Studio
-/Assets/Hovl Studio.meta
 
-
-
-///////////임시 테스트/////////////
-
-#임시 테스트 에셋
 /Assets/Resources/FBXModel
 /Assets/Resources/FBXModel.meta
 
-#임시 테스트 용도
-/Assets/ASB_Work
 
 ///////////// Nuget///////////////
 # NuGet cache
@@ -138,7 +128,6 @@ project.assets.json
 
 
 Assets/_ProtoType_Merge/CLAUDE.md.meta
-
 # /.github
 /Assets/Editor
 

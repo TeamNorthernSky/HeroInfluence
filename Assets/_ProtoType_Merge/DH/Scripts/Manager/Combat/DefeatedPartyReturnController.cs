@@ -11,6 +11,8 @@ public class DefeatedPartyReturnController : MonoBehaviour
 
     private readonly Dictionary<string, PartyGridMover> waitingParties =
         new Dictionary<string, PartyGridMover>();
+    private readonly Dictionary<string, int> waitingPartyStartDays =
+        new Dictionary<string, int>();
     private Coroutine pendingReturnCoroutine;
 
     public static bool IsPartyWaiting(PartyGridMover party)
@@ -90,6 +92,7 @@ public class DefeatedPartyReturnController : MonoBehaviour
             return;
 
         waitingParties[partyId] = party;
+        waitingPartyStartDays[partyId] = ResolveCurrentDay();
         ClearPartyPresentation(party);
         party.gameObject.SetActive(false);
         HQVisitState.Instance?.ClearVisitingParties();
@@ -131,25 +134,38 @@ public class DefeatedPartyReturnController : MonoBehaviour
         if (DHGameEndState.IsEnding)
         {
             waitingParties.Clear();
+            waitingPartyStartDays.Clear();
             HQVisitState.Instance?.ClearVisitingParties();
             return;
         }
 
         List<string> partyIds = new List<string>(waitingParties.Keys);
+        List<string> completedPartyIds = new List<string>();
+        int currentDay = ResolveCurrentDay();
         for (int i = 0; i < partyIds.Count; i++)
         {
             string partyId = partyIds[i];
             if (!waitingParties.TryGetValue(partyId, out PartyGridMover party) || party == null)
             {
                 waitingParties.Remove(partyId);
+                waitingPartyStartDays.Remove(partyId);
                 continue;
             }
 
+            if (waitingPartyStartDays.TryGetValue(partyId, out int startDay) && currentDay <= startDay)
+                continue;
+
             party.gameObject.SetActive(true);
+            RecoverPartyBeforeLobby(partyId, party);
+            completedPartyIds.Add(partyId);
+            waitingParties.Remove(partyId);
+            waitingPartyStartDays.Remove(partyId);
         }
 
-        HQVisitState.Instance?.SetVisitingParties(HQVisitState.SourceHQ, partyIds);
-        waitingParties.Clear();
+        if (completedPartyIds.Count == 0)
+            return;
+
+        HQVisitState.Instance?.SetVisitingParties(HQVisitState.SourceHQ, completedPartyIds);
         LoadLobbyScene();
     }
 
@@ -177,6 +193,36 @@ public class DefeatedPartyReturnController : MonoBehaviour
 
         string partyId = ResolvePartyId(party);
         return !string.IsNullOrWhiteSpace(partyId) && waitingParties.ContainsKey(partyId);
+    }
+
+    private static void RecoverPartyBeforeLobby(string partyId, PartyGridMover party)
+    {
+        IReadOnlyList<int> unitIndices = ResolvePartyUnitIndices(partyId, party);
+        if (unitIndices == null || unitIndices.Count == 0)
+            return;
+
+        ExplorationDefeatResultHandler.RecoverDefeatedUnitsForReturn(unitIndices);
+    }
+
+    private static IReadOnlyList<int> ResolvePartyUnitIndices(string partyId, PartyGridMover party)
+    {
+        PartyPersistentRepository partyRepository = PartyPersistentRepository.Instance;
+        if (partyRepository != null &&
+            !string.IsNullOrWhiteSpace(partyId) &&
+            partyRepository.TryGetParty(partyId, out PartyPersistentData partyData) &&
+            partyData != null &&
+            partyData.UnitIndices.Count > 0)
+        {
+            return partyData.UnitIndices;
+        }
+
+        PartyComposition composition = party != null ? party.GetComponent<PartyComposition>() : null;
+        return composition != null ? composition.UnitIndices : System.Array.Empty<int>();
+    }
+
+    private static int ResolveCurrentDay()
+    {
+        return GameManager.Instance != null ? GameManager.Instance.CurrentDay : 1;
     }
 
     private static string ResolvePartyId(PartyGridMover party)

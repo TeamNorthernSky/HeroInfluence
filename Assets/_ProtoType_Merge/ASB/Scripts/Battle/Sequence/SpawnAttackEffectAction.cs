@@ -23,7 +23,6 @@ namespace ASB.Work.Battle.Sequence
         public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             _visual?.PlayAttackEffect(_actor, _skillIndex);
-            _visual?.PlayAttackSfx(_actor, _skillIndex);
             yield break;
         }
     }
