@@ -11,5 +11,7 @@ public enum LevelEditorBrushType
     GroundTile = 9,
     GroundTileErase = 10,
     TileSelection = 11,
-    DecorativeBuilding = 12
+    DecorativeBuilding = 12,
+    GateBlocker = 13,
+    EnemySpawnPoint = 14
 }

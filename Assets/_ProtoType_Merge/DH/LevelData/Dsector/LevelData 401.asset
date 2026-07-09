@@ -2429,6 +2429,22 @@ MonoBehaviour:
     enemyGroupIndex: 30004
     behaviorType: 1
   decorativeBuildingPlacements: []
+  gatePlacements:
+  - gateId: gate_005
+    firstZoneId: zone_003
+    secondZoneId: zone_004
+    openDurationTurns: 3
+    blockerCells:
+    - {x: 0, y: 20}
+    - {x: 0, y: 19}
+  - gateId: gate_004
+    firstZoneId: zone_002
+    secondZoneId: zone_004
+    openDurationTurns: 3
+    blockerCells:
+    - {x: 24, y: 0}
+    - {x: 25, y: 0}
+  enemySpawnPointPlacements: []
   heroUnionPlacement:
     hasPlacement: 1
     gridPosition: {x: 16, y: 5}

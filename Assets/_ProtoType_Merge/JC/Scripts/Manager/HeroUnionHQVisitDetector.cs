@@ -27,8 +27,6 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
     [SerializeField] private bool logVisitChanges = false;
 
     // [JC 260618] HQVisitState 일반화: 본부는 고정 source 키로 자기 방문 파티만 갱신(거점 source와 분리).
-    private const string HqSource = HQVisitState.SourceHQ;
-
     private HeroUnionUnit heroUnionUnit;
     private readonly List<PartyGridMover> subscribedMovers = new List<PartyGridMover>();
 
@@ -94,7 +92,7 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
 
         if (DHGameEndState.IsEnding)
         {
-            state.ClearSource(HqSource);
+            state.ClearSource(GetSourceKey());
             ApplyVisitorIndicator(false);
             return;
         }
@@ -102,7 +100,7 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
         if (heroUnionUnit == null) heroUnionUnit = GetComponent<HeroUnionUnit>();
         if (heroUnionUnit == null)
         {
-            state.ClearSource(HqSource);
+            state.ClearSource(GetSourceKey());
             ApplyVisitorIndicator(false);
             return;
         }
@@ -126,11 +124,22 @@ public class HeroUnionHQVisitDetector : MonoBehaviour
         }
 
         int prevCount = state.VisitingPartyIds.Count;
-        state.SetVisitingParties(HqSource, detected);
+        state.SetVisitingParties(GetSourceKey(), detected);
         ApplyVisitorIndicator(state.HasVisitingParty);
 
         if (logVisitChanges && prevCount != state.VisitingPartyIds.Count)
             Debug.Log($"[HeroUnionHQVisitDetector] VisitingParties count: {prevCount} → {state.VisitingPartyIds.Count} [{string.Join(",", detected)}]");
+    }
+
+    private string GetSourceKey()
+    {
+        if (heroUnionUnit == null)
+            heroUnionUnit = GetComponent<HeroUnionUnit>();
+
+        if (heroUnionUnit != null)
+            return heroUnionUnit.GetProgressKey();
+
+        return HQVisitState.SourceHQ;
     }
 
     private void ApplyVisitorIndicator(bool hasVisitor)

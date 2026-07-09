@@ -17,6 +17,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
     private const string HeroUnionRootName = "HeroUnionRoot";
     private const string VillainUnionRootName = "VillainUnionRoot";
     private const string DecorativeBuildingRootName = "DecorativeBuildingRoot";
+    private const string GateRootName = "GateRoot";
+    private const string EnemySpawnPointRootName = "EnemySpawnPointRoot";
 
     [Header("Data")]
     [SerializeField] private LevelZoneLayoutData layoutData;
@@ -36,6 +38,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
     [SerializeField] private Transform heroUnionRoot;
     [SerializeField] private Transform villainUnionRoot;
     [SerializeField] private Transform decorativeBuildingRoot;
+    [SerializeField] private Transform gateRoot;
+    [SerializeField] private Transform enemySpawnPointRoot;
 
     [Header("Load Options")]
     [SerializeField] private bool loadOnStart;
@@ -260,10 +264,12 @@ public class LevelZoneLayoutLoader : MonoBehaviour
             tileMeshGenerator.Generate(levelData, offset, false);
 
         SpawnObstacles(levelData, offset);
+        SpawnGates(levelData, offset);
         SpawnItems(levelData, offset);
         SpawnOutposts(zone, levelData, offset);
         SpawnEvents(levelData, offset);
         SpawnEnemyPlacements(levelData, offset);
+        SpawnEnemySpawnPoints(zone, levelData, offset);
         SpawnDecorativeBuildings(levelData, offset);
 
         if (spawnUniqueBuildingsFromZones)
@@ -280,6 +286,45 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         Transform parent = GetObstacleRoot(true);
         for (int i = 0; i < obstacleCells.Count; i++)
             SpawnGameObject(obstaclePrefab, obstacleCells[i] + offset, parent);
+    }
+
+    private void SpawnGates(LevelData levelData, Vector2Int offset)
+    {
+        GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
+        if (obstaclePrefab == null)
+            return;
+
+        IReadOnlyList<GatePlacementData> gatePlacements = levelData.GatePlacements;
+        if (gatePlacements.Count == 0)
+            return;
+
+        Transform parent = GetGateRoot(true);
+        for (int i = 0; i < gatePlacements.Count; i++)
+        {
+            GatePlacementData placement = gatePlacements[i];
+            GameObject gateRootObject = new GameObject($"Gate_{placement.GateId}");
+            gateRootObject.transform.SetParent(parent);
+            gateRootObject.transform.localPosition = Vector3.zero;
+            gateRootObject.transform.localRotation = Quaternion.identity;
+            gateRootObject.transform.localScale = Vector3.one;
+
+            List<GameObject> blockers = new List<GameObject>();
+            IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
+            for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
+            {
+                GameObject blocker = SpawnGameObject(obstaclePrefab, blockerCells[cellIndex] + offset, gateRootObject.transform);
+                if (blocker != null)
+                    blockers.Add(blocker);
+            }
+
+            GateRuntimeController gate = gateRootObject.AddComponent<GateRuntimeController>();
+            gate.Initialize(
+                placement.GateId,
+                placement.FirstZoneId,
+                placement.SecondZoneId,
+                blockers,
+                placement.OpenDurationTurns);
+        }
     }
 
     private void SpawnItems(LevelData levelData, Vector2Int offset)
@@ -487,6 +532,28 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         }
     }
 
+    private void SpawnEnemySpawnPoints(LevelZoneSlot zone, LevelData levelData, Vector2Int offset)
+    {
+        IReadOnlyList<EnemySpawnPointPlacementData> spawnPointPlacements = levelData.EnemySpawnPointPlacements;
+        if (spawnPointPlacements.Count == 0)
+            return;
+
+        Transform parent = GetEnemySpawnPointRoot(true);
+        for (int i = 0; i < spawnPointPlacements.Count; i++)
+        {
+            EnemySpawnPointPlacementData placement = spawnPointPlacements[i];
+            Vector2Int grid = placement.GridPosition + offset;
+            GameObject spawnObject = new GameObject($"EnemySpawnPoint_{grid.x}_{grid.y}");
+            spawnObject.transform.SetParent(parent);
+            spawnObject.transform.position = GetMarkerWorldPosition(grid);
+            EnemySpawnPoint spawnPoint = spawnObject.AddComponent<EnemySpawnPoint>();
+            string zoneId = !string.IsNullOrWhiteSpace(placement.ZoneId)
+                ? placement.ZoneId
+                : zone != null ? zone.ZoneId : string.Empty;
+            spawnPoint.Initialize(zoneId, grid);
+        }
+    }
+
     private static bool IsEnemyDefeated(string placementKey)
     {
         MapProgressRepository repository = MapProgressRepository.Instance;
@@ -572,6 +639,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         ClearChildren(GetHeroUnionRoot(false));
         ClearChildren(GetVillainUnionRoot(false));
         ClearChildren(GetDecorativeBuildingRoot(false));
+        ClearChildren(GetGateRoot(false));
+        ClearChildren(GetEnemySpawnPointRoot(false));
         ClearLevelSpawnedEnemies();
         ClearDirectChildrenWithComponent<HeroUnionUnit>();
         ClearDirectChildrenWithComponent<VillainUnionBase>();
@@ -672,6 +741,12 @@ public class LevelZoneLayoutLoader : MonoBehaviour
     private Transform GetDecorativeBuildingRoot(bool createIfMissing) =>
         GetSpawnRoot(ref decorativeBuildingRoot, DecorativeBuildingRootName, createIfMissing);
 
+    private Transform GetGateRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref gateRoot, GateRootName, createIfMissing);
+
+    private Transform GetEnemySpawnPointRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref enemySpawnPointRoot, EnemySpawnPointRootName, createIfMissing);
+
     private Transform GetSpawnRoot(ref Transform root, string rootName, bool createIfMissing)
     {
         if (root != null)
@@ -736,6 +811,13 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         anchorWorldPosition.y = gridManager.GetLandSurfaceY();
         Vector3 worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
         return Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
+    }
+
+    private Vector3 GetMarkerWorldPosition(Vector2Int grid)
+    {
+        Vector3 worldPosition = gridManager.GridToWorldCenter(grid);
+        worldPosition.y = gridManager.GetLandSurfaceY() + 0.05f;
+        return worldPosition;
     }
 
     private bool IsPrefabFootprintInside(GameObject prefab, Vector2Int grid)
