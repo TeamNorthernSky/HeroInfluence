@@ -795,6 +795,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     }
 
     /// <summary>시트 ID가 "HS1010", "FV20001" 같은 접두어+숫자 코드로 바뀌어도 내부 로직은 숫자만 사용하도록 추출합니다.</summary>
+    private static int ExtractNumericId(int code)
+    {
+        return code;
+    }
+
     private static int ExtractNumericId(string code)
     {
         if (string.IsNullOrEmpty(code)) return 0;

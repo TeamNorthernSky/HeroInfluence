@@ -6,7 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class PlayerUnitData
 {
-    public string ClassIndex;
+    public int ClassIndex;
     public string UnitName;
     public string ClassName;
     public string ClassConcept;
