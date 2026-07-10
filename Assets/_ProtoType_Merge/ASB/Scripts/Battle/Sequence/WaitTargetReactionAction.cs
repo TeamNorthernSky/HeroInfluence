@@ -38,7 +38,7 @@ namespace ASB.Work.Battle.Sequence
 
             if (_target.IsDead)
             {
-                yield return WaitForState(anim, "Die", 0f, _maxWait, 0.95f);
+                yield return WaitForState(anim, "Dead", 0f, _maxWait, 0.95f);
                 // 사망 상태 유지 — Idle 복귀 없음
             }
             else

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
@@ -40,6 +39,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     [SerializeField] private float currentInfluence;
 
     [SerializeField] private List<StatusEffectInstance> activeStatusEffects = new List<StatusEffectInstance>();
+    [NonSerialized] private StatusEffectManager statusEffectManager;
     [HideInInspector] [SerializeField] private Skill activeSkill;
     // skillDataLoader 제거 — DHCsvTemplateCatalog.Instance 로 대체
     /// <summary>availableWeapons 목록 내 로컬 인덱스(0..Count-1). 인스펙터에서는 BattleCharactorEditor 드롭다운으로만 설정합니다.</summary>
@@ -85,52 +85,30 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     public bool IsPlayer { get; set; }
 
     [SerializeField]  public bool IsDead { get; private set; }
-    public bool IsStunned
+    public bool IsStunned => Effects.IsStunned;
+    public bool IsHealBanned => Effects.IsHealBanned;
+
+    private StatusEffectManager Effects
     {
         get
         {
-            if (IsDead || activeStatusEffects == null)
+            if (statusEffectManager == null)
             {
-                return false;
-            }
-
-            return activeStatusEffects.Any(e =>
-                e != null &&
-                e.effectType == StatusEffectType.stun &&
-                e.remainingTurns > 0);
-        }
-    }
-    public bool IsHealBanned
-    {
-        get
-        {
-            if (IsDead || activeStatusEffects == null)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < activeStatusEffects.Count; i++)
-            {
-                StatusEffectInstance effect = activeStatusEffects[i];
-                if (effect == null)
+                if (activeStatusEffects == null)
                 {
-                    continue;
+                    activeStatusEffects = new List<StatusEffectInstance>();
                 }
 
-                if (effect.effectType == StatusEffectType.healBan && effect.remainingTurns > 0)
-                {
-                    return true;
-                }
+                statusEffectManager = new StatusEffectManager(this, activeStatusEffects);
             }
 
-            return false;
+            return statusEffectManager;
         }
     }
-
     public IUnitData UnitData => null;
 
     /// <summary>
-    /// 딕셔너리/Outline 등 런타임 조회용 고유 ID. 스킬 CSV 매칭용 <see cref="unitName"/>에는 포함되지 않습니다.
+    /// 딕셔너리 등 런타임 조회용 고유 ID. 스킬 CSV 매칭용 <see cref="unitName"/>에는 포함되지 않습니다.
     /// 스포너가 <c>gameObject.name</c>에 Index와 GetInstanceID를 붙인 뒤에는 그 이름을 그대로 씁니다(이중 접미사 방지).
     /// </summary>
     public string UnitId
@@ -186,7 +164,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
         return FinalStats.Influence;
     }
-    public IReadOnlyList<StatusEffectInstance> ActiveStatusEffects => activeStatusEffects;
+    public IReadOnlyList<StatusEffectInstance> ActiveStatusEffects => Effects.ActiveEffects;
 
     // [레거시] 인스펙터 스킬 선택 방식으로 전환 완료 후 제거 예정.
     // [마이그레이션 종료 기준]
@@ -271,6 +249,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         {
             activeStatusEffects = new List<StatusEffectInstance>();
         }
+        statusEffectManager = new StatusEffectManager(this, activeStatusEffects);
 
         originalColors.Clear();
         Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
@@ -490,39 +469,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     public void ApplyStatusEffect(StatusEffectInstance effect)
     {
-        if (effect == null || effect.effectType == StatusEffectType.none)
-        {
-            return;
-        }
-
-        if (activeStatusEffects == null)
-        {
-            activeStatusEffects = new List<StatusEffectInstance>();
-        }
-
-        StatusEffectInstance existing = activeStatusEffects.Find(x => x != null && x.effectType == effect.effectType);
-        if (existing != null)
-        {
-            existing.category = effect.category;
-            existing.value = effect.value;
-            existing.remainingTurns = Mathf.Max(1, effect.remainingTurns);
-            existing.source = effect.source;
-            Debug.Log($"[Status] 갱신: {UnitName} effect={effect.effectType} turns={existing.remainingTurns}");
-        }
-        else
-        {
-            activeStatusEffects.Add(new StatusEffectInstance
-            {
-                effectType = effect.effectType,
-                category = effect.category,
-                value = effect.value,
-                remainingTurns = Mathf.Max(1, effect.remainingTurns),
-                source = effect.source
-            });
-            Debug.Log($"[Status] 적용: {UnitName} effect={effect.effectType} turns={Mathf.Max(1, effect.remainingTurns)}");
-        }
-
-        if (RequiresStatRecalculation(effect.effectType))
+        if (Effects.ApplyStatusEffect(effect))
         {
             RecalculateStats(applyCurrentHpClamp: true);
         }
@@ -530,13 +477,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     public void RemoveStatusEffect(StatusEffectType effectType)
     {
-        if (activeStatusEffects == null || activeStatusEffects.Count == 0)
-        {
-            return;
-        }
-
-        bool removed = activeStatusEffects.RemoveAll(x => x != null && x.effectType == effectType) > 0;
-        if (removed && RequiresStatRecalculation(effectType))
+        if (Effects.RemoveStatusEffect(effectType))
         {
             RecalculateStats(applyCurrentHpClamp: true);
         }
@@ -544,121 +485,26 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     public bool HasStatusEffect(StatusEffectType effectType)
     {
-        if (activeStatusEffects == null || activeStatusEffects.Count == 0)
-        {
-            return false;
-        }
-
-        return activeStatusEffects.Exists(x => x != null && x.effectType == effectType);
+        return Effects.HasStatusEffect(effectType);
     }
 
     public BattleCharactor GetTauntSource()
     {
-        if (activeStatusEffects == null || activeStatusEffects.Count == 0)
-        {
-            return null;
-        }
-
-        for (int i = activeStatusEffects.Count - 1; i >= 0; i--)
-        {
-            StatusEffectInstance effect = activeStatusEffects[i];
-            if (effect == null || effect.effectType != StatusEffectType.taunt)
-            {
-                continue;
-            }
-
-            if (effect.remainingTurns > 0 && effect.source != null && !effect.source.IsDead)
-            {
-                return effect.source;
-            }
-
-            activeStatusEffects.RemoveAt(i);
-        }
-
-        return null;
+        return Effects.GetTauntSource();
     }
 
     public void ProcessTurnStartStatusEffects()
     {
-        if (IsDead || activeStatusEffects == null || activeStatusEffects.Count == 0)
-        {
-            return;
-        }
-
-        for (int i = 0; i < activeStatusEffects.Count; i++)
-        {
-            StatusEffectInstance effect = activeStatusEffects[i];
-            if (effect == null || effect.remainingTurns <= 0)
-            {
-                continue;
-            }
-
-            if (effect.effectType != StatusEffectType.poison && effect.effectType != StatusEffectType.bleed)
-            {
-                continue;
-            }
-
-            float dotDamage = Mathf.Max(0f, effect.value);
-            if (dotDamage <= 0f)
-            {
-                continue;
-            }
-
-            float before = currentHp;
-            TakeDamage(dotDamage);
-            float applied = Mathf.Max(0f, before - currentHp);
-            Debug.Log($"[Status] DOT tick: {UnitName} effect={effect.effectType} dmg={applied:F1} turnsLeft={effect.remainingTurns}");
-
-            if (IsDead)
-            {
-                return;
-            }
-        }
+        Effects.ProcessTurnStartStatusEffects();
     }
 
     public void AdvanceStatusEffectDuration()
     {
-        if (activeStatusEffects == null || activeStatusEffects.Count == 0)
-        {
-            return;
-        }
-
-        for (int i = 0; i < activeStatusEffects.Count; i++)
-        {
-            StatusEffectInstance effect = activeStatusEffects[i];
-            if (effect == null)
-            {
-                continue;
-            }
-
-            effect.remainingTurns -= 1;
-        }
-
-        bool removedAny = false;
-        bool removedStatModifier = false;
-        for (int i = activeStatusEffects.Count - 1; i >= 0; i--)
-        {
-            StatusEffectInstance effect = activeStatusEffects[i];
-            if (effect == null || effect.remainingTurns > 0)
-            {
-                continue;
-            }
-
-            if (effect != null && RequiresStatRecalculation(effect.effectType))
-            {
-                removedStatModifier = true;
-            }
-
-            activeStatusEffects.RemoveAt(i);
-            removedAny = true;
-        }
-
-        if (removedAny && removedStatModifier)
+        if (Effects.AdvanceStatusEffectDuration())
         {
             RecalculateStats(applyCurrentHpClamp: true);
         }
     }
-
     private void Die()
     {
         if (IsDead)
@@ -696,16 +542,6 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             if (canvases[i] != null)
             {
                 canvases[i].enabled = false;
-            }
-        }
-
-        var outlines = GetComponentsInChildren<Outline>(true);
-        for (int i = 0; i < outlines.Length; i++)
-        {
-            if (outlines[i] != null)
-            {
-                outlines[i].enabled = false;
-                outlines[i].OutlineMode = Outline.Mode.OutlineHidden;
             }
         }
 
@@ -776,15 +612,6 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             }
         }
 
-        var outlines = GetComponentsInChildren<Outline>(true);
-        for (int i = 0; i < outlines.Length; i++)
-        {
-            if (outlines[i] != null)
-            {
-                outlines[i].enabled = true;
-                outlines[i].OutlineMode = Outline.Mode.OutlineHidden;
-            }
-        }
     }
 
     public void ReviveToFull()
@@ -869,47 +696,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     private void ApplyStatusEffectStatModifiers()
     {
-        if (activeStatusEffects == null || activeStatusEffects.Count == 0)
-        {
-            return;
-        }
-
-        float atkMultiplier = 1f;
-        float defMultiplier = 1f;
-
-        for (int i = 0; i < activeStatusEffects.Count; i++)
-        {
-            StatusEffectInstance effect = activeStatusEffects[i];
-            if (effect == null || effect.remainingTurns <= 0)
-            {
-                continue;
-            }
-
-            float amount = Mathf.Max(0f, effect.value);
-            switch (effect.effectType)
-            {
-                case StatusEffectType.attack_up:
-                    atkMultiplier += amount;
-                    break;
-                case StatusEffectType.attack_down:
-                    atkMultiplier -= amount;
-                    break;
-                case StatusEffectType.defense_up:
-                    defMultiplier += amount;
-                    break;
-                case StatusEffectType.defense_down:
-                    defMultiplier -= amount;
-                    break;
-            }
-        }
-
-        atkMultiplier = Mathf.Max(0.1f, atkMultiplier);
-        defMultiplier = Mathf.Max(0.1f, defMultiplier);
-
-        finalStats.Atk = Mathf.Max(1f, finalStats.Atk * atkMultiplier);
-        finalStats.DEF = Mathf.Max(0f, finalStats.DEF * defMultiplier);
+        Effects.ApplyStatusEffectStatModifiers(ref finalStats);
     }
-
     private void ApplyFormationPassiveModifiers()
     {
         // CounterRate는 현재 0~1 스케일을 사용하므로 +30%는 +0.3으로 적용합니다.
@@ -943,18 +731,6 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
     }
 
-    private static bool RequiresStatRecalculation(StatusEffectType effectType)
-    {
-        if (effectType == StatusEffectType.healBan)
-        {
-            return false;
-        }
-
-        return effectType == StatusEffectType.attack_up
-               || effectType == StatusEffectType.attack_down
-               || effectType == StatusEffectType.defense_up
-               || effectType == StatusEffectType.defense_down;
-    }
 
     public void Initialize(IUnitData data, TeamType team)
     {

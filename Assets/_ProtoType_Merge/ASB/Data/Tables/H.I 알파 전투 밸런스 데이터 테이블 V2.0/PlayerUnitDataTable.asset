@@ -56,7 +56,7 @@ MonoBehaviour:
     ReduceRate: 0.2
     Speed: 3
     ClassSkillIndexList:
-    - HS2020
+    - HS2010
     - HS2020
     - HS2030
     - HS2040
@@ -115,7 +115,7 @@ MonoBehaviour:
     ReduceRate: 0.15
     Speed: 2
     ClassSkillIndexList:
-    - HS4040
+    - HS4010
     - HS4020
     - HS4030
     - HS4040
