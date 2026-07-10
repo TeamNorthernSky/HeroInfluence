@@ -268,7 +268,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         SpawnItems(levelData, offset);
         SpawnOutposts(zone, levelData, offset);
         SpawnEvents(levelData, offset);
-        SpawnEnemyPlacements(levelData, offset);
+        SpawnEnemyPlacements(zone, levelData, offset);
         SpawnEnemySpawnPoints(zone, levelData, offset);
         SpawnDecorativeBuildings(levelData, offset);
 
@@ -466,7 +466,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         return repository != null && repository.IsEventCompleted(MapProgressKey.ForEvent(grid, MapEventTypeUtility.ToEventKey(eventType)));
     }
 
-    private void SpawnEnemyPlacements(LevelData levelData, Vector2Int offset)
+    private void SpawnEnemyPlacements(LevelZoneSlot zone, LevelData levelData, Vector2Int offset)
     {
         var enemyPlacements = levelData.EnemyPlacements;
         if (enemyPlacements.Count == 0)
@@ -486,6 +486,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         }
 
         Transform parent = GetEnemyRoot(true);
+        string zoneId = zone != null ? zone.ZoneId : string.Empty;
+        int enemyLevel = ResolveZoneEnemyLevel(zoneId);
         for (int i = 0; i < enemyPlacements.Count; i++)
         {
             EnemyPlacementData placement = enemyPlacements[i];
@@ -522,7 +524,11 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                     prefabRegistry,
                     grid,
                     placement.BehaviorType,
-                    placementKey))
+                    placementKey,
+                    EnemyPlacementSource.Scene,
+                    placement.EnemyGroupIndex.ToString(),
+                    enemyLevel,
+                    zoneId))
             {
                 Debug.LogWarning(
                     $"LevelZoneLayoutLoader failed to spawn enemy group '{placement.EnemyGroupIndex}' at {grid}.",
@@ -554,6 +560,13 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         }
     }
 
+    private static int ResolveZoneEnemyLevel(string zoneId)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.TryGetZoneEnemyLevel(zoneId, out int level)
+            ? Mathf.Max(1, level)
+            : 1;
+    }
     private static bool IsEnemyDefeated(string placementKey)
     {
         MapProgressRepository repository = MapProgressRepository.Instance;

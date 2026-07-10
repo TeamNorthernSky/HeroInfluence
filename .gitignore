@@ -102,8 +102,20 @@ Docs/
 /Assets/GabrielAguiarProductions
 /packageTool/build
 
+
+#임시 테스트 에셋
 /Assets/Resources/FBXModel
 /Assets/Resources/FBXModel.meta
+
+
+/PromptFile
+/Assets/Hovl Studio
+/Assets/Hovl Studio.meta
+///////////임시 테스트/////////////
+
+#임시 테스트 용도
+/Assets/ASB_Work
+
 
 
 ///////////// Nuget///////////////

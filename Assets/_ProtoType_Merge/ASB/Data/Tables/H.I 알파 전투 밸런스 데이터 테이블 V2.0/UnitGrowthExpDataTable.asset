@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c79f595c6f67204e897e094d159151b, type: 3}
+  m_Name: UnitGrowthExpDataTable
+  m_EditorClassIdentifier: 
+  DataList:
+  - Level: 1
+    Rank: F
+    NeedExpieriencePoint: 0
+    AddIP: 0
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
+  - Level: 2
+    Rank: D
+    NeedExpieriencePoint: 40
+    AddIP: 10
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
+  - Level: 3
+    Rank: C
+    NeedExpieriencePoint: 80
+    AddIP: 10
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
+  - Level: 4
+    Rank: B
+    NeedExpieriencePoint: 150
+    AddIP: 10
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
+  - Level: 5
+    Rank: A
+    NeedExpieriencePoint: 240
+    AddIP: 10
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
+  - Level: 6
+    Rank: S
+    NeedExpieriencePoint: 330
+    AddIP: 10
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
+  - Level: 7
+    Rank: SS
+    NeedExpieriencePoint: 450
+    AddIP: 10
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0
+  - Level: 8
+    Rank: SSS
+    NeedExpieriencePoint: 570
+    AddIP: 20
+    Character1StudySkill: 0
+    Character2StudySkill: 0
+    Character3StudySkill: 0
+    Character4StudySkill: 0

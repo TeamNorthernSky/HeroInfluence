@@ -155,10 +155,10 @@ public class BattleSceneManager : MonoBehaviour
                     continue;
                 }
 
-                if (anim.IsInState("Die"))
+                if (anim.IsInState("Dead"))
                 {
                     observedDeathAnimations.Add(unit);
-                    if (!anim.IsStateNearEnd("Die", endThreshold))
+                    if (!anim.IsStateNearEnd("Dead", endThreshold))
                     {
                         waitingForDeathAnimation = true;
                         break;

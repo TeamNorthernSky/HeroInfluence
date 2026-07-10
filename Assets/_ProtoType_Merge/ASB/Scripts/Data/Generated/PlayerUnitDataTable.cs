@@ -17,8 +17,8 @@ public class PlayerUnitData
     public float CounterRate;
     public float ReduceRate;
     public int Speed;
-    public List<int> ClassSkillIndexList;
-    public List<int> WeaponIndexList;
+    public List<string> ClassSkillIndexList;
+    public List<string> WeaponIndexList;
     public int LevelGrowthMaxHP;
     public int LevelGrowthMaxAtk;
     public int LevelGrowthMaxDef;

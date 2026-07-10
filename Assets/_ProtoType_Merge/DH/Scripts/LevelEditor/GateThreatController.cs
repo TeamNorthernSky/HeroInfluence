@@ -57,6 +57,7 @@ public class GateThreatController : MonoBehaviour
             return;
 
         string zoneId = ResolvePartyZoneId();
+        EnsureZoneEnemyLevel(zoneId);
         if (string.Equals(zoneId, currentPartyZoneId, System.StringComparison.Ordinal))
         {
             EvaluateCurrentZoneThreat(false);
@@ -170,11 +171,155 @@ public class GateThreatController : MonoBehaviour
             }
 
             repository.ClearZoneThreatEnemy(state.ZoneId);
+            if (HasLiveThreatEnemyInZone(state.ZoneId, normalizedPlacementKey))
+                continue;
+
             repository.BeginZoneThreat(state.ZoneId, ResolveCurrentDay());
             OpenGatesForZone(state.ZoneId);
         }
     }
 
+    private void EnsureZoneEnemyLevel(string zoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null || repository.TryGetZoneEnemyLevel(normalizedZoneId, out _))
+            return;
+
+        int enemyLevel = repository.EnsureZoneEnemyLevel(normalizedZoneId, CalculateCurrentPartyAverageLevel());
+        ApplyZoneEnemyLevel(normalizedZoneId, enemyLevel);
+        RefreshZoneEnemyLevelInspectors(normalizedZoneId);
+    }
+
+    private int CalculateCurrentPartyAverageLevel()
+    {
+        PartyPersistentRepository partyRepository = PartyPersistentRepository.Instance;
+        PersistentUnitRepository unitRepository = PersistentUnitRepository.Instance;
+        if (partyRepository == null || unitRepository == null)
+            return 1;
+
+        PartyPersistentData partyData = ResolveCurrentPartyData(partyRepository);
+        if (partyData == null || partyData.UnitIndices == null || partyData.UnitIndices.Count == 0)
+            return 1;
+
+        int totalLevel = 0;
+        int unitCount = 0;
+        IReadOnlyList<int> unitIndices = partyData.UnitIndices;
+        for (int i = 0; i < unitIndices.Count; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (unitIndex <= 0 || !unitRepository.TryGetUnit(unitIndex, out UnitPersistentData unitData) || unitData == null)
+                continue;
+
+            totalLevel += Mathf.Max(1, unitData.Level);
+            unitCount++;
+        }
+
+        return unitCount > 0 ? Mathf.Max(1, totalLevel / unitCount) : 1;
+    }
+
+    private PartyPersistentData ResolveCurrentPartyData(PartyPersistentRepository partyRepository)
+    {
+        if (partyRepository == null)
+            return null;
+
+        if (partyRegistry == null)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
+
+        PartyGridMover playerParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (playerParty != null)
+        {
+            PartyIdentity identity = playerParty.GetComponent<PartyIdentity>();
+            if (identity != null && partyRepository.TryGetParty(identity.PartyId, out PartyPersistentData partyData))
+                return partyData;
+        }
+
+        IReadOnlyList<PartyPersistentData> parties = partyRepository.Parties;
+        for (int i = 0; i < parties.Count; i++)
+        {
+            if (parties[i] != null)
+                return parties[i];
+        }
+
+        return null;
+    }
+
+    private static void ApplyZoneEnemyLevel(string zoneId, int enemyLevel)
+    {
+        MapProgressRepository mapRepository = MapProgressRepository.Instance;
+        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
+        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
+        if (mapRepository == null || enemyGroupRepository == null || enemyRepository == null)
+            return;
+
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        IReadOnlyList<EnemyWorldState> enemyStates = mapRepository.EnemyWorldStates;
+        for (int i = 0; i < enemyStates.Count; i++)
+        {
+            EnemyWorldState worldState = enemyStates[i];
+            if (worldState == null || worldState.Defeated || !string.Equals(worldState.ZoneId, normalizedZoneId, System.StringComparison.Ordinal))
+                continue;
+
+            if (!enemyGroupRepository.TryGetEnemy(worldState.EnemyId, out EnemyPersistentData enemyData) || enemyData == null)
+                continue;
+
+            ApplyEnemyGroupLevel(enemyRepository, enemyData, enemyLevel);
+        }
+    }
+
+    private static void RefreshZoneEnemyLevelInspectors(string zoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return;
+
+        Outpost[] outposts = FindObjectsByType<Outpost>(FindObjectsSortMode.None);
+        for (int i = 0; i < outposts.Length; i++)
+        {
+            Outpost outpost = outposts[i];
+            if (outpost != null && string.Equals(outpost.ZoneId, normalizedZoneId, System.StringComparison.Ordinal))
+                outpost.RefreshResolvedEnemyLevel();
+        }
+
+        VillainUnionBase[] villainUnionBases = FindObjectsByType<VillainUnionBase>(FindObjectsSortMode.None);
+        for (int i = 0; i < villainUnionBases.Length; i++)
+        {
+            VillainUnionBase villainUnionBase = villainUnionBases[i];
+            if (villainUnionBase != null && string.Equals(villainUnionBase.ZoneId, normalizedZoneId, System.StringComparison.Ordinal))
+                villainUnionBase.RefreshResolvedEnemyLevel();
+        }
+
+        EnemySpawnPoint[] enemySpawnPoints = FindObjectsByType<EnemySpawnPoint>(FindObjectsSortMode.None);
+        for (int i = 0; i < enemySpawnPoints.Length; i++)
+        {
+            EnemySpawnPoint enemySpawnPoint = enemySpawnPoints[i];
+            if (enemySpawnPoint != null && string.Equals(enemySpawnPoint.ZoneId, normalizedZoneId, System.StringComparison.Ordinal))
+                enemySpawnPoint.RefreshResolvedEnemyLevel();
+        }
+    }
+
+    private static void ApplyEnemyGroupLevel(PersistentEnemyRepository enemyRepository, EnemyPersistentData enemyData, int enemyLevel)
+    {
+        IReadOnlyList<int> unitIndices = enemyData.UnitIndices;
+        if (unitIndices == null)
+            return;
+
+        int safeLevel = Mathf.Max(1, enemyLevel);
+        for (int i = 0; i < unitIndices.Count; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (!enemyRepository.TryGetUnit(unitIndex, out EnemyUnitPersistentData unitData) || unitData == null)
+                continue;
+
+            if (unitData.Level < safeLevel)
+                enemyRepository.ApplyLevelUp(unitIndex, safeLevel - unitData.Level);
+            else if (unitData.Level > safeLevel)
+                enemyRepository.SetUnitLevel(unitIndex, safeLevel);
+        }
+    }
     private void EvaluateCurrentZoneThreat(bool enteredZone)
     {
         if (string.IsNullOrWhiteSpace(currentPartyZoneId))
@@ -252,6 +397,39 @@ public class GateThreatController : MonoBehaviour
 
         MapProgressRepository repository = MapProgressRepository.Instance;
         return repository == null || !repository.IsEnemyDefeated(state.ActiveEnemyPlacementKey);
+    }
+
+    private static bool HasLiveThreatEnemyInZone(string zoneId, string ignoredPlacementKey)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return false;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null)
+            return false;
+
+        string ignoredKey = MapProgressKey.NormalizeSegment(ignoredPlacementKey);
+        string threatPrefix = $"runtime_enemy_gate_threat_{normalizedZoneId}_";
+        IReadOnlyList<EnemyWorldState> enemyStates = repository.EnemyWorldStates;
+        for (int i = 0; i < enemyStates.Count; i++)
+        {
+            EnemyWorldState enemyState = enemyStates[i];
+            if (enemyState == null || enemyState.Defeated)
+                continue;
+
+            string placementKey = MapProgressKey.NormalizeSegment(enemyState.PlacementKey);
+            if (string.IsNullOrWhiteSpace(placementKey) ||
+                string.Equals(placementKey, ignoredKey, System.StringComparison.Ordinal) ||
+                !placementKey.StartsWith(threatPrefix, System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private bool TrySpawnThreatEnemy(string zoneId, out string placementKey)

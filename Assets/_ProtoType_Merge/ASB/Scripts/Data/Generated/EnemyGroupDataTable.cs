@@ -17,6 +17,9 @@ public class EnemyGroupData
     public int Enemy4Slot;
     public int Enemy5;
     public int Enemy5Slot;
+    public string EnemyGroupName;
+    public int MinLevel;
+    public int MaxLevel;
 }
 
 [CreateAssetMenu(fileName="EnemyGroupDataTable", menuName="DataTable/EnemyGroup")]

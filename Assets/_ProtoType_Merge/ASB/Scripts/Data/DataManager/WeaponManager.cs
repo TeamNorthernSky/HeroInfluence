@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class WeaponManager : MonoBehaviour
@@ -24,13 +22,6 @@ public class WeaponManager : MonoBehaviour
             return new List<WeaponData>();
         }
 
-        string normalized = className.Trim();
-        return DHCsvTemplateCatalog.Instance.GetAllWeapons()
-            .Where(x =>
-                x != null &&
-                !string.IsNullOrWhiteSpace(x.weaponClass) &&
-                string.Equals(x.weaponClass.Trim(), normalized, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(x => x.WeaponIndex)
-            .ToList();
+        return DHCsvTemplateCatalog.Instance.GetWeaponsByClass(className);
     }
 }

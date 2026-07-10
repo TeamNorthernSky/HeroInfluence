@@ -147,6 +147,10 @@ public static class GameSaveService
         data.outpostStates.AddRange(repo.OutpostStates);
         data.fogCells.AddRange(repo.FogCells);
         data.levelZoneSelections.AddRange(repo.LevelZoneSelections);
+        data.heroUnionStates.AddRange(repo.HeroUnionStates);
+        data.gateStates.AddRange(repo.GateStates);
+        data.zoneThreatStates.AddRange(repo.ZoneThreatStates);
+        data.zoneEnemyLevelStates.AddRange(repo.ZoneEnemyLevelStates);
     }
 
     private static void CaptureEconomy(GameSaveData data)

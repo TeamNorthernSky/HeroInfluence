@@ -472,17 +472,13 @@ public class PersistentUnitRepository : MonoBehaviour
             return false;
         }
 
-        string unitClass = unitTemplate.UnitType.Trim();
-        List<WeaponData> weapons = catalog.GetAllWeapons();
+        List<WeaponData> weapons = catalog.GetWeaponsByClass(unitTemplate.UnitType);
         int bestWeaponIndex = 0;
 
         for (int i = 0; i < weapons.Count; i++)
         {
             WeaponData weapon = weapons[i];
             if (weapon == null || weapon.WeaponIndex <= 0)
-                continue;
-
-            if (!string.Equals(weapon.weaponClass?.Trim(), unitClass, System.StringComparison.OrdinalIgnoreCase))
                 continue;
 
             if (GetWeaponTier(weapon.WeaponIndex) != WeaponPersistentRepository.BaseWeaponLevel)
@@ -632,6 +628,32 @@ public class PersistentUnitRepository : MonoBehaviour
             RepairMaxExpIfNeeded(units[i]);
     }
 
+    public void RestoreFromSave(int restoredNextUnitIndex, IReadOnlyList<UnitPersistentDataDiskRow> savedUnits)
+    {
+        units.Clear();
+        unitLookup.Clear();
+
+        if (savedUnits != null)
+        {
+            for (int i = 0; i < savedUnits.Count; i++)
+            {
+                UnitPersistentDataDiskRow row = savedUnits[i];
+                if (row == null)
+                    continue;
+
+                UnitPersistentData data = row.ToUnitPersistentData();
+                if (data == null || data.UnitIndex <= 0 || unitLookup.ContainsKey(data.UnitIndex))
+                    continue;
+
+                units.Add(data);
+                unitLookup.Add(data.UnitIndex, data);
+            }
+        }
+
+        nextUnitIndex = Mathf.Max(1, restoredNextUnitIndex);
+        RebuildLookup();
+        EnsureDefaultWeaponInstances();
+    }
     public void ClearAllUnits()
     {
         units.Clear();

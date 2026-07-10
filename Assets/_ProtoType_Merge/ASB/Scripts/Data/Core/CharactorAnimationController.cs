@@ -200,7 +200,7 @@ public class CharactorAnimationController : MonoBehaviour
                 break;
             case "Die":
                 _animator.SetBool(BoolIsDead, true);
-                _animator.CrossFade("Die", 0.05f, 0, 0f);
+                _animator.CrossFade("Dead", 0.05f, 0, 0f);
                 break;
             case "Revive":
                 _animator.SetBool(BoolIsDead, false);

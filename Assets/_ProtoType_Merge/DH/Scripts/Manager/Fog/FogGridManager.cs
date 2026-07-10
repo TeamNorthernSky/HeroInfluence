@@ -100,6 +100,20 @@ public class FogGridManager : MonoBehaviour
             FogChanged?.Invoke();
     }
 
+    public void MarkUnexploredCellsAsFogged(RectInt bounds)
+    {
+        bool anyChanged = false;
+
+        for (int y = bounds.yMin; y < bounds.yMax; y++)
+        {
+            for (int x = bounds.xMin; x < bounds.xMax; x++)
+                anyChanged |= MarkUnexploredCellAsFogged(new Vector2Int(x, y));
+        }
+
+        if (anyChanged)
+            FogChanged?.Invoke();
+    }
+
     public void ApplyDayProgression()
     {
         if (!enableRefogByDay || refogDelayDays <= 0)
@@ -182,6 +196,27 @@ public class FogGridManager : MonoBehaviour
             CellVisibilityChanged?.Invoke(grid, cell.Visibility);
 
         return changed;
+    }
+
+    private bool MarkUnexploredCellAsFogged(Vector2Int grid)
+    {
+        if (!IsInBounds(grid))
+            return false;
+
+        if (fogCells.TryGetValue(grid, out FogCellData existing) &&
+            existing.Visibility != FogVisibilityState.Unexplored)
+        {
+            return false;
+        }
+
+        fogCells[grid] = new FogCellData
+        {
+            Visibility = FogVisibilityState.Fogged,
+            LastRevealedDay = currentDay
+        };
+
+        CellVisibilityChanged?.Invoke(grid, FogVisibilityState.Fogged);
+        return true;
     }
 
     private bool IsInBounds(Vector2Int grid)

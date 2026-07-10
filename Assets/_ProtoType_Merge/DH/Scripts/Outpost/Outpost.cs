@@ -19,6 +19,7 @@ public class Outpost : MonoBehaviour
     [SerializeField, Min(0)] private int enemyDefenderGroupIndex = 30001;
     [SerializeField] private string defenderEnemyId;
     [SerializeField] private string zoneId;
+    [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
 
     [Header("Visual")]
     [SerializeField] private Renderer targetRenderer;
@@ -37,10 +38,12 @@ public class Outpost : MonoBehaviour
     public int EnemyDefenderGroupIndex => enemyDefenderGroupIndex;
     public string DefenderEnemyId => defenderEnemyId;
     public string ZoneId => NormalizeZoneId(zoneId);
+    public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
 
     private void OnValidate()
     {
         outpostType = OutpostTypeUtility.Normalize(outpostType);
+        RefreshResolvedEnemyLevel();
     }
 
     private void Awake()
@@ -57,6 +60,7 @@ public class Outpost : MonoBehaviour
     {
         ResolveOutpostRegistry();
         outpostRegistry?.Register(this);
+        RefreshResolvedEnemyLevel();
     }
 
     private void OnDisable()
@@ -135,6 +139,7 @@ public class Outpost : MonoBehaviour
     {
         if (!string.IsNullOrWhiteSpace(loaderZoneId))
             zoneId = NormalizeZoneId(loaderZoneId);
+        RefreshResolvedEnemyLevel();
     }
     public void ApplyInitialData(int nextResourcePerTurn, OutpostState nextState)
     {
@@ -173,8 +178,15 @@ public class Outpost : MonoBehaviour
         ApplyStateMaterial();
     }
 
+    public void RefreshResolvedEnemyLevel()
+    {
+        resolvedEnemyLevel = ResolveZoneEnemyLevel(ZoneId);
+    }
+
     public bool EnsureDefenderParty()
     {
+        RefreshResolvedEnemyLevel();
+
         if (!Application.isPlaying || !IsEnemyClaimed)
             return false;
 
@@ -266,6 +278,13 @@ public class Outpost : MonoBehaviour
         defenderEnemyId = OutpostDefenderService.CreateDefenderEnemyId(GetProgressKey(gridManager));
     }
 
+    private static int ResolveZoneEnemyLevel(string targetZoneId)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.TryGetZoneEnemyLevel(targetZoneId, out int level)
+            ? Mathf.Max(1, level)
+            : 1;
+    }
     private static string NormalizeZoneId(string value)
     {
         return MapProgressKey.NormalizeSegment(value);
@@ -383,6 +402,7 @@ public static class OutpostDefenderService
             return false;
         }
 
+        int defenderLevel = ResolveZoneEnemyLevel(outpost.ZoneId);
         List<int> unitIndices = new List<int>(members.Count);
         List<int> unitSlots = new List<int>(members.Count);
         for (int i = 0; i < members.Count; i++)
@@ -399,10 +419,8 @@ public static class OutpostDefenderService
 
             int unitIndex = enemyRepository.CreateUnit(
                 templateKey,
-                1,
-                template.baseStats,
-                template.baseStats,
-                template.baseStats.HP);
+                defenderLevel,
+                template.baseStats);
             unitIndices.Add(unitIndex);
             unitSlots.Add(member.CombatSlot);
         }
@@ -415,6 +433,13 @@ public static class OutpostDefenderService
         return true;
     }
 
+    private static int ResolveZoneEnemyLevel(string zoneId)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.TryGetZoneEnemyLevel(zoneId, out int level)
+            ? Mathf.Max(1, level)
+            : 1;
+    }
     public static void RemoveDefenderParty(string enemyId)
     {
         if (string.IsNullOrWhiteSpace(enemyId))

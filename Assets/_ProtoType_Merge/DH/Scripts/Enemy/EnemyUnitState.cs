@@ -28,7 +28,7 @@ public class EnemyUnitState : MonoBehaviour
             return;
 
         baseStats = template.baseStats;
-        ingameStats = baseStats;
+        ingameStats = UnitStatCalculator.CalculateLevelAdjustedBaseStats(baseStats, template.levelupStats, Level);
         currentHp = Mathf.Max(0f, ingameStats.HP);
         SetIncapacitated(false);
     }

@@ -7,6 +7,7 @@ public class VillainUnionBase : MonoBehaviour
     [SerializeField, Min(0)] private int defenderEnemyGroupIndex = 30001;
     [SerializeField] private string defenderEnemyId;
     [SerializeField] private string zoneId;
+    [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
     [SerializeField] private GridManager gridManager;
     private VillainUnionBaseRegistry villainUnionBaseRegistry;
 
@@ -14,7 +15,12 @@ public class VillainUnionBase : MonoBehaviour
     public int DefenderEnemyGroupIndex => defenderEnemyGroupIndex;
     public string DefenderEnemyId => defenderEnemyId;
     public string ZoneId => NormalizeZoneId(zoneId);
+    public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
 
+    private void OnValidate()
+    {
+        RefreshResolvedEnemyLevel();
+    }
     private void Awake()
     {
         if (gridManager == null)
@@ -25,6 +31,7 @@ public class VillainUnionBase : MonoBehaviour
     {
         ResolveReferences();
         villainUnionBaseRegistry?.Register(this);
+        RefreshResolvedEnemyLevel();
     }
 
     private void OnDisable()
@@ -36,6 +43,7 @@ public class VillainUnionBase : MonoBehaviour
     {
         if (!string.IsNullOrWhiteSpace(loaderZoneId))
             zoneId = NormalizeZoneId(loaderZoneId);
+        RefreshResolvedEnemyLevel();
     }
     public Vector2Int GetCurrentGrid()
     {
@@ -98,8 +106,15 @@ public class VillainUnionBase : MonoBehaviour
         return dx <= 1 && dy <= 1 && (dx != 0 || dy != 0);
     }
 
+    public void RefreshResolvedEnemyLevel()
+    {
+        resolvedEnemyLevel = ResolveZoneEnemyLevel(ZoneId);
+    }
+
     public bool EnsureDefenderParty()
     {
+        RefreshResolvedEnemyLevel();
+
         if (!Application.isPlaying)
             return false;
 
@@ -119,6 +134,14 @@ public class VillainUnionBase : MonoBehaviour
             defenderEnemyGroupIndex = groupIndex;
 
         defenderEnemyId = string.IsNullOrWhiteSpace(enemyId) ? string.Empty : enemyId;
+    }
+
+    private static int ResolveZoneEnemyLevel(string targetZoneId)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.TryGetZoneEnemyLevel(targetZoneId, out int level)
+            ? Mathf.Max(1, level)
+            : 1;
     }
 
     private static string NormalizeZoneId(string value)
@@ -188,6 +211,7 @@ public static class VillainUnionDefenderService
             return false;
         }
 
+        int defenderLevel = ResolveZoneEnemyLevel(villainUnionBase.ZoneId);
         List<int> unitIndices = new List<int>(members.Count);
         List<int> unitSlots = new List<int>(members.Count);
         for (int i = 0; i < members.Count; i++)
@@ -204,10 +228,8 @@ public static class VillainUnionDefenderService
 
             int unitIndex = enemyRepository.CreateUnit(
                 templateKey,
-                1,
-                template.baseStats,
-                template.baseStats,
-                template.baseStats.HP);
+                defenderLevel,
+                template.baseStats);
             unitIndices.Add(unitIndex);
             unitSlots.Add(member.CombatSlot);
         }
@@ -220,6 +242,13 @@ public static class VillainUnionDefenderService
         return true;
     }
 
+    private static int ResolveZoneEnemyLevel(string zoneId)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.TryGetZoneEnemyLevel(zoneId, out int level)
+            ? Mathf.Max(1, level)
+            : 1;
+    }
     public static void RemoveDefenderParty(string enemyId)
     {
         if (string.IsNullOrWhiteSpace(enemyId))

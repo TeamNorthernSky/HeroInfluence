@@ -24,7 +24,7 @@ public class HeroUnionFogRevealer : MonoBehaviour
         for (int i = 0; i < heroUnions.Count; i++)
         {
             HeroUnionUnit heroUnion = heroUnions[i];
-            if (heroUnion == null)
+            if (heroUnion == null || !heroUnion.IsClaimedByHero)
                 continue;
 
             RevealHeroUnionArea(heroUnion);

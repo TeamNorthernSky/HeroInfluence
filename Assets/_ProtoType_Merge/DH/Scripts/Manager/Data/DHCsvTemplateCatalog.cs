@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -39,6 +40,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<int, PlayerUnitData>   playerUnitMasterMap = new Dictionary<int, PlayerUnitData>();
     private readonly Dictionary<int, PlayerWeaponData> weaponMasterMap    = new Dictionary<int, PlayerWeaponData>();
     private readonly Dictionary<int, ClassSkillData>   classSkillMasterMap = new Dictionary<int, ClassSkillData>();
+    private readonly Dictionary<int, List<int>>        classSkillIndexListByClassIndex = new Dictionary<int, List<int>>();
+    private readonly Dictionary<int, List<int>>        weaponIndexListByClassIndex = new Dictionary<int, List<int>>();
 
     // classIndex → (level → skillIndex)
     private readonly Dictionary<int, Dictionary<int, int>> skillUnlockByClassIndex
@@ -47,10 +50,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private static readonly Dictionary<int, System.Func<UnitGrowthExpData, int>> ClassUnlockAccessors
         = new Dictionary<int, System.Func<UnitGrowthExpData, int>>
     {
-        { 10001, d => d.FighterStudySkill   },
-        { 10002, d => d.BlasterStudySkill   },
-        { 10003, d => d.StrikerStudySkill   },
-        { 10004, d => d.SuppoterStudySkill  },
+        { 10001, d => ExtractNumericId(d.Character1StudySkill) },
+        { 10002, d => ExtractNumericId(d.Character2StudySkill) },
+        { 10003, d => ExtractNumericId(d.Character3StudySkill) },
+        { 10004, d => ExtractNumericId(d.Character4StudySkill) },
     };
 
     private bool isLoaded;
@@ -97,14 +100,18 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         EnsureLoaded();
         if (string.IsNullOrWhiteSpace(unitTemplateKey)) { template = null; return false; }
-        return playerTemplateLookup.TryGetValue(unitTemplateKey, out template);
+
+        string key = NormalizeNumericTemplateKey(unitTemplateKey);
+        return playerTemplateLookup.TryGetValue(key, out template);
     }
 
     public bool TryGetEnemyTemplate(string unitTemplateKey, out EnemyData template)
     {
         EnsureLoaded();
         if (string.IsNullOrWhiteSpace(unitTemplateKey)) { template = null; return false; }
-        return enemyTemplateLookup.TryGetValue(unitTemplateKey, out template);
+
+        string key = NormalizeNumericTemplateKey(unitTemplateKey);
+        return enemyTemplateLookup.TryGetValue(key, out template);
     }
 
     public bool TryGetWeapon(int weaponIndex, out WeaponData weaponData)
@@ -237,16 +244,15 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         var result = new List<SkillData>();
 
         if (classIndex <= 0 ||
-            !playerUnitMasterMap.TryGetValue(classIndex, out PlayerUnitData unitData) ||
-            unitData == null ||
-            unitData.ClassSkillIndexList == null)
+            !classSkillIndexListByClassIndex.TryGetValue(classIndex, out List<int> classSkillIndices) ||
+            classSkillIndices == null)
         {
             return result;
         }
 
-        for (int i = 0; i < unitData.ClassSkillIndexList.Count; i++)
+        for (int i = 0; i < classSkillIndices.Count; i++)
         {
-            int skillIndex = unitData.ClassSkillIndexList[i];
+            int skillIndex = classSkillIndices[i];
             if (skillIndex <= 0)
             {
                 continue;
@@ -256,6 +262,35 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             if (skill != null)
             {
                 result.Add(skill);
+            }
+        }
+
+        return result;
+    }
+
+    public List<WeaponData> GetWeaponsByClassIndex(int classIndex)
+    {
+        EnsureLoaded();
+        var result = new List<WeaponData>();
+
+        if (classIndex <= 0 ||
+            !weaponIndexListByClassIndex.TryGetValue(classIndex, out List<int> weaponIndices) ||
+            weaponIndices == null)
+        {
+            return result;
+        }
+
+        for (int i = 0; i < weaponIndices.Count; i++)
+        {
+            int weaponIndex = weaponIndices[i];
+            if (weaponIndex <= 0)
+            {
+                continue;
+            }
+
+            if (TryGetWeapon(weaponIndex, out WeaponData weapon) && weapon != null)
+            {
+                result.Add(weapon);
             }
         }
 
@@ -330,6 +365,16 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         EnsureLoaded();
         if (string.IsNullOrWhiteSpace(className)) return new List<SkillData>();
         string normalized = className.Trim();
+
+        if (TryResolvePlayerClassIndexByName(normalized, out int classIndex))
+        {
+            List<SkillData> byClassIndex = GetSkillsByClassIndex(classIndex);
+            if (byClassIndex.Count > 0)
+            {
+                return byClassIndex;
+            }
+        }
+
         var result = new List<SkillData>();
         foreach (var skill in skillTemplates.Values)
         {
@@ -348,6 +393,53 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     // SO DataTable 로드 경로
     // ─────────────────────────────────────────────────────────
 
+    public List<WeaponData> GetWeaponsByClass(string className)
+    {
+        EnsureLoaded();
+        if (string.IsNullOrWhiteSpace(className)) return new List<WeaponData>();
+
+        if (TryResolvePlayerClassIndexByName(className.Trim(), out int classIndex))
+        {
+            return GetWeaponsByClassIndex(classIndex);
+        }
+
+        return new List<WeaponData>();
+    }
+
+    private bool TryResolvePlayerClassIndexByName(string className, out int classIndex)
+    {
+        classIndex = 0;
+        if (string.IsNullOrWhiteSpace(className))
+        {
+            return false;
+        }
+
+        string normalized = className.Trim();
+        foreach (var pair in playerUnitMasterMap)
+        {
+            PlayerUnitData unit = pair.Value;
+            if (unit == null)
+            {
+                continue;
+            }
+
+            bool matchesClassName =
+                !string.IsNullOrWhiteSpace(unit.ClassName) &&
+                string.Equals(unit.ClassName.Trim(), normalized, System.StringComparison.OrdinalIgnoreCase);
+            bool matchesUnitName =
+                !string.IsNullOrWhiteSpace(unit.UnitName) &&
+                string.Equals(unit.UnitName.Trim(), normalized, System.StringComparison.OrdinalIgnoreCase);
+
+            if (matchesClassName || matchesUnitName)
+            {
+                classIndex = pair.Key;
+                return classIndex > 0;
+            }
+        }
+
+        return false;
+    }
+
     private void ReloadFromSOTables()
     {
         // ── 플레이어 유닛 ──────────────────────────────────────
@@ -356,20 +448,24 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             for (int i = 0; i < playerUnitDataTable.DataList.Count; i++)
             {
                 PlayerUnitData src = playerUnitDataTable.DataList[i];
-                if (src != null && src.ClassIndex > 0 && !playerUnitMasterMap.ContainsKey(src.ClassIndex))
+                int classIndex = src != null ? ExtractNumericId(src.ClassIndex) : 0;
+                if (src != null && classIndex > 0 && !playerUnitMasterMap.ContainsKey(classIndex))
                 {
-                    playerUnitMasterMap.Add(src.ClassIndex, src);
+                    playerUnitMasterMap.Add(classIndex, src);
+                    RegisterPlayerUnitIndexLists(classIndex, src);
                 }
 
                 UnitData unit = ConvertPlayerUnit(src);
                 if (unit == null || string.IsNullOrWhiteSpace(unit.Index)) continue;
 
-                if (playerTemplateLookup.ContainsKey(unit.Index))
+                string playerKey = NormalizeNumericTemplateKey(unit.Index);
+                if (playerTemplateLookup.ContainsKey(playerKey))
                 {
                     Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 플레이어 키 '{unit.Index}' 건너뜀.", this);
                     continue;
                 }
-                playerTemplateLookup.Add(unit.Index, unit);
+                unit.Index = playerKey;
+                playerTemplateLookup.Add(playerKey, unit);
                 cachedPlayerTemplates.Add(unit);
             }
         }
@@ -387,12 +483,13 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 EnemyData enemy = ConvertEnemyUnit(src);
                 if (enemy == null || string.IsNullOrWhiteSpace(enemy.Index)) continue;
 
-                if (enemyTemplateLookup.ContainsKey(enemy.Index))
+                string enemyKey = NormalizeNumericTemplateKey(enemy.Index);
+                if (enemyTemplateLookup.ContainsKey(enemyKey))
                 {
-                    Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 적 키 '{enemy.Index}' 건너뜀.", this);
+                    Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 적 키 '{enemyKey}' 건너뜀.", this);
                     continue;
                 }
-                enemyTemplateLookup.Add(enemy.Index, enemy);
+                RegisterEnemyTemplate(enemy);
                 cachedEnemyTemplates.Add(enemy);
 
                 // 적 내장 스킬 추출
@@ -517,9 +614,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private static UnitData ConvertPlayerUnit(PlayerUnitData src)
     {
         if (src == null) return null;
+        int classIndex = ExtractNumericId(src.ClassIndex);
         return new UnitData
         {
-            Index    = src.ClassIndex.ToString(),
+            Index    = classIndex > 0 ? classIndex.ToString() : src.ClassIndex.ToString(),
             UnitType = src.ClassName,
             Name     = src.UnitName,
             baseStats = new StatBlock(
@@ -542,12 +640,44 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
+    private void RegisterPlayerUnitIndexLists(int classIndex, PlayerUnitData src)
+    {
+        if (classIndex <= 0 || src == null)
+        {
+            return;
+        }
+
+        classSkillIndexListByClassIndex[classIndex] = ToIntIndexList(src.ClassSkillIndexList);
+        weaponIndexListByClassIndex[classIndex] = ToIntIndexList(src.WeaponIndexList);
+    }
+
+    private static List<int> ToIntIndexList(IReadOnlyList<string> source)
+    {
+        var result = new List<int>();
+        if (source == null)
+        {
+            return result;
+        }
+
+        for (int i = 0; i < source.Count; i++)
+        {
+            int index = ExtractNumericId(source[i]);
+            if (index > 0)
+            {
+                result.Add(index);
+            }
+        }
+
+        return result;
+    }
+
     private static EnemyData ConvertEnemyUnit(EnemyUnitData src)
     {
         if (src == null) return null;
+        int enemyIndex = ExtractNumericId(src.EnemyIndex);
         return new EnemyData
         {
-            Index    = src.EnemyIndex.ToString(),
+            Index    = enemyIndex > 0 ? enemyIndex.ToString() : src.EnemyIndex.ToString(),
             UnitType = string.Empty,
             Name     = src.EnemyName,
             baseStats = new StatBlock(
@@ -560,6 +690,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 critMultiplier: 1.5f,
                 counterRate:  src.CounterRate,
                 avoidRate:    src.ReduceRate),
+            levelupStats = new StatBlock(
+                hp:  src.LevelGrowthMaxHP,
+                atk: src.LevelGrowthAtk,
+                def: src.LevelGrowthDef,
+                luck: 0f, speed: 0f),
             IsEnemyRow      = true,
             UnitAI          = src.UnitAI,
             ExperiencePoint = src.ExperiencePoint
@@ -571,7 +706,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         string skillName = slot == 1 ? src.EnemySkill1_Name : src.EnemySkill2_Name;
         if (string.IsNullOrWhiteSpace(skillName)) return;
 
-        int skillIndex = (src.EnemyIndex * 10) + slot;
+        int enemyIndex = ExtractNumericId(src.EnemyIndex);
+        if (enemyIndex <= 0) return;
+
+        int skillIndex = (enemyIndex * 10) + slot;
         if (skillTemplates.ContainsKey(skillIndex))
         {
             Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 적 스킬 인덱스 {skillIndex} 건너뜀.", this);
@@ -630,10 +768,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private static WeaponData ConvertWeapon(PlayerWeaponData src)
     {
         if (src == null) return null;
+        int weaponIndex = ExtractNumericId(src.WeaponIndex);
         return new WeaponData
         {
-            WeaponIndex          = src.WeaponIndex,
-            weaponClass          = src.Class,
+            WeaponIndex          = weaponIndex,
+            weaponClass          = ResolveWeaponClass(weaponIndex),
             WeaponName           = src.WeaponName,
             WeaponDescription    = src.WaeponDescription,
             // Lv1 스탯을 기본값으로 사용
@@ -660,12 +799,63 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
+    /// <summary>시트 ID가 "HS1010", "FV20001" 같은 접두어+숫자 코드로 바뀌어도 내부 로직은 숫자만 사용하도록 추출합니다.</summary>
+    private static int ExtractNumericId(int code)
+    {
+        return code;
+    }
+
+    private static int ExtractNumericId(string code)
+    {
+        if (string.IsNullOrEmpty(code)) return 0;
+        Match match = Regex.Match(code, @"\d+");
+        return match.Success ? int.Parse(match.Value) : 0;
+    }
+
+    private static string NormalizeNumericTemplateKey(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return string.Empty;
+        }
+
+        int numericId = ExtractNumericId(key);
+        return numericId > 0 ? numericId.ToString() : key.Trim();
+    }
+
+    private void RegisterEnemyTemplate(EnemyData template)
+    {
+        if (template == null || string.IsNullOrWhiteSpace(template.Index))
+        {
+            return;
+        }
+
+        string normalizedKey = NormalizeNumericTemplateKey(template.Index);
+        template.Index = normalizedKey;
+        enemyTemplateLookup.Add(normalizedKey, template);
+    }
+
+    private static string ResolveWeaponClass(int weaponIndex)
+    {
+        int classCode = (weaponIndex / 100) % 100;
+        switch (classCode)
+        {
+            case 1: return "가디언";
+            case 2: return "블래스터";
+            case 3: return "스트라이커";
+            case 4: return "서포터";
+            case 5: return "파이터";
+            default: return string.Empty;
+        }
+    }
+
     private static SkillData ConvertClassSkill(ClassSkillData src)
     {
         if (src == null) return null;
+        int classSkillIndex = ExtractNumericId(src.ClassSkillIndex);
         return new SkillData
         {
-            skillIndex          = src.ClassSkillIndex,
+            skillIndex          = classSkillIndex,
             skillClass          = src.Class,
             acquireLevel        = src.ClassSkill_AcquireRank,
             skillName           = src.ClassSkillName,
@@ -718,12 +908,15 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             UnitData template = playerTemplates[i];
             if (template == null || string.IsNullOrWhiteSpace(template.Index)) continue;
-            if (playerTemplateLookup.ContainsKey(template.Index))
+
+            string playerKey = NormalizeNumericTemplateKey(template.Index);
+            if (playerTemplateLookup.ContainsKey(playerKey))
             {
                 Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 플레이어 템플릿 키 '{template.Index}'를 건너뜁니다.", this);
                 continue;
             }
-            playerTemplateLookup.Add(template.Index, template);
+            template.Index = playerKey;
+            playerTemplateLookup.Add(playerKey, template);
             cachedPlayerTemplates.Add(template);
         }
 
@@ -734,12 +927,14 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             EnemyData template = enemyTemplates[i];
             if (template == null || string.IsNullOrWhiteSpace(template.Index)) continue;
-            if (enemyTemplateLookup.ContainsKey(template.Index))
+
+            string enemyKey = NormalizeNumericTemplateKey(template.Index);
+            if (enemyTemplateLookup.ContainsKey(enemyKey))
             {
-                Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 적 템플릿 키 '{template.Index}'를 건너뜁니다.", this);
+                Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 적 템플릿 키 '{enemyKey}'를 건너뜁니다.", this);
                 continue;
             }
-            enemyTemplateLookup.Add(template.Index, template);
+            RegisterEnemyTemplate(template);
             cachedEnemyTemplates.Add(template);
         }
 
@@ -789,6 +984,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         playerUnitMasterMap.Clear();
         weaponMasterMap.Clear();
         classSkillMasterMap.Clear();
+        classSkillIndexListByClassIndex.Clear();
+        weaponIndexListByClassIndex.Clear();
         enemyGroupLookup.Clear();
         skillUnlockByClassIndex.Clear();
         isLoaded = false;

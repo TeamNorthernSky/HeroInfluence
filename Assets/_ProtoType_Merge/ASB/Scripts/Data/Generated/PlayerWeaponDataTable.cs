@@ -6,8 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class PlayerWeaponData
 {
-    public int WeaponIndex;
-    public string Class;
+    public string WeaponIndex;
     public string WeaponName;
     public string WaeponDescription;
     public int BonusMaxHPLv1;

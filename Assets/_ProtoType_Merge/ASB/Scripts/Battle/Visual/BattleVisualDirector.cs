@@ -10,6 +10,11 @@ public class BattleVisualDirector : MonoBehaviour
     [SerializeField] private SkillPresentationCatalog _catalog;
     [SerializeField] private DamagePopupPresenter _popupPresenter;
 
+    public SkillPresentationData GetPresentation(int skillIndex)
+    {
+        return _catalog != null ? _catalog.Get(skillIndex) : null;
+    }
+
     public void PlayAttackEffect(BattleCharactor actor, int skillIndex)
     {
         SkillPresentationData presentation = _catalog?.Get(skillIndex);

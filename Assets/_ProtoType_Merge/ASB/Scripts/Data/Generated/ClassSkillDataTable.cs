@@ -6,7 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class ClassSkillData
 {
-    public int ClassSkillIndex;
+    public string ClassSkillIndex;
     public string Class;
     public int ClassSkill_AcquireRank;
     public string ClassSkillName;
@@ -29,6 +29,8 @@ public class ClassSkillData
     public float ClassSkillSubValueLv4;
     public float ClassSkillValueLv5;
     public float ClassSkillSubValueLv5;
+    public string ReplaceSkillIndex;
+    public string SkillRiskIndex;
 }
 
 [CreateAssetMenu(fileName="ClassSkillDataTable", menuName="DataTable/ClassSkill")]
