@@ -38,7 +38,8 @@ public class PersistentEnemyRepository : MonoBehaviour
 
     public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats)
     {
-        return CreateUnit(unitTemplateKey, level, baseStats, baseStats, baseStats.HP);
+        StatBlock ingameStats = CalculateEnemyIngameStats(unitTemplateKey, baseStats, level);
+        return CreateUnit(unitTemplateKey, level, baseStats, ingameStats, ingameStats.HP);
     }
 
     public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock ingameStats, float currentHp, float currentInfluence = -1f)
@@ -87,6 +88,72 @@ public class PersistentEnemyRepository : MonoBehaviour
         return true;
     }
 
+    public bool ApplyLevelUp(int unitIndex, int amount = 1)
+    {
+        if (unitIndex <= 0 || !unitLookup.TryGetValue(unitIndex, out EnemyUnitPersistentData data))
+            return false;
+
+        int safeAmount = Mathf.Max(0, amount);
+        if (safeAmount <= 0)
+            return true;
+
+        return ApplyEnemyLevel(data, data.Level + safeAmount, true);
+    }
+
+    public bool SetUnitLevel(int unitIndex, int nextLevel)
+    {
+        if (unitIndex <= 0 || !unitLookup.TryGetValue(unitIndex, out EnemyUnitPersistentData data))
+            return false;
+
+        return ApplyEnemyLevel(data, nextLevel, false);
+    }
+
+    private static bool ApplyEnemyLevel(EnemyUnitPersistentData data, int nextLevel, bool healByMaxHpDelta)
+    {
+        if (data == null)
+            return false;
+
+        int safeNextLevel = Mathf.Max(1, nextLevel);
+        float previousMaxHp = Mathf.Max(0f, data.IngameStats.HP);
+        StatBlock nextIngameStats = CalculateEnemyIngameStats(data.UnitTemplateKey, data.BaseStats, safeNextLevel);
+        float nextMaxHp = Mathf.Max(0f, nextIngameStats.HP);
+        float nextCurrentHp = data.CurrentHp;
+
+        if (healByMaxHpDelta)
+        {
+            float maxHpDelta = Mathf.Max(0f, nextMaxHp - previousMaxHp);
+            nextCurrentHp += maxHpDelta;
+        }
+
+        nextCurrentHp = Mathf.Clamp(nextCurrentHp, 0f, nextMaxHp);
+        data.ApplyRuntimeState(
+            data.UnitTemplateKey,
+            safeNextLevel,
+            data.BaseStats,
+            nextIngameStats,
+            nextCurrentHp,
+            data.CurrentInfluence,
+            data.IsIncapacitated);
+        return true;
+    }
+
+    private static StatBlock CalculateEnemyIngameStats(string unitTemplateKey, StatBlock baseStats, int level)
+    {
+        StatBlock levelupStats = ResolveEnemyLevelupStats(unitTemplateKey);
+        return UnitStatCalculator.CalculateLevelAdjustedBaseStats(baseStats, levelupStats, level);
+    }
+
+    private static StatBlock ResolveEnemyLevelupStats(string unitTemplateKey)
+    {
+        if (string.IsNullOrWhiteSpace(unitTemplateKey))
+            return default;
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null && catalog.TryGetEnemyTemplate(unitTemplateKey, out EnemyData template) && template != null)
+            return template.levelupStats;
+
+        return default;
+    }
     public bool SetIncapacitated(int unitIndex, bool isIncapacitated)
     {
         if (unitIndex <= 0 || !unitLookup.TryGetValue(unitIndex, out EnemyUnitPersistentData data))

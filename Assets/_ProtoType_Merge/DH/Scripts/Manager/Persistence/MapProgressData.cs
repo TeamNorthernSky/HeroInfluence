@@ -231,6 +231,33 @@ public class ZoneThreatProgressState
 }
 
 [Serializable]
+public class ZoneEnemyLevelState
+{
+    [SerializeField] private string zoneId;
+    [SerializeField] private bool initialized;
+    [SerializeField] private int enemyLevel;
+
+    public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+    public bool Initialized => initialized;
+    public int EnemyLevel => Mathf.Max(1, enemyLevel);
+
+    public ZoneEnemyLevelState(string zoneId, int enemyLevel)
+    {
+        this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
+        initialized = true;
+        this.enemyLevel = Mathf.Max(1, enemyLevel);
+    }
+
+    public void Initialize(int nextEnemyLevel)
+    {
+        if (initialized)
+            return;
+
+        initialized = true;
+        enemyLevel = Mathf.Max(1, nextEnemyLevel);
+    }
+}
+[Serializable]
 public class EnemyWorldState
 {
     public const string DefaultPrefabKey = "default";
@@ -241,6 +268,7 @@ public class EnemyWorldState
     [SerializeField] private bool defeated;
     [SerializeField] private EnemyPlacementSource placementSource = EnemyPlacementSource.Scene;
     [SerializeField] private string prefabKey = DefaultPrefabKey;
+    [SerializeField] private string zoneId;
 
     public string PlacementKey => placementKey;
     public string EnemyId => enemyId;
@@ -248,9 +276,10 @@ public class EnemyWorldState
     public bool Defeated => defeated;
     public EnemyPlacementSource PlacementSource => placementSource;
     public string PrefabKey => prefabKey;
+    public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
 
     public EnemyWorldState(string placementKey, string enemyId, Vector2Int grid)
-        : this(placementKey, enemyId, grid, EnemyPlacementSource.Scene, DefaultPrefabKey)
+        : this(placementKey, enemyId, grid, EnemyPlacementSource.Scene, DefaultPrefabKey, string.Empty)
     {
     }
 
@@ -260,12 +289,24 @@ public class EnemyWorldState
         Vector2Int grid,
         EnemyPlacementSource placementSource,
         string prefabKey)
+        : this(placementKey, enemyId, grid, placementSource, prefabKey, string.Empty)
+    {
+    }
+
+    public EnemyWorldState(
+        string placementKey,
+        string enemyId,
+        Vector2Int grid,
+        EnemyPlacementSource placementSource,
+        string prefabKey,
+        string zoneId)
     {
         this.placementKey = placementKey;
         this.enemyId = enemyId;
         this.grid = grid;
         this.placementSource = placementSource;
         this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? DefaultPrefabKey : prefabKey;
+        this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
         defeated = false;
     }
 
@@ -293,8 +334,12 @@ public class EnemyWorldState
     {
         prefabKey = string.IsNullOrWhiteSpace(nextPrefabKey) ? DefaultPrefabKey : nextPrefabKey;
     }
-}
 
+    public void SetZoneId(string nextZoneId)
+    {
+        zoneId = MapProgressKey.NormalizeSegment(nextZoneId);
+    }
+}
 [Serializable]
 public class OutpostProgressState
 {

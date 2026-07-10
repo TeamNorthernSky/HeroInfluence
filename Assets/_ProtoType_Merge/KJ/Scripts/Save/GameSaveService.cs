@@ -150,6 +150,7 @@ public static class GameSaveService
         data.heroUnionStates.AddRange(repo.HeroUnionStates);
         data.gateStates.AddRange(repo.GateStates);
         data.zoneThreatStates.AddRange(repo.ZoneThreatStates);
+        data.zoneEnemyLevelStates.AddRange(repo.ZoneEnemyLevelStates);
     }
 
     private static void CaptureEconomy(GameSaveData data)

@@ -18,6 +18,7 @@ public class MapProgressRepository : MonoBehaviour
     [SerializeField] private List<HeroUnionProgressState> heroUnionStates = new List<HeroUnionProgressState>();
     [SerializeField] private List<GateProgressState> gateStates = new List<GateProgressState>();
     [SerializeField] private List<ZoneThreatProgressState> zoneThreatStates = new List<ZoneThreatProgressState>();
+    [SerializeField] private List<ZoneEnemyLevelState> zoneEnemyLevelStates = new List<ZoneEnemyLevelState>();
 
     private readonly HashSet<string> collectedItemLookup = new HashSet<string>();
     private readonly HashSet<string> completedEventLookup = new HashSet<string>();
@@ -28,6 +29,7 @@ public class MapProgressRepository : MonoBehaviour
     private readonly Dictionary<string, HeroUnionProgressState> heroUnionStateLookup = new Dictionary<string, HeroUnionProgressState>();
     private readonly Dictionary<string, GateProgressState> gateStateLookup = new Dictionary<string, GateProgressState>();
     private readonly Dictionary<string, ZoneThreatProgressState> zoneThreatStateLookup = new Dictionary<string, ZoneThreatProgressState>();
+    private readonly Dictionary<string, ZoneEnemyLevelState> zoneEnemyLevelStateLookup = new Dictionary<string, ZoneEnemyLevelState>();
 
     public string MapId => mapId;
     public IReadOnlyList<string> CollectedItemKeys => collectedItemKeys;
@@ -40,6 +42,7 @@ public class MapProgressRepository : MonoBehaviour
     public IReadOnlyList<HeroUnionProgressState> HeroUnionStates => heroUnionStates;
     public IReadOnlyList<GateProgressState> GateStates => gateStates;
     public IReadOnlyList<ZoneThreatProgressState> ZoneThreatStates => zoneThreatStates;
+    public IReadOnlyList<ZoneEnemyLevelState> ZoneEnemyLevelStates => zoneEnemyLevelStates;
 
     private void Awake()
     {
@@ -262,14 +265,26 @@ public class MapProgressRepository : MonoBehaviour
         EnemyPlacementSource placementSource,
         string prefabKey)
     {
+        BindEnemy(placementKey, enemyId, grid, placementSource, prefabKey, string.Empty);
+    }
+
+    public void BindEnemy(
+        string placementKey,
+        string enemyId,
+        Vector2Int grid,
+        EnemyPlacementSource placementSource,
+        string prefabKey,
+        string zoneId)
+    {
         if (!IsValidKey(placementKey) || string.IsNullOrWhiteSpace(enemyId))
             return;
 
-        EnemyWorldState state = GetOrCreateEnemyState(NormalizeKey(placementKey), enemyId, grid, placementSource, prefabKey);
+        EnemyWorldState state = GetOrCreateEnemyState(NormalizeKey(placementKey), enemyId, grid, placementSource, prefabKey, zoneId);
         state.SetEnemyId(enemyId);
         state.SetGrid(grid);
         state.SetPlacementSource(placementSource);
         state.SetPrefabKey(prefabKey);
+        state.SetZoneId(zoneId);
         state.SetDefeated(false);
     }
 
@@ -283,6 +298,12 @@ public class MapProgressRepository : MonoBehaviour
     {
         if (TryGetEnemyState(placementKey, out EnemyWorldState state))
             state.SetDefeated(true);
+    }
+
+    public void SetEnemyZone(string placementKey, string zoneId)
+    {
+        if (TryGetEnemyState(placementKey, out EnemyWorldState state))
+            state.SetZoneId(zoneId);
     }
 
     public void MarkEnemyActive(string placementKey)
@@ -429,6 +450,30 @@ public class MapProgressRepository : MonoBehaviour
             state.ClearActiveEnemy();
     }
 
+    public bool TryGetZoneEnemyLevel(string zoneId, out int enemyLevel)
+    {
+        enemyLevel = 1;
+        string normalizedZoneId = NormalizeKey(zoneId);
+        if (!IsValidKey(normalizedZoneId))
+            return false;
+
+        if (!zoneEnemyLevelStateLookup.TryGetValue(normalizedZoneId, out ZoneEnemyLevelState state) || state == null || !state.Initialized)
+            return false;
+
+        enemyLevel = state.EnemyLevel;
+        return true;
+    }
+
+    public int EnsureZoneEnemyLevel(string zoneId, int enemyLevel)
+    {
+        string normalizedZoneId = NormalizeKey(zoneId);
+        if (!IsValidKey(normalizedZoneId))
+            return Mathf.Max(1, enemyLevel);
+
+        ZoneEnemyLevelState state = GetOrCreateZoneEnemyLevelState(normalizedZoneId, enemyLevel);
+        state.Initialize(enemyLevel);
+        return state.EnemyLevel;
+    }
     public void RestoreFromSave(
         string restoredMapId,
         IEnumerable<string> restoredCollectedItemKeys,
@@ -440,7 +485,8 @@ public class MapProgressRepository : MonoBehaviour
         IEnumerable<LevelZoneSelectionState> restoredLevelZoneSelections,
         IEnumerable<HeroUnionProgressState> restoredHeroUnionStates,
         IEnumerable<GateProgressState> restoredGateStates,
-        IEnumerable<ZoneThreatProgressState> restoredZoneThreatStates)
+        IEnumerable<ZoneThreatProgressState> restoredZoneThreatStates,
+        IEnumerable<ZoneEnemyLevelState> restoredZoneEnemyLevelStates)
     {
         mapId = string.IsNullOrWhiteSpace(restoredMapId)
             ? "default"
@@ -456,6 +502,7 @@ public class MapProgressRepository : MonoBehaviour
         ReplaceList(heroUnionStates, restoredHeroUnionStates);
         ReplaceList(gateStates, restoredGateStates);
         ReplaceList(zoneThreatStates, restoredZoneThreatStates);
+        ReplaceList(zoneEnemyLevelStates, restoredZoneEnemyLevelStates);
         RebuildLookups();
     }
     public void ClearAllProgress()
@@ -470,6 +517,7 @@ public class MapProgressRepository : MonoBehaviour
         heroUnionStates.Clear();
         gateStates.Clear();
         zoneThreatStates.Clear();
+        zoneEnemyLevelStates.Clear();
         RebuildLookups();
     }
 
@@ -507,6 +555,16 @@ public class MapProgressRepository : MonoBehaviour
         return state;
     }
 
+    private ZoneEnemyLevelState GetOrCreateZoneEnemyLevelState(string zoneId, int enemyLevel)
+    {
+        if (zoneEnemyLevelStateLookup.TryGetValue(zoneId, out ZoneEnemyLevelState state))
+            return state;
+
+        state = new ZoneEnemyLevelState(zoneId, enemyLevel);
+        zoneEnemyLevelStates.Add(state);
+        zoneEnemyLevelStateLookup[zoneId] = state;
+        return state;
+    }
     private PartyWorldState GetOrCreatePartyState(string placementKey, string partyId, Vector2Int grid)
     {
         return GetOrCreatePartyState(placementKey, partyId, grid, PartyPlacementSource.Scene, PartyWorldState.DefaultPrefabKey);
@@ -540,10 +598,21 @@ public class MapProgressRepository : MonoBehaviour
         EnemyPlacementSource placementSource,
         string prefabKey)
     {
+        return GetOrCreateEnemyState(placementKey, enemyId, grid, placementSource, prefabKey, string.Empty);
+    }
+
+    private EnemyWorldState GetOrCreateEnemyState(
+        string placementKey,
+        string enemyId,
+        Vector2Int grid,
+        EnemyPlacementSource placementSource,
+        string prefabKey,
+        string zoneId)
+    {
         if (enemyWorldLookup.TryGetValue(placementKey, out EnemyWorldState state))
             return state;
 
-        state = new EnemyWorldState(placementKey, enemyId, grid, placementSource, prefabKey);
+        state = new EnemyWorldState(placementKey, enemyId, grid, placementSource, prefabKey, zoneId);
         enemyWorldStates.Add(state);
         enemyWorldLookup[placementKey] = state;
         return state;
@@ -586,6 +655,7 @@ public class MapProgressRepository : MonoBehaviour
         heroUnionStateLookup.Clear();
         gateStateLookup.Clear();
         zoneThreatStateLookup.Clear();
+        zoneEnemyLevelStateLookup.Clear();
 
         RebuildKeyLookup(collectedItemKeys, collectedItemLookup, "collected item key");
         RebuildKeyLookup(completedEventKeys, completedEventLookup, "completed event key");
@@ -700,6 +770,21 @@ public class MapProgressRepository : MonoBehaviour
             }
 
             zoneThreatStateLookup.Add(key, state);
+        }
+        for (int i = 0; i < zoneEnemyLevelStates.Count; i++)
+        {
+            ZoneEnemyLevelState state = zoneEnemyLevelStates[i];
+            if (state == null || !IsValidKey(state.ZoneId))
+                continue;
+
+            string key = NormalizeKey(state.ZoneId);
+            if (zoneEnemyLevelStateLookup.ContainsKey(key))
+            {
+                Debug.LogWarning($"MapProgressRepository has duplicate zone enemy level id '{key}'.", this);
+                continue;
+            }
+
+            zoneEnemyLevelStateLookup.Add(key, state);
         }
     }
 

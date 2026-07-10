@@ -29,7 +29,8 @@ public static class DHGameStateRestoreService
             data.levelZoneSelections,
             data.heroUnionStates,
             data.gateStates,
-            data.zoneThreatStates);
+            data.zoneThreatStates,
+            data.zoneEnemyLevelStates);
     }
 
     public static void ApplySceneState()

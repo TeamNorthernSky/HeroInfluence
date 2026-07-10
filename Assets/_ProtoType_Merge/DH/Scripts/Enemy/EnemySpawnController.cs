@@ -212,7 +212,8 @@ public class EnemySpawnController : MonoBehaviour
         spawnedEnemy.SnapToGridPosition(spawnGrid);
 
         EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, spawnGrid, placementKey, runtimeEnemyGroupIndex))
+        int enemyLevel = ResolveZoneEnemyLevelFromPlacementKey(placementKey);
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, spawnGrid, placementKey, runtimeEnemyGroupIndex, enemyLevel, ExtractZoneIdFromRuntimePlacementKey(placementKey)))
         {
             Destroy(spawnedEnemy.gameObject);
             return false;
@@ -325,7 +326,9 @@ public class EnemySpawnController : MonoBehaviour
         EnemyGridMover enemy,
         Vector2Int grid,
         string placementKey,
-        int enemyGroupIndex)
+        int enemyGroupIndex,
+        int enemyLevel = 1,
+        string zoneId = "")
     {
         if (enemyBootstrap == null || enemy == null)
             return false;
@@ -356,9 +359,31 @@ public class EnemySpawnController : MonoBehaviour
             EnemyBehaviorType.Mobile,
             placementKey,
             EnemyPlacementSource.Runtime,
-            enemyGroupIndex.ToString());
+            enemyGroupIndex.ToString(),
+            enemyLevel,
+            zoneId);
     }
 
+    private static int ResolveZoneEnemyLevelFromPlacementKey(string placementKey)
+    {
+        string zoneId = ExtractZoneIdFromRuntimePlacementKey(placementKey);
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.TryGetZoneEnemyLevel(zoneId, out int level)
+            ? Mathf.Max(1, level)
+            : 1;
+    }
+
+    private static string ExtractZoneIdFromRuntimePlacementKey(string placementKey)
+    {
+        string normalized = MapProgressKey.NormalizeSegment(placementKey);
+        const string prefix = "runtime_enemy_gate_threat_";
+        if (string.IsNullOrWhiteSpace(normalized) || !normalized.StartsWith(prefix, System.StringComparison.Ordinal))
+            return string.Empty;
+
+        string remainder = normalized.Substring(prefix.Length);
+        int lastUnderscore = remainder.LastIndexOf('_');
+        return lastUnderscore > 0 ? remainder.Substring(0, lastUnderscore) : remainder;
+    }
     private int ResolveRuntimeEnemyGroupIndex(EnemyWorldState state)
     {
         if (state != null &&
