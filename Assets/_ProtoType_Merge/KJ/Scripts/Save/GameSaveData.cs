@@ -41,6 +41,9 @@ public class GameSaveData : ScriptableObject
     public List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
     public List<FogProgressCell> fogCells = new List<FogProgressCell>();
     public List<LevelZoneSelectionState> levelZoneSelections = new List<LevelZoneSelectionState>();
+    public List<HeroUnionProgressState> heroUnionStates = new List<HeroUnionProgressState>();
+    public List<GateProgressState> gateStates = new List<GateProgressState>();
+    public List<ZoneThreatProgressState> zoneThreatStates = new List<ZoneThreatProgressState>();
 
     // ── 자원 (JsonUtility가 Dictionary 미지원 → 엔트리 배열) ──
     [Serializable]

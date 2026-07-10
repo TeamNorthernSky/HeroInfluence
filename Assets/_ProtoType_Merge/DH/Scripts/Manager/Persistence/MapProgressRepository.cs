@@ -429,6 +429,35 @@ public class MapProgressRepository : MonoBehaviour
             state.ClearActiveEnemy();
     }
 
+    public void RestoreFromSave(
+        string restoredMapId,
+        IEnumerable<string> restoredCollectedItemKeys,
+        IEnumerable<string> restoredCompletedEventKeys,
+        IEnumerable<PartyWorldState> restoredPartyWorldStates,
+        IEnumerable<EnemyWorldState> restoredEnemyWorldStates,
+        IEnumerable<OutpostProgressState> restoredOutpostStates,
+        IEnumerable<FogProgressCell> restoredFogCells,
+        IEnumerable<LevelZoneSelectionState> restoredLevelZoneSelections,
+        IEnumerable<HeroUnionProgressState> restoredHeroUnionStates,
+        IEnumerable<GateProgressState> restoredGateStates,
+        IEnumerable<ZoneThreatProgressState> restoredZoneThreatStates)
+    {
+        mapId = string.IsNullOrWhiteSpace(restoredMapId)
+            ? "default"
+            : MapProgressKey.NormalizeSegment(restoredMapId);
+
+        ReplaceList(collectedItemKeys, restoredCollectedItemKeys);
+        ReplaceList(completedEventKeys, restoredCompletedEventKeys);
+        ReplaceList(partyWorldStates, restoredPartyWorldStates);
+        ReplaceList(enemyWorldStates, restoredEnemyWorldStates);
+        ReplaceList(outpostStates, restoredOutpostStates);
+        ReplaceList(fogCells, restoredFogCells);
+        ReplaceList(levelZoneSelections, restoredLevelZoneSelections);
+        ReplaceList(heroUnionStates, restoredHeroUnionStates);
+        ReplaceList(gateStates, restoredGateStates);
+        ReplaceList(zoneThreatStates, restoredZoneThreatStates);
+        RebuildLookups();
+    }
     public void ClearAllProgress()
     {
         collectedItemKeys.Clear();
@@ -699,6 +728,15 @@ public class MapProgressRepository : MonoBehaviour
         source.Add(normalizedKey);
     }
 
+    private static void ReplaceList<T>(List<T> target, IEnumerable<T> source)
+    {
+        target.Clear();
+        if (source == null)
+            return;
+
+        foreach (T item in source)
+            target.Add(item);
+    }
     private static bool IsValidKey(string key)
     {
         return !string.IsNullOrWhiteSpace(key);

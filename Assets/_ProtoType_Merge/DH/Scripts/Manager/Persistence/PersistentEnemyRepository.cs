@@ -104,6 +104,31 @@ public class PersistentEnemyRepository : MonoBehaviour
         return true;
     }
 
+    public void RestoreFromSave(int restoredNextUnitIndex, IReadOnlyList<EnemyUnitPersistentDataDiskRow> savedUnits)
+    {
+        units.Clear();
+        unitLookup.Clear();
+
+        if (savedUnits != null)
+        {
+            for (int i = 0; i < savedUnits.Count; i++)
+            {
+                EnemyUnitPersistentDataDiskRow row = savedUnits[i];
+                if (row == null)
+                    continue;
+
+                EnemyUnitPersistentData data = row.ToEnemyUnitPersistentData();
+                if (data == null || data.UnitIndex <= 0 || unitLookup.ContainsKey(data.UnitIndex))
+                    continue;
+
+                units.Add(data);
+                unitLookup.Add(data.UnitIndex, data);
+            }
+        }
+
+        nextUnitIndex = Mathf.Max(1, restoredNextUnitIndex);
+        RebuildLookup();
+    }
     public void ClearAllEnemies()
     {
         units.Clear();

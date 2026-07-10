@@ -102,6 +102,27 @@ public class EnemyGroupPersistentRepository : MonoBehaviour
         return true;
     }
 
+    public void RestoreFromSave(int restoredNextEnemySequence, IReadOnlyList<EnemyPersistentData> savedEnemies)
+    {
+        enemies.Clear();
+        enemyLookup.Clear();
+
+        if (savedEnemies != null)
+        {
+            for (int i = 0; i < savedEnemies.Count; i++)
+            {
+                EnemyPersistentData data = savedEnemies[i];
+                if (data == null || string.IsNullOrWhiteSpace(data.EnemyId) || enemyLookup.ContainsKey(data.EnemyId))
+                    continue;
+
+                enemies.Add(data);
+                enemyLookup.Add(data.EnemyId, data);
+            }
+        }
+
+        nextEnemySequence = Mathf.Max(1, restoredNextEnemySequence);
+        RebuildLookup();
+    }
     public void ClearAllEnemies()
     {
         enemies.Clear();

@@ -79,6 +79,26 @@ public class PartyPersistentRepository : MonoBehaviour
         return true;
     }
 
+    public void RestoreFromSave(IReadOnlyList<PartyPersistentData> savedParties)
+    {
+        parties.Clear();
+        partyLookup.Clear();
+
+        if (savedParties != null)
+        {
+            for (int i = 0; i < savedParties.Count; i++)
+            {
+                PartyPersistentData data = savedParties[i];
+                if (data == null || string.IsNullOrWhiteSpace(data.PartyId) || partyLookup.ContainsKey(data.PartyId))
+                    continue;
+
+                parties.Add(data);
+                partyLookup.Add(data.PartyId, data);
+            }
+        }
+
+        RebuildLookup();
+    }
     public void ClearAllParties()
     {
         parties.Clear();

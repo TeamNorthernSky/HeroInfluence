@@ -62,6 +62,10 @@ public class GateRuntimeController : MonoBehaviour
         TryRegister();
     }
 
+    public void RefreshFromProgress()
+    {
+        ApplyProgressOrInitialState();
+    }
     public bool ContainsZone(string zoneId)
     {
         string normalizedZoneId = NormalizeId(zoneId);
