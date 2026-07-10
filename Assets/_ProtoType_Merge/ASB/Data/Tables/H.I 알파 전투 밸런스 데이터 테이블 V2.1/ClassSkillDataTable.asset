@@ -40,6 +40,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0101
   - ClassSkillIndex: HS1020
     Class: "\uC800\uC2A4\uD2F0\uC2A4"
     ClassSkill_AcquireRank: 2
@@ -66,6 +68,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.2
     ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0.2
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0102
   - ClassSkillIndex: HS1030
     Class: "\uC800\uC2A4\uD2F0\uC2A4"
     ClassSkill_AcquireRank: 3
@@ -94,6 +98,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.8
     ClassSkillValueLv5: 0.6
     ClassSkillSubValueLv5: 0.8
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0103
   - ClassSkillIndex: HS1040
     Class: "\uC800\uC2A4\uD2F0\uC2A4"
     ClassSkill_AcquireRank: 4
@@ -120,6 +126,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 0
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0101
   - ClassSkillIndex: HS1011
     Class: "\uC800\uC2A4\uD2F0\uC2A4"
     ClassSkill_AcquireRank: 5
@@ -147,6 +155,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 1.2
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS1010
+    SkillRiskIndex: R0101
   - ClassSkillIndex: HS1021
     Class: "\uC800\uC2A4\uD2F0\uC2A4"
     ClassSkill_AcquireRank: 6
@@ -173,6 +183,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.2
     ClassSkillValueLv5: 1.2
     ClassSkillSubValueLv5: 0.2
+    ReplaceSkillIndex: HS1020
+    SkillRiskIndex: R0102
   - ClassSkillIndex: HS1031
     Class: "\uC800\uC2A4\uD2F0\uC2A4"
     ClassSkill_AcquireRank: 7
@@ -201,6 +213,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.9
     ClassSkillValueLv5: 0.7
     ClassSkillSubValueLv5: 0.9
+    ReplaceSkillIndex: HS1030
+    SkillRiskIndex: R0103
   - ClassSkillIndex: HS1041
     Class: "\uC800\uC2A4\uD2F0\uC2A4"
     ClassSkill_AcquireRank: 8
@@ -227,6 +241,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 0
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS1040
+    SkillRiskIndex: R0101
   - ClassSkillIndex: HS2010
     Class: "\uB8E8\uBBF8\uB098"
     ClassSkill_AcquireRank: 1
@@ -251,6 +267,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0202
   - ClassSkillIndex: HS2020
     Class: "\uB8E8\uBBF8\uB098"
     ClassSkill_AcquireRank: 2
@@ -277,6 +295,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.3
     ClassSkillValueLv5: 0.9
     ClassSkillSubValueLv5: 0.3
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0203
   - ClassSkillIndex: HS2030
     Class: "\uB8E8\uBBF8\uB098"
     ClassSkill_AcquireRank: 3
@@ -301,6 +321,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 0.6
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0201
   - ClassSkillIndex: HS2040
     Class: "\uB8E8\uBBF8\uB098"
     ClassSkill_AcquireRank: 4
@@ -327,6 +349,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.05
     ClassSkillValueLv5: 0.6
     ClassSkillSubValueLv5: 0.05
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0201
   - ClassSkillIndex: HS2011
     Class: "\uB8E8\uBBF8\uB098"
     ClassSkill_AcquireRank: 5
@@ -351,6 +375,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 1.2
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS2010
+    SkillRiskIndex: R0202
   - ClassSkillIndex: HS2021
     Class: "\uB8E8\uBBF8\uB098"
     ClassSkill_AcquireRank: 6
@@ -377,6 +403,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.4
     ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0.4
+    ReplaceSkillIndex: HS2020
+    SkillRiskIndex: R0203
   - ClassSkillIndex: HS2031
     Class: "\uB8E8\uBBF8\uB098"
     ClassSkill_AcquireRank: 7
@@ -401,6 +429,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 0.7
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS2030
+    SkillRiskIndex: R0201
   - ClassSkillIndex: HS2041
     Class: "\uB8E8\uBBF8\uB098"
     ClassSkill_AcquireRank: 8
@@ -427,6 +457,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.05
     ClassSkillValueLv5: 0.7
     ClassSkillSubValueLv5: 0.05
+    ReplaceSkillIndex: HS2040
+    SkillRiskIndex: R0201
   - ClassSkillIndex: HS3010
     Class: "\uBE14\uB799 \uBD88\uB9BF"
     ClassSkill_AcquireRank: 1
@@ -451,6 +483,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0303
   - ClassSkillIndex: HS3020
     Class: "\uBE14\uB799 \uBD88\uB9BF"
     ClassSkill_AcquireRank: 2
@@ -476,6 +510,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.2
     ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0.2
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0301
   - ClassSkillIndex: HS3030
     Class: "\uBE14\uB799 \uBD88\uB9BF"
     ClassSkill_AcquireRank: 3
@@ -501,6 +537,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.7
     ClassSkillValueLv5: 0.7
     ClassSkillSubValueLv5: 0.7
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0302
   - ClassSkillIndex: HS3040
     Class: "\uBE14\uB799 \uBD88\uB9BF"
     ClassSkill_AcquireRank: 4
@@ -527,6 +565,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.1
     ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0.1
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0303
   - ClassSkillIndex: HS3011
     Class: "\uBE14\uB799 \uBD88\uB9BF"
     ClassSkill_AcquireRank: 5
@@ -551,6 +591,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 1.2
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS3010
+    SkillRiskIndex: R0303
   - ClassSkillIndex: HS3021
     Class: "\uBE14\uB799 \uBD88\uB9BF"
     ClassSkill_AcquireRank: 6
@@ -576,6 +618,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.3
     ClassSkillValueLv5: 1.2
     ClassSkillSubValueLv5: 0.3
+    ReplaceSkillIndex: HS3020
+    SkillRiskIndex: R0301
   - ClassSkillIndex: HS3031
     Class: "\uBE14\uB799 \uBD88\uB9BF"
     ClassSkill_AcquireRank: 7
@@ -601,6 +645,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.9
     ClassSkillValueLv5: 0.9
     ClassSkillSubValueLv5: 0.9
+    ReplaceSkillIndex: HS3030
+    SkillRiskIndex: R0302
   - ClassSkillIndex: HS3041
     Class: "\uBE14\uB799 \uBD88\uB9BF"
     ClassSkill_AcquireRank: 8
@@ -627,6 +673,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.15
     ClassSkillValueLv5: 1.2
     ClassSkillSubValueLv5: 0.15
+    ReplaceSkillIndex: HS3040
+    SkillRiskIndex: R0303
   - ClassSkillIndex: HS4010
     Class: "\uB124\uCF54\uBC0D"
     ClassSkill_AcquireRank: 1
@@ -651,6 +699,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 0.5
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0401
   - ClassSkillIndex: HS4020
     Class: "\uB124\uCF54\uBC0D"
     ClassSkill_AcquireRank: 2
@@ -676,6 +726,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 0.8
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0403
   - ClassSkillIndex: HS4030
     Class: "\uB124\uCF54\uBC0D"
     ClassSkill_AcquireRank: 3
@@ -702,6 +754,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.3
     ClassSkillValueLv5: 0.3
     ClassSkillSubValueLv5: 0.3
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0402
   - ClassSkillIndex: HS4040
     Class: "\uB124\uCF54\uBC0D"
     ClassSkill_AcquireRank: 4
@@ -730,6 +784,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.2
     ClassSkillValueLv5: 0.2
     ClassSkillSubValueLv5: 0.2
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0401
   - ClassSkillIndex: HS4011
     Class: "\uB124\uCF54\uBC0D"
     ClassSkill_AcquireRank: 5
@@ -754,6 +810,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 0.7
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS4010
+    SkillRiskIndex: R0401
   - ClassSkillIndex: HS4021
     Class: "\uB124\uCF54\uBC0D"
     ClassSkill_AcquireRank: 6
@@ -779,6 +837,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0
     ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS4020
+    SkillRiskIndex: R0403
   - ClassSkillIndex: HS4031
     Class: "\uB124\uCF54\uBC0D"
     ClassSkill_AcquireRank: 7
@@ -805,6 +865,8 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.5
     ClassSkillValueLv5: 0.5
     ClassSkillSubValueLv5: 0.5
+    ReplaceSkillIndex: HS4030
+    SkillRiskIndex: R0402
   - ClassSkillIndex: HS4041
     Class: "\uB124\uCF54\uBC0D"
     ClassSkill_AcquireRank: 8
@@ -833,3 +895,5 @@ MonoBehaviour:
     ClassSkillSubValueLv4: 0.3
     ClassSkillValueLv5: 0.3
     ClassSkillSubValueLv5: 0.3
+    ReplaceSkillIndex: HS4040
+    SkillRiskIndex: R0401

@@ -24,6 +24,9 @@ MonoBehaviour:
     Enemy4Slot: 6
     Enemy5: 0
     Enemy5Slot: 0
+    EnemyGroupName: 
+    MinLevel: 0
+    MaxLevel: 0
   - EnemyIndex: 30002
     Enemy1: 20002
     Enemy1Slot: 1
@@ -35,6 +38,9 @@ MonoBehaviour:
     Enemy4Slot: 6
     Enemy5: 0
     Enemy5Slot: 0
+    EnemyGroupName: 
+    MinLevel: 0
+    MaxLevel: 0
   - EnemyIndex: 30003
     Enemy1: 20003
     Enemy1Slot: 1
@@ -46,6 +52,9 @@ MonoBehaviour:
     Enemy4Slot: 6
     Enemy5: 0
     Enemy5Slot: 0
+    EnemyGroupName: 
+    MinLevel: 0
+    MaxLevel: 0
   - EnemyIndex: 30004
     Enemy1: 20001
     Enemy1Slot: 1
@@ -57,6 +66,9 @@ MonoBehaviour:
     Enemy4Slot: 0
     Enemy5: 0
     Enemy5Slot: 0
+    EnemyGroupName: 
+    MinLevel: 0
+    MaxLevel: 0
   - EnemyIndex: 30005
     Enemy1: 20001
     Enemy1Slot: 1
@@ -68,6 +80,9 @@ MonoBehaviour:
     Enemy4Slot: 0
     Enemy5: 0
     Enemy5Slot: 0
+    EnemyGroupName: 
+    MinLevel: 0
+    MaxLevel: 0
   - EnemyIndex: 30006
     Enemy1: 20001
     Enemy1Slot: 1
@@ -79,6 +94,9 @@ MonoBehaviour:
     Enemy4Slot: 0
     Enemy5: 0
     Enemy5Slot: 0
+    EnemyGroupName: 
+    MinLevel: 0
+    MaxLevel: 0
   - EnemyIndex: 30007
     Enemy1: 20001
     Enemy1Slot: 1
@@ -90,6 +108,9 @@ MonoBehaviour:
     Enemy4Slot: 6
     Enemy5: 0
     Enemy5Slot: 0
+    EnemyGroupName: 
+    MinLevel: 0
+    MaxLevel: 0
   - EnemyIndex: 30008
     Enemy1: 20001
     Enemy1Slot: 1
@@ -101,3 +122,6 @@ MonoBehaviour:
     Enemy4Slot: 6
     Enemy5: 20003
     Enemy5Slot: 5
+    EnemyGroupName: 
+    MinLevel: 0
+    MaxLevel: 0
