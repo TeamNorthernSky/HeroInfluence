@@ -571,12 +571,15 @@ public class GridManager : MonoBehaviour
         return heroUnion.IsInteractionCell(grid);
     }
 
-    public bool CanEnterCell(Vector2Int grid, Vector2Int destination, Transform selfTransform = null, bool ignoreFogVisibility = false)
+    public bool CanEnterCell(Vector2Int grid, Vector2Int destination, Transform selfTransform = null, bool ignoreFogVisibility = false, bool allowItemCells = false)
     {
         if (HasObstacle(grid))
             return false;
 
         if (HasOtherPlayer(grid, selfTransform))
+            return false;
+
+        if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
             return false;
 
         if (!ignoreFogVisibility && !IsVisibleCell(grid))
@@ -594,7 +597,13 @@ public class GridManager : MonoBehaviour
         if (HasHeroUnion(grid, selfTransform))
             return false;
 
-        return !HasItemOutpostOrEvent(grid);
+        if (HasOutpost(grid) || HasEvent(grid))
+            return false;
+
+        if (HasItem(grid))
+            return allowItemCells || ZoneEntryGuidanceController.IsActive;
+
+        return true;
     }
 
     public bool CanOccupyCell(Vector2Int grid, Transform selfTransform = null, bool ignoreFogVisibility = false)
@@ -603,6 +612,9 @@ public class GridManager : MonoBehaviour
             return false;
 
         if (HasOtherPlayer(grid, selfTransform))
+            return false;
+
+        if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
             return false;
 
         if (!ignoreFogVisibility && !IsVisibleCell(grid))

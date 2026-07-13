@@ -132,6 +132,7 @@ public class GateTeleportController : MonoBehaviour
         teleporting = true;
         suppressUntilFrame = Time.frameCount + 1;
         observedParty.SnapToGridPosition(destinationGrid, notifyMoveCompleted: false);
+        ZoneEntryGuidanceController.EnsureInstance()?.TryBeginAfterTeleport(destinationGrid, observedParty);
         teleporting = false;
     }
 

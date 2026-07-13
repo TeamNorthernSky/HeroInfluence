@@ -45,6 +45,7 @@ public class GameSaveData : ScriptableObject
     public List<GateProgressState> gateStates = new List<GateProgressState>();
     public List<ZoneThreatProgressState> zoneThreatStates = new List<ZoneThreatProgressState>();
     public List<ZoneEnemyLevelState> zoneEnemyLevelStates = new List<ZoneEnemyLevelState>();
+    public ZoneEntryGuidanceProgressState zoneEntryGuidanceState = new ZoneEntryGuidanceProgressState();
 
     // ── 자원 (JsonUtility가 Dictionary 미지원 → 엔트리 배열) ──
     [Serializable]

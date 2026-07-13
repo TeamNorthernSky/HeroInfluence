@@ -19,6 +19,7 @@ public class MapProgressRepository : MonoBehaviour
     [SerializeField] private List<GateProgressState> gateStates = new List<GateProgressState>();
     [SerializeField] private List<ZoneThreatProgressState> zoneThreatStates = new List<ZoneThreatProgressState>();
     [SerializeField] private List<ZoneEnemyLevelState> zoneEnemyLevelStates = new List<ZoneEnemyLevelState>();
+    [SerializeField] private ZoneEntryGuidanceProgressState zoneEntryGuidanceState = new ZoneEntryGuidanceProgressState();
 
     private readonly HashSet<string> collectedItemLookup = new HashSet<string>();
     private readonly HashSet<string> completedEventLookup = new HashSet<string>();
@@ -43,6 +44,7 @@ public class MapProgressRepository : MonoBehaviour
     public IReadOnlyList<GateProgressState> GateStates => gateStates;
     public IReadOnlyList<ZoneThreatProgressState> ZoneThreatStates => zoneThreatStates;
     public IReadOnlyList<ZoneEnemyLevelState> ZoneEnemyLevelStates => zoneEnemyLevelStates;
+    public ZoneEntryGuidanceProgressState ZoneEntryGuidanceState => zoneEntryGuidanceState;
 
     private void Awake()
     {
@@ -474,6 +476,44 @@ public class MapProgressRepository : MonoBehaviour
         state.Initialize(enemyLevel);
         return state.EnemyLevel;
     }
+
+    public bool IsZoneEntryGuidanceCompleted(string zoneId)
+    {
+        EnsureZoneEntryGuidanceState();
+        return zoneEntryGuidanceState.IsZoneCompleted(zoneId);
+    }
+
+    public void BeginZoneEntryGuidance(string zoneId, string requiredHeroUnionId, IReadOnlyList<Vector2Int> allowedPathCells)
+    {
+        EnsureZoneEntryGuidanceState();
+        zoneEntryGuidanceState.Begin(zoneId, requiredHeroUnionId, allowedPathCells);
+    }
+
+    public void CompleteZoneEntryGuidance(string zoneId)
+    {
+        EnsureZoneEntryGuidanceState();
+        zoneEntryGuidanceState.AddCompletedZone(zoneId);
+
+        if (zoneEntryGuidanceState.Active &&
+            string.Equals(zoneEntryGuidanceState.ZoneId, NormalizeKey(zoneId), System.StringComparison.Ordinal))
+        {
+            zoneEntryGuidanceState.ClearActive();
+        }
+    }
+
+    public void ClearActiveZoneEntryGuidance()
+    {
+        EnsureZoneEntryGuidanceState();
+        zoneEntryGuidanceState.ClearActive();
+    }
+
+    public void RestoreZoneEntryGuidance(ZoneEntryGuidanceProgressState restoredState)
+    {
+        zoneEntryGuidanceState = restoredState != null
+            ? new ZoneEntryGuidanceProgressState(restoredState)
+            : new ZoneEntryGuidanceProgressState();
+    }
+
     public void RestoreFromSave(
         string restoredMapId,
         IEnumerable<string> restoredCollectedItemKeys,
@@ -486,7 +526,8 @@ public class MapProgressRepository : MonoBehaviour
         IEnumerable<HeroUnionProgressState> restoredHeroUnionStates,
         IEnumerable<GateProgressState> restoredGateStates,
         IEnumerable<ZoneThreatProgressState> restoredZoneThreatStates,
-        IEnumerable<ZoneEnemyLevelState> restoredZoneEnemyLevelStates)
+        IEnumerable<ZoneEnemyLevelState> restoredZoneEnemyLevelStates,
+        ZoneEntryGuidanceProgressState restoredZoneEntryGuidanceState)
     {
         mapId = string.IsNullOrWhiteSpace(restoredMapId)
             ? "default"
@@ -503,6 +544,7 @@ public class MapProgressRepository : MonoBehaviour
         ReplaceList(gateStates, restoredGateStates);
         ReplaceList(zoneThreatStates, restoredZoneThreatStates);
         ReplaceList(zoneEnemyLevelStates, restoredZoneEnemyLevelStates);
+        RestoreZoneEntryGuidance(restoredZoneEntryGuidanceState);
         RebuildLookups();
     }
     public void ClearAllProgress()
@@ -518,6 +560,7 @@ public class MapProgressRepository : MonoBehaviour
         gateStates.Clear();
         zoneThreatStates.Clear();
         zoneEnemyLevelStates.Clear();
+        zoneEntryGuidanceState = new ZoneEntryGuidanceProgressState();
         RebuildLookups();
     }
 
@@ -646,6 +689,7 @@ public class MapProgressRepository : MonoBehaviour
 
     private void RebuildLookups()
     {
+        EnsureZoneEntryGuidanceState();
         collectedItemLookup.Clear();
         completedEventLookup.Clear();
         partyWorldLookup.Clear();
@@ -830,5 +874,11 @@ public class MapProgressRepository : MonoBehaviour
     private static string NormalizeKey(string key)
     {
         return MapProgressKey.NormalizeSegment(key);
+    }
+
+    private void EnsureZoneEntryGuidanceState()
+    {
+        if (zoneEntryGuidanceState == null)
+            zoneEntryGuidanceState = new ZoneEntryGuidanceProgressState();
     }
 }

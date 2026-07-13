@@ -17,14 +17,15 @@ public class AStarPathfinder : MonoBehaviour
         Vector2Int goal,
         Transform selfTransform = null,
         bool ignoreFogVisibility = false,
-        EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore)
+        EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
+        bool allowItemCells = false)
     {
         if (start == goal)
             return new List<Vector2Int> { start };
 
         if (gridManager != null)
         {
-            if (!CanEnterPathCell(goal, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode))
+            if (!CanEnterPathCell(goal, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells))
                 return null;
         }
 
@@ -51,7 +52,7 @@ public class AStarPathfinder : MonoBehaviour
                 if (closedSet.Contains(neighbor))
                     continue;
 
-                if (gridManager != null && !CanEnterPathCell(neighbor, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode))
+                if (gridManager != null && !CanEnterPathCell(neighbor, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells))
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
@@ -74,7 +75,8 @@ public class AStarPathfinder : MonoBehaviour
         Vector2Int goal,
         Transform selfTransform,
         bool ignoreFogVisibility,
-        EnemyEncounterPathMode enemyEncounterPathMode)
+        EnemyEncounterPathMode enemyEncounterPathMode,
+        bool allowItemCells)
     {
         if (gridManager == null)
             return true;
@@ -99,7 +101,7 @@ public class AStarPathfinder : MonoBehaviour
             }
         }
 
-        return gridManager.CanEnterCell(grid, goal, selfTransform, ignoreFogVisibility);
+        return gridManager.CanEnterCell(grid, goal, selfTransform, ignoreFogVisibility, allowItemCells);
     }
 
     private static Vector2Int[] GetOrderedDirections(Vector2Int current, Vector2Int goal)

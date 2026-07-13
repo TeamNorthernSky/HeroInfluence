@@ -40,6 +40,13 @@ public class TurnFogController : MonoBehaviour
 
         fogGridManager.SetCurrentDay(currentDay);
         fogGridManager.ApplyDayProgression();
+
+        if (ZoneEntryGuidanceController.IsActiveOrStoredActive)
+        {
+            ZoneEntryGuidanceController.ApplyStoredGuidanceIfNeeded()?.RevealAllowedPathCells();
+            return;
+        }
+
         partyFogRevealer?.RevealAllCurrentPartyPositions();
         outpostFogRevealer?.RevealAllClaimedOutposts();
         heroUnionFogRevealer?.RevealAllHeroUnions();
