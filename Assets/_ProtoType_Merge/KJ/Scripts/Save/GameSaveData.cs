@@ -91,4 +91,8 @@ public class GameSaveData : ScriptableObject
 
     // ── 턴 ──
     public int currentDay;
+
+    // ── 채팅 분기 플래그 [KJ 260714, F008] ──
+    // ChatFlagStore 스냅샷(Set_Flag_* 효과/분기 조건). 로드 시 ChatFlagStore.RestoreSnapshot(chatFlags) 호출(DH 인수인계).
+    public List<ChatFlagStore.Entry> chatFlags = new List<ChatFlagStore.Entry>();
 }
