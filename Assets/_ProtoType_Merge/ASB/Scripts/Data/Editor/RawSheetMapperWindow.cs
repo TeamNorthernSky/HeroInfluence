@@ -340,6 +340,15 @@ namespace ASB.ExcelImport.Editor
                 ValidateCurrent();
             }
 
+            bool canUpdateData = SelectedRaw != null && _schema != null;
+            using (new EditorGUI.DisabledScope(!canUpdateData))
+            {
+                if (GUILayout.Button("Update Data", GUILayout.Height(26f)))
+                {
+                    UpdateDataCurrent();
+                }
+            }
+
             bool canGenerate = SelectedRaw != null && _schema != null && SelectedRaw.importStatus == RawImportStatus.Validated;
             using (new EditorGUI.DisabledScope(!canGenerate))
             {
@@ -550,6 +559,48 @@ namespace ASB.ExcelImport.Editor
             }
 
             AssetDatabase.SaveAssets();
+            RefreshSchemaCandidateCache();
+        }
+
+        private void UpdateDataCurrent()
+        {
+            _validationErrors.Clear();
+            _validationWarnings.Clear();
+            RawExcelSheetSO raw = SelectedRaw;
+            if (!ExcelRawGeneratePipeline.UpdateData(raw, _schema, out ExcelSheetSchemaSO usedSchema, out string error))
+            {
+                if (usedSchema != null && usedSchema != _schema)
+                {
+                    _schema = usedSchema;
+                    _schemaCloneRequired = false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    _validationErrors.Add(error);
+                    _schemaApplyMessage = error;
+                    _schemaApplyMessageType = MessageType.Error;
+                    EditorUtility.DisplayDialog("Update Data Failed", error, "OK");
+                }
+
+                RefreshSchemaCandidateCache();
+                return;
+            }
+
+            if (usedSchema != null && usedSchema != _schema)
+            {
+                _schema = usedSchema;
+                _schemaApplyMessage = "Schema was cloned for the current Raw sheet before updating data.";
+                _schemaApplyMessageType = MessageType.Info;
+            }
+            else
+            {
+                _schemaApplyMessage = "Data updated.";
+                _schemaApplyMessageType = MessageType.Info;
+            }
+
+            _schemaCloneRequired = false;
+            Debug.Log("[RawSheetMapper] Data updated.");
             RefreshSchemaCandidateCache();
         }
 

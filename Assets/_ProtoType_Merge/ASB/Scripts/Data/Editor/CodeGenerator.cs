@@ -199,7 +199,7 @@ namespace ASB.ExcelImport.Editor
             return !string.IsNullOrEmpty(typeName) && ReservedTypeNames.Contains(typeName);
         }
 
-        private static string ExtractTemplateSignature(string code)
+        public static string ExtractTemplateSignature(string code)
         {
             if (string.IsNullOrEmpty(code))
             {
