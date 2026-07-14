@@ -1,45 +1,83 @@
 // ============================================================================
-// FogOfWarHI  [JC 신설 260706 — RenderFX 라이브러리 소유]
-// DH FogOfWar_PointSoftEdge 포크. 노이즈/높이볼륨/컬러부는 동일, 가시성 샘플링부 교체:
-//   - 이진 임계값(>=0.75)·이웃 trim 제거 → 4텍셀 수동 보간 + smoothstep 성형(_EdgeSoftness)
-//     : depth 정밀도 노이즈에 의한 셀 경계 플리커(z-fight성 지글거림) 구조적 제거 (JC FogOfWarJC 철학)
-//   - _EdgeLayerSpread: 가시 경계에서 high→mid→low 순으로 먼저 걷히는 레이어 테이퍼
+// FogOfWarHI  [JC 신설 260706 — RenderFX 라이브러리 소유 / 260714 상태별 2스택 개편]
+// DH FogOfWar_PointSoftEdge 포크. 가시성 샘플링을 SDF 등고선으로 교체한 풀스크린 합성.
+//   - _FogDistanceTex(RG): R=IsExplored 경계 / G=IsVisible 경계 (FogDistanceField가 푸시)
+//   - Unexplored 스택(무접두 프로퍼티)과 Fogged 스택(_Fg* 프로퍼티)이 같은 수식을
+//     각자의 파라미터로 평가하고, R 등고선 마스크로 두 "완성된 룩"을 크로스페이드
+//     → 상태 경계에서 가산 합성 밝은 띠가 구조적으로 생기지 않는다.
+//   - 경계 파라미터(_EdgeWidthWorld/_EdgeNoise*/_EdgeFadeWidth/_EdgeLayerSpreadWorld)와
+//     시야 배율(_SightBoostWorld)은 두 스택 공유 — 상태 간 이음새는 한 벌이어야 한다.
 //   - _FogZoneTex (전역, RenderFXManager 푸시): R=밀도 배율, G/B/A=low/mid/high 레이어 활성
-//     _FogZoneTexBound=0이면 무시(기본 전부 활성/배율 1)
 // 데이터 소스는 DH FogRenderManager의 _FogVisibilityTex/_FogGridWorld* 전역 그대로 소비.
 // ============================================================================
 Shader "Custom/HI/FogOfWar"
 {
     Properties
     {
-        _FogColor ("Fog Color - Low (volume interior)", Color) = (0.75, 0.78, 0.85, 1.0)
-        _FogColorMid ("Fog Color - Mid (volume surface)", Color) = (0.75, 0.78, 0.85, 1.0)
-        _FogColorHigh ("Fog Color - High (volume top)", Color) = (0.75, 0.78, 0.85, 1.0)
-        _FogDensityLow ("Fog Density - Low", Range(0, 1)) = 1.0
-        _FogDensityMid ("Fog Density - Mid", Range(0, 1)) = 0.85
-        _FogDensityHigh ("Fog Density - High", Range(0, 1)) = 0.50
+        // ===== Unexplored 스택 =====
+        _FogColor ("UE Fog Color - Low", Color) = (0.75, 0.78, 0.85, 1.0)
+        _FogColorMid ("UE Fog Color - Mid", Color) = (0.75, 0.78, 0.85, 1.0)
+        _FogColorHigh ("UE Fog Color - High", Color) = (0.75, 0.78, 0.85, 1.0)
+        _FogDensityLow ("UE Fog Density - Low", Range(0, 1)) = 1.0
+        _FogDensityMid ("UE Fog Density - Mid", Range(0, 1)) = 0.85
+        _FogDensityHigh ("UE Fog Density - High", Range(0, 1)) = 0.50
+        _NoiseScale1 ("UE Noise Scale (Base)", Float) = 6.0
+        _NoiseScale2 ("UE Noise Scale (Detail)", Float) = 18.0
+        _NoiseScale3 ("UE Noise Scale (Distortion)", Float) = 3.0
+        _FlowSpeed1 ("UE Flow Speed (Base)", Float) = 0.15
+        _FlowSpeed2 ("UE Flow Speed (Detail)", Float) = 0.25
+        _FlowSpeed3 ("UE Flow Speed (Distortion)", Float) = 0.08
+        _DistortionStrength ("UE Distortion Strength", Float) = 0.3
+        _NoiseContrast ("UE Noise Contrast", Range(0.5, 8.0)) = 3.5
+        _HeightTransition ("UE Height Band Softness", Range(0.1, 2.0)) = 0.5
+        _FogLowTopY ("UE Low Top Y", Float) = 2.0
+        _FogHighStartY ("UE High Start Y", Float) = 2.0
+        _BrightnessLow ("UE Brightness - Low", Range(0.3, 1.5)) = 0.75
+        _BrightnessMid ("UE Brightness - Mid", Range(0.3, 1.5)) = 1.00
+        _BrightnessHigh ("UE Brightness - High", Range(0.3, 1.5)) = 1.25
+        _CloudContrast ("UE Cloud Contrast", Range(0.0, 0.5)) = 0.15
+        _CloudCoverage ("UE Cloud Coverage", Range(0.0, 1.0)) = 1.0
+        _CloudDensityEffect ("UE Cloud Density Effect", Range(0.0, 1.0)) = 0.0
+        _SheetOpacity ("UE Cloud Sheet Opacity (0=off)", Range(0.0, 1.0)) = 0.0
+        _SheetHeightY ("UE Cloud Sheet Height Y (world)", Float) = 2.0
+        _SheetColor ("UE Cloud Sheet Color", Color) = (0.75, 0.78, 0.85, 1.0)
+        _SheetEdgeShiftWorld ("UE Cloud Sheet Edge Shift (world, C# computed)", Float) = 0.0
+        _SheetFadeWidthWorld ("UE Cloud Sheet Fade Half-Width (world)", Range(0.01, 10.0)) = 1.0
+        _SheetGroundAlign ("UE Cloud Sheet Ground Align", Range(0.0, 1.0)) = 0.5
 
-        _NoiseScale1 ("Noise Scale (Base)", Float) = 6.0
-        _NoiseScale2 ("Noise Scale (Detail)", Float) = 18.0
-        _NoiseScale3 ("Noise Scale (Distortion)", Float) = 3.0
+        // ===== Fogged 스택 (탐사됨·비가시 지역) =====
+        _FgFogColor ("FG Fog Color - Low", Color) = (0.75, 0.78, 0.85, 1.0)
+        _FgFogColorMid ("FG Fog Color - Mid", Color) = (0.75, 0.78, 0.85, 1.0)
+        _FgFogColorHigh ("FG Fog Color - High", Color) = (0.75, 0.78, 0.85, 1.0)
+        _FgFogDensityLow ("FG Fog Density - Low", Range(0, 1)) = 0.0
+        _FgFogDensityMid ("FG Fog Density - Mid", Range(0, 1)) = 0.85
+        _FgFogDensityHigh ("FG Fog Density - High", Range(0, 1)) = 0.50
+        _FgNoiseScale1 ("FG Noise Scale (Base)", Float) = 6.0
+        _FgNoiseScale2 ("FG Noise Scale (Detail)", Float) = 18.0
+        _FgNoiseScale3 ("FG Noise Scale (Distortion)", Float) = 3.0
+        _FgFlowSpeed1 ("FG Flow Speed (Base)", Float) = 0.15
+        _FgFlowSpeed2 ("FG Flow Speed (Detail)", Float) = 0.25
+        _FgFlowSpeed3 ("FG Flow Speed (Distortion)", Float) = 0.08
+        _FgDistortionStrength ("FG Distortion Strength", Float) = 0.3
+        _FgNoiseContrast ("FG Noise Contrast", Range(0.5, 8.0)) = 3.5
+        _FgHeightTransition ("FG Height Band Softness", Range(0.1, 2.0)) = 0.5
+        _FgFogLowTopY ("FG Low Top Y", Float) = 2.0
+        _FgFogHighStartY ("FG High Start Y", Float) = 2.0
+        _FgBrightnessLow ("FG Brightness - Low", Range(0.3, 1.5)) = 0.75
+        _FgBrightnessMid ("FG Brightness - Mid", Range(0.3, 1.5)) = 1.00
+        _FgBrightnessHigh ("FG Brightness - High", Range(0.3, 1.5)) = 1.25
+        _FgCloudContrast ("FG Cloud Contrast", Range(0.0, 0.5)) = 0.15
+        _FgCloudCoverage ("FG Cloud Coverage", Range(0.0, 1.0)) = 1.0
+        _FgCloudDensityEffect ("FG Cloud Density Effect", Range(0.0, 1.0)) = 0.0
+        _FgSheetOpacity ("FG Cloud Sheet Opacity (0=off)", Range(0.0, 1.0)) = 0.0
+        _FgSheetHeightY ("FG Cloud Sheet Height Y (world)", Float) = 2.0
+        _FgSheetColor ("FG Cloud Sheet Color", Color) = (0.75, 0.78, 0.85, 1.0)
+        _FgSheetEdgeShiftWorld ("FG Cloud Sheet Edge Shift (world, C# computed)", Float) = 0.0
+        _FgSheetFadeWidthWorld ("FG Cloud Sheet Fade Half-Width (world)", Range(0.01, 10.0)) = 1.0
+        _FgSheetGroundAlign ("FG Cloud Sheet Ground Align", Range(0.0, 1.0)) = 0.5
 
-        _FlowSpeed1 ("Flow Speed (Base)", Float) = 0.15
-        _FlowSpeed2 ("Flow Speed (Detail)", Float) = 0.25
-        _FlowSpeed3 ("Flow Speed (Distortion)", Float) = 0.08
-
-        _DistortionStrength ("Distortion Strength", Float) = 0.3
-        _NoiseContrast ("Noise Contrast", Range(0.5, 8.0)) = 3.5
-
-        _HeightTransition ("Height Band Softness", Range(0.1, 2.0)) = 0.5
-        _FogLowTopY ("Low Top Y (Low->Mid boundary height)", Float) = 2.0
-        _FogHighStartY ("High Start Y (Mid->High boundary height)", Float) = 2.0
-
-        _BrightnessLow ("Brightness - Low (volume interior)", Range(0.3, 1.5)) = 0.75
-        _BrightnessMid ("Brightness - Mid (volume surface)", Range(0.3, 1.5)) = 1.00
-        _BrightnessHigh ("Brightness - High (volume top)", Range(0.3, 1.5)) = 1.25
-        _CloudContrast ("Cloud Contrast (color modulation range)", Range(0.0, 0.5)) = 0.15
+        // ===== 공유 (상태 간 이음새) =====
         _EdgeSoftness ("Edge Softness (cell ratio, non-SDF fallback)", Range(0.01, 0.49)) = 0.18
-
         _EdgeWidthWorld ("Edge Width - blur (world units)", Range(0.01, 10.0)) = 1.0
         _EdgeNoiseStrength ("Edge Noise Strength - roughness (world units)", Range(0.0, 5.0)) = 0.5
         _EdgeNoiseScale ("Edge Noise Scale", Float) = 0.35
@@ -47,13 +85,7 @@ Shader "Custom/HI/FogOfWar"
         _EdgeFadeWidth ("Edge Density Ramp Width (world units, 0=off)", Range(0.0, 20.0)) = 3.0
         _EdgeLayerSpreadWorld ("Edge Layer Spread - taper (world units, 0=off)", Range(0.0, 10.0)) = 1.0
         _SightBoostWorld ("Sight Boost (world units, visual only)", Float) = 0.0
-
-        _SheetOpacity ("Cloud Sheet Opacity (0=off)", Range(0.0, 1.0)) = 0.0
-        _SheetHeightY ("Cloud Sheet Height Y (world)", Float) = 2.0
-        _SheetColor ("Cloud Sheet Color", Color) = (0.75, 0.78, 0.85, 1.0)
-        _SheetEdgeShiftWorld ("Cloud Sheet Edge Shift (world, C# computed)", Float) = 0.0
-        _SheetFadeWidthWorld ("Cloud Sheet Fade Half-Width (world)", Range(0.01, 10.0)) = 1.0
-        _SheetGroundAlign ("Cloud Sheet Ground Align (0=physical, 1=aligned)", Range(0.0, 1.0)) = 0.5
+        _StateBlendWidthWorld ("State Blend Half-Width (world units)", Range(0.01, 20.0)) = 1.0
 
         [Toggle] _DebugMode ("Debug Mode (show visibility)", Float) = 0
     }
@@ -105,7 +137,7 @@ Shader "Custom/HI/FogOfWar"
             SAMPLER(sampler_FogZoneTex);
             float _FogZoneTexBound;
 
-            // 가시성 경계 SDF (FogDistanceField가 전역 푸시. r=셀 단위 부호 거리, +=안개 쪽)
+            // 가시성 경계 SDF (FogDistanceField가 전역 푸시. R=IsExplored, G=IsVisible, 셀 단위 부호 거리, +=안개 쪽)
             TEXTURE2D(_FogDistanceTex);
             SAMPLER(sampler_FogDistanceTex);
             float _FogDistanceTexBound;
@@ -123,26 +155,60 @@ Shader "Custom/HI/FogOfWar"
                 float _FogDensityLow;
                 float _FogDensityMid;
                 float _FogDensityHigh;
-
                 float _NoiseScale1;
                 float _NoiseScale2;
                 float _NoiseScale3;
-
                 float _FlowSpeed1;
                 float _FlowSpeed2;
                 float _FlowSpeed3;
-
                 float _DistortionStrength;
                 float _NoiseContrast;
-
                 float _HeightTransition;
                 float _FogLowTopY;
                 float _FogHighStartY;
-
                 float _BrightnessLow;
                 float _BrightnessMid;
                 float _BrightnessHigh;
                 float _CloudContrast;
+                float _CloudCoverage;
+                float _CloudDensityEffect;
+                float _SheetOpacity;
+                float _SheetHeightY;
+                float4 _SheetColor;
+                float _SheetEdgeShiftWorld;
+                float _SheetFadeWidthWorld;
+                float _SheetGroundAlign;
+
+                float4 _FgFogColor;
+                float4 _FgFogColorMid;
+                float4 _FgFogColorHigh;
+                float _FgFogDensityLow;
+                float _FgFogDensityMid;
+                float _FgFogDensityHigh;
+                float _FgNoiseScale1;
+                float _FgNoiseScale2;
+                float _FgNoiseScale3;
+                float _FgFlowSpeed1;
+                float _FgFlowSpeed2;
+                float _FgFlowSpeed3;
+                float _FgDistortionStrength;
+                float _FgNoiseContrast;
+                float _FgHeightTransition;
+                float _FgFogLowTopY;
+                float _FgFogHighStartY;
+                float _FgBrightnessLow;
+                float _FgBrightnessMid;
+                float _FgBrightnessHigh;
+                float _FgCloudContrast;
+                float _FgCloudCoverage;
+                float _FgCloudDensityEffect;
+                float _FgSheetOpacity;
+                float _FgSheetHeightY;
+                float4 _FgSheetColor;
+                float _FgSheetEdgeShiftWorld;
+                float _FgSheetFadeWidthWorld;
+                float _FgSheetGroundAlign;
+
                 float _EdgeSoftness;
                 float _EdgeWidthWorld;
                 float _EdgeNoiseStrength;
@@ -151,12 +217,7 @@ Shader "Custom/HI/FogOfWar"
                 float _EdgeFadeWidth;
                 float _EdgeLayerSpreadWorld;
                 float _SightBoostWorld;
-                float _SheetOpacity;
-                float _SheetHeightY;
-                float4 _SheetColor;
-                float _SheetEdgeShiftWorld;
-                float _SheetFadeWidthWorld;
-                float _SheetGroundAlign;
+                float _StateBlendWidthWorld;
             CBUFFER_END
 
             float2 HashGradient(float2 p)
@@ -194,12 +255,155 @@ Shader "Custom/HI/FogOfWar"
                 return val;
             }
 
-            Varyings vert(Attributes input)
+            // ===== 안개 스택 파라미터 묶음 (Unexplored/Fogged 각 1벌) =====
+            struct FogStack
             {
-                Varyings output;
-                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
-                output.uv = input.uv;
-                return output;
+                half3 colLow; half3 colMid; half3 colHigh;
+                float densLow; float densMid; float densHigh;
+                float ns1; float ns2; float ns3;
+                float fs1; float fs2; float fs3;
+                float distortion; float contrast;
+                float heightTransition; float lowTopY; float highStartY;
+                float brightLow; float brightMid; float brightHigh;
+                float cloudContrast;
+                float coverage; float densityEffect;
+            };
+
+            FogStack MakeUnexploredStack()
+            {
+                FogStack s;
+                s.colLow = _FogColor.rgb; s.colMid = _FogColorMid.rgb; s.colHigh = _FogColorHigh.rgb;
+                s.densLow = _FogDensityLow; s.densMid = _FogDensityMid; s.densHigh = _FogDensityHigh;
+                s.ns1 = _NoiseScale1; s.ns2 = _NoiseScale2; s.ns3 = _NoiseScale3;
+                s.fs1 = _FlowSpeed1; s.fs2 = _FlowSpeed2; s.fs3 = _FlowSpeed3;
+                s.distortion = _DistortionStrength; s.contrast = _NoiseContrast;
+                s.heightTransition = _HeightTransition; s.lowTopY = _FogLowTopY; s.highStartY = _FogHighStartY;
+                s.brightLow = _BrightnessLow; s.brightMid = _BrightnessMid; s.brightHigh = _BrightnessHigh;
+                s.cloudContrast = _CloudContrast;
+                s.coverage = _CloudCoverage; s.densityEffect = _CloudDensityEffect;
+                return s;
+            }
+
+            FogStack MakeFoggedStack()
+            {
+                FogStack s;
+                s.colLow = _FgFogColor.rgb; s.colMid = _FgFogColorMid.rgb; s.colHigh = _FgFogColorHigh.rgb;
+                s.densLow = _FgFogDensityLow; s.densMid = _FgFogDensityMid; s.densHigh = _FgFogDensityHigh;
+                s.ns1 = _FgNoiseScale1; s.ns2 = _FgNoiseScale2; s.ns3 = _FgNoiseScale3;
+                s.fs1 = _FgFlowSpeed1; s.fs2 = _FgFlowSpeed2; s.fs3 = _FgFlowSpeed3;
+                s.distortion = _FgDistortionStrength; s.contrast = _FgNoiseContrast;
+                s.heightTransition = _FgHeightTransition; s.lowTopY = _FgFogLowTopY; s.highStartY = _FgFogHighStartY;
+                s.brightLow = _FgBrightnessLow; s.brightMid = _FgBrightnessMid; s.brightHigh = _FgBrightnessHigh;
+                s.cloudContrast = _FgCloudContrast;
+                s.coverage = _FgCloudCoverage; s.densityEffect = _FgCloudDensityEffect;
+                return s;
+            }
+
+            // 노이즈 구름. x = 구름값(0.2~1, 색 명암용) / y = 커버리지 마스크(0~1, 농도·시트용)
+            // coverage 1이면 y는 전 영역 1(현행 동치), 낮출수록 노이즈 낮은 곳부터 뚫린다
+            float2 CloudValue(float2 xz, float gridInvX, float t, FogStack s)
+            {
+                float2 dIn = xz * s.ns3 * gridInvX + float2(t * s.fs3, t * s.fs3 * 0.7);
+                float2 dist = float2(
+                    GradientNoise(dIn) - 0.5,
+                    GradientNoise(dIn + float2(43, 17)) - 0.5
+                ) * s.distortion;
+
+                float2 bIn = xz * s.ns1 * gridInvX + dist + float2(t * s.fs1, t * s.fs1 * 0.3);
+                float nBase = FBM(bIn, 4);
+                float2 dIn2 = xz * s.ns2 * gridInvX + dist * 0.5 + float2(-t * s.fs2 * 0.5, t * s.fs2 * 0.8);
+                float nDetail = FBM(dIn2, 3);
+
+                float noise = saturate(((nBase * 0.55 + nDetail * 0.45) - 0.5) * s.contrast + 0.5);
+
+                float cutLow = 1.0 - s.coverage * 1.3;   // coverage 1 → cutLow -0.3 → 마스크 상시 1
+                float mask = smoothstep(cutLow, cutLow + 0.3, noise);
+                return float2(lerp(0.2, 1.0, noise), mask);
+            }
+
+            // 스택 1벌 평가: 등고선 3대역 마스크 + 높이 대역 + 구름 → 안개 색/알파
+            void EvaluateStack(FogStack s, float3 worldPos, float distW, float ew,
+                               float zoneDensity, float3 zoneLayerOn, float gridInvX, float t,
+                               out half3 fogColor, out float fogAlpha)
+            {
+                float visL = 1.0 - smoothstep(-ew, ew, distW);
+                float visM = 1.0 - smoothstep(-ew, ew, distW - _EdgeLayerSpreadWorld);
+                float visH = 1.0 - smoothstep(-ew, ew, distW - 2.0 * _EdgeLayerSpreadWorld);
+
+                float lowFactor = 1.0 - smoothstep(s.lowTopY - s.heightTransition, s.lowTopY, worldPos.y);
+                float highFactor = smoothstep(s.highStartY, s.highStartY + s.heightTransition, worldPos.y);
+                float midFactor = max(0.0, 1.0 - lowFactor - highFactor);
+
+                float2 cv = CloudValue(worldPos.xz, gridInvX, t, s);
+
+                float lowFog = lowFactor * s.densLow * (1.0 - visL) * zoneLayerOn.x;
+                float midFog = midFactor * s.densMid * (1.0 - visM) * zoneLayerOn.y;
+                float highFog = highFactor * s.densHigh * (1.0 - visH) * zoneLayerOn.z;
+
+                // 경계 농도 램프: 안개 알파가 0에서 출발하는 지점(d=-ew)부터 안쪽으로 차오름 (공유 파라미터)
+                float edgeFade = 1.0;
+                if (_EdgeFadeWidth > 0.001)
+                    edgeFade = saturate((distW + ew) / _EdgeFadeWidth);
+
+                // 구름의 농도 관여: densityEffect 0=색 명암만(현행), 1=커버리지 틈은 투명
+                float cloudDensity = lerp(1.0, cv.y, s.densityEffect);
+
+                fogAlpha = saturate((lowFog + midFog + highFog) * zoneDensity * edgeFade * cloudDensity);
+
+                half3 layerColor = lowFactor * s.colLow * s.brightLow
+                                 + midFactor * s.colMid * s.brightMid
+                                 + highFactor * s.colHigh * s.brightHigh;
+                float cloudMod = lerp(1.0 - s.cloudContrast, 1.0 + s.cloudContrast, cv.x);
+                fogColor = layerColor * cloudMod;
+            }
+
+            // 구름 시트: 고정 높이 평면과의 레이 교차점 기준 반투명층. channelSel로 SDF 채널 선택 (R=UE, G=FG)
+            half3 ApplyCloudSheet(half3 result, FogStack s,
+                                  float opacity, float heightY, half3 sheetColor,
+                                  float edgeShift, float fadeW, float groundAlign,
+                                  float2 channelSel, float3 worldPos, float gridInvX, float t)
+            {
+                if (opacity <= 0.001)
+                    return result;
+
+                float3 camPos = _WorldSpaceCameraPos;
+                float3 rayVec = worldPos - camPos;
+                float tSurf = length(rayVec);
+                float3 rayDir = rayVec / max(tSurf, 0.0001);
+
+                if (abs(rayDir.y) <= 0.001)
+                    return result;
+
+                float tPlane = (heightY - camPos.y) / rayDir.y;
+                if (tPlane <= 0.0 || tPlane >= tSurf)
+                    return result;
+
+                float3 planeHit = camPos + rayDir * tPlane;
+
+                // 마스크 샘플 좌표: 물리적 구름 위치(평면 XZ) ↔ 지면 경계 정렬(표면 XZ) 블렌드
+                float2 maskXZ = lerp(planeHit.xz, worldPos.xz, groundAlign);
+                float2 maskOffset = maskXZ - _FogGridWorldMin.xy;
+                float2 maskUV = saturate(float2(
+                    maskOffset.x / max(_FogGridWorldSize.x, 0.0001),
+                    maskOffset.y / max(_FogGridWorldSize.y, 0.0001)));
+
+                float dSheet = dot(SAMPLE_TEXTURE2D_LOD(_FogDistanceTex, sampler_FogDistanceTex, maskUV, 0).rg, channelSel)
+                               * max(_FogCellSize, 0.0001);
+                dSheet -= _SightBoostWorld + edgeShift;
+                float2 enSheet = maskXZ * _EdgeNoiseScale + _Time.y * _EdgeNoiseSpeed;
+                dSheet += (GradientNoise(enSheet) - 0.5) * 2.0 * _EdgeNoiseStrength;
+
+                float fw = max(fadeW, 0.001);
+                float sheetMask = smoothstep(-fw, fw, dSheet);
+
+                float4 zoneSheet = SAMPLE_TEXTURE2D_LOD(_FogZoneTex, sampler_FogZoneTex, maskUV, 0);
+                sheetMask *= lerp(1.0, zoneSheet.r, _FogZoneTexBound);
+
+                float2 cv = CloudValue(planeHit.xz, gridInvX, t, s);
+                float cloudMod = lerp(1.0 - s.cloudContrast, 1.0 + s.cloudContrast, cv.x);
+                // 커버리지 마스크로 시트에 구멍 — coverage 1이면 현행 동치
+                float sheetAlpha = saturate(opacity * sheetMask * cv.x * cv.y);
+                return lerp(result, sheetColor * cloudMod, sheetAlpha);
             }
 
             // 셀 인덱스(정수) 중심에서 point 샘플. 텍스처 필터 모드와 무관하게 결정적.
@@ -209,7 +413,7 @@ Shader "Custom/HI/FogOfWar"
                 return SAMPLE_TEXTURE2D_LOD(_FogVisibilityTex, sampler_FogVisibilityTex, uv, 0).r;
             }
 
-            // 4텍셀 수동 보간 + smoothstep 성형. 임계값 없는 연속값 → 시간적 안정.
+            // 폴백: 4텍셀 수동 보간 + smoothstep 성형 (SDF 미바인딩 시)
             float SampleVisibilitySmooth(float2 worldOffset, float2 texelSize)
             {
                 float2 gridCoord = worldOffset / max(_FogCellSize, 0.0001);
@@ -228,6 +432,14 @@ Shader "Custom/HI/FogOfWar"
                 float v11 = SampleCellVisibility(baseCell + float2(1, 1), texelSize);
 
                 return lerp(lerp(v00, v10, w.x), lerp(v01, v11, w.x), w.y);
+            }
+
+            Varyings vert(Attributes input)
+            {
+                Varyings output;
+                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                output.uv = input.uv;
+                return output;
             }
 
             half4 frag(Varyings input) : SV_Target
@@ -261,47 +473,48 @@ Shader "Custom/HI/FogOfWar"
                     worldOffset.x / max(_FogGridWorldSize.x, 0.0001),
                     worldOffset.y / max(_FogGridWorldSize.y, 0.0001)));
 
-                float visLow, visMid, visHigh;
-                float distWorld = 0.0;
+                float distW = 0.0;      // R: IsExplored 경계 (Unexplored 스택)
+                float distVisW = 0.0;   // G: IsVisible 경계 (Fogged 스택)
+                float ueCellFogLow = 0.0;
+                float fgCellFogLow = 0.0;
+                float stateBlend = 0.0; // Fogged↔Unexplored 룩 크로스페이드 가중 (전용 폭 _StateBlendWidthWorld)
+                float ew = max(_EdgeWidthWorld, 0.001);
                 bool useSdf = _FogDistanceTexBound > 0.5;
 
                 if (useSdf)
                 {
-                    // SDF 경로: 셀 격자를 벗어난 영역 기반 등고선.
-                    //   경계 폭(_EdgeWidthWorld)·거칠기 노이즈(_EdgeNoise*)·레이어 테이퍼(_EdgeLayerSpreadWorld) 전부 월드 유닛.
-                    float dCells = SAMPLE_TEXTURE2D_LOD(_FogDistanceTex, sampler_FogDistanceTex, gridUV, 0).r;
-                    distWorld = dCells * max(_FogCellSize, 0.0001);
+                    float2 dCellsRG = SAMPLE_TEXTURE2D_LOD(_FogDistanceTex, sampler_FogDistanceTex, gridUV, 0).rg;
+                    distW = dCellsRG.r * max(_FogCellSize, 0.0001);
+                    distVisW = dCellsRG.g * max(_FogCellSize, 0.0001);
 
-                    // 시야 배율(시각 전용): 데이터 공개 범위는 그대로, 렌더 경계만 안개 쪽(+)/시야 쪽(-)으로 평행이동
-                    distWorld -= _SightBoostWorld;
-
+                    // 시야 배율(시각 전용) + 경계 거칠기 노이즈 — 두 등고선에 동일 적용
                     float2 en = worldPos.xz * _EdgeNoiseScale + _Time.y * _EdgeNoiseSpeed;
-                    distWorld += (GradientNoise(en) - 0.5) * 2.0 * _EdgeNoiseStrength;
+                    float edgeNoise = (GradientNoise(en) - 0.5) * 2.0 * _EdgeNoiseStrength;
+                    distW += edgeNoise - _SightBoostWorld;
+                    distVisW += edgeNoise - _SightBoostWorld;
 
-                    float ew = max(_EdgeWidthWorld, 0.001);
-                    visLow  = 1.0 - smoothstep(-ew, ew, distWorld);
-                    visMid  = 1.0 - smoothstep(-ew, ew, distWorld - _EdgeLayerSpreadWorld);
-                    visHigh = 1.0 - smoothstep(-ew, ew, distWorld - 2.0 * _EdgeLayerSpreadWorld);
+                    ueCellFogLow = smoothstep(-ew, ew, distW);
+                    fgCellFogLow = smoothstep(-ew, ew, distVisW);
+
+                    float sbw = max(_StateBlendWidthWorld, 0.001);
+                    stateBlend = smoothstep(-sbw, sbw, distW);
                 }
                 else
                 {
-                    // 폴백: SDF 미바인딩 시 4텍셀 보간 (테이퍼·거칠기·농도 램프 없음)
+                    // 폴백: 4텍셀 보간 — Unexplored 스택만, Fogged 스택 없음 (foggedValue 텍스처가 유일 표현)
                     float vis = SampleVisibilitySmooth(worldOffset, texelSize);
-                    visLow = vis;
-                    visMid = vis;
-                    visHigh = vis;
+                    ueCellFogLow = 1.0 - vis;
+                    stateBlend = ueCellFogLow;
+                    distW = (ueCellFogLow - 0.5) * 2.0 * ew;   // 근사 거리 (edgeFade용)
                 }
 
                 #if defined(_DEBUGMODE_ON)
-                    return half4(visLow.xxx, 1.0);
+                    return half4((1.0 - ueCellFogLow).xxx, 1.0);
                 #endif
 
-                float cellFogLow = 1.0 - visLow;
-                float cellFogMid = 1.0 - visMid;
-                float cellFogHigh = 1.0 - visHigh;
-                // 시트가 켜져 있으면 가시 픽셀도 통과시킨다 — 사선 카메라에서 시트 교차점은
-                // 표면과 다른 XZ라, 표면 기준으로 조기 탈출하면 경계 부근 시트에 이음선이 생김
-                if (cellFogLow < 0.001 && _SheetOpacity <= 0.001)
+                bool ueSheetOn = useSdf && _SheetOpacity > 0.001;
+                bool fgSheetOn = useSdf && _FgSheetOpacity > 0.001;
+                if (stateBlend < 0.001 && fgCellFogLow < 0.001 && !ueSheetOn && !fgSheetOn)
                     return sceneColor;
 
                 // 영역 지정 제어: R=밀도 배율, G/B/A=low/mid/high 활성 (미바인딩 시 전부 1)
@@ -309,120 +522,39 @@ Shader "Custom/HI/FogOfWar"
                 float zoneDensity = lerp(1.0, zone.r, _FogZoneTexBound);
                 float3 zoneLayerOn = lerp(float3(1.0, 1.0, 1.0), zone.gba, _FogZoneTexBound);
 
-                // 높이 대역 판정: Low(지면 Y < LowTopY) / Mid(LowTopY~HighStartY) / High(> HighStartY)
-                //   두 경계가 같으면(기본 2.0) 구 단일 ceiling 동작과 동치
-                float worldY = worldPos.y;
-                float s = _HeightTransition;
-
-                float lowFactor = 1.0 - smoothstep(_FogLowTopY - s, _FogLowTopY, worldY);
-                float highFactor = smoothstep(_FogHighStartY, _FogHighStartY + s, worldY);
-                float midFactor = max(0.0, 1.0 - lowFactor - highFactor);
-
                 float t = _Time.y;
-                float2 nUV = worldPos.xz;
                 float gridInvX = 1.0 / max(_FogGridWorldSize.x, 0.0001);
 
-                float2 dIn = nUV * _NoiseScale3 * gridInvX + float2(t * _FlowSpeed3, t * _FlowSpeed3 * 0.7);
-                float2 dist = float2(
-                    GradientNoise(dIn) - 0.5,
-                    GradientNoise(dIn + float2(43, 17)) - 0.5
-                ) * _DistortionStrength;
-
-                float2 bIn = nUV * _NoiseScale1 * gridInvX + dist + float2(t * _FlowSpeed1, t * _FlowSpeed1 * 0.3);
-                float nBase = FBM(bIn, 4);
-
-                float2 dIn2 = nUV * _NoiseScale2 * gridInvX + dist * 0.5 + float2(-t * _FlowSpeed2 * 0.5, t * _FlowSpeed2 * 0.8);
-                float nDetail = FBM(dIn2, 3);
-
-                float noise = nBase * 0.55 + nDetail * 0.45;
-                noise = saturate((noise - 0.5) * _NoiseContrast + 0.5);
-
-                float cloud = lerp(0.2, 1.0, noise);
-
-                float lowFog = lowFactor * _FogDensityLow * cellFogLow * zoneLayerOn.x;
-                float midFog = midFactor * _FogDensityMid * cellFogMid * zoneLayerOn.y;
-                float highFog = highFactor * _FogDensityHigh * cellFogHigh * zoneLayerOn.z;
-
-                // 경계 농도 램프: 안개 알파가 0에서 출발하는 지점(d=-_EdgeWidthWorld)부터 안쪽으로
-                // _EdgeFadeWidth에 걸쳐 농도가 차오름. d=0(등고선) 기준으로 자르면 블러 그라데이션의
-                // 바깥 절반이 계단으로 잘려 fadeWidth가 작을 때 경계선이 도드라진다 (260707 수정)
-                float edgeFade = 1.0;
-                if (useSdf && _EdgeFadeWidth > 0.001)
-                    edgeFade = saturate((distWorld + _EdgeWidthWorld) / _EdgeFadeWidth);
-
-                float alpha = saturate((lowFog + midFog + highFog) * zoneDensity * edgeFade);
-
-                // 레이어별 컬러 × 밝기 가중 합성 (세 컬러가 같으면 구 단일 컬러 수식과 동치)
-                half3 layerColor = lowFactor  * _FogColor.rgb     * _BrightnessLow
-                                 + midFactor  * _FogColorMid.rgb  * _BrightnessMid
-                                 + highFactor * _FogColorHigh.rgb * _BrightnessHigh;
-                float cloudMod = lerp(1.0 - _CloudContrast, 1.0 + _CloudContrast, cloud);
-                half3 fogColorFinal = layerColor * cloudMod;
-
-                half3 result = lerp(sceneColor.rgb, fogColorFinal, alpha);
-
-                // ===== 구름 시트: 고정 높이 평면(Y=_SheetHeightY)과의 레이 교차점 기준 반투명층 =====
-                // 표면이 아니라 평면 좌표로 SDF·구름을 샘플 → 벽/틈을 타고 흐르는 표면 밀착 티를 가림.
-                // 표면이 평면보다 가까우면(솟은 구조물) 시트를 그리지 않아 구조물이 구름을 뚫고 나온다.
-                if (_SheetOpacity > 0.001 && useSdf)
+                // ===== Unexplored 스택 (짙은 안개 룩) =====
+                half3 ueResult = sceneColor.rgb;
+                if (stateBlend > 0.001 || ueSheetOn)
                 {
-                    float3 camPos = _WorldSpaceCameraPos;
-                    float3 rayVec = worldPos - camPos;
-                    float tSurf = length(rayVec);
-                    float3 rayDir = rayVec / max(tSurf, 0.0001);
-
-                    if (abs(rayDir.y) > 0.001)
-                    {
-                        float tPlane = (_SheetHeightY - camPos.y) / rayDir.y;
-                        if (tPlane > 0.0 && tPlane < tSurf)
-                        {
-                            float3 planeHit = camPos + rayDir * tPlane;
-
-                            // 마스크 샘플 좌표: 물리적 구름 위치(평면 XZ) ↔ 지면 경계 정렬(표면 XZ) 블렌드.
-                            // 사선 카메라에서 시트 구멍이 지면 경계 대비 밀려 보이는 시차의 보정 노브.
-                            float2 maskXZ = lerp(planeHit.xz, worldPos.xz, _SheetGroundAlign);
-                            float2 maskOffset = maskXZ - _FogGridWorldMin.xy;
-                            float2 maskUV = saturate(float2(
-                                maskOffset.x / max(_FogGridWorldSize.x, 0.0001),
-                                maskOffset.y / max(_FogGridWorldSize.y, 0.0001)));
-
-                            // 시트 가장자리 = base 경계 파라미터에서 독립: 확대축소(_SheetEdgeShiftWorld,
-                            // C#에서 (계수-1)×시야반경 환산)와 전용 페이드(_SheetFadeWidthWorld)만 사용.
-                            // 거칠기 노이즈는 base와 공유해 두 층의 굴곡 질감을 일치시킨다.
-                            float dSheet = SAMPLE_TEXTURE2D_LOD(_FogDistanceTex, sampler_FogDistanceTex, maskUV, 0).r
-                                           * max(_FogCellSize, 0.0001);
-                            dSheet -= _SightBoostWorld + _SheetEdgeShiftWorld;
-                            float2 enSheet = maskXZ * _EdgeNoiseScale + _Time.y * _EdgeNoiseSpeed;
-                            dSheet += (GradientNoise(enSheet) - 0.5) * 2.0 * _EdgeNoiseStrength;
-
-                            float fwSheet = max(_SheetFadeWidthWorld, 0.001);
-                            float sheetMask = smoothstep(-fwSheet, fwSheet, dSheet);
-
-                            float4 zoneSheet = SAMPLE_TEXTURE2D_LOD(_FogZoneTex, sampler_FogZoneTex, maskUV, 0);
-                            sheetMask *= lerp(1.0, zoneSheet.r, _FogZoneTexBound);
-
-                            // 구름 질감 — 노이즈 파라미터는 base와 공유, 샘플 좌표만 평면 기준
-                            float2 nUVSheet = planeHit.xz;
-                            float2 dInSheet = nUVSheet * _NoiseScale3 * gridInvX + float2(t * _FlowSpeed3, t * _FlowSpeed3 * 0.7);
-                            float2 distSheet = float2(
-                                GradientNoise(dInSheet) - 0.5,
-                                GradientNoise(dInSheet + float2(43, 17)) - 0.5
-                            ) * _DistortionStrength;
-
-                            float2 bInSheet = nUVSheet * _NoiseScale1 * gridInvX + distSheet + float2(t * _FlowSpeed1, t * _FlowSpeed1 * 0.3);
-                            float nBaseSheet = FBM(bInSheet, 4);
-                            float2 dIn2Sheet = nUVSheet * _NoiseScale2 * gridInvX + distSheet * 0.5 + float2(-t * _FlowSpeed2 * 0.5, t * _FlowSpeed2 * 0.8);
-                            float nDetailSheet = FBM(dIn2Sheet, 3);
-                            float noiseSheet = saturate(((nBaseSheet * 0.55 + nDetailSheet * 0.45) - 0.5) * _NoiseContrast + 0.5);
-                            float cloudSheet = lerp(0.2, 1.0, noiseSheet);
-
-                            float cloudModSheet = lerp(1.0 - _CloudContrast, 1.0 + _CloudContrast, cloudSheet);
-                            float sheetAlpha = saturate(_SheetOpacity * sheetMask * cloudSheet);
-                            result = lerp(result, _SheetColor.rgb * cloudModSheet, sheetAlpha);
-                        }
-                    }
+                    FogStack ue = MakeUnexploredStack();
+                    half3 fogColor; float fogAlpha;
+                    EvaluateStack(ue, worldPos, distW, ew, zoneDensity, zoneLayerOn, gridInvX, t, fogColor, fogAlpha);
+                    ueResult = lerp(sceneColor.rgb, fogColor, fogAlpha);
+                    if (ueSheetOn)
+                        ueResult = ApplyCloudSheet(ueResult, ue, _SheetOpacity, _SheetHeightY, _SheetColor.rgb,
+                                                   _SheetEdgeShiftWorld, _SheetFadeWidthWorld, _SheetGroundAlign,
+                                                   float2(1.0, 0.0), worldPos, gridInvX, t);
                 }
 
+                // ===== Fogged 스택 (탐사됨·비가시 룩) — 짙은 층이 완전히 덮는 픽셀은 평가 생략 =====
+                half3 fgResult = sceneColor.rgb;
+                if (stateBlend < 0.999 && (fgCellFogLow > 0.001 || fgSheetOn))
+                {
+                    FogStack fg = MakeFoggedStack();
+                    half3 fogColor; float fogAlpha;
+                    EvaluateStack(fg, worldPos, distVisW, ew, zoneDensity, zoneLayerOn, gridInvX, t, fogColor, fogAlpha);
+                    fgResult = lerp(sceneColor.rgb, fogColor, fogAlpha);
+                    if (fgSheetOn)
+                        fgResult = ApplyCloudSheet(fgResult, fg, _FgSheetOpacity, _FgSheetHeightY, _FgSheetColor.rgb,
+                                                   _FgSheetEdgeShiftWorld, _FgSheetFadeWidthWorld, _FgSheetGroundAlign,
+                                                   float2(0.0, 1.0), worldPos, gridInvX, t);
+                }
+
+                // ===== 크로스페이드: 두 "완성된 룩"을 R 등고선 기준 전용 폭으로 섞는다 (가산 아님 → 경계 띠 없음) =====
+                half3 result = lerp(fgResult, ueResult, stateBlend);
                 return half4(result, 1.0);
             }
             ENDHLSL
