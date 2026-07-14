@@ -56,6 +56,9 @@ public static class GameSaveService
         CaptureEconomy(data);
         CaptureHqAndDay(data);
         CaptureDepartments(data);
+
+        // [KJ 260714, F008] 채팅 분기 플래그 — 스냅샷 패턴(내용 확장 시 이 파일 무수정)
+        data.chatFlags.AddRange(ChatFlagStore.CaptureSnapshot());
     }
 
     private static void CaptureUnits(GameSaveData data)
