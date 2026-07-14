@@ -1,0 +1,150 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43dfc12f652c64d45b326b84321ad2ce, type: 3}
+  m_Name: "BranchDB\uC11C\uBE0C\uC774\uBCA4\uD2B8DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - Branch_ID: 40601
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uC801\uC758 \uC801\uC740 \uC544\uAD70\uC774\uB780 \uB9D0\uC774
+      \uC788\uAE34 \uD574."
+    Target_Talk_ID: 4060100
+    Trigger_Effect: Set_Flag_SubEvent1Accept
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uC9C0\uC6D0 \uC218\uB77D"
+  - Branch_ID: 40601
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uC5B4\uCC28\uD53C \uB2E4 \uBE4C\uB7F0\uC774\uC57C. \uC5EC\uAE30\uC11C
+      \uC81C\uC555\uD55C\uB2E4."
+    Target_Talk_ID: 4060150
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uD1A0\uBC8C"
+  - Branch_ID: 40602
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_SubEvent1March
+    "\uBE44\uACE0": "\uC2DC\uC704 \uD589\uC9C4 \uC2DC\uC791"
+  - Branch_ID: 40603
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_Battle_4060\Set_Flag_SubEvent1Fail
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uD1A0\uBC8C \uD6C4 \uC2E4\uD328"
+  - Branch_ID: 40701
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uC2DC\uC704\uB300\uB97C \uB450\uACE0 \uC774\uD0C8\uD55C\uB2E4."
+    Target_Talk_ID: 4070090
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBCF4\uD638 \uD3EC\uAE30"
+  - Branch_ID: 40701
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uC2DC\uC704\uB300\uB97C \uBCF4\uD638\uD55C\uB2E4. \uC57D\uC18D\uC740
+      \uC9C0\uD0A8\uB2E4."
+    Target_Talk_ID: 4070140
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC9C4\uC555\uB300\uC640 \uB300\uCE58"
+  - Branch_ID: 40702
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_SubEvent1Fail
+    "\uBE44\uACE0": "\uC11C\uBE0C \uC774\uBCA4\uD2B81 \uC2E4\uD328"
+  - Branch_ID: 40703
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_Battle_4070
+    "\uBE44\uACE0": "\uC9C4\uC555\uB300 \uC804\uD22C / \uC2DC\uC704\uB300 \uC0DD\uC874
+      \uC870\uAC74"
+  - Branch_ID: 40801
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - ProtesterSurvivorCount>=1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_SubEvent1Complete\Reward_AllHeroIP_401
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uC0DD\uC874 \uC2DC \uC644\uB8CC"
+  - Branch_ID: 40801
+    Selection_Index: 2
+    Trigger_Type: Flag
+    Trigger_Value:
+    - ProtesterSurvivorCount==0
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_SubEvent1Fail
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uC804\uBA78 \uC2DC \uC2E4\uD328"
+  - Branch_ID: 40901
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_SubEvent2Start
+    "\uBE44\uACE0": "\uBC1C\uB85C \uCD94\uC801 \uC2DC\uC791"
+  - Branch_ID: 41001
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_Battle_4090
+    "\uBE44\uACE0": "\uBC1C\uB85C \uC81C\uC555\uC804"
+  - Branch_ID: 41101
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uC790\uC6D0\uC774 \uB354 \uB098\uC62C \uB54C\uAE4C\uC9C0 \uB450\uB4E4\uAE34\uB2E4."
+    Target_Talk_ID: 4110090
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC131\uC7A5 \uC790\uC6D0 \uB8E8\uD2B8"
+  - Branch_ID: 41101
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uD788\uC5B4\uB85C\uB4E4\uC744 \uB9D0\uB9AC\uACE0 \uBE4C\uB7F0
+      \uC5F0\uD569 \uBCF8\uBD80\uC5D0 \uBA39\uC774\uAC00 \uB9CE\uB2E4\uACE0 \uC54C\uB824\uC900\uB2E4."
+    Target_Talk_ID: 4110150
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBC1C\uB85C \uC9C0\uC6D0 \uB8E8\uD2B8"
+  - Branch_ID: 41102
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_SubEvent2Complete\Reward_GrowthResource_402_Max
+    "\uBE44\uACE0": "\uBC1C\uB85C \uC774\uD0C8 / \uB300\uB7C9 \uC790\uC6D0"
+  - Branch_ID: 41103
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_SubEvent2Complete\Set_Flag_SubEvent2ValloSupport\Reward_GrowthResource_402
+    "\uBE44\uACE0": "\uBC1C\uB85C \uC9C0\uC6D0 / \uAE30\uBCF8 \uC790\uC6D0"

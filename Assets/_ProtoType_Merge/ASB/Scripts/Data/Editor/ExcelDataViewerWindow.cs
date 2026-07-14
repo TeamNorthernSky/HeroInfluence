@@ -2,7 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
+using System.Text;
+using System.Xml;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using UnityEditor;
@@ -58,14 +61,14 @@ namespace ASB.ExcelImport.Editor
         {
             var toolbar = new Toolbar();
 
-            var importBtn = new ToolbarButton(ExcelEditorWindow.ShowWindow) { text = "?뱿 Excel Importer ?닿린" };
+            var importBtn = new ToolbarButton(ExcelEditorWindow.ShowWindow) { text = "Open Excel Importer" };
             toolbar.Add(importBtn);
 
             var spacer = new ToolbarSpacer();
             spacer.style.flexGrow = 1f;
             toolbar.Add(spacer);
 
-            _saveButton = new ToolbarButton(OnSaveToExcel) { text = "?뮶 Save to Excel" };
+            _saveButton = new ToolbarButton(OnSaveToExcel) { text = "Save to Excel" };
             _saveButton.style.backgroundColor = new Color(0.2f, 0.5f, 0.2f);
             _saveButton.SetEnabled(false);
             toolbar.Add(_saveButton);
@@ -95,7 +98,7 @@ namespace ASB.ExcelImport.Editor
             panel.style.paddingRight  = 4f;
             panel.style.flexDirection = FlexDirection.Column;
 
-            var dropLabel = new Label("Excel ?뚯씪");
+            var dropLabel = new Label("Excel File");
             dropLabel.style.marginBottom = 2f;
             panel.Add(dropLabel);
 
@@ -613,7 +616,7 @@ namespace ASB.ExcelImport.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[ExcelDataViewer] Excel ?쎄린 ?ㅽ뙣: {ex.Message}");
+                Debug.LogError($"[ExcelDataViewer] Excel read failed: {ex.Message}");
             }
             return result;
         }
@@ -685,12 +688,33 @@ namespace ASB.ExcelImport.Editor
     {
         private const string BackupFolderAssetPath = "Assets/ASB_Work/.ExcelBackup";
         private const int MaxBackupsPerWorkbook = 3;
+        private const string ThemeRelationshipType = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme";
+        private const string ThemeContentType = "application/vnd.openxmlformats-officedocument.theme+xml";
+        private const string RelationshipsNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";
+        private const string ContentTypesNamespace = "http://schemas.openxmlformats.org/package/2006/content-types";
+        private const string WorkbookRelsEntryName = "xl/_rels/workbook.xml.rels";
+        private const string ContentTypesEntryName = "[Content_Types].xml";
+        private const string DefaultThemeEntryName = "xl/theme/theme1.xml";
 
         private struct ColInfo
         {
             public int    index;
             public string excelType;
             public ListDelimiter listDelimiter;
+        }
+
+        private sealed class WorkbookThemeParts
+        {
+            public byte[] ThemeBytes;
+            public string ThemeEntryName;
+            public string ThemePartName;
+            public string ThemeTarget;
+            public string ThemeRelationshipId;
+
+            public bool HasTheme => ThemeBytes != null && ThemeBytes.Length > 0 &&
+                                    !string.IsNullOrEmpty(ThemeEntryName) &&
+                                    !string.IsNullOrEmpty(ThemePartName) &&
+                                    !string.IsNullOrEmpty(ThemeTarget);
         }
 
         private static string ToSheetName(string typeName)
@@ -761,7 +785,7 @@ namespace ASB.ExcelImport.Editor
                     if (!colMap.TryGetValue(fields[f].Name, out ColInfo col)) continue;
                     object val  = fields[f].GetValue(rowObj);
                     ICell  cell = excelRow.GetCell(col.index) ?? excelRow.CreateCell(col.index);
-                    WriteCellValue(cell, val, col.excelType, workbook, styleCache, col.listDelimiter);
+                    WriteCellValue(cell, val, fields[f].Name, col.excelType, workbook, styleCache, col.listDelimiter);
                 }
             }
 
@@ -793,6 +817,7 @@ namespace ASB.ExcelImport.Editor
 
             string fileName = Path.GetFileName(fullExcelPath);
             string tempPath = Path.Combine(dir, $".{fileName}.{Guid.NewGuid():N}.tmp");
+            WorkbookThemeParts themeParts = CaptureWorkbookThemeParts(fullExcelPath);
 
             try
             {
@@ -801,7 +826,17 @@ namespace ASB.ExcelImport.Editor
                     workbook.Write(fs);
                 }
 
+                if (themeParts.HasTheme)
+                {
+                    RestoreWorkbookThemeParts(tempPath, themeParts);
+                }
+
                 ValidateWorkbookFile(tempPath);
+                if (themeParts.HasTheme)
+                {
+                    ValidateThemeParts(tempPath, themeParts);
+                }
+
                 if (!File.Exists(fullExcelPath))
                 {
                     File.Move(tempPath, fullExcelPath);
@@ -846,6 +881,483 @@ namespace ASB.ExcelImport.Editor
                 }
                 validationWorkbook.Close();
             }
+        }
+
+        private static WorkbookThemeParts CaptureWorkbookThemeParts(string workbookPath)
+        {
+            var parts = new WorkbookThemeParts();
+            if (string.IsNullOrEmpty(workbookPath) || !File.Exists(workbookPath))
+            {
+                return parts;
+            }
+
+            using (ZipArchive archive = OpenZip(workbookPath, ZipArchiveMode.Read, FileAccess.Read, FileShare.ReadWrite))
+            {
+                XmlDocument relsDoc = ReadEntryXml(archive, WorkbookRelsEntryName);
+                if (relsDoc != null)
+                {
+                    XmlElement themeRelationship = FindThemeRelationship(relsDoc);
+                    if (themeRelationship != null)
+                    {
+                        parts.ThemeRelationshipId = themeRelationship.GetAttribute("Id");
+                        parts.ThemeTarget = themeRelationship.GetAttribute("Target");
+                    }
+                }
+
+                XmlDocument contentTypesDoc = ReadEntryXml(archive, ContentTypesEntryName);
+                if (contentTypesDoc != null)
+                {
+                    XmlElement themeOverride = FindThemeOverride(contentTypesDoc, null);
+                    if (themeOverride != null)
+                    {
+                        parts.ThemePartName = themeOverride.GetAttribute("PartName");
+                    }
+                }
+
+                string entryName = !string.IsNullOrEmpty(parts.ThemeTarget)
+                    ? ResolveWorkbookRelationshipTarget(parts.ThemeTarget)
+                    : NormalizePartNameToEntryName(parts.ThemePartName);
+
+                if (string.IsNullOrEmpty(entryName))
+                {
+                    // Current project workbooks use a single standard theme part. If future files use
+                    // multiple theme parts, prefer the content-types override above.
+                    entryName = DefaultThemeEntryName;
+                }
+
+                byte[] themeBytes = ReadEntryBytes(archive, entryName);
+                if (themeBytes == null || themeBytes.Length == 0)
+                {
+                    return parts;
+                }
+
+                parts.ThemeBytes = themeBytes;
+                parts.ThemeEntryName = entryName;
+                if (string.IsNullOrEmpty(parts.ThemePartName))
+                {
+                    parts.ThemePartName = "/" + entryName.Replace('\\', '/');
+                }
+
+                if (string.IsNullOrEmpty(parts.ThemeTarget))
+                {
+                    parts.ThemeTarget = ThemeTargetFromEntryName(entryName);
+                }
+            }
+
+            return parts;
+        }
+
+        private static void RestoreWorkbookThemeParts(string workbookPath, WorkbookThemeParts parts)
+        {
+            if (string.IsNullOrEmpty(workbookPath) || parts == null || !parts.HasTheme)
+            {
+                return;
+            }
+
+            using (ZipArchive archive = OpenZip(workbookPath, ZipArchiveMode.Update, FileAccess.ReadWrite, FileShare.None))
+            {
+                ReplaceEntryBytes(archive, parts.ThemeEntryName, parts.ThemeBytes);
+                UpsertThemeRelationship(archive, parts);
+                UpsertThemeContentType(archive, parts);
+            }
+        }
+
+        private static void ValidateThemeParts(string workbookPath, WorkbookThemeParts parts)
+        {
+            if (string.IsNullOrEmpty(workbookPath) || parts == null || !parts.HasTheme)
+            {
+                return;
+            }
+
+            using (ZipArchive archive = OpenZip(workbookPath, ZipArchiveMode.Read, FileAccess.Read, FileShare.Read))
+            {
+                XmlDocument themeDoc = ReadEntryXml(archive, parts.ThemeEntryName);
+                if (themeDoc == null)
+                {
+                    throw new InvalidDataException($"Saved workbook is missing theme part: {parts.ThemeEntryName}");
+                }
+
+                XmlDocument contentTypesDoc = ReadEntryXml(archive, ContentTypesEntryName);
+                XmlElement themeOverride = contentTypesDoc == null
+                    ? null
+                    : FindThemeOverride(contentTypesDoc, parts.ThemePartName);
+                if (themeOverride == null)
+                {
+                    throw new InvalidDataException($"Saved workbook is missing theme content type: {parts.ThemePartName}");
+                }
+
+                XmlDocument relsDoc = ReadEntryXml(archive, WorkbookRelsEntryName);
+                XmlElement themeRelationship = relsDoc == null
+                    ? null
+                    : FindThemeRelationship(relsDoc);
+                if (themeRelationship == null ||
+                    !string.Equals(themeRelationship.GetAttribute("Target"), parts.ThemeTarget, StringComparison.Ordinal))
+                {
+                    throw new InvalidDataException($"Saved workbook is missing theme relationship: {parts.ThemeTarget}");
+                }
+            }
+        }
+
+        private static void UpsertThemeRelationship(ZipArchive archive, WorkbookThemeParts parts)
+        {
+            XmlDocument doc = ReadEntryXml(archive, WorkbookRelsEntryName) ?? CreateRelationshipsDocument();
+
+            XmlElement root = doc.DocumentElement;
+            XmlElement themeRelationship = FindThemeRelationship(doc);
+            bool changed = false;
+
+            if (themeRelationship == null)
+            {
+                themeRelationship = doc.CreateElement("Relationship", RelationshipsNamespace);
+                themeRelationship.SetAttribute("Id", GetUniqueRelationshipId(root, parts.ThemeRelationshipId));
+                themeRelationship.SetAttribute("Type", ThemeRelationshipType);
+                themeRelationship.SetAttribute("Target", parts.ThemeTarget);
+                root.AppendChild(themeRelationship);
+                changed = true;
+            }
+            else
+            {
+                string desiredId = GetReusableRelationshipId(root, themeRelationship, parts.ThemeRelationshipId);
+                if (!string.IsNullOrEmpty(desiredId) &&
+                    !string.Equals(themeRelationship.GetAttribute("Id"), desiredId, StringComparison.Ordinal))
+                {
+                    themeRelationship.SetAttribute("Id", desiredId);
+                    changed = true;
+                }
+
+                if (!string.Equals(themeRelationship.GetAttribute("Type"), ThemeRelationshipType, StringComparison.Ordinal))
+                {
+                    themeRelationship.SetAttribute("Type", ThemeRelationshipType);
+                    changed = true;
+                }
+
+                if (!string.Equals(themeRelationship.GetAttribute("Target"), parts.ThemeTarget, StringComparison.Ordinal))
+                {
+                    themeRelationship.SetAttribute("Target", parts.ThemeTarget);
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                ReplaceEntryText(archive, WorkbookRelsEntryName, doc);
+            }
+        }
+
+        private static void UpsertThemeContentType(ZipArchive archive, WorkbookThemeParts parts)
+        {
+            XmlDocument doc = ReadEntryXml(archive, ContentTypesEntryName) ?? CreateContentTypesDocument();
+
+            XmlElement root = doc.DocumentElement;
+            XmlElement keeper = null;
+            var duplicates = new List<XmlElement>();
+            XmlNodeList overrides = doc.GetElementsByTagName("Override", ContentTypesNamespace);
+            for (int i = 0; i < overrides.Count; i++)
+            {
+                XmlElement element = overrides[i] as XmlElement;
+                if (element == null)
+                {
+                    continue;
+                }
+
+                bool isTheme = string.Equals(element.GetAttribute("ContentType"), ThemeContentType, StringComparison.Ordinal) ||
+                               string.Equals(element.GetAttribute("PartName"), parts.ThemePartName, StringComparison.Ordinal);
+                if (!isTheme)
+                {
+                    continue;
+                }
+
+                if (keeper == null)
+                {
+                    keeper = element;
+                }
+                else
+                {
+                    duplicates.Add(element);
+                }
+            }
+
+            bool changed = false;
+            if (keeper == null)
+            {
+                keeper = doc.CreateElement("Override", ContentTypesNamespace);
+                keeper.SetAttribute("PartName", parts.ThemePartName);
+                keeper.SetAttribute("ContentType", ThemeContentType);
+                root.AppendChild(keeper);
+                changed = true;
+            }
+            else
+            {
+                if (!string.Equals(keeper.GetAttribute("PartName"), parts.ThemePartName, StringComparison.Ordinal))
+                {
+                    keeper.SetAttribute("PartName", parts.ThemePartName);
+                    changed = true;
+                }
+
+                if (!string.Equals(keeper.GetAttribute("ContentType"), ThemeContentType, StringComparison.Ordinal))
+                {
+                    keeper.SetAttribute("ContentType", ThemeContentType);
+                    changed = true;
+                }
+            }
+
+            for (int i = 0; i < duplicates.Count; i++)
+            {
+                duplicates[i].ParentNode.RemoveChild(duplicates[i]);
+                changed = true;
+            }
+
+            if (changed)
+            {
+                ReplaceEntryText(archive, ContentTypesEntryName, doc);
+            }
+        }
+
+        private static XmlDocument CreateRelationshipsDocument()
+        {
+            var doc = new XmlDocument { PreserveWhitespace = true };
+            doc.AppendChild(doc.CreateElement("Relationships", RelationshipsNamespace));
+            return doc;
+        }
+
+        private static XmlDocument CreateContentTypesDocument()
+        {
+            var doc = new XmlDocument { PreserveWhitespace = true };
+            doc.AppendChild(doc.CreateElement("Types", ContentTypesNamespace));
+            return doc;
+        }
+
+        private static XmlElement FindThemeRelationship(XmlDocument doc)
+        {
+            if (doc == null)
+            {
+                return null;
+            }
+
+            XmlNodeList relationships = doc.GetElementsByTagName("Relationship", RelationshipsNamespace);
+            for (int i = 0; i < relationships.Count; i++)
+            {
+                XmlElement element = relationships[i] as XmlElement;
+                if (element != null &&
+                    string.Equals(element.GetAttribute("Type"), ThemeRelationshipType, StringComparison.Ordinal))
+                {
+                    return element;
+                }
+            }
+
+            return null;
+        }
+
+        private static XmlElement FindThemeOverride(XmlDocument doc, string partName)
+        {
+            if (doc == null)
+            {
+                return null;
+            }
+
+            XmlNodeList overrides = doc.GetElementsByTagName("Override", ContentTypesNamespace);
+            for (int i = 0; i < overrides.Count; i++)
+            {
+                XmlElement element = overrides[i] as XmlElement;
+                if (element == null)
+                {
+                    continue;
+                }
+
+                bool matchesPart = !string.IsNullOrEmpty(partName) &&
+                                   string.Equals(element.GetAttribute("PartName"), partName, StringComparison.Ordinal);
+                bool matchesTheme = string.Equals(element.GetAttribute("ContentType"), ThemeContentType, StringComparison.Ordinal);
+                if (matchesPart || matchesTheme)
+                {
+                    return element;
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetReusableRelationshipId(XmlElement root, XmlElement current, string desiredId)
+        {
+            if (string.IsNullOrEmpty(desiredId))
+            {
+                return null;
+            }
+
+            XmlNodeList relationships = root.GetElementsByTagName("Relationship", RelationshipsNamespace);
+            for (int i = 0; i < relationships.Count; i++)
+            {
+                XmlElement element = relationships[i] as XmlElement;
+                if (element != null &&
+                    !ReferenceEquals(element, current) &&
+                    string.Equals(element.GetAttribute("Id"), desiredId, StringComparison.Ordinal))
+                {
+                    return null;
+                }
+            }
+
+            return desiredId;
+        }
+
+        private static string GetUniqueRelationshipId(XmlElement root, string preferredId)
+        {
+            if (!string.IsNullOrEmpty(preferredId) && !RelationshipIdExists(root, preferredId))
+            {
+                return preferredId;
+            }
+
+            for (int i = 1; i < 10000; i++)
+            {
+                string candidate = "rId" + i;
+                if (!RelationshipIdExists(root, candidate))
+                {
+                    return candidate;
+                }
+            }
+
+            return "rId" + Guid.NewGuid().ToString("N");
+        }
+
+        private static bool RelationshipIdExists(XmlElement root, string relationshipId)
+        {
+            if (root == null || string.IsNullOrEmpty(relationshipId))
+            {
+                return false;
+            }
+
+            XmlNodeList relationships = root.GetElementsByTagName("Relationship", RelationshipsNamespace);
+            for (int i = 0; i < relationships.Count; i++)
+            {
+                XmlElement element = relationships[i] as XmlElement;
+                if (element != null &&
+                    string.Equals(element.GetAttribute("Id"), relationshipId, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static ZipArchive OpenZip(string path, ZipArchiveMode mode, FileAccess access, FileShare share)
+        {
+            FileStream stream = new FileStream(path, FileMode.Open, access, share);
+            return new ZipArchive(stream, mode);
+        }
+
+        private static byte[] ReadEntryBytes(ZipArchive archive, string entryName)
+        {
+            if (archive == null || string.IsNullOrEmpty(entryName))
+            {
+                return null;
+            }
+
+            ZipArchiveEntry entry = archive.GetEntry(entryName);
+            if (entry == null)
+            {
+                return null;
+            }
+
+            using (Stream stream = entry.Open())
+            using (var ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        private static void ReplaceEntryBytes(ZipArchive archive, string entryName, byte[] bytes)
+        {
+            if (archive == null || string.IsNullOrEmpty(entryName) || bytes == null)
+            {
+                return;
+            }
+
+            ZipArchiveEntry existing = archive.GetEntry(entryName);
+            existing?.Delete();
+
+            ZipArchiveEntry entry = archive.CreateEntry(entryName, System.IO.Compression.CompressionLevel.Optimal);
+            using (Stream stream = entry.Open())
+            {
+                stream.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+        private static void ReplaceEntryText(ZipArchive archive, string entryName, XmlDocument doc)
+        {
+            if (archive == null || string.IsNullOrEmpty(entryName) || doc == null)
+            {
+                return;
+            }
+
+            ZipArchiveEntry existing = archive.GetEntry(entryName);
+            existing?.Delete();
+
+            ZipArchiveEntry entry = archive.CreateEntry(entryName, System.IO.Compression.CompressionLevel.Optimal);
+            using (Stream stream = entry.Open())
+            using (var writer = new XmlTextWriter(stream, new UTF8Encoding(false)))
+            {
+                doc.Save(writer);
+            }
+        }
+
+        private static XmlDocument ReadEntryXml(ZipArchive archive, string entryName)
+        {
+            if (archive == null || string.IsNullOrEmpty(entryName))
+            {
+                return null;
+            }
+
+            ZipArchiveEntry entry = archive.GetEntry(entryName);
+            if (entry == null)
+            {
+                return null;
+            }
+
+            var doc = new XmlDocument { PreserveWhitespace = true };
+            using (Stream stream = entry.Open())
+            {
+                doc.Load(stream);
+            }
+            return doc;
+        }
+
+        private static string ResolveWorkbookRelationshipTarget(string target)
+        {
+            if (string.IsNullOrEmpty(target))
+            {
+                return null;
+            }
+
+            string normalized = target.Replace('\\', '/');
+            if (normalized.StartsWith("/", StringComparison.Ordinal))
+            {
+                return normalized.TrimStart('/');
+            }
+
+            return "xl/" + normalized;
+        }
+
+        private static string NormalizePartNameToEntryName(string partName)
+        {
+            if (string.IsNullOrEmpty(partName))
+            {
+                return null;
+            }
+
+            return partName.TrimStart('/').Replace('\\', '/');
+        }
+
+        private static string ThemeTargetFromEntryName(string entryName)
+        {
+            if (string.IsNullOrEmpty(entryName))
+            {
+                return null;
+            }
+
+            string normalized = entryName.Replace('\\', '/');
+            return normalized.StartsWith("xl/", StringComparison.Ordinal)
+                ? normalized.Substring("xl/".Length)
+                : normalized;
         }
 
         private static string CreateBackupPath(string excelFilePath)
@@ -1019,7 +1531,7 @@ namespace ASB.ExcelImport.Editor
         }
 
         private static void WriteCellValue(
-            ICell cell, object value, string excelType,
+            ICell cell, object value, string fieldName, string excelType,
             IWorkbook workbook, Dictionary<string, ICellStyle> styleCache, ListDelimiter listDelimiter)
         {
             if (value == null) { cell.SetBlank(); return; }
@@ -1055,8 +1567,17 @@ namespace ASB.ExcelImport.Editor
                     break;
 
                 case "string":
-                    cell.SetCellValue(value.ToString());
+                {
+                    string text = value.ToString();
+                    if (ShouldWriteStringAsNumber(fieldName, text, out int numericValue))
+                    {
+                        cell.SetCellValue((double)numericValue);
+                        break;
+                    }
+
+                    cell.SetCellValue(text);
                     break;
+                }
 
                 default:
                     if (excelType.StartsWith("list<", StringComparison.Ordinal))
@@ -1093,6 +1614,21 @@ namespace ASB.ExcelImport.Editor
                     }
                     break;
             }
+        }
+
+        private static bool ShouldWriteStringAsNumber(string fieldName, string value, out int numericValue)
+        {
+            numericValue = 0;
+            if (!string.Equals(fieldName, "Selection_Index", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return int.TryParse(
+                value?.Trim(),
+                System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out numericValue);
         }
 
         private static List<IRow> CollectDataRows(ISheet sheet)

@@ -1,40 +1,49 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>이벤트 스크립트(분기형 대사) 채널 구분. 지금은 메인/서브를 분리 캐싱한다.</summary>
-public enum EventScriptChannel
+/// <summary>
+/// 이벤트 스크립트 한 구역(zone)의 SO 참조 묶음.
+/// 메인/서브 테이블은 로드 시 해당 구역의 저장공간 하나로 통합된다.
+/// </summary>
+[System.Serializable]
+public class EventScriptZone
 {
-    Main,
-    Sub
+    [Tooltip("구역 식별자. Chat_ID/Branch_ID 맨 앞 자리와 맞추는 것을 권장 (예: 1구역→1, 4구역→4)")]
+    public int zoneId;
+
+    [Tooltip("인스펙터 식별용 라벨 (예: \"1구역\", \"4구역\"). 로직엔 영향 없음")]
+    public string zoneLabel;
+
+    public ChatDBEventDataTable   chatMainTable;
+    public ChatDBEventDataTable   chatSubTable;
+    public BranchDBEventDataTable branchMainTable;
+    public BranchDBEventDataTable branchSubTable;
 }
 
 /// <summary>
-/// 이벤트 스크립트(분기형 대사) 데이터를 SO에서 로드해 Dictionary로 캐싱하는 카탈로그.
-/// 순수 데이터 조회까지만 담당하며, 대사 진행 상태(현재 노드/선택 처리)는 이 카탈로그를 쓰는 쪽 책임이다.
-/// 골격은 DHCsvTemplateCatalog 패턴을 따른다.
+/// 이벤트 스크립트(분기형 대사) 데이터를 SO에서 로드해 구역별 Dictionary로 캐싱하는 카탈로그.
+/// 저장공간은 구역(zone)별로 분리하고, 각 구역 안에서 메인/서브는 하나로 통합한다.
+/// 순수 데이터 조회까지만 담당하며, 대사 진행 상태는 이 카탈로그를 쓰는 쪽 책임이다.
 /// </summary>
 [DisallowMultipleComponent]
 public class EventScriptCatalog : MonoBehaviour
 {
     public static EventScriptCatalog Instance { get; private set; }
 
-    [Header("SO DataTables (Excel Importer)")]
-    [SerializeField] private ChatDBEventDataTable   chatMainTable;
-    [SerializeField] private ChatDBEventDataTable   chatSubTable;
-    [SerializeField] private BranchDBEventDataTable branchMainTable;
-    [SerializeField] private BranchDBEventDataTable branchSubTable;
+    [Header("Event Script Zones")]
+    [SerializeField] private List<EventScriptZone> zones = new List<EventScriptZone>();
 
     [Header("Settings")]
     [SerializeField] private bool loadOnAwake       = true;
     [SerializeField] private bool dontDestroyOnLoad = true;
 
-    // 메인/서브는 지금 분리 유지. (이후 병합 요청 시 채널 무시 오버로드만 추가하면 됨)
-    private readonly Dictionary<int, ChatDBEventData> chatMainLookup = new Dictionary<int, ChatDBEventData>();
-    private readonly Dictionary<int, ChatDBEventData> chatSubLookup  = new Dictionary<int, ChatDBEventData>();
-
-    // Branch_ID → 선택지 리스트 (Selection_Index 오름차순 정렬)
-    private readonly Dictionary<int, List<BranchDBEventData>> branchMainLookup = new Dictionary<int, List<BranchDBEventData>>();
-    private readonly Dictionary<int, List<BranchDBEventData>> branchSubLookup  = new Dictionary<int, List<BranchDBEventData>>();
+    // 구역별 저장공간. 각 구역 안에서 메인/서브는 통합된다.
+    // zoneId → (Chat_ID → 대사 노드)
+    private readonly Dictionary<int, Dictionary<int, ChatDBEventData>> chatByZone
+        = new Dictionary<int, Dictionary<int, ChatDBEventData>>();
+    // zoneId → (Branch_ID → 선택지 리스트, Selection_Index 오름차순 정렬)
+    private readonly Dictionary<int, Dictionary<int, List<BranchDBEventData>>> branchByZone
+        = new Dictionary<int, Dictionary<int, List<BranchDBEventData>>>();
 
     private bool isLoaded;
 
@@ -62,29 +71,30 @@ public class EventScriptCatalog : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────────────────
-    // Public API (전부 채널 파라미터를 받는 순수 조회)
+    // Public API (전부 zoneId를 받는 순수 조회)
     // ─────────────────────────────────────────────────────────
 
-    /// <summary>Chat_ID로 대사 노드를 조회한다.</summary>
-    public bool TryGetChat(EventScriptChannel channel, int chatId, out ChatDBEventData chat)
+    /// <summary>구역 내 Chat_ID로 대사 노드를 조회한다.</summary>
+    public bool TryGetChat(int zoneId, int chatId, out ChatDBEventData chat)
     {
         EnsureLoaded();
         chat = null;
         if (chatId <= 0) return false;
-        return GetChatLookup(channel).TryGetValue(chatId, out chat);
+        return chatByZone.TryGetValue(zoneId, out Dictionary<int, ChatDBEventData> lookup)
+            && lookup.TryGetValue(chatId, out chat);
     }
 
     /// <summary>현재 노드의 Next_Chat_ID를 따라 다음 노드를 조회한다. (Next_Chat_ID가 0이면 종료 → false)</summary>
-    public bool TryGetNextChat(EventScriptChannel channel, int chatId, out ChatDBEventData next)
+    public bool TryGetNextChat(int zoneId, int chatId, out ChatDBEventData next)
     {
         next = null;
-        if (!TryGetChat(channel, chatId, out ChatDBEventData current) || current == null)
+        if (!TryGetChat(zoneId, chatId, out ChatDBEventData current) || current == null)
             return false;
 
         if (current.Next_Chat_ID <= 0)
             return false;
 
-        return TryGetChat(channel, current.Next_Chat_ID, out next);
+        return TryGetChat(zoneId, current.Next_Chat_ID, out next);
     }
 
     /// <summary>이 노드가 선택지 분기를 가지는지 여부.</summary>
@@ -93,15 +103,16 @@ public class EventScriptCatalog : MonoBehaviour
         return chat != null && chat.Branch_Group_ID != 0;
     }
 
-    /// <summary>Branch_Group_ID(= Branch_ID)에 해당하는 선택지 목록을 조회한다.</summary>
-    public bool TryGetBranchOptions(EventScriptChannel channel, int branchGroupId,
+    /// <summary>구역 내 Branch_Group_ID(= Branch_ID)에 해당하는 선택지 목록을 조회한다.</summary>
+    public bool TryGetBranchOptions(int zoneId, int branchGroupId,
                                     out IReadOnlyList<BranchDBEventData> options)
     {
         EnsureLoaded();
         options = null;
         if (branchGroupId == 0) return false;
 
-        if (GetBranchLookup(channel).TryGetValue(branchGroupId, out List<BranchDBEventData> list))
+        if (branchByZone.TryGetValue(zoneId, out Dictionary<int, List<BranchDBEventData>> lookup) &&
+            lookup.TryGetValue(branchGroupId, out List<BranchDBEventData> list))
         {
             options = list;
             return true;
@@ -110,12 +121,12 @@ public class EventScriptCatalog : MonoBehaviour
     }
 
     /// <summary>선택지(Selection_Index)를 고른 결과의 Target_Talk_ID 노드를 조회한다.</summary>
-    public bool TryResolveBranchTarget(EventScriptChannel channel, int branchGroupId,
+    public bool TryResolveBranchTarget(int zoneId, int branchGroupId,
                                        string selectionIndex, out ChatDBEventData target)
     {
         target = null;
         if (string.IsNullOrWhiteSpace(selectionIndex)) return false;
-        if (!TryGetBranchOptions(channel, branchGroupId, out IReadOnlyList<BranchDBEventData> options))
+        if (!TryGetBranchOptions(zoneId, branchGroupId, out IReadOnlyList<BranchDBEventData> options))
             return false;
 
         string normalized = selectionIndex.Trim();
@@ -129,20 +140,29 @@ public class EventScriptCatalog : MonoBehaviour
             // TODO(trigger): Trigger_Type/Trigger_Value 조건 판정은 미정. 지금은 조건 무관 그대로 해석한다.
 
             // Target_Talk_ID == 0 은 "이 선택지는 대화 종료" → 대상 없음(false).
-            // 6자리 등 잘못된 ID는 데이터 오류이며, 조회 실패 시 안전하게 false 반환한다.
+            // 잘못된 ID는 데이터 오류이며, 조회 실패 시 안전하게 false 반환한다.
             if (option.Target_Talk_ID <= 0)
                 return false;
 
-            return TryGetChat(channel, option.Target_Talk_ID, out target);
+            return TryGetChat(zoneId, option.Target_Talk_ID, out target);
         }
         return false;
     }
 
-    /// <summary>디버그/에디터용: 해당 채널의 전체 대사 노드.</summary>
-    public IReadOnlyList<ChatDBEventData> GetAllChats(EventScriptChannel channel)
+    /// <summary>디버그/에디터용: 해당 구역의 전체 대사 노드.</summary>
+    public IReadOnlyList<ChatDBEventData> GetAllChats(int zoneId)
     {
         EnsureLoaded();
-        return new List<ChatDBEventData>(GetChatLookup(channel).Values);
+        return chatByZone.TryGetValue(zoneId, out Dictionary<int, ChatDBEventData> lookup)
+            ? new List<ChatDBEventData>(lookup.Values)
+            : new List<ChatDBEventData>();
+    }
+
+    /// <summary>디버그/UI용: 로드된 구역 ID 목록.</summary>
+    public IReadOnlyList<int> GetZoneIds()
+    {
+        EnsureLoaded();
+        return new List<int>(chatByZone.Keys);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -154,23 +174,47 @@ public class EventScriptCatalog : MonoBehaviour
     {
         ClearCache();
 
-        LoadChatTable(chatMainTable,   chatMainLookup, EventScriptChannel.Main);
-        LoadChatTable(chatSubTable,    chatSubLookup,  EventScriptChannel.Sub);
-        LoadBranchTable(branchMainTable, branchMainLookup, EventScriptChannel.Main);
-        LoadBranchTable(branchSubTable,  branchSubLookup,  EventScriptChannel.Sub);
+        for (int i = 0; i < zones.Count; i++)
+        {
+            EventScriptZone zone = zones[i];
+            if (zone == null) continue;
+            LoadZone(zone);
+        }
 
         isLoaded = true;
-        Debug.Log($"[EventScriptCatalog] 로드 완료 — " +
-                  $"Chat(Main {chatMainLookup.Count} / Sub {chatSubLookup.Count}), " +
-                  $"Branch(Main {branchMainLookup.Count} / Sub {branchSubLookup.Count}) 그룹.", this);
+        LogSummary();
+    }
+
+    private void LoadZone(EventScriptZone zone)
+    {
+        string label = string.IsNullOrWhiteSpace(zone.zoneLabel) ? $"zone {zone.zoneId}" : zone.zoneLabel;
+
+        // 구역 저장공간 확보 (같은 zoneId가 여러 번 나오면 같은 공간에 통합된다)
+        if (!chatByZone.TryGetValue(zone.zoneId, out Dictionary<int, ChatDBEventData> chatLookup))
+            chatByZone[zone.zoneId] = chatLookup = new Dictionary<int, ChatDBEventData>();
+        if (!branchByZone.TryGetValue(zone.zoneId, out Dictionary<int, List<BranchDBEventData>> branchLookup))
+            branchByZone[zone.zoneId] = branchLookup = new Dictionary<int, List<BranchDBEventData>>();
+
+        // 메인/서브를 같은 저장공간으로 통합
+        LoadChatTable(zone.chatMainTable, chatLookup, label, "Chat/Main");
+        LoadChatTable(zone.chatSubTable,  chatLookup, label, "Chat/Sub");
+        LoadBranchTable(zone.branchMainTable, branchLookup, label, "Branch/Main");
+        LoadBranchTable(zone.branchSubTable,  branchLookup, label, "Branch/Sub");
+
+        // 그룹별로 Selection_Index 오름차순 정렬. ("1", "1A", "2" …)
+        foreach (var options in branchLookup.Values)
+        {
+            options.Sort((a, b) => string.Compare(
+                a?.Selection_Index, b?.Selection_Index, System.StringComparison.Ordinal));
+        }
     }
 
     private void LoadChatTable(ChatDBEventDataTable table, Dictionary<int, ChatDBEventData> lookup,
-                               EventScriptChannel channel)
+                               string zoneLabel, string source)
     {
         if (table == null)
         {
-            Debug.LogWarning($"[EventScriptCatalog] Chat 테이블({channel})이 할당되지 않았습니다.", this);
+            Debug.LogWarning($"[EventScriptCatalog] {zoneLabel} {source} 테이블이 할당되지 않았습니다.", this);
             return;
         }
 
@@ -181,7 +225,7 @@ public class EventScriptCatalog : MonoBehaviour
 
             if (lookup.ContainsKey(row.Chat_ID))
             {
-                Debug.LogWarning($"[EventScriptCatalog] 중복 Chat_ID {row.Chat_ID}({channel}) 건너뜀.", this);
+                Debug.LogWarning($"[EventScriptCatalog] {zoneLabel} 중복 Chat_ID {row.Chat_ID}({source}) 건너뜀.", this);
                 continue;
             }
             lookup.Add(row.Chat_ID, row);
@@ -189,15 +233,15 @@ public class EventScriptCatalog : MonoBehaviour
     }
 
     private void LoadBranchTable(BranchDBEventDataTable table, Dictionary<int, List<BranchDBEventData>> lookup,
-                                 EventScriptChannel channel)
+                                 string zoneLabel, string source)
     {
         if (table == null)
         {
-            Debug.LogWarning($"[EventScriptCatalog] Branch 테이블({channel})이 할당되지 않았습니다.", this);
+            Debug.LogWarning($"[EventScriptCatalog] {zoneLabel} {source} 테이블이 할당되지 않았습니다.", this);
             return;
         }
 
-        // Branch_ID로 선택지들을 묶는다.
+        // Branch_ID로 선택지들을 묶는다. (정렬은 LoadZone에서 구역 로드 완료 후 일괄 수행)
         for (int i = 0; i < table.DataList.Count; i++)
         {
             BranchDBEventData row = table.DataList[i];
@@ -208,35 +252,30 @@ public class EventScriptCatalog : MonoBehaviour
 
             options.Add(row);
         }
+    }
 
-        // 그룹별로 Selection_Index 오름차순 정렬. ("1", "1A", "2" …)
-        foreach (var options in lookup.Values)
+    private void LogSummary()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"[EventScriptCatalog] 로드 완료 — 구역 {chatByZone.Count}개");
+        foreach (var pair in chatByZone)
         {
-            options.Sort((a, b) => string.Compare(
-                a?.Selection_Index, b?.Selection_Index, System.StringComparison.Ordinal));
+            int zoneId = pair.Key;
+            int chatCount = pair.Value.Count;
+            int branchCount = branchByZone.TryGetValue(zoneId, out var b) ? b.Count : 0;
+            sb.Append($" | zone {zoneId}: Chat {chatCount}, Branch {branchCount} 그룹");
         }
+        Debug.Log(sb.ToString(), this);
     }
 
     // ─────────────────────────────────────────────────────────
     // 공통 유틸
     // ─────────────────────────────────────────────────────────
 
-    private Dictionary<int, ChatDBEventData> GetChatLookup(EventScriptChannel channel)
-    {
-        return channel == EventScriptChannel.Main ? chatMainLookup : chatSubLookup;
-    }
-
-    private Dictionary<int, List<BranchDBEventData>> GetBranchLookup(EventScriptChannel channel)
-    {
-        return channel == EventScriptChannel.Main ? branchMainLookup : branchSubLookup;
-    }
-
     private void ClearCache()
     {
-        chatMainLookup.Clear();
-        chatSubLookup.Clear();
-        branchMainLookup.Clear();
-        branchSubLookup.Clear();
+        chatByZone.Clear();
+        branchByZone.Clear();
         isLoaded = false;
     }
 

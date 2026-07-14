@@ -7,10 +7,15 @@ namespace ASB.ExcelImport.Editor
 {
     public sealed class RawSheetMapperWindow : EditorWindow
     {
+        private const string AllWorkbookFolders = "All Workbooks";
+
+        private readonly List<RawExcelSheetSO> _allRawSheets = new List<RawExcelSheetSO>();
         private readonly List<RawExcelSheetSO> _rawSheets = new List<RawExcelSheetSO>();
+        private readonly List<string> _workbookFolders = new List<string>();
         private readonly List<SchemaCandidateInfo> _schemaCandidates = new List<SchemaCandidateInfo>();
         private readonly List<string> _validationErrors = new List<string>();
         private readonly List<string> _validationWarnings = new List<string>();
+        private int _selectedWorkbookFolderIndex;
         private int _selectedRawIndex;
         private ExcelSheetSchemaSO _schema;
         private TemplateCompatibilityReport _templateReport;
@@ -68,6 +73,19 @@ namespace ASB.ExcelImport.Editor
         {
             EditorGUILayout.BeginVertical(GUILayout.Width(230f));
             EditorGUILayout.LabelField("Raw Sheets", EditorStyles.boldLabel);
+
+            EditorGUI.BeginChangeCheck();
+            _selectedWorkbookFolderIndex = EditorGUILayout.Popup(
+                _selectedWorkbookFolderIndex,
+                _workbookFolders.ToArray());
+            if (EditorGUI.EndChangeCheck())
+            {
+                _selectedWorkbookFolderIndex = Mathf.Clamp(_selectedWorkbookFolderIndex, 0, Mathf.Max(0, _workbookFolders.Count - 1));
+                ApplyWorkbookFolderFilter();
+                _selectedRawIndex = 0;
+                LoadBestSchemaForSelectedRaw();
+            }
+
             _rawListScroll = EditorGUILayout.BeginScrollView(_rawListScroll, GUI.skin.box);
             for (int i = 0; i < _rawSheets.Count; i++)
             {
@@ -402,10 +420,13 @@ namespace ASB.ExcelImport.Editor
             try
             {
                 List<RawExcelSheetSO> imported = ExcelRawImportUtility.ImportMarkerlessSheets(path);
+                RawExcelSheetSO firstImported = imported.Count > 0 ? imported[0] : null;
                 RefreshRawList();
-                if (imported.Count > 0)
+                if (firstImported != null)
                 {
-                    _selectedRawIndex = Mathf.Max(0, _rawSheets.IndexOf(imported[0]));
+                    SelectWorkbookFolderForRaw(firstImported);
+                    ApplyWorkbookFolderFilter();
+                    _selectedRawIndex = Mathf.Max(0, _rawSheets.IndexOf(firstImported));
                     LoadBestSchemaForSelectedRaw();
                 }
                 Debug.Log($"[RawSheetMapper] Imported {imported.Count} raw sheet(s) from {Path.GetFileName(path)}.");
@@ -418,6 +439,10 @@ namespace ASB.ExcelImport.Editor
 
         private void RefreshRawList()
         {
+            RawExcelSheetSO previousRaw = SelectedRaw;
+            string previousFolder = SelectedWorkbookFolder;
+
+            _allRawSheets.Clear();
             _rawSheets.Clear();
             ExcelRawImportUtility.EnsureFolder(ExcelImportPaths.RawImportFolder);
             string[] guids = AssetDatabase.FindAssets("t:RawExcelSheetSO", new[] { ExcelImportPaths.RawImportFolder });
@@ -427,11 +452,11 @@ namespace ASB.ExcelImport.Editor
                 RawExcelSheetSO raw = AssetDatabase.LoadAssetAtPath<RawExcelSheetSO>(path);
                 if (raw != null)
                 {
-                    _rawSheets.Add(raw);
+                    _allRawSheets.Add(raw);
                 }
             }
 
-            _rawSheets.Sort((a, b) =>
+            _allRawSheets.Sort((a, b) =>
             {
                 int workbookCompare = string.Compare(a.workbookFileName, b.workbookFileName, System.StringComparison.Ordinal);
                 return workbookCompare != 0
@@ -439,9 +464,82 @@ namespace ASB.ExcelImport.Editor
                     : string.Compare(a.sheetName, b.sheetName, System.StringComparison.Ordinal);
             });
 
+            RebuildWorkbookFolders(previousFolder);
+            ApplyWorkbookFolderFilter();
+
+            if (previousRaw != null)
+            {
+                int previousIndex = _rawSheets.IndexOf(previousRaw);
+                if (previousIndex >= 0)
+                {
+                    _selectedRawIndex = previousIndex;
+                }
+            }
+
             _selectedRawIndex = Mathf.Clamp(_selectedRawIndex, 0, Mathf.Max(0, _rawSheets.Count - 1));
             LoadBestSchemaForSelectedRaw();
             Repaint();
+        }
+
+        private void RebuildWorkbookFolders(string preferredFolder)
+        {
+            _workbookFolders.Clear();
+            _workbookFolders.Add(AllWorkbookFolders);
+
+            for (int i = 0; i < _allRawSheets.Count; i++)
+            {
+                string folder = GetRawWorkbookFolderName(_allRawSheets[i]);
+                if (!string.IsNullOrEmpty(folder) && !_workbookFolders.Contains(folder))
+                {
+                    _workbookFolders.Add(folder);
+                }
+            }
+
+            _workbookFolders.Sort(1, _workbookFolders.Count - 1, System.StringComparer.Ordinal);
+
+            int preferredIndex = string.IsNullOrEmpty(preferredFolder)
+                ? -1
+                : _workbookFolders.IndexOf(preferredFolder);
+            if (preferredIndex >= 0)
+            {
+                _selectedWorkbookFolderIndex = preferredIndex;
+            }
+            else
+            {
+                _selectedWorkbookFolderIndex = Mathf.Clamp(_selectedWorkbookFolderIndex, 0, Mathf.Max(0, _workbookFolders.Count - 1));
+            }
+        }
+
+        private void ApplyWorkbookFolderFilter()
+        {
+            _rawSheets.Clear();
+            string selectedFolder = SelectedWorkbookFolder;
+            bool showAll = string.IsNullOrEmpty(selectedFolder) ||
+                           string.Equals(selectedFolder, AllWorkbookFolders, System.StringComparison.Ordinal);
+
+            for (int i = 0; i < _allRawSheets.Count; i++)
+            {
+                RawExcelSheetSO raw = _allRawSheets[i];
+                if (raw == null)
+                {
+                    continue;
+                }
+
+                if (showAll || string.Equals(GetRawWorkbookFolderName(raw), selectedFolder, System.StringComparison.Ordinal))
+                {
+                    _rawSheets.Add(raw);
+                }
+            }
+        }
+
+        private void SelectWorkbookFolderForRaw(RawExcelSheetSO raw)
+        {
+            string folder = GetRawWorkbookFolderName(raw);
+            int index = string.IsNullOrEmpty(folder) ? -1 : _workbookFolders.IndexOf(folder);
+            if (index >= 0)
+            {
+                _selectedWorkbookFolderIndex = index;
+            }
         }
 
         private void LoadBestSchemaForSelectedRaw()
@@ -611,6 +709,20 @@ namespace ASB.ExcelImport.Editor
             if (raw != null)
             {
                 List<SchemaCandidateInfo> candidates = ExcelSchemaAdapter.FindSchemaCandidateInfos(raw, _schema);
+                candidates.Sort((a, b) =>
+                {
+                    bool aSameFolder = IsSchemaInSameWorkbookFolder(raw, a.Schema);
+                    bool bSameFolder = IsSchemaInSameWorkbookFolder(raw, b.Schema);
+                    if (aSameFolder != bSameFolder)
+                    {
+                        return aSameFolder ? -1 : 1;
+                    }
+
+                    return string.Compare(
+                        a.Schema == null ? string.Empty : a.Schema.name,
+                        b.Schema == null ? string.Empty : b.Schema.name,
+                        System.StringComparison.Ordinal);
+                });
                 for (int i = 0; i < candidates.Count; i++)
                 {
                     if (candidates[i].Schema != null)
@@ -694,6 +806,63 @@ namespace ASB.ExcelImport.Editor
 
                 return _rawSheets[_selectedRawIndex];
             }
+        }
+
+        private string SelectedWorkbookFolder
+        {
+            get
+            {
+                if (_workbookFolders.Count == 0 ||
+                    _selectedWorkbookFolderIndex < 0 ||
+                    _selectedWorkbookFolderIndex >= _workbookFolders.Count)
+                {
+                    return AllWorkbookFolders;
+                }
+
+                return _workbookFolders[_selectedWorkbookFolderIndex];
+            }
+        }
+
+        private static string GetRawWorkbookFolderName(RawExcelSheetSO raw)
+        {
+            if (raw == null)
+            {
+                return string.Empty;
+            }
+
+            string path = AssetDatabase.GetAssetPath(raw).Replace('\\', '/');
+            string root = ExcelImportPaths.RawImportFolder.TrimEnd('/') + "/";
+            if (path.StartsWith(root, System.StringComparison.OrdinalIgnoreCase))
+            {
+                string rest = path.Substring(root.Length);
+                int slash = rest.IndexOf('/');
+                if (slash >= 0)
+                {
+                    return rest.Substring(0, slash);
+                }
+            }
+
+            return raw.workbookFileName ?? string.Empty;
+        }
+
+        private static bool IsSchemaInSameWorkbookFolder(RawExcelSheetSO raw, ExcelSheetSchemaSO schema)
+        {
+            if (raw == null || schema == null)
+            {
+                return false;
+            }
+
+            string rawFolder = GetRawWorkbookFolderName(raw);
+            string schemaPath = AssetDatabase.GetAssetPath(schema).Replace('\\', '/');
+            string root = ExcelImportPaths.SchemaFolder.TrimEnd('/') + "/";
+            if (string.IsNullOrEmpty(rawFolder) ||
+                !schemaPath.StartsWith(root, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            string rest = schemaPath.Substring(root.Length);
+            return rest.StartsWith(rawFolder + "/", System.StringComparison.Ordinal);
         }
     }
 }

@@ -18,7 +18,7 @@ MonoBehaviour:
     Trigger_Type: 
     Trigger_Value: []
     Selection_Text: "\uAC1C\uC18C\uB9AC \uC9D1\uC5B4\uCE58\uC6CC!"
-    Target_Talk_ID: 101019
+    Target_Talk_ID: 1010190
     Trigger_Effect: 
     "\uBE44\uACE0": 
   - Branch_ID: 10101
@@ -26,7 +26,7 @@ MonoBehaviour:
     Trigger_Type: 
     Trigger_Value: []
     Selection_Text: "\uADF8\uB0E5 \uADF8\uB807\uB2E4\uACE0 \uCE58\uC790\u2026"
-    Target_Talk_ID: 101026
+    Target_Talk_ID: 1010260
     Trigger_Effect: 
     "\uBE44\uACE0": 
   - Branch_ID: 10201
@@ -35,7 +35,7 @@ MonoBehaviour:
     Trigger_Value:
     - Flag_SubEvent1Complete==1
     Selection_Text: 
-    Target_Talk_ID: 103014
+    Target_Talk_ID: 1030140
     Trigger_Effect: Set_Flag_RuminaExplosionDeny
     "\uBE44\uACE0": 
   - Branch_ID: 10201
@@ -43,7 +43,7 @@ MonoBehaviour:
     Trigger_Type: 
     Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 103016
+    Target_Talk_ID: 1030160
     Trigger_Effect: 
     "\uBE44\uACE0": 
   - Branch_ID: 10202
@@ -51,7 +51,7 @@ MonoBehaviour:
     Trigger_Type: 
     Trigger_Value: []
     Selection_Text: "\uC815\uBA74\uC5D0\uC11C \uBE60\uB974\uAC8C \uB3CC\uD30C\uD558\uC790."
-    Target_Talk_ID: 103018
+    Target_Talk_ID: 1030180
     Trigger_Effect: 
     "\uBE44\uACE0": 
   - Branch_ID: 10202
@@ -59,9 +59,8 @@ MonoBehaviour:
     Trigger_Type: Flag
     Trigger_Value:
     - Flag_RuminaExplosionDeny!=1
-    Selection_Text: "\uB8E8\uBBF8\uB098\uAC00 \uBC16\uC5D0\uC11C \uC0AC\uC8FC\uACBD\uACC4\uD558\uB294
-      \uB3D9\uC548 \uC870\uC6A9\uD788 \uB4B7\uBB38\uC73C\uB85C \uC7A0\uC785\uD558\uC790."
-    Target_Talk_ID: 103034
+    Selection_Text: "\uBAB0\uB798 \uB4E4\uC5B4\uAC08 \uACF3\uC744 \uCC3E\uC544\uBCF4\uC790"
+    Target_Talk_ID: 1030610
     Trigger_Effect: 
     "\uBE44\uACE0": 
   - Branch_ID: 10202
@@ -69,9 +68,8 @@ MonoBehaviour:
     Trigger_Type: Flag
     Trigger_Value:
     - Flag_SubEvent1Complete==1
-    Selection_Text: "\uBE14\uB799\uBD88\uB9BF\uACFC \uC800\uC2A4\uD2F0\uC2A4\uAC00
-      \uBA3C\uC800 \uC778\uC9C8\uBD80\uD130 \uAD6C\uCD9C\uD574."
-    Target_Talk_ID: 103039
+    Selection_Text: "\uC6B0\uC120 \uC778\uC9C8\uBD80\uD130 \uAD6C\uCD9C\uD558\uC790."
+    Target_Talk_ID: 1031200
     Trigger_Effect: Set_Flag_1CectorHiddenRoute
     "\uBE44\uACE0": 
   - Branch_ID: 10203
@@ -97,7 +95,7 @@ MonoBehaviour:
     Trigger_Value:
     - Flag_SubEvent1Complete==1
     Selection_Text: 
-    Target_Talk_ID: 103026
+    Target_Talk_ID: 1030300
     Trigger_Effect: 
     "\uBE44\uACE0": 
   - Branch_ID: 10204
@@ -105,7 +103,7 @@ MonoBehaviour:
     Trigger_Type: 
     Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 103027
+    Target_Talk_ID: 1030310
     Trigger_Effect: 
     "\uBE44\uACE0": 
   - Branch_ID: 10205
@@ -169,9 +167,13 @@ MonoBehaviour:
     "\uBE44\uACE0": "\uC778\uC9C8 3\uBA85 \uBD80\uC0C1"
   - Branch_ID: 10209
     Selection_Index: 2A
-    Trigger_Type: Flag
+    Trigger_Type: 'Flag\
+
+      Flag'
     Trigger_Value:
-    - 2 >= HostageInjuredCount >= 1
+    - 'HostageInjuredCount >= 1
+
+      HostageInjuredCount <= 2'
     Selection_Text: 
     Target_Talk_ID: 1040110
     Trigger_Effect: Reward_0020\Set_Flag_1SectorMainEventClear

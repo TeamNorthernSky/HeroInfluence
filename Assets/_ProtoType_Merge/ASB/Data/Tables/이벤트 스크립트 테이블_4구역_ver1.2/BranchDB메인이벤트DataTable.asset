@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43dfc12f652c64d45b326b84321ad2ce, type: 3}
+  m_Name: "BranchDB\uBA54\uC778\uC774\uBCA4\uD2B8DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - Branch_ID: 40301
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_SubEvent1Complete==1
+    Selection_Text: 
+    Target_Talk_ID: 4030080
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uC9C0\uC6D0 \uC131\uACF5"
+  - Branch_ID: 40301
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uC815\uBA74\uC73C\uB85C \uB3CC\uD30C\uD55C\uB2E4."
+    Target_Talk_ID: 4030160
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 40302
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_Battle_4010
+    "\uBE44\uACE0": "1\uCC28 \uBC29\uC704\uB300 \uC804\uD22C"
+  - Branch_ID: 40401
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_SubEvent2ValloSupport==1
+    Selection_Text: 
+    Target_Talk_ID: 4040070
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBC1C\uB85C \uC9C0\uC6D0 \uC131\uACF5"
+  - Branch_ID: 40401
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uAE30\uACC4 \uBC29\uC704\uC120\uC744 \uC815\uBA74\uC73C\uB85C
+      \uB3CC\uD30C\uD55C\uB2E4."
+    Target_Talk_ID: 4040160
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 40402
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_Battle_4020
+    "\uBE44\uACE0": "2\uCC28 \uAE30\uACC4 \uBC29\uC704\uC120 \uC804\uD22C"
+  - Branch_ID: 40501
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_Battle_Final_Yulia
+    "\uBE44\uACE0": "\uCD5C\uC885 \uBCF4\uC2A4\uC804"

@@ -14,7 +14,7 @@ public class ChatManager : MonoBehaviour
 
     private readonly List<BranchDBEventData> currentOptions = new List<BranchDBEventData>();
 
-    private EventScriptChannel currentChannel;
+    private int currentZoneId;
     private ChatDBEventData currentChat;
 
     public event Action<ChatDBEventData> OnChatShown;
@@ -22,7 +22,7 @@ public class ChatManager : MonoBehaviour
     public event Action OnChatEnded;
 
     public bool IsRunning { get; private set; }
-    public EventScriptChannel CurrentChannel => currentChannel;
+    public int CurrentZoneId => currentZoneId;
     public ChatDBEventData CurrentChat => currentChat;
     public IReadOnlyList<BranchDBEventData> CurrentOptions => currentOptions.ToArray();
 
@@ -51,7 +51,7 @@ public class ChatManager : MonoBehaviour
         }
     }
 
-    public void StartChat(EventScriptChannel channel, int startChatId)
+    public void StartChat(int zoneId, int startChatId)
     {
         if (!ResolveCatalog())
         {
@@ -66,14 +66,14 @@ public class ChatManager : MonoBehaviour
             EndChat();
         }
 
-        if (!catalog.TryGetChat(channel, startChatId, out ChatDBEventData chat) || chat == null)
+        if (!catalog.TryGetChat(zoneId, startChatId, out ChatDBEventData chat) || chat == null)
         {
-            Debug.LogWarning($"[ChatManager] Chat ID was not found. Channel: {channel}, Chat_ID: {startChatId}", this);
+            Debug.LogWarning($"[ChatManager] Chat ID was not found. Zone: {zoneId}, Chat_ID: {startChatId}", this);
             EndChat();
             return;
         }
 
-        currentChannel = channel;
+        currentZoneId = zoneId;
         ShowChat(chat);
     }
 
@@ -104,9 +104,9 @@ public class ChatManager : MonoBehaviour
         }
 
         int nextChatId = currentChat.Next_Chat_ID;
-        if (!catalog.TryGetChat(currentChannel, nextChatId, out ChatDBEventData next) || next == null)
+        if (!catalog.TryGetChat(currentZoneId, nextChatId, out ChatDBEventData next) || next == null)
         {
-            Debug.LogWarning($"[ChatManager] Next Chat_ID was not found. Channel: {currentChannel}, Chat_ID: {nextChatId}", this);
+            Debug.LogWarning($"[ChatManager] Next Chat_ID was not found. Zone: {currentZoneId}, Chat_ID: {nextChatId}", this);
             EndChat();
             return;
         }
@@ -146,9 +146,9 @@ public class ChatManager : MonoBehaviour
             return;
         }
 
-        if (!catalog.TryGetChat(currentChannel, option.Target_Talk_ID, out ChatDBEventData target) || target == null)
+        if (!catalog.TryGetChat(currentZoneId, option.Target_Talk_ID, out ChatDBEventData target) || target == null)
         {
-            Debug.LogWarning($"[ChatManager] Branch target Chat_ID was not found. Channel: {currentChannel}, Chat_ID: {option.Target_Talk_ID}", this);
+            Debug.LogWarning($"[ChatManager] Branch target Chat_ID was not found. Zone: {currentZoneId}, Chat_ID: {option.Target_Talk_ID}", this);
             EndChat();
             return;
         }
@@ -207,7 +207,7 @@ public class ChatManager : MonoBehaviour
             return;
         }
 
-        if (catalog.TryGetBranchOptions(currentChannel, chat.Branch_Group_ID, out IReadOnlyList<BranchDBEventData> options) &&
+        if (catalog.TryGetBranchOptions(currentZoneId, chat.Branch_Group_ID, out IReadOnlyList<BranchDBEventData> options) &&
             options != null)
         {
             for (int i = 0; i < options.Count; i++)
@@ -221,7 +221,7 @@ public class ChatManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[ChatManager] Branch options were not found. Channel: {currentChannel}, Branch_Group_ID: {chat.Branch_Group_ID}", this);
+            Debug.LogWarning($"[ChatManager] Branch options were not found. Zone: {currentZoneId}, Branch_Group_ID: {chat.Branch_Group_ID}", this);
         }
 
         OnBranchShown?.Invoke(currentOptions.Count > 0 ? currentOptions.ToArray() : EmptyOptions);
