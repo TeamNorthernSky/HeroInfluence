@@ -690,6 +690,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 critMultiplier: 1.5f,
                 counterRate:  src.CounterRate,
                 avoidRate:    src.ReduceRate),
+            levelupStats = new StatBlock(
+                hp:  src.LevelGrowthMaxHP,
+                atk: src.LevelGrowthAtk,
+                def: src.LevelGrowthDef,
+                luck: 0f, speed: 0f),
             IsEnemyRow      = true,
             UnitAI          = src.UnitAI,
             ExperiencePoint = src.ExperiencePoint

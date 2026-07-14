@@ -173,6 +173,12 @@ public class DHFogProgressApplier : MonoBehaviour
 
     private static void RevealCurrentContext()
     {
+        if (ZoneEntryGuidanceController.IsActiveOrStoredActive)
+        {
+            ZoneEntryGuidanceController.ApplyStoredGuidanceIfNeeded()?.RevealAllowedPathCells();
+            return;
+        }
+
         PartyFogRevealer partyFogRevealer = FindFirstObjectByType<PartyFogRevealer>();
         partyFogRevealer?.RevealAllCurrentPartyPositions();
 

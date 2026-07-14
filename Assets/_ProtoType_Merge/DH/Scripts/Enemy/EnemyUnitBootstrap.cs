@@ -144,7 +144,9 @@ public class EnemyUnitBootstrap : MonoBehaviour
             behaviorType,
             placementKey,
             EnemyPlacementSource.Scene,
-            groupData != null ? groupData.EnemyIndex.ToString() : EnemyWorldState.DefaultPrefabKey);
+            groupData != null ? groupData.EnemyIndex.ToString() : EnemyWorldState.DefaultPrefabKey,
+            1,
+            string.Empty);
     }
 
     public bool InitializeEnemyGroupFromCsv(
@@ -154,7 +156,9 @@ public class EnemyUnitBootstrap : MonoBehaviour
         EnemyBehaviorType behaviorType,
         string placementKey,
         EnemyPlacementSource placementSource,
-        string prefabKey)
+        string prefabKey,
+        int enemyLevel = 1,
+        string zoneId = "")
     {
         if (hasInitialized)
             return true;
@@ -190,7 +194,8 @@ public class EnemyUnitBootstrap : MonoBehaviour
                 enemyRepository,
                 prefabRegistry,
                 placementKey,
-                initialGrid))
+                initialGrid,
+                zoneId))
             return true;
 
         if (!TryBuildCsvGroupMembers(groupData, out List<CsvEnemyGroupMember> members))
@@ -223,6 +228,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             unitState.transform.localPosition = GetExplorationUnitLocalPosition(i);
             unitState.transform.localRotation = Quaternion.identity;
             unitState.SetUnitTemplateKey(templateKey);
+            unitState.SetLevel(enemyLevel);
             unitState.InitializeFromTemplate(template);
 
             int unitIndex = enemyRepository.CreateUnit(
@@ -251,7 +257,8 @@ public class EnemyUnitBootstrap : MonoBehaviour
             enemyId,
             initialGrid,
             placementSource,
-            string.IsNullOrWhiteSpace(prefabKey) ? groupData.EnemyIndex.ToString() : prefabKey);
+            string.IsNullOrWhiteSpace(prefabKey) ? groupData.EnemyIndex.ToString() : prefabKey,
+            zoneId);
 
         RefreshFogVisibilityBinding();
         hasInitialized = true;
@@ -291,7 +298,8 @@ public class EnemyUnitBootstrap : MonoBehaviour
         return true;
     }
 
-    private string EnsurePlacementKey(Vector2Int initialGrid)
+    private string EnsurePlacementKey(Vector2Int initialGrid,
+        string zoneId = "")
     {
         if (!string.IsNullOrWhiteSpace(enemyIdentity.PlacementKey))
             return enemyIdentity.PlacementKey;
@@ -324,7 +332,8 @@ public class EnemyUnitBootstrap : MonoBehaviour
         MapProgressRepository mapProgressRepository,
         EnemyGroupPersistentRepository enemyGroupRepository,
         string placementKey,
-        Vector2Int initialGrid)
+        Vector2Int initialGrid,
+        string zoneId = "")
     {
         if (mapProgressRepository == null ||
             enemyGroupRepository == null ||
@@ -374,7 +383,8 @@ public class EnemyUnitBootstrap : MonoBehaviour
         PersistentEnemyRepository enemyRepository,
         LevelPrefabRegistry prefabRegistry,
         string placementKey,
-        Vector2Int initialGrid)
+        Vector2Int initialGrid,
+        string zoneId = "")
     {
         if (mapProgressRepository == null ||
             enemyGroupRepository == null ||
@@ -402,6 +412,9 @@ public class EnemyUnitBootstrap : MonoBehaviour
             enemyUnit.SnapToGridPosition(worldState.Grid);
         else
             mapProgressRepository.SetEnemyGrid(placementKey, initialGrid);
+
+        if (!string.IsNullOrWhiteSpace(zoneId))
+            mapProgressRepository.SetEnemyZone(placementKey, zoneId);
 
         RefreshFogVisibilityBinding();
         hasInitialized = true;

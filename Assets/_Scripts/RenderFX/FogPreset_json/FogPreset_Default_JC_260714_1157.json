@@ -1,0 +1,119 @@
+{
+    "unexplored": {
+        "heightTransition": 0.11999999731779099,
+        "fogLowTopY": 0.550000011920929,
+        "fogHighStartY": 0.75,
+        "fogColor": {
+            "r": 0.6143941283226013,
+            "g": 0.6351432800292969,
+            "b": 0.6855344772338867,
+            "a": 1.0
+        },
+        "fogColorMid": {
+            "r": 0.5627744197845459,
+            "g": 0.5898863077163696,
+            "b": 0.6603773832321167,
+            "a": 1.0
+        },
+        "fogColorHigh": {
+            "r": 0.871464729309082,
+            "g": 0.8722664713859558,
+            "b": 0.8742138147354126,
+            "a": 1.0
+        },
+        "fogDensityLow": 1.0,
+        "fogDensityMid": 1.0,
+        "fogDensityHigh": 1.0,
+        "noiseScaleBase": 50.0,
+        "noiseScaleDetail": 16.0,
+        "noiseScaleDistortion": 5.0,
+        "flowSpeedBase": 0.25999999046325686,
+        "flowSpeedDetail": 0.2199999988079071,
+        "flowSpeedDistortion": 0.05000000074505806,
+        "distortionStrength": 1.2999999523162842,
+        "noiseContrast": 5.929999828338623,
+        "cloudCoverage": 1.0,
+        "cloudDensityEffect": 0.0,
+        "sheetOpacity": 0.6430000066757202,
+        "sheetHeightY": 0.7599999904632568,
+        "sheetColor": {
+            "r": 0.7106918096542358,
+            "g": 0.7106918096542358,
+            "b": 0.7106918096542358,
+            "a": 1.0
+        },
+        "cloudContrast": 0.2590000033378601,
+        "sheetRangeMultiplier": 1.350000023841858,
+        "sheetFadeWidthWorld": 2.3299999237060549,
+        "sheetGroundAlign": 0.8040000200271606,
+        "brightnessLow": 0.7360000014305115,
+        "brightnessMid": 0.8510000109672546,
+        "brightnessHigh": 0.9520000219345093
+    },
+    "fogged": {
+        "heightTransition": 0.17800000309944154,
+        "fogLowTopY": 0.28999999165534975,
+        "fogHighStartY": 0.4699999988079071,
+        "fogColor": {
+            "r": 0.7960785031318665,
+            "g": 0.9137255549430847,
+            "b": 1.0,
+            "a": 1.0
+        },
+        "fogColorMid": {
+            "r": 0.7960785031318665,
+            "g": 0.9137255549430847,
+            "b": 1.0,
+            "a": 1.0
+        },
+        "fogColorHigh": {
+            "r": 0.7960784435272217,
+            "g": 0.9134281277656555,
+            "b": 1.0,
+            "a": 1.0
+        },
+        "fogDensityLow": 0.019999999552965165,
+        "fogDensityMid": 0.017000000923871995,
+        "fogDensityHigh": 0.15399999916553498,
+        "noiseScaleBase": 28.18000030517578,
+        "noiseScaleDetail": 4.5,
+        "noiseScaleDistortion": 1.0,
+        "flowSpeedBase": 0.25999999046325686,
+        "flowSpeedDetail": 0.2199999988079071,
+        "flowSpeedDistortion": 0.05000000074505806,
+        "distortionStrength": 1.2999999523162842,
+        "noiseContrast": 4.849999904632568,
+        "cloudCoverage": 0.6010000109672546,
+        "cloudDensityEffect": 0.11400000005960465,
+        "sheetOpacity": 0.06499999761581421,
+        "sheetHeightY": 0.7599999904632568,
+        "sheetColor": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 0.3764705955982208
+        },
+        "cloudContrast": 0.2280000001192093,
+        "sheetRangeMultiplier": 1.350000023841858,
+        "sheetFadeWidthWorld": 2.3299999237060549,
+        "sheetGroundAlign": 0.8040000200271606,
+        "brightnessLow": 1.1369999647140504,
+        "brightnessMid": 1.0839999914169312,
+        "brightnessHigh": 1.1440000534057618
+    },
+    "shared": {
+        "sightRangeMultiplier": 1.090000033378601,
+        "edgeWidthWorld": 0.9900000095367432,
+        "edgeNoiseStrength": 0.48364099860191347,
+        "edgeNoiseScale": 0.15000000596046449,
+        "edgeNoiseSpeed": 0.5,
+        "edgeFadeWidth": 1.7100000381469727,
+        "edgeLayerSpreadWorld": 1.600000023841858,
+        "edgeRoundingWorld": 1.2599999904632569,
+        "stateBlendWidthWorld": 0.9900000095367432,
+        "fallbackEdgeSoftness": 0.4000000059604645,
+        "debugMode": false,
+        "enableRefogByDay": false,
+        "refogDelayDays": 3
+    }
+}

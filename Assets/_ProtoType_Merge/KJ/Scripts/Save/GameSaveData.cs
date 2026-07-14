@@ -41,6 +41,11 @@ public class GameSaveData : ScriptableObject
     public List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
     public List<FogProgressCell> fogCells = new List<FogProgressCell>();
     public List<LevelZoneSelectionState> levelZoneSelections = new List<LevelZoneSelectionState>();
+    public List<HeroUnionProgressState> heroUnionStates = new List<HeroUnionProgressState>();
+    public List<GateProgressState> gateStates = new List<GateProgressState>();
+    public List<ZoneThreatProgressState> zoneThreatStates = new List<ZoneThreatProgressState>();
+    public List<ZoneEnemyLevelState> zoneEnemyLevelStates = new List<ZoneEnemyLevelState>();
+    public ZoneEntryGuidanceProgressState zoneEntryGuidanceState = new ZoneEntryGuidanceProgressState();
 
     // ── 자원 (JsonUtility가 Dictionary 미지원 → 엔트리 배열) ──
     [Serializable]
@@ -86,4 +91,8 @@ public class GameSaveData : ScriptableObject
 
     // ── 턴 ──
     public int currentDay;
+
+    // ── 채팅 분기 플래그 [KJ 260714, F008] ──
+    // ChatFlagStore 스냅샷(Set_Flag_* 효과/분기 조건). 로드 시 ChatFlagStore.RestoreSnapshot(chatFlags) 호출(DH 인수인계).
+    public List<ChatFlagStore.Entry> chatFlags = new List<ChatFlagStore.Entry>();
 }

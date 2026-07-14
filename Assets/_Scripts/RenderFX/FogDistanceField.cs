@@ -1,10 +1,12 @@
 using UnityEngine;
 
 /// <summary>
-/// [JC 신설 260707] 가시성 경계 SDF(부호 있는 거리장) 빌더.
-/// FogGridManager의 탐색 상태(IsExplored)를 경계 기준으로, 셀 단위 부호 거리(+=안개 쪽, -=개방 쪽)를
-/// 2패스 챔퍼 거리변환으로 계산해 RFloat 텍스처(bilinear)로 굽고 전역 _FogDistanceTex로 푸시한다.
-/// FogOfWarHI 셰이더가 등고선 smoothstep으로 소비 — 셀 격자를 벗어난 영역 기반의 매끄러운 경계.
+/// [JC 신설 260707 / 260714 이중화] 가시성 경계 SDF(부호 있는 거리장) 빌더.
+/// FogGridManager의 상태를 경계 기준으로, 셀 단위 부호 거리(+=안개 쪽, -=개방 쪽)를
+/// 2패스 챔퍼 거리변환으로 계산해 RGFloat 텍스처(bilinear)로 굽고 전역 _FogDistanceTex로 푸시한다.
+///   R = IsExplored 경계 (Unexplored ↔ Fogged/Visible) — 짙은 안개층의 등고선
+///   G = IsVisible  경계 (Visible ↔ Fogged/Unexplored) — Fogged 베일층의 등고선
+/// FogOfWarHI 셰이더가 두 등고선을 순차 합성 — 셀 격자를 벗어난 영역 기반의 매끄러운 경계.
 /// 재계산은 fog 변경 이벤트가 있었던 프레임에만 수행(평시 프레임 비용 0). 수명은 RenderFXManager가 관리.
 /// </summary>
 public class FogDistanceField
@@ -16,9 +18,11 @@ public class FogDistanceField
 
     private FogGridManager grid;
     private Texture2D texture;
-    private float[] distToExplored;
-    private float[] distToUnexplored;
-    private float[] signedDist;
+    private float[] distToOpen;      // 스크래치: 개방(explored/visible) 셀까지 거리
+    private float[] distToClosed;    // 스크래치: 닫힌 셀까지 거리
+    private float[] signedExplored;  // R 채널: IsExplored 경계
+    private float[] signedVisible;   // G 채널: IsVisible 경계
+    private float[] packed;          // RG 인터리브 업로드 버퍼
     private bool dirty;
 
     private float roundingCells;
@@ -78,37 +82,31 @@ public class FogDistanceField
         int count = w * h;
         if (count < 1) return;
 
-        if (signedDist == null || signedDist.Length != count)
+        if (signedExplored == null || signedExplored.Length != count)
         {
-            distToExplored = new float[count];
-            distToUnexplored = new float[count];
-            signedDist = new float[count];
+            distToOpen = new float[count];
+            distToClosed = new float[count];
+            signedExplored = new float[count];
+            signedVisible = new float[count];
+            packed = new float[count * 2];
         }
 
-        for (int y = 0; y < h; y++)
-        {
-            for (int x = 0; x < w; x++)
-            {
-                int i = y * w + x;
-                bool explored = grid.IsExplored(new Vector2Int(x, y));
-                distToExplored[i] = explored ? 0f : Far;
-                distToUnexplored[i] = explored ? Far : 0f;
-            }
-        }
+        BuildSignedField(w, h, count, exploredBoundary: true, signedExplored);
+        BuildSignedField(w, h, count, exploredBoundary: false, signedVisible);
 
-        Chamfer(distToExplored, w, h);
-        Chamfer(distToUnexplored, w, h);
+        ApplyRounding(signedExplored, w, h);
+        ApplyRounding(signedVisible, w, h);
 
-        // 안개(미탐) 셀 = +탐색경계까지 거리 / 개방 셀 = -미탐경계까지 거리 (둘 중 하나는 0)
         for (int i = 0; i < count; i++)
-            signedDist[i] = distToExplored[i] - distToUnexplored[i];
-
-        ApplyRounding(w, h);
+        {
+            packed[i * 2] = signedExplored[i];
+            packed[i * 2 + 1] = signedVisible[i];
+        }
 
         if (texture == null || texture.width != w || texture.height != h)
         {
             if (texture != null) Object.Destroy(texture);
-            texture = new Texture2D(w, h, TextureFormat.RFloat, false, true)
+            texture = new Texture2D(w, h, TextureFormat.RGFloat, false, true)
             {
                 name = "FogDistanceField",
                 filterMode = FilterMode.Bilinear,
@@ -116,15 +114,38 @@ public class FogDistanceField
             };
         }
 
-        texture.SetPixelData(signedDist, 0);
+        texture.SetPixelData(packed, 0);
         texture.Apply(false, false);
         Shader.SetGlobalTexture(FogDistanceTexId, texture);
         Shader.SetGlobalFloat(FogDistanceTexBoundId, 1f);
     }
 
+    // 개방 판정(explored 또는 visible) 기준의 부호 거리장을 result에 채운다.
+    // 닫힌(안개) 셀 = +개방경계까지 거리 / 개방 셀 = -닫힌경계까지 거리 (둘 중 하나는 0)
+    private void BuildSignedField(int w, int h, int count, bool exploredBoundary, float[] result)
+    {
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                int i = y * w + x;
+                var cell = new Vector2Int(x, y);
+                bool open = exploredBoundary ? grid.IsExplored(cell) : grid.IsVisible(cell);
+                distToOpen[i] = open ? 0f : Far;
+                distToClosed[i] = open ? Far : 0f;
+            }
+        }
+
+        Chamfer(distToOpen, w, h);
+        Chamfer(distToClosed, w, h);
+
+        for (int i = 0; i < count; i++)
+            result[i] = distToOpen[i] - distToClosed[i];
+    }
+
     // 거리장 가우시안 분리 블러 = 등고선 모서리 라운딩 (반경 ≈ roundingCells).
-    // distToExplored를 스크래치로 재사용 — signedDist 계산 후에는 소비처가 없다.
-    private void ApplyRounding(int w, int h)
+    // distToOpen을 스크래치로 재사용 — signed 계산 후에는 소비처가 없다.
+    private void ApplyRounding(float[] data, int w, int h)
     {
         int r = Mathf.CeilToInt(roundingCells);
         if (r < 1) return;
@@ -148,7 +169,7 @@ public class FogDistanceField
                 blurKernel[k] /= sum;
         }
 
-        float[] scratch = distToExplored;
+        float[] scratch = distToOpen;
 
         for (int y = 0; y < h; y++)
         {
@@ -157,7 +178,7 @@ public class FogDistanceField
             {
                 float acc = 0f;
                 for (int k = -r; k <= r; k++)
-                    acc += signedDist[row + Mathf.Clamp(x + k, 0, w - 1)] * blurKernel[k + r];
+                    acc += data[row + Mathf.Clamp(x + k, 0, w - 1)] * blurKernel[k + r];
                 scratch[row + x] = acc;
             }
         }
@@ -169,7 +190,7 @@ public class FogDistanceField
                 float acc = 0f;
                 for (int k = -r; k <= r; k++)
                     acc += scratch[Mathf.Clamp(y + k, 0, h - 1) * w + x] * blurKernel[k + r];
-                signedDist[y * w + x] = acc;
+                data[y * w + x] = acc;
             }
         }
     }

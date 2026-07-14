@@ -37,12 +37,21 @@ public class TurnManager : MonoBehaviour
     {
         // [JC 260610] 로비에서 위임된 턴종료 요청 처리.
         // 로비 턴종료 = "나가기 + 탐사 턴종료" 이므로, 탐사 진입 직후 정상 EndPlayerTurn(적 턴 진행)을 실행한다.
-        if (GameManager.Instance != null && GameManager.Instance.ConsumePendingEndTurn())
+        bool pendingEndTurn = GameManager.Instance != null && GameManager.Instance.ConsumePendingEndTurn();
+        if (pendingEndTurn)
+        {
             EndPlayerTurn();
+            return;
+        }
 
         EnemyTurnSessionRepository sessionRepository = EnemyTurnSessionRepository.Instance;
         if (sessionRepository != null && sessionRepository.ShouldResumeAfterCombat)
+        {
             StartCoroutine(ResumeEnemyTurnAfterSceneReady());
+            return;
+        }
+
+        StartCoroutine(CaptureInitialTurnStartSnapshotAfterSceneReady());
     }
 
     public void EndPlayerTurn()
@@ -109,7 +118,7 @@ public class TurnManager : MonoBehaviour
         }
 
         // [KJ 260706] 플레이어 턴 시작마다 자동 저장 — AdvanceDay·거점 생산·이동력 리셋 반영 후 시점.
-        GameSaveService.SaveToSlot(SaveSlotRepository.CurrentSlot);
+        DHTurnStartSnapshotStore.CaptureTurnStartSnapshot();
     }
 
     private void AdvanceDay()
@@ -192,6 +201,17 @@ public class TurnManager : MonoBehaviour
         EnemyTurnStateChanged?.Invoke(true);
         UpdateTurnStateText("Enemy Turn");
         StartCoroutine(RunEnemyTurn());
+    }
+
+    private IEnumerator CaptureInitialTurnStartSnapshotAfterSceneReady()
+    {
+        yield return null;
+        yield return null;
+
+        if (DHGameEndState.IsEnding || enemyTurnRunning)
+            yield break;
+
+        DHTurnStartSnapshotStore.CaptureTurnStartSnapshot();
     }
 
     private void UpdateTurnStateText(string nextText)

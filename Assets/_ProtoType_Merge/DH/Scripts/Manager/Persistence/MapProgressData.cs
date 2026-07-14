@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
@@ -231,6 +232,153 @@ public class ZoneThreatProgressState
 }
 
 [Serializable]
+public class ZoneEnemyLevelState
+{
+    [SerializeField] private string zoneId;
+    [SerializeField] private bool initialized;
+    [SerializeField] private int enemyLevel;
+
+    public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+    public bool Initialized => initialized;
+    public int EnemyLevel => Mathf.Max(1, enemyLevel);
+
+    public ZoneEnemyLevelState(string zoneId, int enemyLevel)
+    {
+        this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
+        initialized = true;
+        this.enemyLevel = Mathf.Max(1, enemyLevel);
+    }
+
+    public void Initialize(int nextEnemyLevel)
+    {
+        if (initialized)
+            return;
+
+        initialized = true;
+        enemyLevel = Mathf.Max(1, nextEnemyLevel);
+    }
+}
+
+[Serializable]
+public class ZoneEntryGuidanceProgressState
+{
+    [SerializeField] private bool active;
+    [SerializeField] private string zoneId;
+    [SerializeField] private string requiredHeroUnionId;
+    [SerializeField] private List<Vector2Int> allowedPathCells = new List<Vector2Int>();
+    [SerializeField] private List<string> completedZoneIds = new List<string>();
+
+    public bool Active => active;
+    public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+    public string RequiredHeroUnionId => MapProgressKey.NormalizeSegment(requiredHeroUnionId);
+    public IReadOnlyList<Vector2Int> AllowedPathCells => allowedPathCells;
+    public IReadOnlyList<string> CompletedZoneIds => completedZoneIds;
+
+    public ZoneEntryGuidanceProgressState()
+    {
+        active = false;
+        zoneId = string.Empty;
+        requiredHeroUnionId = string.Empty;
+    }
+
+    public ZoneEntryGuidanceProgressState(ZoneEntryGuidanceProgressState source)
+        : this()
+    {
+        if (source == null)
+            return;
+
+        active = source.Active;
+        zoneId = source.ZoneId;
+        requiredHeroUnionId = source.RequiredHeroUnionId;
+        ReplaceAllowedPathCells(source.AllowedPathCells);
+        ReplaceCompletedZoneIds(source.CompletedZoneIds);
+    }
+
+    public void Begin(string nextZoneId, string nextRequiredHeroUnionId, IReadOnlyList<Vector2Int> nextAllowedPathCells)
+    {
+        zoneId = MapProgressKey.NormalizeSegment(nextZoneId);
+        requiredHeroUnionId = MapProgressKey.NormalizeSegment(nextRequiredHeroUnionId);
+        ReplaceAllowedPathCells(nextAllowedPathCells);
+        active = !string.IsNullOrWhiteSpace(zoneId) && allowedPathCells.Count > 0;
+    }
+
+    public void CompleteActive()
+    {
+        if (!string.IsNullOrWhiteSpace(ZoneId))
+            AddCompletedZone(ZoneId);
+
+        ClearActive();
+    }
+
+    public void ClearActive()
+    {
+        active = false;
+        zoneId = string.Empty;
+        requiredHeroUnionId = string.Empty;
+        allowedPathCells.Clear();
+    }
+
+    public bool IsZoneCompleted(string candidateZoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(candidateZoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return false;
+
+        for (int i = 0; i < completedZoneIds.Count; i++)
+        {
+            if (string.Equals(completedZoneIds[i], normalizedZoneId, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    public void AddCompletedZone(string completedZoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(completedZoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId) || IsZoneCompleted(normalizedZoneId))
+            return;
+
+        completedZoneIds.Add(normalizedZoneId);
+    }
+
+    public bool ContainsAllowedPathCell(Vector2Int grid)
+    {
+        for (int i = 0; i < allowedPathCells.Count; i++)
+        {
+            if (allowedPathCells[i] == grid)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void ReplaceAllowedPathCells(IReadOnlyList<Vector2Int> source)
+    {
+        allowedPathCells.Clear();
+        if (source == null)
+            return;
+
+        for (int i = 0; i < source.Count; i++)
+        {
+            Vector2Int cell = source[i];
+            if (!allowedPathCells.Contains(cell))
+                allowedPathCells.Add(cell);
+        }
+    }
+
+    private void ReplaceCompletedZoneIds(IReadOnlyList<string> source)
+    {
+        completedZoneIds.Clear();
+        if (source == null)
+            return;
+
+        for (int i = 0; i < source.Count; i++)
+            AddCompletedZone(source[i]);
+    }
+}
+
+[Serializable]
 public class EnemyWorldState
 {
     public const string DefaultPrefabKey = "default";
@@ -241,6 +389,7 @@ public class EnemyWorldState
     [SerializeField] private bool defeated;
     [SerializeField] private EnemyPlacementSource placementSource = EnemyPlacementSource.Scene;
     [SerializeField] private string prefabKey = DefaultPrefabKey;
+    [SerializeField] private string zoneId;
 
     public string PlacementKey => placementKey;
     public string EnemyId => enemyId;
@@ -248,9 +397,10 @@ public class EnemyWorldState
     public bool Defeated => defeated;
     public EnemyPlacementSource PlacementSource => placementSource;
     public string PrefabKey => prefabKey;
+    public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
 
     public EnemyWorldState(string placementKey, string enemyId, Vector2Int grid)
-        : this(placementKey, enemyId, grid, EnemyPlacementSource.Scene, DefaultPrefabKey)
+        : this(placementKey, enemyId, grid, EnemyPlacementSource.Scene, DefaultPrefabKey, string.Empty)
     {
     }
 
@@ -260,12 +410,24 @@ public class EnemyWorldState
         Vector2Int grid,
         EnemyPlacementSource placementSource,
         string prefabKey)
+        : this(placementKey, enemyId, grid, placementSource, prefabKey, string.Empty)
+    {
+    }
+
+    public EnemyWorldState(
+        string placementKey,
+        string enemyId,
+        Vector2Int grid,
+        EnemyPlacementSource placementSource,
+        string prefabKey,
+        string zoneId)
     {
         this.placementKey = placementKey;
         this.enemyId = enemyId;
         this.grid = grid;
         this.placementSource = placementSource;
         this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? DefaultPrefabKey : prefabKey;
+        this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
         defeated = false;
     }
 
@@ -293,8 +455,12 @@ public class EnemyWorldState
     {
         prefabKey = string.IsNullOrWhiteSpace(nextPrefabKey) ? DefaultPrefabKey : nextPrefabKey;
     }
-}
 
+    public void SetZoneId(string nextZoneId)
+    {
+        zoneId = MapProgressKey.NormalizeSegment(nextZoneId);
+    }
+}
 [Serializable]
 public class OutpostProgressState
 {

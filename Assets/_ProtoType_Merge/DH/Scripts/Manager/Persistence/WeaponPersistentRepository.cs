@@ -133,6 +133,37 @@ public class WeaponPersistentRepository : MonoBehaviour
         return TryGetWeapon(weaponIndex, out WeaponPersistentData data) && RefreshWeaponStats(data);
     }
 
+    public void RestoreFromSave(int restoredNextWeaponIndex, IReadOnlyList<WeaponPersistentData> savedWeapons)
+    {
+        weapons.Clear();
+        weaponLookup.Clear();
+
+        if (savedWeapons != null)
+        {
+            for (int i = 0; i < savedWeapons.Count; i++)
+            {
+                WeaponPersistentData data = savedWeapons[i];
+                if (data == null || data.WeaponIndex <= 0 || weaponLookup.ContainsKey(data.WeaponIndex))
+                    continue;
+
+                weapons.Add(data);
+                weaponLookup.Add(data.WeaponIndex, data);
+            }
+        }
+
+        nextWeaponIndex = Mathf.Max(1, restoredNextWeaponIndex);
+        RebuildLookup();
+        PersistentUnitRepository unitRepository = PersistentUnitRepository.Instance;
+        if (unitRepository != null)
+        {
+            for (int i = 0; i < weapons.Count; i++)
+            {
+                WeaponPersistentData data = weapons[i];
+                if (data != null)
+                    unitRepository.RefreshUnitsEquippedWithWeapon(data.WeaponIndex);
+            }
+        }
+    }
     public void ClearAllWeapons()
     {
         weapons.Clear();

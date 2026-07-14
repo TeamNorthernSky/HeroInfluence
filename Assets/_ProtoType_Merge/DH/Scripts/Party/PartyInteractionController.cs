@@ -54,6 +54,13 @@ public class PartyInteractionController
         if (gridManager == null)
             return;
 
+        if (ZoneEntryGuidanceController.IsActive)
+        {
+            TryCollectItemAtGrid(enteredGrid);
+            ZoneEntryGuidanceController.Instance.TryCompleteFromPartyGrid(enteredGrid);
+            return;
+        }
+
         HandleAdjacentHeroUnionProximity(enteredGrid);
         HandleAdjacentOutpostProximity(enteredGrid);
         HandleVillainUnionProximity(enteredGrid);
@@ -68,6 +75,9 @@ public class PartyInteractionController
             return;
 
         if (gridManager == null || combatEncounterManager == null || ownerParty == null)
+            return;
+
+        if (ZoneEntryGuidanceController.IsActive)
             return;
 
         if (!gridManager.TryGetEnemyEncounterZoneOwner(ownerParty.GetCurrentGrid(), out EnemyGridMover enemy))
@@ -106,6 +116,9 @@ public class PartyInteractionController
 
         if (remainingPath == null || remainingPath.Count == 0) return;
         if (gridManager == null || ownerParty == null) return;
+
+        if (ZoneEntryGuidanceController.IsActive)
+            return;
         
         Vector2Int currentGrid = ownerParty.GetCurrentGrid();
         
@@ -276,13 +289,33 @@ public class PartyInteractionController
             yield break;
         }
 
+        CollectItem(itemGrid, itemObject);
+        IsInputLocked = false;
+    }
+
+    private bool TryCollectItemAtGrid(Vector2Int itemGrid)
+    {
+        if (gridManager == null)
+            return false;
+
+        if (!gridManager.TryGetItemObjectAtGrid(itemGrid, out ItemObject itemObject))
+            return false;
+
+        CollectItem(itemGrid, itemObject);
+        return true;
+    }
+
+    private static void CollectItem(Vector2Int itemGrid, ItemObject itemObject)
+    {
+        if (itemObject == null)
+            return;
+
         // [JC 260514 머지후처리] ItemObject가 GameManager 통합 패턴(Game.Economy)을 내부 사용하므로 인자 없이 호출.
         MapProgressRepository repository = MapProgressRepository.Instance;
         if (repository != null)
             repository.MarkItemCollected(MapProgressKey.ForItem(itemGrid));
 
         itemObject.GetItem();
-        IsInputLocked = false;
     }
 
     private IEnumerator InvokeDelayedOutpostClaim(Vector2Int outpostGrid)
