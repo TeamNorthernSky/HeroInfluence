@@ -29,6 +29,8 @@ Material:
     - _BrightnessLow: 0.602
     - _BrightnessMid: 1
     - _CloudContrast: 0.15
+    - _CloudCoverage: 1
+    - _CloudDensityEffect: 0
     - _DebugMode: 0
     - _DistortionStrength: 0.3
     - _EdgeFadeWidth: 3
@@ -39,6 +41,31 @@ Material:
     - _EdgeNoiseStrength: 0.5
     - _EdgeSoftness: 0.18
     - _EdgeWidthWorld: 1
+    - _FgBrightnessHigh: 1.25
+    - _FgBrightnessLow: 0.75
+    - _FgBrightnessMid: 1
+    - _FgCloudContrast: 0.15
+    - _FgCloudCoverage: 1
+    - _FgCloudDensityEffect: 0
+    - _FgDistortionStrength: 0.3
+    - _FgFlowSpeed1: 0.15
+    - _FgFlowSpeed2: 0.25
+    - _FgFlowSpeed3: 0.08
+    - _FgFogDensityHigh: 0.5
+    - _FgFogDensityLow: 0
+    - _FgFogDensityMid: 0.85
+    - _FgFogHighStartY: 2
+    - _FgFogLowTopY: 2
+    - _FgHeightTransition: 0.5
+    - _FgNoiseContrast: 3.5
+    - _FgNoiseScale1: 6
+    - _FgNoiseScale2: 18
+    - _FgNoiseScale3: 3
+    - _FgSheetEdgeShiftWorld: 0
+    - _FgSheetFadeWidthWorld: 1
+    - _FgSheetGroundAlign: 0.5
+    - _FgSheetHeightY: 2
+    - _FgSheetOpacity: 0
     - _FlowSpeed1: 0.15
     - _FlowSpeed2: 0.25
     - _FlowSpeed3: 0.08
@@ -48,6 +75,8 @@ Material:
     - _FogDensityMid: 0.85
     - _FogHighStartY: 2
     - _FogLowTopY: 2
+    - _FoggedCloudStrength: 0.3
+    - _FoggedDensity: 0.35
     - _HeightTransition: 0.5
     - _NoiseContrast: 8
     - _NoiseScale1: 6
@@ -59,11 +88,17 @@ Material:
     - _SheetHeightY: 2
     - _SheetOpacity: 0
     - _SightBoostWorld: 0
+    - _StateBlendWidthWorld: 1
     - _TrimStrength: 0.65
     - _VisibilitySoftness: 0.18
     m_Colors:
+    - _FgFogColor: {r: 0.75, g: 0.78, b: 0.85, a: 1}
+    - _FgFogColorHigh: {r: 0.75, g: 0.78, b: 0.85, a: 1}
+    - _FgFogColorMid: {r: 0.75, g: 0.78, b: 0.85, a: 1}
+    - _FgSheetColor: {r: 0.75, g: 0.78, b: 0.85, a: 1}
     - _FogColor: {r: 0.75, g: 0.78, b: 0.85, a: 1}
     - _FogColorHigh: {r: 0.75, g: 0.78, b: 0.85, a: 1}
     - _FogColorMid: {r: 0.75, g: 0.78, b: 0.85, a: 1}
+    - _FoggedColor: {r: 0.75, g: 0.78, b: 0.85, a: 1}
     - _SheetColor: {r: 0.75, g: 0.78, b: 0.85, a: 1}
   m_BuildTextureStacks: []
