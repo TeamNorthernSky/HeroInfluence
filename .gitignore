@@ -99,6 +99,8 @@ Docs/
 
 #ASB 
 /Assets/_ProtoType_Merge/ASB/Animation/TmpModel
+/Assets/_ProtoType_Merge/ASB/Data/RawImports/
+/Assets/_ProtoType_Merge/ASB/Data/RawImports.meta
 /Assets/GabrielAguiarProductions
 /packageTool/build
 
@@ -162,3 +164,5 @@ Assets/_ProtoType_Merge/CLAUDE.md.meta
 # mergetool 백업
 *.orig
 *_BACKUP_*
+
+/Assets/ASB_Work/.ExcelBackup/

@@ -12,11 +12,20 @@ namespace ASB.ExcelImport.Editor
     {
         public const string GeneratedScriptFolder = "Assets/_ProtoType_Merge/ASB/Scripts/Data/Generated";
         public const string TableAssetFolder = "Assets/_ProtoType_Merge/ASB/Data/Tables";
+        public const string RawImportFolder = "Assets/_ProtoType_Merge/ASB/Data/RawImports";
+        public const string SchemaFolder = "Assets/_ProtoType_Merge/ASB/Data/Schemas";
         public const string DefaultExcelFolder = "Assets/_ProtoType_Merge/ASB/Data/Excel";
         public const string PendingFilePathKey = "ExcelParser_PendingFilePath";
+        public const string PendingRawGenerateKey = "ExcelParser_PendingRawGenerate";
 
         public static string GetTableAssetFolder(string excelFileName) =>
             $"{TableAssetFolder}/{excelFileName}";
+
+        public static string GetRawImportFolder(string excelFileName) =>
+            $"{RawImportFolder}/{excelFileName}";
+
+        public static string GetSchemaFolder(string excelFileName) =>
+            $"{SchemaFolder}/{excelFileName}";
     }
 
     /// <summary>에디터 파서 전용 DTO. Generated 데이터 클래스와 이름이 겹치지 않도록 Editor 네임스페이스에 둡니다.</summary>
@@ -24,11 +33,14 @@ namespace ASB.ExcelImport.Editor
     {
         public string SheetName;
         public string CustomClassName;
+        public string OutputAssetName;
+        public string TemplateSignature;
         /// <summary>#DataName이 있으면 그 값, 없으면 SheetName을 클래스명 기준으로 사용합니다.</summary>
         public string ClassName => string.IsNullOrEmpty(CustomClassName) ? SheetName : CustomClassName;
         public List<string> Types = new List<string>();
         public List<string> Names = new List<string>();
         public List<List<string>> Rows = new List<List<string>>();
+        public Dictionary<string, ListDelimiter> ListDelimiters = new Dictionary<string, ListDelimiter>(StringComparer.Ordinal);
     }
 
     public static class ExcelParser

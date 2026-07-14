@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -19,14 +19,12 @@ namespace ASB.ExcelImport.Editor
         private readonly List<ScriptableObject> _assets     = new List<ScriptableObject>();
         private readonly List<string>           _excelPaths = new List<string>();
 
-        private readonly Dictionary<ScriptableObject, HashSet<string>> _dirtyTracker =
-            new Dictionary<ScriptableObject, HashSet<string>>();
+        private readonly HashSet<ScriptableObject> _dirtyAssets =
+            new HashSet<ScriptableObject>();
 
-        // BindProperty가 userData를 덮어쓰므로 경로는 별도 맵에 보관
-        private readonly Dictionary<VisualElement, string> _cellPathMap =
-            new Dictionary<VisualElement, string>();
+        // BindProperty媛 userData瑜???뼱?곕?濡?寃쎈줈??蹂꾨룄 留듭뿉 蹂닿?
 
-        // bindCell에서 BindProperty 재연결 시 ChangeEvent 오발 방지
+        // bindCell?먯꽌 BindProperty ?ъ뿰寃???ChangeEvent ?ㅻ컻 諛⑹?
         private bool _isBinding = false;
 
         private ScriptableObject _selected;
@@ -54,20 +52,20 @@ namespace ASB.ExcelImport.Editor
             ScanExcelFolder();
         }
 
-        // ─── Toolbar ──────────────────────────────────────────────────────────
+        // ??? Toolbar ??????????????????????????????????????????????????????????
 
         private void BuildToolbar()
         {
             var toolbar = new Toolbar();
 
-            var importBtn = new ToolbarButton(ExcelEditorWindow.ShowWindow) { text = "📥 Excel Importer 열기" };
+            var importBtn = new ToolbarButton(ExcelEditorWindow.ShowWindow) { text = "?뱿 Excel Importer ?닿린" };
             toolbar.Add(importBtn);
 
             var spacer = new ToolbarSpacer();
             spacer.style.flexGrow = 1f;
             toolbar.Add(spacer);
 
-            _saveButton = new ToolbarButton(OnSaveToExcel) { text = "💾 Save to Excel" };
+            _saveButton = new ToolbarButton(OnSaveToExcel) { text = "?뮶 Save to Excel" };
             _saveButton.style.backgroundColor = new Color(0.2f, 0.5f, 0.2f);
             _saveButton.SetEnabled(false);
             toolbar.Add(_saveButton);
@@ -75,7 +73,7 @@ namespace ASB.ExcelImport.Editor
             rootVisualElement.Add(toolbar);
         }
 
-        // ─── Split View ───────────────────────────────────────────────────────
+        // ??? Split View ???????????????????????????????????????????????????????
 
         private void BuildSplitView()
         {
@@ -86,7 +84,7 @@ namespace ASB.ExcelImport.Editor
             rootVisualElement.Add(splitView);
         }
 
-        // ─── Left Panel ───────────────────────────────────────────────────────
+        // ??? Left Panel ???????????????????????????????????????????????????????
 
         private VisualElement BuildLeftPanel()
         {
@@ -97,7 +95,7 @@ namespace ASB.ExcelImport.Editor
             panel.style.paddingRight  = 4f;
             panel.style.flexDirection = FlexDirection.Column;
 
-            var dropLabel = new Label("Excel 파일");
+            var dropLabel = new Label("Excel ?뚯씪");
             dropLabel.style.marginBottom = 2f;
             panel.Add(dropLabel);
 
@@ -131,7 +129,7 @@ namespace ASB.ExcelImport.Editor
                 label.text = _assets[index] != null ? _assets[index].name : "(null)";
         }
 
-        // ─── Right Panel ──────────────────────────────────────────────────────
+        // ??? Right Panel ??????????????????????????????????????????????????????
 
         private VisualElement BuildRightPanel()
         {
@@ -154,7 +152,7 @@ namespace ASB.ExcelImport.Editor
             _rightPanel.Add(label);
         }
 
-        // ─── Grid View ────────────────────────────────────────────────────────
+        // ??? Grid View ????????????????????????????????????????????????????????
 
         private struct ColumnMeta
         {
@@ -236,14 +234,14 @@ namespace ASB.ExcelImport.Editor
                     resizable = true
                 };
 
-                // so.targetObject를 캡처 (_selected는 이후 변경될 수 있으므로 사용 금지)
+                // so.targetObject瑜?罹≪쿂 (_selected???댄썑 蹂寃쎈맆 ???덉쑝誘濡??ъ슜 湲덉?)
                 ScriptableObject capturedAsset = so.targetObject as ScriptableObject;
 
                 column.makeCell = () =>
                 {
                     if (isList)
                     {
-                        // List 타입은 bindCell에서 콜백 등록/해제 관리
+                        // List ??낆? bindCell?먯꽌 肄쒕갚 ?깅줉/?댁젣 愿由?
                         return MakeGridCell(new TextField());
                     }
 
@@ -256,8 +254,7 @@ namespace ASB.ExcelImport.Editor
                             {
                                 if (_isBinding) return;
                                 if (EqualityComparer<int>.Default.Equals(evt.previousValue, evt.newValue)) return;
-                                _cellPathMap.TryGetValue(f, out string path);
-                                MarkDirty(capturedAsset, path);
+                                MarkDirty(capturedAsset);
                             });
                             return MakeGridCell(f);
                         }
@@ -268,8 +265,7 @@ namespace ASB.ExcelImport.Editor
                             {
                                 if (_isBinding) return;
                                 if (EqualityComparer<float>.Default.Equals(evt.previousValue, evt.newValue)) return;
-                                _cellPathMap.TryGetValue(f, out string path);
-                                MarkDirty(capturedAsset, path);
+                                MarkDirty(capturedAsset);
                             });
                             return MakeGridCell(f);
                         }
@@ -280,8 +276,7 @@ namespace ASB.ExcelImport.Editor
                             {
                                 if (_isBinding) return;
                                 if (EqualityComparer<bool>.Default.Equals(evt.previousValue, evt.newValue)) return;
-                                _cellPathMap.TryGetValue(f, out string path);
-                                MarkDirty(capturedAsset, path);
+                                MarkDirty(capturedAsset);
                             });
                             return MakeGridCell(f);
                         }
@@ -292,8 +287,7 @@ namespace ASB.ExcelImport.Editor
                             {
                                 if (_isBinding) return;
                                 if (EqualityComparer<string>.Default.Equals(evt.previousValue, evt.newValue)) return;
-                                _cellPathMap.TryGetValue(f, out string path);
-                                MarkDirty(capturedAsset, path);
+                                MarkDirty(capturedAsset);
                             });
                             return MakeGridCell(f);
                         }
@@ -317,25 +311,22 @@ namespace ASB.ExcelImport.Editor
 
                         tf.SetValueWithoutNotify(SerializeListProperty(prop));
 
-                        string capturedPath = prop.propertyPath;
-
                         EventCallback<ChangeEvent<string>> cb = evt =>
                         {
                             if (EqualityComparer<string>.Default.Equals(evt.previousValue, evt.newValue)) return;
                             Undo.RecordObject(capturedAsset, "Edit Excel Data");
                             DeserializeListProperty(prop, evt.newValue);
                             so.ApplyModifiedProperties();
-                            MarkDirty(capturedAsset, capturedPath);
+                            MarkDirty(capturedAsset);
                         };
                         tf.userData = cb;
                         tf.RegisterValueChangedCallback(cb);
                         return;
                     }
 
-                    // 비 List 타입: BindProperty 전후를 _isBinding으로 감싸 오발 방지
-                    // userData는 BindProperty가 덮어쓸 수 있으므로 별도 맵에 경로 보관
+                    // 鍮?List ??? BindProperty ?꾪썑瑜?_isBinding?쇰줈 媛먯떥 ?ㅻ컻 諛⑹?
+                    // userData??BindProperty媛 ??뼱?????덉쑝誘濡?蹂꾨룄 留듭뿉 寃쎈줈 蹂닿?
                     _isBinding                = true;
-                    _cellPathMap[element]     = prop.propertyPath;
 
                     switch (propType)
                     {
@@ -345,7 +336,7 @@ namespace ASB.ExcelImport.Editor
                         default:                             ((TextField)element).BindProperty(prop);    break;
                     }
 
-                    // BindProperty가 동기 이벤트를 발생시킬 수 있으므로 다음 프레임에 해제
+                    // BindProperty媛 ?숆린 ?대깽?몃? 諛쒖깮?쒗궗 ???덉쑝誘濡??ㅼ쓬 ?꾨젅?꾩뿉 ?댁젣
                     element.schedule.Execute(() => _isBinding = false);
                 };
 
@@ -373,40 +364,17 @@ namespace ASB.ExcelImport.Editor
             return field;
         }
 
-        // ─── Dirty Tracking ───────────────────────────────────────────────────
+        // ??? Dirty Tracking ???????????????????????????????????????????????????
 
-        private void MarkDirty(ScriptableObject asset, string propertyPath)
+        private void MarkDirty(ScriptableObject asset)
         {
-            if (asset == null || string.IsNullOrEmpty(propertyPath)) return;
-            if (!_dirtyTracker.ContainsKey(asset))
-                _dirtyTracker[asset] = new HashSet<string>();
-            _dirtyTracker[asset].Add(propertyPath);
+            if (asset == null) return;
+            _dirtyAssets.Add(asset);
             EditorUtility.SetDirty(asset);
         }
 
-        // 입력 예시: "DataList.Array.data[2].EnemyHp"
-        // 출력:      rowIndex = 2, fieldName = "EnemyHp"
-        private static bool TryParseDataListPropertyPath(string propertyPath, out int rowIndex, out string fieldName)
-        {
-            rowIndex  = -1;
-            fieldName = string.Empty;
-
-            int bracketOpen  = propertyPath.IndexOf('[');
-            int bracketClose = propertyPath.IndexOf(']');
-            if (bracketOpen < 0 || bracketClose < 0) return false;
-
-            int dotAfter = propertyPath.IndexOf('.', bracketClose);
-            if (dotAfter < 0) return false;
-
-            string indexStr = propertyPath.Substring(bracketOpen + 1, bracketClose - bracketOpen - 1);
-            if (!int.TryParse(indexStr, out rowIndex)) return false;
-
-            fieldName = propertyPath.Substring(dotAfter + 1);
-            return !string.IsNullOrEmpty(fieldName);
-        }
-
-        // ─── Column Meta (Reflection 기반, Generated 클래스 타입 사용) ──────────
-
+        // ?낅젰 ?덉떆: "DataList.Array.data[2].EnemyHp"
+        // 異쒕젰:      rowIndex = 2, fieldName = "EnemyHp"
         private static List<ColumnMeta> CollectColumnMeta(SerializedObject so, SerializedProperty listProp)
         {
             var columns = new List<ColumnMeta>();
@@ -465,7 +433,7 @@ namespace ASB.ExcelImport.Editor
             return list;
         }
 
-        // ─── List Property 직렬화 ─────────────────────────────────────────────
+        // ??? List Property 吏곷젹???????????????????????????????????????????????
 
         private static string SerializeListProperty(SerializedProperty prop)
         {
@@ -529,7 +497,7 @@ namespace ASB.ExcelImport.Editor
             }
         }
 
-        // ─── Excel 폴더 스캔 ──────────────────────────────────────────────────
+        // ??? Excel ?대뜑 ?ㅼ틪 ??????????????????????????????????????????????????
 
         private void ScanExcelFolder()
         {
@@ -556,7 +524,7 @@ namespace ASB.ExcelImport.Editor
             OnExcelFileSelected();
         }
 
-        // ─── Asset Loading ────────────────────────────────────────────────────
+        // ??? Asset Loading ????????????????????????????????????????????????????
 
         private void OnExcelFileSelected()
         {
@@ -645,7 +613,7 @@ namespace ASB.ExcelImport.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[ExcelDataViewer] Excel 읽기 실패: {ex.Message}");
+                Debug.LogError($"[ExcelDataViewer] Excel ?쎄린 ?ㅽ뙣: {ex.Message}");
             }
             return result;
         }
@@ -663,7 +631,7 @@ namespace ASB.ExcelImport.Editor
             return false;
         }
 
-        // ─── Event Handlers ───────────────────────────────────────────────────
+        // ??? Event Handlers ???????????????????????????????????????????????????
 
         public void RefreshAssets()
         {
@@ -691,17 +659,15 @@ namespace ASB.ExcelImport.Editor
         {
             if (_selected == null || string.IsNullOrEmpty(_selectedExcelPath)) return;
 
-            _dirtyTracker.TryGetValue(_selected, out HashSet<string> dirtyPaths);
-
-            if (dirtyPaths == null || dirtyPaths.Count == 0)
+            if (!_dirtyAssets.Contains(_selected))
             {
-                Debug.Log("[ExcelDataViewer] 변경된 셀이 없어 Excel 저장을 건너뜁니다.");
+                Debug.Log("[ExcelDataViewer] No changed data. Skipped Excel save.");
                 return;
             }
 
-            SOToExcelExporter.OverwriteDirtyCells(_selected, _selectedExcelPath, dirtyPaths);
+            SOToExcelExporter.OverwriteSheet(_selected, _selectedExcelPath);
             AssetDatabase.SaveAssets();
-            _dirtyTracker.Remove(_selected);
+            _dirtyAssets.Remove(_selected);
         }
 
         private static string ToAbsolutePath(string assetPath)
@@ -713,14 +679,18 @@ namespace ASB.ExcelImport.Editor
         }
     }
 
-    // ─── SO → Excel 원본 시트 덮어쓰기 ──────────────────────────────────────
+    // ??? SO ??Excel ?먮낯 ?쒗듃 ??뼱?곌린 ??????????????????????????????????????
 
     internal static class SOToExcelExporter
     {
+        private const string BackupFolderAssetPath = "Assets/ASB_Work/.ExcelBackup";
+        private const int MaxBackupsPerWorkbook = 3;
+
         private struct ColInfo
         {
             public int    index;
             public string excelType;
+            public ListDelimiter listDelimiter;
         }
 
         private static string ToSheetName(string typeName)
@@ -731,141 +701,32 @@ namespace ASB.ExcelImport.Editor
                 : typeName;
         }
 
-        // ─── 변경된 셀만 저장 ─────────────────────────────────────────────────
-
-        public static void OverwriteDirtyCells(
-            ScriptableObject asset,
-            string excelFilePath,
-            HashSet<string> dirtyPaths)
-        {
-            if (asset == null || string.IsNullOrEmpty(excelFilePath) || dirtyPaths == null) return;
-
-            FieldInfo dataListField = asset.GetType()
-                .GetField("DataList", BindingFlags.Instance | BindingFlags.Public);
-            if (dataListField == null)
-            {
-                Debug.LogError($"[SOToExcelExporter] DataList 필드 없음: {asset.GetType().Name}");
-                return;
-            }
-
-            IList dataList = dataListField.GetValue(asset) as IList;
-            if (dataList == null || dataList.Count == 0)
-            {
-                Debug.LogWarning($"[SOToExcelExporter] DataList 비어있음: {asset.name}");
-                return;
-            }
-
-            Type        rowType   = dataList.GetType().GetGenericArguments()[0];
-            FieldInfo[] fields    = rowType.GetFields(BindingFlags.Instance | BindingFlags.Public);
-            string      sheetName = ToSheetName(asset.GetType().Name);
-
-            IWorkbook workbook;
-            using (FileStream fs = new FileStream(excelFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                workbook = new XSSFWorkbook(fs);
-
-            ISheet sheet = workbook.GetSheet(sheetName);
-            if (sheet == null)
-            {
-                Debug.LogError($"[SOToExcelExporter] 시트 없음: '{sheetName}' ({Path.GetFileName(excelFilePath)})");
-                return;
-            }
-
-            Dictionary<string, ColInfo> colMap   = BuildColMap(sheet);
-            List<IRow>                  dataRows = CollectDataRows(sheet);
-            var styleCache = new Dictionary<string, ICellStyle>();
-
-            // dirtyPaths에서 (rowIndex, fieldName) 쌍 추출 후 해당 셀만 덮어씀
-            int savedCount = 0;
-            foreach (string propPath in dirtyPaths)
-            {
-                if (!TryParseDataListPropertyPath(propPath, out int rowIndex, out string fieldName))
-                {
-                    Debug.LogWarning($"[SOToExcelExporter] propertyPath 파싱 실패: {propPath}");
-                    continue;
-                }
-
-                if (rowIndex < 0 || rowIndex >= dataList.Count || rowIndex >= dataRows.Count)
-                {
-                    Debug.LogWarning($"[SOToExcelExporter] rowIndex 범위 초과: {rowIndex} (dataList={dataList.Count}, dataRows={dataRows.Count})");
-                    continue;
-                }
-
-                if (!colMap.TryGetValue(fieldName, out ColInfo col))
-                {
-                    Debug.LogWarning($"[SOToExcelExporter] 필드 없음: {fieldName}");
-                    continue;
-                }
-
-                FieldInfo field = FindField(fields, fieldName);
-                if (field == null) continue;
-
-                object rowObj = dataList[rowIndex];
-                object val    = field.GetValue(rowObj);
-                IRow   excelRow = dataRows[rowIndex];
-                ICell  cell     = excelRow.GetCell(col.index) ?? excelRow.CreateCell(col.index);
-                WriteCellValue(cell, val, col.excelType, workbook, styleCache);
-                savedCount++;
-            }
-
-            using (FileStream fs = new FileStream(excelFilePath, FileMode.Create, FileAccess.Write))
-                workbook.Write(fs);
-
-            Debug.Log($"[SOToExcelExporter] '{sheetName}' 부분 저장 완료 ({savedCount}셀) → {Path.GetFileName(excelFilePath)}");
-        }
-
-        private static FieldInfo FindField(FieldInfo[] fields, string fieldName)
-        {
-            for (int i = 0; i < fields.Length; i++)
-            {
-                if (fields[i].Name == fieldName) return fields[i];
-            }
-            return null;
-        }
-
-        // propertyPath 파싱 — ExcelDataViewerWindow와 동일한 규칙
-        private static bool TryParseDataListPropertyPath(string propertyPath, out int rowIndex, out string fieldName)
-        {
-            rowIndex  = -1;
-            fieldName = string.Empty;
-
-            int bracketOpen  = propertyPath.IndexOf('[');
-            int bracketClose = propertyPath.IndexOf(']');
-            if (bracketOpen < 0 || bracketClose < 0) return false;
-
-            int dotAfter = propertyPath.IndexOf('.', bracketClose);
-            if (dotAfter < 0) return false;
-
-            string indexStr = propertyPath.Substring(bracketOpen + 1, bracketClose - bracketOpen - 1);
-            if (!int.TryParse(indexStr, out rowIndex)) return false;
-
-            fieldName = propertyPath.Substring(dotAfter + 1);
-            return !string.IsNullOrEmpty(fieldName);
-        }
-
-        // ─── 전체 저장 (기존 유지) ────────────────────────────────────────────
+        // ??? 蹂寃쎈맂 ?留?????????????????????????????????????????????????????
 
         public static void OverwriteSheet(ScriptableObject asset, string excelFilePath)
         {
             if (asset == null || string.IsNullOrEmpty(excelFilePath)) return;
+            if (IsRawImportAsset(asset)) return;
 
             FieldInfo dataListField = asset.GetType()
                 .GetField("DataList", BindingFlags.Instance | BindingFlags.Public);
             if (dataListField == null)
             {
-                Debug.LogError($"[SOToExcelExporter] DataList 필드 없음: {asset.GetType().Name}");
+                Debug.LogError($"[SOToExcelExporter] DataList field was not found: {asset.GetType().Name}");
                 return;
             }
 
             IList dataList = dataListField.GetValue(asset) as IList;
             if (dataList == null || dataList.Count == 0)
             {
-                Debug.LogWarning($"[SOToExcelExporter] DataList 비어있음: {asset.name}");
+                Debug.LogWarning($"[SOToExcelExporter] DataList is empty: {asset.name}");
                 return;
             }
 
             Type        rowType   = dataList.GetType().GetGenericArguments()[0];
             FieldInfo[] fields    = rowType.GetFields(BindingFlags.Instance | BindingFlags.Public);
-            string      sheetName = ToSheetName(asset.GetType().Name);
+            ExcelSheetSchemaSO schema = FindSchemaForAsset(asset);
+            string      sheetName = schema != null ? schema.sourceSheetName : ToSheetName(asset.GetType().Name);
 
             IWorkbook workbook;
             using (FileStream fs = new FileStream(excelFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -874,20 +735,20 @@ namespace ASB.ExcelImport.Editor
             ISheet sheet = workbook.GetSheet(sheetName);
             if (sheet == null)
             {
-                Debug.LogError($"[SOToExcelExporter] 시트 없음: '{sheetName}' ({Path.GetFileName(excelFilePath)})");
+                Debug.LogError($"[SOToExcelExporter] Sheet was not found: '{sheetName}' ({Path.GetFileName(excelFilePath)})");
                 return;
             }
 
-            Dictionary<string, ColInfo> colMap   = BuildColMap(sheet);
-            List<IRow>                  dataRows = CollectDataRows(sheet);
+            Dictionary<string, ColInfo> colMap   = schema != null ? BuildColMapFromSchema(sheet, schema) : BuildColMap(sheet);
+            List<IRow>                  dataRows = schema != null ? CollectDataRowsFromSchema(sheet, schema.dataStartRowIndex) : CollectDataRows(sheet);
             var styleCache = new Dictionary<string, ICellStyle>();
 
             if (dataList.Count != dataRows.Count)
             {
                 Debug.LogWarning(
                     $"[SOToExcelExporter] '{sheetName}': " +
-                    $"SO 데이터 {dataList.Count}행 vs Excel #data구간 {dataRows.Count}행 불일치. " +
-                    $"{Math.Min(dataList.Count, dataRows.Count)}행만 저장됩니다.");
+                    $"SO row count {dataList.Count} differs from Excel data row count {dataRows.Count}. " +
+                    $"Only {Math.Min(dataList.Count, dataRows.Count)} rows will be written.");
             }
 
             int rowCount = Math.Min(dataList.Count, dataRows.Count);
@@ -900,17 +761,135 @@ namespace ASB.ExcelImport.Editor
                     if (!colMap.TryGetValue(fields[f].Name, out ColInfo col)) continue;
                     object val  = fields[f].GetValue(rowObj);
                     ICell  cell = excelRow.GetCell(col.index) ?? excelRow.CreateCell(col.index);
-                    WriteCellValue(cell, val, col.excelType, workbook, styleCache);
+                    WriteCellValue(cell, val, col.excelType, workbook, styleCache, col.listDelimiter);
                 }
             }
 
-            using (FileStream fs = new FileStream(excelFilePath, FileMode.Create, FileAccess.Write))
-                workbook.Write(fs);
+            SafeSaveWorkbook(workbook, excelFilePath);
 
-            Debug.Log($"[SOToExcelExporter] '{sheetName}' 전체 저장 완료 ({rowCount}행) → {Path.GetFileName(excelFilePath)}");
+            Debug.Log($"[SOToExcelExporter] Saved full sheet '{sheetName}' ({rowCount} rows) -> {Path.GetFileName(excelFilePath)}");
         }
 
-        // ─── 공통 내부 유틸 ───────────────────────────────────────────────────
+        // ??? 怨듯넻 ?대? ?좏떥 ???????????????????????????????????????????????????
+
+        private static void SafeSaveWorkbook(IWorkbook workbook, string excelFilePath)
+        {
+            if (workbook == null)
+            {
+                throw new ArgumentNullException(nameof(workbook));
+            }
+
+            if (string.IsNullOrWhiteSpace(excelFilePath))
+            {
+                throw new ArgumentException("Excel file path is empty.", nameof(excelFilePath));
+            }
+
+            string fullExcelPath = Path.GetFullPath(excelFilePath);
+            string dir = Path.GetDirectoryName(fullExcelPath);
+            if (string.IsNullOrEmpty(dir))
+            {
+                throw new InvalidDataException($"Invalid Excel path: {excelFilePath}");
+            }
+
+            string fileName = Path.GetFileName(fullExcelPath);
+            string tempPath = Path.Combine(dir, $".{fileName}.{Guid.NewGuid():N}.tmp");
+
+            try
+            {
+                using (FileStream fs = new FileStream(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    workbook.Write(fs);
+                }
+
+                ValidateWorkbookFile(tempPath);
+                if (!File.Exists(fullExcelPath))
+                {
+                    File.Move(tempPath, fullExcelPath);
+                    return;
+                }
+
+                string backupPath = CreateBackupPath(fullExcelPath);
+                try
+                {
+                    File.Replace(tempPath, fullExcelPath, backupPath, true);
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    File.Copy(fullExcelPath, backupPath, true);
+                    File.Copy(tempPath, fullExcelPath, true);
+                }
+                catch (IOException)
+                {
+                    File.Copy(fullExcelPath, backupPath, true);
+                    File.Copy(tempPath, fullExcelPath, true);
+                }
+
+                PruneBackups(fullExcelPath);
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+        }
+
+        private static void ValidateWorkbookFile(string path)
+        {
+            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                XSSFWorkbook validationWorkbook = new XSSFWorkbook(fs);
+                if (validationWorkbook.NumberOfSheets <= 0)
+                {
+                    throw new InvalidDataException("Saved workbook has no sheets.");
+                }
+                validationWorkbook.Close();
+            }
+        }
+
+        private static string CreateBackupPath(string excelFilePath)
+        {
+            EnsureBackupFolder();
+            string safeName = CodeGenerator.ToTypeBaseName(Path.GetFileNameWithoutExtension(excelFilePath));
+            string extension = Path.GetExtension(excelFilePath);
+            string stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string fileName = $"{safeName}_{stamp}_{Guid.NewGuid():N}{extension}";
+            return Path.Combine(GetBackupFolderAbsolutePath(), fileName);
+        }
+
+        private static void EnsureBackupFolder()
+        {
+            string path = GetBackupFolderAbsolutePath();
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
+
+        private static string GetBackupFolderAbsolutePath()
+        {
+            string relative = BackupFolderAssetPath.Substring("Assets/".Length).Replace('/', Path.DirectorySeparatorChar);
+            return Path.GetFullPath(Path.Combine(Application.dataPath, relative));
+        }
+
+        private static void PruneBackups(string excelFilePath)
+        {
+            string backupFolder = GetBackupFolderAbsolutePath();
+            if (!Directory.Exists(backupFolder))
+            {
+                return;
+            }
+
+            string safeName = CodeGenerator.ToTypeBaseName(Path.GetFileNameWithoutExtension(excelFilePath));
+            string extension = Path.GetExtension(excelFilePath);
+            FileInfo[] backups = new DirectoryInfo(backupFolder).GetFiles($"{safeName}_*{extension}");
+            Array.Sort(backups, (a, b) => b.LastWriteTimeUtc.CompareTo(a.LastWriteTimeUtc));
+            for (int i = MaxBackupsPerWorkbook; i < backups.Length; i++)
+            {
+                backups[i].Delete();
+            }
+        }
 
         private static Dictionary<string, ColInfo> BuildColMap(ISheet sheet)
         {
@@ -943,15 +922,105 @@ namespace ASB.ExcelImport.Editor
 
                 string sanitized = CodeGenerator.SanitizeFieldName(fieldName);
                 if (!map.ContainsKey(sanitized))
-                    map[sanitized] = new ColInfo { index = c, excelType = excelType.ToLowerInvariant() };
+                    map[sanitized] = new ColInfo
+                    {
+                        index = c,
+                        excelType = excelType.ToLowerInvariant(),
+                        listDelimiter = ListDelimiter.Comma
+                    };
             }
 
             return map;
         }
 
+        private static Dictionary<string, ColInfo> BuildColMapFromSchema(ISheet sheet, ExcelSheetSchemaSO schema)
+        {
+            var map = new Dictionary<string, ColInfo>(StringComparer.Ordinal);
+            if (schema == null)
+            {
+                return map;
+            }
+
+            IRow headerRow = sheet.GetRow(Math.Max(0, schema.headerRowIndex));
+            if (headerRow == null)
+            {
+                Debug.LogError($"[SOToExcelExporter] Schema header row not found: {schema.headerRowIndex}");
+                return map;
+            }
+
+            int lastCol = Math.Max(headerRow.LastCellNum - 1, 0);
+            for (int i = 0; i < schema.Columns.Count; i++)
+            {
+                ExcelColumnMapping column = schema.Columns[i];
+                if (column == null || !column.include)
+                {
+                    continue;
+                }
+
+                int actualIndex = FindSchemaColumn(headerRow, lastCol, column);
+                if (actualIndex < 0)
+                {
+                    Debug.LogError($"[SOToExcelExporter] Schema column not found: {column.fieldName} / {column.sourceHeaderName}");
+                    continue;
+                }
+
+                string fieldName = CodeGenerator.SanitizeFieldName(column.fieldName);
+                if (!map.ContainsKey(fieldName))
+                {
+                    map[fieldName] = new ColInfo
+                    {
+                        index = actualIndex,
+                        excelType = ExcelSchemaAdapter.ToGeneratorType(column.fieldType),
+                        listDelimiter = column.listDelimiter
+                    };
+                }
+            }
+
+            return map;
+        }
+
+        private static int FindSchemaColumn(IRow headerRow, int lastCol, ExcelColumnMapping column)
+        {
+            if (column.sourceColumnIndex >= 0 && column.sourceColumnIndex <= lastCol)
+            {
+                string hinted = headerRow.GetCell(column.sourceColumnIndex)?.ToString()?.Trim() ?? string.Empty;
+                if (HeaderMatches(hinted, column))
+                {
+                    return column.sourceColumnIndex;
+                }
+            }
+
+            for (int c = 0; c <= lastCol; c++)
+            {
+                string header = headerRow.GetCell(c)?.ToString()?.Trim() ?? string.Empty;
+                if (HeaderMatches(header, column))
+                {
+                    return c;
+                }
+            }
+
+            return -1;
+        }
+
+        private static bool HeaderMatches(string header, ExcelColumnMapping column)
+        {
+            if (string.IsNullOrWhiteSpace(header))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(column.sourceHeaderName) &&
+                string.Equals(header, column.sourceHeaderName, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return string.Equals(CodeGenerator.SanitizeFieldName(header), column.fieldName, StringComparison.Ordinal);
+        }
+
         private static void WriteCellValue(
             ICell cell, object value, string excelType,
-            IWorkbook workbook, Dictionary<string, ICellStyle> styleCache)
+            IWorkbook workbook, Dictionary<string, ICellStyle> styleCache, ListDelimiter listDelimiter)
         {
             if (value == null) { cell.SetBlank(); return; }
 
@@ -994,6 +1063,12 @@ namespace ASB.ExcelImport.Editor
                     {
                         IList list = value as IList;
                         if (list == null || list.Count == 0) { cell.SetBlank(); return; }
+
+                        if (excelType == "list<string>" && listDelimiter == ListDelimiter.Backslash)
+                        {
+                            cell.SetCellValue(ExcelListParser.FormatBackslashStringList(list));
+                            return;
+                        }
 
                         var parts = new string[list.Count];
                         bool isFloatList = excelType == "list<float>";
@@ -1045,6 +1120,88 @@ namespace ASB.ExcelImport.Editor
                     rows.Add(row);
             }
             return rows;
+        }
+
+        private static List<IRow> CollectDataRowsFromSchema(ISheet sheet, int dataStartRowIndex)
+        {
+            var rows = new List<IRow>();
+            int lastDataCol = GetLastUsedColumnInSheet(sheet);
+            for (int r = Math.Max(sheet.FirstRowNum, dataStartRowIndex); r <= sheet.LastRowNum; r++)
+            {
+                IRow row = sheet.GetRow(r);
+                if (row == null || IsRowEmpty(row, lastDataCol))
+                {
+                    continue;
+                }
+
+                rows.Add(row);
+            }
+
+            return rows;
+        }
+
+        private static bool IsRawImportAsset(ScriptableObject asset)
+        {
+            if (asset is RawExcelSheetSO || asset is ExcelSheetSchemaSO)
+            {
+                Debug.LogWarning("[SOToExcelExporter] Raw/Schema import assets cannot be exported to Excel.");
+                return true;
+            }
+
+            string path = AssetDatabase.GetAssetPath(asset);
+            if (!string.IsNullOrEmpty(path) &&
+                path.Replace('\\', '/').StartsWith(ExcelImportPaths.RawImportFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.LogWarning("[SOToExcelExporter] RawImports folder is excluded from Excel export.");
+                return true;
+            }
+
+            return false;
+        }
+
+        private static ExcelSheetSchemaSO FindSchemaForAsset(ScriptableObject asset)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(asset);
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                return null;
+            }
+
+            AssetImporter importer = AssetImporter.GetAtPath(assetPath);
+            string schemaGuid = importer?.userData;
+            if (string.IsNullOrWhiteSpace(schemaGuid))
+            {
+                return null;
+            }
+
+            string schemaPath = AssetDatabase.GUIDToAssetPath(schemaGuid);
+            ExcelSheetSchemaSO schema = string.IsNullOrEmpty(schemaPath)
+                ? null
+                : AssetDatabase.LoadAssetAtPath<ExcelSheetSchemaSO>(schemaPath);
+            if (schema != null)
+            {
+                return schema;
+            }
+
+            if (!AssetDatabase.IsValidFolder(ExcelImportPaths.SchemaFolder))
+            {
+                Debug.LogError($"[SOToExcelExporter] Schema folder was not found: {ExcelImportPaths.SchemaFolder}");
+                return null;
+            }
+
+            string[] schemaGuids = AssetDatabase.FindAssets("t:ExcelSheetSchemaSO", new[] { ExcelImportPaths.SchemaFolder });
+            for (int i = 0; i < schemaGuids.Length; i++)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(schemaGuids[i]);
+                schema = AssetDatabase.LoadAssetAtPath<ExcelSheetSchemaSO>(path);
+                if (schema != null && (schema.schemaGuid == schemaGuid || schemaGuids[i] == schemaGuid))
+                {
+                    return schema;
+                }
+            }
+
+            Debug.LogError($"[SOToExcelExporter] Schema metadata exists but schema asset was not found: {schemaGuid}");
+            return null;
         }
 
         private static bool IsRowEmpty(IRow row, int lastCol)

@@ -34,6 +34,8 @@ namespace ASB.ExcelImport.Editor
 
                 ExportSheet(sheet, assetFolder);
             }
+
+            AssetDatabase.SaveAssets();
         }
 
         private static void ExportSheet(ExcelSheetParseResult sheet, string assetFolder)
@@ -41,7 +43,8 @@ namespace ASB.ExcelImport.Editor
             string baseName = CodeGenerator.ToTypeBaseName(sheet.ClassName);
             string rowTypeName = baseName + "Data";
             string tableTypeName = baseName + "DataTable";
-            string assetPath = $"{assetFolder}/{tableTypeName}.asset";
+            string assetName = ExcelSchemaAdapter.SanitizeOutputAssetName(sheet.OutputAssetName, tableTypeName);
+            string assetPath = $"{assetFolder}/{assetName}.asset";
 
             Type rowType = FindTypeByName(rowTypeName);
             Type tableType = FindTypeByName(tableTypeName);
@@ -110,7 +113,7 @@ namespace ASB.ExcelImport.Editor
                         continue;
                     }
 
-                    object converted = ConvertCellValue(rowValues[colIndex], field.FieldType);
+                    object converted = ConvertCellValue(rowValues[colIndex], field.FieldType, fieldName, sheet);
                     field.SetValue(rowInstance, converted);
                 }
 
@@ -121,7 +124,7 @@ namespace ASB.ExcelImport.Editor
             Debug.Log($"[ScriptableExporter] Exported {sheet.Rows.Count} rows -> {assetPath}");
         }
 
-        private static IList ConvertToList(string value, Type elementType)
+        private static IList ConvertToList(string value, Type elementType, ListDelimiter delimiter)
         {
             IList list = CreateListInstance(elementType);
             if (string.IsNullOrWhiteSpace(value))
@@ -129,16 +132,10 @@ namespace ASB.ExcelImport.Editor
                 return list;
             }
 
-            string normalized = NormalizeListCellValue(value);
-            if (string.IsNullOrWhiteSpace(normalized))
+            List<string> tokens = ExcelListParser.Split(value, elementType == typeof(string), delimiter);
+            for (int i = 0; i < tokens.Count; i++)
             {
-                return list;
-            }
-
-            string[] tokens = normalized.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            for (int i = 0; i < tokens.Length; i++)
-            {
-                string token = tokens[i].Trim();
+                string token = tokens[i];
                 if (string.IsNullOrWhiteSpace(token))
                 {
                     continue;
@@ -154,22 +151,6 @@ namespace ASB.ExcelImport.Editor
         /// <summary>
         /// 리스트 셀 전처리. "1,2,3", "{1,2,3}", "\"{9}\"" 형태를 CSVDataLoad.ParseIntListField와 동일하게 정규화합니다.
         /// </summary>
-        private static string NormalizeListCellValue(string raw)
-        {
-            if (string.IsNullOrWhiteSpace(raw))
-            {
-                return string.Empty;
-            }
-
-            string value = raw.Trim().Trim('"').Trim();
-            if (value.Length >= 2 && value[0] == '{' && value[value.Length - 1] == '}')
-            {
-                value = value.Substring(1, value.Length - 2).Trim();
-            }
-
-            return value;
-        }
-
         private static IList CreateListInstance(Type elementType)
         {
             Type listType = typeof(List<>).MakeGenericType(elementType);
@@ -194,6 +175,11 @@ namespace ASB.ExcelImport.Editor
         }
 
         public static object ConvertCellValue(string raw, Type targetType)
+        {
+            return ConvertCellValue(raw, targetType, null, null);
+        }
+
+        public static object ConvertCellValue(string raw, Type targetType, string fieldName, ExcelSheetParseResult sheet)
         {
             if (targetType == null)
             {
@@ -231,7 +217,18 @@ namespace ASB.ExcelImport.Editor
             // 셀 값 "1,2,3" 또는 "{1,2,3}" → new List<int> { 1, 2, 3 }
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
             {
-                return ConvertToList(value, targetType.GetGenericArguments()[0]);
+                Type elementType = targetType.GetGenericArguments()[0];
+                ListDelimiter delimiter = ListDelimiter.Comma;
+                if (elementType == typeof(string) &&
+                    sheet != null &&
+                    !string.IsNullOrEmpty(fieldName) &&
+                    sheet.ListDelimiters != null &&
+                    sheet.ListDelimiters.TryGetValue(fieldName, out ListDelimiter configured))
+                {
+                    delimiter = configured;
+                }
+
+                return ConvertToList(value, elementType, delimiter);
             }
 
             return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);

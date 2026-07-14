@@ -128,6 +128,11 @@ namespace ASB.ExcelImport.Editor
                 string defaultFolder = ScriptableExporterFindAbsoluteFolder(ExcelImportPaths.DefaultExcelFolder);
                 EditorUtility.RevealInFinder(defaultFolder);
             }
+
+            if (GUILayout.Button("Raw Mapper", GUILayout.Width(110f)))
+            {
+                RawSheetMapperWindow.ShowWindow();
+            }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.LabelField("Path", _selectedExcelPath);
