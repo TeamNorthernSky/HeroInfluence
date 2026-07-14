@@ -36,6 +36,9 @@ public class PartyFogRevealer : MonoBehaviour
     [ContextMenu("Reveal Current Party Positions")]
     public void RevealAllCurrentPartyPositions()
     {
+        if (ZoneEntryGuidanceController.SuppressGeneralFogReveal)
+            return;
+
         if (fogGridManager == null || partyRegistry == null)
             return;
 
@@ -46,6 +49,9 @@ public class PartyFogRevealer : MonoBehaviour
 
     public void RevealAround(Vector2Int centerGrid)
     {
+        if (ZoneEntryGuidanceController.SuppressGeneralFogReveal)
+            return;
+
         if (fogGridManager == null)
             return;
 

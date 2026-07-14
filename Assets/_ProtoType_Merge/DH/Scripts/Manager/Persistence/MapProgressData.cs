@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
@@ -257,6 +258,126 @@ public class ZoneEnemyLevelState
         enemyLevel = Mathf.Max(1, nextEnemyLevel);
     }
 }
+
+[Serializable]
+public class ZoneEntryGuidanceProgressState
+{
+    [SerializeField] private bool active;
+    [SerializeField] private string zoneId;
+    [SerializeField] private string requiredHeroUnionId;
+    [SerializeField] private List<Vector2Int> allowedPathCells = new List<Vector2Int>();
+    [SerializeField] private List<string> completedZoneIds = new List<string>();
+
+    public bool Active => active;
+    public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+    public string RequiredHeroUnionId => MapProgressKey.NormalizeSegment(requiredHeroUnionId);
+    public IReadOnlyList<Vector2Int> AllowedPathCells => allowedPathCells;
+    public IReadOnlyList<string> CompletedZoneIds => completedZoneIds;
+
+    public ZoneEntryGuidanceProgressState()
+    {
+        active = false;
+        zoneId = string.Empty;
+        requiredHeroUnionId = string.Empty;
+    }
+
+    public ZoneEntryGuidanceProgressState(ZoneEntryGuidanceProgressState source)
+        : this()
+    {
+        if (source == null)
+            return;
+
+        active = source.Active;
+        zoneId = source.ZoneId;
+        requiredHeroUnionId = source.RequiredHeroUnionId;
+        ReplaceAllowedPathCells(source.AllowedPathCells);
+        ReplaceCompletedZoneIds(source.CompletedZoneIds);
+    }
+
+    public void Begin(string nextZoneId, string nextRequiredHeroUnionId, IReadOnlyList<Vector2Int> nextAllowedPathCells)
+    {
+        zoneId = MapProgressKey.NormalizeSegment(nextZoneId);
+        requiredHeroUnionId = MapProgressKey.NormalizeSegment(nextRequiredHeroUnionId);
+        ReplaceAllowedPathCells(nextAllowedPathCells);
+        active = !string.IsNullOrWhiteSpace(zoneId) && allowedPathCells.Count > 0;
+    }
+
+    public void CompleteActive()
+    {
+        if (!string.IsNullOrWhiteSpace(ZoneId))
+            AddCompletedZone(ZoneId);
+
+        ClearActive();
+    }
+
+    public void ClearActive()
+    {
+        active = false;
+        zoneId = string.Empty;
+        requiredHeroUnionId = string.Empty;
+        allowedPathCells.Clear();
+    }
+
+    public bool IsZoneCompleted(string candidateZoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(candidateZoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return false;
+
+        for (int i = 0; i < completedZoneIds.Count; i++)
+        {
+            if (string.Equals(completedZoneIds[i], normalizedZoneId, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    public void AddCompletedZone(string completedZoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(completedZoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId) || IsZoneCompleted(normalizedZoneId))
+            return;
+
+        completedZoneIds.Add(normalizedZoneId);
+    }
+
+    public bool ContainsAllowedPathCell(Vector2Int grid)
+    {
+        for (int i = 0; i < allowedPathCells.Count; i++)
+        {
+            if (allowedPathCells[i] == grid)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void ReplaceAllowedPathCells(IReadOnlyList<Vector2Int> source)
+    {
+        allowedPathCells.Clear();
+        if (source == null)
+            return;
+
+        for (int i = 0; i < source.Count; i++)
+        {
+            Vector2Int cell = source[i];
+            if (!allowedPathCells.Contains(cell))
+                allowedPathCells.Add(cell);
+        }
+    }
+
+    private void ReplaceCompletedZoneIds(IReadOnlyList<string> source)
+    {
+        completedZoneIds.Clear();
+        if (source == null)
+            return;
+
+        for (int i = 0; i < source.Count; i++)
+            AddCompletedZone(source[i]);
+    }
+}
+
 [Serializable]
 public class EnemyWorldState
 {
