@@ -1,0 +1,206 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43dfc12f652c64d45b326b84321ad2ce, type: 3}
+  m_Name: "BranchDB\uBA54\uC778\uC774\uBCA4\uD2B8DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - Branch_ID: 10101
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uAC1C\uC18C\uB9AC \uC9D1\uC5B4\uCE58\uC6CC!"
+    Target_Talk_ID: 1020190
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10101
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uADF8\uB0E5 \uADF8\uB807\uB2E4\uACE0 \uCE58\uC790\u2026"
+    Target_Talk_ID: 1020260
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10201
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_SubEvent1Complete==1
+    Selection_Text: 
+    Target_Talk_ID: 1030140
+    Trigger_Effect: Set_Flag_RuminaExplosionDeny
+    "\uBE44\uACE0": 
+  - Branch_ID: 10201
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 1030160
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10202
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uC815\uBA74\uC5D0\uC11C \uBE60\uB974\uAC8C \uB3CC\uD30C\uD558\uC790."
+    Target_Talk_ID: 1030180
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10202
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_RuminaExplosionDeny!=1
+    Selection_Text: "\uBAB0\uB798 \uB4E4\uC5B4\uAC08 \uACF3\uC744 \uCC3E\uC544\uBCF4\uC790"
+    Target_Talk_ID: 1030610
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10202
+    Selection_Index: 3A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_SubEvent1Complete==1
+    Selection_Text: "\uC6B0\uC120 \uC778\uC9C8\uBD80\uD130 \uAD6C\uCD9C\uD558\uC790."
+    Target_Talk_ID: 1031200
+    Trigger_Effect: Set_Flag_1CectorHiddenRoute
+    "\uBE44\uACE0": 
+  - Branch_ID: 10203
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_SubEvent1Complete==1
+    Selection_Text: 
+    Target_Talk_ID: 1030200
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10203
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 1030210
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10204
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_SubEvent1Complete==1
+    Selection_Text: 
+    Target_Talk_ID: 1030300
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10204
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 1030310
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10205
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_Battle_002
+    "\uBE44\uACE0": "\uC778\uC9C8\uADF9 \uC2DC\uC791"
+  - Branch_ID: 10206
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_Battle_003
+    "\uBE44\uACE0": "\uC778\uC9C8 \uBAA8\uB450 \uBD80\uC0C1\uD558\uACE0 \uC2DC\uC791"
+  - Branch_ID: 10207
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_Battle_004
+    "\uBE44\uACE0": "\uC778\uC9C8 \uC5C6\uC74C"
+  - Branch_ID: 10208
+    Selection_Index: 1C
+    Trigger_Type: 'Stat\
+
+      Stat\
+
+      Stat\
+
+      Stat'
+    Trigger_Value:
+    - Rumina_IP =< 20
+    - Justice_IP =< 20
+    - BlackBullet_IP =< 20
+    - Nekoming_IP =< 20
+    Selection_Text: 
+    Target_Talk_ID: 1030340
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10208
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 1030520
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10209
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - HostageInjuredCount >= 3
+    Selection_Text: 
+    Target_Talk_ID: 1040030
+    Trigger_Effect: Reward_0010\Set_Flag_1SectorMainEventClear
+    "\uBE44\uACE0": "\uC778\uC9C8 3\uBA85 \uBD80\uC0C1"
+  - Branch_ID: 10209
+    Selection_Index: 2A
+    Trigger_Type: 'Flag\
+
+      Flag'
+    Trigger_Value:
+    - 'HostageInjuredCount >= 1
+
+      HostageInjuredCount <= 2'
+    Selection_Text: 
+    Target_Talk_ID: 1040110
+    Trigger_Effect: Reward_0020\Set_Flag_1SectorMainEventClear
+    "\uBE44\uACE0": "\uC778\uC9C8 1~2\uBA85 \uBD80\uC0C1"
+  - Branch_ID: 10209
+    Selection_Index: 3
+    Trigger_Type: Flag
+    Trigger_Value:
+    - HostageInjuredCount = 10
+    Selection_Text: 
+    Target_Talk_ID: 1040170
+    Trigger_Effect: Set_Flag_1SectorMainEventClear
+    "\uBE44\uACE0": "\uC778\uC9C8 \uBAA8\uB450 \uAD6C\uCD9C"
+  - Branch_ID: 10210
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Set_Flag_1CectorHiddenRoute==1
+    Selection_Text: 
+    Target_Talk_ID: 1040180
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 10210
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 1040280
+    Trigger_Effect: 
+    "\uBE44\uACE0": 

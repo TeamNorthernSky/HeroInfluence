@@ -14,13 +14,14 @@ public class ChoiceButtonView : MonoBehaviour
     [SerializeField] private TMP_Text label;
 
     /// <summary>버튼 문구와 클릭 동작 설정. 재사용 대비 기존 리스너 제거 후 등록.</summary>
-    public void Bind(string text, Action onClick)
+    public void Bind(string text, Action onClick, bool interactable = true)
     {
         if (label != null) label.text = text;
         if (button != null)
         {
             button.onClick.RemoveAllListeners();
-            if (onClick != null) button.onClick.AddListener(() => onClick());
+            button.interactable = interactable;
+            if (interactable && onClick != null) button.onClick.AddListener(() => onClick());
         }
     }
 }

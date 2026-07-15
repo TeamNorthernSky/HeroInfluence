@@ -9,6 +9,7 @@ using UnityEngine;
 public class ChatEventTrigger : MonoBehaviour
 {
     [Tooltip("상호작용 시 시작할 Chat_ID. 0 이하 = 비활성. (임시 테스트 데이터: 900001)")]
+    [SerializeField] private int eventZoneId;
     [SerializeField] private int eventStartChatId;
 
     /// <summary>상호작용 진입점 — 파티 상호작용/더블클릭 등 외부 경로에서 호출.</summary>
@@ -20,12 +21,24 @@ public class ChatEventTrigger : MonoBehaviour
             return;
         }
 
-        ChatModalController.Show(eventStartChatId);
+        int zoneId = eventZoneId > 0 ? eventZoneId : ResolveDefaultZoneId(eventStartChatId);
+        ChatModalController.Show(zoneId, eventStartChatId);
     }
 
     [ContextMenu("Start Chat (Test)")]
     private void StartChatTest()
     {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[ChatEventTrigger] Start Chat (Test) can only be used in Play Mode.", this);
+            return;
+        }
+
         Interact();
+    }
+
+    private static int ResolveDefaultZoneId(int startChatId)
+    {
+        return startChatId >= 100000 ? startChatId / 100000 : 1;
     }
 }
