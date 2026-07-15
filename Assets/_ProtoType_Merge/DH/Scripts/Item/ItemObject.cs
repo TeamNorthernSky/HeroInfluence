@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemObject : MonoBehaviour
@@ -35,6 +33,16 @@ public class ItemObject : MonoBehaviour
     public void RemoveWithoutReward()
     {
         Destroy(gameObject);
+    }
+
+    public Vector2Int GetCurrentGrid(GridManager gridManager)
+    {
+        return gridManager != null ? gridManager.WorldToGrid(transform.position) : Vector2Int.zero;
+    }
+
+    public bool OccupiesGrid(Vector2Int grid, GridManager gridManager)
+    {
+        return GetCurrentGrid(gridManager) == grid;
     }
 
     private void ResolveRegistry()

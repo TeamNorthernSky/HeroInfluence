@@ -54,6 +54,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
     [FormerlySerializedAs("generateTilemaps")]
     [SerializeField] private bool generateTileMeshes = true;
     [SerializeField] private bool spawnUniqueBuildingsFromZones;
+    [SerializeField] private bool generateObstacleTileMeshes = true;
+    [SerializeField] private bool spawnObstaclePrefabs;
 
     private readonly List<string> validationErrors = new List<string>();
     private readonly List<LoadedLevelZoneData> loadedZones = new List<LoadedLevelZoneData>();
@@ -278,12 +280,21 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
     private void SpawnObstacles(LevelData levelData, Vector2Int offset)
     {
+        var obstacleCells = levelData.ObstacleCells;
+        for (int i = 0; i < obstacleCells.Count; i++)
+            gridManager?.RegisterLevelObstacleCell(obstacleCells[i] + offset);
+
+        Transform parent = GetObstacleRoot(true);
+        if (generateObstacleTileMeshes)
+            tileMeshGenerator?.GenerateObstacleTiles(levelData, offset, parent, false);
+
+        if (!spawnObstaclePrefabs)
+            return;
+
         GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
         if (obstaclePrefab == null)
             return;
 
-        var obstacleCells = levelData.ObstacleCells;
-        Transform parent = GetObstacleRoot(true);
         for (int i = 0; i < obstacleCells.Count; i++)
             SpawnGameObject(obstaclePrefab, obstacleCells[i] + offset, parent);
     }
@@ -309,10 +320,13 @@ public class LevelZoneLayoutLoader : MonoBehaviour
             gateRootObject.transform.localScale = Vector3.one;
 
             List<GameObject> blockers = new List<GameObject>();
+            List<Vector2Int> gateBlockerCells = new List<Vector2Int>();
             IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
             for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
             {
-                GameObject blocker = SpawnGameObject(obstaclePrefab, blockerCells[cellIndex] + offset, gateRootObject.transform);
+                Vector2Int blockerCell = blockerCells[cellIndex] + offset;
+                gateBlockerCells.Add(blockerCell);
+                GameObject blocker = SpawnGameObject(obstaclePrefab, blockerCell, gateRootObject.transform);
                 if (blocker != null)
                     blockers.Add(blocker);
             }
@@ -323,6 +337,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 placement.FirstZoneId,
                 placement.SecondZoneId,
                 blockers,
+                gateBlockerCells,
                 placement.OpenDurationTurns);
         }
     }
@@ -642,6 +657,9 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
     private void ClearSpawnedObjects()
     {
+        gridManager?.ClearLevelObstacleCells();
+        gridManager?.ClearGateBlockerCells();
+
         if (tileMeshGenerator != null)
             tileMeshGenerator.ClearTileMeshes();
 

@@ -34,14 +34,18 @@ public class GridManager : MonoBehaviour
     [Header("Obstacle Settings")]
     [Tooltip("이 레이어에 있는 콜라이더는 장애물로 간주합니다.")]
     [SerializeField] private LayerMask obstacleLayerMask;
+    [SerializeField] private bool useLegacyObstacleColliderFallback;
     [SerializeField] private LayerMask itemLayerMask;
+    [SerializeField] private bool useLegacyItemColliderFallback;
     [FormerlySerializedAs("mineLayerMask")]
     [SerializeField] private LayerMask outpostLayerMask;
     [SerializeField] private LayerMask eventLayerMask;
     [SerializeField] private LayerMask playerLayerMask;
     [SerializeField] private LayerMask enemyLayerMask;
+    [SerializeField] private bool useLegacyEnemyColliderFallback;
     [SerializeField] private LayerMask heroUnionLayerMask;
     [SerializeField] private FogGridManager fogGridManager;
+    [SerializeField] private ItemRegistry itemRegistry;
     [SerializeField] private EnemyRegistry enemyRegistry;
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [FormerlySerializedAs("mineRegistry")]
@@ -67,6 +71,8 @@ public class GridManager : MonoBehaviour
     // 전제 조건: Land 월드 중심 = (0, 0, 0)
     // 필요 시 인스펙터에서 원점 오프셋 확장 가능
     private Vector3 gridOrigin = Vector3.zero;
+    private readonly HashSet<Vector2Int> levelObstacleCells = new HashSet<Vector2Int>();
+    private readonly HashSet<Vector2Int> gateBlockerCells = new HashSet<Vector2Int>();
 
     public float CellSize => cellSize;
     public Transform LandTransform => landTransform;
@@ -80,6 +86,9 @@ public class GridManager : MonoBehaviour
 
         if (fogGridManager == null)
             fogGridManager = FindFirstObjectByType<FogGridManager>();
+
+        if (itemRegistry == null)
+            itemRegistry = FindFirstObjectByType<ItemRegistry>();
 
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
@@ -107,6 +116,9 @@ public class GridManager : MonoBehaviour
 
         if (heroUnionRegistry == null)
             heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
+
+        if (itemRegistry == null)
+            itemRegistry = FindFirstObjectByType<ItemRegistry>();
 
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
@@ -149,22 +161,94 @@ public class GridManager : MonoBehaviour
 
     public bool HasObstacle(Vector2Int grid)
     {
-        return HasBlockingCollider(grid, obstacleLayerMask);
+        if (levelObstacleCells.Contains(grid) || gateBlockerCells.Contains(grid))
+            return true;
+
+        return useLegacyObstacleColliderFallback && HasBlockingCollider(grid, obstacleLayerMask);
+    }
+
+    public void ClearLevelObstacleCells()
+    {
+        levelObstacleCells.Clear();
+    }
+
+    public void RegisterLevelObstacleCell(Vector2Int grid)
+    {
+        levelObstacleCells.Add(grid);
+    }
+
+    public void RegisterLevelObstacleCells(IEnumerable<Vector2Int> grids)
+    {
+        if (grids == null)
+            return;
+
+        foreach (Vector2Int grid in grids)
+            levelObstacleCells.Add(grid);
+    }
+
+    public void ClearGateBlockerCells()
+    {
+        gateBlockerCells.Clear();
+    }
+
+    public void RegisterGateBlockerCell(Vector2Int grid)
+    {
+        gateBlockerCells.Add(grid);
+    }
+
+    public void UnregisterGateBlockerCell(Vector2Int grid)
+    {
+        gateBlockerCells.Remove(grid);
+    }
+
+    public void RegisterGateBlockerCells(IEnumerable<Vector2Int> grids)
+    {
+        if (grids == null)
+            return;
+
+        foreach (Vector2Int grid in grids)
+            gateBlockerCells.Add(grid);
+    }
+
+    public void UnregisterGateBlockerCells(IEnumerable<Vector2Int> grids)
+    {
+        if (grids == null)
+            return;
+
+        foreach (Vector2Int grid in grids)
+            gateBlockerCells.Remove(grid);
     }
 
     public bool HasOtherPlayer(Vector2Int grid, Transform selfTransform)
     {
-        return HasBlockingCollider(grid, playerLayerMask, selfTransform);
+        return false;
     }
 
     public bool HasItem(Vector2Int grid)
     {
-        return HasBlockingCollider(grid, itemLayerMask);
+        return TryGetItemObjectAtGrid(grid, out _);
     }
 
     public bool TryGetItemObjectAtGrid(Vector2Int grid, out ItemObject itemObject)
     {
         itemObject = null;
+
+        IReadOnlyList<ItemObject> items = itemRegistry != null
+            ? itemRegistry.Items
+            : FindObjectsByType<ItemObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            ItemObject candidate = items[i];
+            if (candidate == null || !candidate.OccupiesGrid(grid, this))
+                continue;
+
+            itemObject = candidate;
+            return true;
+        }
+
+        if (!useLegacyItemColliderFallback)
+            return false;
 
         Vector3 center = GridToWorldCenter(grid);
         center.y = GetLandSurfaceY() + 0.5f;
@@ -198,7 +282,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasEnemy(Vector2Int grid, Transform selfTransform = null)
     {
-        return HasBlockingCollider(grid, enemyLayerMask, selfTransform);
+        return TryGetEnemyObjectAtGrid(grid, out _, selfTransform);
     }
 
     public bool HasMultiGridOccupant(Vector2Int grid, Transform selfTransform = null)
@@ -208,8 +292,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasHeroUnion(Vector2Int grid, Transform selfTransform = null)
     {
-        return HasBlockingCollider(grid, heroUnionLayerMask, selfTransform)
-            || TryGetHeroUnionByMultiGrid(grid, out _, selfTransform);
+        return TryGetHeroUnionByMultiGrid(grid, out _, selfTransform);
     }
 
     public bool TryGetOutpostObjectAtGrid(Vector2Int grid, out Outpost outpost)
@@ -288,7 +371,7 @@ public class GridManager : MonoBehaviour
         return false;
     }
 
-    public bool TryGetEnemyObjectAtGrid(Vector2Int grid, out EnemyGridMover enemy)
+    public bool TryGetEnemyObjectAtGrid(Vector2Int grid, out EnemyGridMover enemy, Transform ignoredTransform = null)
     {
         enemy = null;
 
@@ -302,9 +385,19 @@ public class GridManager : MonoBehaviour
             if (candidate == null || candidate.GetCurrentGrid() != grid)
                 continue;
 
+            Transform candidateTransform = candidate.transform;
+            if (ignoredTransform != null
+                && (candidateTransform == ignoredTransform || candidateTransform.IsChildOf(ignoredTransform)))
+            {
+                continue;
+            }
+
             enemy = candidate;
             return true;
         }
+
+        if (!useLegacyEnemyColliderFallback)
+            return false;
 
         Vector3 center = GridToWorldCenter(grid);
         center.y = GetLandSurfaceY() + 0.5f;
@@ -316,6 +409,9 @@ public class GridManager : MonoBehaviour
         {
             Collider col = cols[i];
             if (col == null)
+                continue;
+
+            if (ignoredTransform != null && (col.transform == ignoredTransform || col.transform.IsChildOf(ignoredTransform)))
                 continue;
 
             enemy = col.GetComponentInParent<EnemyGridMover>();
@@ -385,25 +481,6 @@ public class GridManager : MonoBehaviour
 
     public bool TryGetHeroUnionObjectAtGrid(Vector2Int grid, out HeroUnionUnit heroUnion)
     {
-        heroUnion = null;
-
-        Vector3 center = GridToWorldCenter(grid);
-        center.y = GetLandSurfaceY() + 0.5f;
-
-        Vector3 halfExtents = new Vector3(cellSize * 0.5f * obstacleCheckFill, 0.5f, cellSize * 0.5f * obstacleCheckFill);
-        Collider[] cols = Physics.OverlapBox(center, halfExtents, Quaternion.identity, heroUnionLayerMask);
-
-        for (int i = 0; i < cols.Length; i++)
-        {
-            Collider col = cols[i];
-            if (col == null)
-                continue;
-
-            heroUnion = col.GetComponentInParent<HeroUnionUnit>();
-            if (heroUnion != null)
-                return true;
-        }
-
         return TryGetHeroUnionByMultiGrid(grid, out heroUnion);
     }
 

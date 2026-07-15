@@ -50,6 +50,10 @@ public class LevelTileMeshGenerator : MonoBehaviour
     [SerializeField, Min(1)] private int chunkSize = 16;
     [SerializeField] private float yOffset = 0.01f;
 
+    [Header("Obstacle Tiles")]
+    [SerializeField] private string obstacleTileKey = "Obstacle";
+    [SerializeField] private float obstacleYOffset = 0.025f;
+
     [Header("Output")]
     [SerializeField] private Transform tileRoot;
     [SerializeField] private Material materialTemplate;
@@ -99,11 +103,61 @@ public class LevelTileMeshGenerator : MonoBehaviour
                 batches.Add(key, batch);
             }
 
-            AddTileQuad(batch, grid, sprite);
+            AddTileQuad(batch, grid, sprite, yOffset);
         }
 
         foreach (KeyValuePair<TileBatchKey, TileBatch> pair in batches)
             CreateBatchObject(pair.Key, pair.Value);
+    }
+
+    public void GenerateObstacleTiles(
+        LevelData levelData,
+        Vector2Int offset,
+        Transform obstacleRoot,
+        bool clearBeforeGenerate)
+    {
+        if (levelData == null || tileRegistry == null || obstacleRoot == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(obstacleTileKey))
+            return;
+
+        if (clearBeforeGenerate)
+            ClearChildren(obstacleRoot);
+
+        ResolveReferences();
+
+        if (!tileRegistry.TryGetSprite(obstacleTileKey, out Sprite sprite) ||
+            sprite == null ||
+            sprite.texture == null)
+        {
+            return;
+        }
+
+        IReadOnlyList<Vector2Int> obstacleCells = levelData.ObstacleCells;
+        if (obstacleCells == null || obstacleCells.Count == 0)
+            return;
+
+        Dictionary<TileBatchKey, TileBatch> batches = new Dictionary<TileBatchKey, TileBatch>();
+        for (int i = 0; i < obstacleCells.Count; i++)
+        {
+            Vector2Int grid = obstacleCells[i] + offset;
+            Vector2Int chunk = new Vector2Int(
+                Mathf.FloorToInt((float)grid.x / chunkSize),
+                Mathf.FloorToInt((float)grid.y / chunkSize));
+            TileBatchKey key = new TileBatchKey(chunk, sprite.texture);
+
+            if (!batches.TryGetValue(key, out TileBatch batch))
+            {
+                batch = new TileBatch();
+                batches.Add(key, batch);
+            }
+
+            AddTileQuad(batch, grid, sprite, obstacleYOffset);
+        }
+
+        foreach (KeyValuePair<TileBatchKey, TileBatch> pair in batches)
+            CreateBatchObject(pair.Key, pair.Value, obstacleRoot, "ObstacleTileChunk");
     }
 
     public void ClearTileMeshes()
@@ -161,14 +215,14 @@ public class LevelTileMeshGenerator : MonoBehaviour
         tileRoot.SetParent(transform, false);
     }
 
-    private void AddTileQuad(TileBatch batch, Vector2Int grid, Sprite sprite)
+    private void AddTileQuad(TileBatch batch, Vector2Int grid, Sprite sprite, float tileYOffset)
     {
         float size = gridManager != null ? Mathf.Max(0.01f, gridManager.CellSize) : 1f;
         float half = size * 0.5f;
         Vector3 center = gridManager != null
             ? gridManager.GridToWorldCenter(grid)
             : new Vector3(grid.x * size, 0f, grid.y * size);
-        center.y = gridManager != null ? gridManager.GetLandSurfaceY() + yOffset : yOffset;
+        center.y = gridManager != null ? gridManager.GetLandSurfaceY() + tileYOffset : tileYOffset;
 
         int start = batch.Vertices.Count;
         batch.Vertices.Add(new Vector3(center.x - half, center.y, center.z - half));
@@ -198,11 +252,17 @@ public class LevelTileMeshGenerator : MonoBehaviour
 
     private void CreateBatchObject(TileBatchKey key, TileBatch batch)
     {
+        CreateBatchObject(key, batch, tileRoot, "TileChunk");
+    }
+
+    private void CreateBatchObject(TileBatchKey key, TileBatch batch, Transform parent, string namePrefix)
+    {
         if (batch == null || batch.Vertices.Count == 0)
             return;
 
-        GameObject go = new GameObject($"TileChunk_{key.Chunk.x}_{key.Chunk.y}_{key.Texture.name}");
-        go.transform.SetParent(tileRoot, false);
+        string textureName = key.Texture != null ? key.Texture.name : "NoTexture";
+        GameObject go = new GameObject($"{namePrefix}_{key.Chunk.x}_{key.Chunk.y}_{textureName}");
+        go.transform.SetParent(parent, false);
 
         Mesh mesh = new Mesh
         {
@@ -222,6 +282,21 @@ public class LevelTileMeshGenerator : MonoBehaviour
 
         MeshRenderer meshRenderer = go.AddComponent<MeshRenderer>();
         meshRenderer.sharedMaterial = GetMaterialForTexture(key.Texture);
+    }
+
+    private void ClearChildren(Transform root)
+    {
+        if (root == null)
+            return;
+
+        for (int i = root.childCount - 1; i >= 0; i--)
+        {
+            Transform child = root.GetChild(i);
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
+        }
     }
 
     private Material GetMaterialForTexture(Texture texture)
