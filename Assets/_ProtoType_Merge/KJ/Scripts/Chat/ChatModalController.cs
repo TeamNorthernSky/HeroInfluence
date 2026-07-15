@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,18 +36,42 @@ public class ChatModalController : MonoBehaviour
 
     private static ChatModalController current;
 
-    private ChatRunner runner;
+    private ChatManager manager;
+    private Action onClosed;
     private readonly List<GameObject> activeChoices = new List<GameObject>();
     private bool choicesVisible;
     private int beginFrame; // 소환 당시 클릭이 첫 대사를 즉시 넘기는 것 방지
 
     /// <summary>대화 소환. 이미 떠 있으면 재활성 후 해당 대화로 재시작(중복 생성 방지).</summary>
+    private bool isClosing;
+
     public static void Show(int startChatId)
     {
+        Show(ResolveDefaultZoneId(startChatId), startChatId, null);
+    }
+
+    public static void Show(int zoneId, int startChatId)
+    {
+        Show(zoneId, startChatId, null);
+    }
+
+    public static void Show(int zoneId, int startChatId, Action onClosed)
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[ChatModalController] Chat modal can only be opened in Play Mode.");
+            return;
+        }
+
+        if (current == null)
+        {
+            current = FindFirstObjectByType<ChatModalController>();
+        }
+
         if (current != null)
         {
             if (!current.gameObject.activeSelf) current.gameObject.SetActive(true);
-            current.Begin(startChatId);
+            current.Begin(zoneId, startChatId, onClosed);
             return;
         }
 
@@ -59,11 +84,27 @@ public class ChatModalController : MonoBehaviour
 
         GameObject go = Instantiate(prefab);
         current = go.GetComponent<ChatModalController>();
-        if (current != null) current.Begin(startChatId);
+        if (current != null)
+        {
+            current.Begin(zoneId, startChatId, onClosed);
+        }
+        else
+        {
+            Debug.LogWarning("[ChatModalController] ChatModal prefab has no ChatModalController component.");
+            Destroy(go);
+        }
     }
 
     private void Awake()
     {
+        if (current != null && current != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        current = this;
+
         if (skipButton != null) skipButton.onClick.AddListener(OpenSkipConfirm);
         if (skipYesButton != null) skipYesButton.onClick.AddListener(Close);            // 예: 대화 종료
         if (skipNoButton != null) skipNoButton.onClick.AddListener(CloseSkipConfirm);   // 아니오: 팝업만
@@ -80,60 +121,58 @@ public class ChatModalController : MonoBehaviour
         if (skipConfirmPopup != null) skipConfirmPopup.SetActive(false);
     }
 
-    private void Begin(int startChatId)
+    private void Begin(int zoneId, int startChatId, Action closedCallback)
     {
         ClearBubbles();
         ClearChoices();
+        CloseSkipConfirm();
+        UnsubscribeFromManager();
 
-        runner = new ChatRunner(ChatDatabase.Instance);
+        onClosed = closedCallback;
+        isClosing = false;
         beginFrame = Time.frameCount;
+        manager = ChatManager.Instance;
 
-        if (!runner.Start(startChatId))
+        if (manager == null)
         {
             Debug.LogWarning($"[ChatModalController] 시작 Chat_ID {startChatId} 미존재 — 대화 취소");
             Close();
             return;
         }
 
-        ShowCurrentNode();
+        manager.OnChatShown += HandleChatShown;
+        manager.OnBranchShown += HandleBranchShown;
+        manager.OnChatEnded += HandleChatEnded;
+        manager.StartChat(zoneId, startChatId);
+    }
+
+    private static int ResolveDefaultZoneId(int startChatId)
+    {
+        return startChatId >= 100000 ? startChatId / 100000 : 1;
     }
 
     /// <summary>현재 노드 표시: 말풍선 생성 → 분기 노드면 선택지(또는 자동 분기), 아니면 클릭 대기.</summary>
-    private void ShowCurrentNode()
+    private void HandleChatShown(ChatDBEventData chat)
     {
-        ChatNode node = runner.Current;
-        if (node == null)
+        if (chat == null)
         {
             Close();
             return;
         }
 
-        SpawnBubble(node);
-
-        List<BranchOption> options = runner.ResolveOptions();
-        if (options.Count == 0) return; // 분기 없음 — Update의 클릭 대기
-
+        SpawnBubble(chat);
         // 전부 빈 텍스트 = 자동 진행 분기(버튼 없이 조건이 경로 결정, 시트 관찰 기반 규칙)
-        bool allEmpty = true;
-        for (int i = 0; i < options.Count; i++)
-        {
-            if (!string.IsNullOrWhiteSpace(options[i].Text)) { allEmpty = false; break; }
-        }
-
-        if (allEmpty) OnChoice(options[0]);
-        else ShowChoices(options);
     }
 
     private void Update()
     {
-        if (runner == null || choicesVisible) return;
+        if (manager == null || !manager.IsRunning || choicesVisible) return;
         if (skipConfirmPopup != null && skipConfirmPopup.activeSelf) return; // 스킵 확인 중엔 진행 정지
         if (!Input.GetMouseButtonDown(0)) return;
         if (Time.frameCount == beginFrame) return; // 트리거를 누른 그 클릭은 무시
         if (IsPointerOverButton()) return; // Skip 등 버튼 클릭은 대사 진행으로 취급하지 않음
 
-        if (runner.AdvanceLinear()) ShowCurrentNode();
-        else Close();
+        manager.Advance();
     }
 
     /// <summary>클릭 지점이 Button 위인지 — 버튼 클릭과 "화면 클릭=다음 대사"의 이중 반응 방지.</summary>
@@ -154,30 +193,46 @@ public class ChatModalController : MonoBehaviour
         return false;
     }
 
-    private void ShowChoices(List<BranchOption> options)
+    private void HandleBranchShown(IReadOnlyList<ChatBranchOptionState> options)
     {
+        ClearChoices();
+
+        if (options == null || options.Count == 0)
+        {
+            return;
+        }
+
         choicesVisible = true;
         for (int i = 0; i < options.Count; i++)
         {
-            BranchOption option = options[i];
+            ChatBranchOptionState state = options[i];
+            BranchDBEventData option = state?.Option;
+            if (option == null || string.IsNullOrWhiteSpace(option.Selection_Text))
+            {
+                continue;
+            }
+
             ChoiceButtonView view = Instantiate(choiceButtonPrefab, choiceArea);
-            view.Bind(option.Text, () => OnChoice(option));
+            view.Bind(option.Selection_Text, () => manager?.Select(option), state.IsInteractable);
             activeChoices.Add(view.gameObject);
+        }
+
+        if (activeChoices.Count == 0)
+        {
+            choicesVisible = false;
         }
     }
 
-    private void OnChoice(BranchOption option)
+    private void HandleChatEnded()
     {
-        ClearChoices();
-        if (runner.Choose(option)) ShowCurrentNode();
-        else Close();
+        Close();
     }
 
-    private void SpawnBubble(ChatNode node)
+    private void SpawnBubble(ChatDBEventData chat)
     {
         if (bubblePrefab == null || contentRoot == null) return;
         ChatBubbleView bubble = Instantiate(bubblePrefab, contentRoot);
-        bubble.Bind(node.CharName, node.Message, node.Type, node.CharProfile);
+        bubble.Bind(chat.Char_Name, chat.Message_Text, chat.Chat_Type, chat.Char_Profile);
         StartCoroutine(ScrollToBottomNextFrame());
     }
 
@@ -210,12 +265,42 @@ public class ChatModalController : MonoBehaviour
 
     private void Close()
     {
-        runner = null;
+        if (isClosing)
+        {
+            return;
+        }
+
+        isClosing = true;
+
+        if (manager != null && manager.IsRunning)
+        {
+            manager.EndChat();
+        }
+
+        Action callback = onClosed;
+        onClosed = null;
+
+        UnsubscribeFromManager();
+        manager = null;
+        callback?.Invoke();
         Destroy(gameObject);
+    }
+
+    private void UnsubscribeFromManager()
+    {
+        if (manager == null)
+        {
+            return;
+        }
+
+        manager.OnChatShown -= HandleChatShown;
+        manager.OnBranchShown -= HandleBranchShown;
+        manager.OnChatEnded -= HandleChatEnded;
     }
 
     private void OnDestroy()
     {
+        UnsubscribeFromManager();
         if (current == this) current = null;
     }
 }

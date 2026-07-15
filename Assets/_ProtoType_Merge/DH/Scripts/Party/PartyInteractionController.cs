@@ -56,7 +56,6 @@ public class PartyInteractionController
 
         if (ZoneEntryGuidanceController.IsActive)
         {
-            TryCollectItemAtGrid(enteredGrid);
             ZoneEntryGuidanceController.Instance.TryCompleteFromPartyGrid(enteredGrid);
             return;
         }
@@ -118,24 +117,33 @@ public class PartyInteractionController
         if (gridManager == null || ownerParty == null) return;
 
         if (ZoneEntryGuidanceController.IsActive)
+        {
+            TryHandleTargetInteraction(allowEvents: false);
             return;
-        
-        Vector2Int currentGrid = ownerParty.GetCurrentGrid();
-        
+        }
+
+        TryHandleTargetInteraction(allowEvents: true);
+    }
+
+    private bool TryHandleTargetInteraction(bool allowEvents)
+    {
         if (!ownerParty.TargetInteractionGrid.HasValue)
-            return;
+            return false;
 
         Vector2Int targetInteractionGrid = ownerParty.TargetInteractionGrid.Value;
 
         bool isItem = gridManager.TryGetItemObjectAtGrid(targetInteractionGrid, out ItemObject item);
-        bool isEvent = gridManager.TryGetEventObjectAtGrid(targetInteractionGrid, out MapEventObject mapEvent);
+        bool isEvent = allowEvents && gridManager.TryGetEventObjectAtGrid(targetInteractionGrid, out MapEventObject mapEvent);
 
-        if (!isItem && !isEvent) return;
+        if (!isItem && !isEvent)
+            return false;
+
+        Vector2Int currentGrid = ownerParty.GetCurrentGrid();
 
         if (IsAdjacentOrSame(currentGrid, targetInteractionGrid) && currentGrid != targetInteractionGrid)
         {
             ownerParty.SnapToGridPosition(currentGrid);
-            
+
             if (isItem)
             {
                 OnAdjacentItemCellEntered(targetInteractionGrid);
@@ -144,7 +152,11 @@ public class PartyInteractionController
             {
                 OnAdjacentEventCellEntered(targetInteractionGrid);
             }
+
+            return true;
         }
+
+        return false;
     }
 
     private void HandleAdjacentOutpostProximity(Vector2Int enteredGrid)
@@ -291,18 +303,6 @@ public class PartyInteractionController
 
         CollectItem(itemGrid, itemObject);
         IsInputLocked = false;
-    }
-
-    private bool TryCollectItemAtGrid(Vector2Int itemGrid)
-    {
-        if (gridManager == null)
-            return false;
-
-        if (!gridManager.TryGetItemObjectAtGrid(itemGrid, out ItemObject itemObject))
-            return false;
-
-        CollectItem(itemGrid, itemObject);
-        return true;
     }
 
     private static void CollectItem(Vector2Int itemGrid, ItemObject itemObject)

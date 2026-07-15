@@ -101,6 +101,9 @@ public class MoveCommandPreviewController
             return;
         }
 
+        if (ZoneEntryGuidanceController.IsActive)
+            path = TrimGuidancePathAtFirstItem(path, out destinationGrid);
+
         Vector3 markerWorld = gridManager.GridToWorldCenter(destinationGrid);
         markerWorld.y = gridManager.GetLandSurfaceY() + 0.02f;
         PlaceMarker(destinationGrid, markerWorld);
@@ -465,6 +468,25 @@ public class MoveCommandPreviewController
             return path;
 
         path.RemoveAt(path.Count - 1);
+        return path;
+    }
+
+    private List<Vector2Int> TrimGuidancePathAtFirstItem(List<Vector2Int> path, out Vector2Int destinationGrid)
+    {
+        destinationGrid = path != null && path.Count > 0 ? path[path.Count - 1] : Vector2Int.zero;
+        if (path == null || path.Count <= 1 || gridManager == null)
+            return path;
+
+        for (int i = 1; i < path.Count; i++)
+        {
+            Vector2Int grid = path[i];
+            if (!gridManager.TryGetItemObjectAtGrid(grid, out _))
+                continue;
+
+            destinationGrid = grid;
+            return path.GetRange(0, i + 1);
+        }
+
         return path;
     }
 

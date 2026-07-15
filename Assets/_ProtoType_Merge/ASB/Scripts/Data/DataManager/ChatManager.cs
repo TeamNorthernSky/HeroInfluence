@@ -10,15 +10,17 @@ public class ChatManager : MonoBehaviour
     [SerializeField] private EventScriptCatalog catalog;
     [SerializeField] private bool dontDestroyOnLoad = true;
 
-    private static readonly IReadOnlyList<BranchDBEventData> EmptyOptions = Array.Empty<BranchDBEventData>();
+    private static readonly IReadOnlyList<ChatBranchOptionState> EmptyOptionStates = Array.Empty<ChatBranchOptionState>();
 
     private readonly List<BranchDBEventData> currentOptions = new List<BranchDBEventData>();
+    private readonly List<ChatBranchOptionState> currentOptionStates = new List<ChatBranchOptionState>();
 
     private int currentZoneId;
     private ChatDBEventData currentChat;
+    private BranchDBEventData pendingAutoBranch;
 
     public event Action<ChatDBEventData> OnChatShown;
-    public event Action<IReadOnlyList<BranchDBEventData>> OnBranchShown;
+    public event Action<IReadOnlyList<ChatBranchOptionState>> OnBranchShown;
     public event Action OnChatEnded;
 
     public bool IsRunning { get; private set; }
@@ -97,6 +99,14 @@ public class ChatManager : MonoBehaviour
             return;
         }
 
+        if (pendingAutoBranch != null)
+        {
+            BranchDBEventData autoBranch = pendingAutoBranch;
+            pendingAutoBranch = null;
+            SelectBranch(autoBranch);
+            return;
+        }
+
         if (currentChat.Next_Chat_ID <= 0)
         {
             EndChat();
@@ -136,9 +146,17 @@ public class ChatManager : MonoBehaviour
 
         if (!currentOptions.Contains(option))
         {
-            Debug.LogWarning("[ChatManager] Selected branch option does not belong to the current chat.", this);
+            Debug.LogWarning("[ChatManager] Selected branch option does not belong to the current interactable options.", this);
             return;
         }
+
+        SelectBranch(option);
+    }
+
+    private void SelectBranch(BranchDBEventData option)
+    {
+        pendingAutoBranch = null;
+        DHChatBranchRuleEvaluator.ExecuteTriggerEffect(option);
 
         if (option.Target_Talk_ID <= 0)
         {
@@ -176,9 +194,11 @@ public class ChatManager : MonoBehaviour
     {
         currentChat = null;
         currentOptions.Clear();
+        currentOptionStates.Clear();
+        pendingAutoBranch = null;
         IsRunning = false;
 
-        OnBranchShown?.Invoke(EmptyOptions);
+        OnBranchShown?.Invoke(EmptyOptionStates);
         OnChatEnded?.Invoke();
     }
 
@@ -197,13 +217,15 @@ public class ChatManager : MonoBehaviour
     {
         currentChat = chat;
         currentOptions.Clear();
+        currentOptionStates.Clear();
+        pendingAutoBranch = null;
         IsRunning = true;
 
         OnChatShown?.Invoke(chat);
 
         if (chat == null || chat.Branch_Group_ID == 0)
         {
-            OnBranchShown?.Invoke(EmptyOptions);
+            OnBranchShown?.Invoke(EmptyOptionStates);
             return;
         }
 
@@ -213,7 +235,27 @@ public class ChatManager : MonoBehaviour
             for (int i = 0; i < options.Count; i++)
             {
                 BranchDBEventData option = options[i];
-                if (option != null && IsBranchAvailable(option))
+                if (option == null)
+                {
+                    continue;
+                }
+
+                bool isAvailable = IsBranchAvailable(option);
+
+                if (string.IsNullOrWhiteSpace(option.Selection_Text))
+                {
+                    if (isAvailable)
+                    {
+                        pendingAutoBranch = option;
+                        OnBranchShown?.Invoke(EmptyOptionStates);
+                        return;
+                    }
+
+                    continue;
+                }
+
+                currentOptionStates.Add(new ChatBranchOptionState(option, isAvailable));
+                if (isAvailable)
                 {
                     currentOptions.Add(option);
                 }
@@ -224,12 +266,11 @@ public class ChatManager : MonoBehaviour
             Debug.LogWarning($"[ChatManager] Branch options were not found. Zone: {currentZoneId}, Branch_Group_ID: {chat.Branch_Group_ID}", this);
         }
 
-        OnBranchShown?.Invoke(currentOptions.Count > 0 ? currentOptions.ToArray() : EmptyOptions);
+        OnBranchShown?.Invoke(currentOptionStates.Count > 0 ? currentOptionStates.ToArray() : EmptyOptionStates);
     }
 
     private bool IsBranchAvailable(BranchDBEventData option)
     {
-        // TODO(trigger): Evaluate Trigger_Type, Trigger_Value, and Trigger_Effect when branch conditions are defined.
-        return true;
+        return DHChatBranchRuleEvaluator.IsBranchAvailable(option);
     }
 }
