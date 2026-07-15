@@ -12,7 +12,10 @@ namespace ASB.ExcelImport.Editor
         private readonly List<RawExcelSheetSO> _allRawSheets = new List<RawExcelSheetSO>();
         private readonly List<RawExcelSheetSO> _rawSheets = new List<RawExcelSheetSO>();
         private readonly List<string> _workbookFolders = new List<string>();
-        private readonly List<SchemaCandidateInfo> _schemaCandidates = new List<SchemaCandidateInfo>();
+        private readonly List<ExcelSheetSchemaSO> _duplicateSchemas = new List<ExcelSheetSchemaSO>();
+        private readonly List<ExcelSheetSchemaSO> _templateCandidates = new List<ExcelSheetSchemaSO>();
+        private readonly List<ExcelSheetSchemaSO> _relinkCandidates = new List<ExcelSheetSchemaSO>();
+        private readonly List<RawExcelSheetSO> _logicalKeyCollisions = new List<RawExcelSheetSO>();
         private readonly List<string> _validationErrors = new List<string>();
         private readonly List<string> _validationWarnings = new List<string>();
         private int _selectedWorkbookFolderIndex;
@@ -20,7 +23,7 @@ namespace ASB.ExcelImport.Editor
         private ExcelSheetSchemaSO _schema;
         private TemplateCompatibilityReport _templateReport;
         private bool _candidateCacheDirty = true;
-        private bool _schemaCloneRequired;
+        private bool _showTemplates;
         private string _schemaApplyMessage;
         private MessageType _schemaApplyMessageType = MessageType.Info;
         private Vector2 _rawListScroll;
@@ -110,6 +113,11 @@ namespace ASB.ExcelImport.Editor
                 return;
             }
 
+            if (_candidateCacheDirty)
+            {
+                RefreshSchemaCandidateCache();
+            }
+
             EditorGUILayout.BeginVertical();
             EditorGUILayout.LabelField($"{raw.workbookFileName} / {raw.sheetName}", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("Physical ID", raw.physicalSheetId, EditorStyles.miniLabel);
@@ -120,27 +128,39 @@ namespace ASB.ExcelImport.Editor
             _schema = (ExcelSheetSchemaSO)EditorGUILayout.ObjectField("Schema", _schema, typeof(ExcelSheetSchemaSO), false);
             if (EditorGUI.EndChangeCheck())
             {
-                UpdateSchemaCloneRequirementMessage();
                 MarkCandidateCacheDirty();
             }
-            if (GUILayout.Button("New Schema", GUILayout.Width(100f)))
+
+            using (new EditorGUI.DisabledScope(_schema != null))
             {
-                _schema = ExcelSchemaAdapter.CreateDefaultSchema(raw);
-                raw.importStatus = RawImportStatus.SchemaApplied;
-                EditorUtility.SetDirty(raw);
-                ClearSchemaApplyMessage();
-                AssetDatabase.SaveAssets();
-                RefreshSchemaCandidateCache();
+                if (GUILayout.Button("New Schema", GUILayout.Width(100f)))
+                {
+                    CreateNewSchemaForRaw(raw);
+                }
             }
-            if (GUILayout.Button("Apply Candidate", GUILayout.Width(120f)))
+
+            using (new EditorGUI.DisabledScope(_schema == null))
             {
-                ApplyBestSchemaCandidate();
+                if (GUILayout.Button("Rebuild", GUILayout.Width(80f)))
+                {
+                    RebuildSchemaForRaw(raw);
+                }
+
+                if (GUILayout.Button("Recreate", GUILayout.Width(90f)))
+                {
+                    RecreateSchemaForRaw(raw);
+                }
             }
             EditorGUILayout.EndHorizontal();
 
+            DrawDuplicateSchemaWarning();
+            DrawLogicalKeyCollisionWarning();
+            DrawRelinkSection(raw);
+
             if (_schema == null)
             {
-                DrawSchemaCandidates(raw);
+                EditorGUILayout.HelpBox("No schema for this sheet. Create one, or copy from a template.", MessageType.Info);
+                DrawTemplateSection(raw);
                 DrawPreview(raw);
                 EditorGUILayout.EndVertical();
                 return;
@@ -170,32 +190,148 @@ namespace ASB.ExcelImport.Editor
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawSchemaCandidates(RawExcelSheetSO raw)
+        private void DrawDuplicateSchemaWarning()
         {
-            if (_candidateCacheDirty)
+            if (_duplicateSchemas.Count == 0)
             {
-                EditorGUILayout.HelpBox("Candidate cache is stale. Validate or Refresh to update.", MessageType.Info);
-            }
-
-            if (_schemaCandidates.Count == 0)
-            {
-                EditorGUILayout.HelpBox("No schema candidate found. Create a new schema.", MessageType.Info);
                 return;
             }
 
-            EditorGUILayout.LabelField("Schema Candidates", EditorStyles.boldLabel);
-            for (int i = 0; i < _schemaCandidates.Count; i++)
+            EditorGUILayout.HelpBox(
+                $"{_duplicateSchemas.Count} duplicate schema(s) match this sheet. The canonical one is selected. Remove extras (auto-delete is disabled).",
+                MessageType.Warning);
+            for (int i = 0; i < _duplicateSchemas.Count; i++)
             {
-                SchemaCandidateInfo candidate = _schemaCandidates[i];
-                if (candidate.Schema == null)
+                ExcelSheetSchemaSO dup = _duplicateSchemas[i];
+                if (dup == null)
                 {
                     continue;
                 }
 
-                if (GUILayout.Button($"{candidate.Schema.name} ({ExcelSchemaAdapter.GetTemplateClassName(candidate.Schema)}) [{candidate.Kind}]"))
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField(dup.name, EditorStyles.miniLabel);
+                if (GUILayout.Button("Make Canonical", GUILayout.Width(120f)))
                 {
-                    _schema = ApplyCandidate(raw, candidate.Schema);
+                    _schema = dup;
+                    MarkCandidateCacheDirty();
                 }
+
+                if (GUILayout.Button("Delete", GUILayout.Width(60f)))
+                {
+                    DeleteDuplicateSchema(dup);
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        private void DeleteDuplicateSchema(ExcelSheetSchemaSO schema)
+        {
+            string path = AssetDatabase.GetAssetPath(schema);
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            if (EditorUtility.DisplayDialog("Delete Duplicate Schema", $"Delete duplicate schema?\n{path}", "Delete", "Cancel"))
+            {
+                if (_schema == schema)
+                {
+                    _schema = null;
+                }
+
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.SaveAssets();
+                LoadBestSchemaForSelectedRaw();
+            }
+        }
+
+        private void DrawLogicalKeyCollisionWarning()
+        {
+            if (_logicalKeyCollisions.Count == 0)
+            {
+                return;
+            }
+
+            var names = new List<string>();
+            for (int i = 0; i < _logicalKeyCollisions.Count; i++)
+            {
+                if (_logicalKeyCollisions[i] != null)
+                {
+                    names.Add(_logicalKeyCollisions[i].sheetName);
+                }
+            }
+
+            EditorGUILayout.HelpBox(
+                "Logical key collision: other sheet(s) in the same workbook normalize to the same logical key " +
+                $"({string.Join(", ", names)}). Identity uses physicalSheetId so they stay separate, but consider renaming to avoid confusion.",
+                MessageType.Warning);
+        }
+
+        private void DrawRelinkSection(RawExcelSheetSO raw)
+        {
+            if (_relinkCandidates.Count == 0)
+            {
+                return;
+            }
+
+            EditorGUILayout.HelpBox(
+                "Possible renamed sheet: schema(s) with the same workbook and logical key but a different physical id. " +
+                "Relink only if this sheet was renamed (manual).",
+                MessageType.Info);
+            for (int i = 0; i < _relinkCandidates.Count; i++)
+            {
+                ExcelSheetSchemaSO candidate = _relinkCandidates[i];
+                if (candidate == null)
+                {
+                    continue;
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"{candidate.name} (was '{candidate.sourceSheetName}')", EditorStyles.miniLabel);
+                if (GUILayout.Button("Relink", GUILayout.Width(70f)))
+                {
+                    RelinkSchema(raw, candidate);
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+
+        private void DrawTemplateSection(RawExcelSheetSO raw)
+        {
+            EditorGUILayout.Space(4f);
+            _showTemplates = EditorGUILayout.Foldout(_showTemplates, "Copy from Template (explicit)", true);
+            if (!_showTemplates)
+            {
+                return;
+            }
+
+            if (_templateCandidates.Count == 0)
+            {
+                EditorGUILayout.HelpBox("No other schema available as a template.", MessageType.Info);
+                return;
+            }
+
+            EditorGUILayout.HelpBox(
+                "Templates are NOT auto-applied. Copy creates a NEW schema for THIS sheet from the chosen template.",
+                MessageType.Info);
+            for (int i = 0; i < _templateCandidates.Count; i++)
+            {
+                ExcelSheetSchemaSO template = _templateCandidates[i];
+                if (template == null)
+                {
+                    continue;
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"{template.name} ({ExcelSchemaAdapter.GetTemplateClassName(template)})", EditorStyles.miniLabel);
+                using (new EditorGUI.DisabledScope(_schema != null))
+                {
+                    if (GUILayout.Button("Copy as Template", GUILayout.Width(140f)))
+                    {
+                        CopyFromTemplate(raw, template);
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
             }
         }
 
@@ -226,7 +362,8 @@ namespace ASB.ExcelImport.Editor
         private void DrawSchemaFieldsReadOnly()
         {
             EditorGUILayout.HelpBox(
-                "Selected schema belongs to another Raw sheet or workbook. It will be cloned for this Raw when you Apply, Validate, or Generate. Create a Raw-specific schema copy before editing Template Class Name, Output Asset, or Columns.",
+                "Selected schema does not belong to this Raw sheet (identity mismatch). Assign the matching schema, " +
+                "create a new one, or relink if the sheet was renamed. Auto-clone is disabled.",
                 MessageType.Info);
 
             EditorGUILayout.LabelField("Template Class Name", ExcelSchemaAdapter.GetTemplateClassName(_schema));
@@ -245,34 +382,13 @@ namespace ASB.ExcelImport.Editor
                 return;
             }
 
-            if (_candidateCacheDirty)
-            {
-                EditorGUILayout.HelpBox("Template candidate state is stale. Validate or Refresh to update.", MessageType.Info);
-            }
-
             string status = _templateReport == null ? "Unknown" : _templateReport.Status.ToString();
             EditorGUILayout.LabelField("Template Signature", status, EditorStyles.miniLabel);
-
-            int sameStructureCount = 0;
-            for (int i = 0; i < _schemaCandidates.Count; i++)
-            {
-                if (_schemaCandidates[i].Kind == SchemaCandidateKind.SameStructure)
-                {
-                    sameStructureCount++;
-                }
-            }
-            EditorGUILayout.LabelField("Same Structure Candidates", sameStructureCount.ToString(), EditorStyles.miniLabel);
 
             if (_templateReport != null && _templateReport.Status == TemplateCompatibilityStatus.Mismatch)
             {
                 string conflicts = string.Join(", ", _templateReport.ConflictingSchemas.ConvertAll(x => x.name));
                 EditorGUILayout.HelpBox($"Template signature mismatch with: {conflicts}", MessageType.Error);
-            }
-            else if (sameStructureCount > 0)
-            {
-                EditorGUILayout.HelpBox(
-                    "Same structure schema found. Apply candidate to share its Template Class Name, or keep current name to generate a separate script.",
-                    MessageType.Info);
             }
         }
 
@@ -555,78 +671,151 @@ namespace ASB.ExcelImport.Editor
                 return;
             }
 
-            List<SchemaCandidateInfo> candidates = ExcelSchemaAdapter.FindSchemaCandidateInfos(raw);
-            ExcelSheetSchemaSO reusableSchema = null;
-            for (int i = 0; i < candidates.Count; i++)
+            ExcelSheetSchemaSO existing = ExcelSchemaAdapter.FindExistingSchemaForRaw(raw, out _);
+            if (existing != null)
             {
-                if (candidates[i].Schema != null && ExcelSchemaAdapter.CanReuseSchemaForRaw(raw, candidates[i].Schema))
-                {
-                    reusableSchema = candidates[i].Schema;
-                    break;
-                }
-            }
-
-            if (reusableSchema != null)
-            {
-                _schema = reusableSchema;
+                _schema = existing;
                 raw.importStatus = RawImportStatus.SchemaApplied;
                 EditorUtility.SetDirty(raw);
             }
 
-            UpdateSchemaCloneRequirementMessage();
             RefreshSchemaCandidateCache();
         }
 
-        private void ApplyBestSchemaCandidate()
+        private void CreateNewSchemaForRaw(RawExcelSheetSO raw)
         {
-            RawExcelSheetSO raw = SelectedRaw;
             if (raw == null)
             {
                 return;
             }
 
-            if (_candidateCacheDirty)
+            // 안전장치: 이미 스키마가 있으면 절대 새로 만들지 않는다.
+            ExcelSheetSchemaSO existing = ExcelSchemaAdapter.FindExistingSchemaForRaw(raw, out _);
+            if (existing != null)
             {
+                _schema = existing;
+                SetSchemaApplyMessage("A schema already exists for this sheet. Auto-selected it. Use Rebuild or Recreate.", MessageType.Warning);
                 RefreshSchemaCandidateCache();
+                return;
             }
 
-            if (_schemaCandidates.Count == 0)
+            _schema = ExcelSchemaAdapter.CreateDefaultSchema(raw);
+            raw.importStatus = RawImportStatus.SchemaApplied;
+            EditorUtility.SetDirty(raw);
+            ClearSchemaApplyMessage();
+            AssetDatabase.SaveAssets();
+            RefreshSchemaCandidateCache();
+        }
+
+        private void RebuildSchemaForRaw(RawExcelSheetSO raw)
+        {
+            if (raw == null || _schema == null)
             {
                 return;
             }
 
-            for (int i = 0; i < _schemaCandidates.Count; i++)
+            if (!ExcelSchemaAdapter.SchemaMatchesRaw(raw, _schema))
             {
-                if (_schemaCandidates[i].Schema != null)
-                {
-                    _schema = ApplyCandidate(raw, _schemaCandidates[i].Schema);
-                    return;
-                }
+                SetSchemaApplyMessage("Current schema does not belong to this raw sheet.", MessageType.Error);
+                return;
             }
+
+            ExcelSchemaAdapter.ReconcileSchemaColumns(raw, _schema, false, out List<string> added, out List<string> disabled);
+            string message =
+                "Rebuild reconciles columns with the current raw sheet.\n\n" +
+                $"Added: {(added.Count == 0 ? "(none)" : string.Join(", ", added))}\n" +
+                $"Disabled (missing in raw, kept as include=false): {(disabled.Count == 0 ? "(none)" : string.Join(", ", disabled))}\n\n" +
+                "Existing column settings are preserved. No column is deleted. Continue?";
+            if (!EditorUtility.DisplayDialog("Rebuild Schema", message, "Rebuild", "Cancel"))
+            {
+                return;
+            }
+
+            ExcelSchemaAdapter.ReconcileSchemaColumns(raw, _schema, true, out _, out _);
+            SetSchemaApplyMessage("Schema columns rebuilt (merge). schemaGuid preserved.", MessageType.Info);
+            MarkCandidateCacheDirty();
         }
 
-        private ExcelSheetSchemaSO ApplyCandidate(RawExcelSheetSO raw, ExcelSheetSchemaSO candidate)
+        private void RecreateSchemaForRaw(RawExcelSheetSO raw)
+        {
+            if (raw == null || _schema == null)
+            {
+                return;
+            }
+
+            bool ok = EditorUtility.DisplayDialog(
+                "Recreate Schema",
+                "This DELETES the current schema and creates a fresh one from the raw sheet.\n" +
+                "All manual column edits are lost, and the schemaGuid changes (generated DataTable links may break).\n\n" +
+                "Prefer Rebuild unless the schema is corrupted. Continue?",
+                "Recreate", "Cancel");
+            if (!ok)
+            {
+                return;
+            }
+
+            string path = AssetDatabase.GetAssetPath(_schema);
+            if (!string.IsNullOrEmpty(path))
+            {
+                AssetDatabase.DeleteAsset(path);
+            }
+
+            _schema = ExcelSchemaAdapter.CreateDefaultSchema(raw);
+            raw.importStatus = RawImportStatus.SchemaApplied;
+            EditorUtility.SetDirty(raw);
+            AssetDatabase.SaveAssets();
+            SetSchemaApplyMessage("Schema recreated from raw sheet.", MessageType.Info);
+            RefreshSchemaCandidateCache();
+        }
+
+        private void CopyFromTemplate(RawExcelSheetSO raw, ExcelSheetSchemaSO template)
+        {
+            if (raw == null || template == null)
+            {
+                return;
+            }
+
+            ExcelSheetSchemaSO existing = ExcelSchemaAdapter.FindExistingSchemaForRaw(raw, out _);
+            if (existing != null)
+            {
+                _schema = existing;
+                SetSchemaApplyMessage("A schema already exists for this sheet. Copy is disabled.", MessageType.Warning);
+                RefreshSchemaCandidateCache();
+                return;
+            }
+
+            _schema = ExcelSchemaAdapter.CreateSchemaFromTemplate(raw, template);
+            raw.importStatus = RawImportStatus.SchemaApplied;
+            EditorUtility.SetDirty(raw);
+            AssetDatabase.SaveAssets();
+            SetSchemaApplyMessage($"New schema created for this sheet from template '{template.name}'.", MessageType.Info);
+            RefreshSchemaCandidateCache();
+        }
+
+        private void RelinkSchema(RawExcelSheetSO raw, ExcelSheetSchemaSO candidate)
         {
             if (raw == null || candidate == null)
             {
-                return null;
+                return;
             }
 
-            bool cloned = ExcelSchemaAdapter.RequiresSchemaClone(raw, candidate);
-            ExcelSheetSchemaSO schema = cloned
-                ? ExcelSchemaAdapter.CreateSchemaFromTemplate(raw, candidate)
-                : candidate;
+            bool ok = EditorUtility.DisplayDialog(
+                "Relink Schema",
+                $"Relink schema '{candidate.name}' (was sheet '{candidate.sourceSheetName}') to this sheet '{raw.sheetName}'?\n" +
+                "Use this only if the sheet was renamed. schemaGuid is preserved.",
+                "Relink", "Cancel");
+            if (!ok)
+            {
+                return;
+            }
 
+            ExcelSchemaAdapter.RelinkSchemaToRaw(raw, candidate);
+            _schema = candidate;
             raw.importStatus = RawImportStatus.SchemaApplied;
             EditorUtility.SetDirty(raw);
-            _schemaCloneRequired = false;
-            _schemaApplyMessage = cloned
-                ? "Schema was cloned for the current Raw sheet."
-                : string.Empty;
-            _schemaApplyMessageType = MessageType.Info;
             AssetDatabase.SaveAssets();
+            SetSchemaApplyMessage("Schema relinked to this (renamed) sheet.", MessageType.Info);
             RefreshSchemaCandidateCache();
-            return schema;
         }
 
         private void ValidateCurrent()
@@ -634,15 +823,12 @@ namespace ASB.ExcelImport.Editor
             _validationErrors.Clear();
             _validationWarnings.Clear();
             RawExcelSheetSO raw = SelectedRaw;
-            bool cloned = ExcelSchemaAdapter.RequiresSchemaClone(raw, _schema);
-            _schema = ExcelSchemaAdapter.EnsureSchemaForRaw(raw, _schema);
-            if (cloned && _schema != null)
+            _schema = ExcelSchemaAdapter.ResolveExistingSchemaForRaw(raw, _schema);
+            if (_schema == null)
             {
-                raw.importStatus = RawImportStatus.SchemaApplied;
-                EditorUtility.SetDirty(raw);
-                _schemaCloneRequired = false;
-                _schemaApplyMessage = "Schema was cloned for the current Raw sheet before validation.";
-                _schemaApplyMessageType = MessageType.Info;
+                _validationErrors.Add("No schema exists for this raw sheet. Create one first.");
+                RefreshSchemaCandidateCache();
+                return;
             }
 
             if (ExcelSchemaAdapter.Validate(raw, _schema, out List<string> errors, out List<string> warnings))
@@ -670,14 +856,12 @@ namespace ASB.ExcelImport.Editor
                 if (usedSchema != null && usedSchema != _schema)
                 {
                     _schema = usedSchema;
-                    _schemaCloneRequired = false;
                 }
 
                 if (!string.IsNullOrWhiteSpace(error))
                 {
                     _validationErrors.Add(error);
-                    _schemaApplyMessage = error;
-                    _schemaApplyMessageType = MessageType.Error;
+                    SetSchemaApplyMessage(error, MessageType.Error);
                     EditorUtility.DisplayDialog("Update Data Failed", error, "OK");
                 }
 
@@ -685,51 +869,31 @@ namespace ASB.ExcelImport.Editor
                 return;
             }
 
-            if (usedSchema != null && usedSchema != _schema)
+            if (usedSchema != null)
             {
                 _schema = usedSchema;
-                _schemaApplyMessage = "Schema was cloned for the current Raw sheet before updating data.";
-                _schemaApplyMessageType = MessageType.Info;
-            }
-            else
-            {
-                _schemaApplyMessage = "Data updated.";
-                _schemaApplyMessageType = MessageType.Info;
             }
 
-            _schemaCloneRequired = false;
+            SetSchemaApplyMessage("Data updated.", MessageType.Info);
             Debug.Log("[RawSheetMapper] Data updated.");
             RefreshSchemaCandidateCache();
         }
 
         private void RefreshSchemaCandidateCache()
         {
-            _schemaCandidates.Clear();
+            _duplicateSchemas.Clear();
+            _templateCandidates.Clear();
+            _relinkCandidates.Clear();
+            _logicalKeyCollisions.Clear();
+
             RawExcelSheetSO raw = SelectedRaw;
             if (raw != null)
             {
-                List<SchemaCandidateInfo> candidates = ExcelSchemaAdapter.FindSchemaCandidateInfos(raw, _schema);
-                candidates.Sort((a, b) =>
-                {
-                    bool aSameFolder = IsSchemaInSameWorkbookFolder(raw, a.Schema);
-                    bool bSameFolder = IsSchemaInSameWorkbookFolder(raw, b.Schema);
-                    if (aSameFolder != bSameFolder)
-                    {
-                        return aSameFolder ? -1 : 1;
-                    }
-
-                    return string.Compare(
-                        a.Schema == null ? string.Empty : a.Schema.name,
-                        b.Schema == null ? string.Empty : b.Schema.name,
-                        System.StringComparison.Ordinal);
-                });
-                for (int i = 0; i < candidates.Count; i++)
-                {
-                    if (candidates[i].Schema != null)
-                    {
-                        _schemaCandidates.Add(candidates[i]);
-                    }
-                }
+                ExcelSchemaAdapter.FindExistingSchemaForRaw(raw, out List<ExcelSheetSchemaSO> dups);
+                _duplicateSchemas.AddRange(dups);
+                _templateCandidates.AddRange(ExcelSchemaAdapter.FindTemplateCandidates(raw));
+                _relinkCandidates.AddRange(ExcelSchemaAdapter.FindRelinkCandidates(raw));
+                _logicalKeyCollisions.AddRange(ExcelSchemaAdapter.FindLogicalKeyCollisions(raw));
             }
 
             _templateReport = _schema == null ? null : ExcelSchemaAdapter.GetTemplateCompatibilityReport(_schema);
@@ -741,21 +905,7 @@ namespace ASB.ExcelImport.Editor
             RawExcelSheetSO raw = SelectedRaw;
             return raw != null &&
                    _schema != null &&
-                   ExcelSchemaAdapter.CanReuseSchemaForRaw(raw, _schema);
-        }
-
-        private void UpdateSchemaCloneRequirementMessage()
-        {
-            _schemaCloneRequired = ExcelSchemaAdapter.RequiresSchemaClone(SelectedRaw, _schema);
-            if (_schemaCloneRequired)
-            {
-                _schemaApplyMessage = "Selected schema belongs to another Raw sheet or workbook. It will be cloned for this Raw when you Apply, Validate, or Generate.";
-                _schemaApplyMessageType = MessageType.Info;
-            }
-            else
-            {
-                ClearSchemaApplyMessage();
-            }
+                   ExcelSchemaAdapter.SchemaMatchesRaw(raw, _schema);
         }
 
         private void DrawSchemaApplyMessage()
@@ -766,9 +916,14 @@ namespace ASB.ExcelImport.Editor
             }
         }
 
+        private void SetSchemaApplyMessage(string message, MessageType type)
+        {
+            _schemaApplyMessage = message;
+            _schemaApplyMessageType = type;
+        }
+
         private void ClearSchemaApplyMessage()
         {
-            _schemaCloneRequired = false;
             _schemaApplyMessage = string.Empty;
             _schemaApplyMessageType = MessageType.Info;
         }
@@ -843,26 +998,6 @@ namespace ASB.ExcelImport.Editor
             }
 
             return raw.workbookFileName ?? string.Empty;
-        }
-
-        private static bool IsSchemaInSameWorkbookFolder(RawExcelSheetSO raw, ExcelSheetSchemaSO schema)
-        {
-            if (raw == null || schema == null)
-            {
-                return false;
-            }
-
-            string rawFolder = GetRawWorkbookFolderName(raw);
-            string schemaPath = AssetDatabase.GetAssetPath(schema).Replace('\\', '/');
-            string root = ExcelImportPaths.SchemaFolder.TrimEnd('/') + "/";
-            if (string.IsNullOrEmpty(rawFolder) ||
-                !schemaPath.StartsWith(root, System.StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            string rest = schemaPath.Substring(root.Length);
-            return rest.StartsWith(rawFolder + "/", System.StringComparison.Ordinal);
         }
     }
 }

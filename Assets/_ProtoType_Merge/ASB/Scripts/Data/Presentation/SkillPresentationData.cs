@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Presentation data mapped by SkillIndex through SkillPresentationCatalog.
-/// CSV skill values remain separate; this asset stores animation, effect, sound,
+/// Skill runtime values remain separate; this asset stores animation slot, effect, sound,
 /// hit timing, and projectile presentation overrides.
 /// </summary>
 [CreateAssetMenu(fileName = "SkillPresentation_New", menuName = "Battle/Skill Presentation Data")]
@@ -12,11 +12,28 @@ public class SkillPresentationData : ScriptableObject
     [Tooltip("SkillData.skillIndex used by SkillPresentationEditorWindow and SkillPresentationCatalog.")]
     public int SkillIndex;
 
-    [Header("Animation Override (empty uses CSV)")]
-    [Tooltip("Empty uses SkillData.AnimationTrigger.")]
+    [Header("Animation State/Slot Override (empty uses SkillData/fallback)")]
+    [Tooltip("Animator state/slot used by this skill, such as ClassSkill_1 or WeaponSkill_1. Empty uses SkillData.StateName, then the legacy index fallback.")]
+    public string AnimationStateName;
+    [Tooltip("Legacy slot override. Prefer AnimationStateName for new data.")]
     public string AnimationTriggerOverride;
     [Tooltip("Empty uses SkillData.TargetAnimationTrigger.")]
     public string TargetAnimationTriggerOverride;
+
+    public string ResolvedAnimationStateName
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(AnimationStateName))
+            {
+                return AnimationStateName.Trim();
+            }
+
+            return !string.IsNullOrWhiteSpace(AnimationTriggerOverride)
+                ? AnimationTriggerOverride.Trim()
+                : string.Empty;
+        }
+    }
 
     [Header("Sound")]
     public AudioClip AttackSfxClip;

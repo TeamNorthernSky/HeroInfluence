@@ -19,20 +19,11 @@ namespace ASB.ExcelImport.Editor
                 return;
             }
 
-            bool clonedSchema = ExcelSchemaAdapter.RequiresSchemaClone(raw, schema);
-            schema = ExcelSchemaAdapter.EnsureSchemaForRaw(raw, schema);
+            schema = ExcelSchemaAdapter.ResolveExistingSchemaForRaw(raw, schema);
             if (schema == null)
             {
-                Debug.LogError("[ExcelRawGenerate] Schema could not be prepared for this Raw sheet.");
+                Debug.LogError("[ExcelRawGenerate] No schema exists for this Raw sheet. Create a schema first (auto-create/clone is disabled).");
                 return;
-            }
-
-            if (clonedSchema)
-            {
-                raw.importStatus = RawImportStatus.SchemaApplied;
-                EditorUtility.SetDirty(raw);
-                EditorUtility.SetDirty(schema);
-                AssetDatabase.SaveAssets();
             }
 
             if (!ExcelSchemaAdapter.Validate(raw, schema, out List<string> errors, out _))
@@ -98,10 +89,10 @@ namespace ASB.ExcelImport.Editor
 
             try
             {
-                usedSchema = ExcelSchemaAdapter.EnsureSchemaForRaw(raw, schema);
+                usedSchema = ExcelSchemaAdapter.ResolveExistingSchemaForRaw(raw, schema);
                 if (usedSchema == null)
                 {
-                    error = "Schema could not be prepared for this Raw sheet.";
+                    error = "No schema exists for this Raw sheet. Create a schema first (auto-create/clone is disabled).";
                     return false;
                 }
 

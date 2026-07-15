@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// skillIndex → SkillPresentationData 매핑 에셋.
-/// CSV로 로드되는 SkillData에 SO 참조를 붙일 수 없으므로 별도 카탈로그에서 관리합니다.
+/// Runtime SkillData에 SO 참조를 직접 붙이지 않고 별도 카탈로그에서 관리합니다.
 /// </summary>
 [CreateAssetMenu(fileName = "SkillPresentationCatalog", menuName = "Battle/Skill Presentation Catalog")]
 public class SkillPresentationCatalog : ScriptableObject

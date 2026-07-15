@@ -9,7 +9,7 @@ using ASB.Work.Battle.Sequence;
 using PrimeTween;
 
 /// <summary>
-/// ?꾪닾 ?ㅽ뻾怨??ㅽ궗 寃곌낵 ?곸슜???대떦?⑸땲?? ?곕?吏????긽 target.TakeDamage濡??곸슜?⑸땲??
+/// ?꾪닾 ??�뻾????�궗 寃곌???곸슜????�???�땲?? ?�?吏????�?target.TakeDamage�??곸슜??�땲??
 /// </summary>
 [DisallowMultipleComponent]
 public class BattleManager : MonoBehaviour
@@ -17,7 +17,7 @@ public class BattleManager : MonoBehaviour
     public static BattleManager Instance { get; private set; }
     public event Action<string> OnActionExecuted;
 
-    /// <summary>UI ???紐??癒?퐣 獄쏄퀣??癰궰野껋럩???遺욧퍕????獄쏆뮇源??쀪땁??덈뼄. AutoBattleController.OnAutoBattleToggleRequested?? ??덉뵬?????쉘.</summary>
+    /// <summary>UI ???�???????�쏄????�궰??�껋?????�욧??????�쏆뮇源???�땁???�뼄. AutoBattleController.OnAutoBattleToggleRequested?? ???�뵬???????</summary>
     public static event Action<float> OnBattleSpeedChangeRequested;
 
     private const int ClassSkillEffect_Heal = 1;
@@ -67,9 +67,8 @@ public class BattleManager : MonoBehaviour
     [Header("Visual")]
     [SerializeField] private BattleVisualDirector _visualDirector;
 
-    // [CSV 沃섎챷????袁⑸뻻] CSV??UseAnimEvent / HitDelay ?뚎됱쓥????곷선 Presentation 燁삳똾源됪에?볥젃?癒?퐣 ??堉?怨룸빍??
-    // CSV ??쎄텕筌??곕떽? ?????袁⑤굡?? ApplyPresentationOverride 筌롫뗄苑??? ??볤탢??뤾쉭??
-    [Header("Hit Timing Override (CSV 沃섎챷????袁⑸뻻)")]
+    // SkillPresentationCatalog provides animation slot, target reaction, and hit timing overrides.
+    [Header("Skill Presentation Override")]
     [SerializeField] private SkillPresentationCatalog _presentationCatalog;
 
     public float CurrentBattleSpeed => _currentBattleSpeed;
@@ -78,7 +77,7 @@ public class BattleManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("[BattleManager] 餓λ쵎???紐꾨뮞??곷뮞揶쎛 揶쏅Ŋ???뤿???щ빍??");
+            Debug.LogWarning("[BattleManager] 餓λ쵎???紐꾨�??곷뮞?�쎛? ?�쏅Ŋ???�????�??");
         }
 
         Instance = this;
@@ -167,8 +166,8 @@ public class BattleManager : MonoBehaviour
         onBattleElapsed?.Invoke(Mathf.Min(elapsed, timeoutSeconds));
     }
 
-    // TODO: ?袁る떮 VFX Instantiate 野껋럥以덂첎? ?곕떽???롢늺 ??밴쉐 筌욊낱??ApplyBattleSpeedToVfx(vfxInstance)???紐꾪뀱??뤾쉭??
-    // ?袁⑹삺 TmpBattleScene ?袁る떮 ??쎄쾿?깆???癒?뮉 ParticleSystem ??쎄텢 ??꾨읃??Instantiate ?꾨뗀諭뜹첎? ??곷뮸??덈뼄.
+    // TODO: ?袁る??VFX Instantiate ?�껋?�以?�첎? ?곕떽???�?�� ??밴쉐 筌욊???ApplyBattleSpeedToVfx(vfxInstance)???紐꾪???뤾쉭??
+    // ?袁⑹??TmpBattleScene ?袁る?????�쾿?�?????�?ParticleSystem ???�텢 ??꾨읃??Instantiate ?꾨�?�?���? ??곷�????�뼄.
     private void ApplyBattleSpeedToVfx(GameObject vfxInstance)
     {
         if (vfxInstance == null)
@@ -207,7 +206,7 @@ public class BattleManager : MonoBehaviour
             return BattleHitResult.Empty(context?.Target);
         }
 
-        // ??삳뼊 ??딅뱜 筌욊쑵六?餓???彛???野껋옕肉??????袁⑸꺗 ??野꺿뫗? ?얜똻???몃빍??
+        // ???�뼊 ???�뱜 筌욊?�六?�???�????�껋?�肉??????袁⑸�????�꺿�? ??�똻???몃빍??
         if (context.Target.IsDead)
         {
             return BattleHitResult.Empty(context.Target);
@@ -233,8 +232,8 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 데미지 수치/치명타/사망 여부만 순수 계산합니다. target.TakeDamage를 호출하지 않아 HP를 건드리지 않습니다.
-    /// 연출 큐 조립 전에 이벤트(DamageEvent/DeathEvent)를 먼저 기록하기 위해 사용합니다.
+    /// ?��?지 ?�치/치명?�/?�망 ?��?�??�수 계산?�니?? target.TakeDamage�??�출?��? ?�아 HP�?건드리�? ?�습?�다.
+    /// ?�출 ??조립 ?�에 ?�벤??DamageEvent/DeathEvent)�?먼�? 기록?�기 ?�해 ?�용?�니??
     /// </summary>
     private BattleHitResult PredictDamage(DamageContext context)
     {
@@ -265,8 +264,8 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// PredictDamage로 미리 계산된 수치를 실제 target.TakeDamage로 반영합니다.
-    /// 연출 타이밍(ResolveHitAction/AoEApplyDamageAction 콜백)에서 호출되어 HP바 갱신 시점을 유지합니다.
+    /// PredictDamage�?미리 계산???�치�??�제 target.TakeDamage�?반영?�니??
+    /// ?�출 ?�?�밍(ResolveHitAction/AoEApplyDamageAction 콜백)?�서 ?�출?�어 HP�?갱신 ?�점???��??�니??
     /// </summary>
     private BattleHitResult CommitDamage(DamageContext context, BattleHitResult predicted)
     {
@@ -463,7 +462,7 @@ public class BattleManager : MonoBehaviour
         SkillEffectHelper.ApplyStatusEffect(context);
     }
 
-    /// <summary>ClassSkillSheet ??깆벥 skillValue(?? 1.2 = 120%)嚥?域밸챶?????쎄텢 ??노퉸???④쑴沅??몃빍??</summary>
+    /// <summary>ClassSkillSheet ??깆벥 skillValue(?? 1.2 = 120%)???�밸�??????�텢 ???�퉸????�쑴�??몃빍??</summary>
     public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted = null)
     {
         if (classSkillRow == null || actor == null || target == null)
@@ -493,7 +492,7 @@ public class BattleManager : MonoBehaviour
 
         if (!TryConsumeSkillInfluence(actor, classSkillRow))
         {
-            Debug.LogWarning("[BattleManager] Influence揶쎛 ?봔鈺곌퉲釉????쎄텢???????????곷뮸??덈뼄.");
+            Debug.LogWarning("[BattleManager] Influence?�쎛? ?봔?�곌?�釉?????�텢???????????곷�????�뼄.");
             onCompleted?.Invoke(false);
             yield break;
         }
@@ -545,7 +544,7 @@ public class BattleManager : MonoBehaviour
                 || skill.classSkillEffect == ClassSkillEffect_Revive
                 || skill.classSkillEffect == ClassSkillEffect_Buff)
             {
-                Debug.Log($"[Combat] {defender.UnitName} 獄쏆꼵爰???쎄텢({skill.skillIndex})???怨?筌왖 ??쎄텢???袁⑤빍??곴퐣 獄쏆꼵爰???뽰뇚");
+                Debug.Log($"[Combat] {defender.UnitName} ?�쏆꼵爰????�텢({skill.skillIndex})?????筌왖? ???�텢???袁⑤�??곴퐣 ?�쏆꼵爰???뽰뇚");
                 continue;
             }
 
@@ -573,10 +572,10 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"[Combat] {req.Defender.UnitName} 域뱀눘??獄쏆꼵爰?獄쏆뮆猷? (?④쑴??0.5)");
+        Debug.Log($"[Combat] {req.Defender.UnitName} ?��?????�쏆꼵爰??�쏆뮆猷? (??�쑴??0.5)");
 
-        // 獄쏆꼵爰?? ?뚣끉??? ?紐껊굶??? ?얜똻???랁?疫꿸퀡???怨?筌왖 野껋럥以덌쭕??????몃빍??
-        // Influence ???걟 ??곸벉, ?怨?筌왖 ?④쑴??0.5, 獄쏆꼵爰?? 獄쏆꼵爰???醫딆뻣??? ??녿뮸??덈뼄.
+        // ?�쏆꼵爰?? ??�끉??? ?紐껊�??? ??�똻????�??�꿸??????筌왖? ?�껋?�以?�쭕??????몃빍??
+        // Influence ???�???곸벉, ???筌왖? ??�쑴??0.5, ?�쏆꼵爰?? ?�쏆꼵爰????�딆�??? ???��????�뼄.
         SkillExecutionResult result = BuildDefaultSkillResult(
             req.Defender,
             req.OriginalCaster,
@@ -588,7 +587,7 @@ public class BattleManager : MonoBehaviour
 
         if (!executed)
         {
-            Debug.LogWarning($"[BattleManager] {req.Defender.UnitName} 獄쏆꼵爰???쎈뻬 ??쎈솭.");
+            Debug.LogWarning($"[BattleManager] {req.Defender.UnitName} ?�쏆꼵爰????�뻬 ???�솭.");
         }
     }
 
@@ -649,7 +648,7 @@ public class BattleManager : MonoBehaviour
             return false;
         }
 
-        // 疫꿸퀡???⑤벀爰?? ExecuteBasicAttack 野껋럥以덃에??브쑬???뤿선 ??됰선 ??由경에???쇰선??? ??녿뮸??덈뼄.
+        // ?�꿸?????��???? ExecuteBasicAttack ?�껋?�以?�에??브쑬???뤿선 ???�선 ???�경?????�선??? ???��????�뼄.
         float cost = Mathf.Max(0f, skillData.IPCost);
         return actor.TryConsumeInfluence(cost);
     }
@@ -743,13 +742,22 @@ public class BattleManager : MonoBehaviour
         };
     }
 
-    // [CSV 沃섎챷????袁⑸뻻] SkillPresentationCatalog?癒?퐣 UseAnimEvent / HitDelay????뚮선 SkillData????堉?怨룸빍??
-    // CSV ??쎄텕筌띾뜆肉??뚎됱쓥???곕떽???롢늺 ??筌롫뗄苑???紐꾪뀱?봔?? 筌롫뗄苑???癒?퍥????볤탢??뤾쉭??
+    // Apply SkillPresentation overrides to the transient SkillData used by this sequence.
     private void ApplyPresentationOverride(SkillData skill)
     {
         if (skill == null || _presentationCatalog == null) return;
         SkillPresentationData presentation = _presentationCatalog.Get(skill.skillIndex);
         if (presentation == null) return;
+
+        if (!string.IsNullOrWhiteSpace(presentation.ResolvedAnimationStateName))
+        {
+            skill.StateName = presentation.ResolvedAnimationStateName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(presentation.TargetAnimationTriggerOverride))
+        {
+            skill.TargetAnimationTrigger = presentation.TargetAnimationTriggerOverride.Trim();
+        }
 
         skill.UseAnimEvent = presentation.UseAnimEvent;
         skill.HitDelay     = presentation.HitDelay;
@@ -878,7 +886,7 @@ public class BattleManager : MonoBehaviour
         }
 
         skill = ResolveSkillAnimationData(skill);
-        ApplyPresentationOverride(skill); // [CSV 沃섎챷????袁⑸뻻]
+        ApplyPresentationOverride(skill);
         actor.EnsureAnimationController();
         CharactorAnimationController actorAnim = actor.Anim;
         actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
@@ -997,7 +1005,7 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ?용쵐肉???쎄텢: ??뽰읈 ?醫딅빍 1?? HitDelay ??뽰젎??????野???덈뻻 ??④봄夷?怨?筌왖, ??꾩뜎 ?袁⑹뜚 Idle 癰귣벀?.
+    /// ??�쵐?????�텢: ??뽰읈 ??�딅�?1?? HitDelay ??뽰젎???????????�뻻 ???�봄�???筌왖?, ??꾩뜎 ?袁⑹??Idle ?�귣벀?.
     /// </summary>
     internal IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks)
     {
@@ -1021,7 +1029,7 @@ public class BattleManager : MonoBehaviour
 
         BattleCharactor primaryTarget = leadContext.Target;
         SkillData skill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(leadContext));
-        ApplyPresentationOverride(skill); // [CSV 沃섎챷????袁⑸뻻]
+        ApplyPresentationOverride(skill);
         actor.EnsureAnimationController();
         CharactorAnimationController actorAnim = actor.Anim;
         actor.Anim?.SetAnimationSpeed(_currentBattleSpeed);
@@ -1241,7 +1249,7 @@ public class BattleManager : MonoBehaviour
 
         float counterRate = Mathf.Clamp01(target.FinalStats.CounterRate);
         return UnityEngine.Random.value < counterRate;
-        // (?醫뤾문) ??援끿뵳?筌ｋ똾寃? actor/target??GridCell 椰꾧퀡???源놁뵠 ?袁⑹뒄??롢늺 ??由???곕떽?
+        // (??�뤾�? ???�끿�?筌ｋ?�寃? actor/target??GridCell 椰꾧????源놁�??袁⑹???�?�� ??????곕떽?
     }
 
     private static string GetLabel(BattleCharactor unit)

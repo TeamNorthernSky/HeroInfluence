@@ -70,7 +70,7 @@ public class CharactorAnimationController : MonoBehaviour
             return;
         }
 
-        string stateName = ResolveSkillStateName(skill);
+        string stateName = GetTargetStateName(skill);
         if (string.IsNullOrEmpty(stateName))
         {
             return;
@@ -89,22 +89,13 @@ public class CharactorAnimationController : MonoBehaviour
             return string.Empty;
         }
 
-        int skillIdx = skill.skillIndex;
-        int animNumber = (skillIdx / 10) % 10;
-        if (animNumber == 0)
-        {
-            animNumber = 1;
-        }
-
-        return skillIdx >= 300000
-            ? $"WeaponSkill_{animNumber}"
-            : $"ClassSkill_{animNumber}";
+        return ResolveSkillStateName(skill);
     }
 
     /// <summary>근접 반격 연출용 CrossFade 상태명 (ClassSkill_1).</summary>
     public string GetCounterAttackStateName()
     {
-        return "ClassSkill_1";
+        return ResolveFallbackSkillStateName(0);
     }
 
     /// <summary>
@@ -158,17 +149,26 @@ public class CharactorAnimationController : MonoBehaviour
     {
         if (skill == null)
         {
-            return TriggerAttack;
+            return string.Empty;
         }
 
-        int skillIdx = skill.skillIndex;
-        int animNumber = (skillIdx / 10) % 10;
+        if (!string.IsNullOrWhiteSpace(skill.StateName))
+        {
+            return skill.StateName.Trim();
+        }
+
+        return ResolveFallbackSkillStateName(skill.skillIndex);
+    }
+
+    private static string ResolveFallbackSkillStateName(int skillIndex)
+    {
+        int animNumber = (skillIndex / 10) % 10;
         if (animNumber == 0)
         {
             animNumber = 1;
         }
 
-        return skillIdx >= 300000
+        return skillIndex >= 300000
             ? $"WeaponSkill_{animNumber}"
             : $"ClassSkill_{animNumber}";
     }
