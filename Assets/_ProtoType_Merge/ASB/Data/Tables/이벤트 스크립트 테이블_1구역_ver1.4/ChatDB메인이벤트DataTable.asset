@@ -55,7 +55,7 @@ MonoBehaviour:
     Next_Chat_ID: 1020060
     Branch_Group_ID: 0
   - Chat_ID: 1020060
-    Chat_Type: 0
+    Chat_Type: 1
     Char_Name: 
     Char_Profile: 
     Message_Text: "\uC608\uBE44 \uC778\uC6D0\uC774\uB098 \uD734\uAC00 \uC911\uC778
@@ -64,7 +64,7 @@ MonoBehaviour:
     Next_Chat_ID: 1020070
     Branch_Group_ID: 0
   - Chat_ID: 1020070
-    Chat_Type: 1
+    Chat_Type: 0
     Char_Name: "\uB8E8\uBBF8\uB098"
     Char_Profile: 
     Message_Text: "\uC5C6\uC5B4."
@@ -72,7 +72,7 @@ MonoBehaviour:
     Next_Chat_ID: 1020080
     Branch_Group_ID: 0
   - Chat_ID: 1020080
-    Chat_Type: 0
+    Chat_Type: 1
     Char_Name: 
     Char_Profile: 
     Message_Text: "\u2026\u2026"
@@ -288,7 +288,7 @@ MonoBehaviour:
     Next_Chat_ID: 1020330
     Branch_Group_ID: 0
   - Chat_ID: 1020330
-    Chat_Type: 0
+    Chat_Type: 2
     Char_Name: 
     Char_Profile: 
     Message_Text: "\u2026\u2026"
@@ -440,7 +440,7 @@ MonoBehaviour:
     Next_Chat_ID: 1030160
     Branch_Group_ID: 0
   - Chat_ID: 1030160
-    Chat_Type: 1
+    Chat_Type: 0
     Char_Name: "\uB124\uCF54\uBC0D"
     Char_Profile: 
     Message_Text: "\uB8E8\uBBF8\uB098\uC528? \uC5EC\uAE30\uC11C\uB294 \uAD00\uB9AC\uC790\uB2D8\uC758
@@ -457,7 +457,7 @@ MonoBehaviour:
     Next_Chat_ID: 0
     Branch_Group_ID: 10202
   - Chat_ID: 1030180
-    Chat_Type: 0
+    Chat_Type: 1
     Char_Name: 
     Char_Profile: 
     Message_Text: "\uC815\uBA74\uC5D0\uC11C \uBE60\uB974\uAC8C \uB3CC\uD30C\uD558\uC790."
@@ -906,7 +906,7 @@ MonoBehaviour:
     Next_Chat_ID: 1030720
     Branch_Group_ID: 0
   - Chat_ID: 1030720
-    Chat_Type: 2
+    Chat_Type: 0
     Char_Name: "\uB124\uCF54\uBC0D"
     Char_Profile: 
     Message_Text: 
@@ -2319,7 +2319,7 @@ MonoBehaviour:
     Next_Chat_ID: 1040340
     Branch_Group_ID: 0
   - Chat_ID: 1040340
-    Chat_Type: 0
+    Chat_Type: 2
     Char_Name: 
     Char_Profile: 
     Message_Text: "\uB2F9\uC2E0\uC740 \uCC28\uB9C8 \uADF8\uB4E4\uC774 \uC778\uC9C8\uC744

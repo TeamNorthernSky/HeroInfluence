@@ -17,6 +17,7 @@ public class ChatManager : MonoBehaviour
 
     private int currentZoneId;
     private ChatDBEventData currentChat;
+    private BranchDBEventData pendingAutoBranch;
 
     public event Action<ChatDBEventData> OnChatShown;
     public event Action<IReadOnlyList<ChatBranchOptionState>> OnBranchShown;
@@ -98,6 +99,14 @@ public class ChatManager : MonoBehaviour
             return;
         }
 
+        if (pendingAutoBranch != null)
+        {
+            BranchDBEventData autoBranch = pendingAutoBranch;
+            pendingAutoBranch = null;
+            SelectBranch(autoBranch);
+            return;
+        }
+
         if (currentChat.Next_Chat_ID <= 0)
         {
             EndChat();
@@ -146,6 +155,7 @@ public class ChatManager : MonoBehaviour
 
     private void SelectBranch(BranchDBEventData option)
     {
+        pendingAutoBranch = null;
         DHChatBranchRuleEvaluator.ExecuteTriggerEffect(option);
 
         if (option.Target_Talk_ID <= 0)
@@ -185,6 +195,7 @@ public class ChatManager : MonoBehaviour
         currentChat = null;
         currentOptions.Clear();
         currentOptionStates.Clear();
+        pendingAutoBranch = null;
         IsRunning = false;
 
         OnBranchShown?.Invoke(EmptyOptionStates);
@@ -207,6 +218,7 @@ public class ChatManager : MonoBehaviour
         currentChat = chat;
         currentOptions.Clear();
         currentOptionStates.Clear();
+        pendingAutoBranch = null;
         IsRunning = true;
 
         OnChatShown?.Invoke(chat);
@@ -234,7 +246,8 @@ public class ChatManager : MonoBehaviour
                 {
                     if (isAvailable)
                     {
-                        SelectBranch(option);
+                        pendingAutoBranch = option;
+                        OnBranchShown?.Invoke(EmptyOptionStates);
                         return;
                     }
 

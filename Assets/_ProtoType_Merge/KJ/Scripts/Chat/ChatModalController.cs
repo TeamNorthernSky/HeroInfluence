@@ -63,6 +63,11 @@ public class ChatModalController : MonoBehaviour
             return;
         }
 
+        if (current == null)
+        {
+            current = FindFirstObjectByType<ChatModalController>();
+        }
+
         if (current != null)
         {
             if (!current.gameObject.activeSelf) current.gameObject.SetActive(true);
@@ -92,6 +97,14 @@ public class ChatModalController : MonoBehaviour
 
     private void Awake()
     {
+        if (current != null && current != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        current = this;
+
         if (skipButton != null) skipButton.onClick.AddListener(OpenSkipConfirm);
         if (skipYesButton != null) skipYesButton.onClick.AddListener(Close);            // 예: 대화 종료
         if (skipNoButton != null) skipNoButton.onClick.AddListener(CloseSkipConfirm);   // 아니오: 팝업만
