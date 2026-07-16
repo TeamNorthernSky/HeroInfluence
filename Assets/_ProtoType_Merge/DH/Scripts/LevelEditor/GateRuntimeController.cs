@@ -8,6 +8,7 @@ public class GateRuntimeController : MonoBehaviour
     [SerializeField] private string secondZoneId;
     [SerializeField, Min(1)] private int openDurationTurns = 3;
     [SerializeField] private List<GameObject> blockerObjects = new List<GameObject>();
+    [SerializeField] private List<Vector2Int> blockerCells = new List<Vector2Int>();
     [SerializeField] private bool isOpen;
 
     private bool registeredThreat;
@@ -26,6 +27,8 @@ public class GateRuntimeController : MonoBehaviour
 
     private void OnDisable()
     {
+        UnregisterCurrentGateBlockers();
+
         if (registeredThreat && GateThreatController.Instance != null)
             GateThreatController.Instance.UnregisterGate(this);
 
@@ -41,20 +44,33 @@ public class GateRuntimeController : MonoBehaviour
         string nextFirstZoneId,
         string nextSecondZoneId,
         IEnumerable<GameObject> nextBlockers,
+        IEnumerable<Vector2Int> nextBlockerCells,
         int nextOpenDurationTurns)
     {
+        UnregisterCurrentGateBlockers();
+
         gateId = NormalizeId(nextGateId);
         firstZoneId = NormalizeId(nextFirstZoneId);
         secondZoneId = NormalizeId(nextSecondZoneId);
         openDurationTurns = Mathf.Max(1, nextOpenDurationTurns);
 
         blockerObjects.Clear();
+        blockerCells.Clear();
         if (nextBlockers != null)
         {
             foreach (GameObject blocker in nextBlockers)
             {
                 if (blocker != null && !blockerObjects.Contains(blocker))
                     blockerObjects.Add(blocker);
+            }
+        }
+
+        if (nextBlockerCells != null)
+        {
+            foreach (Vector2Int cell in nextBlockerCells)
+            {
+                if (!blockerCells.Contains(cell))
+                    blockerCells.Add(cell);
             }
         }
 
@@ -83,15 +99,27 @@ public class GateRuntimeController : MonoBehaviour
         if (gridManager == null)
             return;
 
-        for (int i = 0; i < blockerObjects.Count; i++)
+        if (blockerCells.Count > 0)
         {
-            GameObject blocker = blockerObjects[i];
-            if (blocker == null)
-                continue;
+            for (int i = 0; i < blockerCells.Count; i++)
+            {
+                Vector2Int cell = blockerCells[i];
+                if (!results.Contains(cell))
+                    results.Add(cell);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < blockerObjects.Count; i++)
+            {
+                GameObject blocker = blockerObjects[i];
+                if (blocker == null)
+                    continue;
 
-            Vector2Int cell = gridManager.WorldToGrid(blocker.transform.position);
-            if (!results.Contains(cell))
-                results.Add(cell);
+                Vector2Int cell = gridManager.WorldToGrid(blocker.transform.position);
+                if (!results.Contains(cell))
+                    results.Add(cell);
+            }
         }
 
         results.Sort(CompareGridCells);
@@ -142,12 +170,21 @@ public class GateRuntimeController : MonoBehaviour
 
     public void SetOpen(bool nextOpen, int day, bool saveProgress)
     {
+        bool wasOpen = isOpen;
         isOpen = nextOpen;
         for (int i = 0; i < blockerObjects.Count; i++)
         {
             GameObject blocker = blockerObjects[i];
             if (blocker != null)
                 blocker.SetActive(!isOpen);
+        }
+
+        if (wasOpen != isOpen || blockerCells.Count > 0)
+        {
+            if (isOpen)
+                UnregisterCurrentGateBlockers();
+            else
+                RegisterCurrentGateBlockers();
         }
 
         if (!saveProgress)
@@ -204,6 +241,24 @@ public class GateRuntimeController : MonoBehaviour
     private static GridManager ResolveGridManager()
     {
         return Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+    }
+
+    private void RegisterCurrentGateBlockers()
+    {
+        GridManager gridManager = ResolveGridManager();
+        if (gridManager == null)
+            return;
+
+        gridManager.RegisterGateBlockerCells(blockerCells);
+    }
+
+    private void UnregisterCurrentGateBlockers()
+    {
+        GridManager gridManager = ResolveGridManager();
+        if (gridManager == null)
+            return;
+
+        gridManager.UnregisterGateBlockerCells(blockerCells);
     }
 
     private static int ResolveCurrentDay()

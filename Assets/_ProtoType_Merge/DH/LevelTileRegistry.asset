@@ -25,3 +25,5 @@ MonoBehaviour:
     sprite: {fileID: 21300000, guid: d7261c9c54a3d82429629e440e4eb2fa, type: 3}
   - tileKey: tilemap_06
     sprite: {fileID: 21300000, guid: ea3e972d731d1964eb4c2c87d312935e, type: 3}
+  - tileKey: Obstacle
+    sprite: {fileID: 21300000, guid: cb0eb2e216e7ca444830f320ce29cf56, type: 3}

@@ -131,7 +131,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
     }
 
     public bool InitializeEnemyGroupFromCsv(
-        EnemyGroupData groupData,
+        DHEnemyGroupTemplate groupData,
         LevelPrefabRegistry prefabRegistry,
         Vector2Int initialGrid,
         EnemyBehaviorType behaviorType,
@@ -144,13 +144,13 @@ public class EnemyUnitBootstrap : MonoBehaviour
             behaviorType,
             placementKey,
             EnemyPlacementSource.Scene,
-            groupData != null ? groupData.EnemyIndex.ToString() : EnemyWorldState.DefaultPrefabKey,
+            groupData != null ? groupData.GroupIndex.ToString() : EnemyWorldState.DefaultPrefabKey,
             1,
             string.Empty);
     }
 
     public bool InitializeEnemyGroupFromCsv(
-        EnemyGroupData groupData,
+        DHEnemyGroupTemplate groupData,
         LevelPrefabRegistry prefabRegistry,
         Vector2Int initialGrid,
         EnemyBehaviorType behaviorType,
@@ -208,7 +208,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             return false;
         }
 
-        if (!ValidateCsvMembers(groupData.EnemyIndex, members, templateCatalog, prefabRegistry))
+        if (!ValidateCsvMembers(groupData.GroupIndex, members, templateCatalog, prefabRegistry))
             return false;
 
         ClearUnitStateChildren();
@@ -257,7 +257,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             enemyId,
             initialGrid,
             placementSource,
-            string.IsNullOrWhiteSpace(prefabKey) ? groupData.EnemyIndex.ToString() : prefabKey,
+            string.IsNullOrWhiteSpace(prefabKey) ? groupData.GroupIndex.ToString() : prefabKey,
             zoneId);
 
         RefreshFogVisibilityBinding();
@@ -484,19 +484,19 @@ public class EnemyUnitBootstrap : MonoBehaviour
         return ExplorationUnitLocalPositions[index];
     }
 
-    private static bool TryBuildCsvGroupMembers(EnemyGroupData groupData, out List<CsvEnemyGroupMember> members)
+    private static bool TryBuildCsvGroupMembers(DHEnemyGroupTemplate groupData, out List<CsvEnemyGroupMember> members)
     {
         members = new List<CsvEnemyGroupMember>(5);
 
-        if (groupData == null)
+        if (groupData == null || groupData.Members == null)
             return false;
 
-        if (!TryAddCsvMember(members, groupData.Enemy1, groupData.Enemy1Slot) ||
-            !TryAddCsvMember(members, groupData.Enemy2, groupData.Enemy2Slot) ||
-            !TryAddCsvMember(members, groupData.Enemy3, groupData.Enemy3Slot) ||
-            !TryAddCsvMember(members, groupData.Enemy4, groupData.Enemy4Slot) ||
-            !TryAddCsvMember(members, groupData.Enemy5, groupData.Enemy5Slot))
-            return false;
+        for (int i = 0; i < groupData.Members.Count; i++)
+        {
+            DHEnemyGroupMember member = groupData.Members[i];
+            if (!TryAddCsvMember(members, member.EnemyUnitIndex, member.CombatSlot))
+                return false;
+        }
 
         return members.Count > 0;
     }

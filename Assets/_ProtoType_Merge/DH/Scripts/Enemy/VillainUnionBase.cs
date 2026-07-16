@@ -202,7 +202,7 @@ public static class VillainUnionDefenderService
         if (enemyGroupRepository.ContainsEnemy(enemyId))
             return true;
 
-        if (!templateCatalog.TryGetEnemyGroup(villainUnionBase.DefenderEnemyGroupIndex, out EnemyGroupData groupData) ||
+        if (!templateCatalog.TryGetEnemyGroupTemplate(villainUnionBase.DefenderEnemyGroupIndex, out DHEnemyGroupTemplate groupData) ||
             !TryBuildCsvGroupMembers(groupData, out List<CsvEnemyGroupMember> members))
         {
             Debug.LogWarning(
@@ -271,19 +271,19 @@ public static class VillainUnionDefenderService
         enemyGroupRepository.RemoveEnemy(enemyId);
     }
 
-    private static bool TryBuildCsvGroupMembers(EnemyGroupData groupData, out List<CsvEnemyGroupMember> members)
+    private static bool TryBuildCsvGroupMembers(DHEnemyGroupTemplate groupData, out List<CsvEnemyGroupMember> members)
     {
         members = new List<CsvEnemyGroupMember>(5);
 
-        if (groupData == null)
+        if (groupData == null || groupData.Members == null)
             return false;
 
-        if (!TryAddCsvMember(members, groupData.Enemy1, groupData.Enemy1Slot) ||
-            !TryAddCsvMember(members, groupData.Enemy2, groupData.Enemy2Slot) ||
-            !TryAddCsvMember(members, groupData.Enemy3, groupData.Enemy3Slot) ||
-            !TryAddCsvMember(members, groupData.Enemy4, groupData.Enemy4Slot) ||
-            !TryAddCsvMember(members, groupData.Enemy5, groupData.Enemy5Slot))
-            return false;
+        for (int i = 0; i < groupData.Members.Count; i++)
+        {
+            DHEnemyGroupMember member = groupData.Members[i];
+            if (!TryAddCsvMember(members, member.EnemyUnitIndex, member.CombatSlot))
+                return false;
+        }
 
         return members.Count > 0;
     }

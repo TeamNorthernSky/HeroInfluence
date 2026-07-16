@@ -48,6 +48,8 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private bool clearExistingBeforeLoad = true;
     [SerializeField] private bool applyInEditMode = true;
     [SerializeField] private bool autoReloadOnValidate = true;
+    [SerializeField] private bool generateObstacleTileMeshes = true;
+    [SerializeField] private bool spawnObstaclePrefabs;
 
     public LevelData LevelData => levelData;
     public GridManager GridManager => gridManager;
@@ -149,12 +151,19 @@ public class LevelLoader : MonoBehaviour
 
     private void SpawnObstacles()
     {
+        gridManager?.RegisterLevelObstacleCells(levelData.ObstacleCells);
+        Transform parent = GetObstacleRoot(true);
+        if (generateObstacleTileMeshes)
+            tileMeshGenerator?.GenerateObstacleTiles(levelData, Vector2Int.zero, parent, false);
+
+        if (!spawnObstaclePrefabs)
+            return;
+
         GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
         if (obstaclePrefab == null)
             return;
 
         var obstacleCells = levelData.ObstacleCells;
-        Transform parent = GetObstacleRoot(true);
         for (int i = 0; i < obstacleCells.Count; i++)
         {
             SpawnGameObject(obstaclePrefab, obstacleCells[i], parent);
@@ -196,6 +205,7 @@ public class LevelLoader : MonoBehaviour
                 placement.FirstZoneId,
                 placement.SecondZoneId,
                 blockers,
+                blockerCells,
                 placement.OpenDurationTurns);
         }
     }
@@ -363,9 +373,9 @@ public class LevelLoader : MonoBehaviour
             if (Application.isPlaying && IsEnemyDefeated(placementKey))
                 continue;
 
-            EnemyGroupData groupData = null;
+            DHEnemyGroupTemplate groupData = null;
             if (Application.isPlaying &&
-                !templateCatalog.TryGetEnemyGroup(placement.EnemyGroupIndex, out groupData))
+                !templateCatalog.TryGetEnemyGroupTemplate(placement.EnemyGroupIndex, out groupData))
             {
                 Debug.LogWarning(
                     $"LevelLoader could not find an enemy group CSV index '{placement.EnemyGroupIndex}'.",
@@ -489,6 +499,9 @@ public class LevelLoader : MonoBehaviour
 
     private void ClearSpawnedObjects()
     {
+        gridManager?.ClearLevelObstacleCells();
+        gridManager?.ClearGateBlockerCells();
+
         if (tileMeshGenerator != null)
             tileMeshGenerator.ClearTileMeshes();
 
