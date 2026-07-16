@@ -6,18 +6,20 @@ using UnityEngine;
 [System.Serializable]
 public class EnemyGroupData
 {
-    public int EnemyIndex;
-    public int Enemy1;
-    public int Enemy1Slot;
-    public int Enemy2;
-    public int Enemy2Slot;
-    public int Enemy3;
-    public int Enemy3Slot;
-    public int Enemy4;
-    public int Enemy4Slot;
-    public int Enemy5;
-    public int Enemy5Slot;
+    public string EnemyIndex;
     public string EnemyGroupName;
+    public string Enemy1;
+    public int Enemy1Slot;
+    public string Enemy2;
+    public int Enemy2Slot;
+    public string Enemy3;
+    public int Enemy3Slot;
+    public string Enemy4;
+    public int Enemy4Slot;
+    public string Enemy5;
+    public int Enemy5Slot;
+    public string Enemy6;
+    public int Enemy6Slot;
     public int MinLevel;
     public int MaxLevel;
 }

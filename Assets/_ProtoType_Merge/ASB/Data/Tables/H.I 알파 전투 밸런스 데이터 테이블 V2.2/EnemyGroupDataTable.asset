@@ -1,0 +1,495 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad1bcbf5c1fd55f49b30ad9c9f8c2cc0, type: 3}
+  m_Name: EnemyGroupDataTable
+  m_EditorClassIdentifier: 
+  DataList:
+  - EnemyIndex: FEP001
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC870\uBB34\uB798\uAE30"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 3
+    Enemy3: 
+    Enemy3Slot: 0
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 1
+    MaxLevel: 1
+  - EnemyIndex: FEP002
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC870\uBB34\uB798\uAE30"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20002
+    Enemy2Slot: 5
+    Enemy3: 
+    Enemy3Slot: 0
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 1
+    MaxLevel: 1
+  - EnemyIndex: FEP003
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC870\uBB34\uB798\uAE30"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20001
+    Enemy2Slot: 4
+    Enemy3: FV20001
+    Enemy3Slot: 6
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 1
+    MaxLevel: 1
+  - EnemyIndex: FEP004S1
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 3
+    Enemy3: FV20002
+    Enemy3Slot: 4
+    Enemy4: FV20002
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 2
+    MaxLevel: 2
+  - EnemyIndex: FEP004S2
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 3
+    Enemy3: FV20002
+    Enemy3Slot: 4
+    Enemy4: FV20002
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 3
+    MaxLevel: 4
+  - EnemyIndex: FEP004S3
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 3
+    Enemy3: FV20002
+    Enemy3Slot: 4
+    Enemy4: FV20002
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 5
+    MaxLevel: 6
+  - EnemyIndex: FEP004S4
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 3
+    Enemy3: FV20002
+    Enemy3Slot: 4
+    Enemy4: FV20002
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 7
+    MaxLevel: 7
+  - EnemyIndex: FEP005S1
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 2
+    Enemy3: FV20003
+    Enemy3Slot: 3
+    Enemy4: FV20002
+    Enemy4Slot: 5
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 2
+    MaxLevel: 2
+  - EnemyIndex: FEP005S2
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 2
+    Enemy3: FV20003
+    Enemy3Slot: 3
+    Enemy4: FV20002
+    Enemy4Slot: 5
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 3
+    MaxLevel: 4
+  - EnemyIndex: FEP005S3
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 2
+    Enemy3: FV20003
+    Enemy3Slot: 3
+    Enemy4: FV20002
+    Enemy4Slot: 5
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 5
+    MaxLevel: 6
+  - EnemyIndex: FEP005S4
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 2
+    Enemy3: FV20003
+    Enemy3Slot: 3
+    Enemy4: FV20002
+    Enemy4Slot: 5
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 7
+    MaxLevel: 7
+  - EnemyIndex: FEP006S1
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20002
+    Enemy2Slot: 4
+    Enemy3: FV20002
+    Enemy3Slot: 5
+    Enemy4: FV20002
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 2
+    MaxLevel: 2
+  - EnemyIndex: FEP006S2
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20002
+    Enemy2Slot: 4
+    Enemy3: FV20002
+    Enemy3Slot: 5
+    Enemy4: FV20002
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 3
+    MaxLevel: 4
+  - EnemyIndex: FEP006S3
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20002
+    Enemy2Slot: 4
+    Enemy3: FV20002
+    Enemy3Slot: 5
+    Enemy4: FV20002
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 5
+    MaxLevel: 6
+  - EnemyIndex: FEP006S4
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20002
+    Enemy2Slot: 4
+    Enemy3: FV20002
+    Enemy3Slot: 5
+    Enemy4: FV20002
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 7
+    MaxLevel: 7
+  - EnemyIndex: FEP007S2
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uD3EC\uD0D1\uBCD1"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 3
+    Enemy3: FV20004
+    Enemy3Slot: 5
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 3
+    MaxLevel: 4
+  - EnemyIndex: FEP007S3
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uD3EC\uD0D1\uBCD1"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 3
+    Enemy3: FV20004
+    Enemy3Slot: 5
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 5
+    MaxLevel: 6
+  - EnemyIndex: FEP007S4
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uD3EC\uD0D1\uBCD1"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20003
+    Enemy2Slot: 3
+    Enemy3: FV20004
+    Enemy3Slot: 5
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 7
+    MaxLevel: 7
+  - EnemyIndex: FEP008S2
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uD3EC\uD0D1\uBCD1"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20004
+    Enemy2Slot: 4
+    Enemy3: FV20002
+    Enemy3Slot: 6
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 3
+    MaxLevel: 4
+  - EnemyIndex: FEP008S3
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uD3EC\uD0D1\uBCD1"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20004
+    Enemy2Slot: 4
+    Enemy3: FV20002
+    Enemy3Slot: 6
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 5
+    MaxLevel: 6
+  - EnemyIndex: FEP009S2
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uB4DC\uB860\uBD80\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20001
+    Enemy2Slot: 2
+    Enemy3: FV20003
+    Enemy3Slot: 3
+    Enemy4: FV20001
+    Enemy4Slot: 4
+    Enemy5: FV20001
+    Enemy5Slot: 5
+    Enemy6: FV20001
+    Enemy6Slot: 6
+    MinLevel: 3
+    MaxLevel: 4
+  - EnemyIndex: FEP009S3
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uB4DC\uB860\uBD80\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20001
+    Enemy2Slot: 2
+    Enemy3: FV20003
+    Enemy3Slot: 3
+    Enemy4: FV20001
+    Enemy4Slot: 4
+    Enemy5: FV20001
+    Enemy5Slot: 5
+    Enemy6: FV20001
+    Enemy6Slot: 6
+    MinLevel: 5
+    MaxLevel: 6
+  - EnemyIndex: FEP009S4
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uB4DC\uB860\uBD80\uB300"
+    Enemy1: FV20003
+    Enemy1Slot: 1
+    Enemy2: FV20001
+    Enemy2Slot: 2
+    Enemy3: FV20003
+    Enemy3Slot: 3
+    Enemy4: FV20001
+    Enemy4Slot: 4
+    Enemy5: FV20001
+    Enemy5Slot: 5
+    Enemy6: FV20001
+    Enemy6Slot: 6
+    MinLevel: 7
+    MaxLevel: 7
+  - EnemyIndex: FEP010S2
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uB4DC\uB860\uBD80\uB300"
+    Enemy1: FV20001
+    Enemy1Slot: 1
+    Enemy2: FV20001
+    Enemy2Slot: 2
+    Enemy3: FV20001
+    Enemy3Slot: 3
+    Enemy4: FV20002
+    Enemy4Slot: 4
+    Enemy5: FV20001
+    Enemy5Slot: 5
+    Enemy6: FV20002
+    Enemy6Slot: 6
+    MinLevel: 3
+    MaxLevel: 4
+  - EnemyIndex: FEP010S3
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uB4DC\uB860\uBD80\uB300"
+    Enemy1: FV20001
+    Enemy1Slot: 1
+    Enemy2: FV20001
+    Enemy2Slot: 2
+    Enemy3: FV20001
+    Enemy3Slot: 3
+    Enemy4: FV20002
+    Enemy4Slot: 4
+    Enemy5: FV20001
+    Enemy5Slot: 5
+    Enemy6: FV20002
+    Enemy6Slot: 6
+    MinLevel: 5
+    MaxLevel: 6
+  - EnemyIndex: FEP011S3
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC815\uC608 \uD3EC\uD0D1"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20001
+    Enemy2Slot: 4
+    Enemy3: FV20004
+    Enemy3Slot: 5
+    Enemy4: FV20001
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 5
+    MaxLevel: 6
+  - EnemyIndex: FEP011S4
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 \uC815\uC608 \uD3EC\uD0D1"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20001
+    Enemy2Slot: 4
+    Enemy3: FV20004
+    Enemy3Slot: 5
+    Enemy4: FV20001
+    Enemy4Slot: 6
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 7
+    MaxLevel: 7
+  - EnemyIndex: UMT001
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 UMT"
+    Enemy1: FV20005
+    Enemy1Slot: 2
+    Enemy2: 
+    Enemy2Slot: 0
+    Enemy3: 
+    Enemy3Slot: 0
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 2
+    MaxLevel: 3
+  - EnemyIndex: UMT002
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 UMT"
+    Enemy1: FV20003
+    Enemy1Slot: 2
+    Enemy2: FV20005
+    Enemy2Slot: 5
+    Enemy3: 
+    Enemy3Slot: 0
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 4
+    MaxLevel: 5
+  - EnemyIndex: UMT003
+    EnemyGroupName: "\uBE4C\uB7F0\uC5F0\uD569 UMT"
+    Enemy1: FV20005
+    Enemy1Slot: 2
+    Enemy2: FV20002
+    Enemy2Slot: 4
+    Enemy3: FV20002
+    Enemy3Slot: 6
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 6
+    MaxLevel: 7

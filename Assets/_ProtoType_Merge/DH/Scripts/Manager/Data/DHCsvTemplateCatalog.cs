@@ -637,7 +637,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             !TryAddEnemyGroupMember(template, src.Enemy2, src.Enemy2Slot) ||
             !TryAddEnemyGroupMember(template, src.Enemy3, src.Enemy3Slot) ||
             !TryAddEnemyGroupMember(template, src.Enemy4, src.Enemy4Slot) ||
-            !TryAddEnemyGroupMember(template, src.Enemy5, src.Enemy5Slot))
+            !TryAddEnemyGroupMember(template, src.Enemy5, src.Enemy5Slot) ||
+            !TryAddEnemyGroupMember(template, src.Enemy6, src.Enemy6Slot))
         {
             Debug.LogWarning($"[DHCsvTemplateCatalog] Enemy group '{src.EnemyIndex}' has invalid enemy member slot data.", this);
             return null;
@@ -670,13 +671,14 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return groupIndex > 0;
     }
 
-    private static bool TryAddEnemyGroupMember(DHEnemyGroupTemplate template, int enemyUnitIndex, int combatSlot)
+    private static bool TryAddEnemyGroupMember(DHEnemyGroupTemplate template, string enemyUnitCode, int combatSlot)
     {
         if (template == null)
         {
             return false;
         }
 
+        int enemyUnitIndex = ExtractNumericId(enemyUnitCode);
         if (enemyUnitIndex <= 0)
         {
             return true;

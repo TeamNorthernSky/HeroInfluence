@@ -745,10 +745,13 @@ namespace ASB.ExcelImport.Editor
 
         public static string SanitizeOutputAssetName(string raw, string fallback)
         {
-            string safe = CodeGenerator.ToTypeBaseName(raw);
+            // ToTypeBaseName returns "Sheet" for blank input. Treat a blank output
+            // name as missing first so tag-based sheets use their DataTable type name.
+            string source = string.IsNullOrWhiteSpace(raw) ? fallback : raw;
+            string safe = CodeGenerator.ToTypeBaseName(source);
             if (string.IsNullOrWhiteSpace(safe))
             {
-                safe = string.IsNullOrWhiteSpace(fallback) ? "SheetDataTable" : CodeGenerator.ToTypeBaseName(fallback);
+                safe = "SheetDataTable";
             }
 
             return safe;
