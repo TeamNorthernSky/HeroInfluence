@@ -9,6 +9,7 @@ public class BattleVisualDirector : MonoBehaviour
 {
     [SerializeField] private SkillPresentationCatalog _catalog;
     [SerializeField] private DamagePopupPresenter _popupPresenter;
+    [SerializeField] private EffectRegistry _effectRegistry;
 
     public SkillPresentationData GetPresentation(int skillIndex)
     {
@@ -18,37 +19,86 @@ public class BattleVisualDirector : MonoBehaviour
     public void PlayAttackEffect(BattleCharactor actor, int skillIndex)
     {
         SkillPresentationData presentation = _catalog?.Get(skillIndex);
-        if (presentation?.AttackEffectPrefab == null)
+        if (presentation == null)
         {
             return;
         }
 
         var profile = actor?.GetComponent<UnitVisualProfile>();
         Transform socket = profile?.AttackEffectSocket ?? actor?.transform;
-        if (socket == null)
+
+        // 공격 이펙트/사운드 id: Attack 페이즈 대표 beat 우선, 없으면 flat 필드 폴백.
+        int effectId = presentation.AttackEffectId;
+        int soundId = presentation.AttackSoundId;
+        if (presentation.Attack != null && presentation.Attack.Enabled
+            && presentation.Attack.Beats != null && presentation.Attack.Beats.Count > 0)
         {
-            return;
+            AttackBeat beat = presentation.Attack.Beats[0];
+            if (beat.EffectId != 0) effectId = beat.EffectId;
+            if (beat.SoundId != 0) soundId = beat.SoundId;
         }
 
-        Instantiate(presentation.AttackEffectPrefab, socket.position, socket.rotation);
+        if (presentation.EnableAttackEffect)
+        {
+            GameObject prefab = ResolveEffectPrefab(effectId, presentation.AttackEffectPrefab);
+            if (prefab != null && socket != null)
+            {
+                Instantiate(prefab, socket.position, socket.rotation);
+            }
+        }
+
+        PlaySound(soundId, presentation.AttackSfxClip, socket, presentation.SfxVolume);
     }
 
     public void PlayHitEffect(BattleCharactor target, int skillIndex)
     {
         SkillPresentationData presentation = _catalog?.Get(skillIndex);
-        if (presentation?.HitEffectPrefab == null)
+        if (presentation == null)
         {
             return;
         }
 
         var profile = target?.GetComponent<UnitVisualProfile>();
         Transform socket = profile?.HitEffectSocket ?? target?.transform;
-        if (socket == null)
+
+        if (presentation.EnableHitEffect)
+        {
+            GameObject prefab = ResolveEffectPrefab(presentation.HitEffectId, presentation.HitEffectPrefab);
+            if (prefab != null && socket != null)
+            {
+                Instantiate(prefab, socket.position, socket.rotation);
+            }
+        }
+
+        PlaySound(presentation.HitSoundId, presentation.HitSfxClip, socket, presentation.SfxVolume);
+    }
+
+    // 레지스트리 id 우선, 없으면 레거시 프리팹 폴백 (마이그레이션 브리지).
+    private GameObject ResolveEffectPrefab(int effectId, GameObject legacyPrefab)
+    {
+        GameObject fromRegistry = effectId != 0 ? _effectRegistry?.Get(effectId) : null;
+        return fromRegistry != null ? fromRegistry : legacyPrefab;
+    }
+
+    // SoundRegistry id 우선, 없으면 레거시 AudioClip 폴백. 전투 로직은 건드리지 않음.
+    private void PlaySound(int soundId, AudioClip legacyClip, Transform at, float volume)
+    {
+        if (SoundManager.Instance == null)
         {
             return;
         }
 
-        Instantiate(presentation.HitEffectPrefab, socket.position, socket.rotation);
+        Vector3 pos = at != null ? at.position : Vector3.zero;
+        if (soundId != 0)
+        {
+            SoundManager.Instance.PlayById(soundId, pos, volume);
+            return;
+        }
+
+        if (legacyClip != null)
+        {
+            SoundManager.Instance.PlayClip(legacyClip, pos, volume);
+        }
     }
 
     public void ShowDamagePopup(BattleHitResult result)

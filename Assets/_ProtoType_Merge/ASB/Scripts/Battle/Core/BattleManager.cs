@@ -9,7 +9,7 @@ using ASB.Work.Battle.Sequence;
 using PrimeTween;
 
 /// <summary>
-/// ?꾪닾 ??�뻾????�궗 寃곌???곸슜????�???�땲?? ?�?吏????�?target.TakeDamage�??곸슜??�땲??
+/// BattleAction 및 플레이어 입력에 의한 전투 실행. 데미지는 항상 target.TakeDamage로 적용합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public class BattleManager : MonoBehaviour
@@ -17,7 +17,7 @@ public class BattleManager : MonoBehaviour
     public static BattleManager Instance { get; private set; }
     public event Action<string> OnActionExecuted;
 
-    /// <summary>UI ???�???????�쏄????�궰??�껋?????�욧??????�쏆뮇源???�땁???�뼄. AutoBattleController.OnAutoBattleToggleRequested?? ???�뵬???????</summary>
+    /// <summary>UI 등 외부에서 배속 변경을 요청할 때 발생시킵니다. AutoBattleController.OnAutoBattleToggleRequested와 동일한 패턴.</summary>
     public static event Action<float> OnBattleSpeedChangeRequested;
 
     private const int ClassSkillEffect_Heal = 1;
@@ -77,7 +77,7 @@ public class BattleManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("[BattleManager] 餓λ쵎???紐꾨�??곷뮞?�쎛? ?�쏅Ŋ???�????�??");
+            Debug.LogWarning("[BattleManager] 중복 인스턴스가 감지되었습니다.");
         }
 
         Instance = this;
@@ -166,8 +166,8 @@ public class BattleManager : MonoBehaviour
         onBattleElapsed?.Invoke(Mathf.Min(elapsed, timeoutSeconds));
     }
 
-    // TODO: ?袁る??VFX Instantiate ?�껋?�以?�첎? ?곕떽???�?�� ??밴쉐 筌욊???ApplyBattleSpeedToVfx(vfxInstance)???紐꾪???뤾쉭??
-    // ?袁⑹??TmpBattleScene ?袁る?????�쾿?�?????�?ParticleSystem ???�텢 ??꾨읃??Instantiate ?꾨�?�?���? ??곷�????�뼄.
+    // TODO: 전투 VFX Instantiate 경로가 추가되면 생성 직후 ApplyBattleSpeedToVfx(vfxInstance)를 호출하세요.
+    // 현재 TmpBattleScene 전투 스크립트에는 ParticleSystem 스킬 이펙트 Instantiate 코드가 없습니다.
     private void ApplyBattleSpeedToVfx(GameObject vfxInstance)
     {
         if (vfxInstance == null)
@@ -206,7 +206,7 @@ public class BattleManager : MonoBehaviour
             return BattleHitResult.Empty(context?.Target);
         }
 
-        // ???�뼊 ???�뱜 筌욊?�六?�???�????�껋?�肉??????袁⑸�????�꺿�? ??�똻???몃빍??
+        // 다단 히트 진행 중 사망 타겟에 대한 후속 타격은 무시합니다.
         if (context.Target.IsDead)
         {
             return BattleHitResult.Empty(context.Target);
@@ -232,8 +232,8 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ?��?지 ?�치/치명?�/?�망 ?��?�??�수 계산?�니?? target.TakeDamage�??�출?��? ?�아 HP�?건드리�? ?�습?�다.
-    /// ?�출 ??조립 ?�에 ?�벤??DamageEvent/DeathEvent)�?먼�? 기록?�기 ?�해 ?�용?�니??
+    /// 데미지 수치/치명타/사망 여부만 순수 계산합니다. target.TakeDamage를 호출하지 않아 HP를 건드리지 않습니다.
+    /// 연출 큐 조립 전에 이벤트(DamageEvent/DeathEvent)를 먼저 기록하기 위해 사용합니다.
     /// </summary>
     private BattleHitResult PredictDamage(DamageContext context)
     {
@@ -264,8 +264,8 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// PredictDamage�?미리 계산???�치�??�제 target.TakeDamage�?반영?�니??
-    /// ?�출 ?�?�밍(ResolveHitAction/AoEApplyDamageAction 콜백)?�서 ?�출?�어 HP�?갱신 ?�점???��??�니??
+    /// PredictDamage로 미리 계산된 수치를 실제 target.TakeDamage로 반영합니다.
+    /// 연출 타이밍(ResolveHitAction/AoEApplyDamageAction 콜백)에서 호출되어 HP바 갱신 시점을 유지합니다.
     /// </summary>
     private BattleHitResult CommitDamage(DamageContext context, BattleHitResult predicted)
     {
@@ -462,7 +462,7 @@ public class BattleManager : MonoBehaviour
         SkillEffectHelper.ApplyStatusEffect(context);
     }
 
-    /// <summary>ClassSkillSheet ??깆벥 skillValue(?? 1.2 = 120%)???�밸�??????�텢 ???�퉸????�쑴�??몃빍??</summary>
+    /// <summary>ClassSkillSheet 행의 skillValue(예: 1.2 = 120%)를 배율로 적용해 클래스 스킬을 실행합니다.</summary>
     public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted = null)
     {
         if (classSkillRow == null || actor == null || target == null)
@@ -492,7 +492,7 @@ public class BattleManager : MonoBehaviour
 
         if (!TryConsumeSkillInfluence(actor, classSkillRow))
         {
-            Debug.LogWarning("[BattleManager] Influence?�쎛? ?봔?�곌?�釉?????�텢???????????곷�????�뼄.");
+            Debug.LogWarning("[BattleManager] Influence가 부족하여 스킬을 사용할 수 없습니다.");
             onCompleted?.Invoke(false);
             yield break;
         }
@@ -544,7 +544,7 @@ public class BattleManager : MonoBehaviour
                 || skill.classSkillEffect == ClassSkillEffect_Revive
                 || skill.classSkillEffect == ClassSkillEffect_Buff)
             {
-                Debug.Log($"[Combat] {defender.UnitName} ?�쏆꼵爰????�텢({skill.skillIndex})?????筌왖? ???�텢???袁⑤�??곴퐣 ?�쏆꼵爰???뽰뇚");
+                Debug.Log($"[Combat] {defender.UnitName} 반격 스킬({skill.skillIndex})이 데미지 스킬이 아니어서 반격 제외");
                 continue;
             }
 
@@ -572,10 +572,10 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"[Combat] {req.Defender.UnitName} ?��?????�쏆꼵爰??�쏆뮆猷? (??�쑴??0.5)");
+        Debug.Log($"[Combat] {req.Defender.UnitName} 근접 반격 발동! (계수 0.5)");
 
-        // ?�쏆꼵爰?? ??�끉??? ?紐껊�??? ??�똻????�??�꿸??????筌왖? ?�껋?�以?�쭕??????몃빍??
-        // Influence ???�???곸벉, ???筌왖? ??�쑴??0.5, ?�쏆꼵爰?? ?�쏆꼵爰????�딆�??? ???��????�뼄.
+        // 반격은 커스텀 핸들러를 무시하고 기본 데미지 경로만 사용합니다.
+        // Influence 소모 없음, 데미지 계수 0.5, 반격은 반격을 유발하지 않습니다.
         SkillExecutionResult result = BuildDefaultSkillResult(
             req.Defender,
             req.OriginalCaster,
@@ -587,7 +587,7 @@ public class BattleManager : MonoBehaviour
 
         if (!executed)
         {
-            Debug.LogWarning($"[BattleManager] {req.Defender.UnitName} ?�쏆꼵爰????�뻬 ???�솭.");
+            Debug.LogWarning($"[BattleManager] {req.Defender.UnitName} 반격 실행 실패.");
         }
     }
 
@@ -648,7 +648,7 @@ public class BattleManager : MonoBehaviour
             return false;
         }
 
-        // ?�꿸?????��???? ExecuteBasicAttack ?�껋?�以?�에??브쑬???뤿선 ???�선 ???�경?????�선??? ???��????�뼄.
+        // 기본 공격은 ExecuteBasicAttack 경로로 분리되어 있어 여기로 들어오지 않습니다.
         float cost = Mathf.Max(0f, skillData.IPCost);
         return actor.TryConsumeInfluence(cost);
     }
@@ -749,9 +749,14 @@ public class BattleManager : MonoBehaviour
         SkillPresentationData presentation = _presentationCatalog.Get(skill.skillIndex);
         if (presentation == null) return;
 
-        if (!string.IsNullOrWhiteSpace(presentation.ResolvedAnimationStateName))
+        AttackBeat beat = GetPrimaryAttackBeat(presentation);
+
+        string stateName = beat != null && !string.IsNullOrWhiteSpace(beat.AnimationStateName)
+            ? beat.AnimationStateName.Trim()
+            : presentation.ResolvedAnimationStateName;
+        if (!string.IsNullOrWhiteSpace(stateName))
         {
-            skill.StateName = presentation.ResolvedAnimationStateName;
+            skill.StateName = stateName;
         }
 
         if (!string.IsNullOrWhiteSpace(presentation.TargetAnimationTriggerOverride))
@@ -759,8 +764,20 @@ public class BattleManager : MonoBehaviour
             skill.TargetAnimationTrigger = presentation.TargetAnimationTriggerOverride.Trim();
         }
 
-        skill.UseAnimEvent = presentation.UseAnimEvent;
-        skill.HitDelay     = presentation.HitDelay;
+        HitTimingSettings timing = beat?.HitTiming;
+        skill.UseAnimEvent = timing != null ? timing.UseAnimEvent : presentation.UseAnimEvent;
+        skill.HitDelay     = timing != null ? timing.HitDelay     : presentation.HitDelay;
+    }
+
+    private static AttackBeat GetPrimaryAttackBeat(SkillPresentationData presentation)
+    {
+        if (presentation?.Attack != null && presentation.Attack.Enabled
+            && presentation.Attack.Beats != null && presentation.Attack.Beats.Count > 0)
+        {
+            return presentation.Attack.Beats[0];
+        }
+
+        return null;
     }
 
     private static SkillData ResolveSkillAnimationData(SkillData source)
@@ -782,7 +799,7 @@ public class BattleManager : MonoBehaviour
             return copy;
         }
 
-        return source;
+        return CloneSkillDataForAnimation(source);
     }
 
     private static SkillData CloneSkillDataForAnimation(SkillData source)
@@ -901,12 +918,18 @@ public class BattleManager : MonoBehaviour
             ? (skill?.ResolvedTargetAnimationTrigger ?? "Hit")
             : null;
 
+        SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
+        bool moveEnabled       = presentation?.Move?.Enabled ?? true;
+        bool attackPrepEnabled = presentation?.AttackPrepare?.Enabled ?? true;
+        bool returnEnabled     = presentation?.Return?.Enabled ?? true;
+
         float sequenceBattleElapsed = 0f;
         var runner = new ActionSequenceRunner();
 
-        EnqueueSkillApproach(runner, actor, target, actorAnim, movement, shouldMove, shouldRotate);
+        if (moveEnabled)
+            EnqueueSkillApproach(runner, actor, target, actorAnim, movement, shouldMove, shouldRotate);
 
-        if (_visualDirector != null && skill != null)
+        if (attackPrepEnabled && _visualDirector != null && skill != null)
             runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
 
         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
@@ -925,7 +948,8 @@ public class BattleManager : MonoBehaviour
         if (!string.IsNullOrEmpty(targetState))
             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
 
-        EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
+        if (returnEnabled)
+            EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
 
         runner.Enqueue(new ReturnToIdleAction(actor));
 
@@ -1005,7 +1029,7 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// ??�쵐?????�텢: ??뽰읈 ??�딅�?1?? HitDelay ??뽰젎???????????�뻻 ???�봄�???筌왖?, ??꾩뜎 ?袁⑹??Idle ?�귣벀?.
+    /// 광역 스킬: 시전 애니 1회, HitDelay 시점에 전 타겟 동시 피격·데미지, 이후 전원 Idle 복귀.
     /// </summary>
     internal IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks)
     {
@@ -1040,12 +1064,18 @@ public class BattleManager : MonoBehaviour
 
         ResolveSkillMovement(actor, primaryTarget, skill, out UnitMovementProfile movement, out bool shouldMove, out bool shouldRotate, out Vector3 originPosition, out float originRotationY);
 
+        SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
+        bool moveEnabled       = presentation?.Move?.Enabled ?? true;
+        bool attackPrepEnabled = presentation?.AttackPrepare?.Enabled ?? true;
+        bool returnEnabled     = presentation?.Return?.Enabled ?? true;
+
         float sequenceBattleElapsed = 0f;
         var runner = new ActionSequenceRunner();
 
-        EnqueueSkillApproach(runner, actor, primaryTarget, actorAnim, movement, shouldMove, shouldRotate);
+        if (moveEnabled)
+            EnqueueSkillApproach(runner, actor, primaryTarget, actorAnim, movement, shouldMove, shouldRotate);
 
-        if (_visualDirector != null && skill != null)
+        if (attackPrepEnabled && _visualDirector != null && skill != null)
             runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
 
         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, false));
@@ -1055,7 +1085,8 @@ public class BattleManager : MonoBehaviour
         if (!string.IsNullOrEmpty(targetState))
             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
 
-        EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
+        if (returnEnabled)
+            EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
 
         runner.Enqueue(new ReturnToIdleAction(actor));
 
@@ -1249,7 +1280,7 @@ public class BattleManager : MonoBehaviour
 
         float counterRate = Mathf.Clamp01(target.FinalStats.CounterRate);
         return UnityEngine.Random.value < counterRate;
-        // (??�뤾�? ???�끿�?筌ｋ?�寃? actor/target??GridCell 椰꾧????源놁�??袁⑹???�?�� ??????곕떽?
+        // (선택) 사거리 체크: actor/target의 GridCell 거리 등이 필요하면 여기에 추가
     }
 
     private static string GetLabel(BattleCharactor unit)
