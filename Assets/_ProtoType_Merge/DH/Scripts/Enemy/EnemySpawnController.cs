@@ -346,7 +346,7 @@ public class EnemySpawnController : MonoBehaviour
             return false;
         }
 
-        if (!templateCatalog.TryGetEnemyGroup(enemyGroupIndex, out EnemyGroupData groupData))
+        if (!templateCatalog.TryGetEnemyGroupTemplate(enemyGroupIndex, out DHEnemyGroupTemplate groupData))
         {
             Debug.LogWarning($"EnemySpawnController could not find an enemy group CSV index '{enemyGroupIndex}'.", this);
             return false;

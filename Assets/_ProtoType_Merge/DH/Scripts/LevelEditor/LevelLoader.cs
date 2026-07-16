@@ -373,9 +373,9 @@ public class LevelLoader : MonoBehaviour
             if (Application.isPlaying && IsEnemyDefeated(placementKey))
                 continue;
 
-            EnemyGroupData groupData = null;
+            DHEnemyGroupTemplate groupData = null;
             if (Application.isPlaying &&
-                !templateCatalog.TryGetEnemyGroup(placement.EnemyGroupIndex, out groupData))
+                !templateCatalog.TryGetEnemyGroupTemplate(placement.EnemyGroupIndex, out groupData))
             {
                 Debug.LogWarning(
                     $"LevelLoader could not find an enemy group CSV index '{placement.EnemyGroupIndex}'.",

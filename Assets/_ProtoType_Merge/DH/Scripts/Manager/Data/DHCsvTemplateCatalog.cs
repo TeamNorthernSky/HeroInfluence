@@ -34,7 +34,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<int,    WeaponData>        weaponLookup         = new Dictionary<int, WeaponData>();
     private readonly Dictionary<int,    SkillData>         skillTemplates       = new Dictionary<int, SkillData>();
     private readonly List<LevelUpData>                     levelUpTemplates     = new List<LevelUpData>();
-    private readonly Dictionary<int,    EnemyGroupData>    enemyGroupLookup     = new Dictionary<int, EnemyGroupData>();
+    private readonly Dictionary<int,    DHEnemyGroupTemplate> enemyGroupLookup  = new Dictionary<int, DHEnemyGroupTemplate>();
 
     // 레벨별 수치 조회용 마스터 캐시 (SO 원본 보관)
     private readonly Dictionary<int, PlayerUnitData>   playerUnitMasterMap = new Dictionary<int, PlayerUnitData>();
@@ -315,7 +315,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return result;
     }
 
-    public bool TryGetEnemyGroup(int groupIndex, out EnemyGroupData group)
+    public bool TryGetEnemyGroupTemplate(int groupIndex, out DHEnemyGroupTemplate group)
     {
         EnsureLoaded();
         return enemyGroupLookup.TryGetValue(groupIndex, out group);
@@ -354,10 +354,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return result;
     }
 
-    public List<EnemyGroupData> GetAllEnemyGroups()
+    public List<DHEnemyGroupTemplate> GetAllEnemyGroupTemplates()
     {
         EnsureLoaded();
-        return new List<EnemyGroupData>(enemyGroupLookup.Values);
+        return new List<DHEnemyGroupTemplate>(enemyGroupLookup.Values);
     }
 
     public List<SkillData> GetSkillsByClass(string className)
@@ -508,13 +508,14 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             for (int i = 0; i < enemyGroupDataTable.DataList.Count; i++)
             {
                 EnemyGroupData group = enemyGroupDataTable.DataList[i];
-                if (group == null) continue;
-                if (enemyGroupLookup.ContainsKey(group.EnemyIndex))
+                DHEnemyGroupTemplate template = ConvertEnemyGroup(group);
+                if (template == null) continue;
+                if (enemyGroupLookup.ContainsKey(template.GroupIndex))
                 {
                     Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 적 그룹 인덱스 {group.EnemyIndex} 건너뜀.", this);
                     continue;
                 }
-                enemyGroupLookup.Add(group.EnemyIndex, group);
+                enemyGroupLookup.Add(template.GroupIndex, template);
             }
         }
 
@@ -610,6 +611,93 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     // ─────────────────────────────────────────────────────────
     // SO → 기존 타입 변환 메서드
     // ─────────────────────────────────────────────────────────
+
+    private DHEnemyGroupTemplate ConvertEnemyGroup(EnemyGroupData src)
+    {
+        if (src == null)
+        {
+            return null;
+        }
+
+        if (!TryParseEnemyGroupIndex(src.EnemyIndex, out int groupIndex))
+        {
+            Debug.LogWarning($"[DHCsvTemplateCatalog] Enemy group index '{src.EnemyIndex}' is invalid.", this);
+            return null;
+        }
+
+        var template = new DHEnemyGroupTemplate
+        {
+            GroupIndex = groupIndex,
+            GroupName = src.EnemyGroupName,
+            MinLevel = src.MinLevel,
+            MaxLevel = src.MaxLevel
+        };
+
+        if (!TryAddEnemyGroupMember(template, src.Enemy1, src.Enemy1Slot) ||
+            !TryAddEnemyGroupMember(template, src.Enemy2, src.Enemy2Slot) ||
+            !TryAddEnemyGroupMember(template, src.Enemy3, src.Enemy3Slot) ||
+            !TryAddEnemyGroupMember(template, src.Enemy4, src.Enemy4Slot) ||
+            !TryAddEnemyGroupMember(template, src.Enemy5, src.Enemy5Slot))
+        {
+            Debug.LogWarning($"[DHCsvTemplateCatalog] Enemy group '{src.EnemyIndex}' has invalid enemy member slot data.", this);
+            return null;
+        }
+
+        return template.Members.Count > 0 ? template : null;
+    }
+
+    private static bool TryParseEnemyGroupIndex(int value, out int groupIndex)
+    {
+        groupIndex = value;
+        return groupIndex > 0;
+    }
+
+    private static bool TryParseEnemyGroupIndex(string value, out int groupIndex)
+    {
+        groupIndex = 0;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        if (int.TryParse(value.Trim(), out groupIndex))
+        {
+            return groupIndex > 0;
+        }
+
+        groupIndex = ExtractNumericId(value);
+        return groupIndex > 0;
+    }
+
+    private static bool TryAddEnemyGroupMember(DHEnemyGroupTemplate template, int enemyUnitIndex, int combatSlot)
+    {
+        if (template == null)
+        {
+            return false;
+        }
+
+        if (enemyUnitIndex <= 0)
+        {
+            return true;
+        }
+
+        if (combatSlot < 1 || combatSlot > 6)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < template.Members.Count; i++)
+        {
+            if (template.Members[i].CombatSlot == combatSlot)
+            {
+                return false;
+            }
+        }
+
+        template.Members.Add(new DHEnemyGroupMember(enemyUnitIndex, combatSlot));
+        return true;
+    }
 
     private static UnitData ConvertPlayerUnit(PlayerUnitData src)
     {
