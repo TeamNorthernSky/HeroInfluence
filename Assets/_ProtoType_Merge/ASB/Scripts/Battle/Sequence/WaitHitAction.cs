@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
@@ -37,7 +36,7 @@ namespace ASB.Work.Battle.Sequence
 
             if (_skill.UseAnimEvent)
             {
-                while (_anim != null && !_anim.IsHitEventReached && elapsed < _animEventTimeout)
+                while (_anim != null && !_anim.HasHitSinceWaitBegan && elapsed < _animEventTimeout)
                 {
                     elapsed += Time.deltaTime * _battleSpeed;
                     yield return null;

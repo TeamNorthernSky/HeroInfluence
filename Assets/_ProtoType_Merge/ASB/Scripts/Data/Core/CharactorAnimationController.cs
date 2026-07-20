@@ -26,6 +26,10 @@ public class CharactorAnimationController : MonoBehaviour
 
     public bool IsHitEventReached { get; private set; }
 
+    /// <summary>타격(AniEvent_OnHit) 누적 횟수. 단조 증가하며 절대 초기화하지 않습니다. 다단히트 판정용.</summary>
+    public int HitEventCount { get; private set; }
+    private int _hitWaitBaseline;
+
     public void SetAnimationSpeed(float speedMultiplier)
     {
         CurrentAnimSpeed = Mathf.Max(0.01f, speedMultiplier);
@@ -49,10 +53,21 @@ public class CharactorAnimationController : MonoBehaviour
         }
     }
 
+    /// <summary>하위호환용 bool만 초기화합니다. HitEventCount는 건드리지 않습니다.</summary>
     public void ResetHitEvent() => IsHitEventReached = false;
 
+    /// <summary>WaitHitAction이 대기 시작 전(애니 재생 직전)에 호출해 현재 HitEventCount를 baseline으로 기록합니다.</summary>
+    public void BeginHitWait() => _hitWaitBaseline = HitEventCount;
+
+    /// <summary>BeginHitWait 이후 새 타격 이벤트가 도착했는지. WaitHitAction 완료 판정에 사용합니다.</summary>
+    public bool HasHitSinceWaitBegan => HitEventCount > _hitWaitBaseline;
+
     /// <summary>Unity Animation Event에서 호출 (함수명: AniEvent_OnHit). model 브리지에서도 전달됩니다.</summary>
-    public void AniEvent_OnHit() => IsHitEventReached = true;
+    public void AniEvent_OnHit()
+    {
+        HitEventCount++;
+        IsHitEventReached = true;
+    }
 
     /// <summary>
     /// 스킬 인덱스 규칙에 따라 ClassSkill_N / WeaponSkill_N 상태로 CrossFade 하거나, null이면 기본 공격 트리거를 실행합니다.

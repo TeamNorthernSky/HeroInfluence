@@ -28,6 +28,7 @@ namespace ASB.Work.Battle.Sequence
             _actor?.GetComponent<UnitVisualProfile>()?.HoldArrow?.SetActive(true);
 
             _anim?.ResetHitEvent();
+            _anim?.BeginHitWait(); // 애니 재생 전 HitEventCount baseline 기록 (첫 프레임 이벤트 누락 방지)
             _anim?.PlaySkillAnimation(_playBasicAttack ? null : _skill);
             yield break;
         }
