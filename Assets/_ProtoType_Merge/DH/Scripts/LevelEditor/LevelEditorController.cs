@@ -22,7 +22,8 @@ public class LevelEditorController : MonoBehaviour
     [FormerlySerializedAs("minePreset")]
     [SerializeField] private OutpostPlacementPreset outpostPreset;
     [SerializeField] private EventPlacementPreset eventPreset;
-    [SerializeField, Min(1)] private int enemyGroupIndex = 30001;
+    [FormerlySerializedAs("enemyGroupIndex")]
+    [SerializeField] private string enemyGroupKey = "FEP001";
     [SerializeField] private EnemyBehaviorType enemyBehaviorType = EnemyBehaviorType.Mobile;
     [SerializeField] private LevelTileRegistry tileRegistry;
     [SerializeField] private string selectedTileKey;
@@ -67,7 +68,7 @@ public class LevelEditorController : MonoBehaviour
     public ItemPlacementPreset ItemPreset => itemPreset;
     public OutpostPlacementPreset OutpostPreset => outpostPreset;
     public EventPlacementPreset EventPreset => eventPreset;
-    public int EnemyGroupIndex => Mathf.Max(1, enemyGroupIndex);
+    public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
     public EnemyBehaviorType EnemyBehaviorType => enemyBehaviorType;
     public LevelTileRegistry TileRegistry => tileRegistry;
     public string SelectedTileKey => selectedTileKey;
@@ -166,7 +167,7 @@ public class LevelEditorController : MonoBehaviour
                     eventPreset.EffectAmount);
                 break;
             case LevelEditorBrushType.EnemyGroup:
-                levelData.SetEnemyPlacement(grid, EnemyGroupIndex, enemyBehaviorType);
+                levelData.SetEnemyPlacement(grid, EnemyGroupKey, enemyBehaviorType);
                 break;
             case LevelEditorBrushType.GroundTile:
                 if (string.IsNullOrWhiteSpace(selectedTileKey))

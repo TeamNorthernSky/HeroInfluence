@@ -34,7 +34,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<int,    WeaponData>        weaponLookup         = new Dictionary<int, WeaponData>();
     private readonly Dictionary<int,    SkillData>         skillTemplates       = new Dictionary<int, SkillData>();
     private readonly List<LevelUpData>                     levelUpTemplates     = new List<LevelUpData>();
-    private readonly Dictionary<int,    DHEnemyGroupTemplate> enemyGroupLookup  = new Dictionary<int, DHEnemyGroupTemplate>();
+    private readonly Dictionary<string, DHEnemyGroupTemplate> enemyGroupLookup  = new Dictionary<string, DHEnemyGroupTemplate>();
 
     // 레벨별 수치 조회용 마스터 캐시 (SO 원본 보관)
     private readonly Dictionary<int, PlayerUnitData>   playerUnitMasterMap = new Dictionary<int, PlayerUnitData>();
@@ -315,10 +315,22 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return result;
     }
 
-    public bool TryGetEnemyGroupTemplate(int groupIndex, out DHEnemyGroupTemplate group)
+    public bool TryGetEnemyGroupTemplate(string groupKey, out DHEnemyGroupTemplate group)
     {
         EnsureLoaded();
-        return enemyGroupLookup.TryGetValue(groupIndex, out group);
+        string normalizedKey = NormalizeEnemyGroupKey(groupKey);
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+        {
+            group = null;
+            return false;
+        }
+
+        return enemyGroupLookup.TryGetValue(normalizedKey, out group);
+    }
+
+    public bool TryGetEnemyGroupTemplate(int groupIndex, out DHEnemyGroupTemplate group)
+    {
+        return TryGetEnemyGroupTemplate(groupIndex.ToString(), out group);
     }
 
     /// <summary>classIndex 유닛이 currentLevel 이하에서 해금한 skillIndex 전체 목록.</summary>
@@ -510,12 +522,12 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 EnemyGroupData group = enemyGroupDataTable.DataList[i];
                 DHEnemyGroupTemplate template = ConvertEnemyGroup(group);
                 if (template == null) continue;
-                if (enemyGroupLookup.ContainsKey(template.GroupIndex))
+                if (enemyGroupLookup.ContainsKey(template.GroupKey))
                 {
                     Debug.LogWarning($"[DHCsvTemplateCatalog] 중복 적 그룹 인덱스 {group.EnemyIndex} 건너뜀.", this);
                     continue;
                 }
-                enemyGroupLookup.Add(template.GroupIndex, template);
+                enemyGroupLookup.Add(template.GroupKey, template);
             }
         }
 
@@ -619,7 +631,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             return null;
         }
 
-        if (!TryParseEnemyGroupIndex(src.EnemyIndex, out int groupIndex))
+        string groupKey = NormalizeEnemyGroupKey(src.EnemyIndex);
+        if (string.IsNullOrWhiteSpace(groupKey))
         {
             Debug.LogWarning($"[DHCsvTemplateCatalog] Enemy group index '{src.EnemyIndex}' is invalid.", this);
             return null;
@@ -627,7 +640,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
         var template = new DHEnemyGroupTemplate
         {
-            GroupIndex = groupIndex,
+            GroupKey = groupKey,
             GroupName = src.EnemyGroupName,
             MinLevel = src.MinLevel,
             MaxLevel = src.MaxLevel
@@ -647,28 +660,14 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return template.Members.Count > 0 ? template : null;
     }
 
-    private static bool TryParseEnemyGroupIndex(int value, out int groupIndex)
+    private static string NormalizeEnemyGroupKey(string value)
     {
-        groupIndex = value;
-        return groupIndex > 0;
-    }
-
-    private static bool TryParseEnemyGroupIndex(string value, out int groupIndex)
-    {
-        groupIndex = 0;
-
         if (string.IsNullOrWhiteSpace(value))
         {
-            return false;
+            return string.Empty;
         }
 
-        if (int.TryParse(value.Trim(), out groupIndex))
-        {
-            return groupIndex > 0;
-        }
-
-        groupIndex = ExtractNumericId(value);
-        return groupIndex > 0;
+        return value.Trim();
     }
 
     private static bool TryAddEnemyGroupMember(DHEnemyGroupTemplate template, string enemyUnitCode, int combatSlot)

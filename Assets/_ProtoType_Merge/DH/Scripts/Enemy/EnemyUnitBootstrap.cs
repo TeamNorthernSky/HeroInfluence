@@ -144,7 +144,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             behaviorType,
             placementKey,
             EnemyPlacementSource.Scene,
-            groupData != null ? groupData.GroupIndex.ToString() : EnemyWorldState.DefaultPrefabKey,
+            groupData != null ? groupData.GroupKey : EnemyWorldState.DefaultPrefabKey,
             1,
             string.Empty);
     }
@@ -208,7 +208,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             return false;
         }
 
-        if (!ValidateCsvMembers(groupData.GroupIndex, members, templateCatalog, prefabRegistry))
+        if (!ValidateCsvMembers(groupData.GroupKey, members, templateCatalog, prefabRegistry))
             return false;
 
         ClearUnitStateChildren();
@@ -257,7 +257,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             enemyId,
             initialGrid,
             placementSource,
-            string.IsNullOrWhiteSpace(prefabKey) ? groupData.GroupIndex.ToString() : prefabKey,
+            string.IsNullOrWhiteSpace(prefabKey) ? groupData.GroupKey : prefabKey,
             zoneId);
 
         RefreshFogVisibilityBinding();
@@ -520,14 +520,14 @@ public class EnemyUnitBootstrap : MonoBehaviour
     }
 
     private bool ValidateCsvMembers(
-        int enemyGroupIndex,
+        string enemyGroupKey,
         IReadOnlyList<CsvEnemyGroupMember> members,
         DHCsvTemplateCatalog templateCatalog,
         LevelPrefabRegistry prefabRegistry)
     {
         if (members == null || members.Count == 0)
         {
-            Debug.LogWarning($"Enemy group '{enemyGroupIndex}' has no valid enemy units.", this);
+            Debug.LogWarning($"Enemy group '{enemyGroupKey}' has no valid enemy units.", this);
             return false;
         }
 
@@ -539,7 +539,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             if (!templateCatalog.TryGetEnemyTemplate(templateKey, out _))
             {
                 Debug.LogWarning(
-                    $"Enemy group '{enemyGroupIndex}' references missing enemy unit CSV index '{enemyUnitIndex}'.",
+                    $"Enemy group '{enemyGroupKey}' references missing enemy unit CSV index '{enemyUnitIndex}'.",
                     this);
                 return false;
             }
@@ -547,7 +547,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             if (!prefabRegistry.TryGetEnemyUnitPrefab(enemyUnitIndex, out _))
             {
                 Debug.LogWarning(
-                    $"Enemy group '{enemyGroupIndex}' references missing enemy unit prefab index '{enemyUnitIndex}'.",
+                    $"Enemy group '{enemyGroupKey}' references missing enemy unit prefab index '{enemyUnitIndex}'.",
                     this);
                 return false;
             }

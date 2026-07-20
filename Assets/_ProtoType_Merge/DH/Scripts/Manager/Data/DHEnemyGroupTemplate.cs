@@ -4,7 +4,7 @@ using System.Collections.Generic;
 [Serializable]
 public class DHEnemyGroupTemplate
 {
-    public int GroupIndex;
+    public string GroupKey;
     public string GroupName;
     public int MinLevel;
     public int MaxLevel;

@@ -438,7 +438,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
         outpost.ApplyProgressData(
             progressState.State,
-            progressState.EnemyDefenderGroupIndex,
+            progressState.EnemyDefenderGroupKey,
             progressState.DefenderEnemyId);
     }
 
@@ -514,10 +514,10 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
             DHEnemyGroupTemplate groupData = null;
             if (Application.isPlaying &&
-                !templateCatalog.TryGetEnemyGroupTemplate(placement.EnemyGroupIndex, out groupData))
+                !templateCatalog.TryGetEnemyGroupTemplate(placement.EnemyGroupKey, out groupData))
             {
                 Debug.LogWarning(
-                    $"LevelZoneLayoutLoader could not find an enemy group CSV index '{placement.EnemyGroupIndex}'.",
+                    $"LevelZoneLayoutLoader could not find an enemy group CSV index '{placement.EnemyGroupKey}'.",
                     this);
                 continue;
             }
@@ -541,12 +541,12 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                     placement.BehaviorType,
                     placementKey,
                     EnemyPlacementSource.Scene,
-                    placement.EnemyGroupIndex.ToString(),
+                    placement.EnemyGroupKey,
                     enemyLevel,
                     zoneId))
             {
                 Debug.LogWarning(
-                    $"LevelZoneLayoutLoader failed to spawn enemy group '{placement.EnemyGroupIndex}' at {grid}.",
+                    $"LevelZoneLayoutLoader failed to spawn enemy group '{placement.EnemyGroupKey}' at {grid}.",
                     this);
                 Destroy(enemy.gameObject);
             }

@@ -268,14 +268,14 @@ public class LevelData : ScriptableObject
         eventPlacements.Add(new EventPlacementData(grid, eventType, requireAmount, effectAmount));
     }
 
-    public void SetEnemyPlacement(Vector2Int grid, int enemyGroupIndex, EnemyBehaviorType behaviorType)
+    public void SetEnemyPlacement(Vector2Int grid, string enemyGroupKey, EnemyBehaviorType behaviorType)
     {
-        if (!IsInsideGrid(grid) || enemyGroupIndex <= 0)
+        if (!IsInsideGrid(grid) || string.IsNullOrWhiteSpace(enemyGroupKey))
             return;
 
         EnsureEnemyPlacements();
         RemoveAllPlacementsAt(grid);
-        enemyPlacements.Add(new EnemyPlacementData(grid, enemyGroupIndex, behaviorType));
+        enemyPlacements.Add(new EnemyPlacementData(grid, enemyGroupKey, behaviorType));
     }
 
     public void SetDecorativeBuilding(Vector2Int grid, string prefabKey)
@@ -470,7 +470,7 @@ public class LevelData : ScriptableObject
             outpostPlacements[i] = outpostPlacements[i].Normalized();
 
         EnsureEnemyPlacements();
-        enemyPlacements.RemoveAll(x => x.EnemyGroupIndex <= 0);
+        enemyPlacements.RemoveAll(x => string.IsNullOrWhiteSpace(x.EnemyGroupKey));
         for (int i = 0; i < enemyPlacements.Count; i++)
             enemyPlacements[i] = enemyPlacements[i].Normalized();
 
@@ -631,25 +631,26 @@ public struct EventPlacementData
 public struct EnemyPlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
-    [SerializeField] private int enemyGroupIndex;
+    [FormerlySerializedAs("enemyGroupIndex")]
+    [SerializeField] private string enemyGroupKey;
     [SerializeField] private EnemyBehaviorType behaviorType;
 
-    public EnemyPlacementData(Vector2Int gridPosition, int enemyGroupIndex, EnemyBehaviorType behaviorType)
+    public EnemyPlacementData(Vector2Int gridPosition, string enemyGroupKey, EnemyBehaviorType behaviorType)
     {
         this.gridPosition = gridPosition;
-        this.enemyGroupIndex = Mathf.Max(1, enemyGroupIndex);
+        this.enemyGroupKey = string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
         this.behaviorType = behaviorType;
     }
 
     public Vector2Int GridPosition => gridPosition;
-    public int EnemyGroupIndex => enemyGroupIndex;
+    public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
     public EnemyBehaviorType BehaviorType => behaviorType;
 
     public EnemyPlacementData Normalized()
     {
         return new EnemyPlacementData(
             gridPosition,
-            Mathf.Max(1, enemyGroupIndex),
+            EnemyGroupKey,
             behaviorType);
     }
 }

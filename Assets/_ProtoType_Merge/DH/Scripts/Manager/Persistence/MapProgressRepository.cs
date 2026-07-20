@@ -128,7 +128,7 @@ public class MapProgressRepository : MonoBehaviour
     public void SetOutpostState(
         string outpostKey,
         OutpostState state,
-        int enemyDefenderGroupIndex,
+        string enemyDefenderGroupKey,
         string defenderEnemyId)
     {
         if (!IsValidKey(outpostKey))
@@ -136,16 +136,16 @@ public class MapProgressRepository : MonoBehaviour
 
         OutpostProgressState progressState = GetOrCreateOutpostState(NormalizeKey(outpostKey), state);
         progressState.SetState(state);
-        progressState.SetEnemyDefender(enemyDefenderGroupIndex, defenderEnemyId);
+        progressState.SetEnemyDefender(enemyDefenderGroupKey, defenderEnemyId);
     }
 
-    public void SetOutpostDefender(string outpostKey, int enemyDefenderGroupIndex, string defenderEnemyId)
+    public void SetOutpostDefender(string outpostKey, string enemyDefenderGroupKey, string defenderEnemyId)
     {
         if (!IsValidKey(outpostKey))
             return;
 
         OutpostProgressState progressState = GetOrCreateOutpostState(NormalizeKey(outpostKey), OutpostState.EnemyClaimed);
-        progressState.SetEnemyDefender(enemyDefenderGroupIndex, defenderEnemyId);
+        progressState.SetEnemyDefender(enemyDefenderGroupKey, defenderEnemyId);
     }
 
     public bool TryFindOutpostByDefenderEnemyId(string defenderEnemyId, out OutpostProgressState progressState)

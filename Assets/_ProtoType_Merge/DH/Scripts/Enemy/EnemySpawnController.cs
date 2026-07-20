@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class EnemySpawnController : MonoBehaviour
 {
@@ -15,7 +16,8 @@ public class EnemySpawnController : MonoBehaviour
 
     [Header("Spawn Rules")]
     [SerializeField] private EnemyGridMover enemyPrefab;
-    [SerializeField, Min(1)] private int runtimeEnemyGroupIndex = 30002;
+    [FormerlySerializedAs("runtimeEnemyGroupIndex")]
+    [SerializeField] private string runtimeEnemyGroupKey = "FEP002";
     [SerializeField, Min(1)] private int spawnInterval = 3;
     [SerializeField, Min(1)] private int maxActiveEnemies = 3;
     [SerializeField] private bool enableBaseEnemyProduction;
@@ -213,7 +215,7 @@ public class EnemySpawnController : MonoBehaviour
 
         EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
         int enemyLevel = ResolveZoneEnemyLevelFromPlacementKey(placementKey);
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, spawnGrid, placementKey, runtimeEnemyGroupIndex, enemyLevel, ExtractZoneIdFromRuntimePlacementKey(placementKey)))
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, spawnGrid, placementKey, runtimeEnemyGroupKey, enemyLevel, ExtractZoneIdFromRuntimePlacementKey(placementKey)))
         {
             Destroy(spawnedEnemy.gameObject);
             return false;
@@ -314,8 +316,8 @@ public class EnemySpawnController : MonoBehaviour
         restoredEnemy.SnapToGridPosition(state.Grid);
 
         EnemyUnitBootstrap enemyBootstrap = restoredEnemy.GetComponent<EnemyUnitBootstrap>();
-        int groupIndex = ResolveRuntimeEnemyGroupIndex(state);
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, restoredEnemy, state.Grid, state.PlacementKey, groupIndex))
+        string groupKey = ResolveRuntimeEnemyGroupKey(state);
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, restoredEnemy, state.Grid, state.PlacementKey, groupKey))
         {
             Destroy(restoredEnemy.gameObject);
         }
@@ -326,7 +328,7 @@ public class EnemySpawnController : MonoBehaviour
         EnemyGridMover enemy,
         Vector2Int grid,
         string placementKey,
-        int enemyGroupIndex,
+        string enemyGroupKey,
         int enemyLevel = 1,
         string zoneId = "")
     {
@@ -346,9 +348,9 @@ public class EnemySpawnController : MonoBehaviour
             return false;
         }
 
-        if (!templateCatalog.TryGetEnemyGroupTemplate(enemyGroupIndex, out DHEnemyGroupTemplate groupData))
+        if (!templateCatalog.TryGetEnemyGroupTemplate(enemyGroupKey, out DHEnemyGroupTemplate groupData))
         {
-            Debug.LogWarning($"EnemySpawnController could not find an enemy group CSV index '{enemyGroupIndex}'.", this);
+            Debug.LogWarning($"EnemySpawnController could not find an enemy group CSV index '{enemyGroupKey}'.", this);
             return false;
         }
 
@@ -359,7 +361,7 @@ public class EnemySpawnController : MonoBehaviour
             EnemyBehaviorType.Mobile,
             placementKey,
             EnemyPlacementSource.Runtime,
-            enemyGroupIndex.ToString(),
+            enemyGroupKey,
             enemyLevel,
             zoneId);
     }
@@ -384,15 +386,14 @@ public class EnemySpawnController : MonoBehaviour
         int lastUnderscore = remainder.LastIndexOf('_');
         return lastUnderscore > 0 ? remainder.Substring(0, lastUnderscore) : remainder;
     }
-    private int ResolveRuntimeEnemyGroupIndex(EnemyWorldState state)
+    private string ResolveRuntimeEnemyGroupKey(EnemyWorldState state)
     {
         if (state != null &&
             !string.IsNullOrWhiteSpace(state.PrefabKey) &&
-            int.TryParse(state.PrefabKey, out int savedGroupIndex) &&
-            savedGroupIndex > 0)
-            return savedGroupIndex;
+            !string.Equals(state.PrefabKey, EnemyWorldState.DefaultPrefabKey, System.StringComparison.Ordinal))
+            return state.PrefabKey.Trim();
 
-        return Mathf.Max(1, runtimeEnemyGroupIndex);
+        return string.IsNullOrWhiteSpace(runtimeEnemyGroupKey) ? "FEP002" : runtimeEnemyGroupKey.Trim();
     }
 
     private void SyncRuntimeEnemySequence(MapProgressRepository progressRepository)

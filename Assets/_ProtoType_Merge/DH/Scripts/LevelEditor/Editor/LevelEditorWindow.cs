@@ -193,7 +193,7 @@ public class LevelEditorWindow : EditorWindow
 
         if (brushType == LevelEditorBrushType.EnemyGroup)
         {
-            EditorGUILayout.PropertyField(serializedController.FindProperty("enemyGroupIndex"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("enemyGroupKey"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("enemyBehaviorType"));
         }
 
@@ -937,7 +937,7 @@ public class LevelEditorWindow : EditorWindow
                     context.EventPreset.EffectAmount);
                 break;
             case LevelEditorBrushType.EnemyGroup:
-                context.LevelData.SetEnemyPlacement(anchor, context.EnemyGroupIndex, context.EnemyBehaviorType);
+                context.LevelData.SetEnemyPlacement(anchor, context.EnemyGroupKey, context.EnemyBehaviorType);
                 break;
             case LevelEditorBrushType.DecorativeBuilding:
                 context.LevelData.SetDecorativeBuilding(
@@ -1012,7 +1012,7 @@ public class LevelEditorWindow : EditorWindow
         context.ItemPreset = controller.ItemPreset;
         context.OutpostPreset = controller.OutpostPreset;
         context.EventPreset = controller.EventPreset;
-        context.EnemyGroupIndex = controller.EnemyGroupIndex;
+        context.EnemyGroupKey = controller.EnemyGroupKey;
         context.EnemyBehaviorType = controller.EnemyBehaviorType;
         context.TileRegistry = controller.TileRegistry;
         context.SelectedTileKey = controller.SelectedTileKey;
@@ -1614,7 +1614,7 @@ public class LevelEditorWindow : EditorWindow
             footprint = BuildFootprint(GetEnemyGroupPrefab(context), anchor);
             if (footprint.Contains(grid))
             {
-                label = $"EnemyGroup {placement.EnemyGroupIndex}";
+                label = $"EnemyGroup {placement.EnemyGroupKey}";
                 return true;
             }
         }
@@ -1901,7 +1901,7 @@ public class LevelEditorWindow : EditorWindow
         public ItemPlacementPreset ItemPreset;
         public OutpostPlacementPreset OutpostPreset;
         public EventPlacementPreset EventPreset;
-        public int EnemyGroupIndex;
+        public string EnemyGroupKey;
         public EnemyBehaviorType EnemyBehaviorType;
         public LevelTileRegistry TileRegistry;
         public string SelectedTileKey;

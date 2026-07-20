@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 public class Outpost : MonoBehaviour
 {
     public static event Action<Outpost> OutpostClaimed;
-    private const int RuntimeEnemyClaimDefenderGroupIndex = 30002;
+    private const string RuntimeEnemyClaimDefenderGroupKey = "FEP002";
 
     [Header("Data")]
     [FormerlySerializedAs("mineType")]
@@ -16,7 +16,8 @@ public class Outpost : MonoBehaviour
     public int resourcePerTurn;
     [FormerlySerializedAs("mineState")]
     public OutpostState outpostState = OutpostState.Unclaimed;
-    [SerializeField, Min(0)] private int enemyDefenderGroupIndex = 30001;
+    [FormerlySerializedAs("enemyDefenderGroupIndex")]
+    [SerializeField] private string enemyDefenderGroupKey = "FEP001";
     [SerializeField] private string defenderEnemyId;
     [SerializeField] private string zoneId;
     [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
@@ -35,7 +36,7 @@ public class Outpost : MonoBehaviour
     public bool IsPlayerClaimed => outpostState == OutpostState.Claimed;
     public bool IsEnemyClaimed => outpostState == OutpostState.EnemyClaimed;
     public OutpostType OutpostType => outpostType;
-    public int EnemyDefenderGroupIndex => enemyDefenderGroupIndex;
+    public string EnemyDefenderGroupKey => NormalizeGroupKey(enemyDefenderGroupKey);
     public string DefenderEnemyId => defenderEnemyId;
     public string ZoneId => NormalizeZoneId(zoneId);
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
@@ -81,22 +82,22 @@ public class Outpost : MonoBehaviour
 
     public void EnemyClaim()
     {
-        EnemyClaim(RuntimeEnemyClaimDefenderGroupIndex);
+        EnemyClaim(RuntimeEnemyClaimDefenderGroupKey);
     }
 
-    public void EnemyClaim(int defenderGroupIndex)
+    public void EnemyClaim(string defenderGroupKey)
     {
         if (outpostState == OutpostState.EnemyClaimed)
         {
-            if (defenderGroupIndex > 0)
-                enemyDefenderGroupIndex = defenderGroupIndex;
+            if (!string.IsNullOrWhiteSpace(defenderGroupKey))
+                enemyDefenderGroupKey = NormalizeGroupKey(defenderGroupKey);
 
             EnsureDefenderParty();
             return;
         }
 
-        if (defenderGroupIndex > 0)
-            enemyDefenderGroupIndex = defenderGroupIndex;
+        if (!string.IsNullOrWhiteSpace(defenderGroupKey))
+            enemyDefenderGroupKey = NormalizeGroupKey(defenderGroupKey);
 
         outpostState = OutpostState.EnemyClaimed;
         EnsureDefenderId();
@@ -159,12 +160,12 @@ public class Outpost : MonoBehaviour
         ApplyStateMaterial();
     }
 
-    public void ApplyProgressData(OutpostState nextState, int nextEnemyDefenderGroupIndex, string nextDefenderEnemyId)
+    public void ApplyProgressData(OutpostState nextState, string nextEnemyDefenderGroupKey, string nextDefenderEnemyId)
     {
         outpostState = nextState;
 
-        if (nextEnemyDefenderGroupIndex > 0)
-            enemyDefenderGroupIndex = nextEnemyDefenderGroupIndex;
+        if (!string.IsNullOrWhiteSpace(nextEnemyDefenderGroupKey))
+            enemyDefenderGroupKey = NormalizeGroupKey(nextEnemyDefenderGroupKey);
 
         defenderEnemyId = string.IsNullOrWhiteSpace(nextDefenderEnemyId)
             ? string.Empty
@@ -201,17 +202,17 @@ public class Outpost : MonoBehaviour
         return MapProgressKey.ForOutpost(GetAnchorGrid(gridManager));
     }
 
-    public void SetDefenderBinding(int groupIndex, string enemyId)
+    public void SetDefenderBinding(string groupKey, string enemyId)
     {
-        if (groupIndex > 0)
-            enemyDefenderGroupIndex = groupIndex;
+        if (!string.IsNullOrWhiteSpace(groupKey))
+            enemyDefenderGroupKey = NormalizeGroupKey(groupKey);
 
         defenderEnemyId = string.IsNullOrWhiteSpace(enemyId) ? string.Empty : enemyId;
     }
 
     public void ClearEnemyDefender()
     {
-        enemyDefenderGroupIndex = 0;
+        enemyDefenderGroupKey = string.Empty;
         defenderEnemyId = string.Empty;
     }
 
@@ -265,7 +266,7 @@ public class Outpost : MonoBehaviour
         repository.SetOutpostState(
             outpostKey,
             outpostState,
-            IsEnemyClaimed ? enemyDefenderGroupIndex : 0,
+            IsEnemyClaimed ? EnemyDefenderGroupKey : string.Empty,
             IsEnemyClaimed ? defenderEnemyId : string.Empty);
     }
 
@@ -288,6 +289,11 @@ public class Outpost : MonoBehaviour
     private static string NormalizeZoneId(string value)
     {
         return MapProgressKey.NormalizeSegment(value);
+    }
+
+    private static string NormalizeGroupKey(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
     private void ResolveOutpostRegistry()
     {
@@ -373,7 +379,7 @@ public static class OutpostDefenderService
 
     public static bool EnsureDefenderParty(Outpost outpost)
     {
-        if (outpost == null || !outpost.IsEnemyClaimed || outpost.EnemyDefenderGroupIndex <= 0)
+        if (outpost == null || !outpost.IsEnemyClaimed || string.IsNullOrWhiteSpace(outpost.EnemyDefenderGroupKey))
             return false;
 
         PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
@@ -387,17 +393,17 @@ public static class OutpostDefenderService
         {
             GridManager gridManager = Game.Grid != null ? Game.Grid : UnityEngine.Object.FindFirstObjectByType<GridManager>();
             enemyId = CreateDefenderEnemyId(outpost.GetProgressKey(gridManager));
-            outpost.SetDefenderBinding(outpost.EnemyDefenderGroupIndex, enemyId);
+            outpost.SetDefenderBinding(outpost.EnemyDefenderGroupKey, enemyId);
         }
 
         if (enemyGroupRepository.ContainsEnemy(enemyId))
             return true;
 
-        if (!templateCatalog.TryGetEnemyGroupTemplate(outpost.EnemyDefenderGroupIndex, out DHEnemyGroupTemplate groupData) ||
+        if (!templateCatalog.TryGetEnemyGroupTemplate(outpost.EnemyDefenderGroupKey, out DHEnemyGroupTemplate groupData) ||
             !TryBuildCsvGroupMembers(groupData, out List<CsvEnemyGroupMember> members))
         {
             Debug.LogWarning(
-                $"Outpost defender group '{outpost.EnemyDefenderGroupIndex}' could not be resolved.",
+                $"Outpost defender group '{outpost.EnemyDefenderGroupKey}' could not be resolved.",
                 outpost);
             return false;
         }
@@ -412,7 +418,7 @@ public static class OutpostDefenderService
             if (!templateCatalog.TryGetEnemyTemplate(templateKey, out EnemyData template))
             {
                 Debug.LogWarning(
-                    $"Outpost defender group '{outpost.EnemyDefenderGroupIndex}' references missing enemy unit '{templateKey}'.",
+                    $"Outpost defender group '{outpost.EnemyDefenderGroupKey}' references missing enemy unit '{templateKey}'.",
                     outpost);
                 continue;
             }
@@ -429,7 +435,7 @@ public static class OutpostDefenderService
             return false;
 
         enemyGroupRepository.RegisterOrUpdateEnemy(enemyId, unitIndices, unitSlots);
-        outpost.SetDefenderBinding(outpost.EnemyDefenderGroupIndex, enemyId);
+        outpost.SetDefenderBinding(outpost.EnemyDefenderGroupKey, enemyId);
         return true;
     }
 
@@ -547,7 +553,7 @@ public class OutpostDefenderController : MonoBehaviour
             {
                 outposts[i].ApplyProgressData(
                     progressState.State,
-                    progressState.EnemyDefenderGroupIndex,
+                    progressState.EnemyDefenderGroupKey,
                     progressState.DefenderEnemyId);
             }
 

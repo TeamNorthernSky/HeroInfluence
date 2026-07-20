@@ -303,7 +303,7 @@ public class LevelLoader : MonoBehaviour
 
         outpost.ApplyProgressData(
             progressState.State,
-            progressState.EnemyDefenderGroupIndex,
+            progressState.EnemyDefenderGroupKey,
             progressState.DefenderEnemyId);
     }
 
@@ -375,10 +375,10 @@ public class LevelLoader : MonoBehaviour
 
             DHEnemyGroupTemplate groupData = null;
             if (Application.isPlaying &&
-                !templateCatalog.TryGetEnemyGroupTemplate(placement.EnemyGroupIndex, out groupData))
+                !templateCatalog.TryGetEnemyGroupTemplate(placement.EnemyGroupKey, out groupData))
             {
                 Debug.LogWarning(
-                    $"LevelLoader could not find an enemy group CSV index '{placement.EnemyGroupIndex}'.",
+                    $"LevelLoader could not find an enemy group CSV index '{placement.EnemyGroupKey}'.",
                     this);
                 continue;
             }
@@ -403,7 +403,7 @@ public class LevelLoader : MonoBehaviour
                     placementKey))
             {
                 Debug.LogWarning(
-                    $"LevelLoader failed to spawn enemy group '{placement.EnemyGroupIndex}' at {placement.GridPosition}.",
+                    $"LevelLoader failed to spawn enemy group '{placement.EnemyGroupKey}' at {placement.GridPosition}.",
                     this);
                 Destroy(enemy.gameObject);
             }

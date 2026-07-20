@@ -368,7 +368,7 @@ public class CombatEncounterManager : MonoBehaviour
 
         string outpostKey = progressState.OutpostKey;
         if (!ForceClaimMatchingOutposts(outpostKey))
-            progressRepository.SetOutpostState(outpostKey, OutpostState.Claimed, 0, string.Empty);
+            progressRepository.SetOutpostState(outpostKey, OutpostState.Claimed, string.Empty, string.Empty);
 
         OutpostDefenderService.RemoveDefenderParty(combatEnemy.EnemyId);
         return true;

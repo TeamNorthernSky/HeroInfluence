@@ -185,7 +185,7 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         {
             OutpostProgressState state = source[i];
             if (state != null)
-                target.Add(new OutpostProgressState(state.OutpostKey, state.State, state.EnemyDefenderGroupIndex, state.DefenderEnemyId));
+                target.Add(new OutpostProgressState(state.OutpostKey, state.State, state.EnemyDefenderGroupKey, state.DefenderEnemyId));
         }
     }
 

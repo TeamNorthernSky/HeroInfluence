@@ -2447,19 +2447,19 @@ MonoBehaviour:
     effectAmount: 3
   enemyPlacements:
   - gridPosition: {x: 9, y: 30}
-    enemyGroupIndex: 30004
+    enemyGroupKey: FEP001
     behaviorType: 1
   - gridPosition: {x: 9, y: 20}
-    enemyGroupIndex: 30004
+    enemyGroupKey: FEP001
     behaviorType: 1
   - gridPosition: {x: 40, y: 19}
-    enemyGroupIndex: 30004
+    enemyGroupKey: FEP001
     behaviorType: 1
   - gridPosition: {x: 24, y: 19}
-    enemyGroupIndex: 30004
+    enemyGroupKey: FEP001
     behaviorType: 1
   - gridPosition: {x: 24, y: 7}
-    enemyGroupIndex: 30004
+    enemyGroupKey: FEP001
     behaviorType: 1
   decorativeBuildingPlacements: []
   gatePlacements:

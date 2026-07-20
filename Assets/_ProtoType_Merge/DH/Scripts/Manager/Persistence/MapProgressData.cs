@@ -466,28 +466,28 @@ public class OutpostProgressState
 {
     [SerializeField] private string outpostKey;
     [SerializeField] private OutpostState state;
-    [SerializeField] private int enemyDefenderGroupIndex;
+    [SerializeField] private string enemyDefenderGroupKey;
     [SerializeField] private string defenderEnemyId;
 
     public string OutpostKey => outpostKey;
     public OutpostState State => state;
-    public int EnemyDefenderGroupIndex => enemyDefenderGroupIndex;
+    public string EnemyDefenderGroupKey => string.IsNullOrWhiteSpace(enemyDefenderGroupKey) ? string.Empty : enemyDefenderGroupKey.Trim();
     public string DefenderEnemyId => defenderEnemyId;
 
     public OutpostProgressState(string outpostKey, OutpostState state)
-        : this(outpostKey, state, 0, string.Empty)
+        : this(outpostKey, state, string.Empty, string.Empty)
     {
     }
 
     public OutpostProgressState(
         string outpostKey,
         OutpostState state,
-        int enemyDefenderGroupIndex,
+        string enemyDefenderGroupKey,
         string defenderEnemyId)
     {
         this.outpostKey = outpostKey;
         this.state = state;
-        this.enemyDefenderGroupIndex = Mathf.Max(0, enemyDefenderGroupIndex);
+        this.enemyDefenderGroupKey = string.IsNullOrWhiteSpace(enemyDefenderGroupKey) ? string.Empty : enemyDefenderGroupKey.Trim();
         this.defenderEnemyId = string.IsNullOrWhiteSpace(defenderEnemyId) ? string.Empty : defenderEnemyId;
     }
 
@@ -496,9 +496,9 @@ public class OutpostProgressState
         state = nextState;
     }
 
-    public void SetEnemyDefender(int groupIndex, string enemyId)
+    public void SetEnemyDefender(string groupKey, string enemyId)
     {
-        enemyDefenderGroupIndex = Mathf.Max(0, groupIndex);
+        enemyDefenderGroupKey = string.IsNullOrWhiteSpace(groupKey) ? string.Empty : groupKey.Trim();
         defenderEnemyId = string.IsNullOrWhiteSpace(enemyId) ? string.Empty : enemyId;
     }
 }

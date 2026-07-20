@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class VillainUnionBase : MonoBehaviour
 {
     [SerializeField] private string baseId = "villain_union_base_001";
-    [SerializeField, Min(0)] private int defenderEnemyGroupIndex = 30001;
+    [FormerlySerializedAs("defenderEnemyGroupIndex")]
+    [SerializeField] private string defenderEnemyGroupKey = "FEP001";
     [SerializeField] private string defenderEnemyId;
     [SerializeField] private string zoneId;
     [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
@@ -12,7 +14,7 @@ public class VillainUnionBase : MonoBehaviour
     private VillainUnionBaseRegistry villainUnionBaseRegistry;
 
     public string BaseId => baseId;
-    public int DefenderEnemyGroupIndex => defenderEnemyGroupIndex;
+    public string DefenderEnemyGroupKey => NormalizeGroupKey(defenderEnemyGroupKey);
     public string DefenderEnemyId => defenderEnemyId;
     public string ZoneId => NormalizeZoneId(zoneId);
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
@@ -128,10 +130,10 @@ public class VillainUnionBase : MonoBehaviour
         return MapProgressKey.ForVillainUnion(GetAnchorGrid());
     }
 
-    public void SetDefenderBinding(int groupIndex, string enemyId)
+    public void SetDefenderBinding(string groupKey, string enemyId)
     {
-        if (groupIndex > 0)
-            defenderEnemyGroupIndex = groupIndex;
+        if (!string.IsNullOrWhiteSpace(groupKey))
+            defenderEnemyGroupKey = NormalizeGroupKey(groupKey);
 
         defenderEnemyId = string.IsNullOrWhiteSpace(enemyId) ? string.Empty : enemyId;
     }
@@ -147,6 +149,11 @@ public class VillainUnionBase : MonoBehaviour
     private static string NormalizeZoneId(string value)
     {
         return MapProgressKey.NormalizeSegment(value);
+    }
+
+    private static string NormalizeGroupKey(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
     private void ResolveReferences()
     {
@@ -182,7 +189,7 @@ public static class VillainUnionDefenderService
 
     public static bool EnsureDefenderParty(VillainUnionBase villainUnionBase)
     {
-        if (villainUnionBase == null || villainUnionBase.DefenderEnemyGroupIndex <= 0)
+        if (villainUnionBase == null || string.IsNullOrWhiteSpace(villainUnionBase.DefenderEnemyGroupKey))
             return false;
 
         PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
@@ -196,17 +203,17 @@ public static class VillainUnionDefenderService
         {
             GridManager gridManager = Game.Grid != null ? Game.Grid : Object.FindFirstObjectByType<GridManager>();
             enemyId = CreateDefenderEnemyId(villainUnionBase.GetProgressKey(gridManager));
-            villainUnionBase.SetDefenderBinding(villainUnionBase.DefenderEnemyGroupIndex, enemyId);
+            villainUnionBase.SetDefenderBinding(villainUnionBase.DefenderEnemyGroupKey, enemyId);
         }
 
         if (enemyGroupRepository.ContainsEnemy(enemyId))
             return true;
 
-        if (!templateCatalog.TryGetEnemyGroupTemplate(villainUnionBase.DefenderEnemyGroupIndex, out DHEnemyGroupTemplate groupData) ||
+        if (!templateCatalog.TryGetEnemyGroupTemplate(villainUnionBase.DefenderEnemyGroupKey, out DHEnemyGroupTemplate groupData) ||
             !TryBuildCsvGroupMembers(groupData, out List<CsvEnemyGroupMember> members))
         {
             Debug.LogWarning(
-                $"VillainUnion defender group '{villainUnionBase.DefenderEnemyGroupIndex}' could not be resolved.",
+                $"VillainUnion defender group '{villainUnionBase.DefenderEnemyGroupKey}' could not be resolved.",
                 villainUnionBase);
             return false;
         }
@@ -221,7 +228,7 @@ public static class VillainUnionDefenderService
             if (!templateCatalog.TryGetEnemyTemplate(templateKey, out EnemyData template))
             {
                 Debug.LogWarning(
-                    $"VillainUnion defender group '{villainUnionBase.DefenderEnemyGroupIndex}' references missing enemy unit '{templateKey}'.",
+                    $"VillainUnion defender group '{villainUnionBase.DefenderEnemyGroupKey}' references missing enemy unit '{templateKey}'.",
                     villainUnionBase);
                 continue;
             }
@@ -238,7 +245,7 @@ public static class VillainUnionDefenderService
             return false;
 
         enemyGroupRepository.RegisterOrUpdateEnemy(enemyId, unitIndices, unitSlots);
-        villainUnionBase.SetDefenderBinding(villainUnionBase.DefenderEnemyGroupIndex, enemyId);
+        villainUnionBase.SetDefenderBinding(villainUnionBase.DefenderEnemyGroupKey, enemyId);
         return true;
     }
 
