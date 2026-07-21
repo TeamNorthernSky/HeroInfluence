@@ -15,12 +15,15 @@ public class SystemMenuController : MonoBehaviour
     [SerializeField] private Button _btnToTitle;
     [SerializeField] private Button _btnOptions;
     [SerializeField] private Button _btnQuit;
+    [SerializeField] private Button _btnSave;
 
     private void Awake()
     {
         if (_btnResume != null) _btnResume.onClick.AddListener(OnClickResume);
         if (_btnToTitle != null) _btnToTitle.onClick.AddListener(OnClickToTitle);
         if (_btnQuit != null) _btnQuit.onClick.AddListener(OnClickQuit);
+        if (_btnOptions != null) _btnOptions.onClick.AddListener(OnClickOptions);
+        if (_btnSave != null) _btnSave.onClick.AddListener(OnClickSave);
     }
 
     private void Update()
@@ -81,10 +84,26 @@ public class SystemMenuController : MonoBehaviour
         }
     }
 
+    // [KJ 260708] SystemMenu는 닫지 않고 Settings를 그 위에 스택으로 연다(ModalManager 재사용).
+    public void OnClickOptions()
+    {
+        CommonUIManager.Instance.SettingsModal.Open();
+    }
+
     public void OnClickResume()
     {
         if (_modal != null) _modal.SetActive(false);
         Time.timeScale = 1f;
+    }
+
+    // [KJ 260715] B 수동 저장 — 현재 슬롯에 현재 진행(마지막 턴 시작 스냅샷)을 기록.
+    // GameSaveService가 스냅샷 부재/IO 실패를 자체 처리(스냅샷 없으면 저장 스킵, false). 메뉴는 열어둔 채 저장만 수행.
+    public void OnClickSave()
+    {
+        bool saved = GameSaveService.SaveToSlot(SaveSlotRepository.CurrentSlot);
+        Debug.Log(saved
+            ? $"[SystemMenu] 저장 완료 — 슬롯 {SaveSlotRepository.CurrentSlot}."
+            : "[SystemMenu] 저장 실패/건너뜀 — 턴 시작 스냅샷 없음 또는 IO 오류.");
     }
 
     public void OnClickToTitle()

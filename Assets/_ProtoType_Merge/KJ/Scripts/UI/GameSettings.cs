@@ -49,6 +49,14 @@ public static class GameSettings
         PlayerPrefs.Save();
     }
 
+    // [KJ 260708] Settings 모달이 지연 초기화(self-deactivate)로 바뀌어도
+    // 저장된 볼륨은 게임 시작 시 항상 적용되도록 GameSettings 자체에 부팅 훅을 둠.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void ApplyOnBoot()
+    {
+        LoadAndApplyAll();
+    }
+
     public static void LoadAndApplyAll()
     {
         AudioListener.volume = MasterVolume;
