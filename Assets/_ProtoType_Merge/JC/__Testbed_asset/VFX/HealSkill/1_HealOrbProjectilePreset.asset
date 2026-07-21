@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 847d969eb0017b74d81eb62acd724c6e, type: 3}
-  m_Name: ProjectileOrbPreset
+  m_Name: 1_HealOrbProjectilePreset
   m_EditorClassIdentifier: 
   coreColor: {r: 1, g: 0.88, b: 0.14, a: 1}
   rimColor: {r: 1, g: 0.6, b: 0.1, a: 1}

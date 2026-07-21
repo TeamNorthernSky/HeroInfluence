@@ -7,7 +7,7 @@ namespace JC.VFX
     /// 커스텀 인스펙터(ProjectileOrbPresetEditor)의 "프리팹에 적용"으로
     /// ProjectileOrbCore.mat + ProjectileOrb 프리팹(ProjectileVfx + Sparkles PS) + 전용 스파클 재질에 일괄 반영.
     /// </summary>
-    [CreateAssetMenu(menuName = "JC VFX/Projectile Orb Preset", fileName = "ProjectileOrbPreset")]
+    [CreateAssetMenu(menuName = "JC VFX/1_Heal Orb Projectile Preset", fileName = "1_HealOrbProjectilePreset")]
     public class ProjectileOrbPreset : ScriptableObject
     {
         [Header("코어 — 색/밝기")]

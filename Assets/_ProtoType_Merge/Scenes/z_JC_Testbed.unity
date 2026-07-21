@@ -667,6 +667,23 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 5966425149972826415}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &843711317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 843711309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58e7df768c899fa4195b520edbad65f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  auraPrefab: {fileID: 1090546588860394684, guid: 14b94c358ee8fd64cbd058b2db98420b,
+    type: 3}
+  center: {fileID: 1551106363}
+  centerYOffset: 0
+  toggleKey: 106
 --- !u!1 &1017281254
 GameObject:
   m_ObjectHideFlags: 0
@@ -1161,6 +1178,12 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1482739142}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1551106363 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: c0dd376a6c06de94aa5aa376d5195899,
+    type: 3}
+  m_PrefabInstance: {fileID: 1134111765}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1581026736
 GameObject:
   m_ObjectHideFlags: 0
@@ -1638,6 +1661,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 843711314}
+    - targetCorrespondingSourceObject: {fileID: 3655450483502980586, guid: 21b9488aaa37b8b4bb01fa40de9a20ce,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 843711317}
   m_SourcePrefab: {fileID: 100100000, guid: 21b9488aaa37b8b4bb01fa40de9a20ce, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
