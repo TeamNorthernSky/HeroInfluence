@@ -1,12 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 /// <summary>
 /// [KJ 260703] 전체 게임 상태를 세이브 슬롯 파일로 기록하는 중앙 수집 서비스.
-/// 각 싱글톤에서 상태를 당겨와 GameSaveData(SO)를 채우고 JsonUtility로 저장한다.
-/// 싱글톤이 null인 구역은 비운 채 경고만 남기고 저장은 계속한다(부분 저장 허용).
+/// [KJ 260714] 저장 데이터는 DH 턴 시작 스냅샷(DHTurnStartSnapshotStore)에서 받아온다.
+/// 저장 순간의 런타임을 재수집하지 않고 "마지막 턴 시작" 스냅샷을 그대로 기록한다
+/// → 로드 시 해당 턴 처음부터 재개(설계 옵션 1). ChatFlags만 스냅샷에 없어 별도 캡처한다.
 /// </summary>
 public static class GameSaveService
 {
@@ -19,10 +19,24 @@ public static class GameSaveService
             slotIndex = 0;
         }
 
+        // [KJ 260714] 턴 시작 스냅샷이 없으면 저장 불가(재시도해도 무의미) — day1 최초 진입/턴 시작 전.
+        // 자동 재캡처는 "턴 시작 시점" 의미를 깨므로 하지 않는다.
+        DHTurnStartSnapshotStore snapshot = DHTurnStartSnapshotStore.Instance;
+        if (snapshot == null || !snapshot.HasSnapshot)
+        {
+            Debug.LogWarning("[GameSaveService] 턴 시작 스냅샷 없음 — 저장을 건너뜁니다.");
+            return false;
+        }
+
         GameSaveData data = ScriptableObject.CreateInstance<GameSaveData>();
         try
         {
-            Capture(data);
+            if (!Capture(data, snapshot))
+            {
+                Debug.LogWarning($"[GameSaveService] 슬롯 {slotIndex} 저장 실패: 스냅샷 수집 실패.");
+                return false;
+            }
+
             string path = Path.Combine(Application.persistentDataPath, $"save_slot_{slotIndex}.json");
             File.WriteAllText(path, JsonUtility.ToJson(data));
             Debug.Log($"[GameSaveService] 슬롯 {slotIndex} 저장 완료: {path}");
@@ -31,7 +45,7 @@ public static class GameSaveService
         catch (Exception ex)
         {
             Debug.LogWarning($"[GameSaveService] 슬롯 {slotIndex} 저장 실패: {ex.Message}");
-            // [KJ 260708] 자동 저장 실패를 유저에게 알리고 재시도 기회 제공(예=재저장/아니요=닫기).
+            // [KJ 260708] 파일 IO 등 저장 실패를 유저에게 알리고 재시도 기회 제공(예=재저장/아니요=닫기).
             SaveRetryModal.Show(slotIndex);
             return false;
         }
@@ -41,205 +55,15 @@ public static class GameSaveService
         }
     }
 
-    private static void Capture(GameSaveData data)
+    // [KJ 260714] 리포지토리 직접 수집(구 Capture* 메서드) → 턴 시작 스냅샷 채우기로 대체.
+    // hasData/savedAt/saveVersion 및 모든 상태 섹션은 FillGameSaveData가 설정한다.
+    private static bool Capture(GameSaveData data, DHTurnStartSnapshotStore snapshot)
     {
-        data.hasData = true;
-        data.savedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
-        data.saveVersion = 1;
+        if (!snapshot.FillGameSaveData(data))
+            return false;
 
-        CaptureUnits(data);
-        CaptureEnemyUnits(data);
-        CaptureEnemyGroups(data);
-        CaptureWeapons(data);
-        CaptureParties(data);
-        CaptureMapProgress(data);
-        CaptureEconomy(data);
-        CaptureHqAndDay(data);
-        CaptureDepartments(data);
-
-        // [KJ 260714, F008] 채팅 분기 플래그 — 스냅샷 패턴(내용 확장 시 이 파일 무수정)
+        // [KJ 260714, F008] 채팅 분기 플래그 — 스냅샷 미포함이라 별도 캡처(내용 확장 시 이 파일 무수정).
         data.chatFlags.AddRange(ChatFlagStore.CaptureSnapshot());
-    }
-
-    private static void CaptureUnits(GameSaveData data)
-    {
-        PersistentUnitRepository repo = PersistentUnitRepository.Instance;
-        if (repo == null)
-        {
-            Debug.LogWarning("[GameSaveService] PersistentUnitRepository 없음 — 유닛 구역 생략");
-            return;
-        }
-
-        data.nextUnitIndex = repo.NextUnitIndex;
-        for (int i = 0; i < repo.Units.Count; i++)
-        {
-            UnitPersistentDataDiskRow row = UnitPersistentDataDiskRow.From(repo.Units[i]);
-            if (row != null) data.units.Add(row);
-        }
-    }
-
-    private static void CaptureEnemyUnits(GameSaveData data)
-    {
-        PersistentEnemyRepository repo = PersistentEnemyRepository.Instance;
-        if (repo == null)
-        {
-            Debug.LogWarning("[GameSaveService] PersistentEnemyRepository 없음 — 적 유닛 구역 생략");
-            return;
-        }
-
-        data.nextEnemyUnitIndex = repo.NextUnitIndex;
-        for (int i = 0; i < repo.Units.Count; i++)
-        {
-            EnemyUnitPersistentDataDiskRow row = EnemyUnitPersistentDataDiskRow.From(repo.Units[i]);
-            if (row != null) data.enemyUnits.Add(row);
-        }
-    }
-
-    private static void CaptureEnemyGroups(GameSaveData data)
-    {
-        EnemyGroupPersistentRepository repo = EnemyGroupPersistentRepository.Instance;
-        if (repo == null)
-        {
-            Debug.LogWarning("[GameSaveService] EnemyGroupPersistentRepository 없음 — 적 그룹 구역 생략");
-            return;
-        }
-
-        data.nextEnemySequence = repo.NextEnemySequence;
-        data.enemyGroups.AddRange(repo.Enemies);
-    }
-
-    private static void CaptureWeapons(GameSaveData data)
-    {
-        WeaponPersistentRepository repo = WeaponPersistentRepository.Instance;
-        if (repo == null)
-        {
-            Debug.LogWarning("[GameSaveService] WeaponPersistentRepository 없음 — 무기 구역 생략");
-            return;
-        }
-
-        data.nextWeaponIndex = repo.NextWeaponIndex;
-        data.weapons.AddRange(repo.Weapons);
-    }
-
-    private static void CaptureParties(GameSaveData data)
-    {
-        PartyPersistentRepository repo = PartyPersistentRepository.Instance;
-        if (repo == null)
-        {
-            Debug.LogWarning("[GameSaveService] PartyPersistentRepository 없음 — 파티 구역 생략");
-            return;
-        }
-
-        data.parties.AddRange(repo.Parties);
-    }
-
-    private static void CaptureMapProgress(GameSaveData data)
-    {
-        MapProgressRepository repo = MapProgressRepository.Instance;
-        if (repo == null)
-        {
-            Debug.LogWarning("[GameSaveService] MapProgressRepository 없음 — 맵 진행도 구역 생략");
-            return;
-        }
-
-        data.mapId = repo.MapId;
-        data.collectedItemKeys.AddRange(repo.CollectedItemKeys);
-        data.completedEventKeys.AddRange(repo.CompletedEventKeys);
-        data.partyWorldStates.AddRange(repo.PartyWorldStates);
-        data.enemyWorldStates.AddRange(repo.EnemyWorldStates);
-        data.outpostStates.AddRange(repo.OutpostStates);
-        data.fogCells.AddRange(repo.FogCells);
-        data.levelZoneSelections.AddRange(repo.LevelZoneSelections);
-        data.heroUnionStates.AddRange(repo.HeroUnionStates);
-        data.gateStates.AddRange(repo.GateStates);
-        data.zoneThreatStates.AddRange(repo.ZoneThreatStates);
-        data.zoneEnemyLevelStates.AddRange(repo.ZoneEnemyLevelStates);
-    }
-
-    private static void CaptureEconomy(GameSaveData data)
-    {
-        EconomyManager economy = GameManager.Instance != null ? GameManager.Instance.Economy : null;
-        if (economy == null)
-        {
-            Debug.LogWarning("[GameSaveService] EconomyManager 없음 — 자원 구역 생략");
-            return;
-        }
-
-        foreach (KeyValuePair<ResourceType, int> pair in economy.GetAll())
-            data.resources.Add(new GameSaveData.ResourceEntry { type = pair.Key, amount = pair.Value });
-    }
-
-    private static void CaptureHqAndDay(GameSaveData data)
-    {
-        GameManager gm = GameManager.Instance;
-        if (gm == null)
-        {
-            Debug.LogWarning("[GameSaveService] GameManager 없음 — HQ/턴 구역 생략");
-            return;
-        }
-
-        data.currentDay = gm.CurrentDay;
-
-        HQStateManager hq = gm.HQ;
-        if (hq == null)
-        {
-            Debug.LogWarning("[GameSaveService] HQStateManager 없음 — HQ 구역 생략");
-            return;
-        }
-
-        foreach (HQDepartment d in Enum.GetValues(typeof(HQDepartment)))
-            data.hqLevels.Add(new GameSaveData.HQLevelEntry { department = d, level = hq.GetLevel(d) });
-        data.hqUpgradedThisTurn = hq.UpgradedThisTurn;
-    }
-
-    // [KJ 260706] 부서 매니저 내부 상태 — 결과가 유닛/무기에 반영되지 않는 것들만.
-    private static void CaptureDepartments(GameSaveData data)
-    {
-        GameManager gm = GameManager.Instance;
-        if (gm == null)
-            return; // CaptureHqAndDay에서 이미 경고
-
-        if (gm.Lab != null)
-            data.labSkillLevels.AddRange(gm.Lab.Entries);
-        else
-            Debug.LogWarning("[GameSaveService] LabManager 없음 — 스킬 강화 구역 생략");
-
-        if (gm.Publicity != null)
-        {
-            data.publicityCurrentPool = gm.Publicity.CurrentPool;
-            data.publicityLastChargeDay = gm.Publicity.LastChargeDay;
-        }
-        else
-            Debug.LogWarning("[GameSaveService] PublicityManager 없음 — 홍보 구역 생략");
-
-        if (gm.Training != null)
-            data.trainingEntries.AddRange(gm.Training.Entries);
-        else
-            Debug.LogWarning("[GameSaveService] TrainingManager 없음 — 훈련 구역 생략");
-
-        if (gm.Infirmary != null)
-            data.infirmaryHealedThisTurn.AddRange(gm.Infirmary.HealedUnitsThisTurn);
-        else
-            Debug.LogWarning("[GameSaveService] InfirmaryManager 없음 — 의무실 구역 생략");
-
-        // [KJ 260706] 공방 보유 매핑 — 무기 인스턴스/장착과 별개인 소유권 정보.
-        if (gm.Workshop != null)
-            data.workshopWeaponEntries.AddRange(gm.Workshop.Entries);
-        else
-            Debug.LogWarning("[GameSaveService] WorkshopManager 없음 — 공방 보유 구역 생략");
-
-        // [KJ 260706] 거점 방문 상태 — 복원은 탐사씬 한정(DH 협의).
-        HQVisitState visit = HQVisitState.Instance;
-        if (visit != null)
-        {
-            foreach (KeyValuePair<string, HashSet<string>> pair in visit.VisitingBySource)
-                data.hqVisitSources.Add(new GameSaveData.VisitEntry
-                {
-                    source = pair.Key,
-                    partyIds = new List<string>(pair.Value)
-                });
-        }
-        else
-            Debug.LogWarning("[GameSaveService] HQVisitState 없음 — 방문 상태 구역 생략");
+        return true;
     }
 }

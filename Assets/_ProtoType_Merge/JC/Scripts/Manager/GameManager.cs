@@ -80,6 +80,8 @@ public class GameManager : MonoBehaviour
 
         initialAutoSaveDone = false; // [KJ 260707] 다음 새 게임의 첫 로비 도착 자동 저장 재활성화
 
+        ChatFlagStore.Clear(); // [KJ 260714, F008] 채팅 분기 플래그 초기화 (새 게임에 이전 회차 플래그 누출 방지)
+
         UnityEngine.Debug.Log("[GameManager] ResetForNewGame — 전체 영속 상태를 첫 실행값으로 초기화");
     }
 

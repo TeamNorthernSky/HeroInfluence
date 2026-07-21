@@ -8,6 +8,7 @@ public class CommonUIManager : MonoBehaviour
     public static CommonUIManager Instance { get; private set; }
 
     public HeroInfoModal HeroInfoModal { get; private set; }
+    public SettingsModalController SettingsModal { get; private set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
@@ -32,5 +33,7 @@ public class CommonUIManager : MonoBehaviour
     {
         // [JC 260629] Modal_HeroStatus(미사용) 제거 — HeroInfo 단일.
         HeroInfoModal = GetComponentInChildren<HeroInfoModal>(true);
+        // [KJ 260708] Settings 모달(Modal_Settings)도 HeroInfo와 동일하게 항상-활성 호스트에서 조회.
+        SettingsModal = GetComponentInChildren<SettingsModalController>(true);
     }
 }
