@@ -167,3 +167,10 @@ Assets/_ProtoType_Merge/CLAUDE.md.meta
 *_BACKUP_*
 
 /Assets/ASB_Work/.ExcelBackup/
+
+# CFXR(Cartoon FX Remaster) — 참고/스프라이트 소스 전용, 런타임 무의존이라 팀 레포 제외(약 41MB)
+/Assets/_ProtoType_Merge/JC/__Testbed_asset/JMO Assets/
+/Assets/_ProtoType_Merge/JC/__Testbed_asset/JMO Assets.meta
+
+# GitHub Copilot이 생성한 Azure 보일러플레이트 — 프로젝트 무관
+/.github/copilot-instructions.md

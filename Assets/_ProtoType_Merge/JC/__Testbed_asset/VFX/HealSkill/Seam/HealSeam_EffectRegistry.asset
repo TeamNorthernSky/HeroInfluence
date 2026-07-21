@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 541a9e4f815bea94d94b270889cd5075, type: 3}
+  m_Name: HealSeam_EffectRegistry
+  m_EditorClassIdentifier: 
+  _entries:
+  - Id: 1
+    Prefab: {fileID: 3703289020053548415, guid: aaee74ecb2db694469e9b60c87931531,
+      type: 3}
+  - Id: 4
+    Prefab: {fileID: 118217792865863873, guid: 893c0c821e9d5504583b5e9c35509178, type: 3}
