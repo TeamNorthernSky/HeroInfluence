@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2197a802db0c69c45bb9a5415f1649b2, type: 3}
   m_Name: 0_HealAuraMasterPreset
   m_EditorClassIdentifier: 
-  duration: 2.5
+  duration: 3
   fadeInTime: 0.2
   fadeOutTime: 0.2

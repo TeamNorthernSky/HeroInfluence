@@ -27,6 +27,12 @@ namespace JC.VFX
         [SerializeField] private ParticleSystem[] particleSystems;
         [Tooltip("E-2 원호 스윕 링들(구체와 독립, 겹치기 가능). 중심은 궤도 중심과 동일.")]
         [SerializeField] private HealArcRing[] arcRings;
+        [Tooltip("E-3 힐 오라 글로우(발밑 직립 광채 기둥). 마스터 페이드는 여기서 동기 주입.")]
+        [SerializeField] private HealAuraGlow auraGlow;
+        [Tooltip("E-4 녹색 십자 버스트(발밑 상승 파티클). 페이드아웃 시 StopSpawning.")]
+        [SerializeField] private HealCrossBurst crossBurst;
+        [Tooltip("E-5 바닥 장판(방사형 샤인 스파크 디스크). 마스터 페이드는 여기서 동기 주입.")]
+        [SerializeField] private HealGroundShine groundShine;
 
         [Header("런타임 프리뷰")]
         [Tooltip("이펙트 전체 타이밍(총 재생시간+전후 페이드) 마스터 프리셋. 없으면 아래 필드값 사용.")]
@@ -110,6 +116,9 @@ namespace JC.VFX
             if (particleSystems != null)
                 foreach (var ps in particleSystems) if (ps) { ps.Clear(); ps.Play(); }
             if (arcRings != null) foreach (var ar in arcRings) if (ar) ar.Play(_center);
+            if (auraGlow) auraGlow.Play(_center);
+            if (crossBurst) crossBurst.Play(_center);
+            if (groundShine) groundShine.Play(_center);
             IsPlaying = true;
         }
 
@@ -127,6 +136,7 @@ namespace JC.VFX
             _phase = Phase.Out;
             _phaseT = 0f;
             if (arcRings != null) foreach (var ar in arcRings) if (ar) ar.StopSpawning();
+            if (crossBurst) crossBurst.StopSpawning();
         }
 
         private void HideImmediate()
@@ -134,6 +144,9 @@ namespace JC.VFX
             if (particleSystems != null)
                 foreach (var ps in particleSystems) if (ps) ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             if (arcRings != null) foreach (var ar in arcRings) if (ar) ar.StopAll();
+            if (crossBurst) crossBurst.StopAll();
+            if (auraGlow) auraGlow.Stop();
+            if (groundShine) groundShine.Stop();
             if (orb) orb.gameObject.SetActive(false);
             _phase = Phase.Idle;
             _fade = 0f;
@@ -173,6 +186,7 @@ namespace JC.VFX
                         _phase = Phase.Out;
                         _phaseT = 0f;
                         if (arcRings != null) foreach (var ar in arcRings) if (ar) ar.StopSpawning();   // 페이드아웃 시작 → 새 원호 중단, 기존은 자연 소멸
+                        if (crossBurst) crossBurst.StopSpawning();
                     }
                     break;
                 case Phase.Out:
@@ -255,6 +269,9 @@ namespace JC.VFX
                 _mpb.SetFloat(FadeMulID, _fade);
                 rimRenderer.SetPropertyBlock(_mpb);
             }
+
+            if (auraGlow) auraGlow.SetEnvelope(_fade);       // 오라 글로우 마스터 페이드 동기
+            if (groundShine) groundShine.SetEnvelope(_fade); // 바닥 장판 마스터 페이드 동기
         }
     }
 }
