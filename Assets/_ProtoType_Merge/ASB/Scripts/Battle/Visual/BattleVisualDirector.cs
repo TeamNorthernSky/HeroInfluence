@@ -24,30 +24,26 @@ public class BattleVisualDirector : MonoBehaviour
             return;
         }
 
+        // Schema=1(PhaseCue)은 시전자 이펙트/사운드를 UnitEffectPresenter/Cue가 담당 →
+        // director는 스폰하지 않는다(이중 스폰 방지). Schema=0만 이 레거시 경로 사용.
+        if (presentation.IsPhaseCue)
+        {
+            return;
+        }
+
         var profile = actor?.GetComponent<UnitVisualProfile>();
         Transform socket = profile?.AttackEffectSocket ?? actor?.transform;
 
-        // 공격 이펙트/사운드 id: Attack 페이즈 대표 beat 우선, 없으면 flat 필드 폴백.
-        int effectId = presentation.AttackEffectId;
-        int soundId = presentation.AttackSoundId;
-        if (presentation.Attack != null && presentation.Attack.Enabled
-            && presentation.Attack.Beats != null && presentation.Attack.Beats.Count > 0)
-        {
-            AttackBeat beat = presentation.Attack.Beats[0];
-            if (beat.EffectId != 0) effectId = beat.EffectId;
-            if (beat.SoundId != 0) soundId = beat.SoundId;
-        }
-
         if (presentation.EnableAttackEffect)
         {
-            GameObject prefab = ResolveEffectPrefab(effectId, presentation.AttackEffectPrefab);
+            GameObject prefab = ResolveEffectPrefab(presentation.AttackEffectId, presentation.AttackEffectPrefab);
             if (prefab != null && socket != null)
             {
                 Instantiate(prefab, socket.position, socket.rotation);
             }
         }
 
-        PlaySound(soundId, presentation.AttackSfxClip, socket, presentation.SfxVolume);
+        PlaySound(presentation.AttackSoundId, presentation.AttackSfxClip, socket, presentation.SfxVolume);
     }
 
     public void PlayHitEffect(BattleCharactor target, int skillIndex)
@@ -64,7 +60,8 @@ public class BattleVisualDirector : MonoBehaviour
         if (presentation.EnableHitEffect)
         {
             GameObject prefab = ResolveEffectPrefab(presentation.HitEffectId, presentation.HitEffectPrefab);
-            if (prefab != null && socket != null)
+            // 재료 프리팹은 프리젠터/이벤트가 담당 → director는 스폰하지 않음.
+            if (prefab != null && prefab.GetComponent<ISkillEffectBehaviour>() == null && socket != null)
             {
                 Instantiate(prefab, socket.position, socket.rotation);
             }
@@ -72,6 +69,9 @@ public class BattleVisualDirector : MonoBehaviour
 
         PlaySound(presentation.HitSoundId, presentation.HitSfxClip, socket, presentation.SfxVolume);
     }
+
+    /// <summary>EffectRegistry에서 id로 프리팹을 조회합니다(시퀀서의 재료 판별용). 0이면 null.</summary>
+    public GameObject GetRegisteredEffect(int id) => id != 0 ? _effectRegistry?.Get(id) : null;
 
     // 레지스트리 id 우선, 없으면 레거시 프리팹 폴백 (마이그레이션 브리지).
     private GameObject ResolveEffectPrefab(int effectId, GameObject legacyPrefab)

@@ -30,6 +30,9 @@ public class CharactorAnimationController : MonoBehaviour
     public int HitEventCount { get; private set; }
     private int _hitWaitBaseline;
 
+    public int ComboAdvanceCount { get; private set; }
+    private int _comboWaitBaseline;
+
     public void SetAnimationSpeed(float speedMultiplier)
     {
         CurrentAnimSpeed = Mathf.Max(0.01f, speedMultiplier);
@@ -62,11 +65,27 @@ public class CharactorAnimationController : MonoBehaviour
     /// <summary>BeginHitWait 이후 새 타격 이벤트가 도착했는지. WaitHitAction 완료 판정에 사용합니다.</summary>
     public bool HasHitSinceWaitBegan => HitEventCount > _hitWaitBaseline;
 
+    public void BeginComboWait() => _comboWaitBaseline = ComboAdvanceCount;
+
+    public bool HasComboAdvancedSinceWaitBegan => ComboAdvanceCount > _comboWaitBaseline;
+
     /// <summary>Unity Animation Event에서 호출 (함수명: AniEvent_OnHit). model 브리지에서도 전달됩니다.</summary>
     public void AniEvent_OnHit()
     {
         HitEventCount++;
         IsHitEventReached = true;
+    }
+
+    public void AniEvent_AdvanceCombo()
+    {
+        ComboAdvanceCount++;
+    }
+
+    public void PlayState(string stateName, float blendSeconds)
+    {
+        if (_animator == null || string.IsNullOrWhiteSpace(stateName)) return;
+        if (blendSeconds <= 0f) { _animator.Play(stateName.Trim(), 0, 0f); return; }
+        _animator.CrossFadeInFixedTime(stateName.Trim(), blendSeconds, 0, 0f);
     }
 
     /// <summary>

@@ -3,23 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Presentation data mapped by SkillIndex through SkillPresentationCatalog.
-/// Skill runtime values remain separate; this asset stores animation slot, effect, sound,
-/// hit timing, and projectile presentation overrides.
+/// skillIndex로 매핑되는 스킬 연출 데이터.
+/// PresentationSchemaVersion으로 신/구 경로를 구분한다: 0=Legacy(기존 director), 1=PhaseCue(페이즈+Cue).
 /// </summary>
 [CreateAssetMenu(fileName = "SkillPresentation_New", menuName = "Battle/Skill Presentation Data")]
 public class SkillPresentationData : ScriptableObject
 {
     [Header("Skill Binding")]
-    [Tooltip("SkillData.skillIndex used by SkillPresentationEditorWindow and SkillPresentationCatalog.")]
+    [Tooltip("SkillData.skillIndex. SkillPresentationCatalog가 이 값으로 조회.")]
     public int SkillIndex;
 
+    [Tooltip("0 = Legacy(기존 director 경로), 1 = PhaseCue(새 Cue 경로). 자동 변경 금지 — 에디터 Upgrade 버튼으로만 전환.")]
+    public int PresentationSchemaVersion = 0;
+
+    /// <summary>새 페이즈/Cue 구조가 활성인지.</summary>
+    public bool IsPhaseCue => PresentationSchemaVersion >= 1;
+
     [Header("Animation State/Slot Override (empty uses SkillData/fallback)")]
-    [Tooltip("Animator state/slot used by this skill, such as ClassSkill_1 or WeaponSkill_1. Empty uses SkillData.StateName, then the legacy index fallback.")]
+    [Tooltip("이 스킬의 Animator state/slot. 비면 SkillData.StateName → 산술(ClassSkill_N/WeaponSkill_N) 폴백.")]
+    [AnimatorStateDropdown]
     public string AnimationStateName;
-    [Tooltip("Legacy slot override. Prefer AnimationStateName for new data.")]
+    [Tooltip("Legacy. 신규는 AnimationStateName 사용.")]
     public string AnimationTriggerOverride;
-    [Tooltip("Empty uses SkillData.TargetAnimationTrigger.")]
+    [Tooltip("비면 SkillData.TargetAnimationTrigger 사용.")]
     public string TargetAnimationTriggerOverride;
 
     public string ResolvedAnimationStateName
@@ -37,27 +43,34 @@ public class SkillPresentationData : ScriptableObject
         }
     }
 
-    [Header("Sound (Registry id; 0 = none)")]
-    [Tooltip("SoundRegistry id for the attack sound. 0 = none.")]
+    [Header("Hit Timing")]
+    [Tooltip("true: AniEvent_OnHit 대기. false: HitDelay 사용.")]
+    public bool UseAnimEvent = false;
+    [Tooltip("UseAnimEvent가 false일 때 히트 지연(초).")]
+    public float HitDelay = 0.25f;
+
+    // ─────────────────────────────────────────────
+    // Legacy (Schema=0) — 기존 BattleVisualDirector 경로용. Schema=1에선 사용하지 않음.
+    // ─────────────────────────────────────────────
+    [Header("Sound (Legacy, Schema=0)")]
     public int AttackSoundId;
-    [Tooltip("SoundRegistry id for the hit sound. 0 = none.")]
     public int HitSoundId;
     [Range(0f, 1f)] public float SfxVolume = 1f;
 
-    [Header("Attack Effect (Registry id; 0 = none)")]
-    [Tooltip("Whether to spawn the attack effect.")]
+    [Header("Attack/Hit Effect (Legacy, Schema=0)")]
     public bool EnableAttackEffect = true;
-    [Tooltip("EffectRegistry id spawned at the actor attack socket. 0 = none.")]
     public int AttackEffectId;
-
-    [Header("Hit Effect (Registry id; 0 = none)")]
-    [Tooltip("Whether to spawn the hit effect.")]
     public bool EnableHitEffect = true;
-    [Tooltip("EffectRegistry id spawned at the target hit socket. 0 = none.")]
     public int HitEffectId;
 
-    // --- Legacy direct-reference fields (마이그레이션용, 데이터 이전 후 제거 예정) ---
-    // 신규 데이터는 위 *Id 필드를 사용하세요. 아래 필드는 레지스트리 조회 실패 시 폴백으로만 참조됩니다.
+    [Header("Projectile (Legacy, Schema=0)")]
+    public GameObject ProjectilePrefab;
+    public float FlightTime = 0.3f;
+    public ProjectileTrajectoryType TrajectoryType = ProjectileTrajectoryType.Straight;
+    public float ArcHeight = 2f;
+    public bool ScaleByCellSize;
+
+    // 더 오래된 직접참조 필드(마이그레이션 잔재). 레지스트리 조회 실패 시 폴백으로만.
     [HideInInspector] public AudioClip AttackSfxClip;
     [HideInInspector] public AudioClip HitSfxClip;
     [HideInInspector] public GameObject AttackEffectPrefab;
@@ -67,29 +80,11 @@ public class SkillPresentationData : ScriptableObject
     [HideInInspector] public Vector3 HitEffectPositionOffset;
     [HideInInspector] public Vector3 HitEffectRotationOffset;
 
-    [Header("Hit Timing")]
-    [Tooltip("true: wait for AniEvent_OnHit. false: use HitDelay.")]
-    public bool UseAnimEvent = false;
-    [Tooltip("Hit delay in seconds when UseAnimEvent is false.")]
-    public float HitDelay = 0.25f;
-
-    [Header("Projectile")]
-    [Tooltip("Empty uses the normal instant hit sequence.")]
-    public GameObject ProjectilePrefab;
-    [Tooltip("Projectile travel time in seconds before battle speed scaling.")]
-    public float FlightTime = 0.3f;
-    public ProjectileTrajectoryType TrajectoryType = ProjectileTrajectoryType.Straight;
-    [Tooltip("Max height used when TrajectoryType is Arc.")]
-    public float ArcHeight = 2f;
-    [Tooltip("Scale projectile to grid cell size.")]
-    public bool ScaleByCellSize;
-
     // ─────────────────────────────────────────────
-    // Presentation Phases (연출 페이즈)
-    // 각 페이즈의 Enabled로 스킵/사용을 데이터로 제어한다.
-    // "무엇을 하나(데미지/힐)"는 SkillExecutionResult가 단일 기준이며, 여기서 중복 정의하지 않는다.
+    // Presentation Phases (Schema=1) — 애니+Cue를 갖는 페이즈: MovePrepare/AttackPrepare/Attack/Post.
+    // Move/Return은 이동 로코모션이라 Enabled만.
     // ─────────────────────────────────────────────
-    [Header("Presentation Phases")]
+    [Header("Presentation Phases (Schema=1)")]
     public MovePreparePhase MovePrepare = new MovePreparePhase();
     public MovePhase Move = new MovePhase();
     public AttackPreparePhase AttackPrepare = new AttackPreparePhase();
@@ -97,7 +92,7 @@ public class SkillPresentationData : ScriptableObject
     public ReturnPhase Return = new ReturnPhase();
     public PostPhase Post = new PostPhase();
 
-    /// <summary>페이즈를 정의 순서대로 순회 (검증·에디터 등 크로스커팅용).</summary>
+    /// <summary>페이즈를 정의 순서대로 순회.</summary>
     public IEnumerable<PhaseBase> GetPhases()
     {
         yield return MovePrepare;
@@ -108,25 +103,69 @@ public class SkillPresentationData : ScriptableObject
         yield return Post;
     }
 
+    /// <summary>첫 Attack Beat. 레거시 state 폴백과 기존 단일 공격 호환에만 사용한다.</summary>
+    public AttackBeat PrimaryAttackBeat =>
+        (Attack != null && Attack.Beats != null && Attack.Beats.Count > 0) ? Attack.Beats[0] : null;
+
     private void OnValidate()
     {
-        // beat가 0개인 경우는 flat/산술 폴백으로 정상 동작하므로 경고하지 않는다(마이그레이션 중 노이즈 방지).
-        // 명시적으로 추가된 beat가 완전히 비어 있을 때만 경고한다.
-        if (Attack?.Beats == null)
+        if (!IsPhaseCue)
         {
             return;
         }
 
-        for (int i = 0; i < Attack.Beats.Count; i++)
+        // Schema=1일 때만 Cue/state 검증.
+        ValidateCuePhase("MovePrepare", MovePrepare);
+        ValidateCuePhase("AttackPrepare", AttackPrepare);
+        ValidateCuePhase("Post", Post);
+
+        if (Attack != null && Attack.Enabled && Attack.Beats != null)
         {
-            AttackBeat b = Attack.Beats[i];
-            if (b != null
-                && string.IsNullOrWhiteSpace(b.AnimationStateName)
-                && b.EffectId == 0 && b.SoundId == 0)
+            if (Attack.Beats.Count > 1)
             {
-                Debug.LogWarning(
-                    $"[SkillPresentation] {name}: Attack.Beats[{i}]에 아무 데이터도 없습니다(상태/이펙트/사운드 모두 비어있음).",
-                    this);
+                Debug.LogWarning($"[SkillPresentation] {name}: 이번 버전은 Attack Beat 단일만 실행합니다. Beats[0] 외에는 무시됩니다.", this);
+            }
+            for (int i = 0; i < Attack.Beats.Count; i++)
+            {
+                ValidateCues($"Attack.Beats[{i}]", Attack.Beats[i]?.AnimationStateName, Attack.Beats[i]?.Cues);
+            }
+        }
+    }
+
+    private void ValidateCuePhase(string label, CuePhase phase)
+    {
+        if (phase == null || !phase.Enabled)
+        {
+            return;
+        }
+        ValidateCues(label, phase.AnimationStateName, phase.Cues);
+    }
+
+    private void ValidateCues(string label, string stateName, List<CueBinding> cues)
+    {
+        bool hasCue = cues != null && cues.Count > 0;
+        if (hasCue && string.IsNullOrWhiteSpace(stateName))
+        {
+            Debug.LogWarning($"[SkillPresentation] {name}: {label}에 Cue가 있는데 AnimationStateName이 비어 Cue를 낼 클립이 없습니다.", this);
+        }
+
+        if (!hasCue)
+        {
+            return;
+        }
+
+        var seen = new HashSet<string>();
+        for (int i = 0; i < cues.Count; i++)
+        {
+            string norm = cues[i] != null ? cues[i].NormalizedCueName : string.Empty;
+            if (string.IsNullOrEmpty(norm))
+            {
+                Debug.LogWarning($"[SkillPresentation] {name}: {label}.Cues[{i}] CueName이 비어 있습니다(실행되지 않음).", this);
+                continue;
+            }
+            if (!seen.Add(norm))
+            {
+                Debug.LogWarning($"[SkillPresentation] {name}: {label}에 CueName '{norm}' 중복. 페이즈/Beat 내 CueName은 유일해야 합니다.", this);
             }
         }
     }
@@ -138,18 +177,38 @@ public enum ProjectileTrajectoryType
     Arc
 }
 
-// ─────────────────────────────────────────────
-// Phase / Beat 정의
-// struct는 class를 상속할 수 없으므로 모두 class로 정의한다.
-// SkillPresentationData에는 구체 타입 필드로만 두고, List<PhaseBase>/SerializeReference 다형 직렬화는 쓰지 않는다.
-// ─────────────────────────────────────────────
-[Serializable]
-public class HitTimingSettings
+/// <summary>이펙트를 어디에 생성할지(배치 정보). 재료 동작이 아니라 레시피가 결정.</summary>
+public enum SpawnAnchor
 {
-    [Tooltip("true: AniEvent_OnHit 대기. false: HitDelay 사용.")]
-    public bool UseAnimEvent = false;
-    [Tooltip("UseAnimEvent가 false일 때 히트 지연(초).")]
-    public float HitDelay = 0.25f;
+    Caster,       // 시전자 루트
+    CasterSocket, // 시전자 소켓(SocketName)
+    Target,       // 대상 위치
+    TargetCell    // 대상 셀(위치 스냅샷)
+}
+
+/// <summary>
+/// 하나의 연출 Cue. 클립의 AniEvent_PresentationCue(cueName)가 이 CueName과 매칭되면
+/// EffectIds/SoundIds를 실행한다. 이펙트/사운드는 id 참조만, 동작은 프리팹, 배치는 Anchor/SocketName.
+/// </summary>
+[Serializable]
+public class CueBinding
+{
+    [CueDropdown]
+    [Tooltip("클립 AniEvent_PresentationCue 인자와 일치. trim+소문자로 정규화됨. 빈 값은 실행 안 함.")]
+    public string CueName;
+
+    [Tooltip("EffectRegistry id 목록(0..N).")]
+    public List<int> EffectIds = new List<int>();
+    [Tooltip("SoundRegistry id 목록(0..N).")]
+    public List<int> SoundIds = new List<int>();
+
+    public SpawnAnchor Anchor = SpawnAnchor.CasterSocket;
+    [Tooltip("Anchor=CasterSocket일 때 사용할 소켓 이름(선택).")]
+    public string SocketName;
+
+    /// <summary>trim + 소문자 정규화된 CueName. 매칭/맵 키에 사용.</summary>
+    public string NormalizedCueName =>
+        string.IsNullOrWhiteSpace(CueName) ? string.Empty : CueName.Trim().ToLowerInvariant();
 }
 
 [Serializable]
@@ -159,39 +218,46 @@ public class PhaseBase
     public bool Enabled = true;
 }
 
+/// <summary>애니메이션 슬롯 + Cue 목록을 갖는 페이즈 공통 형태.</summary>
 [Serializable]
-public class MovePreparePhase : PhaseBase { }
+public class CuePhase : PhaseBase
+{
+    [AnimatorStateDropdown]
+    [Tooltip("이 페이즈에서 재생할 Animator state/slot.")]
+    public string AnimationStateName;
+    public List<CueBinding> Cues = new List<CueBinding>();
+}
+
+[Serializable]
+public class MovePreparePhase : CuePhase { }
 
 [Serializable]
 public class MovePhase : PhaseBase
 {
-    [Tooltip("유닛 이동 프로필(UnitMovementProfile)로 접근/복귀. 실제 이동 여부는 런타임 조건과 AND된다.")]
+    [Tooltip("유닛 이동 프로필로 접근/복귀. 실제 이동 여부는 런타임 조건과 AND.")]
     public bool UseUnitMovement = true;
 }
 
 [Serializable]
-public class AttackPreparePhase : PhaseBase
-{
-    [Tooltip("윈드업 이펙트 EffectRegistry id. 0 = none.")]
-    public int WindupEffectId;
-}
+public class AttackPreparePhase : CuePhase { }
 
+/// <summary>공격 타격 단위. 각 Beat는 시퀀서가 CrossFade로 재생하고 Cue 컨텍스트를 개별 등록한다.</summary>
 [Serializable]
 public class AttackBeat
 {
-    [Tooltip("이 타격에 사용할 Animator state/slot. 비면 폴백(SkillData.StateName → 산술).")]
+    [AnimatorStateDropdown]
+    [Tooltip("이 타격의 Animator state/slot. 비면 SkillData.StateName → 산술 폴백.")]
     public string AnimationStateName;
-    [Tooltip("EffectRegistry id. 0 = none.")]
-    public int EffectId;
-    [Tooltip("SoundRegistry id. 0 = none.")]
-    public int SoundId;
-    public HitTimingSettings HitTiming = new HitTimingSettings();
+    [Min(0f)]
+    public float BlendInSeconds = 0.1f;
+    public bool WaitForHitEvent = true;
+    public List<CueBinding> Cues = new List<CueBinding>();
 }
 
 [Serializable]
 public class AttackPhase : PhaseBase
 {
-    [Tooltip("연출 타격 단위. 실제 데미지/힐 적용 횟수·시점은 SkillExecutionResult(DamageContext/onHitCallback)를 단일 기준으로 한다. beat 수만큼 데미지를 중복 적용하지 말 것.")]
+    [Tooltip("콤보 Beat 목록. non-last Beat 클립에는 AniEvent_AdvanceCombo 이벤트가 필요합니다.")]
     public List<AttackBeat> Beats = new List<AttackBeat>();
 }
 
@@ -199,7 +265,7 @@ public class AttackPhase : PhaseBase
 public class ReturnPhase : PhaseBase { }
 
 [Serializable]
-public class PostPhase : PhaseBase
+public class PostPhase : CuePhase
 {
     [Tooltip("연출 종료 후 추가 대기(초).")]
     public float ExtraDelay;

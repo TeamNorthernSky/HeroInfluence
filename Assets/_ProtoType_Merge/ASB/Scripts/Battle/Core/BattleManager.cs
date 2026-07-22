@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -750,7 +750,6 @@ public class BattleManager : MonoBehaviour
         if (presentation == null) return;
 
         AttackBeat beat = GetPrimaryAttackBeat(presentation);
-
         string stateName = beat != null && !string.IsNullOrWhiteSpace(beat.AnimationStateName)
             ? beat.AnimationStateName.Trim()
             : presentation.ResolvedAnimationStateName;
@@ -764,9 +763,8 @@ public class BattleManager : MonoBehaviour
             skill.TargetAnimationTrigger = presentation.TargetAnimationTriggerOverride.Trim();
         }
 
-        HitTimingSettings timing = beat?.HitTiming;
-        skill.UseAnimEvent = timing != null ? timing.UseAnimEvent : presentation.UseAnimEvent;
-        skill.HitDelay     = timing != null ? timing.HitDelay     : presentation.HitDelay;
+        skill.UseAnimEvent = presentation.UseAnimEvent;
+        skill.HitDelay = presentation.HitDelay;
     }
 
     private static AttackBeat GetPrimaryAttackBeat(SkillPresentationData presentation)
@@ -780,6 +778,61 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
+    private static int _actionInstanceCounter;
+    private static int NextActionInstanceId() => ++_actionInstanceCounter;
+
+    // Schema=1(PhaseCue)일 때만 유닛 로컬 Cue 컨텍스트를 등록한다. Schema=0은 기존 director 경로(무등록).
+    private void SetupPresentationContext(BattleCharactor actor, BattleCharactor target, SkillData skill,
+        SkillPresentationData presentation, AttackBeat activeBeat = null, string activeStateName = null)
+    {
+        if (actor == null || presentation == null || _visualDirector == null || !presentation.IsPhaseCue) return;
+
+        AttackBeat beat = activeBeat ?? GetPrimaryAttackBeat(presentation);
+        var cueMap = new Dictionary<string, RuntimeCue>();
+        if (beat?.Cues != null)
+        {
+            foreach (CueBinding binding in beat.Cues)
+            {
+                if (binding == null) continue;
+                string key = binding.NormalizedCueName;
+                if (string.IsNullOrEmpty(key) || cueMap.ContainsKey(key)) continue;
+
+                var cue = new RuntimeCue { Anchor = binding.Anchor, SocketName = binding.SocketName };
+                if (binding.EffectIds != null)
+                {
+                    foreach (int id in binding.EffectIds)
+                    {
+                        GameObject prefab = _visualDirector.GetRegisteredEffect(id);
+                        if (prefab != null) cue.EffectPrefabs.Add(prefab);
+                    }
+                }
+                if (binding.SoundIds != null) cue.SoundIds.AddRange(binding.SoundIds);
+                cueMap[key] = cue;
+            }
+        }
+
+        PresentationRuntimeContext context = actor.EnsurePresentationComponents();
+        if (context == null) return;
+
+        var effectContext = new SkillEffectContext
+        {
+            ActionInstanceId = NextActionInstanceId(),
+            Caster = actor,
+            PrimaryTarget = target,
+            Targets = target != null ? new List<BattleCharactor> { target } : null,
+            TargetPosition = target != null ? target.transform.position : actor.transform.position,
+            SocketTransform = actor.GetComponent<UnitVisualProfile>()?.AttackEffectSocket ?? actor.transform,
+            PlaybackSpeed = _currentBattleSpeed,
+            HitIndex = 0,
+        };
+        string expectedStateName = !string.IsNullOrWhiteSpace(activeStateName)
+            ? activeStateName
+            : skill != null ? skill.StateName : string.Empty;
+        int expectedHash = !string.IsNullOrWhiteSpace(expectedStateName)
+            ? Animator.StringToHash(expectedStateName.Trim())
+            : 0;
+        context.SetActive(effectContext.ActionInstanceId, effectContext, cueMap, expectedHash);
+    }
     private static SkillData ResolveSkillAnimationData(SkillData source)
     {
         if (source == null || string.IsNullOrWhiteSpace(source.AnimationTrigger))
@@ -902,6 +955,13 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
+        // 특이 스킬 커스텀 연출 탈출구(등록 없으면 no-op → 기본 시퀀서).
+        if (skill != null && SkillPresentationSequenceRegistry.TryGet(skill.skillIndex, out ISkillPresentationSequence customSeq))
+        {
+            yield return StartCoroutine(customSeq.Run(this, actor, target, skill, onHitCallback));
+            yield break;
+        }
+
         skill = ResolveSkillAnimationData(skill);
         ApplyPresentationOverride(skill);
         actor.EnsureAnimationController();
@@ -929,24 +989,36 @@ public class BattleManager : MonoBehaviour
         if (moveEnabled)
             EnqueueSkillApproach(runner, actor, target, actorAnim, movement, shouldMove, shouldRotate);
 
-        if (attackPrepEnabled && _visualDirector != null && skill != null)
+        // Schema=1은 Cue만 이펙트를 재생한다. 기존 SpawnAttackEffectAction은 Legacy 경로에만 남긴다.
+        if (attackPrepEnabled && (presentation == null || !presentation.IsPhaseCue) && _visualDirector != null && skill != null)
             runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
 
-        runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
-        runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
+        bool useCombo = !playBasicAttackAnimation && presentation?.IsPhaseCue == true
+            && presentation.Attack != null && presentation.Attack.Enabled
+            && presentation.Attack.Beats != null && presentation.Attack.Beats.Count > 0;
 
-        bool isArcher = actor.GetComponent<UnitVisualProfile>()?.HoldArrow != null;
-        bool shouldSpawnArrowImpact = playTargetHitAnimation && skill != null && skill.classSkillEffect == 0;
-        if (isArcher && target != null && shouldSpawnArrowImpact)
+        if (useCombo)
         {
-            runner.Enqueue(new ArrowImpactAction(actor, target, _currentBattleSpeed, targetAnimTrigger));
-            targetAnimTrigger = null;
+            runner.Enqueue(new ASB.Work.Battle.Sequence.ComboSkillAction(
+                actorAnim,
+                presentation.Attack.Beats,
+                (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
+                (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, beat, stateName),
+                host => ResolveSkillHitRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill),
+                _currentBattleSpeed,
+                AnimEventTimeoutSeconds,
+                elapsed => sequenceBattleElapsed += elapsed));
         }
-
-        runner.Enqueue(new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector));
-
-        if (!string.IsNullOrEmpty(targetState))
-            runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
+        else
+        {
+            SetupPresentationContext(actor, target, skill, presentation);
+            runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
+            runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
+            runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ResolveSkillHitRoutine(
+                host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill)));
+            if (!string.IsNullOrEmpty(targetState))
+                runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
+        }
 
         if (returnEnabled)
             EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
@@ -955,6 +1027,9 @@ public class BattleManager : MonoBehaviour
 
         yield return StartCoroutine(runner.RunAll(this));
 
+        // 연출 종료: 늦게 도착한 이벤트가 다음 실행 컨텍스트를 오용하지 않도록 정리.
+        actor.GetComponent<PresentationRuntimeContext>()?.Clear();
+
         float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
         yield return WaitForBattleSeconds(Mathf.Max(remainingTotal, 0.2f));
 
@@ -962,6 +1037,26 @@ public class BattleManager : MonoBehaviour
             yield return StartCoroutine(new WaitTargetReactionAction(target, _currentBattleSpeed).ExecuteRoutine(this));
     }
 
+    private static string ResolveAttackBeatState(CharactorAnimationController anim, SkillData skill, SkillPresentationData presentation, AttackBeat beat, int beatIndex)
+    {
+        if (beat != null && !string.IsNullOrWhiteSpace(beat.AnimationStateName)) return beat.AnimationStateName.Trim();
+        if (beatIndex > 0) return string.Empty;
+        if (!string.IsNullOrWhiteSpace(presentation?.ResolvedAnimationStateName)) return presentation.ResolvedAnimationStateName;
+        return anim != null ? anim.GetTargetStateName(skill) : string.Empty;
+    }
+
+    private IEnumerator ResolveSkillHitRoutine(MonoBehaviour host, BattleCharactor actor, BattleCharactor target,
+        Func<BattleHitResult> onHitCallback, string targetAnimTrigger, bool playTargetHitAnimation, SkillData skill)
+    {
+        bool isArcher = actor != null && actor.GetComponent<UnitVisualProfile>()?.HoldArrow != null;
+        bool shouldSpawnArrowImpact = playTargetHitAnimation && skill != null && skill.classSkillEffect == 0;
+        if (isArcher && target != null && shouldSpawnArrowImpact)
+        {
+            yield return new ArrowImpactAction(actor, target, _currentBattleSpeed, targetAnimTrigger).ExecuteRoutine(host);
+            targetAnimTrigger = null;
+        }
+        yield return new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host);
+    }
     private static void ResolveSkillMovement(
         BattleCharactor actor,
         BattleCharactor target,

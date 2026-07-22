@@ -44,4 +44,38 @@ public class UnitVisualProfile : MonoBehaviour
     public float ArcHeight = 2f;
     [Tooltip("라인이 페이드아웃되는 시간(초).")]
     public float TrailFadeDuration = 0.3f;
+
+    /// <summary>이름으로 소켓 Transform 조회. 비면 AttackEffectSocket, 없으면 루트로 폴백.</summary>
+    public Transform GetSocket(string socketName)
+    {
+        if (string.IsNullOrWhiteSpace(socketName))
+        {
+            return AttackEffectSocket != null ? AttackEffectSocket : transform;
+        }
+
+        Transform found = FindDeep(transform, socketName.Trim());
+        if (found != null)
+        {
+            return found;
+        }
+
+        return AttackEffectSocket != null ? AttackEffectSocket : transform;
+    }
+
+    private static Transform FindDeep(Transform root, string name)
+    {
+        if (root.name == name)
+        {
+            return root;
+        }
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform r = FindDeep(root.GetChild(i), name);
+            if (r != null)
+            {
+                return r;
+            }
+        }
+        return null;
+    }
 }

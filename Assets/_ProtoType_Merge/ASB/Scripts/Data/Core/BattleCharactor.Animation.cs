@@ -31,4 +31,27 @@ public partial class BattleCharactor
         EnsureAnimationController();
         Anim?.AniEvent_OnHit();
     }
+
+    public void AniEvent_AdvanceCombo()
+    {
+        EnsureAnimationController();
+        Anim?.AniEvent_AdvanceCombo();
+    }
+
+    // 연출 Cue가 루트 BattleCharactor에 걸린 경우도 유닛 라우터로 분배. 라우터 없으면 no-op(휴면).
+    public void AniEvent_PresentationCue(string cueName) => GetComponent<UnitAnimationEventRouter>()?.PresentationCue(cueName);
+
+    /// <summary>
+    /// 연출 재료(이벤트 기반) 사용 시 필요한 유닛 로컬 컴포넌트를 보장합니다.
+    /// 재료를 쓰는 스킬에서만 시퀀서가 호출하므로, 일반 스킬 유닛에는 부착되지 않습니다.
+    /// </summary>
+    internal PresentationRuntimeContext EnsurePresentationComponents()
+    {
+        PresentationRuntimeContext ctx = GetComponent<PresentationRuntimeContext>();
+        if (ctx == null) ctx = gameObject.AddComponent<PresentationRuntimeContext>();
+        if (GetComponent<UnitEffectPresenter>() == null) gameObject.AddComponent<UnitEffectPresenter>();
+        if (GetComponent<UnitSoundPresenter>() == null) gameObject.AddComponent<UnitSoundPresenter>();
+        if (GetComponent<UnitAnimationEventRouter>() == null) gameObject.AddComponent<UnitAnimationEventRouter>();
+        return ctx;
+    }
 }
