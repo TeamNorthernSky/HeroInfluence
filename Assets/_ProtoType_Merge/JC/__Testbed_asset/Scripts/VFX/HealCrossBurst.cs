@@ -90,6 +90,9 @@ namespace JC.VFX
             _quad = BuildQuad();
         }
 
+        /// <summary>변형 프리셋 런타임 교체(PawForYou 등 색 변형 재사용용).</summary>
+        public void SetPreset(HealCrossPreset p) => preset = p;
+
         /// <summary>중심 주입 + 십자 스폰 시작.</summary>
         public void Play(Vector3 center)
         {

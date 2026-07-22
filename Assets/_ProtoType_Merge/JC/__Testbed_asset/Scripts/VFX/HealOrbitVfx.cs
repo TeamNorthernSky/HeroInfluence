@@ -3,6 +3,7 @@ using UnityEngine;
 namespace JC.VFX
 {
     /// <summary>
+    /// ★네코밍 직업 스킬 「아픈 거 다 날아가라」(HealSkill)의 힐 오라 오케스트레이터.
     /// 힐 오라 E-1: 대상(착지점) 주위를 궤도 운동하는 구체.
     /// 발사체 오브와 동일한 룩(HealOrbitCoreInner/RimShell 2오브젝트, 전용 재질)을 재사용.
     /// ★닫힌 해 파라메트릭: angle += ω·dt, 되먹임 없음 → Update+deltaTime. 충돌/착지 없음.

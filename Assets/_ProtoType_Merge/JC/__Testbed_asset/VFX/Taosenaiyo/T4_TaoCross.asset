@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58ae90754611cc44b8923a3c9419f03c, type: 3}
+  m_Name: T4_TaoCross
+  m_EditorClassIdentifier: 
+  maxCrosses: 12
+  spawnIntervalMin: 0.06
+  spawnIntervalMax: 0.16
+  lifetimeMin: 0.7
+  lifetimeMax: 1.1
+  radius: 0.55
+  baseYOffset: 0.05
+  riseSpeedMin: 1.6
+  riseSpeedMax: 2.3
+  riseAccelMul: 3
+  riseAccelTime: 0.25
+  popOvershoot: 2
+  popFrac: 0.25
+  endFrac: 0.3
+  bobAmp: 0.05
+  bobFreq: 2
+  spinMax: 0
+  billboardYOnly: 1
+  sizeMin: 0.12
+  sizeMax: 0.2
+  fadeInFrac: 0.12
+  fadeOutFrac: 0.3
+  color: {r: 1, g: 0.92, b: 0.5, a: 1}
+  intensity: 8
+  barWidth: 0.02
+  barLength: 0.269
+  softness: 0.08

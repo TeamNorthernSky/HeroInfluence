@@ -3,6 +3,8 @@ using UnityEngine;
 namespace JC.VFX
 {
     /// <summary>
+    /// ★네코밍 직업 스킬 「아픈 거 다 날아가라」(HealSkill)의 발사체 원본.
+    ///   LetsFightingLove(본발사/연쇄)·Taosenaiyo(유성)가 프리팹 복제+베이크로 재사용하는 공용 컴포넌트.
     /// 발사체 구체 VFX. 좌표(생성/목표)는 호출자가 주입, 거동(포물선 비행·도착 버스트)은 이 오브젝트가 소유.
     /// Show(pos): 정지 표시 → Launch(end): 포물선 비행 → 도착 시 1.5배 확대+가산 페이드 후 소멸.
     /// 코어는 2오브젝트 분리(CoreInner=스파이키 / RimShell=매끈 외곽선). 스타버스트 파티클 + 트레일이 궤적을 그림.
@@ -54,6 +56,15 @@ namespace JC.VFX
         {
             _mpb = new MaterialPropertyBlock();
             Hide();
+        }
+
+        /// <summary>비행 튜닝값 런타임 주입(프리셋 라이브 프리뷰용 — TaoMeteorTuner 등).</summary>
+        public void ApplyTuning(float newWorldSize, float newSpeed, float newArcHeight, float newTrailTime)
+        {
+            worldSize = newWorldSize;
+            speed = newSpeed;
+            arcHeight = newArcHeight;
+            trailTime = newTrailTime;
         }
 
         public void Show(Vector3 worldPos)

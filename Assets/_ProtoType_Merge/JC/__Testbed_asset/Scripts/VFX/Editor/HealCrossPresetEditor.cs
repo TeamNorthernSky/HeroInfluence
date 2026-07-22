@@ -6,8 +6,15 @@ namespace JC.VFX
     [CustomEditor(typeof(HealCrossPreset))]
     public class HealCrossPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/HealSkill";
-        static string OrbitPrefab => DIR + "/HealOrbit.prefab";   // CrossBurst가 이 프리팹의 자식
+        // 이 프리셋 SO를 쓰는 컴포넌트가 있을 수 있는 프리팹들(힐 오라 + PawForYou 타격 재사용).
+        // 적용 대상은 "preset 필드가 이 에셋을 참조하는" 컴포넌트만 — 색 변형 에셋이 서로를 덮지 않게.
+        static readonly string[] PrefabPaths =
+        {
+            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/HealSkill/HealOrbit.prefab",
+            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/PawForYou/PawForYou.prefab",
+            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/PawForYou/PawForYouMistake.prefab",
+            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Taosenaiyo/Taosenaiyo.prefab",
+        };
 
         public override void OnInspectorGUI()
         {
@@ -19,10 +26,8 @@ namespace JC.VFX
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
             }
-            EditorGUILayout.HelpBox("적용: 이 값을 HealOrbit 프리팹의 CrossBurst(HealCrossBurst)에 반영.\nlivePreview가 켜져 있으면 플레이 중에도 새 십자부터 즉시 반영됩니다.", MessageType.Info);
+            EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 CrossBurst(HealCrossBurst)에 반영(힐/Paw 프리팹 자동 탐색).\nlivePreview가 켜져 있으면 플레이 중에도 새 십자부터 즉시 반영됩니다.", MessageType.Info);
         }
-
-        static HealCrossBurst FindTarget(GameObject root) => root.GetComponentInChildren<HealCrossBurst>(true);
 
         static readonly string[] Fields =
         {
@@ -33,36 +38,58 @@ namespace JC.VFX
             "intensity","barWidth","barLength","softness",
         };
 
+        static bool UsesPreset(Component c, Object presetAsset)
+            => new SerializedObject(c).FindProperty("preset")?.objectReferenceValue == presetAsset;
+
         void Apply(HealCrossPreset p)
         {
-            var root = PrefabUtility.LoadPrefabContents(OrbitPrefab);
-            var cb = FindTarget(root);
-            if (cb == null) { PrefabUtility.UnloadPrefabContents(root); Debug.LogError("[HealCrossPreset] CrossBurst(HealCrossBurst) 없음"); return; }
-            var so = new SerializedObject(cb);
-            var pso = new SerializedObject(p);
-            foreach (var f in Fields) CopyFloatLike(pso, so, f);
-            so.FindProperty("color").colorValue = p.color;
-            so.FindProperty("billboardYOnly").boolValue = p.billboardYOnly;
-            so.ApplyModifiedPropertiesWithoutUndo();
-            PrefabUtility.SaveAsPrefabAsset(root, OrbitPrefab);
-            PrefabUtility.UnloadPrefabContents(root);
-            Debug.Log("[HealCrossPreset] 프리팹에 적용 완료");
+            int applied = 0;
+            foreach (var path in PrefabPaths)
+            {
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null) continue;
+                var root = PrefabUtility.LoadPrefabContents(path);
+                bool dirty = false;
+                foreach (var cb in root.GetComponentsInChildren<HealCrossBurst>(true))
+                {
+                    if (!UsesPreset(cb, p)) continue;
+                    var so = new SerializedObject(cb);
+                    var pso = new SerializedObject(p);
+                    foreach (var f in Fields) CopyFloatLike(pso, so, f);
+                    so.FindProperty("color").colorValue = p.color;
+                    so.FindProperty("billboardYOnly").boolValue = p.billboardYOnly;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    dirty = true;
+                    applied++;
+                }
+                if (dirty) PrefabUtility.SaveAsPrefabAsset(root, path);
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+            if (applied == 0) Debug.LogError("[HealCrossPreset] 이 에셋을 참조하는 CrossBurst 없음");
+            else Debug.Log($"[HealCrossPreset] 프리팹에 적용 완료 ({applied}곳)");
         }
 
         void Capture(HealCrossPreset p)
         {
-            var root = AssetDatabase.LoadAssetAtPath<GameObject>(OrbitPrefab);
-            var cb = FindTarget(root);
-            if (cb == null) { Debug.LogError("[HealCrossPreset] CrossBurst(HealCrossBurst) 없음"); return; }
-            Undo.RecordObject(p, "Capture Heal Cross");
-            var so = new SerializedObject(cb);
-            var pso = new SerializedObject(p);
-            foreach (var f in Fields) CopyFloatLike(so, pso, f);
-            pso.FindProperty("color").colorValue = so.FindProperty("color").colorValue;
-            pso.FindProperty("billboardYOnly").boolValue = so.FindProperty("billboardYOnly").boolValue;
-            pso.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(p);
-            Debug.Log("[HealCrossPreset] 현재값 캡처 완료");
+            foreach (var path in PrefabPaths)
+            {
+                var root = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (root == null) continue;
+                foreach (var cb in root.GetComponentsInChildren<HealCrossBurst>(true))
+                {
+                    if (!UsesPreset(cb, p)) continue;
+                    Undo.RecordObject(p, "Capture Heal Cross");
+                    var so = new SerializedObject(cb);
+                    var pso = new SerializedObject(p);
+                    foreach (var f in Fields) CopyFloatLike(so, pso, f);
+                    pso.FindProperty("color").colorValue = so.FindProperty("color").colorValue;
+                    pso.FindProperty("billboardYOnly").boolValue = so.FindProperty("billboardYOnly").boolValue;
+                    pso.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(p);
+                    Debug.Log("[HealCrossPreset] 현재값 캡처 완료");
+                    return;
+                }
+            }
+            Debug.LogError("[HealCrossPreset] 이 에셋을 참조하는 CrossBurst 없음");
         }
 
         // int/float 겸용 복사(같은 이름 프로퍼티)

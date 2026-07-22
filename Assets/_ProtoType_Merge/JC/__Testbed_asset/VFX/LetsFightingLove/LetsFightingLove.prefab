@@ -1,0 +1,122 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5196753524613533062
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3942330425293205271}
+  - component: {fileID: 6263541100973671252}
+  m_Layer: 0
+  m_Name: Flash
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3942330425293205271
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5196753524613533062}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7054275192815387418}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6263541100973671252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5196753524613533062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 678a1329f8e5dfb4eaa35c065940c923, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashMaterial: {fileID: 2100000, guid: d6ec421e34402794aa4758374bd03939, type: 2}
+  size: 0.9
+  duration: 0.25
+  growFrom: 0.5
+--- !u!1 &6653199741604405804
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7054275192815387418}
+  - component: {fileID: 6700289420877852747}
+  m_Layer: 0
+  m_Name: LetsFightingLove
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7054275192815387418
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6653199741604405804}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3942330425293205271}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6700289420877852747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6653199741604405804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fe04d77be48d03408d332a3d1ab003e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chargeOrbPrefab: {fileID: 1549392785794828088, guid: 46effff3b507582488c55c461285d270,
+    type: 3}
+  projectilePrefab: {fileID: 3776543144680926548, guid: 70049e8ce82fae8419e9f4a71b74d97b,
+    type: 3}
+  chainProjectilePrefab: {fileID: 3776543144680926548, guid: eb601b97900ac4c45952c94fb83b0f76,
+    type: 3}
+  healAuraPrefab: {fileID: 1090546588860394684, guid: 14b94c358ee8fd64cbd058b2db98420b,
+    type: 3}
+  flash: {fileID: 6263541100973671252}
+  masterPreset: {fileID: 11400000, guid: 4ed3540b80159074b9620fbb3d24c59f, type: 2}
+  livePreview: 1
+  socketLName: Socket_L_VFX
+  socketRName: Socket_R_VFX
+  socketLocalOffsetWorld: {x: 0, y: 0, z: 0.04}
+  handChargeTime: 0.7
+  convergeTime: 0.25
+  mergeLocalOffset: {x: 0, y: 1, z: 0.55}
+  mergeFlashColor: {r: 1, g: 0.95, b: 0.6, a: 1}
+  flashSizeMul: 0.8
+  launchDelay: 0.06
+  hitYOffset: 0.68
+  chainDelay: 0.25
+  chainSpawnYOffset: 0.9
+  chainStagger: 0.08
+  cellSize: 2
+  axisTol: 0.6
+  maxChainTargets: 4
