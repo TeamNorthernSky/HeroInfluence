@@ -178,14 +178,11 @@ public class LevelLoader : MonoBehaviour
 
     private void SpawnGates()
     {
-        GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
-        if (obstaclePrefab == null)
-            return;
-
         var gatePlacements = levelData.GatePlacements;
         if (gatePlacements.Count == 0)
             return;
 
+        GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
         Transform parent = GetGateRoot(true);
         for (int i = 0; i < gatePlacements.Count; i++)
         {
@@ -198,11 +195,24 @@ public class LevelLoader : MonoBehaviour
 
             var blockers = new System.Collections.Generic.List<GameObject>();
             IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
-            for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
+            if (placement.HasPrefab &&
+                prefabRegistry != null &&
+                prefabRegistry.TryGetGatePrefab(placement.PrefabKey, out GateFootprint gatePrefab) &&
+                gatePrefab != null)
             {
-                GameObject blocker = SpawnGameObject(obstaclePrefab, blockerCells[cellIndex], gateRootObject.transform);
-                if (blocker != null)
-                    blockers.Add(blocker);
+                Vector3 worldPosition = gatePrefab.GetRootPositionForAnchor(gridManager, placement.GridPosition);
+                GateFootprint gateVisual = Instantiate(gatePrefab, worldPosition, gatePrefab.transform.rotation, gateRootObject.transform);
+                gateVisual.SyncAnchorFromTransform();
+                blockers.Add(gateVisual.gameObject);
+            }
+            else if (obstaclePrefab != null)
+            {
+                for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
+                {
+                    GameObject blocker = SpawnGameObject(obstaclePrefab, blockerCells[cellIndex], gateRootObject.transform);
+                    if (blocker != null)
+                        blockers.Add(blocker);
+                }
             }
 
             GateRuntimeController gate = gateRootObject.AddComponent<GateRuntimeController>();
@@ -492,7 +502,7 @@ public class LevelLoader : MonoBehaviour
             spawnObject.transform.SetParent(parent);
             spawnObject.transform.position = GetMarkerWorldPosition(placement.GridPosition);
             EnemySpawnPoint spawnPoint = spawnObject.AddComponent<EnemySpawnPoint>();
-            spawnPoint.Initialize(placement.ZoneId, placement.GridPosition);
+            spawnPoint.Initialize(placement.ZoneId, placement.GridPosition, placement.EnemyGroupKey);
         }
     }
 

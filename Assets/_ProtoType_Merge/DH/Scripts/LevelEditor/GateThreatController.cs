@@ -460,7 +460,7 @@ public class GateThreatController : MonoBehaviour
             if (spawnPoint == null)
                 continue;
 
-            if (enemySpawnController.TrySpawnGateThreatEnemy(normalizedZoneId, spawnPoint.GridPosition, out placementKey))
+            if (enemySpawnController.TrySpawnGateThreatEnemy(normalizedZoneId, spawnPoint.GridPosition, spawnPoint.EnemyGroupKey, out placementKey))
                 return true;
         }
 
