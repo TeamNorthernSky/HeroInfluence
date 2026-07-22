@@ -13,6 +13,7 @@ public class PartyInteractionController
     private readonly Func<Vector2Int> currentGridProvider;
 
     private Coroutine pendingInteractionCoroutine;
+    private MainEventRegistry mainEventRegistry;
 
     public bool IsInputLocked { get; private set; }
 
@@ -60,6 +61,9 @@ public class PartyInteractionController
             return;
         }
 
+        if (TryHandleMainEventAtGrid(enteredGrid))
+            return;
+
         HandleAdjacentHeroUnionProximity(enteredGrid);
         HandleAdjacentOutpostProximity(enteredGrid);
         HandleVillainUnionProximity(enteredGrid);
@@ -71,6 +75,9 @@ public class PartyInteractionController
             return;
 
         if (HasPendingCombatResult())
+            return;
+
+        if (IsInputLocked)
             return;
 
         if (gridManager == null || combatEncounterManager == null || ownerParty == null)
@@ -134,8 +141,9 @@ public class PartyInteractionController
 
         bool isItem = gridManager.TryGetItemObjectAtGrid(targetInteractionGrid, out ItemObject item);
         bool isEvent = allowEvents && gridManager.TryGetEventObjectAtGrid(targetInteractionGrid, out MapEventObject mapEvent);
+        bool isSubEvent = allowEvents && gridManager.TryGetSubEventObjectAtGrid(targetInteractionGrid, out SubEventObject subEvent);
 
-        if (!isItem && !isEvent)
+        if (!isItem && !isEvent && !isSubEvent)
             return false;
 
         Vector2Int currentGrid = ownerParty.GetCurrentGrid();
@@ -152,11 +160,26 @@ public class PartyInteractionController
             {
                 OnAdjacentEventCellEntered(targetInteractionGrid);
             }
+            else if (isSubEvent)
+            {
+                OnAdjacentSubEventCellEntered(targetInteractionGrid);
+            }
 
             return true;
         }
 
         return false;
+    }
+
+    private bool TryHandleMainEventAtGrid(Vector2Int enteredGrid)
+    {
+        if (!TryGetMainEventAtInteractionCell(enteredGrid, out MainEventObject mainEvent))
+            return false;
+
+        CancelPendingInteraction();
+        bool started = mainEvent.TryTrigger(ownerParty, HandleMainEventClosed);
+        IsInputLocked = started;
+        return started;
     }
 
     private void HandleAdjacentOutpostProximity(Vector2Int enteredGrid)
@@ -203,6 +226,14 @@ public class PartyInteractionController
         pendingInteractionCoroutine = coroutineOwner.StartCoroutine(InvokeDelayedEventInteraction(eventGrid));
     }
 
+    private void OnAdjacentSubEventCellEntered(Vector2Int subEventGrid)
+    {
+        CancelPendingInteraction();
+
+        IsInputLocked = true;
+        pendingInteractionCoroutine = coroutineOwner.StartCoroutine(InvokeDelayedSubEventInteraction(subEventGrid));
+    }
+
     private IEnumerator InvokeDelayedEventInteraction(Vector2Int eventGrid)
     {
         yield return new WaitForSeconds(itemPickupDelay);
@@ -237,6 +268,41 @@ public class PartyInteractionController
         mapEvent.Interact(ownerParty);
         AdjacentMapEventDetected?.Invoke(mapEvent);
         IsInputLocked = false;
+    }
+
+    private IEnumerator InvokeDelayedSubEventInteraction(Vector2Int subEventGrid)
+    {
+        yield return new WaitForSeconds(itemPickupDelay);
+
+        pendingInteractionCoroutine = null;
+
+        if (DHGameEndState.IsEnding)
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
+        if (gridManager == null)
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
+        Vector2Int currentGrid = currentGridProvider != null ? currentGridProvider() : subEventGrid;
+        if (!IsAdjacentOrSame(currentGrid, subEventGrid))
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
+        if (!gridManager.TryGetSubEventObjectAtGrid(subEventGrid, out SubEventObject subEvent))
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
+        bool started = subEvent.TryTrigger(ownerParty, HandleSubEventClosed);
+        IsInputLocked = started;
     }
 
     private void HandleAdjacentHeroUnionProximity(Vector2Int enteredGrid)
@@ -386,6 +452,53 @@ public class PartyInteractionController
     private void HandleCombatPromptClosed(bool startedCombat)
     {
         IsInputLocked = startedCombat;
+    }
+
+    private void HandleMainEventClosed(MainEventObject mainEvent)
+    {
+        IsInputLocked = false;
+    }
+
+    private void HandleSubEventClosed(SubEventObject subEvent)
+    {
+        IsInputLocked = false;
+    }
+
+    private MainEventRegistry ResolveMainEventRegistry()
+    {
+        if (mainEventRegistry == null)
+            mainEventRegistry = UnityEngine.Object.FindFirstObjectByType<MainEventRegistry>();
+
+        return mainEventRegistry;
+    }
+
+    private bool TryGetMainEventAtInteractionCell(Vector2Int grid, out MainEventObject mainEvent)
+    {
+        mainEvent = null;
+
+        MainEventRegistry registry = ResolveMainEventRegistry();
+        if (registry != null &&
+            registry.TryGetEventAtInteractionCell(grid, gridManager, out mainEvent) &&
+            mainEvent != null)
+        {
+            return true;
+        }
+
+        MainEventObject[] mainEvents = UnityEngine.Object.FindObjectsByType<MainEventObject>(FindObjectsSortMode.None);
+        for (int i = 0; i < mainEvents.Length; i++)
+        {
+            MainEventObject candidate = mainEvents[i];
+            if (candidate == null || !candidate.isActiveAndEnabled)
+                continue;
+
+            if (!candidate.IsInteractionCell(grid, gridManager))
+                continue;
+
+            mainEvent = candidate;
+            return true;
+        }
+
+        return false;
     }
 
     private static bool IsAdjacentOrSame(Vector2Int a, Vector2Int b)

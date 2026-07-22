@@ -29,6 +29,8 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedTileKey;
     [SerializeField] private string selectedHeroUnionPrefabKey;
     [SerializeField] private string selectedDecorativeBuildingKey;
+    [SerializeField] private string selectedMainEventPrefabKey;
+    [SerializeField] private string selectedSubEventPrefabKey;
     [SerializeField] private string selectedGateId = "gate_001";
     [SerializeField] private string selectedGateFirstZoneId = "zone_001";
     [SerializeField] private string selectedGateSecondZoneId = "zone_002";
@@ -55,6 +57,9 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private Color heroUnionColor = new Color(0.95f, 0.85f, 0.25f, 0.75f);
     [SerializeField] private Color villainUnionColor = new Color(0.95f, 0.25f, 0.55f, 0.75f);
     [SerializeField] private Color decorativeBuildingColor = new Color(0.95f, 0.65f, 0.25f, 0.75f);
+    [SerializeField] private Color mainEventColor = new Color(0.2f, 0.9f, 1f, 0.75f);
+    [SerializeField] private Color mainEventInteractionColor = new Color(0.2f, 0.9f, 1f, 0.25f);
+    [SerializeField] private Color subEventColor = new Color(0.35f, 0.95f, 0.95f, 0.75f);
     [SerializeField] private Color gateBlockerColor = new Color(0.45f, 0.15f, 1f, 0.75f);
     [SerializeField] private Color enemySpawnPointColor = new Color(1f, 0.55f, 0.05f, 0.75f);
 
@@ -74,6 +79,8 @@ public class LevelEditorController : MonoBehaviour
     public string SelectedTileKey => selectedTileKey;
     public string SelectedHeroUnionPrefabKey => string.IsNullOrWhiteSpace(selectedHeroUnionPrefabKey) ? string.Empty : selectedHeroUnionPrefabKey.Trim();
     public string SelectedDecorativeBuildingKey => selectedDecorativeBuildingKey;
+    public string SelectedMainEventPrefabKey => string.IsNullOrWhiteSpace(selectedMainEventPrefabKey) ? string.Empty : selectedMainEventPrefabKey.Trim();
+    public string SelectedSubEventPrefabKey => string.IsNullOrWhiteSpace(selectedSubEventPrefabKey) ? string.Empty : selectedSubEventPrefabKey.Trim();
     public string SelectedGateId => selectedGateId;
     public string SelectedGateFirstZoneId => selectedGateFirstZoneId;
     public string SelectedGateSecondZoneId => selectedGateSecondZoneId;
@@ -184,6 +191,18 @@ public class LevelEditorController : MonoBehaviour
 
                 levelData.SetDecorativeBuilding(grid, selectedDecorativeBuildingKey);
                 break;
+            case LevelEditorBrushType.MainEvent:
+                if (string.IsNullOrWhiteSpace(selectedMainEventPrefabKey))
+                    return;
+
+                levelData.SetMainEvent(grid, selectedMainEventPrefabKey);
+                break;
+            case LevelEditorBrushType.SubEvent:
+                if (string.IsNullOrWhiteSpace(selectedSubEventPrefabKey))
+                    return;
+
+                levelData.SetSubEvent(grid, selectedSubEventPrefabKey);
+                break;
             case LevelEditorBrushType.GateBlocker:
                 levelData.AddGateBlockerCell(
                     selectedGateId,
@@ -258,6 +277,12 @@ public class LevelEditorController : MonoBehaviour
         for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
             DrawCell(levelData.DecorativeBuildingPlacements[i].GridPosition, decorativeBuildingColor, y, size);
 
+        for (int i = 0; i < levelData.MainEventPlacements.Count; i++)
+            DrawMainEventCells(levelData.MainEventPlacements[i].GridPosition, y, size);
+
+        for (int i = 0; i < levelData.SubEventPlacements.Count; i++)
+            DrawCell(levelData.SubEventPlacements[i].GridPosition, subEventColor, y, size);
+
         for (int i = 0; i < levelData.GatePlacements.Count; i++)
         {
             IReadOnlyList<Vector2Int> blockerCells = levelData.GatePlacements[i].BlockerCells;
@@ -309,6 +334,23 @@ public class LevelEditorController : MonoBehaviour
         }
 
         DrawCell(grid, enemyGroupColor, y, size);
+    }
+
+    private void DrawMainEventCells(Vector2Int grid, float y, float size)
+    {
+        for (int offsetY = -1; offsetY <= 1; offsetY++)
+        {
+            for (int offsetX = -1; offsetX <= 1; offsetX++)
+            {
+                Vector2Int interactionGrid = new Vector2Int(grid.x + offsetX, grid.y + offsetY);
+                if (!levelData.IsInsideGrid(interactionGrid))
+                    continue;
+
+                DrawCell(interactionGrid, mainEventInteractionColor, y, size);
+            }
+        }
+
+        DrawCell(grid, mainEventColor, y, size);
     }
 
     private void MarkLevelDataDirty()

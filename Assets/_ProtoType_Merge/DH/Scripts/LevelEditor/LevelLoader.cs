@@ -13,6 +13,8 @@ public class LevelLoader : MonoBehaviour
     private const string ItemRootName = "ItemRoot";
     private const string OutpostRootName = "OutpostRoot";
     private const string EventRootName = "EventRoot";
+    private const string MainEventRootName = "MainEventRoot";
+    private const string SubEventRootName = "SubEventRoot";
     private const string EnemyRootName = "EnemyRoot";
     private const string HeroUnionRootName = "HeroUnionRoot";
     private const string VillainUnionRootName = "VillainUnionRoot";
@@ -35,6 +37,8 @@ public class LevelLoader : MonoBehaviour
     [FormerlySerializedAs("mineRoot")]
     [SerializeField] private Transform outpostRoot;
     [SerializeField] private Transform eventRoot;
+    [SerializeField] private Transform mainEventRoot;
+    [SerializeField] private Transform subEventRoot;
     [FormerlySerializedAs("stayEnemyRoot")]
     [SerializeField] private Transform enemyRoot;
     [SerializeField] private Transform heroUnionRoot;
@@ -105,6 +109,8 @@ public class LevelLoader : MonoBehaviour
         SpawnItems();
         SpawnOutposts();
         SpawnEvents();
+        SpawnMainEvents();
+        SpawnSubEvents();
         SpawnEnemyPlacements();
         SpawnEnemySpawnPoints();
         SpawnUniqueBuildings();
@@ -345,6 +351,68 @@ public class LevelLoader : MonoBehaviour
         return repository != null && repository.IsEventCompleted(MapProgressKey.ForEvent(grid, MapEventTypeUtility.ToEventKey(eventType)));
     }
 
+    private void SpawnMainEvents()
+    {
+        if (prefabRegistry == null)
+            return;
+
+        IReadOnlyList<MainEventPlacementData> mainEventPlacements = levelData.MainEventPlacements;
+        Transform parent = GetMainEventRoot(true);
+        for (int i = 0; i < mainEventPlacements.Count; i++)
+        {
+            MainEventPlacementData placement = mainEventPlacements[i];
+            if (!prefabRegistry.TryGetMainEventPrefab(placement.PrefabKey, out MainEventObject mainEventPrefab))
+            {
+                Debug.LogWarning(
+                    $"LevelLoader could not find a main event prefab for key '{placement.PrefabKey}'.",
+                    this);
+                continue;
+            }
+
+            if (Application.isPlaying && IsMainEventCompleted(mainEventPrefab.EventKey))
+                continue;
+
+            SpawnComponent(mainEventPrefab, placement.GridPosition, parent);
+        }
+    }
+
+    private static bool IsMainEventCompleted(string eventKey)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.IsMainEventCompleted(eventKey);
+    }
+
+    private void SpawnSubEvents()
+    {
+        if (prefabRegistry == null)
+            return;
+
+        IReadOnlyList<SubEventPlacementData> subEventPlacements = levelData.SubEventPlacements;
+        Transform parent = GetSubEventRoot(true);
+        for (int i = 0; i < subEventPlacements.Count; i++)
+        {
+            SubEventPlacementData placement = subEventPlacements[i];
+            if (!prefabRegistry.TryGetSubEventPrefab(placement.PrefabKey, out SubEventObject subEventPrefab))
+            {
+                Debug.LogWarning(
+                    $"LevelLoader could not find a sub event prefab for key '{placement.PrefabKey}'.",
+                    this);
+                continue;
+            }
+
+            if (Application.isPlaying && IsSubEventCompleted(subEventPrefab.EventKey))
+                continue;
+
+            SpawnComponent(subEventPrefab, placement.GridPosition, parent);
+        }
+    }
+
+    private static bool IsSubEventCompleted(string eventKey)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        return repository != null && repository.IsSubEventCompleted(eventKey);
+    }
+
     private void SpawnEnemyPlacements()
     {
         var enemyPlacements = levelData.EnemyPlacements;
@@ -509,6 +577,8 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(GetItemRoot(false));
         ClearChildren(GetOutpostRoot(false));
         ClearChildren(GetEventRoot(false));
+        ClearChildren(GetMainEventRoot(false));
+        ClearChildren(GetSubEventRoot(false));
         ClearChildren(GetHeroUnionRoot(false));
         ClearChildren(GetVillainUnionRoot(false));
         ClearChildren(GetDecorativeBuildingRoot(false));
@@ -609,6 +679,12 @@ public class LevelLoader : MonoBehaviour
 
     private Transform GetEventRoot(bool createIfMissing) =>
         GetSpawnRoot(ref eventRoot, EventRootName, createIfMissing);
+
+    private Transform GetMainEventRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref mainEventRoot, MainEventRootName, createIfMissing);
+
+    private Transform GetSubEventRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref subEventRoot, SubEventRootName, createIfMissing);
 
     private Transform GetEnemyRoot(bool createIfMissing) =>
         GetSpawnRoot(ref enemyRoot, EnemyRootName, createIfMissing);

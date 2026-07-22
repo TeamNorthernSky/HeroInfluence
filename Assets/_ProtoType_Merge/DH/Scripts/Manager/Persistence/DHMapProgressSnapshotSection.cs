@@ -6,6 +6,9 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
     [SerializeField] private string mapId;
     [SerializeField] private List<string> collectedItemKeys = new List<string>();
     [SerializeField] private List<string> completedEventKeys = new List<string>();
+    [SerializeField] private List<string> completedMainEventKeys = new List<string>();
+    [SerializeField] private List<string> completedSubEventKeys = new List<string>();
+    [SerializeField] private List<string> completedHeroUnionChatKeys = new List<string>();
     [SerializeField] private List<PartyWorldState> partyWorldStates = new List<PartyWorldState>();
     [SerializeField] private List<EnemyWorldState> enemyWorldStates = new List<EnemyWorldState>();
     [SerializeField] private List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
@@ -28,6 +31,9 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         mapId = repository.MapId;
         CopyStrings(repository.CollectedItemKeys, collectedItemKeys);
         CopyStrings(repository.CompletedEventKeys, completedEventKeys);
+        CopyStrings(repository.CompletedMainEventKeys, completedMainEventKeys);
+        CopyStrings(repository.CompletedSubEventKeys, completedSubEventKeys);
+        CopyStrings(repository.CompletedHeroUnionChatKeys, completedHeroUnionChatKeys);
         CopyPartyWorldStates(repository.PartyWorldStates, partyWorldStates);
         CopyEnemyWorldStates(repository.EnemyWorldStates, enemyWorldStates);
         CopyOutpostStates(repository.OutpostStates, outpostStates);
@@ -48,6 +54,9 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         data.mapId = mapId;
         ReplaceStrings(data.collectedItemKeys, collectedItemKeys);
         ReplaceStrings(data.completedEventKeys, completedEventKeys);
+        ReplaceStrings(data.completedMainEventKeys, completedMainEventKeys);
+        ReplaceStrings(data.completedSubEventKeys, completedSubEventKeys);
+        ReplaceStrings(data.completedHeroUnionChatKeys, completedHeroUnionChatKeys);
         ReplacePartyWorldStates(data.partyWorldStates, partyWorldStates);
         ReplaceEnemyWorldStates(data.enemyWorldStates, enemyWorldStates);
         ReplaceOutpostStates(data.outpostStates, outpostStates);
@@ -69,6 +78,9 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         mapId = data.mapId;
         CopyStrings(data.collectedItemKeys, collectedItemKeys);
         CopyStrings(data.completedEventKeys, completedEventKeys);
+        CopyStrings(data.completedMainEventKeys, completedMainEventKeys);
+        CopyStrings(data.completedSubEventKeys, completedSubEventKeys);
+        CopyStrings(data.completedHeroUnionChatKeys, completedHeroUnionChatKeys);
         CopyPartyWorldStates(data.partyWorldStates, partyWorldStates);
         CopyEnemyWorldStates(data.enemyWorldStates, enemyWorldStates);
         CopyOutpostStates(data.outpostStates, outpostStates);
@@ -86,6 +98,9 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         mapId = string.Empty;
         collectedItemKeys.Clear();
         completedEventKeys.Clear();
+        completedMainEventKeys.Clear();
+        completedSubEventKeys.Clear();
+        completedHeroUnionChatKeys.Clear();
         partyWorldStates.Clear();
         enemyWorldStates.Clear();
         outpostStates.Clear();

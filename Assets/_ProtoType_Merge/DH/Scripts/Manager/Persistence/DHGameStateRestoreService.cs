@@ -47,6 +47,9 @@ public static class DHGameStateRestoreService
             data.mapId,
             data.collectedItemKeys,
             data.completedEventKeys,
+            data.completedMainEventKeys,
+            data.completedSubEventKeys,
+            data.completedHeroUnionChatKeys,
             data.partyWorldStates,
             data.enemyWorldStates,
             data.outpostStates,
@@ -297,6 +300,8 @@ public static class DHGameStateRestoreService
         PartyRepositorySync.ApplyAllPartiesToScene(rebuildVisuals: true);
         RefreshUnitStates();
         ApplyHeroUnionStates();
+        ApplyMainEventStates();
+        ApplySubEventStates();
         RefreshGateStates();
         RefreshSceneRegistriesAndViews();
     }
@@ -367,6 +372,40 @@ public static class DHGameStateRestoreService
         }
     }
 
+    private static void ApplyMainEventStates()
+    {
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+        if (progressRepository == null)
+            return;
+
+        MainEventObject[] mainEvents = Object.FindObjectsByType<MainEventObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < mainEvents.Length; i++)
+        {
+            MainEventObject mainEvent = mainEvents[i];
+            if (mainEvent == null)
+                continue;
+
+            mainEvent.gameObject.SetActive(!progressRepository.IsMainEventCompleted(mainEvent.EventKey));
+        }
+    }
+
+    private static void ApplySubEventStates()
+    {
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+        if (progressRepository == null)
+            return;
+
+        SubEventObject[] subEvents = Object.FindObjectsByType<SubEventObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < subEvents.Length; i++)
+        {
+            SubEventObject subEvent = subEvents[i];
+            if (subEvent == null)
+                continue;
+
+            subEvent.gameObject.SetActive(!progressRepository.IsSubEventCompleted(subEvent.EventKey));
+        }
+    }
+
     private static void RefreshGateStates()
     {
         GateRuntimeController[] gates = Object.FindObjectsByType<GateRuntimeController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -379,6 +418,8 @@ public static class DHGameStateRestoreService
         Object.FindFirstObjectByType<HeroUnionRegistry>()?.RefreshSceneHeroUnions();
         Object.FindFirstObjectByType<EnemyRegistry>()?.RefreshSceneEnemies();
         Object.FindFirstObjectByType<VillainUnionBaseRegistry>()?.RefreshSceneBases();
+        Object.FindFirstObjectByType<MainEventRegistry>()?.RegisterExistingMainEvents();
+        Object.FindFirstObjectByType<SubEventRegistry>()?.RegisterExistingSubEvents();
         Object.FindFirstObjectByType<MultiGridOccupantRegistry>()?.RefreshSceneOccupants();
         Object.FindFirstObjectByType<OutpostRegistry>()?.RegisterExistingOutposts();
         Object.FindFirstObjectByType<EnemyFogVisibilitySystem>()?.RefreshAll();

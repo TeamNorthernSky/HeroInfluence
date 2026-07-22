@@ -9,7 +9,8 @@ public class InteractionCellOverlayController : MonoBehaviour
         Neutral,
         Player,
         Enemy,
-        OverlappedEnemy
+        OverlappedEnemy,
+        MainEvent
     }
 
     [Header("References")]
@@ -18,6 +19,7 @@ public class InteractionCellOverlayController : MonoBehaviour
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
+    [SerializeField] private MainEventRegistry mainEventRegistry;
     [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private Transform overlayRoot;
     [SerializeField] private GameObject overlayPrefab;
@@ -28,6 +30,7 @@ public class InteractionCellOverlayController : MonoBehaviour
     [SerializeField] private Color overlappedZoneColor = new Color(0.55f, 0f, 0f, 0.55f);
     [SerializeField] private Color playerInteractionColor = new Color(0f, 0.35f, 1f, 0.28f);
     [SerializeField] private Color neutralInteractionColor = new Color(1f, 0.85f, 0f, 0.28f);
+    [SerializeField] private Color mainEventInteractionColor = new Color(0.2f, 0.9f, 1f, 0.32f);
     [SerializeField, Range(0.1f, 1.2f)] private float cellScale = 0.92f;
     [SerializeField] private float yOffset = 0.035f;
     [SerializeField, Min(0.02f)] private float refreshInterval = 0.15f;
@@ -59,6 +62,7 @@ public class InteractionCellOverlayController : MonoBehaviour
         Outpost.OutpostClaimed += HandleOutpostChanged;
         HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionChanged;
         HeroUnionUnit.HeroUnionStateChanged += HandleHeroUnionChanged;
+        SubscribeMainEventRegistry();
         RequestRefresh();
     }
 
@@ -68,6 +72,7 @@ public class InteractionCellOverlayController : MonoBehaviour
         UnsubscribeEnemies();
         Outpost.OutpostClaimed -= HandleOutpostChanged;
         HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionChanged;
+        UnsubscribeMainEventRegistry();
         ClearActiveOverlays();
     }
 
@@ -114,10 +119,35 @@ public class InteractionCellOverlayController : MonoBehaviour
     private void BuildDesiredZones()
     {
         desiredCells.Clear();
+        AddMainEventInteractionCells();
         AddEnemyEncounterCells();
         AddOutpostInteractionCells();
         AddHeroUnionInteractionCells();
         AddVillainUnionInteractionCells();
+    }
+
+    private void AddMainEventInteractionCells()
+    {
+        IReadOnlyList<MainEventObject> mainEvents = mainEventRegistry != null
+            ? mainEventRegistry.MainEvents
+            : FindObjectsByType<MainEventObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < mainEvents.Count; i++)
+        {
+            MainEventObject mainEvent = mainEvents[i];
+            if (mainEvent == null || !mainEvent.gameObject.activeInHierarchy)
+                continue;
+
+            IReadOnlyList<Vector2Int> interactionCells = mainEvent.GetInteractionCells(gridManager);
+            for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
+            {
+                Vector2Int grid = interactionCells[cellIndex];
+                if (hideFoggedCells && fogGridManager != null && !fogGridManager.IsVisible(grid))
+                    continue;
+
+                TrySetDesiredCell(grid, OverlayCellType.MainEvent);
+            }
+        }
     }
 
     private void AddEnemyEncounterCells()
@@ -403,6 +433,26 @@ public class InteractionCellOverlayController : MonoBehaviour
         subscribedEnemies.Clear();
     }
 
+    private void SubscribeMainEventRegistry()
+    {
+        if (mainEventRegistry == null)
+            return;
+
+        mainEventRegistry.MainEventRegistered -= HandleMainEventChanged;
+        mainEventRegistry.MainEventUnregistered -= HandleMainEventChanged;
+        mainEventRegistry.MainEventRegistered += HandleMainEventChanged;
+        mainEventRegistry.MainEventUnregistered += HandleMainEventChanged;
+    }
+
+    private void UnsubscribeMainEventRegistry()
+    {
+        if (mainEventRegistry == null)
+            return;
+
+        mainEventRegistry.MainEventRegistered -= HandleMainEventChanged;
+        mainEventRegistry.MainEventUnregistered -= HandleMainEventChanged;
+    }
+
     private void HandleEnemyRegistered(EnemyGridMover enemy)
     {
         SubscribeEnemy(enemy);
@@ -430,6 +480,11 @@ public class InteractionCellOverlayController : MonoBehaviour
         RequestRefresh();
     }
 
+    private void HandleMainEventChanged(MainEventObject mainEvent)
+    {
+        RequestRefresh();
+    }
+
     private OverlayCellType GetOutpostOverlayType(OutpostState state)
     {
         return state switch
@@ -446,6 +501,7 @@ public class InteractionCellOverlayController : MonoBehaviour
         {
             OverlayCellType.Neutral => neutralInteractionColor,
             OverlayCellType.Player => playerInteractionColor,
+            OverlayCellType.MainEvent => mainEventInteractionColor,
             OverlayCellType.OverlappedEnemy => overlappedZoneColor,
             _ => singleZoneColor
         };
@@ -455,6 +511,7 @@ public class InteractionCellOverlayController : MonoBehaviour
     {
         return type switch
         {
+            OverlayCellType.MainEvent => 5,
             OverlayCellType.OverlappedEnemy => 4,
             OverlayCellType.Enemy => 3,
             OverlayCellType.Player => 2,
@@ -478,6 +535,9 @@ public class InteractionCellOverlayController : MonoBehaviour
 
         if (villainUnionBaseRegistry == null)
             villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();
+
+        if (mainEventRegistry == null)
+            mainEventRegistry = FindFirstObjectByType<MainEventRegistry>();
 
         if (fogGridManager == null)
             fogGridManager = FindFirstObjectByType<FogGridManager>();

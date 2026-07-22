@@ -36,6 +36,9 @@ public class GameSaveData : ScriptableObject
     public string mapId;
     public List<string> collectedItemKeys = new List<string>();
     public List<string> completedEventKeys = new List<string>();
+    public List<string> completedMainEventKeys = new List<string>();
+    public List<string> completedSubEventKeys = new List<string>();
+    public List<string> completedHeroUnionChatKeys = new List<string>();
     public List<PartyWorldState> partyWorldStates = new List<PartyWorldState>();
     public List<EnemyWorldState> enemyWorldStates = new List<EnemyWorldState>();
     public List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();

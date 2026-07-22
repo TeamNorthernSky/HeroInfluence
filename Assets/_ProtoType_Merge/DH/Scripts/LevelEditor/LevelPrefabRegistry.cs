@@ -19,6 +19,12 @@ public class LevelPrefabRegistry : MonoBehaviour
     [SerializeField] private MapEventObject defaultEventPrefab;
     [SerializeField] private List<EventPrefabEntry> eventPrefabs = new List<EventPrefabEntry>();
 
+    [Header("Main Event Prefabs")]
+    [SerializeField] private List<MainEventPrefabEntry> mainEventPrefabs = new List<MainEventPrefabEntry>();
+
+    [Header("Sub Event Prefabs")]
+    [SerializeField] private List<SubEventPrefabEntry> subEventPrefabs = new List<SubEventPrefabEntry>();
+
     [Header("Unique Building Prefabs")]
     [SerializeField] private HeroUnionUnit heroUnionPrefab;
     [SerializeField] private List<HeroUnionPrefabEntry> heroUnionPrefabs = new List<HeroUnionPrefabEntry>();
@@ -45,6 +51,14 @@ public class LevelPrefabRegistry : MonoBehaviour
         decorativeBuildingPrefabs != null
             ? decorativeBuildingPrefabs
             : Array.Empty<DecorativeBuildingPrefabEntry>();
+    public IReadOnlyList<MainEventPrefabEntry> MainEventPrefabs =>
+        mainEventPrefabs != null
+            ? mainEventPrefabs
+            : Array.Empty<MainEventPrefabEntry>();
+    public IReadOnlyList<SubEventPrefabEntry> SubEventPrefabs =>
+        subEventPrefabs != null
+            ? subEventPrefabs
+            : Array.Empty<SubEventPrefabEntry>();
 
     private void OnValidate()
     {
@@ -58,6 +72,14 @@ public class LevelPrefabRegistry : MonoBehaviour
         decorativeBuildingPrefabs ??= new List<DecorativeBuildingPrefabEntry>();
         for (int i = 0; i < decorativeBuildingPrefabs.Count; i++)
             decorativeBuildingPrefabs[i] = decorativeBuildingPrefabs[i].Normalized();
+
+        mainEventPrefabs ??= new List<MainEventPrefabEntry>();
+        for (int i = 0; i < mainEventPrefabs.Count; i++)
+            mainEventPrefabs[i] = mainEventPrefabs[i].Normalized();
+
+        subEventPrefabs ??= new List<SubEventPrefabEntry>();
+        for (int i = 0; i < subEventPrefabs.Count; i++)
+            subEventPrefabs[i] = subEventPrefabs[i].Normalized();
     }
 
     public bool TryGetItemPrefab(ResourceType resourceType, out ItemObject prefab)
@@ -153,6 +175,50 @@ public class LevelPrefabRegistry : MonoBehaviour
                 continue;
 
             prefab = decorativeBuildingPrefabs[i].Prefab;
+            return prefab != null;
+        }
+
+        prefab = null;
+        return false;
+    }
+
+    public bool TryGetMainEventPrefab(string prefabKey, out MainEventObject prefab)
+    {
+        string normalizedKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
+        if (mainEventPrefabs == null)
+        {
+            prefab = null;
+            return false;
+        }
+
+        for (int i = 0; i < mainEventPrefabs.Count; i++)
+        {
+            if (!string.Equals(mainEventPrefabs[i].PrefabKey, normalizedKey, StringComparison.Ordinal))
+                continue;
+
+            prefab = mainEventPrefabs[i].Prefab;
+            return prefab != null;
+        }
+
+        prefab = null;
+        return false;
+    }
+
+    public bool TryGetSubEventPrefab(string prefabKey, out SubEventObject prefab)
+    {
+        string normalizedKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
+        if (subEventPrefabs == null)
+        {
+            prefab = null;
+            return false;
+        }
+
+        for (int i = 0; i < subEventPrefabs.Count; i++)
+        {
+            if (!string.Equals(subEventPrefabs[i].PrefabKey, normalizedKey, StringComparison.Ordinal))
+                continue;
+
+            prefab = subEventPrefabs[i].Prefab;
             return prefab != null;
         }
 
@@ -287,6 +353,60 @@ public struct DecorativeBuildingPrefabEntry
     public DecorativeBuildingPrefabEntry Normalized()
     {
         DecorativeBuildingPrefabEntry entry = this;
+        entry.prefabKey = PrefabKey;
+        return entry;
+    }
+}
+
+[Serializable]
+public struct MainEventPrefabEntry
+{
+    [SerializeField] private string prefabKey;
+    [SerializeField] private MainEventObject prefab;
+
+    public string PrefabKey
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(prefabKey))
+                return prefabKey.Trim();
+
+            return prefab != null ? prefab.name : string.Empty;
+        }
+    }
+
+    public MainEventObject Prefab => prefab;
+
+    public MainEventPrefabEntry Normalized()
+    {
+        MainEventPrefabEntry entry = this;
+        entry.prefabKey = PrefabKey;
+        return entry;
+    }
+}
+
+[Serializable]
+public struct SubEventPrefabEntry
+{
+    [SerializeField] private string prefabKey;
+    [SerializeField] private SubEventObject prefab;
+
+    public string PrefabKey
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(prefabKey))
+                return prefabKey.Trim();
+
+            return prefab != null ? prefab.name : string.Empty;
+        }
+    }
+
+    public SubEventObject Prefab => prefab;
+
+    public SubEventPrefabEntry Normalized()
+    {
+        SubEventPrefabEntry entry = this;
         entry.prefabKey = PrefabKey;
         return entry;
     }

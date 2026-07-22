@@ -53,6 +53,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
     [SerializeField] private MultiGridOccupantRegistry multiGridOccupantRegistry;
     [SerializeField] private MapEventRegistry mapEventRegistry;
+    [SerializeField] private MainEventRegistry mainEventRegistry;
+    [SerializeField] private SubEventRegistry subEventRegistry;
     [SerializeField] private bool restrictMovementToVisibleCells = true;
     [Tooltip("셀 워커블 검사 시, 셀 크기 대비 체크 박스 비율(너무 크면 오탐, 너무 작으면 통과).")]
     [SerializeField, Range(0.1f, 1f)] private float obstacleCheckFill = 0.9f;
@@ -107,6 +109,12 @@ public class GridManager : MonoBehaviour
 
         if (mapEventRegistry == null)
             mapEventRegistry = FindFirstObjectByType<MapEventRegistry>();
+
+        if (mainEventRegistry == null)
+            mainEventRegistry = FindFirstObjectByType<MainEventRegistry>();
+
+        if (subEventRegistry == null)
+            subEventRegistry = FindFirstObjectByType<SubEventRegistry>();
     }
 
     private void OnValidate()
@@ -134,6 +142,12 @@ public class GridManager : MonoBehaviour
 
         if (mapEventRegistry == null)
             mapEventRegistry = FindFirstObjectByType<MapEventRegistry>();
+
+        if (mainEventRegistry == null)
+            mainEventRegistry = FindFirstObjectByType<MainEventRegistry>();
+
+        if (subEventRegistry == null)
+            subEventRegistry = FindFirstObjectByType<SubEventRegistry>();
     }
 
     public Vector2Int WorldToGrid(Vector3 worldPosition)
@@ -280,6 +294,16 @@ public class GridManager : MonoBehaviour
         return TryGetEventObjectAtGrid(grid, out _);
     }
 
+    public bool HasMainEvent(Vector2Int grid)
+    {
+        return TryGetMainEventObjectAtGrid(grid, out _);
+    }
+
+    public bool HasSubEvent(Vector2Int grid)
+    {
+        return TryGetSubEventObjectAtGrid(grid, out _);
+    }
+
     public bool HasEnemy(Vector2Int grid, Transform selfTransform = null)
     {
         return TryGetEnemyObjectAtGrid(grid, out _, selfTransform);
@@ -366,6 +390,48 @@ public class GridManager : MonoBehaviour
             mapEvent = col.GetComponentInParent<MapEventObject>();
             if (mapEvent != null)
                 return true;
+        }
+
+        return false;
+    }
+
+    public bool TryGetMainEventObjectAtGrid(Vector2Int grid, out MainEventObject mainEvent)
+    {
+        mainEvent = null;
+
+        IReadOnlyList<MainEventObject> mainEvents = mainEventRegistry != null
+            ? mainEventRegistry.MainEvents
+            : FindObjectsByType<MainEventObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < mainEvents.Count; i++)
+        {
+            MainEventObject candidate = mainEvents[i];
+            if (candidate == null || !candidate.isActiveAndEnabled || !candidate.OccupiesGrid(grid, this))
+                continue;
+
+            mainEvent = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryGetSubEventObjectAtGrid(Vector2Int grid, out SubEventObject subEvent)
+    {
+        subEvent = null;
+
+        IReadOnlyList<SubEventObject> subEvents = subEventRegistry != null
+            ? subEventRegistry.SubEvents
+            : FindObjectsByType<SubEventObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < subEvents.Count; i++)
+        {
+            SubEventObject candidate = subEvents[i];
+            if (candidate == null || !candidate.isActiveAndEnabled || !candidate.OccupiesGrid(grid, this))
+                continue;
+
+            subEvent = candidate;
+            return true;
         }
 
         return false;
@@ -491,7 +557,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasItemOutpostOrEvent(Vector2Int grid)
     {
-        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid);
+        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid);
     }
 
     public bool HasVillainUnionBase(Vector2Int grid)
@@ -501,7 +567,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasInteractionTarget(Vector2Int grid)
     {
-        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasEnemy(grid) || HasHeroUnion(grid) || HasVillainUnionBase(grid);
+        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid) || HasEnemy(grid) || HasHeroUnion(grid) || HasVillainUnionBase(grid);
     }
 
     public bool IsVisibleCell(Vector2Int grid)
@@ -674,7 +740,7 @@ public class GridManager : MonoBehaviour
         if (HasHeroUnion(grid, selfTransform))
             return false;
 
-        if (HasOutpost(grid) || HasEvent(grid))
+        if (HasOutpost(grid) || HasEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid))
             return false;
 
         if (HasItem(grid))

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8521844722801733158}
   - component: {fileID: 3579854251900779421}
   m_Layer: 10
-  m_Name: HeroUnion
+  m_Name: HeroUnionZ3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -68,10 +68,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89f9b6bdc53b5cf489bf7dfb98b2ea78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heroUnionId: heroUnion_001
-  zoneId: zone_001
-  initialState: 1
-  currentState: 1
+  heroUnionId: heroUnion_003
+  zoneId: zone_003
+  initialState: 0
+  currentState: 0
+  captureChatZoneId: 3
+  captureChatId: 0
+  autoPlayWhenInitiallyClaimed: 0
   gridManager: {fileID: 0}
   targetRenderer: {fileID: 274276484162403821}
   neutralMaterial: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
@@ -156,7 +159,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 9afd7964a2d9e064980b47c796d05e5c, type: 2}
+      objectReference: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
     - target: {fileID: 919132149155446097, guid: 099cda0ff8cdf9440bd30874a0936977,
         type: 3}
       propertyPath: m_Name

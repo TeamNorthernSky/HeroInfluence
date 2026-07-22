@@ -18,6 +18,11 @@ public class HeroUnionUnit : MonoBehaviour
     [SerializeField] private HeroUnionState initialState = HeroUnionState.ClaimedByHero;
     [SerializeField] private HeroUnionState currentState = HeroUnionState.ClaimedByHero;
 
+    [Header("Capture Chat")]
+    [SerializeField, Min(1)] private int captureChatZoneId = 1;
+    [SerializeField] private int captureChatId;
+    [SerializeField] private bool autoPlayWhenInitiallyClaimed;
+
     [Header("References")]
     [SerializeField] private GridManager gridManager;
 
@@ -34,11 +39,17 @@ public class HeroUnionUnit : MonoBehaviour
     public HeroUnionState InitialState => initialState;
     public HeroUnionState CurrentState => currentState;
     public bool IsClaimedByHero => currentState == HeroUnionState.ClaimedByHero;
+    public int CaptureChatZoneId => Mathf.Max(1, captureChatZoneId);
+    public int CaptureChatId => Mathf.Max(0, captureChatId);
+    public bool AutoPlayWhenInitiallyClaimed => autoPlayWhenInitiallyClaimed;
 
     private void OnValidate()
     {
         if (string.IsNullOrWhiteSpace(zoneId))
             zoneId = "zone_001";
+
+        captureChatZoneId = Mathf.Max(1, captureChatZoneId);
+        captureChatId = Mathf.Max(0, captureChatId);
 
         if (!Application.isPlaying)
             currentState = initialState;
@@ -99,6 +110,15 @@ public class HeroUnionUnit : MonoBehaviour
     public string GetProgressKey()
     {
         return HeroUnionProgressState.BuildProgressKey(ZoneId);
+    }
+
+    public string GetCaptureChatProgressKey()
+    {
+        string normalizedHeroUnionId = MapProgressKey.NormalizeSegment(heroUnionId);
+        if (string.IsNullOrWhiteSpace(normalizedHeroUnionId))
+            normalizedHeroUnionId = name;
+
+        return MapProgressKey.NormalizeSegment($"hero_union_chat_{ZoneId}_{normalizedHeroUnionId}");
     }
 
     public Vector2Int GetCurrentGrid()

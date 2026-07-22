@@ -149,7 +149,8 @@ public class MoveCommandPreviewController
         bool isItemOrEventTarget = hasMarkerGrid
             && gridManager != null
             && (gridManager.TryGetItemObjectAtGrid(markerGrid, out _)
-                || gridManager.TryGetEventObjectAtGrid(markerGrid, out _));
+                || gridManager.TryGetEventObjectAtGrid(markerGrid, out _)
+                || gridManager.TryGetSubEventObjectAtGrid(markerGrid, out _));
 
         Vector2Int? interactionTarget = null;
         if (hasMarkerGrid
@@ -255,7 +256,8 @@ public class MoveCommandPreviewController
             return false;
 
         return gridManager.TryGetItemObjectAtGrid(markerGrid, out _)
-            || gridManager.TryGetEventObjectAtGrid(markerGrid, out _);
+            || gridManager.TryGetEventObjectAtGrid(markerGrid, out _)
+            || gridManager.TryGetSubEventObjectAtGrid(markerGrid, out _);
     }
 
     private void PlaceMarker(Vector2Int grid, Vector3 worldPosition)
@@ -295,6 +297,13 @@ public class MoveCommandPreviewController
                 activeMover,
                 villainUnionBase.GetAnchorGrid(),
                 villainUnionBase.GetInteractionCells(),
+                out destinationGrid);
+
+        if (gridManager.TryGetMainEventObjectAtGrid(clickedGrid, out MainEventObject mainEvent))
+            return TryResolveApproachGrid(
+                activeMover,
+                mainEvent.GetCurrentGrid(gridManager),
+                mainEvent.GetInteractionCells(gridManager),
                 out destinationGrid);
 
         if (!gridManager.TryGetHeroUnionObjectAtGrid(clickedGrid, out HeroUnionUnit heroUnion))

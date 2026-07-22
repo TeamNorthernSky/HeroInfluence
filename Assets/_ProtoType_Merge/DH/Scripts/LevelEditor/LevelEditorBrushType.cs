@@ -13,5 +13,7 @@ public enum LevelEditorBrushType
     TileSelection = 11,
     DecorativeBuilding = 12,
     GateBlocker = 13,
-    EnemySpawnPoint = 14
+    EnemySpawnPoint = 14,
+    MainEvent = 15,
+    SubEvent = 16
 }

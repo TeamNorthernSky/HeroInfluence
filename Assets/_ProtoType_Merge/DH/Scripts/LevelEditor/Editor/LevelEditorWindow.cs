@@ -27,38 +27,79 @@ public class LevelEditorWindow : EditorWindow
         }
     }
 
-    private static readonly LevelEditorBrushType[] BrushOrder =
+    private readonly struct BrushGroup
     {
-        LevelEditorBrushType.GroundTile,
-        LevelEditorBrushType.GroundTileErase,
-        LevelEditorBrushType.Obstacle,
-        LevelEditorBrushType.Item,
-        LevelEditorBrushType.Outpost,
-        LevelEditorBrushType.Event,
-        LevelEditorBrushType.HeroUnion,
-        LevelEditorBrushType.VillainUnion,
-        LevelEditorBrushType.EnemyGroup,
-        LevelEditorBrushType.DecorativeBuilding,
-        LevelEditorBrushType.GateBlocker,
-        LevelEditorBrushType.EnemySpawnPoint,
-        LevelEditorBrushType.Erase
-    };
+        public readonly string Title;
+        public readonly LevelEditorBrushType[] Brushes;
+        public readonly string[] Labels;
 
-    private static readonly string[] BrushLabels =
+        public BrushGroup(string title, LevelEditorBrushType[] brushes, string[] labels)
+        {
+            Title = title;
+            Brushes = brushes;
+            Labels = labels;
+        }
+    }
+
+    private static readonly BrushGroup[] BrushGroups =
     {
-        "GroundTile",
-        "TileErase",
-        "Obstacle",
-        "Item",
-        "Outpost",
-        "Event",
-        "HeroUnion",
-        "VillainUnion",
-        "EnemyGroup",
-        "Decorative",
-        "Gate",
-        "EnemySpawn",
-        "Erase"
+        new BrushGroup(
+            "Terrain",
+            new[]
+            {
+                LevelEditorBrushType.GroundTile,
+                LevelEditorBrushType.Obstacle
+            },
+            new[] { "GroundTile", "Obstacle" }),
+        new BrushGroup(
+            "Building",
+            new[]
+            {
+                LevelEditorBrushType.Outpost,
+                LevelEditorBrushType.HeroUnion,
+                LevelEditorBrushType.VillainUnion
+            },
+            new[] { "Outpost", "HeroUnion", "VillainUnion" }),
+        new BrushGroup(
+            "Event",
+            new[]
+            {
+                LevelEditorBrushType.Event,
+                LevelEditorBrushType.MainEvent,
+                LevelEditorBrushType.SubEvent
+            },
+            new[] { "MapEvent", "MainEvent", "SubEvent" }),
+        new BrushGroup(
+            "Enemy",
+            new[]
+            {
+                LevelEditorBrushType.EnemyGroup,
+                LevelEditorBrushType.EnemySpawnPoint
+            },
+            new[] { "EnemyGroup", "EnemySpawn" }),
+        new BrushGroup(
+            "Visual",
+            new[]
+            {
+                LevelEditorBrushType.DecorativeBuilding
+            },
+            new[] { "Decorative" }),
+        new BrushGroup(
+            "Etc",
+            new[]
+            {
+                LevelEditorBrushType.Item,
+                LevelEditorBrushType.GateBlocker
+            },
+            new[] { "Item", "Gate" }),
+        new BrushGroup(
+            "Tool",
+            new[]
+            {
+                LevelEditorBrushType.GroundTileErase,
+                LevelEditorBrushType.Erase
+            },
+            new[] { "TileErase", "Erase" })
     };
 
     private LevelEditorController controller;
@@ -190,6 +231,12 @@ public class LevelEditorWindow : EditorWindow
 
         if (brushType == LevelEditorBrushType.Event)
             EditorGUILayout.PropertyField(serializedController.FindProperty("eventPreset"));
+
+        if (brushType == LevelEditorBrushType.MainEvent)
+            DrawMainEventPrefabSelector(serializedController);
+
+        if (brushType == LevelEditorBrushType.SubEvent)
+            DrawSubEventPrefabSelector(serializedController);
 
         if (brushType == LevelEditorBrushType.EnemyGroup)
         {
@@ -404,21 +451,125 @@ public class LevelEditorWindow : EditorWindow
         selectedKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
     }
 
+    private void DrawMainEventPrefabSelector(SerializedObject serializedController)
+    {
+        SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedMainEventPrefabKey");
+
+        LevelPrefabRegistry registry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
+        if (registry == null)
+        {
+            EditorGUILayout.HelpBox("MainEvent brush needs a LevelPrefabRegistry on the LevelLoader.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        IReadOnlyList<MainEventPrefabEntry> entries = registry.MainEventPrefabs;
+        if (entries == null || entries.Count == 0)
+        {
+            EditorGUILayout.HelpBox("LevelPrefabRegistry has no MainEvent entries.", MessageType.Info);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        List<string> keys = new List<string>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            MainEventPrefabEntry entry = entries[i];
+            if (!string.IsNullOrWhiteSpace(entry.PrefabKey))
+                keys.Add(entry.PrefabKey);
+        }
+
+        if (keys.Count == 0)
+        {
+            EditorGUILayout.HelpBox("MainEvent entries do not have prefab keys.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        int selectedIndex = Mathf.Max(0, keys.IndexOf(selectedKeyProperty.stringValue));
+        int nextIndex = EditorGUILayout.Popup("Prefab Key", selectedIndex, keys.ToArray());
+        selectedKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
+
+        if (registry.TryGetMainEventPrefab(selectedKeyProperty.stringValue, out MainEventObject prefab) && prefab != null)
+        {
+            EditorGUILayout.LabelField("Event Key", prefab.EventKey);
+            EditorGUILayout.LabelField("Zone ID", prefab.ZoneId.ToString());
+            EditorGUILayout.LabelField("Chat ID", prefab.ChatId.ToString());
+        }
+    }
+
+    private void DrawSubEventPrefabSelector(SerializedObject serializedController)
+    {
+        SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedSubEventPrefabKey");
+
+        LevelPrefabRegistry registry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
+        if (registry == null)
+        {
+            EditorGUILayout.HelpBox("SubEvent brush needs a LevelPrefabRegistry on the LevelLoader.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        IReadOnlyList<SubEventPrefabEntry> entries = registry.SubEventPrefabs;
+        if (entries == null || entries.Count == 0)
+        {
+            EditorGUILayout.HelpBox("LevelPrefabRegistry has no SubEvent entries.", MessageType.Info);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        List<string> keys = new List<string>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            SubEventPrefabEntry entry = entries[i];
+            if (!string.IsNullOrWhiteSpace(entry.PrefabKey))
+                keys.Add(entry.PrefabKey);
+        }
+
+        if (keys.Count == 0)
+        {
+            EditorGUILayout.HelpBox("SubEvent entries do not have prefab keys.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        int selectedIndex = Mathf.Max(0, keys.IndexOf(selectedKeyProperty.stringValue));
+        int nextIndex = EditorGUILayout.Popup("Prefab Key", selectedIndex, keys.ToArray());
+        selectedKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
+
+        if (registry.TryGetSubEventPrefab(selectedKeyProperty.stringValue, out SubEventObject prefab) && prefab != null)
+        {
+            EditorGUILayout.LabelField("Event Key", prefab.EventKey);
+            EditorGUILayout.LabelField("Zone ID", prefab.ZoneId.ToString());
+            EditorGUILayout.LabelField("Chat ID", prefab.ChatId.ToString());
+        }
+    }
+
     private void DrawBrushSelector(SerializedProperty brushTypeProperty)
     {
         LevelEditorBrushType brushType = (LevelEditorBrushType)brushTypeProperty.intValue;
-        int selectedIndex = GetBrushOrderIndex(brushType);
-        int nextIndex = GUILayout.SelectionGrid(selectedIndex, BrushLabels, 3);
 
-        if (nextIndex < 0 || nextIndex >= BrushOrder.Length)
-            return;
+        for (int i = 0; i < BrushGroups.Length; i++)
+        {
+            BrushGroup group = BrushGroups[i];
+            EditorGUILayout.LabelField(group.Title, EditorStyles.miniBoldLabel);
 
-        LevelEditorBrushType nextBrush = BrushOrder[nextIndex];
-        if (nextBrush == brushType)
-            return;
+            int selectedIndex = GetBrushIndex(group.Brushes, brushType);
+            int nextIndex = GUILayout.SelectionGrid(selectedIndex, group.Labels, 3);
 
-        brushTypeProperty.intValue = (int)nextBrush;
-        sceneStatus = $"Brush : {nextBrush}";
+            if (nextIndex >= 0 && nextIndex < group.Brushes.Length)
+            {
+                LevelEditorBrushType nextBrush = group.Brushes[nextIndex];
+                if (nextBrush != brushType)
+                {
+                    brushTypeProperty.intValue = (int)nextBrush;
+                    sceneStatus = $"Brush : {nextBrush}";
+                    brushType = nextBrush;
+                }
+            }
+
+            EditorGUILayout.Space(2f);
+        }
     }
 
     private void DrawQuickActions()
@@ -506,6 +657,30 @@ public class LevelEditorWindow : EditorWindow
                 EditorGUILayout.HelpBox($"Decorative prefab key '{context.SelectedDecorativeBuildingKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
             else if (decorativePrefab.GetComponent<DecorativeBuildingPlacement>() == null)
                 EditorGUILayout.HelpBox($"Decorative prefab '{context.SelectedDecorativeBuildingKey}' needs a DecorativeBuildingPlacement component.", MessageType.Warning);
+        }
+
+        if (context.BrushType == LevelEditorBrushType.MainEvent)
+        {
+            if (context.PrefabRegistry == null)
+                EditorGUILayout.HelpBox("MainEvent brush needs a LevelPrefabRegistry.", MessageType.Warning);
+            else if (string.IsNullOrWhiteSpace(context.SelectedMainEventPrefabKey))
+                EditorGUILayout.HelpBox("MainEvent brush needs a selected Prefab Key.", MessageType.Warning);
+            else if (!context.PrefabRegistry.TryGetMainEventPrefab(context.SelectedMainEventPrefabKey, out MainEventObject mainEventPrefab))
+                EditorGUILayout.HelpBox($"MainEvent prefab key '{context.SelectedMainEventPrefabKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
+            else if (mainEventPrefab.ChatId <= 0)
+                EditorGUILayout.HelpBox($"MainEvent prefab '{context.SelectedMainEventPrefabKey}' needs a Chat ID.", MessageType.Warning);
+        }
+
+        if (context.BrushType == LevelEditorBrushType.SubEvent)
+        {
+            if (context.PrefabRegistry == null)
+                EditorGUILayout.HelpBox("SubEvent brush needs a LevelPrefabRegistry.", MessageType.Warning);
+            else if (string.IsNullOrWhiteSpace(context.SelectedSubEventPrefabKey))
+                EditorGUILayout.HelpBox("SubEvent brush needs a selected Prefab Key.", MessageType.Warning);
+            else if (!context.PrefabRegistry.TryGetSubEventPrefab(context.SelectedSubEventPrefabKey, out SubEventObject subEventPrefab))
+                EditorGUILayout.HelpBox($"SubEvent prefab key '{context.SelectedSubEventPrefabKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
+            else if (subEventPrefab.ChatId <= 0)
+                EditorGUILayout.HelpBox($"SubEvent prefab '{context.SelectedSubEventPrefabKey}' needs a Chat ID.", MessageType.Warning);
         }
 
         if (!IsPrefablessBrush(context.BrushType) && context.PrefabRegistry == null)
@@ -686,6 +861,19 @@ public class LevelEditorWindow : EditorWindow
             DrawFootprint(context, BuildFootprint(GetEventPrefab(context, placement.EventType), placement.GridPosition), new Color(0.75f, 0.35f, 1f, 0.10f), new Color(0.75f, 0.35f, 1f, 0.65f));
         }
 
+        for (int i = 0; i < levelData.MainEventPlacements.Count; i++)
+        {
+            MainEventPlacementData placement = levelData.MainEventPlacements[i];
+            DrawMainEventInteractionZone(context, placement.GridPosition, new Color(0.2f, 0.9f, 1f, 0.06f), new Color(0.2f, 0.9f, 1f, 0.28f));
+            DrawFootprint(context, BuildFootprint(GetMainEventPrefab(context, placement.PrefabKey), placement.GridPosition), new Color(0.2f, 0.9f, 1f, 0.10f), new Color(0.2f, 0.9f, 1f, 0.65f));
+        }
+
+        for (int i = 0; i < levelData.SubEventPlacements.Count; i++)
+        {
+            SubEventPlacementData placement = levelData.SubEventPlacements[i];
+            DrawFootprint(context, BuildFootprint(GetSubEventPrefab(context, placement.PrefabKey), placement.GridPosition), new Color(0.35f, 0.95f, 0.95f, 0.10f), new Color(0.35f, 0.95f, 0.95f, 0.65f));
+        }
+
         for (int i = 0; i < levelData.EnemyPlacements.Count; i++)
         {
             EnemyPlacementData placement = levelData.EnemyPlacements[i];
@@ -818,6 +1006,15 @@ public class LevelEditorWindow : EditorWindow
                 canPlace ? new Color(1f, 0.1f, 0.1f, 0.45f) : new Color(1f, 0f, 0f, 0.75f));
         }
 
+        if (context.BrushType == LevelEditorBrushType.MainEvent)
+        {
+            DrawMainEventInteractionZone(
+                context,
+                anchor,
+                canPlace ? new Color(0.2f, 0.9f, 1f, 0.08f) : new Color(1f, 0f, 0f, 0.12f),
+                canPlace ? new Color(0.2f, 0.9f, 1f, 0.45f) : new Color(1f, 0f, 0f, 0.75f));
+        }
+
         DrawFootprint(context, footprint, fill, outline);
 
         if (!canPlace)
@@ -936,6 +1133,12 @@ public class LevelEditorWindow : EditorWindow
                     context.EventPreset.RequireAmount,
                     context.EventPreset.EffectAmount);
                 break;
+            case LevelEditorBrushType.MainEvent:
+                context.LevelData.SetMainEvent(anchor, context.SelectedMainEventPrefabKey);
+                break;
+            case LevelEditorBrushType.SubEvent:
+                context.LevelData.SetSubEvent(anchor, context.SelectedSubEventPrefabKey);
+                break;
             case LevelEditorBrushType.EnemyGroup:
                 context.LevelData.SetEnemyPlacement(anchor, context.EnemyGroupKey, context.EnemyBehaviorType);
                 break;
@@ -968,6 +1171,10 @@ public class LevelEditorWindow : EditorWindow
         Undo.RecordObject(context.LevelData, $"Erase {label}");
         if (label == "DecorativeBuilding")
             context.LevelData.RemoveDecorativeBuildingAt(anchor);
+        else if (label == "MainEvent")
+            context.LevelData.RemoveMainEventAt(anchor);
+        else if (label == "SubEvent")
+            context.LevelData.RemoveSubEventAt(anchor);
         else
             context.LevelData.EraseNonGroundTileAt(anchor);
         sceneStatus = $"Erased {label} at {anchor}.";
@@ -1018,6 +1225,8 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedTileKey = controller.SelectedTileKey;
         context.SelectedHeroUnionPrefabKey = controller.SelectedHeroUnionPrefabKey;
         context.SelectedDecorativeBuildingKey = controller.SelectedDecorativeBuildingKey;
+        context.SelectedMainEventPrefabKey = controller.SelectedMainEventPrefabKey;
+        context.SelectedSubEventPrefabKey = controller.SelectedSubEventPrefabKey;
         context.SelectedGateId = controller.SelectedGateId;
         context.SelectedGateFirstZoneId = controller.SelectedGateFirstZoneId;
         context.SelectedGateSecondZoneId = controller.SelectedGateSecondZoneId;
@@ -1393,6 +1602,26 @@ public class LevelEditorWindow : EditorWindow
                 prefab = GetEventPrefab(context, context.EventPreset.EventType);
                 reason = prefab == null ? $"Event prefab is missing for {context.EventPreset.EventKey}." : null;
                 return prefab != null;
+            case LevelEditorBrushType.MainEvent:
+                if (string.IsNullOrWhiteSpace(context.SelectedMainEventPrefabKey))
+                {
+                    reason = "MainEvent prefab key is missing.";
+                    return false;
+                }
+
+                prefab = GetMainEventPrefab(context, context.SelectedMainEventPrefabKey);
+                reason = prefab == null ? $"MainEvent prefab is missing for {context.SelectedMainEventPrefabKey}." : null;
+                return prefab != null;
+            case LevelEditorBrushType.SubEvent:
+                if (string.IsNullOrWhiteSpace(context.SelectedSubEventPrefabKey))
+                {
+                    reason = "SubEvent prefab key is missing.";
+                    return false;
+                }
+
+                prefab = GetSubEventPrefab(context, context.SelectedSubEventPrefabKey);
+                reason = prefab == null ? $"SubEvent prefab is missing for {context.SelectedSubEventPrefabKey}." : null;
+                return prefab != null;
             case LevelEditorBrushType.HeroUnion:
                 prefab = GetHeroUnionPrefab(context, context.SelectedHeroUnionPrefabKey);
                 reason = prefab == null ? "HeroUnion prefab is missing." : null;
@@ -1512,12 +1741,66 @@ public class LevelEditorWindow : EditorWindow
             }
         }
 
+        for (int i = 0; i < levelData.MainEventPlacements.Count; i++)
+        {
+            MainEventPlacementData placement = levelData.MainEventPlacements[i];
+            if (FootprintsOverlap(footprint, BuildFootprint(GetMainEventPrefab(context, placement.PrefabKey), placement.GridPosition)))
+            {
+                reason = "MainEvent overlaps this footprint.";
+                return true;
+            }
+        }
+
+        for (int i = 0; i < levelData.SubEventPlacements.Count; i++)
+        {
+            SubEventPlacementData placement = levelData.SubEventPlacements[i];
+            if (FootprintsOverlap(footprint, BuildFootprint(GetSubEventPrefab(context, placement.PrefabKey), placement.GridPosition)))
+            {
+                reason = "SubEvent overlaps this footprint.";
+                return true;
+            }
+        }
+
         for (int i = 0; i < levelData.EnemyPlacements.Count; i++)
         {
             EnemyPlacementData placement = levelData.EnemyPlacements[i];
             if (FootprintsOverlap(footprint, BuildFootprint(GetEnemyGroupPrefab(context), placement.GridPosition)))
             {
                 reason = "EnemyGroup overlaps this footprint.";
+                return true;
+            }
+        }
+
+        for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
+        {
+            DecorativeBuildingPlacementData placement = levelData.DecorativeBuildingPlacements[i];
+            if (FootprintsOverlap(footprint, BuildFootprint(null, placement.GridPosition)))
+            {
+                reason = "DecorativeBuilding overlaps this footprint.";
+                return true;
+            }
+        }
+
+        for (int i = 0; i < levelData.GatePlacements.Count; i++)
+        {
+            GatePlacementData placement = levelData.GatePlacements[i];
+            IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
+            for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
+            {
+                if (!FootprintsOverlap(footprint, BuildFootprint(null, blockerCells[cellIndex])))
+                    continue;
+
+                reason = "GateBlocker overlaps this footprint.";
+                return true;
+            }
+        }
+
+        for (int i = 0; i < levelData.EnemySpawnPointPlacements.Count; i++)
+        {
+            EnemySpawnPointPlacementData placement = levelData.EnemySpawnPointPlacements[i];
+            if (FootprintsOverlap(footprint, BuildFootprint(null, placement.GridPosition)))
+            {
+                reason = "EnemySpawnPoint overlaps this footprint.";
                 return true;
             }
         }
@@ -1591,6 +1874,30 @@ public class LevelEditorWindow : EditorWindow
             if (footprint.Contains(grid))
             {
                 label = "Event";
+                return true;
+            }
+        }
+
+        for (int i = 0; i < levelData.MainEventPlacements.Count; i++)
+        {
+            MainEventPlacementData placement = levelData.MainEventPlacements[i];
+            anchor = placement.GridPosition;
+            footprint = BuildFootprint(GetMainEventPrefab(context, placement.PrefabKey), anchor);
+            if (footprint.Contains(grid))
+            {
+                label = "MainEvent";
+                return true;
+            }
+        }
+
+        for (int i = 0; i < levelData.SubEventPlacements.Count; i++)
+        {
+            SubEventPlacementData placement = levelData.SubEventPlacements[i];
+            anchor = placement.GridPosition;
+            footprint = BuildFootprint(GetSubEventPrefab(context, placement.PrefabKey), anchor);
+            if (footprint.Contains(grid))
+            {
+                label = "SubEvent";
                 return true;
             }
         }
@@ -1746,6 +2053,24 @@ public class LevelEditorWindow : EditorWindow
         return null;
     }
 
+    private static GameObject GetMainEventPrefab(LevelEditorContext context, string prefabKey)
+    {
+        return context.PrefabRegistry != null
+            && context.PrefabRegistry.TryGetMainEventPrefab(prefabKey, out MainEventObject prefab)
+            && prefab != null
+                ? prefab.gameObject
+                : null;
+    }
+
+    private static GameObject GetSubEventPrefab(LevelEditorContext context, string prefabKey)
+    {
+        return context.PrefabRegistry != null
+            && context.PrefabRegistry.TryGetSubEventPrefab(prefabKey, out SubEventObject prefab)
+            && prefab != null
+                ? prefab.gameObject
+                : null;
+    }
+
     private static GameObject GetHeroUnionPrefab(LevelEditorContext context, string prefabKey)
     {
         return context.PrefabRegistry != null
@@ -1782,6 +2107,11 @@ public class LevelEditorWindow : EditorWindow
     }
 
     private static void DrawEnemyEncounterZone(LevelEditorContext context, Vector2Int anchor, Color fill, Color outline)
+    {
+        DrawFootprint(context, BuildEncounterZone(anchor), fill, outline);
+    }
+
+    private static void DrawMainEventInteractionZone(LevelEditorContext context, Vector2Int anchor, Color fill, Color outline)
     {
         DrawFootprint(context, BuildEncounterZone(anchor), fill, outline);
     }
@@ -1879,11 +2209,14 @@ public class LevelEditorWindow : EditorWindow
         controller = FindFirstObjectByType<LevelEditorController>();
     }
 
-    private static int GetBrushOrderIndex(LevelEditorBrushType brushType)
+    private static int GetBrushIndex(LevelEditorBrushType[] brushes, LevelEditorBrushType brushType)
     {
-        for (int i = 0; i < BrushOrder.Length; i++)
+        if (brushes == null)
+            return -1;
+
+        for (int i = 0; i < brushes.Length; i++)
         {
-            if (BrushOrder[i] == brushType)
+            if (brushes[i] == brushType)
                 return i;
         }
 
@@ -1907,6 +2240,8 @@ public class LevelEditorWindow : EditorWindow
         public string SelectedTileKey;
         public string SelectedHeroUnionPrefabKey;
         public string SelectedDecorativeBuildingKey;
+        public string SelectedMainEventPrefabKey;
+        public string SelectedSubEventPrefabKey;
         public string SelectedGateId;
         public string SelectedGateFirstZoneId;
         public string SelectedGateSecondZoneId;

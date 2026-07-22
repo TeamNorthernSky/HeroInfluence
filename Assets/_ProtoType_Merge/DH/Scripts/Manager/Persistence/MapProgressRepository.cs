@@ -10,6 +10,9 @@ public class MapProgressRepository : MonoBehaviour
     [SerializeField] private string mapId = "default";
     [SerializeField] private List<string> collectedItemKeys = new List<string>();
     [SerializeField] private List<string> completedEventKeys = new List<string>();
+    [SerializeField] private List<string> completedMainEventKeys = new List<string>();
+    [SerializeField] private List<string> completedSubEventKeys = new List<string>();
+    [SerializeField] private List<string> completedHeroUnionChatKeys = new List<string>();
     [SerializeField] private List<PartyWorldState> partyWorldStates = new List<PartyWorldState>();
     [SerializeField] private List<EnemyWorldState> enemyWorldStates = new List<EnemyWorldState>();
     [SerializeField] private List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
@@ -23,6 +26,9 @@ public class MapProgressRepository : MonoBehaviour
 
     private readonly HashSet<string> collectedItemLookup = new HashSet<string>();
     private readonly HashSet<string> completedEventLookup = new HashSet<string>();
+    private readonly HashSet<string> completedMainEventLookup = new HashSet<string>();
+    private readonly HashSet<string> completedSubEventLookup = new HashSet<string>();
+    private readonly HashSet<string> completedHeroUnionChatLookup = new HashSet<string>();
     private readonly Dictionary<string, PartyWorldState> partyWorldLookup = new Dictionary<string, PartyWorldState>();
     private readonly Dictionary<string, EnemyWorldState> enemyWorldLookup = new Dictionary<string, EnemyWorldState>();
     private readonly Dictionary<string, OutpostProgressState> outpostStateLookup = new Dictionary<string, OutpostProgressState>();
@@ -35,6 +41,9 @@ public class MapProgressRepository : MonoBehaviour
     public string MapId => mapId;
     public IReadOnlyList<string> CollectedItemKeys => collectedItemKeys;
     public IReadOnlyList<string> CompletedEventKeys => completedEventKeys;
+    public IReadOnlyList<string> CompletedMainEventKeys => completedMainEventKeys;
+    public IReadOnlyList<string> CompletedSubEventKeys => completedSubEventKeys;
+    public IReadOnlyList<string> CompletedHeroUnionChatKeys => completedHeroUnionChatKeys;
     public IReadOnlyList<PartyWorldState> PartyWorldStates => partyWorldStates;
     public IReadOnlyList<EnemyWorldState> EnemyWorldStates => enemyWorldStates;
     public IReadOnlyList<OutpostProgressState> OutpostStates => outpostStates;
@@ -90,6 +99,36 @@ public class MapProgressRepository : MonoBehaviour
     public void MarkEventCompleted(string eventKey)
     {
         AddUniqueKey(eventKey, completedEventKeys, completedEventLookup);
+    }
+
+    public bool IsMainEventCompleted(string eventKey)
+    {
+        return IsValidKey(eventKey) && completedMainEventLookup.Contains(NormalizeKey(eventKey));
+    }
+
+    public void MarkMainEventCompleted(string eventKey)
+    {
+        AddUniqueKey(eventKey, completedMainEventKeys, completedMainEventLookup);
+    }
+
+    public bool IsSubEventCompleted(string eventKey)
+    {
+        return IsValidKey(eventKey) && completedSubEventLookup.Contains(NormalizeKey(eventKey));
+    }
+
+    public void MarkSubEventCompleted(string eventKey)
+    {
+        AddUniqueKey(eventKey, completedSubEventKeys, completedSubEventLookup);
+    }
+
+    public bool IsHeroUnionChatCompleted(string chatKey)
+    {
+        return IsValidKey(chatKey) && completedHeroUnionChatLookup.Contains(NormalizeKey(chatKey));
+    }
+
+    public void MarkHeroUnionChatCompleted(string chatKey)
+    {
+        AddUniqueKey(chatKey, completedHeroUnionChatKeys, completedHeroUnionChatLookup);
     }
 
     public bool TryGetOutpostState(string outpostKey, out OutpostState state)
@@ -518,6 +557,9 @@ public class MapProgressRepository : MonoBehaviour
         string restoredMapId,
         IEnumerable<string> restoredCollectedItemKeys,
         IEnumerable<string> restoredCompletedEventKeys,
+        IEnumerable<string> restoredCompletedMainEventKeys,
+        IEnumerable<string> restoredCompletedSubEventKeys,
+        IEnumerable<string> restoredCompletedHeroUnionChatKeys,
         IEnumerable<PartyWorldState> restoredPartyWorldStates,
         IEnumerable<EnemyWorldState> restoredEnemyWorldStates,
         IEnumerable<OutpostProgressState> restoredOutpostStates,
@@ -535,6 +577,9 @@ public class MapProgressRepository : MonoBehaviour
 
         ReplaceList(collectedItemKeys, restoredCollectedItemKeys);
         ReplaceList(completedEventKeys, restoredCompletedEventKeys);
+        ReplaceList(completedMainEventKeys, restoredCompletedMainEventKeys);
+        ReplaceList(completedSubEventKeys, restoredCompletedSubEventKeys);
+        ReplaceList(completedHeroUnionChatKeys, restoredCompletedHeroUnionChatKeys);
         ReplaceList(partyWorldStates, restoredPartyWorldStates);
         ReplaceList(enemyWorldStates, restoredEnemyWorldStates);
         ReplaceList(outpostStates, restoredOutpostStates);
@@ -551,6 +596,9 @@ public class MapProgressRepository : MonoBehaviour
     {
         collectedItemKeys.Clear();
         completedEventKeys.Clear();
+        completedMainEventKeys.Clear();
+        completedSubEventKeys.Clear();
+        completedHeroUnionChatKeys.Clear();
         partyWorldStates.Clear();
         enemyWorldStates.Clear();
         outpostStates.Clear();
@@ -692,6 +740,9 @@ public class MapProgressRepository : MonoBehaviour
         EnsureZoneEntryGuidanceState();
         collectedItemLookup.Clear();
         completedEventLookup.Clear();
+        completedMainEventLookup.Clear();
+        completedSubEventLookup.Clear();
+        completedHeroUnionChatLookup.Clear();
         partyWorldLookup.Clear();
         enemyWorldLookup.Clear();
         outpostStateLookup.Clear();
@@ -703,6 +754,9 @@ public class MapProgressRepository : MonoBehaviour
 
         RebuildKeyLookup(collectedItemKeys, collectedItemLookup, "collected item key");
         RebuildKeyLookup(completedEventKeys, completedEventLookup, "completed event key");
+        RebuildKeyLookup(completedMainEventKeys, completedMainEventLookup, "completed main event key");
+        RebuildKeyLookup(completedSubEventKeys, completedSubEventLookup, "completed sub event key");
+        RebuildKeyLookup(completedHeroUnionChatKeys, completedHeroUnionChatLookup, "completed hero union chat key");
 
         for (int i = 0; i < partyWorldStates.Count; i++)
         {

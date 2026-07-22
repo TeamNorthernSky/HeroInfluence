@@ -2462,6 +2462,8 @@ MonoBehaviour:
     enemyGroupKey: FEP001
     behaviorType: 1
   decorativeBuildingPlacements: []
+  mainEventPlacements: []
+  subEventPlacements: []
   gatePlacements:
   - gateId: gate_001
     firstZoneId: zone_001

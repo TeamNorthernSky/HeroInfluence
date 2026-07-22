@@ -173,6 +173,18 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         return true;
     }
 
+    public bool TryCompleteFromClaimedHeroUnion(HeroUnionUnit heroUnion)
+    {
+        if (!Active || heroUnion == null || !heroUnion.IsClaimedByHero)
+            return false;
+
+        if (!IsRequiredHeroUnion(heroUnion))
+            return false;
+
+        CompleteGuidance();
+        return true;
+    }
+
     public void RefreshFromProgress()
     {
         MapProgressRepository repository = MapProgressRepository.Instance;
