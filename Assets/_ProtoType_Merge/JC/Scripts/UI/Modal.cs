@@ -40,7 +40,9 @@ public class Modal : MonoBehaviour
     {
         ModalManager.Unregister(gameObject);
         if (pausesGame)
-            ModalPauseGate.Refresh();
+            // [JC 260722] 자신을 제외. Destroy로 닫히는 모달(ChatModal 등)은 OnDisable 시점에도
+            // activeInHierarchy=true라 제외하지 않으면 자기 자신을 세어 timeScale이 0으로 남는다.
+            ModalPauseGate.Refresh(this);
     }
 
     private void Update()

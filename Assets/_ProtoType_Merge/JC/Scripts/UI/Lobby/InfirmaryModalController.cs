@@ -26,6 +26,8 @@ public class InfirmaryModalController : MonoBehaviour
     [SerializeField] private GameObject healAllDisabledOverlay;
     [SerializeField] private TextMeshProUGUI totalCostText;
     [SerializeField] private TextMeshProUGUI stateInfoText;
+    // [KJ 260707] 상태 메시지 배경 박스(메시지창). 배선되면 박스째로 토글, 없으면 기존처럼 텍스트만.
+    [SerializeField] private GameObject stateInfoBox;
 
     private readonly List<InfirmaryUnitRow> spawnedRows = new List<InfirmaryUnitRow>();
     private InfirmaryManager subscribedInf;
@@ -177,7 +179,8 @@ public class InfirmaryModalController : MonoBehaviour
             else if (!visited) msg = "협회를 방문한 상태에서만 이용할 수 있습니다.";
             else if (units.Count == 0) msg = "회복할 영웅이 없습니다.";
             else if (healableCount == 0) msg = "회복 가능한 영웅이 없습니다.";
-            stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
+            GameObject toggleTarget = stateInfoBox != null ? stateInfoBox : stateInfoText.gameObject;
+            toggleTarget.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;
         }
     }
