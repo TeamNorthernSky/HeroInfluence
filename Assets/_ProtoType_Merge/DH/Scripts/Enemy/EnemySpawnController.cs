@@ -18,7 +18,6 @@ public class EnemySpawnController : MonoBehaviour
     [SerializeField] private EnemyGridMover enemyPrefab;
     [FormerlySerializedAs("runtimeEnemyGroupIndex")]
     [SerializeField] private string runtimeEnemyGroupKey = "FEP002";
-    [SerializeField, Min(1)] private int spawnInterval = 3;
     [SerializeField, Min(1)] private int maxActiveEnemies = 3;
     [SerializeField] private bool enableBaseEnemyProduction;
     [SerializeField] private bool spawnOneEnemyOnStart;
@@ -91,10 +90,22 @@ public class EnemySpawnController : MonoBehaviour
 
     private void HandleDayAdvanced(int currentDay)
     {
-        if (spawnInterval <= 0 || currentDay % spawnInterval != 0)
+        int spawnIntervalTurns = ResolveSpawnIntervalTurns();
+        if (spawnIntervalTurns <= 0 || currentDay % spawnIntervalTurns != 0)
             return;
 
         TrySpawnOneEnemy();
+    }
+
+    private static int ResolveSpawnIntervalTurns()
+    {
+        GateLifecycleController gateLifecycleController = GateLifecycleController.Instance != null
+            ? GateLifecycleController.Instance
+            : FindFirstObjectByType<GateLifecycleController>();
+
+        return gateLifecycleController != null
+            ? gateLifecycleController.OpenDurationTurns
+            : 3;
     }
 
     private void CollectProductionBaseCandidates()
@@ -178,6 +189,11 @@ public class EnemySpawnController : MonoBehaviour
 
     public bool TrySpawnGateThreatEnemy(string zoneId, Vector2Int spawnGrid, out string placementKey)
     {
+        return TrySpawnGateThreatEnemy(zoneId, spawnGrid, string.Empty, out placementKey);
+    }
+
+    public bool TrySpawnGateThreatEnemy(string zoneId, Vector2Int spawnGrid, string enemyGroupKey, out string placementKey)
+    {
         placementKey = string.Empty;
 
         if (enemyPrefab == null || gridManager == null)
@@ -185,7 +201,7 @@ public class EnemySpawnController : MonoBehaviour
 
         string sourceKey = $"gate_threat_{MapProgressKey.NormalizeSegment(zoneId)}";
         placementKey = CreateRuntimeEnemyPlacementKey(sourceKey);
-        if (TrySpawnAtGrid(spawnGrid, placementKey))
+        if (TrySpawnAtGrid(spawnGrid, placementKey, ResolveSpawnEnemyGroupKey(enemyGroupKey), MapProgressKey.NormalizeSegment(zoneId)))
             return true;
 
         placementKey = string.Empty;
@@ -198,6 +214,11 @@ public class EnemySpawnController : MonoBehaviour
     }
 
     private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey)
+    {
+        return TrySpawnAtGrid(spawnGrid, placementKey, runtimeEnemyGroupKey, ExtractZoneIdFromRuntimePlacementKey(placementKey));
+    }
+
+    private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey, string enemyGroupKey, string zoneId)
     {
         if (!gridManager.CanOccupyCell(spawnGrid, null, true))
             return false;
@@ -215,7 +236,7 @@ public class EnemySpawnController : MonoBehaviour
 
         EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
         int enemyLevel = ResolveZoneEnemyLevelFromPlacementKey(placementKey);
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, spawnGrid, placementKey, runtimeEnemyGroupKey, enemyLevel, ExtractZoneIdFromRuntimePlacementKey(placementKey)))
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, spawnGrid, placementKey, enemyGroupKey, enemyLevel, zoneId))
         {
             Destroy(spawnedEnemy.gameObject);
             return false;
@@ -386,6 +407,23 @@ public class EnemySpawnController : MonoBehaviour
         int lastUnderscore = remainder.LastIndexOf('_');
         return lastUnderscore > 0 ? remainder.Substring(0, lastUnderscore) : remainder;
     }
+
+    private string ResolveSpawnEnemyGroupKey(string requestedEnemyGroupKey)
+    {
+        string fallbackKey = string.IsNullOrWhiteSpace(runtimeEnemyGroupKey) ? "FEP002" : runtimeEnemyGroupKey.Trim();
+        string normalizedRequest = string.IsNullOrWhiteSpace(requestedEnemyGroupKey) ? string.Empty : requestedEnemyGroupKey.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedRequest))
+            return fallbackKey;
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (templateCatalog == null)
+            return fallbackKey;
+
+        return templateCatalog.TryGetEnemyGroupTemplate(normalizedRequest, out _)
+            ? normalizedRequest
+            : fallbackKey;
+    }
+
     private string ResolveRuntimeEnemyGroupKey(EnemyWorldState state)
     {
         if (state != null &&

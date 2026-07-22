@@ -405,14 +405,64 @@ public class LevelData : ScriptableObject
         gatePlacements.Add(nextPlacement.Normalized());
     }
 
+    public void SetGatePlacement(
+        string gateId,
+        string firstZoneId,
+        string secondZoneId,
+        Vector2Int grid,
+        string prefabKey,
+        IEnumerable<Vector2Int> blockerCells,
+        int openDurationTurns)
+    {
+        if (!IsInsideGrid(grid))
+            return;
+
+        EnsureGatePlacements();
+        string normalizedGateId = GatePlacementData.NormalizeId(gateId);
+        if (string.IsNullOrWhiteSpace(normalizedGateId))
+            normalizedGateId = $"gate_{grid.x}_{grid.y}";
+
+        gatePlacements.RemoveAll(x => x.GateId == normalizedGateId);
+
+        GatePlacementData nextPlacement = new GatePlacementData(
+            normalizedGateId,
+            firstZoneId,
+            secondZoneId,
+            openDurationTurns,
+            grid,
+            prefabKey);
+
+        if (blockerCells != null)
+        {
+            foreach (Vector2Int blockerCell in blockerCells)
+            {
+                if (!IsInsideGrid(blockerCell))
+                    continue;
+
+                RemoveAllPlacementsAt(blockerCell);
+                nextPlacement.AddBlockerCell(blockerCell);
+            }
+        }
+
+        if (nextPlacement.BlockerCells.Count == 0)
+            nextPlacement.AddBlockerCell(grid);
+
+        gatePlacements.Add(nextPlacement.Normalized());
+    }
+
     public void SetEnemySpawnPoint(Vector2Int grid, string zoneId)
+    {
+        SetEnemySpawnPoint(grid, zoneId, string.Empty);
+    }
+
+    public void SetEnemySpawnPoint(Vector2Int grid, string zoneId, string enemyGroupKey)
     {
         if (!IsInsideGrid(grid))
             return;
 
         EnsureEnemySpawnPointPlacements();
         enemySpawnPointPlacements.RemoveAll(x => x.GridPosition == grid);
-        enemySpawnPointPlacements.Add(new EnemySpawnPointPlacementData(grid, zoneId));
+        enemySpawnPointPlacements.Add(new EnemySpawnPointPlacementData(grid, zoneId, enemyGroupKey));
     }
 
     public void RemoveEnemyPlacementAt(Vector2Int grid)
@@ -446,7 +496,7 @@ public class LevelData : ScriptableObject
             if (!placement.RemoveBlockerCell(grid))
                 continue;
 
-            if (placement.BlockerCells.Count == 0)
+            if (placement.HasPrefab || placement.BlockerCells.Count == 0)
                 gatePlacements.RemoveAt(i);
             else
                 gatePlacements[i] = placement.Normalized();
@@ -465,7 +515,6 @@ public class LevelData : ScriptableObject
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
-        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
         mainEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         RemoveGateBlockerAt(grid);
@@ -843,14 +892,29 @@ public struct GatePlacementData
     [SerializeField] private string firstZoneId;
     [SerializeField] private string secondZoneId;
     [SerializeField, Min(1)] private int openDurationTurns;
+    [SerializeField] private Vector2Int gridPosition;
+    [SerializeField] private string prefabKey;
     [SerializeField] private List<Vector2Int> blockerCells;
 
     public GatePlacementData(string gateId, string firstZoneId, string secondZoneId, int openDurationTurns)
+        : this(gateId, firstZoneId, secondZoneId, openDurationTurns, Vector2Int.zero, string.Empty)
+    {
+    }
+
+    public GatePlacementData(
+        string gateId,
+        string firstZoneId,
+        string secondZoneId,
+        int openDurationTurns,
+        Vector2Int gridPosition,
+        string prefabKey)
     {
         this.gateId = NormalizeId(gateId);
         this.firstZoneId = NormalizeId(firstZoneId);
         this.secondZoneId = NormalizeId(secondZoneId);
         this.openDurationTurns = Mathf.Max(1, openDurationTurns);
+        this.gridPosition = gridPosition;
+        this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
         blockerCells = new List<Vector2Int>();
     }
 
@@ -858,6 +922,9 @@ public struct GatePlacementData
     public string FirstZoneId => NormalizeId(firstZoneId);
     public string SecondZoneId => NormalizeId(secondZoneId);
     public int OpenDurationTurns => Mathf.Max(1, openDurationTurns);
+    public Vector2Int GridPosition => gridPosition;
+    public string PrefabKey => string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
+    public bool HasPrefab => !string.IsNullOrWhiteSpace(PrefabKey);
     public IReadOnlyList<Vector2Int> BlockerCells => blockerCells != null ? blockerCells : Array.Empty<Vector2Int>();
 
     public void SetConnectedZones(string firstZoneId, string secondZoneId)
@@ -901,7 +968,9 @@ public struct GatePlacementData
             GateId,
             FirstZoneId,
             SecondZoneId,
-            OpenDurationTurns);
+            OpenDurationTurns,
+            GridPosition,
+            PrefabKey);
 
         if (blockerCells != null)
         {
@@ -923,19 +992,27 @@ public struct EnemySpawnPointPlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
     [SerializeField] private string zoneId;
+    [SerializeField] private string enemyGroupKey;
 
     public EnemySpawnPointPlacementData(Vector2Int gridPosition, string zoneId)
+        : this(gridPosition, zoneId, string.Empty)
+    {
+    }
+
+    public EnemySpawnPointPlacementData(Vector2Int gridPosition, string zoneId, string enemyGroupKey)
     {
         this.gridPosition = gridPosition;
         this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
+        this.enemyGroupKey = string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
     }
 
     public Vector2Int GridPosition => gridPosition;
     public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+    public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
 
     public EnemySpawnPointPlacementData Normalized()
     {
-        return new EnemySpawnPointPlacementData(gridPosition, ZoneId);
+        return new EnemySpawnPointPlacementData(gridPosition, ZoneId, EnemyGroupKey);
     }
 }
 

@@ -31,11 +31,13 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedDecorativeBuildingKey;
     [SerializeField] private string selectedMainEventPrefabKey;
     [SerializeField] private string selectedSubEventPrefabKey;
+    [SerializeField] private string selectedGatePrefabKey = "horizon";
     [SerializeField] private string selectedGateId = "gate_001";
     [SerializeField] private string selectedGateFirstZoneId = "zone_001";
     [SerializeField] private string selectedGateSecondZoneId = "zone_002";
     [SerializeField, Min(1)] private int selectedGateOpenDurationTurns = 3;
     [SerializeField] private string selectedEnemySpawnZoneId = "zone_002";
+    [SerializeField] private string selectedEnemySpawnEnemyGroupKey;
 
     [Header("Behaviour")]
     [SerializeField] private bool allowRuntimeEditing;
@@ -81,11 +83,13 @@ public class LevelEditorController : MonoBehaviour
     public string SelectedDecorativeBuildingKey => selectedDecorativeBuildingKey;
     public string SelectedMainEventPrefabKey => string.IsNullOrWhiteSpace(selectedMainEventPrefabKey) ? string.Empty : selectedMainEventPrefabKey.Trim();
     public string SelectedSubEventPrefabKey => string.IsNullOrWhiteSpace(selectedSubEventPrefabKey) ? string.Empty : selectedSubEventPrefabKey.Trim();
+    public string SelectedGatePrefabKey => string.IsNullOrWhiteSpace(selectedGatePrefabKey) ? string.Empty : selectedGatePrefabKey.Trim();
     public string SelectedGateId => selectedGateId;
     public string SelectedGateFirstZoneId => selectedGateFirstZoneId;
     public string SelectedGateSecondZoneId => selectedGateSecondZoneId;
     public int SelectedGateOpenDurationTurns => Mathf.Max(1, selectedGateOpenDurationTurns);
     public string SelectedEnemySpawnZoneId => selectedEnemySpawnZoneId;
+    public string SelectedEnemySpawnEnemyGroupKey => string.IsNullOrWhiteSpace(selectedEnemySpawnEnemyGroupKey) ? string.Empty : selectedEnemySpawnEnemyGroupKey.Trim();
     public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
     public LayerMask GroundMask => groundMask;
 
@@ -204,15 +208,10 @@ public class LevelEditorController : MonoBehaviour
                 levelData.SetSubEvent(grid, selectedSubEventPrefabKey);
                 break;
             case LevelEditorBrushType.GateBlocker:
-                levelData.AddGateBlockerCell(
-                    selectedGateId,
-                    selectedGateFirstZoneId,
-                    selectedGateSecondZoneId,
-                    grid,
-                    SelectedGateOpenDurationTurns);
+                ApplyGateBrush(grid);
                 break;
             case LevelEditorBrushType.EnemySpawnPoint:
-                levelData.SetEnemySpawnPoint(grid, selectedEnemySpawnZoneId);
+                levelData.SetEnemySpawnPoint(grid, selectedEnemySpawnZoneId, SelectedEnemySpawnEnemyGroupKey);
                 break;
             case LevelEditorBrushType.HeroUnion:
                 levelData.SetHeroUnion(grid, SelectedHeroUnionPrefabKey);
@@ -243,6 +242,35 @@ public class LevelEditorController : MonoBehaviour
 
         if (applyLevelAfterEdit)
             levelLoader?.LoadLevel();
+    }
+
+    private void ApplyGateBrush(Vector2Int grid)
+    {
+        LevelPrefabRegistry prefabRegistry = levelLoader != null ? levelLoader.PrefabRegistry : null;
+        if (prefabRegistry == null ||
+            string.IsNullOrWhiteSpace(SelectedGatePrefabKey) ||
+            !prefabRegistry.TryGetGatePrefab(SelectedGatePrefabKey, out GateFootprint gatePrefab) ||
+            gatePrefab == null)
+        {
+            levelData.AddGateBlockerCell(
+                selectedGateId,
+                selectedGateFirstZoneId,
+                selectedGateSecondZoneId,
+                grid,
+                SelectedGateOpenDurationTurns);
+            return;
+        }
+
+        List<Vector2Int> blockerCells = new List<Vector2Int>();
+        gatePrefab.CollectOccupiedCells(grid, blockerCells);
+        levelData.SetGatePlacement(
+            selectedGateId,
+            selectedGateFirstZoneId,
+            selectedGateSecondZoneId,
+            grid,
+            SelectedGatePrefabKey,
+            blockerCells,
+            SelectedGateOpenDurationTurns);
     }
 
     private void OnDrawGizmos()

@@ -307,14 +307,11 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
     private void SpawnGates(LevelData levelData, Vector2Int offset)
     {
-        GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
-        if (obstaclePrefab == null)
-            return;
-
         IReadOnlyList<GatePlacementData> gatePlacements = levelData.GatePlacements;
         if (gatePlacements.Count == 0)
             return;
 
+        GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
         Transform parent = GetGateRoot(true);
         for (int i = 0; i < gatePlacements.Count; i++)
         {
@@ -329,12 +326,27 @@ public class LevelZoneLayoutLoader : MonoBehaviour
             List<Vector2Int> gateBlockerCells = new List<Vector2Int>();
             IReadOnlyList<Vector2Int> blockerCells = placement.BlockerCells;
             for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
+                gateBlockerCells.Add(blockerCells[cellIndex] + offset);
+
+            if (placement.HasPrefab &&
+                prefabRegistry != null &&
+                prefabRegistry.TryGetGatePrefab(placement.PrefabKey, out GateFootprint gatePrefab) &&
+                gatePrefab != null)
             {
-                Vector2Int blockerCell = blockerCells[cellIndex] + offset;
-                gateBlockerCells.Add(blockerCell);
-                GameObject blocker = SpawnGameObject(obstaclePrefab, blockerCell, gateRootObject.transform);
-                if (blocker != null)
-                    blockers.Add(blocker);
+                Vector2Int anchorGrid = placement.GridPosition + offset;
+                Vector3 worldPosition = gatePrefab.GetRootPositionForAnchor(gridManager, anchorGrid);
+                GateFootprint gateVisual = Instantiate(gatePrefab, worldPosition, gatePrefab.transform.rotation, gateRootObject.transform);
+                gateVisual.SyncAnchorFromTransform();
+                blockers.Add(gateVisual.gameObject);
+            }
+            else if (obstaclePrefab != null)
+            {
+                for (int cellIndex = 0; cellIndex < gateBlockerCells.Count; cellIndex++)
+                {
+                    GameObject blocker = SpawnGameObject(obstaclePrefab, gateBlockerCells[cellIndex], gateRootObject.transform);
+                    if (blocker != null)
+                        blockers.Add(blocker);
+                }
             }
 
             GateRuntimeController gate = gateRootObject.AddComponent<GateRuntimeController>();
@@ -639,7 +651,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
             string zoneId = !string.IsNullOrWhiteSpace(placement.ZoneId)
                 ? placement.ZoneId
                 : zone != null ? zone.ZoneId : string.Empty;
-            spawnPoint.Initialize(zoneId, grid);
+            spawnPoint.Initialize(zoneId, grid, placement.EnemyGroupKey);
         }
     }
 
