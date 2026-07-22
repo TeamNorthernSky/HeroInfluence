@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class ZoneEntryGuidanceController : MonoBehaviour
 {
     private const string GameObjectName = "[ZoneEntryGuidanceController]";
+    private const int TeleportRevealSuppressFrameCount = 2;
 
     private readonly HashSet<Vector2Int> allowedPathCells = new HashSet<Vector2Int>();
     private readonly List<Vector2Int> pathBuffer = new List<Vector2Int>();
@@ -14,6 +15,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
     private string activeZoneId = string.Empty;
     private string requiredHeroUnionId = string.Empty;
     private Coroutine sceneRefreshCoroutine;
+    private static int suppressGeneralFogRevealUntilFrame = -1;
 
     public static ZoneEntryGuidanceController Instance { get; private set; }
     public static bool IsActive => Instance != null && Instance.Active;
@@ -26,7 +28,8 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         }
     }
     public static bool IsActiveOrStoredActive => IsActive || HasActiveProgressState;
-    public static bool SuppressGeneralFogReveal => IsActive;
+    public static bool SuppressGeneralFogReveal =>
+        IsActive || Time.frameCount <= suppressGeneralFogRevealUntilFrame;
 
     public bool Active { get; private set; }
     public string ActiveZoneId => activeZoneId;
@@ -66,6 +69,13 @@ public class ZoneEntryGuidanceController : MonoBehaviour
             controller.RefreshFromProgress();
 
         return controller;
+    }
+
+    public static void SuppressGeneralFogRevealForTeleport()
+    {
+        suppressGeneralFogRevealUntilFrame = Mathf.Max(
+            suppressGeneralFogRevealUntilFrame,
+            Time.frameCount + TeleportRevealSuppressFrameCount);
     }
 
     private void Awake()
@@ -218,7 +228,34 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 
         pathBuffer.Clear();
         pathBuffer.AddRange(allowedPathCells);
+        AppendRequiredHeroUnionRevealCells(pathBuffer);
         fogGridManager.RevealCells(pathBuffer);
+    }
+
+    private void AppendRequiredHeroUnionRevealCells(List<Vector2Int> cells)
+    {
+        if (cells == null)
+            return;
+
+        HeroUnionUnit heroUnion = ResolveHeroUnion(activeZoneId);
+        if (heroUnion == null || !IsRequiredHeroUnion(heroUnion))
+            return;
+
+        IReadOnlyList<Vector2Int> interactionCells = heroUnion.GetInteractionCells();
+        for (int i = 0; i < interactionCells.Count; i++)
+            cells.Add(interactionCells[i]);
+
+        MultiGridOccupant occupant = heroUnion.GetComponent<MultiGridOccupant>();
+        if (occupant != null)
+        {
+            IReadOnlyList<Vector2Int> occupiedCells = occupant.GetOccupiedCells();
+            for (int i = 0; i < occupiedCells.Count; i++)
+                cells.Add(occupiedCells[i]);
+
+            return;
+        }
+
+        cells.Add(heroUnion.GetCurrentGrid());
     }
 
     private void BeginGuidance(string zoneId, HeroUnionUnit heroUnion, List<Vector2Int> path, bool saveProgress)

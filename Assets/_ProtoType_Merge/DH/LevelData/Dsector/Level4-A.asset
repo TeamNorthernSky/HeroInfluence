@@ -4459,21 +4459,27 @@ MonoBehaviour:
     prefabKey: BGHighBuilding001
   - gridPosition: {x: 32, y: 27}
     prefabKey: BGHighBuilding001
+  mainEventPlacements: []
+  subEventPlacements: []
   gatePlacements:
   - gateId: gate_004
-    firstZoneId: zone_004
-    secondZoneId: zone_002
+    firstZoneId: zone_002
+    secondZoneId: zone_004
     openDurationTurns: 3
+    gridPosition: {x: 24, y: 2}
+    prefabKey: HorizonGate
     blockerCells:
     - {x: 24, y: 2}
     - {x: 25, y: 2}
   - gateId: gate_005
-    firstZoneId: zone_004
-    secondZoneId: zone_003
+    firstZoneId: zone_003
+    secondZoneId: zone_004
     openDurationTurns: 3
+    gridPosition: {x: 2, y: 20}
+    prefabKey: VerticalGate
     blockerCells:
-    - {x: 2, y: 21}
     - {x: 2, y: 20}
+    - {x: 2, y: 21}
   enemySpawnPointPlacements: []
   heroUnionPlacement:
     hasPlacement: 1

@@ -4833,6 +4833,10 @@ MonoBehaviour:
   - {x: 34, y: 19}
   - {x: 0, y: 21}
   - {x: 0, y: 18}
+  - {x: 38, y: 7}
+  - {x: 49, y: 8}
+  - {x: 2, y: 17}
+  - {x: 28, y: 32}
   itemPlacements:
   - gridPosition: {x: 37, y: 19}
     resourceType: 0
@@ -5032,31 +5036,42 @@ MonoBehaviour:
     prefabKey: Mt005
   - gridPosition: {x: 11, y: 0}
     prefabKey: Mt007
+  mainEventPlacements: []
+  subEventPlacements: []
   gatePlacements:
   - gateId: gate_001
-    firstZoneId: zone_002
-    secondZoneId: zone_001
-    openDurationTurns: 999
+    firstZoneId: zone_001
+    secondZoneId: zone_002
+    openDurationTurns: 3
+    gridPosition: {x: 2, y: 19}
+    prefabKey: VerticalGate
     blockerCells:
-    - {x: 2, y: 20}
     - {x: 2, y: 19}
+    - {x: 2, y: 20}
   - gateId: gate_003
     firstZoneId: zone_002
     secondZoneId: zone_003
     openDurationTurns: 3
+    gridPosition: {x: 3, y: 35}
+    prefabKey: CornerGate1
     blockerCells:
-    - {x: 3, y: 34}
+    - {x: 3, y: 35}
     - {x: 4, y: 35}
+    - {x: 3, y: 34}
   - gateId: gate_004
     firstZoneId: zone_002
     secondZoneId: zone_004
-    openDurationTurns: 999
+    openDurationTurns: 3
+    gridPosition: {x: 24, y: 32}
+    prefabKey: HorizonGate
     blockerCells:
     - {x: 24, y: 32}
     - {x: 25, y: 32}
   enemySpawnPointPlacements:
   - gridPosition: {x: 24, y: 31}
     zoneId: umt001
+  - gridPosition: {x: 48, y: 20}
+    zoneId: zone_002
   heroUnionPlacement:
     hasPlacement: 1
     gridPosition: {x: 5, y: 27}

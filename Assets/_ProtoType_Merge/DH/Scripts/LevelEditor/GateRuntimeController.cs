@@ -13,6 +13,7 @@ public class GateRuntimeController : MonoBehaviour
 
     private bool registeredThreat;
     private bool registeredTeleport;
+    private bool registeredLifecycle;
 
     public string GateId => NormalizeId(gateId);
     public string FirstZoneId => NormalizeId(firstZoneId);
@@ -35,8 +36,12 @@ public class GateRuntimeController : MonoBehaviour
         if (registeredTeleport && GateTeleportController.Instance != null)
             GateTeleportController.Instance.UnregisterGate(this);
 
+        if (registeredLifecycle && GateLifecycleController.Instance != null)
+            GateLifecycleController.Instance.UnregisterGate(this);
+
         registeredThreat = false;
         registeredTeleport = false;
+        registeredLifecycle = false;
     }
 
     public void Initialize(
@@ -228,6 +233,16 @@ public class GateRuntimeController : MonoBehaviour
             {
                 controller.RegisterGate(this);
                 registeredTeleport = true;
+            }
+        }
+
+        if (!registeredLifecycle)
+        {
+            GateLifecycleController controller = GateLifecycleController.EnsureSceneInstance();
+            if (controller != null)
+            {
+                controller.RegisterGate(this);
+                registeredLifecycle = true;
             }
         }
     }

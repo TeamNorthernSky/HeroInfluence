@@ -33,6 +33,9 @@ public class LevelPrefabRegistry : MonoBehaviour
     [Header("Decorative Building Prefabs")]
     [SerializeField] private List<DecorativeBuildingPrefabEntry> decorativeBuildingPrefabs = new List<DecorativeBuildingPrefabEntry>();
 
+    [Header("Gate Prefabs")]
+    [SerializeField] private List<GatePrefabEntry> gatePrefabs = new List<GatePrefabEntry>();
+
     [Header("Enemy Prefabs")]
     [SerializeField] private EnemyGridMover enemyGroupPrefab;
     [SerializeField] private List<EnemyUnitPrefabEntry> enemyUnitPrefabs = new List<EnemyUnitPrefabEntry>();
@@ -59,6 +62,10 @@ public class LevelPrefabRegistry : MonoBehaviour
         subEventPrefabs != null
             ? subEventPrefabs
             : Array.Empty<SubEventPrefabEntry>();
+    public IReadOnlyList<GatePrefabEntry> GatePrefabs =>
+        gatePrefabs != null
+            ? gatePrefabs
+            : Array.Empty<GatePrefabEntry>();
 
     private void OnValidate()
     {
@@ -80,6 +87,10 @@ public class LevelPrefabRegistry : MonoBehaviour
         subEventPrefabs ??= new List<SubEventPrefabEntry>();
         for (int i = 0; i < subEventPrefabs.Count; i++)
             subEventPrefabs[i] = subEventPrefabs[i].Normalized();
+
+        gatePrefabs ??= new List<GatePrefabEntry>();
+        for (int i = 0; i < gatePrefabs.Count; i++)
+            gatePrefabs[i] = gatePrefabs[i].Normalized();
     }
 
     public bool TryGetItemPrefab(ResourceType resourceType, out ItemObject prefab)
@@ -219,6 +230,28 @@ public class LevelPrefabRegistry : MonoBehaviour
                 continue;
 
             prefab = subEventPrefabs[i].Prefab;
+            return prefab != null;
+        }
+
+        prefab = null;
+        return false;
+    }
+
+    public bool TryGetGatePrefab(string prefabKey, out GateFootprint prefab)
+    {
+        string normalizedKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
+        if (gatePrefabs == null)
+        {
+            prefab = null;
+            return false;
+        }
+
+        for (int i = 0; i < gatePrefabs.Count; i++)
+        {
+            if (!string.Equals(gatePrefabs[i].PrefabKey, normalizedKey, StringComparison.Ordinal))
+                continue;
+
+            prefab = gatePrefabs[i].Prefab;
             return prefab != null;
         }
 
@@ -407,6 +440,33 @@ public struct SubEventPrefabEntry
     public SubEventPrefabEntry Normalized()
     {
         SubEventPrefabEntry entry = this;
+        entry.prefabKey = PrefabKey;
+        return entry;
+    }
+}
+
+[Serializable]
+public struct GatePrefabEntry
+{
+    [SerializeField] private string prefabKey;
+    [SerializeField] private GateFootprint prefab;
+
+    public string PrefabKey
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(prefabKey))
+                return prefabKey.Trim();
+
+            return prefab != null ? prefab.name : string.Empty;
+        }
+    }
+
+    public GateFootprint Prefab => prefab;
+
+    public GatePrefabEntry Normalized()
+    {
+        GatePrefabEntry entry = this;
         entry.prefabKey = PrefabKey;
         return entry;
     }

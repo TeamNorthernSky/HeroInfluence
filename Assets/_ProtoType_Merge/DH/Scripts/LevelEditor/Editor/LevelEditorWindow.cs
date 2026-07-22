@@ -255,14 +255,17 @@ public class LevelEditorWindow : EditorWindow
 
         if (brushType == LevelEditorBrushType.GateBlocker)
         {
+            DrawGatePrefabSelector(serializedController);
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateId"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateFirstZoneId"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateSecondZoneId"));
-            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedGateOpenDurationTurns"));
         }
 
         if (brushType == LevelEditorBrushType.EnemySpawnPoint)
+        {
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnZoneId"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnEnemyGroupKey"));
+        }
 
         DrawTileClipboardControls(serializedController, brushType);
 
@@ -545,6 +548,51 @@ public class LevelEditorWindow : EditorWindow
         }
     }
 
+    private void DrawGatePrefabSelector(SerializedObject serializedController)
+    {
+        SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedGatePrefabKey");
+
+        LevelPrefabRegistry registry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
+        if (registry == null)
+        {
+            EditorGUILayout.HelpBox("Gate brush needs a LevelPrefabRegistry on the LevelLoader.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        IReadOnlyList<GatePrefabEntry> entries = registry.GatePrefabs;
+        if (entries == null || entries.Count == 0)
+        {
+            EditorGUILayout.HelpBox("LevelPrefabRegistry has no Gate entries.", MessageType.Info);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        List<string> keys = new List<string>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            GatePrefabEntry entry = entries[i];
+            if (!string.IsNullOrWhiteSpace(entry.PrefabKey) && !keys.Contains(entry.PrefabKey))
+                keys.Add(entry.PrefabKey);
+        }
+
+        if (keys.Count == 0)
+        {
+            EditorGUILayout.HelpBox("Gate entries do not have prefab keys.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        int selectedIndex = Mathf.Max(0, keys.IndexOf(selectedKeyProperty.stringValue));
+        int nextIndex = EditorGUILayout.Popup("Prefab Key", selectedIndex, keys.ToArray());
+        selectedKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
+
+        if (registry.TryGetGatePrefab(selectedKeyProperty.stringValue, out GateFootprint prefab) && prefab != null)
+            EditorGUILayout.LabelField("Footprint", prefab.FootprintType.ToString());
+        else
+            EditorGUILayout.HelpBox($"Gate prefab key '{selectedKeyProperty.stringValue}' is not registered.", MessageType.Warning);
+    }
+
     private void DrawBrushSelector(SerializedProperty brushTypeProperty)
     {
         LevelEditorBrushType brushType = (LevelEditorBrushType)brushTypeProperty.intValue;
@@ -683,6 +731,18 @@ public class LevelEditorWindow : EditorWindow
                 EditorGUILayout.HelpBox($"SubEvent prefab '{context.SelectedSubEventPrefabKey}' needs a Chat ID.", MessageType.Warning);
         }
 
+        if (context.BrushType == LevelEditorBrushType.GateBlocker)
+        {
+            if (context.PrefabRegistry == null)
+                EditorGUILayout.HelpBox("Gate brush needs a LevelPrefabRegistry.", MessageType.Warning);
+            else if (string.IsNullOrWhiteSpace(context.SelectedGatePrefabKey))
+                EditorGUILayout.HelpBox("Gate brush needs a selected Prefab Key.", MessageType.Warning);
+            else if (!context.PrefabRegistry.TryGetGatePrefab(context.SelectedGatePrefabKey, out GateFootprint gatePrefab))
+                EditorGUILayout.HelpBox($"Gate prefab key '{context.SelectedGatePrefabKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
+            else if (gatePrefab == null)
+                EditorGUILayout.HelpBox($"Gate prefab '{context.SelectedGatePrefabKey}' is missing.", MessageType.Warning);
+        }
+
         if (!IsPrefablessBrush(context.BrushType) && context.PrefabRegistry == null)
             EditorGUILayout.HelpBox("LevelLoader needs a LevelPrefabRegistry.", MessageType.Warning);
         else if (!IsPrefablessBrush(context.BrushType) && !HasBrushPrefab(context, out string prefabWarning))
@@ -757,10 +817,9 @@ public class LevelEditorWindow : EditorWindow
         bool isTileBrush = context.BrushType == LevelEditorBrushType.GroundTile ||
             context.BrushType == LevelEditorBrushType.GroundTileErase;
         bool isObstacleBrush = context.BrushType == LevelEditorBrushType.Obstacle;
-        bool isGateBlockerBrush = context.BrushType == LevelEditorBrushType.GateBlocker;
         bool leftPaintEvent = currentEvent.button == 0 &&
             (currentEvent.type == EventType.MouseDown ||
-             (currentEvent.type == EventType.MouseDrag && (isTileBrush || isTileSelectionBrush || isObstacleBrush || isGateBlockerBrush)));
+             (currentEvent.type == EventType.MouseDrag && (isTileBrush || isTileSelectionBrush || isObstacleBrush)));
         bool rightEraseEvent = currentEvent.button == 1 && currentEvent.type == EventType.MouseDown;
 
         if (leftPaintEvent)
@@ -778,8 +837,6 @@ public class LevelEditorWindow : EditorWindow
             if (isTileBrush)
                 lastEditedGroundTileGrid = hoveredGrid;
         if (isObstacleBrush)
-            lastEditedObstacleGrid = hoveredGrid;
-        if (isGateBlockerBrush)
             lastEditedObstacleGrid = hoveredGrid;
 
             currentEvent.Use();
@@ -964,13 +1021,20 @@ public class LevelEditorWindow : EditorWindow
 
         if (context.BrushType == LevelEditorBrushType.GateBlocker)
         {
-            bool canPlaceGateBlocker = context.LevelData.IsInsideGrid(anchor) && !string.IsNullOrWhiteSpace(context.SelectedGateId);
+            bool canPlaceGateBlocker =
+                TryBuildGateFootprint(context, anchor, out List<Vector2Int> gateFootprint, out string gateReason) &&
+                CanPlaceFootprint(context, gateFootprint, out gateReason) &&
+                !string.IsNullOrWhiteSpace(context.SelectedGateId);
             DrawFootprint(
                 context,
-                BuildFootprint(null, anchor),
+                gateFootprint ?? BuildFootprint(null, anchor),
                 canPlaceGateBlocker ? new Color(0.45f, 0.15f, 1f, 0.20f) : new Color(1f, 0f, 0f, 0.20f),
                 canPlaceGateBlocker ? new Color(0.45f, 0.15f, 1f, 1f) : new Color(1f, 0f, 0f, 1f));
-            DrawSceneLabel(context, anchor, canPlaceGateBlocker ? context.SelectedGateId : "Gate Id is missing.");
+            DrawSceneLabel(
+                context,
+                anchor,
+                canPlaceGateBlocker ? $"{context.SelectedGateId} / {context.SelectedGatePrefabKey}" :
+                    string.IsNullOrWhiteSpace(context.SelectedGateId) ? "Gate Id is missing." : gateReason);
             return;
         }
 
@@ -1063,9 +1127,6 @@ public class LevelEditorWindow : EditorWindow
 
         if (context.BrushType == LevelEditorBrushType.GateBlocker)
         {
-            if (lastEditedObstacleGrid.HasValue && lastEditedObstacleGrid.Value == anchor)
-                return;
-
             if (string.IsNullOrWhiteSpace(context.SelectedGateId))
             {
                 sceneStatus = "Gate Id is missing.";
@@ -1073,14 +1134,24 @@ public class LevelEditorWindow : EditorWindow
                 return;
             }
 
-            Undo.RecordObject(context.LevelData, "Place Gate Blocker");
-            context.LevelData.AddGateBlockerCell(
+            if (!TryBuildGateFootprint(context, anchor, out List<Vector2Int> gateFootprint, out string gateReason)
+                || !CanPlaceFootprint(context, gateFootprint, out gateReason))
+            {
+                sceneStatus = gateReason;
+                Repaint();
+                return;
+            }
+
+            Undo.RecordObject(context.LevelData, "Place Gate");
+            context.LevelData.SetGatePlacement(
                 context.SelectedGateId,
                 context.SelectedGateFirstZoneId,
                 context.SelectedGateSecondZoneId,
                 anchor,
+                context.SelectedGatePrefabKey,
+                gateFootprint,
                 context.SelectedGateOpenDurationTurns);
-            sceneStatus = $"Placed GateBlocker '{context.SelectedGateId}' at {anchor}.";
+            sceneStatus = $"Placed Gate '{context.SelectedGateId}' ({context.SelectedGatePrefabKey}) at {anchor}.";
             CommitLevelDataChange(context);
             return;
         }
@@ -1095,8 +1166,10 @@ public class LevelEditorWindow : EditorWindow
             }
 
             Undo.RecordObject(context.LevelData, "Place Enemy Spawn Point");
-            context.LevelData.SetEnemySpawnPoint(anchor, context.SelectedEnemySpawnZoneId);
-            sceneStatus = $"Placed EnemySpawnPoint '{context.SelectedEnemySpawnZoneId}' at {anchor}.";
+            context.LevelData.SetEnemySpawnPoint(anchor, context.SelectedEnemySpawnZoneId, context.SelectedEnemySpawnEnemyGroupKey);
+            sceneStatus = string.IsNullOrWhiteSpace(context.SelectedEnemySpawnEnemyGroupKey)
+                ? $"Placed EnemySpawnPoint '{context.SelectedEnemySpawnZoneId}' at {anchor}."
+                : $"Placed EnemySpawnPoint '{context.SelectedEnemySpawnZoneId}' / '{context.SelectedEnemySpawnEnemyGroupKey}' at {anchor}.";
             CommitLevelDataChange(context);
             return;
         }
@@ -1227,11 +1300,13 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedDecorativeBuildingKey = controller.SelectedDecorativeBuildingKey;
         context.SelectedMainEventPrefabKey = controller.SelectedMainEventPrefabKey;
         context.SelectedSubEventPrefabKey = controller.SelectedSubEventPrefabKey;
+        context.SelectedGatePrefabKey = controller.SelectedGatePrefabKey;
         context.SelectedGateId = controller.SelectedGateId;
         context.SelectedGateFirstZoneId = controller.SelectedGateFirstZoneId;
         context.SelectedGateSecondZoneId = controller.SelectedGateSecondZoneId;
         context.SelectedGateOpenDurationTurns = controller.SelectedGateOpenDurationTurns;
         context.SelectedEnemySpawnZoneId = controller.SelectedEnemySpawnZoneId;
+        context.SelectedEnemySpawnEnemyGroupKey = controller.SelectedEnemySpawnEnemyGroupKey;
         context.ApplyLevelAfterEdit = controller.ApplyLevelAfterEdit;
         context.GroundMask = controller.GroundMask;
 
@@ -1503,7 +1578,6 @@ public class LevelEditorWindow : EditorWindow
     {
         return IsGroundTileBrush(brushType) ||
             brushType == LevelEditorBrushType.TileSelection ||
-            brushType == LevelEditorBrushType.GateBlocker ||
             brushType == LevelEditorBrushType.EnemySpawnPoint;
     }
 
@@ -1547,6 +1621,9 @@ public class LevelEditorWindow : EditorWindow
             footprint = BuildFootprint(null, anchor);
             return true;
         }
+
+        if (context.BrushType == LevelEditorBrushType.GateBlocker)
+            return TryBuildGateFootprint(context, anchor, out footprint, out reason);
 
         if (!TryGetBrushPrefab(context, out GameObject prefab, out reason))
             return false;
@@ -1621,6 +1698,16 @@ public class LevelEditorWindow : EditorWindow
 
                 prefab = GetSubEventPrefab(context, context.SelectedSubEventPrefabKey);
                 reason = prefab == null ? $"SubEvent prefab is missing for {context.SelectedSubEventPrefabKey}." : null;
+                return prefab != null;
+            case LevelEditorBrushType.GateBlocker:
+                if (string.IsNullOrWhiteSpace(context.SelectedGatePrefabKey))
+                {
+                    reason = "Gate prefab key is missing.";
+                    return false;
+                }
+
+                prefab = GetGatePrefab(context, context.SelectedGatePrefabKey);
+                reason = prefab == null ? $"Gate prefab is missing for {context.SelectedGatePrefabKey}." : null;
                 return prefab != null;
             case LevelEditorBrushType.HeroUnion:
                 prefab = GetHeroUnionPrefab(context, context.SelectedHeroUnionPrefabKey);
@@ -1771,13 +1858,16 @@ public class LevelEditorWindow : EditorWindow
             }
         }
 
-        for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
+        if (context.BrushType != LevelEditorBrushType.Obstacle)
         {
-            DecorativeBuildingPlacementData placement = levelData.DecorativeBuildingPlacements[i];
-            if (FootprintsOverlap(footprint, BuildFootprint(null, placement.GridPosition)))
+            for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
             {
-                reason = "DecorativeBuilding overlaps this footprint.";
-                return true;
+                DecorativeBuildingPlacementData placement = levelData.DecorativeBuildingPlacements[i];
+                if (FootprintsOverlap(footprint, BuildFootprint(null, placement.GridPosition)))
+                {
+                    reason = "DecorativeBuilding overlaps this footprint.";
+                    return true;
+                }
             }
         }
 
@@ -1997,6 +2087,29 @@ public class LevelEditorWindow : EditorWindow
         return footprint;
     }
 
+    private static bool TryBuildGateFootprint(
+        LevelEditorContext context,
+        Vector2Int anchor,
+        out List<Vector2Int> footprint,
+        out string reason)
+    {
+        footprint = null;
+
+        GateFootprint prefab = GetGateFootprintPrefab(context, context.SelectedGatePrefabKey);
+        if (prefab == null)
+        {
+            reason = string.IsNullOrWhiteSpace(context.SelectedGatePrefabKey)
+                ? "Gate prefab key is missing."
+                : $"Gate prefab is missing for {context.SelectedGatePrefabKey}.";
+            return false;
+        }
+
+        footprint = new List<Vector2Int>();
+        prefab.CollectOccupiedCells(anchor, footprint);
+        reason = null;
+        return footprint.Count > 0;
+    }
+
     private static Vector2Int GetPrefabFootprintSize(GameObject prefab)
     {
         if (prefab == null)
@@ -2067,8 +2180,23 @@ public class LevelEditorWindow : EditorWindow
         return context.PrefabRegistry != null
             && context.PrefabRegistry.TryGetSubEventPrefab(prefabKey, out SubEventObject prefab)
             && prefab != null
-                ? prefab.gameObject
-                : null;
+            ? prefab.gameObject
+            : null;
+    }
+
+    private static GameObject GetGatePrefab(LevelEditorContext context, string prefabKey)
+    {
+        GateFootprint prefab = GetGateFootprintPrefab(context, prefabKey);
+        return prefab != null ? prefab.gameObject : null;
+    }
+
+    private static GateFootprint GetGateFootprintPrefab(LevelEditorContext context, string prefabKey)
+    {
+        return context.PrefabRegistry != null
+            && context.PrefabRegistry.TryGetGatePrefab(prefabKey, out GateFootprint prefab)
+            && prefab != null
+            ? prefab
+            : null;
     }
 
     private static GameObject GetHeroUnionPrefab(LevelEditorContext context, string prefabKey)
@@ -2242,11 +2370,13 @@ public class LevelEditorWindow : EditorWindow
         public string SelectedDecorativeBuildingKey;
         public string SelectedMainEventPrefabKey;
         public string SelectedSubEventPrefabKey;
+        public string SelectedGatePrefabKey;
         public string SelectedGateId;
         public string SelectedGateFirstZoneId;
         public string SelectedGateSecondZoneId;
         public int SelectedGateOpenDurationTurns;
         public string SelectedEnemySpawnZoneId;
+        public string SelectedEnemySpawnEnemyGroupKey;
         public bool ApplyLevelAfterEdit;
         public LayerMask GroundMask;
     }

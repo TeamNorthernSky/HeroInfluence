@@ -4,6 +4,7 @@ public class EnemySpawnPoint : MonoBehaviour
 {
     [SerializeField] private string spawnPointId;
     [SerializeField] private string zoneId;
+    [SerializeField] private string enemyGroupKey;
     [SerializeField] private Vector2Int gridPosition;
     [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
 
@@ -11,6 +12,7 @@ public class EnemySpawnPoint : MonoBehaviour
 
     public string SpawnPointId => MapProgressKey.NormalizeSegment(spawnPointId);
     public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+    public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
     public Vector2Int GridPosition => gridPosition;
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
 
@@ -35,7 +37,13 @@ public class EnemySpawnPoint : MonoBehaviour
 
     public void Initialize(string nextZoneId, Vector2Int nextGridPosition)
     {
+        Initialize(nextZoneId, nextGridPosition, string.Empty);
+    }
+
+    public void Initialize(string nextZoneId, Vector2Int nextGridPosition, string nextEnemyGroupKey)
+    {
         zoneId = MapProgressKey.NormalizeSegment(nextZoneId);
+        enemyGroupKey = string.IsNullOrWhiteSpace(nextEnemyGroupKey) ? string.Empty : nextEnemyGroupKey.Trim();
         gridPosition = nextGridPosition;
         spawnPointId = $"{zoneId}_{gridPosition.x}_{gridPosition.y}";
         RefreshResolvedEnemyLevel();
