@@ -6,7 +6,7 @@ namespace JC.VFX
     [CustomEditor(typeof(HealArcRingPreset))]
     public class HealArcRingPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/HealSkill";
+        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/HealSkill";
         static string OrbitPrefab => DIR + "/HealOrbit.prefab";   // ArcRing이 이 프리팹의 자식
 
         public override void OnInspectorGUI()

@@ -8,8 +8,8 @@ namespace JC.VFX
     {
         static readonly string[] PrefabPaths =
         {
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/PawForYou/PawForYou.prefab",
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/PawForYou/PawForYouMistake.prefab",
+            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/PawForYou/PawForYou.prefab",
+            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/PawForYou/PawForYouMistake.prefab",
         };
 
         public override void OnInspectorGUI()

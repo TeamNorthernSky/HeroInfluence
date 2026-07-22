@@ -10,9 +10,9 @@ namespace JC.VFX
         // 적용 대상은 "preset 필드가 이 에셋을 참조하는" 컴포넌트만 — 색 변형 에셋이 서로를 덮지 않게.
         static readonly string[] PrefabPaths =
         {
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/HealSkill/HealOrbit.prefab",
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/PawForYou/PawForYou.prefab",
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/PawForYou/PawForYouMistake.prefab",
+            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/HealSkill/HealOrbit.prefab",
+            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/PawForYou/PawForYou.prefab",
+            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/PawForYou/PawForYouMistake.prefab",
         };
 
         public override void OnInspectorGUI()
