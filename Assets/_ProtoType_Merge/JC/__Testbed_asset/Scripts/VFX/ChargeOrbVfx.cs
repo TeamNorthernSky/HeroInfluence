@@ -3,6 +3,7 @@ using UnityEngine;
 namespace JC.VFX
 {
     /// <summary>
+    /// ★네코밍 직업 스킬 「아픈 거 다 날아가라」(HealSkill)의 차징 파트. LetsFightingLove(양손 차징)도 재사용.
     /// 차징 구체 VFX. Play() 시 소켓 위치에서 startWorldSize→endWorldSize로 growDuration에 걸쳐 커지며,
     /// 씬-공간 트레일 팔로워가 손 궤적을 따라 파티클 트레일/반짝임을 남긴다.
     /// Stop() 시 구체는 즉시 사라지고 트레일/반짝임은 수명대로 자연 소멸.

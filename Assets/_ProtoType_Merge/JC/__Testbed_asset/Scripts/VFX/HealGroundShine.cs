@@ -70,6 +70,9 @@ namespace JC.VFX
             _playing = false;
         }
 
+        /// <summary>변형 프리셋 런타임 교체(PawForYou 등 색 변형 재사용용).</summary>
+        public void SetPreset(HealGroundShinePreset p) => preset = p;
+
         /// <summary>중심(착지점 지면) 주입 + 표시 시작.</summary>
         public void Play(Vector3 center)
         {

@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: PawSprite
+  m_Shader: {fileID: 4800000, guid: 926bedef9d5fb8c4a89edee9a9014e50, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _FadeMul: 1
+    - _FillOpacity: 0.8
+    - _Fusion: 0.08
+    - _GlowIntensity: 1.5
+    - _GlowRange: 0.25
+    - _InnerGrad: 0.8
+    - _PadIntensity: 2
+    - _PadMainRadius: 0.2
+    - _PadMainSquash: 0.8
+    - _PadToeDistMul: 0.62
+    - _PadToeRadius: 0.08
+    - _PalmOffsetY: -0.25
+    - _PalmRadiusX: 0.42
+    - _PalmRadiusY: 0.34
+    - _RimIntensity: 2.5
+    - _RimWidth: 0.05
+    - _ToeCount: 4
+    - _ToeDist: 0.52
+    - _ToeRadius: 0.16
+    - _ToeSpread: 95
+    - _WobbleAmp: 0.015
+    - _WobbleSpeed: 2
+    m_Colors:
+    - _FillColor: {r: 0.85, g: 0.9, b: 1, a: 1}
+    - _GlowColor: {r: 0.8, g: 0.9, b: 1, a: 1}
+    - _PadColor: {r: 1, g: 0.95, b: 0.8, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []

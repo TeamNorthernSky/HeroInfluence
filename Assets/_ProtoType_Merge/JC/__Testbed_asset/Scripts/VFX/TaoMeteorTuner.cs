@@ -1,0 +1,92 @@
+using UnityEngine;
+
+namespace JC.VFX
+{
+    /// <summary>
+    /// Taosenaiyo 유성 프리셋 브릿지: T5_TaoMeteor 값을 매 프레임
+    /// ProjectileVfx(비행) + CometShell(리본 크기) + 혜성 재질(MPB, 비파괴)에 주입.
+    /// Tao_MeteorOrb 프리팹 루트에 부착. ProjectileVfx.SetFade와 같은 MPB를 공유하므로
+    /// GetPropertyBlock 후 덧쓰기 — _FadeMul과 충돌 없음.
+    /// </summary>
+    public class TaoMeteorTuner : MonoBehaviour
+    {
+        [Header("런타임 프리뷰")]
+        [Tooltip("지정하면 livePreview에서 이 프리셋 값을 매 프레임 반영.")]
+        [SerializeField] private TaoMeteorPreset preset;
+        [SerializeField] private bool livePreview = true;
+
+        [Header("References")]
+        [SerializeField] private ProjectileVfx projectile;
+        [SerializeField] private CometShell cometShell;
+        [Tooltip("혜성 리본 렌더러(TaoComet 재질)")]
+        [SerializeField] private MeshRenderer cometRenderer;
+        [Tooltip("혜성 머리 구형 코마 렌더러(TaoCometHead 재질). 스케일도 여기서 구동")]
+        [SerializeField] private MeshRenderer cometHeadRenderer;
+
+        private MaterialPropertyBlock _mpb;
+
+        private static readonly int ColorHeadID = Shader.PropertyToID("_ColorHead");
+        private static readonly int ColorTailID = Shader.PropertyToID("_ColorTail");
+        private static readonly int IntensityID = Shader.PropertyToID("_Intensity");
+        private static readonly int TailStartWidthID = Shader.PropertyToID("_TailStartWidth");
+        private static readonly int FillColorID = Shader.PropertyToID("_FillColor");
+        private static readonly int FillIntensityID = Shader.PropertyToID("_FillIntensity");
+        private static readonly int FillPowerID = Shader.PropertyToID("_FillPower");
+        private static readonly int RimPowerID = Shader.PropertyToID("_RimPower");
+        private static readonly int TailEndWidthID = Shader.PropertyToID("_TailEndWidth");
+        private static readonly int TailTaperID = Shader.PropertyToID("_TailTaper");
+        private static readonly int TailFadeID = Shader.PropertyToID("_TailFade");
+        private static readonly int FlickerAmpID = Shader.PropertyToID("_FlickerAmp");
+        private static readonly int FlickerSpeedID = Shader.PropertyToID("_FlickerSpeed");
+        private static readonly int RimColorID = Shader.PropertyToID("_RimColor");
+        private static readonly int RimIntensityID = Shader.PropertyToID("_RimIntensity");
+        private static readonly int RimPosID = Shader.PropertyToID("_RimPos");
+        private static readonly int RimSoftID = Shader.PropertyToID("_RimSoft");
+        private static readonly int RimFadeID = Shader.PropertyToID("_RimFade");
+
+        public void SetPreset(TaoMeteorPreset p) => preset = p;
+
+        private void Update()
+        {
+            if (!livePreview || preset == null) return;
+
+            if (projectile) projectile.ApplyTuning(preset.worldSize, preset.speed, preset.arcHeight, preset.trailTime);
+            if (cometShell) cometShell.SetSize(preset.cometLength, preset.cometWidth);
+
+            if (cometRenderer)
+            {
+                if (_mpb == null) _mpb = new MaterialPropertyBlock();
+                cometRenderer.GetPropertyBlock(_mpb);   // _FadeMul(ProjectileVfx) 보존
+                _mpb.SetColor(ColorHeadID, preset.headColor);
+                _mpb.SetColor(ColorTailID, preset.tailColor);
+                _mpb.SetFloat(IntensityID, preset.intensity);   // 마스터(리본 전체 곱)
+                _mpb.SetFloat(TailStartWidthID, preset.tailStartWidth);
+                _mpb.SetFloat(TailEndWidthID, preset.tailEndWidth);
+                _mpb.SetFloat(TailTaperID, preset.tailTaper);
+                _mpb.SetFloat(TailFadeID, preset.tailFade);
+                _mpb.SetFloat(FlickerAmpID, preset.flickerAmp);
+                _mpb.SetFloat(FlickerSpeedID, preset.flickerSpeed);
+                _mpb.SetColor(RimColorID, preset.rimColor);
+                _mpb.SetFloat(RimIntensityID, preset.rimIntensity);
+                _mpb.SetFloat(RimPosID, preset.rimPos);
+                _mpb.SetFloat(RimSoftID, preset.rimSoft);
+                _mpb.SetFloat(RimFadeID, preset.rimFade);
+                cometRenderer.SetPropertyBlock(_mpb);
+            }
+
+            if (cometHeadRenderer)
+            {
+                cometHeadRenderer.transform.localScale = Vector3.one * preset.headSize;
+                if (_mpb == null) _mpb = new MaterialPropertyBlock();
+                cometHeadRenderer.GetPropertyBlock(_mpb);   // _FadeMul 보존
+                _mpb.SetColor(FillColorID, preset.headColor);
+                _mpb.SetFloat(FillIntensityID, preset.headFillIntensity * preset.intensity);   // 개별 × 마스터
+                _mpb.SetFloat(FillPowerID, preset.headFillPower);
+                _mpb.SetColor(RimColorID, preset.rimColor);
+                _mpb.SetFloat(RimIntensityID, preset.headRimIntensity * preset.intensity);     // 개별 × 마스터
+                _mpb.SetFloat(RimPowerID, preset.headRimPower);
+                cometHeadRenderer.SetPropertyBlock(_mpb);
+            }
+        }
+    }
+}

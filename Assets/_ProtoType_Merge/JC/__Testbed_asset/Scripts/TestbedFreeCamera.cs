@@ -2,9 +2,10 @@ using UnityEngine;
 
 /// <summary>
 /// 테스트베드 전용 프리 카메라. ShaderTestbed의 FreeFlyCamera + OrbitCameraRig 통합본.
-/// - WASD: 카메라 기준 전후/좌우 이동 (Shift 가속 / Ctrl 감속)
+/// - 우클릭 홀드 + WASD: 카메라 기준 전후/좌우 이동 (Shift 가속 / Ctrl 감속)
+///   ※ 우클릭 없이 WASD는 무동작 — 테스트베드 스킬 키(Q,W,E,R,…)와의 충돌 방지 (260722)
 /// - 우클릭(누르는 동안): 마우스 시점 회전
-/// - 좌클릭(누르는 동안): W/S가 상하 이동으로 전환 (A/D는 좌우 유지)
+/// - 우클릭+좌클릭 동시 홀드: W/S가 상하 이동으로 전환 (A/D는 좌우 유지)
 /// - Alt+좌클릭 드래그: 피벗(타겟 또는 시선 전방 지점) 주위 오빗
 /// - 휠: 시선 방향 줌(달리)
 /// </summary>
@@ -90,22 +91,24 @@ public class TestbedFreeCamera : MonoBehaviour
             transform.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
         }
 
-        // --- 속도 ---
-        float speed = moveSpeed;
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) speed *= fastMultiplier;
-        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) speed *= slowMultiplier;
+        // --- 이동 (우클릭 홀드 중에만 — WASD가 스킬 테스트 키와 겹치지 않게) ---
+        if (rmb)
+        {
+            float speed = moveSpeed;
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) speed *= fastMultiplier;
+            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) speed *= slowMultiplier;
 
-        // --- 이동 축 ---
-        float h = Input.GetAxisRaw("Horizontal"); // A/D
-        float v = Input.GetAxisRaw("Vertical");   // W/S
+            float h = Input.GetAxisRaw("Horizontal"); // A/D
+            float v = Input.GetAxisRaw("Vertical");   // W/S
 
-        Vector3 move;
-        if (lmb)
-            move = transform.right * h + Vector3.up * v;      // 좌클릭 중: W/S = 상하
-        else
-            move = transform.forward * v + transform.right * h; // 평상시: W/S = 전후
+            Vector3 move;
+            if (lmb)
+                move = transform.right * h + Vector3.up * v;      // 우+좌클릭 중: W/S = 상하
+            else
+                move = transform.forward * v + transform.right * h; // 우클릭 중: W/S = 전후
 
-        transform.position += move * speed * Time.unscaledDeltaTime;
+            transform.position += move * speed * Time.unscaledDeltaTime;
+        }
 
         // --- 휠 줌 (시선 방향 달리, 틱당 이산 이동) ---
         float scroll = Input.GetAxis("Mouse ScrollWheel");

@@ -3,6 +3,7 @@ using UnityEngine;
 namespace JC.VFX
 {
     /// <summary>
+    /// ★네코밍 직업 스킬 「아픈 거 다 날아가라」(HealSkill).
     /// [프리셋 #0] 힐 오라 이펙트 전체(마스터) 타이밍.
     /// 개별 서브이펙트(오브/원호/…) 룩이 아니라 이펙트 전체의 재생 수명과 전후 페이드를 지배.
     /// 에셋 파일명: 0_HealAuraMasterPreset.asset. 오케스트레이터 HealOrbitVfx가 여기서 타이밍을 읽음.
