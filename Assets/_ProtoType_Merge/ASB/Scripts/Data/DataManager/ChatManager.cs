@@ -24,6 +24,12 @@ public class ChatManager : MonoBehaviour
     public event Action OnChatEnded;
 
     public bool IsRunning { get; private set; }
+
+    /// <summary>[KJ 260723] 현재 대사가 더 진행할 곳 없는 마지막 대사인지 (선택지·자동 분기·다음 대사 전부 없음).</summary>
+    public bool IsAtFinalChat =>
+        IsRunning && currentChat != null &&
+        currentOptionStates.Count == 0 && pendingAutoBranch == null &&
+        currentChat.Next_Chat_ID <= 0;
     public int CurrentZoneId => currentZoneId;
     public ChatDBEventData CurrentChat => currentChat;
     public IReadOnlyList<BranchDBEventData> CurrentOptions => currentOptions.ToArray();
@@ -122,6 +128,22 @@ public class ChatManager : MonoBehaviour
         }
 
         ShowChat(next);
+    }
+
+    /// <summary>
+    /// [KJ 260723] 스킵: 선택지 노드 또는 마지막 대사에 도달할 때까지 자동 진행 (창을 닫지 않음).
+    /// 자동 분기(빈 선택 텍스트)는 통과하고, 선택지가 표시되면 선택 대기 상태로 정지한다.
+    /// </summary>
+    public void SkipToEnd()
+    {
+        const int maxSteps = 1000; // 순환 대화 데이터로 인한 무한 루프 방지
+        for (int step = 0; step < maxSteps && IsRunning && currentChat != null; step++)
+        {
+            if (currentOptionStates.Count > 0) return; // 선택지 표시 중 → 선택 대기
+            if (pendingAutoBranch == null && currentChat.Next_Chat_ID <= 0) return; // 마지막 대사 → 표시한 채 정지
+
+            Advance();
+        }
     }
 
     public void Select(BranchDBEventData option)
