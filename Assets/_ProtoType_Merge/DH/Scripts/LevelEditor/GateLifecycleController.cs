@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class GateLifecycleController : MonoBehaviour
 {
+    public const int DefaultOpenDurationTurns = 3;
+
     [SerializeField, Min(1)] private int openDurationTurns = 3;
     [SerializeField] private TurnManager turnManager;
 
@@ -10,6 +12,12 @@ public class GateLifecycleController : MonoBehaviour
 
     public static GateLifecycleController Instance { get; private set; }
     public int OpenDurationTurns => Mathf.Max(1, openDurationTurns);
+
+    public static int ResolveOpenDurationTurns()
+    {
+        GateLifecycleController controller = EnsureSceneInstance();
+        return controller != null ? controller.OpenDurationTurns : DefaultOpenDurationTurns;
+    }
 
     private void Awake()
     {

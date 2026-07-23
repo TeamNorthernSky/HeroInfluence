@@ -128,13 +128,6 @@ public sealed class HeroUnionChatController : MonoBehaviour
         pendingChatKey = string.Empty;
         isPlayingChat = false;
         UnsubscribeFromChatManagerEnded();
-        StartCoroutine(RefreshModalPauseGateNextFrame());
-    }
-
-    private IEnumerator RefreshModalPauseGateNextFrame()
-    {
-        yield return null;
-        ModalPauseGate.Refresh();
     }
 
     private void SubscribeToChatManagerEnded(ChatManager chatManager)

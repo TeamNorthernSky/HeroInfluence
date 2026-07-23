@@ -1149,8 +1149,7 @@ public class LevelEditorWindow : EditorWindow
                 context.SelectedGateSecondZoneId,
                 anchor,
                 context.SelectedGatePrefabKey,
-                gateFootprint,
-                context.SelectedGateOpenDurationTurns);
+                gateFootprint);
             sceneStatus = $"Placed Gate '{context.SelectedGateId}' ({context.SelectedGatePrefabKey}) at {anchor}.";
             CommitLevelDataChange(context);
             return;
@@ -1304,7 +1303,6 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedGateId = controller.SelectedGateId;
         context.SelectedGateFirstZoneId = controller.SelectedGateFirstZoneId;
         context.SelectedGateSecondZoneId = controller.SelectedGateSecondZoneId;
-        context.SelectedGateOpenDurationTurns = controller.SelectedGateOpenDurationTurns;
         context.SelectedEnemySpawnZoneId = controller.SelectedEnemySpawnZoneId;
         context.SelectedEnemySpawnEnemyGroupKey = controller.SelectedEnemySpawnEnemyGroupKey;
         context.ApplyLevelAfterEdit = controller.ApplyLevelAfterEdit;
@@ -2374,7 +2372,6 @@ public class LevelEditorWindow : EditorWindow
         public string SelectedGateId;
         public string SelectedGateFirstZoneId;
         public string SelectedGateSecondZoneId;
-        public int SelectedGateOpenDurationTurns;
         public string SelectedEnemySpawnZoneId;
         public string SelectedEnemySpawnEnemyGroupKey;
         public bool ApplyLevelAfterEdit;

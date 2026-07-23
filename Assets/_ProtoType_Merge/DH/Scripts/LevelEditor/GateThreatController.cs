@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class GateThreatController : MonoBehaviour
 {
-    [SerializeField, Min(1)] private int threatDelayTurns = 3;
     [SerializeField] private TurnManager turnManager;
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
@@ -352,10 +351,7 @@ public class GateThreatController : MonoBehaviour
             return;
 
         int elapsedTurns = Mathf.Max(0, day - state.EnteredDay);
-        if (!enteredZone && elapsedTurns < threatDelayTurns)
-            return;
-
-        if (enteredZone && elapsedTurns < threatDelayTurns)
+        if (elapsedTurns < GateLifecycleController.ResolveOpenDurationTurns())
             return;
 
         TriggerThreat(currentPartyZoneId);

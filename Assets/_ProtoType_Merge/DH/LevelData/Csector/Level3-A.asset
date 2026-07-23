@@ -4922,7 +4922,6 @@ MonoBehaviour:
   - gateId: gate_002
     firstZoneId: zone_001
     secondZoneId: zone_003
-    openDurationTurns: 3
     gridPosition: {x: 24, y: 2}
     prefabKey: HorizonGate
     blockerCells:
@@ -4931,7 +4930,6 @@ MonoBehaviour:
   - gateId: gate_003
     firstZoneId: zone_002
     secondZoneId: zone_003
-    openDurationTurns: 3
     gridPosition: {x: 45, y: 4}
     prefabKey: CornerGate1
     blockerCells:
@@ -4941,7 +4939,6 @@ MonoBehaviour:
   - gateId: gate_005
     firstZoneId: zone_003
     secondZoneId: zone_004
-    openDurationTurns: 3
     gridPosition: {x: 47, y: 20}
     prefabKey: VerticalGate
     blockerCells:

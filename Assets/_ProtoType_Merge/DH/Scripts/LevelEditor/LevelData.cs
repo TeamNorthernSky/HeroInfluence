@@ -372,8 +372,7 @@ public class LevelData : ScriptableObject
         string gateId,
         string firstZoneId,
         string secondZoneId,
-        Vector2Int grid,
-        int openDurationTurns)
+        Vector2Int grid)
     {
         if (!IsInsideGrid(grid))
             return;
@@ -391,7 +390,6 @@ public class LevelData : ScriptableObject
 
             placement.AddBlockerCell(grid);
             placement.SetConnectedZones(firstZoneId, secondZoneId);
-            placement.SetOpenDurationTurns(openDurationTurns);
             gatePlacements[i] = placement.Normalized();
             return;
         }
@@ -399,8 +397,7 @@ public class LevelData : ScriptableObject
         GatePlacementData nextPlacement = new GatePlacementData(
             normalizedGateId,
             firstZoneId,
-            secondZoneId,
-            openDurationTurns);
+            secondZoneId);
         nextPlacement.AddBlockerCell(grid);
         gatePlacements.Add(nextPlacement.Normalized());
     }
@@ -411,8 +408,7 @@ public class LevelData : ScriptableObject
         string secondZoneId,
         Vector2Int grid,
         string prefabKey,
-        IEnumerable<Vector2Int> blockerCells,
-        int openDurationTurns)
+        IEnumerable<Vector2Int> blockerCells)
     {
         if (!IsInsideGrid(grid))
             return;
@@ -428,7 +424,6 @@ public class LevelData : ScriptableObject
             normalizedGateId,
             firstZoneId,
             secondZoneId,
-            openDurationTurns,
             grid,
             prefabKey);
 
@@ -891,13 +886,12 @@ public struct GatePlacementData
     [SerializeField] private string gateId;
     [SerializeField] private string firstZoneId;
     [SerializeField] private string secondZoneId;
-    [SerializeField, Min(1)] private int openDurationTurns;
     [SerializeField] private Vector2Int gridPosition;
     [SerializeField] private string prefabKey;
     [SerializeField] private List<Vector2Int> blockerCells;
 
-    public GatePlacementData(string gateId, string firstZoneId, string secondZoneId, int openDurationTurns)
-        : this(gateId, firstZoneId, secondZoneId, openDurationTurns, Vector2Int.zero, string.Empty)
+    public GatePlacementData(string gateId, string firstZoneId, string secondZoneId)
+        : this(gateId, firstZoneId, secondZoneId, Vector2Int.zero, string.Empty)
     {
     }
 
@@ -905,14 +899,12 @@ public struct GatePlacementData
         string gateId,
         string firstZoneId,
         string secondZoneId,
-        int openDurationTurns,
         Vector2Int gridPosition,
         string prefabKey)
     {
         this.gateId = NormalizeId(gateId);
         this.firstZoneId = NormalizeId(firstZoneId);
         this.secondZoneId = NormalizeId(secondZoneId);
-        this.openDurationTurns = Mathf.Max(1, openDurationTurns);
         this.gridPosition = gridPosition;
         this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
         blockerCells = new List<Vector2Int>();
@@ -921,7 +913,6 @@ public struct GatePlacementData
     public string GateId => NormalizeId(gateId);
     public string FirstZoneId => NormalizeId(firstZoneId);
     public string SecondZoneId => NormalizeId(secondZoneId);
-    public int OpenDurationTurns => Mathf.Max(1, openDurationTurns);
     public Vector2Int GridPosition => gridPosition;
     public string PrefabKey => string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
     public bool HasPrefab => !string.IsNullOrWhiteSpace(PrefabKey);
@@ -931,11 +922,6 @@ public struct GatePlacementData
     {
         this.firstZoneId = NormalizeId(firstZoneId);
         this.secondZoneId = NormalizeId(secondZoneId);
-    }
-
-    public void SetOpenDurationTurns(int nextOpenDurationTurns)
-    {
-        openDurationTurns = Mathf.Max(1, nextOpenDurationTurns);
     }
 
     public void AddBlockerCell(Vector2Int grid)
@@ -968,7 +954,6 @@ public struct GatePlacementData
             GateId,
             FirstZoneId,
             SecondZoneId,
-            OpenDurationTurns,
             GridPosition,
             PrefabKey);
 

@@ -8,6 +8,13 @@ public enum EnemyEncounterPathMode
     AllowSingleEncounterZonePassage
 }
 
+public enum MainEventInteractionPathMode
+{
+    Ignore,
+    BlockInteractionCells,
+    AllowSingleInteractionCellPassage
+}
+
 public class AStarPathfinder : MonoBehaviour
 {
     [SerializeField] private GridManager gridManager;
@@ -18,14 +25,15 @@ public class AStarPathfinder : MonoBehaviour
         Transform selfTransform = null,
         bool ignoreFogVisibility = false,
         EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
-        bool allowItemCells = false)
+        bool allowItemCells = false,
+        MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore)
     {
         if (start == goal)
             return new List<Vector2Int> { start };
 
         if (gridManager != null)
         {
-            if (!CanEnterPathCell(goal, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells))
+            if (!CanEnterPathCell(goal, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                 return null;
         }
 
@@ -52,7 +60,7 @@ public class AStarPathfinder : MonoBehaviour
                 if (closedSet.Contains(neighbor))
                     continue;
 
-                if (gridManager != null && !CanEnterPathCell(neighbor, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells))
+                if (gridManager != null && !CanEnterPathCell(neighbor, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
@@ -76,7 +84,8 @@ public class AStarPathfinder : MonoBehaviour
         Transform selfTransform,
         bool ignoreFogVisibility,
         EnemyEncounterPathMode enemyEncounterPathMode,
-        bool allowItemCells)
+        bool allowItemCells,
+        MainEventInteractionPathMode mainEventInteractionPathMode)
     {
         if (gridManager == null)
             return true;
@@ -99,6 +108,13 @@ public class AStarPathfinder : MonoBehaviour
             {
                 return false;
             }
+        }
+
+        if (mainEventInteractionPathMode == MainEventInteractionPathMode.BlockInteractionCells
+            && grid != goal
+            && gridManager.TryGetMainEventAtInteractionCell(grid, out _))
+        {
+            return false;
         }
 
         return gridManager.CanEnterCell(grid, goal, selfTransform, ignoreFogVisibility, allowItemCells);

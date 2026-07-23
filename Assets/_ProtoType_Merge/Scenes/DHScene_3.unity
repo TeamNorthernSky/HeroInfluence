@@ -23381,7 +23381,6 @@ MonoBehaviour:
   gateId: gate_003
   firstZoneId: zone_002
   secondZoneId: zone_003
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 1608228779}
   blockerCells:
@@ -26203,7 +26202,6 @@ MonoBehaviour:
   gateId: gate_001
   firstZoneId: zone_001
   secondZoneId: zone_002
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 1720641921}
   blockerCells:
@@ -30091,7 +30089,6 @@ MonoBehaviour:
   gateId: gate_001
   firstZoneId: zone_001
   secondZoneId: zone_002
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 769927434}
   blockerCells:
@@ -46883,7 +46880,6 @@ MonoBehaviour:
   gateId: gate_002
   firstZoneId: zone_001
   secondZoneId: zone_003
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 944762289}
   blockerCells:
@@ -47269,7 +47265,6 @@ MonoBehaviour:
   gateId: gate_004
   firstZoneId: zone_002
   secondZoneId: zone_004
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 1997314987}
   blockerCells:
@@ -48177,7 +48172,6 @@ MonoBehaviour:
   gateId: gate_004
   firstZoneId: zone_002
   secondZoneId: zone_004
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 2054108820}
   blockerCells:
@@ -48653,7 +48647,6 @@ MonoBehaviour:
   gateId: gate_005
   firstZoneId: zone_003
   secondZoneId: zone_004
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 1351846954}
   blockerCells:
@@ -49032,7 +49025,6 @@ MonoBehaviour:
   gateId: gate_003
   firstZoneId: zone_002
   secondZoneId: zone_003
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 1035374410}
   blockerCells:
@@ -74081,7 +74073,6 @@ MonoBehaviour:
   gateId: gate_002
   firstZoneId: zone_001
   secondZoneId: zone_003
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 1839376303}
   blockerCells:
@@ -74476,7 +74467,6 @@ MonoBehaviour:
   gateId: gate_005
   firstZoneId: zone_003
   secondZoneId: zone_004
-  openDurationTurns: 3
   blockerObjects:
   - {fileID: 1902555682}
   blockerCells:
@@ -95583,7 +95573,6 @@ MonoBehaviour:
   selectedGateId: gate_001
   selectedGateFirstZoneId: zone_001
   selectedGateSecondZoneId: zone_002
-  selectedGateOpenDurationTurns: 3
   selectedEnemySpawnZoneId: zone_002
   selectedEnemySpawnEnemyGroupKey: 
   allowRuntimeEditing: 0

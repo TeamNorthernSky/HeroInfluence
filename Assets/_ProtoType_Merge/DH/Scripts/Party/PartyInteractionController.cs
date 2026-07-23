@@ -13,7 +13,6 @@ public class PartyInteractionController
     private readonly Func<Vector2Int> currentGridProvider;
 
     private Coroutine pendingInteractionCoroutine;
-    private MainEventRegistry mainEventRegistry;
 
     public bool IsInputLocked { get; private set; }
 
@@ -173,7 +172,7 @@ public class PartyInteractionController
 
     private bool TryHandleMainEventAtGrid(Vector2Int enteredGrid)
     {
-        if (!TryGetMainEventAtInteractionCell(enteredGrid, out MainEventObject mainEvent))
+        if (gridManager == null || !gridManager.TryGetMainEventAtInteractionCell(enteredGrid, out MainEventObject mainEvent))
             return false;
 
         CancelPendingInteraction();
@@ -462,43 +461,6 @@ public class PartyInteractionController
     private void HandleSubEventClosed(SubEventObject subEvent)
     {
         IsInputLocked = false;
-    }
-
-    private MainEventRegistry ResolveMainEventRegistry()
-    {
-        if (mainEventRegistry == null)
-            mainEventRegistry = UnityEngine.Object.FindFirstObjectByType<MainEventRegistry>();
-
-        return mainEventRegistry;
-    }
-
-    private bool TryGetMainEventAtInteractionCell(Vector2Int grid, out MainEventObject mainEvent)
-    {
-        mainEvent = null;
-
-        MainEventRegistry registry = ResolveMainEventRegistry();
-        if (registry != null &&
-            registry.TryGetEventAtInteractionCell(grid, gridManager, out mainEvent) &&
-            mainEvent != null)
-        {
-            return true;
-        }
-
-        MainEventObject[] mainEvents = UnityEngine.Object.FindObjectsByType<MainEventObject>(FindObjectsSortMode.None);
-        for (int i = 0; i < mainEvents.Length; i++)
-        {
-            MainEventObject candidate = mainEvents[i];
-            if (candidate == null || !candidate.isActiveAndEnabled)
-                continue;
-
-            if (!candidate.IsInteractionCell(grid, gridManager))
-                continue;
-
-            mainEvent = candidate;
-            return true;
-        }
-
-        return false;
     }
 
     private static bool IsAdjacentOrSame(Vector2Int a, Vector2Int b)
