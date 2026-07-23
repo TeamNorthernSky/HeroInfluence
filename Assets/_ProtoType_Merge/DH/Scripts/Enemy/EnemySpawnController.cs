@@ -5,11 +5,7 @@ using UnityEngine.Serialization;
 public class EnemySpawnController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private TurnManager turnManager;
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private HeroUnionRegistry heroUnionRegistry;
-    [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
-    [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private EnemyRegistry enemyRegistry;
     [SerializeField] private LevelPrefabRegistry prefabRegistry;
     [SerializeField] private Transform enemyRoot;
@@ -18,167 +14,12 @@ public class EnemySpawnController : MonoBehaviour
     [SerializeField] private EnemyGridMover enemyPrefab;
     [FormerlySerializedAs("runtimeEnemyGroupIndex")]
     [SerializeField] private string runtimeEnemyGroupKey = "FEP002";
-    [SerializeField, Min(1)] private int maxActiveEnemies = 3;
-    [SerializeField] private bool enableBaseEnemyProduction;
-    [SerializeField] private bool spawnOneEnemyOnStart;
-    [SerializeField] private bool skipInitialSpawnWhenSceneHasMobileEnemy = true;
-    [SerializeField] private string runtimeSpawnSourceKey;
     [SerializeField, Min(1)] private int nextRuntimeEnemySequence = 1;
-
-    private readonly List<ProductionBaseCandidate> productionBaseCandidates = new List<ProductionBaseCandidate>();
-    private bool hasSpawnedInitialEnemy;
-
-    private readonly struct ProductionBaseCandidate
-    {
-        public ProductionBaseCandidate(Vector2Int baseGrid, IReadOnlyList<Vector2Int> spawnCells)
-        {
-            BaseGrid = baseGrid;
-            SpawnCells = spawnCells;
-        }
-
-        public Vector2Int BaseGrid { get; }
-        public IReadOnlyList<Vector2Int> SpawnCells { get; }
-    }
 
     private void OnEnable()
     {
         ResolveReferences();
         RestoreRuntimeEnemies();
-
-        if (turnManager != null)
-            turnManager.DayAdvanced += HandleDayAdvanced;
-
-        if (spawnOneEnemyOnStart && !hasSpawnedInitialEnemy)
-        {
-            enemyRegistry?.RefreshSceneEnemies();
-            if (!skipInitialSpawnWhenSceneHasMobileEnemy || GetActiveEnemyCount() == 0)
-                TrySpawnOneEnemy();
-
-            hasSpawnedInitialEnemy = true;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (turnManager != null)
-            turnManager.DayAdvanced -= HandleDayAdvanced;
-    }
-
-    [ContextMenu("Try Spawn One Enemy")]
-    public void TrySpawnOneEnemy()
-    {
-        if (enemyPrefab == null || gridManager == null)
-            return;
-
-        if (GetActiveEnemyCount() >= maxActiveEnemies)
-            return;
-
-        if (!TryGetPlayerMainHeroUnion(out HeroUnionUnit playerMainHeroUnion))
-            return;
-
-        Vector2Int playerHeroUnionGrid = playerMainHeroUnion.GetCurrentGrid();
-        CollectProductionBaseCandidates();
-        SortCandidatesByDistanceToPlayerHeroUnion(playerHeroUnionGrid);
-
-        for (int i = 0; i < productionBaseCandidates.Count; i++)
-        {
-            ProductionBaseCandidate candidate = productionBaseCandidates[i];
-            if (TrySpawnFromCandidate(candidate, playerHeroUnionGrid))
-                return;
-        }
-    }
-
-    private void HandleDayAdvanced(int currentDay)
-    {
-        int spawnIntervalTurns = ResolveSpawnIntervalTurns();
-        if (spawnIntervalTurns <= 0 || currentDay % spawnIntervalTurns != 0)
-            return;
-
-        TrySpawnOneEnemy();
-    }
-
-    private static int ResolveSpawnIntervalTurns()
-    {
-        return GateLifecycleController.ResolveOpenDurationTurns();
-    }
-
-    private void CollectProductionBaseCandidates()
-    {
-        productionBaseCandidates.Clear();
-
-        if (!enableBaseEnemyProduction)
-            return;
-
-        if (villainUnionBaseRegistry != null)
-        {
-            IReadOnlyList<VillainUnionBase> villainUnionBases = villainUnionBaseRegistry.VillainUnionBases;
-            for (int i = 0; i < villainUnionBases.Count; i++)
-            {
-                VillainUnionBase villainUnionBase = villainUnionBases[i];
-                if (villainUnionBase == null || !IsProductionZoneActive(villainUnionBase.ZoneId))
-                    continue;
-
-                productionBaseCandidates.Add(new ProductionBaseCandidate(
-                    villainUnionBase.GetCurrentGrid(),
-                    GetBottomSpawnCells(villainUnionBase.transform, villainUnionBase.GetCurrentGrid())));
-            }
-        }
-
-        if (outpostRegistry == null)
-            return;
-
-        IReadOnlyList<Outpost> outposts = outpostRegistry.Outposts;
-        for (int i = 0; i < outposts.Count; i++)
-        {
-            Outpost outpost = outposts[i];
-            if (outpost == null || !outpost.IsEnemyClaimed || !IsProductionZoneActive(outpost.ZoneId))
-                continue;
-
-            Vector2Int outpostGrid = outpost.GetAnchorGrid(gridManager);
-            productionBaseCandidates.Add(new ProductionBaseCandidate(
-                outpostGrid,
-                GetBottomSpawnCells(outpost.transform, outpostGrid)));
-        }
-    }
-
-    private bool IsProductionZoneActive(string zoneId)
-    {
-        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
-        if (string.IsNullOrWhiteSpace(normalizedZoneId))
-            return true;
-
-        return heroUnionRegistry != null && heroUnionRegistry.TryGetClaimedByZoneId(normalizedZoneId, out _);
-    }
-    private void SortCandidatesByDistanceToPlayerHeroUnion(Vector2Int playerHeroUnionGrid)
-    {
-        productionBaseCandidates.Sort((a, b) =>
-            GridManager.GridDistance(a.BaseGrid, playerHeroUnionGrid).CompareTo(
-                GridManager.GridDistance(b.BaseGrid, playerHeroUnionGrid)));
-    }
-
-    private bool TrySpawnFromCandidate(ProductionBaseCandidate candidate, Vector2Int playerHeroUnionGrid)
-    {
-        if (candidate.SpawnCells == null || candidate.SpawnCells.Count == 0)
-            return false;
-
-        int primaryIndex = 0;
-        int secondaryIndex = candidate.SpawnCells.Count > 1 ? 1 : -1;
-
-        if (candidate.SpawnCells.Count > 1)
-        {
-            int firstDistance = GridManager.GridDistance(candidate.SpawnCells[0], playerHeroUnionGrid);
-            int secondDistance = GridManager.GridDistance(candidate.SpawnCells[1], playerHeroUnionGrid);
-            if (secondDistance < firstDistance)
-            {
-                primaryIndex = 1;
-                secondaryIndex = 0;
-            }
-        }
-
-        if (TrySpawnAtGrid(candidate.SpawnCells[primaryIndex]))
-            return true;
-
-        return secondaryIndex >= 0 && TrySpawnAtGrid(candidate.SpawnCells[secondaryIndex]);
     }
 
     public bool TrySpawnGateThreatEnemy(string zoneId, Vector2Int spawnGrid, out string placementKey)
@@ -202,19 +43,9 @@ public class EnemySpawnController : MonoBehaviour
         return false;
     }
 
-    private bool TrySpawnAtGrid(Vector2Int spawnGrid)
-    {
-        return TrySpawnAtGrid(spawnGrid, CreateRuntimeEnemyPlacementKey());
-    }
-
-    private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey)
-    {
-        return TrySpawnAtGrid(spawnGrid, placementKey, runtimeEnemyGroupKey, ExtractZoneIdFromRuntimePlacementKey(placementKey));
-    }
-
     private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey, string enemyGroupKey, string zoneId)
     {
-        if (!gridManager.CanOccupyCell(spawnGrid, null, true))
+        if (!TryResolveSpawnGrid(spawnGrid, out Vector2Int resolvedSpawnGrid))
             return false;
 
         EnemyGridMover spawnedEnemy = Instantiate(enemyPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
@@ -223,20 +54,43 @@ public class EnemySpawnController : MonoBehaviour
         {
             enemyIdentity.SetPlacementSource(EnemyPlacementSource.Runtime);
             enemyIdentity.SetPlacementKey(placementKey);
+            enemyIdentity.SetEnemyGroupKey(enemyGroupKey);
         }
 
         spawnedEnemy.InitializePlacementIdentity(placementKey);
-        spawnedEnemy.SnapToGridPosition(spawnGrid);
+        spawnedEnemy.SnapToGridPosition(resolvedSpawnGrid);
 
         EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
         int enemyLevel = ResolveZoneEnemyLevelFromPlacementKey(placementKey);
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, spawnGrid, placementKey, enemyGroupKey, enemyLevel, zoneId))
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, resolvedSpawnGrid, placementKey, enemyGroupKey, enemyLevel, zoneId))
         {
             Destroy(spawnedEnemy.gameObject);
             return false;
         }
 
         return true;
+    }
+
+    private bool TryResolveSpawnGrid(Vector2Int preferredGrid, out Vector2Int resolvedGrid)
+    {
+        resolvedGrid = preferredGrid;
+        if (gridManager == null)
+            return false;
+
+        if (gridManager.CanOccupyCell(preferredGrid, null, true))
+            return true;
+
+        for (int i = 0; i < GridManager.Directions8.Length; i++)
+        {
+            Vector2Int candidate = preferredGrid + GridManager.Directions8[i];
+            if (!gridManager.CanOccupyCell(candidate, null, true))
+                continue;
+
+            resolvedGrid = candidate;
+            return true;
+        }
+
+        return false;
     }
 
     private void RestoreRuntimeEnemies()
@@ -318,12 +172,14 @@ public class EnemySpawnController : MonoBehaviour
     private void RestoreRuntimeEnemy(EnemyWorldState state)
     {
         EnemyGridMover restoredEnemy = Instantiate(enemyPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
+        string groupKey = ResolveRuntimeEnemyGroupKey(state);
         EnemyIdentity enemyIdentity = restoredEnemy.GetComponent<EnemyIdentity>();
         if (enemyIdentity != null)
         {
             enemyIdentity.SetPlacementSource(EnemyPlacementSource.Runtime);
             enemyIdentity.SetPlacementKey(state.PlacementKey);
             enemyIdentity.SetEnemyId(state.EnemyId);
+            enemyIdentity.SetEnemyGroupKey(groupKey);
         }
 
         restoredEnemy.InitializePlacementIdentity(state.PlacementKey);
@@ -331,7 +187,6 @@ public class EnemySpawnController : MonoBehaviour
         restoredEnemy.SnapToGridPosition(state.Grid);
 
         EnemyUnitBootstrap enemyBootstrap = restoredEnemy.GetComponent<EnemyUnitBootstrap>();
-        string groupKey = ResolveRuntimeEnemyGroupKey(state);
         if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, restoredEnemy, state.Grid, state.PlacementKey, groupKey))
         {
             Destroy(restoredEnemy.gameObject);
@@ -460,11 +315,6 @@ public class EnemySpawnController : MonoBehaviour
             nextRuntimeEnemySequence = highestSequence + 1;
     }
 
-    private string CreateRuntimeEnemyPlacementKey()
-    {
-        return CreateRuntimeEnemyPlacementKey(ResolveRuntimeSpawnSourceKey());
-    }
-
     private string CreateRuntimeEnemyPlacementKey(string sourceKey)
     {
         int sequence = Mathf.Max(1, nextRuntimeEnemySequence);
@@ -472,76 +322,10 @@ public class EnemySpawnController : MonoBehaviour
         return MapProgressKey.ForRuntimeEnemy(sourceKey, sequence);
     }
 
-    private string ResolveRuntimeSpawnSourceKey()
-    {
-        return !string.IsNullOrWhiteSpace(runtimeSpawnSourceKey)
-            ? runtimeSpawnSourceKey
-            : $"{gameObject.scene.name}_{name}";
-    }
-
-    private List<Vector2Int> GetBottomSpawnCells(Transform originTransform, Vector2Int baseGrid)
-    {
-        MultiGridOccupant occupant = originTransform != null ? originTransform.GetComponent<MultiGridOccupant>() : null;
-        if (occupant != null)
-        {
-            Vector2Int anchorGrid = occupant.AnchorGrid;
-            Vector2Int size = occupant.Size;
-            List<Vector2Int> bottomCells = new List<Vector2Int>(Mathf.Max(1, size.x));
-            for (int x = 0; x < size.x; x++)
-                bottomCells.Add(new Vector2Int(anchorGrid.x + x, anchorGrid.y - 1));
-
-            return bottomCells;
-        }
-
-        return new List<Vector2Int>
-        {
-            new Vector2Int(baseGrid.x, baseGrid.y - 1),
-            new Vector2Int(baseGrid.x + 1, baseGrid.y - 1)
-        };
-    }
-
-    private int GetActiveEnemyCount()
-    {
-        if (enemyRegistry == null)
-            return 0;
-
-        int activeEnemyCount = 0;
-        IReadOnlyList<EnemyGridMover> enemies = enemyRegistry.Enemies;
-        for (int i = 0; i < enemies.Count; i++)
-        {
-            if (enemies[i] != null && !enemies[i].IsStatic)
-                activeEnemyCount++;
-        }
-
-        return activeEnemyCount;
-    }
-
-    private bool TryGetPlayerMainHeroUnion(out HeroUnionUnit playerMainHeroUnion)
-    {
-        playerMainHeroUnion = null;
-
-        if (heroUnionRegistry == null)
-            return false;
-
-        return heroUnionRegistry.TryGetFirstClaimed(out playerMainHeroUnion);
-    }
-
     private void ResolveReferences()
     {
-        if (turnManager == null)
-            turnManager = FindFirstObjectByType<TurnManager>();
-
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
-
-        if (heroUnionRegistry == null)
-            heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
-
-        if (villainUnionBaseRegistry == null)
-            villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();
-
-        if (outpostRegistry == null)
-            outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
 
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();

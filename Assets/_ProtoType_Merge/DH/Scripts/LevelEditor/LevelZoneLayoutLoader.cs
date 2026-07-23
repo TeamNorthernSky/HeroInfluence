@@ -607,6 +607,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
             enemy.gameObject.AddComponent<LevelSpawnedEnemyMarker>();
             enemy.SetBehaviorType(placement.BehaviorType);
+            enemy.GetComponent<EnemyIdentity>()?.SetEnemyGroupKey(placement.EnemyGroupKey);
 
             if (!Application.isPlaying)
                 continue;
@@ -650,7 +651,12 @@ public class LevelZoneLayoutLoader : MonoBehaviour
             string zoneId = !string.IsNullOrWhiteSpace(placement.ZoneId)
                 ? placement.ZoneId
                 : zone != null ? zone.ZoneId : string.Empty;
-            spawnPoint.Initialize(zoneId, grid, placement.EnemyGroupKey);
+            spawnPoint.Initialize(
+                zoneId,
+                grid,
+                placement.EnemyGroupKey,
+                placement.SpawnChatZoneId,
+                placement.SpawnChatId);
         }
     }
 

@@ -37,6 +37,8 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedGateSecondZoneId = "zone_002";
     [SerializeField] private string selectedEnemySpawnZoneId = "zone_002";
     [SerializeField] private string selectedEnemySpawnEnemyGroupKey;
+    [SerializeField, Min(0)] private int selectedEnemySpawnChatZoneId;
+    [SerializeField, Min(0)] private int selectedEnemySpawnChatId;
 
     [Header("Behaviour")]
     [SerializeField] private bool allowRuntimeEditing;
@@ -88,6 +90,8 @@ public class LevelEditorController : MonoBehaviour
     public string SelectedGateSecondZoneId => selectedGateSecondZoneId;
     public string SelectedEnemySpawnZoneId => selectedEnemySpawnZoneId;
     public string SelectedEnemySpawnEnemyGroupKey => string.IsNullOrWhiteSpace(selectedEnemySpawnEnemyGroupKey) ? string.Empty : selectedEnemySpawnEnemyGroupKey.Trim();
+    public int SelectedEnemySpawnChatZoneId => Mathf.Max(0, selectedEnemySpawnChatZoneId);
+    public int SelectedEnemySpawnChatId => Mathf.Max(0, selectedEnemySpawnChatId);
     public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
     public LayerMask GroundMask => groundMask;
 
@@ -209,7 +213,12 @@ public class LevelEditorController : MonoBehaviour
                 ApplyGateBrush(grid);
                 break;
             case LevelEditorBrushType.EnemySpawnPoint:
-                levelData.SetEnemySpawnPoint(grid, selectedEnemySpawnZoneId, SelectedEnemySpawnEnemyGroupKey);
+                levelData.SetEnemySpawnPoint(
+                    grid,
+                    selectedEnemySpawnZoneId,
+                    SelectedEnemySpawnEnemyGroupKey,
+                    SelectedEnemySpawnChatZoneId,
+                    SelectedEnemySpawnChatId);
                 break;
             case LevelEditorBrushType.HeroUnion:
                 levelData.SetHeroUnion(grid, SelectedHeroUnionPrefabKey);

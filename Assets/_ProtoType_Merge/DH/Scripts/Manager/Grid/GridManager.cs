@@ -235,7 +235,21 @@ public class GridManager : MonoBehaviour
 
     public bool HasOtherPlayer(Vector2Int grid, Transform selfTransform)
     {
-        return false;
+        PartyRegistry partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        PartyGridMover playerParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (playerParty == null)
+            return false;
+
+        if (selfTransform != null &&
+            (playerParty.transform == selfTransform || playerParty.transform.IsChildOf(selfTransform)))
+        {
+            return false;
+        }
+
+        if (!playerParty.gameObject.activeInHierarchy)
+            return false;
+
+        return playerParty.GetCurrentGrid() == grid;
     }
 
     public bool HasItem(Vector2Int grid)

@@ -12,10 +12,12 @@ public class EnemyIdentity : MonoBehaviour
     [SerializeField] private string enemyId;
     [SerializeField] private string placementKey;
     [SerializeField] private EnemyPlacementSource placementSource = EnemyPlacementSource.Scene;
+    [SerializeField] private string enemyGroupKey;
 
     public string EnemyId => enemyId;
     public string PlacementKey => placementKey;
     public EnemyPlacementSource PlacementSource => placementSource;
+    public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
 
     public void SetEnemyId(string nextEnemyId)
     {
@@ -36,5 +38,10 @@ public class EnemyIdentity : MonoBehaviour
     public void SetPlacementSource(EnemyPlacementSource nextPlacementSource)
     {
         placementSource = nextPlacementSource;
+    }
+
+    public void SetEnemyGroupKey(string nextEnemyGroupKey)
+    {
+        enemyGroupKey = string.IsNullOrWhiteSpace(nextEnemyGroupKey) ? string.Empty : nextEnemyGroupKey.Trim();
     }
 }

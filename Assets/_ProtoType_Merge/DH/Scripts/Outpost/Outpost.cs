@@ -22,6 +22,9 @@ public class Outpost : MonoBehaviour
     [SerializeField] private string zoneId;
     [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
 
+    [Header("Defender Combat Chat")]
+    [SerializeField, Min(0)] private int defenderCombatChatId;
+
     [Header("Visual")]
     [SerializeField] private Renderer targetRenderer;
     [SerializeField] private Material unclaimedMaterial;
@@ -40,10 +43,12 @@ public class Outpost : MonoBehaviour
     public string DefenderEnemyId => defenderEnemyId;
     public string ZoneId => NormalizeZoneId(zoneId);
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
+    public int DefenderCombatChatId => Mathf.Max(0, defenderCombatChatId);
 
     private void OnValidate()
     {
         outpostType = OutpostTypeUtility.Normalize(outpostType);
+        defenderCombatChatId = Mathf.Max(0, defenderCombatChatId);
         RefreshResolvedEnemyLevel();
     }
 

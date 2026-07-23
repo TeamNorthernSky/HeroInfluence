@@ -447,17 +447,32 @@ public class LevelData : ScriptableObject
 
     public void SetEnemySpawnPoint(Vector2Int grid, string zoneId)
     {
-        SetEnemySpawnPoint(grid, zoneId, string.Empty);
+        SetEnemySpawnPoint(grid, zoneId, string.Empty, 0, 0);
     }
 
     public void SetEnemySpawnPoint(Vector2Int grid, string zoneId, string enemyGroupKey)
+    {
+        SetEnemySpawnPoint(grid, zoneId, enemyGroupKey, 0, 0);
+    }
+
+    public void SetEnemySpawnPoint(
+        Vector2Int grid,
+        string zoneId,
+        string enemyGroupKey,
+        int spawnChatZoneId,
+        int spawnChatId)
     {
         if (!IsInsideGrid(grid))
             return;
 
         EnsureEnemySpawnPointPlacements();
         enemySpawnPointPlacements.RemoveAll(x => x.GridPosition == grid);
-        enemySpawnPointPlacements.Add(new EnemySpawnPointPlacementData(grid, zoneId, enemyGroupKey));
+        enemySpawnPointPlacements.Add(new EnemySpawnPointPlacementData(
+            grid,
+            zoneId,
+            enemyGroupKey,
+            spawnChatZoneId,
+            spawnChatId));
     }
 
     public void RemoveEnemyPlacementAt(Vector2Int grid)
@@ -978,6 +993,8 @@ public struct EnemySpawnPointPlacementData
     [SerializeField] private Vector2Int gridPosition;
     [SerializeField] private string zoneId;
     [SerializeField] private string enemyGroupKey;
+    [SerializeField] private int spawnChatZoneId;
+    [SerializeField] private int spawnChatId;
 
     public EnemySpawnPointPlacementData(Vector2Int gridPosition, string zoneId)
         : this(gridPosition, zoneId, string.Empty)
@@ -985,19 +1002,33 @@ public struct EnemySpawnPointPlacementData
     }
 
     public EnemySpawnPointPlacementData(Vector2Int gridPosition, string zoneId, string enemyGroupKey)
+        : this(gridPosition, zoneId, enemyGroupKey, 0, 0)
+    {
+    }
+
+    public EnemySpawnPointPlacementData(
+        Vector2Int gridPosition,
+        string zoneId,
+        string enemyGroupKey,
+        int spawnChatZoneId,
+        int spawnChatId)
     {
         this.gridPosition = gridPosition;
         this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
         this.enemyGroupKey = string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
+        this.spawnChatZoneId = Mathf.Max(0, spawnChatZoneId);
+        this.spawnChatId = Mathf.Max(0, spawnChatId);
     }
 
     public Vector2Int GridPosition => gridPosition;
     public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
     public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
+    public int SpawnChatZoneId => Mathf.Max(0, spawnChatZoneId);
+    public int SpawnChatId => Mathf.Max(0, spawnChatId);
 
     public EnemySpawnPointPlacementData Normalized()
     {
-        return new EnemySpawnPointPlacementData(gridPosition, ZoneId, EnemyGroupKey);
+        return new EnemySpawnPointPlacementData(gridPosition, ZoneId, EnemyGroupKey, SpawnChatZoneId, SpawnChatId);
     }
 }
 

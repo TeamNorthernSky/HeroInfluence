@@ -175,8 +175,10 @@ public class EnemyUnitBootstrap : MonoBehaviour
             enemyComposition == null || enemyRepository == null || enemyGroupRepository == null)
             return false;
 
+        string resolvedGroupKey = string.IsNullOrWhiteSpace(prefabKey) ? groupData.GroupKey : prefabKey.Trim();
         enemyUnit.SetBehaviorType(behaviorType);
         enemyIdentity.SetPlacementSource(placementSource);
+        enemyIdentity.SetEnemyGroupKey(resolvedGroupKey);
 
         placementKey = string.IsNullOrWhiteSpace(placementKey)
             ? MapProgressKey.ForSceneEnemy(initialGrid)
@@ -257,7 +259,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             enemyId,
             initialGrid,
             placementSource,
-            string.IsNullOrWhiteSpace(prefabKey) ? groupData.GroupKey : prefabKey,
+            resolvedGroupKey,
             zoneId);
 
         RefreshFogVisibilityBinding();
@@ -351,6 +353,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             return false;
 
         enemyIdentity.SetEnemyId(worldState.EnemyId);
+        enemyIdentity.SetEnemyGroupKey(worldState.PrefabKey);
         enemyUnit.InitializePersistentIdentity(worldState.EnemyId);
         ApplyPersistentUnitIndices(persistentData.UnitIndices);
 
@@ -404,6 +407,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             return false;
 
         enemyIdentity.SetEnemyId(worldState.EnemyId);
+        enemyIdentity.SetEnemyGroupKey(worldState.PrefabKey);
         enemyUnit.InitializePersistentIdentity(worldState.EnemyId);
         ApplyPersistentUnitIndices(persistentData.UnitIndices);
         RebuildCsvUnitStateChildren(persistentData.UnitIndices, enemyRepository, prefabRegistry);

@@ -129,11 +129,61 @@ public class GateLifecycleController : MonoBehaviour
         if (repository == null || !repository.TryGetGateState(gate.GateId, out GateProgressState state) || state == null || !state.Open)
             return;
 
+        if (TryGetConnectedThreatElapsedTurns(repository, gate, out int threatElapsedTurns))
+        {
+            if (threatElapsedTurns < OpenDurationTurns)
+                return;
+
+            gate.CloseGate(day);
+            return;
+        }
+
         int elapsedTurns = Mathf.Max(0, day - state.OpenedDay);
         if (elapsedTurns < OpenDurationTurns)
             return;
 
         gate.CloseGate(day);
+    }
+
+    private static bool TryGetConnectedThreatElapsedTurns(
+        MapProgressRepository repository,
+        GateRuntimeController gate,
+        out int elapsedTurns)
+    {
+        elapsedTurns = 0;
+        bool foundActiveThreat = false;
+
+        if (TryGetThreatElapsedTurns(repository, gate.FirstZoneId, out int firstElapsedTurns))
+        {
+            elapsedTurns = Mathf.Max(elapsedTurns, firstElapsedTurns);
+            foundActiveThreat = true;
+        }
+
+        if (TryGetThreatElapsedTurns(repository, gate.SecondZoneId, out int secondElapsedTurns))
+        {
+            elapsedTurns = Mathf.Max(elapsedTurns, secondElapsedTurns);
+            foundActiveThreat = true;
+        }
+
+        return foundActiveThreat;
+    }
+
+    private static bool TryGetThreatElapsedTurns(
+        MapProgressRepository repository,
+        string zoneId,
+        out int elapsedTurns)
+    {
+        elapsedTurns = 0;
+        if (repository == null ||
+            !repository.TryGetZoneThreatState(zoneId, out ZoneThreatProgressState threatState) ||
+            threatState == null ||
+            !threatState.Active)
+        {
+            return false;
+        }
+
+        elapsedTurns = threatState.AccumulatedTurns;
+        return true;
     }
 
     private void RegisterSceneGates()

@@ -466,6 +466,7 @@ public class LevelLoader : MonoBehaviour
 
             enemy.gameObject.AddComponent<LevelSpawnedEnemyMarker>();
             enemy.SetBehaviorType(placement.BehaviorType);
+            enemy.GetComponent<EnemyIdentity>()?.SetEnemyGroupKey(placement.EnemyGroupKey);
 
             if (!Application.isPlaying)
                 continue;
@@ -501,7 +502,12 @@ public class LevelLoader : MonoBehaviour
             spawnObject.transform.SetParent(parent);
             spawnObject.transform.position = GetMarkerWorldPosition(placement.GridPosition);
             EnemySpawnPoint spawnPoint = spawnObject.AddComponent<EnemySpawnPoint>();
-            spawnPoint.Initialize(placement.ZoneId, placement.GridPosition, placement.EnemyGroupKey);
+            spawnPoint.Initialize(
+                placement.ZoneId,
+                placement.GridPosition,
+                placement.EnemyGroupKey,
+                placement.SpawnChatZoneId,
+                placement.SpawnChatId);
         }
     }
 

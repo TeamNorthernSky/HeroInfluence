@@ -295,7 +295,13 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         {
             ZoneThreatProgressState state = source[i];
             if (state != null)
-                target.Add(new ZoneThreatProgressState(state.ZoneId, state.Active, state.EnteredDay, state.ActiveEnemyPlacementKey));
+                target.Add(new ZoneThreatProgressState(
+                    state.ZoneId,
+                    state.Active,
+                    state.EnteredDay,
+                    state.AccumulatedTurns,
+                    state.LastEvaluatedDay,
+                    state.ActiveEnemyPlacementKey));
         }
     }
 

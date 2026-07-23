@@ -201,20 +201,16 @@ public class PartyInteractionController
             return;
 
         CancelPendingInteraction();
-        if (combatPromptService != null &&
-            combatPromptService.TryOpenVillainUnionDefenderCombatPrompt(
-                ownerParty,
-                villainUnionBase,
-                combatEncounterManager,
-                HandleCombatPromptClosed))
+        if (TryShowDefenderCombatChat(
+                villainUnionBase.ZoneId,
+                villainUnionBase.DefenderCombatChatId,
+                () => BeginVillainUnionDefenderCombat(villainUnionBase)))
         {
             IsInputLocked = true;
             return;
         }
 
-        bool combatStarted = combatEncounterManager != null &&
-            combatEncounterManager.BeginVillainUnionDefenderCombat(ownerParty, villainUnionBase);
-        IsInputLocked = combatStarted;
+        BeginVillainUnionDefenderCombat(villainUnionBase);
     }
 
     private void OnAdjacentEventCellEntered(Vector2Int eventGrid)
@@ -416,20 +412,16 @@ public class PartyInteractionController
 
         if (outpost.RequiresDefenderCombat)
         {
-            if (combatPromptService != null &&
-                combatPromptService.TryOpenOutpostDefenderCombatPrompt(
-                    ownerParty,
-                    outpost,
-                    combatEncounterManager,
-                    HandleCombatPromptClosed))
+            if (TryShowDefenderCombatChat(
+                    outpost.ZoneId,
+                    outpost.DefenderCombatChatId,
+                    () => BeginOutpostDefenderCombat(outpost)))
             {
                 IsInputLocked = true;
                 yield break;
             }
 
-            bool combatStarted = combatEncounterManager != null &&
-                combatEncounterManager.BeginOutpostDefenderCombat(ownerParty, outpost);
-            IsInputLocked = combatStarted;
+            BeginOutpostDefenderCombat(outpost);
             yield break;
         }
 
@@ -451,6 +443,48 @@ public class PartyInteractionController
     private void HandleCombatPromptClosed(bool startedCombat)
     {
         IsInputLocked = startedCombat;
+    }
+
+    private bool TryShowDefenderCombatChat(string zoneId, int chatId, Action onClosed)
+    {
+        if (!TryResolveChatZoneId(zoneId, out int chatZoneId) || chatId <= 0)
+            return false;
+
+        EventScriptCatalog catalog = EventScriptCatalog.Instance;
+        if (catalog == null || !catalog.TryGetChat(chatZoneId, chatId, out ChatDBEventData chat) || chat == null)
+            return false;
+
+        ChatModalController.Show(chatZoneId, chatId, onClosed);
+        return true;
+    }
+
+    private static bool TryResolveChatZoneId(string zoneId, out int chatZoneId)
+    {
+        chatZoneId = 0;
+        if (string.IsNullOrWhiteSpace(zoneId))
+            return false;
+
+        string normalized = MapProgressKey.NormalizeSegment(zoneId);
+        const string prefix = "zone_";
+        string numberText = normalized.StartsWith(prefix, StringComparison.Ordinal)
+            ? normalized.Substring(prefix.Length)
+            : normalized;
+
+        return int.TryParse(numberText, out chatZoneId) && chatZoneId > 0;
+    }
+
+    private void BeginOutpostDefenderCombat(Outpost outpost)
+    {
+        bool combatStarted = combatEncounterManager != null &&
+            combatEncounterManager.BeginOutpostDefenderCombat(ownerParty, outpost);
+        IsInputLocked = combatStarted;
+    }
+
+    private void BeginVillainUnionDefenderCombat(VillainUnionBase villainUnionBase)
+    {
+        bool combatStarted = combatEncounterManager != null &&
+            combatEncounterManager.BeginVillainUnionDefenderCombat(ownerParty, villainUnionBase);
+        IsInputLocked = combatStarted;
     }
 
     private void HandleMainEventClosed(MainEventObject mainEvent)

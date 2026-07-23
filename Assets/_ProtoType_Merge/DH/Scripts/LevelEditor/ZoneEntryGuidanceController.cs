@@ -18,7 +18,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
     private static int suppressGeneralFogRevealUntilFrame = -1;
 
     public static ZoneEntryGuidanceController Instance { get; private set; }
-    public static bool IsActive => Instance != null && Instance.Active;
+    public static bool IsActive => IsGuidanceActiveForCurrentPartyZone();
     public static bool HasActiveProgressState
     {
         get
@@ -27,9 +27,9 @@ public class ZoneEntryGuidanceController : MonoBehaviour
             return state != null && state.Active;
         }
     }
-    public static bool IsActiveOrStoredActive => IsActive || HasActiveProgressState;
+    public static bool IsActiveOrStoredActive => IsGuidanceActiveForCurrentPartyZone() || HasStoredGuidanceForCurrentPartyZone();
     public static bool SuppressGeneralFogReveal =>
-        IsActive || Time.frameCount <= suppressGeneralFogRevealUntilFrame;
+        IsGuidanceActiveForCurrentPartyZone() || Time.frameCount <= suppressGeneralFogRevealUntilFrame;
 
     public bool Active { get; private set; }
     public string ActiveZoneId => activeZoneId;
@@ -65,7 +65,16 @@ public class ZoneEntryGuidanceController : MonoBehaviour
     public static ZoneEntryGuidanceController ApplyStoredGuidanceIfNeeded()
     {
         ZoneEntryGuidanceController controller = EnsureInstance();
-        if (controller != null && !controller.Active && HasActiveProgressState)
+        if (controller == null)
+            return null;
+
+        if (!HasStoredGuidanceForCurrentPartyZone())
+        {
+            controller.ClearRuntimeState();
+            return controller;
+        }
+
+        if (!controller.Active)
             controller.RefreshFromProgress();
 
         return controller;
@@ -111,7 +120,11 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 
     public static bool IsCellAllowed(Vector2Int grid)
     {
-        return Instance == null || !Instance.Active || Instance.allowedPathCells.Contains(grid);
+        if (Instance == null || !Instance.Active || !IsGuidanceActiveForCurrentPartyZone())
+            return true;
+
+        return Instance.allowedPathCells.Contains(grid) ||
+            GateTeleportController.IsOpenGateTeleportCell(grid);
     }
 
     public static bool IsRequiredHeroUnion(HeroUnionUnit heroUnion)
@@ -200,6 +213,12 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         MapProgressRepository repository = MapProgressRepository.Instance;
         ZoneEntryGuidanceProgressState state = repository != null ? repository.ZoneEntryGuidanceState : null;
         if (state == null || !state.Active)
+        {
+            ClearRuntimeState();
+            return;
+        }
+
+        if (!HasStoredGuidanceForCurrentPartyZone())
         {
             ClearRuntimeState();
             return;
@@ -354,6 +373,38 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private static bool IsGuidanceActiveForCurrentPartyZone()
+    {
+        if (Instance == null || !Instance.Active)
+            return false;
+
+        return TryResolveCurrentPartyZoneId(out string partyZoneId) &&
+            string.Equals(partyZoneId, Instance.activeZoneId, System.StringComparison.Ordinal);
+    }
+
+    private static bool HasStoredGuidanceForCurrentPartyZone()
+    {
+        ZoneEntryGuidanceProgressState state = MapProgressRepository.Instance?.ZoneEntryGuidanceState;
+        if (state == null || !state.Active)
+            return false;
+
+        return TryResolveCurrentPartyZoneId(out string partyZoneId) &&
+            string.Equals(partyZoneId, state.ZoneId, System.StringComparison.Ordinal);
+    }
+
+    private static bool TryResolveCurrentPartyZoneId(out string zoneId)
+    {
+        zoneId = string.Empty;
+
+        PartyRegistry partyRegistry = FindFirstObjectByType<PartyRegistry>();
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == null)
+            return false;
+
+        LevelZoneLayoutLoader layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+        return TryResolveZoneId(layoutLoader, party.GetCurrentGrid(), out zoneId);
     }
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)

@@ -9,6 +9,9 @@ public class GateThreatController : MonoBehaviour
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private EnemySpawnController enemySpawnController;
     [SerializeField] private LevelZoneLayoutLoader layoutLoader;
+    [SerializeField] private GridManager gridManager;
+    [SerializeField] private CombatPromptService combatPromptService;
+    [SerializeField] private CombatEncounterManager combatEncounterManager;
 
     private readonly List<GateRuntimeController> gates = new List<GateRuntimeController>();
     private readonly List<EnemySpawnPoint> spawnPoints = new List<EnemySpawnPoint>();
@@ -63,6 +66,7 @@ public class GateThreatController : MonoBehaviour
             return;
         }
 
+        PauseZoneThreatCounter(currentPartyZoneId);
         currentPartyZoneId = zoneId;
         EvaluateCurrentZoneThreat(true);
     }
@@ -144,7 +148,6 @@ public class GateThreatController : MonoBehaviour
             return;
 
         EndThreatsConnectedToZone(heroUnion.ZoneId);
-        CloseGatesForZone(heroUnion.ZoneId);
     }
 
     private void HandleDayAdvanced(int day)
@@ -347,14 +350,38 @@ public class GateThreatController : MonoBehaviour
         if (state == null || !state.Active)
             return;
 
+        if (enteredZone)
+            state.PauseAtDay(day);
+
         if (HasLiveThreatEnemy(state))
             return;
 
-        int elapsedTurns = Mathf.Max(0, day - state.EnteredDay);
+        if (HasLiveThreatEnemyInZone(currentPartyZoneId, string.Empty))
+            return;
+
+        int elapsedTurns = state.AccumulateUntilDay(day);
         if (elapsedTurns < GateLifecycleController.ResolveOpenDurationTurns())
             return;
 
         TriggerThreat(currentPartyZoneId);
+    }
+
+    private void PauseZoneThreatCounter(string zoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null ||
+            !repository.TryGetZoneThreatState(normalizedZoneId, out ZoneThreatProgressState state) ||
+            state == null ||
+            !state.Active)
+        {
+            return;
+        }
+
+        state.PauseAtDay(ResolveCurrentDay());
     }
 
     private void TriggerThreat(string zoneId)
@@ -363,11 +390,14 @@ public class GateThreatController : MonoBehaviour
         if (string.IsNullOrWhiteSpace(normalizedZoneId))
             return;
 
-        CloseGatesForZone(normalizedZoneId);
-
         MapProgressRepository repository = MapProgressRepository.Instance;
         if (repository == null)
             return;
+
+        if (HasLiveThreatEnemyInZone(normalizedZoneId, string.Empty))
+            return;
+
+        CloseGatesForZone(normalizedZoneId);
 
         if (repository.TryGetZoneThreatState(normalizedZoneId, out ZoneThreatProgressState state) &&
             state != null &&
@@ -382,8 +412,12 @@ public class GateThreatController : MonoBehaviour
         if (enemySpawnController == null)
             return;
 
-        if (TrySpawnThreatEnemy(normalizedZoneId, out string placementKey))
+        if (TrySpawnThreatEnemy(normalizedZoneId, out string placementKey, out EnemySpawnPoint spawnPoint))
+        {
             repository.SetZoneThreatEnemy(normalizedZoneId, placementKey);
+            if (!TryShowSpawnChat(spawnPoint, placementKey))
+                TryOpenSpawnedEnemyCombatPrompt(placementKey);
+        }
     }
 
     private bool HasLiveThreatEnemy(ZoneThreatProgressState state)
@@ -428,9 +462,10 @@ public class GateThreatController : MonoBehaviour
         return false;
     }
 
-    private bool TrySpawnThreatEnemy(string zoneId, out string placementKey)
+    private bool TrySpawnThreatEnemy(string zoneId, out string placementKey, out EnemySpawnPoint usedSpawnPoint)
     {
         placementKey = string.Empty;
+        usedSpawnPoint = null;
         List<EnemySpawnPoint> candidates = new List<EnemySpawnPoint>();
         string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
 
@@ -457,11 +492,66 @@ public class GateThreatController : MonoBehaviour
                 continue;
 
             if (enemySpawnController.TrySpawnGateThreatEnemy(normalizedZoneId, spawnPoint.GridPosition, spawnPoint.EnemyGroupKey, out placementKey))
+            {
+                usedSpawnPoint = spawnPoint;
                 return true;
+            }
         }
 
         placementKey = string.Empty;
+        usedSpawnPoint = null;
         return false;
+    }
+
+    private bool TryShowSpawnChat(EnemySpawnPoint spawnPoint, string placementKey)
+    {
+        if (spawnPoint == null || spawnPoint.SpawnChatZoneId <= 0 || spawnPoint.SpawnChatId <= 0)
+            return false;
+
+        EventScriptCatalog catalog = EventScriptCatalog.Instance;
+        if (catalog == null || !catalog.TryGetChat(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, out ChatDBEventData chat) || chat == null)
+            return false;
+
+        ChatModalController.Show(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, () => TryOpenSpawnedEnemyCombatPrompt(placementKey));
+        return true;
+    }
+
+    private void TryOpenSpawnedEnemyCombatPrompt(string placementKey)
+    {
+        string normalizedPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
+        if (string.IsNullOrWhiteSpace(normalizedPlacementKey))
+            return;
+
+        ResolveReferences();
+
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == null || gridManager == null || combatEncounterManager == null)
+            return;
+
+        if (!gridManager.TryGetEnemyEncounterZoneOwner(party.GetCurrentGrid(), out EnemyGridMover enemy) ||
+            enemy == null ||
+            !IsMatchingEnemyPlacement(enemy, normalizedPlacementKey))
+        {
+            return;
+        }
+
+        if (combatPromptService != null &&
+            combatPromptService.TryOpenEnemyCombatPrompt(party, enemy, combatEncounterManager, _ => { }))
+        {
+            return;
+        }
+
+        combatEncounterManager.BeginCombat(party, enemy);
+    }
+
+    private static bool IsMatchingEnemyPlacement(EnemyGridMover enemy, string normalizedPlacementKey)
+    {
+        EnemyIdentity identity = enemy != null ? enemy.GetComponent<EnemyIdentity>() : null;
+        return identity != null &&
+            string.Equals(
+                MapProgressKey.NormalizeSegment(identity.PlacementKey),
+                normalizedPlacementKey,
+                System.StringComparison.Ordinal);
     }
 
     private void OpenGatesForZone(string zoneId)
@@ -629,6 +719,12 @@ public class GateThreatController : MonoBehaviour
             enemySpawnController = FindFirstObjectByType<EnemySpawnController>();
         if (layoutLoader == null)
             layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+        if (gridManager == null)
+            gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+        if (combatPromptService == null)
+            combatPromptService = FindFirstObjectByType<CombatPromptService>();
+        if (combatEncounterManager == null)
+            combatEncounterManager = FindFirstObjectByType<CombatEncounterManager>();
 
         SubscribeTurnManager();
     }

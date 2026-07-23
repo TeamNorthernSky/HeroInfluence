@@ -192,18 +192,35 @@ public class ZoneThreatProgressState
     [SerializeField] private string zoneId;
     [SerializeField] private bool active;
     [SerializeField] private int enteredDay;
+    [SerializeField] private int accumulatedTurns;
+    [SerializeField] private int lastEvaluatedDay;
     [SerializeField] private string activeEnemyPlacementKey;
 
     public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
     public bool Active => active;
     public int EnteredDay => Mathf.Max(1, enteredDay);
+    public int AccumulatedTurns => Mathf.Max(0, accumulatedTurns);
+    public int LastEvaluatedDay => lastEvaluatedDay > 0 ? lastEvaluatedDay : EnteredDay;
     public string ActiveEnemyPlacementKey => MapProgressKey.NormalizeSegment(activeEnemyPlacementKey);
 
     public ZoneThreatProgressState(string zoneId, bool active, int enteredDay, string activeEnemyPlacementKey)
+        : this(zoneId, active, enteredDay, 0, enteredDay, activeEnemyPlacementKey)
+    {
+    }
+
+    public ZoneThreatProgressState(
+        string zoneId,
+        bool active,
+        int enteredDay,
+        int accumulatedTurns,
+        int lastEvaluatedDay,
+        string activeEnemyPlacementKey)
     {
         this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
         this.active = active;
         this.enteredDay = Mathf.Max(1, enteredDay);
+        this.accumulatedTurns = Mathf.Max(0, accumulatedTurns);
+        this.lastEvaluatedDay = Mathf.Max(1, lastEvaluatedDay);
         this.activeEnemyPlacementKey = MapProgressKey.NormalizeSegment(activeEnemyPlacementKey);
     }
 
@@ -211,13 +228,33 @@ public class ZoneThreatProgressState
     {
         active = true;
         enteredDay = Mathf.Max(1, nextEnteredDay);
+        accumulatedTurns = 0;
+        lastEvaluatedDay = enteredDay;
         activeEnemyPlacementKey = string.Empty;
     }
 
     public void End()
     {
         active = false;
+        accumulatedTurns = 0;
+        lastEvaluatedDay = Mathf.Max(1, lastEvaluatedDay);
         activeEnemyPlacementKey = string.Empty;
+    }
+
+    public void PauseAtDay(int day)
+    {
+        lastEvaluatedDay = Mathf.Max(1, day);
+    }
+
+    public int AccumulateUntilDay(int day)
+    {
+        int safeDay = Mathf.Max(1, day);
+        int safeLastDay = LastEvaluatedDay;
+        if (safeDay > safeLastDay)
+            accumulatedTurns = Mathf.Max(0, accumulatedTurns + safeDay - safeLastDay);
+
+        lastEvaluatedDay = safeDay;
+        return AccumulatedTurns;
     }
 
     public void SetActiveEnemy(string placementKey)

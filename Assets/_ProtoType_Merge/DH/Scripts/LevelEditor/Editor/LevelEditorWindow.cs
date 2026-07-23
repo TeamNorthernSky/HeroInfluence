@@ -265,6 +265,8 @@ public class LevelEditorWindow : EditorWindow
         {
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnZoneId"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnEnemyGroupKey"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnChatZoneId"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnChatId"));
         }
 
         DrawTileClipboardControls(serializedController, brushType);
@@ -1165,7 +1167,12 @@ public class LevelEditorWindow : EditorWindow
             }
 
             Undo.RecordObject(context.LevelData, "Place Enemy Spawn Point");
-            context.LevelData.SetEnemySpawnPoint(anchor, context.SelectedEnemySpawnZoneId, context.SelectedEnemySpawnEnemyGroupKey);
+            context.LevelData.SetEnemySpawnPoint(
+                anchor,
+                context.SelectedEnemySpawnZoneId,
+                context.SelectedEnemySpawnEnemyGroupKey,
+                context.SelectedEnemySpawnChatZoneId,
+                context.SelectedEnemySpawnChatId);
             sceneStatus = string.IsNullOrWhiteSpace(context.SelectedEnemySpawnEnemyGroupKey)
                 ? $"Placed EnemySpawnPoint '{context.SelectedEnemySpawnZoneId}' at {anchor}."
                 : $"Placed EnemySpawnPoint '{context.SelectedEnemySpawnZoneId}' / '{context.SelectedEnemySpawnEnemyGroupKey}' at {anchor}.";
@@ -1305,6 +1312,8 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedGateSecondZoneId = controller.SelectedGateSecondZoneId;
         context.SelectedEnemySpawnZoneId = controller.SelectedEnemySpawnZoneId;
         context.SelectedEnemySpawnEnemyGroupKey = controller.SelectedEnemySpawnEnemyGroupKey;
+        context.SelectedEnemySpawnChatZoneId = controller.SelectedEnemySpawnChatZoneId;
+        context.SelectedEnemySpawnChatId = controller.SelectedEnemySpawnChatId;
         context.ApplyLevelAfterEdit = controller.ApplyLevelAfterEdit;
         context.GroundMask = controller.GroundMask;
 
@@ -2374,6 +2383,8 @@ public class LevelEditorWindow : EditorWindow
         public string SelectedGateSecondZoneId;
         public string SelectedEnemySpawnZoneId;
         public string SelectedEnemySpawnEnemyGroupKey;
+        public int SelectedEnemySpawnChatZoneId;
+        public int SelectedEnemySpawnChatId;
         public bool ApplyLevelAfterEdit;
         public LayerMask GroundMask;
     }

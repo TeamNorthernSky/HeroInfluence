@@ -10,6 +10,10 @@ public class VillainUnionBase : MonoBehaviour
     [SerializeField] private string defenderEnemyId;
     [SerializeField] private string zoneId;
     [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
+
+    [Header("Defender Combat Chat")]
+    [SerializeField, Min(0)] private int defenderCombatChatId;
+
     [SerializeField] private GridManager gridManager;
     private VillainUnionBaseRegistry villainUnionBaseRegistry;
 
@@ -18,9 +22,11 @@ public class VillainUnionBase : MonoBehaviour
     public string DefenderEnemyId => defenderEnemyId;
     public string ZoneId => NormalizeZoneId(zoneId);
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
+    public int DefenderCombatChatId => Mathf.Max(0, defenderCombatChatId);
 
     private void OnValidate()
     {
+        defenderCombatChatId = Mathf.Max(0, defenderCombatChatId);
         RefreshResolvedEnemyLevel();
     }
     private void Awake()
