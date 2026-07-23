@@ -6,7 +6,6 @@ public class GateRuntimeController : MonoBehaviour
     [SerializeField] private string gateId;
     [SerializeField] private string firstZoneId;
     [SerializeField] private string secondZoneId;
-    [SerializeField, Min(1)] private int openDurationTurns = 3;
     [SerializeField] private List<GameObject> blockerObjects = new List<GameObject>();
     [SerializeField] private List<Vector2Int> blockerCells = new List<Vector2Int>();
     [SerializeField] private bool isOpen;
@@ -18,7 +17,6 @@ public class GateRuntimeController : MonoBehaviour
     public string GateId => NormalizeId(gateId);
     public string FirstZoneId => NormalizeId(firstZoneId);
     public string SecondZoneId => NormalizeId(secondZoneId);
-    public int OpenDurationTurns => Mathf.Max(1, openDurationTurns);
     public bool IsOpen => isOpen;
 
     private void OnEnable()
@@ -49,15 +47,13 @@ public class GateRuntimeController : MonoBehaviour
         string nextFirstZoneId,
         string nextSecondZoneId,
         IEnumerable<GameObject> nextBlockers,
-        IEnumerable<Vector2Int> nextBlockerCells,
-        int nextOpenDurationTurns)
+        IEnumerable<Vector2Int> nextBlockerCells)
     {
         UnregisterCurrentGateBlockers();
 
         gateId = NormalizeId(nextGateId);
         firstZoneId = NormalizeId(nextFirstZoneId);
         secondZoneId = NormalizeId(nextSecondZoneId);
-        openDurationTurns = Mathf.Max(1, nextOpenDurationTurns);
 
         blockerObjects.Clear();
         blockerCells.Clear();

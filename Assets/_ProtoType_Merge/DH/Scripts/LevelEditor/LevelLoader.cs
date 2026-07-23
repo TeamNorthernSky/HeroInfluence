@@ -221,8 +221,7 @@ public class LevelLoader : MonoBehaviour
                 placement.FirstZoneId,
                 placement.SecondZoneId,
                 blockers,
-                blockerCells,
-                placement.OpenDurationTurns);
+                blockerCells);
         }
     }
 
@@ -831,9 +830,4 @@ public class LevelLoader : MonoBehaviour
         if (occupant != null)
             occupant.SetAnchorGrid(grid);
     }
-}
-
-[DisallowMultipleComponent]
-public class LevelSpawnedEnemyMarker : MonoBehaviour
-{
 }

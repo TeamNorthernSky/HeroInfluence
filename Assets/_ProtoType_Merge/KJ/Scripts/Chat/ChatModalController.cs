@@ -14,7 +14,7 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class ChatModalController : MonoBehaviour
 {
-    private const string PrefabPath = "UI/ChatModal"; // Assets/Resources/UI/ChatModal.prefab
+    private const string PrefabPath = "UI_Prefab/Chatting_System/ChatModal"; // Assets/Resources/UI_Prefab/Chatting_System/ChatModal.prefab
 
     [Header("레이아웃 참조")]
     [SerializeField] private ScrollRect scrollRect;
@@ -31,7 +31,7 @@ public class ChatModalController : MonoBehaviour
     [SerializeField] private Button skipButton;
     [Tooltip("'스킵하시겠습니까?' 확인 팝업 루트. 평소 비활성.")]
     [SerializeField] private GameObject skipConfirmPopup;
-    [SerializeField] private Button skipYesButton; // 예 → 채팅 패널 전체 닫기
+    [SerializeField] private Button skipYesButton; // 예 → 선택지/마지막 대사까지 자동 진행 [KJ 260723]
     [SerializeField] private Button skipNoButton;  // 아니오 → 팝업만 닫기
 
     private static ChatModalController current;
@@ -106,7 +106,7 @@ public class ChatModalController : MonoBehaviour
         current = this;
 
         if (skipButton != null) skipButton.onClick.AddListener(OpenSkipConfirm);
-        if (skipYesButton != null) skipYesButton.onClick.AddListener(Close);            // 예: 대화 종료
+        if (skipYesButton != null) skipYesButton.onClick.AddListener(SkipChat);         // 예: 선택지/끝까지 자동 진행 [KJ 260723]
         if (skipNoButton != null) skipNoButton.onClick.AddListener(CloseSkipConfirm);   // 아니오: 팝업만
         if (skipConfirmPopup != null) skipConfirmPopup.SetActive(false);
     }
@@ -119,6 +119,24 @@ public class ChatModalController : MonoBehaviour
     private void CloseSkipConfirm()
     {
         if (skipConfirmPopup != null) skipConfirmPopup.SetActive(false);
+    }
+
+    /// <summary>
+    /// [KJ 260723] 스킵 확정: 창을 닫지 않고 선택지 또는 마지막 대사까지 자동 진행.
+    /// 지나간 대사는 말풍선으로 모두 쌓이고(OnChatShown 경유), 선택지 도달 시 선택 대기.
+    /// </summary>
+    private void SkipChat()
+    {
+        CloseSkipConfirm();
+        manager?.SkipToEnd();
+    }
+
+    /// <summary>[KJ 260723] 마지막 대사이거나 선택지 표시 중이면 스킵 버튼 비활성화 (매 노드 표시 후 호출).</summary>
+    private void RefreshSkipButtonState()
+    {
+        if (skipButton == null) return;
+        bool blocked = choicesVisible || (manager != null && manager.IsAtFinalChat);
+        skipButton.interactable = !blocked;
     }
 
     private void Begin(int zoneId, int startChatId, Action closedCallback)
@@ -199,6 +217,7 @@ public class ChatModalController : MonoBehaviour
 
         if (options == null || options.Count == 0)
         {
+            RefreshSkipButtonState(); // 마지막 대사 도달 시 스킵 비활성 [KJ 260723]
             return;
         }
 
@@ -221,6 +240,8 @@ public class ChatModalController : MonoBehaviour
         {
             choicesVisible = false;
         }
+
+        RefreshSkipButtonState(); // 선택지 표시 중에도 스킵 비활성 [KJ 260723]
     }
 
     private void HandleChatEnded()

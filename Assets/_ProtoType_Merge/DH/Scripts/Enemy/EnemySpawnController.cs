@@ -99,13 +99,7 @@ public class EnemySpawnController : MonoBehaviour
 
     private static int ResolveSpawnIntervalTurns()
     {
-        GateLifecycleController gateLifecycleController = GateLifecycleController.Instance != null
-            ? GateLifecycleController.Instance
-            : FindFirstObjectByType<GateLifecycleController>();
-
-        return gateLifecycleController != null
-            ? gateLifecycleController.OpenDurationTurns
-            : 3;
+        return GateLifecycleController.ResolveOpenDurationTurns();
     }
 
     private void CollectProductionBaseCandidates()

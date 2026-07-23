@@ -355,8 +355,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 placement.FirstZoneId,
                 placement.SecondZoneId,
                 blockers,
-                gateBlockerCells,
-                placement.OpenDurationTurns);
+                gateBlockerCells);
         }
     }
 

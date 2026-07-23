@@ -2456,14 +2456,12 @@ MonoBehaviour:
   - gateId: gate_001
     firstZoneId: zone_001
     secondZoneId: zone_002
-    openDurationTurns: 3
     blockerCells:
     - {x: 0, y: 20}
     - {x: 0, y: 19}
   - gateId: gate_003
     firstZoneId: zone_002
     secondZoneId: zone_003
-    openDurationTurns: 3
     blockerCells:
     - {x: 0, y: 38}
     - {x: 0, y: 39}
@@ -2472,7 +2470,6 @@ MonoBehaviour:
   - gateId: gate_004
     firstZoneId: zone_002
     secondZoneId: zone_004
-    openDurationTurns: 3
     blockerCells:
     - {x: 24, y: 39}
     - {x: 25, y: 39}

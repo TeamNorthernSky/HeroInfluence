@@ -35,7 +35,6 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedGateId = "gate_001";
     [SerializeField] private string selectedGateFirstZoneId = "zone_001";
     [SerializeField] private string selectedGateSecondZoneId = "zone_002";
-    [SerializeField, Min(1)] private int selectedGateOpenDurationTurns = 3;
     [SerializeField] private string selectedEnemySpawnZoneId = "zone_002";
     [SerializeField] private string selectedEnemySpawnEnemyGroupKey;
 
@@ -87,7 +86,6 @@ public class LevelEditorController : MonoBehaviour
     public string SelectedGateId => selectedGateId;
     public string SelectedGateFirstZoneId => selectedGateFirstZoneId;
     public string SelectedGateSecondZoneId => selectedGateSecondZoneId;
-    public int SelectedGateOpenDurationTurns => Mathf.Max(1, selectedGateOpenDurationTurns);
     public string SelectedEnemySpawnZoneId => selectedEnemySpawnZoneId;
     public string SelectedEnemySpawnEnemyGroupKey => string.IsNullOrWhiteSpace(selectedEnemySpawnEnemyGroupKey) ? string.Empty : selectedEnemySpawnEnemyGroupKey.Trim();
     public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
@@ -256,8 +254,7 @@ public class LevelEditorController : MonoBehaviour
                 selectedGateId,
                 selectedGateFirstZoneId,
                 selectedGateSecondZoneId,
-                grid,
-                SelectedGateOpenDurationTurns);
+                grid);
             return;
         }
 
@@ -269,8 +266,7 @@ public class LevelEditorController : MonoBehaviour
             selectedGateSecondZoneId,
             grid,
             SelectedGatePrefabKey,
-            blockerCells,
-            SelectedGateOpenDurationTurns);
+            blockerCells);
     }
 
     private void OnDrawGizmos()

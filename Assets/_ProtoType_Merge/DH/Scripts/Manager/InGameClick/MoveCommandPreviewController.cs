@@ -355,7 +355,9 @@ public class MoveCommandPreviewController
             requestedDestinationGrid,
             activeMover.transform,
             false,
-            EnemyEncounterPathMode.BlockEncounterZones);
+            EnemyEncounterPathMode.BlockEncounterZones,
+            false,
+            MainEventInteractionPathMode.BlockInteractionCells);
         if (strictPath != null && strictPath.Count > 0)
             return strictPath;
 
@@ -364,17 +366,21 @@ public class MoveCommandPreviewController
             requestedDestinationGrid,
             activeMover.transform,
             false,
-            EnemyEncounterPathMode.AllowSingleEncounterZonePassage);
+            EnemyEncounterPathMode.AllowSingleEncounterZonePassage,
+            false,
+            MainEventInteractionPathMode.AllowSingleInteractionCellPassage);
         if (fallbackPath == null || fallbackPath.Count == 0)
             return null;
 
         for (int i = 1; i < fallbackPath.Count; i++)
         {
-            if (gridManager.GetEnemyEncounterZoneState(fallbackPath[i], out _) != EnemyEncounterZoneState.SingleEnemyZone)
-                continue;
-
-            destinationGrid = fallbackPath[i];
-            return fallbackPath.GetRange(0, i + 1);
+            Vector2Int pathGrid = fallbackPath[i];
+            if (gridManager.GetEnemyEncounterZoneState(pathGrid, out _) == EnemyEncounterZoneState.SingleEnemyZone ||
+                gridManager.TryGetMainEventAtInteractionCell(pathGrid, out _))
+            {
+                destinationGrid = pathGrid;
+                return fallbackPath.GetRange(0, i + 1);
+            }
         }
 
         return null;
@@ -407,7 +413,9 @@ public class MoveCommandPreviewController
                 candidate,
                 activeMover.transform,
                 false,
-                EnemyEncounterPathMode.BlockEncounterZones);
+                EnemyEncounterPathMode.BlockEncounterZones,
+                false,
+                MainEventInteractionPathMode.BlockInteractionCells);
             if (candidatePath == null || candidatePath.Count == 0)
                 continue;
 

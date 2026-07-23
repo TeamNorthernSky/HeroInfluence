@@ -416,6 +416,31 @@ public class GridManager : MonoBehaviour
         return false;
     }
 
+    public bool TryGetMainEventAtInteractionCell(Vector2Int grid, out MainEventObject mainEvent)
+    {
+        mainEvent = null;
+
+        if (mainEventRegistry != null)
+            return mainEventRegistry.TryGetEventAtInteractionCell(grid, this, out mainEvent);
+
+        IReadOnlyList<MainEventObject> mainEvents = FindObjectsByType<MainEventObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < mainEvents.Count; i++)
+        {
+            MainEventObject candidate = mainEvents[i];
+            if (candidate == null || !candidate.isActiveAndEnabled)
+                continue;
+
+            if (!candidate.IsInteractionCell(grid, this))
+                continue;
+
+            mainEvent = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
     public bool TryGetSubEventObjectAtGrid(Vector2Int grid, out SubEventObject subEvent)
     {
         subEvent = null;
