@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: FlareAuraSprite
+  m_Shader: {fileID: 4800000, guid: 34a86869260415f4cb7166f5db9ca4d7, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 3002
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _BaseRadius: 0.42
+    - _BirthBias: 1.8
+    - _DebugCircles: 0.15
+    - _EdgeSoftRatio: 0.25
+    - _Emission: 1.2
+    - _FlowSpeed: 1.2
+    - _HighlightRatio: 0.45
+    - _LaneCount: 12
+    - _LanePosJitter: 0.35
+    - _LaneTiltJitter: 0.5
+    - _LaneWidth: 0.16
+    - _LaneWidthJitter: 0.35
+    - _LifeFadePeak: 0.4
+    - _MaxLen: 0.22
+    - _MaxReach: 0.75
+    - _Opacity: 1
+    - _OuterShrink: 0.6
+    - _REnd: 0.6
+    - _RJitter: 0.25
+    - _RStart: 0.34
+    - _ReachSoft: 0.08
+    - _SCurveAmount: 0.45
+    - _SCurveFreq: 2
+    - _SpinSpeed: 25
+    - _TaperSharp: 1.4
+    - _TravelDist: 0.15
+    - _TravelSpeed: 0.3
+    - _UpBias: 0
+    - _VLengthJitter: 0.35
+    - _WidthNoiseAmount: 0.4
+    - _WidthNoiseScale: 3.5
+    m_Colors:
+    - _ColorHighlight: {r: 1.45, g: 1.25, b: 0.8, a: 1}
+    - _ColorTongue: {r: 1.05, g: 0.62, b: 0.16, a: 1}
+  m_BuildTextureStacks: []
