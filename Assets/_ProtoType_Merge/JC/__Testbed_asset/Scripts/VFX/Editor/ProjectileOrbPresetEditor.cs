@@ -6,7 +6,7 @@ namespace JC.VFX
     [CustomEditor(typeof(ProjectileOrbPreset))]
     public class ProjectileOrbPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/HealSkill";
+        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/HealSkill";
         static string MatCoreInner => DIR + "/ProjectileCoreInner.mat";   // 스파이키 코어
         static string MatRimShell  => DIR + "/ProjectileRimShell.mat";    // 매끈 외곽선
         static string MatSparkle   => DIR + "/ProjectileSparkleStar.mat";

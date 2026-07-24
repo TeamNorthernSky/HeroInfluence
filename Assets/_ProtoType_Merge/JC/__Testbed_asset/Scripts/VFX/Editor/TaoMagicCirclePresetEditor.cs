@@ -6,7 +6,7 @@ namespace JC.VFX
     [CustomEditor(typeof(TaoMagicCirclePreset))]
     public class TaoMagicCirclePresetEditor : Editor
     {
-        const string TaoPrefab = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Taosenaiyo/Taosenaiyo.prefab";
+        const string TaoPrefab = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/Taosenaiyo/Taosenaiyo.prefab";
 
         public override void OnInspectorGUI()
         {
