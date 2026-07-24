@@ -6,7 +6,7 @@ namespace JC.VFX
     [CustomEditor(typeof(HealAuraMasterPreset))]
     public class HealAuraMasterPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/HealSkill";
+        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/HealSkill";
         static string OrbitPrefab => DIR + "/HealOrbit.prefab";   // 오케스트레이터 HealOrbitVfx가 루트
 
         public override void OnInspectorGUI()

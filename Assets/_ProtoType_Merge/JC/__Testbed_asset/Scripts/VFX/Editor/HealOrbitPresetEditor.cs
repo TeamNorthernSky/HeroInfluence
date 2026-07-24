@@ -6,7 +6,7 @@ namespace JC.VFX
     [CustomEditor(typeof(HealOrbitPreset))]
     public class HealOrbitPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/HealSkill";
+        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/HealSkill";
         static string MatCoreInner => DIR + "/HealOrbitCoreInner.mat";   // 전용 코어(스파이키 가능)
         static string MatRimShell  => DIR + "/HealOrbitRimShell.mat";    // 전용 외곽선(매끈)
         static string OrbitPrefab  => DIR + "/HealOrbit.prefab";
