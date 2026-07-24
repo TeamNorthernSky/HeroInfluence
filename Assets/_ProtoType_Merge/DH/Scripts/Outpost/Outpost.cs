@@ -327,12 +327,7 @@ public class Outpost : MonoBehaviour
     public IReadOnlyList<Vector2Int> GetAdjacentInteractionCells(GridManager gridManager)
     {
         if (multiGridOccupant != null)
-        {
-            if (multiGridOccupant.IsTwoByTwo())
-                return multiGridOccupant.GetBottomOuterCells();
-
-            return multiGridOccupant.GetAdjacentOuterCells();
-        }
+            return multiGridOccupant.GetBottomOuterCells();
 
         Vector2Int anchorGrid = GetAnchorGrid(gridManager);
         List<Vector2Int> adjacentCells = new List<Vector2Int>(GridManager.Directions8.Length);

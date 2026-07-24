@@ -13,17 +13,73 @@ MonoBehaviour:
   m_Name: LevelTileRegistry
   m_EditorClassIdentifier: 
   tileEntries:
+  - tileKey: Road_01
+    sprite: {fileID: 21300000, guid: fcf9213a46b766b4e8676e56b3b30ca5, type: 3}
+  - tileKey: Road_Centerline_001
+    sprite: {fileID: 21300000, guid: 6170539ae094c0c448e277d6ee75a7ca, type: 3}
+  - tileKey: Road_Centerline_002
+    sprite: {fileID: 21300000, guid: 965da67017126bd4bb1bdc575a75fa8e, type: 3}
+  - tileKey: Road_Centerline_003
+    sprite: {fileID: 21300000, guid: 193c87700efbc5b45bc8c210e64fa9a6, type: 3}
+  - tileKey: Road_Centerline_004
+    sprite: {fileID: 21300000, guid: 4b93daa7e5888e84e965cd9490596097, type: 3}
+  - tileKey: Road_Centerline_005
+    sprite: {fileID: 21300000, guid: 3c4742fda931697479068eb6b5013c98, type: 3}
+  - tileKey: Road_Centerline_006
+    sprite: {fileID: 21300000, guid: 6cda994a2d736eb499b40b4f14c667df, type: 3}
+  - tileKey: Road_Centerline_007
+    sprite: {fileID: 21300000, guid: 95a437302109c2a459c128cf983d4b44, type: 3}
+  - tileKey: Road_Cross_001
+    sprite: {fileID: 21300000, guid: d3c287f6f19947249be56658492b2d92, type: 3}
+  - tileKey: Road_Cross_002
+    sprite: {fileID: 21300000, guid: 78cdf3c61f5d75048bfbd99fc2bbca60, type: 3}
+  - tileKey: Road_Cross_003
+    sprite: {fileID: 21300000, guid: 847ac57276624af4089da6db885a73ac, type: 3}
+  - tileKey: Road_Cross_004
+    sprite: {fileID: 21300000, guid: 1b22a755b33b88445af7758cd4cef7f6, type: 3}
+  - tileKey: Road_Cross_005
+    sprite: {fileID: 21300000, guid: ae197ebc5b0d8ce408224cf9f21ad299, type: 3}
+  - tileKey: Road_Cross_006
+    sprite: {fileID: 21300000, guid: 67213f93b70b23e4bb0def1608fe9ce1, type: 3}
+  - tileKey: Road_parkingLot_01
+    sprite: {fileID: 21300000, guid: b4beae7cf892df44b87de88bda4a131b, type: 3}
+  - tileKey: Road_parkingLot_02
+    sprite: {fileID: 21300000, guid: 54045ff9b6753374fa4e4faf3835370c, type: 3}
+  - tileKey: Road_parkingLot_03
+    sprite: {fileID: 21300000, guid: c145bd670835c9d4097bb326d5210846, type: 3}
+  - tileKey: Road_parkingLot_04
+    sprite: {fileID: 21300000, guid: 7e5bb41e2210b7c49a52ba153c440f7c, type: 3}
+  - tileKey: Road_parkingLot_05
+    sprite: {fileID: 21300000, guid: 4a784e9df7d635a41b2113934f0db78e, type: 3}
+  - tileKey: Road_parkingLot_06
+    sprite: {fileID: 21300000, guid: 12271e1c0c440df4597ac6f63e4832e2, type: 3}
+  - tileKey: Road_parkingLot_07
+    sprite: {fileID: 21300000, guid: 568041f2a79e64343beefa7961828862, type: 3}
+  - tileKey: Road_parkingLot_08
+    sprite: {fileID: 21300000, guid: fab149f4d8647fd4693ad0946a4c8d0a, type: 3}
+  - tileKey: Road_parkingLot_09
+    sprite: {fileID: 21300000, guid: 2b668777b5251ab40af5de600a03b425, type: 3}
+  - tileKey: Road_parkingLot_10
+    sprite: {fileID: 21300000, guid: 9abb5431c8702da40a33073ce060a871, type: 3}
+  - tileKey: Road_parkingLot_11
+    sprite: {fileID: 21300000, guid: a73dae4a47320f94199c850996b76c0c, type: 3}
+  - tileKey: Road_parkingLot_12
+    sprite: {fileID: 21300000, guid: 1620e1ff2bb4460488ca72bfa7683787, type: 3}
   - tileKey: tilemap_01
-    sprite: {fileID: 21300000, guid: 9df017d3d69750f4fb4cf1ca9ac71c04, type: 3}
+    sprite: {fileID: 21300000, guid: 792bfae84a416744cb2839e497e5f30e, type: 3}
   - tileKey: tilemap_02
-    sprite: {fileID: 21300000, guid: fdf2d81979fcfe8478b1381bd877eec1, type: 3}
+    sprite: {fileID: 21300000, guid: 4c53d00f6267a154ebacdd289e6b6247, type: 3}
   - tileKey: tilemap_03
-    sprite: {fileID: 21300000, guid: e8d8e95d15ebbb84ebeeb55e192d005e, type: 3}
+    sprite: {fileID: 21300000, guid: 687d1d3ee6a06324d8d6313dacfa2451, type: 3}
   - tileKey: tilemap_04
-    sprite: {fileID: 21300000, guid: b375a771d28e530499f87065ad70d940, type: 3}
+    sprite: {fileID: 21300000, guid: fdc8d99a598f48b47b652a6ce7b19a0b, type: 3}
   - tileKey: tilemap_05
-    sprite: {fileID: 21300000, guid: d7261c9c54a3d82429629e440e4eb2fa, type: 3}
+    sprite: {fileID: 21300000, guid: f81eecfeb68dd9f4eaebbdcc5f83ee32, type: 3}
   - tileKey: tilemap_06
-    sprite: {fileID: 21300000, guid: ea3e972d731d1964eb4c2c87d312935e, type: 3}
+    sprite: {fileID: 21300000, guid: 3567d551cf6f12643a07d6a6b3e48188, type: 3}
+  - tileKey: tilemap_07
+    sprite: {fileID: 21300000, guid: eb4a11738eef27e46bbadfd8575a311f, type: 3}
+  - tileKey: tilemap_08
+    sprite: {fileID: 21300000, guid: 40839c6b51c44344195d7049bab2a7a1, type: 3}
   - tileKey: Obstacle
     sprite: {fileID: 21300000, guid: cb0eb2e216e7ca444830f320ce29cf56, type: 3}

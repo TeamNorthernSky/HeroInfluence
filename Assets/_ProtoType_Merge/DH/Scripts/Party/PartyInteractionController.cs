@@ -183,16 +183,13 @@ public class PartyInteractionController
 
     private void HandleAdjacentOutpostProximity(Vector2Int enteredGrid)
     {
-        if (!gridManager.TryGetAdjacentOutpostGrid(enteredGrid, out Vector2Int outpostGrid))
-            return;
-
-        if (!gridManager.TryGetOutpostObjectAtGrid(outpostGrid, out Outpost outpost))
+        if (!TryGetOutpostAtInteractionCell(enteredGrid, out Outpost outpost))
             return;
 
         if (!outpost.IsClaimableByPlayer)
             return;
 
-        BeginAdjacentOutpostClaim(outpostGrid);
+        BeginAdjacentOutpostClaim(outpost, enteredGrid);
     }
 
     private void HandleVillainUnionProximity(Vector2Int enteredGrid)
@@ -323,12 +320,12 @@ public class PartyInteractionController
         AdjacentItemCellEntered?.Invoke(itemGrid);
     }
 
-    private void BeginAdjacentOutpostClaim(Vector2Int outpostGrid)
+    private void BeginAdjacentOutpostClaim(Outpost outpost, Vector2Int interactionGrid)
     {
         CancelPendingInteraction();
 
         IsInputLocked = true;
-        pendingInteractionCoroutine = coroutineOwner.StartCoroutine(InvokeDelayedOutpostClaim(outpostGrid));
+        pendingInteractionCoroutine = coroutineOwner.StartCoroutine(InvokeDelayedOutpostClaim(outpost, interactionGrid));
     }
 
     private IEnumerator InvokeDelayedItemPickup(Vector2Int itemGrid)
@@ -379,7 +376,7 @@ public class PartyInteractionController
         itemObject.GetItem();
     }
 
-    private IEnumerator InvokeDelayedOutpostClaim(Vector2Int outpostGrid)
+    private IEnumerator InvokeDelayedOutpostClaim(Outpost outpost, Vector2Int interactionGrid)
     {
         yield return new WaitForSeconds(itemPickupDelay);
 
@@ -397,14 +394,14 @@ public class PartyInteractionController
             yield break;
         }
 
-        Vector2Int currentGrid = currentGridProvider != null ? currentGridProvider() : outpostGrid;
-        if (!IsAdjacentOrSame(currentGrid, outpostGrid))
+        if (outpost == null)
         {
             IsInputLocked = false;
             yield break;
         }
 
-        if (!gridManager.TryGetOutpostObjectAtGrid(outpostGrid, out Outpost outpost))
+        Vector2Int currentGrid = currentGridProvider != null ? currentGridProvider() : interactionGrid;
+        if (!IsOutpostInteractionCell(outpost, currentGrid))
         {
             IsInputLocked = false;
             yield break;
@@ -502,6 +499,54 @@ public class PartyInteractionController
         int dx = Mathf.Abs(a.x - b.x);
         int dy = Mathf.Abs(a.y - b.y);
         return dx <= 1 && dy <= 1;
+    }
+
+    private bool TryGetOutpostAtInteractionCell(Vector2Int grid, out Outpost outpost)
+    {
+        outpost = null;
+
+        Outpost[] outposts = UnityEngine.Object.FindObjectsByType<Outpost>(FindObjectsSortMode.None);
+        for (int i = 0; i < outposts.Length; i++)
+        {
+            Outpost candidate = outposts[i];
+            if (candidate == null)
+                continue;
+
+            System.Collections.Generic.IReadOnlyList<Vector2Int> interactionCells =
+                candidate.GetAdjacentInteractionCells(gridManager);
+            if (interactionCells == null)
+                continue;
+
+            for (int j = 0; j < interactionCells.Count; j++)
+            {
+                if (interactionCells[j] != grid)
+                    continue;
+
+                outpost = candidate;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsOutpostInteractionCell(Outpost outpost, Vector2Int grid)
+    {
+        if (outpost == null)
+            return false;
+
+        System.Collections.Generic.IReadOnlyList<Vector2Int> interactionCells =
+            outpost.GetAdjacentInteractionCells(gridManager);
+        if (interactionCells == null)
+            return false;
+
+        for (int i = 0; i < interactionCells.Count; i++)
+        {
+            if (interactionCells[i] == grid)
+                return true;
+        }
+
+        return false;
     }
 
     private static bool TryGetVillainUnionAtInteractionCell(Vector2Int grid, out VillainUnionBase villainUnionBase)

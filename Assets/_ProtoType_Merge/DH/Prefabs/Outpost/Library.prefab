@@ -29,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
+  m_LocalScale: {x: 1.8, y: 1.8, z: 1.8}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1929514998262958065}
@@ -54,6 +54,7 @@ MonoBehaviour:
   defenderEnemyId: 
   zoneId: 
   resolvedEnemyLevel: 1
+  defenderCombatChatId: 0
   targetRenderer: {fileID: 760034622319852702}
   unclaimedMaterial: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9,
@@ -73,7 +74,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 0}
   anchorGrid: {x: 0, y: 0}
-  size: {x: 2, y: 2}
+  size: {x: 3, y: 3}
   syncAnchorFromTransformOnAwake: 0
   drawOccupiedCellsGizmo: 1
   drawAdjacentCellsGizmo: 0

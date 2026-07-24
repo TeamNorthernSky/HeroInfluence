@@ -22,25 +22,25 @@ MonoBehaviour:
     size: {x: 50, y: 40}
     optional: 0
     candidates:
-    - {fileID: 11400000, guid: 44257183c0073184b99fe619128d074d, type: 2}
+    - {fileID: 11400000, guid: 9d2ab1ac5a04d26428f167084c31be5b, type: 2}
   - zoneId: zone_002
     zoneType: 0
     anchor: {x: 50, y: 0}
     size: {x: 50, y: 40}
     optional: 0
     candidates:
-    - {fileID: 11400000, guid: 7b8466c24012da34ebc834a8bc51ffc4, type: 2}
+    - {fileID: 11400000, guid: 8109ba41cfdd5df43909fba8255b6c40, type: 2}
   - zoneId: zone_003
     zoneType: 0
     anchor: {x: 0, y: 40}
     size: {x: 50, y: 40}
     optional: 0
     candidates:
-    - {fileID: 11400000, guid: 04d3a7d44088dd146ac4b75a49548d87, type: 2}
+    - {fileID: 11400000, guid: 61330e5e8ce6b8844afa3a547653a466, type: 2}
   - zoneId: zone_004
     zoneType: 0
     anchor: {x: 50, y: 40}
     size: {x: 50, y: 40}
     optional: 0
     candidates:
-    - {fileID: 11400000, guid: 626be62ad0fb61247b7ea01d4d907cef, type: 2}
+    - {fileID: 11400000, guid: 94a182cae11c8fb4fa4b326095eb4c1e, type: 2}
