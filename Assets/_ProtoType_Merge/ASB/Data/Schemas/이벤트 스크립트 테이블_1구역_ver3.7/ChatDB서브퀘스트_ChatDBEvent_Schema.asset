@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
-  m_Name: "ChatDB\uBA54\uC778\uD018\uC2A4\uD2B8_Schema"
+  m_Name: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8_ChatDBEvent_Schema"
   m_EditorClassIdentifier: 
-  schemaGuid: 433110f9197640ef8a771b2346ae20bf
+  schemaGuid: ac380d27c85e4ee2ac9c343fb407a384
   sourceWorkbookGuid: 5571aa80d442f86459ada9899f9be953
   sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/\uC774\uBCA4\uD2B8
     \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7.xlsx"
   workbookFileName: "\uC774\uBCA4\uD2B8 \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7"
-  sourceSheetName: "Chat DB_\uBA54\uC778\uD018\uC2A4\uD2B8"
-  physicalSheetId: c9985cec997c6bb54a2d88951f1f197922e01405
-  logicalSheetKey: "chatdb\uBA54\uC778\uD018\uC2A4\uD2B8"
-  templateClassName: "ChatDB\uBA54\uC778\uD018\uC2A4\uD2B8"
-  templateSignature: dict=1|Chat_ID:String:Comma|Chat_Type:String:Comma|Char_Name:String:Comma|Char_Profile:String:Comma|Message_Text:String:Comma|IMG_Res:String:Comma|Next_Chat_ID:String:Comma|Branch_Group_ID:String:Comma
-  className: "ChatDB\uBA54\uC778\uD018\uC2A4\uD2B8"
-  outputAssetName: "ChatDB\uBA54\uC778\uD018\uC2A4\uD2B8DataTable"
-  targetTableAssetGuid: f972df6e0f3e75343b7cb8cbd6f8ae77
+  sourceSheetName: "Chat DB_\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  physicalSheetId: 24c854d306f97ef659a1de58fd291130053fa74a
+  logicalSheetKey: "chatdb\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  templateClassName: ChatDBEvent
+  templateSignature: dict=1|Chat_ID:Int:Comma|Chat_Type:Int:Comma|Char_Name:String:Comma|Char_Profile:String:Comma|Message_Text:String:Comma|IMG_Res:String:Comma|Next_Chat_ID:Int:Comma|Branch_Group_ID:Int:Comma
+  className: ChatDBEvent
+  outputAssetName: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable"
+  targetTableAssetGuid: d2faef44e8ce77540bfc89702a17b05e
   targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/\uC774\uBCA4\uD2B8
-    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7/ChatDB\uBA54\uC778\uD018\uC2A4\uD2B8DataTable.asset"
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7/ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable.asset"
   headerRowIndex: 0
   dataStartRowIndex: 1
   useDictionary: 1
@@ -37,7 +37,7 @@ MonoBehaviour:
     sourceHeaderName: Chat_ID
     fieldName: Chat_ID
     displayName: Chat_ID
-    fieldType: 0
+    fieldType: 1
     listDelimiter: 0
     include: 1
     defaultValue: 
@@ -46,7 +46,7 @@ MonoBehaviour:
     sourceHeaderName: Chat_Type
     fieldName: Chat_Type
     displayName: Chat_Type
-    fieldType: 0
+    fieldType: 1
     listDelimiter: 0
     include: 1
     defaultValue: 
@@ -91,7 +91,7 @@ MonoBehaviour:
     sourceHeaderName: Next_Chat_ID
     fieldName: Next_Chat_ID
     displayName: Next_Chat_ID
-    fieldType: 0
+    fieldType: 1
     listDelimiter: 0
     include: 1
     defaultValue: 
@@ -100,7 +100,7 @@ MonoBehaviour:
     sourceHeaderName: Branch_Group_ID
     fieldName: Branch_Group_ID
     displayName: Branch_Group_ID
-    fieldType: 0
+    fieldType: 1
     listDelimiter: 0
     include: 1
     defaultValue: 

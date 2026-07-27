@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
-  m_Name: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8_Schema"
+  m_Name: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8_BranchDBEvent_Schema"
   m_EditorClassIdentifier: 
-  schemaGuid: b4a5414a95a34843bc5bda504a564908
+  schemaGuid: 1e775431473745cc973acb3b151fe4fe
   sourceWorkbookGuid: 5571aa80d442f86459ada9899f9be953
   sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/\uC774\uBCA4\uD2B8
     \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7.xlsx"
   workbookFileName: "\uC774\uBCA4\uD2B8 \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7"
-  sourceSheetName: "Chat DB_\uC11C\uBE0C\uD018\uC2A4\uD2B8"
-  physicalSheetId: 24c854d306f97ef659a1de58fd291130053fa74a
-  logicalSheetKey: "chatdb\uC11C\uBE0C\uD018\uC2A4\uD2B8"
-  templateClassName: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8"
-  templateSignature: dict=0|Chat_ID:String:Comma|Chat_Type:String:Comma|Char_Name:String:Comma|Char_Profile:String:Comma|Message_Text:String:Comma|IMG_Res:String:Comma|Next_Chat_ID:String:Comma|Branch_Group_ID:String:Comma
-  className: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8"
-  outputAssetName: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable"
-  targetTableAssetGuid: d2faef44e8ce77540bfc89702a17b05e
+  sourceSheetName: "Branch DB_\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  physicalSheetId: 59236b14576e654e104b34747d62c09d0a591b1b
+  logicalSheetKey: "branchdb\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  templateClassName: BranchDBEvent
+  templateSignature: "dict=0|Branch_ID:Int:Comma|Selection_Index:String:Comma|Trigger_Type:String:Comma|Trigger_Value:ListString:Backslash|Selection_Text:String:Comma|Target_Talk_ID:Int:Comma|Trigger_Effect:String:Comma|\uBE44\uACE0:String:Comma"
+  className: BranchDBEvent
+  outputAssetName: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable"
+  targetTableAssetGuid: 58453683287e88b47b7f24953d61c04a
   targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/\uC774\uBCA4\uD2B8
-    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7/ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable.asset"
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7/BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable.asset"
   headerRowIndex: 0
   dataStartRowIndex: 1
   useDictionary: 0
@@ -34,72 +34,72 @@ MonoBehaviour:
   duplicateKeyPolicy: 0
   Columns:
   - sourceColumnIndex: 0
-    sourceHeaderName: Chat_ID
-    fieldName: Chat_ID
-    displayName: Chat_ID
-    fieldType: 0
+    sourceHeaderName: Branch_ID
+    fieldName: Branch_ID
+    displayName: Branch_ID
+    fieldType: 1
     listDelimiter: 0
     include: 1
     defaultValue: 
     isKey: 1
   - sourceColumnIndex: 1
-    sourceHeaderName: Chat_Type
-    fieldName: Chat_Type
-    displayName: Chat_Type
+    sourceHeaderName: Selection_Index
+    fieldName: Selection_Index
+    displayName: Selection_Index
     fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 
     isKey: 0
   - sourceColumnIndex: 2
-    sourceHeaderName: Char_Name
-    fieldName: Char_Name
-    displayName: Char_Name
+    sourceHeaderName: Trigger_Type
+    fieldName: Trigger_Type
+    displayName: Trigger_Type
     fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 
     isKey: 0
   - sourceColumnIndex: 3
-    sourceHeaderName: Char_Profile
-    fieldName: Char_Profile
-    displayName: Char_Profile
-    fieldType: 0
-    listDelimiter: 0
+    sourceHeaderName: Trigger_Value
+    fieldName: Trigger_Value
+    displayName: Trigger_Value
+    fieldType: 5
+    listDelimiter: 1
     include: 1
     defaultValue: 
     isKey: 0
   - sourceColumnIndex: 4
-    sourceHeaderName: Message_Text
-    fieldName: Message_Text
-    displayName: Message_Text
+    sourceHeaderName: Selection_Text
+    fieldName: Selection_Text
+    displayName: Selection_Text
     fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 
     isKey: 0
   - sourceColumnIndex: 5
-    sourceHeaderName: IMG_Res
-    fieldName: IMG_Res
-    displayName: IMG_Res
-    fieldType: 0
+    sourceHeaderName: Target_Talk_ID
+    fieldName: Target_Talk_ID
+    displayName: Target_Talk_ID
+    fieldType: 1
     listDelimiter: 0
     include: 1
     defaultValue: 
     isKey: 0
   - sourceColumnIndex: 6
-    sourceHeaderName: Next_Chat_ID
-    fieldName: Next_Chat_ID
-    displayName: Next_Chat_ID
+    sourceHeaderName: Trigger_Effect
+    fieldName: Trigger_Effect
+    displayName: Trigger_Effect
     fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 
     isKey: 0
   - sourceColumnIndex: 7
-    sourceHeaderName: Branch_Group_ID
-    fieldName: Branch_Group_ID
-    displayName: Branch_Group_ID
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
     fieldType: 0
     listDelimiter: 0
     include: 1

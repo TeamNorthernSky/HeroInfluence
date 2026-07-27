@@ -9,14 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d14e7acf18499a4199697819c74308e, type: 3}
+  m_Script: {fileID: 0}
   m_Name: "BranchDB\uBA54\uC778\uD018\uC2A4\uD2B8DataTable"
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::BranchDBEventDataTable
   DataList:
   - Branch_ID: 10101
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uAC1C\uC18C\uB9AC \uC9D1\uC5B4\uCE58\uC6CC!"
     Target_Talk_ID: 1020190
     Trigger_Effect: 
@@ -24,7 +24,7 @@ MonoBehaviour:
   - Branch_ID: 10101
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uADF8\uB0E5 \uADF8\uB807\uB2E4\uACE0 \uCE58\uC790\u2026"
     Target_Talk_ID: 1020260
     Trigger_Effect: 
@@ -32,15 +32,16 @@ MonoBehaviour:
   - Branch_ID: 11102
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE005
     "\uBE44\uACE0": "\uC57D\uD0C8\uAFBC \uC804\uD22C"
   - Branch_ID: 11103
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstLootershasLost==1
+    Trigger_Value:
+    - Flag_MainQuestFirstLootershasLost==1
     Selection_Text: 
     Target_Talk_ID: 1140010
     Trigger_Effect: 
@@ -49,7 +50,7 @@ MonoBehaviour:
   - Branch_ID: 11103
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1110020
     Trigger_Effect: 
@@ -59,9 +60,9 @@ MonoBehaviour:
     Trigger_Type: 'Flag\
 
       Flag'
-    Trigger_Value: 'Flag_MainQuestFirstLootershasLost==1\
-
-      Flag_BattleResult==1'
+    Trigger_Value:
+    - Flag_MainQuestFirstLootershasLost==1
+    - Flag_BattleResult==1
     Selection_Text: 
     Target_Talk_ID: 1120010
     Trigger_Effect: 
@@ -70,7 +71,8 @@ MonoBehaviour:
   - Branch_ID: 11104
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==1
+    Trigger_Value:
+    - Flag_BattleResult==1
     Selection_Text: 
     Target_Talk_ID: 1120019
     Trigger_Effect: 
@@ -78,7 +80,8 @@ MonoBehaviour:
   - Branch_ID: 11104
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==0
+    Trigger_Value:
+    - Flag_BattleResult==0
     Selection_Text: 
     Target_Talk_ID: 1130010
     Trigger_Effect: Set_Flag_MainQuestFirstLootershasLost
@@ -86,17 +89,17 @@ MonoBehaviour:
   - Branch_ID: 11201
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Reward_000006
     "\uBE44\uACE0": "\uC57D\uD0C8\uAFBC \uD328\uBC30 \uBCF4\uC0C1"
   - Branch_ID: 11302
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Reward_000007\
 
       Set_Flag_MainQuestFirstGirl\
@@ -108,15 +111,16 @@ MonoBehaviour:
   - Branch_ID: 11304
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Reward_000008
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B81-2 \uD328\uBC30 \uBCF4\uC0C1"
   - Branch_ID: 11501
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirlhasLost==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirlhasLost==1
     Selection_Text: 
     Target_Talk_ID: 1180010
     Trigger_Effect: 
@@ -125,7 +129,7 @@ MonoBehaviour:
   - Branch_ID: 11501
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1150020
     Trigger_Effect: 
@@ -133,9 +137,9 @@ MonoBehaviour:
   - Branch_ID: 11502
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE006
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B81-2 \uC18C\uB140 \uC704\uD611
       \uBE4C\uB7F0 \uC804\uD22C"
@@ -144,9 +148,9 @@ MonoBehaviour:
     Trigger_Type: 'Flag\
 
       Flag'
-    Trigger_Value: 'Flag_MainQuestFirstGirlhasLost==1\
-
-      Flag_BattleResult==1'
+    Trigger_Value:
+    - Flag_MainQuestFirstGirlhasLost==1
+    - Flag_BattleResult==1
     Selection_Text: 
     Target_Talk_ID: 1160001
     Trigger_Effect: 
@@ -155,7 +159,8 @@ MonoBehaviour:
   - Branch_ID: 11503
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==1
+    Trigger_Value:
+    - Flag_BattleResult==1
     Selection_Text: 
     Target_Talk_ID: 1160010
     Trigger_Effect: 
@@ -164,7 +169,8 @@ MonoBehaviour:
   - Branch_ID: 11503
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==0
+    Trigger_Value:
+    - Flag_BattleResult==0
     Selection_Text: 
     Target_Talk_ID: 1170010
     Trigger_Effect: Set_Flag_MainQuestFirstGirlhasLost
@@ -174,9 +180,9 @@ MonoBehaviour:
     Trigger_Type: 'Flag\
 
       Flag'
-    Trigger_Value: 'Flag_SubEvent2Complete==1\
-
-      Flag_MainQuestFirstGirl==1'
+    Trigger_Value:
+    - Flag_SubEvent2Complete==1
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1190200
     Trigger_Effect: 
@@ -185,7 +191,8 @@ MonoBehaviour:
   - Branch_ID: 11901
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_SubEvent2Complete==1
+    Trigger_Value:
+    - Flag_SubEvent2Complete==1
     Selection_Text: 
     Target_Talk_ID: 1190400
     Trigger_Effect: 
@@ -193,7 +200,8 @@ MonoBehaviour:
   - Branch_ID: 11901
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1190600
     Trigger_Effect: 
@@ -201,7 +209,7 @@ MonoBehaviour:
   - Branch_ID: 11901
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1190800
     Trigger_Effect: 
@@ -209,7 +217,7 @@ MonoBehaviour:
   - Branch_ID: 11902
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uC9C0\uAE08 \uAE09\uC2B5\uD558\uC790."
     Target_Talk_ID: 1190900
     Trigger_Effect: 
@@ -217,7 +225,7 @@ MonoBehaviour:
   - Branch_ID: 11902
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uBE14\uB799\uBD88\uB9BF\uC5D0\uAC8C \uC815\uBCF4 \uC218\uC9D1\uC744
       \uB9E1\uAE34\uB2E4."
     Target_Talk_ID: 1191000
@@ -226,15 +234,16 @@ MonoBehaviour:
   - Branch_ID: 11903
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE121
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC804\uD22C"
   - Branch_ID: 11904
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==1
+    Trigger_Value:
+    - Flag_BattleResult==1
     Selection_Text: 
     Target_Talk_ID: 1200010
     Trigger_Effect: 
@@ -242,7 +251,8 @@ MonoBehaviour:
   - Branch_ID: 11904
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==0
+    Trigger_Value:
+    - Flag_BattleResult==0
     Selection_Text: 
     Target_Talk_ID: 1210010
     Trigger_Effect: Set_Flag_MainQuest2-1Lost
@@ -252,9 +262,9 @@ MonoBehaviour:
     Trigger_Type: 'Flag\
 
       Flag'
-    Trigger_Value: 'Flag_SubEvent2Complete==1\
-
-      Flag_MainQuestFirstGirl==1'
+    Trigger_Value:
+    - Flag_SubEvent2Complete==1
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1200100
     Trigger_Effect: 
@@ -263,7 +273,8 @@ MonoBehaviour:
   - Branch_ID: 12001
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_SubEvent2Complete==1
+    Trigger_Value:
+    - Flag_SubEvent2Complete==1
     Selection_Text: 
     Target_Talk_ID: 1200300
     Trigger_Effect: 
@@ -271,7 +282,8 @@ MonoBehaviour:
   - Branch_ID: 12001
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1200500
     Trigger_Effect: 
@@ -279,7 +291,7 @@ MonoBehaviour:
   - Branch_ID: 12001
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1200700
     Trigger_Effect: 
@@ -287,9 +299,9 @@ MonoBehaviour:
   - Branch_ID: 12002
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Reward_102010\
 
       Set_Flag_MainQuest2-1Complete\
@@ -307,7 +319,8 @@ MonoBehaviour:
   - Branch_ID: 12101
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1210100
     Trigger_Effect: 
@@ -315,7 +328,7 @@ MonoBehaviour:
   - Branch_ID: 12101
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1210300
     Trigger_Effect: 
@@ -323,15 +336,16 @@ MonoBehaviour:
   - Branch_ID: 12102
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Reward_102011
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uD328\uBC30 \uBCF4\uC0C1"
   - Branch_ID: 12301
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_RuminaIsNaRak==1
+    Trigger_Value:
+    - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 1230200
     Trigger_Effect: 
@@ -339,7 +353,8 @@ MonoBehaviour:
   - Branch_ID: 12301
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_NekomingDisaster==1
+    Trigger_Value:
+    - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 1230400
     Trigger_Effect: 
@@ -347,7 +362,8 @@ MonoBehaviour:
   - Branch_ID: 12301
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1230600
     Trigger_Effect: 
@@ -355,7 +371,7 @@ MonoBehaviour:
   - Branch_ID: 12301
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1230800
     Trigger_Effect: 
@@ -363,15 +379,16 @@ MonoBehaviour:
   - Branch_ID: 12302
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE122
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC804\uD22C"
   - Branch_ID: 12303
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==1
+    Trigger_Value:
+    - Flag_BattleResult==1
     Selection_Text: 
     Target_Talk_ID: 1240010
     Trigger_Effect: 
@@ -379,7 +396,8 @@ MonoBehaviour:
   - Branch_ID: 12303
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==0
+    Trigger_Value:
+    - Flag_BattleResult==0
     Selection_Text: 
     Target_Talk_ID: 1250010
     Trigger_Effect: Set_Flag_MainQuest2-2Lost
@@ -387,7 +405,8 @@ MonoBehaviour:
   - Branch_ID: 12401
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_RuminaIsNaRak==1
+    Trigger_Value:
+    - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 1240100
     Trigger_Effect: 
@@ -395,7 +414,8 @@ MonoBehaviour:
   - Branch_ID: 12401
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_NekomingDisaster==1
+    Trigger_Value:
+    - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 1240300
     Trigger_Effect: 
@@ -403,7 +423,8 @@ MonoBehaviour:
   - Branch_ID: 12401
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1240500
     Trigger_Effect: 
@@ -411,7 +432,7 @@ MonoBehaviour:
   - Branch_ID: 12401
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1240700
     Trigger_Effect: 
@@ -419,9 +440,9 @@ MonoBehaviour:
   - Branch_ID: 12402
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Reward_102020\
 
       Set_Flag_MainQuest2-2Complete\
@@ -436,7 +457,8 @@ MonoBehaviour:
   - Branch_ID: 12501
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_RuminaIsNaRak==1
+    Trigger_Value:
+    - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 1250100
     Trigger_Effect: Disable_Flag_RuminaIsNaRak
@@ -444,7 +466,8 @@ MonoBehaviour:
   - Branch_ID: 12501
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_NekomingDisaster==1
+    Trigger_Value:
+    - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 1250300
     Trigger_Effect: Disable_Flag_NekomingDisaster
@@ -452,7 +475,8 @@ MonoBehaviour:
   - Branch_ID: 12501
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1250500
     Trigger_Effect: 
@@ -460,7 +484,7 @@ MonoBehaviour:
   - Branch_ID: 12501
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1250700
     Trigger_Effect: 
@@ -468,17 +492,17 @@ MonoBehaviour:
   - Branch_ID: 12502
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Reward_102021
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uD328\uBC30 \uBCF4\uC0C1"
   - Branch_ID: 12503
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Reward_000004\
 
       Set_Flag_RuminaIsNaRak\
@@ -493,7 +517,7 @@ MonoBehaviour:
   - Branch_ID: 12504
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "(\uC9C1\uC811 \uB9D0\uB9B0\uB2E4!)"
     Target_Talk_ID: 1120026
     Trigger_Effect: 
@@ -501,7 +525,7 @@ MonoBehaviour:
   - Branch_ID: 12504
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uB124\uCF54\uBC0D \uB124\uAC00 \uC880 \uC5B4\uB5BB\uAC8C \uD574\uBD10!"
     Target_Talk_ID: 1120060
     Trigger_Effect: 
@@ -509,9 +533,9 @@ MonoBehaviour:
   - Branch_ID: 12505
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Reward_000005\
 
       Set_Flag_NekomingDisaster\
@@ -527,7 +551,8 @@ MonoBehaviour:
   - Branch_ID: 12701
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_RuminaIsNaRak==1
+    Trigger_Value:
+    - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 1270200
     Trigger_Effect: 
@@ -535,7 +560,8 @@ MonoBehaviour:
   - Branch_ID: 12701
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_NekomingDisaster==1
+    Trigger_Value:
+    - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 1270400
     Trigger_Effect: 
@@ -543,7 +569,8 @@ MonoBehaviour:
   - Branch_ID: 12701
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1270600
     Trigger_Effect: 
@@ -551,7 +578,7 @@ MonoBehaviour:
   - Branch_ID: 12701
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1270800
     Trigger_Effect: 
@@ -559,15 +586,16 @@ MonoBehaviour:
   - Branch_ID: 12702
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE123
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC804\uD22C"
   - Branch_ID: 12703
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==1
+    Trigger_Value:
+    - Flag_BattleResult==1
     Selection_Text: 
     Target_Talk_ID: 1280010
     Trigger_Effect: 
@@ -575,7 +603,8 @@ MonoBehaviour:
   - Branch_ID: 12703
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_BattleResult==0
+    Trigger_Value:
+    - Flag_BattleResult==0
     Selection_Text: 
     Target_Talk_ID: 1290010
     Trigger_Effect: Set_Flag_MainQuest2-3Lost
@@ -583,7 +612,8 @@ MonoBehaviour:
   - Branch_ID: 12801
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_RuminaIsNaRak==1
+    Trigger_Value:
+    - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 1280100
     Trigger_Effect: 
@@ -591,7 +621,8 @@ MonoBehaviour:
   - Branch_ID: 12801
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_NekomingDisaster==1
+    Trigger_Value:
+    - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 1280300
     Trigger_Effect: 
@@ -599,7 +630,8 @@ MonoBehaviour:
   - Branch_ID: 12801
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1280500
     Trigger_Effect: 
@@ -607,7 +639,7 @@ MonoBehaviour:
   - Branch_ID: 12801
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1280700
     Trigger_Effect: 
@@ -615,9 +647,9 @@ MonoBehaviour:
   - Branch_ID: 12802
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Reward_102030\
 
       Set_Flag_MainQuest2-3Complete\
@@ -632,7 +664,8 @@ MonoBehaviour:
   - Branch_ID: 12901
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_RuminaIsNaRak==1
+    Trigger_Value:
+    - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 1290100
     Trigger_Effect: Disable_Flag_RuminaIsNaRak
@@ -640,7 +673,8 @@ MonoBehaviour:
   - Branch_ID: 12901
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_NekomingDisaster==1
+    Trigger_Value:
+    - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 1290300
     Trigger_Effect: Disable_Flag_NekomingDisaster
@@ -648,7 +682,8 @@ MonoBehaviour:
   - Branch_ID: 12901
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1290500
     Trigger_Effect: 
@@ -656,7 +691,7 @@ MonoBehaviour:
   - Branch_ID: 12901
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1290700
     Trigger_Effect: 
@@ -664,9 +699,9 @@ MonoBehaviour:
   - Branch_ID: 12902
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Reward_102031
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 \uBCF4\uC0C1"
   - Branch_ID: 10300
@@ -674,9 +709,9 @@ MonoBehaviour:
     Trigger_Type: 'Flag\
 
       Flag'
-    Trigger_Value: 'Flag_MainQuestFirstGirl==1\
-
-      Flag_1SectorHostageKnown==1'
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
+    - Flag_1SectorHostageKnown==1
     Selection_Text: 
     Target_Talk_ID: 1030020
     Trigger_Effect: 
@@ -685,7 +720,8 @@ MonoBehaviour:
   - Branch_ID: 10300
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_MainQuestFirstGirl==1
+    Trigger_Value:
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 1030091
     Trigger_Effect: 
@@ -694,7 +730,8 @@ MonoBehaviour:
   - Branch_ID: 10300
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorHostageKnown==1
+    Trigger_Value:
+    - Flag_1SectorHostageKnown==1
     Selection_Text: 
     Target_Talk_ID: 1033010
     Trigger_Effect: 
@@ -702,7 +739,7 @@ MonoBehaviour:
   - Branch_ID: 10300
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1033010
     Trigger_Effect: 
@@ -710,7 +747,7 @@ MonoBehaviour:
   - Branch_ID: 10319
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1030190
     Trigger_Effect: Set_Flag_1SectorHostageKnown
@@ -719,7 +756,8 @@ MonoBehaviour:
   - Branch_ID: 10310
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorHostageKnown==1
+    Trigger_Value:
+    - Flag_1SectorHostageKnown==1
     Selection_Text: 
     Target_Talk_ID: 1033140
     Trigger_Effect: 
@@ -727,7 +765,7 @@ MonoBehaviour:
   - Branch_ID: 10310
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1033160
     Trigger_Effect: 
@@ -735,7 +773,7 @@ MonoBehaviour:
   - Branch_ID: 10301
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uC815\uBA74\uC5D0\uC11C \uBE60\uB974\uAC8C \uB3CC\uD30C\uD558\uC790."
     Target_Talk_ID: 1033180
     Trigger_Effect: Set_Flag_1SectorRouteFrontal
@@ -744,7 +782,8 @@ MonoBehaviour:
   - Branch_ID: 10301
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorHostageKnown!=1
+    Trigger_Value:
+    - Flag_1SectorHostageKnown!=1
     Selection_Text: "\uBAB0\uB798 \uB4E4\uC5B4\uAC08 \uACF3\uC744 \uCC3E\uC544\uBCF4\uC790"
     Target_Talk_ID: 1033610
     Trigger_Effect: Set_Flag_1SectorRouteLuminaExplosion
@@ -753,7 +792,8 @@ MonoBehaviour:
   - Branch_ID: 10301
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorHostageKnown==1
+    Trigger_Value:
+    - Flag_1SectorHostageKnown==1
     Selection_Text: "\uC6B0\uC120 \uC778\uC9C8\uBD80\uD130 \uAD6C\uCD9C\uD558\uC790."
     Target_Talk_ID: 1034200
     Trigger_Effect: Set_Flag_1SectorRouteHostageRescue
@@ -762,7 +802,8 @@ MonoBehaviour:
   - Branch_ID: 10312
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorHostageKnown==1
+    Trigger_Value:
+    - Flag_1SectorHostageKnown==1
     Selection_Text: 
     Target_Talk_ID: 1033200
     Trigger_Effect: 
@@ -771,7 +812,7 @@ MonoBehaviour:
   - Branch_ID: 10312
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1033210
     Trigger_Effect: 
@@ -780,7 +821,8 @@ MonoBehaviour:
   - Branch_ID: 10313
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorHostageKnown==1
+    Trigger_Value:
+    - Flag_1SectorHostageKnown==1
     Selection_Text: 
     Target_Talk_ID: 1033300
     Trigger_Effect: 
@@ -789,7 +831,7 @@ MonoBehaviour:
   - Branch_ID: 10313
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1033310
     Trigger_Effect: 
@@ -804,14 +846,11 @@ MonoBehaviour:
       Stat\
 
       Stat'
-    Trigger_Value: 'Rumina_IP =< 20\
-
-      Justice_IP =< 20\
-
-      BlackBullet_IP
-      =< 20\
-
-      Nekoming_IP =< 20'
+    Trigger_Value:
+    - Rumina_IP =< 20
+    - Justice_IP =< 20
+    - BlackBullet_IP =< 20
+    - Nekoming_IP =< 20
     Selection_Text: 
     Target_Talk_ID: 1033340
     Trigger_Effect: 
@@ -820,7 +859,7 @@ MonoBehaviour:
   - Branch_ID: 10314
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1033520
     Trigger_Effect: 
@@ -828,25 +867,26 @@ MonoBehaviour:
   - Branch_ID: 10303
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE003
     "\uBE44\uACE0": "\uC815\uBA74 \uB3CC\uD30C \uC804\uD22C / \uC778\uC9C8 \uCCB4\uB825
       75%"
   - Branch_ID: 10304
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE004
     "\uBE44\uACE0": "\uAE30\uC2B5 \uC911 \uB8E8\uBBF8\uB098 \uD3ED\uC8FC \uC804\uD22C
       / \uC778\uC9C8 \uCCB4\uB825 50%"
   - Branch_ID: 10305
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: IsBattleDefeated = false
+    Trigger_Value:
+    - IsBattleDefeated = false
     Selection_Text: 
     Target_Talk_ID: 1040010
     Trigger_Effect: 
@@ -854,7 +894,8 @@ MonoBehaviour:
   - Branch_ID: 10305
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: IsBattleDefeated = true
+    Trigger_Value:
+    - IsBattleDefeated = true
     Selection_Text: 
     Target_Talk_ID: 1310010
     Trigger_Effect: 
@@ -862,16 +903,17 @@ MonoBehaviour:
   - Branch_ID: 10306
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE002
     "\uBE44\uACE0": "\uC778\uC9C8 \uAD6C\uCD9C \uC911 \uBC1C\uAC01 \uC804\uD22C /
       \uC778\uC9C8 \uCCB4\uB825 100%"
   - Branch_ID: 10401
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: HostageInjuredCount = 3
+    Trigger_Value:
+    - HostageInjuredCount = 3
     Selection_Text: 
     Target_Talk_ID: 1040030
     Trigger_Effect: 
@@ -881,9 +923,9 @@ MonoBehaviour:
     Trigger_Type: 'Flag\
 
       Flag'
-    Trigger_Value: 'HostageInjuredCount >= 1\
-
-      HostageInjuredCount <= 2'
+    Trigger_Value:
+    - HostageInjuredCount >= 1
+    - HostageInjuredCount <= 2
     Selection_Text: 
     Target_Talk_ID: 1040110
     Trigger_Effect: 
@@ -891,7 +933,8 @@ MonoBehaviour:
   - Branch_ID: 10401
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: HostageInjuredCount = 0
+    Trigger_Value:
+    - HostageInjuredCount = 0
     Selection_Text: 
     Target_Talk_ID: 1040170
     Trigger_Effect: 
@@ -899,7 +942,8 @@ MonoBehaviour:
   - Branch_ID: 10410
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorRouteHostageRescue==1
+    Trigger_Value:
+    - Flag_1SectorRouteHostageRescue==1
     Selection_Text: 
     Target_Talk_ID: 1040180
     Trigger_Effect: 
@@ -907,7 +951,7 @@ MonoBehaviour:
   - Branch_ID: 10410
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1040280
     Trigger_Effect: 
@@ -915,9 +959,9 @@ MonoBehaviour:
   - Branch_ID: 10411
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Set_Flag_1SectorMainEventClear\
 
       Reward_000001'
@@ -926,9 +970,9 @@ MonoBehaviour:
   - Branch_ID: 10412
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Set_Flag_1SectorMainEventClear\
 
       Reward_000002'
@@ -937,9 +981,9 @@ MonoBehaviour:
   - Branch_ID: 10413
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Set_Flag_1SectorMainEventClear\
 
       Reward_000003'
@@ -948,7 +992,8 @@ MonoBehaviour:
   - Branch_ID: 13101
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorRouteHostageRescue==1
+    Trigger_Value:
+    - Flag_1SectorRouteHostageRescue==1
     Selection_Text: 
     Target_Talk_ID: 1310100
     Trigger_Effect: 
@@ -956,7 +1001,8 @@ MonoBehaviour:
   - Branch_ID: 13101
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorRouteFrontal==1
+    Trigger_Value:
+    - Flag_1SectorRouteFrontal==1
     Selection_Text: 
     Target_Talk_ID: 1310200
     Trigger_Effect: 
@@ -964,7 +1010,8 @@ MonoBehaviour:
   - Branch_ID: 13101
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorRouteLuminaExplosion==1
+    Trigger_Value:
+    - Flag_1SectorRouteLuminaExplosion==1
     Selection_Text: 
     Target_Talk_ID: 1310300
     Trigger_Effect: 
@@ -972,7 +1019,7 @@ MonoBehaviour:
   - Branch_ID: 13101
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1310400
     Trigger_Effect: 
@@ -980,7 +1027,8 @@ MonoBehaviour:
   - Branch_ID: 13201
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorRouteHostageRescue==1
+    Trigger_Value:
+    - Flag_1SectorRouteHostageRescue==1
     Selection_Text: 
     Target_Talk_ID: 1320100
     Trigger_Effect: 
@@ -988,7 +1036,8 @@ MonoBehaviour:
   - Branch_ID: 13201
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorRouteFrontal==1
+    Trigger_Value:
+    - Flag_1SectorRouteFrontal==1
     Selection_Text: 
     Target_Talk_ID: 1320200
     Trigger_Effect: 
@@ -996,7 +1045,8 @@ MonoBehaviour:
   - Branch_ID: 13201
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorRouteLuminaExplosion==1
+    Trigger_Value:
+    - Flag_1SectorRouteLuminaExplosion==1
     Selection_Text: 
     Target_Talk_ID: 1320300
     Trigger_Effect: 
@@ -1004,7 +1054,7 @@ MonoBehaviour:
   - Branch_ID: 13201
     Selection_Index: 4
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 1320400
     Trigger_Effect: 
@@ -1012,32 +1062,32 @@ MonoBehaviour:
   - Branch_ID: 13202
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE002
     "\uBE44\uACE0": "\uC778\uC9C8 \uAD6C\uCD9C \uC911 \uBC1C\uAC01 \uB8E8\uD2B8 \uC7AC\uC804\uD22C"
   - Branch_ID: 13203
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE003
     "\uBE44\uACE0": "\uC815\uBA74 \uB3CC\uD30C \uC7AC\uC804\uD22C"
   - Branch_ID: 13204
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE004
     "\uBE44\uACE0": "\uB8E8\uBBF8\uB098 \uD3ED\uC8FC \uB8E8\uD2B8 \uC7AC\uC804\uD22C"
   - Branch_ID: 13205
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE003
     "\uBE44\uACE0": "\uC608\uC678 \uACBD\uB85C \uC7AC\uC804\uD22C"

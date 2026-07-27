@@ -9,16 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 871b0d918a0895545819bc647dc3fe4a, type: 3}
+  m_Script: {fileID: 11500000, guid: 43dfc12f652c64d45b326b84321ad2ce, type: 3}
   m_Name: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable"
   m_EditorClassIdentifier: 
   DataList:
   - Branch_ID: 10502
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE006
     "\uBE44\uACE0": "\uC131\uB09C \uBE4C\uB7F0 \uC804\uD22C"
   - Branch_ID: 10503
@@ -26,9 +26,9 @@ MonoBehaviour:
     Trigger_Type: 'Flag\
 
       Flag'
-    Trigger_Value: 'IsBattleDefeated = false\
-
-      Flag_SubEvent1Defeated==1'
+    Trigger_Value:
+    - IsBattleDefeated = false
+    - Flag_SubEvent1Defeated==1
     Selection_Text: 
     Target_Talk_ID: 1060180
     Trigger_Effect: 
@@ -36,7 +36,8 @@ MonoBehaviour:
   - Branch_ID: 10503
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: IsBattleDefeated = false
+    Trigger_Value:
+    - IsBattleDefeated = false
     Selection_Text: 
     Target_Talk_ID: 1060250
     Trigger_Effect: 
@@ -44,7 +45,8 @@ MonoBehaviour:
   - Branch_ID: 10503
     Selection_Index: 3A
     Trigger_Type: Flag
-    Trigger_Value: IsBattleDefeated = true
+    Trigger_Value:
+    - IsBattleDefeated = true
     Selection_Text: 
     Target_Talk_ID: 1071790
     Trigger_Effect: 
@@ -52,7 +54,7 @@ MonoBehaviour:
   - Branch_ID: 10601
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uBE14\uB799\uBD88\uB9BF\uC5D0\uAC8C \uB9E1\uAE34\uB2E4."
     Target_Talk_ID: 1060780
     Trigger_Effect: Set_Flag_SubEvent1BlackBulletRoute
@@ -60,7 +62,7 @@ MonoBehaviour:
   - Branch_ID: 10601
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uBE4C\uB7F0\uC5D0\uAC8C\uC11C \uBB3C\uAC74\uC744 \uC555\uC218\uD55C\uB2E4."
     Target_Talk_ID: 1061270
     Trigger_Effect: Set_Flag_SubEvent1GoodsConfiscated
@@ -68,9 +70,9 @@ MonoBehaviour:
   - Branch_ID: 10602
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Reward_000006\
 
       Set_Flag_SubEvent1VillainReturned\
@@ -85,9 +87,9 @@ MonoBehaviour:
   - Branch_ID: 10603
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Reward_000007\
 
       Set_Flag_SubEvent1GoodsConfiscated\
@@ -99,9 +101,10 @@ MonoBehaviour:
   - Branch_ID: 10702
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_SubEvent1Defeated!=1
+    Trigger_Value:
+    - Flag_SubEvent1Defeated!=1
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Reward_000008\
 
       Set_Flag_SubEvent1Defeated\
@@ -112,16 +115,16 @@ MonoBehaviour:
   - Branch_ID: 10702
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Set_Flag_SubEvent1RetryAvailable
     "\uBE44\uACE0": "\uC7AC\uD328\uBC30 / \uBCF4\uC0C1 \uC911\uBCF5 \uC9C0\uAE09
       \uBC29\uC9C0"
   - Branch_ID: 10801
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uC601\uC218\uC99D\uACFC CCTV \uC2DC\uAC04\uC744 \uB300\uC870\uD55C\uB2E4."
     Target_Talk_ID: 1080200
     Trigger_Effect: 
@@ -129,7 +132,7 @@ MonoBehaviour:
   - Branch_ID: 10801
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uC57C\uAC04 \uC9C1\uC6D0\uB4E4\uC744 \uCC3E\uC544\uAC00 \uD0D0\uBB38\uD55C\uB2E4."
     Target_Talk_ID: 1080300
     Trigger_Effect: 
@@ -137,7 +140,7 @@ MonoBehaviour:
   - Branch_ID: 10801
     Selection_Index: 3
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: "\uC800\uC2A4\uD2F0\uC2A4\uB97C \uC9C4\uC0C1 \uC190\uB2D8\uC73C\uB85C
       \uC704\uC7A5\uC2DC\uD0A8\uB2E4."
     Target_Talk_ID: 1080400
@@ -146,9 +149,9 @@ MonoBehaviour:
   - Branch_ID: 10802
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Set_Flag_SubEvent2Start\
 
       Set_Flag_SubEvent2TraceComplete'
@@ -156,15 +159,16 @@ MonoBehaviour:
   - Branch_ID: 10902
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE1080
     "\uBE44\uACE0": "\uD3B8\uC758\uC810 \uBE4C\uB7F0 \uC804\uD22C"
   - Branch_ID: 10903
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: IsBattleDefeated = false
+    Trigger_Value:
+    - IsBattleDefeated = false
     Selection_Text: 
     Target_Talk_ID: 1100010
     Trigger_Effect: 
@@ -172,7 +176,8 @@ MonoBehaviour:
   - Branch_ID: 10903
     Selection_Index: 2A
     Trigger_Type: Flag
-    Trigger_Value: IsBattleDefeated = true
+    Trigger_Value:
+    - IsBattleDefeated = true
     Selection_Text: 
     Target_Talk_ID: 1350010
     Trigger_Effect: 
@@ -180,9 +185,10 @@ MonoBehaviour:
   - Branch_ID: 11001
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_1SectorMainEventClear==1
+    Trigger_Value:
+    - Flag_1SectorMainEventClear==1
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Set_Flag_SubEvent2Complete\
 
       Disable_Flag_SubEvent2RetryAvailable\
@@ -193,9 +199,9 @@ MonoBehaviour:
   - Branch_ID: 11001
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Set_Flag_SubEvent2Complete\
 
       Disable_Flag_SubEvent2RetryAvailable\
@@ -207,9 +213,10 @@ MonoBehaviour:
   - Branch_ID: 13501
     Selection_Index: 1A
     Trigger_Type: Flag
-    Trigger_Value: Flag_SubEvent2Defeated!=1
+    Trigger_Value:
+    - Flag_SubEvent2Defeated!=1
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: 'Set_Flag_SubEvent2Defeated\
 
       Set_Flag_SubEvent2RetryAvailable'
@@ -217,16 +224,16 @@ MonoBehaviour:
   - Branch_ID: 13501
     Selection_Index: 2
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Set_Flag_SubEvent2RetryAvailable
     "\uBE44\uACE0": "\uC7AC\uD328\uBC30"
   - Branch_ID: 13601
     Selection_Index: 1
     Trigger_Type: 
-    Trigger_Value: 
+    Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 
+    Target_Talk_ID: 0
     Trigger_Effect: Start_BE1080
     "\uBE44\uACE0": "\uD3B8\uC758\uC810 \uBE4C\uB7F0 \uC7AC\uC804\uD22C"
