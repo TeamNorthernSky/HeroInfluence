@@ -73,7 +73,8 @@ public class HQStateManager : MonoBehaviour
         levels.Clear();
         foreach (HQDepartment d in Enum.GetValues(typeof(HQDepartment)))
         {
-            levels[d] = (d == HQDepartment.Headquarters) ? hqInitialLevel : 0;
+            levels[d] = (d == HQDepartment.Headquarters || d == HQDepartment.Infirmary) ? hqInitialLevel : 0;
+            //Debug.Log($"{d}는 {levels[d]}");
         }
         upgradedThisTurn = false;
     }
@@ -191,7 +192,7 @@ public class HQStateManager : MonoBehaviour
             case HQDepartment.Workshop:     return "공방";
             case HQDepartment.Research:     return "연구소";
             case HQDepartment.Training:     return "훈련실";
-            case HQDepartment.Recruit:      return "의무실";
+            case HQDepartment.Infirmary:    return "의무실";
             case HQDepartment.Exchange:     return "교환소";
             default: return d.ToString();
         }

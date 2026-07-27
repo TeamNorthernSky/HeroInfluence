@@ -144,10 +144,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c94d4741c466984c97c095dcd79e13e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healPercent: 1e0000002800000032000000
-  healCost: 2c010000fa000000c8000000
+  healPercent: 100
+  healCost: e803000020030000f4010000
   reviveHpPercent: 1e0000002800000032000000
-  reviveCost: e803000052030000bc020000
+  reviveCost: 0
 --- !u!114 &3549887790545994653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -166,7 +166,9 @@ MonoBehaviour:
   rowTemplate: {fileID: 0}
   btnHealAll: {fileID: 0}
   healAllDisabledOverlay: {fileID: 0}
+  totalCostText: {fileID: 0}
   stateInfoText: {fileID: 0}
+  stateInfoBox: {fileID: 0}
 --- !u!1 &3304956294269195362
 GameObject:
   m_ObjectHideFlags: 0
