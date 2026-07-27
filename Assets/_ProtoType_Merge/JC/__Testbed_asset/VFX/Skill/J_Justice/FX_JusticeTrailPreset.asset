@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 395aac311786f3442a3938a5dfd27e15, type: 3}
+  m_Name: FX_JusticeTrailPreset
+  m_EditorClassIdentifier: 
+  strokeHeadColor: {r: 1, g: 0.4, b: 0.36, a: 1}
+  strokeMidColor: {r: 1, g: 0.1, b: 0.11, a: 1}
+  strokeTailColor: {r: 0.5, g: 0.02, b: 0.04, a: 1}
+  trail:
+    enabled: 1
+    emission: 3.78
+    chromaHold: 1
+    rateOverTime: 12
+    rateOverDistance: 6
+    maxParticles: 10
+    lifeMin: 0.92
+    lifeMax: 1.21
+    speedMin: 0
+    speedMax: 0.35
+    gravity: 0
+    sizeMin: 0.123
+    sizeMax: 0.154
+    alphaHold: 0.5
+    shapeRadius: 0.25
+    highlightColor: {r: 1, g: 1, b: 1, a: 1}
+    highlightRatio: 0
+    highlightEmission: 0
+    trailLifetime: 0.48
+    trailMinVertexDistance: 0.0139
+  spark:
+    enabled: 1
+    emission: 4.39
+    chromaHold: 1
+    rateOverTime: 7
+    rateOverDistance: 10
+    maxParticles: 111
+    lifeMin: 0.23
+    lifeMax: 0.4
+    speedMin: 2.13
+    speedMax: 4.91
+    gravity: -0.08
+    sizeMin: 0.262
+    sizeMax: 0.338
+    alphaHold: 0.09
+    bodyColor: {r: 1, g: 0.1, b: 0.11, a: 1}
+    coreColor: {r: 1, g: 1, b: 1, a: 1}
+    coreEmission: 2
+    coreRatioStart: 0.276
+    coreRatioEnd: 0.822
+    coreSharpness: 0.622
+    bodySoftness: 0.699
+    sizeEndScale: 0.15
+    spreadAngle: 24.1
+    nozzleRadius: 0.166
+    backwardEject: 3
+    drag: 0.65
+    alignMaxAngle: 105.1
+    scaleEmissionBySpeed: 1
+    speedForFullEmission: 6
+    emissionAtRest: 0.077
+  fadeOutExtraSeconds: 0.15
+  socketOffset: {x: 0, y: 0, z: 0}
+  impact:
+    enabled: 1
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    emission: 5.4
+    burstCount: 70
+    sizeMin: 0.22
+    sizeMax: 0.6
+    speedMin: 6
+    speedMax: 16
+    lifeMin: 0.25
+    lifeMax: 0.55
+    gravity: 0.5
+    lengthScale: 2.35
+    highlightColor: {r: 1, g: 1, b: 1, a: 1}
+    highlightRatio: 0.5
+    highlightEmission: 4.15
+    flashEnabled: 1
+    flashColor: {r: 0.82641506, g: 0, b: 0, a: 1}
+    flashCoreColor: {r: 1, g: 1, b: 1, a: 1}
+    flashCoreEmission: 2
+    flashLength: 4.18
+    flashWidth: 2.81
+    flashStartWidth: 1
+    flashEndWidth: 0.668
+    flashWidthCurve: 0.4
+    flashCoreWidth: 0.137
+    flashSoftness: 0.89
+    flashCoreSharpness: 3.8
+    flashHeadFade: 0.208
+    flashTailFade: 0.662
+    flashEdgeFade: 1
+    flashFadeIn: 0.756
+    flashLifetime: 0.571
+    flashAlpha: 0.316
+    flashOffset: {x: 0, y: 0, z: 0}
+    flashFlipRotation: 0
+    flashSortingFudge: -50
