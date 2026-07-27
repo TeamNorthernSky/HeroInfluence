@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: f3613edb1e81eb446927ec7b2d85719d, type: 3}
   m_Name: "ChatDB\uBA54\uC778\uD018\uC2A4\uD2B8DataTable"
-  m_EditorClassIdentifier: Assembly-CSharp::ChatDBEventDataTable
+  m_EditorClassIdentifier: 
   DataList:
   - Chat_ID: 1020010
     Chat_Type: 1

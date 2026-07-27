@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
   m_Name: "ChatDB\uBA54\uC778\uD018\uC2A4\uD2B8_ChatDBEvent_Schema"
   m_EditorClassIdentifier: 
-  schemaGuid: e302994c8b5148579b3bd08fc77159ec
+  schemaGuid: c11872ea0ec24848b099b46e8d2e28e3
   sourceWorkbookGuid: 5571aa80d442f86459ada9899f9be953
   sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/\uC774\uBCA4\uD2B8
     \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7.xlsx"
