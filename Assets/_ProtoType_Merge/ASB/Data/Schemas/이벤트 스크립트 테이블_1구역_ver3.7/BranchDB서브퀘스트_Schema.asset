@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
-  m_Name: "BranchDB\uC11C\uBE0C\uC774\uBCA4\uD2B8_BranchDBEvent_Schema"
+  m_Name: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8_Schema"
   m_EditorClassIdentifier: 
-  schemaGuid: 56b9754a398946f8b4fce0397f5b6a43
-  sourceWorkbookGuid: 92208689c18f9344da9174a7516a7101
+  schemaGuid: 698d5c706922427583e296a8218fc468
+  sourceWorkbookGuid: 5571aa80d442f86459ada9899f9be953
   sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/\uC774\uBCA4\uD2B8
-    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver1.3.xlsx"
-  workbookFileName: "\uC774\uBCA4\uD2B8 \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver1.3"
-  sourceSheetName: "Branch DB_\uC11C\uBE0C\uC774\uBCA4\uD2B8"
-  physicalSheetId: bdab34b57fe9c0c9700113ce52a5497a86a2b912
-  logicalSheetKey: "branchdb\uC11C\uBE0C\uC774\uBCA4\uD2B8"
-  templateClassName: BranchDBEvent
-  templateSignature: "dict=0|Branch_ID:Int:Comma|Selection_Index:String:Comma|Trigger_Type:String:Comma|Trigger_Value:ListString:Backslash|Selection_Text:String:Comma|Target_Talk_ID:Int:Comma|Trigger_Effect:String:Comma|\uBE44\uACE0:String:Comma"
-  className: BranchDBEvent
-  outputAssetName: "BranchDB\uC11C\uBE0C\uC774\uBCA4\uD2B8DataTable"
-  targetTableAssetGuid: baaf27ef1b7b72a46b41c528dc241984
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7.xlsx"
+  workbookFileName: "\uC774\uBCA4\uD2B8 \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7"
+  sourceSheetName: "Branch DB_\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  physicalSheetId: 59236b14576e654e104b34747d62c09d0a591b1b
+  logicalSheetKey: "branchdb\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  templateClassName: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  templateSignature: "dict=0|Branch_ID:String:Comma|Selection_Index:String:Comma|Trigger_Type:String:Comma|Trigger_Value:String:Comma|Selection_Text:String:Comma|Target_Talk_ID:String:Comma|Trigger_Effect:String:Comma|\uBE44\uACE0:String:Comma"
+  className: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  outputAssetName: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable"
+  targetTableAssetGuid: 58453683287e88b47b7f24953d61c04a
   targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/\uC774\uBCA4\uD2B8
-    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver1.3/BranchDB\uC11C\uBE0C\uC774\uBCA4\uD2B8DataTable.asset"
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7/BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable.asset"
   headerRowIndex: 0
   dataStartRowIndex: 1
   useDictionary: 0
@@ -37,7 +37,7 @@ MonoBehaviour:
     sourceHeaderName: Branch_ID
     fieldName: Branch_ID
     displayName: Branch_ID
-    fieldType: 1
+    fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 
@@ -64,8 +64,8 @@ MonoBehaviour:
     sourceHeaderName: Trigger_Value
     fieldName: Trigger_Value
     displayName: Trigger_Value
-    fieldType: 5
-    listDelimiter: 1
+    fieldType: 0
+    listDelimiter: 0
     include: 1
     defaultValue: 
     isKey: 0
@@ -82,7 +82,7 @@ MonoBehaviour:
     sourceHeaderName: Target_Talk_ID
     fieldName: Target_Talk_ID
     displayName: Target_Talk_ID
-    fieldType: 1
+    fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 

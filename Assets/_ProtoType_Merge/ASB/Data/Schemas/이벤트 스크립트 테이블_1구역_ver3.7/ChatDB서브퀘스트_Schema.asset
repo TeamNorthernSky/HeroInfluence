@@ -10,26 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
-  m_Name: "ChatDB\uC11C\uBE0C\uC774\uBCA4\uD2B8_ChatDBEvent_Schema"
+  m_Name: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8_Schema"
   m_EditorClassIdentifier: 
-  schemaGuid: b0a34d92148c4839a8e6654494c02bec
-  sourceWorkbookGuid: 92208689c18f9344da9174a7516a7101
+  schemaGuid: b4a5414a95a34843bc5bda504a564908
+  sourceWorkbookGuid: 5571aa80d442f86459ada9899f9be953
   sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/\uC774\uBCA4\uD2B8
-    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver1.3.xlsx"
-  workbookFileName: "\uC774\uBCA4\uD2B8 \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver1.3"
-  sourceSheetName: "Chat DB_\uC11C\uBE0C\uC774\uBCA4\uD2B8"
-  physicalSheetId: 09ba39ee94f7707d0f8af093442c74454f9e2d43
-  logicalSheetKey: "chatdb\uC11C\uBE0C\uC774\uBCA4\uD2B8"
-  templateClassName: ChatDBEvent
-  templateSignature: dict=1|Chat_ID:Int:Comma|Chat_Type:Int:Comma|Char_Name:String:Comma|Char_Profile:String:Comma|Message_Text:String:Comma|IMG_Res:String:Comma|Next_Chat_ID:Int:Comma|Branch_Group_ID:Int:Comma
-  className: ChatDBEvent
-  outputAssetName: "ChatDB\uC11C\uBE0C\uC774\uBCA4\uD2B8DataTable"
-  targetTableAssetGuid: 1152488e2af5f6a4b81696e8f361cf3b
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7.xlsx"
+  workbookFileName: "\uC774\uBCA4\uD2B8 \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7"
+  sourceSheetName: "Chat DB_\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  physicalSheetId: 24c854d306f97ef659a1de58fd291130053fa74a
+  logicalSheetKey: "chatdb\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  templateClassName: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  templateSignature: dict=0|Chat_ID:String:Comma|Chat_Type:String:Comma|Char_Name:String:Comma|Char_Profile:String:Comma|Message_Text:String:Comma|IMG_Res:String:Comma|Next_Chat_ID:String:Comma|Branch_Group_ID:String:Comma
+  className: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  outputAssetName: "ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable"
+  targetTableAssetGuid: d2faef44e8ce77540bfc89702a17b05e
   targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/\uC774\uBCA4\uD2B8
-    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver1.3/ChatDB\uC11C\uBE0C\uC774\uBCA4\uD2B8DataTable.asset"
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7/ChatDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable.asset"
   headerRowIndex: 0
   dataStartRowIndex: 1
-  useDictionary: 1
+  useDictionary: 0
   requireUniqueKey: 0
   duplicateKeyPolicy: 0
   Columns:
@@ -37,7 +37,7 @@ MonoBehaviour:
     sourceHeaderName: Chat_ID
     fieldName: Chat_ID
     displayName: Chat_ID
-    fieldType: 1
+    fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 
@@ -46,7 +46,7 @@ MonoBehaviour:
     sourceHeaderName: Chat_Type
     fieldName: Chat_Type
     displayName: Chat_Type
-    fieldType: 1
+    fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 
@@ -91,7 +91,7 @@ MonoBehaviour:
     sourceHeaderName: Next_Chat_ID
     fieldName: Next_Chat_ID
     displayName: Next_Chat_ID
-    fieldType: 1
+    fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 
@@ -100,7 +100,7 @@ MonoBehaviour:
     sourceHeaderName: Branch_Group_ID
     fieldName: Branch_Group_ID
     displayName: Branch_Group_ID
-    fieldType: 1
+    fieldType: 0
     listDelimiter: 0
     include: 1
     defaultValue: 

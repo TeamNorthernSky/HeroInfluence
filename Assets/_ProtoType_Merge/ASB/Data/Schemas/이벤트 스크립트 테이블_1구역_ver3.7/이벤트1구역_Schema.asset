@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
+  m_Name: "\uC774\uBCA4\uD2B81\uAD6C\uC5ED_Schema"
+  m_EditorClassIdentifier: 
+  schemaGuid: 125c9fcda06e40f59502f2b239f9033c
+  sourceWorkbookGuid: 5571aa80d442f86459ada9899f9be953
+  sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/\uC774\uBCA4\uD2B8
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7.xlsx"
+  workbookFileName: "\uC774\uBCA4\uD2B8 \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7"
+  sourceSheetName: "\uC774\uBCA4\uD2B8_1\uAD6C\uC5ED"
+  physicalSheetId: 1fa8ee54b4360874ac04f4cbfeb2e7ab4f625143
+  logicalSheetKey: "\uC774\uBCA4\uD2B81\uAD6C\uC5ED"
+  templateClassName: "\uC774\uBCA4\uD2B81\uAD6C\uC5ED"
+  templateSignature: "dict=0|Field_02:String:Comma|Field_03:String:Comma|\uC81C\uBAA9:String:Comma|\uC18C\uAC1C:String:Comma|\uBE44\uACE0:String:Comma"
+  className: "\uC774\uBCA4\uD2B81\uAD6C\uC5ED"
+  outputAssetName: "\uC774\uBCA4\uD2B81\uAD6C\uC5EDDataTable"
+  targetTableAssetGuid: 346d8c93cb82b44498f991a535454941
+  targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/\uC774\uBCA4\uD2B8
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver3.7/\uC774\uBCA4\uD2B81\uAD6C\uC5EDDataTable.asset"
+  headerRowIndex: 0
+  dataStartRowIndex: 1
+  useDictionary: 0
+  requireUniqueKey: 0
+  duplicateKeyPolicy: 0
+  Columns:
+  - sourceColumnIndex: 0
+    sourceHeaderName: 
+    fieldName: Field_01
+    displayName: 
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: "\uC774\uBCA4\uD2B8 \uADF8\uB8F9"
+    fieldName: Field_02
+    displayName: "\uC774\uBCA4\uD2B8 \uADF8\uB8F9"
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: "\uC774\uBCA4\uD2B8 \uBC88\uD638"
+    fieldName: Field_03
+    displayName: "\uC774\uBCA4\uD2B8 \uBC88\uD638"
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: "\uC81C\uBAA9"
+    fieldName: "\uC81C\uBAA9"
+    displayName: "\uC81C\uBAA9"
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: "\uC18C\uAC1C"
+    fieldName: "\uC18C\uAC1C"
+    displayName: "\uC18C\uAC1C"
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
