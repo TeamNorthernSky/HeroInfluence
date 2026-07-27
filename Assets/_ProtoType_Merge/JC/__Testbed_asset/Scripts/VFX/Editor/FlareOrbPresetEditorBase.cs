@@ -11,7 +11,7 @@ namespace JC.VFX
     /// </summary>
     public abstract class FlareOrbPresetEditorBase : Editor
     {
-        protected const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/FlareBomb";
+        protected const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/L_FlareBomb";
 
         protected abstract string LiveKey { get; }
         protected abstract string HelpText { get; }
@@ -44,6 +44,10 @@ namespace JC.VFX
 
         protected static bool IsAltShell(FlareOrbShell shell) =>
             shell.transform.parent != null && shell.transform.parent.name.Contains("Alt");
+
+        /// <summary>흑염(Dark) 변형 소속 여부. 크림판 프리셋의 라이브 푸시가 다크 변형을 덮지 않도록 스코프에서 제외.</summary>
+        protected static bool InDarkVariant(Component c) =>
+            c != null && c.transform.root.name.Contains("Dark");
 
         // ---------- 셸 형태 공통 처리 ----------
 

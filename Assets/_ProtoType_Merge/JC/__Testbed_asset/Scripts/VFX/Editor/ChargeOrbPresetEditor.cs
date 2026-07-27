@@ -6,7 +6,7 @@ namespace JC.VFX
     [CustomEditor(typeof(ChargeOrbPreset))]
     public class ChargeOrbPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/HealSkill";
+        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_HealSkill";
         static string MatCore    => DIR + "/ChargeOrbCore.mat";
         static string MatSpark   => DIR + "/SparkAdditive.mat";
         static string MatStreak  => DIR + "/StreakAdditive.mat";

@@ -103,6 +103,7 @@ namespace JC.VFX
             foreach (var shell in Object.FindObjectsByType<FlareOrbShell>(FindObjectsSortMode.None))
             {
                 if (IsAltShell(shell)) continue;   // Alt 계열은 F1 프리셋 관할
+                if (InDarkVariant(shell)) continue;   // 흑염 변형은 크림판 프리셋 스코프 밖
                 bool isBack = shell.gameObject.name.Contains("Back");
                 ApplyShellToInstance(shell, p, isBack);
 
