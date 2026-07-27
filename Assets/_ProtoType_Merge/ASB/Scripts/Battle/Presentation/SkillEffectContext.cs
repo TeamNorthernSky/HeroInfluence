@@ -13,9 +13,28 @@ public class SkillEffectContext
     public BattleCharactor PrimaryTarget;
     public IReadOnlyList<BattleCharactor> Targets;
     public Vector3 TargetPosition;
+    /// <summary>현재 Cue가 생성된 월드 위치. TargetPosition과 별개로 보존한다.</summary>
+    public Vector3 SpawnPosition;
     /// <summary>이펙트 생성 기준 소켓(시전자). null이면 재료가 자체 판단.</summary>
     public Transform SocketTransform;
     public float PlaybackSpeed = 1f;
     /// <summary>다단히트에서 몇 번째 타격인지(0-base). 단일 타격은 0.</summary>
     public int HitIndex;
+
+    /// <summary>프리팹별 Anchor 값을 안전하게 전달하기 위한 스냅샷.</summary>
+    public SkillEffectContext CreateSnapshot(Transform socketTransform, Vector3 spawnPosition)
+    {
+        return new SkillEffectContext
+        {
+            ActionInstanceId = ActionInstanceId,
+            Caster = Caster,
+            PrimaryTarget = PrimaryTarget,
+            Targets = Targets,
+            TargetPosition = TargetPosition,
+            SpawnPosition = spawnPosition,
+            SocketTransform = socketTransform,
+            PlaybackSpeed = PlaybackSpeed,
+            HitIndex = HitIndex,
+        };
+    }
 }

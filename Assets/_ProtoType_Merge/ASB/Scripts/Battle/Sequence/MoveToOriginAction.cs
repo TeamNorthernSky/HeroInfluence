@@ -12,17 +12,23 @@ namespace ASB.Work.Battle.Sequence
         private readonly Vector3 _origin;
         private readonly Quaternion _originalRotation;
         private readonly float _duration;
+        private readonly string _animationStateName;
+        private readonly float _blendInSeconds;
 
         public MoveToOriginAction(
             CharactorAnimationController anim,
             Vector3 origin,
             Quaternion originalRotation,
-            float duration)
+            float duration,
+            string animationStateName,
+            float blendInSeconds)
         {
             _anim = anim;
             _origin = origin;
             _originalRotation = originalRotation;
             _duration = duration;
+            _animationStateName = animationStateName;
+            _blendInSeconds = blendInSeconds;
         }
 
         public override IEnumerator ExecuteRoutine(MonoBehaviour host)
@@ -32,7 +38,8 @@ namespace ASB.Work.Battle.Sequence
                 yield break;
             }
 
-            yield return _anim.StartCoroutine(_anim.MoveToOrigin(_origin, _originalRotation, _duration));
+            yield return _anim.StartCoroutine(_anim.MoveToOrigin(
+                _origin, _originalRotation, _duration, _animationStateName, _blendInSeconds));
         }
     }
 }

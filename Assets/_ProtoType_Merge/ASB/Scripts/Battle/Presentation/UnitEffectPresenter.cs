@@ -1,40 +1,48 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-/// <summary>Cue의 Anchor/SocketName으로 이펙트 생성 위치를 해석한다(배치는 레시피가 결정).</summary>
+/// <summary>Cue의 Anchor/Socket으로 이펙트 생성 위치를 해석한다.</summary>
 public static class PresentationAnchorUtil
 {
-    public static Transform Resolve(SkillEffectContext ctx, SpawnAnchor anchor, string socketName,
+    public static Transform Resolve(SkillEffectContext ctx, SpawnAnchor anchor, UnitSocket socket,
         out Vector3 pos, out Quaternion rot)
     {
-        Transform t = null;
+        Transform transform = null;
         if (ctx != null)
         {
             switch (anchor)
             {
                 case SpawnAnchor.Caster:
-                    t = ctx.Caster != null ? ctx.Caster.transform : null;
+                    transform = ctx.Caster != null ? ctx.Caster.transform : null;
                     break;
                 case SpawnAnchor.CasterSocket:
-                    UnitVisualProfile prof = ctx.Caster != null ? ctx.Caster.GetComponent<UnitVisualProfile>() : null;
-                    t = prof != null ? prof.GetSocket(socketName)
-                                     : (ctx.Caster != null ? ctx.Caster.transform : null);
-                    break;
-                case SpawnAnchor.Target:
-                    if (ctx.PrimaryTarget != null && !ctx.PrimaryTarget.IsDead)
+                    UnitVisualProfile profile = ctx.Caster != null ? ctx.Caster.GetComponent<UnitVisualProfile>() : null;
+                    if (profile != null)
                     {
-                        t = ctx.PrimaryTarget.transform;
+                        transform = profile.GetSocket(socket);
+                    }
+                    else if (ctx.Caster != null)
+                    {
+                        // 전투 프리팹은 공통 모델의 UnitSocketHolder만 중첩할 수 있다.
+                        UnitSocketHolder socketHolder = ctx.Caster.GetComponentInChildren<UnitSocketHolder>();
+                        transform = socketHolder != null ? socketHolder.GetNamedSocket(socket) : null;
+                        if (transform == null)
+                        {
+                            Debug.LogWarning($"[PresentationAnchorUtil] Caster '{ctx.Caster.name}'에서 Socket '{socket}'을 찾지 못해 루트로 폴백합니다.", ctx.Caster);
+                            transform = ctx.Caster.transform;
+                        }
                     }
                     break;
-                case SpawnAnchor.TargetCell:
-                    break; // 위치 스냅샷만 사용
+                case SpawnAnchor.Target:
+                    transform = ctx.PrimaryTarget != null && !ctx.PrimaryTarget.IsDead ? ctx.PrimaryTarget.transform : null;
+                    break;
             }
         }
 
-        if (t != null)
+        if (transform != null)
         {
-            pos = t.position;
-            rot = t.rotation;
-            return t;
+            pos = transform.position;
+            rot = transform.rotation;
+            return transform;
         }
 
         pos = ctx != null ? ctx.TargetPosition : Vector3.zero;
@@ -43,10 +51,7 @@ public static class PresentationAnchorUtil
     }
 }
 
-/// <summary>
-/// 유닛 로컬 이펙트 프리젠터. AniEvent_PresentationCue(cue) 수신 시 그 cue의 EffectPrefabs를
-/// Anchor 위치에 생성하고 Play(ctx). cue/컨텍스트 없으면 no-op. 사운드는 UnitSoundPresenter가 담당.
-/// </summary>
+/// <summary>유닛 로컬 Cue 이펙트 라우터. 재료의 구체 종류는 알지 않고 계약만 호출한다.</summary>
 [DisallowMultipleComponent]
 public class UnitEffectPresenter : MonoBehaviour
 {
@@ -55,35 +60,50 @@ public class UnitEffectPresenter : MonoBehaviour
 
     public void PresentationCue(string cueName)
     {
-        PresentationRuntimeContext ctx = Ctx;
-        if (ctx == null)
+        PresentationRuntimeContext runtime = Ctx;
+        if (runtime == null) return;
+
+        string normalizedCue = string.IsNullOrWhiteSpace(cueName) ? string.Empty : cueName.Trim().ToLowerInvariant();
+        if (!runtime.TryGetCue(normalizedCue, out RuntimeCue cue)) return;
+
+        SkillEffectContext baseContext = runtime.Current;
+        Transform anchor = PresentationAnchorUtil.Resolve(baseContext, cue.Anchor, cue.Socket, out Vector3 position, out Quaternion rotation);
+        SkillEffectContext effectContext = baseContext != null ? baseContext.CreateSnapshot(anchor, position) : null;
+
+        switch (cue.Operation)
         {
-            return;
+            case CueOperation.Signal:
+                if (runtime.TryGetHandle(cue.InstanceKey, out ISkillEffectHandle signalHandle)
+                    && signalHandle.Signal(effectContext))
+                {
+                    runtime.RemoveHandle(cue.InstanceKey);
+                }
+                return;
+            case CueOperation.Stop:
+                runtime.StopAndRemoveHandle(cue.InstanceKey);
+                return;
         }
 
-        string norm = string.IsNullOrWhiteSpace(cueName) ? string.Empty : cueName.Trim().ToLowerInvariant();
-        if (!ctx.TryGetCue(norm, out RuntimeCue cue) || cue.EffectPrefabs == null)
-        {
-            return;
-        }
-
-        SkillEffectContext baseCtx = ctx.Current;
+        if (cue.EffectPrefabs == null) return;
         for (int i = 0; i < cue.EffectPrefabs.Count; i++)
         {
             GameObject prefab = cue.EffectPrefabs[i];
-            if (prefab == null)
-            {
-                continue;
-            }
+            if (prefab == null) continue;
 
-            Transform at = PresentationAnchorUtil.Resolve(baseCtx, cue.Anchor, cue.SocketName, out Vector3 pos, out Quaternion rot);
-            GameObject inst = Instantiate(prefab, pos, rot);
+            GameObject instance = Instantiate(prefab, position, rotation);
+            instance.GetComponent<ISkillEffectBehaviour>()?.Play(effectContext);
 
-            if (baseCtx != null)
+            if (!string.IsNullOrEmpty(cue.InstanceKey))
             {
-                baseCtx.SocketTransform = at; // 재료가 소켓을 참조할 경우 대비
+                if (instance.TryGetComponent(out ISkillEffectHandle handle))
+                {
+                    runtime.RegisterHandle(cue.InstanceKey, handle);
+                }
+                else
+                {
+                    Debug.LogWarning($"[UnitEffectPresenter] Held InstanceKey '{cue.InstanceKey}' prefab '{prefab.name}' does not implement ISkillEffectHandle.", instance);
+                }
             }
-            inst.GetComponent<ISkillEffectBehaviour>()?.Play(baseCtx);
         }
     }
 }

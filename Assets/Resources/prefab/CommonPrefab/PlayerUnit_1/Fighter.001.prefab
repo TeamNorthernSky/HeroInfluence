@@ -1,5 +1,130 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &16420955473394491
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2398147435031017296}
+  m_Layer: 0
+  m_Name: FloorSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2398147435031017296
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 16420955473394491}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 2, y: 2.2, z: 2}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6513351636802597539}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &420868516547296338
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5710462914602349465}
+  m_Layer: 0
+  m_Name: L_FootSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5710462914602349465
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 420868516547296338}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.00003, y: 0.00007, z: -0.00049}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2575471082428063812}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &860106170376967474
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4776020745528709817}
+  m_Layer: 0
+  m_Name: R_FootSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4776020745528709817
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 860106170376967474}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.00001, y: 0.000077, z: -0.000556}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2481435440178824639}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2491022162251004882
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2018618933918925400}
+  m_Layer: 0
+  m_Name: ChestSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2018618933918925400
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2491022162251004882}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.000000028259088, y: -0.0000000018626451, z: 6.459384e-10,
+    w: 1}
+  m_LocalPosition: {x: 0.00007, y: -0, z: -0.0007}
+  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 932434922014488017}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3294133025189730611
 GameObject:
   m_ObjectHideFlags: 0
@@ -10,7 +135,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7739868744417647111}
   m_Layer: 0
-  m_Name: L_Weapon
+  m_Name: L_HandSocket
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41,7 +166,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1160585607421026298}
   m_Layer: 0
-  m_Name: R_Weapon
+  m_Name: R_HandSocket
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -149,6 +274,22 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: ce021b58f955e434096b89340035c70a,
+        type: 3}
+      insertIndex: 0
+      addedObject: {fileID: 2398147435031017296}
+    - targetCorrespondingSourceObject: {fileID: -120679109087660788, guid: ce021b58f955e434096b89340035c70a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5710462914602349465}
+    - targetCorrespondingSourceObject: {fileID: -35606781207899913, guid: ce021b58f955e434096b89340035c70a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4776020745528709817}
+    - targetCorrespondingSourceObject: {fileID: -3378254769876819815, guid: ce021b58f955e434096b89340035c70a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2018618933918925400}
     - targetCorrespondingSourceObject: {fileID: 8205817706839162134, guid: ce021b58f955e434096b89340035c70a,
         type: 3}
       insertIndex: -1
@@ -163,6 +304,24 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 7930566844491449484}
   m_SourcePrefab: {fileID: 100100000, guid: ce021b58f955e434096b89340035c70a, type: 3}
+--- !u!4 &932434922014488017 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -3378254769876819815, guid: ce021b58f955e434096b89340035c70a,
+    type: 3}
+  m_PrefabInstance: {fileID: 6768536064776639816}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2481435440178824639 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -35606781207899913, guid: ce021b58f955e434096b89340035c70a,
+    type: 3}
+  m_PrefabInstance: {fileID: 6768536064776639816}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2575471082428063812 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -120679109087660788, guid: ce021b58f955e434096b89340035c70a,
+    type: 3}
+  m_PrefabInstance: {fileID: 6768536064776639816}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &3174545203024144478 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8205817706839162134, guid: ce021b58f955e434096b89340035c70a,
@@ -195,4 +354,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rightWeaponSocketObject: {fileID: 5118108452359518206}
   leftWeaponSocketObject: {fileID: 3294133025189730611}
+  rightFootSocketObject: {fileID: 860106170376967474}
+  leftFootSocketObject: {fileID: 420868516547296338}
   hitSocketObject: {fileID: 0}
+  chestSocketObject: {fileID: 2491022162251004882}
+  floorSocketObject: {fileID: 16420955473394491}
+  visualRoot: {fileID: 0}
+--- !u!4 &6513351636802597539 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ce021b58f955e434096b89340035c70a,
+    type: 3}
+  m_PrefabInstance: {fileID: 6768536064776639816}
+  m_PrefabAsset: {fileID: 0}

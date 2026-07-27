@@ -9,6 +9,8 @@ public static class PresentationCues
         "fire",     // 발사(투사체/손발사)
         "impact",   // 착탄/명중
         "cast",     // 시전/차징
-        "hit_fx"    // 타격 연출(데미지 타이밍 OnHit과는 별개)
+        "hit_fx",   //
+        "attack1",  // 공격 1
+        "attack2"   // 공격 2    // 타격 연출(데미지 타이밍 OnHit과는 별개)
     };
 }

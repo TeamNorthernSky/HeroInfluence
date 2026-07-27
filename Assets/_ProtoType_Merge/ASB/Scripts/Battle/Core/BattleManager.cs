@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -781,23 +781,29 @@ public class BattleManager : MonoBehaviour
     private static int _actionInstanceCounter;
     private static int NextActionInstanceId() => ++_actionInstanceCounter;
 
-    // Schema=1(PhaseCue)일 때만 유닛 로컬 Cue 컨텍스트를 등록한다. Schema=0은 기존 director 경로(무등록).
+    // Schema=1(PhaseCue)일 때만 유닛 로컬 Cue 컨텍스트를 등록한다. 같은 actionId의 Beat 갱신은 Held Handle을 보존한다.
     private void SetupPresentationContext(BattleCharactor actor, BattleCharactor target, SkillData skill,
-        SkillPresentationData presentation, AttackBeat activeBeat = null, string activeStateName = null)
+        SkillPresentationData presentation, int actionInstanceId, List<CueBinding> activeCues = null, string activeStateName = null)
     {
-        if (actor == null || presentation == null || _visualDirector == null || !presentation.IsPhaseCue) return;
+        if (actor == null || presentation == null || _visualDirector == null || !presentation.IsPhaseCue || actionInstanceId == 0) return;
 
-        AttackBeat beat = activeBeat ?? GetPrimaryAttackBeat(presentation);
         var cueMap = new Dictionary<string, RuntimeCue>();
-        if (beat?.Cues != null)
+        List<CueBinding> cues = activeCues ?? GetPrimaryAttackBeat(presentation)?.Cues;
+        if (cues != null)
         {
-            foreach (CueBinding binding in beat.Cues)
+            foreach (CueBinding binding in cues)
             {
                 if (binding == null) continue;
                 string key = binding.NormalizedCueName;
                 if (string.IsNullOrEmpty(key) || cueMap.ContainsKey(key)) continue;
 
-                var cue = new RuntimeCue { Anchor = binding.Anchor, SocketName = binding.SocketName };
+                var cue = new RuntimeCue
+                {
+                    Operation = binding.Operation,
+                    InstanceKey = binding.NormalizedInstanceKey,
+                    Anchor = binding.Anchor,
+                    Socket = binding.Socket,
+                };
                 if (binding.EffectIds != null)
                 {
                     foreach (int id in binding.EffectIds)
@@ -816,7 +822,7 @@ public class BattleManager : MonoBehaviour
 
         var effectContext = new SkillEffectContext
         {
-            ActionInstanceId = NextActionInstanceId(),
+            ActionInstanceId = actionInstanceId,
             Caster = actor,
             PrimaryTarget = target,
             Targets = target != null ? new List<BattleCharactor> { target } : null,
@@ -831,7 +837,7 @@ public class BattleManager : MonoBehaviour
         int expectedHash = !string.IsNullOrWhiteSpace(expectedStateName)
             ? Animator.StringToHash(expectedStateName.Trim())
             : 0;
-        context.SetActive(effectContext.ActionInstanceId, effectContext, cueMap, expectedHash);
+        context.SetActive(actionInstanceId, effectContext, cueMap, expectedHash);
     }
     private static SkillData ResolveSkillAnimationData(SkillData source)
     {
@@ -941,7 +947,107 @@ public class BattleManager : MonoBehaviour
         return null;
     }
 
-    internal IEnumerator RunSkillSequenceCore(
+        private sealed class MovingAttackPlan
+    {
+        public MovingAttackPresentation Presentation;
+        public Vector3 FormationCenter;
+        public Vector3 OriginPosition;
+        public MovingAttackPath.Points PathPoints;
+        public List<BattleCharactor> Targets;
+    }
+
+    private static bool TryBuildMovingAttackPlan(BattleCharactor actor, CharactorAnimationController animation,
+        SkillPresentationData presentation, IEnumerable<BattleCharactor> candidateTargets, out MovingAttackPlan plan)
+    {
+        plan = null;
+        MovingAttackPresentation sweep = presentation?.MovingAttack;
+        if (sweep == null || !sweep.Enabled || actor == null || animation == null
+            || string.IsNullOrWhiteSpace(sweep.AnimationStateName))
+        {
+            return false;
+        }
+
+        var targets = new List<BattleCharactor>();
+        var seen = new HashSet<BattleCharactor>();
+        if (candidateTargets != null)
+        {
+            foreach (BattleCharactor candidate in candidateTargets)
+            {
+                if (candidate != null && !candidate.IsDead && seen.Add(candidate))
+                {
+                    targets.Add(candidate);
+                }
+            }
+        }
+
+        if (targets.Count == 0) return false;
+
+        Vector3 center = Vector3.zero;
+        for (int i = 0; i < targets.Count; i++) center += targets[i].transform.position;
+        center /= targets.Count;
+
+        Vector3 origin = actor.transform.position;
+        plan = new MovingAttackPlan
+        {
+            Presentation = sweep,
+            FormationCenter = center,
+            OriginPosition = origin,
+            PathPoints = MovingAttackPath.BuildPoints(sweep, origin, center),
+            Targets = targets
+        };
+        return true;
+    }
+
+    private void EnqueueMovingAttackSequence(ActionSequenceRunner runner, MovingAttackPlan plan,
+        BattleCharactor actor, BattleCharactor presentationTarget, SkillData skill,
+        SkillPresentationData presentation, int actionInstanceId, CharactorAnimationController actorAnim,
+        Func<MonoBehaviour, IEnumerator> primaryHitRoutine, List<ASB.Work.Battle.Sequence.MovingAttackHitTarget> sequentialHits,
+        float nextBlendInSeconds, Action<float> onElapsed)
+    {
+        if (runner == null || plan == null) return;
+
+        runner.Enqueue(new ASB.Work.Battle.Sequence.MovingAttackPresentationAction(
+            actor, actorAnim, plan.Presentation, plan.PathPoints, plan.OriginPosition,
+            () => SetupPresentationContext(actor, presentationTarget, skill, presentation, actionInstanceId,
+                plan.Presentation.Cues, plan.Presentation.AnimationStateName),
+            primaryHitRoutine, sequentialHits, _currentBattleSpeed, nextBlendInSeconds, onElapsed));
+    }
+
+    private void EnqueueMovingAttackApproach(ActionSequenceRunner runner, MovingAttackPlan plan,
+        CharactorAnimationController actorAnim, UnitMovementProfile movement, MovePhase movePhase)
+    {
+        if (runner == null || plan == null || actorAnim == null || movement == null) return;
+
+        string stateName = movePhase?.AnimationStateName;
+        float blend = movePhase != null ? Mathf.Max(0f, movePhase.BlendInSeconds) : 0.1f;
+        runner.Enqueue(new ASB.Work.Battle.Sequence.MoveToWorldPositionAction(
+            actorAnim, plan.PathPoints.Entry, movement.MoveDuration / _currentBattleSpeed, stateName, blend));
+    }
+
+    private static float ResolveMovingAttackIncomingBlendInSeconds(MovingAttackPlan plan)
+    {
+        return plan?.Presentation != null ? Mathf.Max(0f, plan.Presentation.AnimationBlendInSeconds) : 0f;
+    }
+
+    private static float ResolveMovingAttackOutgoingBlendInSeconds(SkillPresentationData presentation,
+        bool returnEnabled)
+    {
+        if (returnEnabled && presentation?.Return != null)
+        {
+            return Mathf.Max(0f, presentation.Return.BlendInSeconds);
+        }
+
+        return ResolvePostBlendInSeconds(presentation) ?? 0f;
+    }
+
+    private void EnqueueMovingAttackReturn(ActionSequenceRunner runner, CharactorAnimationController actorAnim,
+        UnitMovementProfile movement, Vector3 originPosition, float originRotationY, ReturnPhase returnPhase)
+    {
+        if (movement == null) return;
+        EnqueueSkillReturn(runner, actorAnim, movement, true, false, originPosition, originRotationY, returnPhase);
+    }
+
+internal IEnumerator RunSkillSequenceCore(
         BattleCharactor actor,
         BattleCharactor target,
         SkillData skill,
@@ -979,56 +1085,114 @@ public class BattleManager : MonoBehaviour
             : null;
 
         SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
+        int presentationActionInstanceId = presentation?.IsPhaseCue == true ? NextActionInstanceId() : 0;
         bool moveEnabled       = presentation?.Move?.Enabled ?? true;
         bool attackPrepEnabled = presentation?.AttackPrepare?.Enabled ?? true;
         bool returnEnabled     = presentation?.Return?.Enabled ?? true;
+        bool usePhaseCue       = presentation?.IsPhaseCue == true;
+                MovingAttackPlan spinSweepPlan = null;
+                bool useMovingAttack = !playBasicAttackAnimation
+                            && usePhaseCue
+                            && moveEnabled
+                            && movement != null
+                            && TryBuildMovingAttackPlan(actor, actorAnim, presentation, new[] { target }, out spinSweepPlan);
 
         float sequenceBattleElapsed = 0f;
         var runner = new ActionSequenceRunner();
-
-        if (moveEnabled)
-            EnqueueSkillApproach(runner, actor, target, actorAnim, movement, shouldMove, shouldRotate);
-
-        // Schema=1은 Cue만 이펙트를 재생한다. 기존 SpawnAttackEffectAction은 Legacy 경로에만 남긴다.
-        if (attackPrepEnabled && (presentation == null || !presentation.IsPhaseCue) && _visualDirector != null && skill != null)
-            runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
+        bool hasApproachMovementAnimation = !useMovingAttack && moveEnabled && shouldMove;
+                bool hasReturnMovementAnimation = !useMovingAttack && returnEnabled && (shouldMove || shouldRotate);
+                bool hasPhaseCueCombo = !playBasicAttackAnimation && presentation?.IsPhaseCue == true
+                    && presentation.Attack != null && presentation.Attack.Enabled
+                    && presentation.Attack.Beats != null && presentation.Attack.Beats.Count > 0;
+                float? movePrepareNextBlendSeconds = useMovingAttack
+                    ? Mathf.Max(0f, presentation?.Move?.BlendInSeconds ?? 0.1f)
+                    : hasPhaseCueCombo && !hasApproachMovementAnimation
+                        ? ResolveMovePrepareNextBlendInSeconds(actorAnim, skill, presentation)
+                        : null;
+                float? postBlendAfterLastBeatSeconds = hasPhaseCueCombo && !hasReturnMovementAnimation
+                    ? ResolvePostBlendInSeconds(presentation)
+                    : null;
+        
+                EnqueuePhaseCuePrologue(runner, actor, target, skill, presentation, presentationActionInstanceId,
+            movePrepareNextBlendSeconds, elapsed => sequenceBattleElapsed += elapsed);
 
         bool useCombo = !playBasicAttackAnimation && presentation?.IsPhaseCue == true
-            && presentation.Attack != null && presentation.Attack.Enabled
-            && presentation.Attack.Beats != null && presentation.Attack.Beats.Count > 0;
-
-        if (useCombo)
-        {
-            runner.Enqueue(new ASB.Work.Battle.Sequence.ComboSkillAction(
-                actorAnim,
-                presentation.Attack.Beats,
-                (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
-                (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, beat, stateName),
-                host => ResolveSkillHitRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill),
-                _currentBattleSpeed,
-                AnimEventTimeoutSeconds,
-                elapsed => sequenceBattleElapsed += elapsed));
-        }
-        else
-        {
-            SetupPresentationContext(actor, target, skill, presentation);
-            runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
-            runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
-            runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ResolveSkillHitRoutine(
-                host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill)));
-            if (!string.IsNullOrEmpty(targetState))
-                runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
-        }
-
-        if (returnEnabled)
-            EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
+                    && presentation.Attack != null && presentation.Attack.Enabled
+                    && presentation.Attack.Beats != null && presentation.Attack.Beats.Count > 0;
+        
+                if (useMovingAttack)
+                        {
+                            EnqueueMovingAttackApproach(runner, spinSweepPlan, actorAnim, movement, presentation?.Move);
+        
+                            EnqueuePhaseCueAttackPrepare(runner, actor, target, skill, presentation, presentationActionInstanceId,
+                                attackPrepEnabled ? ResolveMovingAttackIncomingBlendInSeconds(spinSweepPlan) : null,
+                                elapsed => sequenceBattleElapsed += elapsed);
+        
+                            EnqueueMovingAttackSequence(runner, spinSweepPlan, actor, target, skill, presentation,
+                                presentationActionInstanceId, actorAnim,
+                                host => ResolveSkillHitRoutine(host, actor, target, onHitCallback, targetAnimTrigger,
+                                    playTargetHitAnimation, skill),
+                                null,
+                                ResolveMovingAttackOutgoingBlendInSeconds(presentation, returnEnabled && movement != null),
+                                elapsed => sequenceBattleElapsed += elapsed);
+                        }
+                        
+                else
+                {
+                    if (moveEnabled)
+                        EnqueueSkillApproach(runner, actor, target, actorAnim, movement, shouldMove, shouldRotate, presentation?.Move);
+        
+                    EnqueuePhaseCueAttackPrepare(runner, actor, target, skill, presentation, presentationActionInstanceId,
+                        useCombo ? ResolveFirstAttackBeatBlendInSeconds(actorAnim, skill, presentation) : null,
+                        elapsed => sequenceBattleElapsed += elapsed);
+                    if (!usePhaseCue && attackPrepEnabled && _visualDirector != null && skill != null)
+                        runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
+        
+                    if (useCombo)
+                    {
+                        runner.Enqueue(new ASB.Work.Battle.Sequence.ComboSkillAction(
+                            actorAnim,
+                            presentation.Attack.Beats,
+                            (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
+                            (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName),
+                            host => ResolveSkillHitRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill),
+                            _currentBattleSpeed,
+                            AnimEventTimeoutSeconds,
+                            postBlendAfterLastBeatSeconds,
+                            elapsed => sequenceBattleElapsed += elapsed));
+                    }
+                    else
+                    {
+                        if (usePhaseCue)
+                            runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ActivatePresentationCueRoutine(
+                                actor, target, skill, presentation, presentationActionInstanceId, GetPrimaryAttackBeat(presentation)?.Cues, targetState)));
+                        runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
+                        runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
+                        runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ResolveSkillHitRoutine(
+                            host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill)));
+                        if (!string.IsNullOrEmpty(targetState))
+                            runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
+                    }
+                }
+        
+                if (returnEnabled)
+                {
+                    if (useMovingAttack)
+                        EnqueueMovingAttackReturn(runner, actorAnim, movement, originPosition, originRotationY, presentation?.Return);
+                    else
+                        EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY,
+                            presentation?.Return);
+                }
+        
+                EnqueuePhaseCueEpilogue(runner, actor, target, skill, presentation, presentationActionInstanceId,
+            elapsed => sequenceBattleElapsed += elapsed);
 
         runner.Enqueue(new ReturnToIdleAction(actor));
 
         yield return StartCoroutine(runner.RunAll(this));
 
         // 연출 종료: 늦게 도착한 이벤트가 다음 실행 컨텍스트를 오용하지 않도록 정리.
-        actor.GetComponent<PresentationRuntimeContext>()?.Clear();
+        ClearPresentationContext(actor);
 
         float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
         yield return WaitForBattleSeconds(Mathf.Max(remainingTotal, 0.2f));
@@ -1037,12 +1201,139 @@ public class BattleManager : MonoBehaviour
             yield return StartCoroutine(new WaitTargetReactionAction(target, _currentBattleSpeed).ExecuteRoutine(this));
     }
 
+    private void EnqueuePhaseCuePrologue(ActionSequenceRunner runner, BattleCharactor actor, BattleCharactor target,
+        SkillData skill, SkillPresentationData presentation, int actionInstanceId, float? nextBlendSeconds,
+        Action<float> onElapsed)
+    {
+        EnqueueCuePhase(runner, actor, target, skill, presentation, actionInstanceId, presentation?.MovePrepare,
+            nextBlendSeconds, onElapsed);
+    }
+
+    private void EnqueuePhaseCueAttackPrepare(ActionSequenceRunner runner, BattleCharactor actor, BattleCharactor target,
+        SkillData skill, SkillPresentationData presentation, int actionInstanceId, float? nextBlendSeconds,
+        Action<float> onElapsed)
+    {
+        EnqueueCuePhase(runner, actor, target, skill, presentation, actionInstanceId, presentation?.AttackPrepare,
+            nextBlendSeconds, onElapsed);
+    }
+
+    private void EnqueuePhaseCueEpilogue(ActionSequenceRunner runner, BattleCharactor actor, BattleCharactor target,
+        SkillData skill, SkillPresentationData presentation, int actionInstanceId, Action<float> onElapsed)
+    {
+        EnqueueCuePhase(runner, actor, target, skill, presentation, actionInstanceId, presentation?.Post,
+            null, onElapsed);
+    }
+
+    private void EnqueueCuePhase(ActionSequenceRunner runner, BattleCharactor actor, BattleCharactor target,
+        SkillData skill, SkillPresentationData presentation, int actionInstanceId, CuePhase phase,
+        float? nextBlendSeconds, Action<float> onElapsed)
+    {
+        if (runner == null || presentation?.IsPhaseCue != true || phase == null)
+            return;
+
+        runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => PlayCuePhaseRoutine(
+            actor, target, skill, presentation, actionInstanceId, phase, nextBlendSeconds, onElapsed)));
+    }
+
+    private static void ClearPresentationContext(BattleCharactor actor)
+    {
+        actor?.GetComponent<PresentationRuntimeContext>()?.Clear();
+    }
+    private IEnumerator ActivatePresentationCueRoutine(BattleCharactor actor, BattleCharactor target, SkillData skill,
+        SkillPresentationData presentation, int actionInstanceId, List<CueBinding> cues, string stateName)
+    {
+        SetupPresentationContext(actor, target, skill, presentation, actionInstanceId, cues, stateName);
+        yield break;
+    }
+
+    private IEnumerator PlayCuePhaseRoutine(BattleCharactor actor, BattleCharactor target, SkillData skill,
+        SkillPresentationData presentation, int actionInstanceId, CuePhase phase, float? nextBlendSeconds,
+        Action<float> onElapsed)
+    {
+        if (phase == null || !phase.Enabled)
+            yield break;
+
+        string stateName = phase.AnimationStateName?.Trim();
+        SetupPresentationContext(actor, target, skill, presentation, actionInstanceId, phase.Cues, stateName);
+
+        CharactorAnimationController animation = actor?.Anim;
+        if (!string.IsNullOrEmpty(stateName) && animation != null)
+        {
+            animation.PlayState(stateName, Mathf.Max(0f, phase.BlendInSeconds));
+            if (nextBlendSeconds.HasValue)
+            {
+                yield return animation.WaitForSkillTransitionStart(stateName, nextBlendSeconds.Value);
+            }
+            else
+            {
+                yield return animation.WaitForSkillClipEnd(stateName);
+            }
+            onElapsed?.Invoke(animation.LastClipWaitBattleSeconds);
+        }
+
+        if (phase is PostPhase post && post.ExtraDelay > 0f)
+        {
+            yield return WaitForBattleSeconds(post.ExtraDelay);
+            onElapsed?.Invoke(post.ExtraDelay);
+        }
+    }
+
     private static string ResolveAttackBeatState(CharactorAnimationController anim, SkillData skill, SkillPresentationData presentation, AttackBeat beat, int beatIndex)
     {
         if (beat != null && !string.IsNullOrWhiteSpace(beat.AnimationStateName)) return beat.AnimationStateName.Trim();
         if (beatIndex > 0) return string.Empty;
         if (!string.IsNullOrWhiteSpace(presentation?.ResolvedAnimationStateName)) return presentation.ResolvedAnimationStateName;
         return anim != null ? anim.GetTargetStateName(skill) : string.Empty;
+    }
+
+    private static float? ResolveFirstAttackBeatBlendInSeconds(CharactorAnimationController anim, SkillData skill,
+        SkillPresentationData presentation)
+    {
+        if (presentation?.Attack?.Beats == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < presentation.Attack.Beats.Count; i++)
+        {
+            AttackBeat beat = presentation.Attack.Beats[i];
+            if (beat == null)
+            {
+                continue;
+            }
+
+            string stateName = ResolveAttackBeatState(anim, skill, presentation, beat, i);
+            if (!string.IsNullOrWhiteSpace(stateName))
+            {
+                return Mathf.Max(0f, beat.BlendInSeconds);
+            }
+        }
+
+        return null;
+    }
+
+    private static float? ResolveMovePrepareNextBlendInSeconds(CharactorAnimationController anim, SkillData skill,
+        SkillPresentationData presentation)
+    {
+        CuePhase attackPrepare = presentation?.AttackPrepare;
+        if (attackPrepare != null && attackPrepare.Enabled
+            && !string.IsNullOrWhiteSpace(attackPrepare.AnimationStateName))
+        {
+            return Mathf.Max(0f, attackPrepare.BlendInSeconds);
+        }
+
+        return ResolveFirstAttackBeatBlendInSeconds(anim, skill, presentation);
+    }
+
+    private static float? ResolvePostBlendInSeconds(SkillPresentationData presentation)
+    {
+        PostPhase post = presentation?.Post;
+        if (post == null || !post.Enabled || string.IsNullOrWhiteSpace(post.AnimationStateName))
+        {
+            return null;
+        }
+
+        return Mathf.Max(0f, post.BlendInSeconds);
     }
 
     private IEnumerator ResolveSkillHitRoutine(MonoBehaviour host, BattleCharactor actor, BattleCharactor target,
@@ -1081,16 +1372,22 @@ public class BattleManager : MonoBehaviour
         CharactorAnimationController actorAnim,
         UnitMovementProfile movement,
         bool shouldMove,
-        bool shouldRotate)
+        bool shouldRotate,
+        MovePhase movePhase)
     {
         if (target == null || movement == null)
         {
             return;
         }
 
+        string animationStateName = movePhase?.AnimationStateName;
+        float blendInSeconds = movePhase != null ? Mathf.Max(0f, movePhase.BlendInSeconds) : 0.1f;
+
         if (shouldMove)
         {
-            runner.Enqueue(new MoveToTargetAction(actorAnim, target.transform, movement.ApproachDistance, movement.MoveDuration / _currentBattleSpeed));
+            runner.Enqueue(new MoveToTargetAction(
+                actorAnim, target.transform, movement.ApproachDistance, movement.MoveDuration / _currentBattleSpeed,
+                animationStateName, blendInSeconds));
         }
         else if (shouldRotate)
         {
@@ -1105,7 +1402,8 @@ public class BattleManager : MonoBehaviour
         bool shouldMove,
         bool shouldRotate,
         Vector3 originPosition,
-        float originRotationY)
+        float originRotationY,
+        ReturnPhase returnPhase)
     {
         if (movement == null)
         {
@@ -1113,13 +1411,20 @@ public class BattleManager : MonoBehaviour
         }
 
         Quaternion originRotation = Quaternion.Euler(0f, originRotationY, 0f);
+        string animationStateName = returnPhase?.AnimationStateName;
+        float blendInSeconds = returnPhase != null ? Mathf.Max(0f, returnPhase.BlendInSeconds) : 0.1f;
+
         if (shouldMove)
         {
-            runner.Enqueue(new MoveToOriginAction(actorAnim, originPosition, originRotation, movement.ReturnDuration / _currentBattleSpeed));
+            runner.Enqueue(new MoveToOriginAction(
+                actorAnim, originPosition, originRotation, movement.ReturnDuration / _currentBattleSpeed,
+                animationStateName, blendInSeconds));
         }
         else if (shouldRotate)
         {
-            runner.Enqueue(new MoveToOriginAction(actorAnim, originPosition, originRotation, movement.RotateReturnDuration / _currentBattleSpeed));
+            runner.Enqueue(new MoveToOriginAction(
+                actorAnim, originPosition, originRotation, movement.RotateReturnDuration / _currentBattleSpeed,
+                animationStateName, blendInSeconds));
         }
     }
 
@@ -1160,32 +1465,153 @@ public class BattleManager : MonoBehaviour
         ResolveSkillMovement(actor, primaryTarget, skill, out UnitMovementProfile movement, out bool shouldMove, out bool shouldRotate, out Vector3 originPosition, out float originRotationY);
 
         SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
+        int presentationActionInstanceId = presentation?.IsPhaseCue == true ? NextActionInstanceId() : 0;
         bool moveEnabled       = presentation?.Move?.Enabled ?? true;
         bool attackPrepEnabled = presentation?.AttackPrepare?.Enabled ?? true;
         bool returnEnabled     = presentation?.Return?.Enabled ?? true;
+        bool usePhaseCue       = presentation?.IsPhaseCue == true;
+                var spinSweepCandidates = new List<BattleCharactor>();
+                for (int i = 0; i < pairCount; i++)
+                {
+                    if (contexts[i]?.Target != null)
+                    {
+                        spinSweepCandidates.Add(contexts[i].Target);
+                    }
+                }
+                MovingAttackPlan spinSweepPlan = null;
+                bool useMovingAttack = usePhaseCue
+                            && moveEnabled
+                            && movement != null
+                            && TryBuildMovingAttackPlan(actor, actorAnim, presentation, spinSweepCandidates,
+                                out spinSweepPlan);
 
         float sequenceBattleElapsed = 0f;
         var runner = new ActionSequenceRunner();
+        bool hasApproachMovementAnimation = !useMovingAttack && moveEnabled && shouldMove;
+                bool hasReturnMovementAnimation = !useMovingAttack && returnEnabled && (shouldMove || shouldRotate);
+                bool hasPhaseCueCombo = usePhaseCue && presentation.Attack != null && presentation.Attack.Enabled
+                    && presentation.Attack.Beats != null && presentation.Attack.Beats.Count > 0;
+                float? movePrepareNextBlendSeconds = useMovingAttack
+                    ? Mathf.Max(0f, presentation?.Move?.BlendInSeconds ?? 0.1f)
+                    : hasPhaseCueCombo && !hasApproachMovementAnimation
+                        ? ResolveMovePrepareNextBlendInSeconds(actorAnim, skill, presentation)
+                        : null;
+                float? postBlendAfterLastBeatSeconds = hasPhaseCueCombo && !hasReturnMovementAnimation
+                    ? ResolvePostBlendInSeconds(presentation)
+                    : null;
+        
+                EnqueuePhaseCuePrologue(runner, actor, primaryTarget, skill, presentation, presentationActionInstanceId,
+            movePrepareNextBlendSeconds, elapsed => sequenceBattleElapsed += elapsed);
 
-        if (moveEnabled)
-            EnqueueSkillApproach(runner, actor, primaryTarget, actorAnim, movement, shouldMove, shouldRotate);
-
-        if (attackPrepEnabled && _visualDirector != null && skill != null)
-            runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
-
-        runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, false));
-        runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
-        runner.Enqueue(new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector));
-
-        if (!string.IsNullOrEmpty(targetState))
-            runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
-
-        if (returnEnabled)
-            EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
+        bool useCombo = usePhaseCue && presentation.Attack != null && presentation.Attack.Enabled
+                    && presentation.Attack.Beats != null && presentation.Attack.Beats.Count > 0;
+        
+                if (useMovingAttack)
+                {
+                    Func<MonoBehaviour, IEnumerator> primaryHitRoutine = null;
+                    List<ASB.Work.Battle.Sequence.MovingAttackHitTarget> sequentialHits = null;
+        
+                    if (spinSweepPlan.Presentation.HitMode == MovingAttackHitMode.SequentialAoE)
+                    {
+                        sequentialHits = new List<ASB.Work.Battle.Sequence.MovingAttackHitTarget>();
+                        for (int i = 0; i < pairCount; i++)
+                        {
+                            DamageContext context = contexts[i];
+                            Func<BattleHitResult> callback = hitCallbacks[i];
+                            if (context?.Target == null) continue;
+        
+                            sequentialHits.Add(new ASB.Work.Battle.Sequence.MovingAttackHitTarget
+                            {
+                                Target = context.Target,
+                                HitRoutine = host => new AoEApplyDamageAction(
+                                    new List<DamageContext> { context },
+                                    new List<Func<BattleHitResult>> { callback },
+                                    1, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host)
+                            });
+                        }
+                    }
+                    else
+                            {
+                                if (spinSweepPlan.Presentation.HitMode == MovingAttackHitMode.SingleTarget)
+                                {
+                                    primaryHitRoutine = host => new AoEApplyDamageAction(
+                                        new List<DamageContext> { contexts[0] },
+                                        new List<Func<BattleHitResult>> { hitCallbacks[0] },
+                                        1, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host);
+                                }
+                                else
+                                {
+                                    primaryHitRoutine = host => new AoEApplyDamageAction(
+                                        contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host);
+                                }
+                            }
+        
+                            EnqueueMovingAttackApproach(runner, spinSweepPlan, actorAnim, movement, presentation?.Move);
+        
+                                    EnqueuePhaseCueAttackPrepare(runner, actor, primaryTarget, skill, presentation, presentationActionInstanceId,
+                                        attackPrepEnabled ? ResolveMovingAttackIncomingBlendInSeconds(spinSweepPlan) : null,
+                                        elapsed => sequenceBattleElapsed += elapsed);
+        
+                                    EnqueueMovingAttackSequence(runner, spinSweepPlan, actor, primaryTarget, skill, presentation,
+                                        presentationActionInstanceId, actorAnim, primaryHitRoutine, sequentialHits,
+                                        ResolveMovingAttackOutgoingBlendInSeconds(presentation, returnEnabled && movement != null),
+                                        elapsed => sequenceBattleElapsed += elapsed);
+                }
+                else
+                {
+                    if (moveEnabled)
+                        EnqueueSkillApproach(runner, actor, primaryTarget, actorAnim, movement, shouldMove, shouldRotate, presentation?.Move);
+        
+                    EnqueuePhaseCueAttackPrepare(runner, actor, primaryTarget, skill, presentation, presentationActionInstanceId,
+                        useCombo ? ResolveFirstAttackBeatBlendInSeconds(actorAnim, skill, presentation) : null,
+                        elapsed => sequenceBattleElapsed += elapsed);
+                    if (!usePhaseCue && attackPrepEnabled && _visualDirector != null && skill != null)
+                        runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
+        
+                    if (useCombo)
+                    {
+                        runner.Enqueue(new ASB.Work.Battle.Sequence.ComboSkillAction(
+                            actorAnim,
+                            presentation.Attack.Beats,
+                            (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
+                            (beat, stateName) => SetupPresentationContext(actor, primaryTarget, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName),
+                            host => new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host),
+                            _currentBattleSpeed,
+                            AnimEventTimeoutSeconds,
+                            postBlendAfterLastBeatSeconds,
+                            elapsed => sequenceBattleElapsed += elapsed));
+                    }
+                    else
+                    {
+                        if (usePhaseCue)
+                            runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ActivatePresentationCueRoutine(
+                                actor, primaryTarget, skill, presentation, presentationActionInstanceId, GetPrimaryAttackBeat(presentation)?.Cues, targetState)));
+                        runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, false));
+                        runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
+                        runner.Enqueue(new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector));
+        
+                        if (!string.IsNullOrEmpty(targetState))
+                            runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
+                    }
+                }
+        
+                if (returnEnabled)
+                {
+                    if (useMovingAttack)
+                        EnqueueMovingAttackReturn(runner, actorAnim, movement, originPosition, originRotationY, presentation?.Return);
+                    else
+                        EnqueueSkillReturn(runner, actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY,
+                            presentation?.Return);
+                }
+        
+                EnqueuePhaseCueEpilogue(runner, actor, primaryTarget, skill, presentation, presentationActionInstanceId,
+            elapsed => sequenceBattleElapsed += elapsed);
 
         runner.Enqueue(new ReturnToIdleAction(actor));
 
         yield return StartCoroutine(runner.RunAll(this));
+
+        ClearPresentationContext(actor);
 
         float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
         yield return WaitForBattleSeconds(Mathf.Max(remainingTotal, 0.2f));

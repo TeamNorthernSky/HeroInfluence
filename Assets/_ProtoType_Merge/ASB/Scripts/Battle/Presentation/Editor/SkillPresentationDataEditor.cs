@@ -78,6 +78,13 @@ public class SkillPresentationDataEditor : Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Attack"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Return"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Post"), true);
+        
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField("Moving Attack (진입 이동 + 공격)", EditorStyles.boldLabel);
+                            EditorGUILayout.PropertyField(serializedObject.FindProperty("MovingAttack"), true);
+                            serializedObject.ApplyModifiedProperties();
+                            MovingAttackPathSceneTool.DrawInspectorControls(target as SkillPresentationData);
+                            serializedObject.Update();
             EditorGUI.indentLevel--;
         }
 

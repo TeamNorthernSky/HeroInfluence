@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,12 +18,13 @@ namespace ASB.Work.Battle.Sequence
         private readonly Func<MonoBehaviour, IEnumerator> _resolveFirstHit;
         private readonly float _battleSpeed;
         private readonly float _eventTimeout;
+        private readonly float? _nextBlendAfterLastBeat;
         private readonly Action<float> _onElapsed;
 
         public ComboSkillAction(CharactorAnimationController anim, List<AttackBeat> beats,
             Func<AttackBeat, int, string> resolveState, Action<AttackBeat, string> activateContext,
             Func<MonoBehaviour, IEnumerator> resolveFirstHit, float battleSpeed, float eventTimeout,
-            Action<float> onElapsed)
+            float? nextBlendAfterLastBeat, Action<float> onElapsed)
         {
             _anim = anim;
             _beats = beats;
@@ -32,6 +33,7 @@ namespace ASB.Work.Battle.Sequence
             _resolveFirstHit = resolveFirstHit;
             _battleSpeed = Mathf.Max(0.01f, battleSpeed);
             _eventTimeout = Mathf.Max(0.01f, eventTimeout);
+            _nextBlendAfterLastBeat = nextBlendAfterLastBeat;
             _onElapsed = onElapsed;
         }
 
@@ -69,6 +71,7 @@ namespace ASB.Work.Battle.Sequence
                     _onElapsed?.Invoke(Mathf.Min(elapsed, _eventTimeout));
                 }
 
+                // 전투 결과는 콤보 Beat 수와 무관하게 최초 Hit 시점에 한 번만 적용한다.
                 if (!resolvedHit)
                 {
                     resolvedHit = true;
@@ -76,27 +79,56 @@ namespace ASB.Work.Battle.Sequence
                     if (hitRoutine != null) yield return hitRoutine;
                 }
 
-                if (i < _beats.Count - 1)
+                float? nextBlendSeconds = ResolveNextBlendSeconds(i);
+                bool isLastBeat = i == _beats.Count - 1;
+                if (nextBlendSeconds.HasValue)
                 {
-                    float elapsed = 0f;
-                    while (!_anim.HasComboAdvancedSinceWaitBegan && elapsed < _eventTimeout)
+                    if (beat.AdvanceOnEvent)
                     {
-                        elapsed += Time.deltaTime * _battleSpeed;
-                        yield return null;
+                        yield return _anim.WaitForSkillTransitionStartOrSignal(
+                            stateName,
+                            nextBlendSeconds.Value,
+                            () => _anim.HasComboAdvancedSinceWaitBegan);
                     }
-                    _onElapsed?.Invoke(Mathf.Min(elapsed, _eventTimeout));
-                    if (!_anim.HasComboAdvancedSinceWaitBegan)
+                    else
                     {
-                        Debug.LogWarning($"[ComboSkillAction] Beat {i} did not send AniEvent_AdvanceCombo before timeout. Remaining beats skipped.");
-                        yield break;
+                        yield return _anim.WaitForSkillTransitionStart(stateName, nextBlendSeconds.Value);
                     }
+                }
+                else if (!isLastBeat && beat.AdvanceOnEvent)
+                {
+                    // No playable next beat was found. Preserve the legacy event-or-clip-end wait.
+                    yield return _anim.WaitForSkillClipEndOrSignal(
+                        stateName,
+                        () => _anim.HasComboAdvancedSinceWaitBegan);
                 }
                 else
                 {
                     yield return _anim.WaitForSkillClipEnd(stateName);
-                    _onElapsed?.Invoke(_anim.LastClipWaitBattleSeconds);
+                }
+
+                _onElapsed?.Invoke(_anim.LastClipWaitBattleSeconds);
+            }
+        }
+
+        private float? ResolveNextBlendSeconds(int currentIndex)
+        {
+            for (int i = currentIndex + 1; i < _beats.Count; i++)
+            {
+                AttackBeat nextBeat = _beats[i];
+                if (nextBeat == null)
+                {
+                    continue;
+                }
+
+                string nextStateName = _resolveState?.Invoke(nextBeat, i);
+                if (!string.IsNullOrWhiteSpace(nextStateName))
+                {
+                    return Mathf.Max(0f, nextBeat.BlendInSeconds);
                 }
             }
+
+            return _nextBlendAfterLastBeat;
         }
     }
 }

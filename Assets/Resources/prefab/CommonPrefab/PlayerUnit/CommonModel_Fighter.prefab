@@ -19547,6 +19547,8 @@ MonoBehaviour:
   rightWeaponSocketObject: {fileID: 63220141677019216}
   leftWeaponSocketObject: {fileID: 3546401445267888921}
   hitSocketObject: {fileID: 341051339072617961}
+  chestSocketObject: {fileID: 3454934467240316173}
+  floorSocketObject: {fileID: 8923479650055088232}
 --- !u!1 &8284416257600035579
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using PrimeTween;
 using UnityEngine;
@@ -137,6 +138,25 @@ public class CharactorAnimationController : MonoBehaviour
     /// </summary>
     public IEnumerator WaitForSkillClipEnd(string stateName)
     {
+        yield return WaitForSkillClipEndOrSignal(stateName, null);
+    }
+
+    /// <summary>
+    /// Waits until the current skill state has only <paramref name="nextBlendSeconds"/> left before its end.
+    /// The incoming state's blend duration determines when its outgoing state must begin transitioning.
+    /// </summary>
+    public IEnumerator WaitForSkillTransitionStart(string stateName, float nextBlendSeconds)
+    {
+        yield return WaitForSkillTransitionStartOrSignal(stateName, nextBlendSeconds, null);
+    }
+
+    /// <summary>
+    /// Waits for the latest of the calculated blend start and an optional combo-advance signal.
+    /// If the signal never arrives, the state naturally reaches its end before falling back.
+    /// </summary>
+    public IEnumerator WaitForSkillTransitionStartOrSignal(string stateName, float nextBlendSeconds,
+        Func<bool> hasAdvanceSignal)
+    {
         LastClipWaitBattleSeconds = 0f;
 
         if (_animator == null || string.IsNullOrEmpty(stateName))
@@ -152,10 +172,25 @@ public class CharactorAnimationController : MonoBehaviour
             elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed;
         }
 
-        if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(stateName))
+        AnimatorStateInfo enteredState = _animator.GetCurrentAnimatorStateInfo(0);
+        if (!enteredState.IsName(stateName))
         {
+            LastClipWaitBattleSeconds = elapsedBattleAnimTime;
             yield break;
         }
+
+        if (enteredState.loop || enteredState.length <= Mathf.Epsilon)
+        {
+            Debug.LogWarning($"[CharactorAnimationController] Cannot calculate fixed-time blend start for looping or zero-length state '{stateName}'. Falling back to the legacy clip-end wait.", this);
+            yield return WaitForSkillClipEndOrSignal(stateName, hasAdvanceSignal);
+            yield break;
+        }
+
+        float safeBlendSeconds = Mathf.Max(0f, nextBlendSeconds);
+        float transitionStartNormalized = safeBlendSeconds <= 0f
+            ? 1f
+            : Mathf.Clamp01(1f - safeBlendSeconds / enteredState.length);
+        bool blendStartPassedWithoutSignal = false;
 
         while (elapsedBattleAnimTime < SkillClipEndLoopGuardSeconds)
         {
@@ -166,7 +201,98 @@ public class CharactorAnimationController : MonoBehaviour
                 yield break;
             }
 
-            if (stateInfo.normalizedTime >= SkillClipEndNormalizedThreshold)
+            bool atBlendStart = stateInfo.normalizedTime >= transitionStartNormalized;
+            if (hasAdvanceSignal == null)
+            {
+                if (atBlendStart)
+                {
+                    LastClipWaitBattleSeconds = elapsedBattleAnimTime;
+                    yield break;
+                }
+            }
+            else
+            {
+                bool signalReceived = hasAdvanceSignal();
+                if (signalReceived && atBlendStart)
+                {
+                    if (blendStartPassedWithoutSignal)
+                    {
+                        Debug.LogWarning($"[CharactorAnimationController] Combo advance for '{stateName}' arrived after its calculated blend start ({transitionStartNormalized:0.###}). The overlap will be shorter than requested.", this);
+                    }
+
+                    LastClipWaitBattleSeconds = elapsedBattleAnimTime;
+                    yield break;
+                }
+
+                if (atBlendStart)
+                {
+                    blendStartPassedWithoutSignal = true;
+                }
+
+                if (stateInfo.normalizedTime >= 1f)
+                {
+                    if (!signalReceived)
+                    {
+                        Debug.LogWarning($"[CharactorAnimationController] Combo advance for '{stateName}' was not received before the clip ended. Falling back to a no-overlap transition.", this);
+                    }
+
+                    LastClipWaitBattleSeconds = elapsedBattleAnimTime;
+                    yield break;
+                }
+            }
+
+            yield return null;
+            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed;
+        }
+
+        LastClipWaitBattleSeconds = elapsedBattleAnimTime;
+    }
+
+
+    /// <summary>
+    /// 대상 state의 클립 종료 또는 외부 신호 중 먼저 도착한 시점까지 대기합니다.
+    /// 신호가 없으면 <see cref="WaitForSkillClipEnd"/>와 동일하게 동작합니다.
+    /// </summary>
+    public IEnumerator WaitForSkillClipEndOrSignal(string stateName, Func<bool> hasEarlySignal)
+    {
+        LastClipWaitBattleSeconds = 0f;
+
+        if (_animator == null || string.IsNullOrEmpty(stateName))
+        {
+            yield break;
+        }
+
+        float elapsedBattleAnimTime = 0f;
+        while (!_animator.GetCurrentAnimatorStateInfo(0).IsName(stateName)
+               && elapsedBattleAnimTime < StateEnterWaitTimeoutSeconds)
+        {
+            if (hasEarlySignal != null && hasEarlySignal())
+            {
+                LastClipWaitBattleSeconds = elapsedBattleAnimTime;
+                yield break;
+            }
+
+            yield return null;
+            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed;
+        }
+
+        if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(stateName))
+        {
+            LastClipWaitBattleSeconds = elapsedBattleAnimTime;
+            yield break;
+        }
+
+        while (elapsedBattleAnimTime < SkillClipEndLoopGuardSeconds)
+        {
+            if (hasEarlySignal != null && hasEarlySignal())
+            {
+                LastClipWaitBattleSeconds = elapsedBattleAnimTime;
+                yield break;
+            }
+
+            AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            if (!stateInfo.IsName(stateName)
+                || stateInfo.normalizedTime >= SkillClipEndNormalizedThreshold)
             {
                 LastClipWaitBattleSeconds = elapsedBattleAnimTime;
                 yield break;
@@ -178,7 +304,6 @@ public class CharactorAnimationController : MonoBehaviour
 
         LastClipWaitBattleSeconds = elapsedBattleAnimTime;
     }
-
     private static string ResolveSkillStateName(SkillData skill)
     {
         if (skill == null)
@@ -254,7 +379,31 @@ public class CharactorAnimationController : MonoBehaviour
             || _animator.GetNextAnimatorStateInfo(0).IsName(stateName);
     }
 
-    /// <summary>현재 상태가 stateName이고 normalizedTime이 threshold 이상인지 확인합니다. 상태가 아니면 true 반환(이미 지남).</summary>
+    /// <summary>
+            /// 지정 state가 현재 레이어 0을 소유할 때 normalizedTime과 state 길이를 반환합니다.
+            /// 스핀 스윕처럼 애니메이션 시간을 외부 연출 진행도로 사용할 때만 사용합니다.
+            /// </summary>
+            public bool TryGetCurrentStateProgress(string stateName, out float normalizedTime, out float stateLength)
+            {
+                normalizedTime = 0f;
+                stateLength = 0f;
+                if (_animator == null || string.IsNullOrWhiteSpace(stateName))
+                {
+                    return false;
+                }
+        
+                AnimatorStateInfo info = _animator.GetCurrentAnimatorStateInfo(0);
+                if (!info.IsName(stateName))
+                {
+                    return false;
+                }
+        
+                normalizedTime = info.normalizedTime;
+                stateLength = info.length;
+                return true;
+            }
+        
+            /// <summary>현재 상태가 stateName이고 normalizedTime이 threshold 이상인지 확인합니다. 상태가 아니면 true 반환(이미 지남).</summary>
     public bool IsStateNearEnd(string stateName, float threshold = 0.9f)
     {
         if (_animator == null) return true;
@@ -266,11 +415,13 @@ public class CharactorAnimationController : MonoBehaviour
     /// <summary>레거시 호출 호환.</summary>
     public void PlayLegacyTrigger(string triggerName) => PlayGenericAnimation(triggerName);
 
-    public IEnumerator MoveToTarget(Transform target, float approachDistance, float duration)
+    public IEnumerator MoveToTarget(Transform target, float approachDistance, float duration,
+        string animationStateName = null, float blendInSeconds = CrossFadeDuration)
     {
         if (_animator != null)
         {
-            _animator.CrossFade("MoveForward", CrossFadeDuration);
+            string stateName = string.IsNullOrWhiteSpace(animationStateName) ? "MoveForward" : animationStateName.Trim();
+            PlayState(stateName, Mathf.Max(0f, blendInSeconds));
         }
 
         Vector3 dir = (transform.position - target.position);
@@ -290,11 +441,35 @@ public class CharactorAnimationController : MonoBehaviour
         yield return Tween.Position(transform, destination, duration).ToYieldInstruction();
     }
 
-    public IEnumerator MoveToOrigin(Vector3 origin, Quaternion originalRotation, float duration)
+    /// <summary>월드 좌표 Entry로 향하는 스핀 스윕 전용 접근 이동.</summary>
+            public IEnumerator MoveToPosition(Vector3 destination, float duration,
+                string animationStateName = null, float blendInSeconds = CrossFadeDuration)
+            {
+                if (_animator != null)
+                {
+                    string stateName = string.IsNullOrWhiteSpace(animationStateName) ? "MoveForward" : animationStateName.Trim();
+                    PlayState(stateName, Mathf.Max(0f, blendInSeconds));
+                }
+        
+                destination.y = transform.position.y;
+                Vector3 direction = destination - transform.position;
+                direction.y = 0f;
+                if (direction.sqrMagnitude > 0.0001f)
+                {
+                    Quaternion rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+                    yield return Tween.Rotation(transform, rotation, 0.1f).ToYieldInstruction();
+                }
+        
+                yield return Tween.Position(transform, destination, Mathf.Max(0.01f, duration)).ToYieldInstruction();
+            }
+        
+            public IEnumerator MoveToOrigin(Vector3 origin, Quaternion originalRotation, float duration,
+        string animationStateName = null, float blendInSeconds = CrossFadeDuration)
     {
         if (_animator != null)
         {
-            _animator.CrossFade("MoveReturn", CrossFadeDuration);
+            string stateName = string.IsNullOrWhiteSpace(animationStateName) ? "MoveReturn" : animationStateName.Trim();
+            PlayState(stateName, Mathf.Max(0f, blendInSeconds));
         }
 
         Tween.Rotation(transform, Quaternion.Euler(0f, originalRotation.eulerAngles.y, 0f), duration);

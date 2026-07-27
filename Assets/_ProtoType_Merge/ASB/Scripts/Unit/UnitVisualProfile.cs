@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Serialization;
 
 /// <summary>
@@ -45,37 +45,24 @@ public class UnitVisualProfile : MonoBehaviour
     [Tooltip("라인이 페이드아웃되는 시간(초).")]
     public float TrailFadeDuration = 0.3f;
 
-    /// <summary>이름으로 소켓 Transform 조회. 비면 AttackEffectSocket, 없으면 루트로 폴백.</summary>
-    public Transform GetSocket(string socketName)
+    /// <summary>소켓 종류로 Transform 조회. None이거나 미설정이면 AttackEffectSocket, 없으면 루트로 폴백.</summary>
+    public Transform GetSocket(UnitSocket socket)
     {
-        if (string.IsNullOrWhiteSpace(socketName))
+        if (socket == UnitSocket.None)
         {
             return AttackEffectSocket != null ? AttackEffectSocket : transform;
         }
 
-        Transform found = FindDeep(transform, socketName.Trim());
-        if (found != null)
+        UnitSocketHolder socketHolder = GetComponentInChildren<UnitSocketHolder>();
+        Transform registeredSocket = socketHolder != null ? socketHolder.GetNamedSocket(socket) : null;
+        if (registeredSocket != null)
         {
-            return found;
+            return registeredSocket;
         }
 
+        Debug.LogWarning(
+            $"[UnitVisualProfile] Socket '{socket}' 미해결 → 기본 공격 소켓/루트로 폴백. " +
+            $"'{name}'의 UnitSocketHolder에 해당 소켓을 할당하세요.", this);
         return AttackEffectSocket != null ? AttackEffectSocket : transform;
-    }
-
-    private static Transform FindDeep(Transform root, string name)
-    {
-        if (root.name == name)
-        {
-            return root;
-        }
-        for (int i = 0; i < root.childCount; i++)
-        {
-            Transform r = FindDeep(root.GetChild(i), name);
-            if (r != null)
-            {
-                return r;
-            }
-        }
-        return null;
     }
 }
