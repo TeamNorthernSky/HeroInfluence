@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: FlareCrescentGlyph
+  m_Shader: {fileID: 4800000, guid: 9b362268ce7c9474b87214e71aae82ce, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _Bite2: 0
+    - _Bite2Angle: 250
+    - _Bite2Off: 0.9
+    - _Bite2Prob: 1
+    - _Bite2R: 0.6
+    - _BiteOffMax: 0.75
+    - _BiteOffMin: 0.15
+    - _BiteRMax: 1.4
+    - _BiteRMin: 0.7
+    - _DMaxFrac: 3
+    - _EdgeSoft: 0.006
+    - _EdgeWidth: 0.0117
+    - _Emission: 1
+    - _GlowRange: 0.06
+    - _GlowStrength: 0.35
+    - _GridCols: 5
+    - _GridRows: 5
+    - _InNotchDepthK: 0.85
+    - _InNotchProb: 1
+    - _InNotchSpanMax: 70
+    - _InNotchSpanMin: 50
+    - _NotchDepthK: 0.265
+    - _NotchSpanMax: 49
+    - _NotchSpanMin: 18.9
+    - _Opacity: 1
+    - _RadiusA: 0.45
+    - _RandRotate: 1
+    - _Rotate: 0
+    - _SZoneMax: 0.333
+    - _SZoneMin: 0.333
+    - _Seed: 14.1
+    - _StretchMax: 2.09
+    - _TipBreakRatio: 1
+    - _TipR2Max: 1
+    - _TipR2Min: 1
+    m_Colors:
+    - _EdgeColor: {r: 2.2, g: 1.2, b: 3.2, a: 1}
+    - _FillColor: {r: 0.16, g: 0.05, b: 0.22, a: 1}
+  m_BuildTextureStacks: []

@@ -45,8 +45,13 @@ namespace JC.VFX
             setC("_ColorHighlight", p.tongueHighlightColor);
             setF("_Emission", p.tongueEmission);
             setF("_BaseRadius", p.baseRadius);
+            setF("_EllipseRatio", p.ellipseRatio);
             setF("_MaxReach", p.maxReach);
+            setF("_ReachRatio", p.reachRatio);
             setF("_ReachSoft", p.reachSoft);
+            setF("_YOffset", p.patternYOffset);
+            setF("_EmitterDepth", p.emitterDepth);
+            setF("_CutHeight", p.cutHeight);
             setF("_LaneCount", p.laneCount);
             setF("_LaneWidth", p.laneWidth);
             setF("_LaneWidthJitter", p.laneWidthJitter);
@@ -54,13 +59,13 @@ namespace JC.VFX
             setF("_LaneTiltJitter", p.laneTiltJitter);
             setF("_WidthNoiseScale", p.widthNoiseScale);
             setF("_WidthNoiseAmount", p.widthNoiseAmount);
-            setF("_RStart", p.birthRadiusStart);
-            setF("_REnd", p.birthRadiusEnd);
-            setF("_RJitter", p.birthRadiusJitter);
+            setF("_BirthMin", p.birthOffsetMin);
+            setF("_BirthMax", p.birthOffsetMax);
             setF("_BirthBias", p.birthInnerBias);
             setF("_VLengthJitter", p.laneLengthJitter);
             setF("_MaxLen", p.laneMaxLength);
             setF("_OuterShrink", p.outerShrink);
+            setF("_CutFarShrink", p.cutFarShrink);
             setF("_TravelDist", p.laneTravelDist);
             setF("_TravelSpeed", p.laneTravelSpeed);
             setF("_LifeFadePeak", p.laneLifeFadePeak);
@@ -68,8 +73,6 @@ namespace JC.VFX
             setF("_HighlightRatio", p.highlightRatio);
             setF("_EdgeSoftRatio", p.edgeSoftRatio);
             setF("_FlowSpeed", p.flowSpeed);
-            setF("_SpinSpeed", p.spinSpeed);
-            setF("_UpBias", p.upBias);
             setF("_SCurveAmount", p.sCurveAmount);
             setF("_SCurveFreq", p.sCurveFreq);
             setF("_DebugCircles", p.debugCircles);
@@ -79,6 +82,7 @@ namespace JC.VFX
         {
             foreach (var aura in Object.FindObjectsByType<FlareOrbSpriteAura>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if (InDarkVariant(aura)) continue;   // 흑염 변형은 크림판 프리셋 스코프 밖
                 aura.worldSize = p.worldSize;
                 var mr = aura.GetComponent<MeshRenderer>();
                 if (mr != null)
@@ -132,8 +136,13 @@ namespace JC.VFX
             p.tongueHighlightColor = mat.GetColor("_ColorHighlight");
             p.tongueEmission = mat.GetFloat("_Emission");
             p.baseRadius = mat.GetFloat("_BaseRadius");
+            p.ellipseRatio = mat.GetFloat("_EllipseRatio");
             p.maxReach = mat.GetFloat("_MaxReach");
+            p.reachRatio = mat.GetFloat("_ReachRatio");
             p.reachSoft = mat.GetFloat("_ReachSoft");
+            p.patternYOffset = mat.GetFloat("_YOffset");
+            p.emitterDepth = mat.GetFloat("_EmitterDepth");
+            p.cutHeight = mat.GetFloat("_CutHeight");
             p.laneCount = Mathf.RoundToInt(mat.GetFloat("_LaneCount"));
             p.laneWidth = mat.GetFloat("_LaneWidth");
             p.laneWidthJitter = mat.GetFloat("_LaneWidthJitter");
@@ -141,13 +150,13 @@ namespace JC.VFX
             p.laneTiltJitter = mat.GetFloat("_LaneTiltJitter");
             p.widthNoiseScale = mat.GetFloat("_WidthNoiseScale");
             p.widthNoiseAmount = mat.GetFloat("_WidthNoiseAmount");
-            p.birthRadiusStart = mat.GetFloat("_RStart");
-            p.birthRadiusEnd = mat.GetFloat("_REnd");
-            p.birthRadiusJitter = mat.GetFloat("_RJitter");
+            p.birthOffsetMin = mat.GetFloat("_BirthMin");
+            p.birthOffsetMax = mat.GetFloat("_BirthMax");
             p.birthInnerBias = mat.GetFloat("_BirthBias");
             p.laneLengthJitter = mat.GetFloat("_VLengthJitter");
             p.laneMaxLength = mat.GetFloat("_MaxLen");
             p.outerShrink = mat.GetFloat("_OuterShrink");
+            p.cutFarShrink = mat.GetFloat("_CutFarShrink");
             p.laneTravelDist = mat.GetFloat("_TravelDist");
             p.laneTravelSpeed = mat.GetFloat("_TravelSpeed");
             p.laneLifeFadePeak = mat.GetFloat("_LifeFadePeak");
@@ -155,8 +164,6 @@ namespace JC.VFX
             p.highlightRatio = mat.GetFloat("_HighlightRatio");
             p.edgeSoftRatio = mat.GetFloat("_EdgeSoftRatio");
             p.flowSpeed = mat.GetFloat("_FlowSpeed");
-            p.spinSpeed = mat.GetFloat("_SpinSpeed");
-            p.upBias = mat.GetFloat("_UpBias");
             p.sCurveAmount = mat.GetFloat("_SCurveAmount");
             p.sCurveFreq = mat.GetFloat("_SCurveFreq");
             p.debugCircles = mat.GetFloat("_DebugCircles");
