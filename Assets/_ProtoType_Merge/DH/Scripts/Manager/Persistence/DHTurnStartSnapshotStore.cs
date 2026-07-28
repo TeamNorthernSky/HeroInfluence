@@ -45,6 +45,7 @@ public sealed class DHTurnStartSnapshotStore : MonoBehaviour
         AddSection<DHHQSnapshotSection>(root.transform, "HQSnapshot");
         AddSection<DHDepartmentSnapshotSection>(root.transform, "DepartmentSnapshot");
         AddSection<DHVisitSnapshotSection>(root.transform, "VisitSnapshot");
+        AddSection<DHEventStateSnapshotSection>(root.transform, "EventStateSnapshot");
 
         return root.AddComponent<DHTurnStartSnapshotStore>();
     }
@@ -72,7 +73,35 @@ public sealed class DHTurnStartSnapshotStore : MonoBehaviour
     [ContextMenu("Refresh Sections")]
     public void RefreshSections()
     {
+        EnsureDefaultSections();
         sections = GetComponentsInChildren<DHTurnStartSnapshotSection>(true);
+    }
+
+    private void EnsureDefaultSections()
+    {
+        EnsureSection<DHUnitSnapshotSection>("UnitSnapshot");
+        EnsureSection<DHEnemyUnitSnapshotSection>("EnemyUnitSnapshot");
+        EnsureSection<DHEnemyGroupSnapshotSection>("EnemyGroupSnapshot");
+        EnsureSection<DHWeaponSnapshotSection>("WeaponSnapshot");
+        EnsureSection<DHPartySnapshotSection>("PartySnapshot");
+        EnsureSection<DHMapProgressSnapshotSection>("MapProgressSnapshot");
+        EnsureSection<DHGameStateSnapshotSection>("GameStateSnapshot");
+        EnsureSection<DHEconomySnapshotSection>("EconomySnapshot");
+        EnsureSection<DHHQSnapshotSection>("HQSnapshot");
+        EnsureSection<DHDepartmentSnapshotSection>("DepartmentSnapshot");
+        EnsureSection<DHVisitSnapshotSection>("VisitSnapshot");
+        EnsureSection<DHEventStateSnapshotSection>("EventStateSnapshot");
+    }
+
+    private void EnsureSection<T>(string sectionName) where T : DHTurnStartSnapshotSection
+    {
+        if (GetComponentInChildren<T>(true) != null)
+            return;
+
+        Transform child = transform.Find(sectionName);
+        GameObject sectionObject = child != null ? child.gameObject : new GameObject(sectionName);
+        sectionObject.transform.SetParent(transform, false);
+        sectionObject.AddComponent<T>();
     }
 
     [ContextMenu("Capture Turn Start Snapshot")]

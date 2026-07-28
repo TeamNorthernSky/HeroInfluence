@@ -59,10 +59,15 @@ public static class DHChatBranchRuleEvaluator
 
     public static void ExecuteTriggerEffect(BranchDBEventData option)
     {
+        ExecuteTriggerEffect(option, null);
+    }
+
+    public static void ExecuteTriggerEffect(BranchDBEventData option, DHEventEffectExecutionContext context)
+    {
         if (option == null || string.IsNullOrWhiteSpace(option.Trigger_Effect))
             return;
 
-        DHChatEffectRuntimeManager.EnsureInstance().ExecuteEffects(option.Trigger_Effect);
+        DHEventEffectRuntimeManager.EnsureInstance().ExecuteEffects(option.Trigger_Effect, context);
     }
 
     private static List<(string triggerType, string expression)> BuildConditions(
@@ -205,26 +210,148 @@ public static class DHChatBranchRuleEvaluator
         if (float.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
             return true;
 
-        DHChatEffectRuntimeManager runtime = DHChatEffectRuntimeManager.EnsureInstance();
-        if (runtime.TryGetNumericValue(token, out value))
+        DHEventStateRepository eventStateRepository = DHEventStateRepository.EnsureInstance();
+        if (eventStateRepository.TryGetNumericValue(token, out value))
             return true;
 
-        if (string.Equals(triggerType, "Resource", StringComparison.OrdinalIgnoreCase) &&
-            Enum.TryParse(token, true, out ResourceType resourceType) &&
-            Game.Economy != null)
+        if (string.Equals(triggerType, "Stat", StringComparison.OrdinalIgnoreCase) &&
+            TryResolveUnitStat(token, out value))
         {
-            value = Game.Economy.Get(resourceType);
             return true;
         }
 
         if (string.Equals(triggerType, "Flag", StringComparison.OrdinalIgnoreCase))
         {
-            value = runtime.GetFlag(token) ? 1f : 0f;
+            value = eventStateRepository.GetFlag(token) ? 1f : 0f;
             return true;
         }
 
         Debug.LogWarning($"[DHChatBranchRuleEvaluator] Branch condition value was not found. Type: {triggerType}, Key: {token}");
         return false;
+    }
+
+    private static bool TryResolveUnitStat(string token, out float value)
+    {
+        value = 0f;
+        if (string.IsNullOrWhiteSpace(token))
+            return false;
+
+        int separatorIndex = token.LastIndexOf('_');
+        if (separatorIndex <= 0 || separatorIndex >= token.Length - 1)
+            return false;
+
+        string unitAlias = token.Substring(0, separatorIndex).Trim();
+        string statKey = token.Substring(separatorIndex + 1).Trim();
+        if (!TryResolveUnitTemplateKey(unitAlias, out string unitTemplateKey) ||
+            !TryFindPersistentUnit(unitTemplateKey, out UnitPersistentData unitData))
+        {
+            return false;
+        }
+
+        return TryReadUnitStat(unitData, statKey, out value);
+    }
+
+    private static bool TryResolveUnitTemplateKey(string alias, out string unitTemplateKey)
+    {
+        unitTemplateKey = string.Empty;
+        if (string.IsNullOrWhiteSpace(alias))
+            return false;
+
+        string normalized = NormalizeAlias(alias);
+        switch (normalized)
+        {
+            case "10001":
+            case "JUSTICE":
+            case "저스티스":
+                unitTemplateKey = "10001";
+                return true;
+            case "10002":
+            case "RUMINA":
+            case "LUMINA":
+            case "루미나":
+                unitTemplateKey = "10002";
+                return true;
+            case "10003":
+            case "BLACKBULLET":
+            case "BLACK_BULLET":
+            case "블랙불릿":
+                unitTemplateKey = "10003";
+                return true;
+            case "10004":
+            case "NEKOMING":
+            case "네코밍":
+                unitTemplateKey = "10004";
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static string NormalizeAlias(string alias)
+    {
+        return alias.Trim().Replace(" ", string.Empty).Replace("-", "_").ToUpperInvariant();
+    }
+
+    private static bool TryFindPersistentUnit(string unitTemplateKey, out UnitPersistentData unitData)
+    {
+        unitData = null;
+        PersistentUnitRepository repository = PersistentUnitRepository.Instance;
+        if (repository == null || string.IsNullOrWhiteSpace(unitTemplateKey))
+            return false;
+
+        IReadOnlyList<UnitPersistentData> units = repository.Units;
+        for (int i = 0; i < units.Count; i++)
+        {
+            UnitPersistentData candidate = units[i];
+            if (candidate == null)
+                continue;
+
+            if (!string.Equals(candidate.UnitTemplateKey, unitTemplateKey, StringComparison.Ordinal))
+                continue;
+
+            unitData = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryReadUnitStat(UnitPersistentData unitData, string statKey, out float value)
+    {
+        value = 0f;
+        if (unitData == null || string.IsNullOrWhiteSpace(statKey))
+            return false;
+
+        switch (statKey.Trim().ToUpperInvariant())
+        {
+            case "IP":
+            case "INFLUENCE":
+            case "CURRENTIP":
+            case "CURRENTINFLUENCE":
+                value = unitData.CurrentInfluence;
+                return true;
+            case "MAXIP":
+            case "MAXINFLUENCE":
+                value = unitData.IngameStats.Influence;
+                return true;
+            case "HP":
+            case "CURRENTHP":
+                value = unitData.CurrentHp;
+                return true;
+            case "MAXHP":
+                value = unitData.IngameStats.HP;
+                return true;
+            case "ATK":
+            case "ATTACK":
+                value = unitData.IngameStats.Atk;
+                return true;
+            case "DEF":
+            case "DEFENSE":
+                value = unitData.IngameStats.DEF;
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static string NormalizeOperator(string op)
