@@ -184,9 +184,11 @@ namespace ASB.Work.Battle.Sequence
         private static Transform ResolveArrowFirePoint(BattleCharactor actor)
         {
             UnitSocketHolder socketHolder = actor?.GetComponentInChildren<UnitSocketHolder>();
-            if (socketHolder?.LeftWeaponSocket != null)
+            // 장착 무기(활)의 Muzzle 우선, 없으면 기존처럼 왼손 마운트로 폴백.
+            Transform firePoint = socketHolder?.ResolveWeaponOrigin(WeaponSocket.Muzzle);
+            if (firePoint != null)
             {
-                return socketHolder.LeftWeaponSocket;
+                return firePoint;
             }
 
             return actor != null ? actor.transform : null;

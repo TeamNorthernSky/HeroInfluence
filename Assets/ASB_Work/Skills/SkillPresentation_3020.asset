@@ -17,7 +17,7 @@ MonoBehaviour:
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
-  UseAnimEvent: 0
+  UseAnimEvent: 1
   HitDelay: 0.25
   AttackSoundId: 0
   HitSoundId: 0
@@ -79,19 +79,19 @@ MonoBehaviour:
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
       Cues:
-      - CueName: 
-        EffectIds: 
+      - CueName: hit_fx
+        EffectIds: 2e040000
         SoundIds: 
         Operation: 0
         InstanceKey: 
-        Anchor: 0
-        Socket: 0
+        Anchor: 1
+        Socket: 11
   Return:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
   Post:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []

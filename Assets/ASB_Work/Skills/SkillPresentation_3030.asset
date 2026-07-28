@@ -17,7 +17,7 @@ MonoBehaviour:
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
-  UseAnimEvent: 0
+  UseAnimEvent: 1
   HitDelay: 0.25
   AttackSoundId: 0
   HitSoundId: 0
@@ -61,12 +61,12 @@ MonoBehaviour:
     BlendInSeconds: 0.1
     Cues: []
   Move:
-    Enabled: 1
+    Enabled: 0
     UseUnitMovement: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
   AttackPrepare:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []
@@ -74,16 +74,30 @@ MonoBehaviour:
     Enabled: 1
     Beats:
     - AnimationStateName: Base Layer.ClassSkill_3
-      BlendInSeconds: 0
+      BlendInSeconds: 0.1
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
-      Cues: []
+      Cues:
+      - CueName: fx_right
+        EffectIds: 2e040000
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 1
+        Socket: 11
+      - CueName: fx_left
+        EffectIds: 2e040000
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 1
+        Socket: 10
   Return:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
   Post:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []

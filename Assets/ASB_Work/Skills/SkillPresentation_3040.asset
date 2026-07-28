@@ -56,17 +56,17 @@ MonoBehaviour:
   HitEffectPositionOffset: {x: 0, y: 0, z: 0}
   HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []
   Move:
-    Enabled: 1
+    Enabled: 0
     UseUnitMovement: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
   AttackPrepare:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []
@@ -79,11 +79,11 @@ MonoBehaviour:
       WaitForHitEvent: 0
       Cues: []
   Return:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
   Post:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []

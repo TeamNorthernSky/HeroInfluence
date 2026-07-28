@@ -167,7 +167,7 @@ MonoBehaviour:
   DamagePopupSocket: {fileID: 0}
   HitDamagePopupDelay: 0
   HitAnimationDelay: 0
-  HoldArrow: {fileID: 2137968763567833344}
+  HoldArrow: {fileID: 0}
   TargetArrowPrefab: {fileID: 6341818806498125037, guid: 96476541362745d49b89d901bc518f96,
     type: 3}
   ArrowHitPoint: {fileID: 0}
@@ -538,12 +538,6 @@ PrefabInstance:
 --- !u!95 &672468824689837087 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5663276138126019020, guid: e8506414cf9fc0f4d9108dd5b9bc2266,
-    type: 3}
-  m_PrefabInstance: {fileID: 5170951994383994323}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &2137968763567833344 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6514877091103411411, guid: e8506414cf9fc0f4d9108dd5b9bc2266,
     type: 3}
   m_PrefabInstance: {fileID: 5170951994383994323}
   m_PrefabAsset: {fileID: 0}

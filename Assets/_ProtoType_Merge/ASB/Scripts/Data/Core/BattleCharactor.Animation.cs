@@ -45,6 +45,13 @@ public partial class BattleCharactor
         Anim?.AniEvent_HoldBegin(seconds);
     }
 
+    /// <summary>클립 이벤트가 루트 BattleCharactor에 걸린 경우의 Idle 블렌드 전달.</summary>
+    public void AniEvent_ReturnIdle(float seconds)
+    {
+        EnsureAnimationController();
+        Anim?.AniEvent_ReturnIdle(seconds);
+    }
+
     // 연출 Cue가 루트 BattleCharactor에 걸린 경우도 유닛 라우터로 분배. 라우터 없으면 no-op(휴면).
     public void AniEvent_PresentationCue(string cueName) => GetComponent<UnitAnimationEventRouter>()?.PresentationCue(cueName);
 

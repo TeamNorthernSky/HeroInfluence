@@ -1322,7 +1322,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53194c5e2822cc44993d83d47a0fc12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _currentBattleSpeed: 1
+  _currentBattleSpeed: 0.5
   battleFlowManager: {fileID: 621159268}
   _visualDirector: {fileID: 621159274}
   _presentationCatalog: {fileID: 11400000, guid: 99e1bc13888047f4ea436fbc4eaf9856,
@@ -1401,7 +1401,7 @@ MonoBehaviour:
   enemyPlace: {fileID: 912453333}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
-  playerUnitId: 10002
+  playerUnitId: 10003
   playerGridNumber: 101
   enemyUnitId: 20001
   enemyGridNumber: 201
