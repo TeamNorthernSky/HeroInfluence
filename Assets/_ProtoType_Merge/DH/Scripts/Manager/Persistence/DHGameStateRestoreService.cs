@@ -28,8 +28,15 @@ public static class DHGameStateRestoreService
 
     public static void RestoreFromGameSaveData(GameSaveData data)
     {
+        DHTurnStartSnapshotStore.EnsureInstance().LoadFromGameSaveData(data);
+        RestoreEventState(data);
         RestoreRepositories(data);
         RestoreGlobalState(data);
+    }
+
+    private static void RestoreEventState(GameSaveData data)
+    {
+        DHEventStateRepository.EnsureInstance().RestoreFlagSnapshot(data != null ? data.chatFlags : null);
     }
 
     public static void RestoreRepositories(GameSaveData data)
