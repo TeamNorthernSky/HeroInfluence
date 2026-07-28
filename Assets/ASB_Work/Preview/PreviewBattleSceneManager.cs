@@ -10,6 +10,21 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 /// </summary>
 public class PreviewBattleSceneManager : MonoBehaviour
 {
+    [System.Serializable]
+    private sealed class PreviewEnemy
+    {
+        [SerializeField] private string unitId;
+        [SerializeField] private int gridNumber;
+
+        public string UnitId => unitId;
+        public int GridNumber => gridNumber;
+
+        public PreviewEnemy(string unitId, int gridNumber)
+        {
+            this.unitId = unitId;
+            this.gridNumber = gridNumber;
+        }
+    }
     [Header("Scene Roots")]
     [SerializeField] private Transform playerPlace;
     [SerializeField] private Transform enemyPlace;
@@ -28,6 +43,12 @@ public class PreviewBattleSceneManager : MonoBehaviour
     [SerializeField] private int playerGridNumber = 0;
     [SerializeField] private string enemyUnitId = "20001";
     [SerializeField] private int enemyGridNumber = 200;
+    [SerializeField] private List<PreviewEnemy> previewEnemies = new List<PreviewEnemy>
+    {
+        new PreviewEnemy("20001", 200),
+        new PreviewEnemy("20001", 201),
+        new PreviewEnemy("20001", 202),
+    };
 
     [Header("Preview Controller")]
     [SerializeField] private SkillPresentationPreviewController previewController;
@@ -55,7 +76,8 @@ public class PreviewBattleSceneManager : MonoBehaviour
         }
 
         BattleCharactor actor = SpawnPlayerPreviewUnit();
-        BattleCharactor target = SpawnEnemyPreviewUnit();
+        List<BattleCharactor> targets = SpawnEnemyPreviewUnits();
+        BattleCharactor target = targets.Count > 0 ? targets[0] : null;
 
         BattleGridManager.Instance?.RebuildCache();
 
@@ -109,15 +131,48 @@ public class PreviewBattleSceneManager : MonoBehaviour
         return ResolveSpawnedBattleCharactor(spawned, "player");
     }
 
-    private BattleCharactor SpawnEnemyPreviewUnit()
+    private List<BattleCharactor> SpawnEnemyPreviewUnits()
     {
+        List<BattleCharactor> spawnedEnemies = new List<BattleCharactor>();
+
         if (enemySpawner == null)
         {
             Debug.LogWarning("[PreviewBattleSceneManager] enemySpawner is missing.");
-            return null;
+            return spawnedEnemies;
         }
 
-        GameObject spawned = enemySpawner.SpawnUnit(enemyUnitId, enemyGridNumber);
+        if (previewEnemies == null || previewEnemies.Count == 0)
+        {
+            BattleCharactor legacyEnemy = SpawnEnemyPreviewUnit(enemyUnitId, enemyGridNumber);
+            if (legacyEnemy != null)
+            {
+                spawnedEnemies.Add(legacyEnemy);
+            }
+
+            return spawnedEnemies;
+        }
+
+        for (int i = 0; i < previewEnemies.Count; i++)
+        {
+            PreviewEnemy previewEnemy = previewEnemies[i];
+            if (previewEnemy == null || string.IsNullOrWhiteSpace(previewEnemy.UnitId))
+            {
+                continue;
+            }
+
+            BattleCharactor enemy = SpawnEnemyPreviewUnit(previewEnemy.UnitId, previewEnemy.GridNumber);
+            if (enemy != null)
+            {
+                spawnedEnemies.Add(enemy);
+            }
+        }
+
+        return spawnedEnemies;
+    }
+
+    private BattleCharactor SpawnEnemyPreviewUnit(string unitId, int gridNumber)
+    {
+        GameObject spawned = enemySpawner.SpawnUnit(unitId, gridNumber);
         return ResolveSpawnedBattleCharactor(spawned, "enemy");
     }
 

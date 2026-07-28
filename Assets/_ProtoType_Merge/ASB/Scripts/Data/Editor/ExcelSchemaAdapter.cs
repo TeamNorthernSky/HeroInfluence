@@ -72,7 +72,7 @@ namespace ASB.ExcelImport.Editor
             schema.useDictionary = false;
             schema.requireUniqueKey = false;
             schema.duplicateKeyPolicy = DuplicateKeyPolicy.Error;
-            schema.Columns = BuildDefaultColumns(raw);
+            schema.Columns = BuildDefaultColumns(raw, schema.headerRowIndex);
             schema.templateSignature = BuildTemplateSignature(schema);
 
             AssetDatabase.CreateAsset(schema, schemaPath);
@@ -336,7 +336,7 @@ namespace ASB.ExcelImport.Editor
                 return;
             }
 
-            List<ExcelColumnMapping> defaults = BuildDefaultColumns(raw);
+            List<ExcelColumnMapping> defaults = BuildDefaultColumns(raw, schema.headerRowIndex);
             List<ExcelColumnMapping> existing = schema.Columns ?? new List<ExcelColumnMapping>();
             var used = new HashSet<ExcelColumnMapping>();
             var result = new List<ExcelColumnMapping>();
@@ -960,10 +960,16 @@ namespace ASB.ExcelImport.Editor
             };
         }
 
-        private static List<ExcelColumnMapping> BuildDefaultColumns(RawExcelSheetSO raw)
+        private static List<ExcelColumnMapping> BuildDefaultColumns(RawExcelSheetSO raw, int headerRowIndex = 0)
         {
             var columns = new List<ExcelColumnMapping>();
-            RawExcelRow header = raw.Rows.Count > 0 ? raw.Rows[0] : null;
+            if (raw == null || raw.Rows == null || raw.Rows.Count == 0)
+            {
+                return columns;
+            }
+
+            int safeHeaderRowIndex = Math.Max(0, Math.Min(headerRowIndex, raw.Rows.Count - 1));
+            RawExcelRow header = raw.Rows[safeHeaderRowIndex];
             int count = header != null ? header.Cells.Count : 0;
             var usedNames = new Dictionary<string, int>(StringComparer.Ordinal);
 

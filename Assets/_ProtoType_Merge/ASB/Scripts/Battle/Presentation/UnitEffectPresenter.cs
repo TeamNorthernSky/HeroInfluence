@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>Cue의 Anchor/Socket으로 이펙트 생성 위치를 해석한다.</summary>
 public static class PresentationAnchorUtil
@@ -84,7 +85,44 @@ public class UnitEffectPresenter : MonoBehaviour
                 return;
         }
 
-        if (cue.EffectPrefabs == null) return;
+        if (cue.EffectPrefabs == null || cue.EffectPrefabs.Count == 0) return;
+
+        var spawnedHandles = new List<ISkillEffectHandle>();
+
+        if (cue.Anchor == SpawnAnchor.EachTarget)
+        {
+            // 대상 수만큼: 각 타깃 위치에 하나씩 스폰(열의 적이 N명이면 N개).
+            IReadOnlyList<BattleCharactor> targets = baseContext?.Targets;
+            if (targets != null)
+            {
+                for (int t = 0; t < targets.Count; t++)
+                {
+                    BattleCharactor unit = targets[t];
+                    if (unit == null || unit.IsDead) continue;
+                    Transform tr = unit.transform;
+                    SpawnCueInstances(cue, baseContext, tr, tr.position, tr.rotation, spawnedHandles);
+                }
+            }
+        }
+        else
+        {
+            SpawnCueInstances(cue, baseContext, anchor, position, rotation, spawnedHandles);
+        }
+
+        // held(InstanceKey): 1개면 그대로, 여러 개면 Composite로 묶어 등록(후속 Signal/Stop이 전부에 전달됨).
+        if (!string.IsNullOrEmpty(cue.InstanceKey) && spawnedHandles.Count > 0)
+        {
+            ISkillEffectHandle held = spawnedHandles.Count == 1
+                ? spawnedHandles[0]
+                : new CompositeSkillEffectHandle(spawnedHandles);
+            runtime.RegisterHandle(cue.InstanceKey, held);
+        }
+    }
+
+    private void SpawnCueInstances(RuntimeCue cue, SkillEffectContext baseContext,
+        Transform anchor, Vector3 position, Quaternion rotation, List<ISkillEffectHandle> handlesOut)
+    {
+        SkillEffectContext effectContext = baseContext != null ? baseContext.CreateSnapshot(anchor, position) : null;
         for (int i = 0; i < cue.EffectPrefabs.Count; i++)
         {
             GameObject prefab = cue.EffectPrefabs[i];
@@ -97,7 +135,7 @@ public class UnitEffectPresenter : MonoBehaviour
             {
                 if (instance.TryGetComponent(out ISkillEffectHandle handle))
                 {
-                    runtime.RegisterHandle(cue.InstanceKey, handle);
+                    handlesOut.Add(handle);
                 }
                 else
                 {

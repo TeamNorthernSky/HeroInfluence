@@ -20,6 +20,7 @@ namespace ASB.Work.Battle.Command
         private readonly Func<BattleHitResult> _onHitCallback;
 
         // 다중 타겟(AoE)용
+        private readonly HitDeliveryGate _deliveryGate;
         private readonly List<DamageContext> _aoeContexts;
         private readonly List<Func<BattleHitResult>> _aoeHitCallbacks;
 
@@ -32,7 +33,8 @@ namespace ASB.Work.Battle.Command
             SkillData skill,
             bool playBasicAttackAnimation,
             bool playTargetHitAnimation,
-            Func<BattleHitResult> onHitCallback)
+            Func<BattleHitResult> onHitCallback,
+            HitDeliveryGate deliveryGate)
         {
             _actor = actor;
             _target = target;
@@ -40,12 +42,17 @@ namespace ASB.Work.Battle.Command
             _playBasicAttackAnimation = playBasicAttackAnimation;
             _playTargetHitAnimation = playTargetHitAnimation;
             _onHitCallback = onHitCallback;
+            _deliveryGate = deliveryGate;
             _isAoE = false;
         }
 
         /// <summary>다중 타겟(AoE) 스킬. 전 타겟이 동시에 피격 연출됩니다.</summary>
-        public SkillActionCommand(List<DamageContext> aoeContexts, List<Func<BattleHitResult>> aoeHitCallbacks)
+        public SkillActionCommand(
+            List<DamageContext> aoeContexts,
+            List<Func<BattleHitResult>> aoeHitCallbacks,
+            HitDeliveryGate deliveryGate)
         {
+            _deliveryGate = deliveryGate;
             _aoeContexts = aoeContexts;
             _aoeHitCallbacks = aoeHitCallbacks;
             _isAoE = true;
@@ -55,7 +62,7 @@ namespace ASB.Work.Battle.Command
         {
             if (_isAoE)
             {
-                yield return battleManager.StartCoroutine(battleManager.RunAoESkillSequence(_aoeContexts, _aoeHitCallbacks));
+                yield return battleManager.StartCoroutine(battleManager.RunAoESkillSequence(_aoeContexts, _aoeHitCallbacks, _deliveryGate));
                 yield break;
             }
 
@@ -65,7 +72,7 @@ namespace ASB.Work.Battle.Command
                 _skill,
                 _playBasicAttackAnimation,
                 _playTargetHitAnimation,
-                _onHitCallback));
+                _onHitCallback, _deliveryGate));
         }
     }
 }

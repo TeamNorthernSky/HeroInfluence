@@ -345,8 +345,8 @@ namespace ASB.ExcelImport.Editor
             _schema.templateClassName = CodeGenerator.ToTypeBaseName(templateClassName);
             _schema.className = _schema.templateClassName;
             _schema.outputAssetName = EditorGUILayout.TextField("Output Asset", _schema.outputAssetName);
-            _schema.headerRowIndex = EditorGUILayout.IntField("Header Row", _schema.headerRowIndex);
-            _schema.dataStartRowIndex = EditorGUILayout.IntField("Data Start Row", _schema.dataStartRowIndex);
+            _schema.headerRowIndex = EditorGUILayout.IntField("Header Row (0-based)", _schema.headerRowIndex);
+            _schema.dataStartRowIndex = EditorGUILayout.IntField("Data Start Row (0-based)", _schema.dataStartRowIndex);
             _schema.useDictionary = EditorGUILayout.Toggle("Use Dictionary", _schema.useDictionary);
             _schema.requireUniqueKey = EditorGUILayout.Toggle("Require Unique Key", _schema.requireUniqueKey);
             EditorGUI.BeginDisabledGroup(true);
@@ -357,6 +357,10 @@ namespace ASB.ExcelImport.Editor
                 EditorUtility.SetDirty(_schema);
                 MarkCandidateCacheDirty();
             }
+
+            EditorGUILayout.HelpBox(
+                "Rows before Data Start Row are ignored. To use a later header row, set Header Row, then click Rebuild to refresh column mappings.",
+                MessageType.Info);
         }
 
         private void DrawSchemaFieldsReadOnly()

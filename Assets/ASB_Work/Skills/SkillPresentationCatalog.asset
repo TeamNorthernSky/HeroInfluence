@@ -36,7 +36,7 @@ MonoBehaviour:
   - SkillIndex: 2030
     Presentation: {fileID: 11400000, guid: 91978797f9371794399e0f497914cd36, type: 2}
   - SkillIndex: 2040
-    Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
+    Presentation: {fileID: 11400000, guid: 1d5ed6957c695754fa49ec43973f9020, type: 2}
   - SkillIndex: 2050
     Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
   - SkillIndex: 3020
@@ -44,7 +44,7 @@ MonoBehaviour:
   - SkillIndex: 3030
     Presentation: {fileID: 11400000, guid: be7b57f869865cd42a2c14dc8a3107aa, type: 2}
   - SkillIndex: 3040
-    Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
+    Presentation: {fileID: 11400000, guid: e9a58b61e762d5d41b3dbf09b33db8c5, type: 2}
   - SkillIndex: 3050
     Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
   - SkillIndex: 3060

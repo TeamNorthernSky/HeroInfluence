@@ -329,7 +329,20 @@ namespace ASB.Work.Battle.SkillExecution
             }
 
             var result = SkillExecutionResult.SuccessResult(caster, skillData);
+
+            int mainBefore = result.DamageContexts != null ? result.DamageContexts.Count : 0;
             ApplyMainEffect(caster, target, skillData, result);
+            // 주 타깃으로 생성된 컨텍스트는 명시적으로 Primary.
+            if (result.DamageContexts != null)
+            {
+                for (int k = mainBefore; k < result.DamageContexts.Count; k++)
+                {
+                    if (result.DamageContexts[k] != null)
+                    {
+                        result.DamageContexts[k].Role = ASB.Work.Battle.Core.DamageRole.Primary;
+                    }
+                }
+            }
 
             ASB.Work.BattleGrid.BattleGridManager gridManager = ASB.Work.BattleGrid.BattleGridManager.Instance;
             if (gridManager == null)
@@ -354,6 +367,8 @@ namespace ASB.Work.Battle.SkillExecution
                     continue;
                 }
 
+                int addBefore = result.DamageContexts != null ? result.DamageContexts.Count : 0;
+
                 if (skillData.classSkillEffect == 0)
                 {
                     ApplyAdditionaDamage(caster, extraTarget, skillData, result);
@@ -364,6 +379,18 @@ namespace ASB.Work.Battle.SkillExecution
                 }
 
                 ApplyAdditionalEffect(caster, extraTarget, skillData, result);
+
+                // 추가 타깃으로 생성된 컨텍스트는 명시적으로 Additional.
+                if (result.DamageContexts != null)
+                {
+                    for (int k = addBefore; k < result.DamageContexts.Count; k++)
+                    {
+                        if (result.DamageContexts[k] != null)
+                        {
+                            result.DamageContexts[k].Role = ASB.Work.Battle.Core.DamageRole.Additional;
+                        }
+                    }
+                }
             }
 
             return result;

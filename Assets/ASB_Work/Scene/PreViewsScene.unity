@@ -1401,10 +1401,17 @@ MonoBehaviour:
   enemyPlace: {fileID: 912453333}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
-  playerUnitId: 10001
+  playerUnitId: 10002
   playerGridNumber: 101
   enemyUnitId: 20001
   enemyGridNumber: 201
+  previewEnemies:
+  - unitId: 20001
+    gridNumber: 200
+  - unitId: 20001
+    gridNumber: 201
+  - unitId: 20001
+    gridNumber: 202
   previewController: {fileID: 1306616268}
   removeExistingPlacedUnits: 1
 --- !u!1 &771919882

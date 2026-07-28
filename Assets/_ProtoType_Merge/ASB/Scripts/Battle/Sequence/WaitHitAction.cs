@@ -38,7 +38,11 @@ namespace ASB.Work.Battle.Sequence
             {
                 while (_anim != null && !_anim.HasHitSinceWaitBegan && elapsed < _animEventTimeout)
                 {
-                    elapsed += Time.deltaTime * _battleSpeed;
+                    // 홀드(프리즈) 중에는 타임아웃 시계를 멈춘다(긴 차지에도 조기 히트 방지).
+                    if (!_anim.IsHolding)
+                    {
+                        elapsed += Time.deltaTime * _battleSpeed;
+                    }
                     yield return null;
                 }
 

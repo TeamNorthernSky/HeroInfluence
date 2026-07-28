@@ -118,6 +118,10 @@ public class SkillPresentationDataEditor : Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("HitSfxClip"));
 
             EditorGUILayout.LabelField("Projectile", EditorStyles.miniBoldLabel);
+            EditorGUILayout.LabelField("Projectile Impact (skill-specific)", EditorStyles.miniBoldLabel);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("ProjectileVisual"), true);
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Projectile (legacy fallback)", EditorStyles.miniBoldLabel);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("ProjectilePrefab"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("FlightTime"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("TrajectoryType"));

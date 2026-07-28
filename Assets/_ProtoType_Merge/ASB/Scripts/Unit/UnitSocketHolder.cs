@@ -14,6 +14,9 @@ public enum UnitSocket
     Floor,
     RightFoot,
     LeftFoot,
+    // 새 값은 반드시 맨 끝에 추가(기존 직렬화된 CueBinding.Socket int가 밀리지 않도록).
+    Overhead,
+    FrontProjectile,
 }
 
 /// <summary>
@@ -36,6 +39,14 @@ public class UnitSocketHolder : MonoBehaviour
     [SerializeField] private GameObject chestSocketObject;
     [SerializeField] private GameObject floorSocketObject;
 
+    [Header("Air Socket")]
+    [Tooltip("공중 부유 발사/캐스트 지점. 캐릭터 루트의 자식으로 공중에 offset해 두면 발사점이 공중에 유지됩니다.")]
+    [SerializeField] private GameObject overheadSocketObject;
+
+    [Header("Projectile Socket")]
+    [Tooltip("투사체를 차징하거나 발사하기 전, 캐릭터 전방에 배치할 기준 소켓입니다.")]
+    [SerializeField] private GameObject frontProjectileSocketObject;
+
     [Header("Scale Reference")]
     [SerializeField]
     [Tooltip("캐릭터 전체 크기를 결정하는 모델 루트. UseVisualRoot 이펙트 스케일 모드에서 사용.")]
@@ -48,6 +59,8 @@ public class UnitSocketHolder : MonoBehaviour
     public Transform HitSocket => hitSocketObject != null ? hitSocketObject.transform : null;
     public Transform ChestSocket => chestSocketObject != null ? chestSocketObject.transform : null;
     public Transform FloorSocket => floorSocketObject != null ? floorSocketObject.transform : null;
+    public Transform OverheadSocket => overheadSocketObject != null ? overheadSocketObject.transform : null;
+    public Transform FrontProjectileSocket => frontProjectileSocketObject != null ? frontProjectileSocketObject.transform : null;
     public Transform VisualRoot => visualRoot;
 
     /// <summary>
@@ -93,6 +106,10 @@ public class UnitSocketHolder : MonoBehaviour
                 return ChestSocket;
             case UnitSocket.Floor:
                 return FloorSocket;
+            case UnitSocket.Overhead:
+                return OverheadSocket;
+            case UnitSocket.FrontProjectile:
+                return FrontProjectileSocket;
             default:
                 return null;
         }

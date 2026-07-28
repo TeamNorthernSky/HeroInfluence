@@ -71,6 +71,11 @@ public class BattleManager : MonoBehaviour
     [Header("Skill Presentation Override")]
     [SerializeField] private SkillPresentationCatalog _presentationCatalog;
 
+    // 체인 투사체 캐스트-로컬 상태. 비-AoE 컨텍스트 루프에서 설정하고 ResolveSkillHitRoutine이 읽는다.
+    // (코루틴을 가로지르지만 컨텍스트는 순차 실행이라 동시성 문제 없음 — _currentBattleSpeed와 동일 패턴)
+    private ProjectileChainState _projectileChainState;
+    private DamageRole _projectileChainRole = DamageRole.Primary;
+
     public float CurrentBattleSpeed => _currentBattleSpeed;
 
     private void Awake()
@@ -269,14 +274,9 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     private BattleHitResult CommitDamage(DamageContext context, BattleHitResult predicted)
     {
-        if (context?.Target == null || predicted == null)
+        if (context?.Target == null || predicted == null || context.Target.IsDead)
         {
-            return predicted;
-        }
-
-        if (context.Target.IsDead)
-        {
-            return predicted;
+            return BattleHitResult.Empty(context?.Target);
         }
 
         context.Target.TakeDamage(predicted.Damage);
@@ -293,6 +293,8 @@ public class BattleManager : MonoBehaviour
         }
 
         float totalDamageDealt = 0f;
+        var deliveryGates = new Dictionary<DamageContext, HitDeliveryGate>();
+        _projectileChainState = null; // 캐스트마다 초기화(이전 체인 상태 누수 방지)
         if (result.DamageContexts != null)
         {
             bool isAoE = result.Handler is BaseAoESkillHandler;
@@ -301,6 +303,7 @@ public class BattleManager : MonoBehaviour
             {
                 var aoeContexts = new List<DamageContext>();
                 var hitCallbacks = new List<Func<BattleHitResult>>();
+                var aoeDeliveryGate = new HitDeliveryGate();
 
                 for (int i = 0; i < result.DamageContexts.Count; i++)
                 {
@@ -321,12 +324,13 @@ public class BattleManager : MonoBehaviour
                     }
 
                     BattleHitResult predicted = PredictDamage(damageContext);
-                    result.RecordDamageResult(damageContext, predicted);
+                    deliveryGates[damageContext] = aoeDeliveryGate;
 
                     aoeContexts.Add(damageContext);
                     hitCallbacks.Add(() =>
                     {
                         BattleHitResult r = CommitDamage(damageContext, predicted);
+                        result.RecordDamageResult(damageContext, r);
                         totalDamageDealt += r?.Damage ?? 0f;
                         return r;
                     });
@@ -335,12 +339,15 @@ public class BattleManager : MonoBehaviour
                 if (aoeContexts.Count > 0)
                 {
                     var aoeQueue = new ASB.Work.Battle.Command.BattleActionQueue();
-                    aoeQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(aoeContexts, hitCallbacks));
+                    aoeQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(aoeContexts, hitCallbacks, aoeDeliveryGate));
                     yield return StartCoroutine(aoeQueue.RunAll(this));
                 }
             }
             else
             {
+                // 체인 투사체 모드면 캐스트-로컬 상태를 준비(1차 도착점을 2차 원점으로 전달).
+                _projectileChainState = ResolveChainStateForCast(result);
+
                 for (int i = 0; i < result.DamageContexts.Count; i++)
                 {
                     DamageContext damageContext = result.DamageContexts[i];
@@ -354,13 +361,25 @@ public class BattleManager : MonoBehaviour
                         continue;
                     }
 
+                    // 1차 취소 시 추가 타깃 체인 전체 중단.
+                    if (_projectileChainState != null
+                        && damageContext.Role == DamageRole.Additional
+                        && _projectileChainState.IsCancelled)
+                    {
+                        continue;
+                    }
+
                     if (!damageContext.IsCounterAttack && !damageContext.CanTriggerCounter)
                     {
                         damageContext.CanTriggerCounter = CanTriggerCounterattack(damageContext);
                     }
 
+                    // ResolveSkillHitRoutine이 읽을 현재 컨텍스트 역할.
+                    _projectileChainRole = damageContext.Role;
+
                     BattleHitResult predicted = PredictDamage(damageContext);
-                    result.RecordDamageResult(damageContext, predicted);
+                    var deliveryGate = new HitDeliveryGate();
+                    deliveryGates[damageContext] = deliveryGate;
 
                     SkillData hitAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(damageContext));
                     var actionQueue = new ASB.Work.Battle.Command.BattleActionQueue();
@@ -373,9 +392,10 @@ public class BattleManager : MonoBehaviour
                         onHitCallback: () =>
                         {
                             BattleHitResult r = CommitDamage(damageContext, predicted);
+                            result.RecordDamageResult(damageContext, r);
                             totalDamageDealt += r?.Damage ?? 0f;
                             return r;
-                        }));
+                        }, deliveryGate));
                     yield return StartCoroutine(actionQueue.RunAll(this));
 
                     float delay = Mathf.Max(0f, damageContext.DelayAfter);
@@ -415,7 +435,7 @@ public class BattleManager : MonoBehaviour
                             IsHeal = true,
                             SkillIndex = healContext.SkillIndex
                         };
-                    }));
+                    }, new HitDeliveryGate()));
                 yield return StartCoroutine(healQueue.RunAll(this));
             }
         }
@@ -430,11 +450,14 @@ public class BattleManager : MonoBehaviour
                     continue;
                 }
 
-                ApplyStatusEffect(statusContext);
+                if (CanApplyStatusEffect(statusContext, deliveryGates))
+                {
+                    ApplyStatusEffect(statusContext);
+                }
             }
         }
 
-        var counterRequests = CollectCounterAttackRequests(result);
+        var counterRequests = CollectCounterAttackRequests(result, deliveryGates);
         if (counterRequests.Count > 0)
         {
             yield return StartCoroutine(FlushCounterAttacks(counterRequests));
@@ -519,7 +542,7 @@ public class BattleManager : MonoBehaviour
         onCompleted?.Invoke(executed);
     }
 
-    private List<CounterAttackRequest> CollectCounterAttackRequests(SkillExecutionResult result)
+    private List<CounterAttackRequest> CollectCounterAttackRequests(SkillExecutionResult result, IReadOnlyDictionary<DamageContext, HitDeliveryGate> deliveryGates)
     {
         var requests = new List<CounterAttackRequest>();
         if (result.DamageContexts == null) return requests;
@@ -530,7 +553,7 @@ public class BattleManager : MonoBehaviour
         if (originalCaster == null) return requests;
 
         var candidates = result.DamageContexts
-            .Where(ctx => ctx != null && ctx.CanTriggerCounter)
+            .Where(ctx => ctx != null && ctx.CanTriggerCounter && CanApplyDeliveryEffects(ctx, deliveryGates))
             .Select(ctx => ctx.Target)
             .Distinct()
             .Where(t => t != null && !t.IsDead && t.IsPlayer != originalCaster.IsPlayer);
@@ -554,6 +577,42 @@ public class BattleManager : MonoBehaviour
         }
 
         return requests;
+    }
+
+    private static bool CanApplyStatusEffect(
+        StatusEffectContext statusContext,
+        IReadOnlyDictionary<DamageContext, HitDeliveryGate> deliveryGates)
+    {
+        if (deliveryGates == null)
+        {
+            return true;
+        }
+
+        foreach (KeyValuePair<DamageContext, HitDeliveryGate> pair in deliveryGates)
+        {
+            DamageContext damageContext = pair.Key;
+            if (damageContext != null
+                && damageContext.Caster == statusContext.Caster
+                && damageContext.Target == statusContext.Target
+                && pair.Value != null
+                && !pair.Value.CanApplyEffects)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool CanApplyDeliveryEffects(
+        DamageContext damageContext,
+        IReadOnlyDictionary<DamageContext, HitDeliveryGate> deliveryGates)
+    {
+        return damageContext != null
+            && (deliveryGates == null
+                || !deliveryGates.TryGetValue(damageContext, out HitDeliveryGate gate)
+                || gate == null
+                || gate.CanApplyEffects);
     }
 
     internal IEnumerator ExecuteCounterSkill(CounterAttackRequest req)
@@ -783,7 +842,8 @@ public class BattleManager : MonoBehaviour
 
     // Schema=1(PhaseCue)일 때만 유닛 로컬 Cue 컨텍스트를 등록한다. 같은 actionId의 Beat 갱신은 Held Handle을 보존한다.
     private void SetupPresentationContext(BattleCharactor actor, BattleCharactor target, SkillData skill,
-        SkillPresentationData presentation, int actionInstanceId, List<CueBinding> activeCues = null, string activeStateName = null)
+        SkillPresentationData presentation, int actionInstanceId, List<CueBinding> activeCues = null, string activeStateName = null,
+        IReadOnlyList<BattleCharactor> aoeTargets = null)
     {
         if (actor == null || presentation == null || _visualDirector == null || !presentation.IsPhaseCue || actionInstanceId == 0) return;
 
@@ -825,7 +885,10 @@ public class BattleManager : MonoBehaviour
             ActionInstanceId = actionInstanceId,
             Caster = actor,
             PrimaryTarget = target,
-            Targets = target != null ? new List<BattleCharactor> { target } : null,
+            // EachTarget 앵커가 대상 수만큼 스폰할 수 있도록 AoE 타깃 리스트를 그대로 보존. 없으면 주 타깃 1개.
+            Targets = (aoeTargets != null && aoeTargets.Count > 0)
+                ? aoeTargets
+                : (target != null ? new List<BattleCharactor> { target } : null),
             TargetPosition = target != null ? target.transform.position : actor.transform.position,
             SocketTransform = actor.GetComponent<UnitVisualProfile>()?.AttackEffectSocket ?? actor.transform,
             PlaybackSpeed = _currentBattleSpeed,
@@ -1053,8 +1116,14 @@ internal IEnumerator RunSkillSequenceCore(
         SkillData skill,
         bool playBasicAttackAnimation,
         bool playTargetHitAnimation,
-        Func<BattleHitResult> onHitCallback)
+        Func<BattleHitResult> onHitCallback,
+        HitDeliveryGate deliveryGate)
     {
+        if (deliveryGate == null)
+        {
+            deliveryGate = new HitDeliveryGate();
+        }
+
         if (actor == null)
         {
             onHitCallback?.Invoke();
@@ -1131,7 +1200,7 @@ internal IEnumerator RunSkillSequenceCore(
                             EnqueueMovingAttackSequence(runner, spinSweepPlan, actor, target, skill, presentation,
                                 presentationActionInstanceId, actorAnim,
                                 host => ResolveSkillHitRoutine(host, actor, target, onHitCallback, targetAnimTrigger,
-                                    playTargetHitAnimation, skill),
+                                    playTargetHitAnimation, skill, deliveryGate),
                                 null,
                                 ResolveMovingAttackOutgoingBlendInSeconds(presentation, returnEnabled && movement != null),
                                 elapsed => sequenceBattleElapsed += elapsed);
@@ -1155,7 +1224,7 @@ internal IEnumerator RunSkillSequenceCore(
                             presentation.Attack.Beats,
                             (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
                             (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName),
-                            host => ResolveSkillHitRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill),
+                            host => ResolveSkillHitRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate),
                             _currentBattleSpeed,
                             AnimEventTimeoutSeconds,
                             postBlendAfterLastBeatSeconds,
@@ -1169,7 +1238,7 @@ internal IEnumerator RunSkillSequenceCore(
                         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
                         runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
                         runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ResolveSkillHitRoutine(
-                            host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill)));
+                            host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate)));
                         if (!string.IsNullOrEmpty(targetState))
                             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
                     }
@@ -1240,9 +1309,10 @@ internal IEnumerator RunSkillSequenceCore(
         actor?.GetComponent<PresentationRuntimeContext>()?.Clear();
     }
     private IEnumerator ActivatePresentationCueRoutine(BattleCharactor actor, BattleCharactor target, SkillData skill,
-        SkillPresentationData presentation, int actionInstanceId, List<CueBinding> cues, string stateName)
+        SkillPresentationData presentation, int actionInstanceId, List<CueBinding> cues, string stateName,
+        IReadOnlyList<BattleCharactor> aoeTargets = null)
     {
-        SetupPresentationContext(actor, target, skill, presentation, actionInstanceId, cues, stateName);
+        SetupPresentationContext(actor, target, skill, presentation, actionInstanceId, cues, stateName, aoeTargets);
         yield break;
     }
 
@@ -1336,17 +1406,117 @@ internal IEnumerator RunSkillSequenceCore(
         return Mathf.Max(0f, post.BlendInSeconds);
     }
 
-    private IEnumerator ResolveSkillHitRoutine(MonoBehaviour host, BattleCharactor actor, BattleCharactor target,
-        Func<BattleHitResult> onHitCallback, string targetAnimTrigger, bool playTargetHitAnimation, SkillData skill)
+    /// <summary>
+    /// 캐스트의 투사체 전달 방식이 ChainAdditionalTargets면 체인 상태를 생성한다. 아니면 null(=일반 Single 동작).
+    /// </summary>
+    private ProjectileChainState ResolveChainStateForCast(SkillExecutionResult result)
     {
-        bool isArcher = actor != null && actor.GetComponent<UnitVisualProfile>()?.HoldArrow != null;
-        bool shouldSpawnArrowImpact = playTargetHitAnimation && skill != null && skill.classSkillEffect == 0;
-        if (isArcher && target != null && shouldSpawnArrowImpact)
+        if (result?.DamageContexts == null)
         {
-            yield return new ArrowImpactAction(actor, target, _currentBattleSpeed, targetAnimTrigger).ExecuteRoutine(host);
-            targetAnimTrigger = null;
+            return null;
+        }
+
+        DamageContext first = null;
+        for (int i = 0; i < result.DamageContexts.Count; i++)
+        {
+            if (result.DamageContexts[i] != null)
+            {
+                first = result.DamageContexts[i];
+                break;
+            }
+        }
+        if (first == null)
+        {
+            return null;
+        }
+
+        SkillPresentationData presentation = _presentationCatalog?.Get(first.SkillIndex);
+        ProjectileVisualData projectileVisual = presentation?.GetProjectileVisual();
+        if (projectileVisual != null && projectileVisual.DeliveryMode == ProjectileDeliveryMode.ChainAdditionalTargets)
+        {
+            return new ProjectileChainState();
+        }
+        return null;
+    }
+
+    private IEnumerator ResolveSkillHitRoutine(MonoBehaviour host, BattleCharactor actor, BattleCharactor target,
+        Func<BattleHitResult> onHitCallback, string targetAnimTrigger, bool playTargetHitAnimation, SkillData skill,
+        HitDeliveryGate deliveryGate)
+    {
+        SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
+        if (TryGetProjectileVisual(actor, skill, presentation, playTargetHitAnimation, out ProjectileVisualData projectileVisual))
+        {
+            bool isChain = projectileVisual.DeliveryMode == ProjectileDeliveryMode.ChainAdditionalTargets
+                           && _projectileChainState != null;
+            Vector3? originOverride = null;
+            if (isChain && _projectileChainRole == DamageRole.Additional && _projectileChainState.HasPreviousImpact)
+            {
+                // 추가 타깃 투사체는 1차 도착 좌표에서 출발(타깃 사망에도 안전).
+                originOverride = _projectileChainState.LastImpactPoint;
+            }
+
+            var projectile = new ProjectileImpactAction(actor, target, projectileVisual, _currentBattleSpeed, deliveryGate, skill.skillIndex, originOverride);
+            yield return projectile.ExecuteRoutine(host);
+
+            // 주 타깃 단계: 실제 도착 좌표를 저장 → 추가 타깃 투사체의 원점으로 사용.
+            if (isChain && _projectileChainRole == DamageRole.Primary)
+            {
+                switch (projectile.DeliveryResult)
+                {
+                    case ProjectileDeliveryResult.Arrived:
+                        _projectileChainState.LastImpactPoint = projectile.ImpactPoint;
+                        _projectileChainState.HasPreviousImpact = true;
+                        break;
+                    case ProjectileDeliveryResult.Fallback:
+                        // 폴백: 주 타깃의 그 시점 위치를 도착점으로 사용하고 체인 계속.
+                        _projectileChainState.LastImpactPoint = target != null ? target.transform.position : projectile.ImpactPoint;
+                        _projectileChainState.HasPreviousImpact = true;
+                        break;
+                    case ProjectileDeliveryResult.Cancelled:
+                        // 1차 취소: 체인 전체 종료.
+                        _projectileChainState.IsCancelled = true;
+                        break;
+                }
+            }
+            if (!deliveryGate.CanApplyEffects)
+            {
+                yield break;
+            }
+            if (projectile.DeliveryResult == ProjectileDeliveryResult.Arrived)
+            {
+                targetAnimTrigger = null;
+        }
+            }
+        else
+        {
+            bool isArcher = actor != null && actor.GetComponent<UnitVisualProfile>()?.HoldArrow != null;
+            bool shouldSpawnArrowImpact = playTargetHitAnimation && skill != null && skill.classSkillEffect == 0;
+            if (isArcher && target != null && shouldSpawnArrowImpact)
+            {
+                yield return new ArrowImpactAction(actor, target, _currentBattleSpeed, targetAnimTrigger).ExecuteRoutine(host);
+                targetAnimTrigger = null;
+            }
         }
         yield return new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host);
+    }
+
+    private bool TryGetProjectileVisual(BattleCharactor actor, SkillData skill, SkillPresentationData presentation,
+        bool playTargetHitAnimation, out ProjectileVisualData projectileVisual)
+    {
+        projectileVisual = null;
+        if (!playTargetHitAnimation || skill == null || skill.classSkillEffect != 0 || !IsRangedSkill(actor, skill))
+        {
+            return false;
+        }
+
+        projectileVisual = presentation?.GetProjectileVisual();
+        return projectileVisual != null && projectileVisual.Prefab != null;
+    }
+
+    private ProjectileVisualData GetProjectileVisual(BattleCharactor actor, SkillData skill, SkillPresentationData presentation)
+    {
+        return TryGetProjectileVisual(actor, skill, presentation, true, out ProjectileVisualData projectileVisual)
+            ? projectileVisual : null;
     }
     private static void ResolveSkillMovement(
         BattleCharactor actor,
@@ -1431,8 +1601,14 @@ internal IEnumerator RunSkillSequenceCore(
     /// <summary>
     /// 광역 스킬: 시전 애니 1회, HitDelay 시점에 전 타겟 동시 피격·데미지, 이후 전원 Idle 복귀.
     /// </summary>
-    internal IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks)
+    internal IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks,
+        HitDeliveryGate deliveryGate)
     {
+        if (deliveryGate == null)
+        {
+            deliveryGate = new HitDeliveryGate();
+        }
+
         if (contexts == null || contexts.Count == 0 || hitCallbacks == null || hitCallbacks.Count == 0)
         {
             yield break;
@@ -1465,6 +1641,7 @@ internal IEnumerator RunSkillSequenceCore(
         ResolveSkillMovement(actor, primaryTarget, skill, out UnitMovementProfile movement, out bool shouldMove, out bool shouldRotate, out Vector3 originPosition, out float originRotationY);
 
         SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
+        ProjectileVisualData projectileVisual = GetProjectileVisual(actor, skill, presentation);
         int presentationActionInstanceId = presentation?.IsPhaseCue == true ? NextActionInstanceId() : 0;
         bool moveEnabled       = presentation?.Move?.Enabled ?? true;
         bool attackPrepEnabled = presentation?.AttackPrepare?.Enabled ?? true;
@@ -1526,7 +1703,7 @@ internal IEnumerator RunSkillSequenceCore(
                                 HitRoutine = host => new AoEApplyDamageAction(
                                     new List<DamageContext> { context },
                                     new List<Func<BattleHitResult>> { callback },
-                                    1, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host)
+                                    1, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate).ExecuteRoutine(host)
                             });
                         }
                     }
@@ -1537,12 +1714,12 @@ internal IEnumerator RunSkillSequenceCore(
                                     primaryHitRoutine = host => new AoEApplyDamageAction(
                                         new List<DamageContext> { contexts[0] },
                                         new List<Func<BattleHitResult>> { hitCallbacks[0] },
-                                        1, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host);
+                                        1, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate).ExecuteRoutine(host);
                                 }
                                 else
                                 {
                                     primaryHitRoutine = host => new AoEApplyDamageAction(
-                                        contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host);
+                                        contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate).ExecuteRoutine(host);
                                 }
                             }
         
@@ -1568,14 +1745,27 @@ internal IEnumerator RunSkillSequenceCore(
                     if (!usePhaseCue && attackPrepEnabled && _visualDirector != null && skill != null)
                         runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _visualDirector));
         
+                    // AoE 타깃 리스트(EachTarget 앵커가 대상 수만큼 스폰하는 데 사용).
+                    var aoePresentationTargets = new List<BattleCharactor>();
+                    if (contexts != null)
+                    {
+                        foreach (DamageContext c in contexts)
+                        {
+                            if (c?.Target != null && !aoePresentationTargets.Contains(c.Target))
+                            {
+                                aoePresentationTargets.Add(c.Target);
+                            }
+                        }
+                    }
+
                     if (useCombo)
                     {
                         runner.Enqueue(new ASB.Work.Battle.Sequence.ComboSkillAction(
                             actorAnim,
                             presentation.Attack.Beats,
                             (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
-                            (beat, stateName) => SetupPresentationContext(actor, primaryTarget, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName),
-                            host => new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector).ExecuteRoutine(host),
+                            (beat, stateName) => SetupPresentationContext(actor, primaryTarget, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName, aoePresentationTargets),
+                            host => new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate).ExecuteRoutine(host),
                             _currentBattleSpeed,
                             AnimEventTimeoutSeconds,
                             postBlendAfterLastBeatSeconds,
@@ -1585,10 +1775,10 @@ internal IEnumerator RunSkillSequenceCore(
                     {
                         if (usePhaseCue)
                             runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ActivatePresentationCueRoutine(
-                                actor, primaryTarget, skill, presentation, presentationActionInstanceId, GetPrimaryAttackBeat(presentation)?.Cues, targetState)));
+                                actor, primaryTarget, skill, presentation, presentationActionInstanceId, GetPrimaryAttackBeat(presentation)?.Cues, targetState, aoePresentationTargets)));
                         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, false));
                         runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
-                        runner.Enqueue(new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector));
+                        runner.Enqueue(new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate));
         
                         if (!string.IsNullOrEmpty(targetState))
                             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));

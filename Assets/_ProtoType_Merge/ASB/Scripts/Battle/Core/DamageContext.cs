@@ -1,8 +1,17 @@
 namespace ASB.Work.Battle.Core
 {
+    /// <summary>피해 컨텍스트의 역할. 체인 투사체에서 원점 결정에 사용. 순서/CanTriggerCounter 추론 대신 명시적으로 설정.</summary>
+    public enum DamageRole
+    {
+        Primary,
+        Additional
+    }
+
     public class DamageContext
     {
         public BattleCharactor Caster;
+        /// <summary>주 타깃(Primary) / 추가 타깃(Additional). 기본 Primary. TargetAroundRandom이 명시 설정.</summary>
+        public DamageRole Role = DamageRole.Primary;
         public BattleCharactor Target;
         /// <summary>스킬 배율. SkillValue가 0보다 크면 CombatCalculator는 SkillValue를 우선 사용합니다.</summary>
         public float SkillMultiplier;
