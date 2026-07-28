@@ -162,7 +162,7 @@ MonoBehaviour:
     Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Start_BE1080
+    Trigger_Effect: Start_BE158
     "\uBE44\uACE0": "\uD3B8\uC758\uC810 \uBE4C\uB7F0 \uC804\uD22C"
   - Branch_ID: 10903
     Selection_Index: 1A
@@ -235,5 +235,5 @@ MonoBehaviour:
     Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Start_BE1080
+    Trigger_Effect: Start_BE158
     "\uBE44\uACE0": "\uD3B8\uC758\uC810 \uBE4C\uB7F0 \uC7AC\uC804\uD22C"

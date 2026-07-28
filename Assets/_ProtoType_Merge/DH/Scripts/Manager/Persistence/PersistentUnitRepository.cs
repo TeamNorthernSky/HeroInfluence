@@ -365,6 +365,57 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
+    public bool ApplyEventRewardStats(
+        int unitIndex,
+        float hpBonus,
+        float atkBonus,
+        float defBonus,
+        float influenceDelta,
+        float healAmount)
+    {
+        if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
+            return false;
+
+        StatBlock nextEventBonusStats = data.EventBonusStats;
+        nextEventBonusStats.HP += hpBonus;
+        nextEventBonusStats.Atk += atkBonus;
+        nextEventBonusStats.DEF += defBonus;
+
+        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
+            data.BaseStats,
+            data.LevelupStats,
+            data.Level,
+            data.CurrentWeaponStats,
+            nextEventBonusStats,
+            levelUpTemplates);
+
+        float previousMaxHp = Mathf.Max(0f, data.IngameStats.HP);
+        float nextMaxHp = Mathf.Max(0f, nextIngameStats.HP);
+        float maxHpDelta = Mathf.Max(0f, nextMaxHp - previousMaxHp);
+        float nextCurrentHp = Mathf.Clamp(data.CurrentHp + maxHpDelta + Mathf.Max(0f, healAmount), 0f, nextMaxHp);
+        float nextCurrentInfluence = Mathf.Clamp(data.CurrentInfluence + influenceDelta, 0f, Mathf.Max(0f, nextIngameStats.Influence));
+
+        data.SetEventBonusStats(nextEventBonusStats);
+        data.ApplyRuntimeState(
+            data.UnitTemplateKey,
+            data.Level,
+            data.BaseStats,
+            data.LevelupStats,
+            data.CurrentSkillIndex,
+            data.CurrentWeaponIndex,
+            data.CurrentWeaponStats,
+            nextIngameStats,
+            nextCurrentHp,
+            data.Exp,
+            data.MaxExp,
+            data.SkillLevel,
+            data.EquippedWeaponInstanceIndex,
+            nextCurrentInfluence,
+            nextCurrentHp <= 0f);
+        return true;
+    }
+
     public bool AddExp(int unitIndex, int amount)
     {
         if (amount <= 0)

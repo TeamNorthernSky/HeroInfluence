@@ -98,4 +98,5 @@ public class GameSaveData : ScriptableObject
     // ── 채팅 분기 플래그 [KJ 260714, F008] ──
     // DHEventStateSnapshotSection 스냅샷(Set_Flag_* 효과/분기 조건).
     public List<DHEventFlagState> chatFlags = new List<DHEventFlagState>();
+    public List<DHEventNumericState> eventNumericStates = new List<DHEventNumericState>();
 }

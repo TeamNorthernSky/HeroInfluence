@@ -5,6 +5,15 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
+public enum OutpostCompletionFlagPreset
+{
+    None,
+    Sector1MainEventClear,
+    Sector2MainEventClear,
+    Sector3MainEventClear,
+    Sector4MainEventClear
+}
+
 public class Outpost : MonoBehaviour
 {
     public static event Action<Outpost> OutpostClaimed;
@@ -25,6 +34,9 @@ public class Outpost : MonoBehaviour
     [Header("Defender Combat Chat")]
     [SerializeField, Min(0)] private int defenderCombatChatId;
 
+    [Header("Event Completion")]
+    [SerializeField] private OutpostCompletionFlagPreset completionFlagPreset = OutpostCompletionFlagPreset.None;
+
     [Header("Visual")]
     [SerializeField] private Renderer targetRenderer;
     [SerializeField] private Material unclaimedMaterial;
@@ -44,6 +56,7 @@ public class Outpost : MonoBehaviour
     public string ZoneId => NormalizeZoneId(zoneId);
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
     public int DefenderCombatChatId => Mathf.Max(0, defenderCombatChatId);
+    public OutpostCompletionFlagPreset CompletionFlagPreset => completionFlagPreset;
 
     private void OnValidate()
     {
@@ -67,11 +80,23 @@ public class Outpost : MonoBehaviour
         ResolveOutpostRegistry();
         outpostRegistry?.Register(this);
         RefreshResolvedEnemyLevel();
+
+        if (!Application.isPlaying)
+            return;
+
+        DHEventStateRepository eventStateRepository = DHEventStateRepository.EnsureInstance();
+        eventStateRepository.FlagChanged -= HandleEventFlagChanged;
+        eventStateRepository.FlagChanged += HandleEventFlagChanged;
+        ApplyCompletionFlagIfAlreadySet(eventStateRepository);
     }
 
     private void OnDisable()
     {
         outpostRegistry?.Unregister(this);
+
+        DHEventStateRepository eventStateRepository = DHEventStateRepository.Instance;
+        if (eventStateRepository != null)
+            eventStateRepository.FlagChanged -= HandleEventFlagChanged;
     }
 
     public void Claim()
@@ -230,6 +255,34 @@ public class Outpost : MonoBehaviour
         OutpostClaimed?.Invoke(this);
     }
 
+    private void HandleEventFlagChanged(string flagName, bool value)
+    {
+        if (!value || IsPlayerClaimed)
+            return;
+
+        string completionFlag = ResolveCompletionFlagName(completionFlagPreset);
+        if (string.IsNullOrEmpty(completionFlag))
+            return;
+
+        if (!string.Equals(DHEventStateRepository.NormalizeFlagName(flagName), completionFlag, StringComparison.Ordinal))
+            return;
+
+        ForceClaimFromCombatResult();
+    }
+
+    private void ApplyCompletionFlagIfAlreadySet(DHEventStateRepository eventStateRepository)
+    {
+        if (eventStateRepository == null || IsPlayerClaimed)
+            return;
+
+        string completionFlag = ResolveCompletionFlagName(completionFlagPreset);
+        if (string.IsNullOrEmpty(completionFlag))
+            return;
+
+        if (eventStateRepository.GetFlag(completionFlag))
+            ForceClaimFromCombatResult();
+    }
+
     private void ApplyStateMaterial()
     {
         if (targetRenderer == null)
@@ -299,6 +352,22 @@ public class Outpost : MonoBehaviour
     private static string NormalizeGroupKey(string value)
     {
         return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+    }
+
+    private static string ResolveCompletionFlagName(OutpostCompletionFlagPreset preset)
+    {
+        string rawFlag = preset switch
+        {
+            OutpostCompletionFlagPreset.Sector1MainEventClear => "1SectorMainEventClear",
+            OutpostCompletionFlagPreset.Sector2MainEventClear => "2SectorMainEventClear",
+            OutpostCompletionFlagPreset.Sector3MainEventClear => "3SectorMainEventClear",
+            OutpostCompletionFlagPreset.Sector4MainEventClear => "4SectorMainEventClear",
+            _ => string.Empty
+        };
+
+        return string.IsNullOrEmpty(rawFlag)
+            ? string.Empty
+            : DHEventStateRepository.NormalizeFlagName(rawFlag);
     }
     private void ResolveOutpostRegistry()
     {
