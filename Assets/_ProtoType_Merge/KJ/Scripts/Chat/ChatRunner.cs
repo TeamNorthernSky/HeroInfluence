@@ -54,7 +54,7 @@ public class ChatRunner
         var numberOrder = new List<string>();
         foreach (BranchOption option in all)
         {
-            if (option == null || !ChatFlagStore.EvaluateCondition(option.Condition)) continue;
+            if (option == null || !EvaluateCondition(option.Condition)) continue;
 
             string number = NumericPart(option.SelectionIndex);
             bool isVariant = (option.SelectionIndex?.Trim().Length ?? 0) > number.Length; // "1A" 등 접미 보유
@@ -103,17 +103,77 @@ public class ChatRunner
 
         effect = effect.Trim();
         // "Set_Flag_X" → 플래그 "Flag_X"를 1로 (조건 문법 "Flag_X==1"과 키 일치)
-        if (effect.StartsWith("Set_", StringComparison.Ordinal))
-        {
-            ChatFlagStore.Set(effect.Substring(4));
-            return;
-        }
+        DHEventEffectRuntimeManager.EnsureInstance().ExecuteEffects(effect);
 
         if (OnExternalEffect != null) OnExternalEffect.Invoke(effect);
         else Debug.LogWarning($"[ChatRunner] 외부 효과 '{effect}' 구독자 없음 — 무시 (전투 연결은 후속 작업)");
     }
 
     /// <summary>"1A" → "1". 숫자 접두부만 추출(없으면 원문 그대로).</summary>
+    private static bool EvaluateCondition(string condition)
+    {
+        if (string.IsNullOrWhiteSpace(condition)) return true;
+
+        string[] operators = { "==", "!=", ">=", "<=", "=>", "=<", "=", ">", "<" };
+        for (int i = 0; i < operators.Length; i++)
+        {
+            string op = operators[i];
+            int index = condition.IndexOf(op, StringComparison.Ordinal);
+            if (index < 0)
+                continue;
+
+            string left = condition.Substring(0, index).Trim();
+            string right = condition.Substring(index + op.Length).Trim();
+            if (!TryResolveOperand(left, out float leftValue) ||
+                !TryResolveOperand(right, out float rightValue))
+            {
+                return false;
+            }
+
+            return Compare(leftValue, NormalizeOperator(op), rightValue);
+        }
+
+        return TryResolveOperand(condition, out float value) && value != 0f;
+    }
+
+    private static bool TryResolveOperand(string raw, out float value)
+    {
+        value = 0f;
+        if (string.IsNullOrWhiteSpace(raw))
+            return false;
+
+        string token = raw.Trim();
+        if (float.TryParse(token, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out value))
+            return true;
+
+        return DHEventStateRepository.EnsureInstance().TryGetNumericValue(token, out value);
+    }
+
+    private static string NormalizeOperator(string op)
+    {
+        if (op == "=")
+            return "==";
+        if (op == "=>")
+            return ">=";
+        if (op == "=<")
+            return "<=";
+        return op;
+    }
+
+    private static bool Compare(float left, string op, float right)
+    {
+        switch (op)
+        {
+            case "==": return Mathf.Approximately(left, right);
+            case "!=": return !Mathf.Approximately(left, right);
+            case ">=": return left >= right;
+            case "<=": return left <= right;
+            case ">": return left > right;
+            case "<": return left < right;
+            default: return false;
+        }
+    }
+
     private static string NumericPart(string selectionIndex)
     {
         if (string.IsNullOrWhiteSpace(selectionIndex)) return string.Empty;

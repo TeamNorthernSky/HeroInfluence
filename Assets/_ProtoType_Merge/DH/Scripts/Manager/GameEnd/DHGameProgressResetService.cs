@@ -11,5 +11,7 @@ public static class DHGameProgressResetService
         WeaponPersistentRepository.Instance?.ClearAllWeapons();
         CombatContext.Instance?.Clear();
         HQVisitState.Instance?.ClearVisitingParties();
+        DHEventStateRepository.EnsureInstance().ClearAllState();
+        DHTurnStartSnapshotStore.Instance?.ClearSnapshot();
     }
 }
