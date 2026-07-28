@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 /// [KJ 260714] 이어하기 배선: SaveSlotRepository.IsContinue면 ResetForNewGame 대신 저장 슬롯을 복원한다.
 ///   복원 순서 — (1) 저장 파일 역직렬화 → (2) BeginRestoreSession + RestoreFromGameSaveData(DDOL 리포/전역 상태를
 ///   씬 로드 전에 채움 → PartyUnitBootstrap이 기존 파티 감지 후 재시드하지 않고 복원값 동기화)
-///   → (3) DHScene 로드 → (4) ApplySceneState(씬 오브젝트 반영) → (5) ChatFlagStore.RestoreSnapshot
+///   → (3) DHScene 로드 → (4) ApplySceneState(씬 오브젝트 반영) → (5) DHEventStateRepository.RestoreFlagSnapshot
 ///   → (6) CompleteRestoreSession. 이후 ReevaluateNow/Active 전환은 새게임과 공통(복원된 위치 기준 재평가).
 /// </summary>
 [DisallowMultipleComponent]
@@ -88,7 +88,6 @@ public class GameLoadGate : MonoBehaviour
             // [KJ 260714] 씬 오브젝트 반영은 DHScene 로드 후에만 가능(FindObjectsByType). 파티 위치/유닛/게이트/레지스트리 동기화.
             DHGameStateRestoreService.ApplySceneState();
             // ChatFlags는 턴 시작 스냅샷에 없어 별도 복원(F008).
-            ChatFlagStore.RestoreSnapshot(restoreData.chatFlags);
             // 복원 세션 종료 + 현재 상태를 새 턴 시작 스냅샷으로 캡처(이후 수동 저장이 이 시점 기준).
             DHGameStateRestoreService.CompleteRestoreSession(captureTurnStartSnapshot: true);
             UnityEngine.Object.Destroy(restoreData);

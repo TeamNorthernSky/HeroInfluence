@@ -63,7 +63,6 @@ public static class GameSaveService
             return false;
 
         // [KJ 260714, F008] 채팅 분기 플래그 — 스냅샷 미포함이라 별도 캡처(내용 확장 시 이 파일 무수정).
-        data.chatFlags.AddRange(ChatFlagStore.CaptureSnapshot());
         return true;
     }
 }
