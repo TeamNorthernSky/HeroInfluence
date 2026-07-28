@@ -27,7 +27,7 @@ public class ChatModalController : MonoBehaviour
     [SerializeField] private ChatBubbleView bubblePrefab;
     [SerializeField] private ChoiceButtonView choiceButtonPrefab;
 
-    [Header("스킵 [KJ 260715]")]
+    [Header("스킵")]
     [SerializeField] private Button skipButton;
     [Tooltip("'스킵하시겠습니까?' 확인 팝업 루트. 평소 비활성.")]
     [SerializeField] private GameObject skipConfirmPopup;

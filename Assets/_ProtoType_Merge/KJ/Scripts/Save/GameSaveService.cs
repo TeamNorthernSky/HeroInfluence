@@ -45,8 +45,6 @@ public static class GameSaveService
         catch (Exception ex)
         {
             Debug.LogWarning($"[GameSaveService] 슬롯 {slotIndex} 저장 실패: {ex.Message}");
-            // [KJ 260708] 파일 IO 등 저장 실패를 유저에게 알리고 재시도 기회 제공(예=재저장/아니요=닫기).
-            SaveRetryModal.Show(slotIndex);
             return false;
         }
         finally
