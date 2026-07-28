@@ -10,11 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 395aac311786f3442a3938a5dfd27e15, type: 3}
-  m_Name: FX_JusticeTrailPreset
+  m_Name: FX_EnterTheJusticeBlue
   m_EditorClassIdentifier: 
-  strokeHeadColor: {r: 1, g: 0.4, b: 0.36, a: 1}
-  strokeMidColor: {r: 1, g: 0.1, b: 0.11, a: 1}
-  strokeTailColor: {r: 0.5, g: 0.02, b: 0.04, a: 1}
+  targets:
+    trailPrefab: {fileID: 3616402648774875410, guid: 3e132d4f01fc11d44814995a2b2efdd8,
+      type: 3}
+    impactPrefab: {fileID: 738097252154879308, guid: 1f1be05faf5f3a14ba2a909f314c1acb,
+      type: 3}
+    strokeMaterial: {fileID: 2100000, guid: 9470c10d9e0e50345bd69c2c06a66d0b, type: 2}
+    sparkMaterial: {fileID: 2100000, guid: 5f4ec539d9fa6be4ea60c8ed599be132, type: 2}
+    impactSparkMaterial: {fileID: 2100000, guid: e324b4fd5d0315749ab46c24113a619a,
+      type: 2}
+    flashMaterial: {fileID: 2100000, guid: 6e863cf8bd7025241932b4fff2a3194c, type: 2}
   trail:
     enabled: 1
     emission: 3.78
@@ -26,12 +33,14 @@ MonoBehaviour:
     lifeMax: 1.21
     speedMin: 0
     speedMax: 0.35
-    gravity: 0
     sizeMin: 0.123
     sizeMax: 0.154
     alphaHold: 0.5
+    headColor: {r: 0, g: 0.0077590942, b: 1, a: 1}
+    midColor: {r: 0.78301877, g: 0.79067695, b: 1, a: 1}
+    tailColor: {r: 0, g: 0.054148197, b: 1, a: 1}
     shapeRadius: 0.25
-    highlightColor: {r: 1, g: 1, b: 1, a: 1}
+    highlightColor: {r: 0, g: 0.12437248, b: 1, a: 1}
     highlightRatio: 0
     highlightEmission: 0
     trailLifetime: 0.48
@@ -42,16 +51,15 @@ MonoBehaviour:
     chromaHold: 1
     rateOverTime: 7
     rateOverDistance: 10
-    maxParticles: 111
+    maxParticles: 95
     lifeMin: 0.23
     lifeMax: 0.4
     speedMin: 2.13
     speedMax: 4.91
-    gravity: -0.08
-    sizeMin: 0.262
-    sizeMax: 0.338
+    sizeMin: 0.088
+    sizeMax: 0.193
     alphaHold: 0.09
-    bodyColor: {r: 1, g: 0.1, b: 0.11, a: 1}
+    bodyColor: {r: 0, g: 0.20696878, b: 1, a: 1}
     coreColor: {r: 1, g: 1, b: 1, a: 1}
     coreEmission: 2
     coreRatioStart: 0.276
@@ -63,6 +71,7 @@ MonoBehaviour:
     nozzleRadius: 0.166
     backwardEject: 3
     drag: 0.65
+    gravity: -0.08
     alignMaxAngle: 105.1
     scaleEmissionBySpeed: 1
     speedForFullEmission: 6
@@ -71,22 +80,25 @@ MonoBehaviour:
   socketOffset: {x: 0, y: 0, z: 0}
   impact:
     enabled: 1
+    headColor: {r: 0.92, g: 0.97, b: 1, a: 1}
+    midColor: {r: 0.7, g: 0.85, b: 1, a: 1}
+    tailColor: {r: 0.06560251, g: 0.30378017, b: 0.67295593, a: 1}
     tint: {r: 1, g: 1, b: 1, a: 1}
-    emission: 5.4
+    emission: 4.99
     burstCount: 70
-    sizeMin: 0.22
-    sizeMax: 0.6
     speedMin: 6
     speedMax: 16
-    lifeMin: 0.25
-    lifeMax: 0.55
-    gravity: 0.5
-    lengthScale: 2.35
-    highlightColor: {r: 1, g: 1, b: 1, a: 1}
+    lifeMin: 0.215
+    lifeMax: 0.352
+    width: 0.478
+    widthVariation: 0.431
+    length: 1.41
+    velocityScale: 0.067
+    highlightColor: {r: 0, g: 0.06883955, b: 1, a: 1}
     highlightRatio: 0.5
     highlightEmission: 4.15
     flashEnabled: 1
-    flashColor: {r: 0.82641506, g: 0, b: 0, a: 1}
+    flashColor: {r: 0.75, g: 0.88, b: 1, a: 1}
     flashCoreColor: {r: 1, g: 1, b: 1, a: 1}
     flashCoreEmission: 2
     flashLength: 4.18

@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: JusticePenStroke
-  m_Shader: {fileID: 4800000, guid: cff117793a1d8a94cb3a5dbcbc0bb10a, type: 3}
+  m_Name: EnterTheJusticeFlash
+  m_Shader: {fileID: 4800000, guid: ac4e75a4460ac3a4e8429a1fe80708e0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -24,11 +24,25 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 10dfb449c4ca8184ba4199d7c8266b65, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8073a924b05e36c46a7c9084c6a94736, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
-    m_Floats: []
+    m_Floats:
+    - _BodySoft: 0.89
+    - _CoreSharp: 3.8
+    - _CoreWidth: 0.137
+    - _EdgeFade: 1
+    - _Emission: 1
+    - _EndWidth: 0.668
+    - _HeadFade: 0.208
+    - _MaxAlpha: 0.316
+    - _StartWidth: 1
+    - _TailFade: 0.662
+    - _Taper: 0.32
+    - _WidthCurve: 0.4
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BodyColor: {r: 0.75, g: 0.88, b: 1, a: 1}
+    - _CoreColor: {r: 2, g: 2, b: 2, a: 1}
+    - _Tint: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

@@ -7,7 +7,10 @@ namespace JC.VFX.Seam
     /// <summary>
     /// 프리뷰 씬 단축키 — 인스펙터에서 컨트롤러를 띄우지 않고 스킬을 재생/초기화한다.
     ///
-    /// 기본 배치: Q/W/E/R = 저스티스 4종, T = 초기화.
+    /// 배치: 스킬 2종 × 색 변종 2종 = Q/W/E/R, T = 초기화.
+    /// 같은 skillIndex라도 <see cref="Binding.useAlternate"/>가 다르면 다른 색 프리셋으로 나온다
+    /// (이펙트 프리팹은 공용, 바인더가 스폰 시점에 프리셋을 골라 읽는다).
+    ///
     /// 재생 중에 다른 키를 누르면 먼저 초기화한 뒤 한 프레임 쉬고 재생한다
     /// (PreviewResetGuard가 고아 시퀀스를 끊을 틈을 준다).
     /// </summary>
@@ -20,6 +23,8 @@ namespace JC.VFX.Seam
             public KeyCode key = KeyCode.Q;
             [Tooltip("재생할 SkillData.skillIndex.")]
             public int skillIndex = 1010;
+            [Tooltip("켜면 +스킬 색 변종(바인더의 보조 프리셋)으로 재생한다.")]
+            public bool useAlternate;
             [Tooltip("화면 안내에 표시할 이름.")]
             public string label = "";
         }
@@ -28,10 +33,10 @@ namespace JC.VFX.Seam
         [SerializeField]
         private Binding[] bindings =
         {
-            new Binding { key = KeyCode.Q, skillIndex = 1010, label = "저스티스 등장!" },
-            new Binding { key = KeyCode.W, skillIndex = 1020, label = "저스티스 펀치" },
-            new Binding { key = KeyCode.E, skillIndex = 1030, label = "저스티스 대쉬" },
-            new Binding { key = KeyCode.R, skillIndex = 1040, label = "저스티스 크래쉬" },
+            new Binding { key = KeyCode.Q, skillIndex = 1010, useAlternate = false, label = "저스티스 등장! (기본·청)" },
+            new Binding { key = KeyCode.W, skillIndex = 1010, useAlternate = true,  label = "저스티스 등장! (+·적)" },
+            new Binding { key = KeyCode.E, skillIndex = 1020, useAlternate = false, label = "저스티스 펀치 (기본·청)" },
+            new Binding { key = KeyCode.R, skillIndex = 1020, useAlternate = true,  label = "저스티스 펀치 (+·적)" },
         };
 
         [Header("초기화")]
@@ -69,18 +74,21 @@ namespace JC.VFX.Seam
             {
                 Binding b = bindings[i];
                 if (b == null || !Input.GetKeyDown(b.key)) continue;
-                StartCoroutine(PlayRoutine(b.skillIndex));
+                StartCoroutine(PlayRoutine(b.skillIndex, b.useAlternate));
                 return;
             }
         }
 
-        private IEnumerator PlayRoutine(int skillIndex)
+        private IEnumerator PlayRoutine(int skillIndex, bool useAlternate)
         {
             if (Preview.IsPlaying)
             {
                 Preview.ResetPreview();
                 yield return null;   // PreviewResetGuard가 고아 시퀀스를 끊을 한 프레임
             }
+
+            // 스폰보다 먼저 세워야 한다. 바인더가 Awake에서 이 값을 보고 프리셋을 고른다.
+            JusticeTrailPresetBinder.UseAlternate = useAlternate;
 
             Preview.SetSelectedSkillIndex(skillIndex);
             Preview.PlaySelectedSkill();

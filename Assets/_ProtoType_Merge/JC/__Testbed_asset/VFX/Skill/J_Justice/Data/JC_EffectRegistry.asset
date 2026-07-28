@@ -18,3 +18,8 @@ MonoBehaviour:
   - Id: 9010
     Prefab: {fileID: 3616402648774875410, guid: 3e132d4f01fc11d44814995a2b2efdd8,
       type: 3}
+  - Id: 9020
+    Prefab: {fileID: 3616402648774875410, guid: f88b6a0a6d0559742adbb7ab0e8d7d8a,
+      type: 3}
+  - Id: 9021
+    Prefab: {fileID: 738097252154879308, guid: a0090a6b699eb6e469afcd724c3d66aa, type: 3}

@@ -15,3 +15,5 @@ MonoBehaviour:
   _bindings:
   - SkillIndex: 1010
     Presentation: {fileID: 11400000, guid: 3292e0932024c5447a1cebc301910f94, type: 2}
+  - SkillIndex: 1020
+    Presentation: {fileID: 11400000, guid: 36d6f1c540208e444a6aea3490470770, type: 2}

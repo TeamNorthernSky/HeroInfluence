@@ -1617,16 +1617,20 @@ MonoBehaviour:
   bindings:
   - key: 113
     skillIndex: 1010
-    label: "\uC800\uC2A4\uD2F0\uC2A4 \uB4F1\uC7A5!"
+    useAlternate: 0
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uB4F1\uC7A5! (\uAE30\uBCF8\xB7\uCCAD)"
   - key: 119
-    skillIndex: 1020
-    label: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58"
+    skillIndex: 1010
+    useAlternate: 1
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uB4F1\uC7A5! (+\xB7\uC801)"
   - key: 101
-    skillIndex: 1030
-    label: "\uC800\uC2A4\uD2F0\uC2A4 \uB300\uC26C"
+    skillIndex: 1020
+    useAlternate: 0
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58 (\uAE30\uBCF8\xB7\uCCAD)"
   - key: 114
-    skillIndex: 1040
-    label: "\uC800\uC2A4\uD2F0\uC2A4 \uD06C\uB798\uC26C"
+    skillIndex: 1020
+    useAlternate: 1
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58 (+\xB7\uC801)"
   resetKey: 116
   showOverlay: 1
   overlayFontSize: 13

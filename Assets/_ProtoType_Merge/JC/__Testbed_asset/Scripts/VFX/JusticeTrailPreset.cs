@@ -7,12 +7,14 @@ namespace JC.VFX
     /// 저스티스 「등장!」 주먹 연출 프리셋.
     ///
     /// 세 요소가 완전히 분리되어 있고, **각 요소가 자기에게 의미 있는 항목만** 가진다.
+    /// ★색도 마찬가지로 요소마다 독립이다. 공용 팔레트는 폐기했다 —
+    ///   하나를 만지면 무관한 요소까지 함께 바뀌어 따로 맞출 수 없었기 때문.
     ///   1) 궤적(PenStrokes) — Local 시뮬레이션. 주먹을 따라 이동하며 입자마다 선을 끈다.
-    ///      색은 팔레트 + 하이라이트(수명 앞단의 색 전환)로 만든다.
+    ///      색은 자기 팔레트(머리/중간/꼬리) + 하이라이트(수명 앞단의 색 전환)로 만든다.
     ///   2) 입자(SparkDots) — World 시뮬레이션. 진행 반대 방향으로 원뿔 분사되는 점.
     ///      색은 전용 셰이더가 「몸통 + 가운데 코어」 구조로 그린다.
     ///      ★코어가 하이라이트 역할을 대신하므로 하이라이트 항목을 갖지 않는다.
-    ///   3) 타격(Impact) — 스파크 + 섬광.
+    ///   3) 타격(Impact) — 스파크 + 섬광. 스파크는 자기 팔레트, 섬광은 자기 몸통·코어 색을 갖는다.
     /// </summary>
     [CreateAssetMenu(menuName = "JC VFX/Justice Trail Preset (저스티스 주먹 궤적)", fileName = "FX_JusticeTrailPreset")]
     public class JusticeTrailPreset : ScriptableObject
@@ -47,8 +49,6 @@ namespace JC.VFX
             [Tooltip("초기 속도(방향은 각 계열의 분포가 정한다).")]
             [Range(0f, 6f)] public float speedMin = 0f;
             [Range(0f, 6f)] public float speedMax = 1.2f;
-            [Tooltip("중력 배수. 음수면 위로 떠오른다.")]
-            [Range(-2f, 2f)] public float gravity = -0.05f;
 
             [Header("크기")]
             [Range(0.001f, 0.5f)] public float sizeMin = 0.020f;
@@ -60,10 +60,18 @@ namespace JC.VFX
             [Range(0f, 0.95f)] public float alphaHold = 0.5f;
         }
 
-        /// <summary>궤적 계열 — 입자마다 per-particle 트레일을 끈다. 색은 팔레트+하이라이트.</summary>
+        /// <summary>궤적 계열 — 입자마다 per-particle 트레일을 끈다. 색은 자기 팔레트+하이라이트.</summary>
         [Serializable]
         public class TrailGroup : EmitGroupBase
         {
+            [Header("색 (수명 진행: 머리 → 중간 → 꼬리)")]
+            [Tooltip("갓 태어난 구간의 색.")]
+            [ColorUsage(true, true)] public Color headColor = new Color(1f, 0.40f, 0.36f);
+            [Tooltip("수명 중반의 색. 선의 인상을 좌우한다.")]
+            [ColorUsage(true, true)] public Color midColor = new Color(1f, 0.10f, 0.11f);
+            [Tooltip("사라지기 직전의 색.")]
+            [ColorUsage(true, true)] public Color tailColor = new Color(0.50f, 0.02f, 0.04f);
+
             [Header("분포")]
             [Tooltip("방출 구(sphere) 반경. 작을수록 주먹에 밀착한다.")]
             [Range(0.005f, 1.5f)] public float shapeRadius = 0.07f;
@@ -123,6 +131,11 @@ namespace JC.VFX
             [Tooltip("분출 후 감속. 클수록 빨리 멈춰 뒤에 머문다.")]
             [Range(0f, 8f)] public float drag = 0f;
 
+            [Tooltip("중력 배수. 음수면 위로 떠오른다.\n" +
+                     "★입자 계열에만 있다. 궤적·타격 스파크는 현실의 물체가 아닌 방사광이라 중력을 받지 않는 게 자연스럽다.\n" +
+                     "입자는 바닥 마찰 불꽃처럼 실체 있는 연출로 변주할 여지가 있어 남겨 둔다.")]
+            [Range(-2f, 2f)] public float gravity = -0.05f;
+
             [Header("방향 클램프")]
             [Tooltip("분사 축이 최초 기준 방향에서 벗어날 수 있는 최대 각도(도).\n" +
                      "주먹 회수 구간에서 속도가 뒤집혀 분사가 적 쪽을 향하는 것을 막는다. 0이면 완전 고정.")]
@@ -144,22 +157,43 @@ namespace JC.VFX
             [Tooltip("타격 이펙트 전체를 켜고 끈다. 끄면 스파크·섬광 모두 방출되지 않는다.")]
             public bool enabled = true;
 
+            [Header("스파크 — 색 (수명 진행: 머리 → 중간 → 꼬리)")]
+            [Tooltip("갓 터져 나온 구간의 색.")]
+            [ColorUsage(true, true)] public Color headColor = new Color(1f, 0.40f, 0.36f);
+            [Tooltip("수명 중반의 색. 폭발의 인상을 좌우한다.")]
+            [ColorUsage(true, true)] public Color midColor = new Color(1f, 0.10f, 0.11f);
+            [Tooltip("사라지기 직전의 색.")]
+            [ColorUsage(true, true)] public Color tailColor = new Color(0.50f, 0.02f, 0.04f);
+
             [Header("스파크")]
-            [Tooltip("스파크 재질 색. 중립(흰색)으로 두면 색은 팔레트가 전담한다.")]
+            [Tooltip("스파크 재질 색. 중립(흰색)으로 두면 색은 위 팔레트가 전담한다.")]
             [ColorUsage(true, true)] public Color tint = Color.white;
             [Tooltip("스파크 재질 발광 배수.")]
             [Range(0f, 6f)] public float emission = 1.6f;
             [Tooltip("한 번에 터지는 스파크 수.")]
             [Range(0, 200)] public int burstCount = 70;
-            [Range(0.02f, 2f)] public float sizeMin = 0.22f;
-            [Range(0.02f, 2f)] public float sizeMax = 0.60f;
             [Range(0f, 40f)] public float speedMin = 6f;
             [Range(0f, 40f)] public float speedMax = 16f;
             [Range(0.02f, 2f)] public float lifeMin = 0.25f;
             [Range(0.02f, 2f)] public float lifeMax = 0.55f;
-            [Range(-2f, 3f)] public float gravity = 0.5f;
-            [Tooltip("늘어난 스파크 길이 배수(Stretch 렌더).")]
-            [Range(0.5f, 12f)] public float lengthScale = 3.6f;
+
+            // 스파크는 Stretch 렌더라 화면상 모습이 세 값의 조합으로 정해진다.
+            //     굵기 = startSize
+            //     길이 = startSize × lengthScale  +  속도 × velocityScale
+            // 예전엔 startSize(Min/Max)와 lengthScale을 그대로 노출했는데,
+            //   ① startSize를 만지면 굵기와 길이가 동시에 변해 "굵기만" 조절할 수 없었고
+            //   ② velocityScale은 프리팹에 박혀 있어 조절 불가인데도 실측상 길이의 절반 이상을 만들고 있었다.
+            // 그래서 화면에 보이는 치수(굵기·길이 m)를 그대로 받고, 위 세 값은 역산해서 넣는다.
+            [Header("스파크 — 크기 (화면상 실제 치수)")]
+            [Tooltip("스파크의 굵기(m). 가장 굵은 입자 기준.")]
+            [Range(0.01f, 2f)] public float width = 0.60f;
+            [Tooltip("굵기 편차. 0 = 전부 같은 굵기, 1 = 가장 가는 입자가 0까지 얇아진다.")]
+            [Range(0f, 1f)] public float widthVariation = 0.63f;
+            [Tooltip("스파크의 길이(m). 정지 상태 기준이며, 실제로는 아래 속도 반영분이 더해진다.")]
+            [Range(0.01f, 8f)] public float length = 1.41f;
+            [Tooltip("속도가 길이에 반영되는 정도. 빠른 스파크일수록 길게 늘어난다.\n" +
+                     "속도 6~16m/s × 이 값 만큼이 길이에 더해진다(0.1이면 0.6~1.6m).")]
+            [Range(0f, 0.5f)] public float velocityScale = 0.10f;
 
             [Header("하이라이트")]
             [Tooltip("스파크·섬광이 갓 태어난 구간에 얹는 색.")]
@@ -229,13 +263,36 @@ namespace JC.VFX
             [Range(-50f, 50f)] public float flashSortingFudge = 0f;
         }
 
+        /// <summary>
+        /// 이 프리셋이 다루는 자산들.
+        ///
+        /// 예전엔 에디터가 등장! 자산 경로를 상수로 박아 두었다. 프리셋이 하나일 땐 문제가 없었지만
+        /// 펀치 프리셋에서 「적용/캡처」를 누르면 **등장! 프리팹·재질에 쓰이는** 버그가 있었다.
+        /// 프리셋이 자기 대상을 들고 있게 해서 근본적으로 막는다.
+        /// </summary>
+        [Serializable]
+        public class TargetSet
+        {
+            [Tooltip("궤적·입자가 올라탄 프리팹.")]
+            public GameObject trailPrefab;
+            [Tooltip("타격(스파크·섬광) 프리팹.")]
+            public GameObject impactPrefab;
+
+            [Tooltip("궤적 선 재질. 색은 그라데이션이 전담하므로 항상 중립(흰색)으로 유지된다.")]
+            public Material strokeMaterial;
+            [Tooltip("입자 재질. Testbed/Justice/SparkDot 셰이더.")]
+            public Material sparkMaterial;
+            [Tooltip("타격 스파크 재질.")]
+            public Material impactSparkMaterial;
+            [Tooltip("타격 섬광 재질. Testbed/Justice/ImpactFlash 셰이더.")]
+            public Material flashMaterial;
+        }
+
         /// <summary>궤적 계열의 동시 개수 상한. 소수의 굵은 선으로 읽히도록 좁게 제한한다.</summary>
         public const int TrailMaxParticlesLimit = 10;
 
-        [Header("── 팔레트 (궤적·타격용. 입자는 셰이더가 색을 갖는다) ──")]
-        [ColorUsage(true, true)] public Color strokeHeadColor = new Color(1f, 0.40f, 0.36f);
-        [ColorUsage(true, true)] public Color strokeMidColor = new Color(1f, 0.10f, 0.11f);
-        [ColorUsage(true, true)] public Color strokeTailColor = new Color(0.50f, 0.02f, 0.04f);
+        [Header("── 대상 자산 (적용·캡처가 쓰는 곳) ──")]
+        public TargetSet targets = new TargetSet();
 
         [Header("── 궤적 (PenStrokes · Local) ──")]
         [Tooltip("maxParticles가 1~10으로 제한된다.")]

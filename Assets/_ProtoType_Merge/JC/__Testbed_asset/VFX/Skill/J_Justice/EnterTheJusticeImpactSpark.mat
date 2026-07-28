@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: JusticeImpactSpark
+  m_Name: EnterTheJusticeImpactSpark
   m_Shader: {fileID: 4800000, guid: 542c25681d3bfc5488b89ebb5ee69c9b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
