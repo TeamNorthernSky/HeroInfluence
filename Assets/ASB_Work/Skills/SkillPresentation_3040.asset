@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SkillPresentation_3040
   m_EditorClassIdentifier: 
   SkillIndex: 3040
-  PresentationSchemaVersion: 0
+  PresentationSchemaVersion: 1
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -72,7 +72,12 @@ MonoBehaviour:
     Cues: []
   Attack:
     Enabled: 1
-    Beats: []
+    Beats:
+    - AnimationStateName: Base Layer.ClassSkill_4
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 0
+      Cues: []
   Return:
     Enabled: 1
     AnimationStateName: 
