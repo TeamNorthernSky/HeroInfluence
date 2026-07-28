@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 2010
   PresentationSchemaVersion: 1
-  AnimationStateName: 
+  AnimationStateName: Base Layer.ClassSkill_2
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
@@ -31,6 +31,19 @@ MonoBehaviour:
   TrajectoryType: 0
   ArcHeight: 2
   ScaleByCellSize: 0
+  ProjectileVisual:
+    Prefab: {fileID: 8985827497061507061, guid: b7796d08f4f3ed34db8e4c93bd9ab528,
+      type: 3}
+    Speed: 6
+    Trajectory: 1
+    ArcHeight: 1.2
+    TrailTime: 0.4
+    TrackTarget: 0
+    AlignToVelocity: 1
+    ImpactVisualLifetime: 0.3
+    ArrivalRadius: 0.2
+    TimeoutGraceSeconds: 1
+    TimeoutSeconds: 5
   AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
@@ -55,20 +68,27 @@ MonoBehaviour:
     BlendInSeconds: 0.1
     Cues: []
   Attack:
-    Enabled: 0
+    Enabled: 1
     Beats:
-    - AnimationStateName: ClassSkill_1
+    - AnimationStateName: Base Layer.ClassSkill_2
       BlendInSeconds: 0.1
       AdvanceOnEvent: 0
       WaitForHitEvent: 1
       Cues:
-      - CueName: 
-        EffectIds: 00000000
-        SoundIds: 00000000
+      - CueName: cast
+        EffectIds: 10040000
+        SoundIds: 
         Operation: 0
-        InstanceKey: 
-        Anchor: 0
-        Socket: 0
+        InstanceKey: charge
+        Anchor: 1
+        Socket: 8
+      - CueName: fire
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: charge
+        Anchor: 1
+        Socket: 8
   Return:
     Enabled: 0
     AnimationStateName: 
@@ -79,7 +99,7 @@ MonoBehaviour:
     BlendInSeconds: 0.1
     Cues: []
     ExtraDelay: 0
-  SpinSweep:
+  MovingAttack:
     Enabled: 0
     AnimationStateName: Base Layer.ClassSkill_4
     AnimationBlendInSeconds: 0.1

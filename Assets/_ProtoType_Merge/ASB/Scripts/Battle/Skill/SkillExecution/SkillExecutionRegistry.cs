@@ -43,14 +43,13 @@ namespace ASB.Work.Battle.SkillExecution
 
 
             //블래스터
-            Register(2010, new DamageSkillHandler());        // 단일 공격
-            Register(2020, new AoEDamageSkillHandler());     // 열 공격
-            Register(2030, new AtkAfterRest());              // 단일공격 + 자신 한턴 쉼(기절)
-            Register(2040, new HitTargetAroundRandomHandler()); // 단일 + 렌덤 주변적 공격
-            Register(2050, new AoEDamageSkillHandler());     // 전체 공격
-            Register(2060, new TargetMoreHPMoreDmg());       // 적의 체력이 높을수록 피해량 증가
-            Register(2070, new HitNumLowerDamageHandler());    // 전제!!! 공격 대상 수에 따라 피해량 감소
-
+            Register(2010, new DamageSkillHandler());                 // 단일 공격
+            Register(2020, new HitTargetAroundRandomHandler());      // 단일 + 랜덤 주변 적 공격
+            Register(2030, new AoEDamageSkillHandler());             // 한 열 공격
+            Register(2040, new AoEDamageSkillHandler());             // 전체 공격
+            Register(2050, new AtkAfterRest());                      // 임시 보관: 단일 공격 + 자신 한 턴 쉼(기절)
+            Register(2060, new TargetMoreHPMoreDmg());               // 임시 보관: 적의 체력이 높을수록 피해량 증가
+            Register(2070, new HitNumLowerDamageHandler());          // 임시 보관: 공격 대상 수에 따라 피해량 감소
 
             //스트라이커
             Register(3010, new DamageSkillHandler());    // 단일 공격

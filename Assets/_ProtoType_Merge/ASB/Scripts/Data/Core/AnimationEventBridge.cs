@@ -27,6 +27,8 @@ public class AnimationEventBridge : MonoBehaviour
     /// <summary>클립 이벤트 함수명과 동일해야 합니다. (OnHit은 기존 직결 유지)</summary>
     public void AniEvent_OnHit() => _owner?.AniEvent_OnHit();
     public void AniEvent_AdvanceCombo() => _owner?.AniEvent_AdvanceCombo();
+    // 지정 시간(배속-초)만큼 애니를 정지 후 자동 재개. 차지/앞동작 홀드 연출용.
+    public void AniEvent_HoldBegin(float seconds) => _owner?.AniEvent_HoldBegin(seconds);
 
     // 연출 Cue 통일 이벤트: 유닛 라우터로 분배(이펙트+사운드). 라우터 없으면 no-op(휴면).
     public void AniEvent_PresentationCue(string cueName) => Router?.PresentationCue(cueName);

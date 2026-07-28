@@ -1,0 +1,668 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56dd176deb75713449c2473504161b77, type: 3}
+  m_Name: EnemyUnit1SectorDataTable
+  m_EditorClassIdentifier: 
+  DataList:
+  - EnemyIndex: FV20006
+    EnemyName: "\uBE4C\uB7F0 \uC5F0\uD569 \uC18C\uCD1D\uC218"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9 \uC6D0\uAC70\uB9AC \uBCD1\uC885
+      \uBE4C\uB7F0"
+    UnitMaxHP: 8
+    UnitATK: 6
+    UnitDEF: 6
+    CriticalRate: 0.1
+    CounterRate: 0.1
+    ReduceRate: 0.1
+    Speed: 3
+    EnemySkill1_Name: "\uC6D0\uAC70\uB9AC \uC0AC\uACA9"
+    EnemySkill1_Description: "\uC0C1\uB300 \uC804\uC5F4 \uB610\uB294 \uD6C4\uC5F4
+      \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C {EnemySkill1Value} \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 1
+    EnemySkill1RangeLine: 1
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 1
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uC778\uC9C8 \uC704\uD611"
+    EnemySkill2_Description: "{HostageAggro}\uAC00 \uAC00\uC7A5 \uB192\uC740 \uC778\uC9C8
+      \uC720\uB2DB\uC5D0\uAC8C 10\uB9CC\uD07C \uB300\uBBF8\uC9C0\uB97C \uCD94\uACE0,
+      \uB300\uC0C1 \uC720\uB2DB\uC758 {HostageAggro}\uB97C 2 \uAC10\uC18C\uC2DC\uD0A8\uB2E4."
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "(\uB9E4 \uD134)\n\uACF5\uACA9 \uD589\uB3D9\uACFC \uC778\uC9C8 \uC704\uD611
+      \uD589\uB3D9 \uC911 \uBB34\uC5C7\uC744 \uC218\uD589\uD560\uC9C0 \uD655\uB960\uC801\uC73C\uB85C
+      \uD310\uC815\n{TotalHostageAggro} \uAC12\uC5D0 \uBE44\uB840\uD558\uC5EC \uC778\uC9C8
+      \uC704\uD611 \uD589\uB3D9 \uC218\uD589 \uBE44\uC911 \uC99D\uAC00\n\n//\uC778\uC9C8
+      \uC704\uD611\n\uC6B0\uC120 \uC21C\uC704\n1. \uAC00\uC7A5 HostageAggro \uAC12\uC774
+      \uB192\uC740 \uC778\uC9C8\uC744 \uD45C\uC801\uC73C\uB85C \uC0BC\uB294\uB2E4.\n2.
+      HostageAggro\uAC12\uC774 \uB3D9\uC77C\uD560 \uACBD\uC6B0 \uD0C0\uC77C \uBC88\uD638
+      \uC624\uB984\uCC28\uC21C\uC73C\uB85C \uC120\uC815\uD55C\uB2E4.\n3. \uB300\uC0C1\uC73C\uB85C
+      \uC120\uC815\uD560 \uC778\uC9C8\uC774 \uC5C6\uC73C\uBA74 '\uC6D0\uAC70\uB9AC
+      \uC0AC\uACA9' \uD589\uB3D9\uC73C\uB85C \uC804\uD658\uD55C\uB2E4.\n\n//\uACF5\uACA9
+      \uD589\uB3D9 / \uACF5\uACA9 \uD589\uB3D9 \uD310\uC815 \uC2DC\uC758 \uD589\uB3D9
+      \uC120\uD0DD \uB85C\uC9C1\uC740 \uAE30\uC874 \uC804\uD22C\uB85C\uC9C1\uACFC
+      \uB3D9\uC77C\n '\uC6D0\uAC70\uB9AC \uC0AC\uACA9'\n\uC6B0\uC120 \uC21C\uC704\n1.
+      \uAC19\uC740 \uD589\uC5D0 \uC788\uB294 \uD788\uC5B4\uB85C\uB97C \uC6B0\uC120
+      \uD45C\uC801\uC73C\uB85C \uC0BC\uB294\uB2E4.\n2. \uAC19\uC740 \uD589 \uD45C\uC801\uC774
+      \uC5EC\uB7FF\uC774\uBA74 \uD604\uC7AC \uCCB4\uB825\uC774 \uB0AE\uC740 \uD788\uC5B4\uB85C\uB97C
+      \uC120\uD0DD\uD55C\uB2E4.\n3. \uAC19\uC740 \uD589\uC5D0 \uD45C\uC801\uC774
+      \uC5C6\uC73C\uBA74 \uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uD788\uC5B4\uB85C\uB97C
+      \uC0AC\uACA9\uD55C\uB2E4. (\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC774
+      \uB458 \uC774\uC0C1\uC77C \uACBD\uC6B0 \uB300\uC0C1\uC740 \uB79C\uB364)"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20007
+    EnemyName: "\uBE4C\uB7F0 \uC5F0\uD569 \uBC29\uD328\uBCD1"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9 \uD0F1\uCEE4 \uBCD1\uC885
+      \uBE4C\uB7F0"
+    UnitMaxHP: 6
+    UnitATK: 6
+    UnitDEF: 8
+    CriticalRate: 0.1
+    CounterRate: 0.1
+    ReduceRate: 0.1
+    Speed: 0
+    EnemySkill1_Name: "\uBC29\uD328 \uCE58\uAE30"
+    EnemySkill1_Description: "\uC0C1\uB300 \uC804\uC5F4 \uC6B0\uC120 \uB2E8\uC77C
+      \uC720\uB2DB\uC5D0\uAC8C {EnemySkill1Value} \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0.8
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB300\uC2E0 \uB9DE\uAE30"
+    EnemySkill2_Description: "\uB2E4\uC74C \uC790\uC2E0\uC758 \uCC28\uB840\uAE4C\uC9C0
+      \uC544\uAD70 \uC720\uB2DB\uC744 \uACF5\uACA9\uD558\uB294 \uD50C\uB808\uC774\uC5B4\uC758
+      \uB2E8\uC77C \uACF5\uACA9\uC744 1\uD68C \uB9C9\uAE30 (\uB300\uC0C1 \uC704\uCE58\uB85C
+      \uC774\uB3D9\uD574 \uD53C\uD574\uB97C \uB300\uC2E0 \uBC1B\uACE0 \uC6D0\uB798
+      \uC704\uCE58\uB85C \uBCF5\uADC0)\n(\uB2E8, \uC790\uC2E0\uC744 \uACF5\uACA9\uD558\uB294
+      \uB2E8\uC77C \uACF5\uACA9\uC774\uB098 \uAD11\uC5ED \uD53C\uD574\uB294 \uB9C9\uAE30
+      \uB300\uC0C1\uC73C\uB85C \uCDE8\uAE09\uD558\uC9C0 \uC54A\uC74C)"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: "\uC778\uC9C8 \uC704\uD611"
+    EnemySkill3_Description: "{HostageAggro}\uAC00 \uAC00\uC7A5 \uB192\uC740 \uC778\uC9C8
+      \uC720\uB2DB\uC5D0\uAC8C 10\uB9CC\uD07C \uB300\uBBF8\uC9C0\uB97C \uCD94\uACE0,
+      \uB300\uC0C1 \uC720\uB2DB\uC758 {HostageAggro}\uB97C 2 \uAC10\uC18C\uC2DC\uD0A8\uB2E4."
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "(\uB9E4 \uD134)\n\uACF5\uACA9 \uD589\uB3D9\uACFC \uC778\uC9C8 \uC704\uD611
+      \uD589\uB3D9 \uC911 \uBB34\uC5C7\uC744 \uC218\uD589\uD560\uC9C0 \uD310\uC815\n{TotalHostageAggro}
+      \uAC12\uC5D0 \uBE44\uB840\uD558\uC5EC \uC778\uC9C8 \uC704\uD611 \uD589\uB3D9
+      \uC218\uD589 \uBE44\uC911 \uC99D\uAC00\n\uC790\uC138\uD55C \uB0B4\uC6A9\uC740
+      1\uAD6C\uC5ED \uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9_\uC138\uBD80 \uAD6C\uD604
+      \uAE30\uD68D \uBB38\uC11C 3. \uBE4C\uB7F0 \uD589\uB3D9 \uD310\uC815 \uCC38\uACE0\n\n//\uC778\uC9C8
+      \uC704\uD611\n\uC6B0\uC120 \uC21C\uC704\n1. \uAC00\uC7A5 {HostageAggro} \uAC12\uC774
+      \uB192\uC740 \uC778\uC9C8\uC744 \uD45C\uC801\uC73C\uB85C \uC0BC\uB294\uB2E4.\n2.
+      {HostageAggro}\uAC12\uC774 \uB3D9\uC77C\uD560 \uACBD\uC6B0 \uD0C0\uC77C \uBC88\uD638
+      \uC624\uB984\uCC28\uC21C\uC73C\uB85C \uC120\uC815\uD55C\uB2E4.\n3. \uB300\uC0C1\uC73C\uB85C
+      \uC120\uC815\uD560 \uC778\uC9C8\uC774 \uC5C6\uC73C\uBA74 '\uC6D0\uAC70\uB9AC
+      \uC0AC\uACA9' \uD589\uB3D9\uC73C\uB85C \uC804\uD658\uD55C\uB2E4.\n\n//\uACF5\uACA9
+      \uD589\uB3D9 / \uACF5\uACA9 \uD589\uB3D9 \uD310\uC815 \uC2DC\uC758 \uD589\uB3D9
+      \uC120\uD0DD \uB85C\uC9C1\uC740 \uAE30\uC874 \uC804\uD22C\uB85C\uC9C1\uACFC
+      \uB3D9\uC77C\n'\uB300\uC2E0 \uB9DE\uAE30'\n- \uC544\uAD70 \uC720\uB2DB \uC911,
+      \uCCB4\uB825 30% \uBBF8\uB9CC \uC720\uB2DB\uC774 1\uBA85 \uC774\uC0C1 \uC788\uB294
+      \uACBD\uC6B0, '\uB300\uC2E0 \uB9DE\uAE30' \uC2E4\uD589\n- \uC544\uB2CC \uACBD\uC6B0
+      \uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC5D0\uAC8C '\uBC29\uD328 \uCE58\uAE30'
+      \uC2E4\uD589"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20008
+    EnemyName: "\uC778\uC9C81_100%"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9\uC758 \uC778\uC9C8 \uCE90\uB9AD\uD1301"
+    UnitMaxHP: 50
+    UnitATK: 0
+    UnitDEF: 0
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 0
+    EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
+    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB09C\uB3D9"
+    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC774 \uC720\uB2DB\uC758 \uD604\uC7AC \uCCB4\uB825\uC740 \uCD5C\uB300
+      \uCCB4\uB825\uC758 100%\n(\uB9E4 \uD134)\n- \uD604\uC7AC \uCCB4\uB825 = \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB3C4\uC6C0 \uC694\uCCAD' \uD589\uB3D9 \uC218\uD589
+      -> {HostageAggro} 1 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 < \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB09C\uB3D9' \uD589\uB3D9 \uC218\uD589 ->
+      {HostageAggro} 2 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 = 0 \uC77C \uACBD\uC6B0
+      \uBD80\uC0C1 \uD544\uB4DC\uC5D0\uC11C \uC81C\uC678 -> {HostageAggro} 0\uC73C\uB85C
+      \uCD08\uAE30\uD654 \uBC0F HostageInjuredCount 1 \uB204\uC801"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20009
+    EnemyName: "\uC778\uC9C82_100%"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9\uC758 \uC778\uC9C8 \uCE90\uB9AD\uD1302"
+    UnitMaxHP: 50
+    UnitATK: 0
+    UnitDEF: 0
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 0
+    EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
+    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB09C\uB3D9"
+    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC774 \uC720\uB2DB\uC758 \uD604\uC7AC \uCCB4\uB825\uC740 \uCD5C\uB300
+      \uCCB4\uB825\uC758 100%\n(\uB9E4 \uD134)\n- \uD604\uC7AC \uCCB4\uB825 = \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB3C4\uC6C0 \uC694\uCCAD' \uD589\uB3D9 \uC218\uD589
+      -> {HostageAggro} 1 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 < \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB09C\uB3D9' \uD589\uB3D9 \uC218\uD589 ->
+      {HostageAggro} 2 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 = 0 \uC77C \uACBD\uC6B0
+      \uBD80\uC0C1 \uD544\uB4DC\uC5D0\uC11C \uC81C\uC678 -> {HostageAggro} 0\uC73C\uB85C
+      \uCD08\uAE30\uD654 \uBC0F HostageInjuredCount 1 \uB204\uC801"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20010
+    EnemyName: "\uC778\uC9C83_100%"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9\uC758 \uC778\uC9C8 \uCE90\uB9AD\uD1303"
+    UnitMaxHP: 50
+    UnitATK: 0
+    UnitDEF: 0
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 0
+    EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
+    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB09C\uB3D9"
+    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC774 \uC720\uB2DB\uC758 \uD604\uC7AC \uCCB4\uB825\uC740 \uCD5C\uB300
+      \uCCB4\uB825\uC758 100%\n(\uB9E4 \uD134)\n- \uD604\uC7AC \uCCB4\uB825 = \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB3C4\uC6C0 \uC694\uCCAD' \uD589\uB3D9 \uC218\uD589
+      -> {HostageAggro} 1 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 < \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB09C\uB3D9' \uD589\uB3D9 \uC218\uD589 ->
+      {HostageAggro} 2 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 = 0 \uC77C \uACBD\uC6B0
+      \uBD80\uC0C1 \uD544\uB4DC\uC5D0\uC11C \uC81C\uC678 -> {HostageAggro} 0\uC73C\uB85C
+      \uCD08\uAE30\uD654 \uBC0F HostageInjuredCount 1 \uB204\uC801"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20011
+    EnemyName: "\uC778\uC9C81_75%"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9\uC758 \uC778\uC9C8 \uCE90\uB9AD\uD1301"
+    UnitMaxHP: 50
+    UnitATK: 0
+    UnitDEF: 0
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 0
+    EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
+    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB09C\uB3D9"
+    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC774 \uC720\uB2DB\uC758 \uD604\uC7AC \uCCB4\uB825\uC740 \uCD5C\uB300
+      \uCCB4\uB825\uC758 75%\n(\uB9E4 \uD134)\n- \uD604\uC7AC \uCCB4\uB825 = \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB3C4\uC6C0 \uC694\uCCAD' \uD589\uB3D9 \uC218\uD589
+      -> {HostageAggro} 1 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 < \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB09C\uB3D9' \uD589\uB3D9 \uC218\uD589 ->
+      {HostageAggro} 2 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 = 0 \uC77C \uACBD\uC6B0
+      \uBD80\uC0C1 \uD544\uB4DC\uC5D0\uC11C \uC81C\uC678 -> {HostageAggro} 0\uC73C\uB85C
+      \uCD08\uAE30\uD654 \uBC0F HostageInjuredCount 1 \uB204\uC801"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20012
+    EnemyName: "\uC778\uC9C82_75%"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9\uC758 \uC778\uC9C8 \uCE90\uB9AD\uD1302"
+    UnitMaxHP: 50
+    UnitATK: 0
+    UnitDEF: 0
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 0
+    EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
+    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB09C\uB3D9"
+    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC774 \uC720\uB2DB\uC758 \uD604\uC7AC \uCCB4\uB825\uC740 \uCD5C\uB300
+      \uCCB4\uB825\uC758 75%\n(\uB9E4 \uD134)\n- \uD604\uC7AC \uCCB4\uB825 = \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB3C4\uC6C0 \uC694\uCCAD' \uD589\uB3D9 \uC218\uD589
+      -> {HostageAggro} 1 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 < \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB09C\uB3D9' \uD589\uB3D9 \uC218\uD589 ->
+      {HostageAggro} 2 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 = 0 \uC77C \uACBD\uC6B0
+      \uBD80\uC0C1 \uD544\uB4DC\uC5D0\uC11C \uC81C\uC678 -> {HostageAggro} 0\uC73C\uB85C
+      \uCD08\uAE30\uD654 \uBC0F HostageInjuredCount 1 \uB204\uC801"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20013
+    EnemyName: "\uC778\uC9C83_75%"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9\uC758 \uC778\uC9C8 \uCE90\uB9AD\uD1303"
+    UnitMaxHP: 50
+    UnitATK: 0
+    UnitDEF: 0
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 0
+    EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
+    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB09C\uB3D9"
+    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC774 \uC720\uB2DB\uC758 \uD604\uC7AC \uCCB4\uB825\uC740 \uCD5C\uB300
+      \uCCB4\uB825\uC758 75%\n(\uB9E4 \uD134)\n- \uD604\uC7AC \uCCB4\uB825 = \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB3C4\uC6C0 \uC694\uCCAD' \uD589\uB3D9 \uC218\uD589
+      -> {HostageAggro} 1 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 < \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB09C\uB3D9' \uD589\uB3D9 \uC218\uD589 ->
+      {HostageAggro} 2 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 = 0 \uC77C \uACBD\uC6B0
+      \uBD80\uC0C1 \uD544\uB4DC\uC5D0\uC11C \uC81C\uC678 -> {HostageAggro} 0\uC73C\uB85C
+      \uCD08\uAE30\uD654 \uBC0F HostageInjuredCount 1 \uB204\uC801"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20014
+    EnemyName: "\uC778\uC9C81_50%"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9\uC758 \uC778\uC9C8 \uCE90\uB9AD\uD1301"
+    UnitMaxHP: 50
+    UnitATK: 0
+    UnitDEF: 0
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 0
+    EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
+    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB09C\uB3D9"
+    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC774 \uC720\uB2DB\uC758 \uD604\uC7AC \uCCB4\uB825\uC740 \uCD5C\uB300
+      \uCCB4\uB825\uC758 50%\n(\uB9E4 \uD134)\n- \uD604\uC7AC \uCCB4\uB825 = \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB3C4\uC6C0 \uC694\uCCAD' \uD589\uB3D9 \uC218\uD589
+      -> {HostageAggro} 1 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 < \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB09C\uB3D9' \uD589\uB3D9 \uC218\uD589 ->
+      {HostageAggro} 2 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 = 0 \uC77C \uACBD\uC6B0
+      \uBD80\uC0C1 \uD544\uB4DC\uC5D0\uC11C \uC81C\uC678 -> {HostageAggro} 0\uC73C\uB85C
+      \uCD08\uAE30\uD654 \uBC0F HostageInjuredCount 1 \uB204\uC801"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20015
+    EnemyName: "\uC778\uC9C82_50%"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9\uC758 \uC778\uC9C8 \uCE90\uB9AD\uD1302"
+    UnitMaxHP: 50
+    UnitATK: 0
+    UnitDEF: 0
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 0
+    EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
+    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB09C\uB3D9"
+    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC774 \uC720\uB2DB\uC758 \uD604\uC7AC \uCCB4\uB825\uC740 \uCD5C\uB300
+      \uCCB4\uB825\uC758 50%\n(\uB9E4 \uD134)\n- \uD604\uC7AC \uCCB4\uB825 = \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB3C4\uC6C0 \uC694\uCCAD' \uD589\uB3D9 \uC218\uD589
+      -> {HostageAggro} 1 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 < \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB09C\uB3D9' \uD589\uB3D9 \uC218\uD589 ->
+      {HostageAggro} 2 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 = 0 \uC77C \uACBD\uC6B0
+      \uBD80\uC0C1 \uD544\uB4DC\uC5D0\uC11C \uC81C\uC678 -> {HostageAggro} 0\uC73C\uB85C
+      \uCD08\uAE30\uD654 \uBC0F HostageInjuredCount 1 \uB204\uC801"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV20016
+    EnemyName: "\uC778\uC9C83_50%"
+    EnemyConcept: "\uACF5\uAD6C\uC0C1 \uC778\uC9C8\uADF9\uC758 \uC778\uC9C8 \uCE90\uB9AD\uD1303"
+    UnitMaxHP: 50
+    UnitATK: 0
+    UnitDEF: 0
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 0
+    EnemySkill1_Name: "\uB3C4\uC6C0 \uC694\uCCAD"
+    EnemySkill1_Description: "{HostageAggro} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB09C\uB3D9"
+    EnemySkill2_Description: "{HostageAggro} 2 \uC99D\uAC00"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC774 \uC720\uB2DB\uC758 \uD604\uC7AC \uCCB4\uB825\uC740 \uCD5C\uB300
+      \uCCB4\uB825\uC758 50%\n(\uB9E4 \uD134)\n- \uD604\uC7AC \uCCB4\uB825 = \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB3C4\uC6C0 \uC694\uCCAD' \uD589\uB3D9 \uC218\uD589
+      -> {HostageAggro} 1 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 < \uCD5C\uB300
+      \uCCB4\uB825\uC77C \uACBD\uC6B0 '\uB09C\uB3D9' \uD589\uB3D9 \uC218\uD589 ->
+      {HostageAggro} 2 \uB204\uC801\n- \uD604\uC7AC \uCCB4\uB825 = 0 \uC77C \uACBD\uC6B0
+      \uBD80\uC0C1 \uD544\uB4DC\uC5D0\uC11C \uC81C\uC678 -> {HostageAggro} 0\uC73C\uB85C
+      \uCD08\uAE30\uD654 \uBC0F HostageInjuredCount 1 \uB204\uC801"
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0

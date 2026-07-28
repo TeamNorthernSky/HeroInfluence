@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
+  m_Name: SkillPresentation_3040
+  m_EditorClassIdentifier: 
+  SkillIndex: 3040
+  PresentationSchemaVersion: 0
+  AnimationStateName: 
+  AnimationTriggerOverride: 
+  TargetAnimationTriggerOverride: 
+  UseAnimEvent: 0
+  HitDelay: 0.25
+  AttackSoundId: 0
+  HitSoundId: 0
+  SfxVolume: 1
+  EnableAttackEffect: 1
+  AttackEffectId: 0
+  EnableHitEffect: 1
+  HitEffectId: 0
+  ProjectilePrefab: {fileID: 0}
+  FlightTime: 0.3
+  TrajectoryType: 0
+  ArcHeight: 2
+  ScaleByCellSize: 0
+  ProjectileVisual:
+    Prefab: {fileID: 0}
+    Speed: 6
+    Trajectory: 1
+    ArcHeight: 1.2
+    TrailTime: 0.4
+    TrackTarget: 0
+    AlignToVelocity: 1
+    ImpactVisualLifetime: 0.3
+    ArrivalRadius: 0.2
+    TimeoutGraceSeconds: 1
+    TimeoutSeconds: 5
+    DeliveryMode: 0
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
+    TargetFormationCenter: 0
+  AttackSfxClip: {fileID: 0}
+  HitSfxClip: {fileID: 0}
+  AttackEffectPrefab: {fileID: 0}
+  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
+  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
+  HitEffectPrefab: {fileID: 0}
+  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
+  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
+  MovePrepare:
+    Enabled: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+  Move:
+    Enabled: 1
+    UseUnitMovement: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+  AttackPrepare:
+    Enabled: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+  Attack:
+    Enabled: 1
+    Beats: []
+  Return:
+    Enabled: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+  Post:
+    Enabled: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+    ExtraDelay: 0
+  MovingAttack:
+    Enabled: 0
+    AnimationStateName: 
+    AnimationBlendInSeconds: 0.1
+    EntryOffset: {x: -1.5, y: 0}
+    MidOffset: {x: 0, y: 0}
+    ExitOffset: {x: 1.5, y: 0}
+    PathSchemaVersion: 2
+    TopOffset: 1.5
+    BottomOffset: 1.5
+    SweepClearance: 0
+    FaceCurveTangent: 0
+    HitMode: 0
+    SingleAoEHitPathProgress: -1
+    PathSampleCount: 64
+    Cues: []

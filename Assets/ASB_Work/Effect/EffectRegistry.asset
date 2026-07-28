@@ -22,3 +22,12 @@ MonoBehaviour:
   - Id: 1030
     Prefab: {fileID: 3632712385227303547, guid: 3f4b069bf4d19834e8f2e533f74a1401,
       type: 3}
+  - Id: 1040
+    Prefab: {fileID: 1682308738772587252, guid: 8835c0243c1d75a4a9582b2da8a460c7,
+      type: 3}
+  - Id: 1050
+    Prefab: {fileID: 2210917845221197732, guid: 4c5860a68e541354d9baf472789a7eb1,
+      type: 3}
+  - Id: 1060
+    Prefab: {fileID: 3970442260384458838, guid: bb26c93ea1bd73041bf8ca0b50de737a,
+      type: 3}

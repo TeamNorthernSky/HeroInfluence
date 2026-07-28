@@ -27,6 +27,10 @@ public class CharactorAnimationController : MonoBehaviour
 
     public bool IsHitEventReached { get; private set; }
 
+    /// <summary>AniEvent_HoldBegin으로 애니가 프리즈(정지)된 상태인지. WaitHit 등 타임아웃 시계는 이 동안 멈춰야 한다.</summary>
+    public bool IsHolding { get; private set; }
+    private Coroutine _holdRoutine;
+
     /// <summary>타격(AniEvent_OnHit) 누적 횟수. 단조 증가하며 절대 초기화하지 않습니다. 다단히트 판정용.</summary>
     public int HitEventCount { get; private set; }
     private int _hitWaitBaseline;
@@ -38,7 +42,8 @@ public class CharactorAnimationController : MonoBehaviour
     {
         CurrentAnimSpeed = Mathf.Max(0.01f, speedMultiplier);
 
-        if (_animator != null)
+        // 홀드(프리즈) 중에는 배속 값만 갱신하고 애니는 계속 정지시킨다(재개 시 최신 배속 적용).
+        if (_animator != null && !IsHolding)
         {
             _animator.speed = CurrentAnimSpeed;
         }
@@ -80,6 +85,60 @@ public class CharactorAnimationController : MonoBehaviour
     public void AniEvent_AdvanceCombo()
     {
         ComboAdvanceCount++;
+    }
+
+    /// <summary>
+    /// Unity Animation Event (함수명: AniEvent_HoldBegin). holdBattleSeconds("배속-시간" 초) 동안
+    /// 애니메이션을 정지(freeze)시킨 뒤 자동 재개한다. 차지/앞동작 홀드 연출용.
+    /// 같은 프레임에 AniEvent_PresentationCue("cast")를 두면 차지 이펙트가 정지 구간 동안 떠 있는다.
+    /// </summary>
+    public void AniEvent_HoldBegin(float holdBattleSeconds)
+    {
+        if (_animator == null || holdBattleSeconds <= 0f)
+        {
+            return;
+        }
+
+        if (_holdRoutine != null)
+        {
+            StopCoroutine(_holdRoutine);
+        }
+        _holdRoutine = StartCoroutine(HoldRoutine(holdBattleSeconds));
+    }
+
+    private IEnumerator HoldRoutine(float holdBattleSeconds)
+    {
+        IsHolding = true;
+        _animator.speed = 0f; // 프리즈
+
+        float elapsedBattle = 0f;
+        while (elapsedBattle < holdBattleSeconds)
+        {
+            // 배속-시간 기준 누적: 전투 배속이 높을수록 실제 정지 시간은 짧아진다(전투 전체와 일관).
+            elapsedBattle += Time.deltaTime * Mathf.Max(0.01f, CurrentAnimSpeed);
+            yield return null;
+        }
+
+        IsHolding = false;
+        _holdRoutine = null;
+        if (_animator != null)
+        {
+            _animator.speed = CurrentAnimSpeed; // 최신 배속으로 재개
+        }
+    }
+
+    private void OnDisable()
+    {
+        // 홀드 중 비활성화되면 코루틴이 멈춰 프리즈가 남을 수 있으니 상태를 정리한다.
+        if (IsHolding)
+        {
+            IsHolding = false;
+            _holdRoutine = null;
+            if (_animator != null)
+            {
+                _animator.speed = CurrentAnimSpeed;
+            }
+        }
     }
 
     public void PlayState(string stateName, float blendSeconds)

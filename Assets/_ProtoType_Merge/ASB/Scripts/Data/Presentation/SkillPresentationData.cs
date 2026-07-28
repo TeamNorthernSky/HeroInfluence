@@ -72,6 +72,20 @@ public class SkillPresentationData : ScriptableObject
     public float ArcHeight = 2f;
     public bool ScaleByCellSize;
 
+    [Header("Projectile Impact (Skill-specific)")]
+    [Tooltip("Actual projectile presentation used by ranged offensive skills. This lives on the presentation asset, never in CSV SkillData.")]
+    public ProjectileVisualData ProjectileVisual = new ProjectileVisualData();
+
+    /// <summary>
+    /// 스킬별 투사체 데이터를 반환한다. 유효 조건은 "Prefab != null"뿐이며 JC 컴포넌트를 확인하지 않는다.
+    /// 프리팹이 없으면 null을 반환해 기존 즉시 히트/레거시 화살 흐름으로 폴백한다.
+    /// (레거시 ProjectilePrefab 자동 합성은 JC 의존을 없애기 위해 제거함. 필요하면 ProjectileVisual을 명시 설정.)
+    /// </summary>
+    public ProjectileVisualData GetProjectileVisual()
+    {
+        return (ProjectileVisual != null && ProjectileVisual.Prefab != null) ? ProjectileVisual : null;
+    }
+
     // 더 오래된 직접참조 필드(마이그레이션 잔재). 레지스트리 조회 실패 시 폴백으로만.
     [HideInInspector] public AudioClip AttackSfxClip;
     [HideInInspector] public AudioClip HitSfxClip;
@@ -200,10 +214,54 @@ public class SkillPresentationData : ScriptableObject
     }
 }
 
+
+/// <summary>
+/// Unity-object-backed visual data for one skill's projectile. Keep this on
+/// SkillPresentationData; SkillData is CSV-loaded and must remain reference-free.
+/// </summary>
+[Serializable]
+public class ProjectileVisualData
+{
+    public GameObject Prefab;
+    [Min(0.01f)] public float Speed = 6f;
+    public ProjectileTrajectoryType Trajectory = ProjectileTrajectoryType.Arc;
+    [Min(0f)] public float ArcHeight = 1.2f;
+    [Min(0.01f)] public float TrailTime = 0.4f;
+    [Tooltip("Visual endpoint follows the locked target while it remains valid.")]
+    public bool TrackTarget;
+    [Tooltip("이동 방향으로 투사체를 회전시킬지 여부.")]
+    public bool AlignToVelocity = true;
+    [Tooltip("도착 후 폭발/페이드/트레일 잔상을 유지할 배속-시간(초). 이후 자동 정리. 피해 타이밍과 무관.")]
+    [Min(0f)] public float ImpactVisualLifetime = 0.3f;
+    [Tooltip("Homing 전용 도착 반경. Straight/Arc는 거리 완료(t>=1)로 판정하며 이 값을 사용하지 않는다.")]
+    [Min(0f)] public float ArrivalRadius = 0.2f;
+    [Tooltip("Additional battle-time allowance after distance / speed. Increase for tracking projectiles that can chase a moving target.")]
+    [Min(0.1f)] public float TimeoutGraceSeconds = 1f;
+    [Tooltip("Deprecated compatibility field for existing assets. It is not used to determine arrival or timeout.")]
+    [HideInInspector]
+    [Min(0.1f)] public float TimeoutSeconds = 5f;
+
+    [Tooltip("전달 방식. Single=일반 원거리. ChainAdditionalTargets=주 타깃 도착 지점에서 추가 타깃으로 이어지는 체인.")]
+    public ProjectileDeliveryMode DeliveryMode = ProjectileDeliveryMode.Single;
+
+    [Tooltip("준비(차징) 단계에서 미리 만든 인스턴스를 발사에 재사용(2040 낙하형). 첫 이벤트에 held Cue로 스폰·차징, 둘째 이벤트에 그 인스턴스를 발사.")]
+    public bool UsePreparedCharge = false;
+    [Tooltip("UsePreparedCharge일 때, 차징 held 이펙트의 InstanceKey. 발사 시점에 이 인스턴스를 넘겨받아 발사한다.")]
+    public string ChargeInstanceKey;
+    [Tooltip("도착점을 개별 타깃이 아니라 대상 진형 중심으로. 낙하형 전체 공격에 사용.")]
+    public bool TargetFormationCenter = false;
+}
 public enum ProjectileTrajectoryType
 {
     Straight,
     Arc
+}
+
+/// <summary>투사체 전달 방식. Single=시전자 원점에서 각 타깃으로. ChainAdditionalTargets=1차 도착점에서 2차로 체인.</summary>
+public enum ProjectileDeliveryMode
+{
+    Single,
+    ChainAdditionalTargets
 }
 
 /// <summary>이펙트를 어디에 생성할지(배치 정보). 재료 동작이 아니라 레시피가 결정.</summary>
@@ -218,7 +276,8 @@ public enum SpawnAnchor
     Caster,       // 시전자 루트
     CasterSocket, // 시전자 소켓(Socket)
     Target,       // 대상 위치
-    TargetCell    // 대상 셀(위치 스냅샷)
+    TargetCell,   // 대상 셀(위치 스냅샷)
+    EachTarget    // AoE 각 타깃마다 하나씩 생성(대상 수만큼). Targets 리스트를 순회.
 }
 
 /// <summary>
