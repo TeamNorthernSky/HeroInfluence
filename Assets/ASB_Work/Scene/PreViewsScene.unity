@@ -1403,6 +1403,9 @@ MonoBehaviour:
   enemySpawner: {fileID: 912453334}
   playerUnitId: 10003
   playerGridNumber: 101
+  additionalPreviewPlayers:
+  - unitId: 10002
+    gridNumber: 100
   enemyUnitId: 20001
   enemyGridNumber: 201
   previewEnemies:

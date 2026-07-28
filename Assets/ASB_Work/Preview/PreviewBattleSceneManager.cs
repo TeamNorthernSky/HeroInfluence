@@ -11,6 +11,15 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 public class PreviewBattleSceneManager : MonoBehaviour
 {
     [System.Serializable]
+    private sealed class PreviewPlayer
+    {
+        [SerializeField] private string unitId;
+        [SerializeField] private int gridNumber;
+
+        public string UnitId => unitId;
+        public int GridNumber => gridNumber;
+    }
+    [System.Serializable]
     private sealed class PreviewEnemy
     {
         [SerializeField] private string unitId;
@@ -41,6 +50,7 @@ public class PreviewBattleSceneManager : MonoBehaviour
     [Header("Preview Units")]
     [SerializeField] private string playerUnitId = "10001";
     [SerializeField] private int playerGridNumber = 0;
+    [SerializeField] private List<PreviewPlayer> additionalPreviewPlayers = new List<PreviewPlayer>();
     [SerializeField] private string enemyUnitId = "20001";
     [SerializeField] private int enemyGridNumber = 200;
     [SerializeField] private List<PreviewEnemy> previewEnemies = new List<PreviewEnemy>
@@ -76,14 +86,16 @@ public class PreviewBattleSceneManager : MonoBehaviour
         }
 
         BattleCharactor actor = SpawnPlayerPreviewUnit();
+        List<BattleCharactor> allies = SpawnAdditionalPlayerPreviewUnits();
         List<BattleCharactor> targets = SpawnEnemyPreviewUnits();
         BattleCharactor target = targets.Count > 0 ? targets[0] : null;
+        BattleCharactor allyTarget = allies.Count > 0 ? allies[0] : null;
 
         BattleGridManager.Instance?.RebuildCache();
 
         if (previewController != null)
         {
-            previewController.SetUnits(actor, target);
+            previewController.SetUnits(actor, target, allyTarget);
         }
         else
         {
@@ -131,6 +143,32 @@ public class PreviewBattleSceneManager : MonoBehaviour
         return ResolveSpawnedBattleCharactor(spawned, "player");
     }
 
+    private List<BattleCharactor> SpawnAdditionalPlayerPreviewUnits()
+    {
+        List<BattleCharactor> spawnedPlayers = new List<BattleCharactor>();
+        if (playerSpawner == null || additionalPreviewPlayers == null)
+        {
+            return spawnedPlayers;
+        }
+
+        for (int i = 0; i < additionalPreviewPlayers.Count; i++)
+        {
+            PreviewPlayer previewPlayer = additionalPreviewPlayers[i];
+            if (previewPlayer == null || string.IsNullOrWhiteSpace(previewPlayer.UnitId))
+            {
+                continue;
+            }
+
+            GameObject spawned = playerSpawner.SpawnUnit(previewPlayer.UnitId, previewPlayer.GridNumber);
+            BattleCharactor ally = ResolveSpawnedBattleCharactor(spawned, "additional player");
+            if (ally != null)
+            {
+                spawnedPlayers.Add(ally);
+            }
+        }
+
+        return spawnedPlayers;
+    }
     private List<BattleCharactor> SpawnEnemyPreviewUnits()
     {
         List<BattleCharactor> spawnedEnemies = new List<BattleCharactor>();

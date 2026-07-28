@@ -62,12 +62,12 @@ namespace ASB.Work.Battle.SkillExecution
 
             // 서포터
             Register(4010, new TargetHPPerHeal());      // 대상 체력 비례 힐 
-            Register(4020, new DamageSkillHandler());    // 단일 공격
-            Register(4030, new TargetLowerHPMoreHeal()); // 긴급 힐: 대상의 체력이 낮을수록 힐량 증가
-            Register(4040, new TargetHealBanSkill());    // 단일공격 + 대상 힐 밴
-            Register(4050, new HealTargetAroundRandomHandler()); // 단일 힐 + 랜덤 주변 힐
+            Register(4020, new HolyBulletHpRecoveryHandler());    // 단일 공격 + HP 회복
+            Register(4030, new HealTargetAroundRandomHandler()); // 광역 힐 + 인접 무작위 1명
+            Register(4040, new RebirthSkillHandler());    // 부활 + 적 전체 공격
+            Register(4050, new TargetLowerHPMoreHeal()); // 긴급 힐
             Register(4060, new AoEDamageSkillHandler()); //전체 공격
-            Register(4070, new RebirthSkillHandler());   // 부활
+            Register(4070, new TargetHealBanSkill());   // 단일 공격 + 대상 힐 밴
 
 
             // 나이트 

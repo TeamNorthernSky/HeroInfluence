@@ -24,6 +24,8 @@ namespace ASB.Work.Battle.Sequence
             {
                 case ProjectileTrajectoryType.Straight:
                     return new StraightTrajectory();
+                case ProjectileTrajectoryType.OverheadDrop:
+                    return new OverheadDropTrajectory();
                 case ProjectileTrajectoryType.Arc:
                 default:
                     return new ArcTrajectory();
@@ -110,6 +112,72 @@ namespace ASB.Work.Battle.Sequence
                 return true;
             }
 
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 낙하형: start에서 "대상 바로 위(end + up*height)"로 로프트한 뒤, 그 지점에서 end로 수직 하강한다.
+    /// height는 ProjectileVisualData.ArcHeight를 대상 위 체공 높이로 재사용한다. 도착 = 하강 완료.
+    /// </summary>
+    public sealed class OverheadDropTrajectory : IProjectileTrajectory
+    {
+        private Vector3 _start;
+        private Vector3 _end;
+        private float _height;
+        private float _speed;
+        private float _loftDur;
+        private float _dropDur;
+        private float _elapsed;
+
+        public void Init(Vector3 start, Vector3 end, ProjectileVisualData data)
+        {
+            _start = start;
+            _end = end;
+            _height = data != null ? Mathf.Max(0.5f, data.ArcHeight) : 2f;
+            _speed = data != null ? Mathf.Max(0.01f, data.Speed) : 6f;
+            _elapsed = 0f;
+            RecomputeDurations();
+        }
+
+        private void RecomputeDurations()
+        {
+            Vector3 overhead = _end + Vector3.up * _height;
+            float loftDist = Vector3.Distance(_start, overhead);
+            _loftDur = loftDist > 0.001f ? loftDist / _speed : 0.0001f;
+            _dropDur = _height > 0.001f ? _height / _speed : 0.0001f;
+        }
+
+        public bool Step(float dtBattle, Transform trackedTarget, out Vector3 position)
+        {
+            // 추적형: 대상 현재 위치를 끝점으로 갱신(그 위 체공점도 함께 이동).
+            if (trackedTarget != null)
+            {
+                _end = trackedTarget.position;
+                RecomputeDurations();
+            }
+
+            _elapsed += dtBattle;
+            Vector3 overhead = _end + Vector3.up * _height;
+
+            // 1단계: 대상 바로 위로 로프트(살짝 포물선).
+            if (_elapsed < _loftDur)
+            {
+                float t = Mathf.Clamp01(_elapsed / _loftDur);
+                Vector3 p = Vector3.Lerp(_start, overhead, t);
+                p.y += _height * 0.35f * 4f * t * (1f - t);
+                position = p;
+                return false;
+            }
+
+            // 2단계: 체공점 → 대상으로 수직 하강.
+            float dropT = Mathf.Clamp01((_elapsed - _loftDur) / _dropDur);
+            position = Vector3.Lerp(overhead, _end, dropT);
+            if (dropT >= 1f)
+            {
+                position = _end;
+                return true;
+            }
             return false;
         }
     }
