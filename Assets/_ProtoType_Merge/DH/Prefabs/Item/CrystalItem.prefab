@@ -81,6 +81,7 @@ GameObject:
   - component: {fileID: 5843275972758138485}
   - component: {fileID: 8189238196783143757}
   - component: {fileID: 1029090634544637568}
+  - component: {fileID: 5713449404511492630}
   m_Layer: 6
   m_Name: Mesh
   m_TagString: Untagged
@@ -175,3 +176,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 2484040839372886333, guid: fb906c3833cce574cba426a51ea185fa, type: 3}
+--- !u!95 &5713449404511492630
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2734341938353017882}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e784caceef7eb774ba6b186e3af66893, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

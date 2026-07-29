@@ -181,6 +181,7 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
                 state.PrefabKey,
                 state.ZoneId);
             copy.SetDefeated(state.Defeated);
+            copy.SetEventEncounter(state.EncounterChatZoneId, state.EncounterChatId, state.EventBattleKey);
             target.Add(copy);
         }
     }

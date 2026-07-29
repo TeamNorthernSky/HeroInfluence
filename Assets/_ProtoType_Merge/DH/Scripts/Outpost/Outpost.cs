@@ -5,15 +5,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
-public enum OutpostCompletionFlagPreset
-{
-    None,
-    Sector1MainEventClear,
-    Sector2MainEventClear,
-    Sector3MainEventClear,
-    Sector4MainEventClear
-}
-
 public class Outpost : MonoBehaviour
 {
     public static event Action<Outpost> OutpostClaimed;
@@ -35,7 +26,7 @@ public class Outpost : MonoBehaviour
     [SerializeField, Min(0)] private int defenderCombatChatId;
 
     [Header("Event Completion")]
-    [SerializeField] private OutpostCompletionFlagPreset completionFlagPreset = OutpostCompletionFlagPreset.None;
+    [SerializeField] private string completionFlagName;
 
     [Header("Visual")]
     [SerializeField] private Renderer targetRenderer;
@@ -56,7 +47,7 @@ public class Outpost : MonoBehaviour
     public string ZoneId => NormalizeZoneId(zoneId);
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
     public int DefenderCombatChatId => Mathf.Max(0, defenderCombatChatId);
-    public OutpostCompletionFlagPreset CompletionFlagPreset => completionFlagPreset;
+    public string CompletionFlagName => string.IsNullOrWhiteSpace(completionFlagName) ? string.Empty : completionFlagName.Trim();
 
     private void OnValidate()
     {
@@ -171,6 +162,9 @@ public class Outpost : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(loaderZoneId))
             zoneId = NormalizeZoneId(loaderZoneId);
         RefreshResolvedEnemyLevel();
+
+        if (Application.isPlaying)
+            ApplyCompletionFlagIfAlreadySet(DHEventStateRepository.Instance);
     }
     public void ApplyInitialData(int nextResourcePerTurn, OutpostState nextState)
     {
@@ -260,7 +254,7 @@ public class Outpost : MonoBehaviour
         if (!value || IsPlayerClaimed)
             return;
 
-        string completionFlag = ResolveCompletionFlagName(completionFlagPreset);
+        string completionFlag = ResolveCompletionFlagName();
         if (string.IsNullOrEmpty(completionFlag))
             return;
 
@@ -275,7 +269,7 @@ public class Outpost : MonoBehaviour
         if (eventStateRepository == null || IsPlayerClaimed)
             return;
 
-        string completionFlag = ResolveCompletionFlagName(completionFlagPreset);
+        string completionFlag = ResolveCompletionFlagName();
         if (string.IsNullOrEmpty(completionFlag))
             return;
 
@@ -354,20 +348,11 @@ public class Outpost : MonoBehaviour
         return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
 
-    private static string ResolveCompletionFlagName(OutpostCompletionFlagPreset preset)
+    private string ResolveCompletionFlagName()
     {
-        string rawFlag = preset switch
-        {
-            OutpostCompletionFlagPreset.Sector1MainEventClear => "1SectorMainEventClear",
-            OutpostCompletionFlagPreset.Sector2MainEventClear => "2SectorMainEventClear",
-            OutpostCompletionFlagPreset.Sector3MainEventClear => "3SectorMainEventClear",
-            OutpostCompletionFlagPreset.Sector4MainEventClear => "4SectorMainEventClear",
-            _ => string.Empty
-        };
-
-        return string.IsNullOrEmpty(rawFlag)
+        return string.IsNullOrWhiteSpace(completionFlagName)
             ? string.Empty
-            : DHEventStateRepository.NormalizeFlagName(rawFlag);
+            : DHEventStateRepository.NormalizeFlagName(completionFlagName);
     }
     private void ResolveOutpostRegistry()
     {

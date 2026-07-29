@@ -372,16 +372,14 @@ public class PartyGridMover : MonoBehaviour
         if (interactionCells == null || interactionCells.Count == 0)
             return false;
 
-        startGrid = interactionCells[0];
-        for (int i = 1; i < interactionCells.Count; i++)
+        List<Vector2Int> sortedInteractionCells = new List<Vector2Int>(interactionCells);
+        sortedInteractionCells.Sort((left, right) =>
         {
-            Vector2Int candidate = interactionCells[i];
-            if (candidate.x < startGrid.x ||
-                (candidate.x == startGrid.x && candidate.y < startGrid.y))
-            {
-                startGrid = candidate;
-            }
-        }
+            int yCompare = left.y.CompareTo(right.y);
+            return yCompare != 0 ? yCompare : left.x.CompareTo(right.x);
+        });
+
+        startGrid = sortedInteractionCells[sortedInteractionCells.Count / 2];
 
         return true;
     }

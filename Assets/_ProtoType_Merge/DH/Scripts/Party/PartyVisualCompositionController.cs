@@ -129,7 +129,7 @@ public class PartyVisualCompositionController : MonoBehaviour
         // initialUnitTemplateKeys = [10001,10002,10003,10004]이고 10004=아쿠아블루(후열) 이므로
         // 10001/02/03 → 전열(슬롯4·5·6), 10004(아쿠아) → 후열(슬롯1). (슬롯 미전달 시 자동 [1,2,3,4]가
         // 전열3+후열1로 어긋나 출전/전력평가 진형이 잘못 표시되던 문제 교정.)
-        int[] unitSlots = { 4, 5, 6, 1 };
+        int[] unitSlots = { 5, 1, 3, 2 };
         partyRepository.RegisterOrUpdateParty(partyId, unitIndices, unitSlots);
     }
 

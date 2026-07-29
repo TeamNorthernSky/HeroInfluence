@@ -507,7 +507,10 @@ public class LevelLoader : MonoBehaviour
                 placement.GridPosition,
                 placement.EnemyGroupKey,
                 placement.SpawnChatZoneId,
-                placement.SpawnChatId);
+                placement.SpawnChatId,
+                placement.EncounterChatZoneId,
+                placement.EncounterChatId,
+                placement.EventBattleKey);
         }
     }
 
