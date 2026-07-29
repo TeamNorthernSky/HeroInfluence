@@ -288,7 +288,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
             if (mainEvent == null || !IsSameEventKey(mainEvent.EventKey, eventKey))
                 continue;
 
-            mainEvent.gameObject.SetActive(false);
+            mainEvent.DeactivateByDisableEffect();
         }
     }
 

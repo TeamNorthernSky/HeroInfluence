@@ -240,13 +240,18 @@ public class Outpost : MonoBehaviour
         defenderEnemyId = string.Empty;
     }
 
-    private void ApplyPlayerClaimedState()
+    private void ApplyPlayerClaimedState(bool notifyClaimed = true)
     {
+        if (IsPlayerClaimed)
+            return;
+
         outpostState = OutpostState.Claimed;
         ClearEnemyDefender();
         ApplyStateMaterial();
         SaveProgressState();
-        OutpostClaimed?.Invoke(this);
+
+        if (notifyClaimed)
+            OutpostClaimed?.Invoke(this);
     }
 
     private void HandleEventFlagChanged(string flagName, bool value)
@@ -274,7 +279,7 @@ public class Outpost : MonoBehaviour
             return;
 
         if (eventStateRepository.GetFlag(completionFlag))
-            ForceClaimFromCombatResult();
+            ApplyPlayerClaimedState(false);
     }
 
     private void ApplyStateMaterial()
