@@ -35,3 +35,6 @@ MonoBehaviour:
   - Id: 9033
     Prefab: {fileID: 5014783889222747169, guid: a52020892572524458e5a533a9431063,
       type: 3}
+  - Id: 9034
+    Prefab: {fileID: 5014783889222747169, guid: 3fbbbcaed39d3d545993a8564c93f05f,
+      type: 3}

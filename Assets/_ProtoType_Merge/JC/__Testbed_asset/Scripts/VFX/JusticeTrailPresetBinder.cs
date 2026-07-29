@@ -323,7 +323,7 @@ namespace JC.VFX
 
         /// <summary>
         /// 호 획 V2 — 재설계(260729). 획 하나의 일생 규칙:
-        ///   두께: 0 → 최대(증가 시간 growTime) → 유지 → 0 (소멸 구간 fadeTime)
+        ///   두께: 0 → 최대(증가 비율 growRatio) → 유지 → 0 (소멸 비율 fadeRatio)
         ///   소멸: 전체 유지 후 알파 페이드 — 트레일 정점이 개별 만료로 뒤에서 지워지지 않는다.
         ///
         /// 구현 배선:
@@ -339,9 +339,10 @@ namespace JC.VFX
 
             float life = Mathf.Max(g.strokeLifetime, 0.1f);
             float lifeMin = Mathf.Clamp(g.strokeLifeMin, 0.05f, life);
-            // 두께·알파 곡선은 수명에 정규화되므로, 짧은 일생의 획은 생명주기 전체가 비례 압축된다.
-            float growT = Mathf.Clamp01(g.growTime / life);
-            float fadeStart = Mathf.Clamp(1f - g.fadeTime / life, growT + 0.01f, 0.99f);
+            // ★grow·fade는 일생 비율(260729 전환) — 곡선이 수명 정규화라 비율이 그대로 키가 된다.
+            // 어떤 수명의 획이든(랜덤 추첨·잔여 클램프 압축 포함) 같은 비율 규칙을 받는다.
+            float growT = Mathf.Clamp(g.growRatio, 0.01f, 0.98f);
+            float fadeStart = Mathf.Clamp(1f - g.fadeRatio, growT + 0.01f, 0.99f);
 
             foreach (var ps in root.GetComponentsInChildren<ParticleSystem>(true))
             {
@@ -368,7 +369,7 @@ namespace JC.VFX
                     Mathf.Max(g.nozzleRadius * 2f, 0.002f),
                     Mathf.Max(g.nozzleThickness, 0.005f),
                     Mathf.Max(g.nozzleThickness, 0.005f));
-                shape.rotation = new Vector3(0f, -90f, 0f);   // 시작각 0(12시) 기준 초기값 — 런타임에 덮임
+                shape.rotation = new Vector3(0f, -90f + g.nozzleTilt, 0f);   // 시작각 0(12시) 기준 초기값 — 런타임에 덮임
                 shape.randomDirectionAmount = 0f;
 
                 // 색은 수명 그라데이션, 알파는 「유지 → 소멸 구간 페이드」 — BuildCore의 hold가 곧 fadeStart.
@@ -378,7 +379,7 @@ namespace JC.VFX
                     BuildCore(g.headColor, g.midColor, g.tailColor,
                               Color.white, 0f, 0f, g.emission, g.chromaHold, fadeStart));
 
-                // ★두께 규칙: 0 → 최대(growTime) → 유지 → 0(fadeTime). Width 값 = 최대 두께.
+                // ★두께 규칙: 0 → 최대(growRatio) → 유지 → 0(fadeRatio). Width 값 = 최대 두께.
                 var sol = ps.sizeOverLifetime;
                 sol.enabled = true;
                 sol.separateAxes = false;
@@ -426,8 +427,11 @@ namespace JC.VFX
                 fx.AngleEnd = g.angleEnd;
                 fx.Radius = g.radius;
                 fx.SweepDuration = g.sweepDuration;
+                fx.EaseOut = g.easeOut;
+                fx.NozzleTilt = g.nozzleTilt;
                 fx.SpawnOffset = g.spawnOffset;
-                fx.EmitTailCutoffSeconds = g.growTime;   // 제자리 쐐기 방지 — 두께가 자라는 시간만큼 미리 컷
+                // 말단 컷은 별도 결선이 없다 — 컴포넌트가 「잔여 < Stroke Life Min」으로 스스로 판정한다.
+                // (구 growTime 절대 초 컷은 비율 전환으로 전제가 소멸해 폐기, 260729)
                 fx.EmissionRamp = g.emissionRamp;
                 fx.EmissionDecay = g.emissionDecay;
                 fx.BaseRateOverDistance = g.rateOverDistance;
@@ -441,6 +445,112 @@ namespace JC.VFX
                 fx.ThinRadiusOuter = g.radius + Mathf.Max(g.nozzleRadius, 0.05f);
                 // 재조준이 점프할 「하강 구간 시작」 — 두께 곡선(fadeStart)과 반드시 일치해야 한다.
                 fx.FadeStartNorm = fadeStart;
+            }
+        }
+
+        /// <summary>
+        /// 호 포인트 획 — 본 호 획 위에 겹치는 액센트 가닥. 파티클 구성은 ApplyArcStroke와
+        /// 같은 규칙(획 일생·방추형·트레일)이고, 궤도·수렴은 JcArcPointEffect에 밀어 넣는다.
+        /// 전용 재질을 받으므로 단면 감쇠(bodyFalloff)도 본 획과 독립이다.
+        /// </summary>
+        public static void ApplyArcPoint(GameObject root, JusticeTrailPreset p, Material pointMaterial = null)
+        {
+            if (root == null || p == null) return;
+            var g = p.arcPoint;
+
+            float life = Mathf.Max(g.strokeLifetime, 0.1f);
+            float lifeMin = Mathf.Clamp(g.strokeLifeMin, 0.05f, life);
+            float growT = Mathf.Clamp(g.growRatio, 0.01f, 0.98f);
+            float fadeStart = Mathf.Clamp(1f - g.fadeRatio, growT + 0.01f, 0.99f);
+
+            foreach (var ps in root.GetComponentsInChildren<ParticleSystem>(true))
+            {
+                var main = ps.main;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(lifeMin, life);
+                main.startSize = new ParticleSystem.MinMaxCurve(g.widthMin, Mathf.Max(g.widthMin, g.widthMax));
+                main.startSpeed = new ParticleSystem.MinMaxCurve(0f);
+                main.maxParticles = g.maxParticles;
+                main.gravityModifier = 0f;
+                main.simulationSpace = ParticleSystemSimulationSpace.Local;
+
+                var em = ps.emission;
+                em.enabled = g.enabled;
+                em.rateOverTime = 0f;
+                em.rateOverDistance = g.enabled ? g.rateOverDistance : 0f;
+                em.SetBursts(new ParticleSystem.Burst[0]);
+
+                // ★탄생 위치 = 시작 오프셋 — 상자 X(반경 방향) 스케일이 [Offset Min, Max] 대역 폭이고,
+                // 대역 중심으로의 이동·공전 회전은 JcArcPointEffect가 매 서브스텝 준다.
+                var shape = ps.shape;
+                shape.enabled = true;
+                shape.shapeType = ParticleSystemShapeType.Box;
+                shape.scale = new Vector3(
+                    Mathf.Max(Mathf.Abs(g.offsetMax - g.offsetMin), 0.002f),
+                    Mathf.Max(g.nozzleThickness, 0.005f),
+                    Mathf.Max(g.nozzleThickness, 0.005f));
+                shape.rotation = new Vector3(0f, -90f, 0f);
+                shape.randomDirectionAmount = 0f;
+
+                var col = ps.colorOverLifetime;
+                col.enabled = true;
+                col.color = new ParticleSystem.MinMaxGradient(
+                    BuildCore(g.headColor, g.midColor, g.tailColor,
+                              Color.white, 0f, 0f, g.emission, g.chromaHold, fadeStart));
+
+                var sol = ps.sizeOverLifetime;
+                sol.enabled = true;
+                sol.separateAxes = false;
+                sol.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
+                    new Keyframe(0f, 0f), new Keyframe(growT, 1f),
+                    new Keyframe(fadeStart, 1f), new Keyframe(1f, 0f)));
+
+                var tm = ps.trails;
+                tm.enabled = true;
+                tm.mode = ParticleSystemTrailMode.PerParticle;
+                tm.ratio = 1f;
+                tm.lifetime = new ParticleSystem.MinMaxCurve(1f);
+                tm.minVertexDistance = g.trailMinVertexDistance;
+                tm.worldSpace = true;
+                tm.dieWithParticles = true;
+                tm.sizeAffectsWidth = true;
+                float et = Mathf.Clamp(g.edgeTaper, 0f, 0.45f);
+                tm.widthOverTrail = et < 0.001f
+                    ? new ParticleSystem.MinMaxCurve(1f)
+                    : new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
+                        new Keyframe(0f, 0f), new Keyframe(et, 1f),
+                        new Keyframe(1f - et, 1f), new Keyframe(1f, 0f)));
+                tm.inheritParticleColor = true;
+                tm.textureMode = ParticleSystemTrailTextureMode.Stretch;
+
+                var rend = ps.GetComponent<ParticleSystemRenderer>();
+                if (rend != null && pointMaterial != null)
+                {
+                    rend.renderMode = ParticleSystemRenderMode.None;
+                    rend.trailMaterial = pointMaterial;
+                }
+            }
+
+            PushCoreParams(pointMaterial, Color.black, 0f, 0.01f, 1f, g.bodyFalloff, 0.05f);
+
+            var fx = root.GetComponent<Seam.JcArcPointEffect>();
+            if (fx != null)
+            {
+                fx.AngleStart = g.angleStart;
+                fx.AngleEnd = g.angleEnd;
+                fx.Radius = g.radius;
+                fx.SweepDuration = g.sweepDuration;
+                fx.EaseOut = g.easeOut;
+                fx.OffsetMin = g.offsetMin;
+                fx.OffsetMax = g.offsetMax;
+                fx.ConvergeExp = g.convergeExp;
+                fx.SpawnOffset = g.spawnOffset;
+                fx.ExtraLinger = g.extraLinger;
+                fx.EmissionRamp = g.emissionRamp;
+                fx.EmissionDecay = g.emissionDecay;
+                fx.BaseRateOverDistance = g.rateOverDistance;
+                fx.StrokeLifeMin = lifeMin;
+                fx.StrokeLifeMax = life;
+                fx.SkipShortRemainder = g.skipShortRemainder;
             }
         }
 
@@ -870,7 +980,7 @@ namespace JC.VFX
     [DisallowMultipleComponent]
     public class JusticeTrailPresetBinder : MonoBehaviour
     {
-        public enum Kind { Trail, Impact, Vortex, Slash, ArcStroke }
+        public enum Kind { Trail, Impact, Vortex, Slash, ArcStroke, ArcPoint }
 
         /// <summary>다음에 스폰될 이펙트가 +스킬(변종) 프리셋을 쓸지. 재생 직전에 단축키가 세운다.</summary>
         public static bool UseAlternate;
@@ -902,8 +1012,11 @@ namespace JC.VFX
         [Tooltip("[레거시] 구 호 참격용 재질.")]
         [SerializeField] private Material slashMaterial;
 
-        [Tooltip("호 획 V2용 재질(Testbed/Justice/StrokeCore).")]
+        [Tooltip("호 획용 재질(Testbed/Justice/StrokeCore).")]
         [SerializeField] private Material arcStrokeMaterial;
+
+        [Tooltip("호 포인트 획용 재질 — 본 획과 분리해 단면 감쇠를 독립 조절한다.")]
+        [SerializeField] private Material arcPointMaterial;
 
         public JusticeTrailPreset Preset { get => preset; set => preset = value; }
         public JusticeTrailPreset PresetAlt { get => presetAlt; set => presetAlt = value; }
@@ -927,6 +1040,7 @@ namespace JC.VFX
                 case Kind.Vortex: JusticeTrailPresetRuntime.ApplyVortex(gameObject, p, vortexMaterial); break;
                 case Kind.Slash:  JusticeTrailPresetRuntime.ApplySlash(gameObject, p, slashMaterial); break;
                 case Kind.ArcStroke: JusticeTrailPresetRuntime.ApplyArcStroke(gameObject, p, arcStrokeMaterial); break;
+                case Kind.ArcPoint: JusticeTrailPresetRuntime.ApplyArcPoint(gameObject, p, arcPointMaterial); break;
             }
 
             if (!applyMaterials) return;
