@@ -8,6 +8,20 @@ using UnityEngine.Scripting.APIUpdating;
 /// skillIndex로 매핑되는 스킬 연출 데이터.
 /// PresentationSchemaVersion으로 신/구 경로를 구분한다: 0=Legacy(기존 director), 1=PhaseCue(페이즈+Cue).
 /// </summary>
+
+public enum SkillImpactDeliveryMode
+{
+    AnimationHit,
+    CustomEffectImpact
+}
+
+public enum CustomImpactResolutionPolicy
+{
+    FirstImpact,
+    AllTargetsImpacted,
+    PerTargetImpact
+}
+
 [CreateAssetMenu(fileName = "SkillPresentation_New", menuName = "Battle/Skill Presentation Data")]
 public class SkillPresentationData : ScriptableObject
 {
@@ -75,6 +89,23 @@ public class SkillPresentationData : ScriptableObject
     [Header("Projectile Impact (Skill-specific)")]
     [Tooltip("Actual projectile presentation used by ranged offensive skills. This lives on the presentation asset, never in CSV SkillData.")]
     public ProjectileVisualData ProjectileVisual = new ProjectileVisualData();
+
+    [Header("Impact Delivery")]
+    [Tooltip("AnimationHit keeps the existing OnHit timing. CustomEffectImpact waits for the effect to publish its actual impact frame.")]
+    public SkillImpactDeliveryMode ImpactDeliveryMode = SkillImpactDeliveryMode.AnimationHit;
+    [Min(0.1f)]
+    [Tooltip("Failsafe wait in seconds for CustomEffectImpact. When exceeded, damage falls back to the normal hit timing.")]
+    public float CustomImpactTimeoutSeconds = 5f;
+
+    [Tooltip("How a CustomEffectImpact resolves multi-target delivery.")]
+    public CustomImpactResolutionPolicy CustomImpactResolutionPolicy = CustomImpactResolutionPolicy.FirstImpact;
+        
+            [Tooltip("Held effect key signalled at AniEvent_OnHit when CustomEffectImpact is selected.")]
+            public string CustomImpactSignalInstanceKey;
+
+    [Header("Chain Lightning (optional)")]
+    [Tooltip("ChainAdditionalTargets 전달 시 시전자→주 타깃→추가 타깃 순으로 재생할 ChainLightningVfx 프리팹. 일반 투사체 Prefab과 별도로 유지한다.")]
+    public GameObject ChainLightningEffectPrefab;
 
     /// <summary>
     /// 스킬별 투사체 데이터를 반환한다. 유효 조건은 "Prefab != null"뿐이며 JC 컴포넌트를 확인하지 않는다.
@@ -279,7 +310,9 @@ public enum SpawnAnchor
     CasterSocket, // 시전자 소켓(Socket)
     Target,       // 대상 위치
     TargetCell,   // 대상 셀(위치 스냅샷)
-    EachTarget    // AoE 각 타깃마다 하나씩 생성(대상 수만큼). Targets 리스트를 순회.
+    EachTarget,   // AoE 각 타깃마다 하나씩 생성(대상 수만큼). Targets 리스트를 순회.
+    // 새 값은 반드시 맨 끝에 추가(직렬화된 int가 밀리지 않도록).
+    ReviveTarget  // 부활 대상(아군)의 위치. 공격 대상(적)과 다른 유닛에 이펙트를 꽂을 때(4040 부활). ReviveTarget이 없으면 스폰 생략.
 }
 
 /// <summary>

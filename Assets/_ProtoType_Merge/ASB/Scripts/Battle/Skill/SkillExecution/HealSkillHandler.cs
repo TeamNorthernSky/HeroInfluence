@@ -101,36 +101,77 @@ namespace ASB.Work.Battle.SkillExecution
             return best;
         }
     }
-    public sealed class RebirthSkillHandler : BaseSingleSkillHandler
+    /// <summary>
+    /// 4040: 죽은 아군 1명을 전투당 1회 부활(20%)시키고, 적 전체에 데미지.
+    /// 부활 대상이 없으면 부활을 건너뛰고 적 전체 공격만 한다.
+    /// 연출은 한 번의 시전으로 AttackPrepare(ClassSkill_4=부활) → Attack(WeaponSkill_3=전체공격)을 재생한다.
+    /// 부활 아군에 이펙트를 꽂기 위해 caster.PendingReviveTarget을 설정한다(SpawnAnchor.ReviveTarget이 참조).
+    /// AoE 핸들러로 두어 적 데미지가 동시(RunAoESkillSequence) 연출된다.
+    /// </summary>
+    public sealed class RebirthSkillHandler : BaseAoESkillHandler
     {
-        protected override void ApplyHeal(
-            BattleCharactor caster,
-            BattleCharactor target,
-            SkillData skillData,
-            SkillExecutionResult result)
+        private const float ReviveHpRatioValue = 0.2f;
+
+        protected override void ApplySkill(SkillExecutionContext context, SkillExecutionResult result)
         {
-            if (!target.IsDead)
+            if (context == null || context.Caster == null || context.Skill == null)
                 return;
 
-            target.Revive(0.2f);
-            Debug.Log($"[Skill/Rebirth] {caster.UnitName} -> {target.UnitName} hpRatio={0.2f:0.###}");
+            BattleCharactor caster = context.Caster;
+            SkillData skill = context.Skill;
 
+            // 1) 부활: 죽은 아군 1명(전투당 1회). 즉시 Revive하고, 연출용 참조(PendingReviveTarget)를 남긴다.
+            //    (연출은 아래 적 전체공격 컨텍스트가 구동하는 프레젠테이션의 AttackPrepare=ClassSkill_4에서
+            //     ReviveTarget 앵커로 부활 아군 바닥에 이펙트를 낸다.)
+            //    ※ 힐 루프는 죽은 대상을 스킵하므로 부활은 컨텍스트가 아니라 직접 적용해야 한다.
+            caster.PendingReviveTarget = null;
+            if (!caster.HasUsedRevive)
+            {
+                BattleCharactor deadAlly = FindDeadAlly(context);
+                if (deadAlly != null)
+                {
+                    deadAlly.Revive(ReviveHpRatioValue);
+                    caster.HasUsedRevive = true;
+                    caster.PendingReviveTarget = deadAlly;
+                    Debug.Log($"[Skill/Rebirth] {caster.UnitName} revived {deadAlly.UnitName} (ratio={ReviveHpRatioValue:0.##})");
+                }
+            }
+
+            // 2) 적 전체 공격(항상): 살아있는 반대 진영 전부에 데미지.
             BattleCharactor[] units = UnityEngine.Object.FindObjectsByType<BattleCharactor>(
-                FindObjectsInactive.Exclude,
-                FindObjectsSortMode.None);
+                FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             foreach (BattleCharactor enemy in units)
             {
                 if (enemy == null || enemy.IsDead || enemy.IsPlayer == caster.IsPlayer)
                     continue;
 
                 result.AddDamage(SkillEffectHelper.ApplyStandardDamage(
-                    caster,
-                    enemy,
-                    skillData.skillValue,
-                    skillData.skillIndex,
-                    skillData.classSkillRange,
-                    isAdditionalHit: true));
+                    caster, enemy, skill.skillValue, skill.skillIndex, skill.classSkillRange));
             }
+        }
+
+        // 부활 대상 = 타겟팅이 고른 죽은 아군(ResolvedTargets). 없으면 씬에서 죽은 아군을 찾는다.
+        private static BattleCharactor FindDeadAlly(SkillExecutionContext context)
+        {
+            BattleCharactor caster = context.Caster;
+            if (context.ResolvedTargets != null)
+            {
+                foreach (BattleCharactor t in context.ResolvedTargets)
+                {
+                    if (t != null && t.IsDead && t.IsPlayer == caster.IsPlayer)
+                        return t;
+                }
+            }
+
+            BattleCharactor[] units = UnityEngine.Object.FindObjectsByType<BattleCharactor>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (BattleCharactor unit in units)
+            {
+                if (unit == null || unit == caster || !unit.IsDead || unit.IsPlayer != caster.IsPlayer)
+                    continue;
+                return unit;
+            }
+            return null;
         }
     }
     public sealed class HealTargetAroundRandomHandler : TargetAroundRandom

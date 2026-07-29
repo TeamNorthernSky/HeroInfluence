@@ -36,6 +36,10 @@ public static class PresentationAnchorUtil
                 case SpawnAnchor.Target:
                     transform = ctx.PrimaryTarget != null && !ctx.PrimaryTarget.IsDead ? ctx.PrimaryTarget.transform : null;
                     break;
+                case SpawnAnchor.ReviveTarget:
+                    // 부활 대상(아군). 부활 직후라 살아있으므로 IsDead 체크 없이 transform 사용.
+                    transform = ctx.ReviveTarget != null ? ctx.ReviveTarget.transform : null;
+                    break;
             }
         }
 
@@ -68,6 +72,13 @@ public class UnitEffectPresenter : MonoBehaviour
         if (!runtime.TryGetCue(normalizedCue, out RuntimeCue cue)) return;
 
         SkillEffectContext baseContext = runtime.Current;
+
+        // 부활 대상이 없으면(공격만 수행) ReviveTarget 앵커 Cue는 스폰하지 않는다(엉뚱한 위치 스폰 방지).
+        if (cue.Anchor == SpawnAnchor.ReviveTarget && (baseContext == null || baseContext.ReviveTarget == null))
+        {
+            return;
+        }
+
         Transform anchor = PresentationAnchorUtil.Resolve(baseContext, cue.Anchor, cue.Socket, out Vector3 position, out Quaternion rotation);
         SkillEffectContext effectContext = baseContext != null ? baseContext.CreateSnapshot(anchor, position) : null;
 

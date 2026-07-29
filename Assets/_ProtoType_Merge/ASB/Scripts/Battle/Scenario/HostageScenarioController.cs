@@ -16,16 +16,26 @@ public sealed class HostageScenarioController : MonoBehaviour
     public static HostageScenarioController Active { get; private set; }
     public int InjuredCount => injuredCount;
     public IReadOnlyList<HostageBattleActor> Hostages => hostages;
+    public bool IsFullyInitialized { get; private set; }
+    public string InitializationError { get; private set; } = string.Empty;
 
-    public static HostageScenarioController Create(Transform enemyRoot, BattleScenarioConfig scenario)
+    public static HostageScenarioController Create(
+        BattleLogicalSlotMap slotMap,
+        BattleScenarioConfig scenario)
     {
-        if (enemyRoot == null || scenario == null || !scenario.IsHostageRescue)
+        if (scenario == null || !scenario.IsHostageRescue)
             return null;
 
+        if (slotMap == null || slotMap.Root == null)
+        {
+            Debug.LogError("[HostageScenario] Shared enemy slot map is missing.");
+            return null;
+        }
+
         GameObject root = new GameObject("[HostageScenario]");
-        root.transform.SetParent(enemyRoot, false);
+        root.transform.SetParent(slotMap.Root, false);
         HostageScenarioController controller = root.AddComponent<HostageScenarioController>();
-        controller.Initialize(enemyRoot, scenario.HostageRescue);
+        controller.Initialize(slotMap, scenario.HostageRescue);
         return controller;
     }
 
@@ -45,35 +55,89 @@ public sealed class HostageScenarioController : MonoBehaviour
             Active = null;
     }
 
-    private void Initialize(Transform enemyRoot, HostageScenarioConfig nextConfig)
+    private void Initialize(BattleLogicalSlotMap slotMap, HostageScenarioConfig nextConfig)
     {
         config = nextConfig;
         hostages.Clear();
         injuredCount = 0;
         lastAdvancedRound = 0;
+        IsFullyInitialized = false;
+        InitializationError = string.Empty;
         WriteInjuredCount();
 
+        if (slotMap == null || config == null || config.Hostages == null)
+        {
+            InitializationError = "Hostage configuration or shared slot map is missing.";
+            Debug.LogError($"[HostageScenario] {InitializationError}", this);
+            return;
+        }
+
+        var errors = new List<string>();
+        var claimedLogicalSlots = new HashSet<int>();
+        int expectedHostages = config.Hostages.Count;
         for (int i = 0; i < config.Hostages.Count; i++)
         {
             HostageSpawnConfig spawn = config.Hostages[i];
             if (spawn == null)
-                continue;
-
-            GridCellRef cell = FindCellForSlot(enemyRoot, spawn.Slot);
-            if (cell == null)
             {
-                Debug.LogError(
-                    $"[HostageScenario] Hostage grid was not found. id={spawn.HostageId}, slot={spawn.Slot}",
-                    this);
+                errors.Add($"Hostage config at index {i} is null.");
+                continue;
+            }
+
+            if (!claimedLogicalSlots.Add(spawn.Slot))
+            {
+                errors.Add($"Duplicate hostage logical slot. id={spawn.HostageId}, slot={spawn.Slot}");
+                continue;
+            }
+
+            if (!slotMap.TryResolve(spawn.Slot, out BattleLogicalSlotMap.Slot resolvedSlot) ||
+                resolvedSlot.Cell == null)
+            {
+                errors.Add($"Hostage grid was not found. id={spawn.HostageId}, slot={spawn.Slot}");
+                continue;
+            }
+
+            GridCellRef cell = resolvedSlot.Cell;
+            BattleCharactor occupyingUnit = cell.GetComponentInChildren<BattleCharactor>(true);
+            HostageBattleActor occupyingHostage = cell.GetComponentInChildren<HostageBattleActor>(true);
+            if (occupyingUnit != null || occupyingHostage != null)
+            {
+                errors.Add(
+                    $"Hostage grid is already occupied. id={spawn.HostageId}, " +
+                    $"slot={spawn.Slot}, grid={resolvedSlot.GridName}({resolvedSlot.GridNumber})");
                 continue;
             }
 
             HostageBattleActor actor = SpawnHostage(spawn, cell);
             if (actor == null)
+            {
+                errors.Add($"Hostage spawn failed. id={spawn.HostageId}, slot={spawn.Slot}");
                 continue;
+            }
 
             actor.Injured += HandleHostageInjured;
             hostages.Add(actor);
+            Debug.Log(
+                $"[HostageScenario] Hostage spawned. Id={spawn.HostageId}, " +
+                $"LogicalSlot={spawn.Slot}, ResolvedGridNumber={resolvedSlot.GridNumber}, " +
+                $"ResolvedGridName={resolvedSlot.GridName}",
+                actor);
+        }
+
+        IsFullyInitialized = errors.Count == 0 && hostages.Count == expectedHostages;
+        if (!IsFullyInitialized)
+        {
+            InitializationError = string.Join(" | ", errors);
+            if (string.IsNullOrEmpty(InitializationError))
+            {
+                InitializationError =
+                    $"Hostage count mismatch. Expected={expectedHostages}, Spawned={hostages.Count}";
+            }
+
+            Debug.LogError(
+                $"[HostageScenario] Initialization failed. {InitializationError}",
+                this);
+            return;
         }
 
         Debug.Log($"[HostageScenario] Initialized. hostages={hostages.Count}", this);
@@ -243,42 +307,4 @@ public sealed class HostageScenarioController : MonoBehaviour
         return actor;
     }
 
-    private static GridCellRef FindCellForSlot(Transform root, int slot)
-    {
-        if (root == null)
-            return null;
-
-        GridCellRef[] cells = root.GetComponentsInChildren<GridCellRef>(true);
-        for (int i = 0; i < cells.Length; i++)
-        {
-            GridCellRef cell = cells[i];
-            if (cell != null && TryResolveGridNumber(cell.transform.name, out int gridNumber) && gridNumber == slot)
-                return cell;
-        }
-
-        return null;
-    }
-
-    private static bool TryResolveGridNumber(string objectName, out int gridNumber)
-    {
-        gridNumber = 0;
-        if (string.IsNullOrWhiteSpace(objectName) ||
-            !objectName.StartsWith("Grid_", System.StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        string suffix = objectName.Substring("Grid_".Length);
-        if (int.TryParse(suffix, out gridNumber))
-            return true;
-
-        string[] xy = suffix.Split('_');
-        if (xy.Length == 2 && int.TryParse(xy[0], out int x) && int.TryParse(xy[1], out int y))
-        {
-            gridNumber = (x * 100) + y;
-            return true;
-        }
-
-        return false;
-    }
 }

@@ -78,6 +78,11 @@ public class BattleManager : MonoBehaviour
     // (코루틴을 가로지르지만 컨텍스트는 순차 실행이라 동시성 문제 없음 — _currentBattleSpeed와 동일 패턴)
     private ProjectileChainState _projectileChainState;
     private DamageRole _projectileChainRole = DamageRole.Primary;
+    // 체인 번개는 일반 투사체처럼 매 타격마다 생성하지 않고, 프리팹별 런타임 인스턴스를 재사용한다.
+    private readonly Dictionary<GameObject, JC.VFX.ChainLightningVfx> _chainLightningEffects = new();
+    private List<Transform> _chainLightningTargets;
+    private int _chainLightningActionInstanceId;
+    private JC.VFX.ChainLightningVfx _chainLightningImpactEffect;
 
     public float CurrentBattleSpeed => _currentBattleSpeed;
 
@@ -298,6 +303,8 @@ public class BattleManager : MonoBehaviour
         float totalDamageDealt = 0f;
         var deliveryGates = new Dictionary<DamageContext, HitDeliveryGate>();
         _projectileChainState = null; // 캐스트마다 초기화(이전 체인 상태 누수 방지)
+        _chainLightningTargets = null;
+        _chainLightningActionInstanceId = 0;
         if (result.DamageContexts != null)
         {
             bool isAoE = result.Handler is BaseAoESkillHandler;
@@ -350,7 +357,13 @@ public class BattleManager : MonoBehaviour
             {
                 // 체인 투사체 모드면 캐스트-로컬 상태를 준비(1차 도착점을 2차 원점으로 전달).
                 _projectileChainState = ResolveChainStateForCast(result);
+                _chainLightningTargets = BuildChainLightningTargets(result.DamageContexts);
+                if (_projectileChainState != null)
+                {
+                    _chainLightningActionInstanceId = NextActionInstanceId();
+                }
 
+                bool chainPrimaryPresented = false;
                 for (int i = 0; i < result.DamageContexts.Count; i++)
                 {
                     DamageContext damageContext = result.DamageContexts[i];
@@ -384,22 +397,64 @@ public class BattleManager : MonoBehaviour
                     var deliveryGate = new HitDeliveryGate();
                     deliveryGates[damageContext] = deliveryGate;
 
-                    SkillData hitAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(damageContext));
-                    var actionQueue = new ASB.Work.Battle.Command.BattleActionQueue();
-                    actionQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
-                        damageContext.Caster,
-                        damageContext.Target,
-                        hitAnimSkill,
-                        playBasicAttackAnimation: false,
-                        playTargetHitAnimation: true,
-                        onHitCallback: () =>
+                    Func<BattleHitResult> onHitCallback = () =>
+                    {
+                        BattleHitResult r = CommitDamage(damageContext, predicted);
+                        result.RecordDamageResult(damageContext, r);
+                        totalDamageDealt += r?.Damage ?? 0f;
+                        return r;
+                    };
+
+                    bool isAdditionalChainTarget = _projectileChainState != null
+                                                   && chainPrimaryPresented
+                                                   && damageContext.Role == DamageRole.Additional;
+                    if (isAdditionalChainTarget)
+                    {
+                        // 체인 번개의 추가 대상도 실제 볼트가 끝점에 닿은 후에만 피격 애니메이션·피해 UI를 적용한다.
+                        if (_chainLightningActionInstanceId > 0)
                         {
-                            BattleHitResult r = CommitDamage(damageContext, predicted);
-                            result.RecordDamageResult(damageContext, r);
-                            totalDamageDealt += r?.Damage ?? 0f;
-                            return r;
-                        }, deliveryGate));
-                    yield return StartCoroutine(actionQueue.RunAll(this));
+                            SkillPresentationData chainPresentation = _presentationCatalog?.Get(damageContext.SkillIndex);
+                            yield return WaitForPresentationImpactRoutine(damageContext.Target, chainPresentation);
+                            SkillData chainSkill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(damageContext));
+                            yield return new ResolveHitAction(
+                                damageContext.Caster,
+                                damageContext.Target,
+                                onHitCallback,
+                                ResolveAdditionalChainTargetAnimationTrigger(chainPresentation, chainSkill),
+                                _currentBattleSpeed,
+                                _visualDirector).ExecuteRoutine(this);
+                        }
+                        else
+                        {
+                            // 프리팹 누락 등으로 체인 도착 신호를 받을 수 없는 기존 폴백.
+                            yield return WaitForBattleSeconds(0.12f);
+                            yield return new ResolveHitAction(
+                                damageContext.Caster,
+                                damageContext.Target,
+                                onHitCallback,
+                                targetAnimTrigger: null,
+                                battleSpeed: _currentBattleSpeed,
+                                visual: _visualDirector).ExecuteRoutine(this);
+                        }
+                    }
+                    else
+                    {
+                        SkillData hitAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(damageContext));
+                        var actionQueue = new ASB.Work.Battle.Command.BattleActionQueue();
+                        actionQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
+                            damageContext.Caster,
+                            damageContext.Target,
+                            hitAnimSkill,
+                            playBasicAttackAnimation: false,
+                            playTargetHitAnimation: true,
+                            onHitCallback: onHitCallback,
+                            deliveryGate));
+                        yield return StartCoroutine(actionQueue.RunAll(this));
+                        if (_projectileChainState != null && damageContext.Role == DamageRole.Primary)
+                        {
+                            chainPrimaryPresented = true;
+                        }
+                    }
 
                     float delay = Mathf.Max(0f, damageContext.DelayAfter);
                     if (delay > 0f)
@@ -426,7 +481,14 @@ public class BattleManager : MonoBehaviour
                 HealContext capturedHeal = healContext;
                 Func<BattleHitResult> healCallback = () =>
                 {
-                    capturedHeal.Target.ApplyHeal(capturedHeal.HealAmount);
+                    if (capturedHeal.IsRevive)
+                    {
+                        capturedHeal.Target.Revive(capturedHeal.ReviveHpRatio);
+                    }
+                    else
+                    {
+                        capturedHeal.Target.ApplyHeal(capturedHeal.HealAmount);
+                    }
                     return new BattleHitResult
                     {
                         Target = capturedHeal.Target,
@@ -913,6 +975,8 @@ public class BattleManager : MonoBehaviour
             SocketTransform = actor.GetComponent<UnitVisualProfile>()?.AttackEffectSocket ?? actor.transform,
             PlaybackSpeed = _currentBattleSpeed,
             HitIndex = 0,
+            // 부활 스킬(4040): 공격 대상(적)과 다른 부활 아군에 이펙트를 꽂기 위한 참조. 부활 없으면 null.
+            ReviveTarget = actor.PendingReviveTarget,
         };
         string expectedStateName = !string.IsNullOrWhiteSpace(activeStateName)
             ? activeStateName
@@ -1219,8 +1283,7 @@ internal IEnumerator RunSkillSequenceCore(
         
                             EnqueueMovingAttackSequence(runner, spinSweepPlan, actor, target, skill, presentation,
                                 presentationActionInstanceId, actorAnim,
-                                host => ResolveSkillHitRoutine(host, actor, target, onHitCallback, targetAnimTrigger,
-                                    playTargetHitAnimation, skill, deliveryGate),
+                                host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId),
                                 null,
                                 ResolveMovingAttackOutgoingBlendInSeconds(presentation, returnEnabled && movement != null),
                                 elapsed => sequenceBattleElapsed += elapsed);
@@ -1244,7 +1307,7 @@ internal IEnumerator RunSkillSequenceCore(
                             presentation.Attack.Beats,
                             (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
                             (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName),
-                            host => ResolveSkillHitRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate),
+                            host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId),
                             _currentBattleSpeed,
                             AnimEventTimeoutSeconds,
                             postBlendAfterLastBeatSeconds,
@@ -1290,7 +1353,77 @@ internal IEnumerator RunSkillSequenceCore(
             yield return StartCoroutine(new WaitTargetReactionAction(target, _currentBattleSpeed).ExecuteRoutine(this));
     }
 
-    private void EnqueuePhaseCuePrologue(ActionSequenceRunner runner, BattleCharactor actor, BattleCharactor target,
+
+            private IEnumerator ResolveSkillHitWithPresentationDeliveryRoutine(
+                MonoBehaviour host,
+                BattleCharactor actor,
+                BattleCharactor target,
+                Func<BattleHitResult> onHitCallback,
+                string targetAnimTrigger,
+                bool playTargetHitAnimation,
+                SkillData skill,
+                HitDeliveryGate deliveryGate,
+                SkillPresentationData presentation,
+                int actionInstanceId)
+            {
+                yield return ASB.Work.Battle.Sequence.CustomEffectImpactAction.WaitForImpactRoutine(
+                    presentation, actionInstanceId, deliveryGate);
+                if (deliveryGate == null || !deliveryGate.CanApplyEffects)
+                {
+                    yield break;
+                }
+        
+                yield return ResolveSkillHitRoutine(
+                    host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate);
+            }
+        
+            private IEnumerator ResolveAoEHitWithPresentationDeliveryRoutine(
+                MonoBehaviour host,
+                BattleCharactor actor,
+                SkillPresentationData presentation,
+                int actionInstanceId,
+                HitDeliveryGate deliveryGate,
+                List<DamageContext> contexts,
+                List<Func<BattleHitResult>> hitCallbacks,
+                int pairCount,
+                ProjectileVisualData projectileVisual)
+            {
+                SignalCustomImpactEffectAtHit(actor, presentation);
+                yield return ASB.Work.Battle.Sequence.CustomEffectImpactAction.WaitForImpactRoutine(
+                    presentation, actionInstanceId, deliveryGate);
+                if (deliveryGate == null || !deliveryGate.CanApplyEffects)
+                {
+                    yield break;
+                }
+        
+                yield return new AoEApplyDamageAction(
+                    contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate)
+                    .ExecuteRoutine(host);
+            }
+        
+        
+            private static void SignalCustomImpactEffectAtHit(BattleCharactor actor, SkillPresentationData presentation)
+            {
+                if (actor == null
+                    || presentation == null
+                    || presentation.ImpactDeliveryMode != SkillImpactDeliveryMode.CustomEffectImpact
+                    || string.IsNullOrWhiteSpace(presentation.CustomImpactSignalInstanceKey))
+                {
+                    return;
+                }
+        
+                PresentationRuntimeContext runtime = actor.GetComponent<PresentationRuntimeContext>();
+                string instanceKey = presentation.CustomImpactSignalInstanceKey.Trim();
+                if (runtime != null
+                    && runtime.TryGetHandle(instanceKey, out ISkillEffectHandle handle)
+                    && handle != null
+                    && handle.Signal(null))
+                {
+                    runtime.RemoveHandle(instanceKey);
+                }
+            }
+        
+            private void EnqueuePhaseCuePrologue(ActionSequenceRunner runner, BattleCharactor actor, BattleCharactor target,
         SkillData skill, SkillPresentationData presentation, int actionInstanceId, float? nextBlendSeconds,
         Action<float> onElapsed)
     {
@@ -1451,8 +1584,10 @@ internal IEnumerator RunSkillSequenceCore(
         }
 
         SkillPresentationData presentation = _presentationCatalog?.Get(first.SkillIndex);
-        ProjectileVisualData projectileVisual = presentation?.GetProjectileVisual();
-        if (projectileVisual != null && projectileVisual.DeliveryMode == ProjectileDeliveryMode.ChainAdditionalTargets)
+        ProjectileVisualData projectileVisual = presentation?.ProjectileVisual;
+        if (projectileVisual != null
+            && projectileVisual.DeliveryMode == ProjectileDeliveryMode.ChainAdditionalTargets
+            && (projectileVisual.Prefab != null || presentation.ChainLightningEffectPrefab != null))
         {
             return new ProjectileChainState();
         }
@@ -1464,6 +1599,21 @@ internal IEnumerator RunSkillSequenceCore(
         HitDeliveryGate deliveryGate)
     {
         SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
+        bool waitForChainLightningImpact = false;
+        if (_projectileChainRole == DamageRole.Primary)
+        {
+            waitForChainLightningImpact = PlayChainLightningEffect(presentation, actor, target, _chainLightningTargets);
+        }
+
+        if (waitForChainLightningImpact)
+        {
+            yield return WaitForPresentationImpactRoutine(target, presentation, deliveryGate);
+            if (!deliveryGate.CanApplyEffects)
+            {
+                yield break;
+            }
+        }
+
         if (TryGetProjectileVisual(actor, skill, presentation, playTargetHitAnimation, out ProjectileVisualData projectileVisual))
         {
             bool isChain = projectileVisual.DeliveryMode == ProjectileDeliveryMode.ChainAdditionalTargets
@@ -1795,7 +1945,7 @@ internal IEnumerator RunSkillSequenceCore(
                             presentation.Attack.Beats,
                             (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
                             (beat, stateName) => SetupPresentationContext(actor, primaryTarget, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName, aoePresentationTargets),
-                            host => new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate).ExecuteRoutine(host),
+                            host => ResolveAoEHitWithPresentationDeliveryRoutine(host, actor, presentation, presentationActionInstanceId, deliveryGate, contexts, hitCallbacks, pairCount, projectileVisual),
                             _currentBattleSpeed,
                             AnimEventTimeoutSeconds,
                             postBlendAfterLastBeatSeconds,
@@ -1808,7 +1958,9 @@ internal IEnumerator RunSkillSequenceCore(
                                 actor, primaryTarget, skill, presentation, presentationActionInstanceId, GetPrimaryAttackBeat(presentation)?.Cues, targetState, aoePresentationTargets)));
                         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, false));
                         runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
-                        runner.Enqueue(new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate));
+                        runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => PlayChainLightningEffectRoutine(
+                            presentation, actor, primaryTarget, contexts, pairCount)));
+                        runner.Enqueue(new ASB.Work.Battle.Sequence.CustomEffectImpactAction(presentation, presentationActionInstanceId, deliveryGate, new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate)));
         
                         if (!string.IsNullOrEmpty(targetState))
                             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
@@ -1840,6 +1992,115 @@ internal IEnumerator RunSkillSequenceCore(
         {
             ReturnToIdleIfAlive(contexts[i]?.Target);
         }
+    }
+
+    private static List<Transform> BuildChainLightningTargets(IReadOnlyList<DamageContext> contexts)
+    {
+        var targets = new List<Transform>();
+        var seen = new HashSet<Transform>();
+        if (contexts == null)
+        {
+            return targets;
+        }
+
+        for (int i = 0; i < contexts.Count; i++)
+        {
+            DamageContext context = contexts[i];
+            Transform targetTransform = context?.Role == DamageRole.Additional && context.Target != null
+                ? context.Target.transform
+                : null;
+            if (targetTransform != null && seen.Add(targetTransform))
+            {
+                targets.Add(targetTransform);
+            }
+        }
+
+        return targets;
+    }
+
+    private IEnumerator WaitForPresentationImpactRoutine(BattleCharactor target, SkillPresentationData presentation, HitDeliveryGate deliveryGate = null)
+    {
+        if (target == null || _chainLightningActionInstanceId <= 0)
+        {
+            yield break;
+        }
+
+        ImpactKey key = new ImpactKey(_chainLightningActionInstanceId, target.transform.GetInstanceID());
+        yield return ASB.Work.Battle.Sequence.CustomEffectImpactAction.WaitForImpactKeyRoutine(presentation, key, deliveryGate, false);
+    }
+
+    private static string ResolveAdditionalChainTargetAnimationTrigger(SkillPresentationData presentation, SkillData skill)
+    {
+        if (presentation != null && !string.IsNullOrWhiteSpace(presentation.TargetAnimationTriggerOverride))
+        {
+            return presentation.TargetAnimationTriggerOverride.Trim();
+        }
+
+        return skill != null ? skill.ResolvedTargetAnimationTrigger : null;
+    }
+
+    private bool PlayChainLightningEffect(
+        SkillPresentationData presentation,
+        BattleCharactor actor,
+        BattleCharactor primaryTarget,
+        IReadOnlyList<Transform> chainTargets)
+    {
+        if (presentation?.ChainLightningEffectPrefab == null
+            || presentation.ProjectileVisual?.DeliveryMode != ProjectileDeliveryMode.ChainAdditionalTargets
+            || actor == null
+            || primaryTarget == null)
+        {
+            return false;
+        }
+
+        GameObject effectPrefab = presentation.ChainLightningEffectPrefab;
+        if (!_chainLightningEffects.TryGetValue(effectPrefab, out JC.VFX.ChainLightningVfx effect)
+            || effect == null)
+        {
+            GameObject instance = Instantiate(effectPrefab);
+            effect = instance.GetComponent<JC.VFX.ChainLightningVfx>();
+            if (effect == null)
+            {
+                Debug.LogWarning($"[BattleManager] {effectPrefab.name}에 ChainLightningVfx가 없습니다.", effectPrefab);
+                Destroy(instance);
+                return false;
+            }
+
+            _chainLightningEffects[effectPrefab] = effect;
+        }
+
+        _chainLightningImpactEffect = effect;
+        ChainLightningImpactProbe probe = effect.GetComponent<ChainLightningImpactProbe>();
+        if (probe == null)
+        {
+            probe = effect.gameObject.AddComponent<ChainLightningImpactProbe>();
+        }
+
+        probe.Configure(_chainLightningActionInstanceId, primaryTarget.transform, chainTargets);
+        effect.Play(actor.transform, primaryTarget.transform, chainTargets);
+        return true;
+    }
+
+    private IEnumerator PlayChainLightningEffectRoutine(
+        SkillPresentationData presentation,
+        BattleCharactor actor,
+        BattleCharactor primaryTarget,
+        List<DamageContext> contexts,
+        int pairCount)
+    {
+        var chainTargets = new List<Transform>();
+        var seen = new HashSet<Transform>();
+        for (int i = 1; i < pairCount; i++)
+        {
+            Transform targetTransform = contexts[i]?.Target != null ? contexts[i].Target.transform : null;
+            if (targetTransform != null && targetTransform != primaryTarget.transform && seen.Add(targetTransform))
+            {
+                chainTargets.Add(targetTransform);
+            }
+        }
+
+        PlayChainLightningEffect(presentation, actor, primaryTarget, chainTargets);
+        yield break;
     }
 
     private static void ReturnToIdleIfAlive(BattleCharactor unit)

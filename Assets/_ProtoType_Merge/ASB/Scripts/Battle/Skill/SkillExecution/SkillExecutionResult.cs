@@ -140,6 +140,28 @@ namespace ASB.Work.Battle.SkillExecution
             return this;
         }
 
+        /// <summary>
+        /// 부활 컨텍스트를 힐 경로에 추가한다(연출은 힐 프리젠테이션을 재사용, 실제 적용은 OnHit에서 Revive).
+        /// 힐량 조건(amount &gt; 0)과 무관하게 항상 컨텍스트를 만든다.
+        /// </summary>
+        public SkillExecutionResult AddRevive(BattleCharactor caster, BattleCharactor target, float hpRatio, int skillIndex = 0)
+        {
+            if (caster != null && target != null)
+            {
+                HealContexts.Add(new HealContext
+                {
+                    Caster = caster,
+                    Target = target,
+                    HealAmount = 0f,
+                    SkillIndex = skillIndex,
+                    IsRevive = true,
+                    ReviveHpRatio = hpRatio
+                });
+                Success = true;
+            }
+            return this;
+        }
+
         public SkillExecutionResult AddStatusEffect(BattleCharactor caster, BattleCharactor target, StatusEffectType effectType, int durationTurn)
         {
             if (target != null && effectType != StatusEffectType.none)

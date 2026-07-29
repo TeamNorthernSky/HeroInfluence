@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25a1a80aa6713024a80afda1bc268d20, type: 3}
+  m_Name: BattleScenarioCatalog
+  m_EditorClassIdentifier: 
+  hostageScenarios:
+  - ZoneId: 1
+    BattleKey: BE002
+    InitialHpRatio: 1
+    Hostages:
+    - HostageId: Hostage1
+      SourceUnitKey: FV20008
+      PrefabResourcePath: prefab/BattlePrefab/CitizenUnit/Unit_Citizen_man_1
+    - HostageId: Hostage2
+      SourceUnitKey: FV20009
+      PrefabResourcePath: prefab/BattlePrefab/CitizenUnit/Unit_Citizen_man_1
+    - HostageId: Hostage3
+      SourceUnitKey: FV20010
+      PrefabResourcePath: prefab/BattlePrefab/CitizenUnit/Unit_Citizen_man_1
+    ThreatEnemyUnitKeys:
+    - FV20006
+    - FV20007
+    FullHealthAggroGain: 1
+    DamagedAggroGain: 2
+    ThreatDamage: 10
+    ThreatAggroReduction: 2
+    ThreatChancePerTotalAggro: 0.1
+    MaximumThreatChance: 1
+    ThreatWindupSeconds: 0.25
+    ThreatRecoverySeconds: 0.25
+  - ZoneId: 1
+    BattleKey: BE003
+    InitialHpRatio: 0.75
+    Hostages:
+    - HostageId: Hostage1
+      SourceUnitKey: FV20011
+      PrefabResourcePath: prefab/BattlePrefab/CitizenUnit/Unit_Citizen_man_1
+    - HostageId: Hostage2
+      SourceUnitKey: FV20012
+      PrefabResourcePath: prefab/BattlePrefab/CitizenUnit/Unit_Citizen_man_1
+    - HostageId: Hostage3
+      SourceUnitKey: FV20013
+      PrefabResourcePath: prefab/BattlePrefab/CitizenUnit/Unit_Citizen_man_1
+    ThreatEnemyUnitKeys:
+    - FV20006
+    - FV20007
+    FullHealthAggroGain: 1
+    DamagedAggroGain: 2
+    ThreatDamage: 10
+    ThreatAggroReduction: 2
+    ThreatChancePerTotalAggro: 0.1
+    MaximumThreatChance: 1
+    ThreatWindupSeconds: 0.25
+    ThreatRecoverySeconds: 0.25
+  - ZoneId: 1
+    BattleKey: BE004
+    InitialHpRatio: 0.5
+    Hostages:
+    - HostageId: Hostage1
+      SourceUnitKey: FV20014
+      PrefabResourcePath: prefab/BattlePrefab/CitizenUnit/Unit_Citizen_man_1
+    - HostageId: Hostage2
+      SourceUnitKey: FV20015
+      PrefabResourcePath: prefab/BattlePrefab/CitizenUnit/Unit_Citizen_man_1
+    - HostageId: Hostage3
+      SourceUnitKey: FV20016
+      PrefabResourcePath: prefab/BattlePrefab/CitizenUnit/Unit_Citizen_man_1
+    ThreatEnemyUnitKeys:
+    - FV20006
+    - FV20007
+    FullHealthAggroGain: 1
+    DamagedAggroGain: 2
+    ThreatDamage: 10
+    ThreatAggroReduction: 2
+    ThreatChancePerTotalAggro: 0.1
+    MaximumThreatChance: 1
+    ThreatWindupSeconds: 0.25
+    ThreatRecoverySeconds: 0.25

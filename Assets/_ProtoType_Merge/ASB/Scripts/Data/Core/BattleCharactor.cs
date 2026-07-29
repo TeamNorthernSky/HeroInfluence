@@ -86,6 +86,12 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     [SerializeField]  public bool IsDead { get; private set; }
     public bool IsStunned => Effects.IsStunned;
+
+    /// <summary>이번 전투에서 부활(RebirthSkill)을 이미 사용했는지. 전투 시작(MarkInitializedFromDataPipeline)에 리셋.</summary>
+    public bool HasUsedRevive { get; set; }
+
+    /// <summary>이번 시전에서 부활시킬 아군(연출의 SpawnAnchor.ReviveTarget이 참조). 부활 없으면 null. RebirthSkillHandler가 매 시전 설정.</summary>
+    public BattleCharactor PendingReviveTarget { get; set; }
     public bool IsHealBanned => Effects.IsHealBanned;
 
     private StatusEffectManager Effects
@@ -560,6 +566,9 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         float ratio = Mathf.Clamp01(hpRatio);
         currentHp = Mathf.Clamp(MaxHp * ratio, 1f, MaxHp);
         EnableVisuals();
+
+        // 부활 HP를 HP바 UI에 반영한다. (이게 없으면 사망 시점의 0 표시가 남아 '부활했는데 HP 0'처럼 보임)
+        OnHpChanged?.Invoke(CurrentHp, MaxHp);
 
         EnsureAnimationController();
         Anim?.PlayGenericAnimation("Revive");
