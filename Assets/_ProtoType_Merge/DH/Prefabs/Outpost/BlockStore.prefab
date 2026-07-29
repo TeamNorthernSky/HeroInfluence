@@ -55,7 +55,7 @@ MonoBehaviour:
   zoneId: 
   resolvedEnemyLevel: 1
   defenderCombatChatId: 1030010
-  completionFlagPreset: 1
+  completionFlagName: Set_Flag_MainQuest3Complete
   targetRenderer: {fileID: 579879847048373463}
   unclaimedMaterial: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9,

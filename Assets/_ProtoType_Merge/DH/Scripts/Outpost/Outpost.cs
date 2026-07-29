@@ -5,15 +5,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
-public enum OutpostCompletionFlagPreset
-{
-    None,
-    Sector1MainEventClear,
-    Sector2MainEventClear,
-    Sector3MainEventClear,
-    Sector4MainEventClear
-}
-
 public class Outpost : MonoBehaviour
 {
     public static event Action<Outpost> OutpostClaimed;
@@ -35,7 +26,7 @@ public class Outpost : MonoBehaviour
     [SerializeField, Min(0)] private int defenderCombatChatId;
 
     [Header("Event Completion")]
-    [SerializeField] private OutpostCompletionFlagPreset completionFlagPreset = OutpostCompletionFlagPreset.None;
+    [SerializeField] private string completionFlagName;
 
     [Header("Visual")]
     [SerializeField] private Renderer targetRenderer;
@@ -56,7 +47,7 @@ public class Outpost : MonoBehaviour
     public string ZoneId => NormalizeZoneId(zoneId);
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
     public int DefenderCombatChatId => Mathf.Max(0, defenderCombatChatId);
-    public OutpostCompletionFlagPreset CompletionFlagPreset => completionFlagPreset;
+    public string CompletionFlagName => string.IsNullOrWhiteSpace(completionFlagName) ? string.Empty : completionFlagName.Trim();
 
     private void OnValidate()
     {
@@ -357,47 +348,11 @@ public class Outpost : MonoBehaviour
         return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
     }
 
-    private static string ResolveCompletionFlagName(OutpostCompletionFlagPreset preset)
-    {
-        string rawFlag = preset switch
-        {
-            OutpostCompletionFlagPreset.Sector1MainEventClear => "1SectorMainEventClear",
-            OutpostCompletionFlagPreset.Sector2MainEventClear => "2SectorMainEventClear",
-            OutpostCompletionFlagPreset.Sector3MainEventClear => "3SectorMainEventClear",
-            OutpostCompletionFlagPreset.Sector4MainEventClear => "4SectorMainEventClear",
-            _ => string.Empty
-        };
-
-        return string.IsNullOrEmpty(rawFlag)
-            ? string.Empty
-            : DHEventStateRepository.NormalizeFlagName(rawFlag);
-    }
-
     private string ResolveCompletionFlagName()
     {
-        OutpostCompletionFlagPreset resolvedPreset = completionFlagPreset != OutpostCompletionFlagPreset.None
-            ? completionFlagPreset
-            : ResolveCompletionFlagPresetFromZone(ZoneId);
-
-        return ResolveCompletionFlagName(resolvedPreset);
-    }
-
-    private static OutpostCompletionFlagPreset ResolveCompletionFlagPresetFromZone(string targetZoneId)
-    {
-        string normalized = NormalizeZoneId(targetZoneId);
-        const string prefix = "zone_";
-        string numberText = normalized.StartsWith(prefix, StringComparison.Ordinal)
-            ? normalized.Substring(prefix.Length)
-            : normalized;
-
-        return numberText switch
-        {
-            "1" => OutpostCompletionFlagPreset.Sector1MainEventClear,
-            "2" => OutpostCompletionFlagPreset.Sector2MainEventClear,
-            "3" => OutpostCompletionFlagPreset.Sector3MainEventClear,
-            "4" => OutpostCompletionFlagPreset.Sector4MainEventClear,
-            _ => OutpostCompletionFlagPreset.None
-        };
+        return string.IsNullOrWhiteSpace(completionFlagName)
+            ? string.Empty
+            : DHEventStateRepository.NormalizeFlagName(completionFlagName);
     }
     private void ResolveOutpostRegistry()
     {
