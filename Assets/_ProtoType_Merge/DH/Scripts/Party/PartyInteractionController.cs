@@ -89,6 +89,12 @@ public class PartyInteractionController
             return;
 
         CancelPendingInteraction();
+        if (EnemyEventEncounterService.TryOpenEncounterChat(ownerParty, enemy, HandleCombatPromptClosed))
+        {
+            IsInputLocked = true;
+            return;
+        }
+
         if (combatPromptService != null &&
             combatPromptService.TryOpenEnemyCombatPrompt(ownerParty, enemy, combatEncounterManager, HandleCombatPromptClosed))
         {

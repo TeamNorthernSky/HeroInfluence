@@ -656,7 +656,10 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 grid,
                 placement.EnemyGroupKey,
                 placement.SpawnChatZoneId,
-                placement.SpawnChatId);
+                placement.SpawnChatId,
+                placement.EncounterChatZoneId,
+                placement.EncounterChatId,
+                placement.EventBattleKey);
         }
     }
 
