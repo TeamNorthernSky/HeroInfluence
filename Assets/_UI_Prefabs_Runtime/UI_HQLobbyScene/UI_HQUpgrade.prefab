@@ -1657,12 +1657,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36400f5b130684b4786b46bbf98625fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  btnUpgradeHQ: {fileID: 0}
-  modalHQRoot: {fileID: 0}
   modalProgressRoot: {fileID: 4371812502366379019}
   titleText: {fileID: 938791448854629599}
-  iconBuilding: {fileID: 0}
-  functionText: {fileID: 0}
   upgradeInfoText: {fileID: 2357282890658017528}
   hqLevelText: {fileID: 4118587504012035651}
   stateInfoText: {fileID: 7369906770155059643}
@@ -1671,11 +1667,9 @@ MonoBehaviour:
   costCrystalText: {fileID: 4062297731138639440}
   costSupplyText: {fileID: 6267397513135340670}
   btnConfirm: {fileID: 1139828745751781072}
-  btnConfirmLabel: {fileID: 1891127338768710054}
   disabledOverlay: {fileID: 7239635812668617408}
   btnCancel: {fileID: 1432188203611130652}
   btnClose: {fileID: 8704493719182698233}
-  turnWarningGo: {fileID: 0}
   modalResultRoot: {fileID: 7042676258440369991}
   resultTitleText: {fileID: 4553629859687784811}
   resultLevelText: {fileID: 8724404327097907230}
@@ -1685,7 +1679,6 @@ MonoBehaviour:
   - department: 0
     progressTitle: "\uBCF8\uBD80 \uC5C5\uADF8\uB808\uC774\uB4DC"
     progressTitleUpgrade: 
-    iconSprite: {fileID: 0}
     showHqLevel: 1
     upgradeInfoStaticText: 
     upgradeInfoStaticTextUpgrade: 
@@ -1697,7 +1690,6 @@ MonoBehaviour:
   - department: 1
     progressTitle: "\uD64D\uBCF4 \uAC74\uC124"
     progressTitleUpgrade: "\uD64D\uBCF4 \uC5C5\uADF8\uB808\uC774\uB4DC"
-    iconSprite: {fileID: 0}
     showHqLevel: 0
     upgradeInfoStaticText: "\uD64D\uBCF4\uC744(\uB97C) \uAC74\uC124\uD569\uB2C8\uB2E4."
     upgradeInfoStaticTextUpgrade: "\uD64D\uBCF4 \uB2E8\uACC4\uB97C \uC62C\uB9BD\uB2C8\uB2E4."
@@ -1709,7 +1701,6 @@ MonoBehaviour:
   - department: 2
     progressTitle: "\uACF5\uBC29 \uAC74\uC124"
     progressTitleUpgrade: "\uACF5\uBC29 \uC5C5\uADF8\uB808\uC774\uB4DC"
-    iconSprite: {fileID: 0}
     showHqLevel: 0
     upgradeInfoStaticText: "\uACF5\uBC29\uC744(\uB97C) \uAC74\uC124\uD569\uB2C8\uB2E4."
     upgradeInfoStaticTextUpgrade: "\uACF5\uBC29 \uB2E8\uACC4\uB97C \uC62C\uB9BD\uB2C8\uB2E4."
@@ -1721,7 +1712,6 @@ MonoBehaviour:
   - department: 3
     progressTitle: "\uC5F0\uAD6C\uC18C \uAC74\uC124"
     progressTitleUpgrade: "\uC5F0\uAD6C\uC18C \uC5C5\uADF8\uB808\uC774\uB4DC"
-    iconSprite: {fileID: 0}
     showHqLevel: 0
     upgradeInfoStaticText: "\uC5F0\uAD6C\uC18C\uC744(\uB97C) \uAC74\uC124\uD569\uB2C8\uB2E4."
     upgradeInfoStaticTextUpgrade: "\uC5F0\uAD6C\uC18C \uB2E8\uACC4\uB97C \uC62C\uB9BD\uB2C8\uB2E4."
@@ -1733,7 +1723,6 @@ MonoBehaviour:
   - department: 4
     progressTitle: "\uD2B8\uB808\uC774\uB2DD \uC13C\uD130 \uAC74\uC124"
     progressTitleUpgrade: "\uD2B8\uB808\uC774\uB2DD \uC13C\uD130 \uC5C5\uADF8\uB808\uC774\uB4DC"
-    iconSprite: {fileID: 0}
     showHqLevel: 0
     upgradeInfoStaticText: "\uD2B8\uB808\uC774\uB2DD \uC13C\uD130\uC744(\uB97C) \uAC74\uC124\uD569\uB2C8\uB2E4."
     upgradeInfoStaticTextUpgrade: "\uD2B8\uB808\uC774\uB2DD \uC13C\uD130 \uB2E8\uACC4\uB97C
@@ -1748,7 +1737,6 @@ MonoBehaviour:
   - department: 5
     progressTitle: "\uBAA8\uC9D1 \uC13C\uD130 \uAC74\uC124"
     progressTitleUpgrade: "\uBAA8\uC9D1 \uC13C\uD130 \uC5C5\uADF8\uB808\uC774\uB4DC"
-    iconSprite: {fileID: 0}
     showHqLevel: 0
     upgradeInfoStaticText: "\uBAA8\uC9D1 \uC13C\uD130\uC744(\uB97C) \uAC74\uC124\uD569\uB2C8\uB2E4."
     upgradeInfoStaticTextUpgrade: "\uBAA8\uC9D1 \uC13C\uD130 \uB2E8\uACC4\uB97C \uC62C\uB9BD\uB2C8\uB2E4."
@@ -1760,7 +1748,6 @@ MonoBehaviour:
   - department: 6
     progressTitle: "\uAD50\uD658\uC18C \uAC74\uC124"
     progressTitleUpgrade: "\uAD50\uD658\uC18C \uC5C5\uADF8\uB808\uC774\uB4DC"
-    iconSprite: {fileID: 0}
     showHqLevel: 0
     upgradeInfoStaticText: "\uAD50\uD658\uC18C\uC744(\uB97C) \uAC74\uC124\uD569\uB2C8\uB2E4."
     upgradeInfoStaticTextUpgrade: "\uAD50\uD658\uC18C \uB2E8\uACC4\uB97C \uC62C\uB9BD\uB2C8\uB2E4."

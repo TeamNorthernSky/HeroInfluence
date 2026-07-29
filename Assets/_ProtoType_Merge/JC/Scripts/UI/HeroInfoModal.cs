@@ -210,7 +210,7 @@ public class HeroInfoModal : MonoBehaviour
             int w = gm.Workshop.GetEquippedWeaponIndex(unitIndex);
             if (w > 0)
             {
-                int wl = gm.Workshop.GetWeaponLevel(unitIndex, w);
+                int wl = Mathf.Max(1, gm.Workshop.GetWeaponLevel(w));
                 WeaponData wd = null;
                 var cat = DHCsvTemplateCatalog.Instance;
                 if (cat != null) cat.TryGetWeapon(w, out wd);

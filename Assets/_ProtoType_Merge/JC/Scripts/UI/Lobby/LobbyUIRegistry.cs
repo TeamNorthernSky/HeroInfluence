@@ -28,6 +28,8 @@ public static class LobbyUIRegistry
     public static Button HqButton { get; set; }
     public static HQBuildModeController BuildMode { get; set; }
     public static GameObject LobbyRosterRoot { get; set; } // [JC 260703] 로비 로스터 뷰 루트(출전 중 SortieController가 비활성 토글)
+    // [KJ 260728] 시설 모달이 영웅 선택을 위임하는 로비 로스터 뷰. 등록=LobbyRosterView.OnEnable.
+    public static LobbyRosterView RosterView { get; set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Clear()
@@ -35,5 +37,6 @@ public static class LobbyUIRegistry
         facilities.Clear();
         Sortie = null; Roster = null; RosterPanelRoot = null;
         HqButton = null; BuildMode = null; LobbyRosterRoot = null;
+        RosterView = null;
     }
 }

@@ -21,6 +21,10 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
     [SerializeField] private TMP_Text levelText;
     [SerializeField] private Image profileImage;
 
+    [Header("장착 코어명 (공방 2단계)")]
+    [Tooltip("장착 중인 코어명. 카탈로그가 없거나 미장착이면 '—'.")]
+    [SerializeField] private TMP_Text coreText;
+
     [Header("파티 편성 표시 (깃발)")]
     [Tooltip("파티에 편성된 영웅이면 표시(방문 여부 무관). UI_box_heroList_particiatingMark")]
     [FormerlySerializedAs("visitIndicator")]
@@ -82,6 +86,8 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (nameText != null) nameText.text = displayName;
         if (classText != null) classText.text = displayClass;
         if (levelText != null) levelText.text = $"Lv {level}";
+        // [KJ 260729] 공방 2단계 — 장착 코어명 표시.
+        if (coreText != null) coreText.text = ResolveCoreName();
 
         if (profileImage != null)
         {
@@ -99,6 +105,22 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
         selected = false;
         hovering = false;
         ApplyFrame();
+    }
+
+    /// <summary>[KJ 260729] 장착 코어명. 공방/카탈로그가 없거나 미장착이면 '—'.
+    /// unitIndex는 Bind/BindForSelect에서 ApplyDisplay 호출 전에 대입된다.</summary>
+    private string ResolveCoreName()
+    {
+        const string none = "—";
+        var gm = GameManager.Instance;
+        if (gm == null || gm.Workshop == null || unitIndex <= 0) return none;
+
+        int weaponIndex = gm.Workshop.GetEquippedWeaponIndex(unitIndex);
+        if (weaponIndex <= 0) return none;
+
+        var catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog == null || !catalog.TryGetWeapon(weaponIndex, out WeaponData wd) || wd == null) return none;
+        return string.IsNullOrWhiteSpace(wd.WeaponName) ? none : wd.WeaponName;
     }
 
     private void ApplyFrame()

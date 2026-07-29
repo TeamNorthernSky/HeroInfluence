@@ -66,7 +66,7 @@ public class SkillButtonIcon : MonoBehaviour
             ? unit.EquippedWeaponIndex
             : (unit.SourceData != null ? unit.SourceData.CurrentWeaponIndex : 0);
         int wl = (gm != null && gm.Workshop != null && uIdx > 0)
-            ? gm.Workshop.GetWeaponLevel(uIdx, wIdx)
+            ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(wIdx))
             : 1;
         return Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl);
     }
