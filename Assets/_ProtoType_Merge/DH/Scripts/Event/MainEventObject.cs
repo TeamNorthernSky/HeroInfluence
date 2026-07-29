@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class MainEventObject : MonoBehaviour
 {
-    private const string BattleResultKey = "Flag_BattleResult";
-
     [Header("Chat")]
     [SerializeField] private string eventKey = "main_event_001";
     [SerializeField] private int zoneId = 1;
@@ -135,6 +133,8 @@ public class MainEventObject : MonoBehaviour
         eventBattleRequestedDuringTrigger = false;
         pendingClosedCallback = closedCallback;
         SubscribeEventBattleRequested();
+        DHEventEffectRuntimeManager.EnsureInstance().SetActiveMainEventSource(EventKey);
+        DHEventBattleRuntimeManager.SetPendingMainEventSource(EventKey);
         ChatModalController.Show(ZoneId, ChatId, HandleChatClosed);
 
         if (!chatManager.IsRunning)
@@ -143,6 +143,8 @@ public class MainEventObject : MonoBehaviour
             eventBattleRequestedDuringTrigger = false;
             pendingClosedCallback = null;
             UnsubscribeEventBattleRequested();
+            DHEventEffectRuntimeManager.Instance?.ClearActiveMainEventSource(EventKey);
+            DHEventBattleRuntimeManager.ClearPendingMainEventSource(EventKey);
             return false;
         }
 
@@ -166,10 +168,11 @@ public class MainEventObject : MonoBehaviour
     {
         isTriggering = false;
         UnsubscribeEventBattleRequested();
+        DHEventEffectRuntimeManager.Instance?.ClearActiveMainEventSource(EventKey);
         Action<MainEventObject> closedCallback = pendingClosedCallback;
         pendingClosedCallback = null;
 
-        if (ShouldRemainAfterEventBattleDefeat())
+        if (eventBattleRequestedDuringTrigger)
         {
             eventBattleRequestedDuringTrigger = false;
             closedCallback?.Invoke(this);
@@ -177,9 +180,21 @@ public class MainEventObject : MonoBehaviour
         }
 
         eventBattleRequestedDuringTrigger = false;
+        DHEventBattleRuntimeManager.ClearPendingMainEventSource(EventKey);
         MarkCompleted();
         gameObject.SetActive(false);
         closedCallback?.Invoke(this);
+    }
+
+    public void CompleteAfterEventBattleVictory()
+    {
+        if (!Application.isPlaying)
+            return;
+
+        if (!IsCompleted())
+            MarkCompleted();
+
+        gameObject.SetActive(false);
     }
 
     private void SubscribeEventBattleRequested()
@@ -199,17 +214,10 @@ public class MainEventObject : MonoBehaviour
     private void HandleEventBattleRequested(DHEventBattleEffectRequest request)
     {
         eventBattleRequestedDuringTrigger = true;
-    }
+        if (request != null)
+            request.SourceMainEventKey = EventKey;
 
-    private bool ShouldRemainAfterEventBattleDefeat()
-    {
-        if (!eventBattleRequestedDuringTrigger)
-            return false;
-
-        DHEventStateRepository eventStateRepository = DHEventStateRepository.Instance;
-        return eventStateRepository != null &&
-            eventStateRepository.TryGetNumericValue(BattleResultKey, out float battleResult) &&
-            Mathf.Approximately(battleResult, 0f);
+        DHEventBattleRuntimeManager.AssignCurrentEventBattleSourceMainEvent(EventKey);
     }
 
     private bool IsCompleted()

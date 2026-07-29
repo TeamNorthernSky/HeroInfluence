@@ -1320,6 +1320,7 @@ MonoBehaviour:
   chatId: 1110010
   gridManager: {fileID: 0}
   interactionRadius: 1
+  replacementEnemyGroupKey: FEP001
 --- !u!1 &8823235868387896026
 GameObject:
   m_ObjectHideFlags: 0

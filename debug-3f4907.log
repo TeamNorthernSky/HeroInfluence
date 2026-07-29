@@ -228,3 +228,12 @@
 {"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1785217297495}
 {"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_done","data":{"sheetCount":6},"timestamp":1785217297839}
 {"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1785218106707}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1785324089938}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1785324731959}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_start","data":{"path":"D:/HeroInfluence/Assets/_ProtoType_Merge/ASB/Data/Excel/H.I 알파 전투 밸런스 데이터 테이블 V3.0.xlsx"},"timestamp":1785324736893}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1785324736893}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_done","data":{"sheetCount":6},"timestamp":1785324738012}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1785324856902}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_start","data":{"path":"D:/HeroInfluence/Assets/_ProtoType_Merge/ASB/Data/Excel/1구역 전투 테이블 V3.0.xlsx"},"timestamp":1785324860508}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1785324860510}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_done","data":{"sheetCount":2},"timestamp":1785324860857}
