@@ -1,0 +1,117 @@
+{
+    "unexplored": {
+        "heightTransition": 1.0,
+        "fogLowTopY": 7.570000171661377,
+        "fogHighStartY": 10.0,
+        "fogColor": {
+            "r": 0.6143941283226013,
+            "g": 0.6351432800292969,
+            "b": 0.6855344772338867,
+            "a": 1.0
+        },
+        "fogColorMid": {
+            "r": 0.5627744197845459,
+            "g": 0.5898863077163696,
+            "b": 0.6603773832321167,
+            "a": 1.0
+        },
+        "fogColorHigh": {
+            "r": 0.871464729309082,
+            "g": 0.8722664713859558,
+            "b": 0.8742138147354126,
+            "a": 1.0
+        },
+        "fogDensityLow": 1.0,
+        "fogDensityMid": 1.0,
+        "fogDensityHigh": 1.0,
+        "noiseScaleBase": 50.0,
+        "noiseScaleDetail": 16.0,
+        "noiseScaleDistortion": 5.0,
+        "flowSpeedBase": 0.25999999046325686,
+        "flowSpeedDetail": 0.2199999988079071,
+        "flowSpeedDistortion": 0.05000000074505806,
+        "distortionStrength": 1.2999999523162842,
+        "noiseContrast": 5.929999828338623,
+        "cloudCoverage": 1.0,
+        "cloudDensityEffect": 0.0,
+        "sheetOpacity": 0.6430000066757202,
+        "sheetHeightY": 5.0,
+        "sheetColor": {
+            "r": 0.7106918096542358,
+            "g": 0.7106918096542358,
+            "b": 0.7106918096542358,
+            "a": 1.0
+        },
+        "cloudContrast": 0.2590000033378601,
+        "sheetRangeMultiplier": 1.350000023841858,
+        "sheetFadeWidthWorld": 2.3299999237060549,
+        "sheetGroundAlign": 0.8040000200271606,
+        "brightnessLow": 0.7360000014305115,
+        "brightnessMid": 0.8510000109672546,
+        "brightnessHigh": 0.9520000219345093
+    },
+    "fogged": {
+        "heightTransition": 2.0,
+        "fogLowTopY": 1.0,
+        "fogHighStartY": 10.0,
+        "fogColor": {
+            "r": 0.7971698045730591,
+            "g": 0.9130727052688599,
+            "b": 1.0,
+            "a": 1.0
+        },
+        "fogColorMid": {
+            "r": 0.38461196422576907,
+            "g": 0.3966396450996399,
+            "b": 0.40566039085388186,
+            "a": 1.0
+        },
+        "fogColorHigh": {
+            "r": 0.7411764860153198,
+            "g": 0.8666667342185974,
+            "b": 0.960784375667572,
+            "a": 1.0
+        },
+        "fogDensityLow": 1.0,
+        "fogDensityMid": 0.800000011920929,
+        "fogDensityHigh": 1.0,
+        "noiseScaleBase": 28.690000534057618,
+        "noiseScaleDetail": 7.599999904632568,
+        "noiseScaleDistortion": 1.0,
+        "flowSpeedBase": 0.25999999046325686,
+        "flowSpeedDetail": 0.2199999988079071,
+        "flowSpeedDistortion": 0.05000000074505806,
+        "distortionStrength": 1.2999999523162842,
+        "noiseContrast": 2.0,
+        "cloudCoverage": 0.5,
+        "cloudDensityEffect": 0.009999999776482582,
+        "sheetOpacity": 0.23600000143051148,
+        "sheetHeightY": 0.7599999904632568,
+        "sheetColor": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0,
+            "a": 0.3764705955982208
+        },
+        "cloudContrast": 0.09600000083446503,
+        "sheetRangeMultiplier": 1.350000023841858,
+        "sheetFadeWidthWorld": 2.3299999237060549,
+        "sheetGroundAlign": 0.6800000071525574,
+        "brightnessLow": 1.3580000400543213,
+        "brightnessMid": 1.5,
+        "brightnessHigh": 1.0329999923706055
+    },
+    "shared": {
+        "sightRangeMultiplier": 1.0,
+        "edgeWidthWorld": 0.20000000298023225,
+        "edgeNoiseStrength": 0.05999999865889549,
+        "edgeNoiseScale": 0.15000000596046449,
+        "edgeNoiseSpeed": 0.5,
+        "edgeFadeWidth": 0.0,
+        "edgeLayerSpreadWorld": 0.0,
+        "edgeRoundingWorld": 2.0,
+        "stateBlendWidthWorld": 1.0,
+        "fallbackEdgeSoftness": 0.4000000059604645,
+        "debugMode": false
+    }
+}

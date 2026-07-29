@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: JusticePunchFlash
-  m_Shader: {fileID: 4800000, guid: ac4e75a4460ac3a4e8429a1fe80708e0, type: 3}
+  m_Name: JusticePunchSpark
+  m_Shader: {fileID: 4800000, guid: 59dc08d48f9d0ff4b80d7380172d4f25, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -22,27 +22,15 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs:
-    - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 8073a924b05e36c46a7c9084c6a94736, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
+    m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BodySoft: 0.89
-    - _CoreSharp: 3.8
-    - _CoreWidth: 0.137
-    - _EdgeFade: 1
+    - _BodySoft: 0.699
+    - _CoreEnd: 0.822
+    - _CoreSharp: 0.622
+    - _CoreStart: 0.276
     - _Emission: 1
-    - _EndWidth: 0.668
-    - _HeadFade: 0.208
-    - _MaxAlpha: 0.316
-    - _StartWidth: 1
-    - _TailFade: 0.662
-    - _Taper: 0.32
-    - _WidthCurve: 0.4
     m_Colors:
-    - _BodyColor: {r: 0.75, g: 0.88, b: 1, a: 1}
+    - _BodyColor: {r: 4.39, g: 0.10339, b: 0.114512086, a: 1}
     - _CoreColor: {r: 2, g: 2, b: 2, a: 1}
-    - _Tint: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

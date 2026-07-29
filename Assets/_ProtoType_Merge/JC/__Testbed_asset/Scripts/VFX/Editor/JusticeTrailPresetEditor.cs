@@ -112,7 +112,7 @@ namespace JC.VFX
                 var trail = PrefabUtility.LoadPrefabContents(trailPath);
                 try
                 {
-                    JusticeTrailPresetRuntime.ApplyTrail(trail, p, t.sparkMaterial);
+                    JusticeTrailPresetRuntime.ApplyTrail(trail, p, t.sparkMaterial, t.strokeMaterial);
                     var fx = trail.GetComponent<JcSocketTrailEffect>();
                     if (fx != null)
                     {
@@ -126,10 +126,38 @@ namespace JC.VFX
                 finally { PrefabUtility.UnloadPrefabContents(trail); }
             }
 
+            string arcPath = PathOf(t.arcStrokePrefab);
+            if (!string.IsNullOrEmpty(arcPath))
+            {
+                var arc = PrefabUtility.LoadPrefabContents(arcPath);
+                try
+                {
+                    JusticeTrailPresetRuntime.ApplyArcStroke(arc, p, t.arcStrokeMaterial);
+                    PrefabUtility.SaveAsPrefabAsset(arc, arcPath);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(arc); }
+                if (t.arcStrokeMaterial != null) EditorUtility.SetDirty(t.arcStrokeMaterial);
+            }
+
+            string slashPath = PathOf(t.slashPrefab);
+            if (!string.IsNullOrEmpty(slashPath))
+            {
+                var slash = PrefabUtility.LoadPrefabContents(slashPath);
+                try
+                {
+                    JusticeTrailPresetRuntime.ApplySlash(slash, p, t.slashMaterial);
+                    PrefabUtility.SaveAsPrefabAsset(slash, slashPath);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(slash); }
+                if (t.slashMaterial != null) EditorUtility.SetDirty(t.slashMaterial);
+            }
+
             string impactPath = PathOf(t.impactPrefab);
             if (string.IsNullOrEmpty(impactPath))
             {
-                Debug.LogWarning("[JusticeTrailPreset] " + p.name + ": 대상 타격 프리팹이 비어 있어 건너뜁니다.", p);
+                // 대쉬처럼 타격 스파크 대신 참격을 쓰는 프리셋은 비어 있는 게 정상이다.
+                if (string.IsNullOrEmpty(slashPath))
+                    Debug.LogWarning("[JusticeTrailPreset] " + p.name + ": 대상 타격 프리팹이 비어 있어 건너뜁니다.", p);
             }
             else
             {
@@ -188,9 +216,8 @@ namespace JC.VFX
                 {
                     CaptureCommon(tps, p.trail);
                     p.trail.shapeRadius = tps.shape.radius;
-                    var tm = tps.trails;
-                    p.trail.trailLifetime = tm.lifetime.constant;
-                    p.trail.trailMinVertexDistance = tm.minVertexDistance;
+                    // 트레일 배율은 1 고정 정책이라 캡처하지 않는다.
+                    p.trail.trailMinVertexDistance = tps.trails.minVertexDistance;
                 }
 
                 var sps = sparkT != null ? sparkT.GetComponent<ParticleSystem>() : null;
