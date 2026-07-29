@@ -12,6 +12,7 @@ public class EnemySpawnController : MonoBehaviour
 
     [Header("Spawn Rules")]
     [SerializeField] private EnemyGridMover enemyPrefab;
+    [SerializeField] private EnemyGridMover staticEnemyPrefab;
     [FormerlySerializedAs("runtimeEnemyGroupIndex")]
     [SerializeField] private string runtimeEnemyGroupKey = "FEP002";
     [SerializeField, Min(1)] private int nextRuntimeEnemySequence = 1;
@@ -55,13 +56,73 @@ public class EnemySpawnController : MonoBehaviour
         return false;
     }
 
+    public bool TrySpawnMainEventReplacementEnemy(
+        string eventKey,
+        string enemyGroupKey,
+        Vector2Int spawnGrid,
+        out string placementKey,
+        out EnemyGridMover spawnedEnemy)
+    {
+        placementKey = string.Empty;
+        spawnedEnemy = null;
+
+        string normalizedEventKey = MapProgressKey.NormalizeSegment(eventKey);
+        string normalizedGroupKey = string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedEventKey) || string.IsNullOrWhiteSpace(normalizedGroupKey))
+            return false;
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (templateCatalog == null || !templateCatalog.TryGetEnemyGroupTemplate(normalizedGroupKey, out _))
+            return false;
+
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+        placementKey = MapProgressKey.ForRuntimeEnemy($"main_event_replacement_{normalizedEventKey}", 1);
+        if (progressRepository != null && progressRepository.TryGetEnemyState(placementKey, out _))
+        {
+            placementKey = string.Empty;
+            return false;
+        }
+
+        string zoneId = ResolveZoneId(spawnGrid);
+        int enemyLevel = ResolveZoneEnemyLevel(zoneId);
+        if (TrySpawnAtGrid(spawnGrid, placementKey, normalizedGroupKey, zoneId, enemyLevel, EnemyBehaviorType.Static, out spawnedEnemy))
+            return true;
+
+        placementKey = string.Empty;
+        spawnedEnemy = null;
+        return false;
+    }
+
     private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey, string enemyGroupKey, string zoneId, out EnemyGridMover spawnedEnemy)
+    {
+        return TrySpawnAtGrid(
+            spawnGrid,
+            placementKey,
+            enemyGroupKey,
+            zoneId,
+            ResolveZoneEnemyLevelFromPlacementKey(placementKey),
+            EnemyBehaviorType.Mobile,
+            out spawnedEnemy);
+    }
+
+    private bool TrySpawnAtGrid(
+        Vector2Int spawnGrid,
+        string placementKey,
+        string enemyGroupKey,
+        string zoneId,
+        int enemyLevel,
+        EnemyBehaviorType behaviorType,
+        out EnemyGridMover spawnedEnemy)
     {
         spawnedEnemy = null;
         if (!TryResolveSpawnGrid(spawnGrid, out Vector2Int resolvedSpawnGrid))
             return false;
 
-        spawnedEnemy = Instantiate(enemyPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
+        EnemyGridMover spawnPrefab = ResolveEnemyPrefab(behaviorType);
+        if (spawnPrefab == null)
+            return false;
+
+        spawnedEnemy = Instantiate(spawnPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
         EnemyIdentity enemyIdentity = spawnedEnemy.GetComponent<EnemyIdentity>();
         if (enemyIdentity != null)
         {
@@ -74,8 +135,7 @@ public class EnemySpawnController : MonoBehaviour
         spawnedEnemy.SnapToGridPosition(resolvedSpawnGrid);
 
         EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
-        int enemyLevel = ResolveZoneEnemyLevelFromPlacementKey(placementKey);
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, resolvedSpawnGrid, placementKey, enemyGroupKey, enemyLevel, zoneId))
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, resolvedSpawnGrid, placementKey, enemyGroupKey, enemyLevel, zoneId, behaviorType))
         {
             Destroy(spawnedEnemy.gameObject);
             spawnedEnemy = null;
@@ -185,7 +245,7 @@ public class EnemySpawnController : MonoBehaviour
 
     private void RestoreRuntimeEnemy(EnemyWorldState state)
     {
-        EnemyGridMover restoredEnemy = Instantiate(enemyPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
+        EnemyGridMover restoredEnemy = Instantiate(ResolveEnemyPrefab(EnemyBehaviorType.Mobile), Vector3.zero, Quaternion.identity, enemyRoot);
         string groupKey = ResolveRuntimeEnemyGroupKey(state);
         EnemyIdentity enemyIdentity = restoredEnemy.GetComponent<EnemyIdentity>();
         if (enemyIdentity != null)
@@ -239,7 +299,8 @@ public class EnemySpawnController : MonoBehaviour
         string placementKey,
         string enemyGroupKey,
         int enemyLevel = 1,
-        string zoneId = "")
+        string zoneId = "",
+        EnemyBehaviorType behaviorType = EnemyBehaviorType.Mobile)
     {
         if (enemyBootstrap == null || enemy == null)
             return false;
@@ -267,7 +328,7 @@ public class EnemySpawnController : MonoBehaviour
             groupData,
             prefabRegistry,
             grid,
-            EnemyBehaviorType.Mobile,
+            behaviorType,
             placementKey,
             EnemyPlacementSource.Runtime,
             enemyGroupKey,
@@ -278,10 +339,35 @@ public class EnemySpawnController : MonoBehaviour
     private static int ResolveZoneEnemyLevelFromPlacementKey(string placementKey)
     {
         string zoneId = ExtractZoneIdFromRuntimePlacementKey(placementKey);
+        return ResolveZoneEnemyLevel(zoneId);
+    }
+
+    private static int ResolveZoneEnemyLevel(string zoneId)
+    {
         MapProgressRepository repository = MapProgressRepository.Instance;
         return repository != null && repository.TryGetZoneEnemyLevel(zoneId, out int level)
             ? Mathf.Max(1, level)
             : 1;
+    }
+
+    private static string ResolveZoneId(Vector2Int grid)
+    {
+        LevelZoneLayoutLoader layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+        if (layoutLoader == null || layoutLoader.LoadedZones == null)
+            return string.Empty;
+
+        IReadOnlyList<LoadedLevelZoneData> zones = layoutLoader.LoadedZones;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            LoadedLevelZoneData zone = zones[i];
+            RectInt bounds = new RectInt(zone.Anchor, zone.Size);
+            if (!bounds.Contains(grid))
+                continue;
+
+            return MapProgressKey.NormalizeSegment(zone.ZoneId);
+        }
+
+        return string.Empty;
     }
 
     private static string ExtractZoneIdFromRuntimePlacementKey(string placementKey)
@@ -320,6 +406,14 @@ public class EnemySpawnController : MonoBehaviour
             return state.PrefabKey.Trim();
 
         return string.IsNullOrWhiteSpace(runtimeEnemyGroupKey) ? "FEP002" : runtimeEnemyGroupKey.Trim();
+    }
+
+    private EnemyGridMover ResolveEnemyPrefab(EnemyBehaviorType behaviorType)
+    {
+        if (behaviorType == EnemyBehaviorType.Static && staticEnemyPrefab != null)
+            return staticEnemyPrefab;
+
+        return enemyPrefab;
     }
 
     private void SyncRuntimeEnemySequence(MapProgressRepository progressRepository)

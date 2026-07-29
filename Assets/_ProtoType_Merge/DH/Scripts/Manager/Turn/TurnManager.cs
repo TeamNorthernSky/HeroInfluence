@@ -15,8 +15,10 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private TMP_Text turnStateText;
     [FormerlySerializedAs("mineRegistry")]
     [SerializeField] private OutpostRegistry outpostRegistry;
+    [SerializeField] private GateThreatController gateThreatController;
 
     private bool enemyTurnRunning;
+    private Coroutine pendingEnemyTurnStartCoroutine;
 
     public bool IsEnemyTurnRunning => enemyTurnRunning;
     public bool IsPlayerTurn => !enemyTurnRunning;
@@ -25,6 +27,9 @@ public class TurnManager : MonoBehaviour
     {
         if (enemyTurnController == null)
             enemyTurnController = FindFirstObjectByType<EnemyTurnController>();
+
+        if (gateThreatController == null)
+            gateThreatController = FindFirstObjectByType<GateThreatController>();
 
         // [JC 수정 260511] GameManager.CurrentDay에서 day 복원 (DHScene 재로드 시 Day 리셋 방지)
         if (GameManager.Instance != null)
@@ -63,6 +68,21 @@ public class TurnManager : MonoBehaviour
         // 적 턴 진행 중은 물론, 씬 전환 직후·모달 표시 전의 틈에도 탐사 오브젝트 인터랙션(본부 더블클릭 등)을 막는다.
         WorldInputGate.IsTurnResolving = true;
 
+        if (pendingEnemyTurnStartCoroutine != null)
+            return;
+
+        pendingEnemyTurnStartCoroutine = StartCoroutine(StartEnemyTurnAfterPendingThreats());
+    }
+
+    private IEnumerator StartEnemyTurnAfterPendingThreats()
+    {
+        if (gateThreatController == null)
+            gateThreatController = FindFirstObjectByType<GateThreatController>();
+
+        if (gateThreatController != null)
+            yield return gateThreatController.ResolvePendingThreatsBeforeEnemyTurn();
+
+        pendingEnemyTurnStartCoroutine = null;
         StartEnemyTurn();
     }
 
@@ -184,6 +204,9 @@ public class TurnManager : MonoBehaviour
         while (CombatContext.Instance != null && CombatContext.Instance.Result != CombatResult.None)
             yield return null;
 
+        while (ChatManager.Instance != null && ChatManager.Instance.IsRunning)
+            yield return null;
+
         if (DHGameEndState.IsEnding || enemyTurnRunning)
             yield break;
 
@@ -226,5 +249,8 @@ public class TurnManager : MonoBehaviour
     {
         if (outpostRegistry == null)
             outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
+
+        if (gateThreatController == null)
+            gateThreatController = FindFirstObjectByType<GateThreatController>();
     }
 }

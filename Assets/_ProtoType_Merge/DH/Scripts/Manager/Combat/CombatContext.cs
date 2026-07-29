@@ -54,6 +54,7 @@ public class CombatEventBattleData
     public string BattleKey;
     public int ResumeChatId;
     public string SourceEnemyPlacementKey;
+    public string SourceMainEventKey;
     public int EnemyLevel;
     public List<CombatEventBattleUnitData> EnemyUnits = new List<CombatEventBattleUnitData>();
     public List<DHEventNumericState> NumericResults = new List<DHEventNumericState>();
@@ -186,6 +187,8 @@ public class CombatContext : MonoBehaviour
         if (string.IsNullOrWhiteSpace(enemyId))
             return;
 
+        eventBattle = null;
+
         if (combatEnemy == null)
         {
             combatEnemy = new CombatEnemyPersistentData(enemyId, placementKey, unitIndices);
@@ -199,6 +202,7 @@ public class CombatContext : MonoBehaviour
 
     public void RegisterEventBattle(CombatEventBattleData nextEventBattle)
     {
+        combatEnemy = null;
         eventBattle = nextEventBattle;
     }
 

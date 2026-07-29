@@ -91,6 +91,29 @@ public class GateRuntimeController : MonoBehaviour
              string.Equals(SecondZoneId, normalizedZoneId, System.StringComparison.Ordinal));
     }
 
+    public bool TryGetOtherZoneId(string zoneId, out string otherZoneId)
+    {
+        otherZoneId = string.Empty;
+
+        string normalizedZoneId = NormalizeId(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return false;
+
+        if (string.Equals(FirstZoneId, normalizedZoneId, System.StringComparison.Ordinal))
+        {
+            otherZoneId = SecondZoneId;
+            return !string.IsNullOrWhiteSpace(otherZoneId);
+        }
+
+        if (string.Equals(SecondZoneId, normalizedZoneId, System.StringComparison.Ordinal))
+        {
+            otherZoneId = FirstZoneId;
+            return !string.IsNullOrWhiteSpace(otherZoneId);
+        }
+
+        return false;
+    }
+
     public void CollectTeleportCells(List<Vector2Int> results)
     {
         if (results == null)

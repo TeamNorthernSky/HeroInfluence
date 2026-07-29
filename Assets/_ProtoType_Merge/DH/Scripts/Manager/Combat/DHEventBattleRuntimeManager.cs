@@ -11,6 +11,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
     private const string BattleEndRelayText = "전투 종료";
 
     public static DHEventBattleRuntimeManager Instance { get; private set; }
+    private static string pendingMainEventSourceKey = string.Empty;
 
     [Header("Debug")]
     [SerializeField] private bool logRequests;
@@ -112,6 +113,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
             eventBattle.SourceEnemyPlacementKey = sourcePlacementKey;
         }
 
+        eventBattle.SourceMainEventKey = ResolveSourceMainEventKey(request.SourceMainEventKey);
         eventBattle.Scenario = BuildBattleScenario(zoneId, request.BattleKey, units);
         eventBattle.SetNumericResult(HostageInjuredCountKey, 0f);
 
@@ -146,6 +148,10 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         ApplyNumericResults(stateRepository, eventBattle);
         DHEnemyEventEncounterRuntimeManager.EnsureInstance().RegisterCompletedEventBattle(context);
 
+        if (context.Result == CombatResult.Victory)
+            CompleteSourceMainEvent(eventBattle.SourceMainEventKey);
+        ClearPendingMainEventSource(eventBattle.SourceMainEventKey);
+
         if (eventBattle.ResumeChatId <= 0)
             return;
 
@@ -157,6 +163,39 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         }
 
         ChatModalController.Show(eventBattle.ZoneId, modalChatId);
+    }
+
+    public static void AssignCurrentEventBattleSourceMainEvent(string eventKey)
+    {
+        string normalizedKey = DHEventStateRepository.NormalizeKey(eventKey);
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+            return;
+
+        CombatContext context = CombatContext.Instance;
+        if (context == null || context.EventBattle == null)
+            return;
+
+        context.EventBattle.SourceMainEventKey = normalizedKey;
+    }
+
+    public static void SetPendingMainEventSource(string eventKey)
+    {
+        pendingMainEventSourceKey = DHEventStateRepository.NormalizeKey(eventKey);
+    }
+
+    public static void ClearPendingMainEventSource(string eventKey)
+    {
+        string normalizedKey = DHEventStateRepository.NormalizeKey(eventKey);
+        if (string.Equals(pendingMainEventSourceKey, normalizedKey, StringComparison.Ordinal))
+            pendingMainEventSourceKey = string.Empty;
+    }
+
+    private static string ResolveSourceMainEventKey(string requestSourceKey)
+    {
+        string normalizedRequestKey = DHEventStateRepository.NormalizeKey(requestSourceKey);
+        return !string.IsNullOrWhiteSpace(normalizedRequestKey)
+            ? normalizedRequestKey
+            : pendingMainEventSourceKey;
     }
 
     private static bool TryResolveResumeChatForModal(int zoneId, int resumeChatId, out int modalChatId)
@@ -220,6 +259,36 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
             return false;
 
         return string.Equals(chat.Message_Text?.Trim(), BattleEndRelayText, StringComparison.Ordinal);
+    }
+
+    private static void CompleteSourceMainEvent(string eventKey)
+    {
+        string normalizedKey = DHEventStateRepository.NormalizeKey(eventKey);
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+            return;
+
+        MapProgressRepository.Instance?.MarkMainEventCompleted(normalizedKey);
+
+        MainEventObject[] mainEvents = FindObjectsByType<MainEventObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < mainEvents.Length; i++)
+        {
+            MainEventObject mainEvent = mainEvents[i];
+            if (mainEvent == null)
+                continue;
+
+            if (!string.Equals(
+                    DHEventStateRepository.NormalizeKey(mainEvent.EventKey),
+                    normalizedKey,
+                    StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            mainEvent.CompleteAfterEventBattleVictory();
+        }
     }
 
     private static void ApplyNumericResults(DHEventStateRepository stateRepository, CombatEventBattleData eventBattle)

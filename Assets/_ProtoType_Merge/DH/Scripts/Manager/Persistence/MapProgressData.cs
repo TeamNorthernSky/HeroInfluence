@@ -195,6 +195,7 @@ public class ZoneThreatProgressState
     [SerializeField] private int accumulatedTurns;
     [SerializeField] private int lastEvaluatedDay;
     [SerializeField] private string activeEnemyPlacementKey;
+    [SerializeField] private bool pendingThreatSpawn;
 
     public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
     public bool Active => active;
@@ -202,6 +203,7 @@ public class ZoneThreatProgressState
     public int AccumulatedTurns => Mathf.Max(0, accumulatedTurns);
     public int LastEvaluatedDay => lastEvaluatedDay > 0 ? lastEvaluatedDay : EnteredDay;
     public string ActiveEnemyPlacementKey => MapProgressKey.NormalizeSegment(activeEnemyPlacementKey);
+    public bool PendingThreatSpawn => pendingThreatSpawn;
 
     public ZoneThreatProgressState(string zoneId, bool active, int enteredDay, string activeEnemyPlacementKey)
         : this(zoneId, active, enteredDay, 0, enteredDay, activeEnemyPlacementKey)
@@ -215,6 +217,18 @@ public class ZoneThreatProgressState
         int accumulatedTurns,
         int lastEvaluatedDay,
         string activeEnemyPlacementKey)
+        : this(zoneId, active, enteredDay, accumulatedTurns, lastEvaluatedDay, activeEnemyPlacementKey, false)
+    {
+    }
+
+    public ZoneThreatProgressState(
+        string zoneId,
+        bool active,
+        int enteredDay,
+        int accumulatedTurns,
+        int lastEvaluatedDay,
+        string activeEnemyPlacementKey,
+        bool pendingThreatSpawn)
     {
         this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
         this.active = active;
@@ -222,6 +236,7 @@ public class ZoneThreatProgressState
         this.accumulatedTurns = Mathf.Max(0, accumulatedTurns);
         this.lastEvaluatedDay = Mathf.Max(1, lastEvaluatedDay);
         this.activeEnemyPlacementKey = MapProgressKey.NormalizeSegment(activeEnemyPlacementKey);
+        this.pendingThreatSpawn = pendingThreatSpawn;
     }
 
     public void Begin(int nextEnteredDay)
@@ -231,6 +246,7 @@ public class ZoneThreatProgressState
         accumulatedTurns = 0;
         lastEvaluatedDay = enteredDay;
         activeEnemyPlacementKey = string.Empty;
+        pendingThreatSpawn = false;
     }
 
     public void End()
@@ -239,6 +255,7 @@ public class ZoneThreatProgressState
         accumulatedTurns = 0;
         lastEvaluatedDay = Mathf.Max(1, lastEvaluatedDay);
         activeEnemyPlacementKey = string.Empty;
+        pendingThreatSpawn = false;
     }
 
     public void PauseAtDay(int day)
@@ -250,9 +267,10 @@ public class ZoneThreatProgressState
     {
         int safeDay = Mathf.Max(1, day);
         int safeLastDay = LastEvaluatedDay;
-        if (safeDay > safeLastDay)
-            accumulatedTurns = Mathf.Max(0, accumulatedTurns + safeDay - safeLastDay);
+        if (safeDay <= safeLastDay)
+            return AccumulatedTurns;
 
+        accumulatedTurns = Mathf.Max(0, accumulatedTurns + safeDay - safeLastDay);
         lastEvaluatedDay = safeDay;
         return AccumulatedTurns;
     }
@@ -260,11 +278,22 @@ public class ZoneThreatProgressState
     public void SetActiveEnemy(string placementKey)
     {
         activeEnemyPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
+        pendingThreatSpawn = false;
     }
 
     public void ClearActiveEnemy()
     {
         activeEnemyPlacementKey = string.Empty;
+    }
+
+    public void MarkThreatSpawnPending()
+    {
+        pendingThreatSpawn = true;
+    }
+
+    public void ClearThreatSpawnPending()
+    {
+        pendingThreatSpawn = false;
     }
 }
 

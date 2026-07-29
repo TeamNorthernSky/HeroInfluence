@@ -361,6 +361,10 @@ public class CombatEncounterManager : MonoBehaviour
         if (context.HasEventBattle)
         {
             DHEventBattleRuntimeManager.HandleCompletedEventBattle(context);
+            if (context.Result == CombatResult.Defeat)
+                ReturnDefeatedPartyToHeroUnion(context.CombatParty);
+
+            return;
         }
 
         if (context.Result == CombatResult.Defeat)
@@ -528,10 +532,10 @@ public class CombatEncounterManager : MonoBehaviour
         if (interactionCells == null || interactionCells.Count == 0)
             return;
 
-        Vector2Int leftCell = GetLeftmostCell(interactionCells);
-        Vector2Int targetCell = leftCell;
-        if (IsOccupiedByOtherParty(leftCell, party) &&
-            TryGetAlternativeCell(interactionCells, leftCell, party, out Vector2Int alternativeCell))
+        Vector2Int centerCell = GetCenterCell(interactionCells);
+        Vector2Int targetCell = centerCell;
+        if (IsOccupiedByOtherParty(centerCell, party) &&
+            TryGetAlternativeCell(interactionCells, centerCell, party, out Vector2Int alternativeCell))
         {
             targetCell = alternativeCell;
         }
@@ -605,17 +609,47 @@ public class CombatEncounterManager : MonoBehaviour
         return false;
     }
 
-    private static Vector2Int GetLeftmostCell(IReadOnlyList<Vector2Int> cells)
+    private static Vector2Int GetCenterCell(IReadOnlyList<Vector2Int> cells)
     {
         Vector2Int bestCell = cells[0];
+        int minX = cells[0].x;
+        int maxX = cells[0].x;
+        int minY = cells[0].y;
+        int maxY = cells[0].y;
+
         for (int i = 1; i < cells.Count; i++)
         {
             Vector2Int cell = cells[i];
-            if (cell.x < bestCell.x || cell.x == bestCell.x && cell.y < bestCell.y)
+            minX = Mathf.Min(minX, cell.x);
+            maxX = Mathf.Max(maxX, cell.x);
+            minY = Mathf.Min(minY, cell.y);
+            maxY = Mathf.Max(maxY, cell.y);
+        }
+
+        float centerX = (minX + maxX) * 0.5f;
+        float centerY = (minY + maxY) * 0.5f;
+        float bestDistance = SquaredDistanceToCenter(bestCell, centerX, centerY);
+        for (int i = 1; i < cells.Count; i++)
+        {
+            Vector2Int cell = cells[i];
+            float distance = SquaredDistanceToCenter(cell, centerX, centerY);
+            if (distance < bestDistance ||
+                Mathf.Approximately(distance, bestDistance) &&
+                (cell.x < bestCell.x || cell.x == bestCell.x && cell.y < bestCell.y))
+            {
                 bestCell = cell;
+                bestDistance = distance;
+            }
         }
 
         return bestCell;
+    }
+
+    private static float SquaredDistanceToCenter(Vector2Int cell, float centerX, float centerY)
+    {
+        float dx = cell.x - centerX;
+        float dy = cell.y - centerY;
+        return dx * dx + dy * dy;
     }
 
     private static bool TryGetAlternativeCell(

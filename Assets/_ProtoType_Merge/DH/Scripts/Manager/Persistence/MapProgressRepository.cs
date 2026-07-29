@@ -495,6 +495,22 @@ public class MapProgressRepository : MonoBehaviour
         state.SetActiveEnemy(placementKey);
     }
 
+    public void MarkZoneThreatSpawnPending(string zoneId)
+    {
+        string normalizedZoneId = NormalizeKey(zoneId);
+        if (!IsValidKey(normalizedZoneId))
+            return;
+
+        ZoneThreatProgressState state = GetOrCreateZoneThreatState(normalizedZoneId);
+        state.MarkThreatSpawnPending();
+    }
+
+    public void ClearZoneThreatSpawnPending(string zoneId)
+    {
+        if (TryGetZoneThreatState(zoneId, out ZoneThreatProgressState state))
+            state.ClearThreatSpawnPending();
+    }
+
     public void ClearZoneThreatEnemy(string zoneId)
     {
         if (TryGetZoneThreatState(zoneId, out ZoneThreatProgressState state))

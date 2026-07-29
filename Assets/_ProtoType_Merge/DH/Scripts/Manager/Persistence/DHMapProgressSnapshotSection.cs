@@ -302,7 +302,8 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
                     state.EnteredDay,
                     state.AccumulatedTurns,
                     state.LastEvaluatedDay,
-                    state.ActiveEnemyPlacementKey));
+                    state.ActiveEnemyPlacementKey,
+                    state.PendingThreatSpawn));
         }
     }
 

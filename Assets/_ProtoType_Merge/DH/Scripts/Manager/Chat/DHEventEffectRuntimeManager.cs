@@ -37,6 +37,7 @@ public class DHEventEffectExecutionContext
     public int ZoneId;
     public int SourceChatId;
     public int ResumeChatId;
+    public string SourceMainEventKey;
 
     public DHEventEffectExecutionContext() { }
 
@@ -55,6 +56,7 @@ public class DHEventBattleEffectRequest
     public int ZoneId;
     public int SourceChatId;
     public int ResumeChatId;
+    public string SourceMainEventKey;
 
     public DHEventBattleEffectRequest() { }
 
@@ -68,6 +70,7 @@ public class DHEventBattleEffectRequest
         ZoneId = context.ZoneId;
         SourceChatId = context.SourceChatId;
         ResumeChatId = context.ResumeChatId;
+        SourceMainEventKey = context.SourceMainEventKey;
     }
 }
 
@@ -88,6 +91,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool logUnhandledEffects;
     [SerializeField] private List<DHEventEffectToken> lastParsedEffects = new List<DHEventEffectToken>();
+    private string activeMainEventSourceKey = string.Empty;
 
     public IReadOnlyList<DHEventEffectToken> LastParsedEffects => lastParsedEffects;
 
@@ -113,6 +117,18 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
         GameObject root = new GameObject(RootName);
         DontDestroyOnLoad(root);
         return root.AddComponent<DHEventEffectRuntimeManager>();
+    }
+
+    public void SetActiveMainEventSource(string eventKey)
+    {
+        activeMainEventSourceKey = DHEventStateRepository.NormalizeKey(eventKey);
+    }
+
+    public void ClearActiveMainEventSource(string eventKey)
+    {
+        string normalizedKey = DHEventStateRepository.NormalizeKey(eventKey);
+        if (string.Equals(activeMainEventSourceKey, normalizedKey, StringComparison.Ordinal))
+            activeMainEventSourceKey = string.Empty;
     }
 
     private void Awake()
@@ -168,7 +184,11 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
             case DHEventEffectKind.StartBattle:
                 LogUnhandled(token);
                 BattleRequested?.Invoke(token.payload);
-                EventBattleRequested?.Invoke(new DHEventBattleEffectRequest(token.payload, context));
+                DHEventBattleEffectRequest request = new DHEventBattleEffectRequest(token.payload, context);
+                if (string.IsNullOrWhiteSpace(request.SourceMainEventKey))
+                    request.SourceMainEventKey = activeMainEventSourceKey;
+
+                EventBattleRequested?.Invoke(request);
                 break;
             case DHEventEffectKind.Reward:
                 LogUnhandled(token);
@@ -288,7 +308,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
             if (mainEvent == null || !IsSameEventKey(mainEvent.EventKey, eventKey))
                 continue;
 
-            mainEvent.gameObject.SetActive(false);
+            mainEvent.DeactivateByDisableEffect();
         }
     }
 
