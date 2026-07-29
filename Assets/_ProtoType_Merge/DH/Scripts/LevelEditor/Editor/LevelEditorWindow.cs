@@ -263,10 +263,10 @@ public class LevelEditorWindow : EditorWindow
 
         if (brushType == LevelEditorBrushType.EnemySpawnPoint)
         {
-            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnZoneId"));
-            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnEnemyGroupKey"));
-            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnChatZoneId"));
-            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnChatId"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnZoneId"), new GUIContent("Zone"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnEnemyGroupKey"), new GUIContent("CSV Group"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnChatId"), new GUIContent("Spawn Chat"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnEncounterChatId"), new GUIContent("Meet Chat"));
         }
 
         DrawTileClipboardControls(serializedController, brushType);
@@ -1171,8 +1171,11 @@ public class LevelEditorWindow : EditorWindow
                 anchor,
                 context.SelectedEnemySpawnZoneId,
                 context.SelectedEnemySpawnEnemyGroupKey,
-                context.SelectedEnemySpawnChatZoneId,
-                context.SelectedEnemySpawnChatId);
+                0,
+                context.SelectedEnemySpawnChatId,
+                0,
+                context.SelectedEnemySpawnEncounterChatId,
+                string.Empty);
             sceneStatus = string.IsNullOrWhiteSpace(context.SelectedEnemySpawnEnemyGroupKey)
                 ? $"Placed EnemySpawnPoint '{context.SelectedEnemySpawnZoneId}' at {anchor}."
                 : $"Placed EnemySpawnPoint '{context.SelectedEnemySpawnZoneId}' / '{context.SelectedEnemySpawnEnemyGroupKey}' at {anchor}.";
@@ -1314,6 +1317,9 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedEnemySpawnEnemyGroupKey = controller.SelectedEnemySpawnEnemyGroupKey;
         context.SelectedEnemySpawnChatZoneId = controller.SelectedEnemySpawnChatZoneId;
         context.SelectedEnemySpawnChatId = controller.SelectedEnemySpawnChatId;
+        context.SelectedEnemySpawnEncounterChatZoneId = controller.SelectedEnemySpawnEncounterChatZoneId;
+        context.SelectedEnemySpawnEncounterChatId = controller.SelectedEnemySpawnEncounterChatId;
+        context.SelectedEnemySpawnEventBattleKey = controller.SelectedEnemySpawnEventBattleKey;
         context.ApplyLevelAfterEdit = controller.ApplyLevelAfterEdit;
         context.GroundMask = controller.GroundMask;
 
@@ -2385,6 +2391,9 @@ public class LevelEditorWindow : EditorWindow
         public string SelectedEnemySpawnEnemyGroupKey;
         public int SelectedEnemySpawnChatZoneId;
         public int SelectedEnemySpawnChatId;
+        public int SelectedEnemySpawnEncounterChatZoneId;
+        public int SelectedEnemySpawnEncounterChatId;
+        public string SelectedEnemySpawnEventBattleKey;
         public bool ApplyLevelAfterEdit;
         public LayerMask GroundMask;
     }

@@ -35,10 +35,13 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedGateId = "gate_001";
     [SerializeField] private string selectedGateFirstZoneId = "zone_001";
     [SerializeField] private string selectedGateSecondZoneId = "zone_002";
-    [SerializeField] private string selectedEnemySpawnZoneId = "zone_002";
+    [SerializeField] private string selectedEnemySpawnZoneId = "2";
     [SerializeField] private string selectedEnemySpawnEnemyGroupKey;
     [SerializeField, Min(0)] private int selectedEnemySpawnChatZoneId;
     [SerializeField, Min(0)] private int selectedEnemySpawnChatId;
+    [SerializeField, Min(0)] private int selectedEnemySpawnEncounterChatZoneId;
+    [SerializeField, Min(0)] private int selectedEnemySpawnEncounterChatId;
+    [SerializeField] private string selectedEnemySpawnEventBattleKey;
 
     [Header("Behaviour")]
     [SerializeField] private bool allowRuntimeEditing;
@@ -88,10 +91,13 @@ public class LevelEditorController : MonoBehaviour
     public string SelectedGateId => selectedGateId;
     public string SelectedGateFirstZoneId => selectedGateFirstZoneId;
     public string SelectedGateSecondZoneId => selectedGateSecondZoneId;
-    public string SelectedEnemySpawnZoneId => selectedEnemySpawnZoneId;
+    public string SelectedEnemySpawnZoneId => EnemySpawnPoint.NormalizeSpawnZoneId(selectedEnemySpawnZoneId);
     public string SelectedEnemySpawnEnemyGroupKey => string.IsNullOrWhiteSpace(selectedEnemySpawnEnemyGroupKey) ? string.Empty : selectedEnemySpawnEnemyGroupKey.Trim();
     public int SelectedEnemySpawnChatZoneId => Mathf.Max(0, selectedEnemySpawnChatZoneId);
     public int SelectedEnemySpawnChatId => Mathf.Max(0, selectedEnemySpawnChatId);
+    public int SelectedEnemySpawnEncounterChatZoneId => Mathf.Max(0, selectedEnemySpawnEncounterChatZoneId);
+    public int SelectedEnemySpawnEncounterChatId => Mathf.Max(0, selectedEnemySpawnEncounterChatId);
+    public string SelectedEnemySpawnEventBattleKey => string.IsNullOrWhiteSpace(selectedEnemySpawnEventBattleKey) ? string.Empty : selectedEnemySpawnEventBattleKey.Trim();
     public bool ApplyLevelAfterEdit => applyLevelAfterEdit;
     public LayerMask GroundMask => groundMask;
 
@@ -217,8 +223,11 @@ public class LevelEditorController : MonoBehaviour
                     grid,
                     selectedEnemySpawnZoneId,
                     SelectedEnemySpawnEnemyGroupKey,
-                    SelectedEnemySpawnChatZoneId,
-                    SelectedEnemySpawnChatId);
+                    0,
+                    SelectedEnemySpawnChatId,
+                    0,
+                    SelectedEnemySpawnEncounterChatId,
+                    SelectedEnemySpawnEventBattleKey);
                 break;
             case LevelEditorBrushType.HeroUnion:
                 levelData.SetHeroUnion(grid, SelectedHeroUnionPrefabKey);

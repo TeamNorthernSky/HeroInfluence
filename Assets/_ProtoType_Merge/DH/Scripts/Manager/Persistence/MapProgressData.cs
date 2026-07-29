@@ -427,6 +427,9 @@ public class EnemyWorldState
     [SerializeField] private EnemyPlacementSource placementSource = EnemyPlacementSource.Scene;
     [SerializeField] private string prefabKey = DefaultPrefabKey;
     [SerializeField] private string zoneId;
+    [SerializeField] private int encounterChatZoneId;
+    [SerializeField] private int encounterChatId;
+    [SerializeField] private string eventBattleKey;
 
     public string PlacementKey => placementKey;
     public string EnemyId => enemyId;
@@ -435,6 +438,9 @@ public class EnemyWorldState
     public EnemyPlacementSource PlacementSource => placementSource;
     public string PrefabKey => prefabKey;
     public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+    public int EncounterChatZoneId => Mathf.Max(0, encounterChatZoneId);
+    public int EncounterChatId => Mathf.Max(0, encounterChatId);
+    public string EventBattleKey => string.IsNullOrWhiteSpace(eventBattleKey) ? string.Empty : eventBattleKey.Trim();
 
     public EnemyWorldState(string placementKey, string enemyId, Vector2Int grid)
         : this(placementKey, enemyId, grid, EnemyPlacementSource.Scene, DefaultPrefabKey, string.Empty)
@@ -496,6 +502,13 @@ public class EnemyWorldState
     public void SetZoneId(string nextZoneId)
     {
         zoneId = MapProgressKey.NormalizeSegment(nextZoneId);
+    }
+
+    public void SetEventEncounter(int nextEncounterChatZoneId, int nextEncounterChatId, string nextEventBattleKey)
+    {
+        encounterChatZoneId = Mathf.Max(0, nextEncounterChatZoneId);
+        encounterChatId = Mathf.Max(0, nextEncounterChatId);
+        eventBattleKey = string.IsNullOrWhiteSpace(nextEventBattleKey) ? string.Empty : nextEventBattleKey.Trim();
     }
 }
 [Serializable]

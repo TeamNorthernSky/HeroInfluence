@@ -491,8 +491,14 @@ public class GateThreatController : MonoBehaviour
             if (spawnPoint == null)
                 continue;
 
-            if (enemySpawnController.TrySpawnGateThreatEnemy(normalizedZoneId, spawnPoint.GridPosition, spawnPoint.EnemyGroupKey, out placementKey))
+            if (enemySpawnController.TrySpawnGateThreatEnemy(
+                    normalizedZoneId,
+                    spawnPoint.GridPosition,
+                    spawnPoint.EnemyGroupKey,
+                    out placementKey,
+                    out EnemyGridMover spawnedEnemy))
             {
+                ApplySpawnPointEventEncounter(spawnPoint, placementKey, spawnedEnemy);
                 usedSpawnPoint = spawnPoint;
                 return true;
             }
@@ -512,8 +518,38 @@ public class GateThreatController : MonoBehaviour
         if (catalog == null || !catalog.TryGetChat(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, out ChatDBEventData chat) || chat == null)
             return false;
 
-        ChatModalController.Show(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, () => TryOpenSpawnedEnemyCombatPrompt(placementKey));
+        if (spawnPoint.EncounterChatZoneId > 0 && spawnPoint.EncounterChatId > 0)
+            ChatModalController.Show(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId);
+        else
+            ChatModalController.Show(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, () => TryOpenSpawnedEnemyCombatPrompt(placementKey));
         return true;
+    }
+
+    private static void ApplySpawnPointEventEncounter(
+        EnemySpawnPoint spawnPoint,
+        string placementKey,
+        EnemyGridMover spawnedEnemy)
+    {
+        if (spawnPoint == null ||
+            spawnedEnemy == null ||
+            spawnPoint.EncounterChatZoneId <= 0 ||
+            spawnPoint.EncounterChatId <= 0)
+        {
+            return;
+        }
+
+        EnemySpawnController.ApplyEventEncounterBinding(
+            spawnedEnemy,
+            placementKey,
+            spawnPoint.EncounterChatZoneId,
+            spawnPoint.EncounterChatId,
+            spawnPoint.EventBattleKey);
+
+        MapProgressRepository.Instance?.SetEnemyEventEncounter(
+            placementKey,
+            spawnPoint.EncounterChatZoneId,
+            spawnPoint.EncounterChatId,
+            spawnPoint.EventBattleKey);
     }
 
     private void TryOpenSpawnedEnemyCombatPrompt(string placementKey)

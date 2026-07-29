@@ -29,26 +29,39 @@ public class EnemySpawnController : MonoBehaviour
 
     public bool TrySpawnGateThreatEnemy(string zoneId, Vector2Int spawnGrid, string enemyGroupKey, out string placementKey)
     {
+        return TrySpawnGateThreatEnemy(zoneId, spawnGrid, enemyGroupKey, out placementKey, out _);
+    }
+
+    public bool TrySpawnGateThreatEnemy(
+        string zoneId,
+        Vector2Int spawnGrid,
+        string enemyGroupKey,
+        out string placementKey,
+        out EnemyGridMover spawnedEnemy)
+    {
         placementKey = string.Empty;
+        spawnedEnemy = null;
 
         if (enemyPrefab == null || gridManager == null)
             return false;
 
         string sourceKey = $"gate_threat_{MapProgressKey.NormalizeSegment(zoneId)}";
         placementKey = CreateRuntimeEnemyPlacementKey(sourceKey);
-        if (TrySpawnAtGrid(spawnGrid, placementKey, ResolveSpawnEnemyGroupKey(enemyGroupKey), MapProgressKey.NormalizeSegment(zoneId)))
+        if (TrySpawnAtGrid(spawnGrid, placementKey, ResolveSpawnEnemyGroupKey(enemyGroupKey), MapProgressKey.NormalizeSegment(zoneId), out spawnedEnemy))
             return true;
 
         placementKey = string.Empty;
+        spawnedEnemy = null;
         return false;
     }
 
-    private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey, string enemyGroupKey, string zoneId)
+    private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey, string enemyGroupKey, string zoneId, out EnemyGridMover spawnedEnemy)
     {
+        spawnedEnemy = null;
         if (!TryResolveSpawnGrid(spawnGrid, out Vector2Int resolvedSpawnGrid))
             return false;
 
-        EnemyGridMover spawnedEnemy = Instantiate(enemyPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
+        spawnedEnemy = Instantiate(enemyPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
         EnemyIdentity enemyIdentity = spawnedEnemy.GetComponent<EnemyIdentity>();
         if (enemyIdentity != null)
         {
@@ -65,6 +78,7 @@ public class EnemySpawnController : MonoBehaviour
         if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, resolvedSpawnGrid, placementKey, enemyGroupKey, enemyLevel, zoneId))
         {
             Destroy(spawnedEnemy.gameObject);
+            spawnedEnemy = null;
             return false;
         }
 
@@ -190,7 +204,32 @@ public class EnemySpawnController : MonoBehaviour
         if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, restoredEnemy, state.Grid, state.PlacementKey, groupKey))
         {
             Destroy(restoredEnemy.gameObject);
+            return;
         }
+
+        ApplyEventEncounterBinding(
+            restoredEnemy,
+            state.PlacementKey,
+            state.EncounterChatZoneId,
+            state.EncounterChatId,
+            state.EventBattleKey);
+    }
+
+    public static void ApplyEventEncounterBinding(
+        EnemyGridMover enemy,
+        string placementKey,
+        int encounterChatZoneId,
+        int encounterChatId,
+        string eventBattleKey)
+    {
+        if (enemy == null || encounterChatZoneId <= 0 || encounterChatId <= 0)
+            return;
+
+        EnemyEventEncounterBinding binding = enemy.GetComponent<EnemyEventEncounterBinding>();
+        if (binding == null)
+            binding = enemy.gameObject.AddComponent<EnemyEventEncounterBinding>();
+
+        binding.Initialize(encounterChatZoneId, encounterChatId, eventBattleKey, placementKey);
     }
 
     private bool TryInitializeRuntimeEnemyGroup(

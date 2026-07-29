@@ -104,6 +104,14 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
             request.ResumeChatId,
             enemyLevel,
             units);
+        if (DHEnemyEventEncounterRuntimeManager.Instance != null &&
+            DHEnemyEventEncounterRuntimeManager.Instance.TryConsumePendingBattleSource(
+                request.BattleKey,
+                out string sourcePlacementKey))
+        {
+            eventBattle.SourceEnemyPlacementKey = sourcePlacementKey;
+        }
+
         eventBattle.Scenario = BuildBattleScenario(zoneId, request.BattleKey, units);
         eventBattle.SetNumericResult(HostageInjuredCountKey, 0f);
 
@@ -136,6 +144,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         DHEventStateRepository stateRepository = DHEventStateRepository.EnsureInstance();
         stateRepository.SetNumericValue(BattleResultKey, context.Result == CombatResult.Victory ? 1f : 0f);
         ApplyNumericResults(stateRepository, eventBattle);
+        DHEnemyEventEncounterRuntimeManager.EnsureInstance().RegisterCompletedEventBattle(context);
 
         if (eventBattle.ResumeChatId <= 0)
             return;
