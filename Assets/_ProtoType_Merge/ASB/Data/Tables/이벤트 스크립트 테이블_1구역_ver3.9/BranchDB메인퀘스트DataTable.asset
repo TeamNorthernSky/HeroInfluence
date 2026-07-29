@@ -298,14 +298,14 @@ MonoBehaviour:
     "\uBE44\uACE0": "\uAE30\uBCF8 \uB8E8\uD2B8"
   - Branch_ID: 12002
     Selection_Index: 1C
-    Trigger_Type: Flag\ / Flag
+    Trigger_Type: Flag\ Flag
     Trigger_Value:
     - Flag_SubEvent2Complete==1
-    - / Flag_MainQuestFirstGirl==1
+    - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102151\ / Set_Flag_MainQuest2-1Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-2\ / Disable_MainQuest2-3\ / Set_Flag_1SectorHostageKnown
+    Trigger_Effect: Reward_102151\ Set_Flag_MainQuest2-1Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-2\ Disable_MainQuest2-3\ Set_Flag_1SectorHostageKnown
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uD3B8\uC758\uC810 \uBE4C\uB7F0 \uC644\uB8CC + \uC18C\uB140 \uB3D9\uD589"
   - Branch_ID: 12002
@@ -315,8 +315,8 @@ MonoBehaviour:
     - Flag_SubEvent2Complete==1
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102141\ / Set_Flag_MainQuest2-1Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-2\ / Disable_MainQuest2-3\ / Set_Flag_1SectorHostageKnown
+    Trigger_Effect: Reward_102141\ Set_Flag_MainQuest2-1Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-2\ Disable_MainQuest2-3\ Set_Flag_1SectorHostageKnown
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uD3B8\uC758\uC810 \uBE4C\uB7F0 \uC644\uB8CC"
   - Branch_ID: 12002
@@ -326,8 +326,8 @@ MonoBehaviour:
     - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102131\ / Set_Flag_MainQuest2-1Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-2\ / Disable_MainQuest2-3\ / Set_Flag_1SectorHostageKnown
+    Trigger_Effect: Reward_102131\ Set_Flag_MainQuest2-1Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-2\ Disable_MainQuest2-3\ Set_Flag_1SectorHostageKnown
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uC18C\uB140 \uB3D9\uD589"
   - Branch_ID: 12002
@@ -336,8 +336,8 @@ MonoBehaviour:
     Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102101\ / Set_Flag_MainQuest2-1Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-2\ / Disable_MainQuest2-3\ / Set_Flag_1SectorHostageKnown
+    Trigger_Effect: Reward_102101\ Set_Flag_MainQuest2-1Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-2\ Disable_MainQuest2-3\ Set_Flag_1SectorHostageKnown
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uAE30\uBCF8"
   - Branch_ID: 12101
@@ -469,8 +469,8 @@ MonoBehaviour:
     - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102211\ / Set_Flag_MainQuest2-2Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-1\ / Disable_MainQuest2-3
+    Trigger_Effect: Reward_102211\ Set_Flag_MainQuest2-2Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-1\ Disable_MainQuest2-3
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uB8E8\uBBF8\uB098 \uB098\uB77D"
   - Branch_ID: 12402
@@ -480,8 +480,8 @@ MonoBehaviour:
     - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102221\ / Set_Flag_MainQuest2-2Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-1\ / Disable_MainQuest2-3
+    Trigger_Effect: Reward_102221\ Set_Flag_MainQuest2-2Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-1\ Disable_MainQuest2-3
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uB124\uCF54\uBC0D \uC7AC\uC559"
   - Branch_ID: 12402
@@ -491,8 +491,8 @@ MonoBehaviour:
     - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102231\ / Set_Flag_MainQuest2-2Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-1\ / Disable_MainQuest2-3
+    Trigger_Effect: Reward_102231\ Set_Flag_MainQuest2-2Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-1\ Disable_MainQuest2-3
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uC18C\uB140 \uB3D9\uD589"
   - Branch_ID: 12402
@@ -501,8 +501,8 @@ MonoBehaviour:
     Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102201\ / Set_Flag_MainQuest2-2Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-1\ / Disable_MainQuest2-3
+    Trigger_Effect: Reward_102201\ Set_Flag_MainQuest2-2Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-1\ Disable_MainQuest2-3
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uAE30\uBCF8"
   - Branch_ID: 12501
@@ -512,7 +512,7 @@ MonoBehaviour:
     - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 1250100
-    Trigger_Effect: Reward_102212\ / Disable_Flag_RuminaIsNaRak
+    Trigger_Effect: Reward_102212\ Disable_Flag_RuminaIsNaRak
     "\uBE44\uACE0": "\uB8E8\uBBF8\uB098 \uB098\uB77D \uD328\uBC30 / \uC18C\uBB38
       \uBE44\uD65C\uC131\uD654 / \uBCF4\uC0C1 \uBD84\uAE30"
   - Branch_ID: 12501
@@ -522,7 +522,7 @@ MonoBehaviour:
     - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 1250300
-    Trigger_Effect: Reward_102222\ / Disable_Flag_NekomingDisaster
+    Trigger_Effect: Reward_102222\ Disable_Flag_NekomingDisaster
     "\uBE44\uACE0": "\uB124\uCF54\uBC0D \uC7AC\uC559 \uD328\uBC30 / \uC18C\uBB38
       \uBE44\uD65C\uC131\uD654 / \uBCF4\uC0C1 \uBD84\uAE30"
   - Branch_ID: 12501
@@ -706,8 +706,8 @@ MonoBehaviour:
     - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102311\ / Set_Flag_MainQuest2-3Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-1\ / Disable_MainQuest2-2
+    Trigger_Effect: Reward_102311\ Set_Flag_MainQuest2-3Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-1\ Disable_MainQuest2-2
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uB8E8\uBBF8\uB098 \uB098\uB77D"
   - Branch_ID: 12802
@@ -717,8 +717,8 @@ MonoBehaviour:
     - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102321\ / Set_Flag_MainQuest2-3Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-1\ / Disable_MainQuest2-2
+    Trigger_Effect: Reward_102321\ Set_Flag_MainQuest2-3Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-1\ Disable_MainQuest2-2
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uB124\uCF54\uBC0D \uC7AC\uC559"
   - Branch_ID: 12802
@@ -728,8 +728,8 @@ MonoBehaviour:
     - Flag_MainQuestFirstGirl==1
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102331\ / Set_Flag_MainQuest2-3Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-1\ / Disable_MainQuest2-2
+    Trigger_Effect: Reward_102331\ Set_Flag_MainQuest2-3Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-1\ Disable_MainQuest2-2
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uC18C\uB140 \uB3D9\uD589"
   - Branch_ID: 12802
@@ -738,8 +738,8 @@ MonoBehaviour:
     Trigger_Value: []
     Selection_Text: 
     Target_Talk_ID: 0
-    Trigger_Effect: Reward_102301\ / Set_Flag_MainQuest2-3Complete\ / Set_Flag_MainQuest2Complete\
-      / Disable_MainQuest2-1\ / Disable_MainQuest2-2
+    Trigger_Effect: Reward_102301\ Set_Flag_MainQuest2-3Complete\ Set_Flag_MainQuest2Complete\
+      Disable_MainQuest2-1\ Disable_MainQuest2-2
     "\uBE44\uACE0": "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC \uBCF4\uC0C1
       / \uAE30\uBCF8"
   - Branch_ID: 12901
@@ -749,7 +749,7 @@ MonoBehaviour:
     - Flag_RuminaIsNaRak==1
     Selection_Text: 
     Target_Talk_ID: 1290100
-    Trigger_Effect: Reward_102312\ / Disable_Flag_RuminaIsNaRak
+    Trigger_Effect: Reward_102312\ Disable_Flag_RuminaIsNaRak
     "\uBE44\uACE0": "\uB8E8\uBBF8\uB098 \uB098\uB77D \uD328\uBC30 / \uC18C\uBB38
       \uBE44\uD65C\uC131\uD654 / \uBCF4\uC0C1 \uBD84\uAE30"
   - Branch_ID: 12901
@@ -759,7 +759,7 @@ MonoBehaviour:
     - Flag_NekomingDisaster==1
     Selection_Text: 
     Target_Talk_ID: 1290300
-    Trigger_Effect: Reward_102322\ / Disable_Flag_NekomingDisaster
+    Trigger_Effect: Reward_102322\ Disable_Flag_NekomingDisaster
     "\uBE44\uACE0": "\uB124\uCF54\uBC0D \uC7AC\uC559 \uD328\uBC30 / \uC18C\uBB38
       \uBE44\uD65C\uC131\uD654 / \uBCF4\uC0C1 \uBD84\uAE30"
   - Branch_ID: 12901
@@ -948,7 +948,7 @@ MonoBehaviour:
     Selection_Index: 1A
     Trigger_Type: Flag
     Trigger_Value:
-    - IsBattleDefeated = false
+    - Flag_BattleResult==1
     Selection_Text: 
     Target_Talk_ID: 1040010
     Trigger_Effect: 
@@ -957,7 +957,7 @@ MonoBehaviour:
     Selection_Index: 2A
     Trigger_Type: Flag
     Trigger_Value:
-    - IsBattleDefeated = true
+    - Flag_BattleResult==0
     Selection_Text: 
     Target_Talk_ID: 1310010
     Trigger_Effect: 
@@ -975,7 +975,7 @@ MonoBehaviour:
     Selection_Index: 1A
     Trigger_Type: Flag
     Trigger_Value:
-    - HostageInjuredCount = 3
+    - HostageInjuredCount == 3
     Selection_Text: 
     Target_Talk_ID: 1040030
     Trigger_Effect: 
@@ -996,7 +996,7 @@ MonoBehaviour:
     Selection_Index: 3A
     Trigger_Type: Flag
     Trigger_Value:
-    - HostageInjuredCount = 0
+    - HostageInjuredCount == 0
     Selection_Text: 
     Target_Talk_ID: 1040170
     Trigger_Effect: 
@@ -1153,3 +1153,64 @@ MonoBehaviour:
     Target_Talk_ID: 0
     Trigger_Effect: Start_BE003
     "\uBE44\uACE0": "\uC608\uC678 \uACBD\uB85C \uC7AC\uC804\uD22C"
+  - Branch_ID: 15201
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - HostageInjuredCount == 3
+    Selection_Text: 
+    Target_Talk_ID: 1520140
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC778\uC9C8 \uC804\uBA78"
+  - Branch_ID: 0
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_RuminaIsNaRak==1
+    Selection_Text: 
+    Target_Talk_ID: 1520180
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC544\uB180\uB4DC \uC804\uD22C \uC9C4\uC785 \uB8E8\uBBF8\uB098
+      \uB098\uB77D \uB8E8\uD2B8"
+  - Branch_ID: 0
+    Selection_Index: 3A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_NekomingDisaster==1
+    Selection_Text: 
+    Target_Talk_ID: 1520280
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC544\uB180\uB4DC \uC804\uD22C \uC9C4\uC785 \uB124\uCF54\uBC0D
+      \uC7AC\uC559 \uB8E8\uD2B8"
+  - Branch_ID: 0
+    Selection_Index: 4
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 1520040
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC544\uB180\uB4DC \uC804\uD22C \uC9C4\uC785 \uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 15202
+    Selection_Index: 
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE161
+    "\uBE44\uACE0": "\uC544\uB180\uB4DC \uC804\uD22C"
+  - Branch_ID: 0
+    Selection_Index: 
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Reward_105101
+    "\uBE44\uACE0": "\uC544\uB180\uB4DC \uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 0
+    Selection_Index: 
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC544\uB180\uB4DC \uC804\uD22C \uD328\uBC30"

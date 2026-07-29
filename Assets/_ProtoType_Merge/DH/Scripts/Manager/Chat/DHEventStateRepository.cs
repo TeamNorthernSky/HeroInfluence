@@ -213,6 +213,23 @@ public sealed class DHEventStateRepository : MonoBehaviour
         return snapshot;
     }
 
+    public List<DHEventNumericState> CaptureNumericSnapshot()
+    {
+        var snapshot = new List<DHEventNumericState>(numericStates.Count);
+        for (int i = 0; i < numericStates.Count; i++)
+        {
+            DHEventNumericState state = numericStates[i];
+            if (state == null || string.IsNullOrWhiteSpace(state.key))
+                continue;
+
+            snapshot.Add(new DHEventNumericState(
+                NormalizeKey(state.key),
+                state.value));
+        }
+
+        return snapshot;
+    }
+
     public void RestoreFlagSnapshot(IEnumerable<DHEventFlagState> snapshot)
     {
         flags.Clear();
@@ -227,6 +244,23 @@ public sealed class DHEventStateRepository : MonoBehaviour
                 continue;
 
             SetFlag(state.flagName, state.value);
+        }
+    }
+
+    public void RestoreNumericSnapshot(IEnumerable<DHEventNumericState> snapshot)
+    {
+        numericStates.Clear();
+        numericLookup.Clear();
+
+        if (snapshot == null)
+            return;
+
+        foreach (DHEventNumericState state in snapshot)
+        {
+            if (state == null || string.IsNullOrWhiteSpace(state.key))
+                continue;
+
+            SetNumericValue(state.key, state.value);
         }
     }
 

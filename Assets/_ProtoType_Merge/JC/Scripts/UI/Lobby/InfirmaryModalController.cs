@@ -112,11 +112,12 @@ public class InfirmaryModalController : MonoBehaviour
     {
         var gm = GameManager.Instance;
         if (!gm.Infirmary.CanRevive(unitIndex)) return false;
+        // [KJ] 부활 무료 규격: cost 0이면 Economy.Spend가 amount<=0을 거부하므로 결제/롤백을 건너뛴다.
         int cost = gm.Infirmary.GetReviveCost();
-        if (!gm.Economy.Spend(ResourceType.Money, cost)) return false;
+        if (cost > 0 && !gm.Economy.Spend(ResourceType.Money, cost)) return false;
         if (!gm.Infirmary.TryRevive(unitIndex))
         {
-            gm.Economy.Add(ResourceType.Money, cost);
+            if (cost > 0) gm.Economy.Add(ResourceType.Money, cost);
             Debug.LogError($"[Infirmary] TryRevive 실패 — 차감 롤백 (unit {unitIndex})");
             return false;
         }
@@ -148,6 +149,7 @@ public class InfirmaryModalController : MonoBehaviour
         var repo = PersistentUnitRepository.Instance;
         List<int> units = ResolveVisitingUnits();
         int healableCount = 0;
+        int revivableCount = 0;
         int healAllTotal = 0;
         int healCost = gm.Infirmary.GetHealCost();
 
@@ -161,6 +163,7 @@ public class InfirmaryModalController : MonoBehaviour
             spawnedRows.Add(row);
 
             if (gm.Infirmary.CanHeal(idx)) { healableCount++; healAllTotal += healCost; }
+            else if (gm.Infirmary.CanRevive(idx)) revivableCount++;
         }
 
         bool unlocked = gm.Infirmary.IsUnlocked;
@@ -178,7 +181,8 @@ public class InfirmaryModalController : MonoBehaviour
             if (!unlocked) msg = "의무실이 활성화되지 않았습니다.";
             else if (!visited) msg = "협회를 방문한 상태에서만 이용할 수 있습니다.";
             else if (units.Count == 0) msg = "회복할 영웅이 없습니다.";
-            else if (healableCount == 0) msg = "회복 가능한 영웅이 없습니다.";
+            // [KJ] 부활 가능한 유닛이 있으면 조치할 게 남은 것 → 안내 숨김(부활 후 회복까지 같은 턴에 가능).
+            else if (healableCount == 0 && revivableCount == 0) msg = "회복 가능한 영웅이 없습니다.";
             GameObject toggleTarget = stateInfoBox != null ? stateInfoBox : stateInfoText.gameObject;
             toggleTarget.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;

@@ -51,11 +51,11 @@ public class HeroUnionUnit : MonoBehaviour
         captureChatZoneId = Mathf.Max(1, captureChatZoneId);
         captureChatId = Mathf.Max(0, captureChatId);
 
-        if (!Application.isPlaying)
-            currentState = initialState;
-
-        ResolveRenderer();
-        ApplyStateMaterial();
+        if (Application.isPlaying)
+        {
+            ResolveRenderer();
+            ApplyStateMaterial();
+        }
     }
 
     private void Awake()

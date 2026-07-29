@@ -36,7 +36,9 @@ public static class DHGameStateRestoreService
 
     private static void RestoreEventState(GameSaveData data)
     {
-        DHEventStateRepository.EnsureInstance().RestoreFlagSnapshot(data != null ? data.chatFlags : null);
+        DHEventStateRepository repository = DHEventStateRepository.EnsureInstance();
+        repository.RestoreFlagSnapshot(data != null ? data.chatFlags : null);
+        repository.RestoreNumericSnapshot(data != null ? data.eventNumericStates : null);
     }
 
     public static void RestoreRepositories(GameSaveData data)

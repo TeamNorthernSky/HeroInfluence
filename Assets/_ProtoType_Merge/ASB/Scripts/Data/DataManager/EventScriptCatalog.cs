@@ -18,6 +18,10 @@ public class EventScriptZone
     public ChatDBEventDataTable   chatSubTable;
     public BranchDBEventDataTable branchMainTable;
     public BranchDBEventDataTable branchSubTable;
+
+    [Header("Event Battle Tables")]
+    public EnemyGroupDataTable enemyBattleGroupTable;
+    public EnemyUnit1SectorDataTable enemyBattleUnitTable;
 }
 
 /// <summary>
@@ -33,6 +37,10 @@ public class EventScriptCatalog : MonoBehaviour
     [Header("Event Script Zones")]
     [SerializeField] private List<EventScriptZone> zones = new List<EventScriptZone>();
 
+    [Header("Reward Tables")]
+    [SerializeField] private MainSubEventRewardDataTable mainSubEventRewardTable;
+    [SerializeField] private WorldEventRewardDataTable worldEventRewardTable;
+
     [Header("Settings")]
     [SerializeField] private bool loadOnAwake       = true;
     [SerializeField] private bool dontDestroyOnLoad = true;
@@ -44,6 +52,14 @@ public class EventScriptCatalog : MonoBehaviour
     // zoneId → (Branch_ID → 선택지 리스트, Selection_Index 오름차순 정렬)
     private readonly Dictionary<int, Dictionary<int, List<BranchDBEventData>>> branchByZone
         = new Dictionary<int, Dictionary<int, List<BranchDBEventData>>>();
+    private readonly Dictionary<int, Dictionary<string, EnemyGroupData>> battleGroupByZone
+        = new Dictionary<int, Dictionary<string, EnemyGroupData>>();
+    private readonly Dictionary<int, Dictionary<string, EnemyUnit1SectorData>> battleUnitByZone
+        = new Dictionary<int, Dictionary<string, EnemyUnit1SectorData>>();
+    private readonly Dictionary<int, MainSubEventRewardData> mainSubRewardLookup
+        = new Dictionary<int, MainSubEventRewardData>();
+    private readonly Dictionary<int, WorldEventRewardData> worldRewardLookup
+        = new Dictionary<int, WorldEventRewardData>();
 
     private bool isLoaded;
 
@@ -165,6 +181,63 @@ public class EventScriptCatalog : MonoBehaviour
         return new List<int>(chatByZone.Keys);
     }
 
+    public bool TryGetBattleEnemyGroup(int zoneId, string groupKey, out EnemyGroupData group)
+    {
+        EnsureLoaded();
+        group = null;
+
+        string normalizedKey = NormalizeBattleGroupKey(groupKey);
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+            return false;
+
+        return battleGroupByZone.TryGetValue(zoneId, out Dictionary<string, EnemyGroupData> lookup)
+            && lookup.TryGetValue(normalizedKey, out group);
+    }
+
+    public bool TryGetBattleEnemyUnit(int zoneId, string unitKey, out EnemyUnit1SectorData unit)
+    {
+        EnsureLoaded();
+        unit = null;
+
+        string normalizedKey = NormalizeBattleUnitKey(unitKey);
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+            return false;
+
+        return battleUnitByZone.TryGetValue(zoneId, out Dictionary<string, EnemyUnit1SectorData> lookup)
+            && lookup.TryGetValue(normalizedKey, out unit);
+    }
+
+    public bool TryGetMainSubEventReward(int rewardId, out MainSubEventRewardData reward)
+    {
+        EnsureLoaded();
+        reward = null;
+        if (rewardId <= 0)
+            return false;
+
+        return mainSubRewardLookup.TryGetValue(rewardId, out reward);
+    }
+
+    public bool TryGetWorldEventReward(int rewardId, out WorldEventRewardData reward)
+    {
+        EnsureLoaded();
+        reward = null;
+        if (rewardId <= 0)
+            return false;
+
+        return worldRewardLookup.TryGetValue(rewardId, out reward);
+    }
+
+    public bool TryGetAnyEventReward(int rewardId, out MainSubEventRewardData mainSubReward, out WorldEventRewardData worldReward)
+    {
+        mainSubReward = null;
+        worldReward = null;
+
+        if (TryGetMainSubEventReward(rewardId, out mainSubReward))
+            return true;
+
+        return TryGetWorldEventReward(rewardId, out worldReward);
+    }
+
     // ─────────────────────────────────────────────────────────
     // 로드 / 캐싱
     // ─────────────────────────────────────────────────────────
@@ -181,8 +254,11 @@ public class EventScriptCatalog : MonoBehaviour
             LoadZone(zone);
         }
 
+        LoadMainSubRewardTable(mainSubEventRewardTable, mainSubRewardLookup, "Global", "Reward/MainSub");
+        LoadWorldRewardTable(worldEventRewardTable, worldRewardLookup, "Global", "Reward/World");
+
         isLoaded = true;
-        LogSummary();
+        LogCatalogSummary();
     }
 
     private void LoadZone(EventScriptZone zone)
@@ -194,12 +270,18 @@ public class EventScriptCatalog : MonoBehaviour
             chatByZone[zone.zoneId] = chatLookup = new Dictionary<int, ChatDBEventData>();
         if (!branchByZone.TryGetValue(zone.zoneId, out Dictionary<int, List<BranchDBEventData>> branchLookup))
             branchByZone[zone.zoneId] = branchLookup = new Dictionary<int, List<BranchDBEventData>>();
+        if (!battleGroupByZone.TryGetValue(zone.zoneId, out Dictionary<string, EnemyGroupData> battleGroupLookup))
+            battleGroupByZone[zone.zoneId] = battleGroupLookup = new Dictionary<string, EnemyGroupData>();
+        if (!battleUnitByZone.TryGetValue(zone.zoneId, out Dictionary<string, EnemyUnit1SectorData> battleUnitLookup))
+            battleUnitByZone[zone.zoneId] = battleUnitLookup = new Dictionary<string, EnemyUnit1SectorData>();
 
         // 메인/서브를 같은 저장공간으로 통합
         LoadChatTable(zone.chatMainTable, chatLookup, label, "Chat/Main");
         LoadChatTable(zone.chatSubTable,  chatLookup, label, "Chat/Sub");
         LoadBranchTable(zone.branchMainTable, branchLookup, label, "Branch/Main");
         LoadBranchTable(zone.branchSubTable,  branchLookup, label, "Branch/Sub");
+        LoadBattleGroupTable(zone.enemyBattleGroupTable, battleGroupLookup, label, "Battle/EnemyGroup");
+        LoadBattleUnitTable(zone.enemyBattleUnitTable, battleUnitLookup, label, "Battle/EnemyUnit");
 
         // 그룹별로 Selection_Index 오름차순 정렬. ("1", "1A", "2" …)
         foreach (var options in branchLookup.Values)
@@ -254,6 +336,125 @@ public class EventScriptCatalog : MonoBehaviour
         }
     }
 
+    private void LoadBattleGroupTable(EnemyGroupDataTable table, Dictionary<string, EnemyGroupData> lookup,
+                                      string zoneLabel, string source)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            EnemyGroupData row = table.DataList[i];
+            if (row == null) continue;
+
+            string key = NormalizeBattleGroupKey(row.EnemyIndex);
+            if (string.IsNullOrWhiteSpace(key))
+                continue;
+
+            if (lookup.ContainsKey(key))
+            {
+                Debug.LogWarning($"[EventScriptCatalog] {zoneLabel} duplicate battle group key '{key}'({source}) skipped.", this);
+                continue;
+            }
+
+            lookup.Add(key, row);
+        }
+    }
+
+    private void LoadBattleUnitTable(EnemyUnit1SectorDataTable table, Dictionary<string, EnemyUnit1SectorData> lookup,
+                                     string zoneLabel, string source)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            EnemyUnit1SectorData row = table.DataList[i];
+            if (row == null) continue;
+
+            AddBattleUnitAlias(lookup, row, row.EnemyIndex, zoneLabel, source);
+            AddBattleUnitAlias(lookup, row, ExtractNumericBattleUnitKey(row.EnemyIndex), zoneLabel, source);
+        }
+    }
+
+    private void LoadMainSubRewardTable(MainSubEventRewardDataTable table, Dictionary<int, MainSubEventRewardData> lookup,
+                                        string zoneLabel, string source)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            MainSubEventRewardData row = table.DataList[i];
+            if (row == null || row.reward_id <= 0)
+                continue;
+
+            if (lookup.ContainsKey(row.reward_id))
+            {
+                Debug.LogWarning($"[EventScriptCatalog] {zoneLabel} duplicate main/sub reward id '{row.reward_id}'({source}) skipped.", this);
+                continue;
+            }
+
+            lookup.Add(row.reward_id, row);
+        }
+    }
+
+    private void LoadWorldRewardTable(WorldEventRewardDataTable table, Dictionary<int, WorldEventRewardData> lookup,
+                                      string zoneLabel, string source)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            WorldEventRewardData row = table.DataList[i];
+            if (row == null || row.reward_id <= 0)
+                continue;
+
+            if (lookup.ContainsKey(row.reward_id))
+            {
+                Debug.LogWarning($"[EventScriptCatalog] {zoneLabel} duplicate world reward id '{row.reward_id}'({source}) skipped.", this);
+                continue;
+            }
+
+            lookup.Add(row.reward_id, row);
+        }
+    }
+
+    private void AddBattleUnitAlias(Dictionary<string, EnemyUnit1SectorData> lookup, EnemyUnit1SectorData row,
+                                    string rawKey, string zoneLabel, string source)
+    {
+        string key = NormalizeBattleUnitKey(rawKey);
+        if (string.IsNullOrWhiteSpace(key))
+            return;
+
+        if (lookup.TryGetValue(key, out EnemyUnit1SectorData existing))
+        {
+            if (!ReferenceEquals(existing, row))
+                Debug.LogWarning($"[EventScriptCatalog] {zoneLabel} duplicate battle unit key '{key}'({source}) skipped.", this);
+            return;
+        }
+
+        lookup.Add(key, row);
+    }
+
+    private void LogCatalogSummary()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"[EventScriptCatalog] Loaded zones={chatByZone.Count}");
+        foreach (var pair in chatByZone)
+        {
+            int zoneId = pair.Key;
+            int chatCount = pair.Value.Count;
+            int branchCount = branchByZone.TryGetValue(zoneId, out var b) ? b.Count : 0;
+            int battleGroupCount = battleGroupByZone.TryGetValue(zoneId, out var bg) ? bg.Count : 0;
+            int battleUnitCount = battleUnitByZone.TryGetValue(zoneId, out var bu) ? bu.Count : 0;
+            sb.Append($" | zone {zoneId}: Chat {chatCount}, Branch {branchCount}, BattleGroup {battleGroupCount}, BattleUnit {battleUnitCount}");
+        }
+        sb.Append($" | Rewards: MainSub {mainSubRewardLookup.Count}, World {worldRewardLookup.Count}");
+        Debug.Log(sb.ToString(), this);
+    }
+
     private void LogSummary()
     {
         var sb = new System.Text.StringBuilder();
@@ -276,11 +477,40 @@ public class EventScriptCatalog : MonoBehaviour
     {
         chatByZone.Clear();
         branchByZone.Clear();
+        battleGroupByZone.Clear();
+        battleUnitByZone.Clear();
+        mainSubRewardLookup.Clear();
+        worldRewardLookup.Clear();
         isLoaded = false;
     }
 
     private void EnsureLoaded()
     {
         if (!isLoaded) Reload();
+    }
+
+    private static string NormalizeBattleGroupKey(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+    }
+
+    private static string NormalizeBattleUnitKey(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+    }
+
+    private static string ExtractNumericBattleUnitKey(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        var digits = new System.Text.StringBuilder();
+        for (int i = 0; i < value.Length; i++)
+        {
+            if (char.IsDigit(value[i]))
+                digits.Append(value[i]);
+        }
+
+        return digits.Length > 0 ? digits.ToString() : string.Empty;
     }
 }

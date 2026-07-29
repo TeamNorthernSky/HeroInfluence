@@ -178,7 +178,12 @@ public class ChatManager : MonoBehaviour
     private void SelectBranch(BranchDBEventData option)
     {
         pendingAutoBranch = null;
-        DHChatBranchRuleEvaluator.ExecuteTriggerEffect(option);
+        DHChatBranchRuleEvaluator.ExecuteTriggerEffect(
+            option,
+            new DHEventEffectExecutionContext(
+                currentZoneId,
+                currentChat != null ? currentChat.Chat_ID : 0,
+                currentChat != null ? currentChat.Next_Chat_ID : 0));
 
         if (option.Target_Talk_ID <= 0)
         {
@@ -194,6 +199,49 @@ public class ChatManager : MonoBehaviour
         }
 
         ShowChat(target);
+    }
+
+    public void ResumeEventBattleChat(int zoneId, int resumeChatId)
+    {
+        if (!ResolveCatalog())
+        {
+            Debug.LogWarning("[ChatManager] EventScriptCatalog was not found. Event battle chat cannot resume.", this);
+            EndChat();
+            return;
+        }
+
+        if (resumeChatId <= 0)
+        {
+            EndChat();
+            return;
+        }
+
+        if (IsRunning)
+        {
+            EndChat();
+        }
+
+        if (!catalog.TryGetChat(zoneId, resumeChatId, out ChatDBEventData chat) || chat == null)
+        {
+            Debug.LogWarning($"[ChatManager] Event battle resume Chat_ID was not found. Zone: {zoneId}, Chat_ID: {resumeChatId}", this);
+            EndChat();
+            return;
+        }
+
+        currentZoneId = zoneId;
+
+        if (IsBattleEndRelayChat(chat) && TryResolveAutoBranch(chat, out BranchDBEventData autoBranch))
+        {
+            currentChat = chat;
+            currentOptions.Clear();
+            currentOptionStates.Clear();
+            pendingAutoBranch = null;
+            IsRunning = true;
+            SelectBranch(autoBranch);
+            return;
+        }
+
+        ShowChat(chat);
     }
 
     public void Select(int optionIndex)
@@ -294,5 +342,41 @@ public class ChatManager : MonoBehaviour
     private bool IsBranchAvailable(BranchDBEventData option)
     {
         return DHChatBranchRuleEvaluator.IsBranchAvailable(option);
+    }
+
+    private bool TryResolveAutoBranch(ChatDBEventData chat, out BranchDBEventData autoBranch)
+    {
+        autoBranch = null;
+        if (chat == null || chat.Branch_Group_ID == 0)
+            return false;
+
+        if (!catalog.TryGetBranchOptions(currentZoneId, chat.Branch_Group_ID, out IReadOnlyList<BranchDBEventData> options) ||
+            options == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < options.Count; i++)
+        {
+            BranchDBEventData option = options[i];
+            if (option == null || !string.IsNullOrWhiteSpace(option.Selection_Text))
+                continue;
+
+            if (!IsBranchAvailable(option))
+                continue;
+
+            autoBranch = option;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsBattleEndRelayChat(ChatDBEventData chat)
+    {
+        if (chat == null || chat.Branch_Group_ID == 0)
+            return false;
+
+        return string.Equals(chat.Message_Text?.Trim(), "전투 종료", StringComparison.Ordinal);
     }
 }

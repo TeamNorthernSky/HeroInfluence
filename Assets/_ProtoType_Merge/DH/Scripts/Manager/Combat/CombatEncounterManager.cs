@@ -227,6 +227,58 @@ public class CombatEncounterManager : MonoBehaviour
         return true;
     }
 
+    public bool BeginEventBattleCombat(PartyGridMover party, CombatEventBattleData eventBattle)
+    {
+        if (DHGameEndState.IsEnding)
+            return false;
+
+        if (HasPendingCombatResult())
+            return false;
+
+        if (party == null || eventBattle == null || string.IsNullOrWhiteSpace(eventBattle.BattleKey))
+            return false;
+
+        if (IsCombatActive)
+            return false;
+
+        CombatContext combatContext = CombatContext.Instance;
+        PersistentUnitRepository unitRepository = PersistentUnitRepository.Instance;
+        PartyPersistentRepository partyRepository = PartyPersistentRepository.Instance;
+        if (combatContext == null)
+        {
+            Debug.LogWarning("CombatContext is missing, so event battle participants could not be registered.", this);
+            return false;
+        }
+
+        if (combatContext.Result != CombatResult.None)
+            return false;
+
+        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
+        string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
+        IReadOnlyList<int> partyUnitIndices = FilterCombatReadyPartyUnits(
+            ResolvePartyUnitIndices(partyRepository, party, partyId),
+            unitRepository);
+
+        int partyUnitCount = CountValidUnitIndices(partyUnitIndices);
+        if (partyUnitCount == 0)
+        {
+            Debug.LogWarning($"Event battle participant registration failed. partyId='{partyId}' units={partyUnitCount}.", this);
+            combatContext.Clear();
+            return false;
+        }
+
+        combatContext.RegisterCombatParty(partyId, partyUnitIndices);
+        combatContext.RegisterEventBattle(eventBattle);
+        combatContext.SetCombatResult(CombatResult.None);
+
+        IsCombatActive = true;
+        ActiveParty = party;
+        ActiveEnemy = null;
+
+        CombatStarted?.Invoke(party, null);
+        return true;
+    }
+
     public void ApplyCurrentCombatResultAndClear()
     {
         CombatContext context = CombatContext.Instance;
@@ -305,6 +357,11 @@ public class CombatEncounterManager : MonoBehaviour
     {
         if (context == null)
             return;
+
+        if (context.HasEventBattle)
+        {
+            DHEventBattleRuntimeManager.HandleCompletedEventBattle(context);
+        }
 
         if (context.Result == CombatResult.Defeat)
         {

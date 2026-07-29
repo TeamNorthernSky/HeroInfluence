@@ -59,10 +59,15 @@ public static class DHChatBranchRuleEvaluator
 
     public static void ExecuteTriggerEffect(BranchDBEventData option)
     {
+        ExecuteTriggerEffect(option, null);
+    }
+
+    public static void ExecuteTriggerEffect(BranchDBEventData option, DHEventEffectExecutionContext context)
+    {
         if (option == null || string.IsNullOrWhiteSpace(option.Trigger_Effect))
             return;
 
-        DHEventEffectRuntimeManager.EnsureInstance().ExecuteEffects(option.Trigger_Effect);
+        DHEventEffectRuntimeManager.EnsureInstance().ExecuteEffects(option.Trigger_Effect, context);
     }
 
     private static List<(string triggerType, string expression)> BuildConditions(

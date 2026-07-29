@@ -31,6 +31,46 @@ public class DHEventEffectToken
     }
 }
 
+[Serializable]
+public class DHEventEffectExecutionContext
+{
+    public int ZoneId;
+    public int SourceChatId;
+    public int ResumeChatId;
+
+    public DHEventEffectExecutionContext() { }
+
+    public DHEventEffectExecutionContext(int zoneId, int sourceChatId, int resumeChatId)
+    {
+        ZoneId = zoneId;
+        SourceChatId = sourceChatId;
+        ResumeChatId = resumeChatId;
+    }
+}
+
+[Serializable]
+public class DHEventBattleEffectRequest
+{
+    public string BattleKey;
+    public int ZoneId;
+    public int SourceChatId;
+    public int ResumeChatId;
+
+    public DHEventBattleEffectRequest() { }
+
+    public DHEventBattleEffectRequest(string battleKey, DHEventEffectExecutionContext context)
+    {
+        BattleKey = battleKey;
+
+        if (context == null)
+            return;
+
+        ZoneId = context.ZoneId;
+        SourceChatId = context.SourceChatId;
+        ResumeChatId = context.ResumeChatId;
+    }
+}
+
 [DisallowMultipleComponent]
 public sealed class DHEventEffectRuntimeManager : MonoBehaviour
 {
@@ -52,6 +92,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
     public IReadOnlyList<DHEventEffectToken> LastParsedEffects => lastParsedEffects;
 
     public event Action<string> BattleRequested;
+    public event Action<DHEventBattleEffectRequest> EventBattleRequested;
     public event Action<string> RewardRequested;
     public event Action<string> FogRevealRequested;
     public event Action<string> EventDisableRequested;
@@ -88,6 +129,11 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
 
     public void ExecuteEffects(string rawEffect)
     {
+        ExecuteEffects(rawEffect, null);
+    }
+
+    public void ExecuteEffects(string rawEffect, DHEventEffectExecutionContext context)
+    {
         lastParsedEffects.Clear();
 
         IReadOnlyList<DHEventEffectToken> tokens = ParseEffects(rawEffect);
@@ -95,11 +141,16 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
         {
             DHEventEffectToken token = tokens[i];
             lastParsedEffects.Add(token);
-            ExecuteToken(token);
+            ExecuteToken(token, context);
         }
     }
 
     public void ExecuteToken(DHEventEffectToken token)
+    {
+        ExecuteToken(token, null);
+    }
+
+    public void ExecuteToken(DHEventEffectToken token, DHEventEffectExecutionContext context)
     {
         if (token == null || token.kind == DHEventEffectKind.None)
             return;
@@ -117,6 +168,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
             case DHEventEffectKind.StartBattle:
                 LogUnhandled(token);
                 BattleRequested?.Invoke(token.payload);
+                EventBattleRequested?.Invoke(new DHEventBattleEffectRequest(token.payload, context));
                 break;
             case DHEventEffectKind.Reward:
                 LogUnhandled(token);
