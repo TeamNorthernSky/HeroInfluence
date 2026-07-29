@@ -244,7 +244,6 @@ public static class DHGameStateRestoreService
 
                 entries.Add(new WorkshopManager.WeaponEntry
                 {
-                    unitIndex = entry.unitIndex,
                     weaponIndex = entry.weaponIndex,
                     instanceIndex = entry.instanceIndex
                 });

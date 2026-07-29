@@ -20,8 +20,8 @@ public class ChatModalController : MonoBehaviour
     [SerializeField] private ScrollRect scrollRect;
     [Tooltip("말풍선이 세로로 쌓이는 ScrollView 내부 Content.")]
     [SerializeField] private RectTransform contentRoot;
-    [Tooltip("선택지 버튼이 쌓이는 영역.")]
-    [SerializeField] private RectTransform choiceArea;
+    [Tooltip("선택지 영역의 동적 높이 + 말풍선 밀어내기 애니메이션 담당.")]
+    [SerializeField] private ChatChoicePanelLayout choiceLayout;
 
     [Header("하위 프리팹")]
     [SerializeField] private ChatBubbleView bubblePrefab;
@@ -111,6 +111,28 @@ public class ChatModalController : MonoBehaviour
         if (skipConfirmPopup != null) skipConfirmPopup.SetActive(false);
     }
 
+    /// <summary>
+    /// [KJ 260729] ESC 처리 — ChatModal이 열려 있는 동안 ESC로는 대화가 닫히지 않는다.
+    /// 스킵 확인 팝업이 떠 있으면 팝업만 닫고(타이틀 종료팝업과 동일), 아니면 스킵 확인 팝업을 연다.
+    /// 처리했으면 true — 상위 ESC 로직(ModalManager.CloseTop / 시스템 메뉴)을 막는다.
+    /// </summary>
+    public static bool HandleEscape()
+    {
+        if (current == null || !current.gameObject.activeInHierarchy) return false;
+        if (ModalManager.Top != current.gameObject) return false; // 채팅 위에 다른 모달이 있으면 그쪽이 우선
+
+        if (current.skipConfirmPopup != null && current.skipConfirmPopup.activeSelf)
+        {
+            current.CloseSkipConfirm();
+            return true;
+        }
+
+        // 마지막 대사/선택지 표시 중(스킵 불가)이면 팝업을 열지 않되, ESC는 소비해 대화가 닫히지 않게 한다.
+        if (current.skipButton == null || current.skipButton.interactable)
+            current.OpenSkipConfirm();
+        return true;
+    }
+
     private void OpenSkipConfirm()
     {
         if (skipConfirmPopup != null) skipConfirmPopup.SetActive(true);
@@ -144,6 +166,7 @@ public class ChatModalController : MonoBehaviour
         ClearBubbles();
         ClearChoices();
         CloseSkipConfirm();
+        if (choiceLayout != null) choiceLayout.ApplyHiddenImmediate();
         UnsubscribeFromManager();
 
         onClosed = closedCallback;
@@ -217,6 +240,7 @@ public class ChatModalController : MonoBehaviour
 
         if (options == null || options.Count == 0)
         {
+            if (choiceLayout != null) choiceLayout.PlayHide();
             RefreshSkipButtonState(); // 마지막 대사 도달 시 스킵 비활성 [KJ 260723]
             return;
         }
@@ -231,7 +255,7 @@ public class ChatModalController : MonoBehaviour
                 continue;
             }
 
-            ChoiceButtonView view = Instantiate(choiceButtonPrefab, choiceArea);
+            ChoiceButtonView view = Instantiate(choiceButtonPrefab, choiceLayout.SpawnParent);
             view.Bind(option.Selection_Text, () => manager?.Select(option), state.IsInteractable);
             activeChoices.Add(view.gameObject);
         }
@@ -239,6 +263,13 @@ public class ChatModalController : MonoBehaviour
         if (activeChoices.Count == 0)
         {
             choicesVisible = false;
+        }
+
+        // 스폰이 끝난 뒤에 호출해야 자연 높이가 정확히 측정된다. [KJ 260729]
+        if (choiceLayout != null)
+        {
+            if (activeChoices.Count > 0) choiceLayout.PlayShow();
+            else choiceLayout.PlayHide();
         }
 
         RefreshSkipButtonState(); // 선택지 표시 중에도 스킵 비활성 [KJ 260723]
@@ -279,7 +310,13 @@ public class ChatModalController : MonoBehaviour
         choicesVisible = false;
         for (int i = 0; i < activeChoices.Count; i++)
         {
-            if (activeChoices[i] != null) Destroy(activeChoices[i]);
+            if (activeChoices[i] == null) continue;
+
+            // Destroy는 프레임 끝에 처리된다. 같은 프레임에 새 버튼을 스폰하고
+            // ForceRebuildLayoutImmediate로 측정하면 파괴 예정인 옛 버튼까지 세게 되므로
+            // 계층에서 먼저 떼어낸다. [KJ 260729]
+            activeChoices[i].transform.SetParent(null, false);
+            Destroy(activeChoices[i]);
         }
         activeChoices.Clear();
     }
