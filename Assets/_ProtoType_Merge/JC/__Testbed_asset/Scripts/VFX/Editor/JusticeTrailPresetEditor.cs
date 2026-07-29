@@ -16,22 +16,17 @@ namespace JC.VFX
     [CustomEditor(typeof(JusticeTrailPreset))]
     public class JusticeTrailPresetEditor : FlareOrbPresetEditorBase
     {
-        const string JDIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/J_Justice";
-        static string TrailPrefab  => JDIR + "/JC_JusticeFistTrail.prefab";
-        static string ImpactPrefab => JDIR + "/JC_JusticeImpactBurst.prefab";
-        static string StrokeMat    => JDIR + "/JusticePenStroke.mat";
-        static string ImpactMat    => JDIR + "/JusticeImpactSpark.mat";
-        static string SparkMat     => JDIR + "/JusticeSparkDot.mat";
-        static string FlashMat     => JDIR + "/JusticeImpactFlash.mat";
-        const string PresetPath    = JDIR + "/FX_JusticeTrailPreset.asset";
-        const string RestartKey    = "JC.JusticeTrailPreset.RestartOnPush";
+        // ★대상 자산은 프리셋이 들고 있다(JusticeTrailPreset.targets).
+        // 예전엔 여기에 등장! 경로를 상수로 박아 두어, 펀치 프리셋에서 적용/캡처를 누르면
+        // 등장! 프리팹·재질에 쓰이는 버그가 있었다. 변종이 늘면 걷잡을 수 없어 데이터로 옮겼다.
+        const string RestartKey = "JC.JusticeTrailPreset.RestartOnPush";
 
         protected override string LiveKey => "JC.JusticeTrailPreset.LivePreview";
         protected override string HelpText =>
             "실시간 반영: 슬라이더를 움직이면 (1) 살아 있는 인스턴스에 즉시 반영되고 " +
             "(2) 프리팹의 Binder가 스폰마다 프리셋을 읽으므로 '적용' 없이도 다음 재생에 반영된다.\n" +
             "파티클은 이미 방출된 입자에 소급되지 않으므로, '변경 시 파티클 재시작'이 켜져 있으면 즉시 새 값으로 다시 뿜는다.\n" +
-            "궤적(PenStrokes)·입자(SparkDots)·타격은 각자 발광과 하이라이트를 따로 가진다. 본체 팔레트만 공유.\n" +
+            "궤적(PenStrokes)·입자(SparkDots)·타격은 색·발광·하이라이트를 전부 따로 가진다. 공유 항목은 없다.\n" +
             "적용: 현재 값을 프리팹·재질에 확정 기록(스냅샷). 캡처: 프리팹 값을 프리셋으로 역방향 읽기.";
 
         public override void OnInspectorGUI()
@@ -53,20 +48,37 @@ namespace JC.VFX
             {
                 if (s != PlayModeStateChange.EnteredPlayMode) return;
                 if (!EditorPrefs.GetBool("JC.JusticeTrailPreset.LivePreview", true)) return;
-                var p = AssetDatabase.LoadAssetAtPath<JusticeTrailPreset>(PresetPath);
-                if (p != null) EditorApplication.delayCall += () => LivePushStatic(p);
+
+                // 프리셋이 여러 개(스킬 × 색 변종)라 특정 경로를 고를 수 없다.
+                // 살아 있는 바인더가 실제로 참조하는 프리셋만 다시 밀어 넣는다.
+                EditorApplication.delayCall += () =>
+                {
+                    foreach (var b in Object.FindObjectsByType<JusticeTrailPresetBinder>(
+                                 FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    {
+                        if (b.ActivePreset != null) b.ApplyNow();
+                    }
+                };
             };
         }
 
+        /// <summary>
+        /// 살아 있는 인스턴스에 즉시 반영.
+        /// **이 프리셋을 참조하는 바인더에만** 적용한다 — 예전엔 씬의 모든 이펙트에 무차별로 밀어 넣어,
+        /// 펀치 프리셋을 만지면 등장! 인스턴스의 재질까지 갈아치웠다.
+        /// </summary>
         static void LivePushStatic(JusticeTrailPreset p)
         {
             bool restart = EditorPrefs.GetBool(RestartKey, true);
 
-            foreach (var fx in Object.FindObjectsByType<JcSocketTrailEffect>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var binder in Object.FindObjectsByType<JusticeTrailPresetBinder>(
+                         FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
-                JusticeTrailPresetRuntime.ApplyTrail(fx.gameObject, p, Load<Material>(SparkMat));
+                if (binder.Preset != p && binder.PresetAlt != p) continue;
+
+                binder.Apply(p);
                 if (!restart) continue;
-                foreach (var ps in fx.GetComponentsInChildren<ParticleSystem>(true))
+                foreach (var ps in binder.GetComponentsInChildren<ParticleSystem>(true))
                 {
                     if (!ps.isPlaying) continue;
                     ps.Clear(true);
@@ -74,52 +86,92 @@ namespace JC.VFX
                 }
             }
 
-            foreach (var binder in Object.FindObjectsByType<JusticeTrailPresetBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            {
-                if (binder.Preset == null) binder.Preset = p;
-                binder.ApplyNow();
-            }
-
-            JusticeTrailPresetRuntime.ApplyMaterials(p, Load<Material>(StrokeMat), Load<Material>(ImpactMat));
+            JusticeTrailPresetRuntime.ApplyMaterials(p, p.targets.strokeMaterial, p.targets.impactSparkMaterial);
 
             SceneView.RepaintAll();
             EditorApplication.QueuePlayerLoopUpdate();
         }
 
+        /// <summary>대상 프리팹의 에셋 경로. 비어 있으면 빈 문자열.</summary>
+        static string PathOf(Object o) => o == null ? "" : AssetDatabase.GetAssetPath(o);
+
         public static void Apply(JusticeTrailPreset p)
         {
-            var sm = Load<Material>(StrokeMat);
-            var im = Load<Material>(ImpactMat);
-            JusticeTrailPresetRuntime.ApplyMaterials(p, sm, im);
-            if (sm != null) EditorUtility.SetDirty(sm);
-            if (im != null) EditorUtility.SetDirty(im);
+            var t = p.targets;
+            JusticeTrailPresetRuntime.ApplyMaterials(p, t.strokeMaterial, t.impactSparkMaterial);
+            if (t.strokeMaterial != null) EditorUtility.SetDirty(t.strokeMaterial);
+            if (t.impactSparkMaterial != null) EditorUtility.SetDirty(t.impactSparkMaterial);
 
-            var trail = PrefabUtility.LoadPrefabContents(TrailPrefab);
-            try
+            string trailPath = PathOf(t.trailPrefab);
+            if (string.IsNullOrEmpty(trailPath))
             {
-                JusticeTrailPresetRuntime.ApplyTrail(trail, p, Load<Material>(SparkMat));
-                var fx = trail.GetComponent<JcSocketTrailEffect>();
-                if (fx != null)
+                Debug.LogWarning("[JusticeTrailPreset] " + p.name + ": 대상 궤적 프리팹이 비어 있어 건너뜁니다.", p);
+            }
+            else
+            {
+                var trail = PrefabUtility.LoadPrefabContents(trailPath);
+                try
                 {
-                    var so = new SerializedObject(fx);
-                    so.FindProperty("fadeOutExtraSeconds").floatValue = p.fadeOutExtraSeconds;
-                    so.FindProperty("socketOffset").vector3Value = p.socketOffset;
-                    so.ApplyModifiedPropertiesWithoutUndo();
+                    JusticeTrailPresetRuntime.ApplyTrail(trail, p, t.sparkMaterial, t.strokeMaterial);
+                    var fx = trail.GetComponent<JcSocketTrailEffect>();
+                    if (fx != null)
+                    {
+                        var so = new SerializedObject(fx);
+                        so.FindProperty("fadeOutExtraSeconds").floatValue = p.fadeOutExtraSeconds;
+                        so.FindProperty("socketOffset").vector3Value = p.socketOffset;
+                        so.ApplyModifiedPropertiesWithoutUndo();
+                    }
+                    PrefabUtility.SaveAsPrefabAsset(trail, trailPath);
                 }
-                PrefabUtility.SaveAsPrefabAsset(trail, TrailPrefab);
+                finally { PrefabUtility.UnloadPrefabContents(trail); }
             }
-            finally { PrefabUtility.UnloadPrefabContents(trail); }
 
-            var impact = PrefabUtility.LoadPrefabContents(ImpactPrefab);
-            try
+            string arcPath = PathOf(t.arcStrokePrefab);
+            if (!string.IsNullOrEmpty(arcPath))
             {
-                JusticeTrailPresetRuntime.ApplyImpact(impact, p, Load<Material>(FlashMat));
-                PrefabUtility.SaveAsPrefabAsset(impact, ImpactPrefab);
+                var arc = PrefabUtility.LoadPrefabContents(arcPath);
+                try
+                {
+                    JusticeTrailPresetRuntime.ApplyArcStroke(arc, p, t.arcStrokeMaterial);
+                    PrefabUtility.SaveAsPrefabAsset(arc, arcPath);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(arc); }
+                if (t.arcStrokeMaterial != null) EditorUtility.SetDirty(t.arcStrokeMaterial);
             }
-            finally { PrefabUtility.UnloadPrefabContents(impact); }
+
+            string slashPath = PathOf(t.slashPrefab);
+            if (!string.IsNullOrEmpty(slashPath))
+            {
+                var slash = PrefabUtility.LoadPrefabContents(slashPath);
+                try
+                {
+                    JusticeTrailPresetRuntime.ApplySlash(slash, p, t.slashMaterial);
+                    PrefabUtility.SaveAsPrefabAsset(slash, slashPath);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(slash); }
+                if (t.slashMaterial != null) EditorUtility.SetDirty(t.slashMaterial);
+            }
+
+            string impactPath = PathOf(t.impactPrefab);
+            if (string.IsNullOrEmpty(impactPath))
+            {
+                // 대쉬처럼 타격 스파크 대신 참격을 쓰는 프리셋은 비어 있는 게 정상이다.
+                if (string.IsNullOrEmpty(slashPath))
+                    Debug.LogWarning("[JusticeTrailPreset] " + p.name + ": 대상 타격 프리팹이 비어 있어 건너뜁니다.", p);
+            }
+            else
+            {
+                var impact = PrefabUtility.LoadPrefabContents(impactPath);
+                try
+                {
+                    JusticeTrailPresetRuntime.ApplyImpact(impact, p, t.flashMaterial);
+                    PrefabUtility.SaveAsPrefabAsset(impact, impactPath);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(impact); }
+            }
 
             AssetDatabase.SaveAssets();
-            Debug.Log("[JusticeTrailPreset] 프리팹·재질에 확정 기록 완료");
+            Debug.Log("[JusticeTrailPreset] " + p.name + " → 프리팹·재질에 확정 기록 완료", p);
         }
 
         /// <summary>방출·수명·크기 등 공통 항목 역방향 읽기. 발광·하이라이트·코어는 프리셋 전용이라 캡처 대상이 아니다.</summary>
@@ -134,7 +186,7 @@ namespace JC.VFX
             g.sizeMin = main.startSize.constantMin;
             g.sizeMax = main.startSize.constantMax;
             g.maxParticles = main.maxParticles;
-            g.gravity = main.gravityModifier.constant;
+            // 중력은 입자 계열 전용이라 공통 캡처 대상이 아니다(호출부에서 따로 읽는다).
 
             var em = ps.emission;
             g.enabled = em.enabled;
@@ -146,14 +198,14 @@ namespace JC.VFX
         {
             Undo.RecordObject(p, "Capture Justice Trail");
 
-            var im = Load<Material>(ImpactMat);
+            var im = p.targets.impactSparkMaterial;
             if (im != null)
             {
                 if (im.HasProperty("_Tint")) p.impact.tint = im.GetColor("_Tint");
                 if (im.HasProperty("_Emission")) p.impact.emission = im.GetFloat("_Emission");
             }
 
-            var trail = Load<GameObject>(TrailPrefab);
+            var trail = p.targets.trailPrefab;
             if (trail != null)
             {
                 var trailT = trail.transform.Find(JusticeTrailPresetRuntime.TrailName);
@@ -164,15 +216,15 @@ namespace JC.VFX
                 {
                     CaptureCommon(tps, p.trail);
                     p.trail.shapeRadius = tps.shape.radius;
-                    var tm = tps.trails;
-                    p.trail.trailLifetime = tm.lifetime.constant;
-                    p.trail.trailMinVertexDistance = tm.minVertexDistance;
+                    // 트레일 배율은 1 고정 정책이라 캡처하지 않는다.
+                    p.trail.trailMinVertexDistance = tps.trails.minVertexDistance;
                 }
 
                 var sps = sparkT != null ? sparkT.GetComponent<ParticleSystem>() : null;
                 if (sps != null)
                 {
                     CaptureCommon(sps, p.spark);
+                    p.spark.gravity = sps.main.gravityModifier.constant;   // 중력을 갖는 유일한 계열
                     p.spark.spreadAngle = sps.shape.angle;
                     p.spark.nozzleRadius = sps.shape.radius;
                     p.spark.drag = sps.limitVelocityOverLifetime.enabled ? sps.limitVelocityOverLifetime.drag.constant : 0f;
@@ -188,7 +240,7 @@ namespace JC.VFX
                 }
             }
 
-            var impact = Load<GameObject>(ImpactPrefab);
+            var impact = p.targets.impactPrefab;
             if (impact != null)
             {
                 var ps = impact.GetComponent<ParticleSystem>();
@@ -199,9 +251,10 @@ namespace JC.VFX
                     p.impact.lifeMax = main.startLifetime.constantMax;
                     p.impact.speedMin = main.startSpeed.constantMin;
                     p.impact.speedMax = main.startSpeed.constantMax;
-                    p.impact.sizeMin = main.startSize.constantMin;
-                    p.impact.sizeMax = main.startSize.constantMax;
-                    p.impact.gravity = main.gravityModifier.constant;
+                    // 프리팹의 파티클 파라미터 → 화면상 치수로 되돌린다(바인더 역산의 역방향).
+                    float wMax = main.startSize.constantMax;
+                    p.impact.width = wMax;
+                    p.impact.widthVariation = wMax > 0.0001f ? 1f - main.startSize.constantMin / wMax : 0f;
                     p.impact.enabled = ps.emission.enabled;
 
                     var bursts = new ParticleSystem.Burst[ps.emission.burstCount];
@@ -210,7 +263,11 @@ namespace JC.VFX
                         p.impact.burstCount = (int)bursts[0].count.constant;
 
                     var rend = ps.GetComponent<ParticleSystemRenderer>();
-                    if (rend != null) p.impact.lengthScale = rend.lengthScale;
+                    if (rend != null)
+                    {
+                        p.impact.length = wMax * rend.lengthScale;
+                        p.impact.velocityScale = rend.velocityScale;
+                    }
                 }
 
                 var flashT = impact.transform.Find(JusticeTrailPresetRuntime.FlashName);
@@ -230,7 +287,7 @@ namespace JC.VFX
             }
 
             EditorUtility.SetDirty(p);
-            Debug.Log("[JusticeTrailPreset] 현재값 캡처 완료");
+            Debug.Log("[JusticeTrailPreset] " + p.name + " ← 현재값 캡처 완료", p);
         }
     }
 }

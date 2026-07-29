@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: FogPreset_Default
   m_EditorClassIdentifier: 
   unexplored:
-    heightTransition: 0.12
-    fogLowTopY: 0.55
-    fogHighStartY: 0.75
+    heightTransition: 1
+    fogLowTopY: 7.57
+    fogHighStartY: 10
     fogColor: {r: 0.6143941, g: 0.6351433, b: 0.6855345, a: 1}
     fogColorMid: {r: 0.5627744, g: 0.5898863, b: 0.6603774, a: 1}
     fogColorHigh: {r: 0.8714647, g: 0.8722665, b: 0.8742138, a: 1}
@@ -33,7 +33,7 @@ MonoBehaviour:
     cloudCoverage: 1
     cloudDensityEffect: 0
     sheetOpacity: 0.643
-    sheetHeightY: 0.76
+    sheetHeightY: 5
     sheetColor: {r: 0.7106918, g: 0.7106918, b: 0.7106918, a: 1}
     cloudContrast: 0.259
     sheetRangeMultiplier: 1.35
@@ -43,46 +43,44 @@ MonoBehaviour:
     brightnessMid: 0.851
     brightnessHigh: 0.952
   fogged:
-    heightTransition: 0.178
-    fogLowTopY: 0.29
-    fogHighStartY: 0.47
-    fogColor: {r: 0.7960785, g: 0.91372555, b: 1, a: 1}
-    fogColorMid: {r: 0.7960785, g: 0.91372555, b: 1, a: 1}
-    fogColorHigh: {r: 0.79607844, g: 0.9134281, b: 1, a: 1}
-    fogDensityLow: 0.02
-    fogDensityMid: 0.017
-    fogDensityHigh: 0.154
-    noiseScaleBase: 28.18
-    noiseScaleDetail: 4.5
+    heightTransition: 2
+    fogLowTopY: 1
+    fogHighStartY: 10
+    fogColor: {r: 0.7971698, g: 0.9130727, b: 1, a: 1}
+    fogColorMid: {r: 0.38461196, g: 0.39663965, b: 0.4056604, a: 1}
+    fogColorHigh: {r: 0.7411765, g: 0.86666673, b: 0.9607844, a: 1}
+    fogDensityLow: 1
+    fogDensityMid: 0.8
+    fogDensityHigh: 1
+    noiseScaleBase: 28.69
+    noiseScaleDetail: 7.6
     noiseScaleDistortion: 1
     flowSpeedBase: 0.26
     flowSpeedDetail: 0.22
     flowSpeedDistortion: 0.05
     distortionStrength: 1.3
-    noiseContrast: 4.85
-    cloudCoverage: 0.601
-    cloudDensityEffect: 0.114
-    sheetOpacity: 0.065
+    noiseContrast: 2
+    cloudCoverage: 0.5
+    cloudDensityEffect: 0.01
+    sheetOpacity: 0.236
     sheetHeightY: 0.76
     sheetColor: {r: 1, g: 1, b: 1, a: 0.3764706}
-    cloudContrast: 0.228
+    cloudContrast: 0.096
     sheetRangeMultiplier: 1.35
     sheetFadeWidthWorld: 2.33
-    sheetGroundAlign: 0.804
-    brightnessLow: 1.137
-    brightnessMid: 1.084
-    brightnessHigh: 1.144
+    sheetGroundAlign: 0.68
+    brightnessLow: 1.358
+    brightnessMid: 1.5
+    brightnessHigh: 1.033
   shared:
-    sightRangeMultiplier: 1.077
-    edgeWidthWorld: 0.99
-    edgeNoiseStrength: 0.483641
+    sightRangeMultiplier: 1
+    edgeWidthWorld: 0.2
+    edgeNoiseStrength: 0.06
     edgeNoiseScale: 0.15
     edgeNoiseSpeed: 0.5
-    edgeFadeWidth: 1.71
-    edgeLayerSpreadWorld: 1.6
-    edgeRoundingWorld: 1.26
-    stateBlendWidthWorld: 0.99
+    edgeFadeWidth: 0
+    edgeLayerSpreadWorld: 0
+    edgeRoundingWorld: 2
+    stateBlendWidthWorld: 1
     fallbackEdgeSoftness: 0.4
     debugMode: 0
-    enableRefogByDay: 0
-    refogDelayDays: 3

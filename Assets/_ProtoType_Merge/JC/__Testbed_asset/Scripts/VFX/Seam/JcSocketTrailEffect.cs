@@ -180,12 +180,13 @@ namespace JC.VFX.Seam
                 if (streaks[i] == null) continue;
                 streaks[i].Stop(true, ParticleSystemStopBehavior.StopEmitting);
 
-                // per-particle 트레일은 입자가 죽은 뒤에도 trails.lifetime 만큼 더 남는다.
+                // per-particle 트레일은 입자가 죽은 뒤에도 더 남는다.
+                // ★trails.lifetime은 초가 아니라 입자 수명에 대한 배율이다(1 고정 정책).
                 float psLife = streaks[i].main.startLifetime.constantMax;
                 ParticleSystem.TrailModule trails = streaks[i].trails;
                 if (trails.enabled && !trails.dieWithParticles)
                 {
-                    psLife += trails.lifetime.constantMax;
+                    psLife += psLife * trails.lifetime.constantMax;
                 }
 
                 float needed = psLife + fadeOutExtraSeconds;
