@@ -5181,13 +5181,22 @@ MonoBehaviour:
     prefabKey: BGStore001
   - gridPosition: {x: 27, y: 9}
     prefabKey: BGStore002
-  mainEventPlacements: []
+  mainEventPlacements:
+  - gridPosition: {x: 21, y: 7}
+    prefabKey: MainEvent1-2
+  - gridPosition: {x: 7, y: 28}
+    prefabKey: MainEvent2-1
+  - gridPosition: {x: 24, y: 17}
+    prefabKey: MainEvent2-2
+  - gridPosition: {x: 41, y: 7}
+    prefabKey: MainEvent2-3
+  - gridPosition: {x: 7, y: 15}
+    prefabKey: MainEvent1-1
   subEventPlacements: []
   gatePlacements:
   - gateId: gate_001
     firstZoneId: zone_001
     secondZoneId: zone_002
-    openDurationTurns: 3
     gridPosition: {x: 43, y: 19}
     prefabKey: VerticalGate
     blockerCells:
@@ -5196,7 +5205,6 @@ MonoBehaviour:
   - gateId: gate_002
     firstZoneId: zone_001
     secondZoneId: zone_003
-    openDurationTurns: 3
     gridPosition: {x: 24, y: 33}
     prefabKey: HorizonGate
     blockerCells:
@@ -5206,6 +5214,8 @@ MonoBehaviour:
   - gridPosition: {x: 24, y: 32}
     zoneId: zone_001
     enemyGroupKey: 
+    spawnChatZoneId: 0
+    spawnChatId: 0
   heroUnionPlacement:
     hasPlacement: 1
     gridPosition: {x: 10, y: 8}

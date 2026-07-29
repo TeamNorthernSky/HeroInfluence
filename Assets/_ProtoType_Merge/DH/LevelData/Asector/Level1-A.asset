@@ -4765,6 +4765,9 @@ MonoBehaviour:
   enemySpawnPointPlacements:
   - gridPosition: {x: 24, y: 32}
     zoneId: zone_001
+    enemyGroupKey: 
+    spawnChatZoneId: 0
+    spawnChatId: 0
   heroUnionPlacement:
     hasPlacement: 1
     gridPosition: {x: 10, y: 8}
