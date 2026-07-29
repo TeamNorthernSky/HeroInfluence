@@ -26,6 +26,9 @@ public class BattleManager : MonoBehaviour
 
     private const float AnimEventTimeoutSeconds = 2f;
 
+    // 다중 아군 힐에서 주 대상 이후 인접 아군 힐 이펙트를 순차로 낼 때의 스태거 간격(배속-시간, 초).
+    private const float MultiHealStaggerSeconds = 0.15f;
+
     private readonly struct SkillExecutionOptions
     {
         public readonly float ExtraMultiplier;
@@ -409,6 +412,9 @@ public class BattleManager : MonoBehaviour
 
         if (result.HealContexts != null && result.HealContexts.Count > 0)
         {
+            // 다중 아군 힐: 시전 애니는 첫(주) 대상에서 1회만 재생하고, 인접 아군은 시전을 다시 돌리지 않고
+            // 짧은 딜레이(스태거) 후 힐 이펙트 + 힐만 적용한다. (첫 대상만 투척/Cue 등 전체 연출 수행)
+            bool firstHealPresented = false;
             for (int i = 0; i < result.HealContexts.Count; i++)
             {
                 HealContext healContext = result.HealContexts[i];
@@ -417,26 +423,40 @@ public class BattleManager : MonoBehaviour
                     continue;
                 }
 
-                SkillData healAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForHealContext(healContext));
-                var healQueue = new ASB.Work.Battle.Command.BattleActionQueue();
-                healQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
-                    healContext.Caster,
-                    healContext.Target,
-                    healAnimSkill,
-                    playBasicAttackAnimation: false,
-                    playTargetHitAnimation: false,
-                    onHitCallback: () =>
+                HealContext capturedHeal = healContext;
+                Func<BattleHitResult> healCallback = () =>
+                {
+                    capturedHeal.Target.ApplyHeal(capturedHeal.HealAmount);
+                    return new BattleHitResult
                     {
-                        healContext.Target.ApplyHeal(healContext.HealAmount);
-                        return new BattleHitResult
-                        {
-                            Target = healContext.Target,
-                            Damage = healContext.HealAmount,
-                            IsHeal = true,
-                            SkillIndex = healContext.SkillIndex
-                        };
-                    }, new HitDeliveryGate()));
-                yield return StartCoroutine(healQueue.RunAll(this));
+                        Target = capturedHeal.Target,
+                        Damage = capturedHeal.HealAmount,
+                        IsHeal = true,
+                        SkillIndex = capturedHeal.SkillIndex
+                    };
+                };
+
+                if (!firstHealPresented)
+                {
+                    firstHealPresented = true;
+                    SkillData healAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForHealContext(healContext));
+                    var healQueue = new ASB.Work.Battle.Command.BattleActionQueue();
+                    healQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
+                        healContext.Caster,
+                        healContext.Target,
+                        healAnimSkill,
+                        playBasicAttackAnimation: false,
+                        playTargetHitAnimation: false,
+                        onHitCallback: healCallback, new HitDeliveryGate()));
+                    yield return StartCoroutine(healQueue.RunAll(this));
+                }
+                else
+                {
+                    // 인접 아군: 시전 애니 없이 스태거 딜레이 후 힐 이펙트 + 힐.
+                    yield return WaitForBattleSeconds(MultiHealStaggerSeconds);
+                    _visualDirector?.PlayHitEffect(healContext.Target, healContext.SkillIndex);
+                    healCallback();
+                }
             }
         }
 
@@ -1455,7 +1475,20 @@ internal IEnumerator RunSkillSequenceCore(
                 originOverride = _projectileChainState.LastImpactPoint;
             }
 
-            var projectile = new ProjectileImpactAction(actor, target, projectileVisual, _currentBattleSpeed, deliveryGate, skill.skillIndex, originOverride);
+            // 준비(차징) 단계에서 만든 held 인스턴스를 재사용(낙하형: 손에 소환한 이펙트를 그대로 발사).
+            // 지금까지 AoE 경로(AoEApplyDamageAction)에만 있던 처리를 단일 대상에도 동일 적용한다.
+            GameObject preparedCharge = null;
+            if (projectileVisual.UsePreparedCharge && actor != null && !string.IsNullOrEmpty(projectileVisual.ChargeInstanceKey))
+            {
+                PresentationRuntimeContext chargeCtx = actor.GetComponent<PresentationRuntimeContext>();
+                if (chargeCtx != null && chargeCtx.TryGetHandle(projectileVisual.ChargeInstanceKey, out ISkillEffectHandle chargeHandle))
+                {
+                    preparedCharge = (chargeHandle as Component)?.gameObject;
+                    chargeCtx.RemoveHandle(projectileVisual.ChargeInstanceKey);
+                }
+            }
+
+            var projectile = new ProjectileImpactAction(actor, target, projectileVisual, _currentBattleSpeed, deliveryGate, skill.skillIndex, originOverride, destinationOverride: null, existingInstance: preparedCharge);
             yield return projectile.ExecuteRoutine(host);
 
             // 주 타깃 단계: 실제 도착 좌표를 저장 → 추가 타깃 투사체의 원점으로 사용.
@@ -1503,14 +1536,11 @@ internal IEnumerator RunSkillSequenceCore(
     private bool TryGetProjectileVisual(BattleCharactor actor, SkillData skill, SkillPresentationData presentation,
         bool playTargetHitAnimation, out ProjectileVisualData projectileVisual)
     {
-        projectileVisual = null;
-        if (!playTargetHitAnimation || skill == null || skill.classSkillEffect != 0 || !IsRangedSkill(actor, skill))
-        {
-            return false;
-        }
-
         projectileVisual = presentation?.GetProjectileVisual();
-        return projectileVisual != null && projectileVisual.Prefab != null;
+        // ProjectileVisual이 명시적으로 설정(Prefab 존재)된 스킬은 힐/부활·근거리·피격애니 여부와 무관하게
+        // 투사체 연출을 허용한다(예: 힐 구체를 아군에게 투척). Prefab 미설정이면 투사체 연출 없음.
+        // (기존엔 원거리 공격 스킬만 허용했으나, 연출은 프레젠테이션이 명시하면 따르도록 완화)
+        return skill != null && projectileVisual != null && projectileVisual.Prefab != null;
     }
 
     private ProjectileVisualData GetProjectileVisual(BattleCharactor actor, SkillData skill, SkillPresentationData presentation)

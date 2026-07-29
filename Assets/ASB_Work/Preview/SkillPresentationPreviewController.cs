@@ -15,6 +15,7 @@ public class SkillPresentationPreviewController : MonoBehaviour
     [SerializeField] private BattleVisualDirector visualDirector;
     [SerializeField] private BattleCharactor previewActor;
     [SerializeField] private BattleCharactor previewTarget;
+    [SerializeField] private BattleCharactor previewAllyTarget;
     [SerializeField] private int selectedSkillIndex;
     [SerializeField] private bool ignoreSkillCost = true;
 
@@ -22,6 +23,7 @@ public class SkillPresentationPreviewController : MonoBehaviour
     private Coroutine _playRoutine;
     private UnitSnapshot _actorSnapshot;
     private UnitSnapshot _targetSnapshot;
+    private UnitSnapshot _allyTargetSnapshot;
 
     public bool IsPlaying => _isPlaying;
     public string ActorName => previewActor != null ? previewActor.UnitName : "-";
@@ -73,16 +75,19 @@ public class SkillPresentationPreviewController : MonoBehaviour
         selectedSkillIndex = skillIndex;
     }
 
-    public void SetUnits(BattleCharactor actor, BattleCharactor target)
+    public void SetUnits(BattleCharactor actor, BattleCharactor target, BattleCharactor allyTarget = null)
     {
         previewActor = actor;
         previewTarget = target;
+        previewAllyTarget = allyTarget;
 
         RestoreUnit(previewActor);
         RestoreUnit(previewTarget);
+        RestoreUnit(previewAllyTarget);
 
         _actorSnapshot = UnitSnapshot.Capture(previewActor);
         _targetSnapshot = UnitSnapshot.Capture(previewTarget);
+        _allyTargetSnapshot = UnitSnapshot.Capture(previewAllyTarget);
     }
 
     public void PlaySelectedSkill()
@@ -111,6 +116,12 @@ public class SkillPresentationPreviewController : MonoBehaviour
             return;
         }
 
+        BattleCharactor executionTarget = ResolveExecutionTarget(source);
+        if (executionTarget == null)
+        {
+            Debug.LogWarning($"[SkillPresentationPreviewController] skillIndex {selectedSkillIndex} has no valid preview target.");
+            return;
+        }
         SkillPresentationData presentation = visualDirector != null ? visualDirector.GetPresentation(selectedSkillIndex) : null;
         if (presentation == null)
         {
@@ -119,7 +130,7 @@ public class SkillPresentationPreviewController : MonoBehaviour
 
         Debug.Log(
             $"[SkillPresentationPreviewController] Play skillIndex={selectedSkillIndex}, skillName={source.skillName}, " +
-            $"actor={previewActor.UnitName}, target={previewTarget.UnitName}, " +
+            $"actor={previewActor.UnitName}, target={executionTarget.UnitName}, " +
             $"battleManager={(battleManager != null)}, visualDirector={(visualDirector != null)}, " +
             $"csvCatalog={(DHCsvTemplateCatalog.Instance != null)}");
 
@@ -130,7 +141,7 @@ public class SkillPresentationPreviewController : MonoBehaviour
         }
 
         _isPlaying = true;
-        _playRoutine = StartCoroutine(PlayRoutine(clone));
+        _playRoutine = StartCoroutine(PlayRoutine(clone, executionTarget));
     }
 
     public void ResetPreview()
@@ -145,24 +156,28 @@ public class SkillPresentationPreviewController : MonoBehaviour
 
         previewActor?.GetComponent<PresentationRuntimeContext>()?.Clear();
         previewTarget?.GetComponent<PresentationRuntimeContext>()?.Clear();
+        previewAllyTarget?.GetComponent<PresentationRuntimeContext>()?.Clear();
 
         RestoreSnapshotOrUnit(_actorSnapshot, previewActor);
         RestoreSnapshotOrUnit(_targetSnapshot, previewTarget);
+        RestoreSnapshotOrUnit(_allyTargetSnapshot, previewAllyTarget);
 
         // TODO: 남아있는 임시 VFX/투사체 정리는 이번 스코프에서 구현하지 않는다.
     }
 
-    private IEnumerator PlayRoutine(SkillData clonedSkill)
+    private IEnumerator PlayRoutine(SkillData clonedSkill, BattleCharactor executionTarget)
     {
         try
         {
             RestoreUnit(previewActor);
             RestoreUnit(previewTarget);
+            RestoreUnit(previewAllyTarget);
             _actorSnapshot = UnitSnapshot.Capture(previewActor);
             _targetSnapshot = UnitSnapshot.Capture(previewTarget);
+            _allyTargetSnapshot = UnitSnapshot.Capture(previewAllyTarget);
 
             bool executed = false;
-            yield return battleManager.ExecuteGridSkill(previewActor, previewTarget, clonedSkill, success => executed = success);
+            yield return battleManager.ExecuteGridSkill(previewActor, executionTarget, clonedSkill, success => executed = success);
 
             if (!executed)
             {
@@ -175,11 +190,21 @@ public class SkillPresentationPreviewController : MonoBehaviour
         {
             RestoreSnapshotOrUnit(_actorSnapshot, previewActor);
             RestoreSnapshotOrUnit(_targetSnapshot, previewTarget);
+        RestoreSnapshotOrUnit(_allyTargetSnapshot, previewAllyTarget);
             _isPlaying = false;
             _playRoutine = null;
         }
     }
 
+    private BattleCharactor ResolveExecutionTarget(SkillData skill)
+    {
+        if (skill != null && (skill.classSkillEffect == 1 || skill.classSkillEffect == 2))
+        {
+            return previewAllyTarget != null ? previewAllyTarget : previewActor;
+        }
+
+        return previewTarget;
+    }
     private static void RestoreUnit(BattleCharactor unit)
     {
         if (unit == null)

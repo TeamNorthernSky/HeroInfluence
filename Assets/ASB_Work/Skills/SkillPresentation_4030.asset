@@ -11,19 +11,111 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
   m_Name: SkillPresentation_4030
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   SkillIndex: 4030
-  AnimationTriggerOverride: 
-  TargetAnimationTriggerOverride: 
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  SfxVolume: 1
-  AttackEffectPrefab: {fileID: 0}
-  HitEffectPrefab: {fileID: 0}
-  UseAnimEvent: 0
+  PresentationSchemaVersion: 1
+  AnimationStateName:
+  AnimationTriggerOverride:
+  TargetAnimationTriggerOverride:
+  UseAnimEvent: 1
   HitDelay: 0.25
+  AttackSoundId: 0
+  HitSoundId: 0
+  SfxVolume: 1
+  EnableAttackEffect: 0
+  AttackEffectId: 0
+  EnableHitEffect: 1
+  HitEffectId: 4011
   ProjectilePrefab: {fileID: 0}
   FlightTime: 0.3
   TrajectoryType: 0
   ArcHeight: 2
   ScaleByCellSize: 0
+  ProjectileVisual:
+    Prefab: {fileID: 1697924425435355953, guid: 3b145aa619b72264098ae44c3837bcdd,
+      type: 3}
+    Speed: 7
+    Trajectory: 1
+    ArcHeight: 1.5
+    TrailTime: 0.4
+    TrackTarget: 1
+    AlignToVelocity: 1
+    ImpactVisualLifetime: 0.4
+    ArrivalRadius: 0.2
+    TimeoutGraceSeconds: 1
+    TimeoutSeconds: 5
+    DeliveryMode: 0
+    UsePreparedCharge: 0
+    ChargeInstanceKey:
+    TargetFormationCenter: 0
+  AttackSfxClip: {fileID: 0}
+  HitSfxClip: {fileID: 0}
+  AttackEffectPrefab: {fileID: 0}
+  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
+  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
+  HitEffectPrefab: {fileID: 0}
+  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
+  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
+  MovePrepare:
+    Enabled: 0
+    AnimationStateName:
+    BlendInSeconds: 0.1
+    Cues: []
+  Move:
+    Enabled: 0
+    UseUnitMovement: 1
+    AnimationStateName:
+    BlendInSeconds: 0.1
+  AttackPrepare:
+    Enabled: 0
+    AnimationStateName:
+    BlendInSeconds: 0.1
+    Cues: []
+  Attack:
+    Enabled: 1
+    Beats:
+    - AnimationStateName: Base Layer.ClassSkill_3
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 1
+      Cues:
+      - CueName: charge_r
+        EffectIds: ac0f0000
+        SoundIds:
+        Operation: 0
+        InstanceKey:
+        Anchor: 1
+        Socket: 11
+      - CueName: charge_l
+        EffectIds: ac0f0000
+        SoundIds:
+        Operation: 0
+        InstanceKey:
+        Anchor: 1
+        Socket: 10
+  Return:
+    Enabled: 0
+    AnimationStateName:
+    BlendInSeconds: 0.1
+  Post:
+    Enabled: 0
+    AnimationStateName:
+    BlendInSeconds: 0.1
+    Cues: []
+    ExtraDelay: 0
+  MovingAttack:
+    Enabled: 0
+    AnimationStateName:
+    AnimationBlendInSeconds: 0.1
+    EntryOffset: {x: -1.5, y: 0}
+    MidOffset: {x: 0, y: 0}
+    ExitOffset: {x: 1.5, y: 0}
+    PathSchemaVersion: 2
+    TopOffset: 1.5
+    BottomOffset: 1.5
+    SweepClearance: 0
+    FaceCurveTangent: 0
+    HitMode: 0
+    SingleAoEHitPathProgress: -1
+    PathSampleCount: 64
+    Cues: []

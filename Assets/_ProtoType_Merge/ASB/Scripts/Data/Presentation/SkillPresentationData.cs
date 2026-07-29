@@ -254,7 +254,9 @@ public class ProjectileVisualData
 public enum ProjectileTrajectoryType
 {
     Straight,
-    Arc
+    Arc,
+    // 적 바로 위로 로프트한 뒤 수직으로 낙하한다(낙하형 단일 대상). ArcHeight를 대상 위 체공 높이로 사용.
+    OverheadDrop
 }
 
 /// <summary>투사체 전달 방식. Single=시전자 원점에서 각 타깃으로. ChainAdditionalTargets=1차 도착점에서 2차로 체인.</summary>

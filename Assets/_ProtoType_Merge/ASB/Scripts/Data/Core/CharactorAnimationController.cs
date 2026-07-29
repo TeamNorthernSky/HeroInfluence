@@ -88,6 +88,29 @@ public class CharactorAnimationController : MonoBehaviour
     }
 
     /// <summary>
+    /// Unity Animation Event (함수명: AniEvent_ReturnIdle). 지정한 블렌드 시간(초, 배속-시간)으로
+    /// 현재 상태에서 Idle로 CrossFade한다. 공격 애니 중간에 빠져나가 Idle로 블렌딩할 때 사용.
+    /// OnHit과 같은 프레임에 두면 "공격과 동시에 Idle 블렌드 시작"이 된다.
+    /// </summary>
+    public void AniEvent_ReturnIdle(float blendSeconds)
+    {
+        if (_animator == null)
+        {
+            return;
+        }
+        float blend = Mathf.Max(0f, blendSeconds);
+        Debug.Log($"[IdleDiag] AniEvent_ReturnIdle → CrossFade Idle (blend={blend:F2}) — 클립 이벤트가 Idle 전환 수행");
+        if (blend <= 0f)
+        {
+            _animator.CrossFadeInFixedTime(StateIdle, 0f, 0, 0f);
+        }
+        else
+        {
+            _animator.CrossFadeInFixedTime(StateIdle, blend, 0, 0f);
+        }
+    }
+
+    /// <summary>
     /// Unity Animation Event (함수명: AniEvent_HoldBegin). holdBattleSeconds("배속-시간" 초) 동안
     /// 애니메이션을 정지(freeze)시킨 뒤 자동 재개한다. 차지/앞동작 홀드 연출용.
     /// 같은 프레임에 AniEvent_PresentationCue("cast")를 두면 차지 이펙트가 정지 구간 동안 떠 있는다.
@@ -109,6 +132,7 @@ public class CharactorAnimationController : MonoBehaviour
     private IEnumerator HoldRoutine(float holdBattleSeconds)
     {
         IsHolding = true;
+        Debug.Log($"[IdleDiag] HoldBegin 시작 (freeze {holdBattleSeconds:F2} 배속-초) — 이 동안 현재 프레임 포즈로 정지");
         _animator.speed = 0f; // 프리즈
 
         float elapsedBattle = 0f;

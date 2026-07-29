@@ -46,21 +46,93 @@ namespace ASB.Work.Battle.SkillExecution
 
 
     //부활 스킬
-    public sealed class RebirthSkillHandler : BaseSingleSkillHandler
+    /// <summary>
+    /// 4020: Deals normal damage, then restores HP to the living allied unit with
+    /// the lowest HP ratio by the actual damage dealt (capped at 20).
+    /// </summary>
+    public sealed class HolyBulletHpRecoveryHandler : BaseSingleSkillHandler
     {
-        protected override void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
+        protected override void ApplyAdditionaDamage(
+            BattleCharactor caster,
+            BattleCharactor target,
+            SkillData skillData,
+            SkillExecutionResult result)
         {
-            if (!target.IsDead)
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(
+                caster,
+                target,
+                skillData.skillValue,
+                skillData.skillIndex,
+                skillData.classSkillRange));
+
+            result.OnPostExecution += totalDamageDealt =>
             {
-                return;
+                float healAmount = Mathf.Min(20f, Mathf.Max(0f, totalDamageDealt));
+                if (healAmount <= 0f)
+                    return;
+
+                BattleCharactor healTarget = FindLowestHpRatioAlly(caster);
+                if (healTarget != null)
+                    healTarget.ApplyHeal(healAmount);
+            };
+        }
+
+        private static BattleCharactor FindLowestHpRatioAlly(BattleCharactor caster)
+        {
+            BattleCharactor best = null;
+            float lowestRatio = float.MaxValue;
+            BattleCharactor[] units = UnityEngine.Object.FindObjectsByType<BattleCharactor>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+
+            foreach (BattleCharactor unit in units)
+            {
+                if (unit == null || unit.IsDead || unit.IsPlayer != caster.IsPlayer || unit.MaxHp <= 0f)
+                    continue;
+
+                float hpRatio = unit.CurrentHp / unit.MaxHp;
+                if (hpRatio < lowestRatio)
+                {
+                    lowestRatio = hpRatio;
+                    best = unit;
+                }
             }
-            //float ratio = SkillEffectHelper.ResolveReviveHpRatio(skillData.skillValue);
-            target.Revive(0.2f);
-            Debug.Log($"[Skill/Rebirth] {caster.UnitName} -> {target.UnitName} hpRatio={0.2f:0.###}");
+
+            return best;
         }
     }
+    public sealed class RebirthSkillHandler : BaseSingleSkillHandler
+    {
+        protected override void ApplyHeal(
+            BattleCharactor caster,
+            BattleCharactor target,
+            SkillData skillData,
+            SkillExecutionResult result)
+        {
+            if (!target.IsDead)
+                return;
 
-    // 타깃 + boundary 패턴 내 랜덤/전체 추가 힐
+            target.Revive(0.2f);
+            Debug.Log($"[Skill/Rebirth] {caster.UnitName} -> {target.UnitName} hpRatio={0.2f:0.###}");
+
+            BattleCharactor[] units = UnityEngine.Object.FindObjectsByType<BattleCharactor>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+            foreach (BattleCharactor enemy in units)
+            {
+                if (enemy == null || enemy.IsDead || enemy.IsPlayer == caster.IsPlayer)
+                    continue;
+
+                result.AddDamage(SkillEffectHelper.ApplyStandardDamage(
+                    caster,
+                    enemy,
+                    skillData.skillValue,
+                    skillData.skillIndex,
+                    skillData.classSkillRange,
+                    isAdditionalHit: true));
+            }
+        }
+    }
     public sealed class HealTargetAroundRandomHandler : TargetAroundRandom
     {
         protected override void ApplyMainEffect(
@@ -69,20 +141,29 @@ namespace ASB.Work.Battle.SkillExecution
             SkillData skillData,
             SkillExecutionResult result)
         {
-            float heal = SkillEffectHelper.CalculateStandardHealAmount(skillData.skillValue);
-            result.AddHeal(caster, target, heal, skillData != null ? skillData.skillIndex : 0);
-            Debug.Log($"[Skill/TargetAroundRandomHeal] main {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
+            AddCasterBasedHeal(caster, target, skillData, result);
         }
 
-        protected override void ApplyHeal(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
+        protected override void ApplyHeal(
+            BattleCharactor caster,
+            BattleCharactor target,
+            SkillData skillData,
+            SkillExecutionResult result)
         {
-            float ratio = skillData.skillSubValue > 0f ? skillData.skillSubValue : skillData.skillValue;
-            float heal = SkillEffectHelper.CalculateStandardHealAmount(ratio);
-            result.AddHeal(caster, target, heal, skillData != null ? skillData.skillIndex : 0);
-            Debug.Log($"[Skill/TargetAroundRandomHeal] splash {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
+            AddCasterBasedHeal(caster, target, skillData, result);
+        }
+
+        private static void AddCasterBasedHeal(
+            BattleCharactor caster,
+            BattleCharactor target,
+            SkillData skillData,
+            SkillExecutionResult result)
+        {
+            float heal = caster.MaxHp * skillData.skillValue;
+            result.AddHeal(caster, target, heal, skillData.skillIndex);
+            Debug.Log($"[Skill/TargetAroundRandomHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
         }
     }
-
     /// <summary>
     /// 광역 흡혈 스킬:
     /// - 범위 내 각 대상에게 데미지를 주고

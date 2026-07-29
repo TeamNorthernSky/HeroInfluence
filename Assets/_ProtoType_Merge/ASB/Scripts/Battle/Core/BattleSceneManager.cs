@@ -36,6 +36,7 @@ public class BattleSceneManager : MonoBehaviour
     private BattleCharactor playerBattleCharactor;
     private readonly List<BattleCharactor> playerBattleCharactors = new List<BattleCharactor>();
     private readonly List<BattleCharactor> enemyBattleCharactors = new List<BattleCharactor>();
+    private HostageScenarioController hostageScenarioController;
 
     public BattleCharactor PlayerBattleCharactor => playerBattleCharactor;
 
@@ -55,6 +56,8 @@ public class BattleSceneManager : MonoBehaviour
 
     private void OnDisable()
     {
+        hostageScenarioController?.FlushResult();
+
         if (battleFlowManager != null)
         {
             battleFlowManager.OnBattleEnded -= HandleBattleEndedForTransition;
@@ -78,6 +81,7 @@ public class BattleSceneManager : MonoBehaviour
     private IEnumerator PostBattleSequence(BattleResult result)
     {
         yield return WaitDeadUnitDeathAnimations();
+        hostageScenarioController?.FlushResult();
 
         // 1. 보상 계산 (Repository/JSON 변경 없음)
         BattleRewardPlan plan = BattleResultPersistenceHandler.BuildBattleRewardPlan(
@@ -230,6 +234,11 @@ public class BattleSceneManager : MonoBehaviour
 
         playerSpawner?.ManualSpawn();
         enemySpawner?.ManualSpawn();
+        hostageScenarioController = HostageScenarioController.Create(
+            enemyPlace,
+            CombatContext.Instance != null && CombatContext.Instance.EventBattle != null
+                ? CombatContext.Instance.EventBattle.Scenario
+                : null);
 
         var inactiveMode = includeInactiveUnits ? FindObjectsInactive.Include : FindObjectsInactive.Exclude;
         var sceneUnits = FindObjectsByType<BattleCharactor>(inactiveMode, FindObjectsSortMode.None).ToList();

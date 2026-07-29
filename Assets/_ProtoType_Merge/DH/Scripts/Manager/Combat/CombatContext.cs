@@ -19,6 +19,8 @@ public class CombatEventBattleUnitData
     public int Speed;
     public string UnitAI;
     public int ExperiencePoint;
+    public string PrefabResourcePath;
+    public List<SkillData> Skills = new List<SkillData>();
 
     public CombatEventBattleUnitData() { }
 
@@ -54,6 +56,7 @@ public class CombatEventBattleData
     public int EnemyLevel;
     public List<CombatEventBattleUnitData> EnemyUnits = new List<CombatEventBattleUnitData>();
     public List<DHEventNumericState> NumericResults = new List<DHEventNumericState>();
+    public BattleScenarioConfig Scenario;
 
     public CombatEventBattleData() { }
 

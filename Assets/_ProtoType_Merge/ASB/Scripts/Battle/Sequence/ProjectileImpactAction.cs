@@ -306,7 +306,9 @@ namespace ASB.Work.Battle.Sequence
             }
 
             UnitSocketHolder holder = actor != null ? actor.GetComponentInChildren<UnitSocketHolder>() : null;
-            return holder?.LeftWeaponSocket != null ? holder.LeftWeaponSocket : actor != null ? actor.transform : null;
+            // 장착 무기의 Muzzle 우선, 없으면 기존처럼 왼손 마운트로 폴백.
+            Transform origin = holder?.ResolveWeaponOrigin(WeaponSocket.Muzzle);
+            return origin != null ? origin : actor != null ? actor.transform : null;
         }
     }
 }

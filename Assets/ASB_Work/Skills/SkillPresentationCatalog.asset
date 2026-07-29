@@ -54,7 +54,7 @@ MonoBehaviour:
   - SkillIndex: 4030
     Presentation: {fileID: 11400000, guid: e803712e08195a3468f868d534597cde, type: 2}
   - SkillIndex: 4040
-    Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
+    Presentation: {fileID: 11400000, guid: a23ceceb316480d488d36d7910ba7fd2, type: 2}
   - SkillIndex: 4050
     Presentation: {fileID: 11400000, guid: f205ec4f9347f2647b03120edecfd0cd, type: 2}
   - SkillIndex: 5020

@@ -643,6 +643,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 390142417}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &390279902
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 390279903}
+  m_Layer: 0
+  m_Name: '[DH_EventStateRepository]'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &390279903
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 390279902}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &499124194
 GameObject:
   m_ObjectHideFlags: 0
@@ -1322,7 +1353,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53194c5e2822cc44993d83d47a0fc12b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _currentBattleSpeed: 1
+  _currentBattleSpeed: 0.5
   battleFlowManager: {fileID: 621159268}
   _visualDirector: {fileID: 621159274}
   _presentationCatalog: {fileID: 11400000, guid: 99e1bc13888047f4ea436fbc4eaf9856,
@@ -1401,8 +1432,11 @@ MonoBehaviour:
   enemyPlace: {fileID: 912453333}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
-  playerUnitId: 10002
+  playerUnitId: 10004
   playerGridNumber: 101
+  additionalPreviewPlayers:
+  - unitId: 10002
+    gridNumber: 100
   enemyUnitId: 20001
   enemyGridNumber: 201
   previewEnemies:
@@ -2075,6 +2109,7 @@ MonoBehaviour:
   visualDirector: {fileID: 621159274}
   previewActor: {fileID: 0}
   previewTarget: {fileID: 0}
+  previewAllyTarget: {fileID: 0}
   selectedSkillIndex: 1010
   ignoreSkillCost: 1
 --- !u!4 &1306616269
@@ -3399,3 +3434,4 @@ SceneRoots:
   - {fileID: 1283536123}
   - {fileID: 1598461279}
   - {fileID: 1306616269}
+  - {fileID: 390279903}

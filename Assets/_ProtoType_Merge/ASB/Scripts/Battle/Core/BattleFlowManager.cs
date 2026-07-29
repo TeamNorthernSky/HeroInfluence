@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
@@ -153,6 +153,7 @@ public class BattleFlowManager : MonoBehaviour
 
         turnQueue = new Queue<BattleCharactor>(ordered);
         roundIndex++;
+        HostageScenarioController.Active?.AdvanceRound(roundIndex);
         Debug.Log($"[BattleFlow] Round {roundIndex} 시작. queue={turnQueue.Count}");
 
         Log("[TurnOrder] New round order:");
