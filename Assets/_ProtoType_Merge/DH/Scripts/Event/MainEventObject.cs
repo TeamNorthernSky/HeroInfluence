@@ -15,6 +15,9 @@ public class MainEventObject : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField, Min(1)] private int interactionRadius = 1;
 
+    [Header("Disable Replacement")]
+    [SerializeField] private string replacementEnemyGroupKey;
+
     private MainEventRegistry mainEventRegistry;
     private bool isTriggering;
     private bool eventBattleRequestedDuringTrigger;
@@ -24,6 +27,9 @@ public class MainEventObject : MonoBehaviour
     public int ZoneId => Mathf.Max(1, zoneId);
     public int ChatId => Mathf.Max(0, chatId);
     public int InteractionRadius => Mathf.Max(1, interactionRadius);
+    public string ReplacementEnemyGroupKey => string.IsNullOrWhiteSpace(replacementEnemyGroupKey)
+        ? string.Empty
+        : replacementEnemyGroupKey.Trim();
 
     private void Awake()
     {
@@ -143,6 +149,19 @@ public class MainEventObject : MonoBehaviour
         return true;
     }
 
+    public void DeactivateByDisableEffect()
+    {
+        if (!Application.isPlaying)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        Vector2Int spawnGrid = GetCurrentGrid();
+        gameObject.SetActive(false);
+        TrySpawnReplacementEnemy(spawnGrid);
+    }
+
     private void HandleChatClosed()
     {
         isTriggering = false;
@@ -203,6 +222,24 @@ public class MainEventObject : MonoBehaviour
     {
         MapProgressRepository repository = MapProgressRepository.Instance;
         repository?.MarkMainEventCompleted(EventKey);
+    }
+
+    private void TrySpawnReplacementEnemy(Vector2Int spawnGrid)
+    {
+        string groupKey = ReplacementEnemyGroupKey;
+        if (string.IsNullOrWhiteSpace(groupKey))
+            return;
+
+        EnemySpawnController spawnController = FindFirstObjectByType<EnemySpawnController>();
+        if (spawnController == null)
+            return;
+
+        spawnController.TrySpawnMainEventReplacementEnemy(
+            EventKey,
+            groupKey,
+            spawnGrid,
+            out _,
+            out _);
     }
 
     private GridManager ResolveGridManager()

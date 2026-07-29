@@ -361,6 +361,10 @@ public class CombatEncounterManager : MonoBehaviour
         if (context.HasEventBattle)
         {
             DHEventBattleRuntimeManager.HandleCompletedEventBattle(context);
+            if (context.Result == CombatResult.Defeat)
+                ReturnDefeatedPartyToHeroUnion(context.CombatParty);
+
+            return;
         }
 
         if (context.Result == CombatResult.Defeat)

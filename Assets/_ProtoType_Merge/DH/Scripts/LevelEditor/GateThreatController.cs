@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -152,7 +153,36 @@ public class GateThreatController : MonoBehaviour
 
     private void HandleDayAdvanced(int day)
     {
-        EvaluateCurrentZoneThreat(false);
+    }
+
+    public IEnumerator ResolvePendingThreatsBeforeEnemyTurn()
+    {
+        ResolveReferences();
+
+        string zoneId = ResolvePartyZoneId();
+        EnsureZoneEnemyLevel(zoneId);
+        if (!string.Equals(zoneId, currentPartyZoneId, System.StringComparison.Ordinal))
+        {
+            PauseZoneThreatCounter(currentPartyZoneId);
+            currentPartyZoneId = zoneId;
+            EvaluateCurrentZoneThreat(true);
+        }
+
+        EvaluateCurrentZoneThreat(false, ResolveCurrentDay() + 1);
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null)
+            yield break;
+
+        IReadOnlyList<ZoneThreatProgressState> states = repository.ZoneThreatStates;
+        for (int i = 0; i < states.Count; i++)
+        {
+            ZoneThreatProgressState state = states[i];
+            if (state == null || !state.Active || !state.PendingThreatSpawn)
+                continue;
+
+            yield return ResolvePendingThreatSpawn(state.ZoneId);
+        }
     }
 
     private void HandleEnemyDefeated(string placementKey)
@@ -324,6 +354,11 @@ public class GateThreatController : MonoBehaviour
     }
     private void EvaluateCurrentZoneThreat(bool enteredZone)
     {
+        EvaluateCurrentZoneThreat(enteredZone, ResolveCurrentDay());
+    }
+
+    private void EvaluateCurrentZoneThreat(bool enteredZone, int evaluationDay)
+    {
         if (string.IsNullOrWhiteSpace(currentPartyZoneId))
             return;
 
@@ -337,7 +372,7 @@ public class GateThreatController : MonoBehaviour
         if (repository == null)
             return;
 
-        int day = ResolveCurrentDay();
+        int day = Mathf.Max(1, evaluationDay);
         ZoneThreatProgressState state;
         if (!repository.TryGetZoneThreatState(currentPartyZoneId, out state) || state == null || !state.Active)
         {
@@ -348,6 +383,9 @@ public class GateThreatController : MonoBehaviour
         }
 
         if (state == null || !state.Active)
+            return;
+
+        if (state.PendingThreatSpawn)
             return;
 
         if (enteredZone)
@@ -363,7 +401,7 @@ public class GateThreatController : MonoBehaviour
         if (elapsedTurns < GateLifecycleController.ResolveOpenDurationTurns())
             return;
 
-        TriggerThreat(currentPartyZoneId);
+        repository.MarkZoneThreatSpawnPending(currentPartyZoneId);
     }
 
     private void PauseZoneThreatCounter(string zoneId)
@@ -384,39 +422,44 @@ public class GateThreatController : MonoBehaviour
         state.PauseAtDay(ResolveCurrentDay());
     }
 
-    private void TriggerThreat(string zoneId)
+    private IEnumerator ResolvePendingThreatSpawn(string zoneId)
     {
         string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
         if (string.IsNullOrWhiteSpace(normalizedZoneId))
-            return;
+            yield break;
 
         MapProgressRepository repository = MapProgressRepository.Instance;
         if (repository == null)
-            return;
+            yield break;
 
         if (HasLiveThreatEnemyInZone(normalizedZoneId, string.Empty))
-            return;
+        {
+            repository.ClearZoneThreatSpawnPending(normalizedZoneId);
+            yield break;
+        }
 
         CloseGatesForZone(normalizedZoneId);
+        repository.ClearZoneThreatSpawnPending(normalizedZoneId);
 
         if (repository.TryGetZoneThreatState(normalizedZoneId, out ZoneThreatProgressState state) &&
             state != null &&
             HasLiveThreatEnemy(state))
         {
-            return;
+            yield break;
         }
 
         if (enemySpawnController == null)
             enemySpawnController = FindFirstObjectByType<EnemySpawnController>();
 
         if (enemySpawnController == null)
-            return;
+            yield break;
 
         if (TrySpawnThreatEnemy(normalizedZoneId, out string placementKey, out EnemySpawnPoint spawnPoint))
         {
             repository.SetZoneThreatEnemy(normalizedZoneId, placementKey);
-            if (!TryShowSpawnChat(spawnPoint, placementKey))
-                TryOpenSpawnedEnemyCombatPrompt(placementKey);
+            bool chatClosed = false;
+            if (TryShowSpawnChat(spawnPoint, placementKey, () => chatClosed = true))
+                yield return new WaitUntil(() => chatClosed);
         }
     }
 
@@ -509,7 +552,7 @@ public class GateThreatController : MonoBehaviour
         return false;
     }
 
-    private bool TryShowSpawnChat(EnemySpawnPoint spawnPoint, string placementKey)
+    private bool TryShowSpawnChat(EnemySpawnPoint spawnPoint, string placementKey, System.Action onClosed = null)
     {
         if (spawnPoint == null || spawnPoint.SpawnChatZoneId <= 0 || spawnPoint.SpawnChatId <= 0)
             return false;
@@ -518,10 +561,7 @@ public class GateThreatController : MonoBehaviour
         if (catalog == null || !catalog.TryGetChat(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, out ChatDBEventData chat) || chat == null)
             return false;
 
-        if (spawnPoint.EncounterChatZoneId > 0 && spawnPoint.EncounterChatId > 0)
-            ChatModalController.Show(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId);
-        else
-            ChatModalController.Show(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, () => TryOpenSpawnedEnemyCombatPrompt(placementKey));
+        ChatModalController.Show(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, onClosed);
         return true;
     }
 

@@ -8,6 +8,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 {
     private const string GameObjectName = "[ZoneEntryGuidanceController]";
     private const int TeleportRevealSuppressFrameCount = 2;
+    private const int VisualRevealPadding = 1;
 
     private readonly HashSet<Vector2Int> allowedPathCells = new HashSet<Vector2Int>();
     private readonly List<Vector2Int> pathBuffer = new List<Vector2Int>();
@@ -15,6 +16,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
     private string activeZoneId = string.Empty;
     private string requiredHeroUnionId = string.Empty;
     private Coroutine sceneRefreshCoroutine;
+    private Coroutine revealRefreshCoroutine;
     private static int suppressGeneralFogRevealUntilFrame = -1;
 
     public static ZoneEntryGuidanceController Instance { get; private set; }
@@ -116,6 +118,12 @@ public class ZoneEntryGuidanceController : MonoBehaviour
             StopCoroutine(sceneRefreshCoroutine);
             sceneRefreshCoroutine = null;
         }
+
+        if (revealRefreshCoroutine != null)
+        {
+            StopCoroutine(revealRefreshCoroutine);
+            revealRefreshCoroutine = null;
+        }
     }
 
     public static bool IsCellAllowed(Vector2Int grid)
@@ -140,11 +148,17 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 
     public void TryBeginAfterTeleport(Vector2Int destinationGrid, PartyGridMover party)
     {
+        TryBeginAfterTeleport(destinationGrid, party, string.Empty);
+    }
+
+    public void TryBeginAfterTeleport(Vector2Int destinationGrid, PartyGridMover party, string destinationZoneId)
+    {
         if (party == null)
             return;
 
         LevelZoneLayoutLoader layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
-        if (!TryResolveZoneId(layoutLoader, destinationGrid, out string zoneId))
+        string zoneId = MapProgressKey.NormalizeSegment(destinationZoneId);
+        if (string.IsNullOrWhiteSpace(zoneId) && !TryResolveZoneId(layoutLoader, destinationGrid, out zoneId))
             return;
 
         MapProgressRepository repository = MapProgressRepository.Instance;
@@ -247,8 +261,34 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 
         pathBuffer.Clear();
         pathBuffer.AddRange(allowedPathCells);
+        AppendVisualPaddingCells(pathBuffer);
         AppendRequiredHeroUnionRevealCells(pathBuffer);
         fogGridManager.RevealCells(pathBuffer);
+        MarkFogRenderManagersDirty();
+    }
+
+    private static void AppendVisualPaddingCells(List<Vector2Int> cells)
+    {
+        if (cells == null || VisualRevealPadding <= 0)
+            return;
+
+        int baseCount = cells.Count;
+        for (int i = 0; i < baseCount; i++)
+        {
+            Vector2Int center = cells[i];
+            for (int x = -VisualRevealPadding; x <= VisualRevealPadding; x++)
+            {
+                for (int y = -VisualRevealPadding; y <= VisualRevealPadding; y++)
+                {
+                    if (x == 0 && y == 0)
+                        continue;
+
+                    Vector2Int paddedCell = center + new Vector2Int(x, y);
+                    if (!cells.Contains(paddedCell))
+                        cells.Add(paddedCell);
+                }
+            }
+        }
     }
 
     private void AppendRequiredHeroUnionRevealCells(List<Vector2Int> cells)
@@ -287,10 +327,39 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         for (int i = 0; i < path.Count; i++)
             allowedPathCells.Add(path[i]);
 
-        RevealAllowedPathCells();
-
         if (saveProgress)
             MapProgressRepository.Instance?.BeginZoneEntryGuidance(activeZoneId, requiredHeroUnionId, path);
+
+        RevealAllowedPathCells();
+        QueueRevealAllowedPathCells();
+    }
+
+    private void QueueRevealAllowedPathCells()
+    {
+        if (!Application.isPlaying || !isActiveAndEnabled)
+            return;
+
+        if (revealRefreshCoroutine != null)
+            StopCoroutine(revealRefreshCoroutine);
+
+        revealRefreshCoroutine = StartCoroutine(RevealAllowedPathCellsNextFrame());
+    }
+
+    private IEnumerator RevealAllowedPathCellsNextFrame()
+    {
+        yield return null;
+        revealRefreshCoroutine = null;
+        RevealAllowedPathCells();
+    }
+
+    private static void MarkFogRenderManagersDirty()
+    {
+        FogRenderManager[] renderManagers = FindObjectsByType<FogRenderManager>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < renderManagers.Length; i++)
+            renderManagers[i]?.MarkDirty();
     }
 
     private void CompleteGuidance()

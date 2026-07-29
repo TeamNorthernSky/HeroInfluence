@@ -132,9 +132,28 @@ public class GateTeleportController : MonoBehaviour
         teleporting = true;
         suppressUntilFrame = Time.frameCount + 1;
         ZoneEntryGuidanceController.SuppressGeneralFogRevealForTeleport();
+        string destinationZoneId = ResolveDestinationZoneId(sourceGate, currentGrid, destinationGrid);
         observedParty.SnapToGridPosition(destinationGrid, notifyMoveCompleted: false);
-        ZoneEntryGuidanceController.EnsureInstance()?.TryBeginAfterTeleport(destinationGrid, observedParty);
+        ZoneEntryGuidanceController.EnsureInstance()?.TryBeginAfterTeleport(destinationGrid, observedParty, destinationZoneId);
         teleporting = false;
+    }
+
+    private static string ResolveDestinationZoneId(
+        GateRuntimeController sourceGate,
+        Vector2Int sourceGrid,
+        Vector2Int destinationGrid)
+    {
+        LevelZoneLayoutLoader layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+        if (sourceGate != null &&
+            TryResolveZoneId(layoutLoader, sourceGrid, out string sourceZoneId) &&
+            sourceGate.TryGetOtherZoneId(sourceZoneId, out string otherZoneId))
+        {
+            return otherZoneId;
+        }
+
+        return TryResolveZoneId(layoutLoader, destinationGrid, out string fallbackZoneId)
+            ? fallbackZoneId
+            : string.Empty;
     }
 
     private bool TryFindOpenGateAtCell(Vector2Int grid, out GateRuntimeController gate, out int cellIndex)
@@ -192,6 +211,27 @@ public class GateTeleportController : MonoBehaviour
             $"GateTeleportController found multiple destination gates for '{sourceGate.GateId}'. GateId teleport requires exactly two gates.",
             this);
         destinationGate = null;
+        return false;
+    }
+
+    private static bool TryResolveZoneId(LevelZoneLayoutLoader layoutLoader, Vector2Int grid, out string zoneId)
+    {
+        zoneId = string.Empty;
+        if (layoutLoader == null || layoutLoader.LoadedZones == null)
+            return false;
+
+        IReadOnlyList<LoadedLevelZoneData> zones = layoutLoader.LoadedZones;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            LoadedLevelZoneData zone = zones[i];
+            RectInt bounds = new RectInt(zone.Anchor, zone.Size);
+            if (!bounds.Contains(grid))
+                continue;
+
+            zoneId = MapProgressKey.NormalizeSegment(zone.ZoneId);
+            return !string.IsNullOrWhiteSpace(zoneId);
+        }
+
         return false;
     }
 }

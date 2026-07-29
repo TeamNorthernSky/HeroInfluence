@@ -55,7 +55,55 @@ public class EnemySpawnController : MonoBehaviour
         return false;
     }
 
+    public bool TrySpawnMainEventReplacementEnemy(
+        string eventKey,
+        string enemyGroupKey,
+        Vector2Int spawnGrid,
+        out string placementKey,
+        out EnemyGridMover spawnedEnemy)
+    {
+        placementKey = string.Empty;
+        spawnedEnemy = null;
+
+        string normalizedEventKey = MapProgressKey.NormalizeSegment(eventKey);
+        string normalizedGroupKey = string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedEventKey) || string.IsNullOrWhiteSpace(normalizedGroupKey))
+            return false;
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (templateCatalog == null || !templateCatalog.TryGetEnemyGroupTemplate(normalizedGroupKey, out _))
+            return false;
+
+        MapProgressRepository progressRepository = MapProgressRepository.Instance;
+        placementKey = MapProgressKey.ForRuntimeEnemy($"main_event_replacement_{normalizedEventKey}", 1);
+        if (progressRepository != null && progressRepository.TryGetEnemyState(placementKey, out _))
+        {
+            placementKey = string.Empty;
+            return false;
+        }
+
+        string zoneId = ResolveZoneId(spawnGrid);
+        int enemyLevel = ResolveZoneEnemyLevel(zoneId);
+        if (TrySpawnAtGrid(spawnGrid, placementKey, normalizedGroupKey, zoneId, enemyLevel, out spawnedEnemy))
+            return true;
+
+        placementKey = string.Empty;
+        spawnedEnemy = null;
+        return false;
+    }
+
     private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey, string enemyGroupKey, string zoneId, out EnemyGridMover spawnedEnemy)
+    {
+        return TrySpawnAtGrid(spawnGrid, placementKey, enemyGroupKey, zoneId, ResolveZoneEnemyLevelFromPlacementKey(placementKey), out spawnedEnemy);
+    }
+
+    private bool TrySpawnAtGrid(
+        Vector2Int spawnGrid,
+        string placementKey,
+        string enemyGroupKey,
+        string zoneId,
+        int enemyLevel,
+        out EnemyGridMover spawnedEnemy)
     {
         spawnedEnemy = null;
         if (!TryResolveSpawnGrid(spawnGrid, out Vector2Int resolvedSpawnGrid))
@@ -74,7 +122,6 @@ public class EnemySpawnController : MonoBehaviour
         spawnedEnemy.SnapToGridPosition(resolvedSpawnGrid);
 
         EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
-        int enemyLevel = ResolveZoneEnemyLevelFromPlacementKey(placementKey);
         if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, resolvedSpawnGrid, placementKey, enemyGroupKey, enemyLevel, zoneId))
         {
             Destroy(spawnedEnemy.gameObject);
@@ -278,10 +325,35 @@ public class EnemySpawnController : MonoBehaviour
     private static int ResolveZoneEnemyLevelFromPlacementKey(string placementKey)
     {
         string zoneId = ExtractZoneIdFromRuntimePlacementKey(placementKey);
+        return ResolveZoneEnemyLevel(zoneId);
+    }
+
+    private static int ResolveZoneEnemyLevel(string zoneId)
+    {
         MapProgressRepository repository = MapProgressRepository.Instance;
         return repository != null && repository.TryGetZoneEnemyLevel(zoneId, out int level)
             ? Mathf.Max(1, level)
             : 1;
+    }
+
+    private static string ResolveZoneId(Vector2Int grid)
+    {
+        LevelZoneLayoutLoader layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+        if (layoutLoader == null || layoutLoader.LoadedZones == null)
+            return string.Empty;
+
+        IReadOnlyList<LoadedLevelZoneData> zones = layoutLoader.LoadedZones;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            LoadedLevelZoneData zone = zones[i];
+            RectInt bounds = new RectInt(zone.Anchor, zone.Size);
+            if (!bounds.Contains(grid))
+                continue;
+
+            return MapProgressKey.NormalizeSegment(zone.ZoneId);
+        }
+
+        return string.Empty;
     }
 
     private static string ExtractZoneIdFromRuntimePlacementKey(string placementKey)
