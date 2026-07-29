@@ -37,9 +37,9 @@ public class WeaponPersistentRepository : MonoBehaviour
         RebuildLookup();
     }
 
-    public int CreateWeapon(string weaponTemplateKey)
+    public int CreateWeapon(int weaponTemplateKey)
     {
-        if (string.IsNullOrWhiteSpace(weaponTemplateKey))
+        if (weaponTemplateKey <= 0)
             return -1;
 
         int weaponIndex = Mathf.Max(1, nextWeaponIndex);
@@ -50,11 +50,6 @@ public class WeaponPersistentRepository : MonoBehaviour
         weapons.Add(newData);
         weaponLookup[weaponIndex] = newData;
         return weaponIndex;
-    }
-
-    public int CreateWeapon(int weaponTemplateKey)
-    {
-        return CreateWeapon(weaponTemplateKey.ToString());
     }
 
     public bool ContainsWeapon(int weaponIndex)
@@ -90,7 +85,8 @@ public class WeaponPersistentRepository : MonoBehaviour
         if (!TryGetWeapon(weaponIndex, out WeaponPersistentData data) || data == null)
             return false;
 
-        return TryParseWeaponTemplateKey(data.WeaponTemplateKey, out weaponTemplateKey);
+        weaponTemplateKey = data.WeaponTemplateKey;
+        return weaponTemplateKey > 0;
     }
 
     public bool TryGetWeaponStats(int weaponIndex, out EquipmentStatBlock weaponStats)
@@ -219,8 +215,10 @@ public class WeaponPersistentRepository : MonoBehaviour
 
     private static EquipmentStatBlock ResolveWeaponStats(WeaponPersistentData data)
     {
-        if (data == null || !TryParseWeaponTemplateKey(data.WeaponTemplateKey, out int weaponTemplateKey))
+        if (data == null || data.WeaponTemplateKey <= 0)
             return default;
+
+        int weaponTemplateKey = data.WeaponTemplateKey;
 
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
         if (catalog == null)
@@ -233,11 +231,6 @@ public class WeaponPersistentRepository : MonoBehaviour
         return catalog.TryGetWeaponStats(weaponTemplateKey, out EquipmentStatBlock baseStats)
             ? baseStats
             : default;
-    }
-
-    private static bool TryParseWeaponTemplateKey(string weaponTemplateKey, out int parsedKey)
-    {
-        return int.TryParse(weaponTemplateKey, out parsedKey) && parsedKey > 0;
     }
 
     private static bool IsDefault(EquipmentStatBlock stats)

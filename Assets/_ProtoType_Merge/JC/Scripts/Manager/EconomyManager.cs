@@ -10,6 +10,11 @@ public class EconomyManager : MonoBehaviour
     [Tooltip("전 자원 공통 상한. 추후 자원별로 분기 가능. 기본 999,999.")]
     [SerializeField] private int resourceMax = 999999;
 
+    [Header("자원 초깃값")]
+    [SerializeField] private int initialMoney;
+    [SerializeField] private int initialChip;
+    [SerializeField] private int initialCrystal;
+    [SerializeField] private int initialSupply;
     private readonly Dictionary<ResourceType, int> resources = new Dictionary<ResourceType, int>();
 
     /// <summary>자원별 상한. 현재는 전 자원 공통값(resourceMax). 추후 자원별 분기 가능.</summary>
@@ -20,20 +25,25 @@ public class EconomyManager : MonoBehaviour
 
     public void Initialize()
     {
-        foreach (ResourceType type in Enum.GetValues(typeof(ResourceType)))
-        {
-            if (!resources.ContainsKey(type))
-            {
-                resources[type] = 0;
-            }
-        }
+        //foreach (ResourceType type in Enum.GetValues(typeof(ResourceType)))
+        //{
+        //    if (!resources.ContainsKey(type))
+        //    {
+        //        resources[type] = 0;
+        //    }
+        //}
+        resources[ResourceType.Money] = initialMoney;
+        resources[ResourceType.Chip] = initialChip;
+        resources[ResourceType.Crystal] = initialCrystal;
+        resources[ResourceType.Supply] = initialSupply;
+
     }
 
     public int Get(ResourceType type)
     {
         return resources.TryGetValue(type, out int value) ? value : 0;
     }
-
+     
     public void Set(ResourceType type, int value)
     {
         int oldValue = Get(type);
@@ -89,6 +99,7 @@ public class EconomyManager : MonoBehaviour
             resources[type] = 0;
             OnResourceChanged?.Invoke(type, 0);
         }
+        Initialize();
     }
 
     public Dictionary<ResourceType, int> GetAll()
