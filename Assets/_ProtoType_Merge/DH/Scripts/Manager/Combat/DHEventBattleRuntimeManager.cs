@@ -8,6 +8,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
     private const string RootName = "[DH_EventBattleRuntime]";
     private const string BattleResultKey = "Flag_BattleResult";
     private const string HostageInjuredCountKey = "HostageInjuredCount";
+    private const string BattleEndRelayText = "전투 종료";
 
     public static DHEventBattleRuntimeManager Instance { get; private set; }
 
@@ -139,15 +140,77 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         if (eventBattle.ResumeChatId <= 0)
             return;
 
-        ChatManager chatManager = ChatManager.Instance;
-        if (chatManager == null)
+        if (!TryResolveResumeChatForModal(eventBattle.ZoneId, eventBattle.ResumeChatId, out int modalChatId))
         {
             Debug.LogWarning(
-                $"[DHEventBattleRuntime] ChatManager is missing. Event battle chat resume skipped. Zone={eventBattle.ZoneId}, Chat={eventBattle.ResumeChatId}");
+                $"[DHEventBattleRuntime] Event battle resume chat could not be resolved. Zone={eventBattle.ZoneId}, Chat={eventBattle.ResumeChatId}");
             return;
         }
 
-        chatManager.ResumeEventBattleChat(eventBattle.ZoneId, eventBattle.ResumeChatId);
+        ChatModalController.Show(eventBattle.ZoneId, modalChatId);
+    }
+
+    private static bool TryResolveResumeChatForModal(int zoneId, int resumeChatId, out int modalChatId)
+    {
+        modalChatId = 0;
+
+        EventScriptCatalog catalog = EventScriptCatalog.Instance;
+        if (catalog == null)
+            return false;
+
+        if (!catalog.TryGetChat(zoneId, resumeChatId, out ChatDBEventData chat) || chat == null)
+            return false;
+
+        modalChatId = resumeChatId;
+        if (!IsBattleEndRelayChat(chat))
+            return true;
+
+        if (!TryResolveAutoBranch(catalog, zoneId, chat, out BranchDBEventData autoBranch) || autoBranch == null)
+            return true;
+
+        DHChatBranchRuleEvaluator.ExecuteTriggerEffect(autoBranch);
+        modalChatId = autoBranch.Target_Talk_ID;
+        return modalChatId > 0;
+    }
+
+    private static bool TryResolveAutoBranch(
+        EventScriptCatalog catalog,
+        int zoneId,
+        ChatDBEventData chat,
+        out BranchDBEventData autoBranch)
+    {
+        autoBranch = null;
+        if (catalog == null || chat == null || chat.Branch_Group_ID == 0)
+            return false;
+
+        if (!catalog.TryGetBranchOptions(zoneId, chat.Branch_Group_ID, out IReadOnlyList<BranchDBEventData> options) ||
+            options == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < options.Count; i++)
+        {
+            BranchDBEventData option = options[i];
+            if (option == null || !string.IsNullOrWhiteSpace(option.Selection_Text))
+                continue;
+
+            if (!DHChatBranchRuleEvaluator.IsBranchAvailable(option))
+                continue;
+
+            autoBranch = option;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsBattleEndRelayChat(ChatDBEventData chat)
+    {
+        if (chat == null || chat.Branch_Group_ID == 0)
+            return false;
+
+        return string.Equals(chat.Message_Text?.Trim(), BattleEndRelayText, StringComparison.Ordinal);
     }
 
     private static void ApplyNumericResults(DHEventStateRepository stateRepository, CombatEventBattleData eventBattle)

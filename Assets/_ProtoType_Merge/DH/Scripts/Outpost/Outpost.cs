@@ -171,6 +171,9 @@ public class Outpost : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(loaderZoneId))
             zoneId = NormalizeZoneId(loaderZoneId);
         RefreshResolvedEnemyLevel();
+
+        if (Application.isPlaying)
+            ApplyCompletionFlagIfAlreadySet(DHEventStateRepository.Instance);
     }
     public void ApplyInitialData(int nextResourcePerTurn, OutpostState nextState)
     {
@@ -260,7 +263,7 @@ public class Outpost : MonoBehaviour
         if (!value || IsPlayerClaimed)
             return;
 
-        string completionFlag = ResolveCompletionFlagName(completionFlagPreset);
+        string completionFlag = ResolveCompletionFlagName();
         if (string.IsNullOrEmpty(completionFlag))
             return;
 
@@ -275,7 +278,7 @@ public class Outpost : MonoBehaviour
         if (eventStateRepository == null || IsPlayerClaimed)
             return;
 
-        string completionFlag = ResolveCompletionFlagName(completionFlagPreset);
+        string completionFlag = ResolveCompletionFlagName();
         if (string.IsNullOrEmpty(completionFlag))
             return;
 
@@ -368,6 +371,33 @@ public class Outpost : MonoBehaviour
         return string.IsNullOrEmpty(rawFlag)
             ? string.Empty
             : DHEventStateRepository.NormalizeFlagName(rawFlag);
+    }
+
+    private string ResolveCompletionFlagName()
+    {
+        OutpostCompletionFlagPreset resolvedPreset = completionFlagPreset != OutpostCompletionFlagPreset.None
+            ? completionFlagPreset
+            : ResolveCompletionFlagPresetFromZone(ZoneId);
+
+        return ResolveCompletionFlagName(resolvedPreset);
+    }
+
+    private static OutpostCompletionFlagPreset ResolveCompletionFlagPresetFromZone(string targetZoneId)
+    {
+        string normalized = NormalizeZoneId(targetZoneId);
+        const string prefix = "zone_";
+        string numberText = normalized.StartsWith(prefix, StringComparison.Ordinal)
+            ? normalized.Substring(prefix.Length)
+            : normalized;
+
+        return numberText switch
+        {
+            "1" => OutpostCompletionFlagPreset.Sector1MainEventClear,
+            "2" => OutpostCompletionFlagPreset.Sector2MainEventClear,
+            "3" => OutpostCompletionFlagPreset.Sector3MainEventClear,
+            "4" => OutpostCompletionFlagPreset.Sector4MainEventClear,
+            _ => OutpostCompletionFlagPreset.None
+        };
     }
     private void ResolveOutpostRegistry()
     {
