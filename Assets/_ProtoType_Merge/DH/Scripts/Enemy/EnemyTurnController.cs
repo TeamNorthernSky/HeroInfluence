@@ -315,6 +315,26 @@ public class EnemyTurnController : MonoBehaviour
             yield break;
         }
 
+        bool eventEncounterClosed = false;
+        bool eventEncounterStartedCombat = false;
+        if (EnemyEventEncounterService.TryOpenEncounterChat(
+                party,
+                enemy,
+                startedCombat =>
+                {
+                    eventEncounterStartedCombat = startedCombat;
+                    eventEncounterClosed = true;
+                }))
+        {
+            yield return new WaitUntil(() => eventEncounterClosed);
+
+            if (eventEncounterStartedCombat)
+                InterruptForCombat(enemy, remainingMovePoints);
+
+            onComplete?.Invoke(true);
+            yield break;
+        }
+
         if (combatPromptService != null && !combatPromptService.IsOpen)
         {
             bool promptClosed = false;

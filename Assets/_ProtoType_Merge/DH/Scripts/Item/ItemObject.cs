@@ -2,10 +2,16 @@ using UnityEngine;
 
 public class ItemObject : MonoBehaviour
 {
+    private const string GetTriggerName = "Get";
+
     public ResourceType resourceType;
     public int amount;
 
+    [SerializeField] private Animator animator;
+    [SerializeField, Min(0f)] private float getAnimationDestroyDelay = 0.45f;
+
     private ItemRegistry itemRegistry;
+    private bool isCollecting;
 
     private void OnEnable()
     {
@@ -25,7 +31,21 @@ public class ItemObject : MonoBehaviour
 
     public void GetItem()
     {
+        if (isCollecting)
+            return;
+
+        isCollecting = true;
         Game.Economy?.Add(resourceType, amount);
+
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>(true);
+
+        if (animator != null)
+        {
+            animator.SetTrigger(GetTriggerName);
+            Destroy(gameObject, getAnimationDestroyDelay);
+            return;
+        }
 
         Destroy(gameObject);
     }

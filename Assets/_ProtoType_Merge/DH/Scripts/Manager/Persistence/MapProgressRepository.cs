@@ -329,6 +329,16 @@ public class MapProgressRepository : MonoBehaviour
         state.SetDefeated(false);
     }
 
+    public void SetEnemyEventEncounter(
+        string placementKey,
+        int encounterChatZoneId,
+        int encounterChatId,
+        string eventBattleKey)
+    {
+        if (TryGetEnemyState(placementKey, out EnemyWorldState state))
+            state.SetEventEncounter(encounterChatZoneId, encounterChatId, eventBattleKey);
+    }
+
     public void SetEnemyGrid(string placementKey, Vector2Int grid)
     {
         if (TryGetEnemyState(placementKey, out EnemyWorldState state))
