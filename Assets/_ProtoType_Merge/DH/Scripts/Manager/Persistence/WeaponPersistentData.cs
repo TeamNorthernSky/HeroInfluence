@@ -5,25 +5,25 @@ using UnityEngine;
 public class WeaponPersistentData
 {
     public int WeaponIndex => weaponIndex;
-    public string WeaponTemplateKey => weaponTemplateKey;
+    public int WeaponTemplateKey => weaponTemplateKey;
     public int Level => level;
     public EquipmentStatBlock CachedWeaponStats => cachedWeaponStats;
 
     [SerializeField] private int weaponIndex;
-    [SerializeField] private string weaponTemplateKey;
+    [SerializeField] private int weaponTemplateKey;
     [SerializeField] private int level = WeaponPersistentRepository.BaseWeaponLevel;
     [SerializeField] private EquipmentStatBlock cachedWeaponStats;
 
-    public WeaponPersistentData(int weaponIndex, string weaponTemplateKey)
+    public WeaponPersistentData(int weaponIndex, int weaponTemplateKey)
     {
         this.weaponIndex = weaponIndex;
-        this.weaponTemplateKey = weaponTemplateKey ?? string.Empty;
+        this.weaponTemplateKey = Math.Max(0, weaponTemplateKey);
         level = WeaponPersistentRepository.BaseWeaponLevel;
     }
 
-    public void SetWeaponTemplateKey(string nextWeaponTemplateKey)
+    public void SetWeaponTemplateKey(int nextWeaponTemplateKey)
     {
-        weaponTemplateKey = nextWeaponTemplateKey ?? string.Empty;
+        weaponTemplateKey = Math.Max(0, nextWeaponTemplateKey);
     }
 
     public void SetLevel(int nextLevel)
