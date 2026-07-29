@@ -92,6 +92,10 @@ public class EnemySpawner : MonoBehaviour
         if (!hierarchyReady)
             Awake();
 
+        CombatContext combatContext = CombatContext.Instance;
+        if (combatContext != null && combatContext.HasEventBattle)
+            return SpawnFromEventBattle(combatContext.EventBattle);
+
         if (SpawnFromPersistentRepository())
             return true;
 
@@ -203,6 +207,152 @@ public class EnemySpawner : MonoBehaviour
         Debug.Log(
             $"[EnemySpawner] 적 스폰 완료: id={enemyId}, grid={gridNumber}, Index={data.Index}, place={gameObject.name}");
         return go;
+    }
+
+    private bool SpawnFromEventBattle(CombatEventBattleData eventBattle)
+    {
+        if (eventBattle == null || eventBattle.EnemyUnits == null)
+            return false;
+
+        HostageScenarioConfig hostageConfig = eventBattle.Scenario != null &&
+                                              eventBattle.Scenario.IsHostageRescue
+            ? eventBattle.Scenario.HostageRescue
+            : null;
+
+        bool spawnedAny = false;
+        for (int i = 0; i < eventBattle.EnemyUnits.Count; i++)
+        {
+            CombatEventBattleUnitData unit = eventBattle.EnemyUnits[i];
+            if (unit == null || string.IsNullOrWhiteSpace(unit.UnitKey))
+                continue;
+
+            if (hostageConfig != null && hostageConfig.ContainsHostageUnit(unit.UnitKey))
+                continue;
+
+            if (SpawnEventEnemy(unit) != null)
+                spawnedAny = true;
+        }
+
+        if (!spawnedAny)
+        {
+            Debug.LogWarning(
+                $"[EnemySpawner] Event battle spawned no combat enemies. Battle={eventBattle.BattleKey}",
+                this);
+        }
+
+        return spawnedAny;
+    }
+
+    private GameObject SpawnEventEnemy(CombatEventBattleUnitData unit)
+    {
+        if (unit == null || unit.Slot <= 0)
+            return null;
+
+        if (!gridSlots.TryGetValue(unit.Slot, out Vector3 worldPos) ||
+            !gridRotations.TryGetValue(unit.Slot, out Quaternion worldRot) ||
+            !gridCellsByNumber.TryGetValue(unit.Slot, out GridCellRef cell) ||
+            cell == null)
+        {
+            Debug.LogError(
+                $"[EnemySpawner] Event enemy grid was not found. unit={unit.UnitKey}, slot={unit.Slot}",
+                this);
+            return null;
+        }
+
+        GameObject prefab = FindEventEnemyPrefab(unit);
+        if (prefab == null)
+            return null;
+
+        ClearGrid(unit.Slot);
+        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
+        GameObject go = Instantiate(prefab, worldPos, facingPlayerRot, cell.transform);
+        go.name = $"EventEnemy_{unit.UnitKey}_{go.GetInstanceID()}";
+
+        foreach (CharactorScript legacy in go.GetComponentsInChildren<CharactorScript>(true))
+            Destroy(legacy);
+
+        BattleCharactor battle = go.GetComponent<BattleCharactor>();
+        if (battle == null)
+            battle = go.AddComponent<BattleCharactor>();
+
+        EnemyScript enemyScript = go.GetComponent<EnemyScript>();
+        if (enemyScript == null)
+            enemyScript = go.AddComponent<EnemyScript>();
+
+        EnemyData runtimeData = BuildEventEnemyData(unit);
+        enemyScript.Initialize(runtimeData);
+
+        battle.availableSkills.Clear();
+        if (unit.Skills != null)
+        {
+            for (int i = 0; i < unit.Skills.Count; i++)
+            {
+                if (unit.Skills[i] != null)
+                    battle.availableSkills.Add(unit.Skills[i]);
+            }
+        }
+
+        if (battle.availableSkills.Count > 0)
+        {
+            battle.SetClassSkillIndex(battle.availableSkills[0].skillIndex);
+            battle.ResolveSelectedSkill(false);
+        }
+
+        battle.AssignToCell(cell);
+        cell.SetOccupyingUnit(battle);
+        spawnedByGrid[unit.Slot] = go;
+
+        Debug.Log(
+            $"[EnemySpawner] Event enemy spawned. key={unit.UnitKey}, slot={unit.Slot}, skills={battle.availableSkills.Count}",
+            go);
+        return go;
+    }
+
+    private static EnemyData BuildEventEnemyData(CombatEventBattleUnitData unit)
+    {
+        return new EnemyData
+        {
+            Index = BattleScenarioUnitKey.Normalize(unit.UnitKey),
+            UnitType = unit.EnemyConcept,
+            Name = unit.EnemyName,
+            baseStats = new StatBlock(
+                hp: Mathf.Max(1, unit.MaxHp),
+                atk: Mathf.Max(0, unit.Atk),
+                def: Mathf.Max(0, unit.Def),
+                luck: 0f,
+                speed: Mathf.Max(0, unit.Speed),
+                criticalRate: Mathf.Max(0f, unit.CriticalRate),
+                critMultiplier: 1.5f,
+                counterRate: Mathf.Max(0f, unit.CounterRate),
+                avoidRate: Mathf.Max(0f, unit.ReduceRate)),
+            levelupStats = new StatBlock(0f, 0f, 0f, 0f, 0f),
+            IsEnemyRow = true,
+            UnitAI = unit.UnitAI,
+            ExperiencePoint = Mathf.Max(0, unit.ExperiencePoint)
+        };
+    }
+
+    private static GameObject FindEventEnemyPrefab(CombatEventBattleUnitData unit)
+    {
+        string resourcePath = unit != null ? unit.PrefabResourcePath : string.Empty;
+        if (string.IsNullOrWhiteSpace(resourcePath))
+        {
+            string normalized = unit != null ? BattleScenarioUnitKey.Normalize(unit.UnitKey) : string.Empty;
+            resourcePath = normalized == "20007"
+                ? "prefab/BattlePrefab/EnemyUnit/Unit_AdvancedMonster_20003"
+                : normalized == "20006"
+                    ? "prefab/BattlePrefab/EnemyUnit/Unit_MiddleMonster_20002"
+                    : "prefab/BattlePrefab/EnemyUnit/Unit_LowerMonster_20001";
+        }
+
+        GameObject prefab = Resources.Load<GameObject>(resourcePath.Trim());
+        if (prefab == null)
+        {
+            Debug.LogError(
+                $"[EnemySpawner] Event enemy prefab was not found. unit={unit?.UnitKey}, path={resourcePath}");
+        }
+
+        return prefab;
     }
 
     private bool SpawnFromPersistentRepository()

@@ -150,6 +150,14 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             yield break;
         }
 
+        HostageScenarioController hostageScenario = HostageScenarioController.Active;
+        if (hostageScenario != null &&
+            hostageScenario.TryPrepareThreat(self, out HostageBattleActor hostageTarget))
+        {
+            yield return StartCoroutine(hostageScenario.ExecuteThreat(self, hostageTarget));
+            yield break;
+        }
+
         List<BattleCharactor> targets = flowManager != null
             ? flowManager.GetAlivePlayerUnits()
             : new List<BattleCharactor>();

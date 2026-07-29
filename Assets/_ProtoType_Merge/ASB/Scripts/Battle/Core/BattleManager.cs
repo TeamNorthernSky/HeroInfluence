@@ -26,6 +26,9 @@ public class BattleManager : MonoBehaviour
 
     private const float AnimEventTimeoutSeconds = 2f;
 
+    // 다중 아군 힐에서 주 대상 이후 인접 아군 힐 이펙트를 순차로 낼 때의 스태거 간격(배속-시간, 초).
+    private const float MultiHealStaggerSeconds = 0.15f;
+
     private readonly struct SkillExecutionOptions
     {
         public readonly float ExtraMultiplier;
@@ -409,6 +412,9 @@ public class BattleManager : MonoBehaviour
 
         if (result.HealContexts != null && result.HealContexts.Count > 0)
         {
+            // 다중 아군 힐: 시전 애니는 첫(주) 대상에서 1회만 재생하고, 인접 아군은 시전을 다시 돌리지 않고
+            // 짧은 딜레이(스태거) 후 힐 이펙트 + 힐만 적용한다. (첫 대상만 투척/Cue 등 전체 연출 수행)
+            bool firstHealPresented = false;
             for (int i = 0; i < result.HealContexts.Count; i++)
             {
                 HealContext healContext = result.HealContexts[i];
@@ -417,26 +423,40 @@ public class BattleManager : MonoBehaviour
                     continue;
                 }
 
-                SkillData healAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForHealContext(healContext));
-                var healQueue = new ASB.Work.Battle.Command.BattleActionQueue();
-                healQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
-                    healContext.Caster,
-                    healContext.Target,
-                    healAnimSkill,
-                    playBasicAttackAnimation: false,
-                    playTargetHitAnimation: false,
-                    onHitCallback: () =>
+                HealContext capturedHeal = healContext;
+                Func<BattleHitResult> healCallback = () =>
+                {
+                    capturedHeal.Target.ApplyHeal(capturedHeal.HealAmount);
+                    return new BattleHitResult
                     {
-                        healContext.Target.ApplyHeal(healContext.HealAmount);
-                        return new BattleHitResult
-                        {
-                            Target = healContext.Target,
-                            Damage = healContext.HealAmount,
-                            IsHeal = true,
-                            SkillIndex = healContext.SkillIndex
-                        };
-                    }, new HitDeliveryGate()));
-                yield return StartCoroutine(healQueue.RunAll(this));
+                        Target = capturedHeal.Target,
+                        Damage = capturedHeal.HealAmount,
+                        IsHeal = true,
+                        SkillIndex = capturedHeal.SkillIndex
+                    };
+                };
+
+                if (!firstHealPresented)
+                {
+                    firstHealPresented = true;
+                    SkillData healAnimSkill = ResolveSkillAnimationData(TryGetSkillDataForHealContext(healContext));
+                    var healQueue = new ASB.Work.Battle.Command.BattleActionQueue();
+                    healQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
+                        healContext.Caster,
+                        healContext.Target,
+                        healAnimSkill,
+                        playBasicAttackAnimation: false,
+                        playTargetHitAnimation: false,
+                        onHitCallback: healCallback, new HitDeliveryGate()));
+                    yield return StartCoroutine(healQueue.RunAll(this));
+                }
+                else
+                {
+                    // 인접 아군: 시전 애니 없이 스태거 딜레이 후 힐 이펙트 + 힐.
+                    yield return WaitForBattleSeconds(MultiHealStaggerSeconds);
+                    _visualDirector?.PlayHitEffect(healContext.Target, healContext.SkillIndex);
+                    healCallback();
+                }
             }
         }
 

@@ -103,6 +103,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
             request.ResumeChatId,
             enemyLevel,
             units);
+        eventBattle.Scenario = BuildBattleScenario(zoneId, request.BattleKey, units);
         eventBattle.SetNumericResult(HostageInjuredCountKey, 0f);
 
         CombatEncounterManager encounterManager = FindFirstObjectByType<CombatEncounterManager>();
@@ -201,7 +202,196 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         int resolvedSlot = slot > 0 ? slot : units.Count + 1;
         CombatEventBattleUnitData unit = new CombatEventBattleUnitData(normalizedUnitKey, resolvedSlot, enemyLevel, source);
         ApplyLevelGrowth(unit, source, enemyLevel);
+        PopulateEventBattleSkills(unit, source);
         units.Add(unit);
+    }
+
+    private static BattleScenarioConfig BuildBattleScenario(
+        int zoneId,
+        string battleKey,
+        IReadOnlyList<CombatEventBattleUnitData> units)
+    {
+        BattleScenarioCatalog scenarioCatalog = BattleScenarioCatalog.LoadDefault();
+        if (scenarioCatalog == null ||
+            !scenarioCatalog.TryGetHostageScenario(zoneId, battleKey, out HostageScenarioDefinition definition) ||
+            definition == null)
+        {
+            return null;
+        }
+
+        var hostageConfig = new HostageScenarioConfig
+        {
+            FullHealthAggroGain = Mathf.Max(0f, definition.FullHealthAggroGain),
+            DamagedAggroGain = Mathf.Max(0f, definition.DamagedAggroGain),
+            ThreatDamage = Mathf.Max(0f, definition.ThreatDamage),
+            ThreatAggroReduction = Mathf.Max(0f, definition.ThreatAggroReduction),
+            ThreatChancePerTotalAggro = Mathf.Max(0f, definition.ThreatChancePerTotalAggro),
+            MaximumThreatChance = Mathf.Clamp01(definition.MaximumThreatChance),
+            ThreatWindupSeconds = Mathf.Max(0f, definition.ThreatWindupSeconds),
+            ThreatRecoverySeconds = Mathf.Max(0f, definition.ThreatRecoverySeconds)
+        };
+
+        if (definition.ThreatEnemyUnitKeys != null)
+            hostageConfig.ThreatEnemyUnitKeys.AddRange(definition.ThreatEnemyUnitKeys);
+
+        float initialHpRatio = Mathf.Clamp01(definition.InitialHpRatio);
+        if (definition.Hostages != null)
+        {
+            for (int i = 0; i < definition.Hostages.Count; i++)
+            {
+                HostageDefinitionEntry entry = definition.Hostages[i];
+                if (entry == null || string.IsNullOrWhiteSpace(entry.SourceUnitKey))
+                    continue;
+
+                CombatEventBattleUnitData sourceUnit = FindEventBattleUnit(units, entry.SourceUnitKey);
+                if (sourceUnit == null)
+                {
+                    Debug.LogWarning(
+                        $"[DHEventBattleRuntime] Hostage unit was not found in battle group. Battle={battleKey}, Unit={entry.SourceUnitKey}");
+                    continue;
+                }
+
+                float maxHp = Mathf.Max(1f, sourceUnit.MaxHp);
+                hostageConfig.Hostages.Add(new HostageSpawnConfig
+                {
+                    HostageId = string.IsNullOrWhiteSpace(entry.HostageId) ? entry.SourceUnitKey.Trim() : entry.HostageId.Trim(),
+                    SourceUnitKey = sourceUnit.UnitKey,
+                    Slot = sourceUnit.Slot,
+                    MaxHp = maxHp,
+                    InitialHp = Mathf.Max(1f, maxHp * initialHpRatio),
+                    InitialAggro = 0f,
+                    PrefabResourcePath = entry.PrefabResourcePath
+                });
+            }
+        }
+
+        if (hostageConfig.Hostages.Count == 0)
+        {
+            Debug.LogWarning($"[DHEventBattleRuntime] Hostage scenario has no valid hostages. Battle={battleKey}");
+            return null;
+        }
+
+        return new BattleScenarioConfig
+        {
+            ScenarioType = BattleScenarioType.HostageRescue,
+            HostageRescue = hostageConfig
+        };
+    }
+
+    private static CombatEventBattleUnitData FindEventBattleUnit(
+        IReadOnlyList<CombatEventBattleUnitData> units,
+        string unitKey)
+    {
+        if (units == null || string.IsNullOrWhiteSpace(unitKey))
+            return null;
+
+        string normalized = BattleScenarioUnitKey.Normalize(unitKey);
+        for (int i = 0; i < units.Count; i++)
+        {
+            CombatEventBattleUnitData candidate = units[i];
+            if (candidate != null &&
+                string.Equals(BattleScenarioUnitKey.Normalize(candidate.UnitKey), normalized, StringComparison.Ordinal))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private static void PopulateEventBattleSkills(CombatEventBattleUnitData unit, EnemyUnit1SectorData source)
+    {
+        if (unit == null || source == null)
+            return;
+
+        unit.Skills.Clear();
+        int enemyIndex = ExtractNumericId(unit.UnitKey);
+        if (enemyIndex <= 0)
+            return;
+
+        TryAddEventBattleSkill(
+            unit.Skills, enemyIndex, 1, source.EnemyName,
+            source.EnemySkill1_Name, source.EnemySkill1_Description,
+            source.EnemySkill1Effect, source.EnemySkill1Range, source.EnemySkill1RangeLine,
+            source.EnemySkill1Target, source.EnemySkill1MultiTarget,
+            source.EnemySkill1_MultiTargetType, source.EnemySkill1_MultiTargetCount,
+            source.EnemySkill1Value, source.EnemySkill1SubValue);
+        TryAddEventBattleSkill(
+            unit.Skills, enemyIndex, 2, source.EnemyName,
+            source.EnemySkill2_Name, source.EnemySkill2_Description,
+            source.EnemySkill2Effect, source.EnemySkill2Range, source.EnemySkill2RangeLine,
+            source.EnemySkill2Target, source.EnemySkill2MultiTarget,
+            source.EnemySkill2_MultiTargetType, source.EnemySkill2_MultiTargetCount,
+            source.EnemySkill2Value, source.EnemySkill2SubValue);
+        TryAddEventBattleSkill(
+            unit.Skills, enemyIndex, 3, source.EnemyName,
+            source.EnemySkill3_Name, source.EnemySkill3_Description,
+            source.EnemySkill3Effect, source.EnemySkill3Range, source.EnemySkill3RangeLine,
+            source.EnemySkill3Target, source.EnemySkill3MultiTarget,
+            source.EnemySkill3_MultiTargetType, source.EnemySkill3_MultiTargetCount,
+            source.EnemySkill3Value, source.EnemySkill3SubValue);
+    }
+
+    private static void TryAddEventBattleSkill(
+        List<SkillData> destination,
+        int enemyIndex,
+        int slot,
+        string enemyName,
+        string skillName,
+        string description,
+        int effect,
+        int range,
+        int rangeLine,
+        int target,
+        IReadOnlyList<int> boundary,
+        int multiTargetType,
+        int multiTargetCount,
+        float value,
+        float subValue)
+    {
+        if (destination == null || string.IsNullOrWhiteSpace(skillName))
+            return;
+
+        var skill = new SkillData
+        {
+            skillIndex = (enemyIndex * 10) + slot,
+            skillClass = enemyName,
+            acquireLevel = 1,
+            skillName = skillName,
+            description = description,
+            ipCost = 0,
+            classSkillEffect = effect,
+            classSkillRange = range,
+            EnemySkill1Range = slot == 1 ? range : -1,
+            EnemySkill2Range = slot == 2 ? range : -1,
+            classSkillRangeLine = rangeLine,
+            classSkillTarget = target,
+            multiTargetType = multiTargetType,
+            multiTargetCount = multiTargetCount,
+            skillValue = value,
+            skillSubValue = subValue,
+            AnimationTrigger = "Attack",
+            TargetAnimationTrigger = "Hit",
+            HitDelay = 0.25f,
+            TotalDelay = 0.5f
+        };
+
+        if (boundary != null)
+        {
+            for (int i = 0; i < boundary.Count; i++)
+                skill.boundary.Add(boundary[i]);
+        }
+
+        destination.Add(skill);
+    }
+
+    private static int ExtractNumericId(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return 0;
+
+        string normalized = BattleScenarioUnitKey.Normalize(value);
+        return int.TryParse(normalized, out int parsed) ? parsed : 0;
     }
 
     private static void ApplyLevelGrowth(CombatEventBattleUnitData unit, EnemyUnit1SectorData source, int enemyLevel)
