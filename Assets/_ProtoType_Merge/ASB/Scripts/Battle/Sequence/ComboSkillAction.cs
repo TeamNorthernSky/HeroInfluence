@@ -72,7 +72,9 @@ namespace ASB.Work.Battle.Sequence
                 }
 
                 // 전투 결과는 콤보 Beat 수와 무관하게 최초 Hit 시점에 한 번만 적용한다.
-                if (!resolvedHit)
+                // 이후 Beat가 히트 이벤트를 기다리는 콤보라면, 현재의 비대기 Beat에서는
+                // 피해를 적용하지 않는다. 예: Start → Maintain → OnHit.
+                if (!resolvedHit && (beat.WaitForHitEvent || !HasLaterHitEventBeat(i)))
                 {
                     resolvedHit = true;
                     IEnumerator hitRoutine = _resolveFirstHit?.Invoke(host);
@@ -109,6 +111,19 @@ namespace ASB.Work.Battle.Sequence
 
                 _onElapsed?.Invoke(_anim.LastClipWaitBattleSeconds);
             }
+        }
+
+        private bool HasLaterHitEventBeat(int currentIndex)
+        {
+            for (int i = currentIndex + 1; i < _beats.Count; i++)
+            {
+                if (_beats[i] != null && _beats[i].WaitForHitEvent)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private float? ResolveNextBlendSeconds(int currentIndex)

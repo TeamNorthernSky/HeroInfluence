@@ -74,6 +74,7 @@ public partial class BattleCharactor
     {
         IsPlayer = teamType == TeamType.Player;
         IsDead   = false;
+        HasUsedRevive = false;
 
         if (!preserveInjectedEquipment)
         {

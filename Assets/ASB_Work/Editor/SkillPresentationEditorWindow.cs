@@ -343,6 +343,32 @@ public class SkillPresentationEditorWindow : EditorWindow
         {
             _cachedPreviewController.ResetPreview();
         }
+
+        // 아군(부활 대상) 수동 제어 — 부활 스킬(4040 등) 연출 확인용.
+        if (_cachedPreviewController.HasAllyTarget)
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField($"아군: {_cachedPreviewController.AllyTargetName} ({(_cachedPreviewController.IsAllyTargetDead ? "사망" : "생존")})");
+            using (new EditorGUI.DisabledScope(_cachedPreviewController.IsPlaying))
+            {
+                EditorGUILayout.BeginHorizontal();
+                using (new EditorGUI.DisabledScope(_cachedPreviewController.IsAllyTargetDead))
+                {
+                    if (GUILayout.Button("아군 죽이기"))
+                    {
+                        _cachedPreviewController.KillAllyTarget();
+                    }
+                }
+                using (new EditorGUI.DisabledScope(!_cachedPreviewController.IsAllyTargetDead))
+                {
+                    if (GUILayout.Button("아군 살리기"))
+                    {
+                        _cachedPreviewController.ReviveAllyTarget();
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+        }
     }
 
     private void StepPreviewSelection(int direction)

@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: SkillPresentation_4040
   m_EditorClassIdentifier: 
   SkillIndex: 4040
-  PresentationSchemaVersion: 0
+  PresentationSchemaVersion: 1
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 0
-  HitDelay: 0.25
+  HitDelay: 0.35
   AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
+  EnableAttackEffect: 0
   AttackEffectId: 0
-  EnableHitEffect: 1
+  EnableHitEffect: 0
   HitEffectId: 0
   ProjectilePrefab: {fileID: 0}
   FlightTime: 0.3
@@ -56,29 +56,41 @@ MonoBehaviour:
   HitEffectPositionOffset: {x: 0, y: 0, z: 0}
   HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []
   Move:
-    Enabled: 1
-    UseUnitMovement: 1
+    Enabled: 0
+    UseUnitMovement: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
   AttackPrepare:
     Enabled: 1
-    AnimationStateName: 
+    AnimationStateName: Base Layer.ClassSkill_4
     BlendInSeconds: 0.1
-    Cues: []
+    Cues:
+    - CueName: revive
+      EffectIds: ab0f0000
+      SoundIds: 
+      Operation: 0
+      InstanceKey: 
+      Anchor: 5
+      Socket: 0
   Attack:
     Enabled: 1
-    Beats: []
+    Beats:
+    - AnimationStateName: Base Layer.WeaponSkill_3
+      BlendInSeconds: 0.1
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 0
+      Cues: []
   Return:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
   Post:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []

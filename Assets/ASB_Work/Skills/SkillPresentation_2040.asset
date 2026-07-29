@@ -32,8 +32,7 @@ MonoBehaviour:
   ArcHeight: 2
   ScaleByCellSize: 0
   ProjectileVisual:
-    Prefab: {fileID: 3970442260384458838, guid: bb26c93ea1bd73041bf8ca0b50de737a,
-      type: 3}
+    Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 2.5
@@ -45,9 +44,14 @@ MonoBehaviour:
     TimeoutGraceSeconds: 1
     TimeoutSeconds: 5
     DeliveryMode: 0
-    UsePreparedCharge: 1
-    ChargeInstanceKey: fall_charge
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
     TargetFormationCenter: 1
+  ImpactDeliveryMode: 1
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: fall_charge
+  ChainLightningEffectPrefab: {fileID: 0}
   AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
@@ -57,7 +61,7 @@ MonoBehaviour:
   HitEffectPositionOffset: {x: 0, y: 0, z: 0}
   HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []
@@ -67,7 +71,7 @@ MonoBehaviour:
     AnimationStateName: 
     BlendInSeconds: 0.1
   AttackPrepare:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []
@@ -80,18 +84,18 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: charge
-        EffectIds: 24040000
+        EffectIds: f8070000
         SoundIds: 
         Operation: 0
         InstanceKey: fall_charge
         Anchor: 1
         Socket: 9
   Return:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
   Post:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []

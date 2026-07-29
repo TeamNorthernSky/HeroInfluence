@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SkillPresentation_2020
   m_EditorClassIdentifier: 
   SkillIndex: 2020
-  PresentationSchemaVersion: 0
+  PresentationSchemaVersion: 1
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -32,8 +32,7 @@ MonoBehaviour:
   ArcHeight: 2
   ScaleByCellSize: 0
   ProjectileVisual:
-    Prefab: {fileID: 8985827497061507061, guid: b7796d08f4f3ed34db8e4c93bd9ab528,
-      type: 3}
+    Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
@@ -45,6 +44,15 @@ MonoBehaviour:
     TimeoutGraceSeconds: 1
     TimeoutSeconds: 5
     DeliveryMode: 1
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
+    TargetFormationCenter: 0
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 2
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 175146618285826147, guid: c912456cef5272a48b509413ed1d920c,
+    type: 3}
   AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
@@ -59,24 +67,41 @@ MonoBehaviour:
     BlendInSeconds: 0.1
     Cues: []
   Move:
-    Enabled: 1
+    Enabled: 0
     UseUnitMovement: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
   AttackPrepare:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []
   Attack:
     Enabled: 1
-    Beats: []
+    Beats:
+    - AnimationStateName: Base Layer.WeaponSkill_3
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 0
+      Cues:
+      - CueName: 
+        EffectIds: 
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 0
+        Socket: 0
+    - AnimationStateName: Base Layer.ClassSkill_3
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 1
+      Cues: []
   Return:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
   Post:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []

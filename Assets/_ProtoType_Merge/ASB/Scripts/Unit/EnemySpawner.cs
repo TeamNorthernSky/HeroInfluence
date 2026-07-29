@@ -32,13 +32,17 @@ public class EnemySpawner : MonoBehaviour
     private readonly Dictionary<int, Quaternion> gridRotations = new Dictionary<int, Quaternion>();
     private readonly Dictionary<int, GameObject> spawnedByGrid = new Dictionary<int, GameObject>();
     private readonly Dictionary<int, GridCellRef> gridCellsByNumber = new Dictionary<int, GridCellRef>();
+    private BattleLogicalSlotMap eventSlotMap;
     private bool hierarchyReady;
+
+    public Transform GridRoot => transform;
 
     private void Awake()
     {
         gridSlots.Clear();
         gridRotations.Clear();
         gridCellsByNumber.Clear();
+        eventSlotMap = null;
         unitParent = null;
         hierarchyReady = false;
 
@@ -80,6 +84,29 @@ public class EnemySpawner : MonoBehaviour
     public void SetSpawnOnStart(bool enabled)
     {
         spawnOnStart = enabled;
+    }
+
+    public bool ConfigureEventSlotMap(BattleLogicalSlotMap slotMap, out string error)
+    {
+        eventSlotMap = null;
+        error = string.Empty;
+
+        if (slotMap == null)
+        {
+            error = "Event slot map is null.";
+            return false;
+        }
+
+        if (slotMap.Root != transform)
+        {
+            error =
+                $"Event slot map root mismatch. mapRoot='{slotMap.Root?.name ?? "<null>"}', " +
+                $"spawnerRoot='{transform.name}'.";
+            return false;
+        }
+
+        eventSlotMap = slotMap;
+        return true;
     }
 
     public bool ManualSpawn()
@@ -214,12 +241,23 @@ public class EnemySpawner : MonoBehaviour
         if (eventBattle == null || eventBattle.EnemyUnits == null)
             return false;
 
+        if (eventSlotMap == null)
+        {
+            Debug.LogError(
+                $"[EnemySpawner] Event slot map is not configured. Battle={eventBattle.BattleKey}",
+                this);
+            return false;
+        }
+
         HostageScenarioConfig hostageConfig = eventBattle.Scenario != null &&
                                               eventBattle.Scenario.IsHostageRescue
             ? eventBattle.Scenario.HostageRescue
             : null;
 
-        bool spawnedAny = false;
+        var claimedLogicalSlots = new HashSet<int>();
+        int expectedCombatEnemies = 0;
+        int spawnedCombatEnemies = 0;
+        bool setupValid = true;
         for (int i = 0; i < eventBattle.EnemyUnits.Count; i++)
         {
             CombatEventBattleUnitData unit = eventBattle.EnemyUnits[i];
@@ -229,32 +267,68 @@ public class EnemySpawner : MonoBehaviour
             if (hostageConfig != null && hostageConfig.ContainsHostageUnit(unit.UnitKey))
                 continue;
 
-            if (SpawnEventEnemy(unit) != null)
-                spawnedAny = true;
+            expectedCombatEnemies++;
+            if (!claimedLogicalSlots.Add(unit.Slot))
+            {
+                setupValid = false;
+                Debug.LogError(
+                    $"[EnemySpawner] Duplicate event combat slot. " +
+                    $"Battle={eventBattle.BattleKey}, Unit={unit.UnitKey}, LogicalSlot={unit.Slot}",
+                    this);
+                continue;
+            }
+
+            if (SpawnEventEnemy(eventBattle.BattleKey, unit) != null)
+                spawnedCombatEnemies++;
+            else
+                setupValid = false;
         }
 
-        if (!spawnedAny)
+        if (spawnedCombatEnemies == 0)
         {
             Debug.LogWarning(
                 $"[EnemySpawner] Event battle spawned no combat enemies. Battle={eventBattle.BattleKey}",
                 this);
         }
 
-        return spawnedAny;
+        if (spawnedCombatEnemies != expectedCombatEnemies)
+        {
+            Debug.LogError(
+                $"[EnemySpawner] Event combat enemy setup was incomplete. " +
+                $"Battle={eventBattle.BattleKey}, Expected={expectedCombatEnemies}, Spawned={spawnedCombatEnemies}",
+                this);
+        }
+
+        return setupValid &&
+               expectedCombatEnemies > 0 &&
+               spawnedCombatEnemies == expectedCombatEnemies;
     }
 
-    private GameObject SpawnEventEnemy(CombatEventBattleUnitData unit)
+    private GameObject SpawnEventEnemy(string battleKey, CombatEventBattleUnitData unit)
     {
         if (unit == null || unit.Slot <= 0)
             return null;
 
-        if (!gridSlots.TryGetValue(unit.Slot, out Vector3 worldPos) ||
-            !gridRotations.TryGetValue(unit.Slot, out Quaternion worldRot) ||
-            !gridCellsByNumber.TryGetValue(unit.Slot, out GridCellRef cell) ||
-            cell == null)
+        if (eventSlotMap == null ||
+            !eventSlotMap.TryResolve(unit.Slot, out BattleLogicalSlotMap.Slot resolvedSlot) ||
+            resolvedSlot.Cell == null)
         {
             Debug.LogError(
-                $"[EnemySpawner] Event enemy grid was not found. unit={unit.UnitKey}, slot={unit.Slot}",
+                $"[EnemySpawner] Event enemy grid was not found. " +
+                $"Battle={battleKey}, Unit={unit.UnitKey}, LogicalSlot={unit.Slot}",
+                this);
+            return null;
+        }
+
+        GridCellRef cell = resolvedSlot.Cell;
+        BattleCharactor existingUnit = cell.GetComponentInChildren<BattleCharactor>(true);
+        HostageBattleActor existingHostage = cell.GetComponentInChildren<HostageBattleActor>(true);
+        if (existingUnit != null || existingHostage != null)
+        {
+            Debug.LogError(
+                $"[EnemySpawner] Event grid is already occupied. " +
+                $"Battle={battleKey}, Unit={unit.UnitKey}, LogicalSlot={unit.Slot}, " +
+                $"ResolvedGridNumber={resolvedSlot.GridNumber}, ResolvedGridName={resolvedSlot.GridName}",
                 this);
             return null;
         }
@@ -263,9 +337,13 @@ public class EnemySpawner : MonoBehaviour
         if (prefab == null)
             return null;
 
-        ClearGrid(unit.Slot);
-        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
-        GameObject go = Instantiate(prefab, worldPos, facingPlayerRot, cell.transform);
+        ClearGrid(resolvedSlot.GridNumber);
+        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(resolvedSlot.WorldRotation);
+        GameObject go = Instantiate(
+            prefab,
+            resolvedSlot.WorldPosition,
+            facingPlayerRot,
+            cell.transform);
         go.name = $"EventEnemy_{unit.UnitKey}_{go.GetInstanceID()}";
 
         foreach (CharactorScript legacy in go.GetComponentsInChildren<CharactorScript>(true))
@@ -300,10 +378,13 @@ public class EnemySpawner : MonoBehaviour
 
         battle.AssignToCell(cell);
         cell.SetOccupyingUnit(battle);
-        spawnedByGrid[unit.Slot] = go;
+        spawnedByGrid[resolvedSlot.GridNumber] = go;
 
         Debug.Log(
-            $"[EnemySpawner] Event enemy spawned. key={unit.UnitKey}, slot={unit.Slot}, skills={battle.availableSkills.Count}",
+            $"[EnemySpawner] Event enemy spawned. " +
+            $"Battle={battleKey}, Unit={unit.UnitKey}, LogicalSlot={unit.Slot}, " +
+            $"ResolvedGridNumber={resolvedSlot.GridNumber}, ResolvedGridName={resolvedSlot.GridName}, " +
+            $"Skills={battle.availableSkills.Count}",
             go);
         return go;
     }
@@ -527,35 +608,8 @@ public class EnemySpawner : MonoBehaviour
     {
         gridNumber = 0;
         if (slotTransform == null)
-        {
             return false;
-        }
 
-        string name = slotTransform.name ?? string.Empty;
-        if (!name.StartsWith("Grid_", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        string suffix = name.Substring("Grid_".Length);
-        return TryGetGridNumberFromSuffix(suffix, out gridNumber);
-    }
-
-    private static bool TryGetGridNumberFromSuffix(string suffix, out int gridNumber)
-    {
-        gridNumber = 0;
-        if (int.TryParse(suffix, out gridNumber))
-        {
-            return true;
-        }
-
-        string[] xy = suffix.Split('_');
-        if (xy.Length == 2 && int.TryParse(xy[0], out int x) && int.TryParse(xy[1], out int y))
-        {
-            gridNumber = (x * 100) + y;
-            return true;
-        }
-
-        return false;
+        return BattleLogicalSlotMap.TryParseGridNumber(slotTransform.name, out gridNumber);
     }
 }

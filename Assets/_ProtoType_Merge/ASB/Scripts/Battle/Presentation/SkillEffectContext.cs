@@ -11,6 +11,8 @@ public class SkillEffectContext
     public int ActionInstanceId;
     public BattleCharactor Caster;
     public BattleCharactor PrimaryTarget;
+    /// <summary>부활 대상(아군). SpawnAnchor.ReviveTarget이 이 유닛 위치에 이펙트를 생성한다. 없으면 null.</summary>
+    public BattleCharactor ReviveTarget;
     public IReadOnlyList<BattleCharactor> Targets;
     public Vector3 TargetPosition;
     /// <summary>현재 Cue가 생성된 월드 위치. TargetPosition과 별개로 보존한다.</summary>
@@ -29,6 +31,7 @@ public class SkillEffectContext
             ActionInstanceId = ActionInstanceId,
             Caster = Caster,
             PrimaryTarget = PrimaryTarget,
+            ReviveTarget = ReviveTarget,
             Targets = Targets,
             TargetPosition = TargetPosition,
             SpawnPosition = spawnPosition,
