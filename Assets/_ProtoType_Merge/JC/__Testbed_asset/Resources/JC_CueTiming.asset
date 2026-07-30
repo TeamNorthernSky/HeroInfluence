@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dc6f1b039be06747900bb5b2fce82f5, type: 3}
+  m_Name: JC_CueTiming
+  m_EditorClassIdentifier: 
+  entries:
+  - enabled: 1
+    stateName: Base Layer.ClassSkill_1
+    cueName: impact
+    time: 0.175
+    note: "1010 \uB4F1\uC7A5! \uD0C0\uACA9 / 1020 \uD380\uCE58 1\uD0C0"
+  - enabled: 1
+    stateName: Base Layer.ClassSkill_1
+    cueName: fist_trail_off
+    time: 0.33
+    note: "1010 \uC8FC\uBA39 \uADA4\uC801 \uC885\uB8CC"
+  - enabled: 1
+    stateName: Base Layer.ClassSkill_2
+    cueName: impact
+    time: 0.331
+    note: "1020 \uD380\uCE58 2\uD0C0"
+  - enabled: 1
+    stateName: Base Layer.ClassSkill_2
+    cueName: fist_trail_off
+    time: 0.42
+    note: "1020 \uC624\uB978\uC190 \uADA4\uC801 \uC885\uB8CC"
+  - enabled: 1
+    stateName: Base Layer.ClassSkill_2
+    cueName: fist_trail_off_l
+    time: 0.425
+    note: "1020 \uC67C\uC190 \uADA4\uC801 \uC885\uB8CC"
+  - enabled: 1
+    stateName: Base Layer.ClassSkill_3
+    cueName: impact
+    time: 0.194
+    note: "1030 \uB300\uC26C \uD0C0\uACA9 \u2014 \uC11C\uBE0C\uC774\uD399\uD2B8 5\uC885
+      \uB3D9\uC2DC \uC2A4\uD3F0"
+  - enabled: 1
+    stateName: Base Layer.ClassSkill_3
+    cueName: fist_trail_off
+    time: 0.4
+    note: "1030 \uBC1C \uADA4\uC801 \uC885\uB8CC"
+  - enabled: 1
+    stateName: Base Layer.Dash
+    cueName: fist_trail_on
+    time: 0.02
+    note: "1030 \uC774\uB3D9 \uC2DC\uC791 \u2014 \uBC1C \uADA4\uC801 \uAC1C\uC2DC"
+  - enabled: 1
+    stateName: Base Layer.MoveForward
+    cueName: fist_trail_on
+    time: 0.03
+    note: "1010/1020 \uC804\uC9C4 \u2014 \uC624\uB978\uC190 \uADA4\uC801 \uAC1C\uC2DC"
+  - enabled: 1
+    stateName: Base Layer.MoveForward
+    cueName: fist_trail_on_l
+    time: 0.035
+    note: "1020 \uC804\uC9C4 \u2014 \uC67C\uC190 \uADA4\uC801 \uAC1C\uC2DC"
+  logFire: 0
+  warnUnusedStates: 1
