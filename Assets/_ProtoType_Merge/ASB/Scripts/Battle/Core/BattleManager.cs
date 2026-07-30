@@ -1410,6 +1410,12 @@ internal IEnumerator RunSkillSequenceCore(
                             presentation?.Return);
                 }
         
+                if (!returnEnabled && !useMovingAttack && shouldRotate)
+                {
+                    EnqueueSkillReturn(runner, actorAnim, movement, false, true, originPosition, originRotationY,
+                        presentation?.Return);
+                }
+
                 EnqueuePhaseCueEpilogue(runner, actor, target, skill, presentation, presentationActionInstanceId,
             elapsed => sequenceBattleElapsed += elapsed);
 
@@ -1770,10 +1776,6 @@ internal IEnumerator RunSkillSequenceCore(
             {
                 yield break;
             }
-            if (projectile.DeliveryResult == ProjectileDeliveryResult.Arrived)
-            {
-                targetAnimTrigger = null;
-        }
             }
         else
         {
@@ -1874,7 +1876,7 @@ internal IEnumerator RunSkillSequenceCore(
         float originRotationY,
         ReturnPhase returnPhase)
     {
-        if (movement == null)
+        if (runner == null || actorAnim == null || (!shouldMove && !shouldRotate))
         {
             return;
         }
@@ -1882,19 +1884,13 @@ internal IEnumerator RunSkillSequenceCore(
         Quaternion originRotation = Quaternion.Euler(0f, originRotationY, 0f);
         string animationStateName = returnPhase?.AnimationStateName;
         float blendInSeconds = returnPhase != null ? Mathf.Max(0f, returnPhase.BlendInSeconds) : 0.1f;
+        float duration = shouldMove
+            ? (movement != null ? movement.ReturnDuration : 0.15f)
+            : (movement != null ? movement.RotateReturnDuration : 0.15f);
 
-        if (shouldMove)
-        {
-            runner.Enqueue(new MoveToOriginAction(
-                actorAnim, originPosition, originRotation, movement.ReturnDuration / _currentBattleSpeed,
-                animationStateName, blendInSeconds));
-        }
-        else if (shouldRotate)
-        {
-            runner.Enqueue(new MoveToOriginAction(
-                actorAnim, originPosition, originRotation, movement.RotateReturnDuration / _currentBattleSpeed,
-                animationStateName, blendInSeconds));
-        }
+        runner.Enqueue(new MoveToOriginAction(
+            actorAnim, originPosition, originRotation, duration / _currentBattleSpeed,
+            animationStateName, blendInSeconds));
     }
 
     /// <summary>
@@ -2095,6 +2091,12 @@ internal IEnumerator RunSkillSequenceCore(
                             presentation?.Return);
                 }
         
+                if (!returnEnabled && !useMovingAttack && shouldRotate)
+                {
+                    EnqueueSkillReturn(runner, actorAnim, movement, false, true, originPosition, originRotationY,
+                        presentation?.Return);
+                }
+
                 EnqueuePhaseCueEpilogue(runner, actor, primaryTarget, skill, presentation, presentationActionInstanceId,
             elapsed => sequenceBattleElapsed += elapsed);
 

@@ -91,7 +91,7 @@ MonoBehaviour:
       WaitForHitEvent: 0
       Cues:
       - CueName: impact
-        EffectIds: f2030000
+        EffectIds: 
         SoundIds: 
         Operation: 0
         InstanceKey: 
