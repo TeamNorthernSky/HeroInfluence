@@ -37,6 +37,47 @@ namespace JC.VFX
             base.OnInspectorGUI();
         }
 
+        /// <summary>
+        /// ★대상 자산이 비어 있는 섹션은 숨긴다.
+        /// 이 프리셋 하나가 궤적·타격·호 획·포인트 획을 겸하는데, 스킬마다 쓰는 조합이 다르다
+        /// (용권풍은 호 획+포인트만 쓴다). 안 쓰는 섹션까지 다 펼쳐 두면 어느 값이 화면에 영향을 주는지
+        /// 구분이 안 되고, 무관한 값을 만지다 헛돌기 쉽다.
+        /// 판정 기준은 targets — 「적용」이 기록할 대상이 없으면 그 섹션은 애초에 무의미하다.
+        /// </summary>
+        protected override void DrawBody()
+        {
+            var t = ((JusticeTrailPreset)target).targets;
+            var skip = new System.Collections.Generic.List<string>();
+            if (t.trailPrefab == null) { skip.Add("trail"); skip.Add("spark"); }
+            if (t.impactPrefab == null) skip.Add("impact");
+            if (t.arcStrokePrefab == null) skip.Add("arcStroke");
+            if (t.arcPointPrefab == null) skip.Add("arcPoint");
+
+            serializedObject.Update();
+            SerializedProperty it = serializedObject.GetIterator();
+            bool enterChildren = true;
+            while (it.NextVisible(enterChildren))
+            {
+                enterChildren = false;
+                if (it.propertyPath == "m_Script")
+                {
+                    using (new EditorGUI.DisabledScope(true)) EditorGUILayout.PropertyField(it);
+                    continue;
+                }
+                if (skip.Contains(it.propertyPath)) continue;
+                EditorGUILayout.PropertyField(it, true);
+            }
+            serializedObject.ApplyModifiedProperties();
+
+            if (skip.Count > 0)
+            {
+                EditorGUILayout.Space(2);
+                EditorGUILayout.HelpBox(
+                    "대상 자산이 없어 숨긴 섹션: " + string.Join(", ", skip) +
+                    "\ntargets에 해당 프리팹을 넣으면 다시 나타난다.", MessageType.None);
+            }
+        }
+
         protected override void LivePush() => LivePushStatic((JusticeTrailPreset)target);
         protected override void ApplyPreset() => Apply((JusticeTrailPreset)target);
         protected override void CapturePreset() => Capture((JusticeTrailPreset)target);

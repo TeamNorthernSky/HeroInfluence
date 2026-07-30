@@ -10,42 +10,42 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 283c7557d7adc244fa6c39154a825f53, type: 3}
-  m_Name: FX_JusticeDashShardRed
+  m_Name: FX_JusticeVortexShardRed
   m_EditorClassIdentifier: 
   targets:
-    shardPrefab: {fileID: 4231697358879776452, guid: 4ec27b6f611ce5449a6e450c4e99d442,
+    shardPrefab: {fileID: 4231697358879776452, guid: da86082255585994b8754d6d614a4c91,
       type: 3}
-    shardMaterial: {fileID: 2100000, guid: 7adaefb95aab4c94dbb18bc7b9eec58c, type: 2}
+    shardMaterial: {fileID: 2100000, guid: 78f83351d2fad88408bca81f27decea1, type: 2}
   headColor: {r: 1, g: 0.027025223, b: 0, a: 1}
   midColor: {r: 1, g: 0.059999943, b: 0, a: 1}
   tailColor: {r: 1, g: 1, b: 1, a: 1}
-  edgeEmission: 8
+  edgeEmission: 13.4
   innerColor: {r: 1, g: 1, b: 1, a: 1}
-  innerEmission: 8
+  innerEmission: 12.4
   edgeWidth: 0.178
-  edgeSoft: 0.1529
-  triWidth: 0.486
-  triHeight: 0.559
-  cutMin: 0.25
-  cutMax: 0.416
+  edgeSoft: 0.083
+  triWidth: 0.753
+  triHeight: 0.767
+  cutMin: 0.355
+  cutMax: 0.437
   angleStart: 108
   angleEnd: -31
-  radius: 1.97
-  sweepDuration: 0.5
-  easeOut: 2.77
-  rateOverDistance: 29
-  maxParticles: 152
-  speedMin: 3.4
-  speedMax: 5
-  spreadAngle: 8
-  nozzleRadius: 0.2
-  tiltAngle: 9.8
+  radius: 1.28
+  sweepDuration: 0.58
+  easeOut: 1.25
+  rateOverDistance: 7
+  maxParticles: 17
+  speedMin: 20.5
+  speedMax: 23.1
+  spreadAngle: 3.53
+  nozzleRadius: 0.017
+  tiltAngle: 5.51
   gravity: 0
-  drag: 0.2
-  sizeMin: 0.627
-  sizeMax: 0.749
-  lifeMin: 0.85
-  lifeMax: 1.14
+  drag: 1.32
+  sizeMin: 0.375
+  sizeMax: 0.513
+  lifeMin: 0.14
+  lifeMax: 0.37
   shrinkStart: 0.265
   shrinkEndScale: 0
   fadeStart: 0.324

@@ -116,8 +116,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 1.14
-      minScalar: 0.85
+      scalar: 0.37
+      minScalar: 0.14
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -169,8 +169,8 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 5
-      minScalar: 3.4
+      scalar: 23.1
+      minScalar: 20.5
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -287,8 +287,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.749
-      minScalar: 0.627
+      scalar: 0.513
+      minScalar: 0.375
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -552,8 +552,8 @@ ParticleSystem:
     startRotation:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.17104226
-      minScalar: -0.17104226
+      scalar: 0.09616765
+      minScalar: -0.09616765
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -604,7 +604,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 152
+    maxNumParticles: 17
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -665,7 +665,7 @@ ParticleSystem:
     serializedVersion: 6
     enabled: 1
     type: 4
-    angle: 8
+    angle: 3.53
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
@@ -751,7 +751,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 0.2
+      value: 0.017
       mode: 0
       spread: 0
       speed:
@@ -923,7 +923,7 @@ ParticleSystem:
     rateOverDistance:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 29
+      scalar: 7
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -2643,7 +2643,7 @@ ParticleSystem:
     drag:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.2
+      scalar: 1.32
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -4786,7 +4786,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7adaefb95aab4c94dbb18bc7b9eec58c, type: 2}
+  - {fileID: 2100000, guid: 78f83351d2fad88408bca81f27decea1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4851,7 +4851,7 @@ GameObject:
   - component: {fileID: 7004309094572533278}
   - component: {fileID: 7016209428944635670}
   m_Layer: 0
-  m_Name: JC_JusticeDashShard
+  m_Name: JC_JusticeVortexShard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4888,12 +4888,12 @@ MonoBehaviour:
   anchor: {fileID: 0}
   angleStart: 108
   angleEnd: -31
-  radius: 1.97
-  sweepDuration: 0.5
-  easeOut: 2.77
+  radius: 1.28
+  sweepDuration: 0.58
+  easeOut: 1.25
   spawnOffset: {x: 0, y: -0.2, z: 0}
   extraLinger: 0.5
-  lifeMaxForCleanup: 1.14
+  lifeMaxForCleanup: 0.37
   logLifecycle: 0
 --- !u!114 &7016209428944635670
 MonoBehaviour:
@@ -4907,6 +4907,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26c2b6456f4501841b0e02bdae04a142, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  preset: {fileID: 11400000, guid: 48e5714a3fd52fb4c9a38632bf5a4f9f, type: 2}
-  presetAlt: {fileID: 11400000, guid: 3ddf838890180c241b69877abe64791d, type: 2}
-  shardMaterial: {fileID: 2100000, guid: 7adaefb95aab4c94dbb18bc7b9eec58c, type: 2}
+  preset: {fileID: 11400000, guid: 60014ab3975a717438fecff0a8774ac7, type: 2}
+  presetAlt: {fileID: 11400000, guid: 60014ab3975a717438fecff0a8774ac7, type: 2}
+  shardMaterial: {fileID: 2100000, guid: 78f83351d2fad88408bca81f27decea1, type: 2}
