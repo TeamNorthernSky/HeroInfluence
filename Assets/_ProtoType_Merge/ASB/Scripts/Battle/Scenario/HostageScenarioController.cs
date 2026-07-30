@@ -211,20 +211,29 @@ public sealed class HostageScenarioController : MonoBehaviour
         if (config == null || enemy == null || target == null || !target.IsSafe)
             yield break;
 
-        Vector3 direction = target.transform.position - enemy.transform.position;
-        direction.y = 0f;
-        if (direction.sqrMagnitude > 0.0001f)
-            enemy.transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        Quaternion originalRotation = enemy.transform.rotation;
+        try
+        {
+            Vector3 direction = target.transform.position - enemy.transform.position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude > 0.0001f)
+                enemy.transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
 
-        yield return WaitScaledSeconds(config.ThreatWindupSeconds);
+            yield return WaitScaledSeconds(config.ThreatWindupSeconds);
 
-        if (enemy == null || enemy.IsDead || target == null || !target.IsSafe)
-            yield break;
+            if (enemy == null || enemy.IsDead || target == null || !target.IsSafe)
+                yield break;
 
-        Debug.DrawLine(enemy.transform.position, target.transform.position, Color.red, 0.75f);
-        target.ApplyThreatDamage(config.ThreatDamage, config.ThreatAggroReduction);
+            Debug.DrawLine(enemy.transform.position, target.transform.position, Color.red, 0.75f);
+            target.ApplyThreatDamage(config.ThreatDamage, config.ThreatAggroReduction);
 
-        yield return WaitScaledSeconds(config.ThreatRecoverySeconds);
+            yield return WaitScaledSeconds(config.ThreatRecoverySeconds);
+        }
+        finally
+        {
+            if (enemy != null)
+                enemy.transform.rotation = originalRotation;
+        }
     }
 
     public void FlushResult()

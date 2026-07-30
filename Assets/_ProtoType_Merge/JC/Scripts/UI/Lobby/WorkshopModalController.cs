@@ -37,6 +37,9 @@ public class WorkshopModalController : MonoBehaviour
     [Header("영웅 영역")]
     [SerializeField] private Image heroProfileImage;
     [SerializeField] private GameObject selectPromptGo;
+    [Tooltip("HeroSlot/EquippedCoreInfo — 선택 영웅이 장착한 코어의 아이콘·이름")]
+    [SerializeField] private Image equippedCoreIcon;
+    [SerializeField] private TextMeshProUGUI equippedCoreNameText;
 
     [Header("코어 카드 5장")]
     [SerializeField] private List<CoreCard> cards = new List<CoreCard>();
@@ -241,6 +244,26 @@ public class WorkshopModalController : MonoBehaviour
 
         ApplyActionBar(ws, eco, valid, sel, selOwned, selLevel, deptLevel, unlocked);
         ApplyEquipButton(ws, hasHero, sel, selOwned);
+        ApplyEquippedCoreInfo(ws, hasHero);
+    }
+
+    /// <summary>EquippedCoreInfo — 선택 영웅이 장착한 코어의 아이콘·이름.
+    /// 미장착 상태는 두지 않는다. EnsureDefaultEquipped가 기본 코어를 보장하므로
+    /// 조회가 비면(매니저 준비 전 등) 기본 코어로 표시한다.</summary>
+    private void ApplyEquippedCoreInfo(WorkshopManager ws, bool hasHero)
+    {
+        int wi = (hasHero && ws != null) ? ws.GetEquippedWeaponIndex(selectedUnitIndex) : 0;
+        if (wi < WorkshopManager.MinWeaponIndex || wi > WorkshopManager.MaxWeaponIndex)
+            wi = WorkshopManager.DefaultWeaponIndex;
+
+        if (equippedCoreIcon != null)
+        {
+            Sprite sp = CoreIcon(wi - 1);
+            equippedCoreIcon.sprite = sp;
+            equippedCoreIcon.enabled = sp != null;
+        }
+        if (equippedCoreNameText != null)
+            equippedCoreNameText.text = CoreName(wi - 1);
     }
 
     /// <summary>주 버튼 라벨·활성 여부와 조건·비용 표시를 한 번에 결정한다.</summary>
