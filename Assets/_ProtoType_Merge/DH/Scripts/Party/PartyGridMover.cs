@@ -372,16 +372,32 @@ public class PartyGridMover : MonoBehaviour
         if (interactionCells == null || interactionCells.Count == 0)
             return false;
 
-        List<Vector2Int> sortedInteractionCells = new List<Vector2Int>(interactionCells);
-        sortedInteractionCells.Sort((left, right) =>
-        {
-            int yCompare = left.y.CompareTo(right.y);
-            return yCompare != 0 ? yCompare : left.x.CompareTo(right.x);
-        });
+        MultiGridOccupant occupant = heroUnion.GetComponent<MultiGridOccupant>();
+        Vector2Int heroUnionGrid = occupant != null
+            ? new Vector2Int(occupant.AnchorGrid.x + (occupant.Size.x - 1) / 2, occupant.AnchorGrid.y - 1)
+            : heroUnion.GetCurrentGrid();
 
-        startGrid = sortedInteractionCells[sortedInteractionCells.Count / 2];
+        startGrid = interactionCells[0];
+        int bestDistance = GetSquaredGridDistance(startGrid, heroUnionGrid);
+        for (int i = 1; i < interactionCells.Count; i++)
+        {
+            Vector2Int candidate = interactionCells[i];
+            int distance = GetSquaredGridDistance(candidate, heroUnionGrid);
+            if (distance >= bestDistance)
+                continue;
+
+            startGrid = candidate;
+            bestDistance = distance;
+        }
 
         return true;
+    }
+
+    private static int GetSquaredGridDistance(Vector2Int left, Vector2Int right)
+    {
+        int dx = left.x - right.x;
+        int dy = left.y - right.y;
+        return dx * dx + dy * dy;
     }
 
     private static HeroUnionUnit ResolveStartHeroUnion()

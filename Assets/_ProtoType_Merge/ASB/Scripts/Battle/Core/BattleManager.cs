@@ -470,6 +470,14 @@ public class BattleManager : MonoBehaviour
             // 다중 아군 힐: 시전 애니는 첫(주) 대상에서 1회만 재생하고, 인접 아군은 시전을 다시 돌리지 않고
             // 짧은 딜레이(스태거) 후 힐 이펙트 + 힐만 적용한다. (첫 대상만 투척/Cue 등 전체 연출 수행)
             bool firstHealPresented = false;
+            var groupHealPresentationTargets = new List<BattleCharactor>();
+            foreach (HealContext context in result.HealContexts)
+            {
+                if (context?.Target != null && !context.Target.IsDead && !groupHealPresentationTargets.Contains(context.Target))
+                {
+                    groupHealPresentationTargets.Add(context.Target);
+                }
+            }
             for (int i = 0; i < result.HealContexts.Count; i++)
             {
                 HealContext healContext = result.HealContexts[i];
@@ -509,7 +517,9 @@ public class BattleManager : MonoBehaviour
                         healAnimSkill,
                         playBasicAttackAnimation: false,
                         playTargetHitAnimation: false,
-                        onHitCallback: healCallback, new HitDeliveryGate()));
+                        onHitCallback: healCallback,
+                        deliveryGate: new HitDeliveryGate(),
+                        presentationTargets: healContext.SkillIndex == 4030 ? groupHealPresentationTargets : null));
                     yield return StartCoroutine(healQueue.RunAll(this));
                 }
                 else
@@ -568,6 +578,31 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>ClassSkillSheet 행의 skillValue(예: 1.2 = 120%)를 배율로 적용해 클래스 스킬을 실행합니다.</summary>
+    public System.Collections.IEnumerator ExecuteHostageSkill(
+        BattleCharactor actor,
+        HostageBattleActor target,
+        SkillData skillData,
+        Action<bool> onCompleted = null)
+    {
+        if (!HostageFriendlyFireResolver.CanTargetHostages(actor, skillData) || target == null || !target.IsSafe)
+        {
+            onCompleted?.Invoke(false);
+            yield break;
+        }
+
+        if (!TryConsumeSkillInfluence(actor, skillData))
+        {
+            onCompleted?.Invoke(false);
+            yield break;
+        }
+
+        int hitCount = HostageFriendlyFireResolver.ApplySkillDamage(actor, target, skillData);
+        if (hitCount > 0)
+            OnActionExecuted?.Invoke(GetSkillDisplayName(skillData));
+
+        onCompleted?.Invoke(hitCount > 0);
+    }
+
     public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted = null)
     {
         if (classSkillRow == null || actor == null || target == null)
@@ -618,6 +653,7 @@ public class BattleManager : MonoBehaviour
 
         if (executed)
         {
+            HostageFriendlyFireResolver.ApplyCollateralDamage(actor, target, classSkillRow);
             OnActionExecuted?.Invoke(GetSkillDisplayName(classSkillRow));
         }
 
@@ -1201,7 +1237,8 @@ internal IEnumerator RunSkillSequenceCore(
         bool playBasicAttackAnimation,
         bool playTargetHitAnimation,
         Func<BattleHitResult> onHitCallback,
-        HitDeliveryGate deliveryGate)
+        HitDeliveryGate deliveryGate,
+        IReadOnlyList<BattleCharactor> presentationTargets = null)
     {
         if (deliveryGate == null)
         {
@@ -1306,7 +1343,7 @@ internal IEnumerator RunSkillSequenceCore(
                             actorAnim,
                             presentation.Attack.Beats,
                             (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
-                            (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName),
+                            (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName, presentationTargets),
                             host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId),
                             _currentBattleSpeed,
                             AnimEventTimeoutSeconds,
@@ -1317,7 +1354,7 @@ internal IEnumerator RunSkillSequenceCore(
                     {
                         if (usePhaseCue)
                             runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ActivatePresentationCueRoutine(
-                                actor, target, skill, presentation, presentationActionInstanceId, GetPrimaryAttackBeat(presentation)?.Cues, targetState)));
+                                actor, target, skill, presentation, presentationActionInstanceId, GetPrimaryAttackBeat(presentation)?.Cues, targetState, presentationTargets)));
                         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
                         runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
                         runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ResolveSkillHitRoutine(
@@ -1492,6 +1529,23 @@ internal IEnumerator RunSkillSequenceCore(
                 yield return animation.WaitForSkillClipEnd(stateName);
             }
             onElapsed?.Invoke(animation.LastClipWaitBattleSeconds);
+        }
+
+        else if (phase is MovePreparePhase && phase.Cues != null)
+        {
+            // MovePrepare cues without an animation state fire immediately before movement.
+            UnitEffectPresenter presenter = actor != null ? actor.GetComponent<UnitEffectPresenter>() : null;
+            if (presenter != null)
+            {
+                for (int i = 0; i < phase.Cues.Count; i++)
+                {
+                    string cueName = phase.Cues[i]?.CueName;
+                    if (!string.IsNullOrWhiteSpace(cueName))
+                    {
+                        presenter.PresentationCue(cueName);
+                    }
+                }
+            }
         }
 
         if (phase is PostPhase post && post.ExtraDelay > 0f)
@@ -1698,7 +1752,7 @@ internal IEnumerator RunSkillSequenceCore(
         return TryGetProjectileVisual(actor, skill, presentation, true, out ProjectileVisualData projectileVisual)
             ? projectileVisual : null;
     }
-    private static void ResolveSkillMovement(
+    private void ResolveSkillMovement(
         BattleCharactor actor,
         BattleCharactor target,
         SkillData skill,
@@ -1711,8 +1765,21 @@ internal IEnumerator RunSkillSequenceCore(
         originPosition = actor != null ? actor.transform.position : Vector3.zero;
         originRotationY = actor != null ? actor.transform.eulerAngles.y : 0f;
         movement = actor != null ? actor.GetComponent<UnitMovementProfile>() : null;
-        shouldMove = movement != null && !movement.RotateOnly && target != null && IsMeleeSkillRange(actor, skill);
-        shouldRotate = movement != null && movement.RotateOnly && target != null;
+
+        // Friendly projectiles must face their target before launch.
+        SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
+        bool isFriendlyProjectile = actor != null
+            && target != null
+            && actor.IsPlayer == target.IsPlayer
+            && (skill?.classSkillEffect == ClassSkillEffect_Heal || skill?.classSkillEffect == ClassSkillEffect_Revive)
+            && presentation?.GetProjectileVisual() != null;
+
+        shouldMove = movement != null
+            && !movement.RotateOnly
+            && target != null
+            && !isFriendlyProjectile
+            && IsMeleeSkillRange(actor, skill);
+        shouldRotate = target != null && ((movement != null && movement.RotateOnly) || isFriendlyProjectile);
     }
 
     private void EnqueueSkillApproach(
@@ -1725,7 +1792,7 @@ internal IEnumerator RunSkillSequenceCore(
         bool shouldRotate,
         MovePhase movePhase)
     {
-        if (target == null || movement == null)
+        if (target == null || actor == null)
         {
             return;
         }
@@ -1733,7 +1800,7 @@ internal IEnumerator RunSkillSequenceCore(
         string animationStateName = movePhase?.AnimationStateName;
         float blendInSeconds = movePhase != null ? Mathf.Max(0f, movePhase.BlendInSeconds) : 0.1f;
 
-        if (shouldMove)
+        if (shouldMove && movement != null)
         {
             runner.Enqueue(new MoveToTargetAction(
                 actorAnim, target.transform, movement.ApproachDistance, movement.MoveDuration / _currentBattleSpeed,
@@ -1741,7 +1808,8 @@ internal IEnumerator RunSkillSequenceCore(
         }
         else if (shouldRotate)
         {
-            runner.Enqueue(new RotateToTargetAction(actor.transform, target.transform, movement.RotateDuration / _currentBattleSpeed));
+            float rotateDuration = movement != null ? movement.RotateDuration : 0.15f;
+            runner.Enqueue(new RotateToTargetAction(actor.transform, target.transform, rotateDuration / _currentBattleSpeed));
         }
     }
 

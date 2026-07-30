@@ -47,6 +47,11 @@ MonoBehaviour:
     UsePreparedCharge: 0
     ChargeInstanceKey: 
     TargetFormationCenter: 0
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
   AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
@@ -71,11 +76,18 @@ MonoBehaviour:
     BlendInSeconds: 0.1
     Cues:
     - CueName: revive
-      EffectIds: ab0f0000
+      EffectIds: c90f0000
       SoundIds: 
       Operation: 0
       InstanceKey: 
       Anchor: 5
+      Socket: 0
+    - CueName: meteor
+      EffectIds: ca0f0000
+      SoundIds: 
+      Operation: 0
+      InstanceKey: 
+      Anchor: 4
       Socket: 0
   Attack:
     Enabled: 1

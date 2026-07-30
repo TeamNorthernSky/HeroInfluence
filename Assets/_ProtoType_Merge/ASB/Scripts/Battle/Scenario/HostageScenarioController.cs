@@ -7,6 +7,7 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 public sealed class HostageScenarioController : MonoBehaviour
 {
     public const string InjuredCountResultKey = "HostageInjuredCount";
+    private static readonly Quaternion FacingPlayerYawOffset = Quaternion.Euler(0f, 180f, 0f);
 
     private readonly List<HostageBattleActor> hostages = new List<HostageBattleActor>();
     private HostageScenarioConfig config;
@@ -284,7 +285,8 @@ public sealed class HostageScenarioController : MonoBehaviour
             }
             else
             {
-                instance = Object.Instantiate(prefab, cell.transform.position, cell.transform.rotation, cell.transform);
+                Quaternion facingPlayerRotation = cell.transform.rotation * FacingPlayerYawOffset;
+                instance = Object.Instantiate(prefab, cell.transform.position, facingPlayerRotation, cell.transform);
             }
         }
 
@@ -300,11 +302,29 @@ public sealed class HostageScenarioController : MonoBehaviour
         }
 
         instance.name = $"Hostage_{spawn.HostageId}_{spawn.Slot}";
+        InitializeVisualAnimators(instance);
         HostageBattleActor actor = instance.GetComponent<HostageBattleActor>();
         if (actor == null)
             actor = instance.AddComponent<HostageBattleActor>();
         actor.Initialize(spawn);
         return actor;
+    }
+
+    private static void InitializeVisualAnimators(GameObject instance)
+    {
+        foreach (Animator animator in instance.GetComponentsInChildren<Animator>(true))
+        {
+            if (animator.runtimeAnimatorController == null || animator.avatar == null)
+            {
+                Debug.LogWarning($"[HostageScenario] Hostage animator is missing its controller or avatar. object={instance.name}");
+                continue;
+            }
+
+            animator.enabled = true;
+            animator.Rebind();
+            animator.Play("Idle", 0, 0f);
+            animator.Update(0f);
+        }
     }
 
 }

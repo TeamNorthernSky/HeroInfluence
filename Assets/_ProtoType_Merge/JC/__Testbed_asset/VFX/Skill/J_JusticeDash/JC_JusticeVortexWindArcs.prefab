@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2480173325109819924
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3289166110563484588}
+  - component: {fileID: 7184323461544009511}
+  - component: {fileID: 4778210201720605082}
+  m_Layer: 0
+  m_Name: JC_JusticeVortexWindArcs
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3289166110563484588
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2480173325109819924}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7184323461544009511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2480173325109819924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ab1aca5f4240e0448b6cc044d9c0fb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  colorA: {r: 1, g: 1, b: 1, a: 1}
+  colorB: {r: 1, g: 0.53400004, b: 0.5, a: 1}
+  emission: 0.51
+  radius: 1.15
+  radiusNoise: 0.107
+  orbitHeight: 0.42
+  heightNoise: 0.352
+  arcSpanMin: 183
+  arcSpanMax: 338
+  tiltMax: 22
+  bidirectional: 1
+  sweepDurMin: 0.051
+  sweepDurMax: 0.14
+  spawnIntMin: 0.01
+  spawnIntMax: 0.055
+  maxArcs: 23
+  spawnWindow: 0.6
+  widthMin: 0.12
+  widthMax: 0.3
+  trailTimeMin: 0.25
+  trailTimeMax: 0.45
+  alphaMin: 0.25
+  alphaMax: 0.5
+  brightRatio: 0.094
+  brightWidthMul: 0.35
+  brightAlphaMul: 1.8
+  spawnOffset: {x: 0, y: -0.2, z: 0}
+  ribbonMaterial: {fileID: 2100000, guid: 9c0749e3a754a1e4da059667d2419392, type: 2}
+  followRoot: 0
+  logLifecycle: 0
+--- !u!114 &4778210201720605082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2480173325109819924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e860f2d52c2a484287f0f938807eb08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  preset: {fileID: 11400000, guid: d9e168551925dc54190eaf22c70d04d4, type: 2}
+  presetAlt: {fileID: 11400000, guid: d3f74ae637837d94894f8f3757e91269, type: 2}
+  ribbonMaterial: {fileID: 2100000, guid: 9c0749e3a754a1e4da059667d2419392, type: 2}

@@ -47,6 +47,11 @@ MonoBehaviour:
     UsePreparedCharge: 0
     ChargeInstanceKey: 
     TargetFormationCenter: 0
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
   AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
@@ -86,7 +91,7 @@ MonoBehaviour:
       WaitForHitEvent: 0
       Cues:
       - CueName: impact
-        EffectIds: 492300004a2300004c2300004d230000
+        EffectIds: 492300004a2300004c2300004d2300004e230000
         SoundIds: 
         Operation: 0
         InstanceKey: 

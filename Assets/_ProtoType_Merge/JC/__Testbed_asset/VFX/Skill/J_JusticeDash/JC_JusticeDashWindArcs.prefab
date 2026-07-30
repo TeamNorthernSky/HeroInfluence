@@ -73,6 +73,7 @@ MonoBehaviour:
   brightAlphaMul: 1.8
   spawnOffset: {x: 0, y: -0.2, z: 0}
   ribbonMaterial: {fileID: 2100000, guid: 03a3f048900169d4daff2fa31f988dd2, type: 2}
+  followRoot: 0
   logLifecycle: 0
 --- !u!114 &4778210201720605082
 MonoBehaviour:

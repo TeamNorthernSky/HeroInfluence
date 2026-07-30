@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>Cue의 Anchor/Socket으로 이펙트 생성 위치를 해석한다.</summary>
@@ -140,6 +140,11 @@ public class UnitEffectPresenter : MonoBehaviour
             if (prefab == null) continue;
 
             GameObject instance = Instantiate(prefab, position, rotation);
+            if (!string.IsNullOrEmpty(cue.InstanceKey) && anchor != null)
+            {
+                // Held cues remain attached to their resolved anchor until a later sequence consumes them.
+                instance.transform.SetParent(anchor, false);
+            }
             instance.GetComponent<ISkillEffectBehaviour>()?.Play(effectContext);
 
             if (!string.IsNullOrEmpty(cue.InstanceKey))

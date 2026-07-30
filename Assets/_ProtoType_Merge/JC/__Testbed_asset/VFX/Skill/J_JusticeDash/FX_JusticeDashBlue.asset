@@ -173,12 +173,12 @@ MonoBehaviour:
     bodyFalloff: 2.5
     edgeTaper: 0.25
     angleStart: 210
-    angleEnd: -140
-    radius: 1.22
+    angleEnd: -75
+    radius: 1.67
     sweepDuration: 0.54
     easeOut: 1.05
-    offsetMin: 0.954
-    offsetMax: 1.387
+    offsetMin: 0.6
+    offsetMax: 0.9
     convergeExp: 1.37
     rateOverDistance: 4.66
     emissionRamp: 0

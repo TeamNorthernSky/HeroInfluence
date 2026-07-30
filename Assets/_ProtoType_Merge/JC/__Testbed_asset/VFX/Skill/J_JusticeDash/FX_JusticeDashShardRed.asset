@@ -33,8 +33,8 @@ MonoBehaviour:
   radius: 1.97
   sweepDuration: 0.5
   easeOut: 2.77
-  rateOverDistance: 17.2
-  maxParticles: 304
+  rateOverDistance: 29
+  maxParticles: 152
   speedMin: 3.4
   speedMax: 5
   spreadAngle: 8

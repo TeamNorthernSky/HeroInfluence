@@ -112,6 +112,11 @@ namespace ASB.Work.Battle.Sequence
             Vector3 destination = _destinationOverride ?? (_target != null ? _target.transform.position : start);
 
             Transform tr = instance.transform;
+            if (_existingInstance != null)
+            {
+                // Prepared charge was following the cast socket. Detach it at the hit event, preserving its world position.
+                tr.SetParent(null, true);
+            }
             tr.position = start;
 
             // 연출(트레일/파티클)은 여기서 관리한다 → 훅 컴포넌트가 없어도 순수 아트 프리팹이 동작한다.

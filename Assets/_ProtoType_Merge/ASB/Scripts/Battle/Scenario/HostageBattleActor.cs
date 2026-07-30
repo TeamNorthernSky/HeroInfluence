@@ -12,6 +12,7 @@ public sealed class HostageBattleActor : MonoBehaviour
     public int Slot => config != null ? config.Slot : 0;
     public float MaxHp { get; private set; }
     public float CurrentHp { get; private set; }
+    public float Defense { get; private set; }
     public float HostageAggro { get; private set; }
     public HostageBattleState State { get; private set; } = HostageBattleState.Safe;
     public bool IsSafe => State == HostageBattleState.Safe;
@@ -23,6 +24,7 @@ public sealed class HostageBattleActor : MonoBehaviour
         config = nextConfig ?? throw new ArgumentNullException(nameof(nextConfig));
         MaxHp = Mathf.Max(1f, config.MaxHp);
         CurrentHp = Mathf.Clamp(config.InitialHp, 0f, MaxHp);
+        Defense = Mathf.Max(0f, config.Defense);
         HostageAggro = Mathf.Max(0f, config.InitialAggro);
         State = CurrentHp > 0f ? HostageBattleState.Safe : HostageBattleState.Injured;
         CacheVisualColors();
@@ -46,6 +48,28 @@ public sealed class HostageBattleActor : MonoBehaviour
 
         CurrentHp = Mathf.Max(0f, CurrentHp - Mathf.Max(0f, damage));
         HostageAggro = Mathf.Max(0f, HostageAggro - Mathf.Max(0f, aggroReduction));
+        if (CurrentHp <= 0f)
+        {
+            State = HostageBattleState.Injured;
+            HostageAggro = 0f;
+            RefreshVisual();
+            Injured?.Invoke(this);
+            return;
+        }
+
+        RefreshVisual();
+    }
+
+    /// <summary>
+    /// 아군 공격에 의한 인질 피해입니다. 적 위협과 달리 인질 방어력을 적용합니다.
+    /// </summary>
+    public void ApplyFriendlyDamage(float damage)
+    {
+        if (!IsSafe)
+            return;
+
+        float finalDamage = Mathf.Max(0f, damage - Defense);
+        CurrentHp = Mathf.Max(0f, CurrentHp - finalDamage);
         if (CurrentHp <= 0f)
         {
             State = HostageBattleState.Injured;

@@ -18,9 +18,12 @@ public class SkillPresentationPreviewController : MonoBehaviour
     [SerializeField] private BattleCharactor previewAllyTarget;
     [SerializeField] private int selectedSkillIndex;
     [SerializeField] private bool ignoreSkillCost = true;
+    [SerializeField, Tooltip("프리뷰 중 적 타깃의 HP를 최소 1로 유지해 사망 처리와 모델 비활성화를 막습니다.")]
+    private bool preventPreviewTargetDeath = true;
 
     private bool _isPlaying;
     private Coroutine _playRoutine;
+    private bool _isRestoringPreviewEnemyHp;
     private UnitSnapshot _actorSnapshot;
     private UnitSnapshot _targetSnapshot;
     private UnitSnapshot _allyTargetSnapshot;
@@ -235,8 +238,48 @@ public class SkillPresentationPreviewController : MonoBehaviour
                 }
             }
 
+            bool protectEnemiesFromDeath =
+                preventPreviewTargetDeath &&
+                ReferenceEquals(executionTarget, previewTarget);
+
+            var deathGuardHandlers = new System.Collections.Generic.Dictionary<BattleCharactor, System.Action<float, float>>();
+            if (protectEnemiesFromDeath)
+            {
+                BattleCharactor[] sceneUnits = Object.FindObjectsByType<BattleCharactor>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None);
+
+                for (int i = 0; i < sceneUnits.Length; i++)
+                {
+                    BattleCharactor enemy = sceneUnits[i];
+                    if (enemy == null || enemy.TeamType == TeamType.Player)
+                    {
+                        continue;
+                    }
+
+                    BattleCharactor protectedEnemy = enemy;
+                    System.Action<float, float> handler = (currentHp, maxHp) =>
+                        KeepPreviewEnemyAlive(protectedEnemy, currentHp);
+                    protectedEnemy.OnHpChanged += handler;
+                    deathGuardHandlers.Add(protectedEnemy, handler);
+                }
+            }
+
             bool executed = false;
-            yield return battleManager.ExecuteGridSkill(previewActor, executionTarget, clonedSkill, success => executed = success);
+            try
+            {
+                yield return battleManager.ExecuteGridSkill(previewActor, executionTarget, clonedSkill, success => executed = success);
+            }
+            finally
+            {
+                foreach (var pair in deathGuardHandlers)
+                {
+                    if (pair.Key != null)
+                    {
+                        pair.Key.OnHpChanged -= pair.Value;
+                    }
+                }
+            }
 
             if (!executed)
             {
@@ -264,6 +307,18 @@ public class SkillPresentationPreviewController : MonoBehaviour
 
         return previewTarget;
     }
+    private void KeepPreviewEnemyAlive(BattleCharactor enemy, float currentHp)
+    {
+        if (_isRestoringPreviewEnemyHp || enemy == null || currentHp > 0f)
+        {
+            return;
+        }
+
+        _isRestoringPreviewEnemyHp = true;
+        enemy.InitializeCurrentState(1f, enemy.CurrentInfluence);
+        _isRestoringPreviewEnemyHp = false;
+    }
+
     private static void RestoreUnit(BattleCharactor unit)
     {
         if (unit == null)

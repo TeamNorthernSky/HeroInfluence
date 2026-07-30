@@ -334,7 +334,7 @@ MonoBehaviour:
   leftWeaponSocketObject: {fileID: 2330813656924486878}
   rightFootSocketObject: {fileID: 9219699071399521846}
   leftFootSocketObject: {fileID: 2392293582727775475}
-  hitSocketObject: {fileID: 0}
+  hitSocketObject: {fileID: 4559243129770209793}
   chestSocketObject: {fileID: 4559243129770209793}
   floorSocketObject: {fileID: 1558823453626809804}
   overheadSocketObject: {fileID: 0}
