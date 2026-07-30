@@ -1,7 +1,7 @@
 {
     "name": "Orora.UI.Extensions",
     "rootNamespace": "Orora.UI.Extensions",
-    "references": [],
+    "references": ["UnityEngine.UI"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
