@@ -63,8 +63,13 @@ namespace JC.VFX
         public JusticeWindArcsPreset Preset { get => preset; set => preset = value; }
         public JusticeWindArcsPreset PresetAlt { get => presetAlt; set => presetAlt = value; }
 
+        [Tooltip("★켜면 이 인스턴스는 무조건 알트(강화·적색) 프리셋을 쓴다. 강화 스킬 전용 프리팹용.")]
+        [SerializeField] private bool forceAlternate;
+
+        public bool ForceAlternate { get => forceAlternate; set => forceAlternate = value; }
+
         public JusticeWindArcsPreset ActivePreset =>
-            (JusticeTrailPresetBinder.UseAlternate && presetAlt != null) ? presetAlt : preset;
+            ((forceAlternate || JusticeTrailPresetBinder.UseAlternate) && presetAlt != null) ? presetAlt : preset;
 
         private void Awake() => ApplyNow();
 

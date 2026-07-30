@@ -42,7 +42,7 @@ Material:
     - _Taper: 0.32
     - _WidthCurve: 0.4
     m_Colors:
-    - _BodyColor: {r: 0.82641506, g: 0, b: 0, a: 1}
+    - _BodyColor: {r: 0.75, g: 0.88, b: 1, a: 1}
     - _CoreColor: {r: 2, g: 2, b: 2, a: 1}
     - _Tint: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
