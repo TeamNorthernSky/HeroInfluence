@@ -470,6 +470,7 @@ public class BattleManager : MonoBehaviour
             // 다중 아군 힐: 시전 애니는 첫(주) 대상에서 1회만 재생하고, 인접 아군은 시전을 다시 돌리지 않고
             // 짧은 딜레이(스태거) 후 힐 이펙트 + 힐만 적용한다. (첫 대상만 투척/Cue 등 전체 연출 수행)
             bool firstHealPresented = false;
+            BattleCharactor previousHealTarget = null;
             var groupHealPresentationTargets = new List<BattleCharactor>();
             foreach (HealContext context in result.HealContexts)
             {
@@ -521,13 +522,22 @@ public class BattleManager : MonoBehaviour
                         deliveryGate: new HitDeliveryGate(),
                         presentationTargets: healContext.SkillIndex == 4030 ? groupHealPresentationTargets : null));
                     yield return StartCoroutine(healQueue.RunAll(this));
+                    previousHealTarget = healContext.Target;
                 }
                 else
                 {
                     // 인접 아군: 시전 애니 없이 스태거 딜레이 후 힐 이펙트 + 힐.
                     yield return WaitForBattleSeconds(MultiHealStaggerSeconds);
+                    if (healContext.SkillIndex == 4030 && previousHealTarget != null)
+                    {
+                        yield return PlayGroupHealBounceProjectile(
+                            previousHealTarget,
+                            healContext.Target,
+                            healContext.SkillIndex);
+                    }
                     _visualDirector?.PlayHitEffect(healContext.Target, healContext.SkillIndex);
                     healCallback();
+                    previousHealTarget = healContext.Target;
                 }
             }
         }
@@ -560,6 +570,33 @@ public class BattleManager : MonoBehaviour
         result.LogEventTrackingSummary();
 #endif
         onCompleted?.Invoke(true);
+    }
+
+    private IEnumerator PlayGroupHealBounceProjectile(
+        BattleCharactor source,
+        BattleCharactor target,
+        int skillIndex)
+    {
+        if (source == null || target == null || source.IsDead || target.IsDead)
+        {
+            yield break;
+        }
+
+        ProjectileVisualData projectileVisual = _presentationCatalog?.Get(skillIndex)?.GetProjectileVisual();
+        if (projectileVisual == null)
+        {
+            yield break;
+        }
+
+        var projectile = new ProjectileImpactAction(
+            source,
+            target,
+            projectileVisual,
+            _currentBattleSpeed,
+            null,
+            skillIndex,
+            originOverride: source.transform.position);
+        yield return projectile.ExecuteRoutine(this);
     }
 
     public void ApplyStatusEffect(StatusEffectContext context)
@@ -1515,6 +1552,20 @@ internal IEnumerator RunSkillSequenceCore(
 
         string stateName = phase.AnimationStateName?.Trim();
         SetupPresentationContext(actor, target, skill, presentation, actionInstanceId, phase.Cues, stateName);
+
+        // 4040의 ClassSkill_4 클립에는 revive Cue 이벤트가 없는 구성도 있으므로,
+        // 부활 대상용 Cue만 준비 페이즈 시작 시 보장한다.
+        if (skill?.skillIndex == 4040 && phase is AttackPreparePhase)
+        {
+            UnitEffectPresenter presenter = actor != null ? actor.GetComponent<UnitEffectPresenter>() : null;
+            presenter?.PresentationCue("revive");
+
+            BattleCharactor reviveTarget = actor?.PendingReviveTarget;
+            if (reviveTarget != null && reviveTarget.IsDead)
+            {
+                reviveTarget.Revive(0.2f);
+            }
+        }
 
         CharactorAnimationController animation = actor?.Anim;
         if (!string.IsNullOrEmpty(stateName) && animation != null)
