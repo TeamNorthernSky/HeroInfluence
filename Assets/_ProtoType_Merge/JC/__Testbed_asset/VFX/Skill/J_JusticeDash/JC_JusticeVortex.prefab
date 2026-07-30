@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4957818361431581012
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7975981041396651186}
+  - component: {fileID: 790967473443719155}
+  - component: {fileID: 2188312245614572057}
+  m_Layer: 0
+  m_Name: JC_JusticeVortex
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7975981041396651186
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4957818361431581012}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &790967473443719155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4957818361431581012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc4aed57b9fb4bf49a566f9783a3e124, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  useStroke: 1
+  strokePrefab: {fileID: 5014783889222747169, guid: 34368804c9daa914892d33eb8a83e92a,
+    type: 3}
+  usePoint: 1
+  pointPrefab: {fileID: 5014783889222747169, guid: 52314a557f5d7a8458a0afc850abdf88,
+    type: 3}
+  useWindArcs: 1
+  windArcsPrefab: {fileID: 2480173325109819924, guid: 0bbbca490e534c14182bf4740f319f3c,
+    type: 3}
+  useShard: 1
+  shardPrefab: {fileID: 4231697358879776452, guid: da86082255585994b8754d6d614a4c91,
+    type: 3}
+  launchDelay: 0.05
+  speed: 6.4
+  distance: 4.6
+  spawnOffset: {x: 0.34, y: 0.6, z: 1.05}
+  angleStart: 210
+  clockwise: 0
+  turns: 9.8
+  preserveStrokeArc: 1
+  opacity: 0.232
+  tailLinger: 1.64
+  logLifecycle: 0
+--- !u!114 &2188312245614572057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4957818361431581012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 131f1ba942d7c524c9ccef33ef6918b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  preset: {fileID: 11400000, guid: 29dfcc71a0045b548921366f399729f7, type: 2}
+  presetAlt: {fileID: 11400000, guid: 13fa0b02ae611184ca4d5b289f17318e, type: 2}

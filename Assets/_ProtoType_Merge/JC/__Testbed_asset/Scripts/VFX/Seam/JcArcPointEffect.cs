@@ -84,9 +84,16 @@ namespace JC.VFX.Seam
         public float StrokeLifeMax { get => strokeLifeMax; set => strokeLifeMax = Mathf.Max(0.05f, value); }
         public bool SkipShortRemainder { get => skipShortRemainder; set => skipShortRemainder = value; }
 
-        // 대시별 탄생 오프셋 δ — 처음 관측될 때 현재 반경 성분으로 기록한다.
-        private readonly System.Collections.Generic.Dictionary<uint, float> birthOffsets =
-            new System.Collections.Generic.Dictionary<uint, float>();
+        /// <summary>대시별 탄생 정보 — 오프셋 δ와 ★그때의 반경 방향.</summary>
+        private struct Birth
+        {
+            public float delta;
+            public Vector3 radial;
+        }
+
+        // 처음 관측될 때 기록하고, 이후 그 입자는 늘 자기 탄생 반경선 위에서만 움직인다.
+        private readonly System.Collections.Generic.Dictionary<uint, Birth> births =
+            new System.Collections.Generic.Dictionary<uint, Birth>();
         private ParticleSystem.Particle[] buffer;
 
         private void Awake() => EnsureRefs();
@@ -156,7 +163,7 @@ namespace JC.VFX.Seam
                                  "s) — 선별 모드에서 방출 창이 0이라 대시가 태어나지 않습니다.", this);
 
             MoveAnchor(0f);
-            birthOffsets.Clear();
+            births.Clear();
 
             bool shaping = emissionRamp > 0.001f || emissionDecay > 0.001f || skipShortRemainder;
             for (int i = 0; i < strokes.Length; i++)
@@ -250,14 +257,22 @@ namespace JC.VFX.Seam
 
         /// <summary>
         /// ★수렴 재배치 — 입자는 로컬 좌표가 탄생 시 고정이라 스스로 궤도로 붙지 못한다.
-        /// 매 서브스텝, 생존 입자의 위치에서 「현재 반경 방향 성분」만 δ×(1−q)^k 로 교체한다
-        /// (δ = 처음 관측 시 기록한 탄생 오프셋, q = 수명 진행). 두께·수직 산포는 보존된다.
+        /// 매 서브스텝, 생존 입자의 위치에서 「자기 탄생 반경 방향 성분」만 δ×(1−q)^k 로 교체한다
+        /// (δ·방향 = 처음 관측 시 기록, q = 수명 진행). 접선·수직 산포는 보존된다.
         /// 수명 압축이 없으므로 q는 늘 자기 시간표대로 흐른다 — 재조준류 개입 없음.
+        ///
+        /// ★탄생 방향을 입자마다 기록하는 이유(260730). 예전에는 살아 있는 모든 입자를
+        ///   「앵커의 현재 반경 방향」 하나로 재배치했다. 입자는 자기가 태어난 각도의 반경선을 따라
+        ///   들어와야 하는데 이미 돌아간 방향으로 투영하니, 서브스텝마다 Δθ² 크기의 오차가 남고
+        ///   그것이 수명 내내 누적되어 입자가 바깥으로 끌려 나갔다(누적량 ≈ δ·Θ·Δθ/2).
+        ///   대쉬(한 번 긋고 끝)에서는 묻혔지만 용권풍처럼 여러 바퀴를 돌면 회전이 빠를수록 심해져,
+        ///   「회전수를 올리면 포인트 반경이 커진다」로 드러났다.
+        ///   자기 반경선에 묶으면 회전량과 무관해진다 — 누적이 생길 자리가 없다.
         /// </summary>
         private void ApplyConverge(float clockDeg)
         {
             float rad = clockDeg * Mathf.Deg2Rad;
-            Vector3 radial = new Vector3(Mathf.Sin(rad), 0f, Mathf.Cos(rad));
+            Vector3 radialNow = new Vector3(Mathf.Sin(rad), 0f, Mathf.Cos(rad));
 
             for (int i = 0; i < strokes.Length; i++)
             {
@@ -274,18 +289,20 @@ namespace JC.VFX.Seam
                     float q = Mathf.Clamp01(1f - buffer[k].remainingLifetime / startLife);
 
                     Vector3 pos = buffer[k].position;
-                    float rc = Vector3.Dot(pos, radial);
-
                     uint seed = buffer[k].randomSeed;
-                    float delta;
-                    if (!birthOffsets.TryGetValue(seed, out delta))
+
+                    Birth b;
+                    if (!births.TryGetValue(seed, out b))
                     {
-                        delta = Mathf.Max(rc, 0f);   // 탄생 직후 첫 관측 — 노즐이 준 바깥 오프셋
-                        birthOffsets[seed] = delta;
+                        // 탄생 직후 첫 관측 — 지금 앵커 방향이 곧 이 입자의 반경선이다.
+                        b.radial = radialNow;
+                        b.delta = Mathf.Max(Vector3.Dot(pos, radialNow), 0f);   // 노즐이 준 바깥 오프셋
+                        births[seed] = b;
                     }
 
-                    float desired = delta * Mathf.Pow(1f - q, convergeExp);
-                    buffer[k].position = pos - radial * rc + radial * desired;
+                    float rc = Vector3.Dot(pos, b.radial);
+                    float desired = b.delta * Mathf.Pow(1f - q, convergeExp);
+                    buffer[k].position = pos - b.radial * rc + b.radial * desired;
                 }
                 ps.SetParticles(buffer, n);
             }
