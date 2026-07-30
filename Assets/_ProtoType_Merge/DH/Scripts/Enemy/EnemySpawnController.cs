@@ -245,7 +245,8 @@ public class EnemySpawnController : MonoBehaviour
 
     private void RestoreRuntimeEnemy(EnemyWorldState state)
     {
-        EnemyGridMover restoredEnemy = Instantiate(ResolveEnemyPrefab(EnemyBehaviorType.Mobile), Vector3.zero, Quaternion.identity, enemyRoot);
+        EnemyBehaviorType behaviorType = state.BehaviorType;
+        EnemyGridMover restoredEnemy = Instantiate(ResolveEnemyPrefab(behaviorType), Vector3.zero, Quaternion.identity, enemyRoot);
         string groupKey = ResolveRuntimeEnemyGroupKey(state);
         EnemyIdentity enemyIdentity = restoredEnemy.GetComponent<EnemyIdentity>();
         if (enemyIdentity != null)
@@ -261,7 +262,7 @@ public class EnemySpawnController : MonoBehaviour
         restoredEnemy.SnapToGridPosition(state.Grid);
 
         EnemyUnitBootstrap enemyBootstrap = restoredEnemy.GetComponent<EnemyUnitBootstrap>();
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, restoredEnemy, state.Grid, state.PlacementKey, groupKey))
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, restoredEnemy, state.Grid, state.PlacementKey, groupKey, 1, state.ZoneId, behaviorType))
         {
             Destroy(restoredEnemy.gameObject);
             return;
