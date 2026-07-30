@@ -6,6 +6,11 @@ public class Modal : MonoBehaviour
     // [JC 260513] 활성 중 Time.timeScale=0 적용 여부. 다른 pausesGame 모달이 스택에 남아 있으면 유지.
     [SerializeField] private bool pausesGame;
 
+    // [KJ 260730] 활성화 시 최상단 이동을 생략하고 배치된 sibling 순서를 유지할지.
+    // 특정 UI만 위에 남기고 나머지를 덮는 차단 패널처럼, 렌더 순서 자체가 기능인 모달에서 사용.
+    [Tooltip("체크 시 OnEnable에서 SetAsLastSibling을 건너뛴다. 배치한 계층 순서가 그대로 유지된다.")]
+    [SerializeField] private bool keepSiblingOrder = false;
+
     // [JC 260519] 외부 클릭 닫기 옵트인(기하 판정). contentRect 밖 클릭 + 본 모달이 ModalManager.Top일 때만 SetActive(false).
     // [JC 260702] 공유 dim 도입 후 dimClosesModal과 역할 중복 — Phase 3에서 점진 은퇴 예정. 현행 유지.
     [Header("외부 클릭 닫기 (옵트인 · 기하 판정)")]
@@ -30,7 +35,8 @@ public class Modal : MonoBehaviour
 
     private void OnEnable()
     {
-        transform.SetAsLastSibling();
+        if (!keepSiblingOrder)
+            transform.SetAsLastSibling();
         ModalManager.Register(gameObject);
         if (pausesGame)
             ModalPauseGate.Refresh();

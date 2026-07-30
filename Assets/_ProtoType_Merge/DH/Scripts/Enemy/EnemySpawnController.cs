@@ -20,7 +20,12 @@ public class EnemySpawnController : MonoBehaviour
     private void OnEnable()
     {
         ResolveReferences();
-        RestoreRuntimeEnemies();
+        SubscribeRuntimeLoaders();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeRuntimeLoaders();
     }
 
     public bool TrySpawnGateThreatEnemy(string zoneId, Vector2Int spawnGrid, out string placementKey)
@@ -77,8 +82,16 @@ public class EnemySpawnController : MonoBehaviour
 
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
         placementKey = MapProgressKey.ForRuntimeEnemy($"main_event_replacement_{normalizedEventKey}", 1);
-        if (progressRepository != null && progressRepository.TryGetEnemyState(placementKey, out _))
+        if (progressRepository != null && progressRepository.TryGetEnemyState(placementKey, out EnemyWorldState existingState))
         {
+            EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
+            if (ShouldRestoreRuntimeEnemy(existingState, enemyGroupRepository) &&
+                !HasMatchingEnemyInScene(existingState.PlacementKey, existingState.EnemyId) &&
+                TryRestoreRuntimeEnemy(existingState, out spawnedEnemy))
+            {
+                return true;
+            }
+
             placementKey = string.Empty;
             return false;
         }
@@ -189,13 +202,43 @@ public class EnemySpawnController : MonoBehaviour
             if (HasMatchingEnemyInScene(state.PlacementKey, state.EnemyId))
                 continue;
 
-            RestoreRuntimeEnemy(state);
+            TryRestoreRuntimeEnemy(state, out _);
         }
 
         enemyRegistry?.RefreshSceneEnemies();
     }
 
-    private static bool ShouldRestoreRuntimeEnemy(EnemyWorldState state, EnemyGroupPersistentRepository enemyGroupRepository)
+    private void SubscribeRuntimeLoaders()
+    {
+        LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
+        LevelLoader.RuntimeLevelLoaded += HandleRuntimeLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded += HandleRuntimeLayoutLoaded;
+    }
+
+    private void UnsubscribeRuntimeLoaders()
+    {
+        LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
+        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
+    }
+
+    private void HandleRuntimeLevelLoaded(LevelLoader loader)
+    {
+        RestoreRuntimeEnemiesAfterLevelLoaded();
+    }
+
+    private void HandleRuntimeLayoutLoaded(LevelZoneLayoutLoader loader)
+    {
+        RestoreRuntimeEnemiesAfterLevelLoaded();
+    }
+
+    private void RestoreRuntimeEnemiesAfterLevelLoaded()
+    {
+        ResolveReferences();
+        RestoreRuntimeEnemies();
+    }
+
+    private bool ShouldRestoreRuntimeEnemy(EnemyWorldState state, EnemyGroupPersistentRepository enemyGroupRepository)
     {
         if (state == null ||
             state.Defeated ||
@@ -206,7 +249,20 @@ public class EnemySpawnController : MonoBehaviour
         if (!IsRuntimeEnemyState(state))
             return false;
 
-        return enemyGroupRepository != null && enemyGroupRepository.ContainsEnemy(state.EnemyId);
+        if (enemyGroupRepository != null && enemyGroupRepository.ContainsEnemy(state.EnemyId))
+            return true;
+
+        return CanRecreateRuntimeEnemyFromTemplate(state);
+    }
+
+    private bool CanRecreateRuntimeEnemyFromTemplate(EnemyWorldState state)
+    {
+        string groupKey = ResolveRuntimeEnemyGroupKey(state);
+        if (string.IsNullOrWhiteSpace(groupKey))
+            return false;
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        return templateCatalog != null && templateCatalog.TryGetEnemyGroupTemplate(groupKey, out _);
     }
 
     private static bool IsRuntimeEnemyState(EnemyWorldState state)
@@ -243,11 +299,16 @@ public class EnemySpawnController : MonoBehaviour
         return false;
     }
 
-    private void RestoreRuntimeEnemy(EnemyWorldState state)
+    private bool TryRestoreRuntimeEnemy(EnemyWorldState state, out EnemyGridMover restoredEnemy)
     {
-        EnemyGridMover restoredEnemy = Instantiate(ResolveEnemyPrefab(EnemyBehaviorType.Mobile), Vector3.zero, Quaternion.identity, enemyRoot);
+        restoredEnemy = null;
+        if (state == null)
+            return false;
+
+        EnemyBehaviorType behaviorType = state.BehaviorType;
+        EnemyGridMover instance = Instantiate(ResolveEnemyPrefab(behaviorType), Vector3.zero, Quaternion.identity, enemyRoot);
         string groupKey = ResolveRuntimeEnemyGroupKey(state);
-        EnemyIdentity enemyIdentity = restoredEnemy.GetComponent<EnemyIdentity>();
+        EnemyIdentity enemyIdentity = instance.GetComponent<EnemyIdentity>();
         if (enemyIdentity != null)
         {
             enemyIdentity.SetPlacementSource(EnemyPlacementSource.Runtime);
@@ -256,23 +317,26 @@ public class EnemySpawnController : MonoBehaviour
             enemyIdentity.SetEnemyGroupKey(groupKey);
         }
 
-        restoredEnemy.InitializePlacementIdentity(state.PlacementKey);
-        restoredEnemy.InitializePersistentIdentity(state.EnemyId);
-        restoredEnemy.SnapToGridPosition(state.Grid);
+        instance.InitializePlacementIdentity(state.PlacementKey);
+        instance.InitializePersistentIdentity(state.EnemyId);
+        instance.SnapToGridPosition(state.Grid);
 
-        EnemyUnitBootstrap enemyBootstrap = restoredEnemy.GetComponent<EnemyUnitBootstrap>();
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, restoredEnemy, state.Grid, state.PlacementKey, groupKey))
+        EnemyUnitBootstrap enemyBootstrap = instance.GetComponent<EnemyUnitBootstrap>();
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, instance, state.Grid, state.PlacementKey, groupKey, 1, state.ZoneId, behaviorType))
         {
-            Destroy(restoredEnemy.gameObject);
-            return;
+            Destroy(instance.gameObject);
+            return false;
         }
 
         ApplyEventEncounterBinding(
-            restoredEnemy,
+            instance,
             state.PlacementKey,
             state.EncounterChatZoneId,
             state.EncounterChatId,
             state.EventBattleKey);
+
+        restoredEnemy = instance;
+        return true;
     }
 
     public static void ApplyEventEncounterBinding(

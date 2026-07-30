@@ -338,16 +338,16 @@ public class PartyInteractionController
     {
         yield return new WaitForSeconds(itemPickupDelay);
 
-        pendingInteractionCoroutine = null;
-
         if (DHGameEndState.IsEnding)
         {
+            pendingInteractionCoroutine = null;
             IsInputLocked = false;
             yield break;
         }
 
         if (gridManager == null)
         {
+            pendingInteractionCoroutine = null;
             IsInputLocked = false;
             yield break;
         }
@@ -355,31 +355,37 @@ public class PartyInteractionController
         Vector2Int currentGrid = currentGridProvider != null ? currentGridProvider() : itemGrid;
         if (!IsAdjacentOrSame(currentGrid, itemGrid))
         {
+            pendingInteractionCoroutine = null;
             IsInputLocked = false;
             yield break;
         }
 
         if (!gridManager.TryGetItemObjectAtGrid(itemGrid, out ItemObject itemObject))
         {
+            pendingInteractionCoroutine = null;
             IsInputLocked = false;
             yield break;
         }
 
-        CollectItem(itemGrid, itemObject);
+        float inputUnlockDelay = CollectItem(itemGrid, itemObject);
+        if (inputUnlockDelay > 0f)
+            yield return new WaitForSeconds(inputUnlockDelay);
+
+        pendingInteractionCoroutine = null;
         IsInputLocked = false;
     }
 
-    private static void CollectItem(Vector2Int itemGrid, ItemObject itemObject)
+    private static float CollectItem(Vector2Int itemGrid, ItemObject itemObject)
     {
         if (itemObject == null)
-            return;
+            return 0f;
 
         // [JC 260514 머지후처리] ItemObject가 GameManager 통합 패턴(Game.Economy)을 내부 사용하므로 인자 없이 호출.
         MapProgressRepository repository = MapProgressRepository.Instance;
         if (repository != null)
             repository.MarkItemCollected(MapProgressKey.ForItem(itemGrid));
 
-        itemObject.GetItem();
+        return itemObject.GetItem();
     }
 
     private IEnumerator InvokeDelayedOutpostClaim(Outpost outpost, Vector2Int interactionGrid)

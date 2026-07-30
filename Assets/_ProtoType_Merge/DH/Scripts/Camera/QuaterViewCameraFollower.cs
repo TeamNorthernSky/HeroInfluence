@@ -158,7 +158,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void HandleEdgeScrolling()
     {
-        if (blockEdgeScrollOverButtons && IsPointerOverButton())
+        if (blockEdgeScrollOverButtons && IsPointerOverBlockingUI())
         {
             edgeScrollVelocity = Vector3.zero;
             return;
@@ -271,7 +271,11 @@ public class QuarterViewCameraFollower : MonoBehaviour
             && mousePosition.y <= Screen.height;
     }
 
-    private static bool IsPointerOverButton()
+    /// <summary>
+    /// 포인터 아래에 엣지 스크롤을 막아야 할 UI가 있는지.
+    /// 버튼과, [KJ 260730] CameraEdgeScrollBlocker가 붙은 UI(전멸 시 턴종료 강제 패널 등)를 같은 판정으로 본다.
+    /// </summary>
+    private static bool IsPointerOverBlockingUI()
     {
         EventSystem eventSystem = EventSystem.current;
         if (eventSystem == null)
@@ -288,7 +292,13 @@ public class QuarterViewCameraFollower : MonoBehaviour
         for (int i = 0; i < UiRaycastResults.Count; i++)
         {
             GameObject hitObject = UiRaycastResults[i].gameObject;
-            if (hitObject != null && hitObject.GetComponentInParent<Button>() != null)
+            if (hitObject == null)
+                continue;
+
+            if (hitObject.GetComponentInParent<Button>() != null)
+                return true;
+
+            if (hitObject.GetComponentInParent<CameraEdgeScrollBlocker>() != null)
                 return true;
         }
 

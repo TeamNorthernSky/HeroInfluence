@@ -260,7 +260,8 @@ public class EnemyUnitBootstrap : MonoBehaviour
             initialGrid,
             placementSource,
             resolvedGroupKey,
-            zoneId);
+            zoneId,
+            behaviorType);
 
         RefreshFogVisibilityBinding();
         hasInitialized = true;

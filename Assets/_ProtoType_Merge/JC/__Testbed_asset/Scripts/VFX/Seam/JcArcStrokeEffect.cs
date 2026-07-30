@@ -6,7 +6,8 @@ namespace JC.VFX.Seam
     /// 호 획 V2 — 재설계(260729). ASB 연출 규약(ISkillEffectBehaviour) 구현체.
     /// 구버전(JcArcSweepEffect)은 레거시로 무수정 보존, 이 컴포넌트가 대체한다.
     ///
-    /// 책임을 최소로 줄였다: 「앵커를 반경·각도의 호 궤도로 등속 주행시킨다」가 전부다.
+    /// 책임을 최소로 줄였다: 「앵커를 반경·각도의 호 궤도로 주행시킨다」가 전부다
+    /// (easeOut 1 = 등속, 초과 = 촤악 감속. 밀도·수축 구간은 호 위 위치 기준이라 easeOut과 무관하게 형상 유지).
     /// 획의 형태·일생은 파티클(프리셋 ArcStrokeGroup)이 전담한다:
     ///   두께: 0 → 최대(증가 시간) → 0 (소멸 구간)   ← 획 일생 규칙
     ///   소멸: 전체 유지 후 알파 페이드 — 뒤에서 지워지는 혜성 없음
@@ -15,8 +16,10 @@ namespace JC.VFX.Seam
     /// 레거시에서 검증된 기술은 유지한다:
     ///   서브스텝 수동 시뮬레이션 — 프레임당 이동이 크면 갓 태어난 획의 첫 세그먼트가
     ///     직선 글리치로 찍힌다. 프레임을 쪼개 이동↔시뮬레이트를 교대 진행.
-    ///   말단 방출 컷 — 주행 종료 직전에 태어난 입자는 이동 없이 두께만 자라
-    ///     쐐기가 되므로, 증가 시간만큼 방출을 미리 끊는다(자동, 파라미터 아님).
+    ///   말단 방출 컷 — 잔여 스윕이 획 일생 Min보다 짧으면 방출을 멈춘다(자동, 파라미터 아님).
+    ///     Min = 「의미 있는 획의 하한」이므로 그보다 짧게 압축될 획은 태어나지 않는다.
+    ///     (구 컷은 growTime 절대 초 기준이었으나 grow가 일생 비율로 전환되며 전제 소멸 — 260729.
+    ///      비율 체계에서는 성장이 항상 자기 사망 전에 끝나 「정지 후 제자리 성장」이 정의상 불가능하다.)
     ///   소켓 비부모 — 소켓 lossyScale 약 200배라 위치만 읽는다.
     /// </summary>
     [DisallowMultipleComponent]
@@ -32,14 +35,16 @@ namespace JC.VFX.Seam
         [SerializeField] private float angleEnd = 30f;
         [Tooltip("궤도 반경(m).")]
         [SerializeField, Min(0.05f)] private float radius = 1.6f;
-        [Tooltip("호를 다 긋는 데 걸리는 시간(초). 등속.")]
+        [Tooltip("호를 다 긋는 데 걸리는 시간(초).")]
         [SerializeField, Min(0.02f)] private float sweepDuration = 0.5f;
+        [Tooltip("주행 가속 곡선. 1=등속, 클수록 초반이 빠르고 끝에서 감속(촤악).")]
+        [SerializeField, Range(0.3f, 4f)] private float easeOut = 1f;
+        [Tooltip("노즐 상자 기울기(도) — 궤도 평면 내 로컬 회전. 0 = 반경 방향 정렬, 기울인 채로 공전한다.")]
+        [SerializeField, Range(-45f, 45f)] private float nozzleTilt = 0f;
 
         [Header("배치 · 정리")]
         [Tooltip("스폰 지점(소켓) 기준 오프셋(m). 소켓 스케일은 무시하고 그대로 더한다.")]
         [SerializeField] private Vector3 spawnOffset = new Vector3(0f, -0.2f, 0f);
-        [Tooltip("주행 종료 전 이 시간(초)부터 방출 정지 — 제자리 쐐기 방지. 바인더가 증가 시간으로 채운다.")]
-        [SerializeField, Min(0f)] private float emitTailCutoffSeconds = 0.15f;
 
         [Header("밀도 점진")]
         [Tooltip("방출 밀도가 0 → 100%로 선형 증가하는 구간(스윕 전체=1.0 기준). 0이면 즉시 풀 밀도.")]
@@ -89,8 +94,9 @@ namespace JC.VFX.Seam
         public float AngleEnd { get => angleEnd; set => angleEnd = value; }
         public float Radius { get => radius; set => radius = Mathf.Max(0.05f, value); }
         public float SweepDuration { get => sweepDuration; set => sweepDuration = Mathf.Max(0.02f, value); }
+        public float EaseOut { get => easeOut; set => easeOut = Mathf.Clamp(value, 0.3f, 4f); }
+        public float NozzleTilt { get => nozzleTilt; set => nozzleTilt = Mathf.Clamp(value, -45f, 45f); }
         public Vector3 SpawnOffset { get => spawnOffset; set => spawnOffset = value; }
-        public float EmitTailCutoffSeconds { get => emitTailCutoffSeconds; set => emitTailCutoffSeconds = Mathf.Max(0f, value); }
         public float EmissionRamp { get => emissionRamp; set => emissionRamp = Mathf.Clamp(value, 0f, 0.5f); }
         public float EmissionDecay { get => emissionDecay; set => emissionDecay = Mathf.Clamp(value, 0f, 0.5f); }
         public float BaseRateOverDistance { get => baseRateOverDistance; set => baseRateOverDistance = Mathf.Max(0f, value); }
@@ -189,11 +195,19 @@ namespace JC.VFX.Seam
             }
         }
 
-        /// <summary>진행도 t에서의 방출 밀도 배율 — 점진(앞) × 감소(뒤).</summary>
-        private float EmissionFactor(float t)
+        /// <summary>
+        /// ★휘어진 진행도 — 시간 진행도 t(0~1)를 호 위 위치(0~1)로 사상한다.
+        /// easeOut 1 = 등속, 초과 = 초반 빠르고 말단 감속. 앵커 이동·밀도 구간·수축 트리거가
+        /// 전부 이 값을 쓰므로, easeOut을 바꿔도 화면상 형상(어느 호 구간에서 무엇이 일어나는지)이 유지된다.
+        /// </summary>
+        private float EasedProgress(float t)
+            => 1f - Mathf.Pow(1f - Mathf.Clamp01(t), easeOut);
+
+        /// <summary>호 위 위치 p(0~1)에서의 방출 밀도 배율 — 점진(앞) × 감소(뒤). ★공간 기준.</summary>
+        private float EmissionFactor(float p)
         {
-            float up = emissionRamp > 0.001f ? Mathf.Clamp01(t / emissionRamp) : 1f;
-            float down = emissionDecay > 0.001f ? Mathf.Clamp01((1f - t) / emissionDecay) : 1f;
+            float up = emissionRamp > 0.001f ? Mathf.Clamp01(p / emissionRamp) : 1f;
+            float down = emissionDecay > 0.001f ? Mathf.Clamp01((1f - p) / emissionDecay) : 1f;
             return up * down;
         }
 
@@ -226,6 +240,13 @@ namespace JC.VFX.Seam
             running = true;
             simulating = true;
             emissionCut = false;
+
+            // 퇴화 조합 감시 — Min ≥ 스윕이면 「Min보다 짧은 획은 없다」는 선언에 의해
+            // 방출 창이 0이 된다. 의도일 수도 있으나 조용히 사라지면 튜닝 함정이므로 알린다.
+            if (strokeLifeMin >= sweepDuration)
+                Debug.LogWarning("[JcArcStroke] Stroke Life Min(" + strokeLifeMin.ToString("F2") +
+                                 "s) ≥ Sweep Duration(" + sweepDuration.ToString("F2") +
+                                 "s) — 방출 창이 0이라 획이 태어나지 않습니다.", this);
             MoveAnchor(0f);
             ClampLifetimeToRemaining(sweepDuration);   // 시작부터 규칙 적용 — Max가 스윕보다 길어도 조여진다
             thinned.Clear();                           // 수축 재조준 이력 초기화
@@ -277,16 +298,21 @@ namespace JC.VFX.Seam
             if (running)
             {
                 float span = Mathf.Abs(angleEnd - angleStart) * Mathf.Deg2Rad * radius;
-                float frameMove = span * (dt / Mathf.Max(sweepDuration, 0.01f));
+                // ★이번 프레임의 「실제」 이동량으로 쪼갠다 — 평균 속도(dt/스윕) 기준이면
+                // Ease Out의 빠른 초반(실속도 최대 easeOut배)에서 첫 세그먼트 직선 글리치가 부활한다.
+                float t0 = Mathf.Clamp01(elapsed / sweepDuration);
+                float t1 = Mathf.Clamp01((elapsed + dt) / sweepDuration);
+                float frameMove = span * Mathf.Abs(EasedProgress(t1) - EasedProgress(t0));
                 steps = Mathf.Clamp(Mathf.CeilToInt(frameMove / SubStepTargetMeters), 1, 16);
             }
 
-            // 강제 수축 — 시작 구간 진입 후, 아직 재조준 안 된 획을 프레임당 1회 처리한다.
-            // (재조준은 획당 한 번뿐이라 이후 프레임은 신규 탄생분만 스캔한다)
+            // 강제 수축 — 시작 구간(호 위 위치 기준) 진입 후, 아직 재조준 안 된 획을 프레임당 1회 처리한다.
+            // (재조준은 획당 한 번뿐이라 이후 프레임은 신규 탄생분만 스캔한다.
+            //  트리거는 공간 기준이지만 하강 시간 D는 잔여 「초」가 필요하므로 시간 잔여를 넘긴다.)
             if (thinDecay > 0.001f && running)
             {
-                float tNow = Mathf.Clamp01(elapsed / sweepDuration);
-                if (tNow >= 1f - thinDecay)
+                float pNow = EasedProgress(Mathf.Clamp01(elapsed / sweepDuration));
+                if (pNow >= 1f - thinDecay)
                 {
                     ApplyThinRetarget(Mathf.Max(sweepDuration - elapsed, 0.02f));
                 }
@@ -299,7 +325,8 @@ namespace JC.VFX.Seam
                 {
                     elapsed += sub;
                     float t = Mathf.Clamp01(elapsed / sweepDuration);
-                    MoveAnchor(t);   // 등속
+                    float p = EasedProgress(t);   // 호 위 위치 — 앵커·밀도 구간이 공유
+                    MoveAnchor(p);
 
                     if (!emissionCut)
                     {
@@ -311,11 +338,11 @@ namespace JC.VFX.Seam
                         // 선별 모드: 수명이 잔여를 넘는 획은 아예 안 태어남 → 생존 확률만큼 방출을 줄인다.
                         float survival = skipShortRemainder ? SurvivalFraction(remaining) : 1f;
 
-                        // 밀도 성형(점진·감소) × 선별 생존 배율.
+                        // 밀도 성형(점진·감소 — 호 위 위치 기준) × 선별 생존 배율(시간 기준).
                         bool shaping = emissionRamp > 0.001f || emissionDecay > 0.001f || skipShortRemainder;
                         if (shaping)
                         {
-                            float factor = EmissionFactor(t) * survival;
+                            float factor = EmissionFactor(p) * survival;
                             for (int i = 0; i < strokes.Length; i++)
                             {
                                 if (strokes[i] == null) continue;
@@ -325,7 +352,10 @@ namespace JC.VFX.Seam
                         }
                     }
 
-                    if (!emissionCut && sweepDuration - elapsed <= emitTailCutoffSeconds)
+                    // 말단 방출 컷 — 잔여가 Min 아래로 내려가면 그 뒤에 태어날 획은 전부
+                    // Min보다 짧게 압축될 운명이므로 방출을 멈춘다. 선별 모드(ON)에서는
+                    // survival이 같은 지점에서 0이 되어 두 모드의 방출 종료점이 일치한다.
+                    if (!emissionCut && sweepDuration - elapsed < strokeLifeMin)
                     {
                         emissionCut = true;
                         SetEmission(false);
@@ -371,7 +401,8 @@ namespace JC.VFX.Seam
             // 앵커 자체를 회전시키면 Local 시뮬레이션의 기존 입자까지 휘둘리므로,
             // 신규 입자에만 적용되는 shape.rotation을 쓴다.
             // rotY(φ)가 X축을 (cosφ, 0, -sinφ)로 보내므로, 반경 방향 (sinθ, 0, cosθ)에는 φ = θ − 90°.
-            float shapeYaw = clockDeg - 90f;
+            // 노즐 기울기는 여기에 더해지는 로컬 오프셋 — 기울어진 채 공전한다(펜촉 눕히기).
+            float shapeYaw = clockDeg - 90f + nozzleTilt;
             for (int i = 0; i < strokes.Length; i++)
             {
                 if (strokes[i] == null) continue;
