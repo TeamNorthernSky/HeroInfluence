@@ -10,29 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 395aac311786f3442a3938a5dfd27e15, type: 3}
-  m_Name: FX_JusticeDashBlue
+  m_Name: FX_JusticeVortexStrokeBlue
   m_EditorClassIdentifier: 
   targets:
-    trailPrefab: {fileID: 3616402648774875410, guid: 15218dc8ef0d266498789ff9460f4df7,
-      type: 3}
+    trailPrefab: {fileID: 0}
     impactPrefab: {fileID: 0}
-    strokeMaterial: {fileID: 2100000, guid: 1859ef92f2a27cb42a55718c3fef3bd8, type: 2}
-    sparkMaterial: {fileID: 2100000, guid: a2668eff6917fa4439896f9d7f0bdd53, type: 2}
-    impactSparkMaterial: {fileID: 2100000, guid: e324b4fd5d0315749ab46c24113a619a,
-      type: 2}
-    flashMaterial: {fileID: 2100000, guid: 6e863cf8bd7025241932b4fff2a3194c, type: 2}
-    vortexPrefab: {fileID: 4592826295913032553, guid: fedffccb69b5c1e4f98ff68f9456d8d5,
+    strokeMaterial: {fileID: 0}
+    sparkMaterial: {fileID: 0}
+    impactSparkMaterial: {fileID: 0}
+    flashMaterial: {fileID: 0}
+    vortexPrefab: {fileID: 0}
+    vortexMaterial: {fileID: 0}
+    slashPrefab: {fileID: 0}
+    slashMaterial: {fileID: 0}
+    arcStrokePrefab: {fileID: 5014783889222747169, guid: 34368804c9daa914892d33eb8a83e92a,
       type: 3}
-    vortexMaterial: {fileID: 2100000, guid: 1934677e70077ad4186a62d41389e7cb, type: 2}
-    slashPrefab: {fileID: 6437639273885971770, guid: 6a828ce9cbf25b44085095eaa1a0699d,
+    arcStrokeMaterial: {fileID: 2100000, guid: 2b81e3f76cf5ad244962730c9482a33b, type: 2}
+    arcPointPrefab: {fileID: 5014783889222747169, guid: 52314a557f5d7a8458a0afc850abdf88,
       type: 3}
-    slashMaterial: {fileID: 2100000, guid: 4a678e006a63af34b956e91de3daa508, type: 2}
-    arcStrokePrefab: {fileID: 5014783889222747169, guid: a52020892572524458e5a533a9431063,
-      type: 3}
-    arcStrokeMaterial: {fileID: 2100000, guid: e732ad5307a0f2747ae6e436904cacca, type: 2}
-    arcPointPrefab: {fileID: 5014783889222747169, guid: 3fbbbcaed39d3d545993a8564c93f05f,
-      type: 3}
-    arcPointMaterial: {fileID: 2100000, guid: bc296ef5a8304c64d821460aff423a2f, type: 2}
+    arcPointMaterial: {fileID: 2100000, guid: 417c81c6877a1cc4d8fda42be2e0ac15, type: 2}
   trail:
     enabled: 1
     emission: 2.25
@@ -79,7 +75,7 @@ MonoBehaviour:
     coreRatioEnd: 0.822
     coreSharpness: 0.622
     bodySoftness: 0.699
-    sizeEndScale: 0.15
+    sizeEndScale: 0.159
     spreadAngle: 24.1
     nozzleRadius: 0.166
     backwardEject: 3
@@ -136,31 +132,31 @@ MonoBehaviour:
     headColor: {r: 0.92, g: 0.97, b: 1, a: 1}
     midColor: {r: 0.7, g: 0.85, b: 1, a: 1}
     tailColor: {r: 0.32, g: 0.48, b: 0.72, a: 1}
-    emission: 4.49
+    emission: 4.3
     chromaHold: 1
-    bodyFalloff: 6.57
-    edgeTaper: 0.398
+    bodyFalloff: 3.41
+    edgeTaper: 0.395
     angleStart: 183
     angleEnd: -126
-    radius: 1.94
-    sweepDuration: 0.62
-    easeOut: 2.55
-    rateOverDistance: 21.5
+    radius: 0.71
+    sweepDuration: 0.56
+    easeOut: 1.2
+    rateOverDistance: 32.1
     emissionRamp: 0.24
     emissionDecay: 0.114
-    maxParticles: 40
-    nozzleRadius: 0.393
-    nozzleThickness: 0.034
+    maxParticles: 105
+    nozzleRadius: 0.25
+    nozzleThickness: 0.079
     nozzleTilt: 36
     thinDecay: 0.42
     thinFarBoost: 5
-    strokeLifeMin: 0.27
-    strokeLifetime: 0.48
-    skipShortRemainder: 1
+    strokeLifeMin: 0.38
+    strokeLifetime: 0.51
+    skipShortRemainder: 0
     growRatio: 0.3
     fadeRatio: 0.25
-    widthMin: 0.598
-    widthMax: 1.628
+    widthMin: 0.34
+    widthMax: 0.54
     trailMinVertexDistance: 0.004
     spawnOffset: {x: 0, y: -0.2, z: 0}
   arcPoint:
@@ -168,30 +164,30 @@ MonoBehaviour:
     headColor: {r: 0, g: 0.068327904, b: 1, a: 1}
     midColor: {r: 0, g: 0.047646288, b: 0.6037736, a: 1}
     tailColor: {r: 0.2728333, g: 0.50683653, b: 0.9748427, a: 1}
-    emission: 5.13
+    emission: 2.42
     chromaHold: 1
     bodyFalloff: 2.5
     edgeTaper: 0.25
     angleStart: 210
-    angleEnd: -75
-    radius: 1.67
+    angleEnd: -140
+    radius: 0.92
     sweepDuration: 0.54
     easeOut: 1.05
-    offsetMin: 0.6
-    offsetMax: 0.9
+    offsetMin: 0.12
+    offsetMax: 0.18
     convergeExp: 1.37
     rateOverDistance: 4.66
     emissionRamp: 0
     emissionDecay: 0.185
     maxParticles: 13
-    nozzleThickness: 0.21
+    nozzleThickness: 0.118
     strokeLifeMin: 0.05
-    strokeLifetime: 0.31
+    strokeLifetime: 0.1
     skipShortRemainder: 1
     growRatio: 0.083
     fadeRatio: 0.188
-    widthMin: 0.448
-    widthMax: 0.786
+    widthMin: 0.27
+    widthMax: 0.4
     trailMinVertexDistance: 0.004
     spawnOffset: {x: 0, y: -0.2, z: 0}
     extraLinger: 0.2

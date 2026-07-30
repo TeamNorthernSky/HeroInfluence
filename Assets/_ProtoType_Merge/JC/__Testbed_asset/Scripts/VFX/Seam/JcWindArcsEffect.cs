@@ -58,6 +58,10 @@ namespace JC.VFX.Seam
         [SerializeField] private Vector3 spawnOffset = new Vector3(0f, -0.2f, 0f);
         [SerializeField] private Material ribbonMaterial;
 
+        [Tooltip("켜면 궤도 중심이 매 프레임 이 오브젝트의 위치를 따라간다(용권풍처럼 이동하는 모체에 얹을 때).\n" +
+                 "기본은 꺼짐 — 재생 순간의 위치에 고정된다(제자리 방사광).")]
+        [SerializeField] private bool followRoot;
+
         [SerializeField] private bool logLifecycle;
 
         // 프리셋 바인더가 밀어넣는 값
@@ -89,6 +93,7 @@ namespace JC.VFX.Seam
         public float BrightAlphaMul { get => brightAlphaMul; set => brightAlphaMul = Mathf.Clamp(value, 1f, 4f); }
         public Vector3 SpawnOffset { get => spawnOffset; set => spawnOffset = value; }
         public Material RibbonMaterial { get => ribbonMaterial; set => ribbonMaterial = value; }
+        public bool FollowRoot { get => followRoot; set => followRoot = value; }
 
         private class Arc
         {
@@ -134,6 +139,10 @@ namespace JC.VFX.Seam
             if (!playing) return;
             float dt = Time.deltaTime;
             elapsed += dt;
+
+            // 이동하는 모체에 얹힌 경우에만 중심을 갱신한다. 리본(TrailRenderer)은 월드 공간이라
+            // 이미 그려진 띠는 제자리에 남아 뒤로 흐르고, 새 원호만 새 중심에서 태어난다.
+            if (followRoot) center = transform.position;
 
             if (elapsed < spawnWindow)
             {

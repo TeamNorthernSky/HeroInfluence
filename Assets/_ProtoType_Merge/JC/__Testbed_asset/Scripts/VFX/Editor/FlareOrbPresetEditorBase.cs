@@ -19,6 +19,12 @@ namespace JC.VFX
         protected abstract void ApplyPreset();
         protected abstract void CapturePreset();
 
+        /// <summary>
+        /// 본문 필드 그리기. 기본은 전체 표시이고, 한 프리셋이 여러 대상을 겸하는 경우
+        /// 파생 에디터가 「그 프리셋이 실제로 쓰지 않는 섹션」을 걸러내도록 훅으로 열어 둔다.
+        /// </summary>
+        protected virtual void DrawBody() => DrawDefaultInspector();
+
         public override void OnInspectorGUI()
         {
             bool live = EditorPrefs.GetBool(LiveKey, true);
@@ -27,7 +33,7 @@ namespace JC.VFX
             EditorGUILayout.Space(2);
 
             EditorGUI.BeginChangeCheck();
-            DrawDefaultInspector();
+            DrawBody();
             bool changed = EditorGUI.EndChangeCheck();
             if (changed && newLive) LivePush();
 

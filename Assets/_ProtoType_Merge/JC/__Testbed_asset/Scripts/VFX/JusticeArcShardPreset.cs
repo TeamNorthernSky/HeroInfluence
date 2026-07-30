@@ -33,13 +33,16 @@ namespace JC.VFX
         [ColorUsage(true, true)] public Color midColor = new Color(0.45f, 0.75f, 1f);
         [Tooltip("사라지기 직전의 테두리 색.")]
         [ColorUsage(true, true)] public Color tailColor = new Color(0.20f, 0.45f, 0.9f);
-        [Tooltip("테두리 발광 배수.")]
-        [Range(0f, 8f)] public float edgeEmission = 1.2f;
+        [Tooltip("테두리 발광 배수.\n" +
+                 "★상한 위쪽은 화면 색이 아니라 블룸이 반응하는 구간이다 — 이미 흰색으로 포화된 자리에서는\n" +
+                 "색이 더 진해지지 않고 번짐만 커진다. 다른 이펙트에 묻힐 때는 발광을 올리는 것보다\n" +
+                 "겹치는 쪽을 옅게 하거나 색을 다른 계열로 옮기는 편이 효과가 크다.")]
+        [Range(0f, 24f)] public float edgeEmission = 1.2f;
 
         [Tooltip("내부(심) 색 — 빛나는 흰색이 기본.")]
         [ColorUsage(true, true)] public Color innerColor = Color.white;
-        [Tooltip("내부 발광 배수.")]
-        [Range(0f, 8f)] public float innerEmission = 1.6f;
+        [Tooltip("내부 발광 배수. 상한 위쪽의 성질은 테두리 발광과 같다(블룸 번짐만 커진다).")]
+        [Range(0f, 24f)] public float innerEmission = 1.6f;
         [Tooltip("테두리 두께(파편 크기 대비 비율). 0에 가까우면 속이 거의 다 흰 심이 된다.")]
         [Range(0.001f, 0.5f)] public float edgeWidth = 0.08f;
         [Tooltip("형상 경계의 부드러움(안티에일리어싱). 크면 흐릿해진다.")]
