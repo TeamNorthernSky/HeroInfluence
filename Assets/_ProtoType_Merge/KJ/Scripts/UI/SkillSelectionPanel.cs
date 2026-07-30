@@ -129,11 +129,12 @@ public class SkillSelectionPanel : MonoBehaviour
     {
         if (completed) return;
         completed = true;
-        confirmButton?.gameObject.SetActive(false);
-        cancelButton?.gameObject.SetActive(false);
         int selectedId = (skillDropdown != null && skillDropdown.value < candidateSkillIds.Count)
             ? candidateSkillIds[skillDropdown.value]
             : -1;
+        // [KJ 260729] Destroy는 프레임 끝에 처리되므로 루트를 먼저 끈다.
+        //   그러지 않으면 OnCompleted가 켜는 다음 창과 한 프레임 겹쳐 보인다.
+        gameObject.SetActive(false);
         OnCompleted?.Invoke(selectedId);
         Destroy(gameObject);
     }
@@ -142,8 +143,8 @@ public class SkillSelectionPanel : MonoBehaviour
     {
         if (completed) return;
         completed = true;
-        confirmButton?.gameObject.SetActive(false);
-        cancelButton?.gameObject.SetActive(false);
+        // [KJ 260729] OnConfirm과 동일 — 다음 창과의 1프레임 겹침 방지.
+        gameObject.SetActive(false);
         OnCompleted?.Invoke(-1);
         Destroy(gameObject);
     }
