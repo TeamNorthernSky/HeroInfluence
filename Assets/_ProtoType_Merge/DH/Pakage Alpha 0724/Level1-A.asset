@@ -5192,8 +5192,6 @@ MonoBehaviour:
     prefabKey: Fence_01
   - gridPosition: {x: 43, y: 10}
     prefabKey: Fence_01-1
-  - gridPosition: {x: 13, y: 17}
-    prefabKey: BGStore004
   - gridPosition: {x: 14, y: 23}
     prefabKey: BGStore004
   - gridPosition: {x: 43, y: 11}
@@ -5210,6 +5208,8 @@ MonoBehaviour:
     prefabKey: Fence_01-1
   - gridPosition: {x: 16, y: 27}
     prefabKey: Fence_01-1
+  - gridPosition: {x: 13, y: 17}
+    prefabKey: BGHouse002
   mainEventPlacements:
   - gridPosition: {x: 8, y: 15}
     prefabKey: Main_1-1
@@ -5224,8 +5224,6 @@ MonoBehaviour:
   subEventPlacements:
   - gridPosition: {x: 33, y: 12}
     prefabKey: Sub_1
-  - gridPosition: {x: 13, y: 15}
-    prefabKey: Sub_2-1
   - gridPosition: {x: 14, y: 21}
     prefabKey: Sub_2-2
   gatePlacements:
