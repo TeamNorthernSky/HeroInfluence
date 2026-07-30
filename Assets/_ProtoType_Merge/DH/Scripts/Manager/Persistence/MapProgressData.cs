@@ -456,6 +456,7 @@ public class EnemyWorldState
     [SerializeField] private EnemyPlacementSource placementSource = EnemyPlacementSource.Scene;
     [SerializeField] private string prefabKey = DefaultPrefabKey;
     [SerializeField] private string zoneId;
+    [SerializeField] private EnemyBehaviorType behaviorType = EnemyBehaviorType.Mobile;
     [SerializeField] private int encounterChatZoneId;
     [SerializeField] private int encounterChatId;
     [SerializeField] private string eventBattleKey;
@@ -467,6 +468,7 @@ public class EnemyWorldState
     public EnemyPlacementSource PlacementSource => placementSource;
     public string PrefabKey => prefabKey;
     public string ZoneId => MapProgressKey.NormalizeSegment(zoneId);
+    public EnemyBehaviorType BehaviorType => behaviorType;
     public int EncounterChatZoneId => Mathf.Max(0, encounterChatZoneId);
     public int EncounterChatId => Mathf.Max(0, encounterChatId);
     public string EventBattleKey => string.IsNullOrWhiteSpace(eventBattleKey) ? string.Empty : eventBattleKey.Trim();
@@ -493,6 +495,18 @@ public class EnemyWorldState
         EnemyPlacementSource placementSource,
         string prefabKey,
         string zoneId)
+        : this(placementKey, enemyId, grid, placementSource, prefabKey, zoneId, EnemyBehaviorType.Mobile)
+    {
+    }
+
+    public EnemyWorldState(
+        string placementKey,
+        string enemyId,
+        Vector2Int grid,
+        EnemyPlacementSource placementSource,
+        string prefabKey,
+        string zoneId,
+        EnemyBehaviorType behaviorType)
     {
         this.placementKey = placementKey;
         this.enemyId = enemyId;
@@ -500,6 +514,7 @@ public class EnemyWorldState
         this.placementSource = placementSource;
         this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? DefaultPrefabKey : prefabKey;
         this.zoneId = MapProgressKey.NormalizeSegment(zoneId);
+        this.behaviorType = behaviorType;
         defeated = false;
     }
 
@@ -531,6 +546,11 @@ public class EnemyWorldState
     public void SetZoneId(string nextZoneId)
     {
         zoneId = MapProgressKey.NormalizeSegment(nextZoneId);
+    }
+
+    public void SetBehaviorType(EnemyBehaviorType nextBehaviorType)
+    {
+        behaviorType = nextBehaviorType;
     }
 
     public void SetEventEncounter(int nextEncounterChatZoneId, int nextEncounterChatId, string nextEventBattleKey)
