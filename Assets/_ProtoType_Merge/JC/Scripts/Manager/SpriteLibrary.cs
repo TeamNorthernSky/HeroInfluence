@@ -308,7 +308,9 @@ public class SpriteLibrary : ScriptableObject
             if (wsp != null) return wsp;
         }
 
-        int tier = Mathf.Clamp(WorkshopManager.TierOf(weaponIndex), 1, 3);
+        // [KJ 260729] 티어 폐지 — 구 아이콘 시트(키 310101 등) 폴백 경로용 근사값.
+        //   신 체계 코어 아이콘의 정본은 WorkshopModalController의 coreIcons 인스펙터 직결이다.
+        int tier = Mathf.Clamp(weaponIndex, 1, 3);
         int lv = Mathf.Clamp(level < 1 ? 1 : level, 1, 5);
         return LoadRes(string.Format(weaponIconPathFormat, tier, lv));
     }

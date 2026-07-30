@@ -16,12 +16,20 @@ public class BattleResultPanel : MonoBehaviour
     private readonly List<SkillSelectionPanel> skillQueue = new List<SkillSelectionPanel>();
     private int currentSkillIndex = 0;
 
+    // [KJ 260729] 스킬 획득 창이 전부 사라진 뒤에 결과 내용을 노출한다.
+    //   기존에는 결과 패널 위에 스킬 창이 겹쳐 떠 있었다(GetSkillParent가 결과 패널의 자식이고
+    //   GetSkillBackground가 ResultBackground와 같은 1440x720 영역을 덮는 구조).
+    //   숨긴 대상만 기록해 복원하므로 원래 비활성이던 노드는 건드리지 않는다.
+    private readonly List<GameObject> hiddenResultContent = new List<GameObject>();
+
     public void Show(BattleResult result, BattleRewardPlan plan)
     {
         skillResults.Clear();
         pendingSlotCount = 0;
         skillQueue.Clear();
         currentSkillIndex = 0;
+        // [KJ 260729] 같은 인스턴스에서 재호출되어도 이전에 숨긴 노드가 남지 않게 먼저 되돌린다.
+        RevealResultContent();
 
         BattleResultView view = GetComponent<BattleResultView>();
         if (view == null) return;
@@ -39,8 +47,35 @@ public class BattleResultPanel : MonoBehaviour
         BuildSlots(plan, view, ordered);
         BuildSkillSlots(plan, result, view, ordered);
 
-        if (pendingSlotCount == 0 && view.acceptButton != null)
+        // [KJ 260729] 스킬 획득 창이 있으면 결과 내용을 숨겨 두고, 마지막 창이 닫힐 때 노출한다.
+        if (pendingSlotCount > 0)
+            HideResultContent(view);
+        else if (view.acceptButton != null)
             view.acceptButton.gameObject.SetActive(true);
+    }
+
+    /// <summary>[KJ 260729] 스킬 슬롯 부모(및 그 조상)를 제외한 직계 자식을 숨긴다.
+    /// 이미 비활성인 노드는 기록하지 않아 복원 시 원래 꺼져 있던 것이 켜지지 않는다.</summary>
+    private void HideResultContent(BattleResultView view)
+    {
+        hiddenResultContent.Clear();
+        foreach (Transform child in transform)
+        {
+            // skillSlotParent가 계층 어디에 있어도 그 조상은 끄지 않는다(스킬 창까지 같이 꺼지므로).
+            if (view.skillSlotParent != null && view.skillSlotParent.IsChildOf(child)) continue;
+            if (!child.gameObject.activeSelf) continue;
+
+            child.gameObject.SetActive(false);
+            hiddenResultContent.Add(child.gameObject);
+        }
+    }
+
+    /// <summary>[KJ 260729] HideResultContent가 숨긴 노드만 되돌린다.</summary>
+    private void RevealResultContent()
+    {
+        for (int i = 0; i < hiddenResultContent.Count; i++)
+            if (hiddenResultContent[i] != null) hiddenResultContent[i].SetActive(true);
+        hiddenResultContent.Clear();
     }
 
     private void BuildSlots(BattleRewardPlan plan, BattleResultView view, IReadOnlyList<int> orderedUnitIndices)
@@ -108,8 +143,12 @@ public class BattleResultPanel : MonoBehaviour
                 ActivateNextSkillSlot(); // 다음 창 팝업(현재 창은 SkillSelectionPanel이 스스로 Destroy)
 
                 pendingSlotCount--;
-                if (pendingSlotCount <= 0 && acceptButton != null)
-                    acceptButton.gameObject.SetActive(true);
+                if (pendingSlotCount <= 0)
+                {
+                    // [KJ 260729] 마지막 스킬 창까지 처리된 뒤에 결과 내용을 노출한다.
+                    RevealResultContent();
+                    if (acceptButton != null) acceptButton.gameObject.SetActive(true);
+                }
             };
             skillQueue.Add(slot);
         }

@@ -48,7 +48,6 @@ public class LabModalController : MonoBehaviour
     [SerializeField] private Button btnCancel;    // 취소
 
     [Header("영웅 영역")]
-    [SerializeField] private Button btnHeroSlot;
     [SerializeField] private Image heroProfileImage;
     [SerializeField] private GameObject heroSilhouette;
     [SerializeField] private GameObject selectPromptGo;
@@ -72,11 +71,6 @@ public class LabModalController : MonoBehaviour
     [Header("툴팁 문구")]
     [SerializeField] private string lockedStageTip = "연구소 업그레이드 필요";
     [SerializeField] private string notLearnedTip  = "아직 습득하지 않은 스킬";
-
-    [Header("영웅 선택 sub-modal")]
-    [SerializeField] private GameObject heroSelectModalRoot;
-    [SerializeField] private HeroListController heroSelectListController;
-    [SerializeField] private Button btnHeroSelectClose;
 
     private const float CompletionDuration = 5f;
     private float completionMsgUntil;
@@ -111,8 +105,6 @@ public class LabModalController : MonoBehaviour
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnCancel != null) btnCancel.onClick.AddListener(OnCancel);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
-        if (btnHeroSlot != null) btnHeroSlot.onClick.AddListener(OpenHeroSelect);
-        if (btnHeroSelectClose != null) btnHeroSelectClose.onClick.AddListener(CloseHeroSelect);
 
         for (int r = 0; r < rows.Count; r++)
         {
@@ -131,17 +123,26 @@ public class LabModalController : MonoBehaviour
                     if (sr != null) sr.Bind(this, cr, k);
                 }
         }
-
-        if (heroSelectListController != null)
-        {
-            heroSelectListController.SetSelectionMode(true);
-            heroSelectListController.SetVisitingOnlyMode(true);
-        }
     }
 
-    private void OnEnable() { TrySubscribe(); Refresh(); }
+    private void OnEnable()
+    {
+        TrySubscribe();
+        // [KJ 260728] 파티 패널을 선택 모드로 전환. 서브모달 대신 우측 로스터에서 영웅을 고른다.
+        var roster = LobbyUIRegistry.RosterView;
+        if (roster != null) roster.BeginSelection(OnHeroSelected);
+        else Debug.LogWarning("[LabModalController] LobbyUIRegistry.RosterView 없음 — 영웅 선택 불가.");
+        // [KJ 260729] 우클릭 해제를 없앤 대신 진입 시 기본 유닛(블래스터)을 선택해 둔다.
+        if (selectedUnitIndex < 0)
+        {
+            int defaultUnit = RosterOrdering.ResolveDefaultUnit();
+            if (defaultUnit >= 0) OnHeroSelected(defaultUnit);
+        }
+        Refresh();
+    }
     private void OnDisable()
     {
+        if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.EndSelection();
         selectedUnitIndex = -1;
         ClearSelection();
         completionMsgUntil = 0f;
@@ -158,7 +159,6 @@ public class LabModalController : MonoBehaviour
         {
             subLab = gm.Lab;
             subLab.OnStateChanged += Refresh;
-            if (heroSelectListController != null) heroSelectListController.UnitSelected += OnHeroSelected;
         }
         if (subEco == null && gm.Economy != null)
         {
@@ -173,7 +173,6 @@ public class LabModalController : MonoBehaviour
         if (subLab != null)
         {
             subLab.OnStateChanged -= Refresh;
-            if (heroSelectListController != null) heroSelectListController.UnitSelected -= OnHeroSelected;
             subLab = null;
         }
         if (subEco != null) { subEco.OnResourceChanged -= OnResourceChanged; subEco = null; }
@@ -183,22 +182,16 @@ public class LabModalController : MonoBehaviour
 
     public void CloseModal()
     {
-        if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(false);
         if (modalRoot != null) modalRoot.SetActive(false);
     }
 
-    private void OpenHeroSelect()
-    {
-        if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(true);
-        if (heroSelectListController != null) heroSelectListController.Rebuild();
-    }
-    private void CloseHeroSelect() { if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(false); }
     private void OnHeroSelected(int unitIndex)
     {
         selectedUnitIndex = unitIndex;
         EnsureDefaultEquipped(unitIndex); // [JC 260617] 기본 장착 스킬 미지정(CurrentSkillIndex=0)이면 첫 습득 스킬 자동 장착
         ClearSelection();
-        CloseHeroSelect();
+        // [KJ 260728] 파티 패널 하이라이트 동기화. 서브모달 폐기로 CloseHeroSelect 호출 제거.
+        if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.SetSelected(unitIndex);
         Refresh();
     }
 
