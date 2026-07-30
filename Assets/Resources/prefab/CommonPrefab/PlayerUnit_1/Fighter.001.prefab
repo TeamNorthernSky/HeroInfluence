@@ -356,9 +356,11 @@ MonoBehaviour:
   leftWeaponSocketObject: {fileID: 3294133025189730611}
   rightFootSocketObject: {fileID: 860106170376967474}
   leftFootSocketObject: {fileID: 420868516547296338}
-  hitSocketObject: {fileID: 0}
+  hitSocketObject: {fileID: 2491022162251004882}
   chestSocketObject: {fileID: 2491022162251004882}
   floorSocketObject: {fileID: 16420955473394491}
+  overheadSocketObject: {fileID: 0}
+  frontProjectileSocketObject: {fileID: 0}
   visualRoot: {fileID: 0}
 --- !u!4 &6513351636802597539 stripped
 Transform:

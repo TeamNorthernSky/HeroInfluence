@@ -54,16 +54,34 @@ public class BattleVisualDirector : MonoBehaviour
             return;
         }
 
-        var profile = target?.GetComponent<UnitVisualProfile>();
-        Transform socket = profile?.HitEffectSocket ?? target?.transform;
+        // 소켓 해석: HitEffectSocket이 지정돼 있으면 사용, 아니면 대상 루트로 폴백한다.
+        // Unity Object는 파괴 시 "fake null"이라 C#의 ?? 연산자가 폴백하지 못하므로,
+        // 반드시 Unity의 != null 오버로드로 판정한다(미지정/파괴 소켓 → 대상 루트).
+        var profile = target != null ? target.GetComponent<UnitVisualProfile>() : null;
+        Transform socket = profile != null && profile.HitEffectSocket != null
+            ? profile.HitEffectSocket
+            : (target != null ? target.transform : null);
 
         if (presentation.EnableHitEffect)
         {
             GameObject prefab = ResolveEffectPrefab(presentation.HitEffectId, presentation.HitEffectPrefab);
             // 재료 프리팹은 프리젠터/이벤트가 담당 → director는 스폰하지 않음.
-            if (prefab != null && prefab.GetComponent<ISkillEffectBehaviour>() == null && socket != null)
+            if (prefab != null && socket != null)
             {
-                Instantiate(prefab, socket.position, socket.rotation);
+                GameObject instance = Instantiate(prefab, socket.position, socket.rotation);
+
+                // HealOrbitVfx는 parameterless Play()로는 현재 루트 좌표를 쓰므로,
+                // 힐 대상의 월드 좌표를 명시해 발밑에서 시작시킨다. 이 호출은 프리팹의
+                // OnEnable 자동 재생 여부와 무관하게 런타임 인스턴스를 확실히 구동한다.
+                JC.VFX.HealOrbitVfx healAura = instance.GetComponent<JC.VFX.HealOrbitVfx>();
+                if (healAura != null)
+                {
+                    healAura.Play(target.transform.position);
+                }
+                else
+                {
+                    instance.GetComponent<JC.VFX.VfxEffect>()?.Play();
+                }
             }
         }
 

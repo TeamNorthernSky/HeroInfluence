@@ -51,14 +51,17 @@ namespace ASB.Work.Battle.SkillExecution
             Register(2060, new TargetMoreHPMoreDmg());               // 임시 보관: 적의 체력이 높을수록 피해량 증가
             Register(2070, new HitNumLowerDamageHandler());          // 임시 보관: 공격 대상 수에 따라 피해량 감소
 
-            //스트라이커
-            Register(3010, new DamageSkillHandler());    // 단일 공격
-            Register(3020, new TargetFrontPosMoreDmg()); // 단일 공격 + 전열 추가 피해
-            Register(3030, new TargetBackPosMoreCriticDmg()); // 단일공격 + 후열 공격시 일시적으로 회피율 -20% 
-            Register(3040, new DoubleAttackSkillHandler()); // 더블 어택
-            Register(3050, new TargetLowerHPMoreCriticDmg()); // 단일 공격 + 체력 70%이하 일시적으로 치명타 20% 확률업
-            Register(3060, new AoEDamageSkillHandler()); //전체 공격
-            Register(3070, new DamageSkillHandler());    // 단일, 전체 체력이 낮을 경우 큰 데미지
+            //스트라이커  (현재 스킬 시트 기준 재매핑)
+            Register(3010, new DamageSkillHandler());        // 단일 공격
+            Register(3020, new TargetFrontPosMoreDmg());     // 전열 적일 경우 더 많은 데미지 공격
+            Register(3030, new DoubleAttackSkillHandler());  // 더블 공격
+            Register(3040, new TargetLowerHPMoreDmg());      // 적 체력이 낮을 경우 높은 데미지
+
+            // 미사용 스킬 파킹 (3050~3080, 핸들러 중복 없음)
+            Register(3050, new TargetBackPosMoreCriticDmg()); // 단일공격 + 후열 공격시 일시적으로 회피율 -20%
+            Register(3060, new TargetLowerHPMoreCriticDmg()); // 단일 공격 + 체력 70%이하 일시적으로 치명타 20% 확률업
+            Register(3070, new AoEDamageSkillHandler());      // 전체 공격
+            Register(3080, new DamageSkillHandler());         // 단일, 전체 체력이 낮을 경우 큰 데미지
 
             // 서포터
             Register(4010, new TargetHPPerHeal());      // 대상 체력 비례 힐 

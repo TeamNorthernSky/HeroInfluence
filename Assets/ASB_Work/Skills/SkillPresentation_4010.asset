@@ -45,8 +45,8 @@ MonoBehaviour:
     TimeoutGraceSeconds: 1
     TimeoutSeconds: 5
     DeliveryMode: 0
-    UsePreparedCharge: 0
-    ChargeInstanceKey: 
+    UsePreparedCharge: 1
+    ChargeInstanceKey: heal_projectile
     TargetFormationCenter: 0
   ImpactDeliveryMode: 0
   CustomImpactTimeoutSeconds: 5
@@ -68,10 +68,10 @@ MonoBehaviour:
     Cues:
     - CueName: heal_cast
       EffectIds:
-      - 4014
+      - 4013
       SoundIds: []
       Operation: 0
-      InstanceKey:
+      InstanceKey: heal_projectile
       Anchor: 1
       Socket: 10
   Move:
