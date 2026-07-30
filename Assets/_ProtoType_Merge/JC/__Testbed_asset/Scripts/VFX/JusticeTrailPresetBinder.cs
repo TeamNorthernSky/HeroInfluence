@@ -1022,7 +1022,16 @@ namespace JC.VFX
         public JusticeTrailPreset PresetAlt { get => presetAlt; set => presetAlt = value; }
 
         /// <summary>지금 실제로 쓰이는 프리셋. 에디터 라이브 반영이 대상을 가려내는 데도 쓴다.</summary>
-        public JusticeTrailPreset ActivePreset => (UseAlternate && presetAlt != null) ? presetAlt : preset;
+        [Tooltip("★켜면 이 인스턴스는 무조건 알트(강화·적색) 프리셋을 쓴다.\n" +
+                 "UseAlternate는 프리뷰 전용 전역 스위치라 실전투에서는 아무도 켜 주지 않고, static이라\n" +
+                 "유닛마다 다른 값을 가질 수도 없다. 강화 스킬(HS1011 등)이 독립 스킬이 된 이상\n" +
+                 "프리팹 자체가 「나는 강화판이다」를 들고 있어야 한다 — 그 스위치가 이 필드다.")]
+        [SerializeField] private bool forceAlternate;
+
+        public bool ForceAlternate { get => forceAlternate; set => forceAlternate = value; }
+
+        public JusticeTrailPreset ActivePreset =>
+            ((forceAlternate || UseAlternate) && presetAlt != null) ? presetAlt : preset;
 
         private void Awake() => ApplyNow();
 

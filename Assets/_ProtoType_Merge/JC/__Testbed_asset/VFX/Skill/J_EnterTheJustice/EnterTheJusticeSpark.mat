@@ -31,6 +31,6 @@ Material:
     - _CoreStart: 0.276
     - _Emission: 1
     m_Colors:
-    - _BodyColor: {r: 4.39, g: 0.10339, b: 0.114512086, a: 1}
+    - _BodyColor: {r: 0, g: 0.2370236, b: 4.39, a: 1}
     - _CoreColor: {r: 2, g: 2, b: 2, a: 1}
   m_BuildTextureStacks: []

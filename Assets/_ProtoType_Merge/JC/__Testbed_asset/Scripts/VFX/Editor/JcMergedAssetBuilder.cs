@@ -64,6 +64,11 @@ namespace JC.VFX.EditorTools
 
             Collect(cfg.asbRegistry, "_entries", "Id", "Prefab", order, map, null);
             Collect(cfg.jcRegistry, "_entries", "Id", "Prefab", order, map, overridden);
+            if (cfg.extraRegistries != null)
+            {
+                for (int i = 0; i < cfg.extraRegistries.Length; i++)
+                    Collect(cfg.extraRegistries[i], "_entries", "Id", "Prefab", order, map, overridden);
+            }
 
             var so = new SerializedObject(cfg.mergedRegistry);
             SerializedProperty arr = so.FindProperty("_entries");
@@ -102,6 +107,11 @@ namespace JC.VFX.EditorTools
 
             Collect(cfg.asbCatalog, "_bindings", "SkillIndex", "Presentation", order, map, null);
             Collect(cfg.jcCatalog, "_bindings", "SkillIndex", "Presentation", order, map, overridden);
+            if (cfg.extraCatalogs != null)
+            {
+                for (int i = 0; i < cfg.extraCatalogs.Length; i++)
+                    Collect(cfg.extraCatalogs[i], "_bindings", "SkillIndex", "Presentation", order, map, overridden);
+            }
 
             var so = new SerializedObject(cfg.mergedCatalog);
             SerializedProperty arr = so.FindProperty("_bindings");
@@ -241,6 +251,12 @@ namespace JC.VFX.EditorTools
             Append(cfg.jcCatalog, "_bindings", "SkillIndex", "Presentation", sb);
             Append(cfg.asbRegistry, "_entries", "Id", "Prefab", sb);
             Append(cfg.jcRegistry, "_entries", "Id", "Prefab", sb);
+            if (cfg.extraCatalogs != null)
+                for (int i = 0; i < cfg.extraCatalogs.Length; i++)
+                    Append(cfg.extraCatalogs[i], "_bindings", "SkillIndex", "Presentation", sb);
+            if (cfg.extraRegistries != null)
+                for (int i = 0; i < cfg.extraRegistries.Length; i++)
+                    Append(cfg.extraRegistries[i], "_entries", "Id", "Prefab", sb);
 
             using (var md5 = System.Security.Cryptography.MD5.Create())
             {

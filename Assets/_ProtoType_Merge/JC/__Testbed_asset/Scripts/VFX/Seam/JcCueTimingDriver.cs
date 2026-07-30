@@ -60,7 +60,8 @@ namespace JC.VFX.Seam
             public float prevSeconds;     // 직전 프레임의 상태 경과 초
             public bool[] fired;          // 표의 줄별 발화 여부
             public bool[] suppressed;     // 클립이 자체 이벤트를 가져 이번 상태에서 건너뛸 줄
-            public bool suppressResolved; // 이번 상태 진입에서 억제 판정을 마쳤는지
+            public bool clipResolved;     // 이번 상태 진입에서 클립 판정을 마쳤는지
+            public readonly HashSet<string> clipNames = new HashSet<string>();   // 지금 재생 중인 클립 이름
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -72,8 +73,11 @@ namespace JC.VFX.Seam
                 return;   // 표가 없으면 존재하지 않는 것과 같다
             }
 
+            // ★HideFlags.DontSave 금지 — 「플레이 종료 시에도 파괴하지 않음」이 포함돼 있어
+            //   오브젝트가 에디트 모드로 새어 나가고 플레이할 때마다 누적된다.
+            if (FindAnyObjectByType<JcCueTimingDriver>() != null) return;   // 중복 방지
+
             var go = new GameObject("[JC] CueTimingDriver");
-            go.hideFlags = HideFlags.DontSave;   // 씬에 저장되지 않는다
             DontDestroyOnLoad(go);
             go.AddComponent<JcCueTimingDriver>().table = table;
         }
@@ -164,15 +168,15 @@ namespace JC.VFX.Seam
                 t.stateHash = hash;
                 t.actionId = t.ctx.CurrentActionInstanceId;
                 t.prevSeconds = -1f;             // 첫 관측이 이미 지난 시각이어도 놓치지 않도록
-                t.suppressResolved = false;
+                t.clipResolved = false;
                 for (int i = 0; i < t.fired.Length; i++) { t.fired[i] = false; t.suppressed[i] = false; }
             }
 
-            // 이번 상태 진입에서 한 번만 — 클립이 자체 이벤트를 가진 줄을 골라 둔다.
-            if (!t.suppressResolved)
+            // 이번 상태 진입에서 한 번만 — 재생 클립 이름을 모으고, 자체 이벤트를 가진 줄을 골라 둔다.
+            if (!t.clipResolved)
             {
-                ResolveSuppression(t, useNext);
-                t.suppressResolved = true;
+                ResolveClipContext(t, useNext);
+                t.clipResolved = true;
             }
 
             for (int i = 0; i < table.entries.Length; i++)
@@ -181,6 +185,9 @@ namespace JC.VFX.Seam
                 if (e == null || !e.enabled || t.fired[i] || t.suppressed[i]) continue;
                 if (string.IsNullOrEmpty(e.stateName) || string.IsNullOrEmpty(e.cueName)) continue;
                 if (Animator.StringToHash(e.stateName) != hash) continue;
+
+                // ★클립 범위 제한 — 상태 이름은 전 클래스가 공유하므로 이것까지 봐야 남의 유닛에 외치지 않는다.
+                if (!string.IsNullOrEmpty(e.clipName) && !t.clipNames.Contains(e.clipName)) continue;
 
                 if (t.prevSeconds < e.time && e.time <= seconds)
                 {
@@ -202,11 +209,15 @@ namespace JC.VFX.Seam
         }
 
         /// <summary>
-        /// 재생 중인 클립이 이미 같은 이름의 Cue 이벤트를 갖고 있으면 그 줄을 이번 상태에서 억제한다.
-        /// ASB가 클립에 진짜 이벤트를 심으면 여기서 자동으로 손을 뗀다(이중 발화 방지).
+        /// 이번 상태에서 재생되는 클립을 조사해 두 가지를 정한다.
+        ///   ① 클립 이름 집합 — 표의 클립 범위 제한에 쓴다(남의 클래스에 외치지 않기 위해).
+        ///   ② 억제 대상 — 클립이 이미 같은 이름의 Cue 이벤트를 가졌으면 그 줄은 발화하지 않는다.
+        /// ②가 있어서 ASB가 클립에 진짜 이벤트를 심으면 여기서 자동으로 손을 뗀다(이중 발화 방지).
         /// </summary>
-        private void ResolveSuppression(Tracked t, bool useNext)
+        private void ResolveClipContext(Tracked t, bool useNext)
         {
+            t.clipNames.Clear();
+
             clipInfoBuffer.Clear();
             if (useNext) t.animator.GetNextAnimatorClipInfo(0, clipInfoBuffer);
             else t.animator.GetCurrentAnimatorClipInfo(0, clipInfoBuffer);
@@ -215,6 +226,8 @@ namespace JC.VFX.Seam
             {
                 AnimationClip clip = clipInfoBuffer[c].clip;
                 if (clip == null) continue;
+
+                t.clipNames.Add(clip.name);
 
                 HashSet<string> cues = GetClipCues(clip);
                 if (cues.Count == 0) continue;

@@ -50,10 +50,17 @@ namespace JC.VFX.EditorTools
                     continue;
                 }
 
-                string key = e.stateName + "|" + e.cueName;
+                string key = e.stateName + "|" + e.clipName + "|" + e.cueName;
                 if (!seen.Add(key))
                 {
-                    sb.Append($"  [{i}] 같은 상태·Cue 조합이 중복이다: {key}\n");
+                    sb.Append($"  [{i}] 같은 상태·클립·Cue 조합이 중복이다: {key}\n");
+                    problems++;
+                }
+
+                if (string.IsNullOrWhiteSpace(e.clipName))
+                {
+                    sb.Append($"  [{i}] 클립 이름이 비었다 — 상태 이름은 전 클래스가 공유하므로 " +
+                              $"다른 클래스에도 '{e.cueName}'이 외쳐진다.\n");
                     problems++;
                 }
 

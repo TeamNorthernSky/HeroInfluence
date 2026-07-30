@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
-  m_Name: K_BB_SkillPresentation_3010
+  m_Name: JC_SkillPresentation_1011
   m_EditorClassIdentifier: 
-  SkillIndex: 3010
+  SkillIndex: 1011
   PresentationSchemaVersion: 1
   AnimationStateName: 
   AnimationTriggerOverride: 
@@ -52,7 +52,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 8300000, guid: aa82d1d64dc984b4c97628b17894648f, type: 3}
+  AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
   AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
@@ -64,12 +64,19 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
-    Cues: []
+    Cues:
+    - CueName: fist_trail_on
+      EffectIds: fa230000
+      SoundIds: 
+      Operation: 0
+      InstanceKey: fist_trail
+      Anchor: 1
+      Socket: 1
   Move:
-    Enabled: 0
+    Enabled: 1
     UseUnitMovement: 1
-    AnimationStateName: 
-    BlendInSeconds: 0.1
+    AnimationStateName: Base Layer.MoveForward
+    BlendInSeconds: 0
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -83,29 +90,36 @@ MonoBehaviour:
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
       Cues:
-      - CueName: fire
-        EffectIds: 8d230000
+      - CueName: impact
+        EffectIds: f1230000
         SoundIds: 
         Operation: 0
         InstanceKey: 
         Anchor: 1
-        Socket: 11
-      - CueName: hit_fx
-        EffectIds: 8d230000
+        Socket: 1
+      - CueName: fist_trail_off
+        EffectIds: 
         SoundIds: 
-        Operation: 0
-        InstanceKey: 
+        Operation: 2
+        InstanceKey: fist_trail
         Anchor: 1
-        Socket: 11
+        Socket: 1
   Return:
-    Enabled: 0
-    AnimationStateName: 
-    BlendInSeconds: 0.1
+    Enabled: 1
+    AnimationStateName: Base Layer.MoveReturn
+    BlendInSeconds: 0.001
   Post:
     Enabled: 1
-    AnimationStateName: 
+    AnimationStateName: Base Layer.Taunt
     BlendInSeconds: 0.1
-    Cues: []
+    Cues:
+    - CueName: cast
+      EffectIds: 
+      SoundIds: e9030000
+      Operation: 0
+      InstanceKey: 
+      Anchor: 1
+      Socket: 4
     ExtraDelay: 0
   MovingAttack:
     Enabled: 0

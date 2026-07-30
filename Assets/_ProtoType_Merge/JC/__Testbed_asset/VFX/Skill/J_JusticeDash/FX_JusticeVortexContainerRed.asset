@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aceb3ca09a698e841a389a1b113ed750, type: 3}
+  m_Name: FX_JusticeVortexContainerRed
+  m_EditorClassIdentifier: 
+  targets:
+    vortexPrefab: {fileID: 4957818361431581012, guid: d13888d7fff69654e94c8545d27d8c62,
+      type: 3}
+    strokePrefab: {fileID: 8611901290201109420, guid: f72d547a454085a4ca7386254c8480d9,
+      type: 3}
+    pointPrefab: {fileID: 7674410979476553257, guid: f5ac3846604ea3c4cbba0184ca30b17f,
+      type: 3}
+    windArcsPrefab: {fileID: 4578970827829647634, guid: 7b9a53427b428544bbca66ad67a96fc6,
+      type: 3}
+    shardPrefab: {fileID: 4231697358879776452, guid: da86082255585994b8754d6d614a4c91,
+      type: 3}
+  useStroke: 1
+  usePoint: 1
+  useWindArcs: 1
+  useShard: 1
+  launchDelay: 0.05
+  speed: 6.4
+  distance: 4.6
+  spawnOffset: {x: 0.34, y: 0.6, z: 1.05}
+  angleStart: 210
+  clockwise: 0
+  turns: 9.8
+  preserveStrokeArc: 1
+  opacity: 0.232
+  tailLinger: 1.64

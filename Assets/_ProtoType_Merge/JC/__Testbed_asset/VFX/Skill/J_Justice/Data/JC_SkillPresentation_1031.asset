@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
-  m_Name: K_BB_SkillPresentation_3010
+  m_Name: JC_SkillPresentation_1031
   m_EditorClassIdentifier: 
-  SkillIndex: 3010
+  SkillIndex: 1031
   PresentationSchemaVersion: 1
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
-  UseAnimEvent: 1
-  HitDelay: 0
+  UseAnimEvent: 0
+  HitDelay: 0.07
   AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
@@ -52,7 +52,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 8300000, guid: aa82d1d64dc984b4c97628b17894648f, type: 3}
+  AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
   AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
@@ -63,12 +63,19 @@ MonoBehaviour:
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
-    BlendInSeconds: 0.1
-    Cues: []
+    BlendInSeconds: 0
+    Cues:
+    - CueName: fist_trail_on
+      EffectIds: 0e240000
+      SoundIds: 
+      Operation: 0
+      InstanceKey: foot_trail
+      Anchor: 1
+      Socket: 6
   Move:
-    Enabled: 0
+    Enabled: 1
     UseUnitMovement: 1
-    AnimationStateName: 
+    AnimationStateName: Base Layer.Dash
     BlendInSeconds: 0.1
   AttackPrepare:
     Enabled: 0
@@ -78,29 +85,29 @@ MonoBehaviour:
   Attack:
     Enabled: 1
     Beats:
-    - AnimationStateName: Base Layer.ClassSkill_1
-      BlendInSeconds: 0
+    - AnimationStateName: Base Layer.ClassSkill_3
+      BlendInSeconds: 0.001
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
       Cues:
-      - CueName: fire
-        EffectIds: 8d230000
+      - CueName: impact
+        EffectIds: 1124000012240000142400001524000016240000
         SoundIds: 
         Operation: 0
         InstanceKey: 
         Anchor: 1
-        Socket: 11
-      - CueName: hit_fx
-        EffectIds: 8d230000
+        Socket: 4
+      - CueName: fist_trail_off
+        EffectIds: 
         SoundIds: 
-        Operation: 0
-        InstanceKey: 
+        Operation: 2
+        InstanceKey: foot_trail
         Anchor: 1
-        Socket: 11
+        Socket: 6
   Return:
-    Enabled: 0
-    AnimationStateName: 
-    BlendInSeconds: 0.1
+    Enabled: 1
+    AnimationStateName: Base Layer.MoveReturn
+    BlendInSeconds: 0
   Post:
     Enabled: 1
     AnimationStateName: 

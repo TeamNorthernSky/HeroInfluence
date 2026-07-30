@@ -28,6 +28,14 @@ namespace JC.VFX
         [Tooltip("JC 이펙트 레지스트리. 같은 id가 있으면 이쪽이 이긴다(현재 id 대역이 겹치지 않아 실제로는 단순 합집합).")]
         public EffectRegistry jcRegistry;
 
+        [Header("── 재료: 추가 JC 스킬 (뒤에 오는 것이 이긴다) ──")]
+        [Tooltip("스킬별로 따로 만든 JC 카탈로그들. 블랙불릿(K_AimShot) 등 새 캐릭터를 여기에 더한다.\n" +
+                 "위 jcCatalog 다음에 순서대로 얹히므로, 같은 스킬 인덱스가 겹치면 아래쪽이 이긴다.")]
+        public SkillPresentationCatalog[] extraCatalogs = new SkillPresentationCatalog[0];
+        [Tooltip("스킬별 JC 레지스트리들. ★id가 겹치지 않도록 대역을 나눠 쓸 것 —\n" +
+                 "저스티스 기본 90xx / 저스티스 강화 92xx / 블랙불릿 91xx.")]
+        public EffectRegistry[] extraRegistries = new EffectRegistry[0];
+
         [Header("── 산출물 (기존 에셋에 덮어쓴다 — GUID 보존) ──")]
         [Tooltip("병합 카탈로그. 씬이 이 에셋을 참조하게 되므로 재생성 시에도 같은 파일에 써야 한다.")]
         public SkillPresentationCatalog mergedCatalog;

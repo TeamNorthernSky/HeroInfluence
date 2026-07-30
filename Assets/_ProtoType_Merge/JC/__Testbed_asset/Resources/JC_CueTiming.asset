@@ -14,55 +14,54 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - enabled: 1
-    stateName: Base Layer.ClassSkill_1
+    stateName: Base Layer.ClassSkill_2
+    clipName: Attack02_NoWeapon
     cueName: impact
-    time: 0.175
-    note: "1010 \uB4F1\uC7A5! \uD0C0\uACA9 / 1020 \uD380\uCE58 1\uD0C0"
+    time: 0.111
+    note: "\u2605ASB \uD074\uB9BD \uC774\uBCA4\uD2B8 \uC774\uB984 \uB204\uB77D\uBD84
+      \uB300\uD589. \uC2DC\uAC01\uC740 ASB\uAC00 \uCC0D\uC740 0.111 \uADF8\uB300\uB85C"
   - enabled: 1
     stateName: Base Layer.ClassSkill_1
+    clipName: Attack01_NoWeapon
     cueName: fist_trail_off
-    time: 0.33
-    note: "1010 \uC8FC\uBA39 \uADA4\uC801 \uC885\uB8CC"
+    time: 0.215
+    note: "1010 \uB4F1\uC7A5! \uC8FC\uBA39 \uADA4\uC801 \uC885\uB8CC (impact 0.115
+      + 0.10)"
   - enabled: 1
     stateName: Base Layer.ClassSkill_2
-    cueName: impact
-    time: 0.331
-    note: "1020 \uD380\uCE58 2\uD0C0"
-  - enabled: 1
-    stateName: Base Layer.ClassSkill_2
+    clipName: Attack02_NoWeapon
     cueName: fist_trail_off
-    time: 0.42
-    note: "1020 \uC624\uB978\uC190 \uADA4\uC801 \uC885\uB8CC"
+    time: 0.211
+    note: "1020 \uD380\uCE58 \uC624\uB978\uC190 \uADA4\uC801 \uC885\uB8CC"
   - enabled: 1
     stateName: Base Layer.ClassSkill_2
+    clipName: Attack02_NoWeapon
     cueName: fist_trail_off_l
-    time: 0.425
-    note: "1020 \uC67C\uC190 \uADA4\uC801 \uC885\uB8CC"
+    time: 0.216
+    note: "1020 \uD380\uCE58 \uC67C\uC190 \uADA4\uC801 \uC885\uB8CC"
   - enabled: 1
     stateName: Base Layer.ClassSkill_3
-    cueName: impact
-    time: 0.194
-    note: "1030 \uB300\uC26C \uD0C0\uACA9 \u2014 \uC11C\uBE0C\uC774\uD399\uD2B8 5\uC885
-      \uB3D9\uC2DC \uC2A4\uD3F0"
-  - enabled: 1
-    stateName: Base Layer.ClassSkill_3
+    clipName: Attack03_NoWeapon
     cueName: fist_trail_off
-    time: 0.4
-    note: "1030 \uBC1C \uADA4\uC801 \uC885\uB8CC"
+    time: 0.215
+    note: "1030 \uB300\uC26C \uBC1C \uADA4\uC801 \uC885\uB8CC"
   - enabled: 1
     stateName: Base Layer.Dash
+    clipName: DashFWD_Battle_InPlace_NoWeapon
     cueName: fist_trail_on
     time: 0.02
-    note: "1030 \uC774\uB3D9 \uC2DC\uC791 \u2014 \uBC1C \uADA4\uC801 \uAC1C\uC2DC"
+    note: "1030 \uB300\uC26C \uC774\uB3D9 \u2014 \uBC1C \uADA4\uC801 \uAC1C\uC2DC"
   - enabled: 1
     stateName: Base Layer.MoveForward
+    clipName: MoveFWD_Normal_InPlace_NoWeapon
     cueName: fist_trail_on
-    time: 0.03
+    time: 0.02
     note: "1010/1020 \uC804\uC9C4 \u2014 \uC624\uB978\uC190 \uADA4\uC801 \uAC1C\uC2DC"
   - enabled: 1
     stateName: Base Layer.MoveForward
+    clipName: MoveFWD_Normal_InPlace_NoWeapon
     cueName: fist_trail_on_l
-    time: 0.035
+    time: 0.025
     note: "1020 \uC804\uC9C4 \u2014 \uC67C\uC190 \uADA4\uC801 \uAC1C\uC2DC"
-  logFire: 0
+  logFire: 1
   warnUnusedStates: 1

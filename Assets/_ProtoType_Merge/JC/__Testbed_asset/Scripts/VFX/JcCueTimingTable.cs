@@ -27,6 +27,12 @@ namespace JC.VFX
                      "★연출 데이터(SkillPresentationData)의 AnimationStateName과 글자 그대로 같아야 한다.")]
             public string stateName;
 
+            [Tooltip("★이 클립이 재생 중일 때만 발화한다. 예: Attack02_NoWeapon\n" +
+                     "상태 이름(ClassSkill_2 등)은 전 클래스가 공유하므로 그것만으로는 범위를 못 가린다 —\n" +
+                     "파이터는 Attack02_NoWeapon, 블래스터는 Attack02_MagicWand를 같은 상태에 물린다.\n" +
+                     "비워 두면 클립을 가리지 않는다(권장하지 않음 — 다른 클래스에도 이름이 외쳐진다).")]
+            public string clipName;
+
             [Tooltip("부를 Cue 이름. 예: impact / fist_trail_on / fist_trail_off\n" +
                      "★연출 데이터의 CueName과 같아야 한다. 표에만 있고 데이터에 없는 이름은 불러도 무해하다\n" +
                      "(등록되지 않은 Cue는 프리젠터가 조용히 무시한다).")]
