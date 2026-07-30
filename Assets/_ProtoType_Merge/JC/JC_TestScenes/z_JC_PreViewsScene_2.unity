@@ -1354,6 +1354,7 @@ MonoBehaviour:
   enemySpawner: {fileID: 912453334}
   playerUnitId: 10001
   playerGridNumber: 101
+  additionalPreviewPlayers: []
   enemyUnitId: 20001
   enemyGridNumber: 201
   previewEnemies:
@@ -1631,29 +1632,42 @@ MonoBehaviour:
   - key: 113
     skillIndex: 1010
     useAlternate: 0
-    requireTargetClick: 0
+    requireTargetClick: 1
     label: "\uC800\uC2A4\uD2F0\uC2A4 \uB4F1\uC7A5! (\uAE30\uBCF8\xB7\uCCAD)"
   - key: 119
     skillIndex: 1010
     useAlternate: 1
-    requireTargetClick: 0
+    requireTargetClick: 1
     label: "\uC800\uC2A4\uD2F0\uC2A4 \uB4F1\uC7A5! (+\xB7\uC801)"
   - key: 101
     skillIndex: 1020
     useAlternate: 0
-    requireTargetClick: 0
+    requireTargetClick: 1
     label: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58 (\uAE30\uBCF8\xB7\uCCAD)"
   - key: 114
     skillIndex: 1020
     useAlternate: 1
-    requireTargetClick: 0
+    requireTargetClick: 1
     label: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58 (+\xB7\uC801)"
   - key: 97
     skillIndex: 1030
     useAlternate: 0
     requireTargetClick: 1
     label: "\uC800\uC2A4\uD2F0\uC2A4 \uB300\uC26C (\uAE30\uBCF8\xB7\uCCAD)"
+  - key: 115
+    skillIndex: 1030
+    useAlternate: 1
+    requireTargetClick: 1
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uB300\uC26C (+\xB7\uC801)"
   resetKey: 116
+  slowerKey: 91
+  fasterKey: 93
+  timeResetKey: 92
+  timeScaleSteps:
+  - 0.1
+  - 0.25
+  - 0.5
+  - 1
   raycastCamera: {fileID: 0}
   maxRayDistance: 200
   showOverlay: 1
@@ -2110,6 +2124,7 @@ MonoBehaviour:
   visualDirector: {fileID: 621159274}
   previewActor: {fileID: 0}
   previewTarget: {fileID: 0}
+  previewAllyTarget: {fileID: 0}
   selectedSkillIndex: 1010
   ignoreSkillCost: 1
 --- !u!4 &1306616269

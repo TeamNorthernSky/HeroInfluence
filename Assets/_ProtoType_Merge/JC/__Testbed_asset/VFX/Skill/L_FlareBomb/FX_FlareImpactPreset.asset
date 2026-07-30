@@ -60,4 +60,4 @@ MonoBehaviour:
   emberSize: 0.05
   emberNoise: 0.35
   lingerTime: 0.5
-  previewProgress: 0.35
+  previewProgress: 0

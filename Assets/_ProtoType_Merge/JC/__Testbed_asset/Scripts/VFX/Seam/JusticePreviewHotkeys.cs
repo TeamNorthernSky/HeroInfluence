@@ -11,7 +11,7 @@ namespace JC.VFX.Seam
     /// <summary>
     /// 프리뷰 씬 단축키 — 인스펙터에서 컨트롤러를 띄우지 않고 스킬을 재생/초기화한다.
     ///
-    /// 배치: Q/W = 등장!(청/적), E/R = 펀치(청/적), A = 대쉬(청, 타겟 클릭), T = 초기화.
+    /// 배치: Q/W = 등장!(청/적), E/R = 펀치(청/적), A/S = 대쉬(청/적), T = 초기화. 전 키 타겟 클릭.
     ///       [ / ] = 배속 단계 감속/가속, \ = 1.0 복원 — 씬 전용(비활성 시 1로 복원).
     /// 같은 skillIndex라도 <see cref="Binding.useAlternate"/>가 다르면 다른 색 프리셋으로 나온다.
     ///
@@ -47,11 +47,12 @@ namespace JC.VFX.Seam
         [SerializeField]
         private Binding[] bindings =
         {
-            new Binding { key = KeyCode.Q, skillIndex = 1010, useAlternate = false, label = "저스티스 등장! (기본·청)" },
-            new Binding { key = KeyCode.W, skillIndex = 1010, useAlternate = true,  label = "저스티스 등장! (+·적)" },
-            new Binding { key = KeyCode.E, skillIndex = 1020, useAlternate = false, label = "저스티스 펀치 (기본·청)" },
-            new Binding { key = KeyCode.R, skillIndex = 1020, useAlternate = true,  label = "저스티스 펀치 (+·적)" },
+            new Binding { key = KeyCode.Q, skillIndex = 1010, useAlternate = false, requireTargetClick = true, label = "저스티스 등장! (기본·청)" },
+            new Binding { key = KeyCode.W, skillIndex = 1010, useAlternate = true,  requireTargetClick = true, label = "저스티스 등장! (+·적)" },
+            new Binding { key = KeyCode.E, skillIndex = 1020, useAlternate = false, requireTargetClick = true, label = "저스티스 펀치 (기본·청)" },
+            new Binding { key = KeyCode.R, skillIndex = 1020, useAlternate = true,  requireTargetClick = true, label = "저스티스 펀치 (+·적)" },
             new Binding { key = KeyCode.A, skillIndex = 1030, useAlternate = false, requireTargetClick = true, label = "저스티스 대쉬 (기본·청)" },
+            new Binding { key = KeyCode.S, skillIndex = 1030, useAlternate = true,  requireTargetClick = true, label = "저스티스 대쉬 (+·적)" },
         };
 
         [Header("초기화")]

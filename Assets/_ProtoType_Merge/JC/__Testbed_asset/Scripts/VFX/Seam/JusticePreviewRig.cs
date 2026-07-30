@@ -4,7 +4,7 @@ using UnityEngine;
 namespace JC.VFX.Seam
 {
     /// <summary>
-    /// 저스티스 VFX 테스트 씬(z_JC_PreViewsScene) 전용 리그.
+    /// 저스티스 VFX 테스트 씬(z_JC_PreViewsScene_2) 전용 리그.
     ///
     /// ASB 자산을 일절 수정하지 않기 위한 씬 로컬 우회 장치다.
     /// 유닛 프리팹(Unit_Fighter_10001)의 Animator에는 ASB의 Fighter_Ani_Controller가 직접 물려 있고,

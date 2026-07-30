@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d03144d9d3efb3e419742b175560e552, type: 3}
+  m_Name: F2_FlareOrbSpritePreset_Dark
+  m_EditorClassIdentifier: 
+  variantSuffix: _Dark
+  worldSize: 1.8
+  baseRadius: 0.471
+  ellipseRatio: 1.086
+  maxReach: 0.763
+  reachRatio: 1
+  reachSoft: 0.115
+  patternYOffset: 0
+  emitterDepth: 1.157
+  cutHeight: -0.907
+  tongueColor: {r: 0.5767125, g: 0.02385, b: 0.94499993, a: 1}
+  tongueHighlightColor: {r: 1.1540625, g: 0.63225, b: 1.3050001, a: 1}
+  tongueEmission: 6
+  laneCount: 8
+  laneWidth: 0.327
+  laneWidthJitter: 0.207
+  lanePosJitter: 0.531
+  laneTiltJitter: 1.011
+  widthNoiseScale: 6.24
+  widthNoiseAmount: 0.42
+  birthOffsetMin: -0.085
+  birthOffsetMax: 0.266
+  birthInnerBias: 2.36
+  laneLengthJitter: 0.068
+  laneMaxLength: 0.32
+  outerShrink: 0.543
+  cutFarShrink: 0.557
+  laneTravelDist: 0.267
+  laneTravelSpeed: 0.148
+  laneLifeFadePeak: 0.162
+  taperSharp: 2.55
+  highlightRatio: 0.691
+  edgeSoftRatio: 1
+  flowSpeed: 2.52
+  sCurveAmount: 0
+  sCurveFreq: 3.31
+  debugCircles: 0
