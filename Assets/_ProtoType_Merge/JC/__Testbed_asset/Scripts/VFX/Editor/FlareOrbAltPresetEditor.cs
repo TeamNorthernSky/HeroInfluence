@@ -11,10 +11,16 @@ namespace JC.VFX
     [CustomEditor(typeof(FlareOrbAltPreset))]
     public class FlareOrbAltPresetEditor : FlareOrbPresetEditorBase
     {
-        static string MatLane     => DIR + "/FlareAuraLane.mat";
-        static string MatLaneBack => DIR + "/FlareAuraLaneBack.mat";
+        // ★변종 대응(260730): 경로를 프리셋의 variantSuffix로 만든다. 비면 종전과 동일(크림판).
+        static string Sfx(FlareOrbPresetBase p) => p != null && !string.IsNullOrEmpty(p.variantSuffix) ? p.variantSuffix : "";
+        static string MatLane(FlareOrbPresetBase p)     => DIR + "/FlareAuraLane" + Sfx(p) + ".mat";
+        static string MatLaneBack(FlareOrbPresetBase p) => DIR + "/FlareAuraLaneBack" + Sfx(p) + ".mat";
+        /// <summary>F1은 흑염 전용 오브 프리팹이 없다(셸 형태는 크림판과 공유) — 접미사를 붙이지 않는다.</summary>
         static string OrbPrefab   => DIR + "/FlareOrbAlt.prefab";
         const string PresetPath   = DIR + "/F1_FlareOrbAltPreset.asset";
+
+        /// <summary>이 프리셋이 흑염 변종을 대상으로 하는가 — 라이브 프리뷰 스코프를 가른다.</summary>
+        static bool WantsDark(FlareOrbPresetBase p) => Sfx(p).Contains("Dark");
 
         protected override string LiveKey => "JC.FlareOrbAltPreset.LivePreview";
         protected override string HelpText =>
@@ -85,7 +91,8 @@ namespace JC.VFX
             foreach (var shell in Object.FindObjectsByType<FlareOrbShell>(FindObjectsSortMode.None))
             {
                 if (!IsAltShell(shell)) continue;
-                if (InDarkVariant(shell)) continue;   // 흑염 변형은 크림판 프리셋 스코프 밖
+                // ★변종 스코프(260730): 크림판은 흑염을 건너뛰고, 흑염 프리셋은 흑염만 만진다.
+                if (InDarkVariant(shell) != WantsDark(p)) continue;
                 bool isBack = shell.gameObject.name.Contains("Back");
                 ApplyShellToInstance(shell, p, isBack);
 
@@ -106,13 +113,13 @@ namespace JC.VFX
 
         public static void Apply(FlareOrbAltPreset p)
         {
-            var lane = Load<Material>(MatLane);
+            var lane = Load<Material>(MatLane(p));
             FillLaneCommon((n, f) => lane.SetFloat(n, f), (n, c) => lane.SetColor(n, c), p, false);
             lane.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Back);
             lane.renderQueue = 3002;   // 최상단(레인 전면)
             EditorUtility.SetDirty(lane);
 
-            var laneBack = Load<Material>(MatLaneBack);
+            var laneBack = Load<Material>(MatLaneBack(p));
             if (laneBack != null)
             {
                 FillLaneCommon((n, f) => laneBack.SetFloat(n, f), (n, c) => laneBack.SetColor(n, c), p, true);
@@ -121,6 +128,13 @@ namespace JC.VFX
                 EditorUtility.SetDirty(laneBack);
             }
             AssetDatabase.SaveAssets();
+
+            // ★흑염은 전용 오브 프리팹이 없다 — 기록하면 크림판 프리팹을 덮어쓰므로 건너뛴다.
+            if (WantsDark(p))
+            {
+                Debug.Log("[FlareOrbAltPreset] " + p.name + " → 흑염 레인 재질에 적용 완료 (프리팹은 크림판 공유이므로 미기록)");
+                return;
+            }
 
             var orb = PrefabUtility.LoadPrefabContents(OrbPrefab);
             try
@@ -138,7 +152,7 @@ namespace JC.VFX
         {
             Undo.RecordObject(p, "Capture Flare Orb F1");
 
-            var lane = Load<Material>(MatLane);
+            var lane = Load<Material>(MatLane(p));
             p.tongueColor = lane.GetColor("_ColorTongue");
             p.tongueHighlightColor = lane.GetColor("_ColorHighlight");
             p.tongueEmission = lane.GetFloat("_Emission");
@@ -171,7 +185,7 @@ namespace JC.VFX
             p.tipErodeStrength = lane.GetFloat("_TipErodeStrength");
             p.debugOutline = lane.GetFloat("_DebugOutline");
 
-            var laneBack = Load<Material>(MatLaneBack);
+            var laneBack = Load<Material>(MatLaneBack(p));
             if (laneBack != null)
             {
                 p.backOpacity = laneBack.GetFloat("_Opacity");

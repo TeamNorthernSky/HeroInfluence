@@ -4903,7 +4903,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   preset: {fileID: 11400000, guid: 679d6139f18f7cb4bb70b300e89ed8cd, type: 2}
-  presetAlt: {fileID: 0}
+  presetAlt: {fileID: 11400000, guid: df73acb82e9af5a4984c8a3f3e849961, type: 2}
   kind: 0
   applyMaterials: 1
   strokeMaterial: {fileID: 2100000, guid: 1859ef92f2a27cb42a55718c3fef3bd8, type: 2}
@@ -4913,6 +4913,7 @@ MonoBehaviour:
   vortexMaterial: {fileID: 0}
   slashMaterial: {fileID: 0}
   arcStrokeMaterial: {fileID: 0}
+  arcPointMaterial: {fileID: 0}
 --- !u!1 &7426273800200814891
 GameObject:
   m_ObjectHideFlags: 0

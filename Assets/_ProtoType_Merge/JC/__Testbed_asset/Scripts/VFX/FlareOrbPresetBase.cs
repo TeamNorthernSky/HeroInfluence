@@ -10,6 +10,15 @@ namespace JC.VFX
     /// </summary>
     public abstract class FlareOrbPresetBase : ScriptableObject
     {
+        // ★변종 대응(260730) — 예전에는 에디터가 자산 경로를 상수로 박아, 크림판 프리셋 하나만
+        // 존재할 수 있었다(흑염 자산은 프리셋 스코프에서 아예 제외). 접미사를 프리셋이 들고 있게 해서
+        // 같은 코드로 변종 프리셋을 만들 수 있게 한다. 빈 값이면 종전과 완전히 동일하게 동작한다.
+        [Header("변종 (대상 자산 선택)")]
+        [Tooltip("대상 자산 이름의 접미사. 비우면 기본(크림) 세트, \"_Dark\"면 흑염 세트를 대상으로 한다.\n" +
+                 "적용·캡처·라이브 프리뷰의 대상이 이 값에 따라 갈린다.\n" +
+                 "예) 비움 → FlareOrbCore.mat / \"_Dark\" → FlareOrbCore_Dark.mat")]
+        public string variantSuffix = "";
+
         [Header("셸 형태 (FlareOrbShell — 통통 티어드롭 메시)")]
         [Tooltip("몸통(구) 반경(m). 코어 구체(0.4)를 살짝 감싸는 값.")]
         public float shellRadius = 0.46f;

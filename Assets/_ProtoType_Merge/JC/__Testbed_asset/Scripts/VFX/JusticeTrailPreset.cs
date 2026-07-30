@@ -320,31 +320,26 @@ namespace JC.VFX
             [Range(-360f, 720f)] public float angleEnd = 30f;
             [Tooltip("궤도 반경(m).")]
             [Range(0.2f, 6f)] public float radius = 1.6f;
-            [Tooltip("호를 다 긋는 데 걸리는 시간(초). 등속 주행.")]
+            [Tooltip("호를 다 긋는 데 걸리는 시간(초).")]
             [Range(0.05f, 3f)] public float sweepDuration = 0.5f;
+            [Tooltip("주행 가속 곡선. 1=등속, 클수록 초반이 빠르고 끝에서 감속(촤악), 1 미만은 반대(끝에서 가속).\n" +
+                     "※방출 밀도(거리 기준)와 아래 점진·감소·수축 구간(호 위 위치 기준)은 이 값과 무관하게 형상이 유지된다.")]
+            [Range(0.3f, 4f)] public float easeOut = 1f;
 
             [Header("획 방출")]
             [Tooltip("주행 거리당 방출 수. 획의 개수 밀도.")]
             [Range(0f, 60f)] public float rateOverDistance = 6f;
-            [Tooltip("생성 밀도의 점진 구간(스윕 전체=1.0 기준).\n" +
-                     "0 = 처음부터 풀 밀도.  0.25 = 스윕 앞 25% 동안 밀도가 0 → 100%로 선형 증가.\n" +
+            // ★점진·감소·수축 구간의 기준은 「호 위 위치」(공간 진행도)다(260729, Ease Out 도입과 함께 재정의).
+            // 시간 기준이면 Ease Out 감속 시 "뒤 X%"가 말단의 좁은 호 조각에 압축돼 버린다 —
+            // 공간 기준이라 easeOut 값을 바꿔도 화면상 형상이 유지된다.
+            [Tooltip("생성 밀도의 점진 구간(호 전체=1.0, 호 위 위치 기준).\n" +
+                     "0 = 처음부터 풀 밀도.  0.25 = 호의 앞 25% 구간 동안 밀도가 0 → 100%로 선형 증가.\n" +
                      "호의 시작은 성기고 진행할수록 빽빽해진다.")]
             [Range(0f, 0.5f)] public float emissionRamp = 0f;
-            [Tooltip("생성 밀도의 감소 구간(스윕 전체=1.0 기준).\n" +
-                     "0 = 끝까지 풀 밀도 유지(마지막에 한 번에 종료).  0.5 = 중간부터 밀도가 100% → 0으로 선형 감소.\n" +
+            [Tooltip("생성 밀도의 감소 구간(호 전체=1.0, 호 위 위치 기준).\n" +
+                     "0 = 끝까지 풀 밀도 유지(마지막에 한 번에 종료).  0.5 = 호의 중간부터 밀도가 100% → 0으로 선형 감소.\n" +
                      "호의 끝으로 갈수록 획이 성겨진다.")]
             [Range(0f, 0.5f)] public float emissionDecay = 0f;
-
-            // ★강제 수축 — 살아 있는 획의 「머리」를 강제로 끝낸다: 성장을 멈추고 현재 두께에서
-            // 이어서 가늘어져 0으로(붓을 떼는 동작). 수명·최대 두께 목표는 전부 무시된다.
-            // 이미 그어진 몸통은 보존된다. 궤도 중심에서 먼 획일수록 빨리 0에 닿고,
-            // 가장 가까운 획도 스윕 종료에는 0에 도달한다.
-            [Header("강제 수축 (획 머리 성장 정지 → 가늘어져 0)")]
-            [Tooltip("수축 시작 구간(스윕 전체=1.0 기준). Emission Decay와 같은 문법.\n" +
-                     "0 = 수축 없음.  0.5 = 스윕 중간부터 수축 시작 → 종료 시점에 전원 마무리.")]
-            [Range(0f, 0.5f)] public float thinDecay = 0f;
-            [Tooltip("먼 곳(반경 바깥쪽) 가속 배수. 1 = 차등 없음, 클수록 바깥 획이 먼저 마무리된다.")]
-            [Range(1f, 5f)] public float thinFarBoost = 2f;
             [Tooltip("동시 존재 상한.")]
             [Min(1)] public int maxParticles = 60;
             // ★노즐은 구가 아니라 「공전하는 직사각형」(260729). 구형은 반경 편차가 중앙에 몰려
@@ -354,6 +349,21 @@ namespace JC.VFX
             [Range(0f, 2f)] public float nozzleRadius = 0.2f;
             [Tooltip("노즐 두께(m) — 진행 방향·수직 방향의 폭. 얇을수록 획들이 한 평면 대역에 정렬된다.")]
             [Range(0.005f, 0.5f)] public float nozzleThickness = 0.05f;
+            [Tooltip("노즐 기울기(도) — 궤도 평면 안에서의 로컬 회전. 기울인 채로 공전한다(펜촉 눕히기).\n" +
+                     "0 = 반경 방향 정렬(기존).  + = 시계 방향으로 눕힘 — 반대 인상이면 부호를 뒤집는다.\n" +
+                     "※기울일수록 반경 방향 발자국이 cos배로 좁아진다(45°≈71%).")]
+            [Range(-45f, 45f)] public float nozzleTilt = 0f;
+
+            // ★강제 수축 — 살아 있는 획의 「머리」를 강제로 끝낸다: 성장을 멈추고 현재 두께에서
+            // 이어서 가늘어져 0으로(붓을 떼는 동작). 수명·최대 두께 목표는 전부 무시된다.
+            // 이미 그어진 몸통은 보존된다. 궤도 중심에서 먼 획일수록 빨리 0에 닿고,
+            // 가장 가까운 획도 스윕 종료에는 0에 도달한다.
+            [Header("강제 수축 (획 머리 성장 정지 → 가늘어져 0)")]
+            [Tooltip("수축 시작 구간(호 전체=1.0, 호 위 위치 기준). Emission Decay와 같은 문법.\n" +
+                     "0 = 수축 없음.  0.5 = 호의 중간부터 수축 시작 → 종료 시점에 전원 마무리.")]
+            [Range(0f, 0.5f)] public float thinDecay = 0f;
+            [Tooltip("먼 곳(반경 바깥쪽) 가속 배수. 1 = 차등 없음, 클수록 바깥 획이 먼저 마무리된다.")]
+            [Range(1f, 5f)] public float thinFarBoost = 2f;
 
             [Header("획 일생 (두께 0 → 최대 → 0)")]
             // ★잔여 시간 클램프 규칙(사용자 확정, 260729): Min/Max와 무관하게, 획은 자신이
@@ -367,10 +377,14 @@ namespace JC.VFX
                      "잔여가 Max 아래로 내려가면 긴 수명 획부터 빠져 밀도가 자연 감소하고, Min 아래면 방출이 멈춘다.\n" +
                      "끄면: 잔여 시간으로 수명을 조인다(생명주기 압축 — 모든 획이 끝까지 태어남).")]
             public bool skipShortRemainder = true;
-            [Tooltip("★두께 증가 시간(초). 0에서 최대 두께에 닿기까지 — 작을수록 빠르게 굵어진다.")]
-            [Range(0.01f, 2f)] public float growTime = 0.15f;
-            [Tooltip("소멸 구간(초). 이 시간 동안 알파가 빠지며 두께도 0으로 수렴한다.")]
-            [Range(0.01f, 2f)] public float fadeTime = 0.3f;
+            // ★260729 절대 초 → 일생 비율로 전환. 절대 초는 두께 곡선이 수명 정규화라
+            // Max 수명 획에만 유효했고(나머지는 비례 압축), 말단 방출 컷과 값을 공유해
+            // 스윕을 조이면 방출 창이 몰래 잠식되는 함정을 만들었다. 비율은 모든 획에 똑같이 적용된다.
+            [Tooltip("★두께 증가 구간 — 자기 일생에 대한 비율(0~1). 어떤 수명의 획이든 일생의 이 비율 동안 0에서 최대 두께로 자란다.")]
+            [Range(0.01f, 0.98f)] public float growRatio = 0.12f;
+            [Tooltip("소멸 구간 — 자기 일생에 대한 비율(0~1). 일생의 마지막 이 비율 동안 알파가 빠지며 두께도 0으로 수렴한다.\n" +
+                     "※증가+소멸 비율의 합이 0.99를 넘으면 소멸 쪽이 자동 축소된다.")]
+            [Range(0.01f, 0.98f)] public float fadeRatio = 0.25f;
             [Tooltip("최대 두께 최소(m).")]
             [Range(0.005f, 2.5f)] public float widthMin = 0.15f;
             [Tooltip("최대 두께 최대(m). Min과 벌릴수록 굵기가 제각각인 획이 된다.")]
@@ -383,6 +397,89 @@ namespace JC.VFX
             [Header("배치")]
             [Tooltip("스폰 지점(소켓) 기준 오프셋(m). 소켓 스케일은 무시된다.")]
             public Vector3 spawnOffset = new Vector3(0f, -0.2f, 0f);
+        }
+
+        /// <summary>
+        /// 호 포인트 획 — 본 호 획 위에 겹치는 액센트 가닥(구 하이라이트의 후계, 260729).
+        /// 바깥 오프셋 지점에서 시작해 본 궤도로 수렴하는 별도 호를 포인트 색으로 긋는다.
+        /// 로직 규칙은 본 호 획과 동일하지만 **별도 객체·별도 컴포넌트**(JcArcPointEffect)로 격리 —
+        /// 1차 완성으로 동결한 본 획 코드를 열지 않기 위함.
+        /// </summary>
+        [Serializable]
+        public class ArcPointGroup
+        {
+            [Tooltip("포인트 획을 사용할지.")]
+            public bool enabled = true;
+
+            [Header("색 (획 수명 진행: 머리 → 중간 → 꼬리)")]
+            [ColorUsage(true, true)] public Color headColor = Color.white;
+            [ColorUsage(true, true)] public Color midColor = new Color(0.55f, 0.80f, 1f);
+            [ColorUsage(true, true)] public Color tailColor = new Color(0.25f, 0.45f, 0.85f);
+            [Tooltip("본체 발광 배수.")]
+            [Range(0f, 8f)] public float emission = 2f;
+            [Tooltip("발광을 올릴 때 채도를 지키는 정도.")]
+            [Range(0f, 1f)] public float chromaHold = 1f;
+
+            [Header("획 형태 (몸통 단면 — 전용 재질 소유라 본 획과 독립)")]
+            [Range(0.5f, 8f)] public float bodyFalloff = 2.5f;
+            [Tooltip("획 양끝(길이 방향) 방추형 테이퍼 구간(획 길이 비율).")]
+            [Range(0f, 0.5f)] public float edgeTaper = 0.25f;
+
+            [Header("궤도 (본 호와 동일 문법 — 겹치려면 본 호와 같은 값으로 맞춘다)")]
+            [Range(-360f, 720f)] public float angleStart = 210f;
+            [Range(-360f, 720f)] public float angleEnd = 30f;
+            [Range(0.2f, 6f)] public float radius = 1.6f;
+            [Range(0.05f, 3f)] public float sweepDuration = 0.5f;
+            [Range(0.3f, 4f)] public float easeOut = 1f;
+
+            // ★대시 1개 = 입자 1개(260729 3차 확정). 탄생 위치가 곧 시작 오프셋이라
+            // 노즐 반경 대역 = [Offset Min, Max]이며 별도 노즐 반폭 항목이 없다.
+            [Header("수렴 (탄생 시 바깥 오프셋 → 수명 진행에 따라 본 궤도 합류)")]
+            [Tooltip("시작 오프셋 최소(m). 대시마다 [최소, 최대]에서 랜덤 = 노이즈.")]
+            [Range(0f, 2f)] public float offsetMin = 0.3f;
+            [Tooltip("시작 오프셋 최대(m).")]
+            [Range(0f, 2f)] public float offsetMax = 0.9f;
+            [Tooltip("복귀 곡선 지수. 1 = 선형 수렴, 클수록 초반에 빠르게 붙고 이후 궤도에 밀착.")]
+            [Range(0.5f, 4f)] public float convergeExp = 1.5f;
+
+            [Header("대시 방출 (밀도 구간은 호 위 위치 기준)")]
+            [Tooltip("헤드 이동 거리당 대시 등장 수. ★대시 1개 = 입자 1개라 본 획보다 훨씬 낮게(0.5~2 권장).")]
+            [Range(0f, 60f)] public float rateOverDistance = 1.5f;
+            [Range(0f, 0.5f)] public float emissionRamp = 0f;
+            [Range(0f, 0.5f)] public float emissionDecay = 0f;
+            [Tooltip("동시 대시 상한. 실제 개수는 방출률 × 수명으로 정해지며 이 값은 뚜껑이다.")]
+            [Min(1)] public int maxParticles = 20;
+            [Tooltip("노즐 두께(m) — 진행·수직 방향 산포. 수렴 재배치가 반경 성분만 만지므로 이 산포는 보존된다.")]
+            [Range(0.005f, 0.5f)] public float nozzleThickness = 0.03f;
+
+            // ★수명 압축 없음(260729 확정) — 어떤 대시도 수명이 조여지지 않는다.
+            // 급꺾임의 원인이 압축(시간 기반 수렴 가속)이었으므로, 말미 처리는 토글이 정한다.
+            [Header("대시 일생 (수명 = 대시 길이 — 압축 없음)")]
+            [Tooltip("대시 수명 최소(초). 헤드를 따라 그리는 시간 = 대시 길이.")]
+            [Range(0.05f, 4f)] public float strokeLifeMin = 0.15f;
+            [Tooltip("대시 수명 최대(초).")]
+            [Range(0.1f, 4f)] public float strokeLifetime = 0.35f;
+            [Tooltip("켜면: 스윕을 넘길 대시는 애초에 태어나지 않는다 → 연장 없이 스윕과 함께 종료.\n" +
+                     "끄면: 말미 대시도 전부 태어나고, 스윕 종료 후 앵커가 등속으로 연장 주행하며 남은 호선을 마저 그린다.\n" +
+                     "※어느 쪽이든 붓 「생성」만 제어한다 — 그려지는 중인 호선은 건드리지 않는다.")]
+            public bool skipShortRemainder = true;
+            [Tooltip("두께 증가 구간 — 자기 일생 비율(0~1).")]
+            [Range(0.01f, 0.98f)] public float growRatio = 0.12f;
+            [Tooltip("소멸 구간 — 자기 일생 비율(0~1). 증가+소멸 합이 0.99를 넘으면 자동 축소.")]
+            [Range(0.01f, 0.98f)] public float fadeRatio = 0.25f;
+            [Range(0.005f, 2.5f)] public float widthMin = 0.05f;
+            [Range(0.005f, 2.5f)] public float widthMax = 0.15f;
+
+            // ★강제 수축(Thin Decay)은 포인트에서 폐지(260729) — 재조준이 수렴 q를 점프시켜
+            // 위치 팝을 만들었고, 오버런 체계에서는 존재 이유(스윕 종료 강제 마무리)도 소멸했다.
+
+            [Header("궤적")]
+            [Range(0.001f, 0.05f)] public float trailMinVertexDistance = 0.004f;
+
+            [Header("배치")]
+            public Vector3 spawnOffset = new Vector3(0f, -0.2f, 0f);
+            [Tooltip("주행 종료 후 잔광 여유(초).")]
+            [Range(0f, 2f)] public float extraLinger = 0.2f;
         }
 
         /// <summary>
@@ -600,20 +697,21 @@ namespace JC.VFX
             [Tooltip("타격 섬광 재질. Testbed/Justice/ImpactFlash 셰이더.")]
             public Material flashMaterial;
 
-            [Tooltip("용권풍 프리팹. 쓰지 않는 스킬은 비워 둔다.")]
-            public GameObject vortexPrefab;
-            [Tooltip("용권풍 나선 줄기 재질. 색은 그라데이션이 전담하므로 중립(흰색)으로 유지된다.")]
-            public Material vortexMaterial;
+            // [레거시] 인스펙터 은닉(260729) — 참조 데이터는 보존, 적용·캡처 흐름에서도 제외.
+            [HideInInspector] public GameObject vortexPrefab;
+            [HideInInspector] public Material vortexMaterial;
+            [HideInInspector] public GameObject slashPrefab;
+            [HideInInspector] public Material slashMaterial;
 
-            [Tooltip("[레거시] 구 호 참격 프리팹.")]
-            public GameObject slashPrefab;
-            [Tooltip("[레거시] 구 호 참격 재질.")]
-            public Material slashMaterial;
-
-            [Tooltip("호 획 V2 프리팹.")]
+            [Tooltip("호 획 프리팹.")]
             public GameObject arcStrokePrefab;
-            [Tooltip("호 획 V2 재질(Testbed/Justice/StrokeCore).")]
+            [Tooltip("호 획 재질(Testbed/Justice/StrokeCore).")]
             public Material arcStrokeMaterial;
+
+            [Tooltip("호 포인트 획(액센트 가닥) 프리팹.")]
+            public GameObject arcPointPrefab;
+            [Tooltip("호 포인트 획 재질 — 본 획과 분리해 단면 감쇠를 독립 조절한다.")]
+            public Material arcPointMaterial;
         }
 
         /// <summary>궤적 계열의 동시 개수 상한. 소수의 굵은 선으로 읽히도록 좁게 제한한다.</summary>
@@ -639,20 +737,26 @@ namespace JC.VFX
         [Header("── 타격 (스파크 · 하이라이트 · 섬광) ──")]
         public ImpactGroup impact = new ImpactGroup();
 
-        [Header("── 호 획 V2 (앵커 주행 · 재설계) ──")]
+        [Header("── 호 획 (앵커 주행) ──")]
         public ArcStrokeGroup arcStroke = new ArcStrokeGroup();
 
-        [Header("── [레거시] 호 참격 V1 ──")]
-        public SlashGroup slash = new SlashGroup();
+        [Header("── 호 포인트 획 (액센트 가닥 — 바깥 오프셋 → 궤도 복귀) ──")]
+        public ArcPointGroup arcPoint = new ArcPointGroup();
 
-        [Header("── 용권풍 (보류 자산 — 재설계 예정) ──")]
-        public VortexGroup vortex = new VortexGroup();
+        // [레거시] 1차 완성(260729)과 함께 인스펙터에서 은닉 — 데이터·코드는 보존.
+        [HideInInspector] public SlashGroup slash = new SlashGroup();
+        [HideInInspector] public VortexGroup vortex = new VortexGroup();
 
         private void OnValidate()
         {
             if (trail != null) trail.maxParticles = Mathf.Clamp(trail.maxParticles, 1, TrailMaxParticlesLimit);
             if (spark != null) spark.maxParticles = Mathf.Clamp(spark.maxParticles, 1, 600);
             if (vortex != null) vortex.maxParticles = Mathf.Clamp(vortex.maxParticles, 1, 1500);
+            // 증가+소멸 비율 합이 일생을 넘지 못하게 — 넘치면 소멸 쪽을 줄인다(툴팁에 명기).
+            if (arcStroke != null && arcStroke.growRatio + arcStroke.fadeRatio > 0.99f)
+                arcStroke.fadeRatio = Mathf.Max(0.01f, 0.99f - arcStroke.growRatio);
+            if (arcPoint != null && arcPoint.growRatio + arcPoint.fadeRatio > 0.99f)
+                arcPoint.fadeRatio = Mathf.Max(0.01f, 0.99f - arcPoint.growRatio);
         }
     }
 }

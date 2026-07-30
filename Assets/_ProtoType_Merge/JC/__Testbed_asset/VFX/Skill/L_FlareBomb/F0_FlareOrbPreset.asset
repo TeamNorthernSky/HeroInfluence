@@ -12,52 +12,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47e4b63a97d8f4b428bf92238c201175, type: 3}
   m_Name: F0_FlareOrbPreset
   m_EditorClassIdentifier: 
-  shellRadius: 0.41
-  shellTipStart: 0.102
-  shellTipHeight: 0.19
+  variantSuffix: 
+  shellRadius: 0.45
+  shellTipStart: 0.38
+  shellTipHeight: 0.09
   shellTipPower: 4
-  shellYOffset: -0.04
+  shellYOffset: 0
   shellBodyHeightRatio: 1
-  shellSpinSpeed: 115.97
+  shellSpinSpeed: 157.78
   tongueColor: {r: 1.05, g: 0.62, b: 0.16, a: 1}
-  tongueHighlightColor: {r: 1.6314826, g: 1.3474369, b: 0.7028714, a: 1}
-  tongueEmission: 1.5
+  tongueHighlightColor: {r: 1.45, g: 1.25, b: 0.8, a: 1}
+  tongueEmission: 1
   backEmissionMul: 0.695
   backOpacity: 0.755
   backSpinSpeed: 34.52
-  coreColor: {r: 1.9668436, g: 0.6655234, b: 0.21647626, a: 1}
-  coreMidColor: {r: 1.1528239, g: 0.73518187, b: 0.44590354, a: 1}
-  coreRimColor: {r: 1.5916555, g: 1.280456, b: 0.6857131, a: 1}
-  coreEmission: 2.47
-  coreBaseAlpha: 1
-  coreRimPower: 3.16
-  coreRimStrength: 0
-  coreNoiseScale: 2.17
+  coreColor: {r: 1.45, g: 1.28, b: 0.95, a: 1}
+  coreMidColor: {r: 1.05, g: 0.66, b: 0.22, a: 1}
+  coreRimColor: {r: 1.8, g: 1.55, b: 1, a: 1}
+  coreEmission: 1.35
+  coreBaseAlpha: 0.85
+  coreRimPower: 2.6
+  coreRimStrength: 0.9
+  coreNoiseScale: 2.6
   coreNoiseSpeed: 0.5
   coreSwirlSpeed: 0.4
-  rimRadius: 0.879
-  rimWidth: 0.023
-  rimHalo: 0.412
-  patternScale: 4.81
-  patternVStretch: 0.666
-  patternDetail: 0.384
-  ridgeMix: 0.216
-  taperSharp: 5.13
-  breakScale: 3.47
-  breakAmount: 0.156
-  patternThreshold: 0.343
-  edgeSoftRatio: 0.398
-  highlightShift: 0.106
-  flowSpeed: 2.19
-  waver: 0.14
-  waverSpeed: 2.84
+  rimRadius: 0.6
+  rimWidth: 0.15
+  rimHalo: 0.35
+  patternScale: 5.18
+  patternVStretch: 0.25
+  patternDetail: 0.626
+  ridgeMix: 0.577
+  taperSharp: 3.29
+  breakScale: 3.42
+  breakAmount: 0.282
+  patternThreshold: 0.352
+  edgeSoftRatio: 0
+  highlightShift: 0.07
+  flowSpeed: 2.55
+  waver: 0.05
+  waverSpeed: 2.5
   spiralShear: 2
-  sCurveAmount: 0.261
-  sCurveFreq: 1.14
-  sCurveFollow: 0
-  sCurveUpperRatio: 0.443
-  tipErodeStart: 0.796
-  tipErodeStrength: 0.966
+  sCurveAmount: 0.278
+  sCurveFreq: 2.16
+  sCurveFollow: 1
+  sCurveUpperRatio: 0.4
+  tipErodeStart: 0.802
+  tipErodeStrength: 0.798
   speckAmount: 0
   speckScale: 2
   lightColor: {r: 1, g: 0.85, b: 0.6, a: 1}

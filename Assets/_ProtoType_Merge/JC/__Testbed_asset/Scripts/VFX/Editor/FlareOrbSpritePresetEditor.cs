@@ -11,8 +11,14 @@ namespace JC.VFX
     [CustomEditor(typeof(FlareOrbSpritePreset))]
     public class FlareOrbSpritePresetEditor : FlareOrbPresetEditorBase
     {
-        static string MatSprite  => DIR + "/FlareAuraSprite.mat";
-        static string FullPrefab => DIR + "/FlareBombOrbFull.prefab";
+        // ★변종 대응(260730): 경로를 프리셋의 variantSuffix로 만든다. 비면 종전과 동일(크림판).
+        static string Sfx(FlareOrbSpritePreset p) => p != null && !string.IsNullOrEmpty(p.variantSuffix) ? p.variantSuffix : "";
+        static string MatSprite(FlareOrbSpritePreset p) => DIR + "/FlareAuraSprite" + Sfx(p) + ".mat";
+        /// <summary>통합 프리팹만 흑염 이름에 언더바가 없다(FlareBombOrbFullDark) — 접미사에서 '_'를 뺀다.</summary>
+        static string FullPrefab(FlareOrbSpritePreset p) => DIR + "/FlareBombOrbFull" + Sfx(p).Replace("_", "") + ".prefab";
+
+        /// <summary>이 프리셋이 흑염 변종을 대상으로 하는가 — 라이브 프리뷰 스코프를 가른다.</summary>
+        static bool WantsDark(FlareOrbSpritePreset p) => Sfx(p).Contains("Dark");
         const string PresetPath  = DIR + "/F2_FlareOrbSpritePreset.asset";
 
         protected override string LiveKey => "JC.FlareOrbSpritePreset.LivePreview";
@@ -82,7 +88,8 @@ namespace JC.VFX
         {
             foreach (var aura in Object.FindObjectsByType<FlareOrbSpriteAura>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
-                if (InDarkVariant(aura)) continue;   // 흑염 변형은 크림판 프리셋 스코프 밖
+                // ★변종 스코프(260730): 크림판은 흑염을 건너뛰고, 흑염 프리셋은 흑염만 만진다.
+                if (InDarkVariant(aura) != WantsDark(p)) continue;
                 aura.worldSize = p.worldSize;
                 var mr = aura.GetComponent<MeshRenderer>();
                 if (mr != null)
@@ -99,13 +106,13 @@ namespace JC.VFX
 
         public static void Apply(FlareOrbSpritePreset p)
         {
-            var mat = Load<Material>(MatSprite);
+            var mat = Load<Material>(MatSprite(p));
             FillSprite((n, f) => mat.SetFloat(n, f), (n, c) => mat.SetColor(n, c), p);
             mat.renderQueue = 3002;   // 코어 위, 최상단
             EditorUtility.SetDirty(mat);
             AssetDatabase.SaveAssets();
 
-            var full = PrefabUtility.LoadPrefabContents(FullPrefab);
+            var full = PrefabUtility.LoadPrefabContents(FullPrefab(p));
             try
             {
                 var aura = full.GetComponentInChildren<FlareOrbSpriteAura>(true);
@@ -115,7 +122,7 @@ namespace JC.VFX
                     so.FindProperty("worldSize").floatValue = p.worldSize;
                     so.ApplyModifiedPropertiesWithoutUndo();
                 }
-                PrefabUtility.SaveAsPrefabAsset(full, FullPrefab);
+                PrefabUtility.SaveAsPrefabAsset(full, FullPrefab(p));
             }
             finally { PrefabUtility.UnloadPrefabContents(full); }
 
@@ -131,7 +138,7 @@ namespace JC.VFX
         {
             Undo.RecordObject(p, "Capture Flare Orb F2");
 
-            var mat = Load<Material>(MatSprite);
+            var mat = Load<Material>(MatSprite(p));
             p.tongueColor = mat.GetColor("_ColorTongue");
             p.tongueHighlightColor = mat.GetColor("_ColorHighlight");
             p.tongueEmission = mat.GetFloat("_Emission");
@@ -168,7 +175,7 @@ namespace JC.VFX
             p.sCurveFreq = mat.GetFloat("_SCurveFreq");
             p.debugCircles = mat.GetFloat("_DebugCircles");
 
-            var full = Load<GameObject>(FullPrefab);
+            var full = Load<GameObject>(FullPrefab(p));
             var aura = full != null ? full.GetComponentInChildren<FlareOrbSpriteAura>(true) : null;
             if (aura != null) p.worldSize = aura.worldSize;
 

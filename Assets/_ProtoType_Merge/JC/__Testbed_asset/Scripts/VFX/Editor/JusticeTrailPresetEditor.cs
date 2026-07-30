@@ -139,24 +139,26 @@ namespace JC.VFX
                 if (t.arcStrokeMaterial != null) EditorUtility.SetDirty(t.arcStrokeMaterial);
             }
 
-            string slashPath = PathOf(t.slashPrefab);
-            if (!string.IsNullOrEmpty(slashPath))
+            string pointPath = PathOf(t.arcPointPrefab);
+            if (!string.IsNullOrEmpty(pointPath))
             {
-                var slash = PrefabUtility.LoadPrefabContents(slashPath);
+                var point = PrefabUtility.LoadPrefabContents(pointPath);
                 try
                 {
-                    JusticeTrailPresetRuntime.ApplySlash(slash, p, t.slashMaterial);
-                    PrefabUtility.SaveAsPrefabAsset(slash, slashPath);
+                    JusticeTrailPresetRuntime.ApplyArcPoint(point, p, t.arcPointMaterial);
+                    PrefabUtility.SaveAsPrefabAsset(point, pointPath);
                 }
-                finally { PrefabUtility.UnloadPrefabContents(slash); }
-                if (t.slashMaterial != null) EditorUtility.SetDirty(t.slashMaterial);
+                finally { PrefabUtility.UnloadPrefabContents(point); }
+                if (t.arcPointMaterial != null) EditorUtility.SetDirty(t.arcPointMaterial);
             }
+
+            // [레거시] 호 참격 V1(slashPrefab) 기록은 1차 완성(260729)과 함께 중단 — 보존 자산은 더 건드리지 않는다.
 
             string impactPath = PathOf(t.impactPrefab);
             if (string.IsNullOrEmpty(impactPath))
             {
-                // 대쉬처럼 타격 스파크 대신 참격을 쓰는 프리셋은 비어 있는 게 정상이다.
-                if (string.IsNullOrEmpty(slashPath))
+                // 대쉬처럼 타격 스파크 대신 호 획을 쓰는 프리셋은 비어 있는 게 정상이다.
+                if (string.IsNullOrEmpty(arcPath))
                     Debug.LogWarning("[JusticeTrailPreset] " + p.name + ": 대상 타격 프리팹이 비어 있어 건너뜁니다.", p);
             }
             else

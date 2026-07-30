@@ -13,6 +13,14 @@ namespace JC.VFX
     [CreateAssetMenu(menuName = "JC VFX/Flare Orb Sprite Preset (F2 2D)", fileName = "F2_FlareOrbSpritePreset")]
     public class FlareOrbSpritePreset : ScriptableObject
     {
+        // ★변종 대응(260730) — F0/F1과 같은 규칙. 이 SO는 FlareOrbPresetBase를 상속하지 않으므로
+        // 같은 이름의 필드를 자체 보유한다. 빈 값이면 종전과 완전히 동일하게 동작한다.
+        [Header("변종 (대상 자산 선택)")]
+        [Tooltip("대상 자산 이름의 접미사. 비우면 기본(크림) 세트, \"_Dark\"면 흑염 세트를 대상으로 한다.\n" +
+                 "적용·캡처·라이브 프리뷰의 대상이 이 값에 따라 갈린다.\n" +
+                 "예) 비움 → FlareAuraSprite.mat / \"_Dark\" → FlareAuraSprite_Dark.mat")]
+        public string variantSuffix = "";
+
         [Header("스프라이트 배치")]
         [Tooltip("빌보드 쿼드 월드 크기(m). 도달한계 지름보다 넉넉하게(경계 클리핑 방지 여백).")]
         public float worldSize = 1.8f;
