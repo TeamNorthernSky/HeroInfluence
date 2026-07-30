@@ -2882,7 +2882,7 @@ MonoBehaviour:
   _catalog: {fileID: 11400000, guid: 99e1bc13888047f4ea436fbc4eaf9856, type: 2}
   _popupPresenter: {fileID: 2717163431547817391, guid: 7fce9a6c8cecfa84193fd19e5b1b423a,
     type: 3}
-  _effectRegistry: {fileID: 0}
+  _effectRegistry: {fileID: 11400000, guid: c2170fd9c24a36a48bc7f987625591ce, type: 2}
 --- !u!1 &658894164
 GameObject:
   m_ObjectHideFlags: 0

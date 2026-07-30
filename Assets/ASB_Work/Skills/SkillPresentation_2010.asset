@@ -32,7 +32,7 @@ MonoBehaviour:
   ArcHeight: 2
   ScaleByCellSize: 0
   ProjectileVisual:
-    Prefab: {fileID: 8985827497061507061, guid: b7796d08f4f3ed34db8e4c93bd9ab528,
+    Prefab: {fileID: 8985827497061507061, guid: c332626274ba37a45a7bb6f3c11d7117,
       type: 3}
     Speed: 6
     Trajectory: 1
@@ -44,6 +44,15 @@ MonoBehaviour:
     ArrivalRadius: 0.2
     TimeoutGraceSeconds: 1
     TimeoutSeconds: 5
+    DeliveryMode: 0
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
+    TargetFormationCenter: 0
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
   AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
@@ -76,7 +85,7 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: cast
-        EffectIds: 10040000
+        EffectIds: da070000
         SoundIds: 
         Operation: 0
         InstanceKey: charge
