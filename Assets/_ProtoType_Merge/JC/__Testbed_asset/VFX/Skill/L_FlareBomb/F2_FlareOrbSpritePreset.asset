@@ -12,39 +12,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d03144d9d3efb3e419742b175560e552, type: 3}
   m_Name: F2_FlareOrbSpritePreset
   m_EditorClassIdentifier: 
+  variantSuffix: 
   worldSize: 1.8
-  baseRadius: 0.532
-  ellipseRatio: 1.123
-  maxReach: 0.71
-  reachRatio: 1.174
-  reachSoft: 0.184
-  patternYOffset: -0.115
-  emitterDepth: 1.371
-  cutHeight: -0.764
+  baseRadius: 0.471
+  ellipseRatio: 1.086
+  maxReach: 0.763
+  reachRatio: 1
+  reachSoft: 0.115
+  patternYOffset: 0
+  emitterDepth: 1.157
+  cutHeight: -0.907
   tongueColor: {r: 1.05, g: 0.62, b: 0.16, a: 1}
   tongueHighlightColor: {r: 1.45, g: 1.25, b: 0.8, a: 1}
   tongueEmission: 6
-  laneCount: 5
-  laneWidth: 0.245
-  laneWidthJitter: 0.575
+  laneCount: 8
+  laneWidth: 0.327
+  laneWidthJitter: 0.207
   lanePosJitter: 0.531
-  laneTiltJitter: 1.465
+  laneTiltJitter: 1.011
   widthNoiseScale: 6.24
   widthNoiseAmount: 0.42
-  birthOffsetMin: 0.027
+  birthOffsetMin: -0.085
   birthOffsetMax: 0.266
-  birthInnerBias: 2.13
-  laneLengthJitter: 0.197
-  laneMaxLength: 0.454
-  outerShrink: 0.779
-  cutFarShrink: 0.514
+  birthInnerBias: 2.36
+  laneLengthJitter: 0.068
+  laneMaxLength: 0.32
+  outerShrink: 0.543
+  cutFarShrink: 0.557
   laneTravelDist: 0.267
   laneTravelSpeed: 0.148
   laneLifeFadePeak: 0.162
   taperSharp: 2.55
-  highlightRatio: 0.806
+  highlightRatio: 0.691
   edgeSoftRatio: 1
-  flowSpeed: 1.62
-  sCurveAmount: 0.05
-  sCurveFreq: 2.46
+  flowSpeed: 2.52
+  sCurveAmount: 0
+  sCurveFreq: 3.31
   debugCircles: 0

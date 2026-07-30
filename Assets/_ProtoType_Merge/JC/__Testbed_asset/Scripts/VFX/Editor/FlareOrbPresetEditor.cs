@@ -11,12 +11,19 @@ namespace JC.VFX
     [CustomEditor(typeof(FlareOrbPreset))]
     public class FlareOrbPresetEditor : FlareOrbPresetEditorBase
     {
-        static string MatCore     => DIR + "/FlareOrbCore.mat";
-        static string MatRim      => DIR + "/FlareCoreRim.mat";
-        static string MatAura     => DIR + "/FlareAuraTongue.mat";
-        static string MatAuraBack => DIR + "/FlareAuraTongueBack.mat";
+        // ★변종 대응(260730): 경로를 프리셋의 variantSuffix로 만든다.
+        // 접미사가 비면 종전과 동일한 크림판 자산, "_Dark"면 흑염 자산 세트를 가리킨다.
+        static string Sfx(FlareOrbPresetBase p) => p != null && !string.IsNullOrEmpty(p.variantSuffix) ? p.variantSuffix : "";
+        static string MatCore(FlareOrbPresetBase p)     => DIR + "/FlareOrbCore" + Sfx(p) + ".mat";
+        static string MatRim(FlareOrbPresetBase p)      => DIR + "/FlareCoreRim" + Sfx(p) + ".mat";
+        static string MatAura(FlareOrbPresetBase p)     => DIR + "/FlareAuraTongue" + Sfx(p) + ".mat";
+        static string MatAuraBack(FlareOrbPresetBase p) => DIR + "/FlareAuraTongueBack" + Sfx(p) + ".mat";
+        /// <summary>오브 프리팹. 흑염은 전용 프리팹이 없으므로(형태·광원은 공유) 접미사를 붙이지 않는다.</summary>
         static string OrbPrefab   => DIR + "/FlareBombOrb.prefab";
         const string PresetPath   = DIR + "/F0_FlareOrbPreset.asset";
+
+        /// <summary>이 프리셋이 흑염 변종을 대상으로 하는가 — 라이브 프리뷰 스코프를 가른다.</summary>
+        static bool WantsDark(FlareOrbPresetBase p) => Sfx(p).Contains("Dark");
 
         protected override string LiveKey => "JC.FlareOrbPreset.LivePreview";
         protected override string HelpText =>
@@ -103,7 +110,8 @@ namespace JC.VFX
             foreach (var shell in Object.FindObjectsByType<FlareOrbShell>(FindObjectsSortMode.None))
             {
                 if (IsAltShell(shell)) continue;   // Alt 계열은 F1 프리셋 관할
-                if (InDarkVariant(shell)) continue;   // 흑염 변형은 크림판 프리셋 스코프 밖
+                // ★변종 스코프(260730): 크림판 프리셋은 흑염을 건너뛰고, 흑염 프리셋은 흑염만 만진다.
+                if (InDarkVariant(shell) != WantsDark(p)) continue;
                 bool isBack = shell.gameObject.name.Contains("Back");
                 ApplyShellToInstance(shell, p, isBack);
 
@@ -167,7 +175,7 @@ namespace JC.VFX
 
         public static void Apply(FlareOrbPreset p)
         {
-            var core = Load<Material>(MatCore);
+            var core = Load<Material>(MatCore(p));
             core.SetColor("_ColorCore", p.coreColor);
             core.SetColor("_ColorMid", p.coreMidColor);
             core.SetColor("_ColorRim", p.coreRimColor);
@@ -181,7 +189,7 @@ namespace JC.VFX
             core.renderQueue = 3000;
             EditorUtility.SetDirty(core);
 
-            var rim = Load<Material>(MatRim);
+            var rim = Load<Material>(MatRim(p));
             if (rim != null)
             {
                 rim.SetColor("_Color", p.coreRimColor);
@@ -193,7 +201,7 @@ namespace JC.VFX
                 EditorUtility.SetDirty(rim);
             }
 
-            var aura = Load<Material>(MatAura);
+            var aura = Load<Material>(MatAura(p));
             aura.SetColor("_ColorTongue", p.tongueColor);
             aura.SetColor("_ColorHighlight", p.tongueHighlightColor);
             aura.SetFloat("_Emission", p.tongueEmission);
@@ -223,7 +231,7 @@ namespace JC.VFX
             aura.renderQueue = 3001;
             EditorUtility.SetDirty(aura);
 
-            var back = Load<Material>(MatAuraBack);
+            var back = Load<Material>(MatAuraBack(p));
             if (back != null)
             {
                 back.CopyPropertiesFromMaterial(aura);
@@ -234,6 +242,15 @@ namespace JC.VFX
                 EditorUtility.SetDirty(back);
             }
             AssetDatabase.SaveAssets();
+
+            // ★흑염 변종은 전용 오브 프리팹이 없다 — 여기서 기록하면 크림판 프리팹을 덮어쓰므로 건너뛴다.
+            // (셸 형태·광원은 두 변종이 공유하는 값이라, 형태 조정은 크림판 프리셋에서 한다)
+            if (WantsDark(p))
+            {
+                ClearShellOverrides(s => !IsAltShell(s), true);
+                Debug.Log("[FlareOrbPreset] " + p.name + " → 흑염 재질에 적용 완료 (프리팹은 크림판 공유이므로 미기록)");
+                return;
+            }
 
             var orb = PrefabUtility.LoadPrefabContents(OrbPrefab);
             try
@@ -266,7 +283,7 @@ namespace JC.VFX
         {
             Undo.RecordObject(p, "Capture Flare Orb F0");
 
-            var core = Load<Material>(MatCore);
+            var core = Load<Material>(MatCore(p));
             p.coreColor = core.GetColor("_ColorCore");
             p.coreMidColor = core.GetColor("_ColorMid");
             p.coreEmission = core.GetFloat("_EmissionStrength");
@@ -276,7 +293,7 @@ namespace JC.VFX
             p.coreNoiseSpeed = core.GetFloat("_NoiseSpeed");
             p.coreSwirlSpeed = core.GetFloat("_SwirlSpeed");
 
-            var rim = Load<Material>(MatRim);
+            var rim = Load<Material>(MatRim(p));
             if (rim != null)
             {
                 p.coreRimColor = rim.GetColor("_Color");
@@ -286,7 +303,7 @@ namespace JC.VFX
                 p.rimHalo = rim.GetFloat("_HaloStrength");
             }
 
-            var aura = Load<Material>(MatAura);
+            var aura = Load<Material>(MatAura(p));
             p.tongueColor = aura.GetColor("_ColorTongue");
             p.tongueHighlightColor = aura.GetColor("_ColorHighlight");
             p.tongueEmission = aura.GetFloat("_Emission");
@@ -313,7 +330,7 @@ namespace JC.VFX
             p.speckAmount = aura.GetFloat("_SpeckAmount");
             p.speckScale = aura.GetFloat("_SpeckScale");
 
-            var backMat = Load<Material>(MatAuraBack);
+            var backMat = Load<Material>(MatAuraBack(p));
             if (backMat != null)
             {
                 p.backOpacity = backMat.GetFloat("_Opacity");

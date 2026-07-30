@@ -25,7 +25,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _BodyFalloff: 2.5
+    - _BodyFalloff: 6.57
     - _CoreSharp: 1
     - _CoreWidth: 0.01
     - _EndFade: 0.05

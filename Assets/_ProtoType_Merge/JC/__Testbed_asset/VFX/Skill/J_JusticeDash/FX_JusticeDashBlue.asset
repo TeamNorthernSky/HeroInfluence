@@ -30,6 +30,9 @@ MonoBehaviour:
     arcStrokePrefab: {fileID: 5014783889222747169, guid: a52020892572524458e5a533a9431063,
       type: 3}
     arcStrokeMaterial: {fileID: 2100000, guid: e732ad5307a0f2747ae6e436904cacca, type: 2}
+    arcPointPrefab: {fileID: 5014783889222747169, guid: 3fbbbcaed39d3d545993a8564c93f05f,
+      type: 3}
+    arcPointMaterial: {fileID: 2100000, guid: bc296ef5a8304c64d821460aff423a2f, type: 2}
   trail:
     enabled: 1
     emission: 2.25
@@ -133,29 +136,65 @@ MonoBehaviour:
     headColor: {r: 0.92, g: 0.97, b: 1, a: 1}
     midColor: {r: 0.7, g: 0.85, b: 1, a: 1}
     tailColor: {r: 0.32, g: 0.48, b: 0.72, a: 1}
-    emission: 1.2
+    emission: 4.49
     chromaHold: 1
-    bodyFalloff: 2.5
-    angleStart: 149
-    angleEnd: -111
-    radius: 1.96
-    sweepDuration: 1.02
-    rateOverDistance: 13.1
-    emissionRamp: 0.303
-    emissionDecay: 0.423
-    thinDecay: 0.5
-    thinFarBoost: 3.49
-    maxParticles: 60
-    nozzleRadius: 0.342
-    strokeLifeMin: 0.64
-    strokeLifetime: 0.84
+    bodyFalloff: 6.57
+    edgeTaper: 0.398
+    angleStart: 183
+    angleEnd: -126
+    radius: 1.94
+    sweepDuration: 0.62
+    easeOut: 2.55
+    rateOverDistance: 21.5
+    emissionRamp: 0.24
+    emissionDecay: 0.114
+    maxParticles: 40
+    nozzleRadius: 0.393
+    nozzleThickness: 0.034
+    nozzleTilt: 36
+    thinDecay: 0.42
+    thinFarBoost: 5
+    strokeLifeMin: 0.27
+    strokeLifetime: 0.48
     skipShortRemainder: 1
-    growTime: 0.655
-    fadeTime: 0.125
-    widthMin: 0.15
-    widthMax: 0.45
+    growRatio: 0.3
+    fadeRatio: 0.25
+    widthMin: 0.598
+    widthMax: 1.628
     trailMinVertexDistance: 0.004
     spawnOffset: {x: 0, y: -0.2, z: 0}
+  arcPoint:
+    enabled: 1
+    headColor: {r: 0, g: 0.068327904, b: 1, a: 1}
+    midColor: {r: 0, g: 0.047646288, b: 0.6037736, a: 1}
+    tailColor: {r: 0.2728333, g: 0.50683653, b: 0.9748427, a: 1}
+    emission: 5.13
+    chromaHold: 1
+    bodyFalloff: 2.5
+    edgeTaper: 0.25
+    angleStart: 210
+    angleEnd: -140
+    radius: 1.22
+    sweepDuration: 0.54
+    easeOut: 1.05
+    offsetMin: 0.954
+    offsetMax: 1.387
+    convergeExp: 1.37
+    rateOverDistance: 4.66
+    emissionRamp: 0
+    emissionDecay: 0.185
+    maxParticles: 13
+    nozzleThickness: 0.21
+    strokeLifeMin: 0.05
+    strokeLifetime: 0.31
+    skipShortRemainder: 1
+    growRatio: 0.083
+    fadeRatio: 0.188
+    widthMin: 0.448
+    widthMax: 0.786
+    trailMinVertexDistance: 0.004
+    spawnOffset: {x: 0, y: -0.2, z: 0}
+    extraLinger: 0.2
   slash:
     enabled: 1
     headColor: {r: 0, g: 0.087656975, b: 1, a: 1}

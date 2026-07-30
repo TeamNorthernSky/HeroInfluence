@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c040c788de3728e4a95708c8f59cb525, type: 3}
+  m_Name: F1_FlareOrbAltPreset_Dark
+  m_EditorClassIdentifier: 
+  variantSuffix: _Dark
+  shellRadius: 0.32
+  shellTipStart: 0.65
+  shellTipHeight: 0.1
+  shellTipPower: 1.2
+  shellYOffset: 0.07
+  shellBodyHeightRatio: 1.51
+  shellSpinSpeed: 0
+  tongueColor: {r: 0.30880478, g: 0.16171312, b: 0.6622641, a: 1}
+  tongueHighlightColor: {r: 2.3420165, g: 1.4941828, b: 3.576592, a: 1}
+  tongueEmission: 4.11
+  backEmissionMul: 0.55
+  backOpacity: 0.24
+  backSpinSpeed: 31.9
+  laneCount: 4
+  laneWidth: 0.224
+  laneWidthJitter: 0.511
+  lanePosJitter: 0.398
+  laneTiltJitter: 0.325
+  widthNoiseScale: 1.05
+  widthNoiseAmount: 0.429
+  laneVStart: 0.278
+  laneVEnd: 0.828
+  laneVJitter: 0.5
+  birthBottomBias: 1.54
+  laneLengthJitter: 0.162
+  laneMaxLength: 0.232
+  laneUpperShrink: 0.802
+  laneTravelDist: 0.435
+  laneTravelSpeed: 0.225
+  laneLifeFadePeak: 0.064
+  taperSharp: 3.25
+  highlightRatio: 0.606
+  edgeSoftRatio: 0.699
+  flowSpeed: 1.83
+  spiralShear: -1.71
+  sCurveAmount: 0.659
+  sCurveFreq: 1.82
+  sCurveUpperRatio: 0.53
+  tipErodeStart: 0.194
+  tipErodeStrength: 0
+  debugOutline: 0

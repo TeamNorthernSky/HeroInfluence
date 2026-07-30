@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c040c788de3728e4a95708c8f59cb525, type: 3}
   m_Name: F1_FlareOrbAltPreset
   m_EditorClassIdentifier: 
+  variantSuffix: 
   shellRadius: 0.32
   shellTipStart: 0.65
   shellTipHeight: 0.1
