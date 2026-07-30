@@ -29,10 +29,10 @@ public class ItemObject : MonoBehaviour
         amount = nextAmount;
     }
 
-    public void GetItem()
+    public float GetItem()
     {
         if (isCollecting)
-            return;
+            return 0f;
 
         isCollecting = true;
         Game.Economy?.Add(resourceType, amount);
@@ -44,10 +44,11 @@ public class ItemObject : MonoBehaviour
         {
             animator.SetTrigger(GetTriggerName);
             Destroy(gameObject, getAnimationDestroyDelay);
-            return;
+            return getAnimationDestroyDelay;
         }
 
         Destroy(gameObject);
+        return 0f;
     }
 
     public void RemoveWithoutReward()

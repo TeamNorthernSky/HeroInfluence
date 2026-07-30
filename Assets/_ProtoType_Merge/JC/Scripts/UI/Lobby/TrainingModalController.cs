@@ -45,7 +45,6 @@ public class TrainingModalController : MonoBehaviour
     [SerializeField] private TMP_Text titleText;  // "훈련실 Lv.N"
 
     [Header("영웅 영역")]
-    [SerializeField] private Button btnHeroSlot;
     [SerializeField] private Image heroProfileImage;
     [SerializeField] private GameObject heroSilhouette;
     [SerializeField] private GameObject selectPromptGo;
@@ -69,11 +68,6 @@ public class TrainingModalController : MonoBehaviour
     [SerializeField] private string atkCategoryTip = "공격력을 강화합니다.";
     [SerializeField] private string hpCategoryTip  = "생명력을 강화합니다.";
     [SerializeField] private string lockedStageTip = "훈련실 업그레이드 필요";
-
-    [Header("영웅 선택 sub-modal")]
-    [SerializeField] private GameObject heroSelectModalRoot;
-    [SerializeField] private HeroListController heroSelectListController;
-    [SerializeField] private Button btnHeroSelectClose;
 
     private int selectedUnitIndex = -1;
     private int selRow = -1;        // 선택된 행 인덱스
@@ -102,8 +96,6 @@ public class TrainingModalController : MonoBehaviour
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnCancel != null) btnCancel.onClick.AddListener(OnCancel);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
-        if (btnHeroSlot != null) btnHeroSlot.onClick.AddListener(OpenHeroSelect);
-        if (btnHeroSelectClose != null) btnHeroSelectClose.onClick.AddListener(CloseHeroSelect);
 
         // 분류 아이콘 + 분류 툴팁 고정 세팅
         for (int r = 0; r < rows.Count; r++)
@@ -123,16 +115,26 @@ public class TrainingModalController : MonoBehaviour
                     if (row.stages[k]?.clickHandler != null) row.stages[k].clickHandler.Bind(this, r, k);
         }
 
-        if (heroSelectListController != null)
-        {
-            heroSelectListController.SetSelectionMode(true);
-            heroSelectListController.SetVisitingOnlyMode(true); // 본부 상주 파티 + 무소속만
-        }
     }
 
-    private void OnEnable() { TrySubscribe(); Refresh(); }
+    private void OnEnable()
+    {
+        TrySubscribe();
+        // [KJ 260728] 파티 패널을 선택 모드로 전환.
+        var roster = LobbyUIRegistry.RosterView;
+        if (roster != null) roster.BeginSelection(OnHeroSelected);
+        else Debug.LogWarning("[TrainingModalController] LobbyUIRegistry.RosterView 없음 — 영웅 선택 불가.");
+        // [KJ 260729] 우클릭 해제를 없앤 대신 진입 시 기본 유닛(블래스터)을 선택해 둔다.
+        if (selectedUnitIndex < 0)
+        {
+            int defaultUnit = RosterOrdering.ResolveDefaultUnit();
+            if (defaultUnit >= 0) OnHeroSelected(defaultUnit);
+        }
+        Refresh();
+    }
     private void OnDisable()
     {
+        if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.EndSelection();
         // [JC 260617] 닫힐 때(모든 경로) 선택 영웅·완료 토스트 초기화 → 재진입 시 미선택 상태
         selectedUnitIndex = -1;
         ClearSelection();
@@ -150,7 +152,6 @@ public class TrainingModalController : MonoBehaviour
         {
             subTM = gm.Training;
             subTM.OnStateChanged += Refresh;
-            if (heroSelectListController != null) heroSelectListController.UnitSelected += OnHeroSelected;
         }
         if (subEco == null && gm.Economy != null)
         {
@@ -165,7 +166,6 @@ public class TrainingModalController : MonoBehaviour
         if (subTM != null)
         {
             subTM.OnStateChanged -= Refresh;
-            if (heroSelectListController != null) heroSelectListController.UnitSelected -= OnHeroSelected;
             subTM = null;
         }
         if (subEco != null) { subEco.OnResourceChanged -= OnResourceChanged; subEco = null; }
@@ -175,22 +175,16 @@ public class TrainingModalController : MonoBehaviour
 
     public void CloseModal()
     {
-        if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(false);
         if (modalRoot != null) modalRoot.SetActive(false);
     }
 
     // ─── 영웅 선택 ──────────────────────────────────────────
-    private void OpenHeroSelect()
-    {
-        if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(true);
-        if (heroSelectListController != null) heroSelectListController.Rebuild();
-    }
-    private void CloseHeroSelect() { if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(false); }
     private void OnHeroSelected(int unitIndex)
     {
         selectedUnitIndex = unitIndex;
         ClearSelection();
-        CloseHeroSelect();
+        // [KJ 260728] 파티 패널 하이라이트 동기화. 서브모달 폐기로 CloseHeroSelect 호출 제거.
+        if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.SetSelected(unitIndex);
         Refresh();
     }
 

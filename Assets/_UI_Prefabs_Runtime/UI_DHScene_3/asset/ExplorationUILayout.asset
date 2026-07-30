@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ExplorationUILayout
   m_EditorClassIdentifier: 
   prefabs:
-  - {fileID: 3681680316538222678, guid: cec34f52626ecbb458daa1d7145754ce, type: 3}
   - {fileID: 3771642218309638473, guid: 7d7824a8af8541e41bc3f2e69b8de36e, type: 3}
   - {fileID: 7330790199591114536, guid: a9d6caa8a4a151b48ad5578934ec2e5e, type: 3}
+  - {fileID: 3681680316538222678, guid: cec34f52626ecbb458daa1d7145754ce, type: 3}
   - {fileID: 233380180719038784, guid: 28a57803c9ec40a4dbf995da3434b42c, type: 3}

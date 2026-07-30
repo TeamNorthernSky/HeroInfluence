@@ -32,6 +32,34 @@ public class SkillPresentationPreviewController : MonoBehaviour
             public Transform PreviewActorTransform => previewActor != null ? previewActor.transform : null;
             public Transform PreviewTargetTransform => previewTarget != null ? previewTarget.transform : null;
 
+    // ── 아군(부활 대상) 수동 제어: 부활 스킬 미리보기용. previewAllyTarget 우선, 없으면 previewTarget. ──
+    private BattleCharactor AllyUnit => previewAllyTarget != null ? previewAllyTarget : previewTarget;
+    public bool HasAllyTarget => AllyUnit != null;
+    public string AllyTargetName => AllyUnit != null ? AllyUnit.UnitName : "-";
+    public bool IsAllyTargetDead => AllyUnit != null && AllyUnit.IsDead;
+
+    /// <summary>미리보기에서 아군(부활 대상)을 쓰러뜨린다. 부활 스킬 연출 확인용.</summary>
+    public void KillAllyTarget()
+    {
+        BattleCharactor ally = AllyUnit;
+        if (ally == null || ally.IsDead)
+        {
+            return;
+        }
+        ally.TakeDamage(ally.MaxHp * 2f);
+    }
+
+    /// <summary>미리보기에서 아군(부활 대상)을 풀피로 되살린다.</summary>
+    public void ReviveAllyTarget()
+    {
+        BattleCharactor ally = AllyUnit;
+        if (ally == null || !ally.IsDead)
+        {
+            return;
+        }
+        ally.Revive(1f);
+    }
+
     private void Awake()
     {
         if (battleManager == null)
@@ -169,12 +197,43 @@ public class SkillPresentationPreviewController : MonoBehaviour
     {
         try
         {
-            RestoreUnit(previewActor);
-            RestoreUnit(previewTarget);
-            RestoreUnit(previewAllyTarget);
+            // 부활 스킬(ClassSkillEffect=2)이고 대상이 '이미' 죽어있으면, 복구(되살리기)하지 않고 그대로 둔다.
+            //  → 안 그러면 RestoreUnit이 되살렸다가 아래에서 다시 쓰러뜨려 '죽는 모션'이 한 번 더 재생된다.
+            bool isRevive = clonedSkill != null && clonedSkill.classSkillEffect == 2;
+            bool keepTargetDead = isRevive && executionTarget != null && executionTarget.IsDead;
+
+            if (!(keepTargetDead && ReferenceEquals(previewActor, executionTarget)))
+            {
+                RestoreUnit(previewActor);
+            }
+            if (!(keepTargetDead && ReferenceEquals(previewTarget, executionTarget)))
+            {
+                RestoreUnit(previewTarget);
+            }
+            if (!(keepTargetDead && ReferenceEquals(previewAllyTarget, executionTarget)))
+            {
+                RestoreUnit(previewAllyTarget);
+            }
+
             _actorSnapshot = UnitSnapshot.Capture(previewActor);
             _targetSnapshot = UnitSnapshot.Capture(previewTarget);
             _allyTargetSnapshot = UnitSnapshot.Capture(previewAllyTarget);
+
+            // 부활 스킬 미리보기 보정:
+            //  - 부활은 전투당 1회 제한이므로 매 재생마다 시전자 플래그를 리셋(반복 재생 가능).
+            //  - ExecuteGridSkill 가드가 '죽은 대상'을 요구하므로, 대상이 '살아있을 때만' 조용히 쓰러뜨린다.
+            //    (이미 죽어있으면 위에서 복구를 건너뛰었으므로 그대로 부활 연출만 재생된다)
+            if (isRevive)
+            {
+                if (previewActor != null)
+                {
+                    previewActor.HasUsedRevive = false;
+                }
+                if (executionTarget != null && !executionTarget.IsDead)
+                {
+                    executionTarget.TakeDamage(executionTarget.MaxHp * 2f);
+                }
+            }
 
             bool executed = false;
             yield return battleManager.ExecuteGridSkill(previewActor, executionTarget, clonedSkill, success => executed = success);

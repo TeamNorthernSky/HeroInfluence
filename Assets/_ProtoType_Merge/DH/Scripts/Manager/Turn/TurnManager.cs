@@ -204,6 +204,9 @@ public class TurnManager : MonoBehaviour
         while (CombatContext.Instance != null && CombatContext.Instance.Result != CombatResult.None)
             yield return null;
 
+        while (ChatManager.Instance != null && ChatManager.Instance.IsRunning)
+            yield return null;
+
         if (DHGameEndState.IsEnding || enemyTurnRunning)
             yield break;
 

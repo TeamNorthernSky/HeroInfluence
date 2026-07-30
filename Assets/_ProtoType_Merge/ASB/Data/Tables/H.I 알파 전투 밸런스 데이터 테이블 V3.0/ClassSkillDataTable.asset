@@ -1,0 +1,899 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c9a703ec5e68f141aab78211b1506c7, type: 3}
+  m_Name: ClassSkillDataTable
+  m_EditorClassIdentifier: 
+  DataList:
+  - ClassSkillIndex: HS1010
+    Class: "\uC800\uC2A4\uD2F0\uC2A4"
+    ClassSkill_AcquireRank: 1
+    ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uB4F1\uC7A5!"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD788\uACE0, 1\uD134 \uB3D9\uC548 \uD574\uB2F9 \uB300\uC0C1\uC774 \uB2E8\uC77C
+      \uACF5\uACA9 \uC2DC \uC790\uC2E0\uC744 \uACF5\uACA9\uD558\uAC8C \uD55C\uB2E4.
+      (\uC801 \uC804\uC5F4\uC774 \uC788\uC744 \uACBD\uC6B0, \uC804\uC5F4 \uC6B0\uC120
+      \uACF5\uACA9)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 0
+    ClassSkillRangeLine: 0
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 1.1
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1.3
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.4
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0101
+  - ClassSkillIndex: HS1020
+    Class: "\uC800\uC2A4\uD2F0\uC2A4"
+    ClassSkill_AcquireRank: 2
+    ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4. \uB300\uC0C1\uC774 \uC804\uC5F4\uC77C \uACBD\uC6B0 {ClassSkillValue}+{ClassSkillSubValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4. (\uC801 \uC804\uC5F4\uC774 \uC788\uC744
+      \uACBD\uC6B0, \uC804\uC5F4 \uC6B0\uC120 \uACF5\uACA9)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 0
+    ClassSkillRangeLine: 0
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 00000000
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1
+    ClassSkillSubValueLv1: 0.2
+    ClassSkillValueLv2: 1.1
+    ClassSkillSubValueLv2: 0.3
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0.4
+    ClassSkillValueLv4: 1.3
+    ClassSkillSubValueLv4: 0.5
+    ClassSkillValueLv5: 1.4
+    ClassSkillSubValueLv5: 0.6
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0102
+  - ClassSkillIndex: HS1030
+    Class: "\uC800\uC2A4\uD2F0\uC2A4"
+    ClassSkill_AcquireRank: 3
+    ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uB300\uC26C"
+    ClassSkillDescription: "\uC804\uC5F4\uC758 \uC801 \uD55C \uBA85\uC5D0\uAC8C {ClassSkillValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD788\uACE0, \uD574\uB2F9 \uD6C4\uC5F4\uC5D0
+      \uC788\uB294 \uC801 \uD55C \uBA85\uC5D0\uAC8C \uCD94\uAC00\uB85C {ClassSkillSubValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4. (\uC804\uC5F4\uC758 \uC801\uC774
+      \uC5C6\uC744 \uACBD\uC6B0 \uD6C4\uC5F4\uC758 \uC801 \uD55C \uBA85\uB9CC\uC744
+      \uACF5\uACA9)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 0
+    ClassSkillRangeLine: 0
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 03000000
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 1
+    ClassSkillValueLv1: 0.6
+    ClassSkillSubValueLv1: 0.8
+    ClassSkillValueLv2: 0.7
+    ClassSkillSubValueLv2: 0.9
+    ClassSkillValueLv3: 0.8
+    ClassSkillSubValueLv3: 1
+    ClassSkillValueLv4: 0.9
+    ClassSkillSubValueLv4: 1.1
+    ClassSkillValueLv5: 1
+    ClassSkillSubValueLv5: 1.2
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0103
+  - ClassSkillIndex: HS1040
+    Class: "\uC800\uC2A4\uD2F0\uC2A4"
+    ClassSkill_AcquireRank: 4
+    ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uD06C\uB798\uC26C"
+    ClassSkillDescription: "\uC801 \uC804\uC5F4\uACFC \uD6C4\uC5F4\uC758 \uBAA8\uB4E0
+      \uC801\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4.
+      1\uD134 \uB3D9\uC548 \uBAA8\uB4E0 \uC801\uC774 \uB2E8\uC77C \uACF5\uACA9 \uC2DC
+      \uC790\uC2E0\uC744 \uACF5\uACA9\uD558\uAC8C \uD55C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 0
+    ClassSkillRangeLine: 0
+    ClassSkillTarget: 2
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.5
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 0.6
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 0.7
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 0.8
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 0.9
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0101
+  - ClassSkillIndex: HS1011
+    Class: "\uC800\uC2A4\uD2F0\uC2A4"
+    ClassSkill_AcquireRank: 5
+    ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uB4F1\uC7A5!+"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD788\uACE0, 1\uD134 \uB3D9\uC548 \uD574\uB2F9 \uB300\uC0C1\uC774 \uB2E8\uC77C
+      \uACF5\uACA9 \uC2DC \uC790\uC2E0\uC744 \uACF5\uACA9\uD558\uAC8C \uD55C\uB2E4.
+      (\uC801 \uC804\uC5F4\uC774 \uC788\uC744 \uACBD\uC6B0, \uC804\uC5F4 \uC6B0\uC120
+      \uACF5\uACA9)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 0
+    ClassSkillRangeLine: 0
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1.2
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 1.3
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 1.4
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1.5
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.6
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS1010
+    SkillRiskIndex: R0101
+  - ClassSkillIndex: HS1021
+    Class: "\uC800\uC2A4\uD2F0\uC2A4"
+    ClassSkill_AcquireRank: 6
+    ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58+"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4. \uB300\uC0C1\uC774 \uC804\uC5F4\uC77C \uACBD\uC6B0 {ClassSkillValue}+{ClassSkillSubValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4. (\uC801 \uC804\uC5F4\uC774 \uC788\uC744
+      \uACBD\uC6B0, \uC804\uC5F4 \uC6B0\uC120 \uACF5\uACA9)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 0
+    ClassSkillRangeLine: 0
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 00000000
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1.2
+    ClassSkillSubValueLv1: 0.2
+    ClassSkillValueLv2: 1.3
+    ClassSkillSubValueLv2: 0.3
+    ClassSkillValueLv3: 1.4
+    ClassSkillSubValueLv3: 0.4
+    ClassSkillValueLv4: 1.5
+    ClassSkillSubValueLv4: 0.5
+    ClassSkillValueLv5: 1.6
+    ClassSkillSubValueLv5: 0.6
+    ReplaceSkillIndex: HS1020
+    SkillRiskIndex: R0102
+  - ClassSkillIndex: HS1031
+    Class: "\uC800\uC2A4\uD2F0\uC2A4"
+    ClassSkill_AcquireRank: 7
+    ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uB300\uC26C+"
+    ClassSkillDescription: "\uC804\uC5F4\uC758 \uC801 \uD55C \uBA85\uC5D0\uAC8C {ClassSkillValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD788\uACE0, \uD574\uB2F9 \uD6C4\uC5F4\uC5D0
+      \uC788\uB294 \uC801 \uD55C \uBA85\uC5D0\uAC8C \uCD94\uAC00\uB85C {ClassSkillSubValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4. (\uC804\uC5F4\uC758 \uC801\uC774
+      \uC5C6\uC744 \uACBD\uC6B0 \uD6C4\uC5F4\uC758 \uC801 \uD55C \uBA85\uB9CC\uC744
+      \uACF5\uACA9)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 0
+    ClassSkillRangeLine: 0
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 03000000
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 1
+    ClassSkillValueLv1: 0.7
+    ClassSkillSubValueLv1: 0.9
+    ClassSkillValueLv2: 0.8
+    ClassSkillSubValueLv2: 1
+    ClassSkillValueLv3: 0.9
+    ClassSkillSubValueLv3: 1.1
+    ClassSkillValueLv4: 1
+    ClassSkillSubValueLv4: 1.2
+    ClassSkillValueLv5: 1.1
+    ClassSkillSubValueLv5: 1.3
+    ReplaceSkillIndex: HS1030
+    SkillRiskIndex: R0103
+  - ClassSkillIndex: HS1041
+    Class: "\uC800\uC2A4\uD2F0\uC2A4"
+    ClassSkill_AcquireRank: 8
+    ClassSkillName: "\uC800\uC2A4\uD2F0\uC2A4 \uD06C\uB798\uC26C+"
+    ClassSkillDescription: "\uC801 \uC804\uC5F4\uACFC \uD6C4\uC5F4\uC758 \uBAA8\uB4E0
+      \uC801\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4.
+      1\uD134 \uB3D9\uC548 \uBAA8\uB4E0 \uC801\uC774 \uB2E8\uC77C \uACF5\uACA9 \uC2DC
+      \uC790\uC2E0\uC744 \uACF5\uACA9\uD558\uAC8C \uD55C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 0
+    ClassSkillRangeLine: 0
+    ClassSkillTarget: 2
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.6
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 0.7
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 0.8
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 0.9
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS1040
+    SkillRiskIndex: R0101
+  - ClassSkillIndex: HS2010
+    Class: "\uB8E8\uBBF8\uB098"
+    ClassSkill_AcquireRank: 1
+    ClassSkillName: "\uD50C\uB808\uC5B4 \uBD04"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 1.1
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1.3
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.4
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0202
+  - ClassSkillIndex: HS2020
+    Class: "\uB8E8\uBBF8\uB098"
+    ClassSkill_AcquireRank: 2
+    ClassSkillName: "\uCCB4\uC778 \uB77C\uC774\uD305"
+    ClassSkillDescription: "\uC804\uC5F4\uC758 \uC801 \uD55C \uBA85\uC5D0\uAC8C {ClassSkillValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD788\uACE0, \uC778\uC811\uD55C \uC801 \uD55C
+      \uBA85\uC5D0\uAC8C \uCD94\uAC00\uB85C {ClassSkillSubValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 01000000030000000500000007000000
+    ClassSkill_MultiTargetType: 1
+    ClassSkill_MultiTargetCount: 1
+    ClassSkillValueLv1: 0.9
+    ClassSkillSubValueLv1: 0.3
+    ClassSkillValueLv2: 1
+    ClassSkillSubValueLv2: 0.4
+    ClassSkillValueLv3: 1.1
+    ClassSkillSubValueLv3: 0.5
+    ClassSkillValueLv4: 1.2
+    ClassSkillSubValueLv4: 0.6
+    ClassSkillValueLv5: 1.3
+    ClassSkillSubValueLv5: 0.7
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0203
+  - ClassSkillIndex: HS2030
+    Class: "\uB8E8\uBBF8\uB098"
+    ClassSkill_AcquireRank: 3
+    ClassSkillName: "\uC194\uB77C \uD504\uB9AC\uC998"
+    ClassSkillDescription: "\uC801 \uD55C \uC5F4\uC5D0 {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 1
+    ClassSkillMultiTarget: 09000000
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.6
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 0.7
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 0.8
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 0.9
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0201
+  - ClassSkillIndex: HS2040
+    Class: "\uB8E8\uBBF8\uB098"
+    ClassSkill_AcquireRank: 4
+    ClassSkillName: "\uD504\uB9AC\uC998 \uC775\uC2A4\uD50C\uB85C\uC804"
+    ClassSkillDescription: "\uC801 \uC804\uC5F4\uACFC \uD6C4\uC5F4\uC758 \uBAA8\uB4E0
+      \uC801\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4.
+      \uB300\uC0C1\uC758 \uD604\uC7AC \uCCB4\uB825\uC774 50% \uBBF8\uB9CC\uC77C \uACBD\uC6B0
+      {SubClassSkillSubValue} \uB300\uBBF8\uC9C0\uB97C \uCD94\uAC00\uB85C \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 2
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.6
+    ClassSkillSubValueLv1: 0.05
+    ClassSkillValueLv2: 0.7
+    ClassSkillSubValueLv2: 0.15
+    ClassSkillValueLv3: 0.8
+    ClassSkillSubValueLv3: 0.25
+    ClassSkillValueLv4: 0.9
+    ClassSkillSubValueLv4: 0.35
+    ClassSkillValueLv5: 1
+    ClassSkillSubValueLv5: 0.45
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0201
+  - ClassSkillIndex: HS2011
+    Class: "\uB8E8\uBBF8\uB098"
+    ClassSkill_AcquireRank: 5
+    ClassSkillName: "\uD50C\uB808\uC5B4 \uBD04+"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1.2
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 1.3
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 1.4
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1.5
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.6
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS2010
+    SkillRiskIndex: R0202
+  - ClassSkillIndex: HS2021
+    Class: "\uB8E8\uBBF8\uB098"
+    ClassSkill_AcquireRank: 6
+    ClassSkillName: "\uCCB4\uC778 \uB77C\uC774\uD305+"
+    ClassSkillDescription: "\uC804\uC5F4\uC758 \uC801 \uD55C \uBA85\uC5D0\uAC8C {ClassSkillValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD788\uACE0, \uC778\uC811\uD55C \uC801 \uD55C
+      \uBA85\uC5D0\uAC8C \uCD94\uAC00\uB85C {ClassSkillSubValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 01000000030000000500000007000000
+    ClassSkill_MultiTargetType: 1
+    ClassSkill_MultiTargetCount: 1
+    ClassSkillValueLv1: 1
+    ClassSkillSubValueLv1: 0.4
+    ClassSkillValueLv2: 1.1
+    ClassSkillSubValueLv2: 0.5
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0.6
+    ClassSkillValueLv4: 1.3
+    ClassSkillSubValueLv4: 0.7
+    ClassSkillValueLv5: 1.4
+    ClassSkillSubValueLv5: 0.8
+    ReplaceSkillIndex: HS2020
+    SkillRiskIndex: R0203
+  - ClassSkillIndex: HS2031
+    Class: "\uB8E8\uBBF8\uB098"
+    ClassSkill_AcquireRank: 7
+    ClassSkillName: "\uC194\uB77C \uD504\uB9AC\uC998+"
+    ClassSkillDescription: "\uC801 \uD55C \uC5F4\uC5D0 {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 1
+    ClassSkillMultiTarget: 09000000
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.7
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 0.8
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 0.9
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.1
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS2030
+    SkillRiskIndex: R0201
+  - ClassSkillIndex: HS2041
+    Class: "\uB8E8\uBBF8\uB098"
+    ClassSkill_AcquireRank: 8
+    ClassSkillName: "\uD504\uB9AC\uC998 \uC775\uC2A4\uD50C\uB85C\uC804+"
+    ClassSkillDescription: "\uC801 \uC804\uC5F4\uACFC \uD6C4\uC5F4\uC758 \uBAA8\uB4E0
+      \uC801\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4.
+      \uB300\uC0C1\uC758 \uD604\uC7AC \uCCB4\uB825\uC774 50% \uBBF8\uB9CC\uC77C \uACBD\uC6B0
+      {SubClassSkillSubValue} \uB300\uBBF8\uC9C0\uB97C \uCD94\uAC00\uB85C \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 2
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.7
+    ClassSkillSubValueLv1: 0.05
+    ClassSkillValueLv2: 0.8
+    ClassSkillSubValueLv2: 0.15
+    ClassSkillValueLv3: 0.9
+    ClassSkillSubValueLv3: 0.25
+    ClassSkillValueLv4: 1
+    ClassSkillSubValueLv4: 0.35
+    ClassSkillValueLv5: 1.1
+    ClassSkillSubValueLv5: 0.45
+    ReplaceSkillIndex: HS2040
+    SkillRiskIndex: R0201
+  - ClassSkillIndex: HS3010
+    Class: "\uBE14\uB799 \uBD88\uB9BF"
+    ClassSkill_AcquireRank: 1
+    ClassSkillName: "\uBE14\uB799 \uB370\uBE4C \uD37C\uD399\uD2B8 \uC5D0\uC784 \uC0F7"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 1.1
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1.3
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.4
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0303
+  - ClassSkillIndex: HS3020
+    Class: "\uBE14\uB799 \uBD88\uB9BF"
+    ClassSkill_AcquireRank: 2
+    ClassSkillName: "\uD504\uB860\uD2B8 \uB77C\uC778 \uBE0C\uB808\uC774\uD06C \uBD88\uB9BF"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4. \uC804\uC5F4\uC758 \uC801\uC744 \uACF5\uACA9 \uC2DC, {ClassSkillValue}+{ClassSkillSubValue}\uB300\uBBF8\uC9C0\uB85C
+      \uACC4\uC0B0\uD55C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1
+    ClassSkillSubValueLv1: 0.2
+    ClassSkillValueLv2: 1.1
+    ClassSkillSubValueLv2: 0.3
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0.4
+    ClassSkillValueLv4: 1.3
+    ClassSkillSubValueLv4: 0.5
+    ClassSkillValueLv5: 1.4
+    ClassSkillSubValueLv5: 0.6
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0301
+  - ClassSkillIndex: HS3030
+    Class: "\uBE14\uB799 \uBD88\uB9BF"
+    ClassSkill_AcquireRank: 3
+    ClassSkillName: "\uD2B8\uC708 \uD2B8\uB9AC\uAC70 \uB354\uBE14 \uBC84\uC2A4\uD2B8"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue}\uB300\uBBF8\uC9C0\uB97C
+      \uB450 \uBC88 \uC785\uD78C\uB2E4. (\uCE58\uBA85\uD0C0, \uD68C\uD53C\uC728 \uD310\uC815\uC740
+      \uAC01\uAC01 \uACC4\uC0B0\uD55C\uB2E4.)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 00000000
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.7
+    ClassSkillSubValueLv1: 0.7
+    ClassSkillValueLv2: 0.8
+    ClassSkillSubValueLv2: 0.8
+    ClassSkillValueLv3: 0.9
+    ClassSkillSubValueLv3: 0.9
+    ClassSkillValueLv4: 1
+    ClassSkillSubValueLv4: 1
+    ClassSkillValueLv5: 1.1
+    ClassSkillSubValueLv5: 1.1
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0302
+  - ClassSkillIndex: HS3040
+    Class: "\uBE14\uB799 \uBD88\uB9BF"
+    ClassSkill_AcquireRank: 4
+    ClassSkillName: "\uB370\uB4DC\uC5D4\uB4DC \uB77C\uC2A4\uD2B8 \uD2B8\uB9AC\uAC70"
+    ClassSkillDescription: "\uC801\uC758 \uCCB4\uB825\uC774 \uB0AE\uC744 \uC218\uB85D
+      \uB192\uC740 \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4. (\uAE30\uBCF8 100%
+      + \uC801\uC758 \uCD5C\uB300 \uCCB4\uB825 \uB300\uBE44 \uD604\uC7AC \uCCB4\uB825
+      10%\uAC00 \uB0AE\uC544\uC9C8 \uB54C\uB9C8\uB2E4 {ClassSkillSubValue} \uCD94\uAC00)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1
+    ClassSkillSubValueLv1: 0.1
+    ClassSkillValueLv2: 1.1
+    ClassSkillSubValueLv2: 0.2
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0.3
+    ClassSkillValueLv4: 1.3
+    ClassSkillSubValueLv4: 0.4
+    ClassSkillValueLv5: 1.4
+    ClassSkillSubValueLv5: 0.5
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0303
+  - ClassSkillIndex: HS3011
+    Class: "\uBE14\uB799 \uBD88\uB9BF"
+    ClassSkill_AcquireRank: 5
+    ClassSkillName: "\uBE14\uB799 \uB370\uBE4C \uD37C\uD399\uD2B8 \uC5D0\uC784 \uC0F7+"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1.2
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 1.3
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 1.4
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1.5
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.6
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS3010
+    SkillRiskIndex: R0303
+  - ClassSkillIndex: HS3021
+    Class: "\uBE14\uB799 \uBD88\uB9BF"
+    ClassSkill_AcquireRank: 6
+    ClassSkillName: "\uD504\uB860\uD2B8 \uB77C\uC778 \uBE0C\uB808\uC774\uD06C \uBD88\uB9BF+"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4. \uC804\uC5F4\uC758 \uC801\uC744 \uACF5\uACA9 \uC2DC, {ClassSkillValue}+{ClassSkillSubValue}\uB300\uBBF8\uC9C0\uB85C
+      \uACC4\uC0B0\uD55C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1.2
+    ClassSkillSubValueLv1: 0.3
+    ClassSkillValueLv2: 1.3
+    ClassSkillSubValueLv2: 0.4
+    ClassSkillValueLv3: 1.4
+    ClassSkillSubValueLv3: 0.5
+    ClassSkillValueLv4: 1.5
+    ClassSkillSubValueLv4: 0.6
+    ClassSkillValueLv5: 1.6
+    ClassSkillSubValueLv5: 0.7
+    ReplaceSkillIndex: HS3020
+    SkillRiskIndex: R0301
+  - ClassSkillIndex: HS3031
+    Class: "\uBE14\uB799 \uBD88\uB9BF"
+    ClassSkill_AcquireRank: 7
+    ClassSkillName: "\uD2B8\uC708 \uD2B8\uB9AC\uAC70 \uB354\uBE14 \uBC84\uC2A4\uD2B8+"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue}\uB300\uBBF8\uC9C0\uB97C
+      \uB450 \uBC88 \uC785\uD78C\uB2E4. (\uCE58\uBA85\uD0C0, \uD68C\uD53C\uC728 \uD310\uC815\uC740
+      \uAC01\uAC01 \uACC4\uC0B0\uD55C\uB2E4.)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 00000000
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.9
+    ClassSkillSubValueLv1: 0.9
+    ClassSkillValueLv2: 1
+    ClassSkillSubValueLv2: 1
+    ClassSkillValueLv3: 1.1
+    ClassSkillSubValueLv3: 1.1
+    ClassSkillValueLv4: 1.2
+    ClassSkillSubValueLv4: 1.2
+    ClassSkillValueLv5: 1.3
+    ClassSkillSubValueLv5: 1.3
+    ReplaceSkillIndex: HS3030
+    SkillRiskIndex: R0302
+  - ClassSkillIndex: HS3041
+    Class: "\uBE14\uB799 \uBD88\uB9BF"
+    ClassSkill_AcquireRank: 8
+    ClassSkillName: "\uB370\uB4DC\uC5D4\uB4DC \uB77C\uC2A4\uD2B8 \uD2B8\uB9AC\uAC70+"
+    ClassSkillDescription: "\uC801\uC758 \uCCB4\uB825\uC774 \uB0AE\uC744 \uC218\uB85D
+      \uB192\uC740 \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4. (\uAE30\uBCF8 100%
+      + \uC801\uC758 \uCD5C\uB300 \uCCB4\uB825 \uB300\uBE44 \uD604\uC7AC \uCCB4\uB825
+      10%\uAC00 \uB0AE\uC544\uC9C8 \uB54C\uB9C8\uB2E4 {ClassSkillSubValue} \uCD94\uAC00)"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1.2
+    ClassSkillSubValueLv1: 0.15
+    ClassSkillValueLv2: 1.3
+    ClassSkillSubValueLv2: 0.25
+    ClassSkillValueLv3: 1.4
+    ClassSkillSubValueLv3: 0.35
+    ClassSkillValueLv4: 1.5
+    ClassSkillSubValueLv4: 0.45
+    ClassSkillValueLv5: 1.6
+    ClassSkillSubValueLv5: 0.55
+    ReplaceSkillIndex: HS3040
+    SkillRiskIndex: R0303
+  - ClassSkillIndex: HS4010
+    Class: "\uB124\uCF54\uBC0D"
+    ClassSkill_AcquireRank: 1
+    ClassSkillName: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C"
+    ClassSkillDescription: "\uC544\uAD70 1\uBA85 \uCCB4\uB825\uC744 \uB124\uCF54\uBC0D
+      \uCD5C\uB300 \uCCB4\uB825\uC758 {ClassSkillValue} \uD68C\uBCF5"
+    IPCost: 0
+    ClassSkillEffect: 1
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.5
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 0.6
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 0.7
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 0.8
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 0.9
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0401
+  - ClassSkillIndex: HS4020
+    Class: "\uB124\uCF54\uBC0D"
+    ClassSkill_AcquireRank: 2
+    ClassSkillName: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue}\uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4. \uC785\uD78C \uB300\uBBF8\uC9C0 \uB9CC\uD07C \uB79C\uB364
+      \uC544\uAD70 1\uBA85\uC758 \uCCB4\uB825\uC744 \uD68C\uBCF5\uD55C\uB2E4"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.8
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 0.9
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 1
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1.1
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.2
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0403
+  - ClassSkillIndex: HS4030
+    Class: "\uB124\uCF54\uBC0D"
+    ClassSkill_AcquireRank: 3
+    ClassSkillName: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    ClassSkillDescription: "\uC544\uAD70 1\uBA85\uC758 \uCCB4\uB825\uC744 \uB124\uCF54\uBC0D
+      \uCD5C\uB300 \uCCB4\uB825\uC758 {ClassSkillValue} \uD68C\uBCF5\uD558\uACE0,
+      \uC778\uC811\uD55C \uC544\uAD70 1\uBA85\uC758 \uCCB4\uB825\uC744 \uC790\uC2E0
+      \uCD5C\uB300 \uCCB4\uB825\uC758 {ClassSkillSubValue} \uCD94\uAC00 \uD68C\uBCF5\uD55C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 1
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 1
+    ClassSkillMultiTarget: 01000000030000000500000007000000
+    ClassSkill_MultiTargetType: 1
+    ClassSkill_MultiTargetCount: 1
+    ClassSkillValueLv1: 0.3
+    ClassSkillSubValueLv1: 0.3
+    ClassSkillValueLv2: 0.4
+    ClassSkillSubValueLv2: 0.4
+    ClassSkillValueLv3: 0.5
+    ClassSkillSubValueLv3: 0.5
+    ClassSkillValueLv4: 0.6
+    ClassSkillSubValueLv4: 0.6
+    ClassSkillValueLv5: 0.7
+    ClassSkillSubValueLv5: 0.7
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0402
+  - ClassSkillIndex: HS4040
+    Class: "\uB124\uCF54\uBC0D"
+    ClassSkill_AcquireRank: 4
+    ClassSkillName: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
+    ClassSkillDescription: "\uB9AC\uD0C0\uC774\uC5B4\uD55C \uC544\uAD70 1\uBA85\uC744
+      \uD574\uB2F9 \uC544\uAD70 \uCD5C\uB300 \uCCB4\uB825\uC758 {ClassSkillSubValue}\uB85C
+      \uBD80\uD65C\uC2DC\uD0A8 \uD6C4, \uC801 \uC804\uCCB4\uC5D0 {ClassSkillValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4.\n\uB2E8, \uBD80\uD65C \uD6A8\uACFC\uB294
+      \uC804\uD22C\uB2F9 1\uD68C\uB9CC \uC801\uC6A9\uB418\uBA70, \uC774\uD6C4 \uC0AC\uC6A9
+      \uC2DC\uC5D0\uB294 \uC801 \uC804\uCCB4 \uB300\uBBF8\uC9C0\uB9CC \uC801\uC6A9\uB41C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 2
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 2
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.2
+    ClassSkillSubValueLv1: 0.2
+    ClassSkillValueLv2: 0.3
+    ClassSkillSubValueLv2: 0.3
+    ClassSkillValueLv3: 0.4
+    ClassSkillSubValueLv3: 0.4
+    ClassSkillValueLv4: 0.5
+    ClassSkillSubValueLv4: 0.5
+    ClassSkillValueLv5: 0.6
+    ClassSkillSubValueLv5: 0.6
+    ReplaceSkillIndex: 
+    SkillRiskIndex: R0401
+  - ClassSkillIndex: HS4011
+    Class: "\uB124\uCF54\uBC0D"
+    ClassSkill_AcquireRank: 5
+    ClassSkillName: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C+"
+    ClassSkillDescription: "\uC544\uAD70 1\uBA85 \uCCB4\uB825\uC744 \uB124\uCF54\uBC0D
+      \uCD5C\uB300 \uCCB4\uB825\uC758 {ClassSkillValue} \uD68C\uBCF5"
+    IPCost: 0
+    ClassSkillEffect: 1
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.7
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 0.8
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 0.9
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.1
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS4010
+    SkillRiskIndex: R0401
+  - ClassSkillIndex: HS4021
+    Class: "\uB124\uCF54\uBC0D"
+    ClassSkill_AcquireRank: 6
+    ClassSkillName: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4+"
+    ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue}\uB300\uBBF8\uC9C0\uB97C
+      \uC785\uD78C\uB2E4. \uC785\uD78C \uB300\uBBF8\uC9C0 \uB9CC\uD07C \uB79C\uB364
+      \uC544\uAD70 1\uBA85\uC758 \uCCB4\uB825\uC744 \uD68C\uBCF5\uD55C\uB2E4"
+    IPCost: 0
+    ClassSkillEffect: 0
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 0
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 1
+    ClassSkillSubValueLv1: 0
+    ClassSkillValueLv2: 1.1
+    ClassSkillSubValueLv2: 0
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0
+    ClassSkillValueLv4: 1.3
+    ClassSkillSubValueLv4: 0
+    ClassSkillValueLv5: 1.4
+    ClassSkillSubValueLv5: 0
+    ReplaceSkillIndex: HS4020
+    SkillRiskIndex: R0403
+  - ClassSkillIndex: HS4031
+    Class: "\uB124\uCF54\uBC0D"
+    ClassSkill_AcquireRank: 7
+    ClassSkillName: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790+"
+    ClassSkillDescription: "\uC544\uAD70 1\uBA85\uC758 \uCCB4\uB825\uC744 \uB124\uCF54\uBC0D
+      \uCD5C\uB300 \uCCB4\uB825\uC758 {ClassSkillValue} \uD68C\uBCF5\uD558\uACE0,
+      \uC778\uC811\uD55C \uC544\uAD70 1\uBA85\uC758 \uCCB4\uB825\uC744 \uC790\uC2E0
+      \uCD5C\uB300 \uCCB4\uB825\uC758 {ClassSkillSubValue} \uCD94\uAC00 \uD68C\uBCF5\uD55C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 1
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 1
+    ClassSkillMultiTarget: 01000000030000000500000007000000
+    ClassSkill_MultiTargetType: 1
+    ClassSkill_MultiTargetCount: 1
+    ClassSkillValueLv1: 0.5
+    ClassSkillSubValueLv1: 0.5
+    ClassSkillValueLv2: 0.6
+    ClassSkillSubValueLv2: 0.6
+    ClassSkillValueLv3: 0.7
+    ClassSkillSubValueLv3: 0.7
+    ClassSkillValueLv4: 0.8
+    ClassSkillSubValueLv4: 0.8
+    ClassSkillValueLv5: 0.9
+    ClassSkillSubValueLv5: 0.9
+    ReplaceSkillIndex: HS4030
+    SkillRiskIndex: R0402
+  - ClassSkillIndex: HS4041
+    Class: "\uB124\uCF54\uBC0D"
+    ClassSkill_AcquireRank: 8
+    ClassSkillName: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC+"
+    ClassSkillDescription: "\uB9AC\uD0C0\uC774\uC5B4\uD55C \uC544\uAD70 1\uBA85\uC744
+      \uD574\uB2F9 \uC544\uAD70 \uCD5C\uB300 \uCCB4\uB825\uC758 {ClassSkillSubValue}\uB85C
+      \uBD80\uD65C\uC2DC\uD0A8 \uD6C4, \uC801 \uC804\uCCB4\uC5D0 {ClassSkillValue}
+      \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4.\n\uB2E8, \uBD80\uD65C \uD6A8\uACFC\uB294
+      \uC804\uD22C\uB2F9 1\uD68C\uB9CC \uC801\uC6A9\uB418\uBA70, \uC774\uD6C4 \uC0AC\uC6A9
+      \uC2DC\uC5D0\uB294 \uC801 \uC804\uCCB4 \uB300\uBBF8\uC9C0\uB9CC \uC801\uC6A9\uB41C\uB2E4."
+    IPCost: 0
+    ClassSkillEffect: 2
+    ClassSkillRange: 1
+    ClassSkillRangeLine: 1
+    ClassSkillTarget: 2
+    ClassSkillMultiTarget: 
+    ClassSkill_MultiTargetType: 0
+    ClassSkill_MultiTargetCount: 0
+    ClassSkillValueLv1: 0.3
+    ClassSkillSubValueLv1: 0.3
+    ClassSkillValueLv2: 0.4
+    ClassSkillSubValueLv2: 0.4
+    ClassSkillValueLv3: 0.5
+    ClassSkillSubValueLv3: 0.5
+    ClassSkillValueLv4: 0.6
+    ClassSkillSubValueLv4: 0.6
+    ClassSkillValueLv5: 0.7
+    ClassSkillSubValueLv5: 0.7
+    ReplaceSkillIndex: HS4040
+    SkillRiskIndex: R0401

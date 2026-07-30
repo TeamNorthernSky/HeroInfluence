@@ -44,6 +44,14 @@ MonoBehaviour:
     TimeoutGraceSeconds: 1
     TimeoutSeconds: 5
     DeliveryMode: 0
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
+    TargetFormationCenter: 0
+  ImpactDeliveryMode: 1
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
   AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
@@ -76,7 +84,7 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: charge
-        EffectIds: 1a040000
+        EffectIds: ee070000
         SoundIds: 
         Operation: 0
         InstanceKey: col_charge

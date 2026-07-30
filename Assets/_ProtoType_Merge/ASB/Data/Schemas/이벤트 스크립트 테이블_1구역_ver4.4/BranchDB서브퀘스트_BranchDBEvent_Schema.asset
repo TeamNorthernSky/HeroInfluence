@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
+  m_Name: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8_BranchDBEvent_Schema"
+  m_EditorClassIdentifier: 
+  schemaGuid: b602bec86bd9485ca70efc4f5b23d152
+  sourceWorkbookGuid: 931a7ba163310a64eb43789c43f5c280
+  sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/\uC774\uBCA4\uD2B8
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver4.4.xlsx"
+  workbookFileName: "\uC774\uBCA4\uD2B8 \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver4.4"
+  sourceSheetName: "Branch DB_\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  physicalSheetId: a3f22eeac02e1885a68c9de4760626c0f4890ebe
+  logicalSheetKey: "branchdb\uC11C\uBE0C\uD018\uC2A4\uD2B8"
+  templateClassName: BranchDBEvent
+  templateSignature: "dict=0|Branch_ID:Int:Comma|Selection_Index:String:Comma|Trigger_Type:String:Comma|Trigger_Value:ListString:Backslash|Selection_Text:String:Comma|Target_Talk_ID:Int:Comma|Trigger_Effect:String:Comma|\uBE44\uACE0:String:Comma"
+  className: BranchDBEvent
+  outputAssetName: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable"
+  targetTableAssetGuid: aaa3a2a9a628e6741a276c6f6ba76547
+  targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/\uC774\uBCA4\uD2B8
+    \uC2A4\uD06C\uB9BD\uD2B8 \uD14C\uC774\uBE14_1\uAD6C\uC5ED_ver4.4/BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable.asset"
+  headerRowIndex: 0
+  dataStartRowIndex: 1
+  useDictionary: 0
+  requireUniqueKey: 0
+  duplicateKeyPolicy: 0
+  Columns:
+  - sourceColumnIndex: 0
+    sourceHeaderName: Branch_ID
+    fieldName: Branch_ID
+    displayName: Branch_ID
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: Selection_Index
+    fieldName: Selection_Index
+    displayName: Selection_Index
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: Trigger_Type
+    fieldName: Trigger_Type
+    displayName: Trigger_Type
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: Trigger_Value
+    fieldName: Trigger_Value
+    displayName: Trigger_Value
+    fieldType: 5
+    listDelimiter: 1
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: Selection_Text
+    fieldName: Selection_Text
+    displayName: Selection_Text
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: Target_Talk_ID
+    fieldName: Target_Talk_ID
+    displayName: Target_Talk_ID
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: Trigger_Effect
+    fieldName: Trigger_Effect
+    displayName: Trigger_Effect
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0

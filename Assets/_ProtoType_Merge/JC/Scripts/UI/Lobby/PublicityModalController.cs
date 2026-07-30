@@ -7,15 +7,13 @@ using UnityEngine.UI;
 /// 영웅 선택 sub-modal은 별도 신설(Modal_PublicityHeroSelect, HeroListController 재활용).
 /// </summary>
 [DisallowMultipleComponent]
-public class PublicityModalController : MonoBehaviour
+public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
 {
     [Header("Modal_Publicity 본체")]
     [SerializeField] private GameObject modalPublicityRoot;
     [SerializeField] private Button btnClose;
 
     [Header("영웅 영역")]
-    [Tooltip("HeroProfile 자체 GO에 부착된 Button (없으면 클릭 영역으로 만들 수 있음). 클릭 시 영웅 선택 모달 열기")]
-    [SerializeField] private Button btnHeroSlot;
     [SerializeField] private Image heroProfileImage;
     [SerializeField] private GameObject heroSilhouette; // 미선택 시 활성
     [SerializeField] private TextMeshProUGUI currentIPText; // Txt_CurrentIP
@@ -39,11 +37,6 @@ public class PublicityModalController : MonoBehaviour
     [SerializeField] private GameObject disabledOverlay;
     [SerializeField] private TextMeshProUGUI stateInfoText;
 
-    [Header("영웅 선택 sub-modal")]
-    [SerializeField] private GameObject heroSelectModalRoot;
-    [SerializeField] private HeroListController heroSelectListController;
-    [SerializeField] private Button btnHeroSelectClose;
-
     private int selectedUnitIndex = -1;
     private int progressCount;
     private PublicityManager subscribedBC;
@@ -52,24 +45,30 @@ public class PublicityModalController : MonoBehaviour
     private void Awake()
     {
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
-        if (btnCancel != null) btnCancel.onClick.AddListener(CloseModal);
-        if (btnHeroSlot != null) btnHeroSlot.onClick.AddListener(OpenHeroSelect);
-        if (btnHeroSelectClose != null) btnHeroSelectClose.onClick.AddListener(CloseHeroSelect);
+        // [KJ 260729] 취소 = 영웅 선택 해제(HeroSlot 우클릭과 동일). 모달 닫기는 btnClose가 담당한다.
+        if (btnCancel != null) btnCancel.onClick.AddListener(ClearHeroSelection);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
         if (btnPrev != null) btnPrev.onClick.AddListener(() => SetCount(progressCount - 1));
         if (btnNext != null) btnNext.onClick.AddListener(() => SetCount(progressCount + 1));
         if (btnMax != null) btnMax.onClick.AddListener(SetCountToMax);
         if (progressSlider != null) progressSlider.onValueChanged.AddListener(OnSliderChanged);
-
-        if (heroSelectListController != null)
-        {
-            heroSelectListController.SetSelectionMode(true);
-            heroSelectListController.SetVisitingOnlyMode(true); // 본부 상주(방문) 파티 영웅만 홍보 사용
-        }
     }
 
-    private void OnEnable() { TrySubscribe(); progressCount = 0; Refresh(); }
-    private void OnDisable() { Unsubscribe(); }
+    private void OnEnable()
+    {
+        TrySubscribe();
+        progressCount = 0;
+        // [KJ 260728] 파티 패널을 선택 모드로 전환.
+        var roster = LobbyUIRegistry.RosterView;
+        if (roster != null) roster.BeginSelection(OnHeroSelected);
+        else Debug.LogWarning("[PublicityModalController] LobbyUIRegistry.RosterView 없음 — 영웅 선택 불가.");
+        Refresh();
+    }
+    private void OnDisable()
+    {
+        if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.EndSelection();
+        Unsubscribe();
+    }
     private void Update()
     {
         if (subscribedBC == null || subscribedEco == null) TrySubscribe();
@@ -83,8 +82,6 @@ public class PublicityModalController : MonoBehaviour
         {
             subscribedBC = gm.Publicity;
             subscribedBC.OnStateChanged += Refresh;
-            if (heroSelectListController != null)
-                heroSelectListController.UnitSelected += OnHeroSelected;
         }
         if (subscribedEco == null && gm.Economy != null)
         {
@@ -99,8 +96,6 @@ public class PublicityModalController : MonoBehaviour
         if (subscribedBC != null)
         {
             subscribedBC.OnStateChanged -= Refresh;
-            if (heroSelectListController != null)
-                heroSelectListController.UnitSelected -= OnHeroSelected;
             subscribedBC = null;
         }
         if (subscribedEco != null)
@@ -114,27 +109,24 @@ public class PublicityModalController : MonoBehaviour
 
     public void CloseModal()
     {
-        if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(false);
         if (modalPublicityRoot != null) modalPublicityRoot.SetActive(false);
     }
 
     // ─── 영웅 선택 ──────────────────────────────────────────
-    private void OpenHeroSelect()
-    {
-        if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(true);
-        if (heroSelectListController != null) heroSelectListController.Rebuild();
-    }
-
-    private void CloseHeroSelect()
-    {
-        if (heroSelectModalRoot != null) heroSelectModalRoot.SetActive(false);
-    }
-
     private void OnHeroSelected(int unitIndex)
     {
         selectedUnitIndex = unitIndex;
-        CloseHeroSelect();
         progressCount = 0;
+        // [KJ 260728] 파티 패널 하이라이트 동기화. 서브모달 폐기로 CloseHeroSelect 호출 제거.
+        if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.SetSelected(unitIndex);
+        Refresh();
+    }
+
+    /// <summary>[KJ 260728] HeroSlot 우클릭 → 선택 해제(IHeroSelectionOwner).</summary>
+    public void ClearHeroSelection()
+    {
+        selectedUnitIndex = -1;
+        if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.SetSelected(-1);
         Refresh();
     }
 

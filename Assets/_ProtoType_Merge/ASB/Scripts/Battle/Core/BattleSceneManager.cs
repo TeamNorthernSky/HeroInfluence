@@ -11,6 +11,8 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 /// </summary>
 public class BattleSceneManager : MonoBehaviour
 {
+    private const int EventBattleLogicalSlotCount = 6;
+
     [Header("Prototype Boot")]
     [Tooltip("Prototype 전용: 씬에 배치된 BattleCharactor를 그대로 초기화해 전투를 시작합니다.")]
     [SerializeField] private bool includeInactiveUnits = true;
@@ -219,9 +221,15 @@ public class BattleSceneManager : MonoBehaviour
 
     private void Start()
     {
+        CombatContext combatContext = CombatContext.Instance;
+        bool isEventBattle = combatContext != null && combatContext.HasEventBattle;
+
         if (battleFlowManager == null)
         {
-            Debug.LogError("[BattleSceneManager] battleFlowManager가 할당되지 않았습니다.");
+            const string error = "battleFlowManager is not assigned.";
+            Debug.LogError($"[BattleSceneManager] {error}", this);
+            if (isEventBattle)
+                AbortEventBattleSetup(combatContext, error);
             return;
         }
 
@@ -232,25 +240,69 @@ public class BattleSceneManager : MonoBehaviour
         playerSpawner?.SetSpawnOnStart(false);
         enemySpawner?.SetSpawnOnStart(false);
 
+        BattleLogicalSlotMap eventSlotMap = null;
+        if (isEventBattle &&
+            !TryPrepareEventSlotMap(combatContext, out eventSlotMap, out string slotMapError))
+        {
+            AbortEventBattleSetup(combatContext, slotMapError);
+            return;
+        }
+
         playerSpawner?.ManualSpawn();
-        enemySpawner?.ManualSpawn();
-        hostageScenarioController = HostageScenarioController.Create(
-            enemyPlace,
-            CombatContext.Instance != null && CombatContext.Instance.EventBattle != null
-                ? CombatContext.Instance.EventBattle.Scenario
-                : null);
+        bool enemySpawnSucceeded = enemySpawner != null && enemySpawner.ManualSpawn();
+        if (isEventBattle && !enemySpawnSucceeded)
+        {
+            AbortEventBattleSetup(
+                combatContext,
+                $"No complete event combat enemy set was spawned. Battle={combatContext.EventBattle.BattleKey}");
+            return;
+        }
+
+        BattleScenarioConfig scenario = isEventBattle && combatContext.EventBattle != null
+            ? combatContext.EventBattle.Scenario
+            : null;
+        if (scenario != null && scenario.IsHostageRescue)
+        {
+            hostageScenarioController = HostageScenarioController.Create(eventSlotMap, scenario);
+            if (hostageScenarioController == null || !hostageScenarioController.IsFullyInitialized)
+            {
+                string hostageError = hostageScenarioController != null
+                    ? hostageScenarioController.InitializationError
+                    : "Hostage scenario controller could not be created.";
+                AbortEventBattleSetup(combatContext, hostageError);
+                return;
+            }
+        }
 
         var inactiveMode = includeInactiveUnits ? FindObjectsInactive.Include : FindObjectsInactive.Exclude;
         var sceneUnits = FindObjectsByType<BattleCharactor>(inactiveMode, FindObjectsSortMode.None).ToList();
         if (sceneUnits.Count == 0)
         {
-            Debug.LogWarning("[BattleSceneManager] 씬에서 BattleCharactor를 찾지 못했습니다.");
+            const string error = "No BattleCharactor was found in the battle scene.";
+            Debug.LogWarning($"[BattleSceneManager] {error}", this);
+            if (isEventBattle)
+                AbortEventBattleSetup(combatContext, error);
             return;
         }
 
         // 그리드 ↔ 유닛 점유 동기화 후, 각 BattleCharactor.Initialize()로 스탯·스킬·무기 확정
         SyncGridOccupancy(sceneUnits);
         CollectParticipantsAfterInitialize(sceneUnits);
+
+        if (isEventBattle)
+        {
+            bool hasAlivePlayer = playerBattleCharactors.Any(unit => unit != null && !unit.IsDead);
+            bool hasAliveEnemy = enemyBattleCharactors.Any(unit => unit != null && !unit.IsDead);
+            if (!hasAlivePlayer || !hasAliveEnemy)
+            {
+                AbortEventBattleSetup(
+                    combatContext,
+                    $"Event battle participant validation failed. " +
+                    $"Players={playerBattleCharactors.Count}, Enemies={enemyBattleCharactors.Count}, " +
+                    $"HasAlivePlayer={hasAlivePlayer}, HasAliveEnemy={hasAliveEnemy}");
+                return;
+            }
+        }
 
         var allUnits = new List<BattleCharactor>(playerBattleCharactors.Count + enemyBattleCharactors.Count);
         allUnits.AddRange(playerBattleCharactors);
@@ -259,6 +311,105 @@ public class BattleSceneManager : MonoBehaviour
         // BattleFlowManager.Initialize → RebuildRuntimeLookup: 스포너/CollectParticipantsAfterInitialize 이후이며
         // 각 인스턴스의 BattleCharactor.Awake에서 런타임 키가 이미 할당된 상태입니다.
         battleFlowManager.Initialize(allUnits);
+    }
+
+    private bool TryPrepareEventSlotMap(
+        CombatContext combatContext,
+        out BattleLogicalSlotMap slotMap,
+        out string error)
+    {
+        slotMap = null;
+        error = string.Empty;
+
+        if (combatContext == null || !combatContext.HasEventBattle)
+        {
+            error = "Event battle context is missing.";
+            return false;
+        }
+
+        if (enemyPlace == null)
+        {
+            error = "EnemyPlace is not assigned.";
+            return false;
+        }
+
+        if (enemySpawner == null)
+        {
+            error = "EnemySpawner is not assigned.";
+            return false;
+        }
+
+        if (enemySpawner.GridRoot != enemyPlace)
+        {
+            error =
+                $"Enemy grid root mismatch. enemyPlace='{enemyPlace.name}', " +
+                $"enemySpawnerRoot='{enemySpawner.GridRoot?.name ?? "<null>"}'.";
+            return false;
+        }
+
+        if (playerPlace != null &&
+            (playerPlace == enemyPlace ||
+             playerPlace.IsChildOf(enemyPlace) ||
+             enemyPlace.IsChildOf(playerPlace)))
+        {
+            error =
+                $"Player and enemy grid roots overlap. " +
+                $"playerPlace='{playerPlace.name}', enemyPlace='{enemyPlace.name}'.";
+            return false;
+        }
+
+        if (!BattleLogicalSlotMap.TryCreate(enemyPlace, out slotMap, out error))
+            return false;
+
+        if (slotMap.Count != EventBattleLogicalSlotCount)
+        {
+            error =
+                $"Event enemy grid must contain exactly {EventBattleLogicalSlotCount} logical slots. " +
+                $"Root='{enemyPlace.name}', Found={slotMap.Count}.";
+            slotMap = null;
+            return false;
+        }
+
+        if (!enemySpawner.ConfigureEventSlotMap(slotMap, out error))
+        {
+            slotMap = null;
+            return false;
+        }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        Debug.Log(slotMap.BuildDebugSummary(combatContext.EventBattle.BattleKey), enemyPlace);
+#endif
+        return true;
+    }
+
+    private void AbortEventBattleSetup(CombatContext combatContext, string reason)
+    {
+        if (combatContext == null || !combatContext.HasEventBattle)
+        {
+            Debug.LogError(
+                $"[BattleSceneManager] Cannot abort event setup because its CombatContext is missing. Reason={reason}",
+                this);
+            return;
+        }
+
+        CombatEventBattleData eventBattle = combatContext.EventBattle;
+        eventBattle.SetNumericResult(HostageScenarioController.InjuredCountResultKey, 0f);
+        combatContext.SetCombatResult(CombatResult.Cancelled);
+
+        Debug.LogError(
+            $"[BattleSceneManager] Event battle setup cancelled. " +
+            $"Battle={eventBattle.BattleKey}, Reason={reason}",
+            this);
+
+        if (returnSceneCoroutine == null)
+            returnSceneCoroutine = StartCoroutine(AbortEventBattleSetupRoutine());
+    }
+
+    private IEnumerator AbortEventBattleSetupRoutine()
+    {
+        // 정상 PostBattleSequence를 사용하지 않습니다. 초기화 오류에는 보상/결과 UI/커밋이 없어야 합니다.
+        yield return null;
+        yield return StartCoroutine(TransitionToSceneRoutine());
     }
 
     /// <summary>

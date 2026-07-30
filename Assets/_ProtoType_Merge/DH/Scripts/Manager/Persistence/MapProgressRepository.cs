@@ -317,15 +317,28 @@ public class MapProgressRepository : MonoBehaviour
         string prefabKey,
         string zoneId)
     {
+        BindEnemy(placementKey, enemyId, grid, placementSource, prefabKey, zoneId, EnemyBehaviorType.Mobile);
+    }
+
+    public void BindEnemy(
+        string placementKey,
+        string enemyId,
+        Vector2Int grid,
+        EnemyPlacementSource placementSource,
+        string prefabKey,
+        string zoneId,
+        EnemyBehaviorType behaviorType)
+    {
         if (!IsValidKey(placementKey) || string.IsNullOrWhiteSpace(enemyId))
             return;
 
-        EnemyWorldState state = GetOrCreateEnemyState(NormalizeKey(placementKey), enemyId, grid, placementSource, prefabKey, zoneId);
+        EnemyWorldState state = GetOrCreateEnemyState(NormalizeKey(placementKey), enemyId, grid, placementSource, prefabKey, zoneId, behaviorType);
         state.SetEnemyId(enemyId);
         state.SetGrid(grid);
         state.SetPlacementSource(placementSource);
         state.SetPrefabKey(prefabKey);
         state.SetZoneId(zoneId);
+        state.SetBehaviorType(behaviorType);
         state.SetDefeated(false);
     }
 
@@ -726,10 +739,22 @@ public class MapProgressRepository : MonoBehaviour
         string prefabKey,
         string zoneId)
     {
+        return GetOrCreateEnemyState(placementKey, enemyId, grid, placementSource, prefabKey, zoneId, EnemyBehaviorType.Mobile);
+    }
+
+    private EnemyWorldState GetOrCreateEnemyState(
+        string placementKey,
+        string enemyId,
+        Vector2Int grid,
+        EnemyPlacementSource placementSource,
+        string prefabKey,
+        string zoneId,
+        EnemyBehaviorType behaviorType)
+    {
         if (enemyWorldLookup.TryGetValue(placementKey, out EnemyWorldState state))
             return state;
 
-        state = new EnemyWorldState(placementKey, enemyId, grid, placementSource, prefabKey, zoneId);
+        state = new EnemyWorldState(placementKey, enemyId, grid, placementSource, prefabKey, zoneId, behaviorType);
         enemyWorldStates.Add(state);
         enemyWorldLookup[placementKey] = state;
         return state;

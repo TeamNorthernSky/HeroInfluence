@@ -91,7 +91,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
                 ? currentUnit.EquippedWeaponIndex
                 : (currentUnit.SourceData != null ? currentUnit.SourceData.CurrentWeaponIndex : 0);
             int wl = (gm != null && gm.Workshop != null && uIdx > 0)
-                ? gm.Workshop.GetWeaponLevel(uIdx, wIdx)
+                ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(wIdx))
                 : 1;
             tip.ShowInfo(
                 Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl),

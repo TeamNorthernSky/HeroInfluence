@@ -12,6 +12,7 @@ public class UIComposer : MonoBehaviour
     [SerializeField] private UILayout layout;
     [SerializeField] private Transform backgroundLayer;
     [SerializeField] private Transform baseLayer;
+    // [KJ 260728] 레이어 순서를 Modals 뒤로 변경 — 파티 패널이 시설 모달·공유 dim 위에서 클릭을 받는다.
     [SerializeField] private Transform overlayLayer;   // [JC 260703] 신설(HQLobby만 결선, DHScene_3는 null)
     [SerializeField] private Transform modalLayer;
     [SerializeField] private Transform tooltipLayer;

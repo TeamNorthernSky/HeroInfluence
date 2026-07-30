@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,10 +25,16 @@ public class LobbyRosterView : MonoBehaviour
 
     private readonly List<HeroProfileButton> spawned = new List<HeroProfileButton>();
 
+    // [KJ 260728] 선택 모드 상태. callback이 있으면 클릭=선택, 없으면 클릭=인포모달.
+    private Action<int> selectionCallback;
+    private int selectedUnitIndex = -1;
+
     private void OnEnable()
     {
         // [JC 260703] 크로스번들 폴백 등록(SortieController가 출전 중 이 루트를 비활성).
         LobbyUIRegistry.LobbyRosterRoot = gameObject;
+        // [KJ 260728] 시설 모달이 지연 해석하는 선택 위임 대상.
+        LobbyUIRegistry.RosterView = this;
         Rebuild();
     }
 
@@ -35,6 +42,31 @@ public class LobbyRosterView : MonoBehaviour
     {
         Clear();
         if (LobbyUIRegistry.LobbyRosterRoot == gameObject) LobbyUIRegistry.LobbyRosterRoot = null;
+        if (LobbyUIRegistry.RosterView == this) LobbyUIRegistry.RosterView = null;
+    }
+
+    /// <summary>[KJ 260728] 선택 모드 진입. 카드 클릭이 onSelected 콜백을 호출한다.</summary>
+    public void BeginSelection(Action<int> onSelected)
+    {
+        selectionCallback = onSelected;
+        selectedUnitIndex = -1;
+        Rebuild();
+    }
+
+    /// <summary>[KJ 260728] 인포 모드 복귀. 카드 클릭이 다시 히어로 인포 모달을 연다.</summary>
+    public void EndSelection()
+    {
+        selectionCallback = null;
+        selectedUnitIndex = -1;
+        Rebuild();
+    }
+
+    /// <summary>[KJ 260728] 하이라이트 갱신. -1이면 전체 해제.</summary>
+    public void SetSelected(int unitIndex)
+    {
+        selectedUnitIndex = unitIndex;
+        for (int i = 0; i < spawned.Count; i++)
+            if (spawned[i] != null) spawned[i].SetSelected(spawned[i].UnitIndex == unitIndex);
     }
 
     public void Rebuild()
@@ -59,9 +91,16 @@ public class LobbyRosterView : MonoBehaviour
 
             HeroProfileButton item = Instantiate(itemPrefab, content);
             item.gameObject.SetActive(true);
-            item.Bind(unitIndex, infoModal, unit, template, inParty);  // 항상 info 모드(클릭=인포모달)
+            // [KJ 260728] 선택 모드면 콜백 바인딩, 아니면 기존 인포 모드.
+            if (selectionCallback != null)
+                item.BindForSelect(unitIndex, selectionCallback, unit, template, inParty);
+            else
+                item.Bind(unitIndex, infoModal, unit, template, inParty);
             spawned.Add(item);
         }
+
+        // [KJ 260728] ApplyDisplay가 selected=false로 리셋하므로 재적용.
+        if (selectedUnitIndex >= 0) SetSelected(selectedUnitIndex);
     }
 
     private void Clear()

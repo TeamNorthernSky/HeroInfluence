@@ -81,6 +81,36 @@ public static class RosterOrdering
         }
     }
 
+    /// <summary>
+    /// [KJ 260729] 시설 모달 진입 시 기본 선택 유닛. 우클릭 해제를 없앤 공방·훈련·연구소가 쓴다.
+    /// 1순위 preferredClass 유닛, 없으면 로스터 첫 유닛, 로스터가 비면 -1.
+    /// 카탈로그 미배치 시 클래스 판별이 불가하므로 첫 유닛으로 폴백한다.
+    /// </summary>
+    public static int ResolveDefaultUnit(string preferredClass = "Blaster")
+    {
+        PersistentUnitRepository repo = PersistentUnitRepository.Instance;
+        if (repo == null) return -1;
+
+        List<int> ordered = ResolveOrderedUnits(repo, HQVisitState.Instance, true);
+        if (ordered.Count == 0) return -1;
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null && !string.IsNullOrWhiteSpace(preferredClass))
+        {
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                if (!repo.TryGetUnit(ordered[i], out UnitPersistentData unit) || unit == null) continue;
+                if (string.IsNullOrWhiteSpace(unit.UnitTemplateKey)) continue;
+                if (!catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out UnitData template) || template == null) continue;
+                if (!string.IsNullOrWhiteSpace(template.UnitType) &&
+                    string.Equals(template.UnitType.Trim(), preferredClass, System.StringComparison.OrdinalIgnoreCase))
+                    return ordered[i];
+            }
+        }
+
+        return ordered[0];
+    }
+
     // [JC 260615] 깃발(파티 편성) 판정: 방문 여부 무관, 어느 파티든 UnitIndices에 있으면 true
     public static bool IsUnitInAnyParty(int unitIndex)
     {
