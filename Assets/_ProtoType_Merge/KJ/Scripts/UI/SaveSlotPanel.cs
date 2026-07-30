@@ -113,7 +113,10 @@ public class SaveSlotPanel : MonoBehaviour
         }
         else
         {
-            tutorialPopup?.SetActive(true);
+            SceneManager.LoadScene(GameScene);
+
+            //튜토리얼 씬이 없으므로 임시 비활성화
+            //tutorialPopup?.SetActive(true);
         }
     }
 
