@@ -18,6 +18,7 @@ namespace ASB.Work.Battle.Command
         private readonly bool _playBasicAttackAnimation;
         private readonly bool _playTargetHitAnimation;
         private readonly Func<BattleHitResult> _onHitCallback;
+        private readonly IReadOnlyList<BattleCharactor> _presentationTargets;
 
         // 다중 타겟(AoE)용
         private readonly HitDeliveryGate _deliveryGate;
@@ -34,7 +35,8 @@ namespace ASB.Work.Battle.Command
             bool playBasicAttackAnimation,
             bool playTargetHitAnimation,
             Func<BattleHitResult> onHitCallback,
-            HitDeliveryGate deliveryGate)
+            HitDeliveryGate deliveryGate,
+            IReadOnlyList<BattleCharactor> presentationTargets = null)
         {
             _actor = actor;
             _target = target;
@@ -43,6 +45,7 @@ namespace ASB.Work.Battle.Command
             _playTargetHitAnimation = playTargetHitAnimation;
             _onHitCallback = onHitCallback;
             _deliveryGate = deliveryGate;
+            _presentationTargets = presentationTargets;
             _isAoE = false;
         }
 
@@ -72,7 +75,7 @@ namespace ASB.Work.Battle.Command
                 _skill,
                 _playBasicAttackAnimation,
                 _playTargetHitAnimation,
-                _onHitCallback, _deliveryGate));
+                _onHitCallback, _deliveryGate, _presentationTargets));
         }
     }
 }

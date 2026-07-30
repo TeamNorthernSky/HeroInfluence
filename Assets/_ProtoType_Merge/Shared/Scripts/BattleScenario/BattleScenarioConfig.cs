@@ -89,6 +89,7 @@ public sealed class HostageSpawnConfig
     public int Slot;
     public float MaxHp = 50f;
     public float InitialHp = 50f;
+    public float Defense = 5f;
     public float InitialAggro;
     public string PrefabResourcePath;
 }

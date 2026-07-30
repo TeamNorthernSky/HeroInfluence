@@ -43,7 +43,9 @@ public class InputHandler : MonoBehaviour
     private PlayerActionState currentState = PlayerActionState.Idle;
     private PendingActionType pendingAction = PendingActionType.None;
     private HashSet<BattleCharactor> validTargets = new HashSet<BattleCharactor>();
+    private readonly HashSet<HostageBattleActor> validHostageTargets = new HashSet<HostageBattleActor>();
     private BattleCharactor hoverTarget = null;
+    private HostageBattleActor hoverHostageTarget = null;
     private readonly HashSet<BattleCharactor> deathSubscribedUnits = new HashSet<BattleCharactor>();
     private bool isProcessingAction;
 
@@ -142,6 +144,7 @@ public class InputHandler : MonoBehaviour
         }
 
         UpdateHoverTarget(actor);
+        UpdateHoverHostageTarget(actor);
         if (hoverTarget != null && TryResolveSkillData(actor, pendingAction, out SkillData currentSelectedSkill))
         {
             UpdateAoEPreview(hoverTarget, currentSelectedSkill);
@@ -266,7 +269,10 @@ public class InputHandler : MonoBehaviour
         }
 
         HashSet<BattleCharactor> targets = TargetingHelper.GetValidTargets(actor, actionType);
-        if (targets.Count == 0)
+        validHostageTargets.Clear();
+        if (TryResolveSkillData(actor, actionType, out SkillData hostageTargetSkill))
+            validHostageTargets.UnionWith(HostageFriendlyFireResolver.GetSelectableTargets(actor, hostageTargetSkill));
+        if (targets.Count == 0 && validHostageTargets.Count == 0)
         {
             Debug.LogWarning($"[InputHandler] 유효 타겟이 없습니다: actor={actor.UnitName}, action={actionType}");
             ResetTargetingState();
@@ -348,7 +354,7 @@ public class InputHandler : MonoBehaviour
 
     private void TryExecutePendingAction(BattleCharactor actor)
     {
-        if (isProcessingAction || hoverTarget == null || battleManager == null)
+        if (isProcessingAction || (hoverTarget == null && hoverHostageTarget == null) || battleManager == null)
         {
             return;
         }
@@ -364,6 +370,19 @@ public class InputHandler : MonoBehaviour
         {
             Debug.LogWarning("[InputHandler] Influence 부족 (선택 불가)");
             ResetTargetingState();
+            return;
+        }
+
+        if (hoverHostageTarget != null)
+        {
+            if (!HostageFriendlyFireResolver.IsStillValidTarget(actor, pendingAction, hoverHostageTarget))
+            {
+                validHostageTargets.Remove(hoverHostageTarget);
+                SetHoverHostageTarget(null);
+                return;
+            }
+
+            StartCoroutine(ExecuteHostageActionRoutine(actor, hoverHostageTarget, pendingAction));
             return;
         }
 
@@ -479,6 +498,77 @@ public class InputHandler : MonoBehaviour
         ASBGridManager.Instance?.ClearPreviewHighlight();
     }
 
+    private void UpdateHoverHostageTarget(BattleCharactor actor)
+    {
+        if (hoverTarget != null)
+        {
+            SetHoverHostageTarget(null);
+            return;
+        }
+
+        HostageBattleActor hostage = RaycastHostageUnderCursor();
+        if (hostage == null || !validHostageTargets.Contains(hostage) ||
+            !HostageFriendlyFireResolver.IsStillValidTarget(actor, pendingAction, hostage))
+        {
+            SetHoverHostageTarget(null);
+            return;
+        }
+
+        SetHoverHostageTarget(hostage);
+    }
+
+    private System.Collections.IEnumerator ExecuteHostageActionRoutine(
+        BattleCharactor actor,
+        HostageBattleActor hostage,
+        PendingActionType actionType)
+    {
+        isProcessingAction = true;
+        bool executed = false;
+        if (TryResolveSkillData(actor, actionType, out SkillData skillData))
+        {
+            yield return StartCoroutine(
+                battleManager.ExecuteHostageSkill(actor, hostage, skillData, success => executed = success));
+        }
+
+        if (executed)
+            PlayerSkillActionResolved?.Invoke(actor, null);
+
+        ResetTargetingState();
+        isProcessingAction = false;
+    }
+
+    private HostageBattleActor RaycastHostageUnderCursor()
+    {
+        if (raycastCamera == null)
+            return null;
+
+        RaycastHit[] hits = Physics.RaycastAll(
+            raycastCamera.ScreenPointToRay(Input.mousePosition),
+            maxRayDistance,
+            selectionRaycastMask);
+        if (hits == null || hits.Length == 0)
+            return null;
+
+        Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (hits[i].collider == null)
+                continue;
+
+            HostageBattleActor hostage = hits[i].collider.GetComponentInParent<HostageBattleActor>();
+            if (hostage == null)
+            {
+                ASBGridCell cell = hits[i].collider.GetComponentInParent<ASBGridCell>();
+                hostage = cell != null ? cell.GetComponentInChildren<HostageBattleActor>(true) : null;
+            }
+
+            if (hostage != null)
+                return hostage;
+        }
+
+        return null;
+    }
+
     private BattleCharactor RaycastUnitUnderCursor()
     {
         var ray = raycastCamera.ScreenPointToRay(Input.mousePosition);
@@ -514,6 +604,11 @@ public class InputHandler : MonoBehaviour
         return null;
     }
 
+    private void SetHoverHostageTarget(HostageBattleActor newTarget)
+    {
+        hoverHostageTarget = newTarget;
+    }
+
     private void SetHoverTarget(BattleCharactor newTarget)
     {
         hoverTarget = newTarget;
@@ -525,7 +620,9 @@ public class InputHandler : MonoBehaviour
         targetingVisualController?.ClearAll();
         ClearAoEPreview();
         SetHoverTarget(null);
+        SetHoverHostageTarget(null);
         validTargets.Clear();
+        validHostageTargets.Clear();
         pendingAction = PendingActionType.None;
         currentState = PlayerActionState.Idle;
     }

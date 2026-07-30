@@ -25,7 +25,7 @@ MonoBehaviour:
   EnableAttackEffect: 0
   AttackEffectId: 0
   EnableHitEffect: 1
-  HitEffectId: 4011
+  HitEffectId: 4015
   ProjectilePrefab: {fileID: 0}
   FlightTime: 0.3
   TrajectoryType: 0
@@ -62,12 +62,20 @@ MonoBehaviour:
   HitEffectPositionOffset: {x: 0, y: 0, z: 0}
   HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
-    Enabled: 0
+    Enabled: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
-    Cues: []
+    Cues:
+    - CueName: heal_cast
+      EffectIds:
+      - 4014
+      SoundIds: []
+      Operation: 0
+      InstanceKey:
+      Anchor: 1
+      Socket: 10
   Move:
-    Enabled: 0
+    Enabled: 1
     UseUnitMovement: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
@@ -83,21 +91,7 @@ MonoBehaviour:
       BlendInSeconds: 0
       AdvanceOnEvent: 0
       WaitForHitEvent: 1
-      Cues:
-      - CueName: heal_cast
-        EffectIds: ae0f0000
-        SoundIds: 
-        Operation: 0
-        InstanceKey: 
-        Anchor: 1
-        Socket: 10
-      - CueName: heal_orb
-        EffectIds: af0f0000
-        SoundIds: 
-        Operation: 0
-        InstanceKey: 
-        Anchor: 2
-        Socket: 0
+      Cues: []
   Return:
     Enabled: 0
     AnimationStateName: 

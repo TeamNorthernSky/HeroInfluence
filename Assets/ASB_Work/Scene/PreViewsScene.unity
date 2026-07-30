@@ -1435,9 +1435,9 @@ MonoBehaviour:
   playerUnitId: 10004
   playerGridNumber: 101
   additionalPreviewPlayers:
-  - unitId: 10002
+  - unitId: 10003
     gridNumber: 100
-  enemyUnitId: 20001
+  enemyUnitId: 10002
   enemyGridNumber: 201
   previewEnemies:
   - unitId: 20001
@@ -2112,6 +2112,7 @@ MonoBehaviour:
   previewAllyTarget: {fileID: 0}
   selectedSkillIndex: 1010
   ignoreSkillCost: 1
+  preventPreviewTargetDeath: 1
 --- !u!4 &1306616269
 Transform:
   m_ObjectHideFlags: 0
