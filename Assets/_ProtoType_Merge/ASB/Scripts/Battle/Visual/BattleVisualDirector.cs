@@ -46,6 +46,28 @@ public class BattleVisualDirector : MonoBehaviour
         PlaySound(presentation.AttackSoundId, presentation.AttackSfxClip, socket, presentation.SfxVolume);
     }
 
+    public void PlayHitEffectAt(Transform targetTransform, int skillIndex)
+    {
+        if (targetTransform == null)
+            return;
+
+        SkillPresentationData presentation = _catalog?.Get(skillIndex);
+        if (presentation == null)
+            return;
+
+        if (presentation.EnableHitEffect)
+        {
+            GameObject prefab = ResolveEffectPrefab(presentation.HitEffectId, presentation.HitEffectPrefab);
+            if (prefab != null)
+            {
+                GameObject instance = Instantiate(prefab, targetTransform.position, targetTransform.rotation);
+                instance.GetComponent<JC.VFX.VfxEffect>()?.Play();
+            }
+        }
+
+        PlaySound(presentation.HitSoundId, presentation.HitSfxClip, targetTransform, presentation.SfxVolume);
+    }
+
     public void PlayHitEffect(BattleCharactor target, int skillIndex)
     {
         SkillPresentationData presentation = _catalog?.Get(skillIndex);

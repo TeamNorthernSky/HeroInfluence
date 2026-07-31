@@ -13,7 +13,7 @@ namespace ASB.Work.Battle.Command
     {
         // 단일 타겟용
         private readonly BattleCharactor _actor;
-        private readonly BattleCharactor _target;
+        private readonly ISkillTarget _target;
         private readonly SkillData _skill;
         private readonly bool _playBasicAttackAnimation;
         private readonly bool _playTargetHitAnimation;
@@ -30,7 +30,7 @@ namespace ASB.Work.Battle.Command
         /// <summary>단일 타겟 스킬(공격/힐).</summary>
         public SkillActionCommand(
             BattleCharactor actor,
-            BattleCharactor target,
+            ISkillTarget target,
             SkillData skill,
             bool playBasicAttackAnimation,
             bool playTargetHitAnimation,

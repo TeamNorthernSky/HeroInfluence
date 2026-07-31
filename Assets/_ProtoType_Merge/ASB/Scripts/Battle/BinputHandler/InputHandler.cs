@@ -145,9 +145,14 @@ public class InputHandler : MonoBehaviour
 
         UpdateHoverTarget(actor);
         UpdateHoverHostageTarget(actor);
-        if (hoverTarget != null && TryResolveSkillData(actor, pendingAction, out SkillData currentSelectedSkill))
+        if (TryResolveSkillData(actor, pendingAction, out SkillData currentSelectedSkill))
         {
-            UpdateAoEPreview(hoverTarget, currentSelectedSkill);
+            if (hoverTarget != null)
+                UpdateAoEPreview(hoverTarget, currentSelectedSkill);
+            else if (hoverHostageTarget != null)
+                UpdateHostageAoEPreview(actor, hoverHostageTarget, currentSelectedSkill);
+            else
+                ClearAoEPreview();
         }
         else
         {
@@ -283,7 +288,9 @@ public class InputHandler : MonoBehaviour
         validTargets = targets;
         currentState = PlayerActionState.WaitingForTarget;
         targetingVisualController?.ShowSelectableTargets(validTargets);
+        targetingVisualController?.ShowSelectableHostageTargets(validHostageTargets);
         SetHoverTarget(null);
+        SetHoverHostageTarget(null);
         OnActionSelected?.Invoke(BuildSelectedActionLabel(actor, actionType));
     }
 
@@ -359,30 +366,30 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
-        if (!TargetingHelper.IsStillValidTarget(actor, pendingAction, hoverTarget))
-        {
-            validTargets.Remove(hoverTarget);
-            SetHoverTarget(null);
-            return;
-        }
-
-        if (!HasEnoughInfluenceForAction(actor, pendingAction))
-        {
-            Debug.LogWarning("[InputHandler] Influence 부족 (선택 불가)");
-            ResetTargetingState();
-            return;
-        }
-
+        // Hostages are not BattleCharactors. Validate and execute this route before the
+        // normal BattleCharactor validity check, which correctly rejects a null hoverTarget.
         if (hoverHostageTarget != null)
         {
             if (!HostageFriendlyFireResolver.IsStillValidTarget(actor, pendingAction, hoverHostageTarget))
             {
                 validHostageTargets.Remove(hoverHostageTarget);
+                targetingVisualController?.RemoveSelectableHostageTarget(hoverHostageTarget);
                 SetHoverHostageTarget(null);
                 return;
             }
 
             StartCoroutine(ExecuteHostageActionRoutine(actor, hoverHostageTarget, pendingAction));
+            return;
+        }
+
+        if (hoverTarget == null || !TargetingHelper.IsStillValidTarget(actor, pendingAction, hoverTarget))
+        {
+            if (hoverTarget != null)
+            {
+                validTargets.Remove(hoverTarget);
+                targetingVisualController?.RemoveSelectableTarget(hoverTarget);
+            }
+            SetHoverTarget(null);
             return;
         }
 
@@ -434,6 +441,31 @@ public class InputHandler : MonoBehaviour
 
         ResetTargetingState();
         isProcessingAction = false;
+    }
+
+    private void UpdateHostageAoEPreview(BattleCharactor actor, HostageBattleActor hostage, SkillData skill)
+    {
+        ASBGridManager.Instance?.ClearPreviewHighlight();
+
+        if (actor == null || hostage == null || skill == null)
+            return;
+        if (!validHostageTargets.Contains(hostage) ||
+            !HostageFriendlyFireResolver.IsStillValidTarget(actor, pendingAction, hostage))
+            return;
+
+        if (!HostageFriendlyFireResolver.TryGetPreviewCells(hostage, skill,
+                out ASBGridCell mainCell, out List<ASBGridCell> previewCells))
+            return;
+
+        var splashCells = new List<ASBGridCell>();
+        for (int i = 0; i < previewCells.Count; i++)
+        {
+            ASBGridCell cell = previewCells[i];
+            if (cell != null && cell != mainCell)
+                splashCells.Add(cell);
+        }
+
+        ASBGridManager.Instance?.ShowPreviewHighlight(skill, mainCell, splashCells);
     }
 
     private void UpdateAoEPreview(BattleCharactor hoverUnit, SkillData currentSelectedSkill)
@@ -606,7 +638,14 @@ public class InputHandler : MonoBehaviour
 
     private void SetHoverHostageTarget(HostageBattleActor newTarget)
     {
+        if (newTarget != null && !validHostageTargets.Contains(newTarget))
+            newTarget = null;
+
+        if (hoverHostageTarget == newTarget)
+            return;
+
         hoverHostageTarget = newTarget;
+        targetingVisualController?.SetHoveredHostageTarget(hoverHostageTarget);
     }
 
     private void SetHoverTarget(BattleCharactor newTarget)

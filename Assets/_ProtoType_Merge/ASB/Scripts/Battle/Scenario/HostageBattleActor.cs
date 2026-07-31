@@ -1,9 +1,18 @@
 using System;
 using UnityEngine;
+using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
 [DisallowMultipleComponent]
-public sealed class HostageBattleActor : MonoBehaviour
+public sealed class HostageBattleActor : MonoBehaviour, ISkillTarget
 {
+    // ── ISkillTarget: 인질은 연출/타깃수집 공통 경로에 위치로만 참여하고, 피해는 ApplyFriendlyDamage로 분기한다.
+    //    (BattleCharactor로 캐스팅/컴포넌트 추가하지 않기 위한 공통 seam)
+    UnitTargetCategory ISkillTarget.TargetCategory => UnitTargetCategory.Hostage;
+    Transform ISkillTarget.TargetTransform => transform;
+    Vector3 ISkillTarget.TargetPosition => transform.position;
+    bool ISkillTarget.IsValidSkillTarget => IsSafe;
+    GridCellRef ISkillTarget.TargetCell => GetComponentInParent<GridCellRef>();
+
     private HostageSpawnConfig config;
     private Renderer[] cachedRenderers = Array.Empty<Renderer>();
     private Color[] initialColors = Array.Empty<Color>();
