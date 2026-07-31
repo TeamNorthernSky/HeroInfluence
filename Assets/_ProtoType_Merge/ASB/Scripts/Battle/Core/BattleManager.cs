@@ -633,11 +633,47 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        int hitCount = HostageFriendlyFireResolver.ApplySkillDamage(actor, target, skillData);
-        if (hitCount > 0)
+        bool hitApplied = false;
+
+        // 피해는 인질 규칙(ApplyFriendlyDamage, 스플래시 포함)으로 분기하고, 연출은 적 대상과 동일한
+        // 공유 엔진(SkillActionCommand → RunSkillSequenceCore)을 재사용한다. 인질은 ISkillTarget으로만
+        // 참여하므로 BattleCharactor로 캐스팅/컴포넌트 추가하지 않는다. 피격 리액션/데미지팝업은 인질에 없음.
+        System.Func<BattleHitResult> onHit = () =>
+        {
+            List<HostageBattleActor> hitHostages = HostageFriendlyFireResolver.ApplySkillDamage(actor, target, skillData);
+            for (int i = 0; i < hitHostages.Count; i++)
+            {
+                HostageBattleActor hitHostage = hitHostages[i];
+                if (hitHostage != null)
+                    _visualDirector?.PlayHitEffectAt(hitHostage.transform, skillData.skillIndex);
+            }
+            hitApplied = hitHostages.Count > 0;
+            // 인질은 BattleCharactor가 아니므로 Target=null(피격애니/팝업 skip). 피해는 위에서 이미 적용.
+            return new BattleHitResult { Target = null, Damage = 0f, SkillIndex = skillData.skillIndex };
+        };
+
+        // 인질 경로는 ApplySkillExecutionResultRoutine(적 피해 파이프라인)을 우회하므로 체인 상태를 직접 초기화한다.
+        // (이전 캐스트 누수 방지 + 인질은 추가 체인 대상이 없는 단일 대상 Primary 볼트로 처리)
+        _projectileChainState = null;
+        _chainLightningTargets = null;
+        _chainLightningActionInstanceId = 0;
+        _projectileChainRole = DamageRole.Primary;
+
+        var hostageQueue = new ASB.Work.Battle.Command.BattleActionQueue();
+        hostageQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
+            actor,
+            target,
+            skillData,
+            playBasicAttackAnimation: false,
+            playTargetHitAnimation: false,
+            onHitCallback: onHit,
+            deliveryGate: new HitDeliveryGate()));
+        yield return StartCoroutine(hostageQueue.RunAll(this));
+
+        if (hitApplied)
             OnActionExecuted?.Invoke(GetSkillDisplayName(skillData));
 
-        onCompleted?.Invoke(hitCount > 0);
+        onCompleted?.Invoke(hitApplied);
     }
 
     public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted = null)
@@ -998,7 +1034,7 @@ public class BattleManager : MonoBehaviour
     // Schema=1(PhaseCue)일 때만 유닛 로컬 Cue 컨텍스트를 등록한다. 같은 actionId의 Beat 갱신은 Held Handle을 보존한다.
     private void SetupPresentationContext(BattleCharactor actor, BattleCharactor target, SkillData skill,
         SkillPresentationData presentation, int actionInstanceId, List<CueBinding> activeCues = null, string activeStateName = null,
-        IReadOnlyList<BattleCharactor> aoeTargets = null)
+        IReadOnlyList<BattleCharactor> aoeTargets = null, Vector3? targetPositionOverride = null)
     {
         if (actor == null || presentation == null || _visualDirector == null || !presentation.IsPhaseCue || actionInstanceId == 0) return;
 
@@ -1044,7 +1080,8 @@ public class BattleManager : MonoBehaviour
             Targets = (aoeTargets != null && aoeTargets.Count > 0)
                 ? aoeTargets
                 : (target != null ? new List<BattleCharactor> { target } : null),
-            TargetPosition = target != null ? target.transform.position : actor.transform.position,
+            // 인질 등 BattleCharactor가 아닌 대상은 위치만 오버라이드로 주입(캐스팅/컴포넌트 추가 없이 Target 앵커 스폰 지원).
+            TargetPosition = targetPositionOverride ?? (target != null ? target.transform.position : actor.transform.position),
             SocketTransform = actor.GetComponent<UnitVisualProfile>()?.AttackEffectSocket ?? actor.transform,
             PlaybackSpeed = _currentBattleSpeed,
             HitIndex = 0,
@@ -1177,7 +1214,8 @@ public class BattleManager : MonoBehaviour
     }
 
     private static bool TryBuildMovingAttackPlan(BattleCharactor actor, CharactorAnimationController animation,
-        SkillPresentationData presentation, IEnumerable<BattleCharactor> candidateTargets, out MovingAttackPlan plan)
+        SkillPresentationData presentation, IEnumerable<BattleCharactor> candidateTargets, out MovingAttackPlan plan,
+        Vector3? fallbackCenter = null)
     {
         plan = null;
         MovingAttackPresentation sweep = presentation?.MovingAttack;
@@ -1200,11 +1238,20 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        if (targets.Count == 0) return false;
+        // 인질 등 BattleCharactor가 아닌 타깃은 candidateTargets가 비므로, 명시된 중심점(인질 위치)으로 스윕한다.
+        if (targets.Count == 0 && !fallbackCenter.HasValue) return false;
 
-        Vector3 center = Vector3.zero;
-        for (int i = 0; i < targets.Count; i++) center += targets[i].transform.position;
-        center /= targets.Count;
+        Vector3 center;
+        if (targets.Count > 0)
+        {
+            center = Vector3.zero;
+            for (int i = 0; i < targets.Count; i++) center += targets[i].transform.position;
+            center /= targets.Count;
+        }
+        else
+        {
+            center = fallbackCenter.Value;
+        }
 
         Vector3 origin = actor.transform.position;
         plan = new MovingAttackPlan
@@ -1269,7 +1316,7 @@ public class BattleManager : MonoBehaviour
 
 internal IEnumerator RunSkillSequenceCore(
         BattleCharactor actor,
-        BattleCharactor target,
+        ISkillTarget skillTarget,
         SkillData skill,
         bool playBasicAttackAnimation,
         bool playTargetHitAnimation,
@@ -1277,6 +1324,13 @@ internal IEnumerator RunSkillSequenceCore(
         HitDeliveryGate deliveryGate,
         IReadOnlyList<BattleCharactor> presentationTargets = null)
     {
+        // 전투유닛 타깃(적/아군)만 BattleCharactor. 인질 등은 null → 위치 기반 연출만 사용하고
+        // 피격 리액션/투사체 대상 추적 등 BattleCharactor 전용 처리는 건너뛴다.
+        BattleCharactor target = skillTarget as BattleCharactor;
+        // 연출 위치 앵커(타깃 유형 무관). 인질은 셀 자식 transform, 전투유닛은 자기 transform.
+        Transform targetTransform = skillTarget?.TargetTransform;
+        Vector3 targetPosition = skillTarget != null ? skillTarget.TargetPosition : actor.transform.position;
+
         if (deliveryGate == null)
         {
             deliveryGate = new HitDeliveryGate();
@@ -1305,7 +1359,7 @@ internal IEnumerator RunSkillSequenceCore(
             ? actorAnim.GetTargetStateName(playBasicAttackAnimation ? null : skill)
             : string.Empty;
 
-        ResolveSkillMovement(actor, target, skill, out UnitMovementProfile movement, out bool shouldMove, out bool shouldRotate, out Vector3 originPosition, out float originRotationY);
+        ResolveSkillMovement(actor, target, skill, out UnitMovementProfile movement, out bool shouldMove, out bool shouldRotate, out Vector3 originPosition, out float originRotationY, targetTransform);
 
         string targetAnimTrigger = playTargetHitAnimation
             ? (skill?.ResolvedTargetAnimationTrigger ?? "Hit")
@@ -1322,7 +1376,8 @@ internal IEnumerator RunSkillSequenceCore(
                             && usePhaseCue
                             && moveEnabled
                             && movement != null
-                            && TryBuildMovingAttackPlan(actor, actorAnim, presentation, new[] { target }, out spinSweepPlan);
+                            && TryBuildMovingAttackPlan(actor, actorAnim, presentation, new[] { target }, out spinSweepPlan,
+                                fallbackCenter: target == null ? targetPosition : (Vector3?)null);
 
         float sequenceBattleElapsed = 0f;
         var runner = new ActionSequenceRunner();
@@ -1357,7 +1412,7 @@ internal IEnumerator RunSkillSequenceCore(
         
                             EnqueueMovingAttackSequence(runner, spinSweepPlan, actor, target, skill, presentation,
                                 presentationActionInstanceId, actorAnim,
-                                host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId),
+                                host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId, targetPosition, targetTransform),
                                 null,
                                 ResolveMovingAttackOutgoingBlendInSeconds(presentation, returnEnabled && movement != null),
                                 elapsed => sequenceBattleElapsed += elapsed);
@@ -1366,7 +1421,7 @@ internal IEnumerator RunSkillSequenceCore(
                 else
                 {
                     if (moveEnabled)
-                        EnqueueSkillApproach(runner, actor, target, actorAnim, movement, shouldMove, shouldRotate, presentation?.Move);
+                        EnqueueSkillApproach(runner, actor, target, actorAnim, movement, shouldMove, shouldRotate, presentation?.Move, targetTransform);
         
                     EnqueuePhaseCueAttackPrepare(runner, actor, target, skill, presentation, presentationActionInstanceId,
                         useCombo ? ResolveFirstAttackBeatBlendInSeconds(actorAnim, skill, presentation) : null,
@@ -1380,8 +1435,9 @@ internal IEnumerator RunSkillSequenceCore(
                             actorAnim,
                             presentation.Attack.Beats,
                             (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
-                            (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName, presentationTargets),
-                            host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId),
+                            (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName, presentationTargets,
+                                targetPositionOverride: target == null ? targetPosition : (Vector3?)null),
+                            host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId, targetPosition, targetTransform),
                             _currentBattleSpeed,
                             AnimEventTimeoutSeconds,
                             postBlendAfterLastBeatSeconds,
@@ -1395,7 +1451,7 @@ internal IEnumerator RunSkillSequenceCore(
                         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
                         runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
                         runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ResolveSkillHitRoutine(
-                            host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate)));
+                            host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, targetPosition, targetTransform)));
                         if (!string.IsNullOrEmpty(targetState))
                             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
                     }
@@ -1444,7 +1500,9 @@ internal IEnumerator RunSkillSequenceCore(
                 SkillData skill,
                 HitDeliveryGate deliveryGate,
                 SkillPresentationData presentation,
-                int actionInstanceId)
+                int actionInstanceId,
+                Vector3? targetPositionOverride = null,
+                Transform targetTransformOverride = null)
             {
                 yield return ASB.Work.Battle.Sequence.CustomEffectImpactAction.WaitForImpactRoutine(
                     presentation, actionInstanceId, deliveryGate);
@@ -1452,9 +1510,9 @@ internal IEnumerator RunSkillSequenceCore(
                 {
                     yield break;
                 }
-        
+
                 yield return ResolveSkillHitRoutine(
-                    host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate);
+                    host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, targetPositionOverride, targetTransformOverride);
             }
         
             private IEnumerator ResolveAoEHitWithPresentationDeliveryRoutine(
@@ -1707,13 +1765,17 @@ internal IEnumerator RunSkillSequenceCore(
 
     private IEnumerator ResolveSkillHitRoutine(MonoBehaviour host, BattleCharactor actor, BattleCharactor target,
         Func<BattleHitResult> onHitCallback, string targetAnimTrigger, bool playTargetHitAnimation, SkillData skill,
-        HitDeliveryGate deliveryGate)
+        HitDeliveryGate deliveryGate, Vector3? targetPositionOverride = null, Transform targetTransformOverride = null)
     {
         SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
+        // 체인 번개의 1차 지점: 전투유닛은 자기 transform, 인질 등은 override transform.
+        // (인질은 target=null이라 이전엔 스킵돼 이펙트가 아예 안 떴다.)
+        Transform chainPrimaryTransform = target != null ? target.transform : targetTransformOverride;
         bool waitForChainLightningImpact = false;
-        if (_projectileChainRole == DamageRole.Primary)
+        if (chainPrimaryTransform != null && _projectileChainRole == DamageRole.Primary)
         {
-            waitForChainLightningImpact = PlayChainLightningEffect(presentation, actor, target, _chainLightningTargets);
+            waitForChainLightningImpact = PlayChainLightningEffect(presentation, actor, chainPrimaryTransform,
+                _chainLightningTargets ?? (IReadOnlyList<Transform>)System.Array.Empty<Transform>());
         }
 
         if (waitForChainLightningImpact)
@@ -1749,7 +1811,10 @@ internal IEnumerator RunSkillSequenceCore(
                 }
             }
 
-            var projectile = new ProjectileImpactAction(actor, target, projectileVisual, _currentBattleSpeed, deliveryGate, skill.skillIndex, originOverride, destinationOverride: null, existingInstance: preparedCharge);
+            // 인질 등 BattleCharactor가 아닌 타깃은 target이 null이라, 목적지를 명시(destinationOverride)해야
+            // 투사체가 취소되지 않고 그 위치까지 날아간다. 전투유닛(target!=null)은 기존대로 타깃 추적.
+            Vector3? projectileDestination = target != null ? (Vector3?)null : targetPositionOverride;
+            var projectile = new ProjectileImpactAction(actor, target, projectileVisual, _currentBattleSpeed, deliveryGate, skill.skillIndex, originOverride, destinationOverride: projectileDestination, existingInstance: preparedCharge);
             yield return projectile.ExecuteRoutine(host);
 
             // 주 타깃 단계: 실제 도착 좌표를 저장 → 추가 타깃 투사체의 원점으로 사용.
@@ -1813,11 +1878,15 @@ internal IEnumerator RunSkillSequenceCore(
         out bool shouldMove,
         out bool shouldRotate,
         out Vector3 originPosition,
-        out float originRotationY)
+        out float originRotationY,
+        Transform targetTransformOverride = null)
     {
         originPosition = actor != null ? actor.transform.position : Vector3.zero;
         originRotationY = actor != null ? actor.transform.eulerAngles.y : 0f;
         movement = actor != null ? actor.GetComponent<UnitMovementProfile>() : null;
+
+        // 인질 등 BattleCharactor가 아닌 타깃은 target이 null이라 위치(override)로만 접근/회전을 판단한다.
+        bool hasTarget = target != null || targetTransformOverride != null;
 
         // Friendly projectiles must face their target before launch.
         SkillPresentationData presentation = skill != null ? _presentationCatalog?.Get(skill.skillIndex) : null;
@@ -1829,10 +1898,10 @@ internal IEnumerator RunSkillSequenceCore(
 
         shouldMove = movement != null
             && !movement.RotateOnly
-            && target != null
+            && hasTarget
             && !isFriendlyProjectile
             && IsMeleeSkillRange(actor, skill);
-        shouldRotate = target != null && ((movement != null && movement.RotateOnly) || isFriendlyProjectile);
+        shouldRotate = hasTarget && ((movement != null && movement.RotateOnly) || isFriendlyProjectile);
     }
 
     private void EnqueueSkillApproach(
@@ -1843,9 +1912,17 @@ internal IEnumerator RunSkillSequenceCore(
         UnitMovementProfile movement,
         bool shouldMove,
         bool shouldRotate,
-        MovePhase movePhase)
+        MovePhase movePhase,
+        Transform targetTransformOverride = null)
     {
-        if (target == null || actor == null)
+        if (actor == null)
+        {
+            return;
+        }
+
+        // 전투유닛은 자기 transform, 인질 등은 override transform으로 접근/회전 목표를 삼는다.
+        Transform targetTransform = target != null ? target.transform : targetTransformOverride;
+        if (targetTransform == null)
         {
             return;
         }
@@ -1856,13 +1933,13 @@ internal IEnumerator RunSkillSequenceCore(
         if (shouldMove && movement != null)
         {
             runner.Enqueue(new MoveToTargetAction(
-                actorAnim, target.transform, movement.ApproachDistance, movement.MoveDuration / _currentBattleSpeed,
+                actorAnim, targetTransform, movement.ApproachDistance, movement.MoveDuration / _currentBattleSpeed,
                 animationStateName, blendInSeconds));
         }
         else if (shouldRotate)
         {
             float rotateDuration = movement != null ? movement.RotateDuration : 0.15f;
-            runner.Enqueue(new RotateToTargetAction(actor.transform, target.transform, rotateDuration / _currentBattleSpeed));
+            runner.Enqueue(new RotateToTargetAction(actor.transform, targetTransform, rotateDuration / _currentBattleSpeed));
         }
     }
 
@@ -2163,13 +2240,13 @@ internal IEnumerator RunSkillSequenceCore(
     private bool PlayChainLightningEffect(
         SkillPresentationData presentation,
         BattleCharactor actor,
-        BattleCharactor primaryTarget,
+        Transform primaryTargetTransform,
         IReadOnlyList<Transform> chainTargets)
     {
         if (presentation?.ChainLightningEffectPrefab == null
             || presentation.ProjectileVisual?.DeliveryMode != ProjectileDeliveryMode.ChainAdditionalTargets
             || actor == null
-            || primaryTarget == null)
+            || primaryTargetTransform == null)
         {
             return false;
         }
@@ -2197,8 +2274,8 @@ internal IEnumerator RunSkillSequenceCore(
             probe = effect.gameObject.AddComponent<ChainLightningImpactProbe>();
         }
 
-        probe.Configure(_chainLightningActionInstanceId, primaryTarget.transform, chainTargets);
-        effect.Play(actor.transform, primaryTarget.transform, chainTargets);
+        probe.Configure(_chainLightningActionInstanceId, primaryTargetTransform, chainTargets);
+        effect.Play(actor.transform, primaryTargetTransform, chainTargets);
         return true;
     }
 
@@ -2220,7 +2297,7 @@ internal IEnumerator RunSkillSequenceCore(
             }
         }
 
-        PlayChainLightningEffect(presentation, actor, primaryTarget, chainTargets);
+        PlayChainLightningEffect(presentation, actor, primaryTarget != null ? primaryTarget.transform : null, chainTargets);
         yield break;
     }
 
