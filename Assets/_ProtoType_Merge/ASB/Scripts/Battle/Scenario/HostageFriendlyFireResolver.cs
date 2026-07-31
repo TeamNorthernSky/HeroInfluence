@@ -82,32 +82,81 @@ public static class HostageFriendlyFireResolver
         return hitCount;
     }
 
-    public static int ApplySkillDamage(BattleCharactor actor, HostageBattleActor primaryTarget, SkillData skill)
+    /// <summary>
+    /// Returns the cells that should be highlighted while a hostage is targeted.
+    /// Random-around skills expose every possible splash cell, matching enemy targeting previews;
+    /// actual hostage damage remains resolved by TryGetAffectedCells.
+    /// </summary>
+    public static bool TryGetPreviewCells(
+        HostageBattleActor primaryTarget,
+        SkillData skill,
+        out GridCellRef centerCell,
+        out List<GridCellRef> previewCells)
     {
-        if (!CanTargetHostages(actor, skill) || primaryTarget == null || !primaryTarget.IsSafe)
-            return 0;
+        centerCell = primaryTarget != null ? primaryTarget.GetComponentInParent<GridCellRef>() : null;
+        previewCells = new List<GridCellRef>();
 
-        GridCellRef centerCell = primaryTarget.GetComponentInParent<GridCellRef>();
         GridManagerRef gridManager = GridManagerRef.Instance;
-        if (centerCell == null || gridManager == null)
-            return 0;
+        if (centerCell == null || skill == null || gridManager == null)
+            return false;
+
+        previewCells.Add(centerCell);
+
+        if (SkillExecutionRegistry.TryGetHandler(skill.skillIndex, out ISkillEffectHandler handler) &&
+            handler is TargetAroundRandom)
+        {
+            TargetAroundRandomHelper.CollectSplashCells(
+                centerCell.Coords,
+                skill,
+                gridManager,
+                centerCell,
+                previewCells);
+            return true;
+        }
+
+        previewCells = ResolveAffectedCells(centerCell, skill, gridManager);
+        return previewCells.Count > 0;
+    }
+
+    public static bool TryGetAffectedCells(
+        HostageBattleActor primaryTarget,
+        SkillData skill,
+        out GridCellRef centerCell,
+        out List<GridCellRef> affectedCells)
+    {
+        centerCell = primaryTarget != null ? primaryTarget.GetComponentInParent<GridCellRef>() : null;
+        affectedCells = new List<GridCellRef>();
+        GridManagerRef gridManager = GridManagerRef.Instance;
+        if (centerCell == null || skill == null || gridManager == null)
+            return false;
+
+        affectedCells = ResolveAffectedCells(centerCell, skill, gridManager);
+        return affectedCells.Count > 0;
+    }
+
+    public static List<HostageBattleActor> ApplySkillDamage(BattleCharactor actor, HostageBattleActor primaryTarget, SkillData skill)
+    {
+        var hitHostages = new List<HostageBattleActor>();
+        if (!CanTargetHostages(actor, skill) || primaryTarget == null || !primaryTarget.IsSafe)
+            return hitHostages;
+
+        if (!TryGetAffectedCells(primaryTarget, skill, out _, out List<GridCellRef> cells))
+            return hitHostages;
 
         float rawDamage = Mathf.Max(0f, actor.FinalStats.Atk * Mathf.Max(0.01f, skill.skillValue));
-        List<GridCellRef> cells = ResolveAffectedCells(centerCell, skill, gridManager);
-        var hitHostages = new HashSet<HostageBattleActor>();
-        int hitCount = 0;
+        var seen = new HashSet<HostageBattleActor>();
 
         for (int i = 0; i < cells.Count; i++)
         {
             HostageBattleActor hostage = cells[i].GetComponentInChildren<HostageBattleActor>(true);
-            if (hostage == null || !hostage.IsSafe || !hitHostages.Add(hostage))
+            if (hostage == null || !hostage.IsSafe || !seen.Add(hostage))
                 continue;
 
             hostage.ApplyFriendlyDamage(rawDamage);
-            hitCount++;
+            hitHostages.Add(hostage);
         }
 
-        return hitCount;
+        return hitHostages;
     }
 
     private static List<GridCellRef> ResolveAffectedCells(GridCellRef centerCell, SkillData skill, GridManagerRef gridManager)

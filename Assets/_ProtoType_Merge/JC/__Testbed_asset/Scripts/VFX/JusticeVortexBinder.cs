@@ -57,8 +57,15 @@ namespace JC.VFX
         public JusticeVortexPreset Preset { get => preset; set => preset = value; }
         public JusticeVortexPreset PresetAlt { get => presetAlt; set => presetAlt = value; }
 
+        [Tooltip("★켜면 이 인스턴스는 무조건 알트(강화·적색) 프리셋을 쓴다. 강화 스킬 전용 프리팹용.\n" +
+                 "자식 프리팹은 컨테이너 프리셋(targets)이 가리키는 것을 그대로 쓰므로,\n" +
+                 "적색 컨테이너는 적색 자식 프리팹을 가리키는 전용 프리셋을 물려야 한다.")]
+        [SerializeField] private bool forceAlternate;
+
+        public bool ForceAlternate { get => forceAlternate; set => forceAlternate = value; }
+
         public JusticeVortexPreset ActivePreset =>
-            (JusticeTrailPresetBinder.UseAlternate && presetAlt != null) ? presetAlt : preset;
+            ((forceAlternate || JusticeTrailPresetBinder.UseAlternate) && presetAlt != null) ? presetAlt : preset;
 
         private void Awake() => ApplyNow();
 

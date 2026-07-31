@@ -31,6 +31,27 @@ MonoBehaviour:
   TrajectoryType: 0
   ArcHeight: 2
   ScaleByCellSize: 0
+  ProjectileVisual:
+    Prefab: {fileID: 0}
+    Speed: 6
+    Trajectory: 1
+    ArcHeight: 1.2
+    TrailTime: 0.4
+    TrackTarget: 0
+    AlignToVelocity: 1
+    ImpactVisualLifetime: 0.3
+    ArrivalRadius: 0.2
+    TimeoutGraceSeconds: 1
+    TimeoutSeconds: 5
+    DeliveryMode: 0
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
+    TargetFormationCenter: 0
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
   AttackSfxClip: {fileID: 0}
   HitSfxClip: {fileID: 0}
   AttackEffectPrefab: {fileID: 0}
@@ -84,8 +105,8 @@ MonoBehaviour:
     PathSampleCount: 64
     Cues:
     - CueName: impact
-      EffectIds: f2030000
-      SoundIds: e9030000
+      EffectIds: 
+      SoundIds: 
       Operation: 0
       InstanceKey: 
       Anchor: 0
