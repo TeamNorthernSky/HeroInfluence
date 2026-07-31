@@ -2747,7 +2747,7 @@ MonoBehaviour:
   _currentBattleSpeed: 1
   battleFlowManager: {fileID: 621159268}
   _visualDirector: {fileID: 621159275}
-  _presentationCatalog: {fileID: 11400000, guid: 99e1bc13888047f4ea436fbc4eaf9856,
+  _presentationCatalog: {fileID: 11400000, guid: 80b063d4620a5ac4f96bbd0e34bef686,
     type: 2}
 --- !u!114 &621159271
 MonoBehaviour:
@@ -2819,10 +2819,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68f6cd0754ed4bc4ead79605623650fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _catalog: {fileID: 11400000, guid: 99e1bc13888047f4ea436fbc4eaf9856, type: 2}
+  _catalog: {fileID: 11400000, guid: 80b063d4620a5ac4f96bbd0e34bef686, type: 2}
   _popupPresenter: {fileID: 2717163431547817391, guid: 7fce9a6c8cecfa84193fd19e5b1b423a,
     type: 3}
-  _effectRegistry: {fileID: 11400000, guid: c2170fd9c24a36a48bc7f987625591ce, type: 2}
+  _effectRegistry: {fileID: 11400000, guid: cd76adeeba9fadc43a41cdd3f68fcd6e, type: 2}
 --- !u!1 &676690277
 GameObject:
   m_ObjectHideFlags: 0
