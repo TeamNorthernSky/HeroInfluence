@@ -216,7 +216,7 @@ namespace JC.VFX.Seam
             tr.textureMode = LineTextureMode.Stretch;
             tr.minVertexDistance = 0.02f;
             tr.numCapVertices = 4;
-            tr.numCornerVertices = 2;
+            tr.numCornerVertices = 4;   // 서브스텝으로 점이 촘촘해진 만큼 모서리도 함께 둥글린다
             tr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             tr.receiveShadows = false;
             tr.widthCurve = AnimationCurve.Constant(0f, 1f, 1f);
@@ -232,11 +232,41 @@ namespace JC.VFX.Seam
             return center + a.plane * local;
         }
 
+        /// <summary>
+        /// ★서브스텝 목표 이동 거리(m). 한 프레임에 이보다 많이 움직이면 중간 점을 직접 찍는다.
+        ///
+        /// TrailRenderer는 **프레임당 한 점**만 기록한다. 원호가 183~338도를 0.05~0.14초에 훑으므로
+        /// 60fps에서 3~8프레임밖에 안 지나가고, 궤적이 서너 점짜리 다각형이 되어 각져 보였다.
+        /// minVertexDistance를 줄여도 소용없다 — 제약이 거리가 아니라 **프레임 수**이기 때문이다.
+        /// `AddPosition`으로 중간 점을 직접 넣어 해소한다(호 획의 서브스텝과 같은 발상).
+        /// </summary>
+        const float TrailStepMeters = 0.08f;
+
+        /// <summary>한 프레임에 찍을 수 있는 점의 상한 — 폭주 방지.</summary>
+        const int MaxTrailSteps = 24;
+
         private void Advance(Arc a, float dt)
         {
+            float prevT = a.t;
             a.t += dt;
             float k = Mathf.Clamp01(a.t / a.dur);
             float eased = 1f - (1f - k) * (1f - k);             // 촤악 — 초반 빠르고 말미 감속
+
+            // 이번 프레임의 실이동량으로 서브스텝 수를 정하고, 중간 점을 직접 찍는다.
+            // (마지막 점은 아래에서 transform.position으로 들어가므로 여기서는 제외한다)
+            if (a.tr.emitting)
+            {
+                float prevK = Mathf.Clamp01(prevT / a.dur);
+                float prevEased = 1f - (1f - prevK) * (1f - prevK);
+                float moved = Mathf.Abs(eased - prevEased) * a.span * Mathf.Deg2Rad * a.r;
+                int steps = Mathf.Clamp(Mathf.CeilToInt(moved / TrailStepMeters), 1, MaxTrailSteps);
+
+                for (int s = 1; s < steps; s++)
+                {
+                    float mid = Mathf.Lerp(prevEased, eased, s / (float)steps);
+                    a.tr.AddPosition(ArcPos(a, mid));
+                }
+            }
 
             a.go.transform.position = ArcPos(a, eased);
             // 폭: 일생 절반 피크(사인 엔벨로프). widthMultiplier는 리본 전체 라이브 스케일 —

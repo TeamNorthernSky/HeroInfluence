@@ -31,7 +31,7 @@ Material:
     - _BirthMin: -0.085
     - _CutFarShrink: 0.557
     - _CutHeight: -0.907
-    - _DebugCircles: 0.192
+    - _DebugCircles: 0
     - _EdgeSoftRatio: 1
     - _EllipseRatio: 1.086
     - _Emission: 6
