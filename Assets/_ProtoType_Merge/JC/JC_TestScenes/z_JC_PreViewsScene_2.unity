@@ -2127,6 +2127,7 @@ MonoBehaviour:
   previewAllyTarget: {fileID: 0}
   selectedSkillIndex: 1010
   ignoreSkillCost: 1
+  preventPreviewTargetDeath: 1
 --- !u!4 &1306616269
 Transform:
   m_ObjectHideFlags: 0
@@ -3382,7 +3383,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1956195432}
-  - {fileID: 1348185595}
   - {fileID: 56801851}
   - {fileID: 173310003}
   - {fileID: 912453333}
@@ -3396,3 +3396,4 @@ SceneRoots:
   - {fileID: 1598461279}
   - {fileID: 1306616269}
   - {fileID: 856108277}
+  - {fileID: 1348185595}
