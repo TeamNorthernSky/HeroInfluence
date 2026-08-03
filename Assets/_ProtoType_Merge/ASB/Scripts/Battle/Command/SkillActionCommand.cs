@@ -67,11 +67,11 @@ namespace ASB.Work.Battle.Command
         {
             if (_isAoE)
             {
-                yield return battleManager.StartCoroutine(battleManager.RunAoESkillSequence(_aoeContexts, _aoeHitCallbacks, _deliveryGate));
+                yield return battleManager.StartCoroutine(battleManager.Presentation.RunAoESkillSequence(_aoeContexts, _aoeHitCallbacks, _deliveryGate));
                 yield break;
             }
 
-            yield return battleManager.StartCoroutine(battleManager.RunSkillSequenceCore(
+            yield return battleManager.StartCoroutine(battleManager.Presentation.RunSkillSequenceCore(
                 _actor,
                 _target,
                 _skill,

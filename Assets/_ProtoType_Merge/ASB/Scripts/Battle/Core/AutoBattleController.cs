@@ -42,11 +42,12 @@ public class AutoBattleController : MonoBehaviour
             if (inputHandler != null)
                 inputHandler.IsAutoBattleActive = value;
 
+            // 타겟팅 선택 상태는 켤 때든 끌 때든 정리한다.
+            // 끌 때 정리하지 않으면 자동전투 중 무장돼 있던 선택 상태가 되살아나 이중 행동으로 이어진다.
+            inputHandler?.ClearSelectionState();
+
             if (value)
             {
-                // 타겟팅 선택 상태가 남아있으면 먼저 정리
-                inputHandler?.ClearSelectionState();
-
                 // 이미 플레이어 턴 WaitUntil 중이면 즉시 실행
                 if (flowManager != null
                     && flowManager.CurrentUnit != null
@@ -155,6 +156,25 @@ public class AutoBattleController : MonoBehaviour
         flowManager?.ShowTargetHighlight(actor, target, highlightSkill);
         float speed = BattleManager.Instance != null ? BattleManager.Instance.CurrentBattleSpeed : 1f;
         yield return new WaitForSeconds(thinkDelay / Mathf.Max(0.01f, speed));
+
+        // 대기 전 전제를 다시 확인한다. 대기 중에 액터가 죽거나 기절하거나, 턴이 이미 넘어갔을 수 있다.
+        if (actor == null || actor.IsDead || actor.IsStunned
+            || flowManager == null || flowManager.CurrentUnit != actor)
+        {
+            Debug.LogWarning($"[AutoBattle] 대기 중 상태가 바뀌어 실행을 취소한다: actor={actor?.UnitName}");
+            flowManager?.ClearTargetHighlight();
+            if (inputHandler != null) inputHandler.IsAutoBattleActive = false;
+            yield break;
+        }
+
+        // 이번 턴의 행동 권한 확보. 수동 입력이 먼저 가져갔으면 자동전투는 물러난다.
+        if (!flowManager.TryClaimPlayerAction(actor))
+        {
+            Debug.Log($"[AutoBattle] 이번 턴의 행동이 이미 진행 중이라 자동전투를 건너뛴다: actor={actor.UnitName}");
+            flowManager.ClearTargetHighlight();
+            if (inputHandler != null) inputHandler.IsAutoBattleActive = false;
+            yield break;
+        }
 
         // 실행
         bool executed = false;
