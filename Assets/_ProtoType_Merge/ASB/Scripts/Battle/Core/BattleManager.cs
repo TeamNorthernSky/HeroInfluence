@@ -84,6 +84,10 @@ public class BattleManager : MonoBehaviour
     private int _chainLightningActionInstanceId;
     private JC.VFX.ChainLightningVfx _chainLightningImpactEffect;
 
+    // 부활 캐스트-로컬 상태. 규칙 계층이 '누구를 몇 %로'를 정해 확정 델리게이트를 여기 걸어두면,
+    // 연출(revive Cue)이 '언제 일어서는가'만 트리거한다. 트리거가 없어도 스윕이 확정을 보장한다.
+    private Func<BattleHitResult> _pendingReviveCommit;
+
     public float CurrentBattleSpeed => _currentBattleSpeed;
 
     private void Awake()
@@ -307,6 +311,11 @@ public class BattleManager : MonoBehaviour
         _projectileChainState = null; // 캐스트마다 초기화(이전 체인 상태 누수 방지)
         _chainLightningTargets = null;
         _chainLightningActionInstanceId = 0;
+
+        // 부활은 연출(데미지 구간)보다 먼저 확정 델리게이트를 준비해야 한다.
+        // 4040처럼 부활 Cue가 공격 연출의 AttackPrepare 페이즈에 있는 경우, 그 시점에 트리거되어야 하기 때문.
+        _pendingReviveCommit = BuildPendingReviveCommit(result, pendingCommits);
+
         if (result.DamageContexts != null)
         {
             bool isAoE = result.Handler is BaseAoESkillHandler;
@@ -390,13 +399,11 @@ public class BattleManager : MonoBehaviour
                         continue;
                     }
 
-                    // 1차 취소 시 추가 타깃 체인 전체 중단.
-                    if (_projectileChainState != null
+                    // 1차 투사체가 취소되면 추가 타깃의 '볼트 연출'은 생략한다.
+                    // 타깃은 규칙 계층이 이미 정했으므로 피해는 그대로 적용한다(아래에서 즉시 확정).
+                    bool skipChainPresentation = _projectileChainState != null
                         && damageContext.Role == DamageRole.Additional
-                        && _projectileChainState.IsCancelled)
-                    {
-                        continue;
-                    }
+                        && _projectileChainState.IsCancelled;
 
                     if (!damageContext.IsCounterAttack && !damageContext.CanTriggerCounter)
                     {
@@ -426,6 +433,13 @@ public class BattleManager : MonoBehaviour
                         return r;
                     };
                     pendingCommits.Add(onHitCallback);
+
+                    // 체인이 끊겼으면 볼트가 오지 않으므로 기다리지 않는다. 피해만 즉시 확정하고 다음 대상으로.
+                    if (skipChainPresentation)
+                    {
+                        onHitCallback();
+                        continue;
+                    }
 
                     bool isAdditionalChainTarget = _projectileChainState != null
                                                    && chainPrimaryPresented
@@ -513,8 +527,14 @@ public class BattleManager : MonoBehaviour
                     continue;
                 }
 
-                // 부활 컨텍스트는 죽은 대상이 정상 입력이므로 IsDead 필터를 통과시킨다.
-                if (healContext.Target.IsDead && !healContext.IsRevive)
+                // 부활은 위에서 확정 델리게이트로 준비했고 연출도 스킬 자체의 revive Cue가 담당한다.
+                // 힐 프리젠테이션(시전 애니 + 힐 이펙트)을 중복으로 돌리지 않는다.
+                if (healContext.IsRevive)
+                {
+                    continue;
+                }
+
+                if (healContext.Target.IsDead)
                 {
                     continue;
                 }
@@ -611,6 +631,64 @@ public class BattleManager : MonoBehaviour
         result.LogEventTrackingSummary();
 #endif
         onCompleted?.Invoke(true);
+    }
+
+    /// <summary>
+    /// 부활 컨텍스트의 확정 델리게이트를 만들어 스윕 목록에 등록하고 반환한다.
+    /// 반환값은 연출(revive Cue)이 '일어서는 시점'을 정하기 위해 트리거한다.
+    /// 트리거되지 않아도 스윕이 확정하므로 연출은 부활을 취소할 수 없다.
+    /// </summary>
+    private Func<BattleHitResult> BuildPendingReviveCommit(
+        SkillExecutionResult result,
+        List<Func<BattleHitResult>> pendingCommits)
+    {
+        if (result?.HealContexts == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < result.HealContexts.Count; i++)
+        {
+            HealContext healContext = result.HealContexts[i];
+            if (healContext == null || !healContext.IsRevive || healContext.Target == null)
+            {
+                continue;
+            }
+
+            HealContext capturedRevive = healContext;
+            bool committed = false;
+            Func<BattleHitResult> commit = () =>
+            {
+                if (committed)
+                {
+                    return null;
+                }
+
+                committed = true;
+                capturedRevive.Target.Revive(capturedRevive.ReviveHpRatio);
+                Debug.Log($"[Combat] {capturedRevive.Target.UnitName} 부활 (ratio={capturedRevive.ReviveHpRatio:0.##})");
+                return new BattleHitResult
+                {
+                    Target = capturedRevive.Target,
+                    Damage = 0f,
+                    IsHeal = true,
+                    SkillIndex = capturedRevive.SkillIndex
+                };
+            };
+
+            pendingCommits.Add(commit);
+            return commit; // 캐스트당 부활은 1건이다.
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 연출의 revive Cue 시점에 호출된다. 부활 확정이 대기 중이면 지금 적용한다(멱등).
+    /// </summary>
+    private void TriggerPendingRevive()
+    {
+        _pendingReviveCommit?.Invoke();
     }
 
     /// <summary>
@@ -716,6 +794,7 @@ public class BattleManager : MonoBehaviour
         _chainLightningTargets = null;
         _chainLightningActionInstanceId = 0;
         _projectileChainRole = DamageRole.Primary;
+        _pendingReviveCommit = null; // 인질 경로는 부활을 만들지 않는다. 이전 캐스트 잔여 참조 제거.
 
         var hostageQueue = new ASB.Work.Battle.Command.BattleActionQueue();
         hostageQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
@@ -1640,18 +1719,14 @@ internal IEnumerator RunSkillSequenceCore(
         string stateName = phase.AnimationStateName?.Trim();
         SetupPresentationContext(actor, target, skill, presentation, actionInstanceId, phase.Cues, stateName);
 
-        // 4040의 ClassSkill_4 클립에는 revive Cue 이벤트가 없는 구성도 있으므로,
-        // 부활 대상용 Cue만 준비 페이즈 시작 시 보장한다.
-        if (skill?.skillIndex == 4040 && phase is AttackPreparePhase)
+        // 부활 대기가 있으면 준비 페이즈 시작 시 Cue를 보장하고, 같은 시점에 부활 확정을 트리거한다.
+        // (클립에 revive Cue 이벤트가 없는 구성이 있어 Cue를 여기서 직접 낸다.)
+        // 확정 자체는 규칙 계층이 만든 멱등 델리게이트다 — 여기서 '시점'만 정하고, 트리거가 없어도 스윕이 보장한다.
+        if (_pendingReviveCommit != null && phase is AttackPreparePhase)
         {
             UnitEffectPresenter presenter = actor != null ? actor.GetComponent<UnitEffectPresenter>() : null;
             presenter?.PresentationCue("revive");
-
-            BattleCharactor reviveTarget = actor?.PendingReviveTarget;
-            if (reviveTarget != null && reviveTarget.IsDead)
-            {
-                reviveTarget.Revive(0.2f);
-            }
+            TriggerPendingRevive();
         }
 
         CharactorAnimationController animation = actor?.Anim;

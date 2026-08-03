@@ -120,10 +120,11 @@ namespace ASB.Work.Battle.SkillExecution
             BattleCharactor caster = context.Caster;
             SkillData skill = context.Skill;
 
-            // 1) 부활: 죽은 아군 1명(전투당 1회)을 예약하고, 연출용 참조(PendingReviveTarget)를 남긴다.
-            //    (연출은 아래 적 전체공격 컨텍스트가 구동하는 프레젠테이션의 AttackPrepare=ClassSkill_4에서
-            //     ReviveTarget 앵커로 부활 아군 바닥에 이펙트를 낸다.)
-            //    실제 Revive는 BattleManager의 AttackPrepare Cue 직후 실행해, 이펙트·HP·외형 복구 시점을 맞춘다.
+            // 1) 부활: 죽은 아군 1명(전투당 1회)을 규칙으로 결정한다.
+            //    누구를 몇 %로 살릴지는 여기(규칙)에서 정하고, 결과는 AddRevive로 남긴다.
+            //    '언제 일어서는가'만 연출이 정한다 — AttackPrepare의 revive Cue 시점에 확정이 트리거되고,
+            //    Cue가 오지 않아도 BattleManager의 스윕이 확정을 보장한다.
+            //    PendingReviveTarget은 연출 앵커(SpawnAnchor.ReviveTarget)용으로 계속 유지한다.
             caster.PendingReviveTarget = null;
             if (!caster.HasUsedRevive)
             {
@@ -132,6 +133,7 @@ namespace ASB.Work.Battle.SkillExecution
                 {
                     caster.HasUsedRevive = true;
                     caster.PendingReviveTarget = deadAlly;
+                    result.AddRevive(caster, deadAlly, ReviveHpRatioValue, skill.skillIndex);
                     Debug.Log($"[Skill/Rebirth] prepared revive for {deadAlly.UnitName} (ratio={ReviveHpRatioValue:0.##})");
                 }
             }
