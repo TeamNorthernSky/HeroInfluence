@@ -20,7 +20,7 @@ namespace ASB.Work.Battle.Sequence
         public override IEnumerator ExecuteRoutine(MonoBehaviour host)
         {
             yield return WaitForImpactRoutine(_presentation, _actionInstanceId, _deliveryGate);
-            if (_deliveryGate == null || !_deliveryGate.CanApplyEffects || _innerAction == null) yield break;
+            if (_deliveryGate == null || !_deliveryGate.ShouldPlayImpactPresentation || _innerAction == null) yield break;
             yield return _innerAction.ExecuteRoutine(host);
         }
 

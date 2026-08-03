@@ -301,7 +301,9 @@ public class BattleManager : MonoBehaviour
         }
 
         float totalDamageDealt = 0f;
-        var deliveryGates = new Dictionary<DamageContext, HitDeliveryGate>();
+        // 연출이 확정하지 못한(취소·타임아웃) 히트를 규칙 계층이 나중에 일괄 확정하기 위한 목록.
+        // 연출은 확정 '시점'만 정하고 '여부'는 정하지 못한다. 각 항목은 멱등하다(두 번 호출해도 1회만 적용).
+        var pendingCommits = new List<Func<BattleHitResult>>();
         _projectileChainState = null; // 캐스트마다 초기화(이전 체인 상태 누수 방지)
         _chainLightningTargets = null;
         _chainLightningActionInstanceId = 0;
@@ -334,16 +336,27 @@ public class BattleManager : MonoBehaviour
                     }
 
                     BattleHitResult predicted = PredictDamage(damageContext);
-                    deliveryGates[damageContext] = aoeDeliveryGate;
 
-                    aoeContexts.Add(damageContext);
-                    hitCallbacks.Add(() =>
+                    // 멱등 확정. 연출이 임팩트 시점에 호출하지만, 호출하지 않아도(취소·타임아웃)
+                    // 루틴 종료 전 스윕이 반드시 확정한다.
+                    bool committed = false;
+                    Func<BattleHitResult> commit = () =>
                     {
+                        if (committed)
+                        {
+                            return null;
+                        }
+
+                        committed = true;
                         BattleHitResult r = CommitDamage(damageContext, predicted);
                         result.RecordDamageResult(damageContext, r);
                         totalDamageDealt += r?.Damage ?? 0f;
                         return r;
-                    });
+                    };
+                    pendingCommits.Add(commit);
+
+                    aoeContexts.Add(damageContext);
+                    hitCallbacks.Add(commit);
                 }
 
                 if (aoeContexts.Count > 0)
@@ -395,15 +408,24 @@ public class BattleManager : MonoBehaviour
 
                     BattleHitResult predicted = PredictDamage(damageContext);
                     var deliveryGate = new HitDeliveryGate();
-                    deliveryGates[damageContext] = deliveryGate;
 
+                    // 멱등 확정. 연출이 임팩트 시점에 호출하지만, 호출하지 않아도(취소·타임아웃)
+                    // 루틴 종료 전 스윕이 반드시 확정한다.
+                    bool committed = false;
                     Func<BattleHitResult> onHitCallback = () =>
                     {
+                        if (committed)
+                        {
+                            return null;
+                        }
+
+                        committed = true;
                         BattleHitResult r = CommitDamage(damageContext, predicted);
                         result.RecordDamageResult(damageContext, r);
                         totalDamageDealt += r?.Damage ?? 0f;
                         return r;
                     };
+                    pendingCommits.Add(onHitCallback);
 
                     bool isAdditionalChainTarget = _projectileChainState != null
                                                    && chainPrimaryPresented
@@ -465,6 +487,10 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        // 스윕: 연출이 취소·타임아웃돼 확정되지 않은 히트를 규칙 계층이 여기서 반드시 확정한다.
+        // 이 한 줄이 "연출은 피해를 취소할 수 없다"를 보장한다.
+        FlushPendingCommits(pendingCommits);
+
         if (result.HealContexts != null && result.HealContexts.Count > 0)
         {
             // 다중 아군 힐: 시전 애니는 첫(주) 대상에서 1회만 재생하고, 인접 아군은 시전을 다시 돌리지 않고
@@ -482,14 +508,27 @@ public class BattleManager : MonoBehaviour
             for (int i = 0; i < result.HealContexts.Count; i++)
             {
                 HealContext healContext = result.HealContexts[i];
-                if (healContext == null || healContext.Caster == null || healContext.Target == null || healContext.Target.IsDead)
+                if (healContext == null || healContext.Caster == null || healContext.Target == null)
+                {
+                    continue;
+                }
+
+                // 부활 컨텍스트는 죽은 대상이 정상 입력이므로 IsDead 필터를 통과시킨다.
+                if (healContext.Target.IsDead && !healContext.IsRevive)
                 {
                     continue;
                 }
 
                 HealContext capturedHeal = healContext;
+                bool healCommitted = false;
                 Func<BattleHitResult> healCallback = () =>
                 {
+                    if (healCommitted)
+                    {
+                        return null;
+                    }
+
+                    healCommitted = true;
                     if (capturedHeal.IsRevive)
                     {
                         capturedHeal.Target.Revive(capturedHeal.ReviveHpRatio);
@@ -506,6 +545,7 @@ public class BattleManager : MonoBehaviour
                         SkillIndex = capturedHeal.SkillIndex
                     };
                 };
+                pendingCommits.Add(healCallback);
 
                 if (!firstHealPresented)
                 {
@@ -542,6 +582,9 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        // 힐/부활도 동일하게, 연출이 확정하지 못했으면 여기서 확정한다.
+        FlushPendingCommits(pendingCommits);
+
         if (result.StatusEffectContexts != null && result.StatusEffectContexts.Count > 0)
         {
             for (int i = 0; i < result.StatusEffectContexts.Count; i++)
@@ -552,14 +595,12 @@ public class BattleManager : MonoBehaviour
                     continue;
                 }
 
-                if (CanApplyStatusEffect(statusContext, deliveryGates))
-                {
-                    ApplyStatusEffect(statusContext);
-                }
+                // 투사체 전달 결과와 무관하게 적용한다. 연출은 규칙을 취소할 수 없다.
+                ApplyStatusEffect(statusContext);
             }
         }
 
-        var counterRequests = CollectCounterAttackRequests(result, deliveryGates);
+        var counterRequests = CollectCounterAttackRequests(result);
         if (counterRequests.Count > 0)
         {
             yield return StartCoroutine(FlushCounterAttacks(counterRequests));
@@ -570,6 +611,23 @@ public class BattleManager : MonoBehaviour
         result.LogEventTrackingSummary();
 #endif
         onCompleted?.Invoke(true);
+    }
+
+    /// <summary>
+    /// 연출이 확정하지 못한 히트를 규칙 계층이 일괄 확정한다.
+    /// 각 항목은 멱등하므로 이미 확정된 것은 무시된다.
+    /// </summary>
+    private static void FlushPendingCommits(List<Func<BattleHitResult>> pendingCommits)
+    {
+        if (pendingCommits == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < pendingCommits.Count; i++)
+        {
+            pendingCommits[i]?.Invoke();
+        }
     }
 
     private IEnumerator PlayGroupHealBounceProjectile(
@@ -733,7 +791,7 @@ public class BattleManager : MonoBehaviour
         onCompleted?.Invoke(executed);
     }
 
-    private List<CounterAttackRequest> CollectCounterAttackRequests(SkillExecutionResult result, IReadOnlyDictionary<DamageContext, HitDeliveryGate> deliveryGates)
+    private List<CounterAttackRequest> CollectCounterAttackRequests(SkillExecutionResult result)
     {
         var requests = new List<CounterAttackRequest>();
         if (result.DamageContexts == null) return requests;
@@ -743,8 +801,9 @@ public class BattleManager : MonoBehaviour
             ?.Caster;
         if (originalCaster == null) return requests;
 
+        // 투사체 전달 결과는 더 이상 반격 성립에 관여하지 않는다. 연출은 규칙을 취소할 수 없다.
         var candidates = result.DamageContexts
-            .Where(ctx => ctx != null && ctx.CanTriggerCounter && CanApplyDeliveryEffects(ctx, deliveryGates))
+            .Where(ctx => ctx != null && ctx.CanTriggerCounter)
             .Select(ctx => ctx.Target)
             .Distinct()
             .Where(t => t != null && !t.IsDead && t.IsPlayer != originalCaster.IsPlayer);
@@ -768,42 +827,6 @@ public class BattleManager : MonoBehaviour
         }
 
         return requests;
-    }
-
-    private static bool CanApplyStatusEffect(
-        StatusEffectContext statusContext,
-        IReadOnlyDictionary<DamageContext, HitDeliveryGate> deliveryGates)
-    {
-        if (deliveryGates == null)
-        {
-            return true;
-        }
-
-        foreach (KeyValuePair<DamageContext, HitDeliveryGate> pair in deliveryGates)
-        {
-            DamageContext damageContext = pair.Key;
-            if (damageContext != null
-                && damageContext.Caster == statusContext.Caster
-                && damageContext.Target == statusContext.Target
-                && pair.Value != null
-                && !pair.Value.CanApplyEffects)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static bool CanApplyDeliveryEffects(
-        DamageContext damageContext,
-        IReadOnlyDictionary<DamageContext, HitDeliveryGate> deliveryGates)
-    {
-        return damageContext != null
-            && (deliveryGates == null
-                || !deliveryGates.TryGetValue(damageContext, out HitDeliveryGate gate)
-                || gate == null
-                || gate.CanApplyEffects);
     }
 
     internal IEnumerator ExecuteCounterSkill(CounterAttackRequest req)
@@ -1506,7 +1529,7 @@ internal IEnumerator RunSkillSequenceCore(
             {
                 yield return ASB.Work.Battle.Sequence.CustomEffectImpactAction.WaitForImpactRoutine(
                     presentation, actionInstanceId, deliveryGate);
-                if (deliveryGate == null || !deliveryGate.CanApplyEffects)
+                if (deliveryGate == null || !deliveryGate.ShouldPlayImpactPresentation)
                 {
                     yield break;
                 }
@@ -1529,7 +1552,7 @@ internal IEnumerator RunSkillSequenceCore(
                 SignalCustomImpactEffectAtHit(actor, presentation);
                 yield return ASB.Work.Battle.Sequence.CustomEffectImpactAction.WaitForImpactRoutine(
                     presentation, actionInstanceId, deliveryGate);
-                if (deliveryGate == null || !deliveryGate.CanApplyEffects)
+                if (deliveryGate == null || !deliveryGate.ShouldPlayImpactPresentation)
                 {
                     yield break;
                 }
@@ -1781,7 +1804,7 @@ internal IEnumerator RunSkillSequenceCore(
         if (waitForChainLightningImpact)
         {
             yield return WaitForPresentationImpactRoutine(target, presentation, deliveryGate);
-            if (!deliveryGate.CanApplyEffects)
+            if (!deliveryGate.ShouldPlayImpactPresentation)
             {
                 yield break;
             }
@@ -1837,7 +1860,7 @@ internal IEnumerator RunSkillSequenceCore(
                         break;
                 }
             }
-            if (!deliveryGate.CanApplyEffects)
+            if (!deliveryGate.ShouldPlayImpactPresentation)
             {
                 yield break;
             }
