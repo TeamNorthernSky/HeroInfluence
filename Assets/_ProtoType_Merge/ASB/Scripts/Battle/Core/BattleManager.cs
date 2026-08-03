@@ -934,9 +934,16 @@ public class BattleManager : MonoBehaviour
 
     internal IEnumerator ExecuteCounterSkill(CounterAttackRequest req)
     {
-        if (req.Skill == null
-            || req.Defender == null || req.Defender.IsDead
-            || req.OriginalCaster == null || req.OriginalCaster.IsDead)
+        // 원 시전자가 쓰러졌으면 남은 반격은 전부 취소한다.
+        // 반격은 실행 순간의 상태를 기준으로 성립하므로, 앞선 반격이 시전자를 죽였다면
+        // 뒤따르던 반격들은 여기서 각각 걸러진다(연쇄 큐에 남아 있어도 실행되지 않는다).
+        if (req.OriginalCaster == null || req.OriginalCaster.IsDead)
+        {
+            Debug.Log($"[Combat] 반격 취소: 원 시전자가 이미 쓰러졌다. defender={req.Defender?.UnitName ?? "null"}");
+            yield break;
+        }
+
+        if (req.Skill == null || req.Defender == null || req.Defender.IsDead)
         {
             yield break;
         }
@@ -969,8 +976,8 @@ public class BattleManager : MonoBehaviour
 
     /// <summary>
     /// 반격 요청을 연쇄 큐에 싣는다.
-    /// 가드는 <b>수집 시점에만</b> 평가한다 — 반격 #1 실행 중 시전자가 죽어도 #2는 그대로 진행된다.
-    /// (기존 동작 보존. 실행 중 재평가로 바꾸려면 별도 결정이 필요하다.)
+    /// 여기 가드는 <b>사전 필터</b>일 뿐이고, 실제 판정은 실행 시점에 <see cref="ExecuteCounterSkill"/>이
+    /// 다시 한다 — 반격 #1이 시전자를 죽이면 뒤따르던 반격들은 실행 직전에 취소된다.
     /// </summary>
     private void EnqueueCounterAttacks(List<CounterAttackRequest> requests)
     {
