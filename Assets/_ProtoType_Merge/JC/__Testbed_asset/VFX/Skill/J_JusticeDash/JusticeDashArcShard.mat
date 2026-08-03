@@ -25,14 +25,14 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _CutMax: 0.376
-    - _CutMin: 0.074
-    - _EdgeEmission: 18.1
-    - _EdgeSoft: 0.061
+    - _CutMax: 0.416
+    - _CutMin: 0.25
+    - _EdgeEmission: 8
+    - _EdgeSoft: 0.1529
     - _EdgeWidth: 0.178
-    - _InnerEmission: 11
-    - _TriHeight: 0.703
-    - _TriWidth: 0.913
+    - _InnerEmission: 8
+    - _TriHeight: 0.559
+    - _TriWidth: 0.486
     m_Colors:
     - _InnerColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

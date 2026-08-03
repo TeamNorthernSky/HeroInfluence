@@ -11,7 +11,7 @@ using UnityEngine;
 [CustomEditor(typeof(FogPreset))]
 public class FogPresetEditor : Editor
 {
-    private const string DefaultJsonFolder = "Assets/RenderFX/FogPreset_json";   // 260729 폴더 이동(_Scripts 폐지) 반영
+    private const string DefaultJsonFolder = "Assets/RenderFX/FogOfWar/FogPreset_json";   // 260803 폴더 이동 반영
 
     /// <summary>다이얼로그 시작 폴더 — 없으면 생성 후 절대경로 반환.</summary>
     private static string GetJsonFolder()
