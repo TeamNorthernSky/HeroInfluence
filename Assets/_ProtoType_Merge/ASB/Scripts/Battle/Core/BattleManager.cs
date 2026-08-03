@@ -78,11 +78,10 @@ public class BattleManager : MonoBehaviour
     // (코루틴을 가로지르지만 컨텍스트는 순차 실행이라 동시성 문제 없음 — _currentBattleSpeed와 동일 패턴)
     private ProjectileChainState _projectileChainState;
     private DamageRole _projectileChainRole = DamageRole.Primary;
-    // 체인 번개는 일반 투사체처럼 매 타격마다 생성하지 않고, 프리팹별 런타임 인스턴스를 재사용한다.
-    private readonly Dictionary<GameObject, JC.VFX.ChainLightningVfx> _chainLightningEffects = new();
-    private List<Transform> _chainLightningTargets;
-    private int _chainLightningActionInstanceId;
-    private JC.VFX.ChainLightningVfx _chainLightningImpactEffect;
+    // 연출 소유자. 규칙 계층은 확정된 결과만 넘기고, 재생은 전적으로 여기서 담당한다.
+    private SkillPresentationDirector _presentationDirector;
+    private SkillPresentationDirector Presentation =>
+        _presentationDirector ??= new SkillPresentationDirector(this);
 
     // 부활 캐스트-로컬 상태. 규칙 계층이 '누구를 몇 %로'를 정해 확정 델리게이트를 여기 걸어두면,
     // 연출(revive Cue)이 '언제 일어서는가'만 트리거한다. 트리거가 없어도 스윕이 확정을 보장한다.
@@ -318,8 +317,7 @@ public class BattleManager : MonoBehaviour
         // 연출은 확정 '시점'만 정하고 '여부'는 정하지 못한다. 각 항목은 멱등하다(두 번 호출해도 1회만 적용).
         var pendingCommits = new List<Func<BattleHitResult>>();
         _projectileChainState = null; // 캐스트마다 초기화(이전 체인 상태 누수 방지)
-        _chainLightningTargets = null;
-        _chainLightningActionInstanceId = 0;
+        Presentation.ResetCastState();
 
         // 부활은 연출(데미지 구간)보다 먼저 확정 델리게이트를 준비해야 한다.
         // 4040처럼 부활 Cue가 공격 연출의 AttackPrepare 페이즈에 있는 경우, 그 시점에 트리거되어야 하기 때문.
@@ -388,10 +386,13 @@ public class BattleManager : MonoBehaviour
             {
                 // 체인 투사체 모드면 캐스트-로컬 상태를 준비(1차 도착점을 2차 원점으로 전달).
                 _projectileChainState = ResolveChainStateForCast(result);
-                _chainLightningTargets = BuildChainLightningTargets(result.DamageContexts);
                 if (_projectileChainState != null)
                 {
-                    _chainLightningActionInstanceId = NextActionInstanceId();
+                    Presentation.PrepareChainTargets(result.DamageContexts, NextActionInstanceId());
+                }
+                else
+                {
+                    Presentation.PrepareChainTargets(result.DamageContexts, 0);
                 }
 
                 bool chainPrimaryPresented = false;
@@ -456,16 +457,16 @@ public class BattleManager : MonoBehaviour
                     if (isAdditionalChainTarget)
                     {
                         // 체인 번개의 추가 대상도 실제 볼트가 끝점에 닿은 후에만 피격 애니메이션·피해 UI를 적용한다.
-                        if (_chainLightningActionInstanceId > 0)
+                        if (Presentation.ChainActionInstanceId > 0)
                         {
                             SkillPresentationData chainPresentation = _presentationCatalog?.Get(damageContext.SkillIndex);
-                            yield return WaitForPresentationImpactRoutine(damageContext.Target, chainPresentation);
+                            yield return Presentation.WaitForPresentationImpactRoutine(damageContext.Target, chainPresentation);
                             SkillData chainSkill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(damageContext));
                             yield return new ResolveHitAction(
                                 damageContext.Caster,
                                 damageContext.Target,
                                 onHitCallback,
-                                ResolveAdditionalChainTargetAnimationTrigger(chainPresentation, chainSkill),
+                                SkillPresentationDirector.ResolveAdditionalChainTargetAnimationTrigger(chainPresentation, chainSkill),
                                 _currentBattleSpeed,
                                 _visualDirector).ExecuteRoutine(this);
                         }
@@ -803,8 +804,7 @@ public class BattleManager : MonoBehaviour
         // 인질 경로는 ApplySkillExecutionResultRoutine(적 피해 파이프라인)을 우회하므로 체인 상태를 직접 초기화한다.
         // (이전 캐스트 누수 방지 + 인질은 추가 체인 대상이 없는 단일 대상 Primary 볼트로 처리)
         _projectileChainState = null;
-        _chainLightningTargets = null;
-        _chainLightningActionInstanceId = 0;
+        Presentation.ResetCastState();
         _projectileChainRole = DamageRole.Primary;
         _pendingReviveCommit = null; // 인질 경로는 부활을 만들지 않는다. 이전 캐스트 잔여 참조 제거.
 
@@ -1953,13 +1953,13 @@ internal IEnumerator RunSkillSequenceCore(
         bool waitForChainLightningImpact = false;
         if (chainPrimaryTransform != null && _projectileChainRole == DamageRole.Primary)
         {
-            waitForChainLightningImpact = PlayChainLightningEffect(presentation, actor, chainPrimaryTransform,
-                _chainLightningTargets ?? (IReadOnlyList<Transform>)System.Array.Empty<Transform>());
+            waitForChainLightningImpact = Presentation.PlayChainLightningEffect(
+                presentation, actor, chainPrimaryTransform, Presentation.ChainTargets);
         }
 
         if (waitForChainLightningImpact)
         {
-            yield return WaitForPresentationImpactRoutine(target, presentation, deliveryGate);
+            yield return Presentation.WaitForPresentationImpactRoutine(target, presentation, deliveryGate);
             if (!deliveryGate.ShouldPlayImpactPresentation)
             {
                 yield break;
@@ -2329,7 +2329,7 @@ internal IEnumerator RunSkillSequenceCore(
                                 actor, primaryTarget, skill, presentation, presentationActionInstanceId, GetPrimaryAttackBeat(presentation)?.Cues, targetState, aoePresentationTargets)));
                         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, false));
                         runner.Enqueue(new WaitHitAction(actorAnim, skill, _currentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, AnimEventTimeoutSeconds));
-                        runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => PlayChainLightningEffectRoutine(
+                        runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => Presentation.PlayChainLightningEffectRoutine(
                             presentation, actor, primaryTarget, contexts, pairCount)));
                         runner.Enqueue(new ASB.Work.Battle.Sequence.CustomEffectImpactAction(presentation, presentationActionInstanceId, deliveryGate, new AoEApplyDamageAction(contexts, hitCallbacks, pairCount, _currentBattleSpeed, _visualDirector, projectileVisual, deliveryGate)));
         
@@ -2369,115 +2369,6 @@ internal IEnumerator RunSkillSequenceCore(
         {
             ReturnToIdleIfAlive(contexts[i]?.Target);
         }
-    }
-
-    private static List<Transform> BuildChainLightningTargets(IReadOnlyList<DamageContext> contexts)
-    {
-        var targets = new List<Transform>();
-        var seen = new HashSet<Transform>();
-        if (contexts == null)
-        {
-            return targets;
-        }
-
-        for (int i = 0; i < contexts.Count; i++)
-        {
-            DamageContext context = contexts[i];
-            Transform targetTransform = context?.Role == DamageRole.Additional && context.Target != null
-                ? context.Target.transform
-                : null;
-            if (targetTransform != null && seen.Add(targetTransform))
-            {
-                targets.Add(targetTransform);
-            }
-        }
-
-        return targets;
-    }
-
-    private IEnumerator WaitForPresentationImpactRoutine(BattleCharactor target, SkillPresentationData presentation, HitDeliveryGate deliveryGate = null)
-    {
-        if (target == null || _chainLightningActionInstanceId <= 0)
-        {
-            yield break;
-        }
-
-        ImpactKey key = new ImpactKey(_chainLightningActionInstanceId, target.transform.GetInstanceID());
-        yield return ASB.Work.Battle.Sequence.CustomEffectImpactAction.WaitForImpactKeyRoutine(presentation, key, deliveryGate, false);
-    }
-
-    private static string ResolveAdditionalChainTargetAnimationTrigger(SkillPresentationData presentation, SkillData skill)
-    {
-        if (presentation != null && !string.IsNullOrWhiteSpace(presentation.TargetAnimationTriggerOverride))
-        {
-            return presentation.TargetAnimationTriggerOverride.Trim();
-        }
-
-        return skill != null ? skill.ResolvedTargetAnimationTrigger : null;
-    }
-
-    private bool PlayChainLightningEffect(
-        SkillPresentationData presentation,
-        BattleCharactor actor,
-        Transform primaryTargetTransform,
-        IReadOnlyList<Transform> chainTargets)
-    {
-        if (presentation?.ChainLightningEffectPrefab == null
-            || presentation.ProjectileVisual?.DeliveryMode != ProjectileDeliveryMode.ChainAdditionalTargets
-            || actor == null
-            || primaryTargetTransform == null)
-        {
-            return false;
-        }
-
-        GameObject effectPrefab = presentation.ChainLightningEffectPrefab;
-        if (!_chainLightningEffects.TryGetValue(effectPrefab, out JC.VFX.ChainLightningVfx effect)
-            || effect == null)
-        {
-            GameObject instance = Instantiate(effectPrefab);
-            effect = instance.GetComponent<JC.VFX.ChainLightningVfx>();
-            if (effect == null)
-            {
-                Debug.LogWarning($"[BattleManager] {effectPrefab.name}에 ChainLightningVfx가 없습니다.", effectPrefab);
-                Destroy(instance);
-                return false;
-            }
-
-            _chainLightningEffects[effectPrefab] = effect;
-        }
-
-        _chainLightningImpactEffect = effect;
-        ChainLightningImpactProbe probe = effect.GetComponent<ChainLightningImpactProbe>();
-        if (probe == null)
-        {
-            probe = effect.gameObject.AddComponent<ChainLightningImpactProbe>();
-        }
-
-        probe.Configure(_chainLightningActionInstanceId, primaryTargetTransform, chainTargets);
-        effect.Play(actor.transform, primaryTargetTransform, chainTargets);
-        return true;
-    }
-
-    private IEnumerator PlayChainLightningEffectRoutine(
-        SkillPresentationData presentation,
-        BattleCharactor actor,
-        BattleCharactor primaryTarget,
-        List<DamageContext> contexts,
-        int pairCount)
-    {
-        var chainTargets = new List<Transform>();
-        var seen = new HashSet<Transform>();
-        for (int i = 1; i < pairCount; i++)
-        {
-            Transform targetTransform = contexts[i]?.Target != null ? contexts[i].Target.transform : null;
-            if (targetTransform != null && targetTransform != primaryTarget.transform && seen.Add(targetTransform))
-            {
-                chainTargets.Add(targetTransform);
-            }
-        }
-
-        PlayChainLightningEffect(presentation, actor, primaryTarget != null ? primaryTarget.transform : null, chainTargets);
-        yield break;
     }
 
     private static void ReturnToIdleIfAlive(BattleCharactor unit)
