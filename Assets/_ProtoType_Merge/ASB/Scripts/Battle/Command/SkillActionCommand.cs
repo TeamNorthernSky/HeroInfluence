@@ -27,6 +27,8 @@ namespace ASB.Work.Battle.Command
 
         private readonly bool _isAoE;
 
+        public int Depth { get; set; }
+
         /// <summary>단일 타겟 스킬(공격/힐).</summary>
         public SkillActionCommand(
             BattleCharactor actor,

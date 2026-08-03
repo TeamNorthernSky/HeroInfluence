@@ -88,6 +88,15 @@ public class BattleManager : MonoBehaviour
     // 연출(revive Cue)이 '언제 일어서는가'만 트리거한다. 트리거가 없어도 스윕이 확정을 보장한다.
     private Func<BattleHitResult> _pendingReviveCommit;
 
+    // 연쇄(cascading) 액션 큐. 한 행동이 낳은 후속 행동(반격, 앞으로 추가될 발동형 효과 등)이 여기 쌓인다.
+    // 드레인 중에 추가되면 바깥 루프가 그대로 집어가므로 깊이에 제한 없이 이어질 수 있다.
+    // 그래서 MaxFollowUpDepth를 백스톱으로 둔다 — 데이터 실수 한 번이 무한 루프가 되는 것을 막는다.
+    private readonly ASB.Work.Battle.Command.BattleActionQueue _followUpQueue =
+        new ASB.Work.Battle.Command.BattleActionQueue();
+    private bool _isDrainingFollowUps;
+    private int _currentFollowUpDepth;
+    private const int MaxFollowUpDepth = 8;
+
     public float CurrentBattleSpeed => _currentBattleSpeed;
 
     private void Awake()
@@ -623,7 +632,10 @@ public class BattleManager : MonoBehaviour
         var counterRequests = CollectCounterAttackRequests(result);
         if (counterRequests.Count > 0)
         {
-            yield return StartCoroutine(FlushCounterAttacks(counterRequests));
+            EnqueueCounterAttacks(counterRequests);
+            // 이 루틴 자체가 연쇄 액션으로 실행 중이면 DrainFollowUps는 즉시 반환하고,
+            // 방금 넣은 반격은 바깥 드레인 루프가 이어서 처리한다.
+            yield return StartCoroutine(DrainFollowUps());
         }
 
         result.OnPostExecution?.Invoke(totalDamageDealt);
@@ -815,6 +827,15 @@ public class BattleManager : MonoBehaviour
 
     public IEnumerator ExecuteGridSkill(BattleCharactor actor, BattleCharactor target, SkillData classSkillRow, Action<bool> onCompleted = null)
     {
+        // 코루틴이 강제 중단(StopAllCoroutines, 씬 전환 등)되면 DrainFollowUps의 finally가 실행되지 않아
+        // 드레인 플래그가 남고 이후 모든 연쇄가 조용히 멈춘다. 최상위 진입 시 큐가 비어 있으면 안전하게 되돌린다.
+        if (_followUpQueue.Count == 0 && _isDrainingFollowUps)
+        {
+            Debug.LogWarning("[BattleManager] 연쇄 드레인 플래그가 남아 있어 초기화한다(코루틴 강제 중단 추정).");
+            _isDrainingFollowUps = false;
+            _currentFollowUpDepth = 0;
+        }
+
         if (classSkillRow == null || actor == null || target == null)
         {
             onCompleted?.Invoke(false);
@@ -943,18 +964,78 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private IEnumerator FlushCounterAttacks(List<CounterAttackRequest> requests)
+    /// <summary>
+    /// 반격 요청을 연쇄 큐에 싣는다.
+    /// 가드는 <b>수집 시점에만</b> 평가한다 — 반격 #1 실행 중 시전자가 죽어도 #2는 그대로 진행된다.
+    /// (기존 동작 보존. 실행 중 재평가로 바꾸려면 별도 결정이 필요하다.)
+    /// </summary>
+    private void EnqueueCounterAttacks(List<CounterAttackRequest> requests)
     {
-        var counterQueue = new ASB.Work.Battle.Command.BattleActionQueue();
         foreach (CounterAttackRequest req in requests)
         {
             if (req.OriginalCaster == null || req.OriginalCaster.IsDead) break;
             if (req.Defender == null || req.Defender.IsDead) continue;
 
-            counterQueue.Enqueue(new ASB.Work.Battle.Command.CounterAttackActionCommand(req));
+            EnqueueFollowUp(new ASB.Work.Battle.Command.CounterAttackActionCommand(req));
+        }
+    }
+
+    /// <summary>
+    /// 한 행동이 낳은 후속(연쇄) 액션을 큐에 싣는다.
+    /// 이미 드레인 중이면 바깥 루프가 집어가므로 여기서는 넣기만 한다 — 이것이 연쇄가 성립하는 지점이다.
+    /// 깊이 상한을 넘으면 거부하고 에러 로그를 남긴다(조용히 자르지 않는다).
+    /// </summary>
+    public void EnqueueFollowUp(ASB.Work.Battle.Command.IBattleActionCommand command)
+    {
+        if (command == null)
+        {
+            return;
         }
 
-        yield return StartCoroutine(counterQueue.RunAll(this));
+        int depth = _currentFollowUpDepth + 1;
+        if (depth > MaxFollowUpDepth)
+        {
+            Debug.LogError(
+                $"[BattleManager] 연쇄 깊이 상한({MaxFollowUpDepth})을 넘어 후속 액션을 거부했다. " +
+                $"command={command.GetType().Name}, depth={depth}");
+            return;
+        }
+
+        command.Depth = depth;
+        _followUpQueue.Enqueue(command);
+    }
+
+    /// <summary>
+    /// 연쇄 큐를 빌 때까지 실행한다. 실행 중 추가된 액션도 같은 루프가 이어서 처리한다.
+    /// 이미 드레인 중이면 즉시 반환한다 — 중첩 드레인을 만들지 않고 바깥 루프에 맡긴다.
+    /// </summary>
+    private IEnumerator DrainFollowUps()
+    {
+        if (_isDrainingFollowUps)
+        {
+            yield break;
+        }
+
+        _isDrainingFollowUps = true;
+        try
+        {
+            while (_followUpQueue.Count > 0)
+            {
+                ASB.Work.Battle.Command.IBattleActionCommand command = _followUpQueue.Dequeue();
+                if (command == null)
+                {
+                    continue;
+                }
+
+                _currentFollowUpDepth = command.Depth;
+                yield return StartCoroutine(command.Execute(this));
+            }
+        }
+        finally
+        {
+            _currentFollowUpDepth = 0;
+            _isDrainingFollowUps = false;
+        }
     }
 
     private SkillExecutionResult BuildDefaultSkillResult(
