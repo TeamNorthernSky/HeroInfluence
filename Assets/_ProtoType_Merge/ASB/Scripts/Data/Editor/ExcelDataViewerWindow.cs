@@ -759,7 +759,25 @@ namespace ASB.ExcelImport.Editor
             ISheet sheet = workbook.GetSheet(sheetName);
             if (sheet == null)
             {
-                Debug.LogError($"[SOToExcelExporter] Sheet was not found: '{sheetName}' ({Path.GetFileName(excelFilePath)})");
+                // 스키마가 있으면 sourceSheetName은 실제 시트명이므로 이름 불일치가 원인이다.
+                // 스키마가 없으면 ToSheetName이 타입명에서 시트명을 역산한 값인데, 타입명은 공백·특수문자가
+                // 제거된 결과라 비가역이다("1구역 전투 테이블 V2.2" 같은 이름은 절대 복원되지 않는다).
+                // 어느 쪽인지 메시지에 드러내야 사용자가 조치할 수 있다.
+                if (schema == null)
+                {
+                    Debug.LogError(
+                        $"[SOToExcelExporter] 시트를 찾지 못했다: '{sheetName}' ({Path.GetFileName(excelFilePath)}). " +
+                        $"{asset.GetType().Name}에 연결된 ExcelSheetSchemaSO가 없어 타입명에서 시트명을 역산했다. " +
+                        "타입명은 공백·특수문자가 제거된 결과라 원래 시트명으로 되돌릴 수 없다 — " +
+                        "해당 애셋의 스키마를 등록하거나 시트 탭 이름을 타입명과 같게 맞출 것.", asset);
+                }
+                else
+                {
+                    Debug.LogError(
+                        $"[SOToExcelExporter] 시트를 찾지 못했다: '{sheetName}' ({Path.GetFileName(excelFilePath)}). " +
+                        "스키마의 sourceSheetName이 현재 워크북의 시트 탭 이름과 다르다.", asset);
+                }
+
                 return;
             }
 

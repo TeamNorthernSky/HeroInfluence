@@ -7,6 +7,7 @@ using ASB.Work.Battle.SkillExecution;
 using ASB.Work.Battle.Core;
 using ASB.Work.Battle.Sequence;
 using PrimeTween;
+using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
 /// <summary>
 /// BattleAction 및 플레이어 입력에 의한 전투 실행. 데미지는 항상 target.TakeDamage로 적용합니다.
@@ -20,6 +21,7 @@ public class BattleManager : MonoBehaviour
     /// <summary>UI 등 외부에서 배속 변경을 요청할 때 발생시킵니다. AutoBattleController.OnAutoBattleToggleRequested와 동일한 패턴.</summary>
     public static event Action<float> OnBattleSpeedChangeRequested;
 
+    internal const int ClassSkillEffect_Damage = 0;
     internal const int ClassSkillEffect_Heal = 1;
     internal const int ClassSkillEffect_Revive = 2;
     internal const int ClassSkillEffect_Buff = 3;
@@ -882,12 +884,17 @@ public class BattleManager : MonoBehaviour
             result = BuildDefaultSkillResult(actor, target, classSkillRow, SkillExecutionOptions.Normal);
         }
 
+        // 인질 부수피해의 중심 칸은 피해 확정 '전'에 스냅샷한다.
+        // 확정 뒤에 판정하면 대상이 이번 공격으로 죽었는지에 따라 결과가 뒤집힌다.
+        GridCellRef hostageCollateralCenter =
+            HostageFriendlyFireResolver.CaptureCollateralCenter(actor, target, classSkillRow);
+
         bool executed = false;
         yield return StartCoroutine(ApplySkillExecutionResultRoutine(result, success => executed = success));
 
         if (executed)
         {
-            HostageFriendlyFireResolver.ApplyCollateralDamage(actor, target, classSkillRow);
+            HostageFriendlyFireResolver.ApplyCollateralDamage(actor, hostageCollateralCenter, classSkillRow);
             OnActionExecuted?.Invoke(GetSkillDisplayName(classSkillRow));
         }
 
@@ -1062,6 +1069,18 @@ public class BattleManager : MonoBehaviour
             return SkillExecutionResult
                 .SuccessResult(actor, skillData)
                 .AddHeal(actor, target, healAmount, skillData.skillIndex);
+        }
+
+        // 부활(2)·버프(3)는 전용 핸들러(SkillExecutionRegistry)에서만 지원한다.
+        // 기본 경로로 흘리면 죽은 아군 대상 DamageContext가 만들어져 ApplyDamage의 IsDead 가드에 걸리고,
+        // 아무 일도 일어나지 않는데 Success=true라 IP만 소모되고 OnActionExecuted까지 발생했다.
+        // 조용히 실패하지 않도록 여기서 끊는다.
+        if (skillData.classSkillEffect != ClassSkillEffect_Damage)
+        {
+            Debug.LogWarning(
+                $"[BattleManager] skillIndex={skillData.skillIndex}의 classSkillEffect={skillData.classSkillEffect}는 " +
+                "기본 스킬 경로가 처리할 수 없다(부활·버프는 전용 핸들러 필요). SkillExecutionRegistry에 핸들러를 등록할 것.");
+            return SkillExecutionResult.Failed();
         }
 
         var context = new DamageContext

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 
@@ -19,6 +20,11 @@ public class CharactorAnimationController : MonoBehaviour
     private const float SkillClipEndLoopGuardSeconds = 5f;
 
     [SerializeField] private Animator _animator;
+
+    /// <summary>
+    /// 이미 경고를 낸 (누락 상태명) 집합. 시전마다 같은 경고가 반복되는 것을 막는다.
+    /// </summary>
+    private readonly HashSet<string> _missingStateWarned = new HashSet<string>();
 
     public float CurrentAnimSpeed { get; private set; } = 1.0f;
 
@@ -168,8 +174,82 @@ public class CharactorAnimationController : MonoBehaviour
     public void PlayState(string stateName, float blendSeconds)
     {
         if (_animator == null || string.IsNullOrWhiteSpace(stateName)) return;
-        if (blendSeconds <= 0f) { _animator.Play(stateName.Trim(), 0, 0f); return; }
-        _animator.CrossFadeInFixedTime(stateName.Trim(), blendSeconds, 0, 0f);
+        if (!TryResolveExistingState(stateName, out string resolved)) return;
+
+        if (blendSeconds <= 0f) { _animator.Play(resolved, 0, 0f); return; }
+        _animator.CrossFadeInFixedTime(resolved, blendSeconds, 0, 0f);
+    }
+
+    /// <summary>
+    /// Animator 컨트롤러에 실제로 존재하는 상태명으로 해석한다.
+    /// <para>
+    /// <see cref="Animator.CrossFade"/>는 없는 상태명에 예외도 경고도 내지 않고 조용히 무시한다.
+    /// 그러면 유닛은 Idle에 머물고 <c>WaitForSkillClipEndOrSignal</c>이 타임아웃만 소진해
+    /// <b>애니메이션 없이 데미지만 즉발</b>로 들어간다 — 실패가 완전히 침묵하는 경로다.
+    /// 여기서 <see cref="Animator.HasState"/>로 검증하고, 없으면 경고 후
+    /// 번호를 뗀 기본 상태(<c>ClassSkill_1</c> / <c>WeaponSkill_1</c>)로 폴백한다.
+    /// </para>
+    /// </summary>
+    /// <returns>재생 가능한 상태를 찾으면 true.</returns>
+    private bool TryResolveExistingState(string stateName, out string resolved)
+    {
+        resolved = stateName != null ? stateName.Trim() : string.Empty;
+        if (_animator == null || string.IsNullOrEmpty(resolved))
+        {
+            return false;
+        }
+
+        if (_animator.HasState(0, Animator.StringToHash(resolved)))
+        {
+            return true;
+        }
+
+        // ClassSkill_7 처럼 컨트롤러에 없는 번호 → 같은 계열 1번으로 폴백.
+        string fallback = ResolveBaseStateFallback(resolved);
+        bool hasFallback = !string.IsNullOrEmpty(fallback)
+                           && _animator.HasState(0, Animator.StringToHash(fallback));
+
+        if (_missingStateWarned.Add(resolved))
+        {
+            if (hasFallback)
+            {
+                Debug.LogWarning(
+                    $"[Anim] '{resolved}' 상태가 Animator 컨트롤러에 없다. '{fallback}'으로 폴백한다. " +
+                    "(스킬 데이터의 StateName 또는 컨트롤러 상태를 확인할 것)", this);
+            }
+            else
+            {
+                Debug.LogWarning(
+                    $"[Anim] '{resolved}' 상태가 Animator 컨트롤러에 없고 폴백 대상도 없다. 스킬 애니를 재생하지 않는다. " +
+                    "(애니 없이 데미지만 즉발로 들어간다 — 컨트롤러에 상태를 추가할 것)", this);
+            }
+        }
+
+        if (!hasFallback)
+        {
+            return false;
+        }
+
+        resolved = fallback;
+        return true;
+    }
+
+    /// <summary><c>ClassSkill_3</c> → <c>ClassSkill_1</c> 처럼 계열의 1번 상태명을 만든다.</summary>
+    private static string ResolveBaseStateFallback(string stateName)
+    {
+        int underscore = stateName.LastIndexOf('_');
+        if (underscore <= 0 || underscore == stateName.Length - 1)
+        {
+            return string.Empty;
+        }
+
+        string suffix = stateName.Substring(underscore + 1);
+        if (!int.TryParse(suffix, out int number) || number == 1)
+        {
+            return string.Empty;
+        }
+
+        return stateName.Substring(0, underscore + 1) + "1";
     }
 
     /// <summary>
@@ -194,7 +274,12 @@ public class CharactorAnimationController : MonoBehaviour
             return;
         }
 
-        _animator.CrossFade(stateName, CrossFadeDuration);
+        if (!TryResolveExistingState(stateName, out string resolved))
+        {
+            return;
+        }
+
+        _animator.CrossFade(resolved, CrossFadeDuration);
     }
 
     /// <summary>

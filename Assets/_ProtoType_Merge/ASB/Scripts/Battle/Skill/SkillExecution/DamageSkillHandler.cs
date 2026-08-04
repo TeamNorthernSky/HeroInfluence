@@ -129,9 +129,12 @@ namespace ASB.Work.Battle.SkillExecution
         {
             float totalSkillValue = skillData.skillValue;
 
+            // 전열 대상에만 추가 배율. 추가량은 데이터(ClassSkillSubValueLv*)에서 온다.
+            // 중괄호가 없어 두 줄이 모두 실행되던 버그를 수정: 전열이면 2배가 붙고 후열에도 붙었다.
             if (target.IsInFrontRow)
-                totalSkillValue += 0.2f; // 예: 전방 위치에 있을 경우 50% 추가 데미지
-                totalSkillValue += 0.2f; // 예: 전방 위치에 있을 경우 50% 추가 데미지
+            {
+                totalSkillValue += skillData.skillSubValue;
+            }
 
             result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, totalSkillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (skillValue={totalSkillValue:F2})");
@@ -286,9 +289,20 @@ namespace ASB.Work.Battle.SkillExecution
     // 피격된 적 수에 따라 데미지 감소
     public sealed class HitNumLowerDamageHandler : BaseAoESkillHandler
     {
+        /// <summary>
+        /// 배율 하한. 대상이 아무리 많아도 여기까지만 깎인다.
+        /// 데이터에 대응 컬럼이 없어 임시값이며, 기획 수치 확정 시 교체할 것.
+        /// </summary>
+        private const float MinTotalSkillValue = 0.1f;
+
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result, bool? sharedIsCritical = null)
         {
-            float totalSkillValue = skillData.skillValue + 0.2f * Count;
+            // 첫 대상은 감소 없음. 초과 대상 1명마다 데이터(ClassSkillSubValueLv*)만큼 배율이 깎인다.
+            // 기존 코드는 부호가 반대라 대상이 많을수록 1인당 피해가 '증가'했다(총 피해가 제곱으로 폭증).
+            int extraTargets = Mathf.Max(0, Count - 1);
+            float totalSkillValue = Mathf.Max(
+                MinTotalSkillValue,
+                skillData.skillValue - skillData.skillSubValue * extraTargets);
             result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, totalSkillValue, skillData.skillIndex, skillData.classSkillRange, sharedIsCritical: sharedIsCritical));
             Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (skillValue={totalSkillValue:F2})");
         }
