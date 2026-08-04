@@ -224,13 +224,24 @@ public class LevelEditorWindow : EditorWindow
         LevelEditorBrushType brushType = (LevelEditorBrushType)brushTypeProperty.intValue;
 
         if (brushType == LevelEditorBrushType.Item)
-            EditorGUILayout.PropertyField(serializedController.FindProperty("itemPreset"));
+        {
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedItemResourceType"), new GUIContent("Resource Type"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedItemAmount"), new GUIContent("Amount"));
+        }
 
         if (brushType == LevelEditorBrushType.Outpost)
-            EditorGUILayout.PropertyField(serializedController.FindProperty("outpostPreset"));
+        {
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedOutpostType"), new GUIContent("Outpost Type"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedOutpostResourcePerTurn"), new GUIContent("Resource/Turn"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedOutpostInitialState"), new GUIContent("Initial State"));
+        }
 
         if (brushType == LevelEditorBrushType.Event)
-            EditorGUILayout.PropertyField(serializedController.FindProperty("eventPreset"));
+        {
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedMapEventType"), new GUIContent("Event Type"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedMapEventRequireAmount"), new GUIContent("Require Amount"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedMapEventEffectAmount"), new GUIContent("Effect Amount"));
+        }
 
         if (brushType == LevelEditorBrushType.MainEvent)
             DrawMainEventPrefabSelector(serializedController);
@@ -677,15 +688,6 @@ public class LevelEditorWindow : EditorWindow
 
         if (context.LevelLoader == null)
             EditorGUILayout.HelpBox("LevelLoader is not connected.", MessageType.Warning);
-
-        if (context.BrushType == LevelEditorBrushType.Item && context.ItemPreset == null)
-            EditorGUILayout.HelpBox("Item brush needs an ItemPlacementPreset.", MessageType.Warning);
-
-        if (context.BrushType == LevelEditorBrushType.Outpost && context.OutpostPreset == null)
-            EditorGUILayout.HelpBox("Outpost brush needs an OutpostPlacementPreset.", MessageType.Warning);
-
-        if (context.BrushType == LevelEditorBrushType.Event && context.EventPreset == null)
-            EditorGUILayout.HelpBox("Event brush needs an EventPlacementPreset.", MessageType.Warning);
 
         if (context.BrushType == LevelEditorBrushType.GroundTile)
         {
@@ -1199,21 +1201,21 @@ public class LevelEditorWindow : EditorWindow
                 context.LevelData.SetObstacle(anchor);
                 break;
             case LevelEditorBrushType.Item:
-                context.LevelData.SetItem(anchor, context.ItemPreset.ResourceType, Mathf.Max(1, context.ItemPreset.Amount));
+                context.LevelData.SetItem(anchor, context.SelectedItemResourceType, context.SelectedItemAmount);
                 break;
             case LevelEditorBrushType.Outpost:
                 context.LevelData.SetOutpost(
                     anchor,
-                    context.OutpostPreset.OutpostType,
-                    Mathf.Max(1, context.OutpostPreset.ResourcePerTurn),
-                    context.OutpostPreset.InitialState);
+                    context.SelectedOutpostType,
+                    context.SelectedOutpostResourcePerTurn,
+                    context.SelectedOutpostInitialState);
                 break;
             case LevelEditorBrushType.Event:
                 context.LevelData.SetEvent(
                     anchor,
-                    context.EventPreset.EventType,
-                    context.EventPreset.RequireAmount,
-                    context.EventPreset.EffectAmount);
+                    context.SelectedMapEventType,
+                    context.SelectedMapEventRequireAmount,
+                    context.SelectedMapEventEffectAmount);
                 break;
             case LevelEditorBrushType.MainEvent:
                 context.LevelData.SetMainEvent(anchor, context.SelectedMainEventPrefabKey);
@@ -1298,9 +1300,15 @@ public class LevelEditorWindow : EditorWindow
         context.PrefabRegistry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
         context.InputCamera = controller.InputCamera;
         context.BrushType = controller.BrushType;
-        context.ItemPreset = controller.ItemPreset;
-        context.OutpostPreset = controller.OutpostPreset;
-        context.EventPreset = controller.EventPreset;
+        context.SelectedItemResourceType = controller.SelectedItemResourceType;
+        context.SelectedItemAmount = controller.SelectedItemAmount;
+        context.SelectedOutpostType = controller.SelectedOutpostType;
+        context.SelectedOutpostResourcePerTurn = controller.SelectedOutpostResourcePerTurn;
+        context.SelectedOutpostInitialState = controller.SelectedOutpostInitialState;
+        context.SelectedMapEventType = controller.SelectedMapEventType;
+        context.SelectedMapEventKey = controller.SelectedMapEventKey;
+        context.SelectedMapEventRequireAmount = controller.SelectedMapEventRequireAmount;
+        context.SelectedMapEventEffectAmount = controller.SelectedMapEventEffectAmount;
         context.EnemyGroupKey = controller.EnemyGroupKey;
         context.EnemyBehaviorType = controller.EnemyBehaviorType;
         context.TileRegistry = controller.TileRegistry;
@@ -1663,34 +1671,16 @@ public class LevelEditorWindow : EditorWindow
                 reason = prefab == null ? "Obstacle prefab is missing." : null;
                 return prefab != null;
             case LevelEditorBrushType.Item:
-                if (context.ItemPreset == null)
-                {
-                    reason = "Item preset is missing.";
-                    return false;
-                }
-
-                prefab = GetItemPrefab(context, context.ItemPreset.ResourceType);
-                reason = prefab == null ? $"Item prefab is missing for {context.ItemPreset.ResourceType}." : null;
+                prefab = GetItemPrefab(context, context.SelectedItemResourceType);
+                reason = prefab == null ? $"Item prefab is missing for {context.SelectedItemResourceType}." : null;
                 return prefab != null;
             case LevelEditorBrushType.Outpost:
-                if (context.OutpostPreset == null)
-                {
-                    reason = "Outpost preset is missing.";
-                    return false;
-                }
-
-                prefab = GetOutpostPrefab(context, context.OutpostPreset.OutpostType);
-                reason = prefab == null ? $"Outpost prefab is missing for {context.OutpostPreset.OutpostType}." : null;
+                prefab = GetOutpostPrefab(context, context.SelectedOutpostType);
+                reason = prefab == null ? $"Outpost prefab is missing for {context.SelectedOutpostType}." : null;
                 return prefab != null;
             case LevelEditorBrushType.Event:
-                if (context.EventPreset == null)
-                {
-                    reason = "Event preset is missing.";
-                    return false;
-                }
-
-                prefab = GetEventPrefab(context, context.EventPreset.EventType);
-                reason = prefab == null ? $"Event prefab is missing for {context.EventPreset.EventKey}." : null;
+                prefab = GetEventPrefab(context, context.SelectedMapEventType);
+                reason = prefab == null ? $"Event prefab is missing for {context.SelectedMapEventKey}." : null;
                 return prefab != null;
             case LevelEditorBrushType.MainEvent:
                 if (string.IsNullOrWhiteSpace(context.SelectedMainEventPrefabKey))
@@ -2372,9 +2362,15 @@ public class LevelEditorWindow : EditorWindow
         public LevelPrefabRegistry PrefabRegistry;
         public Camera InputCamera;
         public LevelEditorBrushType BrushType;
-        public ItemPlacementPreset ItemPreset;
-        public OutpostPlacementPreset OutpostPreset;
-        public EventPlacementPreset EventPreset;
+        public ResourceType SelectedItemResourceType;
+        public int SelectedItemAmount;
+        public OutpostType SelectedOutpostType;
+        public int SelectedOutpostResourcePerTurn;
+        public OutpostState SelectedOutpostInitialState;
+        public MapEventType SelectedMapEventType;
+        public string SelectedMapEventKey;
+        public int SelectedMapEventRequireAmount;
+        public int SelectedMapEventEffectAmount;
         public string EnemyGroupKey;
         public EnemyBehaviorType EnemyBehaviorType;
         public LevelTileRegistry TileRegistry;

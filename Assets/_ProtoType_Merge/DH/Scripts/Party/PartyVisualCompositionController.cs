@@ -120,7 +120,7 @@ public class PartyVisualCompositionController : MonoBehaviour
                 1,
                 template.baseStats,
                 template.levelupStats,
-                0,
+                ResolveInitialCurrentSkillIndex(template.Index),
                 0,
                 default);
         }
@@ -131,6 +131,16 @@ public class PartyVisualCompositionController : MonoBehaviour
         // 전열3+후열1로 어긋나 출전/전력평가 진형이 잘못 표시되던 문제 교정.)
         int[] unitSlots = { 5, 1, 3, 2 };
         partyRepository.RegisterOrUpdateParty(partyId, unitIndices, unitSlots);
+    }
+
+    private int ResolveInitialCurrentSkillIndex(string unitTemplateKey)
+    {
+        if (prefabRegistry == null)
+            return 0;
+
+        return prefabRegistry.TryGetPlayerUnitPrefab(unitTemplateKey, out PartyUnitState prefab) && prefab != null
+            ? prefab.CurrentSkillIndex
+            : 0;
     }
 
     private string GetInitialTemplateKey(int index)
@@ -145,7 +155,7 @@ public class PartyVisualCompositionController : MonoBehaviour
     {
         int[] result = new int[ExplorationSlotCount];
         HashSet<int> seenUnitIndices = new HashSet<int>();
-        IReadOnlyList<int> sourceIndices = partyData.UnitIndices;
+        List<int> sourceIndices = PartyFormation.OrderFrontFirst(partyData.UnitIndices, partyData.UnitSlots);
 
         for (int i = 0; i < ExplorationSlotCount; i++)
         {
