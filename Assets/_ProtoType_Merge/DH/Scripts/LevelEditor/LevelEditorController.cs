@@ -18,10 +18,14 @@ public class LevelEditorController : MonoBehaviour
 
     [Header("Brush")]
     [SerializeField] private LevelEditorBrushType brushType = LevelEditorBrushType.Obstacle;
-    [SerializeField] private ItemPlacementPreset itemPreset;
-    [FormerlySerializedAs("minePreset")]
-    [SerializeField] private OutpostPlacementPreset outpostPreset;
-    [SerializeField] private EventPlacementPreset eventPreset;
+    [SerializeField] private ResourceType selectedItemResourceType = ResourceType.Supply;
+    [SerializeField, Min(1)] private int selectedItemAmount = 5;
+    [SerializeField] private OutpostType selectedOutpostType = OutpostType.Composite;
+    [SerializeField, Min(1)] private int selectedOutpostResourcePerTurn = 1000;
+    [SerializeField] private OutpostState selectedOutpostInitialState = OutpostState.EnemyClaimed;
+    [SerializeField] private MapEventType selectedMapEventType = MapEventType.TrainingHp;
+    [SerializeField, Min(1)] private int selectedMapEventRequireAmount = 100;
+    [SerializeField, Min(0)] private int selectedMapEventEffectAmount = 3;
     [FormerlySerializedAs("enemyGroupIndex")]
     [SerializeField] private string enemyGroupKey = "FEP001";
     [SerializeField] private EnemyBehaviorType enemyBehaviorType = EnemyBehaviorType.Mobile;
@@ -76,9 +80,15 @@ public class LevelEditorController : MonoBehaviour
     public GridManager GridManager => gridManager;
     public Camera InputCamera => inputCamera;
     public LevelEditorBrushType BrushType => brushType;
-    public ItemPlacementPreset ItemPreset => itemPreset;
-    public OutpostPlacementPreset OutpostPreset => outpostPreset;
-    public EventPlacementPreset EventPreset => eventPreset;
+    public ResourceType SelectedItemResourceType => selectedItemResourceType;
+    public int SelectedItemAmount => Mathf.Max(1, selectedItemAmount);
+    public OutpostType SelectedOutpostType => OutpostTypeUtility.Normalize(selectedOutpostType);
+    public int SelectedOutpostResourcePerTurn => Mathf.Max(1, selectedOutpostResourcePerTurn);
+    public OutpostState SelectedOutpostInitialState => selectedOutpostInitialState;
+    public MapEventType SelectedMapEventType => selectedMapEventType;
+    public string SelectedMapEventKey => MapEventTypeUtility.ToEventKey(selectedMapEventType);
+    public int SelectedMapEventRequireAmount => Mathf.Max(1, selectedMapEventRequireAmount);
+    public int SelectedMapEventEffectAmount => Mathf.Max(0, selectedMapEventEffectAmount);
     public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
     public EnemyBehaviorType EnemyBehaviorType => enemyBehaviorType;
     public LevelTileRegistry TileRegistry => tileRegistry;
@@ -160,30 +170,21 @@ public class LevelEditorController : MonoBehaviour
                 levelData.SetObstacle(grid);
                 break;
             case LevelEditorBrushType.Item:
-                if (itemPreset == null)
-                    return;
-
-                levelData.SetItem(grid, itemPreset.ResourceType, Mathf.Max(1, itemPreset.Amount));
+                levelData.SetItem(grid, SelectedItemResourceType, SelectedItemAmount);
                 break;
             case LevelEditorBrushType.Outpost:
-                if (outpostPreset == null)
-                    return;
-
                 levelData.SetOutpost(
                     grid,
-                    outpostPreset.OutpostType,
-                    Mathf.Max(1, outpostPreset.ResourcePerTurn),
-                    outpostPreset.InitialState);
+                    SelectedOutpostType,
+                    SelectedOutpostResourcePerTurn,
+                    SelectedOutpostInitialState);
                 break;
             case LevelEditorBrushType.Event:
-                if (eventPreset == null)
-                    return;
-
                 levelData.SetEvent(
                     grid,
-                    eventPreset.EventType,
-                    eventPreset.RequireAmount,
-                    eventPreset.EffectAmount);
+                    SelectedMapEventType,
+                    SelectedMapEventRequireAmount,
+                    SelectedMapEventEffectAmount);
                 break;
             case LevelEditorBrushType.EnemyGroup:
                 levelData.SetEnemyPlacement(grid, EnemyGroupKey, enemyBehaviorType);
@@ -294,6 +295,15 @@ public class LevelEditorController : MonoBehaviour
 
         DrawPlacedCells();
         DrawHoveredCell();
+    }
+
+    private void OnValidate()
+    {
+        selectedItemAmount = Mathf.Max(1, selectedItemAmount);
+        selectedOutpostType = OutpostTypeUtility.Normalize(selectedOutpostType);
+        selectedOutpostResourcePerTurn = Mathf.Max(1, selectedOutpostResourcePerTurn);
+        selectedMapEventRequireAmount = Mathf.Max(1, selectedMapEventRequireAmount);
+        selectedMapEventEffectAmount = Mathf.Max(0, selectedMapEventEffectAmount);
     }
 
     private void DrawPlacedCells()

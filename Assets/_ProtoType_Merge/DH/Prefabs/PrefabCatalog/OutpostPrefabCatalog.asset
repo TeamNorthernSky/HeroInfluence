@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae26f7c5d62ca3644a3c75037406cf96, type: 3}
+  m_Name: OutpostPrefabCatalog
+  m_EditorClassIdentifier: 
+  outpostPrefabs:
+  - outpostType: 4
+    prefab: {fileID: 1437105346472438531, guid: cae35fefec80af049aa85613d2a78588,
+      type: 3}
+  - outpostType: 3
+    prefab: {fileID: 8283866018255117843, guid: 9cd54a6aae50e9b43acba289b1830bea,
+      type: 3}
+  - outpostType: 2
+    prefab: {fileID: 4681628370604149225, guid: 8b17949c47d9fd44ea576bc4b71f9967,
+      type: 3}
+  - outpostType: 0
+    prefab: {fileID: 8289241608959208900, guid: c729d96a6afdeb44c8d1d3f3c82f4375,
+      type: 3}
+  - outpostType: 1
+    prefab: {fileID: 6473873035720111039, guid: 31aa6bf7054e45a4ba63fdef7c6b7cc0,
+      type: 3}

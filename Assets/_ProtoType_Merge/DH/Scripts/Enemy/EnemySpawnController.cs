@@ -11,8 +11,6 @@ public class EnemySpawnController : MonoBehaviour
     [SerializeField] private Transform enemyRoot;
 
     [Header("Spawn Rules")]
-    [SerializeField] private EnemyGridMover enemyPrefab;
-    [SerializeField] private EnemyGridMover staticEnemyPrefab;
     [FormerlySerializedAs("runtimeEnemyGroupIndex")]
     [SerializeField] private string runtimeEnemyGroupKey = "FEP002";
     [SerializeField, Min(1)] private int nextRuntimeEnemySequence = 1;
@@ -48,7 +46,7 @@ public class EnemySpawnController : MonoBehaviour
         placementKey = string.Empty;
         spawnedEnemy = null;
 
-        if (enemyPrefab == null || gridManager == null)
+        if (ResolveEnemyPrefab(EnemyBehaviorType.Mobile) == null || gridManager == null)
             return false;
 
         string sourceKey = $"gate_threat_{MapProgressKey.NormalizeSegment(zoneId)}";
@@ -182,7 +180,7 @@ public class EnemySpawnController : MonoBehaviour
 
     private void RestoreRuntimeEnemies()
     {
-        if (enemyPrefab == null)
+        if (!HasAnyRuntimeEnemyPrefab())
             return;
 
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
@@ -474,10 +472,17 @@ public class EnemySpawnController : MonoBehaviour
 
     private EnemyGridMover ResolveEnemyPrefab(EnemyBehaviorType behaviorType)
     {
-        if (behaviorType == EnemyBehaviorType.Static && staticEnemyPrefab != null)
-            return staticEnemyPrefab;
+        if (prefabRegistry != null &&
+            prefabRegistry.TryGetRuntimeEnemyGroupPrefab(behaviorType, out EnemyGridMover catalogPrefab))
+            return catalogPrefab;
 
-        return enemyPrefab;
+        return null;
+    }
+
+    private bool HasAnyRuntimeEnemyPrefab()
+    {
+        return ResolveEnemyPrefab(EnemyBehaviorType.Mobile) != null ||
+            ResolveEnemyPrefab(EnemyBehaviorType.Static) != null;
     }
 
     private void SyncRuntimeEnemySequence(MapProgressRepository progressRepository)

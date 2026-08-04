@@ -168,6 +168,12 @@ public class ClickSelectionController : MonoBehaviour
         if (!gridManager.IsVisibleCell(clickedGrid))
             return;
 
+        if (moveCommandPreviewController.TryConfirmMoveAtGrid(clickedGrid, activeMover))
+        {
+            partySelectionController.FocusActiveMover();
+            return;
+        }
+
         moveCommandPreviewController.PreviewMoveToGrid(activeMover, clickedGrid);
     }
 
