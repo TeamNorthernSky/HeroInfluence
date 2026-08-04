@@ -9,6 +9,8 @@ namespace ASB.Work.Battle.Command
     {
         private readonly BattleManager.CounterAttackRequest _request;
 
+        public int Depth { get; set; }
+
         public CounterAttackActionCommand(BattleManager.CounterAttackRequest request)
         {
             _request = request;

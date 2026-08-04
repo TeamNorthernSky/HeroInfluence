@@ -27,6 +27,8 @@ namespace ASB.Work.Battle.Command
 
         private readonly bool _isAoE;
 
+        public int Depth { get; set; }
+
         /// <summary>단일 타겟 스킬(공격/힐).</summary>
         public SkillActionCommand(
             BattleCharactor actor,
@@ -65,11 +67,11 @@ namespace ASB.Work.Battle.Command
         {
             if (_isAoE)
             {
-                yield return battleManager.StartCoroutine(battleManager.RunAoESkillSequence(_aoeContexts, _aoeHitCallbacks, _deliveryGate));
+                yield return battleManager.StartCoroutine(battleManager.Presentation.RunAoESkillSequence(_aoeContexts, _aoeHitCallbacks, _deliveryGate));
                 yield break;
             }
 
-            yield return battleManager.StartCoroutine(battleManager.RunSkillSequenceCore(
+            yield return battleManager.StartCoroutine(battleManager.Presentation.RunSkillSequenceCore(
                 _actor,
                 _target,
                 _skill,

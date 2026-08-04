@@ -94,6 +94,8 @@ namespace ASB.ExcelImport.Editor
                 dataList.Clear();
             }
 
+            var missingFieldsWarned = new HashSet<string>(StringComparer.Ordinal);
+
             for (int rowIndex = 0; rowIndex < sheet.Rows.Count; rowIndex++)
             {
                 List<string> rowValues = sheet.Rows[rowIndex];
@@ -110,6 +112,16 @@ namespace ASB.ExcelImport.Editor
                     FieldInfo field = rowType.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public);
                     if (field == null)
                     {
+                        // 조용히 넘기면 그 컬럼 값이 전부 소실되는데 성공 로그만 남아 사용자가 알 수 없다.
+                        // 시트당 한 번만 경고해 행 수만큼 반복되는 것을 막는다.
+                        if (missingFieldsWarned.Add(fieldName))
+                        {
+                            Debug.LogWarning(
+                                $"[ScriptableExporter] '{sheet.SheetName}' 시트의 컬럼 '{sheet.Names[colIndex]}'" +
+                                $"(필드명 '{fieldName}')이 {rowType.Name}에 없다. 이 컬럼 값은 저장되지 않는다. " +
+                                "스크립트를 재생성하고 컴파일 후 다시 Bake할 것.");
+                        }
+
                         continue;
                     }
 

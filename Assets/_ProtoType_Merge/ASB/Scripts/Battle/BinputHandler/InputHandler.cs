@@ -85,6 +85,9 @@ public class InputHandler : MonoBehaviour
     private void OnTurnStarted(int round, BattleCharactor unit)
     {
         if (unit == null || !unit.IsPlayer) return;
+        // 자동전투 중에는 타겟팅을 무장하지 않는다. 무장해두면 턴 도중 자동전투를 끄는 순간
+        // 이미 준비된 선택 상태가 되살아나 같은 턴에 두 번 행동할 수 있다.
+        if (IsAutoBattleActive) return;
         BeginPendingAction(PendingActionType.ClassSkill);
     }
 
@@ -179,7 +182,10 @@ public class InputHandler : MonoBehaviour
     // [JC 260513] 키 4 스킵 처리. hover/선택 무관 즉시 발화. target=null → BattleFlowManager가 다음 턴으로.
     private void SkipCurrentTurn()
     {
+        if (isProcessingAction) return;
         if (!TryGetCurrentActor(out BattleCharactor actor)) return;
+        // 스킵도 '이번 턴의 행동'이다. 점유권을 얻지 못하면(이미 자동전투 등이 실행 중) 무시한다.
+        if (battleFlowManager != null && !battleFlowManager.TryClaimPlayerAction(actor)) return;
         ResetTargetingState();
         ClearAoEPreview();
         PlayerSkillActionResolved?.Invoke(actor, null);
@@ -363,6 +369,13 @@ public class InputHandler : MonoBehaviour
     {
         if (isProcessingAction || (hoverTarget == null && hoverHostageTarget == null) || battleManager == null)
         {
+            return;
+        }
+
+        // 이번 턴의 행동 권한을 먼저 확보한다. 자동전투가 이미 실행 중이면 여기서 막힌다.
+        if (battleFlowManager != null && !battleFlowManager.TryClaimPlayerAction(actor))
+        {
+            Debug.Log($"[InputHandler] 이번 턴의 행동이 이미 진행 중이라 입력을 무시한다: actor={actor?.UnitName}");
             return;
         }
 

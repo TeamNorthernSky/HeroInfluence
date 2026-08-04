@@ -139,25 +139,43 @@ public class UnitEffectPresenter : MonoBehaviour
             GameObject prefab = cue.EffectPrefabs[i];
             if (prefab == null) continue;
 
-            GameObject instance = Instantiate(prefab, position, rotation);
-            if (!string.IsNullOrEmpty(cue.InstanceKey) && anchor != null)
-            {
-                // Held cues remain attached to their resolved anchor until a later sequence consumes them.
-                instance.transform.SetParent(anchor, false);
-            }
+            bool held = !string.IsNullOrEmpty(cue.InstanceKey);
+
+            // Held cues remain attached to their resolved anchor until a later sequence consumes them.
+            //
+            // 부모를 지정한 Instantiate 오버로드를 쓴다. 예전에는 부모 없이 스폰한 뒤
+            // SetParent(anchor, false)로 붙였는데, 부모가 없을 때는 localPosition == 월드 좌표라
+            // worldPositionStays:false로 붙이면 그 값이 로컬로 유지되어 월드 위치가
+            // anchor.TransformPoint(position)이 됐다 — 앵커 좌표가 한 번 더 더해져 2배 지점에 스폰.
+            bool attachToAnchor = held && anchor != null;
+            GameObject instance = attachToAnchor
+                ? Instantiate(prefab, position, rotation, anchor)
+                : Instantiate(prefab, position, rotation);
+
             instance.GetComponent<ISkillEffectBehaviour>()?.Play(effectContext);
 
-            if (!string.IsNullOrEmpty(cue.InstanceKey))
+            if (!held)
             {
-                if (instance.TryGetComponent(out ISkillEffectHandle handle))
-                {
-                    handlesOut.Add(handle);
-                }
-                else
-                {
-                    Debug.LogWarning($"[UnitEffectPresenter] Held InstanceKey '{cue.InstanceKey}' prefab '{prefab.name}' does not implement ISkillEffectHandle.", instance);
-                }
+                // InstanceKey가 없는 Cue는 후속 Signal/Stop이 오지 않는다(핸들로 등록되지 않으므로
+                // StopAllHandles 대상도 아니다). 자체 정리를 하지 않는 재료는 시전마다 하나씩 누적되므로
+                // 스폰한 쪽에서 수명 상한을 보장한다.
+                EffectFallbackRelease.Ensure(instance);
+                continue;
             }
+
+            if (instance.TryGetComponent(out ISkillEffectHandle handle))
+            {
+                handlesOut.Add(handle);
+                continue;
+            }
+
+            // 핸들 등록 실패: 경고만 남기고 살려두면 소켓에 붙은 채 아무도 회수하지 않는다.
+            // 수명 상한을 걸어 누수를 끊는다(즉시 파괴하면 의도된 연출이 아예 보이지 않으므로 OneShot 취급).
+            Debug.LogWarning(
+                $"[UnitEffectPresenter] Held InstanceKey '{cue.InstanceKey}' prefab '{prefab.name}'이 " +
+                "ISkillEffectHandle을 구현하지 않는다. 후속 Signal/Stop으로 회수할 수 없어 OneShot 수명으로 폴백한다.",
+                instance);
+            EffectFallbackRelease.Ensure(instance);
         }
     }
 }

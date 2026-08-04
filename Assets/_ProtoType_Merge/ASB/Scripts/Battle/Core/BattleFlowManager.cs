@@ -52,6 +52,11 @@ public class BattleFlowManager : MonoBehaviour
     private int roundIndex = 0;
 
     private bool playerActionResolved;
+
+    // 이번 플레이어 턴의 '행동 실행 권한'을 누군가 가져갔는지.
+    // InputHandler(수동)와 AutoBattleController(자동)가 같은 턴에 동시에 행동하는 것을 막는다.
+    // 이 플래그가 없던 시절에는 턴 도중 자동전투를 끄면 같은 액터가 두 번 행동하고 IP도 두 번 빠졌다.
+    private bool playerActionClaimed;
     private bool battleEnded;
     private bool battleEndRequested;
     private BattleResult requestedBattleResult = BattleResult.Defeat;
@@ -338,10 +343,9 @@ public class BattleFlowManager : MonoBehaviour
 
             CurrentUnit = unit;
 
-            // 이전 턴 입력 상태 먼저 정리 후 OnTurnStarted 발행 (UI의 BeginPendingAction이 덮어쓰이지 않도록)
+            // 이전 턴 입력 상태를 먼저 정리한다 (UI의 BeginPendingAction이 덮어쓰이지 않도록).
             inputHandler?.ClearSelectionState();
             Log(FormatTurnStartLog(unit));
-            OnTurnStarted?.Invoke(roundIndex, CurrentUnit);
 
             CurrentUnit.ProcessTurnStartStatusEffects();
             if (CurrentUnit == null || CurrentUnit.IsDead)
@@ -360,10 +364,16 @@ public class BattleFlowManager : MonoBehaviour
                 continue;
             }
 
+            // 턴 점유권 초기화 후 이벤트 발행.
+            // OnTurnStarted는 '행동 가능이 확정된 뒤'에만 나간다 — 도트 사망·기절로 스킵되는 턴에는 발행되지 않는다.
+            // (이전에는 상태이상 처리 전에 발행돼, 기절한 유닛으로 자동전투가 행동하는 문제가 있었다.)
+            playerActionResolved = false;
+            playerActionClaimed = false;
+            OnTurnStarted?.Invoke(roundIndex, CurrentUnit);
+
             if (unit.IsPlayer)
             {
                 Log("[BattleFlow] 플레이어 턴: 적 선택 후 숫자키(1/2) 입력 대기");
-                playerActionResolved = false;
                 yield return new WaitUntil(() =>
                     playerActionResolved
                     || CurrentUnit == null
@@ -578,6 +588,35 @@ public class BattleFlowManager : MonoBehaviour
 
         result.AddRange(acted);
         return result;
+    }
+
+    /// <summary>
+    /// 이번 플레이어 턴의 행동 실행 권한을 요청한다. 성공한 쪽만 실제로 행동을 실행할 수 있다.
+    ///
+    /// 턴 해결의 유일한 소유자는 BattleFlowManager다. InputHandler(수동 입력·스킵)와
+    /// AutoBattleController(자동전투)는 이 메서드로 '요청'만 하고, 동시에 두 곳이 행동하지 못한다.
+    /// 턴이 바뀌면 BattleLoop가 점유권을 초기화한다.
+    /// </summary>
+    /// <returns>권한을 획득했으면 true. 이미 다른 주체가 가져갔거나 행동 불가 상태면 false.</returns>
+    public bool TryClaimPlayerAction(BattleCharactor actor)
+    {
+        if (actor == null || CurrentUnit == null || actor != CurrentUnit)
+        {
+            return false;
+        }
+
+        if (!CurrentUnit.IsPlayer || CurrentUnit.IsDead || CurrentUnit.IsStunned)
+        {
+            return false;
+        }
+
+        if (playerActionClaimed || playerActionResolved)
+        {
+            return false;
+        }
+
+        playerActionClaimed = true;
+        return true;
     }
 
     private void OnPlayerSkillActionResolved(BattleCharactor actor, BattleCharactor target)
