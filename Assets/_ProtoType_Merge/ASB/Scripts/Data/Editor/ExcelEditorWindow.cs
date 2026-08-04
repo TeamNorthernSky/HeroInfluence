@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -283,10 +284,13 @@ namespace ASB.ExcelImport.Editor
                 AddLog("[Step 1] Generating C# scripts...");
                 CodeGenerator.GenerateAll(selectedSheets, _sheetUseDictionary);
 
-                // 타입이 이미 메모리에 있으면 즉시 Export (재컴파일 없이도 동작)
+                // 타입이 이미 메모리에 있으면 즉시 Export (재컴파일 없이도 동작).
+                // '같은 이름의 타입이 있는가'만 보면 안 된다 — 컬럼을 추가해도 예전 타입이 메모리에 남아
+                // true가 되고, 구 타입으로 export되면 ExportSheet가 FieldInfo를 못 찾아 조용히 continue해서
+                // 새 컬럼 값이 전부 소실된다(사용자는 성공 로그만 본다).
+                // 필드 집합이 시트 헤더를 모두 담고 있는지까지 확인한다.
                 string excelName = Path.GetFileNameWithoutExtension(_selectedExcelPath);
-                bool allTypesReady = selectedSheets.TrueForAll(s =>
-                    ScriptableExporter.FindTypeByName(CodeGenerator.ToTypeBaseName(s.ClassName) + "Data") != null);
+                bool allTypesReady = selectedSheets.TrueForAll(IsRowTypeUpToDate);
 
                 if (allTypesReady)
                 {
@@ -317,6 +321,44 @@ namespace ASB.ExcelImport.Editor
                 AddLog($"Bake failed: {ex.Message}");
                 Debug.LogError($"[Excel Importer] Bake failed: {ex}\n{ex.StackTrace}");
             }
+        }
+
+        /// <summary>
+        /// 시트의 row 타입이 메모리에 있고, <b>현재 헤더의 모든 컬럼에 대응하는 필드를 갖고 있는지</b> 확인한다.
+        /// 컬럼이 추가/변경된 경우 false를 돌려 재컴파일 경로(Step 2)로 보낸다.
+        /// </summary>
+        private bool IsRowTypeUpToDate(ExcelSheetParseResult sheet)
+        {
+            if (sheet == null)
+            {
+                return false;
+            }
+
+            Type rowType = ScriptableExporter.FindTypeByName(CodeGenerator.ToTypeBaseName(sheet.ClassName) + "Data");
+            if (rowType == null)
+            {
+                return false;
+            }
+
+            if (sheet.Names == null)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < sheet.Names.Count; i++)
+            {
+                string fieldName = CodeGenerator.SanitizeFieldName(sheet.Names[i]);
+                if (rowType.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public) != null)
+                {
+                    continue;
+                }
+
+                AddLog($"[Step 1] '{sheet.SheetName}' 시트의 컬럼 '{sheet.Names[i]}'에 대응하는 필드가 " +
+                       $"기존 타입 {rowType.Name}에 없다 → 재컴파일 필요.");
+                return false;
+            }
+
+            return true;
         }
 
         private void UpdateSelectedSheetData()

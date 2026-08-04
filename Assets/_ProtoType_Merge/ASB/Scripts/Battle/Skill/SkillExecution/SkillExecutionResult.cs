@@ -141,7 +141,9 @@ namespace ASB.Work.Battle.SkillExecution
         }
 
         /// <summary>
-        /// 부활 컨텍스트를 힐 경로에 추가한다(연출은 힐 프리젠테이션을 재사용, 실제 적용은 OnHit에서 Revive).
+        /// 부활 컨텍스트를 힐 경로에 추가한다. 누구를 몇 %로 살릴지는 규칙(핸들러)이 여기서 확정한다.
+        /// 실제 적용 '시점'만 연출(revive Cue)이 정하며, Cue가 없어도
+        /// BattleManager의 확정 스윕이 부활을 보장한다.
         /// 힐량 조건(amount &gt; 0)과 무관하게 항상 컨텍스트를 만든다.
         /// </summary>
         public SkillExecutionResult AddRevive(BattleCharactor caster, BattleCharactor target, float hpRatio, int skillIndex = 0)

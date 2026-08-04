@@ -55,14 +55,34 @@ public static class HostageFriendlyFireResolver
                && HostageScenarioController.Active != null;
     }
 
-    public static int ApplyCollateralDamage(BattleCharactor actor, BattleCharactor primaryTarget, SkillData skill)
+    /// <summary>
+    /// 부수피해의 중심 칸을 <b>피해 확정 전에</b> 스냅샷한다.
+    /// <para>
+    /// 확정 후에 판정하면 <c>primaryTarget.IsDead</c>가 "이번 공격으로 죽었는지"를 뜻하게 되어
+    /// <b>적을 죽이면 옆 인질이 무사하고, 살려두면 다치는</b> 역전이 생긴다.
+    /// 시전자가 반격으로 사망하는 경우도 마찬가지라 <see cref="CanTargetHostages"/> 판정을 여기서 끝낸다.
+    /// </para>
+    /// </summary>
+    /// <returns>부수피해를 적용해야 하면 중심 칸, 아니면 null.</returns>
+    public static GridCellRef CaptureCollateralCenter(BattleCharactor actor, BattleCharactor primaryTarget, SkillData skill)
     {
         if (!CanTargetHostages(actor, skill) || primaryTarget == null || primaryTarget.IsDead)
+            return null;
+
+        return primaryTarget.OccupiedCell;
+    }
+
+    /// <summary>
+    /// <see cref="CaptureCollateralCenter"/>로 미리 잡아둔 중심 칸에 부수피해를 적용한다.
+    /// 이 시점의 전투 상태(대상·시전자 생사)는 판정에 쓰지 않는다.
+    /// </summary>
+    public static int ApplyCollateralDamage(BattleCharactor actor, GridCellRef centerCell, SkillData skill)
+    {
+        if (actor == null || skill == null || centerCell == null)
             return 0;
 
-        GridCellRef centerCell = primaryTarget.OccupiedCell;
         GridManagerRef gridManager = GridManagerRef.Instance;
-        if (centerCell == null || gridManager == null)
+        if (gridManager == null)
             return 0;
 
         float rawDamage = Mathf.Max(0f, actor.FinalStats.Atk * Mathf.Max(0.01f, skill.skillValue));

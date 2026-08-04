@@ -177,7 +177,10 @@ public static class BattleResultPersistenceHandler
 
         float hp = ResolvePersistedHp(battle);
         float influence = Mathf.Clamp(battle.CurrentInfluence, 0f, battle.MaxInfluence);
-        bool isIncapacitated = battle.IsDead;
+
+        // 적 경로(TryPersistEnemyUnit)와 동일한 규칙: 행동불능은 저장되는 HP에서 파생한다.
+        // 여기서는 ResolvePersistedHp가 IsDead일 때만 0을 돌려주므로 결과는 기존과 같다.
+        bool isIncapacitated = hp <= 0f;
 
         StatBlock ingame = src.IngameStats;
 
@@ -215,7 +218,12 @@ public static class BattleResultPersistenceHandler
         // 패배 시 적 HP를 최대 체력으로 복원
         float hp = isBattleDefeat ? battle.MaxHp : ResolvePersistedHp(battle);
         float influence = Mathf.Clamp(battle.CurrentInfluence, 0f, battle.MaxInfluence);
-        bool isIncapacitated = battle.IsDead;
+
+        // 행동불능은 '저장되는 HP'와 일치해야 한다. battle.IsDead를 그대로 쓰면 패배 시
+        // HP는 만피로 복원되는데 isIncapacitated=true가 남아 "만피인데 행동불능" 상태가 디스크까지 갔고,
+        // 재도전 때 FilterCombatReadyEnemyUnits가 그 적을 제외해 스폰되지 않았다
+        // (= 패배 시 HP 복원 의도가 무력화되고 재도전마다 적이 줄어듦).
+        bool isIncapacitated = hp <= 0f;
 
         StatBlock ingame = src.IngameStats;
 

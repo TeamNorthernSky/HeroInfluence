@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using UnityEngine;
 
@@ -66,6 +67,20 @@ namespace ASB.ExcelImport.Editor
             string filePath = $"{outputFolder}/{tableClassName}.cs";
             string code     = BuildSheetScript(sheet, rowClassName, tableClassName, baseName, useDictionary);
             string absolutePath = ToAbsoluteAssetPath(filePath);
+
+            // 생성 타입은 전역 네임스페이스라 손으로 쓴 동명 타입과 CS0101(중복 정의)로 충돌한다.
+            // 예: 시트 탭을 "Skill"로 두면 Model/SkillData.cs와 부딪혀 프로젝트 전체가 컴파일 에러로 잠기고,
+            // 에디터 창도 못 열어 손으로 .cs를 지워야 복구된다. 디스크에 쓰기 전에 끊는다.
+            // 이미 생성 폴더에 파일이 있으면 그 타입은 우리가 만든 것이므로 검사하지 않는다.
+            if (!File.Exists(absolutePath) &&
+                (TryFindConflictingGlobalType(rowClassName, out string conflictOwner) ||
+                 TryFindConflictingGlobalType(tableClassName, out conflictOwner)))
+            {
+                Debug.LogError(
+                    $"[CodeGenerator] Skip sheet '{sheet.SheetName}': 전역 타입 '{conflictOwner}'이 이미 존재해 " +
+                    "생성 타입과 중복 정의(CS0101)가 된다. 시트 탭 이름을 바꿀 것.");
+                return;
+            }
 
             if (File.Exists(absolutePath))
             {
@@ -267,8 +282,82 @@ namespace ASB.ExcelImport.Editor
             string result = sb.ToString();
             if (string.IsNullOrEmpty(result))  return "field";
             if (char.IsDigit(result[0]))       result = "_" + result;
+
+            // C# 예약어는 그대로 쓰면 컴파일이 깨진다("event" 컬럼 → public string event; → CS1041).
+            // 컴파일 에러가 나면 에디터 창도 열 수 없어 손으로 .cs를 지워야 복구되므로 여기서 반드시 걸러야 한다.
+            //
+            // 축자 식별자(@event)가 아니라 '_' 접두를 쓴다. ScriptableExporter가 이 함수의 반환값을
+            // 그대로 rowType.GetField()에 넘기는데, 리플렉션이 보는 필드명에는 @가 없어서
+            // @를 붙이면 조회가 null이 되고 그 컬럼 값이 조용히 유실된다.
+            if (CSharpKeywords.Contains(result)) result = "_" + result;
+
             return result;
         }
+
+        /// <summary>
+        /// 전역 네임스페이스에 <paramref name="typeName"/>과 같은 이름의 타입이 이미 있는지 찾는다.
+        /// 생성 타입은 네임스페이스가 없으므로 <c>FullName == typeName</c>인 타입만 충돌 대상이다.
+        /// </summary>
+        private static bool TryFindConflictingGlobalType(string typeName, out string owner)
+        {
+            owner = null;
+            if (string.IsNullOrEmpty(typeName))
+            {
+                return false;
+            }
+
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0; i < assemblies.Length; i++)
+            {
+                Type[] types;
+                try
+                {
+                    types = assemblies[i].GetTypes();
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    types = ex.Types;
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                if (types == null)
+                {
+                    continue;
+                }
+
+                for (int t = 0; t < types.Length; t++)
+                {
+                    Type type = types[t];
+                    if (type != null && string.Equals(type.FullName, typeName, StringComparison.Ordinal))
+                    {
+                        owner = $"{typeName} ({assemblies[i].GetName().Name})";
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// C# 예약 키워드 전체. 축자 식별자(@)로 escape 할 대상.
+        /// 문맥 키워드(var, value, async 등)는 식별자로 써도 합법이라 제외한다.
+        /// </summary>
+        private static readonly HashSet<string> CSharpKeywords = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked",
+            "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
+            "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for",
+            "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock",
+            "long", "namespace", "new", "null", "object", "operator", "out", "override", "params",
+            "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed",
+            "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this",
+            "throw", "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort",
+            "using", "virtual", "void", "volatile", "while"
+        };
 
         public static string ToCSharpType(string excelType)
         {

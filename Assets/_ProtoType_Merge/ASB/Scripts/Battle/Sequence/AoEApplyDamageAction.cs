@@ -64,7 +64,7 @@ namespace ASB.Work.Battle.Sequence
                 var projectile = new ProjectileImpactAction(caster, primaryTarget, _projectileVisual, _battleSpeed, _deliveryGate, skillIndex,
                     originOverride: null, destinationOverride: destinationOverride, existingInstance: prepared);
                 yield return projectile.ExecuteRoutine(host);
-                if (!_deliveryGate.CanApplyEffects)
+                if (!_deliveryGate.ShouldPlayImpactPresentation)
                 {
                     yield break;
                 }

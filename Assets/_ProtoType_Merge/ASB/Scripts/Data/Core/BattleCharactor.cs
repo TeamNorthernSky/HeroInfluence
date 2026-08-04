@@ -520,6 +520,12 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
         IsDead = true;
         currentHp = 0f;
+
+        // 대열 경계(minX/maxX)는 '생존한' 팀원만으로 계산된다. 죽은 순간 경계가 바뀌므로
+        // 남은 팀원의 대열 패시브(전열 CounterRate / 후열 CriticalRate)를 다시 계산해야 한다.
+        // IsDead=true 이후에 호출해야 이 유닛이 경계 계산에서 빠진다.
+        RefreshFormationPassiveStatsForAllUnits();
+
         EnsureAnimationController();
         Anim?.PlayGenericAnimation("Die");
         OnDied?.Invoke(this);
@@ -565,6 +571,10 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         IsDead = false;
         float ratio = Mathf.Clamp01(hpRatio);
         currentHp = Mathf.Clamp(MaxHp * ratio, 1f, MaxHp);
+
+        // 부활로 대열 경계가 되돌아간다. 사망 시와 대칭으로 재계산한다(IsDead=false 이후).
+        RefreshFormationPassiveStatsForAllUnits();
+
         EnableVisuals();
 
         // 부활 HP를 HP바 UI에 반영한다. (이게 없으면 사망 시점의 0 표시가 남아 '부활했는데 HP 0'처럼 보임)
@@ -627,6 +637,9 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     {
         IsDead = false;
         InitializeCurrentHpToMax();
+
+        // Revive(float)와 동일하게 대열 경계 복귀를 반영한다.
+        RefreshFormationPassiveStatsForAllUnits();
     }
 
     public void AssignToCell(GridCellRef cell)
