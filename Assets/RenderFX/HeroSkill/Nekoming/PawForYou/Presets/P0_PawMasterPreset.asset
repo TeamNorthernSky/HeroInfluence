@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a810b2ddd6f71f5429b033ee4f6849ed, type: 3}
   m_Name: P0_PawMasterPreset
   m_EditorClassIdentifier: 
-  appearTime: 0.25
+  appearTime: 0.2
   holdTime: 0.96
   warpOutTime: 0.12
   warpTravelTime: 0.1
@@ -21,7 +21,7 @@ MonoBehaviour:
   beamSustainTime: 1.2
   fadeOutTime: 0.35
   popOvershoot: 1.7
-  casterOffset: {x: 0.55, y: 1.7, z: 0.15}
+  casterOffset: {x: -0.75, y: 1.11, z: 0.15}
   targetHeadOffset: 1.9
   beamEndOffsetY: 0.35
   pawBeamGap: 0.12

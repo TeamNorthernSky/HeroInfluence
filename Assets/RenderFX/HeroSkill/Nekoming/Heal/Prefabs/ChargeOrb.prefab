@@ -4963,6 +4963,6 @@ MonoBehaviour:
   sparks: {fileID: 1273693603759653540}
   trailFollowerPrefab: {fileID: 7409386087301539617, guid: e2c30758562e2434783a7bde3f371a8a,
     type: 3}
-  startWorldSize: 0.015
-  endWorldSize: 0.11
+  startWorldSize: 0.03
+  endWorldSize: 0.22
   growDuration: 0.5

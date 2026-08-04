@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 071b959bd5cd83945bce455e05df7f6c, type: 3}
+  m_Name: P6_PawPlacementPreset
+  m_EditorClassIdentifier: 
+  entries:
+  - key: paw_spawn
+    socketName: 
+    offset: {x: 0.55, y: 1.7, z: 0.15}
+    note: "\uBC1C \uB4F1\uC7A5(\uC2DC\uC804\uC790 \uC5B4\uAE68 \uC606)"
+  - key: paw_warp_out
+    socketName: 
+    offset: {x: 0.55, y: 1.7, z: 0.15}
+    note: "\uC6CC\uD504 \uC18C\uBA78(= paw_spawn \uC790\uB9AC)"
+  - key: paw_warp_in
+    socketName: 
+    offset: {x: 0, y: 1.9, z: 0}
+    note: "\uC6CC\uD504 \uC7AC\uB4F1\uC7A5(\uB300\uC0C1 \uBA38\uB9AC \uC704)"
+  - key: paw_beam
+    socketName: 
+    offset: {x: 0, y: 0, z: 0}
+    note: "\uAD11\uC120(\uB300\uC0C1 \uAE30\uC900)"

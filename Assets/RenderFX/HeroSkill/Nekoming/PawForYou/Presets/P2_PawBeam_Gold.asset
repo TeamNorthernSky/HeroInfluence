@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2089ebf4bfebf274a92739443e666632, type: 3}
-  m_Name: P2_PawBeam_Yellow
+  m_Name: P2_PawBeam_Gold
   m_EditorClassIdentifier: 
   width: 0.35
   coreColor: {r: 1, g: 0.98, b: 0.85, a: 1}

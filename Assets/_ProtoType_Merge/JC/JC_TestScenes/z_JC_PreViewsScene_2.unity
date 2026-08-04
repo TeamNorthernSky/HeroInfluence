@@ -1354,7 +1354,13 @@ MonoBehaviour:
   enemySpawner: {fileID: 912453334}
   playerUnitId: 10001
   playerGridNumber: 101
-  additionalPreviewPlayers: []
+  additionalPreviewPlayers:
+  - unitId: 10004
+    gridNumber: 0
+  - unitId: 10002
+    gridNumber: 1
+  - unitId: 10003
+    gridNumber: 2
   enemyUnitId: 20001
   enemyGridNumber: 201
   previewEnemies:
@@ -3191,6 +3197,7 @@ GameObject:
   - component: {fileID: 1956195431}
   - component: {fileID: 1956195430}
   - component: {fileID: 1956195433}
+  - component: {fileID: 1956195434}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -3316,6 +3323,29 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &1956195434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1956195429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 884f24b556e67c64b9b07103dad8cfda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 6
+  fastMultiplier: 3
+  slowMultiplier: 0.25
+  lookSensitivity: 3
+  pitchLimit: 89
+  invertY: 0
+  resetMouseButton: 2
+  resetPosition: {x: 3.2, y: 15, z: 0}
+  resetEuler: {x: 79.1292, y: 270, z: 0}
+  resetFov: 60
+  showHint: 1
 --- !u!1 &2059641229
 GameObject:
   m_ObjectHideFlags: 0
@@ -3345,17 +3375,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerUnitDataTable: {fileID: 11400000, guid: 3b89cb7b14ea0474a977a89885da9c4b,
+  playerUnitDataTable: {fileID: 11400000, guid: f4e069b905c70c748aec0057882b4997,
     type: 2}
-  enemyUnitInfoDataTable: {fileID: 11400000, guid: fde59fca974ac494d9930c4bef22966f,
+  enemyUnitInfoDataTable: {fileID: 11400000, guid: 57f54f0152ff09f46bd32397d1ca3b5e,
     type: 2}
-  playerWeaponDataTable: {fileID: 11400000, guid: e294108c53215504f8a910401f7df260,
+  playerWeaponDataTable: {fileID: 11400000, guid: 04d6e44b239a69e4fa4867ce2153fa5b,
     type: 2}
-  classSkillDataTable: {fileID: 11400000, guid: a286b6f98c61e0449850d4f1ba63a692,
+  classSkillDataTable: {fileID: 11400000, guid: efefb0955fb007540ac909271643ab0f,
     type: 2}
-  unitGrowthExpDataTable: {fileID: 11400000, guid: eec440627eb8d5845a6c042b5dcefc22,
+  unitGrowthExpDataTable: {fileID: 11400000, guid: 3a3582c35af186b4bb20d742a3a2b548,
     type: 2}
-  enemyGroupDataTable: {fileID: 11400000, guid: 1470067c63682a84187f0d548a254801,
+  enemyGroupDataTable: {fileID: 11400000, guid: 6adb67ae246e04d40819ad7652d7565f,
     type: 2}
   useSOTables: 1
   loadOnAwake: 0

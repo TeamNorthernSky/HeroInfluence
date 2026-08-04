@@ -18,6 +18,16 @@ namespace JC.VFX
     {
         public enum WarpStyle { PillarBlink, TravelStreak }
 
+        /// <summary>
+        /// 이 프리팹이 담당할 구간. 부품을 독립적으로 큐에서 부르기 위한 분할 축이다.
+        ///   All   = 전 구간(기존 동작). 프리뷰·레거시 프리팹이 쓴다.
+        ///   Spawn = 시전자 위 발의 일생  (등장 → 유지 → 소멸)          → paw_spawn
+        ///   Warp  = 워프 기둥·섬광 한 번  (스폰된 자기 위치에서)         → paw_warp  ※출발·도착 각 1회 호출
+        ///   Beam  = 대상 위 발 재등장 + 광선 + 착탄                     → paw_beam
+        /// ★구간을 나눠도 연출이 같은 이유: 발은 이동하지 않고 양쪽에서 껐다 켜지는 블링크다.
+        /// </summary>
+        public enum Segment { All, Spawn, Warp, Beam }
+
         [Header("References")]
         [Tooltip("고양이 발 빌보드")]
         [SerializeField] private PawSprite paw;
@@ -61,7 +71,13 @@ namespace JC.VFX
         [Range(0f, 0.6f)] [SerializeField] private float pawBeamGap = 0.12f;
         [Range(0.2f, 3f)] [SerializeField] private float flashSizeMul = 1f;
 
-        private enum Phase { Idle, Appear, Hold, WarpOut, Travel, WarpIn, BeamExtend, Sustain, FadeOut }
+        [Header("구간 분할")]
+        [Tooltip("이 프리팹이 담당할 구간. All = 기존 전 구간 동작.")]
+        [SerializeField] private Segment segment = Segment.All;
+        [Tooltip("Warp 구간 전용 — 기둥·섬광을 터뜨린 뒤 종료까지 대기하는 시간(초).")]
+        [Range(0.05f, 1.5f)] [SerializeField] private float warpBurstTime = 0.35f;
+
+        private enum Phase { Idle, Appear, Hold, WarpOut, Travel, WarpIn, BeamExtend, Sustain, FadeOut, WarpBurst }
         private Phase _phase = Phase.Idle;
         private float _phaseT;
         private Transform _caster, _target;
@@ -71,20 +87,51 @@ namespace JC.VFX
         /// <summary>시전자/대상 주입 재생 — 실 게임 결선용 시그니처.</summary>
         public override void Play(Transform origin, Transform target)
         {
-            if (origin == null || target == null)
+            // 필요한 인자는 구간마다 다르다. Spawn은 시전자만, Beam은 대상만 있으면 된다.
+            bool needCaster = segment == Segment.All || segment == Segment.Spawn;
+            bool needTarget = segment == Segment.All || segment == Segment.Beam;
+            if (needCaster && origin == null)
             {
-                Debug.LogWarning("[PawForYouVfx] caster/target 없이 Play 호출 — 무시");
+                Debug.LogWarning($"[PawForYouVfx:{segment}] caster 없이 Play 호출 — 무시", this);
                 return;
             }
+            if (needTarget && target == null)
+            {
+                Debug.LogWarning($"[PawForYouVfx:{segment}] target 없이 Play 호출 — 무시", this);
+                return;
+            }
+
             _caster = origin;
             _target = target;
             if (livePreview && masterPreset) PullFromMaster();
             HideImmediate();
-            EnterPhase(Phase.Appear);
-            paw.Show();
-            paw.SetBasePosition(CasterAnchor());
-            paw.SetScaleMul(0f);
-            paw.SetEnvelope(1f);
+
+            switch (segment)
+            {
+                case Segment.Warp:
+                    // 일회성. 스폰된 자기 위치에서 터뜨린다 — 위치는 큐의 Anchor 가 정한다.
+                    if (flash && paw) flash.Flash(SelfAnchor(), paw.WarpFlashColor, flashSizeMul);
+                    if (warpPillar) warpPillar.Burst(SelfAnchor());
+                    EnterPhase(Phase.WarpBurst);
+                    break;
+
+                case Segment.Beam:
+                    // 대상 위에서 발이 다시 나타나는 지점부터 시작한다.
+                    EnterPhase(Phase.WarpIn);
+                    paw.Show();
+                    paw.SetBasePosition(TargetHead());
+                    paw.SetScaleMul(0f);
+                    paw.SetEnvelope(1f);
+                    break;
+
+                default:   // All · Spawn
+                    EnterPhase(Phase.Appear);
+                    paw.Show();
+                    paw.SetBasePosition(CasterAnchor());
+                    paw.SetScaleMul(0f);
+                    paw.SetEnvelope(1f);
+                    break;
+            }
             IsPlaying = true;
         }
 
@@ -125,6 +172,8 @@ namespace JC.VFX
         private Vector3 TargetHead() => _target ? _target.position + Vector3.up * targetHeadOffset : transform.position;
         private Vector3 BeamEnd() => _target ? _target.position + Vector3.up * beamEndOffsetY : transform.position;
         private Vector3 TargetGround() => _target ? _target.position : transform.position;
+        /// <summary>Warp 구간 전용 — 스폰된 자기 위치. 출발·도착 어느 쪽인지는 큐의 Anchor 가 정한다.</summary>
+        private Vector3 SelfAnchor() => transform.position;
 
         private void EnterPhase(Phase p)
         {
@@ -163,8 +212,12 @@ namespace JC.VFX
                     if (_phaseT >= holdTime)
                     {
                         // 워프 소멸: 원위치 플래시 (+빛기둥 블링크)
-                        if (flash) flash.Flash(CasterAnchor(), paw.WarpFlashColor, flashSizeMul);
-                        if (warpStyle == WarpStyle.PillarBlink && warpPillar) warpPillar.Burst(CasterAnchor());
+                        // ★분할 시에는 이 연출을 paw_warp 부품이 대신 낸다 → All 에서만 낸다.
+                        if (segment == Segment.All)
+                        {
+                            if (flash) flash.Flash(CasterAnchor(), paw.WarpFlashColor, flashSizeMul);
+                            if (warpStyle == WarpStyle.PillarBlink && warpPillar) warpPillar.Burst(CasterAnchor());
+                        }
                         EnterPhase(Phase.WarpOut);
                     }
                     break;
@@ -176,6 +229,13 @@ namespace JC.VFX
                     if (_phaseT >= warpOutTime)
                     {
                         paw.SetScaleMul(0f);
+                        // Spawn 구간은 여기서 제 할 일이 끝난다. 이후는 paw_warp · paw_beam 몫.
+                        if (segment == Segment.Spawn)
+                        {
+                            HideImmediate();
+                            RaiseFinished();
+                            break;
+                        }
                         if (warpStyle == WarpStyle.TravelStreak && warpStreak)
                         {
                             warpStreak.Show();
@@ -187,6 +247,15 @@ namespace JC.VFX
                     }
                     break;
 
+                case Phase.WarpBurst:
+                    // Warp 구간 — 기둥·섬광은 Play 에서 이미 터뜨렸다. 잔향이 끝나면 정리한다.
+                    if (_phaseT >= warpBurstTime)
+                    {
+                        HideImmediate();
+                        RaiseFinished();
+                    }
+                    break;
+
                 case Phase.Travel:
                     // PillarBlink: 공백(소멸 지점 기둥만 위로 빠져나감) / TravelStreak: 스트릭 신장 이동
                     if (warpStyle == WarpStyle.TravelStreak && warpStreak)
@@ -194,6 +263,7 @@ namespace JC.VFX
                     if (_phaseT >= warpTravelTime)
                     {
                         // 재등장: 대상 머리 위 플래시 + 팝 (+빛기둥 블링크)
+                        // ★분할 시 이 연출도 paw_warp 몫 → All 에서만. (Beam 구간은 WarpIn 부터 시작한다)
                         if (flash) flash.Flash(TargetHead(), paw.WarpFlashColor, flashSizeMul);
                         if (warpStyle == WarpStyle.PillarBlink && warpPillar) warpPillar.Burst(TargetHead());
                         paw.SetBasePosition(TargetHead());

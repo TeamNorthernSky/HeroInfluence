@@ -174,7 +174,7 @@ MonoBehaviour:
   - {fileID: 2973451135672626020}
   - {fileID: 8443004812469949597}
   trail: {fileID: 3083038318793620389}
-  worldSize: 0.2
+  worldSize: 0.4
   speed: 3
   arcHeight: 1.2
   trailTime: 0.8

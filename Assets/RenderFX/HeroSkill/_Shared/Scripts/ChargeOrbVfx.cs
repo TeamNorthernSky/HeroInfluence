@@ -49,6 +49,26 @@ namespace JC.VFX
             }
         }
 
+        /// <summary>
+        /// ★이미 차오른 상태로 즉시 표시 — 성장 생략. 합체(LflMergeVfx)처럼
+        /// 「차징이 끝난 오브」를 넘겨받은 것처럼 보여야 하는 연출이 쓴다.
+        /// </summary>
+        public void ShowCharged()
+        {
+            IsPlaying = true;
+            _growing = false;
+            SetWorldSize(endWorldSize);
+            if (coreRenderer) coreRenderer.enabled = true;
+            if (sparks) { sparks.Clear(); sparks.Play(); }
+
+            if (trailFollowerPrefab != null)
+            {
+                if (_follower == null)
+                    _follower = Instantiate(trailFollowerPrefab);   // 씬 루트(부모 없음) = lossyScale 1
+                _follower.Begin(transform.position);
+            }
+        }
+
         public override void Stop()
         {
             IsPlaying = false;

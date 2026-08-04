@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a81035f6e7c14554e9a5fc5de30291be, type: 3}
+  m_Name: 2_HealOrbitPreset_Silver
+  m_EditorClassIdentifier: 
+  orbitRadius: 0.74
+  orbitHeight: 0.32
+  angularSpeed: 200
+  startAngle: 0
+  tiltDeg: 0
+  orbWorldSize: 0.25
+  coreSize: 0.761
+  rimSize: 0.914
+  coreColor: {r: 0.742, g: 0.778, b: 1, a: 1}
+  coreIntensity: 2.96
+  corePower: 4.65
+  rimColor: {r: 0.73, g: 0.84999996, b: 1, a: 1}
+  rimIntensity: 7.43
+  rimPower: 5.28
+  coreSpikeAmount: 0.13
+  rimSpikeAmount: 0.445
+  spikeFreq: 8.12
+  spikeSpeed: 1.48
+  spikeSharp: 7.41

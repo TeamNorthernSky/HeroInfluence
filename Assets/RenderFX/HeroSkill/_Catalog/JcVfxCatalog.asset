@@ -1,0 +1,216 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61f575529cfe8aa4fa2235377a27f6ff, type: 3}
+  m_Name: JcVfxCatalog
+  m_EditorClassIdentifier: 
+  entries:
+  - cueName: heal_charge
+    variant: 0
+    prefab: {fileID: 2921961172497451164, guid: 9c1413fc990e2c5479075a62a327c0bd,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C"
+    note: "\uCC28\uC9C0 \uAD6C\uCCB4 + \uD2B8\uB808\uC77C (\uC740\uBC31)"
+  - cueName: heal_charge
+    variant: 1
+    prefab: {fileID: 9030752358751714066, guid: 46effff3b507582488c55c461285d270,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C"
+    note: "\uCC28\uC9C0 \uAD6C\uCCB4 + \uD2B8\uB808\uC77C (\uAE08) \u2014 \uC6D0\uBCF8"
+  - cueName: heal_fire
+    variant: 0
+    prefab: {fileID: 7726389985300732922, guid: a0c933e6062621e49b09f12052dfa234,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C"
+    note: "\uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4 (\uC740\uBC31)"
+  - cueName: heal_fire
+    variant: 1
+    prefab: {fileID: 1697924425435355953, guid: 3b145aa619b72264098ae44c3837bcdd,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C"
+    note: "\uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4 (\uAE08) \u2014 \uC6D0\uBCF8"
+  - cueName: heal_land
+    variant: 0
+    prefab: {fileID: 7978199882979150190, guid: a8f7e0a8146de6744892ed7a192a3168,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C"
+    note: "\uCC29\uD0C4 \uD790 \uC138\uD2B8 (\uC740\uBC31). \uACE0\uB9AC\xB7\uC2ED\uC790\uB294
+      \uACF5\uD1B5\uC0C9"
+  - cueName: heal_land
+    variant: 1
+    prefab: {fileID: 993474151478095831, guid: 14b94c358ee8fd64cbd058b2db98420b, type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C"
+    note: "\uCC29\uD0C4 \uD790 \uC138\uD2B8 (\uAE08) \u2014 \uC6D0\uBCF8"
+  - cueName: paw_spawn
+    variant: 0
+    prefab: {fileID: 2777668551892851515, guid: 4cc54880b590f8d45999864a10ee1f8c,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC2DC\uC804\uC790 \uC704 \uBC1C (\uC740\uBC31)"
+  - cueName: paw_spawn
+    variant: 1
+    prefab: {fileID: 8900063451661120116, guid: bfb593c36ebabe84dac044686d18068d,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC2DC\uC804\uC790 \uC704 \uBC1C (\uAE08)"
+  - cueName: paw_warp
+    variant: 0
+    prefab: {fileID: 2777668551892851515, guid: b53b82f0a4010384eb97bc2db984a941,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC6CC\uD504 \uAE30\uB465+\uC12C\uAD11 (\uC740\uBC31). \uCD9C\uBC1C\xB7\uB3C4\uCC29
+      \uAC01 1\uD68C"
+  - cueName: paw_warp
+    variant: 1
+    prefab: {fileID: 370569248902000873, guid: 9776a73e1b697d44c9833a24e6b91941, type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC6CC\uD504 \uAE30\uB465+\uC12C\uAD11 (\uAE08)"
+  - cueName: paw_beam
+    variant: 0
+    prefab: {fileID: 2777668551892851515, guid: 316690d192b6b36428c9368fb6be146f,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC7AC\uB4F1\uC7A5+\uAD11\uC120+\uCC29\uD0C4 (\uC740\uBC31)"
+  - cueName: paw_beam
+    variant: 1
+    prefab: {fileID: 1936940180607932696, guid: 00d472303e9df6f478c1e27690da73c6,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC7AC\uB4F1\uC7A5+\uAD11\uC120+\uCC29\uD0C4 (\uAE08)"
+  - cueName: lfl_charge_r
+    variant: 0
+    prefab: {fileID: 7202160663652775434, guid: 30cd12b46e7cbf94e953157c84093ff3,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uC624\uB978\uC190 \uCC28\uC9C0 (\uC740\uBC31) \u2014 heal_charge \uC640
+      \uAC19\uC740 \uBD80\uD488"
+  - cueName: lfl_charge_r
+    variant: 1
+    prefab: {fileID: 4829934348776443450, guid: d557f64805cf78b49afbf685abadc030,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uC624\uB978\uC190 \uCC28\uC9C0 (\uAE08)"
+  - cueName: lfl_charge_l
+    variant: 0
+    prefab: {fileID: 7202160663652775434, guid: 30cd12b46e7cbf94e953157c84093ff3,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uC67C\uC190 \uCC28\uC9C0 (\uC740\uBC31)"
+  - cueName: lfl_charge_l
+    variant: 1
+    prefab: {fileID: 4829934348776443450, guid: d557f64805cf78b49afbf685abadc030,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uC67C\uC190 \uCC28\uC9C0 (\uAE08)"
+  - cueName: lfl_merge
+    variant: 0
+    prefab: {fileID: 8802595925866567801, guid: 93ee2a787ba6bdd4e91bac923bcae536,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uD569\uCCB4 \uC12C\uAD11 (\uC740\uBC31). \u2605\uC2E0\uADDC \uC81C\uC791"
+  - cueName: lfl_merge
+    variant: 1
+    prefab: {fileID: 3329866428666849945, guid: 5b46baf6e853825409b970e8ebbdef8b,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uD569\uCCB4 \uC12C\uAD11 (\uAE08). \u2605\uC2E0\uADDC \uC81C\uC791"
+  - cueName: lfl_fire
+    variant: 0
+    prefab: {fileID: 7726389985300732922, guid: a0c933e6062621e49b09f12052dfa234,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4 (\uC740\uBC31)"
+  - cueName: lfl_fire
+    variant: 1
+    prefab: {fileID: 1697924425435355953, guid: 3b145aa619b72264098ae44c3837bcdd,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4 (\uAE08)"
+  - cueName: lfl_land
+    variant: 0
+    prefab: {fileID: 7978199882979150190, guid: a8f7e0a8146de6744892ed7a192a3168,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uCC29\uD0C4 \uD790 (\uC740\uBC31)"
+  - cueName: lfl_land
+    variant: 1
+    prefab: {fileID: 993474151478095831, guid: 14b94c358ee8fd64cbd058b2db98420b, type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uCC29\uD0C4 \uD790 (\uAE08)"
+  - cueName: lfl_chain
+    variant: 0
+    prefab: {fileID: 7726389985300732922, guid: a0c933e6062621e49b09f12052dfa234,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uC5F0\uC1C4 \uD22C\uC0AC\uCCB4 (\uC740\uBC31)"
+  - cueName: lfl_chain
+    variant: 1
+    prefab: {fileID: 1697924425435355953, guid: 3b145aa619b72264098ae44c3837bcdd,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uC5F0\uC1C4 \uD22C\uC0AC\uCCB4 (\uAE08)"
+  - cueName: lfl_chain_land
+    variant: 0
+    prefab: {fileID: 7978199882979150190, guid: a8f7e0a8146de6744892ed7a192a3168,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uC5F0\uC1C4 \uCC29\uD0C4 \uD790 (\uC740\uBC31)"
+  - cueName: lfl_chain_land
+    variant: 1
+    prefab: {fileID: 993474151478095831, guid: 14b94c358ee8fd64cbd058b2db98420b, type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
+    note: "\uC5F0\uC1C4 \uCC29\uD0C4 \uD790 (\uAE08)"
+  - cueName: tao_fire
+    variant: 0
+    prefab: {fileID: 1697924425435355953, guid: 2f4e7d4f8fceb1846885fc325f97824d,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
+    note: "\uD61C\uC131 \uD22C\uC0AC\uCCB4"
+  - cueName: tao_revive
+    variant: 0
+    prefab: {fileID: 1040852602494138211, guid: c2e7f2fa79fd4a04b8344ac788ba5a41,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
+    note: "\uBD80\uD65C \uC138\uD2B8. \uB300\uC0C1\uC774 \uC4F0\uB7EC\uC9C4 \uACBD\uC6B0\uB9CC"
+  - cueName: tao_barrage
+    variant: 0
+    prefab: {fileID: 0}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
+    note: "\uC801 \uC804\uCCB4 \uAD11\uC120 \uB2E4\uBC1C. \u2605\uC2E0\uADDC \uC81C\uC791"

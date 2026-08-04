@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 071b959bd5cd83945bce455e05df7f6c, type: 3}
+  m_Name: 8_HealPlacementPreset
+  m_EditorClassIdentifier: 
+  entries:
+  - key: heal_charge
+    socketName: 
+    offset: {x: 0.55, y: 2, z: 0.15}
+    note: "\uCC28\uC9C0 = \uBC1C\uC0AC \uC2DC\uC791\uC810(heal_fire \uAC00 \uC774
+      \uD0A4\uB97C \uACF5\uC720)"
+  - key: heal_land
+    socketName: 
+    offset: {x: 0, y: 0, z: 0}
+    note: "\uCC29\uC9C0 \uC624\uB77C(\uB300\uC0C1 \uBC1C\uBC11)"
