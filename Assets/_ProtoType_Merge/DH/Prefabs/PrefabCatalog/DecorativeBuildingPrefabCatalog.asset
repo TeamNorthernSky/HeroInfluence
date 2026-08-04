@@ -1,0 +1,146 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a2fd93ce458e93478a064c8c3d7f33f, type: 3}
+  m_Name: DecorativeBuildingPrefabCatalog
+  m_EditorClassIdentifier: 
+  decorativeBuildingPrefabs:
+  - prefabKey: BGFactory001
+    prefab: {fileID: 6409899147619144014, guid: a1b3acca7aa75bc4d848f23ec28a1191,
+      type: 3}
+  - prefabKey: BGFactory002
+    prefab: {fileID: 8172164364183093230, guid: f574b5cc63608804bba8b72eea20b2bc,
+      type: 3}
+  - prefabKey: BGHigh001
+    prefab: {fileID: 6764690245435158181, guid: d565a2469eb69d4429e4761a0322b881,
+      type: 3}
+  - prefabKey: BGHigh002
+    prefab: {fileID: 7889785538580591138, guid: 45d27e8e992f16940b9d4c4962563661,
+      type: 3}
+  - prefabKey: BGHigh003
+    prefab: {fileID: 1145379394044673432, guid: e7f0d3047185158418bea0c4391fec47,
+      type: 3}
+  - prefabKey: BGHigh004
+    prefab: {fileID: 8736176874502331982, guid: 6d237498f0aa33f4abbe70a42080b03c,
+      type: 3}
+  - prefabKey: BGHouse001
+    prefab: {fileID: 2292214188101383093, guid: 79dd3463630b3ca48addbda5fdbfe50f,
+      type: 3}
+  - prefabKey: BGHouse002
+    prefab: {fileID: 7660221021570841454, guid: 2c7a5602cd7a2a549bf5696fbc38d9e1,
+      type: 3}
+  - prefabKey: BGOffice001
+    prefab: {fileID: 6106123662000733858, guid: 8203604898a668141b0e48b74e9cfa54,
+      type: 3}
+  - prefabKey: BGOffice002
+    prefab: {fileID: 211925836079301260, guid: 57fa3bf46c5cbe9458bcb764f7ad7968, type: 3}
+  - prefabKey: BGRowHouse001
+    prefab: {fileID: 507173090067462353, guid: d012f1a113cc3c842a88bcd60da46309, type: 3}
+  - prefabKey: BGRowHouse002
+    prefab: {fileID: 2123447965230796313, guid: 7bac3970904ec954faefd3c88963f393,
+      type: 3}
+  - prefabKey: BGStore001
+    prefab: {fileID: 7914387537086795669, guid: 3614d2be691e774499dbcf59732072ef,
+      type: 3}
+  - prefabKey: BGStore002
+    prefab: {fileID: 69924128716512221, guid: 541ebf4e9a2e5664684a519959bf8a6c, type: 3}
+  - prefabKey: BGStore003
+    prefab: {fileID: 106364087087084287, guid: 51071bfddc7d02442b2bdc5a90f962b6, type: 3}
+  - prefabKey: BGStore004
+    prefab: {fileID: 8865873040631196466, guid: 51da2671a7320b5488f8aea6968e749a,
+      type: 3}
+  - prefabKey: BGStore005
+    prefab: {fileID: 5825440346530419896, guid: 7b1f76068b2250643abf8c316d6bcf8b,
+      type: 3}
+  - prefabKey: BGWarehouse_001
+    prefab: {fileID: 323540260894810839, guid: 8bd0a398e7f55f543b4fa563c33ce30b, type: 3}
+  - prefabKey: BGWarehouse_002
+    prefab: {fileID: 8295559244960546721, guid: a5ca73710b22e66439c4b13fd5142970,
+      type: 3}
+  - prefabKey: barrier
+    prefab: {fileID: 3502909144878231276, guid: 7348537240ffe0149ad594e8b6510231,
+      type: 3}
+  - prefabKey: Drill
+    prefab: {fileID: 8516040978714978187, guid: 1df38fd467a05564fbcf9c78327cc7c7,
+      type: 3}
+  - prefabKey: BigHeroGem
+    prefab: {fileID: 4477385489227928754, guid: 00ef6148a8e41484188d45d4b46a9fa3,
+      type: 3}
+  - prefabKey: Bridge01
+    prefab: {fileID: 7178258451458262173, guid: 2e1fe42c9f1181340877bc44b255d64f,
+      type: 3}
+  - prefabKey: Bridge02
+    prefab: {fileID: 6100472768684354945, guid: c0ab908edb51b8949b19eca46e37a9b8,
+      type: 3}
+  - prefabKey: Bridge03
+    prefab: {fileID: 5878245969387717596, guid: 93a5e22e8cf1c4443ad014862f8fb03c,
+      type: 3}
+  - prefabKey: Bridge04
+    prefab: {fileID: 8401425473160265838, guid: 628c97d3474a9bf4491494a24b345529,
+      type: 3}
+  - prefabKey: TrainStation
+    prefab: {fileID: 1966605014292293228, guid: 56a7606a3ef9aa84da01c2e3b35c2084,
+      type: 3}
+  - prefabKey: Fence_01
+    prefab: {fileID: 2881739241463281542, guid: 2d4c921f62e975249a0b5a32affa4775,
+      type: 3}
+  - prefabKey: Fence_01-1
+    prefab: {fileID: 2881739241463281542, guid: 12817dd61af51184d94612467d3650b9,
+      type: 3}
+  - prefabKey: Fence_02
+    prefab: {fileID: 3486295036635557901, guid: e48d294221145e14a8e745de69bd0e7b,
+      type: 3}
+  - prefabKey: Fence_02-1
+    prefab: {fileID: 3486295036635557901, guid: 2ad00a48b3af39448aa384b6ac254272,
+      type: 3}
+  - prefabKey: Fence_02-2
+    prefab: {fileID: 3486295036635557901, guid: 60d34f55993e7df4bbe8ca69762227d0,
+      type: 3}
+  - prefabKey: Fence_02-3
+    prefab: {fileID: 3486295036635557901, guid: 9e85c96c151d8fb40ac53740c0004a69,
+      type: 3}
+  - prefabKey: Fence_03
+    prefab: {fileID: 7340383589336225116, guid: 5845489b08bf90c4bb4f16967f4116df,
+      type: 3}
+  - prefabKey: Fence_03-1
+    prefab: {fileID: 7340383589336225116, guid: 0b3d5d077fbdeb240a133afa2b609f23,
+      type: 3}
+  - prefabKey: Mt01
+    prefab: {fileID: 8280457189905265404, guid: c66fe52629926d64f8b920010a309135,
+      type: 3}
+  - prefabKey: Mt02
+    prefab: {fileID: 2215981523752404015, guid: a54102cc945563d4e857cbacddfef994,
+      type: 3}
+  - prefabKey: Mt03
+    prefab: {fileID: 4184490161617201779, guid: a5a44380ff9d88844a6e0444fd9321a1,
+      type: 3}
+  - prefabKey: Mt04
+    prefab: {fileID: 864305407314633105, guid: 17c4e89262bc9b9428cb58029b5f6654, type: 3}
+  - prefabKey: Mt05
+    prefab: {fileID: 6343825663565746163, guid: 35b3cd5df1c971e4d9ac6fa5b5a98985,
+      type: 3}
+  - prefabKey: Mt06
+    prefab: {fileID: 5672684345775405761, guid: 389c162039dfe154eac2c47ed600dc07,
+      type: 3}
+  - prefabKey: Mt07
+    prefab: {fileID: 864305407314633105, guid: f2e83172c2b4b324d97ef416c0153cf6, type: 3}
+  - prefabKey: Mt08
+    prefab: {fileID: 4726933744781495713, guid: 421ba67fbe6087a40a33deae7cbc465e,
+      type: 3}
+  - prefabKey: Ship
+    prefab: {fileID: 6128556338955728587, guid: 2d36de989e61b7c4bad8a694b14c0344,
+      type: 3}
+  - prefabKey: SM_Buildings_Port_01
+    prefab: {fileID: 2841961541569584745, guid: a766606d5f8b2c64c8f7be7a31ab7ac2,
+      type: 3}
+  - prefabKey: SM_Buildings_Port_02
+    prefab: {fileID: 7212952195747501473, guid: 04bfc3ea828c24a4798857b2fd5001c5,
+      type: 3}

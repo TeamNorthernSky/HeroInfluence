@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312c1387501cde74fb16d2815dd1a6d6, type: 3}
+  m_Name: GatePrefabCatalog
+  m_EditorClassIdentifier: 
+  gatePrefabs:
+  - prefabKey: HorizonGate
+    prefab: {fileID: 1130390622451909506, guid: 9ffa980ad96592749a258e78ac5ac6a1,
+      type: 3}
+  - prefabKey: VerticalGate
+    prefab: {fileID: 1130390622451909506, guid: cbf56fda652dfb34b916718254423f09,
+      type: 3}
+  - prefabKey: CornerGate1
+    prefab: {fileID: 1130390622451909506, guid: e0c16408e3ec3344d99770d1c294b347,
+      type: 3}
+  - prefabKey: CornerGate2
+    prefab: {fileID: 1130390622451909506, guid: 8503f48605f21f347830f6a5d1a224ba,
+      type: 3}
