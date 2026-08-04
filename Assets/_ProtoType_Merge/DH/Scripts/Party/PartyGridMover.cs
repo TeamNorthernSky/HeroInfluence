@@ -245,12 +245,9 @@ public class PartyGridMover : MonoBehaviour
             return;
         }
 
-        Vector2Int previousGrid = currentGrid;
-        int previousMP = movePointController != null ? movePointController.RemainingMovePoints : -1;
-        Vector2Int nearestGrid = gridManager.WorldToGrid(transform.position);
-        if (nearestGrid != previousGrid && pathQueue.Count > 0)
+        if (isMoving && pathQueue.Count > 0)
         {
-            // 다음 셀로 80% 이상 진행한 상태에서 정지 → 한 셀 진행 처리
+            // Stop after reaching the next queued cell to avoid snapping backward mid-step.
             Vector2Int stopGrid = pathQueue.Peek();
             pathQueue.Clear();
             pathQueue.Enqueue(stopGrid);

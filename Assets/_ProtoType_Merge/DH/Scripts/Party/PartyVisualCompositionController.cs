@@ -7,6 +7,18 @@ using UnityEngine;
 public class PartyVisualCompositionController : MonoBehaviour
 {
     private const int ExplorationSlotCount = 4;
+    private const string JusticeTemplateKey = "10001";
+    private const string RuminaTemplateKey = "10002";
+    private const string BlackBulletTemplateKey = "10003";
+    private const string NekomingTemplateKey = "10004";
+
+    private static readonly string[] ExplorationTemplateOrder =
+    {
+        JusticeTemplateKey,
+        RuminaTemplateKey,
+        BlackBulletTemplateKey,
+        NekomingTemplateKey
+    };
 
     [Header("References")]
     [SerializeField] private Transform unitRoot;
@@ -16,16 +28,6 @@ public class PartyVisualCompositionController : MonoBehaviour
     [SerializeField] private bool rebuildOnStart = true;
     [SerializeField] private bool createInitialPartyWhenMissing = true;
     [SerializeField] private string[] initialUnitTemplateKeys = new string[ExplorationSlotCount];
-
-    [Header("Layout")]
-    [SerializeField]
-    private Vector3[] slotLocalPositions =
-    {
-        new Vector3(-0.3f, 0f, 0f),
-        new Vector3(0f, 0f, 0.3f),
-        new Vector3(0f, 0f, -0.3f),
-        new Vector3(0.3f, 0f, 0f)
-    };
 
     [Header("Debug")]
     [SerializeField] private bool logWarnings = true;
@@ -67,7 +69,7 @@ public class PartyVisualCompositionController : MonoBehaviour
         }
 
         int[] explorationIndices = BuildExplorationIndices(partyData, unitRepository);
-        SetCompositionSlots(explorationIndices);
+        SetCompositionSlots(partyData.UnitIndices);
         RebuildVisualUnits(explorationIndices, unitRepository);
     }
 
@@ -155,25 +157,12 @@ public class PartyVisualCompositionController : MonoBehaviour
     {
         int[] result = new int[ExplorationSlotCount];
         HashSet<int> seenUnitIndices = new HashSet<int>();
-        List<int> sourceIndices = PartyFormation.OrderFrontFirst(partyData.UnitIndices, partyData.UnitSlots);
 
         for (int i = 0; i < ExplorationSlotCount; i++)
         {
-            int unitIndex = sourceIndices != null && i < sourceIndices.Count ? sourceIndices[i] : 0;
+            int unitIndex = FindPartyUnitByTemplateKey(partyData, unitRepository, ExplorationTemplateOrder[i], seenUnitIndices);
             if (unitIndex <= 0)
                 continue;
-
-            if (!seenUnitIndices.Add(unitIndex))
-            {
-                Warn($"Duplicate unit index '{unitIndex}' found in party '{partyData.PartyId}'. The later slot was cleared.");
-                continue;
-            }
-
-            if (!unitRepository.ContainsUnit(unitIndex))
-            {
-                Warn($"Party '{partyData.PartyId}' references missing unit index '{unitIndex}'.");
-                continue;
-            }
 
             result[i] = unitIndex;
         }
@@ -215,7 +204,7 @@ public class PartyVisualCompositionController : MonoBehaviour
 
             PartyUnitState instance = Instantiate(prefab, unitRoot, false);
             instance.name = $"{unitData.UnitTemplateKey}_{unitData.UnitIndex}";
-            instance.transform.localPosition = GetSlotLocalPosition(i);
+            instance.transform.localPosition = GetExplorationLocalPosition(unitData.UnitTemplateKey);
             instance.transform.localRotation = Quaternion.identity;
             instance.ApplyPersistentData(unitData);
         }
@@ -240,12 +229,49 @@ public class PartyVisualCompositionController : MonoBehaviour
         }
     }
 
-    private Vector3 GetSlotLocalPosition(int slotIndex)
+    private static int FindPartyUnitByTemplateKey(
+        PartyPersistentData partyData,
+        PersistentUnitRepository unitRepository,
+        string templateKey,
+        HashSet<int> seenUnitIndices)
     {
-        if (slotLocalPositions != null && slotIndex >= 0 && slotIndex < slotLocalPositions.Length)
-            return slotLocalPositions[slotIndex];
+        if (partyData == null || partyData.UnitIndices == null || unitRepository == null || string.IsNullOrWhiteSpace(templateKey))
+            return 0;
 
-        return Vector3.zero;
+        for (int i = 0; i < partyData.UnitIndices.Count; i++)
+        {
+            int unitIndex = partyData.UnitIndices[i];
+            if (unitIndex <= 0 || seenUnitIndices.Contains(unitIndex))
+                continue;
+
+            if (!unitRepository.TryGetUnit(unitIndex, out UnitPersistentData unitData) || unitData == null)
+                continue;
+
+            if (!string.Equals(unitData.UnitTemplateKey, templateKey, System.StringComparison.Ordinal))
+                continue;
+
+            seenUnitIndices.Add(unitIndex);
+            return unitIndex;
+        }
+
+        return 0;
+    }
+
+    private static Vector3 GetExplorationLocalPosition(string unitTemplateKey)
+    {
+        switch (unitTemplateKey)
+        {
+            case JusticeTemplateKey:
+                return new Vector3(0f, 0f, 0.3f);
+            case RuminaTemplateKey:
+                return new Vector3(0f, 0f, -0.3f);
+            case BlackBulletTemplateKey:
+                return new Vector3(-0.3f, 0f, 0f);
+            case NekomingTemplateKey:
+                return new Vector3(0.3f, 0f, 0f);
+            default:
+                return Vector3.zero;
+        }
     }
 
     private void Warn(string message)
