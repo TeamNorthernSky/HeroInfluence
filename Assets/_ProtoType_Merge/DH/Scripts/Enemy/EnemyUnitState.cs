@@ -22,13 +22,13 @@ public class EnemyUnitState : MonoBehaviour
     public float CurrentHp => currentHp;
     public bool IsIncapacitated => isIncapacitated;
 
-    public void InitializeFromTemplate(EnemyData template)
+    public void InitializeFromTemplate(DHEnemyUnitTemplate template)
     {
         if (template == null)
             return;
 
-        baseStats = template.baseStats;
-        ingameStats = UnitStatCalculator.CalculateLevelAdjustedBaseStats(baseStats, template.levelupStats, Level);
+        baseStats = template.BaseStats;
+        ingameStats = UnitStatCalculator.CalculateLevelAdjustedBaseStats(baseStats, template.LevelupStats, Level);
         currentHp = Mathf.Max(0f, ingameStats.HP);
         SetIncapacitated(false);
     }

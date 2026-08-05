@@ -130,15 +130,19 @@ public class PartyUnitBootstrap : MonoBehaviour
                 continue;
             }
 
-            if (!templateCatalog.TryGetPlayerTemplate(unitState.UnitTemplateKey, out UnitData template))
+            if (!templateCatalog.TryGetPlayerUnitTemplate(unitState.UnitTemplateKey, out DHPlayerUnitTemplate template))
             {
                 Debug.LogWarning($"Party unit state on '{unitState.name}' could not resolve CSV template '{unitState.UnitTemplateKey}'.", unitState);
                 continue;
             }
 
             EquipmentStatBlock currentWeaponStats = default;
-            if (unitState.CurrentWeaponIndex > 0)
-                templateCatalog.TryGetWeaponStats(unitState.CurrentWeaponIndex, out currentWeaponStats);
+            if (unitState.CurrentWeaponIndex > 0 &&
+                templateCatalog.TryGetWeaponTemplate(unitState.CurrentWeaponIndex, out DHWeaponTemplate weaponTemplate) &&
+                weaponTemplate != null)
+            {
+                currentWeaponStats = EquipmentStatBlock.FromStatBlock(weaponTemplate.GetBonusStatsAtLevel(WeaponPersistentRepository.BaseWeaponLevel));
+            }
 
             unitState.InitializeFromTemplate(template, currentWeaponStats);
 
