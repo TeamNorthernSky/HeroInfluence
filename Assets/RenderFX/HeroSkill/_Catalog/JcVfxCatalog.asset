@@ -142,55 +142,57 @@ MonoBehaviour:
     note: "\uD569\uCCB4 \uC12C\uAD11 (\uAE08). \u2605\uC2E0\uADDC \uC81C\uC791"
   - cueName: lfl_fire
     variant: 0
-    prefab: {fileID: 7726389985300732922, guid: a0c933e6062621e49b09f12052dfa234,
+    prefab: {fileID: 8360249971204413469, guid: b16b4b2e84d919c418054d48939e7ccd,
       type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
     note: "\uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4 (\uC740\uBC31)"
   - cueName: lfl_fire
     variant: 1
-    prefab: {fileID: 1697924425435355953, guid: 3b145aa619b72264098ae44c3837bcdd,
+    prefab: {fileID: 6790517777361698389, guid: 1c3eed91f23df814a96c67024cd1c58d,
       type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
     note: "\uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4 (\uAE08)"
   - cueName: lfl_land
     variant: 0
-    prefab: {fileID: 7978199882979150190, guid: a8f7e0a8146de6744892ed7a192a3168,
+    prefab: {fileID: 6048190252065451608, guid: 239db543d42d9984e9807408526ce69a,
       type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
     note: "\uCC29\uD0C4 \uD790 (\uC740\uBC31)"
   - cueName: lfl_land
     variant: 1
-    prefab: {fileID: 993474151478095831, guid: 14b94c358ee8fd64cbd058b2db98420b, type: 3}
+    prefab: {fileID: 5199048043874945121, guid: 483d0bbed5dc2574498364a9164f545d,
+      type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
     note: "\uCC29\uD0C4 \uD790 (\uAE08)"
   - cueName: lfl_chain
     variant: 0
-    prefab: {fileID: 7726389985300732922, guid: a0c933e6062621e49b09f12052dfa234,
+    prefab: {fileID: 8360249971204413469, guid: b16b4b2e84d919c418054d48939e7ccd,
       type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
     note: "\uC5F0\uC1C4 \uD22C\uC0AC\uCCB4 (\uC740\uBC31)"
   - cueName: lfl_chain
     variant: 1
-    prefab: {fileID: 1697924425435355953, guid: 3b145aa619b72264098ae44c3837bcdd,
+    prefab: {fileID: 6790517777361698389, guid: 1c3eed91f23df814a96c67024cd1c58d,
       type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
     note: "\uC5F0\uC1C4 \uD22C\uC0AC\uCCB4 (\uAE08)"
   - cueName: lfl_chain_land
     variant: 0
-    prefab: {fileID: 7978199882979150190, guid: a8f7e0a8146de6744892ed7a192a3168,
+    prefab: {fileID: 6048190252065451608, guid: 239db543d42d9984e9807408526ce69a,
       type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
     note: "\uC5F0\uC1C4 \uCC29\uD0C4 \uD790 (\uC740\uBC31)"
   - cueName: lfl_chain_land
     variant: 1
-    prefab: {fileID: 993474151478095831, guid: 14b94c358ee8fd64cbd058b2db98420b, type: 3}
+    prefab: {fileID: 5199048043874945121, guid: 483d0bbed5dc2574498364a9164f545d,
+      type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790"
     note: "\uC5F0\uC1C4 \uCC29\uD0C4 \uD790 (\uAE08)"

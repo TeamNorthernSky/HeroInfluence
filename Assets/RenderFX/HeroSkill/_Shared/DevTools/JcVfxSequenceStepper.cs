@@ -65,6 +65,15 @@ namespace JC.VFX
                      "여러 스텝이 같은 키를 쓰면 한 값으로 같이 움직인다(heal_fire → heal_charge).")]
             public string placementKey;
 
+            [Tooltip("★탄착 위치 프리셋 키(발사체 전용). 비면 대상 루트(발밑)로 날아간다.\n" +
+                     "3등신 캐릭터는 머리에 맞는 편이 자연스러워서 도착점도 프리셋으로 조절한다(예: heal_impact).")]
+            public string impactPlacementKey;
+
+            [Tooltip("★켜면 이 단계를 타이머 대신 <b>발사체의 착탄 시그널</b>로 잇는다.\n" +
+                     "대응 발사체 = 같은 chainIndex 의 발사체(일반 단계는 본 발사체).\n" +
+                     "비행 시간은 거리의 함수라 타이머(delayAfter)로는 원거리에서 어긋난다 — 착지 오라는 이걸 켤 것.")]
+            public bool waitForImpact;
+
             [Tooltip("화면에 표시할 설명. 비우면 이름을 쓴다.")]
             public string label;
         }
@@ -132,6 +141,14 @@ namespace JC.VFX
         private readonly List<Transform> _chainTargets = new List<Transform>(4);
         private readonly List<Transform> _chainExclude = new List<Transform>(2);
         private readonly List<VfxTarget> _chainVfxTargets = new List<VfxTarget>(4);
+
+        /// <summary>이번 시전에서 쏜 발사체들의 착탄 플래그. 키 = chainIndex (본 발사체는 -1).</summary>
+        private class ImpactFlag { public bool hit; }
+        private readonly Dictionary<int, ImpactFlag> _impactFlags = new Dictionary<int, ImpactFlag>();
+        private const float ImpactWaitTimeout = 8f;   // 시그널 유실 시 무한 대기 방지
+
+        /// <summary>★실측 릴레이 — 이번 시전에서 차지를 실제로 스폰한 위치. 「투사체 출발 = 차지 위치」의 정본.</summary>
+        private Vector3? _lastChargePos;
 
         private void Update()
         {
@@ -202,18 +219,41 @@ namespace JC.VFX
         private static string CastName(Cast c) =>
             c == null ? "-" : (string.IsNullOrWhiteSpace(c.label) ? $"{c.key}" : c.label);
 
-        /// <summary>전 단계를 지정 간격으로 이어 재생한다.</summary>
+        /// <summary>
+        /// 전 단계를 이어 재생한다. 잇는 방식은 두 가지 —
+        /// 기본은 타이머(delayAfter), waitForImpact 단계는 <b>대응 발사체의 착탄 시그널</b>.
+        /// 착탄 대기 단계 앞의 타이머는 건너뛴다(이중 대기로 가까운 거리에서 늦어지는 것 방지).
+        /// </summary>
         private IEnumerator PlayAll()
         {
             Cast c = _pending;
             if (c == null || c.steps == null) { _playing = null; yield break; }
+            _impactFlags.Clear();
+            _lastChargePos = null;   // 시전마다 실측 릴레이 초기화
 
             for (int i = 0; i < c.steps.Length; i++)
             {
                 _index = i;
-                SpawnStep(c.steps[i], i + 1, c.steps.Length, c.variant);
-                float d = c.steps[i].delayAfter;
-                if (d > 0f) yield return new WaitForSeconds(d);
+                Step s = c.steps[i];
+
+                if (s.waitForImpact)
+                {
+                    int key = s.spawnAt == SpawnAt.ChainTarget ? s.chainIndex : -1;
+                    if (_impactFlags.TryGetValue(key, out ImpactFlag flag))
+                    {
+                        float t0 = Time.time;
+                        yield return new WaitUntil(() => flag.hit || Time.time - t0 > ImpactWaitTimeout);
+                        if (!flag.hit)
+                            Debug.LogWarning($"[Stepper] '{s.cueName}' 착탄 대기 시간 초과({ImpactWaitTimeout}s) — 그냥 진행", this);
+                    }
+                    // 대응 발사체가 아예 없으면(연쇄 생략 등) 그냥 진행 — SpawnStep 의 생략 로직이 마저 거른다
+                }
+
+                SpawnStep(s, i + 1, c.steps.Length, c.variant);
+
+                // 다음 단계가 착탄 대기면 타이머는 무의미 — 시그널이 이음새를 쥔다
+                bool nextWaits = i + 1 < c.steps.Length && c.steps[i + 1].waitForImpact;
+                if (s.delayAfter > 0f && !nextWaits) yield return new WaitForSeconds(s.delayAfter);
             }
             _index = c.steps.Length;
             _message = $"[{CastName(c)}] 완료 — {resetKey} 정리";
@@ -303,12 +343,17 @@ namespace JC.VFX
                         : caster;
             // ★로컬 오프셋 = TransformPoint. 부품 내부(PawForYouVfx.CasterAnchor 등)가 로컬로 잡는데
             //   여기서 월드로 더하면, 캐릭터가 전투에서 적을 향해 회전해 있을 때 위치가 어긋난다.
-            // ★위치 결정 — 프리셋 항목이 있으면 그쪽이 정본, 없으면 스텝의 오프셋(레거시 폴백).
+            // ★위치 결정 — 우선순위: ① 호출자 지정(placement 자산) ② 부품 프리셋의 위치 항목 ③ 스텝 오프셋(레거시).
+            //   ①이 이기는 이유: 같은 부품을 두 지점에서 부르는 경우(paw_warp, LFL 양손)는 호출자만 안다.
             string pkey = string.IsNullOrWhiteSpace(s.placementKey) ? s.cueName : s.placementKey.Trim();
             bool hasPlacement = TryGetPlacement(pkey, out JcVfxPlacementPreset.Entry pe);
-            Vector3 pos = hasPlacement
-                ? JcVfxPlacementPreset.Resolve(anchor != null ? anchor : transform, pe)
-                : PointOn(anchor, s.offset, s.localOffset);
+            Vector3 pos;
+            if (hasPlacement)
+                pos = JcVfxPlacementPreset.Resolve(anchor != null ? anchor : transform, pe);
+            else if (TryPartPresetSpawn(e.prefab, anchor != null ? anchor : transform, out Vector3 partPos))
+                pos = partPos;
+            else
+                pos = PointOn(anchor, s.offset, s.localOffset);
 
             GameObject go = Instantiate(e.prefab, pos, Quaternion.identity);
             _spawned.Add(go);
@@ -325,6 +370,9 @@ namespace JC.VFX
             var vfx = go.GetComponent<VfxEffect>();
             if (vfx != null)
             {
+                // 실측 릴레이 — 차지가 실제로 뜬 자리를 기억해 두면 투사체가 이어받는다.
+                if (vfx is ChargeOrbVfx) _lastChargePos = pos;
+
                 // 다중 대상을 받는 부품(통짜 오케스트레이터 등)에는 결정된 목록을 그대로 넘긴다.
                 if (_chainTargets.Count > 0) vfx.SetTargets(BuildChainVfxTargets());
 
@@ -335,11 +383,35 @@ namespace JC.VFX
                 {
                     // ★출발점은 앵커가 아니라 「쏘는 쪽」이다. 연쇄 마디의 앵커는 도착점(이웃)이므로
                     //   여기서 앵커를 쓰면 도착점에서 생겨 거리 0으로 날아간다.
-                    Vector3 from = hasPlacement
-                        ? JcVfxPlacementPreset.Resolve(playOrigin != null ? playOrigin : transform, pe)
-                        : PointOn(playOrigin, s.offset, s.localOffset);
+                    Vector3 from;
+                    if (hasPlacement)
+                        from = JcVfxPlacementPreset.Resolve(playOrigin != null ? playOrigin : transform, pe);
+                    else if (TryProjectilePresetSpawn(proj, playOrigin != null ? playOrigin : transform, out Vector3 pf))
+                        from = pf;
+                    else
+                        from = PointOn(playOrigin, s.offset, s.localOffset);
+
+                    // 도착점 — 우선순위: ① 호출자 탄착 키 ② 투사체 프리셋의 탄착점 ③ 대상 루트(발밑).
+                    Vector3 to = playTarget != null ? playTarget.position : from;
+                    if (!string.IsNullOrWhiteSpace(s.impactPlacementKey) &&
+                        TryGetPlacement(s.impactPlacementKey.Trim(), out JcVfxPlacementPreset.Entry ie))
+                        to = JcVfxPlacementPreset.Resolve(playTarget != null ? playTarget : transform, ie);
+                    else if (proj.Preset != null && playTarget != null)
+                    {
+                        var pt = proj.Preset.TransformSource;
+                        to = JcVfxPlacementPreset.Resolve(playTarget, pt.impactSocketName, pt.impactOffset);
+                    }
+
                     proj.Show(from);
-                    proj.Launch(playTarget != null ? playTarget.position : from);
+                    proj.Launch(to);
+
+                    // 착탄 플래그 등록 — 뒤의 waitForImpact 단계가 이 시그널로 이어진다.
+                    int impactKey = s.spawnAt == SpawnAt.ChainTarget ? s.chainIndex : -1;
+                    var flag = new ImpactFlag();
+                    _impactFlags[impactKey] = flag;
+                    System.Action<ProjectileVfx> h = null;
+                    h = _ => { proj.OnImpact -= h; flag.hit = true; };
+                    proj.OnImpact += h;
                 }
                 else vfx.Play(playOrigin, playTarget);
 
@@ -359,6 +431,57 @@ namespace JC.VFX
                 if (placements[i] != null && placements[i].TryGet(key, out entry)) return true;
             entry = null;
             return false;
+        }
+
+        /// <summary>
+        /// ★부품 프리셋이 위치를 소유하는 경우(우선순위 ②).
+        /// 차지 오브 = 「발사 시작점」(시전자 기준) / 착지 오라 = 「착지점 오프셋」(스텝 앵커 = 대상 기준).
+        /// 호출자 지정(①)이 없을 때만 여기로 온다.
+        /// </summary>
+        private bool TryPartPresetSpawn(GameObject prefab, Transform stepAnchor, out Vector3 pos)
+        {
+            pos = default;
+            if (prefab == null) return false;
+
+            var charge = prefab.GetComponent<ChargeOrbVfx>();
+            if (charge != null && charge.Preset != null)
+            {
+                var t = charge.Preset.TransformSource;
+                pos = JcVfxPlacementPreset.Resolve(caster != null ? caster : transform, t.spawnSocketName, t.spawnOffset);
+                return true;
+            }
+
+            var orbit = prefab.GetComponent<HealOrbitVfx>();
+            if (orbit != null && orbit.Preset != null)
+            {
+                pos = JcVfxPlacementPreset.Resolve(stepAnchor, null, orbit.Preset.TransformSource.landOffset);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// ★투사체 시작점 — 「차지 위치를 시작점으로」 토글 처리.
+        /// 실측 릴레이가 최우선: 이번 시전에서 차지를 실제로 스폰한 위치가 있으면 그걸 쓴다
+        /// (호출자 오버라이드로 차지가 다른 곳에 떴어도 자동 일치). 없으면 chargeRef 프리셋 값.
+        /// </summary>
+        private bool TryProjectilePresetSpawn(ProjectileVfx proj, Transform origin, out Vector3 pos)
+        {
+            pos = default;
+            var p = proj != null ? proj.Preset : null;
+            if (p == null) return false;
+            var t = p.TransformSource;
+
+            if (t.useChargeOrbPosition)
+            {
+                if (_lastChargePos.HasValue) { pos = _lastChargePos.Value; return true; }
+                var cs = p.chargeRef != null ? p.chargeRef.TransformSource : null;
+                if (cs == null) return false;   // 차지도 실측도 없으면 레거시 폴백으로
+                pos = JcVfxPlacementPreset.Resolve(origin, cs.spawnSocketName, cs.spawnOffset);
+                return true;
+            }
+            pos = JcVfxPlacementPreset.Resolve(origin, t.spawnSocketName, t.spawnOffset);
+            return true;
         }
 
         /// <summary>lifeTime 경과 후 부품을 정지 — 리셋으로 이미 파괴됐으면 아무것도 안 한다.</summary>
@@ -420,9 +543,17 @@ namespace JC.VFX
             if (_playing != null) { StopCoroutine(_playing); _playing = null; }
             _awaitingTarget = false;
             for (int i = 0; i < _spawned.Count; i++)
-                if (_spawned[i] != null) Destroy(_spawned[i]);
+            {
+                if (_spawned[i] == null) continue;
+                // ★파괴 전에 Stop — 부품이 씬 루트에 만든 것(트레일 팔로워 등)의 방출을 끈다.
+                //   이거 없이 Destroy 만 하면 팔로워가 공중에서 계속 반짝이는 고아가 된다(260805 실증).
+                _spawned[i].GetComponent<VfxEffect>()?.Stop();
+                Destroy(_spawned[i]);
+            }
             _spawned.Clear();
             _chainTargets.Clear();
+            _impactFlags.Clear();
+            _lastChargePos = null;
             _index = 0;
             _message = "리셋";
         }

@@ -7,10 +7,40 @@ namespace JC.VFX
     /// 커스텀 인스펙터(ProjectileOrbPresetEditor)의 "프리팹에 적용"으로
     /// ProjectileOrbCore.mat + ProjectileOrb 프리팹(ProjectileVfx + Sparkles PS) + 전용 스파클 재질에 일괄 반영.
     /// </summary>
-    [CreateAssetMenu(menuName = "JC VFX/1_Heal Orb Projectile Preset", fileName = "1_HealOrbProjectilePreset")]
+    [CreateAssetMenu(menuName = "JC VFX/2_Heal Projectile Preset", fileName = "2_HealProjectilePreset")]
     public class ProjectileOrbPreset : ScriptableObject
     {
-        [Header("코어 — 색/밝기")]
+        [Header("★따름 (Alter 전용)")]
+        [Tooltip("켜면 트랜스폼(비행·크기·시작점·탄착점)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON.\n" +
+                 "Basic 과 Alter 는 색만 다르고 형태·움직임은 같아야 한다는 규칙의 장치.")]
+        public bool followBasic;
+        [Tooltip("따를 Basic 프리셋. followBasic 이 켜져 있을 때만 쓰인다.")]
+        public ProjectileOrbPreset basicRef;
+
+        [Header("★구체 룩 공유 — 「거기 생겨난 구체가 날아간다」")]
+        [Tooltip("차지 오브 프리셋. 지정하면 코어/림 룩(색·밝기·스파이크)은 이쪽 값을 쓴다.\n" +
+                 "트레일 등 이동 이펙트만 이 프리셋 소유로 남는다.")]
+        public ChargeOrbPreset chargeRef;
+
+        [Header("★시작 위치 (시전자 기준)")]
+        [Tooltip("켜면 차지 오브의 위치를 시작점으로 쓴다(기본).\n" +
+                 "호출자가 차지의 실제 스폰 위치를 기억해 이어 주고, 없으면 chargeRef 의 발사 시작점을 읽는다.")]
+        public bool useChargeOrbPosition = true;
+        [Tooltip("토글 해제 시에만 쓰는 자체 시작점 — 기준 소켓(비면 캐릭터 루트).")]
+        public string spawnSocketName;
+        [Tooltip("토글 해제 시에만 쓰는 자체 시작점 — 오프셋(m, 기준점 회전 적용·스케일 무시).")]
+        public Vector3 spawnOffset = new Vector3(0.55f, 2.0f, 0.15f);
+
+        [Header("★탄착점 (대상 기준)")]
+        [Tooltip("기준 소켓(비면 대상 루트 = 발밑).")]
+        public string impactSocketName;
+        [Tooltip("탄착 오프셋(m). 3등신 캐릭터는 머리 높이(~1.5)가 자연스럽다.")]
+        public Vector3 impactOffset = new Vector3(0f, 1.5f, 0f);
+
+        /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic, 아니면 자기 자신.</summary>
+        public ProjectileOrbPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
+        [Header("코어 — 색/밝기 (chargeRef 지정 시 무시 — 차지 오브 룩을 따른다)")]
         [ColorUsage(true, true)] public Color coreColor = new Color(1f, 0.88f, 0.14f);
         [ColorUsage(true, true)] public Color rimColor = new Color(1f, 0.60f, 0.10f);
         [Range(0, 8)] public float coreIntensity = 1.7f;

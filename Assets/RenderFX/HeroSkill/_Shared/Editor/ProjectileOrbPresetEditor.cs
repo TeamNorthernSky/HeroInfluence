@@ -6,17 +6,27 @@ namespace JC.VFX
     [CustomEditor(typeof(ProjectileOrbPreset))]
     public class ProjectileOrbPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_HealSkill";
-        static string MatCoreInner => DIR + "/ProjectileCoreInner.mat";   // 스파이키 코어
-        static string MatRimShell  => DIR + "/ProjectileRimShell.mat";    // 매끈 외곽선
-        static string MatSparkle   => DIR + "/ProjectileSparkleStar.mat";
-        static string MatSpikeBurst => DIR + "/SpikeBurstAdditive.mat";
-        static string MatStarFlash  => DIR + "/StarFlashAdditive.mat";
-        static string ProjPrefab   => DIR + "/ProjectileOrb.prefab";
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
+        // ★변종 자동 인식 — 프리셋 이름이 _Silver 로 끝나면 은백 재질·프리팹을 대상으로 잡는다.
+        //   (FlareOrb 에디터의 Sfx 패턴. 금 프리셋으로 은백을 덮는 사고 방지)
+        string Sfx => target != null && target.name.EndsWith("_Basic") ? "_Basic" : "_Alter";   // 개편 후 전 자산이 접미를 가진다
+        string MatCoreInner => DIR + "/Materials/ProjectileCoreInner" + Sfx + ".mat";   // 스파이키 코어
+        string MatRimShell  => DIR + "/Materials/ProjectileRimShell" + Sfx + ".mat";    // 매끈 외곽선
+        string MatSparkle   => DIR + "/Materials/ProjectileSparkleStar" + Sfx + ".mat";
+        string MatSpikeBurst => DIR + "/Materials/SpikeBurstAdditive" + Sfx + ".mat";
+        string MatStarFlash  => DIR + "/Materials/StarFlashAdditive" + Sfx + ".mat";
+        string ProjPrefab   => DIR + "/Prefabs/ProjectileOrb" + Sfx + ".prefab";
+
+        static readonly string[] TransformProps =
+        {
+            "useChargeOrbPosition", "spawnSocketName", "spawnOffset", "impactSocketName", "impactOffset",
+            "worldSize", "speed", "arcHeight", "trailTime", "trailAutoBySpeed", "trailLengthWorld",
+            "burstScaleMul", "burstDuration", "coreSize", "rimSize",
+        };
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.ProjOrb.Fold", TransformProps);
             var p = (ProjectileOrbPreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())

@@ -13,13 +13,13 @@ namespace JC.VFX
     {
         // ★변종 대응(260730): 경로를 프리셋의 variantSuffix로 만든다. 비면 종전과 동일(크림판).
         static string Sfx(FlareOrbSpritePreset p) => p != null && !string.IsNullOrEmpty(p.variantSuffix) ? p.variantSuffix : "";
-        static string MatSprite(FlareOrbSpritePreset p) => DIR + "/FlareAuraSprite" + Sfx(p) + ".mat";
+        static string MatSprite(FlareOrbSpritePreset p) => DIR + "/Materials/FlareAuraSprite" + Sfx(p) + ".mat";
         /// <summary>통합 프리팹만 흑염 이름에 언더바가 없다(FlareBombOrbFullDark) — 접미사에서 '_'를 뺀다.</summary>
-        static string FullPrefab(FlareOrbSpritePreset p) => DIR + "/FlareBombOrbFull" + Sfx(p).Replace("_", "") + ".prefab";
+        static string FullPrefab(FlareOrbSpritePreset p) => DIR + "/Prefabs/FlareBombOrbFull" + Sfx(p).Replace("_", "") + ".prefab";
 
         /// <summary>이 프리셋이 흑염 변종을 대상으로 하는가 — 라이브 프리뷰 스코프를 가른다.</summary>
         static bool WantsDark(FlareOrbSpritePreset p) => Sfx(p).Contains("Dark");
-        const string PresetPath  = DIR + "/F2_FlareOrbSpritePreset.asset";
+        const string PresetPath  = DIR + "/Presets/F2_FlareOrbSpritePreset.asset";
 
         protected override string LiveKey => "JC.FlareOrbSpritePreset.LivePreview";
         protected override string HelpText =>

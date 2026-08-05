@@ -6,8 +6,13 @@ namespace JC.VFX
     [CustomEditor(typeof(HealAuraMasterPreset))]
     public class HealAuraMasterPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_HealSkill";
-        static string OrbitPrefab => DIR + "/HealOrbit.prefab";   // 오케스트레이터 HealOrbitVfx가 루트
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
+        // ★공용 프리셋(타이밍+묶음 트랜스폼) — Basic·Alter 두 프리팹 모두에 적용
+        static readonly string[] PrefabPaths =
+        {
+            DIR + "/Prefabs/HealOrbit_Basic.prefab",
+            DIR + "/Prefabs/HealOrbit_Alter.prefab",
+        };
 
         public override void OnInspectorGUI()
         {
@@ -24,21 +29,25 @@ namespace JC.VFX
 
         void Apply(HealAuraMasterPreset p)
         {
-            var root = PrefabUtility.LoadPrefabContents(OrbitPrefab);
-            var vfx = root.GetComponent<HealOrbitVfx>();
-            var so = new SerializedObject(vfx);
-            so.FindProperty("duration").floatValue = p.duration;
-            so.FindProperty("fadeInTime").floatValue = p.fadeInTime;
-            so.FindProperty("fadeOutTime").floatValue = p.fadeOutTime;
-            so.ApplyModifiedPropertiesWithoutUndo();
-            PrefabUtility.SaveAsPrefabAsset(root, OrbitPrefab);
-            PrefabUtility.UnloadPrefabContents(root);
-            Debug.Log("[HealAuraMasterPreset] 프리팹에 적용 완료");
+            foreach (var path in PrefabPaths)
+            {
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null) continue;
+                var root = PrefabUtility.LoadPrefabContents(path);
+                var so = new SerializedObject(root.GetComponent<HealOrbitVfx>());
+                so.FindProperty("duration").floatValue = p.duration;
+                so.FindProperty("fadeInTime").floatValue = p.fadeInTime;
+                so.FindProperty("fadeOutTime").floatValue = p.fadeOutTime;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+            Debug.Log("[HealAuraMasterPreset] 프리팹에 적용 완료 (Basic·Alter)");
         }
 
         void Capture(HealAuraMasterPreset p)
         {
-            var root = AssetDatabase.LoadAssetAtPath<GameObject>(OrbitPrefab);
+            var root = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPaths[0])
+                    ?? AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPaths[1]);
             var vfx = root.GetComponent<HealOrbitVfx>();
             var so = new SerializedObject(vfx);
             Undo.RecordObject(p, "Capture Heal Aura Master");

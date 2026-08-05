@@ -71,6 +71,18 @@ namespace JC.VFX
 
         public override void Stop() => StopInternal();
 
+        /// <summary>
+        /// ★오브·합체 구체는 씬 루트에 있어 자식이 아니다 — 이 부품이 Stop 없이 파괴되면
+        /// (스테퍼 리셋 등) 전부 고아가 되므로 여기서 같이 지운다. 각 오브의 OnDestroy 가
+        /// 자기 팔로워를 이어서 지우므로 연쇄적으로 정리된다.
+        /// </summary>
+        private void OnDestroy()
+        {
+            if (_orbR) Destroy(_orbR.gameObject);
+            if (_orbL) Destroy(_orbL.gameObject);
+            if (_merged) Destroy(_merged.gameObject);
+        }
+
         private void Update()
         {
             if (!IsPlaying) return;

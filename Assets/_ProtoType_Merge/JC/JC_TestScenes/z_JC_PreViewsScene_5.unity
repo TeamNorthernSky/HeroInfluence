@@ -676,7 +676,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   catalog: {fileID: 11400000, guid: 2e64e26e7f20f66438885eb869723307, type: 2}
   placements:
-  - {fileID: 11400000, guid: a7e5ab5ddb4d4e146ab2ce22ebfe8f43, type: 2}
   - {fileID: 11400000, guid: ba48f260179be594e9dd6d24eb4a1553, type: 2}
   - {fileID: 11400000, guid: 781c7399a89bb034d8bd384cfb913554, type: 2}
   caster: {fileID: 0}
@@ -698,6 +697,8 @@ MonoBehaviour:
       delayAfter: 0.8
       lifeTime: 0.8
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "1. \uCC28\uC9C0 \uAD6C\uCCB4"
     - cueName: heal_fire
       variant: 0
@@ -707,7 +708,9 @@ MonoBehaviour:
       localOffset: 1
       delayAfter: 0.7
       lifeTime: 0
-      placementKey: heal_charge
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "2. \uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4"
     - cueName: heal_land
       variant: 0
@@ -718,6 +721,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
       label: "3. \uCC29\uD0C4 \uD790"
   - key: 119
     label: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C (\uC5BC\uD130)"
@@ -733,6 +738,8 @@ MonoBehaviour:
       delayAfter: 0.8
       lifeTime: 0.8
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "1. \uCC28\uC9C0 \uAD6C\uCCB4"
     - cueName: heal_fire
       variant: 0
@@ -742,7 +749,9 @@ MonoBehaviour:
       localOffset: 1
       delayAfter: 0.7
       lifeTime: 0
-      placementKey: heal_charge
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "2. \uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4"
     - cueName: heal_land
       variant: 0
@@ -753,6 +762,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
       label: "3. \uCC29\uD0C4 \uD790"
   - key: 101
     label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uBC14\uB2D0\uB77C)"
@@ -768,6 +779,8 @@ MonoBehaviour:
       delayAfter: 1.16
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "1. \uBC1C \uB4F1\uC7A5\xB7\uC720\uC9C0\xB7\uC18C\uBA78"
     - cueName: paw_warp
       variant: 0
@@ -778,6 +791,8 @@ MonoBehaviour:
       delayAfter: 0.22
       lifeTime: 0
       placementKey: paw_warp_out
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "2. \uC6CC\uD504 \u2014 \uCD9C\uBC1C"
     - cueName: paw_warp
       variant: 0
@@ -788,6 +803,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0
       placementKey: paw_warp_in
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "3. \uC6CC\uD504 \u2014 \uB3C4\uCC29"
     - cueName: paw_beam
       variant: 0
@@ -798,6 +815,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "4. \uC7AC\uB4F1\uC7A5 + \uAD11\uC120 + \uCC29\uD0C4"
   - key: 114
     label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uC5BC\uD130)"
@@ -813,6 +832,8 @@ MonoBehaviour:
       delayAfter: 1.16
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "1. \uBC1C \uB4F1\uC7A5\xB7\uC720\uC9C0\xB7\uC18C\uBA78"
     - cueName: paw_warp
       variant: 0
@@ -823,6 +844,8 @@ MonoBehaviour:
       delayAfter: 0.22
       lifeTime: 0
       placementKey: paw_warp_out
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "2. \uC6CC\uD504 \u2014 \uCD9C\uBC1C"
     - cueName: paw_warp
       variant: 0
@@ -833,6 +856,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0
       placementKey: paw_warp_in
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "3. \uC6CC\uD504 \u2014 \uB3C4\uCC29"
     - cueName: paw_beam
       variant: 0
@@ -843,6 +868,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "4. \uC7AC\uB4F1\uC7A5 + \uAD11\uC120 + \uCC29\uD0C4"
   - key: 116
     label: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790 (\uBC14\uB2D0\uB77C)"
@@ -858,6 +885,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0.7
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "1. \uC624\uB978\uC190 \uCC28\uC9C0"
     - cueName: lfl_charge_l
       variant: 0
@@ -868,6 +897,8 @@ MonoBehaviour:
       delayAfter: 0.7
       lifeTime: 0.7
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "2. \uC67C\uC190 \uCC28\uC9C0"
     - cueName: lfl_merge
       variant: 0
@@ -878,6 +909,8 @@ MonoBehaviour:
       delayAfter: 0.5
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "3. \uD569\uCCB4 \u2605\uBBF8\uC81C\uC791"
     - cueName: lfl_fire
       variant: 0
@@ -888,6 +921,8 @@ MonoBehaviour:
       delayAfter: 0.76
       lifeTime: 0
       placementKey: lfl_merge
+      impactPlacementKey: lfl_impact
+      waitForImpact: 0
       label: "4. \uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4"
     - cueName: lfl_land
       variant: 0
@@ -898,6 +933,8 @@ MonoBehaviour:
       delayAfter: 0.25
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
       label: "5. \uCC29\uD0C4 \uD790"
     - cueName: lfl_chain
       variant: 0
@@ -908,6 +945,8 @@ MonoBehaviour:
       delayAfter: 0.08
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: lfl_impact
+      waitForImpact: 0
       label: "\uC5F0\uC1C4 \uBE44\uD589 #0"
     - cueName: lfl_chain
       variant: 0
@@ -918,6 +957,8 @@ MonoBehaviour:
       delayAfter: 0.62
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: lfl_impact
+      waitForImpact: 0
       label: "\uC5F0\uC1C4 \uBE44\uD589 #1"
     - cueName: lfl_chain_land
       variant: 0
@@ -928,6 +969,8 @@ MonoBehaviour:
       delayAfter: 0.08
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
       label: "\uC5F0\uC1C4 \uCC29\uC9C0 #0"
     - cueName: lfl_chain_land
       variant: 0
@@ -938,6 +981,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
       label: "\uC5F0\uC1C4 \uCC29\uC9C0 #1"
   - key: 121
     label: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790 (\uC5BC\uD130)"
@@ -953,6 +998,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0.7
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "1. \uC624\uB978\uC190 \uCC28\uC9C0"
     - cueName: lfl_charge_l
       variant: 0
@@ -963,6 +1010,8 @@ MonoBehaviour:
       delayAfter: 0.7
       lifeTime: 0.7
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "2. \uC67C\uC190 \uCC28\uC9C0"
     - cueName: lfl_merge
       variant: 0
@@ -973,6 +1022,8 @@ MonoBehaviour:
       delayAfter: 0.5
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
       label: "3. \uD569\uCCB4 \u2605\uBBF8\uC81C\uC791"
     - cueName: lfl_fire
       variant: 0
@@ -983,6 +1034,8 @@ MonoBehaviour:
       delayAfter: 0.76
       lifeTime: 0
       placementKey: lfl_merge
+      impactPlacementKey: lfl_impact
+      waitForImpact: 0
       label: "4. \uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4"
     - cueName: lfl_land
       variant: 0
@@ -993,6 +1046,8 @@ MonoBehaviour:
       delayAfter: 0.25
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
       label: "5. \uCC29\uD0C4 \uD790"
     - cueName: lfl_chain
       variant: 0
@@ -1003,6 +1058,8 @@ MonoBehaviour:
       delayAfter: 0.08
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: lfl_impact
+      waitForImpact: 0
       label: "\uC5F0\uC1C4 \uBE44\uD589 #0"
     - cueName: lfl_chain
       variant: 0
@@ -1013,6 +1070,8 @@ MonoBehaviour:
       delayAfter: 0.62
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: lfl_impact
+      waitForImpact: 0
       label: "\uC5F0\uC1C4 \uBE44\uD589 #1"
     - cueName: lfl_chain_land
       variant: 0
@@ -1023,6 +1082,8 @@ MonoBehaviour:
       delayAfter: 0.08
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
       label: "\uC5F0\uC1C4 \uCC29\uC9C0 #0"
     - cueName: lfl_chain_land
       variant: 0
@@ -1033,6 +1094,8 @@ MonoBehaviour:
       delayAfter: 0
       lifeTime: 0
       placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
       label: "\uC5F0\uC1C4 \uCC29\uC9C0 #1"
   mode: 0
   stepKey: 0

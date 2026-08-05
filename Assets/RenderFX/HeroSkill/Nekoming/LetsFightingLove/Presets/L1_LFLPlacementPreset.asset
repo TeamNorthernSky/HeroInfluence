@@ -41,3 +41,9 @@ MonoBehaviour:
     socketName: 
     offset: {x: 0, y: 0, z: 0}
     note: "\uC5F0\uC1C4 \uCC29\uC9C0 \uC624\uB77C"
+  - key: lfl_impact
+    socketName: 
+    offset: {x: 0, y: 0, z: 0}
+    note: "\uD22C\uC0AC\uCCB4 \uD0C4\uCC29\uC810(\uBCF8\xB7\uC5F0\uC1C4 \uACF5\uC6A9,
+      \uB300\uC0C1 \uAE30\uC900). \uD604\uC7AC \uB8E9 = \uBC1C\uBC11(0) \u2014 \uC5EC\uAE30\uC11C
+      \uC870\uC808"

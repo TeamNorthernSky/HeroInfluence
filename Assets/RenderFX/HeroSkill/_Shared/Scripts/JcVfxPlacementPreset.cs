@@ -67,17 +67,25 @@ namespace JC.VFX
         public static Vector3 Resolve(Transform anchor, Entry entry)
         {
             if (entry == null) return anchor != null ? anchor.position : Vector3.zero;
+            return Resolve(anchor, entry.socketName, entry.offset);
+        }
 
+        /// <summary>
+        /// 소켓+오프셋 → 월드 좌표. 부품 프리셋이 위치를 소유하는 경우(1·2번 프리셋 등)도
+        /// 같은 규칙을 쓰도록 공개한 원형 — 위치 계산 규칙은 이 한 곳에만 둔다.
+        /// </summary>
+        public static Vector3 Resolve(Transform anchor, string socketName, Vector3 offset)
+        {
             Transform basis = anchor;
-            if (anchor != null && !string.IsNullOrEmpty(entry.socketName))
+            if (anchor != null && !string.IsNullOrEmpty(socketName))
             {
                 foreach (var t in anchor.GetComponentsInChildren<Transform>(true))
-                    if (t.name == entry.socketName) { basis = t; break; }
+                    if (t.name == socketName) { basis = t; break; }
             }
-            if (basis == null) return entry.offset;
+            if (basis == null) return offset;
 
             // 회전만 적용, 스케일 무시 — 믹사모 본(lossyScale 100)에서도 오프셋이 미터로 유지된다.
-            return basis.position + basis.rotation * entry.offset;
+            return basis.position + basis.rotation * offset;
         }
 
         private void BuildMap()

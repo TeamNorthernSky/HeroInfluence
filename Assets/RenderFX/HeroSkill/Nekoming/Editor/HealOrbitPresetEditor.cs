@@ -6,14 +6,22 @@ namespace JC.VFX
     [CustomEditor(typeof(HealOrbitPreset))]
     public class HealOrbitPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_HealSkill";
-        static string MatCoreInner => DIR + "/HealOrbitCoreInner.mat";   // 전용 코어(스파이키 가능)
-        static string MatRimShell  => DIR + "/HealOrbitRimShell.mat";    // 전용 외곽선(매끈)
-        static string OrbitPrefab  => DIR + "/HealOrbit.prefab";
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
+        static string MatCoreInner => DIR + "/Materials/HealOrbitCoreInner.mat";   // ★공용 재질(변종 색은 라이브 MPB)
+        static string MatRimShell  => DIR + "/Materials/HealOrbitRimShell.mat";
+        // ★변종 인식 — _Basic/_Alter 프리셋은 제 프리팹만 만진다.
+        string Sfx => JcPresetEditorUtil.VariantSuffix(target) ?? "_Alter";
+        string OrbitPrefab => DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab";
+
+        static readonly string[] TransformProps =
+        {
+            "landOffset", "orbitRadius", "orbitHeight", "angularSpeed", "startAngle", "tiltDeg",
+            "orbWorldSize", "coreSize", "rimSize",
+        };
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.HealOrbit.Fold", TransformProps);
             var p = (HealOrbitPreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
@@ -21,7 +29,8 @@ namespace JC.VFX
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
             }
-            EditorGUILayout.HelpBox("적용: 이 값을 HealOrbitCoreInner/RimShell.mat(전용) + HealOrbit 프리팹(HealOrbitVfx, Orb 크기, 코어/림 사이즈)에 반영.\n발사체 재질과 분리되어 있어 발사체에 영향 없음.", MessageType.Info);
+            EditorGUILayout.HelpBox("적용: 이 값을 HealOrbit" + Sfx + " 프리팹(변종 자동 인식) + 공용 재질에 반영.\n" +
+                "⚠재질(CoreInner/RimShell)은 Basic·Alter 공용 — 색 베이크는 마지막 적용이 이깁니다(런타임 색은 라이브 MPB가 변종별로 정확).", MessageType.Info);
         }
 
         static T Load<T>(string path) where T : Object => AssetDatabase.LoadAssetAtPath<T>(path);

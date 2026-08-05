@@ -12,6 +12,14 @@ namespace JC.VFX
     [CreateAssetMenu(menuName = "JC VFX/5_Heal Aura Glow Preset", fileName = "5_HealAuraGlowPreset")]
     public class HealAuraGlowPreset : ScriptableObject
     {
+        [Header("★따름 (Alter 전용)")]
+        [Tooltip("켜면 트랜스폼(크기·위치)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON.")]
+        public bool followBasic;
+        public HealAuraGlowPreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
+        public HealAuraGlowPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
         [Header("크기 / 위치 (월드 m)")]
         [Tooltip("광채 기둥 지름(m)")]
         public float width = 1.6f;

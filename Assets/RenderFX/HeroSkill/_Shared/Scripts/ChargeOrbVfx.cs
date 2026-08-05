@@ -26,14 +26,37 @@ namespace JC.VFX
         [Tooltip("커지는 데 걸리는 시간(초). 확정값 0.5")]
         [SerializeField] private float growDuration = 0.5f;
 
+        [Header("런타임 프리뷰")]
+        [Tooltip("지정하면 재생(Play/ShowCharged)마다 프리셋 전 항목을 읽고, 색은 매 프레임 반영(비파괴 MPB).\n" +
+                 "개발 루프: 시전 → 프리셋 조절 → 재시전 → … → 플레이 종료 후 「프리팹에 적용」으로 저장.\n" +
+                 "★변종은 제 프리셋을 물 것. LFL 소형 배리언트는 크기 고정이 필요하므로 비워 둔다.")]
+        [SerializeField] private ChargeOrbPreset preset;
+        [SerializeField] private bool livePreview = true;
+
         private float _t;
         private bool _growing;
         private ChargeTrailFollower _follower;
+        private MaterialPropertyBlock _mpb;
+
+        private bool Live => livePreview && preset != null;
+
+        /// <summary>호출자(스테퍼/큐 드라이버)가 발사 시작점 등을 읽어 가는 창구.</summary>
+        public ChargeOrbPreset Preset => preset;
 
         private void Awake() => ApplyHidden();
 
+        /// <summary>
+        /// ★팔로워는 씬 루트에 있어 자식이 아니다 — 이 오브가 파괴될 때 같이 지워 주지 않으면
+        /// 공중에 반짝임이 켜진 채 고아로 남는다(호출자가 Stop 없이 Destroy 하는 경우 포함).
+        /// </summary>
+        private void OnDestroy()
+        {
+            if (_follower) Destroy(_follower.gameObject);
+        }
+
         public override void Play()
         {
+            if (Live) PullFromPreset();   // ★재생마다 최신 프리셋 값으로 — 「조절 → 재시전」 개발 루프
             IsPlaying = true;
             _t = 0f;
             _growing = true;
@@ -45,6 +68,7 @@ namespace JC.VFX
             {
                 if (_follower == null)
                     _follower = Instantiate(trailFollowerPrefab);   // 씬 루트(부모 없음) = lossyScale 1
+                if (Live) _follower.ApplyPresetConfig(preset);      // 생성 직후라 PullFromPreset 시점엔 없었다
                 _follower.Begin(transform.position);
             }
         }
@@ -55,6 +79,7 @@ namespace JC.VFX
         /// </summary>
         public void ShowCharged()
         {
+            if (Live) PullFromPreset();
             IsPlaying = true;
             _growing = false;
             SetWorldSize(endWorldSize);
@@ -65,6 +90,7 @@ namespace JC.VFX
             {
                 if (_follower == null)
                     _follower = Instantiate(trailFollowerPrefab);   // 씬 루트(부모 없음) = lossyScale 1
+                if (Live) _follower.ApplyPresetConfig(preset);      // 생성 직후라 PullFromPreset 시점엔 없었다
                 _follower.Begin(transform.position);
             }
         }
@@ -98,6 +124,63 @@ namespace JC.VFX
                 if (k >= 1f) _growing = false;
             }
             if (IsPlaying && _follower) _follower.Follow(transform.position);
+
+            // 색·밝기는 진행 중에도 즉시 반영 — 저스티스 프리뷰와 같은 감각
+            if (Live && IsPlaying) ApplyLookMpb();
+        }
+
+        // ── 런타임 프리뷰 — 에디터 「프리팹에 적용」과 같은 매핑, 대상만 런타임 인스턴스 ──
+
+        private void PullFromPreset()
+        {
+            var p = preset;
+            var t = p.TransformSource;   // ★트랜스폼은 따름 규칙 적용(Alter → Basic)
+            startWorldSize = t.startWorldSize;
+            endWorldSize = t.endWorldSize;
+            growDuration = t.growDuration;
+
+            if (sparks)
+            {
+                var m = sparks.main;
+                m.startSize = new ParticleSystem.MinMaxCurve(p.sparkSizeMin, p.sparkSizeMax);
+                m.startSpeed = p.sparkSpeed;
+                var e = sparks.emission; e.rateOverTime = p.sparkRate;
+            }
+            if (_follower) _follower.ApplyPresetConfig(p);   // 없으면 Play 의 Begin 직후 다시 시도된다
+        }
+
+        private void ApplyLookMpb()
+        {
+            if (_mpb == null) _mpb = new MaterialPropertyBlock();
+            var p = preset;
+            if (coreRenderer)
+            {
+                coreRenderer.GetPropertyBlock(_mpb);
+                _mpb.SetColor("_CoreColor", p.coreColor);
+                _mpb.SetColor("_RimColor", p.rimColor);
+                _mpb.SetFloat("_CoreIntensity", p.coreIntensity);
+                _mpb.SetFloat("_RimIntensity", p.rimIntensity);
+                _mpb.SetFloat("_CorePower", p.corePower);
+                _mpb.SetFloat("_RimPower", p.rimPower);
+                _mpb.SetFloat("_GapStrength", p.gapStrength);
+                _mpb.SetFloat("_CoreSpikeAmount", p.coreSpikeAmount);
+                _mpb.SetFloat("_RimSpikeAmount", p.rimSpikeAmount);
+                _mpb.SetFloat("_SpikeFreq", p.spikeFreq);
+                _mpb.SetFloat("_SpikeSpeed", p.spikeSpeed);
+                _mpb.SetFloat("_SpikeSharp", p.spikeSharp);
+                coreRenderer.SetPropertyBlock(_mpb);
+            }
+            if (sparks)
+            {
+                var r = sparks.GetComponent<ParticleSystemRenderer>();
+                if (r)
+                {
+                    r.GetPropertyBlock(_mpb);
+                    _mpb.SetColor("_BaseColor", p.sparkColor);
+                    r.SetPropertyBlock(_mpb);
+                }
+            }
+            if (_follower) _follower.ApplyPresetColors(p, _mpb);
         }
 
         /// <summary>부모 lossyScale를 보정해 구체가 지정 월드 지름이 되도록 localScale을 설정.</summary>

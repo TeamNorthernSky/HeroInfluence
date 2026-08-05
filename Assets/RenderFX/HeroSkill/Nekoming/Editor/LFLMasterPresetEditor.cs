@@ -6,7 +6,7 @@ namespace JC.VFX
     [CustomEditor(typeof(LFLMasterPreset))]
     public class LFLMasterPresetEditor : Editor
     {
-        const string LFLPrefab = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_LetsFightingLove/LetsFightingLove.prefab";
+        const string LFLPrefab = "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove/Prefabs/LetsFightingLove.prefab";
 
         public override void OnInspectorGUI()
         {
