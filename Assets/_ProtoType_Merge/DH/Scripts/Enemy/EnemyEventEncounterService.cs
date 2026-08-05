@@ -17,7 +17,7 @@ public static class EnemyEventEncounterService
 
         EventScriptCatalog catalog = EventScriptCatalog.Instance;
         if (catalog == null ||
-            !catalog.TryGetChat(binding.EncounterChatZoneId, binding.EncounterChatId, out ChatDBEventData chat) ||
+            !catalog.TryGetChatTemplate(binding.EncounterChatZoneId, binding.EncounterChatId, out DHEventChatTemplate chat) ||
             chat == null)
         {
             return false;

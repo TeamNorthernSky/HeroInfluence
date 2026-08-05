@@ -149,8 +149,8 @@ public class PersistentEnemyRepository : MonoBehaviour
             return default;
 
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-        if (catalog != null && catalog.TryGetEnemyTemplate(unitTemplateKey, out EnemyData template) && template != null)
-            return template.levelupStats;
+        if (catalog != null && catalog.TryGetEnemyUnitTemplate(unitTemplateKey, out DHEnemyUnitTemplate template) && template != null)
+            return template.LevelupStats;
 
         return default;
     }

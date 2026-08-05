@@ -146,11 +146,11 @@ public static class ExplorationDefeatResultHandler
             return string.Empty;
 
         if (DHCsvTemplateCatalog.Instance != null &&
-            DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(data.UnitTemplateKey, out UnitData unitData) &&
+            DHCsvTemplateCatalog.Instance.TryGetPlayerUnitTemplate(data.UnitTemplateKey, out DHPlayerUnitTemplate unitData) &&
             unitData != null &&
-            !string.IsNullOrWhiteSpace(unitData.Name))
+            !string.IsNullOrWhiteSpace(unitData.UnitName))
         {
-            return unitData.Name;
+            return unitData.UnitName;
         }
 
         return string.IsNullOrWhiteSpace(data.UnitTemplateKey)

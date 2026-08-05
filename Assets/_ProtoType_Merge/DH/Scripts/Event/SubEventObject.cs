@@ -87,7 +87,7 @@ public class SubEventObject : MonoBehaviour
             return false;
 
         EventScriptCatalog catalog = EventScriptCatalog.Instance;
-        if (catalog == null || !catalog.TryGetChat(ZoneId, ChatId, out ChatDBEventData chat) || chat == null)
+        if (catalog == null || !catalog.TryGetChatTemplate(ZoneId, ChatId, out DHEventChatTemplate chat) || chat == null)
         {
             Debug.LogWarning($"[SubEventObject] {EventKey}: Chat data was not found. Zone: {ZoneId}, Chat_ID: {ChatId}", this);
             return false;

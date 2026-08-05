@@ -224,7 +224,7 @@ public static class VillainUnionDefenderService
         {
             CsvEnemyGroupMember member = members[i];
             string templateKey = member.EnemyUnitIndex.ToString();
-            if (!templateCatalog.TryGetEnemyTemplate(templateKey, out EnemyData template))
+            if (!templateCatalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate template))
             {
                 Debug.LogWarning(
                     $"VillainUnion defender group '{villainUnionBase.DefenderEnemyGroupKey}' references missing enemy unit '{templateKey}'.",
@@ -235,7 +235,7 @@ public static class VillainUnionDefenderService
             int unitIndex = enemyRepository.CreateUnit(
                 templateKey,
                 defenderLevel,
-                template.baseStats);
+                template.BaseStats);
             unitIndices.Add(unitIndex);
             unitSlots.Add(member.CombatSlot);
         }

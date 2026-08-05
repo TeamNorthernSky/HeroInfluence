@@ -71,49 +71,43 @@ public sealed class DHEventRewardRuntimeManager : MonoBehaviour
             return;
         }
 
-        if (!catalog.TryGetAnyEventReward(rewardId, out MainSubEventRewardData mainSubReward, out WorldEventRewardData worldReward))
+        if (!catalog.TryGetEventRewardTemplate(rewardId, out DHEventRewardTemplate reward) || reward == null)
         {
             Debug.LogWarning($"[DHEventRewardRuntime] Reward was not found: {rewardId}", this);
             return;
         }
 
-        if (mainSubReward != null)
-            ApplyMainSubReward(mainSubReward);
-        else if (worldReward != null)
-            ApplyWorldReward(worldReward);
+        ApplyReward(reward);
     }
 
-    private void ApplyMainSubReward(MainSubEventRewardData reward)
+    private void ApplyReward(DHEventRewardTemplate reward)
     {
         if (reward == null)
             return;
 
-        ApplyResources(reward.money, reward.medal, reward.gem, reward.supply);
-        ApplyExpToAlivePartyUnits(reward.EXP);
-        ApplyCharacterReward(RuminaKey, reward.Rumina_MaxHP, reward.Rumina_ATK, reward.Rumina_DEF, reward.Rumina_IP, reward.Rumina_Heal);
-        ApplyCharacterReward(JusticeKey, reward.Justice_MaxHP, reward.Justice_ATK, reward.Justice_Def, reward.Justice_IP, reward.Justice_Heal);
-        ApplyCharacterReward(BlackBulletKey, reward.BlackBullet_MaxHP, reward.BlackBullet_ATK, reward.BlackBullet_Def, reward.BlackBullet_IP, reward.BlackBullet_Heal);
-        ApplyCharacterReward(NekomingKey, reward.Nekoming_MaxHP, reward.Nekoming_ATK, reward.Nekoming_Def, reward.Nekoming_IP, reward.Nekoming_Heal);
+        ApplyResources(reward.Money, reward.Medal, reward.Gem, reward.Supply);
+        ApplyExpToAlivePartyUnits(reward.Exp);
+
+        IReadOnlyList<DHEventCharacterRewardEntry> characterRewards = reward.CharacterRewards;
+        if (characterRewards != null)
+        {
+            for (int i = 0; i < characterRewards.Count; i++)
+            {
+                DHEventCharacterRewardEntry entry = characterRewards[i];
+                ApplyCharacterReward(
+                    entry.UnitTemplateKey,
+                    entry.MaxHp,
+                    entry.Atk,
+                    entry.Def,
+                    entry.Influence,
+                    entry.Heal);
+            }
+        }
+
         SyncPlayerPartySceneUnits();
 
         if (logRewards)
-            Debug.Log($"[DHEventRewardRuntime] Applied main/sub reward {reward.reward_id}: {reward.reward_name}", this);
-    }
-
-    private void ApplyWorldReward(WorldEventRewardData reward)
-    {
-        if (reward == null)
-            return;
-
-        ApplyResources(reward.money, reward.medal, reward.gem, 0);
-        ApplyCharacterReward(RuminaKey, reward.Rumina_MaxHP, reward.Rumina_ATK, reward.Rumina_DEF, reward.Rumina_IP, reward.Rumina_Heal);
-        ApplyCharacterReward(JusticeKey, reward.Justice_MaxHP, reward.Justice_ATK, reward.Justice_Def, reward.Justice_IP, reward.Justice_Heal);
-        ApplyCharacterReward(BlackBulletKey, reward.BlackBullet_MaxHP, reward.BlackBullet_ATK, reward.BlackBullet_Def, reward.BlackBullet_IP, reward.BlackBullet_Heal);
-        ApplyCharacterReward(NekomingKey, reward.Nekoming_MaxHP, reward.Nekoming_ATK, reward.Nekoming_Def, reward.Nekoming_IP, reward.Nekoming_Heal);
-        SyncPlayerPartySceneUnits();
-
-        if (logRewards)
-            Debug.Log($"[DHEventRewardRuntime] Applied world reward {reward.reward_id}", this);
+            Debug.Log($"[DHEventRewardRuntime] Applied {reward.SourceType} reward {reward.RewardId}: {reward.RewardName}", this);
     }
 
     private static void ApplyResources(int money, int medal, int gem, int supply)
