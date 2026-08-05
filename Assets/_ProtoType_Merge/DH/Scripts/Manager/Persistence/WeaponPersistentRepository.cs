@@ -225,8 +225,8 @@ public class WeaponPersistentRepository : MonoBehaviour
             return default;
 
         int level = Mathf.Clamp(data.Level, BaseWeaponLevel, MaxWeaponLevel);
-        if (catalog.TryGetWeaponBonusAtLevel(weaponTemplateKey, level, out StatBlock leveledStats))
-            return EquipmentStatBlock.FromStatBlock(leveledStats);
+        if (catalog.TryGetWeaponTemplate(weaponTemplateKey, out DHWeaponTemplate template) && template != null)
+            return EquipmentStatBlock.FromStatBlock(template.GetBonusStatsAtLevel(level));
 
         return catalog.TryGetWeaponStats(weaponTemplateKey, out EquipmentStatBlock baseStats)
             ? baseStats

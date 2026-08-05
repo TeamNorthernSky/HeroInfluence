@@ -111,18 +111,18 @@ public class PartyVisualCompositionController : MonoBehaviour
             if (string.IsNullOrWhiteSpace(templateKey))
                 continue;
 
-            if (!templateCatalog.TryGetPlayerTemplate(templateKey, out UnitData template) || template == null)
+            if (!templateCatalog.TryGetPlayerUnitTemplate(templateKey, out DHPlayerUnitTemplate template) || template == null)
             {
                 Warn($"Could not resolve initial player template '{templateKey}'.");
                 continue;
             }
 
             unitIndices[i] = unitRepository.CreateUnit(
-                template.Index,
+                template.UnitKey,
                 1,
-                template.baseStats,
-                template.levelupStats,
-                ResolveInitialCurrentSkillIndex(template.Index),
+                template.BaseStats,
+                template.LevelupStats,
+                ResolveInitialCurrentSkillIndex(template.UnitKey),
                 0,
                 default);
         }

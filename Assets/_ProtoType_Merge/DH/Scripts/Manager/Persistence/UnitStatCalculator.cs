@@ -17,7 +17,7 @@ public static class UnitStatCalculator
 
     public static StatBlock CalculateIngameStats(StatBlock templateBaseStats, StatBlock levelupStats, int level, EquipmentStatBlock weaponStats)
     {
-        return CalculateIngameStats(templateBaseStats, levelupStats, level, weaponStats, default, null);
+        return CalculateIngameStats(templateBaseStats, levelupStats, level, weaponStats, default, (IReadOnlyList<DHUnitGrowthTemplate>)null);
     }
 
     public static StatBlock CalculateIngameStats(
@@ -25,9 +25,9 @@ public static class UnitStatCalculator
         StatBlock levelupStats,
         int level,
         EquipmentStatBlock weaponStats,
-        IReadOnlyList<LevelUpData> levelUpTable)
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTable)
     {
-        return CalculateIngameStats(templateBaseStats, levelupStats, level, weaponStats, default, levelUpTable);
+        return CalculateIngameStats(templateBaseStats, levelupStats, level, weaponStats, default, unitGrowthTable);
     }
 
     public static StatBlock CalculateIngameStats(
@@ -36,30 +36,30 @@ public static class UnitStatCalculator
         int level,
         EquipmentStatBlock weaponStats,
         StatBlock eventBonusStats,
-        IReadOnlyList<LevelUpData> levelUpTable)
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTable)
     {
         StatBlock adjustedBaseStats = CalculateLevelAdjustedBaseStats(templateBaseStats, levelupStats, level);
         StatBlock result = adjustedBaseStats + weaponStats.ToStatBlock() + eventBonusStats;
-        result.Influence += CalculateLevelInfluenceBonus(level, levelUpTable);
+        result.Influence += CalculateLevelInfluenceBonus(level, unitGrowthTable);
         result.ClampToMinimumOne();
         return result;
     }
 
-    private static float CalculateLevelInfluenceBonus(int level, IReadOnlyList<LevelUpData> levelUpTable)
+    private static float CalculateLevelInfluenceBonus(int level, IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTable)
     {
-        if (levelUpTable == null || levelUpTable.Count == 0)
+        if (unitGrowthTable == null || unitGrowthTable.Count == 0)
             return 0f;
 
         int safeLevel = Mathf.Max(1, level);
         float bonus = 0f;
-        for (int i = 0; i < levelUpTable.Count; i++)
+        for (int i = 0; i < unitGrowthTable.Count; i++)
         {
-            LevelUpData row = levelUpTable[i];
-            if (row == null || row.MaxIP <= 0)
+            DHUnitGrowthTemplate row = unitGrowthTable[i];
+            if (row == null || row.AddInfluence <= 0)
                 continue;
 
-            if (Mathf.FloorToInt(row.level) <= safeLevel)
-                bonus += row.MaxIP;
+            if (row.Level <= safeLevel)
+                bonus += row.AddInfluence;
         }
 
         return bonus;

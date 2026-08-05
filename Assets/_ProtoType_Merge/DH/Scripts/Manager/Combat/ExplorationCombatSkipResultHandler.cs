@@ -181,7 +181,7 @@ public static class ExplorationCombatSkipResultHandler
                 continue;
 
             if (DHCsvTemplateCatalog.Instance != null &&
-                DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(data.UnitTemplateKey, out EnemyData enemyTemplate) &&
+                DHCsvTemplateCatalog.Instance.TryGetEnemyUnitTemplate(data.UnitTemplateKey, out DHEnemyUnitTemplate enemyTemplate) &&
                 enemyTemplate != null)
             {
                 totalExp += Mathf.Max(0f, enemyTemplate.ExperiencePoint);
@@ -260,11 +260,11 @@ public static class ExplorationCombatSkipResultHandler
             return string.Empty;
 
         if (DHCsvTemplateCatalog.Instance != null &&
-            DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(data.UnitTemplateKey, out UnitData unitData) &&
+            DHCsvTemplateCatalog.Instance.TryGetPlayerUnitTemplate(data.UnitTemplateKey, out DHPlayerUnitTemplate unitData) &&
             unitData != null &&
-            !string.IsNullOrWhiteSpace(unitData.Name))
+            !string.IsNullOrWhiteSpace(unitData.UnitName))
         {
-            return unitData.Name;
+            return unitData.UnitName;
         }
 
         return string.IsNullOrWhiteSpace(data.UnitTemplateKey)

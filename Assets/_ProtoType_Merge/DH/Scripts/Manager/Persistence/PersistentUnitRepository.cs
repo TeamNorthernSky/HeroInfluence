@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -61,15 +62,15 @@ public class PersistentUnitRepository : MonoBehaviour
 
     public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats)
     {
-        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         StatBlock ingameStats = UnitStatCalculator.CalculateIngameStats(
             baseStats,
             levelupStats,
             level,
             currentWeaponStats,
             default,
-            levelUpTemplates);
-        return CreateUnit(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, levelUpTemplates), DefaultPlayerCurrentInfluence);
+            unitGrowthTemplates);
+        return CreateUnit(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, unitGrowthTemplates), DefaultPlayerCurrentInfluence);
     }
 
     public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, float currentInfluence = -1f)
@@ -338,14 +339,14 @@ public class PersistentUnitRepository : MonoBehaviour
         nextEventBonusStats.HP += hpBonus;
         nextEventBonusStats.Atk += atkBonus;
 
-        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
             data.BaseStats,
             data.LevelupStats,
             data.Level,
             data.CurrentWeaponStats,
             nextEventBonusStats,
-            levelUpTemplates);
+            unitGrowthTemplates);
 
         float hpRecovery = Mathf.Max(0f, hpBonus);
         float nextCurrentHp = Mathf.Clamp(data.CurrentHp + hpRecovery, 0f, Mathf.Max(0f, nextIngameStats.HP));
@@ -381,14 +382,14 @@ public class PersistentUnitRepository : MonoBehaviour
         nextEventBonusStats.Atk += atkBonus;
         nextEventBonusStats.DEF += defBonus;
 
-        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
             data.BaseStats,
             data.LevelupStats,
             data.Level,
             data.CurrentWeaponStats,
             nextEventBonusStats,
-            levelUpTemplates);
+            unitGrowthTemplates);
 
         float previousMaxHp = Mathf.Max(0f, data.IngameStats.HP);
         float nextMaxHp = Mathf.Max(0f, nextIngameStats.HP);
@@ -439,15 +440,15 @@ public class PersistentUnitRepository : MonoBehaviour
             return true;
 
         int nextLevel = Mathf.Max(1, data.Level + safeAmount);
-        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
             data.BaseStats,
             data.LevelupStats,
             nextLevel,
             data.CurrentWeaponStats,
             data.EventBonusStats,
-            levelUpTemplates);
-        int nextMaxExp = ResolveMaxExp(nextLevel, levelUpTemplates);
+            unitGrowthTemplates);
+        int nextMaxExp = ResolveMaxExp(nextLevel, unitGrowthTemplates);
         data.ApplyRuntimeState(
             data.UnitTemplateKey,
             nextLevel,
@@ -463,10 +464,10 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
-    private static IReadOnlyList<LevelUpData> ResolveLevelUpTemplates()
+    private static IReadOnlyList<DHUnitGrowthTemplate> ResolveUnitGrowthTemplates()
     {
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-        return catalog != null ? catalog.GetLevelUpTemplates() : null;
+        return catalog != null ? catalog.GetUnitGrowthTemplates() : null;
     }
 
     private bool ApplyWeaponState(UnitPersistentData data, int weaponInstanceIndex, int weaponTemplateKey, EquipmentStatBlock weaponStats)
@@ -474,14 +475,14 @@ public class PersistentUnitRepository : MonoBehaviour
         if (data == null)
             return false;
 
-        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
             data.BaseStats,
             data.LevelupStats,
             data.Level,
             weaponStats,
             data.EventBonusStats,
-            levelUpTemplates);
+            unitGrowthTemplates);
 
         float nextCurrentHp = Mathf.Clamp(data.CurrentHp, 0f, Mathf.Max(0f, nextIngameStats.HP));
         data.ApplyRuntimeState(
@@ -516,27 +517,25 @@ public class PersistentUnitRepository : MonoBehaviour
 
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
         if (catalog == null ||
-            !catalog.TryGetPlayerTemplate(data.UnitTemplateKey, out UnitData unitTemplate) ||
-            unitTemplate == null ||
-            string.IsNullOrWhiteSpace(unitTemplate.UnitType))
+            !TryExtractNumericId(data.UnitTemplateKey, out int classIndex))
         {
             return false;
         }
 
-        List<WeaponData> weapons = catalog.GetWeaponsByClass(unitTemplate.UnitType);
+        List<DHWeaponTemplate> weapons = catalog.GetWeaponTemplatesByClassIndex(classIndex);
         int bestWeaponIndex = 0;
 
         for (int i = 0; i < weapons.Count; i++)
         {
-            WeaponData weapon = weapons[i];
-            if (weapon == null || weapon.WeaponIndex <= 0)
+            DHWeaponTemplate weapon = weapons[i];
+            if (weapon == null || weapon.NumericWeaponId <= 0)
                 continue;
 
-            if (GetWeaponTier(weapon.WeaponIndex) != WeaponPersistentRepository.BaseWeaponLevel)
+            if (GetWeaponTier(weapon.NumericWeaponId) != WeaponPersistentRepository.BaseWeaponLevel)
                 continue;
 
-            if (bestWeaponIndex <= 0 || weapon.WeaponIndex < bestWeaponIndex)
-                bestWeaponIndex = weapon.WeaponIndex;
+            if (bestWeaponIndex <= 0 || weapon.NumericWeaponId < bestWeaponIndex)
+                bestWeaponIndex = weapon.NumericWeaponId;
         }
 
         if (bestWeaponIndex <= 0)
@@ -546,6 +545,16 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
+    private static bool TryExtractNumericId(string rawKey, out int numericId)
+    {
+        numericId = 0;
+        if (string.IsNullOrWhiteSpace(rawKey))
+            return false;
+
+        Match match = Regex.Match(rawKey.Trim(), @"\d+");
+        return match.Success && int.TryParse(match.Value, out numericId) && numericId > 0;
+    }
+
     private static int GetWeaponTier(int weaponIndex)
     {
         return Mathf.Abs(weaponIndex % 100);
@@ -553,30 +562,30 @@ public class PersistentUnitRepository : MonoBehaviour
 
     private static int ResolveMaxExp(int level)
     {
-        return ResolveMaxExp(level, ResolveLevelUpTemplates());
+        return ResolveMaxExp(level, ResolveUnitGrowthTemplates());
     }
 
-    private static int ResolveMaxExp(int level, IReadOnlyList<LevelUpData> levelUpTable)
+    private static int ResolveMaxExp(int level, IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTable)
     {
-        if (levelUpTable == null || levelUpTable.Count == 0)
+        if (unitGrowthTable == null || unitGrowthTable.Count == 0)
             return 0;
 
         int safeLevel = Mathf.Max(1, level);
         int nextLevel = int.MaxValue;
         int nextExp = 0;
 
-        for (int i = 0; i < levelUpTable.Count; i++)
+        for (int i = 0; i < unitGrowthTable.Count; i++)
         {
-            LevelUpData row = levelUpTable[i];
+            DHUnitGrowthTemplate row = unitGrowthTable[i];
             if (row == null)
                 continue;
 
-            int rowLevel = Mathf.RoundToInt(row.level);
+            int rowLevel = row.Level;
             if (rowLevel <= safeLevel || rowLevel >= nextLevel)
                 continue;
 
             nextLevel = rowLevel;
-            nextExp = Mathf.Max(0, row.expPerLevel);
+            nextExp = Mathf.Max(0, row.RequiredExperience);
         }
 
         return nextExp;
@@ -588,16 +597,16 @@ public class PersistentUnitRepository : MonoBehaviour
         if (data == null || expAmount <= 0)
             return data?.Level ?? 1;
 
-        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         int level = Mathf.Max(1, data.Level);
         int exp = Mathf.Max(0, data.Exp) + expAmount;
-        int maxExp = data.MaxExp > 0 ? data.MaxExp : ResolveMaxExp(level, levelUpTemplates);
+        int maxExp = data.MaxExp > 0 ? data.MaxExp : ResolveMaxExp(level, unitGrowthTemplates);
 
         while (maxExp > 0 && exp >= maxExp)
         {
             exp -= maxExp;
             level++;
-            maxExp = ResolveMaxExp(level, levelUpTemplates);
+            maxExp = ResolveMaxExp(level, unitGrowthTemplates);
         }
 
         return level;
@@ -608,10 +617,10 @@ public class PersistentUnitRepository : MonoBehaviour
         if (data == null || amount <= 0)
             return;
 
-        IReadOnlyList<LevelUpData> levelUpTemplates = ResolveLevelUpTemplates();
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         int nextLevel = Mathf.Max(1, data.Level);
         int nextExp = Mathf.Max(0, data.Exp) + amount;
-        int nextMaxExp = data.MaxExp > 0 ? data.MaxExp : ResolveMaxExp(nextLevel, levelUpTemplates);
+        int nextMaxExp = data.MaxExp > 0 ? data.MaxExp : ResolveMaxExp(nextLevel, unitGrowthTemplates);
         StatBlock nextIngameStats = data.IngameStats;
         float nextCurrentHp = data.CurrentHp;
 
@@ -626,11 +635,11 @@ public class PersistentUnitRepository : MonoBehaviour
                 nextLevel,
                 data.CurrentWeaponStats,
                 data.EventBonusStats,
-                levelUpTemplates);
+                unitGrowthTemplates);
             float nextMaxHp = Mathf.Max(0f, nextIngameStats.HP);
             float maxHpDelta = Mathf.Max(0f, nextMaxHp - previousMaxHp);
             nextCurrentHp = Mathf.Clamp(nextCurrentHp + maxHpDelta, 0f, nextMaxHp);
-            nextMaxExp = ResolveMaxExp(nextLevel, levelUpTemplates);
+            nextMaxExp = ResolveMaxExp(nextLevel, unitGrowthTemplates);
         }
 
         data.ApplyRuntimeState(

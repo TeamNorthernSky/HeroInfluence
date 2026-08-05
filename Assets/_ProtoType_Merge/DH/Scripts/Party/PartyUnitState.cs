@@ -44,13 +44,13 @@ public class PartyUnitState : MonoBehaviour
     public float CurrentHp => currentHp;
     public bool IsIncapacitated => isIncapacitated;
 
-    public void InitializeFromTemplate(UnitData template, EquipmentStatBlock weaponStats)
+    public void InitializeFromTemplate(DHPlayerUnitTemplate template, EquipmentStatBlock weaponStats)
     {
         if (template == null)
             return;
 
-        baseStats = template.baseStats;
-        levelupStats = template.levelupStats;
+        baseStats = template.BaseStats;
+        levelupStats = template.LevelupStats;
         eventBonusStats = default;
         currentWeaponStats = weaponStats;
         skillLevel = Mathf.Max(1, skillLevel);
@@ -210,37 +210,37 @@ public class PartyUnitState : MonoBehaviour
             Level,
             currentWeaponStats,
             eventBonusStats,
-            ResolveLevelUpTemplates());
+            ResolveUnitGrowthTemplates());
     }
 
-    private static IReadOnlyList<LevelUpData> ResolveLevelUpTemplates()
+    private static IReadOnlyList<DHUnitGrowthTemplate> ResolveUnitGrowthTemplates()
     {
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-        return catalog != null ? catalog.GetLevelUpTemplates() : null;
+        return catalog != null ? catalog.GetUnitGrowthTemplates() : null;
     }
 
     private static int ResolveMaxExp(int level)
     {
-        IReadOnlyList<LevelUpData> levelUpTable = ResolveLevelUpTemplates();
-        if (levelUpTable == null || levelUpTable.Count == 0)
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTable = ResolveUnitGrowthTemplates();
+        if (unitGrowthTable == null || unitGrowthTable.Count == 0)
             return 0;
 
         int safeLevel = Mathf.Max(1, level);
         int nextLevel = int.MaxValue;
         int nextExp = 0;
 
-        for (int i = 0; i < levelUpTable.Count; i++)
+        for (int i = 0; i < unitGrowthTable.Count; i++)
         {
-            LevelUpData row = levelUpTable[i];
+            DHUnitGrowthTemplate row = unitGrowthTable[i];
             if (row == null)
                 continue;
 
-            int rowLevel = Mathf.RoundToInt(row.level);
+            int rowLevel = row.Level;
             if (rowLevel <= safeLevel || rowLevel >= nextLevel)
                 continue;
 
             nextLevel = rowLevel;
-            nextExp = Mathf.Max(0, row.expPerLevel);
+            nextExp = Mathf.Max(0, row.RequiredExperience);
         }
 
         return nextExp;
