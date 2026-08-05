@@ -460,7 +460,7 @@ public class PartyInteractionController
             return false;
 
         EventScriptCatalog catalog = EventScriptCatalog.Instance;
-        if (catalog == null || !catalog.TryGetChat(chatZoneId, chatId, out ChatDBEventData chat) || chat == null)
+        if (catalog == null || !catalog.TryGetChatTemplate(chatZoneId, chatId, out DHEventChatTemplate chat) || chat == null)
             return false;
 
         ChatModalController.Show(chatZoneId, chatId, onClosed);

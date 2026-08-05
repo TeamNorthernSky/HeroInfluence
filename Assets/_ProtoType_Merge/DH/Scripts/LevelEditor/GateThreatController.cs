@@ -558,7 +558,7 @@ public class GateThreatController : MonoBehaviour
             return false;
 
         EventScriptCatalog catalog = EventScriptCatalog.Instance;
-        if (catalog == null || !catalog.TryGetChat(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, out ChatDBEventData chat) || chat == null)
+        if (catalog == null || !catalog.TryGetChatTemplate(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, out DHEventChatTemplate chat) || chat == null)
             return false;
 
         ChatModalController.Show(spawnPoint.SpawnChatZoneId, spawnPoint.SpawnChatId, onClosed);
