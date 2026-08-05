@@ -12,14 +12,14 @@ public class ChatManager : MonoBehaviour
 
     private static readonly IReadOnlyList<ChatBranchOptionState> EmptyOptionStates = Array.Empty<ChatBranchOptionState>();
 
-    private readonly List<BranchDBEventData> currentOptions = new List<BranchDBEventData>();
+    private readonly List<DHEventBranchTemplate> currentOptions = new List<DHEventBranchTemplate>();
     private readonly List<ChatBranchOptionState> currentOptionStates = new List<ChatBranchOptionState>();
 
     private int currentZoneId;
-    private ChatDBEventData currentChat;
-    private BranchDBEventData pendingAutoBranch;
+    private DHEventChatTemplate currentChat;
+    private DHEventBranchTemplate pendingAutoBranch;
 
-    public event Action<ChatDBEventData> OnChatShown;
+    public event Action<DHEventChatTemplate> OnChatShown;
     public event Action<IReadOnlyList<ChatBranchOptionState>> OnBranchShown;
     public event Action OnChatEnded;
 
@@ -29,10 +29,10 @@ public class ChatManager : MonoBehaviour
     public bool IsAtFinalChat =>
         IsRunning && currentChat != null &&
         currentOptionStates.Count == 0 && pendingAutoBranch == null &&
-        currentChat.Next_Chat_ID <= 0;
+        currentChat.NextChatId <= 0;
     public int CurrentZoneId => currentZoneId;
-    public ChatDBEventData CurrentChat => currentChat;
-    public IReadOnlyList<BranchDBEventData> CurrentOptions => currentOptions.ToArray();
+    public DHEventChatTemplate CurrentChat => currentChat;
+    public IReadOnlyList<DHEventBranchTemplate> CurrentOptions => currentOptions.ToArray();
 
     private void Awake()
     {
@@ -74,7 +74,7 @@ public class ChatManager : MonoBehaviour
             EndChat();
         }
 
-        if (!catalog.TryGetChat(zoneId, startChatId, out ChatDBEventData chat) || chat == null)
+        if (!catalog.TryGetChatTemplate(zoneId, startChatId, out DHEventChatTemplate chat) || chat == null)
         {
             Debug.LogWarning($"[ChatManager] Chat ID was not found. Zone: {zoneId}, Chat_ID: {startChatId}", this);
             EndChat();
@@ -107,20 +107,20 @@ public class ChatManager : MonoBehaviour
 
         if (pendingAutoBranch != null)
         {
-            BranchDBEventData autoBranch = pendingAutoBranch;
+            DHEventBranchTemplate autoBranch = pendingAutoBranch;
             pendingAutoBranch = null;
             SelectBranch(autoBranch);
             return;
         }
 
-        if (currentChat.Next_Chat_ID <= 0)
+        if (currentChat.NextChatId <= 0)
         {
             EndChat();
             return;
         }
 
-        int nextChatId = currentChat.Next_Chat_ID;
-        if (!catalog.TryGetChat(currentZoneId, nextChatId, out ChatDBEventData next) || next == null)
+        int nextChatId = currentChat.NextChatId;
+        if (!catalog.TryGetChatTemplate(currentZoneId, nextChatId, out DHEventChatTemplate next) || next == null)
         {
             Debug.LogWarning($"[ChatManager] Next Chat_ID was not found. Zone: {currentZoneId}, Chat_ID: {nextChatId}", this);
             EndChat();
@@ -140,13 +140,13 @@ public class ChatManager : MonoBehaviour
         for (int step = 0; step < maxSteps && IsRunning && currentChat != null; step++)
         {
             if (currentOptionStates.Count > 0) return; // 선택지 표시 중 → 선택 대기
-            if (pendingAutoBranch == null && currentChat.Next_Chat_ID <= 0) return; // 마지막 대사 → 표시한 채 정지
+            if (pendingAutoBranch == null && currentChat.NextChatId <= 0) return; // 마지막 대사 → 표시한 채 정지
 
             Advance();
         }
     }
 
-    public void Select(BranchDBEventData option)
+    public void Select(DHEventBranchTemplate option)
     {
         if (!ResolveCatalog())
         {
@@ -175,25 +175,25 @@ public class ChatManager : MonoBehaviour
         SelectBranch(option);
     }
 
-    private void SelectBranch(BranchDBEventData option)
+    private void SelectBranch(DHEventBranchTemplate option)
     {
         pendingAutoBranch = null;
         DHChatBranchRuleEvaluator.ExecuteTriggerEffect(
             option,
             new DHEventEffectExecutionContext(
                 currentZoneId,
-                currentChat != null ? currentChat.Chat_ID : 0,
-                currentChat != null ? currentChat.Next_Chat_ID : 0));
+                currentChat != null ? currentChat.ChatId : 0,
+                currentChat != null ? currentChat.NextChatId : 0));
 
-        if (option.Target_Talk_ID <= 0)
+        if (option.TargetTalkId <= 0)
         {
             EndChat();
             return;
         }
 
-        if (!catalog.TryGetChat(currentZoneId, option.Target_Talk_ID, out ChatDBEventData target) || target == null)
+        if (!catalog.TryGetChatTemplate(currentZoneId, option.TargetTalkId, out DHEventChatTemplate target) || target == null)
         {
-            Debug.LogWarning($"[ChatManager] Branch target Chat_ID was not found. Zone: {currentZoneId}, Chat_ID: {option.Target_Talk_ID}", this);
+            Debug.LogWarning($"[ChatManager] Branch target Chat_ID was not found. Zone: {currentZoneId}, Chat_ID: {option.TargetTalkId}", this);
             EndChat();
             return;
         }
@@ -221,7 +221,7 @@ public class ChatManager : MonoBehaviour
             EndChat();
         }
 
-        if (!catalog.TryGetChat(zoneId, resumeChatId, out ChatDBEventData chat) || chat == null)
+        if (!catalog.TryGetChatTemplate(zoneId, resumeChatId, out DHEventChatTemplate chat) || chat == null)
         {
             Debug.LogWarning($"[ChatManager] Event battle resume Chat_ID was not found. Zone: {zoneId}, Chat_ID: {resumeChatId}", this);
             EndChat();
@@ -230,7 +230,7 @@ public class ChatManager : MonoBehaviour
 
         currentZoneId = zoneId;
 
-        if (IsBattleEndRelayChat(chat) && TryResolveAutoBranch(chat, out BranchDBEventData autoBranch))
+        if (IsBattleEndRelayChat(chat) && TryResolveAutoBranch(chat, out DHEventBranchTemplate autoBranch))
         {
             currentChat = chat;
             currentOptions.Clear();
@@ -283,7 +283,7 @@ public class ChatManager : MonoBehaviour
         return catalog != null;
     }
 
-    private void ShowChat(ChatDBEventData chat)
+    private void ShowChat(DHEventChatTemplate chat)
     {
         currentChat = chat;
         currentOptions.Clear();
@@ -293,18 +293,18 @@ public class ChatManager : MonoBehaviour
 
         OnChatShown?.Invoke(chat);
 
-        if (chat == null || chat.Branch_Group_ID == 0)
+        if (chat == null || chat.BranchGroupId == 0)
         {
             OnBranchShown?.Invoke(EmptyOptionStates);
             return;
         }
 
-        if (catalog.TryGetBranchOptions(currentZoneId, chat.Branch_Group_ID, out IReadOnlyList<BranchDBEventData> options) &&
+        if (catalog.TryGetBranchOptionTemplates(currentZoneId, chat.BranchGroupId, out IReadOnlyList<DHEventBranchTemplate> options) &&
             options != null)
         {
             for (int i = 0; i < options.Count; i++)
             {
-                BranchDBEventData option = options[i];
+                DHEventBranchTemplate option = options[i];
                 if (option == null)
                 {
                     continue;
@@ -312,7 +312,7 @@ public class ChatManager : MonoBehaviour
 
                 bool isAvailable = IsBranchAvailable(option);
 
-                if (string.IsNullOrWhiteSpace(option.Selection_Text))
+                if (string.IsNullOrWhiteSpace(option.SelectionText))
                 {
                     if (isAvailable)
                     {
@@ -333,24 +333,24 @@ public class ChatManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[ChatManager] Branch options were not found. Zone: {currentZoneId}, Branch_Group_ID: {chat.Branch_Group_ID}", this);
+            Debug.LogWarning($"[ChatManager] Branch options were not found. Zone: {currentZoneId}, Branch_Group_ID: {chat.BranchGroupId}", this);
         }
 
         OnBranchShown?.Invoke(currentOptionStates.Count > 0 ? currentOptionStates.ToArray() : EmptyOptionStates);
     }
 
-    private bool IsBranchAvailable(BranchDBEventData option)
+    private bool IsBranchAvailable(DHEventBranchTemplate option)
     {
         return DHChatBranchRuleEvaluator.IsBranchAvailable(option);
     }
 
-    private bool TryResolveAutoBranch(ChatDBEventData chat, out BranchDBEventData autoBranch)
+    private bool TryResolveAutoBranch(DHEventChatTemplate chat, out DHEventBranchTemplate autoBranch)
     {
         autoBranch = null;
-        if (chat == null || chat.Branch_Group_ID == 0)
+        if (chat == null || chat.BranchGroupId == 0)
             return false;
 
-        if (!catalog.TryGetBranchOptions(currentZoneId, chat.Branch_Group_ID, out IReadOnlyList<BranchDBEventData> options) ||
+        if (!catalog.TryGetBranchOptionTemplates(currentZoneId, chat.BranchGroupId, out IReadOnlyList<DHEventBranchTemplate> options) ||
             options == null)
         {
             return false;
@@ -358,8 +358,8 @@ public class ChatManager : MonoBehaviour
 
         for (int i = 0; i < options.Count; i++)
         {
-            BranchDBEventData option = options[i];
-            if (option == null || !string.IsNullOrWhiteSpace(option.Selection_Text))
+            DHEventBranchTemplate option = options[i];
+            if (option == null || !string.IsNullOrWhiteSpace(option.SelectionText))
                 continue;
 
             if (!IsBranchAvailable(option))
@@ -372,11 +372,11 @@ public class ChatManager : MonoBehaviour
         return false;
     }
 
-    private static bool IsBattleEndRelayChat(ChatDBEventData chat)
+    private static bool IsBattleEndRelayChat(DHEventChatTemplate chat)
     {
-        if (chat == null || chat.Branch_Group_ID == 0)
+        if (chat == null || chat.BranchGroupId == 0)
             return false;
 
-        return string.Equals(chat.Message_Text?.Trim(), "전투 종료", StringComparison.Ordinal);
+        return string.Equals(chat.MessageText, "전투 종료", StringComparison.Ordinal);
     }
 }

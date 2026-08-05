@@ -78,7 +78,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
             return;
         }
 
-        if (!catalog.TryGetBattleEnemyGroup(zoneId, request.BattleKey, out EnemyGroupData group) || group == null)
+        if (!catalog.TryGetBattleEnemyGroupTemplate(zoneId, request.BattleKey, out DHEventBattleGroupTemplate group) || group == null)
         {
             Debug.LogWarning($"[DHEventBattleRuntime] Battle group was not found. Zone: {zoneId}, BattleKey: {request.BattleKey}", this);
             return;
@@ -206,32 +206,32 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         if (catalog == null)
             return false;
 
-        if (!catalog.TryGetChat(zoneId, resumeChatId, out ChatDBEventData chat) || chat == null)
+        if (!catalog.TryGetChatTemplate(zoneId, resumeChatId, out DHEventChatTemplate chat) || chat == null)
             return false;
 
         modalChatId = resumeChatId;
         if (!IsBattleEndRelayChat(chat))
             return true;
 
-        if (!TryResolveAutoBranch(catalog, zoneId, chat, out BranchDBEventData autoBranch) || autoBranch == null)
+        if (!TryResolveAutoBranch(catalog, zoneId, chat, out DHEventBranchTemplate autoBranch) || autoBranch == null)
             return true;
 
         DHChatBranchRuleEvaluator.ExecuteTriggerEffect(autoBranch);
-        modalChatId = autoBranch.Target_Talk_ID;
+        modalChatId = autoBranch.TargetTalkId;
         return modalChatId > 0;
     }
 
     private static bool TryResolveAutoBranch(
         EventScriptCatalog catalog,
         int zoneId,
-        ChatDBEventData chat,
-        out BranchDBEventData autoBranch)
+        DHEventChatTemplate chat,
+        out DHEventBranchTemplate autoBranch)
     {
         autoBranch = null;
-        if (catalog == null || chat == null || chat.Branch_Group_ID == 0)
+        if (catalog == null || chat == null || chat.BranchGroupId == 0)
             return false;
 
-        if (!catalog.TryGetBranchOptions(zoneId, chat.Branch_Group_ID, out IReadOnlyList<BranchDBEventData> options) ||
+        if (!catalog.TryGetBranchOptionTemplates(zoneId, chat.BranchGroupId, out IReadOnlyList<DHEventBranchTemplate> options) ||
             options == null)
         {
             return false;
@@ -239,8 +239,8 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
 
         for (int i = 0; i < options.Count; i++)
         {
-            BranchDBEventData option = options[i];
-            if (option == null || !string.IsNullOrWhiteSpace(option.Selection_Text))
+            DHEventBranchTemplate option = options[i];
+            if (option == null || !string.IsNullOrWhiteSpace(option.SelectionText))
                 continue;
 
             if (!DHChatBranchRuleEvaluator.IsBranchAvailable(option))
@@ -253,12 +253,12 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         return false;
     }
 
-    private static bool IsBattleEndRelayChat(ChatDBEventData chat)
+    private static bool IsBattleEndRelayChat(DHEventChatTemplate chat)
     {
-        if (chat == null || chat.Branch_Group_ID == 0)
+        if (chat == null || chat.BranchGroupId == 0)
             return false;
 
-        return string.Equals(chat.Message_Text?.Trim(), BattleEndRelayText, StringComparison.Ordinal);
+        return string.Equals(chat.MessageText, BattleEndRelayText, StringComparison.Ordinal);
     }
 
     private static void CompleteSourceMainEvent(string eventKey)
@@ -309,16 +309,19 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
     private static List<CombatEventBattleUnitData> BuildEventBattleUnits(
         EventScriptCatalog catalog,
         int zoneId,
-        EnemyGroupData group,
+        DHEventBattleGroupTemplate group,
         int enemyLevel)
     {
         var units = new List<CombatEventBattleUnitData>();
-        TryAddUnit(catalog, zoneId, units, group.Enemy1, group.Enemy1Slot, enemyLevel);
-        TryAddUnit(catalog, zoneId, units, group.Enemy2, group.Enemy2Slot, enemyLevel);
-        TryAddUnit(catalog, zoneId, units, group.Enemy3, group.Enemy3Slot, enemyLevel);
-        TryAddUnit(catalog, zoneId, units, group.Enemy4, group.Enemy4Slot, enemyLevel);
-        TryAddUnit(catalog, zoneId, units, group.Enemy5, group.Enemy5Slot, enemyLevel);
-        TryAddUnit(catalog, zoneId, units, group.Enemy6, group.Enemy6Slot, enemyLevel);
+        if (group == null || group.Members == null)
+            return units;
+
+        for (int i = 0; i < group.Members.Count; i++)
+        {
+            DHEventBattleGroupMember member = group.Members[i];
+            TryAddUnit(catalog, zoneId, units, member.UnitKey, member.CombatSlot, enemyLevel);
+        }
+
         return units;
     }
 
@@ -334,7 +337,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
             return;
 
         string normalizedUnitKey = unitKey.Trim();
-        if (!catalog.TryGetBattleEnemyUnit(zoneId, normalizedUnitKey, out EnemyUnit1SectorData source) || source == null)
+        if (!catalog.TryGetBattleEnemyUnitTemplate(zoneId, normalizedUnitKey, out DHEventBattleUnitTemplate source) || source == null)
         {
             Debug.LogWarning($"[DHEventBattleRuntime] Battle enemy unit was not found. Zone: {zoneId}, UnitKey: {normalizedUnitKey}");
             return;
@@ -440,7 +443,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         return null;
     }
 
-    private static void PopulateEventBattleSkills(CombatEventBattleUnitData unit, EnemyUnit1SectorData source)
+    private static void PopulateEventBattleSkills(CombatEventBattleUnitData unit, DHEventBattleUnitTemplate source)
     {
         if (unit == null || source == null)
             return;
@@ -450,27 +453,17 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         if (enemyIndex <= 0)
             return;
 
-        TryAddEventBattleSkill(
-            unit.Skills, enemyIndex, 1, source.EnemyName,
-            source.EnemySkill1_Name, source.EnemySkill1_Description,
-            source.EnemySkill1Effect, source.EnemySkill1Range, source.EnemySkill1RangeLine,
-            source.EnemySkill1Target, source.EnemySkill1MultiTarget,
-            source.EnemySkill1_MultiTargetType, source.EnemySkill1_MultiTargetCount,
-            source.EnemySkill1Value, source.EnemySkill1SubValue);
-        TryAddEventBattleSkill(
-            unit.Skills, enemyIndex, 2, source.EnemyName,
-            source.EnemySkill2_Name, source.EnemySkill2_Description,
-            source.EnemySkill2Effect, source.EnemySkill2Range, source.EnemySkill2RangeLine,
-            source.EnemySkill2Target, source.EnemySkill2MultiTarget,
-            source.EnemySkill2_MultiTargetType, source.EnemySkill2_MultiTargetCount,
-            source.EnemySkill2Value, source.EnemySkill2SubValue);
-        TryAddEventBattleSkill(
-            unit.Skills, enemyIndex, 3, source.EnemyName,
-            source.EnemySkill3_Name, source.EnemySkill3_Description,
-            source.EnemySkill3Effect, source.EnemySkill3Range, source.EnemySkill3RangeLine,
-            source.EnemySkill3Target, source.EnemySkill3MultiTarget,
-            source.EnemySkill3_MultiTargetType, source.EnemySkill3_MultiTargetCount,
-            source.EnemySkill3Value, source.EnemySkill3SubValue);
+        for (int i = 0; i < source.Skills.Count; i++)
+        {
+            DHEventBattleSkillTemplate skill = source.Skills[i];
+            TryAddEventBattleSkill(
+                unit.Skills, enemyIndex, skill.Slot, source.EnemyName,
+                skill.SkillName, skill.Description,
+                skill.Effect, skill.Range, skill.RangeLine,
+                skill.Target, skill.Boundary,
+                skill.MultiTargetType, skill.MultiTargetCount,
+                skill.Value, skill.SubValue);
+        }
     }
 
     private static void TryAddEventBattleSkill(
@@ -535,19 +528,19 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         return int.TryParse(normalized, out int parsed) ? parsed : 0;
     }
 
-    private static void ApplyLevelGrowth(CombatEventBattleUnitData unit, EnemyUnit1SectorData source, int enemyLevel)
+    private static void ApplyLevelGrowth(CombatEventBattleUnitData unit, DHEventBattleUnitTemplate source, int enemyLevel)
     {
         if (unit == null || source == null)
             return;
 
         int growthCount = Mathf.Max(0, enemyLevel - 1);
-        unit.MaxHp = Mathf.Max(1, source.UnitMaxHP + source.LevelGrowthMaxHP * growthCount);
-        unit.Atk = Mathf.Max(0, source.UnitATK + source.LevelGrowthAtk * growthCount);
-        unit.Def = Mathf.Max(0, source.UnitDEF + source.LevelGrowthDef * growthCount);
+        unit.MaxHp = Mathf.Max(1, source.BaseMaxHp + source.LevelGrowthMaxHp * growthCount);
+        unit.Atk = Mathf.Max(0, source.BaseAtk + source.LevelGrowthAtk * growthCount);
+        unit.Def = Mathf.Max(0, source.BaseDef + source.LevelGrowthDef * growthCount);
         unit.ExperiencePoint = Mathf.Max(0, source.ExperiencePoint + source.LevelGrowthExperiencePoint * growthCount);
     }
 
-    private static int ResolveEnemyLevel(int zoneId, EnemyGroupData group, PartyGridMover party)
+    private static int ResolveEnemyLevel(int zoneId, DHEventBattleGroupTemplate group, PartyGridMover party)
     {
         string zoneKey = zoneId.ToString();
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
