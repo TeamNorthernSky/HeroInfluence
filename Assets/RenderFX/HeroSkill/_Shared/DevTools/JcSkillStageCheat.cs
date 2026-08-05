@@ -148,7 +148,7 @@ namespace JC.VFX.Seam
                 Debug.LogWarning("[SkillStage] 카탈로그가 없습니다 — 전투 씬이 맞는지 확인하세요.");
                 return;
             }
-            if (catalog.GetSkillTemplate(skillIndex) == null)
+            if (!catalog.TryGetClassSkillTemplate(skillIndex, out _))
             {
                 Debug.LogWarning($"[SkillStage] {label} {stage}단계(인덱스 {skillIndex})가 카탈로그에 없습니다. 건너뜁니다.");
                 return;

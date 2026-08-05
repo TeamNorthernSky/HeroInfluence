@@ -6,10 +6,14 @@ namespace JC.VFX
     [CustomEditor(typeof(PawWarpPillarPreset))]
     public class PawWarpPillarPresetEditor : Editor
     {
+        // ★분할 프리팹(PawSpawn/Warp/Beam ×B·G)이 실사용 — 통짜 2종만 있던 죽은 목록을 교정(260805).
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs";
         static readonly string[] PrefabPaths =
         {
-            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawForYou.prefab",
-            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/PawForYouMistake.prefab",
+            DIR + "/PawSpawn.prefab",  DIR + "/PawSpawn_Gold.prefab",
+            DIR + "/PawWarp.prefab",   DIR + "/PawWarp_Gold.prefab",
+            DIR + "/PawBeam.prefab",   DIR + "/PawBeam_Gold.prefab",
+            DIR + "/PawForYou.prefab", DIR + "/_Legacy/PawForYouMistake.prefab",
         };
 
         public override void OnInspectorGUI()

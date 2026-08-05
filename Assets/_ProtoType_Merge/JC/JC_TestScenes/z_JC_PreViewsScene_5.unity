@@ -677,7 +677,6 @@ MonoBehaviour:
   catalog: {fileID: 11400000, guid: 2e64e26e7f20f66438885eb869723307, type: 2}
   placements:
   - {fileID: 11400000, guid: ba48f260179be594e9dd6d24eb4a1553, type: 2}
-  - {fileID: 11400000, guid: 781c7399a89bb034d8bd384cfb913554, type: 2}
   caster: {fileID: 0}
   target: {fileID: 0}
   casterNameHint: 10004
@@ -790,7 +789,7 @@ MonoBehaviour:
       localOffset: 1
       delayAfter: 0.22
       lifeTime: 0
-      placementKey: paw_warp_out
+      placementKey: 
       impactPlacementKey: 
       waitForImpact: 0
       label: "2. \uC6CC\uD504 \u2014 \uCD9C\uBC1C"
@@ -802,7 +801,7 @@ MonoBehaviour:
       localOffset: 0
       delayAfter: 0
       lifeTime: 0
-      placementKey: paw_warp_in
+      placementKey: 
       impactPlacementKey: 
       waitForImpact: 0
       label: "3. \uC6CC\uD504 \u2014 \uB3C4\uCC29"
@@ -843,7 +842,7 @@ MonoBehaviour:
       localOffset: 1
       delayAfter: 0.22
       lifeTime: 0
-      placementKey: paw_warp_out
+      placementKey: 
       impactPlacementKey: 
       waitForImpact: 0
       label: "2. \uC6CC\uD504 \u2014 \uCD9C\uBC1C"
@@ -855,7 +854,7 @@ MonoBehaviour:
       localOffset: 0
       delayAfter: 0
       lifeTime: 0
-      placementKey: paw_warp_in
+      placementKey: 
       impactPlacementKey: 
       waitForImpact: 0
       label: "3. \uC6CC\uD504 \u2014 \uB3C4\uCC29"
@@ -3387,7 +3386,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1832740940}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -3.3, y: 0, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3757,9 +3756,429 @@ MonoBehaviour:
   useSOTables: 1
   loadOnAwake: 0
   dontDestroyOnLoad: 1
-  cachedPlayerTemplates: []
-  cachedEnemyTemplates: []
-  cachedWeapons: []
+  cachedPlayerTemplates:
+  - Index: 10001
+    UnitType: "\uD30C\uC774\uD130"
+    Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    baseStats:
+      HP: 6
+      Atk: 9
+      DEF: 5
+      Luck: 0
+      Speed: 1
+      CriticalRate: 0.15
+      CritMultiplier: 1.5
+      CounterRate: 0.15
+      AvoidRate: 0.15
+      influence: 100
+    levelupStats:
+      HP: 4
+      Atk: 4
+      DEF: 2
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 0
+  - Index: 10002
+    UnitType: "\uBE14\uB798\uC2A4\uD130"
+    Name: "\uB8E8\uBBF8\uB098"
+    baseStats:
+      HP: 4
+      Atk: 12
+      DEF: 4
+      Luck: 0
+      Speed: 3
+      CriticalRate: 0.3
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.2
+      influence: 100
+    levelupStats:
+      HP: 4
+      Atk: 4
+      DEF: 2
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 0
+  - Index: 10003
+    UnitType: "\uC2A4\uD2B8\uB77C\uC774\uCEE4"
+    Name: "\uBE14\uB799 \uBD88\uB9BF"
+    baseStats:
+      HP: 6
+      Atk: 12
+      DEF: 2
+      Luck: 0
+      Speed: 2
+      CriticalRate: 0.2
+      CritMultiplier: 1.5
+      CounterRate: 0.05
+      AvoidRate: 0.1
+      influence: 100
+    levelupStats:
+      HP: 2
+      Atk: 6
+      DEF: 2
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 0
+  - Index: 10004
+    UnitType: "\uC11C\uD3EC\uD130"
+    Name: "\uB124\uCF54\uBC0D"
+    baseStats:
+      HP: 6
+      Atk: 8
+      DEF: 6
+      Luck: 0
+      Speed: 2
+      CriticalRate: 0.1
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.15
+      influence: 100
+    levelupStats:
+      HP: 5
+      Atk: 4
+      DEF: 1
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 0
+  cachedEnemyTemplates:
+  - Index: 20001
+    UnitType: 
+    Name: "\uB9C8\uC5D0\uC2A4\uD2B8\uB85C\uBD07"
+    baseStats:
+      HP: 5
+      Atk: 10
+      DEF: 5
+      Luck: 0
+      Speed: 2
+      CriticalRate: 0.1
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.1
+      influence: 0
+    levelupStats:
+      HP: 1
+      Atk: 4
+      DEF: 1
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(1\uD134) \uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uD788\uC5B4\uB85C 1\uBA85\uC744
+      \uD45C\uC801\uC73C\uB85C \uC9C0\uC815 (\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC774
+      \uB458 \uC774\uC0C1\uC77C \uACBD\uC6B0 \uB300\uC0C1\uC740 \uB79C\uB364)\n(2\uD134)
+      \uD574\uB2F9 \uC720\uB2DB\uC5D0\uAC8C '\uC790\uD3ED' \uC2E4\uD589 - \uB300\uBBF8\uC9C0
+      \uACC4\uC0B0 \uD6C4 \uB9C8\uC5D0\uC2A4\uD2B8\uB85C\uBD07 \uC804\uC7A5 \uC81C\uAC70"
+    ExperiencePoint: 15
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 20002
+    UnitType: 
+    Name: "\uBE4C\uB7F0\uC5F0\uD569 \uC18C\uCD1D\uC218"
+    baseStats:
+      HP: 8
+      Atk: 6
+      DEF: 6
+      Luck: 0
+      Speed: 3
+      CriticalRate: 0.1
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.1
+      influence: 0
+    levelupStats:
+      HP: 3
+      Atk: 4
+      DEF: 1
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(\uB9E4 \uD134) '\uC6D0\uAC70\uB9AC \uC0AC\uACA9' \uC2E4\uD589\n\uC6B0\uC120
+      \uC21C\uC704\n1. \uAC19\uC740 \uD589\uC5D0 \uC788\uB294 \uD788\uC5B4\uB85C\uB97C
+      \uC6B0\uC120 \uD45C\uC801\uC73C\uB85C \uC0BC\uB294\uB2E4.\n2. \uAC19\uC740
+      \uD589 \uD45C\uC801\uC774 \uC5EC\uB7FF\uC774\uBA74 \uD604\uC7AC \uCCB4\uB825\uC774
+      \uB0AE\uC740 \uD788\uC5B4\uB85C\uB97C \uC120\uD0DD\uD55C\uB2E4.\n3. \uAC19\uC740
+      \uD589\uC5D0 \uD45C\uC801\uC774 \uC5C6\uC73C\uBA74 \uAC00\uC7A5 \uAC00\uAE4C\uC6B4
+      \uD788\uC5B4\uB85C\uB97C \uC0AC\uACA9\uD55C\uB2E4. (\uAC00\uC7A5 \uAC00\uAE4C\uC6B4
+      \uC720\uB2DB\uC774 \uB458 \uC774\uC0C1\uC77C \uACBD\uC6B0 \uB300\uC0C1\uC740
+      \uB79C\uB364)"
+    ExperiencePoint: 30
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 20003
+    UnitType: 
+    Name: "\uBE4C\uB7F0\uC5F0\uD569 \uBC29\uD328\uBCD1"
+    baseStats:
+      HP: 6
+      Atk: 6
+      DEF: 8
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0.1
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.1
+      influence: 0
+    levelupStats:
+      HP: 2
+      Atk: 3
+      DEF: 3
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(\uB9E4 \uD134) \n- \uC544\uAD70 \uC720\uB2DB \uC911, \uCCB4\uB825 30%
+      \uBBF8\uB9CC \uC720\uB2DB\uC774 1\uBA85 \uC774\uC0C1 \uC788\uB294 \uACBD\uC6B0,
+      '\uB300\uC2E0 \uB9DE\uAE30' \uC2E4\uD589\n- \uC544\uB2CC \uACBD\uC6B0 \uAC00\uC7A5
+      \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC5D0\uAC8C '\uBC29\uD328 \uCE58\uAE30' \uC2E4\uD589"
+    ExperiencePoint: 30
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 20004
+    UnitType: 
+    Name: "\uBB34\uC778 \uC911\uD3EC\uD0D1"
+    baseStats:
+      HP: 6
+      Atk: 12
+      DEF: 6
+      Luck: 0
+      Speed: 2
+      CriticalRate: 0.2
+      CritMultiplier: 1.5
+      CounterRate: 0.15
+      AvoidRate: 0.15
+      influence: 0
+    levelupStats:
+      HP: 3
+      Atk: 4
+      DEF: 3
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(\uB9E4 \uD134) \uB79C\uB364 \uD788\uC5B4\uB85C 1\uBA85\uC744 \uB300\uC0C1\uC73C\uB85C
+      '\uCDA9\uC804 \uD3EC\uACA9' \uC2E4\uD589"
+    ExperiencePoint: 60
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 20005
+    UnitType: 
+    Name: "\uBE4C\uB7F0\uC5F0\uD569 \uAC15\uD654\uBCD1"
+    baseStats:
+      HP: 10
+      Atk: 6
+      DEF: 6
+      Luck: 0
+      Speed: 1
+      CriticalRate: 0.25
+      CritMultiplier: 1.5
+      CounterRate: 0.2
+      AvoidRate: 0.2
+      influence: 0
+    levelupStats:
+      HP: 7
+      Atk: 5
+      DEF: 3
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "(\uB9E4 \uD134)\n- \uAC19\uC740 \uD589\uC5D0 \uD788\uC5B4\uB85C\uAC00
+      \uC5C6\uB294 \uACBD\uC6B0, '\uBC1C\uD1B1 \uD6C4\uB9AC\uAE30' \uC2E4\uD589\n-
+      \uAC19\uC740 \uD589\uC5D0 \uD788\uC5B4\uB85C\uAC00 1\uBA85 \uC788\uB294 \uACBD\uC6B0,
+      '\uBC1C\uD1B1 \uD6C4\uB9AC\uAE30' \uC2E4\uD589\n- \uAC19\uC740 \uD589\uC5D0
+      \uD788\uC5B4\uB85C\uAC00 2\uBA85 \uC788\uB294 \uACBD\uC6B0, '\uBC15\uCE58\uAE30'
+      \uC2E4\uD589"
+    ExperiencePoint: 80
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  cachedWeapons:
+  - WeaponIndex: 1
+    weaponClass: 
+    WeaponName: "\uAE30\uBCF8 \uCF54\uC5B4"
+    WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uAC00\uC7A5
+      \uAE30\uBCF8\uC801\uC778 \uD615\uD0DC\uB85C \uB2E4\uB8E8\uB294 \uCF54\uC5B4.
+      \uC548\uC815\uC801\uC778 \uB2E8\uC77C \uACF5\uACA9\uC744 \uC0AC\uC6A9\uD560
+      \uC218 \uC788\uB2E4."
+    BonusHP: 0
+    BonusATK: 1
+    BonusDEF: 0
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: 0
+    WeaponSkillName: "\uC82C \uD30C\uC6CC"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801
+      1\uBA85\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 0
+    WeaponSkillRange: 0
+    WeaponSkillRangeLine: 0
+    WeaponSkillTarget: 0
+    WeaponSkillMultiTarget: 
+    WeaponSkillMultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValue: 0.8
+    WeaponSkillSubValue: 0
+  - WeaponIndex: 2
+    weaponClass: 
+    WeaponName: "\uAD11\uC5ED \uCF54\uC5B4"
+    WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uB113\uAC8C
+      \uD655\uC0B0\uC2DC\uD0A4\uB294 \uCF54\uC5B4. \uB2E4\uC218\uC758 \uC801\uC744
+      \uB3D9\uC2DC\uC5D0 \uACF5\uACA9\uD560 \uC218 \uC788\uB2E4."
+    BonusHP: 0
+    BonusATK: 1
+    BonusDEF: 0
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: 0
+    WeaponSkillName: "\uC82C \uC775\uC2A4\uD50C\uB85C\uC804"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uD3ED\uBC1C\uC2DC\uCF1C
+      \uBAA8\uB4E0 \uC801\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC900\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 0
+    WeaponSkillRange: 1
+    WeaponSkillRangeLine: 1
+    WeaponSkillTarget: 2
+    WeaponSkillMultiTarget: 
+    WeaponSkillMultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValue: 0.3
+    WeaponSkillSubValue: 0
+  - WeaponIndex: 3
+    weaponClass: 
+    WeaponName: "\uBC29\uC5B4 \uCF54\uC5B4"
+    WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
+      \uD615\uC131\uD558\uB294 \uCF54\uC5B4. \uC801\uC758 \uACF5\uACA9\uC73C\uB85C\uBD80\uD130
+      \uC544\uAD70\uC744 \uC9C0\uCF1C\uB0B8\uB2E4."
+    BonusHP: 0
+    BonusATK: 0
+    BonusDEF: 1
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: 0
+    WeaponSkillName: "\uC82C \uC2E4\uB4DC"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
+      \uC0DD\uC131\uD55C\uB2E4. \uC0AC\uC6A9\uD55C \uD788\uC5B4\uB85C\uAC00 \uB2E4\uC74C
+      \uC790\uC2E0\uC758 \uC21C\uC11C\uAE4C\uC9C0 \uBC1B\uB294 \uB300\uBBF8\uC9C0\uAC00
+      {WeaponSkillValue} \uAC10\uC18C\uD55C\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 3
+    WeaponSkillRange: 1
+    WeaponSkillRangeLine: 1
+    WeaponSkillTarget: 0
+    WeaponSkillMultiTarget: 
+    WeaponSkillMultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValue: 0.3
+    WeaponSkillSubValue: 0
+  - WeaponIndex: 4
+    weaponClass: 
+    WeaponName: "\uD68C\uBCF5 \uCF54\uC5B4"
+    WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uCE58\uC720
+      \uC5D0\uB108\uC9C0\uB85C \uBCC0\uD658\uD558\uB294 \uCF54\uC5B4. \uBD80\uC0C1\uB2F9\uD55C
+      \uC544\uAD70\uC744 \uD68C\uBCF5\uC2DC\uD0A8\uB2E4."
+    BonusHP: 1
+    BonusATK: 0
+    BonusDEF: 0
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: 0
+    WeaponSkillName: "\uC82C \uB9AC\uCEE4\uBC84\uB9AC"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC544\uAD70
+      1\uBA85\uC758 \uCCB4\uB825\uC744 {WeaponSkillValue} \uD68C\uBCF5\uD55C\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 1
+    WeaponSkillRange: 1
+    WeaponSkillRangeLine: 1
+    WeaponSkillTarget: 0
+    WeaponSkillMultiTarget: 
+    WeaponSkillMultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValue: 0.3
+    WeaponSkillSubValue: 0
+  - WeaponIndex: 5
+    weaponClass: 
+    WeaponName: "\uC704\uC555 \uCF54\uC5B4"
+    WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801\uC758
+      \uC804\uC758\uB97C \uAEBE\uB294 \uCF54\uC5B4. \uC801 \uC804\uCCB4\uC758 \uBC29\uC5B4
+      \uB2A5\uB825\uC744 \uC57D\uD654\uC2DC\uD0A8\uB2E4."
+    BonusHP: 1
+    BonusATK: 0
+    BonusDEF: 0
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: 0
+    WeaponSkillName: "\uC82C \uD504\uB808\uC154"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC555\uBC15\uD558\uC5EC
+      \uBAA8\uB4E0 \uC801\uC758 \uBC29\uC5B4\uB825\uC744 1\uD134 \uB3D9\uC548 {WeaponSkillValue}
+      \uAC10\uC18C\uC2DC\uD0A8\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 4
+    WeaponSkillRange: 1
+    WeaponSkillRangeLine: 1
+    WeaponSkillTarget: 2
+    WeaponSkillMultiTarget: 
+    WeaponSkillMultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValue: 0.1
+    WeaponSkillSubValue: 0
 --- !u!4 &2059641231
 Transform:
   m_ObjectHideFlags: 0

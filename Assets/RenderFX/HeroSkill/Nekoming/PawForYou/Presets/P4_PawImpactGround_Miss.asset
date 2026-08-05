@@ -10,8 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4303e6e152bc704d9219aa99d377a15, type: 3}
-  m_Name: P4_PawImpactGround_Green
+  m_Name: P4_PawImpactGround_Miss
   m_EditorClassIdentifier: 
+  followBasic: 1
+  basicRef: {fileID: 11400000, guid: d469c5aed33687f43a967459f8e07443, type: 2}
   discRadius: 0.5
   rayRadius: 0.75
   groundOffsetY: 0.02

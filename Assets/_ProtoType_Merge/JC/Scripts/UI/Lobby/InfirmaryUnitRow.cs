@@ -75,9 +75,9 @@ public class InfirmaryUnitRow : MonoBehaviour
         if (unit == null) return "-";
         var catalog = DHCsvTemplateCatalog.Instance;
         if (catalog != null && !string.IsNullOrWhiteSpace(unit.UnitTemplateKey)
-            && catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out UnitData template)
-            && template != null && !string.IsNullOrWhiteSpace(template.Name))
-            return template.Name;
+            && catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out DHPlayerUnitTemplate template)
+            && template != null && !string.IsNullOrWhiteSpace(template.UnitName))
+            return template.UnitName;
         return string.IsNullOrWhiteSpace(unit.UnitTemplateKey) ? "-" : unit.UnitTemplateKey;
     }
 }

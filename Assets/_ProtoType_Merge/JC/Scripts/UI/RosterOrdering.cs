@@ -101,9 +101,9 @@ public static class RosterOrdering
             {
                 if (!repo.TryGetUnit(ordered[i], out UnitPersistentData unit) || unit == null) continue;
                 if (string.IsNullOrWhiteSpace(unit.UnitTemplateKey)) continue;
-                if (!catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out UnitData template) || template == null) continue;
-                if (!string.IsNullOrWhiteSpace(template.UnitType) &&
-                    string.Equals(template.UnitType.Trim(), preferredClass, System.StringComparison.OrdinalIgnoreCase))
+                if (!catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out DHPlayerUnitTemplate template) || template == null) continue;
+                if (!string.IsNullOrWhiteSpace(template.ClassName) &&
+                    string.Equals(template.ClassName.Trim(), preferredClass, System.StringComparison.OrdinalIgnoreCase))
                     return ordered[i];
             }
         }

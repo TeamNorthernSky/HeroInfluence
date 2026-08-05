@@ -73,6 +73,9 @@ namespace JC.VFX
         /// <summary>
         /// 소켓+오프셋 → 월드 좌표. 부품 프리셋이 위치를 소유하는 경우(1·2번 프리셋 등)도
         /// 같은 규칙을 쓰도록 공개한 원형 — 위치 계산 규칙은 이 한 곳에만 둔다.
+        /// ★용도 구분(260805): 이 판(회전 따름)은 <b>시전자측</b>(손 소켓·발사 시작점) 전용.
+        ///   대상측(탄착·머리 위·착지)은 <see cref="ResolveWorld(Transform,string,Vector3)"/> 를 쓴다 —
+        ///   대상의 바라보는 방향에 따라 오프셋이 반전되면 화면상 위치가 뒤집힌다(프리뷰 씬 실증).
         /// </summary>
         public static Vector3 Resolve(Transform anchor, string socketName, Vector3 offset)
         {
@@ -86,6 +89,29 @@ namespace JC.VFX
 
             // 회전만 적용, 스케일 무시 — 믹사모 본(lossyScale 100)에서도 오프셋이 미터로 유지된다.
             return basis.position + basis.rotation * offset;
+        }
+
+        /// <summary>
+        /// ★대상측 해석 — 오프셋을 <b>월드 축 그대로</b> 더한다(회전·스케일 미적용).
+        /// 탄착점·머리 위·착지처럼 「대상 기준」 위치는 대상이 어느 쪽을 보든 화면상 일정해야
+        /// 자연스럽고, 인스펙터에서 움직인 방향대로 화면에서 움직인다. 소켓은 위치만 빌린다.
+        /// </summary>
+        public static Vector3 ResolveWorld(Transform anchor, string socketName, Vector3 offset)
+        {
+            Transform basis = anchor;
+            if (anchor != null && !string.IsNullOrEmpty(socketName))
+            {
+                foreach (var t in anchor.GetComponentsInChildren<Transform>(true))
+                    if (t.name == socketName) { basis = t; break; }
+            }
+            return (basis != null ? basis.position : Vector3.zero) + offset;
+        }
+
+        /// <summary>대상측 해석 — 항목판. <see cref="ResolveWorld(Transform,string,Vector3)"/> 참조.</summary>
+        public static Vector3 ResolveWorld(Transform anchor, Entry entry)
+        {
+            if (entry == null) return anchor != null ? anchor.position : Vector3.zero;
+            return ResolveWorld(anchor, entry.socketName, entry.offset);
         }
 
         private void BuildMap()

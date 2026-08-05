@@ -618,9 +618,9 @@ public class SortieController : MonoBehaviour
         if (repo == null || !repo.TryGetUnit(unitIndex, out var unit) || unit == null)
             return $"#{unitIndex}";
         var catalog = DHCsvTemplateCatalog.Instance;
-        if (catalog != null && catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out var template) && template != null
-            && !string.IsNullOrWhiteSpace(template.Name))
-            return template.Name;
+        if (catalog != null && catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out var template) && template != null
+            && !string.IsNullOrWhiteSpace(template.UnitName))
+            return template.UnitName;
         return string.IsNullOrWhiteSpace(unit.UnitTemplateKey) ? $"#{unitIndex}" : unit.UnitTemplateKey;
     }
 }

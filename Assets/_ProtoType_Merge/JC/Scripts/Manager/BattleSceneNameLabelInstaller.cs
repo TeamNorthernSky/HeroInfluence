@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// [JC 신설 260512] TmpBattleScene의 BattleSceneManager GO에 부착.
 /// ManualSpawn으로 캐릭터 인스턴스가 등장한 후 일정 지연 뒤 모든 BattleCharactor를 찾아 BattleNameLabel을 부착·이름 설정.
-/// 이름은 BattleCharactor.UnitID(=unitTemplateKey) → DHCsvTemplateCatalog 조회 → UnitData/EnemyData.Name.
+/// 이름은 BattleCharactor.UnitID(=unitTemplateKey) → DHCsvTemplateCatalog 조회 → DH*Template의 UnitName/EnemyName.
 /// ASB 정식 흐름 도입 시 폐기 가능.
 /// </summary>
 [DisallowMultipleComponent]
@@ -77,13 +77,14 @@ public class BattleSceneNameLabelInstaller : MonoBehaviour
 
     private static string ResolveDisplayName(DHCsvTemplateCatalog catalog, string id)
     {
-        if (catalog.TryGetPlayerTemplate(id, out UnitData playerTemplate) && playerTemplate != null &&
-            !string.IsNullOrWhiteSpace(playerTemplate.Name))
-            return playerTemplate.Name;
+        // [JC 260805] DH 템플릿 전환 — 레거시 행 타입(UnitData/EnemyData) 대신 DH*Template 경유.
+        if (catalog.TryGetPlayerUnitTemplate(id, out DHPlayerUnitTemplate playerTemplate) && playerTemplate != null &&
+            !string.IsNullOrWhiteSpace(playerTemplate.UnitName))
+            return playerTemplate.UnitName;
 
-        if (catalog.TryGetEnemyTemplate(id, out EnemyData enemyTemplate) && enemyTemplate != null &&
-            !string.IsNullOrWhiteSpace(enemyTemplate.Name))
-            return enemyTemplate.Name;
+        if (catalog.TryGetEnemyUnitTemplate(id, out DHEnemyUnitTemplate enemyTemplate) && enemyTemplate != null &&
+            !string.IsNullOrWhiteSpace(enemyTemplate.EnemyName))
+            return enemyTemplate.EnemyName;
 
         return null;
     }

@@ -10,9 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7b01768cf4a0dc04587694a212cc5737, type: 3}
-  m_Name: P1_PawSprite_Gold
+  m_Name: P1_PawSprite_Basic
   m_EditorClassIdentifier: 
-  size: 1.6
+  followBasic: 0
+  basicRef: {fileID: 0}
+  spawnSocketName: 
+  spawnOffset: {x: -0.4, y: 2.5, z: 0.3}
+  headSocketName: 
+  headOffset: {x: 0, y: 1.36, z: 0.3}
+  size: 2
   canvasScale: 0.55
   billboardYOnly: 0
   bobAmp: 0.04
@@ -29,17 +35,17 @@ MonoBehaviour:
   padMainSquash: 0.8
   padToeRadius: 0.08
   padToeDistMul: 0.62
-  padColor: {r: 1, g: 0.98, b: 0.75, a: 1}
-  padIntensity: 3
-  fillColor: {r: 1, g: 0.8, b: 0.35, a: 1}
-  fillOpacity: 0.85
+  padColor: {r: 1, g: 1, b: 1, a: 1}
+  padIntensity: 1.6
+  fillColor: {r: 0.82, g: 0.88, b: 1, a: 1}
+  fillOpacity: 0.558
   innerGrad: 0.8
-  rimColor: {r: 1, g: 0.95, b: 0.6, a: 1}
-  rimIntensity: 3.5
+  rimColor: {r: 1, g: 1, b: 1, a: 1}
+  rimIntensity: 2.27
   rimWidth: 0.05
-  glowColor: {r: 1, g: 0.75, b: 0.2, a: 1}
-  glowIntensity: 2.5
-  glowRange: 0.175
+  glowColor: {r: 0.75, g: 0.85, b: 1, a: 1}
+  glowIntensity: 1.8
+  glowRange: 0.084
   wobbleAmp: 0.015
   wobbleSpeed: 2
-  warpFlashColor: {r: 1, g: 0.9, b: 0.4, a: 1}
+  warpFlashColor: {r: 0.9, g: 0.95, b: 1, a: 1}

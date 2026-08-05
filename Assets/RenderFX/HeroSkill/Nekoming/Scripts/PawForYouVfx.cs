@@ -65,17 +65,15 @@ namespace JC.VFX
 
         [Header("팝 / 배치")]
         [Range(0f, 4f)] [SerializeField] private float popOvershoot = 1.7f;
-        [SerializeField] private Vector3 casterOffset = new Vector3(0.55f, 1.7f, 0.15f);
-        [SerializeField] private float targetHeadOffset = 1.9f;
-        [SerializeField] private float beamEndOffsetY = 0.35f;
+        // ★위치는 부품 프리셋이 정본(260805) — 발 = P1(spawnOffset/headOffset), 광선 끝 = P2(endOffset).
         [Range(0f, 0.6f)] [SerializeField] private float pawBeamGap = 0.12f;
         [Range(0.2f, 3f)] [SerializeField] private float flashSizeMul = 1f;
 
         [Header("구간 분할")]
         [Tooltip("이 프리팹이 담당할 구간. All = 기존 전 구간 동작.")]
         [SerializeField] private Segment segment = Segment.All;
-        [Tooltip("Warp 구간 전용 — 기둥·섬광을 터뜨린 뒤 종료까지 대기하는 시간(초).")]
-        [Range(0.05f, 1.5f)] [SerializeField] private float warpBurstTime = 0.35f;
+        // ★warpBurstTime 폐지(260805) — Warp 구간 정리 대기 = max(기둥 P5 duration, 섬광 duration).
+        //   P5 duration 이 유일 조절축이 되어 「duration 을 늘리면 기둥이 잘리는」 간섭이 소멸한다.
 
         private enum Phase { Idle, Appear, Hold, WarpOut, Travel, WarpIn, BeamExtend, Sustain, FadeOut, WarpBurst }
         private Phase _phase = Phase.Idle;
@@ -167,13 +165,44 @@ namespace JC.VFX
             IsPlaying = false;
         }
 
-        // ── 앵커 산출 ──
-        private Vector3 CasterAnchor() => _caster ? _caster.TransformPoint(casterOffset) : transform.position;
-        private Vector3 TargetHead() => _target ? _target.position + Vector3.up * targetHeadOffset : transform.position;
-        private Vector3 BeamEnd() => _target ? _target.position + Vector3.up * beamEndOffsetY : transform.position;
+        // ── 앵커 산출 ── ★발·광선 끝 좌표의 정본은 부품 프리셋(P1/P2). 프리셋 없으면 앵커 루트로 폴백.
+        //   소켓+오프셋 해석 규칙은 JcVfxPlacementPreset.Resolve 한 곳(회전만 적용·스케일 무시).
+        /// <summary>이 프리팹의 발 프리셋 — 워프 기둥 위치를 발 좌표에 맞추려는 호출자(스테퍼·큐 드라이버)가 읽는다.</summary>
+        public PawSpritePreset PawPreset => paw ? paw.Preset : null;
+
+        private Vector3 CasterAnchor()
+        {
+            if (_caster == null) return transform.position;
+            var pp = PawPreset != null ? PawPreset.TransformSource : null;
+            return pp != null ? JcVfxPlacementPreset.Resolve(_caster, pp.spawnSocketName, pp.spawnOffset) : _caster.position;
+        }
+
+        private Vector3 TargetHead()
+        {
+            if (_target == null) return transform.position;
+            var pp = PawPreset != null ? PawPreset.TransformSource : null;
+            return pp != null ? JcVfxPlacementPreset.ResolveWorld(_target, pp.headSocketName, pp.headOffset) : _target.position;
+        }
+
+        private Vector3 BeamEnd()
+        {
+            if (_target == null) return transform.position;
+            var bp = beam && beam.Preset != null ? beam.Preset.TransformSource : null;
+            return bp != null ? JcVfxPlacementPreset.ResolveWorld(_target, bp.endSocketName, bp.endOffset) : _target.position;
+        }
+
         private Vector3 TargetGround() => _target ? _target.position : transform.position;
         /// <summary>Warp 구간 전용 — 스폰된 자기 위치. 출발·도착 어느 쪽인지는 큐의 Anchor 가 정한다.</summary>
         private Vector3 SelfAnchor() => transform.position;
+
+        /// <summary>Warp 구간 정리 대기 시간 — 기둥(P5 duration)·섬광 중 긴 쪽. 어느 쪽도 잘리지 않는다.</summary>
+        private float WarpBurstDuration()
+        {
+            float wait = 0.05f;   // 요소가 하나도 없어도 즉시 종료는 피한다
+            if (warpPillar) wait = Mathf.Max(wait, warpPillar.CurrentDuration);
+            if (flash) wait = Mathf.Max(wait, flash.Duration);
+            return wait;
+        }
 
         private void EnterPhase(Phase p)
         {
@@ -248,8 +277,8 @@ namespace JC.VFX
                     break;
 
                 case Phase.WarpBurst:
-                    // Warp 구간 — 기둥·섬광은 Play 에서 이미 터뜨렸다. 잔향이 끝나면 정리한다.
-                    if (_phaseT >= warpBurstTime)
+                    // Warp 구간 — 기둥·섬광은 Play 에서 이미 터뜨렸다. 둘 다 제 수명을 다하면 정리한다.
+                    if (_phaseT >= WarpBurstDuration())
                     {
                         HideImmediate();
                         RaiseFinished();
@@ -358,9 +387,6 @@ namespace JC.VFX
             beamSustainTime = masterPreset.beamSustainTime;
             fadeOutTime = masterPreset.fadeOutTime;
             popOvershoot = masterPreset.popOvershoot;
-            casterOffset = masterPreset.casterOffset;
-            targetHeadOffset = masterPreset.targetHeadOffset;
-            beamEndOffsetY = masterPreset.beamEndOffsetY;
             pawBeamGap = masterPreset.pawBeamGap;
             flashSizeMul = masterPreset.flashSizeMul;
         }

@@ -21,8 +21,5 @@ MonoBehaviour:
   beamSustainTime: 1.2
   fadeOutTime: 0.35
   popOvershoot: 1.7
-  casterOffset: {x: -0.75, y: 1.11, z: 0.15}
-  targetHeadOffset: 1.9
-  beamEndOffsetY: 0.35
-  pawBeamGap: 0.12
+  pawBeamGap: 0.24
   flashSizeMul: 1

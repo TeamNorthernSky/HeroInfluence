@@ -12,13 +12,23 @@ namespace JC.VFX
         {
             "Assets/RenderFX/HeroSkill/Nekoming/Heal/Prefabs/HealOrbit_Basic.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/Heal/Prefabs/HealOrbit_Alter.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam_Gold.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawForYou.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/PawForYouMistake.prefab",
         };
 
+        // 따름 잠금 대상 = 색·밝기·불투명도를 제외한 전부(반경·위치·경계·광선 기하)
+        static readonly string[] TransformProps =
+        {
+            "discRadius","rayRadius","groundOffsetY",
+            "edgeSoft","sideSoft","centerFalloff",
+            "rayDensity","raySharp","rayRotSpeed","valleyWidth","spreadGrow",
+        };
+
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.HealGroundShine.Fold", TransformProps);
             var p = (HealGroundShinePreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())

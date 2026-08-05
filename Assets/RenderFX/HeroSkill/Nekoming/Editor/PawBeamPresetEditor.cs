@@ -6,15 +6,28 @@ namespace JC.VFX
     [CustomEditor(typeof(PawBeamPreset))]
     public class PawBeamPresetEditor : Editor
     {
+        // ★분할 프리팹(PawSpawn/Warp/Beam ×B·G)이 실사용 — 통짜 2종만 있던 죽은 목록을 교정(260805).
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs";
         static readonly string[] PrefabPaths =
         {
-            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawForYou.prefab",
-            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/PawForYouMistake.prefab",
+            DIR + "/PawSpawn.prefab",  DIR + "/PawSpawn_Gold.prefab",
+            DIR + "/PawWarp.prefab",   DIR + "/PawWarp_Gold.prefab",
+            DIR + "/PawBeam.prefab",   DIR + "/PawBeam_Gold.prefab",
+            DIR + "/PawForYou.prefab", DIR + "/_Legacy/PawForYouMistake.prefab",
+        };
+
+        // 따름 잠금 대상 = 색·밝기를 제외한 전부(위치·폭·단면·노이즈·캡)
+        static readonly string[] TransformProps =
+        {
+            "endSocketName","endOffset","width",
+            "coreWidth","glowFalloff","edgeSoft",
+            "noiseScale","noiseScroll","noiseAmount","pulseAmp","pulseFreq",
+            "capSoftStart","capSoftEnd","frontSoft",
         };
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.PawBeam.Fold", TransformProps);
             var p = (PawBeamPreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())

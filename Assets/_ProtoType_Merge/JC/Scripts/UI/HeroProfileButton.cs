@@ -52,7 +52,7 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (background == null) background = GetComponent<Image>();
     }
 
-    public void Bind(int unitIndex, HeroInfoModal infoModal, UnitPersistentData unit, UnitData template, bool inParty)
+    public void Bind(int unitIndex, HeroInfoModal infoModal, UnitPersistentData unit, DHPlayerUnitTemplate template, bool inParty)
     {
         this.unitIndex = unitIndex;
         this.infoModal = infoModal;
@@ -60,7 +60,7 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
         ApplyDisplay(unit, template, inParty);
     }
 
-    public void BindForSelect(int unitIndex, Action<int> onSelected, UnitPersistentData unit, UnitData template, bool inParty)
+    public void BindForSelect(int unitIndex, Action<int> onSelected, UnitPersistentData unit, DHPlayerUnitTemplate template, bool inParty)
     {
         this.unitIndex = unitIndex;
         this.infoModal = null;
@@ -75,12 +75,12 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
         ApplyFrame();
     }
 
-    private void ApplyDisplay(UnitPersistentData unit, UnitData template, bool inParty)
+    private void ApplyDisplay(UnitPersistentData unit, DHPlayerUnitTemplate template, bool inParty)
     {
-        string displayName = template != null && !string.IsNullOrWhiteSpace(template.Name)
-            ? template.Name
+        string displayName = template != null && !string.IsNullOrWhiteSpace(template.UnitName)
+            ? template.UnitName
             : (unit != null ? unit.UnitTemplateKey : $"unit_{unitIndex}");
-        string displayClass = template != null ? template.UnitType : "-";
+        string displayClass = template != null ? template.ClassName : "-";
         int level = unit != null ? unit.Level : 1;
 
         if (nameText != null) nameText.text = displayName;
@@ -119,7 +119,7 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (weaponIndex <= 0) return none;
 
         var catalog = DHCsvTemplateCatalog.Instance;
-        if (catalog == null || !catalog.TryGetWeapon(weaponIndex, out WeaponData wd) || wd == null) return none;
+        if (catalog == null || !catalog.TryGetWeaponTemplate(weaponIndex, out DHWeaponTemplate wd) || wd == null) return none;
         return string.IsNullOrWhiteSpace(wd.WeaponName) ? none : wd.WeaponName;
     }
 

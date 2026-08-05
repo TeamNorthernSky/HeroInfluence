@@ -65,10 +65,95 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
         type: 3}
+      propertyPath: size
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
       propertyPath: preset
       value: 
       objectReference: {fileID: 11400000, guid: f68bee4335f96e04395b70ba072bdf05,
         type: 2}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: padColor.b
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: padColor.g
+      value: 0.98
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: rimColor.b
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: rimColor.g
+      value: 0.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: fillColor.b
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: fillColor.g
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: fillColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: fillOpacity
+      value: 0.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: glowColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: glowColor.g
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: glowColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: padIntensity
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: rimIntensity
+      value: 3.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: glowIntensity
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: warpFlashColor.b
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      propertyPath: warpFlashColor.g
+      value: 0.9
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

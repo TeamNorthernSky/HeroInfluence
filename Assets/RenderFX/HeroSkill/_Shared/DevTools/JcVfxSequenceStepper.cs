@@ -392,14 +392,15 @@ namespace JC.VFX
                         from = PointOn(playOrigin, s.offset, s.localOffset);
 
                     // 도착점 — 우선순위: ① 호출자 탄착 키 ② 투사체 프리셋의 탄착점 ③ 대상 루트(발밑).
+                    //   탄착은 대상측 — 월드 축 해석(대상 회전에 따라 반전되지 않게).
                     Vector3 to = playTarget != null ? playTarget.position : from;
                     if (!string.IsNullOrWhiteSpace(s.impactPlacementKey) &&
                         TryGetPlacement(s.impactPlacementKey.Trim(), out JcVfxPlacementPreset.Entry ie))
-                        to = JcVfxPlacementPreset.Resolve(playTarget != null ? playTarget : transform, ie);
+                        to = JcVfxPlacementPreset.ResolveWorld(playTarget != null ? playTarget : transform, ie);
                     else if (proj.Preset != null && playTarget != null)
                     {
                         var pt = proj.Preset.TransformSource;
-                        to = JcVfxPlacementPreset.Resolve(playTarget, pt.impactSocketName, pt.impactOffset);
+                        to = JcVfxPlacementPreset.ResolveWorld(playTarget, pt.impactSocketName, pt.impactOffset);
                     }
 
                     proj.Show(from);
@@ -454,7 +455,23 @@ namespace JC.VFX
             var orbit = prefab.GetComponent<HealOrbitVfx>();
             if (orbit != null && orbit.Preset != null)
             {
-                pos = JcVfxPlacementPreset.Resolve(stepAnchor, null, orbit.Preset.TransformSource.landOffset);
+                // 착지 오라도 대상측 — 월드 축 해석.
+                pos = JcVfxPlacementPreset.ResolveWorld(stepAnchor, null, orbit.Preset.TransformSource.landOffset);
+                return true;
+            }
+
+            // ★PawForYou 계열 — 발 좌표의 정본 = P1_PawSprite 프리셋.
+            //   앵커가 대상이면 재등장(머리 위) 좌표, 아니면 등장(시전자) 좌표.
+            //   paw_warp 가 출발(시전자)/도착(대상) 두 앵커로 들어와도 이 규칙 하나로 기둥이 발과 겹친다.
+            var pawFx = prefab.GetComponent<PawForYouVfx>();
+            if (pawFx != null && pawFx.PawPreset != null)
+            {
+                var pp = pawFx.PawPreset.TransformSource;   // 위치는 트랜스폼 — 따름 규칙(변종→Basic)
+                bool atTarget = stepAnchor != null && stepAnchor == target;
+                // 대상측(머리 위)은 월드 축, 시전자측(등장)은 회전 따름 — Resolve 용도 구분 참조.
+                pos = atTarget
+                    ? JcVfxPlacementPreset.ResolveWorld(stepAnchor, pp.headSocketName, pp.headOffset)
+                    : JcVfxPlacementPreset.Resolve(stepAnchor, pp.spawnSocketName, pp.spawnOffset);
                 return true;
             }
             return false;

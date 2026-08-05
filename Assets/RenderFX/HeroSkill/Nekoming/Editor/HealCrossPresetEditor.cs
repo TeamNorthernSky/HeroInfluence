@@ -12,14 +12,25 @@ namespace JC.VFX
         {
             "Assets/RenderFX/HeroSkill/Nekoming/Heal/Prefabs/HealOrbit_Basic.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/Heal/Prefabs/HealOrbit_Alter.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam_Gold.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawForYou.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/PawForYouMistake.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/Taosenaiyo.prefab",
         };
 
+        // 따름 잠금 대상 = 색·밝기를 제외한 전부(스폰·배치·바운스·크기·형태). Paw P3 변형용 — 힐 8번 공용은 따름 끔.
+        static readonly string[] TransformProps =
+        {
+            "maxCrosses","spawnIntervalMin","spawnIntervalMax","lifetimeMin","lifetimeMax",
+            "radius","baseYOffset","riseSpeedMin","riseSpeedMax","riseAccelMul","riseAccelTime",
+            "popOvershoot","popFrac","endFrac","bobAmp","bobFreq","spinMax","billboardYOnly",
+            "sizeMin","sizeMax","fadeInFrac","fadeOutFrac","barWidth","barLength","softness",
+        };
+
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.HealCross.Fold", TransformProps);
             var p = (HealCrossPreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())

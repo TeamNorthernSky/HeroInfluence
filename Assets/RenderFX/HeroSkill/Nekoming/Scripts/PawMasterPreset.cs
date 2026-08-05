@@ -33,13 +33,9 @@ namespace JC.VFX
         [Tooltip("등장/재등장 스케일 easeOutBack 오버슛 강도. 0=오버슛 없음")]
         [Range(0f, 4f)] public float popOvershoot = 1.7f;
 
-        [Header("배치 오프셋")]
-        [Tooltip("시전자 로컬 기준 발 위치(우상단). x=우, y=상, z=전방")]
-        public Vector3 casterOffset = new Vector3(0.55f, 1.7f, 0.15f);
-        [Tooltip("대상 머리 위 높이(대상 루트 기준, m)")]
-        public float targetHeadOffset = 1.9f;
-        [Tooltip("광선 끝 높이(대상 루트 기준, m). 몸통에 박히는 지점")]
-        public float beamEndOffsetY = 0.35f;
+        [Header("배치")]
+        // ★위치(발 등장·재등장·광선 끝)는 부품 프리셋 소유로 이관(260805) —
+        //   발 좌표 = P1_PawSprite(spawnOffset/headOffset), 광선 끝 = P2_PawBeam(endOffset).
         [Tooltip("발 아래에서 광선이 시작되는 간격(m)")]
         [Range(0f, 0.6f)] public float pawBeamGap = 0.12f;
 

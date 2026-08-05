@@ -6,10 +6,14 @@ namespace JC.VFX
     [CustomEditor(typeof(PawMasterPreset))]
     public class PawMasterPresetEditor : Editor
     {
+        // ★분할 프리팹(PawSpawn/Warp/Beam ×B·G)이 실사용 — 통짜 2종만 있던 죽은 목록을 교정(260805).
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs";
         static readonly string[] PrefabPaths =
         {
-            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawForYou.prefab",
-            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/PawForYouMistake.prefab",
+            DIR + "/PawSpawn.prefab",  DIR + "/PawSpawn_Gold.prefab",
+            DIR + "/PawWarp.prefab",   DIR + "/PawWarp_Gold.prefab",
+            DIR + "/PawBeam.prefab",   DIR + "/PawBeam_Gold.prefab",
+            DIR + "/PawForYou.prefab", DIR + "/_Legacy/PawForYouMistake.prefab",
         };
 
         public override void OnInspectorGUI()
@@ -25,11 +29,12 @@ namespace JC.VFX
             EditorGUILayout.HelpBox("적용: 이 값을 PawForYou 프리팹의 PawForYouVfx(전체 타이밍/배치)에 반영.\nlivePreview가 켜져 있으면 플레이 중에도 즉시 반영됩니다.", MessageType.Info);
         }
 
+        // ★위치(casterOffset/targetHeadOffset/beamEndOffsetY)는 P1/P2 부품 프리셋 소유로 이관(260805).
         static readonly string[] Fields =
         {
             "appearTime","holdTime","warpOutTime","warpTravelTime","warpInTime",
             "beamExtendTime","beamSustainTime","fadeOutTime",
-            "popOvershoot","targetHeadOffset","beamEndOffsetY","pawBeamGap","flashSizeMul",
+            "popOvershoot","pawBeamGap","flashSizeMul",
         };
 
         static bool UsesPreset(Component c, Object presetAsset)
@@ -48,7 +53,6 @@ namespace JC.VFX
                     var so = new SerializedObject(fx);
                     var pso = new SerializedObject(p);
                     foreach (var f in Fields) CopyFloat(pso, so, f);
-                    so.FindProperty("casterOffset").vector3Value = p.casterOffset;
                     so.ApplyModifiedPropertiesWithoutUndo();
                     PrefabUtility.SaveAsPrefabAsset(root, path);
                     applied++;
@@ -70,7 +74,6 @@ namespace JC.VFX
                 var so = new SerializedObject(fx);
                 var pso = new SerializedObject(p);
                 foreach (var f in Fields) CopyFloat(so, pso, f);
-                pso.FindProperty("casterOffset").vector3Value = so.FindProperty("casterOffset").vector3Value;
                 pso.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(p);
                 Debug.Log("[PawMasterPreset] 현재값 캡처 완료");

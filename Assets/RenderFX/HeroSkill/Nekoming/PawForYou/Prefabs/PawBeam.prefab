@@ -99,10 +99,10 @@ MonoBehaviour:
   preset: {fileID: 11400000, guid: 0c743a6b1bd680a4c9c35240617aec04, type: 2}
   livePreview: 1
   width: 0.35
-  coreColor: {r: 1, g: 1, b: 0.9, a: 1}
-  glowColor: {r: 1, g: 0.8, b: 0.25, a: 1}
-  intensity: 2.5
-  hitFlashColor: {r: 1, g: 0.9, b: 0.5, a: 1}
+  coreColor: {r: 0.98, g: 0.99, b: 1, a: 1}
+  glowColor: {r: 0.7, g: 0.85, b: 1, a: 1}
+  intensity: 3
+  hitFlashColor: {r: 0.88, g: 0.94, b: 1, a: 1}
 --- !u!1 &2777668551892851515
 GameObject:
   m_ObjectHideFlags: 0
@@ -158,11 +158,11 @@ MonoBehaviour:
   warpStreak: {fileID: 0}
   beam: {fileID: 6434259747882950159}
   flash: {fileID: 8945785873360734476}
-  impactCross: {fileID: 2238429249326248789}
+  impactCross: {fileID: 0}
   impactGround: {fileID: 2290535929685901758}
   masterPreset: {fileID: 11400000, guid: 6d92acfbe7a5ee84da3ba5a3d3054d4a, type: 2}
   livePreview: 1
-  appearTime: 0.25
+  appearTime: 0.2
   holdTime: 0.96
   warpOutTime: 0.12
   warpTravelTime: 0.1
@@ -171,10 +171,7 @@ MonoBehaviour:
   beamSustainTime: 1.2
   fadeOutTime: 0.35
   popOvershoot: 1.7
-  casterOffset: {x: 0.55, y: 1.7, z: 0.15}
-  targetHeadOffset: 1.9
-  beamEndOffsetY: 0.35
-  pawBeamGap: 0.12
+  pawBeamGap: 0.24
   flashSizeMul: 1
   segment: 3
   warpBurstTime: 0.35
@@ -276,19 +273,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   preset: {fileID: 11400000, guid: 8a959988d98c4bb41af030ed39645351, type: 2}
   livePreview: 1
-  size: 0.9
+  size: 2
   billboardYOnly: 0
   bobAmp: 0.04
   bobFreq: 1.2
-  fillColor: {r: 0.85, g: 0.9, b: 1, a: 1}
-  fillOpacity: 0.8
+  fillColor: {r: 0.82, g: 0.88, b: 1, a: 1}
+  fillOpacity: 0.558
   rimColor: {r: 1, g: 1, b: 1, a: 1}
-  rimIntensity: 2.5
-  glowColor: {r: 0.8, g: 0.9, b: 1, a: 1}
-  glowIntensity: 1.5
-  padColor: {r: 1, g: 0.95, b: 0.8, a: 1}
-  padIntensity: 2
-  warpFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  rimIntensity: 2.27
+  glowColor: {r: 0.75, g: 0.85, b: 1, a: 1}
+  glowIntensity: 1.8
+  padColor: {r: 1, g: 1, b: 1, a: 1}
+  padIntensity: 1.6
+  warpFlashColor: {r: 0.9, g: 0.95, b: 1, a: 1}
 --- !u!1 &4653929571470860248
 GameObject:
   m_ObjectHideFlags: 0
@@ -387,17 +384,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   preset: {fileID: 11400000, guid: d469c5aed33687f43a967459f8e07443, type: 2}
   livePreview: 1
-  discRadius: 0.8
-  rayRadius: 1.1
+  discRadius: 0.5
+  rayRadius: 0.75
   groundOffsetY: 0.02
-  color: {r: 1, g: 0.88, b: 0.35, a: 1}
+  color: {r: 0.82, g: 0.9, b: 1, a: 1}
   intensity: 1.8
   opacity: 1
   edgeSoft: 0.35
   sideSoft: 0.06
   centerFalloff: 1.6
-  rayDensity: 14
-  raySharp: 2.5
+  rayDensity: 5
+  raySharp: 1
   rayRotSpeed: 18
   valleyWidth: 0
   spreadGrow: 0.5

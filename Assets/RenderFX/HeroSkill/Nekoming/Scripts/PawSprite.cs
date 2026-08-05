@@ -90,6 +90,9 @@ namespace JC.VFX
         /// <summary>변형 프리셋 런타임 교체.</summary>
         public void SetPreset(PawSpritePreset p) => preset = p;
 
+        /// <summary>현재 프리셋 — 발 좌표(등장/재등장)의 정본. 오케스트레이터·호출자가 읽어간다.</summary>
+        public PawSpritePreset Preset => preset;
+
         public void Show()
         {
             _visible = true;
@@ -138,10 +141,11 @@ namespace JC.VFX
 
         private void PullFromPreset()
         {
-            size = preset.size;
-            billboardYOnly = preset.billboardYOnly;
-            bobAmp = preset.bobAmp;
-            bobFreq = preset.bobFreq;
+            var t = preset.TransformSource;   // ★트랜스폼(크기·거동)은 따름 규칙(변종→Basic), 룩은 자기 것
+            size = t.size;
+            billboardYOnly = t.billboardYOnly;
+            bobAmp = t.bobAmp;
+            bobFreq = t.bobFreq;
             fillColor = preset.fillColor;
             fillOpacity = preset.fillOpacity;
             rimColor = preset.rimColor;
@@ -159,19 +163,20 @@ namespace JC.VFX
             _mr.GetPropertyBlock(_mpb);
             if (livePreview && preset)
             {
-                _mpb.SetFloat(CanvasScaleID, preset.canvasScale);
-                _mpb.SetFloat(ToeCountID, preset.toeCount);
-                _mpb.SetFloat(ToeSpreadID, preset.toeSpreadDeg);
-                _mpb.SetFloat(ToeDistID, preset.toeDist);
-                _mpb.SetFloat(ToeRadiusID, preset.toeRadius);
-                _mpb.SetFloat(PalmRadiusXID, preset.palmRadiusX);
-                _mpb.SetFloat(PalmRadiusYID, preset.palmRadiusY);
-                _mpb.SetFloat(PalmOffsetYID, preset.palmOffsetY);
-                _mpb.SetFloat(FusionID, preset.fusion);
-                _mpb.SetFloat(PadMainRadiusID, preset.padMainRadius);
-                _mpb.SetFloat(PadMainSquashID, preset.padMainSquash);
-                _mpb.SetFloat(PadToeRadiusID, preset.padToeRadius);
-                _mpb.SetFloat(PadToeDistMulID, preset.padToeDistMul);
+                var t = preset.TransformSource;   // ★형태(SDF)·움직임은 따름 규칙, 색·밝기는 자기 것
+                _mpb.SetFloat(CanvasScaleID, t.canvasScale);
+                _mpb.SetFloat(ToeCountID, t.toeCount);
+                _mpb.SetFloat(ToeSpreadID, t.toeSpreadDeg);
+                _mpb.SetFloat(ToeDistID, t.toeDist);
+                _mpb.SetFloat(ToeRadiusID, t.toeRadius);
+                _mpb.SetFloat(PalmRadiusXID, t.palmRadiusX);
+                _mpb.SetFloat(PalmRadiusYID, t.palmRadiusY);
+                _mpb.SetFloat(PalmOffsetYID, t.palmOffsetY);
+                _mpb.SetFloat(FusionID, t.fusion);
+                _mpb.SetFloat(PadMainRadiusID, t.padMainRadius);
+                _mpb.SetFloat(PadMainSquashID, t.padMainSquash);
+                _mpb.SetFloat(PadToeRadiusID, t.padToeRadius);
+                _mpb.SetFloat(PadToeDistMulID, t.padToeDistMul);
                 _mpb.SetColor(PadColorID, padColor);
                 _mpb.SetFloat(PadIntensityID, padIntensity);
                 _mpb.SetColor(FillColorID, fillColor);
@@ -179,12 +184,12 @@ namespace JC.VFX
                 _mpb.SetFloat(InnerGradID, preset.innerGrad);
                 _mpb.SetColor(RimColorID, rimColor);
                 _mpb.SetFloat(RimIntensityID, rimIntensity);
-                _mpb.SetFloat(RimWidthID, preset.rimWidth);
+                _mpb.SetFloat(RimWidthID, t.rimWidth);
                 _mpb.SetColor(GlowColorID, glowColor);
                 _mpb.SetFloat(GlowIntensityID, glowIntensity);
-                _mpb.SetFloat(GlowRangeID, preset.glowRange);
-                _mpb.SetFloat(WobbleAmpID, preset.wobbleAmp);
-                _mpb.SetFloat(WobbleSpeedID, preset.wobbleSpeed);
+                _mpb.SetFloat(GlowRangeID, t.glowRange);
+                _mpb.SetFloat(WobbleAmpID, t.wobbleAmp);
+                _mpb.SetFloat(WobbleSpeedID, t.wobbleSpeed);
             }
             _mpb.SetFloat(FadeMulID, _envelope);
             _mr.SetPropertyBlock(_mpb);

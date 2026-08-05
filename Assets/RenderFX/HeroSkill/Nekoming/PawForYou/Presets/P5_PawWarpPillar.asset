@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 0.5
   height: 4
-  bottomOffset: -0.3
-  duration: 0.35
+  bottomOffset: -0.13
+  duration: 0.4
   flashFrac: 0.35
   flashBoost: 1.2
   narrow: 0.4
