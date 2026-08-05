@@ -39,11 +39,11 @@ public class CharacterDetailModal : MonoBehaviour
             if (enemyRepo == null || !enemyRepo.TryGetUnit(unitIndex, out EnemyUnitPersistentData edata)) return "-";
 
             DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-            EnemyData template = null;
-            catalog?.TryGetEnemyTemplate(edata.UnitTemplateKey, out template);
+            DHEnemyUnitTemplate template = null;
+            catalog?.TryGetEnemyUnitTemplate(edata.UnitTemplateKey, out template);
 
-            string ename = template != null && !string.IsNullOrWhiteSpace(template.Name) ? template.Name : edata.UnitTemplateKey;
-            string ecls = template != null ? template.UnitType : "-";
+            string ename = template != null && !string.IsNullOrWhiteSpace(template.EnemyName) ? template.EnemyName : edata.UnitTemplateKey;
+            string ecls = template != null ? string.Empty : "-";   // 적 템플릿에 클래스 축 없음(기존 UnitType도 항상 공란)
 
             float emaxHp = Mathf.Max(0f, edata.IngameStats.HP);
             float ecurHp = Mathf.Clamp(edata.CurrentHp, 0f, emaxHp);
@@ -56,11 +56,11 @@ public class CharacterDetailModal : MonoBehaviour
         if (repo == null || !repo.TryGetUnit(unitIndex, out UnitPersistentData data)) return "-";
 
         DHCsvTemplateCatalog catalog2 = DHCsvTemplateCatalog.Instance;
-        UnitData template2 = null;
-        catalog2?.TryGetPlayerTemplate(data.UnitTemplateKey, out template2);
+        DHPlayerUnitTemplate template2 = null;
+        catalog2?.TryGetPlayerUnitTemplate(data.UnitTemplateKey, out template2);
 
-        string name = template2 != null && !string.IsNullOrWhiteSpace(template2.Name) ? template2.Name : data.UnitTemplateKey;
-        string cls = template2 != null ? template2.UnitType : "-";
+        string name = template2 != null && !string.IsNullOrWhiteSpace(template2.UnitName) ? template2.UnitName : data.UnitTemplateKey;
+        string cls = template2 != null ? template2.ClassName : "-";
 
         float maxHp = Mathf.Max(0f, data.IngameStats.HP);
         float curHp = Mathf.Clamp(data.CurrentHp, 0f, maxHp);

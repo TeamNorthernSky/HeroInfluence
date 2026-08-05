@@ -10,6 +10,24 @@ namespace JC.VFX
     [CreateAssetMenu(menuName = "JC VFX/PawForYou/P1_Paw Sprite Preset", fileName = "P1_PawSpritePreset")]
     public class PawSpritePreset : ScriptableObject
     {
+        [Header("★따름 (Alter/Miss 전용)")]
+        [Tooltip("켜면 트랜스폼(위치·크기·형태·움직임)을 Basic 프리셋에서 읽는다. Alter/Miss 는 기본 ON — 변종은 색만 다르고 형태·움직임 동일 규칙.")]
+        public bool followBasic;
+        public PawSpritePreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter/Miss 가 따름이면 Basic.</summary>
+        public PawSpritePreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
+        [Header("★위치 — 발 좌표의 정본 (P6 위치 프리셋 폐기·이관, 260805)")]
+        [Tooltip("등장 기준 소켓(시전자 계층에서 이름 검색). 비면 시전자 루트(발밑).")]
+        public string spawnSocketName = "";
+        [Tooltip("발 등장 위치 오프셋(m, 시전자 기준·회전만 적용). 워프 기둥(출발)도 이 좌표에서 터진다.")]
+        public Vector3 spawnOffset = new Vector3(-0.75f, 1.11f, 0.15f);
+        [Tooltip("재등장 기준 소켓(대상 계층에서 이름 검색). 비면 대상 루트.")]
+        public string headSocketName = "";
+        [Tooltip("재등장(대상 머리 위) 위치 오프셋(m, 대상 기준). 워프 기둥(도착)·광선 시작이 이 좌표를 따른다.")]
+        public Vector3 headOffset = new Vector3(0f, 1.9f, 0f);
+
         [Header("크기 / 거동")]
         [Tooltip("발 월드 크기(m, 쿼드 한 변)")]
         public float size = 1.6f;

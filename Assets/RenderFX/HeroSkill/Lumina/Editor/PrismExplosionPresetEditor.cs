@@ -13,14 +13,14 @@ namespace JC.VFX
     [CustomEditor(typeof(PrismExplosionPreset))]
     public class PrismExplosionPresetEditor : FlareOrbPresetEditorBase
     {
-        const string XDIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/L_PrismExplosion";
-        static string MatCrystal => XDIR + "/PrismCrystalX.mat";
-        static string MatFlare   => XDIR + "/StarFlareX.mat";
-        static string MatGround  => XDIR + "/GlowDiscX.mat";
-        static string MatBurst   => XDIR + "/PrismBurstX.mat";
-        static string MatRing    => XDIR + "/PrismImpactRingX.mat";
-        static string SkillPrefab => XDIR + "/PrismExplosionSkill.prefab";
-        const string PresetPath  = XDIR + "/FX_PrismExplosionPreset.asset";
+        const string XDIR = "Assets/RenderFX/HeroSkill/Lumina/PrismExplosion";
+        static string MatCrystal => XDIR + "/Materials/PrismCrystalX.mat";
+        static string MatFlare   => XDIR + "/Materials/StarFlareX.mat";
+        static string MatGround  => XDIR + "/Materials/GlowDiscX.mat";
+        static string MatBurst   => XDIR + "/Materials/PrismBurstX.mat";
+        static string MatRing    => XDIR + "/Materials/PrismImpactRingX.mat";
+        static string SkillPrefab => XDIR + "/Prefabs/PrismExplosionSkill.prefab";
+        const string PresetPath  = XDIR + "/Presets/FX_PrismExplosionPreset.asset";
 
         protected override string LiveKey => "JC.PrismExplosionPreset.LivePreview";
         protected override string HelpText =>

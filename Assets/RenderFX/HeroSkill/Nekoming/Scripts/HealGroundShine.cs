@@ -104,9 +104,10 @@ namespace JC.VFX
 
         private void PullFromPreset()
         {
-            discRadius = preset.discRadius;
-            rayRadius = preset.rayRadius;
-            groundOffsetY = preset.groundOffsetY;
+            var t = preset.TransformSource;   // ★트랜스폼(반지름·위치)은 따름 규칙(Alter→Basic), 룩은 자기 것
+            discRadius = t.discRadius;
+            rayRadius = t.rayRadius;
+            groundOffsetY = t.groundOffsetY;
             color = preset.color;
             intensity = preset.intensity;
             opacity = preset.opacity;

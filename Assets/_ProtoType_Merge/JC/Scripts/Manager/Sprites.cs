@@ -80,9 +80,9 @@ public static class Sprites
             var catalog = DHCsvTemplateCatalog.Instance;
             if (repo != null && catalog != null
                 && repo.TryGetUnit(unitIndex, out var unit) && unit != null
-                && catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out var template) && template != null)
+                && catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out var template) && template != null)
             {
-                return Library.GetCharacterProfile(template.Name);
+                return Library.GetCharacterProfile(template.UnitName);
             }
             return Library.DefaultProfile;
         }

@@ -22,6 +22,9 @@ namespace JC.VFX
         [Tooltip("시작 스케일 비율(작게 시작해 팝)")]
         [Range(0.1f, 1f)] [SerializeField] private float growFrom = 0.5f;
 
+        /// <summary>플래시 수명(초) — 오케스트레이터가 정리 대기 시간으로 읽어간다.</summary>
+        public float Duration => duration;
+
         private Mesh _quad;
         private Camera _cam;
         private readonly List<Entry> _pool = new List<Entry>();

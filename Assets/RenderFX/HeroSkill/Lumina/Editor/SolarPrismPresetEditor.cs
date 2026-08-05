@@ -12,14 +12,14 @@ namespace JC.VFX
     [CustomEditor(typeof(SolarPrismPreset))]
     public class SolarPrismPresetEditor : FlareOrbPresetEditorBase
     {
-        const string SDIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/L_SolarPrism";
-        static string MatCrystal => SDIR + "/PrismCrystal.mat";
-        static string MatFlare   => SDIR + "/StarFlare.mat";
-        static string MatGround  => SDIR + "/GlowDisc.mat";
-        static string MatBurst   => SDIR + "/PrismBurst.mat";
-        static string MatRing    => SDIR + "/PrismImpactRing.mat";
-        static string SkillPrefab => SDIR + "/SolarPrismSkill.prefab";
-        const string PresetPath  = SDIR + "/FX_SolarPrismPreset.asset";
+        const string SDIR = "Assets/RenderFX/HeroSkill/Lumina/SolarPrism";
+        static string MatCrystal => SDIR + "/Materials/PrismCrystal.mat";
+        static string MatFlare   => SDIR + "/Materials/StarFlare.mat";
+        static string MatGround  => SDIR + "/Materials/GlowDisc.mat";
+        static string MatBurst   => SDIR + "/Materials/PrismBurst.mat";
+        static string MatRing    => SDIR + "/Materials/PrismImpactRing.mat";
+        static string SkillPrefab => SDIR + "/Prefabs/SolarPrismSkill.prefab";
+        const string PresetPath  = SDIR + "/Presets/FX_SolarPrismPreset.asset";
 
         protected override string LiveKey => "JC.SolarPrismPreset.LivePreview";
         protected override string HelpText =>

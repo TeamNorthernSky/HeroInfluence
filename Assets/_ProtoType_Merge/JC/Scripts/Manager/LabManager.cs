@@ -89,74 +89,81 @@ public class LabManager : MonoBehaviour
         var catalog = DHCsvTemplateCatalog.Instance;
         if (repo == null || catalog == null) return false;
         if (!repo.TryGetUnit(unitIndex, out var unit) || unit == null) return false;
-        if (!catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out var template) || template == null) return false;
-        className = template.UnitType;
+        // [JC 260805] DH 템플릿 전환 — 클래스 인덱스는 템플릿이 정수로 직접 소유(ClassIndex).
+        if (!catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out var template) || template == null) return false;
+        className = template.ClassName;
         if (!string.IsNullOrWhiteSpace(unit.UnitTemplateKey) && int.TryParse(unit.UnitTemplateKey.Trim(), out classIndex))
         {
             return classIndex > 0;
         }
 
-        if (!string.IsNullOrWhiteSpace(template.Index) && int.TryParse(template.Index.Trim(), out classIndex))
+        if (template.ClassIndex > 0)
         {
-            return classIndex > 0;
+            classIndex = template.ClassIndex;
+            return true;
         }
 
         return !string.IsNullOrWhiteSpace(className)
                && ClassNameToIndex.TryGetValue(className.Trim(), out classIndex);
     }
 
-    /// <summary>해당 영웅이 보유(습득)한 직업 스킬 목록. acquireLevel ≤ 유닛 레벨인 것만.</summary>
-    public List<SkillData> GetLearnedSkills(int unitIndex)
+    /// <summary>해당 영웅이 보유(습득)한 직업 스킬 목록. AcquireLevel ≤ 유닛 레벨인 것만.</summary>
+    public List<DHClassSkillTemplate> GetLearnedSkills(int unitIndex)
     {
-        var result = new List<SkillData>();
+        var result = new List<DHClassSkillTemplate>();
         var repo = PersistentUnitRepository.Instance;
-        var catalog = DHCsvTemplateCatalog.Instance;
-        if (repo == null || catalog == null) return result;
+        if (repo == null) return result;
         if (!repo.TryGetUnit(unitIndex, out var unit) || unit == null) return result;
-        if (!TryResolveClass(unitIndex, out _, out int classIndex)) return result;
 
-        foreach (var s in catalog.GetAvailableSkillsByClassIndex(classIndex, unit.Level))
+        int level = Mathf.Max(1, unit.Level);
+        foreach (var s in GetClassSkills(unitIndex))
         {
-            if (s != null)
+            if (s != null && s.AcquireLevel <= level)
                 result.Add(s);
         }
         return result;
     }
 
-    /// <summary>[JC 260617] 해당 영웅의 클래스 스킬 전체(미습득 포함). 그리드 행 표시용.</summary>
-    public List<SkillData> GetClassSkills(int unitIndex)
+    /// <summary>[JC 260617] 해당 영웅의 클래스 스킬 전체(미습득 포함). 그리드 행 표시용.
+    /// [JC 260805] DH 템플릿 전환 — 유닛 템플릿의 ClassSkillIndices 를 스킬 템플릿으로 해석(시트 순서 유지).</summary>
+    public List<DHClassSkillTemplate> GetClassSkills(int unitIndex)
     {
-        var result = new List<SkillData>();
+        var result = new List<DHClassSkillTemplate>();
+        var repo = PersistentUnitRepository.Instance;
         var catalog = DHCsvTemplateCatalog.Instance;
-        if (catalog == null) return result;
-        if (!TryResolveClass(unitIndex, out _, out int classIndex)) return result;
-        foreach (var s in catalog.GetSkillsByClassIndex(classIndex))
-            if (s != null) result.Add(s);
+        if (repo == null || catalog == null) return result;
+        if (!repo.TryGetUnit(unitIndex, out var unit) || unit == null) return result;
+        if (!catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out var template) ||
+            template == null || template.ClassSkillIndices == null) return result;
+
+        foreach (int skillIndex in template.ClassSkillIndices)
+        {
+            if (skillIndex > 0 && catalog.TryGetClassSkillTemplate(skillIndex, out var skill) && skill != null)
+                result.Add(skill);
+        }
         return result;
     }
 
-    /// <summary>스킬 습득 여부(acquireLevel ≤ 영웅 레벨).</summary>
-    public bool IsSkillLearned(int unitIndex, SkillData skill)
+    /// <summary>스킬 습득 여부(AcquireLevel ≤ 영웅 레벨).</summary>
+    public bool IsSkillLearned(int unitIndex, DHClassSkillTemplate skill)
     {
         if (skill == null) return false;
         var repo = PersistentUnitRepository.Instance;
-        var catalog = DHCsvTemplateCatalog.Instance;
         if (repo == null || !repo.TryGetUnit(unitIndex, out var unit) || unit == null) return false;
-        if (catalog == null || !TryResolveClass(unitIndex, out _, out int classIndex)) return false;
 
-        List<SkillData> classSkills = catalog.GetSkillsByClassIndex(classIndex);
+        List<DHClassSkillTemplate> classSkills = GetClassSkills(unitIndex);
         bool belongsToClass = false;
         for (int i = 0; i < classSkills.Count; i++)
         {
-            SkillData candidate = classSkills[i];
-            if (candidate != null && candidate.skillIndex == skill.skillIndex)
+            DHClassSkillTemplate candidate = classSkills[i];
+            if (candidate != null && candidate.NumericSkillId == skill.NumericSkillId)
             {
                 belongsToClass = true;
                 break;
             }
         }
 
-        return belongsToClass && skill.acquireLevel <= Mathf.Max(1, unit.Level);
+        return belongsToClass && skill.AcquireLevel <= Mathf.Max(1, unit.Level);
     }
 
     // ─── 스킬 강화 레벨 조회 ───────────────────────────────────
@@ -249,8 +256,8 @@ public class LabManager : MonoBehaviour
         bool valid = false;
         if (eq != 0)
             for (int i = 0; i < learned.Count; i++)
-                if (learned[i] != null && learned[i].skillIndex == eq) { valid = true; break; }
-        if (!valid) EquipSkill(unitIndex, learned[0].skillIndex);
+                if (learned[i] != null && learned[i].NumericSkillId == eq) { valid = true; break; }
+        if (!valid) EquipSkill(unitIndex, learned[0].NumericSkillId);
     }
 
     /// <summary>[JC 260619] 전 플레이어 유닛에 기본 클래스 스킬을 보장 장착(게임 시작 시 1회용, 멱등).</summary>

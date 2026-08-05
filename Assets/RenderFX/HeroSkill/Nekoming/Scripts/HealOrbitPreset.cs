@@ -8,9 +8,21 @@ namespace JC.VFX
     /// HealOrbitCoreInner/RimShell.mat(전용 재질) + HealOrbit 프리팹(HealOrbitVfx + Orb 크기/코어림 사이즈)에 일괄 반영.
     /// ★셰이더 재질은 발사체와 분리된 전용 재질이라, 여기 값이 발사체에 영향 없음.
     /// </summary>
-    [CreateAssetMenu(menuName = "JC VFX/2_Heal Orbit Preset", fileName = "2_HealOrbitPreset")]
+    [CreateAssetMenu(menuName = "JC VFX/3_Heal Orbit Preset", fileName = "3_HealOrbitPreset")]
     public class HealOrbitPreset : ScriptableObject
     {
+        [Header("★따름 (Alter 전용)")]
+        [Tooltip("켜면 트랜스폼(궤도·크기·착지점)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON.")]
+        public bool followBasic;
+        public HealOrbitPreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
+        public HealOrbitPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
+        [Header("★착지점 (대상 기준)")]
+        [Tooltip("착지 오라 생성 오프셋(m). 기본 0 = 대상 발밑. 폐기된 위치 프리셋의 heal_land 항목이 여기로 이관됨.")]
+        public Vector3 landOffset = Vector3.zero;
+
         [Header("궤도 (거동)")]
         [Tooltip("궤도 반경(m)")]
         public float orbitRadius = 1.0f;

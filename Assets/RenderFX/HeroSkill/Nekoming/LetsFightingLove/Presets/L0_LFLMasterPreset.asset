@@ -22,6 +22,6 @@ MonoBehaviour:
   chainDelay: 0.25
   chainSpawnYOffset: 0.9
   chainStagger: 0.08
-  cellSize: 2
+  cellSize: 3.3
   axisTol: 0.6
   maxChainTargets: 4

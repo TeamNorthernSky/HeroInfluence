@@ -14,13 +14,13 @@ namespace JC.VFX
         // ★변종 대응(260730): 경로를 프리셋의 variantSuffix로 만든다.
         // 접미사가 비면 종전과 동일한 크림판 자산, "_Dark"면 흑염 자산 세트를 가리킨다.
         static string Sfx(FlareOrbPresetBase p) => p != null && !string.IsNullOrEmpty(p.variantSuffix) ? p.variantSuffix : "";
-        static string MatCore(FlareOrbPresetBase p)     => DIR + "/FlareOrbCore" + Sfx(p) + ".mat";
-        static string MatRim(FlareOrbPresetBase p)      => DIR + "/FlareCoreRim" + Sfx(p) + ".mat";
-        static string MatAura(FlareOrbPresetBase p)     => DIR + "/FlareAuraTongue" + Sfx(p) + ".mat";
-        static string MatAuraBack(FlareOrbPresetBase p) => DIR + "/FlareAuraTongueBack" + Sfx(p) + ".mat";
+        static string MatCore(FlareOrbPresetBase p)     => DIR + "/Materials/FlareOrbCore" + Sfx(p) + ".mat";
+        static string MatRim(FlareOrbPresetBase p)      => DIR + "/Materials/FlareCoreRim" + Sfx(p) + ".mat";
+        static string MatAura(FlareOrbPresetBase p)     => DIR + "/Materials/FlareAuraTongue" + Sfx(p) + ".mat";
+        static string MatAuraBack(FlareOrbPresetBase p) => DIR + "/Materials/FlareAuraTongueBack" + Sfx(p) + ".mat";
         /// <summary>오브 프리팹. 흑염은 전용 프리팹이 없으므로(형태·광원은 공유) 접미사를 붙이지 않는다.</summary>
-        static string OrbPrefab   => DIR + "/FlareBombOrb.prefab";
-        const string PresetPath   = DIR + "/F0_FlareOrbPreset.asset";
+        static string OrbPrefab   => DIR + "/Prefabs/FlareBombOrb.prefab";
+        const string PresetPath   = DIR + "/Presets/F0_FlareOrbPreset.asset";
 
         /// <summary>이 프리셋이 흑염 변종을 대상으로 하는가 — 라이브 프리뷰 스코프를 가른다.</summary>
         static bool WantsDark(FlareOrbPresetBase p) => Sfx(p).Contains("Dark");

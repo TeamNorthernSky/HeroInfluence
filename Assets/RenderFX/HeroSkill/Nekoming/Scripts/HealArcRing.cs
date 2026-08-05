@@ -123,22 +123,23 @@ namespace JC.VFX
 
         private void PullFromPreset()
         {
-            spawnIntervalMin = preset.spawnIntervalMin;
-            spawnIntervalMax = preset.spawnIntervalMax;
-            maxArcs = preset.maxArcs;
-            sweepDurationMin = preset.sweepDurationMin;
-            sweepDurationMax = preset.sweepDurationMax;
-            arcSpanMinDeg = preset.arcSpanMinDeg;
-            arcSpanMaxDeg = preset.arcSpanMaxDeg;
-            radius = preset.radius;
-            radiusNoise = preset.radiusNoise;
-            orbitHeight = preset.orbitHeight;
-            tiltMaxDeg = preset.tiltMaxDeg;
-            bidirectional = preset.bidirectional;
-            widthStartMin = preset.widthStartMin;
-            widthStartMax = preset.widthStartMax;
-            trailTimeMin = preset.trailTimeMin;
-            trailTimeMax = preset.trailTimeMax;
+            var t = preset.TransformSource;   // ★트랜스폼은 따름 규칙(Alter→Basic), 색·알파는 자기 것
+            spawnIntervalMin = t.spawnIntervalMin;
+            spawnIntervalMax = t.spawnIntervalMax;
+            maxArcs = t.maxArcs;
+            sweepDurationMin = t.sweepDurationMin;
+            sweepDurationMax = t.sweepDurationMax;
+            arcSpanMinDeg = t.arcSpanMinDeg;
+            arcSpanMaxDeg = t.arcSpanMaxDeg;
+            radius = t.radius;
+            radiusNoise = t.radiusNoise;
+            orbitHeight = t.orbitHeight;
+            tiltMaxDeg = t.tiltMaxDeg;
+            bidirectional = t.bidirectional;
+            widthStartMin = t.widthStartMin;
+            widthStartMax = t.widthStartMax;
+            trailTimeMin = t.trailTimeMin;
+            trailTimeMax = t.trailTimeMax;
             alphaMin = preset.alphaMin;
             alphaMax = preset.alphaMax;
             if (preset.colorGradient != null) colorGradient = preset.colorGradient;

@@ -6,9 +6,9 @@ namespace JC.VFX
     [CustomEditor(typeof(TaoMeteorPreset))]
     public class TaoMeteorPresetEditor : Editor
     {
-        const string MeteorPrefab = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_Taosenaiyo/Tao_MeteorOrb.prefab";
-        const string CometMat = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_Taosenaiyo/TaoComet.mat";
-        const string HeadMat = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_Taosenaiyo/TaoCometHead.mat";
+        const string MeteorPrefab = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/Tao_MeteorOrb.prefab";
+        const string CometMat = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Materials/TaoComet.mat";
+        const string HeadMat = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Materials/TaoCometHead.mat";
 
         public override void OnInspectorGUI()
         {

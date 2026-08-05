@@ -37,8 +37,10 @@ namespace JC.VFX
         public float chainSpawnYOffset = 0.9f;
         [Tooltip("연쇄 다발 발사 시차(초/발)")]
         [Range(0f, 0.5f)] public float chainStagger = 0.08f;
-        [Tooltip("1칸 크기(m). 상하좌우 이웃 판정 거리")]
-        [Range(0.5f, 6f)] public float cellSize = 2.0f;
+        [Tooltip("1칸 크기(m). 상하좌우 이웃 판정 거리.\n" +
+                 "★폴백 판정 전용 — 스킬이 SetTargets 로 대상을 주입하면 쓰이지 않는다.\n" +
+                 "실측 격자 간격 = 3.30 (Grid_c_r 의 x·z 모두 동일)")]
+        [Range(0.5f, 6f)] public float cellSize = 3.3f;
         [Tooltip("십자 판정 허용오차(m). 수직축 어긋남 + 거리 여유")]
         [Range(0.05f, 1.5f)] public float axisTol = 0.6f;
         [Tooltip("최대 연쇄 대상 수(가까운 순)")]

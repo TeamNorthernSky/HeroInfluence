@@ -12,10 +12,10 @@ namespace JC.VFX
     [CustomEditor(typeof(FlareImpactPreset))]
     public class FlareImpactPresetEditor : FlareOrbPresetEditorBase
     {
-        static string MatBurst    => DIR + "/FlareImpactBurst.mat";
-        static string MatRing     => DIR + "/FlareImpactRing.mat";
-        static string SkillPrefab => DIR + "/FlareBombSkill.prefab";
-        const string PresetPath   = DIR + "/FX_FlareImpactPreset.asset";
+        static string MatBurst    => DIR + "/Materials/FlareImpactBurst.mat";
+        static string MatRing     => DIR + "/Materials/FlareImpactRing.mat";
+        static string SkillPrefab => DIR + "/Prefabs/FlareBombSkill.prefab";
+        const string PresetPath   = DIR + "/Presets/FX_FlareImpactPreset.asset";
 
         protected override string LiveKey => "JC.FlareImpactPreset.LivePreview";
         protected override string HelpText =>

@@ -143,9 +143,9 @@ public class HeroListController : MonoBehaviour, IBeginDragHandler, IEndDragHand
             int unitIndex = orderedUnits[i];
             if (!repo.TryGetUnit(unitIndex, out UnitPersistentData unit) || unit == null) continue;
 
-            UnitData template = null;
+            DHPlayerUnitTemplate template = null;
             if (catalog != null && !string.IsNullOrWhiteSpace(unit.UnitTemplateKey))
-                catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out template);
+                catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out template);
 
             bool inParty = RosterOrdering.IsUnitInAnyParty(unitIndex);
 

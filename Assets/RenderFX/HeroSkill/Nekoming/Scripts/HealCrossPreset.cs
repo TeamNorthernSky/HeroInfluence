@@ -11,6 +11,14 @@ namespace JC.VFX
     [CreateAssetMenu(menuName = "JC VFX/6_Heal Cross Preset", fileName = "6_HealCrossPreset")]
     public class HealCrossPreset : ScriptableObject
     {
+        [Header("★따름 (변형 전용 — 힐 8번 공용 자산에선 끔)")]
+        [Tooltip("켜면 트랜스폼(스폰·배치·바운스·크기·형태)을 Basic 프리셋에서 읽는다. Paw P3 의 Alter/Miss 는 기본 ON.")]
+        public bool followBasic;
+        public HealCrossPreset basicRef;
+
+        /// <summary>트랜스폼 정본 — 변형이 따름이면 Basic.</summary>
+        public HealCrossPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
         [Header("스폰")]
         [Tooltip("동시 최대 십자 수")]
         public int maxCrosses = 14;

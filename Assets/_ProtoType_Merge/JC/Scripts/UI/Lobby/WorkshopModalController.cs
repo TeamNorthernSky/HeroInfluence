@@ -171,11 +171,11 @@ public class WorkshopModalController : MonoBehaviour
     }
 
     // ─── 카탈로그 폴백 해석 ────────────────────────────────────
-    private static bool TryGetWeaponData(int weaponIndex, out WeaponData data)
+    private static bool TryGetWeaponData(int weaponIndex, out DHWeaponTemplate data)
     {
         data = null;
         var cat = DHCsvTemplateCatalog.Instance;
-        return cat != null && cat.TryGetWeapon(weaponIndex, out data) && data != null;
+        return cat != null && cat.TryGetWeaponTemplate(weaponIndex, out data) && data != null;
     }
 
     private string CoreName(int i)

@@ -3,15 +3,33 @@ using UnityEditor;
 
 namespace JC.VFX
 {
+    /// <summary>
+    /// 오라 글로우 프리셋 에디터 — 260805 변종 인식 개편.
+    /// ★적용/캡처 대상은 「preset 필드가 이 에셋을 참조하는 HealAuraGlow」만(첫 자식 폴백 제거).
+    /// </summary>
     [CustomEditor(typeof(HealAuraGlowPreset))]
     public class HealAuraGlowPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_HealSkill";
-        static string OrbitPrefab => DIR + "/HealOrbit.prefab";   // AuraGlow가 이 프리팹의 자식
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
+        static readonly string[] PrefabPaths =
+        {
+            DIR + "/Prefabs/HealOrbit_Basic.prefab",
+            DIR + "/Prefabs/HealOrbit_Alter.prefab",
+        };
+
+        static readonly string[] TransformProps = { "width", "height", "groundOffsetY" };
+
+        static readonly string[] Fields =
+        {
+            "width", "height", "groundOffsetY", "intensity", "opacity",
+            "bottomFade", "verticalBias", "topMin", "topMax", "topSoft", "topNoiseScale", "topNoiseSpeed",
+            "facePower", "streakTiling", "streakStrength", "streakScroll",
+            "wobbleAmount", "wobbleSpeed", "riseGrow",
+        };
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.AuraGlow.Fold", TransformProps);
             var p = (HealAuraGlowPreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
@@ -19,72 +37,67 @@ namespace JC.VFX
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
             }
-            EditorGUILayout.HelpBox("적용: 이 값을 HealOrbit 프리팹의 AuraGlow(HealAuraGlow)에 반영.\nHealAuraGlow.livePreview가 켜져 있으면 플레이 중에도 즉시 반영됩니다.", MessageType.Info);
+            EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 AuraGlow 에만 반영(Basic·Alter 프리팹 자동 탐색).\nlivePreview가 켜져 있으면 플레이 중에도 즉시 반영됩니다.", MessageType.Info);
         }
 
-        static HealAuraGlow FindTarget(GameObject root) => root.GetComponentInChildren<HealAuraGlow>(true);
+        static bool UsesPreset(Component c, Object presetAsset)
+            => new SerializedObject(c).FindProperty("preset")?.objectReferenceValue == presetAsset;
 
         void Apply(HealAuraGlowPreset p)
         {
-            var root = PrefabUtility.LoadPrefabContents(OrbitPrefab);
-            var fg = FindTarget(root);
-            if (fg == null) { PrefabUtility.UnloadPrefabContents(root); Debug.LogError("[HealAuraGlowPreset] AuraGlow(HealAuraGlow) 없음"); return; }
-            var so = new SerializedObject(fg);
-            so.FindProperty("width").floatValue = p.width;
-            so.FindProperty("height").floatValue = p.height;
-            so.FindProperty("groundOffsetY").floatValue = p.groundOffsetY;
-            so.FindProperty("color").colorValue = p.color;
-            so.FindProperty("intensity").floatValue = p.intensity;
-            so.FindProperty("opacity").floatValue = p.opacity;
-            so.FindProperty("bottomFade").floatValue = p.bottomFade;
-            so.FindProperty("verticalBias").floatValue = p.verticalBias;
-            so.FindProperty("topMin").floatValue = p.topMin;
-            so.FindProperty("topMax").floatValue = p.topMax;
-            so.FindProperty("topSoft").floatValue = p.topSoft;
-            so.FindProperty("topNoiseScale").floatValue = p.topNoiseScale;
-            so.FindProperty("topNoiseSpeed").floatValue = p.topNoiseSpeed;
-            so.FindProperty("facePower").floatValue = p.facePower;
-            so.FindProperty("streakTiling").floatValue = p.streakTiling;
-            so.FindProperty("streakStrength").floatValue = p.streakStrength;
-            so.FindProperty("streakScroll").floatValue = p.streakScroll;
-            so.FindProperty("wobbleAmount").floatValue = p.wobbleAmount;
-            so.FindProperty("wobbleSpeed").floatValue = p.wobbleSpeed;
-            so.FindProperty("riseGrow").floatValue = p.riseGrow;
-            so.ApplyModifiedPropertiesWithoutUndo();
-            PrefabUtility.SaveAsPrefabAsset(root, OrbitPrefab);
-            PrefabUtility.UnloadPrefabContents(root);
-            Debug.Log("[HealAuraGlowPreset] 프리팹에 적용 완료");
+            int applied = 0;
+            foreach (var path in PrefabPaths)
+            {
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null) continue;
+                var root = PrefabUtility.LoadPrefabContents(path);
+                bool dirty = false;
+                foreach (var fg in root.GetComponentsInChildren<HealAuraGlow>(true))
+                {
+                    if (!UsesPreset(fg, p)) continue;
+                    var so = new SerializedObject(fg);
+                    var pso = new SerializedObject(p);
+                    foreach (var f in Fields) CopyFloat(pso, so, f);
+                    so.FindProperty("color").colorValue = p.color;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    dirty = true;
+                    applied++;
+                }
+                if (dirty) PrefabUtility.SaveAsPrefabAsset(root, path);
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+            if (applied == 0) Debug.LogError("[HealAuraGlowPreset] 이 프리셋을 참조하는 AuraGlow 없음 — 결선을 확인하세요(폴백 없음)");
+            else Debug.Log($"[HealAuraGlowPreset] 프리팹에 적용 완료 ({applied}곳)");
         }
 
         void Capture(HealAuraGlowPreset p)
         {
-            var root = AssetDatabase.LoadAssetAtPath<GameObject>(OrbitPrefab);
-            var fg = FindTarget(root);
-            if (fg == null) { Debug.LogError("[HealAuraGlowPreset] AuraGlow(HealAuraGlow) 없음"); return; }
-            Undo.RecordObject(p, "Capture Heal Floor Glow");
-            var so = new SerializedObject(fg);
-            p.width = so.FindProperty("width").floatValue;
-            p.height = so.FindProperty("height").floatValue;
-            p.groundOffsetY = so.FindProperty("groundOffsetY").floatValue;
-            p.color = so.FindProperty("color").colorValue;
-            p.intensity = so.FindProperty("intensity").floatValue;
-            p.opacity = so.FindProperty("opacity").floatValue;
-            p.bottomFade = so.FindProperty("bottomFade").floatValue;
-            p.verticalBias = so.FindProperty("verticalBias").floatValue;
-            p.topMin = so.FindProperty("topMin").floatValue;
-            p.topMax = so.FindProperty("topMax").floatValue;
-            p.topSoft = so.FindProperty("topSoft").floatValue;
-            p.topNoiseScale = so.FindProperty("topNoiseScale").floatValue;
-            p.topNoiseSpeed = so.FindProperty("topNoiseSpeed").floatValue;
-            p.facePower = so.FindProperty("facePower").floatValue;
-            p.streakTiling = so.FindProperty("streakTiling").floatValue;
-            p.streakStrength = so.FindProperty("streakStrength").floatValue;
-            p.streakScroll = so.FindProperty("streakScroll").floatValue;
-            p.wobbleAmount = so.FindProperty("wobbleAmount").floatValue;
-            p.wobbleSpeed = so.FindProperty("wobbleSpeed").floatValue;
-            p.riseGrow = so.FindProperty("riseGrow").floatValue;
-            EditorUtility.SetDirty(p);
-            Debug.Log("[HealAuraGlowPreset] 현재값 캡처 완료");
+            foreach (var path in PrefabPaths)
+            {
+                var root = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (root == null) continue;
+                foreach (var fg in root.GetComponentsInChildren<HealAuraGlow>(true))
+                {
+                    if (!UsesPreset(fg, p)) continue;
+                    Undo.RecordObject(p, "Capture Heal Aura Glow");
+                    var so = new SerializedObject(fg);
+                    var pso = new SerializedObject(p);
+                    foreach (var f in Fields) CopyFloat(so, pso, f);
+                    pso.FindProperty("color").colorValue = so.FindProperty("color").colorValue;
+                    pso.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(p);
+                    Debug.Log($"[HealAuraGlowPreset] 현재값 캡처 완료 ({root.name})");
+                    return;
+                }
+            }
+            Debug.LogError("[HealAuraGlowPreset] 이 프리셋을 참조하는 AuraGlow 없음 — 결선을 확인하세요(폴백 없음)");
+        }
+
+        static void CopyFloat(SerializedObject from, SerializedObject to, string name)
+        {
+            var pf = from.FindProperty(name);
+            var pt = to.FindProperty(name);
+            if (pf == null || pt == null) return;
+            pt.floatValue = pf.floatValue;
         }
     }
 }

@@ -135,33 +135,34 @@ namespace JC.VFX
 
         private void PullFromPreset()
         {
-            maxCrosses = preset.maxCrosses;
-            spawnIntervalMin = preset.spawnIntervalMin;
-            spawnIntervalMax = preset.spawnIntervalMax;
-            lifetimeMin = preset.lifetimeMin;
-            lifetimeMax = preset.lifetimeMax;
-            radius = preset.radius;
-            baseYOffset = preset.baseYOffset;
-            riseSpeedMin = preset.riseSpeedMin;
-            riseSpeedMax = preset.riseSpeedMax;
-            riseAccelMul = preset.riseAccelMul;
-            riseAccelTime = preset.riseAccelTime;
-            popOvershoot = preset.popOvershoot;
-            popFrac = preset.popFrac;
-            endFrac = preset.endFrac;
-            bobAmp = preset.bobAmp;
-            bobFreq = preset.bobFreq;
-            spinMax = preset.spinMax;
-            billboardYOnly = preset.billboardYOnly;
-            sizeMin = preset.sizeMin;
-            sizeMax = preset.sizeMax;
-            fadeInFrac = preset.fadeInFrac;
-            fadeOutFrac = preset.fadeOutFrac;
+            var t = preset.TransformSource;   // ★트랜스폼(스폰·배치·형태)은 따름 규칙(변종→Basic), 색·밝기는 자기 것
+            maxCrosses = t.maxCrosses;
+            spawnIntervalMin = t.spawnIntervalMin;
+            spawnIntervalMax = t.spawnIntervalMax;
+            lifetimeMin = t.lifetimeMin;
+            lifetimeMax = t.lifetimeMax;
+            radius = t.radius;
+            baseYOffset = t.baseYOffset;
+            riseSpeedMin = t.riseSpeedMin;
+            riseSpeedMax = t.riseSpeedMax;
+            riseAccelMul = t.riseAccelMul;
+            riseAccelTime = t.riseAccelTime;
+            popOvershoot = t.popOvershoot;
+            popFrac = t.popFrac;
+            endFrac = t.endFrac;
+            bobAmp = t.bobAmp;
+            bobFreq = t.bobFreq;
+            spinMax = t.spinMax;
+            billboardYOnly = t.billboardYOnly;
+            sizeMin = t.sizeMin;
+            sizeMax = t.sizeMax;
+            fadeInFrac = t.fadeInFrac;
+            fadeOutFrac = t.fadeOutFrac;
             color = preset.color;
             intensity = preset.intensity;
-            barWidth = preset.barWidth;
-            barLength = preset.barLength;
-            softness = preset.softness;
+            barWidth = t.barWidth;
+            barLength = t.barLength;
+            softness = t.softness;
         }
 
         private void Advance(Cross c)
