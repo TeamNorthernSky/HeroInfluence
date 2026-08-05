@@ -72,6 +72,9 @@ MonoBehaviour:
       InstanceKey: 
       Anchor: 0
       Socket: 0
+      Timing: 0
+      Time: 0
+      CueId: 1d25814d7c6040c588121e6d8f03c82d
   Move:
     Enabled: 1
     UseUnitMovement: 1
@@ -97,6 +100,9 @@ MonoBehaviour:
         InstanceKey: 
         Anchor: 1
         Socket: 1
+        Timing: 0
+        Time: 0
+        CueId: 505bee9a733044a98d75ba4d0a8d8e79
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
@@ -113,6 +119,9 @@ MonoBehaviour:
       InstanceKey: 
       Anchor: 1
       Socket: 4
+      Timing: 0
+      Time: 0
+      CueId: 6319f7d263b14243886a5f24c87876ac
     ExtraDelay: 0
   MovingAttack:
     Enabled: 0

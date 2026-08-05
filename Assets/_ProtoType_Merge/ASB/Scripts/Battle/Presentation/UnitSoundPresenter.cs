@@ -10,7 +10,11 @@ public class UnitSoundPresenter : MonoBehaviour
     private PresentationRuntimeContext _ctx;
     private PresentationRuntimeContext Ctx => _ctx != null ? _ctx : (_ctx = GetComponent<PresentationRuntimeContext>());
 
-    public void PresentationCue(string cueName)
+    private PresentationCueDriver _driver;
+    private PresentationCueDriver Driver => _driver != null ? _driver : (_driver = GetComponent<PresentationCueDriver>());
+
+    /// <param name="bypassStateGate">시퀀서 직접 호출용. <see cref="UnitEffectPresenter.PresentationCue"/> 참조.</param>
+    public void PresentationCue(string cueName, bool bypassStateGate = false)
     {
         PresentationRuntimeContext ctx = Ctx;
         if (ctx == null || SoundManager.Instance == null)
@@ -22,6 +26,13 @@ public class UnitSoundPresenter : MonoBehaviour
         if (!ctx.TryGetCue(norm, out RuntimeCue cue) || cue.SoundIds == null)
         {
             return;
+        }
+
+        // 등록되어 있다는 이유만으로 발화하지 않는다 — 기대 Animator state에 실제로 진입했을 때만.
+        if (!bypassStateGate)
+        {
+            PresentationCueDriver driver = Driver;
+            if (driver != null && !driver.IsCueAllowed(norm)) return;
         }
 
         Vector3 pos = ctx.Current != null && ctx.Current.Caster != null

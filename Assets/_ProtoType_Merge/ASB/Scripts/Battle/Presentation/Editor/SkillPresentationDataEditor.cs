@@ -30,19 +30,29 @@ public class SkillPresentationDataEditor : Editor
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Presentation Schema", isPhaseCue ? "PhaseCue (1)" : "Legacy (0)", EditorStyles.boldLabel);
-        using (new EditorGUI.DisabledScope(isPhaseCue))
+
+        // 체크박스로 양방향 전환한다. 어느 쪽으로 가도 데이터는 지워지지 않는다 —
+        // Legacy 슬롯과 Cue는 각각 다른 자리에 그대로 남고, '런타임이 어느 쪽을 읽는지'만 바뀐다.
+        // (BeginChangeCheck로 감싸 값이 실제로 바뀔 때만 쓴다. 그냥 열어보기만 해도 dirty가 되면 자산 YAML이 흔들린다.)
+        using (new EditorGUI.DisabledScope(schema == null))
         {
-            if (GUILayout.Button("Upgrade To Phase Cue (Schema = 1)") && schema != null)
+            EditorGUI.BeginChangeCheck();
+            bool next = EditorGUILayout.ToggleLeft("Phase Cue 사용 (Schema = 1)", isPhaseCue);
+            if (EditorGUI.EndChangeCheck() && schema != null)
             {
-                schema.intValue = 1;
-                isPhaseCue = true;
-                _foldNew = true;
-                _foldLegacy = false;
+                schema.intValue = next ? 1 : 0;
+                isPhaseCue = next;
+                _foldNew = next;
+                _foldLegacy = !next;
             }
         }
+
         EditorGUILayout.HelpBox(isPhaseCue
-            ? "PhaseCue: 이펙트/사운드는 아래 Presentation Phases의 Cue로만. 빈 Cue = 의도적 무연출."
-            : "Legacy: 기존 director 경로. Upgrade 시 Cue 경로로 전환.", MessageType.Info);
+            ? "PhaseCue: 이펙트/사운드는 아래 Presentation Phases의 Cue로만. 빈 Cue = 의도적 무연출.\n" +
+              "체크를 해제하면 Legacy 슬롯을 다시 읽습니다(Cue 데이터는 지워지지 않습니다)."
+            : "Legacy: 기존 director 경로(Attack/Hit Effect·Sound id). 체크하면 Cue 경로로 전환됩니다.\n" +
+              "전환은 값을 옮기지 않습니다 — Cue를 채우기 전까지 이펙트·사운드가 재생되지 않습니다.",
+            MessageType.Info);
 
         // ── 공용 (전 스키마) ──
         EditorGUILayout.Space();

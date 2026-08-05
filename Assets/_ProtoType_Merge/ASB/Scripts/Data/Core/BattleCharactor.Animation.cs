@@ -66,6 +66,8 @@ public partial class BattleCharactor
         if (GetComponent<UnitEffectPresenter>() == null) gameObject.AddComponent<UnitEffectPresenter>();
         if (GetComponent<UnitSoundPresenter>() == null) gameObject.AddComponent<UnitSoundPresenter>();
         if (GetComponent<UnitAnimationEventRouter>() == null) gameObject.AddComponent<UnitAnimationEventRouter>();
+        // State 게이트 + 시간 기반 Cue 발화. 런타임에 붙이므로 프리팹/씬 자산은 바뀌지 않는다.
+        if (GetComponent<PresentationCueDriver>() == null) gameObject.AddComponent<PresentationCueDriver>();
         return ctx;
     }
 }

@@ -29,7 +29,8 @@ public class SkillPresentationData : ScriptableObject
     [Tooltip("SkillData.skillIndex. SkillPresentationCatalog가 이 값으로 조회.")]
     public int SkillIndex;
 
-    [Tooltip("0 = Legacy(기존 director 경로), 1 = PhaseCue(새 Cue 경로). 자동 변경 금지 — 에디터 Upgrade 버튼으로만 전환.")]
+    [Tooltip("0 = Legacy(기존 director 경로), 1 = PhaseCue(새 Cue 경로). 자동 변경 금지 — 에디터의 " +
+             "'Phase Cue 사용' 체크박스로만 전환. 전환은 값을 옮기지 않고 '어느 쪽을 읽는지'만 바꾼다.")]
     public int PresentationSchemaVersion = 0;
 
     /// <summary>새 페이즈/Cue 구조가 활성인지.</summary>
@@ -241,7 +242,107 @@ public class SkillPresentationData : ScriptableObject
             {
                 Debug.LogWarning($"[SkillPresentation] {name}: {label}.Cues[{i}] {cue.Operation}은 EffectIds를 생성하지 않습니다. 별도 Spawn Cue로 분리하세요.", this);
             }
+
+            ValidateCueTiming(label, stateName, i, cue);
         }
+    }
+
+    /// <summary>
+    /// 데이터 시각(Timing != ClipEvent) Cue의 경계값 검증.
+    /// 클립 종료 판정이 normalizedTime 0.95에서 일어나므로(CharactorAnimationController) 그 이후는 발화가 보장되지 않는다.
+    /// </summary>
+    private void ValidateCueTiming(string label, string stateName, int index, CueBinding cue)
+    {
+        if (!cue.IsDataTimed)
+        {
+            return;
+        }
+
+        // 데이터 시각은 "그 state가 재생되는 동안"을 기준으로 하므로 state가 없으면 해석할 수 없다.
+        if (string.IsNullOrWhiteSpace(stateName))
+        {
+            Debug.LogWarning(
+                $"[SkillPresentation] {name}: {label}.Cues[{index}] Timing={cue.Timing}인데 AnimationStateName이 비어 있어 발화하지 않습니다.", this);
+            return;
+        }
+
+        if (cue.Timing != CueTimingSource.NormalizedTime)
+        {
+            // Seconds는 실제 재생 클립 길이를 알아야 검증할 수 있다(캐릭터별 오버라이드로 길이가 달라짐).
+            // Timeline 지그 생성 시점에 검증한다.
+            return;
+        }
+
+        if (cue.Time > 1f)
+        {
+            Debug.LogWarning(
+                $"[SkillPresentation] {name}: {label}.Cues[{index}] NormalizedTime={cue.Time:F3}이 0~1 범위를 벗어났습니다.", this);
+        }
+        else if (cue.Time >= CueFireGuaranteedNormalizedLimit)
+        {
+            Debug.LogWarning(
+                $"[SkillPresentation] {name}: {label}.Cues[{index}] NormalizedTime={cue.Time:F3}은 클립 종료 판정({CueFireGuaranteedNormalizedLimit:F2}) 이후라 " +
+                "발화가 보장되지 않습니다. 더 이른 시각으로 옮기거나 다음 페이즈의 이른 Cue로 이동하세요.", this);
+        }
+    }
+
+    /// <summary>
+    /// 발화가 보장되는 정규화 시각의 상한. CharactorAnimationController의 클립 종료 임계값과 같은 값이어야 한다.
+    /// (그 상수는 private이므로 여기서 복제한다 — 한쪽을 바꾸면 다른 쪽도 바꿀 것.)
+    /// </summary>
+    private const float CueFireGuaranteedNormalizedLimit = 0.95f;
+
+    /// <summary>
+    /// 모든 Cue에 CueId를 채운다. Timeline 지그가 마커 → CueBinding 역기입 대상을 특정하는 데 사용한다.
+    /// CueName은 페이즈/Beat 간 중복이 가능하고 리스트 순서도 바뀌므로 이름·인덱스로는 특정할 수 없다.
+    ///
+    /// ★OnValidate에서 호출하지 않는다 — 자산을 인스펙터로 열기만 해도 전 자산이 dirty가 되어
+    ///   YAML이 통째로 바뀐다. 지그가 실제로 필요할 때 명시적으로 호출하고, 그 커밋에서만 자산이 변한다.
+    /// </summary>
+    public bool EnsureCueIds()
+    {
+        bool changed = false;
+        foreach (PhaseBase phase in GetPhases())
+        {
+            if (phase is CuePhase cuePhase)
+            {
+                changed |= EnsureCueIds(cuePhase.Cues);
+            }
+        }
+
+        if (MovingAttack != null)
+        {
+            changed |= EnsureCueIds(MovingAttack.Cues);
+        }
+
+        if (Attack?.Beats != null)
+        {
+            for (int i = 0; i < Attack.Beats.Count; i++)
+            {
+                changed |= EnsureCueIds(Attack.Beats[i]?.Cues);
+            }
+        }
+
+        return changed;
+    }
+
+    private static bool EnsureCueIds(List<CueBinding> cues)
+    {
+        if (cues == null)
+        {
+            return false;
+        }
+
+        bool changed = false;
+        for (int i = 0; i < cues.Count; i++)
+        {
+            if (cues[i] != null)
+            {
+                changed |= cues[i].EnsureCueId();
+            }
+        }
+
+        return changed;
     }
 }
 
@@ -316,6 +417,20 @@ public enum SpawnAnchor
 }
 
 /// <summary>
+/// Cue의 발화 시점을 누가 정하는가.
+/// ClipEvent = 클립에 심긴 AniEvent_PresentationCue(현행). 나머지는 이 데이터의 Time에 드라이버가 발화.
+/// 같은 CueName의 진짜 클립 이벤트가 있으면 데이터 쪽이 스스로 물러난다(이중 발화 방지).
+/// </summary>
+public enum CueTimingSource
+{
+    ClipEvent,
+    /// <summary>Time = 0~1. 실제 시각 = Time * 클립길이. 클립 길이가 달라도 모션 대비 같은 지점(권장).</summary>
+    NormalizedTime,
+    /// <summary>Time = 초. 클립 이벤트와 같은 단위이나 캐릭터별 클립 길이 차이에 취약.</summary>
+    Seconds
+}
+
+/// <summary>
 /// 하나의 연출 Cue. 클립의 AniEvent_PresentationCue(cueName)가 이 CueName과 매칭되면
 /// EffectIds/SoundIds를 실행한다. 이펙트/사운드는 id 참조만, 동작은 프리팹, 배치는 Anchor/Socket.
 /// </summary>
@@ -339,6 +454,48 @@ public class CueBinding
     public SpawnAnchor Anchor = SpawnAnchor.CasterSocket;
     [Tooltip("Anchor=CasterSocket일 때 사용할 소켓. None이면 기본 공격 소켓(AttackEffectSocket).")]
     public UnitSocket Socket = UnitSocket.None;
+
+    [Header("Timing")]
+    [Tooltip("ClipEvent = 클립의 AniEvent_PresentationCue가 발화(현행 동작). " +
+             "NormalizedTime/Seconds = 이 데이터의 Time에 발화. 같은 이름의 클립 이벤트가 있으면 그쪽이 우선.")]
+    public CueTimingSource Timing = CueTimingSource.ClipEvent;
+
+    [Min(0f)]
+    [Tooltip("Timing이 ClipEvent가 아닐 때만 사용. NormalizedTime은 0~1(0.95 이상은 발화 보장 없음).")]
+    public float Time;
+
+    [HideInInspector]
+    [Tooltip("Timeline 지그의 마커 역기입 대상 식별자. 자동 생성이며 수동 편집 금지.")]
+    public string CueId;
+
+    /// <summary>이 Cue를 데이터 시각으로 발화해야 하는지.</summary>
+    public bool IsDataTimed => Timing != CueTimingSource.ClipEvent;
+
+    /// <summary>
+    /// 이 Cue가 발화할 시각(초). NormalizedTime이면 클립 길이를 곱한다.
+    /// stateLength가 0 이하면(길이 불명) 정규화 값을 해석할 수 없으므로 음수를 반환해 발화를 건너뛰게 한다.
+    /// </summary>
+    public float ResolveFireSeconds(float stateLength)
+    {
+        if (Timing == CueTimingSource.Seconds)
+        {
+            return Mathf.Max(0f, Time);
+        }
+
+        return stateLength > 0f ? Mathf.Max(0f, Time) * stateLength : -1f;
+    }
+
+    /// <summary>CueId가 비어 있으면 새로 만든다. 이미 있으면 유지한다.</summary>
+    public bool EnsureCueId()
+    {
+        if (!string.IsNullOrEmpty(CueId))
+        {
+            return false;
+        }
+
+        CueId = Guid.NewGuid().ToString("N");
+        return true;
+    }
 
     /// <summary>trim + 소문자 정규화된 CueName. 매칭/맵 키에 사용.</summary>
     public string NormalizedCueName =>

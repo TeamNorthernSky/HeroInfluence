@@ -63,13 +63,28 @@ public class UnitEffectPresenter : MonoBehaviour
     private PresentationRuntimeContext _ctx;
     private PresentationRuntimeContext Ctx => _ctx != null ? _ctx : (_ctx = GetComponent<PresentationRuntimeContext>());
 
-    public void PresentationCue(string cueName)
+    private PresentationCueDriver _driver;
+    private PresentationCueDriver Driver => _driver != null ? _driver : (_driver = GetComponent<PresentationCueDriver>());
+
+    /// <param name="bypassStateGate">
+    /// 시퀀서가 직접 부르는 Cue(예: 부활, 애니 없는 MovePrepare)는 아직 기대 state에 진입하지 않은 시점에
+    /// 호출되므로 State 게이트를 우회한다. 게이트의 목적은 "이전 상태의 늦은 Animation Event"를 막는 것이지
+    /// 의도된 직접 호출을 막는 것이 아니다.
+    /// </param>
+    public void PresentationCue(string cueName, bool bypassStateGate = false)
     {
         PresentationRuntimeContext runtime = Ctx;
         if (runtime == null) return;
 
         string normalizedCue = string.IsNullOrWhiteSpace(cueName) ? string.Empty : cueName.Trim().ToLowerInvariant();
         if (!runtime.TryGetCue(normalizedCue, out RuntimeCue cue)) return;
+
+        // 등록되어 있다는 이유만으로 발화하지 않는다 — 기대 Animator state에 실제로 진입했을 때만.
+        if (!bypassStateGate)
+        {
+            PresentationCueDriver driver = Driver;
+            if (driver != null && !driver.IsCueAllowed(normalizedCue)) return;
+        }
 
         SkillEffectContext baseContext = runtime.Current;
 

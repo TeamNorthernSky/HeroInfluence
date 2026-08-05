@@ -216,7 +216,9 @@ public sealed class SkillPresentationDirector
         BattleVisualDirector visual = _battle.VisualDirector;
         if (actor == null || presentation == null || visual == null || !presentation.IsPhaseCue || actionInstanceId == 0) return;
 
-        var cueMap = new Dictionary<string, RuntimeCue>();
+        // 선언 순서를 보존한다 — 같은 프레임에 여러 Cue가 걸릴 때 리스트 순서로 발화하기 위해서다.
+        var runtimeCues = new List<RuntimeCue>();
+        var seenCueNames = new HashSet<string>();
         List<CueBinding> cues = activeCues ?? GetPrimaryAttackBeat(presentation)?.Cues;
         if (cues != null)
         {
@@ -224,14 +226,17 @@ public sealed class SkillPresentationDirector
             {
                 if (binding == null) continue;
                 string key = binding.NormalizedCueName;
-                if (string.IsNullOrEmpty(key) || cueMap.ContainsKey(key)) continue;
+                if (string.IsNullOrEmpty(key) || !seenCueNames.Add(key)) continue;
 
                 var cue = new RuntimeCue
                 {
+                    NormalizedCueName = key,
                     Operation = binding.Operation,
                     InstanceKey = binding.NormalizedInstanceKey,
                     Anchor = binding.Anchor,
                     Socket = binding.Socket,
+                    Timing = binding.Timing,
+                    Time = binding.Time,
                 };
                 if (binding.EffectIds != null)
                 {
@@ -242,7 +247,7 @@ public sealed class SkillPresentationDirector
                     }
                 }
                 if (binding.SoundIds != null) cue.SoundIds.AddRange(binding.SoundIds);
-                cueMap[key] = cue;
+                runtimeCues.Add(cue);
             }
         }
 
@@ -272,7 +277,8 @@ public sealed class SkillPresentationDirector
         int expectedHash = !string.IsNullOrWhiteSpace(expectedStateName)
             ? Animator.StringToHash(expectedStateName.Trim())
             : 0;
-        context.SetActive(actionInstanceId, effectContext, cueMap, expectedHash);
+        context.SetActive(actionInstanceId, effectContext, runtimeCues, expectedHash,
+            $"{presentation.name} / state='{expectedStateName}'");
     }
 
     public static void ClearPresentationContext(BattleCharactor actor)
@@ -338,7 +344,8 @@ public sealed class SkillPresentationDirector
         if (_battle.HasPendingRevive && phase is AttackPreparePhase)
         {
             UnitEffectPresenter presenter = actor != null ? actor.GetComponent<UnitEffectPresenter>() : null;
-            presenter?.PresentationCue("revive");
+            // PlayState 이전이라 아직 기대 state에 진입하지 않았다 → State 게이트를 우회한다.
+            presenter?.PresentationCue("revive", bypassStateGate: true);
             _battle.TriggerPendingRevive();
         }
 
@@ -368,7 +375,8 @@ public sealed class SkillPresentationDirector
                     string cueName = phase.Cues[i]?.CueName;
                     if (!string.IsNullOrWhiteSpace(cueName))
                     {
-                        presenter.PresentationCue(cueName);
+                        // 애니 state가 없는 MovePrepare Cue는 이동 직전에 즉시 발화한다 → 게이트 우회.
+                        presenter.PresentationCue(cueName, bypassStateGate: true);
                     }
                 }
             }
