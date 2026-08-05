@@ -42,6 +42,15 @@ public class QuarterViewCameraFollower : MonoBehaviour
     [SerializeField] private float edgeLimitRange = 50f;
     [SerializeField] private bool invertVerticalEdgeScroll = false;
 
+    [Header("Map Bounds")]
+    [SerializeField] private bool clampToMapBounds = true;
+    [SerializeField, Min(0f)] private float mapBoundsPaddingCells = 0f;
+    [SerializeField] private GridManager gridManager;
+    [SerializeField] private LevelZoneLayoutData levelZoneLayoutData;
+    [SerializeField] private LevelZoneLayoutLoader levelZoneLayoutLoader;
+    [SerializeField] private LevelData levelData;
+    [SerializeField] private LevelLoader levelLoader;
+
     [Header("UI Blocking")]
     [SerializeField] private bool blockEdgeScrollOverButtons = true;
     [SerializeField] private bool blockCameraInputDuringCombatPrompt = true;
@@ -51,6 +60,13 @@ public class QuarterViewCameraFollower : MonoBehaviour
     [SerializeField] private KeyCode resetKey = KeyCode.Y;
 
     private static readonly List<RaycastResult> UiRaycastResults = new List<RaycastResult>();
+    private static readonly Vector3[] ViewportCorners =
+    {
+        new Vector3(0f, 0f, 0f),
+        new Vector3(1f, 0f, 0f),
+        new Vector3(1f, 1f, 0f),
+        new Vector3(0f, 1f, 0f)
+    };
 
     private Vector3 followVelocity;
     private Vector3 smoothedFollowAnchor;
@@ -60,6 +76,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private float defaultZoomZ;
     private float zoomZPerY;
     private bool hasSmoothedFollowAnchor;
+    private Camera targetCamera;
+    private readonly Vector3[] groundCorners = new Vector3[4];
 
     public void SetFollowTarget(Transform target)
     {
@@ -89,6 +107,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void Awake()
     {
+        targetCamera = GetComponent<Camera>();
         positionOffset.x = 0f;
         defaultZoomY = positionOffset.y;
         defaultZoomZ = positionOffset.z;
@@ -144,6 +163,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
         Quaternion desiredFixedRot = Quaternion.Euler(fixedEulerAngles);
         transform.rotation = Quaternion.Slerp(transform.rotation, desiredFixedRot, tRot);
+
+        ClampCameraToMapBounds();
     }
 
     private void HandleZoomInput()
@@ -218,8 +239,15 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (!Input.GetKeyDown(resetKey))
             return;
 
-        RecenterOnFollowTarget();
-        positionOffset = new Vector3(0f, defaultZoomY, defaultZoomZ);
+        if (edgeScrollEnabled)
+        {
+            RecenterOnFollowTarget();
+            positionOffset = new Vector3(0f, defaultZoomY, defaultZoomZ);
+            edgeScrollEnabled = false;
+            return;
+        }
+
+        edgeScrollEnabled = true;
     }
 
     private void ApplyZoomDepthOffset()
@@ -247,6 +275,215 @@ public class QuarterViewCameraFollower : MonoBehaviour
         panOffset.x = Mathf.Clamp(panOffset.x, -edgeLimitRange, edgeLimitRange);
         panOffset.z = Mathf.Clamp(panOffset.z, -edgeLimitRange, edgeLimitRange);
         panOffset.y = 0f;
+    }
+
+    private void ClampCameraToMapBounds()
+    {
+        if (!clampToMapBounds)
+            return;
+
+        ResolveMapBoundsReferences();
+
+        if (targetCamera == null || gridManager == null || !TryGetMapWorldBounds(out Rect mapBounds))
+            return;
+
+        Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, gridManager.GetLandSurfaceY(), 0f));
+        if (!TryGetViewportGroundRect(groundPlane, out Rect viewportRect))
+            return;
+
+        if (TryShrinkZoomToFitBounds(mapBounds, groundPlane, ref viewportRect))
+            ApplyCameraPositionFromCurrentState();
+
+        Vector3 correction = Vector3.zero;
+        correction.x = CalculateAxisCorrection(viewportRect.xMin, viewportRect.xMax, mapBounds.xMin, mapBounds.xMax);
+        correction.z = CalculateAxisCorrection(viewportRect.yMin, viewportRect.yMax, mapBounds.yMin, mapBounds.yMax);
+
+        if (Mathf.Approximately(correction.x, 0f) && Mathf.Approximately(correction.z, 0f))
+            return;
+
+        transform.position += correction;
+        panOffset += correction;
+        panOffset.y = 0f;
+
+        if (!Mathf.Approximately(correction.x, 0f))
+            edgeScrollVelocity.x = 0f;
+
+        if (!Mathf.Approximately(correction.z, 0f))
+            edgeScrollVelocity.z = 0f;
+    }
+
+    private bool TryShrinkZoomToFitBounds(Rect mapBounds, Plane groundPlane, ref Rect viewportRect)
+    {
+        bool changed = false;
+
+        for (int i = 0; i < 6; i++)
+        {
+            float widthRatio = viewportRect.width > mapBounds.width && viewportRect.width > Mathf.Epsilon
+                ? mapBounds.width / viewportRect.width
+                : 1f;
+            float heightRatio = viewportRect.height > mapBounds.height && viewportRect.height > Mathf.Epsilon
+                ? mapBounds.height / viewportRect.height
+                : 1f;
+            float scale = Mathf.Min(widthRatio, heightRatio);
+
+            if (scale >= 0.999f || positionOffset.y <= minZoomY + 0.001f)
+                return changed;
+
+            float nextZoomY = Mathf.Max(minZoomY, positionOffset.y * scale * 0.98f);
+            if (Mathf.Approximately(nextZoomY, positionOffset.y))
+                nextZoomY = Mathf.Max(minZoomY, positionOffset.y - 0.1f);
+
+            positionOffset.y = nextZoomY;
+            ApplyZoomDepthOffset();
+            ApplyCameraPositionFromCurrentState();
+            changed = true;
+
+            if (!TryGetViewportGroundRect(groundPlane, out viewportRect))
+                return changed;
+        }
+
+        return changed;
+    }
+
+    private void ApplyCameraPositionFromCurrentState()
+    {
+        Vector3 anchor = GetCurrentFollowAnchor();
+        transform.position = new Vector3(
+            anchor.x + panOffset.x,
+            positionOffset.y,
+            anchor.z + panOffset.z + positionOffset.z);
+    }
+
+    private bool TryGetViewportGroundRect(Plane groundPlane, out Rect rect)
+    {
+        rect = default;
+
+        for (int i = 0; i < ViewportCorners.Length; i++)
+        {
+            Ray ray = targetCamera.ViewportPointToRay(ViewportCorners[i]);
+            if (!groundPlane.Raycast(ray, out float enter))
+                return false;
+
+            groundCorners[i] = ray.GetPoint(enter);
+        }
+
+        float minX = groundCorners[0].x;
+        float maxX = groundCorners[0].x;
+        float minZ = groundCorners[0].z;
+        float maxZ = groundCorners[0].z;
+
+        for (int i = 1; i < groundCorners.Length; i++)
+        {
+            Vector3 corner = groundCorners[i];
+            minX = Mathf.Min(minX, corner.x);
+            maxX = Mathf.Max(maxX, corner.x);
+            minZ = Mathf.Min(minZ, corner.z);
+            maxZ = Mathf.Max(maxZ, corner.z);
+        }
+
+        rect = Rect.MinMaxRect(minX, minZ, maxX, maxZ);
+        return true;
+    }
+
+    private bool TryGetMapWorldBounds(out Rect bounds)
+    {
+        bounds = default;
+
+        if (!TryGetGridSize(out Vector2Int gridSize))
+            return false;
+
+        int maxGridX = Mathf.Max(0, gridSize.x - 1);
+        int maxGridY = Mathf.Max(0, gridSize.y - 1);
+        Vector3 minCenter = gridManager.GridToWorldCenter(Vector2Int.zero);
+        Vector3 maxCenter = gridManager.GridToWorldCenter(new Vector2Int(maxGridX, maxGridY));
+
+        float halfCell = Mathf.Max(0.01f, gridManager.CellSize) * 0.5f;
+        float padding = Mathf.Max(0f, mapBoundsPaddingCells) * Mathf.Max(0.01f, gridManager.CellSize);
+        float minX = Mathf.Min(minCenter.x, maxCenter.x) - halfCell - padding;
+        float maxX = Mathf.Max(minCenter.x, maxCenter.x) + halfCell + padding;
+        float minZ = Mathf.Min(minCenter.z, maxCenter.z) - halfCell - padding;
+        float maxZ = Mathf.Max(minCenter.z, maxCenter.z) + halfCell + padding;
+
+        bounds = Rect.MinMaxRect(minX, minZ, maxX, maxZ);
+        return true;
+    }
+
+    private bool TryGetGridSize(out Vector2Int gridSize)
+    {
+        if (levelZoneLayoutData != null)
+        {
+            gridSize = levelZoneLayoutData.TotalGridSize;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
+        if (levelZoneLayoutLoader != null && levelZoneLayoutLoader.LayoutData != null)
+        {
+            gridSize = levelZoneLayoutLoader.LayoutData.TotalGridSize;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
+        if (levelData != null)
+        {
+            gridSize = levelData.GridSize;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
+        if (levelLoader != null && levelLoader.LevelData != null)
+        {
+            gridSize = levelLoader.LevelData.GridSize;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
+        gridSize = default;
+        return false;
+    }
+
+    private void ResolveMapBoundsReferences()
+    {
+        if (targetCamera == null)
+            targetCamera = GetComponent<Camera>();
+
+        if (levelZoneLayoutLoader == null)
+            levelZoneLayoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+
+        if (levelLoader == null)
+            levelLoader = FindFirstObjectByType<LevelLoader>();
+
+        if (levelZoneLayoutData == null && levelZoneLayoutLoader != null)
+            levelZoneLayoutData = levelZoneLayoutLoader.LayoutData;
+
+        if (levelData == null && levelLoader != null)
+            levelData = levelLoader.LevelData;
+
+        if (gridManager == null && levelZoneLayoutLoader != null)
+            gridManager = levelZoneLayoutLoader.GridManager;
+
+        if (gridManager == null && levelLoader != null)
+            gridManager = levelLoader.GridManager;
+
+        if (gridManager == null)
+            gridManager = FindFirstObjectByType<GridManager>();
+    }
+
+    private static float CalculateAxisCorrection(float viewMin, float viewMax, float boundsMin, float boundsMax)
+    {
+        float viewSize = viewMax - viewMin;
+        float boundsSize = boundsMax - boundsMin;
+
+        if (viewSize >= boundsSize)
+        {
+            float viewCenter = (viewMin + viewMax) * 0.5f;
+            float boundsCenter = (boundsMin + boundsMax) * 0.5f;
+            return boundsCenter - viewCenter;
+        }
+
+        if (viewMin < boundsMin)
+            return boundsMin - viewMin;
+
+        if (viewMax > boundsMax)
+            return boundsMax - viewMax;
+
+        return 0f;
     }
 
     private float EvaluateEdgeInput(float mouseAxis, float screenSize, float threshold)
