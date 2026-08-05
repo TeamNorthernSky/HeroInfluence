@@ -57,7 +57,7 @@ public class HeroInfoModal : MonoBehaviour
 
     public void Open(int unitIndex)
     {
-        if (!TryResolve(unitIndex, out UnitPersistentData unit, out UnitData template))
+        if (!TryResolve(unitIndex, out UnitPersistentData unit, out DHPlayerUnitTemplate template))
         {
             Debug.LogWarning($"[HeroInfoModal] unitIndex {unitIndex} 조회 실패");
             return;
@@ -78,7 +78,7 @@ public class HeroInfoModal : MonoBehaviour
         return modalRoot != null ? modalRoot : gameObject;
     }
 
-    private static bool TryResolve(int unitIndex, out UnitPersistentData unit, out UnitData template)
+    private static bool TryResolve(int unitIndex, out UnitPersistentData unit, out DHPlayerUnitTemplate template)
     {
         unit = null;
         template = null;
@@ -91,17 +91,17 @@ public class HeroInfoModal : MonoBehaviour
 
         var catalog = DHCsvTemplateCatalog.Instance;
         if (catalog != null && !string.IsNullOrWhiteSpace(unit.UnitTemplateKey))
-            catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out template);
+            catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out template);
 
         return true;
     }
 
-    private void Apply(UnitPersistentData unit, UnitData template)
+    private void Apply(UnitPersistentData unit, DHPlayerUnitTemplate template)
     {
-        string displayName = template != null && !string.IsNullOrWhiteSpace(template.Name)
-            ? template.Name : unit.UnitTemplateKey;
-        string displayClass = template != null && !string.IsNullOrWhiteSpace(template.UnitType)
-            ? template.UnitType : "-";
+        string displayName = template != null && !string.IsNullOrWhiteSpace(template.UnitName)
+            ? template.UnitName : unit.UnitTemplateKey;
+        string displayClass = template != null && !string.IsNullOrWhiteSpace(template.ClassName)
+            ? template.ClassName : "-";
 
         StatBlock s = unit.IngameStats; // [JC 260616] 표시는 인게임 스탯(베이스는 내부 연산용·비공개)
 
@@ -196,9 +196,9 @@ public class HeroInfoModal : MonoBehaviour
             if (sk > 0)
             {
                 int lv = gm.Lab.GetSkillLevel(unitIndex, sk);
-                SkillData sd = FindSkill(gm.Lab.GetClassSkills(unitIndex), sk);
+                DHClassSkillTemplate sd = FindSkill(gm.Lab.GetClassSkills(unitIndex), sk);
                 // [JC 260619] 이름 뒤 Lv.n + 설명은 계수 치환(전투 UI와 동일, ClassSkillTooltipText).
-                string csName = (sd != null && !string.IsNullOrWhiteSpace(sd.skillName) ? sd.skillName : "스킬") + $" Lv.{lv}";
+                string csName = (sd != null && !string.IsNullOrWhiteSpace(sd.SkillName) ? sd.SkillName : "스킬") + $" Lv.{lv}";
                 slotClassSkill = MakeSlot(classSkillButton, Sprites.Icon.ClassSkill(sk, lv),
                     csName, ClassSkillTooltipText.BuildDesc(sd, lv));
             }
@@ -211,9 +211,9 @@ public class HeroInfoModal : MonoBehaviour
             if (w > 0)
             {
                 int wl = Mathf.Max(1, gm.Workshop.GetWeaponLevel(w));
-                WeaponData wd = null;
+                DHWeaponTemplate wd = null;
                 var cat = DHCsvTemplateCatalog.Instance;
-                if (cat != null) cat.TryGetWeapon(w, out wd);
+                if (cat != null) cat.TryGetWeaponTemplate(w, out wd);
                 // 2번째(무기) 툴팁 = 공방 무기 호버와 동일(BuildWeaponLevelDesc). 이름 뒤 Lv.n(무기 레벨).
                 string wName = (wd != null && !string.IsNullOrWhiteSpace(wd.WeaponName) ? wd.WeaponName : "무기") + $" Lv.{wl}";
                 slotWeapon = MakeSlot(weaponButton, Sprites.Icon.Weapon(w, wl),
@@ -232,11 +232,11 @@ public class HeroInfoModal : MonoBehaviour
         ApplySlotIcon(slotWeaponSkill, weaponSkillButton);
     }
 
-    private static SkillData FindSkill(System.Collections.Generic.List<SkillData> list, int skillIndex)
+    private static DHClassSkillTemplate FindSkill(System.Collections.Generic.List<DHClassSkillTemplate> list, int skillIndex)
     {
         if (list == null) return null;
         for (int i = 0; i < list.Count; i++)
-            if (list[i] != null && list[i].skillIndex == skillIndex) return list[i];
+            if (list[i] != null && list[i].NumericSkillId == skillIndex) return list[i];
         return null;
     }
 

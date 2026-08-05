@@ -6,17 +6,25 @@ namespace JC.VFX
     [CustomEditor(typeof(ChargeOrbPreset))]
     public class ChargeOrbPresetEditor : Editor
     {
-        const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_HealSkill";
-        static string MatCore    => DIR + "/ChargeOrbCore.mat";
-        static string MatSpark   => DIR + "/SparkAdditive.mat";
-        static string MatStreak  => DIR + "/StreakAdditive.mat";
-        static string MatSparkle => DIR + "/SparkleStarAdditive.mat";
-        static string OrbPrefab  => DIR + "/ChargeOrb.prefab";
-        static string FollowerPrefab => DIR + "/ChargeTrailFollower.prefab";
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
+        // ★변종 자동 인식 — 프리셋 이름이 _Silver 로 끝나면 은백 재질·프리팹을 대상으로 잡는다.
+        //   (FlareOrb 에디터의 Sfx 패턴. 금 프리셋으로 은백을 덮는 사고 방지)
+        string Sfx => target != null && target.name.EndsWith("_Basic") ? "_Basic" : "_Alter";   // 개편 후 전 자산이 접미를 가진다
+        string MatCore    => DIR + "/Materials/ChargeOrbCore" + Sfx + ".mat";
+        string MatSpark   => DIR + "/Materials/SparkAdditive" + Sfx + ".mat";
+        string MatStreak  => DIR + "/Materials/StreakAdditive" + Sfx + ".mat";
+        string MatSparkle => DIR + "/Materials/SparkleStarAdditive" + Sfx + ".mat";
+        string OrbPrefab  => DIR + "/Prefabs/ChargeOrb" + Sfx + ".prefab";
+        string FollowerPrefab => DIR + "/Prefabs/ChargeTrailFollower" + Sfx + ".prefab";
+
+        static readonly string[] TransformProps =
+        {
+            "spawnSocketName", "spawnOffset", "startWorldSize", "endWorldSize", "growDuration",
+        };
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.ChargeOrb.Fold", TransformProps);
             var p = (ChargeOrbPreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())

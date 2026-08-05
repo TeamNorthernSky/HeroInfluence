@@ -9,9 +9,17 @@ namespace JC.VFX
     /// 커스텀 인스펙터(HealGroundShinePresetEditor)의 "프리팹에 적용"으로 HealOrbit 프리팹의 GroundShine에 반영.
     /// livePreview가 켜져 있으면 플레이 중에도 즉시 반영(재질은 비파괴 MPB). 에셋명: 7_HealGroundShinePreset.asset.
     /// </summary>
-    [CreateAssetMenu(menuName = "JC VFX/7_Heal Ground Shine Preset", fileName = "7_HealGroundShinePreset")]
+    [CreateAssetMenu(menuName = "JC VFX/6_Heal Ground Shine Preset", fileName = "6_HealGroundShinePreset")]
     public class HealGroundShinePreset : ScriptableObject
     {
+        [Header("★따름 (Alter 전용)")]
+        [Tooltip("켜면 트랜스폼(반지름·위치)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON.")]
+        public bool followBasic;
+        public HealGroundShinePreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
+        public HealGroundShinePreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
         [Header("크기 / 위치 (월드 m)")]
         [Tooltip("중심장판 반지름(m). 이 안쪽은 항상 채워진 디스크")]
         public float discRadius = 0.8f;

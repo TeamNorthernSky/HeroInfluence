@@ -16,7 +16,7 @@ namespace JC.VFX.EditorTools
     /// </summary>
     public static class JcMergedAssetBuilder
     {
-        const string ConfigPath = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/J_Justice/Data/Merged/JC_MergeSources.asset";
+        const string ConfigPath = "Assets/RenderFX/_Seam/Data/Merged/JC_MergeSources.asset";
 
         [MenuItem("JC VFX/병합 에셋 재생성", priority = 100)]
         public static void Rebuild()

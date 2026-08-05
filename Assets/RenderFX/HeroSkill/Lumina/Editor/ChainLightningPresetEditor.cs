@@ -12,12 +12,12 @@ namespace JC.VFX
     [CustomEditor(typeof(ChainLightningPreset))]
     public class ChainLightningPresetEditor : FlareOrbPresetEditorBase
     {
-        const string CDIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/L_ChainLightning";
-        static string MatBolt    => CDIR + "/LightningBolt.mat";
-        static string MatShock   => CDIR + "/ShockAura.mat";
-        static string MatBg      => CDIR + "/ShockBurstBg.mat";
-        static string SkillPrefab => CDIR + "/ChainLightningSkill.prefab";
-        const string PresetPath  = CDIR + "/FX_ChainLightningPreset.asset";
+        const string CDIR = "Assets/RenderFX/HeroSkill/Lumina/ChainLightning";
+        static string MatBolt    => CDIR + "/Materials/LightningBolt.mat";
+        static string MatShock   => CDIR + "/Materials/ShockAura.mat";
+        static string MatBg      => CDIR + "/Materials/ShockBurstBg.mat";
+        static string SkillPrefab => CDIR + "/Prefabs/ChainLightningSkill.prefab";
+        const string PresetPath  = CDIR + "/Presets/FX_ChainLightningPreset.asset";
 
         protected override string LiveKey => "JC.ChainLightningPreset.LivePreview";
         protected override string HelpText =>

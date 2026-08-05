@@ -10,14 +10,25 @@ namespace JC.VFX
         // 적용 대상은 "preset 필드가 이 에셋을 참조하는" 컴포넌트만 — 색 변형 에셋이 서로를 덮지 않게.
         static readonly string[] PrefabPaths =
         {
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_HealSkill/HealOrbit.prefab",
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_PawForYou/PawForYou.prefab",
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_PawForYou/PawForYouMistake.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/Heal/Prefabs/HealOrbit_Basic.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/Heal/Prefabs/HealOrbit_Alter.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam_Gold.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawForYou.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/PawForYouMistake.prefab",
+        };
+
+        // 따름 잠금 대상 = 색·밝기·불투명도를 제외한 전부(반경·위치·경계·광선 기하)
+        static readonly string[] TransformProps =
+        {
+            "discRadius","rayRadius","groundOffsetY",
+            "edgeSoft","sideSoft","centerFalloff",
+            "rayDensity","raySharp","rayRotSpeed","valleyWidth","spreadGrow",
         };
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.HealGroundShine.Fold", TransformProps);
             var p = (HealGroundShinePreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())

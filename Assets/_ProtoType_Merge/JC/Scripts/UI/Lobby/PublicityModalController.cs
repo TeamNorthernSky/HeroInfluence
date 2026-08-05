@@ -247,7 +247,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         }
     }
 
-    private bool TryResolveSelected(out UnitPersistentData unit, out UnitData template)
+    private bool TryResolveSelected(out UnitPersistentData unit, out DHPlayerUnitTemplate template)
     {
         unit = null;
         template = null;
@@ -257,7 +257,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         if (!repo.TryGetUnit(selectedUnitIndex, out unit) || unit == null) return false;
         var catalog = DHCsvTemplateCatalog.Instance;
         if (catalog != null && !string.IsNullOrWhiteSpace(unit.UnitTemplateKey))
-            catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out template);
+            catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out template);
         return true;
     }
 }

@@ -4,12 +4,26 @@ namespace JC.VFX
 {
     /// <summary>
     /// [프리셋 P2] 광선/스트릭(PawBeam)의 튜닝 값.
-    /// 색 바리에이션(노랑/녹색)은 에셋 2개(P2_PawBeam_Yellow / P2_PawBeam_Green)로 구현.
-    /// 워프 잔상 스트릭도 같은 SO 타입의 별도 에셋(P2_PawStreak)을 씀 — 짧고 가늘고 캡이 부드러운 값.
+    /// 변형은 에셋 3개(P2_PawBeam_Basic/은백 · _Alter/금 · _Miss/녹색 빗나감)로 구현 — Alter/Miss 는 Basic 따름.
+    /// 워프 잔상 스트릭도 같은 SO 타입의 별도 에셋(P6_Legacy_PawStreak, 레거시 Mistake 전용)을 씀 — 짧고 가늘고 캡이 부드러운 값.
     /// </summary>
     [CreateAssetMenu(menuName = "JC VFX/PawForYou/P2_Paw Beam Preset", fileName = "P2_PawBeamPreset")]
     public class PawBeamPreset : ScriptableObject
     {
+        [Header("★따름 (Alter/Miss 전용)")]
+        [Tooltip("켜면 트랜스폼(위치·폭·단면·노이즈·캡)을 Basic 프리셋에서 읽는다. Alter/Miss 는 기본 ON. 스트릭 에셋(공용)은 끔.")]
+        public bool followBasic;
+        public PawBeamPreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter/Miss 가 따름이면 Basic.</summary>
+        public PawBeamPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
+        [Header("★위치 — 광선 끝 (P6 위치 프리셋 폐기·이관, 260805. 스트릭 에셋에서는 무시)")]
+        [Tooltip("광선 끝 기준 소켓(대상 계층에서 이름 검색). 비면 대상 루트.")]
+        public string endSocketName = "";
+        [Tooltip("광선 끝(몸통에 박히는 지점) 오프셋(m, 대상 기준). 광선 시작은 발(P1 재등장 좌표) 아래다.")]
+        public Vector3 endOffset = new Vector3(0f, 0.35f, 0f);
+
         [Header("폭 / 색")]
         [Tooltip("광선 월드 폭(m)")]
         public float width = 0.35f;

@@ -8,9 +8,17 @@ namespace JC.VFX
     /// 커스텀 인스펙터(HealArcRingPresetEditor)의 "프리팹에 적용"으로 HealOrbit 프리팹의 ArcRing에 일괄 반영.
     /// HealArcRing.livePreview가 켜져 있으면 플레이 중 값 변경이 새로 생성되는 원호에 즉시 반영.
     /// </summary>
-    [CreateAssetMenu(menuName = "JC VFX/3_Heal Arc Ring Preset", fileName = "3_HealArcRingPreset")]
+    [CreateAssetMenu(menuName = "JC VFX/4_Heal Arc Ring Preset", fileName = "4_HealArcRingPreset")]
     public class HealArcRingPreset : ScriptableObject
     {
+        [Header("★따름 (Alter 전용 — 공용 프리셋(7_Sub)은 끔 유지)")]
+        [Tooltip("켜면 트랜스폼(밀도·반경·폭·타이밍)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON.")]
+        public bool followBasic;
+        public HealArcRingPreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
+        public HealArcRingPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
         [Header("■ 밀도 / 타이밍")]
         [Tooltip("원호 생성 간격 최소(초). 작을수록 촘촘(밀도↑)")]
         public float spawnIntervalMin = 0.06f;

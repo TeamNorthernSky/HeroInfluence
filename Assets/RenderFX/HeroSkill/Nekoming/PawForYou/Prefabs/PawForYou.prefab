@@ -99,10 +99,10 @@ MonoBehaviour:
   preset: {fileID: 11400000, guid: b9928269c6f640442999fb0c6b1f2103, type: 2}
   livePreview: 1
   width: 0.35
-  coreColor: {r: 1, g: 1, b: 0.9, a: 1}
-  glowColor: {r: 1, g: 0.8, b: 0.25, a: 1}
-  intensity: 2.5
-  hitFlashColor: {r: 1, g: 0.9, b: 0.5, a: 1}
+  coreColor: {r: 0.85, g: 1, b: 0.9, a: 1}
+  glowColor: {r: 0.3, g: 1, b: 0.4, a: 1}
+  intensity: 3
+  hitFlashColor: {r: 0.5, g: 1, b: 0.55, a: 1}
 --- !u!1 &2777668551892851515
 GameObject:
   m_ObjectHideFlags: 0
@@ -163,7 +163,7 @@ MonoBehaviour:
   impactGround: {fileID: 2290535929685901758}
   masterPreset: {fileID: 11400000, guid: 6d92acfbe7a5ee84da3ba5a3d3054d4a, type: 2}
   livePreview: 1
-  appearTime: 0.25
+  appearTime: 0.2
   holdTime: 0.96
   warpOutTime: 0.12
   warpTravelTime: 0.1
@@ -172,11 +172,10 @@ MonoBehaviour:
   beamSustainTime: 1.2
   fadeOutTime: 0.35
   popOvershoot: 1.7
-  casterOffset: {x: 0.55, y: 1.7, z: 0.15}
-  targetHeadOffset: 1.9
-  beamEndOffsetY: 0.35
-  pawBeamGap: 0.12
+  pawBeamGap: 0.24
   flashSizeMul: 1
+  segment: 0
+  warpBurstTime: 0.35
 --- !u!1 &2976003973477904555
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,8 +225,8 @@ MonoBehaviour:
   livePreview: 1
   width: 0.5
   height: 4
-  bottomOffset: -0.3
-  duration: 0.35
+  bottomOffset: -0.13
+  duration: 0.4
   flashFrac: 0.35
   flashBoost: 1.2
   narrow: 0.4
@@ -332,19 +331,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   preset: {fileID: 11400000, guid: f68bee4335f96e04395b70ba072bdf05, type: 2}
   livePreview: 1
-  size: 0.9
+  size: 1.6
   billboardYOnly: 0
   bobAmp: 0.04
   bobFreq: 1.2
-  fillColor: {r: 0.85, g: 0.9, b: 1, a: 1}
-  fillOpacity: 0.8
-  rimColor: {r: 1, g: 1, b: 1, a: 1}
-  rimIntensity: 2.5
-  glowColor: {r: 0.8, g: 0.9, b: 1, a: 1}
-  glowIntensity: 1.5
-  padColor: {r: 1, g: 0.95, b: 0.8, a: 1}
-  padIntensity: 2
-  warpFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  fillColor: {r: 1, g: 0.8, b: 0.35, a: 1}
+  fillOpacity: 0.85
+  rimColor: {r: 1, g: 0.95, b: 0.6, a: 1}
+  rimIntensity: 3.5
+  glowColor: {r: 1, g: 0.75, b: 0.2, a: 1}
+  glowIntensity: 2.5
+  padColor: {r: 1, g: 0.98, b: 0.75, a: 1}
+  padIntensity: 3
+  warpFlashColor: {r: 1, g: 0.9, b: 0.4, a: 1}
 --- !u!1 &4653929571470860248
 GameObject:
   m_ObjectHideFlags: 0
@@ -443,17 +442,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   preset: {fileID: 11400000, guid: c647623c750a88140b37e806108b780d, type: 2}
   livePreview: 1
-  discRadius: 0.8
-  rayRadius: 1.1
+  discRadius: 0.5
+  rayRadius: 0.75
   groundOffsetY: 0.02
-  color: {r: 1, g: 0.88, b: 0.35, a: 1}
+  color: {r: 0.4, g: 1, b: 0.5, a: 1}
   intensity: 1.8
   opacity: 1
   edgeSoft: 0.35
   sideSoft: 0.06
   centerFalloff: 1.6
-  rayDensity: 14
-  raySharp: 2.5
+  rayDensity: 5
+  raySharp: 1
   rayRotSpeed: 18
   valleyWidth: 0
   spreadGrow: 0.5
@@ -552,30 +551,30 @@ MonoBehaviour:
   crossMaterial: {fileID: 2100000, guid: 62d8b6b4eefced44ab31df0ea1b61073, type: 2}
   preset: {fileID: 11400000, guid: 9d5c6282bcc012c4aa425c64c59f8b24, type: 2}
   livePreview: 1
-  maxCrosses: 14
-  spawnIntervalMin: 0.06
-  spawnIntervalMax: 0.16
-  lifetimeMin: 0.9
-  lifetimeMax: 1.3
-  radius: 0.7
+  maxCrosses: 10
+  spawnIntervalMin: 0.18
+  spawnIntervalMax: 0.4
+  lifetimeMin: 1.37
+  lifetimeMax: 1.51
+  radius: 0.5
   baseYOffset: 0.05
-  riseSpeedMin: 1.2
-  riseSpeedMax: 1.8
-  riseAccelMul: 3
-  riseAccelTime: 0.25
-  popOvershoot: 2
-  popFrac: 0.25
+  riseSpeedMin: 0.99
+  riseSpeedMax: 1.22
+  riseAccelMul: 2.1
+  riseAccelTime: 0.187
+  popOvershoot: 0
+  popFrac: 0.05
   endFrac: 0.3
-  bobAmp: 0.05
+  bobAmp: 0
   bobFreq: 2
-  spinMax: 25
+  spinMax: 0
   billboardYOnly: 1
-  sizeMin: 0.28
-  sizeMax: 0.44
-  fadeInFrac: 0.12
-  fadeOutFrac: 0.3
+  sizeMin: 0.11
+  sizeMax: 0.16
+  fadeInFrac: 0.16
+  fadeOutFrac: 0.336
   color: {r: 0.35, g: 1, b: 0.45, a: 1}
-  intensity: 2.2
+  intensity: 2.12
   barWidth: 0.13
   barLength: 0.42
-  softness: 0.06
+  softness: 0.077
