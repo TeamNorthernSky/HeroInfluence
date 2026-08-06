@@ -54,6 +54,16 @@ public class PresentationRuntimeContext : MonoBehaviour
     /// <summary>등록 순서를 보존한 Cue 목록. 같은 프레임에 여러 Cue가 걸릴 때 선언 순서로 발화하기 위해 유지한다.</summary>
     private readonly List<RuntimeCue> _orderedCues = new List<RuntimeCue>();
 
+    // ── 다-state Cue 인덱스 (§3-A / §3-A2) — 재배선 전 검증 가능한 토대 ──
+    // 모든 state의 Cue를 stateHash로 인덱싱한다. 드라이버가 현재 state로 조회하면 Beat별 SetActive 교체가
+    // 불필요해지고(동기화 문제 소멸), 이름 단일 키가 아니라 (state, 이름)으로 특정하므로 전이 중 동명 Cue도 구분된다.
+    // ★아직 라이브 경로(SetupPresentationContext→SetActive)는 이 인덱스를 쓰지 않는다 — 이 API는
+    //   아무 데서도 호출되지 않는 순수 추가분이며 기존 동작에 영향이 없다. 라이브 배선은 1010 실측·PlayMode 회귀
+    //   뒤에 한다(Docs/SkillPresentation_StateDrivenCue_구현검토서.md §3-A/§3-A2/§8).
+    private readonly Dictionary<int, List<RuntimeCue>> _cuesByState = new Dictionary<int, List<RuntimeCue>>();
+    private readonly Dictionary<int, Dictionary<string, RuntimeCue>> _lookupByState =
+        new Dictionary<int, Dictionary<string, RuntimeCue>>();
+
     private readonly Dictionary<string, ISkillEffectHandle> _handles = new Dictionary<string, ISkillEffectHandle>();
 
     public bool HasValidContext => CurrentActionInstanceId != 0 && Current != null;
@@ -101,6 +111,71 @@ public class PresentationRuntimeContext : MonoBehaviour
         return HasValidContext
             && !string.IsNullOrEmpty(normalizedName)
             && _cues.TryGetValue(normalizedName, out cue);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // 다-state Cue 인덱스 (§3-A) — 스킬 시작 시 모든 state의 Cue를 한 번에 등록
+    // ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 한 state의 Cue 목록을 인덱스에 등록한다. stateHash 0(미지정)은 등록하지 않는다 —
+    /// state를 지정하지 않은 자산은 게이트를 통과시키는 규칙과 동일하게 인덱싱 대상이 아니다.
+    /// 같은 stateHash로 다시 등록하면 덮어쓴다(재시전 갱신). 한 state 안의 이름 중복은
+    /// 첫 항목만 남긴다 — 이름이 조회 키이므로 <see cref="SetActive"/>와 같은 규칙이다.
+    /// </summary>
+    public void RegisterStateCues(int stateHash, List<RuntimeCue> cues)
+    {
+        if (stateHash == 0) return;
+
+        var ordered = new List<RuntimeCue>();
+        var lookup = new Dictionary<string, RuntimeCue>();
+        if (cues != null)
+        {
+            for (int i = 0; i < cues.Count; i++)
+            {
+                RuntimeCue cue = cues[i];
+                string key = cue?.NormalizedCueName;
+                if (string.IsNullOrEmpty(key) || lookup.ContainsKey(key)) continue;
+                lookup[key] = cue;
+                ordered.Add(cue);
+            }
+        }
+
+        _cuesByState[stateHash] = ordered;
+        _lookupByState[stateHash] = lookup;
+    }
+
+    /// <summary>
+    /// 현재 state 해시로 그 state의 Cue를 조회한다(§3-A2). 이름 단일 키가 아니라 (state, 이름)으로 특정하므로
+    /// 전이 중 이전/다음 state가 같은 이름을 가져도 어느 state의 것인지 확정된다.
+    /// </summary>
+    public bool TryGetCueForState(int stateHash, string normalizedName, out RuntimeCue cue)
+    {
+        cue = null;
+        return !string.IsNullOrEmpty(normalizedName)
+            && _lookupByState.TryGetValue(stateHash, out Dictionary<string, RuntimeCue> lookup)
+            && lookup.TryGetValue(normalizedName, out cue);
+    }
+
+    /// <summary>그 state의 등록 순서 보존 Cue 목록(없으면 빈 목록). 드라이버 시간 기반 순회용.</summary>
+    public IReadOnlyList<RuntimeCue> GetOrderedCuesForState(int stateHash)
+    {
+        return _cuesByState.TryGetValue(stateHash, out List<RuntimeCue> list)
+            ? list
+            : System.Array.Empty<RuntimeCue>();
+    }
+
+    /// <summary>이 state의 Cue가 인덱스에 등록되어 있는지.</summary>
+    public bool HasStateCues(int stateHash) => _cuesByState.ContainsKey(stateHash);
+
+    /// <summary>인덱스에 등록된 state 수(진단·테스트용).</summary>
+    public int IndexedStateCount => _cuesByState.Count;
+
+    /// <summary>state 인덱스를 비운다. 스킬 종료 시 호출해 다음 연출로 새지 않게 한다.</summary>
+    public void ClearStateIndex()
+    {
+        _cuesByState.Clear();
+        _lookupByState.Clear();
     }
 
     private static bool IsAlive(ISkillEffectHandle handle)
@@ -171,5 +246,6 @@ public class PresentationRuntimeContext : MonoBehaviour
         DebugLabel = string.Empty;
         _cues.Clear();
         _orderedCues.Clear();
+        ClearStateIndex();
     }
 }

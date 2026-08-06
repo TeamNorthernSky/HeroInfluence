@@ -224,6 +224,80 @@ public sealed class PresentationCueTimingTests
     }
 
     // ──────────────────────────────────────────────────────────────
+    // ⑤ 다-state Cue 인덱스 (§3-A / §3-A2) — 상태별 저장·식별
+    // ──────────────────────────────────────────────────────────────
+
+    [Test]
+    public void RegisterStateCues_IndexesByStateHash_PreservingOrder()
+    {
+        object ctx = NewContext(out GameObject _);
+        int stateA = Animator.StringToHash("Base Layer.ClassSkill_1");
+
+        InvokeRegisterStateCues(ctx, stateA, NewCueList(
+            NewCue("cast", "NormalizedTime", 0.1f),
+            NewCue("impact", "NormalizedTime", 0.5f)));
+
+        Assert.That(OrderedStateCueNames(ctx, stateA), Is.EqualTo(new[] { "cast", "impact" }),
+            "state별 인덱스도 선언 순서를 보존해야 합니다(같은 프레임 다중 Cue 발화 순서).");
+        Assert.That(GetProperty<int>(ctx, "IndexedStateCount"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void TryGetCueForState_DisambiguatesSameNameAcrossStates()
+    {
+        // §3-A2: 전이 중 이전/다음 state가 둘 다 "impact"를 가져도 state로 특정된다.
+        // 이름 단일 키(SetActive/_cues)였다면 여기서 구분이 불가능했다.
+        object ctx = NewContext(out GameObject _);
+        int stateA = Animator.StringToHash("Base Layer.ClassSkill_1");
+        int stateB = Animator.StringToHash("Base Layer.ClassSkill_1_1");
+
+        InvokeRegisterStateCues(ctx, stateA, NewCueList(NewCue("impact", "NormalizedTime", 0.3f)));
+        InvokeRegisterStateCues(ctx, stateB, NewCueList(NewCue("impact", "NormalizedTime", 0.7f)));
+
+        Assert.That(StateCueTime(ctx, stateA, "impact"), Is.EqualTo(0.3f).Within(1e-5f),
+            "state A의 impact는 A의 것이어야 합니다.");
+        Assert.That(StateCueTime(ctx, stateB, "impact"), Is.EqualTo(0.7f).Within(1e-5f),
+            "state B의 impact는 B의 것이어야 합니다 — 이것이 §3-A2 상태 식별의 핵심입니다.");
+    }
+
+    [Test]
+    public void RegisterStateCues_ZeroHash_IsIgnored()
+    {
+        object ctx = NewContext(out GameObject _);
+        InvokeRegisterStateCues(ctx, 0, NewCueList(NewCue("impact", "NormalizedTime", 0.5f)));
+
+        Assert.That(GetProperty<int>(ctx, "IndexedStateCount"), Is.EqualTo(0),
+            "state 미지정(0)은 인덱싱 대상이 아닙니다 — 게이트를 통과시키는 자산과 동일 취급입니다.");
+    }
+
+    [Test]
+    public void RegisterStateCues_DropsDuplicateNamesWithinState()
+    {
+        object ctx = NewContext(out GameObject _);
+        int stateA = Animator.StringToHash("Base Layer.ClassSkill_1");
+
+        InvokeRegisterStateCues(ctx, stateA, NewCueList(
+            NewCue("impact", "NormalizedTime", 0.1f),
+            NewCue("impact", "NormalizedTime", 0.9f)));
+
+        Assert.That(OrderedStateCueNames(ctx, stateA), Is.EqualTo(new[] { "impact" }),
+            "한 state 안에서 이름은 조회 키이므로 중복은 첫 항목만 남아야 합니다(SetActive와 동일 규칙).");
+    }
+
+    [Test]
+    public void Clear_EmptiesStateIndex()
+    {
+        object ctx = NewContext(out GameObject _);
+        int stateA = Animator.StringToHash("Base Layer.ClassSkill_1");
+        InvokeRegisterStateCues(ctx, stateA, NewCueList(NewCue("impact", "NormalizedTime", 0.5f)));
+
+        ContextType.GetMethod("Clear").Invoke(ctx, null);
+
+        Assert.That(GetProperty<int>(ctx, "IndexedStateCount"), Is.EqualTo(0),
+            "Clear는 state 인덱스도 비워 다음 연출로 새지 않게 해야 합니다.");
+    }
+
+    // ──────────────────────────────────────────────────────────────
     // 리플렉션 도우미
     // ──────────────────────────────────────────────────────────────
 
@@ -294,6 +368,34 @@ public sealed class PresentationCueTimingTests
             names.Add((string)RuntimeCueType.GetField("NormalizedCueName").GetValue(cue));
         }
         return names.ToArray();
+    }
+
+    private static void InvokeRegisterStateCues(object ctx, int stateHash, IList cues)
+    {
+        MethodInfo m = ContextType.GetMethod("RegisterStateCues");
+        Assert.That(m, Is.Not.Null, "RegisterStateCues를 찾지 못했습니다.");
+        m.Invoke(ctx, new object[] { stateHash, cues });
+    }
+
+    private static string[] OrderedStateCueNames(object ctx, int stateHash)
+    {
+        var ordered = (IEnumerable)ContextType.GetMethod("GetOrderedCuesForState")
+            .Invoke(ctx, new object[] { stateHash });
+        var names = new List<string>();
+        foreach (object cue in ordered)
+        {
+            names.Add((string)RuntimeCueType.GetField("NormalizedCueName").GetValue(cue));
+        }
+        return names.ToArray();
+    }
+
+    private static float StateCueTime(object ctx, int stateHash, string name)
+    {
+        MethodInfo m = ContextType.GetMethod("TryGetCueForState");
+        object[] args = { stateHash, name, null };
+        bool ok = (bool)m.Invoke(ctx, args);
+        Assert.That(ok, Is.True, $"state {stateHash}의 '{name}' Cue를 찾아야 합니다.");
+        return (float)RuntimeCueType.GetField("Time").GetValue(args[2]);
     }
 
     private static float ResolveFireSeconds(object cue, float stateLength)

@@ -101,7 +101,7 @@ MonoBehaviour:
         Anchor: 1
         Socket: 1
         Timing: 0
-        Time: 0
+        Time: 0.24615386
         CueId: 505bee9a733044a98d75ba4d0a8d8e79
   Return:
     Enabled: 1
