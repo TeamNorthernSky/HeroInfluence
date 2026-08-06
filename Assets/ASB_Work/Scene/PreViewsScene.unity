@@ -1432,7 +1432,7 @@ MonoBehaviour:
   enemyPlace: {fileID: 912453333}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
-  playerUnitId: 10004
+  playerUnitId: 10001
   playerGridNumber: 101
   additionalPreviewPlayers:
   - unitId: 10003
