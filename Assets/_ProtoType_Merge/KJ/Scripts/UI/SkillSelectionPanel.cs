@@ -44,7 +44,7 @@ public class SkillSelectionPanel : MonoBehaviour
             unitNameText.text = preview.UnitName;
 
         if (rankText != null)
-            rankText.text = GetRank(preview.NewLevel).ToString();
+            rankText.text = GetRank(preview.NewLevel);
 
         if (levelUpText != null)
             levelUpText.text = $"Lv.{preview.OldLevel} → {preview.NewLevel}";
@@ -69,7 +69,10 @@ public class SkillSelectionPanel : MonoBehaviour
         }
 
         // 현재 ClassSkill 정보 표시
-        SkillData currentSkill = DHCsvTemplateCatalog.Instance?.GetSkillTemplate(preview.CurrentClassSkillId);
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+
+        DHClassSkillTemplate currentSkill = null;
+        catalog?.TryGetClassSkillTemplate(preview.CurrentClassSkillId, out currentSkill);
         if (prevSkillText != null)
             prevSkillText.text = currentSkill != null ? SkillDescriptionBuilder.Build(currentSkill) : "-";
 
@@ -77,8 +80,9 @@ public class SkillSelectionPanel : MonoBehaviour
         var options = new List<TMP_Dropdown.OptionData>();
         foreach (int skillId in preview.UnlockCandidateSkillIds)
         {
-            SkillData skillData = DHCsvTemplateCatalog.Instance?.GetSkillTemplate(skillId);
-            string label = skillData != null ? skillData.skillName : $"Skill {skillId}";
+            DHClassSkillTemplate skillTemplate = null;
+            catalog?.TryGetClassSkillTemplate(skillId, out skillTemplate);
+            string label = skillTemplate != null ? skillTemplate.SkillName : $"Skill {skillId}";
             options.Add(new TMP_Dropdown.OptionData(label));
             candidateSkillIds.Add(skillId);
         }
@@ -104,23 +108,25 @@ public class SkillSelectionPanel : MonoBehaviour
     {
         if (nextSkillText == null || index < 0 || index >= candidateSkillIds.Count) return;
 
-        SkillData nextSkill = DHCsvTemplateCatalog.Instance?.GetSkillTemplate(candidateSkillIds[index]);
+        DHClassSkillTemplate nextSkill = null;
+        DHCsvTemplateCatalog.Instance?.TryGetClassSkillTemplate(candidateSkillIds[index], out nextSkill);
         nextSkillText.text = nextSkill != null ? SkillDescriptionBuilder.Build(nextSkill) : "-";
     }
 
-    private static char GetRank(int level)
+    private static string GetRank(int level)
     {
-        var templates = DHCsvTemplateCatalog.Instance?.GetLevelUpTemplates();
-        if (templates == null) return '-';
+        var templates = DHCsvTemplateCatalog.Instance?.GetUnitGrowthTemplates();
+        if (templates == null) return "-";
 
-        LevelUpData match = null;
+        DHUnitGrowthTemplate match = null;
         foreach (var row in templates)
         {
-            if (row.level <= level) match = row;
+            if (row == null) continue;
+            if (row.Level <= level) match = row;
             else break;
         }
 
-        return match != null && match.Rank != '\0' ? match.Rank : '-';
+        return match != null && !string.IsNullOrEmpty(match.Rank) ? match.Rank : "-";
     }
 
     private bool completed = false;
