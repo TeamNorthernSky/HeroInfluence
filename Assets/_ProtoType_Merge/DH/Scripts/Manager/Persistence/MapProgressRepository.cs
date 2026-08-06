@@ -7,6 +7,7 @@ public class MapProgressRepository : MonoBehaviour
     public static MapProgressRepository Instance { get; private set; }
 
     [Header("Map Progress")]
+    // Map progress is the exploration scene source of truth. Save/load copies this through DHMapProgressSnapshotSection.
     [SerializeField] private string mapId = "default";
     [SerializeField] private List<string> collectedItemKeys = new List<string>();
     [SerializeField] private List<string> completedEventKeys = new List<string>();
@@ -504,6 +505,7 @@ public class MapProgressRepository : MonoBehaviour
         if (!IsValidKey(normalizedZoneId))
             return;
 
+        // The active enemy key connects gate lifecycle reopening to the spawned runtime enemy.
         ZoneThreatProgressState state = GetOrCreateZoneThreatState(normalizedZoneId);
         state.SetActiveEnemy(placementKey);
     }
@@ -550,6 +552,7 @@ public class MapProgressRepository : MonoBehaviour
         if (!IsValidKey(normalizedZoneId))
             return Mathf.Max(1, enemyLevel);
 
+        // Zone enemy level is fixed on first entry and reused by placed, spawned, and defender enemies.
         ZoneEnemyLevelState state = GetOrCreateZoneEnemyLevelState(normalizedZoneId, enemyLevel);
         state.Initialize(enemyLevel);
         return state.EnemyLevel;
@@ -610,6 +613,7 @@ public class MapProgressRepository : MonoBehaviour
         IEnumerable<ZoneEnemyLevelState> restoredZoneEnemyLevelStates,
         ZoneEntryGuidanceProgressState restoredZoneEntryGuidanceState)
     {
+        // Replace the whole repository snapshot at once, then rebuild lookups used by runtime systems.
         mapId = string.IsNullOrWhiteSpace(restoredMapId)
             ? "default"
             : MapProgressKey.NormalizeSegment(restoredMapId);

@@ -48,6 +48,7 @@ public sealed class DHEventStateRepository : MonoBehaviour
     [Header("Runtime Numeric Values")]
     [SerializeField] private List<DHEventNumericState> numericStates = new List<DHEventNumericState>();
 
+    // DDOL store for event branch state. Snapshot/save code copies these lists through capture APIs.
     private readonly Dictionary<string, DHEventFlagState> flagLookup =
         new Dictionary<string, DHEventFlagState>(StringComparer.Ordinal);
     private readonly Dictionary<string, DHEventNumericState> numericLookup =
@@ -162,6 +163,7 @@ public sealed class DHEventStateRepository : MonoBehaviour
         if (string.IsNullOrEmpty(normalized))
             return false;
 
+        // Numeric states also cover temporary battle results such as Flag_BattleResult and HostageInjuredCount.
         if (numericLookup.TryGetValue(normalized, out DHEventNumericState numericState) && numericState != null)
         {
             value = numericState.value;
@@ -290,6 +292,7 @@ public sealed class DHEventStateRepository : MonoBehaviour
         if (string.IsNullOrWhiteSpace(flagName))
             return string.Empty;
 
+        // Data table effects may use Set_Flag_*/Disable_Flag_* while branch conditions usually use Flag_*.
         string normalized = flagName.Trim();
         if (normalized.StartsWith(SetFlagPrefix, StringComparison.Ordinal))
             normalized = FlagPrefix + normalized.Substring(SetFlagPrefix.Length);

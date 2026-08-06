@@ -91,6 +91,8 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool logUnhandledEffects;
     [SerializeField] private List<DHEventEffectToken> lastParsedEffects = new List<DHEventEffectToken>();
+
+    // Runtime-only bridge for main-event battles. The completed state is saved through MapProgressRepository.
     private string activeMainEventSourceKey = string.Empty;
 
     public IReadOnlyList<DHEventEffectToken> LastParsedEffects => lastParsedEffects;
@@ -152,6 +154,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
     {
         lastParsedEffects.Clear();
 
+        // Effects can be packed with backslashes or newlines in the data table.
         IReadOnlyList<DHEventEffectToken> tokens = ParseEffects(rawEffect);
         for (int i = 0; i < tokens.Count; i++)
         {
@@ -184,6 +187,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
             case DHEventEffectKind.StartBattle:
                 LogUnhandled(token);
                 BattleRequested?.Invoke(token.payload);
+                // Event battle requests are transient; battle result is persisted by DHEventBattleRuntimeManager.
                 DHEventBattleEffectRequest request = new DHEventBattleEffectRequest(token.payload, context);
                 if (string.IsNullOrWhiteSpace(request.SourceMainEventKey))
                     request.SourceMainEventKey = activeMainEventSourceKey;
@@ -276,6 +280,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
         if (!logUnhandledEffects || token == null)
             return;
 
+        // Historical name: recognized effects may still log here when detailed debug logging is enabled.
         Debug.Log($"[DHEventEffectRuntime] Event effect recognized but not implemented yet: {token.rawToken}", this);
     }
 
@@ -285,6 +290,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
         if (string.IsNullOrEmpty(normalizedKey))
             return;
 
+        // Disable effects are stored as completed event keys so scene reload can keep them hidden.
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
         if (progressRepository != null)
         {

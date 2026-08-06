@@ -440,6 +440,7 @@ public class CombatEncounterManager : MonoBehaviour
         if (combatEnemy == null || string.IsNullOrWhiteSpace(combatEnemy.EnemyId))
             return false;
 
+        // TODO(remove fallback): multiple match paths cover older repository combat ids; keep until defender combat uses a single event/group key.
         string normalizedCombatPlacementKey = MapProgressKey.NormalizeSegment(combatEnemy.PlacementKey);
         string normalizedCombatEnemyId = MapProgressKey.NormalizeSegment(combatEnemy.EnemyId);
         GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();

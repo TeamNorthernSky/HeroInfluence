@@ -97,6 +97,7 @@ public class SubEventObject : MonoBehaviour
         eventBattleRequestedDuringTrigger = false;
         pendingClosedCallback = closedCallback;
         SubscribeEventBattleRequested();
+        // Sub events are item/map-event style triggers, but may still launch event battles from chat effects.
         ChatModalController.Show(ZoneId, ChatId, HandleChatClosed);
 
         if (!chatManager.IsRunning)
@@ -155,6 +156,7 @@ public class SubEventObject : MonoBehaviour
         if (!eventBattleRequestedDuringTrigger)
             return false;
 
+        // Defeated event battles leave the sub event on the map so the player can retry the route.
         DHEventStateRepository eventStateRepository = DHEventStateRepository.Instance;
         return eventStateRepository != null &&
             eventStateRepository.TryGetNumericValue(BattleResultKey, out float battleResult) &&

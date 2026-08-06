@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public sealed class HeroUnionChatController : MonoBehaviour
 {
     private const string RuntimeObjectName = "[DH_HeroUnionChatController]";
+    // Scene transitions can create HeroUnions before ChatManager/DataStorage is ready; retry briefly instead of dropping the first-zone chat.
     private const int InitialChatDelayFrames = 5;
     private const int InitialChatRetryFrames = 180;
 
@@ -127,6 +128,7 @@ public sealed class HeroUnionChatController : MonoBehaviour
             !catalog.TryGetChatTemplate(heroUnion.CaptureChatZoneId, chatId, out DHEventChatTemplate chat) ||
             chat == null)
         {
+            // Missing chat data is tolerated while later zones are still being authored.
             return false;
         }
 

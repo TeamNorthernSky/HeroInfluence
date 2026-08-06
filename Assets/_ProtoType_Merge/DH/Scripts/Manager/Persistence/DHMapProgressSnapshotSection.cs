@@ -28,6 +28,7 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         if (repository == null)
             return;
 
+        // Capture pure map progress only. Unit stats and economy are handled by their own snapshot sections.
         mapId = repository.MapId;
         CopyStrings(repository.CollectedItemKeys, collectedItemKeys);
         CopyStrings(repository.CompletedEventKeys, completedEventKeys);
@@ -51,6 +52,7 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         if (data == null)
             return;
 
+        // SaveService receives this already-copied turn-start state instead of reading live repositories.
         data.mapId = mapId;
         ReplaceStrings(data.collectedItemKeys, collectedItemKeys);
         ReplaceStrings(data.completedEventKeys, completedEventKeys);
@@ -167,6 +169,7 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         if (source == null || target == null)
             return;
 
+        // Copy event encounter fields as well; runtime-spawned enemies need them after scene restore.
         for (int i = 0; i < source.Count; i++)
         {
             EnemyWorldState state = source[i];

@@ -4,8 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// 카메라를 대상(플레이어 등) 기준으로 쿼터뷰 오프셋만큼 유지하며 계속 따라가는 컴포넌트.
-/// 카메라 GameObject에 붙여 사용합니다.
+/// Quarter-view exploration camera that follows the active party and supports edge scrolling.
 /// </summary>
 [DisallowMultipleComponent]
 public class QuarterViewCameraFollower : MonoBehaviour
@@ -43,6 +42,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     [SerializeField] private bool invertVerticalEdgeScroll = false;
 
     [Header("Map Bounds")]
+    [Tooltip("Clamp the projected camera viewport to the data-driven map bounds.")]
     [SerializeField] private bool clampToMapBounds = true;
     [SerializeField, Min(0f)] private float mapBoundsPaddingCells = 0f;
     [SerializeField] private GridManager gridManager;
@@ -144,7 +144,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
             hasSmoothedFollowAnchor = true;
         }
 
-        // 스무딩 (프레임 독립 느낌)
+        // Smooth follow movement with frame-rate independent damping.
         float smoothTime = Mathf.Max(0.01f, followDelay);
         float tRot = 1f - Mathf.Exp(-rotationLerp * Time.deltaTime);
 
@@ -239,6 +239,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (!Input.GetKeyDown(resetKey))
             return;
 
+        // First press recenters the camera and disables edge scrolling; second press re-enables it.
         if (edgeScrollEnabled)
         {
             RecenterOnFollowTarget();
@@ -287,6 +288,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (targetCamera == null || gridManager == null || !TryGetMapWorldBounds(out Rect mapBounds))
             return;
 
+        // Bounds are based on level data, not on scene colliders or the Land mesh size.
         Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, gridManager.GetLandSurfaceY(), 0f));
         if (!TryGetViewportGroundRect(groundPlane, out Rect viewportRect))
             return;
@@ -316,6 +318,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     {
         bool changed = false;
 
+        // If the viewport is larger than the map, pull zoom inward before clamping position.
         for (int i = 0; i < 6; i++)
         {
             float widthRatio = viewportRect.width > mapBounds.width && viewportRect.width > Mathf.Epsilon
@@ -358,6 +361,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     {
         rect = default;
 
+        // Project the four camera viewport corners onto a virtual ground plane.
         for (int i = 0; i < ViewportCorners.Length; i++)
         {
             Ray ray = targetCamera.ViewportPointToRay(ViewportCorners[i]);
@@ -397,6 +401,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         Vector3 minCenter = gridManager.GridToWorldCenter(Vector2Int.zero);
         Vector3 maxCenter = gridManager.GridToWorldCenter(new Vector2Int(maxGridX, maxGridY));
 
+        // Include half a cell so the bounds match the outer edge of the level grid.
         float halfCell = Mathf.Max(0.01f, gridManager.CellSize) * 0.5f;
         float padding = Mathf.Max(0f, mapBoundsPaddingCells) * Mathf.Max(0.01f, gridManager.CellSize);
         float minX = Mathf.Min(minCenter.x, maxCenter.x) - halfCell - padding;
@@ -509,8 +514,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
     }
 
     /// <summary>
-    /// 포인터 아래에 엣지 스크롤을 막아야 할 UI가 있는지.
-    /// 버튼과, [KJ 260730] CameraEdgeScrollBlocker가 붙은 UI(전멸 시 턴종료 강제 패널 등)를 같은 판정으로 본다.
+    /// Returns true when the pointer is over UI that should block edge scrolling.
+    /// Buttons and CameraEdgeScrollBlocker panels are treated as blocking UI.
     /// </summary>
     private static bool IsPointerOverBlockingUI()
     {

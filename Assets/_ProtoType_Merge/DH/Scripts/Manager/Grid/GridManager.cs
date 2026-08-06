@@ -35,10 +35,6 @@ public class GridManager : MonoBehaviour
     [Tooltip("이 레이어에 있는 콜라이더는 장애물로 간주합니다.")]
     [SerializeField] private LayerMask obstacleLayerMask;
     [SerializeField] private bool useLegacyObstacleColliderFallback;
-    [SerializeField] private LayerMask itemLayerMask;
-    [SerializeField] private bool useLegacyItemColliderFallback;
-    [FormerlySerializedAs("mineLayerMask")]
-    [SerializeField] private LayerMask outpostLayerMask;
     [SerializeField] private LayerMask eventLayerMask;
     [SerializeField] private LayerMask playerLayerMask;
     [SerializeField] private LayerMask enemyLayerMask;
@@ -275,26 +271,6 @@ public class GridManager : MonoBehaviour
             return true;
         }
 
-        if (!useLegacyItemColliderFallback)
-            return false;
-
-        Vector3 center = GridToWorldCenter(grid);
-        center.y = GetLandSurfaceY() + 0.5f;
-
-        Vector3 halfExtents = new Vector3(cellSize * 0.5f * obstacleCheckFill, 0.5f, cellSize * 0.5f * obstacleCheckFill);
-        Collider[] cols = Physics.OverlapBox(center, halfExtents, Quaternion.identity, itemLayerMask);
-
-        for (int i = 0; i < cols.Length; i++)
-        {
-            var c = cols[i];
-            if (c == null)
-                continue;
-
-            itemObject = c.GetComponentInParent<ItemObject>();
-            if (itemObject != null)
-                return true;
-        }
-
         return false;
     }
 
@@ -349,23 +325,6 @@ public class GridManager : MonoBehaviour
 
             outpost = candidate;
             return true;
-        }
-
-        Vector3 center = GridToWorldCenter(grid);
-        center.y = GetLandSurfaceY() + 0.5f;
-
-        Vector3 halfExtents = new Vector3(cellSize * 0.5f * obstacleCheckFill, 0.5f, cellSize * 0.5f * obstacleCheckFill);
-        Collider[] cols = Physics.OverlapBox(center, halfExtents, Quaternion.identity, outpostLayerMask);
-
-        for (int i = 0; i < cols.Length; i++)
-        {
-            Collider col = cols[i];
-            if (col == null)
-                continue;
-
-            outpost = col.GetComponentInParent<Outpost>();
-            if (outpost != null)
-                return true;
         }
 
         return false;

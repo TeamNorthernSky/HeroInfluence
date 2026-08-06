@@ -8,6 +8,7 @@ using UnityEngine.Serialization;
 public class Outpost : MonoBehaviour
 {
     public static event Action<Outpost> OutpostClaimed;
+    // Fallback kept until all zone data defines explicit defender groups for enemy-claimed outposts.
     private const string RuntimeEnemyClaimDefenderGroupKey = "FEP002";
 
     [Header("Data")]
@@ -23,9 +24,11 @@ public class Outpost : MonoBehaviour
     [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
 
     [Header("Defender Combat Chat")]
+    // Chat id 0 keeps unfinished zones on the legacy direct-combat path.
     [SerializeField, Min(0)] private int defenderCombatChatId;
 
     [Header("Event Completion")]
+    // Event battles can replace defender combat; this flag lets battle result data claim the outpost.
     [SerializeField] private string completionFlagName;
 
     [Header("Visual")]
@@ -441,6 +444,7 @@ public static class OutpostDefenderService
         if (outpost == null || !outpost.IsEnemyClaimed || string.IsNullOrWhiteSpace(outpost.EnemyDefenderGroupKey))
             return false;
 
+        // TODO(remove fallback): this repository-backed defender path should go away when combat can consume group keys directly.
         PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
         EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
         DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
@@ -598,6 +602,7 @@ public class OutpostDefenderController : MonoBehaviour
         yield return null;
         yield return null;
 
+        // Rebuild repository defender parties after scene load until building combat no longer depends on enemy repositories.
         Outpost[] outposts = FindObjectsByType<Outpost>(FindObjectsSortMode.None);
         MapProgressRepository repository = MapProgressRepository.Instance;
         GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
