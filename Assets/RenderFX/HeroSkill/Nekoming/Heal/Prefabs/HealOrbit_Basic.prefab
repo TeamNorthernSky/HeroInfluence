@@ -5046,6 +5046,11 @@ PrefabInstance:
       propertyPath: colorGradient.m_ColorSpace
       value: -1
       objectReference: {fileID: 0}
+    - target: {fileID: 7698585027933182080, guid: 14b94c358ee8fd64cbd058b2db98420b,
+        type: 3}
+      propertyPath: billboardYOnly
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7893545983123158404, guid: 14b94c358ee8fd64cbd058b2db98420b,
         type: 3}
       propertyPath: radius

@@ -18,11 +18,11 @@ namespace JC.VFX
         /// <summary>트랜스폼 정본 — Alter/Miss 가 따름이면 Basic.</summary>
         public PawBeamPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
 
-        [Header("★위치 — 광선 끝 (P6 위치 프리셋 폐기·이관, 260805. 스트릭 에셋에서는 무시)")]
-        [Tooltip("광선 끝 기준 소켓(대상 계층에서 이름 검색). 비면 대상 루트.")]
-        public string endSocketName = "";
-        [Tooltip("광선 끝(몸통에 박히는 지점) 오프셋(m, 대상 기준). 광선 시작은 발(P1 재등장 좌표) 아래다.")]
-        public Vector3 endOffset = new Vector3(0f, 0.35f, 0f);
+        [Header("★위치 — 광선 시작 (260806 시작점 소유로 개편. 스트릭 에셋에서는 무시)")]
+        [Tooltip("광선 시작 기준 소켓(대상 계층에서 이름 검색). ★비면 발바닥(P1 재등장 좌표 − pawBeamGap) 기준.")]
+        public string startSocketName = "";
+        [Tooltip("광선 시작 오프셋(m, 월드 축). 광선은 이 지점에서 XZ평면에 수직으로 바닥(대상 루트 y)까지 뿜어진다 — 끝점은 조절 불가.")]
+        public Vector3 startOffset = Vector3.zero;
 
         [Header("폭 / 색")]
         [Tooltip("광선 월드 폭(m)")]

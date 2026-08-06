@@ -19,8 +19,14 @@ namespace JC.VFX
         [Header("크기 / 거동")]
         [Tooltip("발 월드 크기(m, 쿼드 한 변)")]
         [SerializeField] private float size = 0.9f;
-        [Tooltip("빌보드 Y축만: 수직 유지·수평만 카메라. 끄면 완전 정면")]
-        [SerializeField] private bool billboardYOnly = false;
+        [Tooltip("빌보드 방식 — 정면 / 정면+월드수직 롤 정렬(광선 축과 일직선) / Y축 고정")]
+        [SerializeField] private JcBillboardSolver.Mode billboardMode = JcBillboardSolver.Mode.CameraFacing;
+
+        [Header("접점 핀 (빌보드-3D 정합, 260806)")]
+        [Tooltip("★켜면 쿼드 로컬 접점(anchorLocal)이 발 좌표(3D 앵커)에 못 박힌다 — 카메라 각도 무관하게 광선 시작점과 일치.")]
+        [SerializeField] private bool anchorPin = true;
+        [Tooltip("쿼드 로컬 접점(±0.5). (0,-0.27) ≈ 발바닥 하단(canvasScale 0.55 기준). 씬 뷰 기즈모(청록 구)로 확인.")]
+        [SerializeField] private Vector2 anchorLocal = new Vector2(0f, -0.27f);
         [Range(0f, 0.3f)] [SerializeField] private float bobAmp = 0.04f;
         [Range(0f, 6f)] [SerializeField] private float bobFreq = 1.2f;
 
@@ -76,8 +82,13 @@ namespace JC.VFX
         /// <summary>워프 플래시 색(변형 색 매칭). 프리뷰 중이면 프리셋 값.</summary>
         public Color WarpFlashColor => livePreview && preset ? preset.warpFlashColor : warpFlashColor;
 
-        /// <summary>bob 포함 현재 위치(빔 시작점 추적용).</summary>
+        /// <summary>bob 포함 쿼드 중심 위치(레거시 — 핀이 켜져 있으면 접점이 아니라 중심이다).</summary>
         public Vector3 CurrentPosition => transform.position;
+
+        /// <summary>★시각 접점(핀 지점)의 월드 좌표 — 광선 시작 추적의 정본. 핀이 꺼져 있으면 쿼드 중심.</summary>
+        public Vector3 AnchorPosition => anchorPin ? _basePos + Vector3.up * CurrentBob() : transform.position;
+
+        private float CurrentBob() => bobAmp * Mathf.Sin((Time.time * bobFreq + _bobPhase) * Mathf.PI * 2f);
 
         private void Awake()
         {
@@ -120,21 +131,16 @@ namespace JC.VFX
             if (!_visible) return;
             if (livePreview && preset) PullFromPreset();
 
-            float bob = bobAmp * Mathf.Sin((Time.time * bobFreq + _bobPhase) * Mathf.PI * 2f);
-            transform.position = _basePos + Vector3.up * bob;
+            // ★순서 고정: 앵커 확정 → 회전 → 핀 위치(회전된 접점 기준으로 중심을 되민다).
+            Vector3 anchor = _basePos + Vector3.up * CurrentBob();
             transform.localScale = Vector3.one * (size * _scaleMul);
 
             if (_cam == null) _cam = Camera.main;
-            if (_cam)
-            {
-                if (billboardYOnly)
-                {
-                    Vector3 f = transform.position - _cam.transform.position;
-                    f.y = 0f;
-                    if (f.sqrMagnitude > 1e-6f) transform.rotation = Quaternion.LookRotation(f.normalized, Vector3.up);
-                }
-                else transform.rotation = _cam.transform.rotation;
-            }
+            if (_cam) transform.rotation = JcBillboardSolver.SolveRotation(_cam, anchor, billboardMode, transform.rotation);
+
+            transform.position = anchorPin
+                ? JcBillboardSolver.SolvePinnedCenter(anchor, transform.rotation, anchorLocal, size * _scaleMul)
+                : anchor;
 
             ApplyVisual();
         }
@@ -143,7 +149,9 @@ namespace JC.VFX
         {
             var t = preset.TransformSource;   // ★트랜스폼(크기·거동)은 따름 규칙(변종→Basic), 룩은 자기 것
             size = t.size;
-            billboardYOnly = t.billboardYOnly;
+            billboardMode = t.billboardMode;
+            anchorPin = t.anchorPin;
+            anchorLocal = t.anchorLocal;
             bobAmp = t.bobAmp;
             bobFreq = t.bobFreq;
             fillColor = preset.fillColor;
@@ -194,5 +202,16 @@ namespace JC.VFX
             _mpb.SetFloat(FadeMulID, _envelope);
             _mr.SetPropertyBlock(_mpb);
         }
+
+#if UNITY_EDITOR
+        /// <summary>접점 튜닝용 — 청록 구(접점)가 광선 시작(발 좌표)과 겹쳐야 한다.</summary>
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.cyan;
+            Vector3 p = transform.TransformPoint((Vector3)anchorLocal);
+            Gizmos.DrawWireSphere(p, 0.05f);
+            Gizmos.DrawLine(transform.position, p);
+        }
+#endif
     }
 }

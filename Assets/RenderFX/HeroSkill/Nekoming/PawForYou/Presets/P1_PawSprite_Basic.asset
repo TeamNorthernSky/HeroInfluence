@@ -15,12 +15,14 @@ MonoBehaviour:
   followBasic: 0
   basicRef: {fileID: 0}
   spawnSocketName: 
-  spawnOffset: {x: -0.4, y: 2.5, z: 0.3}
+  spawnOffset: {x: 0, y: 2.5, z: 0}
   headSocketName: 
-  headOffset: {x: 0, y: 1.36, z: 0.3}
+  headOffset: {x: 0, y: 2.5, z: 0}
   size: 2
   canvasScale: 0.55
-  billboardYOnly: 0
+  billboardMode: 1
+  anchorPin: 1
+  anchorLocal: {x: 0, y: -0.27}
   bobAmp: 0.04
   bobFreq: 1.2
   toeCount: 4

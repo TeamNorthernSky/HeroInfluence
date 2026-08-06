@@ -1,5 +1,5 @@
 // JC 힐 스킬 VFX — 녹색 십자(E-4): 절차적 플러스(+) 기호 빌보드.
-// 가산·양면(Cull Off). 빌보드 회전은 스크립트(HealCrossBurst)가 처리.
+// 가산·양면(Cull Off)·★ZTest Always(캐릭터 메시에 가리지 않고 항상 위에, 260806). 빌보드 회전은 스크립트(HealCrossBurst)가 처리.
 // 두 개의 소프트 사각 바(가로/세로)를 max로 합쳐 십자. 텍스처 의존 없음.
 Shader "JC/VFX/HealCross"
 {
@@ -17,6 +17,7 @@ Shader "JC/VFX/HealCross"
         Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" "IgnoreProjector"="True" }
         Blend One One
         ZWrite Off
+        ZTest Always
         Cull Off
 
         Pass
