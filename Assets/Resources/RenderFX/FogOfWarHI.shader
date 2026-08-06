@@ -5,10 +5,12 @@
 //   - Unexplored 스택(무접두 프로퍼티)과 Fogged 스택(_Fg* 프로퍼티)이 같은 수식을
 //     각자의 파라미터로 평가하고, R 등고선 마스크로 두 "완성된 룩"을 크로스페이드
 //     → 상태 경계에서 가산 합성 밝은 띠가 구조적으로 생기지 않는다.
-//   - 경계 파라미터(_EdgeWidthWorld/_EdgeNoise*/_EdgeFadeWidth/_EdgeLayerSpreadWorld)와
-//     시야 배율(_SightBoostWorld)은 두 스택 공유 — 상태 간 이음새는 한 벌이어야 한다.
+//   - 경계 파라미터(_EdgeWidthWorld/_EdgeNoise*/_EdgeFadeWidth/_EdgeLayerSpreadWorld)는
+//     두 스택 공유 — 상태 간 이음새는 한 벌이어야 한다.
+//     (시야 배율 _SightBoostWorld는 260806 은퇴 — 시야는 revealRadius 주입 단일 소스)
 //   - _FogZoneTex (전역, RenderFXManager 푸시): R=밀도 배율, G/B/A=low/mid/high 레이어 활성
-// 데이터 소스는 DH FogRenderManager의 _FogVisibilityTex/_FogGridWorld* 전역 그대로 소비.
+// 데이터 소스 = _FogDistanceTex(SDF) + DH FogRenderManager의 _FogGridWorld*/_FogCellSize 전역.
+// (260806 T2: _FogVisibilityTex 4텍셀 폴백 경로 철거 — SDF 단일 경로. 미바인딩 시 합성 생략)
 // ============================================================================
 Shader "Custom/HI/FogOfWar"
 {
@@ -77,14 +79,12 @@ Shader "Custom/HI/FogOfWar"
         _FgSheetGroundAlign ("FG Cloud Sheet Ground Align", Range(0.0, 1.0)) = 0.5
 
         // ===== 공유 (상태 간 이음새) =====
-        _EdgeSoftness ("Edge Softness (cell ratio, non-SDF fallback)", Range(0.01, 0.49)) = 0.18
         _EdgeWidthWorld ("Edge Width - blur (world units)", Range(0.01, 10.0)) = 1.0
         _EdgeNoiseStrength ("Edge Noise Strength - roughness (world units)", Range(0.0, 5.0)) = 0.5
         _EdgeNoiseScale ("Edge Noise Scale", Float) = 0.35
         _EdgeNoiseSpeed ("Edge Noise Speed", Float) = 0.1
         _EdgeFadeWidth ("Edge Density Ramp Width (world units, 0=off)", Range(0.0, 20.0)) = 3.0
         _EdgeLayerSpreadWorld ("Edge Layer Spread - taper (world units, 0=off)", Range(0.0, 10.0)) = 1.0
-        _SightBoostWorld ("Sight Boost (world units, visual only)", Float) = 0.0
         _StateBlendWidthWorld ("State Blend Half-Width (world units)", Range(0.01, 20.0)) = 1.0
 
         [Toggle] _DebugMode ("Debug Mode (show visibility)", Float) = 0
@@ -126,9 +126,6 @@ Shader "Custom/HI/FogOfWar"
                 float2 uv : TEXCOORD0;
             };
 
-            TEXTURE2D(_FogVisibilityTex);
-            SAMPLER(sampler_FogVisibilityTex);
-
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
 
@@ -142,8 +139,6 @@ Shader "Custom/HI/FogOfWar"
             SAMPLER(sampler_FogDistanceTex);
             float _FogDistanceTexBound;
 
-            float4 _FogGridMin;
-            float4 _FogGridMax;
             float4 _FogGridWorldMin;
             float4 _FogGridWorldSize;
             float _FogCellSize;
@@ -209,14 +204,12 @@ Shader "Custom/HI/FogOfWar"
                 float _FgSheetFadeWidthWorld;
                 float _FgSheetGroundAlign;
 
-                float _EdgeSoftness;
                 float _EdgeWidthWorld;
                 float _EdgeNoiseStrength;
                 float _EdgeNoiseScale;
                 float _EdgeNoiseSpeed;
                 float _EdgeFadeWidth;
                 float _EdgeLayerSpreadWorld;
-                float _SightBoostWorld;
                 float _StateBlendWidthWorld;
             CBUFFER_END
 
@@ -389,7 +382,7 @@ Shader "Custom/HI/FogOfWar"
 
                 float dSheet = dot(SAMPLE_TEXTURE2D_LOD(_FogDistanceTex, sampler_FogDistanceTex, maskUV, 0).rg, channelSel)
                                * max(_FogCellSize, 0.0001);
-                dSheet -= _SightBoostWorld + edgeShift;
+                dSheet -= edgeShift;
                 float2 enSheet = maskXZ * _EdgeNoiseScale + _Time.y * _EdgeNoiseSpeed;
                 dSheet += (GradientNoise(enSheet) - 0.5) * 2.0 * _EdgeNoiseStrength;
 
@@ -404,34 +397,6 @@ Shader "Custom/HI/FogOfWar"
                 // 커버리지 마스크로 시트에 구멍 — coverage 1이면 현행 동치
                 float sheetAlpha = saturate(opacity * sheetMask * cv.x * cv.y);
                 return lerp(result, sheetColor * cloudMod, sheetAlpha);
-            }
-
-            // 셀 인덱스(정수) 중심에서 point 샘플. 텍스처 필터 모드와 무관하게 결정적.
-            float SampleCellVisibility(float2 cell, float2 texelSize)
-            {
-                float2 uv = saturate((cell + 0.5) * texelSize);
-                return SAMPLE_TEXTURE2D_LOD(_FogVisibilityTex, sampler_FogVisibilityTex, uv, 0).r;
-            }
-
-            // 폴백: 4텍셀 수동 보간 + smoothstep 성형 (SDF 미바인딩 시)
-            float SampleVisibilitySmooth(float2 worldOffset, float2 texelSize)
-            {
-                float2 gridCoord = worldOffset / max(_FogCellSize, 0.0001);
-                float2 p = gridCoord - 0.5;
-                float2 baseCell = floor(p);
-                float2 f = frac(p);
-
-                float es = clamp(_EdgeSoftness, 0.01, 0.49);
-                float2 w = float2(
-                    smoothstep(0.5 - es, 0.5 + es, f.x),
-                    smoothstep(0.5 - es, 0.5 + es, f.y));
-
-                float v00 = SampleCellVisibility(baseCell, texelSize);
-                float v10 = SampleCellVisibility(baseCell + float2(1, 0), texelSize);
-                float v01 = SampleCellVisibility(baseCell + float2(0, 1), texelSize);
-                float v11 = SampleCellVisibility(baseCell + float2(1, 1), texelSize);
-
-                return lerp(lerp(v00, v10, w.x), lerp(v01, v11, w.x), w.y);
             }
 
             Varyings vert(Attributes input)
@@ -464,56 +429,40 @@ Shader "Custom/HI/FogOfWar"
                 float4 worldPos4 = mul(UNITY_MATRIX_I_VP, float4(posNDC, depth, 1.0));
                 float3 worldPos = worldPos4.xyz / worldPos4.w;
 
-                float2 worldOffset = worldPos.xz - _FogGridWorldMin.xy;
-                float2 texelSize = float2(
-                    _FogCellSize / max(_FogGridWorldSize.x, 0.0001),
-                    _FogCellSize / max(_FogGridWorldSize.y, 0.0001));
+                // SDF 미바인딩(씬 전환 직후 등) = 안개 데이터 없음 — 합성 생략
+                if (_FogDistanceTexBound < 0.5)
+                    return sceneColor;
 
+                float2 worldOffset = worldPos.xz - _FogGridWorldMin.xy;
                 float2 gridUV = saturate(float2(
                     worldOffset.x / max(_FogGridWorldSize.x, 0.0001),
                     worldOffset.y / max(_FogGridWorldSize.y, 0.0001)));
 
-                float distW = 0.0;      // R: IsExplored 경계 (Unexplored 스택)
-                float distVisW = 0.0;   // G: IsVisible 경계 (Fogged 스택)
-                float ueCellFogLow = 0.0;
-                float fgCellFogLow = 0.0;
-                float stateBlend = 0.0; // Fogged↔Unexplored 룩 크로스페이드 가중 (전용 폭 _StateBlendWidthWorld)
                 float ew = max(_EdgeWidthWorld, 0.001);
-                bool useSdf = _FogDistanceTexBound > 0.5;
 
-                if (useSdf)
-                {
-                    float2 dCellsRG = SAMPLE_TEXTURE2D_LOD(_FogDistanceTex, sampler_FogDistanceTex, gridUV, 0).rg;
-                    distW = dCellsRG.r * max(_FogCellSize, 0.0001);
-                    distVisW = dCellsRG.g * max(_FogCellSize, 0.0001);
+                float2 dCellsRG = SAMPLE_TEXTURE2D_LOD(_FogDistanceTex, sampler_FogDistanceTex, gridUV, 0).rg;
+                float distW = dCellsRG.r * max(_FogCellSize, 0.0001);      // R: IsExplored 경계 (Unexplored 스택)
+                float distVisW = dCellsRG.g * max(_FogCellSize, 0.0001);   // G: IsVisible 경계 (Fogged 스택)
 
-                    // 시야 배율(시각 전용) + 경계 거칠기 노이즈 — 두 등고선에 동일 적용
-                    float2 en = worldPos.xz * _EdgeNoiseScale + _Time.y * _EdgeNoiseSpeed;
-                    float edgeNoise = (GradientNoise(en) - 0.5) * 2.0 * _EdgeNoiseStrength;
-                    distW += edgeNoise - _SightBoostWorld;
-                    distVisW += edgeNoise - _SightBoostWorld;
+                // 경계 거칠기 노이즈 — 두 등고선에 동일 적용
+                float2 en = worldPos.xz * _EdgeNoiseScale + _Time.y * _EdgeNoiseSpeed;
+                float edgeNoise = (GradientNoise(en) - 0.5) * 2.0 * _EdgeNoiseStrength;
+                distW += edgeNoise;
+                distVisW += edgeNoise;
 
-                    ueCellFogLow = smoothstep(-ew, ew, distW);
-                    fgCellFogLow = smoothstep(-ew, ew, distVisW);
+                float ueCellFogLow = smoothstep(-ew, ew, distW);
+                float fgCellFogLow = smoothstep(-ew, ew, distVisW);
 
-                    float sbw = max(_StateBlendWidthWorld, 0.001);
-                    stateBlend = smoothstep(-sbw, sbw, distW);
-                }
-                else
-                {
-                    // 폴백: 4텍셀 보간 — Unexplored 스택만, Fogged 스택 없음 (foggedValue 텍스처가 유일 표현)
-                    float vis = SampleVisibilitySmooth(worldOffset, texelSize);
-                    ueCellFogLow = 1.0 - vis;
-                    stateBlend = ueCellFogLow;
-                    distW = (ueCellFogLow - 0.5) * 2.0 * ew;   // 근사 거리 (edgeFade용)
-                }
+                // Fogged↔Unexplored 룩 크로스페이드 가중 (전용 폭 _StateBlendWidthWorld)
+                float sbw = max(_StateBlendWidthWorld, 0.001);
+                float stateBlend = smoothstep(-sbw, sbw, distW);
 
                 #if defined(_DEBUGMODE_ON)
                     return half4((1.0 - ueCellFogLow).xxx, 1.0);
                 #endif
 
-                bool ueSheetOn = useSdf && _SheetOpacity > 0.001;
-                bool fgSheetOn = useSdf && _FgSheetOpacity > 0.001;
+                bool ueSheetOn = _SheetOpacity > 0.001;
+                bool fgSheetOn = _FgSheetOpacity > 0.001;
                 if (stateBlend < 0.001 && fgCellFogLow < 0.001 && !ueSheetOn && !fgSheetOn)
                     return sceneColor;
 

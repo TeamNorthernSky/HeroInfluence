@@ -1,21 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-9152688244207490017
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6cac8de2c52d3e4fb0bdc867cf79cfe, type: 3}
-  m_Name: FogOfWarFeatureJC
-  m_EditorClassIdentifier: 
-  m_Active: 1
-  settings:
-    fogMaterial: {fileID: 0}
-    renderPassEvent: 500
 --- !u!114 &-7070252392523603137
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51,7 +35,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   settings:
-    renderFog: 0
+    renderFog: 1
     fogMaterial: {fileID: 2100000, guid: d916019a810e45143a55da2442e04f66, type: 2}
     renderPassEvent: 500
 --- !u!114 &-1878332245247344467

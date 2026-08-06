@@ -1,4 +1,3 @@
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,7 +7,8 @@ using UnityEngine.SceneManagement;
 /// - 씬 로드/언로드 시 FogRenderManager 존재 여부를 스캔해 FogRenderGate.SceneHasFog 갱신
 ///   → 탐사씬에서만 fog 패스가 발동하고, 로비/전투/타이틀에서는 자동 차단된다.
 /// - FogPreset 적용: unexplored/fogged 두 레이어(FogLayerSettings)를 각각 무접두/_Fg* 셰이더
-///   프로퍼티군에 반영. 가시성/refog 값은 씬의 DH 매니저 2종에 리플렉션 반영.
+///   프로퍼티군에 반영. 시야 반경(sightRadiusCells>0)은 DH PartyFogRevealer.revealRadius에
+///   주입해 탐사 로직과 렌더 경계가 단일 소스로 동반된다(260806 B안).
 ///   머티리얼은 Awake에서 백업 후 OnDestroy(플레이 종료)에 복원 — 커밋 에셋 무오염.
 ///   튜닝 결과의 영구 저장소는 FogPreset SO 에셋 (플레이 중 편집해도 보존됨).
 /// - 부트스트랩: Resources/RenderFX/RenderFXManager.prefab을 BeforeSceneLoad에 생성 (GameManager 패턴).
@@ -82,14 +82,12 @@ public class RenderFXManager : MonoBehaviour
     private static readonly LayerIds FgIds = new LayerIds("Fg");
 
     private static readonly int FogCeilingYId = Shader.PropertyToID("_FogCeilingY");   // 구 DH 셰이더 폴백용
-    private static readonly int EdgeSoftnessId = Shader.PropertyToID("_EdgeSoftness");
     private static readonly int EdgeWidthWorldId = Shader.PropertyToID("_EdgeWidthWorld");
     private static readonly int EdgeNoiseStrengthId = Shader.PropertyToID("_EdgeNoiseStrength");
     private static readonly int EdgeNoiseScaleId = Shader.PropertyToID("_EdgeNoiseScale");
     private static readonly int EdgeNoiseSpeedId = Shader.PropertyToID("_EdgeNoiseSpeed");
     private static readonly int EdgeFadeWidthId = Shader.PropertyToID("_EdgeFadeWidth");
     private static readonly int EdgeLayerSpreadWorldId = Shader.PropertyToID("_EdgeLayerSpreadWorld");
-    private static readonly int SightBoostWorldId = Shader.PropertyToID("_SightBoostWorld");
     private static readonly int StateBlendWidthWorldId = Shader.PropertyToID("_StateBlendWidthWorld");
     private static readonly int DebugModeId = Shader.PropertyToID("_DebugMode");
     private const string DebugModeKeyword = "_DEBUGMODE_ON";
@@ -181,33 +179,83 @@ public class RenderFXManager : MonoBehaviour
         if (preset == null) return;
 
         activePreset = preset;
+        ApplySightRadius(preset, resetOnChange: false);
         ApplyToMaterial(preset);
         ApplyToDistanceField(preset);
     }
 
     /// <summary>
-    /// 파티 시야반경(월드) — PartyFogRevealer.revealRadius 리플렉션 조회(DH 무수정 seam), 부재 시 기본 4셀.
-    /// sightRangeMultiplier/sheetRangeMultiplier의 (계수−1)×반경 환산 공용 기반.
+    /// 시야 반경 단일 소스 주입(260806 B안) — 프리셋 sightRadiusCells(>0)를 DH
+    /// PartyFogRevealer.revealRadius에 반영한다. 탐사 로직(이동 가능 범위)과
+    /// 안개 경계가 같은 값에서 파생되어 항상 일치한다.
+    /// resetOnChange=true(프리셋 라이브 튜닝 경로)면 안개를 리셋 후 재구성해
+    /// 반경 축소도 즉시 순수하게 보인다. 씬 로드 주입 경로는 false —
+    /// 세이브에서 복원된 탐사 이력을 지우면 안 되므로 가산 리빌만 한다.
+    /// </summary>
+    private void ApplySightRadius(FogPreset p, bool resetOnChange)
+    {
+        if (p.shared.sightRadiusCells <= 0) return;
+
+        var revealer = FindFirstObjectByType<PartyFogRevealer>();
+        if (revealer == null) return;
+
+        if (revealer.RevealRadius == p.shared.sightRadiusCells) return;
+
+        revealer.SetRevealRadius(p.shared.sightRadiusCells);
+
+        if (!Application.isPlaying) return;
+
+        if (resetOnChange)
+            ResetFogAndReveal();
+        else
+            revealer.RevealAllCurrentPartyPositions();
+    }
+
+    /// <summary>
+    /// [튜닝 보조] 안개 상태 전체를 지우고 현재 상태(파티 위치·점령 거점·HeroUnion) 기준으로
+    /// 재구성한다 — 프리셋 인스펙터에서 시야 반경을 바꾸면 자동 호출(라이브 튜닝 경로 한정).
+    /// ⚠️ 탐사 이동 이력이 소실되고 그 상태가 세이브에도 반영된다 — 튜닝 세션 전용.
+    /// 재리빌 순서는 DHFogProgressApplier.RevealCurrentContext와 동일(구역 진입 안내 분기 포함).
+    /// </summary>
+    private void ResetFogAndReveal()
+    {
+        if (!Application.isPlaying) return;
+
+        var fogGrid = FindFirstObjectByType<FogGridManager>();
+        if (fogGrid == null) return;
+
+        fogGrid.ClearFogData();
+
+        if (ZoneEntryGuidanceController.IsActiveOrStoredActive)
+        {
+            ZoneEntryGuidanceController.ApplyStoredGuidanceIfNeeded()?.RevealAllowedPathCells();
+        }
+        else
+        {
+            FindFirstObjectByType<PartyFogRevealer>()?.RevealAllCurrentPartyPositions();
+            FindFirstObjectByType<OutpostFogRevealer>()?.RevealAllClaimedOutposts();
+            FindFirstObjectByType<HeroUnionFogRevealer>()?.RevealAllHeroUnions();
+        }
+
+        // 동기 재빌드 — 프레임 콜백(Update)을 기다리지 않고 그 자리에서 굽는다.
+        // 에디터 일시정지 중 인스펙터 튜닝 시에도 즉시 화면에 반영되게 하는 안전망.
+        distanceField.RebuildIfDirty();
+    }
+
+    /// <summary>
+    /// 파티 시야반경(월드) — PartyFogRevealer.RevealRadius 조회, 부재 시 기본 4셀.
+    /// sheetRangeMultiplier의 (계수−1)×반경 환산 기반.
     /// </summary>
     private float GetSightRadiusWorld()
     {
         float radiusCells = 4f;
         var revealer = FindFirstObjectByType<PartyFogRevealer>();
         if (revealer != null)
-        {
-            var field = typeof(PartyFogRevealer).GetField("revealRadius", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (field != null) radiusCells = (int)field.GetValue(revealer);
-        }
+            radiusCells = revealer.RevealRadius;
 
         float cellSize = Shader.GetGlobalFloat(FogCellSizeId);
         if (cellSize <= 0.0001f) cellSize = 1f;
         return radiusCells * cellSize;
-    }
-
-    private float ComputeSightBoostWorld(FogPreset p)
-    {
-        if (Mathf.Approximately(p.shared.sightRangeMultiplier, 1f)) return 0f;
-        return (p.shared.sightRangeMultiplier - 1f) * GetSightRadiusWorld();
     }
 
     /// <summary>경계 라운딩(월드)을 셀 단위로 환산해 SDF 빌더에 전달. 셀 크기는 FogRenderManager가 푸시한 전역값 사용.</summary>
@@ -226,7 +274,6 @@ public class RenderFXManager : MonoBehaviour
         if (fogMaterial.HasProperty(FgIds.DensityLow))
             ApplyLayerToMaterial(p.fogged, FgIds, legacyFallback: false);
 
-        fogMaterial.SetFloat(EdgeSoftnessId, p.shared.fallbackEdgeSoftness);
         // 셰이더 세대별 전용 프로퍼티 — 미보유 머티리얼에 유령 프로퍼티가 쌓이지 않게 가드
         if (fogMaterial.HasProperty(EdgeWidthWorldId))
         {
@@ -236,7 +283,6 @@ public class RenderFXManager : MonoBehaviour
             fogMaterial.SetFloat(EdgeNoiseSpeedId, p.shared.edgeNoiseSpeed);
             fogMaterial.SetFloat(EdgeFadeWidthId, p.shared.edgeFadeWidth);
             fogMaterial.SetFloat(EdgeLayerSpreadWorldId, p.shared.edgeLayerSpreadWorld);
-            fogMaterial.SetFloat(SightBoostWorldId, ComputeSightBoostWorld(p));
             if (fogMaterial.HasProperty(StateBlendWidthWorldId))
                 fogMaterial.SetFloat(StateBlendWidthWorldId, p.shared.stateBlendWidthWorld);
         }
@@ -298,8 +344,7 @@ public class RenderFXManager : MonoBehaviour
         }
     }
 
-    // DH 씬 컴포넌트로의 리플렉션 푸시는 260714 전량 은퇴 —
-    // 가시성 3값(_FogVisibilityTex 농도)은 SDF 파이프라인 무효(폴백은 FogRenderManager 자체 값),
+    // DH 씬 컴포넌트로의 리플렉션 푸시는 260714 전량 은퇴, 비-SDF 폴백 경로는 260806 T2로 철거.
     // refog는 게임 규칙(데이터)이라 DH 씬 값을 존중한다.
 
     private void HandlePresetChanged(FogPreset changed)
@@ -307,6 +352,7 @@ public class RenderFXManager : MonoBehaviour
         if (!Application.isPlaying) return;
         if (changed != activePreset) return;
 
+        ApplySightRadius(changed, resetOnChange: true);
         ApplyToMaterial(changed);
         ApplyToDistanceField(changed);
     }
@@ -444,7 +490,6 @@ public class RenderFXManager : MonoBehaviour
         if (fogMaterial.HasProperty(FgIds.DensityLow))
             CaptureLayerFromMaterial(p.fogged, FgIds);
 
-        p.shared.fallbackEdgeSoftness = fogMaterial.GetFloat(EdgeSoftnessId);
         if (fogMaterial.HasProperty(EdgeWidthWorldId))
         {
             p.shared.edgeWidthWorld = fogMaterial.GetFloat(EdgeWidthWorldId);

@@ -93,15 +93,14 @@ public class FogPreset : ScriptableObject
 
     /// <summary>
     /// 두 레이어가 공유하는 항목 — 경계는 상태 간 이음새라 한 벌이어야 크로스페이드가 성립한다.
-    /// 가시성 단계 값(구 농도 3종)은 SDF 파이프라인에서 무효라 260714 삭제 —
-    /// 폴백 경로는 씬 FogRenderManager(DH)의 자체 인스펙터 값을 그대로 쓴다.
+    /// (260806 T2: 비-SDF 폴백 경로 철거로 fallbackEdgeSoftness 은퇴 — SDF 단일 경로)
     /// </summary>
     [Serializable]
     public class SharedFogSettings
     {
-        [Header("시야 배율 (시각 전용)")]
-        [Tooltip("시야 범위 계수 — 데이터(탐사 로직)의 공개 범위는 그대로 두고, 렌더 경계만 파티 시야반경 × (계수−1)만큼 밖(>1)/안(<1)으로 이동. SDF 경로 전용")]
-        [Range(0.1f, 3f)] public float sightRangeMultiplier = 1f;
+        [Header("시야 반경 (단일 소스 — 로직·렌더 동반)")]
+        [Tooltip("파티 시야 반경(그리드 셀). 0=미개입(DH PartyFogRevealer의 씬 값 유지). 1 이상이면 이 값이 revealRadius에 주입되어 탐사 로직(이동 가능 범위)과 안개 경계가 함께 움직임 — 시각·로직이 항상 일치. ※플레이 중 이 값을 바꾸면 안개가 리셋 후 현재 상태 기준으로 재구성됨(축소 즉시 반영·이동 이력 소실 — 튜닝 전용). 씬 로드 시엔 이력 보존 주입만")]
+        [Range(0, 16)] public int sightRadiusCells = 0;
 
         [Header("경계 SDF (상태 간 이음새, 전부 월드 유닛)")]
         [Tooltip("경계 폭(블러) — 가시↔안개가 이 폭에 걸쳐 부드럽게 넘어감 (SDF 거리 기준 smoothstep 반폭). 작을수록 칼같은 경계")]
@@ -120,8 +119,6 @@ public class FogPreset : ScriptableObject
         [Range(0f, 10f)] public float edgeRoundingWorld = 2f;
         [Tooltip("상태 전이 폭 — Fogged↔Unexplored 룩이 크로스페이드되는 반폭(월드). 경계 블러(edgeWidthWorld)와 분리된 값 — 구획 경계를 완만하게 하려면 이 값을 키울 것")]
         [Range(0.01f, 20f)] public float stateBlendWidthWorld = 1f;
-        [Tooltip("※SDF 미바인딩 시 폴백 전용 — 셀 경계 smoothstep 반폭(셀 비율). SDF가 활성인 평상시엔 효과 없고, 경계 폭은 edgeWidthWorld가 담당")]
-        [Range(0.01f, 0.49f)] public float fallbackEdgeSoftness = 0.18f;
 
         [Header("디버그")]
         [Tooltip("셰이더 디버그 모드 — 안개 합성 대신 가시성 값(visLow)을 흑백으로 표시")]
@@ -132,7 +129,7 @@ public class FogPreset : ScriptableObject
     public FogLayerSettings unexplored = new FogLayerSettings();
     [Tooltip("Fogged(탐사됨·비가시) 지역의 안개 룩 — 지형·오브젝트는 보이고 적만 숨는 지역. fogDensityLow 0이면 지면 안개 없음")]
     public FogLayerSettings fogged = new FogLayerSettings { fogDensityLow = 0f, sheetOpacity = 0f };
-    [Tooltip("공통 — 시야 배율·경계 SDF·디버그. 경계는 두 레이어의 이음새라 한 벌")]
+    [Tooltip("공통 — 시야 반경·경계 SDF·디버그. 경계는 두 레이어의 이음새라 한 벌")]
     public SharedFogSettings shared = new SharedFogSettings();
 
     /// <summary>외부 경로(JSON 불러오기 등)로 값이 바뀌었을 때 재적용 통지용 — 플레이 중이면 RenderFXManager가 즉시 반영.</summary>
