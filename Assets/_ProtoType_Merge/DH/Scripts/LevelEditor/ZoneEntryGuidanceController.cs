@@ -264,7 +264,6 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         AppendVisualPaddingCells(pathBuffer);
         AppendRequiredHeroUnionRevealCells(pathBuffer);
         fogGridManager.RevealCells(pathBuffer);
-        MarkFogRenderManagersDirty();
     }
 
     private static void AppendVisualPaddingCells(List<Vector2Int> cells)
@@ -350,16 +349,6 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         yield return null;
         revealRefreshCoroutine = null;
         RevealAllowedPathCells();
-    }
-
-    private static void MarkFogRenderManagersDirty()
-    {
-        FogRenderManager[] renderManagers = FindObjectsByType<FogRenderManager>(
-            FindObjectsInactive.Exclude,
-            FindObjectsSortMode.None);
-
-        for (int i = 0; i < renderManagers.Length; i++)
-            renderManagers[i]?.MarkDirty();
     }
 
     private void CompleteGuidance()

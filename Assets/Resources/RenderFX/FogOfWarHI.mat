@@ -39,7 +39,6 @@ Material:
     - _EdgeNoiseScale: 0.35
     - _EdgeNoiseSpeed: 0.1
     - _EdgeNoiseStrength: 0.5
-    - _EdgeSoftness: 0.18
     - _EdgeWidthWorld: 1
     - _FgBrightnessHigh: 1.25
     - _FgBrightnessLow: 0.75
@@ -87,7 +86,6 @@ Material:
     - _SheetGroundAlign: 0.5
     - _SheetHeightY: 2
     - _SheetOpacity: 0
-    - _SightBoostWorld: 0
     - _StateBlendWidthWorld: 1
     - _TrimStrength: 0.65
     - _VisibilitySoftness: 0.18

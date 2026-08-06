@@ -111,6 +111,9 @@
         "edgeLayerSpreadWorld": 0.0,
         "edgeRoundingWorld": 2.0,
         "stateBlendWidthWorld": 1.0,
+        "revealSpeedUnexplored": 4.0,
+        "revealSpeedFogged": 4.0,
+        "revealSpeedSheet": 4.0,
         "debugMode": false
     }
 }
