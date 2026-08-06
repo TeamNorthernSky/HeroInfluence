@@ -33,6 +33,13 @@ public class PartyFogRevealer : MonoBehaviour
         UnsubscribeFromRegisteredParties();
     }
 
+    public int RevealRadius => revealRadius;
+
+    public void SetRevealRadius(int radius)
+    {
+        revealRadius = Mathf.Max(0, radius);
+    }
+
     [ContextMenu("Reveal Current Party Positions")]
     public void RevealAllCurrentPartyPositions()
     {
@@ -71,17 +78,10 @@ public class PartyFogRevealer : MonoBehaviour
         fogGridManager.RevealCells(revealBuffer);
     }
 
+    // 반경 일반형 원형 마스크. revealRadius=4에서 종전 하드코드 제외 셀 (4,4)/(4,3)/(3,4)과 동일.
     private bool IsExcludedCornerOffset(int dx, int dy)
     {
-        if (revealRadius != 4)
-            return false;
-
-        int absX = Mathf.Abs(dx);
-        int absY = Mathf.Abs(dy);
-
-        return (absX == 4 && absY == 4)
-            || (absX == 4 && absY == 3)
-            || (absX == 3 && absY == 4);
+        return dx * dx + dy * dy > revealRadius * (revealRadius + 1);
     }
 
     private void SubscribeToRegisteredParties()
