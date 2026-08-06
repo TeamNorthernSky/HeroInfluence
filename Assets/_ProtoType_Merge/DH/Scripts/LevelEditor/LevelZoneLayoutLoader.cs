@@ -291,6 +291,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
             gridManager?.RegisterLevelObstacleCell(obstacleCells[i] + offset);
 
         Transform parent = GetObstacleRoot(true);
+        // Obstacle data is authoritative for movement; prefab spawning is optional visual/debug support.
         if (generateObstacleTileMeshes)
             tileMeshGenerator?.GenerateObstacleTiles(levelData, offset, parent, false);
 
@@ -311,7 +312,6 @@ public class LevelZoneLayoutLoader : MonoBehaviour
         if (gatePlacements.Count == 0)
             return;
 
-        GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
         Transform parent = GetGateRoot(true);
         for (int i = 0; i < gatePlacements.Count; i++)
         {
@@ -338,15 +338,6 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 GateFootprint gateVisual = Instantiate(gatePrefab, worldPosition, gatePrefab.transform.rotation, gateRootObject.transform);
                 gateVisual.SyncAnchorFromTransform();
                 blockers.Add(gateVisual.gameObject);
-            }
-            else if (obstaclePrefab != null)
-            {
-                for (int cellIndex = 0; cellIndex < gateBlockerCells.Count; cellIndex++)
-                {
-                    GameObject blocker = SpawnGameObject(obstaclePrefab, gateBlockerCells[cellIndex], gateRootObject.transform);
-                    if (blocker != null)
-                        blockers.Add(blocker);
-                }
             }
 
             GateRuntimeController gate = gateRootObject.AddComponent<GateRuntimeController>();

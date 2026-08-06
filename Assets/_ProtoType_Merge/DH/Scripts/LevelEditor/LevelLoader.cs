@@ -159,6 +159,7 @@ public class LevelLoader : MonoBehaviour
     {
         gridManager?.RegisterLevelObstacleCells(levelData.ObstacleCells);
         Transform parent = GetObstacleRoot(true);
+        // Obstacle data is authoritative for movement; prefab spawning is optional visual/debug support.
         if (generateObstacleTileMeshes)
             tileMeshGenerator?.GenerateObstacleTiles(levelData, Vector2Int.zero, parent, false);
 
@@ -182,7 +183,6 @@ public class LevelLoader : MonoBehaviour
         if (gatePlacements.Count == 0)
             return;
 
-        GameObject obstaclePrefab = prefabRegistry != null ? prefabRegistry.ObstaclePrefab : null;
         Transform parent = GetGateRoot(true);
         for (int i = 0; i < gatePlacements.Count; i++)
         {
@@ -204,15 +204,6 @@ public class LevelLoader : MonoBehaviour
                 GateFootprint gateVisual = Instantiate(gatePrefab, worldPosition, gatePrefab.transform.rotation, gateRootObject.transform);
                 gateVisual.SyncAnchorFromTransform();
                 blockers.Add(gateVisual.gameObject);
-            }
-            else if (obstaclePrefab != null)
-            {
-                for (int cellIndex = 0; cellIndex < blockerCells.Count; cellIndex++)
-                {
-                    GameObject blocker = SpawnGameObject(obstaclePrefab, blockerCells[cellIndex], gateRootObject.transform);
-                    if (blocker != null)
-                        blockers.Add(blocker);
-                }
             }
 
             GateRuntimeController gate = gateRootObject.AddComponent<GateRuntimeController>();
@@ -378,6 +369,7 @@ public class LevelLoader : MonoBehaviour
                 continue;
             }
 
+            // Completion is keyed by the prefab's EventKey while event prefab reuse is not supported.
             if (Application.isPlaying && IsMainEventCompleted(mainEventPrefab.EventKey))
                 continue;
 
@@ -409,6 +401,7 @@ public class LevelLoader : MonoBehaviour
                 continue;
             }
 
+            // Completion is keyed by the prefab's EventKey while event prefab reuse is not supported.
             if (Application.isPlaying && IsSubEventCompleted(subEventPrefab.EventKey))
                 continue;
 

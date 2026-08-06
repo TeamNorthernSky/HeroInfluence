@@ -11,8 +11,6 @@ public class GateThreatController : MonoBehaviour
     [SerializeField] private EnemySpawnController enemySpawnController;
     [SerializeField] private LevelZoneLayoutLoader layoutLoader;
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private CombatPromptService combatPromptService;
-    [SerializeField] private CombatEncounterManager combatEncounterManager;
 
     private readonly List<GateRuntimeController> gates = new List<GateRuntimeController>();
     private readonly List<EnemySpawnPoint> spawnPoints = new List<EnemySpawnPoint>();
@@ -35,7 +33,6 @@ public class GateThreatController : MonoBehaviour
             Instance = this;
 
         ResolveReferences();
-        SubscribeTurnManager();
         Outpost.OutpostClaimed += HandleOutpostClaimed;
         HeroUnionUnit.HeroUnionStateChanged += HandleHeroUnionStateChanged;
     }
@@ -44,9 +41,6 @@ public class GateThreatController : MonoBehaviour
     {
         Outpost.OutpostClaimed -= HandleOutpostClaimed;
         HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionStateChanged;
-
-        if (turnManager != null)
-            turnManager.DayAdvanced -= HandleDayAdvanced;
 
         if (Instance == this)
             Instance = null;
@@ -139,6 +133,7 @@ public class GateThreatController : MonoBehaviour
             return;
 
         MapProgressRepository repository = MapProgressRepository.Instance;
+        // Claiming an outpost starts the zone threat timer and opens connected gates.
         repository?.BeginZoneThreat(outpost.ZoneId, ResolveCurrentDay());
         OpenGatesForZone(outpost.ZoneId);
     }
@@ -151,14 +146,11 @@ public class GateThreatController : MonoBehaviour
         EndThreatsConnectedToZone(heroUnion.ZoneId);
     }
 
-    private void HandleDayAdvanced(int day)
-    {
-    }
-
     public IEnumerator ResolvePendingThreatsBeforeEnemyTurn()
     {
         ResolveReferences();
 
+        // TurnManager calls this just before the enemy turn so spawned threats can act immediately.
         string zoneId = ResolvePartyZoneId();
         EnsureZoneEnemyLevel(zoneId);
         if (!string.Equals(zoneId, currentPartyZoneId, System.StringComparison.Ordinal))
@@ -391,6 +383,7 @@ public class GateThreatController : MonoBehaviour
         if (enteredZone)
             state.PauseAtDay(day);
 
+        // Only one active gate threat enemy is allowed per zone.
         if (HasLiveThreatEnemy(state))
             return;
 
@@ -419,6 +412,7 @@ public class GateThreatController : MonoBehaviour
             return;
         }
 
+        // Threat timers pause while the party is outside that zone and resume on re-entry.
         state.PauseAtDay(ResolveCurrentDay());
     }
 
@@ -438,6 +432,7 @@ public class GateThreatController : MonoBehaviour
             yield break;
         }
 
+        // When the threat matures, connected gates close before the enemy appears.
         CloseGatesForZone(normalizedZoneId);
         repository.ClearZoneThreatSpawnPending(normalizedZoneId);
 
@@ -458,6 +453,7 @@ public class GateThreatController : MonoBehaviour
         {
             repository.SetZoneThreatEnemy(normalizedZoneId, placementKey);
             bool chatClosed = false;
+            // Spawn chat is optional; when present, enemy movement waits until the modal closes.
             if (TryShowSpawnChat(spawnPoint, placementKey, () => chatClosed = true))
                 yield return new WaitUntil(() => chatClosed);
         }
@@ -585,49 +581,12 @@ public class GateThreatController : MonoBehaviour
             spawnPoint.EncounterChatId,
             spawnPoint.EventBattleKey);
 
+        // Persist the encounter binding so runtime-spawned enemies restore with the same chat route.
         MapProgressRepository.Instance?.SetEnemyEventEncounter(
             placementKey,
             spawnPoint.EncounterChatZoneId,
             spawnPoint.EncounterChatId,
             spawnPoint.EventBattleKey);
-    }
-
-    private void TryOpenSpawnedEnemyCombatPrompt(string placementKey)
-    {
-        string normalizedPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
-        if (string.IsNullOrWhiteSpace(normalizedPlacementKey))
-            return;
-
-        ResolveReferences();
-
-        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
-        if (party == null || gridManager == null || combatEncounterManager == null)
-            return;
-
-        if (!gridManager.TryGetEnemyEncounterZoneOwner(party.GetCurrentGrid(), out EnemyGridMover enemy) ||
-            enemy == null ||
-            !IsMatchingEnemyPlacement(enemy, normalizedPlacementKey))
-        {
-            return;
-        }
-
-        if (combatPromptService != null &&
-            combatPromptService.TryOpenEnemyCombatPrompt(party, enemy, combatEncounterManager, _ => { }))
-        {
-            return;
-        }
-
-        combatEncounterManager.BeginCombat(party, enemy);
-    }
-
-    private static bool IsMatchingEnemyPlacement(EnemyGridMover enemy, string normalizedPlacementKey)
-    {
-        EnemyIdentity identity = enemy != null ? enemy.GetComponent<EnemyIdentity>() : null;
-        return identity != null &&
-            string.Equals(
-                MapProgressKey.NormalizeSegment(identity.PlacementKey),
-                normalizedPlacementKey,
-                System.StringComparison.Ordinal);
     }
 
     private void OpenGatesForZone(string zoneId)
@@ -797,21 +756,6 @@ public class GateThreatController : MonoBehaviour
             layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
         if (gridManager == null)
             gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
-        if (combatPromptService == null)
-            combatPromptService = FindFirstObjectByType<CombatPromptService>();
-        if (combatEncounterManager == null)
-            combatEncounterManager = FindFirstObjectByType<CombatEncounterManager>();
-
-        SubscribeTurnManager();
-    }
-
-    private void SubscribeTurnManager()
-    {
-        if (turnManager == null)
-            return;
-
-        turnManager.DayAdvanced -= HandleDayAdvanced;
-        turnManager.DayAdvanced += HandleDayAdvanced;
     }
 
     private int ResolveCurrentDay()

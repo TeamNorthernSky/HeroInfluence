@@ -131,6 +131,7 @@ public class GateTeleportController : MonoBehaviour
 
         teleporting = true;
         suppressUntilFrame = Time.frameCount + 1;
+        // Teleport owns the first reveal step; general party fog reveal is suppressed for this frame.
         ZoneEntryGuidanceController.SuppressGeneralFogRevealForTeleport();
         string destinationZoneId = ResolveDestinationZoneId(sourceGate, currentGrid, destinationGrid);
         observedParty.SnapToGridPosition(destinationGrid, notifyMoveCompleted: false);
@@ -151,6 +152,7 @@ public class GateTeleportController : MonoBehaviour
             return otherZoneId;
         }
 
+        // If the source zone cannot be resolved, use the destination cell's loaded zone as a safety net.
         return TryResolveZoneId(layoutLoader, destinationGrid, out string fallbackZoneId)
             ? fallbackZoneId
             : string.Empty;
@@ -198,6 +200,7 @@ public class GateTeleportController : MonoBehaviour
             matchCount++;
         }
 
+        // Teleport pairs are intentionally strict: one open source and one open destination with the same GateId.
         if (matchCount == 1)
             return true;
 

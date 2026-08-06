@@ -11,6 +11,8 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
     private const string BattleEndRelayText = "전투 종료";
 
     public static DHEventBattleRuntimeManager Instance { get; private set; }
+
+    // Runtime-only source marker for event battles started by MainEventObject.
     private static string pendingMainEventSourceKey = string.Empty;
 
     [Header("Debug")]
@@ -92,6 +94,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         }
 
         int enemyLevel = ResolveEnemyLevel(zoneId, group, party);
+        // Event battle units are temporary CombatContext data, not PersistentEnemyRepository entries.
         List<CombatEventBattleUnitData> units = BuildEventBattleUnits(catalog, zoneId, group, enemyLevel);
         if (units.Count == 0)
         {
@@ -144,10 +147,12 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
 
         CombatEventBattleData eventBattle = context.EventBattle;
         DHEventStateRepository stateRepository = DHEventStateRepository.EnsureInstance();
+        // Branch conditions read these values through DHEventStateRepository and snapshots save them as numeric state.
         stateRepository.SetNumericValue(BattleResultKey, context.Result == CombatResult.Victory ? 1f : 0f);
         ApplyNumericResults(stateRepository, eventBattle);
         DHEnemyEventEncounterRuntimeManager.EnsureInstance().RegisterCompletedEventBattle(context);
 
+        // Main event objects complete only on victory; defeat keeps them available for retry.
         if (context.Result == CombatResult.Victory)
             CompleteSourceMainEvent(eventBattle.SourceMainEventKey);
         ClearPendingMainEventSource(eventBattle.SourceMainEventKey);
@@ -213,6 +218,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         if (!IsBattleEndRelayChat(chat))
             return true;
 
+        // "Battle end" relay nodes are skipped and immediately resolved to their auto branch target.
         if (!TryResolveAutoBranch(catalog, zoneId, chat, out DHEventBranchTemplate autoBranch) || autoBranch == null)
             return true;
 

@@ -49,6 +49,7 @@ public class EnemySpawnController : MonoBehaviour
         if (ResolveEnemyPrefab(EnemyBehaviorType.Mobile) == null || gridManager == null)
             return false;
 
+        // Gate threats are runtime mobile enemies. Their encounter chat is attached by GateThreatController.
         string sourceKey = $"gate_threat_{MapProgressKey.NormalizeSegment(zoneId)}";
         placementKey = CreateRuntimeEnemyPlacementKey(sourceKey);
         if (TrySpawnAtGrid(spawnGrid, placementKey, ResolveSpawnEnemyGroupKey(enemyGroupKey), MapProgressKey.NormalizeSegment(zoneId), out spawnedEnemy))
@@ -74,6 +75,7 @@ public class EnemySpawnController : MonoBehaviour
         if (string.IsNullOrWhiteSpace(normalizedEventKey) || string.IsNullOrWhiteSpace(normalizedGroupKey))
             return false;
 
+        // Replacement enemies are static runtime enemies spawned from a completed/disabled main event.
         DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
         if (templateCatalog == null || !templateCatalog.TryGetEnemyGroupTemplate(normalizedGroupKey, out _))
             return false;
@@ -190,6 +192,7 @@ public class EnemySpawnController : MonoBehaviour
 
         SyncRuntimeEnemySequence(progressRepository);
 
+        // Runtime enemies are recreated from MapProgress enemy states after level/layout loading.
         IReadOnlyList<EnemyWorldState> enemyStates = progressRepository.EnemyWorldStates;
         for (int i = 0; i < enemyStates.Count; i++)
         {
@@ -250,6 +253,7 @@ public class EnemySpawnController : MonoBehaviour
         if (enemyGroupRepository != null && enemyGroupRepository.ContainsEnemy(state.EnemyId))
             return true;
 
+        // Some runtime enemies are template-only and do not have a persistent enemy group entry.
         return CanRecreateRuntimeEnemyFromTemplate(state);
     }
 
@@ -446,6 +450,7 @@ public class EnemySpawnController : MonoBehaviour
 
     private string ResolveSpawnEnemyGroupKey(string requestedEnemyGroupKey)
     {
+        // Spawn-point chat data is independent; this fallback only decides which enemy group appears.
         string fallbackKey = string.IsNullOrWhiteSpace(runtimeEnemyGroupKey) ? "FEP002" : runtimeEnemyGroupKey.Trim();
         string normalizedRequest = string.IsNullOrWhiteSpace(requestedEnemyGroupKey) ? string.Empty : requestedEnemyGroupKey.Trim();
         if (string.IsNullOrWhiteSpace(normalizedRequest))

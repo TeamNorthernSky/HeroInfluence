@@ -269,11 +269,6 @@ public class LevelEditorController : MonoBehaviour
             !prefabRegistry.TryGetGatePrefab(SelectedGatePrefabKey, out GateFootprint gatePrefab) ||
             gatePrefab == null)
         {
-            levelData.AddGateBlockerCell(
-                selectedGateId,
-                selectedGateFirstZoneId,
-                selectedGateSecondZoneId,
-                grid);
             return;
         }
 

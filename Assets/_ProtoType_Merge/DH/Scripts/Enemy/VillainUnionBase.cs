@@ -12,6 +12,7 @@ public class VillainUnionBase : MonoBehaviour
     [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
 
     [Header("Defender Combat Chat")]
+    // Chat id 0 keeps unfinished zones on the legacy direct-combat path.
     [SerializeField, Min(0)] private int defenderCombatChatId;
 
     [SerializeField] private GridManager gridManager;
@@ -191,6 +192,7 @@ public static class VillainUnionDefenderService
         if (villainUnionBase == null || string.IsNullOrWhiteSpace(villainUnionBase.DefenderEnemyGroupKey))
             return false;
 
+        // TODO(remove fallback): this repository-backed defender path should go away when combat can consume group keys directly.
         PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
         EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
         DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;

@@ -379,8 +379,7 @@ public class PartyInteractionController
     {
         if (itemObject == null)
             return 0f;
-
-        // [JC 260514 머지후처리] ItemObject가 GameManager 통합 패턴(Game.Economy)을 내부 사용하므로 인자 없이 호출.
+        // ItemObject owns the Economy reward and returns how long pickup input should stay locked.
         MapProgressRepository repository = MapProgressRepository.Instance;
         if (repository != null)
             repository.MarkItemCollected(MapProgressKey.ForItem(itemGrid));

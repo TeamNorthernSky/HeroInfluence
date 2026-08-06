@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GateRuntimeController : MonoBehaviour
 {
     [SerializeField] private string gateId;
     [SerializeField] private string firstZoneId;
     [SerializeField] private string secondZoneId;
-    [SerializeField] private List<GameObject> blockerObjects = new List<GameObject>();
+    [FormerlySerializedAs("blockerObjects")]
+    [SerializeField] private List<GameObject> gateVisualObjects = new List<GameObject>();
     [SerializeField] private List<Vector2Int> blockerCells = new List<Vector2Int>();
     [SerializeField] private bool isOpen;
 
@@ -55,14 +57,14 @@ public class GateRuntimeController : MonoBehaviour
         firstZoneId = NormalizeId(nextFirstZoneId);
         secondZoneId = NormalizeId(nextSecondZoneId);
 
-        blockerObjects.Clear();
+        gateVisualObjects.Clear();
         blockerCells.Clear();
         if (nextBlockers != null)
         {
             foreach (GameObject blocker in nextBlockers)
             {
-                if (blocker != null && !blockerObjects.Contains(blocker))
-                    blockerObjects.Add(blocker);
+                if (blocker != null && !gateVisualObjects.Contains(blocker))
+                    gateVisualObjects.Add(blocker);
             }
         }
 
@@ -119,31 +121,12 @@ public class GateRuntimeController : MonoBehaviour
         if (results == null)
             return;
 
-        GridManager gridManager = ResolveGridManager();
-        if (gridManager == null)
-            return;
-
-        if (blockerCells.Count > 0)
+        // Gate placement data owns teleport order. Matching by index lets paired gates preserve multi-cell entry position.
+        for (int i = 0; i < blockerCells.Count; i++)
         {
-            for (int i = 0; i < blockerCells.Count; i++)
-            {
-                Vector2Int cell = blockerCells[i];
-                if (!results.Contains(cell))
-                    results.Add(cell);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < blockerObjects.Count; i++)
-            {
-                GameObject blocker = blockerObjects[i];
-                if (blocker == null)
-                    continue;
-
-                Vector2Int cell = gridManager.WorldToGrid(blocker.transform.position);
-                if (!results.Contains(cell))
-                    results.Add(cell);
-            }
+            Vector2Int cell = blockerCells[i];
+            if (!results.Contains(cell))
+                results.Add(cell);
         }
 
         results.Sort(CompareGridCells);
@@ -196,9 +179,11 @@ public class GateRuntimeController : MonoBehaviour
     {
         bool wasOpen = isOpen;
         isOpen = nextOpen;
-        for (int i = 0; i < blockerObjects.Count; i++)
+
+        // Closed gates show their visual blockers; open gates hide them and unregister movement blockers.
+        for (int i = 0; i < gateVisualObjects.Count; i++)
         {
-            GameObject blocker = blockerObjects[i];
+            GameObject blocker = gateVisualObjects[i];
             if (blocker != null)
                 blocker.SetActive(!isOpen);
         }
@@ -235,6 +220,7 @@ public class GateRuntimeController : MonoBehaviour
         if (string.IsNullOrWhiteSpace(GateId))
             return;
 
+        // Runtime gates feed three independent systems: threat state, teleport, and open-duration lifecycle.
         if (!registeredThreat)
         {
             GateThreatController controller = GateThreatController.EnsureSceneInstance();
