@@ -62,7 +62,8 @@ namespace ASB.Work.Battle.Core
 
             float critMultiplier = context.IsCritical ? 1.5f : 1.0f;
             float influenceMultiplier = context.Caster.FinalStats.Influence / 100f;
-            float finalDamage = baseStatDiff * multiplier * mitigationRate * critMultiplier * influenceMultiplier;
+            float BaseDamage = baseStatDiff * multiplier * mitigationRate * critMultiplier;
+            float finalDamage = BaseDamage + BaseDamage * influenceMultiplier;
             float roundedDamage = Mathf.Floor(finalDamage + 0.5f);
             return Mathf.Max(2f, roundedDamage);
         }

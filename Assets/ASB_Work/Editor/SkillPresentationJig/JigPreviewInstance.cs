@@ -127,6 +127,9 @@ namespace ASB.Work.EditorTools.Jig
 
         public static void DestroyInstance()
         {
+            // 슬로우 재생이 돌고 있으면 먼저 멈춘다(EditorApplication.update 구독 해제). 네 정리 훅이 모두 이 함수를 지난다.
+            JigPreviewPlayback.Stop();
+
             // 프리뷰 카메라는 인스턴스의 자식이라 함께 파괴되지만, RenderTexture는 명시 해제가 필요하다.
             JigPreviewCamera.Forget();
 

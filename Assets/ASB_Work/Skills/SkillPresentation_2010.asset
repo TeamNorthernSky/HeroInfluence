@@ -91,6 +91,9 @@ MonoBehaviour:
         InstanceKey: charge
         Anchor: 1
         Socket: 8
+        Timing: 0
+        Time: 0
+        CueId: e75fc17a37fb4404ad76dd0e52344a29
       - CueName: fire
         EffectIds: 
         SoundIds: 
@@ -98,6 +101,9 @@ MonoBehaviour:
         InstanceKey: charge
         Anchor: 1
         Socket: 8
+        Timing: 0
+        Time: 0
+        CueId: 4ff979ea293a4618a136e36f3f28a68b
   Return:
     Enabled: 0
     AnimationStateName: 

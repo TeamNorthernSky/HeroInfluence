@@ -13,6 +13,12 @@ namespace ASB.Work.EditorTools.Jig
         public string AssetPath;
         public List<JigPhaseInterval> Intervals = new List<JigPhaseInterval>();
 
+        /// <summary>경계 블렌드(겹침/연장) 계산 결과. 표시·진단용.</summary>
+        public List<JigBlendBoundary> Boundaries = new List<JigBlendBoundary>();
+
+        /// <summary>Cue 미리보기(사운드·이펙트) 발화 목록. 마커 시각과 동일 계산을 재사용해 수집한다.</summary>
+        public List<JigCueFire> CueFires = new List<JigCueFire>();
+
         /// <summary>해석 실패가 하나라도 있으면 역기입을 허용하지 않는다(§2.5.1).</summary>
         public bool HasResolutionFailure;
 
@@ -78,6 +84,17 @@ namespace ASB.Work.EditorTools.Jig
             result.Intervals = JigPhaseLayout.Build(data, controller, movement, out bool anyFailure);
             result.HasResolutionFailure = anyFailure;
 
+            // 경계 블렌드(겹침/연장) 계산 — 인터벌의 Start/DisplayDuration을 겹침 반영으로 갱신한다.
+            // 아래 클립·마커 생성이 이 갱신된 Start를 쓰므로 반드시 클립 생성 전에 부른다.
+            result.Boundaries = JigPhaseLayout.ComputeBlendBoundaries(result.Intervals);
+            for (int b = 0; b < result.Boundaries.Count; b++)
+            {
+                if (!string.IsNullOrEmpty(result.Boundaries[b].Warning))
+                {
+                    result.Warnings.Add(result.Boundaries[b].Warning);
+                }
+            }
+
             for (int i = 0; i < result.Intervals.Count; i++)
             {
                 JigPhaseInterval iv = result.Intervals[i];
@@ -123,20 +140,20 @@ namespace ASB.Work.EditorTools.Jig
                 if (iv.Clip != null)
                 {
                     TimelineClip clip = animTrack.CreateClip(iv.Clip);
-                    clip.start = iv.Start;
+                    clip.start = iv.Start;   // ★ComputeBlendBoundaries가 겹침 반영해 갱신한 Start
                     clip.displayName = iv.Label;
 
-                    // 클립 구간의 길이:
-                    //   로코모션 → 이동 지속시간 (클립 길이가 아니다)
-                    //   그 외     → 실효 길이 (Post의 ExtraDelay는 제외)
-                    double clipDuration = iv.IsLocomotion ? iv.Duration : iv.EffectiveLength;
+                    // 클립 길이 = DisplayDuration(BaseClipDuration + PostBoundary 연장분).
+                    //   BaseClipDuration: 로코모션=이동 지속시간 / 그 외=실효 길이(Post ExtraDelay 제외)
+                    double clipDuration = iv.DisplayDuration > 0d ? iv.DisplayDuration : iv.BaseClipDuration;
                     if (clipDuration > 0d)
                     {
                         clip.duration = clipDuration;
                     }
 
-                    // 로코모션 클립은 루프다. 구간이 클립보다 길면 반복시켜 뒷부분이 정지 포즈로 남지 않게 한다.
-                    // (TimelineClip.postExtrapolationMode는 읽기 전용이므로 AnimationPlayableAsset.loop을 쓴다.)
+                    // 연장 정책(§4.2): 로코모션은 루프. 비루프 애니 클립은 끝 포즈 Hold —
+                    // Timeline은 clip.duration이 클립 길이보다 길면 기본이 마지막 프레임 Hold이므로 별도 처리 없이 성립한다.
+                    // (TimelineClip.postExtrapolationMode는 읽기 전용이라 AnimationPlayableAsset.loop만 켠다.)
                     if (iv.IsLocomotion && iv.EffectiveLength > 0d && clipDuration > iv.EffectiveLength + 1e-4d
                         && clip.asset is AnimationPlayableAsset playable)
                     {
@@ -163,6 +180,10 @@ namespace ASB.Work.EditorTools.Jig
                 director.playableAsset = timeline;
                 director.SetGenericBinding(animTrack, animator);
             }
+
+            // Cue 미리보기(사운드·이펙트) 준비 — 레지스트리 자동 해석 + 발화 목록 설정(빌드 교체 시 이전 상태 정리).
+            JigCuePreview.AutoResolveRegistries();
+            JigCuePreview.SetFires(result.CueFires);
 
             return result;
         }
@@ -214,7 +235,9 @@ namespace ASB.Work.EditorTools.Jig
                             "이후입니다 → 발화하지 않을 수 있습니다. 더 이른 시각으로 옮기세요.");
                     }
 
-                    CreateMarker(markerTrack, iv.Start + Mathf.Max(0f, (float)local), cue, iv, fromClipEvent: false);
+                    double dataFire = iv.Start + Mathf.Max(0f, (float)local);
+                    CreateMarker(markerTrack, dataFire, cue, iv, fromClipEvent: false);
+                    if (local >= 0d) TryCollectCueFire(result, dataFire, cue);
                     continue;
                 }
 
@@ -223,7 +246,9 @@ namespace ASB.Work.EditorTools.Jig
                 {
                     for (int t = 0; t < times.Count; t++)
                     {
-                        CreateMarker(markerTrack, iv.Start + times[t], cue, iv, fromClipEvent: true);
+                        double clipFire = iv.Start + times[t];
+                        CreateMarker(markerTrack, clipFire, cue, iv, fromClipEvent: true);
+                        TryCollectCueFire(result, clipFire, cue);
                     }
                 }
                 else
@@ -233,6 +258,35 @@ namespace ASB.Work.EditorTools.Jig
                         "같은 이름의 AniEvent_PresentationCue가 없습니다 → 발화하지 않습니다.");
                 }
             }
+        }
+
+        /// <summary>
+        /// 미리보기 발화 목록에 수집한다(§4 술어). Held(InstanceKey 있거나 Signal/Stop)와 발화할 게 없는 Cue는 제외.
+        /// Target 계열 앵커도 수집한다 — 사운드는 재생하고 이펙트만 스킵하는 판정은 JigCuePreview가 한다.
+        /// </summary>
+        private static void TryCollectCueFire(JigBuildResult result, double fireTime, CueBinding cue)
+        {
+            if (cue == null || cue.Operation != CueOperation.Spawn || !string.IsNullOrWhiteSpace(cue.InstanceKey))
+            {
+                return;
+            }
+
+            bool hasEffect = cue.EffectIds != null && cue.EffectIds.Count > 0;
+            bool hasSound = cue.SoundIds != null && cue.SoundIds.Count > 0;
+            if (!hasEffect && !hasSound)
+            {
+                return;
+            }
+
+            result.CueFires.Add(new JigCueFire
+            {
+                FireTime = fireTime,
+                EffectIds = cue.EffectIds,
+                SoundIds = cue.SoundIds,
+                Anchor = cue.Anchor,
+                Socket = cue.Socket,
+                Label = cue.NormalizedCueName,
+            });
         }
 
         private static void CreateMarker(TrackAsset markerTrack, double time, CueBinding cue,

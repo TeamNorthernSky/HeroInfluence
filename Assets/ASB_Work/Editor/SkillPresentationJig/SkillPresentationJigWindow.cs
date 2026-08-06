@@ -51,6 +51,10 @@ namespace ASB.Work.EditorTools.Jig
             if (JigPreviewInstance.IsAlive)
             {
                 EditorGUILayout.Space();
+                DrawPlayback();
+                EditorGUILayout.Space();
+                DrawCuePreview();
+                EditorGUILayout.Space();
                 DrawPreviewCamera();
             }
 
@@ -145,6 +149,76 @@ namespace ASB.Work.EditorTools.Jig
                 _build = null;
                 _report.Clear();
                 _report.Add("임시 에셋과 프리뷰 인스턴스를 정리했습니다.");
+            }
+        }
+
+        /// <summary>
+        /// 에디트 모드 슬로우 재생. <b>재생 속도만</b> 바꾼다 — 클립·마커·Cue 값은 무변경(감상용).
+        /// director.time을 배속만큼 밀고 Evaluate로 포즈를 갱신한다(<see cref="JigPreviewPlayback"/>).
+        /// </summary>
+        private void DrawPlayback()
+        {
+            EditorGUILayout.LabelField("슬로우 재생 (감상용 — 데이터 무변경)", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "재생 속도만 조절합니다. 클립·마커·Cue 값은 바뀌지 않습니다.\n" +
+                "포즈는 Scene/Game 뷰에 갱신됩니다. 정밀 확인은 Timeline에서 플레이헤드를 직접 끌어(스크럽) 보세요.",
+                MessageType.None);
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("▶ 0.25x")) JigPreviewPlayback.Play(0.25f);
+                if (GUILayout.Button("▶ 0.5x")) JigPreviewPlayback.Play(0.5f);
+                if (GUILayout.Button("▶ 1x")) JigPreviewPlayback.Play(1f);
+                using (new EditorGUI.DisabledScope(!JigPreviewPlayback.IsPlaying))
+                {
+                    if (GUILayout.Button("⏸ 정지")) JigPreviewPlayback.Stop();
+                }
+            }
+
+            if (JigPreviewPlayback.IsPlaying)
+            {
+                EditorGUILayout.LabelField($"재생 중 · {JigPreviewPlayback.Speed:0.##}x", EditorStyles.miniLabel);
+                Repaint();   // 재생 중에는 창을 계속 갱신해 상태 표시가 살아 있게 한다.
+            }
+        }
+
+        /// <summary>
+        /// 이펙트·사운드 미리보기 토글 + 레지스트리 선택. 슬로우 재생 중 Cue 시각에 근사로 발화한다(<see cref="JigCuePreview"/>).
+        /// 원본 데이터 무영향 — 재생/스폰만 한다.
+        /// </summary>
+        private void DrawCuePreview()
+        {
+            EditorGUILayout.LabelField("이펙트·사운드 미리보기 (근사)", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "슬로우 재생 중 Cue 시각에 사운드·소켓 이펙트를 근사로 발화합니다.\n" +
+                "투사체·타깃 이펙트와 정확한 발화·믹싱은 PreviewScene에서 확인하세요.",
+                MessageType.None);
+
+            bool sound = EditorGUILayout.ToggleLeft("사운드 미리보기", JigCuePreview.SoundEnabled);
+            if (sound != JigCuePreview.SoundEnabled)
+            {
+                JigCuePreview.SoundEnabled = sound;
+                if (!sound) JigCuePreview.OnSoundToggledOff();
+            }
+
+            bool eff = EditorGUILayout.ToggleLeft("이펙트 미리보기 (근사)", JigCuePreview.EffectEnabled);
+            if (eff != JigCuePreview.EffectEnabled)
+            {
+                JigCuePreview.EffectEnabled = eff;
+                if (!eff) JigCuePreview.OnEffectToggledOff();
+            }
+
+            JigCuePreview.SoundRegistry = (SoundRegistry)EditorGUILayout.ObjectField(
+                "Sound Registry", JigCuePreview.SoundRegistry, typeof(SoundRegistry), false);
+            JigCuePreview.EffectRegistry = (EffectRegistry)EditorGUILayout.ObjectField(
+                "Effect Registry", JigCuePreview.EffectRegistry, typeof(EffectRegistry), false);
+
+            if ((JigCuePreview.SoundEnabled && JigCuePreview.SoundRegistry == null)
+                || (JigCuePreview.EffectEnabled && JigCuePreview.EffectRegistry == null))
+            {
+                EditorGUILayout.HelpBox(
+                    "레지스트리 자산을 지정하세요(프로젝트에 정확히 1개면 자동 선택됩니다).",
+                    MessageType.Warning);
             }
         }
 

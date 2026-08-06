@@ -89,7 +89,7 @@ MonoBehaviour:
     Enabled: 1
     Beats:
     - AnimationStateName: Base Layer.ClassSkill_1
-      BlendInSeconds: 0
+      BlendInSeconds: 0.05
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
       Cues:
@@ -106,7 +106,7 @@ MonoBehaviour:
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
-    BlendInSeconds: 0.001
+    BlendInSeconds: 0.05
   Post:
     Enabled: 1
     AnimationStateName: Base Layer.Taunt
