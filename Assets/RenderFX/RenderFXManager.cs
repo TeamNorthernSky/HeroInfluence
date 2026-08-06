@@ -161,7 +161,7 @@ public class RenderFXManager : MonoBehaviour
         if (shiftHeld && Input.GetKeyDown(KeyCode.F))
             ToggleFog();
 
-        distanceField.RebuildIfDirty();
+        distanceField.Tick(Time.deltaTime);
     }
 
     public void ToggleFog()
@@ -237,9 +237,9 @@ public class RenderFXManager : MonoBehaviour
             FindFirstObjectByType<HeroUnionFogRevealer>()?.RevealAllHeroUnions();
         }
 
-        // 동기 재빌드 — 프레임 콜백(Update)을 기다리지 않고 그 자리에서 굽는다.
-        // 에디터 일시정지 중 인스펙터 튜닝 시에도 즉시 화면에 반영되게 하는 안전망.
-        distanceField.RebuildIfDirty();
+        // 동기 즉시 반영(Snap) — 프레임 콜백을 기다리지 않고, 걷힘 연출도 생략한다.
+        // 시야 리셋은 맵 전역이 바뀌는 튜닝 조작이라 연출을 걸면 대규모 스윕이 된다.
+        distanceField.SnapToTarget();
     }
 
     /// <summary>
@@ -258,12 +258,19 @@ public class RenderFXManager : MonoBehaviour
         return radiusCells * cellSize;
     }
 
-    /// <summary>경계 라운딩(월드)을 셀 단위로 환산해 SDF 빌더에 전달. 셀 크기는 FogRenderManager가 푸시한 전역값 사용.</summary>
+    /// <summary>걷힘 속도 슬라이더(0~10) 1당 월드 속도 — 5 ≈ 종전 3월드유닛/초 매핑.</summary>
+    private const float RevealSpeedUnitWorld = 0.6f;
+
+    /// <summary>경계 라운딩·층별 걷힘 속도(월드)를 셀 단위로 환산해 SDF 빌더에 전달. 셀 크기는 FogRenderManager가 푸시한 전역값 사용.</summary>
     private void ApplyToDistanceField(FogPreset p)
     {
         float cellSize = Shader.GetGlobalFloat(FogCellSizeId);
         if (cellSize <= 0.0001f) cellSize = 1f;
         distanceField.SetRounding(p.shared.edgeRoundingWorld / cellSize);
+        distanceField.SetRevealSpeeds(
+            p.shared.revealSpeedUnexplored * RevealSpeedUnitWorld / cellSize,
+            p.shared.revealSpeedFogged * RevealSpeedUnitWorld / cellSize,
+            p.shared.revealSpeedSheet * RevealSpeedUnitWorld / cellSize);
     }
 
     private void ApplyToMaterial(FogPreset p)

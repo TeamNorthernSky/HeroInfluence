@@ -134,7 +134,8 @@ Shader "Custom/HI/FogOfWar"
             SAMPLER(sampler_FogZoneTex);
             float _FogZoneTexBound;
 
-            // 가시성 경계 SDF (FogDistanceField가 전역 푸시. R=IsExplored, G=IsVisible, 셀 단위 부호 거리, +=안개 쪽)
+            // 가시성 경계 SDF (FogDistanceField가 전역 푸시. 셀 단위 부호 거리, +=안개 쪽.
+            //  R=IsExplored/G=IsVisible = base 층별 속도로 수렴 / B·A=같은 경계의 구름 시트용 사본, 시트 속도로 수렴)
             TEXTURE2D(_FogDistanceTex);
             SAMPLER(sampler_FogDistanceTex);
             float _FogDistanceTexBound;
@@ -380,7 +381,7 @@ Shader "Custom/HI/FogOfWar"
                     maskOffset.x / max(_FogGridWorldSize.x, 0.0001),
                     maskOffset.y / max(_FogGridWorldSize.y, 0.0001)));
 
-                float dSheet = dot(SAMPLE_TEXTURE2D_LOD(_FogDistanceTex, sampler_FogDistanceTex, maskUV, 0).rg, channelSel)
+                float dSheet = dot(SAMPLE_TEXTURE2D_LOD(_FogDistanceTex, sampler_FogDistanceTex, maskUV, 0).ba, channelSel)
                                * max(_FogCellSize, 0.0001);
                 dSheet -= edgeShift;
                 float2 enSheet = maskXZ * _EdgeNoiseScale + _Time.y * _EdgeNoiseSpeed;

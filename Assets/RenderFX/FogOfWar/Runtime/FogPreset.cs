@@ -120,6 +120,14 @@ public class FogPreset : ScriptableObject
         [Tooltip("상태 전이 폭 — Fogged↔Unexplored 룩이 크로스페이드되는 반폭(월드). 경계 블러(edgeWidthWorld)와 분리된 값 — 구획 경계를 완만하게 하려면 이 값을 키울 것")]
         [Range(0.01f, 20f)] public float stateBlendWidthWorld = 1f;
 
+        [Header("걷힘 연출 (실효 속도 = 값 × 0.6 월드유닛/초, 5 ≈ 종전 3)")]
+        [Tooltip("짙은 안개층(Unexplored) 걷힘 속도 — 새로 밝혀진 경계까지 짙은 안개 벽이 등속(선형)으로 물러난다. 0=연출 끔(즉시). 씬 진입·세이브 복구·시야 리셋은 항상 즉시")]
+        [Range(0f, 10f)] public float revealSpeedUnexplored = 5f;
+        [Tooltip("베일층(Fogged) 걷힘 속도 — Fogged↔Visible 경계(베일)가 물러나는 속도. 0=즉시")]
+        [Range(0f, 10f)] public float revealSpeedFogged = 5f;
+        [Tooltip("구름 시트 걷힘 속도 — 시트 구멍이 열리는 속도(양 상태의 시트 공통). base 안개와 다르게 주면 겹층의 깊이감이 생긴다. 0=즉시")]
+        [Range(0f, 10f)] public float revealSpeedSheet = 5f;
+
         [Header("디버그")]
         [Tooltip("셰이더 디버그 모드 — 안개 합성 대신 가시성 값(visLow)을 흑백으로 표시")]
         public bool debugMode = false;

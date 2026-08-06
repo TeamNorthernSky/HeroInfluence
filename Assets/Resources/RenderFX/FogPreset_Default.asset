@@ -82,4 +82,7 @@ MonoBehaviour:
     edgeLayerSpreadWorld: 0
     edgeRoundingWorld: 2
     stateBlendWidthWorld: 1
+    revealSpeedUnexplored: 4
+    revealSpeedFogged: 4
+    revealSpeedSheet: 4
     debugMode: 0
