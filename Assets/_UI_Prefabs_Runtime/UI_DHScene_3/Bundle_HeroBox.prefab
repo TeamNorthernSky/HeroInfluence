@@ -2407,12 +2407,35 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8617780365458937074, guid: c00e733ddc5513843a0de8cf9e960143,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 4903160912982823887, guid: c00e733ddc5513843a0de8cf9e960143, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c00e733ddc5513843a0de8cf9e960143, type: 3}
+--- !u!1 &3364496795963842131 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4540684396614563634, guid: c00e733ddc5513843a0de8cf9e960143,
+    type: 3}
+  m_PrefabInstance: {fileID: 1275319569078282593}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5717629692182256503 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6839773271596741142, guid: c00e733ddc5513843a0de8cf9e960143,
+    type: 3}
+  m_PrefabInstance: {fileID: 1275319569078282593}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3364496795963842131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &7421849682656814113 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8596646640542616896, guid: c00e733ddc5513843a0de8cf9e960143,
@@ -2756,6 +2779,12 @@ PrefabInstance:
 --- !u!224 &1013461920065763166 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4702524472677333995, guid: f9201516cc032b44eb1e19cff09c7346,
+    type: 3}
+  m_PrefabInstance: {fileID: 5715687127994649781}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &5070532884031343916 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 651920114551407001, guid: f9201516cc032b44eb1e19cff09c7346,
     type: 3}
   m_PrefabInstance: {fileID: 5715687127994649781}
   m_PrefabAsset: {fileID: 0}
@@ -3499,9 +3528,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f7c231b50362f04cbdcf8e416267e57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canBuildButton: {fileID: 0}
-  cannotBuildButton: {fileID: 0}
-  canBuildClickTarget: {fileID: 0}
+  canBuildButton: {fileID: 3364496795963842131}
+  cannotBuildButton: {fileID: 5070532884031343916}
+  canBuildClickTarget: {fileID: 5717629692182256503}
 --- !u!224 &7469583030766879802 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1963322366662245123, guid: 431f62219375bd6428ca12e94bf6d457,
