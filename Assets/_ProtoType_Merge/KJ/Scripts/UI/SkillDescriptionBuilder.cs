@@ -44,33 +44,74 @@ public static class SkillDescriptionBuilder
     {
         if (skill == null) return string.Empty;
 
+        return BuildText(
+            skill.classSkillEffect,
+            skill.classSkillTarget,
+            skill.classSkillRange,
+            skill.classSkillRangeLine,
+            skill.multiTargetCount,
+            skill.skillValue,
+            skill.skillSubValue,
+            skill.ipCost,
+            skill.description);
+    }
+
+    // [KJ 260805] DH 템플릿 경유 오버로드. 수치는 Lv1 기준 — SkillData.skillValue가
+    // 카탈로그에서 ValueLv1로 채워지므로 표시 결과는 기존과 동일하다.
+    public static string Build(DHClassSkillTemplate skill)
+    {
+        if (skill == null) return string.Empty;
+
+        return BuildText(
+            skill.Effect,
+            skill.Target,
+            skill.Range,
+            skill.RangeLine,
+            skill.MultiTargetCount,
+            skill.ValueLv1,
+            skill.SubValueLv1,
+            skill.IpCost,
+            skill.Description);
+    }
+
+    private static string BuildText(
+        int effect,
+        int skillTarget,
+        int skillRange,
+        int skillRangeLine,
+        int multiTargetCount,
+        float value,
+        float subValue,
+        int ipCost,
+        string description)
+    {
         var sb = new System.Text.StringBuilder();
 
         // 대상
-        string target = skill.classSkillTarget switch
+        string target = skillTarget switch
         {
             0 => "적 1명",
-            1 => $"적 {skill.multiTargetCount + 1}명",
+            1 => $"적 {multiTargetCount + 1}명",
             2 => "적 전체",
             _ => "대상"
         };
 
         // 효과
-        switch (skill.classSkillEffect)
+        switch (effect)
         {
             case 0: // 공격
-                int dmgPercent = (int)(skill.skillValue * 100);
+                int dmgPercent = (int)(value * 100);
                 sb.Append($"{target}에게 {dmgPercent}% 대미지");
-                if (skill.skillSubValue > 0)
-                    sb.Append($" + {(int)(skill.skillSubValue * 100)}% 추가 대미지");
+                if (subValue > 0)
+                    sb.Append($" + {(int)(subValue * 100)}% 추가 대미지");
                 break;
 
             case 1: // 힐
-                int healPercent = (int)(skill.skillValue * 100);
-                string healTarget = skill.classSkillTarget switch
+                int healPercent = (int)(value * 100);
+                string healTarget = skillTarget switch
                 {
                     0 => "아군 1명",
-                    1 => $"아군 {skill.multiTargetCount + 1}명",
+                    1 => $"아군 {multiTargetCount + 1}명",
                     2 => "아군 전체",
                     _ => "대상"
                 };
@@ -78,17 +119,17 @@ public static class SkillDescriptionBuilder
                 break;
 
             case 2: // 부활
-                int revivePercent = (int)(skill.skillValue * 100);
+                int revivePercent = (int)(value * 100);
                 sb.Append($"전사한 아군 1명을 HP {revivePercent}%로 부활");
                 break;
 
             default:
-                sb.Append(skill.description);
+                sb.Append(description);
                 break;
         }
 
         // 사정거리
-        string range = skill.classSkillRange switch
+        string range = skillRange switch
         {
             0 => "근거리",
             1 => "원거리",
@@ -98,9 +139,9 @@ public static class SkillDescriptionBuilder
             sb.Append($" ({range}");
 
         // 열 우선
-        if (skill.classSkillRange >= 0)
+        if (skillRange >= 0)
         {
-            string line = skill.classSkillRangeLine switch
+            string line = skillRangeLine switch
             {
                 0 => ", 전열 우선",
                 1 => ", 열 선택",
@@ -112,8 +153,8 @@ public static class SkillDescriptionBuilder
         }
 
         // IP 코스트
-        if (skill.ipCost > 0)
-            sb.Append($"\nIP 소모: {skill.ipCost}");
+        if (ipCost > 0)
+            sb.Append($"\nIP 소모: {ipCost}");
 
         return sb.ToString();
     }
