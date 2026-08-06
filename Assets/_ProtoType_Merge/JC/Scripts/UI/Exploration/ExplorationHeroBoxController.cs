@@ -94,10 +94,10 @@ public class ExplorationHeroBoxController : MonoBehaviour
 
             int unitIndex = members[i];
             UnitPersistentData unit = null;
-            UnitData template = null;
+            DHPlayerUnitTemplate template = null;
             if (unitRepo != null) unitRepo.TryGetUnit(unitIndex, out unit);
             if (unit != null && catalog != null && !string.IsNullOrWhiteSpace(unit.UnitTemplateKey))
-                catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out template);
+                catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out template);
 
             if (slot.profile != null)
             {
@@ -107,8 +107,8 @@ public class ExplorationHeroBoxController : MonoBehaviour
                 if (sp != null) slot.profile.sprite = sp;
             }
             if (slot.nameText != null)
-                slot.nameText.text = template != null && !string.IsNullOrWhiteSpace(template.Name)
-                    ? template.Name : (unit != null ? unit.UnitTemplateKey : "-");
+                slot.nameText.text = template != null && !string.IsNullOrWhiteSpace(template.UnitName)
+                    ? template.UnitName : (unit != null ? unit.UnitTemplateKey : "-");
             if (slot.hpText != null)
             {
                 float cur = unit != null ? unit.CurrentHp : 0f;

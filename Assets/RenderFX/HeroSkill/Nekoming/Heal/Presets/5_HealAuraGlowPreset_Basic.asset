@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 077ccb87b3b1ae346a26a5240f3c6e9e, type: 3}
+  m_Name: 5_HealAuraGlowPreset_Basic
+  m_EditorClassIdentifier: 
+  width: 1.24
+  height: 2
+  groundOffsetY: 0
+  color: {r: 0.784, g: 0.829, b: 1, a: 1}
+  intensity: 1.68
+  opacity: 0.732
+  bottomFade: 0.06
+  verticalBias: 1.85
+  topMin: 0.623
+  topMax: 0.766
+  topSoft: 0.386
+  topNoiseScale: 3
+  topNoiseSpeed: 1.23
+  facePower: 2
+  streakTiling: 22
+  streakStrength: 0.15
+  streakScroll: -0.46
+  wobbleAmount: 0.26
+  wobbleSpeed: 1.2
+  riseGrow: 0.4

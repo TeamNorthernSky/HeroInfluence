@@ -12,10 +12,10 @@ public enum ChatBranchConditionMode
 
 public sealed class ChatBranchOptionState
 {
-    public BranchDBEventData Option { get; }
+    public DHEventBranchTemplate Option { get; }
     public bool IsInteractable { get; }
 
-    public ChatBranchOptionState(BranchDBEventData option, bool isInteractable)
+    public ChatBranchOptionState(DHEventBranchTemplate option, bool isInteractable)
     {
         Option = option;
         IsInteractable = isInteractable;
@@ -24,20 +24,27 @@ public sealed class ChatBranchOptionState
 
 public static class DHChatBranchRuleEvaluator
 {
-    public static bool IsBranchAvailable(BranchDBEventData option)
+    public static bool IsBranchAvailable(DHEventBranchTemplate option)
     {
         if (option == null)
             return false;
 
-        IReadOnlyList<string> values = option.Trigger_Value;
-        if ((values == null || values.Count == 0) && string.IsNullOrWhiteSpace(option.Trigger_Type))
+        IReadOnlyList<string> values = option.TriggerValues;
+        if ((values == null || values.Count == 0) && string.IsNullOrWhiteSpace(option.TriggerType))
             return true;
 
-        var conditions = BuildConditions(option.Trigger_Type, values);
+        var conditions = BuildConditions(option.TriggerType, values);
+        return EvaluateConditions(option.SelectionIndex, conditions);
+    }
+
+    private static bool EvaluateConditions(
+        string selectionIndex,
+        IReadOnlyList<(string triggerType, string expression)> conditions)
+    {
         if (conditions.Count == 0)
             return true;
 
-        ChatBranchConditionMode mode = GetConditionMode(option.Selection_Index, conditions.Count);
+        ChatBranchConditionMode mode = GetConditionMode(selectionIndex, conditions.Count);
         bool result = mode == ChatBranchConditionMode.All;
 
         for (int i = 0; i < conditions.Count; i++)
@@ -57,17 +64,17 @@ public static class DHChatBranchRuleEvaluator
         return result;
     }
 
-    public static void ExecuteTriggerEffect(BranchDBEventData option)
+    public static void ExecuteTriggerEffect(DHEventBranchTemplate option)
     {
         ExecuteTriggerEffect(option, null);
     }
 
-    public static void ExecuteTriggerEffect(BranchDBEventData option, DHEventEffectExecutionContext context)
+    public static void ExecuteTriggerEffect(DHEventBranchTemplate option, DHEventEffectExecutionContext context)
     {
-        if (option == null || string.IsNullOrWhiteSpace(option.Trigger_Effect))
+        if (option == null || string.IsNullOrWhiteSpace(option.TriggerEffect))
             return;
 
-        DHEventEffectRuntimeManager.EnsureInstance().ExecuteEffects(option.Trigger_Effect, context);
+        DHEventEffectRuntimeManager.EnsureInstance().ExecuteEffects(option.TriggerEffect, context);
     }
 
     private static List<(string triggerType, string expression)> BuildConditions(

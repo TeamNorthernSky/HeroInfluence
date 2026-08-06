@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class MoveCommandPreviewController
 {
+    private const int PreviewPathMaxVisitedNodes = 2000;
+
     private readonly GridManager gridManager;
     private readonly AStarPathfinder pathfinder;
     private readonly Transform marker;
@@ -22,6 +24,8 @@ public class MoveCommandPreviewController
     private bool hasOverLimitTail;
     private Renderer[] markerRenderers;
     private MaterialPropertyBlock markerPropertyBlock;
+    private EnemyGridMover previewEnemyTarget;
+    private MainEventObject previewMainEventTarget;
 
     public MoveCommandPreviewController(
         GridManager gridManager,
@@ -64,6 +68,8 @@ public class MoveCommandPreviewController
         canMoveToMarker = false;
         isDestinationFullyReachable = false;
         hasOverLimitTail = false;
+        previewEnemyTarget = null;
+        previewMainEventTarget = null;
 
         if (marker != null)
         {
@@ -81,6 +87,9 @@ public class MoveCommandPreviewController
             ClearPreview();
             return;
         }
+
+        previewEnemyTarget = null;
+        previewMainEventTarget = null;
 
         if (!TryResolveDestinationGrid(activeMover, clickedGrid, out Vector2Int requestedDestinationGrid))
         {
@@ -146,6 +155,36 @@ public class MoveCommandPreviewController
         if (!TryHandleMarkerClick(ray))
             return false;
 
+        ConfirmMove(activeMover);
+        return true;
+    }
+
+    public bool TryConfirmMoveAtGrid(Vector2Int clickedGrid, PartyGridMover activeMover)
+    {
+        if (!CanConfirmCurrentPreview(activeMover) || gridManager == null)
+            return false;
+
+        if (previewEnemyTarget != null
+            && gridManager.TryGetEnemyObjectAtGrid(clickedGrid, out EnemyGridMover enemy)
+            && enemy == previewEnemyTarget)
+        {
+            ConfirmMove(activeMover);
+            return true;
+        }
+
+        if (previewMainEventTarget != null
+            && gridManager.TryGetMainEventObjectAtGrid(clickedGrid, out MainEventObject mainEvent)
+            && mainEvent == previewMainEventTarget)
+        {
+            ConfirmMove(activeMover);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void ConfirmMove(PartyGridMover activeMover)
+    {
         bool isItemOrEventTarget = hasMarkerGrid
             && gridManager != null
             && (gridManager.TryGetItemObjectAtGrid(markerGrid, out _)
@@ -162,7 +201,6 @@ public class MoveCommandPreviewController
         }
 
         activeMover.MoveByGridPath(movePath, interactionTarget);
-        return true;
     }
 
     public void HandlePathUpdated(List<Vector2Int> remainingPath)
@@ -213,7 +251,7 @@ public class MoveCommandPreviewController
 
     private bool TryHandleMarkerClick(Ray ray)
     {
-        if (marker == null || !marker.gameObject.activeInHierarchy || !hasMarkerGrid || !hasPreviewPath || !canMoveToMarker)
+        if (!CanConfirmCurrentPreview(null) || marker == null || !marker.gameObject.activeInHierarchy)
             return false;
 
         RaycastHit[] hits = Physics.RaycastAll(ray, rayDistance);
@@ -237,6 +275,18 @@ public class MoveCommandPreviewController
         }
 
         return hitMarker;
+    }
+
+    private bool CanConfirmCurrentPreview(PartyGridMover activeMover)
+    {
+        if (activeMover != null && !CanPreviewForMover(activeMover))
+            return false;
+
+        return hasMarkerGrid
+            && hasPreviewPath
+            && canMoveToMarker
+            && movePath != null
+            && movePath.Count > 0;
     }
 
     private bool CanConfirmZeroStepInteraction(PartyGridMover activeMover)
@@ -279,11 +329,14 @@ public class MoveCommandPreviewController
             return true;
 
         if (gridManager.TryGetEnemyObjectAtGrid(clickedGrid, out EnemyGridMover enemy))
+        {
+            previewEnemyTarget = enemy;
             return TryResolveApproachGrid(
                 activeMover,
                 enemy.GetCurrentGrid(),
                 GetEnemyEncounterCandidates(enemy),
                 out destinationGrid);
+        }
 
         if (gridManager.TryGetOutpostObjectAtGrid(clickedGrid, out Outpost outpost))
             return TryResolveApproachGrid(
@@ -300,11 +353,14 @@ public class MoveCommandPreviewController
                 out destinationGrid);
 
         if (gridManager.TryGetMainEventObjectAtGrid(clickedGrid, out MainEventObject mainEvent))
+        {
+            previewMainEventTarget = mainEvent;
             return TryResolveApproachGrid(
                 activeMover,
                 mainEvent.GetCurrentGrid(gridManager),
                 mainEvent.GetInteractionCells(gridManager),
                 out destinationGrid);
+        }
 
         if (!gridManager.TryGetHeroUnionObjectAtGrid(clickedGrid, out HeroUnionUnit heroUnion))
             return true;
@@ -357,7 +413,8 @@ public class MoveCommandPreviewController
             false,
             EnemyEncounterPathMode.BlockEncounterZones,
             false,
-            MainEventInteractionPathMode.BlockInteractionCells);
+            MainEventInteractionPathMode.BlockInteractionCells,
+            PreviewPathMaxVisitedNodes);
         if (strictPath != null && strictPath.Count > 0)
             return strictPath;
 
@@ -368,7 +425,8 @@ public class MoveCommandPreviewController
             false,
             EnemyEncounterPathMode.AllowSingleEncounterZonePassage,
             false,
-            MainEventInteractionPathMode.AllowSingleInteractionCellPassage);
+            MainEventInteractionPathMode.AllowSingleInteractionCellPassage,
+            PreviewPathMaxVisitedNodes);
         if (fallbackPath == null || fallbackPath.Count == 0)
             return null;
 
@@ -415,7 +473,8 @@ public class MoveCommandPreviewController
                 false,
                 EnemyEncounterPathMode.BlockEncounterZones,
                 false,
-                MainEventInteractionPathMode.BlockInteractionCells);
+                MainEventInteractionPathMode.BlockInteractionCells,
+                PreviewPathMaxVisitedNodes);
             if (candidatePath == null || candidatePath.Count == 0)
                 continue;
 

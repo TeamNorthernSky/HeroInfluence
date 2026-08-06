@@ -102,7 +102,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
                 continue;
             }
 
-            if (!templateCatalog.TryGetEnemyTemplate(unitState.UnitTemplateKey, out EnemyData template))
+            if (!templateCatalog.TryGetEnemyUnitTemplate(unitState.UnitTemplateKey, out DHEnemyUnitTemplate template))
             {
                 Debug.LogWarning($"Enemy unit state on '{unitState.name}' could not resolve CSV template '{unitState.UnitTemplateKey}'.", unitState);
                 continue;
@@ -223,7 +223,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
         {
             CsvEnemyGroupMember member = members[i];
             string templateKey = member.EnemyUnitIndex.ToString();
-            templateCatalog.TryGetEnemyTemplate(templateKey, out EnemyData template);
+            templateCatalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate template);
             prefabRegistry.TryGetEnemyUnitPrefab(member.EnemyUnitIndex, out EnemyUnitState unitPrefab);
 
             EnemyUnitState unitState = Instantiate(unitPrefab, transform);
@@ -541,7 +541,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
             int enemyUnitIndex = members[i].EnemyUnitIndex;
             string templateKey = enemyUnitIndex.ToString();
 
-            if (!templateCatalog.TryGetEnemyTemplate(templateKey, out _))
+            if (!templateCatalog.TryGetEnemyUnitTemplate(templateKey, out _))
             {
                 Debug.LogWarning(
                     $"Enemy group '{enemyGroupKey}' references missing enemy unit CSV index '{enemyUnitIndex}'.",

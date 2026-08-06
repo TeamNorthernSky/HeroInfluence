@@ -9,8 +9,12 @@ namespace JC.VFX
     /// 시퀀스: 양손 앞 치유 오브 2개 차징(ChargeOrb 재사용) → 가슴 앞 합류점으로 수렴·합체(플래시) →
     ///         아군에게 낮은 포물선 비행(ProjectileVfx 재사용, arcHeight 낮춤 프리팹) → 착지 힐 오라(HealOrbit 재사용) →
     ///         본 대상의 상하좌우 1칸 이웃 전원에게 연쇄 투사체 1홉(재연쇄 없음) → 각 착지마다 힐 오라.
-    /// ★Play(caster, target) 2점 주입 + SetChainCandidates(아군 목록)는 호출자가 사전 주입.
-    ///   연쇄 판정은 십자 셀(ResolveChainTargets) — 실전 2×3 그리드 도입 시 이 메서드만 교체.
+    /// ★연쇄 대상을 정하는 방법은 두 가지고, <b>주입이 우선</b>이다.
+    ///   ① <see cref="SetTargets"/> — 스킬이 이미 결정한 대상을 그대로 받는다. <b>실전 경로.</b>
+    ///      「누가 인접인가」는 격자 인덱스를 아는 스킬이 판단해야 정확하다.
+    ///   ② <see cref="SetChainCandidates"/> + 자체 십자 판정 — <b>주입이 없을 때만</b> 도는 폴백.
+    ///      테스트베드·프리뷰 씬이 스킬 로직 없이도 굴러가게 하려고 남겨 둔 것이다.
+    ///   Play(caster, target) 2점 주입은 두 경로 공통.
     /// 손 위치 = 시전자 계층에서 소켓 이름 검색(Socket_L/R_VFX), 소켓 lossyScale(100) 오프셋 보정.
     /// </summary>
     public class LetsFightingLoveVfx : VfxEffect
@@ -51,7 +55,8 @@ namespace JC.VFX
         [Range(0f, 1f)] [SerializeField] private float chainDelay = 0.25f;
         [SerializeField] private float chainSpawnYOffset = 0.9f;
         [Range(0f, 0.5f)] [SerializeField] private float chainStagger = 0.08f;
-        [Range(0.5f, 6f)] [SerializeField] private float cellSize = 2.0f;
+        [Tooltip("폴백 판정용 1칸 크기(m). 실측 격자 간격 = 3.30 (Grid_c_r 의 x·z 모두 동일).")]
+        [Range(0.5f, 6f)] [SerializeField] private float cellSize = 3.3f;
         [Range(0.05f, 1.5f)] [SerializeField] private float axisTol = 0.6f;
         [Range(1, 8)] [SerializeField] private int maxChainTargets = 4;
 
@@ -61,17 +66,38 @@ namespace JC.VFX
 
         private Transform _caster, _target;
         private Transform[] _candidates;
+        private readonly List<VfxTarget> _injected = new List<VfxTarget>();
+        private bool _hasInjected;
+        private readonly List<Transform> _fallbackExclude = new List<Transform>(2);
+        private readonly List<Transform> _fallbackPicked = new List<Transform>(4);
         private ChargeOrbVfx _orbL, _orbR;
         private Vector3 _convStartL, _convStartR;
         private ProjectileVfx _mainProj;
         private readonly List<ProjectileVfx> _chainProjs = new List<ProjectileVfx>();
         private readonly List<HealOrbitVfx> _auraPool = new List<HealOrbitVfx>();
-        private readonly List<Transform> _chainTargets = new List<Transform>();
+        private readonly List<VfxTarget> _chainTargets = new List<VfxTarget>();
 
         private bool _launched, _mainLanded;
         private int _chainLaunchedCount, _chainPending, _aurasPlaying;
 
-        /// <summary>연쇄 후보(아군 목록) 주입. Play 전에 호출. 시전자/본 대상은 내부에서 제외.</summary>
+        /// <summary>
+        /// ★실전 경로 — 스킬이 <b>이미 결정한</b> 연쇄 대상을 그대로 받는다. Play 전에 호출.
+        /// 여기에 무엇이 들어오든 이펙트는 되묻지 않는다. 시전자·본 대상 제외도 부르는 쪽 책임이다.
+        /// 빈 목록을 주면 「연쇄 없음」이고, 아예 호출하지 않으면 폴백 판정이 돈다 — <b>둘은 다르다.</b>
+        /// </summary>
+        public override void SetTargets(IReadOnlyList<VfxTarget> targets)
+        {
+            _injected.Clear();
+            _hasInjected = targets != null;
+            if (targets == null) return;
+            for (int i = 0; i < targets.Count; i++) _injected.Add(targets[i]);
+        }
+
+        /// <summary>
+        /// 폴백용 연쇄 후보(아군 목록) 주입. <b><see cref="SetTargets"/> 를 쓴 경우 무시된다.</b>
+        /// 스킬 로직 없이 도는 테스트베드·프리뷰 씬 전용이라고 보면 된다.
+        /// 시전자/본 대상은 내부 판정에서 제외한다.
+        /// </summary>
         public void SetChainCandidates(Transform[] candidates) => _candidates = candidates;
 
         /// <summary>시전자/대상 주입 재생 — 실 게임 결선용 시그니처.</summary>
@@ -265,7 +291,8 @@ namespace JC.VFX
         private void LaunchChain(int index)
         {
             var tgt = _chainTargets[index];
-            if (tgt == null) { _chainPending--; return; }
+            // 발사 시점의 좌표를 굳혀 둔다 — 비행 도중 대상이 죽어도 착탄점이 사라지지 않는다.
+            Vector3 landPos = tgt.Position;
 
             while (_chainProjs.Count <= index)
                 _chainProjs.Add(chainProjectilePrefab != null ? Instantiate(chainProjectilePrefab) : null);
@@ -276,9 +303,10 @@ namespace JC.VFX
             SubscribeOnce(proj, () =>
             {
                 _chainPending--;
-                SpawnAura(tgt.position);
+                // 착탄 시점에 다시 읽는다 — 대상이 살아 있으면 그 사이 움직인 위치를 따라간다.
+                SpawnAura(tgt.HasAnchor ? tgt.Position : landPos);
             });
-            proj.Launch(tgt.position + Vector3.up * hitYOffset);
+            proj.Launch(landPos + Vector3.up * hitYOffset);
         }
 
         private void SpawnAura(Vector3 groundPos)
@@ -305,27 +333,40 @@ namespace JC.VFX
             fx.OnFinished += h;
         }
 
-        // ── 연쇄 판정 (십자 셀) — 실전 그리드 도입 시 이 메서드만 교체 ──
+        // ── 연쇄 대상 결정 ──
 
+        /// <summary>주입이 있으면 그대로 쓰고, 없을 때만 폴백 판정을 돌린다.</summary>
         private void ResolveChainTargets()
         {
             _chainTargets.Clear();
-            if (_candidates == null) return;
-            Vector3 o = _target.position;
-            var scored = new List<(Transform t, float d)>();
-            foreach (var c in _candidates)
+            if (_hasInjected)
             {
-                if (c == null || c == _caster || c == _target) continue;
-                Vector3 d = c.position - o;
-                float ax = Mathf.Abs(d.x), az = Mathf.Abs(d.z);
-                // 상하좌우 1칸: 한 축은 cellSize 이내(+여유), 수직축은 허용오차 이내. 대각/2칸 제외.
-                bool horizontal = ax <= cellSize + axisTol && ax > axisTol && az <= axisTol;
-                bool vertical = az <= cellSize + axisTol && az > axisTol && ax <= axisTol;
-                if (horizontal || vertical) scored.Add((c, d.sqrMagnitude));
+                foreach (var t in _injected)
+                    if (t.HasAnchor || t.fallbackPos != Vector3.zero) _chainTargets.Add(t);
+                return;
             }
-            scored.Sort((a, b) => a.d.CompareTo(b.d));
-            for (int i = 0; i < scored.Count && i < maxChainTargets; i++)
-                _chainTargets.Add(scored[i].t);
+            ResolveChainTargetsFallback();
+        }
+
+        /// <summary>
+        /// 폴백 — 좌표 거리로 십자 인접을 추정한다. <b>정확한 판정이 아니다.</b>
+        /// 캐릭터가 칸 중앙에서 벗어나면 오판하므로 실전에서는 <see cref="SetTargets"/> 를 써야 한다.
+        /// (실제로 cellSize 가 실측 격자와 어긋나 판정이 전부 탈락한 적이 있다 — 260804)
+        /// </summary>
+        private void ResolveChainTargetsFallback()
+        {
+            if (_candidates == null) return;
+
+            _fallbackExclude.Clear();
+            _fallbackExclude.Add(_caster);
+            _fallbackExclude.Add(_target);
+
+            // 규칙은 VfxGridAdjacency 한 곳에만 둔다 — 여기와 스테퍼가 같은 답을 내야 한다.
+            VfxGridAdjacency.ResolveCross(
+                _target.position, _candidates, _fallbackPicked,
+                _fallbackExclude, cellSize, axisTol, maxChainTargets);
+
+            foreach (var t in _fallbackPicked) _chainTargets.Add(VfxTarget.Of(t));
         }
 
         private void PullFromMaster()

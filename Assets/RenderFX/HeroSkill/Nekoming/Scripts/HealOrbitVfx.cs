@@ -43,6 +43,17 @@ namespace JC.VFX
         [Tooltip("플레이 중 preset/master 값을 매 프레임 반영(비파괴, MPB). 끄면 아래 프리팹 값 사용.")]
         [SerializeField] private bool livePreview = true;
 
+        /// <summary>호출자(스테퍼/큐 드라이버)가 착지점 오프셋 등을 읽어 가는 창구.</summary>
+        public HealOrbitPreset Preset => preset;
+
+        [Header("궤도 반짝임 (스타버스트 — 오브 추종)")]
+        [Tooltip("궤도 오브를 따라다니는 스타버스트 PS. 루트 자식(스케일 1)에 두고 위치만 추종한다.\n" +
+                 "월드 시뮬레이션이라 오브가 지나간 궤적에 반짝임이 남는다 — 투사체 Sparkles 와 동일 사양.")]
+        [SerializeField] private ParticleSystem orbSparkles;
+        [Tooltip("반짝임 전용 프리셋(10번). 투사체(2번)와 분리 튜닝.")]
+        [SerializeField] private HealOrbitSparklePreset sparklePreset;
+        private static readonly int SparkleBaseColorID = Shader.PropertyToID("_BaseColor");
+
         [Header("Orbit (파라메트릭)")]
         [Tooltip("궤도 반경(m)")]
         [SerializeField] private float orbitRadius = 1.0f;
@@ -99,6 +110,15 @@ namespace JC.VFX
         /// <summary>궤도 중심(착지점)을 주입하고 재생 시작.</summary>
         public void Play(Vector3 center)
         {
+            // ★묶음 트랜스폼(9번 마스터) — 오프셋은 중심 이동으로 전 부품에 전파(월드계산 부품 포함),
+            //   회전·스케일은 루트 트랜스폼에 적용(메시 기반 자식 대상. 월드계산 부품의 반경은 각 프리셋에서).
+            if (masterPreset != null)
+            {
+                var rot = Quaternion.Euler(masterPreset.rootEuler);
+                center += rot * masterPreset.rootOffset;
+                transform.rotation = rot;
+                transform.localScale = Vector3.one * masterPreset.rootScale;
+            }
             _center = center;
             _angle = startAngle;
             _elapsed = 0f;
@@ -114,6 +134,7 @@ namespace JC.VFX
                 orb.position = OrbitPos(_angle);
             }
             ApplyVisual();
+            SyncSparkles();
             if (particleSystems != null)
                 foreach (var ps in particleSystems) if (ps) { ps.Clear(); ps.Play(); }
             if (arcRings != null) foreach (var ar in arcRings) if (ar) ar.Play(_center);
@@ -204,19 +225,57 @@ namespace JC.VFX
             _angle += angularSpeed * dt;
             if (orb) orb.position = OrbitPos(_angle);
             ApplyVisual();
+            SyncSparkles();
         }
 
-        /// <summary>프리셋 값을 런타임 필드로 복사(거동+크기+페이드).</summary>
+        /// <summary>
+        /// 궤도 반짝임 — 오브 위치 추종 + (라이브 시) 10번 프리셋 구성·색 반영.
+        /// PS 는 루트 자식(스케일 1)·월드 시뮬레이션이라 오브가 지나간 궤적에 반짝임이 남는다.
+        /// 색은 렌더러 MPB(_BaseColor) — 투사체와 재질을 공유해도 서로를 덮지 않는다.
+        /// </summary>
+        private void SyncSparkles()
+        {
+            if (orbSparkles == null) return;
+            if (orb) orbSparkles.transform.position = orb.position;
+            if (!livePreview || sparklePreset == null) return;
+
+            var t = sparklePreset.TransformSource;
+            var m = orbSparkles.main;
+            m.startSize = new ParticleSystem.MinMaxCurve(t.sizeMin, t.sizeMax);
+            m.startLifetime = t.lifetime;
+            var e = orbSparkles.emission; e.rateOverTime = t.rate;
+            var sh = orbSparkles.shape; sh.radius = t.shapeRadius;
+
+            var r = orbSparkles.GetComponent<ParticleSystemRenderer>();
+            if (r != null)
+            {
+                if (_mpb == null) _mpb = new MaterialPropertyBlock();
+                r.GetPropertyBlock(_mpb);
+                _mpb.SetColor(SparkleBaseColorID, sparklePreset.color);
+                r.SetPropertyBlock(_mpb);
+            }
+        }
+
+        /// <summary>프리셋 값을 런타임 필드로 복사(거동+크기+페이드). 트랜스폼은 따름 규칙(Alter→Basic) 적용.</summary>
         private void PullFromPreset()
         {
-            orbitRadius = preset.orbitRadius;
-            orbitHeight = preset.orbitHeight;
-            angularSpeed = preset.angularSpeed;
-            startAngle = preset.startAngle;
-            tiltDeg = preset.tiltDeg;
-            orbWorldSize = preset.orbWorldSize;
-            coreSize = preset.coreSize;
-            rimSize = preset.rimSize;
+            var t = preset.TransformSource;
+            orbitRadius = t.orbitRadius;
+            orbitHeight = t.orbitHeight;
+            angularSpeed = t.angularSpeed;
+            startAngle = t.startAngle;
+            tiltDeg = t.tiltDeg;
+            orbWorldSize = t.orbWorldSize;
+            coreSize = t.coreSize;
+            rimSize = t.rimSize;
+
+            // ★묶음 스케일 — 조립체 전체 배수(9번 마스터). 궤도 반경·오브 크기에 적용.
+            //   pull 이 매 프레임 값을 덮으므로, pull 직후 곱하는 이 자리만이 이중 적용 없이 안전하다.
+            if (masterPreset != null && !Mathf.Approximately(masterPreset.rootScale, 1f))
+            {
+                orbitRadius *= masterPreset.rootScale;
+                orbWorldSize *= masterPreset.rootScale;
+            }
         }
 
         /// <summary>마스터 프리셋 값을 런타임 필드로 복사(이펙트 전체 타이밍).</summary>

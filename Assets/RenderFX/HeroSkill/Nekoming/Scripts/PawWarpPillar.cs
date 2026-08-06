@@ -74,6 +74,9 @@ namespace JC.VFX
         /// <summary>변형 프리셋 런타임 교체.</summary>
         public void SetPreset(PawWarpPillarPreset p) => preset = p;
 
+        /// <summary>현재 버스트 수명(초) — P5 duration 이 유일 정본. 오케스트레이터가 정리 대기 시간으로 읽어간다.</summary>
+        public float CurrentDuration => livePreview && preset ? preset.duration : duration;
+
         /// <summary>지정 위치에서 빛기둥 블링크 재생(자체 수명 소멸).</summary>
         public void Burst(Vector3 pos)
         {

@@ -13,11 +13,11 @@ namespace JC.VFX
     {
         // ★변종 대응(260730): 경로를 프리셋의 variantSuffix로 만든다. 비면 종전과 동일(크림판).
         static string Sfx(FlareOrbPresetBase p) => p != null && !string.IsNullOrEmpty(p.variantSuffix) ? p.variantSuffix : "";
-        static string MatLane(FlareOrbPresetBase p)     => DIR + "/FlareAuraLane" + Sfx(p) + ".mat";
-        static string MatLaneBack(FlareOrbPresetBase p) => DIR + "/FlareAuraLaneBack" + Sfx(p) + ".mat";
+        static string MatLane(FlareOrbPresetBase p)     => DIR + "/Materials/FlareAuraLane" + Sfx(p) + ".mat";
+        static string MatLaneBack(FlareOrbPresetBase p) => DIR + "/Materials/FlareAuraLaneBack" + Sfx(p) + ".mat";
         /// <summary>F1은 흑염 전용 오브 프리팹이 없다(셸 형태는 크림판과 공유) — 접미사를 붙이지 않는다.</summary>
-        static string OrbPrefab   => DIR + "/FlareOrbAlt.prefab";
-        const string PresetPath   = DIR + "/F1_FlareOrbAltPreset.asset";
+        static string OrbPrefab   => DIR + "/Prefabs/FlareOrbAlt.prefab";
+        const string PresetPath   = DIR + "/Presets/F1_FlareOrbAltPreset.asset";
 
         /// <summary>이 프리셋이 흑염 변종을 대상으로 하는가 — 라이브 프리뷰 스코프를 가른다.</summary>
         static bool WantsDark(FlareOrbPresetBase p) => Sfx(p).Contains("Dark");

@@ -114,9 +114,10 @@ namespace JC.VFX
 
         private void PullFromPreset()
         {
-            width = preset.width;
-            height = preset.height;
-            groundOffsetY = preset.groundOffsetY;
+            var t = preset.TransformSource;   // ★트랜스폼(크기·위치)은 따름 규칙(Alter→Basic), 룩은 자기 것
+            width = t.width;
+            height = t.height;
+            groundOffsetY = t.groundOffsetY;
             color = preset.color;
             intensity = preset.intensity;
             opacity = preset.opacity;

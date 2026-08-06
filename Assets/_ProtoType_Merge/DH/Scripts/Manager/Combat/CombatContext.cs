@@ -24,7 +24,7 @@ public class CombatEventBattleUnitData
 
     public CombatEventBattleUnitData() { }
 
-    public CombatEventBattleUnitData(string unitKey, int slot, int level, EnemyUnit1SectorData source)
+    public CombatEventBattleUnitData(string unitKey, int slot, int level, DHEventBattleUnitTemplate source)
     {
         UnitKey = unitKey;
         Slot = slot;
@@ -35,9 +35,9 @@ public class CombatEventBattleUnitData
 
         EnemyName = source.EnemyName;
         EnemyConcept = source.EnemyConcept;
-        MaxHp = source.UnitMaxHP;
-        Atk = source.UnitATK;
-        Def = source.UnitDEF;
+        MaxHp = source.BaseMaxHp;
+        Atk = source.BaseAtk;
+        Def = source.BaseDef;
         CriticalRate = source.CriticalRate;
         CounterRate = source.CounterRate;
         ReduceRate = source.ReduceRate;

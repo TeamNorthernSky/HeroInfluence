@@ -26,7 +26,8 @@ public class AStarPathfinder : MonoBehaviour
         bool ignoreFogVisibility = false,
         EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
         bool allowItemCells = false,
-        MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore)
+        MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
+        int maxVisitedNodes = 0)
     {
         if (start == goal)
             return new List<Vector2Int> { start };
@@ -50,6 +51,8 @@ public class AStarPathfinder : MonoBehaviour
 
             openSet.Remove(current);
             closedSet.Add(current);
+            if (maxVisitedNodes > 0 && closedSet.Count >= maxVisitedNodes)
+                return null;
 
             Vector2Int[] orderedDirections = GetOrderedDirections(current, goal);
             for (int i = 0; i < orderedDirections.Length; i++)

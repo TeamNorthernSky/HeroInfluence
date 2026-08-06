@@ -54,11 +54,11 @@ public class PartyMemberSlotView : MonoBehaviour
             }
 
             DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-            EnemyData template = null;
-            catalog?.TryGetEnemyTemplate(edata.UnitTemplateKey, out template);
+            DHEnemyUnitTemplate template = null;
+            catalog?.TryGetEnemyUnitTemplate(edata.UnitTemplateKey, out template);
 
-            name = template != null && !string.IsNullOrWhiteSpace(template.Name) ? template.Name : edata.UnitTemplateKey;
-            cls = template != null ? template.UnitType : "-";
+            name = template != null && !string.IsNullOrWhiteSpace(template.EnemyName) ? template.EnemyName : edata.UnitTemplateKey;
+            cls = template != null ? string.Empty : "-";   // 적 템플릿에 클래스 축 없음(기존 UnitType도 항상 공란)
             level = edata.Level;
             maxHp = Mathf.Max(0f, edata.IngameStats.HP);
             curHp = Mathf.Clamp(edata.CurrentHp, 0f, maxHp);
@@ -74,11 +74,11 @@ public class PartyMemberSlotView : MonoBehaviour
             }
 
             DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-            UnitData template = null;
-            catalog?.TryGetPlayerTemplate(data.UnitTemplateKey, out template);
+            DHPlayerUnitTemplate template = null;
+            catalog?.TryGetPlayerUnitTemplate(data.UnitTemplateKey, out template);
 
-            name = template != null && !string.IsNullOrWhiteSpace(template.Name) ? template.Name : data.UnitTemplateKey;
-            cls = template != null ? template.UnitType : "-";
+            name = template != null && !string.IsNullOrWhiteSpace(template.UnitName) ? template.UnitName : data.UnitTemplateKey;
+            cls = template != null ? template.ClassName : "-";
             level = data.Level;
             maxHp = Mathf.Max(0f, data.IngameStats.HP);
             curHp = Mathf.Clamp(data.CurrentHp, 0f, maxHp);

@@ -6,7 +6,7 @@ namespace JC.VFX
     [CustomEditor(typeof(TaoFeatherPreset))]
     public class TaoFeatherPresetEditor : Editor
     {
-        const string TaoPrefab = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_Taosenaiyo/Taosenaiyo.prefab";
+        const string TaoPrefab = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/Taosenaiyo.prefab";
 
         public override void OnInspectorGUI()
         {

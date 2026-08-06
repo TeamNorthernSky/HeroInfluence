@@ -11,7 +11,7 @@ namespace JC.VFX
     /// </summary>
     public abstract class FlareOrbPresetEditorBase : Editor
     {
-        protected const string DIR = "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/L_FlareBomb";
+        protected const string DIR = "Assets/RenderFX/HeroSkill/Lumina/FlareBomb";
 
         protected abstract string LiveKey { get; }
         protected abstract string HelpText { get; }

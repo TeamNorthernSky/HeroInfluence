@@ -6,15 +6,30 @@ namespace JC.VFX
     [CustomEditor(typeof(PawSpritePreset))]
     public class PawSpritePresetEditor : Editor
     {
+        // ★분할 프리팹(PawSpawn/Warp/Beam ×B·G)이 실사용 — 통짜 2종만 있던 죽은 목록을 교정(260805).
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs";
         static readonly string[] PrefabPaths =
         {
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_PawForYou/PawForYou.prefab",
-            "Assets/_ProtoType_Merge/JC/__Testbed_asset/VFX/Skill/N_PawForYou/PawForYouMistake.prefab",
+            DIR + "/PawSpawn.prefab",  DIR + "/PawSpawn_Gold.prefab",
+            DIR + "/PawWarp.prefab",   DIR + "/PawWarp_Gold.prefab",
+            DIR + "/PawBeam.prefab",   DIR + "/PawBeam_Gold.prefab",
+            DIR + "/PawForYou.prefab", DIR + "/_Legacy/PawForYouMistake.prefab",
+        };
+
+        // 따름 잠금 대상 = 색·밝기를 제외한 전부(위치·크기·형태·움직임)
+        static readonly string[] TransformProps =
+        {
+            "spawnSocketName","spawnOffset","headSocketName","headOffset",
+            "size","canvasScale","billboardYOnly","bobAmp","bobFreq",
+            "toeCount","toeSpreadDeg","toeDist","toeRadius",
+            "palmRadiusX","palmRadiusY","palmOffsetY","fusion",
+            "padMainRadius","padMainSquash","padToeRadius","padToeDistMul",
+            "rimWidth","glowRange","wobbleAmp","wobbleSpeed",
         };
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.PawSprite.Fold", TransformProps);
             var p = (PawSpritePreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())

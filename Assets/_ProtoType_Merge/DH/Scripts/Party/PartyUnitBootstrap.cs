@@ -6,6 +6,11 @@ using UnityEngine;
 [RequireComponent(typeof(PartyIdentity))]
 public class PartyUnitBootstrap : MonoBehaviour
 {
+    private const string JusticeTemplateKey = "10001";
+    private const string RuminaTemplateKey = "10002";
+    private const string BlackBulletTemplateKey = "10003";
+    private const string NekomingTemplateKey = "10004";
+
     [Header("Bootstrap")]
     [SerializeField] private bool populateOnStart = true;
     [SerializeField] private List<PartyUnitState> partyUnitStates = new List<PartyUnitState>();
@@ -94,6 +99,8 @@ public class PartyUnitBootstrap : MonoBehaviour
                     partyComposition.SetUnitIndexAt(i, persistentIndices[i]);
                     ApplyPersistentUnitStateAt(i, persistentIndices[i]);
                 }
+
+                ApplyExplorationUnitPositions();
             }
             return;
         }
@@ -102,7 +109,10 @@ public class PartyUnitBootstrap : MonoBehaviour
         partyComposition.EnsureSlotCount(slotCount);
 
         if (onlyWhenAllSlotsEmpty && !AreAllUnitSlotsEmpty(slotCount))
+        {
+            ApplyExplorationUnitPositions();
             return;
+        }
 
         int registeredCount = 0;
         for (int i = 0; i < partyUnitStates.Count; i++)
@@ -120,15 +130,19 @@ public class PartyUnitBootstrap : MonoBehaviour
                 continue;
             }
 
-            if (!templateCatalog.TryGetPlayerTemplate(unitState.UnitTemplateKey, out UnitData template))
+            if (!templateCatalog.TryGetPlayerUnitTemplate(unitState.UnitTemplateKey, out DHPlayerUnitTemplate template))
             {
                 Debug.LogWarning($"Party unit state on '{unitState.name}' could not resolve CSV template '{unitState.UnitTemplateKey}'.", unitState);
                 continue;
             }
 
             EquipmentStatBlock currentWeaponStats = default;
-            if (unitState.CurrentWeaponIndex > 0)
-                templateCatalog.TryGetWeaponStats(unitState.CurrentWeaponIndex, out currentWeaponStats);
+            if (unitState.CurrentWeaponIndex > 0 &&
+                templateCatalog.TryGetWeaponTemplate(unitState.CurrentWeaponIndex, out DHWeaponTemplate weaponTemplate) &&
+                weaponTemplate != null)
+            {
+                currentWeaponStats = EquipmentStatBlock.FromStatBlock(weaponTemplate.GetBonusStatsAtLevel(WeaponPersistentRepository.BaseWeaponLevel));
+            }
 
             unitState.InitializeFromTemplate(template, currentWeaponStats);
 
@@ -148,6 +162,7 @@ public class PartyUnitBootstrap : MonoBehaviour
         }
 
         partyRepository.RegisterOrUpdateParty(partyId, partyComposition.UnitIndices);
+        ApplyExplorationUnitPositions();
     }
 
     private bool AreAllUnitSlotsEmpty(int slotCount)
@@ -172,5 +187,40 @@ public class PartyUnitBootstrap : MonoBehaviour
 
         unitState.AssignUnitIndex(unitIndex);
         unitState.RefreshFromRepository();
+    }
+
+    private void ApplyExplorationUnitPositions()
+    {
+        for (int i = 0; i < partyUnitStates.Count; i++)
+        {
+            PartyUnitState unitState = partyUnitStates[i];
+            if (unitState == null)
+                continue;
+
+            if (TryGetExplorationLocalPosition(unitState.UnitTemplateKey, out Vector3 localPosition))
+                unitState.transform.localPosition = localPosition;
+        }
+    }
+
+    private static bool TryGetExplorationLocalPosition(string unitTemplateKey, out Vector3 localPosition)
+    {
+        switch (unitTemplateKey)
+        {
+            case JusticeTemplateKey:
+                localPosition = new Vector3(0f, 0f, 0.3f);
+                return true;
+            case RuminaTemplateKey:
+                localPosition = new Vector3(0f, 0f, -0.3f);
+                return true;
+            case BlackBulletTemplateKey:
+                localPosition = new Vector3(-0.3f, 0f, 0f);
+                return true;
+            case NekomingTemplateKey:
+                localPosition = new Vector3(0.3f, 0f, 0f);
+                return true;
+            default:
+                localPosition = default;
+                return false;
+        }
     }
 }

@@ -79,7 +79,7 @@ public class LabModalController : MonoBehaviour
     private int selectedUnitIndex = -1;
     private int selRow = -1;
     private int selStageLevel = -1;
-    private readonly List<SkillData> boundSkills = new List<SkillData>();
+    private readonly List<DHClassSkillTemplate> boundSkills = new List<DHClassSkillTemplate>();
 
     private LabManager subLab;
     private EconomyManager subEco;
@@ -96,7 +96,7 @@ public class LabModalController : MonoBehaviour
     {
         // [JC 260618] 아이콘 해석을 HeroIconLibrary로 이관. 정체성 키=skillIndex, order는 폴백(시각 동등)용.
         int skillIndex = (order >= 0 && order < boundSkills.Count && boundSkills[order] != null)
-            ? boundSkills[order].skillIndex : -1;
+            ? boundSkills[order].NumericSkillId : -1;
         return Sprites.Icon.ClassSkill(skillIndex, level, order);
     }
 
@@ -212,8 +212,8 @@ public class LabModalController : MonoBehaviour
         if (rowIndex < 0 || rowIndex >= boundSkills.Count) return;
         var skill = boundSkills[rowIndex];
         if (!gm.Lab.IsSkillLearned(selectedUnitIndex, skill)) return; // 미습득은 장착 불가
-        if (gm.Lab.GetEquippedSkillIndex(selectedUnitIndex) != skill.skillIndex)
-            gm.Lab.EquipSkill(selectedUnitIndex, skill.skillIndex);
+        if (gm.Lab.GetEquippedSkillIndex(selectedUnitIndex) != skill.NumericSkillId)
+            gm.Lab.EquipSkill(selectedUnitIndex, skill.NumericSkillId);
         ClearSelection();
         Refresh();
     }
@@ -227,10 +227,10 @@ public class LabModalController : MonoBehaviour
         if (rowIndex < 0 || rowIndex >= boundSkills.Count) return;
         var skill = boundSkills[rowIndex];
         if (!gm.Lab.IsSkillLearned(selectedUnitIndex, skill)) return;
-        int level = gm.Lab.GetSkillLevel(selectedUnitIndex, skill.skillIndex);
+        int level = gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId);
         int stageLevel = stageIndex + 2; // 셀0→레벨2 … 셀3→레벨5
         if (level + 1 != stageLevel) return;
-        if (!gm.Lab.CanUpgradeSkill(selectedUnitIndex, skill.skillIndex)) return;
+        if (!gm.Lab.CanUpgradeSkill(selectedUnitIndex, skill.NumericSkillId)) return;
         if (selRow == rowIndex && selStageLevel == stageLevel) ClearSelection();
         else { selRow = rowIndex; selStageLevel = stageLevel; }
         Refresh();
@@ -251,25 +251,25 @@ public class LabModalController : MonoBehaviour
         if (gm == null || gm.Lab == null || gm.Economy == null) return;
         if (selectedUnitIndex < 0 || selRow < 0 || selRow >= boundSkills.Count) return;
         var skill = boundSkills[selRow];
-        if (!gm.Lab.CanUpgradeSkill(selectedUnitIndex, skill.skillIndex)) return;
-        if (gm.Lab.GetSkillLevel(selectedUnitIndex, skill.skillIndex) + 1 != selStageLevel) return;
-        if (!gm.Lab.GetNextUpgradeCost(selectedUnitIndex, skill.skillIndex, out int money, out int chip)) return;
+        if (!gm.Lab.CanUpgradeSkill(selectedUnitIndex, skill.NumericSkillId)) return;
+        if (gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) + 1 != selStageLevel) return;
+        if (!gm.Lab.GetNextUpgradeCost(selectedUnitIndex, skill.NumericSkillId, out int money, out int chip)) return;
         if (!gm.Economy.Has(ResourceType.Money, money) || !gm.Economy.Has(ResourceType.Chip, chip)) return;
         if (!gm.Economy.Spend(ResourceType.Money, money)) return;
         if (!gm.Economy.Spend(ResourceType.Chip, chip)) { gm.Economy.Add(ResourceType.Money, money); return; }
-        if (!gm.Lab.TryUpgradeSkill(selectedUnitIndex, skill.skillIndex))
+        if (!gm.Lab.TryUpgradeSkill(selectedUnitIndex, skill.NumericSkillId))
         {
             gm.Economy.Add(ResourceType.Money, money);
             gm.Economy.Add(ResourceType.Chip, chip);
             return;
         }
-        int reached = gm.Lab.GetSkillLevel(selectedUnitIndex, skill.skillIndex);
+        int reached = gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId);
         ShowCompletion($"{SkillName(skill)} {reached}단계 강화 완료!");
         ClearSelection();
         Refresh();
     }
 
-    private static string SkillName(SkillData s) => (s != null && !string.IsNullOrWhiteSpace(s.skillName)) ? s.skillName : "스킬";
+    private static string SkillName(DHClassSkillTemplate s) => (s != null && !string.IsNullOrWhiteSpace(s.SkillName)) ? s.SkillName : "스킬";
 
     private static float SkillValueAt(int skillIndex, int level)
     {
@@ -285,7 +285,7 @@ public class LabModalController : MonoBehaviour
 
     /// <summary>[JC 260617] 스킬 설명에 레벨별 계수 치환(효과타입별). 공격(0)=배율("1.2배"), 그 외=원문 수치.</summary>
     // [JC 260619] 본문은 공유 헬퍼 ClassSkillTooltipText로 이관(HeroInfo 모달과 공용).
-    private static string EffectText(SkillData s, int level) => ClassSkillTooltipText.BuildDesc(s, level);
+    private static string EffectText(DHClassSkillTemplate s, int level) => ClassSkillTooltipText.BuildDesc(s, level);
 
     /// <summary>[JC 260617] 리치 스킬 툴팁 호버 콜백. stageIndex -1=rep(1레벨 정보), 0~3=단계(현재↔다음 비교).</summary>
     public void OnSkillHover(int rowIndex, int stageIndex, bool enter)
@@ -296,7 +296,7 @@ public class LabModalController : MonoBehaviour
         if (selectedUnitIndex < 0 || rowIndex < 0 || rowIndex >= boundSkills.Count || rowIndex >= rows.Count) return;
         var skill = boundSkills[rowIndex];
         var row = rows[rowIndex];
-        int level = Mathf.Max(1, gm.Lab.IsSkillLearned(selectedUnitIndex, skill) ? gm.Lab.GetSkillLevel(selectedUnitIndex, skill.skillIndex) : 1);
+        int level = Mathf.Max(1, gm.Lab.IsSkillLearned(selectedUnitIndex, skill) ? gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) : 1);
 
         if (stageIndex < 0)
         {
@@ -366,8 +366,8 @@ public class LabModalController : MonoBehaviour
 
             var skill = boundSkills[r];
             bool learned = lab.IsSkillLearned(selectedUnitIndex, skill);
-            int level = learned ? lab.GetSkillLevel(selectedUnitIndex, skill.skillIndex) : 1;
-            bool isEquipped = learned && skill.skillIndex == equipped;
+            int level = learned ? lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) : 1;
+            bool isEquipped = learned && skill.NumericSkillId == equipped;
 
             if (row.skillIcon != null) { var sp = GetSkillIcon(r, level); row.skillIcon.sprite = sp; row.skillIcon.enabled = sp != null; }
             if (row.usingMark != null) row.usingMark.SetActive(isEquipped);
@@ -377,8 +377,8 @@ public class LabModalController : MonoBehaviour
             // [JC 260617] 무강화 스킬 → 단계셀 숨김, rep(1레벨)만 표시.
             //   판정: 계수가 레벨에 따라 "변하는가"(Lv1≠Lv5). 회복/부활은 전 레벨 평탄(고정값)이라 강화X.
             //   (구판 'Lv2>0'은 4010힐 0.3·4050광역힐 0.1·4070기적 0.2처럼 평탄한 고정값을 강화로 오판했음)
-            bool enhanceable = !Mathf.Approximately(SkillValueAt(skill.skillIndex, 1), SkillValueAt(skill.skillIndex, 5))
-                            || !Mathf.Approximately(SkillSubValueAt(skill.skillIndex, 1), SkillSubValueAt(skill.skillIndex, 5));
+            bool enhanceable = !Mathf.Approximately(SkillValueAt(skill.NumericSkillId, 1), SkillValueAt(skill.NumericSkillId, 5))
+                            || !Mathf.Approximately(SkillSubValueAt(skill.NumericSkillId, 1), SkillSubValueAt(skill.NumericSkillId, 5));
             if (row.stages == null) continue;
             for (int k = 0; k < row.stages.Length; k++)
             {
@@ -388,7 +388,7 @@ public class LabModalController : MonoBehaviour
                 if (!enhanceable) continue;
                 int stageLevel = k + 2;
                 bool filled = learned && level >= stageLevel;          // 이미 강화한 단계
-                bool isNext = learned && level + 1 == stageLevel && lab.CanUpgradeSkill(selectedUnitIndex, skill.skillIndex);
+                bool isNext = learned && level + 1 == stageLevel && lab.CanUpgradeSkill(selectedUnitIndex, skill.NumericSkillId);
                 bool stageLocked = !filled && !isNext;                 // 강화 불가(잠금)
                 bool isSel = selRow == r && selStageLevel == stageLevel;
 
@@ -403,14 +403,14 @@ public class LabModalController : MonoBehaviour
 
         // 비용(자금+메달)
         bool showCost = hasHero && selRow >= 0 && selRow < boundSkills.Count
-                        && lab.GetNextUpgradeCost(selectedUnitIndex, boundSkills[selRow].skillIndex, out _, out _);
+                        && lab.GetNextUpgradeCost(selectedUnitIndex, boundSkills[selRow].NumericSkillId, out _, out _);
         int reqM = -1, reqC = -1;
-        if (showCost) lab.GetNextUpgradeCost(selectedUnitIndex, boundSkills[selRow].skillIndex, out reqM, out reqC);
+        if (showCost) lab.GetNextUpgradeCost(selectedUnitIndex, boundSkills[selRow].NumericSkillId, out reqM, out reqC);
         if (costMoneyText != null) costMoneyText.text = showCost ? $"{reqM:N0}" : "—";
         if (costChipText != null) costChipText.text = showCost ? $"{reqC:N0}" : "—";
 
         bool canConfirm = showCost && gm.Economy.Has(ResourceType.Money, reqM) && gm.Economy.Has(ResourceType.Chip, reqC)
-                          && lab.CanUpgradeSkill(selectedUnitIndex, boundSkills[selRow].skillIndex);
+                          && lab.CanUpgradeSkill(selectedUnitIndex, boundSkills[selRow].NumericSkillId);
         if (btnConfirm != null) btnConfirm.interactable = canConfirm;
 
         if (stateInfoText != null)

@@ -10,12 +10,12 @@ namespace JC.VFX
     [CreateAssetMenu(menuName = "JC VFX/PawForYou/P5_Paw Warp Pillar Preset", fileName = "P5_PawWarpPillar")]
     public class PawWarpPillarPreset : ScriptableObject
     {
-        [Header("배치")]
+        [Header("배치 — ★기준점 = 발 좌표(P1 프리셋 소유). 여기서는 Y 오프셋과 길이만 조절")]
         [Tooltip("기둥 폭(m)")]
         public float width = 0.5f;
-        [Tooltip("기둥 높이(m)")]
+        [Tooltip("기둥 높이(길이, m)")]
         public float height = 4f;
-        [Tooltip("기둥 하단의 기준점 대비 오프셋(m). -면 발 아래까지 내려옴")]
+        [Tooltip("기둥 하단의 발 좌표 대비 Y 오프셋(m). -면 발 아래까지 내려옴")]
         public float bottomOffset = -0.3f;
 
         [Header("타임라인")]

@@ -193,7 +193,7 @@ public class ChatModalController : MonoBehaviour
     }
 
     /// <summary>현재 노드 표시: 말풍선 생성 → 분기 노드면 선택지(또는 자동 분기), 아니면 클릭 대기.</summary>
-    private void HandleChatShown(ChatDBEventData chat)
+    private void HandleChatShown(DHEventChatTemplate chat)
     {
         if (chat == null)
         {
@@ -249,14 +249,14 @@ public class ChatModalController : MonoBehaviour
         for (int i = 0; i < options.Count; i++)
         {
             ChatBranchOptionState state = options[i];
-            BranchDBEventData option = state?.Option;
-            if (option == null || string.IsNullOrWhiteSpace(option.Selection_Text))
+            DHEventBranchTemplate option = state?.Option;
+            if (option == null || string.IsNullOrWhiteSpace(option.SelectionText))
             {
                 continue;
             }
 
             ChoiceButtonView view = Instantiate(choiceButtonPrefab, choiceLayout.SpawnParent);
-            view.Bind(option.Selection_Text, () => manager?.Select(option), state.IsInteractable);
+            view.Bind(option.SelectionText, () => manager?.Select(option), state.IsInteractable);
             activeChoices.Add(view.gameObject);
         }
 
@@ -280,11 +280,11 @@ public class ChatModalController : MonoBehaviour
         Close();
     }
 
-    private void SpawnBubble(ChatDBEventData chat)
+    private void SpawnBubble(DHEventChatTemplate chat)
     {
         if (bubblePrefab == null || contentRoot == null) return;
         ChatBubbleView bubble = Instantiate(bubblePrefab, contentRoot);
-        bubble.Bind(chat.Char_Name, chat.Message_Text, chat.Chat_Type, chat.Char_Profile);
+        bubble.Bind(chat.CharacterName, chat.MessageText, chat.ChatType, chat.CharacterProfile);
         StartCoroutine(ScrollToBottomNextFrame());
     }
 

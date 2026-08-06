@@ -53,9 +53,9 @@ MonoBehaviour:
   level: 1
   exp: 0
   maxExp: 0
-  currentSkillIndex: 5010
+  currentSkillIndex: 1010
   skillLevel: 1
-  currentWeaponIndex: 310501
+  currentWeaponIndex: 310101
   baseStats:
     HP: 0
     Atk: 0

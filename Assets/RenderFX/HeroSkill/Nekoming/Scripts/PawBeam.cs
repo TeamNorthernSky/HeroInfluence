@@ -64,6 +64,9 @@ namespace JC.VFX
         /// <summary>변형 프리셋 런타임 교체.</summary>
         public void SetPreset(PawBeamPreset p) => preset = p;
 
+        /// <summary>현재 프리셋 — 광선 끝 좌표의 정본. 오케스트레이터가 읽어간다.</summary>
+        public PawBeamPreset Preset => preset;
+
         public void Show()
         {
             _visible = true;
@@ -120,7 +123,7 @@ namespace JC.VFX
 
         private void PullFromPreset()
         {
-            width = preset.width;
+            width = preset.TransformSource.width;   // ★트랜스폼은 따름 규칙(변종→Basic), 룩은 자기 것
             coreColor = preset.coreColor;
             glowColor = preset.glowColor;
             intensity = preset.intensity;
@@ -133,20 +136,21 @@ namespace JC.VFX
             _mr.GetPropertyBlock(_mpb);
             if (livePreview && preset)
             {
+                var t = preset.TransformSource;   // ★단면·노이즈·캡은 따름 규칙, 색·밝기는 자기 것
                 _mpb.SetColor(CoreColorID, coreColor);
                 _mpb.SetColor(GlowColorID, glowColor);
                 _mpb.SetFloat(IntensityID, intensity);
-                _mpb.SetFloat(CoreWidthID, preset.coreWidth);
-                _mpb.SetFloat(GlowFalloffID, preset.glowFalloff);
-                _mpb.SetFloat(EdgeSoftID, preset.edgeSoft);
-                _mpb.SetFloat(NoiseScaleID, preset.noiseScale);
-                _mpb.SetFloat(NoiseScrollID, preset.noiseScroll);
-                _mpb.SetFloat(NoiseAmountID, preset.noiseAmount);
-                _mpb.SetFloat(PulseAmpID, preset.pulseAmp);
-                _mpb.SetFloat(PulseFreqID, preset.pulseFreq);
-                _mpb.SetFloat(CapSoftStartID, preset.capSoftStart);
-                _mpb.SetFloat(CapSoftEndID, preset.capSoftEnd);
-                _mpb.SetFloat(FrontSoftID, preset.frontSoft);
+                _mpb.SetFloat(CoreWidthID, t.coreWidth);
+                _mpb.SetFloat(GlowFalloffID, t.glowFalloff);
+                _mpb.SetFloat(EdgeSoftID, t.edgeSoft);
+                _mpb.SetFloat(NoiseScaleID, t.noiseScale);
+                _mpb.SetFloat(NoiseScrollID, t.noiseScroll);
+                _mpb.SetFloat(NoiseAmountID, t.noiseAmount);
+                _mpb.SetFloat(PulseAmpID, t.pulseAmp);
+                _mpb.SetFloat(PulseFreqID, t.pulseFreq);
+                _mpb.SetFloat(CapSoftStartID, t.capSoftStart);
+                _mpb.SetFloat(CapSoftEndID, t.capSoftEnd);
+                _mpb.SetFloat(FrontSoftID, t.frontSoft);
             }
             _mpb.SetFloat(ExtendID, _extend);
             _mpb.SetFloat(FadeMulID, _envelope);

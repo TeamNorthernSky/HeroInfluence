@@ -44,13 +44,13 @@ public class LobbyMemberPanelBinder : MonoBehaviour
     [ContextMenu("Refresh")]
     public void Refresh()
     {
-        if (TryResolveMember(out UnitPersistentData unit, out UnitData template))
+        if (TryResolveMember(out UnitPersistentData unit, out DHPlayerUnitTemplate template))
             ApplyMember(unit, template);
         else
             ApplyEmpty();
     }
 
-    private bool TryResolveMember(out UnitPersistentData unit, out UnitData template)
+    private bool TryResolveMember(out UnitPersistentData unit, out DHPlayerUnitTemplate template)
     {
         unit = null;
         template = null;
@@ -81,21 +81,21 @@ public class LobbyMemberPanelBinder : MonoBehaviour
         // 템플릿은 옵션. 없어도 PersistentData로 기본 표시 가능
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
         if (catalog != null && !string.IsNullOrWhiteSpace(unit.UnitTemplateKey))
-            catalog.TryGetPlayerTemplate(unit.UnitTemplateKey, out template);
+            catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out template);
 
         return true;
     }
 
-    private void ApplyMember(UnitPersistentData unit, UnitData template)
+    private void ApplyMember(UnitPersistentData unit, DHPlayerUnitTemplate template)
     {
         if (emptySlotIndicator != null) emptySlotIndicator.SetActive(false);
         if (memberInfoContainer != null) memberInfoContainer.SetActive(true);
 
-        string displayName = template != null && !string.IsNullOrWhiteSpace(template.Name)
-            ? template.Name
+        string displayName = template != null && !string.IsNullOrWhiteSpace(template.UnitName)
+            ? template.UnitName
             : unit.UnitTemplateKey;
-        string displayClass = template != null && !string.IsNullOrWhiteSpace(template.UnitType)
-            ? template.UnitType
+        string displayClass = template != null && !string.IsNullOrWhiteSpace(template.ClassName)
+            ? template.ClassName
             : "-";
 
         StatBlock s = unit.IngameStats; // [JC 260616] 표시는 인게임 스탯(베이스는 내부 연산용·비공개)

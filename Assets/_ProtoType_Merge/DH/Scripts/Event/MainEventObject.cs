@@ -123,7 +123,7 @@ public class MainEventObject : MonoBehaviour
             return false;
 
         EventScriptCatalog catalog = EventScriptCatalog.Instance;
-        if (catalog == null || !catalog.TryGetChat(ZoneId, ChatId, out ChatDBEventData chat) || chat == null)
+        if (catalog == null || !catalog.TryGetChatTemplate(ZoneId, ChatId, out DHEventChatTemplate chat) || chat == null)
         {
             Debug.LogWarning($"[MainEventObject] {EventKey}: Chat data was not found. Zone: {ZoneId}, Chat_ID: {ChatId}", this);
             return false;

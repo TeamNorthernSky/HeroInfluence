@@ -102,7 +102,7 @@
         "brightnessHigh": 1.0329999923706055
     },
     "shared": {
-        "sightRangeMultiplier": 1.0,
+        "sightRadiusCells": 4,
         "edgeWidthWorld": 0.20000000298023225,
         "edgeNoiseStrength": 0.05999999865889549,
         "edgeNoiseScale": 0.15000000596046449,
@@ -111,7 +111,6 @@
         "edgeLayerSpreadWorld": 0.0,
         "edgeRoundingWorld": 2.0,
         "stateBlendWidthWorld": 1.0,
-        "fallbackEdgeSoftness": 0.4000000059604645,
         "debugMode": false
     }
 }

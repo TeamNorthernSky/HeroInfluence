@@ -124,7 +124,7 @@ public sealed class HeroUnionChatController : MonoBehaviour
 
         EventScriptCatalog catalog = EventScriptCatalog.Instance;
         if (catalog == null ||
-            !catalog.TryGetChat(heroUnion.CaptureChatZoneId, chatId, out ChatDBEventData chat) ||
+            !catalog.TryGetChatTemplate(heroUnion.CaptureChatZoneId, chatId, out DHEventChatTemplate chat) ||
             chat == null)
         {
             return false;

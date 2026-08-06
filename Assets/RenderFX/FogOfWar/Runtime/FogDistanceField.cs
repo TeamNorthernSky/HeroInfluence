@@ -1,13 +1,19 @@
 using UnityEngine;
 
 /// <summary>
-/// [JC 신설 260707 / 260714 이중화] 가시성 경계 SDF(부호 있는 거리장) 빌더.
+/// [JC 신설 260707 / 260714 이중화 / 260806 걷힘 연출·층별 속도] 가시성 경계 SDF(부호 있는 거리장) 빌더.
 /// FogGridManager의 상태를 경계 기준으로, 셀 단위 부호 거리(+=안개 쪽, -=개방 쪽)를
-/// 2패스 챔퍼 거리변환으로 계산해 RGFloat 텍스처(bilinear)로 굽고 전역 _FogDistanceTex로 푸시한다.
-///   R = IsExplored 경계 (Unexplored ↔ Fogged/Visible) — 짙은 안개층의 등고선
-///   G = IsVisible  경계 (Visible ↔ Fogged/Unexplored) — Fogged 베일층의 등고선
-/// FogOfWarHI 셰이더가 두 등고선을 순차 합성 — 셀 격자를 벗어난 영역 기반의 매끄러운 경계.
-/// 재계산은 fog 변경 이벤트가 있었던 프레임에만 수행(평시 프레임 비용 0). 수명은 RenderFXManager가 관리.
+/// 2패스 챔퍼 거리변환으로 계산해 RGBAFloat 텍스처(bilinear)로 굽고 전역 _FogDistanceTex로 푸시한다.
+///   R = IsExplored 경계 (짙은 안개층 등고선) — 짙은층 속도로 수렴
+///   G = IsVisible  경계 (Fogged 베일층 등고선) — 베일층 속도로 수렴
+///   B = IsExplored 경계 시트용 사본 / A = IsVisible 경계 시트용 사본 — 구름 시트 속도로 수렴
+/// FogOfWarHI 셰이더가 base는 RG, 구름 시트는 BA를 샘플 — 상태 3겹(짙은층·베일·시트)이 각자 속도로 걷힌다.
+///
+/// 걷힘 연출: 목표 필드(target)와 표시 필드(shown)를 분리 — 상태 변경 시 target만 즉시 재계산하고,
+/// shown이 매 프레임 등속(셀/초)으로 target에 수렴한다. 거리값이 등속으로 움직이면 등고선(=안개 벽)도
+/// 정확히 그 속도로 미끄러진다(선형). 수렴 중 새 리빌이 와도 target만 갱신되어 끊김 없이 이어진다.
+/// 씬 부착 직후 유예창과 명시 Snap은 즉시 반영 — 씬 진입/세이브 복구/시야 리셋에는 연출을 걸지 않는다.
+/// 수명은 RenderFXManager가 관리(매 프레임 Tick 호출).
 /// </summary>
 public class FogDistanceField
 {
@@ -15,15 +21,26 @@ public class FogDistanceField
     private static readonly int FogDistanceTexBoundId = Shader.PropertyToID("_FogDistanceTexBound");
     private const float Diag = 1.4142f;
     private const float Far = 4096f;
+    private const float SnapGraceSeconds = 1f;   // Attach 직후 이 시간 안의 변경은 즉시 반영 (씬 진입·세이브 복구)
 
     private FogGridManager grid;
     private Texture2D texture;
-    private float[] distToOpen;      // 스크래치: 개방(explored/visible) 셀까지 거리
-    private float[] distToClosed;    // 스크래치: 닫힌 셀까지 거리
-    private float[] signedExplored;  // R 채널: IsExplored 경계
-    private float[] signedVisible;   // G 채널: IsVisible 경계
-    private float[] packed;          // RG 인터리브 업로드 버퍼
+    private float[] distToOpen;       // 스크래치: 개방(explored/visible) 셀까지 거리
+    private float[] distToClosed;     // 스크래치: 닫힌 셀까지 거리
+    private float[] targetExplored;   // 목표: IsExplored 경계 (R·B 공용 목표)
+    private float[] targetVisible;    // 목표: IsVisible 경계 (G·A 공용 목표)
+    private float[] shownExplored;    // R 표시: 짙은층 속도로 수렴
+    private float[] shownVisible;     // G 표시: 베일층 속도로 수렴
+    private float[] shownSheetExplored; // B 표시: 시트 속도로 수렴
+    private float[] shownSheetVisible;  // A 표시: 시트 속도로 수렴
+    private float[] packed;           // RGBA 인터리브 업로드 버퍼
+    private int texW, texH;
     private bool dirty;
+    private bool animating;
+    private float snapUntil;
+    private float speedExploredCells; // 짙은층 걷힘 속도(셀/초). 0 = 즉시
+    private float speedVisibleCells;  // 베일층 걷힘 속도(셀/초). 0 = 즉시
+    private float speedSheetCells;    // 구름 시트 걷힘 속도(셀/초). 0 = 즉시
 
     private float roundingCells;
     private float[] blurKernel;
@@ -38,6 +55,14 @@ public class FogDistanceField
         dirty = true;
     }
 
+    /// <summary>층별 걷힘 연출 속도(셀/초). 0인 층은 연출 없이 즉시 반영.</summary>
+    public void SetRevealSpeeds(float exploredCellsPerSec, float visibleCellsPerSec, float sheetCellsPerSec)
+    {
+        speedExploredCells = Mathf.Max(0f, exploredCellsPerSec);
+        speedVisibleCells = Mathf.Max(0f, visibleCellsPerSec);
+        speedSheetCells = Mathf.Max(0f, sheetCellsPerSec);
+    }
+
     public void Attach(FogGridManager gridManager)
     {
         Detach();
@@ -47,6 +72,7 @@ public class FogDistanceField
         grid.FogChanged += MarkDirty;
         grid.CellVisibilityChanged += HandleCellChanged;
         dirty = true;
+        snapUntil = Time.time + SnapGraceSeconds;
     }
 
     public void Detach()
@@ -65,48 +91,139 @@ public class FogDistanceField
             texture = null;
         }
         dirty = false;
+        animating = false;
     }
 
     public void MarkDirty() => dirty = true;
 
     private void HandleCellChanged(Vector2Int cell, FogVisibilityState state) => dirty = true;
 
-    /// <summary>변경이 있었으면 재빌드. 매 프레임 호출해도 변경 없으면 no-op.</summary>
-    public void RebuildIfDirty()
+    /// <summary>매 프레임 호출. 변경이 있으면 target 재계산 후 shown을 등속 전진 — 평시 프레임 비용 0.</summary>
+    public void Tick(float deltaTime)
     {
-        if (!dirty || grid == null) return;
+        if (grid == null) return;
+
+        if (dirty)
+        {
+            bool resized = RebuildTarget();
+            if (resized || Time.time < snapUntil)
+                SnapShownToTarget();
+            else
+                animating = true;
+        }
+
+        if (animating)
+            AdvanceShown(deltaTime);
+    }
+
+    /// <summary>즉시 반영 — 필요 시 target 재계산 후 shown=target 업로드. 시야 리셋 등 연출 생략 지점용.</summary>
+    public void SnapToTarget()
+    {
+        if (grid == null) return;
+        if (dirty) RebuildTarget();
+        SnapShownToTarget();
+    }
+
+    // target 필드 재계산. 그리드 크기가 바뀌어 버퍼를 재할당했으면 true(호출부가 snap 처리).
+    private bool RebuildTarget()
+    {
         dirty = false;
 
         Vector2Int size = grid.GridSize;
         int w = size.x, h = size.y;
         int count = w * h;
-        if (count < 1) return;
+        if (count < 1) return false;
 
-        if (signedExplored == null || signedExplored.Length != count)
+        bool resized = targetExplored == null || targetExplored.Length != count;
+        if (resized)
         {
             distToOpen = new float[count];
             distToClosed = new float[count];
-            signedExplored = new float[count];
-            signedVisible = new float[count];
-            packed = new float[count * 2];
+            targetExplored = new float[count];
+            targetVisible = new float[count];
+            shownExplored = new float[count];
+            shownVisible = new float[count];
+            shownSheetExplored = new float[count];
+            shownSheetVisible = new float[count];
+            packed = new float[count * 4];
         }
 
-        BuildSignedField(w, h, count, exploredBoundary: true, signedExplored);
-        BuildSignedField(w, h, count, exploredBoundary: false, signedVisible);
+        texW = w;
+        texH = h;
 
-        ApplyRounding(signedExplored, w, h);
-        ApplyRounding(signedVisible, w, h);
+        BuildSignedField(w, h, count, exploredBoundary: true, targetExplored);
+        BuildSignedField(w, h, count, exploredBoundary: false, targetVisible);
+
+        ApplyRounding(targetExplored, w, h);
+        ApplyRounding(targetVisible, w, h);
+
+        return resized;
+    }
+
+    private void SnapShownToTarget()
+    {
+        if (targetExplored == null) return;
+
+        System.Array.Copy(targetExplored, shownExplored, targetExplored.Length);
+        System.Array.Copy(targetVisible, shownVisible, targetVisible.Length);
+        System.Array.Copy(targetExplored, shownSheetExplored, targetExplored.Length);
+        System.Array.Copy(targetVisible, shownSheetVisible, targetVisible.Length);
+        animating = false;
+        UploadShown();
+    }
+
+    // shown을 target으로 층별 등속 전진(선형) — 각 층의 등고선이 자기 속도로 미끄러진다.
+    private void AdvanceShown(float deltaTime)
+    {
+        int count = texW * texH;
+        bool remaining = false;
+        remaining |= AdvanceChannel(shownExplored, targetExplored, speedExploredCells * deltaTime, count);
+        remaining |= AdvanceChannel(shownVisible, targetVisible, speedVisibleCells * deltaTime, count);
+        remaining |= AdvanceChannel(shownSheetExplored, targetExplored, speedSheetCells * deltaTime, count);
+        remaining |= AdvanceChannel(shownSheetVisible, targetVisible, speedSheetCells * deltaTime, count);
+
+        animating = remaining;
+        UploadShown();
+    }
+
+    // 채널 1벌 전진. step<=0(속도 0)은 즉시 도달. 미수렴 원소가 남아 있으면 true.
+    private static bool AdvanceChannel(float[] shown, float[] target, float step, int count)
+    {
+        if (step <= 0f)
+        {
+            System.Array.Copy(target, shown, count);
+            return false;
+        }
+
+        bool remaining = false;
+        for (int i = 0; i < count; i++)
+        {
+            float v = Mathf.MoveTowards(shown[i], target[i], step);
+            shown[i] = v;
+            if (v != target[i]) remaining = true;
+        }
+
+        return remaining;
+    }
+
+    private void UploadShown()
+    {
+        int count = texW * texH;
+        if (count < 1 || shownExplored == null) return;
 
         for (int i = 0; i < count; i++)
         {
-            packed[i * 2] = signedExplored[i];
-            packed[i * 2 + 1] = signedVisible[i];
+            int p = i * 4;
+            packed[p] = shownExplored[i];
+            packed[p + 1] = shownVisible[i];
+            packed[p + 2] = shownSheetExplored[i];
+            packed[p + 3] = shownSheetVisible[i];
         }
 
-        if (texture == null || texture.width != w || texture.height != h)
+        if (texture == null || texture.width != texW || texture.height != texH)
         {
             if (texture != null) Object.Destroy(texture);
-            texture = new Texture2D(w, h, TextureFormat.RGFloat, false, true)
+            texture = new Texture2D(texW, texH, TextureFormat.RGBAFloat, false, true)
             {
                 name = "FogDistanceField",
                 filterMode = FilterMode.Bilinear,

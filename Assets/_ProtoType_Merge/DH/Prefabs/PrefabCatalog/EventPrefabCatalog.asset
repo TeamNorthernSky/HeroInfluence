@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c44148d3a8df92c48bf0a8b0ff1403ad, type: 3}
+  m_Name: EventPrefabCatalog
+  m_EditorClassIdentifier: 
+  mapEventPrefabs:
+  - eventType: 0
+    prefab: {fileID: 7957649149759182037, guid: 73d8aa7be220e0f4bb867f36a2aa9749,
+      type: 3}
+  - eventType: 1
+    prefab: {fileID: 6403879733641146597, guid: 57ed535ff2e6d044da64654650d8465d,
+      type: 3}
+  - eventType: 2
+    prefab: {fileID: 3258722379827126897, guid: 1147d50ffe774cb4b9174becb64b64a8,
+      type: 3}
+  mainEventPrefabs:
+  - prefabKey: Main_1-1
+    prefab: {fileID: -4997627292347206012, guid: 8541a6c63da90334e8aab79d0e356c73,
+      type: 3}
+  - prefabKey: Main_1-2
+    prefab: {fileID: -4997627292347206012, guid: f010d267e6a44ee47ba3662ef03bc81c,
+      type: 3}
+  - prefabKey: Main_2-1
+    prefab: {fileID: -4997627292347206012, guid: d1f7bb9bc273b1146b1a0b6d47604aa5,
+      type: 3}
+  - prefabKey: Main_2-2
+    prefab: {fileID: -4997627292347206012, guid: 112d9b61a7f503942928762f01a65019,
+      type: 3}
+  - prefabKey: Main_2-3
+    prefab: {fileID: -4997627292347206012, guid: 7175d99d8cb2aae4a9dd3d20c0481621,
+      type: 3}
+  subEventPrefabs:
+  - prefabKey: Sub_1
+    prefab: {fileID: 280840444368205281, guid: 5fffb83a0ae8dee42992a3de3c444a48, type: 3}
+  - prefabKey: Sub_2-1
+    prefab: {fileID: 2578186627216865515, guid: 7bfacbb17b178c647b5024f131b820b5,
+      type: 3}
+  - prefabKey: Sub_2-2
+    prefab: {fileID: 2578186627216865515, guid: 903340cead13d9e4fafd77292b84a87f,
+      type: 3}
