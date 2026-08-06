@@ -13,13 +13,14 @@ namespace JC.VFX
             DIR + "/PawSpawn.prefab",  DIR + "/PawSpawn_Gold.prefab",
             DIR + "/PawWarp.prefab",   DIR + "/PawWarp_Gold.prefab",
             DIR + "/PawBeam.prefab",   DIR + "/PawBeam_Gold.prefab",
+            DIR + "/PawBeam_Miss.prefab", DIR + "/PawBeam_Gold_Miss.prefab",
             DIR + "/PawForYou.prefab", DIR + "/_Legacy/PawForYouMistake.prefab",
         };
 
         // 따름 잠금 대상 = 색·밝기를 제외한 전부(위치·폭·단면·노이즈·캡)
         static readonly string[] TransformProps =
         {
-            "endSocketName","endOffset","width",
+            "startSocketName","startOffset","width",
             "coreWidth","glowFalloff","edgeSoft",
             "noiseScale","noiseScroll","noiseAmount","pulseAmp","pulseFreq",
             "capSoftStart","capSoftEnd","frontSoft",

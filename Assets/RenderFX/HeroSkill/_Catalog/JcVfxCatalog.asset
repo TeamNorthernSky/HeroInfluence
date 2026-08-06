@@ -97,6 +97,20 @@ MonoBehaviour:
     character: "\uB124\uCF54\uBC0D"
     skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
     note: "\uC7AC\uB4F1\uC7A5+\uAD11\uC120+\uCC29\uD0C4 (\uAE08)"
+  - cueName: paw_beam_miss
+    variant: 0
+    prefab: {fileID: 1701908741892779338, guid: 768a63aa5f964193b2efe0bd00d79407,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC2E4\uC218 \uD790 \u2014 \uC7AC\uB4F1\uC7A5(\uC740\uBC31)+\uB179\uC0C9 \uAD11\uC120+\uC2ED\uC790 \uCC29\uD0C4"
+  - cueName: paw_beam_miss
+    variant: 1
+    prefab: {fileID: 1823103172392327103, guid: 1ca37ecdbc37415ca2ea1a4065f8c41b,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC2E4\uC218 \uD790 \u2014 \uC7AC\uB4F1\uC7A5(\uAE08)+\uB179\uC0C9 \uAD11\uC120+\uC2ED\uC790 \uCC29\uD0C4"
   - cueName: lfl_charge_r
     variant: 0
     prefab: {fileID: 7202160663652775434, guid: 30cd12b46e7cbf94e953157c84093ff3,

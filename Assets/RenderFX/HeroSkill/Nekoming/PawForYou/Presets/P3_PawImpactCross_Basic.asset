@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58ae90754611cc44b8923a3c9419f03c, type: 3}
   m_Name: P3_PawImpactCross_Basic
   m_EditorClassIdentifier: 
+  followBasic: 0
+  basicRef: {fileID: 0}
   maxCrosses: 10
   spawnIntervalMin: 0.18
   spawnIntervalMax: 0.4
   lifetimeMin: 1.37
   lifetimeMax: 1.51
-  radius: 0.5
+  radius: 0.71
   baseYOffset: 0.05
   riseSpeedMin: 0.99
   riseSpeedMax: 1.22
@@ -29,9 +31,9 @@ MonoBehaviour:
   bobAmp: 0
   bobFreq: 2
   spinMax: 0
-  billboardYOnly: 1
-  sizeMin: 0.11
-  sizeMax: 0.16
+  billboardYOnly: 0
+  sizeMin: 0.13
+  sizeMax: 0.23
   fadeInFrac: 0.16
   fadeOutFrac: 0.336
   color: {r: 0.85, g: 0.92, b: 1, a: 1}

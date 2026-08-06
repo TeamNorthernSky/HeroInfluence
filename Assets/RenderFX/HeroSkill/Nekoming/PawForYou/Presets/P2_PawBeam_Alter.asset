@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   followBasic: 1
   basicRef: {fileID: 11400000, guid: 0c743a6b1bd680a4c9c35240617aec04, type: 2}
-  endSocketName: 
-  endOffset: {x: 0, y: 0.35, z: 0}
-  width: 0.35
+  startSocketName: 
+  startOffset: {x: 0, y: 0.5, z: 0}
+  width: 0.58
   coreColor: {r: 1, g: 0.98, b: 0.85, a: 1}
   glowColor: {r: 1, g: 0.8, b: 0.2, a: 1}
   intensity: 3
@@ -29,6 +29,6 @@ MonoBehaviour:
   pulseAmp: 0.12
   pulseFreq: 7
   capSoftStart: 0.08
-  capSoftEnd: 0.12
+  capSoftEnd: 0.347
   frontSoft: 0.05
   hitFlashColor: {r: 1, g: 0.9, b: 0.45, a: 1}
