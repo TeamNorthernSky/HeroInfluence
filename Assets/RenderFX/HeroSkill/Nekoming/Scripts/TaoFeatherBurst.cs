@@ -123,23 +123,25 @@ namespace JC.VFX
 
         private void PullFromPreset()
         {
-            maxFeathers = preset.maxFeathers;
-            spawnIntervalMin = preset.spawnIntervalMin;
-            spawnIntervalMax = preset.spawnIntervalMax;
-            lifetimeMin = preset.lifetimeMin;
-            lifetimeMax = preset.lifetimeMax;
-            spawnRadius = preset.spawnRadius;
-            baseYOffset = preset.baseYOffset;
-            riseSpeedMin = preset.riseSpeedMin;
-            riseSpeedMax = preset.riseSpeedMax;
-            spiralSpeed = preset.spiralSpeed;
-            swayAmp = preset.swayAmp;
-            swayFreq = preset.swayFreq;
-            spinMax = preset.spinMax;
-            sizeMin = preset.sizeMin;
-            sizeMax = preset.sizeMax;
-            fadeInFrac = preset.fadeInFrac;
-            fadeOutFrac = preset.fadeOutFrac;
+            // ★라이브 따름(260807) — 스폰·거동·형태는 TransformSource(Alter→Basic), 색·밝기만 자기 것.
+            var t = preset.TransformSource;
+            maxFeathers = t.maxFeathers;
+            spawnIntervalMin = t.spawnIntervalMin;
+            spawnIntervalMax = t.spawnIntervalMax;
+            lifetimeMin = t.lifetimeMin;
+            lifetimeMax = t.lifetimeMax;
+            spawnRadius = t.spawnRadius;
+            baseYOffset = t.baseYOffset;
+            riseSpeedMin = t.riseSpeedMin;
+            riseSpeedMax = t.riseSpeedMax;
+            spiralSpeed = t.spiralSpeed;
+            swayAmp = t.swayAmp;
+            swayFreq = t.swayFreq;
+            spinMax = t.spinMax;
+            sizeMin = t.sizeMin;
+            sizeMax = t.sizeMax;
+            fadeInFrac = t.fadeInFrac;
+            fadeOutFrac = t.fadeOutFrac;
             color = preset.color;
             intensity = preset.intensity;
         }
@@ -173,11 +175,12 @@ namespace JC.VFX
             f.mr.GetPropertyBlock(f.mpb);
             if (livePreview && preset)
             {
+                var t = preset.TransformSource;   // ★따름 — 깃털 형태(벤드·깃가지)는 Basic 정본
                 f.mpb.SetColor(ColorID, color);
                 f.mpb.SetFloat(IntensityID, intensity);
-                f.mpb.SetFloat(BendID, preset.bend * f.bendSign);
-                f.mpb.SetFloat(BarbFreqID, preset.barbFreq);
-                f.mpb.SetFloat(BarbAmountID, preset.barbAmount);
+                f.mpb.SetFloat(BendID, t.bend * f.bendSign);
+                f.mpb.SetFloat(BarbFreqID, t.barbFreq);
+                f.mpb.SetFloat(BarbAmountID, t.barbAmount);
             }
             f.mpb.SetFloat(FadeMulID, alpha);
             f.mr.SetPropertyBlock(f.mpb);

@@ -15,7 +15,7 @@ MonoBehaviour:
   followBasic: 0
   basicRef: {fileID: 0}
   spawnSocketName: 
-  spawnOffset: {x: 0.35, y: 1.3, z: 0.2}
+  spawnOffset: {x: 0.56, y: 1.53, z: 0.68}
   coreColor: {r: 0.742, g: 0.778, b: 1, a: 1}
   rimColor: {r: 0.73, g: 0.84999996, b: 1, a: 1}
   coreIntensity: 1.7

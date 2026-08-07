@@ -45,6 +45,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 ArcRing 에만 반영(Basic·Alter 프리팹 자동 탐색 — 다른 변종을 덮지 않음).\nlivePreview가 켜져 있으면 플레이 중에도 새 원호부터 즉시 반영됩니다.", MessageType.Info);
         }

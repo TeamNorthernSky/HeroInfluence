@@ -78,6 +78,10 @@ namespace JC.VFX
                      "LFL 합체 섬광이 lfl_fire 를 가리켜 「합류점 = 발사 시작점」을 한 값으로 묶는 용도.")]
             public string positionRefCue;
 
+            [Tooltip("★켜면 씬의 적 전원을 VfxTarget 목록으로 이 부품에 주입한다(광역기 — tao_barrage).\n" +
+                     "연쇄 아군 목록 대신 적 목록이 SetTargets 로 들어간다. 실전에서는 스킬 로직이 이 자리를 맡는다.")]
+            public bool sendEnemyTargets;
+
             [Tooltip("★켜면 이 단계를 타이머 대신 <b>발사체의 착탄 시그널</b>로 잇는다.\n" +
                      "대응 발사체 = 같은 chainIndex 의 발사체(일반 단계는 본 발사체).\n" +
                      "비행 시간은 거리의 함수라 타이머(delayAfter)로는 원거리에서 어긋난다 — 착지 오라는 이걸 켤 것.")]
@@ -122,6 +126,9 @@ namespace JC.VFX
             public JcVfxCatalog.Variant variant = JcVfxCatalog.Variant.Base;
             [Tooltip("겨눌 수 있는 진영. Ally = 아군만, Enemy = 적만.")]
             public TargetSide targetSide = TargetSide.Any;
+            [Tooltip("★켜면 타겟 클릭 없이 키만으로 즉시 시전(「발동 후 자동」류 — Tao 배리지 단독 K/L).\n" +
+                     "대상 = 시전자 자신. 적 전체는 스텝의 sendEnemyTargets 가 주입한다.")]
+            public bool autoCast;
             public Step[] steps = new Step[0];
         }
 
@@ -185,6 +192,19 @@ namespace JC.VFX
                 if (_playing != null) { StopCoroutine(_playing); _playing = null; }
                 ResetAll();
                 _pending = casts[i];
+
+                // ★자동 시전(autoCast) — 타겟 클릭 없이 즉시. 대상 = 시전자 자신(배리지 단독처럼
+                //   실제 대상 목록은 스텝의 sendEnemyTargets 주입이 담당하는 묶음).
+                if (_pending.autoCast)
+                {
+                    _awaitingTarget = false;
+                    ResolveActors();
+                    target = caster != null ? caster : transform;
+                    ResolveChainTargets();
+                    _playing = StartCoroutine(PlayAll());
+                    return;
+                }
+
                 _awaitingTarget = true;
                 _message = $"[{CastName(_pending)}] {SideName(_pending.targetSide)}을(를) 클릭하세요 ({resetKey}=취소)";
                 return;
@@ -396,7 +416,9 @@ namespace JC.VFX
                 if (vfx is ChargeOrbVfx) _lastChargePos = pos;
 
                 // 다중 대상을 받는 부품(통짜 오케스트레이터 등)에는 결정된 목록을 그대로 넘긴다.
-                if (_chainTargets.Count > 0) vfx.SetTargets(BuildChainVfxTargets());
+                // ★광역기 스텝은 적 전원 목록이 우선(tao_barrage) — 연쇄 아군 목록을 덮는다.
+                if (s.sendEnemyTargets) vfx.SetTargets(BuildEnemyVfxTargets());
+                else if (_chainTargets.Count > 0) vfx.SetTargets(BuildChainVfxTargets());
 
                 // ★발사체는 Play(origin,target) 이 Show(origin.position) 으로 생성 위치를 덮어쓴다.
                 //   그대로 두면 단계에 적어 둔 오프셋(손 높이 등)이 무시되고 발밑에서 출발한다.
@@ -427,6 +449,11 @@ namespace JC.VFX
                     {
                         var pt = proj.Preset.TransformSource;
                         to = JcVfxPlacementPreset.ResolveWorld(playTarget, pt.impactSocketName, pt.impactOffset);
+                    }
+                    else if (playTarget != null && proj.GetComponent<TaoMeteorTuner>() is TaoMeteorTuner mtn && mtn.Preset != null)
+                    {
+                        // ★Tao 유성 탄착 — T6 프리셋의 impactOffset(구 hitYOffset 흡수, 대상측·월드 축).
+                        to = JcVfxPlacementPreset.ResolveWorld(playTarget, null, mtn.Preset.TransformSource.impactOffset);
                     }
 
                     proj.Show(from);
@@ -506,6 +533,15 @@ namespace JC.VFX
                 return true;
             }
 
+            // ★Tao 부활 오라(260807) — 착지점 정본 = T8 마스터의 landOffset(대상측·월드 축).
+            var revive = prefab.GetComponent<TaoReviveVfx>();
+            if (revive != null && revive.Master != null)
+            {
+                var off = revive.Master.landOffset; if (mirror) off.x = -off.x;
+                pos = JcVfxPlacementPreset.ResolveWorld(stepAnchor, null, off);
+                return true;
+            }
+
             // ★PawForYou 계열 — 발 좌표의 정본 = P1_PawSprite 프리셋.
             //   앵커가 대상이면 재등장(머리 위) 좌표, 아니면 등장(시전자) 좌표.
             //   paw_warp 가 출발(시전자)/도착(대상) 두 앵커로 들어와도 이 규칙 하나로 기둥이 발과 겹친다.
@@ -531,7 +567,18 @@ namespace JC.VFX
         private bool TryProjectilePresetSpawn(ProjectileVfx proj, Transform origin, out Vector3 pos)
         {
             pos = default;
-            var p = proj != null ? proj.Preset : null;
+            if (proj == null) return false;
+
+            // ★Tao 유성(260807) — 위치 정본은 TaoMeteorTuner 의 T6 프리셋(ProjectileOrbPreset 미사용).
+            var tuner = proj.GetComponent<TaoMeteorTuner>();
+            if (tuner != null && tuner.Preset != null)
+            {
+                var mt = tuner.Preset.TransformSource;
+                pos = JcVfxPlacementPreset.Resolve(origin, mt.spawnSocketName, mt.spawnOffset);
+                return true;
+            }
+
+            var p = proj.Preset;
             if (p == null) return false;
             var t = p.TransformSource;
 
@@ -599,6 +646,21 @@ namespace JC.VFX
             _chainVfxTargets.Clear();
             foreach (var t in _chainTargets) _chainVfxTargets.Add(VfxTarget.Of(t));
             return _chainVfxTargets;
+        }
+
+        private readonly List<VfxTarget> _enemyVfxTargets = new List<VfxTarget>(8);
+
+        /// <summary>
+        /// ★광역기 대역(260807) — 씬의 적 전원을 목록으로. 실전에서는 스킬 로직이 판정해 넣는 자리다
+        /// (「판정은 스킬, VFX는 위치를 받기만」 규약).
+        /// </summary>
+        private IReadOnlyList<VfxTarget> BuildEnemyVfxTargets()
+        {
+            _enemyVfxTargets.Clear();
+            var units = FindObjectsByType<BattleCharactor>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (var c in units)
+                if (c.TeamType != TeamType.Player) _enemyVfxTargets.Add(VfxTarget.Of(c.transform));
+            return _enemyVfxTargets;
         }
 
         private void ResetAll()

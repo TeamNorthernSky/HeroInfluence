@@ -31,6 +31,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 값을 HealOrbit" + Sfx + " 프리팹(변종 자동 인식) + 공용 재질에 반영.\n" +
                 "⚠재질(CoreInner/RimShell)은 Basic·Alter 공용 — 색 베이크는 마지막 적용이 이깁니다(런타임 색은 라이브 MPB가 변종별로 정확).", MessageType.Info);

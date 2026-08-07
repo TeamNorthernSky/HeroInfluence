@@ -76,6 +76,25 @@ namespace JC.VFX
             return null;
         }
 
+        // ── 명시 디스크 저장(260807 공식 규격 — 자동저장 폐지·사용자 확정) ───────────────
+        //   모델: 인스펙터 조절값 = 메모리 유지(플레이 출입·리컴파일 생존) /
+        //         「프리팹에 적용」 = 재질·프리팹 디스크 확정 / 「💾」 = 이 에셋 파일 자체를 디스크 확정.
+        //   모든 디스크 쓰기는 명시 클릭으로만 — 실험값이 파일에 스미지 않는 안전판.
+        //   ★향후 저스티스·루미나·블랙불릿 부품 정리에도 이 규격을 쓴다(사용자 지정).
+
+        /// <summary>💾 디스크 저장 버튼 — 이 에셋 파일만 저장. wide=단독 배치용 전폭.</summary>
+        public static void DrawSaveButton(Object target, bool wide = false)
+        {
+            var label = wide ? "💾 디스크 저장 (조절값 파일 확정)" : "💾 저장";
+            bool clicked = wide
+                ? GUILayout.Button(label, GUILayout.Height(30))
+                : GUILayout.Button(label, GUILayout.Height(30), GUILayout.Width(72));
+            if (!clicked || target == null) return;
+            EditorUtility.SetDirty(target);
+            AssetDatabase.SaveAssetIfDirty(target);
+            Debug.Log($"[JC] 디스크 저장 완료: {target.name}");
+        }
+
         /// <summary>
         /// ★소속 스킬 분기(260807) — 프리셋 자산이 LetsFightingLove 폴더 소속이면 true.
         /// 같은 프리셋 클래스를 힐·LFL 이 공유하므로, 에디터의 적용/캡처 대상(재질·프리팹)은

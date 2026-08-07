@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   handChargeTime: 0.7
   convergeTime: 0.25
-  mergeLocalOffset: {x: 0, y: 1, z: 0.55}
+  mergeLocalOffset: {x: 0, y: 1.46, z: 1.11}
   mergeFlashColor: {r: 1, g: 0.95, b: 0.6, a: 1}
   flashSizeMul: 0.8
   launchDelay: 0.06
-  hitYOffset: 0.68
+  hitYOffset: 1.02
   chainDelay: 0.25
   chainSpawnYOffset: 0.9
   chainStagger: 0.08

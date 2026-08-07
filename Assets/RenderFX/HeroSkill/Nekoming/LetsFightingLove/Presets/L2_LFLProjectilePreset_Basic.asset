@@ -17,9 +17,9 @@ MonoBehaviour:
   chargeRef: {fileID: 11400000, guid: acc7214968e32ac4e14f4fd4fba39c88, type: 2}
   useChargeOrbPosition: 0
   spawnSocketName: 
-  spawnOffset: {x: 0, y: 1.45, z: 0.25}
+  spawnOffset: {x: 0, y: 2.11, z: 0.5}
   impactSocketName: 
-  impactOffset: {x: 0, y: 0, z: 0}
+  impactOffset: {x: 0, y: 1.12, z: 0}
   coreColor: {r: 0.742, g: 0.778, b: 1, a: 1}
   rimColor: {r: 0.73, g: 0.84999996, b: 1, a: 1}
   coreIntensity: 2.96

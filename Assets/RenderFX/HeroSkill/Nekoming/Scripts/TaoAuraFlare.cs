@@ -101,10 +101,12 @@ namespace JC.VFX
 
         private void PullFromPreset()
         {
-            width = preset.width;
-            height = preset.height;
-            groundOffsetY = preset.groundOffsetY;
-            riseGrow = preset.riseGrow;
+            // ★라이브 따름(260807) — 형태·움직임은 TransformSource(Alter→Basic), 색·밝기만 자기 것.
+            var t = preset.TransformSource;
+            width = t.width;
+            height = t.height;
+            groundOffsetY = t.groundOffsetY;
+            riseGrow = t.riseGrow;
             baseColor = preset.baseColor;
             baseIntensity = preset.baseIntensity;
             lineColor = preset.lineColor;
@@ -123,30 +125,31 @@ namespace JC.VFX
             _mr.GetPropertyBlock(_mpb);
             if (livePreview && preset)
             {
+                var t = preset.TransformSource;   // ★따름 — 형태·라인 기하는 Basic 정본, 색·불투명은 자기 것
                 _mpb.SetColor(ColorID, baseColor);
                 _mpb.SetFloat(IntensityID, baseIntensity);
                 _mpb.SetColor(LineColorID, lineColor);
                 _mpb.SetFloat(LineIntensityID, lineIntensity);
                 _mpb.SetFloat(OpacityID, preset.opacity);
-                _mpb.SetFloat(FlareID, preset.flare);
-                _mpb.SetFloat(FlareCurveID, preset.flareCurve);
+                _mpb.SetFloat(FlareID, t.flare);
+                _mpb.SetFloat(FlareCurveID, t.flareCurve);
                 _mpb.SetFloat(FlareUpID, 0f);            // 본 오라 = 벨 고정
                 _mpb.SetFloat(SprayIntensityID, 0f);     // 스프레이는 BaseSpray(스커트) 전담
-                _mpb.SetFloat(BaseBoostID, preset.baseBoost);
-                _mpb.SetFloat(BottomFadeID, preset.bottomFade);
-                _mpb.SetFloat(VerticalBiasID, preset.verticalBias);
-                _mpb.SetFloat(TopMinID, preset.topMin);
-                _mpb.SetFloat(TopMaxID, preset.topMax);
-                _mpb.SetFloat(TopSoftID, preset.topSoft);
-                _mpb.SetFloat(TopNoiseScaleID, preset.topNoiseScale);
-                _mpb.SetFloat(TopNoiseSpeedID, preset.topNoiseSpeed);
-                _mpb.SetFloat(FacePowerID, preset.facePower);
-                _mpb.SetFloat(LineCountID, preset.lineCount);
-                _mpb.SetFloat(LineWidthID, preset.lineWidth);
-                _mpb.SetFloat(LineSharpID, preset.lineSharp);
-                _mpb.SetFloat(DashFreqID, preset.dashFreq);
-                _mpb.SetFloat(DashDutyID, preset.dashDuty);
-                _mpb.SetFloat(ScrollSpeedID, preset.scrollSpeed);
+                _mpb.SetFloat(BaseBoostID, t.baseBoost);
+                _mpb.SetFloat(BottomFadeID, t.bottomFade);
+                _mpb.SetFloat(VerticalBiasID, t.verticalBias);
+                _mpb.SetFloat(TopMinID, t.topMin);
+                _mpb.SetFloat(TopMaxID, t.topMax);
+                _mpb.SetFloat(TopSoftID, t.topSoft);
+                _mpb.SetFloat(TopNoiseScaleID, t.topNoiseScale);
+                _mpb.SetFloat(TopNoiseSpeedID, t.topNoiseSpeed);
+                _mpb.SetFloat(FacePowerID, t.facePower);
+                _mpb.SetFloat(LineCountID, t.lineCount);
+                _mpb.SetFloat(LineWidthID, t.lineWidth);
+                _mpb.SetFloat(LineSharpID, t.lineSharp);
+                _mpb.SetFloat(DashFreqID, t.dashFreq);
+                _mpb.SetFloat(DashDutyID, t.dashDuty);
+                _mpb.SetFloat(ScrollSpeedID, t.scrollSpeed);
             }
             _mpb.SetFloat(YExtentID, 1f);
             _mpb.SetFloat(FadeMulID, _envelope);

@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 410e4e4f1947fe54fae6a4b66fc3b5d8, type: 3}
+  m_Name: T10_TaoBarrageCircle_Alter
+  m_EditorClassIdentifier: 
+  followBasic: 1
+  basicRef: {fileID: 11400000, guid: 30949d2c26f1a9a93ac1e6d6341fe143, type: 2}
+  radius: 1.07
+  groundOffsetY: 1.05
+  forwardOffset: 0.54
+  appearTime: 0.25
+  appearStartScale: 0.3
+  appearStartAlpha: 0
+  color: {r: 1, g: 0.99064183, b: 0.95911944, a: 1}
+  intensity: 2.2
+  centerSpread: 0.956
+  centerPulseAmp: 0.412
+  centerPulsePeriod: 1.43
+  ring1: 0.853
+  ring2: 0.78
+  ring3: 0.38
+  ringIntensity: 1
+  lineWidth: 0.012
+  lineSoft: 0.008
+  hexRadius: 0.72
+  hexWidth: 0.011
+  hexIntensity: 1
+  squareRadius: 0.6
+  squareWidth: 0.009
+  squareIntensity: 1
+  satOrbit: 0.78
+  satCount: 9.53
+  satRadius: 0.0392
+  satIntensity: 2.23
+  spokeCount: 16
+  spokeInner: 0.434
+  spokeOuter: 0.587
+  spokeIntensity: 1.65
+  tickRadius: 0.86
+  tickWidth: 0.045
+  tickCount: 48
+  tickDuty: 0.45
+  tickIntensity: 3
+  rotInner: 106
+  rotOuter: -53
+  centerGlow: 0.55
+  edgeFade: 0.06

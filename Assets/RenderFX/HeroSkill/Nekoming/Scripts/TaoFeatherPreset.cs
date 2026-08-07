@@ -6,9 +6,17 @@ namespace JC.VFX
     /// [프리셋 T3] 휘날리는 깃털(TaoFeatherBurst)의 튜닝 값.
     /// 절차 SDF 깃털(베시카+샤프트+깃가지 결) — 추후 텍스처 교체 전제. 에셋명: T3_TaoFeather.asset.
     /// </summary>
-    [CreateAssetMenu(menuName = "JC VFX/Taosenaiyo/T3_Tao Feather Preset", fileName = "T3_TaoFeather")]
+    [CreateAssetMenu(menuName = "JC VFX/Taosenaiyo/T4_Tao Feather Preset", fileName = "T4_TaoFeather")]
     public class TaoFeatherPreset : ScriptableObject
     {
+        [Header("★따름 (Alter 전용)")]
+        [Tooltip("켜면 트랜스폼(형태·움직임)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON — B/A는 색만 다르다.")]
+        public bool followBasic;
+        public TaoFeatherPreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
+        public TaoFeatherPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
         [Header("스폰")]
         [Tooltip("동시 최대 깃털 수")]
         public int maxFeathers = 10;

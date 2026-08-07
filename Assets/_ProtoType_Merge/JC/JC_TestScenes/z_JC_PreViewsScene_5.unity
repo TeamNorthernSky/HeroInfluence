@@ -1209,6 +1209,150 @@ MonoBehaviour:
       impactPlacementKey: 
       waitForImpact: 1
       label: "\uC5F0\uC1C4 \uCC29\uC9C0 #1"
+  - key: 111
+    label: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC (\uBC14\uB2D0\uB77C)"
+    variant: 0
+    targetSide: 1
+    autoCast: 0
+    steps:
+    - cueName: tao_fire
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
+      label: "1. \uC720\uC131 \uBC1C\uC0AC (T6 \uC704\uCE58)"
+    - cueName: tao_revive
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.8
+      lifeTime: 0
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
+      label: "2. \uBD80\uD65C \uC624\uB77C (\uCC29\uD0C4 \uC2DC\uADF8\uB110)"
+    - cueName: tao_barrage
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 1
+      label: "3. \uAD11\uC5ED \uBC30\uB9AC\uC9C0 (\uC804\uAC1C \uD6C4) \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354"
+  - key: 112
+    label: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC (\uC5BC\uD130)"
+    variant: 1
+    targetSide: 1
+    autoCast: 0
+    steps:
+    - cueName: tao_fire
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
+      label: "1. \uC720\uC131 \uBC1C\uC0AC (T6 \uC704\uCE58)"
+    - cueName: tao_revive
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.8
+      lifeTime: 0
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 1
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
+      label: "2. \uBD80\uD65C \uC624\uB77C (\uCC29\uD0C4 \uC2DC\uADF8\uB110)"
+    - cueName: tao_barrage
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 1
+      label: "3. \uAD11\uC5ED \uBC30\uB9AC\uC9C0 (\uC804\uAC1C \uD6C4) \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354"
+  - key: 107
+    label: "\uBC30\uB9AC\uC9C0 \uB2E8\uB3C5 (\uBC14\uB2D0\uB77C\u00B7\uC790\uB3D9)"
+    variant: 0
+    targetSide: 0
+    autoCast: 1
+    steps:
+    - cueName: tao_barrage
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 1
+      label: "\uAD11\uC5ED \uBC30\uB9AC\uC9C0 \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354 (\uD074\uB9AD \uC5C6\uC774 \uC790\uB3D9)"
+  - key: 108
+    label: "\uBC30\uB9AC\uC9C0 \uB2E8\uB3C5 (\uC5BC\uD130\u00B7\uC790\uB3D9)"
+    variant: 1
+    targetSide: 0
+    autoCast: 1
+    steps:
+    - cueName: tao_barrage
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey: 
+      impactPlacementKey: 
+      waitForImpact: 0
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 1
+      label: "\uAD11\uC5ED \uBC30\uB9AC\uC9C0 \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354 (\uD074\uB9AD \uC5C6\uC774 \uC790\uB3D9)"
   mode: 0
   stepKey: 0
   resetKey: 122

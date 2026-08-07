@@ -30,6 +30,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이펙트 전체 타이밍을 HealOrbit 프리팹의 HealOrbitVfx(오케스트레이터)에 반영.\nlivePreview가 켜져 있으면 플레이 중에도 즉시 반영됩니다.", MessageType.Info);
         }

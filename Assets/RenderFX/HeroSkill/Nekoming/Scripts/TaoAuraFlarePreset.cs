@@ -9,6 +9,14 @@ namespace JC.VFX
     [CreateAssetMenu(menuName = "JC VFX/Taosenaiyo/T2_Tao Aura Flare Preset", fileName = "T2_TaoAuraFlare")]
     public class TaoAuraFlarePreset : ScriptableObject
     {
+        [Header("★따름 (Alter 전용)")]
+        [Tooltip("켜면 트랜스폼(형태·움직임)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON — B/A는 색만 다르다.")]
+        public bool followBasic;
+        public TaoAuraFlarePreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
+        public TaoAuraFlarePreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
         [Header("크기")]
         [Tooltip("바닥 지름(m). 상단은 플레어만큼 더 벌어짐")]
         public float width = 1.0f;

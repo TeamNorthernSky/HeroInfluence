@@ -13,11 +13,16 @@ namespace JC.VFX
     {
         const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
         const string LFL = "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove";
+        const string TAO = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo";
         string Sfx => JcPresetEditorUtil.VariantSuffix(target) ?? "_Alter";
-        // ★소속 분기 — L10(LFL) 프리셋이면 LFL_LandAura 프리팹만 만진다(힐과 완전 절연, 260807).
-        string OrbitPrefab => JcPresetEditorUtil.IsLfl(target)
-            ? LFL + "/Prefabs/LFL_LandAura" + Sfx + ".prefab"
+        // ★소속 분기 — L10(LFL)/T7(Tao) 프리셋이면 제 스킬 프리팹만 만진다(힐과 완전 절연, 260807).
+        bool IsTao => target != null &&
+            UnityEditor.AssetDatabase.GetAssetPath(target).Replace('\\', '/').Contains("/Taosenaiyo/");
+        string OrbitPrefab => IsTao ? TAO + "/Prefabs/Tao_Revive" + Sfx + ".prefab"
+            : JcPresetEditorUtil.IsLfl(target) ? LFL + "/Prefabs/LFL_LandAura" + Sfx + ".prefab"
             : DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab";
+        // Tao 는 자식 이름이 다르다(OrbSparkles ↛ Sparkles).
+        string SparkleChild => IsTao ? "Sparkles" : "OrbSparkles";
 
         static readonly string[] TransformProps = { "rate", "sizeMin", "sizeMax", "lifetime", "shapeRadius" };
 
@@ -30,6 +35,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 값을 HealOrbit" + Sfx + " 프리팹의 OrbSparkles(PS)에 반영.\n" +
                 "색 베이크는 PS startColor — 재질(투사체와 공유)은 만지지 않습니다. 라이브 색은 MPB 로 즉시 반영.", MessageType.Info);
@@ -38,9 +44,9 @@ namespace JC.VFX
         void Apply(HealOrbitSparklePreset p)
         {
             var root = PrefabUtility.LoadPrefabContents(OrbitPrefab);
-            var t = root.transform.Find("OrbSparkles");
+            var t = root.transform.Find(SparkleChild);
             var ps = t ? t.GetComponent<ParticleSystem>() : null;
-            if (ps == null) { PrefabUtility.UnloadPrefabContents(root); Debug.LogError("[HealOrbitSparklePreset] OrbSparkles 없음"); return; }
+            if (ps == null) { PrefabUtility.UnloadPrefabContents(root); Debug.LogError("[HealOrbitSparklePreset] " + SparkleChild + " 없음"); return; }
             var m = ps.main;
             m.startSize = new ParticleSystem.MinMaxCurve(p.sizeMin, p.sizeMax);
             m.startLifetime = p.lifetime;
@@ -55,9 +61,9 @@ namespace JC.VFX
         void Capture(HealOrbitSparklePreset p)
         {
             var root = AssetDatabase.LoadAssetAtPath<GameObject>(OrbitPrefab);
-            var t = root != null ? root.transform.Find("OrbSparkles") : null;
+            var t = root != null ? root.transform.Find(SparkleChild) : null;
             var ps = t ? t.GetComponent<ParticleSystem>() : null;
-            if (ps == null) { Debug.LogError("[HealOrbitSparklePreset] OrbSparkles 없음"); return; }
+            if (ps == null) { Debug.LogError("[HealOrbitSparklePreset] " + SparkleChild + " 없음"); return; }
             Undo.RecordObject(p, "Capture Orbit Sparkle");
             p.sizeMin = ps.main.startSize.constantMin;
             p.sizeMax = ps.main.startSize.constantMax;

@@ -34,6 +34,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 값을 재질/오브/팔로워 프리팹에 일괄 반영.\n캡처: 현재 프리팹/재질 값을 이 프리셋으로 역방향 읽기.\n적용 후 새로 재생하면 반영됩니다.", MessageType.Info);
         }
