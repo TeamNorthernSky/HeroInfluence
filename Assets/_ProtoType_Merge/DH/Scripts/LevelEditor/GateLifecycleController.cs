@@ -131,6 +131,7 @@ public class GateLifecycleController : MonoBehaviour
 
         if (TryGetConnectedThreatElapsedTurns(repository, gate, out int threatElapsedTurns))
         {
+            // If a connected zone has an active threat timer, that timer is the authoritative close countdown.
             if (threatElapsedTurns < OpenDurationTurns)
                 return;
 
@@ -138,6 +139,7 @@ public class GateLifecycleController : MonoBehaviour
             return;
         }
 
+        // Gates without active threat state fall back to the day they were opened.
         int elapsedTurns = Mathf.Max(0, day - state.OpenedDay);
         if (elapsedTurns < OpenDurationTurns)
             return;
@@ -204,6 +206,7 @@ public class GateLifecycleController : MonoBehaviour
         if (turnManager == null)
             return;
 
+        // Resubscribe defensively because the controller can be created before TurnManager is ready.
         turnManager.DayAdvanced -= HandleDayAdvanced;
         turnManager.DayAdvanced += HandleDayAdvanced;
     }

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class LevelPrefabRegistry : MonoBehaviour
 {
+    // Catalog hub for level loading. Most prefab groups live in ScriptableObject catalogs now.
     [Header("Default Prefabs")]
+    // Still direct because obstacle prefab also acts as the gate blocker fallback.
     [SerializeField] private GameObject obstaclePrefab;
 
     [Header("Item Prefabs")]
@@ -19,6 +20,7 @@ public class LevelPrefabRegistry : MonoBehaviour
 
     [Header("Unique Building Prefabs")]
     [SerializeField] private HeroUnionPrefabCatalog heroUnionCatalog;
+    // Single direct prefab for now; catalog split can wait until multiple villain union variants exist.
     [SerializeField] private VillainUnionBase villainUnionBasePrefab;
 
     [Header("Decorative Building Prefabs")]
@@ -55,10 +57,6 @@ public class LevelPrefabRegistry : MonoBehaviour
         gateCatalog != null
             ? gateCatalog.GatePrefabs
             : Array.Empty<GatePrefabEntry>();
-
-    private void OnValidate()
-    {
-    }
 
     public bool TryGetItemPrefab(ResourceType resourceType, out ItemObject prefab)
     {

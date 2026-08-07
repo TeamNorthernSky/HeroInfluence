@@ -85,6 +85,7 @@ public sealed class DHEventRewardRuntimeManager : MonoBehaviour
         if (reward == null)
             return;
 
+        // Rewards are applied immediately to persistent state; reward IDs are not tracked as once-only state here.
         ApplyResources(reward.Money, reward.Medal, reward.Gem, reward.Supply);
         ApplyExpToAlivePartyUnits(reward.Exp);
 
@@ -116,6 +117,7 @@ public sealed class DHEventRewardRuntimeManager : MonoBehaviour
         if (economy == null)
             return;
 
+        // Snapshot/save stores the resulting economy values through DHEconomySnapshotSection.
         economy.Add(ResourceType.Money, money);
         economy.Add(ResourceType.Chip, medal);
         economy.Add(ResourceType.Crystal, gem);
@@ -138,6 +140,7 @@ public sealed class DHEventRewardRuntimeManager : MonoBehaviour
             if (unitIndex <= 0 || !unitRepository.TryGetUnit(unitIndex, out UnitPersistentData data) || data == null)
                 continue;
 
+            // Dead or incapacitated units do not receive event reward EXP.
             if (data.IsIncapacitated || data.CurrentHp <= 0f)
                 continue;
 

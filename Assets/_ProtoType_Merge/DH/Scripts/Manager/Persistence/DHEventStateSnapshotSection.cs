@@ -11,6 +11,7 @@ public sealed class DHEventStateSnapshotSection : DHTurnStartSnapshotSection
         chatFlags.Clear();
         eventNumericStates.Clear();
 
+        // Persistent event state only. Active effect execution context and CombatContext are runtime-only.
         DHEventStateRepository repository = DHEventStateRepository.Instance;
         if (repository == null)
             return;
@@ -24,6 +25,7 @@ public sealed class DHEventStateSnapshotSection : DHTurnStartSnapshotSection
         if (data == null)
             return;
 
+        // KJ SaveService writes these lists directly into JSON through GameSaveData.
         data.chatFlags.Clear();
         data.eventNumericStates.Clear();
         CopyFlags(chatFlags, data.chatFlags);

@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58ae90754611cc44b8923a3c9419f03c, type: 3}
   m_Name: 8_HealCrossPreset
   m_EditorClassIdentifier: 
+  followBasic: 0
+  basicRef: {fileID: 0}
   maxCrosses: 10
   spawnIntervalMin: 0.18
   spawnIntervalMax: 0.4
@@ -29,7 +31,7 @@ MonoBehaviour:
   bobAmp: 0
   bobFreq: 2
   spinMax: 0
-  billboardYOnly: 1
+  billboardYOnly: 0
   sizeMin: 0.11
   sizeMax: 0.16
   fadeInFrac: 0.16

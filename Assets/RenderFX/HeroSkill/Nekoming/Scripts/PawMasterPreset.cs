@@ -35,9 +35,9 @@ namespace JC.VFX
 
         [Header("배치")]
         // ★위치(발 등장·재등장·광선 끝)는 부품 프리셋 소유로 이관(260805) —
-        //   발 좌표 = P1_PawSprite(spawnOffset/headOffset), 광선 끝 = P2_PawBeam(endOffset).
-        [Tooltip("발 아래에서 광선이 시작되는 간격(m)")]
-        [Range(0f, 0.6f)] public float pawBeamGap = 0.12f;
+        //   발 좌표 = P1_PawSprite(spawnOffset/headOffset), 광선 시작 = P2_PawBeam(startOffset, 끝은 수직 낙하 고정).
+        [Tooltip("발 아래에서 광선이 시작되는 간격(m). ★음수 = 겹침 — 광선 머리를 글리프 뒤로 밀어넣어 소프트캡 이음새를 숨긴다(표준 기법).")]
+        [Range(-0.6f, 0.6f)] public float pawBeamGap = 0.12f;
 
         [Header("플래시")]
         [Tooltip("워프/착탄 플래시 크기 배수")]

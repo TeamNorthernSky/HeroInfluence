@@ -33,8 +33,14 @@ namespace JC.VFX
         public float size = 1.6f;
         [Tooltip("쿼드 내 발 형태 점유 비율. 작을수록 여백↑(글로우가 사각 경계에 잘리지 않음)")]
         [Range(0.2f, 1f)] public float canvasScale = 0.55f;
-        [Tooltip("빌보드 Y축만(수직 유지). 끄면 카메라 완전 정면")]
-        public bool billboardYOnly = false;
+        [Tooltip("빌보드 방식 — 정면 / 정면+월드수직 롤 정렬(광선 축과 일직선) / Y축 고정(내려다볼수록 납작해짐)")]
+        public JcBillboardSolver.Mode billboardMode = JcBillboardSolver.Mode.CameraFacing;
+
+        [Header("★접점 핀 (빌보드-3D 정합, 260806)")]
+        [Tooltip("켜면 쿼드 로컬 접점(anchorLocal)이 발 좌표(3D 앵커)에 못 박힌다 — 카메라 각도 무관하게 광선 시작점과 시각 접점이 일치.")]
+        public bool anchorPin = true;
+        [Tooltip("쿼드 로컬 접점(±0.5). (0,-0.27) ≈ 발바닥 하단(canvasScale 0.55 기준). 씬 뷰에서 발 선택 시 청록 구로 표시.")]
+        public Vector2 anchorLocal = new Vector2(0f, -0.27f);
         [Tooltip("둥실 bob 진폭(m)")]
         [Range(0f, 0.3f)] public float bobAmp = 0.04f;
         [Tooltip("둥실 bob 빈도(Hz)")]

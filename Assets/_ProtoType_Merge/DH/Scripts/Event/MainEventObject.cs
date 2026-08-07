@@ -14,6 +14,7 @@ public class MainEventObject : MonoBehaviour
     [SerializeField, Min(1)] private int interactionRadius = 1;
 
     [Header("Disable Replacement")]
+    // Disable_* effects can replace this event with a static enemy group at the same grid.
     [SerializeField] private string replacementEnemyGroupKey;
 
     private MainEventRegistry mainEventRegistry;
@@ -133,6 +134,7 @@ public class MainEventObject : MonoBehaviour
         eventBattleRequestedDuringTrigger = false;
         pendingClosedCallback = closedCallback;
         SubscribeEventBattleRequested();
+        // Main events pass their source key into effect/battle runtime so victory can complete this object later.
         DHEventEffectRuntimeManager.EnsureInstance().SetActiveMainEventSource(EventKey);
         DHEventBattleRuntimeManager.SetPendingMainEventSource(EventKey);
         ChatModalController.Show(ZoneId, ChatId, HandleChatClosed);
@@ -174,6 +176,7 @@ public class MainEventObject : MonoBehaviour
 
         if (eventBattleRequestedDuringTrigger)
         {
+            // Event battles complete main events only on victory through DHEventBattleRuntimeManager.
             eventBattleRequestedDuringTrigger = false;
             closedCallback?.Invoke(this);
             return;
@@ -191,6 +194,7 @@ public class MainEventObject : MonoBehaviour
         if (!Application.isPlaying)
             return;
 
+        // Called after event battle result handling; defeat keeps the event available for retry.
         if (!IsCompleted())
             MarkCompleted();
 

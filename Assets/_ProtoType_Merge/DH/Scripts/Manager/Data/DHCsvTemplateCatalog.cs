@@ -41,11 +41,11 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly List<DHUnitGrowthTemplate>            unitGrowthTemplates  = new List<DHUnitGrowthTemplate>();
     private readonly Dictionary<string, DHEnemyGroupTemplate> enemyGroupLookup  = new Dictionary<string, DHEnemyGroupTemplate>();
 
-    // ?덈꺼蹂??섏튂 議고쉶??留덉뒪??罹먯떆 (SO ?먮낯 蹂닿?)
+    // Master caches for level-scaled lookup data.
     private readonly Dictionary<int, List<int>>        classSkillIndexListByClassIndex = new Dictionary<int, List<int>>();
     private readonly Dictionary<int, List<int>>        weaponIndexListByClassIndex = new Dictionary<int, List<int>>();
 
-    // classIndex ??(level ??skillIndex)
+    // classIndex -> (level -> skillIndex)
     private readonly Dictionary<int, Dictionary<int, int>> skillUnlockByClassIndex
         = new Dictionary<int, Dictionary<int, int>>();
 
@@ -55,9 +55,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
     public bool IsLoaded => isLoaded;
 
-    // ?????????????????????????????????????????????????????????
-    // Unity ?앸챸二쇨린
-    // ?????????????????????????????????????????????????????????
+    // Unity lifecycle
 
     private void Awake()
     {
@@ -76,9 +74,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             ReloadTemplates();
     }
 
-    // ?????????????????????????????????????????????????????????
     // Public API
-    // ?????????????????????????????????????????????????????????
 
     [ContextMenu("Reload Templates")]
     public void ReloadTemplates()
@@ -177,11 +173,9 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return unitGrowthTemplates;
     }
 
-    // ?????????????????????????????????????????????????????????
-    // ?덈꺼蹂??섏튂 議고쉶 API
-    // ?????????????????????????????????????????????????????????
+    // Level-scaled lookup API
 
-    /// <summary>臾닿린 媛뺥솕 ?덈꺼 湲곗? ?ㅽ꺈 蹂대꼫??諛섑솚 (HP/ATK/DEF)</summary>
+    /// <summary>Returns weapon stat bonuses for the given enhancement level.</summary>
     public bool TryGetWeaponBonusAtLevel(int weaponIndex, int level, out StatBlock bonus)
     {
         EnsureLoaded();
@@ -195,7 +189,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return true;
     }
 
-    /// <summary>臾닿린 ?ㅽ궗 媛뺥솕 ?덈꺼 湲곗? Value 諛섑솚</summary>
+    /// <summary>Returns weapon skill value for the given enhancement level.</summary>
     public float GetWeaponSkillValueAtLevel(int weaponIndex, int level)
     {
         EnsureLoaded();
@@ -204,7 +198,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             : 0f;
     }
 
-    /// <summary>臾닿린 ?ㅽ궗 媛뺥솕 ?덈꺼 湲곗? SubValue 諛섑솚</summary>
+    /// <summary>Returns weapon skill sub-value for the given enhancement level.</summary>
     public float GetWeaponSkillSubValueAtLevel(int weaponIndex, int level)
     {
         EnsureLoaded();
@@ -213,7 +207,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             : 0f;
     }
 
-    /// <summary>罹먮┃???ㅽ궗 媛뺥솕 ?덈꺼 湲곗? Value 諛섑솚</summary>
+    /// <summary>Returns class skill value for the given skill level.</summary>
     public float GetClassSkillValueAtLevel(int skillIndex, int level)
     {
         EnsureLoaded();
@@ -223,7 +217,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             : 0f;
     }
 
-    /// <summary>罹먮┃???ㅽ궗 媛뺥솕 ?덈꺼 湲곗? SubValue 諛섑솚</summary>
+    /// <summary>Returns class skill sub-value for the given skill level.</summary>
     public float GetClassSkillSubValueAtLevel(int skillIndex, int level)
     {
         EnsureLoaded();
@@ -233,9 +227,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             : 0f;
     }
 
-    // ?????????????????????????????????????????????????????????
-    // ?덈꺼 留ㅽ븨 ?ы띁 (switch 濡쒖쭅????怨녹뿉留??묒꽦)
-    // ?????????????????????????????????????????????????????????
+    // Level mapping helpers.
 
     private static float LeveledFloat(float lv1, float lv2, float lv3, float lv4, float lv5, int level)
     {
@@ -385,7 +377,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return TryGetEnemyGroupTemplate(groupIndex.ToString(), out group);
     }
 
-    /// <summary>classIndex ?좊떅??currentLevel ?댄븯?먯꽌 ?닿툑??skillIndex ?꾩껜 紐⑸줉.</summary>
+    /// <summary>Returns every skillIndex unlocked by the class at or below currentLevel.</summary>
     public List<int> GetAvailableStudySkills(int classIndex, int currentLevel)
     {
         EnsureLoaded();
@@ -401,7 +393,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return result;
     }
 
-    /// <summary>oldLevel 珥덇낵 ~ newLevel ?댄븯 援ш컙?먯꽌 ?덈줈 ?닿툑?섎뒗 skillIndex 紐⑸줉.</summary>
+    /// <summary>Returns skillIndex values newly unlocked between oldLevel and newLevel.</summary>
     public List<int> GetNewlyUnlockedStudySkills(int classIndex, int oldLevel, int newLevel)
     {
         EnsureLoaded();
@@ -453,9 +445,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return result;
     }
 
-    // ?????????????????????????????????????????????????????????
-    // SO DataTable 濡쒕뱶 寃쎈줈
-    // ?????????????????????????????????????????????????????????
+    // SO DataTable load path.
 
     public List<WeaponData> GetWeaponsByClass(string className)
     {
@@ -506,7 +496,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
     private void ReloadFromSOTables()
     {
-        // ?? ?뚮젅?댁뼱 ?좊떅 ??????????????????????????????????????
+        // Player units
         if (playerUnitDataTable != null)
         {
             for (int i = 0; i < playerUnitDataTable.DataList.Count; i++)
@@ -530,10 +520,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[DHCsvTemplateCatalog] playerUnitTable???좊떦?섏? ?딆븯?듬땲??", this);
+            Debug.LogWarning("[DHCsvTemplateCatalog] playerUnitDataTable is not assigned.", this);
         }
 
-        // ?? ???좊떅 + ???ㅽ궗 ?????????????????????????????????
+        // Enemy units and embedded enemy skills
         if (enemyUnitInfoDataTable != null)
         {
             for (int i = 0; i < enemyUnitInfoDataTable.DataList.Count; i++)
@@ -545,7 +535,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 string enemyKey = NormalizeNumericTemplateKey(enemyUnit.EnemyKey);
                 if (enemyUnitTemplateLookup.ContainsKey(enemyKey))
                 {
-                    Debug.LogWarning($"[DHCsvTemplateCatalog] 以묐났 ????'{enemyKey}' 嫄대꼫?.", this);
+                    Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate enemy key '{enemyKey}' skipped.", this);
                     continue;
                 }
                 RegisterEnemyUnitTemplate(enemyUnit);
@@ -553,17 +543,17 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 RegisterEnemyTemplate(enemy);
                 cachedEnemyTemplates.Add(enemy);
 
-                // ???댁옣 ?ㅽ궗 異붿텧
+                // Extract embedded enemy skills.
                 TryAddEnemySkill(src, slot: 1);
                 TryAddEnemySkill(src, slot: 2);
             }
         }
         else
         {
-            Debug.LogWarning("[DHCsvTemplateCatalog] enemyUnitInfoTable???좊떦?섏? ?딆븯?듬땲??", this);
+            Debug.LogWarning("[DHCsvTemplateCatalog] enemyUnitInfoDataTable is not assigned.", this);
         }
 
-        // ?? ??洹몃９ ????????????????????????????????????????????
+        // Enemy groups
         if (enemyGroupDataTable != null)
         {
             for (int i = 0; i < enemyGroupDataTable.DataList.Count; i++)
@@ -573,14 +563,14 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 if (template == null) continue;
                 if (enemyGroupLookup.ContainsKey(template.GroupKey))
                 {
-                    Debug.LogWarning($"[DHCsvTemplateCatalog] 以묐났 ??洹몃９ ?몃뜳??{group.EnemyIndex} 嫄대꼫?.", this);
+                    Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate enemy group index {group.EnemyIndex} skipped.", this);
                     continue;
                 }
                 enemyGroupLookup.Add(template.GroupKey, template);
             }
         }
 
-        // ?? 吏곸뾽 ?ㅽ궗 ??????????????????????????????????????????
+        // Class skills
         if (classSkillDataTable != null)
         {
             for (int i = 0; i < classSkillDataTable.DataList.Count; i++)
@@ -602,10 +592,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[DHCsvTemplateCatalog] classSkillTable???좊떦?섏? ?딆븯?듬땲??", this);
+            Debug.LogWarning("[DHCsvTemplateCatalog] classSkillDataTable is not assigned.", this);
         }
 
-        // ?? 臾닿린 ???????????????????????????????????????????????
+        // Weapons
         if (playerWeaponDataTable != null)
         {
             for (int i = 0; i < playerWeaponDataTable.DataList.Count; i++)
@@ -627,10 +617,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[DHCsvTemplateCatalog] weaponTable???좊떦?섏? ?딆븯?듬땲??", this);
+            Debug.LogWarning("[DHCsvTemplateCatalog] playerWeaponDataTable is not assigned.", this);
         }
 
-        // ?? ?덈꺼??+ ?대옒?ㅻ퀎 ?ㅽ꽣???ㅽ궗 ????????????????????????
+        // Unit growth and class unlock skills
         if (unitGrowthExpDataTable != null)
         {
             for (int i = 0; i < unitGrowthExpDataTable.DataList.Count; i++)
@@ -657,7 +647,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
                     if (map.ContainsKey(template.Level))
                     {
-                        Debug.LogWarning($"[DHCsvTemplateCatalog] classIndex={classIndex} level={template.Level} ?ㅽ꽣???ㅽ궗 以묐났 嫄대꼫?.", this);
+                        Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate study skill unlock skipped. classIndex={classIndex}, level={template.Level}.", this);
                         continue;
                     }
                     map[template.Level] = skillIndex;
@@ -666,16 +656,14 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         isLoaded = true;
-        Debug.Log($"[DHCsvTemplateCatalog][SO] ?뚮젅?댁뼱 {cachedPlayerTemplates.Count}嫄? " +
-                  $"??{cachedEnemyTemplates.Count}嫄? " +
-                  $"臾닿린 {cachedWeapons.Count}嫄? " +
-                  $"?ㅽ궗 {skillTemplates.Count}嫄? " +
-                  $"?덈꺼??{levelUpTemplates.Count}嫄?濡쒕뱶 ?꾨즺.", this);
+        Debug.Log($"[DHCsvTemplateCatalog][SO] Loaded players={cachedPlayerTemplates.Count}, " +
+                  $"enemies={cachedEnemyTemplates.Count}, " +
+                  $"weapons={cachedWeapons.Count}, " +
+                  $"skills={skillTemplates.Count}, " +
+                  $"levelUps={levelUpTemplates.Count}.", this);
     }
 
-    // ?????????????????????????????????????????????????????????
-    // SO ??湲곗〈 ???蹂??硫붿꽌??
-    // ?????????????????????????????????????????????????????????
+    // SO conversion methods.
 
     private DHEnemyGroupTemplate ConvertEnemyGroup(EnemyGroupData src)
     {
@@ -916,7 +904,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         int skillIndex = (enemyIndex * 10) + slot;
         if (skillTemplates.ContainsKey(skillIndex))
         {
-            Debug.LogWarning($"[DHCsvTemplateCatalog] 以묐났 ???ㅽ궗 ?몃뜳??{skillIndex} 嫄대꼫?.", this);
+            Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate enemy skill index {skillIndex} skipped.", this);
             return;
         }
 
@@ -1104,7 +1092,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         };
     }
 
-    /// <summary>?쒗듃 ID媛 "HS1010", "FV20001" 媛숈? ?묐몢???レ옄 肄붾뱶濡?諛붾뚯뼱???대? 濡쒖쭅? ?レ옄留??ъ슜?섎룄濡?異붿텧?⑸땲??</summary>
+    /// <summary>Extracts the numeric part from sheet IDs such as "HS1010" or "FV20001".</summary>
     private static int ExtractNumericId(int code)
     {
         return code;
@@ -1338,15 +1326,13 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             null);
     }
 
-    // ?????????????????????????????????????????????????????????
-    // CSV 濡쒕뱶 寃쎈줈 (湲곗〈 肄붾뱶 洹몃?濡??좎?)
-    // ?????????????????????????????????????????????????????????
+    // CSV load path.
 
     private void ReloadFromCSV()
     {
         if (!TryResolveCsvDataLoad())
         {
-            Debug.LogError("[DHCsvTemplateCatalog] CSVDataLoad瑜?李얠쓣 ???놁뒿?덈떎. ?ъ뿉 CSVDataLoad瑜??먭굅???몄뒪?숉꽣???좊떦?섏꽭??", this);
+            Debug.LogError("[DHCsvTemplateCatalog] CSVDataLoad could not be found. Add it to the scene or assign it in the inspector.", this);
             return;
         }
 
@@ -1354,7 +1340,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         TextAsset enemyTa  = csvDataLoad.GetEnemyUnitCsv();
         TextAsset weaponTa = csvDataLoad.GetWeaponSheetCsv();
 
-        // ?뚮젅?댁뼱
+        // Players
         List<UnitData> playerTemplates = LoadPlayerUnitsForCatalog(effectivePlayer, enemyTa);
         for (int i = 0; i < playerTemplates.Count; i++)
         {
@@ -1385,7 +1371,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             string enemyKey = NormalizeNumericTemplateKey(unitTemplate.EnemyKey);
             if (enemyUnitTemplateLookup.ContainsKey(enemyKey))
             {
-                Debug.LogWarning($"[DHCsvTemplateCatalog] 以묐났 ???쒗뵆由???'{enemyKey}'瑜?嫄대꼫?곷땲??", this);
+                Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate enemy template key '{enemyKey}' skipped.", this);
                 continue;
             }
             RegisterEnemyUnitTemplate(unitTemplate);
@@ -1428,16 +1414,14 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         isLoaded = true;
-        Debug.Log($"[DHCsvTemplateCatalog][CSV] ?뚮젅?댁뼱 {cachedPlayerTemplates.Count}嫄? " +
-                  $"??{cachedEnemyTemplates.Count}嫄? " +
-                  $"臾닿린 {cachedWeapons.Count}嫄? " +
-                  $"?ㅽ궗 {skillTemplates.Count}嫄? " +
-                  $"?덈꺼??{levelUpTemplates.Count}嫄?濡쒕뱶 ?꾨즺.", this);
+        Debug.Log($"[DHCsvTemplateCatalog][CSV] Loaded players={cachedPlayerTemplates.Count}, " +
+                  $"enemies={cachedEnemyTemplates.Count}, " +
+                  $"weapons={cachedWeapons.Count}, " +
+                  $"skills={skillTemplates.Count}, " +
+                  $"levelUps={levelUpTemplates.Count}.", this);
     }
 
-    // ?????????????????????????????????????????????????????????
-    // 怨듯넻 ?좏떥
-    // ?????????????????????????????????????????????????????????
+    // Common utilities.
 
     private void ClearCache()
     {
@@ -1521,7 +1505,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         if (playerUnitCsvAsset == null)
         {
-            Debug.LogError("[DHCsvTemplateCatalog] ?좏슚 ?뚮젅?댁뼱 ?좊떅 CSV媛 鍮꾩뼱 ?덉뒿?덈떎.", this);
+            Debug.LogError("[DHCsvTemplateCatalog] Valid player unit CSV is missing.", this);
             return new List<UnitData>();
         }
         List<UnitData> allUnits = CSVLoader.LoadUnitData(playerUnitCsvAsset.text);
@@ -1543,7 +1527,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
         if (playerUnitCsvAsset == null)
         {
-            Debug.LogWarning("[DHCsvTemplateCatalog] enemyUnitCsv? ?좏슚 ?뚮젅?댁뼱 ?좊떅 CSV媛 紐⑤몢 鍮꾩뼱 ?덉뒿?덈떎.", this);
+            Debug.LogWarning("[DHCsvTemplateCatalog] Both enemyUnitCsv and valid player unit CSV are missing.", this);
             return new EnemyCsvLoadResult();
         }
 
@@ -1561,7 +1545,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         if (weaponSheetCsvAsset == null)
         {
-            Debug.LogWarning("[DHCsvTemplateCatalog] weaponSheetCsv媛 鍮꾩뼱 ?덉뒿?덈떎.", this);
+            Debug.LogWarning("[DHCsvTemplateCatalog] weaponSheetCsv is missing.", this);
             return new List<WeaponData>();
         }
         return CSVLoader.LoadWeaponData(weaponSheetCsvAsset.text);

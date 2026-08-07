@@ -26,6 +26,7 @@ public class LevelData : ScriptableObject
     [SerializeField] private List<TilePlacementData> groundTilePlacements = new List<TilePlacementData>();
     [SerializeField] private List<Vector2Int> obstacleCells = new List<Vector2Int>();
     [SerializeField] private List<ItemPlacementData> itemPlacements = new List<ItemPlacementData>();
+    // Kept for old level assets that still serialized outposts as minePlacements.
     [FormerlySerializedAs("minePlacements")]
     [SerializeField] private List<OutpostPlacementData> outpostPlacements = new List<OutpostPlacementData>();
     [SerializeField] private List<EventPlacementData> eventPlacements = new List<EventPlacementData>();
@@ -368,40 +369,6 @@ public class LevelData : ScriptableObject
         subEventPlacements.Add(new SubEventPlacementData(grid, prefabKey));
     }
 
-    public void AddGateBlockerCell(
-        string gateId,
-        string firstZoneId,
-        string secondZoneId,
-        Vector2Int grid)
-    {
-        if (!IsInsideGrid(grid))
-            return;
-
-        EnsureGatePlacements();
-        string normalizedGateId = GatePlacementData.NormalizeId(gateId);
-        if (string.IsNullOrWhiteSpace(normalizedGateId))
-            normalizedGateId = $"gate_{grid.x}_{grid.y}";
-
-        for (int i = 0; i < gatePlacements.Count; i++)
-        {
-            GatePlacementData placement = gatePlacements[i];
-            if (placement.GateId != normalizedGateId)
-                continue;
-
-            placement.AddBlockerCell(grid);
-            placement.SetConnectedZones(firstZoneId, secondZoneId);
-            gatePlacements[i] = placement.Normalized();
-            return;
-        }
-
-        GatePlacementData nextPlacement = new GatePlacementData(
-            normalizedGateId,
-            firstZoneId,
-            secondZoneId);
-        nextPlacement.AddBlockerCell(grid);
-        gatePlacements.Add(nextPlacement.Normalized());
-    }
-
     public void SetGatePlacement(
         string gateId,
         string firstZoneId,
@@ -434,6 +401,7 @@ public class LevelData : ScriptableObject
                 if (!IsInsideGrid(blockerCell))
                     continue;
 
+                // Gate blockers own their cells so other placements do not remain under closed gates.
                 RemoveAllPlacementsAt(blockerCell);
                 nextPlacement.AddBlockerCell(blockerCell);
             }
@@ -589,6 +557,7 @@ public class LevelData : ScriptableObject
 
     private void RemoveNonObstaclePlacementsAt(Vector2Int grid)
     {
+        // Obstacle cells can coexist with ground tiles, but clear every interactive/object placement.
         itemPlacements.RemoveAll(x => x.GridPosition == grid);
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
@@ -603,6 +572,7 @@ public class LevelData : ScriptableObject
 
     private void RemoveAllPlacementsAt(Vector2Int grid)
     {
+        // Central collision cleanup used by most brush setters before adding a new placement.
         obstacleCells.Remove(grid);
         itemPlacements.RemoveAll(x => x.GridPosition == grid);
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
@@ -756,6 +726,7 @@ public struct ItemPlacementData
 public struct OutpostPlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
+    // Kept for old assets that stored outpost kind as a resource type.
     [FormerlySerializedAs("resourceType")]
     [SerializeField] private OutpostType outpostType;
     [SerializeField] private int resourcePerTurn;
@@ -824,6 +795,7 @@ public struct EventPlacementData
 public struct EnemyPlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
+    // Kept for old assets that stored enemy group as an int index.
     [FormerlySerializedAs("enemyGroupIndex")]
     [SerializeField] private string enemyGroupKey;
     [SerializeField] private EnemyBehaviorType behaviorType;
@@ -918,6 +890,7 @@ public struct GatePlacementData
     [SerializeField] private string firstZoneId;
     [SerializeField] private string secondZoneId;
     [SerializeField] private Vector2Int gridPosition;
+    // Empty prefabKey means the loader should use blockerCells with the obstacle fallback.
     [SerializeField] private string prefabKey;
     [SerializeField] private List<Vector2Int> blockerCells;
 
@@ -1009,6 +982,7 @@ public struct EnemySpawnPointPlacementData
     [SerializeField] private Vector2Int gridPosition;
     [SerializeField] private string zoneId;
     [SerializeField] private string enemyGroupKey;
+    // Chat zone ids are derived from zoneId now; serialized fields remain only for old editor data.
     [SerializeField] private int spawnChatZoneId;
     [SerializeField] private int spawnChatId;
     [SerializeField] private int encounterChatZoneId;

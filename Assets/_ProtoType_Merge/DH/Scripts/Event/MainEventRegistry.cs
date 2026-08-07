@@ -53,6 +53,7 @@ public class MainEventRegistry : MonoBehaviour
     {
         mainEvent = null;
 
+        // Main events trigger from their surrounding interaction cells, not from their occupied cell.
         for (int i = 0; i < mainEvents.Count; i++)
         {
             MainEventObject candidate = mainEvents[i];

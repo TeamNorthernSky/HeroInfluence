@@ -187,6 +187,7 @@ public class GateProgressState
 }
 
 [Serializable]
+// Per-zone gate threat timer. It pauses outside the zone and resumes from accumulated turns on re-entry.
 public class ZoneThreatProgressState
 {
     [SerializeField] private string zoneId;
@@ -288,6 +289,7 @@ public class ZoneThreatProgressState
 
     public void MarkThreatSpawnPending()
     {
+        // Pending spawn is resolved just before the enemy turn so the new enemy can act immediately.
         pendingThreatSpawn = true;
     }
 
@@ -326,6 +328,7 @@ public class ZoneEnemyLevelState
 }
 
 [Serializable]
+// Stores the forced first-entry path to a zone HeroUnion. These cells are movement permission, not just fog reveal.
 public class ZoneEntryGuidanceProgressState
 {
     [SerializeField] private bool active;
@@ -405,6 +408,7 @@ public class ZoneEntryGuidanceProgressState
         if (string.IsNullOrWhiteSpace(normalizedZoneId) || IsZoneCompleted(normalizedZoneId))
             return;
 
+        // Completed zones never restart guidance after revisits.
         completedZoneIds.Add(normalizedZoneId);
     }
 
@@ -445,6 +449,7 @@ public class ZoneEntryGuidanceProgressState
 }
 
 [Serializable]
+// World-state record for scene and runtime enemies. Runtime enemies can be rebuilt from this without scene objects.
 public class EnemyWorldState
 {
     public const string DefaultPrefabKey = "default";

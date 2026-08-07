@@ -42,6 +42,7 @@ public class ItemObject : MonoBehaviour
 
         if (animator != null)
         {
+            // Return the destroy delay so grid input can stay locked until the pickup animation finishes.
             animator.SetTrigger(GetTriggerName);
             Destroy(gameObject, getAnimationDestroyDelay);
             return getAnimationDestroyDelay;

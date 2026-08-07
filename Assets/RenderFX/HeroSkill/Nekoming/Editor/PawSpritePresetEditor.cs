@@ -13,6 +13,7 @@ namespace JC.VFX
             DIR + "/PawSpawn.prefab",  DIR + "/PawSpawn_Gold.prefab",
             DIR + "/PawWarp.prefab",   DIR + "/PawWarp_Gold.prefab",
             DIR + "/PawBeam.prefab",   DIR + "/PawBeam_Gold.prefab",
+            DIR + "/PawBeam_Miss.prefab", DIR + "/PawBeam_Gold_Miss.prefab",
             DIR + "/PawForYou.prefab", DIR + "/_Legacy/PawForYouMistake.prefab",
         };
 
@@ -20,7 +21,7 @@ namespace JC.VFX
         static readonly string[] TransformProps =
         {
             "spawnSocketName","spawnOffset","headSocketName","headOffset",
-            "size","canvasScale","billboardYOnly","bobAmp","bobFreq",
+            "size","canvasScale","billboardMode","anchorPin","anchorLocal","bobAmp","bobFreq",
             "toeCount","toeSpreadDeg","toeDist","toeRadius",
             "palmRadiusX","palmRadiusY","palmOffsetY","fusion",
             "padMainRadius","padMainSquash","padToeRadius","padToeDistMul",
@@ -61,7 +62,9 @@ namespace JC.VFX
                     var pso = new SerializedObject(p);
                     foreach (var f in Floats) CopyFloat(pso, so, f);
                     foreach (var c in Colors) so.FindProperty(c).colorValue = pso.FindProperty(c).colorValue;
-                    so.FindProperty("billboardYOnly").boolValue = p.billboardYOnly;
+                    so.FindProperty("billboardMode").enumValueIndex = (int)p.billboardMode;
+                    so.FindProperty("anchorPin").boolValue = p.anchorPin;
+                    so.FindProperty("anchorLocal").vector2Value = p.anchorLocal;
                     so.ApplyModifiedPropertiesWithoutUndo();
                     dirty = true;
                     applied++;
@@ -87,7 +90,9 @@ namespace JC.VFX
                     var pso = new SerializedObject(p);
                     foreach (var f in Floats) CopyFloat(so, pso, f);
                     foreach (var c in Colors) pso.FindProperty(c).colorValue = so.FindProperty(c).colorValue;
-                    pso.FindProperty("billboardYOnly").boolValue = so.FindProperty("billboardYOnly").boolValue;
+                    pso.FindProperty("billboardMode").enumValueIndex = so.FindProperty("billboardMode").enumValueIndex;
+                    pso.FindProperty("anchorPin").boolValue = so.FindProperty("anchorPin").boolValue;
+                    pso.FindProperty("anchorLocal").vector2Value = so.FindProperty("anchorLocal").vector2Value;
                     pso.ApplyModifiedPropertiesWithoutUndo();
                     EditorUtility.SetDirty(p);
                     Debug.Log("[PawSpritePreset] 현재값 캡처 완료");
