@@ -17,6 +17,9 @@ namespace JC.VFX
         {
             DIR + "/Prefabs/HealOrbit_Basic.prefab",
             DIR + "/Prefabs/HealOrbit_Alter.prefab",
+            // ★LFL 독립 사본(260807) — UsesPreset 가드 덕에 L4/L7 프리셋만 여기 닿는다(힐과 절연).
+            "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove/Prefabs/LFL_LandAura_Basic.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove/Prefabs/LFL_LandAura_Alter.prefab",
         };
 
         static readonly string[] TransformProps =

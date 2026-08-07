@@ -75,5 +75,14 @@ namespace JC.VFX
             if (target.name.EndsWith("_Alter")) return "_Alter";
             return null;
         }
+
+        /// <summary>
+        /// ★소속 스킬 분기(260807) — 프리셋 자산이 LetsFightingLove 폴더 소속이면 true.
+        /// 같은 프리셋 클래스를 힐·LFL 이 공유하므로, 에디터의 적용/캡처 대상(재질·프리팹)은
+        /// 「프리셋이 어느 스킬 폴더에 사는가」로 가른다 — LFL 튜닝이 힐 자산을 덮지 않게(완전 절연).
+        /// </summary>
+        public static bool IsLfl(Object target)
+            => target != null && AssetDatabase.GetAssetPath(target).Replace('\\', '/')
+                                              .Contains("/LetsFightingLove/");
     }
 }

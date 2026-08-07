@@ -19,6 +19,9 @@ namespace JC.VFX
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawForYou.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/PawForYouMistake.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/Taosenaiyo.prefab",
+            // ★LFL 독립 사본(260807) — UsesPreset 가드 덕에 L8 프리셋만 여기 닿는다(힐과 절연).
+            "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove/Prefabs/LFL_LandAura_Basic.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove/Prefabs/LFL_LandAura_Alter.prefab",
         };
 
         // 따름 잠금 대상 = 색·밝기를 제외한 전부(스폰·배치·바운스·크기·형태). Paw P3 변형용 — 힐 8번 공용은 따름 끔.

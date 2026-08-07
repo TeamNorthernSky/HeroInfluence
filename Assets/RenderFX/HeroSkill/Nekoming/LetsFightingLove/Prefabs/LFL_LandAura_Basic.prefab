@@ -44,8 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a0afa7dc41bb7d45a87cad4b9df9879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trailMaterial: {fileID: 2100000, guid: 79e1d1f35db3224488e16f5315354543, type: 2}
-  preset: {fileID: 11400000, guid: 28664641e232700418e3f7ac06ab0124, type: 2}
+  trailMaterial: {fileID: 2100000, guid: b2cc8e7f59aeaf80ab29d390f829056c, type: 2}
+  preset: {fileID: 11400000, guid: 5c52eac7eb92611b71d1c211950766b4, type: 2}
   livePreview: 1
   radius: 0.8
   radiusNoise: 0.05
@@ -190,7 +190,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4ce2c25111834d341a0383f751850f49, type: 2}
+  - {fileID: 2100000, guid: 0dfda11081729cce590b8a6c0f593f39, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07e7e4251e062ff4d9a5c0b80c5ce2b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  preset: {fileID: 11400000, guid: 8c0899d4be1025046bd66e1f9b5f0a90, type: 2}
+  preset: {fileID: 11400000, guid: c01d8df2c67100361b85d4922c4de6d4, type: 2}
   livePreview: 1
   discRadius: 0.5
   rayRadius: 0.61
@@ -284,8 +284,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a20b10f85665490408ee33bbf618b3cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  crossMaterial: {fileID: 2100000, guid: 6bc66f74fe7ef8b4e9dabe7acf514120, type: 2}
-  preset: {fileID: 11400000, guid: ad850cda30a38294cab4455814630201, type: 2}
+  crossMaterial: {fileID: 2100000, guid: 4c3f3a4e217a732b439f2bbc6f972b60, type: 2}
+  preset: {fileID: 11400000, guid: d9debff8bd470207e8fea8c08d51d8cc, type: 2}
   livePreview: 1
   maxCrosses: 10
   spawnIntervalMin: 0.18
@@ -376,7 +376,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 45540f9097d1b6249a54259398dc5536, type: 2}
+  - {fileID: 2100000, guid: bcf8dfb3ea795d65bb3d430f0e815211, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -410,7 +410,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef64991f837b174b98434ef0c815919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  preset: {fileID: 11400000, guid: 976b5c5312663474abf8887b9f275e04, type: 2}
+  preset: {fileID: 11400000, guid: da49a02e9eca566ac65bffa563940efa, type: 2}
   livePreview: 1
   width: 1.24
   height: 1.92
@@ -5218,7 +5218,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 18e853ab8fb36e9459557051320cd395, type: 2}
+  - {fileID: 2100000, guid: c42d18fdc89a74ee62048fada2990794, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5333,8 +5333,8 @@ MonoBehaviour:
   auraGlow: {fileID: 7645606281272520335}
   crossBurst: {fileID: 5588614151696583862}
   groundShine: {fileID: 3919287612333428652}
-  masterPreset: {fileID: 11400000, guid: 0fd0f8a54b7e7264496a385f756045da, type: 2}
-  preset: {fileID: 11400000, guid: 54b77a1ac866b614f872b12b7094c7d8, type: 2}
+  masterPreset: {fileID: 11400000, guid: de8ed703f8cd81b7e94bee414d6e6a91, type: 2}
+  preset: {fileID: 11400000, guid: 89b16b7d6b41cdb868782c10e94fb735, type: 2}
   livePreview: 1
   orbSparkles: {fileID: 653721493007381407}
   sparklePreset: {fileID: 11400000, guid: 63b7c19867d5cba4d8bc8828522535ad, type: 2}
@@ -5393,8 +5393,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a0afa7dc41bb7d45a87cad4b9df9879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trailMaterial: {fileID: 2100000, guid: 79e1d1f35db3224488e16f5315354543, type: 2}
-  preset: {fileID: 11400000, guid: 074ffbbef910de84da9469e602439a46, type: 2}
+  trailMaterial: {fileID: 2100000, guid: b2cc8e7f59aeaf80ab29d390f829056c, type: 2}
+  preset: {fileID: 11400000, guid: e31c229ffb9dbb1991459427beb6f6e2, type: 2}
   livePreview: 1
   radius: 0.8
   radiusNoise: 0.05
@@ -5505,7 +5505,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 65fc718cfc8033a409218d16e2ba272b, type: 2}
+  - {fileID: 2100000, guid: f5cc52055db78c1c73af6fefc85ad4bd, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5588,7 +5588,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 62526621517261f408a61aa89e9bd7d7, type: 2}
+  - {fileID: 2100000, guid: 2c0727ef9e815d8186f2a2ae2622e0a7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

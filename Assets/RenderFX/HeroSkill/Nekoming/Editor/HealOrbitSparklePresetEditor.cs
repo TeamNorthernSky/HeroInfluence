@@ -12,8 +12,12 @@ namespace JC.VFX
     public class HealOrbitSparklePresetEditor : Editor
     {
         const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
+        const string LFL = "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove";
         string Sfx => JcPresetEditorUtil.VariantSuffix(target) ?? "_Alter";
-        string OrbitPrefab => DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab";
+        // ★소속 분기 — L10(LFL) 프리셋이면 LFL_LandAura 프리팹만 만진다(힐과 완전 절연, 260807).
+        string OrbitPrefab => JcPresetEditorUtil.IsLfl(target)
+            ? LFL + "/Prefabs/LFL_LandAura" + Sfx + ".prefab"
+            : DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab";
 
         static readonly string[] TransformProps = { "rate", "sizeMin", "sizeMax", "lifetime", "shapeRadius" };
 

@@ -7,11 +7,14 @@ namespace JC.VFX
     public class HealOrbitPresetEditor : Editor
     {
         const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
-        static string MatCoreInner => DIR + "/Materials/HealOrbitCoreInner.mat";   // ★공용 재질(변종 색은 라이브 MPB)
-        static string MatRimShell  => DIR + "/Materials/HealOrbitRimShell.mat";
+        const string LFL = "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove";
+        // ★소속 분기 — L3(LFL) 프리셋이면 LFL 전용 재질·프리팹만 만진다(힐과 완전 절연, 260807).
+        bool Lfl => JcPresetEditorUtil.IsLfl(target);
+        string MatCoreInner => Lfl ? LFL + "/Materials/LFL_OrbitCoreInner.mat" : DIR + "/Materials/HealOrbitCoreInner.mat";   // ★B/A 공용 재질(변종 색은 라이브 MPB)
+        string MatRimShell  => Lfl ? LFL + "/Materials/LFL_OrbitRimShell.mat"  : DIR + "/Materials/HealOrbitRimShell.mat";
         // ★변종 인식 — _Basic/_Alter 프리셋은 제 프리팹만 만진다.
         string Sfx => JcPresetEditorUtil.VariantSuffix(target) ?? "_Alter";
-        string OrbitPrefab => DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab";
+        string OrbitPrefab => Lfl ? LFL + "/Prefabs/LFL_LandAura" + Sfx + ".prefab" : DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab";
 
         static readonly string[] TransformProps =
         {
