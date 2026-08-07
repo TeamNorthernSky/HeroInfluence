@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a71d0348b10c5d46ade2cd27df1f592, type: 3}
+  m_Name: T2_TaoAuraFlare_Basic
+  m_EditorClassIdentifier: 
+  followBasic: 0
+  basicRef: {fileID: 0}
+  width: 0.8
+  height: 1.65
+  groundOffsetY: 0.02
+  riseGrow: 0.375
+  flare: 0
+  flareCurve: 0.5
+  baseBoost: 1.45
+  baseColor: {r: 0.475, g: 0.865, b: 1, a: 1}
+  baseIntensity: 1.2
+  lineColor: {r: 0.3625, g: 0.775, b: 1, a: 1}
+  lineIntensity: 3.2
+  opacity: 1
+  bottomFade: 0
+  verticalBias: 1.24
+  topMin: 0.72
+  topMax: 1
+  topSoft: 0.372
+  topNoiseScale: 7.02
+  topNoiseSpeed: 1.29
+  facePower: 2.3
+  lineCount: 50
+  lineWidth: 0.18
+  lineSharp: 0.026
+  dashFreq: 1.36
+  dashDuty: 0.65
+  scrollSpeed: 2.4

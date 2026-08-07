@@ -18,11 +18,31 @@ namespace JC.VFX
         [Header("크기 / 위치 (월드 m)")]
         [SerializeField] private float radius = 1.1f;
         [SerializeField] private float groundOffsetY = 0.02f;
-        [Range(0f, 1f)] [SerializeField] private float spreadGrow = 0.5f;
+        [Tooltip("전방 오프셋(m) — 수직 모드 전용(260807).")]
+        [Range(0f, 5f)] [SerializeField] private float forwardOffset = 0f;
+
+        [Header("등장 (선형보간, 260807 — livePreview 시 preset 사용)")]
+        [Tooltip("등장 보간 시간(초). 0 = 즉시(기존 동작).")]
+        [Range(0f, 2f)] [SerializeField] private float appearTime = 0f;
+        [Range(0f, 1f)] [SerializeField] private float appearStartScale = 0.3f;
+        [Range(0f, 1f)] [SerializeField] private float appearStartAlpha = 0f;
+        private float _appearT;
 
         [Header("색 (livePreview 시 preset 사용)")]
         [ColorUsage(true, true)] [SerializeField] private Color color = new Color(1f, 0.85f, 0.35f);
         [Range(0f, 8f)] [SerializeField] private float intensity = 2.2f;
+
+        [Header("배치 모드")]
+        [Tooltip("★수직 모드(260807, 배리지 손앞 마법진) — 바닥에 눕히지 않고 SetFacing 방향을 바라보는 수직 배치.\n" +
+                 "OFF = 기존 장판(바닥 수평). 부활 오라는 OFF 그대로.")]
+        [SerializeField] private bool upright;
+        private Vector3 _facing = Vector3.forward;
+
+        /// <summary>수직 모드의 바라볼 방향(시전자 전방 등). 호출자가 Play 전후 아무 때나 넣는다.</summary>
+        public void SetFacing(Vector3 f) { if (f.sqrMagnitude > 1e-6f) _facing = f.normalized; }
+
+        /// <summary>수직 모드 토글 — 절차 조립(배리지)용.</summary>
+        public void SetUpright(bool on) => upright = on;
 
         private MeshRenderer _mr;
         private MaterialPropertyBlock _mpb;
@@ -55,6 +75,12 @@ namespace JC.VFX
         private static readonly int RotOuterID = Shader.PropertyToID("_RotOuter");
         private static readonly int PulseAmpID = Shader.PropertyToID("_PulseAmp");
         private static readonly int PulseFreqID = Shader.PropertyToID("_PulseFreq");
+        private static readonly int RingIntensityID = Shader.PropertyToID("_RingIntensity");
+        private static readonly int HexIntensityID = Shader.PropertyToID("_HexIntensity");
+        private static readonly int SquareIntensityID = Shader.PropertyToID("_SquareIntensity");
+        private static readonly int SatIntensityID = Shader.PropertyToID("_SatIntensity");
+        private static readonly int SpokeIntensityID = Shader.PropertyToID("_SpokeIntensity");
+        private static readonly int TickIntensityID = Shader.PropertyToID("_TickIntensity");
         private static readonly int CenterGlowID = Shader.PropertyToID("_CenterGlow");
         private static readonly int CenterFalloffID = Shader.PropertyToID("_CenterFalloff");
         private static readonly int EdgeFadeID = Shader.PropertyToID("_EdgeFade");
@@ -75,6 +101,7 @@ namespace JC.VFX
             _center = center;
             if (livePreview && preset) PullFromPreset();
             _playing = true;
+            _appearT = 0f;   // 등장 보간 재시작
             _mr.enabled = true;
             Apply();
         }
@@ -90,61 +117,92 @@ namespace JC.VFX
         private void Update()
         {
             if (!_playing) return;
+            _appearT += Time.deltaTime;
             if (livePreview && preset) PullFromPreset();
             Apply();
         }
 
         private void PullFromPreset()
         {
-            radius = preset.radius;
-            groundOffsetY = preset.groundOffsetY;
-            spreadGrow = preset.spreadGrow;
+            // ★라이브 따름(260807) — 형태·움직임은 TransformSource(Alter→Basic), 색·밝기만 자기 것.
+            //   이거 없이는 「Alter 인스펙터는 잠겨 있는데 라이브는 잠긴 자기 값을 읽는」 모순이 생긴다.
+            var t = preset.TransformSource;
+            radius = t.radius;
+            groundOffsetY = t.groundOffsetY;
+            forwardOffset = t.forwardOffset;
+            appearTime = t.appearTime;
+            appearStartScale = t.appearStartScale;
+            appearStartAlpha = t.appearStartAlpha;
             color = preset.color;
             intensity = preset.intensity;
         }
 
         private void Apply()
         {
-            float grow = Mathf.Lerp(1f - spreadGrow, 1f, _envelope);
-            float size = Mathf.Max(radius, 1e-4f) * 2f * grow;
+            // ★등장 선형보간(260807) — 크기·알파가 초기값→1 로 등속 증가. appearTime 0 = 즉시.
+            //   (구 spreadGrow 엔벨로프 팝은 등장 보간으로 대체·폐지 — 엔벨로프는 이제 알파만 쥔다)
+            float appear01 = appearTime > 1e-4f ? Mathf.Clamp01(_appearT / appearTime) : 1f;
+            float appearScale = Mathf.Lerp(appearStartScale, 1f, appear01);
+            float appearAlpha = Mathf.Lerp(appearStartAlpha, 1f, appear01);
+
+            float size = Mathf.Max(radius, 1e-4f) * 2f * appearScale;
             transform.localScale = new Vector3(size, size, 1f);
-            transform.position = _center + Vector3.up * groundOffsetY;
-            transform.rotation = Quaternion.Euler(90f, 0f, 0f);   // 바닥에 눕힘
+            if (upright)
+            {
+                // 수직 배치 — 손앞 마법진. groundOffsetY(위) + forwardOffset(전방·바라보는 방향)로 미세 조정.
+                transform.position = _center + Vector3.up * groundOffsetY + _facing * forwardOffset;
+                transform.rotation = Quaternion.LookRotation(_facing);
+            }
+            else
+            {
+                transform.position = _center + Vector3.up * groundOffsetY;
+                transform.rotation = Quaternion.Euler(90f, 0f, 0f);   // 바닥에 눕힘
+            }
 
             if (_mpb == null) _mpb = new MaterialPropertyBlock();
             _mr.GetPropertyBlock(_mpb);
             if (livePreview && preset)
             {
+                var t = preset.TransformSource;   // ★따름 — 문양·회전·펄스는 Basic 정본
                 _mpb.SetColor(ColorID, color);
                 _mpb.SetFloat(IntensityID, intensity);
-                _mpb.SetFloat(Ring1ID, preset.ring1);
-                _mpb.SetFloat(Ring2ID, preset.ring2);
-                _mpb.SetFloat(Ring3ID, preset.ring3);
-                _mpb.SetFloat(LineWidthID, preset.lineWidth);
-                _mpb.SetFloat(LineSoftID, preset.lineSoft);
-                _mpb.SetFloat(HexRadiusID, preset.hexRadius);
-                _mpb.SetFloat(HexWidthID, preset.hexWidth);
-                _mpb.SetFloat(SquareRadiusID, preset.squareRadius);
-                _mpb.SetFloat(SquareWidthID, preset.squareWidth);
-                _mpb.SetFloat(SatOrbitID, preset.satOrbit);
-                _mpb.SetFloat(SatCountID, preset.satCount);
-                _mpb.SetFloat(SatRadiusID, preset.satRadius);
-                _mpb.SetFloat(SpokeCountID, preset.spokeCount);
-                _mpb.SetFloat(SpokeInnerID, preset.spokeInner);
-                _mpb.SetFloat(SpokeOuterID, preset.spokeOuter);
-                _mpb.SetFloat(TickRadiusID, preset.tickRadius);
-                _mpb.SetFloat(TickWidthID, preset.tickWidth);
-                _mpb.SetFloat(TickCountID, preset.tickCount);
-                _mpb.SetFloat(TickDutyID, preset.tickDuty);
-                _mpb.SetFloat(RotInnerID, preset.rotInner);
-                _mpb.SetFloat(RotOuterID, preset.rotOuter);
-                _mpb.SetFloat(PulseAmpID, preset.pulseAmp);
-                _mpb.SetFloat(PulseFreqID, preset.pulseFreq);
+                _mpb.SetFloat(Ring1ID, t.ring1);
+                _mpb.SetFloat(Ring2ID, t.ring2);
+                _mpb.SetFloat(Ring3ID, t.ring3);
+                _mpb.SetFloat(LineWidthID, t.lineWidth);
+                _mpb.SetFloat(LineSoftID, t.lineSoft);
+                _mpb.SetFloat(HexRadiusID, t.hexRadius);
+                _mpb.SetFloat(HexWidthID, t.hexWidth);
+                _mpb.SetFloat(SquareRadiusID, t.squareRadius);
+                _mpb.SetFloat(SquareWidthID, t.squareWidth);
+                _mpb.SetFloat(SatOrbitID, t.satOrbit);
+                _mpb.SetFloat(SatCountID, t.satCount);
+                _mpb.SetFloat(SatRadiusID, t.satRadius);
+                _mpb.SetFloat(SpokeCountID, t.spokeCount);
+                _mpb.SetFloat(SpokeInnerID, t.spokeInner);
+                _mpb.SetFloat(SpokeOuterID, t.spokeOuter);
+                _mpb.SetFloat(TickRadiusID, t.tickRadius);
+                _mpb.SetFloat(TickWidthID, t.tickWidth);
+                _mpb.SetFloat(TickCountID, t.tickCount);
+                _mpb.SetFloat(TickDutyID, t.tickDuty);
+                _mpb.SetFloat(RotInnerID, t.rotInner);
+                _mpb.SetFloat(RotOuterID, t.rotOuter);
+                // ★요소별 밝기(260807) — 문양 배분은 형태 취급 = 따름(t).
+                _mpb.SetFloat(RingIntensityID, t.ringIntensity);
+                _mpb.SetFloat(HexIntensityID, t.hexIntensity);
+                _mpb.SetFloat(SquareIntensityID, t.squareIntensity);
+                _mpb.SetFloat(SatIntensityID, t.satIntensity);
+                _mpb.SetFloat(SpokeIntensityID, t.spokeIntensity);
+                _mpb.SetFloat(TickIntensityID, t.tickIntensity);
+                // ★중심 광채(260807 재편) — 밝기는 변종 자유(preset), 퍼짐·깜빡임은 따름(t).
+                //   퍼짐(0~1, 값↑=넓게)은 셰이더 감쇠 지수로 역매핑, 주기(초)는 rad/s 로 환산.
+                _mpb.SetFloat(PulseAmpID, t.centerPulseAmp);
+                _mpb.SetFloat(PulseFreqID, (2f * Mathf.PI) / Mathf.Max(t.centerPulsePeriod, 0.1f));
                 _mpb.SetFloat(CenterGlowID, preset.centerGlow);
-                _mpb.SetFloat(CenterFalloffID, preset.centerFalloff);
-                _mpb.SetFloat(EdgeFadeID, preset.edgeFade);
+                _mpb.SetFloat(CenterFalloffID, Mathf.Lerp(8f, 0.5f, t.centerSpread));
+                _mpb.SetFloat(EdgeFadeID, t.edgeFade);
             }
-            _mpb.SetFloat(FadeMulID, _envelope);
+            _mpb.SetFloat(FadeMulID, _envelope * appearAlpha);   // 엔벨로프 × 등장 알파(선형)
             _mr.SetPropertyBlock(_mpb);
         }
     }
