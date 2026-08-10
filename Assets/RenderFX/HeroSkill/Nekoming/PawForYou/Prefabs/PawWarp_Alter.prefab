@@ -61,7 +61,7 @@ PrefabInstance:
     - target: {fileID: 2777668551892851515, guid: b53b82f0a4010384eb97bc2db984a941,
         type: 3}
       propertyPath: m_Name
-      value: PawWarp_Gold
+      value: PawWarp_Alter
       objectReference: {fileID: 0}
     - target: {fileID: 5280030132326235134, guid: b53b82f0a4010384eb97bc2db984a941,
         type: 3}

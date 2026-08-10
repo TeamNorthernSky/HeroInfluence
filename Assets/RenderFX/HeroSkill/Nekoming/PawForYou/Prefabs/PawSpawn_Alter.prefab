@@ -61,7 +61,7 @@ PrefabInstance:
     - target: {fileID: 2777668551892851515, guid: 4cc54880b590f8d45999864a10ee1f8c,
         type: 3}
       propertyPath: m_Name
-      value: PawSpawn_Gold
+      value: PawSpawn_Alter
       objectReference: {fileID: 0}
     - target: {fileID: 5280030132326235134, guid: 4cc54880b590f8d45999864a10ee1f8c,
         type: 3}

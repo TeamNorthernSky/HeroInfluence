@@ -188,7 +188,7 @@ PrefabInstance:
     - target: {fileID: 2777668551892851515, guid: 316690d192b6b36428c9368fb6be146f,
         type: 3}
       propertyPath: m_Name
-      value: PawBeam_Gold
+      value: PawBeam_Alter
       objectReference: {fileID: 0}
     - target: {fileID: 5280030132326235134, guid: 316690d192b6b36428c9368fb6be146f,
         type: 3}
