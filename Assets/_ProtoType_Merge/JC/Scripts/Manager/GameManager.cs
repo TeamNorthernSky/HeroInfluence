@@ -76,6 +76,9 @@ public class GameManager : MonoBehaviour
         if (Lab != null) Lab.Reset();
         if (Workshop != null) Workshop.Reset();
 
+        // Static battle settings must not carry over into a new game session.
+        BattleRuntimeSettings.Reset();
+
         DHGameProgressResetService.ResetDHProgress(); // DH 레포 + HQVisit + CombatContext + MapProgress + DHGameEndState
 
         initialAutoSaveDone = false; // [KJ 260707] 다음 새 게임의 첫 로비 도착 자동 저장 재활성화
