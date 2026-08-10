@@ -116,18 +116,24 @@ namespace JC.VFX
                 case Segment.Beam:
                     // 대상 위에서 발이 다시 나타나는 지점부터 시작한다.
                     EnterPhase(Phase.WarpIn);
-                    paw.Show();
-                    paw.SetBasePosition(TargetHead());
-                    paw.SetScaleMul(0f);
-                    paw.SetEnvelope(1f);
+                    if (paw)
+                    {
+                        paw.Show();
+                        paw.SetBasePosition(TargetHead());
+                        paw.SetScaleMul(0f);
+                        paw.SetEnvelope(1f);
+                    }
                     break;
 
                 default:   // All · Spawn
                     EnterPhase(Phase.Appear);
-                    paw.Show();
-                    paw.SetBasePosition(CasterAnchor());
-                    paw.SetScaleMul(0f);
-                    paw.SetEnvelope(1f);
+                    if (paw)
+                    {
+                        paw.Show();
+                        paw.SetBasePosition(CasterAnchor());
+                        paw.SetScaleMul(0f);
+                        paw.SetEnvelope(1f);
+                    }
                     break;
             }
             IsPlaying = true;
