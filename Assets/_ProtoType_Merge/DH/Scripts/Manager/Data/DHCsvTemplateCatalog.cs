@@ -9,8 +9,6 @@ public class DHCsvTemplateCatalog : MonoBehaviour
 
     public static DHCsvTemplateCatalog Instance { get; private set; }
 
-    private CSVDataLoad csvDataLoad;
-
     [Header("SO DataTables (Excel Importer)")]
     [SerializeField] private PlayerUnitDataTable    playerUnitDataTable;
     [SerializeField] private EnemyUnitDataTable enemyUnitInfoDataTable;
@@ -20,7 +18,6 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     [SerializeField] private EnemyGroupDataTable    enemyGroupDataTable;
 
     [Header("Settings")]
-    [SerializeField] private bool useSOTables      = false;
     [SerializeField] private bool loadOnAwake      = true;
     [SerializeField] private bool dontDestroyOnLoad = true;
 
@@ -34,9 +31,13 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<string, EnemyData>         enemyTemplateLookup  = new Dictionary<string, EnemyData>();
     private readonly Dictionary<string, DHEnemyUnitTemplate> enemyUnitTemplateLookup = new Dictionary<string, DHEnemyUnitTemplate>();
     private readonly Dictionary<int,    WeaponData>        weaponLookup         = new Dictionary<int, WeaponData>();
+    private readonly Dictionary<string, WeaponData>        weaponByKey          = new Dictionary<string, WeaponData>();              // §5-3 string 병렬 조회
     private readonly Dictionary<int,    DHWeaponTemplate>  weaponTemplateLookup = new Dictionary<int, DHWeaponTemplate>();
+    private readonly Dictionary<string, DHWeaponTemplate>  weaponTemplateByKey  = new Dictionary<string, DHWeaponTemplate>();         // §5-3 string 병렬 조회
     private readonly Dictionary<int,    SkillData>         skillTemplates       = new Dictionary<int, SkillData>();
+    private readonly Dictionary<string, SkillData>         skillTemplatesByKey  = new Dictionary<string, SkillData>();               // §5-3 string 병렬 조회
     private readonly Dictionary<int,    DHClassSkillTemplate> classSkillTemplateLookup = new Dictionary<int, DHClassSkillTemplate>();
+    private readonly Dictionary<string, DHClassSkillTemplate> classSkillTemplateByKey  = new Dictionary<string, DHClassSkillTemplate>();  // §5-3 string 병렬 조회
     private readonly List<LevelUpData>                     levelUpTemplates     = new List<LevelUpData>();
     private readonly List<DHUnitGrowthTemplate>            unitGrowthTemplates  = new List<DHUnitGrowthTemplate>();
     private readonly Dictionary<string, DHEnemyGroupTemplate> enemyGroupLookup  = new Dictionary<string, DHEnemyGroupTemplate>();
@@ -81,10 +82,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         ClearCache();
 
-        if (useSOTables)
-            ReloadFromSOTables();
-        else
-            ReloadFromCSV();
+        // CSV 로더 경로 제거됨 — SO(Excel Importer) 캐싱 데이터만 사용.
+        ReloadFromSOTables();
     }
 
     public bool TryGetPlayerTemplate(string unitTemplateKey, out UnitData template)
@@ -159,6 +158,48 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         EnsureLoaded();
         if (skillIndex <= 0) { template = null; return false; }
         return classSkillTemplateLookup.TryGetValue(skillIndex, out template);
+    }
+
+    // ───────────────────────────────────────────────────────────
+    // §5-3 string 키 조회 API (기존 int API와 병렬). 소비부는 점진적으로 이쪽으로 이행.
+    // ───────────────────────────────────────────────────────────
+    public bool TryGetWeapon(string weaponKey, out WeaponData weaponData)
+    {
+        EnsureLoaded();
+        if (string.IsNullOrWhiteSpace(weaponKey)) { weaponData = null; return false; }
+        return weaponByKey.TryGetValue(weaponKey.Trim(), out weaponData);
+    }
+
+    public bool TryGetWeaponTemplate(string weaponKey, out DHWeaponTemplate template)
+    {
+        EnsureLoaded();
+        if (string.IsNullOrWhiteSpace(weaponKey)) { template = null; return false; }
+        return weaponTemplateByKey.TryGetValue(weaponKey.Trim(), out template);
+    }
+
+    public bool TryGetWeaponStats(string weaponKey, out EquipmentStatBlock equipmentStats)
+    {
+        if (TryGetWeaponTemplate(weaponKey, out DHWeaponTemplate template))
+        {
+            equipmentStats = EquipmentStatBlock.FromStatBlock(template.GetBonusStatsAtLevel(1));
+            return true;
+        }
+        equipmentStats = default;
+        return false;
+    }
+
+    public SkillData GetSkillTemplate(string skillKey)
+    {
+        EnsureLoaded();
+        if (string.IsNullOrWhiteSpace(skillKey)) return null;
+        return skillTemplatesByKey.TryGetValue(skillKey.Trim(), out SkillData data) ? data : null;
+    }
+
+    public bool TryGetClassSkillTemplate(string skillKey, out DHClassSkillTemplate template)
+    {
+        EnsureLoaded();
+        if (string.IsNullOrWhiteSpace(skillKey)) { template = null; return false; }
+        return classSkillTemplateByKey.TryGetValue(skillKey.Trim(), out template);
     }
 
     public IReadOnlyList<LevelUpData> GetLevelUpTemplates()
@@ -587,6 +628,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 RegisterClassSkillTemplate(template);
                 SkillData skill = ConvertClassSkill(template);
                 skillTemplates.Add(skill.skillIndex, skill);
+                if (!string.IsNullOrEmpty(skill.skillKey)) skillTemplatesByKey[skill.skillKey] = skill;   // §5-3 string 병렬
 
             }
         }
@@ -612,6 +654,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 RegisterWeaponTemplate(template);
                 WeaponData weapon = ConvertWeapon(template);
                 weaponLookup.Add(weapon.WeaponIndex, weapon);
+                if (!string.IsNullOrEmpty(weapon.weaponKey)) weaponByKey[weapon.weaponKey] = weapon;   // §5-3 string 병렬
                 cachedWeapons.Add(weapon);
             }
         }
@@ -913,7 +956,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             skill = new SkillData
             {
-                skillIndex      = skillIndex,
+                skillIndex      = skillIndex,   // [TEMP:STRKEY] 레거시 int 브리지
+                skillKey        = EnemySkillKeyRules.Compose(src.EnemyIndex, slot),
+                category        = SkillCategory.Enemy,
+                slot            = slot,
                 skillClass      = src.EnemyName,
                 acquireLevel    = 1,
                 skillName       = src.EnemySkill1_Name,
@@ -935,7 +981,10 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             skill = new SkillData
             {
-                skillIndex      = skillIndex,
+                skillIndex      = skillIndex,   // [TEMP:STRKEY] 레거시 int 브리지
+                skillKey        = EnemySkillKeyRules.Compose(src.EnemyIndex, slot),
+                category        = SkillCategory.Enemy,
+                slot            = slot,
                 skillClass      = src.EnemyName,
                 acquireLevel    = 1,
                 skillName       = src.EnemySkill2_Name,
@@ -955,14 +1004,16 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         skillTemplates.Add(skillIndex, skill);
+        if (!string.IsNullOrEmpty(skill.skillKey)) skillTemplatesByKey[skill.skillKey] = skill;   // §5-3 string 병렬
     }
 
     private static DHWeaponTemplate ConvertWeaponTemplate(PlayerWeaponData src)
     {
         if (src == null) return null;
         int weaponIndex = ExtractNumericId(src.WeaponIndex);
+        // §5-1 키 원본 보존: ExtractNumericId 손실 제거 (HC001 그대로 유지). NumericWeaponId는 하위호환용으로 병존.
         return new DHWeaponTemplate(
-            weaponIndex > 0 ? weaponIndex.ToString() : src.WeaponIndex,
+            string.IsNullOrWhiteSpace(src.WeaponIndex) ? string.Empty : src.WeaponIndex.Trim(),
             weaponIndex,
             ResolveWeaponClass(weaponIndex),
             src.WeaponName,
@@ -1037,7 +1088,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             src.BonusCounterRate,
             src.BonusReduceRate,
             src.BonusSpeed,
-            src.WeaponSkillIndex,
+            src.WeaponSkillIndex.ToString(),
             src.WeaponSkillName,
             src.WeaponSkillDescription,
             src.IPCost,
@@ -1065,7 +1116,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         if (src == null) return null;
         return new WeaponData
         {
-            WeaponIndex          = src.NumericWeaponId,
+            WeaponIndex          = src.NumericWeaponId,   // [TEMP:STRKEY] 레거시 int 브리지
+            weaponKey            = src.WeaponKey,
             weaponClass          = src.WeaponClass,
             WeaponName           = src.WeaponName,
             WeaponDescription    = src.WeaponDescription,
@@ -1076,7 +1128,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             BonusCounterRate     = src.BonusCounterRate,
             BonusReduceRate      = src.BonusReduceRate,
             BonusSpeed           = src.BonusSpeed,
-            WeaponSkillIndex     = src.WeaponSkillIndex,
+            WeaponSkillIndex     = src.WeaponSkillIndex,   // [TEMP:STRKEY] 레거시 int 브리지
+            weaponSkillKey       = src.WeaponSkillKey,
             WeaponSkillName      = src.WeaponSkillName,
             WeaponSkillDescription = src.WeaponSkillDescription,
             IPCost               = src.IpCost,
@@ -1158,6 +1211,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         weaponTemplateLookup.Add(template.NumericWeaponId, template);
+        if (!string.IsNullOrEmpty(template.WeaponKey)) weaponTemplateByKey[template.WeaponKey] = template;   // §5-3 string 병렬
     }
 
     private void RegisterClassSkillTemplate(DHClassSkillTemplate template)
@@ -1168,6 +1222,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         classSkillTemplateLookup.Add(template.NumericSkillId, template);
+        if (!string.IsNullOrEmpty(template.SkillKey)) classSkillTemplateByKey[template.SkillKey] = template;   // §5-3 string 병렬
     }
 
     private static string ResolveWeaponClass(int weaponIndex)
@@ -1188,7 +1243,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         if (src == null) return null;
         int classSkillIndex = ExtractNumericId(src.ClassSkillIndex);
-        string skillKey = classSkillIndex > 0 ? classSkillIndex.ToString() : src.ClassSkillIndex;
+        // §5-1 키 원본 보존: ExtractNumericId 손실 제거 (HS1010 그대로 유지). NumericSkillId는 하위호환용으로 병존.
+        string skillKey = string.IsNullOrWhiteSpace(src.ClassSkillIndex) ? string.Empty : src.ClassSkillIndex.Trim();
         return new DHClassSkillTemplate(
             skillKey,
             classSkillIndex,
@@ -1257,7 +1313,9 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         if (src == null) return null;
         return new SkillData
         {
-            skillIndex          = src.NumericSkillId,
+            skillIndex          = src.NumericSkillId,   // [TEMP:STRKEY] 레거시 int 브리지
+            skillKey            = src.SkillKey,
+            category            = SkillCategory.Class,
             skillClass          = src.ClassName,
             acquireLevel        = src.AcquireLevel,
             skillName           = src.SkillName,
@@ -1326,101 +1384,6 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             null);
     }
 
-    // CSV load path.
-
-    private void ReloadFromCSV()
-    {
-        if (!TryResolveCsvDataLoad())
-        {
-            Debug.LogError("[DHCsvTemplateCatalog] CSVDataLoad could not be found. Add it to the scene or assign it in the inspector.", this);
-            return;
-        }
-
-        TextAsset effectivePlayer = csvDataLoad.GetEffectivePlayerUnitCsv();
-        TextAsset enemyTa  = csvDataLoad.GetEnemyUnitCsv();
-        TextAsset weaponTa = csvDataLoad.GetWeaponSheetCsv();
-
-        // Players
-        List<UnitData> playerTemplates = LoadPlayerUnitsForCatalog(effectivePlayer, enemyTa);
-        for (int i = 0; i < playerTemplates.Count; i++)
-        {
-            DHPlayerUnitTemplate template = ConvertPlayerUnitTemplate(playerTemplates[i]);
-            if (template == null || string.IsNullOrWhiteSpace(template.UnitKey)) continue;
-
-            string playerKey = NormalizeNumericTemplateKey(template.UnitKey);
-            if (playerTemplateLookup.ContainsKey(playerKey))
-            {
-                Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate player unit key '{template.UnitKey}' skipped.", this);
-                continue;
-            }
-            RegisterPlayerUnitTemplate(template);
-            RegisterPlayerUnitIndexLists(template);
-            UnitData unit = ConvertPlayerUnit(template);
-            playerTemplateLookup.Add(playerKey, unit);
-            cachedPlayerTemplates.Add(unit);
-        }
-
-        // ??
-        EnemyCsvLoadResult enemyLoadResult = LoadEnemyCsvForCatalog(effectivePlayer, enemyTa);
-        List<EnemyData> enemyTemplates = enemyLoadResult != null ? enemyLoadResult.Enemies : new List<EnemyData>();
-        for (int i = 0; i < enemyTemplates.Count; i++)
-        {
-            DHEnemyUnitTemplate unitTemplate = ConvertEnemyUnitTemplate(enemyTemplates[i]);
-            if (unitTemplate == null || string.IsNullOrWhiteSpace(unitTemplate.EnemyKey)) continue;
-
-            string enemyKey = NormalizeNumericTemplateKey(unitTemplate.EnemyKey);
-            if (enemyUnitTemplateLookup.ContainsKey(enemyKey))
-            {
-                Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate enemy template key '{enemyKey}' skipped.", this);
-                continue;
-            }
-            RegisterEnemyUnitTemplate(unitTemplate);
-
-            EnemyData template = ConvertEnemyUnit(unitTemplate);
-            RegisterEnemyTemplate(template);
-            cachedEnemyTemplates.Add(template);
-        }
-
-        CacheClassSkillsIntoSkillTemplates(csvDataLoad.GetClassSkillSheetCsv());
-        MergeEnemySkillsIntoSkillTemplates(enemyLoadResult);
-
-        TextAsset levelUpTa = csvDataLoad.GetLevelUpSheetCsv();
-        if (levelUpTa != null)
-        {
-            List<LevelUpData> loadedLevelUpTemplates = CSVLoader.LoadLevelUpData(levelUpTa.text);
-            levelUpTemplates.AddRange(loadedLevelUpTemplates);
-            for (int i = 0; i < loadedLevelUpTemplates.Count; i++)
-            {
-                DHUnitGrowthTemplate template = ConvertUnitGrowthTemplate(loadedLevelUpTemplates[i]);
-                if (template != null)
-                    unitGrowthTemplates.Add(template);
-            }
-        }
-
-        List<WeaponData> weapons = LoadWeaponsForCatalog(weaponTa);
-        for (int i = 0; i < weapons.Count; i++)
-        {
-            DHWeaponTemplate template = ConvertWeaponTemplate(weapons[i]);
-            if (template == null || template.NumericWeaponId <= 0) continue;
-            if (weaponTemplateLookup.ContainsKey(template.NumericWeaponId))
-            {
-                Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate weapon index {template.NumericWeaponId} skipped.", this);
-                continue;
-            }
-            RegisterWeaponTemplate(template);
-            WeaponData weapon = ConvertWeapon(template);
-            weaponLookup.Add(weapon.WeaponIndex, weapon);
-            cachedWeapons.Add(weapon);
-        }
-
-        isLoaded = true;
-        Debug.Log($"[DHCsvTemplateCatalog][CSV] Loaded players={cachedPlayerTemplates.Count}, " +
-                  $"enemies={cachedEnemyTemplates.Count}, " +
-                  $"weapons={cachedWeapons.Count}, " +
-                  $"skills={skillTemplates.Count}, " +
-                  $"levelUps={levelUpTemplates.Count}.", this);
-    }
-
     // Common utilities.
 
     private void ClearCache()
@@ -1430,9 +1393,13 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         enemyTemplateLookup.Clear();
         enemyUnitTemplateLookup.Clear();
         weaponLookup.Clear();
+        weaponByKey.Clear();
         weaponTemplateLookup.Clear();
+        weaponTemplateByKey.Clear();
         skillTemplates.Clear();
+        skillTemplatesByKey.Clear();
         classSkillTemplateLookup.Clear();
+        classSkillTemplateByKey.Clear();
         levelUpTemplates.Clear();
         unitGrowthTemplates.Clear();
         cachedPlayerTemplates.Clear();
@@ -1450,104 +1417,4 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         if (!isLoaded) ReloadTemplates();
     }
 
-    private bool TryResolveCsvDataLoad()
-    {
-        if (csvDataLoad != null) return true;
-        csvDataLoad = GetComponent<CSVDataLoad>();
-        if (csvDataLoad != null) return true;
-        csvDataLoad = Object.FindObjectOfType<CSVDataLoad>(true);
-        return csvDataLoad != null;
-    }
-
-    private void CacheClassSkillsIntoSkillTemplates(TextAsset classSkillSheet)
-    {
-        if (classSkillSheet == null) return;
-        List<SkillData> rows = CSVLoader.LoadClassSkillData(classSkillSheet.text);
-        for (int i = 0; i < rows.Count; i++)
-        {
-            DHClassSkillTemplate template = ConvertClassSkillTemplate(rows[i]);
-            if (template == null) continue;
-            if (classSkillTemplateLookup.ContainsKey(template.NumericSkillId))
-            {
-                Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate class skill index {template.NumericSkillId} skipped.", this);
-                continue;
-            }
-
-            RegisterClassSkillTemplate(template);
-            SkillData skill = ConvertClassSkill(template);
-            if (skillTemplates.ContainsKey(skill.skillIndex))
-            {
-                Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate skill index {skill.skillIndex} skipped.", this);
-                continue;
-            }
-            skillTemplates.Add(skill.skillIndex, skill);
-        }
-    }
-
-    private void MergeEnemySkillsIntoSkillTemplates(EnemyCsvLoadResult enemyLoadResult)
-    {
-        if (enemyLoadResult?.Skills == null) return;
-        List<SkillData> skills = enemyLoadResult.Skills;
-        for (int i = 0; i < skills.Count; i++)
-        {
-            SkillData skill = skills[i];
-            if (skill == null) continue;
-            if (skillTemplates.ContainsKey(skill.skillIndex))
-            {
-                Debug.LogWarning($"[DHCsvTemplateCatalog] Duplicate skill index {skill.skillIndex} skipped.", this);
-                continue;
-            }
-            skillTemplates.Add(skill.skillIndex, skill);
-        }
-    }
-
-    private List<UnitData> LoadPlayerUnitsForCatalog(TextAsset playerUnitCsvAsset, TextAsset enemyUnitCsvAsset)
-    {
-        if (playerUnitCsvAsset == null)
-        {
-            Debug.LogError("[DHCsvTemplateCatalog] Valid player unit CSV is missing.", this);
-            return new List<UnitData>();
-        }
-        List<UnitData> allUnits = CSVLoader.LoadUnitData(playerUnitCsvAsset.text);
-        if (enemyUnitCsvAsset != null) return allUnits;
-
-        List<UnitData> players = new List<UnitData>();
-        for (int i = 0; i < allUnits.Count; i++)
-        {
-            if (allUnits[i] == null || CSVLoader.IsEnemyUnitRow(allUnits[i])) continue;
-            players.Add(allUnits[i]);
-        }
-        return players;
-    }
-
-    private EnemyCsvLoadResult LoadEnemyCsvForCatalog(TextAsset playerUnitCsvAsset, TextAsset enemyUnitCsvAsset)
-    {
-        if (enemyUnitCsvAsset != null)
-            return CSVLoader.LoadEnemyDataAndSkills(enemyUnitCsvAsset.text);
-
-        if (playerUnitCsvAsset == null)
-        {
-            Debug.LogWarning("[DHCsvTemplateCatalog] Both enemyUnitCsv and valid player unit CSV are missing.", this);
-            return new EnemyCsvLoadResult();
-        }
-
-        List<UnitData> allUnits = CSVLoader.LoadUnitData(playerUnitCsvAsset.text);
-        List<EnemyData> enemies = new List<EnemyData>();
-        for (int i = 0; i < allUnits.Count; i++)
-        {
-            if (allUnits[i] == null || !CSVLoader.IsEnemyUnitRow(allUnits[i])) continue;
-            enemies.Add(CSVLoader.UnitDataToEnemyData(allUnits[i], string.Empty));
-        }
-        return new EnemyCsvLoadResult { Enemies = enemies, Skills = new List<SkillData>() };
-    }
-
-    private List<WeaponData> LoadWeaponsForCatalog(TextAsset weaponSheetCsvAsset)
-    {
-        if (weaponSheetCsvAsset == null)
-        {
-            Debug.LogWarning("[DHCsvTemplateCatalog] weaponSheetCsv is missing.", this);
-            return new List<WeaponData>();
-        }
-        return CSVLoader.LoadWeaponData(weaponSheetCsvAsset.text);
-    }
 }

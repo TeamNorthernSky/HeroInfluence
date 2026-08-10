@@ -1432,7 +1432,7 @@ MonoBehaviour:
   enemyPlace: {fileID: 912453333}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
-  playerUnitId: 10004
+  playerUnitId: 10001
   playerGridNumber: 101
   additionalPreviewPlayers:
   - unitId: 10003
@@ -3382,17 +3382,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerUnitDataTable: {fileID: 11400000, guid: 3b89cb7b14ea0474a977a89885da9c4b,
+  playerUnitDataTable: {fileID: 11400000, guid: 7377f5f81ed19444787d168f9dce8ebb,
     type: 2}
-  enemyUnitInfoDataTable: {fileID: 11400000, guid: fde59fca974ac494d9930c4bef22966f,
+  enemyUnitInfoDataTable: {fileID: 11400000, guid: e76cb054dd6579c48862410bc6d9929f,
     type: 2}
-  playerWeaponDataTable: {fileID: 11400000, guid: e294108c53215504f8a910401f7df260,
+  playerWeaponDataTable: {fileID: 11400000, guid: cf9d6f78837c56c4f93f88803f090b6f,
     type: 2}
-  classSkillDataTable: {fileID: 11400000, guid: a286b6f98c61e0449850d4f1ba63a692,
+  classSkillDataTable: {fileID: 11400000, guid: efefb0955fb007540ac909271643ab0f,
     type: 2}
-  unitGrowthExpDataTable: {fileID: 11400000, guid: eec440627eb8d5845a6c042b5dcefc22,
+  unitGrowthExpDataTable: {fileID: 11400000, guid: 3a3582c35af186b4bb20d742a3a2b548,
     type: 2}
-  enemyGroupDataTable: {fileID: 11400000, guid: 1470067c63682a84187f0d548a254801,
+  enemyGroupDataTable: {fileID: 11400000, guid: a2e3aec4ec0ac164686a3cfb66e5b18f,
     type: 2}
   useSOTables: 1
   loadOnAwake: 0
