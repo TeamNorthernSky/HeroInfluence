@@ -874,7 +874,7 @@ public class BattleManager : MonoBehaviour
         }
 
         SkillExecutionResult result;
-        if (SkillExecutionRegistry.TryGetHandler(classSkillRow.skillIndex, out ISkillEffectHandler custom))
+        if (SkillExecutionRegistry.TryGetHandler(classSkillRow.skillKey, out ISkillEffectHandler custom))
         {
             result = custom.Execute(actor, target, classSkillRow, null);
             result.Handler = custom;
@@ -1260,13 +1260,14 @@ public class BattleManager : MonoBehaviour
             return -1;
         }
 
-        bool isEnemySkill = skillData.skillIndex >= 200000 && skillData.skillIndex < 300000;
+        // §5-7 숫자 파생(skillIndex>=200000, %10) → 명시 필드(category/slot)로 대체
+        bool isEnemySkill = skillData.category == SkillCategory.Enemy;
         if (!isEnemySkill)
         {
             return skillData.classSkillRange;
         }
 
-        int slot = Mathf.Abs(skillData.skillIndex % 10);
+        int slot = skillData.slot;
         if (slot == 1 && skillData.EnemySkill1Range >= 0)
         {
             return skillData.EnemySkill1Range;

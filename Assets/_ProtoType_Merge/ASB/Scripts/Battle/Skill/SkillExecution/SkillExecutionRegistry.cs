@@ -3,14 +3,13 @@ using System.Collections.Generic;
 namespace ASB.Work.Battle.SkillExecution
 {
     /// <summary>
-    /// skillIndex -> 커스텀 핸들러 매핑.
-    /// 등록되지 않은 인덱스는 BattleManager 기본 실행 경로를 사용합니다.
+    /// skillKey(string) -> 커스텀 핸들러 매핑. (구현지시서 §5-9)
+    /// 캐릭터=HS+숫자, 적=FV+숫자_슬롯(EnemySkillKeyRules.Compose). 무기(HCS…)는 아직 미연결 — 아래 TODO 참고.
+    /// 등록되지 않은 키는 BattleManager 기본 실행 경로를 사용합니다.
     /// </summary>
     public static class SkillExecutionRegistry
     {
-        public const int DoubleAttackSkillIndex = 5040;
-        public const int DuelistSkillIndex = 201;
-        private static readonly Dictionary<int, ISkillEffectHandler> Handlers = new Dictionary<int, ISkillEffectHandler>();
+        private static readonly Dictionary<string, ISkillEffectHandler> Handlers = new Dictionary<string, ISkillEffectHandler>();
         private static bool s_initialized;
 
         static SkillExecutionRegistry()
@@ -29,114 +28,98 @@ namespace ASB.Work.Battle.SkillExecution
             }
             s_initialized = true;
 
-
-            // 이것 등록하는 것도 필요한 클래스의 함수만 따로 분리하는게 좋을듯함
-            //------------------아군 유닛
+            //------------------아군 유닛 (캐릭터 스킬 키 = "HS" + 숫자)
             // 가디언
-            Register(1010, new TauntStrikeSkillHandler()); // 단일 도발
-            Register(1020, new AoEDamageSkillHandler());   // 열 공격
-            Register(1030, new AoEDamageSkillHandler());   // 후열 공격
-            Register(1040, new TauntStrikeSkillHandler()); // 전체 도발 + 한열 타격 -------- 한 열 타격 적용 안됨
-            Register(1050, new DamageSkillHandler());      // 단일(전체타겟)공격
-            Register(1060, new AoEDamageSkillHandler());   // 전체공격
-            Register(1070, new CasterLowHPMoreDmg());      // 시전자 체력 낮을수록 데미지 증가
-
+            Register("HS1010", new TauntStrikeSkillHandler()); // 단일 도발
+            Register("HS1020", new AoEDamageSkillHandler());   // 열 공격
+            Register("HS1030", new AoEDamageSkillHandler());   // 후열 공격
+            Register("HS1040", new TauntStrikeSkillHandler()); // 전체 도발 + 한열 타격 -------- 한 열 타격 적용 안됨
+            Register("HS1050", new DamageSkillHandler());      // 단일(전체타겟)공격
+            Register("HS1060", new AoEDamageSkillHandler());   // 전체공격
+            Register("HS1070", new CasterLowHPMoreDmg());      // 시전자 체력 낮을수록 데미지 증가
 
             //블래스터
-            Register(2010, new DamageSkillHandler());                 // 단일 공격
-            Register(2020, new HitTargetAroundRandomHandler());      // 단일 + 랜덤 주변 적 공격
-            Register(2030, new AoEDamageSkillHandler());             // 한 열 공격
-            Register(2040, new AoEDamageSkillHandler());             // 전체 공격
-            Register(2050, new AtkAfterRest());                      // 임시 보관: 단일 공격 + 자신 한 턴 쉼(기절)
-            Register(2060, new TargetMoreHPMoreDmg());               // 임시 보관: 적의 체력이 높을수록 피해량 증가
-            Register(2070, new HitNumLowerDamageHandler());          // 임시 보관: 공격 대상 수에 따라 피해량 감소
+            Register("HS2010", new DamageSkillHandler());                 // 단일 공격
+            Register("HS2020", new HitTargetAroundRandomHandler());      // 단일 + 랜덤 주변 적 공격
+            Register("HS2030", new AoEDamageSkillHandler());             // 한 열 공격
+            Register("HS2040", new AoEDamageSkillHandler());             // 전체 공격
+            Register("HS2050", new AtkAfterRest());                      // 임시 보관: 단일 공격 + 자신 한 턴 쉼(기절)
+            Register("HS2060", new TargetMoreHPMoreDmg());               // 임시 보관: 적의 체력이 높을수록 피해량 증가
+            Register("HS2070", new HitNumLowerDamageHandler());          // 임시 보관: 공격 대상 수에 따라 피해량 감소
 
             //스트라이커  (현재 스킬 시트 기준 재매핑)
-            Register(3010, new DamageSkillHandler());        // 단일 공격
-            Register(3020, new TargetFrontPosMoreDmg());     // 전열 적일 경우 더 많은 데미지 공격
-            Register(3030, new DoubleAttackSkillHandler());  // 더블 공격
-            Register(3040, new TargetLowerHPMoreDmg());      // 적 체력이 낮을 경우 높은 데미지
+            Register("HS3010", new DamageSkillHandler());        // 단일 공격
+            Register("HS3020", new TargetFrontPosMoreDmg());     // 전열 적일 경우 더 많은 데미지 공격
+            Register("HS3030", new DoubleAttackSkillHandler());  // 더블 공격
+            Register("HS3040", new TargetLowerHPMoreDmg());      // 적 체력이 낮을 경우 높은 데미지
 
             // 미사용 스킬 파킹 (3050~3080, 핸들러 중복 없음)
-            Register(3050, new TargetBackPosMoreCriticDmg()); // 단일공격 + 후열 공격시 일시적으로 회피율 -20%
-            Register(3060, new TargetLowerHPMoreCriticDmg()); // 단일 공격 + 체력 70%이하 일시적으로 치명타 20% 확률업
-            Register(3070, new AoEDamageSkillHandler());      // 전체 공격
-            Register(3080, new DamageSkillHandler());         // 단일, 전체 체력이 낮을 경우 큰 데미지
+            Register("HS3050", new TargetBackPosMoreCriticDmg()); // 단일공격 + 후열 공격시 일시적으로 회피율 -20%
+            Register("HS3060", new TargetLowerHPMoreCriticDmg()); // 단일 공격 + 체력 70%이하 일시적으로 치명타 20% 확률업
+            Register("HS3070", new AoEDamageSkillHandler());      // 전체 공격
+            Register("HS3080", new DamageSkillHandler());         // 단일, 전체 체력이 낮을 경우 큰 데미지
 
             // 서포터
-            Register(4010, new TargetHPPerHeal());      // 대상 체력 비례 힐 
-            Register(4020, new HolyBulletHpRecoveryHandler());    // 단일 공격 + HP 회복
-            Register(4030, new HealTargetAroundRandomHandler()); // 광역 힐 + 인접 무작위 1명
-            Register(4040, new RebirthSkillHandler());    // 부활 + 적 전체 공격
-            Register(4050, new TargetLowerHPMoreHeal()); // 긴급 힐
-            Register(4060, new AoEDamageSkillHandler()); //전체 공격
-            Register(4070, new TargetHealBanSkill());   // 단일 공격 + 대상 힐 밴
+            Register("HS4010", new TargetHPPerHeal());      // 대상 체력 비례 힐
+            Register("HS4020", new HolyBulletHpRecoveryHandler());    // 단일 공격 + HP 회복
+            Register("HS4030", new HealTargetAroundRandomHandler()); // 광역 힐 + 인접 무작위 1명
+            Register("HS4040", new RebirthSkillHandler());    // 부활 + 적 전체 공격
+            Register("HS4050", new TargetLowerHPMoreHeal()); // 긴급 힐
+            Register("HS4060", new AoEDamageSkillHandler()); //전체 공격
+            Register("HS4070", new TargetHealBanSkill());   // 단일 공격 + 대상 힐 밴
 
+            // 나이트
+            Register("HS5010", new TargetFrontPosMoreDmg()); // 단일 공격 + 전열 시 추가피해
+            Register("HS5020", new DamageSkillHandler());    // 단일 공격 -----
+            Register("HS5030", new AoEDamageSkillHandler());  // 단일 공격 + 후열 추가 피해  -> 추가 구현 필요
+            Register("HS5040", new DoubleAttackSkillHandler()); // 더블어택
+            Register("HS5050", new MoreCriticDmg());         // 일시적 치명타 20% 확률업 + 전열우선 ----- 치명타 20% 적용 안됨
+            Register("HS5060", new TargetLowerHPMoreDmg());  // 단일 공격 + 대상 체력 낮을수록 데미지 증가
+            Register("HS5070", new DuelistSkillHandler());   // (1v1 시 데미지 증폭)
 
-            // 나이트 
-            Register(5010, new TargetFrontPosMoreDmg()); // 단일 공격 + 전열 시 추가피해
-            Register(5020, new DamageSkillHandler());    // 단일 공격 ----- 
-            Register(5030, new AoEDamageSkillHandler());  // 단일 공격 + 후열 추가 피해  -> 추가 구현 필요
-            Register(5040, new DoubleAttackSkillHandler()); // 더블어택
-            Register(5050, new MoreCriticDmg());         // 일시적 치명타 20% 확률업 + 전열우선 ----- 치명타 20% 적용 안됨
-            Register(5060, new TargetLowerHPMoreDmg());  // 단일 공격 + 대상 체력 낮을수록 데미지 증가
-            Register(5070, new DuelistSkillHandler());   // (1v1 시 데미지 증폭)
+            //------------------적 (적 스킬 키 = EnemySkillKeyRules.Compose("FV"+숫자, 슬롯). 옛 200011 = 20001*10+1)
+            Register(EnemySkillKeyRules.Compose("FV20001", 1), new DamageSkillHandler());    //단일 공격
+            Register(EnemySkillKeyRules.Compose("FV20001", 2), new AoEDamageSkillHandler()); //열 공격
 
+            Register(EnemySkillKeyRules.Compose("FV20002", 1), new DamageSkillHandler());    // 단일 공격
+            Register(EnemySkillKeyRules.Compose("FV20002", 2), new HealSkillHandler());      //단일 힐
 
+            Register(EnemySkillKeyRules.Compose("FV20003", 1), new DamageSkillHandler());    // 단일공격
+            Register(EnemySkillKeyRules.Compose("FV20003", 2), new AoEDamageSkillHandler()); // 전체공격
 
-            //------------------적
-            Register(200011, new DamageSkillHandler());    //단일 공격
-            Register(200012, new AoEDamageSkillHandler()); //열 공격
-
-            Register(200021, new DamageSkillHandler());    // 단일 공격
-            Register(200022, new HealSkillHandler());      //단일 힐
-
-            Register(200031, new DamageSkillHandler());    // 단일공격
-            Register(200032, new AoEDamageSkillHandler()); // 전체공격
-
-
-            //------------------장비
-            Register(311010, new DamageSkillHandler());  // 단일 공격 
-            Register(311020, new DamageSkillHandler());  // 단일 공격
-            Register(311030, new DamageSkillHandler());  // 단일 공격 
-
-            Register(312010, new DamageSkillHandler());    // 단일공격 
-            Register(312020, new AoEDamageSkillHandler()); // 열공격
-            Register(312030, new DamageSkillHandler());    // 단일공격
-
-            Register(313010, new DamageSkillHandler());    // 단일공격 
-            Register(313020, new HitTargetAroundRandomHandler());    // 단일 + 랜덤 주변공격
-            Register(313030, new AoEDamageSkillHandler()); //전체 공격
-
-            Register(314010, new DamageSkillHandler());    // 단일공격
-            Register(314020, new DamageSkillHandler());    // 단일공격
-            Register(314030, new AoEVampiricSkillHandler()); // 전체 + 흡혈  -> 구현 필요함
-
-            Register(315010, new DamageSkillHandler());    // 단일공격 
-            Register(315020, new DamageSkillHandler());    // 자신의 위치 후열 -> 후열 공격,  자신의 위치 전열 -> 전열 공격 
-            Register(315030, new AoEDamageSkillHandler()); // 단일공격
+            //------------------장비(무기 스킬) — HCS00X 매핑 (X = 무기 스킬 종류)
+            Register("HCS001", new DamageSkillHandler());                    // 1. 단일 공격
+            Register("HCS002", new AoEDamageSkillHandler());                 // 2. 광역 공격
+            Register("HCS003", new DamageTakenReductionSkillHandler());      // 3. 받피감 추가 감소(방어 버프 defense_up)
+            Register("HCS004", new HealSkillHandler());                      // 4. 단일 체력 회복
+            Register("HCS005", new DefenseDownSkillHandler());               // 5. 방어력 감소(디버프 defense_down)
         }
-       
-        public static bool TryGetHandler(int skillIndex, out ISkillEffectHandler handler)
+
+        public static bool TryGetHandler(string skillKey, out ISkillEffectHandler handler)
         {
             EnsureInitialized();
-            return Handlers.TryGetValue(skillIndex, out handler);
+            if (string.IsNullOrEmpty(skillKey))
+            {
+                handler = null;
+                return false;
+            }
+            return Handlers.TryGetValue(skillKey, out handler);
         }
 
-        private static void Register(int skillIndex, ISkillEffectHandler handler)
+        private static void Register(string skillKey, ISkillEffectHandler handler)
         {
-            if (handler == null)
+            if (handler == null || string.IsNullOrEmpty(skillKey))
             {
                 return;
             }
 
-            if (Handlers.ContainsKey(skillIndex))
+            if (Handlers.ContainsKey(skillKey))
             {
-                UnityEngine.Debug.LogWarning($"[SkillExecutionRegistry] skillIndex {skillIndex} 중복 등록 무시.");
+                UnityEngine.Debug.LogWarning($"[SkillExecutionRegistry] skillKey {skillKey} 중복 등록 무시.");
                 return;
             }
 
-            Handlers.Add(skillIndex, handler);
+            Handlers.Add(skillKey, handler);
         }
     }
 }
