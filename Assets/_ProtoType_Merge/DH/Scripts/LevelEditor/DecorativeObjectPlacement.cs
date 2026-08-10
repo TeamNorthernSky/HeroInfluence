@@ -1,13 +1,26 @@
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public class DecorativeBuildingPlacement : MonoBehaviour
+public class DecorativeObjectPlacement : MonoBehaviour
 {
     [SerializeField] private string prefabKey;
     [SerializeField] private Vector3 anchorLocalOffset;
 
+    private DecorativeObjectRegistry registry;
+
     public string PrefabKey => string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
     public Vector3 AnchorLocalOffset => anchorLocalOffset;
+
+    private void OnEnable()
+    {
+        ResolveRegistry();
+        registry?.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        registry?.Unregister(this);
+    }
 
     public Vector3 GetRootPositionForAnchor(Vector3 anchorWorldPosition)
     {
@@ -23,6 +36,12 @@ public class DecorativeBuildingPlacement : MonoBehaviour
     public void SetAnchorLocalOffset(Vector3 nextAnchorLocalOffset)
     {
         anchorLocalOffset = nextAnchorLocalOffset;
+    }
+
+    private void ResolveRegistry()
+    {
+        if (registry == null)
+            registry = FindFirstObjectByType<DecorativeObjectRegistry>();
     }
 
     private void OnDrawGizmosSelected()

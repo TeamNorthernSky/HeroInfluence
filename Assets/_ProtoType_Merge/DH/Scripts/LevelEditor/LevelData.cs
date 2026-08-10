@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 public class LevelData : ScriptableObject
 {
     private static readonly IReadOnlyList<EnemyPlacementData> EmptyEnemyPlacements = Array.Empty<EnemyPlacementData>();
-    private static readonly IReadOnlyList<DecorativeBuildingPlacementData> EmptyDecorativeBuildingPlacements = Array.Empty<DecorativeBuildingPlacementData>();
+    private static readonly IReadOnlyList<DecorativeObjectPlacementData> EmptyDecorativeObjectPlacements = Array.Empty<DecorativeObjectPlacementData>();
     private static readonly IReadOnlyList<MainEventPlacementData> EmptyMainEventPlacements = Array.Empty<MainEventPlacementData>();
     private static readonly IReadOnlyList<SubEventPlacementData> EmptySubEventPlacements = Array.Empty<SubEventPlacementData>();
     private static readonly IReadOnlyList<GatePlacementData> EmptyGatePlacements = Array.Empty<GatePlacementData>();
@@ -31,7 +31,8 @@ public class LevelData : ScriptableObject
     [SerializeField] private List<OutpostPlacementData> outpostPlacements = new List<OutpostPlacementData>();
     [SerializeField] private List<EventPlacementData> eventPlacements = new List<EventPlacementData>();
     [SerializeField] private List<EnemyPlacementData> enemyPlacements = new List<EnemyPlacementData>();
-    [SerializeField] private List<DecorativeBuildingPlacementData> decorativeBuildingPlacements = new List<DecorativeBuildingPlacementData>();
+    [FormerlySerializedAs("decorativeBuildingPlacements")]
+    [SerializeField] private List<DecorativeObjectPlacementData> decorativeObjectPlacements = new List<DecorativeObjectPlacementData>();
     [SerializeField] private List<MainEventPlacementData> mainEventPlacements = new List<MainEventPlacementData>();
     [SerializeField] private List<SubEventPlacementData> subEventPlacements = new List<SubEventPlacementData>();
     [SerializeField] private List<GatePlacementData> gatePlacements = new List<GatePlacementData>();
@@ -50,8 +51,8 @@ public class LevelData : ScriptableObject
     public IReadOnlyList<OutpostPlacementData> OutpostPlacements => outpostPlacements;
     public IReadOnlyList<EventPlacementData> EventPlacements => eventPlacements;
     public IReadOnlyList<EnemyPlacementData> EnemyPlacements => enemyPlacements != null ? enemyPlacements : EmptyEnemyPlacements;
-    public IReadOnlyList<DecorativeBuildingPlacementData> DecorativeBuildingPlacements =>
-        decorativeBuildingPlacements != null ? decorativeBuildingPlacements : EmptyDecorativeBuildingPlacements;
+    public IReadOnlyList<DecorativeObjectPlacementData> DecorativeObjectPlacements =>
+        decorativeObjectPlacements != null ? decorativeObjectPlacements : EmptyDecorativeObjectPlacements;
     public IReadOnlyList<MainEventPlacementData> MainEventPlacements =>
         mainEventPlacements != null ? mainEventPlacements : EmptyMainEventPlacements;
     public IReadOnlyList<SubEventPlacementData> SubEventPlacements =>
@@ -121,9 +122,9 @@ public class LevelData : ScriptableObject
         return TryGetEnemyPlacementAt(grid, out _);
     }
 
-    public bool HasDecorativeBuildingAt(Vector2Int grid)
+    public bool HasDecorativeObjectAt(Vector2Int grid)
     {
-        return TryGetDecorativeBuildingAt(grid, out _);
+        return TryGetDecorativeObjectAt(grid, out _);
     }
 
     public bool HasMainEventAt(Vector2Int grid)
@@ -179,24 +180,24 @@ public class LevelData : ScriptableObject
         return false;
     }
 
-    public bool TryGetDecorativeBuildingAt(Vector2Int grid, out DecorativeBuildingPlacementData decorativeBuildingPlacement)
+    public bool TryGetDecorativeObjectAt(Vector2Int grid, out DecorativeObjectPlacementData decorativeObjectPlacement)
     {
-        if (decorativeBuildingPlacements == null)
+        if (decorativeObjectPlacements == null)
         {
-            decorativeBuildingPlacement = default;
+            decorativeObjectPlacement = default;
             return false;
         }
 
-        for (int i = 0; i < decorativeBuildingPlacements.Count; i++)
+        for (int i = 0; i < decorativeObjectPlacements.Count; i++)
         {
-            if (decorativeBuildingPlacements[i].GridPosition != grid)
+            if (decorativeObjectPlacements[i].GridPosition != grid)
                 continue;
 
-            decorativeBuildingPlacement = decorativeBuildingPlacements[i];
+            decorativeObjectPlacement = decorativeObjectPlacements[i];
             return true;
         }
 
-        decorativeBuildingPlacement = default;
+        decorativeObjectPlacement = default;
         return false;
     }
 
@@ -339,14 +340,14 @@ public class LevelData : ScriptableObject
         enemyPlacements.Add(new EnemyPlacementData(grid, enemyGroupKey, behaviorType));
     }
 
-    public void SetDecorativeBuilding(Vector2Int grid, string prefabKey)
+    public void SetDecorativeObject(Vector2Int grid, string prefabKey)
     {
         if (!IsInsideGrid(grid) || string.IsNullOrWhiteSpace(prefabKey))
             return;
 
-        EnsureDecorativeBuildingPlacements();
-        decorativeBuildingPlacements.RemoveAll(x => x.GridPosition == grid);
-        decorativeBuildingPlacements.Add(new DecorativeBuildingPlacementData(grid, prefabKey));
+        EnsureDecorativeObjectPlacements();
+        decorativeObjectPlacements.RemoveAll(x => x.GridPosition == grid);
+        decorativeObjectPlacements.Add(new DecorativeObjectPlacementData(grid, prefabKey));
     }
 
     public void SetMainEvent(Vector2Int grid, string prefabKey)
@@ -464,9 +465,9 @@ public class LevelData : ScriptableObject
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
     }
 
-    public void RemoveDecorativeBuildingAt(Vector2Int grid)
+    public void RemoveDecorativeObjectAt(Vector2Int grid)
     {
-        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        decorativeObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
     }
 
     public void RemoveMainEventAt(Vector2Int grid)
@@ -547,7 +548,7 @@ public class LevelData : ScriptableObject
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
-        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        decorativeObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         mainEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         RemoveGateBlockerAt(grid);
@@ -562,7 +563,7 @@ public class LevelData : ScriptableObject
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
-        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        decorativeObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         mainEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         RemoveGateBlockerAt(grid);
@@ -578,7 +579,7 @@ public class LevelData : ScriptableObject
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
-        decorativeBuildingPlacements?.RemoveAll(x => x.GridPosition == grid);
+        decorativeObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         mainEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         RemoveGateBlockerAt(grid);
@@ -620,9 +621,9 @@ public class LevelData : ScriptableObject
         for (int i = 0; i < eventPlacements.Count; i++)
             eventPlacements[i] = eventPlacements[i].Normalized();
 
-        EnsureDecorativeBuildingPlacements();
-        for (int i = 0; i < decorativeBuildingPlacements.Count; i++)
-            decorativeBuildingPlacements[i] = decorativeBuildingPlacements[i].Normalized();
+        EnsureDecorativeObjectPlacements();
+        for (int i = 0; i < decorativeObjectPlacements.Count; i++)
+            decorativeObjectPlacements[i] = decorativeObjectPlacements[i].Normalized();
 
         EnsureMainEventPlacements();
         mainEventPlacements.RemoveAll(x => string.IsNullOrWhiteSpace(x.PrefabKey));
@@ -661,9 +662,9 @@ public class LevelData : ScriptableObject
         enemyPlacements ??= new List<EnemyPlacementData>();
     }
 
-    private void EnsureDecorativeBuildingPlacements()
+    private void EnsureDecorativeObjectPlacements()
     {
-        decorativeBuildingPlacements ??= new List<DecorativeBuildingPlacementData>();
+        decorativeObjectPlacements ??= new List<DecorativeObjectPlacementData>();
     }
 
     private void EnsureMainEventPlacements()
@@ -821,12 +822,12 @@ public struct EnemyPlacementData
 }
 
 [Serializable]
-public struct DecorativeBuildingPlacementData
+public struct DecorativeObjectPlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
     [SerializeField] private string prefabKey;
 
-    public DecorativeBuildingPlacementData(Vector2Int gridPosition, string prefabKey)
+    public DecorativeObjectPlacementData(Vector2Int gridPosition, string prefabKey)
     {
         this.gridPosition = gridPosition;
         this.prefabKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
@@ -835,9 +836,9 @@ public struct DecorativeBuildingPlacementData
     public Vector2Int GridPosition => gridPosition;
     public string PrefabKey => string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
 
-    public DecorativeBuildingPlacementData Normalized()
+    public DecorativeObjectPlacementData Normalized()
     {
-        return new DecorativeBuildingPlacementData(gridPosition, PrefabKey);
+        return new DecorativeObjectPlacementData(gridPosition, PrefabKey);
     }
 }
 
