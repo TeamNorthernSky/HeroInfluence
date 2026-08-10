@@ -54,7 +54,7 @@ MonoBehaviour:
     ClassSkillEffect: 0
     ClassSkillRange: 0
     ClassSkillRangeLine: 0
-    ClassSkillTarget: 0
+    ClassSkillTarget: 1
     ClassSkillMultiTarget: 00000000
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 0
@@ -84,7 +84,7 @@ MonoBehaviour:
     ClassSkillEffect: 0
     ClassSkillRange: 0
     ClassSkillRangeLine: 0
-    ClassSkillTarget: 0
+    ClassSkillTarget: 1
     ClassSkillMultiTarget: 03000000
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 1

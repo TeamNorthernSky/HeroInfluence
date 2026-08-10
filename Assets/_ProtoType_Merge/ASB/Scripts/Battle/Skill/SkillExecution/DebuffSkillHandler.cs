@@ -112,4 +112,32 @@ namespace ASB.Work.Battle.SkillExecution
     }
 
 
+    // 받피감 추가 감소 (방어 버프) - 무기 스킬 HCS003
+    // WeaponSkillEffect=3(버프) 전제. 대상(아군)에게 defense_up을 부여해 받는 피해를 줄인다.
+    public sealed class DamageTakenReductionSkillHandler : BaseSingleSkillHandler
+    {
+        private const int BuffDurationTurns = 1;
+
+        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
+        {
+            result?.AddStatusEffect(caster, target, StatusEffectType.defense_up, BuffDurationTurns);
+            Debug.Log($"[Skill/DamageTakenReduction] defense_up reserved: target={target.UnitName}, source={caster.UnitName}, turns={BuffDurationTurns}");
+        }
+    }
+
+
+    // 방어력 감소 (디버프) - 무기 스킬 HCS005
+    // WeaponSkillEffect=4(디버프) 전제. 대상(적)에게 defense_down을 부여한다.
+    public sealed class DefenseDownSkillHandler : BaseSingleSkillHandler
+    {
+        private const int DebuffDurationTurns = 1;
+
+        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
+        {
+            result?.AddStatusEffect(caster, target, StatusEffectType.defense_down, DebuffDurationTurns);
+            Debug.Log($"[Skill/DefenseDown] defense_down reserved: target={target.UnitName}, source={caster.UnitName}, turns={DebuffDurationTurns}");
+        }
+    }
+
+
 }

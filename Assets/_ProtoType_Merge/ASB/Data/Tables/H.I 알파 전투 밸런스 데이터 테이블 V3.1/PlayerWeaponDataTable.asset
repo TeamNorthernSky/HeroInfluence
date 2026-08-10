@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 421ecc56dc2ded346a925a074335871a, type: 3}
+  m_Script: {fileID: 11500000, guid: 3c00474ebb4011841ac8466b4b88d30b, type: 3}
   m_Name: PlayerWeaponDataTable
   m_EditorClassIdentifier: 
   DataList:
@@ -38,7 +38,7 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
+    WeaponSkillIndex: HCS001
     WeaponSkillName: "\uC82C \uD30C\uC6CC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801
       1\uBA85\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
@@ -84,7 +84,7 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
+    WeaponSkillIndex: HCS002
     WeaponSkillName: "\uC82C \uC775\uC2A4\uD50C\uB85C\uC804"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uD3ED\uBC1C\uC2DC\uCF1C
       \uBAA8\uB4E0 \uC801\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C
@@ -131,7 +131,7 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
+    WeaponSkillIndex: HCS003
     WeaponSkillName: "\uC82C \uC2E4\uB4DC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
       \uC0DD\uC131\uD55C\uB2E4. \uC0AC\uC6A9\uD55C \uD788\uC5B4\uB85C\uAC00 \uB2E4\uC74C
@@ -179,7 +179,7 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
+    WeaponSkillIndex: HCS004
     WeaponSkillName: "\uC82C \uB9AC\uCEE4\uBC84\uB9AC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC544\uAD70
       1\uBA85\uC758 \uCCB4\uB825\uC744 {WeaponSkillValue} \uD68C\uBCF5\uD55C\uB2E4."
@@ -225,7 +225,7 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
+    WeaponSkillIndex: HCS005
     WeaponSkillName: "\uC82C \uD504\uB808\uC154"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC555\uBC15\uD558\uC5EC
       \uBAA8\uB4E0 \uC801\uC758 \uBC29\uC5B4\uB825\uC744 1\uD134 \uB3D9\uC548 {WeaponSkillValue}

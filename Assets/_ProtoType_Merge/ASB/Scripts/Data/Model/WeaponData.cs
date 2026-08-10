@@ -5,7 +5,8 @@ using UnityEngine;
 [Serializable]
 public class WeaponData
 {
-    public int WeaponIndex;
+    public int WeaponIndex;             // [TEMP:STRKEY] 레거시 int 키 브리지 / 제거조건: 무기 소비부 string 이행 완료 후
+    public string weaponKey;            // 원본 무기 키(HC001) 보존 — 손실 없음
     public string weaponClass;
     public string WeaponName;
     public string WeaponDescription;
@@ -18,7 +19,8 @@ public class WeaponData
     public float BonusReduceRate;
     public float BonusSpeed;
 
-    public int WeaponSkillIndex;
+    public int WeaponSkillIndex;        // [TEMP:STRKEY] 레거시 int 브리지 / 제거조건: SkillData.skillIndex string화 + 무기스킬 아이콘 string화 완료 후
+    public string weaponSkillKey;       // 원본 무기 스킬 키(HCS001) 보존 — 손실 없음
     public string WeaponSkillName;
     public string WeaponSkillDescription;
     public int IPCost;
@@ -50,7 +52,9 @@ public class WeaponData
     {
         var result = new SkillData
         {
-            skillIndex = WeaponSkillIndex,
+            skillIndex = WeaponSkillIndex,   // [TEMP:STRKEY] 레거시 int 브리지
+            skillKey = weaponSkillKey,
+            category = SkillCategory.Weapon,
             skillClass = weaponClass,
             acquireLevel = 1,
             skillName = WeaponSkillName,

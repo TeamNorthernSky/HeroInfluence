@@ -18,7 +18,7 @@ public class LevelLoader : MonoBehaviour
     private const string EnemyRootName = "EnemyRoot";
     private const string HeroUnionRootName = "HeroUnionRoot";
     private const string VillainUnionRootName = "VillainUnionRoot";
-    private const string DecorativeBuildingRootName = "DecorativeBuildingRoot";
+    private const string DecorativeObjectRootName = "DecorativeObjectRoot";
     private const string GateRootName = "GateRoot";
     private const string EnemySpawnPointRootName = "EnemySpawnPointRoot";
 
@@ -43,7 +43,8 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private Transform enemyRoot;
     [SerializeField] private Transform heroUnionRoot;
     [SerializeField] private Transform villainUnionRoot;
-    [SerializeField] private Transform decorativeBuildingRoot;
+    [FormerlySerializedAs("decorativeBuildingRoot")]
+    [SerializeField] private Transform decorativeObjectRoot;
     [SerializeField] private Transform gateRoot;
     [SerializeField] private Transform enemySpawnPointRoot;
 
@@ -114,7 +115,7 @@ public class LevelLoader : MonoBehaviour
         SpawnEnemyPlacements();
         SpawnEnemySpawnPoints();
         SpawnUniqueBuildings();
-        SpawnDecorativeBuildings();
+        SpawnDecorativeObjects();
 
         if (Application.isPlaying)
             RuntimeLevelLoaded?.Invoke(this);
@@ -554,25 +555,25 @@ public class LevelLoader : MonoBehaviour
         SpawnComponent(villainUnionBasePrefab, placement.GridPosition, parent);
     }
 
-    private void SpawnDecorativeBuildings()
+    private void SpawnDecorativeObjects()
     {
         if (prefabRegistry == null)
             return;
 
-        var placements = levelData.DecorativeBuildingPlacements;
-        Transform parent = GetDecorativeBuildingRoot(true);
+        var placements = levelData.DecorativeObjectPlacements;
+        Transform parent = GetDecorativeObjectRoot(true);
         for (int i = 0; i < placements.Count; i++)
         {
-            DecorativeBuildingPlacementData placement = placements[i];
-            if (!prefabRegistry.TryGetDecorativeBuildingPrefab(placement.PrefabKey, out GameObject prefab))
+            DecorativeObjectPlacementData placement = placements[i];
+            if (!prefabRegistry.TryGetDecorativeObjectPrefab(placement.PrefabKey, out GameObject prefab))
             {
                 Debug.LogWarning(
-                    $"LevelLoader could not find a decorative building prefab for key '{placement.PrefabKey}'.",
+                    $"LevelLoader could not find a decorative object prefab for key '{placement.PrefabKey}'.",
                     this);
                 continue;
             }
 
-            SpawnDecorativeGameObject(prefab, placement.GridPosition, parent);
+            SpawnDecorativeObjectGameObject(prefab, placement.GridPosition, parent);
         }
     }
 
@@ -592,7 +593,7 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(GetSubEventRoot(false));
         ClearChildren(GetHeroUnionRoot(false));
         ClearChildren(GetVillainUnionRoot(false));
-        ClearChildren(GetDecorativeBuildingRoot(false));
+        ClearChildren(GetDecorativeObjectRoot(false));
         ClearChildren(GetGateRoot(false));
         ClearChildren(GetEnemySpawnPointRoot(false));
         ClearLevelSpawnedEnemies();
@@ -706,8 +707,8 @@ public class LevelLoader : MonoBehaviour
     private Transform GetVillainUnionRoot(bool createIfMissing) =>
         GetSpawnRoot(ref villainUnionRoot, VillainUnionRootName, createIfMissing);
 
-    private Transform GetDecorativeBuildingRoot(bool createIfMissing) =>
-        GetSpawnRoot(ref decorativeBuildingRoot, DecorativeBuildingRootName, createIfMissing);
+    private Transform GetDecorativeObjectRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref decorativeObjectRoot, DecorativeObjectRootName, createIfMissing);
 
     private Transform GetGateRoot(bool createIfMissing) =>
         GetSpawnRoot(ref gateRoot, GateRootName, createIfMissing);
@@ -761,16 +762,16 @@ public class LevelLoader : MonoBehaviour
         return instance;
     }
 
-    private GameObject SpawnDecorativeGameObject(GameObject prefab, Vector2Int grid, Transform parent)
+    private GameObject SpawnDecorativeObjectGameObject(GameObject prefab, Vector2Int grid, Transform parent)
     {
         if (prefab == null || !levelData.IsInsideGrid(grid))
             return null;
 
-        DecorativeBuildingPlacement placement = prefab.GetComponent<DecorativeBuildingPlacement>();
+        DecorativeObjectPlacement placement = prefab.GetComponent<DecorativeObjectPlacement>();
         if (placement == null)
         {
             Debug.LogWarning(
-                $"Decorative building prefab '{prefab.name}' needs a DecorativeBuildingPlacement component.",
+                $"Decorative object prefab '{prefab.name}' needs a DecorativeObjectPlacement component.",
                 this);
             return null;
         }

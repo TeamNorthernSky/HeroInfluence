@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class LevelPrefabRegistry : MonoBehaviour
 {
@@ -23,8 +24,9 @@ public class LevelPrefabRegistry : MonoBehaviour
     // Single direct prefab for now; catalog split can wait until multiple villain union variants exist.
     [SerializeField] private VillainUnionBase villainUnionBasePrefab;
 
-    [Header("Decorative Building Prefabs")]
-    [SerializeField] private DecorativeBuildingPrefabCatalog decorativeBuildingCatalog;
+    [Header("Decorative Object Prefabs")]
+    [FormerlySerializedAs("decorativeBuildingCatalog")]
+    [SerializeField] private DecorativeObjectPrefabCatalog decorativeObjectCatalog;
 
     [Header("Gate Prefabs")]
     [SerializeField] private GatePrefabCatalog gateCatalog;
@@ -41,10 +43,10 @@ public class LevelPrefabRegistry : MonoBehaviour
         heroUnionCatalog != null
             ? heroUnionCatalog.HeroUnionPrefabs
             : Array.Empty<HeroUnionPrefabEntry>();
-    public IReadOnlyList<DecorativeBuildingPrefabEntry> DecorativeBuildingPrefabs =>
-        decorativeBuildingCatalog != null
-            ? decorativeBuildingCatalog.DecorativeBuildingPrefabs
-            : Array.Empty<DecorativeBuildingPrefabEntry>();
+    public IReadOnlyList<DecorativeObjectPrefabEntry> DecorativeObjectPrefabs =>
+        decorativeObjectCatalog != null
+            ? decorativeObjectCatalog.DecorativeObjectPrefabs
+            : Array.Empty<DecorativeObjectPrefabEntry>();
     public IReadOnlyList<MainEventPrefabEntry> MainEventPrefabs =>
         eventCatalog != null
             ? eventCatalog.MainEventPrefabs
@@ -105,10 +107,10 @@ public class LevelPrefabRegistry : MonoBehaviour
         return prefab != null;
     }
 
-    public bool TryGetDecorativeBuildingPrefab(string prefabKey, out GameObject prefab)
+    public bool TryGetDecorativeObjectPrefab(string prefabKey, out GameObject prefab)
     {
-        if (decorativeBuildingCatalog != null &&
-            decorativeBuildingCatalog.TryGetDecorativeBuildingPrefab(prefabKey, out prefab))
+        if (decorativeObjectCatalog != null &&
+            decorativeObjectCatalog.TryGetDecorativeObjectPrefab(prefabKey, out prefab))
         {
             return true;
         }

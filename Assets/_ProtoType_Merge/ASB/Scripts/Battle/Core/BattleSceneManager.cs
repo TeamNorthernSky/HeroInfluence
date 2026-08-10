@@ -12,6 +12,7 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 public class BattleSceneManager : MonoBehaviour
 {
     private const int EventBattleLogicalSlotCount = 6;
+    private const float ResultUiDelayAfterPresentationSeconds = 1f;
 
     [Header("Prototype Boot")]
     [Tooltip("Prototype 전용: 씬에 배치된 BattleCharactor를 그대로 초기화해 전투를 시작합니다.")]
@@ -82,6 +83,8 @@ public class BattleSceneManager : MonoBehaviour
 
     private IEnumerator PostBattleSequence(BattleResult result)
     {
+        yield return WaitForActivePresentationSequence();
+        yield return new WaitForSeconds(ResultUiDelayAfterPresentationSeconds);
         yield return WaitDeadUnitDeathAnimations();
         hostageScenarioController?.FlushResult();
 
@@ -134,6 +137,17 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         yield return StartCoroutine(TransitionToSceneRoutine());
+    }
+
+    private IEnumerator WaitForActivePresentationSequence()
+    {
+        BattleManager battleManager = battleFlowManager != null ? battleFlowManager.BattleManager : null;
+        if (battleManager == null)
+        {
+            yield break;
+        }
+
+        yield return new WaitUntil(() => !battleManager.Presentation.IsSequenceRunning);
     }
 
     private IEnumerator WaitDeadUnitDeathAnimations()

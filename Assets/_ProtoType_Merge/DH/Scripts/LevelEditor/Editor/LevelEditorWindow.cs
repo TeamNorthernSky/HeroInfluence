@@ -81,7 +81,7 @@ public class LevelEditorWindow : EditorWindow
             "Visual",
             new[]
             {
-                LevelEditorBrushType.DecorativeBuilding
+                LevelEditorBrushType.DecorativeObject
             },
             new[] { "Decorative" }),
         new BrushGroup(
@@ -261,8 +261,8 @@ public class LevelEditorWindow : EditorWindow
         if (brushType == LevelEditorBrushType.HeroUnion)
             DrawHeroUnionPrefabSelector(serializedController);
 
-        if (brushType == LevelEditorBrushType.DecorativeBuilding)
-            DrawDecorativeBuildingSelector(serializedController);
+        if (brushType == LevelEditorBrushType.DecorativeObject)
+            DrawDecorativeObjectSelector(serializedController);
 
         if (brushType == LevelEditorBrushType.GateBlocker)
         {
@@ -425,9 +425,9 @@ public class LevelEditorWindow : EditorWindow
         selectedKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
     }
 
-    private void DrawDecorativeBuildingSelector(SerializedObject serializedController)
+    private void DrawDecorativeObjectSelector(SerializedObject serializedController)
     {
-        SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedDecorativeBuildingKey");
+        SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedDecorativeObjectKey");
 
         LevelPrefabRegistry registry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
         if (registry == null)
@@ -437,10 +437,10 @@ public class LevelEditorWindow : EditorWindow
             return;
         }
 
-        IReadOnlyList<DecorativeBuildingPrefabEntry> entries = registry.DecorativeBuildingPrefabs;
+        IReadOnlyList<DecorativeObjectPrefabEntry> entries = registry.DecorativeObjectPrefabs;
         if (entries == null || entries.Count == 0)
         {
-            EditorGUILayout.HelpBox("LevelPrefabRegistry has no decorative building entries.", MessageType.Info);
+            EditorGUILayout.HelpBox("LevelPrefabRegistry has no decorative object entries.", MessageType.Info);
             EditorGUILayout.PropertyField(selectedKeyProperty);
             return;
         }
@@ -448,7 +448,7 @@ public class LevelEditorWindow : EditorWindow
         List<string> keys = new List<string>();
         for (int i = 0; i < entries.Count; i++)
         {
-            DecorativeBuildingPrefabEntry entry = entries[i];
+            DecorativeObjectPrefabEntry entry = entries[i];
             if (string.IsNullOrWhiteSpace(entry.PrefabKey))
                 continue;
 
@@ -457,7 +457,7 @@ public class LevelEditorWindow : EditorWindow
 
         if (keys.Count == 0)
         {
-            EditorGUILayout.HelpBox("Decorative building entries do not have prefab keys.", MessageType.Warning);
+            EditorGUILayout.HelpBox("Decorative object entries do not have prefab keys.", MessageType.Warning);
             EditorGUILayout.PropertyField(selectedKeyProperty);
             return;
         }
@@ -699,16 +699,16 @@ public class LevelEditorWindow : EditorWindow
                 EditorGUILayout.HelpBox($"Tile key '{context.SelectedTileKey}' was not found in the LevelTileRegistry.", MessageType.Warning);
         }
 
-        if (context.BrushType == LevelEditorBrushType.DecorativeBuilding)
+        if (context.BrushType == LevelEditorBrushType.DecorativeObject)
         {
             if (context.PrefabRegistry == null)
                 EditorGUILayout.HelpBox("Decorative brush needs a LevelPrefabRegistry.", MessageType.Warning);
-            else if (string.IsNullOrWhiteSpace(context.SelectedDecorativeBuildingKey))
+            else if (string.IsNullOrWhiteSpace(context.SelectedDecorativeObjectKey))
                 EditorGUILayout.HelpBox("Decorative brush needs a selected Prefab Key.", MessageType.Warning);
-            else if (!context.PrefabRegistry.TryGetDecorativeBuildingPrefab(context.SelectedDecorativeBuildingKey, out GameObject decorativePrefab))
-                EditorGUILayout.HelpBox($"Decorative prefab key '{context.SelectedDecorativeBuildingKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
-            else if (decorativePrefab.GetComponent<DecorativeBuildingPlacement>() == null)
-                EditorGUILayout.HelpBox($"Decorative prefab '{context.SelectedDecorativeBuildingKey}' needs a DecorativeBuildingPlacement component.", MessageType.Warning);
+            else if (!context.PrefabRegistry.TryGetDecorativeObjectPrefab(context.SelectedDecorativeObjectKey, out GameObject decorativePrefab))
+                EditorGUILayout.HelpBox($"Decorative prefab key '{context.SelectedDecorativeObjectKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
+            else if (decorativePrefab.GetComponent<DecorativeObjectPlacement>() == null)
+                EditorGUILayout.HelpBox($"Decorative prefab '{context.SelectedDecorativeObjectKey}' needs a DecorativeObjectPlacement component.", MessageType.Warning);
         }
 
         if (context.BrushType == LevelEditorBrushType.MainEvent)
@@ -942,9 +942,9 @@ public class LevelEditorWindow : EditorWindow
             DrawFootprint(context, BuildFootprint(GetEnemyGroupPrefab(context), placement.GridPosition), new Color(1f, 0.3f, 0.05f, 0.14f), new Color(1f, 0.3f, 0.05f, 0.75f));
         }
 
-        for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
+        for (int i = 0; i < levelData.DecorativeObjectPlacements.Count; i++)
         {
-            DecorativeBuildingPlacementData placement = levelData.DecorativeBuildingPlacements[i];
+            DecorativeObjectPlacementData placement = levelData.DecorativeObjectPlacements[i];
             DrawFootprint(context, BuildFootprint(null, placement.GridPosition), new Color(1f, 0.65f, 0.2f, 0.10f), new Color(1f, 0.65f, 0.2f, 0.65f));
         }
 
@@ -1226,10 +1226,10 @@ public class LevelEditorWindow : EditorWindow
             case LevelEditorBrushType.EnemyGroup:
                 context.LevelData.SetEnemyPlacement(anchor, context.EnemyGroupKey, context.EnemyBehaviorType);
                 break;
-            case LevelEditorBrushType.DecorativeBuilding:
-                context.LevelData.SetDecorativeBuilding(
+            case LevelEditorBrushType.DecorativeObject:
+                context.LevelData.SetDecorativeObject(
                     anchor,
-                    context.SelectedDecorativeBuildingKey);
+                    context.SelectedDecorativeObjectKey);
                 break;
             case LevelEditorBrushType.HeroUnion:
                 context.LevelData.SetHeroUnion(anchor, context.SelectedHeroUnionPrefabKey);
@@ -1253,8 +1253,8 @@ public class LevelEditorWindow : EditorWindow
         }
 
         Undo.RecordObject(context.LevelData, $"Erase {label}");
-        if (label == "DecorativeBuilding")
-            context.LevelData.RemoveDecorativeBuildingAt(anchor);
+        if (label == "DecorativeObject")
+            context.LevelData.RemoveDecorativeObjectAt(anchor);
         else if (label == "MainEvent")
             context.LevelData.RemoveMainEventAt(anchor);
         else if (label == "SubEvent")
@@ -1314,7 +1314,7 @@ public class LevelEditorWindow : EditorWindow
         context.TileRegistry = controller.TileRegistry;
         context.SelectedTileKey = controller.SelectedTileKey;
         context.SelectedHeroUnionPrefabKey = controller.SelectedHeroUnionPrefabKey;
-        context.SelectedDecorativeBuildingKey = controller.SelectedDecorativeBuildingKey;
+        context.SelectedDecorativeObjectKey = controller.SelectedDecorativeObjectKey;
         context.SelectedMainEventPrefabKey = controller.SelectedMainEventPrefabKey;
         context.SelectedSubEventPrefabKey = controller.SelectedSubEventPrefabKey;
         context.SelectedGatePrefabKey = controller.SelectedGatePrefabKey;
@@ -1634,7 +1634,7 @@ public class LevelEditorWindow : EditorWindow
     {
         footprint = null;
 
-        if (context.BrushType == LevelEditorBrushType.DecorativeBuilding)
+        if (context.BrushType == LevelEditorBrushType.DecorativeObject)
         {
             if (!TryGetBrushPrefab(context, out _, out reason))
                 return false;
@@ -1724,23 +1724,23 @@ public class LevelEditorWindow : EditorWindow
                 prefab = GetEnemyGroupPrefab(context);
                 reason = prefab == null ? "EnemyGroup prefab is missing." : null;
                 return prefab != null;
-            case LevelEditorBrushType.DecorativeBuilding:
-                if (string.IsNullOrWhiteSpace(context.SelectedDecorativeBuildingKey))
+            case LevelEditorBrushType.DecorativeObject:
+                if (string.IsNullOrWhiteSpace(context.SelectedDecorativeObjectKey))
                 {
                     reason = "Decorative prefab key is missing.";
                     return false;
                 }
 
-                prefab = GetDecorativeBuildingPrefab(context, context.SelectedDecorativeBuildingKey);
+                prefab = GetDecorativeObjectPrefab(context, context.SelectedDecorativeObjectKey);
                 if (prefab == null)
                 {
-                    reason = $"Decorative prefab is missing for {context.SelectedDecorativeBuildingKey}.";
+                    reason = $"Decorative prefab is missing for {context.SelectedDecorativeObjectKey}.";
                     return false;
                 }
 
-                if (prefab.GetComponent<DecorativeBuildingPlacement>() == null)
+                if (prefab.GetComponent<DecorativeObjectPlacement>() == null)
                 {
-                    reason = $"Decorative prefab '{context.SelectedDecorativeBuildingKey}' needs a DecorativeBuildingPlacement component.";
+                    reason = $"Decorative prefab '{context.SelectedDecorativeObjectKey}' needs a DecorativeObjectPlacement component.";
                     return false;
                 }
 
@@ -1775,7 +1775,7 @@ public class LevelEditorWindow : EditorWindow
             return false;
         }
 
-        if (context.BrushType == LevelEditorBrushType.DecorativeBuilding)
+        if (context.BrushType == LevelEditorBrushType.DecorativeObject)
         {
             reason = null;
             return true;
@@ -1863,12 +1863,12 @@ public class LevelEditorWindow : EditorWindow
 
         if (context.BrushType != LevelEditorBrushType.Obstacle)
         {
-            for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
+            for (int i = 0; i < levelData.DecorativeObjectPlacements.Count; i++)
             {
-                DecorativeBuildingPlacementData placement = levelData.DecorativeBuildingPlacements[i];
+                DecorativeObjectPlacementData placement = levelData.DecorativeObjectPlacements[i];
                 if (FootprintsOverlap(footprint, BuildFootprint(null, placement.GridPosition)))
                 {
-                    reason = "DecorativeBuilding overlaps this footprint.";
+                    reason = "DecorativeObject overlaps this footprint.";
                     return true;
                 }
             }
@@ -2019,14 +2019,14 @@ public class LevelEditorWindow : EditorWindow
             }
         }
 
-        for (int i = 0; i < levelData.DecorativeBuildingPlacements.Count; i++)
+        for (int i = 0; i < levelData.DecorativeObjectPlacements.Count; i++)
         {
-            DecorativeBuildingPlacementData placement = levelData.DecorativeBuildingPlacements[i];
+            DecorativeObjectPlacementData placement = levelData.DecorativeObjectPlacements[i];
             anchor = placement.GridPosition;
             footprint = BuildFootprint(null, anchor);
             if (footprint.Contains(grid))
             {
-                label = "DecorativeBuilding";
+                label = "DecorativeObject";
                 return true;
             }
         }
@@ -2229,10 +2229,10 @@ public class LevelEditorWindow : EditorWindow
                 : null;
     }
 
-    private static GameObject GetDecorativeBuildingPrefab(LevelEditorContext context, string prefabKey)
+    private static GameObject GetDecorativeObjectPrefab(LevelEditorContext context, string prefabKey)
     {
         return context.PrefabRegistry != null
-            && context.PrefabRegistry.TryGetDecorativeBuildingPrefab(prefabKey, out GameObject prefab)
+            && context.PrefabRegistry.TryGetDecorativeObjectPrefab(prefabKey, out GameObject prefab)
                 ? prefab
                 : null;
     }
@@ -2376,7 +2376,7 @@ public class LevelEditorWindow : EditorWindow
         public LevelTileRegistry TileRegistry;
         public string SelectedTileKey;
         public string SelectedHeroUnionPrefabKey;
-        public string SelectedDecorativeBuildingKey;
+        public string SelectedDecorativeObjectKey;
         public string SelectedMainEventPrefabKey;
         public string SelectedSubEventPrefabKey;
         public string SelectedGatePrefabKey;
