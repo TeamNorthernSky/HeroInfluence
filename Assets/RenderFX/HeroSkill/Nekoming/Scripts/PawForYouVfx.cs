@@ -65,8 +65,8 @@ namespace JC.VFX
 
         [Header("팝 / 배치")]
         [Range(0f, 4f)] [SerializeField] private float popOvershoot = 1.7f;
-        // ★위치는 부품 프리셋이 정본(260805) — 발 = P1(spawnOffset/headOffset), 광선 끝 = P2(endOffset).
-        [Range(0f, 0.6f)] [SerializeField] private float pawBeamGap = 0.12f;
+        // ★위치는 부품 프리셋이 정본(260805) — 발 = P1(spawnOffset/headOffset), 광선 시작 = P2(startOffset, 끝은 수직 낙하 고정).
+        [Range(-0.6f, 0.6f)] [SerializeField] private float pawBeamGap = 0.12f;
         [Range(0.2f, 3f)] [SerializeField] private float flashSizeMul = 1f;
 
         [Header("구간 분할")]
@@ -184,12 +184,24 @@ namespace JC.VFX
             return pp != null ? JcVfxPlacementPreset.ResolveWorld(_target, pp.headSocketName, pp.headOffset) : _target.position;
         }
 
-        private Vector3 BeamEnd()
+        /// <summary>
+        /// ★광선 시작점(260806 개편) — 정본 = P2 프리셋(startSocketName/startOffset).
+        /// 소켓이 비면 발바닥(발 현재 위치 − pawBeamGap) 기준, 지정 시 대상 소켓 기준. 오프셋은 월드 축.
+        /// </summary>
+        private Vector3 BeamStart()
         {
-            if (_target == null) return transform.position;
+            // ★접점 핀(260806) — 발의 「시각 접점」(패드 하단)이 정본. 핀이 꺼진 프리셋에선 쿼드 중심(종전과 동일).
+            Vector3 basePos = paw != null ? paw.AnchorPosition + Vector3.down * pawBeamGap
+                                          : transform.position;
             var bp = beam && beam.Preset != null ? beam.Preset.TransformSource : null;
-            return bp != null ? JcVfxPlacementPreset.ResolveWorld(_target, bp.endSocketName, bp.endOffset) : _target.position;
+            if (bp == null) return basePos;
+            if (!string.IsNullOrWhiteSpace(bp.startSocketName) && _target != null)
+                return JcVfxPlacementPreset.ResolveWorld(_target, bp.startSocketName, bp.startOffset);
+            return basePos + bp.startOffset;
         }
+
+        /// <summary>광선 끝 = 시작의 XZ 그대로, y만 바닥(대상 루트) — 광선은 항상 XZ평면에 수직.</summary>
+        private Vector3 BeamEnd(Vector3 start) => new Vector3(start.x, TargetGround().y, start.z);
 
         private Vector3 TargetGround() => _target ? _target.position : transform.position;
         /// <summary>Warp 구간 전용 — 스폰된 자기 위치. 출발·도착 어느 쪽인지는 큐의 Anchor 가 정한다.</summary>
@@ -315,7 +327,8 @@ namespace JC.VFX
                         if (beam)
                         {
                             beam.Show();
-                            beam.SetLine(paw.CurrentPosition + Vector3.down * pawBeamGap, BeamEnd());
+                            Vector3 bs = BeamStart();
+                            beam.SetLine(bs, BeamEnd(bs));
                             beam.SetExtend(0f);
                             beam.SetEnvelope(1f);
                         }
@@ -329,13 +342,14 @@ namespace JC.VFX
                     paw.SetScaleMul(1f);
                     if (beam)
                     {
-                        beam.SetLine(paw.CurrentPosition + Vector3.down * pawBeamGap, BeamEnd());
+                        Vector3 bs = BeamStart();
+                        beam.SetLine(bs, BeamEnd(bs));
                         beam.SetExtend(u);
                     }
                     if (_phaseT >= beamExtendTime)
                     {
                         // 착탄: 플래시 + 타격 이펙트 시작
-                        if (flash && beam) flash.Flash(BeamEnd(), beam.HitFlashColor, flashSizeMul);
+                        if (flash && beam) flash.Flash(BeamEnd(BeamStart()), beam.HitFlashColor, flashSizeMul);
                         if (impactCross) impactCross.Play(TargetGround());
                         if (impactGround)
                         {
@@ -350,7 +364,8 @@ namespace JC.VFX
                     paw.SetBasePosition(TargetHead());
                     if (beam)
                     {
-                        beam.SetLine(paw.CurrentPosition + Vector3.down * pawBeamGap, BeamEnd());
+                        Vector3 bs = BeamStart();
+                        beam.SetLine(bs, BeamEnd(bs));
                         beam.SetExtend(1f);
                     }
                     if (impactGround) impactGround.SetEnvelope(1f);
@@ -363,7 +378,8 @@ namespace JC.VFX
                     paw.SetEnvelope(fade);
                     if (beam)
                     {
-                        beam.SetLine(paw.CurrentPosition + Vector3.down * pawBeamGap, BeamEnd());
+                        Vector3 bs = BeamStart();
+                        beam.SetLine(bs, BeamEnd(bs));
                         beam.SetEnvelope(fade);
                     }
                     if (impactGround) impactGround.SetEnvelope(fade);

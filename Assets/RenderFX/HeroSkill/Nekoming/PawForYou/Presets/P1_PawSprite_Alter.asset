@@ -15,12 +15,14 @@ MonoBehaviour:
   followBasic: 1
   basicRef: {fileID: 11400000, guid: 8a959988d98c4bb41af030ed39645351, type: 2}
   spawnSocketName: 
-  spawnOffset: {x: -0.75, y: 1.11, z: 0.15}
+  spawnOffset: {x: 0, y: 2.5, z: 0}
   headSocketName: 
-  headOffset: {x: 0, y: 1.9, z: 0}
-  size: 1.6
+  headOffset: {x: 0, y: 2.5, z: 0}
+  size: 2
   canvasScale: 0.55
-  billboardYOnly: 0
+  billboardMode: 1
+  anchorPin: 1
+  anchorLocal: {x: 0, y: -0.27}
   bobAmp: 0.04
   bobFreq: 1.2
   toeCount: 4
@@ -45,7 +47,7 @@ MonoBehaviour:
   rimWidth: 0.05
   glowColor: {r: 1, g: 0.75, b: 0.2, a: 1}
   glowIntensity: 2.5
-  glowRange: 0.175
+  glowRange: 0.084
   wobbleAmp: 0.015
   wobbleSpeed: 2
   warpFlashColor: {r: 1, g: 0.9, b: 0.4, a: 1}

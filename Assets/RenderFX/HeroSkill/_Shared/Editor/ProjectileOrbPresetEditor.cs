@@ -7,15 +7,18 @@ namespace JC.VFX
     public class ProjectileOrbPresetEditor : Editor
     {
         const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
+        const string LFL = "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove";
         // ★변종 자동 인식 — 프리셋 이름이 _Silver 로 끝나면 은백 재질·프리팹을 대상으로 잡는다.
         //   (FlareOrb 에디터의 Sfx 패턴. 금 프리셋으로 은백을 덮는 사고 방지)
         string Sfx => target != null && target.name.EndsWith("_Basic") ? "_Basic" : "_Alter";   // 개편 후 전 자산이 접미를 가진다
-        string MatCoreInner => DIR + "/Materials/ProjectileCoreInner" + Sfx + ".mat";   // 스파이키 코어
-        string MatRimShell  => DIR + "/Materials/ProjectileRimShell" + Sfx + ".mat";    // 매끈 외곽선
-        string MatSparkle   => DIR + "/Materials/ProjectileSparkleStar" + Sfx + ".mat";
-        string MatSpikeBurst => DIR + "/Materials/SpikeBurstAdditive" + Sfx + ".mat";
-        string MatStarFlash  => DIR + "/Materials/StarFlashAdditive" + Sfx + ".mat";
-        string ProjPrefab   => DIR + "/Prefabs/ProjectileOrb" + Sfx + ".prefab";
+        // ★소속 분기 — L2(LFL) 프리셋이면 LFL 전용 재질·프리팹만 만진다(힐과 완전 절연, 260807).
+        bool Lfl => JcPresetEditorUtil.IsLfl(target);
+        string MatCoreInner => (Lfl ? LFL + "/Materials/LFL_" : DIR + "/Materials/") + "ProjectileCoreInner" + Sfx + ".mat";   // 스파이키 코어
+        string MatRimShell  => (Lfl ? LFL + "/Materials/LFL_" : DIR + "/Materials/") + "ProjectileRimShell" + Sfx + ".mat";    // 매끈 외곽선
+        string MatSparkle   => (Lfl ? LFL + "/Materials/LFL_" : DIR + "/Materials/") + "ProjectileSparkleStar" + Sfx + ".mat";
+        string MatSpikeBurst => (Lfl ? LFL + "/Materials/LFL_" : DIR + "/Materials/") + "SpikeBurstAdditive" + Sfx + ".mat";
+        string MatStarFlash  => (Lfl ? LFL + "/Materials/LFL_" : DIR + "/Materials/") + "StarFlashAdditive" + Sfx + ".mat";
+        string ProjPrefab   => Lfl ? LFL + "/Prefabs/LFL_Projectile" + Sfx + ".prefab" : DIR + "/Prefabs/ProjectileOrb" + Sfx + ".prefab";
 
         static readonly string[] TransformProps =
         {
@@ -33,6 +36,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 값을 ProjectileOrbCore.mat + ProjectileOrb 프리팹(ProjectileVfx/Sparkles) + 전용 스파클 재질에 반영.\n적용 후 새로 재생하면 반영됩니다.", MessageType.Info);
         }

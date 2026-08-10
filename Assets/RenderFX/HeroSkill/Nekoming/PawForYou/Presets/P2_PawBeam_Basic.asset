@@ -12,7 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2089ebf4bfebf274a92739443e666632, type: 3}
   m_Name: P2_PawBeam_Basic
   m_EditorClassIdentifier: 
-  width: 0.35
+  followBasic: 0
+  basicRef: {fileID: 0}
+  startSocketName: 
+  startOffset: {x: 0, y: 0.5, z: 0}
+  width: 0.58
   coreColor: {r: 0.98, g: 0.99, b: 1, a: 1}
   glowColor: {r: 0.7, g: 0.85, b: 1, a: 1}
   intensity: 3
@@ -25,6 +29,6 @@ MonoBehaviour:
   pulseAmp: 0.12
   pulseFreq: 7
   capSoftStart: 0.08
-  capSoftEnd: 0.12
+  capSoftEnd: 0.347
   frontSoft: 0.05
   hitFlashColor: {r: 0.88, g: 0.94, b: 1, a: 1}

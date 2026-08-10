@@ -40,6 +40,13 @@ Shader "JC/VFX/TaoMagicCircle"
         [Header(Center Glow)]
         _CenterGlow ("Center Glow", Range(0,3)) = 0.55
         _CenterFalloff ("Center Falloff", Range(0.5,8)) = 2.6
+        [Header(Element Intensity)]
+        _RingIntensity ("Ring Intensity", Range(0,3)) = 1
+        _HexIntensity ("Hexagram Intensity", Range(0,3)) = 1
+        _SquareIntensity ("Square Intensity", Range(0,3)) = 1
+        _SatIntensity ("Satellite Intensity", Range(0,3)) = 1
+        _SpokeIntensity ("Spoke Intensity", Range(0,3)) = 1
+        _TickIntensity ("Tick Intensity", Range(0,3)) = 1
         _EdgeFade ("Outer Edge Fade", Range(0.005,0.3)) = 0.06
         _FadeMul ("Fade Multiplier", Range(0,1)) = 1.0
     }
@@ -70,6 +77,8 @@ Shader "JC/VFX/TaoMagicCircle"
                 float _TickRadius; float _TickWidth; float _TickCount; float _TickDuty;
                 float _RotInner; float _RotOuter; float _PulseAmp; float _PulseFreq;
                 float _CenterGlow; float _CenterFalloff; float _EdgeFade;
+                float _RingIntensity; float _HexIntensity; float _SquareIntensity;
+                float _SatIntensity; float _SpokeIntensity; float _TickIntensity;
                 float _FadeMul;
             CBUFFER_END
 
@@ -119,17 +128,17 @@ Shader "JC/VFX/TaoMagicCircle"
 
                 float v = 0.0;
 
-                // 동심원 링 3개 (0=off)
-                if (_Ring1 > 0.01) v += LineMask(abs(r - _Ring1), _LineWidth, _LineSoft);
-                if (_Ring2 > 0.01) v += LineMask(abs(r - _Ring2), _LineWidth, _LineSoft);
-                if (_Ring3 > 0.01) v += LineMask(abs(r - _Ring3), _LineWidth, _LineSoft);
+                // 동심원 링 3개 (0=off) — ★요소별 밝기(260807)
+                if (_Ring1 > 0.01) v += _RingIntensity * LineMask(abs(r - _Ring1), _LineWidth, _LineSoft);
+                if (_Ring2 > 0.01) v += _RingIntensity * LineMask(abs(r - _Ring2), _LineWidth, _LineSoft);
+                if (_Ring3 > 0.01) v += _RingIntensity * LineMask(abs(r - _Ring3), _LineWidth, _LineSoft);
 
                 // 육망성: 정삼각형 2개(60도 오프셋), 내륜 회전
                 if (_HexRadius > 0.01)
                 {
                     float d1 = NGonDist(p, _HexRadius, rotI + 1.5707963, 3);
                     float d2 = NGonDist(p, _HexRadius, rotI + 1.5707963 + 1.0471976, 3);
-                    v += LineMask(min(d1, d2), _HexWidth, _LineSoft);
+                    v += _HexIntensity * LineMask(min(d1, d2), _HexWidth, _LineSoft);
                 }
 
                 // 겹정사각(8망성): 정사각형 2개(45도 오프셋), 내륜 역위상 회전
@@ -138,7 +147,7 @@ Shader "JC/VFX/TaoMagicCircle"
                     float rotSq = -rotI * 0.7;   // 육망성과 미묘하게 다른 속도·역방향
                     float d1 = NGonDist(p, _SquareRadius, rotSq, 4);
                     float d2 = NGonDist(p, _SquareRadius, rotSq + 0.7853982, 4);
-                    v += LineMask(min(d1, d2), _SquareWidth, _LineSoft);
+                    v += _SquareIntensity * LineMask(min(d1, d2), _SquareWidth, _LineSoft);
                 }
 
                 // 위성 소원: 궤도 위 N개 작은 원 아웃라인, 외륜 회전
@@ -149,7 +158,7 @@ Shader "JC/VFX/TaoMagicCircle"
                     float satAng = (floor(aRel / rep + 0.5)) * rep + rotO;
                     float2 c = _SatOrbit * float2(cos(satAng), sin(satAng));
                     float dSat = abs(length(p - c) - _SatRadius);
-                    v += LineMask(dSat, _LineWidth, _LineSoft);
+                    v += _SatIntensity * LineMask(dSat, _LineWidth, _LineSoft);
                 }
 
                 // 방사 스포크: 내→외 반경 구간의 방사 선분 N개, 내륜 회전
@@ -161,7 +170,7 @@ Shader "JC/VFX/TaoMagicCircle"
                     float dLine = r * sin(delta);   // 스포크 레이까지의 수직 거리
                     float band = smoothstep(_SpokeInner - 0.02, _SpokeInner, r)
                                * (1.0 - smoothstep(_SpokeOuter, _SpokeOuter + 0.02, r));
-                    v += LineMask(dLine, _LineWidth, _LineSoft) * band;
+                    v += _SpokeIntensity * LineMask(dLine, _LineWidth, _LineSoft) * band;
                 }
 
                 // 룬 눈금 밴드: 각도 대시 × 반경 밴드, 외륜 회전
@@ -169,17 +178,19 @@ Shader "JC/VFX/TaoMagicCircle"
                 {
                     float band = 1.0 - smoothstep(_TickWidth * 0.7, _TickWidth, abs(r - _TickRadius));
                     float dash = step(1.0 - _TickDuty, frac((ang + rotO) * round(_TickCount) / 6.2831853));
-                    v += band * dash;
+                    v += _TickIntensity * band * dash;
                 }
 
-                // 중심 광채
-                v += _CenterGlow * pow(saturate(1.0 - r), _CenterFalloff);
+                // 중심 광채 — ★깜빡임은 중심광 전용(260807): 문양은 고정 밝기, 중심 빛만 숨쉬듯 맥동.
+                //   _PulseFreq 는 컴포넌트가 「주기(초)」를 rad/s 로 환산해 넣는다.
+                // ★밝기 분리(260807): _Intensity 는 문양(v)에만, _CenterGlow 는 중심광의 독립 밝기.
+                float centerPulse = 1.0 + _PulseAmp * sin(_Time.y * _PulseFreq);
+                float center = _CenterGlow * centerPulse * pow(saturate(1.0 - r), _CenterFalloff);
 
-                // 외곽 페이드(쿼드 경계 은폐) + 펄스
+                // 외곽 페이드(쿼드 경계 은폐)
                 float edge = 1.0 - smoothstep(1.0 - _EdgeFade, 1.0, r);
-                float pulse = 1.0 + _PulseAmp * sin(_Time.y * _PulseFreq);
 
-                float3 col = _Color.rgb * _Intensity * v * edge * pulse * _FadeMul;
+                float3 col = _Color.rgb * (_Intensity * v + center) * edge * _FadeMul;
                 return half4(col, 1.0);
             }
             ENDHLSL

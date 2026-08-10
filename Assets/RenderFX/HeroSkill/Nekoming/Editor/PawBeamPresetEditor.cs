@@ -13,13 +13,14 @@ namespace JC.VFX
             DIR + "/PawSpawn.prefab",  DIR + "/PawSpawn_Gold.prefab",
             DIR + "/PawWarp.prefab",   DIR + "/PawWarp_Gold.prefab",
             DIR + "/PawBeam.prefab",   DIR + "/PawBeam_Gold.prefab",
+            DIR + "/PawBeam_Miss.prefab", DIR + "/PawBeam_Gold_Miss.prefab",
             DIR + "/PawForYou.prefab", DIR + "/_Legacy/PawForYouMistake.prefab",
         };
 
         // 따름 잠금 대상 = 색·밝기를 제외한 전부(위치·폭·단면·노이즈·캡)
         static readonly string[] TransformProps =
         {
-            "endSocketName","endOffset","width",
+            "startSocketName","startOffset","width",
             "coreWidth","glowFalloff","edgeSoft",
             "noiseScale","noiseScroll","noiseAmount","pulseAmp","pulseFreq",
             "capSoftStart","capSoftEnd","frontSoft",
@@ -34,6 +35,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 PawBeam(수직 빔/워프 스트릭)에 반영.\n단면/노이즈/캡 항목은 프리셋+livePreview로만 구동됩니다.", MessageType.Info);
         }

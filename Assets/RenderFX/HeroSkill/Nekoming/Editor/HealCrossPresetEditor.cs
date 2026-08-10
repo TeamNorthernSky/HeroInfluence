@@ -14,9 +14,17 @@ namespace JC.VFX
             "Assets/RenderFX/HeroSkill/Nekoming/Heal/Prefabs/HealOrbit_Alter.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam_Gold.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam_Miss.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam_Gold_Miss.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawForYou.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/PawForYouMistake.prefab",
-            "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/Taosenaiyo.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/_Legacy/Taosenaiyo.prefab",
+            // ★Tao 부품 축(260807) — T5_TaoCross(공용)가 두 변종 프리팹의 십자에 닿는다.
+            "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/Tao_Revive_Basic.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/Tao_Revive_Alter.prefab",
+            // ★LFL 독립 사본(260807) — UsesPreset 가드 덕에 L8 프리셋만 여기 닿는다(힐과 절연).
+            "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove/Prefabs/LFL_LandAura_Basic.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove/Prefabs/LFL_LandAura_Alter.prefab",
         };
 
         // 따름 잠금 대상 = 색·밝기를 제외한 전부(스폰·배치·바운스·크기·형태). Paw P3 변형용 — 힐 8번 공용은 따름 끔.
@@ -37,6 +45,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 CrossBurst(HealCrossBurst)에 반영(힐/Paw 프리팹 자동 탐색).\nlivePreview가 켜져 있으면 플레이 중에도 새 십자부터 즉시 반영됩니다.", MessageType.Info);
         }

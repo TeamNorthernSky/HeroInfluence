@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 847d969eb0017b74d81eb62acd724c6e, type: 3}
+  m_Name: L2_LFLProjectilePreset_Basic
+  m_EditorClassIdentifier: 
+  followBasic: 0
+  basicRef: {fileID: 0}
+  chargeRef: {fileID: 11400000, guid: acc7214968e32ac4e14f4fd4fba39c88, type: 2}
+  useChargeOrbPosition: 0
+  spawnSocketName: 
+  spawnOffset: {x: 0, y: 2.11, z: 0.5}
+  impactSocketName: 
+  impactOffset: {x: 0, y: 1.12, z: 0}
+  coreColor: {r: 0.742, g: 0.778, b: 1, a: 1}
+  rimColor: {r: 0.73, g: 0.84999996, b: 1, a: 1}
+  coreIntensity: 2.96
+  rimIntensity: 7.43
+  corePower: 4.63
+  rimPower: 3.71
+  coreSize: 0.788
+  rimSize: 1
+  coreSpikeAmount: 0.13
+  rimSpikeAmount: 0.445
+  spikeFreq: 8.12
+  spikeSpeed: 1.48
+  spikeSharp: 7.41
+  worldSize: 0.4
+  speed: 6
+  arcHeight: 1.2
+  trailTime: 0.8
+  trailAutoBySpeed: 0
+  trailLengthWorld: 2.5
+  burstScaleMul: 1.5
+  burstDuration: 0.3
+  rayRate: 59.55
+  rayCenterSize: 0.015
+  rayReachRadius: 0.18
+  raySizeMin: 0.008
+  raySizeMax: 0.025
+  raySpeed: 0.7
+  rayLengthScale: 2.2
+  rayColor: {r: 1.936, g: 1.969, b: 2.2, a: 2.2}
+  sparkleRate: 10
+  sparkleSizeMin: 0.17
+  sparkleSizeMax: 0.28
+  sparkleLifetime: 0.8
+  sparkleShapeRadius: 0.15
+  sparkleColor: {r: 1.6379999, g: 1.6542, b: 1.8, a: 1.8}
+  starSize: 0.14
+  starLifetime: 0.8
+  starRate: 2
+  starSpinSpeed: 35
+  starColor: {r: 1.61, g: 1.67, b: 2, a: 2}

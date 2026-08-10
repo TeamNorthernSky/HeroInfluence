@@ -14,8 +14,13 @@ namespace JC.VFX
             "Assets/RenderFX/HeroSkill/Nekoming/Heal/Prefabs/HealOrbit_Alter.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam_Gold.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam_Miss.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawBeam_Gold_Miss.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/PawForYou.prefab",
             "Assets/RenderFX/HeroSkill/Nekoming/PawForYou/Prefabs/_Legacy/PawForYouMistake.prefab",
+            // ★LFL 독립 사본(260807) — UsesPreset 가드 덕에 L6 프리셋만 여기 닿는다(힐과 절연).
+            "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove/Prefabs/LFL_LandAura_Basic.prefab",
+            "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove/Prefabs/LFL_LandAura_Alter.prefab",
         };
 
         // 따름 잠금 대상 = 색·밝기·불투명도를 제외한 전부(반경·위치·경계·광선 기하)
@@ -35,6 +40,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 GroundShine(HealGroundShine)에 반영(힐/Paw 프리팹 자동 탐색).\nlivePreview가 켜져 있으면 플레이 중에도 즉시 반영됩니다.", MessageType.Info);
         }
