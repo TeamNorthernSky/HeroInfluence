@@ -97,6 +97,20 @@ MonoBehaviour:
     character: "\uB124\uCF54\uBC0D"
     skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
     note: "\uC7AC\uB4F1\uC7A5+\uAD11\uC120+\uCC29\uD0C4 (\uAE08)"
+  - cueName: paw_beam_miss
+    variant: 0
+    prefab: {fileID: 1701908741892779338, guid: 768a63aa5f964193b2efe0bd00d79407,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC2E4\uC218 \uD790 \u2014 \uC7AC\uB4F1\uC7A5(\uC740\uBC31)+\uB179\uC0C9 \uAD11\uC120+\uC2ED\uC790 \uCC29\uD0C4"
+  - cueName: paw_beam_miss
+    variant: 1
+    prefab: {fileID: 1823103172392327103, guid: 1ca37ecdbc37415ca2ea1a4065f8c41b,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4"
+    note: "\uC2E4\uC218 \uD790 \u2014 \uC7AC\uB4F1\uC7A5(\uAE08)+\uB179\uC0C9 \uAD11\uC120+\uC2ED\uC790 \uCC29\uD0C4"
   - cueName: lfl_charge_r
     variant: 0
     prefab: {fileID: 7202160663652775434, guid: 30cd12b46e7cbf94e953157c84093ff3,
@@ -198,21 +212,43 @@ MonoBehaviour:
     note: "\uC5F0\uC1C4 \uCC29\uD0C4 \uD790 (\uAE08)"
   - cueName: tao_fire
     variant: 0
+    prefab: {fileID: 1697924425435355953, guid: 46394382001ef2d0c98543fcd56292b4,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
+    note: "\uD61C\uC131 \uD22C\uC0AC\uCCB4 (\uC740\uBC31)"
+  - cueName: tao_fire
+    variant: 1
     prefab: {fileID: 1697924425435355953, guid: 2f4e7d4f8fceb1846885fc325f97824d,
       type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
-    note: "\uD61C\uC131 \uD22C\uC0AC\uCCB4"
+    note: "\uD61C\uC131 \uD22C\uC0AC\uCCB4 (\uAE08)"
   - cueName: tao_revive
     variant: 0
-    prefab: {fileID: 1040852602494138211, guid: c2e7f2fa79fd4a04b8344ac788ba5a41,
+    prefab: {fileID: 1040852602494138211, guid: 76eb679b1591797dabf45d166316eea5,
       type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
-    note: "\uBD80\uD65C \uC138\uD2B8. \uB300\uC0C1\uC774 \uC4F0\uB7EC\uC9C4 \uACBD\uC6B0\uB9CC"
-  - cueName: tao_barrage
-    variant: 0
-    prefab: {fileID: 0}
+    note: "\uBD80\uD65C \uC624\uB77C (\uC740\uBC31). \uB300\uC0C1\uC774 \uC4F0\uB7EC\uC9C4 \uACBD\uC6B0\uB9CC"
+  - cueName: tao_revive
+    variant: 1
+    prefab: {fileID: 1040852602494138211, guid: 9a3b7ebf36d16cb640f762a63e432813,
+      type: 3}
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
-    note: "\uC801 \uC804\uCCB4 \uAD11\uC120 \uB2E4\uBC1C. \u2605\uC2E0\uADDC \uC81C\uC791"
+    note: "\uBD80\uD65C \uC624\uB77C (\uAE08)"
+  - cueName: tao_barrage
+    variant: 0
+    prefab: {fileID: 5806843239561021001, guid: 23bf32b43e0f338eb741da338a6c89f1,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
+    note: "\uC801 \uC804\uCCB4 \uAD11\uC120 \uB2E4\uBC1C (\uC740\uBC31). \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354 \u2014 \uBCF8 \uC5F0\uCD9C \uC124\uACC4 \uB300\uAE30"
+  - cueName: tao_barrage
+    variant: 1
+    prefab: {fileID: 7130551272357713001, guid: a1273183bd7216ca912779273162769a,
+      type: 3}
+    character: "\uB124\uCF54\uBC0D"
+    skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
+    note: "\uC801 \uC804\uCCB4 \uAD11\uC120 \uB2E4\uBC1C (\uAE08). \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354 \u2014 \uBCF8 \uC5F0\uCD9C \uC124\uACC4 \uB300\uAE30"

@@ -145,6 +145,9 @@ public partial class BattleCharactor
         return new SkillData
         {
             skillIndex = source.skillIndex,
+            skillKey = source.skillKey,
+            category = source.category,
+            slot = source.slot,
             skillClass = source.skillClass,
             acquireLevel = source.acquireLevel,
             skillName = source.skillName,
@@ -180,6 +183,7 @@ public partial class BattleCharactor
         return new WeaponData
         {
             WeaponIndex = source.WeaponIndex,
+            weaponKey = source.weaponKey,
             weaponClass = source.weaponClass,
             WeaponName = source.WeaponName,
             WeaponDescription = source.WeaponDescription,
@@ -191,6 +195,7 @@ public partial class BattleCharactor
             BonusReduceRate = source.BonusReduceRate,
             BonusSpeed = source.BonusSpeed,
             WeaponSkillIndex = source.WeaponSkillIndex,
+            weaponSkillKey = source.weaponSkillKey,
             WeaponSkillName = source.WeaponSkillName,
             WeaponSkillDescription = source.WeaponSkillDescription,
             IPCost = source.IPCost,

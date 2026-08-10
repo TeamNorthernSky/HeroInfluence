@@ -226,6 +226,7 @@ public class HeroUnionUnit : MonoBehaviour
 
     private static string NormalizeZoneId(string value)
     {
+        // TODO(remove fallback): require loader-authored zone ids once every HeroUnion prefab/placement has explicit data.
         string normalized = MapProgressKey.NormalizeSegment(value);
         return string.IsNullOrWhiteSpace(normalized) ? "zone_001" : normalized;
     }

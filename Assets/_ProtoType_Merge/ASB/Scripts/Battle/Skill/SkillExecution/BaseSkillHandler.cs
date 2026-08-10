@@ -88,7 +88,7 @@ namespace ASB.Work.Battle.SkillExecution
                 return;
             }
 
-            ITargetSelector selector = SkillTargetSelectorRegistry.GetSelector(context.Skill.skillIndex);
+            ITargetSelector selector = SkillTargetSelectorRegistry.GetSelector(context.Skill.skillKey);
             context.PrimaryTarget = selector.SelectTarget(context) ?? context.SelectedTarget;
 
             ASBGridManager gm = ASBGridManager.Instance;
@@ -156,6 +156,10 @@ namespace ASB.Work.Battle.SkillExecution
                     return !unit.IsDead && unit.IsPlayer == context.Caster.IsPlayer;
                 case 2: // Revive
                     return unit.IsDead && unit.IsPlayer == context.Caster.IsPlayer;
+                case 3: // Buff(버프): 아군 대상
+                    return !unit.IsDead && unit.IsPlayer == context.Caster.IsPlayer;
+                case 4: // Debuff(디버프): 적 대상
+                    return !unit.IsDead && unit.IsPlayer != context.Caster.IsPlayer;
                 default:
                     return false;
             }

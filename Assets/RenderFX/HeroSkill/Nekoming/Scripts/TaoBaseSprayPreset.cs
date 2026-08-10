@@ -7,9 +7,17 @@ namespace JC.VFX
     /// 위로 벌어지는 콘 표면에 갈퀴 스트릭이 바깥·위로 뿜어지는 방사형 버스트.
     /// 본 오라(T2)와 셰이더는 공유하되 쓰는 노브만 분리 노출. 에셋명: T2b_TaoBaseSpray.asset.
     /// </summary>
-    [CreateAssetMenu(menuName = "JC VFX/Taosenaiyo/T2b_Tao Base Spray Preset", fileName = "T2b_TaoBaseSpray")]
+    [CreateAssetMenu(menuName = "JC VFX/Taosenaiyo/T3_Tao Base Spray Preset", fileName = "T3_TaoBaseSpray")]
     public class TaoBaseSprayPreset : ScriptableObject
     {
+        [Header("★따름 (Alter 전용)")]
+        [Tooltip("켜면 트랜스폼(형태·움직임)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON — B/A는 색만 다르다.")]
+        public bool followBasic;
+        public TaoBaseSprayPreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
+        public TaoBaseSprayPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
         [Header("스커트 크기 / 기울기")]
         [Tooltip("바닥 지름(m). 상단은 flare만큼 더 벌어짐")]
         public float width = 0.9f;

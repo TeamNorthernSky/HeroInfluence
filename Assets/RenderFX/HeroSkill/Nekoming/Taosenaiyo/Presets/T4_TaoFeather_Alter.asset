@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e26bd7bd10467ea479bd0421f308db09, type: 3}
+  m_Name: T4_TaoFeather_Alter
+  m_EditorClassIdentifier: 
+  followBasic: 1
+  basicRef: {fileID: 11400000, guid: 7699621080a4cfeffa71e12e2dd2da7c, type: 2}
+  maxFeathers: 10
+  spawnIntervalMin: 0.12
+  spawnIntervalMax: 0.3
+  lifetimeMin: 1.5
+  lifetimeMax: 2.3
+  spawnRadius: 0.8
+  baseYOffset: 0.04
+  riseSpeedMin: 0.7
+  riseSpeedMax: 1.06
+  spiralSpeed: 40
+  swayAmp: 0.12
+  swayFreq: 0.61
+  spinMax: 90
+  sizeMin: 0.18
+  sizeMax: 0.3
+  fadeInFrac: 0.15
+  fadeOutFrac: 0.4
+  color: {r: 1, g: 0.9, b: 0.55, a: 1}
+  intensity: 7.34
+  bend: 0.22
+  barbFreq: 22
+  barbAmount: 0.3

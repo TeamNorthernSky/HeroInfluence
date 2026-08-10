@@ -22,19 +22,27 @@ public interface ISkillPresentationSequence
 /// </summary>
 public static class SkillPresentationSequenceRegistry
 {
-    private static readonly Dictionary<int, ISkillPresentationSequence> _map =
-        new Dictionary<int, ISkillPresentationSequence>();
+    // §5-9 skillKey(string) 기반. 현재 등록 없음(항상 기본 시퀀서).
+    private static readonly Dictionary<string, ISkillPresentationSequence> _map =
+        new Dictionary<string, ISkillPresentationSequence>();
 
-    public static void Register(int skillIndex, ISkillPresentationSequence sequence)
+    public static void Register(string skillKey, ISkillPresentationSequence sequence)
     {
-        if (sequence != null)
+        if (sequence != null && !string.IsNullOrEmpty(skillKey))
         {
-            _map[skillIndex] = sequence;
+            _map[skillKey] = sequence;
         }
     }
 
-    public static bool TryGet(int skillIndex, out ISkillPresentationSequence sequence)
-        => _map.TryGetValue(skillIndex, out sequence);
+    public static bool TryGet(string skillKey, out ISkillPresentationSequence sequence)
+    {
+        if (string.IsNullOrEmpty(skillKey))
+        {
+            sequence = null;
+            return false;
+        }
+        return _map.TryGetValue(skillKey, out sequence);
+    }
 
     public static void Clear() => _map.Clear();
 }

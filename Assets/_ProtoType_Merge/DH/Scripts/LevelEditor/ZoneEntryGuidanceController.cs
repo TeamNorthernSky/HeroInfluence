@@ -7,9 +7,12 @@ using UnityEngine.SceneManagement;
 public class ZoneEntryGuidanceController : MonoBehaviour
 {
     private const string GameObjectName = "[ZoneEntryGuidanceController]";
+    // Teleport reveal is delayed so the guided path becomes the first visible area in a new zone.
     private const int TeleportRevealSuppressFrameCount = 2;
+    // Padding widens fog visibility only. It must not be treated as extra movement permission.
     private const int VisualRevealPadding = 1;
 
+    // The allowed path is both the movement restriction and the persisted route for re-entry restore.
     private readonly HashSet<Vector2Int> allowedPathCells = new HashSet<Vector2Int>();
     private readonly List<Vector2Int> pathBuffer = new List<Vector2Int>();
 
@@ -70,6 +73,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         if (controller == null)
             return null;
 
+        // Stored guidance only applies while the party is inside the guided zone.
         if (!HasStoredGuidanceForCurrentPartyZone())
         {
             controller.ClearRuntimeState();
@@ -131,6 +135,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         if (Instance == null || !Instance.Active || !IsGuidanceActiveForCurrentPartyZone())
             return true;
 
+        // Backtracking through an open gate remains allowed even while the new-zone path is restricted.
         return Instance.allowedPathCells.Contains(grid) ||
             GateTeleportController.IsOpenGateTeleportCell(grid);
     }
@@ -168,6 +173,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
             return;
         }
 
+        // First entry into a zone forces the party toward that zone's unclaimed HeroUnion.
         HeroUnionUnit heroUnion = ResolveHeroUnion(zoneId);
         if (heroUnion == null)
         {
@@ -247,6 +253,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         for (int i = 0; i < savedCells.Count; i++)
             allowedPathCells.Add(savedCells[i]);
 
+        // Restore reuses the saved route exactly instead of recalculating around changed runtime objects.
         RevealAllowedPathCells();
     }
 
@@ -261,6 +268,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 
         pathBuffer.Clear();
         pathBuffer.AddRange(allowedPathCells);
+        // Reveal can be broader than movement so the path and HeroUnion read clearly through fog.
         AppendVisualPaddingCells(pathBuffer);
         AppendRequiredHeroUnionRevealCells(pathBuffer);
         fogGridManager.RevealCells(pathBuffer);
@@ -326,6 +334,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         for (int i = 0; i < path.Count; i++)
             allowedPathCells.Add(path[i]);
 
+        // Saving the exact path lets the party leave the zone and resume the same guidance later.
         if (saveProgress)
             MapProgressRepository.Instance?.BeginZoneEntryGuidance(activeZoneId, requiredHeroUnionId, path);
 
@@ -354,6 +363,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
     private void CompleteGuidance()
     {
         string completedZoneId = activeZoneId;
+        // Completion is permanent per zone; revisits return to normal movement and fog reveal.
         MapProgressRepository.Instance?.CompleteZoneEntryGuidance(completedZoneId);
         ClearRuntimeState();
 
@@ -386,6 +396,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
             if (candidate != start && !gridManager.CanOccupyCell(candidate, party.transform, true))
                 continue;
 
+            // Item cells stay valid so guided movement can still use the normal pickup flow.
             List<Vector2Int> candidatePath = pathfinder.FindPath(
                 start,
                 candidate,

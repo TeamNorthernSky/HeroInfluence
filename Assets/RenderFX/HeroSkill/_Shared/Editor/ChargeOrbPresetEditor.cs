@@ -7,15 +7,18 @@ namespace JC.VFX
     public class ChargeOrbPresetEditor : Editor
     {
         const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Heal";
+        const string LFL = "Assets/RenderFX/HeroSkill/Nekoming/LetsFightingLove";
         // ★변종 자동 인식 — 프리셋 이름이 _Silver 로 끝나면 은백 재질·프리팹을 대상으로 잡는다.
         //   (FlareOrb 에디터의 Sfx 패턴. 금 프리셋으로 은백을 덮는 사고 방지)
         string Sfx => target != null && target.name.EndsWith("_Basic") ? "_Basic" : "_Alter";   // 개편 후 전 자산이 접미를 가진다
-        string MatCore    => DIR + "/Materials/ChargeOrbCore" + Sfx + ".mat";
-        string MatSpark   => DIR + "/Materials/SparkAdditive" + Sfx + ".mat";
-        string MatStreak  => DIR + "/Materials/StreakAdditive" + Sfx + ".mat";
-        string MatSparkle => DIR + "/Materials/SparkleStarAdditive" + Sfx + ".mat";
-        string OrbPrefab  => DIR + "/Prefabs/ChargeOrb" + Sfx + ".prefab";
-        string FollowerPrefab => DIR + "/Prefabs/ChargeTrailFollower" + Sfx + ".prefab";
+        // ★소속 분기 — L1(LFL) 프리셋이면 LFL 전용 재질·프리팹만 만진다(힐과 완전 절연, 260807).
+        bool Lfl => JcPresetEditorUtil.IsLfl(target);
+        string MatCore    => Lfl ? LFL + "/Materials/LFL_ChargeOrbCore" + Sfx + ".mat"       : DIR + "/Materials/ChargeOrbCore" + Sfx + ".mat";
+        string MatSpark   => Lfl ? LFL + "/Materials/LFL_SparkAdditive" + Sfx + ".mat"       : DIR + "/Materials/SparkAdditive" + Sfx + ".mat";
+        string MatStreak  => Lfl ? LFL + "/Materials/LFL_StreakAdditive" + Sfx + ".mat"      : DIR + "/Materials/StreakAdditive" + Sfx + ".mat";
+        string MatSparkle => Lfl ? LFL + "/Materials/LFL_SparkleStarAdditive" + Sfx + ".mat" : DIR + "/Materials/SparkleStarAdditive" + Sfx + ".mat";
+        string OrbPrefab  => Lfl ? LFL + "/Prefabs/LFL_ChargeOrb" + Sfx + ".prefab"          : DIR + "/Prefabs/ChargeOrb" + Sfx + ".prefab";
+        string FollowerPrefab => Lfl ? LFL + "/Prefabs/LFL_ChargeTrailFollower" + Sfx + ".prefab" : DIR + "/Prefabs/ChargeTrailFollower" + Sfx + ".prefab";
 
         static readonly string[] TransformProps =
         {
@@ -31,6 +34,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 값을 재질/오브/팔로워 프리팹에 일괄 반영.\n캡처: 현재 프리팹/재질 값을 이 프리셋으로 역방향 읽기.\n적용 후 새로 재생하면 반영됩니다.", MessageType.Info);
         }

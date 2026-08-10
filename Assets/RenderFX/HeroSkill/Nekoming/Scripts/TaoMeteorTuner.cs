@@ -46,12 +46,17 @@ namespace JC.VFX
 
         public void SetPreset(TaoMeteorPreset p) => preset = p;
 
+        /// <summary>호출자(스테퍼/큐 드라이버)가 발사 시작·탄착 위치를 읽어 가는 창구(260807).</summary>
+        public TaoMeteorPreset Preset => preset;
+
         private void Update()
         {
             if (!livePreview || preset == null) return;
+            // ★라이브 따름(260807) — 위치·비행·크기·플리커는 TransformSource(Alter→Basic), 색·강도만 자기 것.
+            var t = preset.TransformSource;
 
-            if (projectile) projectile.ApplyTuning(preset.worldSize, preset.speed, preset.arcHeight, preset.trailTime);
-            if (cometShell) cometShell.SetSize(preset.cometLength, preset.cometWidth);
+            if (projectile) projectile.ApplyTuning(t.worldSize, t.speed, t.arcHeight, t.trailTime);
+            if (cometShell) cometShell.SetSize(t.cometLength, t.cometWidth);
 
             if (cometRenderer)
             {
@@ -60,23 +65,23 @@ namespace JC.VFX
                 _mpb.SetColor(ColorHeadID, preset.headColor);
                 _mpb.SetColor(ColorTailID, preset.tailColor);
                 _mpb.SetFloat(IntensityID, preset.intensity);   // 마스터(리본 전체 곱)
-                _mpb.SetFloat(TailStartWidthID, preset.tailStartWidth);
-                _mpb.SetFloat(TailEndWidthID, preset.tailEndWidth);
-                _mpb.SetFloat(TailTaperID, preset.tailTaper);
-                _mpb.SetFloat(TailFadeID, preset.tailFade);
-                _mpb.SetFloat(FlickerAmpID, preset.flickerAmp);
-                _mpb.SetFloat(FlickerSpeedID, preset.flickerSpeed);
+                _mpb.SetFloat(TailStartWidthID, t.tailStartWidth);
+                _mpb.SetFloat(TailEndWidthID, t.tailEndWidth);
+                _mpb.SetFloat(TailTaperID, t.tailTaper);
+                _mpb.SetFloat(TailFadeID, t.tailFade);
+                _mpb.SetFloat(FlickerAmpID, t.flickerAmp);
+                _mpb.SetFloat(FlickerSpeedID, t.flickerSpeed);
                 _mpb.SetColor(RimColorID, preset.rimColor);
                 _mpb.SetFloat(RimIntensityID, preset.rimIntensity);
-                _mpb.SetFloat(RimPosID, preset.rimPos);
-                _mpb.SetFloat(RimSoftID, preset.rimSoft);
-                _mpb.SetFloat(RimFadeID, preset.rimFade);
+                _mpb.SetFloat(RimPosID, t.rimPos);
+                _mpb.SetFloat(RimSoftID, t.rimSoft);
+                _mpb.SetFloat(RimFadeID, t.rimFade);
                 cometRenderer.SetPropertyBlock(_mpb);
             }
 
             if (cometHeadRenderer)
             {
-                cometHeadRenderer.transform.localScale = Vector3.one * preset.headSize;
+                cometHeadRenderer.transform.localScale = Vector3.one * t.headSize;
                 if (_mpb == null) _mpb = new MaterialPropertyBlock();
                 cometHeadRenderer.GetPropertyBlock(_mpb);   // _FadeMul 보존
                 _mpb.SetColor(FillColorID, preset.headColor);

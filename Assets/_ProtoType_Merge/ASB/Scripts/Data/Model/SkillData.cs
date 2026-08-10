@@ -14,7 +14,10 @@ using UnityEngine;
 [Serializable]
 public class SkillData
 {
-    public int skillIndex;
+    public int skillIndex;              // [TEMP:STRKEY] 레거시 int 키 브리지 / 제거조건: 레지스트리·컨텍스트·연출·아이콘 전 소비부 string 이행 완료 후
+    public string skillKey;             // 신규 string 키 (캐릭터=HS1010 / 무기=HCS001 / 적=FV20001_1)
+    public SkillCategory category;      // §5-7 명시 분류 (Class/Enemy/Weapon). skillIndex>=200000/>=300000 판정 대체
+    public int slot;                    // §5-7 적 스킬 슬롯(1/2), 그 외 0. skillIndex%10 판정 대체
     public string skillClass;
     public int acquireLevel;
     public string skillName;
@@ -67,7 +70,8 @@ public class SkillData
 
     private bool IsHealOrBuffSkill()
     {
-        // classSkillEffect: 0=공격, 1=힐, 2=부활 (TargetingHelper·BattleManager와 동일)
-        return classSkillEffect == 1 || classSkillEffect == 2;
+        // classSkillEffect: 0=공격, 1=힐, 2=부활, 3=버프, 4=디버프 (TargetingHelper·BattleManager와 동일)
+        // 힐·부활·버프(아군 대상)는 HealReceive 애니, 디버프(적 대상)는 Hit 애니.
+        return classSkillEffect == 1 || classSkillEffect == 2 || classSkillEffect == 3;
     }
 }

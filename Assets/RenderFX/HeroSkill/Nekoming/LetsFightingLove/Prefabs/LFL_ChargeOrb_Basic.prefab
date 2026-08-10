@@ -4777,7 +4777,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3efe9eaacde53aa45b5d6d877db87ae2, type: 2}
+  - {fileID: 2100000, guid: 1fdfd2921db32f62d97f4555741f6585, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4878,12 +4878,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   coreRenderer: {fileID: 7098361407672874982}
   sparks: {fileID: 1084674881447137212}
-  trailFollowerPrefab: {fileID: 3887752418092172733, guid: 652546c9b19651c4292f6ecd12935a18,
+  trailFollowerPrefab: {fileID: 3887752418092172733, guid: 9a0cb11e54681f5aa4716ade94874d2d,
     type: 3}
   startWorldSize: 0.015
   endWorldSize: 0.11
   growDuration: 0.5
-  preset: {fileID: 0}
+  preset: {fileID: 11400000, guid: acc7214968e32ac4e14f4fd4fba39c88, type: 2}
   livePreview: 1
 --- !u!1 &7708320784080037336
 GameObject:
@@ -4946,7 +4946,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3e3dedeefd816c44a6579df27d81946, type: 2}
+  - {fileID: 2100000, guid: 488b996998ef73ab37b5da0743096e73, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

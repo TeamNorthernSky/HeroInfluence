@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: TaoComet_Alter
+  m_Shader: {fileID: 4800000, guid: aa1d98ee91d29f047ac33cb28adebdf2, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _FadeMul: 1
+    - _FlickerAmp: 0.495
+    - _FlickerSpeed: 7.7
+    - _HeadInset: 0.03
+    - _HeadRadius: 0.45
+    - _HeadWidth: 0.5
+    - _Intensity: 1.7
+    - _RimFade: 1.88
+    - _RimHeadAmount: 0.25
+    - _RimIntensity: 5.07
+    - _RimPos: 0.716
+    - _RimSoft: 0.354
+    - _TailEndWidth: 0.04
+    - _TailFade: 1.6
+    - _TailStartWidth: 0.318
+    - _TailTaper: 0.73
+    m_Colors:
+    - _ColorHead: {r: 1, g: 0.98, b: 0.85, a: 1}
+    - _ColorTail: {r: 1, g: 0.82, b: 0.3, a: 1}
+    - _CoreColor: {r: 1, g: 0.98, b: 0.85, a: 1}
+    - _GlowColor: {r: 1, g: 0.82, b: 0.3, a: 1}
+    - _RimColor: {r: 1, g: 0.95, b: 0.7, a: 1}
+  m_BuildTextureStacks: []

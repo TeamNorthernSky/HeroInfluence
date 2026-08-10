@@ -6,17 +6,30 @@ namespace JC.VFX
     [CustomEditor(typeof(TaoFeatherPreset))]
     public class TaoFeatherPresetEditor : Editor
     {
-        const string TaoPrefab = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/Taosenaiyo.prefab";
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs";
+        // ★변종 인식(260807) — _Basic/_Alter 프리셋은 제 부품 프리팹(Tao_Revive±)만 만진다.
+        string Sfx => JcPresetEditorUtil.VariantSuffix(target) ?? "_Alter";
+        string TaoPrefab => DIR + "/Tao_Revive" + Sfx + ".prefab";
+
+        // 따름 잠금 — 색·밝기 외 전부(스폰·거동·형태)는 Basic 이 정본.
+        static readonly string[] TransformProps =
+        {
+            "maxFeathers", "spawnIntervalMin", "spawnIntervalMax", "lifetimeMin", "lifetimeMax",
+            "spawnRadius", "baseYOffset", "riseSpeedMin", "riseSpeedMax", "spiralSpeed",
+            "swayAmp", "swayFreq", "spinMax", "sizeMin", "sizeMax", "fadeInFrac", "fadeOutFrac",
+            "bend", "barbFreq", "barbAmount",
+        };
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.TaoFeather.Fold", TransformProps);
             var p = (TaoFeatherPreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 FeatherBurst(TaoFeatherBurst)에 반영.\n깃털 형태(벤드/깃가지) 항목은 프리셋+livePreview로만 구동됩니다.", MessageType.Info);
         }

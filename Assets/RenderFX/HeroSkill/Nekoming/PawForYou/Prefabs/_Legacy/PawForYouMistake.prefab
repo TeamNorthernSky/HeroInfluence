@@ -172,10 +172,9 @@ MonoBehaviour:
   beamSustainTime: 1.2
   fadeOutTime: 0.35
   popOvershoot: 1.7
-  pawBeamGap: 0.24
+  pawBeamGap: -0.064
   flashSizeMul: 1
   segment: 0
-  warpBurstTime: 0.35
 --- !u!1 &3194704572033566953
 GameObject:
   m_ObjectHideFlags: 0
@@ -275,7 +274,9 @@ MonoBehaviour:
   preset: {fileID: 11400000, guid: 8a959988d98c4bb41af030ed39645351, type: 2}
   livePreview: 1
   size: 2
-  billboardYOnly: 0
+  billboardMode: 1
+  anchorPin: 1
+  anchorLocal: {x: 0, y: -0.27}
   bobAmp: 0.04
   bobFreq: 1.2
   fillColor: {r: 0.82, g: 0.88, b: 1, a: 1}

@@ -39,6 +39,7 @@ public class MapEventObject : MonoBehaviour
 
     public void Interact(PartyGridMover party)
     {
+        // Map events still use the old confirmation panel flow instead of the chat/event-effect system.
         EventInteracted?.Invoke(this, party);
     }
 
@@ -59,6 +60,7 @@ public class MapEventObject : MonoBehaviour
         if (!ApplyEventEffect(party))
             return false;
 
+        // Map events are one-shot per cell and are restored by MapProgressRepository completion keys.
         MarkEventCompleted();
         Destroy(gameObject);
         return true;

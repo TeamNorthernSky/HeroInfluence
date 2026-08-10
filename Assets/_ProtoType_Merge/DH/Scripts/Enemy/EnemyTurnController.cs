@@ -13,8 +13,6 @@ public class EnemyTurnController : MonoBehaviour
     [SerializeField] private CombatEncounterManager combatEncounterManager;
     [SerializeField] private CombatPromptService combatPromptService;
     [SerializeField] private GridManager gridManager;
-    [FormerlySerializedAs("mineRegistry")]
-    [SerializeField] private OutpostRegistry outpostRegistry;
 
     private readonly List<TargetCandidate> targetCandidates = new List<TargetCandidate>();
     private EnemyTurnSessionRepository turnSessionRepository;
@@ -65,6 +63,7 @@ public class EnemyTurnController : MonoBehaviour
             turnSessionRepository.HasCurrentEnemy &&
             turnSessionRepository.RemainingMovePoints > 0)
         {
+            // Resume the same enemy after combat instead of restarting the whole enemy turn.
             EnemyGridMover currentEnemy = FindSessionCurrentEnemy();
             if (currentEnemy != null && !currentEnemy.IsStatic && !IsEnemyDefeated(currentEnemy))
             {
@@ -225,6 +224,7 @@ public class EnemyTurnController : MonoBehaviour
         targetCandidates.Clear();
 
         Vector2Int enemyGrid = enemy.GetCurrentGrid();
+        // Current mobile enemies only chase claimed HeroUnions; outpost branches remain for target-type compatibility.
         CollectTargetCandidates();
 
         TargetCandidate? selectedCandidate = GetClosestCandidate(enemyGrid);
@@ -317,6 +317,7 @@ public class EnemyTurnController : MonoBehaviour
 
         bool eventEncounterClosed = false;
         bool eventEncounterStartedCombat = false;
+        // Event-spawned enemies use encounter chat first; normal combat UI remains as the fallback path.
         if (EnemyEventEncounterService.TryOpenEncounterChat(
                 party,
                 enemy,
@@ -574,30 +575,6 @@ public class EnemyTurnController : MonoBehaviour
         return path == null ? 0 : Mathf.Max(0, path.Count - 1);
     }
 
-    private bool HandleAdjacentOutpostInteraction(EnemyGridMover enemy)
-    {
-        if (DHGameEndState.IsEnding)
-            return false;
-
-        if (enemy == null || gridManager == null)
-            return false;
-
-        if (!gridManager.TryGetAdjacentOutpostGrid(enemy.GetCurrentGrid(), out Vector2Int outpostGrid))
-            return false;
-
-        if (!gridManager.TryGetOutpostObjectAtGrid(outpostGrid, out Outpost outpost))
-            return false;
-
-        if (outpost.IsEnemyClaimed)
-            return false;
-
-        if (enemy.CurrentTarget == outpost)
-            enemy.ClearTarget();
-
-        outpost.EnemyClaim();
-        return true;
-    }
-
     private static bool IsBetterAlignedApproach(
         Vector2Int enemyGrid,
         Vector2Int targetGrid,
@@ -660,9 +637,6 @@ public class EnemyTurnController : MonoBehaviour
 
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
-
-        if (outpostRegistry == null)
-            outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
     }
 }
 

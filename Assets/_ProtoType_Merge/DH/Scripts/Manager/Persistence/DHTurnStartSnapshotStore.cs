@@ -14,6 +14,7 @@ public sealed class DHTurnStartSnapshotStore : MonoBehaviour
     [SerializeField] private string capturedAt;
     [SerializeField] private int capturedDay = 1;
 
+    // Sections are independent memory copies of turn-start state. Do not store transient combat flow here.
     private DHTurnStartSnapshotSection[] sections = Array.Empty<DHTurnStartSnapshotSection>();
 
     public bool HasSnapshot => hasSnapshot;
@@ -115,6 +116,7 @@ public sealed class DHTurnStartSnapshotStore : MonoBehaviour
 
         RefreshSections();
 
+        // Each section decides which runtime repository/manager state is safe to save at turn start.
         for (int i = 0; i < sections.Length; i++)
             sections[i]?.CaptureFromRuntime();
 
@@ -151,6 +153,7 @@ public sealed class DHTurnStartSnapshotStore : MonoBehaviour
         data.savedAt = capturedAt;
         data.saveVersion = 1;
 
+        // SaveService writes this snapshot as-is, so fields should represent turn-start state only.
         for (int i = 0; i < sections.Length; i++)
             sections[i]?.FillGameSaveData(data);
 

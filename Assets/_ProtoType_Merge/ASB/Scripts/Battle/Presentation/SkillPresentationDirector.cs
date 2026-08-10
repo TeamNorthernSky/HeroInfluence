@@ -20,6 +20,13 @@ using ASB.Work.Battle.SkillExecution;
 public sealed class SkillPresentationDirector
 {
     private readonly BattleManager _battle;
+    private int _activeSequenceCount;
+
+    /// <summary>
+    /// True while an attack presentation owns the battle screen. Battle-end UI must
+    /// wait for this rather than reacting to the damage/death commit mid-Cue.
+    /// </summary>
+    public bool IsSequenceRunning => _activeSequenceCount > 0;
 
     // 체인 라이트닝은 일반 투사체처럼 매 타격마다 생성하지 않고, 프리팹별 런타임 인스턴스를 재사용한다.
     private readonly Dictionary<GameObject, JC.VFX.ChainLightningVfx> _chainLightningEffects = new();
@@ -48,6 +55,19 @@ public sealed class SkillPresentationDirector
     public SkillPresentationDirector(BattleManager battle)
     {
         _battle = battle;
+    }
+
+    private IEnumerator TrackSequence(IEnumerator sequence)
+    {
+        _activeSequenceCount++;
+        try
+        {
+            yield return sequence;
+        }
+        finally
+        {
+            _activeSequenceCount = Mathf.Max(0, _activeSequenceCount - 1);
+        }
     }
 
     /// <summary>체인 임팩트 신호를 식별하는 액션 인스턴스 ID. 0이면 체인 연출이 없는 캐스트다.</summary>
@@ -510,6 +530,9 @@ public sealed class SkillPresentationDirector
         return new SkillData
         {
             skillIndex = source.skillIndex,
+            skillKey = source.skillKey,
+            category = source.category,
+            slot = source.slot,
             skillClass = source.skillClass,
             acquireLevel = source.acquireLevel,
             skillName = source.skillName,
@@ -701,7 +724,22 @@ public sealed class SkillPresentationDirector
         EnqueueSkillReturn(runner, actorAnim, movement, true, false, originPosition, originRotationY, returnPhase);
     }
 
-public IEnumerator RunSkillSequenceCore(
+    public IEnumerator RunSkillSequenceCore(
+        BattleCharactor actor,
+        ISkillTarget skillTarget,
+        SkillData skill,
+        bool playBasicAttackAnimation,
+        bool playTargetHitAnimation,
+        Func<BattleHitResult> onHitCallback,
+        HitDeliveryGate deliveryGate,
+        IReadOnlyList<BattleCharactor> presentationTargets = null)
+    {
+        yield return TrackSequence(RunSkillSequenceCoreInternal(
+            actor, skillTarget, skill, playBasicAttackAnimation, playTargetHitAnimation,
+            onHitCallback, deliveryGate, presentationTargets));
+    }
+
+    private IEnumerator RunSkillSequenceCoreInternal(
         BattleCharactor actor,
         ISkillTarget skillTarget,
         SkillData skill,
@@ -730,7 +768,7 @@ public IEnumerator RunSkillSequenceCore(
         }
 
         // 특이 스킬 커스텀 연출 탈출구(등록 없으면 no-op → 기본 시퀀서).
-        if (skill != null && SkillPresentationSequenceRegistry.TryGet(skill.skillIndex, out ISkillPresentationSequence customSeq))
+        if (skill != null && SkillPresentationSequenceRegistry.TryGet(skill.skillKey, out ISkillPresentationSequence customSeq))
         {
             yield return _battle.StartCoroutine(customSeq.Run(_battle, actor, target, skill, onHitCallback));
             yield break;
@@ -1194,6 +1232,12 @@ public IEnumerator RunSkillSequenceCore(
     /// 광역 스킬: 시전 애니 1회, HitDelay 시점에 전 타겟 동시 피격·데미지, 이후 전원 Idle 복귀.
     /// </summary>
     public IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks,
+        HitDeliveryGate deliveryGate)
+    {
+        yield return TrackSequence(RunAoESkillSequenceInternal(contexts, hitCallbacks, deliveryGate));
+    }
+
+    private IEnumerator RunAoESkillSequenceInternal(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks,
         HitDeliveryGate deliveryGate)
     {
         if (deliveryGate == null)

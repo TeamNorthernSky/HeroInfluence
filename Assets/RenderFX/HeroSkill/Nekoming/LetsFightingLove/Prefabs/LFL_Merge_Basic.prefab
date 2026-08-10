@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 678a1329f8e5dfb4eaa35c065940c923, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flashMaterial: {fileID: 2100000, guid: d6ec421e34402794aa4758374bd03939, type: 2}
+  flashMaterial: {fileID: 2100000, guid: ce72a917e47f5b056124e021e74cbc95, type: 2}
   size: 0.9
   duration: 0.25
   growFrom: 0.5

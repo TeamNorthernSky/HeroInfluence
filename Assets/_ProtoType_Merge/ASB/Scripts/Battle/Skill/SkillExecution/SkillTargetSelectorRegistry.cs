@@ -4,11 +4,14 @@ namespace ASB.Work.Battle.SkillExecution
 {
     public static class SkillTargetSelectorRegistry
     {
-        private static readonly Dictionary<int, ITargetSelector> Selectors = new Dictionary<int, ITargetSelector>();
+        // §5-9 skillKey(string) 기반. 현재 등록 없음(항상 기본 셀렉터).
+        private static readonly Dictionary<string, ITargetSelector> Selectors = new Dictionary<string, ITargetSelector>();
 
-        public static ITargetSelector GetSelector(int skillIndex)
+        public static ITargetSelector GetSelector(string skillKey)
         {
-            if (Selectors.TryGetValue(skillIndex, out ITargetSelector selector) && selector != null)
+            if (!string.IsNullOrEmpty(skillKey)
+                && Selectors.TryGetValue(skillKey, out ITargetSelector selector)
+                && selector != null)
             {
                 return selector;
             }
@@ -16,14 +19,14 @@ namespace ASB.Work.Battle.SkillExecution
             return DefaultTargetSelector.Instance;
         }
 
-        public static void Register(int skillIndex, ITargetSelector selector)
+        public static void Register(string skillKey, ITargetSelector selector)
         {
-            if (selector == null)
+            if (selector == null || string.IsNullOrEmpty(skillKey))
             {
                 return;
             }
 
-            Selectors[skillIndex] = selector;
+            Selectors[skillKey] = selector;
         }
     }
 }

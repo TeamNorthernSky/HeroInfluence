@@ -29,10 +29,12 @@ namespace JC.VFX
         [Tooltip("합체 순간 섬광(자식, PawFlash 재사용)")]
         [SerializeField] private PawFlash flash;
 
-        [Header("손 위치 (시전자 로컬 오프셋)")]
-        [Tooltip("오른손 오브 시작점. lfl_charge_r 마디의 오프셋과 맞출 것.")]
+        [Header("손 위치 (폴백 전용 — 정본은 차지 프리셋 L1)")]
+        [Tooltip("★260807 단일 소스화: 손 시작점의 정본은 orbPrefab 이 문 차지 프리셋(L1)의 spawnOffset.\n" +
+                 "오른손 = 그대로, 왼손 = X 부호 반전(스테퍼 mirrorX 와 같은 규칙) — L1 을 고치면 여기도 따라온다.\n" +
+                 "이 값은 차지 프리셋이 비어 있을 때만 쓰는 폴백이다.")]
         [SerializeField] private Vector3 handLocalOffsetR = new Vector3(0.35f, 1.30f, 0.20f);
-        [Tooltip("왼손 오브 시작점. lfl_charge_l 마디의 오프셋과 맞출 것.")]
+        [Tooltip("왼손 폴백. 위와 같음 — 정본은 L1 spawnOffset 의 X 반전.")]
         [SerializeField] private Vector3 handLocalOffsetL = new Vector3(-0.35f, 1.30f, 0.20f);
 
         [Header("수렴 / 합체")]
@@ -57,9 +59,8 @@ namespace JC.VFX
             StopInternal();
 
             Vector3 mp = transform.position;
-            // 시전자가 없으면(순수 프리뷰) 합류점 좌우에서 시작 — 부품 단독 재생도 굴러가게.
-            _startR = origin != null ? origin.TransformPoint(handLocalOffsetR) : mp + new Vector3(0.35f, -0.15f, 0f);
-            _startL = origin != null ? origin.TransformPoint(handLocalOffsetL) : mp + new Vector3(-0.35f, -0.15f, 0f);
+            _startR = HandStart(origin, true, mp);
+            _startL = HandStart(origin, false, mp);
 
             _orbR = SpawnOrb(_startR);
             _orbL = SpawnOrb(_startL);
@@ -70,6 +71,28 @@ namespace JC.VFX
         }
 
         public override void Stop() => StopInternal();
+
+        /// <summary>
+        /// ★손 시작점 단일 소스(260807) — 정본은 차지 프리셋(L1)의 spawnOffset.
+        /// 오른손 = 그대로 / 왼손 = X 반전(스테퍼 mirrorX 와 같은 규칙). 해석도 차지 마디와 동일한
+        /// <see cref="JcVfxPlacementPreset.Resolve(Transform,string,Vector3)"/>(회전 따름·스케일 무시)라
+        /// 앞 마디(lfl_charge_r/l)가 만든 오브 위치와 정확히 겹친다. 프리셋이 없으면 내장값 폴백.
+        /// 시전자가 없으면(순수 프리뷰) 합류점 좌우에서 시작 — 부품 단독 재생도 굴러가게.
+        /// </summary>
+        private Vector3 HandStart(Transform origin, bool right, Vector3 mergePoint)
+        {
+            if (origin == null) return mergePoint + new Vector3(right ? 0.35f : -0.35f, -0.15f, 0f);
+
+            var preset = orbPrefab != null ? orbPrefab.Preset : null;
+            if (preset != null)
+            {
+                var t = preset.TransformSource;   // 따름 규칙(Alter → Basic) 포함
+                var off = t.spawnOffset;
+                if (!right) off.x = -off.x;
+                return JcVfxPlacementPreset.Resolve(origin, t.spawnSocketName, off);
+            }
+            return origin.TransformPoint(right ? handLocalOffsetR : handLocalOffsetL);
+        }
 
         /// <summary>
         /// ★오브·합체 구체는 씬 루트에 있어 자식이 아니다 — 이 부품이 Stop 없이 파괴되면

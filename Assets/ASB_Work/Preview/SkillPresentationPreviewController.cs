@@ -470,6 +470,9 @@ public class SkillPresentationPreviewController : MonoBehaviour
         return new SkillData
         {
             skillIndex = source.skillIndex,
+            skillKey = source.skillKey,
+            category = source.category,
+            slot = source.slot,
             skillClass = source.skillClass,
             acquireLevel = source.acquireLevel,
             skillName = source.skillName,

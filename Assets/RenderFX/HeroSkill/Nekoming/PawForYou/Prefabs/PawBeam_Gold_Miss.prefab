@@ -1,0 +1,217 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &4593870055326731396
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451682280943091858, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2200540506755527175, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: impactCross
+      value: 
+      objectReference: {fileID: 2364614049928495057}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: bobAmp
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: preset
+      value: 
+      objectReference: {fileID: 11400000, guid: 9d5c6282bcc012c4aa425c64c59f8b24,
+        type: 2}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: radius
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: popFrac
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: sizeMax
+      value: 0.16
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: sizeMin
+      value: 0.11
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: spinMax
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: softness
+      value: 0.077
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: intensity
+      value: 2.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: fadeInFrac
+      value: 0.16
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: maxCrosses
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: fadeOutFrac
+      value: 0.336
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: lifetimeMax
+      value: 1.51
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: lifetimeMin
+      value: 1.37
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: popOvershoot
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: riseAccelMul
+      value: 2.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: riseSpeedMax
+      value: 1.22
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: riseSpeedMin
+      value: 0.99
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: riseAccelTime
+      value: 0.187
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: spawnIntervalMax
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: spawnIntervalMin
+      value: 0.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 2290535929685901758, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: preset
+      value: 
+      objectReference: {fileID: 11400000, guid: c647623c750a88140b37e806108b780d,
+        type: 2}
+    - target: {fileID: 2777668551892851515, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: m_Name
+      value: PawBeam_Gold_Miss
+      objectReference: {fileID: 0}
+    - target: {fileID: 5280030132326235134, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: preset
+      value: 
+      objectReference: {fileID: 11400000, guid: f68bee4335f96e04395b70ba072bdf05,
+        type: 2}
+    - target: {fileID: 6434259747882950159, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      propertyPath: preset
+      value: 
+      objectReference: {fileID: 11400000, guid: b9928269c6f640442999fb0c6b1f2103,
+        type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 316690d192b6b36428c9368fb6be146f, type: 3}
+--- !u!1 &6669889289751652130 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7156361102498573222, guid: 316690d192b6b36428c9368fb6be146f,
+    type: 3}
+  m_PrefabInstance: {fileID: 4593870055326731396}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2364614049928495057 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2238429249326248789, guid: 316690d192b6b36428c9368fb6be146f,
+    type: 3}
+  m_PrefabInstance: {fileID: 4593870055326731396}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6669889289751652130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a20b10f85665490408ee33bbf618b3cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07f6d5d1be650204080c3eaadc56b01f, type: 3}
+  m_Name: T7_TaoSparkle_Alter
+  m_EditorClassIdentifier: 
+  followBasic: 1
+  basicRef: {fileID: 11400000, guid: 2f46bb4d6eb3f5db7d97f9d960f166ea, type: 2}
+  rate: 12
+  sizeMin: 0.1
+  sizeMax: 0.22
+  lifetime: 0.8
+  shapeRadius: 0.3
+  color: {r: 1.8, g: 1.62, b: 1.08, a: 1.8}

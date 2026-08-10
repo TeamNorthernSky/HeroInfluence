@@ -115,10 +115,17 @@ public class CombatEncounterManager : MonoBehaviour
         PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
         string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
         string enemyId = outpost.DefenderEnemyId;
+        string enemyGroupKey = outpost.EnemyDefenderGroupKey;
         GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
         string outpostKey = outpost.GetProgressKey(gridManager);
 
-        if (!TryRegisterCombatParticipants(party, partyId, enemyId, outpostKey))
+        if (!TryRegisterCombatParticipants(
+                party,
+                partyId,
+                enemyId,
+                outpostKey,
+                enemyGroupKey,
+                CombatEnemySourceType.OutpostDefender))
             return false;
 
         IsCombatActive = true;
@@ -149,10 +156,17 @@ public class CombatEncounterManager : MonoBehaviour
         PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
         string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
         string enemyId = outpost.DefenderEnemyId;
+        string enemyGroupKey = outpost.EnemyDefenderGroupKey;
         GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
         string outpostKey = outpost.GetProgressKey(gridManager);
 
-        if (!TryRegisterCombatParticipants(party, partyId, enemyId, outpostKey))
+        if (!TryRegisterCombatParticipants(
+                party,
+                partyId,
+                enemyId,
+                outpostKey,
+                enemyGroupKey,
+                CombatEnemySourceType.OutpostDefender))
             return false;
 
         IsCombatActive = true;
@@ -181,10 +195,17 @@ public class CombatEncounterManager : MonoBehaviour
         PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
         string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
         string enemyId = villainUnionBase.DefenderEnemyId;
+        string enemyGroupKey = villainUnionBase.DefenderEnemyGroupKey;
         GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
         string villainUnionKey = villainUnionBase.GetProgressKey(gridManager);
 
-        if (!TryRegisterCombatParticipants(party, partyId, enemyId, villainUnionKey))
+        if (!TryRegisterCombatParticipants(
+                party,
+                partyId,
+                enemyId,
+                villainUnionKey,
+                enemyGroupKey,
+                CombatEnemySourceType.VillainUnionDefender))
             return false;
 
         IsCombatActive = true;
@@ -215,10 +236,17 @@ public class CombatEncounterManager : MonoBehaviour
         PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
         string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
         string enemyId = villainUnionBase.DefenderEnemyId;
+        string enemyGroupKey = villainUnionBase.DefenderEnemyGroupKey;
         GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
         string villainUnionKey = villainUnionBase.GetProgressKey(gridManager);
 
-        if (!TryRegisterCombatParticipants(party, partyId, enemyId, villainUnionKey))
+        if (!TryRegisterCombatParticipants(
+                party,
+                partyId,
+                enemyId,
+                villainUnionKey,
+                enemyGroupKey,
+                CombatEnemySourceType.VillainUnionDefender))
             return false;
 
         IsCombatActive = true;
@@ -299,7 +327,14 @@ public class CombatEncounterManager : MonoBehaviour
 
     private bool TryRegisterCombatParticipants(PartyGridMover party, string partyId, EnemyGridMover enemy, string enemyId)
     {
-        return TryRegisterCombatParticipants(party, partyId, enemyId, ResolveEnemyPlacementKey(enemy), enemy);
+        return TryRegisterCombatParticipants(
+            party,
+            partyId,
+            enemyId,
+            ResolveEnemyPlacementKey(enemy),
+            ResolveEnemyGroupKey(enemy),
+            CombatEnemySourceType.Field,
+            enemy);
     }
 
     private bool TryRegisterCombatParticipants(
@@ -307,6 +342,8 @@ public class CombatEncounterManager : MonoBehaviour
         string partyId,
         string enemyId,
         string enemyPlacementKey,
+        string enemyGroupKey,
+        CombatEnemySourceType enemySourceType,
         EnemyGridMover enemy = null)
     {
         CombatContext combatContext = CombatContext.Instance;
@@ -342,7 +379,7 @@ public class CombatEncounterManager : MonoBehaviour
         }
 
         combatContext.RegisterCombatParty(partyId, partyUnitIndices);
-        combatContext.RegisterCombatEnemy(enemyId, enemyPlacementKey, enemyUnitIndices);
+        combatContext.RegisterCombatEnemy(enemyId, enemyPlacementKey, enemyGroupKey, enemySourceType, enemyUnitIndices);
         combatContext.SetCombatResult(CombatResult.None);
         return true;
     }
@@ -440,6 +477,7 @@ public class CombatEncounterManager : MonoBehaviour
         if (combatEnemy == null || string.IsNullOrWhiteSpace(combatEnemy.EnemyId))
             return false;
 
+        // TODO(remove fallback): multiple match paths cover older repository combat ids; keep until defender combat uses a single event/group key.
         string normalizedCombatPlacementKey = MapProgressKey.NormalizeSegment(combatEnemy.PlacementKey);
         string normalizedCombatEnemyId = MapProgressKey.NormalizeSegment(combatEnemy.EnemyId);
         GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
@@ -725,6 +763,12 @@ public class CombatEncounterManager : MonoBehaviour
     {
         EnemyIdentity identity = enemy != null ? enemy.GetComponent<EnemyIdentity>() : null;
         return identity != null ? identity.PlacementKey : string.Empty;
+    }
+
+    private static string ResolveEnemyGroupKey(EnemyGridMover enemy)
+    {
+        EnemyIdentity identity = enemy != null ? enemy.GetComponent<EnemyIdentity>() : null;
+        return identity != null ? identity.EnemyGroupKey : string.Empty;
     }
 
     private static void RemoveDefeatedEnemyGroup(string enemyId)
