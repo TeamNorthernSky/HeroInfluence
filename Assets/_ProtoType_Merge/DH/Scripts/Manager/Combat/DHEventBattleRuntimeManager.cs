@@ -494,7 +494,11 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
 
         var skill = new SkillData
         {
-            skillIndex = (enemyIndex * 10) + slot,
+            skillIndex = (enemyIndex * 10) + slot,   // [TEMP:STRKEY] 레거시 int 브리지
+            // TODO(§5-11): 정규 enemyKey(FV…)가 이 경로엔 없어 숫자 문자열로 합성. 카탈로그 경로와 키 포맷 통일 필요.
+            skillKey = EnemySkillKeyRules.Compose(enemyIndex.ToString(), slot),
+            category = SkillCategory.Enemy,
+            slot = slot,
             skillClass = enemyName,
             acquireLevel = 1,
             skillName = skillName,

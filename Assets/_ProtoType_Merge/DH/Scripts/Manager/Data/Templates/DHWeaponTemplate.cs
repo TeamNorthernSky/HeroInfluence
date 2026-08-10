@@ -30,7 +30,8 @@ public sealed class DHWeaponTemplate
     public float BonusCounterRate { get; }
     public float BonusReduceRate { get; }
     public float BonusSpeed { get; }
-    public int WeaponSkillIndex { get; }
+    public int WeaponSkillIndex { get; }        // [TEMP:STRKEY] 레거시 int 브리지 / 제거조건: SkillData.skillIndex string화 + 무기스킬 아이콘 string화 완료 후
+    public string WeaponSkillKey { get; }       // 원본 무기 스킬 키(HCS001) 보존 — 손실 없음
     public string WeaponSkillName { get; }
     public string WeaponSkillDescription { get; }
     public int IpCost { get; }
@@ -77,7 +78,7 @@ public sealed class DHWeaponTemplate
         float bonusCounterRate,
         float bonusReduceRate,
         float bonusSpeed,
-        int weaponSkillIndex,
+        string weaponSkillIndex,
         string weaponSkillName,
         string weaponSkillDescription,
         int ipCost,
@@ -123,7 +124,8 @@ public sealed class DHWeaponTemplate
         BonusCounterRate = bonusCounterRate;
         BonusReduceRate = bonusReduceRate;
         BonusSpeed = bonusSpeed;
-        WeaponSkillIndex = Math.Max(0, weaponSkillIndex);
+        WeaponSkillIndex = ExtractNumericId(weaponSkillIndex);   // [TEMP:STRKEY] 레거시 int 브리지
+        WeaponSkillKey = string.IsNullOrWhiteSpace(weaponSkillIndex) ? string.Empty : weaponSkillIndex.Trim();
         WeaponSkillName = string.IsNullOrWhiteSpace(weaponSkillName) ? string.Empty : weaponSkillName.Trim();
         WeaponSkillDescription = string.IsNullOrWhiteSpace(weaponSkillDescription) ? string.Empty : weaponSkillDescription.Trim();
         IpCost = Math.Max(0, ipCost);
@@ -179,5 +181,35 @@ public sealed class DHWeaponTemplate
             case 5: return lv5;
             default: return lv1;
         }
+    }
+    private static int ExtractNumericId(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return 0;
+        }
+        int start = -1;
+        for (int i = 0; i < value.Length; i++)
+        {
+            if (char.IsDigit(value[i]))
+            {
+                start = i;
+                break;
+            }
+        }
+
+        if (start < 0)
+        {
+            return 0;
+        }
+
+        int end = start;
+        while (end < value.Length && char.IsDigit(value[end]))
+        {
+            end++;
+        }
+
+        int numericId;
+        return int.TryParse(value.Substring(start, end - start), out numericId) ? numericId : 0;
     }
 }

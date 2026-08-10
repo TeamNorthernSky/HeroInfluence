@@ -65,6 +65,7 @@ public class BattleFlowManager : MonoBehaviour
 
     public BattleCharactor CurrentUnit { get; private set; }
     public IReadOnlyList<BattleCharactor> Participants => participants;
+    public BattleManager BattleManager => battleManager;
     public event Action<int, BattleCharactor> OnTurnStarted;
     public event Action<BattleResult> OnBattleEnded;
 

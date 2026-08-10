@@ -122,7 +122,7 @@ public static class HostageFriendlyFireResolver
 
         previewCells.Add(centerCell);
 
-        if (SkillExecutionRegistry.TryGetHandler(skill.skillIndex, out ISkillEffectHandler handler) &&
+        if (SkillExecutionRegistry.TryGetHandler(skill.skillKey, out ISkillEffectHandler handler) &&
             handler is TargetAroundRandom)
         {
             TargetAroundRandomHelper.CollectSplashCells(

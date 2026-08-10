@@ -28,7 +28,7 @@ public class PlayerWeaponData
     public float BonusCounterRate;
     public float BonusReduceRate;
     public int BonusSpeed;
-    public int WeaponSkillIndex;
+    public string WeaponSkillIndex;
     public string WeaponSkillName;
     public string WeaponSkillDescription;
     public int IPCost;

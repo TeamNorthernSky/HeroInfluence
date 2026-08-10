@@ -99,7 +99,7 @@ namespace ASB.Work.Battle.SkillExecution
                 return TryResolveSingleTargetCell(selectedTarget, gridManager, out mainCell);
             }
 
-            if (SkillExecutionRegistry.TryGetHandler(skill.skillIndex, out ISkillEffectHandler handler)
+            if (SkillExecutionRegistry.TryGetHandler(skill.skillKey, out ISkillEffectHandler handler)
                 && handler is TargetAroundRandom)
             {
                 return TryResolveTargetAroundRandomArea(selectedTarget, skill, gridManager, out mainCell, splashCells);
@@ -142,7 +142,7 @@ namespace ASB.Work.Battle.SkillExecution
                 SelectedCell = selectedTarget.OccupiedCell ?? gridManager.FindCellByUnit(selectedTarget)
             };
 
-            ITargetSelector selector = SkillTargetSelectorRegistry.GetSelector(skill.skillIndex);
+            ITargetSelector selector = SkillTargetSelectorRegistry.GetSelector(skill.skillKey);
             BattleCharactor primaryTarget = selector.SelectTarget(previewContext) ?? selectedTarget;
             if (primaryTarget == null)
             {
