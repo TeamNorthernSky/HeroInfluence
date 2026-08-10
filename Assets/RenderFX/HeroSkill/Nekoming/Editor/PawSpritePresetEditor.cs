@@ -37,6 +37,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 Paw(PawSprite)에 반영.\n형태(SDF) 항목은 프리셋+livePreview로만 구동됩니다(컴포넌트에 동명 필드 없음).", MessageType.Info);
         }

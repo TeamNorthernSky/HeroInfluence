@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f933ddcdd84a9d43aa16a18f4974161, type: 3}
+  m_Name: L1_LFLChargeOrbPreset_Basic
+  m_EditorClassIdentifier: 
+  followBasic: 0
+  basicRef: {fileID: 0}
+  spawnSocketName: 
+  spawnOffset: {x: 0.56, y: 1.53, z: 0.68}
+  coreColor: {r: 0.742, g: 0.778, b: 1, a: 1}
+  rimColor: {r: 0.73, g: 0.84999996, b: 1, a: 1}
+  coreIntensity: 1.7
+  rimIntensity: 2
+  corePower: 3.4
+  rimPower: 4.5
+  gapStrength: 0.5
+  coreSpikeAmount: 0.1
+  rimSpikeAmount: 0.22
+  spikeFreq: 5.5
+  spikeSpeed: 2.5
+  spikeSharp: 3
+  startWorldSize: 0.015
+  endWorldSize: 0.11
+  growDuration: 0.5
+  sparkSizeMin: 0.06
+  sparkSizeMax: 0.16
+  sparkRate: 40
+  sparkSpeed: 1
+  sparkColor: {r: 1.55, g: 1.658, b: 2, a: 2}
+  bandRate: 6
+  bandStartLifetime: 1.1
+  bandStartSize: 0.018
+  bandTrailLifetime: 1
+  bandInheritVelocity: 0.7
+  bandShapeRadius: 0.035
+  bandColor: {r: 1.329, g: 1.3515, b: 1.5, a: 1.5}
+  sparkleRate: 6
+  sparkleSizeMin: 0.02
+  sparkleSizeMax: 0.05
+  sparkleLifetime: 0.45
+  sparkleShapeRadius: 0.03
+  sparkleColor: {r: 1.6379999, g: 1.6542, b: 1.8, a: 1.8}

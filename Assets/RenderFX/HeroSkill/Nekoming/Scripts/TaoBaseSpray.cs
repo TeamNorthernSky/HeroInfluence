@@ -99,10 +99,12 @@ namespace JC.VFX
 
         private void PullFromPreset()
         {
-            width = preset.width;
-            height = preset.height;
-            groundOffsetY = preset.groundOffsetY;
-            riseGrow = preset.riseGrow;
+            // ★라이브 따름(260807) — 형태·움직임은 TransformSource(Alter→Basic), 색·밝기만 자기 것.
+            var t = preset.TransformSource;
+            width = t.width;
+            height = t.height;
+            groundOffsetY = t.groundOffsetY;
+            riseGrow = t.riseGrow;
             sprayColor = preset.sprayColor;
             sprayIntensity = preset.sprayIntensity;
         }
@@ -119,30 +121,31 @@ namespace JC.VFX
             _mr.GetPropertyBlock(_mpb);
             if (livePreview && preset)
             {
+                var t = preset.TransformSource;   // ★따름 — 형태·갈퀴 기하는 Basic 정본, 색·불투명은 자기 것
                 _mpb.SetColor(ColorID, preset.baseColor);
                 _mpb.SetFloat(IntensityID, preset.baseIntensity);
                 _mpb.SetFloat(OpacityID, preset.opacity);
-                _mpb.SetFloat(FlareID, preset.flare);
-                _mpb.SetFloat(FlareCurveID, preset.flareCurve);
-                _mpb.SetFloat(BottomFadeID, preset.bottomFade);
-                _mpb.SetFloat(VerticalBiasID, preset.verticalBias);
-                _mpb.SetFloat(TopMinID, preset.topMin);
-                _mpb.SetFloat(TopMaxID, preset.topMax);
-                _mpb.SetFloat(TopSoftID, preset.topSoft);
-                _mpb.SetFloat(TopNoiseScaleID, preset.topNoiseScale);
-                _mpb.SetFloat(TopNoiseSpeedID, preset.topNoiseSpeed);
-                _mpb.SetFloat(FacePowerID, preset.facePower);
+                _mpb.SetFloat(FlareID, t.flare);
+                _mpb.SetFloat(FlareCurveID, t.flareCurve);
+                _mpb.SetFloat(BottomFadeID, t.bottomFade);
+                _mpb.SetFloat(VerticalBiasID, t.verticalBias);
+                _mpb.SetFloat(TopMinID, t.topMin);
+                _mpb.SetFloat(TopMaxID, t.topMax);
+                _mpb.SetFloat(TopSoftID, t.topSoft);
+                _mpb.SetFloat(TopNoiseScaleID, t.topNoiseScale);
+                _mpb.SetFloat(TopNoiseSpeedID, t.topNoiseSpeed);
+                _mpb.SetFloat(FacePowerID, t.facePower);
                 _mpb.SetColor(SprayColorID, sprayColor);
                 _mpb.SetFloat(SprayIntensityID, sprayIntensity);
-                _mpb.SetFloat(SprayHeightID, preset.sprayHeight);
-                _mpb.SetFloat(SprayCountID, preset.sprayCount);
-                _mpb.SetFloat(SprayWidthID, preset.sprayWidth);
-                _mpb.SetFloat(SpraySharpID, preset.spraySharp);
-                _mpb.SetFloat(SprayDashFreqID, preset.sprayDashFreq);
-                _mpb.SetFloat(SprayDashDutyID, preset.sprayDashDuty);
-                _mpb.SetFloat(SpraySpeedID, preset.spraySpeed);
-                _mpb.SetFloat(SprayTaperID, preset.sprayTaper);
-                _mpb.SetFloat(SprayRandomID, preset.sprayRandom);
+                _mpb.SetFloat(SprayHeightID, t.sprayHeight);
+                _mpb.SetFloat(SprayCountID, t.sprayCount);
+                _mpb.SetFloat(SprayWidthID, t.sprayWidth);
+                _mpb.SetFloat(SpraySharpID, t.spraySharp);
+                _mpb.SetFloat(SprayDashFreqID, t.sprayDashFreq);
+                _mpb.SetFloat(SprayDashDutyID, t.sprayDashDuty);
+                _mpb.SetFloat(SpraySpeedID, t.spraySpeed);
+                _mpb.SetFloat(SprayTaperID, t.sprayTaper);
+                _mpb.SetFloat(SprayRandomID, t.sprayRandom);
             }
             _mpb.SetFloat(FlareUpID, 1f);        // 스커트 = 위로 벌어짐 고정
             _mpb.SetFloat(LineIntensityID, 0f);  // 펜선 없음

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da8607ec16194114eb11fe20199aefb8, type: 3}
+  m_Name: T6_TaoMeteor_Basic
+  m_EditorClassIdentifier: 
+  followBasic: 0
+  basicRef: {fileID: 0}
+  spawnSocketName: Socket_R_VFX
+  spawnOffset: {x: 0, y: 0, z: 0}
+  impactOffset: {x: 0, y: 0.68, z: 0}
+  worldSize: 2.57
+  speed: 6
+  arcHeight: 0.6
+  trailTime: 0.7
+  cometLength: 1.8
+  cometWidth: 0.65
+  headColor: {r: 0.8875, g: 0.985, b: 1, a: 1}
+  tailColor: {r: 0.475, g: 0.865, b: 1, a: 1}
+  rimColor: {r: 0.775, g: 0.9625, b: 1, a: 1}
+  intensity: 1.7
+  headSize: 0.42
+  headFillIntensity: 1.87
+  headFillPower: 6.13
+  headRimIntensity: 4.81
+  headRimPower: 3.98
+  tailStartWidth: 0.318
+  tailEndWidth: 0.04
+  tailTaper: 0.73
+  tailFade: 1.6
+  flickerAmp: 0.495
+  flickerSpeed: 7.7
+  rimIntensity: 5.07
+  rimPos: 0.716
+  rimSoft: 0.354
+  rimFade: 1.88

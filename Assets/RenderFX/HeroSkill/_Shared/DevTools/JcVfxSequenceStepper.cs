@@ -69,6 +69,19 @@ namespace JC.VFX
                      "3등신 캐릭터는 머리에 맞는 편이 자연스러워서 도착점도 프리셋으로 조절한다(예: heal_impact).")]
             public string impactPlacementKey;
 
+            [Tooltip("★부품 프리셋 위치의 X 부호를 반전한다(왼손 등 좌우 대칭 지점).\n" +
+                     "LFL 왼손 차지가 씀 — 오른손 값 하나(L1 프리셋)로 양손을 만든다.\n" +
+                     "소켓 없이 오프셋 기준일 때 정확하다(소켓 월드 위치는 반전하지 않는다).")]
+            public bool mirrorX;
+
+            [Tooltip("★위치를 다른 큐의 부품 프리셋에서 빌려 온다(비면 자기 부품).\n" +
+                     "LFL 합체 섬광이 lfl_fire 를 가리켜 「합류점 = 발사 시작점」을 한 값으로 묶는 용도.")]
+            public string positionRefCue;
+
+            [Tooltip("★켜면 씬의 적 전원을 VfxTarget 목록으로 이 부품에 주입한다(광역기 — tao_barrage).\n" +
+                     "연쇄 아군 목록 대신 적 목록이 SetTargets 로 들어간다. 실전에서는 스킬 로직이 이 자리를 맡는다.")]
+            public bool sendEnemyTargets;
+
             [Tooltip("★켜면 이 단계를 타이머 대신 <b>발사체의 착탄 시그널</b>로 잇는다.\n" +
                      "대응 발사체 = 같은 chainIndex 의 발사체(일반 단계는 본 발사체).\n" +
                      "비행 시간은 거리의 함수라 타이머(delayAfter)로는 원거리에서 어긋난다 — 착지 오라는 이걸 켤 것.")]
@@ -113,6 +126,9 @@ namespace JC.VFX
             public JcVfxCatalog.Variant variant = JcVfxCatalog.Variant.Base;
             [Tooltip("겨눌 수 있는 진영. Ally = 아군만, Enemy = 적만.")]
             public TargetSide targetSide = TargetSide.Any;
+            [Tooltip("★켜면 타겟 클릭 없이 키만으로 즉시 시전(「발동 후 자동」류 — Tao 배리지 단독 K/L).\n" +
+                     "대상 = 시전자 자신. 적 전체는 스텝의 sendEnemyTargets 가 주입한다.")]
+            public bool autoCast;
             public Step[] steps = new Step[0];
         }
 
@@ -150,6 +166,12 @@ namespace JC.VFX
         /// <summary>★실측 릴레이 — 이번 시전에서 차지를 실제로 스폰한 위치. 「투사체 출발 = 차지 위치」의 정본.</summary>
         private Vector3? _lastChargePos;
 
+        /// <summary>
+        /// ★착탄 실측 릴레이(260807) — 본 발사체(chainIndex -1)가 실제로 떨어진 월드 지점.
+        /// LFL 연쇄가 「본 착탄점에서 출발」하는 데 쓴다(탄착 오프셋 c 를 별도 키 없이 재사용).
+        /// </summary>
+        private Vector3? _lastImpactPos;
+
         private void Update()
         {
             // 카메라 조작(우클릭 홀드) 중에는 스킬 입력을 먹지 않는다 — JcFreeCamera 와 공존.
@@ -170,6 +192,19 @@ namespace JC.VFX
                 if (_playing != null) { StopCoroutine(_playing); _playing = null; }
                 ResetAll();
                 _pending = casts[i];
+
+                // ★자동 시전(autoCast) — 타겟 클릭 없이 즉시. 대상 = 시전자 자신(배리지 단독처럼
+                //   실제 대상 목록은 스텝의 sendEnemyTargets 주입이 담당하는 묶음).
+                if (_pending.autoCast)
+                {
+                    _awaitingTarget = false;
+                    ResolveActors();
+                    target = caster != null ? caster : transform;
+                    ResolveChainTargets();
+                    _playing = StartCoroutine(PlayAll());
+                    return;
+                }
+
                 _awaitingTarget = true;
                 _message = $"[{CastName(_pending)}] {SideName(_pending.targetSide)}을(를) 클릭하세요 ({resetKey}=취소)";
                 return;
@@ -230,6 +265,7 @@ namespace JC.VFX
             if (c == null || c.steps == null) { _playing = null; yield break; }
             _impactFlags.Clear();
             _lastChargePos = null;   // 시전마다 실측 릴레이 초기화
+            _lastImpactPos = null;
 
             for (int i = 0; i < c.steps.Length; i++)
             {
@@ -344,13 +380,19 @@ namespace JC.VFX
             // ★로컬 오프셋 = TransformPoint. 부품 내부(PawForYouVfx.CasterAnchor 등)가 로컬로 잡는데
             //   여기서 월드로 더하면, 캐릭터가 전투에서 적을 향해 회전해 있을 때 위치가 어긋난다.
             // ★위치 결정 — 우선순위: ① 호출자 지정(placement 자산) ② 부품 프리셋의 위치 항목 ③ 스텝 오프셋(레거시).
-            //   ①이 이기는 이유: 같은 부품을 두 지점에서 부르는 경우(paw_warp, LFL 양손)는 호출자만 안다.
+            //   ①이 이기는 이유: 같은 부품을 두 지점에서 부르는 경우(paw_warp)는 호출자만 안다.
+            //   좌우 대칭 지점(LFL 양손)은 ②+mirrorX 로 — 값은 하나, 부호만 스텝이 쥔다.
             string pkey = string.IsNullOrWhiteSpace(s.placementKey) ? s.cueName : s.placementKey.Trim();
             bool hasPlacement = TryGetPlacement(pkey, out JcVfxPlacementPreset.Entry pe);
+            // ★위치 대여(positionRefCue) — 위치만 다른 큐의 부품 프리셋에서 읽는다(LFL 합체 = lfl_fire 시작점).
+            GameObject posSource = e.prefab;
+            if (!string.IsNullOrWhiteSpace(s.positionRefCue) &&
+                catalog.TryGet(s.positionRefCue.Trim(), want, out JcVfxCatalog.Entry re) && re.prefab != null)
+                posSource = re.prefab;
             Vector3 pos;
             if (hasPlacement)
                 pos = JcVfxPlacementPreset.Resolve(anchor != null ? anchor : transform, pe);
-            else if (TryPartPresetSpawn(e.prefab, anchor != null ? anchor : transform, out Vector3 partPos))
+            else if (TryPartPresetSpawn(posSource, anchor != null ? anchor : transform, s.mirrorX, out Vector3 partPos))
                 pos = partPos;
             else
                 pos = PointOn(anchor, s.offset, s.localOffset);
@@ -374,7 +416,9 @@ namespace JC.VFX
                 if (vfx is ChargeOrbVfx) _lastChargePos = pos;
 
                 // 다중 대상을 받는 부품(통짜 오케스트레이터 등)에는 결정된 목록을 그대로 넘긴다.
-                if (_chainTargets.Count > 0) vfx.SetTargets(BuildChainVfxTargets());
+                // ★광역기 스텝은 적 전원 목록이 우선(tao_barrage) — 연쇄 아군 목록을 덮는다.
+                if (s.sendEnemyTargets) vfx.SetTargets(BuildEnemyVfxTargets());
+                else if (_chainTargets.Count > 0) vfx.SetTargets(BuildChainVfxTargets());
 
                 // ★발사체는 Play(origin,target) 이 Show(origin.position) 으로 생성 위치를 덮어쓴다.
                 //   그대로 두면 단계에 적어 둔 오프셋(손 높이 등)이 무시되고 발밑에서 출발한다.
@@ -383,8 +427,12 @@ namespace JC.VFX
                 {
                     // ★출발점은 앵커가 아니라 「쏘는 쪽」이다. 연쇄 마디의 앵커는 도착점(이웃)이므로
                     //   여기서 앵커를 쓰면 도착점에서 생겨 거리 0으로 날아간다.
+                    // ★연쇄는 본 착탄점에서 출발(260807) — 탄착 오프셋 c 가 발사 위치로 재사용된다.
+                    //   실측 릴레이라 별도 키가 없고, 본 발사체가 없었으면(수동 모드 등) 아래 일반 해석으로.
                     Vector3 from;
-                    if (hasPlacement)
+                    if (s.spawnAt == SpawnAt.ChainTarget && _lastImpactPos.HasValue)
+                        from = _lastImpactPos.Value;
+                    else if (hasPlacement)
                         from = JcVfxPlacementPreset.Resolve(playOrigin != null ? playOrigin : transform, pe);
                     else if (TryProjectilePresetSpawn(proj, playOrigin != null ? playOrigin : transform, out Vector3 pf))
                         from = pf;
@@ -402,6 +450,11 @@ namespace JC.VFX
                         var pt = proj.Preset.TransformSource;
                         to = JcVfxPlacementPreset.ResolveWorld(playTarget, pt.impactSocketName, pt.impactOffset);
                     }
+                    else if (playTarget != null && proj.GetComponent<TaoMeteorTuner>() is TaoMeteorTuner mtn && mtn.Preset != null)
+                    {
+                        // ★Tao 유성 탄착 — T6 프리셋의 impactOffset(구 hitYOffset 흡수, 대상측·월드 축).
+                        to = JcVfxPlacementPreset.ResolveWorld(playTarget, null, mtn.Preset.TransformSource.impactOffset);
+                    }
 
                     proj.Show(from);
                     proj.Launch(to);
@@ -410,8 +463,13 @@ namespace JC.VFX
                     int impactKey = s.spawnAt == SpawnAt.ChainTarget ? s.chainIndex : -1;
                     var flag = new ImpactFlag();
                     _impactFlags[impactKey] = flag;
+                    Vector3 impactAt = to;   // 착탄 실측 릴레이용 — 본 발사체의 도착점을 기억
                     System.Action<ProjectileVfx> h = null;
-                    h = _ => { proj.OnImpact -= h; flag.hit = true; };
+                    h = _ =>
+                    {
+                        proj.OnImpact -= h; flag.hit = true;
+                        if (impactKey == -1) _lastImpactPos = impactAt;   // 연쇄 출발점 = 본 착탄점
+                    };
                     proj.OnImpact += h;
                 }
                 else vfx.Play(playOrigin, playTarget);
@@ -438,8 +496,9 @@ namespace JC.VFX
         /// ★부품 프리셋이 위치를 소유하는 경우(우선순위 ②).
         /// 차지 오브 = 「발사 시작점」(시전자 기준) / 착지 오라 = 「착지점 오프셋」(스텝 앵커 = 대상 기준).
         /// 호출자 지정(①)이 없을 때만 여기로 온다.
+        /// mirror = 오프셋 X 부호 반전(왼손 등) — 소켓 월드 위치는 반전하지 않는다.
         /// </summary>
-        private bool TryPartPresetSpawn(GameObject prefab, Transform stepAnchor, out Vector3 pos)
+        private bool TryPartPresetSpawn(GameObject prefab, Transform stepAnchor, bool mirror, out Vector3 pos)
         {
             pos = default;
             if (prefab == null) return false;
@@ -448,7 +507,8 @@ namespace JC.VFX
             if (charge != null && charge.Preset != null)
             {
                 var t = charge.Preset.TransformSource;
-                pos = JcVfxPlacementPreset.Resolve(caster != null ? caster : transform, t.spawnSocketName, t.spawnOffset);
+                var off = t.spawnOffset; if (mirror) off.x = -off.x;
+                pos = JcVfxPlacementPreset.Resolve(caster != null ? caster : transform, t.spawnSocketName, off);
                 return true;
             }
 
@@ -456,7 +516,29 @@ namespace JC.VFX
             if (orbit != null && orbit.Preset != null)
             {
                 // 착지 오라도 대상측 — 월드 축 해석.
-                pos = JcVfxPlacementPreset.ResolveWorld(stepAnchor, null, orbit.Preset.TransformSource.landOffset);
+                var off = orbit.Preset.TransformSource.landOffset; if (mirror) off.x = -off.x;
+                pos = JcVfxPlacementPreset.ResolveWorld(stepAnchor, null, off);
+                return true;
+            }
+
+            // ★발사체(위치 대여용, 260807) — positionRefCue 가 lfl_fire 를 가리킬 때 여기로 온다.
+            //   발사 시작점 = 프리셋 spawn(시전자 기준). useChargeOrbPosition 릴레이는 실제 발사 경로
+            //   (TryProjectilePresetSpawn)의 몫 — 위치 대여는 프리셋에 적힌 자리만 읽는다.
+            var projPart = prefab.GetComponent<ProjectileVfx>();
+            if (projPart != null && projPart.Preset != null)
+            {
+                var t = projPart.Preset.TransformSource;
+                var off = t.spawnOffset; if (mirror) off.x = -off.x;
+                pos = JcVfxPlacementPreset.Resolve(caster != null ? caster : transform, t.spawnSocketName, off);
+                return true;
+            }
+
+            // ★Tao 부활 오라(260807) — 착지점 정본 = T8 마스터의 landOffset(대상측·월드 축).
+            var revive = prefab.GetComponent<TaoReviveVfx>();
+            if (revive != null && revive.Master != null)
+            {
+                var off = revive.Master.landOffset; if (mirror) off.x = -off.x;
+                pos = JcVfxPlacementPreset.ResolveWorld(stepAnchor, null, off);
                 return true;
             }
 
@@ -485,7 +567,18 @@ namespace JC.VFX
         private bool TryProjectilePresetSpawn(ProjectileVfx proj, Transform origin, out Vector3 pos)
         {
             pos = default;
-            var p = proj != null ? proj.Preset : null;
+            if (proj == null) return false;
+
+            // ★Tao 유성(260807) — 위치 정본은 TaoMeteorTuner 의 T6 프리셋(ProjectileOrbPreset 미사용).
+            var tuner = proj.GetComponent<TaoMeteorTuner>();
+            if (tuner != null && tuner.Preset != null)
+            {
+                var mt = tuner.Preset.TransformSource;
+                pos = JcVfxPlacementPreset.Resolve(origin, mt.spawnSocketName, mt.spawnOffset);
+                return true;
+            }
+
+            var p = proj.Preset;
             if (p == null) return false;
             var t = p.TransformSource;
 
@@ -555,6 +648,21 @@ namespace JC.VFX
             return _chainVfxTargets;
         }
 
+        private readonly List<VfxTarget> _enemyVfxTargets = new List<VfxTarget>(8);
+
+        /// <summary>
+        /// ★광역기 대역(260807) — 씬의 적 전원을 목록으로. 실전에서는 스킬 로직이 판정해 넣는 자리다
+        /// (「판정은 스킬, VFX는 위치를 받기만」 규약).
+        /// </summary>
+        private IReadOnlyList<VfxTarget> BuildEnemyVfxTargets()
+        {
+            _enemyVfxTargets.Clear();
+            var units = FindObjectsByType<BattleCharactor>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (var c in units)
+                if (c.TeamType != TeamType.Player) _enemyVfxTargets.Add(VfxTarget.Of(c.transform));
+            return _enemyVfxTargets;
+        }
+
         private void ResetAll()
         {
             if (_playing != null) { StopCoroutine(_playing); _playing = null; }
@@ -571,6 +679,7 @@ namespace JC.VFX
             _chainTargets.Clear();
             _impactFlags.Clear();
             _lastChargePos = null;
+            _lastImpactPos = null;
             _index = 0;
             _message = "리셋";
         }

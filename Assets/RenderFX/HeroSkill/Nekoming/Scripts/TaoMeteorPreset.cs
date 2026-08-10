@@ -10,11 +10,29 @@ namespace JC.VFX
     /// ★밝기 = 마스터(intensity, 머리·꼬리 전체 곱) + 개별 노브(상대 배율).
     /// 에셋명: T5_TaoMeteor.asset.
     /// </summary>
-    [CreateAssetMenu(menuName = "JC VFX/Taosenaiyo/T5_Tao Meteor Preset", fileName = "T5_TaoMeteor")]
+    [CreateAssetMenu(menuName = "JC VFX/Taosenaiyo/T6_Tao Meteor Preset", fileName = "T6_TaoMeteor")]
     public class TaoMeteorPreset : ScriptableObject
     {
+        [Header("★따름 (Alter 전용)")]
+        [Tooltip("켜면 트랜스폼(위치·비행·크기)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON — B/A는 색만 다르다.")]
+        public bool followBasic;
+        public TaoMeteorPreset basicRef;
+
+        /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
+        public TaoMeteorPreset TransformSource => followBasic && basicRef != null ? basicRef : this;
+
+        [Header("★위치 (부품 프리셋이 소유 — 260807 통짜 socketName/hitYOffset 흡수)")]
+        [Tooltip("발사 시작 소켓 이름(시전자 계층 검색). 비면 시전자 루트 기준 오프셋만.")]
+        public string spawnSocketName = "Socket_R_VFX";
+        [Tooltip("발사 시작 오프셋(m, 소켓 기준·회전 따름).")]
+        public Vector3 spawnOffset = Vector3.zero;
+        [Tooltip("탄착 오프셋(m, 대상 루트 기준·월드 축). 구 hitYOffset(0.68)이 y 로 이관됨.")]
+        public Vector3 impactOffset = new Vector3(0f, 0.68f, 0f);
+
         [Header("비행 (ProjectileVfx)")]
-        [Tooltip("구체 월드 지름(m)")]
+        [Tooltip("★내부 글로우 오브 지름(m) — 혜성에서는 비행 중 머리(headSize)에 가려 있다가\n" +
+                 "「도착 버스트(폭발)」때 ×burstScaleMul 로 커지며 드러난다 = 사실상 폭발 크기 노브.\n" +
+                 "날아가는 혜성의 눈에 보이는 크기는 headSize(머리)·cometWidth(리본)로 조절할 것. (260807 의미 명시)")]
         public float worldSize = 0.24f;
         [Tooltip("비행 속력(m/s). 비행 중 변경은 다음 발사부터 적용")]
         public float speed = 6f;

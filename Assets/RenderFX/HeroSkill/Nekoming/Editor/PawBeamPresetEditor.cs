@@ -35,6 +35,7 @@ namespace JC.VFX
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 PawBeam(수직 빔/워프 스트릭)에 반영.\n단면/노이즈/캡 항목은 프리셋+livePreview로만 구동됩니다.", MessageType.Info);
         }

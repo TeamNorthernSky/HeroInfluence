@@ -6,19 +6,32 @@ namespace JC.VFX
     [CustomEditor(typeof(TaoMeteorPreset))]
     public class TaoMeteorPresetEditor : Editor
     {
-        const string MeteorPrefab = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs/Tao_MeteorOrb.prefab";
-        const string CometMat = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Materials/TaoComet.mat";
-        const string HeadMat = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Materials/TaoCometHead.mat";
+        const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo";
+        // ★변종 인식(260807) — _Basic/_Alter 프리셋은 제 변종의 프리팹·재질만 만진다(베이크 상호 오염 방지).
+        string Sfx => JcPresetEditorUtil.VariantSuffix(target) ?? "_Alter";
+        string MeteorPrefab => DIR + "/Prefabs/Tao_MeteorOrb" + Sfx + ".prefab";
+        string CometMat => DIR + "/Materials/TaoComet" + Sfx + ".mat";
+        string HeadMat => DIR + "/Materials/TaoCometHead" + Sfx + ".mat";
+
+        // 따름 잠금 — 색·밝기 외 전부(위치·비행·리본 크기·플리커)는 Basic 이 정본.
+        static readonly string[] TransformProps =
+        {
+            "spawnSocketName", "spawnOffset", "impactOffset",
+            "worldSize", "speed", "arcHeight", "trailTime", "cometLength", "cometWidth", "headSize",
+            "tailStartWidth", "tailEndWidth", "tailTaper", "tailFade",
+            "flickerAmp", "flickerSpeed", "rimPos", "rimSoft", "rimFade",
+        };
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            JcPresetEditorUtil.DrawWithFollowLock(serializedObject, "JC.TaoMeteor.Fold", TransformProps);
             var p = (TaoMeteorPreset)target;
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
                 if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
                 if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 비행 값은 Tao_MeteorOrb 프리팹(ProjectileVfx/CometShell)에, 혜성 룩은 TaoComet.mat에 베이크.\nlivePreview가 켜져 있으면 플레이 중에도 즉시 반영됩니다.", MessageType.Info);
         }
