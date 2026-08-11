@@ -325,6 +325,55 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   debugSpawnRequests: []
   spawnOnStart: 0
+--- !u!1 &229998265
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 229998267}
+  - component: {fileID: 229998266}
+  m_Layer: 0
+  m_Name: Global Volume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &229998266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 229998265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: 559ad1c529fe34749726e0d72e9605cf, type: 2}
+--- !u!4 &229998267
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 229998265}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &253823589
 GameObject:
   m_ObjectHideFlags: 0
@@ -685,6 +734,7 @@ MonoBehaviour:
     label: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C (\uBC14\uB2D0\uB77C)"
     variant: 0
     targetSide: 1
+    autoCast: 0
     steps:
     - cueName: heal_charge
       variant: 0
@@ -696,8 +746,12 @@ MonoBehaviour:
       lifeTime: 0.8
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "1. \uCC28\uC9C0 \uAD6C\uCCB4"
+      effectSocket: 0
     - cueName: heal_fire
       variant: 0
       spawnAt: 0
@@ -708,8 +762,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "2. \uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4"
+      effectSocket: 0
     - cueName: heal_land
       variant: 0
       spawnAt: 1
@@ -720,12 +778,17 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 1
       label: "3. \uCC29\uD0C4 \uD790"
+      effectSocket: 0
   - key: 119
     label: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C (\uC5BC\uD130)"
     variant: 1
     targetSide: 1
+    autoCast: 0
     steps:
     - cueName: heal_charge
       variant: 0
@@ -737,8 +800,12 @@ MonoBehaviour:
       lifeTime: 0.8
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "1. \uCC28\uC9C0 \uAD6C\uCCB4"
+      effectSocket: 0
     - cueName: heal_fire
       variant: 0
       spawnAt: 0
@@ -749,8 +816,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "2. \uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4"
+      effectSocket: 0
     - cueName: heal_land
       variant: 0
       spawnAt: 1
@@ -761,12 +832,17 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 1
       label: "3. \uCC29\uD0C4 \uD790"
+      effectSocket: 0
   - key: 101
     label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uBC14\uB2D0\uB77C)"
     variant: 0
     targetSide: 2
+    autoCast: 0
     steps:
     - cueName: paw_spawn
       variant: 0
@@ -778,8 +854,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "1. \uBC1C \uB4F1\uC7A5\xB7\uC720\uC9C0\xB7\uC18C\uBA78"
+      effectSocket: 0
     - cueName: paw_warp
       variant: 0
       spawnAt: 0
@@ -790,8 +870,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "2. \uC6CC\uD504 \u2014 \uCD9C\uBC1C"
+      effectSocket: 0
     - cueName: paw_warp
       variant: 0
       spawnAt: 1
@@ -802,8 +886,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "3. \uC6CC\uD504 \u2014 \uB3C4\uCC29"
+      effectSocket: 0
     - cueName: paw_beam
       variant: 0
       spawnAt: 1
@@ -814,12 +902,17 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "4. \uC7AC\uB4F1\uC7A5 + \uAD11\uC120 + \uCC29\uD0C4"
+      effectSocket: 0
   - key: 114
     label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uC5BC\uD130)"
     variant: 1
     targetSide: 2
+    autoCast: 0
     steps:
     - cueName: paw_spawn
       variant: 0
@@ -831,8 +924,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "1. \uBC1C \uB4F1\uC7A5\xB7\uC720\uC9C0\xB7\uC18C\uBA78"
+      effectSocket: 0
     - cueName: paw_warp
       variant: 0
       spawnAt: 0
@@ -843,8 +940,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "2. \uC6CC\uD504 \u2014 \uCD9C\uBC1C"
+      effectSocket: 0
     - cueName: paw_warp
       variant: 0
       spawnAt: 1
@@ -855,8 +956,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "3. \uC6CC\uD504 \u2014 \uB3C4\uCC29"
+      effectSocket: 0
     - cueName: paw_beam
       variant: 0
       spawnAt: 1
@@ -867,12 +972,17 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "4. \uC7AC\uB4F1\uC7A5 + \uAD11\uC120 + \uCC29\uD0C4"
+      effectSocket: 0
   - key: 116
-    label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uC2E4\uC218\u00B7\uBC14\uB2D0\uB77C)"
+    label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uC2E4\uC218\xB7\uBC14\uB2D0\uB77C)"
     variant: 0
     targetSide: 2
+    autoCast: 0
     steps:
     - cueName: paw_spawn
       variant: 0
@@ -884,8 +994,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
-      label: "1. \uBC1C \uB4F1\uC7A5\u00B7\uC720\uC9C0\u00B7\uC18C\uBA78"
+      label: "1. \uBC1C \uB4F1\uC7A5\xB7\uC720\uC9C0\xB7\uC18C\uBA78"
+      effectSocket: 0
     - cueName: paw_warp
       variant: 0
       spawnAt: 0
@@ -896,8 +1010,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "2. \uC6CC\uD504 \u2014 \uCD9C\uBC1C"
+      effectSocket: 0
     - cueName: paw_warp
       variant: 0
       spawnAt: 1
@@ -908,8 +1026,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "3. \uC6CC\uD504 \u2014 \uB3C4\uCC29"
+      effectSocket: 0
     - cueName: paw_beam_miss
       variant: 0
       spawnAt: 1
@@ -920,12 +1042,17 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "4. \uC7AC\uB4F1\uC7A5 + \uB179\uC0C9 \uAD11\uC120 + \uC2ED\uC790 \uCC29\uD0C4"
+      effectSocket: 0
   - key: 121
-    label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uC2E4\uC218\u00B7\uC5BC\uD130)"
+    label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uC2E4\uC218\xB7\uC5BC\uD130)"
     variant: 1
     targetSide: 2
+    autoCast: 0
     steps:
     - cueName: paw_spawn
       variant: 0
@@ -937,8 +1064,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
-      label: "1. \uBC1C \uB4F1\uC7A5\u00B7\uC720\uC9C0\u00B7\uC18C\uBA78"
+      label: "1. \uBC1C \uB4F1\uC7A5\xB7\uC720\uC9C0\xB7\uC18C\uBA78"
+      effectSocket: 0
     - cueName: paw_warp
       variant: 0
       spawnAt: 0
@@ -949,8 +1080,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "2. \uC6CC\uD504 \u2014 \uCD9C\uBC1C"
+      effectSocket: 0
     - cueName: paw_warp
       variant: 0
       spawnAt: 1
@@ -961,8 +1096,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "3. \uC6CC\uD504 \u2014 \uB3C4\uCC29"
+      effectSocket: 0
     - cueName: paw_beam_miss
       variant: 0
       spawnAt: 1
@@ -973,12 +1112,17 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "4. \uC7AC\uB4F1\uC7A5 + \uB179\uC0C9 \uAD11\uC120 + \uC2ED\uC790 \uCC29\uD0C4"
+      effectSocket: 0
   - key: 117
     label: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790 (\uBC14\uB2D0\uB77C)"
     variant: 0
     targetSide: 1
+    autoCast: 0
     steps:
     - cueName: lfl_charge_r
       variant: 0
@@ -990,8 +1134,12 @@ MonoBehaviour:
       lifeTime: 0.7
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "1. \uC624\uB978\uC190 \uCC28\uC9C0"
+      effectSocket: 0
     - cueName: lfl_charge_l
       variant: 0
       spawnAt: 0
@@ -1002,10 +1150,12 @@ MonoBehaviour:
       lifeTime: 0.7
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 1
       positionRefCue: 
+      sendEnemyTargets: 0
+      waitForImpact: 0
       label: "2. \uC67C\uC190 \uCC28\uC9C0 (L1 X\uBBF8\uB7EC)"
+      effectSocket: 0
     - cueName: lfl_merge
       variant: 0
       spawnAt: 0
@@ -1016,10 +1166,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 0
       positionRefCue: lfl_fire
+      sendEnemyTargets: 0
+      waitForImpact: 0
       label: "3. \uD569\uCCB4 (\uC704\uCE58 = lfl_fire \uC2DC\uC791\uC810)"
+      effectSocket: 0
     - cueName: lfl_fire
       variant: 0
       spawnAt: 0
@@ -1030,8 +1182,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "4. \uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4"
+      effectSocket: 0
     - cueName: lfl_land
       variant: 0
       spawnAt: 1
@@ -1042,8 +1198,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 1
       label: "5. \uCC29\uD0C4 \uD790"
+      effectSocket: 0
     - cueName: lfl_chain
       variant: 0
       spawnAt: 3
@@ -1054,8 +1214,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "\uC5F0\uC1C4 \uBE44\uD589 #0"
+      effectSocket: 0
     - cueName: lfl_chain
       variant: 0
       spawnAt: 3
@@ -1066,8 +1230,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "\uC5F0\uC1C4 \uBE44\uD589 #1"
+      effectSocket: 0
     - cueName: lfl_chain_land
       variant: 0
       spawnAt: 3
@@ -1078,8 +1246,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 1
       label: "\uC5F0\uC1C4 \uCC29\uC9C0 #0"
+      effectSocket: 0
     - cueName: lfl_chain_land
       variant: 0
       spawnAt: 3
@@ -1090,12 +1262,17 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 1
       label: "\uC5F0\uC1C4 \uCC29\uC9C0 #1"
+      effectSocket: 0
   - key: 105
     label: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790 (\uC5BC\uD130)"
     variant: 1
     targetSide: 1
+    autoCast: 0
     steps:
     - cueName: lfl_charge_r
       variant: 0
@@ -1107,8 +1284,12 @@ MonoBehaviour:
       lifeTime: 0.7
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "1. \uC624\uB978\uC190 \uCC28\uC9C0"
+      effectSocket: 0
     - cueName: lfl_charge_l
       variant: 0
       spawnAt: 0
@@ -1119,10 +1300,12 @@ MonoBehaviour:
       lifeTime: 0.7
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 1
       positionRefCue: 
+      sendEnemyTargets: 0
+      waitForImpact: 0
       label: "2. \uC67C\uC190 \uCC28\uC9C0 (L1 X\uBBF8\uB7EC)"
+      effectSocket: 0
     - cueName: lfl_merge
       variant: 0
       spawnAt: 0
@@ -1133,10 +1316,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 0
       positionRefCue: lfl_fire
+      sendEnemyTargets: 0
+      waitForImpact: 0
       label: "3. \uD569\uCCB4 (\uC704\uCE58 = lfl_fire \uC2DC\uC791\uC810)"
+      effectSocket: 0
     - cueName: lfl_fire
       variant: 0
       spawnAt: 0
@@ -1147,8 +1332,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "4. \uD3EC\uBB3C\uC120 \uD22C\uC0AC\uCCB4"
+      effectSocket: 0
     - cueName: lfl_land
       variant: 0
       spawnAt: 1
@@ -1159,8 +1348,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 1
       label: "5. \uCC29\uD0C4 \uD790"
+      effectSocket: 0
     - cueName: lfl_chain
       variant: 0
       spawnAt: 3
@@ -1171,8 +1364,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "\uC5F0\uC1C4 \uBE44\uD589 #0"
+      effectSocket: 0
     - cueName: lfl_chain
       variant: 0
       spawnAt: 3
@@ -1183,8 +1380,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 0
       label: "\uC5F0\uC1C4 \uBE44\uD589 #1"
+      effectSocket: 0
     - cueName: lfl_chain_land
       variant: 0
       spawnAt: 3
@@ -1195,8 +1396,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 1
       label: "\uC5F0\uC1C4 \uCC29\uC9C0 #0"
+      effectSocket: 0
     - cueName: lfl_chain_land
       variant: 0
       spawnAt: 3
@@ -1207,8 +1412,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
+      mirrorX: 0
+      positionRefCue: 
+      sendEnemyTargets: 0
       waitForImpact: 1
       label: "\uC5F0\uC1C4 \uCC29\uC9C0 #1"
+      effectSocket: 0
   - key: 111
     label: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC (\uBC14\uB2D0\uB77C)"
     variant: 0
@@ -1225,11 +1434,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 0
       positionRefCue: 
       sendEnemyTargets: 0
+      waitForImpact: 0
       label: "1. \uC720\uC131 \uBC1C\uC0AC (T6 \uC704\uCE58)"
+      effectSocket: 0
     - cueName: tao_revive
       variant: 0
       spawnAt: 1
@@ -1240,11 +1450,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 1
       mirrorX: 0
       positionRefCue: 
       sendEnemyTargets: 0
+      waitForImpact: 1
       label: "2. \uBD80\uD65C \uC624\uB77C (\uCC29\uD0C4 \uC2DC\uADF8\uB110)"
+      effectSocket: 0
     - cueName: tao_barrage
       variant: 0
       spawnAt: 1
@@ -1255,11 +1466,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 0
       positionRefCue: 
       sendEnemyTargets: 1
+      waitForImpact: 0
       label: "3. \uAD11\uC5ED \uBC30\uB9AC\uC9C0 (\uC804\uAC1C \uD6C4) \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354"
+      effectSocket: 0
   - key: 112
     label: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC (\uC5BC\uD130)"
     variant: 1
@@ -1276,11 +1488,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 0
       positionRefCue: 
       sendEnemyTargets: 0
+      waitForImpact: 0
       label: "1. \uC720\uC131 \uBC1C\uC0AC (T6 \uC704\uCE58)"
+      effectSocket: 0
     - cueName: tao_revive
       variant: 0
       spawnAt: 1
@@ -1291,11 +1504,12 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 1
       mirrorX: 0
       positionRefCue: 
       sendEnemyTargets: 0
+      waitForImpact: 1
       label: "2. \uBD80\uD65C \uC624\uB77C (\uCC29\uD0C4 \uC2DC\uADF8\uB110)"
+      effectSocket: 0
     - cueName: tao_barrage
       variant: 0
       spawnAt: 1
@@ -1306,13 +1520,14 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 0
       positionRefCue: 
       sendEnemyTargets: 1
+      waitForImpact: 0
       label: "3. \uAD11\uC5ED \uBC30\uB9AC\uC9C0 (\uC804\uAC1C \uD6C4) \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354"
+      effectSocket: 0
   - key: 107
-    label: "\uBC30\uB9AC\uC9C0 \uB2E8\uB3C5 (\uBC14\uB2D0\uB77C\u00B7\uC790\uB3D9)"
+    label: "\uBC30\uB9AC\uC9C0 \uB2E8\uB3C5 (\uBC14\uB2D0\uB77C\xB7\uC790\uB3D9)"
     variant: 0
     targetSide: 0
     autoCast: 1
@@ -1327,13 +1542,15 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 0
       positionRefCue: 
       sendEnemyTargets: 1
-      label: "\uAD11\uC5ED \uBC30\uB9AC\uC9C0 \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354 (\uD074\uB9AD \uC5C6\uC774 \uC790\uB3D9)"
+      waitForImpact: 0
+      label: "\uAD11\uC5ED \uBC30\uB9AC\uC9C0 \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354
+        (\uD074\uB9AD \uC5C6\uC774 \uC790\uB3D9)"
+      effectSocket: 0
   - key: 108
-    label: "\uBC30\uB9AC\uC9C0 \uB2E8\uB3C5 (\uC5BC\uD130\u00B7\uC790\uB3D9)"
+    label: "\uBC30\uB9AC\uC9C0 \uB2E8\uB3C5 (\uC5BC\uD130\xB7\uC790\uB3D9)"
     variant: 1
     targetSide: 0
     autoCast: 1
@@ -1348,11 +1565,13 @@ MonoBehaviour:
       lifeTime: 0
       placementKey: 
       impactPlacementKey: 
-      waitForImpact: 0
       mirrorX: 0
       positionRefCue: 
       sendEnemyTargets: 1
-      label: "\uAD11\uC5ED \uBC30\uB9AC\uC9C0 \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354 (\uD074\uB9AD \uC5C6\uC774 \uC790\uB3D9)"
+      waitForImpact: 0
+      label: "\uAD11\uC5ED \uBC30\uB9AC\uC9C0 \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354
+        (\uD074\uB9AD \uC5C6\uC774 \uC790\uB3D9)"
+      effectSocket: 0
   mode: 0
   stepKey: 0
   resetKey: 122
@@ -3925,7 +4144,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -4010,7 +4229,6 @@ MonoBehaviour:
     type: 2}
   enemyGroupDataTable: {fileID: 11400000, guid: 6adb67ae246e04d40819ad7652d7565f,
     type: 2}
-  useSOTables: 1
   loadOnAwake: 0
   dontDestroyOnLoad: 1
   cachedPlayerTemplates:
@@ -4297,6 +4515,7 @@ MonoBehaviour:
     DropItem1Rate: []
   cachedWeapons:
   - WeaponIndex: 1
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uAE30\uBCF8 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uAC00\uC7A5
@@ -4311,6 +4530,7 @@ MonoBehaviour:
     BonusReduceRate: 0
     BonusSpeed: 0
     WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uD30C\uC6CC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801
       1\uBA85\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
@@ -4325,6 +4545,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.8
     WeaponSkillSubValue: 0
   - WeaponIndex: 2
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uAD11\uC5ED \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uB113\uAC8C
@@ -4338,6 +4559,7 @@ MonoBehaviour:
     BonusReduceRate: 0
     BonusSpeed: 0
     WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uC775\uC2A4\uD50C\uB85C\uC804"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uD3ED\uBC1C\uC2DC\uCF1C
       \uBAA8\uB4E0 \uC801\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C
@@ -4353,6 +4575,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.3
     WeaponSkillSubValue: 0
   - WeaponIndex: 3
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uBC29\uC5B4 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
@@ -4366,6 +4589,7 @@ MonoBehaviour:
     BonusReduceRate: 0
     BonusSpeed: 0
     WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uC2E4\uB4DC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
       \uC0DD\uC131\uD55C\uB2E4. \uC0AC\uC6A9\uD55C \uD788\uC5B4\uB85C\uAC00 \uB2E4\uC74C
@@ -4382,6 +4606,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.3
     WeaponSkillSubValue: 0
   - WeaponIndex: 4
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uD68C\uBCF5 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uCE58\uC720
@@ -4395,6 +4620,7 @@ MonoBehaviour:
     BonusReduceRate: 0
     BonusSpeed: 0
     WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uB9AC\uCEE4\uBC84\uB9AC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC544\uAD70
       1\uBA85\uC758 \uCCB4\uB825\uC744 {WeaponSkillValue} \uD68C\uBCF5\uD55C\uB2E4."
@@ -4409,6 +4635,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.3
     WeaponSkillSubValue: 0
   - WeaponIndex: 5
+    weaponKey: 
     weaponClass: 
     WeaponName: "\uC704\uC555 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801\uC758
@@ -4422,6 +4649,7 @@ MonoBehaviour:
     BonusReduceRate: 0
     BonusSpeed: 0
     WeaponSkillIndex: 0
+    weaponSkillKey: 
     WeaponSkillName: "\uC82C \uD504\uB808\uC154"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC555\uBC15\uD558\uC5EC
       \uBAA8\uB4E0 \uC801\uC758 \uBC29\uC5B4\uB825\uC744 1\uD134 \uB3D9\uC548 {WeaponSkillValue}
@@ -4470,3 +4698,4 @@ SceneRoots:
   - {fileID: 1598461279}
   - {fileID: 1306616269}
   - {fileID: 438752190}
+  - {fileID: 229998267}
