@@ -1,0 +1,184 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
+  m_Name: "\uD611\uD68C\uD64D\uBCF4\uBD80_Schema"
+  m_EditorClassIdentifier: 
+  schemaGuid: 872cbb40992c4b5885e7fdb640e9ccbb
+  sourceWorkbookGuid: 13dd1e4c6ba8547468181f3e67715753
+  sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/H.I \uC790\uC6D0 \uB370\uC774\uD130
+    \uD14C\uC774\uBE14 V1.6.xlsx"
+  workbookFileName: "H.I \uC790\uC6D0 \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.6"
+  sourceSheetName: "\uD611\uD68C-\uD64D\uBCF4\uBD80"
+  physicalSheetId: e3d3b360d94d7765385928955b35d2678fb8fc0f
+  logicalSheetKey: "\uD611\uD68C\uD64D\uBCF4\uBD80"
+  templateClassName: AssociationPromotion
+  templateSignature: dict=0|publicity_level:Int:Comma|cost_resource_type:Int:Comma|cost_resource_amount:Int:Comma|status_type:Int:Comma|ip_amount_per_charge:Int:Comma|ip_charge_limit:Int:Comma|ip_charge_cycle:Int:Comma|note:String:Comma
+  className: AssociationPromotion
+  outputAssetName: "\uD611\uD68C\uD64D\uBCF4\uBD80DataTable"
+  targetTableAssetGuid: b965228d5a487634eabdffb8855808bd
+  targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I \uC790\uC6D0
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.6/\uD611\uD68C\uD64D\uBCF4\uBD80DataTable.asset"
+  headerRowIndex: 1
+  dataStartRowIndex: 2
+  useDictionary: 0
+  requireUniqueKey: 0
+  duplicateKeyPolicy: 0
+  Columns:
+  - sourceColumnIndex: 0
+    sourceHeaderName: publicity_level
+    fieldName: publicity_level
+    displayName: publicity_level
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: cost_resource_type
+    fieldName: cost_resource_type
+    displayName: cost_resource_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: cost_resource_amount
+    fieldName: cost_resource_amount
+    displayName: cost_resource_amount
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: status_type
+    fieldName: status_type
+    displayName: status_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: ip_amount_per_charge
+    fieldName: ip_amount_per_charge
+    displayName: ip_amount_per_charge
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: ip_charge_limit
+    fieldName: ip_charge_limit
+    displayName: ip_charge_limit
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: ip_charge_cycle
+    fieldName: ip_charge_cycle
+    displayName: ip_charge_cycle
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: note
+    fieldName: note
+    displayName: note
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 0
+    sourceHeaderName: "\uD64D\uBCF4\uBD80 \uB808\uBCA8"
+    fieldName: Field_01
+    displayName: "\uD64D\uBCF4\uBD80 \uB808\uBCA8"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 1
+    sourceHeaderName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB958\n(0 \uC790\uAE08 1
+      \uBA54\uB2EC 2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldName: Field_02
+    displayName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB958\n(0 \uC790\uAE08 1 \uBA54\uB2EC
+      2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: "\uCDA9\uC804 1\uD68C\uB2F9 \uC18C\uBAA8 \uC790\uC6D0\uB7C9"
+    fieldName: Field_03
+    displayName: "\uCDA9\uC804 1\uD68C\uB2F9 \uC18C\uBAA8 \uC790\uC6D0\uB7C9"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: "\uC99D\uAC00 \uC2A4\uD14C\uC774\uD130\uC2A4 \uC885\uB958\n(0
+      CurrentIP 1 CurrentHP 2 MaxIP 3 MaxHP 4 ATK 5 DEF)"
+    fieldName: Field_04
+    displayName: "\uC99D\uAC00 \uC2A4\uD14C\uC774\uD130\uC2A4 \uC885\uB958\n(0 CurrentIP
+      1 CurrentHP 2 MaxIP 3 MaxHP 4 ATK 5 DEF)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: "\uCDA9\uC804 1\uD68C\uB2F9 \uC99D\uAC00 IP\uB7C9"
+    fieldName: Field_05
+    displayName: "\uCDA9\uC804 1\uD68C\uB2F9 \uC99D\uAC00 IP\uB7C9"
+    fieldType: 1
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: "\uC8FC\uAE30 \uB0B4 \uCD5C\uB300 \uCDA9\uC804 \uAC00\uB2A5
+      IP\uB7C9"
+    fieldName: Field_06
+    displayName: "\uC8FC\uAE30 \uB0B4 \uCD5C\uB300 \uCDA9\uC804 \uAC00\uB2A5 IP\uB7C9"
+    fieldType: 1
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: "\uCDA9\uC804 \uD55C\uB3C4 \uCD94\uAC00 \uC8FC\uAE30"
+    fieldName: Field_07
+    displayName: "\uCDA9\uC804 \uD55C\uB3C4 \uCD94\uAC00 \uC8FC\uAE30"
+    fieldType: 1
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
