@@ -136,13 +136,22 @@ public class PartyUnitBootstrap : MonoBehaviour
                 continue;
             }
 
+            string currentWeaponKey = unitState.CurrentWeaponKey;
             EquipmentStatBlock currentWeaponStats = default;
-            if (unitState.CurrentWeaponIndex > 0 &&
-                templateCatalog.TryGetWeaponTemplate(unitState.CurrentWeaponIndex, out DHWeaponTemplate weaponTemplate) &&
+            if (!string.IsNullOrWhiteSpace(currentWeaponKey) &&
+                templateCatalog.TryGetWeaponTemplate(currentWeaponKey, out DHWeaponTemplate weaponTemplate) &&
                 weaponTemplate != null)
             {
+                currentWeaponKey = weaponTemplate.WeaponKey;
                 currentWeaponStats = EquipmentStatBlock.FromStatBlock(weaponTemplate.GetBonusStatsAtLevel(WeaponPersistentRepository.BaseWeaponLevel));
             }
+            else if (templateCatalog.TryGetWeaponTemplate("HC001", out weaponTemplate) && weaponTemplate != null)
+            {
+                currentWeaponKey = weaponTemplate.WeaponKey;
+                currentWeaponStats = EquipmentStatBlock.FromStatBlock(weaponTemplate.GetBonusStatsAtLevel(WeaponPersistentRepository.BaseWeaponLevel));
+            }
+
+            unitState.SetCurrentWeapon(currentWeaponKey, currentWeaponStats);
 
             unitState.InitializeFromTemplate(template, currentWeaponStats);
 
@@ -152,7 +161,7 @@ public class PartyUnitBootstrap : MonoBehaviour
                 unitState.BaseStats,
                 unitState.LevelupStats,
                 unitState.CurrentSkillIndex,
-                unitState.CurrentWeaponIndex,
+                unitState.CurrentWeaponKey,
                 unitState.CurrentWeaponStats,
                 unitState.IngameStats,
                 unitState.CurrentHp);

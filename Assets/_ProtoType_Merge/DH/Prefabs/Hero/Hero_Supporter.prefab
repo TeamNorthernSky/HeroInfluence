@@ -55,6 +55,7 @@ MonoBehaviour:
   maxExp: 0
   currentSkillIndex: 4010
   skillLevel: 1
+  currentWeaponKey: HC001
   currentWeaponIndex: 310401
   baseStats:
     HP: 0

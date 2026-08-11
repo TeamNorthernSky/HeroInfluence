@@ -18,8 +18,9 @@ public class PartyUnitState : MonoBehaviour
     [FormerlySerializedAs("initialSkillIndex")]
     [SerializeField] private int currentSkillIndex;
     [SerializeField] private int skillLevel = 1;
+    [SerializeField] private string currentWeaponKey;
     [FormerlySerializedAs("initialWeaponIndex")]
-    [SerializeField] private int currentWeaponIndex;
+    [SerializeField, HideInInspector] private int currentWeaponIndex;
     [SerializeField] private StatBlock baseStats;
     [SerializeField] private StatBlock levelupStats;
     [SerializeField] private StatBlock eventBonusStats;
@@ -35,6 +36,7 @@ public class PartyUnitState : MonoBehaviour
     public int MaxExp => Mathf.Max(0, maxExp);
     public int CurrentSkillIndex => Mathf.Max(0, currentSkillIndex);
     public int SkillLevel => Mathf.Max(1, skillLevel);
+    public string CurrentWeaponKey => string.IsNullOrWhiteSpace(currentWeaponKey) ? string.Empty : currentWeaponKey.Trim();
     public int CurrentWeaponIndex => Mathf.Max(0, currentWeaponIndex);
     public StatBlock BaseStats => baseStats;
     public StatBlock LevelupStats => levelupStats;
@@ -81,6 +83,7 @@ public class PartyUnitState : MonoBehaviour
         eventBonusStats = data.EventBonusStats;
         currentSkillIndex = Mathf.Max(0, data.CurrentSkillIndex);
         skillLevel = Mathf.Max(1, data.SkillLevel);
+        currentWeaponKey = data.CurrentWeaponKey;
         currentWeaponIndex = Mathf.Max(0, data.CurrentWeaponIndex);
         currentWeaponStats = data.CurrentWeaponStats;
         ingameStats = data.IngameStats;
@@ -104,7 +107,7 @@ public class PartyUnitState : MonoBehaviour
             baseStats,
             levelupStats,
             CurrentSkillIndex,
-            CurrentWeaponIndex,
+            CurrentWeaponKey,
             currentWeaponStats,
             ingameStats,
             currentHp,
@@ -166,6 +169,17 @@ public class PartyUnitState : MonoBehaviour
 
     public void SetCurrentWeapon(int nextWeaponIndex, EquipmentStatBlock weaponStats)
     {
+        SetCurrentWeapon(string.Empty, nextWeaponIndex, weaponStats);
+    }
+
+    public void SetCurrentWeapon(string nextWeaponKey, EquipmentStatBlock weaponStats)
+    {
+        SetCurrentWeapon(nextWeaponKey, 0, weaponStats);
+    }
+
+    public void SetCurrentWeapon(string nextWeaponKey, int nextWeaponIndex, EquipmentStatBlock weaponStats)
+    {
+        currentWeaponKey = string.IsNullOrWhiteSpace(nextWeaponKey) ? string.Empty : nextWeaponKey.Trim();
         currentWeaponIndex = Mathf.Max(0, nextWeaponIndex);
         currentWeaponStats = weaponStats;
         RecalculateIngameStats();
@@ -274,6 +288,7 @@ public class PartyUnitState : MonoBehaviour
         exp = Mathf.Max(0, exp);
         currentSkillIndex = Mathf.Max(0, currentSkillIndex);
         skillLevel = Mathf.Max(1, skillLevel);
+        currentWeaponKey = string.IsNullOrWhiteSpace(currentWeaponKey) ? string.Empty : currentWeaponKey.Trim();
         currentWeaponIndex = Mathf.Max(0, currentWeaponIndex);
 
         RecalculateIngameStats();

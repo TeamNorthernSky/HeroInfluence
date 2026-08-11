@@ -125,6 +125,7 @@ public class CombatEncounterManager : MonoBehaviour
                 enemyId,
                 outpostKey,
                 enemyGroupKey,
+                outpost.ResolvedEnemyLevel,
                 CombatEnemySourceType.OutpostDefender))
             return false;
 
@@ -166,6 +167,7 @@ public class CombatEncounterManager : MonoBehaviour
                 enemyId,
                 outpostKey,
                 enemyGroupKey,
+                outpost.ResolvedEnemyLevel,
                 CombatEnemySourceType.OutpostDefender))
             return false;
 
@@ -205,6 +207,7 @@ public class CombatEncounterManager : MonoBehaviour
                 enemyId,
                 villainUnionKey,
                 enemyGroupKey,
+                villainUnionBase.ResolvedEnemyLevel,
                 CombatEnemySourceType.VillainUnionDefender))
             return false;
 
@@ -246,6 +249,7 @@ public class CombatEncounterManager : MonoBehaviour
                 enemyId,
                 villainUnionKey,
                 enemyGroupKey,
+                villainUnionBase.ResolvedEnemyLevel,
                 CombatEnemySourceType.VillainUnionDefender))
             return false;
 
@@ -333,6 +337,7 @@ public class CombatEncounterManager : MonoBehaviour
             enemyId,
             ResolveEnemyPlacementKey(enemy),
             ResolveEnemyGroupKey(enemy),
+            ResolveEnemyLevel(enemy),
             CombatEnemySourceType.Field,
             enemy);
     }
@@ -343,6 +348,7 @@ public class CombatEncounterManager : MonoBehaviour
         string enemyId,
         string enemyPlacementKey,
         string enemyGroupKey,
+        int enemyLevel,
         CombatEnemySourceType enemySourceType,
         EnemyGridMover enemy = null)
     {
@@ -379,7 +385,7 @@ public class CombatEncounterManager : MonoBehaviour
         }
 
         combatContext.RegisterCombatParty(partyId, partyUnitIndices);
-        combatContext.RegisterCombatEnemy(enemyId, enemyPlacementKey, enemyGroupKey, enemySourceType, enemyUnitIndices);
+        combatContext.RegisterCombatEnemy(enemyId, enemyPlacementKey, enemyGroupKey, enemyLevel, enemySourceType, enemyUnitIndices);
         combatContext.SetCombatResult(CombatResult.None);
         return true;
     }
@@ -769,6 +775,40 @@ public class CombatEncounterManager : MonoBehaviour
     {
         EnemyIdentity identity = enemy != null ? enemy.GetComponent<EnemyIdentity>() : null;
         return identity != null ? identity.EnemyGroupKey : string.Empty;
+    }
+
+    private static int ResolveEnemyLevel(EnemyGridMover enemy)
+    {
+        if (enemy != null && TryResolveZoneId(enemy.GetCurrentGrid(), out string gridZoneId))
+        {
+            MapProgressRepository repository = MapProgressRepository.Instance;
+            if (repository != null && repository.TryGetZoneEnemyLevel(gridZoneId, out int gridZoneLevel))
+                return gridZoneLevel;
+        }
+
+        string placementKey = ResolveEnemyPlacementKey(enemy);
+        if (!string.IsNullOrWhiteSpace(placementKey))
+        {
+            MapProgressRepository repository = MapProgressRepository.Instance;
+            IReadOnlyList<EnemyWorldState> enemyStates = repository != null ? repository.EnemyWorldStates : null;
+            if (enemyStates != null)
+            {
+                for (int i = 0; i < enemyStates.Count; i++)
+                {
+                    EnemyWorldState state = enemyStates[i];
+                    if (state == null ||
+                        !string.Equals(state.PlacementKey, placementKey, StringComparison.Ordinal))
+                        continue;
+
+                    if (repository.TryGetZoneEnemyLevel(state.ZoneId, out int stateZoneLevel))
+                        return stateZoneLevel;
+
+                    break;
+                }
+            }
+        }
+
+        return 1;
     }
 
     private static void RemoveDefeatedEnemyGroup(string enemyId)

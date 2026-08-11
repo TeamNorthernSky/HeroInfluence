@@ -63,6 +63,7 @@ public class UnitPersistentDataDiskRow
     public int maxExp;
     public int currentSkillIndex;
     public int skillLevel;
+    public string currentWeaponKey;
     public int currentWeaponIndex;
     public int equippedWeaponInstanceIndex;
     public EquipmentStatBlock currentWeaponStats;
@@ -88,6 +89,7 @@ public class UnitPersistentDataDiskRow
             maxExp = u.MaxExp,
             currentSkillIndex = u.CurrentSkillIndex,
             skillLevel = u.SkillLevel,
+            currentWeaponKey = u.CurrentWeaponKey ?? string.Empty,
             currentWeaponIndex = u.CurrentWeaponIndex,
             equippedWeaponInstanceIndex = u.EquippedWeaponInstanceIndex,
             currentWeaponStats = u.CurrentWeaponStats,
@@ -108,6 +110,7 @@ public class UnitPersistentDataDiskRow
             baseStats.ToStatBlock(),
             levelupStats.ToStatBlock(),
             currentSkillIndex,
+            currentWeaponKey ?? string.Empty,
             currentWeaponIndex,
             currentWeaponStats,
             ingameStats.ToStatBlock(),
