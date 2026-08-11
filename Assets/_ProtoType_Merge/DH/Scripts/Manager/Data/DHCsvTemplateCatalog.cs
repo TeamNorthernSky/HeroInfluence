@@ -230,6 +230,20 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return true;
     }
 
+    public bool TryGetWeaponBonusAtLevel(string weaponKey, int level, out StatBlock bonus)
+    {
+        EnsureLoaded();
+        if (string.IsNullOrWhiteSpace(weaponKey) ||
+            !weaponTemplateByKey.TryGetValue(weaponKey.Trim(), out DHWeaponTemplate template))
+        {
+            bonus = default;
+            return false;
+        }
+
+        bonus = template.GetBonusStatsAtLevel(level);
+        return true;
+    }
+
     /// <summary>Returns weapon skill value for the given enhancement level.</summary>
     public float GetWeaponSkillValueAtLevel(int weaponIndex, int level)
     {
@@ -239,11 +253,29 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             : 0f;
     }
 
+    public float GetWeaponSkillValueAtLevel(string weaponKey, int level)
+    {
+        EnsureLoaded();
+        return !string.IsNullOrWhiteSpace(weaponKey) &&
+               weaponTemplateByKey.TryGetValue(weaponKey.Trim(), out DHWeaponTemplate template)
+            ? template.GetSkillValueAtLevel(level)
+            : 0f;
+    }
+
     /// <summary>Returns weapon skill sub-value for the given enhancement level.</summary>
     public float GetWeaponSkillSubValueAtLevel(int weaponIndex, int level)
     {
         EnsureLoaded();
         return weaponTemplateLookup.TryGetValue(weaponIndex, out DHWeaponTemplate template)
+            ? template.GetSkillSubValueAtLevel(level)
+            : 0f;
+    }
+
+    public float GetWeaponSkillSubValueAtLevel(string weaponKey, int level)
+    {
+        EnsureLoaded();
+        return !string.IsNullOrWhiteSpace(weaponKey) &&
+               weaponTemplateByKey.TryGetValue(weaponKey.Trim(), out DHWeaponTemplate template)
             ? template.GetSkillSubValueAtLevel(level)
             : 0f;
     }

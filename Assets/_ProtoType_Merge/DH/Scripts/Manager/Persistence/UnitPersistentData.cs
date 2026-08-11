@@ -18,6 +18,7 @@ public class UnitPersistentData
     public int MaxExp => maxExp;
     public int CurrentSkillIndex => currentSkillIndex;
     public int SkillLevel => skillLevel;
+    public string CurrentWeaponKey => currentWeaponKey ?? string.Empty;
     public int CurrentWeaponIndex => currentWeaponIndex;
     public int EquippedWeaponInstanceIndex => equippedWeaponInstanceIndex;
     public EquipmentStatBlock CurrentWeaponStats => currentWeaponStats;
@@ -36,7 +37,8 @@ public class UnitPersistentData
     [UnityEngine.SerializeField] private int maxExp;
     [UnityEngine.SerializeField] private int currentSkillIndex;
     [UnityEngine.SerializeField] private int skillLevel;
-    [UnityEngine.SerializeField] private int currentWeaponIndex;
+    [UnityEngine.SerializeField] private string currentWeaponKey;
+    [UnityEngine.SerializeField, UnityEngine.HideInInspector] private int currentWeaponIndex;
     [UnityEngine.SerializeField] private int equippedWeaponInstanceIndex;
     [UnityEngine.SerializeField] private EquipmentStatBlock currentWeaponStats;
     [UnityEngine.SerializeField] private bool isIncapacitated;
@@ -47,6 +49,11 @@ public class UnitPersistentData
     }
 
     public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, StatBlock eventBonusStats = default, int skillLevel = 1, int equippedWeaponInstanceIndex = 0, float currentInfluence = DefaultCurrentInfluence, bool isIncapacitated = false)
+        : this(unitIndex, unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, string.Empty, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, maxExp, eventBonusStats, skillLevel, equippedWeaponInstanceIndex, currentInfluence, isIncapacitated)
+    {
+    }
+
+    public UnitPersistentData(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, string currentWeaponKey, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, StatBlock eventBonusStats = default, int skillLevel = 1, int equippedWeaponInstanceIndex = 0, float currentInfluence = DefaultCurrentInfluence, bool isIncapacitated = false)
     {
         this.unitIndex = unitIndex;
         this.unitTemplateKey = unitTemplateKey ?? string.Empty;
@@ -61,6 +68,7 @@ public class UnitPersistentData
         this.maxExp = Math.Max(0, maxExp);
         this.currentSkillIndex = Math.Max(0, currentSkillIndex);
         this.skillLevel = Math.Max(1, skillLevel);
+        this.currentWeaponKey = string.IsNullOrWhiteSpace(currentWeaponKey) ? string.Empty : currentWeaponKey.Trim();
         this.currentWeaponIndex = Math.Max(0, currentWeaponIndex);
         this.equippedWeaponInstanceIndex = Math.Max(0, equippedWeaponInstanceIndex);
         this.currentWeaponStats = currentWeaponStats;
@@ -69,6 +77,11 @@ public class UnitPersistentData
 
     public void ApplyRuntimeState(string nextUnitTemplateKey, int nextLevel, StatBlock nextBaseStats, StatBlock nextLevelupStats, int nextCurrentSkillIndex, int nextCurrentWeaponIndex, EquipmentStatBlock nextCurrentWeaponStats, StatBlock nextIngameStats, float nextCurrentHp, int nextExp = -1, int nextMaxExp = -1, int nextSkillLevel = -1, int nextEquippedWeaponInstanceIndex = -1, float nextCurrentInfluence = -1f, bool? nextIsIncapacitated = null)
     {
+        ApplyRuntimeState(nextUnitTemplateKey, nextLevel, nextBaseStats, nextLevelupStats, nextCurrentSkillIndex, currentWeaponKey, nextCurrentWeaponIndex, nextCurrentWeaponStats, nextIngameStats, nextCurrentHp, nextExp, nextMaxExp, nextSkillLevel, nextEquippedWeaponInstanceIndex, nextCurrentInfluence, nextIsIncapacitated);
+    }
+
+    public void ApplyRuntimeState(string nextUnitTemplateKey, int nextLevel, StatBlock nextBaseStats, StatBlock nextLevelupStats, int nextCurrentSkillIndex, string nextCurrentWeaponKey, int nextCurrentWeaponIndex, EquipmentStatBlock nextCurrentWeaponStats, StatBlock nextIngameStats, float nextCurrentHp, int nextExp = -1, int nextMaxExp = -1, int nextSkillLevel = -1, int nextEquippedWeaponInstanceIndex = -1, float nextCurrentInfluence = -1f, bool? nextIsIncapacitated = null)
+    {
         unitTemplateKey = nextUnitTemplateKey ?? string.Empty;
         level = Math.Max(1, nextLevel);
         baseStats = nextBaseStats;
@@ -76,6 +89,7 @@ public class UnitPersistentData
         currentSkillIndex = Math.Max(0, nextCurrentSkillIndex);
         if (nextSkillLevel >= 0)
             skillLevel = Math.Max(1, nextSkillLevel);
+        currentWeaponKey = string.IsNullOrWhiteSpace(nextCurrentWeaponKey) ? string.Empty : nextCurrentWeaponKey.Trim();
         currentWeaponIndex = Math.Max(0, nextCurrentWeaponIndex);
         if (nextEquippedWeaponInstanceIndex >= 0)
             equippedWeaponInstanceIndex = Math.Max(0, nextEquippedWeaponInstanceIndex);
@@ -97,6 +111,27 @@ public class UnitPersistentData
             maxExp = Math.Max(0, nextMaxExp);
     }
 
+    public void ApplyRuntimeState(string nextUnitTemplateKey, int nextLevel, StatBlock nextBaseStats, StatBlock nextLevelupStats, int nextCurrentSkillIndex, string nextCurrentWeaponKey, EquipmentStatBlock nextCurrentWeaponStats, StatBlock nextIngameStats, float nextCurrentHp, int nextExp = -1, int nextMaxExp = -1, int nextSkillLevel = -1, int nextEquippedWeaponInstanceIndex = -1, float nextCurrentInfluence = -1f, bool? nextIsIncapacitated = null)
+    {
+        ApplyRuntimeState(
+            nextUnitTemplateKey,
+            nextLevel,
+            nextBaseStats,
+            nextLevelupStats,
+            nextCurrentSkillIndex,
+            nextCurrentWeaponKey,
+            ResolveLegacyNumericWeaponTemplateKey(nextCurrentWeaponKey),
+            nextCurrentWeaponStats,
+            nextIngameStats,
+            nextCurrentHp,
+            nextExp,
+            nextMaxExp,
+            nextSkillLevel,
+            nextEquippedWeaponInstanceIndex,
+            nextCurrentInfluence,
+            nextIsIncapacitated);
+    }
+
     public void SetEventBonusStats(StatBlock nextEventBonusStats)
     {
         eventBonusStats = nextEventBonusStats;
@@ -109,5 +144,24 @@ public class UnitPersistentData
             return Math.Min(DefaultCurrentInfluence, maxInfluence);
 
         return Math.Min(Math.Max(0f, requestedCurrentInfluence), maxInfluence);
+    }
+
+    private static int ResolveLegacyNumericWeaponTemplateKey(string weaponTemplateKey)
+    {
+        if (string.IsNullOrWhiteSpace(weaponTemplateKey))
+            return 0;
+
+        string trimmed = weaponTemplateKey.Trim();
+        int start = -1;
+        for (int i = 0; i < trimmed.Length; i++)
+        {
+            if (char.IsDigit(trimmed[i]))
+            {
+                start = i;
+                break;
+            }
+        }
+
+        return start >= 0 && int.TryParse(trimmed.Substring(start), out int parsed) ? Math.Max(0, parsed) : 0;
     }
 }

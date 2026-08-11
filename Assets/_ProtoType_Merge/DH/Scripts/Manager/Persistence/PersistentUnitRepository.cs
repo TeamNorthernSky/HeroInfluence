@@ -73,7 +73,31 @@ public class PersistentUnitRepository : MonoBehaviour
         return CreateUnit(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, unitGrowthTemplates), DefaultPlayerCurrentInfluence);
     }
 
+    public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, string currentWeaponKey, EquipmentStatBlock currentWeaponStats)
+    {
+        IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
+        StatBlock ingameStats = UnitStatCalculator.CalculateIngameStats(
+            baseStats,
+            levelupStats,
+            level,
+            currentWeaponStats,
+            default,
+            unitGrowthTemplates);
+        return CreateUnit(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponKey, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, unitGrowthTemplates), DefaultPlayerCurrentInfluence);
+    }
+
     public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, float currentInfluence = -1f)
+    {
+        string currentWeaponKey = ResolveWeaponTemplateKey(currentWeaponIndex);
+        return CreateUnit(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponKey, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, maxExp, currentInfluence);
+    }
+
+    public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, string currentWeaponKey, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, float currentInfluence = -1f)
+    {
+        return CreateUnit(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponKey, ResolveLegacyNumericWeaponTemplateKey(currentWeaponKey), currentWeaponStats, ingameStats, currentHp, exp, maxExp, currentInfluence);
+    }
+
+    public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, string currentWeaponKey, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, float currentInfluence = -1f)
     {
         int unitIndex = Mathf.Max(1, nextUnitIndex);
         nextUnitIndex = unitIndex + 1;
@@ -82,9 +106,10 @@ public class PersistentUnitRepository : MonoBehaviour
             maxExp = ResolveMaxExp(level);
 
         float effectiveCurrentInfluence = currentInfluence >= 0f ? currentInfluence : DefaultPlayerCurrentInfluence;
-        var data = new UnitPersistentData(unitIndex, unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, maxExp, currentInfluence: effectiveCurrentInfluence);
+        var data = new UnitPersistentData(unitIndex, unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponKey, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, maxExp, currentInfluence: effectiveCurrentInfluence);
         units.Add(data);
         unitLookup[unitIndex] = data;
+        Debug.Log($"[DHWeaponInit] Created unitIndex={unitIndex}, unitTemplateKey='{unitTemplateKey}', currentWeaponKey='{data.CurrentWeaponKey}', legacyWeaponIndex={data.CurrentWeaponIndex}.", this);
         EnsureDefaultWeaponInstance(unitIndex);
         return unitIndex;
     }
@@ -115,6 +140,17 @@ public class PersistentUnitRepository : MonoBehaviour
 
     public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = -1, int maxExp = -1, int skillLevel = -1, int equippedWeaponInstanceIndex = -1, float currentInfluence = -1f, bool? isIncapacitated = null)
     {
+        string currentWeaponKey = ResolveWeaponTemplateKey(currentWeaponIndex);
+        return UpdateUnitRuntimeState(unitIndex, unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponKey, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, maxExp, skillLevel, equippedWeaponInstanceIndex, currentInfluence, isIncapacitated);
+    }
+
+    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, string currentWeaponKey, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = -1, int maxExp = -1, int skillLevel = -1, int equippedWeaponInstanceIndex = -1, float currentInfluence = -1f, bool? isIncapacitated = null)
+    {
+        return UpdateUnitRuntimeState(unitIndex, unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponKey, ResolveLegacyNumericWeaponTemplateKey(currentWeaponKey), currentWeaponStats, ingameStats, currentHp, exp, maxExp, skillLevel, equippedWeaponInstanceIndex, currentInfluence, isIncapacitated);
+    }
+
+    public bool UpdateUnitRuntimeState(int unitIndex, string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, string currentWeaponKey, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = -1, int maxExp = -1, int skillLevel = -1, int equippedWeaponInstanceIndex = -1, float currentInfluence = -1f, bool? isIncapacitated = null)
+    {
         if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
             return false;
 
@@ -122,7 +158,7 @@ public class PersistentUnitRepository : MonoBehaviour
         if (effectiveMaxExp < 0 && data.MaxExp <= 0)
             effectiveMaxExp = ResolveMaxExp(level);
 
-        data.ApplyRuntimeState(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, effectiveMaxExp, skillLevel, equippedWeaponInstanceIndex, currentInfluence, isIncapacitated);
+        data.ApplyRuntimeState(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponKey, currentWeaponIndex, currentWeaponStats, ingameStats, currentHp, exp, effectiveMaxExp, skillLevel, equippedWeaponInstanceIndex, currentInfluence, isIncapacitated);
         return true;
     }
 
@@ -138,7 +174,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
-            data.CurrentWeaponIndex,
+            data.CurrentWeaponKey,
             data.CurrentWeaponStats,
             data.IngameStats,
             nextHp,
@@ -157,13 +193,15 @@ public class PersistentUnitRepository : MonoBehaviour
             return false;
 
         WeaponPersistentRepository weaponRepository = WeaponPersistentRepository.Instance;
-        if (weaponRepository == null || !weaponRepository.TryGetWeaponTemplateKey(weaponInstanceIndex, out int weaponTemplateKey))
+        if (weaponRepository == null || !weaponRepository.TryGetWeaponTemplateKey(weaponInstanceIndex, out string weaponTemplateKey))
             return false;
 
         if (!weaponRepository.TryGetWeaponStats(weaponInstanceIndex, out EquipmentStatBlock weaponStats))
             weaponStats = default;
 
-        return ApplyWeaponState(data, weaponInstanceIndex, weaponTemplateKey, weaponStats);
+        bool applied = ApplyWeaponState(data, weaponInstanceIndex, weaponTemplateKey, weaponStats);
+        Debug.Log($"[DHWeaponInit] EquipWeaponInstance unitIndex={unitIndex}, weaponInstanceIndex={weaponInstanceIndex}, weaponTemplateKey='{weaponTemplateKey}', applied={applied}.", this);
+        return applied;
     }
 
     public bool UnequipWeaponInstance(int unitIndex)
@@ -171,7 +209,7 @@ public class PersistentUnitRepository : MonoBehaviour
         if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
             return false;
 
-        return ApplyWeaponState(data, 0, 0, default);
+        return ApplyWeaponState(data, 0, string.Empty, default);
     }
 
     public bool RefreshEquippedWeaponStats(int unitIndex)
@@ -181,10 +219,10 @@ public class PersistentUnitRepository : MonoBehaviour
 
         int weaponInstanceIndex = data.EquippedWeaponInstanceIndex;
         if (weaponInstanceIndex <= 0)
-            return ApplyWeaponState(data, 0, 0, default);
+            return ApplyWeaponState(data, 0, string.Empty, default);
 
         WeaponPersistentRepository weaponRepository = WeaponPersistentRepository.Instance;
-        if (weaponRepository == null || !weaponRepository.TryGetWeaponTemplateKey(weaponInstanceIndex, out int weaponTemplateKey))
+        if (weaponRepository == null || !weaponRepository.TryGetWeaponTemplateKey(weaponInstanceIndex, out string weaponTemplateKey))
             return false;
 
         if (!weaponRepository.RefreshWeaponStats(weaponInstanceIndex))
@@ -219,10 +257,10 @@ public class PersistentUnitRepository : MonoBehaviour
         if (data.EquippedWeaponInstanceIndex > 0)
             return true;
 
-        if (!TryResolveDefaultWeaponTemplateKey(data, out int weaponTemplateKey))
+        if (!TryResolveDefaultWeaponTemplateKey(data, out string weaponTemplateKey))
             return false;
 
-        WeaponPersistentRepository weaponRepository = WeaponPersistentRepository.Instance;
+        WeaponPersistentRepository weaponRepository = WeaponPersistentRepositoryBootstrap.EnsureInstance();
         if (weaponRepository == null)
             return false;
 
@@ -230,6 +268,7 @@ public class PersistentUnitRepository : MonoBehaviour
         if (weaponInstanceIndex <= 0)
             return false;
 
+        Debug.Log($"[DHWeaponInit] EnsureDefaultWeaponInstance unitIndex={unitIndex}, weaponTemplateKey='{weaponTemplateKey}', weaponInstanceIndex={weaponInstanceIndex}.", this);
         return EquipWeaponInstance(unitIndex, weaponInstanceIndex);
     }
 
@@ -259,7 +298,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
-            data.CurrentWeaponIndex,
+            data.CurrentWeaponKey,
             data.CurrentWeaponStats,
             data.IngameStats,
             data.CurrentHp,
@@ -285,7 +324,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
-            data.CurrentWeaponIndex,
+            data.CurrentWeaponKey,
             data.CurrentWeaponStats,
             data.IngameStats,
             maxHp,
@@ -317,7 +356,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
-            data.CurrentWeaponIndex,
+            data.CurrentWeaponKey,
             data.CurrentWeaponStats,
             data.IngameStats,
             newHp,
@@ -357,7 +396,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
-            data.CurrentWeaponIndex,
+            data.CurrentWeaponKey,
             data.CurrentWeaponStats,
             nextIngameStats,
             nextCurrentHp,
@@ -404,7 +443,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
-            data.CurrentWeaponIndex,
+            data.CurrentWeaponKey,
             data.CurrentWeaponStats,
             nextIngameStats,
             nextCurrentHp,
@@ -455,7 +494,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
-            data.CurrentWeaponIndex,
+            data.CurrentWeaponKey,
             data.CurrentWeaponStats,
             nextIngameStats,
             nextIngameStats.HP,
@@ -470,11 +509,12 @@ public class PersistentUnitRepository : MonoBehaviour
         return catalog != null ? catalog.GetUnitGrowthTemplates() : null;
     }
 
-    private bool ApplyWeaponState(UnitPersistentData data, int weaponInstanceIndex, int weaponTemplateKey, EquipmentStatBlock weaponStats)
+    private bool ApplyWeaponState(UnitPersistentData data, int weaponInstanceIndex, string weaponTemplateKey, EquipmentStatBlock weaponStats)
     {
         if (data == null)
             return false;
 
+        int legacyWeaponTemplateKey = ResolveLegacyNumericWeaponTemplateKey(weaponTemplateKey);
         IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
             data.BaseStats,
@@ -492,6 +532,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.LevelupStats,
             data.CurrentSkillIndex,
             weaponTemplateKey,
+            legacyWeaponTemplateKey,
             weaponStats,
             nextIngameStats,
             nextCurrentHp,
@@ -502,28 +543,43 @@ public class PersistentUnitRepository : MonoBehaviour
         return true;
     }
 
-    private static bool TryResolveDefaultWeaponTemplateKey(UnitPersistentData data, out int weaponTemplateKey)
+    private static bool TryResolveDefaultWeaponTemplateKey(UnitPersistentData data, out string weaponTemplateKey)
     {
-        weaponTemplateKey = 0;
+        weaponTemplateKey = string.Empty;
 
         if (data == null)
             return false;
 
-        if (data.CurrentWeaponIndex > 0)
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (!string.IsNullOrWhiteSpace(data.CurrentWeaponKey))
         {
-            weaponTemplateKey = data.CurrentWeaponIndex;
+            string currentWeaponKey = data.CurrentWeaponKey.Trim();
+            if (catalog == null || HasWeaponTemplate(currentWeaponKey))
+            {
+                weaponTemplateKey = currentWeaponKey;
+                return true;
+            }
+        }
+
+        if (catalog == null)
+        {
+            weaponTemplateKey = "HC001";
             return true;
         }
 
-        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-        if (catalog == null ||
-            !TryExtractNumericId(data.UnitTemplateKey, out int classIndex))
+        int classIndex = 0;
+        if (catalog.TryGetPlayerUnitTemplate(data.UnitTemplateKey, out DHPlayerUnitTemplate playerTemplate) &&
+            playerTemplate != null)
         {
-            return false;
+            classIndex = playerTemplate.ClassIndex;
+        }
+        else
+        {
+            TryExtractNumericId(data.UnitTemplateKey, out classIndex);
         }
 
         List<DHWeaponTemplate> weapons = catalog.GetWeaponTemplatesByClassIndex(classIndex);
-        int bestWeaponIndex = 0;
+        DHWeaponTemplate bestWeapon = null;
 
         for (int i = 0; i < weapons.Count; i++)
         {
@@ -534,14 +590,17 @@ public class PersistentUnitRepository : MonoBehaviour
             if (GetWeaponTier(weapon.NumericWeaponId) != WeaponPersistentRepository.BaseWeaponLevel)
                 continue;
 
-            if (bestWeaponIndex <= 0 || weapon.NumericWeaponId < bestWeaponIndex)
-                bestWeaponIndex = weapon.NumericWeaponId;
+            if (bestWeapon == null || weapon.NumericWeaponId < bestWeapon.NumericWeaponId)
+                bestWeapon = weapon;
         }
 
-        if (bestWeaponIndex <= 0)
-            return false;
+        if (bestWeapon != null && !string.IsNullOrWhiteSpace(bestWeapon.WeaponKey))
+        {
+            weaponTemplateKey = bestWeapon.WeaponKey.Trim();
+            return true;
+        }
 
-        weaponTemplateKey = bestWeaponIndex;
+        weaponTemplateKey = "HC001";
         return true;
     }
 
@@ -558,6 +617,52 @@ public class PersistentUnitRepository : MonoBehaviour
     private static int GetWeaponTier(int weaponIndex)
     {
         return Mathf.Abs(weaponIndex % 100);
+    }
+
+    private static bool HasWeaponTemplate(string weaponTemplateKey)
+    {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        return catalog != null &&
+               !string.IsNullOrWhiteSpace(weaponTemplateKey) &&
+               catalog.TryGetWeaponTemplate(weaponTemplateKey.Trim(), out DHWeaponTemplate template) &&
+               template != null;
+    }
+
+    private static string ResolveWeaponTemplateKey(int legacyWeaponTemplateKey)
+    {
+        if (legacyWeaponTemplateKey <= 0)
+            return string.Empty;
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null &&
+            catalog.TryGetWeaponTemplate(legacyWeaponTemplateKey, out DHWeaponTemplate template) &&
+            template != null &&
+            !string.IsNullOrWhiteSpace(template.WeaponKey))
+        {
+            return template.WeaponKey.Trim();
+        }
+
+        if (legacyWeaponTemplateKey >= 1 && legacyWeaponTemplateKey <= 999)
+            return $"HC{legacyWeaponTemplateKey:000}";
+
+        return string.Empty;
+    }
+
+    private static int ResolveLegacyNumericWeaponTemplateKey(string weaponTemplateKey)
+    {
+        if (string.IsNullOrWhiteSpace(weaponTemplateKey))
+            return 0;
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null &&
+            catalog.TryGetWeaponTemplate(weaponTemplateKey.Trim(), out DHWeaponTemplate template) &&
+            template != null)
+        {
+            return Mathf.Max(0, template.NumericWeaponId);
+        }
+
+        Match match = Regex.Match(weaponTemplateKey.Trim(), @"\d+");
+        return match.Success && int.TryParse(match.Value, out int numericId) ? Mathf.Max(0, numericId) : 0;
     }
 
     private static int ResolveMaxExp(int level)
@@ -648,7 +753,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
-            data.CurrentWeaponIndex,
+            data.CurrentWeaponKey,
             data.CurrentWeaponStats,
             nextIngameStats,
             nextCurrentHp,
@@ -671,7 +776,7 @@ public class PersistentUnitRepository : MonoBehaviour
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
-            data.CurrentWeaponIndex,
+            data.CurrentWeaponKey,
             data.CurrentWeaponStats,
             data.IngameStats,
             data.CurrentHp,

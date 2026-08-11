@@ -60,6 +60,7 @@ public class PartyVisualCompositionController : MonoBehaviour
 
         string partyId = string.IsNullOrWhiteSpace(partyIdentity.PartyId) ? gameObject.name : partyIdentity.PartyId;
         EnsureInitialPartyData(partyId, unitRepository, partyRepository);
+        unitRepository.EnsureDefaultWeaponInstances();
 
         if (!partyRepository.TryGetParty(partyId, out PartyPersistentData partyData) || partyData == null)
         {
@@ -71,6 +72,7 @@ public class PartyVisualCompositionController : MonoBehaviour
         int[] explorationIndices = BuildExplorationIndices(partyData, unitRepository);
         SetCompositionSlots(partyData.UnitIndices);
         RebuildVisualUnits(explorationIndices, unitRepository);
+        LogInitialEquipmentSnapshot(partyData, unitRepository);
     }
 
     private void ResolveLocalReferences()
@@ -117,14 +119,17 @@ public class PartyVisualCompositionController : MonoBehaviour
                 continue;
             }
 
+            string weaponKey = ResolveInitialCurrentWeaponKey(template.UnitKey);
+            EquipmentStatBlock weaponStats = ResolveInitialCurrentWeaponStats(weaponKey);
+            Debug.Log($"[DHWeaponInit] Initial unit '{template.UnitKey}' resolved weaponKey='{weaponKey}'.", this);
             unitIndices[i] = unitRepository.CreateUnit(
                 template.UnitKey,
                 1,
                 template.BaseStats,
                 template.LevelupStats,
                 ResolveInitialCurrentSkillIndex(template.UnitKey),
-                0,
-                default);
+                weaponKey,
+                weaponStats);
         }
 
         // [JC 260628] 기본 진형 명시. 전투 슬롯 규약: 1-3=후열, 4-6=전열.
@@ -137,12 +142,65 @@ public class PartyVisualCompositionController : MonoBehaviour
 
     private int ResolveInitialCurrentSkillIndex(string unitTemplateKey)
     {
-        if (prefabRegistry == null)
-            return 0;
-
-        return prefabRegistry.TryGetPlayerUnitPrefab(unitTemplateKey, out PartyUnitState prefab) && prefab != null
+        return TryResolvePlayerUnitPrefab(unitTemplateKey, out PartyUnitState prefab) && prefab != null
             ? prefab.CurrentSkillIndex
             : 0;
+    }
+
+    private string ResolveInitialCurrentWeaponKey(string unitTemplateKey)
+    {
+        if (TryResolvePlayerUnitPrefab(unitTemplateKey, out PartyUnitState prefab) &&
+            !string.IsNullOrWhiteSpace(prefab.CurrentWeaponKey))
+        {
+            return prefab.CurrentWeaponKey;
+        }
+
+        return "HC001";
+    }
+
+    private bool TryResolvePlayerUnitPrefab(string unitTemplateKey, out PartyUnitState prefab)
+    {
+        if (prefabRegistry != null &&
+            prefabRegistry.TryGetPlayerUnitPrefab(unitTemplateKey, out prefab) &&
+            prefab != null)
+        {
+            return true;
+        }
+
+        LevelPrefabRegistry[] registries = FindObjectsByType<LevelPrefabRegistry>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+
+        for (int i = 0; i < registries.Length; i++)
+        {
+            LevelPrefabRegistry candidate = registries[i];
+            if (candidate == null ||
+                !candidate.TryGetPlayerUnitPrefab(unitTemplateKey, out prefab) ||
+                prefab == null)
+            {
+                continue;
+            }
+
+            prefabRegistry = candidate;
+            return true;
+        }
+
+        prefab = null;
+        return false;
+    }
+
+    private static EquipmentStatBlock ResolveInitialCurrentWeaponStats(string weaponKey)
+    {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null &&
+            !string.IsNullOrWhiteSpace(weaponKey) &&
+            catalog.TryGetWeaponTemplate(weaponKey, out DHWeaponTemplate template) &&
+            template != null)
+        {
+            return EquipmentStatBlock.FromStatBlock(template.GetBonusStatsAtLevel(WeaponPersistentRepository.BaseWeaponLevel));
+        }
+
+        return default;
     }
 
     private string GetInitialTemplateKey(int index)
@@ -151,6 +209,36 @@ public class PartyVisualCompositionController : MonoBehaviour
             return string.Empty;
 
         return string.IsNullOrWhiteSpace(initialUnitTemplateKeys[index]) ? string.Empty : initialUnitTemplateKeys[index].Trim();
+    }
+
+    private void LogInitialEquipmentSnapshot(PartyPersistentData partyData, PersistentUnitRepository unitRepository)
+    {
+        if (partyData == null || unitRepository == null)
+            return;
+
+        WeaponPersistentRepository weaponRepository = WeaponPersistentRepository.Instance;
+        IReadOnlyList<int> unitIndices = partyData.UnitIndices;
+        for (int i = 0; i < unitIndices.Count; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (!unitRepository.TryGetUnit(unitIndex, out UnitPersistentData unitData) || unitData == null)
+                continue;
+
+            string equippedWeaponKey = string.Empty;
+            int equippedWeaponIndex = unitData.EquippedWeaponInstanceIndex;
+            if (weaponRepository != null &&
+                equippedWeaponIndex > 0 &&
+                weaponRepository.TryGetWeaponTemplateKey(equippedWeaponIndex, out string resolvedWeaponKey))
+            {
+                equippedWeaponKey = resolvedWeaponKey;
+            }
+
+            Debug.Log(
+                $"[DHWeaponInit] Snapshot unitIndex={unitIndex}, unitTemplateKey='{unitData.UnitTemplateKey}', " +
+                $"currentWeaponKey='{unitData.CurrentWeaponKey}', equippedWeaponInstanceIndex={equippedWeaponIndex}, " +
+                $"equippedWeaponKey='{equippedWeaponKey}'.",
+                this);
+        }
     }
 
     private int[] BuildExplorationIndices(PartyPersistentData partyData, PersistentUnitRepository unitRepository)
