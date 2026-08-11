@@ -65,7 +65,10 @@ namespace JC.VFX.Seam
         public float Duration { get => duration; set => duration = Mathf.Max(0.05f, value); }
         public float FadeOutExtraSeconds { get => fadeOutExtraSeconds; set => fadeOutExtraSeconds = Mathf.Max(0f, value); }
 
-        private void Awake()
+        private void Awake() => EnsureRefs();
+
+        /// <summary>★지연 초기화 — Instantiate 중 Awake 선행이 보장되지 않아도 안전(VFX 부품 공통 규격).</summary>
+        private void EnsureRefs()
         {
             if (swirls == null || swirls.Length == 0)
             {
@@ -75,6 +78,8 @@ namespace JC.VFX.Seam
 
         public void Play(SkillEffectContext ctx)
         {
+            EnsureRefs();
+
             // 어떤 경우에도 소켓 자식이 되지 않는다(스케일 오염 차단).
             transform.SetParent(null, true);
             transform.localScale = Vector3.one;
@@ -171,6 +176,7 @@ namespace JC.VFX.Seam
         private void StopEmitting()
         {
             if (stopped) return;
+            EnsureRefs();
             stopped = true;
 
             // 방출만 끊고 이미 나온 입자·나선 줄기는 수명대로 사라지게 둔다.

@@ -1,0 +1,201 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
+  m_Name: "\uD611\uD68C\uD6C8\uB828\uC2E4_Schema"
+  m_EditorClassIdentifier: 
+  schemaGuid: 93dbf151cf2246cfa00fb2b43d6a6313
+  sourceWorkbookGuid: 13dd1e4c6ba8547468181f3e67715753
+  sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/H.I \uC790\uC6D0 \uB370\uC774\uD130
+    \uD14C\uC774\uBE14 V1.6.xlsx"
+  workbookFileName: "H.I \uC790\uC6D0 \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.6"
+  sourceSheetName: "\uD611\uD68C-\uD6C8\uB828\uC2E4"
+  physicalSheetId: 61b724b109fd6b8e81c50d609074ba8776e5c64c
+  logicalSheetKey: "\uD611\uD68C\uD6C8\uB828\uC2E4"
+  templateClassName: AssociationTraining
+  templateSignature: dict=0|required_training_room_level:Int:Comma|training_name:String:Comma|cost_resource_type:Int:Comma|cost_resource_amount:Int:Comma|status_type:Int:Comma|status_amount_per_training:Int:Comma|training_count_per_unit:Int:Comma|training_condition:String:Comma|note:String:Comma
+  className: AssociationTraining
+  outputAssetName: "\uD611\uD68C\uD6C8\uB828\uC2E4DataTable"
+  targetTableAssetGuid: 101a8e299d768194fbf6b06902d0f5f2
+  targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I \uC790\uC6D0
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.6/\uD611\uD68C\uD6C8\uB828\uC2E4DataTable.asset"
+  headerRowIndex: 1
+  dataStartRowIndex: 2
+  useDictionary: 0
+  requireUniqueKey: 0
+  duplicateKeyPolicy: 0
+  Columns:
+  - sourceColumnIndex: 0
+    sourceHeaderName: required_training_room_level
+    fieldName: required_training_room_level
+    displayName: required_training_room_level
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: training_name
+    fieldName: training_name
+    displayName: training_name
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: cost_resource_type
+    fieldName: cost_resource_type
+    displayName: cost_resource_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: cost_resource_amount
+    fieldName: cost_resource_amount
+    displayName: cost_resource_amount
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: status_type
+    fieldName: status_type
+    displayName: status_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: status_amount_per_training
+    fieldName: status_amount_per_training
+    displayName: status_amount_per_training
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: training_count_per_unit
+    fieldName: training_count_per_unit
+    displayName: training_count_per_unit
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: training_condition
+    fieldName: training_condition
+    displayName: training_condition
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 8
+    sourceHeaderName: note
+    fieldName: note
+    displayName: note
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 0
+    sourceHeaderName: "\uD2B8\uB808\uC774\uB2DD\uB8F8 \uD544\uC694 \uB808\uBCA8"
+    fieldName: Field_01
+    displayName: "\uD2B8\uB808\uC774\uB2DD\uB8F8 \uD544\uC694 \uB808\uBCA8"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 1
+    sourceHeaderName: "\uD2B8\uB808\uC774\uB2DD\uBA85"
+    fieldName: "\uD2B8\uB808\uC774\uB2DD\uBA85"
+    displayName: "\uD2B8\uB808\uC774\uB2DD\uBA85"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB958\n(0 \uC790\uAE08 1
+      \uBA54\uB2EC 2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldName: Field_03
+    displayName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB958\n(0 \uC790\uAE08 1 \uBA54\uB2EC
+      2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: "\uD2B8\uB808\uC774\uB2DD 1\uD68C\uB2F9 \uC18C\uBAA8 \uC790\uC6D0\uB7C9"
+    fieldName: Field_04
+    displayName: "\uD2B8\uB808\uC774\uB2DD 1\uD68C\uB2F9 \uC18C\uBAA8 \uC790\uC6D0\uB7C9"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: "\uC99D\uAC00 \uC2A4\uD14C\uC774\uD130\uC2A4 \uC885\uB958\n(0
+      CurrentIP 1 CurrentHP 2 MaxIP 3 MaxHP 4 ATK 5 DEF)"
+    fieldName: Field_05
+    displayName: "\uC99D\uAC00 \uC2A4\uD14C\uC774\uD130\uC2A4 \uC885\uB958\n(0 CurrentIP
+      1 CurrentHP 2 MaxIP 3 MaxHP 4 ATK 5 DEF)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: "\uD2B8\uB808\uC774\uB2DD 1\uD68C\uB2F9\n\uC99D\uAC00 \uC2A4\uD14C\uC774\uD130\uC2A4\uB7C9"
+    fieldName: Field_06
+    displayName: "\uD2B8\uB808\uC774\uB2DD 1\uD68C\uB2F9\n\uC99D\uAC00 \uC2A4\uD14C\uC774\uD130\uC2A4\uB7C9"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: "\uC720\uB2DB\uB2F9 \uD2B8\uB808\uC774\uB2DD \uAC00\uB2A5 \uD69F\uC218"
+    fieldName: Field_07
+    displayName: "\uC720\uB2DB\uB2F9 \uD2B8\uB808\uC774\uB2DD \uAC00\uB2A5 \uD69F\uC218"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: "\uD2B8\uB808\uC774\uB2DD \uC120\uD589 \uC870\uAC74"
+    fieldName: Field_08
+    displayName: "\uD2B8\uB808\uC774\uB2DD \uC120\uD589 \uC870\uAC74"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 8
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0

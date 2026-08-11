@@ -27,7 +27,10 @@ namespace JC.VFX.Seam
         // 프리셋 바인더가 밀어넣는 값
         public Vector3 SpawnOffset { get => spawnOffset; set => spawnOffset = value; }
 
-        private void Awake()
+        private void Awake() => EnsureRefs();
+
+        /// <summary>★지연 초기화 — Instantiate 중 Awake 선행이 보장되지 않아도 안전(VFX 부품 공통 규격).</summary>
+        private void EnsureRefs()
         {
             if (slashParticle == null)
             {
@@ -37,6 +40,8 @@ namespace JC.VFX.Seam
 
         public void Play(SkillEffectContext ctx)
         {
+            EnsureRefs();
+
             // 어떤 경우에도 소켓 자식이 되지 않는다(스케일 오염 차단).
             transform.SetParent(null, true);
             transform.localScale = Vector3.one;

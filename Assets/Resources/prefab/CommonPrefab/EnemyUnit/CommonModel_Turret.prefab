@@ -61,10 +61,42 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 58a49cc1105db0246ae39ef235f31945,
         type: 3}
       propertyPath: m_Name
-      value: turret.001
+      value: CommonModel_Turret
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 58a49cc1105db0246ae39ef235f31945,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3563548386032423748}
   m_SourcePrefab: {fileID: 100100000, guid: 58a49cc1105db0246ae39ef235f31945, type: 3}
+--- !u!1 &3779016140977753041 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 58a49cc1105db0246ae39ef235f31945,
+    type: 3}
+  m_PrefabInstance: {fileID: 4084952851124549248}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3563548386032423748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3779016140977753041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 161a0cce26e60f2408371f6111da8af2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rightWeaponSocketObject: {fileID: 0}
+  leftWeaponSocketObject: {fileID: 0}
+  rightFootSocketObject: {fileID: 0}
+  leftFootSocketObject: {fileID: 0}
+  hitSocketObject: {fileID: 0}
+  chestSocketObject: {fileID: 0}
+  floorSocketObject: {fileID: 0}
+  overheadSocketObject: {fileID: 0}
+  frontProjectileSocketObject: {fileID: 0}
+  visualRoot: {fileID: 0}

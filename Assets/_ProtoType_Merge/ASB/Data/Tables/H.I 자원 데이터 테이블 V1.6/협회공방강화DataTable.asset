@@ -1,0 +1,236 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 271af732c72de77469e8bd4158193dea, type: 3}
+  m_Name: "\uD611\uD68C\uACF5\uBC29\uAC15\uD654DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - required_workshop_level: 1
+    enchantable_equipment_group: "\uAE30\uBCF8 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC001
+    to_enchant_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 5
+    enchant_condition: "\uC5C6\uC74C"
+    note: "\uC7A5\uBE44\uBCC4 \uC2A4\uD14C\uC774\uD130\uC2A4 \uBC0F \uC7A5\uBE44
+      \uC2A4\uD0AC\uC740 \uC804\uD22C \uD14C\uC774\uBE14 \uCC38\uC870"
+  - required_workshop_level: 2
+    enchantable_equipment_group: "\uAE30\uBCF8 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC001
+    to_enchant_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 10
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv2 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 3
+    enchantable_equipment_group: "\uAE30\uBCF8 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC001
+    to_enchant_level: 4
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 15
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv3 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 4
+    enchantable_equipment_group: "\uAE30\uBCF8 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC001
+    to_enchant_level: 5
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 20
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv4 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 2
+    enchantable_equipment_group: "\uAD11\uC5ED \uCF54\uC5B4"
+    weapon_index_list:
+    - HC002
+    to_enchant_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 5
+    enchant_condition: "\uC5C6\uC74C"
+    note: 
+  - required_workshop_level: 2
+    enchantable_equipment_group: "\uAD11\uC5ED \uCF54\uC5B4"
+    weapon_index_list:
+    - HC002
+    to_enchant_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 10
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv2 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 3
+    enchantable_equipment_group: "\uAD11\uC5ED \uCF54\uC5B4"
+    weapon_index_list:
+    - HC002
+    to_enchant_level: 4
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 15
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv3 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 4
+    enchantable_equipment_group: "\uAD11\uC5ED \uCF54\uC5B4"
+    weapon_index_list:
+    - HC002
+    to_enchant_level: 5
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 20
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv4 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 2
+    enchantable_equipment_group: "\uBC29\uC5B4 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC003
+    to_enchant_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 5
+    enchant_condition: "\uC5C6\uC74C"
+    note: 
+  - required_workshop_level: 2
+    enchantable_equipment_group: "\uBC29\uC5B4 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC003
+    to_enchant_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 10
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv2 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 3
+    enchantable_equipment_group: "\uBC29\uC5B4 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC003
+    to_enchant_level: 4
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 15
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv3 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 4
+    enchantable_equipment_group: "\uBC29\uC5B4 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC003
+    to_enchant_level: 5
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 20
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv4 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 2
+    enchantable_equipment_group: "\uD68C\uBCF5 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC004
+    to_enchant_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 5
+    enchant_condition: "\uC5C6\uC74C"
+    note: 
+  - required_workshop_level: 2
+    enchantable_equipment_group: "\uD68C\uBCF5 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC004
+    to_enchant_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 10
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv2 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 3
+    enchantable_equipment_group: "\uD68C\uBCF5 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC004
+    to_enchant_level: 4
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 15
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv3 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 4
+    enchantable_equipment_group: "\uD68C\uBCF5 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC004
+    to_enchant_level: 5
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 20
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv4 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 2
+    enchantable_equipment_group: "\uC704\uC555 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC005
+    to_enchant_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 5
+    enchant_condition: "\uC5C6\uC74C"
+    note: 
+  - required_workshop_level: 2
+    enchantable_equipment_group: "\uC704\uC555 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC005
+    to_enchant_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 10
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv2 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 3
+    enchantable_equipment_group: "\uC704\uC555 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC005
+    to_enchant_level: 4
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 15
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv3 \uAC15\uD654 \uC644\uB8CC"
+    note: 
+  - required_workshop_level: 4
+    enchantable_equipment_group: "\uC704\uC555 \uCF54\uC5B4"
+    weapon_index_list:
+    - HC005
+    to_enchant_level: 5
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 20
+    enchant_condition: "\uB3D9\uC77C \uC7A5\uBE44 Lv4 \uAC15\uD654 \uC644\uB8CC"
+    note: 

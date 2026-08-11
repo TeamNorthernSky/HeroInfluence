@@ -1,0 +1,522 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4711000000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4711000000000000002}
+  - component: {fileID: 4711000000000000003}
+  m_Layer: 0
+  m_Name: JC_JusticeStepperRig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4711000000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4711000000000000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4711000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4711000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad753efc942799849b995533107de76e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  catalog: {fileID: 11400000, guid: 2e64e26e7f20f66438885eb869723307, type: 2}
+  placements: []
+  caster: {fileID: 0}
+  target: {fileID: 0}
+  casterNameHint:
+  targetNameHint:
+  casts:
+  - key: 113
+    label: "등장! (청)"
+    variant: 0
+    targetSide: 2
+    autoCast: 0
+    steps:
+    - cueName: enter_trail
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.15
+      lifeTime: 0.4
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "1. 주먹 궤적"
+      effectSocket: 1
+    - cueName: enter_impact
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 1, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "2. 타격"
+      effectSocket: 0
+  - key: 119
+    label: "등장! (적)"
+    variant: 1
+    targetSide: 2
+    autoCast: 0
+    steps:
+    - cueName: enter_trail
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.15
+      lifeTime: 0.4
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "1. 주먹 궤적"
+      effectSocket: 1
+    - cueName: enter_impact
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 1, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "2. 타격"
+      effectSocket: 0
+  - key: 101
+    label: "펀치 (청)"
+    variant: 0
+    targetSide: 2
+    autoCast: 0
+    steps:
+    - cueName: punch_trail
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.25
+      lifeTime: 0.45
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "1. 우권 궤적"
+      effectSocket: 1
+    - cueName: punch_impact
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 1, z: 0}
+      localOffset: 0
+      delayAfter: 0.25
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "2. 타격 1"
+      effectSocket: 0
+    - cueName: punch_trail
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.25
+      lifeTime: 0.45
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "3. 좌권 궤적"
+      effectSocket: 2
+    - cueName: punch_impact
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 1, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "4. 타격 2"
+      effectSocket: 0
+  - key: 114
+    label: "펀치 (적)"
+    variant: 1
+    targetSide: 2
+    autoCast: 0
+    steps:
+    - cueName: punch_trail
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.25
+      lifeTime: 0.45
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "1. 우권 궤적"
+      effectSocket: 1
+    - cueName: punch_impact
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 1, z: 0}
+      localOffset: 0
+      delayAfter: 0.25
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "2. 타격 1"
+      effectSocket: 0
+    - cueName: punch_trail
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.25
+      lifeTime: 0.45
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "3. 좌권 궤적"
+      effectSocket: 2
+    - cueName: punch_impact
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 1, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "4. 타격 2"
+      effectSocket: 0
+  - key: 97
+    label: "대쉬 (청)"
+    variant: 0
+    targetSide: 2
+    autoCast: 0
+    steps:
+    - cueName: dash_trail
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.2
+      lifeTime: 0.5
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "1. 발 궤적"
+      effectSocket: 6
+    - cueName: dash_arc
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "2. 호 획"
+      effectSocket: 0
+    - cueName: dash_point
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "3. 포인트 획"
+      effectSocket: 0
+    - cueName: dash_wind
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "4. 바람 원호"
+      effectSocket: 0
+    - cueName: dash_shard
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "5. 호 파편"
+      effectSocket: 0
+    - cueName: dash_vortex
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "6. 용권풍"
+      effectSocket: 0
+  - key: 115
+    label: "대쉬 (적)"
+    variant: 1
+    targetSide: 2
+    autoCast: 0
+    steps:
+    - cueName: dash_trail
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0.2
+      lifeTime: 0.5
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "1. 발 궤적"
+      effectSocket: 6
+    - cueName: dash_arc
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "2. 호 획"
+      effectSocket: 0
+    - cueName: dash_point
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "3. 포인트 획"
+      effectSocket: 0
+    - cueName: dash_wind
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "4. 바람 원호"
+      effectSocket: 0
+    - cueName: dash_shard
+      variant: 0
+      spawnAt: 1
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "5. 호 파편"
+      effectSocket: 0
+    - cueName: dash_vortex
+      variant: 0
+      spawnAt: 0
+      chainIndex: 0
+      offset: {x: 0, y: 0, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "6. 용권풍"
+      effectSocket: 0
+  - key: 100
+    label: "크래시 (청·틀·즉시)"
+    variant: 0
+    targetSide: 2
+    autoCast: 1
+    steps:
+    - cueName: crash_impact
+      variant: 0
+      spawnAt: 4
+      chainIndex: 0
+      offset: {x: 0, y: 0.5, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "크래시 타격 (틀)"
+      effectSocket: 0
+  - key: 102
+    label: "크래시 (적·틀·즉시)"
+    variant: 1
+    targetSide: 2
+    autoCast: 1
+    steps:
+    - cueName: crash_impact
+      variant: 0
+      spawnAt: 4
+      chainIndex: 0
+      offset: {x: 0, y: 0.5, z: 0}
+      localOffset: 0
+      delayAfter: 0
+      lifeTime: 0
+      placementKey:
+      impactPlacementKey:
+      mirrorX: 0
+      positionRefCue:
+      sendEnemyTargets: 0
+      waitForImpact: 0
+      label: "크래시 타격 (틀)"
+      effectSocket: 0
+  mode: 0
+  stepKey: 0
+  resetKey: 122
+  loop: 1
+  pickDistance: 200

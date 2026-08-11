@@ -111,13 +111,13 @@ public class UnitEffectPresenter : MonoBehaviour
                     BattleCharactor unit = targets[t];
                     if (unit == null || unit.IsDead) continue;
                     Transform tr = unit.transform;
-                    SpawnCueInstances(cue, baseContext, tr, tr.position, tr.rotation, spawnedHandles);
+                    SpawnCueInstances(runtime, cue, baseContext, tr, tr.position, tr.rotation, spawnedHandles);
                 }
             }
         }
         else
         {
-            SpawnCueInstances(cue, baseContext, anchor, position, rotation, spawnedHandles);
+            SpawnCueInstances(runtime, cue, baseContext, anchor, position, rotation, spawnedHandles);
         }
 
         // held(InstanceKey): 1개면 그대로, 여러 개면 Composite로 묶어 등록(후속 Signal/Stop이 전부에 전달됨).
@@ -130,7 +130,7 @@ public class UnitEffectPresenter : MonoBehaviour
         }
     }
 
-    private void SpawnCueInstances(RuntimeCue cue, SkillEffectContext baseContext,
+    private void SpawnCueInstances(PresentationRuntimeContext runtime, RuntimeCue cue, SkillEffectContext baseContext,
         Transform anchor, Vector3 position, Quaternion rotation, List<ISkillEffectHandle> handlesOut)
     {
         SkillEffectContext effectContext = baseContext != null ? baseContext.CreateSnapshot(anchor, position) : null;
@@ -151,6 +151,17 @@ public class UnitEffectPresenter : MonoBehaviour
             GameObject instance = attachToAnchor
                 ? Instantiate(prefab, position, rotation, anchor)
                 : Instantiate(prefab, position, rotation);
+            if (!held)
+            {
+                PresentationCueEffectLifetimeNotifier notifier =
+                    instance.GetComponent<PresentationCueEffectLifetimeNotifier>();
+                if (notifier == null)
+                {
+                    notifier = instance.AddComponent<PresentationCueEffectLifetimeNotifier>();
+                }
+                notifier.Bind(runtime);
+            }
+
 
             instance.GetComponent<ISkillEffectBehaviour>()?.Play(effectContext);
 
