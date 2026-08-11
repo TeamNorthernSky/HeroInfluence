@@ -3,7 +3,7 @@ using System;
 [Serializable]
 public class UnitPersistentData
 {
-    private const float DefaultCurrentInfluence = 100f;
+    private const float DefaultCurrentInfluence = 0f;
 
     public int UnitIndex => unitIndex;
     public string UnitTemplateKey => unitTemplateKey;

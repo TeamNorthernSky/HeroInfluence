@@ -28,6 +28,7 @@ public class PartyVisualCompositionController : MonoBehaviour
     [SerializeField] private bool rebuildOnStart = true;
     [SerializeField] private bool createInitialPartyWhenMissing = true;
     [SerializeField] private string[] initialUnitTemplateKeys = new string[ExplorationSlotCount];
+    [SerializeField, Min(0f)] private float initialCurrentInfluence = 0f;
 
     [Header("Debug")]
     [SerializeField] private bool logWarnings = true;
@@ -129,7 +130,8 @@ public class PartyVisualCompositionController : MonoBehaviour
                 template.LevelupStats,
                 ResolveInitialCurrentSkillIndex(template.UnitKey),
                 weaponKey,
-                weaponStats);
+                weaponStats,
+                initialCurrentInfluence);
         }
 
         // [JC 260628] 기본 진형 명시. 전투 슬롯 규약: 1-3=후열, 4-6=전열.

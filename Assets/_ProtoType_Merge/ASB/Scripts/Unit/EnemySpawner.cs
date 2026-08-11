@@ -123,6 +123,15 @@ public class EnemySpawner : MonoBehaviour
         if (combatContext != null && combatContext.HasEventBattle)
             return SpawnFromEventBattle(combatContext.EventBattle);
 
+        // 그룹키 기반 스폰 우선(일반 전투). 그룹키가 있으면 실패해도 영속/디버그로 폴백하지 않고
+        // 진입 실패로 둔다(잘못된 적 구성으로 전투가 시작되는 것을 막는다).
+        string enemyGroupKey = combatContext != null && combatContext.CombatEnemy != null
+            ? combatContext.CombatEnemy.EnemyGroupKey
+            : string.Empty;
+        if (!string.IsNullOrWhiteSpace(enemyGroupKey))
+            return SpawnFromEnemyGroupPlan(enemyGroupKey, combatContext.EnemyLevel);
+
+        // 그룹키가 없는 경우(레거시/엣지)만 기존 영속 경로 유지. [TEMP:GROUPKEY] Phase 6에서 제거.
         if (SpawnFromPersistentRepository())
             return true;
 
@@ -563,6 +572,164 @@ public class EnemySpawner : MonoBehaviour
         if (unitsProperty != null && unitsProperty.GetValue(combatEnemy) is IReadOnlyList<int> units && units.Count > 0)
         {
             return units;
+        }
+
+        return null;
+    }
+
+    // 일반 전투 그룹키 스폰: 공용 빌더로 EnemySpawnPlan을 만들고 원자적으로 스폰한다.
+    private bool SpawnFromEnemyGroupPlan(string enemyGroupKey, int enemyLevel)
+    {
+        if (!EnemySpawnPlanBuilder.TryBuildFromEnemyGroup(enemyGroupKey, enemyLevel, out EnemySpawnPlan plan, out string error))
+        {
+            Debug.LogError(
+                $"[EnemySpawner] Enemy group spawn plan build failed. groupKey='{enemyGroupKey}', level={enemyLevel}, error={error}",
+                this);
+            return false; // 폴백 금지 — 진입 실패
+        }
+
+        return SpawnFromPlan(plan, $"group:{enemyGroupKey}");
+    }
+
+    // 원자적 2단계 스폰: (1) 슬롯·프리팹까지 전체 검증 → (2) 전원 성공한 경우에만 Instantiate.
+    // 하나라도 실패하면 부분 스폰 없이 false를 반환한다.
+    private bool SpawnFromPlan(EnemySpawnPlan plan, string contextLabel)
+    {
+        if (!hierarchyReady)
+            Awake();
+
+        if (plan == null || plan.Count == 0)
+        {
+            Debug.LogError($"[EnemySpawner] Spawn plan is empty. context={contextLabel}", this);
+            return false;
+        }
+
+        if (!hierarchyReady || unitParent == null)
+        {
+            Debug.LogError($"[EnemySpawner] Grid/Units 계층이 준비되지 않았습니다. context={contextLabel}", this);
+            return false;
+        }
+
+        if (!BattleLogicalSlotMap.TryCreate(transform, out BattleLogicalSlotMap slotMap, out string slotError))
+        {
+            Debug.LogError($"[EnemySpawner] Slot map build failed. context={contextLabel}, {slotError}", this);
+            return false;
+        }
+
+        int count = plan.Count;
+        var resolvedSlots = new BattleLogicalSlotMap.Slot[count];
+        var resolvedPrefabs = new GameObject[count];
+        var claimedSlots = new HashSet<int>();
+
+        // Phase A: 전체 검증. 실패 시 Instantiate 0회.
+        for (int i = 0; i < count; i++)
+        {
+            EnemySpawnEntry entry = plan.Entries[i];
+            if (entry == null || entry.Data == null)
+            {
+                Debug.LogError($"[EnemySpawner] Spawn entry is invalid. context={contextLabel}, index={i}", this);
+                return false;
+            }
+
+            if (!claimedSlots.Add(entry.CombatSlot))
+            {
+                Debug.LogError($"[EnemySpawner] Duplicate CombatSlot. context={contextLabel}, slot={entry.CombatSlot}", this);
+                return false;
+            }
+
+            if (!slotMap.TryResolve(entry.CombatSlot, out BattleLogicalSlotMap.Slot slot) || slot.Cell == null)
+            {
+                Debug.LogError($"[EnemySpawner] CombatSlot could not be resolved. context={contextLabel}, slot={entry.CombatSlot}", this);
+                return false;
+            }
+
+            GameObject prefab = ResolvePlanPrefab(entry);
+            if (prefab == null)
+            {
+                Debug.LogError(
+                    $"[EnemySpawner] Prefab not found. context={contextLabel}, prefabKey='{entry.PrefabKey}', index='{entry.Data.Index}'",
+                    this);
+                return false;
+            }
+
+            resolvedSlots[i] = slot;
+            resolvedPrefabs[i] = prefab;
+        }
+
+        // Phase B: 전원 검증 성공 → Instantiate.
+        for (int i = 0; i < count; i++)
+            SpawnPlanEntry(plan.Entries[i], resolvedSlots[i], resolvedPrefabs[i]);
+
+        return true;
+    }
+
+    private GameObject SpawnPlanEntry(EnemySpawnEntry entry, BattleLogicalSlotMap.Slot slot, GameObject prefab)
+    {
+        GridCellRef cell = slot.Cell;
+        ClearGrid(slot.GridNumber);
+
+        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(slot.WorldRotation);
+        GameObject go = Instantiate(prefab, slot.WorldPosition, facingPlayerRot, cell.transform);
+        go.name = $"Enemy_{entry.Data.Index}_{go.GetInstanceID()}";
+
+        foreach (CharactorScript legacy in go.GetComponentsInChildren<CharactorScript>(true))
+            DestroyImmediate(legacy);
+
+        BattleCharactor battle = go.GetComponent<BattleCharactor>();
+        if (battle == null)
+            battle = go.AddComponent<BattleCharactor>();
+
+        EnemyScript enemyScript = go.GetComponent<EnemyScript>();
+        if (enemyScript == null)
+            enemyScript = go.AddComponent<EnemyScript>();
+
+        // EnemyData.baseStats에 레벨 스탯이 반영돼 있으므로 SetLevelScaling(false) 경로로 그대로 최종 스탯이 된다.
+        enemyScript.Initialize(entry.Data);
+
+        // 명시 스킬(이벤트)이 있으면 배선. 일반 전투는 EnemyData.Index 규칙(EnemyScript)으로 기본 스킬 유도.
+        if (entry.HasExplicitSkills)
+        {
+            battle.availableSkills.Clear();
+            for (int i = 0; i < entry.ExplicitSkills.Count; i++)
+            {
+                if (entry.ExplicitSkills[i] != null)
+                    battle.availableSkills.Add(entry.ExplicitSkills[i]);
+            }
+
+            if (battle.availableSkills.Count > 0)
+            {
+                battle.SetClassSkillIndex(battle.availableSkills[0].skillIndex);
+                battle.ResolveSelectedSkill(false);
+            }
+        }
+
+        battle.AssignToCell(cell);
+        cell.SetOccupyingUnit(battle);
+        spawnedByGrid[slot.GridNumber] = go;
+        return go;
+    }
+
+    private GameObject ResolvePlanPrefab(EnemySpawnEntry entry)
+    {
+        string key = !string.IsNullOrWhiteSpace(entry.PrefabKey)
+            ? entry.PrefabKey.Trim()
+            : (entry.Data != null ? entry.Data.Index : string.Empty);
+        if (string.IsNullOrWhiteSpace(key))
+            return null;
+
+        key = key.Trim();
+
+        // 리소스 경로(이벤트 PrefabResourcePath 등)면 직접 로드.
+        if (key.Contains("/"))
+            return Resources.Load<GameObject>(key);
+
+        // 그 외(일반=Index): FindPrefab과 동일 규칙(prefab/BattlePrefab/EnemyUnit 아래 이름이 _{key}로 끝나는 프리팹).
+        string suffix = $"_{key}";
+        GameObject[] all = Resources.LoadAll<GameObject>("prefab/BattlePrefab/EnemyUnit");
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] != null && all[i].name.EndsWith(suffix))
+                return all[i];
         }
 
         return null;

@@ -6,7 +6,7 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class PersistentUnitRepository : MonoBehaviour
 {
-    private const float DefaultPlayerCurrentInfluence = 100f;
+    private const float DefaultPlayerCurrentInfluence = 0f;
 
     public static PersistentUnitRepository Instance { get; private set; }
 
@@ -73,7 +73,7 @@ public class PersistentUnitRepository : MonoBehaviour
         return CreateUnit(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponIndex, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, unitGrowthTemplates), DefaultPlayerCurrentInfluence);
     }
 
-    public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, string currentWeaponKey, EquipmentStatBlock currentWeaponStats)
+    public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, string currentWeaponKey, EquipmentStatBlock currentWeaponStats, float currentInfluence = DefaultPlayerCurrentInfluence)
     {
         IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         StatBlock ingameStats = UnitStatCalculator.CalculateIngameStats(
@@ -83,7 +83,7 @@ public class PersistentUnitRepository : MonoBehaviour
             currentWeaponStats,
             default,
             unitGrowthTemplates);
-        return CreateUnit(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponKey, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, unitGrowthTemplates), DefaultPlayerCurrentInfluence);
+        return CreateUnit(unitTemplateKey, level, baseStats, levelupStats, currentSkillIndex, currentWeaponKey, currentWeaponStats, ingameStats, ingameStats.HP, 0, ResolveMaxExp(level, unitGrowthTemplates), currentInfluence);
     }
 
     public int CreateUnit(string unitTemplateKey, int level, StatBlock baseStats, StatBlock levelupStats, int currentSkillIndex, int currentWeaponIndex, EquipmentStatBlock currentWeaponStats, StatBlock ingameStats, float currentHp, int exp = 0, int maxExp = 0, float currentInfluence = -1f)
