@@ -4,7 +4,7 @@ namespace JC.VFX
 {
     /// <summary>
     /// [프리셋 P1] 고양이 발 빌보드(PawSprite)의 형태/룩 튜닝 값.
-    /// 색 바리에이션(은백/금빛)은 이 SO의 에셋 2개(P1_PawSprite_Silver / P1_PawSprite_Gold)로 구현 —
+    /// 색 바리에이션(은백/금빛)은 이 SO의 에셋 2개(P1_PawSprite_Basic / P1_PawSprite_Alter)로 구현 —
     /// PawForYouVfx.ApplyVariant 또는 하네스 키로 런타임 교체.
     /// </summary>
     [CreateAssetMenu(menuName = "JC VFX/PawForYou/P1_Paw Sprite Preset", fileName = "P1_PawSpritePreset")]

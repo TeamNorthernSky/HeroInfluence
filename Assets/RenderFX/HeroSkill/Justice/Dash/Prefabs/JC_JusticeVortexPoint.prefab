@@ -56,8 +56,8 @@ MonoBehaviour:
   flashMaterial: {fileID: 0}
   vortexMaterial: {fileID: 0}
   slashMaterial: {fileID: 0}
-  arcStrokeMaterial: {fileID: 2100000, guid: e732ad5307a0f2747ae6e436904cacca, type: 2}
-  arcPointMaterial: {fileID: 2100000, guid: bc296ef5a8304c64d821460aff423a2f, type: 2}
+  arcStrokeMaterial: {fileID: 2100000, guid: 2b81e3f76cf5ad244962730c9482a33b, type: 2}
+  arcPointMaterial: {fileID: 2100000, guid: 417c81c6877a1cc4d8fda42be2e0ac15, type: 2}
 --- !u!114 &2727096223689079789
 MonoBehaviour:
   m_ObjectHideFlags: 0

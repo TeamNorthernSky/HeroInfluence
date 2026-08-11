@@ -31,6 +31,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     [Header("Edge Scrolling")]
     [SerializeField] private bool edgeScrollEnabled = true;
+    [SerializeField] private bool keyboardPanEnabled = true;
+    [SerializeField] private float keyboardPanSpeed = 20f;
     [SerializeField] private float edgeThresholdX = 40f;
     [SerializeField] private float edgeThresholdY = 40f;
     [SerializeField] private float edgeMinSpeed = 5f;
@@ -45,6 +47,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
     [Tooltip("Clamp the projected camera viewport to the data-driven map bounds.")]
     [SerializeField] private bool clampToMapBounds = true;
     [SerializeField, Min(0f)] private float mapBoundsPaddingCells = 0f;
+    [SerializeField] private Vector2 mapBoundsMinOffsetCells;
+    [SerializeField] private Vector2 mapBoundsMaxOffsetCells;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private LevelZoneLayoutData levelZoneLayoutData;
     [SerializeField] private LevelZoneLayoutLoader levelZoneLayoutLoader;
@@ -78,6 +82,9 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private bool hasSmoothedFollowAnchor;
     private Camera targetCamera;
     private readonly Vector3[] groundCorners = new Vector3[4];
+    private bool constrainFollowToMapEdgeDuringMove;
+    private bool holdFollowXAtMapEdge;
+    private bool holdFollowZAtMapEdge;
 
     public void SetFollowTarget(Transform target)
     {
@@ -92,6 +99,18 @@ public class QuarterViewCameraFollower : MonoBehaviour
     public void RecenterOnFollowTarget()
     {
         panOffset = Vector3.zero;
+        edgeScrollVelocity = Vector3.zero;
+    }
+
+    public void SetFollowMapEdgeMoveConstraint(bool enabled)
+    {
+        constrainFollowToMapEdgeDuringMove = enabled;
+        if (!enabled)
+        {
+            holdFollowXAtMapEdge = false;
+            holdFollowZAtMapEdge = false;
+        }
+
         edgeScrollVelocity = Vector3.zero;
     }
 
@@ -127,6 +146,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
         HandleZoomInput();
         HandleEdgeScrolling();
+        HandleKeyboardPanning();
         HandleResetInput();
     }
 
@@ -135,6 +155,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (!followEnabled || followTarget == null)
             return;
 
+        Vector3 previousPosition = transform.position;
         Vector3 followAnchor = followTarget.position;
         Vector3 targetFollowAnchor = new Vector3(followAnchor.x, 0f, followAnchor.z);
 
@@ -158,6 +179,16 @@ public class QuarterViewCameraFollower : MonoBehaviour
         desiredPos.x = smoothedFollowAnchor.x + panOffset.x;
         desiredPos.y = positionOffset.y;
         desiredPos.z = smoothedFollowAnchor.z + panOffset.z + positionOffset.z;
+
+        if (constrainFollowToMapEdgeDuringMove)
+        {
+            UpdateMapEdgeFollowHolds();
+            if (holdFollowXAtMapEdge)
+                desiredPos.x = previousPosition.x;
+
+            if (holdFollowZAtMapEdge)
+                desiredPos.z = previousPosition.z;
+        }
 
         transform.position = desiredPos;
 
@@ -232,6 +263,67 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
         panOffset += edgeScrollVelocity * Time.deltaTime;
         ClampPanOffset();
+    }
+
+    private void HandleKeyboardPanning()
+    {
+        if (!edgeScrollEnabled || !keyboardPanEnabled)
+            return;
+
+        Vector2 keyboardInput = Vector2.zero;
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+            keyboardInput.x -= 1f;
+
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+            keyboardInput.x += 1f;
+
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+            keyboardInput.y += 1f;
+
+        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            keyboardInput.y -= 1f;
+
+        if (keyboardInput.sqrMagnitude <= 0f)
+            return;
+
+        keyboardInput.Normalize();
+
+        Vector3 right = transform.right;
+        right.y = 0f;
+        right.Normalize();
+
+        Vector3 forward = transform.forward;
+        forward.y = 0f;
+        forward.Normalize();
+
+        Vector3 moveDelta = ((right * keyboardInput.x) + (forward * keyboardInput.y))
+            * Mathf.Max(0f, keyboardPanSpeed)
+            * Time.deltaTime;
+        moveDelta.y = 0f;
+
+        panOffset += moveDelta;
+        ClampPanOffset();
+    }
+
+    private void UpdateMapEdgeFollowHolds()
+    {
+        holdFollowXAtMapEdge = false;
+        holdFollowZAtMapEdge = false;
+
+        ResolveMapBoundsReferences();
+
+        if (targetCamera == null || gridManager == null || !TryGetMapWorldBounds(out Rect mapBounds))
+            return;
+
+        Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, gridManager.GetLandSurfaceY(), 0f));
+        if (!TryGetViewportGroundRect(groundPlane, out Rect viewportRect))
+            return;
+
+        const float edgeEpsilon = 0.02f;
+        holdFollowXAtMapEdge = viewportRect.xMin <= mapBounds.xMin + edgeEpsilon
+            || viewportRect.xMax >= mapBounds.xMax - edgeEpsilon;
+        holdFollowZAtMapEdge = viewportRect.yMin <= mapBounds.yMin + edgeEpsilon
+            || viewportRect.yMax >= mapBounds.yMax - edgeEpsilon;
     }
 
     private void HandleResetInput()
@@ -403,11 +495,12 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
         // Include half a cell so the bounds match the outer edge of the level grid.
         float halfCell = Mathf.Max(0.01f, gridManager.CellSize) * 0.5f;
-        float padding = Mathf.Max(0f, mapBoundsPaddingCells) * Mathf.Max(0.01f, gridManager.CellSize);
-        float minX = Mathf.Min(minCenter.x, maxCenter.x) - halfCell - padding;
-        float maxX = Mathf.Max(minCenter.x, maxCenter.x) + halfCell + padding;
-        float minZ = Mathf.Min(minCenter.z, maxCenter.z) - halfCell - padding;
-        float maxZ = Mathf.Max(minCenter.z, maxCenter.z) + halfCell + padding;
+        float cellSize = Mathf.Max(0.01f, gridManager.CellSize);
+        float padding = Mathf.Max(0f, mapBoundsPaddingCells) * cellSize;
+        float minX = Mathf.Min(minCenter.x, maxCenter.x) - halfCell - padding + mapBoundsMinOffsetCells.x * cellSize;
+        float maxX = Mathf.Max(minCenter.x, maxCenter.x) + halfCell + padding + mapBoundsMaxOffsetCells.x * cellSize;
+        float minZ = Mathf.Min(minCenter.z, maxCenter.z) - halfCell - padding + mapBoundsMinOffsetCells.y * cellSize;
+        float maxZ = Mathf.Max(minCenter.z, maxCenter.z) + halfCell + padding + mapBoundsMaxOffsetCells.y * cellSize;
 
         bounds = Rect.MinMaxRect(minX, minZ, maxX, maxZ);
         return true;

@@ -43,6 +43,7 @@ namespace JC.VFX.EditorTools
             EditorGUILayout.Space(4);
             if (GUILayout.Button("적용 — 프리팹에 확정 기록", GUILayout.Height(26)))
                 Apply(p);
+            JcPresetEditorUtil.DrawSaveButton(target, wide: true);   // 튜닝 저장 공식 규격
         }
 
         private static float Life(JusticeVortexPreset p)

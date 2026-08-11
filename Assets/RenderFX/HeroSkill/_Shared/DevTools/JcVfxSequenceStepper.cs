@@ -25,8 +25,10 @@ namespace JC.VFX
         /// <b>ChainTarget</b> = 본 대상에서 십자로 인접한 아군 중 <see cref="Step.chainIndex"/> 번째.
         /// LFL 연쇄처럼 「본 대상 옆으로 튀는」 마디가 쓴다. 해당 순번이 없으면 그 단계는 조용히 생략된다
         /// (대상이 하나뿐인 배치에서 두 번째 연쇄가 안 나오는 게 정상이므로 경고를 띄우지 않는다).
+        /// <b>AllEnemies</b> = 씬의 적 전원 각각에 하나씩 스폰(전체 공격 — 저스티스 크래시).
+        /// 실전에서는 스킬 로직의 대상 목록이 이 자리를 맡는다. autoCast 와 조합하면 즉시 전체 발동.
         /// </summary>
-        public enum SpawnAt { Caster, Target, Self, ChainTarget }
+        public enum SpawnAt { Caster, Target, Self, ChainTarget, AllEnemies }
 
         [Serializable]
         public class Step
@@ -89,6 +91,11 @@ namespace JC.VFX
 
             [Tooltip("화면에 표시할 설명. 비우면 이름을 쓴다.")]
             public string label;
+
+            [Tooltip("★ISkillEffectBehaviour 부품 전용(저스티스 계열) — 컨텍스트에 실을 시전자 소켓.\n" +
+                     "궤적(JcSocketTrailEffect)이 따라갈 지점. None = 소켓 없이 스폰 위치 고정.\n" +
+                     "실전에서는 Cue 의 Socket 항목이 이 자리를 맡는다.")]
+            public UnitSocket effectSocket = UnitSocket.None;
         }
 
         /// <summary>
@@ -363,6 +370,37 @@ namespace JC.VFX
                 return;
             }
 
+            // ★적 전체 스폰(260811) — 적 전원 각각에 하나씩(저스티스 크래시 틀). 아래 일반 경로를 타지 않는다.
+            if (s.spawnAt == SpawnAt.AllEnemies)
+            {
+                var units = FindObjectsByType<BattleCharactor>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                int spawnedCount = 0;
+                foreach (var c in units)
+                {
+                    if (c.TeamType == TeamType.Player) continue;
+                    Vector3 epos = PointOn(c.transform, s.offset, s.localOffset);
+                    GameObject ego = Instantiate(e.prefab, epos, Quaternion.identity);
+                    _spawned.Add(ego);
+                    Transform eorigin = caster != null ? caster : transform;
+                    if (ego.GetComponent<VfxEffect>() is VfxEffect ev)
+                    {
+                        ev.Play(eorigin, c.transform);
+                        if (s.lifeTime > 0f) StartCoroutine(StopAfter(ev, s.lifeTime));
+                    }
+                    else if (ego.GetComponent<ISkillEffectBehaviour>() is ISkillEffectBehaviour eb)
+                    {
+                        eb.Play(BuildEffectContext(s, eorigin, c.transform, epos));
+                        if (s.lifeTime > 0f && ego.GetComponent<ISkillEffectHandle>() is ISkillEffectHandle eh)
+                            StartCoroutine(StopHandleAfter(eh, s.lifeTime));
+                    }
+                    spawnedCount++;
+                }
+                string alabel = string.IsNullOrWhiteSpace(s.label) ? s.cueName : s.label;
+                _message = $"[{ordinal}/{total}] {alabel} — 적 {spawnedCount}기";
+                Debug.Log($"[Stepper] {_message}");
+                return;
+            }
+
             Transform anchor;
             if (s.spawnAt == SpawnAt.ChainTarget)
             {
@@ -476,7 +514,16 @@ namespace JC.VFX
 
                 if (s.lifeTime > 0f) StartCoroutine(StopAfter(vfx, s.lifeTime));
             }
-            else go.GetComponent<ISkillEffectBehaviour>()?.Play(null);
+            else if (go.GetComponent<ISkillEffectBehaviour>() is ISkillEffectBehaviour beh)
+            {
+                // ★신설 패스(260811) — ASB Cue 규약 부품(저스티스 계열)을 대장 경로로 호출한다.
+                //   실전투 결선(Cue→레지스트리)은 무접촉 병존 — 여기서는 스테퍼가 Cue 의 자리를 대신 채운다.
+                beh.Play(BuildEffectContext(s, playOrigin, playTarget, pos));
+
+                // 유지형(궤적 등)은 lifeTime 뒤 Stop — 실전의 fist_trail_off Cue 자리.
+                if (s.lifeTime > 0f && go.GetComponent<ISkillEffectHandle>() is ISkillEffectHandle handle)
+                    StartCoroutine(StopHandleAfter(handle, s.lifeTime));
+            }
 
             string label = string.IsNullOrWhiteSpace(s.label) ? s.cueName : s.label;
             _message = $"[{ordinal}/{total}] {label}  ({e.prefab.name})";
@@ -599,6 +646,41 @@ namespace JC.VFX
         {
             yield return new WaitForSeconds(delay);
             if (vfx != null) vfx.Stop();
+        }
+
+        private IEnumerator StopHandleAfter(ISkillEffectHandle handle, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            handle?.Stop();
+        }
+
+        /// <summary>
+        /// ★ASB Cue 규약 부품용 컨텍스트 조립(260811) — 실전에서 SkillPresentationDirector 가
+        /// 만드는 SkillEffectContext 의 스테퍼판. 부품이 읽는 항목(Caster/Target/Socket/위치)만 채운다.
+        /// </summary>
+        private SkillEffectContext BuildEffectContext(Step s, Transform origin, Transform tgt, Vector3 spawnPos)
+        {
+            var casterChar = origin != null ? origin.GetComponentInParent<BattleCharactor>() : null;
+            var targetChar = tgt != null ? tgt.GetComponentInParent<BattleCharactor>() : null;
+
+            Transform socket = null;
+            if (s.effectSocket != UnitSocket.None && origin != null)
+            {
+                var holder = origin.GetComponentInChildren<UnitSocketHolder>();
+                if (holder == null) holder = origin.GetComponentInParent<UnitSocketHolder>();
+                if (holder != null) socket = holder.GetNamedSocket(s.effectSocket);
+                if (socket == null)
+                    Debug.LogWarning($"[Stepper] '{s.cueName}' — 소켓 {s.effectSocket} 을 찾지 못했습니다(스폰 위치 고정으로 진행).", this);
+            }
+
+            return new SkillEffectContext
+            {
+                Caster = casterChar,
+                PrimaryTarget = targetChar,
+                TargetPosition = tgt != null ? tgt.position : spawnPos,
+                SpawnPosition = spawnPos,
+                SocketTransform = socket,
+            };
         }
 
         /// <summary>

@@ -88,16 +88,23 @@ namespace JC.VFX
 
         private void Awake()
         {
+            EnsureInit();
+            if (!_playing) _mr.enabled = false;   // pre-Awake Play 가 켜둔 상태는 덮지 않는다
+        }
+
+        /// <summary>★지연 초기화 — Instantiate 중 루트 OnEnable→Play 가 자식 Awake 보다 먼저 와도 안전(VFX 부품 공통 규격).</summary>
+        private void EnsureInit()
+        {
+            if (_mr != null) return;
             _mr = GetComponent<MeshRenderer>();
-            _mpb = new MaterialPropertyBlock();
-            _mr.enabled = false;
-            _playing = false;
+            if (_mpb == null) _mpb = new MaterialPropertyBlock();
         }
 
         public void SetPreset(TaoMagicCirclePreset p) => preset = p;
 
         public void Play(Vector3 center)
         {
+            EnsureInit();
             _center = center;
             if (livePreview && preset) PullFromPreset();
             _playing = true;

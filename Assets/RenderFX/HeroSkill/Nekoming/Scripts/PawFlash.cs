@@ -44,12 +44,19 @@ namespace JC.VFX
 
         private void Awake()
         {
-            _quad = BuildQuad();
+            EnsureQuad();
+        }
+
+        /// <summary>★지연 초기화 — pre-Awake 호출 시 풀 엔트리에 null 메시가 영구 대입되는 것 방지(VFX 부품 공통 규격).</summary>
+        private void EnsureQuad()
+        {
+            if (_quad == null) _quad = BuildQuad();
         }
 
         /// <summary>원샷 플래시 재생. 색은 변형 매칭용으로 호출부가 주입.</summary>
         public void Flash(Vector3 pos, Color color, float sizeMul = 1f)
         {
+            EnsureQuad();
             var e = GetEntry();
             if (e == null) return;
             e.active = true;

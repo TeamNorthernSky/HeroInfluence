@@ -68,7 +68,13 @@ namespace JC.VFX
 
         private void Awake()
         {
-            _quad = BuildQuad();
+            EnsureQuad();
+        }
+
+        /// <summary>★지연 초기화 — pre-Awake 호출 시 풀 엔트리에 null 메시가 영구 대입되는 것 방지(VFX 부품 공통 규격).</summary>
+        private void EnsureQuad()
+        {
+            if (_quad == null) _quad = BuildQuad();
         }
 
         /// <summary>변형 프리셋 런타임 교체.</summary>
@@ -80,6 +86,7 @@ namespace JC.VFX
         /// <summary>지정 위치에서 빛기둥 블링크 재생(자체 수명 소멸).</summary>
         public void Burst(Vector3 pos)
         {
+            EnsureQuad();
             if (livePreview && preset) PullFromPreset();
             var e = GetEntry();
             if (e == null) return;

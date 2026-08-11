@@ -1,0 +1,22 @@
+﻿# UI Recolor 배치 리포트 (적용)
+file,slot,deltaE,action
+UI_button_nextTurn(normal).png,슬롯 1,0.0149,applied
+UI_button_nextTurn(normal).png,슬롯 2,0.0261,applied-relative
+UI_button_option(normal).png,슬롯 1,0.0142,applied
+UI_button_option(normal).png,슬롯 2,0.0340,applied-relative
+UI_button_speaker(normal).png,슬롯 1,0.1335,applied
+UI_button_speaker(normal).png,슬롯 2,0.0210,applied-relative
+UI_button_tooltip(normal).png,슬롯 1,0.0142,applied
+UI_button_tooltip(normal).png,슬롯 2,0.0349,applied-relative
+UI_icon_rankA.png,슬롯 1,0.0208,applied
+UI_icon_rankA.png,슬롯 2,0.0193,applied-relative
+UI_icon_rankB.png,슬롯 1,0.0230,applied
+UI_icon_rankB.png,슬롯 2,-,applied-relative-nocolor
+UI_icon_rankC.png,슬롯 1,0.0175,applied
+UI_icon_rankC.png,슬롯 2,-,applied-relative-nocolor
+UI_icon_rankD.png,슬롯 1,0.0219,applied
+UI_icon_rankD.png,슬롯 2,-,applied-relative-nocolor
+UI_icon_rankE.png,슬롯 1,0.0201,applied
+UI_icon_rankE.png,슬롯 2,-,applied-relative-nocolor
+UI_icon_rankF.png,슬롯 1,0.0160,applied
+UI_icon_rankF.png,슬롯 2,-,applied-relative-nocolor
