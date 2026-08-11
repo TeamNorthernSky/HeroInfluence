@@ -156,6 +156,7 @@ public class CombatContext : MonoBehaviour
     [SerializeField] private CombatPartyPersistentData combatParty;
     [SerializeField] private CombatEnemyPersistentData combatEnemy;
     [SerializeField] private CombatEventBattleData eventBattle;
+    [SerializeField, Min(1)] private int enemyLevel = 1;
     [SerializeField] private CombatResult combatResult = CombatResult.None;
 
     public CombatPartyPersistentData CombatParty => combatParty;
@@ -165,6 +166,7 @@ public class CombatContext : MonoBehaviour
     public CombatEventBattleData EventBattle => eventBattle;
     public CombatResult Result => combatResult;
     public bool HasEventBattle => eventBattle != null && !string.IsNullOrWhiteSpace(eventBattle.BattleKey);
+    public int EnemyLevel => Mathf.Max(1, enemyLevel);
 
     private void Awake()
     {
@@ -200,13 +202,14 @@ public class CombatContext : MonoBehaviour
 
     public void RegisterCombatEnemy(string enemyId, string placementKey, System.Collections.Generic.IReadOnlyList<int> unitIndices)
     {
-        RegisterCombatEnemy(enemyId, placementKey, string.Empty, CombatEnemySourceType.None, unitIndices);
+        RegisterCombatEnemy(enemyId, placementKey, string.Empty, 1, CombatEnemySourceType.None, unitIndices);
     }
 
     public void RegisterCombatEnemy(
         string enemyId,
         string placementKey,
         string enemyGroupKey,
+        int enemyLevel,
         CombatEnemySourceType sourceType,
         System.Collections.Generic.IReadOnlyList<int> unitIndices)
     {
@@ -220,6 +223,7 @@ public class CombatContext : MonoBehaviour
         if (combatEnemy == null)
         {
             combatEnemy = new CombatEnemyPersistentData(enemyId, placementKey, enemyGroupKey, sourceType, unitIndices);
+            SetEnemyLevel(enemyLevel);
             return;
         }
 
@@ -228,6 +232,7 @@ public class CombatContext : MonoBehaviour
         combatEnemy.SetEnemyGroupKey(enemyGroupKey);
         combatEnemy.SetSourceType(sourceType);
         combatEnemy.SetUnitIndices(unitIndices);
+        SetEnemyLevel(enemyLevel);
     }
 
     public void RegisterEventBattle(CombatEventBattleData nextEventBattle)
@@ -236,6 +241,12 @@ public class CombatContext : MonoBehaviour
         // 이 경로는 PersistentEnemyRepository에 적 개체를 만들지 않는다.
         combatEnemy = null;
         eventBattle = nextEventBattle;
+        SetEnemyLevel(nextEventBattle != null ? nextEventBattle.EnemyLevel : 1);
+    }
+
+    public void SetEnemyLevel(int nextEnemyLevel)
+    {
+        enemyLevel = Mathf.Max(1, nextEnemyLevel);
     }
 
     public void SetCombatResult(CombatResult nextResult)
@@ -248,6 +259,7 @@ public class CombatContext : MonoBehaviour
         combatParty = null;
         combatEnemy = null;
         eventBattle = null;
+        enemyLevel = 1;
         combatResult = CombatResult.None;
     }
 }
