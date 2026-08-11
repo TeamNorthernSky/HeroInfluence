@@ -19,6 +19,24 @@ namespace JC.VFX
         public const string FlashName = "Flash";
 
         /// <summary>
+        /// ★재질 굽기 모드 — 에디터 「적용」 버튼에서만 true(try/finally).
+        /// 기본 false = 라이브 반영은 전부 MPB(비파괴). 예전엔 스폰(Awake)마다 공유 재질 에셋에
+        /// 직접 써서 ①에디터 재생만으로 재질이 더럽혀지고(git diff) ②청·적이 재질을 공유하므로
+        /// 「마지막 스폰이 이긴다」 색 섞임이 있었다. 튜닝 저장 공식 규격(디스크 쓰기=명시 버튼만)과 동치.
+        /// </summary>
+        public static bool WriteSharedMaterials;
+
+        static MaterialPropertyBlock _mpb;
+
+        /// <summary>렌더러의 현재 블록을 실은 공용 스크래치 MPB. 값 채운 뒤 SetPropertyBlock으로 닫는다.</summary>
+        internal static MaterialPropertyBlock ScratchMpb(Renderer r)
+        {
+            if (_mpb == null) _mpb = new MaterialPropertyBlock();
+            r.GetPropertyBlock(_mpb);
+            return _mpb;
+        }
+
+        /// <summary>
         /// 색 × 발광 배수. 알파는 보존한다.
         ///
         /// 단순히 전 채널에 곱하면(chromaHold=0) 가산 합성에서 낮은 채널까지 1을 넘어가
@@ -168,7 +186,7 @@ namespace JC.VFX
                 new Keyframe(1f - f, 1f), new Keyframe(1f, 0f)));
         }
 
-        /// <summary>코어 단면 파라미터를 재질 uniform으로. StrokeCore 셰이더가 아닌 재질에는 조용히 무시된다.</summary>
+        /// <summary>[굽기 전용] 코어 단면 파라미터를 재질 uniform으로. StrokeCore 셰이더가 아닌 재질에는 조용히 무시된다.</summary>
         static void PushCoreParams(Material m, Color coreColor, float coreEmission, float coreWidth,
                                    float coreSharpness, float bodyFalloff, float endFade)
         {
@@ -178,6 +196,20 @@ namespace JC.VFX
             if (m.HasProperty("_CoreSharp")) m.SetFloat("_CoreSharp", coreSharpness);
             if (m.HasProperty("_BodyFalloff")) m.SetFloat("_BodyFalloff", bodyFalloff);
             if (m.HasProperty("_EndFade")) m.SetFloat("_EndFade", endFade);
+        }
+
+        /// <summary>[라이브] 같은 파라미터를 렌더러 MPB로 — 재질 에셋 비파괴, 인스턴스별 독립(청·적 동시 존재 안전).</summary>
+        static void PushCoreParams(Renderer rend, Color coreColor, float coreEmission, float coreWidth,
+                                   float coreSharpness, float bodyFalloff, float endFade)
+        {
+            if (rend == null) return;
+            var mpb = ScratchMpb(rend);
+            mpb.SetColor("_CoreColor", Boost(coreColor, coreEmission, 1f));
+            mpb.SetFloat("_CoreWidth", coreWidth);
+            mpb.SetFloat("_CoreSharp", coreSharpness);
+            mpb.SetFloat("_BodyFalloff", bodyFalloff);
+            mpb.SetFloat("_EndFade", endFade);
+            rend.SetPropertyBlock(mpb);
         }
 
         /// <summary>궤적 계열 — per-particle 트레일 사용. 획 중심선 코어는 재질(StrokeCore 셰이더)이 그린다.</summary>
@@ -223,7 +255,10 @@ namespace JC.VFX
                     rend.renderMode = ParticleSystemRenderMode.None;
                     rend.trailMaterial = strokeMaterial;
                 }
-                PushCoreParams(strokeMaterial, g.coreColor, g.coreEmission, g.coreWidth, g.coreSharpness, g.bodyFalloff, g.endFade);
+                if (WriteSharedMaterials)
+                    PushCoreParams(strokeMaterial, g.coreColor, g.coreEmission, g.coreWidth, g.coreSharpness, g.bodyFalloff, g.endFade);
+                else
+                    PushCoreParams(rend, g.coreColor, g.coreEmission, g.coreWidth, g.coreSharpness, g.bodyFalloff, g.endFade);
             }
         }
 
@@ -308,17 +343,32 @@ namespace JC.VFX
             rend.enableGPUInstancing = false;
             rend.SetActiveVertexStreams(SparkStreams);
 
-            Material m = rend.sharedMaterial;
-            if (m == null) return;
             // 코어는 자체 발광을 쓴다. 예전처럼 하이라이트 발광을 빌려 쓰면
             // 하이라이트를 끌 때 코어가 검정(=가산에서 구멍)이 되어버린다.
-            if (m.HasProperty("_BodyColor")) m.SetColor("_BodyColor", Boost(g.bodyColor, g.emission, g.chromaHold));
-            if (m.HasProperty("_CoreColor")) m.SetColor("_CoreColor", Boost(g.coreColor, g.coreEmission, 1f));
-            if (m.HasProperty("_Emission")) m.SetFloat("_Emission", 1f);
-            if (m.HasProperty("_CoreStart")) m.SetFloat("_CoreStart", g.coreRatioStart);
-            if (m.HasProperty("_CoreEnd")) m.SetFloat("_CoreEnd", g.coreRatioEnd);
-            if (m.HasProperty("_CoreSharp")) m.SetFloat("_CoreSharp", g.coreSharpness);
-            if (m.HasProperty("_BodySoft")) m.SetFloat("_BodySoft", g.bodySoftness);
+            if (WriteSharedMaterials)
+            {
+                Material m = rend.sharedMaterial;
+                if (m == null) return;
+                if (m.HasProperty("_BodyColor")) m.SetColor("_BodyColor", Boost(g.bodyColor, g.emission, g.chromaHold));
+                if (m.HasProperty("_CoreColor")) m.SetColor("_CoreColor", Boost(g.coreColor, g.coreEmission, 1f));
+                if (m.HasProperty("_Emission")) m.SetFloat("_Emission", 1f);
+                if (m.HasProperty("_CoreStart")) m.SetFloat("_CoreStart", g.coreRatioStart);
+                if (m.HasProperty("_CoreEnd")) m.SetFloat("_CoreEnd", g.coreRatioEnd);
+                if (m.HasProperty("_CoreSharp")) m.SetFloat("_CoreSharp", g.coreSharpness);
+                if (m.HasProperty("_BodySoft")) m.SetFloat("_BodySoft", g.bodySoftness);
+            }
+            else
+            {
+                var mpb = ScratchMpb(rend);
+                mpb.SetColor("_BodyColor", Boost(g.bodyColor, g.emission, g.chromaHold));
+                mpb.SetColor("_CoreColor", Boost(g.coreColor, g.coreEmission, 1f));
+                mpb.SetFloat("_Emission", 1f);
+                mpb.SetFloat("_CoreStart", g.coreRatioStart);
+                mpb.SetFloat("_CoreEnd", g.coreRatioEnd);
+                mpb.SetFloat("_CoreSharp", g.coreSharpness);
+                mpb.SetFloat("_BodySoft", g.bodySoftness);
+                rend.SetPropertyBlock(mpb);
+            }
         }
 
         /// <summary>
@@ -414,11 +464,14 @@ namespace JC.VFX
                 {
                     rend.renderMode = ParticleSystemRenderMode.None;   // 입자는 앵커 — 그림은 트레일이 전부
                     rend.trailMaterial = arcMaterial;
+                    // 몸통 단면만 — 코어(중심선)는 V2에서 제거된 기능이라 검정으로 눌러 무력화한다.
+                    if (!WriteSharedMaterials)
+                        PushCoreParams(rend, Color.black, 0f, 0.01f, 1f, g.bodyFalloff, 0.05f);
                 }
             }
 
-            // 재질은 몸통 단면만 — 코어(중심선)는 V2에서 제거된 기능이라 검정으로 눌러 무력화한다.
-            PushCoreParams(arcMaterial, Color.black, 0f, 0.01f, 1f, g.bodyFalloff, 0.05f);
+            if (WriteSharedMaterials)
+                PushCoreParams(arcMaterial, Color.black, 0f, 0.01f, 1f, g.bodyFalloff, 0.05f);
 
             var fx = root.GetComponent<Seam.JcArcStrokeEffect>();
             if (fx != null)
@@ -527,10 +580,13 @@ namespace JC.VFX
                 {
                     rend.renderMode = ParticleSystemRenderMode.None;
                     rend.trailMaterial = pointMaterial;
+                    if (!WriteSharedMaterials)
+                        PushCoreParams(rend, Color.black, 0f, 0.01f, 1f, g.bodyFalloff, 0.05f);
                 }
             }
 
-            PushCoreParams(pointMaterial, Color.black, 0f, 0.01f, 1f, g.bodyFalloff, 0.05f);
+            if (WriteSharedMaterials)
+                PushCoreParams(pointMaterial, Color.black, 0f, 0.01f, 1f, g.bodyFalloff, 0.05f);
 
             var fx = root.GetComponent<Seam.JcArcPointEffect>();
             if (fx != null)
@@ -643,8 +699,11 @@ namespace JC.VFX
                     // ★입자 빌보드는 끈다 — 입자는 앵커일 뿐, 그림은 트레일이 전부다(궤적과 동일 결함 예방).
                     rend.renderMode = ParticleSystemRenderMode.None;
                     rend.trailMaterial = slashMaterial;
+                    if (!WriteSharedMaterials)
+                        PushCoreParams(rend, g.coreColor, g.coreEmission, g.coreWidth, g.coreSharpness, g.bodyFalloff, g.endFade);
                 }
-                PushCoreParams(slashMaterial, g.coreColor, g.coreEmission, g.coreWidth, g.coreSharpness, g.bodyFalloff, g.endFade);
+                if (WriteSharedMaterials)
+                    PushCoreParams(slashMaterial, g.coreColor, g.coreEmission, g.coreWidth, g.coreSharpness, g.bodyFalloff, g.endFade);
             }
 
             var fx = root.GetComponent<Seam.JcArcSweepEffect>();
@@ -899,22 +958,43 @@ namespace JC.VFX
                     // 이게 없으면 쿼드 중심이 타점이라 절반이 뒤로 삐져나온다.
                     frend.pivot = new Vector3(0.5f, 0f, 0f);
 
-                    Material fm = frend.sharedMaterial;
-                    if (fm != null)
+                    if (WriteSharedMaterials)
                     {
-                        if (fm.HasProperty("_BodyColor")) fm.SetColor("_BodyColor", im.flashColor);
-                        if (fm.HasProperty("_CoreColor")) fm.SetColor("_CoreColor", Boost(im.flashCoreColor, im.flashCoreEmission, 1f));
-                        if (fm.HasProperty("_StartWidth")) fm.SetFloat("_StartWidth", im.flashStartWidth);
-                        if (fm.HasProperty("_EndWidth")) fm.SetFloat("_EndWidth", im.flashEndWidth);
-                        if (fm.HasProperty("_WidthCurve")) fm.SetFloat("_WidthCurve", im.flashWidthCurve);
-                        if (fm.HasProperty("_CoreWidth")) fm.SetFloat("_CoreWidth", im.flashCoreWidth);
-                        if (fm.HasProperty("_CoreSharp")) fm.SetFloat("_CoreSharp", im.flashCoreSharpness);
-                        if (fm.HasProperty("_BodySoft")) fm.SetFloat("_BodySoft", im.flashSoftness);
-                        if (fm.HasProperty("_HeadFade")) fm.SetFloat("_HeadFade", im.flashHeadFade);
-                        if (fm.HasProperty("_TailFade")) fm.SetFloat("_TailFade", im.flashTailFade);
-                        if (fm.HasProperty("_EdgeFade")) fm.SetFloat("_EdgeFade", im.flashEdgeFade);
+                        Material fm = frend.sharedMaterial;
+                        if (fm != null)
+                        {
+                            if (fm.HasProperty("_BodyColor")) fm.SetColor("_BodyColor", im.flashColor);
+                            if (fm.HasProperty("_CoreColor")) fm.SetColor("_CoreColor", Boost(im.flashCoreColor, im.flashCoreEmission, 1f));
+                            if (fm.HasProperty("_StartWidth")) fm.SetFloat("_StartWidth", im.flashStartWidth);
+                            if (fm.HasProperty("_EndWidth")) fm.SetFloat("_EndWidth", im.flashEndWidth);
+                            if (fm.HasProperty("_WidthCurve")) fm.SetFloat("_WidthCurve", im.flashWidthCurve);
+                            if (fm.HasProperty("_CoreWidth")) fm.SetFloat("_CoreWidth", im.flashCoreWidth);
+                            if (fm.HasProperty("_CoreSharp")) fm.SetFloat("_CoreSharp", im.flashCoreSharpness);
+                            if (fm.HasProperty("_BodySoft")) fm.SetFloat("_BodySoft", im.flashSoftness);
+                            if (fm.HasProperty("_HeadFade")) fm.SetFloat("_HeadFade", im.flashHeadFade);
+                            if (fm.HasProperty("_TailFade")) fm.SetFloat("_TailFade", im.flashTailFade);
+                            if (fm.HasProperty("_EdgeFade")) fm.SetFloat("_EdgeFade", im.flashEdgeFade);
+                            // 셰이더가 진행도를 0~1로 정규화하는 기준값
+                            if (fm.HasProperty("_MaxAlpha")) fm.SetFloat("_MaxAlpha", Mathf.Max(im.flashAlpha, 0.001f));
+                        }
+                    }
+                    else
+                    {
+                        var mpb = ScratchMpb(frend);
+                        mpb.SetColor("_BodyColor", im.flashColor);
+                        mpb.SetColor("_CoreColor", Boost(im.flashCoreColor, im.flashCoreEmission, 1f));
+                        mpb.SetFloat("_StartWidth", im.flashStartWidth);
+                        mpb.SetFloat("_EndWidth", im.flashEndWidth);
+                        mpb.SetFloat("_WidthCurve", im.flashWidthCurve);
+                        mpb.SetFloat("_CoreWidth", im.flashCoreWidth);
+                        mpb.SetFloat("_CoreSharp", im.flashCoreSharpness);
+                        mpb.SetFloat("_BodySoft", im.flashSoftness);
+                        mpb.SetFloat("_HeadFade", im.flashHeadFade);
+                        mpb.SetFloat("_TailFade", im.flashTailFade);
+                        mpb.SetFloat("_EdgeFade", im.flashEdgeFade);
                         // 셰이더가 진행도를 0~1로 정규화하는 기준값
-                        if (fm.HasProperty("_MaxAlpha")) fm.SetFloat("_MaxAlpha", Mathf.Max(im.flashAlpha, 0.001f));
+                        mpb.SetFloat("_MaxAlpha", Mathf.Max(im.flashAlpha, 0.001f));
+                        frend.SetPropertyBlock(mpb);
                     }
                 }
 
@@ -955,17 +1035,50 @@ namespace JC.VFX
             }
         }
 
-        /// <summary>재질 색을 프리셋에 맞춘다(공유 재질이라 즉시 전역 반영).</summary>
-        public static void ApplyMaterials(JusticeTrailPreset p, Material strokeMat, Material impactMat)
+        /// <summary>
+        /// 타격 틴트·궤적 중립색 반영. 굽기 모드=재질 에셋에 기록(공유라 전역 반영) /
+        /// 라이브=root 인스턴스의 해당 렌더러 MPB에만(비파괴).
+        /// </summary>
+        public static void ApplyMaterials(GameObject root, JusticeTrailPreset p, Material strokeMat, Material impactMat)
         {
             if (p == null) return;
+
+            if (WriteSharedMaterials)
+            {
+                if (impactMat != null)
+                {
+                    if (impactMat.HasProperty("_Tint")) impactMat.SetColor("_Tint", p.impact.tint);
+                    if (impactMat.HasProperty("_Emission")) impactMat.SetFloat("_Emission", p.impact.emission);
+                }
+                // 궤적·입자 재질은 중립(흰색) 유지 — 색은 그라데이션이 전담한다.
+                if (strokeMat != null && strokeMat.HasProperty("_BaseColor")) strokeMat.SetColor("_BaseColor", Color.white);
+                return;
+            }
+
+            if (root == null) return;
             if (impactMat != null)
             {
-                if (impactMat.HasProperty("_Tint")) impactMat.SetColor("_Tint", p.impact.tint);
-                if (impactMat.HasProperty("_Emission")) impactMat.SetFloat("_Emission", p.impact.emission);
+                // 타격 스파크 = 루트 파티클(ApplyImpact와 동일 기준)
+                var rend = root.GetComponent<ParticleSystemRenderer>();
+                if (rend != null)
+                {
+                    var mpb = ScratchMpb(rend);
+                    mpb.SetColor("_Tint", p.impact.tint);
+                    mpb.SetFloat("_Emission", p.impact.emission);
+                    rend.SetPropertyBlock(mpb);
+                }
             }
-            // 궤적·입자 재질은 중립(흰색) 유지 — 색은 그라데이션이 전담한다.
-            if (strokeMat != null && strokeMat.HasProperty("_BaseColor")) strokeMat.SetColor("_BaseColor", Color.white);
+            if (strokeMat != null)
+            {
+                var trailT = root.transform.Find(TrailName);
+                var rend = trailT != null ? trailT.GetComponent<ParticleSystemRenderer>() : null;
+                if (rend != null)
+                {
+                    var mpb = ScratchMpb(rend);
+                    mpb.SetColor("_BaseColor", Color.white);
+                    rend.SetPropertyBlock(mpb);
+                }
+            }
         }
     }
 
@@ -1056,8 +1169,8 @@ namespace JC.VFX
 
             // 자기 종류의 재질만 만진다.
             // 예전엔 타격 프리팹도 strokeMaterial을 들고 있어, 스폰할 때마다 궤적 재질을 덮어썼다.
-            if (kind == Kind.Trail) JusticeTrailPresetRuntime.ApplyMaterials(p, strokeMaterial, null);
-            else if (kind == Kind.Impact) JusticeTrailPresetRuntime.ApplyMaterials(p, null, impactMaterial);
+            if (kind == Kind.Trail) JusticeTrailPresetRuntime.ApplyMaterials(gameObject, p, strokeMaterial, null);
+            else if (kind == Kind.Impact) JusticeTrailPresetRuntime.ApplyMaterials(gameObject, p, null, impactMaterial);
         }
     }
 }

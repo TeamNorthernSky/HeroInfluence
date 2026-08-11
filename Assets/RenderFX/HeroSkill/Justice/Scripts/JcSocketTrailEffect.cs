@@ -90,13 +90,17 @@ namespace JC.VFX.Seam
 
         private void Reset() => streaks = GetComponentsInChildren<ParticleSystem>(true);
 
-        private void Awake()
+        private void Awake() => EnsureRefs();
+
+        /// <summary>★지연 초기화 — Instantiate 중 Awake 선행이 보장되지 않아도 안전(VFX 부품 공통 규격).</summary>
+        private void EnsureRefs()
         {
             if (streaks == null || streaks.Length == 0) streaks = GetComponentsInChildren<ParticleSystem>(true);
         }
 
         public void Play(SkillEffectContext ctx)
         {
+            EnsureRefs();
             followTarget = ctx != null ? ctx.SocketTransform : null;
 
             // 어떤 경우에도 소켓 자식이 되지 않는다(스케일 오염 차단).
@@ -169,6 +173,7 @@ namespace JC.VFX.Seam
                 return;
             }
 
+            EnsureRefs();
             stopped = true;
             following = false;
 

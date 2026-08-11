@@ -100,10 +100,27 @@ namespace JC.VFX
                         ParticleSystemVertexStream.StableRandomXY,   // TEXCOORD0.zw (난수 2개를 한 번에)
                     };
                     rend.SetActiveVertexStreams(streams);
+
+                    // [라이브] 파편 룩은 렌더러 MPB로 — 재질 에셋 비파괴, 인스턴스별 독립.
+                    if (!JusticeTrailPresetRuntime.WriteSharedMaterials && shardMat != null)
+                    {
+                        var mpb = JusticeTrailPresetRuntime.ScratchMpb(rend);
+                        mpb.SetColor("_InnerColor", p.innerColor);
+                        mpb.SetFloat("_InnerEmission", p.innerEmission);
+                        mpb.SetFloat("_EdgeEmission", p.edgeEmission);
+                        mpb.SetFloat("_TriWidth", p.triWidth);
+                        mpb.SetFloat("_TriHeight", p.triHeight);
+                        mpb.SetFloat("_CutMin", p.cutMin);
+                        mpb.SetFloat("_CutMax", p.cutMax);
+                        mpb.SetFloat("_EdgeWidth", p.edgeWidth);
+                        mpb.SetFloat("_EdgeSoft", p.edgeSoft);
+                        rend.SetPropertyBlock(mpb);
+                    }
                 }
             }
 
-            if (shardMat != null)
+            // [굽기 전용] 에디터 「적용」에서만 공유 재질 에셋에 기록.
+            if (JusticeTrailPresetRuntime.WriteSharedMaterials && shardMat != null)
             {
                 shardMat.SetColor("_InnerColor", p.innerColor);
                 shardMat.SetFloat("_InnerEmission", p.innerEmission);

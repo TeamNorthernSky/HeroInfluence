@@ -252,3 +252,157 @@ MonoBehaviour:
     character: "\uB124\uCF54\uBC0D"
     skill: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC"
     note: "\uC801 \uC804\uCCB4 \uAD11\uC120 \uB2E4\uBC1C (\uAE08). \u2605\uD50C\uB808\uC774\uC2A4\uD640\uB354 \u2014 \uBCF8 \uC5F0\uCD9C \uC124\uACC4 \uB300\uAE30"
+  - cueName: enter_trail
+    variant: 0
+    prefab: {fileID: 3616402648774875410, guid: 3e132d4f01fc11d44814995a2b2efdd8,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB4F1\uC7A5!"
+    note: "\uC8FC\uBA39 \uADA4\uC801 (\uCCAD). \u2605ISkillEffectBehaviour \u2014 \uC2A4\uD15D effectSocket=RightWeapon"
+  - cueName: enter_trail
+    variant: 1
+    prefab: {fileID: 447569048696413417, guid: 7d38a5b7705932347afdd14080ea48cd,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB4F1\uC7A5!"
+    note: "\uC8FC\uBA39 \uADA4\uC801 (\uC801)"
+  - cueName: enter_impact
+    variant: 0
+    prefab: {fileID: 738097252154879308, guid: 1f1be05faf5f3a14ba2a909f314c1acb,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB4F1\uC7A5!"
+    note: "\uD0C0\uACA9 \uC2A4\uD30C\uD06C+\uC12C\uAD11 (\uCCAD)"
+  - cueName: enter_impact
+    variant: 1
+    prefab: {fileID: 6656011004744042307, guid: eb6ff343c9aaefd4e99c194683d58de7,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB4F1\uC7A5!"
+    note: "\uD0C0\uACA9 \uC2A4\uD30C\uD06C+\uC12C\uAD11 (\uC801)"
+  - cueName: punch_trail
+    variant: 0
+    prefab: {fileID: 3616402648774875410, guid: f88b6a0a6d0559742adbb7ab0e8d7d8a,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uD380\uCE58"
+    note: "\uC8FC\uBA39 \uADA4\uC801 (\uCCAD) \u2014 \uC2E4\uC804\uC740 \uC88C\uC6B0 2\uC5F0\uD0C0"
+  - cueName: punch_trail
+    variant: 1
+    prefab: {fileID: 7561923070804316718, guid: ef496f7df1f308b40a2326b83a53b002,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uD380\uCE58"
+    note: "\uC8FC\uBA39 \uADA4\uC801 (\uC801)"
+  - cueName: punch_impact
+    variant: 0
+    prefab: {fileID: 738097252154879308, guid: a0090a6b699eb6e469afcd724c3d66aa,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uD380\uCE58"
+    note: "\uD0C0\uACA9 \uC2A4\uD30C\uD06C+\uC12C\uAD11 (\uCCAD)"
+  - cueName: punch_impact
+    variant: 1
+    prefab: {fileID: 3562288989252877534, guid: f19fa36b2393a2749ab2adb17d50566e,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uD380\uCE58"
+    note: "\uD0C0\uACA9 \uC2A4\uD30C\uD06C+\uC12C\uAD11 (\uC801)"
+  - cueName: dash_trail
+    variant: 0
+    prefab: {fileID: 3616402648774875410, guid: 15218dc8ef0d266498789ff9460f4df7,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uBC1C \uADA4\uC801 (\uCCAD) \u2014 effectSocket=RightFoot"
+  - cueName: dash_trail
+    variant: 1
+    prefab: {fileID: 5627800422398149266, guid: bf1ab18cc1202bb469bcd12a16c0e1a6,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uBC1C \uADA4\uC801 (\uC801)"
+  - cueName: dash_arc
+    variant: 0
+    prefab: {fileID: 5014783889222747169, guid: a52020892572524458e5a533a9431063,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uD638 \uD68D (\uCCAD) \u2014 \uC784\uD329\uD2B8 5\uCE35 \uC911 1"
+  - cueName: dash_arc
+    variant: 1
+    prefab: {fileID: 7922248667724201381, guid: 6613c31686a11254f913bd8c14a25351,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uD638 \uD68D (\uC801)"
+  - cueName: dash_point
+    variant: 0
+    prefab: {fileID: 5014783889222747169, guid: 3fbbbcaed39d3d545993a8564c93f05f,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uD3EC\uC778\uD2B8 \uD68D (\uCCAD) \u2014 \uC784\uD329\uD2B8 5\uCE35 \uC911 2"
+  - cueName: dash_point
+    variant: 1
+    prefab: {fileID: 7030609806206136022, guid: abcb29fdc16b2c142b924adee7741f2e,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uD3EC\uC778\uD2B8 \uD68D (\uC801)"
+  - cueName: dash_wind
+    variant: 0
+    prefab: {fileID: 2480173325109819924, guid: c649a9b17d65f7c44a99f73219defaee,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uBC14\uB78C\uBB34\uB2AC \uC6D0\uD638 (\uCCAD) \u2014 \uC784\uD329\uD2B8 5\uCE35 \uC911 3"
+  - cueName: dash_wind
+    variant: 1
+    prefab: {fileID: 3660970559736977656, guid: 64fa2bc26e7e11c499e20c274599b30e,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uBC14\uB78C\uBB34\uB2AC \uC6D0\uD638 (\uC801)"
+  - cueName: dash_shard
+    variant: 0
+    prefab: {fileID: 4231697358879776452, guid: 4ec27b6f611ce5449a6e450c4e99d442,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uD638 \uD30C\uD3B8 (\uCCAD) \u2014 \uC784\uD329\uD2B8 5\uCE35 \uC911 4"
+  - cueName: dash_shard
+    variant: 1
+    prefab: {fileID: 8083756017086973636, guid: 46ca4a1b53090024486719d6c6f06abf,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uD638 \uD30C\uD3B8 (\uC801)"
+  - cueName: dash_vortex
+    variant: 0
+    prefab: {fileID: 4957818361431581012, guid: d13888d7fff69654e94c8545d27d8c62,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uC6A9\uAD8C\uD48D \uAD00\uD1B5 \uD22C\uC0AC\uCCB4 (\uCCAD) \u2014 \uC784\uD329\uD2B8 5\uCE35 \uC911 5. \uC790\uC2DD 4\uCE35\uC740 \uCEE8\uD14C\uC774\uB108\uAC00 \uC9C1\uC811 \uC2A4\uD3F0"
+  - cueName: dash_vortex
+    variant: 1
+    prefab: {fileID: 446020432047559242, guid: e9bd429b94ace3f458d1b2bfaf4058fc,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uB300\uC26C"
+    note: "\uC6A9\uAD8C\uD48D \uAD00\uD1B5 \uD22C\uC0AC\uCCB4 (\uC801)"
+  - cueName: crash_impact
+    variant: 0
+    prefab: {fileID: 738097252154879308, guid: b7a8a564f819df5d13df553fe37de4eb,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uD06C\uB798\uC2DC"
+    note: "\uD0C0\uACA9 (\uCCAD). \u2605\uD2C0 \u2014 \uC5F0\uCD9C \uBBF8\uD655\uC815, \uB4F1\uC7A5 \uC784\uD329\uD2B8 \uC0AC\uBCF8. \uC18C\uCF13 \uC88C\uD45C \uAE30\uBC18"
+  - cueName: crash_impact
+    variant: 1
+    prefab: {fileID: 738097252154879308, guid: a8ed1916b9d123af868057978ee156eb,
+      type: 3}
+    character: "\uC800\uC2A4\uD2F0\uC2A4"
+    skill: "\uD06C\uB798\uC2DC"
+    note: "\uD0C0\uACA9 (\uC801). \u2605\uD2C0 \u2014 \uC5F0\uCD9C \uBBF8\uD655\uC815"

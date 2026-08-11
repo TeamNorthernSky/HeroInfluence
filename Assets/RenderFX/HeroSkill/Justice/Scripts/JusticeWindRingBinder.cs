@@ -13,7 +13,10 @@ namespace JC.VFX
         {
             if (root == null || p == null) return;
 
-            if (mat != null)
+            // [굽기 전용] 룩 파라미터는 에디터 「적용」에서만 재질 에셋에 기록.
+            // 라이브 MPB 경로가 없는 이유: 렌더러 3장이 JcWindRingEffect.Play→Build에서 생성되므로
+            // 스폰(Awake) 시점엔 대상이 없다. 룩은 구운 재질에서 읽는다(_Study·미결선 습작이라 수용).
+            if (JusticeTrailPresetRuntime.WriteSharedMaterials && mat != null)
             {
                 mat.SetColor("_ColorA", p.colorA);
                 mat.SetColor("_ColorB", p.colorB);
