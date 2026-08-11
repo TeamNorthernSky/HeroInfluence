@@ -17,8 +17,9 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
     [Header("Display")]
     [SerializeField] private bool drawEveryFrame = true;
     [SerializeField] private bool clampToMinimap = true;
-    [SerializeField] private Color lineColor = new Color(0.1f, 0.95f, 1f, 0.95f);
+    [SerializeField] private Color lineColor = Color.white;
     [SerializeField, Min(1f)] private float lineThickness = 3f;
+    [SerializeField] private Vector2 fixedBoxSizeNormalized = new Vector2(0.18f, 0.18f);
 
     private readonly Vector3[] worldCorners = new Vector3[CornerCount];
     private readonly Vector2[] minimapCorners = new Vector2[CornerCount];
@@ -58,41 +59,28 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
             return;
         }
 
-        if (!TryGetCameraGroundCorners())
+        if (!TryGetCameraGroundCenter(out Vector3 cameraGroundCenter))
         {
             SetLinesVisible(false);
             return;
         }
 
         Rect rect = minimapRect.rect;
-        for (int i = 0; i < CornerCount; i++)
-            minimapCorners[i] = WorldToMinimapPosition(worldCorners[i], gridSize, rect);
-
-        RectifyCornersToBounds();
+        Vector2 center = WorldToMinimapPosition(cameraGroundCenter, gridSize, rect);
+        SetFixedBoxCorners(center, rect);
         ApplyLines();
     }
 
-    private bool TryGetCameraGroundCorners()
+    private bool TryGetCameraGroundCenter(out Vector3 groundCenter)
     {
+        groundCenter = default;
         groundPlane = new Plane(Vector3.up, new Vector3(0f, gridManager.GetLandSurfaceY(), 0f));
 
-        Vector2[] screenCorners =
-        {
-            new Vector2(0f, 0f),
-            new Vector2(targetCamera.pixelWidth, 0f),
-            new Vector2(targetCamera.pixelWidth, targetCamera.pixelHeight),
-            new Vector2(0f, targetCamera.pixelHeight)
-        };
+        Ray ray = targetCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        if (!groundPlane.Raycast(ray, out float enter))
+            return false;
 
-        for (int i = 0; i < CornerCount; i++)
-        {
-            Ray ray = targetCamera.ScreenPointToRay(screenCorners[i]);
-            if (!groundPlane.Raycast(ray, out float enter))
-                return false;
-
-            worldCorners[i] = ray.GetPoint(enter);
-        }
-
+        groundCenter = ray.GetPoint(enter);
         return true;
     }
 
@@ -119,20 +107,24 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
         return position;
     }
 
-    private void RectifyCornersToBounds()
+    private void SetFixedBoxCorners(Vector2 center, Rect rect)
     {
-        float minX = minimapCorners[0].x;
-        float maxX = minimapCorners[0].x;
-        float minY = minimapCorners[0].y;
-        float maxY = minimapCorners[0].y;
+        Vector2 boxSize = new Vector2(
+            Mathf.Max(1f, rect.width * Mathf.Clamp01(fixedBoxSizeNormalized.x)),
+            Mathf.Max(1f, rect.height * Mathf.Clamp01(fixedBoxSizeNormalized.y)));
+        Vector2 halfSize = boxSize * 0.5f;
 
-        for (int i = 1; i < CornerCount; i++)
+        float minX = center.x - halfSize.x;
+        float maxX = center.x + halfSize.x;
+        float minY = center.y - halfSize.y;
+        float maxY = center.y + halfSize.y;
+
+        if (clampToMinimap)
         {
-            Vector2 corner = minimapCorners[i];
-            minX = Mathf.Min(minX, corner.x);
-            maxX = Mathf.Max(maxX, corner.x);
-            minY = Mathf.Min(minY, corner.y);
-            maxY = Mathf.Max(maxY, corner.y);
+            minX = Mathf.Clamp(minX, 0f, rect.width);
+            maxX = Mathf.Clamp(maxX, 0f, rect.width);
+            minY = Mathf.Clamp(minY, 0f, rect.height);
+            maxY = Mathf.Clamp(maxY, 0f, rect.height);
         }
 
         minimapCorners[0] = new Vector2(minX, minY);
@@ -262,6 +254,8 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
     private void OnValidate()
     {
         lineThickness = Mathf.Max(1f, lineThickness);
+        fixedBoxSizeNormalized.x = Mathf.Clamp01(fixedBoxSizeNormalized.x);
+        fixedBoxSizeNormalized.y = Mathf.Clamp01(fixedBoxSizeNormalized.y);
 
         if (lineImages == null)
             return;

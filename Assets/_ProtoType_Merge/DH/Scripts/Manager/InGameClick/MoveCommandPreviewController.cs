@@ -4,6 +4,7 @@ using UnityEngine;
 public class MoveCommandPreviewController
 {
     private const int PreviewPathMaxVisitedNodes = 2000;
+    private const int MaxApproachPathCandidateChecks = 3;
 
     private readonly GridManager gridManager;
     private readonly AStarPathfinder pathfinder;
@@ -451,6 +452,12 @@ public class MoveCommandPreviewController
         out Vector2Int destinationGrid)
     {
         Vector2Int moverGrid = activeMover.GetCurrentGrid();
+        if (approachCandidates == null || approachCandidates.Count == 0)
+        {
+            destinationGrid = moverGrid;
+            return false;
+        }
+
         for (int i = 0; i < approachCandidates.Count; i++)
         {
             if (approachCandidates[i] == moverGrid)
@@ -462,10 +469,15 @@ public class MoveCommandPreviewController
 
         Vector2Int bestGrid = moverGrid;
         List<Vector2Int> bestPath = null;
+        List<Vector2Int> orderedCandidates = BuildOrderedApproachCandidates(
+            approachCandidates,
+            moverGrid,
+            targetGrid);
+        int candidateCheckCount = Mathf.Min(MaxApproachPathCandidateChecks, orderedCandidates.Count);
 
-        for (int i = 0; i < approachCandidates.Count; i++)
+        for (int i = 0; i < candidateCheckCount; i++)
         {
-            Vector2Int candidate = approachCandidates[i];
+            Vector2Int candidate = orderedCandidates[i];
             List<Vector2Int> candidatePath = pathfinder.FindPath(
                 moverGrid,
                 candidate,
@@ -511,6 +523,42 @@ public class MoveCommandPreviewController
 
         destinationGrid = bestGrid;
         return bestPath != null;
+    }
+
+    private static List<Vector2Int> BuildOrderedApproachCandidates(
+        IReadOnlyList<Vector2Int> approachCandidates,
+        Vector2Int moverGrid,
+        Vector2Int targetGrid)
+    {
+        List<Vector2Int> orderedCandidates = new List<Vector2Int>();
+        if (approachCandidates == null)
+            return orderedCandidates;
+
+        for (int i = 0; i < approachCandidates.Count; i++)
+            orderedCandidates.Add(approachCandidates[i]);
+
+        orderedCandidates.Sort((a, b) =>
+        {
+            int distanceCompare = GridManager.GridDistance(moverGrid, a)
+                .CompareTo(GridManager.GridDistance(moverGrid, b));
+            if (distanceCompare != 0)
+                return distanceCompare;
+
+            int alignmentCompare = GetApproachAlignmentScore(moverGrid, targetGrid, b)
+                .CompareTo(GetApproachAlignmentScore(moverGrid, targetGrid, a));
+            if (alignmentCompare != 0)
+                return alignmentCompare;
+
+            int targetDistanceCompare = GridManager.GridDistance(targetGrid, a)
+                .CompareTo(GridManager.GridDistance(targetGrid, b));
+            if (targetDistanceCompare != 0)
+                return targetDistanceCompare;
+
+            int xCompare = a.x.CompareTo(b.x);
+            return xCompare != 0 ? xCompare : a.y.CompareTo(b.y);
+        });
+
+        return orderedCandidates;
     }
 
     private static int CountDiagonalSteps(List<Vector2Int> path)

@@ -25,6 +25,7 @@ namespace JC.VFX.EditorTools
 
             if (GUILayout.Button("적용 — 재질·프리팹에 확정 기록", GUILayout.Height(26)))
                 Apply(p);
+            JcPresetEditorUtil.DrawSaveButton(target, wide: true);   // 튜닝 저장 공식 규격
         }
 
         private static void Apply(JusticeArcShardPreset p)
@@ -40,12 +41,18 @@ namespace JC.VFX.EditorTools
             }
 
             var root = PrefabUtility.LoadPrefabContents(prefabPath);
+            // ★굽기 모드 — 여기서만 공유 재질 에셋에 기록(평시 스폰·라이브는 MPB 비파괴).
+            JusticeTrailPresetRuntime.WriteSharedMaterials = true;
             try
             {
                 JusticeArcShardRuntime.ApplyArcShard(root, p, t.shardMaterial);
                 PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             }
-            finally { PrefabUtility.UnloadPrefabContents(root); }
+            finally
+            {
+                JusticeTrailPresetRuntime.WriteSharedMaterials = false;
+                PrefabUtility.UnloadPrefabContents(root);
+            }
 
             AssetDatabase.SaveAssets();
             Debug.Log("[JusticeArcShard] " + p.name + " → 재질·프리팹에 확정 기록 완료", p);

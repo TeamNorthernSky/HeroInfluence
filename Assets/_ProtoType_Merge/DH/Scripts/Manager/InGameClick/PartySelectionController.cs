@@ -113,11 +113,13 @@ public class PartySelectionController
         activeMover = mover;
         activeMover.PathUpdated += HandlePathUpdated;
         activeMover.MoveCompleted += HandleMoveCompleted;
+        activeMover.MovementStateChanged += HandleMovementStateChanged;
 
         if (cameraFollower != null)
         {
             cameraFollower.SetFollowTarget(activeMover.transform);
             cameraFollower.RecenterOnFollowTarget();
+            cameraFollower.SetFollowMapEdgeMoveConstraint(false);
         }
 
         if (notifyChange)
@@ -131,6 +133,7 @@ public class PartySelectionController
 
         activeMover.PathUpdated -= HandlePathUpdated;
         activeMover.MoveCompleted -= HandleMoveCompleted;
+        activeMover.MovementStateChanged -= HandleMovementStateChanged;
     }
 
     private void HandlePathUpdated(List<Vector2Int> remainingPath)
@@ -140,6 +143,15 @@ public class PartySelectionController
 
     private void HandleMoveCompleted()
     {
+        cameraFollower?.SetFollowMapEdgeMoveConstraint(false);
         ActiveMoverMoveCompleted?.Invoke();
+    }
+
+    private void HandleMovementStateChanged(bool isMoving)
+    {
+        if (cameraFollower == null || activeMover == null)
+            return;
+
+        cameraFollower.SetFollowMapEdgeMoveConstraint(isMoving);
     }
 }

@@ -1,0 +1,219 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
+  m_Name: "\uD611\uD68C\uACF5\uBC29\uAC15\uD654_Schema"
+  m_EditorClassIdentifier: 
+  schemaGuid: b48e385e1df848c79250db3ff72fd32e
+  sourceWorkbookGuid: 13dd1e4c6ba8547468181f3e67715753
+  sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/H.I \uC790\uC6D0 \uB370\uC774\uD130
+    \uD14C\uC774\uBE14 V1.6.xlsx"
+  workbookFileName: "H.I \uC790\uC6D0 \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.6"
+  sourceSheetName: "\uD611\uD68C-\uACF5\uBC29(\uAC15\uD654)"
+  physicalSheetId: 4f0521b2635ed910619007d999263ca17244dbaf
+  logicalSheetKey: "\uD611\uD68C\uACF5\uBC29\uAC15\uD654"
+  templateClassName: AssociationWorkshopEnforce
+  templateSignature: dict=0|required_workshop_level:Int:Comma|enchantable_equipment_group:String:Comma|weapon_index_list:ListString:Comma|to_enchant_level:Int:Comma|cost_resource_1_type:Int:Comma|cost_resource_1_amount:Int:Comma|cost_resource_2_type:Int:Comma|cost_resource_2_amount:Int:Comma|enchant_condition:String:Comma|note:String:Comma
+  className: AssociationWorkshopEnforce
+  outputAssetName: "\uD611\uD68C\uACF5\uBC29\uAC15\uD654DataTable"
+  targetTableAssetGuid: 37ac99ce17adaf24b9297c3eb85ec624
+  targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I \uC790\uC6D0
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.6/\uD611\uD68C\uACF5\uBC29\uAC15\uD654DataTable.asset"
+  headerRowIndex: 1
+  dataStartRowIndex: 2
+  useDictionary: 0
+  requireUniqueKey: 0
+  duplicateKeyPolicy: 0
+  Columns:
+  - sourceColumnIndex: 0
+    sourceHeaderName: required_workshop_level
+    fieldName: required_workshop_level
+    displayName: required_workshop_level
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: enchantable_equipment_group
+    fieldName: enchantable_equipment_group
+    displayName: enchantable_equipment_group
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: weapon_index_list
+    fieldName: weapon_index_list
+    displayName: weapon_index_list
+    fieldType: 5
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: to_enchant_level
+    fieldName: to_enchant_level
+    displayName: to_enchant_level
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: cost_resource_1_type
+    fieldName: cost_resource_1_type
+    displayName: cost_resource_1_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: cost_resource_1_amount
+    fieldName: cost_resource_1_amount
+    displayName: cost_resource_1_amount
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: cost_resource_2_type
+    fieldName: cost_resource_2_type
+    displayName: cost_resource_2_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: cost_resource_2_amount
+    fieldName: cost_resource_2_amount
+    displayName: cost_resource_2_amount
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 8
+    sourceHeaderName: enchant_condition
+    fieldName: enchant_condition
+    displayName: enchant_condition
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 9
+    sourceHeaderName: note
+    fieldName: note
+    displayName: note
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 0
+    sourceHeaderName: "\uACF5\uBC29 \uD544\uC694 \uB808\uBCA8"
+    fieldName: Field_01
+    displayName: "\uACF5\uBC29 \uD544\uC694 \uB808\uBCA8"
+    fieldType: 1
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 1
+    sourceHeaderName: "\uAC15\uD654 \uAC00\uB2A5 \uC7A5\uBE44\uAD70"
+    fieldName: Field_02
+    displayName: "\uAC15\uD654 \uAC00\uB2A5 \uC7A5\uBE44\uAD70"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: "\uAC15\uD654 \uAC00\uB2A5 \uBB34\uAE30 \uC778\uB371\uC2A4"
+    fieldName: Field_03
+    displayName: "\uAC15\uD654 \uAC00\uB2A5 \uBB34\uAE30 \uC778\uB371\uC2A4"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: "\uC7A5\uBE44 \uAC15\uD654 \uB808\uBCA8"
+    fieldName: Field_04
+    displayName: "\uC7A5\uBE44 \uAC15\uD654 \uB808\uBCA8"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB9581\n(0 \uC790\uAE08 1
+      \uBA54\uB2EC \n2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldName: Field_05
+    displayName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB9581\n(0 \uC790\uAE08 1 \uBA54\uB2EC
+      \n2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: "\uC18C\uBAA8 \uC790\uC6D01 \uC18C\uBAA8\uB7C9"
+    fieldName: Field_06
+    displayName: "\uC18C\uBAA8 \uC790\uC6D01 \uC18C\uBAA8\uB7C9"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB9582\n(0 \uC790\uAE08 1
+      \uBA54\uB2EC \n2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldName: Field_07
+    displayName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB9582\n(0 \uC790\uAE08 1 \uBA54\uB2EC
+      \n2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: "\uC18C\uBAA8 \uC790\uC6D02 \uC18C\uBAA8\uB7C9"
+    fieldName: Field_08
+    displayName: "\uC18C\uBAA8 \uC790\uC6D02 \uC18C\uBAA8\uB7C9"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 8
+    sourceHeaderName: "\uC7A5\uBE44 \uAC15\uD654 \uC120\uD589 \uC870\uAC74"
+    fieldName: Field_09
+    displayName: "\uC7A5\uBE44 \uAC15\uD654 \uC120\uD589 \uC870\uAC74"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 9
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
