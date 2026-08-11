@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(RectTransform))]
-public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler
+public class MinimapCameraNavigator : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [Header("References")]
     [SerializeField] private RawImage minimapImage;
@@ -15,10 +15,11 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler
     [SerializeField] private QuarterViewCameraFollower cameraFollower;
 
     [Header("Input")]
-    [SerializeField] private bool enableClickNavigation = true;
+    [SerializeField] private bool enableDragNavigation = true;
     [SerializeField] private bool forceMinimapRaycastTarget = true;
 
     private RectTransform minimapRect;
+    private bool isDragging;
 
     private void Awake()
     {
@@ -32,11 +33,37 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler
         ApplyRaycastTarget();
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    public void OnBeginDrag(PointerEventData eventData)
     {
-        if (!enableClickNavigation || eventData == null || eventData.button != PointerEventData.InputButton.Left)
+        if (!CanHandleDrag(eventData))
             return;
 
+        isDragging = true;
+        MoveCameraToPointer(eventData);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (!isDragging)
+            return;
+
+        MoveCameraToPointer(eventData);
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        isDragging = false;
+    }
+
+    private bool CanHandleDrag(PointerEventData eventData)
+    {
+        return enableDragNavigation
+            && eventData != null
+            && eventData.button == PointerEventData.InputButton.Left;
+    }
+
+    private void MoveCameraToPointer(PointerEventData eventData)
+    {
         ResolveReferences();
         if (minimapRect == null || gridManager == null || cameraFollower == null || !TryGetGridSize(out Vector2Int gridSize))
             return;
