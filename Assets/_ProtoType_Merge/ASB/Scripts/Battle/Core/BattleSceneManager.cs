@@ -12,7 +12,9 @@ using GridCellRef = ASB.Work.BattleGrid.GridCell;
 public class BattleSceneManager : MonoBehaviour
 {
     private const int EventBattleLogicalSlotCount = 6;
-    private const float ResultUiDelayAfterPresentationSeconds = 1f;
+    private const float CueEffectWaitTimeoutSeconds = EffectFallbackRelease.DefaultFallbackSeconds + 0.5f;
+    private const float DeathAnimationWaitTimeoutSeconds = 1.2f;
+    private const float DeathAnimationEndThreshold = 0.95f;
 
     [Header("Prototype Boot")]
     [Tooltip("Prototype 전용: 씬에 배치된 BattleCharactor를 그대로 초기화해 전투를 시작합니다.")]
@@ -84,8 +86,7 @@ public class BattleSceneManager : MonoBehaviour
     private IEnumerator PostBattleSequence(BattleResult result)
     {
         yield return WaitForActivePresentationSequence();
-        yield return new WaitForSeconds(ResultUiDelayAfterPresentationSeconds);
-        yield return WaitDeadUnitDeathAnimations();
+        yield return WaitForRemainingCueEffectsAndDeathAnimations();
         hostageScenarioController?.FlushResult();
 
         // 1. 보상 계산 (Repository/JSON 변경 없음)
@@ -150,54 +151,99 @@ public class BattleSceneManager : MonoBehaviour
         yield return new WaitUntil(() => !battleManager.Presentation.IsSequenceRunning);
     }
 
-    private IEnumerator WaitDeadUnitDeathAnimations()
+    private IEnumerator WaitForRemainingCueEffectsAndDeathAnimations()
     {
-        const float maxWait = 1.2f;
-        const float endThreshold = 0.95f;
-
         float elapsed = 0f;
+        float deathAnimationElapsed = 0f;
         HashSet<BattleCharactor> observedDeathAnimations = new HashSet<BattleCharactor>();
-        while (elapsed < maxWait)
+        while (elapsed < CueEffectWaitTimeoutSeconds)
         {
-            bool waitingForDeathAnimation = false;
-
-            foreach (BattleCharactor unit in playerBattleCharactors.Concat(enemyBattleCharactors))
-            {
-                if (unit == null || !unit.IsDead)
-                {
-                    continue;
-                }
-
-                unit.EnsureAnimationController();
-                CharactorAnimationController anim = unit.Anim;
-                if (anim == null)
-                {
-                    continue;
-                }
-
-                if (anim.IsInState("Dead"))
-                {
-                    observedDeathAnimations.Add(unit);
-                    if (!anim.IsStateNearEnd("Dead", endThreshold))
-                    {
-                        waitingForDeathAnimation = true;
-                        break;
-                    }
-                }
-                else if (!observedDeathAnimations.Contains(unit))
-                {
-                    waitingForDeathAnimation = true;
-                    break;
-                }
-            }
-
-            if (!waitingForDeathAnimation)
+            bool waitingForCueEffects = HasActiveOneShotCueEffects();
+            bool waitingForDeathAnimation = deathAnimationElapsed < DeathAnimationWaitTimeoutSeconds
+                && HasPendingDeathAnimations(observedDeathAnimations);
+            if (!waitingForCueEffects && !waitingForDeathAnimation)
             {
                 yield break;
             }
 
-            elapsed += Time.deltaTime;
+            float deltaTime = Time.deltaTime;
+            elapsed += deltaTime;
+            if (waitingForDeathAnimation)
+            {
+                deathAnimationElapsed += deltaTime;
+            }
             yield return null;
+        }
+
+        LogCueEffectWaitTimeout();
+    }
+
+    private bool HasPendingDeathAnimations(HashSet<BattleCharactor> observedDeathAnimations)
+    {
+        foreach (BattleCharactor unit in playerBattleCharactors.Concat(enemyBattleCharactors))
+        {
+            if (unit == null || !unit.IsDead)
+            {
+                continue;
+            }
+
+            unit.EnsureAnimationController();
+            CharactorAnimationController anim = unit.Anim;
+            if (anim == null)
+            {
+                continue;
+            }
+
+            if (anim.IsInState("Dead"))
+            {
+                observedDeathAnimations.Add(unit);
+                if (!anim.IsStateNearEnd("Dead", DeathAnimationEndThreshold))
+                {
+                    return true;
+                }
+            }
+            else if (!observedDeathAnimations.Contains(unit))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasActiveOneShotCueEffects()
+    {
+        foreach (BattleCharactor unit in playerBattleCharactors.Concat(enemyBattleCharactors))
+        {
+            PresentationRuntimeContext context = unit != null
+                ? unit.GetComponent<PresentationRuntimeContext>()
+                : null;
+            if (context != null && context.HasActiveOneShotCueEffects)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void LogCueEffectWaitTimeout()
+    {
+        var remainingEffectNames = new List<string>();
+        foreach (BattleCharactor unit in playerBattleCharactors.Concat(enemyBattleCharactors))
+        {
+            PresentationRuntimeContext context = unit != null
+                ? unit.GetComponent<PresentationRuntimeContext>()
+                : null;
+            context?.CollectActiveOneShotCueEffectNames(remainingEffectNames);
+        }
+
+        if (remainingEffectNames.Count > 0)
+        {
+            Debug.LogWarning(
+                $"[BattleSceneManager] Cue effect wait timed out after {CueEffectWaitTimeoutSeconds:0.##}s. " +
+                $"Continuing to result UI. Remaining={string.Join(", ", remainingEffectNames)}",
+                this);
         }
     }
 

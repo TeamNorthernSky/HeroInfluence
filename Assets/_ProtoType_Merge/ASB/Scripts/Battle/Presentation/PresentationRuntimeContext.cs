@@ -65,8 +65,17 @@ public class PresentationRuntimeContext : MonoBehaviour
         new Dictionary<int, Dictionary<string, RuntimeCue>>();
 
     private readonly Dictionary<string, ISkillEffectHandle> _handles = new Dictionary<string, ISkillEffectHandle>();
+    private readonly HashSet<GameObject> _activeOneShotCueEffects = new HashSet<GameObject>();
 
     public bool HasValidContext => CurrentActionInstanceId != 0 && Current != null;
+    public bool HasActiveOneShotCueEffects
+    {
+        get
+        {
+            RemoveDestroyedOneShotCueEffects();
+            return _activeOneShotCueEffects.Count > 0;
+        }
+    }
 
     /// <summary>등록 순서가 보존된 Cue 목록(읽기 전용). 드라이버 순회용.</summary>
     public IReadOnlyList<RuntimeCue> OrderedCues => _orderedCues;
@@ -227,6 +236,39 @@ public class PresentationRuntimeContext : MonoBehaviour
         _handles.Clear();
     }
 
+    public void RegisterActiveOneShotCueEffect(GameObject instance)
+    {
+        if (instance != null)
+        {
+            _activeOneShotCueEffects.Add(instance);
+        }
+    }
+
+    public void UnregisterActiveOneShotCueEffect(GameObject instance)
+    {
+        if (instance != null)
+        {
+            _activeOneShotCueEffects.Remove(instance);
+        }
+        RemoveDestroyedOneShotCueEffects();
+    }
+
+    public void CollectActiveOneShotCueEffectNames(List<string> destination)
+    {
+        if (destination == null) return;
+
+        RemoveDestroyedOneShotCueEffects();
+        foreach (GameObject instance in _activeOneShotCueEffects)
+        {
+            destination.Add($"{gameObject.name}/{instance.name}");
+        }
+    }
+
+    private void RemoveDestroyedOneShotCueEffects()
+    {
+        _activeOneShotCueEffects.RemoveWhere(instance => instance == null || !instance.activeInHierarchy);
+    }
+
     private void OnDisable()
     {
         StopAllHandles();
@@ -235,6 +277,7 @@ public class PresentationRuntimeContext : MonoBehaviour
     private void OnDestroy()
     {
         StopAllHandles();
+        _activeOneShotCueEffects.Clear();
     }
 
     public void Clear()

@@ -39,13 +39,25 @@ public class WeaponPersistentRepository : MonoBehaviour
 
     public int CreateWeapon(int weaponTemplateKey)
     {
-        if (weaponTemplateKey <= 0)
+        string resolvedKey = ResolveWeaponTemplateKey(weaponTemplateKey);
+        return CreateWeapon(resolvedKey, weaponTemplateKey);
+    }
+
+    public int CreateWeapon(string weaponTemplateKey)
+    {
+        return CreateWeapon(weaponTemplateKey, ResolveLegacyNumericWeaponTemplateKey(weaponTemplateKey));
+    }
+
+    private int CreateWeapon(string weaponTemplateKey, int legacyNumericWeaponTemplateKey)
+    {
+        weaponTemplateKey = NormalizeWeaponTemplateKey(weaponTemplateKey);
+        if (string.IsNullOrEmpty(weaponTemplateKey))
             return -1;
 
         int weaponIndex = Mathf.Max(1, nextWeaponIndex);
         nextWeaponIndex = weaponIndex + 1;
 
-        WeaponPersistentData newData = new WeaponPersistentData(weaponIndex, weaponTemplateKey);
+        WeaponPersistentData newData = new WeaponPersistentData(weaponIndex, weaponTemplateKey, legacyNumericWeaponTemplateKey);
         RefreshWeaponStats(newData);
         weapons.Add(newData);
         weaponLookup[weaponIndex] = newData;
@@ -85,8 +97,19 @@ public class WeaponPersistentRepository : MonoBehaviour
         if (!TryGetWeapon(weaponIndex, out WeaponPersistentData data) || data == null)
             return false;
 
-        weaponTemplateKey = data.WeaponTemplateKey;
+        weaponTemplateKey = ResolveLegacyNumericWeaponTemplateKey(GetResolvedWeaponTemplateKey(data));
         return weaponTemplateKey > 0;
+    }
+
+    public bool TryGetWeaponTemplateKey(int weaponIndex, out string weaponTemplateKey)
+    {
+        weaponTemplateKey = string.Empty;
+
+        if (!TryGetWeapon(weaponIndex, out WeaponPersistentData data) || data == null)
+            return false;
+
+        weaponTemplateKey = GetResolvedWeaponTemplateKey(data);
+        return !string.IsNullOrEmpty(weaponTemplateKey);
     }
 
     public bool TryGetWeaponStats(int weaponIndex, out EquipmentStatBlock weaponStats)
@@ -195,6 +218,8 @@ public class WeaponPersistentRepository : MonoBehaviour
             if (data.Level < BaseWeaponLevel)
                 data.SetLevel(BaseWeaponLevel);
 
+            RepairWeaponTemplateKey(data);
+
             if (IsDefault(data.CachedWeaponStats))
                 RefreshWeaponStats(data);
         }
@@ -215,10 +240,12 @@ public class WeaponPersistentRepository : MonoBehaviour
 
     private static EquipmentStatBlock ResolveWeaponStats(WeaponPersistentData data)
     {
-        if (data == null || data.WeaponTemplateKey <= 0)
+        if (data == null)
             return default;
 
-        int weaponTemplateKey = data.WeaponTemplateKey;
+        string weaponTemplateKey = GetResolvedWeaponTemplateKey(data);
+        if (string.IsNullOrEmpty(weaponTemplateKey))
+            return default;
 
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
         if (catalog == null)
@@ -242,5 +269,80 @@ public class WeaponPersistentRepository : MonoBehaviour
                stats.CounterRate == 0f &&
                stats.AvoidRate == 0f &&
                stats.Speed == 0f;
+    }
+
+    private static string GetResolvedWeaponTemplateKey(WeaponPersistentData data)
+    {
+        if (data == null)
+            return string.Empty;
+
+        string key = NormalizeWeaponTemplateKey(data.WeaponTemplateKeyString);
+        if (!string.IsNullOrEmpty(key))
+            return key;
+
+        return ResolveWeaponTemplateKey(data.WeaponTemplateKey);
+    }
+
+    private static void RepairWeaponTemplateKey(WeaponPersistentData data)
+    {
+        if (data == null)
+            return;
+
+        string key = GetResolvedWeaponTemplateKey(data);
+        int legacyNumericKey = ResolveLegacyNumericWeaponTemplateKey(key);
+        if (!string.Equals(data.WeaponTemplateKeyString, key, System.StringComparison.Ordinal) ||
+            data.WeaponTemplateKey != legacyNumericKey)
+        {
+            data.SetWeaponTemplateKey(key, legacyNumericKey);
+        }
+    }
+
+    private static string ResolveWeaponTemplateKey(int legacyWeaponTemplateKey)
+    {
+        if (legacyWeaponTemplateKey <= 0)
+            return string.Empty;
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null &&
+            catalog.TryGetWeaponTemplate(legacyWeaponTemplateKey, out DHWeaponTemplate template) &&
+            template != null &&
+            !string.IsNullOrWhiteSpace(template.WeaponKey))
+        {
+            return template.WeaponKey.Trim();
+        }
+
+        if (legacyWeaponTemplateKey >= 1 && legacyWeaponTemplateKey <= 999)
+            return $"HC{legacyWeaponTemplateKey:000}";
+
+        return string.Empty;
+    }
+
+    private static int ResolveLegacyNumericWeaponTemplateKey(string weaponTemplateKey)
+    {
+        weaponTemplateKey = NormalizeWeaponTemplateKey(weaponTemplateKey);
+        if (string.IsNullOrEmpty(weaponTemplateKey))
+            return 0;
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null &&
+            catalog.TryGetWeaponTemplate(weaponTemplateKey, out DHWeaponTemplate template) &&
+            template != null)
+        {
+            return Mathf.Max(0, template.NumericWeaponId);
+        }
+
+        string digits = string.Empty;
+        for (int i = 0; i < weaponTemplateKey.Length; i++)
+        {
+            if (char.IsDigit(weaponTemplateKey[i]))
+                digits += weaponTemplateKey[i];
+        }
+
+        return int.TryParse(digits, out int parsed) ? Mathf.Max(0, parsed) : 0;
+    }
+
+    private static string NormalizeWeaponTemplateKey(string weaponTemplateKey)
+    {
+        return string.IsNullOrWhiteSpace(weaponTemplateKey) ? string.Empty : weaponTemplateKey.Trim();
     }
 }

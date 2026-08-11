@@ -5,10 +5,15 @@ public static class WeaponPersistentRepositoryBootstrap
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void EnsureRepository()
     {
+        EnsureInstance();
+    }
+
+    public static WeaponPersistentRepository EnsureInstance()
+    {
         if (WeaponPersistentRepository.Instance != null)
-            return;
+            return WeaponPersistentRepository.Instance;
 
         var go = new GameObject("[WeaponPersistentRepository]");
-        go.AddComponent<WeaponPersistentRepository>();
+        return go.AddComponent<WeaponPersistentRepository>();
     }
 }

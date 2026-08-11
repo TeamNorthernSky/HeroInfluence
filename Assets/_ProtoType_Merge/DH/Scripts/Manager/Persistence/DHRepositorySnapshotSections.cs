@@ -221,7 +221,7 @@ public sealed class DHWeaponSnapshotSection : DHTurnStartSnapshotSection
             if (data == null)
                 continue;
 
-            WeaponPersistentData copy = new WeaponPersistentData(data.WeaponIndex, data.WeaponTemplateKey);
+            WeaponPersistentData copy = new WeaponPersistentData(data.WeaponIndex, data.WeaponTemplateKeyString, data.WeaponTemplateKey);
             copy.SetLevel(data.Level);
             copy.SetCachedWeaponStats(data.CachedWeaponStats);
             target.Add(copy);

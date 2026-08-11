@@ -34,6 +34,7 @@ public class WorkshopManager : MonoBehaviour
 
     /// <summary>기본 보유 코어(HC001). 제작 대상이 아니다.</summary>
     public const int DefaultWeaponIndex = 1;
+    public const string DefaultWeaponKey = "HC001";
 
     private struct CraftCost
     {
@@ -69,7 +70,8 @@ public class WorkshopManager : MonoBehaviour
     [Serializable]
     public class WeaponEntry
     {
-        public int weaponIndex;    // 무기 템플릿 키(1~5)
+        public int weaponIndex;    // UI slot and legacy bridge index (1~5)
+        public string weaponKey;   // DataTable template key (HC001~HC005)
         public int instanceIndex;  // WeaponPersistentRepository 인스턴스 인덱스
     }
 
@@ -154,10 +156,11 @@ public class WorkshopManager : MonoBehaviour
         var weaponRepo = WeaponPersistentRepository.Instance;
         if (weaponRepo == null) return false;
 
-        int inst = weaponRepo.CreateWeapon(weaponIndex);
+        string weaponKey = ResolveWeaponKey(weaponIndex);
+        int inst = weaponRepo.CreateWeapon(weaponKey);
         if (inst <= 0) return false;
 
-        RegisterEntry(weaponIndex, inst);
+        RegisterEntry(weaponIndex, weaponKey, inst);
         OnStateChanged?.Invoke();
         return true;
     }
@@ -218,8 +221,8 @@ public class WorkshopManager : MonoBehaviour
         if (repo == null || weaponRepo == null) return 0;
         if (!repo.TryGetUnit(unitIndex, out var d) || d == null) return 0;
         int inst = d.EquippedWeaponInstanceIndex;
-        if (inst > 0 && weaponRepo.TryGetWeaponTemplateKey(inst, out int templateKey))
-            return templateKey;
+        if (inst > 0 && weaponRepo.TryGetWeaponTemplateKey(inst, out string templateKey))
+            return ResolveWeaponIndex(templateKey);
         return 0;
     }
 
@@ -243,7 +246,19 @@ public class WorkshopManager : MonoBehaviour
     public void EnsureDefaultEquipped(int unitIndex)
     {
         EnsureDefaultOwned();
-        if (IsAccountInstanceEquipped(unitIndex)) return;
+        if (HasValidEquippedWeapon(unitIndex))
+        {
+            Debug.Log($"[DHWeaponInit] Workshop EnsureDefaultEquipped keeps valid equipped weapon. unitIndex={unitIndex}", this);
+            return;
+        }
+
+        if (IsAccountInstanceEquipped(unitIndex))
+        {
+            Debug.Log($"[DHWeaponInit] Workshop EnsureDefaultEquipped keeps account equipped weapon. unitIndex={unitIndex}", this);
+            return;
+        }
+
+        Debug.Log($"[DHWeaponInit] Workshop EnsureDefaultEquipped falls back to '{DefaultWeaponKey}'. unitIndex={unitIndex}", this);
         EquipWeapon(unitIndex, DefaultWeaponIndex);
     }
 
@@ -255,8 +270,8 @@ public class WorkshopManager : MonoBehaviour
         var weaponRepo = WeaponPersistentRepository.Instance;
         if (weaponRepo == null) return;
 
-        int inst = weaponRepo.CreateWeapon(DefaultWeaponIndex);
-        if (inst > 0) RegisterEntry(DefaultWeaponIndex, inst);
+        int inst = weaponRepo.CreateWeapon(DefaultWeaponKey);
+        if (inst > 0) RegisterEntry(DefaultWeaponIndex, DefaultWeaponKey, inst);
     }
 
     /// <summary>유닛이 장착한 인스턴스가 계정 소유 인스턴스 중 하나인지.</summary>
@@ -273,10 +288,35 @@ public class WorkshopManager : MonoBehaviour
         return false;
     }
 
-    private WeaponEntry RegisterEntry(int weaponIndex, int instanceIndex)
+    private bool HasValidEquippedWeapon(int unitIndex)
     {
-        if (lookup.TryGetValue(weaponIndex, out var e)) { e.instanceIndex = instanceIndex; return e; }
-        e = new WeaponEntry { weaponIndex = weaponIndex, instanceIndex = instanceIndex };
+        var repo = PersistentUnitRepository.Instance;
+        var weaponRepo = WeaponPersistentRepository.Instance;
+        if (repo == null || weaponRepo == null) return false;
+        if (!repo.TryGetUnit(unitIndex, out var d) || d == null) return false;
+
+        int equipped = d.EquippedWeaponInstanceIndex;
+        if (equipped <= 0) return false;
+        if (!weaponRepo.TryGetWeaponTemplateKey(equipped, out string templateKey)) return false;
+
+        int weaponIndex = ResolveWeaponIndex(templateKey);
+        if (!IsValidWeaponIndex(weaponIndex)) return true;
+
+        RegisterEntry(weaponIndex, templateKey, equipped);
+        return true;
+    }
+
+    private WeaponEntry RegisterEntry(int weaponIndex, string weaponKey, int instanceIndex)
+    {
+        weaponKey = NormalizeWeaponKey(weaponKey);
+        if (lookup.TryGetValue(weaponIndex, out var e))
+        {
+            e.weaponKey = weaponKey;
+            e.instanceIndex = instanceIndex;
+            return e;
+        }
+
+        e = new WeaponEntry { weaponIndex = weaponIndex, weaponKey = weaponKey, instanceIndex = instanceIndex };
         entries.Add(e);
         lookup[weaponIndex] = e;
         return e;
@@ -289,6 +329,8 @@ public class WorkshopManager : MonoBehaviour
         {
             var e = entries[i];
             if (e == null || !IsValidWeaponIndex(e.weaponIndex)) continue;
+            if (string.IsNullOrWhiteSpace(e.weaponKey))
+                e.weaponKey = ResolveWeaponKey(e.weaponIndex);
             if (lookup.ContainsKey(e.weaponIndex))
             {
                 Debug.LogWarning($"[WorkshopManager] 중복 보유 항목 무시 (weaponIndex={e.weaponIndex})", this);
@@ -296,5 +338,54 @@ public class WorkshopManager : MonoBehaviour
             }
             lookup.Add(e.weaponIndex, e);
         }
+    }
+
+    private static string ResolveWeaponKey(int weaponIndex)
+    {
+        if (!IsValidWeaponIndex(weaponIndex))
+            return string.Empty;
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null &&
+            catalog.TryGetWeaponTemplate(weaponIndex, out DHWeaponTemplate template) &&
+            template != null &&
+            !string.IsNullOrWhiteSpace(template.WeaponKey))
+        {
+            return template.WeaponKey.Trim();
+        }
+
+        return $"HC{weaponIndex:000}";
+    }
+
+    private static int ResolveWeaponIndex(string weaponKey)
+    {
+        weaponKey = NormalizeWeaponKey(weaponKey);
+        if (string.IsNullOrEmpty(weaponKey))
+            return 0;
+
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (catalog != null &&
+            catalog.TryGetWeaponTemplate(weaponKey, out DHWeaponTemplate template) &&
+            template != null)
+        {
+            return template.NumericWeaponId;
+        }
+
+        int start = -1;
+        for (int i = 0; i < weaponKey.Length; i++)
+        {
+            if (char.IsDigit(weaponKey[i]))
+            {
+                start = i;
+                break;
+            }
+        }
+
+        return start >= 0 && int.TryParse(weaponKey.Substring(start), out int parsed) ? parsed : 0;
+    }
+
+    private static string NormalizeWeaponKey(string weaponKey)
+    {
+        return string.IsNullOrWhiteSpace(weaponKey) ? string.Empty : weaponKey.Trim();
     }
 }
