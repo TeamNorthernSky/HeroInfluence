@@ -67,7 +67,9 @@ public static class BattleResultPersistenceHandler
             Debug.Log($"[BattleRewardPlan] {player.UnitName} | templateKey={src.UnitTemplateKey} classIndex={classIndex} oldLv={src.Level} newLv={newLevel} gainedExp={gainedExp} candidates={candidates.Count}");
 
             float oldInfluence = player.CurrentInfluence;
-            float newInfluence = Mathf.Clamp(oldInfluence * influenceRatio, 0f, player.MaxInfluence);
+            // Both victory and defeat use 10% of maximum IP, rather than current IP.
+            float influenceDelta = player.MaxInfluence * (result == BattleResult.Victory ? 0.1f : -0.1f);
+            float newInfluence = Mathf.Clamp(oldInfluence + influenceDelta, 0f, player.MaxInfluence);
 
             plan.UnitPreviews.Add(new UnitRewardPreview
             {
@@ -98,13 +100,13 @@ public static class BattleResultPersistenceHandler
         BattleResult result,
         IReadOnlyList<SkillSelectionResult> skillResults = null)
     {
-        float influenceRatio = (result == BattleResult.Victory) ? 1.1f : 0.9f;
+        float influenceDeltaRatio = (result == BattleResult.Victory) ? 0.1f : -0.1f;
 
         if (playerUnits != null)
         {
             for (int i = 0; i < playerUnits.Count; i++)
             {
-                playerUnits[i]?.ApplyInfluenceModifier(influenceRatio);
+                playerUnits[i]?.ApplyInfluenceDeltaFromMax(influenceDeltaRatio);
                 TryPersistPlayerUnit(playerUnits[i]);
             }
         }
