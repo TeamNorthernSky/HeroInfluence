@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 283c7557d7adc244fa6c39154a825f53, type: 3}
+  m_Name: FX_JusticeDashShard_Alter
+  m_EditorClassIdentifier: 
+  targets:
+    shardPrefab: {fileID: 4231697358879776452, guid: 4ec27b6f611ce5449a6e450c4e99d442,
+      type: 3}
+    shardMaterial: {fileID: 2100000, guid: 7adaefb95aab4c94dbb18bc7b9eec58c, type: 2}
+  headColor: {r: 1, g: 0.027025223, b: 0, a: 1}
+  midColor: {r: 1, g: 0.059999943, b: 0, a: 1}
+  tailColor: {r: 1, g: 1, b: 1, a: 1}
+  edgeEmission: 8
+  innerColor: {r: 1, g: 1, b: 1, a: 1}
+  innerEmission: 8
+  edgeWidth: 0.178
+  edgeSoft: 0.1529
+  triWidth: 0.486
+  triHeight: 0.559
+  cutMin: 0.25
+  cutMax: 0.416
+  angleStart: 108
+  angleEnd: -31
+  radius: 1.97
+  sweepDuration: 0.5
+  easeOut: 2.77
+  rateOverDistance: 29
+  maxParticles: 152
+  speedMin: 3.4
+  speedMax: 5
+  spreadAngle: 8
+  nozzleRadius: 0.2
+  tiltAngle: 9.8
+  gravity: 0
+  drag: 0.2
+  sizeMin: 0.627
+  sizeMax: 0.749
+  lifeMin: 0.85
+  lifeMax: 1.14
+  shrinkStart: 0.265
+  shrinkEndScale: 0
+  fadeStart: 0.324
+  spawnOffset: {x: 0, y: -0.2, z: 0}
+  extraLinger: 0.5

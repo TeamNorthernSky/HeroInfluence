@@ -35,6 +35,9 @@ namespace JC.VFX
             bool newRestart = EditorGUILayout.ToggleLeft("변경 시 파티클 재시작 (즉시 새 값으로 다시 뿜음)", restart);
             if (newRestart != restart) EditorPrefs.SetBool(RestartKey, newRestart);
             base.OnInspectorGUI();
+
+            EditorGUILayout.Space(2);
+            JcPresetEditorUtil.DrawSaveButton(target, wide: true);   // 튜닝 저장 공식 규격 — 프리셋 파일 확정은 명시 클릭만
         }
 
         /// <summary>
@@ -127,7 +130,8 @@ namespace JC.VFX
                 }
             }
 
-            JusticeTrailPresetRuntime.ApplyMaterials(p, p.targets.strokeMaterial, p.targets.impactSparkMaterial);
+            // 재질 전역 쓰기는 하지 않는다 — 라이브 반영은 위 binder.Apply(MPB 경로)가 인스턴스별로 처리.
+            // 재질 에셋 기록은 「적용」 버튼(WriteSharedMaterials=true) 전용.
 
             SceneView.RepaintAll();
             EditorApplication.QueuePlayerLoopUpdate();
@@ -138,8 +142,22 @@ namespace JC.VFX
 
         public static void Apply(JusticeTrailPreset p)
         {
+            // ★굽기 모드 — 이 블록 안에서만 공유 재질 에셋에 기록된다(평시 스폰·라이브는 MPB 비파괴).
+            JusticeTrailPresetRuntime.WriteSharedMaterials = true;
+            try
+            {
+                ApplyBake(p);
+            }
+            finally
+            {
+                JusticeTrailPresetRuntime.WriteSharedMaterials = false;
+            }
+        }
+
+        static void ApplyBake(JusticeTrailPreset p)
+        {
             var t = p.targets;
-            JusticeTrailPresetRuntime.ApplyMaterials(p, t.strokeMaterial, t.impactSparkMaterial);
+            JusticeTrailPresetRuntime.ApplyMaterials(null, p, t.strokeMaterial, t.impactSparkMaterial);
             if (t.strokeMaterial != null) EditorUtility.SetDirty(t.strokeMaterial);
             if (t.impactSparkMaterial != null) EditorUtility.SetDirty(t.impactSparkMaterial);
 
