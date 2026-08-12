@@ -64,9 +64,11 @@ public class HQStateManager : MonoBehaviour
     }
 
     private readonly Dictionary<HQDepartment, int> levels = new Dictionary<HQDepartment, int>();
-    private bool upgradedThisTurn;
 
-    public bool UpgradedThisTurn => upgradedThisTurn;
+    /// <summary>[KJ 260811] 턴당 1회 제한 폐지 — 항상 false. 시그니처를 남기는 이유는
+    /// DHGlobalSnapshotSections.CaptureFromRuntime이 직접 참조해 지우면 컴파일 에러가 나기 때문.
+    /// DH 영역 정리 협의 후 이 프로퍼티와 GameSaveData.hqUpgradedThisTurn을 함께 제거할 것.</summary>
+    //public bool UpgradedThisTurn => false;
 
     public void Initialize()
     {
@@ -76,7 +78,6 @@ public class HQStateManager : MonoBehaviour
             levels[d] = (d == HQDepartment.Headquarters || d == HQDepartment.Infirmary) ? hqInitialLevel : 0;
             //Debug.Log($"{d}는 {levels[d]}");
         }
-        upgradedThisTurn = false;
     }
 
     /// <summary>[JC 260617] 새 게임 초기화 — 첫 실행과 동일(본부=초기레벨, 나머지 0).</summary>
@@ -200,7 +201,6 @@ public class HQStateManager : MonoBehaviour
 
     public bool CanUpgrade(HQDepartment d)
     {
-        if (upgradedThisTurn) return false;
         if (GetLevel(d) >= GetMaxLevel(d)) return false;
         if (!ArePrerequisitesMet(d)) return false;
         return true;
@@ -213,20 +213,12 @@ public class HQStateManager : MonoBehaviour
         if (!CanUpgrade(d)) return false;
         afterLevel = beforeLevel + 1;
         levels[d] = afterLevel;
-        upgradedThisTurn = true;
         OnStateChanged?.Invoke();
         return true;
     }
 
-    public void OnTurnAdvanced()
-    {
-        if (!upgradedThisTurn) return;
-        upgradedThisTurn = false;
-        OnStateChanged?.Invoke();
-    }
-
     /// <summary>[JC 260617] 디버그 치트: 본부를 제외한 모든 시설(부서)을 최소 1레벨로 즉시 해금.
-    /// 비용·선행조건·턴 1회 제한을 모두 무시한다. 신규로 해금된 부서 수를 반환.</summary>
+    /// 비용·선행조건을 모두 무시한다. 신규로 해금된 부서 수를 반환.</summary>
     public int DebugUnlockAllFacilities()
     {
         int changed = 0;

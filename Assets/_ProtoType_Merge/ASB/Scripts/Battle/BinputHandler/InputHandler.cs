@@ -140,7 +140,11 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
+        // [JC 260812] ESC 제거: 시스템 메뉴 전역 키(SystemMenuController)와 같은 프레임에 이중 소비되어
+        // 메뉴를 여는 순간 타겟팅이 소거되던 문제. 취소 제스처는 우클릭만 유지.
+        // TODO(보류): 취소 제스처 자체가 레거시로 판단됨(외부 의존 없음, 클릭 즉시 시전 설계,
+        // 전투씬 우클릭 타용도 없음) — ASB 확인 후 이 블록 전체 삭제 검토.
+        if (Input.GetMouseButtonDown(1))
         {
             ResetTargetingState();
             return;

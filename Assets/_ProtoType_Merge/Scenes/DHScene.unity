@@ -801,6 +801,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &22429401
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1551,6 +1553,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &47495846
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -6678,6 +6682,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &205551539
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -6783,6 +6789,7 @@ MonoBehaviour:
   enemyTurnController: {fileID: 2000643500}
   turnStateText: {fileID: 2071582394}
   outpostRegistry: {fileID: 337973925}
+  gateThreatController: {fileID: 0}
 --- !u!4 &207868835
 Transform:
   m_ObjectHideFlags: 0
@@ -9322,6 +9329,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &261523777
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -10281,7 +10290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77d9c7e37d507c040b8586befc7d713d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManager: {fileID: 0}
+  gridManager: {fileID: 1870279752}
   anchorGrid: {x: 3, y: 3}
   size: {x: 2, y: 2}
   syncAnchorFromTransformOnAwake: 1
@@ -10300,7 +10309,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   heroUnionId: heroUnion_001
+  zoneId: zone_001
+  initialState: 1
+  currentState: 1
+  captureChatZoneId: 1
+  captureChatId: 0
+  autoPlayWhenInitiallyClaimed: 0
   gridManager: {fileID: 0}
+  targetRenderer: {fileID: 0}
+  neutralMaterial: {fileID: 0}
+  claimedMaterial: {fileID: 0}
 --- !u!65 &291618412
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11500,6 +11518,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &323858490
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -12453,6 +12473,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &364549344
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -12678,6 +12700,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &365469129
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -13741,9 +13765,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &403982660
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -16486,9 +16511,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &467892582
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -16714,6 +16740,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &474910806
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -17674,6 +17702,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &497096855
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -18910,9 +18940,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &528893572
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -20847,6 +20878,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &576817360
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -22589,6 +22622,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &612825528
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -24387,9 +24422,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &650498776
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -25455,6 +25491,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &682165096
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -27676,6 +27714,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &747534820
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -28245,6 +28285,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &758195579
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -28707,9 +28749,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &773622351
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -29880,6 +29923,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &794815507
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -30450,10 +30495,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f6d0b2849bf4a9b84e9f211ab84ab5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelRoot: {fileID: 1592689518}
-  outpostTypeText: {fileID: 312687609}
-  productionText: {fileID: 1846435514}
-  okButton: {fileID: 1749505262}
+  displayEntries: []
 --- !u!114 &818742918
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30466,11 +30508,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 554a7aff09d036a42a226249e5b34a9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panelRoot: {fileID: 1174288650}
-  eventPromptText: {fileID: 140239260}
-  costText: {fileID: 1737869578}
-  yesButton: {fileID: 236770800}
-  noButton: {fileID: 1028279658}
+  displayEntries: []
 --- !u!1 &819753568
 GameObject:
   m_ObjectHideFlags: 0
@@ -31570,6 +31608,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &854472861
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -31994,7 +32034,6 @@ MonoBehaviour:
   moveSpeed: 4
   arriveThreshold: 0.01
   maxMovePoints: 10
-  logStopMovement: 0
 --- !u!4 &866700046
 Transform:
   m_ObjectHideFlags: 0
@@ -32049,6 +32088,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1870279752}
   combatEncounterManager: {fileID: 408417867}
+  combatPromptService: {fileID: 0}
   itemPickupDelay: 0.5
 --- !u!114 &866700049
 MonoBehaviour:
@@ -32076,6 +32116,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   partyId: party_002
+  placementKey: 
+  placementSource: 0
 --- !u!114 &866700051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32950,8 +32992,11 @@ MonoBehaviour:
   unitTemplateKey: 10002
   legacyJobIndex: 0
   level: 1
-  favorability: 0
+  exp: 0
+  maxExp: 0
   currentSkillIndex: 2010
+  skillLevel: 1
+  currentWeaponKey: 
   currentWeaponIndex: 310201
   baseStats:
     HP: 0
@@ -32965,6 +33010,17 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   levelupStats:
+    HP: 0
+    Atk: 0
+    DEF: 0
+    Luck: 0
+    Speed: 0
+    CriticalRate: 0
+    CritMultiplier: 0
+    CounterRate: 0
+    AvoidRate: 0
+    influence: 0
+  eventBonusStats:
     HP: 0
     Atk: 0
     DEF: 0
@@ -32995,6 +33051,7 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   currentHp: 0
+  isIncapacitated: 0
 --- !u!1 &887031686
 GameObject:
   m_ObjectHideFlags: 0
@@ -36075,7 +36132,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c111c800a78d2e48a9ea51f5047e1f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enableRefogByDay: 0
   refogDelayDays: 3
+  restrictToGridBounds: 1
+  gridSize: {x: 20, y: 20}
 --- !u!4 &964046518
 Transform:
   m_ObjectHideFlags: 0
@@ -36105,14 +36165,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fogGridManager: {fileID: 964046517}
   gridManager: {fileID: 1870279752}
+  levelZoneLayoutData: {fileID: 0}
   levelData: {fileID: 11400000, guid: 2035004e0e73b4644bd0715be9bc93a3, type: 2}
   gridSize: {x: 50, y: 30}
-  rebuildOnEnable: 1
-  syncGridSizeWithLevelData: 1
-  unexploredValue: 0
-  foggedValue: 0.5
-  visibleValue: 1
-  fogTextureFilterMode: 0
+  syncGridSizeWithLevelSource: 1
 --- !u!114 &964046520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36127,8 +36183,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1870279752}
   fogGridManager: {fileID: 964046517}
+  levelZoneLayoutLoader: {fileID: 0}
   outpostRegistry: {fileID: 337973925}
   revealRadius: 1
+  fogZoneOnClaim: 1
   revealClaimedOutpostsOnEnable: 1
 --- !u!114 &964046521
 MonoBehaviour:
@@ -37365,7 +37423,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77d9c7e37d507c040b8586befc7d713d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManager: {fileID: 0}
+  gridManager: {fileID: 1870279752}
   anchorGrid: {x: 41, y: 17}
   size: {x: 2, y: 2}
   syncAnchorFromTransformOnAwake: 1
@@ -37384,6 +37442,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseId: villain_union_base_001
+  defenderEnemyGroupKey: FEP001
+  defenderEnemyId: 
+  zoneId: 
+  resolvedEnemyLevel: 1
+  defenderCombatChatId: 0
   gridManager: {fileID: 0}
 --- !u!65 &1005687846
 BoxCollider:
@@ -37790,8 +37853,11 @@ MonoBehaviour:
   unitTemplateKey: 10002
   legacyJobIndex: 0
   level: 1
-  favorability: 0
+  exp: 0
+  maxExp: 0
   currentSkillIndex: 2010
+  skillLevel: 1
+  currentWeaponKey: 
   currentWeaponIndex: 310201
   baseStats:
     HP: 0
@@ -37805,6 +37871,17 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   levelupStats:
+    HP: 0
+    Atk: 0
+    DEF: 0
+    Luck: 0
+    Speed: 0
+    CriticalRate: 0
+    CritMultiplier: 0
+    CounterRate: 0
+    AvoidRate: 0
+    influence: 0
+  eventBonusStats:
     HP: 0
     Atk: 0
     DEF: 0
@@ -37835,6 +37912,7 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   currentHp: 0
+  isIncapacitated: 0
 --- !u!1 &1022998032
 GameObject:
   m_ObjectHideFlags: 0
@@ -39580,6 +39658,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1074650946
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -41556,6 +41636,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1119637572
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -41786,12 +41868,31 @@ MonoBehaviour:
   minZoomY: 5
   maxZoomY: 30
   zoomSpeed: 200
+  keepTargetCenteredOnZoom: 1
   edgeScrollEnabled: 1
-  edgeThreshold: 40
-  edgeScrollSpeed: 30
+  keyboardPanEnabled: 1
+  keyboardPanSpeed: 20
+  edgeThresholdX: 40
+  edgeThresholdY: 40
+  edgeMinSpeed: 5
+  edgeMaxSpeed: 30
   edgeAcceleration: 10
+  edgeDeceleration: 35
+  snapStopWhenLeavingEdge: 0
   edgeLimitRange: 50
   invertVerticalEdgeScroll: 0
+  clampToMapBounds: 1
+  mapBoundsPaddingCells: 0
+  mapBoundsMinOffsetCells: {x: 0, y: 0}
+  mapBoundsMaxOffsetCells: {x: 0, y: 0}
+  gridManager: {fileID: 0}
+  levelZoneLayoutData: {fileID: 0}
+  levelZoneLayoutLoader: {fileID: 0}
+  levelData: {fileID: 0}
+  levelLoader: {fileID: 0}
+  blockEdgeScrollOverButtons: 1
+  blockCameraInputDuringCombatPrompt: 1
+  combatPromptService: {fileID: 0}
   resetKey: 121
 --- !u!1 &1129557380
 GameObject:
@@ -43250,7 +43351,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d648ea0c21f86fe409b0e7a4fd7e574f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pausesGame: 1
+  pausesGame: 0
+  keepSiblingOrder: 0
+  closeOnOutsideClick: 0
+  contentRect: {fileID: 0}
+  wantsDim: 0
+  dimClosesModal: 0
+  dimAlpha: 0.75
 --- !u!1 &1174653590
 GameObject:
   m_ObjectHideFlags: 0
@@ -44245,6 +44352,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1197587413
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -45175,8 +45284,11 @@ MonoBehaviour:
   unitTemplateKey: 10001
   legacyJobIndex: 0
   level: 1
-  favorability: 0
+  exp: 0
+  maxExp: 0
   currentSkillIndex: 1010
+  skillLevel: 1
+  currentWeaponKey: 
   currentWeaponIndex: 310101
   baseStats:
     HP: 0
@@ -45190,6 +45302,17 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   levelupStats:
+    HP: 0
+    Atk: 0
+    DEF: 0
+    Luck: 0
+    Speed: 0
+    CriticalRate: 0
+    CritMultiplier: 0
+    CounterRate: 0
+    AvoidRate: 0
+    influence: 0
+  eventBonusStats:
     HP: 0
     Atk: 0
     DEF: 0
@@ -45220,6 +45343,7 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   currentHp: 0
+  isIncapacitated: 0
 --- !u!1 &1231425215
 GameObject:
   m_ObjectHideFlags: 0
@@ -46109,6 +46233,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1255583730
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -46332,9 +46458,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &1258170270
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -47429,6 +47556,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1289545025
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -47969,6 +48098,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1305367124
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -48299,6 +48430,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1313601648
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -50489,8 +50622,11 @@ MonoBehaviour:
   unitTemplateKey: 10004
   legacyJobIndex: 0
   level: 1
-  favorability: 0
+  exp: 0
+  maxExp: 0
   currentSkillIndex: 4010
+  skillLevel: 1
+  currentWeaponKey: 
   currentWeaponIndex: 310401
   baseStats:
     HP: 0
@@ -50504,6 +50640,17 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   levelupStats:
+    HP: 0
+    Atk: 0
+    DEF: 0
+    Luck: 0
+    Speed: 0
+    CriticalRate: 0
+    CritMultiplier: 0
+    CounterRate: 0
+    AvoidRate: 0
+    influence: 0
+  eventBonusStats:
     HP: 0
     Atk: 0
     DEF: 0
@@ -50534,6 +50681,7 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   currentHp: 0
+  isIncapacitated: 0
 --- !u!1 &1385122161
 GameObject:
   m_ObjectHideFlags: 0
@@ -50686,9 +50834,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &1385232312
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -51315,7 +51464,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  csvDataLoad: {fileID: 1412590607}
+  playerUnitDataTable: {fileID: 0}
+  enemyUnitInfoDataTable: {fileID: 0}
+  playerWeaponDataTable: {fileID: 0}
+  classSkillDataTable: {fileID: 0}
+  unitGrowthExpDataTable: {fileID: 0}
+  enemyGroupDataTable: {fileID: 0}
   loadOnAwake: 1
   dontDestroyOnLoad: 1
   cachedPlayerTemplates: []
@@ -52558,6 +52712,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1455099520
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -54986,9 +55142,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &1523303750
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -55842,9 +55999,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &1544290282
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -56804,7 +56962,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77d9c7e37d507c040b8586befc7d713d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManager: {fileID: 0}
+  gridManager: {fileID: 1870279752}
   anchorGrid: {x: 19, y: 23}
   size: {x: 2, y: 2}
   syncAnchorFromTransformOnAwake: 0
@@ -56825,6 +56983,12 @@ MonoBehaviour:
   outpostType: 0
   resourcePerTurn: 1000
   outpostState: 0
+  enemyDefenderGroupKey: FEP001
+  defenderEnemyId: 
+  zoneId: 
+  resolvedEnemyLevel: 1
+  defenderCombatChatId: 0
+  completionFlagName: 
   targetRenderer: {fileID: 1563268113}
   unclaimedMaterial: {fileID: 2100000, guid: ed571a6ca3c5a964eadb92cf48f7366b, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 2a6d8d47be1070148a2c73069c86f78f,
@@ -57519,7 +57683,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d648ea0c21f86fe409b0e7a4fd7e574f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pausesGame: 1
+  pausesGame: 0
+  keepSiblingOrder: 0
+  closeOnOutsideClick: 0
+  contentRect: {fileID: 0}
+  wantsDim: 0
+  dimClosesModal: 0
+  dimAlpha: 0.75
 --- !u!1 &1594405446
 GameObject:
   m_ObjectHideFlags: 0
@@ -58829,6 +58999,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1627932321
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -62168,7 +62340,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77d9c7e37d507c040b8586befc7d713d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManager: {fileID: 0}
+  gridManager: {fileID: 1870279752}
   anchorGrid: {x: 28, y: 6}
   size: {x: 2, y: 2}
   syncAnchorFromTransformOnAwake: 0
@@ -62189,6 +62361,12 @@ MonoBehaviour:
   outpostType: 1
   resourcePerTurn: 10
   outpostState: 0
+  enemyDefenderGroupKey: FEP001
+  defenderEnemyId: 
+  zoneId: 
+  resolvedEnemyLevel: 1
+  defenderCombatChatId: 0
+  completionFlagName: 
   targetRenderer: {fileID: 1725215442}
   unclaimedMaterial: {fileID: 2100000, guid: ed571a6ca3c5a964eadb92cf48f7366b, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 2a6d8d47be1070148a2c73069c86f78f,
@@ -65983,7 +66161,6 @@ MonoBehaviour:
   moveSpeed: 4
   arriveThreshold: 0.01
   maxMovePoints: 10
-  logStopMovement: 0
 --- !u!4 &1826875708
 Transform:
   m_ObjectHideFlags: 0
@@ -66038,6 +66215,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 1870279752}
   combatEncounterManager: {fileID: 408417867}
+  combatPromptService: {fileID: 0}
   itemPickupDelay: 0.5
 --- !u!114 &1826875711
 MonoBehaviour:
@@ -66065,6 +66243,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   partyId: party_001
+  placementKey: 
+  placementSource: 0
 --- !u!114 &1826875713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66834,8 +67014,11 @@ MonoBehaviour:
   unitTemplateKey: 10003
   legacyJobIndex: 0
   level: 1
-  favorability: 0
+  exp: 0
+  maxExp: 0
   currentSkillIndex: 3010
+  skillLevel: 1
+  currentWeaponKey: 
   currentWeaponIndex: 310301
   baseStats:
     HP: 0
@@ -66849,6 +67032,17 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   levelupStats:
+    HP: 0
+    Atk: 0
+    DEF: 0
+    Luck: 0
+    Speed: 0
+    CriticalRate: 0
+    CritMultiplier: 0
+    CounterRate: 0
+    AvoidRate: 0
+    influence: 0
+  eventBonusStats:
     HP: 0
     Atk: 0
     DEF: 0
@@ -66879,6 +67073,7 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   currentHp: 0
+  isIncapacitated: 0
 --- !u!1 &1846435512
 GameObject:
   m_ObjectHideFlags: 0
@@ -67716,19 +67911,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   landTransform: {fileID: 1757180168}
   cellSize: 1
-  useTilemapGrid: 0
-  tilemapGridLayout: {fileID: 0}
-  referenceTilemap: {fileID: 0}
-  tilemapUsesXZPlane: 1
   obstacleLayerMask:
     serializedVersion: 2
     m_Bits: 8
-  itemLayerMask:
-    serializedVersion: 2
-    m_Bits: 64
-  outpostLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
+  useLegacyObstacleColliderFallback: 0
   eventLayerMask:
     serializedVersion: 2
     m_Bits: 0
@@ -67738,18 +67924,26 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
+  useLegacyEnemyColliderFallback: 0
   heroUnionLayerMask:
     serializedVersion: 2
     m_Bits: 1024
   fogGridManager: {fileID: 964046517}
+  itemRegistry: {fileID: 1628434450}
   enemyRegistry: {fileID: 2000643499}
   heroUnionRegistry: {fileID: 1889454946}
   outpostRegistry: {fileID: 337973925}
   villainUnionBaseRegistry: {fileID: 106732308}
   multiGridOccupantRegistry: {fileID: 162291186}
   mapEventRegistry: {fileID: 216669508}
+  mainEventRegistry: {fileID: 0}
+  subEventRegistry: {fileID: 0}
   restrictMovementToVisibleCells: 1
   obstacleCheckFill: 0.9
+  drawDebugGizmos: 1
+  drawGizmosOnlyWhenSelected: 0
+  drawDebugCenterSpheres: 1
+  drawDebugCellOutlines: 1
   debugQMin: 0
   debugQMax: 49
   debugRMin: 0
@@ -68027,9 +68221,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &1880760775
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -68148,9 +68343,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2338db2b7b5c4a9798a7397b667a1825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  eventKey: event_001
+  eventType: 0
   requireResource: 0
   requireAmount: 100
+  effectAmount: 3
 --- !u!135 &1882351304
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -68820,9 +69016,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01353256ae9548f0a39e5a0046b74d87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  partyMovers:
-  - {fileID: 1826875707}
-  - {fileID: 866700045}
+  playerParty: {fileID: 0}
 --- !u!4 &1919126567
 Transform:
   m_ObjectHideFlags: 0
@@ -69202,6 +69396,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!135 &1930823661
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -71307,8 +71503,11 @@ MonoBehaviour:
   unitTemplateKey: 10004
   legacyJobIndex: 0
   level: 1
-  favorability: 0
+  exp: 0
+  maxExp: 0
   currentSkillIndex: 4010
+  skillLevel: 1
+  currentWeaponKey: 
   currentWeaponIndex: 310401
   baseStats:
     HP: 0
@@ -71322,6 +71521,17 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   levelupStats:
+    HP: 0
+    Atk: 0
+    DEF: 0
+    Luck: 0
+    Speed: 0
+    CriticalRate: 0
+    CritMultiplier: 0
+    CounterRate: 0
+    AvoidRate: 0
+    influence: 0
+  eventBonusStats:
     HP: 0
     Atk: 0
     DEF: 0
@@ -71352,6 +71562,7 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   currentHp: 0
+  isIncapacitated: 0
 --- !u!1 &1953577944
 GameObject:
   m_ObjectHideFlags: 0
@@ -72975,8 +73186,8 @@ MonoBehaviour:
   heroUnionRegistry: {fileID: 1889454946}
   pathfinder: {fileID: 1870279751}
   combatEncounterManager: {fileID: 408417867}
+  combatPromptService: {fileID: 0}
   gridManager: {fileID: 1870279752}
-  outpostRegistry: {fileID: 337973925}
 --- !u!4 &2000643501
 Transform:
   m_ObjectHideFlags: 0
@@ -73004,18 +73215,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86269b1aa264e174a9560dc082a4121d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  turnManager: {fileID: 207868834}
   gridManager: {fileID: 1870279752}
-  heroUnionRegistry: {fileID: 1889454946}
-  villainUnionBaseRegistry: {fileID: 106732308}
-  outpostRegistry: {fileID: 337973925}
   enemyRegistry: {fileID: 2000643499}
+  prefabRegistry: {fileID: 0}
   enemyRoot: {fileID: 2000643501}
-  enemyPrefab: {fileID: 3716356412092212114, guid: 17da2859aa7b32c4cbf58be21d2b26f7,
-    type: 3}
-  spawnInterval: 3
-  maxActiveEnemies: 3
-  spawnOneEnemyOnStart: 1
+  runtimeEnemyGroupKey: FEP002
+  nextRuntimeEnemySequence: 1
 --- !u!1 &2000730950
 GameObject:
   m_ObjectHideFlags: 0
@@ -73560,8 +73765,11 @@ MonoBehaviour:
   unitTemplateKey: 10001
   legacyJobIndex: 0
   level: 1
-  favorability: 0
+  exp: 0
+  maxExp: 0
   currentSkillIndex: 1010
+  skillLevel: 1
+  currentWeaponKey: 
   currentWeaponIndex: 310101
   baseStats:
     HP: 0
@@ -73575,6 +73783,17 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   levelupStats:
+    HP: 0
+    Atk: 0
+    DEF: 0
+    Luck: 0
+    Speed: 0
+    CriticalRate: 0
+    CritMultiplier: 0
+    CounterRate: 0
+    AvoidRate: 0
+    influence: 0
+  eventBonusStats:
     HP: 0
     Atk: 0
     DEF: 0
@@ -73605,6 +73824,7 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   currentHp: 0
+  isIncapacitated: 0
 --- !u!1 &2016143370
 GameObject:
   m_ObjectHideFlags: 0
@@ -74464,8 +74684,11 @@ MonoBehaviour:
   unitTemplateKey: 10003
   legacyJobIndex: 0
   level: 1
-  favorability: 0
+  exp: 0
+  maxExp: 0
   currentSkillIndex: 3010
+  skillLevel: 1
+  currentWeaponKey: 
   currentWeaponIndex: 310301
   baseStats:
     HP: 0
@@ -74479,6 +74702,17 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   levelupStats:
+    HP: 0
+    Atk: 0
+    DEF: 0
+    Luck: 0
+    Speed: 0
+    CriticalRate: 0
+    CritMultiplier: 0
+    CounterRate: 0
+    AvoidRate: 0
+    influence: 0
+  eventBonusStats:
     HP: 0
     Atk: 0
     DEF: 0
@@ -74509,6 +74743,7 @@ MonoBehaviour:
     AvoidRate: 0
     influence: 0
   currentHp: 0
+  isIncapacitated: 0
 --- !u!1 &2037311130
 GameObject:
   m_ObjectHideFlags: 0

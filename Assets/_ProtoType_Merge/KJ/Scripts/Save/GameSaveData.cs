@@ -67,7 +67,8 @@ public class GameSaveData : ScriptableObject
         public int level;
     }
     public List<HQLevelEntry> hqLevels = new List<HQLevelEntry>();
-    public bool hqUpgradedThisTurn;
+    //턴당 한번씩 업그레이드 삭제로 인해 비활성화
+    //public bool hqUpgradedThisTurn;
 
     // ── 부서 매니저 상태 [KJ 260706] ──
     // 연구소: (유닛, 스킬)별 강화 레벨 — 비장착 스킬 레벨은 여기에만 존재

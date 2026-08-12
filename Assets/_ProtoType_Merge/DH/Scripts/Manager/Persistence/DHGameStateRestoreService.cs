@@ -82,7 +82,7 @@ public static class DHGameStateRestoreService
 
         RestoreCurrentDay(gameManager, data.currentDay);
         RestoreEconomy(gameManager.Economy, data.resources);
-        RestoreHQ(gameManager.HQ, data.hqLevels, data.hqUpgradedThisTurn);
+        RestoreHQ(gameManager.HQ, data.hqLevels);
         RestoreLab(gameManager.Lab, data.labSkillLevels);
         RestorePublicity(gameManager.Publicity, data.publicityCurrentPool, data.publicityLastChargeDay);
         RestoreTraining(gameManager.Training, data.trainingEntries);
@@ -111,7 +111,7 @@ public static class DHGameStateRestoreService
             economy.Set(resources[i].type, resources[i].amount);
     }
 
-    private static void RestoreHQ(HQStateManager hq, IReadOnlyList<GameSaveData.HQLevelEntry> hqLevels, bool upgradedThisTurn)
+    private static void RestoreHQ(HQStateManager hq, IReadOnlyList<GameSaveData.HQLevelEntry> hqLevels)
     {
         if (hq == null)
             return;
@@ -124,8 +124,6 @@ public static class DHGameStateRestoreService
             for (int i = 0; i < hqLevels.Count; i++)
                 levels[hqLevels[i].department] = Mathf.Max(0, hqLevels[i].level);
         }
-
-        SetPrivateField(hq, "upgradedThisTurn", upgradedThisTurn);
         InvokeEvent(hq, "OnStateChanged");
     }
 

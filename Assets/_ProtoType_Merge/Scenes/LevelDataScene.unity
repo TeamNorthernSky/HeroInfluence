@@ -745,7 +745,8 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -777,7 +778,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
 --- !u!43 &14152511
 Mesh:
@@ -1295,6 +1296,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &66965617
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1333,7 +1336,8 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -1365,7 +1369,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
 --- !u!1 &74774648
 GameObject:
@@ -1414,7 +1418,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 74774648}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 445796240}
+  m_Script: {fileID: 11500000, guid: 776525b907d196a459ac9b8f38441ec4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &74774651
@@ -1474,6 +1478,7 @@ MonoBehaviour:
   enemyId: 0
   placementKey: 
   placementSource: 0
+  enemyGroupKey: 
 --- !u!114 &74774655
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1909,7 +1914,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77d9c7e37d507c040b8586befc7d713d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManager: {fileID: 0}
+  gridManager: {fileID: 1870279752}
   anchorGrid: {x: 34, y: 5}
   size: {x: 2, y: 2}
   syncAnchorFromTransformOnAwake: 0
@@ -2051,6 +2056,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &107493252
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2454,6 +2461,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &128622955
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2523,6 +2532,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &140081514
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2951,6 +2962,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &184565349
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3020,6 +3033,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &184608064
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3209,6 +3224,7 @@ MonoBehaviour:
   enemyTurnController: {fileID: 2000643500}
   turnStateText: {fileID: 2071582394}
   outpostRegistry: {fileID: 337973925}
+  gateThreatController: {fileID: 0}
 --- !u!4 &207868835
 Transform:
   m_ObjectHideFlags: 0
@@ -3514,8 +3530,7 @@ MonoBehaviour:
   gateId: gate_002
   firstZoneId: zone_001
   secondZoneId: zone_003
-  openDurationTurns: 3
-  blockerObjects:
+  gateVisualObjects:
   - {fileID: 146374752}
   blockerCells:
   - {x: 24, y: 2}
@@ -3621,7 +3636,8 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -3653,7 +3669,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
 --- !u!1 &232793512
 GameObject:
@@ -4072,6 +4088,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &246170732
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4141,6 +4159,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &249146569
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4210,6 +4230,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &251228048
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6754,7 +6776,8 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -6786,7 +6809,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
 --- !u!43 &494792212
 Mesh:
@@ -7165,6 +7188,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &516008426
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7738,6 +7763,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &539732358
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8025,6 +8052,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &587124304
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8501,6 +8530,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &595028767
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9242,8 +9273,7 @@ MonoBehaviour:
   gateId: gate_005
   firstZoneId: zone_003
   secondZoneId: zone_004
-  openDurationTurns: 3
-  blockerObjects:
+  gateVisualObjects:
   - {fileID: 1888548826}
   blockerCells:
   - {x: 47, y: 20}
@@ -9403,6 +9433,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 2
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &624320813
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9661,6 +9693,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &629364772
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9872,6 +9906,7 @@ MonoBehaviour:
   enemyId: 0
   placementKey: 
   placementSource: 0
+  enemyGroupKey: 
 --- !u!114 &636595524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11103,7 +11138,8 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -11135,7 +11171,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
 --- !u!43 &716003341
 Mesh:
@@ -12740,6 +12776,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &778915767
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13159,7 +13197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77d9c7e37d507c040b8586befc7d713d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridManager: {fileID: 0}
+  gridManager: {fileID: 1870279752}
   anchorGrid: {x: 13, y: 33}
   size: {x: 2, y: 2}
   syncAnchorFromTransformOnAwake: 0
@@ -13184,6 +13222,8 @@ MonoBehaviour:
   defenderEnemyId: outpost_defender_outpost_14_34
   zoneId: 
   resolvedEnemyLevel: 1
+  defenderCombatChatId: 0
+  completionFlagName: 
   targetRenderer: {fileID: 122447057}
   unclaimedMaterial: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9,
@@ -14097,6 +14137,7 @@ MonoBehaviour:
   enemyId: 0
   placementKey: 
   placementSource: 0
+  enemyGroupKey: 
 --- !u!114 &837618806
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14266,6 +14307,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &855631889
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -14335,6 +14378,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &858285947
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16563,6 +16608,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &959754357
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16731,14 +16778,9 @@ MonoBehaviour:
   fogGridManager: {fileID: 964046517}
   gridManager: {fileID: 1870279752}
   levelZoneLayoutData: {fileID: 0}
-  levelData: {fileID: 11400000, guid: 2f188831bb3807249941c05e642c9f3a, type: 2}
+  levelData: {fileID: 11400000, guid: 04d3a7d44088dd146ac4b75a49548d87, type: 2}
   gridSize: {x: 50, y: 40}
-  rebuildOnEnable: 1
   syncGridSizeWithLevelSource: 1
-  unexploredValue: 0
-  foggedValue: 0.5
-  visibleValue: 1
-  fogTextureFilterMode: 0
 --- !u!114 &964046520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17221,8 +17263,7 @@ MonoBehaviour:
   gateId: gate_003
   firstZoneId: zone_002
   secondZoneId: zone_003
-  openDurationTurns: 3
-  blockerObjects:
+  gateVisualObjects:
   - {fileID: 1269430479}
   blockerCells:
   - {x: 45, y: 4}
@@ -17662,6 +17703,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1069254012
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -17924,6 +17967,7 @@ MonoBehaviour:
   enemyId: 0
   placementKey: 
   placementSource: 0
+  enemyGroupKey: 
 --- !u!114 &1091310885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18592,6 +18636,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1112950922
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -18774,6 +18820,8 @@ MonoBehaviour:
   zoomSpeed: 200
   keepTargetCenteredOnZoom: 1
   edgeScrollEnabled: 1
+  keyboardPanEnabled: 1
+  keyboardPanSpeed: 20
   edgeThresholdX: 100
   edgeThresholdY: 100
   edgeMinSpeed: 5
@@ -18783,6 +18831,15 @@ MonoBehaviour:
   snapStopWhenLeavingEdge: 0
   edgeLimitRange: 50
   invertVerticalEdgeScroll: 0
+  clampToMapBounds: 1
+  mapBoundsPaddingCells: 0
+  mapBoundsMinOffsetCells: {x: 0, y: 0}
+  mapBoundsMaxOffsetCells: {x: 0, y: 0}
+  gridManager: {fileID: 0}
+  levelZoneLayoutData: {fileID: 0}
+  levelZoneLayoutLoader: {fileID: 0}
+  levelData: {fileID: 0}
+  levelLoader: {fileID: 0}
   blockEdgeScrollOverButtons: 1
   blockCameraInputDuringCombatPrompt: 1
   combatPromptService: {fileID: 0}
@@ -19050,7 +19107,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d648ea0c21f86fe409b0e7a4fd7e574f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pausesGame: 1
+  pausesGame: 0
+  keepSiblingOrder: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 0}
   wantsDim: 0
@@ -19104,6 +19162,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1181989196
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -21628,6 +21688,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1323436865
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -22679,7 +22741,6 @@ MonoBehaviour:
   classSkillDataTable: {fileID: 0}
   unitGrowthExpDataTable: {fileID: 0}
   enemyGroupDataTable: {fileID: 0}
-  useSOTables: 1
   loadOnAwake: 0
   dontDestroyOnLoad: 1
   cachedPlayerTemplates: []
@@ -22922,6 +22983,7 @@ MonoBehaviour:
   clampToMinimap: 1
   lineColor: {r: 0.1, g: 0.95, b: 1, a: 0.95}
   lineThickness: 2
+  fixedBoxSizeNormalized: {x: 0.18, y: 0.18}
 --- !u!114 &1436526980
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22941,7 +23003,7 @@ MonoBehaviour:
   levelZoneLayoutLoader: {fileID: 0}
   gridManager: {fileID: 1870279752}
   cameraFollower: {fileID: 1128058705}
-  enableClickNavigation: 1
+  enableDragNavigation: 1
   forceMinimapRaycastTarget: 1
 --- !u!1 &1441750664
 GameObject:
@@ -25225,6 +25287,7 @@ MonoBehaviour:
   enemyId: 0
   placementKey: 
   placementSource: 0
+  enemyGroupKey: 
 --- !u!114 &1580236992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25453,6 +25516,7 @@ MonoBehaviour:
   enemyId: 0
   placementKey: 
   placementSource: 0
+  enemyGroupKey: 
 --- !u!114 &1587254542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25586,7 +25650,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d648ea0c21f86fe409b0e7a4fd7e574f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pausesGame: 1
+  pausesGame: 0
+  keepSiblingOrder: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 0}
   wantsDim: 0
@@ -25609,7 +25674,8 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -25641,7 +25707,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
 --- !u!1 &1607864901
 GameObject:
@@ -25689,6 +25755,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnPointId: zone_003_3_32
   zoneId: zone_003
+  enemyGroupKey: 
+  spawnChatZoneId: 0
+  spawnChatId: 0
+  encounterChatZoneId: 0
+  encounterChatId: 0
+  eventBattleKey: 
   gridPosition: {x: 3, y: 32}
   resolvedEnemyLevel: 1
 --- !u!1 &1612996959
@@ -26519,6 +26591,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1661168593
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -26753,6 +26827,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1675760998
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -27449,6 +27525,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1729502038
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -29535,6 +29613,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1834336400
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30000,6 +30080,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1847351098
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -30429,13 +30511,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   useLegacyObstacleColliderFallback: 0
-  itemLayerMask:
-    serializedVersion: 2
-    m_Bits: 64
-  useLegacyItemColliderFallback: 0
-  outpostLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
   eventLayerMask:
     serializedVersion: 2
     m_Bits: 0
@@ -30687,6 +30762,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 0
   amount: 1000
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1884087736
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -31068,6 +31145,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &1918724028
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -31252,7 +31331,8 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap: {}
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -31284,7 +31364,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
 --- !u!43 &1926387329
 Mesh:
@@ -31724,7 +31804,6 @@ MonoBehaviour:
   combatEncounterManager: {fileID: 408417867}
   combatPromptService: {fileID: 0}
   gridManager: {fileID: 1870279752}
-  outpostRegistry: {fileID: 337973925}
 --- !u!4 &2000643501
 Transform:
   m_ObjectHideFlags: 0
@@ -31758,23 +31837,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86269b1aa264e174a9560dc082a4121d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  turnManager: {fileID: 207868834}
   gridManager: {fileID: 1870279752}
-  heroUnionRegistry: {fileID: 1889454946}
-  villainUnionBaseRegistry: {fileID: 106732308}
-  outpostRegistry: {fileID: 337973925}
   enemyRegistry: {fileID: 2000643499}
   prefabRegistry: {fileID: 0}
   enemyRoot: {fileID: 2000643501}
-  enemyPrefab: {fileID: 7835340759501969377, guid: 8b7dee6dcefc2394c8b137009c69ce3b,
-    type: 3}
   runtimeEnemyGroupKey: 30002
-  spawnInterval: 3
-  maxActiveEnemies: 3
-  enableBaseEnemyProduction: 0
-  spawnOneEnemyOnStart: 0
-  skipInitialSpawnWhenSceneHasMobileEnemy: 1
-  runtimeSpawnSourceKey: 
   nextRuntimeEnemySequence: 1
 --- !u!1 &2016879487
 GameObject:
@@ -32879,104 +32946,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   obstaclePrefab: {fileID: 4063438008562090651, guid: 0e396f393ddc40941873c765271cdcc9,
     type: 3}
-  itemPrefabs:
-  - resourceType: 0
-    prefab: {fileID: 71210991314680831, guid: 98dfd4d01ce9ca94d9bb0615ffbdf851, type: 3}
-  - resourceType: 1
-    prefab: {fileID: 321619800667980081, guid: 599b03017ceb0324d83124fd592826ce, type: 3}
-  - resourceType: 2
-    prefab: {fileID: 2946670897356283482, guid: d333653dcd018d944ae51319a3b46d97,
-      type: 3}
-  - resourceType: 3
-    prefab: {fileID: 930958971903390477, guid: 10b7c3ec64b6a9b48bbd058685edc8c9, type: 3}
-  outpostPrefabs:
-  - outpostType: 0
-    prefab: {fileID: 8289241608959208900, guid: c729d96a6afdeb44c8d1d3f3c82f4375,
-      type: 3}
-  - outpostType: 1
-    prefab: {fileID: 6473873035720111039, guid: 31aa6bf7054e45a4ba63fdef7c6b7cc0,
-      type: 3}
-  - outpostType: 2
-    prefab: {fileID: 4681628370604149225, guid: 8b17949c47d9fd44ea576bc4b71f9967,
-      type: 3}
-  - outpostType: 3
-    prefab: {fileID: 8283866018255117843, guid: 9cd54a6aae50e9b43acba289b1830bea,
-      type: 3}
-  - outpostType: 4
-    prefab: {fileID: 1437105346472438531, guid: cae35fefec80af049aa85613d2a78588,
-      type: 3}
-  defaultEventPrefab: {fileID: 6643902457070112037, guid: 467aab8252184bcbb7f6977740bc7e1f,
-    type: 3}
-  eventPrefabs:
-  - eventType: 0
-    prefab: {fileID: 7957649149759182037, guid: 73d8aa7be220e0f4bb867f36a2aa9749,
-      type: 3}
-  - eventType: 1
-    prefab: {fileID: 6403879733641146597, guid: 57ed535ff2e6d044da64654650d8465d,
-      type: 3}
-  - eventType: 2
-    prefab: {fileID: 3258722379827126897, guid: 1147d50ffe774cb4b9174becb64b64a8,
-      type: 3}
-  mainEventPrefabs: []
-  subEventPrefabs: []
-  heroUnionPrefab: {fileID: 8521844722801733158, guid: d187a60df42daa64fbe3039120472881,
-    type: 3}
-  heroUnionPrefabs:
-  - prefabKey: HeroUnion
-    prefab: {fileID: 8521844722801733158, guid: d187a60df42daa64fbe3039120472881,
-      type: 3}
-  - prefabKey: HeroUnion 1
-    prefab: {fileID: 8521844722801733158, guid: a3678eb112f042541a066649a05e109a,
-      type: 3}
-  - prefabKey: HeroUnion 2
-    prefab: {fileID: 8521844722801733158, guid: 192f4927e7a278443a9a60a14bab71fe,
-      type: 3}
-  - prefabKey: HeroUnion 3
-    prefab: {fileID: 8521844722801733158, guid: 0e3c348348b9d434284d2197563b280f,
-      type: 3}
+  itemCatalog: {fileID: 0}
+  outpostCatalog: {fileID: 0}
+  eventCatalog: {fileID: 0}
+  heroUnionCatalog: {fileID: 0}
   villainUnionBasePrefab: {fileID: 7581908882623703925, guid: f21b9a302e7e7d946a5552b6e362f64c,
     type: 3}
-  decorativeBuildingPrefabs: []
-  gatePrefabs:
-  - prefabKey: HorizonGate
-    prefab: {fileID: 1130390622451909506, guid: 9ffa980ad96592749a258e78ac5ac6a1,
-      type: 3}
-  - prefabKey: VerticalGate
-    prefab: {fileID: 1130390622451909506, guid: cbf56fda652dfb34b916718254423f09,
-      type: 3}
-  - prefabKey: CornerGate1
-    prefab: {fileID: 1130390622451909506, guid: e0c16408e3ec3344d99770d1c294b347,
-      type: 3}
-  - prefabKey: CornerGate2
-    prefab: {fileID: 1130390622451909506, guid: 8503f48605f21f347830f6a5d1a224ba,
-      type: 3}
-  enemyGroupPrefab: {fileID: 742018977991778901, guid: 5d526f90784e1d8448e553ddcc712e1a,
-    type: 3}
-  enemyUnitPrefabs:
-  - enemyUnitIndex: 20001
-    prefab: {fileID: 2339513491936428854, guid: fe2e590159f221a42a3f45e82555f03c,
-      type: 3}
-  - enemyUnitIndex: 20002
-    prefab: {fileID: 7643362353283354469, guid: 459467f1508fe324f8330fade05dce5c,
-      type: 3}
-  - enemyUnitIndex: 20003
-    prefab: {fileID: 9198183598257805819, guid: 28b595ed690880b4b8b183d199615ca8,
-      type: 3}
-  playerUnitPrefabs:
-  - unitTemplateKey: 10001
-    prefab: {fileID: 2232679219160666054, guid: 33004947477ed524e9f358c676f3940e,
-      type: 3}
-  - unitTemplateKey: 10002
-    prefab: {fileID: 3066000060764545671, guid: 13fa7f1c60800f74a8958bdd5e8e6fb9,
-      type: 3}
-  - unitTemplateKey: 10003
-    prefab: {fileID: 8009465981617956979, guid: e441529fec702ba4e8d3a1745295b124,
-      type: 3}
-  - unitTemplateKey: 10004
-    prefab: {fileID: 76836340046720162, guid: fded1bd1ae6b3514085862157fbe732f, type: 3}
-  - unitTemplateKey: 10005
-    prefab: {fileID: 5520808783093789757, guid: 9146fefc4839c5342b3fda782f481b29,
-      type: 3}
+  decorativeObjectCatalog: {fileID: 0}
+  gateCatalog: {fileID: 0}
+  enemyCatalog: {fileID: 0}
+  playerUnitCatalog: {fileID: 0}
 --- !u!114 &2062833426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33002,7 +32981,7 @@ MonoBehaviour:
   enemyRoot: {fileID: 2000643501}
   heroUnionRoot: {fileID: 1889454947}
   villainUnionRoot: {fileID: 106732309}
-  decorativeBuildingRoot: {fileID: 1466526124}
+  decorativeObjectRoot: {fileID: 1466526124}
   gateRoot: {fileID: 1617649182}
   enemySpawnPointRoot: {fileID: 1729031364}
   loadOnStart: 1
@@ -33049,23 +33028,33 @@ MonoBehaviour:
   gridManager: {fileID: 1870279752}
   inputCamera: {fileID: 1128058702}
   brushType: 14
-  itemPreset: {fileID: 11400000, guid: 6726078c76ad04f4da5196d8e843d2dc, type: 2}
-  outpostPreset: {fileID: 11400000, guid: 230f4e4977d697542903a5970de3c224, type: 2}
-  eventPreset: {fileID: 11400000, guid: 37bb98cd07b44d7e96b1e21bc7c1ea29, type: 2}
+  selectedItemResourceType: 3
+  selectedItemAmount: 5
+  selectedOutpostType: 1
+  selectedOutpostResourcePerTurn: 1000
+  selectedOutpostInitialState: 1
+  selectedMapEventType: 0
+  selectedMapEventRequireAmount: 100
+  selectedMapEventEffectAmount: 3
   enemyGroupKey: 30004
   enemyBehaviorType: 1
   tileRegistry: {fileID: 11400000, guid: 49595da0b4c16a54bb3a3c6055d0f461, type: 2}
   selectedTileKey: tilemap_06
   selectedHeroUnionPrefabKey: HeroUnion
-  selectedDecorativeBuildingKey: 
+  selectedDecorativeObjectKey: 
   selectedMainEventPrefabKey: 
   selectedSubEventPrefabKey: 
   selectedGatePrefabKey: VerticalGate
   selectedGateId: gate_005
   selectedGateFirstZoneId: zone_003
   selectedGateSecondZoneId: zone_004
-  selectedGateOpenDurationTurns: 3
   selectedEnemySpawnZoneId: zone_003
+  selectedEnemySpawnEnemyGroupKey: 
+  selectedEnemySpawnChatZoneId: 0
+  selectedEnemySpawnChatId: 0
+  selectedEnemySpawnEncounterChatZoneId: 0
+  selectedEnemySpawnEncounterChatId: 0
+  selectedEnemySpawnEventBattleKey: 
   allowRuntimeEditing: 0
   applyLevelAfterEdit: 1
   groundMask:
@@ -33081,7 +33070,7 @@ MonoBehaviour:
   enemyGroupEncounterZoneColor: {r: 1, g: 0.15, b: 0.15, a: 0.25}
   heroUnionColor: {r: 0.95, g: 0.85, b: 0.25, a: 0.75}
   villainUnionColor: {r: 0.95, g: 0.25, b: 0.55, a: 0.75}
-  decorativeBuildingColor: {r: 0.95, g: 0.65, b: 0.25, a: 0.75}
+  decorativeObjectColor: {r: 0.95, g: 0.65, b: 0.25, a: 0.75}
   mainEventColor: {r: 0.2, g: 0.9, b: 1, a: 0.75}
   mainEventInteractionColor: {r: 0.2, g: 0.9, b: 1, a: 0.25}
   subEventColor: {r: 0.35, g: 0.95, b: 0.95, a: 0.75}
@@ -33290,6 +33279,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 3
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &2079092906
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -33758,6 +33749,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceType: 1
   amount: 5
+  animator: {fileID: 0}
+  getAnimationDestroyDelay: 0.45
 --- !u!65 &2142390952
 BoxCollider:
   m_ObjectHideFlags: 0
