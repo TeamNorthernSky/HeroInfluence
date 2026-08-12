@@ -108,14 +108,20 @@ public class HQUpgradeFlowController : MonoBehaviour
         }
     }
 
+    // [KJ 260811] 턴 제한 폐지 → Progress를 닫지 않고 연타하므로, 상태/자원이 바뀌면 표시(비용·레벨·문구)까지
+    //  다시 계산한다. 업그레이드 직후 TryUpgrade가 OnStateChanged를 발화 → 여기서 다음 단계로 자동 갱신된다.
     private void HandleResourceChanged(ResourceType _, int __)
     {
-        if (modalProgressRoot != null && modalProgressRoot.activeSelf) ApplyProgressButtonState();
+        if (modalProgressRoot == null || !modalProgressRoot.activeSelf) return;
+        RefreshProgress();
+        ApplyProgressButtonState();
     }
 
     private void HandleHQChanged()
     {
-        if (modalProgressRoot != null && modalProgressRoot.activeSelf) ApplyProgressButtonState();
+        if (modalProgressRoot == null || !modalProgressRoot.activeSelf) return;
+        RefreshProgress();
+        ApplyProgressButtonState();
     }
 
     private DepartmentModalContent FindContent(HQDepartment d)
@@ -136,8 +142,27 @@ public class HQUpgradeFlowController : MonoBehaviour
 
         currentDept = dept;
         currentContent = FindContent(dept);
-        int currentLevel = gm.HQ.GetLevel(dept);
-        currentCost = gm.HQ.GetUpgradeCost(dept, currentLevel);
+
+        // Modal_HQ는 닫지 않음 — Progress가 같은 캔버스 형제로 위에 떠 오버레이.
+        // 닫기 후 사용자가 즉시 다른 부서를 선택할 수 있음.
+        if (modalProgressRoot != null) modalProgressRoot.SetActive(true);
+
+        RefreshProgress();
+        ApplyProgressButtonState();
+    }
+
+    /// <summary>[KJ 260811] 표시 갱신 — 현재 레벨을 다시 읽어 비용까지 재계산한다.
+    /// 턴당 1회 제한 폐지로 Progress를 닫지 않고 연속 업그레이드하므로, OnStateChanged/OnResourceChanged
+    /// 때마다 이 메서드로 "다음 단계" 값으로 갱신해야 한다. 재계산하지 않으면 이전 단계 비용이 남아
+    /// 잘못된 가격으로 차감된다. currentDept/currentContent는 ShowProgress가 세팅한 값을 재사용한다
+    /// (모달이 열려 있는 동안 대상 부서는 바뀌지 않는다).</summary>
+    private void RefreshProgress()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null || gm.HQ == null) return;
+
+        int currentLevel = gm.HQ.GetLevel(currentDept);
+        currentCost = gm.HQ.GetUpgradeCost(currentDept, currentLevel);
 
         // Title — 해금 전(level=0)은 progressTitle, 해금 후(level>=1)는 progressTitleUpgrade (빈값이면 progressTitle 폴백)
         if (titleText != null)
@@ -153,13 +178,13 @@ public class HQUpgradeFlowController : MonoBehaviour
         if (hqLevelText != null)
         {
             hqLevelText.gameObject.SetActive(showHqLevel);
-            if (showHqLevel) hqLevelText.text = BuildHQLevelText(gm.HQ, dept, currentLevel);
+            if (showHqLevel) hqLevelText.text = BuildHQLevelText(gm.HQ, currentDept, currentLevel);
         }
 
         // UpgradeInfo — 해금 후(level>=1)는 upgradeInfoStaticTextUpgrade 우선, 폴백은 기존 흐름
         if (upgradeInfoText != null)
         {
-            bool maxed = currentLevel >= gm.HQ.GetMaxLevel(dept);
+            bool maxed = currentLevel >= gm.HQ.GetMaxLevel(currentDept);
             bool unlocked = currentLevel >= 1;
             string text;
             if (maxed) text = string.Empty;
@@ -168,7 +193,7 @@ public class HQUpgradeFlowController : MonoBehaviour
             else if (currentContent != null && !string.IsNullOrEmpty(currentContent.upgradeInfoStaticText))
                 text = currentContent.upgradeInfoStaticText;
             else
-                text = BuildDynamicUpgradeInfoText(gm.HQ, dept, currentLevel);
+                text = BuildDynamicUpgradeInfoText(gm.HQ, currentDept, currentLevel);
             upgradeInfoText.text = text;
             upgradeInfoText.gameObject.SetActive(!maxed);
         }
@@ -178,12 +203,6 @@ public class HQUpgradeFlowController : MonoBehaviour
         if (costChipText != null) costChipText.text = currentCost[ResourceType.Chip].ToString("N0");
         if (costCrystalText != null) costCrystalText.text = currentCost[ResourceType.Crystal].ToString("N0");
         if (costSupplyText != null) costSupplyText.text = currentCost[ResourceType.Supply].ToString("N0");
-
-        // Modal_HQ는 닫지 않음 — Progress가 같은 캔버스 형제로 위에 떠 오버레이.
-        // 닫기 후 사용자가 즉시 다른 부서를 선택할 수 있음.
-        if (modalProgressRoot != null) modalProgressRoot.SetActive(true);
-
-        ApplyProgressButtonState();
     }
 
     private void ApplyProgressButtonState()
@@ -191,12 +210,12 @@ public class HQUpgradeFlowController : MonoBehaviour
         var gm = GameManager.Instance;
         if (gm == null) return;
 
-        bool turnUsed = gm.HQ != null && gm.HQ.UpgradedThisTurn;
+        //bool turnUsed = gm.HQ != null && gm.HQ.UpgradedThisTurn;
         bool maxed = gm.HQ != null && gm.HQ.GetLevel(currentDept) >= gm.HQ.GetMaxLevel(currentDept);
         bool canAfford = CheckAfford(gm.Economy);
         bool prereqMet = gm.HQ == null || gm.HQ.ArePrerequisitesMet(currentDept);
 
-        bool enabled = !turnUsed && canAfford && !maxed && prereqMet;
+        bool enabled = /*!turnUsed &&*/ canAfford && !maxed && prereqMet;
 
         if (btnConfirm != null) btnConfirm.interactable = enabled;
         if (disabledOverlay != null) disabledOverlay.SetActive(!enabled);
@@ -211,8 +230,8 @@ public class HQUpgradeFlowController : MonoBehaviour
                 msg = "업그레이드 상태가 최고 단계입니다.";
             else if (!prereqMet)
                 msg = gm.HQ != null ? gm.HQ.GetUnmetReasonText(currentDept) : "선행 조건이 필요합니다.";
-            else if (turnUsed)
-                msg = "이번 턴에 이미 건설, 또는 업그레이드를 진행했습니다.";
+            //else if (turnUsed)
+            //    msg = "이번 턴에 이미 건설, 또는 업그레이드를 진행했습니다.";
             else if (!canAfford)
                 msg = "자원이 부족합니다.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
@@ -259,9 +278,14 @@ public class HQUpgradeFlowController : MonoBehaviour
             return;
         }
 
+        // [KJ 260811] 차감 중 Spend가 OnResourceChanged를 동기 발화 → HandleResourceChanged → RefreshProgress가
+        //  currentCost를 새 딕셔너리로 교체한다. 순회 중 컬렉션이 바뀌면 InvalidOperationException이 나므로
+        //  차감·롤백은 이 스냅샷만 사용한다. 필드 currentCost는 건드리지 않는다.
+        var costSnapshot = new List<KeyValuePair<ResourceType, int>>(currentCost);
+
         // [JC 260618] 차감 성공분을 기억해, 이후 단계 실패 시 전체 롤백(자원 유실 방지). Training/Lab 롤백 패턴과 정합.
         var spent = new List<KeyValuePair<ResourceType, int>>();
-        foreach (var kv in currentCost)
+        foreach (var kv in costSnapshot)
         {
             if (kv.Value <= 0) continue;
             if (!gm.Economy.Spend(kv.Key, kv.Value))
@@ -280,7 +304,8 @@ public class HQUpgradeFlowController : MonoBehaviour
             return;
         }
 
-        CloseProgress();
+        // 턴당 업그레이드 1회 제한 해제로 인해 패널 계속 띄워둠
+        //CloseProgress();
         ShowResult(beforeLevel, afterLevel);
     }
 
