@@ -103,8 +103,8 @@ public static class EnemySpawnPlanBuilder
             EnemyData spawnData = BuildEventEnemyData(unit);
             string prefabKey = !string.IsNullOrWhiteSpace(unit.PrefabResourcePath)
                 ? unit.PrefabResourcePath.Trim()
-                : spawnData.Index;
-            entries.Add(new EnemySpawnEntry(spawnData, unit.Slot, prefabKey, unit.Skills));
+                : ResolveEventFallbackPrefabPath(unit.UnitKey);
+            entries.Add(new EnemySpawnEntry(spawnData, unit.Slot, prefabKey, unit.Skills, unit.UnitKey));
         }
 
         if (entries.Count == 0)
@@ -141,6 +141,18 @@ public static class EnemySpawnPlanBuilder
             UnitAI = unit.UnitAI,
             ExperiencePoint = Mathf.Max(0, unit.ExperiencePoint)
         };
+    }
+
+    // EnemySpawner.FindEventEnemyPrefab의 하드코딩 폴백과 동일 규칙(PrefabResourcePath 미지정 시).
+    // [TEMP:EVENTBUILD] Phase 7 완결 시 프리팹 규약 통일 예정.
+    private static string ResolveEventFallbackPrefabPath(string unitKey)
+    {
+        string normalized = BattleScenarioUnitKey.Normalize(unitKey);
+        if (normalized == "20007")
+            return "prefab/BattlePrefab/EnemyUnit/Unit_AdvancedMonster_20003";
+        if (normalized == "20006")
+            return "prefab/BattlePrefab/EnemyUnit/Unit_MiddleMonster_20002";
+        return "prefab/BattlePrefab/EnemyUnit/Unit_LowerMonster_20001";
     }
 
     private static EnemyData CloneForSpawn(EnemyData source)

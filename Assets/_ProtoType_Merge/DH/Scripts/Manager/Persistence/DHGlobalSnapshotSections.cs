@@ -75,12 +75,12 @@ public sealed class DHEconomySnapshotSection : DHTurnStartSnapshotSection
 public sealed class DHHQSnapshotSection : DHTurnStartSnapshotSection
 {
     [SerializeField] private List<GameSaveData.HQLevelEntry> hqLevels = new List<GameSaveData.HQLevelEntry>();
-    [SerializeField] private bool hqUpgradedThisTurn;
+    //[SerializeField] private bool hqUpgradedThisTurn;
 
     public override void CaptureFromRuntime()
     {
         hqLevels.Clear();
-        hqUpgradedThisTurn = false;
+        //hqUpgradedThisTurn = false;
 
         HQStateManager hq = GameManager.Instance != null ? GameManager.Instance.HQ : null;
         if (hq == null)
@@ -94,8 +94,7 @@ public sealed class DHHQSnapshotSection : DHTurnStartSnapshotSection
                 level = hq.GetLevel(department)
             });
         }
-
-        hqUpgradedThisTurn = hq.UpgradedThisTurn;
+        //hqUpgradedThisTurn = hq.UpgradedThisTurn;
     }
 
     public override void FillGameSaveData(GameSaveData data)
@@ -105,13 +104,13 @@ public sealed class DHHQSnapshotSection : DHTurnStartSnapshotSection
 
         data.hqLevels.Clear();
         data.hqLevels.AddRange(hqLevels);
-        data.hqUpgradedThisTurn = hqUpgradedThisTurn;
+        //data.hqUpgradedThisTurn = hqUpgradedThisTurn;
     }
 
     public override void LoadFromGameSaveData(GameSaveData data)
     {
         hqLevels.Clear();
-        hqUpgradedThisTurn = false;
+        //hqUpgradedThisTurn = false;
 
         if (data == null)
             return;
@@ -119,13 +118,13 @@ public sealed class DHHQSnapshotSection : DHTurnStartSnapshotSection
         if (data.hqLevels != null)
             hqLevels.AddRange(data.hqLevels);
 
-        hqUpgradedThisTurn = data.hqUpgradedThisTurn;
+        //hqUpgradedThisTurn = data.hqUpgradedThisTurn;
     }
 
     public override void ClearSnapshot()
     {
         hqLevels.Clear();
-        hqUpgradedThisTurn = false;
+        //hqUpgradedThisTurn = false;
     }
 }
 

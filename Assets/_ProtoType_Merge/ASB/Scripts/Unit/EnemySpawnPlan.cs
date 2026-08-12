@@ -33,13 +33,21 @@ public sealed class EnemySpawnEntry
     public string PrefabKey { get; }
     // 이벤트=명시 스킬 목록, 일반=null/빈값(EnemyData.Index 규칙으로 기본 스킬 유도).
     public IReadOnlyList<SkillData> ExplicitSkills { get; }
+    // 이벤트 인질 시나리오 필터용 원본 유닛 키(일반 전투는 빈 문자열).
+    public string SourceUnitKey { get; }
 
-    public EnemySpawnEntry(EnemyData data, int combatSlot, string prefabKey, IReadOnlyList<SkillData> explicitSkills = null)
+    public EnemySpawnEntry(
+        EnemyData data,
+        int combatSlot,
+        string prefabKey,
+        IReadOnlyList<SkillData> explicitSkills = null,
+        string sourceUnitKey = null)
     {
         Data = data;
         CombatSlot = combatSlot;
         PrefabKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
         ExplicitSkills = explicitSkills;
+        SourceUnitKey = string.IsNullOrWhiteSpace(sourceUnitKey) ? string.Empty : sourceUnitKey.Trim();
     }
 
     public bool HasExplicitSkills => ExplicitSkills != null && ExplicitSkills.Count > 0;

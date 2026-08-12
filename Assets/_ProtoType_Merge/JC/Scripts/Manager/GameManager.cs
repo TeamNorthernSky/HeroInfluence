@@ -32,7 +32,8 @@ public class GameManager : MonoBehaviour
             currentDay = newDay;
             if (advanced)
             {
-                if (HQ != null) HQ.OnTurnAdvanced();
+                // [KJ 260811] HQ.OnTurnAdvanced() 제거 — 턴당 1회 건설/업그레이드 제한 폐지.
+                //  아래 턴 수입 가산은 무관한 로직이므로 그대로 유지한다.
                 int income = 0;
                 if (HQ != null && Economy != null)
                 {

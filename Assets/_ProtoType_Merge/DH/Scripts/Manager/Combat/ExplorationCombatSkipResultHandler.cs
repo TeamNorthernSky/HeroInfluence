@@ -168,6 +168,29 @@ public static class ExplorationCombatSkipResultHandler
 
     private static float CalculateTotalEnemyExp(CombatContext context)
     {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+
+        // 그룹키가 있으면 그룹 템플릿(풀 그룹) 기준으로 경험치를 합산해 PersistentEnemyRepository 의존을 끊는다.
+        // "항상 풀 그룹" 규약과도 일치(영속 개체의 사망 필터 부분집합이 아닌 전체 멤버 기준).
+        string enemyGroupKey = context != null && context.CombatEnemy != null
+            ? context.CombatEnemy.EnemyGroupKey
+            : string.Empty;
+        if (catalog != null && !string.IsNullOrWhiteSpace(enemyGroupKey) &&
+            catalog.TryGetEnemyGroupTemplate(enemyGroupKey, out DHEnemyGroupTemplate group) &&
+            group != null && group.Members != null)
+        {
+            float groupExp = 0f;
+            for (int i = 0; i < group.Members.Count; i++)
+            {
+                string templateKey = group.Members[i].EnemyUnitIndex.ToString();
+                if (catalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate enemyTemplate) && enemyTemplate != null)
+                    groupExp += Mathf.Max(0f, enemyTemplate.ExperiencePoint);
+            }
+
+            return groupExp;
+        }
+
+        // 폴백: 그룹키가 없는 경우(레거시/엣지)에만 기존 영속 경로 사용.
         PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
         IReadOnlyList<int> enemyUnitIndices = context != null ? context.CombatEnemy?.UnitIndices : null;
         if (enemyRepository == null || enemyUnitIndices == null)
@@ -180,8 +203,8 @@ public static class ExplorationCombatSkipResultHandler
             if (unitIndex <= 0 || !enemyRepository.TryGetUnit(unitIndex, out EnemyUnitPersistentData data) || data == null)
                 continue;
 
-            if (DHCsvTemplateCatalog.Instance != null &&
-                DHCsvTemplateCatalog.Instance.TryGetEnemyUnitTemplate(data.UnitTemplateKey, out DHEnemyUnitTemplate enemyTemplate) &&
+            if (catalog != null &&
+                catalog.TryGetEnemyUnitTemplate(data.UnitTemplateKey, out DHEnemyUnitTemplate enemyTemplate) &&
                 enemyTemplate != null)
             {
                 totalExp += Mathf.Max(0f, enemyTemplate.ExperiencePoint);
