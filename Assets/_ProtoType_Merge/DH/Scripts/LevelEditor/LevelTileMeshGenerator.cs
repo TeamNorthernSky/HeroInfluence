@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class LevelTileMeshGenerator : MonoBehaviour
 {
@@ -58,6 +61,7 @@ public class LevelTileMeshGenerator : MonoBehaviour
     [SerializeField] private Transform tileRoot;
     [SerializeField] private Material materialTemplate;
     [SerializeField] private string generatedRootName = "Generated Tile Meshes";
+    [SerializeField] private bool markChunksReflectionProbeStatic = true;
 
     private readonly Dictionary<Texture, Material> materialCache = new Dictionary<Texture, Material>();
 
@@ -263,6 +267,7 @@ public class LevelTileMeshGenerator : MonoBehaviour
         string textureName = key.Texture != null ? key.Texture.name : "NoTexture";
         GameObject go = new GameObject($"{namePrefix}_{key.Chunk.x}_{key.Chunk.y}_{textureName}");
         go.transform.SetParent(parent, false);
+        ApplyStaticFlags(go);
 
         Mesh mesh = new Mesh
         {
@@ -282,6 +287,18 @@ public class LevelTileMeshGenerator : MonoBehaviour
 
         MeshRenderer meshRenderer = go.AddComponent<MeshRenderer>();
         meshRenderer.sharedMaterial = GetMaterialForTexture(key.Texture);
+    }
+
+    private void ApplyStaticFlags(GameObject target)
+    {
+        if (target == null || !markChunksReflectionProbeStatic)
+            return;
+
+#if UNITY_EDITOR
+        StaticEditorFlags flags = GameObjectUtility.GetStaticEditorFlags(target);
+        flags |= StaticEditorFlags.ReflectionProbeStatic;
+        GameObjectUtility.SetStaticEditorFlags(target, flags);
+#endif
     }
 
     private void ClearChildren(Transform root)

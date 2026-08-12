@@ -42,6 +42,10 @@ public class FacilityModule : MonoBehaviour
         LobbyUIRegistry.RegisterFacility(this);
         SetLockedInteractive(false); // 기본 = 완전 비상호작용
         Refresh();
+        if (facilityModal != null && facilityModal.activeSelf != true)
+        {
+
+        }
     }
 
     private void OnDisable() => LobbyUIRegistry.UnregisterFacility(this);

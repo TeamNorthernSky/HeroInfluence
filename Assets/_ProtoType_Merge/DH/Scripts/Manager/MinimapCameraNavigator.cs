@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(RectTransform))]
-public class MinimapCameraNavigator : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [Header("References")]
     [SerializeField] private RawImage minimapImage;
@@ -15,6 +15,7 @@ public class MinimapCameraNavigator : MonoBehaviour, IBeginDragHandler, IDragHan
     [SerializeField] private QuarterViewCameraFollower cameraFollower;
 
     [Header("Input")]
+    [SerializeField] private bool enableClickNavigation = true;
     [SerializeField] private bool enableDragNavigation = true;
     [SerializeField] private bool forceMinimapRaycastTarget = true;
 
@@ -31,6 +32,14 @@ public class MinimapCameraNavigator : MonoBehaviour, IBeginDragHandler, IDragHan
     {
         ResolveReferences();
         ApplyRaycastTarget();
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (!CanHandleClick(eventData))
+            return;
+
+        MoveCameraToPointer(eventData);
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -53,6 +62,13 @@ public class MinimapCameraNavigator : MonoBehaviour, IBeginDragHandler, IDragHan
     public void OnEndDrag(PointerEventData eventData)
     {
         isDragging = false;
+    }
+
+    private bool CanHandleClick(PointerEventData eventData)
+    {
+        return enableClickNavigation
+            && eventData != null
+            && eventData.button == PointerEventData.InputButton.Left;
     }
 
     private bool CanHandleDrag(PointerEventData eventData)
