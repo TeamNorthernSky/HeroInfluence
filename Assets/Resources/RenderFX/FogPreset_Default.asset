@@ -73,7 +73,7 @@ MonoBehaviour:
     brightnessMid: 1.5
     brightnessHigh: 1.033
   shared:
-    sightRadiusCells: 4
+    sightRadiusCells: 10
     edgeWidthWorld: 0.2
     edgeNoiseStrength: 0.06
     edgeNoiseScale: 0.15

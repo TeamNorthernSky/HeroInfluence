@@ -31,6 +31,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private EnemyBehaviorType enemyBehaviorType = EnemyBehaviorType.Mobile;
     [SerializeField] private LevelTileRegistry tileRegistry;
     [SerializeField] private string selectedTileKey;
+    [SerializeField] private string selectedTileMaterialKey;
     [SerializeField] private string selectedHeroUnionPrefabKey;
     [FormerlySerializedAs("selectedDecorativeBuildingKey")]
     [SerializeField] private string selectedDecorativeObjectKey;
@@ -95,6 +96,7 @@ public class LevelEditorController : MonoBehaviour
     public EnemyBehaviorType EnemyBehaviorType => enemyBehaviorType;
     public LevelTileRegistry TileRegistry => tileRegistry;
     public string SelectedTileKey => selectedTileKey;
+    public string SelectedTileMaterialKey => string.IsNullOrWhiteSpace(selectedTileMaterialKey) ? string.Empty : selectedTileMaterialKey.Trim();
     public string SelectedHeroUnionPrefabKey => string.IsNullOrWhiteSpace(selectedHeroUnionPrefabKey) ? string.Empty : selectedHeroUnionPrefabKey.Trim();
     public string SelectedDecorativeObjectKey => selectedDecorativeObjectKey;
     public string SelectedMainEventPrefabKey => string.IsNullOrWhiteSpace(selectedMainEventPrefabKey) ? string.Empty : selectedMainEventPrefabKey.Trim();
@@ -195,7 +197,7 @@ public class LevelEditorController : MonoBehaviour
                 if (string.IsNullOrWhiteSpace(selectedTileKey))
                     return;
 
-                levelData.SetGroundTile(grid, selectedTileKey);
+                levelData.SetGroundTile(grid, selectedTileKey, SelectedTileMaterialKey);
                 break;
             case LevelEditorBrushType.GroundTileErase:
                 levelData.EraseGroundTileAt(grid);

@@ -7,9 +7,14 @@ using UnityEngine;
     menuName = "DH Work/Level Editor/Level Tile Registry")]
 public class LevelTileRegistry : ScriptableObject
 {
+    [Header("Tiles")]
     [SerializeField] private List<LevelTileEntry> tileEntries = new List<LevelTileEntry>();
 
+    [Header("Materials")]
+    [SerializeField] private List<LevelTileMaterialEntry> materialEntries = new List<LevelTileMaterialEntry>();
+
     public IReadOnlyList<LevelTileEntry> TileEntries => tileEntries;
+    public IReadOnlyList<LevelTileMaterialEntry> MaterialEntries => materialEntries;
 
     private void OnValidate()
     {
@@ -73,6 +78,26 @@ public class LevelTileRegistry : ScriptableObject
         return false;
     }
 
+    public bool TryGetMaterialTemplate(string materialKey, out Material materialTemplate)
+    {
+        materialTemplate = null;
+
+        if (string.IsNullOrWhiteSpace(materialKey))
+            return false;
+
+        for (int i = 0; i < materialEntries.Count; i++)
+        {
+            LevelTileMaterialEntry entry = materialEntries[i];
+            if (!string.Equals(entry.MaterialKey, materialKey, StringComparison.Ordinal))
+                continue;
+
+            materialTemplate = entry.MaterialTemplate;
+            return materialTemplate != null;
+        }
+
+        return false;
+    }
+
     private static string CreateUniqueKey(string baseKey, HashSet<string> usedKeys)
     {
         if (!usedKeys.Contains(baseKey))
@@ -104,4 +129,14 @@ public struct LevelTileEntry
     {
         tileKey = value;
     }
+}
+
+[Serializable]
+public struct LevelTileMaterialEntry
+{
+    [SerializeField] private string materialKey;
+    [SerializeField] private Material materialTemplate;
+
+    public string MaterialKey => materialKey;
+    public Material MaterialTemplate => materialTemplate;
 }
