@@ -12,6 +12,11 @@ namespace EnemyAI
                     return new EAI_20002();
                 case 20003:
                     return new EAI_20003();
+                // 보스/미니언 (구현지시서: 보스유닛_소환_창구스킬_페이즈AI). index는 데이터 스키마에 맞게 조정.
+                case 20101:
+                    return new EAI_20101();
+                case 20102:
+                    return new EAI_20102();
                 default:
                     return new EAI_20001();
             }

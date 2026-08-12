@@ -245,6 +245,93 @@ public class EnemySpawner : MonoBehaviour
         return go;
     }
 
+    /// <summary>
+    /// 점유 시 실패하는 안전 소환. 보스 런타임 소환용(구현지시서: 보스유닛_소환_창구스킬_페이즈AI §1·§4).
+    /// <see cref="SpawnUnit"/>과 달리 <c>ClearGrid</c>로 기존 유닛을 파괴하지 않는다 — 대상 셀에
+    /// BattleCharactor/인질이 이미 있으면 스폰하지 않고 false를 반환한다(SpawnEventEnemy 점유 검사 패턴 재사용).
+    /// </summary>
+    public bool TrySpawnUnitIfEmpty(string enemyId, int gridNumber, out GameObject spawned)
+    {
+        spawned = null;
+
+        if (string.IsNullOrWhiteSpace(enemyId))
+        {
+            Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: enemyId가 비어 있습니다. ({gameObject.name})");
+            return false;
+        }
+
+        if (!hierarchyReady || unitParent == null)
+        {
+            Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: Grid/Units 계층이 준비되지 않았습니다. ({gameObject.name})");
+            return false;
+        }
+
+        if (!gridSlots.TryGetValue(gridNumber, out Vector3 worldPos) ||
+            !gridRotations.TryGetValue(gridNumber, out Quaternion worldRot))
+        {
+            Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: {gridNumber}번 그리드를 찾지 못했습니다. ({gameObject.name})");
+            return false;
+        }
+
+        if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef resolvedCell) || resolvedCell == null)
+        {
+            Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: GridCell을 찾지 못했습니다. grid={gridNumber} ({gameObject.name})");
+            return false;
+        }
+
+        // 점유 검사(SpawnEventEnemy 패턴) — 점유 시 기존 유닛을 보존하고 조용히 실패.
+        BattleCharactor existingUnit = resolvedCell.GetComponentInChildren<BattleCharactor>(true);
+        HostageBattleActor existingHostage = resolvedCell.GetComponentInChildren<HostageBattleActor>(true);
+        if (existingUnit != null || existingHostage != null)
+        {
+            return false;
+        }
+
+        DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(enemyId, out EnemyData data);
+        if (data == null)
+        {
+            Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: EnemyData를 찾지 못했습니다. enemyId='{enemyId}'");
+            return false;
+        }
+
+        GameObject prefab = FindPrefab(data);
+        if (prefab == null)
+        {
+            return false;
+        }
+
+        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
+        var go = Instantiate(prefab, worldPos, facingPlayerRot, resolvedCell.transform);
+        go.name = $"Enemy_{data.Index}_{go.GetInstanceID()}";
+
+        foreach (var legacy in go.GetComponentsInChildren<CharactorScript>(true))
+        {
+            DestroyImmediate(legacy);
+        }
+
+        var enemyScript = go.GetComponent<EnemyScript>();
+        if (enemyScript == null)
+        {
+            enemyScript = go.AddComponent<EnemyScript>();
+        }
+        enemyScript.Initialize(data);
+
+        var battle = go.GetComponent<BattleCharactor>();
+        if (battle == null)
+        {
+            battle = go.AddComponent<BattleCharactor>();
+        }
+
+        battle.AssignToCell(resolvedCell);
+        resolvedCell.SetOccupyingUnit(battle);
+
+        spawnedByGrid[gridNumber] = go;
+        spawned = go;
+        Debug.Log(
+            $"[EnemySpawner] 안전 소환 완료: id={enemyId}, grid={gridNumber}, Index={data.Index}, place={gameObject.name}");
+        return true;
+    }
+
     private bool SpawnFromEventBattle(CombatEventBattleData eventBattle)
     {
         if (eventBattle == null || eventBattle.EnemyUnits == null)
