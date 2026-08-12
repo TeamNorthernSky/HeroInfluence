@@ -67,6 +67,10 @@ public class SkillButtonController : MonoBehaviour
         if (!isOn)
         {
             self.SetState(true, false);
+            // [JC 260812] 점등된 버튼 재클릭 = 재무장. 우클릭 취소·IP 부족 등으로 타겟팅만 풀리고
+            // 토글 점등이 남는 상태 불일치의 복구 경로(재점등만 하고 끝나면 영구 불일치).
+            CurrentSkillData = battleFlowManager?.GetCurrentUnitSkill(skillAction);
+            inputHandler?.BeginPendingAction(skillAction);
             return;
         }
 

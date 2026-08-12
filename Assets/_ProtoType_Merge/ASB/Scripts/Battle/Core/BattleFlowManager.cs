@@ -722,6 +722,27 @@ public class BattleFlowManager : MonoBehaviour
         Log($"[BattleFlow] Lookup 재구성: id={battleById.Count}");
     }
 
+    /// <summary>
+    /// 런타임에 소환된 유닛을 참가자로 등록한다(보스 미니언 등). 초기화 경로(Initialize)와 동일하게
+    /// 죽음 이벤트 구독 + 입력 바인딩 + 조회 맵 재구성을 수행한다.
+    /// RefreshQueue는 호출하지 않으므로 진행 중인 라운드 큐엔 끼어들지 않고, 다음 라운드부터 자연히 반영된다.
+    /// (battleById 갱신은 현재 로직상 필수는 아니나 초기화 경로와 대칭 유지를 위해 함께 재구성.)
+    /// </summary>
+    public bool RegisterRuntimeParticipant(BattleCharactor unit)
+    {
+        if (unit == null || participants.Contains(unit))
+        {
+            return false;
+        }
+
+        participants.Add(unit);
+        SubscribeUnitDeathEvent(unit);
+        inputHandler?.BindUnitDeathEvents(new[] { unit });
+        RebuildRuntimeLookup();
+        Debug.Log($"[BattleFlow] 런타임 참가자 등록: {unit.UnitName} (participants={participants.Count})");
+        return true;
+    }
+
     /// <summary>자동전투·적 공격 시 스킬 공격 범위 발판을 표시합니다.</summary>
     public void ShowTargetHighlight(BattleCharactor caster, BattleCharactor target, SkillData skill)
     {

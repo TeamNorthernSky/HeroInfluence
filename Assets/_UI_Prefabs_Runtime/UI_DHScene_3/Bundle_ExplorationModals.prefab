@@ -1673,7 +1673,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d648ea0c21f86fe409b0e7a4fd7e574f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pausesGame: 1
+  pausesGame: 0
+  keepSiblingOrder: 0
   closeOnOutsideClick: 1
   contentRect: {fileID: 801811955780663193}
   wantsDim: 1
@@ -2604,7 +2605,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d648ea0c21f86fe409b0e7a4fd7e574f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pausesGame: 1
+  pausesGame: 0
+  keepSiblingOrder: 0
   closeOnOutsideClick: 1
   contentRect: {fileID: 8724708774392816784}
   wantsDim: 1
