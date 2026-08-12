@@ -63,10 +63,12 @@ public class CombatEventBattleData
     public string SourceMainEventKey;
     public int EnemyLevel;
     // ASB EnemySpawner가 이벤트 전투일 때 읽는 확정 적 유닛 목록.
+    // [TEMP:EVENTBUILD] 전투씬 키-빌드 이관의 과도기 폴백 기준선. 런타임 동등성 검증 후 §6에서 제거 예정.
     public List<CombatEventBattleUnitData> EnemyUnits = new List<CombatEventBattleUnitData>();
     // 전투씬이 돌려줘야 하는 숫자 결과값. 예: HostageInjuredCount.
     public List<DHEventNumericState> NumericResults = new List<DHEventNumericState>();
     // 인질전 같은 전투 특수 규칙. null이면 일반 이벤트 전투처럼 처리한다.
+    // [TEMP:EVENTBUILD] 위와 동일 — 과도기 폴백 기준선.
     public BattleScenarioConfig Scenario;
 
     // ASB 공통 처리에서 "적 그룹 키" 이름으로 읽어야 할 경우를 위한 별칭.

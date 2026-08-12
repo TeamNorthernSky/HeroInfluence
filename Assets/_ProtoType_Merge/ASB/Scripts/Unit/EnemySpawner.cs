@@ -113,6 +113,36 @@ public class EnemySpawner : MonoBehaviour
         return SpawnFromRepositoryOrFallback();
     }
 
+    /// <summary>
+    /// 이미 빌드된 플랜으로 스폰(§5). 빌드는 BattleSceneManager가 수행하고 스포너는 스폰만 담당한다.
+    /// 인질 제외에 쓰는 hostageConfig는 <b>오직 plan.Scenario.HostageRescue에서만</b> 도출한다(별도 인자 없음, §7).
+    /// 이벤트 전투는 사전 주입된 eventSlotMap을, 없으면 스포너 그리드로 만든 슬롯맵을 사용한다.
+    /// </summary>
+    public bool SpawnFromPreparedPlan(EnemySpawnPlan plan)
+    {
+        if (!hierarchyReady)
+            Awake();
+
+        if (plan == null || plan.Count == 0)
+        {
+            Debug.LogError("[EnemySpawner] SpawnFromPreparedPlan: plan is null or empty.", this);
+            return false;
+        }
+
+        BattleLogicalSlotMap slotMap = eventSlotMap;
+        if (slotMap == null && !BattleLogicalSlotMap.TryCreate(transform, out slotMap, out string slotError))
+        {
+            Debug.LogError($"[EnemySpawner] SpawnFromPreparedPlan: slot map build failed. {slotError}", this);
+            return false;
+        }
+
+        HostageScenarioConfig hostageConfig = plan.Scenario != null && plan.Scenario.IsHostageRescue
+            ? plan.Scenario.HostageRescue
+            : null;
+
+        return SpawnFromPlan(plan, slotMap, hostageConfig, "prepared-plan");
+    }
+
     public bool SpawnFromRepositoryOrFallback()
     {
         if (!hierarchyReady)
@@ -341,8 +371,8 @@ public class EnemySpawner : MonoBehaviour
         return true;
     }
 
-    // 이벤트 전투도 일반 전투와 동일한 공용 플랜 경로로 스폰한다.
-    // 인질 유닛 제외 + 미리 주입된 eventSlotMap 사용은 SpawnFromPlan에서 처리.
+    // 이벤트 전투 사전빌드(EnemyUnits) 폴백 경로. [TEMP:EVENTBUILD] 런타임 검증 후 §6에서 제거 예정.
+    // BattleSceneManager가 키-빌드(SpawnFromPreparedPlan)에 실패했을 때 ManualSpawn을 통해 이 경로로 폴백한다.
     private bool SpawnFromEventBattle(CombatEventBattleData eventBattle)
     {
         if (eventBattle == null)
