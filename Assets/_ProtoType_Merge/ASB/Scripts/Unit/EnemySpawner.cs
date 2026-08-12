@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using ASB.Work.BattleGrid;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
@@ -123,19 +122,29 @@ public class EnemySpawner : MonoBehaviour
         if (combatContext != null && combatContext.HasEventBattle)
             return SpawnFromEventBattle(combatContext.EventBattle);
 
-        // 그룹키 기반 스폰 우선(일반 전투). 그룹키가 있으면 실패해도 영속/디버그로 폴백하지 않고
-        // 진입 실패로 둔다(잘못된 적 구성으로 전투가 시작되는 것을 막는다).
+        // 그룹키 기반 스폰 우선(일반 전투). 그룹키가 있으면 실패해도 폴백하지 않고 진입 실패로 둔다
+        // (잘못된 적 구성으로 전투가 시작되는 것을 막는다).
         string enemyGroupKey = combatContext != null && combatContext.CombatEnemy != null
             ? combatContext.CombatEnemy.EnemyGroupKey
             : string.Empty;
         if (!string.IsNullOrWhiteSpace(enemyGroupKey))
             return SpawnFromEnemyGroupPlan(enemyGroupKey, combatContext.EnemyLevel);
 
-        // 그룹키가 없는 경우(레거시/엣지)만 기존 영속 경로 유지. [TEMP:GROUPKEY] Phase 6에서 제거.
-        if (SpawnFromPersistentRepository())
-            return true;
+        // 명시적 개발용: 인스펙터 debugSpawnRequests가 설정된 경우에만 디버그 스폰(자동 폴백 아님).
+        if (debugSpawnRequests != null && debugSpawnRequests.Count > 0)
+        {
+            Debug.LogWarning(
+                "[EnemySpawner] EnemyGroupKey/EventBattle 없음 — 인스펙터 debugSpawnRequests로 개발용 스폰.",
+                this);
+            DebugSpawn();
+            return false;
+        }
 
-        DebugSpawn();
+        // 그룹키도 이벤트도 없으면 잘못된 진입 → 조용한 폴백 없이 실패.
+        // (PersistentEnemyRepository 자동 폴백 제거: 스폰 경로의 영속 의존을 끊는다.)
+        Debug.LogError(
+            "[EnemySpawner] CombatContext에 EnemyGroupKey/EventBattle이 없어 적을 스폰할 수 없습니다.",
+            this);
         return false;
     }
 
@@ -332,9 +341,11 @@ public class EnemySpawner : MonoBehaviour
         return true;
     }
 
+    // 이벤트 전투도 일반 전투와 동일한 공용 플랜 경로로 스폰한다.
+    // 인질 유닛 제외 + 미리 주입된 eventSlotMap 사용은 SpawnFromPlan에서 처리.
     private bool SpawnFromEventBattle(CombatEventBattleData eventBattle)
     {
-        if (eventBattle == null || eventBattle.EnemyUnits == null)
+        if (eventBattle == null)
             return false;
 
         if (eventSlotMap == null)
@@ -345,59 +356,19 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        HostageScenarioConfig hostageConfig = eventBattle.Scenario != null &&
-                                              eventBattle.Scenario.IsHostageRescue
+        if (!EnemySpawnPlanBuilder.TryBuildFromEventBattle(eventBattle, out EnemySpawnPlan plan, out string error))
+        {
+            Debug.LogError(
+                $"[EnemySpawner] Event battle spawn plan build failed. Battle={eventBattle.BattleKey}, error={error}",
+                this);
+            return false;
+        }
+
+        HostageScenarioConfig hostageConfig = eventBattle.Scenario != null && eventBattle.Scenario.IsHostageRescue
             ? eventBattle.Scenario.HostageRescue
             : null;
 
-        var claimedLogicalSlots = new HashSet<int>();
-        int expectedCombatEnemies = 0;
-        int spawnedCombatEnemies = 0;
-        bool setupValid = true;
-        for (int i = 0; i < eventBattle.EnemyUnits.Count; i++)
-        {
-            CombatEventBattleUnitData unit = eventBattle.EnemyUnits[i];
-            if (unit == null || string.IsNullOrWhiteSpace(unit.UnitKey))
-                continue;
-
-            if (hostageConfig != null && hostageConfig.ContainsHostageUnit(unit.UnitKey))
-                continue;
-
-            expectedCombatEnemies++;
-            if (!claimedLogicalSlots.Add(unit.Slot))
-            {
-                setupValid = false;
-                Debug.LogError(
-                    $"[EnemySpawner] Duplicate event combat slot. " +
-                    $"Battle={eventBattle.BattleKey}, Unit={unit.UnitKey}, LogicalSlot={unit.Slot}",
-                    this);
-                continue;
-            }
-
-            if (SpawnEventEnemy(eventBattle.BattleKey, unit) != null)
-                spawnedCombatEnemies++;
-            else
-                setupValid = false;
-        }
-
-        if (spawnedCombatEnemies == 0)
-        {
-            Debug.LogWarning(
-                $"[EnemySpawner] Event battle spawned no combat enemies. Battle={eventBattle.BattleKey}",
-                this);
-        }
-
-        if (spawnedCombatEnemies != expectedCombatEnemies)
-        {
-            Debug.LogError(
-                $"[EnemySpawner] Event combat enemy setup was incomplete. " +
-                $"Battle={eventBattle.BattleKey}, Expected={expectedCombatEnemies}, Spawned={spawnedCombatEnemies}",
-                this);
-        }
-
-        return setupValid &&
-               expectedCombatEnemies > 0 &&
-               spawnedCombatEnemies == expectedCombatEnemies;
+        return SpawnFromPlan(plan, eventSlotMap, hostageConfig, $"event:{eventBattle.BattleKey}");
     }
 
     private GameObject SpawnEventEnemy(string battleKey, CombatEventBattleUnitData unit)
@@ -532,138 +503,6 @@ public class EnemySpawner : MonoBehaviour
         return prefab;
     }
 
-    private bool SpawnFromPersistentRepository()
-    {
-        PersistentEnemyRepository repository = PersistentEnemyRepository.Instance;
-        if (repository == null)
-        {
-            return false;
-        }
-
-        CombatContext combatContext = CombatContext.Instance;
-        IReadOnlyList<int> combatUnitIndices = ResolveCombatUnitIndices(combatContext != null ? combatContext.CombatEnemy : null);
-        if (combatUnitIndices == null || combatUnitIndices.Count == 0)
-        {
-            return false;
-        }
-
-        if (!hierarchyReady || unitParent == null || DHCsvTemplateCatalog.Instance == null || gridSlots.Count == 0)
-        {
-            return false;
-        }
-
-        List<int> sortedGrids = new List<int>(gridSlots.Keys);
-        sortedGrids.Sort();
-
-        bool spawnedAny = false;
-        int spawnCount = Mathf.Min(combatUnitIndices.Count, sortedGrids.Count);
-        for (int i = 0; i < spawnCount; i++)
-        {
-            int persistentUnitIndex = combatUnitIndices[i];
-            if (persistentUnitIndex <= 0)
-            {
-                continue;
-            }
-
-            if (!repository.TryGetUnit(persistentUnitIndex, out EnemyUnitPersistentData persistentData) || persistentData == null)
-            {
-                continue;
-            }
-
-            DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(persistentData.UnitTemplateKey, out EnemyData csvEnemyData);
-            if (csvEnemyData == null)
-            {
-                // unitTemplateKey 미매핑 시 인덱스 문자열 폴백
-                DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(persistentUnitIndex.ToString(), out csvEnemyData);
-            }
-            if (csvEnemyData == null)
-            {
-                continue;
-            }
-
-            SpawnPersistentEnemy(csvEnemyData, persistentData, sortedGrids[i]);
-            spawnedAny = true;
-        }
-
-        return spawnedAny;
-    }
-
-    private GameObject SpawnPersistentEnemy(EnemyData data, EnemyUnitPersistentData persistentData, int gridNumber)
-    {
-        if (data == null || persistentData == null)
-        {
-            return null;
-        }
-
-        if (!gridSlots.TryGetValue(gridNumber, out Vector3 worldPos) ||
-            !gridRotations.TryGetValue(gridNumber, out Quaternion worldRot))
-        {
-            return null;
-        }
-
-        if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef persistentCell) || persistentCell == null)
-        {
-            return null;
-        }
-
-        GameObject prefab = FindPrefab(data);
-        if (prefab == null)
-        {
-            return null;
-        }
-
-        ClearGrid(gridNumber);
-        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
-        var go = Instantiate(prefab, worldPos, facingPlayerRot, persistentCell.transform);
-        go.name = $"Enemy_{data.Index}_{go.GetInstanceID()}";
-
-        foreach (var legacy in go.GetComponentsInChildren<CharactorScript>(true))
-        {
-            DestroyImmediate(legacy);
-        }
-
-        EnemyScript enemyScript = go.GetComponent<EnemyScript>();
-        if (enemyScript == null)
-        {
-            enemyScript = go.AddComponent<EnemyScript>();
-        }
-        enemyScript.Initialize(persistentData, data);
-
-        BattleCharactor battle = go.GetComponent<BattleCharactor>();
-        if (battle == null)
-        {
-            battle = go.AddComponent<BattleCharactor>();
-        }
-
-        battle.AssignToCell(persistentCell);
-        persistentCell.SetOccupyingUnit(battle);
-
-        spawnedByGrid[gridNumber] = go;
-        return go;
-    }
-
-    private static IReadOnlyList<int> ResolveCombatUnitIndices(object combatEnemy)
-    {
-        if (combatEnemy == null)
-        {
-            return null;
-        }
-
-        PropertyInfo unitIndicesProperty = combatEnemy.GetType().GetProperty("UnitIndices", BindingFlags.Public | BindingFlags.Instance);
-        if (unitIndicesProperty != null && unitIndicesProperty.GetValue(combatEnemy) is IReadOnlyList<int> unitIndices && unitIndices.Count > 0)
-        {
-            return unitIndices;
-        }
-
-        PropertyInfo unitsProperty = combatEnemy.GetType().GetProperty("Units", BindingFlags.Public | BindingFlags.Instance);
-        if (unitsProperty != null && unitsProperty.GetValue(combatEnemy) is IReadOnlyList<int> units && units.Count > 0)
-        {
-            return units;
-        }
-
-        return null;
-    }
-
     // 일반 전투 그룹키 스폰: 공용 빌더로 EnemySpawnPlan을 만들고 원자적으로 스폰한다.
     private bool SpawnFromEnemyGroupPlan(string enemyGroupKey, int enemyLevel)
     {
@@ -675,12 +514,25 @@ public class EnemySpawner : MonoBehaviour
             return false; // 폴백 금지 — 진입 실패
         }
 
-        return SpawnFromPlan(plan, $"group:{enemyGroupKey}");
+        // 일반 전투는 스포너 그리드로 논리 슬롯맵을 만든다(이벤트는 미리 주입된 eventSlotMap 사용).
+        if (!BattleLogicalSlotMap.TryCreate(transform, out BattleLogicalSlotMap slotMap, out string slotError))
+        {
+            Debug.LogError($"[EnemySpawner] Slot map build failed. groupKey='{enemyGroupKey}', {slotError}", this);
+            return false;
+        }
+
+        return SpawnFromPlan(plan, slotMap, null, $"group:{enemyGroupKey}");
     }
 
     // 원자적 2단계 스폰: (1) 슬롯·프리팹까지 전체 검증 → (2) 전원 성공한 경우에만 Instantiate.
     // 하나라도 실패하면 부분 스폰 없이 false를 반환한다.
-    private bool SpawnFromPlan(EnemySpawnPlan plan, string contextLabel)
+    // slotMap: 일반=스포너 그리드로 생성, 이벤트=미리 주입된 eventSlotMap.
+    // hostageConfig: 이벤트 인질 시나리오면 인질 원본 유닛을 전투 적 스폰에서 제외(null=제외 없음).
+    private bool SpawnFromPlan(
+        EnemySpawnPlan plan,
+        BattleLogicalSlotMap slotMap,
+        HostageScenarioConfig hostageConfig,
+        string contextLabel)
     {
         if (!hierarchyReady)
             Awake();
@@ -697,19 +549,15 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        if (!BattleLogicalSlotMap.TryCreate(transform, out BattleLogicalSlotMap slotMap, out string slotError))
+        if (slotMap == null)
         {
-            Debug.LogError($"[EnemySpawner] Slot map build failed. context={contextLabel}, {slotError}", this);
+            Debug.LogError($"[EnemySpawner] Slot map is not available. context={contextLabel}", this);
             return false;
         }
 
-        int count = plan.Count;
-        var resolvedSlots = new BattleLogicalSlotMap.Slot[count];
-        var resolvedPrefabs = new GameObject[count];
-        var claimedSlots = new HashSet<int>();
-
-        // Phase A: 전체 검증. 실패 시 Instantiate 0회.
-        for (int i = 0; i < count; i++)
+        // 인질 유닛은 별도 시스템(HostageScenarioController)이 스폰하므로 전투 적 목록에서 제외.
+        var combatEntries = new List<EnemySpawnEntry>(plan.Count);
+        for (int i = 0; i < plan.Entries.Count; i++)
         {
             EnemySpawnEntry entry = plan.Entries[i];
             if (entry == null || entry.Data == null)
@@ -717,6 +565,32 @@ public class EnemySpawner : MonoBehaviour
                 Debug.LogError($"[EnemySpawner] Spawn entry is invalid. context={contextLabel}, index={i}", this);
                 return false;
             }
+
+            if (hostageConfig != null &&
+                !string.IsNullOrEmpty(entry.SourceUnitKey) &&
+                hostageConfig.ContainsHostageUnit(entry.SourceUnitKey))
+            {
+                continue;
+            }
+
+            combatEntries.Add(entry);
+        }
+
+        if (combatEntries.Count == 0)
+        {
+            Debug.LogError($"[EnemySpawner] Spawn plan has no combat enemies. context={contextLabel}", this);
+            return false;
+        }
+
+        int count = combatEntries.Count;
+        var resolvedSlots = new BattleLogicalSlotMap.Slot[count];
+        var resolvedPrefabs = new GameObject[count];
+        var claimedSlots = new HashSet<int>();
+
+        // Phase A: 전체 검증. 실패 시 Instantiate 0회.
+        for (int i = 0; i < count; i++)
+        {
+            EnemySpawnEntry entry = combatEntries[i];
 
             if (!claimedSlots.Add(entry.CombatSlot))
             {
@@ -745,7 +619,7 @@ public class EnemySpawner : MonoBehaviour
 
         // Phase B: 전원 검증 성공 → Instantiate.
         for (int i = 0; i < count; i++)
-            SpawnPlanEntry(plan.Entries[i], resolvedSlots[i], resolvedPrefabs[i]);
+            SpawnPlanEntry(combatEntries[i], resolvedSlots[i], resolvedPrefabs[i]);
 
         return true;
     }

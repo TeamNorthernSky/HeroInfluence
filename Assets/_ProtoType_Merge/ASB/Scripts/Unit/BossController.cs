@@ -46,6 +46,8 @@ public sealed class BossController : MonoBehaviour
     [SerializeField] private List<SummonEntry> _summonEntries = new List<SummonEntry>();
     [Tooltip("씬의 EnemySpawner. 미지정 시 런타임에 부모/씬에서 탐색한다.")]
     [SerializeField] private EnemySpawner _spawner;
+    [Tooltip("씬의 BattleFlowManager. 미지정 시 런타임에 탐색한다. 소환 미니언의 턴 참가자 등록에 사용.")]
+    [SerializeField] private BattleFlowManager _flow;
 
     /// <summary>페이즈 진입이 감지된 즉시(가벼운 효과용) 호출되는 훅. 인자는 진입 페이즈.
     /// ⚠️ 이 훅은 피해 처리 도중(시퀀스 중) 호출될 수 있으므로 전투를 변경하는 무거운 작업은 넣지 말 것.</summary>
@@ -191,6 +193,21 @@ public sealed class BossController : MonoBehaviour
         MinionController mc = go.GetComponent<MinionController>();
         if (mc == null) mc = go.AddComponent<MinionController>();
         mc.Bind(this, _triggerSkillIndex, _reactionSkillIndex);
+
+        // 런타임 참가자 등록: 이게 없으면 미니언이 턴 큐에 못 들어가 EAI를 실행하지 못한다(다음 라운드부터 반영).
+        BattleCharactor minionBattle = go.GetComponent<BattleCharactor>();
+        if (minionBattle != null)
+        {
+            BattleFlowManager flow = ResolveFlowManager();
+            if (flow != null)
+            {
+                flow.RegisterRuntimeParticipant(minionBattle);
+            }
+            else
+            {
+                Debug.LogWarning($"[BossController] BattleFlowManager를 찾지 못해 미니언 턴 등록 실패: {minionEnemyId}@{gridNumber}", this);
+            }
+        }
         return true;
     }
 
@@ -199,8 +216,14 @@ public sealed class BossController : MonoBehaviour
         if (_spawner == null)
         {
             _spawner = GetComponentInParent<EnemySpawner>();
-            if (_spawner == null) _spawner = FindObjectOfType<EnemySpawner>();
+            if (_spawner == null) _spawner = FindFirstObjectByType<EnemySpawner>();
         }
         return _spawner;
+    }
+
+    private BattleFlowManager ResolveFlowManager()
+    {
+        if (_flow == null) _flow = FindFirstObjectByType<BattleFlowManager>();
+        return _flow;
     }
 }
