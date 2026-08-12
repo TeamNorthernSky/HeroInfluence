@@ -95,7 +95,6 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
 
         int enemyLevel = ResolveEnemyLevel(zoneId, group, party);
         // Event battle units are temporary CombatContext data, not PersistentEnemyRepository entries.
-        // [TEMP:EVENTBUILD] 전투씬 키-빌드 이관의 과도기 사전빌드(폴백 기준선). 런타임 동등성 검증 후 §6에서 제거 예정.
         List<CombatEventBattleUnitData> units = BuildEventBattleUnits(catalog, zoneId, group, enemyLevel);
         if (units.Count == 0)
         {
@@ -313,7 +312,6 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         }
     }
 
-    // [TEMP:EVENTBUILD] 과도기 사전빌드 로직. 공용 EventBattlePlanSource와 임시 중복 상태이며 §6에서 제거 예정.
     private static List<CombatEventBattleUnitData> BuildEventBattleUnits(
         EventScriptCatalog catalog,
         int zoneId,

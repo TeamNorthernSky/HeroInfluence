@@ -312,50 +312,28 @@ public class BattleSceneManager : MonoBehaviour
 
         // 이벤트 전투: (ZoneId, BattleKey, EnemyLevel) 키로 플랜을 직접 빌드해 스폰한다(§5).
         //   플랜 빌드 → 적 스폰(plan.Scenario로 인질 유닛 제외) → 인질 컨트롤러 생성.
-        //   [TEMP:EVENTBUILD] 키-빌드가 실패하면 기존 사전빌드(EnemyUnits/Scenario) 경로로 폴백한다.
-        //                     런타임 동등성 검증 후 §6에서 폴백/사전빌드를 제거한다.
+        //   빌드/스폰 실패 시 폴백 없이 즉시 진입 실패(Abort) — 키-빌드 문제를 조용히 가리지 않는다.
         BattleScenarioConfig scenario = null;
         if (isEventBattle)
         {
             CombatEventBattleData eventBattle = combatContext.EventBattle;
-
-            bool spawnedByKeyBuild = false;
-            if (EnemySpawnPlanBuilder.TryBuildFromEventBattleKey(
+            if (!EnemySpawnPlanBuilder.TryBuildFromEventBattleKey(
                     eventBattle.ZoneId, eventBattle.BattleKey, eventBattle.EnemyLevel,
                     out EnemySpawnPlan eventPlan, out string planError))
             {
-                if (enemySpawner != null && enemySpawner.SpawnFromPreparedPlan(eventPlan))
-                {
-                    spawnedByKeyBuild = true;
-                    scenario = eventPlan.Scenario;
-                }
-                else
-                {
-                    Debug.LogWarning(
-                        $"[BattleSceneManager] Event key-build spawn failed; falling back to prebuilt EnemyUnits. Battle={eventBattle.BattleKey}",
-                        this);
-                }
-            }
-            else
-            {
-                Debug.LogWarning(
-                    $"[BattleSceneManager] Event key-build failed; falling back to prebuilt EnemyUnits. Battle={eventBattle.BattleKey}, error={planError}",
-                    this);
+                AbortEventBattleSetup(combatContext, planError);
+                return;
             }
 
-            if (!spawnedByKeyBuild)
+            if (enemySpawner == null || !enemySpawner.SpawnFromPreparedPlan(eventPlan))
             {
-                // 폴백: 기존 사전빌드 경로(ManualSpawn → SpawnFromEventBattle → EnemyUnits/Scenario).
-                if (enemySpawner == null || !enemySpawner.ManualSpawn())
-                {
-                    AbortEventBattleSetup(
-                        combatContext,
-                        $"No complete event combat enemy set was spawned. Battle={eventBattle.BattleKey}");
-                    return;
-                }
-
-                scenario = eventBattle.Scenario;
+                AbortEventBattleSetup(
+                    combatContext,
+                    $"No complete event combat enemy set was spawned. Battle={eventBattle.BattleKey}");
+                return;
             }
+
+            scenario = eventPlan.Scenario;
         }
         else
         {

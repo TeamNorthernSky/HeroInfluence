@@ -79,8 +79,8 @@ public static class EnemySpawnPlanBuilder
     }
 
     /// <summary>
-    /// 이벤트 전투: 현행 사전 빌드된 CombatEventBattleData → Plan 변환(과도기 폴백 경로).
-    /// [TEMP:EVENTBUILD] 런타임 동등성 검증 후 §6에서 TryBuildFromEventBattleKey로 완전 대체.
+    /// 이벤트 전투: 현행 사전 빌드된 CombatEventBattleData → Plan 변환(구경로).
+    /// [TEMP:EVENTBUILD] 현재 미사용 — 전투씬은 TryBuildFromEventBattleKey만 사용(폴백 없음). §6에서 제거.
     /// </summary>
     public static bool TryBuildFromEventBattle(CombatEventBattleData eventBattle, out EnemySpawnPlan plan, out string error)
     {

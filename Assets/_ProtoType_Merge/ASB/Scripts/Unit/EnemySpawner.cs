@@ -371,8 +371,9 @@ public class EnemySpawner : MonoBehaviour
         return true;
     }
 
-    // 이벤트 전투 사전빌드(EnemyUnits) 폴백 경로. [TEMP:EVENTBUILD] 런타임 검증 후 §6에서 제거 예정.
-    // BattleSceneManager가 키-빌드(SpawnFromPreparedPlan)에 실패했을 때 ManualSpawn을 통해 이 경로로 폴백한다.
+    // 이벤트 전투 사전빌드(EnemyUnits) 구경로. [TEMP:EVENTBUILD] 현재 미사용 —
+    // 전투씬은 키-빌드(SpawnFromPreparedPlan)로만 스폰하고 폴백하지 않으므로, ManualSpawn 이벤트 분기(→여기)는 도달하지 않는다.
+    // DH 사전빌드는 A/B 대조·안전망 데이터로 남겨둔 상태이며, §6에서 이 경로와 함께 제거한다.
     private bool SpawnFromEventBattle(CombatEventBattleData eventBattle)
     {
         if (eventBattle == null)
