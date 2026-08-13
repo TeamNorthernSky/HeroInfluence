@@ -87,6 +87,19 @@ namespace ASB.Work.Battle.SkillExecution
             Register(EnemySkillKeyRules.Compose("FV20003", 1), new DamageSkillHandler());    // 단일공격
             Register(EnemySkillKeyRules.Compose("FV20003", 2), new AoEDamageSkillHandler()); // 전체공격
 
+            //------------------ 포탑(FV20004) + 4구역 율리아 진영(FV40001~40005)
+            // 기모으기 2턴째 단일공격(1턴 충전은 EAI_20004가 오케스트레이션). 응축/한턴쉼은 AI가 SelfAction/Skip으로 처리(등록 불필요).
+            Register(EnemySkillKeyRules.Compose("FV20004", 1), new DamageSkillHandler());    // 기모으기: 2턴째 단일공격
+            Register(EnemySkillKeyRules.Compose("FV20004", 2), new AoEDamageSkillHandler()); // 포탑 범위공격(선등록; AI 회전은 후속)
+
+            Register(EnemySkillKeyRules.Compose("FV40001", 1), new AoEDamageSkillHandler()); // 나락의 폭풍(열 광역)
+            Register(EnemySkillKeyRules.Compose("FV40001", 2), new AoEDamageSkillHandler()); // 공멸의 궤적(행 광역)
+
+            Register(EnemySkillKeyRules.Compose("FV40002", 3), new AoEDamageSkillHandler()); // 나락의 폭풍(열)
+            Register(EnemySkillKeyRules.Compose("FV40003", 3), new AoEDamageSkillHandler()); // 공멸의 궤적(행)
+
+            Register(EnemySkillKeyRules.Compose("FV40005", 1), new SelfDestructRowAoEHandler()); // 절망의 굴렁쇠: 돌진+행광역+자폭
+
             //------------------장비(무기 스킬) — HCS00X 매핑 (X = 무기 스킬 종류)
             Register("HCS001", new DamageSkillHandler());                    // 1. 단일 공격
             Register("HCS002", new AoEDamageSkillHandler());                 // 2. 광역 공격

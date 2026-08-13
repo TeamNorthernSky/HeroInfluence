@@ -75,6 +75,8 @@ public partial class BattleCharactor
         IsPlayer = teamType == TeamType.Player;
         IsDead   = false;
         HasUsedRevive = false;
+        ClearCharge();      // 충전 예약(+charging 마커) 리셋 — AI 인스턴스 재사용 대비
+        ResetEnergyStack(); // 에너지 스택 리셋
 
         if (!preserveInjectedEquipment)
         {

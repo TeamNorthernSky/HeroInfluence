@@ -169,11 +169,16 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         //}
 
         EnemyActionDecision decision = currentAI != null ? currentAI.DecideAction(self, targets) : null;
-        if (decision != null && decision.Skip)
+
+        // 최종 결정 확정 후 상태변경을 정확히 1회 커밋(순수 판정과 분리, 도발 이중호출 안전).
+        decision?.Commit?.Invoke();
+
+        // 자기행동(충전 시작/응축/불발)·스킵: 스킬 실행 없이 턴 소비.
+        if (decision != null && (decision.Skip || decision.IsSelfAction))
         {
             if (enableAIDebugLog)
             {
-                Debug.Log($"[EnemyAI/Debug] SkipTurn: self={self.UnitName}");
+                Debug.Log($"[EnemyAI/Debug] {(decision.IsSelfAction ? "SelfAction" : "SkipTurn")}: self={self.UnitName}");
             }
 
             yield return new WaitForSeconds(0.5f);

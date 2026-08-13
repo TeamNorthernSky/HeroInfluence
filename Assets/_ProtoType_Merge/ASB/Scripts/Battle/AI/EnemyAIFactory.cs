@@ -12,6 +12,15 @@ namespace EnemyAI
                     return new EAI_20002();
                 case 20003:
                     return new EAI_20003();
+                // 포탑(2턴 충전) + 4구역 율리아 진영(응축/자폭). 능력개방·소환·페이즈는 미룸.
+                case 20004:
+                    return new EAI_20004();
+                case 40002:
+                    return new EAI_40002();
+                case 40003:
+                    return new EAI_40003();
+                case 40005:
+                    return new EAI_40005();
                 // 보스/미니언 (구현지시서: 보스유닛_소환_창구스킬_페이즈AI). index는 데이터 스키마에 맞게 조정.
                 case 20101:
                     return new EAI_20101();
