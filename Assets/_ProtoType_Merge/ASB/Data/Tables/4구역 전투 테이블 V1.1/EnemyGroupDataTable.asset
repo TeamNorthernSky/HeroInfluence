@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad1bcbf5c1fd55f49b30ad9c9f8c2cc0, type: 3}
+  m_Name: EnemyGroupDataTable
+  m_EditorClassIdentifier: 
+  DataList:
+  - EnemyIndex: BE490
+    EnemyGroupName: "\uC728\uB9AC\uC544 \uBCF4\uC2A4\uC804"
+    Enemy1: FV40001
+    Enemy1Slot: 5
+    Enemy2: FV40002
+    Enemy2Slot: 4
+    Enemy3: FV40003
+    Enemy3Slot: 6
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
+    Enemy6: 
+    Enemy6Slot: 0
+    MinLevel: 7
+    MaxLevel: 8
