@@ -28,5 +28,7 @@ namespace ASB.Work.Battle.Core
         // TODO: 장기적으로는 DamageContext(순수 전투 데이터)와 연출 스텝을
         // SkillExecutionStep 같은 별도 구조로 분리하는 것이 바람직합니다.
         public float DelayAfter = 0f;
+        /// <summary>대신 맞기로 재지정되기 전 원래 대상(B). null=재지정 안 됨. 연출 스왑 앵커용.</summary>
+        public BattleCharactor RedirectedFrom;
     }
 }

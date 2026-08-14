@@ -291,3 +291,11 @@
 {"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_done","data":{"sheetCount":2},"timestamp":1786525345630}
 {"sessionId":"3f4907","hypothesisId":"H2","location":"ExcelEditorWindow.OnScriptsReloaded","message":"step2_start","data":{"path":"C:/HeroInfluencetmp/Assets/_ProtoType_Merge/ASB/Data/Excel/4구역 전투 테이블 V1.1.xlsx"},"timestamp":1786525352181}
 {"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1786525352184}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1786691216673}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_start","data":{"path":"C:/HeroInfluencetmp/Assets/_ProtoType_Merge/ASB/Data/Excel/H.I 알파 전투 밸런스 데이터 테이블 V4.0.xlsx"},"timestamp":1786691226052}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1786691226052}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_done","data":{"sheetCount":6},"timestamp":1786691226918}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1786692511712}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_start","data":{"path":"C:/HeroInfluencetmp/Assets/_ProtoType_Merge/ASB/Data/Excel/H.I 알파 전투 밸런스 데이터 테이블 V4.0.xlsx"},"timestamp":1786692512494}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1786692512494}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_done","data":{"sheetCount":6},"timestamp":1786692512896}

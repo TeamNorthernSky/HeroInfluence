@@ -19,6 +19,11 @@ public partial class BattleCharactor
     public bool IsCharging => hasCharge;          // 진실원본(마커 아님)
     public SkillData ReservedChargeSkill => reservedChargeSkill;
 
+    // ── 포탑 사이클: 발사 직후 1턴 휴식 예약 ─────────────
+    private bool pendingRest;
+    public bool HasPendingRest => pendingRest;
+    public void SetPendingRest(bool value) { pendingRest = value; }
+
     public void BeginCharge(SkillData skill, Vector2Int targetCoords)
     {
         hasCharge = true;

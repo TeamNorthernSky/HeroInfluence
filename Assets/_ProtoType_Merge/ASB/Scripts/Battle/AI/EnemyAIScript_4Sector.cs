@@ -21,14 +21,16 @@ namespace EnemyAI
                 return EnemyActionDecision.SkipTurn();
             }
 
-            // 1) 충전 중이면 → 발사(2턴째). 순수: self 상태를 읽기만 한다.
+            // 사이클: 충전 → 발사 → 휴식 → (반복). 모두 순수 판정, 상태변경은 Commit으로만.
+
+            // [발사] 충전 중이면 고정 타일 점유자에게 단일공격. 발사 후 '휴식 예약'.
             if (self.IsCharging)
             {
                 SkillData fireSkill = self.ReservedChargeSkill;
                 BattleCharactor occupant = self.ResolveChargeOccupant();   // 고정 타일의 현재 점유자
-                System.Action commit = () => self.ClearCharge();          // 예약/마커 해제(1회, RunAITurn에서 실행)
+                System.Action commit = () => { self.ClearCharge(); self.SetPendingRest(true); }; // 발사 정리 + 다음은 휴식(1회)
 
-                // 점유자 사망/부재/아군 → 불발(피해 없음). 유닛 고정이라 '이동해온 다른 유닛' 케이스는 없음.
+                // 점유자 사망/부재/아군 → 불발(피해 없음). 불발이어도 사이클상 다음은 휴식.
                 if (fireSkill == null || occupant == null || occupant.IsDead || occupant.IsPlayer == self.IsPlayer)
                 {
                     return EnemyActionDecision.SelfAction(commit);
@@ -37,7 +39,13 @@ namespace EnemyAI
                 return EnemyActionDecision.Create(occupant, EnemyActionType.ClassSkill, fireSkill, commit);
             }
 
-            // 2) 행동 선택(순수). 회전율은 임시 — 공식 데이터 기준 기본은 기모으기.
+            // [휴식] 발사 직후 1턴 쉼. 이 턴을 소비하고 휴식 예약 해제 → 다음은 충전.
+            if (self.HasPendingRest)
+            {
+                return EnemyActionDecision.SelfAction(() => self.SetPendingRest(false));
+            }
+
+            // [충전] 사이클 시작. 대상 타일을 고정하고 발사 스킬 예약.
             if (!canUseSkill)
             {
                 return EnemyActionDecision.SkipTurn();
