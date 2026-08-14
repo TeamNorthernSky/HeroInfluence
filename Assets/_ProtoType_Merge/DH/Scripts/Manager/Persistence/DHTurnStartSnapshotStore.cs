@@ -36,7 +36,6 @@ public sealed class DHTurnStartSnapshotStore : MonoBehaviour
         DontDestroyOnLoad(root);
 
         AddSection<DHUnitSnapshotSection>(root.transform, "UnitSnapshot");
-        AddSection<DHEnemyUnitSnapshotSection>(root.transform, "EnemyUnitSnapshot");
         AddSection<DHEnemyGroupSnapshotSection>(root.transform, "EnemyGroupSnapshot");
         AddSection<DHWeaponSnapshotSection>(root.transform, "WeaponSnapshot");
         AddSection<DHPartySnapshotSection>(root.transform, "PartySnapshot");
@@ -81,7 +80,6 @@ public sealed class DHTurnStartSnapshotStore : MonoBehaviour
     private void EnsureDefaultSections()
     {
         EnsureSection<DHUnitSnapshotSection>("UnitSnapshot");
-        EnsureSection<DHEnemyUnitSnapshotSection>("EnemyUnitSnapshot");
         EnsureSection<DHEnemyGroupSnapshotSection>("EnemyGroupSnapshot");
         EnsureSection<DHWeaponSnapshotSection>("WeaponSnapshot");
         EnsureSection<DHPartySnapshotSection>("PartySnapshot");

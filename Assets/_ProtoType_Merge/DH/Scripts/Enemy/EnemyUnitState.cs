@@ -45,52 +45,6 @@ public class EnemyUnitState : MonoBehaviour
         unitIndex = Mathf.Max(1, nextUnitIndex);
     }
 
-    public void ApplyPersistentData(EnemyUnitPersistentData data)
-    {
-        if (data == null)
-            return;
-
-        unitIndex = data.UnitIndex;
-        unitTemplateKey = data.UnitTemplateKey;
-        level = Mathf.Max(1, data.Level);
-        baseStats = data.BaseStats;
-        ingameStats = data.IngameStats;
-        currentHp = Mathf.Max(0f, data.CurrentHp);
-        SetIncapacitated(data.IsIncapacitated);
-    }
-
-    public bool SyncToRepository()
-    {
-        if (unitIndex <= 0)
-            return false;
-
-        PersistentEnemyRepository repository = PersistentEnemyRepository.Instance;
-        if (repository == null)
-            return false;
-
-        return repository.UpdateUnitRuntimeState(
-            unitIndex,
-            unitTemplateKey,
-            Level,
-            baseStats,
-            ingameStats,
-            currentHp,
-            isIncapacitated: isIncapacitated);
-    }
-
-    public bool RefreshFromRepository()
-    {
-        if (unitIndex <= 0)
-            return false;
-
-        PersistentEnemyRepository repository = PersistentEnemyRepository.Instance;
-        if (repository == null || !repository.TryGetUnit(unitIndex, out EnemyUnitPersistentData data))
-            return false;
-
-        ApplyPersistentData(data);
-        return true;
-    }
-
     public void SetLevel(int nextLevel)
     {
         level = Mathf.Max(1, nextLevel);

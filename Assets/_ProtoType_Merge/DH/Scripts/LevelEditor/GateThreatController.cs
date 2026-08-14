@@ -273,25 +273,8 @@ public class GateThreatController : MonoBehaviour
 
     private static void ApplyZoneEnemyLevel(string zoneId, int enemyLevel)
     {
-        MapProgressRepository mapRepository = MapProgressRepository.Instance;
-        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
-        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
-        if (mapRepository == null || enemyGroupRepository == null || enemyRepository == null)
-            return;
-
-        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
-        IReadOnlyList<EnemyWorldState> enemyStates = mapRepository.EnemyWorldStates;
-        for (int i = 0; i < enemyStates.Count; i++)
-        {
-            EnemyWorldState worldState = enemyStates[i];
-            if (worldState == null || worldState.Defeated || !string.Equals(worldState.ZoneId, normalizedZoneId, System.StringComparison.Ordinal))
-                continue;
-
-            if (!enemyGroupRepository.TryGetEnemy(worldState.EnemyId, out EnemyPersistentData enemyData) || enemyData == null)
-                continue;
-
-            ApplyEnemyGroupLevel(enemyRepository, enemyData, enemyLevel);
-        }
+        // Enemy unit instances are now rebuilt from EnemyGroupKey + zone level.
+        // The level itself is stored in MapProgressRepository; no per-unit repository patching is needed.
     }
 
     private static void RefreshZoneEnemyLevelInspectors(string zoneId)
@@ -325,25 +308,6 @@ public class GateThreatController : MonoBehaviour
         }
     }
 
-    private static void ApplyEnemyGroupLevel(PersistentEnemyRepository enemyRepository, EnemyPersistentData enemyData, int enemyLevel)
-    {
-        IReadOnlyList<int> unitIndices = enemyData.UnitIndices;
-        if (unitIndices == null)
-            return;
-
-        int safeLevel = Mathf.Max(1, enemyLevel);
-        for (int i = 0; i < unitIndices.Count; i++)
-        {
-            int unitIndex = unitIndices[i];
-            if (!enemyRepository.TryGetUnit(unitIndex, out EnemyUnitPersistentData unitData) || unitData == null)
-                continue;
-
-            if (unitData.Level < safeLevel)
-                enemyRepository.ApplyLevelUp(unitIndex, safeLevel - unitData.Level);
-            else if (unitData.Level > safeLevel)
-                enemyRepository.SetUnitLevel(unitIndex, safeLevel);
-        }
-    }
     private void EvaluateCurrentZoneThreat(bool enteredZone)
     {
         EvaluateCurrentZoneThreat(enteredZone, ResolveCurrentDay());

@@ -444,11 +444,9 @@ public static class OutpostDefenderService
         if (outpost == null || !outpost.IsEnemyClaimed || string.IsNullOrWhiteSpace(outpost.EnemyDefenderGroupKey))
             return false;
 
-        // TODO(remove fallback): this repository-backed defender path should go away when combat can consume group keys directly.
-        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
         EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
         DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
-        if (enemyRepository == null || enemyGroupRepository == null || templateCatalog == null)
+        if (enemyGroupRepository == null || templateCatalog == null)
             return false;
 
         string enemyId = outpost.DefenderEnemyId;
@@ -471,9 +469,6 @@ public static class OutpostDefenderService
             return false;
         }
 
-        int defenderLevel = ResolveZoneEnemyLevel(outpost.ZoneId);
-        List<int> unitIndices = new List<int>(members.Count);
-        List<int> unitSlots = new List<int>(members.Count);
         for (int i = 0; i < members.Count; i++)
         {
             CsvEnemyGroupMember member = members[i];
@@ -485,48 +480,21 @@ public static class OutpostDefenderService
                     outpost);
                 continue;
             }
-
-            int unitIndex = enemyRepository.CreateUnit(
-                templateKey,
-                defenderLevel,
-                template.BaseStats);
-            unitIndices.Add(unitIndex);
-            unitSlots.Add(member.CombatSlot);
         }
 
-        if (unitIndices.Count == 0)
-            return false;
-
-        enemyGroupRepository.RegisterOrUpdateEnemy(enemyId, unitIndices, unitSlots);
+        enemyGroupRepository.RegisterOrUpdateEnemy(enemyId, System.Array.Empty<int>(), System.Array.Empty<int>());
         outpost.SetDefenderBinding(outpost.EnemyDefenderGroupKey, enemyId);
         return true;
     }
 
-    private static int ResolveZoneEnemyLevel(string zoneId)
-    {
-        MapProgressRepository repository = MapProgressRepository.Instance;
-        return repository != null && repository.TryGetZoneEnemyLevel(zoneId, out int level)
-            ? Mathf.Max(1, level)
-            : 1;
-    }
     public static void RemoveDefenderParty(string enemyId)
     {
         if (string.IsNullOrWhiteSpace(enemyId))
             return;
 
         EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
-        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
         if (enemyGroupRepository == null)
             return;
-
-        if (enemyGroupRepository.TryGetEnemy(enemyId, out EnemyPersistentData enemyData) &&
-            enemyData != null &&
-            enemyRepository != null)
-        {
-            IReadOnlyList<int> unitIndices = enemyData.UnitIndices;
-            for (int i = 0; i < unitIndices.Count; i++)
-                enemyRepository.RemoveUnit(unitIndices[i]);
-        }
 
         enemyGroupRepository.RemoveEnemy(enemyId);
     }

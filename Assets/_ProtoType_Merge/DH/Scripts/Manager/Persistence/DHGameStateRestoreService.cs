@@ -47,7 +47,6 @@ public static class DHGameStateRestoreService
             return;
 
         PersistentUnitRepository.Instance?.RestoreFromSave(data.nextUnitIndex, data.units);
-        PersistentEnemyRepository.Instance?.RestoreFromSave(data.nextEnemyUnitIndex, data.enemyUnits);
         EnemyGroupPersistentRepository.Instance?.RestoreFromSave(data.nextEnemySequence, data.enemyGroups);
         WeaponPersistentRepository.Instance?.RestoreFromSave(data.nextWeaponIndex, data.weapons);
         PartyPersistentRepository.Instance?.RestoreFromSave(data.parties);
@@ -354,10 +353,6 @@ public static class DHGameStateRestoreService
         PartyUnitState[] partyUnits = Object.FindObjectsByType<PartyUnitState>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         for (int i = 0; i < partyUnits.Length; i++)
             partyUnits[i]?.RefreshFromRepository();
-
-        EnemyUnitState[] enemyUnits = Object.FindObjectsByType<EnemyUnitState>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        for (int i = 0; i < enemyUnits.Length; i++)
-            enemyUnits[i]?.RefreshFromRepository();
     }
 
     private static void ApplyHeroUnionStates()

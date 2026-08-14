@@ -84,8 +84,7 @@ public class EnemySpawnController : MonoBehaviour
         placementKey = MapProgressKey.ForRuntimeEnemy($"main_event_replacement_{normalizedEventKey}", 1);
         if (progressRepository != null && progressRepository.TryGetEnemyState(placementKey, out EnemyWorldState existingState))
         {
-            EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
-            if (ShouldRestoreRuntimeEnemy(existingState, enemyGroupRepository) &&
+            if (ShouldRestoreRuntimeEnemy(existingState) &&
                 !HasMatchingEnemyInScene(existingState.PlacementKey, existingState.EnemyId) &&
                 TryRestoreRuntimeEnemy(existingState, out spawnedEnemy))
             {
@@ -186,8 +185,7 @@ public class EnemySpawnController : MonoBehaviour
             return;
 
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
-        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
-        if (progressRepository == null || enemyGroupRepository == null)
+        if (progressRepository == null)
             return;
 
         SyncRuntimeEnemySequence(progressRepository);
@@ -197,7 +195,7 @@ public class EnemySpawnController : MonoBehaviour
         for (int i = 0; i < enemyStates.Count; i++)
         {
             EnemyWorldState state = enemyStates[i];
-            if (!ShouldRestoreRuntimeEnemy(state, enemyGroupRepository))
+            if (!ShouldRestoreRuntimeEnemy(state))
                 continue;
 
             if (HasMatchingEnemyInScene(state.PlacementKey, state.EnemyId))
@@ -239,7 +237,7 @@ public class EnemySpawnController : MonoBehaviour
         RestoreRuntimeEnemies();
     }
 
-    private bool ShouldRestoreRuntimeEnemy(EnemyWorldState state, EnemyGroupPersistentRepository enemyGroupRepository)
+    private bool ShouldRestoreRuntimeEnemy(EnemyWorldState state)
     {
         if (state == null ||
             state.Defeated ||
@@ -250,10 +248,6 @@ public class EnemySpawnController : MonoBehaviour
         if (!IsRuntimeEnemyState(state))
             return false;
 
-        if (enemyGroupRepository != null && enemyGroupRepository.ContainsEnemy(state.EnemyId))
-            return true;
-
-        // Some runtime enemies are template-only and do not have a persistent enemy group entry.
         return CanRecreateRuntimeEnemyFromTemplate(state);
     }
 
@@ -324,7 +318,8 @@ public class EnemySpawnController : MonoBehaviour
         instance.SnapToGridPosition(state.Grid);
 
         EnemyUnitBootstrap enemyBootstrap = instance.GetComponent<EnemyUnitBootstrap>();
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, instance, state.Grid, state.PlacementKey, groupKey, 1, state.ZoneId, behaviorType))
+        int enemyLevel = ResolveZoneEnemyLevel(state.ZoneId);
+        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, instance, state.Grid, state.PlacementKey, groupKey, enemyLevel, state.ZoneId, behaviorType))
         {
             Destroy(instance.gameObject);
             return false;
