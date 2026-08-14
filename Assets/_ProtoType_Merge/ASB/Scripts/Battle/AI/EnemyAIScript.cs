@@ -202,6 +202,8 @@ namespace EnemyAI
         }
     }
 
+    // 빌런연합 방패병(20003): 아군 중 HP<30%가 있으면 '대신 맞기'로 그 아군 보호, 아니면 '방패 치기'(단일).
+    // 보호 링크 만료는 BattleFlowManager 턴 시작에서 처리하므로 AI는 링크를 정리하지 않는다.
     public sealed class EAI_20003 : BaseEnemyAI
     {
         public override int Index => 20003;
@@ -216,93 +218,53 @@ namespace EnemyAI
                 return EnemyActionDecision.SkipTurn();
             }
 
-            int enemyIndex =  ResolveEnemyIndex(self);
-            int skill1Index = (enemyIndex * 10) + 1;
-            int skill2Index = (enemyIndex * 10) + 2;
-
-            SkillData skill1 = self.availableSkills != null
-                ? self.availableSkills.FirstOrDefault(s => s != null && s.skillIndex == skill1Index)
-                : null;
-            SkillData skill2 = self.availableSkills != null
-                ? self.availableSkills.FirstOrDefault(s => s != null && s.skillIndex == skill2Index)
-                : null;
-
-            float hpPercent = self.MaxHp > 0f ? (self.CurrentHp / self.MaxHp) * 100f : 0f;
-            SkillData primarySkill = hpPercent > 60f ? skill1 : skill2;
-            SkillData secondarySkill = hpPercent > 60f ? skill2 : skill1;
-
-            List<BattleCharactor> GetValidCandidates(SkillData skill)
-            {
-                if (skill == null)
-                {
-                    return new List<BattleCharactor>();
-                }
-
-                List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill);
-                return candidates
-                    .Where(t => t != null && validTargets.Contains(t))
-                    .ToList();
-            }
-
-            BattleCharactor PickRandomTarget(List<BattleCharactor> candidates)
-            {
-                if (candidates == null || candidates.Count == 0)
-                {
-                    return null;
-                }
-
-                int randomIndex = UnityEngine.Random.Range(0, candidates.Count);
-                return candidates[randomIndex];
-            }
-
+            // 아군(같은 편) 중 HP 30% 미만 대상 → 대신 맞기.
             if (canUseSkill)
             {
-                List<BattleCharactor> primaryCandidates = GetValidCandidates(primarySkill);
-                if (primaryCandidates.Count > 0)
+                BattleCharactor ward = FindLowHpAlly(self, 0.3f);
+                SkillData guardSkill = ResolveSkillBySlot(self, 2); // FV20003_2
+                if (ward != null && guardSkill != null)
                 {
-                    BattleCharactor primaryTarget = PickRandomTarget(primaryCandidates);
-                    if (primaryTarget != null)
-                    {
-                        return EnemyActionDecision.Create(primaryTarget, EnemyActionType.ClassSkill, primarySkill);
-                    }
-                }
-
-                List<BattleCharactor> secondaryCandidates = GetValidCandidates(secondarySkill);
-                if (secondaryCandidates.Count > 0)
-                {
-                    BattleCharactor secondaryTarget = PickRandomTarget(secondaryCandidates);
-                    if (secondaryTarget != null)
-                    {
-                        return EnemyActionDecision.Create(secondaryTarget, EnemyActionType.ClassSkill, secondarySkill);
-                    }
+                    return EnemyActionDecision.Create(ward, EnemyActionType.ClassSkill, guardSkill);
                 }
             }
 
-            return EnemyActionDecision.SkipTurn();
+            // 아니면 방패 치기(단일)로 최저 HP 적 공격.
+            SkillData strike = ResolveSkillBySlot(self, 1);         // FV20003_1
+            BattleCharactor target = GetLowestHpTarget(validTargets);
+            if (!canUseSkill || strike == null || target == null)
+            {
+                return EnemyActionDecision.SkipTurn();
+            }
+
+            return EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, strike);
         }
-        private static int ResolveEnemyIndex(BattleCharactor self)
+
+        // 같은 편(self 제외) 생존 중 HP 비율이 threshold 미만인 최저 HP 대상.
+        private static BattleCharactor FindLowHpAlly(BattleCharactor self, float ratio)
         {
-            if (self == null)
+            BattleFlowManager flow = UnityEngine.Object.FindFirstObjectByType<BattleFlowManager>();
+            if (flow == null)
             {
-                return 20003;
+                return null;
             }
 
-            EnemyScript enemyScript = self.GetComponent<EnemyScript>();
-            if (enemyScript != null
-                && enemyScript.Data != null
-                && !string.IsNullOrWhiteSpace(enemyScript.Data.Index)
-                && int.TryParse(enemyScript.Data.Index.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed))
+            BattleCharactor best = null;
+            System.Collections.Generic.IReadOnlyList<BattleCharactor> parts = flow.Participants;
+            for (int i = 0; i < parts.Count; i++)
             {
-                return parsed;
+                BattleCharactor u = parts[i];
+                if (u == null || u == self || u.IsDead || u.IsPlayer != self.IsPlayer) continue;
+                if (u.MaxHp <= 0f || (u.CurrentHp / u.MaxHp) >= ratio) continue;
+                if (best == null || u.CurrentHp < best.CurrentHp) best = u;
             }
 
-            int fromSkill = EnemyAiIndexHelper.TryResolveEnemyIndexFromClassSkill(self);
-            if (fromSkill > 0)
-            {
-                return fromSkill;
-            }
+            return best;
+        }
 
-            return 20003;
+        private static SkillData ResolveSkillBySlot(BattleCharactor self, int slot)
+        {
+            return self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == (20003 * 10) + slot);
         }
     }
 }

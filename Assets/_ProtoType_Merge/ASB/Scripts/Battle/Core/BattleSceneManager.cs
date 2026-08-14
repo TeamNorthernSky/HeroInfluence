@@ -309,18 +309,37 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         playerSpawner?.ManualSpawn();
-        bool enemySpawnSucceeded = enemySpawner != null && enemySpawner.ManualSpawn();
-        if (isEventBattle && !enemySpawnSucceeded)
+
+        // 이벤트 전투: (ZoneId, BattleKey, EnemyLevel) 키로 플랜을 직접 빌드해 스폰한다(§5).
+        //   플랜 빌드 → 적 스폰(plan.Scenario로 인질 유닛 제외) → 인질 컨트롤러 생성.
+        //   빌드/스폰 실패 시 폴백 없이 즉시 진입 실패(Abort) — 키-빌드 문제를 조용히 가리지 않는다.
+        BattleScenarioConfig scenario = null;
+        if (isEventBattle)
         {
-            AbortEventBattleSetup(
-                combatContext,
-                $"No complete event combat enemy set was spawned. Battle={combatContext.EventBattle.BattleKey}");
-            return;
+            CombatEventBattleData eventBattle = combatContext.EventBattle;
+            if (!EnemySpawnPlanBuilder.TryBuildFromEventBattleKey(
+                    eventBattle.ZoneId, eventBattle.BattleKey, eventBattle.EnemyLevel,
+                    out EnemySpawnPlan eventPlan, out string planError))
+            {
+                AbortEventBattleSetup(combatContext, planError);
+                return;
+            }
+
+            if (enemySpawner == null || !enemySpawner.SpawnFromPreparedPlan(eventPlan))
+            {
+                AbortEventBattleSetup(
+                    combatContext,
+                    $"No complete event combat enemy set was spawned. Battle={eventBattle.BattleKey}");
+                return;
+            }
+
+            scenario = eventPlan.Scenario;
+        }
+        else
+        {
+            enemySpawner?.ManualSpawn();
         }
 
-        BattleScenarioConfig scenario = isEventBattle && combatContext.EventBattle != null
-            ? combatContext.EventBattle.Scenario
-            : null;
         if (scenario != null && scenario.IsHostageRescue)
         {
             hostageScenarioController = HostageScenarioController.Create(eventSlotMap, scenario);

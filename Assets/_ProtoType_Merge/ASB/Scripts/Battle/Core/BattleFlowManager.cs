@@ -343,6 +343,7 @@ public class BattleFlowManager : MonoBehaviour
             }
 
             CurrentUnit = unit;
+            CurrentUnit.ClearGuard(); // 대신 맞기: 가디언의 다음 턴 시작 시 미소비 보호 링크 만료(기절/스킵 포함)
 
             // 이전 턴 입력 상태를 먼저 정리한다 (UI의 BeginPendingAction이 덮어쓰이지 않도록).
             inputHandler?.ClearSelectionState();

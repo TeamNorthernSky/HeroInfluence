@@ -7,7 +7,7 @@ using UnityEngine;
 /// - 이벤트 전투: (현행) 사전 빌드된 CombatEventBattleData → Plan 변환
 ///
 /// 씬 의존이 없어 전투씬(EnemySpawner)과 DH 소비처(스킵 전력/프롬프트/보상)가 함께 재사용한다.
-/// 레벨 스탯은 영속 경로(PersistentEnemyRepository.CalculateEnemyIngameStats)와 동일하게
+/// 레벨 스탯은 DH 템플릿 기반 계산 경로와 동일하게
 /// UnitStatCalculator.CalculateLevelAdjustedBaseStats(base, 적유닛템플릿.LevelupStats, level)로 계산한다.
 /// </summary>
 public static class EnemySpawnPlanBuilder
@@ -79,24 +79,56 @@ public static class EnemySpawnPlanBuilder
     }
 
     /// <summary>
-    /// 이벤트 전투: 현행 사전 빌드된 CombatEventBattleData → Plan 변환.
-    /// [TEMP:EVENTBUILD] 제거조건: Phase 7에서 BattleKey로 전투씬이 직접 빌드하도록 이관.
+    /// 이벤트 전투: (zoneId, battleKey, level) 키로 플랜을 직접 빌드한다(§4). 부분 결과 반환 금지.
+    /// 유닛/시나리오 빌드는 공용 <see cref="EventBattlePlanSource"/>(failFast:true)에 위임하고,
+    /// 시나리오는 반드시 이 플랜(plan.Scenario) 안에 담아 반환한다 — 스포너/BattleSceneManager가
+    /// 시나리오를 별도 경로로 넘기지 않도록 강제(§5·§7).
     /// </summary>
-    public static bool TryBuildFromEventBattle(CombatEventBattleData eventBattle, out EnemySpawnPlan plan, out string error)
+    public static bool TryBuildFromEventBattleKey(int zoneId, string battleKey, int enemyLevel, out EnemySpawnPlan plan, out string error)
     {
         plan = null;
         error = string.Empty;
 
-        if (eventBattle == null || eventBattle.EnemyUnits == null || eventBattle.EnemyUnits.Count == 0)
+        if (!EventBattlePlanSource.TryBuildUnits(
+                zoneId, battleKey, enemyLevel, failFast: true,
+                out List<CombatEventBattleUnitData> units, out error))
+        {
+            return false;
+        }
+
+        if (!TryBuildEntriesFromUnits(units, out List<EnemySpawnEntry> entries, out error))
+            return false;
+
+        if (!EventBattlePlanSource.TryBuildScenario(
+                zoneId, battleKey, units, failFast: true,
+                out BattleScenarioConfig scenario, out error))
+        {
+            return false;
+        }
+
+        plan = new EnemySpawnPlan(entries, scenario);
+        return true;
+    }
+
+    // CombatEventBattleUnitData 목록 → EnemySpawnEntry 목록. 이벤트 키/사전빌드 경로가 공유한다.
+    // 키 경로는 EventBattlePlanSource가 상류에서 이미 검증하므로 여기서 skip이 발생하지 않는다.
+    private static bool TryBuildEntriesFromUnits(
+        IReadOnlyList<CombatEventBattleUnitData> units,
+        out List<EnemySpawnEntry> entries,
+        out string error)
+    {
+        entries = new List<EnemySpawnEntry>(units != null ? units.Count : 0);
+        error = string.Empty;
+
+        if (units == null || units.Count == 0)
         {
             error = "Event battle has no enemy units.";
             return false;
         }
 
-        var entries = new List<EnemySpawnEntry>(eventBattle.EnemyUnits.Count);
-        for (int i = 0; i < eventBattle.EnemyUnits.Count; i++)
+        for (int i = 0; i < units.Count; i++)
         {
-            CombatEventBattleUnitData unit = eventBattle.EnemyUnits[i];
+            CombatEventBattleUnitData unit = units[i];
             if (unit == null || string.IsNullOrWhiteSpace(unit.UnitKey))
                 continue;
 
@@ -113,7 +145,6 @@ public static class EnemySpawnPlanBuilder
             return false;
         }
 
-        plan = new EnemySpawnPlan(entries, eventBattle.Scenario);
         return true;
     }
 

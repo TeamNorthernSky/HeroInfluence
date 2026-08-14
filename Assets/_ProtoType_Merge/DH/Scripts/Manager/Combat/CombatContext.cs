@@ -25,7 +25,7 @@ public class CombatEventBattleUnitData
     public CombatEventBattleUnitData() { }
 
     // DH 이벤트 전투 전용 임시 유닛 데이터.
-    // ASB 전투씬은 이벤트 전투일 때 PersistentEnemyRepository 대신 이 값을 그대로 스폰 입력으로 사용한다.
+    // Event battles keep a lightweight unit DTO until the ASB battle scene reads every enemy from templates directly.
     public CombatEventBattleUnitData(string unitKey, int slot, int level, DHEventBattleUnitTemplate source)
     {
         UnitKey = unitKey;
@@ -62,42 +62,23 @@ public class CombatEventBattleData
     // 메인이벤트 전투에서 승리/패배 후 원본 이벤트 오브젝트 처리에 사용하는 EventKey.
     public string SourceMainEventKey;
     public int EnemyLevel;
-    // ASB EnemySpawner가 이벤트 전투일 때 읽는 확정 적 유닛 목록.
-    public List<CombatEventBattleUnitData> EnemyUnits = new List<CombatEventBattleUnitData>();
     // 전투씬이 돌려줘야 하는 숫자 결과값. 예: HostageInjuredCount.
     public List<DHEventNumericState> NumericResults = new List<DHEventNumericState>();
-    // 인질전 같은 전투 특수 규칙. null이면 일반 이벤트 전투처럼 처리한다.
-    public BattleScenarioConfig Scenario;
 
     // ASB 공통 처리에서 "적 그룹 키" 이름으로 읽어야 할 경우를 위한 별칭.
     // 이벤트 전투에서는 BattleKey가 곧 전투 그룹 키 역할을 한다.
-    public string EnemyGroupKey => string.IsNullOrWhiteSpace(BattleKey) ? string.Empty : BattleKey.Trim();
-    public CombatEnemySourceType SourceType => CombatEnemySourceType.Event;
-
     public CombatEventBattleData() { }
 
     public CombatEventBattleData(
         int zoneId,
         string battleKey,
         int resumeChatId,
-        int enemyLevel,
-        IReadOnlyList<CombatEventBattleUnitData> enemyUnits)
+        int enemyLevel)
     {
         ZoneId = zoneId;
         BattleKey = battleKey;
         ResumeChatId = resumeChatId;
         EnemyLevel = enemyLevel;
-
-        EnemyUnits.Clear();
-        if (enemyUnits == null)
-            return;
-
-        for (int i = 0; i < enemyUnits.Count; i++)
-        {
-            CombatEventBattleUnitData unit = enemyUnits[i];
-            if (unit != null)
-                EnemyUnits.Add(unit);
-        }
     }
 
     public void SetNumericResult(string key, float value)
@@ -195,23 +176,12 @@ public class CombatContext : MonoBehaviour
         combatParty.SetUnitIndices(unitIndices);
     }
 
-    public void RegisterCombatEnemy(string enemyId, System.Collections.Generic.IReadOnlyList<int> unitIndices)
-    {
-        RegisterCombatEnemy(enemyId, string.Empty, unitIndices);
-    }
-
-    public void RegisterCombatEnemy(string enemyId, string placementKey, System.Collections.Generic.IReadOnlyList<int> unitIndices)
-    {
-        RegisterCombatEnemy(enemyId, placementKey, string.Empty, 1, CombatEnemySourceType.None, unitIndices);
-    }
-
     public void RegisterCombatEnemy(
         string enemyId,
         string placementKey,
         string enemyGroupKey,
         int enemyLevel,
-        CombatEnemySourceType sourceType,
-        System.Collections.Generic.IReadOnlyList<int> unitIndices)
+        CombatEnemySourceType sourceType)
     {
         if (string.IsNullOrWhiteSpace(enemyId))
             return;
@@ -222,7 +192,7 @@ public class CombatContext : MonoBehaviour
 
         if (combatEnemy == null)
         {
-            combatEnemy = new CombatEnemyPersistentData(enemyId, placementKey, enemyGroupKey, sourceType, unitIndices);
+            combatEnemy = new CombatEnemyPersistentData(enemyId, placementKey, enemyGroupKey, sourceType);
             SetEnemyLevel(enemyLevel);
             return;
         }
@@ -231,14 +201,12 @@ public class CombatContext : MonoBehaviour
         combatEnemy.SetPlacementKey(placementKey);
         combatEnemy.SetEnemyGroupKey(enemyGroupKey);
         combatEnemy.SetSourceType(sourceType);
-        combatEnemy.SetUnitIndices(unitIndices);
         SetEnemyLevel(enemyLevel);
     }
 
     public void RegisterEventBattle(CombatEventBattleData nextEventBattle)
     {
-        // 이벤트 전투는 EnemyUnits/Scenario를 CombatContext에 임시로 담아 전투씬에 넘긴다.
-        // 이 경로는 PersistentEnemyRepository에 적 개체를 만들지 않는다.
+        // 이벤트 전투는 키/존/레벨만 CombatContext에 담고, ASB가 카탈로그에서 유닛과 시나리오를 해석한다.
         combatEnemy = null;
         eventBattle = nextEventBattle;
         SetEnemyLevel(nextEventBattle != null ? nextEventBattle.EnemyLevel : 1);

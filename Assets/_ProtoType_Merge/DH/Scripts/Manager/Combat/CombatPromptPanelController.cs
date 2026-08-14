@@ -83,7 +83,7 @@ public class CombatPromptPanelController : MonoBehaviour
         Action onSkipBattle,
         CombatAdvantageState advantageState,
         IReadOnlyList<int> heroUnitIndices,
-        IReadOnlyList<int> enemyUnitIndices)
+        IReadOnlyList<string> enemyPortraitKeys)
     {
         startBattleHandler = onStartBattle;
         fleeHandler = onFlee;
@@ -91,7 +91,7 @@ public class CombatPromptPanelController : MonoBehaviour
         gameObject.SetActive(true);
         PrepareInteractableState();
         SetAdvantageState(advantageState);
-        SetCombatPortraits(heroUnitIndices, enemyUnitIndices);
+        SetCombatPortraits(heroUnitIndices, enemyPortraitKeys);
     }
 
     public void Close()
@@ -151,7 +151,7 @@ public class CombatPromptPanelController : MonoBehaviour
 
     private void SetCombatPortraits(
         IReadOnlyList<int> heroUnitIndices,
-        IReadOnlyList<int> enemyUnitIndices)
+        IReadOnlyList<string> enemyPortraitKeys)
     {
         ApplyPortraits(
             heroPortraitImages,
@@ -159,11 +159,10 @@ public class CombatPromptPanelController : MonoBehaviour
             emptyHeroPortraitSprite,
             ResolveHeroPortrait);
 
-        ApplyPortraits(
+        ApplyEnemyPortraits(
             enemyPortraitImages,
-            enemyUnitIndices,
-            emptyEnemyPortraitSprite,
-            ResolveEnemyPortrait);
+            enemyPortraitKeys,
+            emptyEnemyPortraitSprite);
     }
 
     private static void ApplyPortraits(
@@ -199,19 +198,34 @@ public class CombatPromptPanelController : MonoBehaviour
 
     private static Sprite ResolveEnemyPortrait(int unitIndex)
     {
-        if (unitIndex <= 0)
-            return null;
+        return unitIndex > 0 ? Sprites.Portrait.Enemy(unitIndex.ToString()) : null;
+    }
 
-        PersistentEnemyRepository repository = PersistentEnemyRepository.Instance;
-        if (repository != null &&
-            repository.TryGetUnit(unitIndex, out EnemyUnitPersistentData data) &&
-            data != null &&
-            !string.IsNullOrWhiteSpace(data.UnitTemplateKey))
+    private static void ApplyEnemyPortraits(
+        Image[] images,
+        IReadOnlyList<string> portraitKeys,
+        Sprite emptySprite)
+    {
+        if (images == null)
+            return;
+
+        for (int i = 0; i < images.Length; i++)
         {
-            return Sprites.Portrait.Enemy(data.UnitTemplateKey);
-        }
+            Image image = images[i];
+            if (image == null)
+                continue;
 
-        return Sprites.Portrait.Enemy(unitIndex.ToString());
+            string portraitKey = portraitKeys != null && i < portraitKeys.Count
+                ? portraitKeys[i]
+                : string.Empty;
+            Sprite sprite = !string.IsNullOrWhiteSpace(portraitKey)
+                ? Sprites.Portrait.Enemy(portraitKey)
+                : null;
+
+            image.sprite = sprite != null ? sprite : emptySprite;
+            image.enabled = image.sprite != null;
+            image.gameObject.SetActive(true);
+        }
     }
 
     private static void PrepareButton(Button button)

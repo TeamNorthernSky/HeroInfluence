@@ -78,8 +78,13 @@ public class LobbyRosterView : MonoBehaviour
         var catalog = DHCsvTemplateCatalog.Instance;
         var visit = HQVisitState.Instance;
 
-        // 로비 표시 = 본부 상주(방문 파티 + 무소속). visitingOnly=true로 탐사 나간 파티 제외(HeroListController 로비 기본과 동일).
-        List<int> ordered = RosterOrdering.ResolveOrderedUnits(repo, visit, true);
+        // [KJ 260811] 표시는 완화, 선택은 상주만.
+        //  탐사씬 건설버튼(BTN_Explor_IsCanBuild) 진입은 파티 위치와 무관하게 허용되므로(기획 260615),
+        //  파티가 본부 정문 셀에 없으면 방문 파티가 0이 되어 로스터가 통째로 비었다. 표시 모드는
+        //  visitingOnly=false로 완화해 이 경우에도 파티를 보여준다.
+        //  단 선택 모드(시설 모달 BeginSelection)는 visitingOnly=true 유지 — 시설 영웅 배치의 "상주 제한"이
+        //  별도 검증 없이 이 필터에만 의존하기 때문(각 모달 OnHeroSelected는 unitIndex를 그대로 수용).
+        List<int> ordered = RosterOrdering.ResolveOrderedUnits(repo, visit, selectionCallback != null);
         for (int i = 0; i < ordered.Count; i++)
         {
             int unitIndex = ordered[i];

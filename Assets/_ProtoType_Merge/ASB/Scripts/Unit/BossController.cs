@@ -28,6 +28,19 @@ public sealed class BossController : MonoBehaviour
         public int Phase;
     }
 
+    [Serializable]
+    public struct SkillSummonEntry
+    {
+        [Tooltip("이 스킬키로 시전되면 소환. 예: FV40001_3")]
+        public string SkillKey;
+
+        [Tooltip("소환할 미니언 EnemyData.Index. 예: FV40005")]
+        public string MinionEnemyId;
+
+        [Tooltip("소환 그리드 번호(빈 칸일 때만 성공).")]
+        public int GridNumber;
+    }
+
     [Header("Phase thresholds (HP 비율)")]
     [Range(0f, 1f)] [SerializeField] private float _phase1HpRatio = 0.6f;
     [Range(0f, 1f)] [SerializeField] private float _phase2HpRatio = 0.3f;
@@ -44,6 +57,8 @@ public sealed class BossController : MonoBehaviour
 
     [Header("소환 구성")]
     [SerializeField] private List<SummonEntry> _summonEntries = new List<SummonEntry>();
+    [Tooltip("스킬키로 트리거되는 소환(절망의 굴레 등). 여러 칸 = 여러 줄.")]
+    [SerializeField] private List<SkillSummonEntry> _skillSummonEntries = new List<SkillSummonEntry>();
     [Tooltip("씬의 EnemySpawner. 미지정 시 런타임에 부모/씬에서 탐색한다.")]
     [SerializeField] private EnemySpawner _spawner;
     [Tooltip("씬의 BattleFlowManager. 미지정 시 런타임에 탐색한다. 소환 미니언의 턴 참가자 등록에 사용.")]
@@ -190,25 +205,59 @@ public sealed class BossController : MonoBehaviour
             return false; // 점유중이면 기존 유닛 보존, 실패
         }
 
+        // 전투 참가 등록까지 성공해야 '성공 소환'으로 간주한다. 실패 시 오브젝트를 정리해 전투 불참 소환물을 방지(리뷰 반영).
+        BattleCharactor minionBattle = go.GetComponent<BattleCharactor>();
+        BattleFlowManager flow = ResolveFlowManager();
+        if (minionBattle == null || flow == null)
+        {
+            Debug.LogWarning(
+                $"[BossController] 소환 후 턴 등록 불가(BattleCharactor={(minionBattle != null)}, Flow={(flow != null)}) → 소환 취소: {minionEnemyId}@{gridNumber}", this);
+            Destroy(go);
+            return false;
+        }
+
         MinionController mc = go.GetComponent<MinionController>();
         if (mc == null) mc = go.AddComponent<MinionController>();
         mc.Bind(this, _triggerSkillIndex, _reactionSkillIndex);
 
         // 런타임 참가자 등록: 이게 없으면 미니언이 턴 큐에 못 들어가 EAI를 실행하지 못한다(다음 라운드부터 반영).
-        BattleCharactor minionBattle = go.GetComponent<BattleCharactor>();
-        if (minionBattle != null)
+        if (!flow.RegisterRuntimeParticipant(minionBattle))
         {
-            BattleFlowManager flow = ResolveFlowManager();
-            if (flow != null)
+            Debug.LogWarning($"[BossController] 런타임 참가자 등록 실패 → 소환 취소: {minionEnemyId}@{gridNumber}", this);
+            Destroy(go);
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>스킬키에 매칭되는 모든 소환 엔트리를 실행한다. 반환=성공 소환 수. 점유/미설정은 조용히 스킵.</summary>
+    public int TrySummonForSkill(string skillKey)
+    {
+        if (string.IsNullOrEmpty(skillKey) || _skillSummonEntries == null)
+        {
+            return 0;
+        }
+
+        int count = 0;
+        for (int i = 0; i < _skillSummonEntries.Count; i++)
+        {
+            SkillSummonEntry e = _skillSummonEntries[i];
+            if (e.SkillKey != skillKey || string.IsNullOrWhiteSpace(e.MinionEnemyId))
             {
-                flow.RegisterRuntimeParticipant(minionBattle);
+                continue;
             }
-            else
+            if (TrySummonMinion(e.MinionEnemyId, e.GridNumber))
             {
-                Debug.LogWarning($"[BossController] BattleFlowManager를 찾지 못해 미니언 턴 등록 실패: {minionEnemyId}@{gridNumber}", this);
+                count++;
             }
         }
-        return true;
+
+        if (count == 0)
+        {
+            Debug.LogWarning($"[BossController] 소환 0건 (빈 칸 없음/미설정): skill={skillKey}", this);
+        }
+        return count;
     }
 
     private EnemySpawner ResolveSpawner()

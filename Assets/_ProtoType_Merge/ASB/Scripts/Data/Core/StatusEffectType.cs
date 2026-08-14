@@ -9,5 +9,6 @@ public enum StatusEffectType
     bleed,
     taunt,
     stun,
-    healBan
+    healBan,
+    charging   // 신규: 2턴 충전 표시용 마커(로직은 읽지 않음). 스탯/스킵/DOT 무영향.
 }

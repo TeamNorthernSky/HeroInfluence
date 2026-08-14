@@ -1,0 +1,379 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7a557fee7b2f4f429042c23d429c4a9, type: 3}
+  m_Name: EnemyUnit4SectorDataTable
+  m_EditorClassIdentifier: 
+  DataList:
+  - EnemyIndex: FV40001
+    EnemyName: "\uC728\uB9AC\uC544"
+    EnemyConcept: "4\uAD6C\uC5ED \uCD5C\uC885\uBCF4\uC2A4"
+    UnitMaxHP: 500
+    UnitATK: 20
+    UnitDEF: 40
+    CriticalRate: 0.25
+    CounterRate: 0.1
+    ReduceRate: 0.2
+    Speed: 0
+    EnemySkill1_Name: "\uB098\uB77D\uC758 \uD3ED\uD48D"
+    EnemySkill1_Description: "\uD788\uC5B4\uB85C \uC911 \uBB34\uC791\uC704 \uB300\uC0C1\uC774
+      \uD3EC\uD568\uB41C \uC5F4 \uC804\uCCB4 \uC720\uB2DB\uC5D0\uAC8C {EnemySkill1Value}
+      \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 1
+    EnemySkill1RangeLine: 1
+    EnemySkill1Target: 1
+    EnemySkill1MultiTarget: 09000000
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 1.2
+    EnemySkill1SubValue: 1.2
+    EnemySkill2_Name: "\uACF5\uBA78\uC758 \uADA4\uC801"
+    EnemySkill2_Description: "\uD788\uC5B4\uB85C \uC911 \uBB34\uC791\uC704 \uB300\uC0C1\uC774
+      \uC704\uCE58\uD55C \uD589 \uC804\uCCB4 \uC720\uB2DB\uC5D0\uAC8C {EnemySkill2Value}
+      \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 1
+    EnemySkill2RangeLine: 1
+    EnemySkill2Target: 1
+    EnemySkill2MultiTarget: 02000000
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 1.8
+    EnemySkill2SubValue: 1.8
+    EnemySkill3_Name: "\uC808\uB9DD\uC758 \uAD74\uB808"
+    EnemySkill3_Description: "(\uD604 \uD14C\uC774\uBE14 \uC0C1 \uAD6C\uD604\uC774
+      \uD798\uB4DC\uBBC0\uB85C \uBCC4\uB3C4 \uC11C\uC220)\n\n\uC2DC\uC804\uC790 \uC9C4\uC601\uC758
+      \uC804\uC5F4(1,2,3 \uD0C0\uC77C)\uC5D0 \uC808\uB9DD\uC758 \uAD74\uB801\uC1E0
+      \uC18C\uD658\n\uC808\uB9DD\uC758 \uAD74\uB801\uC1E0\uB294 \uC720\uB2DB\uC73C\uB85C
+      \uCDE8\uAE09\uB418\uBA70 \uACF5\uACA9 \uB300\uC0C1\uC774 \uB418\uC5B4 \uD53C\uD574\uB97C
+      \uC785\uC744 \uC218 \uC788\uC74C.\n\n\uC808\uB9DD\uC758 \uAD74\uB801\uC1E0
+      \uC18C\uD658 \uD6C4 \uD55C \uB77C\uC6B4\uB4DC\uAC00 \uC9C0\uB098 \uBCF8\uC778
+      \uD134\uC774 \uB3CC\uC544\uC624\uBA74 \uD574\uB2F9 \uC720\uB2DB\uC774 \uC18D\uD55C
+      \uD589\uC758 \uD788\uC5B4\uB85C \uC9C4\uC601\uC73C\uB85C \uB3CC\uC9C4\uD574
+      \uD589 \uC804\uCCB4\uC5D0 {EnemySkill3Value} \uB9CC\uD07C \uAD11\uC5ED\uD53C\uD574"
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 2.3
+    EnemySkill3SubValue: 2.3
+    UnitAI: "1~2 \uD398\uC774\uC988\n- \uC774 \uC720\uB2DB\uC740 YuliaReservedSkillSource
+      \uB2E8\uC77C \uC608\uC57D\uAC12\uC744 \uD655\uC778\uD55C\uB2E4.\n- YuliaReservedSkillSource\uC5D0
+      \uC720\uD6A8\uD55C \uC99D\uD3ED\uAE30 \uAC1C\uCCB4\uAC00 \uC788\uC73C\uBA74,
+      \uD574\uB2F9 \uC99D\uD3ED\uAE30\uAC00 \uC81C\uACF5\uD558\uB294 \uC2A4\uD0AC\uC744
+      \uC2DC\uC804\uD55C\uB2E4.\n- \uC608\uC57D\uAC12\uC774 \uC5C6\uAC70\uB098, \uC728\uB9AC\uC544
+      \uD134 \uC804\uC5D0 \uC608\uC57D \uC99D\uD3ED\uAE30\uAC00 \uD30C\uAD34\uB418\uC5B4
+      \uC720\uD6A8\uD558\uC9C0 \uC54A\uC73C\uBA74 \uAE30\uBCF8 \uC2A4\uD0AC '\uC808\uB9DD\uC758
+      \uAD74\uB808'\uB97C \uC2DC\uC804\uD55C\uB2E4.\n- \uC2A4\uD0AC \uC2DC\uC804
+      \uD6C4 YuliaReservedSkillSource\uB97C \uCD08\uAE30\uD654\uD55C\uB2E4.\n\n3
+      \uD398\uC774\uC988\n- \uCCB4\uB825 50% \uC774\uD558 \uC2DC '\uC728\uB9AC\uC544\uB97C
+      \uAC00\uB454 \uC7A5\uB9C9'\uC73C\uB85C \uB300\uCCB4\uB41C\uB2E4.\n\n\u203B
+      \uBCF8 \uD14C\uC774\uBE14\uC758 UnitAI\uB294 \uAC04\uB7B5 \uADDC\uCE59\uB9CC
+      \uC815\uB9AC\uD55C\uB2E4. \uC138\uBD80 \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED
+      \uC728\uB9AC\uC544 \uBCF4\uC2A4\uC804_\uC138\uBD80 \uAD6C\uD604 \uAE30\uD68D\u300D
+      \uBB38\uC11C\uB97C \uAE30\uC900\uC73C\uB85C \uD55C\uB2E4."
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV40002
+    EnemyName: "\uB098\uB77D\uC758 \uC99D\uD3ED\uAE30"
+    EnemyConcept: "\uC99D\uD3ED\uAE30{\uB098\uB77D\uC758 \uD3ED\uD48D}"
+    UnitMaxHP: 100
+    UnitATK: 15
+    UnitDEF: 20
+    CriticalRate: 0.2
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 3
+    EnemySkill1_Name: "\uC751\uCD95"
+    EnemySkill1_Description: "{EnergyStack} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB2A5\uB825 \uAC1C\uBC29"
+    EnemySkill2_Description: "\uC728\uB9AC\uC544\uC5D0\uAC8C  \uC2A4\uD0AC{\uB098\uB77D\uC758
+      \uD3ED\uD48D} \uC608\uC57D \uBC84\uD504 \uBD80\uC5EC"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: "\uB098\uB77D\uC758 \uD3ED\uD48D"
+    EnemySkill3_Description: "\uD788\uC5B4\uB85C \uC911 \uBB34\uC791\uC704 \uB300\uC0C1\uC774
+      \uD3EC\uD568\uB41C \uC5F4 \uC804\uCCB4 \uC720\uB2DB\uC5D0\uAC8C {EnemySkill1Value}
+      \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 1
+    EnemySkill3RangeLine: 1
+    EnemySkill3Target: 1
+    EnemySkill3MultiTarget: 09000000
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 1.2
+    EnemySkill3SubValue: 1.2
+    UnitAI: "1 \uD398\uC774\uC988\n- '\uC751\uCD95', '\uB2A5\uB825 \uAC1C\uBC29'
+      \uD589\uB3D9\uB9CC \uC2DC\uC804 \uAC00\uB2A5\uD558\uB2E4.\n- \uC751\uCD95 :
+      '\uC5D0\uB108\uC9C0 \uCD95\uC801' \uC2A4\uD0DD 1 \uC99D\uAC00. \uC5D0\uB108\uC9C0
+      \uCD95\uC801 1\uC2A4\uD0DD\uB2F9 \uB2A5\uB825 \uAC1C\uBC29 \uC2DC\uC804 \uD655\uB960
+      50% \uC99D\uAC00, 2\uC2A4\uD0DD \uC774\uC0C1\uC740 100% \uACE0\uC815.\n- \uB2A5\uB825
+      \uAC1C\uBC29 : \uC728\uB9AC\uC544\uC758 YuliaReservedSkillSource \uB2E8\uC77C
+      \uC608\uC57D\uAC12\uC5D0 \uC774 \uC99D\uD3ED\uAE30 \uAC1C\uCCB4\uB97C \uC800\uC7A5\uD558\uACE0,
+      \uC5D0\uB108\uC9C0 \uCD95\uC801\uC744 0\uC73C\uB85C \uCD08\uAE30\uD654\uD55C\uB2E4.\n-
+      \uB2A5\uB825 \uAC1C\uBC29\uC740 \uC5D0\uB108\uC9C0 \uCD95\uC801 \uC2A4\uD0DD
+      1 \uC774\uC0C1\uC77C \uB54C\uB9CC \uC2DC\uC804 \uAC00\uB2A5\uD558\uB2E4.\n-
+      \uD30C\uAD34 \uC2DC \uB098\uB77D\uC758 \uD3ED\uD48D \uACF5\uAE09\uC774 \uCC28\uB2E8\uB41C\uB2E4.\n\n2
+      \uD398\uC774\uC988\n- 1\uD398\uC774\uC988\uC640 \uB3D9\uC77C\uD558\uAC8C \uC751\uCD95/\uB2A5\uB825
+      \uAC1C\uBC29\uC744 \uC0AC\uC6A9\uD55C\uB2E4.\n- \uCD94\uAC00\uB85C, \uD30C\uAD34
+      \uC2DC 2\uB77C\uC6B4\uB4DC\uAC04 \uBB34\uB825\uD654\uB418\uACE0 2\uB77C\uC6B4\uB4DC
+      \uACBD\uACFC \uD6C4 \uB2E4\uC2DC \uC804\uD22C\uC5D0 \uBCF5\uADC0\uD55C\uB2E4.\n\n3
+      \uD398\uC774\uC988\n- \uC751\uCD95/\uB2A5\uB825 \uAC1C\uBC29\uC740 \uBE44\uD65C\uC131\uD654\uB41C\uB2E4.\n-
+      \uB9E4 \uD134 '\uB098\uB77D\uC758 \uD3ED\uD48D'\uC744 \uC9C1\uC811 \uC2DC\uC804\uD55C\uB2E4.\n-
+      \uB9E4 \uBCF8\uC778 \uD134 \uC885\uB8CC \uC2DC '\uCDA9\uC804' \uC2A4\uD0DD
+      1 \uB204\uC801.\n- \uCDA9\uC804 1\uC2A4\uD0DD\uB2F9 \uACF5\uACA9\uB825 20%
+      \uC99D\uAC00.\n- \uC720\uB2DB \uD30C\uAD34 \uC2DC \uCDA9\uC804 \uC2A4\uD0DD
+      3 \uAC10\uC18C \uBC0F '\uC728\uB9AC\uC544\uB97C \uAC00\uB454 \uC7A5\uB9C9'\uC5D0
+      '\uACFC\uBD80\uD558' \uC2A4\uD0DD 1 \uCD94\uAC00.\n\n\u203B \uBCF8 \uD14C\uC774\uBE14\uC758
+      UnitAI\uB294 \uAC04\uB7B5 \uADDC\uCE59\uB9CC \uC815\uB9AC\uD55C\uB2E4. \uC138\uBD80
+      \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED \uC728\uB9AC\uC544 \uBCF4\uC2A4\uC804_\uC138\uBD80
+      \uAD6C\uD604 \uAE30\uD68D\u300D \uBB38\uC11C\uB97C \uAE30\uC900\uC73C\uB85C
+      \uD55C\uB2E4."
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV40003
+    EnemyName: "\uACF5\uBA78\uC758 \uC99D\uD3ED\uAE30"
+    EnemyConcept: "\uC99D\uD3ED\uAE30{\uACF5\uBA78\uC758 \uADA4\uC801}"
+    UnitMaxHP: 100
+    UnitATK: 15
+    UnitDEF: 20
+    CriticalRate: 0.2
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 2
+    EnemySkill1_Name: "\uC751\uCD95"
+    EnemySkill1_Description: "{EnergyStack} 1 \uC99D\uAC00"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 0
+    EnemySkill1SubValue: 0
+    EnemySkill2_Name: "\uB2A5\uB825 \uAC1C\uBC29"
+    EnemySkill2_Description: "\uC728\uB9AC\uC544\uC5D0\uAC8C  \uC2A4\uD0AC{\uACF5\uBA78\uC758
+      \uADA4\uC801} \uC608\uC57D \uBC84\uD504 \uBD80\uC5EC"
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: "\uACF5\uBA78\uC758 \uADA4\uC801"
+    EnemySkill3_Description: "\uD788\uC5B4\uB85C \uC911 \uBB34\uC791\uC704 \uB300\uC0C1\uC774
+      \uC704\uCE58\uD55C \uD589 \uC804\uCCB4 \uC720\uB2DB\uC5D0\uAC8C {EnemySkill2Value}
+      \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 1
+    EnemySkill3RangeLine: 1
+    EnemySkill3Target: 1
+    EnemySkill3MultiTarget: 02000000
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 1.8
+    EnemySkill3SubValue: 1.8
+    UnitAI: "1 \uD398\uC774\uC988\n- '\uC751\uCD95', '\uB2A5\uB825 \uAC1C\uBC29'
+      \uD589\uB3D9\uB9CC \uC2DC\uC804 \uAC00\uB2A5\uD558\uB2E4.\n- \uC751\uCD95 :
+      '\uC5D0\uB108\uC9C0 \uCD95\uC801' \uC2A4\uD0DD 1 \uC99D\uAC00. \uC5D0\uB108\uC9C0
+      \uCD95\uC801 1\uC2A4\uD0DD\uB2F9 \uB2A5\uB825 \uAC1C\uBC29 \uC2DC\uC804 \uD655\uB960
+      50% \uC99D\uAC00, 2\uC2A4\uD0DD \uC774\uC0C1\uC740 100% \uACE0\uC815.\n- \uB2A5\uB825
+      \uAC1C\uBC29 : \uC728\uB9AC\uC544\uC758 YuliaReservedSkillSource \uB2E8\uC77C
+      \uC608\uC57D\uAC12\uC5D0 \uC774 \uC99D\uD3ED\uAE30 \uAC1C\uCCB4\uB97C \uC800\uC7A5\uD558\uACE0,
+      \uC5D0\uB108\uC9C0 \uCD95\uC801\uC744 0\uC73C\uB85C \uCD08\uAE30\uD654\uD55C\uB2E4.\n-
+      \uB2A5\uB825 \uAC1C\uBC29\uC740 \uC5D0\uB108\uC9C0 \uCD95\uC801 \uC2A4\uD0DD
+      1 \uC774\uC0C1\uC77C \uB54C\uB9CC \uC2DC\uC804 \uAC00\uB2A5\uD558\uB2E4.\n-
+      \uD30C\uAD34 \uC2DC \uACF5\uBA78\uC758 \uADA4\uC801 \uACF5\uAE09\uC774 \uCC28\uB2E8\uB41C\uB2E4.\n\n2
+      \uD398\uC774\uC988\n- 1\uD398\uC774\uC988\uC640 \uB3D9\uC77C\uD558\uAC8C \uC751\uCD95/\uB2A5\uB825
+      \uAC1C\uBC29\uC744 \uC0AC\uC6A9\uD55C\uB2E4.\n- \uCD94\uAC00\uB85C, \uD30C\uAD34
+      \uC2DC 2\uB77C\uC6B4\uB4DC\uAC04 \uBB34\uB825\uD654\uB418\uACE0 2\uB77C\uC6B4\uB4DC
+      \uACBD\uACFC \uD6C4 \uB2E4\uC2DC \uC804\uD22C\uC5D0 \uBCF5\uADC0\uD55C\uB2E4.\n\n3
+      \uD398\uC774\uC988\n- \uD30C\uAD34 \uC2DC 2\uB77C\uC6B4\uB4DC \uBB34\uB825\uD654
+      \uD6C4 \uBCF5\uADC0 \uADDC\uCE59\uB9CC 2\uD398\uC774\uC988\uC5D0\uC11C \uACC4\uC2B9\uD55C\uB2E4.\n-
+      \uC751\uCD95/\uB2A5\uB825 \uAC1C\uBC29\uC740 \uBE44\uD65C\uC131\uD654\uB41C\uB2E4.\n-
+      \uB9E4 \uD134 '\uACF5\uBA78\uC758 \uADA4\uC801'\uC744 \uC9C1\uC811 \uC2DC\uC804\uD55C\uB2E4.\n-
+      \uB9E4 \uBCF8\uC778 \uD134 \uC885\uB8CC \uC2DC '\uCDA9\uC804' \uC2A4\uD0DD
+      1 \uB204\uC801.\n- \uCDA9\uC804 1\uC2A4\uD0DD\uB2F9 \uACF5\uACA9\uB825 20%
+      \uC99D\uAC00.\n- \uC720\uB2DB \uD30C\uAD34 \uC2DC \uCDA9\uC804 \uC2A4\uD0DD
+      3 \uAC10\uC18C \uBC0F '\uC728\uB9AC\uC544\uB97C \uAC00\uB454 \uC7A5\uB9C9'\uC5D0
+      '\uACFC\uBD80\uD558' \uC2A4\uD0DD 1 \uCD94\uAC00.\n\n\u203B \uBCF8 \uD14C\uC774\uBE14\uC758
+      UnitAI\uB294 \uAC04\uB7B5 \uADDC\uCE59\uB9CC \uC815\uB9AC\uD55C\uB2E4. \uC138\uBD80
+      \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED \uC728\uB9AC\uC544 \uBCF4\uC2A4\uC804_\uC138\uBD80
+      \uAD6C\uD604 \uAE30\uD68D\u300D \uBB38\uC11C\uB97C \uAE30\uC900\uC73C\uB85C
+      \uD55C\uB2E4."
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV40004
+    EnemyName: "\uC728\uB9AC\uC544\uB97C \uAC00\uB454 \uC7A5\uB9C9"
+    EnemyConcept: "\uC9C4 \uCD5C\uC885 \uBCF4\uC2A4"
+    UnitMaxHP: 500
+    UnitATK: 15
+    UnitDEF: 40
+    CriticalRate: 0.25
+    CounterRate: 0.1
+    ReduceRate: 0.2
+    Speed: 0
+    EnemySkill1_Name: "\uC808\uB9DD\uC758 \uAD74\uB808"
+    EnemySkill1_Description: "\uC2DC\uC804\uC790 \uC9C4\uC601\uC758 \uC804\uC5F4(1,2,3
+      \uD0C0\uC77C)\uC5D0 \uC808\uB9DD\uC758 \uAD74\uB801\uC1E0 \uC18C\uD658\n\uC808\uB9DD\uC758
+      \uAD74\uB801\uC1E0\uB294 \uC720\uB2DB\uC73C\uB85C \uCDE8\uAE09\uB418\uBA70
+      \uACF5\uACA9 \uB300\uC0C1\uC774 \uB418\uC5B4 \uD53C\uD574\uB97C \uC785\uC744
+      \uC218 \uC788\uC74C.\n\uC808\uB9DD\uC758 \uAD74\uB801\uC1E0 \uC18C\uD658 \uD6C4
+      \uD55C \uB77C\uC6B4\uB4DC\uAC00 \uC9C0\uB098 \uBCF8\uC778 \uD134\uC774 \uB3CC\uC544\uC624\uBA74
+      \uD574\uB2F9 \uC720\uB2DB\uC774 \uC18D\uD55C \uD589\uC758 \uD788\uC5B4\uB85C
+      \uC9C4\uC601\uC73C\uB85C \uB3CC\uC9C4\uD574 \uD589 \uC804\uCCB4\uC5D0 {EnemySkill1Value}
+      \uB9CC\uD07C \uAD11\uC5ED\uD53C\uD574"
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 0
+    EnemySkill1RangeLine: 0
+    EnemySkill1Target: 0
+    EnemySkill1MultiTarget: 
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 2.3
+    EnemySkill1SubValue: 2.3
+    EnemySkill2_Name: 
+    EnemySkill2_Description: 
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "3\uD398\uC774\uC988 \uC9C4\uC785 \uC2DC \uC728\uB9AC\uC544\uB97C \uB300\uCCB4\uD558\uB294
+      \uBCF4\uC2A4 \uC720\uB2DB.\n\n- \uC7A5\uB9C9\uC740 \uC728\uB9AC\uC544\uC758
+      HP\uC640 \uC0C1\uD0DC\uB97C \uACC4\uC2B9\uD55C\uB2E4.\n- \uC7A5\uB9C9\uC740
+      '\uC808\uB9DD\uC758 \uAD74\uB808'\uB9CC \uC0AC\uC6A9\uD55C\uB2E4.\n- YuliaReservedSkillSource
+      \uADDC\uCE59\uC740 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uB294\uB2E4.\n- \uC99D\uD3ED\uAE30
+      \uD30C\uAD34 \uC2DC '\uACFC\uBD80\uD558' \uC2A4\uD0DD 1 \uCD94\uAC00.\n- \uACFC\uBD80\uD558
+      1\uC2A4\uD0DD\uB2F9 \uBC1B\uB294 \uD53C\uD574 50% \uC99D\uAC00.\n\n\u203B \uBCF8
+      \uD14C\uC774\uBE14\uC758 UnitAI\uB294 \uAC04\uB7B5 \uADDC\uCE59\uB9CC \uC815\uB9AC\uD55C\uB2E4.
+      \uC138\uBD80 \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED \uC728\uB9AC\uC544
+      \uBCF4\uC2A4\uC804_\uC138\uBD80 \uAD6C\uD604 \uAE30\uD68D\u300D \uBB38\uC11C\uB97C
+      \uAE30\uC900\uC73C\uB85C \uD55C\uB2E4."
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0
+  - EnemyIndex: FV40005
+    EnemyName: "\uC808\uB9DD\uC758 \uAD74\uB801\uC1E0"
+    EnemyConcept: "\uC808\uB9DD\uC758 \uAD74\uB808 \uC18C\uD658\uCCB4"
+    UnitMaxHP: 30
+    UnitATK: 20
+    UnitDEF: 10
+    CriticalRate: 0
+    CounterRate: 0
+    ReduceRate: 0
+    Speed: 1
+    EnemySkill1_Name: "\uB3CC\uC9C4"
+    EnemySkill1_Description: "\uBCF8\uC778 \uD134\uC5D0 \uD574\uB2F9 \uD589\uC758
+      \uD788\uC5B4\uB85C \uC9C4\uC601\uC73C\uB85C \uB3CC\uC9C4\uD574 \uD589 \uC804\uCCB4\uC5D0
+      {EnemySkill1Value} \uB9CC\uD07C \uAD11\uC5ED \uD53C\uD574. \uB3CC\uC9C4 \uD6C4
+      \uC0AC\uB77C\uC9D0."
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 1
+    EnemySkill1RangeLine: 1
+    EnemySkill1Target: 1
+    EnemySkill1MultiTarget: 02000000
+    EnemySkill1_MultiTargetType: 0
+    EnemySkill1_MultiTargetCount: 0
+    EnemySkill1Value: 2.3
+    EnemySkill1SubValue: 2.3
+    EnemySkill2_Name: 
+    EnemySkill2_Description: 
+    EnemySkill2Effect: 0
+    EnemySkill2Range: 0
+    EnemySkill2RangeLine: 0
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
+    EnemySkill2_MultiTargetType: 0
+    EnemySkill2_MultiTargetCount: 0
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: 
+    EnemySkill3_Description: 
+    EnemySkill3Effect: 0
+    EnemySkill3Range: 0
+    EnemySkill3RangeLine: 0
+    EnemySkill3Target: 0
+    EnemySkill3MultiTarget: 
+    EnemySkill3_MultiTargetType: 0
+    EnemySkill3_MultiTargetCount: 0
+    EnemySkill3Value: 0
+    EnemySkill3SubValue: 0
+    UnitAI: "\uC808\uB9DD\uC758 \uAD74\uB808\uB85C \uC18C\uD658\uB418\uB294 \uC720\uB2DB.\n\n-
+      HP 30 / \uBC29\uC5B4\uB825 10 / Speed 3.\n- \uC2DC\uC804\uC790 \uC9C4\uC601
+      \uC804\uC5F4 1,2,3 \uD0C0\uC77C\uC5D0 \uBAA8\uB450 \uC18C\uD658\uB41C\uB2E4.\n-
+      \uC18C\uD658 \uC704\uCE58\uB294 \uD56D\uC0C1 \uBE44\uC6CC\uB454\uB2E4. \uD574\uB2F9
+      \uD0C0\uC77C\uC5D0 \uC774\uBBF8 \uC720\uB2DB\uC774 \uC788\uC73C\uBA74 \uADF8
+      \uD0C0\uC77C\uC758 \uC18C\uD658\uC740 \uCDE8\uC18C\uB41C\uB2E4.\n- \uC18C\uD658\uB41C
+      \uB2E4\uC74C \uB77C\uC6B4\uB4DC\uBD80\uD130 \uD589\uB3D9\uD55C\uB2E4.\n- \uBCF8\uC778
+      \uD134\uC5D0 \uD574\uB2F9 \uD589\uC758 \uD788\uC5B4\uB85C \uC9C4\uC601\uC73C\uB85C
+      \uB3CC\uC9C4\uD574 \uD589 \uC804\uCCB4 \uD53C\uD574\uB97C \uC8FC\uACE0 \uC0AC\uB77C\uC9C4\uB2E4.\n-
+      \uB3CC\uC9C4 \uC804\uC5D0 \uD30C\uAD34\uB418\uBA74 \uD574\uB2F9 \uD589\uC758
+      \uD53C\uD574\uB294 \uBC1C\uC0DD\uD558\uC9C0 \uC54A\uB294\uB2E4.\n\n\u203B \uC138\uBD80
+      \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED \uC728\uB9AC\uC544 \uBCF4\uC2A4\uC804_\uC138\uBD80
+      \uAD6C\uD604 \uAE30\uD68D\u300D \uBB38\uC11C\uB97C \uAE30\uC900\uC73C\uB85C
+      \uD55C\uB2E4."
+    ExperiencePoint: 0
+    LevelGrowthExperiencePoint: 0
+    LevelGrowthMaxHP: 0
+    LevelGrowthAtk: 0
+    LevelGrowthDef: 0

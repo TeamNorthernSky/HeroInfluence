@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// [Phase A 검증용] 씬 전환 + 명시 시점에 PersistentUnitRepository / PersistentEnemyRepository 상태를 덤프.
+/// [Phase A 검증용] 씬 전환 + 명시 시점에 PersistentUnitRepository / EnemyGroupPersistentRepository 상태를 덤프.
 /// 자동 등록: RuntimeInitializeOnLoadMethod 로 BootScene 진입 시 자체적으로 GameObject 생성 + DontDestroyOnLoad.
 /// 명시 호출: PersistentStateDebugLogger.Dump("label") 로 임의 시점 캡처 가능.
 /// 검증 완료 후 본 파일 + 호출처 5건 제거 예정.
@@ -110,28 +110,11 @@ public class PersistentStateDebugLogger : MonoBehaviour
 
     private static void AppendEnemyRepositoryState(StringBuilder sb)
     {
-        PersistentEnemyRepository repo = PersistentEnemyRepository.Instance;
         EnemyGroupPersistentRepository enemyGroupRepo = EnemyGroupPersistentRepository.Instance;
         CombatContext combatContext = CombatContext.Instance;
 
-        if (repo == null)
-        {
-            sb.AppendLine("[Enemy] Repository is null");
-            return;
-        }
-
         int enemyCount = enemyGroupRepo != null ? enemyGroupRepo.Enemies.Count : 0;
-        sb.AppendLine($"[Enemy] units={repo.Units.Count}, enemies={enemyCount}");
-
-        for (int i = 0; i < repo.Units.Count; i++)
-        {
-            EnemyUnitPersistentData u = repo.Units[i];
-            if (u == null) continue;
-            StatBlock s = u.BaseStats;
-            sb.AppendLine(
-                $"  unit[{u.UnitIndex}] tpl='{u.UnitTemplateKey}' Lv{u.Level} " +
-                $"HP{s.HP} Atk{s.Atk} DEF{s.DEF} Spd{s.Speed}");
-        }
+        sb.AppendLine($"[Enemy] enemies={enemyCount}");
 
         if (enemyGroupRepo != null)
         {
@@ -149,7 +132,7 @@ public class PersistentStateDebugLogger : MonoBehaviour
 
         CombatEnemyPersistentData ce = combatContext != null ? combatContext.CombatEnemy : null;
         if (ce != null)
-            sb.AppendLine($"  combatEnemy=[{ce.EnemyId}] units=[{FormatIndices(ce.UnitIndices)}]");
+            sb.AppendLine($"  combatEnemy=[{ce.EnemyId}] group='{ce.EnemyGroupKey}' placement='{ce.PlacementKey}' source={ce.SourceType}");
         else
             sb.AppendLine("  combatEnemy=(null)");
     }

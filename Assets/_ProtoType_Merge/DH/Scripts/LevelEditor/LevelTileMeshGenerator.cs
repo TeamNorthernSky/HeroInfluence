@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class LevelTileMeshGenerator : MonoBehaviour
 {
@@ -9,16 +12,20 @@ public class LevelTileMeshGenerator : MonoBehaviour
     {
         public readonly Vector2Int Chunk;
         public readonly Texture Texture;
+        public readonly Material MaterialTemplate;
 
-        public TileBatchKey(Vector2Int chunk, Texture texture)
+        public TileBatchKey(Vector2Int chunk, Texture texture, Material materialTemplate)
         {
             Chunk = chunk;
             Texture = texture;
+            MaterialTemplate = materialTemplate;
         }
 
         public bool Equals(TileBatchKey other)
         {
-            return Chunk == other.Chunk && Texture == other.Texture;
+            return Chunk == other.Chunk &&
+                   Texture == other.Texture &&
+                   MaterialTemplate == other.MaterialTemplate;
         }
 
         public override bool Equals(object obj)
@@ -30,7 +37,41 @@ public class LevelTileMeshGenerator : MonoBehaviour
         {
             unchecked
             {
-                return (Chunk.GetHashCode() * 397) ^ (Texture != null ? Texture.GetHashCode() : 0);
+                int hash = Chunk.GetHashCode();
+                hash = (hash * 397) ^ (Texture != null ? Texture.GetHashCode() : 0);
+                hash = (hash * 397) ^ (MaterialTemplate != null ? MaterialTemplate.GetHashCode() : 0);
+                return hash;
+            }
+        }
+    }
+
+    private readonly struct MaterialCacheKey : System.IEquatable<MaterialCacheKey>
+    {
+        public readonly Texture Texture;
+        public readonly Material Template;
+
+        public MaterialCacheKey(Texture texture, Material template)
+        {
+            Texture = texture;
+            Template = template;
+        }
+
+        public bool Equals(MaterialCacheKey other)
+        {
+            return Texture == other.Texture && Template == other.Template;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is MaterialCacheKey other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((Texture != null ? Texture.GetHashCode() : 0) * 397) ^
+                       (Template != null ? Template.GetHashCode() : 0);
             }
         }
     }
@@ -58,8 +99,9 @@ public class LevelTileMeshGenerator : MonoBehaviour
     [SerializeField] private Transform tileRoot;
     [SerializeField] private Material materialTemplate;
     [SerializeField] private string generatedRootName = "Generated Tile Meshes";
+    [SerializeField] private bool markChunksReflectionProbeStatic = true;
 
-    private readonly Dictionary<Texture, Material> materialCache = new Dictionary<Texture, Material>();
+    private readonly Dictionary<MaterialCacheKey, Material> materialCache = new Dictionary<MaterialCacheKey, Material>();
 
     public void Generate(LevelData levelData)
     {
@@ -88,14 +130,21 @@ public class LevelTileMeshGenerator : MonoBehaviour
         for (int i = 0; i < placements.Count; i++)
         {
             TilePlacementData placement = placements[i];
-            if (!tileRegistry.TryGetSprite(placement.TileKey, out Sprite sprite) || sprite == null || sprite.texture == null)
+            if (!tileRegistry.TryGetSprite(placement.TileKey, out Sprite sprite) ||
+                sprite == null ||
+                sprite.texture == null)
+            {
                 continue;
+            }
 
             Vector2Int grid = placement.GridPosition + offset;
             Vector2Int chunk = new Vector2Int(
                 Mathf.FloorToInt((float)grid.x / chunkSize),
                 Mathf.FloorToInt((float)grid.y / chunkSize));
-            TileBatchKey key = new TileBatchKey(chunk, sprite.texture);
+            TileBatchKey key = new TileBatchKey(
+                chunk,
+                sprite.texture,
+                ResolveMaterialTemplate(placement.MaterialKey));
 
             if (!batches.TryGetValue(key, out TileBatch batch))
             {
@@ -145,7 +194,10 @@ public class LevelTileMeshGenerator : MonoBehaviour
             Vector2Int chunk = new Vector2Int(
                 Mathf.FloorToInt((float)grid.x / chunkSize),
                 Mathf.FloorToInt((float)grid.y / chunkSize));
-            TileBatchKey key = new TileBatchKey(chunk, sprite.texture);
+            TileBatchKey key = new TileBatchKey(
+                chunk,
+                sprite.texture,
+                materialTemplate);
 
             if (!batches.TryGetValue(key, out TileBatch batch))
             {
@@ -263,6 +315,7 @@ public class LevelTileMeshGenerator : MonoBehaviour
         string textureName = key.Texture != null ? key.Texture.name : "NoTexture";
         GameObject go = new GameObject($"{namePrefix}_{key.Chunk.x}_{key.Chunk.y}_{textureName}");
         go.transform.SetParent(parent, false);
+        ApplyStaticFlags(go);
 
         Mesh mesh = new Mesh
         {
@@ -281,7 +334,19 @@ public class LevelTileMeshGenerator : MonoBehaviour
         meshFilter.sharedMesh = mesh;
 
         MeshRenderer meshRenderer = go.AddComponent<MeshRenderer>();
-        meshRenderer.sharedMaterial = GetMaterialForTexture(key.Texture);
+        meshRenderer.sharedMaterial = GetMaterialForTexture(key.Texture, key.MaterialTemplate);
+    }
+
+    private void ApplyStaticFlags(GameObject target)
+    {
+        if (target == null || !markChunksReflectionProbeStatic)
+            return;
+
+#if UNITY_EDITOR
+        StaticEditorFlags flags = GameObjectUtility.GetStaticEditorFlags(target);
+        flags |= StaticEditorFlags.ReflectionProbeStatic;
+        GameObjectUtility.SetStaticEditorFlags(target, flags);
+#endif
     }
 
     private void ClearChildren(Transform root)
@@ -299,16 +364,30 @@ public class LevelTileMeshGenerator : MonoBehaviour
         }
     }
 
-    private Material GetMaterialForTexture(Texture texture)
+    private Material ResolveMaterialTemplate(string materialKey)
+    {
+        if (!string.IsNullOrWhiteSpace(materialKey) &&
+            tileRegistry != null &&
+            tileRegistry.TryGetMaterialTemplate(materialKey, out Material selectedMaterial) &&
+            selectedMaterial != null)
+        {
+            return selectedMaterial;
+        }
+
+        return materialTemplate;
+    }
+
+    private Material GetMaterialForTexture(Texture texture, Material template)
     {
         if (texture == null)
             return null;
 
-        if (materialCache.TryGetValue(texture, out Material cached) && cached != null)
+        var cacheKey = new MaterialCacheKey(texture, template);
+        if (materialCache.TryGetValue(cacheKey, out Material cached) && cached != null)
             return cached;
 
-        Material material = materialTemplate != null
-            ? new Material(materialTemplate)
+        Material material = template != null
+            ? new Material(template)
             : new Material(ResolveDefaultShader());
         material.name = $"Tile_{texture.name}";
         material.mainTexture = texture;
@@ -317,7 +396,7 @@ public class LevelTileMeshGenerator : MonoBehaviour
         if (material.HasProperty("_MainTex"))
             material.SetTexture("_MainTex", texture);
 
-        materialCache.Add(texture, material);
+        materialCache.Add(cacheKey, material);
         return material;
     }
 

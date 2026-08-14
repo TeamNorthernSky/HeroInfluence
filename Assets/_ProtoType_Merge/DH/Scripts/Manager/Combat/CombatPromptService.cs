@@ -11,16 +11,16 @@ public class CombatPromptService : MonoBehaviour
         public CombatPromptPreview(
             CombatAdvantageEvaluation evaluation,
             IReadOnlyList<int> heroUnitIndices,
-            IReadOnlyList<int> enemyUnitIndices)
+            IReadOnlyList<string> enemyPortraitKeys)
         {
             Evaluation = evaluation;
             HeroUnitIndices = heroUnitIndices;
-            EnemyUnitIndices = enemyUnitIndices;
+            EnemyPortraitKeys = enemyPortraitKeys;
         }
 
         public CombatAdvantageEvaluation Evaluation { get; }
         public IReadOnlyList<int> HeroUnitIndices { get; }
-        public IReadOnlyList<int> EnemyUnitIndices { get; }
+        public IReadOnlyList<string> EnemyPortraitKeys { get; }
     }
 
     [Header("References")]
@@ -92,7 +92,7 @@ public class CombatPromptService : MonoBehaviour
             HandleSkipBattleClicked,
             preview.Evaluation.State,
             preview.HeroUnitIndices,
-            preview.EnemyUnitIndices);
+            preview.EnemyPortraitKeys);
         ShowModalBackdrop();
         promptInstance.transform.SetAsLastSibling();
         return true;
@@ -138,7 +138,7 @@ public class CombatPromptService : MonoBehaviour
             HandleSkipBattleClicked,
             preview.Evaluation.State,
             preview.HeroUnitIndices,
-            preview.EnemyUnitIndices);
+            preview.EnemyPortraitKeys);
         ShowModalBackdrop();
         promptInstance.transform.SetAsLastSibling();
         return true;
@@ -184,7 +184,7 @@ public class CombatPromptService : MonoBehaviour
             HandleSkipBattleClicked,
             preview.Evaluation.State,
             preview.HeroUnitIndices,
-            preview.EnemyUnitIndices);
+            preview.EnemyPortraitKeys);
         ShowModalBackdrop();
         promptInstance.transform.SetAsLastSibling();
         return true;
@@ -241,10 +241,10 @@ public class CombatPromptService : MonoBehaviour
         // [JC 260628] 전력평가 아군 = 전열→후열 압축(PartyFormation 공용 규약). 포트레이트 4칸에
         // 희소 슬롯배열을 그대로 쓰면 후열 유닛이 잘려 2명 누락되던 문제 교정.
         int[] heroUnitIndices = CopyUnitIndices(context != null ? context.CombatParty?.UnitIndices : null);
-        int[] enemyUnitIndices = CopyUnitIndices(context != null ? context.CombatEnemy?.UnitIndices : null);
+        string[] enemyPortraitKeys = BuildEnemyPortraitKeys(context);
         context?.Clear();
         combatEncounterManager.ClearCombatState();
-        return new CombatPromptPreview(evaluation, heroUnitIndices, enemyUnitIndices);
+        return new CombatPromptPreview(evaluation, heroUnitIndices, enemyPortraitKeys);
     }
 
     private static CombatPromptPreview CreateEmptyPreview()
@@ -252,7 +252,19 @@ public class CombatPromptService : MonoBehaviour
         return new CombatPromptPreview(
             new CombatAdvantageEvaluation(CombatAdvantageState.Close, 0f, 0f),
             Array.Empty<int>(),
-            Array.Empty<int>());
+            Array.Empty<string>());
+    }
+
+    private static string[] BuildEnemyPortraitKeys(CombatContext context)
+    {
+        if (!CombatEnemyTemplatePreviewBuilder.TryBuildFromContext(
+                context,
+                out IReadOnlyList<CombatEnemyTemplatePreviewUnit> units))
+        {
+            return Array.Empty<string>();
+        }
+
+        return CombatEnemyTemplatePreviewBuilder.BuildPortraitKeys(units);
     }
 
     private static int[] CopyUnitIndices(IReadOnlyList<int> source)

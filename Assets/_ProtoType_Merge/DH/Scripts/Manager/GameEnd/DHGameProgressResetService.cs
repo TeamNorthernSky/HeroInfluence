@@ -5,7 +5,6 @@ public static class DHGameProgressResetService
         DHGameEndState.Reset();
         MapProgressRepository.Instance?.ClearAllProgress();
         PersistentUnitRepository.Instance?.ClearAllUnits();
-        PersistentEnemyRepository.Instance?.ClearAllEnemies();
         EnemyGroupPersistentRepository.Instance?.ClearAllEnemies();
         PartyPersistentRepository.Instance?.ClearAllParties();
         WeaponPersistentRepository.Instance?.ClearAllWeapons();

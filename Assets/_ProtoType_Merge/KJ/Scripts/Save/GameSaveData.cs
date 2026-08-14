@@ -18,8 +18,6 @@ public class GameSaveData : ScriptableObject
     // ── 유닛/적 (기존 디스크 DTO 재사용) ──
     public int nextUnitIndex;
     public List<UnitPersistentDataDiskRow> units = new List<UnitPersistentDataDiskRow>();
-    public int nextEnemyUnitIndex;
-    public List<EnemyUnitPersistentDataDiskRow> enemyUnits = new List<EnemyUnitPersistentDataDiskRow>();
 
     // ── 적 그룹 ──
     public int nextEnemySequence;

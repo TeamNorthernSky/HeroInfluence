@@ -19,11 +19,13 @@ public class LevelEditorWindow : EditorWindow
     {
         public readonly Vector2Int Offset;
         public readonly string TileKey;
+        public readonly string MaterialKey;
 
-        public CopiedTile(Vector2Int offset, string tileKey)
+        public CopiedTile(Vector2Int offset, string tileKey, string materialKey)
         {
             Offset = offset;
             TileKey = tileKey;
+            MaterialKey = materialKey;
         }
     }
 
@@ -334,6 +336,7 @@ public class LevelEditorWindow : EditorWindow
     {
         SerializedProperty registryProperty = serializedController.FindProperty("tileRegistry");
         SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedTileKey");
+        SerializedProperty selectedMaterialKeyProperty = serializedController.FindProperty("selectedTileMaterialKey");
 
         EditorGUILayout.PropertyField(registryProperty);
 
@@ -386,6 +389,39 @@ public class LevelEditorWindow : EditorWindow
             else
                 EditorGUI.DrawRect(rect, new Color(0f, 0f, 0f, 0.15f));
         }
+
+        DrawTileMaterialSelector(registry, selectedMaterialKeyProperty);
+    }
+
+    private void DrawTileMaterialSelector(LevelTileRegistry registry, SerializedProperty selectedMaterialKeyProperty)
+    {
+        if (registry == null || selectedMaterialKeyProperty == null)
+            return;
+
+        EditorGUILayout.Space(2f);
+        IReadOnlyList<LevelTileMaterialEntry> entries = registry.MaterialEntries;
+        if (entries == null || entries.Count == 0)
+        {
+            EditorGUILayout.HelpBox("No tile material presets are registered. None uses the mesh generator default.", MessageType.Info);
+            EditorGUILayout.PropertyField(selectedMaterialKeyProperty, new GUIContent("Material Key"));
+            return;
+        }
+
+        List<string> keys = new List<string> { string.Empty };
+        List<string> labels = new List<string> { "None" };
+        for (int i = 0; i < entries.Count; i++)
+        {
+            LevelTileMaterialEntry entry = entries[i];
+            if (string.IsNullOrWhiteSpace(entry.MaterialKey))
+                continue;
+
+            keys.Add(entry.MaterialKey);
+            labels.Add(entry.MaterialKey);
+        }
+
+        int selectedIndex = Mathf.Max(0, keys.IndexOf(selectedMaterialKeyProperty.stringValue));
+        int nextIndex = EditorGUILayout.Popup("Material", selectedIndex, labels.ToArray());
+        selectedMaterialKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
     }
 
     private void DrawHeroUnionPrefabSelector(SerializedObject serializedController)
@@ -1116,8 +1152,11 @@ public class LevelEditorWindow : EditorWindow
             }
 
             Undo.RecordObject(context.LevelData, "Paint GroundTile");
-            context.LevelData.SetGroundTile(anchor, context.SelectedTileKey);
-            sceneStatus = $"Painted {context.SelectedTileKey} at {anchor}.";
+            context.LevelData.SetGroundTile(anchor, context.SelectedTileKey, context.SelectedTileMaterialKey);
+            string materialStatus = string.IsNullOrWhiteSpace(context.SelectedTileMaterialKey)
+                ? "default material"
+                : context.SelectedTileMaterialKey;
+            sceneStatus = $"Painted {context.SelectedTileKey} ({materialStatus}) at {anchor}.";
             CommitLevelDataChange(context);
             return;
         }
@@ -1313,6 +1352,7 @@ public class LevelEditorWindow : EditorWindow
         context.EnemyBehaviorType = controller.EnemyBehaviorType;
         context.TileRegistry = controller.TileRegistry;
         context.SelectedTileKey = controller.SelectedTileKey;
+        context.SelectedTileMaterialKey = controller.SelectedTileMaterialKey;
         context.SelectedHeroUnionPrefabKey = controller.SelectedHeroUnionPrefabKey;
         context.SelectedDecorativeObjectKey = controller.SelectedDecorativeObjectKey;
         context.SelectedMainEventPrefabKey = controller.SelectedMainEventPrefabKey;
@@ -1438,7 +1478,7 @@ public class LevelEditorWindow : EditorWindow
             if (string.IsNullOrWhiteSpace(placement.TileKey))
                 continue;
 
-            clipboard.Tiles.Add(new CopiedTile(grid - min, placement.TileKey));
+            clipboard.Tiles.Add(new CopiedTile(grid - min, placement.TileKey, placement.MaterialKey));
         }
 
         tileClipboard = clipboard;
@@ -1472,7 +1512,7 @@ public class LevelEditorWindow : EditorWindow
             if (!context.LevelData.IsInsideGrid(targetGrid))
                 continue;
 
-            context.LevelData.SetGroundTile(targetGrid, copiedTile.TileKey);
+            context.LevelData.SetGroundTile(targetGrid, copiedTile.TileKey, copiedTile.MaterialKey);
             pastedCount++;
         }
 
@@ -1619,6 +1659,13 @@ public class LevelEditorWindow : EditorWindow
         if (!context.TileRegistry.TryGetSprite(context.SelectedTileKey, out Sprite sprite) || sprite == null)
         {
             reason = $"Tile key '{context.SelectedTileKey}' was not found.";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(context.SelectedTileMaterialKey) &&
+            !context.TileRegistry.TryGetMaterialTemplate(context.SelectedTileMaterialKey, out _))
+        {
+            reason = $"Tile material key '{context.SelectedTileMaterialKey}' was not found.";
             return false;
         }
 
@@ -2375,6 +2422,7 @@ public class LevelEditorWindow : EditorWindow
         public EnemyBehaviorType EnemyBehaviorType;
         public LevelTileRegistry TileRegistry;
         public string SelectedTileKey;
+        public string SelectedTileMaterialKey;
         public string SelectedHeroUnionPrefabKey;
         public string SelectedDecorativeObjectKey;
         public string SelectedMainEventPrefabKey;
