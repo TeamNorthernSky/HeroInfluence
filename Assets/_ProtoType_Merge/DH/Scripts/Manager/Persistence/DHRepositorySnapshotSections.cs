@@ -59,57 +59,6 @@ public sealed class DHUnitSnapshotSection : DHTurnStartSnapshotSection
     }
 }
 
-public sealed class DHEnemyUnitSnapshotSection : DHTurnStartSnapshotSection
-{
-    [SerializeField] private int nextEnemyUnitIndex = 1;
-    [SerializeField] private List<EnemyUnitPersistentDataDiskRow> enemyUnits = new List<EnemyUnitPersistentDataDiskRow>();
-
-    public override void CaptureFromRuntime()
-    {
-        enemyUnits.Clear();
-
-        PersistentEnemyRepository repository = PersistentEnemyRepository.Instance;
-        if (repository == null)
-            return;
-
-        nextEnemyUnitIndex = repository.NextUnitIndex;
-        IReadOnlyList<EnemyUnitPersistentData> source = repository.Units;
-        for (int i = 0; i < source.Count; i++)
-        {
-            EnemyUnitPersistentDataDiskRow row = EnemyUnitPersistentDataDiskRow.From(source[i]);
-            if (row != null)
-                enemyUnits.Add(row);
-        }
-    }
-
-    public override void FillGameSaveData(GameSaveData data)
-    {
-        if (data == null)
-            return;
-
-        data.nextEnemyUnitIndex = nextEnemyUnitIndex;
-        data.enemyUnits.Clear();
-        data.enemyUnits.AddRange(enemyUnits);
-    }
-
-    public override void LoadFromGameSaveData(GameSaveData data)
-    {
-        ClearSnapshot();
-        if (data == null)
-            return;
-
-        nextEnemyUnitIndex = data.nextEnemyUnitIndex;
-        if (data.enemyUnits != null)
-            enemyUnits.AddRange(data.enemyUnits);
-    }
-
-    public override void ClearSnapshot()
-    {
-        nextEnemyUnitIndex = 1;
-        enemyUnits.Clear();
-    }
-}
-
 public sealed class DHEnemyGroupSnapshotSection : DHTurnStartSnapshotSection
 {
     [SerializeField] private int nextEnemySequence = 1;

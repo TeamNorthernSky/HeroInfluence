@@ -7,7 +7,7 @@ using UnityEngine;
 /// - 이벤트 전투: (현행) 사전 빌드된 CombatEventBattleData → Plan 변환
 ///
 /// 씬 의존이 없어 전투씬(EnemySpawner)과 DH 소비처(스킵 전력/프롬프트/보상)가 함께 재사용한다.
-/// 레벨 스탯은 영속 경로(PersistentEnemyRepository.CalculateEnemyIngameStats)와 동일하게
+/// 레벨 스탯은 DH 템플릿 기반 계산 경로와 동일하게
 /// UnitStatCalculator.CalculateLevelAdjustedBaseStats(base, 적유닛템플릿.LevelupStats, level)로 계산한다.
 /// </summary>
 public static class EnemySpawnPlanBuilder
@@ -75,28 +75,6 @@ public static class EnemySpawnPlanBuilder
         }
 
         plan = new EnemySpawnPlan(entries, null);
-        return true;
-    }
-
-    /// <summary>
-    /// 이벤트 전투: 현행 사전 빌드된 CombatEventBattleData → Plan 변환(구경로).
-    /// [TEMP:EVENTBUILD] 현재 미사용 — 전투씬은 TryBuildFromEventBattleKey만 사용(폴백 없음). §6에서 제거.
-    /// </summary>
-    public static bool TryBuildFromEventBattle(CombatEventBattleData eventBattle, out EnemySpawnPlan plan, out string error)
-    {
-        plan = null;
-        error = string.Empty;
-
-        if (eventBattle == null || eventBattle.EnemyUnits == null || eventBattle.EnemyUnits.Count == 0)
-        {
-            error = "Event battle has no enemy units.";
-            return false;
-        }
-
-        if (!TryBuildEntriesFromUnits(eventBattle.EnemyUnits, out List<EnemySpawnEntry> entries, out error))
-            return false;
-
-        plan = new EnemySpawnPlan(entries, eventBattle.Scenario);
         return true;
     }
 

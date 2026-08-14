@@ -34,23 +34,7 @@ public class CharacterDetailModal : MonoBehaviour
         if (unitIndex <= 0) return "-";
 
         if (isEnemy)
-        {
-            PersistentEnemyRepository enemyRepo = PersistentEnemyRepository.Instance;
-            if (enemyRepo == null || !enemyRepo.TryGetUnit(unitIndex, out EnemyUnitPersistentData edata)) return "-";
-
-            DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-            DHEnemyUnitTemplate template = null;
-            catalog?.TryGetEnemyUnitTemplate(edata.UnitTemplateKey, out template);
-
-            string ename = template != null && !string.IsNullOrWhiteSpace(template.EnemyName) ? template.EnemyName : edata.UnitTemplateKey;
-            string ecls = template != null ? string.Empty : "-";   // 적 템플릿에 클래스 축 없음(기존 UnitType도 항상 공란)
-
-            float emaxHp = Mathf.Max(0f, edata.IngameStats.HP);
-            float ecurHp = Mathf.Clamp(edata.CurrentHp, 0f, emaxHp);
-            float ecurIp = Mathf.Clamp(edata.IngameStats.Influence, 0f, InfluencePowerMax);
-
-            return $"이름: {ename}\n클래스: {ecls}\n레벨: {edata.Level}\nHP: {Mathf.RoundToInt(ecurHp)}/{Mathf.RoundToInt(emaxHp)}\nIP: {Mathf.RoundToInt(ecurIp)}/{Mathf.RoundToInt(InfluencePowerMax)}";
-        }
+            return "-";
 
         PersistentUnitRepository repo = PersistentUnitRepository.Instance;
         if (repo == null || !repo.TryGetUnit(unitIndex, out UnitPersistentData data)) return "-";

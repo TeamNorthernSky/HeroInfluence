@@ -137,22 +137,21 @@ public static class CombatSkipCalculator
 
     private static CombatSideSnapshot BuildVillainSnapshot(CombatContext context)
     {
-        PersistentEnemyRepository repository = PersistentEnemyRepository.Instance;
-        IReadOnlyList<int> unitIndices = context != null ? context.CombatEnemy?.UnitIndices : null;
         CombatSideSnapshot snapshot = new CombatSideSnapshot();
-        if (repository == null || unitIndices == null)
-            return snapshot;
-
-        for (int i = 0; i < unitIndices.Count; i++)
+        if (!CombatEnemyTemplatePreviewBuilder.TryBuildFromContext(
+                context,
+                out IReadOnlyList<CombatEnemyTemplatePreviewUnit> units))
         {
-            int unitIndex = unitIndices[i];
-            if (unitIndex <= 0 || !repository.TryGetUnit(unitIndex, out EnemyUnitPersistentData data) || data == null)
+            return snapshot;
+        }
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            CombatEnemyTemplatePreviewUnit unit = units[i];
+            if (!unit.IsValid)
                 continue;
 
-            if (data.IsIncapacitated || data.CurrentHp <= 0f)
-                continue;
-
-            snapshot.Add(data.UnitIndex, data.IngameStats, data.CurrentHp, data.CurrentInfluence);
+            snapshot.Add(unit.CombatSlot, unit.IngameStats, unit.CurrentHp, 0f);
         }
 
         return snapshot;

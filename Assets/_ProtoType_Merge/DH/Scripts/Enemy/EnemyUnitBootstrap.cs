@@ -53,10 +53,8 @@ public class EnemyUnitBootstrap : MonoBehaviour
         enemyUnit ??= GetComponent<EnemyGridMover>();
         enemyIdentity ??= GetComponent<EnemyIdentity>();
         enemyComposition ??= GetComponent<EnemyComposition>();
-        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
-        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
 
-        if (enemyUnit == null || enemyIdentity == null || enemyComposition == null || enemyRepository == null || enemyGroupRepository == null)
+        if (enemyUnit == null || enemyIdentity == null || enemyComposition == null)
             return;
 
         MapProgressRepository mapProgressRepository = MapProgressRepository.Instance;
@@ -65,7 +63,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (TryHandleDefeatedEnemy(mapProgressRepository, placementKey))
             return;
 
-        if (TryRestoreExistingEnemy(mapProgressRepository, enemyGroupRepository, placementKey, initialGrid))
+        if (TryRestoreExistingEnemy(mapProgressRepository, placementKey, initialGrid))
             return;
 
         if (!HasConfiguredUnitStates())
@@ -76,7 +74,10 @@ public class EnemyUnitBootstrap : MonoBehaviour
 
         if (onlyWhenUninitialized && !string.IsNullOrWhiteSpace(enemyIdentity.EnemyId) && !AreAllSlotsEmpty())
         {
-            BindEnemyProgress(mapProgressRepository, placementKey, enemyIdentity.EnemyId);
+            string resolvedEnemyId = ResolveEnemyId(mapProgressRepository, placementKey);
+            enemyIdentity.SetEnemyId(resolvedEnemyId);
+            enemyUnit.InitializePersistentIdentity(resolvedEnemyId);
+            BindEnemyProgress(mapProgressRepository, placementKey, resolvedEnemyId);
             hasInitialized = true;
             return;
         }
@@ -88,7 +89,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
             return;
         }
 
-        List<int> unitIndices = new List<int>(unitStates.Count);
         enemyComposition.EnsureSlotCount(unitStates.Count);
         for (int i = 0; i < unitStates.Count; i++)
         {
@@ -109,21 +109,10 @@ public class EnemyUnitBootstrap : MonoBehaviour
             }
 
             unitState.InitializeFromTemplate(template);
-            int unitIndex = enemyRepository.CreateUnit(
-                unitState.UnitTemplateKey,
-                unitState.Level,
-                unitState.BaseStats,
-                unitState.IngameStats,
-                unitState.CurrentHp);
-            unitIndices.Add(unitIndex);
-            unitState.AssignUnitIndex(unitIndex);
-            enemyComposition.SetUnitIndexAt(i, unitIndex);
+            enemyComposition.SetUnitIndexAt(i, -1);
         }
 
-        if (unitIndices.Count == 0)
-            return;
-
-        string enemyId = enemyGroupRepository.CreateEnemy(unitIndices);
+        string enemyId = ResolveEnemyId(mapProgressRepository, placementKey);
         enemyIdentity.SetEnemyId(enemyId);
         enemyUnit.InitializePersistentIdentity(enemyId);
         BindEnemyProgress(mapProgressRepository, placementKey, enemyId);
@@ -167,12 +156,10 @@ public class EnemyUnitBootstrap : MonoBehaviour
         enemyIdentity ??= GetComponent<EnemyIdentity>();
         enemyComposition ??= GetComponent<EnemyComposition>();
 
-        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
-        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
         MapProgressRepository mapProgressRepository = MapProgressRepository.Instance;
 
         if (groupData == null || prefabRegistry == null || enemyUnit == null || enemyIdentity == null ||
-            enemyComposition == null || enemyRepository == null || enemyGroupRepository == null)
+            enemyComposition == null)
             return false;
 
         string resolvedGroupKey = string.IsNullOrWhiteSpace(prefabKey) ? groupData.GroupKey : prefabKey.Trim();
@@ -192,11 +179,11 @@ public class EnemyUnitBootstrap : MonoBehaviour
 
         if (TryRestoreExistingCsvEnemy(
                 mapProgressRepository,
-                enemyGroupRepository,
-                enemyRepository,
                 prefabRegistry,
+                groupData,
                 placementKey,
                 initialGrid,
+                enemyLevel,
                 zoneId))
             return true;
 
@@ -215,8 +202,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
 
         ClearUnitStateChildren();
 
-        List<int> unitIndices = new List<int>(members.Count);
-        List<int> unitSlots = new List<int>(members.Count);
         enemyComposition.EnsureSlotCount(members.Count);
 
         for (int i = 0; i < members.Count; i++)
@@ -233,24 +218,14 @@ public class EnemyUnitBootstrap : MonoBehaviour
             unitState.SetLevel(enemyLevel);
             unitState.InitializeFromTemplate(template);
 
-            int unitIndex = enemyRepository.CreateUnit(
-                templateKey,
-                unitState.Level,
-                unitState.BaseStats,
-                unitState.IngameStats,
-                unitState.CurrentHp);
-
-            unitState.AssignUnitIndex(unitIndex);
             unitStates.Add(unitState);
-            unitIndices.Add(unitIndex);
-            unitSlots.Add(member.CombatSlot);
-            enemyComposition.SetUnitIndexAt(i, unitIndex);
+            enemyComposition.SetUnitIndexAt(i, -1);
         }
 
-        if (unitIndices.Count == 0)
+        if (unitStates.Count == 0)
             return false;
 
-        string enemyId = enemyGroupRepository.CreateEnemy(unitIndices, unitSlots);
+        string enemyId = ResolveEnemyId(mapProgressRepository, placementKey);
         enemyIdentity.SetEnemyId(enemyId);
         enemyUnit.InitializePersistentIdentity(enemyId);
         enemyUnit.SnapToGridPosition(initialGrid);
@@ -331,15 +306,26 @@ public class EnemyUnitBootstrap : MonoBehaviour
             EnemyWorldState.DefaultPrefabKey);
     }
 
+    private string ResolveEnemyId(MapProgressRepository mapProgressRepository, string placementKey)
+    {
+        if (mapProgressRepository != null &&
+            mapProgressRepository.TryGetEnemyState(placementKey, out EnemyWorldState worldState) &&
+            worldState != null &&
+            !string.IsNullOrWhiteSpace(worldState.EnemyId))
+        {
+            return worldState.EnemyId;
+        }
+
+        return string.IsNullOrWhiteSpace(placementKey) ? gameObject.name : placementKey;
+    }
+
     private bool TryRestoreExistingEnemy(
         MapProgressRepository mapProgressRepository,
-        EnemyGroupPersistentRepository enemyGroupRepository,
         string placementKey,
         Vector2Int initialGrid,
         string zoneId = "")
     {
         if (mapProgressRepository == null ||
-            enemyGroupRepository == null ||
             string.IsNullOrWhiteSpace(placementKey))
             return false;
 
@@ -349,14 +335,9 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (string.IsNullOrWhiteSpace(worldState.EnemyId))
             return false;
 
-        if (!enemyGroupRepository.TryGetEnemy(worldState.EnemyId, out EnemyPersistentData persistentData) ||
-            persistentData == null)
-            return false;
-
         enemyIdentity.SetEnemyId(worldState.EnemyId);
         enemyIdentity.SetEnemyGroupKey(worldState.PrefabKey);
         enemyUnit.InitializePersistentIdentity(worldState.EnemyId);
-        ApplyPersistentUnitIndices(persistentData.UnitIndices);
 
         if (worldState.Grid != initialGrid)
             enemyUnit.SnapToGridPosition(worldState.Grid);
@@ -383,16 +364,14 @@ public class EnemyUnitBootstrap : MonoBehaviour
 
     private bool TryRestoreExistingCsvEnemy(
         MapProgressRepository mapProgressRepository,
-        EnemyGroupPersistentRepository enemyGroupRepository,
-        PersistentEnemyRepository enemyRepository,
         LevelPrefabRegistry prefabRegistry,
+        DHEnemyGroupTemplate fallbackGroupData,
         string placementKey,
         Vector2Int initialGrid,
+        int enemyLevel,
         string zoneId = "")
     {
         if (mapProgressRepository == null ||
-            enemyGroupRepository == null ||
-            enemyRepository == null ||
             prefabRegistry == null ||
             string.IsNullOrWhiteSpace(placementKey))
             return false;
@@ -403,15 +382,26 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (worldState == null || worldState.Defeated || string.IsNullOrWhiteSpace(worldState.EnemyId))
             return false;
 
-        if (!enemyGroupRepository.TryGetEnemy(worldState.EnemyId, out EnemyPersistentData persistentData) ||
-            persistentData == null)
-            return false;
-
         enemyIdentity.SetEnemyId(worldState.EnemyId);
         enemyIdentity.SetEnemyGroupKey(worldState.PrefabKey);
         enemyUnit.InitializePersistentIdentity(worldState.EnemyId);
-        ApplyPersistentUnitIndices(persistentData.UnitIndices);
-        RebuildCsvUnitStateChildren(persistentData.UnitIndices, enemyRepository, prefabRegistry);
+
+        DHEnemyGroupTemplate groupData = fallbackGroupData;
+        string groupKey = !string.IsNullOrWhiteSpace(worldState.PrefabKey) &&
+            !string.Equals(worldState.PrefabKey, EnemyWorldState.DefaultPrefabKey, System.StringComparison.Ordinal)
+                ? worldState.PrefabKey
+                : fallbackGroupData != null ? fallbackGroupData.GroupKey : string.Empty;
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (!string.IsNullOrWhiteSpace(groupKey) &&
+            templateCatalog != null &&
+            templateCatalog.TryGetEnemyGroupTemplate(groupKey, out DHEnemyGroupTemplate restoredGroupData))
+        {
+            groupData = restoredGroupData;
+        }
+
+        int restoredLevel = ResolveEnemyLevelForRestore(mapProgressRepository, worldState, enemyLevel);
+        if (!RebuildCsvUnitStateChildren(groupData, prefabRegistry, restoredLevel))
+            return false;
 
         if (worldState.Grid != initialGrid)
             enemyUnit.SnapToGridPosition(worldState.Grid);
@@ -426,41 +416,39 @@ public class EnemyUnitBootstrap : MonoBehaviour
         return true;
     }
 
-    private void RebuildCsvUnitStateChildren(
-        IReadOnlyList<int> persistentUnitIndices,
-        PersistentEnemyRepository enemyRepository,
-        LevelPrefabRegistry prefabRegistry)
+    private bool RebuildCsvUnitStateChildren(
+        DHEnemyGroupTemplate groupData,
+        LevelPrefabRegistry prefabRegistry,
+        int enemyLevel)
     {
         ClearUnitStateChildren();
 
-        if (persistentUnitIndices == null)
-            return;
+        if (!TryBuildCsvGroupMembers(groupData, out List<CsvEnemyGroupMember> members))
+            return false;
 
-        for (int i = 0; i < persistentUnitIndices.Count; i++)
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (templateCatalog == null || !ValidateCsvMembers(groupData.GroupKey, members, templateCatalog, prefabRegistry))
+            return false;
+
+        enemyComposition.EnsureSlotCount(members.Count);
+        for (int i = 0; i < members.Count; i++)
         {
-            int unitIndex = persistentUnitIndices[i];
-            if (!enemyRepository.TryGetUnit(unitIndex, out EnemyUnitPersistentData persistentUnit) ||
-                persistentUnit == null)
-            {
-                Debug.LogWarning($"EnemyUnitBootstrap could not restore missing enemy unit index '{unitIndex}'.", this);
-                continue;
-            }
-
-            if (!int.TryParse(persistentUnit.UnitTemplateKey, out int enemyUnitIndex) ||
-                !prefabRegistry.TryGetEnemyUnitPrefab(enemyUnitIndex, out EnemyUnitState unitPrefab))
-            {
-                Debug.LogWarning(
-                    $"EnemyUnitBootstrap could not find an enemy unit prefab for restored template '{persistentUnit.UnitTemplateKey}'.",
-                    this);
-                continue;
-            }
+            CsvEnemyGroupMember member = members[i];
+            string templateKey = member.EnemyUnitIndex.ToString();
+            templateCatalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate template);
+            prefabRegistry.TryGetEnemyUnitPrefab(member.EnemyUnitIndex, out EnemyUnitState unitPrefab);
 
             EnemyUnitState unitState = Instantiate(unitPrefab, transform);
             unitState.transform.localPosition = GetExplorationUnitLocalPosition(i);
             unitState.transform.localRotation = Quaternion.identity;
-            unitState.ApplyPersistentData(persistentUnit);
+            unitState.SetUnitTemplateKey(templateKey);
+            unitState.SetLevel(enemyLevel);
+            unitState.InitializeFromTemplate(template);
             unitStates.Add(unitState);
+            enemyComposition.SetUnitIndexAt(i, -1);
         }
+
+        return unitStates.Count > 0;
     }
 
     private void ClearUnitStateChildren()
@@ -561,14 +549,19 @@ public class EnemyUnitBootstrap : MonoBehaviour
         return true;
     }
 
-    private void ApplyPersistentUnitIndices(IReadOnlyList<int> unitIndices)
+    private static int ResolveEnemyLevelForRestore(
+        MapProgressRepository mapProgressRepository,
+        EnemyWorldState worldState,
+        int fallbackLevel)
     {
-        if (unitIndices == null)
-            return;
+        if (mapProgressRepository != null &&
+            worldState != null &&
+            mapProgressRepository.TryGetZoneEnemyLevel(worldState.ZoneId, out int zoneLevel))
+        {
+            return Mathf.Max(1, zoneLevel);
+        }
 
-        enemyComposition.EnsureSlotCount(unitIndices.Count);
-        for (int i = 0; i < unitIndices.Count; i++)
-            enemyComposition.SetUnitIndexAt(i, unitIndices[i]);
+        return Mathf.Max(1, fallbackLevel);
     }
 
     private void RefreshFogVisibilityBinding()

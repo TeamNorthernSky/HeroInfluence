@@ -94,20 +94,12 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         }
 
         int enemyLevel = ResolveEnemyLevel(zoneId, group, party);
-        // Event battle units are temporary CombatContext data, not PersistentEnemyRepository entries.
-        List<CombatEventBattleUnitData> units = BuildEventBattleUnits(catalog, zoneId, group, enemyLevel);
-        if (units.Count == 0)
-        {
-            Debug.LogWarning($"[DHEventBattleRuntime] Battle group has no valid enemy units. Zone: {zoneId}, BattleKey: {request.BattleKey}", this);
-            return;
-        }
 
         var eventBattle = new CombatEventBattleData(
             zoneId,
             request.BattleKey.Trim(),
             request.ResumeChatId,
-            enemyLevel,
-            units);
+            enemyLevel);
         if (DHEnemyEventEncounterRuntimeManager.Instance != null &&
             DHEnemyEventEncounterRuntimeManager.Instance.TryConsumePendingBattleSource(
                 request.BattleKey,
@@ -117,7 +109,6 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         }
 
         eventBattle.SourceMainEventKey = ResolveSourceMainEventKey(request.SourceMainEventKey);
-        eventBattle.Scenario = BuildBattleScenario(zoneId, request.BattleKey, units);
         eventBattle.SetNumericResult(HostageInjuredCountKey, 0f);
 
         CombatEncounterManager encounterManager = FindFirstObjectByType<CombatEncounterManager>();
@@ -130,7 +121,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         if (logRequests)
         {
             Debug.Log(
-                $"[DHEventBattleRuntime] Start event battle. Zone={zoneId}, BattleKey={request.BattleKey}, Level={enemyLevel}, Units={units.Count}, ResumeChat={request.ResumeChatId}",
+                $"[DHEventBattleRuntime] Start event battle. Zone={zoneId}, BattleKey={request.BattleKey}, Level={enemyLevel}, ResumeChat={request.ResumeChatId}",
                 this);
         }
 
@@ -310,244 +301,6 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
 
             stateRepository.SetNumericValue(result.key, result.value);
         }
-    }
-
-    private static List<CombatEventBattleUnitData> BuildEventBattleUnits(
-        EventScriptCatalog catalog,
-        int zoneId,
-        DHEventBattleGroupTemplate group,
-        int enemyLevel)
-    {
-        var units = new List<CombatEventBattleUnitData>();
-        if (group == null || group.Members == null)
-            return units;
-
-        for (int i = 0; i < group.Members.Count; i++)
-        {
-            DHEventBattleGroupMember member = group.Members[i];
-            TryAddUnit(catalog, zoneId, units, member.UnitKey, member.CombatSlot, enemyLevel);
-        }
-
-        return units;
-    }
-
-    private static void TryAddUnit(
-        EventScriptCatalog catalog,
-        int zoneId,
-        List<CombatEventBattleUnitData> units,
-        string unitKey,
-        int slot,
-        int enemyLevel)
-    {
-        if (catalog == null || units == null || string.IsNullOrWhiteSpace(unitKey))
-            return;
-
-        string normalizedUnitKey = unitKey.Trim();
-        if (!catalog.TryGetBattleEnemyUnitTemplate(zoneId, normalizedUnitKey, out DHEventBattleUnitTemplate source) || source == null)
-        {
-            Debug.LogWarning($"[DHEventBattleRuntime] Battle enemy unit was not found. Zone: {zoneId}, UnitKey: {normalizedUnitKey}");
-            return;
-        }
-
-        int resolvedSlot = slot > 0 ? slot : units.Count + 1;
-        CombatEventBattleUnitData unit = new CombatEventBattleUnitData(normalizedUnitKey, resolvedSlot, enemyLevel, source);
-        ApplyLevelGrowth(unit, source, enemyLevel);
-        PopulateEventBattleSkills(unit, source);
-        units.Add(unit);
-    }
-
-    private static BattleScenarioConfig BuildBattleScenario(
-        int zoneId,
-        string battleKey,
-        IReadOnlyList<CombatEventBattleUnitData> units)
-    {
-        BattleScenarioCatalog scenarioCatalog = BattleScenarioCatalog.LoadDefault();
-        if (scenarioCatalog == null ||
-            !scenarioCatalog.TryGetHostageScenario(zoneId, battleKey, out HostageScenarioDefinition definition) ||
-            definition == null)
-        {
-            return null;
-        }
-
-        var hostageConfig = new HostageScenarioConfig
-        {
-            FullHealthAggroGain = Mathf.Max(0f, definition.FullHealthAggroGain),
-            DamagedAggroGain = Mathf.Max(0f, definition.DamagedAggroGain),
-            ThreatDamage = Mathf.Max(0f, definition.ThreatDamage),
-            ThreatAggroReduction = Mathf.Max(0f, definition.ThreatAggroReduction),
-            ThreatChancePerTotalAggro = Mathf.Max(0f, definition.ThreatChancePerTotalAggro),
-            MaximumThreatChance = Mathf.Clamp01(definition.MaximumThreatChance),
-            ThreatWindupSeconds = Mathf.Max(0f, definition.ThreatWindupSeconds),
-            ThreatRecoverySeconds = Mathf.Max(0f, definition.ThreatRecoverySeconds)
-        };
-
-        if (definition.ThreatEnemyUnitKeys != null)
-            hostageConfig.ThreatEnemyUnitKeys.AddRange(definition.ThreatEnemyUnitKeys);
-
-        float initialHpRatio = Mathf.Clamp01(definition.InitialHpRatio);
-        if (definition.Hostages != null)
-        {
-            for (int i = 0; i < definition.Hostages.Count; i++)
-            {
-                HostageDefinitionEntry entry = definition.Hostages[i];
-                if (entry == null || string.IsNullOrWhiteSpace(entry.SourceUnitKey))
-                    continue;
-
-                CombatEventBattleUnitData sourceUnit = FindEventBattleUnit(units, entry.SourceUnitKey);
-                if (sourceUnit == null)
-                {
-                    Debug.LogWarning(
-                        $"[DHEventBattleRuntime] Hostage unit was not found in battle group. Battle={battleKey}, Unit={entry.SourceUnitKey}");
-                    continue;
-                }
-
-                float maxHp = Mathf.Max(1f, sourceUnit.MaxHp);
-                hostageConfig.Hostages.Add(new HostageSpawnConfig
-                {
-                    HostageId = string.IsNullOrWhiteSpace(entry.HostageId) ? entry.SourceUnitKey.Trim() : entry.HostageId.Trim(),
-                    SourceUnitKey = sourceUnit.UnitKey,
-                    Slot = sourceUnit.Slot,
-                    MaxHp = maxHp,
-                    InitialHp = Mathf.Max(1f, maxHp * initialHpRatio),
-                    InitialAggro = 0f,
-                    PrefabResourcePath = entry.PrefabResourcePath
-                });
-            }
-        }
-
-        if (hostageConfig.Hostages.Count == 0)
-        {
-            Debug.LogWarning($"[DHEventBattleRuntime] Hostage scenario has no valid hostages. Battle={battleKey}");
-            return null;
-        }
-
-        return new BattleScenarioConfig
-        {
-            ScenarioType = BattleScenarioType.HostageRescue,
-            HostageRescue = hostageConfig
-        };
-    }
-
-    private static CombatEventBattleUnitData FindEventBattleUnit(
-        IReadOnlyList<CombatEventBattleUnitData> units,
-        string unitKey)
-    {
-        if (units == null || string.IsNullOrWhiteSpace(unitKey))
-            return null;
-
-        string normalized = BattleScenarioUnitKey.Normalize(unitKey);
-        for (int i = 0; i < units.Count; i++)
-        {
-            CombatEventBattleUnitData candidate = units[i];
-            if (candidate != null &&
-                string.Equals(BattleScenarioUnitKey.Normalize(candidate.UnitKey), normalized, StringComparison.Ordinal))
-            {
-                return candidate;
-            }
-        }
-
-        return null;
-    }
-
-    private static void PopulateEventBattleSkills(CombatEventBattleUnitData unit, DHEventBattleUnitTemplate source)
-    {
-        if (unit == null || source == null)
-            return;
-
-        unit.Skills.Clear();
-        int enemyIndex = ExtractNumericId(unit.UnitKey);
-        if (enemyIndex <= 0)
-            return;
-
-        for (int i = 0; i < source.Skills.Count; i++)
-        {
-            DHEventBattleSkillTemplate skill = source.Skills[i];
-            TryAddEventBattleSkill(
-                unit.Skills, enemyIndex, skill.Slot, source.EnemyName,
-                skill.SkillName, skill.Description,
-                skill.Effect, skill.Range, skill.RangeLine,
-                skill.Target, skill.Boundary,
-                skill.MultiTargetType, skill.MultiTargetCount,
-                skill.Value, skill.SubValue);
-        }
-    }
-
-    private static void TryAddEventBattleSkill(
-        List<SkillData> destination,
-        int enemyIndex,
-        int slot,
-        string enemyName,
-        string skillName,
-        string description,
-        int effect,
-        int range,
-        int rangeLine,
-        int target,
-        IReadOnlyList<int> boundary,
-        int multiTargetType,
-        int multiTargetCount,
-        float value,
-        float subValue)
-    {
-        if (destination == null || string.IsNullOrWhiteSpace(skillName))
-            return;
-
-        var skill = new SkillData
-        {
-            skillIndex = (enemyIndex * 10) + slot,   // [TEMP:STRKEY] 레거시 int 브리지
-            // TODO(§5-11): 정규 enemyKey(FV…)가 이 경로엔 없어 숫자 문자열로 합성. 카탈로그 경로와 키 포맷 통일 필요.
-            skillKey = EnemySkillKeyRules.Compose(enemyIndex.ToString(), slot),
-            category = SkillCategory.Enemy,
-            slot = slot,
-            skillClass = enemyName,
-            acquireLevel = 1,
-            skillName = skillName,
-            description = description,
-            ipCost = 0,
-            classSkillEffect = effect,
-            classSkillRange = range,
-            EnemySkill1Range = slot == 1 ? range : -1,
-            EnemySkill2Range = slot == 2 ? range : -1,
-            classSkillRangeLine = rangeLine,
-            classSkillTarget = target,
-            multiTargetType = multiTargetType,
-            multiTargetCount = multiTargetCount,
-            skillValue = value,
-            skillSubValue = subValue,
-            AnimationTrigger = "Attack",
-            TargetAnimationTrigger = "Hit",
-            HitDelay = 0.25f,
-            TotalDelay = 0.5f
-        };
-
-        if (boundary != null)
-        {
-            for (int i = 0; i < boundary.Count; i++)
-                skill.boundary.Add(boundary[i]);
-        }
-
-        destination.Add(skill);
-    }
-
-    private static int ExtractNumericId(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return 0;
-
-        string normalized = BattleScenarioUnitKey.Normalize(value);
-        return int.TryParse(normalized, out int parsed) ? parsed : 0;
-    }
-
-    private static void ApplyLevelGrowth(CombatEventBattleUnitData unit, DHEventBattleUnitTemplate source, int enemyLevel)
-    {
-        if (unit == null || source == null)
-            return;
-
-        int growthCount = Mathf.Max(0, enemyLevel - 1);
-        unit.MaxHp = Mathf.Max(1, source.BaseMaxHp + source.LevelGrowthMaxHp * growthCount);
-        unit.Atk = Mathf.Max(0, source.BaseAtk + source.LevelGrowthAtk * growthCount);
-        unit.Def = Mathf.Max(0, source.BaseDef + source.LevelGrowthDef * growthCount);
-        unit.ExperiencePoint = Mathf.Max(0, source.ExperiencePoint + source.LevelGrowthExperiencePoint * growthCount);
     }
 
     private static int ResolveEnemyLevel(int zoneId, DHEventBattleGroupTemplate group, PartyGridMover party)

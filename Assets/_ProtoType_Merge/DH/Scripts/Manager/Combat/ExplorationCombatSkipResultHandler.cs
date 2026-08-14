@@ -55,9 +55,7 @@ public static class ExplorationCombatSkipResultHandler
         CombatSkipHpResult hpResult)
     {
         PersistentUnitRepository unitRepository = PersistentUnitRepository.Instance;
-        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
         IReadOnlyList<int> partyUnitIndices = context != null ? context.CombatParty?.UnitIndices : null;
-        IReadOnlyList<int> enemyUnitIndices = context != null ? context.CombatEnemy?.UnitIndices : null;
 
         if (unitRepository != null && partyUnitIndices != null)
         {
@@ -101,29 +99,6 @@ public static class ExplorationCombatSkipResultHandler
             unitRepository.SaveRuntimeStateToDisk();
             PartyRepositorySync.ApplyUnitsToScene(partyUnitIndices);
         }
-
-        if (enemyRepository != null && enemyUnitIndices != null)
-        {
-            for (int i = 0; i < enemyUnitIndices.Count; i++)
-            {
-                int unitIndex = enemyUnitIndices[i];
-                if (unitIndex <= 0 || !enemyRepository.TryGetUnit(unitIndex, out EnemyUnitPersistentData data) || data == null)
-                    continue;
-
-                float nextHp = ResolveVillainHpAfter(hpResult, data.UnitIndex, 0f);
-                enemyRepository.UpdateUnitRuntimeState(
-                    data.UnitIndex,
-                    data.UnitTemplateKey,
-                    data.Level,
-                    data.BaseStats,
-                    data.IngameStats,
-                    nextHp,
-                    data.CurrentInfluence,
-                    nextHp <= 0f);
-            }
-
-            enemyRepository.SaveRuntimeStateToDisk();
-        }
     }
 
     public static void CommitDefeat(CombatContext context, CombatSkipHpResult hpResult)
@@ -165,50 +140,20 @@ public static class ExplorationCombatSkipResultHandler
 
         return count;
     }
-
     private static float CalculateTotalEnemyExp(CombatContext context)
     {
-        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-
-        // 그룹키가 있으면 그룹 템플릿(풀 그룹) 기준으로 경험치를 합산해 PersistentEnemyRepository 의존을 끊는다.
-        // "항상 풀 그룹" 규약과도 일치(영속 개체의 사망 필터 부분집합이 아닌 전체 멤버 기준).
-        string enemyGroupKey = context != null && context.CombatEnemy != null
-            ? context.CombatEnemy.EnemyGroupKey
-            : string.Empty;
-        if (catalog != null && !string.IsNullOrWhiteSpace(enemyGroupKey) &&
-            catalog.TryGetEnemyGroupTemplate(enemyGroupKey, out DHEnemyGroupTemplate group) &&
-            group != null && group.Members != null)
+        if (!CombatEnemyTemplatePreviewBuilder.TryBuildFromContext(
+                context,
+                out IReadOnlyList<CombatEnemyTemplatePreviewUnit> units))
         {
-            float groupExp = 0f;
-            for (int i = 0; i < group.Members.Count; i++)
-            {
-                string templateKey = group.Members[i].EnemyUnitIndex.ToString();
-                if (catalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate enemyTemplate) && enemyTemplate != null)
-                    groupExp += Mathf.Max(0f, enemyTemplate.ExperiencePoint);
-            }
-
-            return groupExp;
+            return 0f;
         }
 
-        // 폴백: 그룹키가 없는 경우(레거시/엣지)에만 기존 영속 경로 사용.
-        PersistentEnemyRepository enemyRepository = PersistentEnemyRepository.Instance;
-        IReadOnlyList<int> enemyUnitIndices = context != null ? context.CombatEnemy?.UnitIndices : null;
-        if (enemyRepository == null || enemyUnitIndices == null)
-            return 0f;
-
         float totalExp = 0f;
-        for (int i = 0; i < enemyUnitIndices.Count; i++)
+        for (int i = 0; i < units.Count; i++)
         {
-            int unitIndex = enemyUnitIndices[i];
-            if (unitIndex <= 0 || !enemyRepository.TryGetUnit(unitIndex, out EnemyUnitPersistentData data) || data == null)
-                continue;
-
-            if (catalog != null &&
-                catalog.TryGetEnemyUnitTemplate(data.UnitTemplateKey, out DHEnemyUnitTemplate enemyTemplate) &&
-                enemyTemplate != null)
-            {
-                totalExp += Mathf.Max(0f, enemyTemplate.ExperiencePoint);
-            }
+            if (units[i].IsValid)
+                totalExp += Mathf.Max(0f, units[i].ExperiencePoint);
         }
 
         return totalExp;
@@ -255,14 +200,6 @@ public static class ExplorationCombatSkipResultHandler
     private static float ResolveHeroHpAfter(CombatSkipHpResult hpResult, int unitIndex, float fallback)
     {
         if (hpResult != null && hpResult.HeroHpAfter.TryGetValue(unitIndex, out float hp))
-            return Mathf.Max(0f, hp);
-
-        return Mathf.Max(0f, fallback);
-    }
-
-    private static float ResolveVillainHpAfter(CombatSkipHpResult hpResult, int unitIndex, float fallback)
-    {
-        if (hpResult != null && hpResult.VillainHpAfter.TryGetValue(unitIndex, out float hp))
             return Mathf.Max(0f, hp);
 
         return Mathf.Max(0f, fallback);

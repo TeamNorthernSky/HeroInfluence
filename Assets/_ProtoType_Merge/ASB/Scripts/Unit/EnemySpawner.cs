@@ -150,7 +150,23 @@ public class EnemySpawner : MonoBehaviour
 
         CombatContext combatContext = CombatContext.Instance;
         if (combatContext != null && combatContext.HasEventBattle)
-            return SpawnFromEventBattle(combatContext.EventBattle);
+        {
+            CombatEventBattleData eventBattle = combatContext.EventBattle;
+            if (!EnemySpawnPlanBuilder.TryBuildFromEventBattleKey(
+                    eventBattle.ZoneId,
+                    eventBattle.BattleKey,
+                    eventBattle.EnemyLevel,
+                    out EnemySpawnPlan eventPlan,
+                    out string eventError))
+            {
+                Debug.LogError(
+                    $"[EnemySpawner] Event battle spawn plan build failed. Battle={eventBattle.BattleKey}, error={eventError}",
+                    this);
+                return false;
+            }
+
+            return SpawnFromPreparedPlan(eventPlan);
+        }
 
         // 그룹키 기반 스폰 우선(일반 전투). 그룹키가 있으면 실패해도 폴백하지 않고 진입 실패로 둔다
         // (잘못된 적 구성으로 전투가 시작되는 것을 막는다).
@@ -171,7 +187,7 @@ public class EnemySpawner : MonoBehaviour
         }
 
         // 그룹키도 이벤트도 없으면 잘못된 진입 → 조용한 폴백 없이 실패.
-        // (PersistentEnemyRepository 자동 폴백 제거: 스폰 경로의 영속 의존을 끊는다.)
+        // (적 유닛 리포지토리 자동 폴백 제거: 스폰 경로의 영속 의존을 끊는다.)
         Debug.LogError(
             "[EnemySpawner] CombatContext에 EnemyGroupKey/EventBattle이 없어 적을 스폰할 수 없습니다.",
             this);
@@ -287,7 +303,7 @@ public class EnemySpawner : MonoBehaviour
     /// <summary>
     /// 점유 시 실패하는 안전 소환. 보스 런타임 소환용(구현지시서: 보스유닛_소환_창구스킬_페이즈AI §1·§4).
     /// <see cref="SpawnUnit"/>과 달리 <c>ClearGrid</c>로 기존 유닛을 파괴하지 않는다 — 대상 셀에
-    /// BattleCharactor/인질이 이미 있으면 스폰하지 않고 false를 반환한다(SpawnEventEnemy 점유 검사 패턴 재사용).
+    /// BattleCharactor/인질이 이미 있으면 스폰하지 않고 false를 반환한다.
     /// </summary>
     public bool TrySpawnUnitIfEmpty(string enemyId, int gridNumber, out GameObject spawned)
     {
@@ -318,7 +334,7 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        // 점유 검사(SpawnEventEnemy 패턴) — 점유 시 기존 유닛을 보존하고 조용히 실패.
+        // 점유 시 기존 유닛을 보존하고 조용히 실패.
         BattleCharactor existingUnit = resolvedCell.GetComponentInChildren<BattleCharactor>(true);
         HostageBattleActor existingHostage = resolvedCell.GetComponentInChildren<HostageBattleActor>(true);
         if (existingUnit != null || existingHostage != null)
@@ -371,170 +387,6 @@ public class EnemySpawner : MonoBehaviour
         return true;
     }
 
-    // 이벤트 전투 사전빌드(EnemyUnits) 구경로. [TEMP:EVENTBUILD] 현재 미사용 —
-    // 전투씬은 키-빌드(SpawnFromPreparedPlan)로만 스폰하고 폴백하지 않으므로, ManualSpawn 이벤트 분기(→여기)는 도달하지 않는다.
-    // DH 사전빌드는 A/B 대조·안전망 데이터로 남겨둔 상태이며, §6에서 이 경로와 함께 제거한다.
-    private bool SpawnFromEventBattle(CombatEventBattleData eventBattle)
-    {
-        if (eventBattle == null)
-            return false;
-
-        if (eventSlotMap == null)
-        {
-            Debug.LogError(
-                $"[EnemySpawner] Event slot map is not configured. Battle={eventBattle.BattleKey}",
-                this);
-            return false;
-        }
-
-        if (!EnemySpawnPlanBuilder.TryBuildFromEventBattle(eventBattle, out EnemySpawnPlan plan, out string error))
-        {
-            Debug.LogError(
-                $"[EnemySpawner] Event battle spawn plan build failed. Battle={eventBattle.BattleKey}, error={error}",
-                this);
-            return false;
-        }
-
-        HostageScenarioConfig hostageConfig = eventBattle.Scenario != null && eventBattle.Scenario.IsHostageRescue
-            ? eventBattle.Scenario.HostageRescue
-            : null;
-
-        return SpawnFromPlan(plan, eventSlotMap, hostageConfig, $"event:{eventBattle.BattleKey}");
-    }
-
-    private GameObject SpawnEventEnemy(string battleKey, CombatEventBattleUnitData unit)
-    {
-        if (unit == null || unit.Slot <= 0)
-            return null;
-
-        if (eventSlotMap == null ||
-            !eventSlotMap.TryResolve(unit.Slot, out BattleLogicalSlotMap.Slot resolvedSlot) ||
-            resolvedSlot.Cell == null)
-        {
-            Debug.LogError(
-                $"[EnemySpawner] Event enemy grid was not found. " +
-                $"Battle={battleKey}, Unit={unit.UnitKey}, LogicalSlot={unit.Slot}",
-                this);
-            return null;
-        }
-
-        GridCellRef cell = resolvedSlot.Cell;
-        BattleCharactor existingUnit = cell.GetComponentInChildren<BattleCharactor>(true);
-        HostageBattleActor existingHostage = cell.GetComponentInChildren<HostageBattleActor>(true);
-        if (existingUnit != null || existingHostage != null)
-        {
-            Debug.LogError(
-                $"[EnemySpawner] Event grid is already occupied. " +
-                $"Battle={battleKey}, Unit={unit.UnitKey}, LogicalSlot={unit.Slot}, " +
-                $"ResolvedGridNumber={resolvedSlot.GridNumber}, ResolvedGridName={resolvedSlot.GridName}",
-                this);
-            return null;
-        }
-
-        GameObject prefab = FindEventEnemyPrefab(unit);
-        if (prefab == null)
-            return null;
-
-        ClearGrid(resolvedSlot.GridNumber);
-        Quaternion facingPlayerRot = ApplyFacingPlayerRotation(resolvedSlot.WorldRotation);
-        GameObject go = Instantiate(
-            prefab,
-            resolvedSlot.WorldPosition,
-            facingPlayerRot,
-            cell.transform);
-        go.name = $"EventEnemy_{unit.UnitKey}_{go.GetInstanceID()}";
-
-        foreach (CharactorScript legacy in go.GetComponentsInChildren<CharactorScript>(true))
-            Destroy(legacy);
-
-        BattleCharactor battle = go.GetComponent<BattleCharactor>();
-        if (battle == null)
-            battle = go.AddComponent<BattleCharactor>();
-
-        EnemyScript enemyScript = go.GetComponent<EnemyScript>();
-        if (enemyScript == null)
-            enemyScript = go.AddComponent<EnemyScript>();
-
-        EnemyData runtimeData = BuildEventEnemyData(unit);
-        enemyScript.Initialize(runtimeData);
-
-        battle.availableSkills.Clear();
-        if (unit.Skills != null)
-        {
-            for (int i = 0; i < unit.Skills.Count; i++)
-            {
-                if (unit.Skills[i] != null)
-                    battle.availableSkills.Add(unit.Skills[i]);
-            }
-        }
-
-        if (battle.availableSkills.Count > 0)
-        {
-            battle.SetClassSkillIndex(battle.availableSkills[0].skillIndex);
-            battle.ResolveSelectedSkill(false);
-        }
-
-        battle.AssignToCell(cell);
-        cell.SetOccupyingUnit(battle);
-        spawnedByGrid[resolvedSlot.GridNumber] = go;
-
-        Debug.Log(
-            $"[EnemySpawner] Event enemy spawned. " +
-            $"Battle={battleKey}, Unit={unit.UnitKey}, LogicalSlot={unit.Slot}, " +
-            $"ResolvedGridNumber={resolvedSlot.GridNumber}, ResolvedGridName={resolvedSlot.GridName}, " +
-            $"Skills={battle.availableSkills.Count}",
-            go);
-        return go;
-    }
-
-    private static EnemyData BuildEventEnemyData(CombatEventBattleUnitData unit)
-    {
-        return new EnemyData
-        {
-            Index = BattleScenarioUnitKey.Normalize(unit.UnitKey),
-            UnitType = unit.EnemyConcept,
-            Name = unit.EnemyName,
-            baseStats = new StatBlock(
-                hp: Mathf.Max(1, unit.MaxHp),
-                atk: Mathf.Max(0, unit.Atk),
-                def: Mathf.Max(0, unit.Def),
-                luck: 0f,
-                speed: Mathf.Max(0, unit.Speed),
-                criticalRate: Mathf.Max(0f, unit.CriticalRate),
-                critMultiplier: 1.5f,
-                counterRate: Mathf.Max(0f, unit.CounterRate),
-                avoidRate: Mathf.Max(0f, unit.ReduceRate)),
-            levelupStats = new StatBlock(0f, 0f, 0f, 0f, 0f),
-            IsEnemyRow = true,
-            UnitAI = unit.UnitAI,
-            ExperiencePoint = Mathf.Max(0, unit.ExperiencePoint)
-        };
-    }
-
-    private static GameObject FindEventEnemyPrefab(CombatEventBattleUnitData unit)
-    {
-        string resourcePath = unit != null ? unit.PrefabResourcePath : string.Empty;
-        if (string.IsNullOrWhiteSpace(resourcePath))
-        {
-            string normalized = unit != null ? BattleScenarioUnitKey.Normalize(unit.UnitKey) : string.Empty;
-            resourcePath = normalized == "20007"
-                ? "prefab/BattlePrefab/EnemyUnit/Unit_AdvancedMonster_20003"
-                : normalized == "20006"
-                    ? "prefab/BattlePrefab/EnemyUnit/Unit_MiddleMonster_20002"
-                    : "prefab/BattlePrefab/EnemyUnit/Unit_LowerMonster_20001";
-        }
-
-        GameObject prefab = Resources.Load<GameObject>(resourcePath.Trim());
-        if (prefab == null)
-        {
-            Debug.LogError(
-                $"[EnemySpawner] Event enemy prefab was not found. unit={unit?.UnitKey}, path={resourcePath}");
-        }
-
-        return prefab;
-    }
-
-    // 일반 전투 그룹키 스폰: 공용 빌더로 EnemySpawnPlan을 만들고 원자적으로 스폰한다.
     private bool SpawnFromEnemyGroupPlan(string enemyGroupKey, int enemyLevel)
     {
         if (!EnemySpawnPlanBuilder.TryBuildFromEnemyGroup(enemyGroupKey, enemyLevel, out EnemySpawnPlan plan, out string error))

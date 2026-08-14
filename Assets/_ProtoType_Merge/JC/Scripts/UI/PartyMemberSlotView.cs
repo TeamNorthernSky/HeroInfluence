@@ -46,23 +46,8 @@ public class PartyMemberSlotView : MonoBehaviour
         string name; string cls; int level; float maxHp; float curHp; float curIp;
         if (isEnemy)
         {
-            PersistentEnemyRepository enemyRepo = PersistentEnemyRepository.Instance;
-            if (enemyRepo == null || !enemyRepo.TryGetUnit(unitIndex, out EnemyUnitPersistentData edata))
-            {
-                ApplyEmpty();
-                return;
-            }
-
-            DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-            DHEnemyUnitTemplate template = null;
-            catalog?.TryGetEnemyUnitTemplate(edata.UnitTemplateKey, out template);
-
-            name = template != null && !string.IsNullOrWhiteSpace(template.EnemyName) ? template.EnemyName : edata.UnitTemplateKey;
-            cls = template != null ? string.Empty : "-";   // 적 템플릿에 클래스 축 없음(기존 UnitType도 항상 공란)
-            level = edata.Level;
-            maxHp = Mathf.Max(0f, edata.IngameStats.HP);
-            curHp = Mathf.Clamp(edata.CurrentHp, 0f, maxHp);
-            curIp = Mathf.Clamp(edata.IngameStats.Influence, 0f, InfluencePowerMax);
+            ApplyEmpty();
+            return;
         }
         else
         {
