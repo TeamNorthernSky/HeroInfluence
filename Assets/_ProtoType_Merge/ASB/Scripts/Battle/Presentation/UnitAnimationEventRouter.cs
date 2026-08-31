@@ -34,4 +34,12 @@ public class UnitAnimationEventRouter : MonoBehaviour
         _effect?.PresentationCue(cueName);
         _sound?.PresentationCue(cueName);
     }
+
+    /// <summary>연출 Cue를 CueId로 분배(Path A Timeline Signal 경로). 이름 충돌 없이 특정된다.</summary>
+    public void PresentationCueById(string cueId)
+    {
+        Resolve();
+        _effect?.PresentationCueById(cueId);
+        _sound?.PresentationCueById(cueId);
+    }
 }

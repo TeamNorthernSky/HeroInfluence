@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 1010
   PresentationSchemaVersion: 1
+  AnimationRail: 0
+  SkillTimelines: []
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 

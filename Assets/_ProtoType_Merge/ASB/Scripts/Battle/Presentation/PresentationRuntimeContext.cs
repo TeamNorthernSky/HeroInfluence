@@ -14,6 +14,9 @@ public class RuntimeCue
     /// <summary>정규화된 CueName. 드라이버가 발화할 때 이 이름을 외친다.</summary>
     public string NormalizedCueName;
 
+    /// <summary>연출 Cue의 안정적 식별자(CueBinding.CueId). Path A Signal 경로가 이름 충돌 없이 이 id로 조회·실행한다.</summary>
+    public string CueId;
+
     /// <summary>ClipEvent면 클립 이벤트가 발화. 그 외는 드라이버가 Time에 발화.</summary>
     public CueTimingSource Timing = CueTimingSource.ClipEvent;
     public float Time;
@@ -50,6 +53,9 @@ public class PresentationRuntimeContext : MonoBehaviour
     public string DebugLabel { get; private set; } = string.Empty;
 
     private readonly Dictionary<string, RuntimeCue> _cues = new Dictionary<string, RuntimeCue>();
+
+    /// <summary>CueId → Cue. Path A Signal 경로용(이름 충돌 없이 특정). 이름 인덱스와 병행하는 순수 추가분 — 기존 이름 경로 동작에 영향 없음.</summary>
+    private readonly Dictionary<string, RuntimeCue> _cuesById = new Dictionary<string, RuntimeCue>();
 
     /// <summary>등록 순서를 보존한 Cue 목록. 같은 프레임에 여러 Cue가 걸릴 때 선언 순서로 발화하기 위해 유지한다.</summary>
     private readonly List<RuntimeCue> _orderedCues = new List<RuntimeCue>();
@@ -100,13 +106,19 @@ public class PresentationRuntimeContext : MonoBehaviour
         ExpectedStateHash = expectedStateHash;
         DebugLabel = debugLabel ?? string.Empty;
         _cues.Clear();
+        _cuesById.Clear();
         _orderedCues.Clear();
         if (cues == null) return;
 
         for (int i = 0; i < cues.Count; i++)
         {
             RuntimeCue cue = cues[i];
-            string key = cue?.NormalizedCueName;
+            if (cue == null) continue;
+
+            // id 인덱스는 이름과 무관하게 채운다 — Path A Signal이 동명 Cue를 id로 특정한다.
+            if (!string.IsNullOrEmpty(cue.CueId)) _cuesById[cue.CueId] = cue;
+
+            string key = cue.NormalizedCueName;
             if (string.IsNullOrEmpty(key) || _cues.ContainsKey(key)) continue;
 
             _cues[key] = cue;
@@ -120,6 +132,18 @@ public class PresentationRuntimeContext : MonoBehaviour
         return HasValidContext
             && !string.IsNullOrEmpty(normalizedName)
             && _cues.TryGetValue(normalizedName, out cue);
+    }
+
+    /// <summary>
+    /// CueId로 Cue를 조회한다(Path A Signal 경로). 이름 단일 키가 아니라 id로 특정하므로 한 Timeline에
+    /// 전 페이즈의 동명 Cue가 모여도 각각을 구분한다(지시서 §6).
+    /// </summary>
+    public bool TryGetCueById(string cueId, out RuntimeCue cue)
+    {
+        cue = null;
+        return HasValidContext
+            && !string.IsNullOrEmpty(cueId)
+            && _cuesById.TryGetValue(cueId, out cue);
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -288,6 +312,7 @@ public class PresentationRuntimeContext : MonoBehaviour
         ExpectedStateHash = 0;
         DebugLabel = string.Empty;
         _cues.Clear();
+        _cuesById.Clear();
         _orderedCues.Clear();
         ClearStateIndex();
     }

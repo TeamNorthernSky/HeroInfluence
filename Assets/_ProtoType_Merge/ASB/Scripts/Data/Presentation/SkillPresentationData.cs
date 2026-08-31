@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.Scripting.APIUpdating;
+using UnityEngine.Timeline;
 
 /// <summary>
 /// skillIndex로 매핑되는 스킬 연출 데이터.
@@ -22,6 +23,33 @@ public enum CustomImpactResolutionPolicy
     PerTargetImpact
 }
 
+/// <summary>
+/// 연출 애니메이션 재생 레일. Path A/B 하이브리드의 스킬 단위 선택자.
+/// Docs/SkillPresentation_PathA_Timeline런타임재생_구현지시서.md 참조.
+/// </summary>
+public enum AnimationRail
+{
+    /// <summary>Path B — Animator.CrossFade(named state) 경로. 현행이자 기본.</summary>
+    Animator,
+    /// <summary>Path A — TimelineAsset을 PlayableDirector로 직접 재생(opt-in).</summary>
+    Timeline
+}
+
+/// <summary>
+/// Path A용 캐릭터별 베이크 Timeline 바인딩(지시서 §5).
+/// 저작 시점에 그 캐릭터의 클립(오버라이드 해석 포함)이 이미 구워진 전용 TimelineAsset을 가리킨다.
+/// 런타임은 이 매핑에서 시전 캐릭터 키로 선택만 하고, 클립 해석/에셋 뮤테이션을 하지 않는다.
+/// </summary>
+[Serializable]
+public class SkillTimelineBinding
+{
+    [Tooltip("이 Timeline을 사용할 캐릭터 키(문자열 키 체계와 일치).")]
+    public string CharacterKey;
+
+    [Tooltip("해당 캐릭터의 클립이 이미 구워진 전용 TimelineAsset.")]
+    public TimelineAsset Timeline;
+}
+
 [CreateAssetMenu(fileName = "SkillPresentation_New", menuName = "Battle/Skill Presentation Data")]
 public class SkillPresentationData : ScriptableObject
 {
@@ -35,6 +63,36 @@ public class SkillPresentationData : ScriptableObject
 
     /// <summary>새 페이즈/Cue 구조가 활성인지.</summary>
     public bool IsPhaseCue => PresentationSchemaVersion >= 1;
+
+    [Header("Animation Rail (Path A — opt-in)")]
+    [Tooltip("Timeline이면 이 스킬은 PlayableDirector로 SkillTimelines를 재생한다(Path A). 기본은 Animator(Path B). " +
+             "지시서: Docs/SkillPresentation_PathA_Timeline런타임재생_구현지시서.md")]
+    public AnimationRail AnimationRail = AnimationRail.Animator;
+
+    [Tooltip("AnimationRail=Timeline일 때만 사용. 파일럿은 캐릭터별 베이크 Variant — 시전 캐릭터 키로 조회(지시서 §5).")]
+    public List<SkillTimelineBinding> SkillTimelines = new List<SkillTimelineBinding>();
+
+    /// <summary>이 스킬이 Path A(Timeline 재생) 레일인지.</summary>
+    public bool IsTimelineRail => AnimationRail == AnimationRail.Timeline;
+
+    /// <summary>
+    /// 시전 캐릭터 키에 해당하는 베이크 Timeline을 찾는다(지시서 §5). 없으면 null.
+    /// 런타임은 클립 해석을 하지 않고 이 선택 결과만 재생한다.
+    /// </summary>
+    public TimelineAsset ResolveTimeline(string characterKey)
+    {
+        if (SkillTimelines == null) return null;
+        for (int i = 0; i < SkillTimelines.Count; i++)
+        {
+            SkillTimelineBinding binding = SkillTimelines[i];
+            if (binding != null && binding.Timeline != null
+                && string.Equals(binding.CharacterKey, characterKey, StringComparison.Ordinal))
+            {
+                return binding.Timeline;
+            }
+        }
+        return null;
+    }
 
     [Header("Animation State/Slot Override (empty uses SkillData/fallback)")]
     [Tooltip("이 스킬의 Animator state/slot. 비면 SkillData.StateName → 산술(ClassSkill_N/WeaponSkill_N) 폴백.")]
@@ -324,6 +382,37 @@ public class SkillPresentationData : ScriptableObject
         }
 
         return changed;
+    }
+
+    /// <summary>
+    /// 이 연출의 모든 페이즈/Beat Cue를 순서대로 수집한다(Path A Timeline 레일 등록용, 지시서 §6).
+    /// <see cref="EnsureCueIds"/>와 같은 순회를 쓴다 — 한쪽만 바뀌지 않게 traversal을 일치시킨다.
+    /// </summary>
+    public void CollectAllCues(List<CueBinding> dest)
+    {
+        if (dest == null) return;
+
+        foreach (PhaseBase phase in GetPhases())
+        {
+            if (phase is CuePhase cuePhase && cuePhase.Cues != null)
+            {
+                dest.AddRange(cuePhase.Cues);
+            }
+        }
+
+        if (MovingAttack?.Cues != null)
+        {
+            dest.AddRange(MovingAttack.Cues);
+        }
+
+        if (Attack?.Beats != null)
+        {
+            for (int i = 0; i < Attack.Beats.Count; i++)
+            {
+                List<CueBinding> beatCues = Attack.Beats[i]?.Cues;
+                if (beatCues != null) dest.AddRange(beatCues);
+            }
+        }
     }
 
     private static bool EnsureCueIds(List<CueBinding> cues)

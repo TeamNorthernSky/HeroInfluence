@@ -91,6 +91,9 @@ MonoBehaviour:
         InstanceKey: 
         Anchor: 0
         Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 5cf76e0ef0474034bf0e1fd052355af2
     - AnimationStateName: Base Layer.ClassSkill_3
       BlendInSeconds: 0
       AdvanceOnEvent: 0
