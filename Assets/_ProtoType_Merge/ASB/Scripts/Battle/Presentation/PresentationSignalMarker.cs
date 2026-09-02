@@ -8,7 +8,9 @@ public enum PresentationSignalKind
     /// <summary>연출 Cue 발화(이펙트/사운드). CueId로 특정.</summary>
     Cue,
     /// <summary>타격 시점 — 대미지 콜백을 1회 호출.</summary>
-    Impact
+    Impact,
+    /// <summary>투사체 발사 — 스킬의 ProjectileVisual을 타깃으로 발사하고, 도착 시 대미지를 적용한다.</summary>
+    Projectile
 }
 
 /// <summary>
@@ -23,16 +25,21 @@ public class PresentationSignalMarker : Marker, INotification, INotificationOpti
 {
     [SerializeField] private PresentationSignalKind _kind = PresentationSignalKind.Cue;
 
-    [Tooltip("Kind=Cue일 때 발화할 Cue의 CueId(자동 생성 GUID). Impact면 비워둠.")]
+    [Tooltip("Kind=Cue일 때 발화할 Cue 이름(예: cast). 대부분 이것만 넣으면 됩니다. Impact/Projectile이면 비워둠.")]
+    [SerializeField] private string _cueName;
+
+    [Tooltip("선택: CueId(자동 생성 GUID). 넣으면 CueName보다 우선하며 동명 Cue를 정확히 특정합니다. 이름이 유니크하면 비워도 됨.")]
     [SerializeField] private string _cueId;
 
     public PresentationSignalKind Kind => _kind;
+    public string CueName => _cueName;
     public string CueId => _cueId;
 
     /// <summary>런타임에 값 주입용(Jig '굽기'에서 마커 생성 시 설정).</summary>
-    public void Configure(PresentationSignalKind kind, string cueId)
+    public void Configure(PresentationSignalKind kind, string cueName, string cueId = null)
     {
         _kind = kind;
+        _cueName = cueName;
         _cueId = cueId;
     }
 

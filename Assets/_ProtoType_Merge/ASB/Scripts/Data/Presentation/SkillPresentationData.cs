@@ -43,7 +43,8 @@ public enum AnimationRail
 [Serializable]
 public class SkillTimelineBinding
 {
-    [Tooltip("이 Timeline을 사용할 캐릭터 키(문자열 키 체계와 일치).")]
+    [Tooltip("이 Timeline을 사용할 캐릭터 키 = 시전자 unitName(예: '블래스터'). " +
+             "비워두면 모든 시전자에 적용(와일드카드/폴백) — 단일 캐릭터 파일럿에 편리.")]
     public string CharacterKey;
 
     [Tooltip("해당 캐릭터의 클립이 이미 구워진 전용 TimelineAsset.")]
@@ -82,16 +83,34 @@ public class SkillPresentationData : ScriptableObject
     public TimelineAsset ResolveTimeline(string characterKey)
     {
         if (SkillTimelines == null) return null;
+
+        string key = characterKey?.Trim();
+        TimelineAsset wildcard = null;
+
         for (int i = 0; i < SkillTimelines.Count; i++)
         {
             SkillTimelineBinding binding = SkillTimelines[i];
-            if (binding != null && binding.Timeline != null
-                && string.Equals(binding.CharacterKey, characterKey, StringComparison.Ordinal))
+            if (binding == null || binding.Timeline == null) continue;
+
+            string bindingKey = binding.CharacterKey?.Trim();
+
+            // CharacterKey가 비어 있으면 "모든 캐릭터"(와일드카드/폴백) — 단일 캐릭터 파일럿에 편리.
+            if (string.IsNullOrEmpty(bindingKey))
+            {
+                if (wildcard == null) wildcard = binding.Timeline;
+                continue;
+            }
+
+            // 정확 매칭(대소문자 무시 + 공백 정리로 오타 완화).
+            if (!string.IsNullOrEmpty(key)
+                && string.Equals(bindingKey, key, StringComparison.OrdinalIgnoreCase))
             {
                 return binding.Timeline;
             }
         }
-        return null;
+
+        // 정확 매칭이 없으면 와일드카드(빈 키) 항목을 쓴다.
+        return wildcard;
     }
 
     [Header("Animation State/Slot Override (empty uses SkillData/fallback)")]

@@ -20,6 +20,8 @@ public class PlayerSpawner : MonoBehaviour
     }
 
     [Header("Dependencies")]
+    [SerializeField] private BattleUnitPrefabCatalog prefabCatalog;
+    [SerializeField] private TmpBattlePrefabManager prefabManager;
     // charactorManager 제거 — DHCsvTemplateCatalog.Instance 로 대체
 
     [Header("Inspector Test / Battle debug spawn")]
@@ -33,6 +35,7 @@ public class PlayerSpawner : MonoBehaviour
     private readonly Dictionary<int, GameObject> spawnedByGrid = new Dictionary<int, GameObject>();
     private readonly Dictionary<int, GridCellRef> gridCellsByNumber = new Dictionary<int, GridCellRef>();
     private bool hierarchyReady;
+    private bool prefabCatalogMismatchReported;
 
     private void Awake()
     {
@@ -119,6 +122,9 @@ public class PlayerSpawner : MonoBehaviour
         }
 
         string trimmedIndex = unit.Index.Trim();
+        if (TryGetRegisteredPlayerPrefab(trimmedIndex, out GameObject registeredPrefab))
+            return registeredPrefab;
+
         string suffix = $"_{trimmedIndex}";
 
         GameObject[] all = Resources.LoadAll<GameObject>("prefab/BattlePrefab/PlayerUnit");
@@ -130,6 +136,38 @@ public class PlayerSpawner : MonoBehaviour
 
         Debug.LogError($"[PlayerSpawner] Prefab not found. Index={trimmedIndex}");
         return null;
+    }
+
+
+    private bool TryGetRegisteredPlayerPrefab(string unitKey, out GameObject prefab)
+    {
+        prefab = null;
+
+        TmpBattlePrefabManager resolver = prefabManager != null
+            ? prefabManager
+            : TmpBattlePrefabManager.Instance;
+        if (resolver != null)
+            ReportCatalogMismatchOnce(resolver);
+
+        if (prefabCatalog != null && prefabCatalog.TryGetPlayerPrefab(unitKey, out prefab))
+            return true;
+
+        return resolver != null && resolver.TryGetPlayerPrefab(unitKey, out prefab);
+    }
+
+    private void ReportCatalogMismatchOnce(TmpBattlePrefabManager resolver)
+    {
+        if (prefabCatalogMismatchReported || prefabCatalog == null || resolver == null ||
+            resolver.Catalog == null || resolver.Catalog == prefabCatalog)
+        {
+            return;
+        }
+
+        prefabCatalogMismatchReported = true;
+        Debug.LogWarning(
+            "[PlayerSpawner] Direct Catalog and TmpBattlePrefabManager Catalog differ. " +
+            "The directly assigned Catalog has priority.",
+            this);
     }
 
     public GameObject SpawnUnit(string unitId, int gridNumber)

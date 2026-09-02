@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
 
 namespace ASB.Work.EditorTools.Jig
 {
@@ -112,6 +114,24 @@ namespace ASB.Work.EditorTools.Jig
                 if (GUILayout.Button(_build == null ? "지그 생성" : "지그 재생성", GUILayout.Height(26)))
                 {
                     Generate();
+                }
+            }
+
+            // Path A(Timeline 레일) Variant 굽기 — 지그 생성 없이도 가능(연출 + 캐릭터만 있으면).
+            using (new EditorGUI.DisabledScope(_presentation == null || _characterPrefab == null))
+            {
+                if (GUILayout.Button("▶ Path A Variant로 굽기 (Timeline 생성 + 마커 + 연결)", GUILayout.Height(26)))
+                {
+                    BakePathA();
+                }
+            }
+
+            // 이미 구운 Variant를 프리뷰(캐릭터 바인딩)로 다시 열어 편집.
+            using (new EditorGUI.DisabledScope(_presentation == null || _characterPrefab == null || !_presentation.IsTimelineRail))
+            {
+                if (GUILayout.Button("구운 Variant 편집 열기 (프리뷰 바인딩)"))
+                {
+                    OpenConnectedVariant();
                 }
             }
 
@@ -359,6 +379,72 @@ namespace ASB.Work.EditorTools.Jig
                 Debug.LogWarning("[Jig] Timeline 창을 자동으로 열지 못했습니다. " +
                                  "Window ▸ Sequencing ▸ Timeline 을 직접 열어주세요.");
             }
+        }
+
+        private void BakePathA()
+        {
+            var timeline = JigPathABaker.Bake(_presentation, _characterPrefab, out string error);
+            if (timeline == null)
+            {
+                EditorUtility.DisplayDialog("Path A 굽기 실패", error ?? "알 수 없는 오류", "확인");
+                return;
+            }
+
+            EditorGUIUtility.PingObject(timeline);
+            OpenVariantForEditing(timeline);   // 캐릭터에 바인딩된 프리뷰로 열기(애니 보면서 편집)
+            EditorUtility.DisplayDialog("Path A Variant 생성 완료",
+                $"{AssetDatabase.GetAssetPath(timeline)}\n\n" +
+                "캐릭터에 바인딩된 프리뷰로 열었습니다. Timeline 창에서 플레이헤드를 끌면 포즈가 움직입니다.\n" +
+                "클립 Split/속도/블렌드, 마커 위치, (투사체면) 발사 시점을 다듬으세요. 콘솔에 배치 요약이 있습니다.",
+                "확인");
+        }
+
+        /// <summary>이 스킬에 연결된(캐릭터 키 일치) Variant를 프리뷰로 다시 연다.</summary>
+        private void OpenConnectedVariant()
+        {
+            BattleCharactor bc = _characterPrefab != null ? _characterPrefab.GetComponentInChildren<BattleCharactor>() : null;
+            string key = bc != null ? bc.UnitName : null;
+            TimelineAsset timeline = _presentation.ResolveTimeline(key);
+            if (timeline == null)
+            {
+                EditorUtility.DisplayDialog("Variant 없음",
+                    $"'{key}' 캐릭터에 연결된 Timeline Variant를 찾지 못했습니다. 먼저 '굽기'를 하세요.", "확인");
+                return;
+            }
+            OpenVariantForEditing(timeline);
+        }
+
+        /// <summary>
+        /// TimelineAsset을 캐릭터 프리뷰 인스턴스(Director+Animator 바인딩)에 물려 Timeline 창으로 연다.
+        /// 이렇게 해야 스크러빙 시 캐릭터 포즈가 실제로 움직인다(에셋만 선택하면 바인딩이 없어 정지).
+        /// </summary>
+        private void OpenVariantForEditing(TimelineAsset timeline)
+        {
+            if (timeline == null) return;
+
+            GameObject preview = JigPreviewInstance.Create(_characterPrefab, out string err);
+            if (preview == null)
+            {
+                Debug.LogWarning($"[Jig] 프리뷰 인스턴스 생성 실패({err}) — 에셋만 엽니다(포즈 미리보기 불가).");
+                Selection.activeObject = timeline;
+                OpenTimelineWindow();
+                return;
+            }
+
+            PlayableDirector director = JigPreviewInstance.Director;
+            Animator animator = JigPreviewInstance.ResolveAnimator();
+            director.playableAsset = timeline;
+
+            foreach (TrackAsset track in timeline.GetOutputTracks())
+            {
+                if (track is AnimationTrack && animator != null)
+                {
+                    director.SetGenericBinding(track, animator);
+                }
+            }
+
+            Selection.activeGameObject = preview;
+            OpenTimelineWindow();
         }
 
         private void WriteBack()

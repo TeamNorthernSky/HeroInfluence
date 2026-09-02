@@ -42,4 +42,12 @@ public class UnitAnimationEventRouter : MonoBehaviour
         _effect?.PresentationCueById(cueId);
         _sound?.PresentationCueById(cueId);
     }
+
+    /// <summary>연출 Cue를 CueName으로 분배(Path A Timeline Signal 경로). Timeline이 시점을 소유하므로 State 게이트를 우회한다.</summary>
+    public void PresentationCueByName(string cueName)
+    {
+        Resolve();
+        _effect?.PresentationCue(cueName, bypassStateGate: true);
+        _sound?.PresentationCue(cueName, bypassStateGate: true);
+    }
 }

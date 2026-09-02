@@ -14,6 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 2020
   PresentationSchemaVersion: 1
+  AnimationRail: 1
+  SkillTimelines:
+  - CharacterKey: 
+    Timeline: {fileID: 0}
+  - CharacterKey: "\uBE14\uB798\uC2A4\uD130"
+    Timeline: {fileID: 11400000, guid: ebbd7b4c5947eb3409c9b07e51a7fe05, type: 2}
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 

@@ -54,6 +54,20 @@ public class SkillPresentationDataEditor : Editor
               "전환은 값을 옮기지 않습니다 — Cue를 채우기 전까지 이펙트·사운드가 재생되지 않습니다.",
             MessageType.Info);
 
+        // ── Animation Rail (Path A — opt-in) ──
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Animation Rail (Path A)", EditorStyles.boldLabel);
+        SerializedProperty rail = serializedObject.FindProperty("AnimationRail");
+        EditorGUILayout.PropertyField(rail);
+        if (rail != null && rail.enumValueIndex == (int)AnimationRail.Timeline)
+        {
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("SkillTimelines"), true);
+            EditorGUILayout.HelpBox(
+                "Timeline 레일(Path A): Character Key가 시전자 unitName(예: '블래스터')과 일치하는 Timeline을 재생합니다.\n" +
+                "Character Key를 비워두면 모든 시전자에 적용됩니다(와일드카드) — 단일 캐릭터 파일럿이면 그냥 비워두세요.",
+                MessageType.Info);
+        }
+
         // ── 공용 (전 스키마) ──
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Animation (공용)", EditorStyles.boldLabel);

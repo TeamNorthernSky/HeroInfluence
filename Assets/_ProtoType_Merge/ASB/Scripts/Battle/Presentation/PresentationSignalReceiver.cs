@@ -14,32 +14,48 @@ using UnityEngine.Playables;
 [DisallowMultipleComponent]
 public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
 {
+    /// <summary>마커 수신 진단 로그. 저작·디버그 때만 켠다(기본 꺼짐 — 콘솔 조용). <c>PresentationSignalReceiver.LogSignals = true</c>로 켬.</summary>
+    public static bool LogSignals;
+
     private UnitAnimationEventRouter _router;
     private Action _onImpact;
+    private Action _onProjectile;
 
-    public void Configure(UnitAnimationEventRouter router, Action onImpact)
+    public void Configure(UnitAnimationEventRouter router, Action onImpact, Action onProjectile = null)
     {
         _router = router;
         _onImpact = onImpact;
+        _onProjectile = onProjectile;
     }
 
     public void ClearConfig()
     {
         _router = null;
         _onImpact = null;
+        _onProjectile = null;
     }
 
     public void OnNotify(Playable origin, INotification notification, object context)
     {
         if (!(notification is PresentationSignalMarker marker)) return;
 
+        if (LogSignals)
+        {
+            Debug.Log($"[PathA-Signal] '{marker.Kind}' 마커 도달 (cueName={marker.CueName}, cueId={marker.CueId})", this);
+        }
+
         switch (marker.Kind)
         {
             case PresentationSignalKind.Cue:
-                _router?.PresentationCueById(marker.CueId);
+                // CueId가 있으면 정확 특정(동명 충돌 없음), 없으면 CueName으로 발화.
+                if (!string.IsNullOrEmpty(marker.CueId)) _router?.PresentationCueById(marker.CueId);
+                else _router?.PresentationCueByName(marker.CueName);
                 break;
             case PresentationSignalKind.Impact:
                 _onImpact?.Invoke();
+                break;
+            case PresentationSignalKind.Projectile:
+                _onProjectile?.Invoke();
                 break;
         }
     }

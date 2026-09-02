@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 2010
   PresentationSchemaVersion: 1
+  AnimationRail: 1
+  SkillTimelines:
+  - CharacterKey: "\uBE14\uB798\uC2A4\uD130"
+    Timeline: {fileID: 11400000, guid: ba39b7cd49bb53d45ba9be36ca6f933a, type: 2}
   AnimationStateName: Base Layer.ClassSkill_2
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 

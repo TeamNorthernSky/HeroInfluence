@@ -140,7 +140,7 @@ namespace ASB.Work.EditorTools.Jig
                 if (iv.Clip != null)
                 {
                     TimelineClip clip = animTrack.CreateClip(iv.Clip);
-                    clip.start = iv.Start;   // ★ComputeBlendBoundaries가 겹침 반영해 갱신한 Start
+                    clip.start = iv.Start;   // ComputeBlendBoundaries가 겹침 반영해 갱신한 Start
                     clip.displayName = iv.Label;
 
                     // 클립 길이 = DisplayDuration(BaseClipDuration + PostBoundary 연장분).

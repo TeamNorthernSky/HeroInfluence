@@ -748,15 +748,29 @@ public sealed class SkillPresentationDirector
 
     /// <summary>
     /// Timeline 레일 스킬 재생: 캐릭터 Variant를 PlayableDirector로 틀고, 전투 배속을 그래프에 반영하며,
-    /// 완료까지 대기한 뒤 Idle로 복귀한다.
-    /// 파일럿 1차 범위 — 이동·투사체 없음. Cue/Impact는 Timeline Signal이 시점을 소유하지만 리시버 배선은
-    /// 다음 증분이며, 그전까지는 완료 시 대미지 콜백을 1회 적용해 전투 상태 일관성과 무-hang을 보장한다(§10).
+    /// 재생 중 마커 알림(Cue/Impact/Projectile)을 처리하고, 완료까지 대기한 뒤 Idle로 복귀한다.
+    /// Cue/Impact/Projectile의 시점은 Timeline Signal이 소유한다. Impact·Projectile이 없던 스킬은 완료 시
+    /// 대미지 콜백을 1회 적용해 전투 상태 일관성과 무-hang을 보장한다(§10). 이동(MoveSignal)은 아직 미배선.
     /// </summary>
     private IEnumerator RunTimelineRailRoutine(
         BattleCharactor actor, BattleCharactor target, SkillData skill, SkillPresentationData presentation,
         Func<BattleHitResult> onHitCallback, HitDeliveryGate deliveryGate,
-        Transform targetTransform, Vector3 targetPosition)
+        Transform targetTransform, Vector3 targetPosition, bool playTargetHitAnimation)
     {
+        // 피격 연출(대미지 + 피격 애니 + 데미지 팝업). Path B의 ResolveHitAction을 재사용한다 —
+        // 대미지 콜백만 부르면 HP는 깎이지만 피격 모션·데미지 팝업이 안 나온다.
+        string targetAnimTrigger = playTargetHitAnimation ? (skill?.ResolvedTargetAnimationTrigger ?? "Hit") : null;
+        bool hitResolved = false;
+        Coroutine hitRoutine = null;
+        void ResolveHit()
+        {
+            if (hitResolved) return;
+            hitResolved = true;
+            hitRoutine = _battle.StartCoroutine(
+                new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _battle.CurrentBattleSpeed, _battle.VisualDirector)
+                    .ExecuteRoutine(_battle));
+        }
+
         TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.UnitName) : null;
 
         // 저장/빌드 검증에서 사전 차단하지만(§3), 런타임 도달 시에도 시퀀스는 반드시 종료한다 —
@@ -765,8 +779,9 @@ public sealed class SkillPresentationDirector
         {
             Debug.LogError(
                 $"[PathA] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 '{actor?.UnitName}'의 Variant가 없습니다. " +
-                "대미지만 적용하고 종료합니다.", actor);
-            onHitCallback?.Invoke();
+                "피격 연출만 적용하고 종료합니다.", actor);
+            ResolveHit();
+            if (hitRoutine != null) yield return hitRoutine;
             yield break;
         }
 
@@ -777,12 +792,20 @@ public sealed class SkillPresentationDirector
         int actionInstanceId = NextActionInstanceId();
         RegisterTimelineRailCues(actor, target, skill, presentation, actionInstanceId);
 
-        // 마커 알림 → Cue 발화 / Impact 대미지. Impact 마커가 있으면 그 시점에, 없으면 완료 시 폴백으로 1회.
-        bool impactFired = false;
+        // 마커 알림 → Cue 발화 / Impact 피격연출 / Projectile 발사. 시점 소유는 Timeline이 갖는다.
+        Coroutine projectileRoutine = null;
+        bool projectileLaunched = false;
+        void LaunchProjectile()
+        {
+            if (projectileLaunched) return;
+            projectileLaunched = true;
+            // Timeline과 병행 재생: 투사체를 별도 코루틴으로 날리고, 도착 시 피격연출을 적용한다.
+            projectileRoutine = _battle.StartCoroutine(
+                LaunchProjectileRoutine(actor, target, presentation, deliveryGate, ResolveHit));
+        }
+
         PresentationSignalReceiver receiver = EnsureSignalReceiver(actor);
-        receiver.Configure(
-            actor.GetComponent<UnitAnimationEventRouter>(),
-            () => { if (!impactFired) { impactFired = true; onHitCallback?.Invoke(); } });
+        receiver.Configure(actor.GetComponent<UnitAnimationEventRouter>(), ResolveHit, LaunchProjectile);
 
         bool stopped = false;
         void OnStopped(PlayableDirector d) => stopped = true;
@@ -805,9 +828,35 @@ public sealed class SkillPresentationDirector
             ClearPresentationContext(actor);
         }
 
-        // Impact 마커가 없던 스킬은 여기서 대미지를 1회 보장한다(대미지 유실 방지, §10).
-        if (!impactFired) onHitCallback?.Invoke();
+        // 발사된 투사체가 있으면 도착까지 기다린다(도착 시 피격연출). Timeline이 먼저 끝나도 투사체 완료를 보장한다.
+        if (projectileRoutine != null) yield return projectileRoutine;
+
+        // Impact도 투사체도 없던 스킬은 여기서 피격연출을 1회 보장한다(대미지+애니+팝업 유실 방지, §10).
+        if (!hitResolved) ResolveHit();
+        if (hitRoutine != null) yield return hitRoutine;
         if (actor != null) actor.Anim?.PlayIdleAnimation();
+    }
+
+    /// <summary>
+    /// Path A 투사체 발사(지시서 §4 ProjectileSignal). 스킬의 ProjectileVisual을 타깃으로 발사하고,
+    /// 도착 시 <paramref name="onArrive"/>(대미지)를 호출한다. 기존 <see cref="ProjectileImpactAction"/> 재사용.
+    /// 투사체가 없으면(비-원거리 등) 즉시 대미지를 적용해 유실을 막는다.
+    /// </summary>
+    private IEnumerator LaunchProjectileRoutine(BattleCharactor actor, BattleCharactor target,
+        SkillPresentationData presentation, HitDeliveryGate deliveryGate, Action onArrive)
+    {
+        ProjectileVisualData visual = presentation != null ? presentation.GetProjectileVisual() : null;
+        if (actor == null || visual == null || visual.Prefab == null)
+        {
+            onArrive?.Invoke();
+            yield break;
+        }
+
+        var projectile = new ProjectileImpactAction(
+            actor, target, visual, _battle.CurrentBattleSpeed, deliveryGate, presentation.SkillIndex);
+        yield return projectile.ExecuteRoutine(_battle);
+
+        onArrive?.Invoke();   // 도착 → 대미지
     }
 
     private static PlayableDirector EnsureTimelineDirector(BattleCharactor actor)
@@ -986,7 +1035,7 @@ public sealed class SkillPresentationDirector
         // 우선순위: 커스텀 시퀀스 레지스트리(위) > Timeline 레일(여기) > 기본 경로(아래).
         if (presentation != null && presentation.IsTimelineRail)
         {
-            yield return RunTimelineRailRoutine(actor, target, skill, presentation, onHitCallback, deliveryGate, targetTransform, targetPosition);
+            yield return RunTimelineRailRoutine(actor, target, skill, presentation, onHitCallback, deliveryGate, targetTransform, targetPosition, playTargetHitAnimation);
             yield break;
         }
 
