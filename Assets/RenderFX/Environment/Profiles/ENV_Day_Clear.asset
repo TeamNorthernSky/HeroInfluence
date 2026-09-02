@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d9a11933704504f293ee14d5663c6fd, type: 3}
   m_Name: ENV_Day_Clear
   m_EditorClassIdentifier: 
-  skyboxMaterial: {fileID: 2100000, guid: 7afcc7efdbffbfe48a3d1844bdd1de67, type: 2}
+  skyboxMaterial: {fileID: 2100000, guid: 0e744fb42ef772741966a57f6ca0fa52, type: 2}
   driveSkyboxParams: 1
   skyTint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   skyGroundColor: {r: 0.36899993, g: 0.34899995, b: 0.3409999, a: 1}
@@ -21,12 +21,12 @@ MonoBehaviour:
   sunSize: 0.04
   sunSizeConvergence: 5
   ambientSource: 0
-  ambientIntensity: 1
+  ambientIntensity: 0.67
   ambientSky: {r: 0.07227186, g: 0.14126332, b: 0.26635566, a: 1}
   ambientEquator: {r: 0.37626222, g: 0.48514998, b: 0.57758063, a: 1}
   ambientGround: {r: 0.1878208, g: 0.23074007, b: 0.19120172, a: 1}
-  lightColor: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  lightIntensity: 1.07
+  lightColor: {r: 1, g: 1, b: 1, a: 1}
+  lightIntensity: 0.79
   lightEuler: {x: 50.00002, y: 127.999985, z: 0.0000026564726}
   reflectionIntensity: 0.6
   fogTint: {r: 1, g: 1, b: 1, a: 1}
