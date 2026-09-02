@@ -23,6 +23,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private OutpostType selectedOutpostType = OutpostType.Composite;
     [SerializeField, Min(1)] private int selectedOutpostResourcePerTurn = 1000;
     [SerializeField] private OutpostState selectedOutpostInitialState = OutpostState.EnemyClaimed;
+    [SerializeField] private MapEventKind selectedMapEventKind = MapEventKind.Consume;
     [SerializeField] private MapEventType selectedMapEventType = MapEventType.TrainingHp;
     [SerializeField, Min(1)] private int selectedMapEventRequireAmount = 100;
     [SerializeField, Min(0)] private int selectedMapEventEffectAmount = 3;
@@ -88,6 +89,7 @@ public class LevelEditorController : MonoBehaviour
     public OutpostType SelectedOutpostType => OutpostTypeUtility.Normalize(selectedOutpostType);
     public int SelectedOutpostResourcePerTurn => Mathf.Max(1, selectedOutpostResourcePerTurn);
     public OutpostState SelectedOutpostInitialState => selectedOutpostInitialState;
+    public MapEventKind SelectedMapEventKind => selectedMapEventKind;
     public MapEventType SelectedMapEventType => selectedMapEventType;
     public string SelectedMapEventKey => MapEventTypeUtility.ToEventKey(selectedMapEventType);
     public int SelectedMapEventRequireAmount => Mathf.Max(1, selectedMapEventRequireAmount);
@@ -186,6 +188,7 @@ public class LevelEditorController : MonoBehaviour
             case LevelEditorBrushType.Event:
                 levelData.SetEvent(
                     grid,
+                    SelectedMapEventKind,
                     SelectedMapEventType,
                     SelectedMapEventRequireAmount,
                     SelectedMapEventEffectAmount);
@@ -301,6 +304,7 @@ public class LevelEditorController : MonoBehaviour
         selectedItemAmount = Mathf.Max(1, selectedItemAmount);
         selectedOutpostType = OutpostTypeUtility.Normalize(selectedOutpostType);
         selectedOutpostResourcePerTurn = Mathf.Max(1, selectedOutpostResourcePerTurn);
+        selectedMapEventKind = MapEventKind.Consume;
         selectedMapEventRequireAmount = Mathf.Max(1, selectedMapEventRequireAmount);
         selectedMapEventEffectAmount = Mathf.Max(0, selectedMapEventEffectAmount);
     }

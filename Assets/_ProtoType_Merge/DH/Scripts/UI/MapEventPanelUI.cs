@@ -13,6 +13,8 @@ public class MapEventPanelUI : MonoBehaviour
     private void HandleEventInteracted(MapEventObject mapEvent, PartyGridMover party)
     {
         if (mapEvent == null || party == null) return;
+        if (mapEvent.EventKind != MapEventKind.Consume)
+            return;
 
         string resourceName = GetResourceDisplayName(mapEvent.RequireResource);
         string effectText = GetEffectDisplayText(mapEvent.EventType, mapEvent.EffectAmount);
