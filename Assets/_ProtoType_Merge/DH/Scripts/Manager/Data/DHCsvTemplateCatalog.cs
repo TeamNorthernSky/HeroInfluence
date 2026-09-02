@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -31,13 +31,13 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     private readonly Dictionary<string, EnemyData>         enemyTemplateLookup  = new Dictionary<string, EnemyData>();
     private readonly Dictionary<string, DHEnemyUnitTemplate> enemyUnitTemplateLookup = new Dictionary<string, DHEnemyUnitTemplate>();
     private readonly Dictionary<int,    WeaponData>        weaponLookup         = new Dictionary<int, WeaponData>();
-    private readonly Dictionary<string, WeaponData>        weaponByKey          = new Dictionary<string, WeaponData>();              // §5-3 string 병렬 조회
+    private readonly Dictionary<string, WeaponData>        weaponByKey          = new Dictionary<string, WeaponData>();              // ?5-3 string ?? ??
     private readonly Dictionary<int,    DHWeaponTemplate>  weaponTemplateLookup = new Dictionary<int, DHWeaponTemplate>();
-    private readonly Dictionary<string, DHWeaponTemplate>  weaponTemplateByKey  = new Dictionary<string, DHWeaponTemplate>();         // §5-3 string 병렬 조회
+    private readonly Dictionary<string, DHWeaponTemplate>  weaponTemplateByKey  = new Dictionary<string, DHWeaponTemplate>();         // ?5-3 string ?? ??
     private readonly Dictionary<int,    SkillData>         skillTemplates       = new Dictionary<int, SkillData>();
-    private readonly Dictionary<string, SkillData>         skillTemplatesByKey  = new Dictionary<string, SkillData>();               // §5-3 string 병렬 조회
+    private readonly Dictionary<string, SkillData>         skillTemplatesByKey  = new Dictionary<string, SkillData>();               // ?5-3 string ?? ??
     private readonly Dictionary<int,    DHClassSkillTemplate> classSkillTemplateLookup = new Dictionary<int, DHClassSkillTemplate>();
-    private readonly Dictionary<string, DHClassSkillTemplate> classSkillTemplateByKey  = new Dictionary<string, DHClassSkillTemplate>();  // §5-3 string 병렬 조회
+    private readonly Dictionary<string, DHClassSkillTemplate> classSkillTemplateByKey  = new Dictionary<string, DHClassSkillTemplate>();  // ?5-3 string ?? ??
     private readonly List<LevelUpData>                     levelUpTemplates     = new List<LevelUpData>();
     private readonly List<DHUnitGrowthTemplate>            unitGrowthTemplates  = new List<DHUnitGrowthTemplate>();
     private readonly Dictionary<string, DHEnemyGroupTemplate> enemyGroupLookup  = new Dictionary<string, DHEnemyGroupTemplate>();
@@ -82,7 +82,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         ClearCache();
 
-        // CSV 로더 경로 제거됨 — SO(Excel Importer) 캐싱 데이터만 사용.
+        // CSV ?? ?? ??? ? SO(Excel Importer) ?? ???? ??.
         ReloadFromSOTables();
     }
 
@@ -160,9 +160,9 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return classSkillTemplateLookup.TryGetValue(skillIndex, out template);
     }
 
-    // ───────────────────────────────────────────────────────────
-    // §5-3 string 키 조회 API (기존 int API와 병렬). 소비부는 점진적으로 이쪽으로 이행.
-    // ───────────────────────────────────────────────────────────
+    // ???????????????????????????????????????????????????????????
+    // ?5-3 string ? ?? API (?? int API? ??). ???? ????? ???? ??.
+    // ???????????????????????????????????????????????????????????
     public bool TryGetWeapon(string weaponKey, out WeaponData weaponData)
     {
         EnsureLoaded();
@@ -489,6 +489,26 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         return new List<DHEnemyGroupTemplate>(enemyGroupLookup.Values);
     }
 
+    public List<DHPlayerUnitTemplate> GetAllPlayerUnitTemplates()
+    {
+        EnsureLoaded();
+        var result = new List<DHPlayerUnitTemplate>();
+        foreach (DHPlayerUnitTemplate template in playerUnitTemplateLookup.Values)
+        {
+            if (template != null)
+                result.Add(template);
+        }
+
+        result.Sort((left, right) =>
+        {
+            int byName = string.Compare(left.UnitName, right.UnitName, System.StringComparison.Ordinal);
+            return byName != 0
+                ? byName
+                : string.Compare(left.UnitKey, right.UnitKey, System.StringComparison.Ordinal);
+        });
+        return result;
+    }
+
     public List<SkillData> GetSkillsByClass(string className)
     {
         EnsureLoaded();
@@ -660,7 +680,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 RegisterClassSkillTemplate(template);
                 SkillData skill = ConvertClassSkill(template);
                 skillTemplates.Add(skill.skillIndex, skill);
-                if (!string.IsNullOrEmpty(skill.skillKey)) skillTemplatesByKey[skill.skillKey] = skill;   // §5-3 string 병렬
+                if (!string.IsNullOrEmpty(skill.skillKey)) skillTemplatesByKey[skill.skillKey] = skill;   // ?5-3 string ??
 
             }
         }
@@ -686,7 +706,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
                 RegisterWeaponTemplate(template);
                 WeaponData weapon = ConvertWeapon(template);
                 weaponLookup.Add(weapon.WeaponIndex, weapon);
-                if (!string.IsNullOrEmpty(weapon.weaponKey)) weaponByKey[weapon.weaponKey] = weapon;   // §5-3 string 병렬
+                if (!string.IsNullOrEmpty(weapon.weaponKey)) weaponByKey[weapon.weaponKey] = weapon;   // ?5-3 string ??
                 cachedWeapons.Add(weapon);
             }
         }
@@ -988,7 +1008,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             skill = new SkillData
             {
-                skillIndex      = skillIndex,   // [TEMP:STRKEY] 레거시 int 브리지
+                skillIndex      = skillIndex,   // [TEMP:STRKEY] ??? int ???
                 skillKey        = EnemySkillKeyRules.Compose(src.EnemyIndex, slot),
                 category        = SkillCategory.Enemy,
                 slot            = slot,
@@ -1013,7 +1033,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             skill = new SkillData
             {
-                skillIndex      = skillIndex,   // [TEMP:STRKEY] 레거시 int 브리지
+                skillIndex      = skillIndex,   // [TEMP:STRKEY] ??? int ???
                 skillKey        = EnemySkillKeyRules.Compose(src.EnemyIndex, slot),
                 category        = SkillCategory.Enemy,
                 slot            = slot,
@@ -1036,14 +1056,14 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         skillTemplates.Add(skillIndex, skill);
-        if (!string.IsNullOrEmpty(skill.skillKey)) skillTemplatesByKey[skill.skillKey] = skill;   // §5-3 string 병렬
+        if (!string.IsNullOrEmpty(skill.skillKey)) skillTemplatesByKey[skill.skillKey] = skill;   // ?5-3 string ??
     }
 
     private static DHWeaponTemplate ConvertWeaponTemplate(PlayerWeaponData src)
     {
         if (src == null) return null;
         int weaponIndex = ExtractNumericId(src.WeaponIndex);
-        // §5-1 키 원본 보존: ExtractNumericId 손실 제거 (HC001 그대로 유지). NumericWeaponId는 하위호환용으로 병존.
+        // ?5-1 ? ?? ??: ExtractNumericId ?? ?? (HC001 ??? ??). NumericWeaponId? ??????? ??.
         return new DHWeaponTemplate(
             string.IsNullOrWhiteSpace(src.WeaponIndex) ? string.Empty : src.WeaponIndex.Trim(),
             weaponIndex,
@@ -1148,7 +1168,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         if (src == null) return null;
         return new WeaponData
         {
-            WeaponIndex          = src.NumericWeaponId,   // [TEMP:STRKEY] 레거시 int 브리지
+            WeaponIndex          = src.NumericWeaponId,   // [TEMP:STRKEY] ??? int ???
             weaponKey            = src.WeaponKey,
             weaponClass          = src.WeaponClass,
             WeaponName           = src.WeaponName,
@@ -1160,7 +1180,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             BonusCounterRate     = src.BonusCounterRate,
             BonusReduceRate      = src.BonusReduceRate,
             BonusSpeed           = src.BonusSpeed,
-            WeaponSkillIndex     = src.WeaponSkillIndex,   // [TEMP:STRKEY] 레거시 int 브리지
+            WeaponSkillIndex     = src.WeaponSkillIndex,   // [TEMP:STRKEY] ??? int ???
             weaponSkillKey       = src.WeaponSkillKey,
             WeaponSkillName      = src.WeaponSkillName,
             WeaponSkillDescription = src.WeaponSkillDescription,
@@ -1243,7 +1263,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         weaponTemplateLookup.Add(template.NumericWeaponId, template);
-        if (!string.IsNullOrEmpty(template.WeaponKey)) weaponTemplateByKey[template.WeaponKey] = template;   // §5-3 string 병렬
+        if (!string.IsNullOrEmpty(template.WeaponKey)) weaponTemplateByKey[template.WeaponKey] = template;   // ?5-3 string ??
     }
 
     private void RegisterClassSkillTemplate(DHClassSkillTemplate template)
@@ -1254,7 +1274,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         }
 
         classSkillTemplateLookup.Add(template.NumericSkillId, template);
-        if (!string.IsNullOrEmpty(template.SkillKey)) classSkillTemplateByKey[template.SkillKey] = template;   // §5-3 string 병렬
+        if (!string.IsNullOrEmpty(template.SkillKey)) classSkillTemplateByKey[template.SkillKey] = template;   // ?5-3 string ??
     }
 
     private static string ResolveWeaponClass(int weaponIndex)
@@ -1275,7 +1295,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         if (src == null) return null;
         int classSkillIndex = ExtractNumericId(src.ClassSkillIndex);
-        // §5-1 키 원본 보존: ExtractNumericId 손실 제거 (HS1010 그대로 유지). NumericSkillId는 하위호환용으로 병존.
+        // ?5-1 ? ?? ??: ExtractNumericId ?? ?? (HS1010 ??? ??). NumericSkillId? ??????? ??.
         string skillKey = string.IsNullOrWhiteSpace(src.ClassSkillIndex) ? string.Empty : src.ClassSkillIndex.Trim();
         return new DHClassSkillTemplate(
             skillKey,
@@ -1345,7 +1365,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         if (src == null) return null;
         return new SkillData
         {
-            skillIndex          = src.NumericSkillId,   // [TEMP:STRKEY] 레거시 int 브리지
+            skillIndex          = src.NumericSkillId,   // [TEMP:STRKEY] ??? int ???
             skillKey            = src.SkillKey,
             category            = SkillCategory.Class,
             skillClass          = src.ClassName,

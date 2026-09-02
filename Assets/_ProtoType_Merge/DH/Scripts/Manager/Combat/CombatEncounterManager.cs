@@ -16,8 +16,8 @@ public class CombatEncounterManager : MonoBehaviour
     public EnemyGridMover ActiveEnemy { get; private set; }
     private Coroutine pendingCombatResultCoroutine;
 
-    // [JC 260513] DHScene 재진입 시 직전 전투 결과가 남아 있으면 self-clear.
-    // BattleFlowManager는 전투씬에 있어 OnBattleEnded 이벤트 직접 구독 불가 → Result 폴링 방식.
+    // [JC 260513] DHScene ??? ? ?? ?? ??? ?? ??? self-clear.
+    // BattleFlowManager? ???? ?? OnBattleEnded ??? ?? ?? ?? ? Result ?? ??.
     private void OnEnable()
     {
         CombatContext context = CombatContext.Instance;
@@ -47,7 +47,7 @@ public class CombatEncounterManager : MonoBehaviour
         if (party == null || enemy == null)
             return false;
 
-        // [JC 추가 260514 R-4] 중복 트리거 가드 — PartyInteractionController·EnemyTurnController 양쪽에서 같은 프레임 호출 시 CombatStarted 이중 발화 방지
+        // [JC ?? 260514 R-4] ?? ??? ?? ? PartyInteractionController?EnemyTurnController ???? ?? ??? ?? ? CombatStarted ?? ?? ??
         if (IsCombatActive) return false;
 
         PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
@@ -57,7 +57,7 @@ public class CombatEncounterManager : MonoBehaviour
         if (!TryRegisterCombatParticipants(party, partyId, enemy, enemyId))
             return false;
 
-        // [Orora 260514] IsCombatActive 활성 흐름 + true 반환 (직전 사이클 대비 변경)
+        // [Orora 260514] IsCombatActive ?? ?? + true ?? (?? ??? ?? ??)
         IsCombatActive = true;
         ActiveParty = party;
         ActiveEnemy = enemy;
@@ -396,6 +396,13 @@ public class CombatEncounterManager : MonoBehaviour
     {
         if (context == null)
             return;
+
+        if (context.CombatEnemy != null &&
+            context.CombatEnemy.SourceType == CombatEnemySourceType.Simulation)
+        {
+            context.ClearSimulation();
+            return;
+        }
 
         if (context.HasEventBattle)
         {

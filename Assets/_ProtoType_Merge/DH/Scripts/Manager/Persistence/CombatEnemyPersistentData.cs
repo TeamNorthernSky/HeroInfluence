@@ -6,7 +6,8 @@ public enum CombatEnemySourceType
     Field,
     OutpostDefender,
     VillainUnionDefender,
-    Event
+    Event,
+    Simulation
 }
 
 [Serializable]

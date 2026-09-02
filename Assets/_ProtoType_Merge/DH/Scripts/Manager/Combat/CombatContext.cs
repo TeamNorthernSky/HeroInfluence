@@ -24,7 +24,7 @@ public class CombatEventBattleUnitData
 
     public CombatEventBattleUnitData() { }
 
-    // DH 이벤트 전투 전용 임시 유닛 데이터.
+    // DH ??? ?? ?? ?? ?? ???.
     // Event battles keep a lightweight unit DTO until the ASB battle scene reads every enemy from templates directly.
     public CombatEventBattleUnitData(string unitKey, int slot, int level, DHEventBattleUnitTemplate source)
     {
@@ -53,20 +53,20 @@ public class CombatEventBattleUnitData
 public class CombatEventBattleData
 {
     public int ZoneId;
-    // 이벤트 전투 테이블의 전투 키(Start_BE###). 일반 EnemyGroupKey와 다른 테이블을 가리킨다.
+    // ??? ?? ???? ?? ?(Start_BE###). ?? EnemyGroupKey? ?? ???? ????.
     public string BattleKey;
-    // 전투 종료 후 DH 채팅 흐름이 재개할 Chat_ID. 0이면 별도 재개 채팅 없음.
+    // ?? ?? ? DH ?? ??? ??? Chat_ID. 0?? ?? ?? ?? ??.
     public int ResumeChatId;
-    // 이동형 적 이벤트 전투에서 원본 필드 적을 찾기 위한 MapProgress placement key.
+    // ??? ? ??? ???? ?? ?? ?? ?? ?? MapProgress placement key.
     public string SourceEnemyPlacementKey;
-    // 메인이벤트 전투에서 승리/패배 후 원본 이벤트 오브젝트 처리에 사용하는 EventKey.
+    // ????? ???? ??/?? ? ?? ??? ???? ??? ???? EventKey.
     public string SourceMainEventKey;
     public int EnemyLevel;
-    // 전투씬이 돌려줘야 하는 숫자 결과값. 예: HostageInjuredCount.
+    // ???? ???? ?? ?? ???. ?: HostageInjuredCount.
     public List<DHEventNumericState> NumericResults = new List<DHEventNumericState>();
 
-    // ASB 공통 처리에서 "적 그룹 키" 이름으로 읽어야 할 경우를 위한 별칭.
-    // 이벤트 전투에서는 BattleKey가 곧 전투 그룹 키 역할을 한다.
+    // ASB ?? ???? "? ?? ?" ???? ??? ? ??? ?? ??.
+    // ??? ????? BattleKey? ? ?? ?? ? ??? ??.
     public CombatEventBattleData() { }
 
     public CombatEventBattleData(
@@ -140,14 +140,45 @@ public class CombatContext : MonoBehaviour
     [SerializeField, Min(1)] private int enemyLevel = 1;
     [SerializeField] private CombatResult combatResult = CombatResult.None;
 
+    [Header("Simulation Combat")]
+    [SerializeField] private BattleEntryMode entryMode = BattleEntryMode.Normal;
+    [SerializeField] private string returnSceneName;
+    [SerializeField] private string simulationPartyId;
+    [SerializeField] private System.Collections.Generic.List<SimulationAllyRuntimeData> simulationAllies =
+        new System.Collections.Generic.List<SimulationAllyRuntimeData>();
+
     public CombatPartyPersistentData CombatParty => combatParty;
-    // 일반 필드/거점/빌런연합 전투 정보. 이벤트 전투일 때는 null로 비운다.
+    // ?? ??/??/???? ?? ??. ??? ??? ?? null? ???.
     public CombatEnemyPersistentData CombatEnemy => combatEnemy;
-    // 이벤트 전투 정보. HasEventBattle이 true면 ASB는 CombatEnemy보다 이 데이터를 우선 사용한다.
+    // ??? ?? ??. HasEventBattle? true? ASB? CombatEnemy?? ? ???? ?? ????.
     public CombatEventBattleData EventBattle => eventBattle;
     public CombatResult Result => combatResult;
     public bool HasEventBattle => eventBattle != null && !string.IsNullOrWhiteSpace(eventBattle.BattleKey);
     public int EnemyLevel => Mathf.Max(1, enemyLevel);
+    public BattleEntryMode EntryMode => entryMode;
+    public bool IsSimulation => entryMode == BattleEntryMode.Simulation;
+    public string ReturnSceneName => returnSceneName ?? string.Empty;
+    public string SimulationPartyId => simulationPartyId ?? string.Empty;
+    public System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> SimulationAllies => simulationAllies;
+
+    public bool TryGetSimulationAlly(int runtimeUnitIndex, out SimulationAllyRuntimeData runtimeData)
+    {
+        runtimeData = null;
+        if (!IsSimulation || simulationAllies == null)
+            return false;
+
+        for (int i = 0; i < simulationAllies.Count; i++)
+        {
+            SimulationAllyRuntimeData candidate = simulationAllies[i];
+            if (candidate != null && candidate.RuntimeUnitIndex == runtimeUnitIndex)
+            {
+                runtimeData = candidate;
+                return candidate.UnitData != null;
+            }
+        }
+
+        return false;
+    }
 
     private void Awake()
     {
@@ -159,6 +190,61 @@ public class CombatContext : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
+
+    public bool BeginSimulation(
+        string partyId,
+        System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> allies,
+        string enemyGroupKey,
+        int nextEnemyLevel,
+        string nextReturnSceneName)
+    {
+        Clear();
+        if (string.IsNullOrWhiteSpace(partyId) ||
+            string.IsNullOrWhiteSpace(enemyGroupKey) ||
+            allies == null ||
+            allies.Count == 0)
+        {
+            return false;
+        }
+
+        entryMode = BattleEntryMode.Simulation;
+        simulationPartyId = partyId.Trim();
+        returnSceneName = string.IsNullOrWhiteSpace(nextReturnSceneName)
+            ? "BattleSimulationScene"
+            : nextReturnSceneName.Trim();
+
+        var unitIndices = new System.Collections.Generic.List<int>(allies.Count);
+        for (int i = 0; i < allies.Count; i++)
+        {
+            SimulationAllyRuntimeData ally = allies[i];
+            if (ally == null || ally.UnitData == null || ally.RuntimeUnitIndex <= 0)
+                continue;
+
+            simulationAllies.Add(ally);
+            unitIndices.Add(ally.RuntimeUnitIndex);
+        }
+
+        if (unitIndices.Count == 0)
+        {
+            Clear();
+            return false;
+        }
+
+        RegisterCombatParty(simulationPartyId, unitIndices);
+        RegisterCombatEnemy(
+            "SIMULATION_ENEMY",
+            string.Empty,
+            enemyGroupKey.Trim(),
+            nextEnemyLevel,
+            CombatEnemySourceType.Simulation);
+        SetCombatResult(CombatResult.None);
+        return true;
+    }
+
+    public void ClearSimulation()
+    {
+        Clear();
     }
 
     public void RegisterCombatParty(string partyId, System.Collections.Generic.IReadOnlyList<int> unitIndices)
@@ -186,8 +272,8 @@ public class CombatContext : MonoBehaviour
         if (string.IsNullOrWhiteSpace(enemyId))
             return;
 
-        // 일반 전투 등록 시 이벤트 전투 데이터는 반드시 비운다.
-        // ASB는 HasEventBattle false 상태에서 CombatEnemy를 읽으면 된다.
+        // ?? ?? ?? ? ??? ?? ???? ??? ???.
+        // ASB? HasEventBattle false ???? CombatEnemy? ??? ??.
         eventBattle = null;
 
         if (combatEnemy == null)
@@ -206,7 +292,7 @@ public class CombatContext : MonoBehaviour
 
     public void RegisterEventBattle(CombatEventBattleData nextEventBattle)
     {
-        // 이벤트 전투는 키/존/레벨만 CombatContext에 담고, ASB가 카탈로그에서 유닛과 시나리오를 해석한다.
+        // ??? ??? ?/?/??? CombatContext? ??, ASB? ?????? ??? ????? ????.
         combatEnemy = null;
         eventBattle = nextEventBattle;
         SetEnemyLevel(nextEventBattle != null ? nextEventBattle.EnemyLevel : 1);
@@ -229,5 +315,12 @@ public class CombatContext : MonoBehaviour
         eventBattle = null;
         enemyLevel = 1;
         combatResult = CombatResult.None;
+        entryMode = BattleEntryMode.Normal;
+        returnSceneName = string.Empty;
+        simulationPartyId = string.Empty;
+        if (simulationAllies == null)
+            simulationAllies = new System.Collections.Generic.List<SimulationAllyRuntimeData>();
+        else
+            simulationAllies.Clear();
     }
 }

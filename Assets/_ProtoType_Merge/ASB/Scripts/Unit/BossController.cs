@@ -63,6 +63,11 @@ public sealed class BossController : MonoBehaviour
     [SerializeField] private EnemySpawner _spawner;
     [Tooltip("씬의 BattleFlowManager. 미지정 시 런타임에 탐색한다. 소환 미니언의 턴 참가자 등록에 사용.")]
     [SerializeField] private BattleFlowManager _flow;
+    [Tooltip("전투 공유 상태(페이즈 상태머신). 지정 시 페이즈의 진실원본이 블랙보드로 이관된다. 미지정 시 런타임 탐색(없으면 HP-only 폴백).")]
+    [SerializeField] private EncounterBlackboard _blackboard;
+
+    /// <summary>전투 공유 상태(페이즈 상태머신). AI가 페이즈 읽기/스킬 게이팅에 사용. 없으면 null.</summary>
+    public EncounterBlackboard Blackboard => ResolveBlackboard();
 
     /// <summary>페이즈 진입이 감지된 즉시(가벼운 효과용) 호출되는 훅. 인자는 진입 페이즈.
     /// ⚠️ 이 훅은 피해 처리 도중(시퀀스 중) 호출될 수 있으므로 전투를 변경하는 무거운 작업은 넣지 말 것.</summary>
@@ -86,11 +91,14 @@ public sealed class BossController : MonoBehaviour
     private void OnEnable()
     {
         if (_self != null) _self.OnHpChanged += HandleHpChanged;
+        EncounterBlackboard bb = ResolveBlackboard();
+        if (bb != null) bb.PhaseAdvanced += OnPhaseAdvanced;
     }
 
     private void OnDisable()
     {
         if (_self != null) _self.OnHpChanged -= HandleHpChanged;
+        if (_blackboard != null) _blackboard.PhaseAdvanced -= OnPhaseAdvanced;
     }
 
     private void OnDestroy()
@@ -143,8 +151,16 @@ public sealed class BossController : MonoBehaviour
     // 페이즈 (Tier A 계산 + Tier B 감지/지연 실행)
     // ──────────────────────────────────────────────────────────────
 
-    /// <summary>Tier A: HP 비율로 페이즈 계산(무상태·읽기 전용). 결정 함수에서 부작용 없이 호출 가능.</summary>
+    /// <summary>현재 페이즈. 블랙보드가 있으면 그 진실원본을, 없으면 HP-only 폴백을 반환(읽기 전용).</summary>
     public int ComputePhase()
+    {
+        EncounterBlackboard bb = ResolveBlackboard();
+        if (bb != null) return bb.CurrentPhase;
+        return ComputePhaseFromHp();
+    }
+
+    // HP 비율로 페이즈 계산(블랙보드 없는 단독 보스 폴백).
+    private int ComputePhaseFromHp()
     {
         float ratio = _self != null && _self.MaxHp > 0f ? _self.CurrentHp / _self.MaxHp : 1f;
         if (ratio > _phase1HpRatio) return 1;
@@ -156,13 +172,30 @@ public sealed class BossController : MonoBehaviour
     private void HandleHpChanged(float currentHp, float maxHp)
     {
         if (_self == null || _self.IsDead || currentHp <= 0f) return; // 사망중 발동 가드
-        int phase = ComputePhase();
+
+        EncounterBlackboard bb = ResolveBlackboard();
+        if (bb != null)
+        {
+            // 페이즈 전환은 블랙보드가 판정 → PhaseAdvanced(OnPhaseAdvanced)로 통지받는다.
+            bb.NotifyBossHp(maxHp > 0f ? currentHp / maxHp : 1f);
+            return;
+        }
+
+        // 블랙보드 없음(단독 보스): 기존 HP-only 폴백(전진-only 엣지 감지).
+        int phase = ComputePhaseFromHp();
         if (phase > _lastPhase) // 전진-only(힐로 HP가 올라도 역행 재발동 방지)
         {
             _lastPhase = phase;
             ImmediatePhaseEntered?.Invoke(phase);   // 가벼운 효과(플래그/연출요청)
             _pendingEnteredPhases.Enqueue(phase);   // 무거운 효과(소환)는 안전시점으로 지연
         }
+    }
+
+    // 블랙보드가 페이즈 전진을 통지. 무거운 효과는 즉시 실행 금지 → 지연 큐(보스 턴 시작에 실행).
+    private void OnPhaseAdvanced(int phase)
+    {
+        ImmediatePhaseEntered?.Invoke(phase);   // 가벼운 효과
+        _pendingEnteredPhases.Enqueue(phase);   // 무거운 효과(소환/부활/보스교체)는 안전시점으로 지연
     }
 
     /// <summary>보스 턴 시작(EAI가 호출)의 안전 시점에 지연 페이즈 효과를 실행. 비었으면 no-op(멱등 → 이중 호출 안전).</summary>
@@ -274,5 +307,11 @@ public sealed class BossController : MonoBehaviour
     {
         if (_flow == null) _flow = FindFirstObjectByType<BattleFlowManager>();
         return _flow;
+    }
+
+    private EncounterBlackboard ResolveBlackboard()
+    {
+        if (_blackboard == null) _blackboard = FindFirstObjectByType<EncounterBlackboard>();
+        return _blackboard;
     }
 }
