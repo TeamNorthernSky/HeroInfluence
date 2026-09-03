@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a0c58c95fc53bc46b896c63f649a7d1, type: 3}
+  m_Name: BattleUnitPrefabCatalog
+  m_EditorClassIdentifier: 
+  playerPrefabs:
+  - unitKey: 10001
+    prefab: {fileID: 7563937201503599213, guid: 6a0b6b1fb6a9eaf4980f72999fcc7e51,
+      type: 3}
+  - unitKey: 10002
+    prefab: {fileID: 1210115611748303271, guid: dc4a5e6c8a95e4b4aac8a40d823c76ca,
+      type: 3}
+  - unitKey: 10003
+    prefab: {fileID: 453319653275471567, guid: 0794eea0d06dda54f921e3c87af19cd5, type: 3}
+  - unitKey: 10004
+    prefab: {fileID: 6290960558266015020, guid: e540557cd11514240aafdf2c329798cb,
+      type: 3}
+  enemyPrefabs:
+  - unitKey: 20001
+    prefab: {fileID: 4367654367480254008, guid: 1373055f21e4feb4b9df261148240da5,
+      type: 3}
+  - unitKey: 20002
+    prefab: {fileID: 5597847612702248304, guid: b6c3294ca5ae0b74f8d215217a0fee44,
+      type: 3}
+  - unitKey: 20003
+    prefab: {fileID: 4197761116557718022, guid: 8064077aa668acc479039cda3a364972,
+      type: 3}
+  - unitKey: 20004
+    prefab: {fileID: 5258239332256075357, guid: 8acf52f997661e7479f09ce256f8a447,
+      type: 3}
+  - unitKey: 20005
+    prefab: {fileID: 6674627687946970983, guid: 680343b56597e224299873c4599a4174,
+      type: 3}

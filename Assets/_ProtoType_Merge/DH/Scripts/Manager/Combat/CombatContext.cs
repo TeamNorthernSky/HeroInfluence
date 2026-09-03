@@ -24,7 +24,7 @@ public class CombatEventBattleUnitData
 
     public CombatEventBattleUnitData() { }
 
-    // DH ??? ?? ?? ?? ?? ???.
+    // DH 이벤트 전투 전용 임시 유닛 데이터.
     // Event battles keep a lightweight unit DTO until the ASB battle scene reads every enemy from templates directly.
     public CombatEventBattleUnitData(string unitKey, int slot, int level, DHEventBattleUnitTemplate source)
     {
@@ -53,20 +53,20 @@ public class CombatEventBattleUnitData
 public class CombatEventBattleData
 {
     public int ZoneId;
-    // ??? ?? ???? ?? ?(Start_BE###). ?? EnemyGroupKey? ?? ???? ????.
+    // 이벤트 전투 테이블의 전투 키(Start_BE###). 일반 EnemyGroupKey와 다른 테이블을 가리킨다.
     public string BattleKey;
-    // ?? ?? ? DH ?? ??? ??? Chat_ID. 0?? ?? ?? ?? ??.
+    // 전투 종료 후 DH 채팅 흐름이 재개할 Chat_ID. 0이면 별도 재개 채팅 없음.
     public int ResumeChatId;
-    // ??? ? ??? ???? ?? ?? ?? ?? ?? MapProgress placement key.
+    // 이동형 적 이벤트 전투에서 원본 필드 적을 찾기 위한 MapProgress placement key.
     public string SourceEnemyPlacementKey;
-    // ????? ???? ??/?? ? ?? ??? ???? ??? ???? EventKey.
+    // 메인이벤트 전투에서 승리/패배 후 원본 이벤트 오브젝트 처리에 사용하는 EventKey.
     public string SourceMainEventKey;
     public int EnemyLevel;
-    // ???? ???? ?? ?? ???. ?: HostageInjuredCount.
+    // 전투씬이 돌려줘야 하는 숫자 결과값. 예: HostageInjuredCount.
     public List<DHEventNumericState> NumericResults = new List<DHEventNumericState>();
 
-    // ASB ?? ???? "? ?? ?" ???? ??? ? ??? ?? ??.
-    // ??? ????? BattleKey? ? ?? ?? ? ??? ??.
+    // ASB 공통 처리에서 "적 그룹 키" 이름으로 읽어야 할 경우를 위한 별칭.
+    // 이벤트 전투에서는 BattleKey가 곧 전투 그룹 키 역할을 한다.
     public CombatEventBattleData() { }
 
     public CombatEventBattleData(
@@ -148,9 +148,9 @@ public class CombatContext : MonoBehaviour
         new System.Collections.Generic.List<SimulationAllyRuntimeData>();
 
     public CombatPartyPersistentData CombatParty => combatParty;
-    // ?? ??/??/???? ?? ??. ??? ??? ?? null? ???.
+    // 일반 필드/거점/빌런연합 전투 정보. 이벤트 전투일 때는 null로 비운다.
     public CombatEnemyPersistentData CombatEnemy => combatEnemy;
-    // ??? ?? ??. HasEventBattle? true? ASB? CombatEnemy?? ? ???? ?? ????.
+    // 이벤트 전투 정보. HasEventBattle이 true면 ASB는 CombatEnemy보다 이 데이터를 우선 사용한다.
     public CombatEventBattleData EventBattle => eventBattle;
     public CombatResult Result => combatResult;
     public bool HasEventBattle => eventBattle != null && !string.IsNullOrWhiteSpace(eventBattle.BattleKey);
@@ -272,8 +272,8 @@ public class CombatContext : MonoBehaviour
         if (string.IsNullOrWhiteSpace(enemyId))
             return;
 
-        // ?? ?? ?? ? ??? ?? ???? ??? ???.
-        // ASB? HasEventBattle false ???? CombatEnemy? ??? ??.
+        // 일반 전투 등록 시 이벤트 전투 데이터는 반드시 비운다.
+        // ASB는 HasEventBattle false 상태에서 CombatEnemy를 읽으면 된다.
         eventBattle = null;
 
         if (combatEnemy == null)
@@ -292,7 +292,7 @@ public class CombatContext : MonoBehaviour
 
     public void RegisterEventBattle(CombatEventBattleData nextEventBattle)
     {
-        // ??? ??? ?/?/??? CombatContext? ??, ASB? ?????? ??? ????? ????.
+        // 이벤트 전투는 키/존/레벨만 CombatContext에 담고, ASB가 카탈로그에서 유닛과 시나리오를 해석한다.
         combatEnemy = null;
         eventBattle = nextEventBattle;
         SetEnemyLevel(nextEventBattle != null ? nextEventBattle.EnemyLevel : 1);

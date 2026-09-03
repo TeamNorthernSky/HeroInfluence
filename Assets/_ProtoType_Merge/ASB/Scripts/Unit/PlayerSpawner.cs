@@ -6,8 +6,8 @@ using ASB.Work.BattleGrid;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
 
 /// <summary>
-/// PlayerPlace ???? ??. Grid/Grid_n?? ?? ??? ????, ??? Units ???? ???.
-/// ???? Resources/prefab/BattlePrefab/PlayerUnit ???? Unit_{UnitType}_{Index} ???? ?????.
+/// PlayerPlace 최상위에 부착. Grid/Grid_n에서 월드 위치만 참조하고, 유닛은 Units 자식으로 둡니다.
+/// 프리팹은 Resources/prefab/BattlePrefab/PlayerUnit 아래에서 Unit_{UnitType}_{Index} 규칙으로 로드합니다.
 /// </summary>
 public class PlayerSpawner : MonoBehaviour
 {
@@ -20,7 +20,9 @@ public class PlayerSpawner : MonoBehaviour
     }
 
     [Header("Dependencies")]
-    // charactorManager ?? ? DHCsvTemplateCatalog.Instance ? ??
+    [SerializeField] private BattleUnitPrefabCatalog prefabCatalog;
+    [SerializeField] private TmpBattlePrefabManager prefabManager;
+    // charactorManager 제거 — DHCsvTemplateCatalog.Instance 로 대체
 
     [Header("Inspector Test / Battle debug spawn")]
     public List<SpawnRequest> debugSpawnRequests = new List<SpawnRequest>();
@@ -33,6 +35,7 @@ public class PlayerSpawner : MonoBehaviour
     private readonly Dictionary<int, GameObject> spawnedByGrid = new Dictionary<int, GameObject>();
     private readonly Dictionary<int, GridCellRef> gridCellsByNumber = new Dictionary<int, GridCellRef>();
     private bool hierarchyReady;
+    private bool prefabCatalogMismatchReported;
 
     private void Awake()
     {
@@ -51,11 +54,11 @@ public class PlayerSpawner : MonoBehaviour
         }
         if (unitParent == null)
         {
-            Debug.LogError($"[{gameObject.name}] 'Units' ?? ????? ?? ? ????.");
+            Debug.LogError($"[{gameObject.name}] 'Units' 자식 오브젝트를 찾을 수 없습니다.");
             return;
         }
 
-        // GridCell ????? ???? ?? ??? ?? ?????.
+        // GridCell 컴포넌트를 기준으로 재귀 슬롯을 모두 수집합니다.
         GridCellRef[] cells = GetComponentsInChildren<GridCellRef>(true);
         for (int i = 0; i < cells.Length; i++)
         {
@@ -76,7 +79,7 @@ public class PlayerSpawner : MonoBehaviour
 
     private void Start()
     {
-        // ???? BattleSceneManager? ?? ??(ManualSpawn)? ??? ?????.
+        // 스포너는 BattleSceneManager가 수동 호출(ManualSpawn)로 실행을 제어합니다.
     }
 
     public void SetSpawnOnStart(bool enabled)
@@ -90,7 +93,7 @@ public class PlayerSpawner : MonoBehaviour
         if (combatContext != null && combatContext.IsSimulation)
             return SpawnFromSimulationContext(combatContext);
 
-        // Persistent ?? ??. ?? ? ?? ???(=CSV ?? ??) ???? ?????.
+        // Persistent 우선 스폰. 실패 시 기존 디버그(=CSV 폴백 역할) 리스트로 폴백합니다.
         if (SpawnFromPersistentRepository())
         {
             return true;
@@ -118,11 +121,14 @@ public class PlayerSpawner : MonoBehaviour
     {
         if (unit == null || string.IsNullOrWhiteSpace(unit.Index))
         {
-            Debug.LogError("[PlayerSpawner] Index? ?? ??? UnitData? ????.");
+            Debug.LogError("[PlayerSpawner] Index가 비어 있거나 UnitData가 없습니다.");
             return null;
         }
 
         string trimmedIndex = unit.Index.Trim();
+        if (TryGetRegisteredPlayerPrefab(trimmedIndex, out GameObject registeredPrefab))
+            return registeredPrefab;
+
         string suffix = $"_{trimmedIndex}";
 
         GameObject[] all = Resources.LoadAll<GameObject>("prefab/BattlePrefab/PlayerUnit");
@@ -136,17 +142,49 @@ public class PlayerSpawner : MonoBehaviour
         return null;
     }
 
+
+    private bool TryGetRegisteredPlayerPrefab(string unitKey, out GameObject prefab)
+    {
+        prefab = null;
+
+        TmpBattlePrefabManager resolver = prefabManager != null
+            ? prefabManager
+            : TmpBattlePrefabManager.Instance;
+        if (resolver != null)
+            ReportCatalogMismatchOnce(resolver);
+
+        if (prefabCatalog != null && prefabCatalog.TryGetPlayerPrefab(unitKey, out prefab))
+            return true;
+
+        return resolver != null && resolver.TryGetPlayerPrefab(unitKey, out prefab);
+    }
+
+    private void ReportCatalogMismatchOnce(TmpBattlePrefabManager resolver)
+    {
+        if (prefabCatalogMismatchReported || prefabCatalog == null || resolver == null ||
+            resolver.Catalog == null || resolver.Catalog == prefabCatalog)
+        {
+            return;
+        }
+
+        prefabCatalogMismatchReported = true;
+        Debug.LogWarning(
+            "[PlayerSpawner] Direct Catalog and TmpBattlePrefabManager Catalog differ. " +
+            "The directly assigned Catalog has priority.",
+            this);
+    }
+
     public GameObject SpawnUnit(string unitId, int gridNumber)
     {
         if (string.IsNullOrWhiteSpace(unitId))
         {
-            Debug.LogError($"[PlayerSpawner] unitId? ??????. ({gameObject.name})");
+            Debug.LogError($"[PlayerSpawner] unitId가 비어있습니다. ({gameObject.name})");
             return null;
         }
 
         if (!hierarchyReady || unitParent == null)
         {
-            Debug.LogError($"[PlayerSpawner] Grid/Units ??? ???? ?????. ({gameObject.name})");
+            Debug.LogError($"[PlayerSpawner] Grid/Units 계층이 준비되지 않았습니다. ({gameObject.name})");
             return null;
         }
 
@@ -154,7 +192,7 @@ public class PlayerSpawner : MonoBehaviour
             !gridRotations.TryGetValue(gridNumber, out Quaternion worldRot))
         {
             Debug.LogError(
-                $"[PlayerSpawner] {gridNumber}? ???? ?? ?????. (Grid/Grid_{gridNumber}, {gameObject.name})");
+                $"[PlayerSpawner] {gridNumber}번 그리드를 찾지 못했습니다. (Grid/Grid_{gridNumber}, {gameObject.name})");
             return null;
         }
 
@@ -163,13 +201,13 @@ public class PlayerSpawner : MonoBehaviour
         DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(unitId, out UnitData unit);
         if (unit == null)
         {
-            Debug.LogError($"[PlayerSpawner] UnitData? ?? ?????. unitId={unitId}");
+            Debug.LogError($"[PlayerSpawner] UnitData를 찾지 못했습니다. unitId={unitId}");
             return null;
         }
 
         if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef resolvedCell) || resolvedCell == null)
         {
-            Debug.LogWarning($"[PlayerSpawner] GridCell? ?? ?? ??? ???? ?????. grid={gridNumber}");
+            Debug.LogWarning($"[PlayerSpawner] GridCell이 없어 점유 정보를 연결하지 못했습니다. grid={gridNumber}");
             return null;
         }
 
@@ -179,7 +217,7 @@ public class PlayerSpawner : MonoBehaviour
             return null;
         }
 
-        // BattleSceneManager.SyncGridOccupancy? cell ???? ??? ?????, ??? GridCell ??? ????.
+        // BattleSceneManager.SyncGridOccupancy가 cell 하위에서 유닛을 탐색하므로, 반드시 GridCell 아래에 붙입니다.
         var go = Instantiate(prefab, worldPos, worldRot, resolvedCell.transform);
         go.name = $"Charactor_{unit.Index}_{go.GetInstanceID()}";
 
@@ -189,7 +227,7 @@ public class PlayerSpawner : MonoBehaviour
             script = go.AddComponent<CharactorScript>();
         }
 
-        // ?? ?? ?? Initialize? BattleCharactor? ???? ?????.
+        // 스폰 직후 래퍼 Initialize는 BattleCharactor가 존재해야 수행됩니다.
         var battle = go.GetComponent<BattleCharactor>();
         if (battle == null)
         {
@@ -351,7 +389,7 @@ public class PlayerSpawner : MonoBehaviour
             DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(persistentData.UnitTemplateKey, out UnitData csvUnitData);
             if (csvUnitData == null)
             {
-                // unitTemplateKey ??? ? ??? ??? ??
+                // unitTemplateKey 미매핑 시 인덱스 문자열 폴백
                 DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(persistentUnitIndex.ToString(), out csvUnitData);
             }
 
@@ -390,7 +428,7 @@ public class PlayerSpawner : MonoBehaviour
             battle = go.AddComponent<BattleCharactor>();
         }
 
-        // ??? persistentData ??? BattleCharactor.SourceData? ??? ??????.
+        // 래퍼가 persistentData 참조를 BattleCharactor.SourceData에 그대로 바인딩합니다.
         script.Initialize(persistentData, unitData);
 
         battle.AssignToCell(persistentCell);

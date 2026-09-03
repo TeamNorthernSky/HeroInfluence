@@ -19,14 +19,14 @@ public static class SimulationUnitFactory
 
         if (input == null || !input.Enabled)
         {
-            error = "???? ?? ?? ?????.";
+            error = "The ally slot is disabled.";
             return false;
         }
 
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
         if (catalog == null)
         {
-            error = "DHCsvTemplateCatalog? ???? ?????.";
+            error = "DHCsvTemplateCatalog is not ready.";
             return false;
         }
 
@@ -35,19 +35,19 @@ public static class SimulationUnitFactory
             : input.UnitTemplateKey.Trim();
         if (!catalog.TryGetPlayerUnitTemplate(unitKey, out DHPlayerUnitTemplate template) || template == null)
         {
-            error = $"?? ???? ?? ? ????: '{unitKey}'";
+            error = $"Player unit template was not found: '{unitKey}'";
             return false;
         }
 
         if (!catalog.TryGetPlayerTemplate(unitKey, out UnitData unitData) || unitData == null)
         {
-            error = $"?? ?? ???? ?? ? ????: '{unitKey}'";
+            error = $"Player battle data was not found: '{unitKey}'";
             return false;
         }
 
         if (!HasPlayerBattlePrefab(unitData))
         {
-            error = $"?? ?? ???? ????: UnitKey='{unitKey}', Index='{unitData.Index}'";
+            error = $"Player battle prefab was not found: UnitKey='{unitKey}', Index='{unitData.Index}'";
             return false;
         }
 
@@ -105,20 +105,20 @@ public static class SimulationUnitFactory
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
         if (catalog == null)
         {
-            error = "DHCsvTemplateCatalog? ???? ?????.";
+            error = "DHCsvTemplateCatalog is not ready.";
             return false;
         }
 
         string groupKey = string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
         if (!catalog.TryGetEnemyGroupTemplate(groupKey, out DHEnemyGroupTemplate group) || group == null)
         {
-            error = $"? ??? ?? ? ????: '{groupKey}'";
+            error = $"Enemy group was not found: '{groupKey}'";
             return false;
         }
 
         if (group.Members == null || group.Members.Count == 0)
         {
-            error = $"? ??? ??? ????: '{groupKey}'";
+            error = $"Enemy group has no members: '{groupKey}'";
             return false;
         }
 
@@ -128,20 +128,20 @@ public static class SimulationUnitFactory
             DHEnemyGroupMember member = group.Members[i];
             if (!usedSlots.Add(member.CombatSlot))
             {
-                error = $"? ??? CombatSlot? ?????: Group='{groupKey}', Slot={member.CombatSlot}";
+                error = $"Enemy group has a duplicate CombatSlot. Group='{groupKey}', Slot={member.CombatSlot}";
                 return false;
             }
 
             string enemyKey = member.EnemyUnitIndex.ToString();
             if (!catalog.TryGetEnemyTemplate(enemyKey, out EnemyData enemyData) || enemyData == null)
             {
-                error = $"? ?? ???? ?? ? ????: Group='{groupKey}', Unit='{enemyKey}'";
+                error = $"Enemy template was not found. Group='{groupKey}', Unit='{enemyKey}'";
                 return false;
             }
 
             if (!HasEnemyBattlePrefab(enemyData))
             {
-                error = $"? ?? ???? ????: Group='{groupKey}', Index='{enemyData.Index}'";
+                error = $"Enemy battle prefab was not found. Group='{groupKey}', Index='{enemyData.Index}'";
                 return false;
             }
         }
@@ -186,8 +186,12 @@ public static class SimulationUnitFactory
             ? string.Empty
             : requestedWeaponKey.Trim();
 
-        if (!string.IsNullOrEmpty(normalized) && catalog.TryGetWeaponTemplate(normalized, out weaponTemplate) && weaponTemplate != null)
+        if (!string.IsNullOrEmpty(normalized) &&
+            catalog.TryGetWeaponTemplate(normalized, out weaponTemplate) &&
+            weaponTemplate != null)
+        {
             return weaponTemplate.WeaponKey;
+        }
 
         if (template.WeaponIndices != null && template.WeaponIndices.Count > 0)
         {

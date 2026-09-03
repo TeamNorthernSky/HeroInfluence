@@ -20,6 +20,8 @@ public class EnemySpawner : MonoBehaviour
     }
 
     [Header("Dependencies")]
+    [SerializeField] private BattleUnitPrefabCatalog prefabCatalog;
+    [SerializeField] private TmpBattlePrefabManager prefabManager;
     // enemyManager 제거 — DHCsvTemplateCatalog.Instance 로 대체
 
     [Header("Inspector / Battle debug spawn")]
@@ -33,6 +35,7 @@ public class EnemySpawner : MonoBehaviour
     private readonly Dictionary<int, GridCellRef> gridCellsByNumber = new Dictionary<int, GridCellRef>();
     private BattleLogicalSlotMap eventSlotMap;
     private bool hierarchyReady;
+    private bool prefabCatalogMismatchReported;
 
     public Transform GridRoot => transform;
 
@@ -203,6 +206,9 @@ public class EnemySpawner : MonoBehaviour
         }
 
         string trimmedIndex = data.Index.Trim();
+        if (TryGetRegisteredEnemyPrefab(trimmedIndex, out GameObject registeredPrefab))
+            return registeredPrefab;
+
         string suffix = $"_{trimmedIndex}";
 
         GameObject[] all = Resources.LoadAll<GameObject>("prefab/BattlePrefab/EnemyUnit");
@@ -214,6 +220,38 @@ public class EnemySpawner : MonoBehaviour
 
         Debug.LogError($"[EnemySpawner] Prefab not found. Index={trimmedIndex}");
         return null;
+    }
+
+
+    private bool TryGetRegisteredEnemyPrefab(string unitKey, out GameObject prefab)
+    {
+        prefab = null;
+
+        TmpBattlePrefabManager resolver = prefabManager != null
+            ? prefabManager
+            : TmpBattlePrefabManager.Instance;
+        if (resolver != null)
+            ReportCatalogMismatchOnce(resolver);
+
+        if (prefabCatalog != null && prefabCatalog.TryGetEnemyPrefab(unitKey, out prefab))
+            return true;
+
+        return resolver != null && resolver.TryGetEnemyPrefab(unitKey, out prefab);
+    }
+
+    private void ReportCatalogMismatchOnce(TmpBattlePrefabManager resolver)
+    {
+        if (prefabCatalogMismatchReported || prefabCatalog == null || resolver == null ||
+            resolver.Catalog == null || resolver.Catalog == prefabCatalog)
+        {
+            return;
+        }
+
+        prefabCatalogMismatchReported = true;
+        Debug.LogWarning(
+            "[EnemySpawner] Direct Catalog and TmpBattlePrefabManager Catalog differ. " +
+            "The directly assigned Catalog has priority.",
+            this);
     }
 
     public GameObject SpawnUnit(string enemyId, int gridNumber)
@@ -566,6 +604,21 @@ public class EnemySpawner : MonoBehaviour
         // 리소스 경로(이벤트 PrefabResourcePath 등)면 직접 로드.
         if (key.Contains("/"))
             return Resources.Load<GameObject>(key);
+
+        string dataIndex = entry.Data != null && !string.IsNullOrWhiteSpace(entry.Data.Index)
+            ? entry.Data.Index.Trim()
+            : string.Empty;
+        if (!string.IsNullOrEmpty(dataIndex) &&
+            TryGetRegisteredEnemyPrefab(dataIndex, out GameObject registeredPrefab))
+        {
+            return registeredPrefab;
+        }
+
+        if (!string.Equals(dataIndex, key, StringComparison.Ordinal) &&
+            TryGetRegisteredEnemyPrefab(key, out registeredPrefab))
+        {
+            return registeredPrefab;
+        }
 
         // 그 외(일반=Index): FindPrefab과 동일 규칙(prefab/BattlePrefab/EnemyUnit 아래 이름이 _{key}로 끝나는 프리팹).
         string suffix = $"_{key}";
