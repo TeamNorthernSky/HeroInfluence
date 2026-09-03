@@ -26062,6 +26062,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 921dbc6336c69304993444ea8d2c6ef8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pickupMotion:
+    flyVisualToTargetOnGet: 1
+    destroyDelay: 0.45
+    flyDuration: 0.65
+    arcHeight: 0.45
+    targetYOffset: 0.35
 --- !u!43 &1636756824
 Mesh:
   m_ObjectHideFlags: 0

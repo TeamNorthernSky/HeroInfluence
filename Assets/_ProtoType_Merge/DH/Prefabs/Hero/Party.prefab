@@ -99,7 +99,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 0}
   combatEncounterManager: {fileID: 0}
-  itemPickupDelay: 0.5
 --- !u!114 &3147760685225582575
 MonoBehaviour:
   m_ObjectHideFlags: 0

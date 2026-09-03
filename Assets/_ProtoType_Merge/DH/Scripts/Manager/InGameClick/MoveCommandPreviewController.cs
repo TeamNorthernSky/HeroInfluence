@@ -98,6 +98,12 @@ public class MoveCommandPreviewController
             return;
         }
 
+        if (!TutorialMovementConstraint.IsTargetAllowed(requestedDestinationGrid, activeMover))
+        {
+            ClearPreview();
+            return;
+        }
+
         Vector2Int partyGrid = activeMover.GetCurrentGrid();
         List<Vector2Int> path = FindPlayerPreviewPath(
             activeMover,
