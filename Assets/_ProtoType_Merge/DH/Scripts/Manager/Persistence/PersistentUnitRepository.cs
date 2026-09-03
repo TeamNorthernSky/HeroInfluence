@@ -411,7 +411,8 @@ public class PersistentUnitRepository : MonoBehaviour
         float atkBonus,
         float defBonus,
         float influenceDelta,
-        float healAmount)
+        float healAmount,
+        float influenceBonus = 0f)
     {
         if (!unitLookup.TryGetValue(unitIndex, out UnitPersistentData data))
             return false;
@@ -420,6 +421,7 @@ public class PersistentUnitRepository : MonoBehaviour
         nextEventBonusStats.HP += hpBonus;
         nextEventBonusStats.Atk += atkBonus;
         nextEventBonusStats.DEF += defBonus;
+        nextEventBonusStats.Influence += influenceBonus;
 
         IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
         StatBlock nextIngameStats = UnitStatCalculator.CalculateIngameStats(
@@ -433,7 +435,7 @@ public class PersistentUnitRepository : MonoBehaviour
         float previousMaxHp = Mathf.Max(0f, data.IngameStats.HP);
         float nextMaxHp = Mathf.Max(0f, nextIngameStats.HP);
         float maxHpDelta = Mathf.Max(0f, nextMaxHp - previousMaxHp);
-        float nextCurrentHp = Mathf.Clamp(data.CurrentHp + maxHpDelta + Mathf.Max(0f, healAmount), 0f, nextMaxHp);
+        float nextCurrentHp = Mathf.Clamp(data.CurrentHp + maxHpDelta + healAmount, 0f, nextMaxHp);
         float nextCurrentInfluence = Mathf.Clamp(data.CurrentInfluence + influenceDelta, 0f, Mathf.Max(0f, nextIngameStats.Influence));
 
         data.SetEventBonusStats(nextEventBonusStats);

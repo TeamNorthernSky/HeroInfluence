@@ -27,6 +27,7 @@ public class MoveCommandPreviewController
     private MaterialPropertyBlock markerPropertyBlock;
     private EnemyGridMover previewEnemyTarget;
     private MainEventObject previewMainEventTarget;
+    private WorldEventObject previewWorldEventTarget;
 
     public MoveCommandPreviewController(
         GridManager gridManager,
@@ -71,6 +72,7 @@ public class MoveCommandPreviewController
         hasOverLimitTail = false;
         previewEnemyTarget = null;
         previewMainEventTarget = null;
+        previewWorldEventTarget = null;
 
         if (marker != null)
         {
@@ -91,6 +93,7 @@ public class MoveCommandPreviewController
 
         previewEnemyTarget = null;
         previewMainEventTarget = null;
+        previewWorldEventTarget = null;
 
         if (!TryResolveDestinationGrid(activeMover, clickedGrid, out Vector2Int requestedDestinationGrid))
         {
@@ -187,6 +190,14 @@ public class MoveCommandPreviewController
             return true;
         }
 
+        if (previewWorldEventTarget != null
+            && gridManager.TryGetWorldEventObjectAtGrid(clickedGrid, out WorldEventObject worldEvent)
+            && worldEvent == previewWorldEventTarget)
+        {
+            ConfirmMove(activeMover);
+            return true;
+        }
+
         return false;
     }
 
@@ -196,6 +207,7 @@ public class MoveCommandPreviewController
             && gridManager != null
             && (gridManager.TryGetItemObjectAtGrid(markerGrid, out _)
                 || gridManager.TryGetEventObjectAtGrid(markerGrid, out _)
+                || gridManager.TryGetWorldEventObjectAtGrid(markerGrid, out _)
                 || gridManager.TryGetSubEventObjectAtGrid(markerGrid, out _));
 
         Vector2Int? interactionTarget = null;
@@ -314,6 +326,7 @@ public class MoveCommandPreviewController
 
         return gridManager.TryGetItemObjectAtGrid(markerGrid, out _)
             || gridManager.TryGetEventObjectAtGrid(markerGrid, out _)
+            || gridManager.TryGetWorldEventObjectAtGrid(markerGrid, out _)
             || gridManager.TryGetSubEventObjectAtGrid(markerGrid, out _);
     }
 
@@ -367,6 +380,13 @@ public class MoveCommandPreviewController
                 mainEvent.GetCurrentGrid(gridManager),
                 mainEvent.GetInteractionCells(gridManager),
                 out destinationGrid);
+        }
+
+        if (gridManager.TryGetWorldEventObjectAtGrid(clickedGrid, out WorldEventObject worldEvent))
+        {
+            previewWorldEventTarget = worldEvent;
+            destinationGrid = worldEvent.GetCurrentGrid(gridManager);
+            return true;
         }
 
         if (!gridManager.TryGetHeroUnionObjectAtGrid(clickedGrid, out HeroUnionUnit heroUnion))
