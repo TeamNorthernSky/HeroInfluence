@@ -26,16 +26,17 @@ MonoBehaviour:
       type: 3}
   enemyPrefabs:
   - unitKey: 20001
-    prefab: {fileID: 0}
+    prefab: {fileID: 4367654367480254008, guid: 1373055f21e4feb4b9df261148240da5,
+      type: 3}
   - unitKey: 20002
-    prefab: {fileID: 0}
+    prefab: {fileID: 5597847612702248304, guid: b6c3294ca5ae0b74f8d215217a0fee44,
+      type: 3}
   - unitKey: 20003
-    prefab: {fileID: 0}
+    prefab: {fileID: 4197761116557718022, guid: 8064077aa668acc479039cda3a364972,
+      type: 3}
   - unitKey: 20004
-    prefab: {fileID: 0}
+    prefab: {fileID: 5258239332256075357, guid: 8acf52f997661e7479f09ce256f8a447,
+      type: 3}
   - unitKey: 20005
-    prefab: {fileID: 0}
-  - unitKey: 20006
-    prefab: {fileID: 0}
-  - unitKey: 20007
-    prefab: {fileID: 0}
+    prefab: {fileID: 6674627687946970983, guid: 680343b56597e224299873c4599a4174,
+      type: 3}

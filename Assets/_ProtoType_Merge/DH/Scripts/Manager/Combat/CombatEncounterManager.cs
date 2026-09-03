@@ -397,6 +397,13 @@ public class CombatEncounterManager : MonoBehaviour
         if (context == null)
             return;
 
+        if (context.CombatEnemy != null &&
+            context.CombatEnemy.SourceType == CombatEnemySourceType.Simulation)
+        {
+            context.ClearSimulation();
+            return;
+        }
+
         if (context.HasEventBattle)
         {
             DHEventBattleRuntimeManager.HandleCompletedEventBattle(context);

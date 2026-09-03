@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -487,6 +487,26 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         EnsureLoaded();
         return new List<DHEnemyGroupTemplate>(enemyGroupLookup.Values);
+    }
+
+    public List<DHPlayerUnitTemplate> GetAllPlayerUnitTemplates()
+    {
+        EnsureLoaded();
+        var result = new List<DHPlayerUnitTemplate>();
+        foreach (DHPlayerUnitTemplate template in playerUnitTemplateLookup.Values)
+        {
+            if (template != null)
+                result.Add(template);
+        }
+
+        result.Sort((left, right) =>
+        {
+            int byName = string.Compare(left.UnitName, right.UnitName, System.StringComparison.Ordinal);
+            return byName != 0
+                ? byName
+                : string.Compare(left.UnitKey, right.UnitKey, System.StringComparison.Ordinal);
+        });
+        return result;
     }
 
     public List<SkillData> GetSkillsByClass(string className)

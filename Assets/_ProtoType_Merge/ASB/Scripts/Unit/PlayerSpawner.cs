@@ -89,6 +89,10 @@ public class PlayerSpawner : MonoBehaviour
 
     public bool ManualSpawn()
     {
+        CombatContext combatContext = CombatContext.Instance;
+        if (combatContext != null && combatContext.IsSimulation)
+            return SpawnFromSimulationContext(combatContext);
+
         // Persistent 우선 스폰. 실패 시 기존 디버그(=CSV 폴백 역할) 리스트로 폴백합니다.
         if (SpawnFromPersistentRepository())
         {
@@ -253,6 +257,91 @@ public class PlayerSpawner : MonoBehaviour
         }
 
         spawnedByGrid.Remove(gridNumber);
+    }
+
+    private bool SpawnFromSimulationContext(CombatContext combatContext)
+    {
+        if (combatContext == null || !combatContext.IsSimulation || combatContext.CombatParty == null)
+            return false;
+
+        IReadOnlyList<int> combatUnitIndices = ResolveCombatUnitIndices(combatContext.CombatParty);
+        if (combatUnitIndices == null || combatUnitIndices.Count == 0)
+        {
+            Debug.LogError("[PlayerSpawner] Simulation combat has no party unit indices.", this);
+            return false;
+        }
+
+        if (!hierarchyReady || DHCsvTemplateCatalog.Instance == null || gridSlots.Count == 0)
+        {
+            Debug.LogError("[PlayerSpawner] Simulation spawn dependencies are not ready.", this);
+            return false;
+        }
+
+        List<int> sortedGrids = new List<int>(gridSlots.Keys);
+        sortedGrids.Sort();
+        if (combatUnitIndices.Count > sortedGrids.Count)
+        {
+            Debug.LogError(
+                $"[PlayerSpawner] Simulation party exceeds available grids. units={combatUnitIndices.Count}, grids={sortedGrids.Count}",
+                this);
+            return false;
+        }
+
+        var unitTemplates = new UnitData[combatUnitIndices.Count];
+        var runtimeUnits = new UnitPersistentData[combatUnitIndices.Count];
+        for (int i = 0; i < combatUnitIndices.Count; i++)
+        {
+            int runtimeUnitIndex = combatUnitIndices[i];
+            if (!combatContext.TryGetSimulationAlly(runtimeUnitIndex, out SimulationAllyRuntimeData runtimeData) ||
+                runtimeData == null ||
+                runtimeData.UnitData == null)
+            {
+                Debug.LogError($"[PlayerSpawner] Simulation ally data is missing. runtimeIndex={runtimeUnitIndex}", this);
+                return false;
+            }
+
+            UnitPersistentData persistentData = runtimeData.UnitData;
+            if (persistentData.CurrentHp <= 0f)
+            {
+                Debug.LogError($"[PlayerSpawner] Simulation ally HP must be positive. runtimeIndex={runtimeUnitIndex}", this);
+                return false;
+            }
+
+            if (!DHCsvTemplateCatalog.Instance.TryGetPlayerTemplate(persistentData.UnitTemplateKey, out UnitData csvUnitData) ||
+                csvUnitData == null ||
+                FindPrefab(csvUnitData) == null)
+            {
+                Debug.LogError(
+                    $"[PlayerSpawner] Simulation ally template or prefab is missing. key='{persistentData.UnitTemplateKey}'",
+                    this);
+                return false;
+            }
+
+            int gridNumber = sortedGrids[i];
+            if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null)
+            {
+                Debug.LogError($"[PlayerSpawner] Simulation grid cell is missing. grid={gridNumber}", this);
+                return false;
+            }
+
+            unitTemplates[i] = csvUnitData;
+            runtimeUnits[i] = persistentData;
+        }
+
+        var spawnedGrids = new List<int>();
+        for (int i = 0; i < runtimeUnits.Length; i++)
+        {
+            int gridNumber = sortedGrids[i];
+            if (SpawnPersistentUnit(unitTemplates[i], runtimeUnits[i], gridNumber) == null)
+            {
+                for (int j = 0; j < spawnedGrids.Count; j++)
+                    ClearGrid(spawnedGrids[j]);
+                return false;
+            }
+            spawnedGrids.Add(gridNumber);
+        }
+
+        return runtimeUnits.Length > 0;
     }
 
     private bool SpawnFromPersistentRepository()

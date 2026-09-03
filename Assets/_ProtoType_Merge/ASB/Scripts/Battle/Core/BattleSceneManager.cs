@@ -99,6 +99,7 @@ public class BattleSceneManager : MonoBehaviour
 
         // 3. CombatContext 결과 설정
         CombatContext combatContext = CombatContext.Instance;
+        bool isSimulation = combatContext != null && combatContext.IsSimulation;
         if (combatContext != null)
         {
             CombatResult mappedResult = result switch
@@ -125,19 +126,30 @@ public class BattleSceneManager : MonoBehaviour
 
         // 6. 저장 (스킬 선택 결과 포함)
         var skillResults = resultPanel?.GetSkillResults() ?? new System.Collections.Generic.List<SkillSelectionResult>();
-        BattleResultPersistenceHandler.CommitBattleRewardPlan(
-            plan, playerBattleCharactors, enemyBattleCharactors, result, skillResults);
+        if (!isSimulation)
+        {
+            BattleResultPersistenceHandler.CommitBattleRewardPlan(
+                plan, playerBattleCharactors, enemyBattleCharactors, result, skillResults);
+        }
+
+        string simulationReturnScene = isSimulation && combatContext != null
+            ? combatContext.ReturnSceneName
+            : string.Empty;
+        if (isSimulation && combatContext != null)
+            combatContext.ClearSimulation();
 
         // 8. 씬 전환
         // [JC 260514] returnSceneName 빈 값이라도 GameSceneManager.Instance.ExplorationScene fallback이 있으면 통과.
-        if (string.IsNullOrWhiteSpace(returnSceneName) && GameSceneManager.Instance == null)
+        if (string.IsNullOrWhiteSpace(simulationReturnScene) &&
+            string.IsNullOrWhiteSpace(returnSceneName) &&
+            GameSceneManager.Instance == null)
         {
             Debug.LogWarning("[BattleSceneManager] returnSceneName + GameSceneManager.Instance 모두 없음 — 씬 전환을 건너뜁니다.");
             returnSceneCoroutine = null;
             yield break;
         }
 
-        yield return StartCoroutine(TransitionToSceneRoutine());
+        yield return StartCoroutine(TransitionToSceneRoutine(simulationReturnScene));
     }
 
     private IEnumerator WaitForActivePresentationSequence()
@@ -247,7 +259,7 @@ public class BattleSceneManager : MonoBehaviour
         }
     }
 
-    private IEnumerator TransitionToSceneRoutine()
+    private IEnumerator TransitionToSceneRoutine(string targetOverride = null)
     {
         if (returnDelay > 0f)
         {
@@ -259,7 +271,9 @@ public class BattleSceneManager : MonoBehaviour
         //   2) 빈 값이면 GameSceneManager.Instance.ExplorationScene 토글
         //   3) Instance도 null이면 최후 fallback "DHScene_2"
         string target;
-        if (!string.IsNullOrWhiteSpace(returnSceneName))
+        if (!string.IsNullOrWhiteSpace(targetOverride))
+            target = targetOverride.Trim();
+        else if (!string.IsNullOrWhiteSpace(returnSceneName))
             target = returnSceneName.Trim();
         else if (GameSceneManager.Instance != null)
             target = GameSceneManager.Instance.ExplorationScene;

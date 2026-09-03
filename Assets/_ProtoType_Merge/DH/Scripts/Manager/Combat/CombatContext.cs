@@ -140,6 +140,13 @@ public class CombatContext : MonoBehaviour
     [SerializeField, Min(1)] private int enemyLevel = 1;
     [SerializeField] private CombatResult combatResult = CombatResult.None;
 
+    [Header("Simulation Combat")]
+    [SerializeField] private BattleEntryMode entryMode = BattleEntryMode.Normal;
+    [SerializeField] private string returnSceneName;
+    [SerializeField] private string simulationPartyId;
+    [SerializeField] private System.Collections.Generic.List<SimulationAllyRuntimeData> simulationAllies =
+        new System.Collections.Generic.List<SimulationAllyRuntimeData>();
+
     public CombatPartyPersistentData CombatParty => combatParty;
     // 일반 필드/거점/빌런연합 전투 정보. 이벤트 전투일 때는 null로 비운다.
     public CombatEnemyPersistentData CombatEnemy => combatEnemy;
@@ -148,6 +155,30 @@ public class CombatContext : MonoBehaviour
     public CombatResult Result => combatResult;
     public bool HasEventBattle => eventBattle != null && !string.IsNullOrWhiteSpace(eventBattle.BattleKey);
     public int EnemyLevel => Mathf.Max(1, enemyLevel);
+    public BattleEntryMode EntryMode => entryMode;
+    public bool IsSimulation => entryMode == BattleEntryMode.Simulation;
+    public string ReturnSceneName => returnSceneName ?? string.Empty;
+    public string SimulationPartyId => simulationPartyId ?? string.Empty;
+    public System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> SimulationAllies => simulationAllies;
+
+    public bool TryGetSimulationAlly(int runtimeUnitIndex, out SimulationAllyRuntimeData runtimeData)
+    {
+        runtimeData = null;
+        if (!IsSimulation || simulationAllies == null)
+            return false;
+
+        for (int i = 0; i < simulationAllies.Count; i++)
+        {
+            SimulationAllyRuntimeData candidate = simulationAllies[i];
+            if (candidate != null && candidate.RuntimeUnitIndex == runtimeUnitIndex)
+            {
+                runtimeData = candidate;
+                return candidate.UnitData != null;
+            }
+        }
+
+        return false;
+    }
 
     private void Awake()
     {
@@ -159,6 +190,61 @@ public class CombatContext : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
+
+    public bool BeginSimulation(
+        string partyId,
+        System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> allies,
+        string enemyGroupKey,
+        int nextEnemyLevel,
+        string nextReturnSceneName)
+    {
+        Clear();
+        if (string.IsNullOrWhiteSpace(partyId) ||
+            string.IsNullOrWhiteSpace(enemyGroupKey) ||
+            allies == null ||
+            allies.Count == 0)
+        {
+            return false;
+        }
+
+        entryMode = BattleEntryMode.Simulation;
+        simulationPartyId = partyId.Trim();
+        returnSceneName = string.IsNullOrWhiteSpace(nextReturnSceneName)
+            ? "BattleSimulationScene"
+            : nextReturnSceneName.Trim();
+
+        var unitIndices = new System.Collections.Generic.List<int>(allies.Count);
+        for (int i = 0; i < allies.Count; i++)
+        {
+            SimulationAllyRuntimeData ally = allies[i];
+            if (ally == null || ally.UnitData == null || ally.RuntimeUnitIndex <= 0)
+                continue;
+
+            simulationAllies.Add(ally);
+            unitIndices.Add(ally.RuntimeUnitIndex);
+        }
+
+        if (unitIndices.Count == 0)
+        {
+            Clear();
+            return false;
+        }
+
+        RegisterCombatParty(simulationPartyId, unitIndices);
+        RegisterCombatEnemy(
+            "SIMULATION_ENEMY",
+            string.Empty,
+            enemyGroupKey.Trim(),
+            nextEnemyLevel,
+            CombatEnemySourceType.Simulation);
+        SetCombatResult(CombatResult.None);
+        return true;
+    }
+
+    public void ClearSimulation()
+    {
+        Clear();
     }
 
     public void RegisterCombatParty(string partyId, System.Collections.Generic.IReadOnlyList<int> unitIndices)
@@ -229,5 +315,12 @@ public class CombatContext : MonoBehaviour
         eventBattle = null;
         enemyLevel = 1;
         combatResult = CombatResult.None;
+        entryMode = BattleEntryMode.Normal;
+        returnSceneName = string.Empty;
+        simulationPartyId = string.Empty;
+        if (simulationAllies == null)
+            simulationAllies = new System.Collections.Generic.List<SimulationAllyRuntimeData>();
+        else
+            simulationAllies.Clear();
     }
 }
