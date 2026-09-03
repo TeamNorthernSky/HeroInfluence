@@ -16,7 +16,7 @@ public sealed class SimulationAllyInput
     public int Level = 1;
     public string WeaponKey;
     public int SkillIndex;
-    public float HpRatio = 1f;
+    [Range(0.01f, 1f)] public float HpRatio = 1f;
 }
 
 [Serializable]

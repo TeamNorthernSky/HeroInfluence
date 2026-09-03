@@ -23,6 +23,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/TmpBattleScene.unity
     guid: 8baa5ae0ba4fbff47823cb73e6d0cadb
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/BattleSimulationScene.unity
+    guid: bcfc7d632972ea64ab85a67f4050febd
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 51f1cead6f1010a489e8763571d663e2,
       type: 2}
