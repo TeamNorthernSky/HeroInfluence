@@ -1760,7 +1760,6 @@ MonoBehaviour:
   gridManager: {fileID: 1870279752}
   moveSpeed: 4
   arriveThreshold: 0.01
-  itemPickupDelay: 0.5
   maxMovePoints: 10
 --- !u!4 &866700046
 Transform:
@@ -3497,7 +3496,6 @@ MonoBehaviour:
   gridManager: {fileID: 1870279752}
   moveSpeed: 4
   arriveThreshold: 0.01
-  itemPickupDelay: 0.5
   maxMovePoints: 10
 --- !u!4 &1826875708
 Transform:
