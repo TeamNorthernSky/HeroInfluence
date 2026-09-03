@@ -8,7 +8,6 @@ public class PartyInteractionController
     private readonly CombatEncounterManager combatEncounterManager;
     private readonly CombatPromptService combatPromptService;
     private readonly PartyGridMover ownerParty;
-    private readonly float itemPickupDelay;
     private readonly MonoBehaviour coroutineOwner;
     private readonly Func<Vector2Int> currentGridProvider;
 
@@ -25,7 +24,6 @@ public class PartyInteractionController
         CombatEncounterManager combatEncounterManager,
         CombatPromptService combatPromptService,
         PartyGridMover ownerParty,
-        float itemPickupDelay,
         MonoBehaviour coroutineOwner,
         Func<Vector2Int> currentGridProvider)
     {
@@ -33,7 +31,6 @@ public class PartyInteractionController
         this.combatEncounterManager = combatEncounterManager;
         this.combatPromptService = combatPromptService;
         this.ownerParty = ownerParty;
-        this.itemPickupDelay = itemPickupDelay;
         this.coroutineOwner = coroutineOwner;
         this.currentGridProvider = currentGridProvider;
 
@@ -234,8 +231,6 @@ public class PartyInteractionController
 
     private IEnumerator InvokeDelayedEventInteraction(Vector2Int eventGrid)
     {
-        yield return new WaitForSeconds(itemPickupDelay);
-
         pendingInteractionCoroutine = null;
 
         if (DHGameEndState.IsEnding)
@@ -270,8 +265,6 @@ public class PartyInteractionController
 
     private IEnumerator InvokeDelayedSubEventInteraction(Vector2Int subEventGrid)
     {
-        yield return new WaitForSeconds(itemPickupDelay);
-
         pendingInteractionCoroutine = null;
 
         if (DHGameEndState.IsEnding)
@@ -336,8 +329,6 @@ public class PartyInteractionController
 
     private IEnumerator InvokeDelayedItemPickup(Vector2Int itemGrid)
     {
-        yield return new WaitForSeconds(itemPickupDelay);
-
         if (DHGameEndState.IsEnding)
         {
             pendingInteractionCoroutine = null;
@@ -367,7 +358,7 @@ public class PartyInteractionController
             yield break;
         }
 
-        float inputUnlockDelay = CollectItem(itemGrid, itemObject);
+        float inputUnlockDelay = CollectItem(itemGrid, itemObject, ownerParty != null ? ownerParty.transform : null);
         if (inputUnlockDelay > 0f)
             yield return new WaitForSeconds(inputUnlockDelay);
 
@@ -375,7 +366,7 @@ public class PartyInteractionController
         IsInputLocked = false;
     }
 
-    private static float CollectItem(Vector2Int itemGrid, ItemObject itemObject)
+    private static float CollectItem(Vector2Int itemGrid, ItemObject itemObject, Transform flyTarget)
     {
         if (itemObject == null)
             return 0f;
@@ -384,13 +375,11 @@ public class PartyInteractionController
         if (repository != null)
             repository.MarkItemCollected(MapProgressKey.ForItem(itemGrid));
 
-        return itemObject.GetItem();
+        return itemObject.GetItem(flyTarget);
     }
 
     private IEnumerator InvokeDelayedOutpostClaim(Outpost outpost, Vector2Int interactionGrid)
     {
-        yield return new WaitForSeconds(itemPickupDelay);
-
         pendingInteractionCoroutine = null;
 
         if (DHGameEndState.IsEnding)

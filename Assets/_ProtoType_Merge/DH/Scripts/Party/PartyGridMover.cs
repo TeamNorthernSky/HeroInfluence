@@ -14,6 +14,7 @@ public class PartyGridMover : MonoBehaviour
     [SerializeField] private float moveSpeed = 4f;
     [SerializeField] private float arriveThreshold = 0.01f;
     [SerializeField] private int maxMovePoints = 10;
+    [SerializeField] private bool usePersistentState = true;
 
     private readonly Queue<Vector2Int> pathQueue = new Queue<Vector2Int>();
     private bool isMoving;
@@ -68,6 +69,13 @@ public class PartyGridMover : MonoBehaviour
         var identity = cachedIdentity != null ? cachedIdentity : GetComponent<PartyIdentity>();
         if (identity == null) return;
         cachedIdentity = identity;
+
+        if (!usePersistentState)
+        {
+            currentGrid = gridManager != null ? gridManager.WorldToGrid(transform.position) : currentGrid;
+            GridEntered?.Invoke(currentGrid);
+            return;
+        }
 
         var repo = PartyPersistentRepository.Instance;
         PartyPersistentData partyData = null;
@@ -132,6 +140,7 @@ public class PartyGridMover : MonoBehaviour
         if (!Application.isPlaying ||
             restoredPersistentPosition ||
             !canRefreshHeroUnionStartAfterLevelLoad ||
+            !usePersistentState ||
             gridManager == null ||
             cachedIdentity == null)
         {
@@ -273,6 +282,9 @@ public class PartyGridMover : MonoBehaviour
     // [JC 수정 260512] 머지 사이클: PartyPersistentRepository로 책임 이관됨
     private void PersistLastGrid()
     {
+        if (!usePersistentState)
+            return;
+
         var identity = GetComponent<PartyIdentity>();
         if (identity == null) return;
 
@@ -300,6 +312,9 @@ public class PartyGridMover : MonoBehaviour
 
     private void PersistPartyWorldState(PartyIdentity identity, Vector2Int grid)
     {
+        if (!usePersistentState)
+            return;
+
         if (identity == null)
             return;
 
@@ -318,6 +333,9 @@ public class PartyGridMover : MonoBehaviour
 
     private IEnumerator SnapToHeroUnionStartOrCurrentNextFrame(PartyIdentity identity)
     {
+        if (!usePersistentState)
+            yield break;
+
         yield return null;
 
         if (identity == null || gridManager == null)
@@ -338,6 +356,9 @@ public class PartyGridMover : MonoBehaviour
 
     private IEnumerator PersistCurrentGridWhenPartyDataReady(PartyIdentity identity)
     {
+        if (!usePersistentState)
+            yield break;
+
         const int maxAttempts = 5;
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
@@ -514,6 +535,10 @@ public class PartyGridMover : MonoBehaviour
 
     private bool HasAnyValidPartyUnit()
     {
+        TutorialPartyComposition tutorialComposition = GetComponent<TutorialPartyComposition>();
+        if (tutorialComposition != null)
+            return tutorialComposition.HasAnyJoinedUnit;
+
         PartyComposition composition = GetComponent<PartyComposition>();
         if (composition == null)
             return false;

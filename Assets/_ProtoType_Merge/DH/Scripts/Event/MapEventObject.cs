@@ -5,6 +5,7 @@ public class MapEventObject : MonoBehaviour
 {
     public static event Action<MapEventObject, PartyGridMover> EventInteracted;
 
+    [SerializeField] private MapEventKind eventKind = MapEventKind.Consume;
     [SerializeField] private MapEventType eventType = MapEventType.TrainingHp;
     [SerializeField] private ResourceType requireResource = ResourceType.Money;
     [SerializeField] private int requireAmount = 100;
@@ -12,6 +13,7 @@ public class MapEventObject : MonoBehaviour
 
     private MapEventRegistry eventRegistry;
 
+    public MapEventKind EventKind => eventKind;
     public MapEventType EventType => eventType;
     public string EventKey => MapEventTypeUtility.ToEventKey(eventType);
     public ResourceType RequireResource => requireResource;
@@ -31,6 +33,16 @@ public class MapEventObject : MonoBehaviour
 
     public void ApplyInitialData(MapEventType nextEventType, int nextRequireAmount, int nextEffectAmount)
     {
+        ApplyInitialData(MapEventKind.Consume, nextEventType, nextRequireAmount, nextEffectAmount);
+    }
+
+    public void ApplyInitialData(
+        MapEventKind nextEventKind,
+        MapEventType nextEventType,
+        int nextRequireAmount,
+        int nextEffectAmount)
+    {
+        eventKind = nextEventKind;
         eventType = nextEventType;
         requireResource = ResourceType.Money;
         requireAmount = Mathf.Max(1, nextRequireAmount);
@@ -45,6 +57,9 @@ public class MapEventObject : MonoBehaviour
 
     public bool TryExecuteEvent(PartyGridMover party)
     {
+        if (eventKind != MapEventKind.Consume)
+            return false;
+
         if (Game.Economy == null || party == null)
             return false;
 

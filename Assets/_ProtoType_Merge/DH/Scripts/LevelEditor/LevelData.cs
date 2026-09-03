@@ -328,11 +328,16 @@ public class LevelData : ScriptableObject
 
     public void SetEvent(Vector2Int grid, MapEventType eventType, int requireAmount, int effectAmount)
     {
+        SetEvent(grid, MapEventKind.Consume, eventType, requireAmount, effectAmount);
+    }
+
+    public void SetEvent(Vector2Int grid, MapEventKind eventKind, MapEventType eventType, int requireAmount, int effectAmount)
+    {
         if (!IsInsideGrid(grid))
             return;
 
         RemoveAllPlacementsAt(grid);
-        eventPlacements.Add(new EventPlacementData(grid, eventType, requireAmount, effectAmount));
+        eventPlacements.Add(new EventPlacementData(grid, eventKind, eventType, requireAmount, effectAmount));
     }
 
     public void SetEnemyPlacement(Vector2Int grid, string enemyGroupKey, EnemyBehaviorType behaviorType)
@@ -773,19 +778,32 @@ public struct OutpostPlacementData
 public struct EventPlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
+    [SerializeField] private MapEventKind eventKind;
     [SerializeField] private MapEventType eventType;
     [SerializeField] private int requireAmount;
     [SerializeField] private int effectAmount;
 
     public EventPlacementData(Vector2Int gridPosition, MapEventType eventType, int requireAmount, int effectAmount)
+        : this(gridPosition, MapEventKind.Consume, eventType, requireAmount, effectAmount)
+    {
+    }
+
+    public EventPlacementData(
+        Vector2Int gridPosition,
+        MapEventKind eventKind,
+        MapEventType eventType,
+        int requireAmount,
+        int effectAmount)
     {
         this.gridPosition = gridPosition;
+        this.eventKind = eventKind;
         this.eventType = eventType;
         this.requireAmount = Mathf.Max(1, requireAmount);
         this.effectAmount = Mathf.Max(0, effectAmount);
     }
 
     public Vector2Int GridPosition => gridPosition;
+    public MapEventKind EventKind => eventKind;
     public MapEventType EventType => eventType;
     public string EventKey => MapEventTypeUtility.ToEventKey(eventType);
     public int RequireAmount => requireAmount > 0
@@ -799,6 +817,7 @@ public struct EventPlacementData
     {
         return new EventPlacementData(
             gridPosition,
+            EventKind,
             eventType,
             RequireAmount,
             EffectAmount);

@@ -24,6 +24,14 @@ public class FakeMouseCursor : MonoBehaviour
         Cursor.visible = false;
     }
 
+    // [JC 260902] 유니티는 플레이어가 포커스를 잃으면 OS 커서를 되돌려 놓는다(에디터의 씬 뷰 전환, 빌드의 Alt-Tab).
+    // Awake에서 한 번 끈 것만으로는 복귀 후에도 켜진 채로 남아 가짜 커서와 겹쳐 2개로 보이므로, 포커스를 되찾을 때 재적용한다.
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (hasFocus)
+            Cursor.visible = false;
+    }
+
     private void OnEnable()
     {
         if (_cursorRect == null)

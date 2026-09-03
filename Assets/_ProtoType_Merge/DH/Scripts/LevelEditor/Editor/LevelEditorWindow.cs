@@ -240,7 +240,9 @@ public class LevelEditorWindow : EditorWindow
 
         if (brushType == LevelEditorBrushType.Event)
         {
-            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedMapEventType"), new GUIContent("Event Type"));
+            using (new EditorGUI.DisabledScope(true))
+                EditorGUILayout.PropertyField(serializedController.FindProperty("selectedMapEventKind"), new GUIContent("Map Event Kind"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedMapEventType"), new GUIContent("Consume Type"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedMapEventRequireAmount"), new GUIContent("Require Amount"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedMapEventEffectAmount"), new GUIContent("Effect Amount"));
         }
@@ -1252,6 +1254,7 @@ public class LevelEditorWindow : EditorWindow
             case LevelEditorBrushType.Event:
                 context.LevelData.SetEvent(
                     anchor,
+                    context.SelectedMapEventKind,
                     context.SelectedMapEventType,
                     context.SelectedMapEventRequireAmount,
                     context.SelectedMapEventEffectAmount);
@@ -1344,6 +1347,7 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedOutpostType = controller.SelectedOutpostType;
         context.SelectedOutpostResourcePerTurn = controller.SelectedOutpostResourcePerTurn;
         context.SelectedOutpostInitialState = controller.SelectedOutpostInitialState;
+        context.SelectedMapEventKind = controller.SelectedMapEventKind;
         context.SelectedMapEventType = controller.SelectedMapEventType;
         context.SelectedMapEventKey = controller.SelectedMapEventKey;
         context.SelectedMapEventRequireAmount = controller.SelectedMapEventRequireAmount;
@@ -2414,6 +2418,7 @@ public class LevelEditorWindow : EditorWindow
         public OutpostType SelectedOutpostType;
         public int SelectedOutpostResourcePerTurn;
         public OutpostState SelectedOutpostInitialState;
+        public MapEventKind SelectedMapEventKind;
         public MapEventType SelectedMapEventType;
         public string SelectedMapEventKey;
         public int SelectedMapEventRequireAmount;
