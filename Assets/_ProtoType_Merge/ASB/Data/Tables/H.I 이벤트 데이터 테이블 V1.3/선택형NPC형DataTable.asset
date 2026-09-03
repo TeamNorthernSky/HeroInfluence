@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6abf8b906f2ec8f4aa791896499832c5, type: 3}
+  m_Name: "\uC120\uD0DD\uD615NPC\uD615DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - world_event_id: Choice_NPC_001
+    zone_no: 1
+    world_event_name: "\uAC00\uC704\uBC14\uC704\uBCF4!"
+    npc_type: 4
+    world_event_description: "\uB098\uC640 \uAC00\uC704\uBC14\uC704\uBCF4\uB97C \uD574\uC11C
+      \uC774\uAE30\uBA74 \uB3C8\uC744 \uC8FC\uACA0\uB2E4!"
+    choice_1_id: Choice_NPC_001_C1
+    choice_2_id: Choice_NPC_001_C2
+    note: 

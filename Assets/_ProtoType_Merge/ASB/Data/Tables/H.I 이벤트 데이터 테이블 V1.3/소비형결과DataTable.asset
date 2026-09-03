@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f871cfb0ea8a72478b90dbbf3ae7f0f, type: 3}
+  m_Name: "\uC18C\uBE44\uD615\uACB0\uACFCDataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - world_event_id: Consume_NPC_001
+    result_id: Consume_NPC_Result_001
+    cost_resource_type_1: 0
+    cost_resource_amount_1: 500
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 1
+    status_amount_per_event_1: -5
+    status_type_2: 0
+    status_amount_per_event_2: 3
+    note: 
+  - world_event_id: Consume_NPC_002
+    result_id: Consume_NPC_Result_002
+    cost_resource_type_1: 0
+    cost_resource_amount_1: 300
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 1
+    status_amount_per_event_1: 5
+    status_type_2: 0
+    status_amount_per_event_2: 1
+    note: 
+  - world_event_id: Consume_Condition_001
+    result_id: Consume_Condition_Result_001
+    cost_resource_type_1: 2
+    cost_resource_amount_1: 5
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 4
+    status_amount_per_event_1: 3
+    status_type_2: 0
+    status_amount_per_event_2: 0
+    note: 

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 440607f986c8bed44b69bf2da0eaa2a5, type: 3}
+  m_Name: "\uBCF4\uC0C1\uD615NPC\uD615DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - world_event_id: Reward_NPC_001
+    zone_no: 1
+    world_event_name: "\uD788\uC5B4\uB85C\uAC19\uC740 \uC190\uC790"
+    npc_type: 3
+    world_event_description: "\uC544\uC774\uAD6C~ \uB0B4 \uC0C8\uB07C. \uC694\uC998
+      \uBC25\uC740 \uBA39\uACE0 \uB2E4\uB2C8\uB294\uAC70\uC57C? \uC774\uAC78\uB85C
+      \uCE5C\uAD6C\uB4E4\uC774\uB791 \uB9DB\uC788\uB294 \uAC70 \uC0AC\uBA39\uC5B4"
+    world_event_proceed: "\uAC10\uC0AC\uD569\uB2C8\uB2E4~ ^^"
+    reward_type_1: 1
+    reward_amount_1: 1000
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 
+  - world_event_id: Reward_NPC_002
+    zone_no: 1
+    world_event_name: "\uB0B4 \uAFC8\uC740 \uD788\uC5B4\uB85C"
+    npc_type: 4
+    world_event_description: "\uC9C4\uC9DC \uD788\uC5B4\uB85C\uC560\uC694? \uC800\uB3C4
+      \uB098\uC911\uC5D0 \uCEE4\uC11C \uBA4B\uC9C4 \uD788\uC5B4\uB85C\uAC00 \uB418\uACE0
+      \uC2F6\uC5B4\uC694!"
+    world_event_proceed: "\uB10C \uD788\uC5B4\uB85C\uAC00 \uB420\uC218\uC788\uB2E4!"
+    reward_type_1: 0
+    reward_amount_1: 10
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 
