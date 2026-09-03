@@ -89,6 +89,12 @@ namespace EnemyAI
                 return EnemyActionDecision.SkipTurn();
             }
 
+            // 2페이즈 무력화(다운) 중엔 행동 없음. 재활성은 라운드 경계(EncounterParticipant)에서 처리(§5-A).
+            if (self.IsIncapacitated)
+            {
+                return EnemyActionDecision.SkipTurn();
+            }
+
             // 순수판정: 상태변경 없음. 커밋에서 정확히 +1(도발 이중호출·이중커밋 방지).
             return EnemyActionDecision.SelfAction(() => self.AddEnergyStack(1));
         }
@@ -103,6 +109,12 @@ namespace EnemyAI
             BattleCharactor self, List<BattleCharactor> validTargets, bool canUseSkill)
         {
             if (self == null)
+            {
+                return EnemyActionDecision.SkipTurn();
+            }
+
+            // 2페이즈 무력화(다운) 중엔 행동 없음. 재활성은 라운드 경계(EncounterParticipant)에서 처리(§5-A).
+            if (self.IsIncapacitated)
             {
                 return EnemyActionDecision.SkipTurn();
             }

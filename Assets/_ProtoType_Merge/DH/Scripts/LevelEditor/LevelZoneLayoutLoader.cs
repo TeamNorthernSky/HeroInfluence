@@ -478,6 +478,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
                 continue;
 
             mapEvent.ApplyInitialData(
+                placement.EventKind,
                 placement.EventType,
                 placement.RequireAmount,
                 placement.EffectAmount);

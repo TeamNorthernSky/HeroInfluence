@@ -435,6 +435,12 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             return;
         }
 
+        // 무력화(다운) 중에는 완전 불사 — 추가 피해 무효(구현지시서: 증폭기 §5-A).
+        if (IsIncapacitated)
+        {
+            return;
+        }
+
         float damage = Mathf.Max(0f, amount);
         currentHp = Mathf.Max(0f, currentHp - damage);
         
@@ -445,6 +451,11 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
         if (currentHp <= 0f)
         {
+            // 무력화 대상이면 사망 대신 다운 전환(구현지시서: 증폭기 §5-A). 대신맞기 재지정 seam과 동일 철학.
+            if (TryEnterIncapacitationInsteadOfDeath())
+            {
+                return;
+            }
             Die();
         }
     }

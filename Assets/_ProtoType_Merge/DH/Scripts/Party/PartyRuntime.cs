@@ -11,9 +11,6 @@ public class PartyRuntime : MonoBehaviour
     [SerializeField] private CombatEncounterManager combatEncounterManager;
     [SerializeField] private CombatPromptService combatPromptService;
 
-    [Header("Interaction Settings")]
-    [SerializeField] private float itemPickupDelay = 0.5f;
-
     private PartyGridMover partyGridMover;
     private PartyInteractionController interactionController;
 
@@ -33,7 +30,6 @@ public class PartyRuntime : MonoBehaviour
             combatEncounterManager,
             combatPromptService,
             partyGridMover,
-            itemPickupDelay,
             this,
             partyGridMover.GetCurrentGrid);
 

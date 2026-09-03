@@ -1,3 +1,10 @@
+public enum MapEventKind
+{
+    Consume,
+    Reward,
+    Choice
+}
+
 public enum MapEventType
 {
     TrainingHp,

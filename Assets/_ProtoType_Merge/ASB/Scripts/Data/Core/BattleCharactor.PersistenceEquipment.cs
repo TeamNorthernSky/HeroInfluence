@@ -79,6 +79,7 @@ public partial class BattleCharactor
         ResetEnergyStack(); // 에너지 스택 리셋
         SetPendingRest(false); // 포탑 사이클(휴식 예약) 리셋
         ClearGuard(); // 대신 맞기 보호 링크 리셋
+        ResetIncapacitation(); // 무력화(다운) 상태 리셋
 
         if (!preserveInjectedEquipment)
         {
