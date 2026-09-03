@@ -18,6 +18,7 @@ public class PartyInteractionController
     public event Action<Vector2Int> AdjacentItemCellEntered;
     public event Action<HeroUnionUnit> AdjacentHeroUnionDetected;
     public event Action<MapEventObject> AdjacentMapEventDetected;
+    public event Action<WorldEventObject> AdjacentWorldEventDetected;
 
     public PartyInteractionController(
         GridManager gridManager,
@@ -143,9 +144,10 @@ public class PartyInteractionController
 
         bool isItem = gridManager.TryGetItemObjectAtGrid(targetInteractionGrid, out ItemObject item);
         bool isEvent = allowEvents && gridManager.TryGetEventObjectAtGrid(targetInteractionGrid, out MapEventObject mapEvent);
+        bool isWorldEvent = allowEvents && gridManager.TryGetWorldEventObjectAtGrid(targetInteractionGrid, out WorldEventObject worldEvent);
         bool isSubEvent = allowEvents && gridManager.TryGetSubEventObjectAtGrid(targetInteractionGrid, out SubEventObject subEvent);
 
-        if (!isItem && !isEvent && !isSubEvent)
+        if (!isItem && !isEvent && !isWorldEvent && !isSubEvent)
             return false;
 
         Vector2Int currentGrid = ownerParty.GetCurrentGrid();
@@ -161,6 +163,10 @@ public class PartyInteractionController
             else if (isEvent)
             {
                 OnAdjacentEventCellEntered(targetInteractionGrid);
+            }
+            else if (isWorldEvent)
+            {
+                OnAdjacentWorldEventCellEntered(targetInteractionGrid);
             }
             else if (isSubEvent)
             {
@@ -229,6 +235,14 @@ public class PartyInteractionController
         pendingInteractionCoroutine = coroutineOwner.StartCoroutine(InvokeDelayedSubEventInteraction(subEventGrid));
     }
 
+    private void OnAdjacentWorldEventCellEntered(Vector2Int worldEventGrid)
+    {
+        CancelPendingInteraction();
+
+        IsInputLocked = true;
+        pendingInteractionCoroutine = coroutineOwner.StartCoroutine(InvokeDelayedWorldEventInteraction(worldEventGrid));
+    }
+
     private IEnumerator InvokeDelayedEventInteraction(Vector2Int eventGrid)
     {
         pendingInteractionCoroutine = null;
@@ -261,6 +275,40 @@ public class PartyInteractionController
         mapEvent.Interact(ownerParty);
         AdjacentMapEventDetected?.Invoke(mapEvent);
         IsInputLocked = false;
+    }
+
+    private IEnumerator InvokeDelayedWorldEventInteraction(Vector2Int worldEventGrid)
+    {
+        pendingInteractionCoroutine = null;
+
+        if (DHGameEndState.IsEnding)
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
+        if (gridManager == null)
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
+        Vector2Int currentGrid = currentGridProvider != null ? currentGridProvider() : worldEventGrid;
+        if (!IsAdjacentOrSame(currentGrid, worldEventGrid))
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
+        if (!gridManager.TryGetWorldEventObjectAtGrid(worldEventGrid, out WorldEventObject worldEvent))
+        {
+            IsInputLocked = false;
+            yield break;
+        }
+
+        bool started = worldEvent.TryTrigger(ownerParty, HandleWorldEventClosed);
+        AdjacentWorldEventDetected?.Invoke(worldEvent);
+        IsInputLocked = started;
     }
 
     private IEnumerator InvokeDelayedSubEventInteraction(Vector2Int subEventGrid)
@@ -490,6 +538,11 @@ public class PartyInteractionController
     }
 
     private void HandleSubEventClosed(SubEventObject subEvent)
+    {
+        IsInputLocked = false;
+    }
+
+    private void HandleWorldEventClosed(WorldEventObject worldEvent)
     {
         IsInputLocked = false;
     }
