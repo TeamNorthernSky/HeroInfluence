@@ -514,6 +514,10 @@ MonoBehaviour:
     type: 2}
   enemyGroupDataTable: {fileID: 11400000, guid: 6adb67ae246e04d40819ad7652d7565f,
     type: 2}
+  sector4EnemyUnitDataTable: {fileID: 11400000, guid: 88de00416d03edd4eba0696dbedff063,
+    type: 2}
+  sector4EnemyGroupDataTable: {fileID: 11400000, guid: adb18b1b8fb65c24bb47016d3cb43051,
+    type: 2}
   loadOnAwake: 0
   dontDestroyOnLoad: 1
   cachedPlayerTemplates:
