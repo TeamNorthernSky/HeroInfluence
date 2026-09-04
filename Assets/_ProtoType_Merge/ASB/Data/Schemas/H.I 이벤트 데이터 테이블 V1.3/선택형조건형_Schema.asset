@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
   m_Name: "\uC120\uD0DD\uD615\uC870\uAC74\uD615_Schema"
   m_EditorClassIdentifier: 
-  schemaGuid: 12c61c3c390c45b385191cc9a176c099
+  schemaGuid: 78b6cea40fcb464f9ae9bbc5ec950df9
   sourceWorkbookGuid: e983ef9cf05632143872a52a1be21676
   sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/H.I \uC774\uBCA4\uD2B8
     \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.3.xlsx"

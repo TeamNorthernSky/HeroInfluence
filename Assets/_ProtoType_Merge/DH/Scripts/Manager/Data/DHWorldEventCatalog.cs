@@ -294,7 +294,7 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
                 string.Empty,
                 string.Empty,
                 row.note,
-                new[] { BuildCondition(row.trigger_condition_type, row.trigger_condition_target, row.trigger_condition_stat_type, row.trigger_condition_calculation_type, row.trigger_condition_operator, row.trigger_condition_value) },
+                new[] { BuildCondition(row.trigger_condition_type, row.trigger_condition_target, row.trigger_condition_stat_type, row.trigger_condition_calculation_type, row.trigger_condition_operator.ToString(), row.trigger_condition_value) },
                 GetChoiceList(row.world_event_id, row.choice_1_id, row.choice_2_id)));
         }
     }

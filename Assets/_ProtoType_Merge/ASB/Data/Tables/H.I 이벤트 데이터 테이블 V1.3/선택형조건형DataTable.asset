@@ -19,7 +19,7 @@ MonoBehaviour:
     trigger_condition_target: 0
     trigger_condition_stat_type: 0
     trigger_condition_calculation_type: 0
-    trigger_condition_operator: =
+    trigger_condition_operator: 2
     trigger_condition_value: 12
     world_event_name: "\uC0BC\uC77C\uC9F8"
     npc_type: 4
