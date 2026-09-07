@@ -58,8 +58,10 @@ public static class DHWorldEventResultApplier
                     appliedAny |= ApplyResourceCost(result);
                     break;
                 case DHWorldEventResultKind.StatusEffect:
-                case DHWorldEventResultKind.ChoiceEffect:
                     appliedAny |= ApplyStatusEffect(result, party);
+                    break;
+                case DHWorldEventResultKind.ChoiceEffect:
+                    appliedAny |= ApplyChoiceEffect(result, party);
                     break;
             }
         }
@@ -68,6 +70,63 @@ public static class DHWorldEventResultApplier
             SyncPartyUnits(party);
 
         reason = string.Empty;
+        return true;
+    }
+
+    public static bool TryApplyChoiceResults(
+        IReadOnlyList<DHWorldEventResultTemplate> results,
+        PartyGridMover party,
+        out string reason)
+    {
+        reason = string.Empty;
+        if (results == null)
+        {
+            reason = "Choice result list is null.";
+            return false;
+        }
+
+        bool appliedAny = false;
+        for (int i = 0; i < results.Count; i++)
+        {
+            DHWorldEventResultTemplate result = results[i];
+            if (result.ResultKind != DHWorldEventResultKind.ChoiceEffect)
+                continue;
+
+            appliedAny |= ApplyChoiceEffect(result, party);
+        }
+
+        if (appliedAny)
+            SyncPartyUnits(party);
+
+        return true;
+    }
+
+    public static bool TryApplyRewards(DHWorldEventTemplate template, PartyGridMover party, out string reason)
+    {
+        reason = string.Empty;
+        if (template == null)
+        {
+            reason = "World event template is null.";
+            return false;
+        }
+
+        IReadOnlyList<DHWorldEventRewardEntry> rewards = template.Rewards;
+        bool appliedAny = false;
+        for (int i = 0; i < rewards.Count; i++)
+        {
+            DHWorldEventRewardEntry reward = rewards[i];
+            if (!DHWorldEventCodeMap.TryGetRewardType(reward.RewardType, out DHWorldEventRewardType rewardType))
+            {
+                reason = $"Unknown reward code: {reward.RewardType}";
+                return false;
+            }
+
+            appliedAny |= ApplyReward(rewardType, reward.RewardAmount, party);
+        }
+
+        if (appliedAny)
+            SyncPartyUnits(party);
+
         return true;
     }
 
@@ -126,6 +185,78 @@ public static class DHWorldEventResultApplier
             default:
                 return false;
         }
+    }
+
+    private static bool ApplyReward(DHWorldEventRewardType rewardType, int amount, PartyGridMover party)
+    {
+        if (amount == 0)
+            return false;
+
+        if (rewardType == DHWorldEventRewardType.CurrentIP)
+            return ApplyCurrentIpToParty(amount, party);
+
+        if (!DHWorldEventCodeMap.TryGetRewardResourceType(rewardType, out ResourceType resourceType))
+            return false;
+
+        EconomyManager economy = Game.Economy;
+        if (economy == null)
+            return false;
+
+        economy.Add(resourceType, amount);
+        return true;
+    }
+
+    private static bool ApplyCurrentIpToParty(int amount, PartyGridMover party)
+    {
+        if (!TryGetTargetUnitIndices(0, party, out IReadOnlyList<int> unitIndices))
+            return false;
+
+        PersistentUnitRepository repository = PersistentUnitRepository.Instance;
+        if (repository == null)
+            return false;
+
+        bool appliedAny = false;
+        for (int i = 0; i < unitIndices.Count; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (unitIndex <= 0)
+                continue;
+
+            appliedAny |= repository.ApplyEventRewardStats(unitIndex, 0f, 0f, 0f, amount, 0f);
+        }
+
+        return appliedAny;
+    }
+
+    private static bool ApplyChoiceEffect(DHWorldEventResultTemplate result, PartyGridMover party)
+    {
+        switch (result.TargetScope)
+        {
+            case 0:
+                return false;
+            case 1:
+                return ApplyChoiceResourceEffect(result);
+            case 2:
+                return ApplyStatusEffect(result, party);
+            default:
+                return false;
+        }
+    }
+
+    private static bool ApplyChoiceResourceEffect(DHWorldEventResultTemplate result)
+    {
+        if (result.EffectAmount == 0)
+            return false;
+
+        if (!DHWorldEventCodeMap.TryGetResourceType(result.EffectType, out ResourceType resourceType))
+            return false;
+
+        EconomyManager economy = Game.Economy;
+        if (economy == null)
+            return false;
+
+        economy.Add(resourceType, result.EffectAmount);
+        return true;
     }
 
     private static bool TryGetTargetUnitIndices(

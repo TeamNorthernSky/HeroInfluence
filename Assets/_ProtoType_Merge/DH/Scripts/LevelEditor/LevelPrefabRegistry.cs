@@ -19,6 +19,9 @@ public class LevelPrefabRegistry : MonoBehaviour
     [Header("Event Prefabs")]
     [SerializeField] private EventPrefabCatalog eventCatalog;
 
+    [Header("World Event NPC Prefabs")]
+    [SerializeField] private WorldEventNpcPrefabCatalog worldEventNpcCatalog;
+
     [Header("Unique Building Prefabs")]
     [SerializeField] private HeroUnionPrefabCatalog heroUnionCatalog;
     // Single direct prefab for now; catalog split can wait until multiple villain union variants exist.
@@ -131,6 +134,15 @@ public class LevelPrefabRegistry : MonoBehaviour
     public bool TryGetSubEventPrefab(string prefabKey, out SubEventObject prefab)
     {
         if (eventCatalog != null && eventCatalog.TryGetSubEventPrefab(prefabKey, out prefab))
+            return true;
+
+        prefab = null;
+        return false;
+    }
+
+    public bool TryGetWorldEventNpcPrefab(int npcType, out GameObject prefab)
+    {
+        if (worldEventNpcCatalog != null && worldEventNpcCatalog.TryGetNpcPrefab(npcType, out prefab))
             return true;
 
         prefab = null;

@@ -12,12 +12,19 @@ public sealed class WorldEventObject : MonoBehaviour
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
 
+    [Header("NPC Visual")]
+    [SerializeField] private Transform visualRoot;
+    [SerializeField] private LevelPrefabRegistry prefabRegistry;
+    [SerializeField] private bool spawnNpcVisualOnEnable = true;
+
     private WorldEventRegistry worldEventRegistry;
+    private GameObject spawnedNpcVisual;
     private bool isTriggering;
 
     public string WorldEventId => string.IsNullOrWhiteSpace(worldEventId) ? string.Empty : worldEventId.Trim();
     public bool OneShot => oneShot;
     public string ProgressKey => BuildProgressKey(WorldEventId);
+    public int ResolvedNpcType => TryResolveTemplate(out DHWorldEventTemplate template) ? template.NpcType : 0;
 
     private void Awake()
     {
@@ -35,6 +42,9 @@ public sealed class WorldEventObject : MonoBehaviour
         }
 
         worldEventRegistry?.Register(this);
+
+        if (Application.isPlaying && spawnNpcVisualOnEnable)
+            RefreshNpcVisual();
     }
 
     private void OnDisable()
@@ -90,6 +100,31 @@ public sealed class WorldEventObject : MonoBehaviour
         return started;
     }
 
+    [ContextMenu("Refresh NPC Visual")]
+    public void RefreshNpcVisual()
+    {
+        if (!TryResolveTemplate(out DHWorldEventTemplate template) || template.NpcType <= 0)
+            return;
+
+        LevelPrefabRegistry registry = ResolvePrefabRegistry();
+        if (registry == null || !registry.TryGetWorldEventNpcPrefab(template.NpcType, out GameObject prefab) || prefab == null)
+            return;
+
+        Transform root = visualRoot != null ? visualRoot : transform;
+        if (spawnedNpcVisual != null)
+        {
+            if (Application.isPlaying)
+                Destroy(spawnedNpcVisual);
+            else
+                DestroyImmediate(spawnedNpcVisual);
+        }
+
+        spawnedNpcVisual = Instantiate(prefab, root);
+        spawnedNpcVisual.transform.localPosition = Vector3.zero;
+        spawnedNpcVisual.transform.localRotation = Quaternion.identity;
+        spawnedNpcVisual.transform.localScale = Vector3.one;
+    }
+
     public void Complete()
     {
         if (oneShot)
@@ -124,6 +159,29 @@ public sealed class WorldEventObject : MonoBehaviour
 
         if (worldEventRegistry == null)
             worldEventRegistry = FindFirstObjectByType<WorldEventRegistry>();
+
+        if (visualRoot == null)
+            visualRoot = transform;
+
+        ResolvePrefabRegistry();
+    }
+
+    private LevelPrefabRegistry ResolvePrefabRegistry()
+    {
+        if (prefabRegistry == null)
+            prefabRegistry = FindFirstObjectByType<LevelPrefabRegistry>();
+
+        return prefabRegistry;
+    }
+
+    private bool TryResolveTemplate(out DHWorldEventTemplate template)
+    {
+        template = null;
+        if (string.IsNullOrWhiteSpace(WorldEventId))
+            return false;
+
+        DHWorldEventCatalog catalog = DHWorldEventCatalog.Instance;
+        return catalog != null && catalog.TryGetEvent(WorldEventId, out template) && template != null;
     }
 
     private static string BuildProgressKey(string eventId)

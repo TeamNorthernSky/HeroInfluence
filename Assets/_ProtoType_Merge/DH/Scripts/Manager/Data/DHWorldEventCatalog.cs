@@ -29,7 +29,7 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
     private readonly Dictionary<int, List<DHWorldEventTemplate>> eventsByZone = new Dictionary<int, List<DHWorldEventTemplate>>();
     private readonly Dictionary<string, List<DHWorldEventChoiceTemplate>> choicesByEventId = new Dictionary<string, List<DHWorldEventChoiceTemplate>>();
     private readonly Dictionary<string, List<DHWorldEventResultTemplate>> choiceResultsByGroupId = new Dictionary<string, List<DHWorldEventResultTemplate>>();
-    private readonly Dictionary<string, List<DHWorldEventResultTemplate>> consumeResultsByResultId = new Dictionary<string, List<DHWorldEventResultTemplate>>();
+    private readonly Dictionary<string, List<DHWorldEventResultTemplate>> consumeResultsByEventAndResultId = new Dictionary<string, List<DHWorldEventResultTemplate>>();
 
     private bool isLoaded;
 
@@ -139,7 +139,7 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
                 row.note,
                 null,
                 null,
-                GetConsumeResults(row.result_id)));
+                GetConsumeResults(row.world_event_id, row.result_id)));
         }
     }
 
@@ -171,7 +171,7 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
                 row.note,
                 new[] { BuildCondition(row.trigger_condition_type, row.trigger_condition_target, row.trigger_condition_stat_type, row.trigger_condition_calculation_type, row.trigger_condition_operator.ToString(), row.trigger_condition_value) },
                 null,
-                GetConsumeResults(row.result_id)));
+                GetConsumeResults(row.world_event_id, row.result_id)));
         }
     }
 
@@ -373,11 +373,12 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
                 continue;
 
             string resultId = NormalizeKey(row.result_id);
-            if (string.IsNullOrWhiteSpace(resultId))
+            string resultKey = BuildConsumeResultKey(row.world_event_id, row.result_id);
+            if (string.IsNullOrWhiteSpace(resultId) || string.IsNullOrWhiteSpace(resultKey))
                 continue;
 
-            if (!consumeResultsByResultId.TryGetValue(resultId, out List<DHWorldEventResultTemplate> list))
-                consumeResultsByResultId[resultId] = list = new List<DHWorldEventResultTemplate>();
+            if (!consumeResultsByEventAndResultId.TryGetValue(resultKey, out List<DHWorldEventResultTemplate> list))
+                consumeResultsByEventAndResultId[resultKey] = list = new List<DHWorldEventResultTemplate>();
 
             AddConsumeEffect(list, DHWorldEventResultKind.ResourceCost, resultId, 1, row.cost_resource_type_1, row.cost_resource_amount_1, row.note);
             AddConsumeEffect(list, DHWorldEventResultKind.ResourceCost, resultId, 2, row.cost_resource_type_2, row.cost_resource_amount_2, row.note);
@@ -449,10 +450,10 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
         return result;
     }
 
-    private IReadOnlyList<DHWorldEventResultTemplate> GetConsumeResults(string resultId)
+    private IReadOnlyList<DHWorldEventResultTemplate> GetConsumeResults(string worldEventId, string resultId)
     {
-        string key = NormalizeKey(resultId);
-        return consumeResultsByResultId.TryGetValue(key, out List<DHWorldEventResultTemplate> list)
+        string key = BuildConsumeResultKey(worldEventId, resultId);
+        return consumeResultsByEventAndResultId.TryGetValue(key, out List<DHWorldEventResultTemplate> list)
             ? list
             : new List<DHWorldEventResultTemplate>();
     }
@@ -490,7 +491,7 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
 
     private static void AddRewardEntry(List<DHWorldEventRewardEntry> rewards, int rewardType, int amount)
     {
-        if (rewards == null || rewardType == 0 || amount == 0)
+        if (rewards == null || amount == 0)
             return;
 
         rewards.Add(new DHWorldEventRewardEntry(rewardType, amount));
@@ -505,7 +506,7 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
         int amount,
         string note)
     {
-        if (results == null || effectType == 0 || amount == 0)
+        if (results == null || amount == 0)
             return;
 
         results.Add(new DHWorldEventResultTemplate(resultKind, resultId, order, 0, effectType, amount, note));
@@ -540,12 +541,21 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
         eventsByZone.Clear();
         choicesByEventId.Clear();
         choiceResultsByGroupId.Clear();
-        consumeResultsByResultId.Clear();
+        consumeResultsByEventAndResultId.Clear();
         isLoaded = false;
     }
 
     private static string NormalizeKey(string value)
     {
         return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+    }
+
+    private static string BuildConsumeResultKey(string worldEventId, string resultId)
+    {
+        string eventKey = NormalizeKey(worldEventId);
+        string resultKey = NormalizeKey(resultId);
+        return string.IsNullOrWhiteSpace(eventKey) || string.IsNullOrWhiteSpace(resultKey)
+            ? string.Empty
+            : $"{eventKey}::{resultKey}";
     }
 }
