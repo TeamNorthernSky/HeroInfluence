@@ -802,9 +802,253 @@ MonoBehaviour:
     DropItem1Index: 
     DropItem1Count: 
     DropItem1Rate: []
+  - Index: 40001
+    UnitType: 
+    Name: "\uC728\uB9AC\uC544"
+    baseStats:
+      HP: 500
+      Atk: 20
+      DEF: 40
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0.25
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.2
+      influence: 0
+    levelupStats:
+      HP: 0
+      Atk: 0
+      DEF: 0
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "1~2 \uD398\uC774\uC988\n- \uC774 \uC720\uB2DB\uC740 YuliaReservedSkillSource
+      \uB2E8\uC77C \uC608\uC57D\uAC12\uC744 \uD655\uC778\uD55C\uB2E4.\n- YuliaReservedSkillSource\uC5D0
+      \uC720\uD6A8\uD55C \uC99D\uD3ED\uAE30 \uAC1C\uCCB4\uAC00 \uC788\uC73C\uBA74,
+      \uD574\uB2F9 \uC99D\uD3ED\uAE30\uAC00 \uC81C\uACF5\uD558\uB294 \uC2A4\uD0AC\uC744
+      \uC2DC\uC804\uD55C\uB2E4.\n- \uC608\uC57D\uAC12\uC774 \uC5C6\uAC70\uB098, \uC728\uB9AC\uC544
+      \uD134 \uC804\uC5D0 \uC608\uC57D \uC99D\uD3ED\uAE30\uAC00 \uD30C\uAD34\uB418\uC5B4
+      \uC720\uD6A8\uD558\uC9C0 \uC54A\uC73C\uBA74 \uAE30\uBCF8 \uC2A4\uD0AC '\uC808\uB9DD\uC758
+      \uAD74\uB808'\uB97C \uC2DC\uC804\uD55C\uB2E4.\n- \uC2A4\uD0AC \uC2DC\uC804
+      \uD6C4 YuliaReservedSkillSource\uB97C \uCD08\uAE30\uD654\uD55C\uB2E4.\n\n3
+      \uD398\uC774\uC988\n- \uCCB4\uB825 50% \uC774\uD558 \uC2DC '\uC728\uB9AC\uC544\uB97C
+      \uAC00\uB454 \uC7A5\uB9C9'\uC73C\uB85C \uB300\uCCB4\uB41C\uB2E4.\n\n\u203B
+      \uBCF8 \uD14C\uC774\uBE14\uC758 UnitAI\uB294 \uAC04\uB7B5 \uADDC\uCE59\uB9CC
+      \uC815\uB9AC\uD55C\uB2E4. \uC138\uBD80 \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED
+      \uC728\uB9AC\uC544 \uBCF4\uC2A4\uC804_\uC138\uBD80 \uAD6C\uD604 \uAE30\uD68D\u300D
+      \uBB38\uC11C\uB97C \uAE30\uC900\uC73C\uB85C \uD55C\uB2E4."
+    ExperiencePoint: 0
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 40002
+    UnitType: 
+    Name: "\uB098\uB77D\uC758 \uC99D\uD3ED\uAE30"
+    baseStats:
+      HP: 100
+      Atk: 15
+      DEF: 20
+      Luck: 0
+      Speed: 3
+      CriticalRate: 0.2
+      CritMultiplier: 1.5
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    levelupStats:
+      HP: 0
+      Atk: 0
+      DEF: 0
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "1 \uD398\uC774\uC988\n- '\uC751\uCD95', '\uB2A5\uB825 \uAC1C\uBC29'
+      \uD589\uB3D9\uB9CC \uC2DC\uC804 \uAC00\uB2A5\uD558\uB2E4.\n- \uC751\uCD95 :
+      '\uC5D0\uB108\uC9C0 \uCD95\uC801' \uC2A4\uD0DD 1 \uC99D\uAC00. \uC5D0\uB108\uC9C0
+      \uCD95\uC801 1\uC2A4\uD0DD\uB2F9 \uB2A5\uB825 \uAC1C\uBC29 \uC2DC\uC804 \uD655\uB960
+      50% \uC99D\uAC00, 2\uC2A4\uD0DD \uC774\uC0C1\uC740 100% \uACE0\uC815.\n- \uB2A5\uB825
+      \uAC1C\uBC29 : \uC728\uB9AC\uC544\uC758 YuliaReservedSkillSource \uB2E8\uC77C
+      \uC608\uC57D\uAC12\uC5D0 \uC774 \uC99D\uD3ED\uAE30 \uAC1C\uCCB4\uB97C \uC800\uC7A5\uD558\uACE0,
+      \uC5D0\uB108\uC9C0 \uCD95\uC801\uC744 0\uC73C\uB85C \uCD08\uAE30\uD654\uD55C\uB2E4.\n-
+      \uB2A5\uB825 \uAC1C\uBC29\uC740 \uC5D0\uB108\uC9C0 \uCD95\uC801 \uC2A4\uD0DD
+      1 \uC774\uC0C1\uC77C \uB54C\uB9CC \uC2DC\uC804 \uAC00\uB2A5\uD558\uB2E4.\n-
+      \uD30C\uAD34 \uC2DC \uB098\uB77D\uC758 \uD3ED\uD48D \uACF5\uAE09\uC774 \uCC28\uB2E8\uB41C\uB2E4.\n\n2
+      \uD398\uC774\uC988\n- 1\uD398\uC774\uC988\uC640 \uB3D9\uC77C\uD558\uAC8C \uC751\uCD95/\uB2A5\uB825
+      \uAC1C\uBC29\uC744 \uC0AC\uC6A9\uD55C\uB2E4.\n- \uCD94\uAC00\uB85C, \uD30C\uAD34
+      \uC2DC 2\uB77C\uC6B4\uB4DC\uAC04 \uBB34\uB825\uD654\uB418\uACE0 2\uB77C\uC6B4\uB4DC
+      \uACBD\uACFC \uD6C4 \uB2E4\uC2DC \uC804\uD22C\uC5D0 \uBCF5\uADC0\uD55C\uB2E4.\n\n3
+      \uD398\uC774\uC988\n- \uC751\uCD95/\uB2A5\uB825 \uAC1C\uBC29\uC740 \uBE44\uD65C\uC131\uD654\uB41C\uB2E4.\n-
+      \uB9E4 \uD134 '\uB098\uB77D\uC758 \uD3ED\uD48D'\uC744 \uC9C1\uC811 \uC2DC\uC804\uD55C\uB2E4.\n-
+      \uB9E4 \uBCF8\uC778 \uD134 \uC885\uB8CC \uC2DC '\uCDA9\uC804' \uC2A4\uD0DD
+      1 \uB204\uC801.\n- \uCDA9\uC804 1\uC2A4\uD0DD\uB2F9 \uACF5\uACA9\uB825 20%
+      \uC99D\uAC00.\n- \uC720\uB2DB \uD30C\uAD34 \uC2DC \uCDA9\uC804 \uC2A4\uD0DD
+      3 \uAC10\uC18C \uBC0F '\uC728\uB9AC\uC544\uB97C \uAC00\uB454 \uC7A5\uB9C9'\uC5D0
+      '\uACFC\uBD80\uD558' \uC2A4\uD0DD 1 \uCD94\uAC00.\n\n\u203B \uBCF8 \uD14C\uC774\uBE14\uC758
+      UnitAI\uB294 \uAC04\uB7B5 \uADDC\uCE59\uB9CC \uC815\uB9AC\uD55C\uB2E4. \uC138\uBD80
+      \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED \uC728\uB9AC\uC544 \uBCF4\uC2A4\uC804_\uC138\uBD80
+      \uAD6C\uD604 \uAE30\uD68D\u300D \uBB38\uC11C\uB97C \uAE30\uC900\uC73C\uB85C
+      \uD55C\uB2E4."
+    ExperiencePoint: 0
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 40003
+    UnitType: 
+    Name: "\uACF5\uBA78\uC758 \uC99D\uD3ED\uAE30"
+    baseStats:
+      HP: 100
+      Atk: 15
+      DEF: 20
+      Luck: 0
+      Speed: 2
+      CriticalRate: 0.2
+      CritMultiplier: 1.5
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    levelupStats:
+      HP: 0
+      Atk: 0
+      DEF: 0
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "1 \uD398\uC774\uC988\n- '\uC751\uCD95', '\uB2A5\uB825 \uAC1C\uBC29'
+      \uD589\uB3D9\uB9CC \uC2DC\uC804 \uAC00\uB2A5\uD558\uB2E4.\n- \uC751\uCD95 :
+      '\uC5D0\uB108\uC9C0 \uCD95\uC801' \uC2A4\uD0DD 1 \uC99D\uAC00. \uC5D0\uB108\uC9C0
+      \uCD95\uC801 1\uC2A4\uD0DD\uB2F9 \uB2A5\uB825 \uAC1C\uBC29 \uC2DC\uC804 \uD655\uB960
+      50% \uC99D\uAC00, 2\uC2A4\uD0DD \uC774\uC0C1\uC740 100% \uACE0\uC815.\n- \uB2A5\uB825
+      \uAC1C\uBC29 : \uC728\uB9AC\uC544\uC758 YuliaReservedSkillSource \uB2E8\uC77C
+      \uC608\uC57D\uAC12\uC5D0 \uC774 \uC99D\uD3ED\uAE30 \uAC1C\uCCB4\uB97C \uC800\uC7A5\uD558\uACE0,
+      \uC5D0\uB108\uC9C0 \uCD95\uC801\uC744 0\uC73C\uB85C \uCD08\uAE30\uD654\uD55C\uB2E4.\n-
+      \uB2A5\uB825 \uAC1C\uBC29\uC740 \uC5D0\uB108\uC9C0 \uCD95\uC801 \uC2A4\uD0DD
+      1 \uC774\uC0C1\uC77C \uB54C\uB9CC \uC2DC\uC804 \uAC00\uB2A5\uD558\uB2E4.\n-
+      \uD30C\uAD34 \uC2DC \uACF5\uBA78\uC758 \uADA4\uC801 \uACF5\uAE09\uC774 \uCC28\uB2E8\uB41C\uB2E4.\n\n2
+      \uD398\uC774\uC988\n- 1\uD398\uC774\uC988\uC640 \uB3D9\uC77C\uD558\uAC8C \uC751\uCD95/\uB2A5\uB825
+      \uAC1C\uBC29\uC744 \uC0AC\uC6A9\uD55C\uB2E4.\n- \uCD94\uAC00\uB85C, \uD30C\uAD34
+      \uC2DC 2\uB77C\uC6B4\uB4DC\uAC04 \uBB34\uB825\uD654\uB418\uACE0 2\uB77C\uC6B4\uB4DC
+      \uACBD\uACFC \uD6C4 \uB2E4\uC2DC \uC804\uD22C\uC5D0 \uBCF5\uADC0\uD55C\uB2E4.\n\n3
+      \uD398\uC774\uC988\n- \uD30C\uAD34 \uC2DC 2\uB77C\uC6B4\uB4DC \uBB34\uB825\uD654
+      \uD6C4 \uBCF5\uADC0 \uADDC\uCE59\uB9CC 2\uD398\uC774\uC988\uC5D0\uC11C \uACC4\uC2B9\uD55C\uB2E4.\n-
+      \uC751\uCD95/\uB2A5\uB825 \uAC1C\uBC29\uC740 \uBE44\uD65C\uC131\uD654\uB41C\uB2E4.\n-
+      \uB9E4 \uD134 '\uACF5\uBA78\uC758 \uADA4\uC801'\uC744 \uC9C1\uC811 \uC2DC\uC804\uD55C\uB2E4.\n-
+      \uB9E4 \uBCF8\uC778 \uD134 \uC885\uB8CC \uC2DC '\uCDA9\uC804' \uC2A4\uD0DD
+      1 \uB204\uC801.\n- \uCDA9\uC804 1\uC2A4\uD0DD\uB2F9 \uACF5\uACA9\uB825 20%
+      \uC99D\uAC00.\n- \uC720\uB2DB \uD30C\uAD34 \uC2DC \uCDA9\uC804 \uC2A4\uD0DD
+      3 \uAC10\uC18C \uBC0F '\uC728\uB9AC\uC544\uB97C \uAC00\uB454 \uC7A5\uB9C9'\uC5D0
+      '\uACFC\uBD80\uD558' \uC2A4\uD0DD 1 \uCD94\uAC00.\n\n\u203B \uBCF8 \uD14C\uC774\uBE14\uC758
+      UnitAI\uB294 \uAC04\uB7B5 \uADDC\uCE59\uB9CC \uC815\uB9AC\uD55C\uB2E4. \uC138\uBD80
+      \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED \uC728\uB9AC\uC544 \uBCF4\uC2A4\uC804_\uC138\uBD80
+      \uAD6C\uD604 \uAE30\uD68D\u300D \uBB38\uC11C\uB97C \uAE30\uC900\uC73C\uB85C
+      \uD55C\uB2E4."
+    ExperiencePoint: 0
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 40004
+    UnitType: 
+    Name: "\uC728\uB9AC\uC544\uB97C \uAC00\uB454 \uC7A5\uB9C9"
+    baseStats:
+      HP: 500
+      Atk: 15
+      DEF: 40
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0.25
+      CritMultiplier: 1.5
+      CounterRate: 0.1
+      AvoidRate: 0.2
+      influence: 0
+    levelupStats:
+      HP: 0
+      Atk: 0
+      DEF: 0
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "3\uD398\uC774\uC988 \uC9C4\uC785 \uC2DC \uC728\uB9AC\uC544\uB97C \uB300\uCCB4\uD558\uB294
+      \uBCF4\uC2A4 \uC720\uB2DB.\n\n- \uC7A5\uB9C9\uC740 \uC728\uB9AC\uC544\uC758
+      HP\uC640 \uC0C1\uD0DC\uB97C \uACC4\uC2B9\uD55C\uB2E4.\n- \uC7A5\uB9C9\uC740
+      '\uC808\uB9DD\uC758 \uAD74\uB808'\uB9CC \uC0AC\uC6A9\uD55C\uB2E4.\n- YuliaReservedSkillSource
+      \uADDC\uCE59\uC740 \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uB294\uB2E4.\n- \uC99D\uD3ED\uAE30
+      \uD30C\uAD34 \uC2DC '\uACFC\uBD80\uD558' \uC2A4\uD0DD 1 \uCD94\uAC00.\n- \uACFC\uBD80\uD558
+      1\uC2A4\uD0DD\uB2F9 \uBC1B\uB294 \uD53C\uD574 50% \uC99D\uAC00.\n\n\u203B \uBCF8
+      \uD14C\uC774\uBE14\uC758 UnitAI\uB294 \uAC04\uB7B5 \uADDC\uCE59\uB9CC \uC815\uB9AC\uD55C\uB2E4.
+      \uC138\uBD80 \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED \uC728\uB9AC\uC544
+      \uBCF4\uC2A4\uC804_\uC138\uBD80 \uAD6C\uD604 \uAE30\uD68D\u300D \uBB38\uC11C\uB97C
+      \uAE30\uC900\uC73C\uB85C \uD55C\uB2E4."
+    ExperiencePoint: 0
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
+  - Index: 40005
+    UnitType: 
+    Name: "\uC808\uB9DD\uC758 \uAD74\uB801\uC1E0"
+    baseStats:
+      HP: 30
+      Atk: 20
+      DEF: 10
+      Luck: 0
+      Speed: 1
+      CriticalRate: 0
+      CritMultiplier: 1.5
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    levelupStats:
+      HP: 0
+      Atk: 0
+      DEF: 0
+      Luck: 0
+      Speed: 0
+      CriticalRate: 0
+      CritMultiplier: 0
+      CounterRate: 0
+      AvoidRate: 0
+      influence: 0
+    IsEnemyRow: 1
+    UnitAI: "\uC808\uB9DD\uC758 \uAD74\uB808\uB85C \uC18C\uD658\uB418\uB294 \uC720\uB2DB.\n\n-
+      HP 30 / \uBC29\uC5B4\uB825 10 / Speed 3.\n- \uC2DC\uC804\uC790 \uC9C4\uC601
+      \uC804\uC5F4 1,2,3 \uD0C0\uC77C\uC5D0 \uBAA8\uB450 \uC18C\uD658\uB41C\uB2E4.\n-
+      \uC18C\uD658 \uC704\uCE58\uB294 \uD56D\uC0C1 \uBE44\uC6CC\uB454\uB2E4. \uD574\uB2F9
+      \uD0C0\uC77C\uC5D0 \uC774\uBBF8 \uC720\uB2DB\uC774 \uC788\uC73C\uBA74 \uADF8
+      \uD0C0\uC77C\uC758 \uC18C\uD658\uC740 \uCDE8\uC18C\uB41C\uB2E4.\n- \uC18C\uD658\uB41C
+      \uB2E4\uC74C \uB77C\uC6B4\uB4DC\uBD80\uD130 \uD589\uB3D9\uD55C\uB2E4.\n- \uBCF8\uC778
+      \uD134\uC5D0 \uD574\uB2F9 \uD589\uC758 \uD788\uC5B4\uB85C \uC9C4\uC601\uC73C\uB85C
+      \uB3CC\uC9C4\uD574 \uD589 \uC804\uCCB4 \uD53C\uD574\uB97C \uC8FC\uACE0 \uC0AC\uB77C\uC9C4\uB2E4.\n-
+      \uB3CC\uC9C4 \uC804\uC5D0 \uD30C\uAD34\uB418\uBA74 \uD574\uB2F9 \uD589\uC758
+      \uD53C\uD574\uB294 \uBC1C\uC0DD\uD558\uC9C0 \uC54A\uB294\uB2E4.\n\n\u203B \uC138\uBD80
+      \uAD6C\uD604 \uADDC\uCE59\uC740 \u300C4\uAD6C\uC5ED \uC728\uB9AC\uC544 \uBCF4\uC2A4\uC804_\uC138\uBD80
+      \uAD6C\uD604 \uAE30\uD68D\u300D \uBB38\uC11C\uB97C \uAE30\uC900\uC73C\uB85C
+      \uD55C\uB2E4."
+    ExperiencePoint: 0
+    DropItem1Index: 
+    DropItem1Count: 
+    DropItem1Rate: []
   cachedWeapons:
   - WeaponIndex: 1
-    weaponKey: 
+    weaponKey: HC001
     weaponClass: 
     WeaponName: "\uAE30\uBCF8 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uAC00\uC7A5
@@ -818,8 +1062,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
-    weaponSkillKey: 
+    WeaponSkillIndex: 1
+    weaponSkillKey: HCS001
     WeaponSkillName: "\uC82C \uD30C\uC6CC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801
       1\uBA85\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
@@ -834,7 +1078,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.8
     WeaponSkillSubValue: 0
   - WeaponIndex: 2
-    weaponKey: 
+    weaponKey: HC002
     weaponClass: 
     WeaponName: "\uAD11\uC5ED \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uB113\uAC8C
@@ -847,8 +1091,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
-    weaponSkillKey: 
+    WeaponSkillIndex: 2
+    weaponSkillKey: HCS002
     WeaponSkillName: "\uC82C \uC775\uC2A4\uD50C\uB85C\uC804"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uD3ED\uBC1C\uC2DC\uCF1C
       \uBAA8\uB4E0 \uC801\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C
@@ -864,7 +1108,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.3
     WeaponSkillSubValue: 0
   - WeaponIndex: 3
-    weaponKey: 
+    weaponKey: HC003
     weaponClass: 
     WeaponName: "\uBC29\uC5B4 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
@@ -877,8 +1121,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
-    weaponSkillKey: 
+    WeaponSkillIndex: 3
+    weaponSkillKey: HCS003
     WeaponSkillName: "\uC82C \uC2E4\uB4DC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
       \uC0DD\uC131\uD55C\uB2E4. \uC0AC\uC6A9\uD55C \uD788\uC5B4\uB85C\uAC00 \uB2E4\uC74C
@@ -895,7 +1139,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.3
     WeaponSkillSubValue: 0
   - WeaponIndex: 4
-    weaponKey: 
+    weaponKey: HC004
     weaponClass: 
     WeaponName: "\uD68C\uBCF5 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uCE58\uC720
@@ -908,8 +1152,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
-    weaponSkillKey: 
+    WeaponSkillIndex: 4
+    weaponSkillKey: HCS004
     WeaponSkillName: "\uC82C \uB9AC\uCEE4\uBC84\uB9AC"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC544\uAD70
       1\uBA85\uC758 \uCCB4\uB825\uC744 {WeaponSkillValue} \uD68C\uBCF5\uD55C\uB2E4."
@@ -924,7 +1168,7 @@ MonoBehaviour:
     WeaponSkillValue: 0.3
     WeaponSkillSubValue: 0
   - WeaponIndex: 5
-    weaponKey: 
+    weaponKey: HC005
     weaponClass: 
     WeaponName: "\uC704\uC555 \uCF54\uC5B4"
     WeaponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801\uC758
@@ -937,8 +1181,8 @@ MonoBehaviour:
     BonusCounterRate: 0
     BonusReduceRate: 0
     BonusSpeed: 0
-    WeaponSkillIndex: 0
-    weaponSkillKey: 
+    WeaponSkillIndex: 5
+    weaponSkillKey: HCS005
     WeaponSkillName: "\uC82C \uD504\uB808\uC154"
     WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC555\uBC15\uD558\uC5EC
       \uBAA8\uB4E0 \uC801\uC758 \uBC29\uC5B4\uB825\uC744 1\uD134 \uB3D9\uC548 {WeaponSkillValue}
@@ -1105,6 +1349,74 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!1001 &5906782350245837117
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 4074436419809944235, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8180298766699557435, guid: 88e9db96ca57f294bb37e2b03ec35ac3,
+        type: 3}
+      propertyPath: m_Name
+      value: Unit_VillanMadonna_40001
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 88e9db96ca57f294bb37e2b03ec35ac3, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1115,3 +1427,4 @@ SceneRoots:
   - {fileID: 1336593381}
   - {fileID: 1858113517}
   - {fileID: 1884577820}
+  - {fileID: 5906782350245837117}

@@ -272,10 +272,27 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
     private static int ResolveAiIndex(UnitData data)
     {
         EnemyData typedEnemyData = data as EnemyData;
-        string aiType = typedEnemyData != null ? typedEnemyData.UnitAI : string.Empty;
+        if (typedEnemyData == null)
+        {
+            return 20001;
+        }
+
+        // 1) UnitAI에 명시적 숫자가 있으면 그대로 사용(수동 오버라이드).
+        string aiType = typedEnemyData.UnitAI;
         if (!string.IsNullOrWhiteSpace(aiType) && int.TryParse(aiType.Trim(), out int aiIndex))
         {
             return aiIndex;
+        }
+
+        // 2) UnitAI가 설명 텍스트인 경우: 현재는 4구역(4000x) 유닛만 유닛 Index를 AI 인덱스로 사용한다.
+        //    (EnemyData.Index는 "40002" 형태이며, "FV40002" 같은 형식도 숫자만 추출해 대응.)
+        //    2000x는 튜토리얼 이후 순차 적용 예정이라 지금은 기존 동작(20001)을 유지한다.
+        //    → 범위를 넓히려면 아래 하한(40000)을 20000 등으로 조정.
+        string indexDigits = System.Text.RegularExpressions.Regex.Match(
+            typedEnemyData.Index ?? string.Empty, @"\d+").Value;
+        if (int.TryParse(indexDigits, out int indexAi) && indexAi >= 40000 && indexAi < 50000)
+        {
+            return indexAi;
         }
 
         return 20001;

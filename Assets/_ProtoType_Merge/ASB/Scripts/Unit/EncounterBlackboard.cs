@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>전환 조건 종류(세부 규칙의 어휘). 필요 시 여기만 확장.</summary>
@@ -50,6 +51,12 @@ public sealed class EncounterBlackboard : MonoBehaviour
     private readonly Dictionary<string, HashSet<int>> _skillsUsedThisRound = new Dictionary<string, HashSet<int>>();
     private int _lastRoundIndex = -1;
 
+    // ── 율리아 스킬 예약 (증폭기 능력개방 → 율리아 소비) ──
+    // ※ '증폭기→율리아 소켓 스킬' 전용. BossController의 BossSkillRequest 창구/페이즈효과 큐와는 별개 시스템.
+    private int _reservedSocket;               // 0=없음, 1=나락(40002), 2=공멸(40003)
+    private BattleCharactor _reservedSource;   // 예약한 증폭기(생존검사에 사용, 문자열 id 미사용)
+    private bool _releaseUsedThisRound;        // 라운드당 능력개방 1회 게이트
+
     private BattleFlowManager _flow;
 
     private void OnEnable()
@@ -73,6 +80,9 @@ public sealed class EncounterBlackboard : MonoBehaviour
         _destroyedParticipants.Clear();
         _skillsUsedThisRound.Clear();
         _lastRoundIndex = -1;
+        _reservedSocket = 0;          // ★ 예약 초기화(전투 재시작 누수 방지)
+        _reservedSource = null;
+        _releaseUsedThisRound = false;
     }
 
     // ── 쓰기 API ──
@@ -108,6 +118,7 @@ public sealed class EncounterBlackboard : MonoBehaviour
         if (roundIndex == _lastRoundIndex) return;
         _lastRoundIndex = roundIndex;
         _skillsUsedThisRound.Clear();
+        _releaseUsedThisRound = false;   // 라운드 경계마다 능력개방 게이트 리셋
     }
 
     /// <summary>재소환 시 파괴 이력에서 제거(선택). 상태 정합용.</summary>
@@ -131,6 +142,63 @@ public sealed class EncounterBlackboard : MonoBehaviour
             if (kv.Value.Contains(skillIndex)) return true;
         }
         return false;
+    }
+
+    // ── 율리아 스킬 예약 API (증폭기 능력개방 ↔ 율리아 소비) ──
+
+    /// <summary>읽기전용: 이번 라운드 소켓 예약 가능 여부(확률 소비 전 검사). 소켓1은 소켓2를 덮을 여지도 true.</summary>
+    public bool CanReserveYulia(int socket)
+    {
+        if (socket != 1 && socket != 2) return false;
+        if (!_releaseUsedThisRound) return true;
+        return socket == 1 && _reservedSocket == 2;   // 소켓1 우선 override 여지
+    }
+
+    /// <summary>증폭기 능력개방 시 호출. 라운드당 1회 + 소켓1 우선(소켓2 예약 덮어쓰기). 성공 시 true.</summary>
+    public bool TryReserveYulia(int socket, BattleCharactor source)
+    {
+        if (source == null || (socket != 1 && socket != 2))
+        {
+            Debug.LogWarning($"[Encounter] TryReserveYulia 잘못된 인자: socket={socket}, source={(source != null ? source.UnitName : "null")}");
+            return false;
+        }
+        if (!_releaseUsedThisRound)
+        {
+            _reservedSocket = socket; _reservedSource = source; _releaseUsedThisRound = true;
+            return true;
+        }
+        if (socket == 1 && _reservedSocket == 2)   // 소켓1 우선
+        {
+            _reservedSocket = 1; _reservedSource = source;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>율리아가 조회만(소비 금지). 예약한 증폭기가 무효(사망/미참여)면 예약을 정리하고 false.</summary>
+    public bool TryPeekYuliaReservation(BattleFlowManager flow, out int socket, out BattleCharactor source)
+    {
+        socket = 0; source = null;
+        if (_reservedSocket == 0) return false;
+
+        bool alive = _reservedSource != null && !_reservedSource.IsDead
+                     && flow != null && flow.Participants.Contains(_reservedSource);
+        if (!alive)
+        {
+            _reservedSocket = 0; _reservedSource = null;   // 무효 예약 정리
+            return false;
+        }
+        socket = _reservedSocket; source = _reservedSource;
+        return true;
+    }
+
+    /// <summary>율리아가 non-Skip 결정을 확정하는 커밋에서만 호출(정확히 1회). 슬롯/소스 일치 시에만 비움.</summary>
+    public void ConsumeYuliaReservationIfMatch(int socket, BattleCharactor source)
+    {
+        if (_reservedSocket == socket && _reservedSource == source)
+        {
+            _reservedSocket = 0; _reservedSource = null;
+        }
     }
 
     // ── 상태머신 (뼈대: 규칙을 "실행"만. 규칙 내용은 _transitions 데이터) ──
