@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a271ef9828b8f84fa5d8fa452b0e65f, type: 3}
+  m_Name: BUILDING_Silhouette_Default
+  m_EditorClassIdentifier: 
+  settings:
+    holdBuildingFadeWhileMoving: 1
+    buildingRestoreDelay: 0.2
+    preciseBuildingOcclusion: 1
+    occlusionBoxOffset: {x: 0, y: 0.42, z: 0}
+    occlusionBoxSize: {x: 1.2, y: 0.8, z: 1.2}
+    occlusionCenterPriority: 1
+    occlusionRequiredCorners: 3
+    showOcclusionBox: 1
+    fillColor: {r: 0.49038795, g: 0.5355311, b: 0.59748423, a: 1}
+    opacity: 0.557
+    outlineColor: {r: 1, g: 1, b: 1, a: 1}
+    outlineOpacity: 0.231
+    outlineWidthMode: 0
+    outlineWorldWidth: 0.027
+    outlineWidth: 2
+    depthBias: 0.002

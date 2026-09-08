@@ -14511,7 +14511,7 @@ MonoBehaviour:
   targetCamera: {fileID: 1128058702}
   partyRegistry: {fileID: 1919126566}
   decorativeObjectRegistry: {fileID: 282724743}
-  transparentOverrideMaterial: {fileID: 2100000, guid: cded4d3e5ffc28649a69c5f090f14279,
+  transparentOverrideMaterial: {fileID: 2100000, guid: d06abe5d904ecd3499efb8563d37b9bb,
     type: 2}
   occludedAlpha: 0.45
   checkInterval: 0.1

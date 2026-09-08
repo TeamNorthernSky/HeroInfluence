@@ -16,6 +16,20 @@ MonoBehaviour:
   settings:
     stencilShader: {fileID: 4800000, guid: 3ccad4705b02ff849aa5c4fd02539c04, type: 3}
     passEvent: 300
+--- !u!114 &-6630834068431029415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9dde98482750d0408d4c67ef4cdaec8, type: 3}
+  m_Name: JC Building Silhouette
+  m_EditorClassIdentifier:
+  m_Active: 1
+  silhouetteMaterial: {fileID: 2100000, guid: d06abe5d904ecd3499efb8563d37b9bb, type: 2}
 --- !u!114 &-1878332245247344467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,7 +102,8 @@ MonoBehaviour:
   - {fileID: -1464269865322737980}
   - {fileID: -7345451610133947801}
   - {fileID: 6250830819766864903}
-  m_RendererFeatureMap: adc0de57c6d2eee5c40e21c650deadeb671a25afadb60f9a078c44238369bf56
+  - {fileID: -6630834068431029415}
+  m_RendererFeatureMap: adc0de57c6d2eee5c40e21c650deadeb671a25afadb60f9a078c44238369bf56593b9ce28b8bfaa3
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
