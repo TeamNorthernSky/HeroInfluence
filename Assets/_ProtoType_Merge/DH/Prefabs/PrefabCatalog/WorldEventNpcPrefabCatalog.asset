@@ -12,4 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2ad9b15b8f9493c8f2e0f4fdb96a3d1, type: 3}
   m_Name: WorldEventNpcPrefabCatalog
   m_EditorClassIdentifier: 
-  npcPrefabs: []
+  npcPrefabs:
+  - npcType: 0
+    prefab: {fileID: 0}
+  - npcType: 1
+    prefab: {fileID: 0}
+  - npcType: 2
+    prefab: {fileID: 0}
+  - npcType: 3
+    prefab: {fileID: 0}
