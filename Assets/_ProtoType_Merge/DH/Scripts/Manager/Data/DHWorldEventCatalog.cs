@@ -50,6 +50,9 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
 
         if (loadOnAwake)
             Reload();
+
+        if (Application.isPlaying)
+            DHWorldEventConditionRuntimeManager.EnsureInstance();
     }
 
     [ContextMenu("Reload")]
