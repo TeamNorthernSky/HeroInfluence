@@ -10,12 +10,13 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
 
     [SerializeField] private bool completeImmediatelyUntilUiIsReady;
     [SerializeField] private bool logEvents = true;
-    [SerializeField] private string choiceCancelText = "취소";
+    [SerializeField] private string choiceCancelText = "\uCDE8\uC18C";
 
     private bool isRunning;
     private WorldEventObject runningSource;
     private PartyGridMover runningParty;
     private DHWorldEventTemplate runningTemplate;
+    private string runningProgressKey;
     private Action runningClosedCallback;
     private DHWorldEventPresentationRequest currentRequest;
 
@@ -83,11 +84,30 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         return true;
     }
 
+    public bool TryStartConditionEvent(DHWorldEventTemplate template, PartyGridMover party, Action closedCallback = null)
+    {
+        if (isRunning || template == null || template.SourceType != DHWorldEventSourceType.Condition)
+            return false;
+
+        switch (template.EventType)
+        {
+            case DHWorldEventType.Consume:
+                return StartConsumeConditionEvent(template, party, closedCallback);
+            case DHWorldEventType.Reward:
+                return StartRewardConditionEvent(template, party, closedCallback);
+            case DHWorldEventType.Choice:
+                return StartChoiceConditionEvent(template, party, closedCallback);
+            default:
+                return false;
+        }
+    }
+
     public bool SelectChoice(string choiceId)
     {
         if (!CanHandleInput(DHWorldEventPresentationStep.Description) ||
             runningTemplate.EventType != DHWorldEventType.Choice ||
-            runningTemplate.SourceType != DHWorldEventSourceType.Npc)
+            (runningTemplate.SourceType != DHWorldEventSourceType.Npc &&
+             runningTemplate.SourceType != DHWorldEventSourceType.Condition))
         {
             return false;
         }
@@ -97,7 +117,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
 
         if (option.IsCancel)
         {
-            EndCurrentEvent(false);
+            CompleteOrCloseCancel();
             return true;
         }
 
@@ -137,7 +157,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
                 runningSource);
         }
 
-        runningSource.Complete();
+        CompleteRunningEvent();
         EndCurrentEvent(true);
         return true;
     }
@@ -154,7 +174,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
             return false;
         }
 
-        if (runningTemplate.EventType == DHWorldEventType.Reward && runningTemplate.SourceType == DHWorldEventSourceType.Npc)
+        if (runningTemplate.EventType == DHWorldEventType.Reward)
             return ConfirmRewardProceed();
 
         currentRequest = BuildRequest(DHWorldEventPresentationStep.Accept, runningTemplate.AcceptText, true, string.Empty);
@@ -206,7 +226,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
             return false;
         }
 
-        runningSource.Complete();
+        CompleteRunningEvent();
         EndCurrentEvent(true);
         return true;
     }
@@ -223,7 +243,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
             return false;
         }
 
-        runningSource.Complete();
+        CompleteRunningEvent();
         EndCurrentEvent(true);
         return true;
     }
@@ -233,7 +253,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         if (!CanHandleInput(DHWorldEventPresentationStep.Cancel))
             return false;
 
-        EndCurrentEvent(false);
+        CompleteOrCloseCancel();
         return true;
     }
 
@@ -284,6 +304,65 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         return true;
     }
 
+    private bool StartConsumeConditionEvent(
+        DHWorldEventTemplate template,
+        PartyGridMover party,
+        Action closedCallback)
+    {
+        BeginEventState(null, party, template, closedCallback);
+
+        bool canProceed = DHWorldEventResultApplier.CanApply(template, party, out string disabledReason);
+        currentRequest = BuildRequest(DHWorldEventPresentationStep.Description, template.Description, canProceed, disabledReason);
+
+        if (logEvents)
+        {
+            Debug.Log(
+                $"[DHWorldEventRuntime] Start consume condition event '{template.WorldEventId}' zone={template.ZoneNo}, canProceed={canProceed}.",
+                this);
+        }
+
+        PresentationChanged?.Invoke(currentRequest);
+        return true;
+    }
+
+    private bool StartRewardConditionEvent(
+        DHWorldEventTemplate template,
+        PartyGridMover party,
+        Action closedCallback)
+    {
+        BeginEventState(null, party, template, closedCallback);
+        currentRequest = BuildRequest(DHWorldEventPresentationStep.Description, template.Description, true, string.Empty);
+
+        if (logEvents)
+        {
+            Debug.Log(
+                $"[DHWorldEventRuntime] Start reward condition event '{template.WorldEventId}' zone={template.ZoneNo}.",
+                this);
+        }
+
+        PresentationChanged?.Invoke(currentRequest);
+        return true;
+    }
+
+    private bool StartChoiceConditionEvent(
+        DHWorldEventTemplate template,
+        PartyGridMover party,
+        Action closedCallback)
+    {
+        BeginEventState(null, party, template, closedCallback);
+        currentRequest = BuildChoiceRequest(string.Empty);
+
+        if (logEvents)
+        {
+            Debug.Log(
+                $"[DHWorldEventRuntime] Start choice condition event '{template.WorldEventId}' zone={template.ZoneNo}, choices={template.Choices.Count}.",
+                this);
+        }
+
+        PresentationChanged?.Invoke(currentRequest);
+        return true;
+    }
+
     private bool StartChoiceNpcEvent(
         WorldEventObject source,
         PartyGridMover party,
@@ -309,19 +388,41 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         return true;
     }
 
+    private void BeginEventState(
+        WorldEventObject source,
+        PartyGridMover party,
+        DHWorldEventTemplate template,
+        Action closedCallback)
+    {
+        isRunning = true;
+        runningSource = source;
+        runningParty = party;
+        runningTemplate = template;
+        runningProgressKey = BuildProgressKey(template != null ? template.WorldEventId : string.Empty);
+        runningClosedCallback = closedCallback;
+    }
+
     private DHWorldEventPresentationRequest BuildRequest(
         DHWorldEventPresentationStep step,
         string messageText,
         bool canProceed,
         string disabledReason)
     {
-        return new DHWorldEventPresentationRequest(runningTemplate, step, messageText, canProceed, disabledReason);
+        return new DHWorldEventPresentationRequest(
+            runningTemplate,
+            step,
+            messageText,
+            canProceed,
+            disabledReason,
+            null,
+            DHWorldEventPreviewBuilder.Build(runningTemplate));
     }
 
     private DHWorldEventPresentationRequest BuildChoiceRequest(string disabledReason)
     {
+        DHWorldEventCatalog catalog = DHWorldEventCatalog.Instance;
         IReadOnlyList<DHWorldEventChoicePresentationOption> options =
-            DHWorldEventChoiceResolver.BuildPresentationOptions(runningTemplate, runningParty, choiceCancelText);
+            DHWorldEventChoiceResolver.BuildPresentationOptions(runningTemplate, runningParty, choiceCancelText, catalog);
 
         return new DHWorldEventPresentationRequest(
             runningTemplate,
@@ -329,7 +430,8 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
             runningTemplate != null ? runningTemplate.Description : string.Empty,
             true,
             disabledReason,
-            options);
+            options,
+            DHWorldEventPreviewBuilder.Build(runningTemplate));
     }
 
     private bool TryFindCurrentChoice(string choiceId, out DHWorldEventChoicePresentationOption option)
@@ -356,10 +458,30 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
     private bool CanHandleInput(DHWorldEventPresentationStep expectedStep)
     {
         return isRunning &&
-               runningSource != null &&
                runningTemplate != null &&
                currentRequest != null &&
                currentRequest.Step == expectedStep;
+    }
+
+    private void CompleteOrCloseCancel()
+    {
+        bool completed = runningTemplate != null && runningTemplate.SourceType == DHWorldEventSourceType.Condition;
+        if (completed)
+            CompleteRunningEvent();
+
+        EndCurrentEvent(completed);
+    }
+
+    private void CompleteRunningEvent()
+    {
+        if (runningSource != null)
+        {
+            runningSource.Complete();
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(runningProgressKey))
+            MapProgressRepository.Instance?.MarkEventCompleted(runningProgressKey);
     }
 
     private void EndCurrentEvent(bool completed)
@@ -371,6 +493,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         runningSource = null;
         runningParty = null;
         runningTemplate = null;
+        runningProgressKey = string.Empty;
         runningClosedCallback = null;
         currentRequest = null;
 
@@ -379,5 +502,13 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
 
         PresentationClosed?.Invoke(closedRequest);
         callback?.Invoke();
+    }
+
+    public static string BuildProgressKey(string eventId)
+    {
+        string normalizedId = MapProgressKey.NormalizeSegment(eventId);
+        return string.IsNullOrWhiteSpace(normalizedId)
+            ? "world_event"
+            : $"world_event_{normalizedId}";
     }
 }
