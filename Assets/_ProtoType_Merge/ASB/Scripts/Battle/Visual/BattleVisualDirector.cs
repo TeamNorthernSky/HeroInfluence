@@ -16,36 +16,6 @@ public class BattleVisualDirector : MonoBehaviour
         return _catalog != null ? _catalog.Get(skillIndex) : null;
     }
 
-    public void PlayAttackEffect(BattleCharactor actor, int skillIndex)
-    {
-        SkillPresentationData presentation = _catalog?.Get(skillIndex);
-        if (presentation == null)
-        {
-            return;
-        }
-
-        // Schema=1(PhaseCue)은 시전자 이펙트/사운드를 UnitEffectPresenter/Cue가 담당 →
-        // director는 스폰하지 않는다(이중 스폰 방지). Schema=0만 이 레거시 경로 사용.
-        if (presentation.IsPhaseCue)
-        {
-            return;
-        }
-
-        var profile = actor?.GetComponent<UnitVisualProfile>();
-        Transform socket = profile?.AttackEffectSocket ?? actor?.transform;
-
-        if (presentation.EnableAttackEffect)
-        {
-            GameObject prefab = ResolveEffectPrefab(presentation.AttackEffectId, presentation.AttackEffectPrefab);
-            if (prefab != null && socket != null)
-            {
-                Instantiate(prefab, socket.position, socket.rotation);
-            }
-        }
-
-        PlaySound(presentation.AttackSoundId, presentation.AttackSfxClip, socket, presentation.SfxVolume);
-    }
-
     public void PlayHitEffectAt(Transform targetTransform, int skillIndex)
     {
         if (targetTransform == null)
@@ -57,7 +27,7 @@ public class BattleVisualDirector : MonoBehaviour
 
         if (presentation.EnableHitEffect)
         {
-            GameObject prefab = ResolveEffectPrefab(presentation.HitEffectId, presentation.HitEffectPrefab);
+            GameObject prefab = ResolveEffectPrefab(presentation.HitEffectId);
             if (prefab != null)
             {
                 GameObject instance = Instantiate(prefab, targetTransform.position, targetTransform.rotation);
@@ -65,7 +35,7 @@ public class BattleVisualDirector : MonoBehaviour
             }
         }
 
-        PlaySound(presentation.HitSoundId, presentation.HitSfxClip, targetTransform, presentation.SfxVolume);
+        PlaySound(presentation.HitSoundId, targetTransform, presentation.SfxVolume);
     }
 
     public void PlayHitEffect(BattleCharactor target, int skillIndex)
@@ -86,7 +56,7 @@ public class BattleVisualDirector : MonoBehaviour
 
         if (presentation.EnableHitEffect)
         {
-            GameObject prefab = ResolveEffectPrefab(presentation.HitEffectId, presentation.HitEffectPrefab);
+            GameObject prefab = ResolveEffectPrefab(presentation.HitEffectId);
             // 재료 프리팹은 프리젠터/이벤트가 담당 → director는 스폰하지 않음.
             if (prefab != null && socket != null)
             {
@@ -107,38 +77,28 @@ public class BattleVisualDirector : MonoBehaviour
             }
         }
 
-        PlaySound(presentation.HitSoundId, presentation.HitSfxClip, socket, presentation.SfxVolume);
+        PlaySound(presentation.HitSoundId, socket, presentation.SfxVolume);
     }
 
     /// <summary>EffectRegistry에서 id로 프리팹을 조회합니다(시퀀서의 재료 판별용). 0이면 null.</summary>
     public GameObject GetRegisteredEffect(int id) => id != 0 ? _effectRegistry?.Get(id) : null;
 
-    // 레지스트리 id 우선, 없으면 레거시 프리팹 폴백 (마이그레이션 브리지).
-    private GameObject ResolveEffectPrefab(int effectId, GameObject legacyPrefab)
+    // EffectRegistry id로 프리팹 조회(0이면 null).
+    private GameObject ResolveEffectPrefab(int effectId)
     {
-        GameObject fromRegistry = effectId != 0 ? _effectRegistry?.Get(effectId) : null;
-        return fromRegistry != null ? fromRegistry : legacyPrefab;
+        return effectId != 0 ? _effectRegistry?.Get(effectId) : null;
     }
 
-    // SoundRegistry id 우선, 없으면 레거시 AudioClip 폴백. 전투 로직은 건드리지 않음.
-    private void PlaySound(int soundId, AudioClip legacyClip, Transform at, float volume)
+    // SoundRegistry id로 재생(0이면 무시).
+    private void PlaySound(int soundId, Transform at, float volume)
     {
-        if (SoundManager.Instance == null)
+        if (SoundManager.Instance == null || soundId == 0)
         {
             return;
         }
 
         Vector3 pos = at != null ? at.position : Vector3.zero;
-        if (soundId != 0)
-        {
-            SoundManager.Instance.PlayById(soundId, pos, volume);
-            return;
-        }
-
-        if (legacyClip != null)
-        {
-            SoundManager.Instance.PlayClip(legacyClip, pos, volume);
-        }
+        SoundManager.Instance.PlayById(soundId, pos, volume);
     }
 
     public void ShowDamagePopup(BattleHitResult result)
