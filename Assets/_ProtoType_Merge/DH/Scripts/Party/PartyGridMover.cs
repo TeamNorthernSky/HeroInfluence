@@ -161,8 +161,7 @@ public class PartyGridMover : MonoBehaviour
             return;
 
         Vector2Int nextGrid = pathQueue.Peek();
-        Vector3 target = gridManager.GridToWorldCenter(nextGrid);
-        target.y = fixedY;
+        Vector3 target = GetWorldPositionForGrid(nextGrid);
 
         transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
         if ((transform.position - target).sqrMagnitude <= arriveThreshold * arriveThreshold)
@@ -226,9 +225,7 @@ public class PartyGridMover : MonoBehaviour
         if (gridManager == null)
             return;
 
-        Vector3 worldPosition = gridManager.GridToWorldCenter(grid);
-        worldPosition.y = fixedY;
-        transform.position = worldPosition;
+        transform.position = GetWorldPositionForGrid(grid);
         GridEntered?.Invoke(currentGrid);
         PersistLastGrid();
         NotifyPathUpdated();
@@ -270,9 +267,7 @@ public class PartyGridMover : MonoBehaviour
         SetMoving(false);
         TargetInteractionGrid = null;
 
-        Vector3 worldPos = gridManager.GridToWorldCenter(currentGrid);
-        worldPos.y = fixedY;
-        transform.position = worldPos;
+        transform.position = GetWorldPositionForGrid(currentGrid);
         PersistLastGrid();
         NotifyPathUpdated();
 
@@ -531,6 +526,14 @@ public class PartyGridMover : MonoBehaviour
     private static int GetPathMoveCost(List<Vector2Int> path)
     {
         return path == null ? 0 : Mathf.Max(0, path.Count - 1);
+    }
+
+    private Vector3 GetWorldPositionForGrid(Vector2Int grid)
+    {
+        Vector3 worldPosition = gridManager.GridToWorldCenter(grid);
+        float heightOffset = fixedY - gridManager.GetLandSurfaceY();
+        worldPosition.y = gridManager.GetCellSurfaceY(grid) + heightOffset;
+        return worldPosition;
     }
 
     private bool HasAnyValidPartyUnit()

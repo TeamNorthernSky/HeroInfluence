@@ -120,9 +120,7 @@ public class EnemyGridMover : MonoBehaviour
             return;
         }
 
-        Vector3 worldPosition = gridManager.GridToWorldCenter(grid);
-        worldPosition.y = fixedY;
-        transform.position = worldPosition;
+        transform.position = GetWorldPositionForGrid(grid);
 
         if (changed)
             GridChanged?.Invoke(this, currentGrid);
@@ -143,8 +141,7 @@ public class EnemyGridMover : MonoBehaviour
                 Vector2Int nextGrid = path[i];
                 MoveStepStarted?.Invoke(this, nextGrid);
 
-                Vector3 target = gridManager.GridToWorldCenter(nextGrid);
-                target.y = fixedY;
+                Vector3 target = GetWorldPositionForGrid(nextGrid);
 
                 while ((transform.position - target).sqrMagnitude > arriveThreshold * arriveThreshold)
                 {
@@ -199,5 +196,13 @@ public class EnemyGridMover : MonoBehaviour
 
         MapProgressRepository repository = MapProgressRepository.Instance;
         repository?.SetEnemyGrid(enemyIdentity.PlacementKey, grid);
+    }
+
+    private Vector3 GetWorldPositionForGrid(Vector2Int grid)
+    {
+        Vector3 worldPosition = gridManager.GridToWorldCenter(grid);
+        float heightOffset = fixedY - gridManager.GetLandSurfaceY();
+        worldPosition.y = gridManager.GetCellSurfaceY(grid) + heightOffset;
+        return worldPosition;
     }
 }

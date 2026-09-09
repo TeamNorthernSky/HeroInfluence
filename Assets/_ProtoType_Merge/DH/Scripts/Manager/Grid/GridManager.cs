@@ -72,6 +72,7 @@ public class GridManager : MonoBehaviour
     private Vector3 gridOrigin = Vector3.zero;
     private readonly HashSet<Vector2Int> levelObstacleCells = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> gateBlockerCells = new HashSet<Vector2Int>();
+    private readonly Dictionary<Vector2Int, float> cellSurfaceYOffsetByGrid = new Dictionary<Vector2Int, float>();
 
     public float CellSize => cellSize;
     public Transform LandTransform => landTransform;
@@ -169,6 +170,48 @@ public class GridManager : MonoBehaviour
         float z = gridOrigin.z + cellSize * grid.y;
 
         return new Vector3(x, 0f, z);
+    }
+
+    public void ClearCellSurfaceOffsets()
+    {
+        cellSurfaceYOffsetByGrid.Clear();
+    }
+
+    public void RegisterCellSurfaceOffset(Vector2Int grid, float yOffset)
+    {
+        cellSurfaceYOffsetByGrid[grid] = yOffset;
+    }
+
+    public bool HasCellSurfaceOffset(Vector2Int grid)
+    {
+        return cellSurfaceYOffsetByGrid.ContainsKey(grid);
+    }
+
+    public float GetCellSurfaceY(Vector2Int grid)
+    {
+        return GetLandSurfaceY() + GetCellSurfaceYOffset(grid);
+    }
+
+    public float GetFootprintSurfaceY(Vector2Int anchorGrid, Vector2Int size)
+    {
+        Vector2Int clampedSize = new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
+        float surfaceY = GetCellSurfaceY(anchorGrid);
+
+        for (int y = 0; y < clampedSize.y; y++)
+        {
+            for (int x = 0; x < clampedSize.x; x++)
+            {
+                Vector2Int grid = new Vector2Int(anchorGrid.x + x, anchorGrid.y + y);
+                surfaceY = Mathf.Max(surfaceY, GetCellSurfaceY(grid));
+            }
+        }
+
+        return surfaceY;
+    }
+
+    private float GetCellSurfaceYOffset(Vector2Int grid)
+    {
+        return cellSurfaceYOffsetByGrid.TryGetValue(grid, out float yOffset) ? yOffset : 0f;
     }
 
     public static int GridDistance(Vector2Int a, Vector2Int b)

@@ -397,7 +397,7 @@ public class InteractionCellOverlayController : MonoBehaviour
             return;
 
         Vector3 position = gridManager.GridToWorldCenter(grid);
-        position.y = gridManager.GetLandSurfaceY() + yOffset;
+        position.y = gridManager.GetCellSurfaceY(grid) + yOffset;
         instance.GameObject.transform.position = position;
 
         float size = Mathf.Max(0.01f, gridManager.CellSize * cellScale);

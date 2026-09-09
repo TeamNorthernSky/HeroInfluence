@@ -20,12 +20,18 @@ public class LevelEditorWindow : EditorWindow
         public readonly Vector2Int Offset;
         public readonly string TileKey;
         public readonly string MaterialKey;
+        public readonly LevelTileRenderMode RenderMode;
 
-        public CopiedTile(Vector2Int offset, string tileKey, string materialKey)
+        public CopiedTile(
+            Vector2Int offset,
+            string tileKey,
+            string materialKey,
+            LevelTileRenderMode renderMode)
         {
             Offset = offset;
             TileKey = tileKey;
             MaterialKey = materialKey;
+            RenderMode = renderMode;
         }
     }
 
@@ -339,6 +345,7 @@ public class LevelEditorWindow : EditorWindow
         SerializedProperty registryProperty = serializedController.FindProperty("tileRegistry");
         SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedTileKey");
         SerializedProperty selectedMaterialKeyProperty = serializedController.FindProperty("selectedTileMaterialKey");
+        SerializedProperty selectedRenderModeProperty = serializedController.FindProperty("selectedTileRenderMode");
 
         EditorGUILayout.PropertyField(registryProperty);
 
@@ -393,6 +400,7 @@ public class LevelEditorWindow : EditorWindow
         }
 
         DrawTileMaterialSelector(registry, selectedMaterialKeyProperty);
+        EditorGUILayout.PropertyField(selectedRenderModeProperty, new GUIContent("Render Mode"));
     }
 
     private void DrawTileMaterialSelector(LevelTileRegistry registry, SerializedProperty selectedMaterialKeyProperty)
@@ -1154,11 +1162,15 @@ public class LevelEditorWindow : EditorWindow
             }
 
             Undo.RecordObject(context.LevelData, "Paint GroundTile");
-            context.LevelData.SetGroundTile(anchor, context.SelectedTileKey, context.SelectedTileMaterialKey);
+            context.LevelData.SetGroundTile(
+                anchor,
+                context.SelectedTileKey,
+                context.SelectedTileMaterialKey,
+                context.SelectedTileRenderMode);
             string materialStatus = string.IsNullOrWhiteSpace(context.SelectedTileMaterialKey)
                 ? "default material"
                 : context.SelectedTileMaterialKey;
-            sceneStatus = $"Painted {context.SelectedTileKey} ({materialStatus}) at {anchor}.";
+            sceneStatus = $"Painted {context.SelectedTileKey} ({materialStatus}, {context.SelectedTileRenderMode}) at {anchor}.";
             CommitLevelDataChange(context);
             return;
         }
@@ -1357,6 +1369,7 @@ public class LevelEditorWindow : EditorWindow
         context.TileRegistry = controller.TileRegistry;
         context.SelectedTileKey = controller.SelectedTileKey;
         context.SelectedTileMaterialKey = controller.SelectedTileMaterialKey;
+        context.SelectedTileRenderMode = controller.SelectedTileRenderMode;
         context.SelectedHeroUnionPrefabKey = controller.SelectedHeroUnionPrefabKey;
         context.SelectedDecorativeObjectKey = controller.SelectedDecorativeObjectKey;
         context.SelectedMainEventPrefabKey = controller.SelectedMainEventPrefabKey;
@@ -1482,7 +1495,11 @@ public class LevelEditorWindow : EditorWindow
             if (string.IsNullOrWhiteSpace(placement.TileKey))
                 continue;
 
-            clipboard.Tiles.Add(new CopiedTile(grid - min, placement.TileKey, placement.MaterialKey));
+            clipboard.Tiles.Add(new CopiedTile(
+                grid - min,
+                placement.TileKey,
+                placement.MaterialKey,
+                placement.RenderMode));
         }
 
         tileClipboard = clipboard;
@@ -1516,7 +1533,11 @@ public class LevelEditorWindow : EditorWindow
             if (!context.LevelData.IsInsideGrid(targetGrid))
                 continue;
 
-            context.LevelData.SetGroundTile(targetGrid, copiedTile.TileKey, copiedTile.MaterialKey);
+            context.LevelData.SetGroundTile(
+                targetGrid,
+                copiedTile.TileKey,
+                copiedTile.MaterialKey,
+                copiedTile.RenderMode);
             pastedCount++;
         }
 
@@ -2428,6 +2449,7 @@ public class LevelEditorWindow : EditorWindow
         public LevelTileRegistry TileRegistry;
         public string SelectedTileKey;
         public string SelectedTileMaterialKey;
+        public LevelTileRenderMode SelectedTileRenderMode;
         public string SelectedHeroUnionPrefabKey;
         public string SelectedDecorativeObjectKey;
         public string SelectedMainEventPrefabKey;

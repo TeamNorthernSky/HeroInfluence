@@ -38,13 +38,12 @@ public class PathPreviewRenderer : MonoBehaviour
             return;
         }
 
-        float y = gridManager.GetLandSurfaceY() + 0.02f;
         List<Vector3> points = new List<Vector3>(path.Count);
 
         for (int i = 0; i < path.Count; i++)
         {
             Vector3 p = gridManager.GridToWorldCenter(path[i]);
-            p.y = y;
+            p.y = gridManager.GetCellSurfaceY(path[i]) + 0.02f;
             points.Add(p);
         }
 
@@ -65,16 +64,14 @@ public class PathPreviewRenderer : MonoBehaviour
             return;
         }
 
-        float y = gridManager.GetLandSurfaceY() + 0.02f;
         List<Vector3> points = new List<Vector3>(remainingPath.Count + 1);
 
-        startWorldPosition.y = y;
         points.Add(startWorldPosition);
 
         for (int i = 0; i < remainingPath.Count; i++)
         {
             Vector3 p = gridManager.GridToWorldCenter(remainingPath[i]);
-            p.y = y;
+            p.y = gridManager.GetCellSurfaceY(remainingPath[i]) + 0.02f;
             points.Add(p);
         }
 
