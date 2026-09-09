@@ -6,12 +6,13 @@ using UnityEngine;
 public static class DHWorldEventChoiceResolver
 {
     public const string CancelChoiceId = "__cancel";
-    private const string DefaultCancelText = "취소";
+    private const string DefaultCancelText = "\uCDE8\uC18C";
 
     public static IReadOnlyList<DHWorldEventChoicePresentationOption> BuildPresentationOptions(
         DHWorldEventTemplate template,
         PartyGridMover party,
-        string cancelText = DefaultCancelText)
+        string cancelText = DefaultCancelText,
+        DHWorldEventCatalog catalog = null)
     {
         var result = new List<DHWorldEventChoicePresentationOption>(3);
         if (template != null)
@@ -22,6 +23,11 @@ public static class DHWorldEventChoiceResolver
                 DHWorldEventChoiceTemplate choice = choices[i];
                 bool enabled = DHWorldEventChoiceConditionEvaluator.IsChoiceEnabled(choice, party, out string disabledReason);
                 float successRate = CalculateSuccessRate(choice, party);
+                IReadOnlyList<DHWorldEventPreviewEntry> successPreview =
+                    BuildResultPreview(catalog, choice.SuccessResultGroupId);
+                IReadOnlyList<DHWorldEventPreviewEntry> failurePreview =
+                    BuildResultPreview(catalog, choice.FailureResultGroupId);
+
                 result.Add(new DHWorldEventChoicePresentationOption(
                     choice.ChoiceId,
                     choice.ChoiceText,
@@ -31,7 +37,9 @@ public static class DHWorldEventChoiceResolver
                     successRate,
                     $"{Mathf.RoundToInt(successRate)}%",
                     choice.SuccessResultGroupId,
-                    choice.FailureResultGroupId));
+                    choice.FailureResultGroupId,
+                    successPreview,
+                    failurePreview));
             }
         }
 
@@ -47,6 +55,20 @@ public static class DHWorldEventChoiceResolver
             string.Empty));
 
         return result;
+    }
+
+    private static IReadOnlyList<DHWorldEventPreviewEntry> BuildResultPreview(
+        DHWorldEventCatalog catalog,
+        string resultGroupId)
+    {
+        if (catalog == null ||
+            string.IsNullOrWhiteSpace(resultGroupId) ||
+            !catalog.TryGetChoiceResults(resultGroupId, out IReadOnlyList<DHWorldEventResultTemplate> results))
+        {
+            return System.Array.Empty<DHWorldEventPreviewEntry>();
+        }
+
+        return DHWorldEventPreviewBuilder.BuildChoiceResult(results);
     }
 
     public static bool TryResolveResultGroupId(

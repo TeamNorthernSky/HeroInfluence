@@ -6,6 +6,8 @@ public class DecorativeObjectPlacement : MonoBehaviour
 {
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorId = Shader.PropertyToID("_Color");
+    // [JC 수정 260908] 실루엣 마스크는 원본 재질 색/알파와 분리한 공통 불투명도를 사용한다.
+    private static readonly int SilhouetteAlphaId = Shader.PropertyToID("_JcOcclusionAlpha");
 
     [SerializeField] private string prefabKey;
     [SerializeField] private Vector3 anchorLocalOffset;
@@ -194,10 +196,13 @@ public class DecorativeObjectPlacement : MonoBehaviour
 
         public void ApplyAlpha(Renderer renderer, float alpha)
         {
-            if (renderer == null || (!hasBaseColor && !hasColor))
+            if (renderer == null)
                 return;
 
             renderer.GetPropertyBlock(block);
+            Material currentMaterial = renderer.sharedMaterial;
+            if (currentMaterial != null && currentMaterial.HasProperty(SilhouetteAlphaId))
+                block.SetFloat(SilhouetteAlphaId, alpha);
             if (hasBaseColor)
                 block.SetColor(BaseColorId, WithAlpha(baseColor, alpha));
             if (hasColor)
