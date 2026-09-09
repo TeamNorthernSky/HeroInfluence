@@ -202,7 +202,9 @@ public class ClickSelectionController : MonoBehaviour
             if (marker != null && (t == marker || t.IsChildOf(marker)))
                 continue;
 
-            if (t == groundTransform || (t != null && t.IsChildOf(groundTransform)))
+            bool isLandHit = t == groundTransform || (t != null && t.IsChildOf(groundTransform));
+            bool isRaisedTileTopHit = h.normal.y > 0.5f && gridManager.HasCellSurfaceOffset(gridManager.WorldToGrid(h.point));
+            if (isLandHit || isRaisedTileTopHit)
             {
                 if (h.distance < bestDist)
                 {

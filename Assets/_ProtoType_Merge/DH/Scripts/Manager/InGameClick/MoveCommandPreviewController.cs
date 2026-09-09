@@ -124,7 +124,7 @@ public class MoveCommandPreviewController
             path = TrimGuidancePathAtFirstItem(path, out destinationGrid);
 
         Vector3 markerWorld = gridManager.GridToWorldCenter(destinationGrid);
-        markerWorld.y = gridManager.GetLandSurfaceY() + 0.02f;
+        markerWorld.y = gridManager.GetCellSurfaceY(destinationGrid) + 0.02f;
         PlaceMarker(destinationGrid, markerWorld);
         previewPath = path;
 

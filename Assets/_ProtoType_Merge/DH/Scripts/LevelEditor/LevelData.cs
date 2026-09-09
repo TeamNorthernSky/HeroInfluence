@@ -282,15 +282,24 @@ public class LevelData : ScriptableObject
 
     public void SetGroundTile(Vector2Int grid, string tileKey)
     {
-        SetGroundTile(grid, tileKey, string.Empty);
+        SetGroundTile(grid, tileKey, string.Empty, LevelTileRenderMode.FlatSprite);
     }
 
     public void SetGroundTile(Vector2Int grid, string tileKey, string materialKey)
     {
+        SetGroundTile(grid, tileKey, materialKey, LevelTileRenderMode.FlatSprite);
+    }
+
+    public void SetGroundTile(
+        Vector2Int grid,
+        string tileKey,
+        string materialKey,
+        LevelTileRenderMode renderMode)
+    {
         if (!IsInsideGrid(grid))
             return;
 
-        SetTilePlacement(groundTilePlacements, grid, tileKey, materialKey);
+        SetTilePlacement(groundTilePlacements, grid, tileKey, materialKey, renderMode);
     }
 
     public void EraseGroundTileAt(Vector2Int grid)
@@ -606,14 +615,19 @@ public class LevelData : ScriptableObject
             villainUnionPlacement = default;
     }
 
-    private static void SetTilePlacement(List<TilePlacementData> placements, Vector2Int grid, string tileKey, string materialKey)
+    private static void SetTilePlacement(
+        List<TilePlacementData> placements,
+        Vector2Int grid,
+        string tileKey,
+        string materialKey,
+        LevelTileRenderMode renderMode)
     {
         placements.RemoveAll(x => x.GridPosition == grid);
 
         if (string.IsNullOrWhiteSpace(tileKey))
             return;
 
-        placements.Add(new TilePlacementData(grid, tileKey, materialKey));
+        placements.Add(new TilePlacementData(grid, tileKey, materialKey, renderMode));
     }
 
     private void OnValidate()
@@ -698,28 +712,48 @@ public class LevelData : ScriptableObject
     }
 }
 
+public enum LevelTileRenderMode
+{
+    FlatSprite = 0,
+    LoweredSprite = 1,
+    FlatCube = 2,
+    RaisedCube = 3
+}
+
 [Serializable]
 public struct TilePlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
     [SerializeField] private string tileKey;
     [SerializeField] private string materialKey;
+    [SerializeField] private LevelTileRenderMode renderMode;
 
     public TilePlacementData(Vector2Int gridPosition, string tileKey)
-        : this(gridPosition, tileKey, string.Empty)
+        : this(gridPosition, tileKey, string.Empty, LevelTileRenderMode.FlatSprite)
     {
     }
 
     public TilePlacementData(Vector2Int gridPosition, string tileKey, string materialKey)
+        : this(gridPosition, tileKey, materialKey, LevelTileRenderMode.FlatSprite)
+    {
+    }
+
+    public TilePlacementData(
+        Vector2Int gridPosition,
+        string tileKey,
+        string materialKey,
+        LevelTileRenderMode renderMode)
     {
         this.gridPosition = gridPosition;
         this.tileKey = tileKey;
         this.materialKey = materialKey;
+        this.renderMode = renderMode;
     }
 
     public Vector2Int GridPosition => gridPosition;
     public string TileKey => tileKey;
     public string MaterialKey => string.IsNullOrWhiteSpace(materialKey) ? string.Empty : materialKey.Trim();
+    public LevelTileRenderMode RenderMode => renderMode;
 }
 
 [Serializable]
