@@ -242,8 +242,10 @@ public class BattleFlowManager : MonoBehaviour
 
     /// <summary>
     /// 전투에서 유닛을 완전히 제거할 때만 사용(예: 오브젝트 파괴). 일반 사망(OnDied)에서는 호출하지 마세요.
+    /// refreshQueue=false면 턴 큐를 재구성하지 않음(라운드 도중 제거 시 순서/라운드 초기화 방지).
+    /// 이 경우 큐에 남은 참조는 GetNextUnit이 null/IsDead로 건너뛴다.
     /// </summary>
-    public void RemoveUnit(BattleCharactor unit)
+    public void RemoveUnit(BattleCharactor unit, bool refreshQueue = true)
     {
         if (unit == null) return;
 
@@ -255,8 +257,8 @@ public class BattleFlowManager : MonoBehaviour
             CurrentUnit = null;
         }
 
-        RefreshQueue();
-        Log($"[BattleFlow] 유닛 제거: {GetUnitLabel(unit)}");
+        if (refreshQueue) RefreshQueue();
+        Log($"[BattleFlow] 유닛 제거: {GetUnitLabel(unit)} (refreshQueue={refreshQueue})");
     }
 
 

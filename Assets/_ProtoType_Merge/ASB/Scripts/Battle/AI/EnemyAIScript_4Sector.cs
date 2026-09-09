@@ -154,6 +154,11 @@ namespace EnemyAI
             BossController boss = self.GetComponent<BossController>();
             if (boss != null) boss.DrainPhaseEffectsAtTurnStart();
 
+            // [한턴 쉼] 소켓3(소환) 시전 직후 1턴 휴식. 이 턴을 소비하고 예약 해제 → 다음 턴부터 정상 판정.
+            // SelfAction(비-Skip)이라 도발 폴백 재호출을 유발하지 않는다. 예약 소비 없음.
+            if (self.HasPendingRest)
+                return EnemyActionDecision.SelfAction(() => self.SetPendingRest(false));
+
             if (!canUseSkill) return EnemyActionDecision.SkipTurn(); // 예약 소비 없이 스킵
 
             EncounterBlackboard bb = UnityEngine.Object.FindFirstObjectByType<EncounterBlackboard>();
@@ -177,18 +182,21 @@ namespace EnemyAI
                 return EnemyActionDecision.SkipTurn(); // 예약 미소비
             }
 
-            BattleCharactor target = PickRandomTarget(self, validTargets, skill);
+            // 소켓3(소환)만 타깃=파이프라인 통과용이라 validTargets 폴백 허용. 소켓1·2(공격)는 스킬 유효대상 없으면 예약 유지 + Skip.
+            BattleCharactor target = PickRandomTarget(self, validTargets, skill, allowValidTargetsFallback: socket == 3);
             if (target == null)
-                return EnemyActionDecision.SkipTurn(); // 예약 미소비
+                return EnemyActionDecision.SkipTurn(); // 예약 미소비(공격 소켓은 사거리 규칙 준수)
 
             // (C) non-Skip 확정 직전에만 예약 소비(커밋에서 1회).
             bool consume = socket != 3 && bb != null;
             int consumeSocket = socket;
             BattleCharactor consumeSource = reservedSource;
             int logPhase = phase;
+            bool restAfter = socket == 3;   // 소켓3(소환) 시전 후 다음 턴 한턴 쉼 예약
             return EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, skill, () =>
             {
                 if (consume) bb.ConsumeYuliaReservationIfMatch(consumeSocket, consumeSource);
+                if (restAfter) self.SetPendingRest(true);
                 UnityEngine.Debug.Log($"[EnemyAI/Yulia] phase{logPhase} 소켓{consumeSocket} 시전: {skill.skillName} → {target.UnitName}");
             });
         }
@@ -198,7 +206,7 @@ namespace EnemyAI
 
         // 무작위 유효 대상(열/행 광역은 대표 1명, 소환은 파이프라인용). 도발 시 validTargets가 도발대상만이라 자동 우선.
         private static BattleCharactor PickRandomTarget(
-            BattleCharactor self, List<BattleCharactor> validTargets, SkillData skill)
+            BattleCharactor self, List<BattleCharactor> validTargets, SkillData skill, bool allowValidTargetsFallback)
         {
             var pool = new List<BattleCharactor>();
             List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill);
@@ -210,7 +218,8 @@ namespace EnemyAI
                     if (c != null && !c.IsDead && validTargets.Contains(c)) pool.Add(c);
                 }
             }
-            if (pool.Count == 0)   // 스킬 필터로 비면(예: 소환) validTargets에서 무작위 → 파이프라인 통과 보장
+            // 소환(소켓3)만: 스킬 유효대상이 비어도 살아있는 validTargets로 파이프라인 통과 보장. 공격 소켓은 폴백 금지.
+            if (pool.Count == 0 && allowValidTargetsFallback)
             {
                 for (int i = 0; i < validTargets.Count; i++)
                     if (validTargets[i] != null && !validTargets[i].IsDead) pool.Add(validTargets[i]);

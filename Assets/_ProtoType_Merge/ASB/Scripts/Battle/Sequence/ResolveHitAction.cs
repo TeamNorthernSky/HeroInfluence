@@ -107,7 +107,8 @@ namespace ASB.Work.Battle.Sequence
 
         private void PlayHitAnimation()
         {
-            if (_target == null)
+            // 피해 확정이 먼저 실행되어 Die가 Dead를 재생했다면 피격 애니메이션으로 덮어쓰지 않습니다.
+            if (_target == null || _target.IsDead)
             {
                 return;
             }

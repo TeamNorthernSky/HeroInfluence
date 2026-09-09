@@ -336,6 +336,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _participantId: FV40003
   _blackboard: {fileID: 0}
+  _useIncapacitation: 0
+  _keepCorpseAfterDeath: 1
+  _reviveStartPhase: 2
+  _corpseReviveDelayRounds: 2
+  _reviveHpRatio: 0.5
 --- !u!1 &3268116763756253925
 GameObject:
   m_ObjectHideFlags: 0

@@ -21,21 +21,53 @@ public sealed class EncounterParticipant : MonoBehaviour
     [SerializeField] private string _participantId;
     [Tooltip("씬의 EncounterBlackboard. 미지정 시 런타임 탐색.")]
     [SerializeField] private EncounterBlackboard _blackboard;
+    [Tooltip("2페이즈 이후 HP 0에서 사망 대신 무력화할지 여부입니다.")]
+    [SerializeField] private bool _useIncapacitation = true;
+    [Tooltip("사망 후 논리적 점유만 해제하고 시체 GameObject는 전장에 남길지 여부입니다.")]
+    [SerializeField] private bool _keepCorpseAfterDeath;
+
+    [Header("Corpse revival")]
+    [Tooltip("동일 시체 부활을 시작할 최소 페이즈입니다.")]
+    [Min(1)] [SerializeField] private int _reviveStartPhase = 2;
+    [Tooltip("부활까지 지나야 하는 고유 라운드 경계 수입니다.")]
+    [Min(1)] [SerializeField] private int _corpseReviveDelayRounds = 2;
+    [Tooltip("부활 시 최대 HP 대비 체력 비율입니다.")]
+    [Range(0.01f, 1f)] [SerializeField] private float _reviveHpRatio = 0.5f;
 
     private BattleCharactor _self;
     private BattleFlowManager _flow;
+    private EnemySpawner _spawner;
     private int _lastRound = -1;
+    private int _corpseReviveRoundsLeft = -1;
+    private int _deathGridNumber = -1;
 
     public string Id => _participantId;
+    public bool UseIncapacitation => _useIncapacitation;
+    public bool KeepCorpseAfterDeath => _keepCorpseAfterDeath;
+    public int CorpseReviveRoundsLeft => _corpseReviveRoundsLeft;
+    public int DeathGridNumber => _deathGridNumber;
 
     private void Awake()
     {
         _self = GetComponent<BattleCharactor>();
+        ApplyDeathPolicy();
+    }
+
+    private void Start()
+    {
+        // EnemyScript.Initialize의 ResetIncapacitation보다 뒤에서 프리팹 정책을 최종 반영합니다.
+        ApplyDeathPolicy();
+    }
+
+    public void ApplyDeathPolicy()
+    {
+        if (_self == null) _self = GetComponent<BattleCharactor>();
         EncounterBlackboard bb = ResolveBlackboard();
-        // 2페이즈 이후 재소환분은 무력화 모드로. 1페이즈 배치분은 phase==1이라 false → 정상 사망.
-        if (_self != null && bb != null)
+        if (_self != null)
         {
-            _self.CanBeIncapacitated = bb.CurrentPhase >= 2;
+            // 증폭기는 false로 고정해 실제 Die() + 시체 부활 경로를 사용한다.
+            // 다른 참여자는 기존 무력화 옵션을 계속 사용할 수 있다.
+            _self.CanBeIncapacitated = _useIncapacitation && bb != null && bb.CurrentPhase >= 2;
         }
     }
 
@@ -44,26 +76,109 @@ public sealed class EncounterParticipant : MonoBehaviour
         if (_self != null) _self.OnDied += HandleDied;
         BattleFlowManager flow = ResolveFlow();
         if (flow != null) flow.OnTurnStarted += HandleTurnStarted;
+        EncounterBlackboard bb = ResolveBlackboard();
+        if (bb != null) bb.PhaseAdvanced += HandlePhaseAdvanced;
     }
 
     private void OnDisable()
     {
         if (_self != null) _self.OnDied -= HandleDied;
         if (_flow != null) _flow.OnTurnStarted -= HandleTurnStarted;
+        if (_blackboard != null) _blackboard.PhaseAdvanced -= HandlePhaseAdvanced;
     }
 
-    // 진짜 사망(1페이즈). 무력화는 OnDied를 발화하지 않으므로 여기 안 들어옴 → 파괴 카운트 무관.
+    // 실제 사망만 들어온다. EnemySpawner의 지연 RemoveUnit 전에 원래 셀 번호를 보존한다.
     private void HandleDied(BattleCharactor who)
     {
-        ResolveBlackboard()?.MarkParticipantDestroyed(_participantId);
+        if (who == null || who != _self) return;
+
+        CaptureDeathGridNumber();
+        _self.ResetEnergyStack();
+
+        EncounterBlackboard bb = ResolveBlackboard();
+        if (bb == null) return;
+
+        // 동일 인스턴스가 부활하기 전에 오래된 예약이 다시 유효해지는 것을 막는다.
+        bb.ClearYuliaReservationFrom(_self);
+        bb.MarkParticipantDestroyed(_participantId);
+
+        // 이미 부활 페이즈에 진입한 뒤 재사망한 경우 PhaseAdvanced가 다시 오지 않는다.
+        if (bb.CurrentPhase >= _reviveStartPhase)
+        {
+            ArmCorpseRevivalIfNeeded();
+        }
     }
 
-    // 라운드 경계에서 무력화 카운트다운(자기 턴 무관 — 다운으로 턴이 스킵돼도 진행).
+    private void HandlePhaseAdvanced(int phase)
+    {
+        if (phase >= _reviveStartPhase)
+        {
+            ArmCorpseRevivalIfNeeded();
+        }
+    }
+
+    // 라운드 경계에서 무력화/시체 부활 카운트다운(자기 턴 무관).
     private void HandleTurnStarted(int roundIndex, BattleCharactor current)
     {
         if (roundIndex == _lastRound) return;   // 라운드가 증가한 프레임에만 1회
         _lastRound = roundIndex;
-        if (_self != null) _self.TickIncapacitationRound();
+        if (_useIncapacitation && _self != null) _self.TickIncapacitationRound();
+
+        if (!UsesCorpseRevival || _self == null || !_self.IsDead || _corpseReviveRoundsLeft < 0)
+        {
+            return;
+        }
+
+        if (_corpseReviveRoundsLeft > 0)
+        {
+            _corpseReviveRoundsLeft--;
+        }
+
+        if (_corpseReviveRoundsLeft == 0)
+        {
+            TryReviveCorpse();
+        }
+    }
+
+    private bool UsesCorpseRevival => !_useIncapacitation && _keepCorpseAfterDeath;
+
+    private void CaptureDeathGridNumber()
+    {
+        _deathGridNumber = -1;
+        if (!UsesCorpseRevival || _self == null || _self.OccupiedCell == null) return;
+
+        EnemySpawner spawner = ResolveSpawner();
+        if (spawner != null && spawner.TryGetGridNumber(_self.OccupiedCell, out int gridNumber))
+        {
+            _deathGridNumber = gridNumber;
+        }
+        else
+        {
+            Debug.LogWarning($"[EncounterParticipant] 사망 셀 번호를 보존하지 못했습니다: {_participantId}", this);
+        }
+    }
+
+    private void ArmCorpseRevivalIfNeeded()
+    {
+        if (!UsesCorpseRevival || _self == null || !_self.IsDead) return;
+        if (_deathGridNumber < 0 || _corpseReviveRoundsLeft >= 0) return;
+
+        _corpseReviveRoundsLeft = Mathf.Max(1, _corpseReviveDelayRounds);
+    }
+
+    private void TryReviveCorpse()
+    {
+        EnemySpawner spawner = ResolveSpawner();
+        if (spawner == null || !spawner.TryReviveCorpseAt(_self, _deathGridNumber, _reviveHpRatio))
+        {
+            // 원래 셀이 점유 중이면 0을 유지하고 다음 고유 라운드에 다시 시도한다.
+            return;
+        }
+
+        ResolveBlackboard()?.ClearParticipantDestroyed(_participantId);
+        _self.ResetEnergyStack();
+        _corpseReviveRoundsLeft = -1;
+        _deathGridNumber = -1;
     }
 
     /// <summary>참여자 AI가 스킬로 non-Skip 결정을 확정하기 직전 1회 호출.</summary>
@@ -89,5 +204,15 @@ public sealed class EncounterParticipant : MonoBehaviour
     {
         if (_flow == null) _flow = FindFirstObjectByType<BattleFlowManager>();
         return _flow;
+    }
+
+    private EnemySpawner ResolveSpawner()
+    {
+        if (_spawner == null)
+        {
+            _spawner = GetComponentInParent<EnemySpawner>();
+            if (_spawner == null) _spawner = FindFirstObjectByType<EnemySpawner>();
+        }
+        return _spawner;
     }
 }

@@ -127,6 +127,18 @@ public sealed class EncounterBlackboard : MonoBehaviour
         if (!string.IsNullOrEmpty(participantId)) _destroyedParticipants.Remove(participantId);
     }
 
+    /// <summary>
+    /// 사망한 참여자가 만든 율리아 예약을 즉시 무효화한다.
+    /// 이번 라운드에 능력개방을 사용했다는 게이트는 유지해, 사망으로 추가 예약 기회를 만들지 않는다.
+    /// </summary>
+    public void ClearYuliaReservationFrom(BattleCharactor source)
+    {
+        if (source == null || _reservedSource != source) return;
+
+        _reservedSocket = 0;
+        _reservedSource = null;
+    }
+
     // ── 읽기 API ──
 
     public bool DidParticipantUseSkillThisRound(string participantId, int skillIndex)

@@ -31,7 +31,11 @@ public class EnemySpawner : MonoBehaviour
     private Transform unitParent;
     private readonly Dictionary<int, Vector3> gridSlots = new Dictionary<int, Vector3>();
     private readonly Dictionary<int, Quaternion> gridRotations = new Dictionary<int, Quaternion>();
+    [Tooltip("적 사망 후 시체를 필드에서 제거하기까지의 지연(초). 죽는 애니 길이 이상 권장.")]
+    [SerializeField] private float _corpseRemovalDelay = 0.8f;
+
     private readonly Dictionary<int, GameObject> spawnedByGrid = new Dictionary<int, GameObject>();
+    private BattleFlowManager _flowForRemoval;
     private readonly Dictionary<int, GridCellRef> gridCellsByNumber = new Dictionary<int, GridCellRef>();
     private BattleLogicalSlotMap eventSlotMap;
     private bool hierarchyReady;
@@ -333,6 +337,7 @@ public class EnemySpawner : MonoBehaviour
             $"[EnemySpawner] 스폰 직후 BattleCharactor.UnitId='{battle.UnitId}' EnemyScript.UnitID='{enemyScript.UnitID}' (enemyId={enemyId}, grid={gridNumber})");
 
         spawnedByGrid[gridNumber] = go;
+        HookEnemyDeathRemoval(battle, gridNumber);
         Debug.Log(
             $"[EnemySpawner] 적 스폰 완료: id={enemyId}, grid={gridNumber}, Index={data.Index}, place={gameObject.name}");
         return go;
@@ -419,6 +424,7 @@ public class EnemySpawner : MonoBehaviour
         resolvedCell.SetOccupyingUnit(battle);
 
         spawnedByGrid[gridNumber] = go;
+        HookEnemyDeathRemoval(battle, gridNumber);
         spawned = go;
         Debug.Log(
             $"[EnemySpawner] 안전 소환 완료: id={enemyId}, grid={gridNumber}, Index={data.Index}, place={gameObject.name}");
@@ -588,6 +594,7 @@ public class EnemySpawner : MonoBehaviour
         battle.AssignToCell(cell);
         cell.SetOccupyingUnit(battle);
         spawnedByGrid[slot.GridNumber] = go;
+        HookEnemyDeathRemoval(battle, slot.GridNumber);
         return go;
     }
 
@@ -666,6 +673,176 @@ public class EnemySpawner : MonoBehaviour
     private static Quaternion ApplyFacingPlayerRotation(Quaternion gridRotation)
     {
         return gridRotation * FacingPlayerYawOffset;
+    }
+
+    /// <summary>GridCell에 대응하는 스포너의 표준 gridNumber를 반환한다.</summary>
+    public bool TryGetGridNumber(GridCellRef cell, out int gridNumber)
+    {
+        gridNumber = -1;
+        if (cell == null) return false;
+        if (!hierarchyReady) Awake();
+
+        foreach (KeyValuePair<int, GridCellRef> pair in gridCellsByNumber)
+        {
+            if (pair.Value != cell) continue;
+            gridNumber = pair.Key;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 유지 중인 시체를 원래 셀과 전투 참가 목록에 복구한 뒤 동일 인스턴스로 부활시킨다.
+    /// 현재 라운드 큐는 갱신하지 않아 실제 행동은 다음 라운드부터 가능하다.
+    /// </summary>
+    public bool TryReviveCorpseAt(BattleCharactor corpse, int gridNumber, float hpRatio)
+    {
+        if (corpse == null || !corpse.IsDead || corpse.IsPlayer) return false;
+        if (!hierarchyReady) Awake();
+
+        if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null)
+        {
+            Debug.LogWarning($"[EnemySpawner] 부활 셀을 찾지 못했습니다: grid={gridNumber}", this);
+            return false;
+        }
+
+        if (cell.OccupyingUnit != null && cell.OccupyingUnit != corpse)
+        {
+            return false;
+        }
+
+        BattleCharactor[] unitsInCell = cell.GetComponentsInChildren<BattleCharactor>(true);
+        for (int i = 0; i < unitsInCell.Length; i++)
+        {
+            if (unitsInCell[i] != null && unitsInCell[i] != corpse)
+            {
+                return false;
+            }
+        }
+
+        HostageBattleActor hostage = cell.GetComponentInChildren<HostageBattleActor>(true);
+        if (hostage != null)
+        {
+            return false;
+        }
+
+        if (spawnedByGrid.TryGetValue(gridNumber, out GameObject existing) &&
+            existing != null && existing != corpse.gameObject)
+        {
+            return false;
+        }
+
+        if (_flowForRemoval == null) _flowForRemoval = FindFirstObjectByType<BattleFlowManager>();
+        if (_flowForRemoval == null || ContainsParticipant(_flowForRemoval, corpse))
+        {
+            // 지연 RemoveUnit이 아직 끝나지 않았거나 전투 흐름이 없으면 다음 라운드에 재시도한다.
+            return false;
+        }
+
+        // 먼저 점유와 참가 등록을 확정하고 마지막에 Revive하여
+        // 살아 있지만 전투 시스템에는 없는 부분 성공 상태를 만들지 않는다.
+        corpse.AssignToCell(cell);
+        if (corpse.OccupiedCell != cell || cell.OccupyingUnit != corpse)
+        {
+            corpse.ClearOccupiedCell();
+            return false;
+        }
+
+        if (!_flowForRemoval.RegisterRuntimeParticipant(corpse))
+        {
+            corpse.ClearOccupiedCell();
+            return false;
+        }
+
+        spawnedByGrid[gridNumber] = corpse.gameObject;
+        corpse.Revive(hpRatio);
+        if (!corpse.IsDead)
+        {
+            return true;
+        }
+
+        // Revive가 예외적으로 적용되지 않았을 때 논리 등록을 되돌린다.
+        if (spawnedByGrid.TryGetValue(gridNumber, out GameObject registered) &&
+            registered == corpse.gameObject)
+        {
+            spawnedByGrid.Remove(gridNumber);
+        }
+        _flowForRemoval.RemoveUnit(corpse, refreshQueue: false);
+        return false;
+    }
+
+    private static bool ContainsParticipant(BattleFlowManager flow, BattleCharactor unit)
+    {
+        if (flow == null || unit == null) return false;
+
+        IReadOnlyList<BattleCharactor> participants = flow.Participants;
+        for (int i = 0; i < participants.Count; i++)
+        {
+            if (participants[i] == unit) return true;
+        }
+        return false;
+    }
+
+    // ── 적 사망 시 시체 제거 (죽는 연출 후 지연 제거). 플레이어는 제외. ──
+    private void HookEnemyDeathRemoval(BattleCharactor battle, int gridNumber)
+    {
+        if (battle == null) return;
+        int g = gridNumber;
+        battle.OnDied += (bc) => ScheduleCorpseRemoval(bc, g);
+    }
+
+    public void ScheduleCorpseRemoval(BattleCharactor bc, int gridNumber)
+    {
+        if (bc == null || bc.IsPlayer) return;   // 플레이어 방어(정상적으론 적만 구독)
+        StartCoroutine(RemoveCorpseAfter(bc, gridNumber, _corpseRemovalDelay));
+    }
+
+    private System.Collections.IEnumerator RemoveCorpseAfter(BattleCharactor bc, int gridNumber, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        RemoveCorpseNow(bc, gridNumber);
+    }
+
+    private void RemoveCorpseNow(BattleCharactor bc, int gridNumber)
+    {
+        if (bc == null) { spawnedByGrid.Remove(gridNumber); return; }
+        if (!bc.IsDead || bc.IsIncapacitated) return;   // 되살아났거나(부활) 무력화면 제거 취소
+
+        GameObject go = bc.gameObject;
+        EncounterParticipant participant = bc.GetComponent<EncounterParticipant>();
+        bool keepCorpse = participant != null && participant.KeepCorpseAfterDeath;
+
+        // 시체 유지 여부와 무관하게 논리 상태는 제거해 턴/타깃/그리드 점유에서 제외합니다.
+        if (_flowForRemoval == null) _flowForRemoval = FindFirstObjectByType<BattleFlowManager>();
+        _flowForRemoval?.RemoveUnit(bc, refreshQueue: false);   // 라운드 도중 제거 — 순서/라운드 초기화 방지(파괴된 참조는 GetNextUnit이 skip)
+
+        if (spawnedByGrid.TryGetValue(gridNumber, out var g) && g == go) spawnedByGrid.Remove(gridNumber);
+
+        if (keepCorpse)
+        {
+            DisableCorpseInteraction(go);
+            return;
+        }
+
+        Destroy(go);
+    }
+
+    private static void DisableCorpseInteraction(GameObject corpse)
+    {
+        if (corpse == null) return;
+
+        Collider[] colliders = corpse.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            if (colliders[i] != null) colliders[i].enabled = false;
+        }
+
+        Collider2D[] colliders2D = corpse.GetComponentsInChildren<Collider2D>(true);
+        for (int i = 0; i < colliders2D.Length; i++)
+        {
+            if (colliders2D[i] != null) colliders2D[i].enabled = false;
+        }
     }
 
     private static bool TryResolveGridNumber(Transform slotTransform, out int gridNumber)
