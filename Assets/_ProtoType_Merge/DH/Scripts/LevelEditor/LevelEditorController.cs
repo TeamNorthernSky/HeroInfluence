@@ -33,6 +33,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private LevelTileRegistry tileRegistry;
     [SerializeField] private string selectedTileKey;
     [SerializeField] private string selectedTileMaterialKey;
+    [SerializeField] private LevelTileRenderMode selectedTileRenderMode = LevelTileRenderMode.FlatSprite;
     [SerializeField] private string selectedHeroUnionPrefabKey;
     [FormerlySerializedAs("selectedDecorativeBuildingKey")]
     [SerializeField] private string selectedDecorativeObjectKey;
@@ -99,6 +100,7 @@ public class LevelEditorController : MonoBehaviour
     public LevelTileRegistry TileRegistry => tileRegistry;
     public string SelectedTileKey => selectedTileKey;
     public string SelectedTileMaterialKey => string.IsNullOrWhiteSpace(selectedTileMaterialKey) ? string.Empty : selectedTileMaterialKey.Trim();
+    public LevelTileRenderMode SelectedTileRenderMode => selectedTileRenderMode;
     public string SelectedHeroUnionPrefabKey => string.IsNullOrWhiteSpace(selectedHeroUnionPrefabKey) ? string.Empty : selectedHeroUnionPrefabKey.Trim();
     public string SelectedDecorativeObjectKey => selectedDecorativeObjectKey;
     public string SelectedMainEventPrefabKey => string.IsNullOrWhiteSpace(selectedMainEventPrefabKey) ? string.Empty : selectedMainEventPrefabKey.Trim();
@@ -200,7 +202,7 @@ public class LevelEditorController : MonoBehaviour
                 if (string.IsNullOrWhiteSpace(selectedTileKey))
                     return;
 
-                levelData.SetGroundTile(grid, selectedTileKey, SelectedTileMaterialKey);
+                levelData.SetGroundTile(grid, selectedTileKey, SelectedTileMaterialKey, selectedTileRenderMode);
                 break;
             case LevelEditorBrushType.GroundTileErase:
                 levelData.EraseGroundTileAt(grid);

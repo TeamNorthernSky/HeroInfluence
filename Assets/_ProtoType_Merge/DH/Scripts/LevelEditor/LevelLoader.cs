@@ -778,7 +778,7 @@ public class LevelLoader : MonoBehaviour
         }
 
         Vector3 anchorWorldPosition = gridManager.GridToWorldCenter(grid);
-        anchorWorldPosition.y = gridManager.GetLandSurfaceY();
+        anchorWorldPosition.y = gridManager.GetCellSurfaceY(grid);
         Vector3 worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
         return Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
     }
@@ -786,7 +786,7 @@ public class LevelLoader : MonoBehaviour
     private Vector3 GetMarkerWorldPosition(Vector2Int grid)
     {
         Vector3 worldPosition = gridManager.GridToWorldCenter(grid);
-        worldPosition.y = gridManager.GetLandSurfaceY() + 0.05f;
+        worldPosition.y = gridManager.GetCellSurfaceY(grid) + 0.05f;
         return worldPosition;
     }
 
@@ -812,7 +812,7 @@ public class LevelLoader : MonoBehaviour
         Vector3 minWorldPosition = gridManager.GridToWorldCenter(grid);
         Vector3 maxWorldPosition = gridManager.GridToWorldCenter(maxGrid);
         Vector3 worldPosition = (minWorldPosition + maxWorldPosition) * 0.5f;
-        worldPosition.y = gridManager.GetLandSurfaceY();
+        worldPosition.y = gridManager.GetFootprintSurfaceY(grid, size);
         return worldPosition;
     }
 
