@@ -144,25 +144,13 @@ public class SkillPresentationData : ScriptableObject
     public float HitDelay = 0.25f;
 
     // ─────────────────────────────────────────────
-    // Legacy (Schema=0) — 기존 BattleVisualDirector 경로용. Schema=1에선 사용하지 않음.
+    // Hit Effect/Sound (전 스키마 공용) — 타겟 피격 이펙트/사운드. BattleVisualDirector.PlayHitEffect(At)가 사용.
     // ─────────────────────────────────────────────
-    [Header("Sound (Legacy, Schema=0)")]
-    public int AttackSoundId;
+    [Header("Hit Effect/Sound (전 스키마 공용)")]
     public int HitSoundId;
     [Range(0f, 1f)] public float SfxVolume = 1f;
-
-    [Header("Attack/Hit Effect (Legacy, Schema=0)")]
-    public bool EnableAttackEffect = true;
-    public int AttackEffectId;
     public bool EnableHitEffect = true;
     public int HitEffectId;
-
-    [Header("Projectile (Legacy, Schema=0)")]
-    public GameObject ProjectilePrefab;
-    public float FlightTime = 0.3f;
-    public ProjectileTrajectoryType TrajectoryType = ProjectileTrajectoryType.Straight;
-    public float ArcHeight = 2f;
-    public bool ScaleByCellSize;
 
     [Header("Projectile Impact (Skill-specific)")]
     [Tooltip("Actual projectile presentation used by ranged offensive skills. This lives on the presentation asset, never in CSV SkillData.")]
@@ -194,16 +182,6 @@ public class SkillPresentationData : ScriptableObject
     {
         return (ProjectileVisual != null && ProjectileVisual.Prefab != null) ? ProjectileVisual : null;
     }
-
-    // 더 오래된 직접참조 필드(마이그레이션 잔재). 레지스트리 조회 실패 시 폴백으로만.
-    [HideInInspector] public AudioClip AttackSfxClip;
-    [HideInInspector] public AudioClip HitSfxClip;
-    [HideInInspector] public GameObject AttackEffectPrefab;
-    [HideInInspector] public Vector3 AttackEffectPositionOffset;
-    [HideInInspector] public Vector3 AttackEffectRotationOffset;
-    [HideInInspector] public GameObject HitEffectPrefab;
-    [HideInInspector] public Vector3 HitEffectPositionOffset;
-    [HideInInspector] public Vector3 HitEffectRotationOffset;
 
     // ─────────────────────────────────────────────
     // Presentation Phases (Schema=1) — 애니+Cue를 갖는 페이즈: MovePrepare/AttackPrepare/Attack/Post.

@@ -22,6 +22,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5135d28f4ceb8d2498034bdb5b9e8ce8, type: 2}
   mergedCatalog: {fileID: 11400000, guid: 80b063d4620a5ac4f96bbd0e34bef686, type: 2}
   mergedRegistry: {fileID: 11400000, guid: cd76adeeba9fadc43a41cdd3f68fcd6e, type: 2}
-  sourceFingerprint: 080002745252
-  lastMergedAt: 2026-07-31 08:31:55
+  sourceFingerprint: 1A9BD0327CC1
+  lastMergedAt: 2026-09-09 17:04:58
   warnWhenStale: 1

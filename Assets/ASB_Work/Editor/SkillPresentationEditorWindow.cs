@@ -18,7 +18,6 @@ public class SkillPresentationEditorWindow : EditorWindow
     private Vector2 _listScroll;
     private Vector2 _detailScroll;
     private bool _foldNew = true;
-    private bool _foldLegacy;
     private int _newSkillIndexInput;
 
     private int _selectedTab; // 0 = Data Edit, 1 = Runtime Preview
@@ -105,7 +104,6 @@ public class SkillPresentationEditorWindow : EditorWindow
                 _previewSkillIndex = data.SkillIndex;
                 bool phaseCue = data.PresentationSchemaVersion >= 1;
                 _foldNew = phaseCue;       // 스키마에 맞는 쪽을 자동으로 펼침
-                _foldLegacy = !phaseCue;
             }
         }
         EditorGUILayout.EndScrollView();
@@ -216,6 +214,10 @@ public class SkillPresentationEditorWindow : EditorWindow
         }
         EditorGUILayout.PropertyField(so.FindProperty("SfxVolume"));
 
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Projectile Impact (공용)", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(so.FindProperty("ProjectileVisual"), true);
+
         // ── 신 방식 (Phase Cue, Schema=1) ──
         EditorGUILayout.Space();
         _foldNew = EditorGUILayout.Foldout(_foldNew, "신 방식 — Presentation Phases (Schema=1)", true);
@@ -235,44 +237,6 @@ public class SkillPresentationEditorWindow : EditorWindow
                             so.ApplyModifiedProperties();
                             MovingAttackPathSceneTool.DrawInspectorControls(_selected);
                             so.Update();
-            EditorGUI.indentLevel--;
-        }
-
-        // ── 옛 방식 (Legacy, Schema=0) ──
-        EditorGUILayout.Space();
-        _foldLegacy = EditorGUILayout.Foldout(_foldLegacy, "옛 방식 — Legacy (Schema=0, director 경로)", true);
-        if (_foldLegacy)
-        {
-            EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(so.FindProperty("AnimationTriggerOverride"));
-
-            EditorGUILayout.LabelField("Attack Effect", EditorStyles.miniBoldLabel);
-            SerializedProperty enableAttackEffect = so.FindProperty("EnableAttackEffect");
-            EditorGUILayout.PropertyField(enableAttackEffect);
-            using (new EditorGUI.DisabledScope(enableAttackEffect != null && !enableAttackEffect.boolValue))
-            {
-                EditorGUILayout.PropertyField(so.FindProperty("AttackEffectId"));
-                EditorGUILayout.PropertyField(so.FindProperty("AttackEffectPrefab"));
-                EditorGUILayout.PropertyField(so.FindProperty("AttackEffectPositionOffset"));
-                EditorGUILayout.PropertyField(so.FindProperty("AttackEffectRotationOffset"));
-            }
-
-            EditorGUILayout.LabelField("Attack Sound", EditorStyles.miniBoldLabel);
-            EditorGUILayout.PropertyField(so.FindProperty("AttackSoundId"));
-            EditorGUILayout.PropertyField(so.FindProperty("AttackSfxClip"));
-
-            EditorGUILayout.LabelField("Hit Effect/Sound (legacy prefab/clip)", EditorStyles.miniBoldLabel);
-            EditorGUILayout.PropertyField(so.FindProperty("HitEffectPrefab"));
-            EditorGUILayout.PropertyField(so.FindProperty("HitEffectPositionOffset"));
-            EditorGUILayout.PropertyField(so.FindProperty("HitEffectRotationOffset"));
-            EditorGUILayout.PropertyField(so.FindProperty("HitSfxClip"));
-
-            EditorGUILayout.LabelField("Projectile", EditorStyles.miniBoldLabel);
-            EditorGUILayout.PropertyField(so.FindProperty("ProjectilePrefab"));
-            EditorGUILayout.PropertyField(so.FindProperty("FlightTime"));
-            EditorGUILayout.PropertyField(so.FindProperty("TrajectoryType"));
-            EditorGUILayout.PropertyField(so.FindProperty("ArcHeight"));
-            EditorGUILayout.PropertyField(so.FindProperty("ScaleByCellSize"));
             EditorGUI.indentLevel--;
         }
 
