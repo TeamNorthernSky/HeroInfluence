@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acb1af9f1501cd94793cac72ffba73cf, type: 3}
+  m_Name: "\uC120\uD0DD\uD615\uC120\uD0DD\uACB0\uACFCDataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - result_group_id: RESULT_NONE
+    effect_order: 1
+    target_scope: 0
+    effect_type: 0
+    effect_amount: 0
+    note: "\uC544\uBB34 \uD6A8\uACFC\uB3C4 \uC5C6\uB294 \uC2E4\uD328 \uACB0\uACFC\uC5D0
+      \uC0AC\uC6A9\uD558\uB294 \uACF5\uD1B5 \uACB0\uACFC \uADF8\uB8F9"
+  - result_group_id: Choice_NPC_001_C1_Success
+    effect_order: 1
+    target_scope: 1
+    effect_type: 0
+    effect_amount: 1500
+    note: "Choice_NPC_001_C1 \uC131\uACF5 \uACB0\uACFC"
+  - result_group_id: Choice_NPC_001_C2_Success
+    effect_order: 1
+    target_scope: 1
+    effect_type: 0
+    effect_amount: 1500
+    note: "Choice_NPC_001_C2 \uC131\uACF5 \uACB0\uACFC"
+  - result_group_id: Choice_NPC_001_C2_Fail
+    effect_order: 1
+    target_scope: 0
+    effect_type: 1
+    effect_amount: -10
+    note: "Choice_NPC_001_C2 \uC2E4\uD328 \uACB0\uACFC"
+  - result_group_id: Choice_Condition_001_C1_Success
+    effect_order: 1
+    target_scope: 0
+    effect_type: 0
+    effect_amount: 10
+    note: 
+  - result_group_id: Choice_Condition_001_C2_Success
+    effect_order: 1
+    target_scope: 1
+    effect_type: 1
+    effect_amount: 5
+    note: 
+  - result_group_id: Choice_Condition_001_C1_Fail
+    effect_order: 1
+    target_scope: 1
+    effect_type: 1
+    effect_amount: -20
+    note: 
+  - result_group_id: Choice_Condition_001_C2_Fail
+    effect_order: 1
+    target_scope: 2
+    effect_type: 0
+    effect_amount: -10
+    note: 

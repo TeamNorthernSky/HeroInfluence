@@ -114,7 +114,8 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         // 4. 승패 결과 UI (레벨업 스킬 슬롯 포함, Accept 버튼은 슬롯 모두 처리 후 활성화)
-        BattleResultPanel resultPanel = battleUIManager?.ShowBattleResultUI(result, plan);
+        // [모의 전투] 보상/스킬은 지급되지 않으므로 plan을 넘기지 않아 미리보기 슬롯·스킬 팝업을 숨긴다.
+        BattleResultPanel resultPanel = battleUIManager?.ShowBattleResultUI(result, isSimulation ? null : plan);
 
         // 5. Accept 버튼 대기
         if (resultPanel != null)

@@ -41,6 +41,23 @@ namespace JC.Env
                  "★HDRI 큐브맵 스카이박스를 쓸 때는 꺼 둘 것(해당 프로퍼티가 없어 무의미하다).")]
         public bool driveSkyboxParams = true;
 
+        [Header("①-b 하늘↔태양 방위 정합 (HDRI 전용)")]
+        [Tooltip("★켜면 태양(③) 방위에 맞춰 하늘을 자동으로 돌린다(_Rotation).\n" +
+                 "HDRI 하늘은 태양이 그림 안에 박혀 있어, 라이트만 돌리면 그림자 방향과 하늘의 태양이 어긋난다.\n" +
+                 "이 스위치가 「라이트를 돌리면 하늘이 따라 돈다」를 보장한다.\n" +
+                 "_Rotation 프로퍼티가 없는 셰이더(Procedural 등)에서는 자동으로 무시된다.")]
+        public bool alignSkyToSun = true;
+
+        [Tooltip("★이 하늘 그림 안에서 태양이 있는 방위각(도) — _Rotation = 0 일 때 기준.\n" +
+                 "하늘 재질을 바꾸면 이 값도 다시 재야 한다 — 컨트롤러 인스펙터의 [🔎 태양 자동 탐색] 버튼이 실측해 채운다.\n" +
+                 "적용식: _Rotation = 이 값 − 태양이 있는 실제 방위.")]
+        [Range(0f, 360f)] public float skySunAzimuth = 36.1f;
+
+        [Tooltip("하늘 그림 속 태양의 고도(도) — 자동 탐색이 함께 기록하는 참고값(적용되지 않는다).\n" +
+                 "★고도는 _Rotation 으로 보정할 수 없다. 태양(③)의 X 각도가 이 값과 크게 다르면\n" +
+                 "그림자 길이와 하늘의 태양 높이가 어긋나 보이므로, 맞추려면 라이트 X 를 이 값 근처로 내려야 한다.")]
+        public float skySunElevation = 27.3f;
+
         [Tooltip("하늘 색조. Procedural 기준 중립은 회색(0.5). 카툰 룩은 채도를 살짝 올리는 방향.")]
         [ColorUsage(false, true)] public Color skyTint = new Color(0.5f, 0.5f, 0.5f);
 

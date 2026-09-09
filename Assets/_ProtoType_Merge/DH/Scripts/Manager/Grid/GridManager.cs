@@ -49,6 +49,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
     [SerializeField] private MultiGridOccupantRegistry multiGridOccupantRegistry;
     [SerializeField] private MapEventRegistry mapEventRegistry;
+    [SerializeField] private WorldEventRegistry worldEventRegistry;
     [SerializeField] private MainEventRegistry mainEventRegistry;
     [SerializeField] private SubEventRegistry subEventRegistry;
     [SerializeField] private bool restrictMovementToVisibleCells = true;
@@ -71,6 +72,7 @@ public class GridManager : MonoBehaviour
     private Vector3 gridOrigin = Vector3.zero;
     private readonly HashSet<Vector2Int> levelObstacleCells = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> gateBlockerCells = new HashSet<Vector2Int>();
+    private readonly Dictionary<Vector2Int, float> cellSurfaceYOffsetByGrid = new Dictionary<Vector2Int, float>();
 
     public float CellSize => cellSize;
     public Transform LandTransform => landTransform;
@@ -106,6 +108,9 @@ public class GridManager : MonoBehaviour
         if (mapEventRegistry == null)
             mapEventRegistry = FindFirstObjectByType<MapEventRegistry>();
 
+        if (worldEventRegistry == null)
+            worldEventRegistry = FindFirstObjectByType<WorldEventRegistry>();
+
         if (mainEventRegistry == null)
             mainEventRegistry = FindFirstObjectByType<MainEventRegistry>();
 
@@ -139,6 +144,9 @@ public class GridManager : MonoBehaviour
         if (mapEventRegistry == null)
             mapEventRegistry = FindFirstObjectByType<MapEventRegistry>();
 
+        if (worldEventRegistry == null)
+            worldEventRegistry = FindFirstObjectByType<WorldEventRegistry>();
+
         if (mainEventRegistry == null)
             mainEventRegistry = FindFirstObjectByType<MainEventRegistry>();
 
@@ -162,6 +170,48 @@ public class GridManager : MonoBehaviour
         float z = gridOrigin.z + cellSize * grid.y;
 
         return new Vector3(x, 0f, z);
+    }
+
+    public void ClearCellSurfaceOffsets()
+    {
+        cellSurfaceYOffsetByGrid.Clear();
+    }
+
+    public void RegisterCellSurfaceOffset(Vector2Int grid, float yOffset)
+    {
+        cellSurfaceYOffsetByGrid[grid] = yOffset;
+    }
+
+    public bool HasCellSurfaceOffset(Vector2Int grid)
+    {
+        return cellSurfaceYOffsetByGrid.ContainsKey(grid);
+    }
+
+    public float GetCellSurfaceY(Vector2Int grid)
+    {
+        return GetLandSurfaceY() + GetCellSurfaceYOffset(grid);
+    }
+
+    public float GetFootprintSurfaceY(Vector2Int anchorGrid, Vector2Int size)
+    {
+        Vector2Int clampedSize = new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
+        float surfaceY = GetCellSurfaceY(anchorGrid);
+
+        for (int y = 0; y < clampedSize.y; y++)
+        {
+            for (int x = 0; x < clampedSize.x; x++)
+            {
+                Vector2Int grid = new Vector2Int(anchorGrid.x + x, anchorGrid.y + y);
+                surfaceY = Mathf.Max(surfaceY, GetCellSurfaceY(grid));
+            }
+        }
+
+        return surfaceY;
+    }
+
+    private float GetCellSurfaceYOffset(Vector2Int grid)
+    {
+        return cellSurfaceYOffsetByGrid.TryGetValue(grid, out float yOffset) ? yOffset : 0f;
     }
 
     public static int GridDistance(Vector2Int a, Vector2Int b)
@@ -284,6 +334,11 @@ public class GridManager : MonoBehaviour
         return TryGetEventObjectAtGrid(grid, out _);
     }
 
+    public bool HasWorldEvent(Vector2Int grid)
+    {
+        return TryGetWorldEventObjectAtGrid(grid, out _);
+    }
+
     public bool HasMainEvent(Vector2Int grid)
     {
         return TryGetMainEventObjectAtGrid(grid, out _);
@@ -363,6 +418,27 @@ public class GridManager : MonoBehaviour
             mapEvent = col.GetComponentInParent<MapEventObject>();
             if (mapEvent != null)
                 return true;
+        }
+
+        return false;
+    }
+
+    public bool TryGetWorldEventObjectAtGrid(Vector2Int grid, out WorldEventObject worldEvent)
+    {
+        worldEvent = null;
+
+        IReadOnlyList<WorldEventObject> worldEvents = worldEventRegistry != null
+            ? worldEventRegistry.WorldEvents
+            : FindObjectsByType<WorldEventObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < worldEvents.Count; i++)
+        {
+            WorldEventObject candidate = worldEvents[i];
+            if (candidate == null || !candidate.isActiveAndEnabled || !candidate.OccupiesGrid(grid, this))
+                continue;
+
+            worldEvent = candidate;
+            return true;
         }
 
         return false;
@@ -555,7 +631,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasItemOutpostOrEvent(Vector2Int grid)
     {
-        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid);
+        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasWorldEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid);
     }
 
     public bool HasVillainUnionBase(Vector2Int grid)
@@ -565,7 +641,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasInteractionTarget(Vector2Int grid)
     {
-        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid) || HasEnemy(grid) || HasHeroUnion(grid) || HasVillainUnionBase(grid);
+        return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasWorldEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid) || HasEnemy(grid) || HasHeroUnion(grid) || HasVillainUnionBase(grid);
     }
 
     public bool IsVisibleCell(Vector2Int grid)
@@ -625,6 +701,22 @@ public class GridManager : MonoBehaviour
         {
             Vector2Int candidate = grid + directions8[i];
             if (TryGetEventObjectAtGrid(candidate, out _))
+            {
+                eventGrid = candidate;
+                return true;
+            }
+        }
+
+        eventGrid = grid;
+        return false;
+    }
+
+    public bool TryGetAdjacentWorldEventGrid(Vector2Int grid, out Vector2Int eventGrid)
+    {
+        for (int i = 0; i < directions8.Length; i++)
+        {
+            Vector2Int candidate = grid + directions8[i];
+            if (TryGetWorldEventObjectAtGrid(candidate, out _))
             {
                 eventGrid = candidate;
                 return true;
@@ -738,7 +830,7 @@ public class GridManager : MonoBehaviour
         if (HasHeroUnion(grid, selfTransform))
             return false;
 
-        if (HasOutpost(grid) || HasEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid))
+        if (HasOutpost(grid) || HasEvent(grid) || HasWorldEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid))
             return false;
 
         if (HasItem(grid))

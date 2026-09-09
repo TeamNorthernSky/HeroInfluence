@@ -10,7 +10,8 @@ public class InteractionCellOverlayController : MonoBehaviour
         Player,
         Enemy,
         OverlappedEnemy,
-        MainEvent
+        MainEvent,
+        External
     }
 
     [Header("References")]
@@ -39,6 +40,8 @@ public class InteractionCellOverlayController : MonoBehaviour
     private readonly Stack<OverlayInstance> overlayPool = new Stack<OverlayInstance>();
     private readonly HashSet<EnemyGridMover> subscribedEnemies = new HashSet<EnemyGridMover>();
     private readonly Dictionary<Vector2Int, OverlayCellType> desiredCells = new Dictionary<Vector2Int, OverlayCellType>();
+    private readonly Dictionary<Vector2Int, Color> externalDesiredCellColors = new Dictionary<Vector2Int, Color>();
+    private readonly Dictionary<object, ExternalOverlaySet> externalOverlaySets = new Dictionary<object, ExternalOverlaySet>();
     private readonly List<Vector2Int> removalBuffer = new List<Vector2Int>();
 
     private float nextRefreshTime;
@@ -101,6 +104,32 @@ public class InteractionCellOverlayController : MonoBehaviour
         refreshRequested = true;
     }
 
+    public void SetExternalCells(object owner, IEnumerable<Vector2Int> cells, Color color)
+    {
+        if (owner == null)
+            return;
+
+        ExternalOverlaySet set = GetOrCreateExternalOverlaySet(owner);
+        set.Cells.Clear();
+        if (cells != null)
+        {
+            foreach (Vector2Int cell in cells)
+                set.Cells.Add(cell);
+        }
+
+        set.Color = color;
+        RequestRefresh();
+    }
+
+    public void ClearExternalCells(object owner)
+    {
+        if (owner == null)
+            return;
+
+        if (externalOverlaySets.Remove(owner))
+            RequestRefresh();
+    }
+
     private void RefreshOverlays()
     {
         ResolveReferences();
@@ -119,11 +148,30 @@ public class InteractionCellOverlayController : MonoBehaviour
     private void BuildDesiredZones()
     {
         desiredCells.Clear();
+        externalDesiredCellColors.Clear();
         AddMainEventInteractionCells();
         AddEnemyEncounterCells();
         AddOutpostInteractionCells();
         AddHeroUnionInteractionCells();
         AddVillainUnionInteractionCells();
+        AddExternalOverlayCells();
+    }
+
+    private void AddExternalOverlayCells()
+    {
+        foreach (KeyValuePair<object, ExternalOverlaySet> pair in externalOverlaySets)
+        {
+            ExternalOverlaySet set = pair.Value;
+            if (set == null)
+                continue;
+
+            for (int i = 0; i < set.Cells.Count; i++)
+            {
+                Vector2Int grid = set.Cells[i];
+                desiredCells[grid] = OverlayCellType.External;
+                externalDesiredCellColors[grid] = set.Color;
+            }
+        }
     }
 
     private void AddMainEventInteractionCells()
@@ -349,13 +397,16 @@ public class InteractionCellOverlayController : MonoBehaviour
             return;
 
         Vector3 position = gridManager.GridToWorldCenter(grid);
-        position.y = gridManager.GetLandSurfaceY() + yOffset;
+        position.y = gridManager.GetCellSurfaceY(grid) + yOffset;
         instance.GameObject.transform.position = position;
 
         float size = Mathf.Max(0.01f, gridManager.CellSize * cellScale);
         instance.GameObject.transform.localScale = new Vector3(size, 1f, size);
 
-        instance.ApplyColor(GetColor(type));
+        Color color = type == OverlayCellType.External && externalDesiredCellColors.TryGetValue(grid, out Color externalColor)
+            ? externalColor
+            : GetColor(type);
+        instance.ApplyColor(color);
     }
 
     private void ReleaseOverlay(OverlayInstance instance)
@@ -511,12 +562,24 @@ public class InteractionCellOverlayController : MonoBehaviour
     {
         return type switch
         {
+            OverlayCellType.External => 6,
             OverlayCellType.MainEvent => 5,
             OverlayCellType.OverlappedEnemy => 4,
             OverlayCellType.Enemy => 3,
             OverlayCellType.Player => 2,
             _ => 1
         };
+    }
+
+    private ExternalOverlaySet GetOrCreateExternalOverlaySet(object owner)
+    {
+        if (!externalOverlaySets.TryGetValue(owner, out ExternalOverlaySet set) || set == null)
+        {
+            set = new ExternalOverlaySet();
+            externalOverlaySets[owner] = set;
+        }
+
+        return set;
     }
 
     private void ResolveReferences()
@@ -668,5 +731,11 @@ public class InteractionCellOverlayController : MonoBehaviour
                 renderer.SetPropertyBlock(propertyBlock);
             }
         }
+    }
+
+    private sealed class ExternalOverlaySet
+    {
+        public readonly List<Vector2Int> Cells = new List<Vector2Int>();
+        public Color Color;
     }
 }

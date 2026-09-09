@@ -86,9 +86,13 @@ namespace ASB.Work.Battle.Sequence
                     _visual?.ShowDamagePopup(result);
                 }
 
-                hitTarget.EnsureAnimationController();
-                hitTarget.Anim?.SetAnimationSpeed(_battleSpeed);
-                hitTarget.Anim?.PlayGenericAnimation("Hit");
+                // TakeDamage -> Die가 이미 Dead를 재생한 경우 Hit으로 사망 상태를 덮어쓰지 않습니다.
+                if (!hitTarget.IsDead)
+                {
+                    hitTarget.EnsureAnimationController();
+                    hitTarget.Anim?.SetAnimationSpeed(_battleSpeed);
+                    hitTarget.Anim?.PlayGenericAnimation("Hit");
+                }
             }
 
             yield break;

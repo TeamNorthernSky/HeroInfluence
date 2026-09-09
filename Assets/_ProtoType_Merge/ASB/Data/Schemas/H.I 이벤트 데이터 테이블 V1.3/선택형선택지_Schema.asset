@@ -1,0 +1,312 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
+  m_Name: "\uC120\uD0DD\uD615\uC120\uD0DD\uC9C0_Schema"
+  m_EditorClassIdentifier: 
+  schemaGuid: d0258dcf84eb4e8babbc5690a6f1b40c
+  sourceWorkbookGuid: e983ef9cf05632143872a52a1be21676
+  sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/H.I \uC774\uBCA4\uD2B8
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.3.xlsx"
+  workbookFileName: "H.I \uC774\uBCA4\uD2B8 \uB370\uC774\uD130 \uD14C\uC774\uBE14
+    V1.3"
+  sourceSheetName: "\uC120\uD0DD\uD615 (\uC120\uD0DD\uC9C0)"
+  physicalSheetId: 3c5df7620de0e8da7aeb6d6e68868891f9c90905
+  logicalSheetKey: "\uC120\uD0DD\uD615\uC120\uD0DD\uC9C0"
+  templateClassName: ChoiceOption
+  templateSignature: dict=0|choice_id:String:Comma|world_event_id:String:Comma|choice_text:String:Comma|enable_condition_unit:Int:Comma|enable_condition_type:Int:Comma|enable_condition_target:Int:Comma|enable_condition_calculation_type:Int:Comma|enable_condition_operator:Int:Comma|enable_condition_value:Int:Comma|use_ip_success_rate_bonus:Int:Comma|base_success_rate:String:Comma|success_result_group_id:String:Comma|failure_result_group_id:String:Comma|note:String:Comma
+  className: ChoiceOption
+  outputAssetName: "\uC120\uD0DD\uD615\uC120\uD0DD\uC9C0DataTable"
+  targetTableAssetGuid: 7358de363673eb7498da4a6ec926048c
+  targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I \uC774\uBCA4\uD2B8
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.3/\uC120\uD0DD\uD615\uC120\uD0DD\uC9C0DataTable.asset"
+  headerRowIndex: 1
+  dataStartRowIndex: 2
+  useDictionary: 0
+  requireUniqueKey: 0
+  duplicateKeyPolicy: 0
+  Columns:
+  - sourceColumnIndex: 0
+    sourceHeaderName: choice_id
+    fieldName: choice_id
+    displayName: choice_id
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: world_event_id
+    fieldName: world_event_id
+    displayName: world_event_id
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: choice_text
+    fieldName: choice_text
+    displayName: choice_text
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: enable_condition_unit
+    fieldName: enable_condition_unit
+    displayName: enable_condition_unit
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: enable_condition_type
+    fieldName: enable_condition_type
+    displayName: enable_condition_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: enable_condition_target
+    fieldName: enable_condition_target
+    displayName: enable_condition_target
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: enable_condition_calculation_type
+    fieldName: enable_condition_calculation_type
+    displayName: enable_condition_calculation_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: enable_condition_operator
+    fieldName: enable_condition_operator
+    displayName: enable_condition_operator
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 8
+    sourceHeaderName: enable_condition_value
+    fieldName: enable_condition_value
+    displayName: enable_condition_value
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 9
+    sourceHeaderName: use_ip_success_rate_bonus
+    fieldName: use_ip_success_rate_bonus
+    displayName: use_ip_success_rate_bonus
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 10
+    sourceHeaderName: base_success_rate
+    fieldName: base_success_rate
+    displayName: base_success_rate
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 11
+    sourceHeaderName: success_result_group_id
+    fieldName: success_result_group_id
+    displayName: success_result_group_id
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 12
+    sourceHeaderName: failure_result_group_id
+    fieldName: failure_result_group_id
+    displayName: failure_result_group_id
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 13
+    sourceHeaderName: note
+    fieldName: note
+    displayName: note
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 0
+    sourceHeaderName: "\uC120\uD0DD\uC9C0 id"
+    fieldName: Field_01
+    displayName: "\uC120\uD0DD\uC9C0 id"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 1
+    sourceHeaderName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 id\n(\uC120\uD0DD\uD615 \uD14C\uC774\uBE14
+      \uCC38\uC870)"
+    fieldName: Field_02
+    displayName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 id\n(\uC120\uD0DD\uD615 \uD14C\uC774\uBE14
+      \uCC38\uC870)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: "\uC120\uD0DD\uC9C0 \uD45C\uC2DC \uBB38\uAD6C"
+    fieldName: Field_03
+    displayName: "\uC120\uD0DD\uC9C0 \uD45C\uC2DC \uBB38\uAD6C"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: "\uD65C\uC131 \uC870\uAC74 \uC720\uB2DB \n(0 \uC5C6\uC74C /
+      1 \uC800\uC2A4\uD2F0\uC2A4 / \n2 \uB124\uCF54\uBC0D / 3 \uBE14\uB799\uBD88\uB9BF
+      \n/  4 \uB8E8\uBBF8\uB098 / 5 \uC804\uCCB4)"
+    fieldName: Field_04
+    displayName: "\uD65C\uC131 \uC870\uAC74 \uC720\uB2DB \n(0 \uC5C6\uC74C / 1 \uC800\uC2A4\uD2F0\uC2A4
+      / \n2 \uB124\uCF54\uBC0D / 3 \uBE14\uB799\uBD88\uB9BF \n/  4 \uB8E8\uBBF8\uB098
+      / 5 \uC804\uCCB4)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: "\uD65C\uC131 \uC870\uAC74 \uC885\uB958\n(0 \uC5C6\uC74C /
+      1 \uC7AC\uD654 / 2 \uC2A4\uD14C\uC774\uD130\uC2A4)"
+    fieldName: Field_05
+    displayName: "\uD65C\uC131 \uC870\uAC74 \uC885\uB958\n(0 \uC5C6\uC74C / 1 \uC7AC\uD654
+      / 2 \uC2A4\uD14C\uC774\uD130\uC2A4)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: "\uD65C\uC131 \uC870\uAC74 \uB300\uC0C1\n(\uC870\uAC74 \uC885\uB958\uC5D0
+      \uB530\uB77C \uC801\uC6A9)\n0 \uC5C6\uC74C\n1 \uC7AC\uD654: 0 Money / 1 Medal
+      / 2 Jam / 3 Supply\n2 \uC2A4\uD14C\uC774\uD130\uC2A4: 0 CurrentIP / 1 CurrentHP
+      / 2 MaxIP / 3 MaxHP / 4 ATK"
+    fieldName: Field_06
+    displayName: "\uD65C\uC131 \uC870\uAC74 \uB300\uC0C1\n(\uC870\uAC74 \uC885\uB958\uC5D0
+      \uB530\uB77C \uC801\uC6A9)\n0 \uC5C6\uC74C\n1 \uC7AC\uD654: 0 Money / 1 Medal
+      / 2 Jam / 3 Supply\n2 \uC2A4\uD14C\uC774\uD130\uC2A4: 0 CurrentIP / 1 CurrentHP
+      / 2 MaxIP / 3 MaxHP / 4 ATK"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: "\uACC4\uC0B0 \uBC29\uC2DD\n(\uC804\uCCB4 \uC77C \uACBD\uC6B0)\n(0
+      \uD3C9\uADE0 / 1 \uCD1D\uD569)"
+    fieldName: Field_07
+    displayName: "\uACC4\uC0B0 \uBC29\uC2DD\n(\uC804\uCCB4 \uC77C \uACBD\uC6B0)\n(0
+      \uD3C9\uADE0 / 1 \uCD1D\uD569)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: "\uBE44\uAD50 \uBC29\uC2DD\n(0 \uC774\uC0C1 >= / 1 \uC774\uD558
+      <= / 2 \uAC19\uC74C =)"
+    fieldName: Field_08
+    displayName: "\uBE44\uAD50 \uBC29\uC2DD\n(0 \uC774\uC0C1 >= / 1 \uC774\uD558
+      <= / 2 \uAC19\uC74C =)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 8
+    sourceHeaderName: "\uD65C\uC131 \uC870\uAC74\uAC12"
+    fieldName: Field_09
+    displayName: "\uD65C\uC131 \uC870\uAC74\uAC12"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 9
+    sourceHeaderName: "\uD655\uB960 \uBCF4\uC815 \uC720\uBB34\n(0 \uC5C6\uC74C /
+      1 \uC788\uC74C)\n\uCD5C\uC885 = min(100, \uAE30\uBCF8 + CurrentIP \xD7 0.5)"
+    fieldName: Field_10
+    displayName: "\uD655\uB960 \uBCF4\uC815 \uC720\uBB34\n(0 \uC5C6\uC74C / 1 \uC788\uC74C)\n\uCD5C\uC885
+      = min(100, \uAE30\uBCF8 + CurrentIP \xD7 0.5)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 10
+    sourceHeaderName: "\uAE30\uBCF8 \uC131\uACF5 \uD655\uB960(%p)"
+    fieldName: Field_11
+    displayName: "\uAE30\uBCF8 \uC131\uACF5 \uD655\uB960(%p)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 11
+    sourceHeaderName: "\uC131\uACF5 \uACB0\uACFC \uADF8\uB8F9 id\n(\uC120\uD0DD\uACB0\uACFC
+      \uD14C\uC774\uBE14 \uCC38\uC870)"
+    fieldName: Field_12
+    displayName: "\uC131\uACF5 \uACB0\uACFC \uADF8\uB8F9 id\n(\uC120\uD0DD\uACB0\uACFC
+      \uD14C\uC774\uBE14 \uCC38\uC870)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 12
+    sourceHeaderName: "\uC2E4\uD328 \uACB0\uACFC \uADF8\uB8F9 id\n(\uD6A8\uACFC \uC5C6\uC74C:
+      RESULT_NONE)"
+    fieldName: Field_13
+    displayName: "\uC2E4\uD328 \uACB0\uACFC \uADF8\uB8F9 id\n(\uD6A8\uACFC \uC5C6\uC74C:
+      RESULT_NONE)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 13
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
