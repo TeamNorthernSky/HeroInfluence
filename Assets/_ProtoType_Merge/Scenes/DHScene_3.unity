@@ -253429,6 +253429,114 @@ MonoBehaviour:
   materialTemplate: {fileID: 0}
   generatedRootName: Generated Tile Meshes
   markChunksReflectionProbeStatic: 1
+--- !u!1 &206211935
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 206211936}
+  m_Layer: 0
+  m_Name: JC_Indicator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &206211936
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 206211935}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1436007284}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1436007283
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1436007284}
+  - component: {fileID: 1436007285}
+  m_Layer: 0
+  m_Name: MovementIndicator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1436007284
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1436007283}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 206211936}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1436007285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1436007283}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb93d655a1d9bbf468d54ae4e87fc079, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  profile: {fileID: 11400000, guid: 49c1561a3d1791040a2a2febef4ebb18, type: 2}
+  pathRenderer: {fileID: 347558455}
+  destinationMarker: {fileID: 737785956}
+  gridManager: {fileID: 1870279752}
+  indicatorShader: {fileID: 4800000, guid: b05c63cbe03b1cd478da85fdfc79a095, type: 3}
+  settings:
+    reachableColor: {r: 0.27987415, g: 1, b: 0.27987415, a: 1}
+    unreachableColor: {r: 1, g: 0.380503, b: 0.380503, a: 1}
+    opacity: 0.8
+    markerSize: 0.647
+    borderWidth: 0.126
+    cornerRadius: 0.225
+    ringRadius: 0.307
+    ringWidth: 0.095
+    dotRadius: 0.095
+    floatHeight: 0.06
+    bobAmplitude: 0.04
+    bobFrequency: 0.65
+    shadowColor: {r: 0.025, g: 0.045, b: 0.045, a: 1}
+    shadowOpacity: 1
+    shadowDistance: 0.03
+    shadowAngle: 225
+    shadowSoftness: 0.035
+    lineWidth: 0.075
+    dashLength: 0.18
+    dashGap: 0.105
+    flowSpeed: 0.65
+    highlightColor: {r: 0.8, g: 1, b: 0.86, a: 1}
+    highlightStrength: 0.87
+    waveWidth: 0.087
+    waveSpeed: 0.68
+    wavePeriod: 0.94
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -253469,3 +253577,4 @@ SceneRoots:
   - {fileID: 1702449022}
   - {fileID: 197574232}
   - {fileID: 1293311820}
+  - {fileID: 206211936}
