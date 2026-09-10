@@ -1156,8 +1156,8 @@ namespace Orora.ImageObjectForge
             {
                 _vp.Fit(_cachedCanvasRect, _doc.Width, _doc.Height); e.Use(); Repaint(); return;
             }
-            if (e.keyCode == KeyCode.LeftBracket) { _brushRadius = Mathf.Max(1f, _brushRadius - 2f); e.Use(); Repaint(); return; }
-            if (e.keyCode == KeyCode.RightBracket) { _brushRadius = Mathf.Min(256f, _brushRadius + 2f); e.Use(); Repaint(); return; }
+            if (!e.control && !e.command && e.keyCode == KeyCode.LeftBracket) { _brushRadius = Mathf.Max(1f, _brushRadius - 2f); e.Use(); Repaint(); return; }
+            if (!e.control && !e.command && e.keyCode == KeyCode.RightBracket) { _brushRadius = Mathf.Min(256f, _brushRadius + 2f); e.Use(); Repaint(); return; }
 
             if (_tool == ToolMode.Pen)
             {

@@ -8,6 +8,7 @@ public static class WorldInputGate
     // 적 턴이 아닌 짧은 틈(씬 전환 직후)에도 탐사 인터랙션이 새는 버그 방지.
     public static bool IsTurnResolving { get; set; }
 
-    public static bool IsBlocked => ModalManager.HasAny || IsTurnResolving;
+    public static bool IsBlocked => ModalManager.HasAny || IsTurnResolving
+        || !JcPointerInput.CanControl || !JcPointerInput.Inside;
     // 미래 확장: || IsCinematicPlaying || IsExternalPauseActive ...
 }

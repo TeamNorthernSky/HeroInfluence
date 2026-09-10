@@ -78,6 +78,7 @@ Assets/JC_LP_MegaCity/
 Assets/JC_LP_MegaCity.meta
 Assets/RPGTinyHeroWavePBR.meta
 CLAUDE.md
+/AGENTS.md
 Docs/
 
 # MCP 의존성 (UPM이 로컬에 자동 배포하는 NuGet 산출물 — 팀원별 MCP 버전에 따라 달라짐)
