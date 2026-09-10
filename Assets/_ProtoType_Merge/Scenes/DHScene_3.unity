@@ -253520,8 +253520,9 @@ MonoBehaviour:
     ringRadius: 0.307
     ringWidth: 0.095
     dotRadius: 0.095
-    floatHeight: 0.06
-    bobAmplitude: 0.04
+    floatHeight: 0.05
+    markerHeightOffset: -0.04
+    bobAmplitude: 0
     bobFrequency: 0.65
     shadowColor: {r: 0.025, g: 0.045, b: 0.045, a: 1}
     shadowOpacity: 1
@@ -253530,13 +253531,30 @@ MonoBehaviour:
     shadowSoftness: 0.035
     lineWidth: 0.075
     dashLength: 0.18
-    dashGap: 0.105
-    flowSpeed: 0.65
+    dashGap: 0.13
+    flowSpeed: 0
     highlightColor: {r: 0.8, g: 1, b: 0.86, a: 1}
+    highlightColorCyclePeriod: 0
     highlightStrength: 0.87
     waveWidth: 0.087
     waveSpeed: 0.68
     wavePeriod: 0.94
+    extensionVersion: 6
+    markerThickness: 0.06
+    bevelWidth: 0.012
+    curveSegments: 26
+    sideBrightness: 0.55
+    dashTrailLength: 0.97
+    dashTrailOpacity: 0.361
+    dashTrailFalloff: 1.24
+    dashTrailWidthFalloff: 0.24
+    dashGlowWidth: 0.0191
+    dashGlowStrength: 0.04
+    dashFlickerStrength: 1
+    dashFlickerSpeed: 4
+    dashFlickerRiseSpeed: 4
+    dashFlickerFallSpeed: 2
+    dashFlickerDirection: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

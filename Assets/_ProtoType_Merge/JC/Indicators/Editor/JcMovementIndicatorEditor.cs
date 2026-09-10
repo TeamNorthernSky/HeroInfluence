@@ -11,10 +11,14 @@ namespace JC.Indicators.EditorTools
         {
             new[] { "상태 색상", "reachableColor|이동 가능 색상", "unreachableColor|이동력 초과 색상", "opacity|불투명도" },
             new[] { "도착 문양", "markerSize|셀 대비 크기", "borderWidth|테두리 두께", "cornerRadius|모서리 반지름", "ringRadius|중앙 링 반지름", "ringWidth|중앙 링 두께", "dotRadius|중앙 점 반지름" },
-            new[] { "부유감", "floatHeight|부유 높이", "bobAmplitude|흔들림 진폭", "bobFrequency|흔들림 횟수 / 초" },
+            new[] { "마커 입체 형태", "markerThickness|입체 두께", "bevelWidth|베벨 폭", "curveSegments|곡선 분할 수", "sideBrightness|옆면 밝기" },
+            new[] { "중심 수렴 하이라이트", "highlightColor|하이라이트 색상", "highlightColorCyclePeriod|색상 왕복 주기 (초)", "highlightStrength|하이라이트 강도", "waveWidth|파동 띠 폭", "waveSpeed|파동 속도", "wavePeriod|파동 주기 (초)" },
+            new[] { "부유감", "floatHeight|공통 부유 높이", "markerHeightOffset|도착 문양 높이 오프셋", "bobAmplitude|흔들림 진폭", "bobFrequency|흔들림 횟수 / 초" },
             new[] { "그림자", "shadowColor|그림자 색상", "shadowOpacity|그림자 농도", "shadowDistance|그림자 거리", "shadowAngle|그림자 방향 (도)", "shadowSoftness|그림자 번짐" },
             new[] { "경로 점선", "lineWidth|선 굵기", "dashLength|점선 길이", "dashGap|점선 간격", "flowSpeed|플로우 속도" },
-            new[] { "중심 수렴 하이라이트", "highlightColor|하이라이트 색상", "highlightStrength|하이라이트 강도", "waveWidth|파동 띠 폭", "waveSpeed|파동 속도", "wavePeriod|파동 주기 (초)" }
+            new[] { "점선 트레일", "dashTrailLength|꼬리 길이", "dashTrailOpacity|꼬리 불투명도", "dashTrailFalloff|불투명도 감쇠", "dashTrailWidthFalloff|굵기 감쇠" },
+            new[] { "점선 글로우", "dashGlowWidth|번짐 폭", "dashGlowStrength|번짐 강도" },
+            new[] { "점선 플리커링", "dashFlickerStrength|흰색 반짝임 강도", "dashFlickerSpeed|패턴 진행 속도", "dashFlickerRiseSpeed|흰색 전환 속도 (배)", "dashFlickerFallSpeed|원색 복귀 속도 (배)", "dashFlickerDirection|진행 방향" }
         };
 
         public override void OnInspectorGUI()
