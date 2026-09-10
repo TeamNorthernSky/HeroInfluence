@@ -15,6 +15,8 @@ namespace EnemyAI
                 // 포탑(2턴 충전) + 4구역 율리아 진영(응축/자폭). 능력개방·소환·페이즈는 미룸.
                 case 20004:
                     return new EAI_20004();
+                case 40001:
+                    return new EAI_40001();
                 case 40002:
                     return new EAI_40002();
                 case 40003:

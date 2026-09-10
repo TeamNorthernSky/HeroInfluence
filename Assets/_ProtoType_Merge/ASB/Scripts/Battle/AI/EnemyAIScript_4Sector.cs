@@ -76,50 +76,155 @@ namespace EnemyAI
         }
     }
 
-    // 나락의 증폭기: 응축(EnergyStack +1). 능력개방/페이즈는 미룸.
+    // 나락의 증폭기(소켓1): phase1·2에서 확률로 능력개방(율리아 예약) 또는 응축. 상세는 AmplifierDecision.
     public sealed class EAI_40002 : BaseEnemyAI
     {
         public override int Index => 40002;
 
         protected override EnemyActionDecision DetermineSpecificAction(
             BattleCharactor self, List<BattleCharactor> validTargets, bool canUseSkill)
-        {
-            if (self == null)
-            {
-                return EnemyActionDecision.SkipTurn();
-            }
-
-            // 2페이즈 무력화(다운) 중엔 행동 없음. 재활성은 라운드 경계(EncounterParticipant)에서 처리(§5-A).
-            if (self.IsIncapacitated)
-            {
-                return EnemyActionDecision.SkipTurn();
-            }
-
-            // 순수판정: 상태변경 없음. 커밋에서 정확히 +1(도발 이중호출·이중커밋 방지).
-            return EnemyActionDecision.SelfAction(() => self.AddEnergyStack(1));
-        }
+            => AmplifierDecision.Decide(self, socket: 1);
     }
 
-    // 공멸의 증폭기: 응축(EnergyStack +1). 나락과 동일(차이는 능력개방/phase3 — 미룸).
+    // 공멸의 증폭기(소켓2): 나락과 동일 로직, 소켓만 2.
     public sealed class EAI_40003 : BaseEnemyAI
     {
         public override int Index => 40003;
 
         protected override EnemyActionDecision DetermineSpecificAction(
             BattleCharactor self, List<BattleCharactor> validTargets, bool canUseSkill)
+            => AmplifierDecision.Decide(self, socket: 2);
+    }
+
+    /// <summary>
+    /// 증폭기 공용 판정: phase1·2에서 EnergyStack 확률로 '능력개방'(율리아 EncounterBlackboard 예약) 시도, 아니면 '응축'(+1).
+    /// 확률: 스택>=2 →100%, ==1 →50%, ==0 →불가. 라운드당 해방 1회(블랙보드 게이트). 소켓1 우선.
+    /// 순수 판정에서 roll 1회(게이트 닫혀 있으면 roll 안 함), 상태변경은 커밋에서만(도발 이중호출·이중커밋 안전).
+    /// 예약은 BattleCharactor(self)로 저장 → 생존검사는 flow.Participants. phase>=3 증폭기 직접시전은 범위 밖(응축 유지).
+    /// </summary>
+    internal static class AmplifierDecision
+    {
+        public static EnemyActionDecision Decide(BattleCharactor self, int socket)
         {
-            if (self == null)
+            if (self == null) return EnemyActionDecision.SkipTurn();
+            if (self.IsIncapacitated) return EnemyActionDecision.SkipTurn();
+
+            EncounterBlackboard bb = UnityEngine.Object.FindFirstObjectByType<EncounterBlackboard>();
+            int phase = bb != null ? bb.CurrentPhase : 1;
+
+            bool tryRelease = false;
+            if (phase <= 2 && bb != null && self.EnergyStack >= 1 && bb.CanReserveYulia(socket))
             {
-                return EnemyActionDecision.SkipTurn();
+                tryRelease = self.EnergyStack >= 2 || UnityEngine.Random.value < 0.5f;
             }
 
-            // 2페이즈 무력화(다운) 중엔 행동 없음. 재활성은 라운드 경계(EncounterParticipant)에서 처리(§5-A).
-            if (self.IsIncapacitated)
+            return EnemyActionDecision.SelfAction(() =>
             {
+                if (tryRelease && bb != null && bb.TryReserveYulia(socket, self))
+                {
+                    self.ResetEnergyStack();
+                    UnityEngine.Debug.Log($"[EnemyAI/Amplifier] 능력개방: {self.UnitName} → 율리아 소켓{socket} 예약");
+                }
+                else
+                {
+                    self.AddEnergyStack(1);
+                    UnityEngine.Debug.Log($"[EnemyAI/Amplifier] 응축: {self.UnitName} EnergyStack={self.EnergyStack}");
+                }
+            });
+        }
+    }
+
+    /// <summary>
+    /// 율리아(40001): phase1·2엔 예약(증폭기 능력개방) 있으면 소켓1/2, 없으면 소켓3. phase>=3은 항상 소켓3.
+    /// 예약은 Peek만 → 스킬·타깃 확정 후 non-Skip 반환의 커밋에서만 소비(도발 이중호출 안전).
+    /// 소켓1=열 광역, 소켓2=행 광역(대표 대상 1명 전달), 소켓3=소환(BossController 필요, 대상은 파이프라인 통과용).
+    /// 타깃: 스킬 유효대상 ∩ validTargets 중 '무작위'(GetLowestHp 아님). 후보 없으면 예약 미소비 + Skip.
+    /// </summary>
+    public sealed class EAI_40001 : BaseEnemyAI
+    {
+        public override int Index => 40001;
+
+        protected override EnemyActionDecision DetermineSpecificAction(
+            BattleCharactor self, List<BattleCharactor> validTargets, bool canUseSkill)
+        {
+            if (self == null || validTargets == null || validTargets.Count == 0)
                 return EnemyActionDecision.SkipTurn();
+
+            // (A) 안전시점: 지연된 페이즈 효과(부활/소환/보스교체) 드레인. 멱등 → 이중 호출 안전.
+            BossController boss = self.GetComponent<BossController>();
+            if (boss != null) boss.DrainPhaseEffectsAtTurnStart();
+
+            // [한턴 쉼] 소켓3(소환) 시전 직후 1턴 휴식. 이 턴을 소비하고 예약 해제 → 다음 턴부터 정상 판정.
+            // SelfAction(비-Skip)이라 도발 폴백 재호출을 유발하지 않는다. 예약 소비 없음.
+            if (self.HasPendingRest)
+                return EnemyActionDecision.SelfAction(() => self.SetPendingRest(false));
+
+            if (!canUseSkill) return EnemyActionDecision.SkipTurn(); // 예약 소비 없이 스킵
+
+            EncounterBlackboard bb = UnityEngine.Object.FindFirstObjectByType<EncounterBlackboard>();
+            BattleFlowManager flow = UnityEngine.Object.FindFirstObjectByType<BattleFlowManager>();
+            int phase = bb != null ? bb.CurrentPhase : 1;
+
+            // (B) 예약 Peek만(소비 금지). phase>=3은 항상 소켓3.
+            int socket = 3;
+            int reservedSocket = 0;
+            BattleCharactor reservedSource = null;
+            if (phase <= 2 && bb != null &&
+                bb.TryPeekYuliaReservation(flow, out reservedSocket, out reservedSource))
+            {
+                socket = reservedSocket;
             }
 
-            return EnemyActionDecision.SelfAction(() => self.AddEnergyStack(1));
+            SkillData skill = ResolveSkillBySlot(self, socket);
+            if (skill == null)
+            {
+                UnityEngine.Debug.LogWarning($"[EnemyAI/Yulia] 소켓{socket} 스킬({(40001 * 10) + socket})을 찾지 못함 → 스킵");
+                return EnemyActionDecision.SkipTurn(); // 예약 미소비
+            }
+
+            // 소켓3(소환)만 타깃=파이프라인 통과용이라 validTargets 폴백 허용. 소켓1·2(공격)는 스킬 유효대상 없으면 예약 유지 + Skip.
+            BattleCharactor target = PickRandomTarget(self, validTargets, skill, allowValidTargetsFallback: socket == 3);
+            if (target == null)
+                return EnemyActionDecision.SkipTurn(); // 예약 미소비(공격 소켓은 사거리 규칙 준수)
+
+            // (C) non-Skip 확정 직전에만 예약 소비(커밋에서 1회).
+            bool consume = socket != 3 && bb != null;
+            int consumeSocket = socket;
+            BattleCharactor consumeSource = reservedSource;
+            int logPhase = phase;
+            bool restAfter = socket == 3;   // 소켓3(소환) 시전 후 다음 턴 한턴 쉼 예약
+            return EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, skill, () =>
+            {
+                if (consume) bb.ConsumeYuliaReservationIfMatch(consumeSocket, consumeSource);
+                if (restAfter) self.SetPendingRest(true);
+                UnityEngine.Debug.Log($"[EnemyAI/Yulia] phase{logPhase} 소켓{consumeSocket} 시전: {skill.skillName} → {target.UnitName}");
+            });
+        }
+
+        private static SkillData ResolveSkillBySlot(BattleCharactor self, int slot)
+            => self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == (40001 * 10) + slot);
+
+        // 무작위 유효 대상(열/행 광역은 대표 1명, 소환은 파이프라인용). 도발 시 validTargets가 도발대상만이라 자동 우선.
+        private static BattleCharactor PickRandomTarget(
+            BattleCharactor self, List<BattleCharactor> validTargets, SkillData skill, bool allowValidTargetsFallback)
+        {
+            var pool = new List<BattleCharactor>();
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill);
+            if (candidates != null)
+            {
+                for (int i = 0; i < candidates.Count; i++)
+                {
+                    BattleCharactor c = candidates[i];
+                    if (c != null && !c.IsDead && validTargets.Contains(c)) pool.Add(c);
+                }
+            }
+            // 소환(소켓3)만: 스킬 유효대상이 비어도 살아있는 validTargets로 파이프라인 통과 보장. 공격 소켓은 폴백 금지.
+            if (pool.Count == 0 && allowValidTargetsFallback)
+            {
+                for (int i = 0; i < validTargets.Count; i++)
+                    if (validTargets[i] != null && !validTargets[i].IsDead) pool.Add(validTargets[i]);
+            }
+            return pool.Count == 0 ? null : pool[UnityEngine.Random.Range(0, pool.Count)];
         }
     }
 

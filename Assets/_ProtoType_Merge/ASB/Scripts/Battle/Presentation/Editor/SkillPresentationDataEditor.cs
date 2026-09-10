@@ -9,14 +9,11 @@ using UnityEngine;
 public class SkillPresentationDataEditor : Editor
 {
     private bool _foldNew = true;
-    private bool _foldLegacy;
 
     private void OnEnable()
     {
         var data = target as SkillPresentationData;
-        bool phaseCue = data != null && data.PresentationSchemaVersion >= 1;
-        _foldNew = phaseCue;
-        _foldLegacy = !phaseCue;
+        _foldNew = data == null || data.PresentationSchemaVersion >= 1;
     }
 
     public override void OnInspectorGUI()
@@ -37,7 +34,6 @@ public class SkillPresentationDataEditor : Editor
                 schema.intValue = 1;
                 isPhaseCue = true;
                 _foldNew = true;
-                _foldLegacy = false;
             }
         }
         EditorGUILayout.HelpBox(isPhaseCue
@@ -66,6 +62,10 @@ public class SkillPresentationDataEditor : Editor
         }
         EditorGUILayout.PropertyField(serializedObject.FindProperty("SfxVolume"));
 
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Projectile Impact (공용)", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("ProjectileVisual"), true);
+
         // ── 신 방식 (Phase Cue, Schema=1) ──
         EditorGUILayout.Space();
         _foldNew = EditorGUILayout.Foldout(_foldNew, "신 방식 — Presentation Phases (Schema=1)", true);
@@ -85,48 +85,6 @@ public class SkillPresentationDataEditor : Editor
                             serializedObject.ApplyModifiedProperties();
                             MovingAttackPathSceneTool.DrawInspectorControls(target as SkillPresentationData);
                             serializedObject.Update();
-            EditorGUI.indentLevel--;
-        }
-
-        // ── 옛 방식 (Legacy, Schema=0) ──
-        EditorGUILayout.Space();
-        _foldLegacy = EditorGUILayout.Foldout(_foldLegacy, "옛 방식 — Legacy (Schema=0, director 경로)", true);
-        if (_foldLegacy)
-        {
-            EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("AnimationTriggerOverride"));
-
-            EditorGUILayout.LabelField("Attack Effect", EditorStyles.miniBoldLabel);
-            SerializedProperty enAtk = serializedObject.FindProperty("EnableAttackEffect");
-            EditorGUILayout.PropertyField(enAtk);
-            using (new EditorGUI.DisabledScope(enAtk != null && !enAtk.boolValue))
-            {
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("AttackEffectId"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("AttackEffectPrefab"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("AttackEffectPositionOffset"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("AttackEffectRotationOffset"));
-            }
-
-            EditorGUILayout.LabelField("Attack Sound", EditorStyles.miniBoldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("AttackSoundId"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("AttackSfxClip"));
-
-            EditorGUILayout.LabelField("Hit Effect/Sound (legacy prefab/clip)", EditorStyles.miniBoldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("HitEffectPrefab"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("HitEffectPositionOffset"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("HitEffectRotationOffset"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("HitSfxClip"));
-
-            EditorGUILayout.LabelField("Projectile", EditorStyles.miniBoldLabel);
-            EditorGUILayout.LabelField("Projectile Impact (skill-specific)", EditorStyles.miniBoldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("ProjectileVisual"), true);
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Projectile (legacy fallback)", EditorStyles.miniBoldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("ProjectilePrefab"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("FlightTime"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("TrajectoryType"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("ArcHeight"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("ScaleByCellSize"));
             EditorGUI.indentLevel--;
         }
 

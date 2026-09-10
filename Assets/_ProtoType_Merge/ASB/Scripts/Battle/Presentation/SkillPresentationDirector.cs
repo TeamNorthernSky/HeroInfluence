@@ -843,8 +843,6 @@ public sealed class SkillPresentationDirector
                     EnqueuePhaseCueAttackPrepare(runner, actor, target, skill, presentation, presentationActionInstanceId,
                         useCombo ? ResolveFirstAttackBeatBlendInSeconds(actorAnim, skill, presentation) : null,
                         elapsed => sequenceBattleElapsed += elapsed);
-                    if (!usePhaseCue && attackPrepEnabled && _battle.VisualDirector != null && skill != null)
-                        runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _battle.VisualDirector));
         
                     if (useCombo)
                     {
@@ -1370,8 +1368,6 @@ public sealed class SkillPresentationDirector
                     EnqueuePhaseCueAttackPrepare(runner, actor, primaryTarget, skill, presentation, presentationActionInstanceId,
                         useCombo ? ResolveFirstAttackBeatBlendInSeconds(actorAnim, skill, presentation) : null,
                         elapsed => sequenceBattleElapsed += elapsed);
-                    if (!usePhaseCue && attackPrepEnabled && _battle.VisualDirector != null && skill != null)
-                        runner.Enqueue(new SpawnAttackEffectAction(actor, skill.skillIndex, _battle.VisualDirector));
         
                     // AoE 타깃 리스트(EachTarget 앵커가 대상 수만큼 스폰하는 데 사용).
                     var aoePresentationTargets = new List<BattleCharactor>();
