@@ -62,11 +62,11 @@ namespace JC.VFX.Seam
         // Time.timeScale은 전역값이고 플레이 종료 후에도 살아남는다 — 이 씬에만 사는
         // 이 컴포넌트가 조절을 전담하고 OnDisable에서 1로 복원해 「씬 전용」을 성립시킨다.
         [Header("타임스케일 (씬 전용 — 종료 시 1.0 복원)")]
-        [Tooltip("배속 한 단계 감속.")]
+        [Tooltip("배속 한 단계 감속. Ctrl을 함께 누르면 작동하지 않습니다.")]
         [SerializeField] private KeyCode slowerKey = KeyCode.LeftBracket;
-        [Tooltip("배속 한 단계 가속.")]
+        [Tooltip("배속 한 단계 가속. Ctrl을 함께 누르면 작동하지 않습니다.")]
         [SerializeField] private KeyCode fasterKey = KeyCode.RightBracket;
-        [Tooltip("배속을 즉시 1.0으로 복원.")]
+        [Tooltip("배속을 즉시 1.0으로 복원. Ctrl을 함께 누르면 작동하지 않습니다.")]
         [SerializeField] private KeyCode timeResetKey = KeyCode.Backslash;
         [Tooltip("배속 단계(오름차순). 감속/가속 키가 이 단계들을 오르내린다.")]
         [SerializeField] private float[] timeScaleSteps = { 0.1f, 0.25f, 0.5f, 1f };
@@ -148,6 +148,9 @@ namespace JC.VFX.Seam
         /// <summary>배속 단계 이동·복원. 현재 배속과 가장 가까운 단계를 기준으로 한 칸씩 움직인다.</summary>
         private void HandleTimeScaleKeys()
         {
+            // Ctrl 조합은 에디터의 플레이 입력 제어 단축키로 사용한다.
+            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) return;
+
             if (Input.GetKeyDown(timeResetKey)) { Time.timeScale = 1f; return; }
             if (timeScaleSteps == null || timeScaleSteps.Length == 0) return;
 

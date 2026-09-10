@@ -33,13 +33,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     [SerializeField] private bool edgeScrollEnabled = true;
     [SerializeField] private bool keyboardPanEnabled = true;
     [SerializeField] private float keyboardPanSpeed = 20f;
-    [SerializeField] private float edgeThresholdX = 40f;
-    [SerializeField] private float edgeThresholdY = 40f;
-    [SerializeField] private float edgeMinSpeed = 5f;
-    [SerializeField] private float edgeMaxSpeed = 30f;
-    [SerializeField] private float edgeAcceleration = 10f;
-    [SerializeField] private float edgeDeceleration = 35f;
-    [SerializeField] private bool snapStopWhenLeavingEdge = false;
+    // 거리·속도·응답률은 Resources/JcPointerProfile 공용 프로필에서 관리한다.
     [SerializeField] private float edgeLimitRange = 50f;
     [SerializeField] private bool invertVerticalEdgeScroll = false;
 
@@ -141,13 +135,23 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (IsCameraInputBlocked())
         {
             edgeScrollVelocity = Vector3.zero;
+            JcPointerInput.ClearScroll(this);
             return;
         }
 
-        HandleZoomInput();
+        if (JcPointerInput.Inside) HandleZoomInput();
         HandleEdgeScrolling();
-        HandleKeyboardPanning();
-        HandleResetInput();
+        if (JcPointerInput.Inside)
+        {
+            HandleKeyboardPanning();
+            HandleResetInput();
+        }
+    }
+
+    private void OnDisable()
+    {
+        edgeScrollVelocity = Vector3.zero;
+        JcPointerInput.ClearScroll(this);
     }
 
     private void LateUpdate()
@@ -210,24 +214,25 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void HandleEdgeScrolling()
     {
-        if (blockEdgeScrollOverButtons && IsPointerOverBlockingUI())
+        JcPointerInput.ClearScroll(this);
+        if (!edgeScrollEnabled || !followEnabled || followTarget == null || Time.deltaTime <= 0f ||
+            (blockEdgeScrollOverButtons && JcPointerInput.Inside && IsPointerOverBlockingUI()))
         {
             edgeScrollVelocity = Vector3.zero;
             return;
         }
 
-        Vector2 edgeInput = Vector2.zero;
-        if (edgeScrollEnabled && IsMouseInsideScreen())
+        JcPointerProfile profile = JcPointerProfile.Current;
+        Vector2 edgeInput = JcPointerInput.EdgeVelocity(JcPointerInput.Position, JcPointerInput.Size, profile);
+
+        if (edgeInput.sqrMagnitude <= .000001f)
         {
-            Vector3 mousePosition = Input.mousePosition;
-            edgeInput.x = EvaluateEdgeInput(mousePosition.x, Screen.width, edgeThresholdX);
-            edgeInput.y = EvaluateEdgeInput(mousePosition.y, Screen.height, edgeThresholdY);
+            edgeScrollVelocity = Vector3.zero;
+            return;
         }
 
         if (invertVerticalEdgeScroll)
             edgeInput.y *= -1f;
-
-        float inputStrength = Mathf.Clamp01(edgeInput.magnitude);
 
         Vector3 right = transform.right;
         right.y = 0f;
@@ -238,31 +243,17 @@ public class QuarterViewCameraFollower : MonoBehaviour
         forward.Normalize();
 
         Vector3 desiredVelocity = (right * edgeInput.x) + (forward * edgeInput.y);
-        if (desiredVelocity.sqrMagnitude > 1f)
-            desiredVelocity.Normalize();
-
-        float minSpeed = Mathf.Max(0f, edgeMinSpeed);
-        float maxSpeed = Mathf.Max(minSpeed, edgeMaxSpeed);
-        float speed = inputStrength > 0f
-            ? Mathf.Lerp(minSpeed, maxSpeed, inputStrength)
-            : 0f;
-        desiredVelocity *= speed;
-
-        if (snapStopWhenLeavingEdge && inputStrength <= 0f)
-        {
-            edgeScrollVelocity = Vector3.zero;
-        }
-        else
-        {
-            float response = inputStrength > 0f ? edgeAcceleration : edgeDeceleration;
-            float blend = 1f - Mathf.Exp(-Mathf.Max(0.01f, response) * Time.deltaTime);
-            edgeScrollVelocity = Vector3.Lerp(edgeScrollVelocity, desiredVelocity, blend);
-        }
+        float blend = profile.acceleration <= 0 ? 1 : 1f - Mathf.Exp(-profile.acceleration * Time.deltaTime);
+        edgeScrollVelocity = Vector3.Lerp(edgeScrollVelocity, desiredVelocity, blend);
 
         edgeScrollVelocity.y = 0f;
 
+        Vector3 previousPan = panOffset;
         panOffset += edgeScrollVelocity * Time.deltaTime;
         ClampPanOffset();
+        if ((panOffset - previousPan).sqrMagnitude > .00000001f)
+            JcPointerInput.ReportScroll(this, edgeInput.normalized);
+        else edgeScrollVelocity = Vector3.zero;
     }
 
     private void HandleKeyboardPanning()
@@ -584,28 +575,6 @@ public class QuarterViewCameraFollower : MonoBehaviour
         return 0f;
     }
 
-    private float EvaluateEdgeInput(float mouseAxis, float screenSize, float threshold)
-    {
-        float safeThreshold = Mathf.Max(1f, threshold);
-
-        if (mouseAxis <= safeThreshold)
-            return -Mathf.Clamp01((safeThreshold - mouseAxis) / safeThreshold);
-
-        if (mouseAxis >= screenSize - safeThreshold)
-            return Mathf.Clamp01((mouseAxis - (screenSize - safeThreshold)) / safeThreshold);
-
-        return 0f;
-    }
-
-    private static bool IsMouseInsideScreen()
-    {
-        Vector3 mousePosition = Input.mousePosition;
-        return mousePosition.x >= 0f
-            && mousePosition.x <= Screen.width
-            && mousePosition.y >= 0f
-            && mousePosition.y <= Screen.height;
-    }
-
     /// <summary>
     /// Returns true when the pointer is over UI that should block edge scrolling.
     /// Buttons and CameraEdgeScrollBlocker panels are treated as blocking UI.
@@ -642,6 +611,10 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private bool IsCameraInputBlocked()
     {
+        // 화면 밖은 경계 스크롤에 허용하되, 게임 클릭 게이트와는 구분한다.
+        if (!JcPointerInput.CanControl || ModalManager.HasAny || WorldInputGate.IsTurnResolving)
+            return true;
+
         if (!blockCameraInputDuringCombatPrompt)
             return false;
 
