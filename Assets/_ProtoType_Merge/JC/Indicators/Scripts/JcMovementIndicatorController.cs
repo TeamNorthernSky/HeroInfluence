@@ -25,19 +25,25 @@ namespace JC.Indicators
         private static readonly List<JcMovementIndicatorController> Controllers = new List<JcMovementIndicatorController>();
         private readonly List<Vector3> points = new List<Vector3>();
         private readonly JcIndicatorPathMesh pathBuilder = new JcIndicatorPathMesh();
+        private readonly JcIndicatorMarkerMesh markerBuilder = new JcIndicatorMarkerMesh();
+        private JcMovementIndicatorSettings previousMarkerSettings;
+        private bool markerGeometryBuilt;
         private MaterialPropertyBlock block;
         private GameObject visualRoot;
         private MeshRenderer pathVisual, pathShadow, markerVisual, markerShadow;
-        private Mesh pathMesh, shadowMesh, markerMesh;
-        private Material material, shadowMaterial;
+        private Mesh pathMesh, shadowMesh, markerMesh, markerShadowMesh;
+        private Material material, shadowMaterial, markerMaterial;
         private Renderer originalMarkerRenderer;
         private PathPreviewRenderer boundPath;
         private Transform boundMarker;
         private bool originalMarkerForceRenderingOff;
         private bool markerReachable = true, hasPath, geometryDirty = true;
         private int reachableSegments;
-        private float previousWidth = -1, previousSoftness = -1;
+        private float previousWidth = -1, previousSoftness = -1, previousGlowWidth = -1;
         private bool startedInPlay;
+        private float pathLength, flickerFrontRemaining, flickerPreviousClock;
+        private int flickerDirection;
+        private bool flickerInitialized;
 
         public JcMovementIndicatorProfile Profile { get => profile; set => profile = value; }
         public JcMovementIndicatorSettings Settings { get => settings.Sanitized(); set { settings = value.Sanitized(); geometryDirty = true; } }
@@ -71,7 +77,7 @@ namespace JC.Indicators
             if (boundPath != null && boundPath.VisualOverride == this) boundPath.VisualOverride = null;
             if (originalMarkerRenderer != null) originalMarkerRenderer.forceRenderingOff = originalMarkerForceRenderingOff;
             originalMarkerRenderer = null;
-            boundPath = null; boundMarker = null;
+            boundPath = null; boundMarker = null; flickerInitialized = false;
         }
         public static bool TryGetForMarker(Transform marker, out JcMovementIndicatorController controller)
         {
@@ -87,14 +93,21 @@ namespace JC.Indicators
         public void SetDestinationState(bool reachable) => markerReachable = reachable;
         public void RenderPath(IReadOnlyList<Vector3> path, int reachable)
         {
-            points.Clear();
-            for (int i = 0; i < path.Count; i++) points.Add(path[i]);
+            bool sameDestination = hasPath && path.Count >= 2 && points.Count >= 2
+                && (path[path.Count - 1] - points[points.Count - 1]).sqrMagnitude < .000001f;
+            if (!sameDestination) flickerInitialized = false;
+            points.Clear(); pathLength = 0;
+            for (int i = 0; i < path.Count; i++)
+            {
+                points.Add(path[i]);
+                if (i > 0) pathLength += Vector2.Distance(new Vector2(path[i - 1].x, path[i - 1].z), new Vector2(path[i].x, path[i].z));
+            }
             reachableSegments = Mathf.Clamp(reachable, 0, Mathf.Max(0, points.Count - 1));
-            hasPath = points.Count >= 2; geometryDirty = true;
+            hasPath = points.Count >= 2 && pathLength > .00001f; geometryDirty = true;
         }
         public void HidePath()
         {
-            hasPath = false;
+            hasPath = false; flickerInitialized = false;
             if (pathVisual != null) pathVisual.enabled = false;
             if (pathShadow != null) pathShadow.enabled = false;
         }
@@ -120,15 +133,23 @@ namespace JC.Indicators
             }
             if (originalMarkerRenderer != null) originalMarkerRenderer.forceRenderingOff = true;
             var s = Settings;
+            if (!markerGeometryBuilt || !SameMarkerGeometry(s, previousMarkerSettings))
+            {
+                markerBuilder.Build(markerMesh, s);
+                previousMarkerSettings = s; markerGeometryBuilt = true;
+            }
             float lift = s.floatHeight + s.bobAmplitude * Mathf.Sin(clock * s.bobFrequency * Mathf.PI * 2);
             Vector3 shadowOffset = new Vector3(Mathf.Cos(s.shadowAngle * Mathf.Deg2Rad), 0, Mathf.Sin(s.shadowAngle * Mathf.Deg2Rad)) * s.shadowDistance;
-            if (geometryDirty || previousWidth != s.lineWidth || previousSoftness != s.shadowSoftness)
+            float glowWidth = s.dashGlowStrength > 0 ? s.dashGlowWidth : 0;
+            if (geometryDirty || previousWidth != s.lineWidth || previousSoftness != s.shadowSoftness || previousGlowWidth != glowWidth)
             {
-                pathBuilder.Build(pathMesh, points, reachableSegments, s.lineWidth * .5f + .006f);
+                pathBuilder.Build(pathMesh, points, reachableSegments, s.lineWidth * .5f + glowWidth + .006f);
                 pathBuilder.Build(shadowMesh, points, reachableSegments, s.lineWidth * .5f + s.shadowSoftness + .006f);
+                previousGlowWidth = glowWidth;
                 previousWidth = s.lineWidth; previousSoftness = s.shadowSoftness; geometryDirty = false;
             }
             bool showPath = hasPath && pathRenderer.isActiveAndEnabled;
+            UpdateFlicker(s, clock, showPath);
             pathVisual.enabled = showPath && s.opacity > 0;
             pathShadow.enabled = showPath && s.opacity * s.shadowOpacity > 0;
             pathVisual.transform.position = Vector3.up * lift;
@@ -139,18 +160,45 @@ namespace JC.Indicators
             markerShadow.enabled = showMarker && s.opacity * s.shadowOpacity > 0;
             float size = gridManager.CellSize * s.markerSize;
             Vector3 basePosition = destinationMarker.position;
-            markerVisual.transform.position = basePosition + Vector3.up * (lift + .003f);
+            markerVisual.transform.position = basePosition + Vector3.up * (Mathf.Max(0, lift + s.markerHeightOffset) + .003f);
             markerShadow.transform.position = basePosition + shadowOffset - Vector3.up * .005f;
             markerVisual.transform.localScale = Vector3.one * size;
             // Quad UV extends beyond the square so even maximum blur has enough geometry.
             float extent = .5f + (s.shadowSoftness + .006f) / size;
             markerShadow.transform.localScale = Vector3.one * size;
-            if (markerMesh.bounds.extents.x < extent || markerMesh.bounds.extents.x > extent + .001f) BuildMarkerMesh(extent);
+            if (markerShadowMesh.bounds.extents.x < extent || markerShadowMesh.bounds.extents.x > extent + .001f) BuildMarkerShadowMesh(extent);
             Apply(pathVisual, s, false, false, 1, clock);
             Apply(pathShadow, s, false, true, 1, clock);
             Apply(markerVisual, s, true, false, size, clock);
             Apply(markerShadow, s, true, true, size, clock);
         }
+        private static float FlickerUnit(JcMovementIndicatorSettings s) => Mathf.Max(.015f, s.dashLength + s.dashGap) / .37f;
+        private void UpdateFlicker(JcMovementIndicatorSettings s, float clock, bool showPath)
+        {
+            int direction = s.dashFlickerDirection == JcDashFlickerDirection.TowardStart ? -1 : 1;
+            if (!showPath) { flickerInitialized = false; flickerPreviousClock = clock; return; }
+            if (!flickerInitialized || direction != flickerDirection || clock < flickerPreviousClock)
+            {
+                flickerFrontRemaining = direction > 0 ? pathLength : 0;
+                flickerPreviousClock = clock; flickerDirection = direction; flickerInitialized = true;
+            }
+            float unit = FlickerUnit(s);
+            float distance = Mathf.Max(0, clock - flickerPreviousClock) * s.dashFlickerSpeed * unit;
+            flickerPreviousClock = clock;
+            flickerFrontRemaining -= direction * distance;
+            // 전환과 복귀가 각 1구간. 마지막 위치의 복귀가 끝난 뒤에만 새 흐름을 시작한다.
+            float tail = 2 * unit, cycle = pathLength + tail;
+            if (direction > 0 && flickerFrontRemaining <= -tail)
+                flickerFrontRemaining = pathLength - Mathf.Repeat(-tail - flickerFrontRemaining, cycle);
+            else if (direction < 0 && flickerFrontRemaining >= pathLength + tail)
+                flickerFrontRemaining = Mathf.Repeat(flickerFrontRemaining - pathLength - tail, cycle);
+        }
+
+        private static bool SameMarkerGeometry(JcMovementIndicatorSettings a, JcMovementIndicatorSettings b) =>
+            a.markerThickness == b.markerThickness && a.bevelWidth == b.bevelWidth && a.curveSegments == b.curveSegments
+            && a.borderWidth == b.borderWidth && a.cornerRadius == b.cornerRadius && a.ringRadius == b.ringRadius
+            && a.ringWidth == b.ringWidth && a.dotRadius == b.dotRadius;
+
         private void Apply(MeshRenderer renderer, JcMovementIndicatorSettings s, bool marker, bool shadow, float size, float clock)
         {
             block.Clear();
@@ -158,12 +206,20 @@ namespace JC.Indicators
             block.SetColor("_Color", shadow ? s.shadowColor : color);
             block.SetColor("_UnreachableColor", s.unreachableColor);
             block.SetColor("_HighlightColor", s.highlightColor);
+            block.SetFloat("_MarkerColorCycle", s.highlightColorCyclePeriod);
+            block.SetVector("_DashTrail", new Vector4(s.dashTrailLength, s.dashTrailOpacity, s.dashTrailFalloff, s.dashTrailWidthFalloff));
+            block.SetVector("_DashGlow", new Vector4(s.dashGlowWidth, s.dashGlowStrength, 0, 0));
+            block.SetVector("_FlickerPulse", new Vector4(flickerFrontRemaining, FlickerUnit(s), 0, flickerInitialized ? 1 : 0));
+            block.SetVector("_DashFlickerRates", new Vector4(s.dashFlickerRiseSpeed, s.dashFlickerFallSpeed, 0, 0));
+            block.SetVector("_DashFlicker", new Vector4(s.dashFlickerStrength, s.dashFlickerSpeed,
+                s.dashFlickerDirection == JcDashFlickerDirection.TowardStart ? -1 : 1, 0));
+            block.SetFloat("_SideBrightness", s.sideBrightness);
             block.SetVector("_Shape", new Vector4(s.borderWidth, s.cornerRadius, s.ringRadius, s.ringWidth));
             block.SetVector("_Wave", new Vector4(s.waveWidth, s.waveSpeed, s.wavePeriod, s.highlightStrength));
             block.SetVector("_Dash", new Vector4(s.dashLength, s.dashGap, s.lineWidth, s.flowSpeed));
             block.SetFloat("_DotRadius", s.dotRadius);
             block.SetFloat("_Opacity", s.opacity * (shadow ? s.shadowOpacity : 1));
-            block.SetFloat("_Mode", marker ? 0 : 1);
+            block.SetFloat("_Mode", marker ? (shadow ? 0 : 2) : 1);
             block.SetFloat("_Shadow", shadow ? 1 : 0);
             block.SetFloat("_Softness", shadow ? s.shadowSoftness / size : 0);
             block.SetFloat("_Clock", clock);
@@ -180,12 +236,16 @@ namespace JC.Indicators
             SceneManager.MoveGameObjectToScene(visualRoot, gameObject.scene);
             material = new Material(indicatorShader) { name = "JC Movement (runtime)", hideFlags = HideFlags.HideAndDontSave };
             shadowMaterial = new Material(material) { renderQueue = 2999 };
+            markerMaterial = new Material(material) { name = "JC Solid Marker (runtime)", hideFlags = HideFlags.HideAndDontSave };
+            markerMaterial.SetFloat("_Cull", (float)CullMode.Back);
             pathMesh = NewMesh("JC Path"); shadowMesh = NewMesh("JC Path Shadow"); markerMesh = NewMesh("JC Marker");
-            BuildMarkerMesh(.6f);
+            markerShadowMesh = NewMesh("JC Marker Shadow");
+            BuildMarkerShadowMesh(.6f);
+            markerGeometryBuilt = false;
             pathVisual = MakeRenderer("Path", pathMesh, material);
             pathShadow = MakeRenderer("Path Shadow", shadowMesh, shadowMaterial);
-            markerVisual = MakeRenderer("Destination", markerMesh, material);
-            markerShadow = MakeRenderer("Destination Shadow", markerMesh, shadowMaterial);
+            markerVisual = MakeRenderer("Destination", markerMesh, markerMaterial);
+            markerShadow = MakeRenderer("Destination Shadow", markerShadowMesh, shadowMaterial);
             geometryDirty = true;
         }
         private static Mesh NewMesh(string name)
@@ -203,21 +263,21 @@ namespace JC.Indicators
             renderer.reflectionProbeUsage = ReflectionProbeUsage.Off; renderer.enabled = false;
             return renderer;
         }
-        private void BuildMarkerMesh(float extent)
+        private void BuildMarkerShadowMesh(float extent)
         {
             float e = Mathf.Max(.506f, extent);
-            markerMesh.Clear();
-            markerMesh.vertices = new[] { new Vector3(-e, 0, -e), new Vector3(-e, 0, e), new Vector3(e, 0, -e), new Vector3(e, 0, e) };
-            markerMesh.uv = new[] { new Vector2(-e, -e), new Vector2(-e, e), new Vector2(e, -e), new Vector2(e, e) };
-            markerMesh.colors = new[] { Color.white, Color.white, Color.white, Color.white };
-            markerMesh.triangles = new[] { 0, 1, 2, 2, 1, 3 }; markerMesh.RecalculateBounds();
+            markerShadowMesh.Clear();
+            markerShadowMesh.vertices = new[] { new Vector3(-e, 0, -e), new Vector3(-e, 0, e), new Vector3(e, 0, -e), new Vector3(e, 0, e) };
+            markerShadowMesh.uv = new[] { new Vector2(-e, -e), new Vector2(-e, e), new Vector2(e, -e), new Vector2(e, e) };
+            markerShadowMesh.colors = new[] { Color.white, Color.white, Color.white, Color.white };
+            markerShadowMesh.triangles = new[] { 0, 1, 2, 2, 1, 3 }; markerShadowMesh.RecalculateBounds();
         }
         private void DisposeVisuals()
         {
-            DestroyOwned(visualRoot); DestroyOwned(pathMesh); DestroyOwned(shadowMesh); DestroyOwned(markerMesh);
-            DestroyOwned(material); DestroyOwned(shadowMaterial);
+            DestroyOwned(visualRoot); DestroyOwned(pathMesh); DestroyOwned(shadowMesh); DestroyOwned(markerMesh); DestroyOwned(markerShadowMesh);
+            DestroyOwned(material); DestroyOwned(shadowMaterial); DestroyOwned(markerMaterial);
             visualRoot = null; pathVisual = pathShadow = markerVisual = markerShadow = null;
-            pathMesh = shadowMesh = markerMesh = null; material = shadowMaterial = null;
+            pathMesh = shadowMesh = markerMesh = markerShadowMesh = null; material = shadowMaterial = markerMaterial = null; markerGeometryBuilt = false; flickerInitialized = false;
         }
         private static void DestroyOwned(Object value)
         {
