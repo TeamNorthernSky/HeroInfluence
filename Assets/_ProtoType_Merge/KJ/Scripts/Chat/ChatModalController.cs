@@ -209,7 +209,7 @@ public class ChatModalController : MonoBehaviour
     {
         if (manager == null || !manager.IsRunning || choicesVisible) return;
         if (skipConfirmPopup != null && skipConfirmPopup.activeSelf) return; // 스킵 확인 중엔 진행 정지
-        if (!Input.GetMouseButtonDown(0)) return;
+        if (!Input.GetMouseButtonDown(0)&&!Input.GetKeyDown(KeyCode.Space)) return;
         if (Time.frameCount == beginFrame) return; // 트리거를 누른 그 클릭은 무시
         if (IsPointerOverButton()) return; // Skip 등 버튼 클릭은 대사 진행으로 취급하지 않음
 

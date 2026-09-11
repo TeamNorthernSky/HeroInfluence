@@ -142,7 +142,7 @@ public class SpriteLibrary : ScriptableObject
 
     [Header("클래스 스킬 아이콘 CSV (Resources TextAsset, 컬럼=ClassSkillIndex,Level,IconResourcePath)")]
     [Tooltip("직업별 스킬 아이콘 경로표. 테이블(skills) 미지정 시 레거시 폴백보다 우선 적용.")]
-    [SerializeField] private string classSkillIconCsvPath = "Icon_Skill_Sprite/ClassSkillIconSheet";
+    [SerializeField] private string classSkillIconCsvPath = "UI_Sprite/UI_Icon/HeroSkill/HeroSkillIconSheet"; // [KJ 260911] HeroSkill 아이콘으로 교체
 
     [Header("무기 아이콘 CSV (컬럼=WeaponIndex,IconResourcePath — 레벨 무관)")]
     [SerializeField] private string weaponIconCsvPath = "Icon_Weapon_Sprite/WeaponIconSheet";
