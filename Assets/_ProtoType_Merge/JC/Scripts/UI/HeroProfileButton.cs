@@ -41,6 +41,7 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
     private Action<int> selectCallback;
     private bool selected;
     private bool hovering;
+    private HeroRankBadge rankBadge; // [KJ 260910] 파티 카드 랭크 배지(자식에서 캐시, SerializeField 추가 안 함)
 
     /// <summary>바인딩된 영웅 인덱스(출전 드래그 등 외부 결합용).</summary>
     public int UnitIndex => unitIndex;
@@ -50,6 +51,7 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (button == null) button = GetComponent<Button>();
         if (button != null) button.onClick.AddListener(OnClick);
         if (background == null) background = GetComponent<Image>();
+        rankBadge = GetComponentInChildren<HeroRankBadge>(true);
     }
 
     public void Bind(int unitIndex, HeroInfoModal infoModal, UnitPersistentData unit, DHPlayerUnitTemplate template, bool inParty)
@@ -86,6 +88,7 @@ public class HeroProfileButton : MonoBehaviour, IPointerEnterHandler, IPointerEx
         if (nameText != null) nameText.text = displayName;
         if (classText != null) classText.text = displayClass;
         if (levelText != null) levelText.text = $"Lv {level}";
+        if (rankBadge != null) rankBadge.SetLevel(level); // [KJ 260910] 랭크 배지
         // [KJ 260729] 공방 2단계 — 장착 코어명 표시.
         if (coreText != null) coreText.text = ResolveCoreName();
 

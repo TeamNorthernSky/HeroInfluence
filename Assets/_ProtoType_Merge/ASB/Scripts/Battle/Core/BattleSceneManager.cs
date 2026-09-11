@@ -25,6 +25,11 @@ public class BattleSceneManager : MonoBehaviour
     [SerializeField] private PlayerSpawner playerSpawner;
     [SerializeField] private EnemySpawner enemySpawner;
 
+    [Header("Tutorial Battle")]
+    [SerializeField] private TutorialBattleDirector tutorialBattleDirector;
+    [SerializeField] private TutorialBattleUI tutorialBattleUI;
+    private TutorialBattleFlowRegistry tutorialFlowRegistry;
+
     [Header("UI")]
     [SerializeField] private BattleUIManager battleUIManager;
 
@@ -62,6 +67,7 @@ public class BattleSceneManager : MonoBehaviour
     private void OnDisable()
     {
         hostageScenarioController?.FlushResult();
+        tutorialBattleDirector?.Shutdown();
 
         if (battleFlowManager != null)
         {
@@ -117,12 +123,19 @@ public class BattleSceneManager : MonoBehaviour
         // [모의 전투] 보상/스킬은 지급되지 않으므로 plan을 넘기지 않아 미리보기 슬롯·스킬 팝업을 숨긴다.
         BattleResultPanel resultPanel = battleUIManager?.ShowBattleResultUI(result, isSimulation ? null : plan);
 
+        // 결과창 표시 후·Accept 전: 튜토리얼 flow에 통지(비차단 오버레이 기본).
+        if (resultPanel != null)
+        {
+            tutorialBattleDirector?.NotifyBattleResultShown(result);
+        }
+
         // 5. Accept 버튼 대기
         if (resultPanel != null)
         {
             bool accepted = false;
             resultPanel.OnAccepted += () => accepted = true;
             yield return new WaitUntil(() => accepted);
+            tutorialBattleDirector?.NotifyBattleResultAccepted(result);
         }
 
         // 6. 저장 (스킬 선택 결과 포함)
@@ -402,9 +415,77 @@ public class BattleSceneManager : MonoBehaviour
         allUnits.AddRange(playerBattleCharactors);
         allUnits.AddRange(enemyBattleCharactors);
 
-        // BattleFlowManager.Initialize → RebuildRuntimeLookup: 스포너/CollectParticipantsAfterInitialize 이후이며
-        // 각 인스턴스의 BattleCharactor.Awake에서 런타임 키가 이미 할당된 상태입니다.
-        battleFlowManager.Initialize(allUnits);
+        // Flow는 먼저 참가자만 초기화하고 멈춰 둔다. TutorialBattleDirector가 첫 턴 이벤트보다
+        // 먼저 구독하고 입장 단계를 실행한 다음, 공통 전투 루프를 한 번만 시작한다.
+        battleFlowManager.Initialize(allUnits, false);
+
+        ITutorialBattleFlow tutorialFlow = ResolveTutorialFlow(combatContext);
+        if (tutorialFlow != null)
+        {
+            if (tutorialBattleDirector == null)
+            {
+                tutorialBattleDirector = GetComponent<TutorialBattleDirector>();
+            }
+
+            if (tutorialBattleDirector == null)
+            {
+                // 씬에 배치된 Director만 사용한다(자동 생성하지 않음). 없으면 일반 전투로 계속.
+                Debug.LogError(
+                    $"[BattleSceneManager] 튜토리얼 Flow({tutorialFlow.BattleKey})가 있으나 씬에 " +
+                    $"TutorialBattleDirector가 없습니다. 일반 전투로 계속합니다.",
+                    this);
+            }
+            else
+            {
+                tutorialBattleDirector.enabled = true;
+                if (tutorialBattleUI == null)
+                {
+                    tutorialBattleUI = FindFirstObjectByType<TutorialBattleUI>(FindObjectsInactive.Include);
+                }
+
+                bool hasEventBattle = combatContext != null && combatContext.HasEventBattle;
+                int tutorialZoneId = hasEventBattle ? combatContext.EventBattle.ZoneId : tutorialFlow.ZoneId;
+                string tutorialKey = hasEventBattle ? combatContext.EventBattle.BattleKey : tutorialFlow.BattleKey;
+
+                if (!tutorialBattleDirector.Initialize(
+                        tutorialFlow,
+                        battleFlowManager,
+                        battleFlowManager.BattleManager,
+                        enemySpawner,
+                        playerSpawner,
+                        tutorialBattleUI,
+                        tutorialKey,
+                        tutorialZoneId))
+                {
+                    Debug.LogWarning(
+                        $"[BattleSceneManager] 튜토리얼 초기화에 실패해 일반 전투로 계속합니다. " +
+                        $"BattleKey={tutorialKey}",
+                        this);
+                }
+            }
+        }
+        else
+        {
+            tutorialBattleDirector?.Shutdown();
+        }
+
+        battleFlowManager.StartBattleLoop();
+    }
+
+    private ITutorialBattleFlow ResolveTutorialFlow(CombatContext combatContext)
+    {
+        if (combatContext == null || !combatContext.HasEventBattle)
+        {
+            return null;
+        }
+
+        if (tutorialFlowRegistry == null)
+        {
+            tutorialFlowRegistry = TutorialBattleFlowRegistry.CreateDefault();
+        }
+
+        CombatEventBattleData eventBattle = combatContext.EventBattle;
+        return tutorialFlowRegistry.Resolve(eventBattle.ZoneId, eventBattle.BattleKey);
     }
 
     private bool TryPrepareEventSlotMap(

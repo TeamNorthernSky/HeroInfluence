@@ -17,6 +17,7 @@ public class BattleManager : MonoBehaviour
 {
     public static BattleManager Instance { get; private set; }
     public event Action<string> OnActionExecuted;
+    public event Action<SkillResolutionContext> OnSkillResolved;
 
     /// <summary>UI 등 외부에서 배속 변경을 요청할 때 발생시킵니다. AutoBattleController.OnAutoBattleToggleRequested와 동일한 패턴.</summary>
     public static event Action<float> OnBattleSpeedChangeRequested;
@@ -243,8 +244,10 @@ public class BattleManager : MonoBehaviour
         }
 
         bool wasDeadBefore = context.Target.IsDead;
+        float hpBefore = context.Target.CurrentHp;
         float finalDamage = CombatCalculator.CalculateDamage(context);
         context.Target.TakeDamage(finalDamage);
+        float appliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
         bool isDeadAfter = context.Target.IsDead;
         Debug.Log($"[Combat] {context.Caster.UnitName} -> {context.Target.UnitName} dmg={finalDamage:F1} (Crit: {context.IsCritical})");
 
@@ -252,6 +255,7 @@ public class BattleManager : MonoBehaviour
         {
             Target = context.Target,
             Damage = finalDamage,
+            AppliedDamage = appliedDamage,
             IsCritical = context.IsCritical,
             TargetDied = isDeadAfter,
             WasDeadBefore = wasDeadBefore,
@@ -278,7 +282,10 @@ public class BattleManager : MonoBehaviour
         }
 
         float finalDamage = CombatCalculator.CalculateDamage(context);
-        bool isDeadAfterPredicted = context.Target.CurrentHp - finalDamage <= 0f;
+        float predictedHp = Mathf.Max(
+            context.Target.MinimumHpAfterDamage,
+            context.Target.CurrentHp - finalDamage);
+        bool isDeadAfterPredicted = predictedHp <= 0f;
 
         return new BattleHitResult
         {
@@ -304,8 +311,18 @@ public class BattleManager : MonoBehaviour
             return BattleHitResult.Empty(context?.Target);
         }
 
+        bool wasDeadBefore = context.Target.IsDead;
+        float hpBefore = context.Target.CurrentHp;
         context.Target.TakeDamage(predicted.Damage);
-        Debug.Log($"[Combat] {context.Caster?.UnitName} -> {context.Target.UnitName} dmg={predicted.Damage:F1} (Crit: {predicted.IsCritical})");
+        bool isDeadAfter = context.Target.IsDead;
+
+        predicted.AppliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
+        predicted.WasDeadBefore = wasDeadBefore;
+        predicted.IsDeadAfter = isDeadAfter;
+        predicted.TargetDied = isDeadAfter;
+        predicted.CausedDeath = !wasDeadBefore && isDeadAfter;
+
+        Debug.Log($"[Combat] {context.Caster?.UnitName} -> {context.Target.UnitName} dmg={predicted.Damage:F1} applied={predicted.AppliedDamage:F1} (Crit: {predicted.IsCritical})");
         return predicted;
     }
 
@@ -443,7 +460,7 @@ public class BattleManager : MonoBehaviour
                         committed = true;
                         BattleHitResult r = CommitDamage(damageContext, predicted);
                         result.RecordDamageResult(damageContext, r);
-                        totalDamageDealt += r?.Damage ?? 0f;
+                        totalDamageDealt += r?.AppliedDamage ?? 0f;
                         return r;
                     };
                     pendingCommits.Add(commit);
@@ -516,7 +533,7 @@ public class BattleManager : MonoBehaviour
                         committed = true;
                         BattleHitResult r = CommitDamage(damageContext, predicted);
                         result.RecordDamageResult(damageContext, r);
-                        totalDamageDealt += r?.Damage ?? 0f;
+                        totalDamageDealt += r?.AppliedDamage ?? 0f;
                         return r;
                     };
                     pendingCommits.Add(onHitCallback);
@@ -912,7 +929,20 @@ public class BattleManager : MonoBehaviour
         yield return StartCoroutine(hostageQueue.RunAll(this));
 
         if (hitApplied)
+        {
             OnActionExecuted?.Invoke(GetSkillDisplayName(skillData));
+
+            // 인질은 BattleCharactor가 아니어서 PrimaryTarget/Hits는 비지만,
+            // 최상위 플레이어 행동 완료와 actor/skill 정보는 동일 이벤트로 전달합니다.
+            SkillExecutionResult resolutionResult =
+                SkillExecutionResult.SuccessResult(actor, skillData);
+            OnSkillResolved?.Invoke(new SkillResolutionContext(
+                actor,
+                null,
+                skillData,
+                true,
+                resolutionResult));
+        }
 
         onCompleted?.Invoke(hitApplied);
     }
@@ -983,6 +1013,12 @@ public class BattleManager : MonoBehaviour
         {
             HostageFriendlyFireResolver.ApplyCollateralDamage(actor, hostageCollateralCenter, classSkillRow);
             OnActionExecuted?.Invoke(GetSkillDisplayName(classSkillRow));
+            OnSkillResolved?.Invoke(new SkillResolutionContext(
+                actor,
+                target,
+                classSkillRow,
+                true,
+                result));
         }
 
         onCompleted?.Invoke(executed);

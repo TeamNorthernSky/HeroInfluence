@@ -53,7 +53,7 @@ public class MoveCommandPreviewController
         {
             markerRenderers = marker.GetComponentsInChildren<Renderer>(true);
             markerPropertyBlock = new MaterialPropertyBlock();
-            ApplyMarkerColor(validMarkerColor);
+            ApplyMarkerColor(true);
             marker.gameObject.SetActive(false);
         }
 
@@ -76,7 +76,7 @@ public class MoveCommandPreviewController
 
         if (marker != null)
         {
-            ApplyMarkerColor(validMarkerColor);
+            ApplyMarkerColor(true);
             marker.gameObject.SetActive(false);
         }
 
@@ -140,7 +140,7 @@ public class MoveCommandPreviewController
         isDestinationFullyReachable = hasPreviewPath && activeMover.CanSpendMovePoints(fullMoveCost);
         hasOverLimitTail = hasPreviewPath && fullMoveCost > activeMover.RemainingMovePoints;
 
-        ApplyMarkerColor(isDestinationFullyReachable ? validMarkerColor : invalidMarkerColor);
+        ApplyMarkerColor(isDestinationFullyReachable);
 
         pathPreviewRenderer?.RenderPath(
             previewPath,
@@ -336,7 +336,7 @@ public class MoveCommandPreviewController
         hasMarkerGrid = true;
 
         marker.position = worldPosition;
-        ApplyMarkerColor(validMarkerColor);
+        ApplyMarkerColor(true);
         if (!marker.gameObject.activeSelf)
             marker.gameObject.SetActive(true);
     }
@@ -743,8 +743,11 @@ public class MoveCommandPreviewController
         return dot * 10 + axisMatch;
     }
 
-    private void ApplyMarkerColor(Color color)
+    private void ApplyMarkerColor(bool reachable)
     {
+        if (JC.Indicators.JcMovementIndicatorController.TryGetForMarker(marker, out var visual))
+            visual.SetDestinationState(reachable);
+        Color color = reachable ? validMarkerColor : invalidMarkerColor;
         if (markerRenderers == null || markerPropertyBlock == null)
             return;
 

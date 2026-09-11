@@ -7,7 +7,7 @@ using UnityEngine;
 public class ChatNode
 {
     public int Id;              // Chat_ID
-    public int Type;            // Chat_Type (0=상대/좌, 1=플레이어/우)
+    public int Type;            // Chat_Type (0=상대/좌, 1=플레이어/우, 2=상황 설명/가운데)
     public string CharName;     // Char_Name
     public string CharProfile;  // Char_Profile (기반 단계 미사용)
     public string Message;      // Message_Text

@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class PathPreviewRenderer : MonoBehaviour
 {
+    // JC_Indicator가 설치된 씬에서만 시각 출력을 위임한다. 경로/이동력 계산은 기존 흐름을 유지한다.
+    public JC.Indicators.JcMovementIndicatorController VisualOverride { get; set; }
     [Header("Line Renderers")]
     [SerializeField] private LineRenderer reachableLineRenderer;
     [SerializeField] private LineRenderer unreachableLineRenderer;
@@ -66,6 +68,8 @@ public class PathPreviewRenderer : MonoBehaviour
 
         List<Vector3> points = new List<Vector3>(remainingPath.Count + 1);
 
+        if (VisualOverride != null && VisualOverride.IsReady)
+            startWorldPosition.y = gridManager.GetCellSurfaceY(gridManager.WorldToGrid(startWorldPosition)) + 0.02f;
         points.Add(startWorldPosition);
 
         for (int i = 0; i < remainingPath.Count; i++)
@@ -80,6 +84,7 @@ public class PathPreviewRenderer : MonoBehaviour
 
     public void Hide()
     {
+        if (VisualOverride != null) VisualOverride.HidePath();
         if (reachableLineRenderer != null)
             reachableLineRenderer.enabled = false;
 
@@ -107,6 +112,14 @@ public class PathPreviewRenderer : MonoBehaviour
         if (points == null || points.Count < 2)
         {
             Hide();
+            return;
+        }
+
+        if (VisualOverride != null && VisualOverride.IsReady)
+        {
+            if (reachableLineRenderer != null) reachableLineRenderer.enabled = false;
+            if (unreachableLineRenderer != null) unreachableLineRenderer.enabled = false;
+            VisualOverride.RenderPath(points, reachableSegments);
             return;
         }
 

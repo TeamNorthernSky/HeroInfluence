@@ -16,7 +16,9 @@ public enum PendingActionType
 {
     None,
     ClassSkill,
-    WeaponSkill
+    WeaponSkill,
+    Skip,
+    Flee
 }
 
 /// <summary>
@@ -188,6 +190,11 @@ public class InputHandler : MonoBehaviour
     {
         if (isProcessingAction) return;
         if (!TryGetCurrentActor(out BattleCharactor actor)) return;
+        if (battleFlowManager != null &&
+            !battleFlowManager.IsPlayerActionAllowed(actor, PendingActionType.Skip, null))
+        {
+            return;
+        }
         // 스킵도 '이번 턴의 행동'이다. 점유권을 얻지 못하면(이미 자동전투 등이 실행 중) 무시한다.
         if (battleFlowManager != null && !battleFlowManager.TryClaimPlayerAction(actor)) return;
         ResetTargetingState();
@@ -261,6 +268,13 @@ public class InputHandler : MonoBehaviour
     {
         if (!TryGetCurrentActor(out BattleCharactor actor))
         {
+            return;
+        }
+
+        if (battleFlowManager != null &&
+            !battleFlowManager.IsPlayerActionAllowed(actor, actionType, null))
+        {
+            Debug.Log($"[InputHandler] 현재 시나리오에서 허용되지 않은 행동입니다: action={actionType}");
             return;
         }
 
@@ -373,6 +387,14 @@ public class InputHandler : MonoBehaviour
     {
         if (isProcessingAction || (hoverTarget == null && hoverHostageTarget == null) || battleManager == null)
         {
+            return;
+        }
+
+        BattleCharactor requestedTarget = hoverTarget;
+        if (battleFlowManager != null &&
+            !battleFlowManager.IsPlayerActionAllowed(actor, pendingAction, requestedTarget))
+        {
+            Debug.Log($"[InputHandler] 현재 시나리오에서 허용되지 않은 대상/행동입니다: action={pendingAction}");
             return;
         }
 
