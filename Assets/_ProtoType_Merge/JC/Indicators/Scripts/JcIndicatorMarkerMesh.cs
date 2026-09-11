@@ -17,10 +17,12 @@ namespace JC.Indicators
         private readonly List<float> junctions = new List<float>();
         private readonly int[] order = { 0, 1, 2, 3, 4, 5 };
         private JcMovementIndicatorSettings style;
+        private float localThickness;
 
-        public void Build(Mesh mesh, JcMovementIndicatorSettings settings)
+        public void Build(Mesh mesh, JcMovementIndicatorSettings settings, float worldSize = 1)
         {
             style = settings.Sanitized();
+            localThickness = style.commonThickness / Mathf.Max(.001f, worldSize);
             vertices.Clear(); normals.Clear(); uv.Clear(); colors.Clear(); triangles.Clear();
             angles.Clear(); junctions.Clear();
             int count = style.curveSegments * 4;
@@ -96,7 +98,7 @@ namespace JC.Indicators
 
         private float Bevel(float angle, float inner, float outer)
         {
-            float width = Mathf.Min(style.bevelWidth, style.markerThickness * .5f, (outer - inner) * .24f);
+            float width = Mathf.Min(style.bevelWidth, localThickness * .5f, (outer - inner) * .24f);
             // 결합점에서는 베벨을 좁혀 서로 다른 문양의 접합부가 벌어지지 않게 한다.
             foreach (float junction in junctions)
                 width *= Mathf.Clamp01(Mathf.Abs(Mathf.DeltaAngle(angle * Mathf.Rad2Deg, junction * Mathf.Rad2Deg)) / (90f / style.curveSegments));
@@ -106,7 +108,7 @@ namespace JC.Indicators
         private void Band(float a, float b, int inner, int outer)
         {
             float ia = Radius(inner, a), ib = Radius(inner, b), oa = Radius(outer, a), ob = Radius(outer, b);
-            float ba = Bevel(a, ia, oa), bb = Bevel(b, ib, ob), h = style.markerThickness;
+            float ba = Bevel(a, ia, oa), bb = Bevel(b, ib, ob), h = localThickness;
             bool hole = ia > .000001f || ib > .000001f;
             Vector3 ai = Point(a, ia, 0), bi = Point(b, ib, 0), ao = Point(a, oa, 0), bo = Point(b, ob, 0);
             Vector3 ait = Point(a, ia + (hole ? ba : 0), h), bit = Point(b, ib + (hole ? bb : 0), h);
@@ -129,7 +131,7 @@ namespace JC.Indicators
         {
             Vector3 n = Vector3.Cross(b - a, c - a);
             if (n.sqrMagnitude < 1e-16f) return;
-            n.Normalize();
+            n /= Mathf.Sqrt(n.sqrMagnitude);
             Vertex(a, n); Vertex(b, n); Vertex(c, n);
         }
         private void Vertex(Vector3 v, Vector3 n)
