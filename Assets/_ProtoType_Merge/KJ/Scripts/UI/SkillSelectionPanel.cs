@@ -44,7 +44,7 @@ public class SkillSelectionPanel : MonoBehaviour
             unitNameText.text = preview.UnitName;
 
         if (rankText != null)
-            rankText.text = GetRank(preview.NewLevel);
+            rankText.text = UnitRankLookup.GetRank(preview.NewLevel);
 
         if (levelUpText != null)
             levelUpText.text = $"Lv.{preview.OldLevel} → {preview.NewLevel}";
@@ -111,22 +111,6 @@ public class SkillSelectionPanel : MonoBehaviour
         DHClassSkillTemplate nextSkill = null;
         DHCsvTemplateCatalog.Instance?.TryGetClassSkillTemplate(candidateSkillIds[index], out nextSkill);
         nextSkillText.text = nextSkill != null ? SkillDescriptionBuilder.Build(nextSkill) : "-";
-    }
-
-    private static string GetRank(int level)
-    {
-        var templates = DHCsvTemplateCatalog.Instance?.GetUnitGrowthTemplates();
-        if (templates == null) return "-";
-
-        DHUnitGrowthTemplate match = null;
-        foreach (var row in templates)
-        {
-            if (row == null) continue;
-            if (row.Level <= level) match = row;
-            else break;
-        }
-
-        return match != null && !string.IsNullOrEmpty(match.Rank) ? match.Rank : "-";
     }
 
     private bool completed = false;

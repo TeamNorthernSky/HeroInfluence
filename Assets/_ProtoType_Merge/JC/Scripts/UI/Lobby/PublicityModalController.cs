@@ -203,7 +203,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
                 : HeroProfileCatalog.Default;
         }
         if (currentIPText != null)
-            currentIPText.text = hasSelection ? $"I.P : {gm.Publicity.GetIP(unit.UnitIndex)}" : "I.P : —";
+            currentIPText.text = hasSelection ? $"현재 IP : {gm.Publicity.GetIP(unit.UnitIndex)}" : "현재 IP : -"; // [KJ 260911] 목업 표기
         if (selectPromptGo != null) selectPromptGo.SetActive(!hasSelection);
 
         // Info Value 4종

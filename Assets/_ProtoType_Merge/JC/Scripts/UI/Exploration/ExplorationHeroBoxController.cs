@@ -21,6 +21,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
         public Image profile;
         public TMP_Text nameText;
         public TMP_Text hpText;
+        public Image hpFill;         // [KJ 260909] HP 게이지(Image Type=Filled). 미연결이면 무시
         public TMP_Text ipText;
     }
 
@@ -109,18 +110,19 @@ public class ExplorationHeroBoxController : MonoBehaviour
             if (slot.nameText != null)
                 slot.nameText.text = template != null && !string.IsNullOrWhiteSpace(template.UnitName)
                     ? template.UnitName : (unit != null ? unit.UnitTemplateKey : "-");
-            if (slot.hpText != null)
             {
                 float cur = unit != null ? unit.CurrentHp : 0f;
                 float max = unit != null ? unit.IngameStats.HP : 0f; // [JC 260616] 표시는 인게임 스탯(베이스는 내부 연산용)
-                slot.hpText.text = $"{cur:F0}/{max:F0}";
+                if (slot.hpText != null) slot.hpText.text = $"{cur:F0}/{max:F0}";
+                // [KJ 260909] hpText 미연결(게이지만 쓰는 카드)에서도 게이지가 갱신되도록 값 계산을 블록 밖으로 분리
+                if (slot.hpFill != null) slot.hpFill.fillAmount = max > 0f ? Mathf.Clamp01(cur / max) : 0f;
             }
             if (slot.ipText != null)
             {
                 // [JC 260616] IP 표기 = 유닛 CurrentInfluence/IngameStats.Influence 일원화(PublicityManager 의존 제거)
                 float ip = unit != null ? unit.CurrentInfluence : 0f;
                 float maxIp = unit != null ? unit.IngameStats.Influence : 0f;
-                slot.ipText.text = $"{ip:F0}/{maxIp:F0}";
+                slot.ipText.text = $"{ip:F0}";
             }
         }
     }

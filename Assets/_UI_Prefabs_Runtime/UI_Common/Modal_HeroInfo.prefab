@@ -5258,6 +5258,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pausesGame: 0
+  keepSiblingOrder: 0
   closeOnOutsideClick: 0
   contentRect: {fileID: 6011291815547145118}
   wantsDim: 1
