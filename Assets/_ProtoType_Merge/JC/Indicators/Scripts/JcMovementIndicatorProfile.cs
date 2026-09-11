@@ -70,35 +70,32 @@ namespace JC.Indicators
         public float wavePeriod;
 
         [SerializeField, HideInInspector] private int extensionVersion;
-        [Range(.001f, .3f), Tooltip("문양 한 변 대비 실제 입체 두께입니다. 밑면의 부유 높이를 유지하며 위로 두꺼워집니다.")]
-        public float markerThickness;
-        [Range(0, .08f), Tooltip("문양 한 변 대비 윗면 베벨의 최대 폭입니다. 0은 각진 모서리이며 두께와 문양 간격에 맞춰 자동 제한됩니다.")]
+        // 버전6 이하의 씬/프로파일을 읽기 위한 이전 필드. 새 UI에서는 공통 월드 두께만 사용한다.
+        [SerializeField, HideInInspector] private float markerThickness;
+        [SerializeField, HideInInspector] private bool thicknessNeedsCellScale;
+        [Min(.001f), Tooltip("점선과 도착 문양의 공통 입체 두께(월드 단위)입니다. 밑면을 유지하며 위로 두꺼워집니다. 도착 문양의 셀 대비 크기를 바꿔도 실제 두께는 같습니다.")]
+        public float commonThickness;
+        [Min(0), Tooltip("플리커링이 지나는 점선 조각과 도착 문양의 추가 상승 높이(월드 단위)입니다. 기존 부유 높이와 현재 흔들림 위에 더해집니다. 0은 상승만 끄며, 전환/복귀 곡선을 따르고 그림자는 지면에 남습니다. 흰색 강도와 독립적입니다.")]
+        public float flickerLiftHeight;
+        [Range(0, .08f), Tooltip("도착 문양 한 변 대비 윗면 베벨의 최대 폭입니다. 0은 각진 모서리이며 공통 두께와 문양 간격에 맞춰 자동 제한됩니다. 점선의 둥근 끝에는 적용하지 않습니다.")]
         public float bevelWidth;
-        [Range(4, 32), Tooltip("원과 모서리의 사분면당 분할 수입니다. 높을수록 매끄럽고 메시 정점 수가 늘어납니다. 짝수로 조절됩니다.")]
+        [Range(4, 32), Tooltip("도착 문양의 원과 모서리 사분면당 분할 수입니다. 짝수로 조절되며 높을수록 매끄럽고 정점 수가 늘어납니다. 움직이는 점선의 둥근 끝은 이 값 중 최대 8분할까지 사용합니다.")]
         public int curveSegments;
-        [Range(0, 1), Tooltip("윗면에 대한 옆면의 밝기 비율입니다. 0은 검정, 1은 윗면과 같은 밝기이며 씬 광원과 독립적입니다.")]
+        [Range(0, 1), Tooltip("점선과 도착 문양의 윗면에 대한 옆면 밝기 비율입니다. 0은 검정, 1은 윗면과 같은 밝기이며 씬 광원과 독립적입니다.")]
         public float sideBrightness;
-        [Min(0), Tooltip("각 점선 조각의 뒤에 남는 꼬리 길이(월드 단위)입니다. 0은 끔이며 실제 길이는 점선 간격의 95% 이내로 제한합니다. 경로 변경 시 새 경로를 따릅니다.")]
-        public float dashTrailLength;
-        [Range(0, 1), Tooltip("점선 꼬리의 불투명도입니다. 0은 끔이며 공통 불투명도와 상태 색상의 알파도 반영합니다.")]
-        public float dashTrailOpacity;
-        [Range(.2f, 4), Tooltip("꼬리 불투명도의 감쇠 지수입니다. 1은 선형 감쇠, 클수록 빠르게 투명해지고 작을수록 긴 구간이 밝게 남습니다. 굵기 감쇠와 독립적입니다.")]
-        public float dashTrailFalloff;
-        [Range(0, 4), Tooltip("꼬리 끝으로 갈수록 굵기를 줄이는 감쇠 지수입니다. 0은 일정한 굵기, 1은 선형으로 가늘어짐, 1보다 크면 더 빠르게 가늘어집니다. 불투명도 감쇠와 독립적이며 글로우도 좁아진 윤곽을 따릅니다.")]
-        public float dashTrailWidthFalloff;
-        [Range(0, .2f), Tooltip("점선과 꼬리 주변 빛 번짐의 폭(월드 단위)입니다. 0은 끔입니다. 씬 Bloom과 독립적이며 선 굵기와 그림자는 바꾸지 않습니다.")]
+        [Range(0, .2f), Tooltip("입체 점선 주변 빛 번짐의 폭(월드 단위)입니다. 0은 끔입니다. 씬 Bloom과 독립적이며 점선의 상승을 따라갑니다. 입체 두께와 그림자는 바꾸지 않습니다.")]
         public float dashGlowWidth;
-        [Range(0, 1), Tooltip("점선과 꼬리 주변의 같은 색 빛 번짐 강도입니다. 0은 끔이며 높일수록 번짐이 선명해집니다.")]
+        [Range(0, 1), Tooltip("입체 점선 주변의 같은 색 빛 번짐 강도입니다. 0은 끔이며 높일수록 번짐이 선명해집니다.")]
         public float dashGlowStrength;
-        [Range(0, 1), Tooltip("점선·꼬리·글로우가 흰색으로 반짝이는 최대 강도입니다. 0은 끔, 1은 가장 강할 때 흰색까지 변합니다. 기본보다 어두워지거나 채도가 높아지지 않으며 기본 색조·색상 설정과 알파를 유지합니다.")]
+        [Range(0, 1), Tooltip("점선·글로우가 흰색으로 반짝이는 최대 강도입니다. 0은 흰색 변화만 끄며 상승 높이는 별도로 조절합니다. 1은 가장 강할 때 흰색까지 변하며 알파를 유지합니다.")]
         public float dashFlickerStrength;
         [Min(0), Tooltip("흰색 반짝임 하나가 경로를 따라 진행하는 속도입니다. 클수록 빨라지고 0은 현재 위치에서 정지합니다. 마지막 지점의 원색 복귀가 끝난 뒤 다음 흐름을 시작합니다. 전환·복귀 배율과 점선 자체의 흐름 속도는 별도로 조절합니다.")]
         public float dashFlickerSpeed;
-        [Range(.1f, 10), Tooltip("흰색으로 밝아지는 전환 곡선의 속도 배율입니다. 1은 기존 속도, 클수록 흰색에 빠르게 접근하고 작을수록 늦게 접근합니다. 패턴 진행 속도·원색 복귀 배율과 독립적이며 초 단위의 고정 시간은 아닙니다.")]
+        [Range(.1f, 10), Tooltip("흰색 전환과 추가 상승의 곡선 배율입니다. 1은 기본, 클수록 흰색과 최고 높이에 빠르게 접근합니다. 진행 속도·복귀 배율과 독립적이며 초 단위의 고정 시간은 아닙니다.")]
         public float dashFlickerRiseSpeed;
-        [Range(.1f, 10), Tooltip("흰색 반짝임이 원래 색으로 돌아오는 곡선의 속도 배율입니다. 1은 기존 속도, 클수록 원색에 빠르게 접근하고 작을수록 반짝임이 오래 남습니다. 패턴 진행 속도·흰색 전환 배율과 독립적입니다.")]
+        [Range(.1f, 10), Tooltip("원색 복귀와 추가 상승의 하강 곡선 배율입니다. 1은 기본, 클수록 원색과 원래 높이에 빠르게 복귀합니다. 진행 속도·전환 배율과 독립적입니다.")]
         public float dashFlickerFallSpeed;
-        [Tooltip("흰색 반짝임이 경로를 따라 진행하는 방향입니다. 기본은 도착 방향이며 출발 방향을 선택하면 반전합니다. 점선과 꼬리 자체의 이동 방향은 유지됩니다.")]
+        [Tooltip("반짝임과 상승이 진행하는 방향입니다. 도착 방향은 점선 이후 도착 문양이 반응하고, 출발 방향은 도착 문양부터 반응합니다. 점선 자체의 이동 방향은 유지됩니다.")]
         public JcDashFlickerDirection dashFlickerDirection;
 
         public static JcMovementIndicatorSettings Default => new JcMovementIndicatorSettings
@@ -112,9 +109,9 @@ namespace JC.Indicators
             lineWidth = .075f, dashLength = .18f, dashGap = .105f, flowSpeed = .65f,
             highlightColor = new Color(.8f, 1, .86f, 1), highlightStrength = 1.2f,
             waveWidth = .085f, waveSpeed = .55f, wavePeriod = 1.8f,
-            extensionVersion = 6, markerThickness = .06f, bevelWidth = .012f, curveSegments = 16, sideBrightness = .55f,
+            extensionVersion = 7, markerThickness = .06f, commonThickness = .0468f, flickerLiftHeight = .05f,
+            bevelWidth = .012f, curveSegments = 16, sideBrightness = .55f,
             markerHeightOffset = 0, highlightColorCyclePeriod = 0,
-            dashTrailLength = .07f, dashTrailOpacity = .45f, dashTrailFalloff = 1.5f, dashTrailWidthFalloff = 1,
             dashGlowWidth = .035f, dashGlowStrength = .25f,
             dashFlickerStrength = .08f, dashFlickerSpeed = 3, dashFlickerRiseSpeed = 1, dashFlickerFallSpeed = 1, dashFlickerDirection = JcDashFlickerDirection.TowardDestination
         };
@@ -142,15 +139,12 @@ namespace JC.Indicators
             if (s.extensionVersion < 4)
             {
                 var defaults = Default;
-                s.dashTrailLength = defaults.dashTrailLength; s.dashTrailOpacity = defaults.dashTrailOpacity;
-                s.dashTrailFalloff = defaults.dashTrailFalloff;
                 s.dashGlowWidth = defaults.dashGlowWidth; s.dashGlowStrength = defaults.dashGlowStrength;
                 s.dashFlickerStrength = defaults.dashFlickerStrength; s.dashFlickerSpeed = defaults.dashFlickerSpeed;
                 s.extensionVersion = 4;
             }
             if (s.extensionVersion < 5)
             {
-                s.dashTrailWidthFalloff = 1;
                 s.dashFlickerDirection = JcDashFlickerDirection.TowardDestination;
                 s.extensionVersion = 5;
             }
@@ -161,12 +155,8 @@ namespace JC.Indicators
             }
             s.dashFlickerRiseSpeed = Mathf.Clamp(s.dashFlickerRiseSpeed, .1f, 10);
             s.dashFlickerFallSpeed = Mathf.Clamp(s.dashFlickerFallSpeed, .1f, 10);
-            s.dashTrailWidthFalloff = Mathf.Clamp(s.dashTrailWidthFalloff, 0, 4);
             if (s.dashFlickerDirection != JcDashFlickerDirection.TowardStart)
                 s.dashFlickerDirection = JcDashFlickerDirection.TowardDestination;
-            s.dashTrailLength = Mathf.Max(0, s.dashTrailLength);
-            s.dashTrailOpacity = Mathf.Clamp01(s.dashTrailOpacity);
-            s.dashTrailFalloff = Mathf.Clamp(s.dashTrailFalloff, .2f, 4);
             s.dashGlowWidth = Mathf.Clamp(s.dashGlowWidth, 0, .2f);
             s.dashGlowStrength = Mathf.Clamp01(s.dashGlowStrength);
             s.dashFlickerStrength = Mathf.Clamp01(s.dashFlickerStrength);
@@ -178,6 +168,15 @@ namespace JC.Indicators
             s.sideBrightness = Mathf.Clamp01(s.sideBrightness);
             s.opacity = Mathf.Clamp01(s.opacity);
             s.markerSize = Mathf.Clamp(s.markerSize, .1f, 1);
+            if (s.extensionVersion < 7)
+            {
+                s.commonThickness = s.markerThickness * s.markerSize;
+                s.thicknessNeedsCellScale = true;
+                s.flickerLiftHeight = Default.flickerLiftHeight;
+                s.extensionVersion = 7;
+            }
+            s.commonThickness = Mathf.Max(.001f, s.commonThickness);
+            s.flickerLiftHeight = Mathf.Max(0, s.flickerLiftHeight);
             s.borderWidth = Mathf.Clamp(s.borderWidth, .01f, .3f);
             s.cornerRadius = Mathf.Clamp(s.cornerRadius, 0, .5f);
             s.ringRadius = Mathf.Clamp(s.ringRadius, .02f, .45f);
@@ -199,6 +198,42 @@ namespace JC.Indicators
             s.waveSpeed = Mathf.Max(0, s.waveSpeed);
             s.wavePeriod = Mathf.Max(.05f, s.wavePeriod);
             return s;
+        }
+
+        public JcMovementIndicatorSettings ForCellSize(float cellSize)
+        {
+            var s = Sanitized();
+            if (s.thicknessNeedsCellScale)
+            {
+                s.commonThickness *= Mathf.Max(.001f, cellSize);
+                s.thicknessNeedsCellScale = false;
+            }
+            return s;
+        }
+    }
+
+    // CPU 위치 갱신과 GPU 흰색 변화에 같은 위상·곡선을 사용한다. Shader의 FlickerPulse와 짝을 이룬다.
+    public readonly struct JcIndicatorPulse
+    {
+        public readonly float Front, Unit, Rise, Fall;
+        public readonly int Direction;
+        public readonly bool Active;
+        public JcIndicatorPulse(JcMovementIndicatorSettings settings, float front, int direction, bool active)
+        {
+            Front = front; Unit = Mathf.Max(.015f, settings.dashLength + settings.dashGap) / .37f;
+            Rise = settings.dashFlickerRiseSpeed; Fall = settings.dashFlickerFallSpeed;
+            Direction = direction; Active = active;
+        }
+        public float Evaluate(float remainingDistance)
+        {
+            float phase = (remainingDistance - Front) * Direction / Unit;
+            if (!Active || phase <= 0 || phase >= 2) return 0;
+            bool rising = phase < 1;
+            float p = rising ? phase : phase - 1;
+            float rate = Mathf.Clamp(rising ? Rise : Fall, .1f, 10);
+            p = rate * p / (1 + (rate - 1) * p);
+            p = p * p * (3 - 2 * p);
+            return rising ? p : 1 - p;
         }
     }
 
