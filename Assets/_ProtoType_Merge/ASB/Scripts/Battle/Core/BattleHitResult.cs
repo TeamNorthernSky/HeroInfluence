@@ -7,6 +7,8 @@ namespace ASB.Work.Battle.Core
     {
         public BattleCharactor Target;
         public float Damage;
+        /// <summary>HP 제한과 무력화 규칙을 반영해 실제로 감소한 HP입니다.</summary>
+        public float AppliedDamage;
         public bool IsCritical;
         public bool IsHeal;
         public bool IsMiss;

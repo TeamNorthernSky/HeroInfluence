@@ -61,13 +61,22 @@ public class BattleFlowManager : MonoBehaviour
     private bool battleEndRequested;
     private BattleResult requestedBattleResult = BattleResult.Defeat;
 
+    private readonly Dictionary<int, FlowLockRecord> flowLocks = new Dictionary<int, FlowLockRecord>();
+    private readonly Dictionary<int, PlayerActionConstraintRecord> playerActionConstraints =
+        new Dictionary<int, PlayerActionConstraintRecord>();
+    private int nextFlowExtensionId = 1;
+
     private bool IsBattleOver => !CheckSideAlive(true) || !CheckSideAlive(false);
 
     public BattleCharactor CurrentUnit { get; private set; }
     public IReadOnlyList<BattleCharactor> Participants => participants;
     public BattleManager BattleManager => battleManager;
+    public int RoundIndex => roundIndex;
+    public bool IsFlowBlocked => flowLocks.Count > 0;
     public event Action<int, BattleCharactor> OnTurnStarted;
+    public event Action<TurnResolutionContext> OnTurnResolved;
     public event Action<BattleResult> OnBattleEnded;
+    public event Action<BattleCharactor> OnParticipantRegistered;
 
     private void OnEnable()
     {
@@ -78,6 +87,7 @@ public class BattleFlowManager : MonoBehaviour
     {
         InputHandler.PlayerSkillActionResolved -= OnPlayerSkillActionResolved;
         UnsubscribeAllUnitDeathEvents();
+        ClearFlowExtensions();
         if (battleLoopRoutine != null)
         {
             StopCoroutine(battleLoopRoutine);
@@ -93,7 +103,17 @@ public class BattleFlowManager : MonoBehaviour
 
     public void Initialize(List<BattleCharactor> initialParticipants)
     {
+        Initialize(initialParticipants, autoStartOnInitialize);
+    }
+
+    /// <summary>
+    /// 참가자를 초기화하고 필요하면 루프를 시작합니다. startImmediately=false는 외부 시나리오가
+    /// 이벤트를 먼저 구독한 뒤 <see cref="StartBattleLoop"/>를 호출해야 하는 경우에 사용합니다.
+    /// </summary>
+    public void Initialize(List<BattleCharactor> initialParticipants, bool startImmediately)
+    {
         UnsubscribeAllUnitDeathEvents();
+        ClearFlowExtensions();
         participants.Clear();
         if (initialParticipants != null)
         {
@@ -117,10 +137,66 @@ public class BattleFlowManager : MonoBehaviour
 
         BeginPlayerTurnSelectionCleanup();
 
-        if (autoStartOnInitialize)
+        if (startImmediately)
         {
             StartBattleLoop();
         }
+    }
+
+    /// <summary>전투 흐름을 안전 지점에서 대기시키는 소유권 기반 잠금입니다.</summary>
+    public IDisposable AcquireFlowLock(object owner, string reason = null)
+    {
+        if (battleEnded)
+        {
+            return EmptyDisposable.Instance;
+        }
+
+        int id = nextFlowExtensionId++;
+        flowLocks[id] = new FlowLockRecord(owner, reason);
+        return new ReleaseHandle(() => flowLocks.Remove(id));
+    }
+
+    /// <summary>
+    /// 플레이어가 선택/실행하려는 행동을 제한합니다. 모든 등록 제약이 허용해야 행동할 수 있습니다.
+    /// target=null 호출은 행동 종류를 고르는 단계의 사전 검사입니다.
+    /// </summary>
+    public IDisposable AddPlayerActionConstraint(
+        object owner,
+        Func<BattleCharactor, PendingActionType, BattleCharactor, bool> predicate,
+        string reason = null)
+    {
+        if (predicate == null)
+        {
+            return EmptyDisposable.Instance;
+        }
+
+        int id = nextFlowExtensionId++;
+        playerActionConstraints[id] = new PlayerActionConstraintRecord(owner, predicate, reason);
+        return new ReleaseHandle(() => playerActionConstraints.Remove(id));
+    }
+
+    public bool IsPlayerActionAllowed(
+        BattleCharactor actor,
+        PendingActionType actionType,
+        BattleCharactor target)
+    {
+        foreach (PlayerActionConstraintRecord constraint in playerActionConstraints.Values)
+        {
+            try
+            {
+                if (!constraint.Predicate(actor, actionType, target))
+                {
+                    return false;
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void StartBattleLoop()
@@ -267,7 +343,12 @@ public class BattleFlowManager : MonoBehaviour
     /// </summary>
     public void RequestFlee()
     {
-        if (playerActionResolved || CurrentUnit == null || !CurrentUnit.IsPlayer)
+        if (IsFlowBlocked || playerActionResolved || CurrentUnit == null || !CurrentUnit.IsPlayer)
+        {
+            return;
+        }
+
+        if (!IsPlayerActionAllowed(CurrentUnit, PendingActionType.Flee, null))
         {
             return;
         }
@@ -330,13 +411,25 @@ public class BattleFlowManager : MonoBehaviour
 
         battleEnded = true;
         battleLoopRoutine = null;
+        ClearFlowExtensions();
         OnBattleEnded?.Invoke(result);
+    }
+
+    private IEnumerator WaitForFlowGateOrBattleEnd()
+    {
+        yield return new WaitUntil(() => !IsFlowBlocked || ShouldEndBattle());
     }
 
     private IEnumerator BattleLoop()
     {
         while (!ShouldEndBattle())
         {
+            yield return WaitForFlowGateOrBattleEnd();
+            if (ShouldEndBattle())
+            {
+                break;
+            }
+
             BattleCharactor unit = GetNextUnit();
             if (unit == null)
             {
@@ -354,6 +447,8 @@ public class BattleFlowManager : MonoBehaviour
             CurrentUnit.ProcessTurnStartStatusEffects();
             if (CurrentUnit == null || CurrentUnit.IsDead)
             {
+                PublishTurnResolved(unit, wasSkipped: true);
+                yield return WaitForFlowGateOrBattleEnd();
                 CleanupTurn(unit);
                 yield return null;
                 continue;
@@ -363,6 +458,8 @@ public class BattleFlowManager : MonoBehaviour
             {
                 Debug.Log($"[Stun] {CurrentUnit.UnitName}은(는) 기절 상태여서 턴을 건너뜁니다!");
                 CurrentUnit.AdvanceStatusEffectDuration();
+                PublishTurnResolved(unit, wasSkipped: true);
+                yield return WaitForFlowGateOrBattleEnd();
                 CleanupTurn(unit);
                 yield return null;
                 continue;
@@ -374,6 +471,14 @@ public class BattleFlowManager : MonoBehaviour
             playerActionResolved = false;
             playerActionClaimed = false;
             OnTurnStarted?.Invoke(roundIndex, CurrentUnit);
+
+            yield return WaitForFlowGateOrBattleEnd();
+            if (ShouldEndBattle())
+            {
+                PublishTurnResolved(unit, wasSkipped: true);
+                CleanupTurn(unit);
+                break;
+            }
 
             if (unit.IsPlayer)
             {
@@ -388,9 +493,13 @@ public class BattleFlowManager : MonoBehaviour
 
                 if (ShouldEndBattle())
                 {
+                    // [D1] 시작된 모든 턴은 종료 시 OnTurnResolved를 정확히 1회 발행한다(전투가 끝나는 턴 포함).
+                    PublishTurnResolved(unit, wasSkipped: unit.IsPlayer && !playerActionResolved);
                     CleanupTurn(unit);
                     break;
                 }
+
+                yield return WaitForFlowGateOrBattleEnd();
             }
             else
             {
@@ -398,9 +507,22 @@ public class BattleFlowManager : MonoBehaviour
 
                 if (ShouldEndBattle())
                 {
+                    // [D1] 시작된 모든 턴은 종료 시 OnTurnResolved를 정확히 1회 발행한다(전투가 끝나는 턴 포함).
+                    PublishTurnResolved(unit, wasSkipped: unit.IsPlayer && !playerActionResolved);
                     CleanupTurn(unit);
                     break;
                 }
+
+                yield return WaitForFlowGateOrBattleEnd();
+            }
+
+            PublishTurnResolved(unit, wasSkipped: unit.IsPlayer && !playerActionResolved);
+            yield return WaitForFlowGateOrBattleEnd();
+
+            if (ShouldEndBattle())
+            {
+                CleanupTurn(unit);
+                break;
             }
 
             CleanupTurn(unit);
@@ -413,6 +535,11 @@ public class BattleFlowManager : MonoBehaviour
         }
 
         HandleBattleCompletion();
+    }
+
+    private void PublishTurnResolved(BattleCharactor actor, bool wasSkipped)
+    {
+        OnTurnResolved?.Invoke(new TurnResolutionContext(actor, wasSkipped, roundIndex));
     }
 
     private bool TryEvaluateBattleResult(out BattleResult result)
@@ -604,6 +731,11 @@ public class BattleFlowManager : MonoBehaviour
     /// <returns>권한을 획득했으면 true. 이미 다른 주체가 가져갔거나 행동 불가 상태면 false.</returns>
     public bool TryClaimPlayerAction(BattleCharactor actor)
     {
+        if (IsFlowBlocked)
+        {
+            return false;
+        }
+
         if (actor == null || CurrentUnit == null || actor != CurrentUnit)
         {
             return false;
@@ -743,7 +875,66 @@ public class BattleFlowManager : MonoBehaviour
         inputHandler?.BindUnitDeathEvents(new[] { unit });
         RebuildRuntimeLookup();
         Debug.Log($"[BattleFlow] 런타임 참가자 등록: {unit.UnitName} (participants={participants.Count})");
+        OnParticipantRegistered?.Invoke(unit);
         return true;
+    }
+
+    private void ClearFlowExtensions()
+    {
+        flowLocks.Clear();
+        playerActionConstraints.Clear();
+    }
+
+    private sealed class FlowLockRecord
+    {
+        public readonly object Owner;
+        public readonly string Reason;
+
+        public FlowLockRecord(object owner, string reason)
+        {
+            Owner = owner;
+            Reason = reason ?? string.Empty;
+        }
+    }
+
+    private sealed class PlayerActionConstraintRecord
+    {
+        public readonly object Owner;
+        public readonly Func<BattleCharactor, PendingActionType, BattleCharactor, bool> Predicate;
+        public readonly string Reason;
+
+        public PlayerActionConstraintRecord(
+            object owner,
+            Func<BattleCharactor, PendingActionType, BattleCharactor, bool> predicate,
+            string reason)
+        {
+            Owner = owner;
+            Predicate = predicate;
+            Reason = reason ?? string.Empty;
+        }
+    }
+
+    private sealed class ReleaseHandle : IDisposable
+    {
+        private Action release;
+
+        public ReleaseHandle(Action releaseAction)
+        {
+            release = releaseAction;
+        }
+
+        public void Dispose()
+        {
+            Action action = release;
+            release = null;
+            action?.Invoke();
+        }
+    }
+
+    private sealed class EmptyDisposable : IDisposable
+    {
+        public static readonly EmptyDisposable Instance = new EmptyDisposable();
+        public void Dispose() { }
     }
 
     /// <summary>자동전투·적 공격 시 스킬 공격 범위 발판을 표시합니다.</summary>

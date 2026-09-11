@@ -167,6 +167,14 @@ public class AutoBattleController : MonoBehaviour
             yield break;
         }
 
+        if (!flowManager.IsPlayerActionAllowed(actor, actionType, target))
+        {
+            Debug.Log($"[AutoBattle] 현재 시나리오에서 허용되지 않은 행동이라 자동전투를 중단한다: action={actionType}");
+            flowManager.ClearTargetHighlight();
+            if (inputHandler != null) inputHandler.IsAutoBattleActive = false;
+            yield break;
+        }
+
         // 이번 턴의 행동 권한 확보. 수동 입력이 먼저 가져갔으면 자동전투는 물러난다.
         if (!flowManager.TryClaimPlayerAction(actor))
         {

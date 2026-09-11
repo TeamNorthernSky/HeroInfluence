@@ -174,6 +174,34 @@ public class PlayerSpawner : MonoBehaviour
             this);
     }
 
+    /// <summary>
+    /// 점유된 셀을 파괴하지 않는 런타임 아군 안전 스폰입니다.
+    /// </summary>
+    public bool TrySpawnUnitIfEmpty(string unitId, int gridNumber, out GameObject spawned)
+    {
+        spawned = null;
+        if (!hierarchyReady)
+        {
+            Awake();
+        }
+
+        if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null)
+        {
+            Debug.LogWarning($"[PlayerSpawner] 안전 스폰 셀을 찾지 못했습니다: grid={gridNumber}", this);
+            return false;
+        }
+
+        BattleCharactor occupyingUnit = cell.GetComponentInChildren<BattleCharactor>(true);
+        HostageBattleActor occupyingHostage = cell.GetComponentInChildren<HostageBattleActor>(true);
+        if (occupyingUnit != null || occupyingHostage != null)
+        {
+            return false;
+        }
+
+        spawned = SpawnUnit(unitId, gridNumber);
+        return spawned != null;
+    }
+
     public GameObject SpawnUnit(string unitId, int gridNumber)
     {
         if (string.IsNullOrWhiteSpace(unitId))

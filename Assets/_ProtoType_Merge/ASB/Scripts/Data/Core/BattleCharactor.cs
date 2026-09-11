@@ -311,6 +311,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     private void OnDisable()
     {
+        ClearRuntimeConstraints();
         ClearOccupiedCell();
     }
 
@@ -360,6 +361,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         finalStats.Influence = Mathf.Clamp(finalStats.Influence, 0f, 200f);
         ApplyStatusEffectStatModifiers();
         ApplyFormationPassiveModifiers();
+        ApplyRuntimeStatModifiers();
 
         if (applyCurrentHpClamp)
         {
@@ -442,7 +444,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
 
         float damage = Mathf.Max(0f, amount);
-        currentHp = Mathf.Max(0f, currentHp - damage);
+        float minimumHp = ResolveMinimumHpAfterDamage();
+        currentHp = Mathf.Max(minimumHp, currentHp - damage);
         
         // UI 갱신 이벤트를 "죽기(DisableVisuals)" 이전에 먼저 호출합니다.
         // (Die()에서 Canvas.enabled=false 처리로 인해 마지막 HP 표시가 누락되는 문제 방지)
@@ -489,6 +492,45 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
         // 힐도 동일하게 HP 값 갱신 직후 이벤트를 호출합니다.
         OnHpChanged?.Invoke(CurrentHp, MaxHp);
+    }
+
+    /// <summary>
+    /// 튜토리얼 스크립트용 현재 HP 1회 설정(연출 없음). 사망/부활은 다루지 않습니다.
+    /// 정책: 생존 유닛만, 0 이하 불허(사망은 <see cref="TakeDamage"/>·부활은 <see cref="Revive"/>),
+    /// 최소 HP 제약(<see cref="MinimumHpAfterDamage"/>)을 하한으로 존중, [하한, MaxHp] 클램프, OnHpChanged 1회.
+    /// </summary>
+    public void SetHp(float targetHp)
+    {
+        if (IsDead)
+        {
+            Debug.LogWarning($"[SetHp] {UnitName}은(는) 사망 상태라 SetHp를 무시합니다(부활은 Revive 사용).");
+            return;
+        }
+
+        if (targetHp <= 0f)
+        {
+            Debug.LogWarning($"[SetHp] {UnitName}: 0 이하 값은 허용되지 않습니다(사망은 TakeDamage 사용). 요청={targetHp:F1}");
+            return;
+        }
+
+        float floor = Mathf.Max(0f, MinimumHpAfterDamage);
+        currentHp = Mathf.Clamp(targetHp, floor, MaxHp);
+        OnHpChanged?.Invoke(CurrentHp, MaxHp);
+    }
+
+    /// <summary>
+    /// 튜토리얼 스크립트용 현재 IP 1회 설정. 정책: 생존 유닛만, [0, MaxInfluence] 클램프, OnInfluenceChanged 1회.
+    /// </summary>
+    public void SetInfluence(float targetInfluence)
+    {
+        if (IsDead)
+        {
+            Debug.LogWarning($"[SetInfluence] {UnitName}은(는) 사망 상태라 SetInfluence를 무시합니다.");
+            return;
+        }
+
+        CurrentInfluence = Mathf.Clamp(targetInfluence, 0f, MaxInfluence);
+        OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
     }
 
     public void ApplyStatusEffect(StatusEffectInstance effect)

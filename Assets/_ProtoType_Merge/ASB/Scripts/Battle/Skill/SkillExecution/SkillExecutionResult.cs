@@ -14,7 +14,9 @@ namespace ASB.Work.Battle.SkillExecution
         public List<HealContext> HealContexts { get; private set; } = new List<HealContext>();
         public List<StatusEffectContext> StatusEffectContexts { get; private set; } = new List<StatusEffectContext>();
         public CombatEventStream EventStream { get; private set; } = new CombatEventStream();
+        private readonly List<BattleHitResult> resolvedHitResults = new List<BattleHitResult>();
         public IReadOnlyList<ICombatEvent> Events => EventStream.Events;
+        public IReadOnlyList<BattleHitResult> ResolvedHits => resolvedHitResults;
         public bool HasEventTracking { get; private set; }
         public string ExecutionId { get; private set; } = string.Empty;
         public string? ParentExecutionId { get; private set; }
@@ -79,7 +81,13 @@ namespace ASB.Work.Battle.SkillExecution
 
         public void RecordDamageResult(DamageContext context, BattleHitResult hitResult)
         {
-            if (!HasEventTracking || context == null || hitResult == null)
+            if (context == null || hitResult == null)
+            {
+                return;
+            }
+
+            resolvedHitResults.Add(hitResult);
+            if (!HasEventTracking)
             {
                 return;
             }
@@ -209,4 +217,3 @@ namespace ASB.Work.Battle.SkillExecution
         }
     }
 }
-
