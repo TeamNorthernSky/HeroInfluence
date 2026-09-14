@@ -57,6 +57,7 @@ public class HQUpgradeFlowController : MonoBehaviour
     private static readonly Color costAffordColor = Color.white;
     private static readonly Color costShortColor = new Color(0.85f, 0.15f, 0.15f, 1f);
 
+    [SerializeField] private HQUpgradeLayoutView layoutView;
     private HQDepartment currentDept;
     private DepartmentModalContent currentContent;
     private IReadOnlyDictionary<ResourceType, int> currentCost;
@@ -163,6 +164,11 @@ public class HQUpgradeFlowController : MonoBehaviour
 
         int currentLevel = gm.HQ.GetLevel(currentDept);
         currentCost = gm.HQ.GetUpgradeCost(currentDept, currentLevel);
+        if (layoutView != null)
+        {
+            layoutView.RefreshDisplay(currentDept, currentLevel, gm.HQ, gm.Economy, currentCost);
+            return;
+        }
 
         // Title — 해금 전(level=0)은 progressTitle, 해금 후(level>=1)는 progressTitleUpgrade (빈값이면 progressTitle 폴백)
         if (titleText != null)
@@ -203,6 +209,7 @@ public class HQUpgradeFlowController : MonoBehaviour
         if (costChipText != null) costChipText.text = currentCost[ResourceType.Chip].ToString("N0");
         if (costCrystalText != null) costCrystalText.text = currentCost[ResourceType.Crystal].ToString("N0");
         if (costSupplyText != null) costSupplyText.text = currentCost[ResourceType.Supply].ToString("N0");
+
     }
 
     private void ApplyProgressButtonState()
@@ -251,7 +258,7 @@ public class HQUpgradeFlowController : MonoBehaviour
 
     private void ApplyCostColors(EconomyManager eco)
     {
-        if (currentCost == null) return;
+        if (currentCost == null || layoutView != null) return;
         SetCostColor(costMoneyText, eco, ResourceType.Money);
         SetCostColor(costChipText, eco, ResourceType.Chip);
         SetCostColor(costCrystalText, eco, ResourceType.Crystal);
@@ -342,6 +349,11 @@ public class HQUpgradeFlowController : MonoBehaviour
             resultBodyText.text = body;
         }
 
+        if (layoutView != null)
+        {
+            layoutView.ShowResult(currentDept, before, after, GameManager.Instance.HQ);
+            if (resultLevelText != null) resultLevelText.gameObject.SetActive(false);
+        }
         if (modalResultRoot != null) modalResultRoot.SetActive(true);
     }
 
