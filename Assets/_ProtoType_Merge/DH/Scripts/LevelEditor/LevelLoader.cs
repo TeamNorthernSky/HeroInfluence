@@ -19,6 +19,7 @@ public class LevelLoader : MonoBehaviour
     private const string HeroUnionRootName = "HeroUnionRoot";
     private const string VillainUnionRootName = "VillainUnionRoot";
     private const string DecorativeObjectRootName = "DecorativeObjectRoot";
+    private const string TutorialObjectRootName = "TutorialObjectRoot";
     private const string GateRootName = "GateRoot";
     private const string EnemySpawnPointRootName = "EnemySpawnPointRoot";
 
@@ -45,6 +46,7 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private Transform villainUnionRoot;
     [FormerlySerializedAs("decorativeBuildingRoot")]
     [SerializeField] private Transform decorativeObjectRoot;
+    [SerializeField] private Transform tutorialObjectRoot;
     [SerializeField] private Transform gateRoot;
     [SerializeField] private Transform enemySpawnPointRoot;
 
@@ -116,6 +118,7 @@ public class LevelLoader : MonoBehaviour
         SpawnEnemySpawnPoints();
         SpawnUniqueBuildings();
         SpawnDecorativeObjects();
+        SpawnTutorialObjects();
 
         if (Application.isPlaying)
             RuntimeLevelLoaded?.Invoke(this);
@@ -578,6 +581,28 @@ public class LevelLoader : MonoBehaviour
         }
     }
 
+    private void SpawnTutorialObjects()
+    {
+        if (prefabRegistry == null)
+            return;
+
+        var placements = levelData.TutorialObjectPlacements;
+        Transform parent = GetTutorialObjectRoot(true);
+        for (int i = 0; i < placements.Count; i++)
+        {
+            TutorialObjectPlacementData placement = placements[i];
+            if (!prefabRegistry.TryGetTutorialObjectPrefab(placement.PrefabKey, out GameObject prefab))
+            {
+                Debug.LogWarning(
+                    $"LevelLoader could not find a tutorial object prefab for key '{placement.PrefabKey}'.",
+                    this);
+                continue;
+            }
+
+            SpawnTutorialObjectGameObject(prefab, placement.GridPosition, parent);
+        }
+    }
+
     private void ClearSpawnedObjects()
     {
         gridManager?.ClearLevelObstacleCells();
@@ -595,6 +620,7 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(GetHeroUnionRoot(false));
         ClearChildren(GetVillainUnionRoot(false));
         ClearChildren(GetDecorativeObjectRoot(false));
+        ClearChildren(GetTutorialObjectRoot(false));
         ClearChildren(GetGateRoot(false));
         ClearChildren(GetEnemySpawnPointRoot(false));
         ClearLevelSpawnedEnemies();
@@ -711,6 +737,9 @@ public class LevelLoader : MonoBehaviour
     private Transform GetDecorativeObjectRoot(bool createIfMissing) =>
         GetSpawnRoot(ref decorativeObjectRoot, DecorativeObjectRootName, createIfMissing);
 
+    private Transform GetTutorialObjectRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref tutorialObjectRoot, TutorialObjectRootName, createIfMissing);
+
     private Transform GetGateRoot(bool createIfMissing) =>
         GetSpawnRoot(ref gateRoot, GateRootName, createIfMissing);
 
@@ -781,6 +810,29 @@ public class LevelLoader : MonoBehaviour
         anchorWorldPosition.y = gridManager.GetCellSurfaceY(grid);
         Vector3 worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
         return Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
+    }
+
+    private GameObject SpawnTutorialObjectGameObject(GameObject prefab, Vector2Int grid, Transform parent)
+    {
+        if (prefab == null || !IsPrefabFootprintInside(prefab, grid))
+            return null;
+
+        TutorialBuildingObject placement = prefab.GetComponent<TutorialBuildingObject>();
+        Vector3 worldPosition;
+        if (placement != null)
+        {
+            Vector3 anchorWorldPosition = gridManager.GridToWorldCenter(grid);
+            anchorWorldPosition.y = gridManager.GetCellSurfaceY(grid);
+            worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
+        }
+        else
+        {
+            worldPosition = GetWorldPosition(prefab, grid);
+        }
+
+        GameObject instance = Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
+        ApplyMultiGridAnchor(instance, grid);
+        return instance;
     }
 
     private Vector3 GetMarkerWorldPosition(Vector2Int grid)

@@ -37,6 +37,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedHeroUnionPrefabKey;
     [FormerlySerializedAs("selectedDecorativeBuildingKey")]
     [SerializeField] private string selectedDecorativeObjectKey;
+    [SerializeField] private string selectedTutorialObjectPrefabKey;
     [SerializeField] private string selectedMainEventPrefabKey;
     [SerializeField] private string selectedSubEventPrefabKey;
     [SerializeField] private string selectedGatePrefabKey = "horizon";
@@ -72,6 +73,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private Color villainUnionColor = new Color(0.95f, 0.25f, 0.55f, 0.75f);
     [FormerlySerializedAs("decorativeBuildingColor")]
     [SerializeField] private Color decorativeObjectColor = new Color(0.95f, 0.65f, 0.25f, 0.75f);
+    [SerializeField] private Color tutorialObjectColor = new Color(0.55f, 0.75f, 1f, 0.75f);
     [SerializeField] private Color mainEventColor = new Color(0.2f, 0.9f, 1f, 0.75f);
     [SerializeField] private Color mainEventInteractionColor = new Color(0.2f, 0.9f, 1f, 0.25f);
     [SerializeField] private Color subEventColor = new Color(0.35f, 0.95f, 0.95f, 0.75f);
@@ -103,6 +105,7 @@ public class LevelEditorController : MonoBehaviour
     public LevelTileRenderMode SelectedTileRenderMode => selectedTileRenderMode;
     public string SelectedHeroUnionPrefabKey => string.IsNullOrWhiteSpace(selectedHeroUnionPrefabKey) ? string.Empty : selectedHeroUnionPrefabKey.Trim();
     public string SelectedDecorativeObjectKey => selectedDecorativeObjectKey;
+    public string SelectedTutorialObjectPrefabKey => string.IsNullOrWhiteSpace(selectedTutorialObjectPrefabKey) ? string.Empty : selectedTutorialObjectPrefabKey.Trim();
     public string SelectedMainEventPrefabKey => string.IsNullOrWhiteSpace(selectedMainEventPrefabKey) ? string.Empty : selectedMainEventPrefabKey.Trim();
     public string SelectedSubEventPrefabKey => string.IsNullOrWhiteSpace(selectedSubEventPrefabKey) ? string.Empty : selectedSubEventPrefabKey.Trim();
     public string SelectedGatePrefabKey => string.IsNullOrWhiteSpace(selectedGatePrefabKey) ? string.Empty : selectedGatePrefabKey.Trim();
@@ -212,6 +215,12 @@ public class LevelEditorController : MonoBehaviour
                     return;
 
                 levelData.SetDecorativeObject(grid, selectedDecorativeObjectKey);
+                break;
+            case LevelEditorBrushType.TutorialObject:
+                if (string.IsNullOrWhiteSpace(SelectedTutorialObjectPrefabKey))
+                    return;
+
+                levelData.SetTutorialObject(grid, SelectedTutorialObjectPrefabKey);
                 break;
             case LevelEditorBrushType.MainEvent:
                 if (string.IsNullOrWhiteSpace(selectedMainEventPrefabKey))
@@ -333,6 +342,9 @@ public class LevelEditorController : MonoBehaviour
 
         for (int i = 0; i < levelData.DecorativeObjectPlacements.Count; i++)
             DrawCell(levelData.DecorativeObjectPlacements[i].GridPosition, decorativeObjectColor, y, size);
+
+        for (int i = 0; i < levelData.TutorialObjectPlacements.Count; i++)
+            DrawCell(levelData.TutorialObjectPlacements[i].GridPosition, tutorialObjectColor, y, size);
 
         for (int i = 0; i < levelData.MainEventPlacements.Count; i++)
             DrawMainEventCells(levelData.MainEventPlacements[i].GridPosition, y, size);
