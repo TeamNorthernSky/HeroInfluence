@@ -336,35 +336,6 @@ public class EnemyTurnController : MonoBehaviour
             yield break;
         }
 
-        if (combatPromptService != null && !combatPromptService.IsOpen)
-        {
-            bool promptClosed = false;
-            bool startedCombat = false;
-            bool promptOpened = combatPromptService.TryOpenEnemyCombatPrompt(
-                party,
-                enemy,
-                combatEncounterManager,
-                keepInputLocked =>
-                {
-                    startedCombat = keepInputLocked;
-                    promptClosed = true;
-                });
-
-            if (promptOpened)
-            {
-                yield return new WaitUntil(() =>
-                    promptClosed ||
-                    combatPromptService == null ||
-                    !combatPromptService.IsOpen);
-
-                if (startedCombat)
-                    InterruptForCombat(enemy, remainingMovePoints);
-
-                onComplete?.Invoke(true);
-                yield break;
-            }
-        }
-
         bool combatStarted = combatEncounterManager.BeginCombat(party, enemy);
         if (!combatStarted)
         {
