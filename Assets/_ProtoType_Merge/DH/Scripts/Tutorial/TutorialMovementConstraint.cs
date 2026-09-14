@@ -38,6 +38,7 @@ public class TutorialMovementConstraint : MonoBehaviour
     [SerializeField] private Color currentTargetColor = new Color(1f, 0.9f, 0f, 0.42f);
     [SerializeField] private InteractionCellOverlayController overlayController;
     [SerializeField] private PartyRegistry partyRegistry;
+    [SerializeField] private bool useTutorialProgressRepository = true;
 
     private static TutorialMovementConstraint instance;
     private readonly HashSet<Vector2Int> allowedTargetLookup = new HashSet<Vector2Int>();
@@ -67,6 +68,7 @@ public class TutorialMovementConstraint : MonoBehaviour
 
         instance = this;
         ResolveReferences();
+        RestoreOrderFromRepository();
         RebuildLookup();
     }
 
@@ -74,6 +76,7 @@ public class TutorialMovementConstraint : MonoBehaviour
     {
         instance = this;
         ResolveReferences();
+        RestoreOrderFromRepository();
         SubscribeParty();
         MarkLookupDirty();
         RefreshOverlay();
@@ -114,6 +117,9 @@ public class TutorialMovementConstraint : MonoBehaviour
             return;
 
         currentOrder = order;
+        if (useTutorialProgressRepository)
+            TutorialProgressRepository.EnsureInstance()?.SetCurrentOrder(currentOrder);
+
         RebuildLookup();
         RefreshOverlay();
     }
@@ -208,6 +214,14 @@ public class TutorialMovementConstraint : MonoBehaviour
         if (!allowedTargetLookup.Contains(grid))
             return;
 
+        if (useTutorialProgressRepository)
+        {
+            TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
+            repository?.SetPartyGrid(grid);
+            if (subscribedParty != null)
+                repository?.SetRemainingMovePoints(subscribedParty.RemainingMovePoints);
+        }
+
         AdvanceOrder();
     }
 
@@ -259,6 +273,16 @@ public class TutorialMovementConstraint : MonoBehaviour
 
         if (partyRegistry == null)
             partyRegistry = FindFirstObjectByType<PartyRegistry>();
+    }
+
+    private void RestoreOrderFromRepository()
+    {
+        if (!useTutorialProgressRepository)
+            return;
+
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
+        if (repository != null)
+            currentOrder = Mathf.Max(1, repository.CurrentOrder);
     }
 
     private void SubscribeParty()
