@@ -124,6 +124,12 @@ public class ChatBubbleView : MonoBehaviour
     {
         bool isPlayer = type == TypePlayer;
         bool isNarration = type == TypeNarration;
+        // 오른쪽 대사는 플레이어인 협회장의 이름과 초상화로 통일한다.
+        if (isPlayer)
+        {
+            charName = "협회장";
+            profileKey = "UI_Sprite/UI_Chatting/UI_profile_NPC_commander";
+        }
 
         if (nameText != null)
         {
