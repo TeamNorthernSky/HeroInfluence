@@ -800,15 +800,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: Modal_Publicity
       objectReference: {fileID: 0}
+    - target: {fileID: 4517525284698843723, guid: 2e5c0d9e1b45cf24f99a92785091f6dc,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5953114694569350112, guid: 2e5c0d9e1b45cf24f99a92785091f6dc,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6883859305230294879, guid: 2e5c0d9e1b45cf24f99a92785091f6dc,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
