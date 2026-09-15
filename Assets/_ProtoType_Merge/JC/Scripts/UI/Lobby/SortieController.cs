@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
@@ -98,11 +99,13 @@ public class SortieController : MonoBehaviour
     private TMP_Text ghostLabel;
     private Canvas rootCanvas;
 
+    private string ExplorationScene => GameSceneManager.Instance != null ? GameSceneManager.Instance.ExplorationScene : "DHScene_3";
+
     private void Awake()
     {
         // [JC 260616] X 닫기도 빈 파티 게이트 경유 (멤버 0명이면 닫기 차단)
         if (btnClose != null) btnClose.onClick.AddListener(() => TryClose());
-        if (confirmButton != null) confirmButton.onClick.AddListener(() => TryClose()); // [JC 260703] 편성완료 = 저장(OnDisable)+닫기
+        if (confirmButton != null) confirmButton.onClick.AddListener(() => LoadExploration()); // 탐사씬으로 나가기
         EnsureStateText();
 
         for (int i = 0; i < slots.Count; i++)
@@ -623,4 +626,11 @@ public class SortieController : MonoBehaviour
             return template.UnitName;
         return string.IsNullOrWhiteSpace(unit.UnitTemplateKey) ? $"#{unitIndex}" : unit.UnitTemplateKey;
     }
+
+    private void LoadExploration()
+    {
+        if (GameSceneManager.Instance != null) GameSceneManager.Instance.LoadScene(ExplorationScene);
+        else SceneManager.LoadScene(ExplorationScene);
+    }
+
 }

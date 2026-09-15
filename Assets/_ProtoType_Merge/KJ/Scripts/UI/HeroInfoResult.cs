@@ -8,11 +8,30 @@ public class HeroInfoResult : MonoBehaviour
     [SerializeField] private TextMeshProUGUI ipValueText;
     [SerializeField] private Transform portrait;
 
+    [Header("Scene Result Card")]
+    [Tooltip("미리 배치한 초상화입니다. 연결된 새 카드에서는 실행 중 초상화를 생성하지 않습니다.")]
+    [SerializeField] private Image portraitImage;
+    [Tooltip("결과 캐릭터 이름을 표시합니다.")]
+    [SerializeField] private TMP_Text unitNameText;
+    [Tooltip("보상 적용 후 EXP 비율을 표시합니다. Image Type은 Filled로 설정합니다.")]
+    [SerializeField] private Image expFill;
+    [Tooltip("보상 적용 후 잔여 EXP / 다음 레벨 필요 EXP를 표시합니다. 데이터가 없으면 -를 표시합니다.")]
+    [SerializeField] private TMP_Text expProgressText;
+    [Tooltip("성장 테이블에서 조회한 보상 적용 후 랭크 아이콘입니다. 알 수 없는 랭크는 숨깁니다.")]
+    [SerializeField] private Image rankImage;
+    [Tooltip("UI_icon_rankF 등 이름으로 랭크와 연결하는 기존 아이콘 목록입니다.")]
+    [SerializeField] private Sprite[] rankSprites;
+
     private const string ProfileFolder = "UI_Sprite/UI_Icon/CharacterProfile_temp/";
     //private const string fileName = "character icon sample";
 
     public void Apply(UnitRewardPreview preview)
     {
+        if (portraitImage != null)
+        {
+            ApplySceneCard(preview);
+            return;
+        }
         Debug.Log($"[HeroInfoResult] Apply called | UnitIndex={preview.UnitIndex} | portrait={(portrait != null ? portrait.name : "NULL")}");
         if (portrait != null)
         {
@@ -50,6 +69,56 @@ public class HeroInfoResult : MonoBehaviour
             float delta = preview.InfluenceDelta;
             string sign = delta >= 0 ? "+" : "";
             ipValueText.text = $"{sign}{delta:F0}";
+        }
+    }
+
+    public void ClearDisplay()
+    {
+        if (portraitImage != null) { portraitImage.sprite = null; portraitImage.enabled = false; }
+        if (rankImage != null) { rankImage.sprite = null; rankImage.enabled = false; }
+        if (unitNameText != null) unitNameText.text = "";
+        if (expValueText != null) expValueText.text = "-";
+        if (ipValueText != null) ipValueText.text = "-";
+        if (expProgressText != null) expProgressText.text = "-";
+        if (expFill != null) expFill.fillAmount = 0f;
+    }
+
+    public void ShowWithoutReward(int unitIndex)
+    {
+        ClearDisplay();
+        SetPortrait(unitIndex);
+    }
+
+    private void SetPortrait(int unitIndex)
+    {
+        if (portraitImage == null) return;
+        portraitImage.sprite = Sprites.Portrait.HeroByUnit(unitIndex);
+        portraitImage.enabled = portraitImage.sprite != null;
+    }
+
+    private void ApplySceneCard(UnitRewardPreview preview)
+    {
+        ClearDisplay();
+        if (preview == null) return;
+        SetPortrait(preview.UnitIndex);
+        if (unitNameText != null) unitNameText.text = preview.UnitName ?? "";
+        if (expValueText != null) expValueText.text = $"+{preview.GainedExp}";
+        if (ipValueText != null) ipValueText.text = $"{preview.OldInfluence:F0} → {preview.NewInfluence:F0}";
+        if (preview.HasExpPreview && preview.NewMaxExp > 0)
+        {
+            if (expFill != null) expFill.fillAmount = Mathf.Clamp01((float)preview.NewExp / preview.NewMaxExp);
+            if (expProgressText != null) expProgressText.text = $"{preview.NewExp} / {preview.NewMaxExp}";
+        }
+        string rank = UnitRankLookup.GetRank(preview.NewLevel);
+        if (rankImage != null && rankSprites != null)
+        {
+            foreach (var sprite in rankSprites)
+                if (sprite != null && sprite.name == "UI_icon_rank" + rank)
+                {
+                    rankImage.sprite = sprite;
+                    rankImage.enabled = true;
+                    break;
+                }
         }
     }
 

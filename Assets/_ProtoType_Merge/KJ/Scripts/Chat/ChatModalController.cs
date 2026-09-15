@@ -41,6 +41,7 @@ public class ChatModalController : MonoBehaviour
     private readonly List<GameObject> activeChoices = new List<GameObject>();
     private bool choicesVisible;
     private int beginFrame; // 소환 당시 클릭이 첫 대사를 즉시 넘기는 것 방지
+    private int skipConfirmClosedFrame = -1; // 팝업을 닫은 입력의 같은 프레임 대사 진행 차단
 
     /// <summary>대화 소환. 이미 떠 있으면 재활성 후 해당 대화로 재시작(중복 생성 방지).</summary>
     private bool isClosing;
@@ -140,7 +141,9 @@ public class ChatModalController : MonoBehaviour
 
     private void CloseSkipConfirm()
     {
-        if (skipConfirmPopup != null) skipConfirmPopup.SetActive(false);
+        if (skipConfirmPopup == null || !skipConfirmPopup.activeSelf) return;
+        skipConfirmClosedFrame = Time.frameCount;
+        skipConfirmPopup.SetActive(false);
     }
 
     /// <summary>
@@ -209,6 +212,7 @@ public class ChatModalController : MonoBehaviour
     {
         if (manager == null || !manager.IsRunning || choicesVisible) return;
         if (skipConfirmPopup != null && skipConfirmPopup.activeSelf) return; // 스킵 확인 중엔 진행 정지
+        if (Time.frameCount == skipConfirmClosedFrame) return; // 확인/취소 입력은 채팅 진행에 재사용하지 않음
         if (!Input.GetMouseButtonDown(0)&&!Input.GetKeyDown(KeyCode.Space)) return;
         if (Time.frameCount == beginFrame) return; // 트리거를 누른 그 클릭은 무시
         if (IsPointerOverButton()) return; // Skip 등 버튼 클릭은 대사 진행으로 취급하지 않음

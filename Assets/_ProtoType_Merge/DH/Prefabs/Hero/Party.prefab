@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 345750967644740681}
   - component: {fileID: 4923180608820567710}
   - component: {fileID: 2281181180207935898}
-  - component: {fileID: 3147760685225582575}
   - component: {fileID: 3795084462015429464}
   - component: {fileID: 5785417791782597589}
   - component: {fileID: 2804670577845505273}
@@ -56,7 +55,7 @@ MonoBehaviour:
   moveSpeed: 4
   arriveThreshold: 0.01
   maxMovePoints: 10
-  logStopMovement: 0
+  usePersistentState: 1
 --- !u!114 &345750967644740681
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -99,21 +98,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridManager: {fileID: 0}
   combatEncounterManager: {fileID: 0}
---- !u!114 &3147760685225582575
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 446090598024720202}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f221c9c375cec6499d107cf9c8e9fca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  populateOnStart: 1
-  partyUnitStates: []
-  onlyWhenAllSlotsEmpty: 1
+  combatPromptService: {fileID: 0}
 --- !u!65 &3795084462015429464
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -149,7 +134,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   partyGridMover: {fileID: 7678407591554142433}
   unitTurnControllers: []
-  logMovementVisualChanges: 0
 --- !u!114 &2804670577845505273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -171,11 +155,7 @@ MonoBehaviour:
   - 10002
   - 10003
   - 10004
-  slotLocalPositions:
-  - {x: -0.3, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0.3}
-  - {x: 0, y: 0, z: -0.3}
-  - {x: 0.3, y: 0, z: 0}
+  initialCurrentInfluence: 0
   logWarnings: 1
 --- !u!1 &9176332098272138953
 GameObject:

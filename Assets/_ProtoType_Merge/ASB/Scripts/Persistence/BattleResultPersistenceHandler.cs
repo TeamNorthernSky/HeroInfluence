@@ -68,9 +68,10 @@ public static class BattleResultPersistenceHandler
             UnitPersistentData src = player.SourceData;
             bool isSurvivor = survivors.Contains(player);
             int gainedExp = isSurvivor ? expPerUnit : 0;
-            int newLevel = gainedExp > 0
-                ? PersistentUnitRepository.SimulateFinalLevel(src, gainedExp)
-                : src.Level;
+            PersistentUnitRepository.SimulateExpProgress(src, 0,
+                out _, out int oldExp, out int oldMaxExp);
+            PersistentUnitRepository.SimulateExpProgress(src, gainedExp,
+                out int newLevel, out int newExp, out int newMaxExp);
 
             // 임시: UnitGrowthExpData 기반 스터디 스킬 경로 사용
             // TODO: LevelUpData.skill + SkillData.acquireLevel 데이터 정비 후 아래로 교체
@@ -94,6 +95,11 @@ public static class BattleResultPersistenceHandler
                 OldLevel                = src.Level,
                 NewLevel                = newLevel,
                 GainedExp               = gainedExp,
+                HasExpPreview           = true,
+                OldExp                  = oldExp,
+                OldMaxExp               = oldMaxExp,
+                NewExp                  = newExp,
+                NewMaxExp               = newMaxExp,
                 CurrentClassSkillId     = player.ClassSkillIndex > 0 ? player.ClassSkillIndex : src.CurrentSkillIndex,
                 OldInfluence            = oldInfluence,
                 NewInfluence            = newInfluence,

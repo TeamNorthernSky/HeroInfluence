@@ -93,13 +93,6 @@ public class PartyInteractionController
             return;
         }
 
-        if (combatPromptService != null &&
-            combatPromptService.TryOpenEnemyCombatPrompt(ownerParty, enemy, combatEncounterManager, HandleCombatPromptClosed))
-        {
-            IsInputLocked = true;
-            return;
-        }
-
         bool combatStarted = combatEncounterManager.BeginCombat(ownerParty, enemy);
         IsInputLocked = combatStarted;
     }

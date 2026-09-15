@@ -115,7 +115,7 @@ MonoBehaviour:
   crystalText: {fileID: 0}
   supplyText: {fileID: 0}
   turnWeekDayText: {fileID: 0}
-  exitButton: {fileID: 0}
+  exitButton: {fileID: 4952208523056497375}
   nextTurnButton: {fileID: 0}
   optionButton: {fileID: 0}
   tooltipButton: {fileID: 0}
@@ -759,6 +759,18 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 06ebce58893612b4cb5dacad51cade00, type: 3}
+--- !u!114 &4952208523056497375 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5391848364913400529, guid: 06ebce58893612b4cb5dacad51cade00,
+    type: 3}
+  m_PrefabInstance: {fileID: 1038773422850496526}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &7863120530505006473 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7166665832360715655, guid: 06ebce58893612b4cb5dacad51cade00,
@@ -856,7 +868,7 @@ PrefabInstance:
     - target: {fileID: 1949560666338164038, guid: 753c8846914adf048affb0b267433d73,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -3
+      value: -35
       objectReference: {fileID: 0}
     - target: {fileID: 1949560666338164038, guid: 753c8846914adf048affb0b267433d73,
         type: 3}

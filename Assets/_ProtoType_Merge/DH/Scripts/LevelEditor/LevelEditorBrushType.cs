@@ -15,5 +15,6 @@ public enum LevelEditorBrushType
     GateBlocker = 13,
     EnemySpawnPoint = 14,
     MainEvent = 15,
-    SubEvent = 16
+    SubEvent = 16,
+    TutorialObject = 17
 }

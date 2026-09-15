@@ -15,6 +15,9 @@ public class TurnSlotUI : MonoBehaviour
     [SerializeField] private Sprite playerTurnSprite;
     [SerializeField] private Sprite enemyTurnSprite;
 
+    /// <summary>현재 이 슬롯에 표시 중인 유닛입니다. 전투 전용 호버 UI가 읽습니다.</summary>
+    public BattleCharactor DisplayedUnit { get; private set; }
+
     private void Awake()
     {
         if (playerTurnSprite == null)
@@ -31,6 +34,7 @@ public class TurnSlotUI : MonoBehaviour
 
     public void Setup(BattleCharactor unit, bool isCurrentTurn, Sprite portraitSprite = null)
     {
+        DisplayedUnit = unit;
         if (unit == null)
         {
             gameObject.SetActive(false);

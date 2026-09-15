@@ -71,7 +71,9 @@ public class PartyVisualCompositionController : MonoBehaviour
         }
 
         int[] explorationIndices = BuildExplorationIndices(partyData, unitRepository);
-        SetCompositionSlots(partyData.UnitIndices);
+        // Exploration visuals have their own fixed formation by hero template key.
+        // Lobby sortie slots stay in PartyPersistentData.UnitSlots and are only used when entering combat.
+        SetCompositionSlots(explorationIndices);
         RebuildVisualUnits(explorationIndices, unitRepository);
         LogInitialEquipmentSnapshot(partyData, unitRepository);
     }

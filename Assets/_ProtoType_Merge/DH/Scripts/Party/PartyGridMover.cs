@@ -58,7 +58,7 @@ public class PartyGridMover : MonoBehaviour
     }
 
     // [JC 추가 260511] 위치 영속화: PartyPersistentData.LastGrid가 있으면 그 위치로 복원
-    // Start로 둔 이유: PartyPersistentRepository 및 PartyUnitBootstrap이 먼저 동작하도록 보장
+    // Start로 둔 이유: PartyPersistentRepository 초기화 이후 저장 위치를 적용하기 위함
     // [JC 수정 260512] 머지 사이클: PartyPersistentRepository로 책임 이관됨
     // [JC 수정 260512] LastGrid 없을 때 currentGrid 재계산 + GridEntered 발화 추가.
     //   원인: Awake 시점에 transform.position 또는 GridManager 내부 상태가 부정확해 currentGrid가 (0,0)으로 박힘.
