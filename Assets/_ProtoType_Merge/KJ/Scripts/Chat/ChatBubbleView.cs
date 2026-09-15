@@ -43,6 +43,10 @@ public class ChatBubbleView : MonoBehaviour
     [SerializeField] private Sprite multiLineSprite;
     [SerializeField] private Sprite narrationSprite;
 
+    private float normalFontSize;
+    private RectOffset normalRowPadding;
+    private const int NarrationVerticalSpacing = 28;
+
     private void ApplyBubbleLayout(bool isPlayer, bool isNarration)
     {
         if (portraitRoot != null)
@@ -51,6 +55,19 @@ public class ChatBubbleView : MonoBehaviour
         var box = messageText.transform.parent.GetComponent<LayoutElement>();
         var layout = messageText.transform.parent.GetComponent<VerticalLayoutGroup>();
         if (box == null || layout == null) return;
+        if (normalFontSize <= 0f) normalFontSize = messageText.fontSize;
+        if (isNarration && narrationSprite != null)
+        {
+            ApplyNarrationLayout(box, layout);
+            return;
+        }
+
+        layout.enabled = true;
+        messageText.enableAutoSizing = false;
+        messageText.fontSize = normalFontSize;
+        messageText.overflowMode = TextOverflowModes.Overflow;
+        bubbleImage.type = Image.Type.Sliced;
+        bubbleImage.preserveAspect = false;
         layout.padding = isNarration ? new RectOffset(30, 30, 18, 18)
             : isPlayer ? new RectOffset(30, 58, 18, 18) : new RectOffset(58, 30, 18, 18);
         float width = 440f;
@@ -67,6 +84,35 @@ public class ChatBubbleView : MonoBehaviour
             var portraitLayout = portraitRoot.GetComponent<LayoutElement>();
             if (portraitLayout != null) portraitLayout.minHeight = portraitLayout.preferredHeight = 120f + nameText.GetPreferredValues(nameText.text, 150f, Mathf.Infinity).y;
         }
+        LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
+    }
+
+    // 나레이션은 텍스트 길이와 무관한 원본 비율의 카드. 상단 장식 아래에 본문을 고정한다.
+    private void ApplyNarrationLayout(LayoutElement box, VerticalLayoutGroup layout)
+    {
+        const float width = 900f;
+        float height = width * narrationSprite.rect.height / narrationSprite.rect.width;
+        box.layoutPriority = 2;
+        box.minWidth = box.preferredWidth = width;
+        box.minHeight = box.preferredHeight = height;
+        layout.enabled = false; // TMP preferredHeight가 고정 본문 영역을 늘리지 않도록 분리
+
+        bubbleImage.sprite = narrationSprite;
+        bubbleImage.type = Image.Type.Simple;
+        bubbleImage.preserveAspect = true;
+        bubbleImage.rectTransform.localScale = Vector3.one;
+
+        RectTransform textRect = messageText.rectTransform;
+        textRect.anchorMin = new Vector2(0.04f, 0.10f);
+        textRect.anchorMax = new Vector2(0.96f, 0.64f);
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+        messageText.alignment = TextAlignmentOptions.Center;
+        messageText.enableWordWrapping = true;
+        messageText.fontSizeMax = normalFontSize;
+        messageText.fontSizeMin = 1f;
+        messageText.enableAutoSizing = true;
+        messageText.overflowMode = TextOverflowModes.Truncate;
         LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
     }
 
@@ -92,15 +138,23 @@ public class ChatBubbleView : MonoBehaviour
             messageText.alignment = isNarration ? TextAlignmentOptions.Center : TextAlignmentOptions.MidlineLeft;
         }
         if (rowLayout != null)
+        {
+            if (normalRowPadding == null)
+                normalRowPadding = new RectOffset(rowLayout.padding.left, rowLayout.padding.right,
+                    rowLayout.padding.top, rowLayout.padding.bottom);
+            int extraSpacing = isNarration ? NarrationVerticalSpacing : 0;
+            rowLayout.padding = new RectOffset(normalRowPadding.left, normalRowPadding.right,
+                normalRowPadding.top + extraSpacing, normalRowPadding.bottom + extraSpacing);
             rowLayout.childAlignment = isNarration ? TextAnchor.UpperCenter
                                      : isPlayer ? TextAnchor.UpperRight
                                      : TextAnchor.UpperLeft;
+        }
         if (bubbleImage != null)
             bubbleImage.color = isNarration ? narrationBubbleColor
                               : isPlayer ? playerBubbleColor
                               : otherBubbleColor;
 
-        BindPortrait(!isNarration, profileKey);
+        BindPortrait(!isNarration, profileKey, charName);
         ApplyBubbleLayout(isPlayer, isNarration);
     }
 
@@ -108,23 +162,58 @@ public class ChatBubbleView : MonoBehaviour
     private static Sprite LoadPortrait(string key)
     {
         if (key.EndsWith(".png", System.StringComparison.OrdinalIgnoreCase)) key = key.Substring(0, key.Length - 4);
-        return Resources.Load<Sprite>(PortraitResourceFolder + key)
+        return Resources.Load<Sprite>(key)
+            ?? Resources.Load<Sprite>(PortraitResourceFolder + key)
             ?? Resources.Load<Sprite>("Portrait_Enemy_Sprite/" + key)
             ?? Resources.Load<Sprite>("UI_Sprite/UI_Chatting/" + key);
     }
 
-    private void BindPortrait(bool show, string profileKey)
+    private static string NormalizeSpeaker(string name)
+        => string.IsNullOrWhiteSpace(name) ? string.Empty
+            : System.Text.RegularExpressions.Regex.Replace(name, @"\s+", "");
+
+    private static Sprite ResolveSpeakerPortrait(string profileKey, string speaker)
+    {
+        if (!string.IsNullOrWhiteSpace(profileKey))
+        {
+            var explicitPortrait = LoadPortrait(profileKey.Trim());
+            if (explicitPortrait != null) return explicitPortrait;
+        }
+        string normalized = NormalizeSpeaker(speaker);
+        var catalog = DHCsvTemplateCatalog.Instance;
+        if (normalized.Length == 0) return null;
+        if (catalog != null) foreach (var unit in catalog.GetAllPlayerUnitTemplates())
+        {
+            if (unit == null || NormalizeSpeaker(unit.UnitName) != normalized) continue;
+            var portrait = Sprites.Portrait.Hero(unit.UnitKey);
+            if (portrait != null && portrait != Sprites.Portrait.Unselected) return portrait;
+            break;
+        }
+        string heroKey;
+        switch (normalized)
+        {
+            case "저스티스": heroKey = "10005"; break;
+            case "네코밍": heroKey = "10004"; break;
+            case "블랙불릿": heroKey = "10003"; break;
+            case "루미나": heroKey = "10002"; break;
+            case "저스티스G": heroKey = "10001"; break;
+            default: return null;
+        }
+        var fallback = Sprites.Portrait.Hero(heroKey);
+        return fallback != Sprites.Portrait.Unselected ? fallback : null;
+    }
+
+    private void BindPortrait(bool show, string profileKey, string speaker)
     {
         if (portraitRoot == null) return;
 
         portraitRoot.SetActive(show);
         if (!show || portraitImage == null) return;
 
-        Sprite sprite = string.IsNullOrWhiteSpace(profileKey)
-            ? null
-            : LoadPortrait(profileKey.Trim());
+        Sprite sprite = ResolveSpeakerPortrait(profileKey, speaker);
 
         portraitImage.sprite = sprite;
+        portraitImage.preserveAspect = true;
         portraitImage.enabled = sprite != null; // 없으면 프레임 원(placeholder)만
     }
 }
