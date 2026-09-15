@@ -29,6 +29,12 @@ public class InputHandler : MonoBehaviour
 {
     public static event Action<BattleCharactor, BattleCharactor> PlayerSkillActionResolved;
     public event Action<string> OnActionSelected;
+    // UI는 요청한 버튼이 아니라 실제 선택/취소 결과를 표시합니다.
+    public event Action SelectionChanged;
+    public PendingActionType PendingAction => pendingAction;
+
+    [Tooltip("기존 씬의 턴 시작 자동 선택입니다. 개편 전투씬에서는 끄고 매 시전마다 스킬을 직접 선택합니다.")]
+    [SerializeField] private bool selectSkillOnTurnStart = true;
 
     [Header("Raycast")]
     [SerializeField] private Camera raycastCamera;
@@ -86,6 +92,11 @@ public class InputHandler : MonoBehaviour
 
     private void OnTurnStarted(int round, BattleCharactor unit)
     {
+        if (!selectSkillOnTurnStart)
+        {
+            ResetTargetingState();
+            return;
+        }
         if (unit == null || !unit.IsPlayer) return;
         // 자동전투 중에는 타겟팅을 무장하지 않는다. 무장해두면 턴 도중 자동전투를 끄는 순간
         // 이미 준비된 선택 상태가 되살아나 같은 턴에 두 번 행동할 수 있다.
@@ -100,6 +111,7 @@ public class InputHandler : MonoBehaviour
 
     private void Update()
     {
+        if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return;
         if (IsAutoBattleActive) return;
 
         if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
@@ -144,11 +156,10 @@ public class InputHandler : MonoBehaviour
 
         // [JC 260812] ESC 제거: 시스템 메뉴 전역 키(SystemMenuController)와 같은 프레임에 이중 소비되어
         // 메뉴를 여는 순간 타겟팅이 소거되던 문제. 취소 제스처는 우클릭만 유지.
-        // TODO(보류): 취소 제스처 자체가 레거시로 판단됨(외부 의존 없음, 클릭 즉시 시전 설계,
-        // 전투씬 우클릭 타용도 없음) — ASB 확인 후 이 블록 전체 삭제 검토.
+        // [JC 260914] 우클릭은 대상 선택만 취소합니다. 공격이 확정된 뒤에는 무시합니다.
         if (Input.GetMouseButtonDown(1))
         {
-            ResetTargetingState();
+            TryCancelSkillSelection();
             return;
         }
 
@@ -177,6 +188,15 @@ public class InputHandler : MonoBehaviour
 
             TryExecutePendingAction(actor);
         }
+    }
+
+    /// <summary>사용자 입력으로 선택을 비웁니다. 자동전투·공격 실행 중에는 false를 반환하고 유지합니다.</summary>
+    public bool TryCancelSkillSelection()
+    {
+        if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return false;
+        if (IsAutoBattleActive || isProcessingAction) return false;
+        ResetTargetingState();
+        return true;
     }
 
     /// <summary>BattleFlowManager가 턴 경계에서 호출해 선택 상태를 비웁니다.</summary>
@@ -266,6 +286,8 @@ public class InputHandler : MonoBehaviour
 
     public void BeginPendingAction(PendingActionType actionType)
     {
+        if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return;
+        if (IsAutoBattleActive || isProcessingAction) return;
         if (!TryGetCurrentActor(out BattleCharactor actor))
         {
             return;
@@ -287,6 +309,13 @@ public class InputHandler : MonoBehaviour
         if (actionType == PendingActionType.WeaponSkill && actor.EquippedWeaponData == null)
         {
             Debug.LogWarning($"[InputHandler] 장착 무기가 없어 무기 스킬을 사용할 수 없습니다: actor={actor.UnitName}");
+            return;
+        }
+
+        if (!selectSkillOnTurnStart && actionType == PendingActionType.ClassSkill &&
+            actor.SelectedSkillData.acquireLevel > actor.Level)
+        {
+            ResetTargetingState();
             return;
         }
 
@@ -316,6 +345,7 @@ public class InputHandler : MonoBehaviour
         SetHoverTarget(null);
         SetHoverHostageTarget(null);
         OnActionSelected?.Invoke(BuildSelectedActionLabel(actor, actionType));
+        SelectionChanged?.Invoke();
     }
 
     private string BuildSelectedActionLabel(BattleCharactor actor, PendingActionType actionType)
@@ -703,6 +733,7 @@ public class InputHandler : MonoBehaviour
         validHostageTargets.Clear();
         pendingAction = PendingActionType.None;
         currentState = PlayerActionState.Idle;
+        SelectionChanged?.Invoke();
     }
 
     private bool TryGetCurrentActor(out BattleCharactor actor)

@@ -32,6 +32,9 @@ public class BattleFlowManager : MonoBehaviour
 {
     [Header("Turn/Loop")]
     [SerializeField] private bool autoStartOnInitialize = true;
+    [Tooltip("씬에 배치한 전투 시작/턴 안내입니다. 연결하면 안내가 닫힌 뒤 행동을 시작하며, 비워 두면 기존 흐름을 유지합니다.")]
+    [SerializeField] private BattleTurnBanner turnBanner;
+    private bool turnPresentationPending;
     //[SerializeField] private float enemyThinkSeconds = 3f;
 
     [Header("Debug")]
@@ -57,6 +60,7 @@ public class BattleFlowManager : MonoBehaviour
     // InputHandler(수동)와 AutoBattleController(자동)가 같은 턴에 동시에 행동하는 것을 막는다.
     // 이 플래그가 없던 시절에는 턴 도중 자동전투를 끄면 같은 액터가 두 번 행동하고 IP도 두 번 빠졌다.
     private bool playerActionClaimed;
+    private bool enemyTurnRunning;
     private bool battleEnded;
     private bool battleEndRequested;
     private BattleResult requestedBattleResult = BattleResult.Defeat;
@@ -73,6 +77,18 @@ public class BattleFlowManager : MonoBehaviour
     public BattleManager BattleManager => battleManager;
     public int RoundIndex => roundIndex;
     public bool IsFlowBlocked => flowLocks.Count > 0;
+    public bool IsTurnPresentationPending => turnPresentationPending || (turnBanner != null && turnBanner.BlocksInput);
+    public bool IsEndingBattle => ShouldEndBattle();
+
+    /// <summary>
+    /// UI가 조회하는 행동 진행 상태입니다. 아군은 수동·자동 행동 점유 후 완료 통지 전,
+    /// 적은 AI 판단 대기부터 공격·반격 처리가 반환될 때까지를 포함합니다.
+    /// 행동을 취소하거나 턴 진행을 제어하는 용도로 사용하지 않습니다.
+    /// </summary>
+    public bool IsActionInProgress => !battleEnded &&
+        (enemyTurnRunning || (CurrentUnit != null && CurrentUnit.IsPlayer &&
+                              playerActionClaimed && !playerActionResolved));
+
     public event Action<int, BattleCharactor> OnTurnStarted;
     public event Action<TurnResolutionContext> OnTurnResolved;
     public event Action<BattleResult> OnBattleEnded;
@@ -85,6 +101,9 @@ public class BattleFlowManager : MonoBehaviour
 
     private void OnDisable()
     {
+        turnPresentationPending = false;
+        turnBanner?.Hide();
+        enemyTurnRunning = false;
         InputHandler.PlayerSkillActionResolved -= OnPlayerSkillActionResolved;
         UnsubscribeAllUnitDeathEvents();
         ClearFlowExtensions();
@@ -128,6 +147,7 @@ public class BattleFlowManager : MonoBehaviour
         RebuildRuntimeLookup();
         CurrentUnit = null;
         roundIndex = 0;
+        enemyTurnRunning = false;
         battleEnded = false;
         battleEndRequested = false;
         requestedBattleResult = BattleResult.Defeat;
@@ -180,6 +200,7 @@ public class BattleFlowManager : MonoBehaviour
         PendingActionType actionType,
         BattleCharactor target)
     {
+        if (IsTurnPresentationPending) return false;
         foreach (PlayerActionConstraintRecord constraint in playerActionConstraints.Values)
         {
             try
@@ -201,6 +222,9 @@ public class BattleFlowManager : MonoBehaviour
 
     public void StartBattleLoop()
     {
+        turnPresentationPending = false;
+        turnBanner?.Hide();
+        enemyTurnRunning = false;
         if (battleLoopRoutine != null)
         {
             StopCoroutine(battleLoopRoutine);
@@ -211,6 +235,9 @@ public class BattleFlowManager : MonoBehaviour
 
     public void StopBattleLoop()
     {
+        turnPresentationPending = false;
+        turnBanner?.Hide();
+        enemyTurnRunning = false;
         if (battleLoopRoutine != null)
         {
             StopCoroutine(battleLoopRoutine);
@@ -422,6 +449,11 @@ public class BattleFlowManager : MonoBehaviour
 
     private IEnumerator BattleLoop()
     {
+        if (turnBanner != null)
+        {
+            yield return WaitForFlowGateOrBattleEnd();
+            if (!ShouldEndBattle()) yield return PresentTurnIntro(null);
+        }
         while (!ShouldEndBattle())
         {
             yield return WaitForFlowGateOrBattleEnd();
@@ -443,6 +475,15 @@ public class BattleFlowManager : MonoBehaviour
             // 이전 턴 입력 상태를 먼저 정리한다 (UI의 BeginPendingAction이 덮어쓰이지 않도록).
             inputHandler?.ClearSelectionState();
             Log(FormatTurnStartLog(unit));
+
+            // 건너뛰는 순번도 표시하되, 기존 OnTurnStarted는 행동 가능한 유닛에만 발행한다.
+            if (turnBanner != null) yield return PresentTurnIntro(unit);
+            if (turnBanner != null && ShouldEndBattle())
+            {
+                PublishTurnResolved(unit, wasSkipped: true);
+                CleanupTurn(unit);
+                break;
+            }
 
             CurrentUnit.ProcessTurnStartStatusEffects();
             if (CurrentUnit == null || CurrentUnit.IsDead)
@@ -584,15 +625,23 @@ public class BattleFlowManager : MonoBehaviour
             yield break;
         }
 
-        EnemyScript enemyScript = enemyUnit.GetComponent<EnemyScript>();
-        if (enemyScript != null)
+        enemyTurnRunning = true;
+        try
         {
-            yield return StartCoroutine(enemyScript.RunAITurn(battleManager, this));
+            EnemyScript enemyScript = enemyUnit.GetComponent<EnemyScript>();
+            if (enemyScript != null)
+            {
+                yield return StartCoroutine(enemyScript.RunAITurn(battleManager, this));
+            }
+            else
+            {
+                Debug.LogWarning($"[BattleFlow] EnemyScript가 없어 턴을 스킵합니다: {GetUnitLabel(enemyUnit)}");
+                yield return null;
+            }
         }
-        else
+        finally
         {
-            Debug.LogWarning($"[BattleFlow] EnemyScript가 없어 턴을 스킵합니다: {GetUnitLabel(enemyUnit)}");
-            yield return null;
+            enemyTurnRunning = false;
         }
     }
 
@@ -721,16 +770,27 @@ public class BattleFlowManager : MonoBehaviour
         return result;
     }
 
-    /// <summary>
-    /// 이번 플레이어 턴의 행동 실행 권한을 요청한다. 성공한 쪽만 실제로 행동을 실행할 수 있다.
-    ///
-    /// 턴 해결의 유일한 소유자는 BattleFlowManager다. InputHandler(수동 입력·스킵)와
-    /// AutoBattleController(자동전투)는 이 메서드로 '요청'만 하고, 동시에 두 곳이 행동하지 못한다.
-    /// 턴이 바뀌면 BattleLoop가 점유권을 초기화한다.
-    /// </summary>
-    /// <returns>권한을 획득했으면 true. 이미 다른 주체가 가져갔거나 행동 불가 상태면 false.</returns>
+    /// <summary>행동 가능 이벤트와 구분된 UI 대기입니다. 기절/사망으로 건너뛸 순번도 여기서 표시합니다.</summary>
+    private IEnumerator PresentTurnIntro(BattleCharactor unit)
+    {
+        if (turnBanner == null || !turnBanner.isActiveAndEnabled) yield break;
+        turnPresentationPending = true;
+        try
+        {
+            yield return unit == null ? turnBanner.ShowStart(this) : turnBanner.ShowTurn(this, unit.IsPlayer);
+            yield return WaitForFlowGateOrBattleEnd();
+        }
+        finally
+        {
+            turnPresentationPending = false;
+            if (turnBanner != null) turnBanner.Hide();
+        }
+    }
+
+    /// <summary>이번 턴의 행동 권한을 요청합니다. 안내 중/이미 행동 중/행동 불가라면 false를 반환합니다.</summary>
     public bool TryClaimPlayerAction(BattleCharactor actor)
     {
+        if (IsTurnPresentationPending) return false;
         if (IsFlowBlocked)
         {
             return false;

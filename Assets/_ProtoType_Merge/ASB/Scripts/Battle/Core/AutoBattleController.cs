@@ -50,6 +50,7 @@ public class AutoBattleController : MonoBehaviour
             {
                 // 이미 플레이어 턴 WaitUntil 중이면 즉시 실행
                 if (flowManager != null
+                    && !flowManager.IsTurnPresentationPending
                     && flowManager.CurrentUnit != null
                     && flowManager.CurrentUnit.IsPlayer
                     && !flowManager.CurrentUnit.IsDead)
@@ -101,6 +102,9 @@ public class AutoBattleController : MonoBehaviour
 
     private IEnumerator RunAutoBattleTurn(BattleCharactor actor)
     {
+        // 안내 중 자동 모드가 켜졌다면, 안내 후 OnTurnStarted가 정상적으로 시작한다.
+        if (flowManager == null || flowManager.IsTurnPresentationPending || actor == null || actor.IsStunned)
+            yield break;
         if (inputHandler != null)
             inputHandler.IsAutoBattleActive = true;
 
