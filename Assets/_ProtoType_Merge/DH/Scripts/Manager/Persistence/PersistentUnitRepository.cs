@@ -704,10 +704,23 @@ public class PersistentUnitRepository : MonoBehaviour
         if (data == null || expAmount <= 0)
             return data?.Level ?? 1;
 
+        SimulateExpProgress(data, expAmount, out int level, out _, out _);
+        return level;
+    }
+
+    /// <summary>저장/능력치 변경 없이 레벨, 잔여 EXP, 다음 레벨 필요 EXP를 계산합니다. 필요 EXP 0은 성장 행이 없음을 뜻합니다.</summary>
+    public static void SimulateExpProgress(UnitPersistentData data, int expAmount,
+        out int level, out int exp, out int maxExp)
+    {
+        level = data != null ? Mathf.Max(1, data.Level) : 1;
+        exp = data != null ? Mathf.Max(0, data.Exp) : 0;
+        maxExp = 0;
+        if (data == null) return;
+
         IReadOnlyList<DHUnitGrowthTemplate> unitGrowthTemplates = ResolveUnitGrowthTemplates();
-        int level = Mathf.Max(1, data.Level);
-        int exp = Mathf.Max(0, data.Exp) + expAmount;
-        int maxExp = data.MaxExp > 0 ? data.MaxExp : ResolveMaxExp(level, unitGrowthTemplates);
+        maxExp = data.MaxExp > 0 ? data.MaxExp : ResolveMaxExp(level, unitGrowthTemplates);
+        if (expAmount <= 0) return;
+        exp += expAmount;
 
         while (maxExp > 0 && exp >= maxExp)
         {
@@ -716,7 +729,6 @@ public class PersistentUnitRepository : MonoBehaviour
             maxExp = ResolveMaxExp(level, unitGrowthTemplates);
         }
 
-        return level;
     }
 
     private static void ApplyExpWithLevelUps(UnitPersistentData data, int amount)
