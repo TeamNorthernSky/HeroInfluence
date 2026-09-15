@@ -86,6 +86,7 @@ public class ExplorationCoreSelectController : MonoBehaviour
                 string label = i < coreNames.Length ? coreNames[i] : $"코어 {i + 1}";
                 if (catalog != null && catalog.TryGetWeaponTemplate(i + 1, out var data) &&
                     data != null && !string.IsNullOrWhiteSpace(data.WeaponName)) label = data.WeaponName;
+                cards[i].BindTooltip(i + 1, label, i < coreIcons.Length ? coreIcons[i] : null);
                 bool owned = workshop != null && workshop.IsOwned(i + 1);
                 cards[i].SetState(label, i < coreIcons.Length ? coreIcons[i] : null,
                     owned, hasUnit && equipped == i + 1, hasUnit);
