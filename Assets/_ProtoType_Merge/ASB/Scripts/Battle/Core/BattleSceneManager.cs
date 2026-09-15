@@ -28,6 +28,11 @@ public class BattleSceneManager : MonoBehaviour
     [Header("Tutorial Battle")]
     [SerializeField] private TutorialBattleDirector tutorialBattleDirector;
     [SerializeField] private TutorialBattleUI tutorialBattleUI;
+    [Tooltip("데이터 드리븐 튜토리얼(스케줄 규칙). 매칭 시 인터프리터 flow 사용. 없으면 코드 flow 폴백.")]
+    [SerializeField] private TutorialScheduleCatalog tutorialScheduleCatalog;
+    [Tooltip("이벤트 전투가 아닐 때(씬 직접 진입/테스트) 사용할 튜토리얼 BattleKey. 비면 튜토리얼 미적용.")]
+    [SerializeField] private string tutorialBattleKeyOverride;
+    [SerializeField, Min(-1)] private int tutorialZoneIdOverride = -1;
     private TutorialBattleFlowRegistry tutorialFlowRegistry;
 
     [Header("UI")]
@@ -46,6 +51,7 @@ public class BattleSceneManager : MonoBehaviour
     private BattleCharactor playerBattleCharactor;
     private readonly List<BattleCharactor> playerBattleCharactors = new List<BattleCharactor>();
     private readonly List<BattleCharactor> enemyBattleCharactors = new List<BattleCharactor>();
+    private float victoryEnemyExperienceSnapshot;
     private HostageScenarioController hostageScenarioController;
 
     public BattleCharactor PlayerBattleCharactor => playerBattleCharactor;
@@ -97,7 +103,7 @@ public class BattleSceneManager : MonoBehaviour
 
         // 1. 보상 계산 (Repository/JSON 변경 없음)
         BattleRewardPlan plan = BattleResultPersistenceHandler.BuildBattleRewardPlan(
-            playerBattleCharactors, enemyBattleCharactors, result);
+            playerBattleCharactors, result, victoryEnemyExperienceSnapshot);
 
         // 2. 레벨업 UI (TODO: 레벨업 UI가 생기면 여기서 yield return)
         // if (plan.UnitPreviews.Exists(u => u.HasLevelUp))
@@ -324,6 +330,7 @@ public class BattleSceneManager : MonoBehaviour
         playerBattleCharactor = null;
         playerBattleCharactors.Clear();
         enemyBattleCharactors.Clear();
+        victoryEnemyExperienceSnapshot = 0f;
 
         playerSpawner?.SetSpawnOnStart(false);
         enemySpawner?.SetSpawnOnStart(false);
@@ -396,6 +403,12 @@ public class BattleSceneManager : MonoBehaviour
         SyncGridOccupancy(sceneUnits);
         CollectParticipantsAfterInitialize(sceneUnits);
 
+        // 실제 스폰 계획의 보상 합계를 전투 시작 전에 스냅샷한다.
+        // 이후 시체 GameObject가 제거돼도 승리 보상은 이 순수 값으로 계산된다.
+        victoryEnemyExperienceSnapshot = enemySpawner != null && enemySpawner.HasSuccessfulSpawnPlanRewardSnapshot
+            ? enemySpawner.LastSpawnPlanTotalExperience
+            : CalculateInitialEnemyExperience(enemyBattleCharactors);
+
         if (isEventBattle)
         {
             bool hasAlivePlayer = playerBattleCharactors.Any(unit => unit != null && !unit.IsDead);
@@ -419,9 +432,36 @@ public class BattleSceneManager : MonoBehaviour
         // 먼저 구독하고 입장 단계를 실행한 다음, 공통 전투 루프를 한 번만 시작한다.
         battleFlowManager.Initialize(allUnits, false);
 
-        ITutorialBattleFlow tutorialFlow = ResolveTutorialFlow(combatContext);
-        if (tutorialFlow != null)
+        // 기본 경로는 '일반 전투'다. 튜토리얼은 진입 키가 매칭될 때만 켜지는 특수 케이스로 취급한다.
+        // 진입 키: 이벤트 전투 우선, 없으면 씬 override(§11.1).
+        bool hasEventBattle = combatContext != null && combatContext.HasEventBattle;
+        int tutorialZoneId;
+        string tutorialKey;
+        if (hasEventBattle)
         {
+            tutorialZoneId = combatContext.EventBattle.ZoneId;
+            tutorialKey = combatContext.EventBattle.BattleKey;
+        }
+        else if (!string.IsNullOrWhiteSpace(tutorialBattleKeyOverride))
+        {
+            tutorialZoneId = tutorialZoneIdOverride;
+            tutorialKey = tutorialBattleKeyOverride.Trim();
+        }
+        else
+        {
+            tutorialZoneId = -1;
+            tutorialKey = null;
+        }
+
+        ITutorialBattleFlow tutorialFlow = ResolveTutorialFlow(tutorialZoneId, tutorialKey);
+        if (tutorialFlow == null)
+        {
+            // 일반 전투: 조용히 진행(로그 없음). 혹시 남아있을 Director만 정리한다.
+            tutorialBattleDirector?.Shutdown();
+        }
+        else
+        {
+            // 튜토리얼 전투: 여기서만 로그를 남긴다.
             if (tutorialBattleDirector == null)
             {
                 tutorialBattleDirector = GetComponent<TutorialBattleDirector>();
@@ -429,10 +469,10 @@ public class BattleSceneManager : MonoBehaviour
 
             if (tutorialBattleDirector == null)
             {
-                // 씬에 배치된 Director만 사용한다(자동 생성하지 않음). 없으면 일반 전투로 계속.
+                // 튜토리얼 키인데 씬에 Director가 없는 것은 설정 오류다(개발자가 봐야 함).
                 Debug.LogError(
-                    $"[BattleSceneManager] 튜토리얼 Flow({tutorialFlow.BattleKey})가 있으나 씬에 " +
-                    $"TutorialBattleDirector가 없습니다. 일반 전투로 계속합니다.",
+                    $"[Tutorial] 튜토리얼 전투(BattleKey={tutorialKey})인데 씬에 " +
+                    $"TutorialBattleDirector가 배치되지 않았습니다. 튜토리얼 없이 전투만 진행합니다.",
                     this);
             }
             else
@@ -443,11 +483,7 @@ public class BattleSceneManager : MonoBehaviour
                     tutorialBattleUI = FindFirstObjectByType<TutorialBattleUI>(FindObjectsInactive.Include);
                 }
 
-                bool hasEventBattle = combatContext != null && combatContext.HasEventBattle;
-                int tutorialZoneId = hasEventBattle ? combatContext.EventBattle.ZoneId : tutorialFlow.ZoneId;
-                string tutorialKey = hasEventBattle ? combatContext.EventBattle.BattleKey : tutorialFlow.BattleKey;
-
-                if (!tutorialBattleDirector.Initialize(
+                if (tutorialBattleDirector.Initialize(
                         tutorialFlow,
                         battleFlowManager,
                         battleFlowManager.BattleManager,
@@ -457,35 +493,64 @@ public class BattleSceneManager : MonoBehaviour
                         tutorialKey,
                         tutorialZoneId))
                 {
+                    Debug.Log($"[Tutorial] 튜토리얼 진입: BattleKey={tutorialKey}, Zone={tutorialZoneId}", this);
+                }
+                else
+                {
                     Debug.LogWarning(
-                        $"[BattleSceneManager] 튜토리얼 초기화에 실패해 일반 전투로 계속합니다. " +
-                        $"BattleKey={tutorialKey}",
+                        $"[Tutorial] 튜토리얼 초기화 실패(BattleKey={tutorialKey}). 튜토리얼 없이 전투만 진행합니다.",
                         this);
                 }
             }
-        }
-        else
-        {
-            tutorialBattleDirector?.Shutdown();
         }
 
         battleFlowManager.StartBattleLoop();
     }
 
-    private ITutorialBattleFlow ResolveTutorialFlow(CombatContext combatContext)
+    private static float CalculateInitialEnemyExperience(IReadOnlyList<BattleCharactor> enemies)
     {
-        if (combatContext == null || !combatContext.HasEventBattle)
+        if (enemies == null)
+            return 0f;
+
+        float totalExperience = 0f;
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            BattleCharactor enemy = enemies[i];
+            if (enemy != null)
+                totalExperience += Mathf.Max(0f, enemy.ExperienceReward);
+        }
+
+        return totalExperience;
+    }
+
+    // 진입 키 해석(§11.1): 이벤트 전투면 CombatContext, 아니면 씬 override로 계산된 (zoneId, battleKey)를 받는다.
+    // 우선순위: ① 데이터 드리븐 스케줄 시트(있으면 인터프리터 flow) → ② 코드 flow 레지스트리(특수 튜토리얼 폴백).
+    // 카탈로그 미할당/미매칭이면 기존 코드 flow 경로 그대로(순수 추가, 기존 씬 무영향).
+    private ITutorialBattleFlow ResolveTutorialFlow(int zoneId, string battleKey)
+    {
+        if (string.IsNullOrWhiteSpace(battleKey))
         {
             return null;
         }
 
+        // ① 스케줄 시트 우선
+        if (tutorialScheduleCatalog != null)
+        {
+            TutorialScheduleSheet sheet = tutorialScheduleCatalog.Find(zoneId, battleKey);
+            if (sheet != null)
+            {
+                TutorialHookRegistry hooks = TutorialHookProvider.Build(zoneId, battleKey);
+                return new DataDrivenTutorialFlow(sheet, hooks);
+            }
+        }
+
+        // ② 코드 flow 폴백
         if (tutorialFlowRegistry == null)
         {
             tutorialFlowRegistry = TutorialBattleFlowRegistry.CreateDefault();
         }
 
-        CombatEventBattleData eventBattle = combatContext.EventBattle;
-        return tutorialFlowRegistry.Resolve(eventBattle.ZoneId, eventBattle.BattleKey);
+        return tutorialFlowRegistry.Resolve(zoneId, battleKey);
     }
 
     private bool TryPrepareEventSlotMap(

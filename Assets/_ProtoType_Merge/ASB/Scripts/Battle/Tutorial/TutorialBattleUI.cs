@@ -34,6 +34,50 @@ public sealed class TutorialBattleUI : MonoBehaviour
         UnbindButtons();
     }
 
+    /// <summary>panel·messageLabel이 유효해 실제 표시 가능한 상태인지.</summary>
+    public bool IsReady => panel != null && messageLabel != null;
+
+    /// <summary>actionId가 등록된 버튼인지(누를 대상 존재 여부).</summary>
+    public bool HasActionBinding(string actionId)
+    {
+        string n = Normalize(actionId);
+        if (string.IsNullOrEmpty(n))
+        {
+            return false;
+        }
+
+        for (int i = 0; i < actionButtons.Count; i++)
+        {
+            ActionButtonBinding b = actionButtons[i];
+            if (b != null && string.Equals(Normalize(b.actionId), n, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>표시 성공 여부를 반환하는 Show. 필수 참조가 없으면 false, 미등록 highlight면 경고.</summary>
+    public bool TryShow(string message, string highlightedActionId = null)
+    {
+        if (!IsReady)
+        {
+            Debug.LogWarning("[TutorialUI] panel/messageLabel 미할당 — UI를 표시할 수 없습니다.", this);
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(highlightedActionId) && !HasActionBinding(highlightedActionId))
+        {
+            Debug.LogWarning(
+                $"[TutorialUI] 미등록 highlightActionId '{highlightedActionId}' — 누를 버튼이 없어 진행 불능 위험.",
+                this);
+        }
+
+        Show(message, highlightedActionId);
+        return true;
+    }
+
     public void Show(string message, string highlightedActionId = null)
     {
         if (messageLabel != null)

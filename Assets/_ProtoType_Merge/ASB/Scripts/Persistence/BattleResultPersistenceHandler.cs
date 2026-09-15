@@ -14,25 +14,40 @@ public static class BattleResultPersistenceHandler
         IReadOnlyList<BattleCharactor> enemyUnits,
         BattleResult result)
     {
+        float defeatedEnemyExperience = 0f;
+        if (result == BattleResult.Victory && enemyUnits != null)
+        {
+            foreach (BattleCharactor enemy in enemyUnits)
+            {
+                if (enemy != null && enemy.IsDead)
+                    defeatedEnemyExperience += Mathf.Max(0f, enemy.ExperienceReward);
+            }
+        }
+
+        return BuildBattleRewardPlan(playerUnits, result, defeatedEnemyExperience);
+    }
+
+    /// <summary>
+    /// 전투 시작 시 확정한 적 스폰 계획의 총 EXP를 사용해 보상을 계산합니다.
+    /// Unity 오브젝트의 파괴 시점과 무관하게 동일한 승리 보상을 보장합니다.
+    /// </summary>
+    public static BattleRewardPlan BuildBattleRewardPlan(
+        IReadOnlyList<BattleCharactor> playerUnits,
+        BattleResult result,
+        float victoryEnemyExperience)
+    {
         var plan = new BattleRewardPlan { Result = result };
 
         if (playerUnits == null)
             return plan;
 
-        float influenceRatio = result == BattleResult.Victory ? 1.1f : 0.9f;
-
         // Victory: EXP 계산
         int expPerUnit = 0;
         var survivors = new List<BattleCharactor>();
 
-        if (result == BattleResult.Victory && enemyUnits != null)
+        if (result == BattleResult.Victory)
         {
-            float totalExp = 0f;
-            foreach (var enemy in enemyUnits)
-            {
-                if (enemy != null && enemy.IsDead)
-                    totalExp += enemy.ExperienceReward;
-            }
+            float totalExp = Mathf.Max(0f, victoryEnemyExperience);
 
             foreach (var player in playerUnits)
             {
