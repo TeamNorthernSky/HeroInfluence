@@ -24703,6 +24703,7 @@ Transform:
   m_Children:
   - {fileID: 1380568332}
   - {fileID: 1250966397}
+  - {fileID: 1467536413}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &198224172
@@ -252415,3 +252416,79 @@ SceneRoots:
   - {fileID: 197574232}
   - {fileID: 1293311820}
   - {fileID: 206211936}
+--- !u!1 &1467536412
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1467536413}
+  - component: {fileID: 1467536414}
+  m_Layer: 0
+  m_Name: JC_DOF
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1467536413
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1467536412}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 197574232}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1467536414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1467536412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 947c53e72344a144082274a491c81228, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  profile: {fileID: 11400000, guid: 02975f294bf5aef4190b3431cf7f77de, type: 2}
+  targetVolume: {fileID: 1595537337}
+  targetCamera: {fileID: 0}
+  loadProfileOnPlay: 1
+  settings:
+    mode: 1
+    autoFocus: 1
+    groundY: 0
+    gaussianStartOffset: 1.65
+    gaussianEndOffset: 4.43
+    gaussianStart: 12
+    gaussianEnd: 19
+    gaussianMaxRadius: 1.091
+    highQualitySampling: 1
+    focusDistance: 10
+    aperture: 1.2
+    focalLength: 150
+    bladeCount: 5
+    bladeCurvature: 1
+    bladeRotation: 0
+--- !u!114 &1595537337 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1105188656480844536, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
+    type: 3}
+  m_PrefabInstance: {fileID: 1293311820}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
