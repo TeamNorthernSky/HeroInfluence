@@ -38,6 +38,8 @@ public class LevelEditorController : MonoBehaviour
     [FormerlySerializedAs("selectedDecorativeBuildingKey")]
     [SerializeField] private string selectedDecorativeObjectKey;
     [SerializeField] private string selectedTutorialObjectPrefabKey;
+    [SerializeField] private string selectedTutorialEnemyPrefabKey;
+    [SerializeField] private string selectedTutorialItemPrefabKey;
     [SerializeField] private string selectedMainEventPrefabKey;
     [SerializeField] private string selectedSubEventPrefabKey;
     [SerializeField] private string selectedGatePrefabKey = "horizon";
@@ -106,6 +108,8 @@ public class LevelEditorController : MonoBehaviour
     public string SelectedHeroUnionPrefabKey => string.IsNullOrWhiteSpace(selectedHeroUnionPrefabKey) ? string.Empty : selectedHeroUnionPrefabKey.Trim();
     public string SelectedDecorativeObjectKey => selectedDecorativeObjectKey;
     public string SelectedTutorialObjectPrefabKey => string.IsNullOrWhiteSpace(selectedTutorialObjectPrefabKey) ? string.Empty : selectedTutorialObjectPrefabKey.Trim();
+    public string SelectedTutorialEnemyPrefabKey => string.IsNullOrWhiteSpace(selectedTutorialEnemyPrefabKey) ? string.Empty : selectedTutorialEnemyPrefabKey.Trim();
+    public string SelectedTutorialItemPrefabKey => string.IsNullOrWhiteSpace(selectedTutorialItemPrefabKey) ? string.Empty : selectedTutorialItemPrefabKey.Trim();
     public string SelectedMainEventPrefabKey => string.IsNullOrWhiteSpace(selectedMainEventPrefabKey) ? string.Empty : selectedMainEventPrefabKey.Trim();
     public string SelectedSubEventPrefabKey => string.IsNullOrWhiteSpace(selectedSubEventPrefabKey) ? string.Empty : selectedSubEventPrefabKey.Trim();
     public string SelectedGatePrefabKey => string.IsNullOrWhiteSpace(selectedGatePrefabKey) ? string.Empty : selectedGatePrefabKey.Trim();
@@ -216,11 +220,24 @@ public class LevelEditorController : MonoBehaviour
 
                 levelData.SetDecorativeObject(grid, selectedDecorativeObjectKey);
                 break;
+            case LevelEditorBrushType.TutorialBuilding:
             case LevelEditorBrushType.TutorialObject:
                 if (string.IsNullOrWhiteSpace(SelectedTutorialObjectPrefabKey))
                     return;
 
                 levelData.SetTutorialObject(grid, SelectedTutorialObjectPrefabKey);
+                break;
+            case LevelEditorBrushType.TutorialEnemy:
+                if (string.IsNullOrWhiteSpace(SelectedTutorialEnemyPrefabKey))
+                    return;
+
+                levelData.SetTutorialObject(grid, SelectedTutorialEnemyPrefabKey);
+                break;
+            case LevelEditorBrushType.TutorialItem:
+                if (string.IsNullOrWhiteSpace(SelectedTutorialItemPrefabKey))
+                    return;
+
+                levelData.SetTutorialObject(grid, SelectedTutorialItemPrefabKey);
                 break;
             case LevelEditorBrushType.MainEvent:
                 if (string.IsNullOrWhiteSpace(selectedMainEventPrefabKey))
