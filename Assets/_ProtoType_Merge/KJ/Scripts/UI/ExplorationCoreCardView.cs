@@ -17,6 +17,13 @@ public class ExplorationCoreCardView : MonoBehaviour
 
     public Button Button => button;
 
+    public void BindTooltip(int index, string coreName, Sprite coreIcon)
+    {
+        var hover = GetComponent<CoreSelectionTooltip>();
+        if (!hover) hover = gameObject.AddComponent<CoreSelectionTooltip>();
+        hover.Bind(index, coreName, coreIcon, nameText.font);
+    }
+
     public void SetState(string coreName, Sprite coreIcon, bool available, bool equipped, bool canEquip)
     {
         nameText.text = coreName;

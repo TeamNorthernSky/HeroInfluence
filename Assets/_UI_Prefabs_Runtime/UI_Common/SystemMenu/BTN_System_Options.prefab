@@ -83,6 +83,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 719979477446501070, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -40
+      objectReference: {fileID: 0}
+    - target: {fileID: 719979477446501070, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: -16
+      objectReference: {fileID: 0}
+    - target: {fileID: 1554267031488875825, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2121307353171050079, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
       propertyPath: m_Name
@@ -92,6 +107,51 @@ PrefabInstance:
         type: 3}
       propertyPath: m_text
       value: "\uC635\uC158"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 68
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontStyle
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontSizeMax
+      value: 68
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontSizeMin
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_fontSizeBase
+      value: 68
+      objectReference: {fileID: 0}
+    - target: {fileID: 2853588149870095906, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
@@ -126,12 +186,12 @@ PrefabInstance:
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 480
+      value: 456
       objectReference: {fileID: 0}
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 128
+      value: 154
       objectReference: {fileID: 0}
     - target: {fileID: 6142568185366873133, guid: 1835db66e0427de429b7849b4cb27d31,
         type: 3}
@@ -193,6 +253,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6932642884100360255, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: c8154731720e5664eb6b7c347f83701c,
+        type: 3}
+    - target: {fileID: 8584424440380705086, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8978035978409982843, guid: 1835db66e0427de429b7849b4cb27d31,
+        type: 3}
+      propertyPath: m_Transition
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -225,7 +301,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5422105325741676771}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbf0cfd700018bd4196ba9fadf00bdfd, type: 3}
   m_Name: 

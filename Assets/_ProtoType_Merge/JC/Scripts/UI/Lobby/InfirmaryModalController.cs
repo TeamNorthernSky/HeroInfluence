@@ -182,7 +182,7 @@ public class InfirmaryModalController : MonoBehaviour
             else if (!visited) msg = "협회를 방문한 상태에서만 이용할 수 있습니다.";
             else if (units.Count == 0) msg = "회복할 영웅이 없습니다.";
             // [KJ] 부활 가능한 유닛이 있으면 조치할 게 남은 것 → 안내 숨김(부활 후 회복까지 같은 턴에 가능).
-            else if (healableCount == 0 && revivableCount == 0) msg = "회복 가능한 영웅이 없습니다.";
+            else if (healableCount == 0 && revivableCount == 0) msg = "회복 가능한 히어로 유닛이 없습니다.";
             GameObject toggleTarget = stateInfoBox != null ? stateInfoBox : stateInfoText.gameObject;
             toggleTarget.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;

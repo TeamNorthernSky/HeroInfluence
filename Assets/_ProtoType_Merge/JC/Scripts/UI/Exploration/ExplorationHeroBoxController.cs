@@ -23,6 +23,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
         public TMP_Text hpText;
         public Image hpFill;         // [KJ 260909] HP 게이지(Image Type=Filled). 미연결이면 무시
         public TMP_Text ipText;
+        public GameObject ipMaxIcon;
     }
 
     [Header("멤버 슬롯 (BTN_Explor_HeroBtn 1~4)")]
