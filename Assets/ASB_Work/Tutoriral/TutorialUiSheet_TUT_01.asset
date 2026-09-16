@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 310570ad818439d4c8d9d382bc589a1a, type: 3}
+  m_Name: TutorialUiSheet_TUT_01
+  m_EditorClassIdentifier: 
+  zoneId: 1
+  battleKey: TUT_01
+  entries:
+  - key: step1
+    displayOrder: 1
+    purpose: "\uC2DC\uC791 \uC548\uB0B4"
+    whenNote: 
+    viewId: guide
+    message: "\uD29C\uD1A0\uB9AC\uC5BC: \uC804\uD22C\uB97C \uC2DC\uC791\uD569\uB2C8\uB2E4.\n\uC544\uAD70\uC758
+      IP\uAC00 50\uC73C\uB85C \uC62C\uB790\uC2B5\uB2C8\uB2E4. \uBC84\uD2BC\uC744
+      \uB20C\uB7EC \uACC4\uC18D\uD558\uC138\uC694."
+    highlightActionId: 
+    requiredActionNote: 
+  - key: step2
+    displayOrder: 2
+    purpose: "\uACF5\uACA9 \uC548\uB0B4"
+    whenNote: 
+    viewId: guide
+    message: "\uD29C\uD1A0\uB9AC\uC5BC: 2\uB77C\uC6B4\uB4DC\uC785\uB2C8\uB2E4.\n\uC2A4\uD0AC\uACFC
+      \uB300\uC0C1\uC744 \uC120\uD0DD\uD574 \uACF5\uACA9\uD574 \uBCF4\uC138\uC694.\n(\uC774
+      \uD29C\uD1A0\uB9AC\uC5BC\uC5D0\uC11C\uB294 \uC801\uC774 \uC4F0\uB7EC\uC9C0\uC9C0
+      \uC54A\uC2B5\uB2C8\uB2E4.)"
+    highlightActionId: 
+    requiredActionNote: 

@@ -31,6 +31,9 @@ public class LevelPrefabRegistry : MonoBehaviour
     [FormerlySerializedAs("decorativeBuildingCatalog")]
     [SerializeField] private DecorativeObjectPrefabCatalog decorativeObjectCatalog;
 
+    [Header("Tutorial Object Prefabs")]
+    [SerializeField] private TutorialObjectPrefabCatalog tutorialObjectCatalog;
+
     [Header("Gate Prefabs")]
     [SerializeField] private GatePrefabCatalog gateCatalog;
 
@@ -50,6 +53,10 @@ public class LevelPrefabRegistry : MonoBehaviour
         decorativeObjectCatalog != null
             ? decorativeObjectCatalog.DecorativeObjectPrefabs
             : Array.Empty<DecorativeObjectPrefabEntry>();
+    public IReadOnlyList<TutorialObjectPrefabEntry> TutorialObjectPrefabs =>
+        tutorialObjectCatalog != null
+            ? tutorialObjectCatalog.TutorialObjectPrefabs
+            : Array.Empty<TutorialObjectPrefabEntry>();
     public IReadOnlyList<MainEventPrefabEntry> MainEventPrefabs =>
         eventCatalog != null
             ? eventCatalog.MainEventPrefabs
@@ -114,6 +121,18 @@ public class LevelPrefabRegistry : MonoBehaviour
     {
         if (decorativeObjectCatalog != null &&
             decorativeObjectCatalog.TryGetDecorativeObjectPrefab(prefabKey, out prefab))
+        {
+            return true;
+        }
+
+        prefab = null;
+        return false;
+    }
+
+    public bool TryGetTutorialObjectPrefab(string prefabKey, out GameObject prefab)
+    {
+        if (tutorialObjectCatalog != null &&
+            tutorialObjectCatalog.TryGetTutorialObjectPrefab(prefabKey, out prefab))
         {
             return true;
         }

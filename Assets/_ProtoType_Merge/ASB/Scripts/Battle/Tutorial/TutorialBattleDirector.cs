@@ -32,6 +32,10 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
     private int zoneId = -1;
     private bool combatEventsAttached;
 
+    [Header("Tutorial UI 콘텐츠")]
+    [SerializeField] private TutorialUiCatalog uiCatalog;
+    private TutorialUiSheet uiSheet;
+
     public bool IsRunning { get; private set; }
     public event Action<ITutorialBattleFlow> OnTutorialBattleCompleted;
 
@@ -74,6 +78,7 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
             ? (flow.BattleKey ?? string.Empty)
             : battleKeyValue.Trim();
         zoneId = zoneIdValue;
+        uiSheet = uiCatalog != null ? uiCatalog.Find(zoneId, battleKey) : null;
         IsRunning = true;
 
         flowManager.OnTurnStarted += HandleTurnStarted;
@@ -159,6 +164,57 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
         }
     }
 
+    public bool ShowUi(string key) => ShowResolved(key, null);
+
+    public bool ShowUi(string key, params object[] formatArgs) => ShowResolved(key, formatArgs);
+
+    public void HideUi() => tutorialUI?.Hide();
+
+    private bool ShowResolved(string key, object[] formatArgs)
+    {
+        if (uiSheet == null)
+        {
+            Debug.LogWarning($"[Tutorial] UI 시트 없음(카탈로그 미할당/미매칭): key={key}", this);
+            return false;
+        }
+
+        TutorialUiEntry entry = uiSheet.Get(key);
+        if (entry == null)
+        {
+            Debug.LogWarning($"[Tutorial] UI 엔트리 없음: key={key}", this);
+            return false;
+        }
+
+        string view = string.IsNullOrWhiteSpace(entry.viewId) ? TutorialUiSheet.DefaultViewId : entry.viewId.Trim();
+        if (!string.Equals(view, TutorialUiSheet.DefaultViewId, StringComparison.Ordinal))
+        {
+            Debug.LogWarning($"[Tutorial] 미지원 viewId '{view}'(현재 '{TutorialUiSheet.DefaultViewId}'만): key={key}", this);
+            return false;
+        }
+
+        if (tutorialUI == null)
+        {
+            Debug.LogWarning($"[Tutorial] TutorialBattleUI 미할당: key={key}", this);
+            return false;
+        }
+
+        string message = entry.message;
+        if (formatArgs != null && formatArgs.Length > 0)
+        {
+            try
+            {
+                message = string.Format(entry.message ?? string.Empty, formatArgs);
+            }
+            catch (FormatException e)
+            {
+                Debug.LogWarning($"[Tutorial] UI 문구 형식 오류(key={key}): {e.Message}", this);
+                return false;
+            }
+        }
+
+        return tutorialUI.TryShow(key, message, entry.highlightActionId);
+    }
+
     // --- 결과창(전투 루프 밖) — BattleSceneManager가 호출 ---
 
     public void NotifyBattleResultShown(BattleResult result)
@@ -199,6 +255,7 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
         enemySpawner = null;
         playerSpawner = null;
         tutorialUI = null;
+        uiSheet = null;
         battleKey = string.Empty;
         zoneId = -1;
     }
@@ -243,6 +300,7 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
         // 전투 영향 효과만 해제하고 flow는 결과창 단계까지 생존. 전투 이벤트 구독만 해제.
         ReleaseCombatEffects();
         DetachCombatEvents();
+        tutorialUI?.Hide();   // 전투 단계 UI가 결과창 위에 남지 않도록(§6). 결과 UI는 OnBattleResultShown에서 새로 표시.
     }
 
     // --- 내부 헬퍼 ---

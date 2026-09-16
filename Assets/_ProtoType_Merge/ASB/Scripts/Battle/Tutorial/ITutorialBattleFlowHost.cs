@@ -28,4 +28,13 @@ public interface ITutorialBattleFlowHost
 
     /// <summary>행동 도중 감지(HP/사망)를 다음 안전 경계에서 1회 실행하도록 예약.</summary>
     void RequestBoundaryIntervention(Action intervention);
+
+    /// <summary>UI 시트의 key로 튜토리얼 UI 표시. 표시 성공=true, 시트/키/참조 없음=false(잠금 미획득).</summary>
+    bool ShowUi(string key);
+
+    /// <summary>동적 문구용. string.Format 실패 시 경고 후 false.</summary>
+    bool ShowUi(string key, params object[] formatArgs);
+
+    /// <summary>현재 튜토리얼 UI 숨김.</summary>
+    void HideUi();
 }

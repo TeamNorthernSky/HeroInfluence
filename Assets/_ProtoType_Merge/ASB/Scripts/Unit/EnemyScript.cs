@@ -222,7 +222,8 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             case EnemyActionType.ClassSkill:
                 if (highlightSkill != null)
                 {
-                    yield return StartCoroutine(battleManager.ExecuteGridSkill(self, target, highlightSkill));
+                    // 적(this)이 자기 공격 도중 반격으로 파괴돼도 코루틴이 끊기지 않도록 BattleManager를 호스트로 사용한다.
+                    yield return battleManager.StartCoroutine(battleManager.ExecuteGridSkill(self, target, highlightSkill));
                 }
                 else
                 {
@@ -233,7 +234,8 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             case EnemyActionType.WeaponSkill:
                 if (highlightSkill != null)
                 {
-                    yield return StartCoroutine(battleManager.ExecuteGridSkill(self, target, highlightSkill));
+                    // 적(this)이 자기 공격 도중 반격으로 파괴돼도 코루틴이 끊기지 않도록 BattleManager를 호스트로 사용한다.
+                    yield return battleManager.StartCoroutine(battleManager.ExecuteGridSkill(self, target, highlightSkill));
                 }
                 else
                 {

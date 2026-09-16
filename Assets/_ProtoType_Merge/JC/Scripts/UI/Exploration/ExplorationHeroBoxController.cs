@@ -35,14 +35,24 @@ public class ExplorationHeroBoxController : MonoBehaviour
     private int selectedPartyIndex;
     // [JC 260625] slots 길이에 맞춰 Awake에서 할당(고정 4 → IndexOutOfRange 방지). slots 5+ 설정해도 안전.
     private int[] boundUnits = System.Array.Empty<int>();
+    private GameObject[] ipMaxIcons = System.Array.Empty<GameObject>();
     private EconomyManager subEco; // 갱신 트리거(자원/IP 변동) 용
     private float nextRefresh;     // [JC 260616] 스탯/HP/IP 변동 주기적 재반영 타이머
 
     private void Awake()
     {
         boundUnits = new int[slots != null ? slots.Length : 0];
+        ipMaxIcons = new GameObject[boundUnits.Length];
         for (int i = 0; i < slots.Length; i++)
         {
+            if (slots[i]?.root != null)
+                foreach (var child in slots[i].root.GetComponentsInChildren<Transform>(true))
+                    if (child.name == "UI_icon_max")
+                    {
+                        ipMaxIcons[i] = child.gameObject;
+                        ipMaxIcons[i].SetActive(false);
+                        break;
+                    }
             int ci = i;
             if (slots[i]?.button != null) slots[i].button.onClick.AddListener(() => OnSlotClicked(ci));
         }
@@ -91,7 +101,11 @@ public class ExplorationHeroBoxController : MonoBehaviour
             bool active = i < members.Count;
             if (slot.root != null) slot.root.SetActive(active);
             boundUnits[i] = active ? members[i] : 0;
-            if (!active) continue;
+            if (!active)
+            {
+                if (ipMaxIcons[i] != null) ipMaxIcons[i].SetActive(false);
+                continue;
+            }
 
             int unitIndex = members[i];
             UnitPersistentData unit = null;
@@ -117,6 +131,8 @@ public class ExplorationHeroBoxController : MonoBehaviour
                 // [KJ 260909] hpText 미연결(게이지만 쓰는 카드)에서도 게이지가 갱신되도록 값 계산을 블록 밖으로 분리
                 if (slot.hpFill != null) slot.hpFill.fillAmount = max > 0f ? Mathf.Clamp01(cur / max) : 0f;
             }
+            if (ipMaxIcons[i] != null)
+                ipMaxIcons[i].SetActive(unit != null && IsIpAtMax(unit.CurrentInfluence, unit.IngameStats.Influence));
             if (slot.ipText != null)
             {
                 // [JC 260616] IP 표기 = 유닛 CurrentInfluence/IngameStats.Influence 일원화(PublicityManager 의존 제거)
@@ -126,6 +142,9 @@ public class ExplorationHeroBoxController : MonoBehaviour
             }
         }
     }
+
+    private static bool IsIpAtMax(float current, float maximum)
+        => maximum > 0f && current >= maximum;
 
     private void OnSlotClicked(int i)
     {

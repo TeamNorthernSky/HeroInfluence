@@ -210,9 +210,82 @@ public sealed class TutorialBattleArchitectureTests
             Is.EqualTo(4f).Within(0.001f));
     }
 
-    // NOTE: TutorialBattleFlowRegistry 검증(§20)은 이 Editor 테스트 어셈블리가 게임플레이 런타임
-    //       어셈블리를 직접 참조하지 않으므로(다른 테스트는 FindRuntimeType 리플렉션 사용) 여기서 생략.
-    //       asmdef 참조 정리 또는 리플렉션 기반으로 별도 추가 예정.
+    // NOTE: 이 EditMode 어셈블리는 런타임(Assembly-CSharp)을 직접 참조하지 못하므로 리플렉션(FindRuntimeType) 사용.
+    //       ShowBlockingUi fail-open의 실제 데드락 회피는 BattleFlowManager 실인스턴스가 필요해 PlayMode 테스트로 별도 예정.
+
+    [Test]
+    public void UiCatalog_Find_ExactThenWildcard_Ordinal()
+    {
+        Type sheetType = FindRuntimeType("TutorialUiSheet");
+        Type catalogType = FindRuntimeType("TutorialUiCatalog");
+
+        ScriptableObject exact = MakeSheet(sheetType, 5, "TUT_A");
+        ScriptableObject wild = MakeSheet(sheetType, -1, "TUT_B");
+        ScriptableObject catalog = ScriptableObject.CreateInstance(catalogType);
+        try
+        {
+            var sheets = (System.Collections.IList)catalogType
+                .GetField("sheets", AllInstance).GetValue(catalog);
+            sheets.Add(exact);
+            sheets.Add(wild);
+
+            MethodInfo find = catalogType.GetMethod("Find");
+            Assert.That(find.Invoke(catalog, new object[] { 5, "TUT_A" }), Is.SameAs(exact), "정확 (zone,key)");
+            Assert.That(find.Invoke(catalog, new object[] { 9, "TUT_A" }), Is.Null, "다른 zone·와일드카드 없음");
+            Assert.That(find.Invoke(catalog, new object[] { 9, "TUT_B" }), Is.SameAs(wild), "zone 와일드카드(-1)");
+            Assert.That(find.Invoke(catalog, new object[] { 5, "tut_a" }), Is.Null, "Ordinal 대소문자 구분");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(exact);
+            UnityEngine.Object.DestroyImmediate(wild);
+            UnityEngine.Object.DestroyImmediate(catalog);
+        }
+    }
+
+    [Test]
+    public void UiSheet_CollectValidationIssues_DetectsDupEmptyAndBadView()
+    {
+        Type sheetType = FindRuntimeType("TutorialUiSheet");
+        Type entryType = FindRuntimeType("TutorialUiEntry");
+        ScriptableObject sheet = ScriptableObject.CreateInstance(sheetType);
+        try
+        {
+            var entries = (System.Collections.IList)sheetType
+                .GetField("entries", AllInstance).GetValue(sheet);
+            entries.Add(MakeEntry(entryType, "dup", "guide"));
+            entries.Add(MakeEntry(entryType, "dup", "guide"));   // 중복 key
+            entries.Add(MakeEntry(entryType, "", "guide"));       // 빈 key
+            entries.Add(MakeEntry(entryType, "x", "dialogue"));   // 미지원 viewId
+
+            var issues = new List<string>();
+            sheetType.GetMethod("CollectValidationIssues").Invoke(sheet, new object[] { issues });
+
+            Assert.That(issues.Exists(s => s.Contains("중복")), Is.True, "중복 key 검출");
+            Assert.That(issues.Exists(s => s.Contains("빈 key")), Is.True, "빈 key 검출");
+            Assert.That(issues.Exists(s => s.Contains("viewId")), Is.True, "미지원 viewId 검출");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(sheet);
+        }
+    }
+
+    private static ScriptableObject MakeSheet(Type sheetType, int zoneId, string battleKey)
+    {
+        ScriptableObject sheet = ScriptableObject.CreateInstance(sheetType);
+        sheetType.GetField("zoneId", AllInstance).SetValue(sheet, zoneId);
+        sheetType.GetField("battleKey", AllInstance).SetValue(sheet, battleKey);
+        return sheet;
+    }
+
+    private static object MakeEntry(Type entryType, string key, string viewId)
+    {
+        object e = Activator.CreateInstance(entryType);
+        entryType.GetField("key").SetValue(e, key);
+        entryType.GetField("viewId").SetValue(e, viewId);
+        return e;
+    }
 
     private static Component CreateInitializedUnit(
         GameObject gameObject,

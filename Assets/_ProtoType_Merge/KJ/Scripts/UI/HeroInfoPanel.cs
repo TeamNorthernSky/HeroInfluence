@@ -1,24 +1,36 @@
-using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class HeroInfoPanel : MonoBehaviour
 {
+    [Tooltip("현재 행동 유닛과 턴 시작 이벤트를 제공하는 전투 흐름입니다.")]
     [SerializeField] private BattleFlowManager flowManager;
+    [Tooltip("기존 씬의 초상화 생성 부모입니다. Portrait Image가 연결되어 있으면 사용하지 않습니다.")]
     [SerializeField] private Transform portrait;
+    [Tooltip("현재 행동 유닛의 이름을 표시합니다.")]
     [SerializeField] private TMP_Text nameText;
+    [Tooltip("현재 행동 유닛의 레벨에서 계산한 랭크를 표시합니다.")]
     [SerializeField] private TMP_Text rankText;
+    [Tooltip("현재 HP와 최대 HP를 표시합니다.")]
     [SerializeField] private TMP_Text hpText;
+    [Tooltip("현재 IP를 표시합니다. Show Max Ip를 켜면 최대 IP도 표시합니다.")]
     [SerializeField] private TMP_Text ipText;
+    [Tooltip("HP 비율을 0~1 Fill Amount로 표시합니다. Image Type은 Filled를 사용합니다.")]
     [SerializeField] private UnityEngine.UI.Image hpGauge;
+    [Tooltip("기존 씬의 IP 게이지입니다. 새 하단 UI는 숫자만 표시하므로 비워 둡니다.")]
     [SerializeField] private UnityEngine.UI.Image ipGauge;
 
     private BattleCharactor currentUnit;
-    private Image portraitImage; // [JC 260621] RawImage→Image (PortraitLibrary Sprite 직접 사용)
+    [Tooltip("씬에 미리 배치한 초상화 Image입니다. 연결하면 실행 중 초상화 오브젝트를 생성하거나 배치를 변경하지 않습니다.")]
+    [SerializeField] private Image portraitImage;
+    [Tooltip("켜면 현재 IP / 최대 IP로 표시합니다. 끄면 현재 IP만 표시합니다. 기존 씬 호환용 기본값은 켜짐입니다.")]
+    [SerializeField] private bool showMaxIp = true;
 
     private void Awake()
     {
+        if (portraitImage != null) return;
+
         if (portrait != null)
         {
             GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(Image));
@@ -36,7 +48,10 @@ public class HeroInfoPanel : MonoBehaviour
     {
         if (flowManager == null) flowManager = FindFirstObjectByType<BattleFlowManager>();
         if (flowManager != null)
+        {
             flowManager.OnTurnStarted += OnTurnStarted;
+            OnTurnStarted(0, flowManager.CurrentUnit);
+        }
     }
 
     private void OnDisable()
@@ -79,7 +94,11 @@ public class HeroInfoPanel : MonoBehaviour
             if (rankText != null) rankText.text = "-";
             if (hpText != null) hpText.text = "-";
             if (ipText != null) ipText.text = "-";
-            if (portraitImage != null) portraitImage.sprite = null;
+            if (portraitImage != null)
+            {
+                portraitImage.sprite = null;
+                portraitImage.enabled = false;
+            }
             if (hpGauge != null) hpGauge.fillAmount = 0f;
             if (ipGauge != null) ipGauge.fillAmount = 0f;
             return;
@@ -107,7 +126,6 @@ public class HeroInfoPanel : MonoBehaviour
         if (hpGauge != null)
         {
             hpGauge.fillAmount = max > 0f ? Mathf.Clamp01(current / max) : 0f;
-            Debug.Log($" HpGauge Percent : { hpGauge.fillAmount}");
         }
         
     }
@@ -115,7 +133,7 @@ public class HeroInfoPanel : MonoBehaviour
     private void UpdateIpText(float current, float max)
     {
         if (ipText != null)
-            ipText.text = $"{(int)current} / {(int)max}";
+            ipText.text = showMaxIp ? $"{(int)current} / {(int)max}" : $"{(int)current}";
         if (ipGauge != null)
             ipGauge.fillAmount = max > 0f ? Mathf.Clamp01(current / max) : 0f;
     }
@@ -124,10 +142,14 @@ public class HeroInfoPanel : MonoBehaviour
     {
         if (portraitImage == null || currentUnit == null) return;
 
-        // [JC 260621] 포트레이트 = PortraitLibrary(키=HeroIndex). 적/빌런은 SourceData null → Unselected.
-        Sprite sp = currentUnit.SourceData != null
-            ? Sprites.Portrait.Hero(currentUnit.SourceData.UnitTemplateKey)
-            : Sprites.Portrait.Unselected;
+        // 턴 순서 UI와 같은 초상화 라이브러리를 사용합니다.
+        Sprite sp;
+        if (!currentUnit.IsPlayer)
+            sp = Sprites.Portrait.Enemy(currentUnit.SourceEnemyData != null ? currentUnit.SourceEnemyData.UnitTemplateKey : null);
+        else
+            sp = currentUnit.SourceData != null
+                ? Sprites.Portrait.Hero(currentUnit.SourceData.UnitTemplateKey)
+                : Sprites.Portrait.Unselected;
         portraitImage.sprite = sp;
         portraitImage.enabled = sp != null;
     }

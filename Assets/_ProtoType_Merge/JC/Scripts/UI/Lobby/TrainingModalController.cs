@@ -32,6 +32,10 @@ public class TrainingModalController : MonoBehaviour
     public class StatRow
     {
         public TrainingStat stat;
+        public Button cardButton;
+        public Image cardImage;
+        public TMP_Text levelText;
+        public Sprite categorySprite;
         public Image categoryIcon;              // 분류 아이콘(공격력/생명력)
         public LobbyTooltipTrigger categoryTooltip;
         public StageCell[] stages = new StageCell[3];
@@ -69,6 +73,12 @@ public class TrainingModalController : MonoBehaviour
     [SerializeField] private string hpCategoryTip  = "생명력을 강화합니다.";
     [SerializeField] private string lockedStageTip = "훈련실 업그레이드 필요";
 
+    [Header("훈련 카드 표시")]
+    [SerializeField] private Sprite cardNormalSprite;
+    [SerializeField] private Sprite cardSelectedSprite;
+    [SerializeField] private Sprite gaugeEmptySprite;
+    [SerializeField] private Sprite gaugeFilledSprite;
+
     private int selectedUnitIndex = -1;
     private int selRow = -1;        // 선택된 행 인덱스
     private int selStageLevel = -1; // 선택된 도달 레벨(1~MaxTrainingLevel)
@@ -102,10 +112,13 @@ public class TrainingModalController : MonoBehaviour
         {
             var row = rows[r];
             if (row == null) continue;
+            int rowIndex = r;
+            if (row.cardButton != null)
+                row.cardButton.onClick.AddListener(() => OnTrainingCardClicked(rowIndex));
             if (row.categoryIcon != null)
             {
                 // [JC 260625] 분류 아이콘 = UIIconLibrary facade로 일원화(옛 직접 경로 로드 폐지)
-                var sp = Sprites.UI.Status(row.stat == TrainingStat.Attack ? UIStatusIconType.ATK : UIStatusIconType.HP);
+                var sp = row.categorySprite != null ? row.categorySprite : Sprites.UI.Status(row.stat == TrainingStat.Attack ? UIStatusIconType.ATK : UIStatusIconType.HP);
                 row.categoryIcon.sprite = sp; row.categoryIcon.enabled = sp != null;
             }
             if (row.categoryTooltip != null)
@@ -188,6 +201,14 @@ public class TrainingModalController : MonoBehaviour
         Refresh();
     }
 
+    // 카드의 어느 부분을 눌러도 기존 다음 단계 선택 규칙을 사용한다.
+    public void OnTrainingCardClicked(int rowIndex)
+    {
+        var training = GameManager.Instance != null ? GameManager.Instance.Training : null;
+        if (training == null || selectedUnitIndex < 0 || rowIndex < 0 || rowIndex >= rows.Count) return;
+        OnStageCellClicked(rowIndex, training.GetLevel(selectedUnitIndex, rows[rowIndex].stat), false);
+    }
+
     // ─── 단계 선택/해제 (핸들러 콜백) ───────────────────────────
     public void OnStageCellClicked(int rowIndex, int stageIndex, bool isRight)
     {
@@ -198,9 +219,10 @@ public class TrainingModalController : MonoBehaviour
         var stat = rows[rowIndex].stat;
         int level = gm.Training.GetLevel(selectedUnitIndex, stat);
         int maxLv = gm.Training.GetMaxTrainableLevel();
-        int stageLevel = stageIndex + 1;
+        int stageLevel = rows[rowIndex].cardImage != null ? level + 1 : stageIndex + 1;
         // 다음 강화 가능 단계만 선택 가능
         if (!(level + 1 == stageLevel && level < maxLv)) return;
+        completionMsgUntil = 0f;
         // 토글
         if (selRow == rowIndex && selStageLevel == stageLevel) ClearSelection();
         else { selRow = rowIndex; selStageLevel = stageLevel; }
@@ -214,11 +236,7 @@ public class TrainingModalController : MonoBehaviour
 
     private void ClearSelection() { selRow = -1; selStageLevel = -1; }
 
-    private void OnCancel()
-    {
-        if (selRow >= 0) { ClearSelection(); Refresh(); }
-        else CloseModal();
-    }
+    private void OnCancel() => CloseModal();
 
     private void OnConfirm()
     {
@@ -293,6 +311,8 @@ public class TrainingModalController : MonoBehaviour
             var row = rows[r];
             if (row == null) continue;
             int level = hasHero ? tm.GetLevel(selectedUnitIndex, row.stat) : 0;
+            if (row.levelText != null) row.levelText.text = hasHero ? $"Lv{level}" : "Lv—";
+            if (row.cardImage != null) row.cardImage.sprite = selRow == r ? cardSelectedSprite : cardNormalSprite;
             float[] gains = ToArray(row.stat == TrainingStat.Attack ? tm.AtkGainPerLevel : tm.HpGainPerLevel);
 
             if (row.stages == null) continue;
@@ -306,10 +326,12 @@ public class TrainingModalController : MonoBehaviour
                 bool deptLocked = stageLevel > maxLv; // 부서 레벨 부족
                 bool isSel = selRow == r && selStageLevel == stageLevel;
 
-                Sprite fs = isSel ? sSel : (filled ? sFin : (deptLocked ? sLock : sEmpty));
+                bool cardLayout = row.cardImage != null;
+                Sprite fs = cardLayout ? (filled ? gaugeFilledSprite : gaugeEmptySprite)
+                    : (isSel ? sSel : (filled ? sFin : (deptLocked ? sLock : sEmpty)));
                 if (cell.frame != null) { cell.frame.sprite = fs; cell.frame.enabled = fs != null; }
-                if (cell.finishedMark != null) cell.finishedMark.SetActive(filled && !isSel);
-                if (cell.lockMark != null) cell.lockMark.SetActive(deptLocked);
+                if (cell.finishedMark != null) cell.finishedMark.SetActive(!cardLayout && filled && !isSel);
+                if (cell.lockMark != null) cell.lockMark.SetActive(!cardLayout && deptLocked);
 
                 // 단계 툴팁
                 if (cell.tooltip != null)
@@ -343,6 +365,10 @@ public class TrainingModalController : MonoBehaviour
                 string msg = null;
                 if (!unlocked) msg = "트레이닝 기능이 활성화되지 않았습니다.";
                 else if (!hasHero) msg = "영웅을 선택해 주세요.";
+                else if (!showCost) msg = "진행할 트레이닝을\n선택해 주세요.";
+                else if (reqM < 0) msg = "훈련실 레벨을 확인해 주세요.";
+                else if (!gm.Economy.Has(ResourceType.Money, reqM)) msg = "트레이닝에 필요한\n자금이 부족합니다.";
+                else msg = "트레이닝을\n진행하시겠습니까?";
                 stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
                 if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;
             }

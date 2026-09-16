@@ -14,25 +14,40 @@ public static class BattleResultPersistenceHandler
         IReadOnlyList<BattleCharactor> enemyUnits,
         BattleResult result)
     {
+        float defeatedEnemyExperience = 0f;
+        if (result == BattleResult.Victory && enemyUnits != null)
+        {
+            foreach (BattleCharactor enemy in enemyUnits)
+            {
+                if (enemy != null && enemy.IsDead)
+                    defeatedEnemyExperience += Mathf.Max(0f, enemy.ExperienceReward);
+            }
+        }
+
+        return BuildBattleRewardPlan(playerUnits, result, defeatedEnemyExperience);
+    }
+
+    /// <summary>
+    /// 전투 시작 시 확정한 적 스폰 계획의 총 EXP를 사용해 보상을 계산합니다.
+    /// Unity 오브젝트의 파괴 시점과 무관하게 동일한 승리 보상을 보장합니다.
+    /// </summary>
+    public static BattleRewardPlan BuildBattleRewardPlan(
+        IReadOnlyList<BattleCharactor> playerUnits,
+        BattleResult result,
+        float victoryEnemyExperience)
+    {
         var plan = new BattleRewardPlan { Result = result };
 
         if (playerUnits == null)
             return plan;
 
-        float influenceRatio = result == BattleResult.Victory ? 1.1f : 0.9f;
-
         // Victory: EXP 계산
         int expPerUnit = 0;
         var survivors = new List<BattleCharactor>();
 
-        if (result == BattleResult.Victory && enemyUnits != null)
+        if (result == BattleResult.Victory)
         {
-            float totalExp = 0f;
-            foreach (var enemy in enemyUnits)
-            {
-                if (enemy != null && enemy.IsDead)
-                    totalExp += enemy.ExperienceReward;
-            }
+            float totalExp = Mathf.Max(0f, victoryEnemyExperience);
 
             foreach (var player in playerUnits)
             {
@@ -53,9 +68,10 @@ public static class BattleResultPersistenceHandler
             UnitPersistentData src = player.SourceData;
             bool isSurvivor = survivors.Contains(player);
             int gainedExp = isSurvivor ? expPerUnit : 0;
-            int newLevel = gainedExp > 0
-                ? PersistentUnitRepository.SimulateFinalLevel(src, gainedExp)
-                : src.Level;
+            PersistentUnitRepository.SimulateExpProgress(src, 0,
+                out _, out int oldExp, out int oldMaxExp);
+            PersistentUnitRepository.SimulateExpProgress(src, gainedExp,
+                out int newLevel, out int newExp, out int newMaxExp);
 
             // 임시: UnitGrowthExpData 기반 스터디 스킬 경로 사용
             // TODO: LevelUpData.skill + SkillData.acquireLevel 데이터 정비 후 아래로 교체
@@ -79,6 +95,11 @@ public static class BattleResultPersistenceHandler
                 OldLevel                = src.Level,
                 NewLevel                = newLevel,
                 GainedExp               = gainedExp,
+                HasExpPreview           = true,
+                OldExp                  = oldExp,
+                OldMaxExp               = oldMaxExp,
+                NewExp                  = newExp,
+                NewMaxExp               = newMaxExp,
                 CurrentClassSkillId     = player.ClassSkillIndex > 0 ? player.ClassSkillIndex : src.CurrentSkillIndex,
                 OldInfluence            = oldInfluence,
                 NewInfluence            = newInfluence,

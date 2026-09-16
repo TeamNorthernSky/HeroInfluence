@@ -40,8 +40,12 @@ public class EnemySpawner : MonoBehaviour
     private BattleLogicalSlotMap eventSlotMap;
     private bool hierarchyReady;
     private bool prefabCatalogMismatchReported;
+    private float lastSpawnPlanTotalExperience;
+    private bool hasSuccessfulSpawnPlanRewardSnapshot;
 
     public Transform GridRoot => transform;
+    public float LastSpawnPlanTotalExperience => lastSpawnPlanTotalExperience;
+    public bool HasSuccessfulSpawnPlanRewardSnapshot => hasSuccessfulSpawnPlanRewardSnapshot;
 
     private void Awake()
     {
@@ -51,6 +55,8 @@ public class EnemySpawner : MonoBehaviour
         eventSlotMap = null;
         unitParent = null;
         hierarchyReady = false;
+        lastSpawnPlanTotalExperience = 0f;
+        hasSuccessfulSpawnPlanRewardSnapshot = false;
 
         unitParent = transform.Find("UnitContainer");
         if (unitParent == null)
@@ -464,6 +470,9 @@ public class EnemySpawner : MonoBehaviour
         if (!hierarchyReady)
             Awake();
 
+        lastSpawnPlanTotalExperience = 0f;
+        hasSuccessfulSpawnPlanRewardSnapshot = false;
+
         if (plan == null || plan.Count == 0)
         {
             Debug.LogError($"[EnemySpawner] Spawn plan is empty. context={contextLabel}", this);
@@ -547,6 +556,12 @@ public class EnemySpawner : MonoBehaviour
         // Phase B: 전원 검증 성공 → Instantiate.
         for (int i = 0; i < count; i++)
             SpawnPlanEntry(combatEntries[i], resolvedSlots[i], resolvedPrefabs[i]);
+
+        // 전투 중 적 오브젝트가 제거돼도 보상 계산이 가능하도록 실제 스폰 대상의 EXP를 순수 값으로 보관한다.
+        // 인질 시나리오에서 combatEntries는 인질 원본을 이미 제외한 목록이다.
+        for (int i = 0; i < combatEntries.Count; i++)
+            lastSpawnPlanTotalExperience += Mathf.Max(0f, combatEntries[i].Data.ExperiencePoint);
+        hasSuccessfulSpawnPlanRewardSnapshot = true;
 
         return true;
     }

@@ -49,9 +49,13 @@ namespace JC.Env
 
         private void LateUpdate()
         {
+            // 새 설정 컨트롤러가 연결된 Volume은 그쪽이 초점과 효과를 함께 소유합니다.
+            // 다른 씬의 기존 추적기 및 컨트롤러 비활성 시에는 기존 동작을 유지합니다.
+            if (JcDofController.IsDriving(_volume)) return;
             var cam = targetCamera != null ? targetCamera : Camera.main;
             if (cam == null || _volume == null) return;
-            if (_dof == null && !_volume.profile.TryGet(out _dof)) return;
+            // 컨트롤러 해제/프로파일 교체 후 이전 사본을 계속 쓰지 않습니다.
+            if (!_volume.profile.TryGet(out _dof)) return;
 
             // 화면 중앙 시선 ∩ 바닥 평면
             var ray = new Ray(cam.transform.position, cam.transform.forward);

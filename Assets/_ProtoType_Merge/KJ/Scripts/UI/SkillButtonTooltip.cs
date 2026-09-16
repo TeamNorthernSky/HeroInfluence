@@ -4,15 +4,15 @@ using UnityEngine.EventSystems;
 public enum SkillButtonType { ClassSkill, WeaponSkill }
 
 /// <summary>
-/// [JC 260622] 전투 스킬버튼(클래스/무기스킬) 호버 툴팁.
-/// 기존 KJ HoverTooltip(단순 title+desc) 대신, HeroInfoModal과 "동일한" 리치 SkillTooltip
-/// (아이콘 + 이름 Lv.n + 계수 치환 desc)을 표시한다.
-/// SkillTooltip은 영속 싱글턴 — 배틀 씬에 SkillTooltip.prefab을 배치해 두어야 동작(없으면 no-op).
+/// 고정 설명 컨트롤러가 연결된 전투 버튼은 호버 상태만 전달합니다.
+/// 연결하지 않은 기존 씬은 공용 DDOL SkillTooltip(아이콘·이름·설명)을 계속 사용합니다.
 /// </summary>
 public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private SkillButtonType skillType = SkillButtonType.ClassSkill;
     [SerializeField] private BattleFlowManager battleFlowManager;
+    [Tooltip("전투씬 하단 우측 고정 설명을 관리합니다. 연결하면 공용 DDOL 툴팁을 호출하지 않습니다. 기존 씬은 비워 둡니다.")]
+    [SerializeField] private SkillButtonController fixedDescription;
 
     [Tooltip("[JC 260622] 툴팁 표시 위치 오프셋(버튼 중앙 기준, X 우+/Y 상+). 전투 스킬버튼이 화면 우하단이라 위로 띄우려면 X 음수·Y 양수. 에디터에서 직접 조정.")]
     [SerializeField] private Vector2 tooltipOffset = new Vector2(-250f, 350f);
@@ -32,6 +32,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     private void OnEnable()
     {
+        if (fixedDescription != null) return;
         if (battleFlowManager != null)
             battleFlowManager.OnTurnStarted += OnTurnStarted;
     }
@@ -60,6 +61,13 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     private void ShowTip()
     {
+        var button = GetComponent<UnityEngine.UI.Button>();
+        if (fixedDescription != null)
+        {
+            fixedDescription.SetDescriptionHover(button, true);
+            return;
+        }
+        if (button != null && !button.interactable) return;
         var tip = SkillTooltip.Instance;
         if (tip == null || currentUnit == null) return;
 
@@ -103,6 +111,11 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     private void HideTip()
     {
+        if (fixedDescription != null)
+        {
+            fixedDescription.SetDescriptionHover(GetComponent<UnityEngine.UI.Button>(), false);
+            return;
+        }
         var tip = SkillTooltip.Instance;
         if (tip != null) tip.Hide();
     }

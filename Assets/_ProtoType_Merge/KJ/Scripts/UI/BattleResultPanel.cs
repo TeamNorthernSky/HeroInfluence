@@ -15,6 +15,8 @@ public class BattleResultPanel : MonoBehaviour
     // [JC 260628] 스킬 획득 창 순차 표시용(한 번에 하나씩, 전열→후열 순)
     private readonly List<SkillSelectionPanel> skillQueue = new List<SkillSelectionPanel>();
     private int currentSkillIndex = 0;
+    private Button boundAcceptButton;
+    private bool accepted;
 
     // [KJ 260729] 스킬 획득 창이 전부 사라진 뒤에 결과 내용을 노출한다.
     //   기존에는 결과 패널 위에 스킬 창이 겹쳐 떠 있었다(GetSkillParent가 결과 패널의 자식이고
@@ -24,6 +26,9 @@ public class BattleResultPanel : MonoBehaviour
 
     public void Show(BattleResult result, BattleRewardPlan plan)
     {
+        foreach (var slot in skillQueue)
+            if (slot != null) { slot.gameObject.SetActive(false); Destroy(slot.gameObject); }
+        accepted = false;
         skillResults.Clear();
         pendingSlotCount = 0;
         skillQueue.Clear();
@@ -34,10 +39,19 @@ public class BattleResultPanel : MonoBehaviour
         BattleResultView view = GetComponent<BattleResultView>();
         if (view == null) return;
 
+        if (view.resultTitle != null)
+        {
+            view.resultTitle.sprite = result == BattleResult.Victory ? view.victoryTitle : view.defeatTitle;
+            view.resultTitle.enabled = view.resultTitle.sprite != null;
+        }
+        if (view.resultContent != null) view.resultContent.SetActive(true);
+        if (boundAcceptButton != null) boundAcceptButton.onClick.RemoveListener(Accept);
+        boundAcceptButton = view.acceptButton;
+
         if (view.acceptButton != null)
         {
             view.acceptButton.gameObject.SetActive(false);
-            view.acceptButton.onClick.AddListener(() => OnAccepted?.Invoke());
+            view.acceptButton.onClick.AddListener(Accept);
         }
 
         // [JC 260628] 아군 표시 순서 = 전열→후열(PartyFormation 공용 규약). 전력평가·탐사 HeroBtn과 일치.
@@ -59,6 +73,15 @@ public class BattleResultPanel : MonoBehaviour
     private void HideResultContent(BattleResultView view)
     {
         hiddenResultContent.Clear();
+        if (view.resultContent != null)
+        {
+            if (view.resultContent.activeSelf)
+            {
+                view.resultContent.SetActive(false);
+                hiddenResultContent.Add(view.resultContent);
+            }
+            return;
+        }
         foreach (Transform child in transform)
         {
             // skillSlotParent가 계층 어디에 있어도 그 조상은 끄지 않는다(스킬 창까지 같이 꺼지므로).
@@ -80,6 +103,32 @@ public class BattleResultPanel : MonoBehaviour
 
     private void BuildSlots(BattleRewardPlan plan, BattleResultView view, IReadOnlyList<int> orderedUnitIndices)
     {
+        if (view.sceneHeroSlots != null && view.sceneHeroSlots.Length > 0)
+        {
+            foreach (var card in view.sceneHeroSlots)
+                if (card != null) { card.ClearDisplay(); card.gameObject.SetActive(false); }
+
+            // 전후열 순서를 유지하되, 모의 전투/누락 context에서도 preview를 버리지 않는다.
+            var indices = new List<int>();
+            if (orderedUnitIndices != null)
+                foreach (int index in orderedUnitIndices)
+                    if (index != 0 && !indices.Contains(index)) indices.Add(index);
+            if (plan?.UnitPreviews != null)
+                foreach (var preview in plan.UnitPreviews)
+                    if (preview != null && !indices.Contains(preview.UnitIndex)) indices.Add(preview.UnitIndex);
+            if (indices.Count > view.sceneHeroSlots.Length)
+                Debug.LogWarning("[BattleResult] 4인 파티 사양보다 많은 결과 유닛이 전달되었습니다.");
+            for (int i = 0; i < indices.Count && i < view.sceneHeroSlots.Length; i++)
+            {
+                var card = view.sceneHeroSlots[i];
+                if (card == null) continue;
+                card.gameObject.SetActive(true);
+                var preview = plan?.UnitPreviews?.Find(p => p != null && p.UnitIndex == indices[i]);
+                if (preview != null) card.Apply(preview);
+                else card.ShowWithoutReward(indices[i]);
+            }
+            return;
+        }
         if (view.heroIndex == null || view.heroInfoResultPrefab == null) return;
 
         foreach (Transform child in view.heroIndex)
@@ -166,4 +215,16 @@ public class BattleResultPanel : MonoBehaviour
     }
 
     public List<SkillSelectionResult> GetSkillResults() => skillResults;
+
+    private void Accept()
+    {
+        if (accepted || pendingSlotCount > 0) return;
+        accepted = true;
+        OnAccepted?.Invoke();
+    }
+
+    private void OnDestroy()
+    {
+        if (boundAcceptButton != null) boundAcceptButton.onClick.RemoveListener(Accept);
+    }
 }

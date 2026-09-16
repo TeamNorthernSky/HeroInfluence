@@ -33,6 +33,40 @@ public class LabModalController : MonoBehaviour
     public class SkillRow
     {
         public GameObject rowRoot;
+        public Image cardImage;
+        public TMP_Text nameText;
+        public TMP_Text levelText;
+        public Image firstLevelGauge;
+
+        // Optional compact-card presentation; legacy prefabs retain the stage-icon layout.
+        public void RefreshCard(string skillName, int level, bool learned, bool enhanceable, bool selected,
+            Sprite normal, Sprite highlighted, Sprite empty, Sprite filled)
+        {
+            if (cardImage == null) return;
+            cardImage.sprite = selected ? highlighted : normal;
+            if (nameText != null) { nameText.text = skillName; nameText.color = selected ? Color.white : Color.black; }
+            if (levelText != null) { levelText.text = learned ? $"Lv{level}" : "미습득"; levelText.color = selected ? Color.white : Color.black; }
+            if (firstLevelGauge != null)
+            {
+                firstLevelGauge.gameObject.SetActive(enhanceable);
+                firstLevelGauge.sprite = learned ? filled : empty;
+            }
+            if (stages == null) return;
+            for (int k = 0; k < stages.Length; k++)
+            {
+                var cell = stages[k];
+                if (cell == null) continue;
+                if (cell.root != null) cell.root.SetActive(enhanceable);
+                if (cell.frame != null)
+                {
+                    cell.frame.sprite = learned && level >= k + 2 ? filled : empty;
+                    cell.frame.enabled = true;
+                }
+                if (cell.contentIcon != null) cell.contentIcon.enabled = false;
+                if (cell.finishedMark != null) cell.finishedMark.SetActive(false);
+                if (cell.lockMark != null) cell.lockMark.SetActive(false);
+            }
+        }
         public Button skillButton;              // rep 스킬 아이콘(장착 변경)
         public Image skillIcon;
         public GameObject usingMark;            // 장착중 마크
@@ -71,6 +105,12 @@ public class LabModalController : MonoBehaviour
     [Header("툴팁 문구")]
     [SerializeField] private string lockedStageTip = "연구소 업그레이드 필요";
     [SerializeField] private string notLearnedTip  = "아직 습득하지 않은 스킬";
+
+    [Header("훈련실과 동일한 카드 표시")]
+    [SerializeField] private Sprite cardNormalSprite;
+    [SerializeField] private Sprite cardSelectedSprite;
+    [SerializeField] private Sprite gaugeEmptySprite;
+    [SerializeField] private Sprite gaugeFilledSprite;
 
     private const float CompletionDuration = 5f;
     private float completionMsgUntil;
@@ -379,6 +419,12 @@ public class LabModalController : MonoBehaviour
             //   (구판 'Lv2>0'은 4010힐 0.3·4050광역힐 0.1·4070기적 0.2처럼 평탄한 고정값을 강화로 오판했음)
             bool enhanceable = !Mathf.Approximately(SkillValueAt(skill.NumericSkillId, 1), SkillValueAt(skill.NumericSkillId, 5))
                             || !Mathf.Approximately(SkillSubValueAt(skill.NumericSkillId, 1), SkillSubValueAt(skill.NumericSkillId, 5));
+            if (row.cardImage != null)
+            {
+                row.RefreshCard(SkillName(skill), level, learned, enhanceable, selRow == r,
+                    cardNormalSprite, cardSelectedSprite, gaugeEmptySprite, gaugeFilledSprite);
+                continue;
+            }
             if (row.stages == null) continue;
             for (int k = 0; k < row.stages.Length; k++)
             {

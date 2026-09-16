@@ -51,6 +51,39 @@ public abstract class TutorialBattleFlow : ITutorialBattleFlow
     protected BattleCharactor FindUnit(TutorialUnitSide side, string templateId, UnitMatchMode mode = UnitMatchMode.First)
         => Host?.FindUnit(side, templateId, mode);
 
+    // --- UI ---
+
+    /// <summary>UI 시트 key로 표시(비차단). 표시 성공 여부 반환.</summary>
+    protected bool ShowUi(string key) => Host != null && Host.ShowUi(key);
+
+    /// <summary>동적 문구 UI 표시(string.Format).</summary>
+    protected bool ShowUi(string key, params object[] formatArgs) => Host != null && Host.ShowUi(key, formatArgs);
+
+    /// <summary>현재 UI 숨김.</summary>
+    protected void HideUi() => Host?.HideUi();
+
+    /// <summary>
+    /// FlowLock을 잡고 UI를 띄운다. UI 표시 실패 시 잠금을 즉시 해제(fail-open)하고 false를 반환한다.
+    /// → 작성자가 규칙을 암기할 필요 없이 데드락을 API가 방지한다.
+    /// </summary>
+    protected bool ShowBlockingUi(string key)
+    {
+        if (Host == null)
+        {
+            return false;
+        }
+
+        IDisposable gate = Host.FlowManager.AcquireFlowLock(this);
+        if (!ShowUi(key))
+        {
+            gate.Dispose();   // UI 미표시 → 잠금 잔류 금지
+            return false;
+        }
+
+        Track(gate);          // 성공 시에만 Step 수명으로 추적
+        return true;
+    }
+
     // --- 빈 가상 콜백 (필요한 것만 override) ---
 
     public virtual void OnBattleEntered() { }
