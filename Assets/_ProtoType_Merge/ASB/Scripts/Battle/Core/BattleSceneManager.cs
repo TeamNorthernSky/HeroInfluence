@@ -28,8 +28,6 @@ public class BattleSceneManager : MonoBehaviour
     [Header("Tutorial Battle")]
     [SerializeField] private TutorialBattleDirector tutorialBattleDirector;
     [SerializeField] private TutorialBattleUI tutorialBattleUI;
-    [Tooltip("데이터 드리븐 튜토리얼(스케줄 규칙). 매칭 시 인터프리터 flow 사용. 없으면 코드 flow 폴백.")]
-    [SerializeField] private TutorialScheduleCatalog tutorialScheduleCatalog;
     [Tooltip("이벤트 전투가 아닐 때(씬 직접 진입/테스트) 사용할 튜토리얼 BattleKey. 비면 튜토리얼 미적용.")]
     [SerializeField] private string tutorialBattleKeyOverride;
     [SerializeField, Min(-1)] private int tutorialZoneIdOverride = -1;
@@ -524,8 +522,6 @@ public class BattleSceneManager : MonoBehaviour
     }
 
     // 진입 키 해석(§11.1): 이벤트 전투면 CombatContext, 아니면 씬 override로 계산된 (zoneId, battleKey)를 받는다.
-    // 우선순위: ① 데이터 드리븐 스케줄 시트(있으면 인터프리터 flow) → ② 코드 flow 레지스트리(특수 튜토리얼 폴백).
-    // 카탈로그 미할당/미매칭이면 기존 코드 flow 경로 그대로(순수 추가, 기존 씬 무영향).
     private ITutorialBattleFlow ResolveTutorialFlow(int zoneId, string battleKey)
     {
         if (string.IsNullOrWhiteSpace(battleKey))
@@ -533,18 +529,6 @@ public class BattleSceneManager : MonoBehaviour
             return null;
         }
 
-        // ① 스케줄 시트 우선
-        if (tutorialScheduleCatalog != null)
-        {
-            TutorialScheduleSheet sheet = tutorialScheduleCatalog.Find(zoneId, battleKey);
-            if (sheet != null)
-            {
-                TutorialHookRegistry hooks = TutorialHookProvider.Build(zoneId, battleKey);
-                return new DataDrivenTutorialFlow(sheet, hooks);
-            }
-        }
-
-        // ② 코드 flow 폴백
         if (tutorialFlowRegistry == null)
         {
             tutorialFlowRegistry = TutorialBattleFlowRegistry.CreateDefault();

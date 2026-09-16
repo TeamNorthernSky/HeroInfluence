@@ -671,64 +671,6 @@ public class EnemySpawner : MonoBehaviour
         spawnedByGrid.Remove(gridNumber);
     }
 
-    /// <summary>
-    /// 런타임 스폰 유닛을 그리드 점유·룩업까지 정리하고 파괴한다(튜토리얼 Spawn rollback용, §5-⑦).
-    /// 참가자 등록까지 되어 있었다면 flow 참가 목록에서도 제외한다. 단순 Destroy와 달리
-    /// <c>spawnedByGrid</c>/GridCell 점유 잔류를 남기지 않는다. 성공 시 true.
-    /// </summary>
-    public bool TryDespawnRuntimeUnit(GameObject spawned)
-    {
-        if (spawned == null)
-        {
-            return false;
-        }
-
-        // 역참조로 gridNumber 찾기(등록 실패 롤백이면 방금 넣은 항목).
-        int gridNumber = -1;
-        foreach (KeyValuePair<int, GameObject> kv in spawnedByGrid)
-        {
-            if (kv.Value == spawned)
-            {
-                gridNumber = kv.Key;
-                break;
-            }
-        }
-
-        BattleCharactor bc = spawned.GetComponentInChildren<BattleCharactor>(true);
-        if (bc != null)
-        {
-            // 논리 상태 제거: 참가자로 등록되어 있으면 flow에서 제외(미등록이면 무시된다).
-            if (_flowForRemoval == null)
-            {
-                _flowForRemoval = FindFirstObjectByType<BattleFlowManager>();
-            }
-            _flowForRemoval?.RemoveUnit(bc, refreshQueue: false);
-
-            // 셀 점유 해제.
-            GridCellRef cell = bc.OccupiedCell;
-            if (cell != null && cell.OccupyingUnit == bc)
-            {
-                cell.SetOccupyingUnit(null);
-            }
-            bc.ClearOccupiedCell();
-        }
-
-        if (gridNumber >= 0)
-        {
-            spawnedByGrid.Remove(gridNumber);
-        }
-
-        if (Application.isPlaying)
-        {
-            Destroy(spawned);
-        }
-        else
-        {
-            DestroyImmediate(spawned);
-        }
-        return true;
-    }
-
     [ContextMenu("Debug Spawn Enemies")]
     private void DebugSpawn()
     {

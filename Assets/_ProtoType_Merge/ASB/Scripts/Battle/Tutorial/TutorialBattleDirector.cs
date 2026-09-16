@@ -14,7 +14,6 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
     {
         public IDisposable Handle;
         public TutorialEffectLifetime Lifetime;
-        public string ScopeId;   // 인터프리터 규칙 단위 해제용(null=미지정)
     }
 
     private readonly List<TrackedEffect> trackedEffects = new List<TrackedEffect>();
@@ -130,9 +129,6 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
     }
 
     public void Track(IDisposable handle, TutorialEffectLifetime lifetime)
-        => Track(handle, lifetime, null);
-
-    public void Track(IDisposable handle, TutorialEffectLifetime lifetime, string scopeId)
     {
         if (handle == null)
         {
@@ -145,30 +141,10 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
             return;
         }
 
-        trackedEffects.Add(new TrackedEffect { Handle = handle, Lifetime = lifetime, ScopeId = scopeId });
+        trackedEffects.Add(new TrackedEffect { Handle = handle, Lifetime = lifetime });
     }
 
     public void ReleaseStepEffects() => DisposeEffects(TutorialEffectLifetime.Step);
-
-    public void ReleaseEffects(string scopeId)
-    {
-        if (string.IsNullOrEmpty(scopeId))
-        {
-            return;
-        }
-
-        for (int i = trackedEffects.Count - 1; i >= 0; i--)
-        {
-            if (!string.Equals(trackedEffects[i].ScopeId, scopeId, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            IDisposable handle = trackedEffects[i].Handle;
-            trackedEffects.RemoveAt(i);
-            SafeDispose(handle);
-        }
-    }
 
     /// <summary>전투 종료 시: 전투 영향(Step/Battle/Manual) 효과 해제. ResultPhase는 결과창까지 유지.</summary>
     public void ReleaseCombatEffects()
@@ -236,7 +212,7 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
             }
         }
 
-        return tutorialUI.TryShow(message, entry.highlightActionId);
+        return tutorialUI.TryShow(key, message, entry.highlightActionId);
     }
 
     // --- 결과창(전투 루프 밖) — BattleSceneManager가 호출 ---

@@ -10,7 +10,8 @@ public enum UnitMatchMode
 
 /// <summary>
 /// 튜토리얼 유닛 식별. BattleCharactor.UnitId는 인스턴스 접미사(_InstanceID)가 붙으므로
-/// 그것으로 매칭하면 안 된다. 안정적인 템플릿 ID(적: EnemyScript.Data.Index, 폴백: UnitName)로 판정한다.
+/// 그것으로 매칭하면 안 된다. 안정적인 템플릿 ID로 판정한다:
+/// 적=EnemyScript.Data.Index, 아군=CharactorScript.Data.Index, 최종 폴백=UnitName.
 /// </summary>
 public static class TutorialUnitMatcher
 {
@@ -48,7 +49,16 @@ public static class TutorialUnitMatcher
             return true;
         }
 
-        // 폴백: 접미사 없는 UnitName
+        // 아군: CharactorScript.Data.Index (예: 10001)
+        CharactorScript charactorScript = unit.GetComponent<CharactorScript>();
+        if (charactorScript != null && charactorScript.Data != null &&
+            !string.IsNullOrWhiteSpace(charactorScript.Data.Index) &&
+            string.Equals(charactorScript.Data.Index.Trim(), wanted, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        // 최종 폴백: 접미사 없는 UnitName
         return !string.IsNullOrWhiteSpace(unit.UnitName) &&
                string.Equals(unit.UnitName.Trim(), wanted, StringComparison.Ordinal);
     }

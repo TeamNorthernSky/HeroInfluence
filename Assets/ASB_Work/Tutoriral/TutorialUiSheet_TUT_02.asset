@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 310570ad818439d4c8d9d382bc589a1a, type: 3}
   m_Name: TutorialUiSheet_TUT_02
   m_EditorClassIdentifier: 
-  zoneId: -1
+  zoneId: 2
   battleKey: TUT_02
   entries: []
