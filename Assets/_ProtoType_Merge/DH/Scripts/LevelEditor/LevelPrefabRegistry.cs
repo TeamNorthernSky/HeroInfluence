@@ -57,6 +57,18 @@ public class LevelPrefabRegistry : MonoBehaviour
         tutorialObjectCatalog != null
             ? tutorialObjectCatalog.TutorialObjectPrefabs
             : Array.Empty<TutorialObjectPrefabEntry>();
+    public IReadOnlyList<TutorialObjectPrefabEntry> TutorialEnemyPrefabs =>
+        tutorialObjectCatalog != null
+            ? tutorialObjectCatalog.TutorialEnemyPrefabs
+            : Array.Empty<TutorialObjectPrefabEntry>();
+    public IReadOnlyList<TutorialHeroPrefabEntry> TutorialHeroPrefabs =>
+        tutorialObjectCatalog != null
+            ? tutorialObjectCatalog.TutorialHeroPrefabs
+            : Array.Empty<TutorialHeroPrefabEntry>();
+    public IReadOnlyList<TutorialItemPrefabEntry> TutorialItemPrefabs =>
+        tutorialObjectCatalog != null
+            ? tutorialObjectCatalog.TutorialItemPrefabs
+            : Array.Empty<TutorialItemPrefabEntry>();
     public IReadOnlyList<MainEventPrefabEntry> MainEventPrefabs =>
         eventCatalog != null
             ? eventCatalog.MainEventPrefabs
@@ -139,6 +151,38 @@ public class LevelPrefabRegistry : MonoBehaviour
 
         prefab = null;
         return false;
+    }
+
+    public bool TryGetTutorialItemPrefab(string itemPrefabKey, out GameObject prefab)
+    {
+        if (tutorialObjectCatalog != null &&
+            tutorialObjectCatalog.TryGetTutorialItemPrefab(itemPrefabKey, out prefab))
+        {
+            return true;
+        }
+
+        prefab = null;
+        return false;
+    }
+
+    public bool TryGetTutorialHeroPrefab(string unitTemplateKey, out GameObject prefab)
+    {
+        if (tutorialObjectCatalog != null &&
+            tutorialObjectCatalog.TryGetTutorialHeroPrefab(unitTemplateKey, out prefab))
+        {
+            return true;
+        }
+
+        prefab = null;
+        return false;
+    }
+
+    public bool TryGetTutorialPrefab(string prefabKey, out GameObject prefab)
+    {
+        if (TryGetTutorialObjectPrefab(prefabKey, out prefab))
+            return true;
+
+        return TryGetTutorialItemPrefab(prefabKey, out prefab);
     }
 
     public bool TryGetMainEventPrefab(string prefabKey, out MainEventObject prefab)
