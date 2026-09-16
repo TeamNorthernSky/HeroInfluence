@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6783668164979751319}
   - component: {fileID: 9221204691723415654}
   - component: {fileID: -8768098136240293804}
+  - component: {fileID: 7369718794029067637}
   m_Layer: 8
   m_Name: Hero_Supporter
   m_TagString: Untagged
@@ -77,6 +78,27 @@ MonoBehaviour:
   moveStateName: MoveForward
   animationFadeTime: 0.1
   disableRootMotion: 1
+--- !u!114 &7369718794029067637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2032890177939244664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca21c3e09c20e2843a05a554b81b304b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unitTemplateKey: 10004
+  level: 1
+  currentHp: 0
+  maxHp: 0
+  currentIp: 0
+  maxIp: 0
+  atk: 0
+  initializeOnAwake: 1
+  useTutorialProgressRepository: 1
 --- !u!1001 &6271278625401387707
 PrefabInstance:
   m_ObjectHideFlags: 0

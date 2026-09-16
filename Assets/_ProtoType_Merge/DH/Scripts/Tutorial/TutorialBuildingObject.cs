@@ -18,6 +18,12 @@ public class TutorialBuildingObject : MonoBehaviour
     [Header("Placement")]
     [SerializeField] private Vector3 anchorLocalOffset;
 
+    [Header("Overlay")]
+    [SerializeField] private bool showInteractionOverlay = true;
+    [SerializeField] private Color associationOverlayColor = new Color(0f, 0.35f, 1f, 0.28f);
+    [SerializeField] private Color enemyBaseOverlayColor = new Color(1f, 0.15f, 0.15f, 0.28f);
+    [SerializeField] private InteractionCellOverlayController overlayController;
+
     private MultiGridOccupant multiGridOccupant;
     private Renderer[] cachedRenderers;
 
@@ -30,9 +36,22 @@ public class TutorialBuildingObject : MonoBehaviour
         ResolveReferences();
     }
 
+    private void OnEnable()
+    {
+        ResolveReferences();
+        RefreshInteractionOverlay();
+    }
+
+    private void OnDisable()
+    {
+        ClearInteractionOverlay();
+    }
+
     private void OnValidate()
     {
         ResolveReferences();
+        if (Application.isPlaying && isActiveAndEnabled)
+            RefreshInteractionOverlay();
     }
 
     public void SetBuildingKey(string nextBuildingKey)
@@ -135,12 +154,43 @@ public class TutorialBuildingObject : MonoBehaviour
     {
         if (multiGridOccupant == null)
             multiGridOccupant = GetComponent<MultiGridOccupant>();
+
+        if (overlayController == null)
+            overlayController = FindFirstObjectByType<InteractionCellOverlayController>();
     }
 
     private void EnsureRenderersCached()
     {
         if (cachedRenderers == null)
             RefreshRenderers();
+    }
+
+    private void RefreshInteractionOverlay()
+    {
+        if (!showInteractionOverlay)
+        {
+            ClearInteractionOverlay();
+            return;
+        }
+
+        ResolveReferences();
+        if (overlayController == null)
+            return;
+
+        overlayController.SetExternalCells(this, GetInteractionCells(), GetOverlayColor());
+    }
+
+    private void ClearInteractionOverlay()
+    {
+        if (overlayController != null)
+            overlayController.ClearExternalCells(this);
+    }
+
+    private Color GetOverlayColor()
+    {
+        return buildingType == TutorialBuildingType.EnemyBase
+            ? enemyBaseOverlayColor
+            : associationOverlayColor;
     }
 
     private void OnDrawGizmosSelected()

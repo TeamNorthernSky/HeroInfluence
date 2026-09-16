@@ -745,14 +745,17 @@ public class LevelZoneLayoutLoader : MonoBehaviour
             return;
 
         IReadOnlyList<TutorialObjectPlacementData> placements = levelData.TutorialObjectPlacements;
+        if (placements == null || placements.Count == 0)
+            return;
+
         Transform parent = GetTutorialObjectRoot(true);
         for (int i = 0; i < placements.Count; i++)
         {
             TutorialObjectPlacementData placement = placements[i];
-            if (!prefabRegistry.TryGetTutorialObjectPrefab(placement.PrefabKey, out GameObject prefab))
+            if (!prefabRegistry.TryGetTutorialPrefab(placement.PrefabKey, out GameObject prefab))
             {
                 Debug.LogWarning(
-                    $"LevelZoneLayoutLoader could not find a tutorial object prefab for key '{placement.PrefabKey}'.",
+                    $"LevelZoneLayoutLoader could not find a tutorial prefab for key '{placement.PrefabKey}'.",
                     this);
                 continue;
             }
