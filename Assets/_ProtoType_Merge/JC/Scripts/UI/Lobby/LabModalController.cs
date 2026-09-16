@@ -45,7 +45,7 @@ public class LabModalController : MonoBehaviour
             if (cardImage == null) return;
             cardImage.sprite = selected ? highlighted : normal;
             if (nameText != null) { nameText.text = skillName; nameText.color = selected ? Color.white : Color.black; }
-            if (levelText != null) { levelText.text = learned ? $"Lv{level}" : "미습득"; levelText.color = selected ? Color.white : Color.black; }
+            if (levelText != null) { levelText.text = learned ? (level <= 1 ? "기본" : $"+{level - 1}") : "미습득"; levelText.color = selected ? Color.white : Color.black; }
             if (firstLevelGauge != null)
             {
                 firstLevelGauge.gameObject.SetActive(enhanceable);
@@ -140,8 +140,70 @@ public class LabModalController : MonoBehaviour
         return Sprites.Icon.ClassSkill(skillIndex, level, order);
     }
 
+    private void EnsureFifthEnhancementStage()
+    {
+        foreach (var row in rows)
+        {
+            if (row?.stages == null || row.stages.Length != 4 || row.stages[3]?.root == null) continue;
+            var source = row.stages[3];
+            var clone = Instantiate(source.root, source.root.transform.parent);
+            clone.name = source.root.name + "_Plus5";
+            var extra = new StageCell
+            {
+                root = clone,
+                frame = CloneReference(source.frame, source.root.transform, clone.transform),
+                contentIcon = CloneReference(source.contentIcon, source.root.transform, clone.transform),
+                finishedMark = CloneObject(source.finishedMark, source.root.transform, clone.transform),
+                lockMark = CloneObject(source.lockMark, source.root.transform, clone.transform),
+                clickHandler = CloneReference(source.clickHandler, source.root.transform, clone.transform),
+                tooltip = CloneReference(source.tooltip, source.root.transform, clone.transform)
+            };
+            Array.Resize(ref row.stages, 5);
+            row.stages[4] = extra;
+            // 기존 게이지가 사용하던 가로 영역 안에 기본+5개의 칸을 균등 배치합니다.
+            var first = row.firstLevelGauge != null ? row.firstLevelGauge.rectTransform : row.stages[0].root.transform as RectTransform;
+            var last = source.root.transform as RectTransform;
+            if (first != null && last != null && first.parent == last.parent && first.parent.GetComponent<LayoutGroup>() == null)
+            {
+                float left = first.anchoredPosition.x - first.rect.width * first.pivot.x;
+                float right = last.anchoredPosition.x + last.rect.width * (1f - last.pivot.x);
+                int count = row.firstLevelGauge != null ? 6 : 5;
+                float stride = (right - left) / count;
+                var rects = new List<RectTransform>();
+                if (row.firstLevelGauge != null) rects.Add(first);
+                foreach (var stage in row.stages) rects.Add(stage.root.transform as RectTransform);
+                for (int i = 0; i < rects.Count; i++)
+                {
+                    var rect = rects[i];
+                    rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(1f, stride - 2f));
+                    rect.anchoredPosition = new Vector2(left + stride * (i + rect.pivot.x), rect.anchoredPosition.y);
+                }
+            }
+        }
+    }
+
+    private static Transform CloneTransform(Transform value, Transform source, Transform clone)
+    {
+        if (value == null) return null;
+        if (value == source) return clone;
+        var names = new List<string>();
+        for (var t = value; t != null && t != source; t = t.parent) names.Insert(0, t.name);
+        return clone.Find(string.Join("/", names));
+    }
+    private static T CloneReference<T>(T value, Transform source, Transform clone) where T : Component
+    {
+        var t = value != null ? CloneTransform(value.transform, source, clone) : null;
+        return t != null ? t.GetComponent<T>() : null;
+    }
+    private static GameObject CloneObject(GameObject value, Transform source, Transform clone)
+    {
+        var t = value != null ? CloneTransform(value.transform, source, clone) : null;
+        return t != null ? t.gameObject : null;
+    }
+
     private void Awake()
     {
+        EnsureFifthEnhancementStage();
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnCancel != null) btnCancel.onClick.AddListener(OnCancel);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
@@ -304,7 +366,7 @@ public class LabModalController : MonoBehaviour
             return;
         }
         int reached = gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId);
-        ShowCompletion($"{SkillName(skill)} {reached}단계 강화 완료!");
+        ShowCompletion($"{SkillName(skill)} +{reached - 1} 강화 완료!");
         ClearSelection();
         Refresh();
     }
@@ -350,8 +412,8 @@ public class LabModalController : MonoBehaviour
             var cellRoot = (row.stages != null && stageIndex < row.stages.Length && row.stages[stageIndex] != null) ? row.stages[stageIndex].root : null;
             var rt = cellRoot != null ? cellRoot.transform as RectTransform : null;
             SkillTooltip.Instance.ShowCompare(
-                GetSkillIcon(rowIndex, cur),  $"{SkillName(skill)} Lv.{cur}",  EffectText(skill, cur),
-                GetSkillIcon(rowIndex, next), $"{SkillName(skill)} Lv.{next}", EffectText(skill, next), rt);
+                GetSkillIcon(rowIndex, cur),  $"{SkillName(skill)} {(cur == 1 ? "기본" : "+" + (cur - 1))}",  EffectText(skill, cur),
+                GetSkillIcon(rowIndex, next), $"{SkillName(skill)} +{next - 1}", EffectText(skill, next), rt);
         }
     }
 
@@ -414,11 +476,8 @@ public class LabModalController : MonoBehaviour
             if (row.lockMark != null) row.lockMark.SetActive(!learned);
             // 툴팁은 SkillTooltip(리치)이 호버 콜백으로 표시 — 여기선 문자열 SetContent 안 함
 
-            // [JC 260617] 무강화 스킬 → 단계셀 숨김, rep(1레벨)만 표시.
-            //   판정: 계수가 레벨에 따라 "변하는가"(Lv1≠Lv5). 회복/부활은 전 레벨 평탄(고정값)이라 강화X.
-            //   (구판 'Lv2>0'은 4010힐 0.3·4050광역힐 0.1·4070기적 0.2처럼 평탄한 고정값을 강화로 오판했음)
-            bool enhanceable = !Mathf.Approximately(SkillValueAt(skill.NumericSkillId, 1), SkillValueAt(skill.NumericSkillId, 5))
-                            || !Mathf.Approximately(SkillSubValueAt(skill.NumericSkillId, 1), SkillSubValueAt(skill.NumericSkillId, 5));
+            // 모든 현행 히어로 스킬은 리스크 확률을 +5까지 강화합니다.
+            bool enhanceable = true;
             if (row.cardImage != null)
             {
                 row.RefreshCard(SkillName(skill), level, learned, enhanceable, selRow == r,

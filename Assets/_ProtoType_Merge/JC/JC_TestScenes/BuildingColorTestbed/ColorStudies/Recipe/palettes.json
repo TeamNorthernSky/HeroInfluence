@@ -1,0 +1,5 @@
+{
+  "A_Coral": {"wall":"#EEDFCC", "roof":"#BE7F6D", "window":"#60999F", "foliage":"#769956"},
+  "B_Mint": {"wall":"#E6E7D9", "roof":"#74A699", "window":"#668FA6", "foliage":"#7EA262"},
+  "C_Lavender": {"wall":"#EFE0D5", "roof":"#9691B7", "window":"#699BA2", "foliage":"#829D64"}
+}

@@ -62,6 +62,15 @@ public sealed class StatusEffectManager
         }
     }
 
+    public float DamageTakenMultiplier
+    {
+        get
+        {
+            var shield = activeEffects.Find(e => e != null && e.effectType == StatusEffectType.damage_taken_down && e.remainingTurns > 0);
+            return shield != null ? 1f - Mathf.Clamp01(shield.value) : 1f;
+        }
+    }
+
     public bool ApplyStatusEffect(StatusEffectInstance effect)
     {
         if (owner == null || effect == null || effect.effectType == StatusEffectType.none)
@@ -143,6 +152,8 @@ public sealed class StatusEffectManager
 
     public void ProcessTurnStartStatusEffects()
     {
+        // 방어 코어는 시전한 턴 종료에 사라지지 않고 다음 자기 순서가 시작될 때 만료됩니다.
+        RemoveStatusEffect(StatusEffectType.damage_taken_down);
         if (owner == null || owner.IsDead || activeEffects.Count == 0)
         {
             return;
@@ -194,7 +205,7 @@ public sealed class StatusEffectManager
                 continue;
             }
 
-            effect.remainingTurns -= 1;
+            if (effect.effectType != StatusEffectType.damage_taken_down) effect.remainingTurns -= 1;
         }
 
         bool removedStatModifier = false;

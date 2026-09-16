@@ -523,6 +523,8 @@ public sealed class SkillPresentationDirector
         {
             skillIndex = source.skillIndex,
             skillKey = source.skillKey,
+            riskKey = source.riskKey,
+            enhancementLevel = source.enhancementLevel,
             category = source.category,
             slot = source.slot,
             skillClass = source.skillClass,

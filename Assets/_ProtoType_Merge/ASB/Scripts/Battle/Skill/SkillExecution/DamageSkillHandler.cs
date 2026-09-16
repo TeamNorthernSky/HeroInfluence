@@ -74,8 +74,9 @@ namespace ASB.Work.Battle.SkillExecution
         {
             // HP 비율을 20% 단위로 끊어서 스킬값에 더함
             float hpRatio = 1.0f - (target.CurrentHp / (float)target.MaxHp);
-            float snapped = Mathf.Floor(hpRatio / 0.1f) * 0.1f;
-            float totalSkillValue = snapped + skillData.skillValue;
+            int steps = Mathf.Clamp(Mathf.FloorToInt(hpRatio * 10f + 0.0001f), 0, 9);
+            float bonus = HeroSkillRules.IsFamily(skillData, 3040) ? skillData.skillSubValue : 0.1f;
+            float totalSkillValue = skillData.skillValue + steps * bonus;
 
             result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, totalSkillValue, skillData.skillIndex, skillData.classSkillRange));
             Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (skillValue={totalSkillValue:F2})");
@@ -286,6 +287,30 @@ namespace ASB.Work.Battle.SkillExecution
     }
 
 
+    public sealed class PiercingDashSkillHandler : BaseAoESkillHandler
+    {
+        protected override void ApplySkill(SkillExecutionContext context, SkillExecutionResult result)
+        {
+            foreach (var target in context.ResolvedTargets)
+            {
+                float value = target == context.PrimaryTarget ? context.Skill.skillValue : context.Skill.skillSubValue;
+                result.AddDamage(SkillEffectHelper.ApplyStandardDamage(context.Caster, target, value,
+                    context.Skill.skillIndex, context.Skill.classSkillRange));
+            }
+        }
+    }
+
+    public sealed class PrismExplosionSkillHandler : BaseAoESkillHandler
+    {
+        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData,
+            int count, SkillExecutionResult result, bool? sharedIsCritical = null)
+        {
+            float value = skillData.skillValue + (target.CurrentHp < target.MaxHp * 0.5f ? skillData.skillSubValue : 0f);
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, value, skillData.skillIndex,
+                skillData.classSkillRange, sharedIsCritical: sharedIsCritical));
+        }
+    }
+
     // 피격된 적 수에 따라 데미지 감소
     public sealed class HitNumLowerDamageHandler : BaseAoESkillHandler
     {
@@ -316,7 +341,7 @@ namespace ASB.Work.Battle.SkillExecution
 
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue, skillData.skillIndex, skillData.classSkillRange, true));
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, HeroSkillRules.IsFamily(skillData, 2020) ? skillData.skillSubValue : skillData.skillValue, skillData.skillIndex, skillData.classSkillRange, true));
             Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
         }
     }

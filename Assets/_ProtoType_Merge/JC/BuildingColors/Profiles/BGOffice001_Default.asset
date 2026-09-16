@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e784527f640bea4c8add67e46164452, type: 3}
+  m_Name: BGOffice001_Default
+  m_EditorClassIdentifier: 
+  buildingId: BGOffice001
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000014901161
+    ignoreSourceColorAndShading: 0
+  - hue: 234.57544
+    lightness: 0.74437886
+    saturation: 16.670916
+    ignoreSourceColorAndShading: 0
+  - hue: 270.69464
+    lightness: 0.7495373
+    saturation: 28.10363
+    ignoreSourceColorAndShading: 0
+  - hue: 139.63014
+    lightness: 0.50884026
+    saturation: 36.0771
+    ignoreSourceColorAndShading: 0
+  - hue: 45.654728
+    lightness: 0.6665279
+    saturation: 3.057004
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.6862226
+    saturation: 0.000006390946
+    ignoreSourceColorAndShading: 0
+  - hue: 234.85153
+    lightness: 0.6939523
+    saturation: 14.634378
+    ignoreSourceColorAndShading: 0
+  - hue: 79.7537
+    lightness: 0.60444456
+    saturation: 6.517988
+    ignoreSourceColorAndShading: 0
+  - hue: 79.40548
+    lightness: 0.84553945
+    saturation: 16.771551
+    ignoreSourceColorAndShading: 0
+  - hue: 236.14615
+    lightness: 0.49043894
+    saturation: 10.293867
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.4898614
+    saturation: 0.0000045621896
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - roof_trim

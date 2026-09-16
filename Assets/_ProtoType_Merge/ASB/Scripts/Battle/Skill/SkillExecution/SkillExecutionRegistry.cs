@@ -31,9 +31,9 @@ namespace ASB.Work.Battle.SkillExecution
             //------------------아군 유닛 (캐릭터 스킬 키 = "HS" + 숫자)
             // 가디언
             Register("HS1010", new TauntStrikeSkillHandler()); // 단일 도발
-            Register("HS1020", new AoEDamageSkillHandler());   // 열 공격
-            Register("HS1030", new AoEDamageSkillHandler());   // 후열 공격
-            Register("HS1040", new TauntStrikeSkillHandler()); // 전체 도발 + 한열 타격 -------- 한 열 타격 적용 안됨
+            Register("HS1020", new TargetFrontPosMoreDmg());   // 단일 전열 보너스
+            Register("HS1030", new PiercingDashSkillHandler());   // 후열 공격
+            Register("HS1040", new AoETauntStrikeSkillHandler()); // 전체 도발 + 한열 타격 -------- 한 열 타격 적용 안됨
             Register("HS1050", new DamageSkillHandler());      // 단일(전체타겟)공격
             Register("HS1060", new AoEDamageSkillHandler());   // 전체공격
             Register("HS1070", new CasterLowHPMoreDmg());      // 시전자 체력 낮을수록 데미지 증가
@@ -42,7 +42,7 @@ namespace ASB.Work.Battle.SkillExecution
             Register("HS2010", new DamageSkillHandler());                 // 단일 공격
             Register("HS2020", new HitTargetAroundRandomHandler());      // 단일 + 랜덤 주변 적 공격
             Register("HS2030", new AoEDamageSkillHandler());             // 한 열 공격
-            Register("HS2040", new AoEDamageSkillHandler());             // 전체 공격
+            Register("HS2040", new PrismExplosionSkillHandler());             // 전체 공격
             Register("HS2050", new AtkAfterRest());                      // 임시 보관: 단일 공격 + 자신 한 턴 쉼(기절)
             Register("HS2060", new TargetMoreHPMoreDmg());               // 임시 보관: 적의 체력이 높을수록 피해량 증가
             Register("HS2070", new HitNumLowerDamageHandler());          // 임시 보관: 공격 대상 수에 따라 피해량 감소
@@ -124,7 +124,8 @@ namespace ASB.Work.Battle.SkillExecution
                 handler = null;
                 return false;
             }
-            return Handlers.TryGetValue(skillKey, out handler);
+            if (Handlers.TryGetValue(skillKey, out handler)) return true;
+            return Handlers.TryGetValue(HeroSkillRules.FamilyKey(skillKey), out handler);
         }
 
         private static void Register(string skillKey, ISkillEffectHandler handler)

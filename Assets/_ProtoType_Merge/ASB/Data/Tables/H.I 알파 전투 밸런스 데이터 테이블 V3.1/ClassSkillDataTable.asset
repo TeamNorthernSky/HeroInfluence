@@ -32,13 +32,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 1.1
+    ClassSkillValueLv2: 1
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 1.2
+    ClassSkillValueLv3: 1
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1.3
+    ClassSkillValueLv4: 1
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.4
+    ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: 
     SkillRiskIndex: R0101
@@ -54,20 +54,20 @@ MonoBehaviour:
     ClassSkillEffect: 0
     ClassSkillRange: 0
     ClassSkillRangeLine: 0
-    ClassSkillTarget: 1
+    ClassSkillTarget: 0
     ClassSkillMultiTarget: 00000000
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1
     ClassSkillSubValueLv1: 0.2
-    ClassSkillValueLv2: 1.1
-    ClassSkillSubValueLv2: 0.3
-    ClassSkillValueLv3: 1.2
-    ClassSkillSubValueLv3: 0.4
-    ClassSkillValueLv4: 1.3
-    ClassSkillSubValueLv4: 0.5
-    ClassSkillValueLv5: 1.4
-    ClassSkillSubValueLv5: 0.6
+    ClassSkillValueLv2: 1
+    ClassSkillSubValueLv2: 0.2
+    ClassSkillValueLv3: 1
+    ClassSkillSubValueLv3: 0.2
+    ClassSkillValueLv4: 1
+    ClassSkillSubValueLv4: 0.2
+    ClassSkillValueLv5: 1
+    ClassSkillSubValueLv5: 0.2
     ReplaceSkillIndex: 
     SkillRiskIndex: R0102
   - ClassSkillIndex: HS1030
@@ -90,14 +90,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 1
     ClassSkillValueLv1: 0.6
     ClassSkillSubValueLv1: 0.8
-    ClassSkillValueLv2: 0.7
-    ClassSkillSubValueLv2: 0.9
-    ClassSkillValueLv3: 0.8
-    ClassSkillSubValueLv3: 1
-    ClassSkillValueLv4: 0.9
-    ClassSkillSubValueLv4: 1.1
-    ClassSkillValueLv5: 1
-    ClassSkillSubValueLv5: 1.2
+    ClassSkillValueLv2: 0.6
+    ClassSkillSubValueLv2: 0.8
+    ClassSkillValueLv3: 0.6
+    ClassSkillSubValueLv3: 0.8
+    ClassSkillValueLv4: 0.6
+    ClassSkillSubValueLv4: 0.8
+    ClassSkillValueLv5: 0.6
+    ClassSkillSubValueLv5: 0.8
     ReplaceSkillIndex: 
     SkillRiskIndex: R0103
   - ClassSkillIndex: HS1040
@@ -118,13 +118,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.5
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0.6
+    ClassSkillValueLv2: 0.5
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 0.7
+    ClassSkillValueLv3: 0.5
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 0.8
+    ClassSkillValueLv4: 0.5
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 0.9
+    ClassSkillValueLv5: 0.5
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: 
     SkillRiskIndex: R0101
@@ -147,13 +147,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1.2
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 1.3
+    ClassSkillValueLv2: 1.2
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 1.4
+    ClassSkillValueLv3: 1.2
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1.5
+    ClassSkillValueLv4: 1.2
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.6
+    ClassSkillValueLv5: 1.2
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: HS1010
     SkillRiskIndex: R0101
@@ -175,14 +175,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1.2
     ClassSkillSubValueLv1: 0.2
-    ClassSkillValueLv2: 1.3
-    ClassSkillSubValueLv2: 0.3
-    ClassSkillValueLv3: 1.4
-    ClassSkillSubValueLv3: 0.4
-    ClassSkillValueLv4: 1.5
-    ClassSkillSubValueLv4: 0.5
-    ClassSkillValueLv5: 1.6
-    ClassSkillSubValueLv5: 0.6
+    ClassSkillValueLv2: 1.2
+    ClassSkillSubValueLv2: 0.2
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0.2
+    ClassSkillValueLv4: 1.2
+    ClassSkillSubValueLv4: 0.2
+    ClassSkillValueLv5: 1.2
+    ClassSkillSubValueLv5: 0.2
     ReplaceSkillIndex: HS1020
     SkillRiskIndex: R0102
   - ClassSkillIndex: HS1031
@@ -199,20 +199,20 @@ MonoBehaviour:
     ClassSkillEffect: 0
     ClassSkillRange: 0
     ClassSkillRangeLine: 0
-    ClassSkillTarget: 0
+    ClassSkillTarget: 1
     ClassSkillMultiTarget: 03000000
     ClassSkill_MultiTargetType: 0
     ClassSkill_MultiTargetCount: 1
     ClassSkillValueLv1: 0.7
     ClassSkillSubValueLv1: 0.9
-    ClassSkillValueLv2: 0.8
-    ClassSkillSubValueLv2: 1
-    ClassSkillValueLv3: 0.9
-    ClassSkillSubValueLv3: 1.1
-    ClassSkillValueLv4: 1
-    ClassSkillSubValueLv4: 1.2
-    ClassSkillValueLv5: 1.1
-    ClassSkillSubValueLv5: 1.3
+    ClassSkillValueLv2: 0.7
+    ClassSkillSubValueLv2: 0.9
+    ClassSkillValueLv3: 0.7
+    ClassSkillSubValueLv3: 0.9
+    ClassSkillValueLv4: 0.7
+    ClassSkillSubValueLv4: 0.9
+    ClassSkillValueLv5: 0.7
+    ClassSkillSubValueLv5: 0.9
     ReplaceSkillIndex: HS1030
     SkillRiskIndex: R0103
   - ClassSkillIndex: HS1041
@@ -233,19 +233,19 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.6
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0.7
+    ClassSkillValueLv2: 0.6
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 0.8
+    ClassSkillValueLv3: 0.6
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 0.9
+    ClassSkillValueLv4: 0.6
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1
+    ClassSkillValueLv5: 0.6
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: HS1040
     SkillRiskIndex: R0101
   - ClassSkillIndex: HS2010
     Class: "\uB8E8\uBBF8\uB098"
-    ClassSkill_AcquireRank: 4
+    ClassSkill_AcquireRank: 1
     ClassSkillName: "\uD50C\uB808\uC5B4 \uBD04"
     ClassSkillDescription: "\uC801 1\uBA85\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
       \uC785\uD78C\uB2E4."
@@ -259,19 +259,19 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 1.1
+    ClassSkillValueLv2: 1
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 1.2
+    ClassSkillValueLv3: 1
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1.3
+    ClassSkillValueLv4: 1
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.4
+    ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: 
     SkillRiskIndex: R0202
   - ClassSkillIndex: HS2020
     Class: "\uB8E8\uBBF8\uB098"
-    ClassSkill_AcquireRank: 1
+    ClassSkill_AcquireRank: 2
     ClassSkillName: "\uCCB4\uC778 \uB77C\uC774\uD305"
     ClassSkillDescription: "\uC804\uC5F4\uC758 \uC801 \uD55C \uBA85\uC5D0\uAC8C {ClassSkillValue}
       \uB300\uBBF8\uC9C0\uB97C \uC785\uD788\uACE0, \uC778\uC811\uD55C \uC801 \uD55C
@@ -287,19 +287,19 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 1
     ClassSkillValueLv1: 0.9
     ClassSkillSubValueLv1: 0.3
-    ClassSkillValueLv2: 1
-    ClassSkillSubValueLv2: 0.4
-    ClassSkillValueLv3: 1.1
-    ClassSkillSubValueLv3: 0.5
-    ClassSkillValueLv4: 1.2
-    ClassSkillSubValueLv4: 0.6
-    ClassSkillValueLv5: 1.3
-    ClassSkillSubValueLv5: 0.7
+    ClassSkillValueLv2: 0.9
+    ClassSkillSubValueLv2: 0.3
+    ClassSkillValueLv3: 0.9
+    ClassSkillSubValueLv3: 0.3
+    ClassSkillValueLv4: 0.9
+    ClassSkillSubValueLv4: 0.3
+    ClassSkillValueLv5: 0.9
+    ClassSkillSubValueLv5: 0.3
     ReplaceSkillIndex: 
     SkillRiskIndex: R0203
   - ClassSkillIndex: HS2030
     Class: "\uB8E8\uBBF8\uB098"
-    ClassSkill_AcquireRank: 2
+    ClassSkill_AcquireRank: 3
     ClassSkillName: "\uC194\uB77C \uD504\uB9AC\uC998"
     ClassSkillDescription: "\uC801 \uD55C \uC5F4\uC5D0 {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C
       \uC785\uD78C\uB2E4."
@@ -313,19 +313,19 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.6
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0.7
+    ClassSkillValueLv2: 0.6
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 0.8
+    ClassSkillValueLv3: 0.6
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 0.9
+    ClassSkillValueLv4: 0.6
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1
+    ClassSkillValueLv5: 0.6
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: 
     SkillRiskIndex: R0201
   - ClassSkillIndex: HS2040
     Class: "\uB8E8\uBBF8\uB098"
-    ClassSkill_AcquireRank: 3
+    ClassSkill_AcquireRank: 4
     ClassSkillName: "\uD504\uB9AC\uC998 \uC775\uC2A4\uD50C\uB85C\uC804"
     ClassSkillDescription: "\uC801 \uC804\uC5F4\uACFC \uD6C4\uC5F4\uC758 \uBAA8\uB4E0
       \uC801\uC5D0\uAC8C {ClassSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC785\uD78C\uB2E4.
@@ -341,14 +341,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.6
     ClassSkillSubValueLv1: 0.05
-    ClassSkillValueLv2: 0.7
-    ClassSkillSubValueLv2: 0.15
-    ClassSkillValueLv3: 0.8
-    ClassSkillSubValueLv3: 0.25
-    ClassSkillValueLv4: 0.9
-    ClassSkillSubValueLv4: 0.35
-    ClassSkillValueLv5: 1
-    ClassSkillSubValueLv5: 0.45
+    ClassSkillValueLv2: 0.6
+    ClassSkillSubValueLv2: 0.05
+    ClassSkillValueLv3: 0.6
+    ClassSkillSubValueLv3: 0.05
+    ClassSkillValueLv4: 0.6
+    ClassSkillSubValueLv4: 0.05
+    ClassSkillValueLv5: 0.6
+    ClassSkillSubValueLv5: 0.05
     ReplaceSkillIndex: 
     SkillRiskIndex: R0201
   - ClassSkillIndex: HS2011
@@ -367,13 +367,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1.2
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 1.3
+    ClassSkillValueLv2: 1.2
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 1.4
+    ClassSkillValueLv3: 1.2
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1.5
+    ClassSkillValueLv4: 1.2
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.6
+    ClassSkillValueLv5: 1.2
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: HS2010
     SkillRiskIndex: R0202
@@ -395,14 +395,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 1
     ClassSkillValueLv1: 1
     ClassSkillSubValueLv1: 0.4
-    ClassSkillValueLv2: 1.1
-    ClassSkillSubValueLv2: 0.5
-    ClassSkillValueLv3: 1.2
-    ClassSkillSubValueLv3: 0.6
-    ClassSkillValueLv4: 1.3
-    ClassSkillSubValueLv4: 0.7
-    ClassSkillValueLv5: 1.4
-    ClassSkillSubValueLv5: 0.8
+    ClassSkillValueLv2: 1
+    ClassSkillSubValueLv2: 0.4
+    ClassSkillValueLv3: 1
+    ClassSkillSubValueLv3: 0.4
+    ClassSkillValueLv4: 1
+    ClassSkillSubValueLv4: 0.4
+    ClassSkillValueLv5: 1
+    ClassSkillSubValueLv5: 0.4
     ReplaceSkillIndex: HS2020
     SkillRiskIndex: R0203
   - ClassSkillIndex: HS2031
@@ -421,13 +421,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.7
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0.8
+    ClassSkillValueLv2: 0.7
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 0.9
+    ClassSkillValueLv3: 0.7
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1
+    ClassSkillValueLv4: 0.7
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.1
+    ClassSkillValueLv5: 0.7
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: HS2030
     SkillRiskIndex: R0201
@@ -449,14 +449,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.7
     ClassSkillSubValueLv1: 0.05
-    ClassSkillValueLv2: 0.8
-    ClassSkillSubValueLv2: 0.15
-    ClassSkillValueLv3: 0.9
-    ClassSkillSubValueLv3: 0.25
-    ClassSkillValueLv4: 1
-    ClassSkillSubValueLv4: 0.35
-    ClassSkillValueLv5: 1.1
-    ClassSkillSubValueLv5: 0.45
+    ClassSkillValueLv2: 0.7
+    ClassSkillSubValueLv2: 0.05
+    ClassSkillValueLv3: 0.7
+    ClassSkillSubValueLv3: 0.05
+    ClassSkillValueLv4: 0.7
+    ClassSkillSubValueLv4: 0.05
+    ClassSkillValueLv5: 0.7
+    ClassSkillSubValueLv5: 0.05
     ReplaceSkillIndex: HS2040
     SkillRiskIndex: R0201
   - ClassSkillIndex: HS3010
@@ -475,13 +475,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 1.1
+    ClassSkillValueLv2: 1
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 1.2
+    ClassSkillValueLv3: 1
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1.3
+    ClassSkillValueLv4: 1
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.4
+    ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: 
     SkillRiskIndex: R0303
@@ -502,14 +502,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1
     ClassSkillSubValueLv1: 0.2
-    ClassSkillValueLv2: 1.1
-    ClassSkillSubValueLv2: 0.3
-    ClassSkillValueLv3: 1.2
-    ClassSkillSubValueLv3: 0.4
-    ClassSkillValueLv4: 1.3
-    ClassSkillSubValueLv4: 0.5
-    ClassSkillValueLv5: 1.4
-    ClassSkillSubValueLv5: 0.6
+    ClassSkillValueLv2: 1
+    ClassSkillSubValueLv2: 0.2
+    ClassSkillValueLv3: 1
+    ClassSkillSubValueLv3: 0.2
+    ClassSkillValueLv4: 1
+    ClassSkillSubValueLv4: 0.2
+    ClassSkillValueLv5: 1
+    ClassSkillSubValueLv5: 0.2
     ReplaceSkillIndex: 
     SkillRiskIndex: R0301
   - ClassSkillIndex: HS3030
@@ -529,14 +529,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.7
     ClassSkillSubValueLv1: 0.7
-    ClassSkillValueLv2: 0.8
-    ClassSkillSubValueLv2: 0.8
-    ClassSkillValueLv3: 0.9
-    ClassSkillSubValueLv3: 0.9
-    ClassSkillValueLv4: 1
-    ClassSkillSubValueLv4: 1
-    ClassSkillValueLv5: 1.1
-    ClassSkillSubValueLv5: 1.1
+    ClassSkillValueLv2: 0.7
+    ClassSkillSubValueLv2: 0.7
+    ClassSkillValueLv3: 0.7
+    ClassSkillSubValueLv3: 0.7
+    ClassSkillValueLv4: 0.7
+    ClassSkillSubValueLv4: 0.7
+    ClassSkillValueLv5: 0.7
+    ClassSkillSubValueLv5: 0.7
     ReplaceSkillIndex: 
     SkillRiskIndex: R0302
   - ClassSkillIndex: HS3040
@@ -557,14 +557,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1
     ClassSkillSubValueLv1: 0.1
-    ClassSkillValueLv2: 1.1
-    ClassSkillSubValueLv2: 0.2
-    ClassSkillValueLv3: 1.2
-    ClassSkillSubValueLv3: 0.3
-    ClassSkillValueLv4: 1.3
-    ClassSkillSubValueLv4: 0.4
-    ClassSkillValueLv5: 1.4
-    ClassSkillSubValueLv5: 0.5
+    ClassSkillValueLv2: 1
+    ClassSkillSubValueLv2: 0.1
+    ClassSkillValueLv3: 1
+    ClassSkillSubValueLv3: 0.1
+    ClassSkillValueLv4: 1
+    ClassSkillSubValueLv4: 0.1
+    ClassSkillValueLv5: 1
+    ClassSkillSubValueLv5: 0.1
     ReplaceSkillIndex: 
     SkillRiskIndex: R0303
   - ClassSkillIndex: HS3011
@@ -583,13 +583,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1.2
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 1.3
+    ClassSkillValueLv2: 1.2
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 1.4
+    ClassSkillValueLv3: 1.2
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1.5
+    ClassSkillValueLv4: 1.2
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.6
+    ClassSkillValueLv5: 1.2
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: HS3010
     SkillRiskIndex: R0303
@@ -610,14 +610,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1.2
     ClassSkillSubValueLv1: 0.3
-    ClassSkillValueLv2: 1.3
-    ClassSkillSubValueLv2: 0.4
-    ClassSkillValueLv3: 1.4
-    ClassSkillSubValueLv3: 0.5
-    ClassSkillValueLv4: 1.5
-    ClassSkillSubValueLv4: 0.6
-    ClassSkillValueLv5: 1.6
-    ClassSkillSubValueLv5: 0.7
+    ClassSkillValueLv2: 1.2
+    ClassSkillSubValueLv2: 0.3
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0.3
+    ClassSkillValueLv4: 1.2
+    ClassSkillSubValueLv4: 0.3
+    ClassSkillValueLv5: 1.2
+    ClassSkillSubValueLv5: 0.3
     ReplaceSkillIndex: HS3020
     SkillRiskIndex: R0301
   - ClassSkillIndex: HS3031
@@ -637,14 +637,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.9
     ClassSkillSubValueLv1: 0.9
-    ClassSkillValueLv2: 1
-    ClassSkillSubValueLv2: 1
-    ClassSkillValueLv3: 1.1
-    ClassSkillSubValueLv3: 1.1
-    ClassSkillValueLv4: 1.2
-    ClassSkillSubValueLv4: 1.2
-    ClassSkillValueLv5: 1.3
-    ClassSkillSubValueLv5: 1.3
+    ClassSkillValueLv2: 0.9
+    ClassSkillSubValueLv2: 0.9
+    ClassSkillValueLv3: 0.9
+    ClassSkillSubValueLv3: 0.9
+    ClassSkillValueLv4: 0.9
+    ClassSkillSubValueLv4: 0.9
+    ClassSkillValueLv5: 0.9
+    ClassSkillSubValueLv5: 0.9
     ReplaceSkillIndex: HS3030
     SkillRiskIndex: R0302
   - ClassSkillIndex: HS3041
@@ -665,14 +665,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1.2
     ClassSkillSubValueLv1: 0.15
-    ClassSkillValueLv2: 1.3
-    ClassSkillSubValueLv2: 0.25
-    ClassSkillValueLv3: 1.4
-    ClassSkillSubValueLv3: 0.35
-    ClassSkillValueLv4: 1.5
-    ClassSkillSubValueLv4: 0.45
-    ClassSkillValueLv5: 1.6
-    ClassSkillSubValueLv5: 0.55
+    ClassSkillValueLv2: 1.2
+    ClassSkillSubValueLv2: 0.15
+    ClassSkillValueLv3: 1.2
+    ClassSkillSubValueLv3: 0.15
+    ClassSkillValueLv4: 1.2
+    ClassSkillSubValueLv4: 0.15
+    ClassSkillValueLv5: 1.2
+    ClassSkillSubValueLv5: 0.15
     ReplaceSkillIndex: HS3040
     SkillRiskIndex: R0303
   - ClassSkillIndex: HS4010
@@ -691,13 +691,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.5
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0.6
+    ClassSkillValueLv2: 0.5
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 0.7
+    ClassSkillValueLv3: 0.5
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 0.8
+    ClassSkillValueLv4: 0.5
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 0.9
+    ClassSkillValueLv5: 0.5
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: 
     SkillRiskIndex: R0401
@@ -718,13 +718,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.8
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0.9
+    ClassSkillValueLv2: 0.8
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 1
+    ClassSkillValueLv3: 0.8
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1.1
+    ClassSkillValueLv4: 0.8
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.2
+    ClassSkillValueLv5: 0.8
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: 
     SkillRiskIndex: R0403
@@ -746,14 +746,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 1
     ClassSkillValueLv1: 0.3
     ClassSkillSubValueLv1: 0.3
-    ClassSkillValueLv2: 0.4
-    ClassSkillSubValueLv2: 0.4
-    ClassSkillValueLv3: 0.5
-    ClassSkillSubValueLv3: 0.5
-    ClassSkillValueLv4: 0.6
-    ClassSkillSubValueLv4: 0.6
-    ClassSkillValueLv5: 0.7
-    ClassSkillSubValueLv5: 0.7
+    ClassSkillValueLv2: 0.3
+    ClassSkillSubValueLv2: 0.3
+    ClassSkillValueLv3: 0.3
+    ClassSkillSubValueLv3: 0.3
+    ClassSkillValueLv4: 0.3
+    ClassSkillSubValueLv4: 0.3
+    ClassSkillValueLv5: 0.3
+    ClassSkillSubValueLv5: 0.3
     ReplaceSkillIndex: 
     SkillRiskIndex: R0402
   - ClassSkillIndex: HS4040
@@ -776,14 +776,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.2
     ClassSkillSubValueLv1: 0.2
-    ClassSkillValueLv2: 0.3
-    ClassSkillSubValueLv2: 0.3
-    ClassSkillValueLv3: 0.4
-    ClassSkillSubValueLv3: 0.4
-    ClassSkillValueLv4: 0.5
-    ClassSkillSubValueLv4: 0.5
-    ClassSkillValueLv5: 0.6
-    ClassSkillSubValueLv5: 0.6
+    ClassSkillValueLv2: 0.2
+    ClassSkillSubValueLv2: 0.2
+    ClassSkillValueLv3: 0.2
+    ClassSkillSubValueLv3: 0.2
+    ClassSkillValueLv4: 0.2
+    ClassSkillSubValueLv4: 0.2
+    ClassSkillValueLv5: 0.2
+    ClassSkillSubValueLv5: 0.2
     ReplaceSkillIndex: 
     SkillRiskIndex: R0401
   - ClassSkillIndex: HS4011
@@ -802,13 +802,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.7
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 0.8
+    ClassSkillValueLv2: 0.7
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 0.9
+    ClassSkillValueLv3: 0.7
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1
+    ClassSkillValueLv4: 0.7
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.1
+    ClassSkillValueLv5: 0.7
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: HS4010
     SkillRiskIndex: R0401
@@ -829,13 +829,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 1
     ClassSkillSubValueLv1: 0
-    ClassSkillValueLv2: 1.1
+    ClassSkillValueLv2: 1
     ClassSkillSubValueLv2: 0
-    ClassSkillValueLv3: 1.2
+    ClassSkillValueLv3: 1
     ClassSkillSubValueLv3: 0
-    ClassSkillValueLv4: 1.3
+    ClassSkillValueLv4: 1
     ClassSkillSubValueLv4: 0
-    ClassSkillValueLv5: 1.4
+    ClassSkillValueLv5: 1
     ClassSkillSubValueLv5: 0
     ReplaceSkillIndex: HS4020
     SkillRiskIndex: R0403
@@ -857,14 +857,14 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 1
     ClassSkillValueLv1: 0.5
     ClassSkillSubValueLv1: 0.5
-    ClassSkillValueLv2: 0.6
-    ClassSkillSubValueLv2: 0.6
-    ClassSkillValueLv3: 0.7
-    ClassSkillSubValueLv3: 0.7
-    ClassSkillValueLv4: 0.8
-    ClassSkillSubValueLv4: 0.8
-    ClassSkillValueLv5: 0.9
-    ClassSkillSubValueLv5: 0.9
+    ClassSkillValueLv2: 0.5
+    ClassSkillSubValueLv2: 0.5
+    ClassSkillValueLv3: 0.5
+    ClassSkillSubValueLv3: 0.5
+    ClassSkillValueLv4: 0.5
+    ClassSkillSubValueLv4: 0.5
+    ClassSkillValueLv5: 0.5
+    ClassSkillSubValueLv5: 0.5
     ReplaceSkillIndex: HS4030
     SkillRiskIndex: R0402
   - ClassSkillIndex: HS4041
@@ -887,13 +887,13 @@ MonoBehaviour:
     ClassSkill_MultiTargetCount: 0
     ClassSkillValueLv1: 0.3
     ClassSkillSubValueLv1: 0.3
-    ClassSkillValueLv2: 0.4
-    ClassSkillSubValueLv2: 0.4
-    ClassSkillValueLv3: 0.5
-    ClassSkillSubValueLv3: 0.5
-    ClassSkillValueLv4: 0.6
-    ClassSkillSubValueLv4: 0.6
-    ClassSkillValueLv5: 0.7
-    ClassSkillSubValueLv5: 0.7
+    ClassSkillValueLv2: 0.3
+    ClassSkillSubValueLv2: 0.3
+    ClassSkillValueLv3: 0.3
+    ClassSkillSubValueLv3: 0.3
+    ClassSkillValueLv4: 0.3
+    ClassSkillSubValueLv4: 0.3
+    ClassSkillValueLv5: 0.3
+    ClassSkillSubValueLv5: 0.3
     ReplaceSkillIndex: HS4040
     SkillRiskIndex: R0401

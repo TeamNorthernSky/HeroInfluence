@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 051014fd76a4cce4c87ee0f104a25d1f, type: 3}
+  m_Name: BGHouse002
+  m_EditorClassIdentifier: 
+  buildingId: BGHouse002
+  prefab: {fileID: 7660221021570841454, guid: 2c7a5602cd7a2a549bf5696fbc38d9e1, type: 3}
+  recolorShader: {fileID: 4800000, guid: 81d3ea1c9ef6b804d86d5127ba6a1e43, type: 3}
+  classificationNote: "\uC9C0\uBD95\xB7\uC2DD\uC0DD\xB7\uBC14\uB2E5\uC740 \uC2E4\uC81C
+    \uBA54\uC2DC \uBD80\uD488\uC758 \uBC94\uC704\uB85C \uC81C\uD55C\uD569\uB2C8\uB2E4.
+    \uCC3D\uBB38 \uC0C9\uC5ED\uC740 \uAC74\uBB3C \uC678\uBCBD \uC548\uC5D0\uC11C\uB9CC
+    \uAC80\uCD9C\uD558\uBA70, \uAD00\uB828 \uC5C6\uB294 \uC18C\uD488\uC740 \uC6D0\uBCF8
+    \uC0C9\uC0C1\uC744 \uC720\uC9C0\uD569\uB2C8\uB2E4. \uD30C\uCE20 \uC601\uC5ED
+    \uBCF4\uAE30\uB85C \uBC94\uC704\uB97C \uD655\uC778\uD558\uC138\uC694. \uC11C\uB85C
+    \uB2E4\uB978 \uD30C\uCE20\uAC00 \uACF5\uC720\uD558\uB358 UV\uB3C4 \uBD84\uB9AC\uD588\uC2B5\uB2C8\uB2E4.
+    \uBCF4\uC870 \uB3C4\uC7A5\xB7\uC18C\uD488\uC740 \uAE30\uC874 \uD30C\uCE20 \uBC16\uC758
+    \uC62C\uB9AC\uBE0C\uC0C9 \uB3C4\uC7A5\uACFC \uC18C\uD488\uC785\uB2C8\uB2E4. \uACF5\uC720
+    \uD314\uB808\uD2B8 \uAC74\uBB3C\uC758 \uC62C\uB9AC\uBE0C\uC0C9 \uD558\uB2E8\xB7\uCE35\uAC04
+    \uB760\uB3C4 \uC774 \uD56D\uBAA9\uC5D0\uC11C \uC870\uC808\uD569\uB2C8\uB2E4."
+  bindings:
+  - material: {fileID: 2100000, guid: 24f5ef7c3ba12654cb055f872feb03b9, type: 2}
+    original: {fileID: 2800000, guid: ac3919bafc6631d43878fdc1882937a1, type: 3}
+    source: {fileID: 2800000, guid: 70b35683e114e1248b751f04624bb2e4, type: 3}
+    maskParts: {fileID: 2800000, guid: 99d12a53ac358454f8d56202bd3496cb, type: 3}
+    maskFloor: {fileID: 2800000, guid: 5249112bb23ab7748ae3359f282ac078, type: 3}
+    maskExtra: {fileID: 2800000, guid: 42e606d60ff59744e97cee2ca5b1f3de, type: 3}
+    maskExtra2: {fileID: 2800000, guid: aee72f357fdfbf145ac243c7747aa6a1, type: 3}
+  initial:
+  - hue: 65.23772
+    lightness: 0.9061939
+    saturation: 8.691623
+  - hue: 46.75366
+    lightness: 0.6745037
+    saturation: 16.697527
+  - hue: 203.80215
+    lightness: 0.6339203
+    saturation: 14.91119
+  - hue: 123.76332
+    lightness: 0.5583992
+    saturation: 21.501314
+  - hue: 69.059235
+    lightness: 0.7601904
+    saturation: 0.000013885564
+  - hue: 77.193954
+    lightness: 0.5527089
+    saturation: 14.230127
+  - hue: 83.20043
+    lightness: 0.5526607
+    saturation: 14.38709
+  - hue: 96.02195
+    lightness: 0.6901078
+    saturation: 18.234674
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - pot
+  - soil
+  - accent
+  partNames:
+  - "\uBCBD"
+  - "\uC9C0\uBD95\xB7\uCC28\uC591"
+  - "\uCC3D\uBB38"
+  - "\uC2DD\uC0DD"
+  - "\uBC14\uB2E5 \uBE14\uB85D"
+  - "\uD654\uBD84"
+  - "\uD654\uBD84 \uD1A0\uC591"
+  - "\uBCF4\uC870 \uB3C4\uC7A5\xB7\uC18C\uD488"
+  defaults:
+  - hue: 65.23772
+    lightness: 0.9061939
+    saturation: 8.691623
+  - hue: 46.75366
+    lightness: 0.6745037
+    saturation: 16.697527
+  - hue: 203.80215
+    lightness: 0.6339203
+    saturation: 14.91119
+  - hue: 123.76332
+    lightness: 0.5583992
+    saturation: 21.501314
+  - hue: 69.059235
+    lightness: 0.7601904
+    saturation: 0.000013885564
+  - hue: 77.193954
+    lightness: 0.5527089
+    saturation: 14.230127
+  - hue: 83.20043
+    lightness: 0.5526607
+    saturation: 14.38709
+  - hue: 96.02195
+    lightness: 0.6901078
+    saturation: 18.234674
+  meshes:
+  - original: {fileID: 4910611039589781254, guid: 1978359ca6b40c042b44c05bcab9cdae,
+      type: 3}
+    separated: {fileID: 4300000, guid: 7465f8f1d41070145a24e4be60f42851, type: 2}

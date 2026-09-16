@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-/// <summary>전투 스킬 버튼의 표시와 입력 선택 상태를 연결합니다. 스킬 장착·실행 데이터는 변경하지 않습니다.</summary>
+/// <summary>전투 스킬 버튼의 표시와 입력 선택 상태를 연결합니다. 선택한 스킬 ID를 이번 시전 입력에 전달합니다.</summary>
 public class SkillButtonController : MonoBehaviour
 {
     [Tooltip("기존 단일 히어로 스킬 버튼입니다. 4슬롯이 없는 씬에서 사용합니다.")]
@@ -21,11 +21,12 @@ public class SkillButtonController : MonoBehaviour
     private class HeroSkillSlot
     {
         [Tooltip("씬에 배치한 스킬 선택 토글입니다.")] public ToggleButton toggle;
-        [Tooltip("습득 및 기존 실행 연결 여부에 따라 활성화하는 버튼입니다.")] public Button button;
+        [Tooltip("해당 스킬의 습득 여부에 따라 활성화하는 버튼입니다.")] public Button button;
         [Tooltip("표시할 스킬의 아이콘입니다.")] public Image icon;
         [Tooltip("표시할 스킬 이름입니다.")] public TMP_Text name;
         [Tooltip("요구 레벨 미달 시 표시하는 음영과 자물쇠 묶음입니다.")] public GameObject lockedOverlay;
         [Tooltip("습득했지만 실행 연결이 없는 슬롯의 임시 안내입니다.")] public GameObject unconnectedLabel;
+        [Tooltip("이 슬롯의 사용 가능 효과와 선택 테두리입니다. 없으면 기존 표시를 유지합니다.")] public BattleSkillButtonVisual visual;
         [NonSerialized] public SkillData skill;
         [NonSerialized] public Action<bool> click;
     }
@@ -39,6 +40,9 @@ public class SkillButtonController : MonoBehaviour
     [SerializeField] private TMP_Text descriptionBody;
     [Tooltip("효과·거리·대상 순서의 태그 글자입니다. 각 글자의 부모는 개별 태그 배경이며 안내 상태에서는 숨깁니다.")]
     [SerializeField] private TMP_Text[] descriptionTags = Array.Empty<TMP_Text>();
+
+    [Tooltip("코어스킬 버튼의 사용 가능 효과와 선택 테두리입니다. 없으면 기존 표시를 유지합니다.")]
+    [SerializeField] private BattleSkillButtonVisual coreVisual;
 
     private Button hoveredSkillButton;
     private bool descriptionBattleEnded;
@@ -65,7 +69,7 @@ public class SkillButtonController : MonoBehaviour
             foreach (var slot in heroSlots)
             {
                 if (slot == null || slot.toggle == null) continue;
-                slot.click = _ => { if (slot.button != null && slot.button.interactable) Select(PendingActionType.ClassSkill); };
+                slot.click = _ => { if (slot.button != null && slot.button.interactable) Select(PendingActionType.ClassSkill, slot.skill != null ? slot.skill.skillIndex : 0); };
                 slot.toggle.OnValueChanged += slot.click;
             }
         if (battleFlowManager != null)
@@ -110,15 +114,15 @@ public class SkillButtonController : MonoBehaviour
         SetDescription(string.Empty, string.Empty, null);
     }
 
-    private void Select(PendingActionType action)
+    private void Select(PendingActionType action, int skillId = 0)
     {
         // 다른 스킬은 기존 선택을 먼저 비웁니다. 새 요청이 거절되면 미선택으로 남습니다.
-        if (inputHandler != null && inputHandler.PendingAction != action && !inputHandler.TryCancelSkillSelection())
+        if (inputHandler != null && !inputHandler.TryCancelSkillSelection())
         {
             SyncSelection();
             return;
         }
-        inputHandler?.BeginPendingAction(action);
+        inputHandler?.BeginPendingAction(action, skillId);
         // 요청이 IP 부족·튜토리얼 제한 등으로 거절되어도 실제 입력 상태만 표시합니다.
         SyncSelection();
     }
@@ -142,35 +146,20 @@ public class SkillButtonController : MonoBehaviour
         if (HasHeroSlots)
         {
             var catalog = DHCsvTemplateCatalog.Instance;
-            var skills = new List<SkillData>();
+            var bases = new List<SkillData>();
             if (unit != null && unit.IsPlayer && unit.SourceData != null && catalog != null &&
-                catalog.TryGetPlayerUnitTemplate(unit.SourceData.UnitTemplateKey, out var template))
-                skills = catalog.GetSkillsByClassIndex(template.ClassIndex);
-
-            // 강화판은 ReplaceSkillKey로 같은 기본 스킬 자리에 묶습니다.
-            // 현재 데이터에서 루미나의 습득 순서는 ID 순서와 다릅니다.
-            var bases = skills.FindAll(s => string.IsNullOrEmpty(ReplacementKey(catalog, s)));
-            bases.Sort((a, b) => { int order = a.acquireLevel.CompareTo(b.acquireLevel); return order != 0 ? order : a.skillIndex.CompareTo(b.skillIndex); });
+                catalog.TryGetPlayerUnitTemplate(unit.SourceData.UnitTemplateKey, out var playerTemplate))
+                bases = catalog.GetCurrentClassSkills(playerTemplate.ClassIndex, unit.Level, true);
             for (int i = 0; i < heroSlots.Length; i++)
             {
                 var slot = heroSlots[i];
                 if (slot == null) continue;
-                SkillData basic = i < bases.Count ? bases[i] : null;
-                SkillData shown = basic;
-                if (basic != null)
-                {
-                    foreach (var candidate in skills)
-                        if (ReplacementKey(catalog, candidate) == basic.skillKey && candidate.acquireLevel <= unit.Level &&
-                            candidate.acquireLevel > shown.acquireLevel) shown = candidate;
-                    // 실행 연결된 기본판을 UI만으로 강화판으로 바꿔 표시하지 않습니다.
-                    if (connected != null && (connected.skillIndex == basic.skillIndex || ReplacementKey(catalog, connected) == basic.skillKey))
-                        shown = connected;
-                }
+                SkillData shown = i < bases.Count ? bases[i] : null;
                 // 기존 카탈로그가 없는 테스트 씬도 원래 연결된 한 스킬은 그대로 표시합니다.
                 if (bases.Count == 0 && i == 0) shown = connected;
                 slot.skill = shown;
                 bool locked = shown != null && shown.acquireLevel > unit.Level;
-                bool wired = shown != null && connected != null && shown.skillIndex == connected.skillIndex;
+                bool wired = shown != null && !locked;
                 if (slot.button != null) slot.button.interactable = wired && !locked;
                 if (slot.name != null) slot.name.text = shown != null ? shown.skillName : "-";
                 if (slot.icon != null)
@@ -186,17 +175,11 @@ public class SkillButtonController : MonoBehaviour
         SyncSelection();
     }
 
-    private static string ReplacementKey(DHCsvTemplateCatalog catalog, SkillData skill)
-    {
-        return catalog != null && catalog.TryGetClassSkillTemplate(skill.skillIndex, out var template)
-            ? template.ReplaceSkillKey : string.Empty;
-    }
-
     private void SyncSelection()
     {
         var action = inputHandler != null ? inputHandler.PendingAction : PendingActionType.None;
         CurrentSkillData = action == PendingActionType.ClassSkill || action == PendingActionType.WeaponSkill
-            ? battleFlowManager?.GetCurrentUnitSkill(action) : null;
+            ? inputHandler?.PendingSkill : null;
         if (HasHeroSlots)
         {
             foreach (var slot in heroSlots)
@@ -269,14 +252,42 @@ public class SkillButtonController : MonoBehaviour
         {
             int weaponIndex = unit.EquippedWeaponIndex > 0 ? unit.EquippedWeaponIndex : (unit.SourceData?.CurrentWeaponIndex ?? 0);
             int level = gm != null && gm.Workshop != null && unitIndex > 0 ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(weaponIndex)) : 1;
-            body = WeaponTooltipText.BuildWeaponSkillDesc(unit.EquippedWeaponData, weaponIndex, level);
+            body = WeaponTooltipText.BuildWeaponSkillDesc(unit.EquippedWeaponData, weaponIndex, level, percentageValues: true);
         }
         else
         {
             int level = gm != null && gm.Lab != null && unitIndex > 0 ? gm.Lab.GetSkillLevel(unitIndex, skill.skillIndex) : (unit.SourceData?.SkillLevel ?? 1);
-            body = ClassSkillTooltipText.BuildDesc(skill, level);
+            body = ClassSkillTooltipText.BuildDesc(skill, level, percentageValues: true);
         }
         SetDescription(skill.skillName, body, skill);
+    }
+
+    private void LateUpdate()
+    {
+        if (coreVisual == null && (!HasHeroSlots || !System.Array.Exists(heroSlots, s => s != null && s.visual != null))) return;
+        var actor = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
+        bool ready = actor != null && actor.IsPlayer && !actor.IsDead && !descriptionBattleEnded &&
+            !battleFlowManager.IsEndingBattle && !battleFlowManager.IsActionInProgress &&
+            !battleFlowManager.IsTurnPresentationPending && !battleFlowManager.IsFlowBlocked &&
+            inputHandler != null && !inputHandler.IsAutoBattleActive && Time.timeScale > 0f;
+        if (HasHeroSlots)
+            foreach (var slot in heroSlots)
+            {
+                if (slot == null || slot.visual == null) continue;
+                bool available = ready && slot.button != null && slot.button.IsInteractable() && slot.skill != null &&
+                    actor.CurrentInfluence >= Mathf.Max(0f, slot.skill.IPCost) &&
+                    battleFlowManager.IsPlayerActionAllowed(actor, PendingActionType.ClassSkill, null);
+                slot.visual.SetState(available, ready && slot.toggle != null && slot.toggle.IsOn);
+            }
+        if (coreVisual != null)
+        {
+            var button = toggle2 != null ? toggle2.GetComponent<Button>() : null;
+            var weapon = actor != null ? actor.EquippedWeaponData : null;
+            bool available = ready && button != null && button.IsInteractable() && weapon != null &&
+                actor.CurrentInfluence >= Mathf.Max(0f, weapon.IPCost) &&
+                battleFlowManager.IsPlayerActionAllowed(actor, PendingActionType.WeaponSkill, null);
+            coreVisual.SetState(available, ready && toggle2 != null && toggle2.IsOn);
+        }
     }
 
     private void SetDescription(string title, string body, SkillData skill)
