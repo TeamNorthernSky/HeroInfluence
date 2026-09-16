@@ -162,6 +162,7 @@ namespace ASB.Work.Battle.SkillExecution
                 case StatusEffectType.poison:
                 case StatusEffectType.attack_up:
                 case StatusEffectType.attack_down:
+                case StatusEffectType.damage_taken_down:
                 case StatusEffectType.defense_up:
                 case StatusEffectType.defense_down:
                     context.Target.ApplyStatusEffect(CreateStatusEffectInstance(context));
@@ -178,7 +179,7 @@ namespace ASB.Work.Battle.SkillExecution
             {
                 effectType = context.EffectType,
                 category = ResolveStatusEffectCategory(context.EffectType),
-                value = 0f,
+                value = context.Value,
                 remainingTurns = Mathf.Max(1, context.DurationTurn),
                 source = context.Caster
             };
@@ -189,6 +190,7 @@ namespace ASB.Work.Battle.SkillExecution
             switch (effectType)
             {
                 case StatusEffectType.attack_up:
+                case StatusEffectType.damage_taken_down:
                 case StatusEffectType.defense_up:
                     return StatusEffectCategory.buff;
                 case StatusEffectType.poison:

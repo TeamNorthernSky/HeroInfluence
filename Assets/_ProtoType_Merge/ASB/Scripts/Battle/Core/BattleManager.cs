@@ -697,7 +697,7 @@ public class BattleManager : MonoBehaviour
                         playTargetHitAnimation: false,
                         onHitCallback: healCallback,
                         deliveryGate: new HitDeliveryGate(),
-                        presentationTargets: healContext.SkillIndex == 4030 ? groupHealPresentationTargets : null));
+                        presentationTargets: HeroSkillRules.FamilyId(healContext.SkillIndex) == 4030 ? groupHealPresentationTargets : null));
                     yield return StartCoroutine(healQueue.RunAll(this));
                     previousHealTarget = healContext.Target;
                 }
@@ -705,7 +705,7 @@ public class BattleManager : MonoBehaviour
                 {
                     // 인접 아군: 시전 애니 없이 스태거 딜레이 후 힐 이펙트 + 힐.
                     yield return WaitForBattleSeconds(MultiHealStaggerSeconds);
-                    if (healContext.SkillIndex == 4030 && previousHealTarget != null)
+                    if (HeroSkillRules.FamilyId(healContext.SkillIndex) == 4030 && previousHealTarget != null)
                     {
                         yield return PlayGroupHealBounceProjectile(
                             previousHealTarget,
@@ -724,6 +724,21 @@ public class BattleManager : MonoBehaviour
 
         if (result.StatusEffectContexts != null && result.StatusEffectContexts.Count > 0)
         {
+            // 피해/회복이 없는 코어도 한 번의 시전 연출을 거친 뒤 효과를 확정합니다.
+            if (result.DamageContexts.Count == 0 && result.HealContexts.Count == 0 && result.Skill != null)
+            {
+                var statusTargets = result.StatusEffectContexts.Select(c => c.Target)
+                    .Where(t => t != null && !t.IsDead).Distinct().ToList();
+                if (statusTargets.Count > 0)
+                {
+                    var statusQueue = new ASB.Work.Battle.Command.BattleActionQueue();
+                    statusQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
+                        result.Caster, statusTargets[0], SkillPresentationDirector.ResolveSkillAnimationData(result.Skill),
+                        playBasicAttackAnimation: false, playTargetHitAnimation: false,
+                        onHitCallback: () => null, deliveryGate: new HitDeliveryGate(), presentationTargets: statusTargets));
+                    yield return StartCoroutine(statusQueue.RunAll(this));
+                }
+            }
             for (int i = 0; i < result.StatusEffectContexts.Count; i++)
             {
                 StatusEffectContext statusContext = result.StatusEffectContexts[i];
@@ -786,6 +801,8 @@ public class BattleManager : MonoBehaviour
 
                 committed = true;
                 capturedRevive.Target.Revive(capturedRevive.ReviveHpRatio);
+                if (HeroSkillRules.FamilyId(capturedRevive.SkillIndex) == 4040 && capturedRevive.Caster != null)
+                    capturedRevive.Caster.HasUsedRevive = true;
                 Debug.Log($"[Combat] {capturedRevive.Target.UnitName} 부활 (ratio={capturedRevive.ReviveHpRatio:0.##})");
                 return new BattleHitResult
                 {
@@ -970,7 +987,21 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        bool reviveSkill = classSkillRow.classSkillEffect == ClassSkillEffect_Revive;
+        bool tao = HeroSkillRules.IsFamily(classSkillRow, 4040);
+        if (actor.SourceData != null && HeroSkillRules.IsCurrentHeroSkill(classSkillRow.skillIndex) &&
+            !actor.availableSkills.Exists(s => s != null && s.skillIndex == classSkillRow.skillIndex && s.acquireLevel <= actor.Level))
+        {
+            onCompleted?.Invoke(false);
+            yield break;
+        }
+        if (actor.IsPlayer && (classSkillRow.skillKey?.StartsWith("HS") == true || classSkillRow.skillKey?.StartsWith("HCS") == true) &&
+            !TargetingHelper.GetValidTargetsForSkillData(actor, classSkillRow).Contains(target))
+        {
+            onCompleted?.Invoke(false);
+            yield break;
+        }
+        bool reviveSkill = tao ? SkillActivationRules.RequiresReviveTarget(actor, classSkillRow)
+            : classSkillRow.classSkillEffect == ClassSkillEffect_Revive;
         if (target.IsDead && !reviveSkill)
         {
             onCompleted?.Invoke(false);
@@ -983,7 +1014,7 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        if (!TryConsumeSkillInfluence(actor, classSkillRow))
+        if (actor.IsPlayer && actor.CurrentInfluence < Mathf.Max(0f, classSkillRow.IPCost))
         {
             Debug.LogWarning("[BattleManager] Influence가 부족하여 스킬을 사용할 수 없습니다.");
             onCompleted?.Invoke(false);
@@ -999,6 +1030,12 @@ public class BattleManager : MonoBehaviour
         else
         {
             result = BuildDefaultSkillResult(actor, target, classSkillRow, SkillExecutionOptions.Normal);
+        }
+
+        if (result == null || !result.Success || !TryConsumeSkillInfluence(actor, classSkillRow))
+        {
+            onCompleted?.Invoke(false);
+            yield break;
         }
 
         // 인질 부수피해의 중심 칸은 피해 확정 '전'에 스냅샷한다.

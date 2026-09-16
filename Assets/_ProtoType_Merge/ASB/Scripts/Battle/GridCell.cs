@@ -101,7 +101,7 @@ namespace ASB.Work.BattleGrid
                 return;
             }
 
-            cellRenderer.sharedMaterial = mat;
+            if (cellRenderer.sharedMaterial != mat) cellRenderer.sharedMaterial = mat;
         }
 
         public void ClearHighlight()
@@ -121,7 +121,7 @@ namespace ASB.Work.BattleGrid
                 return;
             }
 
-            cellRenderer.sharedMaterial = mat;
+            if (cellRenderer.sharedMaterial != mat) cellRenderer.sharedMaterial = mat;
         }
 
         public void SetTransparentTargetMaterial(Material mat)

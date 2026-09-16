@@ -1080,8 +1080,34 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         RecalculateStats(Application.isPlaying);
     }
 
+    private SkillData castSelectedSkill;
+    public float SkillDamageTakenMultiplier => Effects.DamageTakenMultiplier;
+
+    /// <summary>이번 시전의 선택입니다. 영속 장착값과 반격 기본값은 바꾸지 않습니다.</summary>
+    public bool TrySelectSkillForCast(int skillId)
+    {
+        var skill = availableSkills?.Find(s => s != null && s.skillIndex == skillId && s.acquireLevel <= Level);
+        if (skill == null) return false;
+        if (SourceData != null && GameManager.Instance?.Lab != null)
+            skill.enhancementLevel = GameManager.Instance.Lab.GetSkillLevel(SourceData.UnitIndex, skill.skillIndex);
+        castSelectedSkill = skill;
+        SelectedSkillData = skill;
+        return true;
+    }
+
+    public void ClearSkillForCast()
+    {
+        castSelectedSkill = null;
+        ResolveSelectedSkill(false);
+    }
+
     public void ResolveSelectedSkill(bool emitWarning = true)
     {
+        if (castSelectedSkill != null)
+        {
+            SelectedSkillData = castSelectedSkill;
+            return;
+        }
         if (SourceData != null && SourceData.CurrentSkillIndex > 0)
         {
             classSkillIndex = SourceData.CurrentSkillIndex;
@@ -1105,7 +1131,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
                 for (int i = 0; i < availableSkills.Count; i++)
                 {
                     SkillData candidate = availableSkills[i];
-                    if (candidate != null && candidate.skillIndex == classSkillIndex)
+                    if (candidate != null && HeroSkillRules.FamilyId(candidate.skillIndex) == HeroSkillRules.FamilyId(classSkillIndex))
                     {
                         localIndex = i;
                         break;

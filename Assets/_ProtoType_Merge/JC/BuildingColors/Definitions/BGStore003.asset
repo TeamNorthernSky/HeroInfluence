@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 051014fd76a4cce4c87ee0f104a25d1f, type: 3}
+  m_Name: BGStore003
+  m_EditorClassIdentifier: 
+  buildingId: BGStore003
+  prefab: {fileID: 106364087087084287, guid: 51071bfddc7d02442b2bdc5a90f962b6, type: 3}
+  recolorShader: {fileID: 4800000, guid: 81d3ea1c9ef6b804d86d5127ba6a1e43, type: 3}
+  classificationNote: "\uBCF4\uC870\uB3C4\uC7A5: \uCC3D \uC544\uB798 \uD558\uB2E8
+    \uB760\uC640 \uBB38 \uC8FC\uBCC0\uC758 \uC62C\uB9AC\uBE0C\uC0C9 \uB3C4\uC7A5\uBA74.
+    \uAC04\uD310\uACFC \uD584\uBC84\uAC70\uB294 \uAC01\uAC01 \uC870\uC808\uD569\uB2C8\uB2E4.
+    \uBCF4\uC870\uB3C4\uC7A5 2: \uC9C4\uC785\uCC28\uB2E8\uBD09 \uAE08\uC18D \uD3EC\uC778\uD2B8\xB7\uCE21\uBA74
+    \uD654\uB2E8 \uD14C\uB450\uB9AC\xB7\uAE30\uC874 \uC18C\uD488 \uD3EC\uC778\uD2B8.
+    \uD654\uBD84 \uBAB8\uCCB4\uC640 \uD1A0\uC591\uC740 \uAE30\uC874 \uD56D\uBAA9\uC744
+    \uC0AC\uC6A9\uD569\uB2C8\uB2E4. \uC625\uC0C1 \uD14C\uB450\uB9AC \uC804\uCCB4(\uC717\uBA74\xB7\uC548\uCABD
+    \uBA74 \uD3EC\uD568)\uB294 \uC9C0\uBD95\xB7\uCC28\uC591\uC73C\uB85C \uC870\uC808\uD569\uB2C8\uB2E4."
+  bindings:
+  - material: {fileID: 2100000, guid: a76819415561a8b42aef05df8a51dd70, type: 2}
+    original: {fileID: 0}
+    source: {fileID: 0}
+    maskParts: {fileID: 2800000, guid: 24066d68b75bb4e46b7a543b41e75aca, type: 3}
+    maskFloor: {fileID: 2800000, guid: dfed223b1093ab64589589bf4bba64ad, type: 3}
+    maskExtra: {fileID: 2800000, guid: 862c98be4560dbe409f583851552190b, type: 3}
+    maskExtra2: {fileID: 2800000, guid: b14f18869df2b4b4590dc7fa6c2d12ee, type: 3}
+  - material: {fileID: 2100000, guid: 5c320a7d07597594d96576decab8ecea, type: 2}
+    original: {fileID: 2800000, guid: bbbff7dc71530724f96592f95084c53b, type: 3}
+    source: {fileID: 2800000, guid: bbbff7dc71530724f96592f95084c53b, type: 3}
+    maskParts: {fileID: 2800000, guid: f5f1dc3b6ce444e43a6ee8848d518eaf, type: 3}
+    maskFloor: {fileID: 2800000, guid: ea26a0c74ecbd104ca2df3a0894a4f77, type: 3}
+    maskExtra: {fileID: 2800000, guid: 6766733175d9b0d41a5cce548c7fe7fb, type: 3}
+    maskExtra2: {fileID: 2800000, guid: a50bf24899e73e64c866e2b37801cb67, type: 3}
+  initial:
+  - hue: 82.861534
+    lightness: 0.6799856
+    saturation: 8.833468
+  - hue: 89.9099
+    lightness: 0.45277253
+    saturation: 6.588923
+  - hue: 177.63486
+    lightness: 0.4832234
+    saturation: 12.301488
+  - hue: 102.394005
+    lightness: 0.4528857
+    saturation: 16.00951
+  - hue: 87.57754
+    lightness: 0.31864005
+    saturation: 7.0348887
+  - hue: 87.0676
+    lightness: 0.47486112
+    saturation: 6.3747973
+  - hue: 88.64103
+    lightness: 0.40474603
+    saturation: 9.282709
+  - hue: 96.851265
+    lightness: 0.3489074
+    saturation: 8.290112
+  - hue: 102.632866
+    lightness: 0.37794784
+    saturation: 13.286578
+  - hue: 95.08069
+    lightness: 0.41858992
+    saturation: 10.676551
+  - hue: 95.08069
+    lightness: 0.41858992
+    saturation: 10.676551
+  - hue: 95.08069
+    lightness: 0.41858992
+    saturation: 10.676551
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - pot
+  - soil
+  - accent
+  - sign_face
+  - sign_symbol
+  - accent2
+  partNames:
+  - "\uBCBD"
+  - "\uC9C0\uBD95\xB7\uCC28\uC591"
+  - "\uCC3D\uBB38"
+  - "\uC2DD\uC0DD"
+  - "\uBC14\uB2E5 \uBE14\uB85D"
+  - "\uC625\uC0C1 \uBC14\uB2E5\uBA74"
+  - "\uD654\uBD84"
+  - "\uD654\uBD84 \uD1A0\uC591"
+  - "\uBCF4\uC870\uB3C4\uC7A5"
+  - "\uAC04\uD310"
+  - "\uD584\uBC84\uAC70"
+  - "\uBCF4\uC870\uB3C4\uC7A5 2"
+  defaults:
+  - hue: 82.861534
+    lightness: 0.6799856
+    saturation: 8.833468
+  - hue: 89.9099
+    lightness: 0.45277253
+    saturation: 6.588923
+  - hue: 177.63486
+    lightness: 0.4832234
+    saturation: 12.301488
+  - hue: 102.394005
+    lightness: 0.4528857
+    saturation: 16.00951
+  - hue: 87.57754
+    lightness: 0.31864005
+    saturation: 7.0348887
+  - hue: 87.0676
+    lightness: 0.47486112
+    saturation: 0
+  - hue: 88.64103
+    lightness: 0.40474603
+    saturation: 9.282709
+  - hue: 96.851265
+    lightness: 0.3489074
+    saturation: 8.290112
+  - hue: 102.632866
+    lightness: 0.37794784
+    saturation: 13.286578
+  - hue: 95.08069
+    lightness: 0.41858992
+    saturation: 10.676551
+  - hue: 95.08069
+    lightness: 0.41858992
+    saturation: 10.676551
+  - hue: 95.08069
+    lightness: 0.41858992
+    saturation: 10.676551
+  meshes: []

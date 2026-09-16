@@ -58,8 +58,15 @@ public static class TargetingHelper
             return result;
         }
 
-        bool isHeal = skill.classSkillEffect == ClassSkillEffect_Heal;
-        bool isRevive = skill.classSkillEffect == ClassSkillEffect_Revive;
+        if (SkillActivationRules.Kind(actor, skill) == SkillActivationKind.Self)
+        {
+            result.Add(actor);
+            return result;
+        }
+        bool isHeal = skill.classSkillEffect == ClassSkillEffect_Heal || skill.classSkillEffect == 3;
+        bool isTao = HeroSkillRules.IsFamily(skill, 4040);
+        bool isRevive = isTao ? SkillActivationRules.RequiresReviveTarget(actor, skill)
+            : skill.classSkillEffect == ClassSkillEffect_Revive;
 
         // [1단계] 진영 + 스킬 성격 1차 필터링
         // - 부활: 죽은 아군만 (적군·생존자 제외)
@@ -121,7 +128,9 @@ public static class TargetingHelper
         // [2단계] 우선순위는 classSkillRangeLine만 사용합니다.
         // 부활 스킬은 사망자가 필요하므로 생존 필터(GetAllValidTargets)를 패스합니다.
         List<BattleCharactor> baseTargets = isRevive ? stage1 : GetAllValidTargets(stage1);
-        List<BattleCharactor> finalTargets = ApplyPriorityFilter(actor, baseTargets, skill);
+        var kind = SkillActivationRules.Kind(actor, skill);
+        List<BattleCharactor> finalTargets = isRevive || kind == SkillActivationKind.Side || kind == SkillActivationKind.Column
+            ? baseTargets : ApplyPriorityFilter(actor, baseTargets, skill);
 
         for (int i = 0; i < finalTargets.Count; i++)
         {

@@ -35,10 +35,10 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
 
         if (_effect is LetsFightingLoveVfx letsFightingLove)
         {
-            letsFightingLove.SetChainCandidates(context?.Targets?
-                .Where(unit => unit != null && !unit.IsDead)
-                .Select(unit => unit.transform)
-                .ToArray());
+            letsFightingLove.SetTargets(context?.Targets?
+                .Where(unit => unit != null && unit != targetUnit)
+                .Select(unit => JC.VFX.VfxTarget.Of(unit.transform))
+                .ToArray() ?? System.Array.Empty<JC.VFX.VfxTarget>());
         }
 
         _played = true;

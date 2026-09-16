@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e784527f640bea4c8add67e46164452, type: 3}
+  m_Name: BGStore004_Default
+  m_EditorClassIdentifier: 
+  buildingId: BGStore004
+  parts:
+  - hue: 77.116684
+    lightness: 0.74482715
+    saturation: 8.529822
+    ignoreSourceColorAndShading: 0
+  - hue: 141.76785
+    lightness: 0.29117113
+    saturation: 24.359852
+    ignoreSourceColorAndShading: 0
+  - hue: 182.47115
+    lightness: 0.8855904
+    saturation: 20.712658
+    ignoreSourceColorAndShading: 0
+  - hue: 141.17834
+    lightness: 0.7852457
+    saturation: 40.311157
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.61708677
+    saturation: 0.000005747069
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.67559874
+    saturation: 0.0000062920035
+    ignoreSourceColorAndShading: 0
+  - hue: 142.4204
+    lightness: 0.44182602
+    saturation: 24.378138
+    ignoreSourceColorAndShading: 0
+  - hue: 21.594643
+    lightness: 0.41878194
+    saturation: 25.933386
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.5571509
+    saturation: 0.000005188872
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - accent
+  - mailbox
+  - crates

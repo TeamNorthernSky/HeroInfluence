@@ -1,0 +1,9 @@
+{
+  "BGHouse002": {
+    "A_Coral": {
+      "roofLightnessOffset": 0.035,
+      "floorTarget": "#B5B5B5",
+      "floorMaxHeight": 0.20
+    }
+  }
+}

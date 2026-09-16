@@ -1,0 +1,140 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 051014fd76a4cce4c87ee0f104a25d1f, type: 3}
+  m_Name: BGRowHouse002
+  m_EditorClassIdentifier: 
+  buildingId: BGRowHouse002
+  prefab: {fileID: 2123447965230796313, guid: 7bac3970904ec954faefd3c88963f393, type: 3}
+  recolorShader: {fileID: 4800000, guid: 81d3ea1c9ef6b804d86d5127ba6a1e43, type: 3}
+  classificationNote: "\uC911\uC559 \uBE14\uB85D\uC740 \uC815\uBA74 \uC138\uB85C
+    \uB3CC\uCD9C\uBD80\uC758 \uC55E\uBA74\xB7\uC591\uCABD \uCE21\uBA74\xB7\uC717\uBD80\uBD84\uC744
+    \uD568\uAED8 \uC870\uC808\uD569\uB2C8\uB2E4. \uBE14\uB85D \uC548\uC758 \uC720\uB9AC\uB294
+    \uCC3D\uBB38, \uC544\uB798 \uD604\uAD00 \uCC28\uC591\uC740 \uC9C0\uBD95\xB7\uCC28\uC591,
+    \uAC74\uBB3C \uD558\uB2E8 \uB760\uB294 \uBCF4\uC870\uB3C4\uC7A5\uC785\uB2C8\uB2E4.
+    \uD604\uAD00 \uB7A8\uD504\xB7\uC190\uC7A1\uC774\xB7\uC625\uC0C1 \uC124\uBE44\uB294
+    \uC6D0\uBCF8 \uC0C9\uC0C1\uC744 \uC720\uC9C0\uD569\uB2C8\uB2E4."
+  bindings:
+  - material: {fileID: 2100000, guid: e98d1dd4637c63341865166a4bcbf8f6, type: 2}
+    original: {fileID: 2800000, guid: b7c0a807bb082b5489ca50c813e807ef, type: 3}
+    source: {fileID: 2800000, guid: 0167b9ac0a3312b45b6b194f1d3eb36d, type: 3}
+    maskParts: {fileID: 2800000, guid: 07cf6266f1d7d974595393b0bc81b08d, type: 3}
+    maskFloor: {fileID: 2800000, guid: ee9b9a24a4bd1f94e8194d7f7c60033c, type: 3}
+    maskExtra: {fileID: 2800000, guid: 49fe19b2f24086349a5407c90809e69f, type: 3}
+    maskExtra2: {fileID: 2800000, guid: 9134ea29faa93224ebccf6cb2f0a6483, type: 3}
+  initial:
+  - hue: 76.98212
+    lightness: 0.6991008
+    saturation: 6.077579
+    ignoreSourceColorAndShading: 0
+  - hue: 92.06512
+    lightness: 0.4677572
+    saturation: 6.777789
+    ignoreSourceColorAndShading: 0
+  - hue: 182.29836
+    lightness: 0.4567463
+    saturation: 7.7816377
+    ignoreSourceColorAndShading: 0
+  - hue: 115.746605
+    lightness: 0.4607426
+    saturation: 24.55801
+    ignoreSourceColorAndShading: 0
+  - hue: 86.66222
+    lightness: 0.47611552
+    saturation: 2.167859
+    ignoreSourceColorAndShading: 0
+  - hue: 76.85579
+    lightness: 0.40544143
+    saturation: 4.69087
+    ignoreSourceColorAndShading: 0
+  - hue: 79.71939
+    lightness: 0.50665826
+    saturation: 7.429105
+    ignoreSourceColorAndShading: 0
+  - hue: 88.77837
+    lightness: 0.47378808
+    saturation: 5.885132
+    ignoreSourceColorAndShading: 0
+  - hue: 98.79057
+    lightness: 0.45759493
+    saturation: 6.9780073
+    ignoreSourceColorAndShading: 0
+  - hue: 98.79057
+    lightness: 0.45759493
+    saturation: 6.9780073
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - pot
+  - soil
+  - accent
+  - central_block
+  partNames:
+  - "\uBCBD"
+  - "\uC9C0\uBD95\xB7\uCC28\uC591"
+  - "\uCC3D\uBB38"
+  - "\uC2DD\uC0DD"
+  - "\uBC14\uB2E5 \uBE14\uB85D"
+  - "\uC625\uC0C1 \uBC14\uB2E5\uBA74"
+  - "\uD654\uBD84"
+  - "\uD654\uBD84 \uD1A0\uC591"
+  - "\uBCF4\uC870\uB3C4\uC7A5"
+  - "\uC911\uC559 \uBE14\uB85D"
+  defaults:
+  - hue: 76.98212
+    lightness: 0.6991008
+    saturation: 6.077579
+    ignoreSourceColorAndShading: 0
+  - hue: 92.06512
+    lightness: 0.4677572
+    saturation: 6.777789
+    ignoreSourceColorAndShading: 0
+  - hue: 182.29836
+    lightness: 0.4567463
+    saturation: 7.7816377
+    ignoreSourceColorAndShading: 0
+  - hue: 115.746605
+    lightness: 0.4607426
+    saturation: 24.55801
+    ignoreSourceColorAndShading: 0
+  - hue: 86.66222
+    lightness: 0.47611552
+    saturation: 2.167859
+    ignoreSourceColorAndShading: 0
+  - hue: 76.85579
+    lightness: 0.40544143
+    saturation: 0
+    ignoreSourceColorAndShading: 0
+  - hue: 79.71939
+    lightness: 0.50665826
+    saturation: 7.429105
+    ignoreSourceColorAndShading: 0
+  - hue: 88.77837
+    lightness: 0.47378808
+    saturation: 5.885132
+    ignoreSourceColorAndShading: 0
+  - hue: 98.79057
+    lightness: 0.45759493
+    saturation: 6.9780073
+    ignoreSourceColorAndShading: 0
+  - hue: 98.79057
+    lightness: 0.45759493
+    saturation: 6.9780073
+    ignoreSourceColorAndShading: 0
+  meshes:
+  - original: {fileID: -6049822181180720091, guid: b345a2ea8793eba488309fbf611fba39,
+      type: 3}
+    separated: {fileID: 4300000, guid: 2675399fbcac5114091a9fbbffb25ac7, type: 2}

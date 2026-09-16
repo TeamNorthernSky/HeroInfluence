@@ -18,6 +18,11 @@ public class SkillData
     public string skillKey;             // 신규 string 키 (캐릭터=HS1010 / 무기=HCS001 / 적=FV20001_1)
     public SkillCategory category;      // §5-7 명시 분류 (Class/Enemy/Weapon). skillIndex>=200000/>=300000 판정 대체
     public int slot;                    // §5-7 적 스킬 슬롯(1/2), 그 외 0. skillIndex%10 판정 대체
+    [Tooltip("원본 스킬의 리스크 식별값입니다. 리스크 실행부가 연결될 때 이 시전의 종류를 판별합니다.")]
+    public string riskKey;
+    [Tooltip("이번 시전의 협회 강화 저장 단계입니다. 1=기본, 6=+5이며 기본판·강화판이 공유합니다.")]
+    public int enhancementLevel = 1;
+    public float RiskChance => string.IsNullOrEmpty(riskKey) ? 0f : HeroSkillRules.RiskChance(enhancementLevel);
     public string skillClass;
     public int acquireLevel;
     public string skillName;

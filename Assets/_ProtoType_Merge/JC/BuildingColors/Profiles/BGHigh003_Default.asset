@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e784527f640bea4c8add67e46164452, type: 3}
+  m_Name: BGHigh003_Default
+  m_EditorClassIdentifier: 
+  buildingId: BGHigh003
+  parts:
+  - hue: 80.17445
+    lightness: 0.7220757
+    saturation: 6.010761
+    ignoreSourceColorAndShading: 0
+  - hue: 92.94508
+    lightness: 0.77122396
+    saturation: 24.532808
+    ignoreSourceColorAndShading: 0
+  - hue: 225.3896
+    lightness: 0.61249167
+    saturation: 13.761506
+    ignoreSourceColorAndShading: 0
+  - hue: 137.6437
+    lightness: 0.34162074
+    saturation: 16.357023
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.51253414
+    saturation: 0.000004773346
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.61169994
+    saturation: 0.0000056968997
+    ignoreSourceColorAndShading: 0
+  - hue: 81.96106
+    lightness: 0.60829115
+    saturation: 7.182773
+    ignoreSourceColorAndShading: 0
+  - hue: 91.04692
+    lightness: 0.44879434
+    saturation: 8.205632
+    ignoreSourceColorAndShading: 0
+  - hue: 92.6608
+    lightness: 0.7704545
+    saturation: 24.4201
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - pot
+  - soil
+  - accent
