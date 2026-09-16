@@ -26,7 +26,7 @@ public sealed class HeroLicenseView : MonoBehaviour
     private static readonly FieldInfo UnitIndexField = typeof(HeroInfoModal).GetField("currentUnitIndex", BindingFlags.Instance | BindingFlags.NonPublic);
     private int lastUnit = -1;
     private int lastLevel = -1;
-    private void OnEnable() { lastUnit = -1; lastLevel = -1; lastCore = -1; lastCoreLevel = -1; }
+    private void OnEnable() { lastUnit = -1; lastLevel = -1; lastCore = -1; lastCoreLevel = -1; BindStatHovers(); }
     private void LateUpdate()
     {
         if (owner == null || UnitIndexField == null) return;
@@ -61,14 +61,12 @@ public sealed class HeroLicenseView : MonoBehaviour
             if (events == null) events = image.gameObject.AddComponent<EventTrigger>();
             events.triggers.Clear();
             if (skill == null) continue;
-            var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            enter.callback.AddListener(_ => {
-                if (SkillTooltip.Instance != null)
-                    SkillTooltip.Instance.ShowInfo(image.sprite, skill.SkillName + $" Lv.{level}", ClassSkillTooltipText.BuildDesc(skill, level), image.rectTransform, 250f, 0f, 0f);
-            });
-            var leave = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-            leave.callback.AddListener(_ => { if (SkillTooltip.Instance != null) SkillTooltip.Instance.Hide(); });
-            events.triggers.Add(enter); events.triggers.Add(leave);
+            image.raycastTarget = true;
+            var tip = image.GetComponent<LicenseHoverTooltip>();
+            if (!tip) tip = image.gameObject.AddComponent<LicenseHoverTooltip>();
+            string effect = skill.Effect == 0 ? "공격" : skill.Effect == 1 ? "회복" : "효과";
+            tip.Bind(skill.SkillName + $" Lv.{level}", ClassSkillTooltipText.BuildDesc(skill, level), image.sprite,
+                hpValue.font, false, effect + $" · IP {skill.IpCost}");
         }
     }
     private void RefreshEquippedCore(int unitIndex)
@@ -83,12 +81,9 @@ public sealed class HeroLicenseView : MonoBehaviour
         DHWeaponTemplate data = null;
         var catalog = DHCsvTemplateCatalog.Instance;
         if (core > 0 && catalog != null) catalog.TryGetWeaponTemplate(core, out data);
-        BindCoreHover(equippedCore, data != null ? data.WeaponName + $" Lv.{level}" : "코어",
-            data != null ? WeaponTooltipText.BuildWeaponLevelDesc(data, core, level) : "");
-        BindCoreHover(equippedCoreSkill, data != null ? data.WeaponSkillName + $" Lv.{level}" : "코어 스킬",
-            data != null ? WeaponTooltipText.BuildWeaponSkillDesc(data, core, level) : "");
+        BindCoreHover(equippedCore, core, data != null ? data.WeaponName : "코어");
+        BindCoreHover(equippedCoreSkill, core, data != null ? data.WeaponName : "코어");
     }
-
     private void ApplyCoreIcons(int core)
     {
         int slot = core - 1; // Workshop's HC001..HC005 use numeric keys 1..5.
@@ -105,23 +100,44 @@ public sealed class HeroLicenseView : MonoBehaviour
         image.color = Color.white;
     }
 
-    private static void BindCoreHover(Image image, string title, string description)
+    private void BindCoreHover(Image image, int core, string title)
     {
-        if (image == null) return;
+        if (!image) return;
         var legacy = image.GetComponent<HeroInfoButtonHover>();
-        if (legacy != null) legacy.enabled = false;
+        if (legacy) legacy.enabled = false;
         var events = image.GetComponent<EventTrigger>();
-        if (events == null) events = image.gameObject.AddComponent<EventTrigger>();
-        events.triggers.Clear();
-        var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-        enter.callback.AddListener(_ => {
-            if (image.sprite != null && SkillTooltip.Instance != null)
-                SkillTooltip.Instance.ShowInfo(image.sprite, title, description, image.rectTransform, 250f, 0f, 0f);
-        });
-        var leave = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-        leave.callback.AddListener(_ => { if (SkillTooltip.Instance != null) SkillTooltip.Instance.Hide(); });
-        events.triggers.Add(enter); events.triggers.Add(leave);
+        if (events) events.triggers.Clear();
+        image.raycastTarget = true;
+        var tip = image.GetComponent<CoreSelectionTooltip>();
+        if (!tip) tip = image.gameObject.AddComponent<CoreSelectionTooltip>();
+        tip.Bind(core, title, core > 0 && core <= coreSprites.Length ? coreSprites[core-1] : null, hpValue.font);
     }
 
+    private void BindStatHovers()
+    {
+        foreach (var t in GetComponentsInChildren<RectTransform>(true))
+        {
+            string title = null, desc = null;
+            switch (t.name)
+            {
+                case "VF_Info_Atk": title="공격력"; desc="상대 유닛을 공격할 때 주는 피해량입니다."; break;
+                case "VF_Info_Def": title="방어력"; desc="상대의 공격으로 받는 피해를 줄이는 능력치입니다."; break;
+                case "VF_Info_CritRate": title="치명타율"; desc="공격 시 치명타가 발생할 확률입니다."; break;
+                case "VF_Info_CounterRate": title="반격률"; desc="공격을 받았을 때 반격할 확률입니다."; break;
+                case "VF_Info_DamageReduction": title="피해 경감률"; desc="받는 피해를 줄이는 비율입니다."; break;
+                case "VF_Info_Speed": title="행동 속도"; desc="전투에서 유닛의 행동 순서에 영향을 줍니다."; break;
+                case "VF_Info_HP": title="HP"; desc="현재 체력 / 최대 체력입니다. 체력이 0이 되면 전투 불능 상태가 됩니다."; break;
+                case "VF_Info_IP": title="IP"; desc="히어로의 영향력입니다. 스킬 사용에 필요한 자원입니다."; break;
+                case "Info_EXP": title="EXP"; desc="현재 경험치 / 다음 레벨까지 필요한 경험치입니다."; break;
+            }
+            if (title == null) continue;
+            var graphic=t.GetComponent<Graphic>();
+            if (!graphic) { var hit=t.gameObject.AddComponent<Image>();hit.color=Color.clear;graphic=hit; }
+            graphic.raycastTarget=true;
+            var tip=t.GetComponent<LicenseHoverTooltip>();
+            if (!tip) tip=t.gameObject.AddComponent<LicenseHoverTooltip>();
+            tip.Bind(title,desc,null,hpValue.font,true);
+        }
+    }
     private void OnDisable() { if (SkillTooltip.Instance != null) SkillTooltip.Instance.Hide(); }
 }
