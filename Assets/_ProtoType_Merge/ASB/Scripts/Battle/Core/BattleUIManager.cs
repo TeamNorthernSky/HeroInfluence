@@ -19,6 +19,8 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private Button[] disableOnResult;
 
     [Header("Turn Arrow")]
+    [Tooltip("기존 턴 화살표를 표시합니다. 노란 셀로 현재 턴을 표시하는 개편 전투씬에서는 끕니다. 다른 씬은 기존 설정을 유지합니다.")]
+    [SerializeField] private bool showTurnArrow = true;
     [SerializeField] private TurnArrow turnArrow;
     [SerializeField] private Vector2 turnArrowScreenOffset = new Vector2(0f, 120f);
 
@@ -88,7 +90,7 @@ public class BattleUIManager : MonoBehaviour
 
     private void UpdateTurnArrowPosition()
     {
-        if (flowManager == null || turnArrow == null)
+        if (!showTurnArrow || flowManager == null || turnArrow == null)
         {
             turnArrow?.Follow(null);
             return;

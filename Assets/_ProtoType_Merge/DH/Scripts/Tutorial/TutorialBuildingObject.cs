@@ -15,24 +15,41 @@ public class TutorialBuildingObject : MonoBehaviour
     [SerializeField] private string buildingKey;
     [SerializeField] private TutorialBuildingType buildingType = TutorialBuildingType.Association;
 
-    [Header("Placement")]
-    [SerializeField] private Vector3 anchorLocalOffset;
+    [Header("Overlay")]
+    [SerializeField] private bool showInteractionOverlay = true;
+    [SerializeField] private Color associationOverlayColor = new Color(0f, 0.35f, 1f, 0.28f);
+    [SerializeField] private Color enemyBaseOverlayColor = new Color(1f, 0.15f, 0.15f, 0.28f);
+    [SerializeField] private InteractionCellOverlayController overlayController;
 
     private MultiGridOccupant multiGridOccupant;
     private Renderer[] cachedRenderers;
+    private bool hasOverlayColorOverride;
+    private Color overlayColorOverride;
 
     public string BuildingKey => string.IsNullOrWhiteSpace(buildingKey) ? string.Empty : buildingKey.Trim();
     public TutorialBuildingType BuildingType => buildingType;
-    public Vector3 AnchorLocalOffset => anchorLocalOffset;
 
     private void Awake()
     {
         ResolveReferences();
     }
 
+    private void OnEnable()
+    {
+        ResolveReferences();
+        RefreshInteractionOverlay();
+    }
+
+    private void OnDisable()
+    {
+        ClearInteractionOverlay();
+    }
+
     private void OnValidate()
     {
         ResolveReferences();
+        if (Application.isPlaying && isActiveAndEnabled)
+            RefreshInteractionOverlay();
     }
 
     public void SetBuildingKey(string nextBuildingKey)
@@ -43,17 +60,6 @@ public class TutorialBuildingObject : MonoBehaviour
     public void SetBuildingType(TutorialBuildingType nextBuildingType)
     {
         buildingType = nextBuildingType;
-    }
-
-    public void SetAnchorLocalOffset(Vector3 nextAnchorLocalOffset)
-    {
-        anchorLocalOffset = nextAnchorLocalOffset;
-    }
-
-    public Vector3 GetRootPositionForAnchor(Vector3 anchorWorldPosition)
-    {
-        Matrix4x4 localToRoot = Matrix4x4.TRS(Vector3.zero, transform.rotation, transform.localScale);
-        return anchorWorldPosition - localToRoot.MultiplyPoint3x4(anchorLocalOffset);
     }
 
     public Vector2Int GetAnchorGrid()
@@ -131,10 +137,41 @@ public class TutorialBuildingObject : MonoBehaviour
         cachedRenderers = GetComponentsInChildren<Renderer>(true);
     }
 
+    public void SetInteractionOverlayColor(Color color)
+    {
+        hasOverlayColorOverride = true;
+        overlayColorOverride = color;
+        RefreshInteractionOverlay();
+    }
+
+    public void ClearInteractionOverlayColorOverride()
+    {
+        hasOverlayColorOverride = false;
+        RefreshInteractionOverlay();
+    }
+
+    public void RefreshInteractionOverlay()
+    {
+        if (!showInteractionOverlay)
+        {
+            ClearInteractionOverlay();
+            return;
+        }
+
+        ResolveReferences();
+        if (overlayController == null)
+            return;
+
+        overlayController.SetExternalCells(this, GetInteractionCells(), GetOverlayColor());
+    }
+
     private void ResolveReferences()
     {
         if (multiGridOccupant == null)
             multiGridOccupant = GetComponent<MultiGridOccupant>();
+
+        if (overlayController == null)
+            overlayController = FindFirstObjectByType<InteractionCellOverlayController>();
     }
 
     private void EnsureRenderersCached()
@@ -143,18 +180,41 @@ public class TutorialBuildingObject : MonoBehaviour
             RefreshRenderers();
     }
 
+    private void ClearInteractionOverlay()
+    {
+        if (overlayController != null)
+            overlayController.ClearExternalCells(this);
+    }
+
+    private Color GetOverlayColor()
+    {
+        if (hasOverlayColorOverride)
+            return overlayColorOverride;
+
+        return buildingType == TutorialBuildingType.EnemyBase
+            ? enemyBaseOverlayColor
+            : associationOverlayColor;
+    }
+
     private void OnDrawGizmosSelected()
     {
-        Vector3 anchorWorldPosition = transform.TransformPoint(anchorLocalOffset);
+        ResolveReferences();
+        if (multiGridOccupant == null)
+            return;
 
-        Matrix4x4 previousMatrix = Gizmos.matrix;
-        Gizmos.matrix = Matrix4x4.TRS(anchorWorldPosition, transform.rotation, Vector3.one);
-        Gizmos.color = new Color(0.25f, 0.8f, 1f, 1f);
-        Gizmos.DrawWireCube(Vector3.zero, new Vector3(1f, 0.02f, 1f));
-        Gizmos.matrix = previousMatrix;
+        IReadOnlyList<Vector2Int> occupiedCells = multiGridOccupant.GetOccupiedCells();
+        Gizmos.color = new Color(0.25f, 0.8f, 1f, 0.85f);
+        for (int i = 0; i < occupiedCells.Count; i++)
+        {
+            Vector3 center = transform.position;
+            GridManager gridManager = FindFirstObjectByType<GridManager>();
+            if (gridManager != null)
+            {
+                center = gridManager.GridToWorldCenter(occupiedCells[i]);
+                center.y = gridManager.GetCellSurfaceY(occupiedCells[i]) + 0.04f;
+            }
 
-        Gizmos.color = new Color(0.25f, 0.95f, 1f, 1f);
-        Gizmos.DrawWireSphere(anchorWorldPosition, 0.15f);
-        Gizmos.DrawLine(transform.position, anchorWorldPosition);
+            Gizmos.DrawWireCube(center, new Vector3(0.9f, 0.02f, 0.9f));
+        }
     }
 }

@@ -1,0 +1,126 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 051014fd76a4cce4c87ee0f104a25d1f, type: 3}
+  m_Name: BGStore005
+  m_EditorClassIdentifier: 
+  buildingId: BGStore005
+  prefab: {fileID: 5825440346530419896, guid: 7b1f76068b2250643abf8c316d6bcf8b, type: 3}
+  recolorShader: {fileID: 4800000, guid: 81d3ea1c9ef6b804d86d5127ba6a1e43, type: 3}
+  classificationNote: "\uC0C1\uB2E8 \uAC04\uD310\xB7\uCE21\uBA74 \uC785\uAC04\uD310\xB7\uCE21\uBA74
+    \uCD9C\uC785\uAD6C\uB97C \uAC01\uAC01 \uC870\uC808\uD569\uB2C8\uB2E4. \uACBD\uACE0
+    \uB3C4\uC7A5\uC740 \uC548\uC804\uBD09\xB7\uBCF4\uD638\uB300\xB7\uB9AC\uD504\uD2B8
+    \uBC1B\uCE68\xB7\uC804\uBA74 \uC5F0\uC11D\uC758 \uB178\uB780 \uBD80\uBD84\uC774\uBA70
+    \uAC80\uC740 \uC904\uBB34\uB2AC\uB294 \uC720\uC9C0\uD569\uB2C8\uB2E4. \uC774
+    \uC601\uC5ED\uB4E4\uC740 \uBCF4\uC870\uB3C4\uC7A5\xB7\uC18C\uD488\uC5D0\uC11C
+    \uC81C\uC678\uB429\uB2C8\uB2E4. \uC625\uC0C1 \uD14C\uB450\uB9AC \uC804\uCCB4(\uC717\uBA74\xB7\uC548\uCABD
+    \uBA74 \uD3EC\uD568)\uB294 \uC9C0\uBD95\xB7\uCC28\uC591\uC73C\uB85C \uC870\uC808\uD569\uB2C8\uB2E4."
+  bindings:
+  - material: {fileID: 2100000, guid: 5b11b1acb561e5c4bb34157a86ab7847, type: 2}
+    original: {fileID: 2800000, guid: 627c1a64a40afd948887ecea54f87228, type: 3}
+    source: {fileID: 2800000, guid: 627c1a64a40afd948887ecea54f87228, type: 3}
+    maskParts: {fileID: 2800000, guid: 45e690598f4f6744486dc59ad2addfa8, type: 3}
+    maskFloor: {fileID: 2800000, guid: 492e7e7ea130dc54fb0f84dadd9415bb, type: 3}
+    maskExtra: {fileID: 2800000, guid: fb91db95f38803248bc33ca70a866c79, type: 3}
+    maskExtra2: {fileID: 2800000, guid: 9475cf2aab13a85408470037865de76b, type: 3}
+  initial:
+  - hue: 76.54778
+    lightness: 0.667836
+    saturation: 8.820891
+  - hue: 88.40784
+    lightness: 0.3737783
+    saturation: 5.223302
+  - hue: 196.55794
+    lightness: 0.376817
+    saturation: 8.918172
+  - hue: 100.1611
+    lightness: 0.4265211
+    saturation: 14.52557
+  - hue: 86.42143
+    lightness: 0.2587392
+    saturation: 4.6967297
+  - hue: 77.04704
+    lightness: 0.42128262
+    saturation: 5.123737
+  - hue: 95.923996
+    lightness: 0.3540237
+    saturation: 11.265008
+  - hue: 95.923996
+    lightness: 0.3540237
+    saturation: 11.265008
+  - hue: 95.923996
+    lightness: 0.3540237
+    saturation: 11.265008
+  - hue: 95.923996
+    lightness: 0.3540237
+    saturation: 11.265008
+  - hue: 84.669846
+    lightness: 0.44202334
+    saturation: 13.953022
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - accent
+  - sign_face
+  - standing_sign
+  - side_entrance
+  - warning_paint
+  partNames:
+  - "\uBCBD"
+  - "\uC9C0\uBD95\xB7\uCC28\uC591"
+  - "\uCC3D\uBB38"
+  - "\uC2DD\uC0DD"
+  - "\uBC14\uB2E5 \uBE14\uB85D"
+  - "\uC625\uC0C1 \uBC14\uB2E5\uBA74"
+  - "\uBCF4\uC870 \uB3C4\uC7A5\xB7\uC18C\uD488"
+  - "\uC0C1\uB2E8 \uAC04\uD310"
+  - "\uCE21\uBA74 \uC785\uAC04\uD310"
+  - "\uCE21\uBA74 \uCD9C\uC785\uAD6C"
+  - "\uACBD\uACE0 \uB3C4\uC7A5"
+  defaults:
+  - hue: 76.54778
+    lightness: 0.667836
+    saturation: 8.820891
+  - hue: 88.40784
+    lightness: 0.3737783
+    saturation: 5.223302
+  - hue: 196.55794
+    lightness: 0.376817
+    saturation: 8.918172
+  - hue: 100.1611
+    lightness: 0.4265211
+    saturation: 14.52557
+  - hue: 86.42143
+    lightness: 0.2587392
+    saturation: 4.6967297
+  - hue: 77.04704
+    lightness: 0.42128262
+    saturation: 0
+  - hue: 95.923996
+    lightness: 0.3540237
+    saturation: 11.265008
+  - hue: 95.923996
+    lightness: 0.3540237
+    saturation: 11.265008
+  - hue: 95.923996
+    lightness: 0.3540237
+    saturation: 11.265008
+  - hue: 95.923996
+    lightness: 0.3540237
+    saturation: 11.265008
+  - hue: 84.669846
+    lightness: 0.44202334
+    saturation: 13.953022
+  meshes: []

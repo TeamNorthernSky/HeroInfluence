@@ -6,5 +6,6 @@ namespace ASB.Work.Battle.Core
         public BattleCharactor Target;
         public StatusEffectType EffectType;
         public int DurationTurn;
+        public float Value;
     }
 }

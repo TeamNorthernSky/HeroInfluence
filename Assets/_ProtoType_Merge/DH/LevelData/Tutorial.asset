@@ -1056,45 +1056,9 @@ MonoBehaviour:
   - {x: 24, y: 18}
   - {x: 31, y: 11}
   - {x: 30, y: 12}
-  itemPlacements:
-  - gridPosition: {x: 20, y: 13}
-    resourceType: 0
-    amount: 1000
-  - gridPosition: {x: 21, y: 14}
-    resourceType: 0
-    amount: 1000
-  - gridPosition: {x: 22, y: 13}
-    resourceType: 0
-    amount: 1000
-  - gridPosition: {x: 22, y: 20}
-    resourceType: 3
-    amount: 1000
-  - gridPosition: {x: 28, y: 27}
-    resourceType: 2
-    amount: 1000
-  - gridPosition: {x: 31, y: 18}
-    resourceType: 1
-    amount: 1000
-  - gridPosition: {x: 37, y: 13}
-    resourceType: 0
-    amount: 1000
-  - gridPosition: {x: 21, y: 19}
-    resourceType: 3
-    amount: 1000
-  - gridPosition: {x: 21, y: 21}
-    resourceType: 3
-    amount: 1000
-  outpostPlacements:
-  - gridPosition: {x: 21, y: 28}
-    outpostType: 0
-    resourcePerTurn: 1000
-    initialState: 0
-  eventPlacements:
-  - gridPosition: {x: 30, y: 26}
-    eventKind: 0
-    eventType: 0
-    requireAmount: 100
-    effectAmount: 3
+  itemPlacements: []
+  outpostPlacements: []
+  eventPlacements: []
   enemyPlacements: []
   decorativeObjectPlacements:
   - gridPosition: {x: 12, y: 12}
@@ -1227,31 +1191,24 @@ MonoBehaviour:
     prefabKey: BGHigh004
   - gridPosition: {x: 48, y: 16}
     prefabKey: BGHigh004
-  mainEventPlacements:
-  - gridPosition: {x: 26, y: 26}
-    prefabKey: Main_1-2
-  - gridPosition: {x: 31, y: 22}
-    prefabKey: Main_2-2
-  subEventPlacements:
-  - gridPosition: {x: 32, y: 16}
-    prefabKey: Sub_2-1
-  - gridPosition: {x: 35, y: 13}
-    prefabKey: Sub_2-1
-  gatePlacements:
-  - gateId: gate_001
-    firstZoneId: zone_001
-    secondZoneId: zone_002
-    gridPosition: {x: 43, y: 13}
-    prefabKey: VerticalGate
-    blockerCells:
-    - {x: 43, y: 13}
-    - {x: 43, y: 14}
+  tutorialObjectPlacements:
+  - gridPosition: {x: 20, y: 13}
+    prefabKey: MoneyItem
+  - gridPosition: {x: 21, y: 14}
+    prefabKey: MoneyItem
+  - gridPosition: {x: 22, y: 13}
+    prefabKey: MoneyItem
+  - gridPosition: {x: 12, y: 14}
+    prefabKey: TutorialEnemy
+  mainEventPlacements: []
+  subEventPlacements: []
+  gatePlacements: []
   enemySpawnPointPlacements: []
   heroUnionPlacement:
-    hasPlacement: 1
-    gridPosition: {x: 4, y: 15}
-    prefabKey: HeroUnionZ1
+    hasPlacement: 0
+    gridPosition: {x: 0, y: 0}
+    prefabKey: 
   villainUnionPlacement:
-    hasPlacement: 1
-    gridPosition: {x: 38, y: 15}
+    hasPlacement: 0
+    gridPosition: {x: 0, y: 0}
     prefabKey: 

@@ -103,6 +103,13 @@ namespace ASB.Work.Battle.SkillExecution
     {
         private const int TauntDurationTurns = 1;
 
+        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData,
+            int count, SkillExecutionResult result, bool? sharedIsCritical = null)
+        {
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, skillData.skillValue,
+                skillData.skillIndex, skillData.classSkillRange, sharedIsCritical: sharedIsCritical));
+        }
+
         // 추가 효과: 타겟에게 도발 부여
         protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, int Count, SkillExecutionResult result)
         {
@@ -120,7 +127,7 @@ namespace ASB.Work.Battle.SkillExecution
 
         protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            result?.AddStatusEffect(caster, target, StatusEffectType.defense_up, BuffDurationTurns);
+            result?.AddStatusEffect(caster, caster, StatusEffectType.damage_taken_down, BuffDurationTurns, skillData.skillValue);
             Debug.Log($"[Skill/DamageTakenReduction] defense_up reserved: target={target.UnitName}, source={caster.UnitName}, turns={BuffDurationTurns}");
         }
     }
@@ -128,13 +135,13 @@ namespace ASB.Work.Battle.SkillExecution
 
     // 방어력 감소 (디버프) - 무기 스킬 HCS005
     // WeaponSkillEffect=4(디버프) 전제. 대상(적)에게 defense_down을 부여한다.
-    public sealed class DefenseDownSkillHandler : BaseSingleSkillHandler
+    public sealed class DefenseDownSkillHandler : BaseAoESkillHandler
     {
         private const int DebuffDurationTurns = 1;
 
-        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
+        protected override void ApplyAdditionalEffect(BattleCharactor caster, BattleCharactor target, SkillData skillData, int count, SkillExecutionResult result)
         {
-            result?.AddStatusEffect(caster, target, StatusEffectType.defense_down, DebuffDurationTurns);
+            result?.AddStatusEffect(caster, target, StatusEffectType.defense_down, DebuffDurationTurns, skillData.skillValue);
             Debug.Log($"[Skill/DefenseDown] defense_down reserved: target={target.UnitName}, source={caster.UnitName}, turns={DebuffDurationTurns}");
         }
     }

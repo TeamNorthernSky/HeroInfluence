@@ -172,7 +172,7 @@ namespace ASB.Work.Battle.SkillExecution
             return this;
         }
 
-        public SkillExecutionResult AddStatusEffect(BattleCharactor caster, BattleCharactor target, StatusEffectType effectType, int durationTurn)
+        public SkillExecutionResult AddStatusEffect(BattleCharactor caster, BattleCharactor target, StatusEffectType effectType, int durationTurn, float value = 0f)
         {
             if (target != null && effectType != StatusEffectType.none)
             {
@@ -181,7 +181,8 @@ namespace ASB.Work.Battle.SkillExecution
                     Caster = caster,
                     Target = target,
                     EffectType = effectType,
-                    DurationTurn = durationTurn
+                    DurationTurn = durationTurn,
+                    Value = value
                 });
                 if (HasEventTracking)
                 {

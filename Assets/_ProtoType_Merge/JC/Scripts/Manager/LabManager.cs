@@ -6,12 +6,10 @@ using UnityEngine;
 /// 연구소(Research) 시스템 영속 매니저. GameManager 영속 자식. TrainingManager 패턴 복제.
 /// 두 가지 기능을 다룬다:
 ///   1) 스킬 장착 변경 — 영웅의 CurrentSkillIndex를 DH PersistentUnitRepository.UpdateUnitRuntimeState로 writeback (실결선/비침습).
-///   2) 스킬 강화 레벨(1~5) — 영웅별·스킬별 강화 레벨을 JC측 in-memory로 보관.
+///   2) 스킬 강화 저장 단계(1=기본, 6=+5) — 영웅별·스킬별 강화 레벨을 JC측 in-memory로 보관.
 ///
-/// ※ [JC 260616] seam 열림: ASB BattleCharactor.LoadPersistentEquipment가 SkillLevel 인자를 받아
-///   전투 위력에 반영함(GetClassSkillValueAtLevel). → 강화/장착 시 "장착 스킬"의 강화 레벨을
-///   DH PersistentUnitRepository.SetSkillLevel(유닛당 단일 SkillLevel)로 writeback해 전투에 반영한다.
-///   LabManager는 (unit,skill)별 레벨을 보관하되, DH 동기는 현재 장착 스킬에 한정(모델 정합).
+/// 기본판과 습득한 강화판은 같은 강화 기록을 사용합니다. 협회 강화는 V1.4 리스크 확률에 적용하며
+/// 위력은 스킬 변형의 계수로 결정합니다. 기존 저장의 1~5는 기본~+4로 보존합니다.
 ///
 /// 비용·조건 출처: H.I 자원 데이터 테이블 V1.4 '협회-연구소' 시트.
 /// </summary>
@@ -21,16 +19,16 @@ public class LabManager : MonoBehaviour
     public event Action OnStateChanged;
 
     public const int BaseSkillLevel = 1;
-    public const int MaxSkillLevel = 5;
+    public const int MaxSkillLevel = 6; // 기본(1) + 협회 강화 5단계
 
     // 협회-연구소 시트: to_skill_level 2/3/4/5 도달 시 비용. 인덱스 = toLevel - 2.
     // 소모 자원: 자금(Money) + 히어로 메달(Chip). [JC 260617] 인스펙터 편집 가능하도록 직렬화.
-    [Header("스킬 강화 비용 (인스펙터 편집 — 레벨 2/3/4/5 도달 기준)")]
+    [Header("스킬 강화 비용 (인스펙터 편집 — +1/+2/+3/+4/+5 도달 기준)")]
     // [JC 260617] V1.0 프로토타입 자원 밸런스 '협회-연구소' 시트 기준.
-    [Tooltip("필요 자금 (레벨 2/3/4/5 도달)")]
-    [SerializeField] private int[] upgradeCostMoney = { 400, 600, 800, 1000 };
-    [Tooltip("필요 히어로 메달 (레벨 2/3/4/5 도달)")]
-    [SerializeField] private int[] upgradeCostChip  = {   5,   6,   8,  10 };
+    [Tooltip("필요 자금 (+1/+2/+3/+4/+5 도달)")]
+    [SerializeField] private int[] upgradeCostMoney = { 400, 600, 800, 1000, 1000 };
+    [Tooltip("필요 히어로 메달 (+1/+2/+3/+4/+5 도달)")]
+    [SerializeField] private int[] upgradeCostChip  = {   5,   6,   8,  10, 10 };
     public IReadOnlyList<int> UpgradeCostMoney => upgradeCostMoney;
     public IReadOnlyList<int> UpgradeCostChip => upgradeCostChip;
 
@@ -48,7 +46,7 @@ public class LabManager : MonoBehaviour
         public int level = BaseSkillLevel;
     }
 
-    [Header("영웅별·스킬별 강화 레벨 (영속)")]
+    [Header("영웅별·스킬 계열별 강화 단계 (영속)")]
     [SerializeField] private List<SkillLevelEntry> entries = new List<SkillLevelEntry>();
 
     // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출
@@ -78,8 +76,8 @@ public class LabManager : MonoBehaviour
 
     public bool IsUnlocked() => GetDepartmentLevel() >= 1;
 
-    /// <summary>스킬 레벨 N(2~5) 강화에 필요한 연구소 레벨 = N - 1.</summary>
-    public static int RequiredLabLevelFor(int toSkillLevel) => Mathf.Max(1, toSkillLevel - 1);
+    /// <summary>+1은 연구소 1, +2는 연구소 2, +3~+5는 연구소 3단계에서 순차 강화합니다.</summary>
+    public static int RequiredLabLevelFor(int toSkillLevel) => Mathf.Clamp(toSkillLevel - 1, 1, 3);
 
     // ─── 영웅 클래스 해석 ──────────────────────────────────────
     public bool TryResolveClass(int unitIndex, out string className, out int classIndex)
@@ -136,11 +134,8 @@ public class LabManager : MonoBehaviour
         if (!catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out var template) ||
             template == null || template.ClassSkillIndices == null) return result;
 
-        foreach (int skillIndex in template.ClassSkillIndices)
-        {
-            if (skillIndex > 0 && catalog.TryGetClassSkillTemplate(skillIndex, out var skill) && skill != null)
-                result.Add(skill);
-        }
+        foreach (var current in catalog.GetCurrentClassSkills(template.ClassIndex, unit.Level, true))
+            if (catalog.TryGetClassSkillTemplate(current.skillIndex, out var skill) && skill != null) result.Add(skill);
         return result;
     }
 
@@ -166,10 +161,13 @@ public class LabManager : MonoBehaviour
         return belongsToClass && skill.AcquireLevel <= Mathf.Max(1, unit.Level);
     }
 
+    /// <summary>V1.4: 기본 35%, 협회 강화마다 7%p 감소, +5에서 0%. 기본판과 강화판이 공유합니다.</summary>
+    public float GetSkillRiskChance(int unitIndex, int skillIndex) => HeroSkillRules.RiskChance(GetSkillLevel(unitIndex, skillIndex));
+
     // ─── 스킬 강화 레벨 조회 ───────────────────────────────────
     public int GetSkillLevel(int unitIndex, int skillIndex)
     {
-        return lookup.TryGetValue(Key(unitIndex, skillIndex), out var e) ? e.level : BaseSkillLevel;
+        return lookup.TryGetValue(Key(unitIndex, HeroSkillRules.FamilyId(skillIndex)), out var e) ? e.level : BaseSkillLevel;
     }
 
     /// <summary>다음 강화 단계(현재+1)에 필요한 (자금, 메달). 더 못 올리면 (-1,-1).</summary>
@@ -189,6 +187,8 @@ public class LabManager : MonoBehaviour
     public bool CanUpgradeSkill(int unitIndex, int skillIndex)
     {
         if (!IsUnlocked()) return false;
+        bool learned = GetLearnedSkills(unitIndex).Exists(s => HeroSkillRules.FamilyId(s.NumericSkillId) == HeroSkillRules.FamilyId(skillIndex));
+        if (!learned) return false;
         int level = GetSkillLevel(unitIndex, skillIndex);
         if (level >= MaxSkillLevel) return false;
         int toLevel = level + 1;
@@ -196,7 +196,7 @@ public class LabManager : MonoBehaviour
     }
 
     /// <summary>스킬 강화 한 단계: 레벨 +1. 자원 차감은 호출자(LabModalController)가 별도 처리.
-    /// 전투 계수 반영은 현재 보류(더미) — 레벨만 영속 보관.</summary>
+    /// 위력은 변형별 고정값이며, 이 단계는 리스크 확률과 전투 시전 데이터에 반영됩니다.</summary>
     public bool TryUpgradeSkill(int unitIndex, int skillIndex)
     {
         if (!CanUpgradeSkill(unitIndex, skillIndex)) return false;
@@ -213,6 +213,7 @@ public class LabManager : MonoBehaviour
         var repo = PersistentUnitRepository.Instance;
         if (repo == null) return false;
         if (!repo.TryGetUnit(unitIndex, out var d) || d == null) return false;
+        if (!GetLearnedSkills(unitIndex).Exists(s => s.NumericSkillId == skillIndex)) return false;
 
         bool ok = repo.UpdateUnitRuntimeState(
             unitIndex, d.UnitTemplateKey, d.Level,
@@ -241,7 +242,11 @@ public class LabManager : MonoBehaviour
     public int GetEquippedSkillIndex(int unitIndex)
     {
         var repo = PersistentUnitRepository.Instance;
-        if (repo != null && repo.TryGetUnit(unitIndex, out var d) && d != null) return d.CurrentSkillIndex;
+        if (repo != null && repo.TryGetUnit(unitIndex, out var d) && d != null)
+        {
+            var current = GetLearnedSkills(unitIndex).Find(s => HeroSkillRules.FamilyId(s.NumericSkillId) == HeroSkillRules.FamilyId(d.CurrentSkillIndex));
+            return current != null ? current.NumericSkillId : d.CurrentSkillIndex;
+        }
         return 0;
     }
 
@@ -257,7 +262,11 @@ public class LabManager : MonoBehaviour
         if (eq != 0)
             for (int i = 0; i < learned.Count; i++)
                 if (learned[i] != null && learned[i].NumericSkillId == eq) { valid = true; break; }
-        if (!valid) EquipSkill(unitIndex, learned[0].NumericSkillId);
+        if (!valid)
+        {
+            var replacement = learned.Find(s => HeroSkillRules.FamilyId(s.NumericSkillId) == HeroSkillRules.FamilyId(eq));
+            EquipSkill(unitIndex, replacement != null ? replacement.NumericSkillId : learned[0].NumericSkillId);
+        }
     }
 
     /// <summary>[JC 260619] 전 플레이어 유닛에 기본 클래스 스킬을 보장 장착(게임 시작 시 1회용, 멱등).</summary>
@@ -275,6 +284,7 @@ public class LabManager : MonoBehaviour
     // ─── 내부 ──────────────────────────────────────────────────
     private SkillLevelEntry GetOrCreateEntry(int unitIndex, int skillIndex)
     {
+        skillIndex = HeroSkillRules.FamilyId(skillIndex);
         long k = Key(unitIndex, skillIndex);
         if (lookup.TryGetValue(k, out var e)) return e;
         e = new SkillLevelEntry { unitIndex = unitIndex, skillIndex = skillIndex, level = BaseSkillLevel };
@@ -285,14 +295,29 @@ public class LabManager : MonoBehaviour
 
     private void RebuildLookup()
     {
+        // 기존 씬/세이브의 네 비용을 보존하고 승인된 +5 비용만 보충합니다.
+        if (upgradeCostMoney != null && upgradeCostMoney.Length == 4)
+        {
+            Array.Resize(ref upgradeCostMoney, 5);
+            upgradeCostMoney[4] = 1000;
+        }
+        if (upgradeCostChip != null && upgradeCostChip.Length == 4)
+        {
+            Array.Resize(ref upgradeCostChip, 5);
+            upgradeCostChip[4] = 10;
+        }
         lookup.Clear();
         for (int i = 0; i < entries.Count; i++)
         {
             var e = entries[i];
             if (e == null || e.unitIndex <= 0 || e.skillIndex <= 0) continue;
+            e.skillIndex = HeroSkillRules.FamilyId(e.skillIndex);
+            e.level = Mathf.Clamp(e.level, BaseSkillLevel, MaxSkillLevel);
             long k = Key(e.unitIndex, e.skillIndex);
-            if (lookup.ContainsKey(k)) { Debug.LogWarning($"[LabManager] dup ({e.unitIndex},{e.skillIndex})", this); continue; }
-            lookup.Add(k, e);
+            if (lookup.TryGetValue(k, out var previous)) previous.level = Mathf.Max(previous.level, e.level);
+            else lookup.Add(k, e);
         }
+        entries.Clear();
+        entries.AddRange(lookup.Values);
     }
 }

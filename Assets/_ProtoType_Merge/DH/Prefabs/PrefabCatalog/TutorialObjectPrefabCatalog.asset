@@ -13,5 +13,38 @@ MonoBehaviour:
   m_Name: TutorialObjectPrefabCatalog
   m_EditorClassIdentifier: 
   tutorialObjectPrefabs:
-  - prefabKey: 
-    prefab: {fileID: 0}
+  - prefabKey: HeroUnion
+    prefab: {fileID: 3392802035522500956, guid: 87b39e515e7c85244b88ddfc089f98fa,
+      type: 3}
+  - prefabKey: Outpost
+    prefab: {fileID: 8453897049157557555, guid: 16c0f9cec4dc581448686b9548796d05,
+      type: 3}
+  tutorialEnemyPrefabs:
+  - prefabKey: TutorialEnemy
+    prefab: {fileID: 2751569927511069708, guid: e43eadbd43333074dbde51e87517468f,
+      type: 3}
+  tutorialItemPrefabs:
+  - itemPrefabKey: ChipItem
+    prefab: {fileID: 5215628995155350120, guid: ef52ef4d72975c047a8ababa35106566,
+      type: 3}
+  - itemPrefabKey: CrystalItem
+    prefab: {fileID: 717885837216888918, guid: a36faab574af2894790e17aab2909799, type: 3}
+  - itemPrefabKey: MoneyItem
+    prefab: {fileID: 8050586947996935793, guid: 6619c2a4dce63e44c9e7428b8052fae0,
+      type: 3}
+  - itemPrefabKey: SupplyItem
+    prefab: {fileID: 9072852610596569496, guid: 1e645b106efe8ad409520612cdb65e97,
+      type: 3}
+  tutorialHeroPrefabs:
+  - unitTemplateKey: 10001
+    prefab: {fileID: 1637212715151764034, guid: a108535f43a57ea4f953c77e8abc6c6c,
+      type: 3}
+  - unitTemplateKey: 10002
+    prefab: {fileID: 8581455599534928499, guid: 1dcfcec7092fd6440a579e3144e0362f,
+      type: 3}
+  - unitTemplateKey: 10003
+    prefab: {fileID: 6794099295440568456, guid: ceed1752665947944baa821a43f4d893,
+      type: 3}
+  - unitTemplateKey: 10004
+    prefab: {fileID: 2032890177939244664, guid: 7f2fbe8c34991ff4ea8a89c4d912bedc,
+      type: 3}

@@ -220,13 +220,25 @@ namespace ASB.Work.Battle.SkillExecution
                 return;
             }
 
-            if (context.Skill.classSkillTarget == 0)
+            if (context.Skill.classSkillTarget == 0 && !HeroSkillRules.IsFamily(context.Skill, 1030) && context.Skill.skillKey != "HCS005" && context.Skill.skillKey != "HCS002")
             {
+                base.ResolveAffectedArea(context);
                 return;
             }
 
             HashSet<Vector2Int> coords;
-            if (context.Skill.classSkillTarget == 2)
+            if (HeroSkillRules.IsFamily(context.Skill, 2030))
+            {
+                coords = SkillTargetingMapper.GetFullSideBoardCoordinates(context.PrimaryCell.Coords);
+                coords.RemoveWhere(c => c.x != context.PrimaryCell.Coords.x);
+            }
+            else if (HeroSkillRules.IsFamily(context.Skill, 1030))
+            {
+                coords = new HashSet<Vector2Int> { context.PrimaryCell.Coords };
+                if (context.PrimaryTarget.IsInFrontRow)
+                    coords.Add(context.PrimaryCell.Coords + new Vector2Int(context.Caster.IsPlayer ? 1 : -1, 0));
+            }
+            else if (context.Skill.classSkillTarget == 2 || context.Skill.skillKey == "HCS005" || context.Skill.skillKey == "HCS002")
             {
                 coords = SkillTargetingMapper.GetFullSideBoardCoordinates(context.PrimaryCell.Coords);
             }

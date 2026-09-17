@@ -90,6 +90,53 @@ public class TutorialPartyProgressState
     }
 }
 
+public enum TutorialOutpostClaimState
+{
+    EnemyClaimed = 0,
+    HeroClaimed = 1
+}
+
+public enum TutorialCombatSourceType
+{
+    None = 0,
+    Outpost = 1
+}
+
+[Serializable]
+public class TutorialOutpostProgressState
+{
+    [SerializeField] private string objectKey;
+    [SerializeField] private TutorialOutpostClaimState claimState;
+
+    public string ObjectKey => NormalizeKey(objectKey);
+    public TutorialOutpostClaimState ClaimState => claimState;
+
+    public TutorialOutpostProgressState()
+    {
+    }
+
+    public TutorialOutpostProgressState(string objectKey, TutorialOutpostClaimState claimState)
+    {
+        this.objectKey = NormalizeKey(objectKey);
+        this.claimState = claimState;
+    }
+
+    public void SetClaimState(TutorialOutpostClaimState nextClaimState)
+    {
+        claimState = nextClaimState;
+    }
+
+    public void Normalize()
+    {
+        objectKey = NormalizeKey(objectKey);
+    }
+
+    private static string NormalizeKey(string key)
+    {
+        return string.IsNullOrWhiteSpace(key) ? string.Empty : key.Trim();
+    }
+}
+
 [DisallowMultipleComponent]
 public sealed class TutorialProgressRepository : MonoBehaviour
 {
@@ -99,15 +146,29 @@ public sealed class TutorialProgressRepository : MonoBehaviour
 
     [Header("Tutorial Progress")]
     [SerializeField] private bool tutorialCompleted;
+    [SerializeField] private CombatResult lastCombatResult = CombatResult.None;
+    [SerializeField] private int currentTurn = 1;
     [SerializeField] private int currentOrder = 1;
     [SerializeField] private TutorialPartyProgressState partyState = new TutorialPartyProgressState();
+    [SerializeField] private int money;
+    [SerializeField] private int chip;
+    [SerializeField] private int crystal;
+    [SerializeField] private int supply;
     [SerializeField] private List<TutorialUnitProgressState> unitStates = new List<TutorialUnitProgressState>();
+    [SerializeField] private List<string> collectedItemKeys = new List<string>();
     [SerializeField] private List<string> completedCellEventKeys = new List<string>();
     [SerializeField] private List<string> seenMessageKeys = new List<string>();
     [SerializeField] private List<string> inactiveObjectKeys = new List<string>();
+    [SerializeField] private List<TutorialOutpostProgressState> outpostStates = new List<TutorialOutpostProgressState>();
+    [SerializeField] private TutorialCombatSourceType pendingCombatSourceType = TutorialCombatSourceType.None;
+    [SerializeField] private string pendingCombatSourceKey;
 
     private readonly Dictionary<string, TutorialUnitProgressState> unitLookup =
         new Dictionary<string, TutorialUnitProgressState>(StringComparer.Ordinal);
+    private readonly Dictionary<string, TutorialOutpostProgressState> outpostLookup =
+        new Dictionary<string, TutorialOutpostProgressState>(StringComparer.Ordinal);
+    private readonly HashSet<string> collectedItemLookup =
+        new HashSet<string>(StringComparer.Ordinal);
     private readonly HashSet<string> completedCellEventLookup =
         new HashSet<string>(StringComparer.Ordinal);
     private readonly HashSet<string> seenMessageLookup =
@@ -116,15 +177,22 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         new HashSet<string>(StringComparer.Ordinal);
 
     public bool TutorialCompleted => tutorialCompleted;
+    public CombatResult LastCombatResult => lastCombatResult;
+    public int CurrentTurn => Mathf.Max(1, currentTurn);
     public int CurrentOrder => currentOrder;
     public TutorialPartyProgressState PartyState => partyState;
     public IReadOnlyList<TutorialUnitProgressState> UnitStates => unitStates;
+    public IReadOnlyList<string> CollectedItemKeys => collectedItemKeys;
     public IReadOnlyList<string> CompletedCellEventKeys => completedCellEventKeys;
     public IReadOnlyList<string> SeenMessageKeys => seenMessageKeys;
     public IReadOnlyList<string> InactiveObjectKeys => inactiveObjectKeys;
+    public IReadOnlyList<TutorialOutpostProgressState> OutpostStates => outpostStates;
+    public TutorialCombatSourceType PendingCombatSourceType => pendingCombatSourceType;
+    public string PendingCombatSourceKey => NormalizeKey(pendingCombatSourceKey);
     public bool HasAnyJoinedUnit => GetJoinedUnitCount() > 0;
 
     public event Action ProgressChanged;
+    public event Action<ResourceType, int> TutorialResourceChanged;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
@@ -142,6 +210,11 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         return root.AddComponent<TutorialProgressRepository>();
     }
 
+    public static void ClearProgress()
+    {
+        EnsureInstance().ResetProgress();
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -157,6 +230,7 @@ public sealed class TutorialProgressRepository : MonoBehaviour
 
     private void OnValidate()
     {
+        currentTurn = Mathf.Max(1, currentTurn);
         currentOrder = Mathf.Max(1, currentOrder);
         RebuildLookups();
     }
@@ -164,14 +238,27 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     public void ResetProgress()
     {
         tutorialCompleted = false;
+        lastCombatResult = CombatResult.None;
+        currentTurn = 1;
         currentOrder = 1;
         partyState.Clear();
+        ResetResources(notify: false);
         unitStates.Clear();
+        collectedItemKeys.Clear();
         completedCellEventKeys.Clear();
         seenMessageKeys.Clear();
         inactiveObjectKeys.Clear();
+        outpostStates.Clear();
+        pendingCombatSourceType = TutorialCombatSourceType.None;
+        pendingCombatSourceKey = string.Empty;
         RebuildLookups();
         NotifyChanged();
+    }
+
+    [ContextMenu("Clear Tutorial Progress")]
+    public void ClearTutorialProgress()
+    {
+        ResetProgress();
     }
 
     public void MarkTutorialCompleted()
@@ -180,6 +267,15 @@ public sealed class TutorialProgressRepository : MonoBehaviour
             return;
 
         tutorialCompleted = true;
+        NotifyChanged();
+    }
+
+    public void SetLastCombatResult(CombatResult result)
+    {
+        if (lastCombatResult == result)
+            return;
+
+        lastCombatResult = result;
         NotifyChanged();
     }
 
@@ -203,6 +299,95 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     {
         partyState.SetRemainingMovePoints(value);
         NotifyChanged();
+    }
+
+    public void SetCurrentTurn(int turn)
+    {
+        int normalized = Mathf.Max(1, turn);
+        if (currentTurn == normalized)
+            return;
+
+        currentTurn = normalized;
+        NotifyChanged();
+    }
+
+    public int AdvanceTurn()
+    {
+        currentTurn = Mathf.Max(1, currentTurn + 1);
+        NotifyChanged();
+        return currentTurn;
+    }
+
+    public void ResetTurn()
+    {
+        SetCurrentTurn(1);
+    }
+
+    public int GetResource(ResourceType type)
+    {
+        return type switch
+        {
+            ResourceType.Money => money,
+            ResourceType.Chip => chip,
+            ResourceType.Crystal => crystal,
+            ResourceType.Supply => supply,
+            _ => 0
+        };
+    }
+
+    public void SetResource(ResourceType type, int value)
+    {
+        int normalizedValue = Mathf.Max(0, value);
+        if (GetResource(type) == normalizedValue)
+            return;
+
+        switch (type)
+        {
+            case ResourceType.Money:
+                money = normalizedValue;
+                break;
+            case ResourceType.Chip:
+                // ResourceType.Chip is displayed as Medal in tutorial/event UI.
+                chip = normalizedValue;
+                break;
+            case ResourceType.Crystal:
+                crystal = normalizedValue;
+                break;
+            case ResourceType.Supply:
+                supply = normalizedValue;
+                break;
+            default:
+                return;
+        }
+
+        NotifyResourceChanged(type, normalizedValue);
+    }
+
+    public void AddResource(ResourceType type, int amount)
+    {
+        if (amount == 0)
+            return;
+
+        SetResource(type, GetResource(type) + amount);
+    }
+
+    public bool HasResource(ResourceType type, int amount)
+    {
+        return amount <= 0 || GetResource(type) >= amount;
+    }
+
+    public bool SpendResource(ResourceType type, int amount)
+    {
+        if (amount <= 0 || !HasResource(type, amount))
+            return false;
+
+        SetResource(type, GetResource(type) - amount);
+        return true;
+    }
+
+    public void ResetResources()
+    {
+        ResetResources(notify: true);
     }
 
     public TutorialUnitProgressState GetOrCreateUnitState(string unitTemplateKey)
@@ -235,6 +420,27 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         NotifyChanged();
     }
 
+    public void SetUnitStats(
+        string unitTemplateKey,
+        int currentHp,
+        int maxHp,
+        int currentIp,
+        int maxIp,
+        int atk)
+    {
+        TutorialUnitProgressState state = GetOrCreateUnitState(unitTemplateKey);
+        if (state == null)
+            return;
+
+        state.SetStats(
+            Mathf.Max(0, currentHp),
+            Mathf.Max(0, maxHp),
+            Mathf.Max(0, currentIp),
+            Mathf.Max(0, maxIp),
+            Mathf.Max(0, atk));
+        NotifyChanged();
+    }
+
     public bool IsUnitJoined(string unitTemplateKey)
     {
         return TryGetUnitState(unitTemplateKey, out TutorialUnitProgressState state) && state.Joined;
@@ -258,6 +464,16 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     public void MarkCellEventCompleted(string eventKey)
     {
         AddUniqueKey(eventKey, completedCellEventKeys, completedCellEventLookup);
+    }
+
+    public void MarkItemCollected(string itemKey)
+    {
+        AddUniqueKey(itemKey, collectedItemKeys, collectedItemLookup);
+    }
+
+    public bool IsItemCollected(string itemKey)
+    {
+        return collectedItemLookup.Contains(NormalizeKey(itemKey));
     }
 
     public bool IsCellEventCompleted(string eventKey)
@@ -285,13 +501,95 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         return inactiveObjectLookup.Contains(NormalizeKey(objectKey));
     }
 
+    public void SetOutpostState(string objectKey, TutorialOutpostClaimState claimState)
+    {
+        string normalized = NormalizeKey(objectKey);
+        if (string.IsNullOrEmpty(normalized))
+            return;
+
+        bool created = false;
+        if (!outpostLookup.TryGetValue(normalized, out TutorialOutpostProgressState state) || state == null)
+        {
+            state = new TutorialOutpostProgressState(normalized, claimState);
+            outpostStates.Add(state);
+            outpostLookup[normalized] = state;
+            created = true;
+        }
+
+        if (state.ClaimState == claimState)
+        {
+            if (created)
+                NotifyChanged();
+
+            return;
+        }
+
+        state.SetClaimState(claimState);
+        NotifyChanged();
+    }
+
+    public bool TryGetOutpostState(string objectKey, out TutorialOutpostClaimState claimState)
+    {
+        claimState = TutorialOutpostClaimState.EnemyClaimed;
+        if (!outpostLookup.TryGetValue(NormalizeKey(objectKey), out TutorialOutpostProgressState state) || state == null)
+            return false;
+
+        claimState = state.ClaimState;
+        return true;
+    }
+
+    public void SetPendingCombatSource(TutorialCombatSourceType sourceType, string sourceKey)
+    {
+        string normalizedKey = NormalizeKey(sourceKey);
+        if (sourceType == TutorialCombatSourceType.None || string.IsNullOrEmpty(normalizedKey))
+        {
+            ClearPendingCombatSource();
+            return;
+        }
+
+        if (pendingCombatSourceType == sourceType && PendingCombatSourceKey == normalizedKey)
+            return;
+
+        pendingCombatSourceType = sourceType;
+        pendingCombatSourceKey = normalizedKey;
+        NotifyChanged();
+    }
+
+    public void ClearPendingCombatSource()
+    {
+        bool changed = pendingCombatSourceType != TutorialCombatSourceType.None ||
+            !string.IsNullOrWhiteSpace(pendingCombatSourceKey);
+
+        pendingCombatSourceType = TutorialCombatSourceType.None;
+        pendingCombatSourceKey = string.Empty;
+
+        if (changed)
+            NotifyChanged();
+    }
+
+    public void ApplyPendingCombatResult(CombatResult result)
+    {
+        TutorialCombatSourceType sourceType = pendingCombatSourceType;
+        string sourceKey = PendingCombatSourceKey;
+        ClearPendingCombatSource();
+
+        if (sourceType != TutorialCombatSourceType.Outpost || string.IsNullOrEmpty(sourceKey))
+            return;
+
+        if (result == CombatResult.Victory)
+            SetOutpostState(sourceKey, TutorialOutpostClaimState.HeroClaimed);
+    }
+
     [ContextMenu("Rebuild Lookup")]
     public void RebuildLookups()
     {
         unitLookup.Clear();
+        outpostLookup.Clear();
+        RebuildKeyLookup(collectedItemKeys, collectedItemLookup);
         RebuildKeyLookup(completedCellEventKeys, completedCellEventLookup);
         RebuildKeyLookup(seenMessageKeys, seenMessageLookup);
         RebuildKeyLookup(inactiveObjectKeys, inactiveObjectLookup);
+        pendingCombatSourceKey = NormalizeKey(pendingCombatSourceKey);
 
         for (int i = unitStates.Count - 1; i >= 0; i--)
         {
@@ -304,6 +602,19 @@ public sealed class TutorialProgressRepository : MonoBehaviour
 
             state.Normalize();
             unitLookup[state.UnitTemplateKey] = state;
+        }
+
+        for (int i = outpostStates.Count - 1; i >= 0; i--)
+        {
+            TutorialOutpostProgressState state = outpostStates[i];
+            if (state == null || string.IsNullOrWhiteSpace(state.ObjectKey))
+            {
+                outpostStates.RemoveAt(i);
+                continue;
+            }
+
+            state.Normalize();
+            outpostLookup[state.ObjectKey] = state;
         }
     }
 
@@ -350,6 +661,29 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     private void NotifyChanged()
     {
         ProgressChanged?.Invoke();
+    }
+
+    private void NotifyResourceChanged(ResourceType type, int value)
+    {
+        TutorialResourceChanged?.Invoke(type, value);
+        NotifyChanged();
+    }
+
+    private void ResetResources(bool notify)
+    {
+        money = 0;
+        chip = 0;
+        crystal = 0;
+        supply = 0;
+
+        if (!notify)
+            return;
+
+        TutorialResourceChanged?.Invoke(ResourceType.Money, money);
+        TutorialResourceChanged?.Invoke(ResourceType.Chip, chip);
+        TutorialResourceChanged?.Invoke(ResourceType.Crystal, crystal);
+        TutorialResourceChanged?.Invoke(ResourceType.Supply, supply);
+        NotifyChanged();
     }
 
     private static string NormalizeKey(string key)

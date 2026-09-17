@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e784527f640bea4c8add67e46164452, type: 3}
+  m_Name: BGHouse002_Default
+  m_EditorClassIdentifier: 
+  buildingId: BGHouse002
+  parts:
+  - hue: 65.23772
+    lightness: 0.9061939
+    saturation: 8.691623
+    ignoreSourceColorAndShading: 0
+  - hue: 47.74982
+    lightness: 0.7363245
+    saturation: 21.45825
+    ignoreSourceColorAndShading: 0
+  - hue: 203.80215
+    lightness: 0.6339203
+    saturation: 14.91119
+    ignoreSourceColorAndShading: 0
+  - hue: 124.48408
+    lightness: 0.50367
+    saturation: 22.894714
+    ignoreSourceColorAndShading: 0
+  - hue: 69.059235
+    lightness: 0.7601904
+    saturation: 0.000013885564
+    ignoreSourceColorAndShading: 0
+  - hue: 77.193954
+    lightness: 0.5527089
+    saturation: 14.230127
+    ignoreSourceColorAndShading: 0
+  - hue: 83.20043
+    lightness: 0.5526607
+    saturation: 14.38709
+    ignoreSourceColorAndShading: 0
+  - hue: 96.02195
+    lightness: 0.6901078
+    saturation: 18.234674
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - pot
+  - soil
+  - accent

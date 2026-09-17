@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e784527f640bea4c8add67e46164452, type: 3}
+  m_Name: BGStore005_Default
+  m_EditorClassIdentifier: 
+  buildingId: BGStore005
+  parts:
+  - hue: 76.002235
+    lightness: 0.6921196
+    saturation: 12.92889
+    ignoreSourceColorAndShading: 0
+  - hue: 246.37878
+    lightness: 0.33203113
+    saturation: 11.012473
+    ignoreSourceColorAndShading: 0
+  - hue: 196.55794
+    lightness: 0.376817
+    saturation: 8.918172
+    ignoreSourceColorAndShading: 0
+  - hue: 100.1611
+    lightness: 0.4265211
+    saturation: 14.52557
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.40230072
+    saturation: 0.0000037467175
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.4319734
+    saturation: 0.0000040230657
+    ignoreSourceColorAndShading: 0
+  - hue: 90
+    lightness: 0.51816297
+    saturation: 0.000004825769
+    ignoreSourceColorAndShading: 0
+  - hue: 267.14804
+    lightness: 0.3221527
+    saturation: 15.658559
+    ignoreSourceColorAndShading: 0
+  - hue: 263.52905
+    lightness: 0.3729121
+    saturation: 33.82853
+    ignoreSourceColorAndShading: 0
+  - hue: 103.03752
+    lightness: 0.46650258
+    saturation: 0.31426573
+    ignoreSourceColorAndShading: 0
+  - hue: 82.82711
+    lightness: 0.50682074
+    saturation: 22.987984
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - accent
+  - sign_face
+  - standing_sign
+  - side_entrance
+  - warning_paint

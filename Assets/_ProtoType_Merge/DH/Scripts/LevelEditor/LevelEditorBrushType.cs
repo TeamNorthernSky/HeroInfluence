@@ -16,5 +16,8 @@ public enum LevelEditorBrushType
     EnemySpawnPoint = 14,
     MainEvent = 15,
     SubEvent = 16,
-    TutorialObject = 17
+    TutorialBuilding = 17,
+    TutorialItem = 18,
+    TutorialObject = 20,
+    TutorialEnemy = 21
 }

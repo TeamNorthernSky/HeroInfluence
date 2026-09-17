@@ -98,7 +98,7 @@ public class AStarPathfinder : MonoBehaviour
 
         if (enemyEncounterPathMode != EnemyEncounterPathMode.Ignore)
         {
-            EnemyEncounterZoneState zoneState = gridManager.GetEnemyEncounterZoneState(grid, out _);
+            EnemyEncounterZoneState zoneState = gridManager.GetGridEnemyEncounterZoneState(grid, out _);
             if (zoneState == EnemyEncounterZoneState.EnemyOccupied
                 || zoneState == EnemyEncounterZoneState.OverlappedEnemyZone)
             {

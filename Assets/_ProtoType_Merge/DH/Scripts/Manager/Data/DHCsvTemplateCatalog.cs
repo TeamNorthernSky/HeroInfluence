@@ -291,8 +291,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         EnsureLoaded();
         return classSkillTemplateLookup.TryGetValue(skillIndex, out DHClassSkillTemplate template)
-            ? LeveledFloat(template.ValueLv1, template.ValueLv2, template.ValueLv3,
-                           template.ValueLv4, template.ValueLv5, level)
+            ? (HeroSkillRules.IsCurrentHeroSkill(skillIndex) ? template.ValueLv1
+                : LeveledFloat(template.ValueLv1, template.ValueLv2, template.ValueLv3, template.ValueLv4, template.ValueLv5, level))
             : 0f;
     }
 
@@ -301,8 +301,8 @@ public class DHCsvTemplateCatalog : MonoBehaviour
     {
         EnsureLoaded();
         return classSkillTemplateLookup.TryGetValue(skillIndex, out DHClassSkillTemplate template)
-            ? LeveledFloat(template.SubValueLv1, template.SubValueLv2, template.SubValueLv3,
-                           template.SubValueLv4, template.SubValueLv5, level)
+            ? (HeroSkillRules.IsCurrentHeroSkill(skillIndex) ? template.SubValueLv1
+                : LeveledFloat(template.SubValueLv1, template.SubValueLv2, template.SubValueLv3, template.SubValueLv4, template.SubValueLv5, level))
             : 0f;
     }
 
@@ -1494,6 +1494,25 @@ public class DHCsvTemplateCatalog : MonoBehaviour
             src.AnimationTrigger);
     }
 
+    /// <summary>네 기본 계열 중 현재 레벨에서 사용할 변형을 반환합니다. 잠긴 기본판도 UI 표시용으로 포함할 수 있습니다.</summary>
+    public List<SkillData> GetCurrentClassSkills(int classIndex, int level, bool includeLocked = false)
+    {
+        var all = GetSkillsByClassIndex(classIndex);
+        var choices = new Dictionary<int, SkillData>();
+        foreach (var skill in all)
+        {
+            if (skill == null) continue;
+            int family = HeroSkillRules.FamilyId(skill.skillIndex);
+            bool basic = family == skill.skillIndex;
+            if (skill.acquireLevel > level && !(includeLocked && basic)) continue;
+            if (!choices.TryGetValue(family, out var previous) || skill.acquireLevel > previous.acquireLevel)
+                choices[family] = skill;
+        }
+        var result = new List<SkillData>(choices.Values);
+        result.Sort((a, b) => HeroSkillRules.FamilyId(a.skillIndex).CompareTo(HeroSkillRules.FamilyId(b.skillIndex)));
+        return result;
+    }
+
     private static SkillData ConvertClassSkill(DHClassSkillTemplate src)
     {
         if (src == null) return null;
@@ -1501,6 +1520,7 @@ public class DHCsvTemplateCatalog : MonoBehaviour
         {
             skillIndex          = src.NumericSkillId,   // [TEMP:STRKEY] 레거시 int 브리지
             skillKey            = src.SkillKey,
+            riskKey             = src.SkillRiskKey,
             category            = SkillCategory.Class,
             skillClass          = src.ClassName,
             acquireLevel        = src.AcquireLevel,

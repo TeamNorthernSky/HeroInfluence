@@ -42,7 +42,9 @@ public class GridManager : MonoBehaviour
     [SerializeField] private LayerMask heroUnionLayerMask;
     [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private ItemRegistry itemRegistry;
+    [SerializeField] private TutorialItemRegistry tutorialItemRegistry;
     [SerializeField] private EnemyRegistry enemyRegistry;
+    [SerializeField] private TutorialEnemyRegistry tutorialEnemyRegistry;
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [FormerlySerializedAs("mineRegistry")]
     [SerializeField] private OutpostRegistry outpostRegistry;
@@ -90,8 +92,14 @@ public class GridManager : MonoBehaviour
         if (itemRegistry == null)
             itemRegistry = FindFirstObjectByType<ItemRegistry>();
 
+        if (tutorialItemRegistry == null)
+            tutorialItemRegistry = FindFirstObjectByType<TutorialItemRegistry>();
+
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
+
+        if (tutorialEnemyRegistry == null)
+            tutorialEnemyRegistry = FindFirstObjectByType<TutorialEnemyRegistry>();
 
         if (heroUnionRegistry == null)
             heroUnionRegistry = FindFirstObjectByType<HeroUnionRegistry>();
@@ -129,8 +137,14 @@ public class GridManager : MonoBehaviour
         if (itemRegistry == null)
             itemRegistry = FindFirstObjectByType<ItemRegistry>();
 
+        if (tutorialItemRegistry == null)
+            tutorialItemRegistry = FindFirstObjectByType<TutorialItemRegistry>();
+
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
+
+        if (tutorialEnemyRegistry == null)
+            tutorialEnemyRegistry = FindFirstObjectByType<TutorialEnemyRegistry>();
 
         if (outpostRegistry == null)
             outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
@@ -300,7 +314,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasItem(Vector2Int grid)
     {
-        return TryGetItemObjectAtGrid(grid, out _);
+        return TryGetGridItemObjectAtGrid(grid, out _);
     }
 
     public bool TryGetItemObjectAtGrid(Vector2Int grid, out ItemObject itemObject)
@@ -314,6 +328,45 @@ public class GridManager : MonoBehaviour
         for (int i = 0; i < items.Count; i++)
         {
             ItemObject candidate = items[i];
+            if (candidate == null || !candidate.OccupiesGrid(grid, this))
+                continue;
+
+            itemObject = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryGetGridItemObjectAtGrid(Vector2Int grid, out IGridItemObject itemObject)
+    {
+        if (TryGetItemObjectAtGrid(grid, out ItemObject runtimeItem))
+        {
+            itemObject = runtimeItem;
+            return true;
+        }
+
+        if (TryGetTutorialItemObjectAtGrid(grid, out TutorialItemObject tutorialItem))
+        {
+            itemObject = tutorialItem;
+            return true;
+        }
+
+        itemObject = null;
+        return false;
+    }
+
+    public bool TryGetTutorialItemObjectAtGrid(Vector2Int grid, out TutorialItemObject itemObject)
+    {
+        itemObject = null;
+
+        IReadOnlyList<TutorialItemObject> items = tutorialItemRegistry != null
+            ? tutorialItemRegistry.Items
+            : FindObjectsByType<TutorialItemObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            TutorialItemObject candidate = items[i];
             if (candidate == null || !candidate.OccupiesGrid(grid, this))
                 continue;
 
@@ -351,7 +404,7 @@ public class GridManager : MonoBehaviour
 
     public bool HasEnemy(Vector2Int grid, Transform selfTransform = null)
     {
-        return TryGetEnemyObjectAtGrid(grid, out _, selfTransform);
+        return TryGetGridEnemyObjectAtGrid(grid, out _, selfTransform);
     }
 
     public bool HasMultiGridOccupant(Vector2Int grid, Transform selfTransform = null)
@@ -359,9 +412,42 @@ public class GridManager : MonoBehaviour
         return TryGetMultiGridOccupantAtGrid(grid, out _, selfTransform);
     }
 
+    public bool HasTutorialBuilding(Vector2Int grid, Transform selfTransform = null)
+    {
+        return TryGetTutorialBuildingObjectAtGrid(grid, out _, selfTransform);
+    }
+
     public bool HasHeroUnion(Vector2Int grid, Transform selfTransform = null)
     {
         return TryGetHeroUnionByMultiGrid(grid, out _, selfTransform);
+    }
+
+    public bool TryGetTutorialBuildingObjectAtGrid(Vector2Int grid, out TutorialBuildingObject building, Transform ignoredTransform = null)
+    {
+        building = null;
+
+        TutorialBuildingObject[] buildings = FindObjectsByType<TutorialBuildingObject>(FindObjectsSortMode.None);
+        for (int i = 0; i < buildings.Length; i++)
+        {
+            TutorialBuildingObject candidate = buildings[i];
+            if (candidate == null || !candidate.isActiveAndEnabled)
+                continue;
+
+            Transform candidateTransform = candidate.transform;
+            if (ignoredTransform != null
+                && (candidateTransform == ignoredTransform || candidateTransform.IsChildOf(ignoredTransform)))
+            {
+                continue;
+            }
+
+            if (!candidate.OccupiesGrid(grid))
+                continue;
+
+            building = candidate;
+            return true;
+        }
+
+        return false;
     }
 
     public bool TryGetOutpostObjectAtGrid(Vector2Int grid, out Outpost outpost)
@@ -562,6 +648,52 @@ public class GridManager : MonoBehaviour
         return false;
     }
 
+    public bool TryGetGridEnemyObjectAtGrid(Vector2Int grid, out IGridEnemyObject enemy, Transform ignoredTransform = null)
+    {
+        if (TryGetEnemyObjectAtGrid(grid, out EnemyGridMover runtimeEnemy, ignoredTransform))
+        {
+            enemy = runtimeEnemy;
+            return true;
+        }
+
+        if (TryGetTutorialEnemyObjectAtGrid(grid, out TutorialEnemyObject tutorialEnemy, ignoredTransform))
+        {
+            enemy = tutorialEnemy;
+            return true;
+        }
+
+        enemy = null;
+        return false;
+    }
+
+    public bool TryGetTutorialEnemyObjectAtGrid(Vector2Int grid, out TutorialEnemyObject enemy, Transform ignoredTransform = null)
+    {
+        enemy = null;
+
+        IReadOnlyList<TutorialEnemyObject> enemies = tutorialEnemyRegistry != null
+            ? tutorialEnemyRegistry.Enemies
+            : FindObjectsByType<TutorialEnemyObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            TutorialEnemyObject candidate = enemies[i];
+            if (candidate == null || !candidate.isActiveAndEnabled || candidate.GetCurrentGrid() != grid)
+                continue;
+
+            Transform candidateTransform = candidate.transform;
+            if (ignoredTransform != null
+                && (candidateTransform == ignoredTransform || candidateTransform.IsChildOf(ignoredTransform)))
+            {
+                continue;
+            }
+
+            enemy = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
     public EnemyEncounterZoneState GetEnemyEncounterZoneState(Vector2Int grid, out EnemyGridMover owner)
     {
         owner = null;
@@ -614,9 +746,105 @@ public class GridManager : MonoBehaviour
         return EnemyEncounterZoneState.None;
     }
 
+    public EnemyEncounterZoneState GetGridEnemyEncounterZoneState(Vector2Int grid, out IGridEnemyObject owner)
+    {
+        owner = null;
+
+        List<IGridEnemyObject> enemies = new List<IGridEnemyObject>();
+        AddRuntimeEnemies(enemies);
+        AddTutorialEnemies(enemies);
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            IGridEnemyObject enemy = enemies[i];
+            if (enemy == null)
+                continue;
+
+            if (enemy.GetCurrentGrid() != grid)
+                continue;
+
+            owner = enemy;
+            return EnemyEncounterZoneState.EnemyOccupied;
+        }
+
+        int ownerCount = 0;
+        IGridEnemyObject singleOwner = null;
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            IGridEnemyObject enemy = enemies[i];
+            if (enemy == null)
+                continue;
+
+            if (!enemy.IsInteractionCell(grid))
+                continue;
+
+            ownerCount++;
+            if (ownerCount == 1)
+            {
+                singleOwner = enemy;
+                continue;
+            }
+
+            owner = null;
+            return EnemyEncounterZoneState.OverlappedEnemyZone;
+        }
+
+        if (ownerCount == 1)
+        {
+            owner = singleOwner;
+            return EnemyEncounterZoneState.SingleEnemyZone;
+        }
+
+        return EnemyEncounterZoneState.None;
+    }
+
+    private void AddRuntimeEnemies(List<IGridEnemyObject> results)
+    {
+        if (results == null)
+            return;
+
+        IReadOnlyList<EnemyGridMover> enemies = enemyRegistry != null
+            ? enemyRegistry.Enemies
+            : FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            EnemyGridMover enemy = enemies[i];
+            if (enemy != null)
+                results.Add(enemy);
+        }
+    }
+
+    private void AddTutorialEnemies(List<IGridEnemyObject> results)
+    {
+        if (results == null)
+            return;
+
+        IReadOnlyList<TutorialEnemyObject> enemies = tutorialEnemyRegistry != null
+            ? tutorialEnemyRegistry.Enemies
+            : FindObjectsByType<TutorialEnemyObject>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            TutorialEnemyObject enemy = enemies[i];
+            if (enemy != null && enemy.isActiveAndEnabled)
+                results.Add(enemy);
+        }
+    }
+
     public bool TryGetEnemyEncounterZoneOwner(Vector2Int grid, out EnemyGridMover enemy)
     {
         return GetEnemyEncounterZoneState(grid, out enemy) == EnemyEncounterZoneState.SingleEnemyZone;
+    }
+
+    public bool TryGetTutorialEnemyEncounterZoneOwner(Vector2Int grid, out TutorialEnemyObject enemy)
+    {
+        enemy = null;
+        if (GetGridEnemyEncounterZoneState(grid, out IGridEnemyObject owner) != EnemyEncounterZoneState.SingleEnemyZone)
+            return false;
+
+        enemy = owner as TutorialEnemyObject;
+        return enemy != null;
     }
 
     public bool TryGetHeroUnionObjectAtGrid(Vector2Int grid, out HeroUnionUnit heroUnion)
@@ -818,6 +1046,9 @@ public class GridManager : MonoBehaviour
         if (!ignoreFogVisibility && !IsVisibleCell(grid))
             return false;
 
+        if (HasTutorialBuilding(grid, selfTransform))
+            return false;
+
         if (grid == destination)
             return true;
 
@@ -851,6 +1082,9 @@ public class GridManager : MonoBehaviour
             return false;
 
         if (!ignoreFogVisibility && !IsVisibleCell(grid))
+            return false;
+
+        if (HasTutorialBuilding(grid, selfTransform))
             return false;
 
         if (HasEnemy(grid, selfTransform))
