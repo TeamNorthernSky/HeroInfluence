@@ -77,10 +77,20 @@ public class PartyInteractionController
         if (IsInputLocked)
             return;
 
-        if (gridManager == null || combatEncounterManager == null || ownerParty == null)
+        if (gridManager == null || ownerParty == null)
             return;
 
         if (ZoneEntryGuidanceController.IsActive)
+            return;
+
+        if (gridManager.TryGetTutorialEnemyEncounterZoneOwner(ownerParty.GetCurrentGrid(), out TutorialEnemyObject tutorialEnemy))
+        {
+            CancelPendingInteraction();
+            IsInputLocked = tutorialEnemy.TryStartTutorialCombat();
+            return;
+        }
+
+        if (combatEncounterManager == null)
             return;
 
         if (!gridManager.TryGetEnemyEncounterZoneOwner(ownerParty.GetCurrentGrid(), out EnemyGridMover enemy))
@@ -135,7 +145,7 @@ public class PartyInteractionController
 
         Vector2Int targetInteractionGrid = ownerParty.TargetInteractionGrid.Value;
 
-        bool isItem = gridManager.TryGetItemObjectAtGrid(targetInteractionGrid, out ItemObject item);
+        bool isItem = gridManager.TryGetGridItemObjectAtGrid(targetInteractionGrid, out _);
         bool isEvent = allowEvents && gridManager.TryGetEventObjectAtGrid(targetInteractionGrid, out MapEventObject mapEvent);
         bool isWorldEvent = allowEvents && gridManager.TryGetWorldEventObjectAtGrid(targetInteractionGrid, out WorldEventObject worldEvent);
         bool isSubEvent = allowEvents && gridManager.TryGetSubEventObjectAtGrid(targetInteractionGrid, out SubEventObject subEvent);
@@ -392,7 +402,7 @@ public class PartyInteractionController
             yield break;
         }
 
-        if (!gridManager.TryGetItemObjectAtGrid(itemGrid, out ItemObject itemObject))
+        if (!gridManager.TryGetGridItemObjectAtGrid(itemGrid, out IGridItemObject itemObject))
         {
             pendingInteractionCoroutine = null;
             IsInputLocked = false;
@@ -407,16 +417,19 @@ public class PartyInteractionController
         IsInputLocked = false;
     }
 
-    private static float CollectItem(Vector2Int itemGrid, ItemObject itemObject, Transform flyTarget)
+    private static float CollectItem(Vector2Int itemGrid, IGridItemObject itemObject, Transform flyTarget)
     {
         if (itemObject == null)
             return 0f;
-        // ItemObject owns the Economy reward and returns how long pickup input should stay locked.
-        MapProgressRepository repository = MapProgressRepository.Instance;
-        if (repository != null)
-            repository.MarkItemCollected(MapProgressKey.ForItem(itemGrid));
 
-        return itemObject.GetItem(flyTarget);
+        if (itemObject is ItemObject)
+        {
+            MapProgressRepository repository = MapProgressRepository.Instance;
+            if (repository != null)
+                repository.MarkItemCollected(MapProgressKey.ForItem(itemGrid));
+        }
+
+        return itemObject.CollectFromInteraction(flyTarget);
     }
 
     private IEnumerator InvokeDelayedOutpostClaim(Outpost outpost, Vector2Int interactionGrid)

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5027053678245481735}
   - component: {fileID: 3458247011834575331}
   - component: {fileID: -7701653366504982764}
+  - component: {fileID: -8648461109205634298}
   m_Layer: 7
   m_Name: Outpost
   m_TagString: Untagged
@@ -93,6 +94,34 @@ MonoBehaviour:
   associationOverlayColor: {r: 0, g: 0.35, b: 1, a: 0.28}
   enemyBaseOverlayColor: {r: 1, g: 0.15, b: 0.15, a: 0.28}
   overlayController: {fileID: 0}
+--- !u!114 &-8648461109205634298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8453897049157557555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11375c625e559b048a5f6819ae18afeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectKey: 
+  initialClaimState: 0
+  enemyGroupKey: 
+  enemyLevel: 1
+  triggerOnInteractionCellEnter: 1
+  associationSceneName: 
+  allowAssociationSceneLoad: 0
+  targetRenderers: []
+  enemyClaimedMaterial: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9,
+    type: 2}
+  heroClaimedMaterial: {fileID: 2100000, guid: 9afd7964a2d9e064980b47c796d05e5c, type: 2}
+  enemyClaimedOverlayColor: {r: 1, g: 0.15, b: 0.15, a: 0.28}
+  heroClaimedOverlayColor: {r: 0, g: 0.35, b: 1, a: 0.28}
+  buildingObject: {fileID: -7701653366504982764}
+  partyRegistry: {fileID: 0}
+  combatLauncher: {fileID: 0}
 --- !u!1001 &6555532117341741556
 PrefabInstance:
   m_ObjectHideFlags: 0
