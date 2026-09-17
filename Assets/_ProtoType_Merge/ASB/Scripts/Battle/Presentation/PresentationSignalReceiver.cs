@@ -20,12 +20,25 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
     private UnitAnimationEventRouter _router;
     private Action _onImpact;
     private Action _onProjectile;
+    private double _activeStart = double.NegativeInfinity;
+    private double _activeEnd = double.PositiveInfinity;
 
     public void Configure(UnitAnimationEventRouter router, Action onImpact, Action onProjectile = null)
+    {
+        Configure(router, onImpact, onProjectile, double.NegativeInfinity, double.PositiveInfinity);
+    }
+
+    /// <summary>
+    /// 부분 구간 재생 시 범위 밖의 Retroactive Marker 알림을 차단한다. Full 재생은 무한 범위를 사용한다.
+    /// </summary>
+    public void Configure(UnitAnimationEventRouter router, Action onImpact, Action onProjectile,
+        double activeStart, double activeEnd)
     {
         _router = router;
         _onImpact = onImpact;
         _onProjectile = onProjectile;
+        _activeStart = activeStart;
+        _activeEnd = activeEnd;
     }
 
     public void ClearConfig()
@@ -33,11 +46,14 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _router = null;
         _onImpact = null;
         _onProjectile = null;
+        _activeStart = double.NegativeInfinity;
+        _activeEnd = double.PositiveInfinity;
     }
 
     public void OnNotify(Playable origin, INotification notification, object context)
     {
         if (!(notification is PresentationSignalMarker marker)) return;
+        if (marker.time < _activeStart - 0.0001d || marker.time > _activeEnd + 0.0001d) return;
 
         if (LogSignals)
         {

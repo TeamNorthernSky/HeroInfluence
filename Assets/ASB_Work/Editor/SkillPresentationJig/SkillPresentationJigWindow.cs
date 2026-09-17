@@ -24,6 +24,9 @@ namespace ASB.Work.EditorTools.Jig
         private GameObject _characterPrefab;
 
         private JigBuildResult _build;
+        private TimelineAsset _runtimeTimeline;
+        private readonly List<string> _runtimeSections = new List<string>();
+        private int _selectedSection;
         private readonly List<string> _report = new List<string>();
         private Vector2 _scroll;
 
@@ -37,12 +40,13 @@ namespace ASB.Work.EditorTools.Jig
         {
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
 
-            EditorGUILayout.HelpBox(
-                "Cue 시각을 포즈를 보며 편집하는 도구입니다.\n" +
-                "• 생성물은 Editor/ 아래 임시 에셋이며 빌드·씬에 남지 않습니다.\n" +
-                "• 마커는 발화하지 않습니다 — 실제 발화·데미지·홀드 확인은 PreviewScene에서 하세요.\n" +
-                "• 전체 타임라인은 근사 프리뷰입니다. 편집의 진실은 '해당 phase/state 진입 후 local time'입니다.",
-                MessageType.Info);
+            bool runtimeMode = _presentation != null && _presentation.IsTimelineRail;
+            EditorGUILayout.HelpBox(runtimeMode
+                    ? "Runtime Timeline 모드입니다. 실제 전투에서 재생되는 캐릭터 Variant가 시간·클립·블렌드·Marker의 원본입니다.\n" +
+                      "Section은 Timeline 안의 구간 라벨이며 Phase 순서를 대체 실행하지 않습니다."
+                    : "Legacy Animator Rail 모드입니다. Editor/ 아래 임시 근사 Timeline으로 Phase Cue 시간을 편집합니다.\n" +
+                      "이 Timeline은 런타임 자산이 아니며 Phase/local time이 원본입니다.",
+                runtimeMode ? MessageType.Info : MessageType.Warning);
 
             EditorGUILayout.Space();
             DrawInputs();
@@ -54,6 +58,11 @@ namespace ASB.Work.EditorTools.Jig
             {
                 EditorGUILayout.Space();
                 DrawPlayback();
+                if (runtimeMode)
+                {
+                    EditorGUILayout.Space();
+                    DrawRuntimeSections();
+                }
                 EditorGUILayout.Space();
                 DrawCuePreview();
                 EditorGUILayout.Space();
@@ -66,6 +75,12 @@ namespace ASB.Work.EditorTools.Jig
                 DrawDiagnostics();
                 EditorGUILayout.Space();
                 DrawIntervals();
+            }
+
+            if (runtimeMode)
+            {
+                EditorGUILayout.Space();
+                DrawRuntimeDiagnostics();
             }
 
             if (_report.Count > 0)
@@ -94,6 +109,10 @@ namespace ASB.Work.EditorTools.Jig
             {
                 // 입력이 바뀌면 기존 지그는 무효다.
                 _build = null;
+                _runtimeTimeline = null;
+                _runtimeSections.Clear();
+                _selectedSection = 0;
+                JigPreviewPlayback.SetFullRange();
                 _report.Clear();
             }
 
@@ -107,11 +126,12 @@ namespace ASB.Work.EditorTools.Jig
 
         private void DrawActions()
         {
-            bool canBuild = _presentation != null && _characterPrefab != null && _presentation.IsPhaseCue;
+            bool canBuild = _presentation != null && _characterPrefab != null
+                            && _presentation.IsPhaseCue && !_presentation.IsTimelineRail;
 
             using (new EditorGUI.DisabledScope(!canBuild))
             {
-                if (GUILayout.Button(_build == null ? "지그 생성" : "지그 재생성", GUILayout.Height(26)))
+                if (GUILayout.Button(_build == null ? "Legacy Phase 지그 생성" : "Legacy Phase 지그 재생성", GUILayout.Height(26)))
                 {
                     Generate();
                 }
@@ -120,7 +140,7 @@ namespace ASB.Work.EditorTools.Jig
             // Path A(Timeline 레일) Variant 굽기 — 지그 생성 없이도 가능(연출 + 캐릭터만 있으면).
             using (new EditorGUI.DisabledScope(_presentation == null || _characterPrefab == null))
             {
-                if (GUILayout.Button("▶ Path A Variant로 굽기 (Timeline 생성 + 마커 + 연결)", GUILayout.Height(26)))
+                if (GUILayout.Button("▶ Runtime Timeline Variant로 마이그레이션", GUILayout.Height(26)))
                 {
                     BakePathA();
                 }
@@ -189,6 +209,7 @@ namespace ASB.Work.EditorTools.Jig
                 if (GUILayout.Button("▶ 0.25x")) JigPreviewPlayback.Play(0.25f);
                 if (GUILayout.Button("▶ 0.5x")) JigPreviewPlayback.Play(0.5f);
                 if (GUILayout.Button("▶ 1x")) JigPreviewPlayback.Play(1f);
+                if (GUILayout.Button("▶ 2x")) JigPreviewPlayback.Play(2f);
                 using (new EditorGUI.DisabledScope(!JigPreviewPlayback.IsPlaying))
                 {
                     if (GUILayout.Button("⏸ 정지")) JigPreviewPlayback.Stop();
@@ -199,6 +220,76 @@ namespace ASB.Work.EditorTools.Jig
             {
                 EditorGUILayout.LabelField($"재생 중 · {JigPreviewPlayback.Speed:0.##}x", EditorStyles.miniLabel);
                 Repaint();   // 재생 중에는 창을 계속 갱신해 상태 표시가 살아 있게 한다.
+            }
+        }
+
+        private void DrawRuntimeSections()
+        {
+            EditorGUILayout.LabelField("Timeline Section", EditorStyles.boldLabel);
+            if (_runtimeTimeline == null)
+            {
+                EditorGUILayout.HelpBox("연결된 Runtime Timeline을 먼저 여세요.", MessageType.Info);
+                return;
+            }
+
+            if (GUILayout.Button("전체 Timeline 범위 사용"))
+            {
+                JigPreviewPlayback.SetFullRange();
+                PlayableDirector director = JigPreviewInstance.Director;
+                if (director != null)
+                {
+                    director.time = 0d;
+                    director.Evaluate();
+                }
+            }
+
+            if (_runtimeSections.Count == 0)
+            {
+                EditorGUILayout.HelpBox("PresentationSectionMarker가 없습니다. 전체 Timeline만 재생할 수 있습니다.", MessageType.None);
+                return;
+            }
+
+            _selectedSection = Mathf.Clamp(_selectedSection, 0, _runtimeSections.Count - 1);
+            _selectedSection = EditorGUILayout.Popup("Section", _selectedSection, _runtimeSections.ToArray());
+            if (GUILayout.Button("선택 Section 범위 사용"))
+            {
+                string id = _runtimeSections[_selectedSection];
+                if (PresentationTimelineSections.TryResolve(_runtimeTimeline, id,
+                        out PresentationTimelineRange range, out string error))
+                {
+                    JigPreviewPlayback.SetRange(range);
+                    _report.Add($"Section '{id}' 선택: {range.Start:F3}s ~ {range.End:F3}s");
+                }
+                else
+                {
+                    _report.Add("Section 선택 실패: " + error);
+                }
+            }
+        }
+
+        private void DrawRuntimeDiagnostics()
+        {
+            if (_presentation == null || !_presentation.IsTimelineRail) return;
+
+            string key = ResolveCharacterKey();
+            TimelineAsset timeline = _runtimeTimeline != null ? _runtimeTimeline : _presentation.ResolveTimeline(key);
+            List<SkillTimelineValidationMessage> messages = SkillTimelineValidator.Validate(_presentation, key, timeline);
+
+            EditorGUILayout.LabelField("Runtime Timeline 검증", EditorStyles.boldLabel);
+            if (messages.Count == 0)
+            {
+                EditorGUILayout.HelpBox("검증 오류가 없습니다.", MessageType.Info);
+                return;
+            }
+
+            for (int i = 0; i < messages.Count; i++)
+            {
+                MessageType type = messages[i].Severity == SkillTimelineValidationSeverity.Error
+                    ? MessageType.Error
+                    : messages[i].Severity == SkillTimelineValidationSeverity.Warning
+                        ? MessageType.Warning
+                        : MessageType.Info;
+                EditorGUILayout.HelpBox(messages[i].Message, type);
             }
         }
 
@@ -402,8 +493,7 @@ namespace ASB.Work.EditorTools.Jig
         /// <summary>이 스킬에 연결된(캐릭터 키 일치) Variant를 프리뷰로 다시 연다.</summary>
         private void OpenConnectedVariant()
         {
-            BattleCharactor bc = _characterPrefab != null ? _characterPrefab.GetComponentInChildren<BattleCharactor>() : null;
-            string key = bc != null ? bc.UnitName : null;
+            string key = ResolveCharacterKey();
             TimelineAsset timeline = _presentation.ResolveTimeline(key);
             if (timeline == null)
             {
@@ -421,6 +511,13 @@ namespace ASB.Work.EditorTools.Jig
         private void OpenVariantForEditing(TimelineAsset timeline)
         {
             if (timeline == null) return;
+
+            _runtimeTimeline = timeline;
+            PresentationTimelineSections.CollectSectionIds(timeline, _runtimeSections);
+            _selectedSection = 0;
+            JigPreviewPlayback.SetFullRange();
+            int cueCount = JigCuePreview.SetFiresFromTimeline(_presentation, timeline, _report);
+            _report.Add($"Runtime Timeline Cue 프리뷰 {cueCount}개를 연결했습니다.");
 
             GameObject preview = JigPreviewInstance.Create(_characterPrefab, out string err);
             if (preview == null)
@@ -445,6 +542,14 @@ namespace ASB.Work.EditorTools.Jig
 
             Selection.activeGameObject = preview;
             OpenTimelineWindow();
+        }
+
+        private string ResolveCharacterKey()
+        {
+            BattleCharactor bc = _characterPrefab != null
+                ? _characterPrefab.GetComponentInChildren<BattleCharactor>()
+                : null;
+            return bc != null ? bc.UnitName : _characterPrefab != null ? _characterPrefab.name : null;
         }
 
         private void WriteBack()

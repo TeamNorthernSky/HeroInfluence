@@ -14,29 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 2020
   PresentationSchemaVersion: 1
-  AnimationRail: 1
-  SkillTimelines:
-  - CharacterKey: 
-    Timeline: {fileID: 0}
-  - CharacterKey: "\uBE14\uB798\uC2A4\uD130"
-    Timeline: {fileID: 11400000, guid: ebbd7b4c5947eb3409c9b07e51a7fe05, type: 2}
+  AnimationRail: 0
+  PresentationArchetype: 0
+  SkillTimelines: []
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 0
   HitDelay: 0.25
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
   EnableHitEffect: 1
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
@@ -59,14 +48,6 @@ MonoBehaviour:
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 175146618285826147, guid: c912456cef5272a48b509413ed1d920c,
     type: 3}
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
     Enabled: 1
     AnimationStateName: 

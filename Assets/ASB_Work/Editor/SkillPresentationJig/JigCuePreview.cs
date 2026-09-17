@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 namespace ASB.Work.EditorTools.Jig
 {
@@ -61,6 +62,58 @@ namespace ASB.Work.EditorTools.Jig
             CleanupAll();
             _fires.Clear();
             if (fires != null) _fires.AddRange(fires);
+        }
+
+        /// <summary>실제 Runtime Timeline의 PresentationSignalMarker를 CueBinding에 연결해 프리뷰 목록을 만든다.</summary>
+        public static int SetFiresFromTimeline(SkillPresentationData data, TimelineAsset timeline,
+            List<string> report = null)
+        {
+            var fires = new List<JigCueFire>();
+            if (data == null || timeline == null || timeline.markerTrack == null)
+            {
+                SetFires(fires);
+                return 0;
+            }
+
+            var bindings = new List<CueBinding>();
+            data.CollectAllCues(bindings);
+            var byId = new Dictionary<string, CueBinding>();
+            var byName = new Dictionary<string, CueBinding>(System.StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < bindings.Count; i++)
+            {
+                CueBinding cue = bindings[i];
+                if (cue == null) continue;
+                if (!string.IsNullOrEmpty(cue.CueId)) byId[cue.CueId] = cue;
+                if (!string.IsNullOrEmpty(cue.NormalizedCueName) && !byName.ContainsKey(cue.NormalizedCueName))
+                    byName.Add(cue.NormalizedCueName, cue);
+            }
+
+            foreach (IMarker raw in timeline.markerTrack.GetMarkers())
+            {
+                if (!(raw is PresentationSignalMarker marker) || marker.Kind != PresentationSignalKind.Cue) continue;
+
+                CueBinding cue = null;
+                if (!string.IsNullOrEmpty(marker.CueId)) byId.TryGetValue(marker.CueId, out cue);
+                if (cue == null && !string.IsNullOrEmpty(marker.CueName)) byName.TryGetValue(marker.CueName, out cue);
+                if (cue == null)
+                {
+                    report?.Add($"Cue Marker 연결 실패 @ {raw.time:F3}s (id='{marker.CueId}', name='{marker.CueName}')");
+                    continue;
+                }
+
+                fires.Add(new JigCueFire
+                {
+                    FireTime = raw.time,
+                    EffectIds = cue.EffectIds != null ? new List<int>(cue.EffectIds) : new List<int>(),
+                    SoundIds = cue.SoundIds != null ? new List<int>(cue.SoundIds) : new List<int>(),
+                    Anchor = cue.Anchor,
+                    Socket = cue.Socket,
+                    Label = cue.NormalizedCueName
+                });
+            }
+
+            SetFires(fires);
+            return fires.Count;
         }
 
         /// <summary>한 재생 패스 리셋 — fired 초기화 + 스폰물/오디오 정리(루프·되감기·재생 시작).</summary>

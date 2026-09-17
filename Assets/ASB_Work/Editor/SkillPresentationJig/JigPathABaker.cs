@@ -55,10 +55,16 @@ namespace ASB.Work.EditorTools.Jig
             AnimationClip clip = res.Clip;
             float clipLen = clip.length > 0f ? clip.length : 1f;
 
-            // 3) 런타임 폴더 + 고유 경로
+            // 3) 런타임 폴더 + 결정적 경로. GenerateUniqueAssetPath로 같은 스킬 Variant를 계속 복제하지 않는다.
             EnsureFolder();
             string safeKey = string.IsNullOrEmpty(characterKey) ? "Any" : SanitizeFileName(characterKey);
-            string path = AssetDatabase.GenerateUniqueAssetPath($"{RuntimeFolder}/Skill{data.SkillIndex}_{safeKey}.playable");
+            string path = $"{RuntimeFolder}/Skill{data.SkillIndex}_{safeKey}.playable";
+            TimelineAsset existing = AssetDatabase.LoadAssetAtPath<TimelineAsset>(path);
+            if (existing != null)
+            {
+                error = $"이미 Runtime Timeline Variant가 있습니다: {path}\n기존 Variant를 열어 편집하거나 명시적으로 이름을 바꾼 뒤 다시 시도하세요.";
+                return null;
+            }
 
             // 4) TimelineAsset + Animation Track + 클립
             var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
@@ -72,6 +78,14 @@ namespace ASB.Work.EditorTools.Jig
             // 5) Cue 마커 미리 배치(PresentationSignalMarker)
             timeline.CreateMarkerTrack();
             MarkerTrack markerTrack = timeline.markerTrack;
+
+            // 전체 Timeline의 기본 공격 구간. 구간 시간의 원본은 이 Marker 둘뿐이다.
+            var sectionStart = markerTrack.CreateMarker<PresentationSectionMarker>(0d);
+            sectionStart.Configure("Attack", PresentationSectionBoundary.Start);
+            var sectionEnd = markerTrack.CreateMarker<PresentationSectionMarker>(clipLen);
+            sectionEnd.Configure("Attack", PresentationSectionBoundary.End);
+
+            if (data.EnsureCueIds()) EditorUtility.SetDirty(data);
 
             var cues = new List<CueBinding>();
             data.CollectAllCues(cues);
@@ -100,6 +114,14 @@ namespace ASB.Work.EditorTools.Jig
                 pm.Configure(PresentationSignalKind.Projectile, null, null);
                 EditorUtility.SetDirty(pm);
                 summary.Append($"  Projectile @ {clipLen * 0.6:F2}s\n");
+                data.PresentationArchetype = PresentationArchetype.Projectile;
+            }
+            else
+            {
+                var impact = markerTrack.CreateMarker<PresentationSignalMarker>(clipLen * 0.6);
+                impact.Configure(PresentationSignalKind.Impact, null, null);
+                EditorUtility.SetDirty(impact);
+                summary.Append($"  Impact @ {clipLen * 0.6:F2}s\n");
             }
 
             EditorUtility.SetDirty(markerTrack);
@@ -113,7 +135,7 @@ namespace ASB.Work.EditorTools.Jig
 
             Debug.Log(
                 $"[JigPathABaker] 구움: {path}\n  캐릭터: '{characterKey}' / 클립: {clip.name} ({clipLen:F2}s)\n" +
-                $"  마커 {placed}개 + 투사체{(data.GetProjectileVisual() != null ? " 1" : " 0")}\n{summary}" +
+                $"  Cue 마커 {placed}개 + 구간 1개 + 전달 마커 1개\n{summary}" +
                 "  → 저작자: 클립 Split/속도/블렌드, 마커 위치, (투사체면) 발사 시점을 Timeline에서 다듬으세요.",
                 timeline);
 

@@ -20,9 +20,14 @@ namespace ASB.Work.EditorTools.Jig
         private static bool _playing;
         private static float _speed = 1f;
         private static double _lastTime;
+        private static double _rangeStart;
+        private static double _rangeEnd = double.PositiveInfinity;
 
         public static bool IsPlaying => _playing;
         public static float Speed => _speed;
+        public static double RangeStart => _rangeStart;
+        public static double RangeEnd => _rangeEnd;
+        public static bool IsRangePlayback => !double.IsPositiveInfinity(_rangeEnd);
 
         public static void Play(float speed)
         {
@@ -34,10 +39,14 @@ namespace ASB.Work.EditorTools.Jig
 
             _speed = Mathf.Max(0.01f, speed);
 
-            // 끝에 있으면 처음부터 재생한다.
-            if (director.duration > 0d && director.time >= director.duration - 1e-4d)
+            double start = IsRangePlayback ? _rangeStart : 0d;
+            double end = IsRangePlayback ? _rangeEnd : director.duration;
+
+            // 범위 밖이거나 끝에 있으면 범위 시작부터 재생한다.
+            if (director.time < start - 1e-4d || director.time >= end - 1e-4d)
             {
-                director.time = 0d;
+                director.time = start;
+                director.Evaluate();
             }
 
             // 재생(재)시작 — 현재 시점부터 새 패스로: fired 리셋 + 이전 스폰물/오디오 정리(§4.1).
@@ -52,6 +61,26 @@ namespace ASB.Work.EditorTools.Jig
         }
 
         public static void SetSpeed(float speed) => _speed = Mathf.Max(0.01f, speed);
+
+        public static void SetFullRange()
+        {
+            _rangeStart = 0d;
+            _rangeEnd = double.PositiveInfinity;
+        }
+
+        public static void SetRange(PresentationTimelineRange range)
+        {
+            _rangeStart = range.Start;
+            _rangeEnd = range.End;
+
+            PlayableDirector director = JigPreviewInstance.Director;
+            if (director != null)
+            {
+                director.time = range.Start;
+                director.Evaluate();
+            }
+            JigCuePreview.ResetPass();
+        }
 
         public static void Stop()
         {
@@ -85,13 +114,15 @@ namespace ASB.Work.EditorTools.Jig
 
             double prev = director.time;
             double advanced = prev + realDt * _speed;   // 배속 반영
-            double duration = director.duration;
+            double rangeStart = IsRangePlayback ? _rangeStart : 0d;
+            double rangeEnd = IsRangePlayback ? _rangeEnd : director.duration;
+            double rangeDuration = rangeEnd - rangeStart;
 
             bool looped = false;
             double t = advanced;
-            if (duration > 0d && advanced >= duration)
+            if (rangeDuration > 0d && advanced >= rangeEnd)
             {
-                t = advanced % duration;
+                t = rangeStart + ((advanced - rangeStart) % rangeDuration);
                 looped = true;
             }
 
@@ -102,7 +133,7 @@ namespace ASB.Work.EditorTools.Jig
             if (looped)
             {
                 JigCuePreview.ResetPass();       // 루프 → 이전 패스 정리 + fired 리셋
-                JigCuePreview.Advance(0d, t);    // 새 패스 [0, t]
+                JigCuePreview.Advance(rangeStart, t);    // 새 패스 [rangeStart, t]
             }
             else
             {

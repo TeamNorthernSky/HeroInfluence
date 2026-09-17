@@ -55,7 +55,9 @@ public class SkillPresentationDataEditor : Editor
         EditorGUILayout.LabelField("Animation Rail (Path A)", EditorStyles.boldLabel);
         SerializedProperty rail = serializedObject.FindProperty("AnimationRail");
         EditorGUILayout.PropertyField(rail);
-        if (rail != null && rail.enumValueIndex == (int)AnimationRail.Timeline)
+        bool isTimelineRail = rail != null && rail.enumValueIndex == (int)AnimationRail.Timeline;
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("PresentationArchetype"));
+        if (isTimelineRail)
         {
             EditorGUILayout.PropertyField(serializedObject.FindProperty("SkillTimelines"), true);
             EditorGUILayout.HelpBox(
@@ -67,7 +69,8 @@ public class SkillPresentationDataEditor : Editor
         // ── 공용 (전 스키마) ──
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Animation (공용)", EditorStyles.boldLabel);
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("AnimationStateName"));
+        using (new EditorGUI.DisabledScope(isTimelineRail))
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("AnimationStateName"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("TargetAnimationTriggerOverride"));
 
         EditorGUILayout.Space();
@@ -92,9 +95,12 @@ public class SkillPresentationDataEditor : Editor
 
         // ── 신 방식 (Phase Cue, Schema=1) ──
         EditorGUILayout.Space();
-        _foldNew = EditorGUILayout.Foldout(_foldNew, "신 방식 — Presentation Phases (Schema=1)", true);
+        _foldNew = EditorGUILayout.Foldout(_foldNew,
+            isTimelineRail ? "Legacy Migration Data — Presentation Phases" : "Presentation Phases (Animator Rail)", true);
         if (_foldNew)
         {
+            using (new EditorGUI.DisabledScope(isTimelineRail))
+            {
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(serializedObject.FindProperty("MovePrepare"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Move"), true);
@@ -110,6 +116,7 @@ public class SkillPresentationDataEditor : Editor
                             MovingAttackPathSceneTool.DrawInspectorControls(target as SkillPresentationData);
                             serializedObject.Update();
             EditorGUI.indentLevel--;
+            }
         }
 
         serializedObject.ApplyModifiedProperties();

@@ -15,6 +15,26 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     public event Action<float, float> OnHpChanged;
     public event Action<float, float> OnInfluenceChanged;
 
+    /// <summary>
+    /// 피격/사망 등으로 진행 중인 스킬 연출(Timeline)을 즉시 중단해야 할 때 발생한다.
+    /// Timeline 재생기(<see cref="SkillPresentationDirector"/>)가 이 유닛의 재생 동안 구독하며,
+    /// 핸들러에서 PlayableDirector를 동기적으로 정지시켜 Hit/Dead CrossFade가 Timeline 포즈에 덮이지 않게 한다.
+    /// </summary>
+    public event Action<PresentationInterruptReason> PresentationInterruptRequested;
+
+    /// <summary>
+    /// 진행 중인 Timeline 연출 중단을 요청한다(피격/사망 시). 구독 중인 재생기가 director를 동기 정지한다.
+    /// 재생 중이 아니면(구독자 없음) 무해한 no-op이다. <see cref="PresentationInterruptReason.None"/>은 무시한다.
+    /// </summary>
+    public void RequestPresentationInterrupt(PresentationInterruptReason reason)
+    {
+        if (reason == PresentationInterruptReason.None)
+        {
+            return;
+        }
+        PresentationInterruptRequested?.Invoke(reason);
+    }
+
     [Header("Identity")]
     [SerializeField] private string unitName = "Unit";
     [SerializeField] private TeamType teamType = TeamType.Player;
@@ -461,6 +481,12 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             }
             Die();
         }
+        else if (damage > 0f)
+        {
+            // 생존 피격: 진행 중인 자신의 Timeline 연출을 Hit 반응(CrossFade)보다 먼저 멈춘다.
+            // (피격 애니는 대미지 액션이 이후에 재생하므로, 여기서 동기 정지하면 같은 프레임에 소유권이 넘어간다.)
+            RequestPresentationInterrupt(PresentationInterruptReason.Hit);
+        }
     }
 
     public void ApplyHeal(float amount)
@@ -587,6 +613,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         RefreshFormationPassiveStatsForAllUnits();
 
         EnsureAnimationController();
+        // 진행 중인 자신의 Timeline 연출(반격으로 시전 중 사망하는 경우 등)을 Dead CrossFade보다 먼저 멈춘다.
+        RequestPresentationInterrupt(PresentationInterruptReason.Dead);
         Anim?.PlayGenericAnimation("Die");
         OnDied?.Invoke(this);
         DisableVisuals();

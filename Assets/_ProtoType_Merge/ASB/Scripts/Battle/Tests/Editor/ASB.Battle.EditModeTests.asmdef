@@ -1,7 +1,9 @@
 {
   "name": "ASB.Battle.EditModeTests",
   "rootNamespace": "",
-  "references": [],
+  "references": [
+    "Unity.Timeline"
+  ],
   "includePlatforms": [
     "Editor"
   ],

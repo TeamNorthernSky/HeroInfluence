@@ -36,6 +36,18 @@ public enum AnimationRail
 }
 
 /// <summary>
+/// Timeline 템플릿과 검증 규칙을 선택하는 저작 분류. SchemaVersion/Cue 형식 및 AnimationRail과는 독립이다.
+/// </summary>
+public enum PresentationArchetype
+{
+    Stationary,
+    Melee,
+    Projectile,
+    AoE,
+    MovingAttack
+}
+
+/// <summary>
 /// Path A용 캐릭터별 베이크 Timeline 바인딩(지시서 §5).
 /// 저작 시점에 그 캐릭터의 클립(오버라이드 해석 포함)이 이미 구워진 전용 TimelineAsset을 가리킨다.
 /// 런타임은 이 매핑에서 시전 캐릭터 키로 선택만 하고, 클립 해석/에셋 뮤테이션을 하지 않는다.
@@ -69,6 +81,9 @@ public class SkillPresentationData : ScriptableObject
     [Tooltip("Timeline이면 이 스킬은 PlayableDirector로 SkillTimelines를 재생한다(Path A). 기본은 Animator(Path B). " +
              "지시서: Docs/SkillPresentation_PathA_Timeline런타임재생_구현지시서.md")]
     public AnimationRail AnimationRail = AnimationRail.Animator;
+
+    [Tooltip("Timeline 템플릿/검증 분류. AnimationRail이나 PresentationSchemaVersion을 대신하지 않습니다.")]
+    public PresentationArchetype PresentationArchetype = PresentationArchetype.Stationary;
 
     [Tooltip("AnimationRail=Timeline일 때만 사용. 파일럿은 캐릭터별 베이크 Variant — 시전 캐릭터 키로 조회(지시서 §5).")]
     public List<SkillTimelineBinding> SkillTimelines = new List<SkillTimelineBinding>();
@@ -217,7 +232,9 @@ public class SkillPresentationData : ScriptableObject
 
     private void OnValidate()
     {
-        if (!IsPhaseCue)
+        // Schema와 Rail은 독립 축이다. Schema=1이어도 Timeline Rail이면 아래 Animator state/time 규칙은
+        // 실행 계약이 아니며, 실제 Cue/Marker 정합성은 SkillTimelineValidator가 검사한다.
+        if (!IsPhaseCue || IsTimelineRail)
         {
             return;
         }
