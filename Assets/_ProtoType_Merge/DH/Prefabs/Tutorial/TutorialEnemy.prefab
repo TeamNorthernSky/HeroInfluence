@@ -48,6 +48,8 @@ MonoBehaviour:
   objectKey: 
   enemyGroupKey: FEP001
   enemyLevel: 1
+  tutorialBattleKey: TUT_01
+  tutorialZoneId: 1
   disableWhenObjectMarkedInactive: 1
   gridManager: {fileID: 0}
   enemyRegistry: {fileID: 0}

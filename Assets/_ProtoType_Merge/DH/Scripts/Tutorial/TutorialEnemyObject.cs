@@ -21,6 +21,12 @@ public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
     [SerializeField] private string enemyGroupKey;
     [SerializeField, Min(1)] private int enemyLevel = 1;
 
+    [Header("Tutorial Flow")]
+    [Tooltip("이 적을 만졌을 때 실행할 튜토리얼 수업 키(예: TUT_01). 비우면 전투 씬 override로 폴백.")]
+    [SerializeField] private string tutorialBattleKey;
+    [Tooltip("튜토리얼 flow/UI 해석에 쓸 존 ID. -1이면 레지스트리 와일드카드.")]
+    [SerializeField, Min(-1)] private int tutorialZoneId = -1;
+
     [Header("Interaction")]
     [SerializeField] private bool disableWhenObjectMarkedInactive = true;
 
@@ -40,6 +46,8 @@ public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
     public string ObjectKey => ResolveObjectKey();
     public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
     public int EnemyLevel => Mathf.Max(1, enemyLevel);
+    public string TutorialBattleKey => string.IsNullOrWhiteSpace(tutorialBattleKey) ? string.Empty : tutorialBattleKey.Trim();
+    public int TutorialZoneId => tutorialZoneId;
 
     private void Awake()
     {
@@ -121,7 +129,7 @@ public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
         }
 
         combatStarting = true;
-        bool started = combatLauncher.BeginCombat(EnemyGroupKey, EnemyLevel);
+        bool started = combatLauncher.BeginCombat(EnemyGroupKey, EnemyLevel, TutorialBattleKey, TutorialZoneId);
         if (!started)
             combatStarting = false;
 

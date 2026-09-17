@@ -93,6 +93,10 @@ public class PlayerSpawner : MonoBehaviour
         if (combatContext != null && combatContext.IsSimulation)
             return SpawnFromSimulationContext(combatContext);
 
+        // 튜토리얼: 탐사에서 넘어온 아군 런타임 데이터로 우선 스폰. 실패 시 아래 폴백으로 진행한다.
+        if (combatContext != null && combatContext.IsTutorial && SpawnFromTutorialContext(combatContext))
+            return true;
+
         // Persistent 우선 스폰. 실패 시 기존 디버그(=CSV 폴백 역할) 리스트로 폴백합니다.
         if (SpawnFromPersistentRepository())
         {
@@ -349,6 +353,95 @@ public class PlayerSpawner : MonoBehaviour
             if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null)
             {
                 Debug.LogError($"[PlayerSpawner] Simulation grid cell is missing. grid={gridNumber}", this);
+                return false;
+            }
+
+            unitTemplates[i] = csvUnitData;
+            runtimeUnits[i] = persistentData;
+        }
+
+        var spawnedGrids = new List<int>();
+        for (int i = 0; i < runtimeUnits.Length; i++)
+        {
+            int gridNumber = sortedGrids[i];
+            if (SpawnPersistentUnit(unitTemplates[i], runtimeUnits[i], gridNumber) == null)
+            {
+                for (int j = 0; j < spawnedGrids.Count; j++)
+                    ClearGrid(spawnedGrids[j]);
+                return false;
+            }
+            spawnedGrids.Add(gridNumber);
+        }
+
+        return runtimeUnits.Length > 0;
+    }
+
+    // 튜토리얼 전투는 시뮬레이션과 동일하게 CombatContext가 들고 온 런타임 아군 데이터로 스폰한다.
+    // (탐사 TutorialCombatLauncher가 defaultUnitTemplateKeys로 빌드해 BeginTutorial에 실어 보낸 값)
+    private bool SpawnFromTutorialContext(CombatContext combatContext)
+    {
+        if (combatContext == null || !combatContext.IsTutorial || combatContext.CombatParty == null)
+            return false;
+
+        IReadOnlyList<int> combatUnitIndices = ResolveCombatUnitIndices(combatContext.CombatParty);
+        if (combatUnitIndices == null || combatUnitIndices.Count == 0)
+        {
+            Debug.LogError("[PlayerSpawner] Tutorial combat has no party unit indices.", this);
+            return false;
+        }
+
+        // 튜토리얼 아군은 일반 카탈로그(DataStorage, 임시)가 아니라 튜토리얼 전용 데이터 매니저(TutorialCatalog,
+        // DontDestroyOnLoad로 탐사→전투 유지)에서 템플릿을 해석한다.
+        if (!hierarchyReady || TutorialCatalog.Instance == null || gridSlots.Count == 0)
+        {
+            Debug.LogError("[PlayerSpawner] Tutorial spawn dependencies are not ready.", this);
+            return false;
+        }
+
+        List<int> sortedGrids = new List<int>(gridSlots.Keys);
+        sortedGrids.Sort();
+        if (combatUnitIndices.Count > sortedGrids.Count)
+        {
+            Debug.LogError(
+                $"[PlayerSpawner] Tutorial party exceeds available grids. units={combatUnitIndices.Count}, grids={sortedGrids.Count}",
+                this);
+            return false;
+        }
+
+        var unitTemplates = new UnitData[combatUnitIndices.Count];
+        var runtimeUnits = new UnitPersistentData[combatUnitIndices.Count];
+        for (int i = 0; i < combatUnitIndices.Count; i++)
+        {
+            int runtimeUnitIndex = combatUnitIndices[i];
+            if (!combatContext.TryGetTutorialAlly(runtimeUnitIndex, out SimulationAllyRuntimeData runtimeData) ||
+                runtimeData == null ||
+                runtimeData.UnitData == null)
+            {
+                Debug.LogError($"[PlayerSpawner] Tutorial ally data is missing. runtimeIndex={runtimeUnitIndex}", this);
+                return false;
+            }
+
+            UnitPersistentData persistentData = runtimeData.UnitData;
+            if (persistentData.CurrentHp <= 0f)
+            {
+                Debug.LogError($"[PlayerSpawner] Tutorial ally HP must be positive. runtimeIndex={runtimeUnitIndex}", this);
+                return false;
+            }
+
+            if (!TutorialCombatUnitFactory.TryCreateUnitData(persistentData.UnitTemplateKey, out UnitData csvUnitData) ||
+                csvUnitData == null ||
+                FindPrefab(csvUnitData) == null)
+            {
+                Debug.LogError(
+                    $"[PlayerSpawner] Tutorial ally template or prefab is missing. key='{persistentData.UnitTemplateKey}'",
+                    this);
+                return false;
+            }
+
+            int gridNumber = sortedGrids[i];
+            if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null)
+            {
+                Debug.LogError($"[PlayerSpawner] Tutorial grid cell is missing. grid={gridNumber}", this);
                 return false;
             }
 

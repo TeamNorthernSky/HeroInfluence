@@ -439,7 +439,16 @@ public class EnemySpawner : MonoBehaviour
 
     private bool SpawnFromEnemyGroupPlan(string enemyGroupKey, int enemyLevel)
     {
-        if (!EnemySpawnPlanBuilder.TryBuildFromEnemyGroup(enemyGroupKey, enemyLevel, out EnemySpawnPlan plan, out string error))
+        // 튜토리얼 전투는 일반 카탈로그(DataStorage=DHCsvTemplateCatalog, 임시)가 아니라 튜토리얼 전용
+        // 데이터 매니저(TutorialCatalog, DontDestroyOnLoad로 탐사→전투 유지)에서 그룹 플랜을 빌드한다.
+        // FEP* 등 튜토리얼 적 그룹은 일반 테이블에 없을 수 있어 반드시 튜토리얼 카탈로그를 써야 한다.
+        bool isTutorial = CombatContext.Instance != null && CombatContext.Instance.IsTutorial;
+        EnemySpawnPlan plan;
+        string error;
+        bool planBuilt = isTutorial
+            ? TutorialEnemySpawnPlanBuilder.TryBuildFromEnemyGroup(enemyGroupKey, enemyLevel, out plan, out error)
+            : EnemySpawnPlanBuilder.TryBuildFromEnemyGroup(enemyGroupKey, enemyLevel, out plan, out error);
+        if (!planBuilt)
         {
             Debug.LogError(
                 $"[EnemySpawner] Enemy group spawn plan build failed. groupKey='{enemyGroupKey}', level={enemyLevel}, error={error}",
