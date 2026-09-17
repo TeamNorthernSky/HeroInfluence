@@ -30,7 +30,9 @@ public sealed class TutorialCombatResultProcessor : MonoBehaviour
         if (context == null || !context.IsTutorial || context.Result == CombatResult.None)
             yield break;
 
-        TutorialProgressRepository.EnsureInstance().SetLastCombatResult(context.Result);
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
+        repository.SetLastCombatResult(context.Result);
+        repository.ApplyPendingCombatResult(context.Result);
         context.ClearTutorial();
     }
 }

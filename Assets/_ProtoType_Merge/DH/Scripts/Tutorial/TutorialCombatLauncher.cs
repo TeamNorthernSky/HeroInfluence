@@ -11,7 +11,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
     [Header("Scene")]
     [SerializeField] private string tutorialBattleSceneName;
     [SerializeField] private string returnSceneName = "TutorialExploreScene";
-    [SerializeField] private bool allowBattleSceneLoad;
+    [SerializeField] private bool allowBattleSceneLoad = true;
 
     [Header("Default Party")]
     [SerializeField] private List<string> defaultUnitTemplateKeys = new List<string>

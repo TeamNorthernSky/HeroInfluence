@@ -90,6 +90,53 @@ public class TutorialPartyProgressState
     }
 }
 
+public enum TutorialOutpostClaimState
+{
+    EnemyClaimed = 0,
+    HeroClaimed = 1
+}
+
+public enum TutorialCombatSourceType
+{
+    None = 0,
+    Outpost = 1
+}
+
+[Serializable]
+public class TutorialOutpostProgressState
+{
+    [SerializeField] private string objectKey;
+    [SerializeField] private TutorialOutpostClaimState claimState;
+
+    public string ObjectKey => NormalizeKey(objectKey);
+    public TutorialOutpostClaimState ClaimState => claimState;
+
+    public TutorialOutpostProgressState()
+    {
+    }
+
+    public TutorialOutpostProgressState(string objectKey, TutorialOutpostClaimState claimState)
+    {
+        this.objectKey = NormalizeKey(objectKey);
+        this.claimState = claimState;
+    }
+
+    public void SetClaimState(TutorialOutpostClaimState nextClaimState)
+    {
+        claimState = nextClaimState;
+    }
+
+    public void Normalize()
+    {
+        objectKey = NormalizeKey(objectKey);
+    }
+
+    private static string NormalizeKey(string key)
+    {
+        return string.IsNullOrWhiteSpace(key) ? string.Empty : key.Trim();
+    }
+}
+
 [DisallowMultipleComponent]
 public sealed class TutorialProgressRepository : MonoBehaviour
 {
@@ -112,9 +159,14 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     [SerializeField] private List<string> completedCellEventKeys = new List<string>();
     [SerializeField] private List<string> seenMessageKeys = new List<string>();
     [SerializeField] private List<string> inactiveObjectKeys = new List<string>();
+    [SerializeField] private List<TutorialOutpostProgressState> outpostStates = new List<TutorialOutpostProgressState>();
+    [SerializeField] private TutorialCombatSourceType pendingCombatSourceType = TutorialCombatSourceType.None;
+    [SerializeField] private string pendingCombatSourceKey;
 
     private readonly Dictionary<string, TutorialUnitProgressState> unitLookup =
         new Dictionary<string, TutorialUnitProgressState>(StringComparer.Ordinal);
+    private readonly Dictionary<string, TutorialOutpostProgressState> outpostLookup =
+        new Dictionary<string, TutorialOutpostProgressState>(StringComparer.Ordinal);
     private readonly HashSet<string> collectedItemLookup =
         new HashSet<string>(StringComparer.Ordinal);
     private readonly HashSet<string> completedCellEventLookup =
@@ -134,6 +186,9 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     public IReadOnlyList<string> CompletedCellEventKeys => completedCellEventKeys;
     public IReadOnlyList<string> SeenMessageKeys => seenMessageKeys;
     public IReadOnlyList<string> InactiveObjectKeys => inactiveObjectKeys;
+    public IReadOnlyList<TutorialOutpostProgressState> OutpostStates => outpostStates;
+    public TutorialCombatSourceType PendingCombatSourceType => pendingCombatSourceType;
+    public string PendingCombatSourceKey => NormalizeKey(pendingCombatSourceKey);
     public bool HasAnyJoinedUnit => GetJoinedUnitCount() > 0;
 
     public event Action ProgressChanged;
@@ -193,6 +248,9 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         completedCellEventKeys.Clear();
         seenMessageKeys.Clear();
         inactiveObjectKeys.Clear();
+        outpostStates.Clear();
+        pendingCombatSourceType = TutorialCombatSourceType.None;
+        pendingCombatSourceKey = string.Empty;
         RebuildLookups();
         NotifyChanged();
     }
@@ -443,14 +501,95 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         return inactiveObjectLookup.Contains(NormalizeKey(objectKey));
     }
 
+    public void SetOutpostState(string objectKey, TutorialOutpostClaimState claimState)
+    {
+        string normalized = NormalizeKey(objectKey);
+        if (string.IsNullOrEmpty(normalized))
+            return;
+
+        bool created = false;
+        if (!outpostLookup.TryGetValue(normalized, out TutorialOutpostProgressState state) || state == null)
+        {
+            state = new TutorialOutpostProgressState(normalized, claimState);
+            outpostStates.Add(state);
+            outpostLookup[normalized] = state;
+            created = true;
+        }
+
+        if (state.ClaimState == claimState)
+        {
+            if (created)
+                NotifyChanged();
+
+            return;
+        }
+
+        state.SetClaimState(claimState);
+        NotifyChanged();
+    }
+
+    public bool TryGetOutpostState(string objectKey, out TutorialOutpostClaimState claimState)
+    {
+        claimState = TutorialOutpostClaimState.EnemyClaimed;
+        if (!outpostLookup.TryGetValue(NormalizeKey(objectKey), out TutorialOutpostProgressState state) || state == null)
+            return false;
+
+        claimState = state.ClaimState;
+        return true;
+    }
+
+    public void SetPendingCombatSource(TutorialCombatSourceType sourceType, string sourceKey)
+    {
+        string normalizedKey = NormalizeKey(sourceKey);
+        if (sourceType == TutorialCombatSourceType.None || string.IsNullOrEmpty(normalizedKey))
+        {
+            ClearPendingCombatSource();
+            return;
+        }
+
+        if (pendingCombatSourceType == sourceType && PendingCombatSourceKey == normalizedKey)
+            return;
+
+        pendingCombatSourceType = sourceType;
+        pendingCombatSourceKey = normalizedKey;
+        NotifyChanged();
+    }
+
+    public void ClearPendingCombatSource()
+    {
+        bool changed = pendingCombatSourceType != TutorialCombatSourceType.None ||
+            !string.IsNullOrWhiteSpace(pendingCombatSourceKey);
+
+        pendingCombatSourceType = TutorialCombatSourceType.None;
+        pendingCombatSourceKey = string.Empty;
+
+        if (changed)
+            NotifyChanged();
+    }
+
+    public void ApplyPendingCombatResult(CombatResult result)
+    {
+        TutorialCombatSourceType sourceType = pendingCombatSourceType;
+        string sourceKey = PendingCombatSourceKey;
+        ClearPendingCombatSource();
+
+        if (sourceType != TutorialCombatSourceType.Outpost || string.IsNullOrEmpty(sourceKey))
+            return;
+
+        if (result == CombatResult.Victory)
+            SetOutpostState(sourceKey, TutorialOutpostClaimState.HeroClaimed);
+    }
+
     [ContextMenu("Rebuild Lookup")]
     public void RebuildLookups()
     {
         unitLookup.Clear();
+        outpostLookup.Clear();
         RebuildKeyLookup(collectedItemKeys, collectedItemLookup);
         RebuildKeyLookup(completedCellEventKeys, completedCellEventLookup);
         RebuildKeyLookup(seenMessageKeys, seenMessageLookup);
         RebuildKeyLookup(inactiveObjectKeys, inactiveObjectLookup);
+        pendingCombatSourceKey = NormalizeKey(pendingCombatSourceKey);
 
         for (int i = unitStates.Count - 1; i >= 0; i--)
         {
@@ -463,6 +602,19 @@ public sealed class TutorialProgressRepository : MonoBehaviour
 
             state.Normalize();
             unitLookup[state.UnitTemplateKey] = state;
+        }
+
+        for (int i = outpostStates.Count - 1; i >= 0; i--)
+        {
+            TutorialOutpostProgressState state = outpostStates[i];
+            if (state == null || string.IsNullOrWhiteSpace(state.ObjectKey))
+            {
+                outpostStates.RemoveAt(i);
+                continue;
+            }
+
+            state.Normalize();
+            outpostLookup[state.ObjectKey] = state;
         }
     }
 

@@ -2,11 +2,18 @@ using PrimeTween;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public sealed class TutorialItemObject : MonoBehaviour
+public sealed class TutorialItemObject : MonoBehaviour, IGridItemObject
 {
     [Header("Reward")]
+    [SerializeField] private string itemKey;
     [SerializeField] private ResourceType resourceType = ResourceType.Money;
     [SerializeField] private int amount = 1;
+
+    [Header("Pickup")]
+    [SerializeField] private bool disableWhenCollected = true;
+
+    [Header("References")]
+    [SerializeField] private GridManager gridManager;
 
     private TutorialItemRegistry registry;
     private bool isCollecting;
@@ -18,11 +25,22 @@ public sealed class TutorialItemObject : MonoBehaviour
     private TutorialItemRegistry.PickupMotionSettings activeMotion;
     private bool activeUsesFlight;
 
+    public string ItemKey => ResolveItemKey();
     public ResourceType ResourceType => resourceType;
     public int Amount => amount;
 
     private void OnEnable()
     {
+        ResolveReferences();
+
+        if (Application.isPlaying &&
+            disableWhenCollected &&
+            TutorialProgressRepository.EnsureInstance()?.IsItemCollected(ItemKey) == true)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         ResolveRegistry();
         registry?.Register(this);
     }
@@ -43,7 +61,9 @@ public sealed class TutorialItemObject : MonoBehaviour
             return 0f;
 
         isCollecting = true;
-        TutorialProgressRepository.EnsureInstance()?.AddResource(resourceType, amount);
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
+        repository?.MarkItemCollected(ItemKey);
+        repository?.AddResource(resourceType, amount);
 
         TutorialItemRegistry.PickupMotionSettings motion = ResolvePickupMotion();
         if (TryPlayPickupMotion(flyTarget, motion, out float duration))
@@ -63,10 +83,32 @@ public sealed class TutorialItemObject : MonoBehaviour
         return gridManager != null ? gridManager.WorldToGrid(transform.position) : Vector2Int.zero;
     }
 
+    public bool OccupiesGrid(Vector2Int grid, GridManager gridManager)
+    {
+        return GetCurrentGrid(gridManager) == grid;
+    }
+
+    public float CollectFromInteraction(Transform flyTarget)
+    {
+        return Collect(flyTarget);
+    }
+
+    private void ResolveReferences()
+    {
+        ResolveGridManager();
+        ResolveRegistry();
+    }
+
     private void ResolveRegistry()
     {
         if (registry == null)
             registry = FindFirstObjectByType<TutorialItemRegistry>();
+    }
+
+    private void ResolveGridManager()
+    {
+        if (gridManager == null)
+            gridManager = FindFirstObjectByType<GridManager>();
     }
 
     private TutorialItemRegistry.PickupMotionSettings ResolvePickupMotion()
@@ -148,5 +190,15 @@ public sealed class TutorialItemObject : MonoBehaviour
         }
 
         activeMotionRoot.localScale = Vector3.Lerp(motionStartScale, Vector3.zero, progress);
+    }
+
+    private string ResolveItemKey()
+    {
+        if (!string.IsNullOrWhiteSpace(itemKey))
+            return itemKey.Trim();
+
+        ResolveGridManager();
+        Vector2Int grid = GetCurrentGrid(gridManager);
+        return $"tutorial_item:{grid.x}_{grid.y}";
     }
 }

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public sealed class TutorialEnemyObject : MonoBehaviour
+public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
 {
     private static readonly Vector2Int[] AdjacentOffsets =
     {
@@ -22,12 +22,10 @@ public sealed class TutorialEnemyObject : MonoBehaviour
     [SerializeField, Min(1)] private int enemyLevel = 1;
 
     [Header("Interaction")]
-    [SerializeField] private bool triggerOnAdjacentPartyEnter = true;
     [SerializeField] private bool disableWhenObjectMarkedInactive = true;
 
     [Header("References")]
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private TutorialEnemyRegistry enemyRegistry;
     [SerializeField] private TutorialCombatLauncher combatLauncher;
     [SerializeField] private InteractionCellOverlayController overlayController;
@@ -36,7 +34,6 @@ public sealed class TutorialEnemyObject : MonoBehaviour
     [SerializeField] private bool showInteractionOverlay = true;
     [SerializeField] private Color overlayColor = new Color(1f, 0.15f, 0.15f, 0.28f);
 
-    private PartyGridMover subscribedParty;
     private bool combatStarting;
     private readonly List<Vector2Int> interactionCellBuffer = new List<Vector2Int>(8);
 
@@ -61,13 +58,11 @@ public sealed class TutorialEnemyObject : MonoBehaviour
         }
 
         enemyRegistry?.Register(this);
-        SubscribeParty();
         RefreshInteractionOverlay();
     }
 
     private void OnDisable()
     {
-        UnsubscribeParty();
         ClearInteractionOverlay();
         enemyRegistry?.Unregister(this);
         combatStarting = false;
@@ -76,12 +71,6 @@ public sealed class TutorialEnemyObject : MonoBehaviour
     private void OnValidate()
     {
         enemyLevel = Mathf.Max(1, enemyLevel);
-    }
-
-    private void Update()
-    {
-        if (triggerOnAdjacentPartyEnter && subscribedParty == null)
-            SubscribeParty();
     }
 
     public Vector2Int GetCurrentGrid()
@@ -145,41 +134,9 @@ public sealed class TutorialEnemyObject : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    private void HandlePartyGridEntered(Vector2Int grid)
-    {
-        if (!triggerOnAdjacentPartyEnter || combatStarting || !IsInteractionCell(grid))
-            return;
-
-        TryStartTutorialCombat();
-    }
-
-    private void SubscribeParty()
-    {
-        if (subscribedParty != null)
-            return;
-
-        ResolvePartyRegistry();
-        subscribedParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
-        if (subscribedParty == null)
-            return;
-
-        subscribedParty.GridEntered -= HandlePartyGridEntered;
-        subscribedParty.GridEntered += HandlePartyGridEntered;
-    }
-
-    private void UnsubscribeParty()
-    {
-        if (subscribedParty == null)
-            return;
-
-        subscribedParty.GridEntered -= HandlePartyGridEntered;
-        subscribedParty = null;
-    }
-
     private void ResolveReferences()
     {
         ResolveGridManager();
-        ResolvePartyRegistry();
         ResolveRegistry();
         ResolveCombatLauncher();
         ResolveOverlayController();
@@ -189,12 +146,6 @@ public sealed class TutorialEnemyObject : MonoBehaviour
     {
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
-    }
-
-    private void ResolvePartyRegistry()
-    {
-        if (partyRegistry == null)
-            partyRegistry = FindFirstObjectByType<PartyRegistry>();
     }
 
     private void ResolveRegistry()
