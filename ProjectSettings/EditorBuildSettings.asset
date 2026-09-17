@@ -26,6 +26,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/BattleSimulationScene.unity
     guid: bcfc7d632972ea64ab85a67f4050febd
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity
+    guid: 542c4c0a0f5127046a707224436e0ed3
+  - enabled: 1
+    path: Assets/_ProtoType_Merge/Scenes/TutorialBattleScene.unity
+    guid: 6ec30f671bc264b46a59e57481341a59
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 51f1cead6f1010a489e8763571d663e2,
       type: 2}
