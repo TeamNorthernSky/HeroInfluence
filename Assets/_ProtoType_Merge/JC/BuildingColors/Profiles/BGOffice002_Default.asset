@@ -38,13 +38,13 @@ MonoBehaviour:
     lightness: 0.40544143
     saturation: 0
     ignoreSourceColorAndShading: 0
-  - hue: 5.840784
-    lightness: 0.86419106
-    saturation: 19.065853
+  - hue: 86.82036
+    lightness: 0.75586265
+    saturation: 23.878515
     ignoreSourceColorAndShading: 0
-  - hue: 336.61914
-    lightness: 0.4432476
-    saturation: 27.6923
+  - hue: 59.684925
+    lightness: 0.6390257
+    saturation: 34.0898
     ignoreSourceColorAndShading: 0
   - hue: 73.74186
     lightness: 0.53487116

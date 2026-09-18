@@ -46,6 +46,7 @@ public class SkillButtonController : MonoBehaviour
 
     private Button hoveredSkillButton;
     private bool descriptionBattleEnded;
+    private BattleCharactor displayedUnit;
 
     private Action<bool> onToggle1;
     private Action<bool> onToggle2;
@@ -141,6 +142,7 @@ public class SkillButtonController : MonoBehaviour
     private void RefreshSkills()
     {
         var unit = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
+        displayedUnit = unit;
         if (unit != null && unit.IsPlayer) unit.ResolveSelectedSkill();
         var connected = unit != null && unit.IsPlayer ? unit.SelectedSkillData : null;
         if (HasHeroSlots)
@@ -264,8 +266,10 @@ public class SkillButtonController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (coreVisual == null && (!HasHeroSlots || !System.Array.Exists(heroSlots, s => s != null && s.visual != null))) return;
         var actor = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
+        // 턴 팝업 중에도 이름/초상화와 같은 유닛의 스킬을 표시합니다. 입력 허용 시점은 바꾸지 않습니다.
+        if (displayedUnit != actor) RefreshSkills();
+        if (coreVisual == null && (!HasHeroSlots || !System.Array.Exists(heroSlots, s => s != null && s.visual != null))) return;
         bool ready = actor != null && actor.IsPlayer && !actor.IsDead && !descriptionBattleEnded &&
             !battleFlowManager.IsEndingBattle && !battleFlowManager.IsActionInProgress &&
             !battleFlowManager.IsTurnPresentationPending && !battleFlowManager.IsFlowBlocked &&

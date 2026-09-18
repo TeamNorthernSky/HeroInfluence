@@ -106,6 +106,24 @@ namespace JC.VFX
         private void ApplyPreset(bool silent)
         {
             var p = Preset;
+            if (p.targetParts != null && p.targetParts.Length > 0)
+            {
+                foreach (var part in p.targetParts)
+                {
+                    if (part == null) continue;
+                    string partPath = AssetDatabase.GetAssetPath(part);
+                    var contents = PrefabUtility.LoadPrefabContents(partPath);
+                    try
+                    {
+                        var shot = contents.GetComponentInChildren<KAimShotVfx>(true);
+                        if (shot == null || !shot.UsesPreset(p)) { Debug.LogError("[KAimShotPreset] 실제 프리셋 참조가 다른 부품: " + partPath); continue; }
+                        CopyPresetToComponent(p, shot);
+                        PrefabUtility.SaveAsPrefabAsset(contents, partPath);
+                    }
+                    finally { PrefabUtility.UnloadPrefabContents(contents); }
+                }
+                return;
+            }
             if (p.targetPrefab == null)
             {
                 if (!silent) EditorUtility.DisplayDialog("적용 대상 없음",

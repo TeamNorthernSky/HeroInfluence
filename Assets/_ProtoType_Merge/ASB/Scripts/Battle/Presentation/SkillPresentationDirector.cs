@@ -349,6 +349,10 @@ public sealed class SkillPresentationDirector
         if (phase == null || !phase.Enabled)
             yield break;
 
+        // TAO 공격 전용 시전에서는 부활 준비 동작을 생략합니다.
+        if (phase is AttackPreparePhase && HeroSkillRules.IsFamily(skill, 4040) && actor.PendingReviveTarget == null)
+            yield break;
+
         string stateName = phase.AnimationStateName?.Trim();
         SetupPresentationContext(actor, target, skill, presentation, actionInstanceId, phase.Cues, stateName);
 

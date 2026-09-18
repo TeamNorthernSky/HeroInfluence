@@ -26,6 +26,8 @@ namespace ASB.Work.BattleGrid
         [SerializeField] private Material currentTurnMaterial;
         [Tooltip("스킬 선택 중 직접 클릭할 수 없는 셀의 검정 재질입니다.")]
         [SerializeField] private Material unavailableMaterial;
+        [Tooltip("JC_BattleUI_VFX/CellBox의 셀 투명도 설정입니다. 미연결이면 기존 재질 그대로 표시합니다.")]
+        [SerializeField] private BattleCellVisualSettings cellVisualSettings;
         private readonly HashSet<GridCell> selectableCells = new HashSet<GridCell>();
         private bool selectingTargets;
         public bool UsesBattleTilePresentation => useBattleTilePresentation;
@@ -244,6 +246,14 @@ namespace ASB.Work.BattleGrid
                     else if (cell == current) material = currentTurnMaterial;
                 }
                 cell.SetMaterial(material);
+                if (cellVisualSettings != null)
+                {
+                    float alpha = material == currentTurnMaterial ? cellVisualSettings.currentTurnAlpha :
+                        material == TargetMaterial ? cellVisualSettings.selectableAlpha :
+                        material == MainTargetHighlightMaterial ? cellVisualSettings.confirmedAreaAlpha :
+                        material == unavailableMaterial ? cellVisualSettings.unavailableAlpha : 1f;
+                    cellVisualSettings.Apply(cell, alpha);
+                }
             }
         }
 

@@ -18,10 +18,13 @@ MonoBehaviour:
   jcRegistry: {fileID: 11400000, guid: e373ce5be2aed3049a0c45e391ea81de, type: 2}
   extraCatalogs:
   - {fileID: 11400000, guid: 84ce10cb672c8b34889807c98aad2893, type: 2}
+  - {fileID: 11400000, guid: 7fd3491d55e7ec845a71d10a39075efa, type: 2}
   extraRegistries:
   - {fileID: 11400000, guid: 5135d28f4ceb8d2498034bdb5b9e8ce8, type: 2}
+  - {fileID: 11400000, guid: f62c1deb7560cf740a8af0a783b4096d, type: 2}
+  - {fileID: 11400000, guid: 884611d3a60792b4aa52970dc0e2911f, type: 2}
   mergedCatalog: {fileID: 11400000, guid: 80b063d4620a5ac4f96bbd0e34bef686, type: 2}
   mergedRegistry: {fileID: 11400000, guid: cd76adeeba9fadc43a41cdd3f68fcd6e, type: 2}
-  sourceFingerprint: 7101E962088C
-  lastMergedAt: 2026-09-09 16:31:50
+  sourceFingerprint: 7B1D07ECF779
+  lastMergedAt: 2026-09-18 14:46:41
   warnWhenStale: 1

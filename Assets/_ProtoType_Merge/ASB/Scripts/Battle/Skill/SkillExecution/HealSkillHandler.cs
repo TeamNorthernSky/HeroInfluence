@@ -73,7 +73,12 @@ namespace ASB.Work.Battle.SkillExecution
 
                 BattleCharactor healTarget = FindRandomLivingAlly(caster);
                 if (healTarget != null)
+                {
                     healTarget.ApplyHeal(healAmount);
+                    // 공격 후 실제로 회복한 아군에게 기존 단일 치유 표시를 재사용합니다.
+                    BattleManager.Instance?.VisualDirector?.PlayHitEffect(
+                        healTarget, skillData.skillIndex == 4021 ? 4011 : 4010);
+                }
             };
         }
 

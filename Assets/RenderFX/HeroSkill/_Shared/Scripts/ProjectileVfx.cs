@@ -129,6 +129,17 @@ namespace JC.VFX
             Launch(target.position);
         }
 
+        /// <summary>전투 시스템이 이동을 담당할 때 도착 위치에서 버스트만 재생합니다.</summary>
+        public void BurstAt(Vector3 position)
+        {
+            transform.position = position;
+            _state = State.Bursting;
+            _burstT = 0f;
+            if (trail) trail.emitting = false;
+            if (particleSystems != null) foreach (var ps in particleSystems) if (ps) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            OnImpact?.Invoke(this);
+        }
+
         public override void Stop() => Hide();
 
         private void Hide()

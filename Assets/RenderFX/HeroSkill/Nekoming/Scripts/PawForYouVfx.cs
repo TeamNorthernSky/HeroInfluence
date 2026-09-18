@@ -16,6 +16,8 @@ namespace JC.VFX
     /// </summary>
     public class PawForYouVfx : VfxEffect
     {
+        /// <summary>빔이 대상에게 닿은 시점. 전투 판정은 구독자가 처리합니다.</summary>
+        public event System.Action OnTargetImpacted;
         public enum WarpStyle { PillarBlink, TravelStreak }
 
         /// <summary>
@@ -239,7 +241,7 @@ namespace JC.VFX
             if (!IsPlaying) return;
             if (livePreview && masterPreset) PullFromMaster();
 
-            _phaseT += Time.deltaTime;
+            _phaseT += EffectDeltaTime;
             float u;
 
             switch (_phase)
@@ -363,6 +365,7 @@ namespace JC.VFX
                             impactGround.SetEnvelope(1f);
                         }
                         EnterPhase(Phase.Sustain);
+                        OnTargetImpacted?.Invoke();
                     }
                     break;
 

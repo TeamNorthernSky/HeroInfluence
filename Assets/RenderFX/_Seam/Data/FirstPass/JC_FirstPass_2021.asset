@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
+  m_Name: JC_FirstPass_2021
+  m_EditorClassIdentifier: 
+  SkillIndex: 2021
+  PresentationSchemaVersion: 1
+  AnimationStateName: 
+  AnimationTriggerOverride: 
+  TargetAnimationTriggerOverride: 
+  UseAnimEvent: 0
+  HitDelay: 0.25
+  HitSoundId: 0
+  SfxVolume: 1
+  EnableHitEffect: 1
+  HitEffectId: 0
+  ProjectileVisual:
+    Prefab: {fileID: 0}
+    Speed: 6
+    Trajectory: 1
+    ArcHeight: 1.2
+    TrailTime: 0.4
+    TrackTarget: 0
+    AlignToVelocity: 1
+    ImpactVisualLifetime: 0.3
+    ArrivalRadius: 0.2
+    TimeoutGraceSeconds: 1
+    TimeoutSeconds: 5
+    DeliveryMode: 1
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
+    TargetFormationCenter: 0
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 2
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 2077068970523408211, guid: 13f0464d4ed223a499037c9f4a63b3f9,
+    type: 3}
+  MovePrepare:
+    Enabled: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+  Move:
+    Enabled: 0
+    UseUnitMovement: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+  AttackPrepare:
+    Enabled: 0
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+  Attack:
+    Enabled: 1
+    Beats:
+    - AnimationStateName: Base Layer.WeaponSkill_3
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 0
+      Cues: []
+    - AnimationStateName: Base Layer.ClassSkill_3
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 1
+      Cues: []
+  Return:
+    Enabled: 0
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+  Post:
+    Enabled: 0
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+    ExtraDelay: 0
+  MovingAttack:
+    Enabled: 0
+    AnimationStateName: 
+    AnimationBlendInSeconds: 0.1
+    EntryOffset: {x: -1.5, y: 0}
+    MidOffset: {x: 0, y: 0}
+    ExitOffset: {x: 1.5, y: 0}
+    PathSchemaVersion: 2
+    TopOffset: 1.5
+    BottomOffset: 1.5
+    SweepClearance: 0
+    FaceCurveTangent: 0
+    HitMode: 0
+    SingleAoEHitPathProgress: -1
+    PathSampleCount: 64
+    Cues: []

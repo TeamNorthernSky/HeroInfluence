@@ -66,6 +66,10 @@ namespace JC.VFX
         private readonly List<Vector3> _hitOrder = new List<Vector3>();
         private Vector3 _origin;
 
+        /// <summary>이번 광역 연출의 모든 피격 표시가 생성된 순간입니다.</summary>
+        public event System.Action OnTargetsImpacted;
+        private bool _impactPublished;
+
         public override void SetTargets(IReadOnlyList<VfxTarget> targets)
         {
             _targets.Clear();
@@ -124,6 +128,7 @@ namespace JC.VFX
                 _hitOrder.Sort((a, b) => (a.x + a.z).CompareTo(b.x + b.z));
 
             _hitFired = 0;
+            _impactPublished = false;
             _hitsScheduled = false;
             _hitTimer = 0f;
             _fade = 0f;
@@ -197,6 +202,11 @@ namespace JC.VFX
                     while (_hitFired < _hitOrder.Count && sinceFirst >= _hitFired * Mathf.Max(stagger, 1e-4f))
                         SpawnPillar(_hitOrder[_hitFired++], t);
                 }
+            }
+            if (!_impactPublished && AllHitsFired())
+            {
+                _impactPublished = true;
+                OnTargetsImpacted?.Invoke();
             }
         }
 

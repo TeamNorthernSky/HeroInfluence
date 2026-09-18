@@ -53,7 +53,7 @@ namespace JC.VFX
 
         /// <summary>흑염(Dark) 변형 소속 여부. 크림판 프리셋의 라이브 푸시가 다크 변형을 덮지 않도록 스코프에서 제외.</summary>
         protected static bool InDarkVariant(Component c) =>
-            c != null && c.transform.root.name.Contains("Dark");
+            c != null && (c.transform.root.name.Contains("Dark") || c.GetComponentInParent<JcLuminaPartPresetBinder>() != null);
 
         // ---------- 셸 형태 공통 처리 ----------
 

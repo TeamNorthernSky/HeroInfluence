@@ -40,8 +40,17 @@ namespace JC.VFX
         public Vector3 Offset { get => offset; set => offset = value; }
         public bool FlipRotation { get => flipRotation; set => flipRotation = value; }
 
+        private bool _played;
+
+        private void Start()
+        {
+            // 피격 프리팹을 직접 생성하는 경로에서도 재생과 수명 정리를 시작합니다.
+            if (!_played) Play(null);
+        }
+
         public void Play(SkillEffectContext ctx)
         {
+            _played = true;
             Vector3 spawn = ctx != null ? ctx.SpawnPosition : transform.position;
 
             // 시전자 → 타깃 방향

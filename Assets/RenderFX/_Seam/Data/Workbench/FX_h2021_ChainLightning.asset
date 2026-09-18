@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad1ecdbb3aba748468adcd2a51f73a7e, type: 3}
+  m_Name: FX_h2021_ChainLightning
+  m_EditorClassIdentifier: 
+  boltCoreColor: {r: 1.5, g: 1.65, b: 1.95, a: 1}
+  boltGlowColor: {r: 0.38, g: 0.62, b: 1.55, a: 1}
+  boltEmission: 1.6
+  boltWidth: 0.18
+  segCount: 14
+  jitterAmp: 0.5
+  microJag: 0.18
+  microFreq: 3
+  endPin: 0.12
+  coreWidth: 0.09
+  glowWidth: 0.42
+  headSize: 0.06
+  headBoost: 2.2
+  branchCount: 2
+  branchLen: 0.14
+  branchSlope: 3.2
+  branchWidthMul: 0.55
+  shockCoreColor: {r: 1.5, g: 1.65, b: 1.95, a: 1}
+  shockGlowColor: {r: 0.38, g: 0.62, b: 1.55, a: 1}
+  shockEmission: 1.5
+  shockRadius: 0.5
+  shockEllipseK: 1.25
+  radJitter: 0.25
+  arcCount: 11
+  arcDensity: 0.65
+  arcWidth: 0.03
+  arcHighlightRatio: 0.45
+  wobbleAmp: 0.15
+  wobbleFreq: 42
+  glowAmt: 0.8
+  shockCoreGlow: 0.35
+  muzzleCoreGlow: 1.6
+  bgBodyColor: {r: 0.06999998, g: 0.12999997, b: 0.33999997, a: 1}
+  bgCenterColor: {r: 0.28, g: 0.52, b: 1.1, a: 1}
+  bgCenterSize: 0.3
+  bgSpikeCount: 14
+  bgSpikeLen: 0.85
+  bgLenJitter: 0.5
+  bgSpikeWidth: 0.14
+  bgTaperSharp: 2
+  bgOpacity: 0.85
+  muzzleTime: 0.12
+  drawTime: 0.08
+  holdTime: 0.25
+  fadeTime: 0.15
+  flickerRate: 18
+  chainDelay: 0.35
+  chainDrawTime: 0.06
+  chainHoldTime: 0.2
+  shockDuration: 1
+  shockFadeTime: 0.25
+  muzzleOffset: {x: 0, y: 1.15, z: 0.5}
+  muzzleSize: 0.4
+  shockSize: 1.7
+  targetHeight: 0.8
+  previewProgress: 1
+  previewSeed: 0
