@@ -23,6 +23,9 @@ namespace JC.VFX
     /// </summary>
     public class KAimShotVfx : VfxEffect
     {
+        public enum Segment { All, Muzzle, Flight, Impact }
+        [Tooltip("All은 기존 전체 사격, 나머지는 총구/탄도/착탄만 독립 재생합니다.")]
+        [SerializeField] private Segment segment;
         [Header("프리셋 (런타임 권위 — Awake에서 재읽기)")]
         [Tooltip("적용·캡처 대상 프리셋. 에디터가 이 참조로 스코프를 판정한다(대상 오배선 방지).")]
         [SerializeField] private KAimShotPreset masterPreset;
@@ -170,6 +173,8 @@ namespace JC.VFX
         {
             _headPos = _shotOrigin;
             _seqT = 0f;
+            if (segment == Segment.Flight) _seqT = launchDelay;
+            if (segment == Segment.Impact) _seqT = impactBurst != null ? impactBurst.startDelay : 0f;
             _muzzleDone = _headDone = _trailDone = _impactDone = false;
             _trailBegun = false;
             IsPlaying = true;
@@ -339,22 +344,20 @@ namespace JC.VFX
         private static bool Pending(KElementLife l, bool done) => l != null && l.enabled && !done;
 
         private bool AllElementsDone()
-            => !Pending(muzzleLife, _muzzleDone)
-            && !Pending(bulletHead, _headDone)
-            && !Pending(trail, _trailDone)
-            && !Pending(impactBurst, _impactDone);
+            => (segment != Segment.All && segment != Segment.Muzzle || !Pending(muzzleLife, _muzzleDone))
+            && (segment != Segment.All && segment != Segment.Flight || !Pending(bulletHead, _headDone) && !Pending(trail, _trailDone))
+            && (segment != Segment.All && segment != Segment.Impact || !Pending(impactBurst, _impactDone));
 
         private void Update()
         {
             if (!IsPlaying) return;
 
-            _seqT += Time.deltaTime;
+            _seqT += EffectDeltaTime;
 
             UpdateHeadPosition();
-            UpdateMuzzle();
-            UpdateHead();
-            UpdateTrail();
-            UpdateImpact();
+            if (segment == Segment.All || segment == Segment.Muzzle) UpdateMuzzle();
+            if (segment == Segment.All || segment == Segment.Flight) { UpdateHead(); UpdateTrail(); }
+            if (segment == Segment.All || segment == Segment.Impact) UpdateImpact();
 
             if (AllElementsDone())
             {

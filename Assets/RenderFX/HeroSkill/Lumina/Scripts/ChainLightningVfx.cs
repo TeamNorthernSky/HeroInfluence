@@ -13,6 +13,17 @@ namespace JC.VFX
     /// </summary>
     public class ChainLightningVfx : VfxEffect
     {
+        public enum PartMode { Integrated, MainBolt, ChainBolt }
+        [Tooltip("Integrated는 전체 조립, 나머지는 최초/연쇄 번개 하나를 독립 재생합니다.")]
+        [SerializeField] private PartMode partMode;
+        [Tooltip("전체 조립이 최초 대상에게 호출하는 독립 번개 부품입니다.")]
+        [SerializeField] private ChainLightningVfx mainPartPrefab;
+        [Tooltip("확정된 추가 대상에게 호출하는 독립 연쇄 부품입니다.")]
+        [SerializeField] private ChainLightningVfx chainPartPrefab;
+        [Tooltip("각 대상의 착탄 시 생성하는 독립 감전 부품입니다.")]
+        [SerializeField] private LightningShock shockPartPrefab;
+        public event System.Action Contacted;
+
         [Header("References")]
         [Tooltip("머즐 구체(작은 번개 구체, ShockAura 소형 재사용).")]
         [SerializeField] private Renderer muzzleRenderer;
@@ -99,7 +110,9 @@ namespace JC.VFX
             if (origin == null || target == null) return;
             if (_co != null) StopCoroutine(_co);
             CleanupSpawned();
-            _co = StartCoroutine(Run(origin, target, chainTargets));
+            _mpb ??= new MaterialPropertyBlock();
+            _co = StartCoroutine(mainPartPrefab != null && partMode == PartMode.Integrated
+                ? RunParts(origin, target, chainTargets) : Run(origin, target, chainTargets));
         }
 
         public override void Stop()
@@ -141,10 +154,10 @@ namespace JC.VFX
 
         private LightningShock SpawnShock(Transform target)
         {
-            if (shockTemplate == null) return null;
-            var inst = Instantiate(shockTemplate, transform);
+            if (shockPartPrefab == null && shockTemplate == null) return null;
+            var inst = Instantiate(shockPartPrefab != null ? shockPartPrefab : shockTemplate, transform);
             _spawned.Add(inst.gameObject);
-            inst.Init(target, Vector3.up * targetHeight, shockSize, shockDuration, shockFadeTime, flickerRate);
+            inst.Init(target, Vector3.up * targetHeight, shockSize, shockDuration / Mathf.Max(.01f, PlaybackSpeed), shockFadeTime / Mathf.Max(.01f, PlaybackSpeed), flickerRate);
             return inst;
         }
 
@@ -154,36 +167,62 @@ namespace JC.VFX
             float t = 0f;
             while (t < draw)
             {
-                t += Time.deltaTime;
+                t += EffectDeltaTime;
                 PushBolt(r, Mathf.Clamp01(t / Mathf.Max(draw, 0.01f)), 1f);
                 yield return null;
             }
             t = 0f;
             while (t < hold)
             {
-                t += Time.deltaTime;
+                t += EffectDeltaTime;
                 PushBolt(r, 1f, 1f);
                 yield return null;
             }
             t = 0f;
             while (t < fade)
             {
-                t += Time.deltaTime;
+                t += EffectDeltaTime;
                 PushBolt(r, 1f, 1f - Mathf.Clamp01(t / Mathf.Max(fade, 0.01f)));
                 yield return null;
             }
             r.gameObject.SetActive(false);
         }
 
+        private IEnumerator RunParts(Transform origin, Transform target, IReadOnlyList<Transform> chainTargets)
+        {
+            IsPlaying = true;
+            var main = Instantiate(mainPartPrefab, transform);
+            _spawned.Add(main.gameObject); main.PlaybackSpeed = PlaybackSpeed;
+            bool contact = false;
+            System.Action onContact = () => contact = true;
+            main.Contacted += onContact;
+            main.Play(origin, target);
+            while (main != null && main.IsPlaying && !contact) yield return null;
+            if (main != null) main.Contacted -= onContact;
+            for (float t = 0; t < chainDelay; t += EffectDeltaTime) yield return null;
+            var children = new List<ChainLightningVfx> { main };
+            if (chainPartPrefab != null && chainTargets != null)
+                foreach (var next in chainTargets)
+                {
+                    if (next == null) continue;
+                    var child = Instantiate(chainPartPrefab, transform);
+                    _spawned.Add(child.gameObject); children.Add(child);
+                    child.PlaybackSpeed = PlaybackSpeed;
+                    child.Play(target, next);
+                }
+            foreach (var child in children) while (child != null && child.IsPlaying) yield return null;
+            CleanupSpawned(); IsPlaying = false; _co = null; RaiseFinished();
+        }
+
         private IEnumerator Run(Transform origin, Transform target, IReadOnlyList<Transform> chainTargets)
         {
             IsPlaying = true;
 
-            Vector3 muzzlePos = origin.TransformPoint(muzzleOffset);
+            Vector3 muzzlePos = partMode == PartMode.ChainBolt ? origin.position + Vector3.up * targetHeight : origin.position + origin.rotation * muzzleOffset;
             Vector3 hitPos = target.position + Vector3.up * targetHeight;
 
             // 머즐 팝
-            if (muzzleRenderer != null)
+            if (partMode != PartMode.ChainBolt && muzzleRenderer != null)
             {
                 var mt = muzzleRenderer.transform;
                 mt.position = muzzlePos;
@@ -191,7 +230,7 @@ namespace JC.VFX
                 float t = 0f;
                 while (t < muzzleTime)
                 {
-                    t += Time.deltaTime;
+                    t += EffectDeltaTime;
                     float g = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / muzzleTime), 3f);
                     mt.localScale = new Vector3(muzzleSize * g, muzzleSize * g, 1f);
                     PushBolt(muzzleRenderer, 1f, 1f);
@@ -207,23 +246,24 @@ namespace JC.VFX
                 mainBoltRenderer.gameObject.SetActive(true);
             }
             float bt = 0f;
-            while (bt < drawTime)
+            while (bt < (partMode == PartMode.ChainBolt ? chainDrawTime : drawTime))
             {
-                bt += Time.deltaTime;
-                PushBolt(mainBoltRenderer, Mathf.Clamp01(bt / Mathf.Max(drawTime, 0.01f)), 1f);
+                bt += EffectDeltaTime;
+                PushBolt(mainBoltRenderer, Mathf.Clamp01(bt / Mathf.Max(partMode == PartMode.ChainBolt ? chainDrawTime : drawTime, 0.01f)), 1f);
                 PushBolt(muzzleRenderer, 1f, 1f);
                 yield return null;
             }
 
             // 명중: 대상1 감전 시작
             SpawnShock(target);
+            Contacted?.Invoke();
             float hitTime = Time.time;
 
             // 유지(플리커) 후 본볼트·머즐 페이드
             bt = 0f;
-            while (bt < holdTime)
+            while (bt < (partMode == PartMode.ChainBolt ? chainHoldTime : holdTime))
             {
-                bt += Time.deltaTime;
+                bt += EffectDeltaTime;
                 PushBolt(mainBoltRenderer, 1f, 1f);
                 PushBolt(muzzleRenderer, 1f, 1f);
                 yield return null;
@@ -231,7 +271,7 @@ namespace JC.VFX
             bt = 0f;
             while (bt < fadeTime)
             {
-                bt += Time.deltaTime;
+                bt += EffectDeltaTime;
                 float f = 1f - Mathf.Clamp01(bt / Mathf.Max(fadeTime, 0.01f));
                 PushBolt(mainBoltRenderer, 1f, f);
                 PushBolt(muzzleRenderer, 1f, f);
@@ -266,7 +306,7 @@ namespace JC.VFX
             }
 
             // 마지막 감전이 끝날 때까지 대기
-            float remain = shockDuration - (Time.time - lastShockStart);
+            float remain = shockDuration / Mathf.Max(.01f, PlaybackSpeed) - (Time.time - lastShockStart);
             if (remain > 0f) yield return new WaitForSeconds(remain);
 
             IsPlaying = false;

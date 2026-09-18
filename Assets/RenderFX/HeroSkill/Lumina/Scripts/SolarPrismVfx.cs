@@ -16,6 +16,24 @@ namespace JC.VFX
     /// </summary>
     public class SolarPrismVfx : VfxEffect
     {
+        public event System.Action<Vector3> Impacted;
+        public enum PartMode { Integrated, Charge, Flight }
+        [Tooltip("Integrated는 기존 전체, Charge는 생성·대기, Flight는 비행만 독립 재생합니다.")]
+        [SerializeField] private PartMode partMode;
+        [Tooltip("차징 부품이 발사 신호를 받으면 생성할 독립 비행 부품입니다.")]
+        [SerializeField] private SolarPrismVfx flightPartPrefab;
+        [Tooltip("대상별 도착 시 호출할 독립 착탄 부품입니다. 비우면 기존 내장 효과를 씁니다.")]
+        [SerializeField] private FlareBombImpact impactPartPrefab;
+        private SolarPrismVfx flightPart;
+        private IReadOnlyList<Transform> partTargets;
+        private bool deferLaunch;
+        public override void SetTargets(IReadOnlyList<VfxTarget> values)
+        {
+            var list = new List<Transform>();
+            if (values != null) foreach (var value in values) if (value.anchor != null) list.Add(value.anchor);
+            partTargets = list;
+        }
+
         [Header("References")]
         [Tooltip("프리즘 유닛 루트들(최대 개수만큼 배치, unitCount로 활성 수 제어).")]
         [SerializeField] private Transform[] units;
@@ -196,6 +214,7 @@ namespace JC.VFX
         public override void Play(Transform origin, Transform target)
         {
             if (origin == null) return;
+            if (_mpb == null) { _mpb = new MaterialPropertyBlock(); BuildCache(); }
             StopAllCoroutines();
             _origin = origin;
             _t = 0f;
@@ -215,18 +234,55 @@ namespace JC.VFX
                 if (!on) continue;
                 if (u.embers != null) { u.embers.Clear(); u.embers.Play(); }
             }
+            if (partMode == PartMode.Flight && !deferLaunch)
+            {
+                _t = summonTime + summonStagger * unitCount;
+                Update();
+                Launch(partTargets != null && partTargets.Count > 0 ? partTargets : new[] { target });
+            }
         }
 
         /// <summary>발사: 차지 중일 때만. targets[i % n]로 유닛-대상 매핑(실전=적 열 주입).</summary>
         public void Launch(IReadOnlyList<Transform> targets)
         {
             if (!_charging || _launching) return;
+            if (partMode == PartMode.Charge && flightPartPrefab != null)
+            {
+                flightPart = Instantiate(flightPartPrefab, transform);
+                flightPart.PlaybackSpeed = PlaybackSpeed;
+                flightPart.UnitCount = targets != null && targets.Count > 0 ? targets.Count : unitCount;
+                flightPart.deferLaunch = true;
+                flightPart.Play(_origin, _origin);
+                flightPart._t = _t;
+                flightPart.Update();
+                for (int i = 0; i < _units.Count && i < flightPart._units.Count; i++)
+                {
+                    var from = _units[i]; var to = flightPart._units[i];
+                    to.root.SetPositionAndRotation(from.root.position, from.root.rotation);
+                    to.yaw = from.yaw;
+                    if (to.crystal != null && from.crystal != null)
+                    { to.crystal.localScale = from.crystal.localScale; to.crystal.rotation = from.crystal.rotation; }
+                }
+                _charging = false; _launching = true;
+                foreach (var u in _units) u.root.gameObject.SetActive(false);
+                flightPart.OnFinished += OnFlightFinished;
+                flightPart.Impacted += ForwardImpact;
+                flightPart.Launch(targets);
+                return;
+            }
             _launching = true;
             StartCoroutine(LaunchAll(targets));
         }
 
+        private void ForwardImpact(Vector3 position) => Impacted?.Invoke(position);
+        private void OnFlightFinished(VfxEffect effect)
+        {
+            IsPlaying = false; _launching = false;
+            RaiseFinished();
+        }
         public override void Stop()
         {
+            if (flightPart != null) { flightPart.OnFinished -= OnFlightFinished; flightPart.Impacted -= ForwardImpact; flightPart.Stop(); Destroy(flightPart.gameObject); flightPart = null; }
             StopAllCoroutines();
             _charging = false;
             _launching = false;
@@ -267,7 +323,7 @@ namespace JC.VFX
 
         private IEnumerator LaunchUnit(Unit u, Transform tgt, float delay)
         {
-            if (delay > 0f) yield return new WaitForSeconds(delay);
+            if (delay > 0f) yield return new WaitForSeconds(delay / Mathf.Max(.01f, PlaybackSpeed));
             u.launched = true;
 
             // 차지 부속 정리(입자는 방출만 중단, 플레어·바닥광 소등) + 궤적 트레일 점화
@@ -287,7 +343,7 @@ namespace JC.VFX
             Vector3 flightDir = (end - start).normalized;
             while (t < dur)
             {
-                t += Time.deltaTime;
+                t += EffectDeltaTime;
                 float e = Mathf.Clamp01(t / dur);
                 float e2 = e * e;   // ease-in 가속
                 Vector3 pos = Vector3.Lerp(start, end, e2);
@@ -298,7 +354,7 @@ namespace JC.VFX
                 if (vel.sqrMagnitude > 1e-8f) flightDir = vel.normalized;
                 // 탄두 정렬: 상단 극점(+Y)=전면, 하단 극점=후면. 직립→진행 방향 블렌드 후 접선 추적.
                 Vector3 axis = Vector3.Slerp(Vector3.up, flightDir, Mathf.Clamp01(e / Mathf.Max(aimBlend, 0.01f)));
-                u.yaw += spinSpeed * u.spinMul * launchSpinMul * Time.deltaTime;
+                u.yaw += spinSpeed * u.spinMul * launchSpinMul * EffectDeltaTime;
                 if (u.crystal != null)
                     u.crystal.rotation = Quaternion.AngleAxis(u.yaw, axis) * Quaternion.FromToRotation(Vector3.up, axis);
                 yield return null;
@@ -307,18 +363,22 @@ namespace JC.VFX
             // 개별 폭발 — 트레일은 방출만 멈추고 잔광이 사그라들게 둔다
             if (u.trail != null) u.trail.emitting = false;
             if (u.crystal != null) u.crystal.gameObject.SetActive(false);
-            if (u.impact != null)
+            var impact = impactPartPrefab != null ? Instantiate(impactPartPrefab, transform) : u.impact;
+            if (impact != null)
             {
-                u.impact.Play(end);
-                while (u.impact.IsPlaying) yield return null;
+                impact.PlaybackSpeed = PlaybackSpeed;
+                impact.Play(end);
+                Impacted?.Invoke(end);
+                while (impact != null && impact.IsPlaying) yield return null;
+                if (impactPartPrefab != null && impact != null) Destroy(impact.gameObject);
             }
         }
 
         private void Update()
         {
             if (!_charging || _origin == null) return;
-            _t += Time.deltaTime;
-            float dt = Time.deltaTime;
+            _t += EffectDeltaTime;
+            float dt = EffectDeltaTime;
 
             Vector3 fwd = _origin.forward; fwd.y = 0f; fwd = fwd.sqrMagnitude > 1e-4f ? fwd.normalized : Vector3.forward;
             Vector3 right = Vector3.Cross(Vector3.up, fwd);

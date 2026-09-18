@@ -6,7 +6,7 @@ using UnityEngine;
 namespace ASB.Work.Battle.Sequence
 {
     /// <summary>
-    /// 원거리 투사체 비행을 ASB가 전적으로 소유한다(JC.VFX 의존 없음).
+    /// 원거리 투사체 비행을 ASB가 전적으로 소유하고, JC 구체의 표시·도착 버스트를 연결한다.
     /// 순수 아트 프리팹을 Instantiate해 IProjectileTrajectory를 따라 매 배속-프레임 이동시키고,
     /// 공유 HitDeliveryGate로 전달 결과(Arrived/Fallback/Cancelled)를 보고한다.
     /// 피해·상태이상·반격은 기존 전투 루틴에 그대로 있고, 이 액션은 "언제 실행되는가"만 게이팅한다.
@@ -124,6 +124,9 @@ namespace ASB.Work.Battle.Sequence
             ParticleSystem[] particles = instance.GetComponentsInChildren<ParticleSystem>(true);
             BattleProjectileVisual hook = instance.GetComponent<BattleProjectileVisual>();
 
+            // JC 구체는 Awake에서 숨겨지므로 표시만 켜고 궤적 이동은 이 액션에 맡깁니다.
+            JC.VFX.ProjectileVfx orbVisual = instance.GetComponent<JC.VFX.ProjectileVfx>();
+            orbVisual?.Show(start);
             BeginCosmetics(trails, particles);
             hook?.OnLaunched();
 
@@ -187,6 +190,7 @@ namespace ASB.Work.Battle.Sequence
             }
 
             // 도착: 연출 훅 발화 → 전투는 즉시 진행(도착 프레임에 피해). 비주얼은 잔상 후 자체 소멸.
+            orbVisual?.BurstAt(ImpactPoint);
             hook?.OnImpact(ImpactPoint);
             EndTrails(trails);
             host.StartCoroutine(DestroyAfter(instance, Mathf.Max(0f, _visual.ImpactVisualLifetime), _battleSpeed));

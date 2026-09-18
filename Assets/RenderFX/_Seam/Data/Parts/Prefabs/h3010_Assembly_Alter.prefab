@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7602375566815215713
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8529173095205442912}
+  - component: {fileID: 8568226579485098073}
+  - component: {fileID: 7074770808933485217}
+  m_Layer: 0
+  m_Name: h3010_Assembly_Alter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8529173095205442912
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7602375566815215713}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8568226579485098073
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7602375566815215713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e90d0b61220bcd40835af63ef1c5a06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  steps:
+  - prefab: {fileID: 7469662687024861626, guid: ea6e0f524be62bd42990c395b21d8d31,
+      type: 3}
+    delay: 0
+    timing: 0
+    shotTiming: {fileID: 0}
+    pawTiming: {fileID: 0}
+    anchor: 0
+    offset: {x: 0, y: 0, z: 0}
+    lifetime: 0
+  - prefab: {fileID: 2067546027719968362, guid: 4d2b77ad004f7f649864da66fcc1a2fc,
+      type: 3}
+    delay: 0
+    timing: 1
+    shotTiming: {fileID: 11400000, guid: c6530eca53f2cff439cb51af528d21ce, type: 2}
+    pawTiming: {fileID: 0}
+    anchor: 0
+    offset: {x: 0, y: 0, z: 0}
+    lifetime: 0
+  - prefab: {fileID: 6193717821537163315, guid: 2e760156887304446ac87d7adc905db4,
+      type: 3}
+    delay: 0
+    timing: 2
+    shotTiming: {fileID: 11400000, guid: c6530eca53f2cff439cb51af528d21ce, type: 2}
+    pawTiming: {fileID: 0}
+    anchor: 0
+    offset: {x: 0, y: 0, z: 0}
+    lifetime: 0
+--- !u!114 &7074770808933485217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7602375566815215713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5158e997164fe9849ab8609b2bdd283d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetSource: 0
+  safetyLifetimeSeconds: 8

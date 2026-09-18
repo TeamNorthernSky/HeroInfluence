@@ -61,7 +61,16 @@ public class HeroInfoPanel : MonoBehaviour
         UnsubscribeUnit();
     }
 
-    private void OnTurnStarted(int round, BattleCharactor unit)
+    private void LateUpdate()
+    {
+        // 현재 유닛은 턴 팝업 전에 결정됩니다. 행동 시작 이벤트를 기다리지 않고 표시만 맞춥니다.
+        var unit = flowManager != null ? flowManager.CurrentUnit : null;
+        if (currentUnit != unit) SetUnit(unit);
+    }
+
+    private void OnTurnStarted(int round, BattleCharactor unit) => SetUnit(unit);
+
+    private void SetUnit(BattleCharactor unit)
     {
         UnsubscribeUnit();
         currentUnit = unit;

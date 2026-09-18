@@ -15,6 +15,10 @@ namespace JC.VFX
 
         public bool IsPlaying { get; protected set; }
 
+        /// <summary>전투가 주입하는 재생 배속. 씬의 Time.timeScale과 별도로 적용합니다.</summary>
+        public float PlaybackSpeed { get; set; } = 1f;
+        protected float EffectDeltaTime => Time.deltaTime * Mathf.Max(0.01f, PlaybackSpeed);
+
         /// <summary>파라미터 없는 즉시 재생.</summary>
         public virtual void Play() { }
 
