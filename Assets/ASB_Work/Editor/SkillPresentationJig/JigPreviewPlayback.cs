@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Timeline;
 
 namespace ASB.Work.EditorTools.Jig
 {
@@ -25,6 +26,15 @@ namespace ASB.Work.EditorTools.Jig
 
         public static bool IsPlaying => _playing;
         public static float Speed => _speed;
+
+        /// <summary>현재 director.time 위치의 구간 속도(SpeedRegion 마커). UI 최종배속 표시용. 없으면 1.0.</summary>
+        public static float CurrentRegionSpeed()
+        {
+            PlayableDirector director = JigPreviewInstance.Director;
+            TimelineAsset timeline = director != null ? director.playableAsset as TimelineAsset : null;
+            return timeline != null ? PresentationTimelineSpeed.SpeedAt(timeline, director.time) : 1f;
+        }
+
         public static double RangeStart => _rangeStart;
         public static double RangeEnd => _rangeEnd;
         public static bool IsRangePlayback => !double.IsPositiveInfinity(_rangeEnd);
@@ -113,7 +123,11 @@ namespace ASB.Work.EditorTools.Jig
             }
 
             double prev = director.time;
-            double advanced = prev + realDt * _speed;   // 배속 반영
+            // 프리뷰 배속 × 구간속도(런타임과 동일 계산). Editor 프레임 지연으로 한 tick에 여러 마커를
+            // 넘으면 이전 구간 속도로 realDt 전체를 계산 = 런타임과 동일 "한 프레임 오차 허용" 정책.
+            float regionSpeed = PresentationTimelineSpeed.SpeedAt(
+                director.playableAsset as TimelineAsset, prev);
+            double advanced = prev + realDt * _speed * regionSpeed;
             double rangeStart = IsRangePlayback ? _rangeStart : 0d;
             double rangeEnd = IsRangePlayback ? _rangeEnd : director.duration;
             double rangeDuration = rangeEnd - rangeStart;

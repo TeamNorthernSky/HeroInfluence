@@ -67,6 +67,7 @@ namespace ASB.Work.EditorTools.Jig
 
             ValidateMarkers(data, timeline, result);
             ValidateSections(timeline, result);
+            ValidateSpeedMarkers(timeline, result);
             ValidateAnimationCoverage(timeline, result);
             return result;
         }
@@ -230,6 +231,85 @@ namespace ASB.Work.EditorTools.Jig
         {
             const double epsilon = 0.0001d;
             return boundary > clip.start + epsilon && boundary < clip.end - epsilon;
+        }
+
+        /// <summary>SpeedRegion 마커 검증: 유한값·허용범위·동일시각 중복·범위 밖·과도한 예상 재생시간.</summary>
+        private const float SpeedWarnTotalSeconds = 30f;
+
+        private static void ValidateSpeedMarkers(TimelineAsset timeline,
+            List<SkillTimelineValidationMessage> result)
+        {
+            if (timeline.markerTrack == null) return;   // Marker Track 부재는 ValidateMarkers가 이미 처리
+
+            var speedMarkers = new List<PresentationSpeedMarker>();
+            foreach (IMarker raw in timeline.markerTrack.GetMarkers())
+                if (raw is PresentationSpeedMarker sm) speedMarkers.Add(sm);
+            if (speedMarkers.Count == 0) return;   // 속도 마커는 선택 기능
+
+            double duration = timeline.duration;
+            const double eps = 0.0001d;
+            var timeGroups = new Dictionary<long, int>();
+
+            for (int i = 0; i < speedMarkers.Count; i++)
+            {
+                PresentationSpeedMarker sm = speedMarkers[i];
+                float raw = sm.RawSpeed;
+
+                if (float.IsNaN(raw) || float.IsInfinity(raw))
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"{sm.time:F3}s Speed Marker 값이 유한하지 않습니다(NaN/Infinity).");
+                else if (raw < PresentationSpeedMarker.MinSpeed - 1e-6f
+                         || raw > PresentationSpeedMarker.MaxSpeed + 1e-6f)
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"{sm.time:F3}s Speed Marker 값 {raw}가 허용 범위 " +
+                        $"[{PresentationSpeedMarker.MinSpeed}, {PresentationSpeedMarker.MaxSpeed}] 밖입니다.");
+
+                if (sm.time < -eps || sm.time > duration + eps)
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"{sm.time:F3}s Speed Marker가 Timeline 범위(0~{duration:F3}s) 밖입니다.");
+
+                long bucket = (long)System.Math.Round(sm.time / eps);
+                timeGroups[bucket] = timeGroups.TryGetValue(bucket, out int c) ? c + 1 : 1;
+            }
+
+            foreach (KeyValuePair<long, int> g in timeGroups)
+                if (g.Value > 1)
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"{g.Key * eps:F3}s에 Speed Marker가 {g.Value}개 겹칩니다(같은 시각 중복은 " +
+                        "비결정적이라 금지 — 서로 다른 시각의 '가장 늦은 마커 우선'은 정상).");
+
+            // 예상 실시간 재생 시간 경고(경고만, 하드 가드 없음): Σ(구간길이 / 구간속도).
+            // 너무 느린 속도값 저작 실수로 한 턴이 사실상 정지하는 것을 방지한다.
+            double estimated = EstimatePlaybackSeconds(speedMarkers, duration);
+            if (estimated > SpeedWarnTotalSeconds)
+                Add(result, SkillTimelineValidationSeverity.Warning,
+                    $"Speed Marker 적용 시 예상 실시간 재생이 약 {estimated:F1}s입니다(> {SpeedWarnTotalSeconds:F0}s). " +
+                    "너무 느린 구간속도가 있는지 확인하세요(재생 루프에 타임아웃이 없어 한 턴이 멈출 수 있음).");
+        }
+
+        private static double EstimatePlaybackSeconds(List<PresentationSpeedMarker> markers, double duration)
+        {
+            if (duration <= 0d) return 0d;
+
+            var ordered = new List<PresentationSpeedMarker>(markers);
+            ordered.Sort((a, b) => a.time.CompareTo(b.time));
+
+            double total = 0d;
+            double cursor = 0d;
+            float currentSpeed = PresentationTimelineSpeed.DefaultSpeed;   // 첫 마커 이전 = 1.0
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                double markerTime = System.Math.Min(System.Math.Max(ordered[i].time, 0d), duration);
+                if (markerTime > cursor)
+                {
+                    total += (markerTime - cursor) / System.Math.Max(currentSpeed, PresentationSpeedMarker.MinSpeed);
+                    cursor = markerTime;
+                }
+                currentSpeed = ordered[i].Speed;
+            }
+            if (duration > cursor)
+                total += (duration - cursor) / System.Math.Max(currentSpeed, PresentationSpeedMarker.MinSpeed);
+            return total;
         }
 
         /// <summary>§4: Animator Rail 에셋의 SkillTimelines 구조 검증. 비면 정상, dangling/null은 정리 대상 Error.</summary>

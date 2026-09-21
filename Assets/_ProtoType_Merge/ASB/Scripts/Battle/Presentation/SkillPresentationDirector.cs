@@ -843,7 +843,8 @@ public sealed class SkillPresentationDirector
             director.Evaluate();
             while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
             {
-                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed);   // 재생 중 배속 변경도 반영
+                float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
+                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed);   // 전투배속 × 구간속도
                 if (director.time >= playbackRange.End - 0.0001d)
                 {
                     break;
@@ -1025,7 +1026,8 @@ public sealed class SkillPresentationDirector
             director.Play();
             while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
             {
-                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed);
+                float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
+                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed);   // 전투배속 × 구간속도
                 yield return null;
             }
         }
