@@ -93,6 +93,17 @@ public sealed class SkillPresentationDirector
         _chainLightningActionInstanceId = actionInstanceId;
     }
 
+    /// <summary>
+    /// 준비된 ChainLightning 임팩트 동기를 비활성화한다(actionId=0). Timeline에서 번개 VFX가 시작되지 않았을 때
+    /// (Projectile 마커 없음/인터럽트/시작 실패) 호출해, 존재하지 않는 target-specific 임팩트 신호를
+    /// 추가 타깃마다 타임아웃까지 기다리는 것을 막는다(<see cref="WaitForPresentationImpactRoutine"/>가 즉시 종료).
+    /// ★VFX가 정상 시작된 뒤에는 호출하지 않는다 — 신호 키 매칭이 깨진다.
+    /// </summary>
+    private void DisablePreparedChainImpactSynchronization()
+    {
+        _chainLightningActionInstanceId = 0;
+    }
+
     private static List<Transform> BuildChainLightningTargets(IReadOnlyList<DamageContext> contexts)
     {
         var targets = new List<Transform>();
@@ -804,6 +815,20 @@ public sealed class SkillPresentationDirector
         int actionInstanceId = NextActionInstanceId();
         RegisterTimelineRailCues(actor, target, skill, presentation, actionInstanceId);
 
+        // ── ChainLightning(HS2020 등) 핸드오프 ──
+        // Projectile 마커에서 번개 VFX만 1회 시작하고, 대미지는 target-specific 임팩트 신호로 동기한다.
+        // ChainActionInstanceId/ChainTargets는 BattleManager가 캐스트 시작 시 준비한 값을 그대로 쓴다(여기서 재준비 금지).
+        bool isChainTimelineDelivery =
+            ChainState != null
+            && ChainRole == DamageRole.Primary
+            && ChainActionInstanceId > 0
+            && presentation?.ChainLightningEffectPrefab != null
+            && presentation.ProjectileVisual?.DeliveryMode == ProjectileDeliveryMode.ChainAdditionalTargets
+            && target != null;
+
+        bool chainStarted = false;
+        Coroutine chainPrimaryImpactRoutine = null;
+
         // 마커 알림 → Cue 발화 / Impact 피격연출 / Projectile 발사. 시점 소유는 Timeline이 갖는다.
         Coroutine projectileRoutine = null;
         bool projectileLaunched = false;
@@ -816,8 +841,40 @@ public sealed class SkillPresentationDirector
                 LaunchProjectileRoutine(actor, target, presentation, deliveryGate, ResolveHit));
         }
 
+        IEnumerator WaitForChainPrimaryImpact()
+        {
+            // 주 타깃은 번개 도달(ChainActionInstanceId + target 인스턴스ID 키) 신호 이후 대미지 확정.
+            yield return WaitForPresentationImpactRoutine(target, presentation, deliveryGate);
+            if (deliveryGate == null || deliveryGate.ShouldPlayImpactPresentation) ResolveHit();
+        }
+
+        void StartChainLightning()
+        {
+            if (chainStarted) return;   // Retroactive/루프로 마커가 여러 번 와도 VFX는 1회
+            chainStarted = true;
+
+            bool ok = PlayChainLightningEffect(presentation, actor, target.transform, ChainTargets);
+            if (ok)
+            {
+                chainPrimaryImpactRoutine = _battle.StartCoroutine(WaitForChainPrimaryImpact());
+            }
+            else
+            {
+                // VFX 시작 실패 → 준비된 체인 임팩트 동기를 끄고(추가 타깃 타임아웃 방지) 주 타깃 폴백.
+                DisablePreparedChainImpactSynchronization();
+                ResolveHit();
+            }
+        }
+
         PresentationSignalReceiver receiver = EnsureSignalReceiver(actor);
-        receiver.Configure(actor.GetComponent<UnitAnimationEventRouter>(), ResolveHit, LaunchProjectile,
+        UnitAnimationEventRouter railRouter = actor.GetComponent<UnitAnimationEventRouter>();
+        // ★레일 재생 중에는 클립 AniEvent 기반 Cue를 억제한다 — 마커(id)가 발화를 소유하므로 클립의
+        //   AniEvent_PresentationCue와 이중 발화(이펙트 2번)를 막는다. finally에서 반드시 해제.
+        if (railRouter != null) railRouter.SuppressClipCues = true;
+        // 체인: Impact는 즉발하지 않고(대미지는 도달 신호가 소유), Projectile 마커로 VFX 시작.
+        Action onImpact = isChainTimelineDelivery ? null : (Action)ResolveHit;
+        Action onProjectile = isChainTimelineDelivery ? (Action)StartChainLightning : (Action)LaunchProjectile;
+        receiver.Configure(railRouter, onImpact, onProjectile,
             playbackRange.Start, playbackRange.End);
 
         bool stopped = false;
@@ -841,10 +898,25 @@ public sealed class SkillPresentationDirector
             // 구간 시작점으로 이동한다. 범위 밖 Retroactive Marker는 receiver가 차단한다.
             director.time = playbackRange.Start;
             director.Evaluate();
+            List<KeyValuePair<double, float>> holdMarks = CollectHoldMarks(timeline);
+            var holdDone = new bool[holdMarks.Count];
+            double holdPrevTime = playbackRange.Start;
             while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
             {
+                // Hold: (prev, now]에 걸린 미소비 Hold 마커에서 director를 정지시킨다(AniEvent_HoldBegin의 Timeline판).
+                for (int h = 0; h < holdMarks.Count; h++)
+                {
+                    if (holdDone[h]) continue;
+                    double ht = holdMarks[h].Key;
+                    if (ht <= holdPrevTime + 0.0001d || ht > director.time + 0.0001d) continue;
+                    holdDone[h] = true;
+                    yield return FreezeForHoldRoutine(director, holdMarks[h].Value,
+                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
+                }
+
                 float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
                 ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed);   // 전투배속 × 구간속도
+                holdPrevTime = director.time;
                 if (director.time >= playbackRange.End - 0.0001d)
                 {
                     break;
@@ -859,6 +931,7 @@ public sealed class SkillPresentationDirector
             director.Stop();               // 그래프 정리
             director.playableAsset = null; // 다음 재생을 위해 바인딩 해제
             receiver.ClearConfig();
+            if (railRouter != null) railRouter.SuppressClipCues = false;   // 클립 AniEvent Cue 억제 해제
             ClearPresentationContext(actor);
         }
 
@@ -872,11 +945,20 @@ public sealed class SkillPresentationDirector
             actor.Anim?.PlayIdleAnimation();
         }
 
+        // ChainLightning: 마커에서 VFX가 시작됐으면 주 타깃 도달까지 기다린다(도달 시 ResolveHit).
+        // 시작 안 됐으면(마커 없음/인터럽트로 마커 전 종료) 준비된 동기를 끄고 아래 폴백으로 1회 확정한다.
+        // (VFX는 Timeline 그래프와 독립이라 finally의 director.Stop이 번개를 멈추지 않는다 — 종료 후에도 도달·발행 가능.)
+        if (isChainTimelineDelivery && !chainStarted)
+        {
+            DisablePreparedChainImpactSynchronization();
+        }
+        if (chainPrimaryImpactRoutine != null) yield return chainPrimaryImpactRoutine;
+
         // 발사된 투사체가 있으면 도착까지 기다린다(도착 시 피격연출). 이 대기는 전투 Delivery만 막고
         // 시전자의 애니메이션 소유권은 더 이상 막지 않는다.
         if (projectileRoutine != null) yield return projectileRoutine;
 
-        // Impact도 투사체도 없던 스킬은 여기서 피격연출을 1회 보장한다(대미지+애니+팝업 유실 방지, §10).
+        // Impact도 투사체도 체인도 없던 스킬은 여기서 피격연출을 1회 보장한다(대미지+애니+팝업 유실 방지, §10).
         if (!hitResolved) ResolveHit();
         if (hitRoutine != null) yield return hitRoutine;
     }
@@ -996,15 +1078,23 @@ public sealed class SkillPresentationDirector
         {
             if (deliveryStarted) return;
             deliveryStarted = true;
+            // Path B와 동일: 커스텀 임팩트(SolarPrism 등, ImpactDeliveryMode=CustomEffectImpact)면 도착 신호
+            // (ImpactSignalBus)를 기다렸다가 대미지를 확정한다. 그 외 스킬은 CustomEffectImpactAction이 즉시
+            // 통과시켜 지금과 동일하게 즉시 적용된다(동작 불변). 신호 미도착 시 타임아웃 폴백도 내장.
             deliveryRoutine = _battle.StartCoroutine(
-                new AoEApplyDamageAction(
-                        contexts, hitCallbacks, pairCount, _battle.CurrentBattleSpeed, _battle.VisualDirector,
-                        projectileVisual, deliveryGate)
+                new ASB.Work.Battle.Sequence.CustomEffectImpactAction(
+                        presentation, actionInstanceId, deliveryGate,
+                        new AoEApplyDamageAction(
+                            contexts, hitCallbacks, pairCount, _battle.CurrentBattleSpeed, _battle.VisualDirector,
+                            projectileVisual, deliveryGate))
                     .ExecuteRoutine(_battle));
         }
 
         PresentationSignalReceiver receiver = EnsureSignalReceiver(actor);
-        receiver.Configure(actor.GetComponent<UnitAnimationEventRouter>(), ResolveDelivery, ResolveDelivery);
+        UnitAnimationEventRouter railRouter = actor.GetComponent<UnitAnimationEventRouter>();
+        // ★레일 재생 중 클립 AniEvent Cue 억제(마커가 발화 소유 → 이중 발화 방지). finally에서 해제.
+        if (railRouter != null) railRouter.SuppressClipCues = true;
+        receiver.Configure(railRouter, ResolveDelivery, ResolveDelivery);
 
         bool stopped = false;
         void OnStopped(PlayableDirector d) => stopped = true;
@@ -1024,10 +1114,25 @@ public sealed class SkillPresentationDirector
             director.time = 0d;
             director.Evaluate();
             director.Play();
+            List<KeyValuePair<double, float>> holdMarks = CollectHoldMarks(timeline);
+            var holdDone = new bool[holdMarks.Count];
+            double holdPrevTime = 0d;
             while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
             {
+                // Hold: (prev, now]에 걸린 미소비 Hold 마커에서 director를 정지시킨다(AniEvent_HoldBegin의 Timeline판).
+                for (int h = 0; h < holdMarks.Count; h++)
+                {
+                    if (holdDone[h]) continue;
+                    double ht = holdMarks[h].Key;
+                    if (ht <= holdPrevTime + 0.0001d || ht > director.time + 0.0001d) continue;
+                    holdDone[h] = true;
+                    yield return FreezeForHoldRoutine(director, holdMarks[h].Value,
+                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
+                }
+
                 float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
                 ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed);   // 전투배속 × 구간속도
+                holdPrevTime = director.time;
                 yield return null;
             }
         }
@@ -1038,6 +1143,7 @@ public sealed class SkillPresentationDirector
             director.Stop();
             director.playableAsset = null;
             receiver.ClearConfig();
+            if (railRouter != null) railRouter.SuppressClipCues = false;   // 클립 AniEvent Cue 억제 해제
             ClearPresentationContext(actor);
         }
 
@@ -1108,6 +1214,48 @@ public sealed class SkillPresentationDirector
             Playable root = graph.GetRootPlayable(i);
             if (root.IsValid()) root.SetSpeed(battleSpeed);
         }
+    }
+
+    /// <summary>Timeline의 PresentationHoldMarker 목록(시각, 정지시간). 재생 루프가 정지 지점을 찾는 데 쓴다.</summary>
+    private static List<KeyValuePair<double, float>> CollectHoldMarks(TimelineAsset timeline)
+    {
+        var list = new List<KeyValuePair<double, float>>();
+        if (timeline != null && timeline.markerTrack != null)
+        {
+            foreach (IMarker m in timeline.markerTrack.GetMarkers())
+            {
+                if (m is PresentationHoldMarker hm && hm.DurationSeconds > 0f)
+                {
+                    list.Add(new KeyValuePair<double, float>(hm.time, hm.DurationSeconds));
+                }
+            }
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// director를 <paramref name="holdTime"/> 지점에서 <paramref name="durationBattleSeconds"/>(배속-초)만큼
+    /// 정지시킨다(AniEvent_HoldBegin의 Timeline판). 루트 속도를 0으로 만들어 포즈·시간을 얼리고,
+    /// 배속-초 누적으로 대기한다(전투 배속이 높을수록 실제 정지 짧음 — HoldRoutine과 동일). 재개는 호출측 루프의
+    /// ApplyBattleSpeedToDirector가 다음 프레임에 정상 속도를 다시 걸어 처리한다.
+    /// </summary>
+    private IEnumerator FreezeForHoldRoutine(PlayableDirector director,
+        float durationBattleSeconds, System.Func<bool> abort)
+    {
+        if (director == null) yield break;
+        // ★director.Pause()로 실제로 동결한다. 루트 속도 0(SetSpeed)은 애니 출력만 멈추고 director.time은
+        //   계속 흘러 재생이 끝나버리므로(정지가 안 됨) hold에 쓸 수 없다.
+        director.Pause();
+
+        float elapsedBattle = 0f;
+        while (elapsedBattle < durationBattleSeconds)
+        {
+            if (director == null || director.playableAsset == null) yield break;
+            if (abort != null && abort()) break;
+            elapsedBattle += Time.deltaTime * Mathf.Max(0.01f, _battle.CurrentBattleSpeed);
+            yield return null;
+        }
+        if (director != null && director.playableAsset != null) director.Resume();
     }
 
     /// <summary>

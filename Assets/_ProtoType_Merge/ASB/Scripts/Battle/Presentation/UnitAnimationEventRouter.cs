@@ -11,6 +11,13 @@ public class UnitAnimationEventRouter : MonoBehaviour
     private UnitEffectPresenter _effect;
     private UnitSoundPresenter _sound;
 
+    /// <summary>
+    /// Timeline 레일 재생 중이면 true. 이때 클립 AniEvent 기반 <see cref="PresentationCue"/>를 무시한다 —
+    /// 발화는 Timeline 마커(<see cref="PresentationCueById"/>/<see cref="PresentationCueByName"/>)가 소유하므로,
+    /// 클립에 심긴 AniEvent_PresentationCue와의 이중 발화(이펙트 2번)를 막는다. Path B(Animator)에선 항상 false.
+    /// </summary>
+    public bool SuppressClipCues { get; set; }
+
     private void Awake() => Resolve();
 
     private void Resolve()
@@ -30,6 +37,7 @@ public class UnitAnimationEventRouter : MonoBehaviour
     /// <summary>연출 Cue: 같은 cue의 이펙트와 사운드를 각 프리젠터로 분배.</summary>
     public void PresentationCue(string cueName)
     {
+        if (SuppressClipCues) return;   // 레일: 마커가 발화 소유 → 클립 AniEvent Cue는 무시(이중 발화 방지)
         Resolve();
         _effect?.PresentationCue(cueName);
         _sound?.PresentationCue(cueName);

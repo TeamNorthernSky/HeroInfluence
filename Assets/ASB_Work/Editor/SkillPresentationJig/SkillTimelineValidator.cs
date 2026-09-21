@@ -125,6 +125,7 @@ namespace ASB.Work.EditorTools.Jig
 
             bool hasImpact = false;
             bool hasProjectile = false;
+            int projectileCount = 0;
             var cueIds = new HashSet<string>(StringComparer.Ordinal);
             var definedCueIds = new HashSet<string>(StringComparer.Ordinal);
             var definedCueNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -184,14 +185,30 @@ namespace ASB.Work.EditorTools.Jig
                         break;
                     case PresentationSignalKind.Projectile:
                         hasProjectile = true;
+                        projectileCount++;
                         break;
                 }
             }
 
+            // ChainLightning: 일반 Projectile Prefab이 없어도(GetProjectileVisual null) 번개 시작 시점을
+            // Projectile 마커로 표시해야 한다. 대미지는 도달 신호(Probe)가 소유하므로 Impact 마커(즉발)는 금지.
+            bool expectsChainDelivery =
+                data.ChainLightningEffectPrefab != null
+                && data.ProjectileVisual?.DeliveryMode == ProjectileDeliveryMode.ChainAdditionalTargets;
             bool expectsProjectile = data.PresentationArchetype == PresentationArchetype.Projectile
-                                     || data.GetProjectileVisual() != null;
+                                     || data.GetProjectileVisual() != null
+                                     || expectsChainDelivery;
             if (expectsProjectile && !hasProjectile)
-                Add(result, SkillTimelineValidationSeverity.Error, "Projectile 스킬에 Projectile Marker가 없습니다.");
+                Add(result, SkillTimelineValidationSeverity.Error, expectsChainDelivery
+                    ? "ChainLightning 스킬에 Projectile Marker가 없습니다(번개 시작 시점)."
+                    : "Projectile 스킬에 Projectile Marker가 없습니다.");
+            if (expectsChainDelivery && projectileCount > 1)
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    $"ChainLightning Timeline에 Projectile Marker가 {projectileCount}개입니다(번개는 1회 시작 — 1개만 두세요).");
+            if (expectsChainDelivery && hasImpact)
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    "ChainLightning Timeline에 Impact Marker가 있습니다. 대미지는 번개 도달 신호가 소유하므로 " +
+                    "Impact 마커(즉발)를 제거하세요.");
             if (!expectsProjectile && !hasImpact)
                 Add(result, SkillTimelineValidationSeverity.Warning,
                     "Impact Marker가 없습니다. 현재 런타임은 Timeline 종료 시 1회 폴백하지만 명시 Marker를 권장합니다.");
