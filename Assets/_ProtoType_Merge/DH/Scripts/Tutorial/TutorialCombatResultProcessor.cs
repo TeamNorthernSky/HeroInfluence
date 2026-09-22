@@ -1,24 +1,75 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
 public sealed class TutorialCombatResultProcessor : MonoBehaviour
 {
+    private const string RuntimeObjectName = "[DH_TutorialCombatResultProcessor]";
+
+    private static TutorialCombatResultProcessor instance;
+
     private Coroutine pendingProcess;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Bootstrap()
+    {
+        if (instance != null)
+            return;
+
+        GameObject root = new GameObject(RuntimeObjectName);
+        DontDestroyOnLoad(root);
+        root.AddComponent<TutorialCombatResultProcessor>();
+    }
+
+    private void Awake()
+    {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        instance = this;
+        if (Application.isPlaying)
+            DontDestroyOnLoad(gameObject);
+    }
 
     private void OnEnable()
     {
-        pendingProcess = StartCoroutine(ProcessAfterSceneReady());
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+        QueueProcess();
     }
 
     private void OnDisable()
     {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+
         if (pendingProcess == null)
             return;
 
         StopCoroutine(pendingProcess);
         pendingProcess = null;
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+            instance = null;
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        QueueProcess();
+    }
+
+    private void QueueProcess()
+    {
+        if (pendingProcess != null)
+            StopCoroutine(pendingProcess);
+
+        pendingProcess = StartCoroutine(ProcessAfterSceneReady());
     }
 
     private IEnumerator ProcessAfterSceneReady()
@@ -31,15 +82,7 @@ public sealed class TutorialCombatResultProcessor : MonoBehaviour
         if (context == null || !context.IsTutorial || context.Result == CombatResult.None)
             yield break;
 
-        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
-        if (repository == null)
-        {
-            Debug.LogError(
-                "[TutorialCombatResultProcessor] The DontDestroyOnLoad tutorial repository is missing. " +
-                "The combat result will not be cleared.",
-                this);
-            yield break;
-        }
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
 
         repository.SetLastCombatResult(context.Result);
         repository.ApplyPendingCombatResult(context.Result);
@@ -90,7 +133,7 @@ public sealed class TutorialCombatResultProcessor : MonoBehaviour
     {
         error = string.Empty;
 
-        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
         if (repository == null)
         {
             error = "The DontDestroyOnLoad tutorial repository is missing.";

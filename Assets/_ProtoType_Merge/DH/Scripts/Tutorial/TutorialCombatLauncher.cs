@@ -7,6 +7,8 @@ using UnityEngine.SceneManagement;
 public sealed class TutorialCombatLauncher : MonoBehaviour
 {
     private const string DefaultPartyId = "TUTORIAL_PARTY";
+    private const string DefaultBattleSceneName = "TutorialBattleScene";
+    private const string DefaultReturnSceneName = "TutorialExploreScene";
 
     [Header("Scene")]
     [SerializeField] private string tutorialBattleSceneName;
@@ -34,8 +36,28 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
 
     public string ReturnSceneName
     {
-        get => string.IsNullOrWhiteSpace(returnSceneName) ? "TutorialExploreScene" : returnSceneName.Trim();
+        get => string.IsNullOrWhiteSpace(returnSceneName) ? DefaultReturnSceneName : returnSceneName.Trim();
         set => returnSceneName = value;
+    }
+
+    public static TutorialCombatLauncher EnsureSceneLauncher()
+    {
+        TutorialCombatLauncher launcher = FindFirstObjectByType<TutorialCombatLauncher>();
+        if (launcher != null)
+            return launcher;
+
+        TutorialCombatLauncher[] launchers = FindObjectsByType<TutorialCombatLauncher>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+        if (launchers != null && launchers.Length > 0)
+            return launchers[0];
+
+        GameObject root = new GameObject("[TutorialCombatLauncher]");
+        launcher = root.AddComponent<TutorialCombatLauncher>();
+        launcher.tutorialBattleSceneName = DefaultBattleSceneName;
+        launcher.returnSceneName = DefaultReturnSceneName;
+        launcher.allowBattleSceneLoad = true;
+        return launcher;
     }
 
     public bool BeginCombat(string enemyGroupKey, int enemyLevel)
@@ -62,7 +84,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
             return false;
         }
 
-        CombatContext context = CombatContext.Instance;
+        CombatContext context = CombatContext.EnsureInstance();
         if (context == null)
         {
             Debug.LogWarning("[TutorialCombatLauncher] CombatContext is missing.", this);
@@ -133,7 +155,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         allies = new List<SimulationAllyRuntimeData>();
         error = string.Empty;
 
-        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
         if (repository == null)
         {
             error = "The DontDestroyOnLoad tutorial repository is missing.";
@@ -211,7 +233,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
 
     private static void SaveCurrentPartyState()
     {
-        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
         if (repository == null)
             return;
 

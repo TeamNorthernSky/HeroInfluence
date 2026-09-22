@@ -131,6 +131,8 @@ public class CombatEventBattleData
 [DisallowMultipleComponent]
 public class CombatContext : MonoBehaviour
 {
+    private const string RuntimeObjectName = "[CombatContext]";
+
     public static CombatContext Instance { get; private set; }
 
     [Header("Current Combat Context")]
@@ -172,6 +174,19 @@ public class CombatContext : MonoBehaviour
     public int TutorialZoneId => tutorialZoneId;
     public System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> SimulationAllies => simulationAllies;
     public System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> TutorialAllies => tutorialAllies;
+
+    public static CombatContext EnsureInstance()
+    {
+        if (Instance != null)
+            return Instance;
+
+        CombatContext existing = FindFirstObjectByType<CombatContext>();
+        if (existing != null)
+            return existing;
+
+        GameObject root = new GameObject(RuntimeObjectName);
+        return root.AddComponent<CombatContext>();
+    }
 
     public bool TryGetSimulationAlly(int runtimeUnitIndex, out SimulationAllyRuntimeData runtimeData)
     {

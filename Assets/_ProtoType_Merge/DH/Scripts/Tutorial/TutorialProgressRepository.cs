@@ -138,6 +138,31 @@ public class TutorialOutpostProgressState
     }
 }
 
+[Serializable]
+public class TutorialFogProgressCell
+{
+    [SerializeField] private Vector2Int grid;
+    [SerializeField] private FogVisibilityState visibility;
+    [SerializeField] private int lastRevealedDay;
+
+    public Vector2Int Grid => grid;
+    public FogVisibilityState Visibility => visibility;
+    public int LastRevealedDay => lastRevealedDay;
+
+    public TutorialFogProgressCell(Vector2Int grid, FogVisibilityState visibility, int lastRevealedDay)
+    {
+        this.grid = grid;
+        this.visibility = visibility;
+        this.lastRevealedDay = Mathf.Max(1, lastRevealedDay);
+    }
+
+    public void Apply(FogVisibilityState nextVisibility, int nextLastRevealedDay)
+    {
+        visibility = nextVisibility;
+        lastRevealedDay = Mathf.Max(1, nextLastRevealedDay);
+    }
+}
+
 [DisallowMultipleComponent]
 public sealed class TutorialProgressRepository : MonoBehaviour
 {
@@ -161,6 +186,7 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     [SerializeField] private List<string> seenMessageKeys = new List<string>();
     [SerializeField] private List<string> inactiveObjectKeys = new List<string>();
     [SerializeField] private List<TutorialOutpostProgressState> outpostStates = new List<TutorialOutpostProgressState>();
+    [SerializeField] private List<TutorialFogProgressCell> fogCells = new List<TutorialFogProgressCell>();
     [SerializeField] private TutorialCombatSourceType pendingCombatSourceType = TutorialCombatSourceType.None;
     [SerializeField] private string pendingCombatSourceKey;
 
@@ -188,6 +214,8 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     public IReadOnlyList<string> SeenMessageKeys => seenMessageKeys;
     public IReadOnlyList<string> InactiveObjectKeys => inactiveObjectKeys;
     public IReadOnlyList<TutorialOutpostProgressState> OutpostStates => outpostStates;
+    public IReadOnlyList<TutorialFogProgressCell> FogCells => fogCells;
+    public bool HasFogProgress => fogCells != null && fogCells.Count > 0;
     public TutorialCombatSourceType PendingCombatSourceType => pendingCombatSourceType;
     public string PendingCombatSourceKey => NormalizeKey(pendingCombatSourceKey);
     public bool HasAnyJoinedUnit => GetJoinedUnitCount() > 0;
@@ -207,7 +235,9 @@ public sealed class TutorialProgressRepository : MonoBehaviour
             return Instance;
 
         GameObject root = new GameObject(RootName);
-        DontDestroyOnLoad(root);
+        if (Application.isPlaying)
+            DontDestroyOnLoad(root);
+
         return root.AddComponent<TutorialProgressRepository>();
     }
 
@@ -250,6 +280,7 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         seenMessageKeys.Clear();
         inactiveObjectKeys.Clear();
         outpostStates.Clear();
+        fogCells.Clear();
         pendingCombatSourceType = TutorialCombatSourceType.None;
         pendingCombatSourceKey = string.Empty;
         RebuildLookups();
@@ -537,6 +568,36 @@ public sealed class TutorialProgressRepository : MonoBehaviour
 
         claimState = state.ClaimState;
         return true;
+    }
+
+    public void ReplaceFogCells(IEnumerable<FogGridManager.FogCellSnapshot> snapshots)
+    {
+        fogCells.Clear();
+
+        if (snapshots != null)
+        {
+            foreach (FogGridManager.FogCellSnapshot snapshot in snapshots)
+            {
+                if (snapshot.Visibility == FogVisibilityState.Unexplored)
+                    continue;
+
+                fogCells.Add(new TutorialFogProgressCell(
+                    snapshot.Grid,
+                    snapshot.Visibility,
+                    snapshot.LastRevealedDay));
+            }
+        }
+
+        NotifyChanged();
+    }
+
+    public void ClearFogProgress()
+    {
+        if (fogCells.Count == 0)
+            return;
+
+        fogCells.Clear();
+        NotifyChanged();
     }
 
     public void SetPendingCombatSource(TutorialCombatSourceType sourceType, string sourceKey)
