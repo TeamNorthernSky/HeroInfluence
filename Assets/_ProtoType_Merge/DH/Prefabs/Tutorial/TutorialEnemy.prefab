@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectKey: 
-  enemyGroupKey: FEP001
+  enemyGroupKey: A2FEP001
   enemyLevel: 1
   tutorialBattleKey: TUT_01
   tutorialZoneId: 1
