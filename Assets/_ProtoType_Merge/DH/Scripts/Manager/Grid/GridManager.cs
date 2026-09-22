@@ -771,14 +771,29 @@ public class GridManager : MonoBehaviour
     {
         owner = null;
 
-        List<IGridEnemyObject> enemies = new List<IGridEnemyObject>();
-        AddRuntimeEnemies(enemies);
-        AddTutorialEnemies(enemies);
-
-        for (int i = 0; i < enemies.Count; i++)
+        IReadOnlyList<EnemyGridMover> runtimeEnemies = enemyRegistry != null
+            ? enemyRegistry.Enemies
+            : FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None);
+        for (int i = 0; i < runtimeEnemies.Count; i++)
         {
-            IGridEnemyObject enemy = enemies[i];
+            EnemyGridMover enemy = runtimeEnemies[i];
             if (enemy == null)
+                continue;
+
+            if (enemy.GetCurrentGrid() != grid)
+                continue;
+
+            owner = enemy;
+            return EnemyEncounterZoneState.EnemyOccupied;
+        }
+
+        IReadOnlyList<TutorialEnemyObject> tutorialEnemies = tutorialEnemyRegistry != null
+            ? tutorialEnemyRegistry.Enemies
+            : FindObjectsByType<TutorialEnemyObject>(FindObjectsSortMode.None);
+        for (int i = 0; i < tutorialEnemies.Count; i++)
+        {
+            TutorialEnemyObject enemy = tutorialEnemies[i];
+            if (enemy == null || !enemy.isActiveAndEnabled)
                 continue;
 
             if (enemy.GetCurrentGrid() != grid)
@@ -790,22 +805,16 @@ public class GridManager : MonoBehaviour
 
         int ownerCount = 0;
         IGridEnemyObject singleOwner = null;
-        for (int i = 0; i < enemies.Count; i++)
+        CountRuntimeEnemyInteractionOwners(grid, runtimeEnemies, ref ownerCount, ref singleOwner);
+        if (ownerCount > 1)
         {
-            IGridEnemyObject enemy = enemies[i];
-            if (enemy == null)
-                continue;
+            owner = null;
+            return EnemyEncounterZoneState.OverlappedEnemyZone;
+        }
 
-            if (!enemy.IsInteractionCell(grid))
-                continue;
-
-            ownerCount++;
-            if (ownerCount == 1)
-            {
-                singleOwner = enemy;
-                continue;
-            }
-
+        CountTutorialEnemyInteractionOwners(grid, tutorialEnemies, ref ownerCount, ref singleOwner);
+        if (ownerCount > 1)
+        {
             owner = null;
             return EnemyEncounterZoneState.OverlappedEnemyZone;
         }
@@ -819,37 +828,51 @@ public class GridManager : MonoBehaviour
         return EnemyEncounterZoneState.None;
     }
 
-    private void AddRuntimeEnemies(List<IGridEnemyObject> results)
+    private static void CountRuntimeEnemyInteractionOwners(
+        Vector2Int grid,
+        IReadOnlyList<EnemyGridMover> enemies,
+        ref int ownerCount,
+        ref IGridEnemyObject singleOwner)
     {
-        if (results == null)
+        if (enemies == null)
             return;
-
-        IReadOnlyList<EnemyGridMover> enemies = enemyRegistry != null
-            ? enemyRegistry.Enemies
-            : FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None);
 
         for (int i = 0; i < enemies.Count; i++)
         {
             EnemyGridMover enemy = enemies[i];
-            if (enemy != null)
-                results.Add(enemy);
+            if (enemy == null || !enemy.IsInteractionCell(grid))
+                continue;
+
+            ownerCount++;
+            if (ownerCount == 1)
+                singleOwner = enemy;
+
+            if (ownerCount > 1)
+                return;
         }
     }
 
-    private void AddTutorialEnemies(List<IGridEnemyObject> results)
+    private static void CountTutorialEnemyInteractionOwners(
+        Vector2Int grid,
+        IReadOnlyList<TutorialEnemyObject> enemies,
+        ref int ownerCount,
+        ref IGridEnemyObject singleOwner)
     {
-        if (results == null)
+        if (enemies == null)
             return;
-
-        IReadOnlyList<TutorialEnemyObject> enemies = tutorialEnemyRegistry != null
-            ? tutorialEnemyRegistry.Enemies
-            : FindObjectsByType<TutorialEnemyObject>(FindObjectsSortMode.None);
 
         for (int i = 0; i < enemies.Count; i++)
         {
             TutorialEnemyObject enemy = enemies[i];
-            if (enemy != null && enemy.isActiveAndEnabled)
-                results.Add(enemy);
+            if (enemy == null || !enemy.isActiveAndEnabled || !enemy.IsInteractionCell(grid))
+                continue;
+
+            ownerCount++;
+            if (ownerCount == 1)
+                singleOwner = enemy;
+
+            if (ownerCount > 1)
+                return;
         }
     }
 
