@@ -171,7 +171,7 @@ public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
     private void ResolveCombatLauncher()
     {
         if (combatLauncher == null)
-            combatLauncher = FindFirstObjectByType<TutorialCombatLauncher>();
+            combatLauncher = TutorialCombatLauncher.EnsureSceneLauncher();
     }
 
     private void ResolveOverlayController()

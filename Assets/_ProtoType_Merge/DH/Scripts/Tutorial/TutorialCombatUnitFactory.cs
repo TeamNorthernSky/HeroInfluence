@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class TutorialCombatUnitFactory
@@ -40,6 +41,7 @@ public static class TutorialCombatUnitFactory
         }
 
         int level = 1;
+        int maxExp = ResolveMaxExp(catalog, level);
         int skillIndex = ResolveDefaultSkillIndex(template);
         string weaponKey = ResolveDefaultWeapon(catalog, template, out DHWeaponTemplate weaponTemplate);
         EquipmentStatBlock weaponStats = weaponTemplate != null
@@ -69,7 +71,7 @@ public static class TutorialCombatUnitFactory
             ingameStats,
             currentHp,
             0,
-            0,
+            maxExp,
             default,
             1,
             0,
@@ -78,6 +80,26 @@ public static class TutorialCombatUnitFactory
 
         runtimeData = new SimulationAllyRuntimeData(runtimeUnitIndex, transientUnit);
         return true;
+    }
+
+    private static int ResolveMaxExp(TutorialCatalog catalog, int level)
+    {
+        if (catalog == null)
+            return 0;
+
+        IReadOnlyList<DHUnitGrowthTemplate> growthTemplates = catalog.GetUnitGrowthTemplates();
+        if (growthTemplates == null)
+            return 0;
+
+        int safeLevel = Mathf.Max(1, level);
+        for (int i = 0; i < growthTemplates.Count; i++)
+        {
+            DHUnitGrowthTemplate growth = growthTemplates[i];
+            if (growth != null && growth.Level == safeLevel)
+                return Mathf.Max(0, growth.RequiredExperience);
+        }
+
+        return 0;
     }
 
     public static bool TryCreateUnitData(string unitTemplateKey, out UnitData unitData)

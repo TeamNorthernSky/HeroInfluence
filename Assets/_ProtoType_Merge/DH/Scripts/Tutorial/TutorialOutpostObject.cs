@@ -20,9 +20,8 @@ public sealed class TutorialOutpostObject : MonoBehaviour
     [Tooltip("Tutorial flow zone id. -1 lets the battle side use its default.")]
     [SerializeField, Min(-1)] private int tutorialZoneId = -1;
 
-    [Header("Association Scene")]
-    [SerializeField] private string associationSceneName;
-    [SerializeField] private bool allowAssociationSceneLoad;
+    [Header("Tutorial Lobby")]
+    [SerializeField] private string tutorialLobbySceneName = "TutorialLobbyScene";
 
     [Header("Visual")]
     [SerializeField] private Renderer[] targetRenderers;
@@ -89,7 +88,7 @@ public sealed class TutorialOutpostObject : MonoBehaviour
         LoadStateFromRepository();
 
         if (currentClaimState == TutorialOutpostClaimState.HeroClaimed)
-            return TryEnterAssociationScene();
+            return false;
 
         return TryStartCaptureCombat();
     }
@@ -143,21 +142,15 @@ public sealed class TutorialOutpostObject : MonoBehaviour
         return started;
     }
 
-    public bool TryEnterAssociationScene()
+    public bool TryEnterTutorialLobbyScene()
     {
-        if (!allowAssociationSceneLoad)
+        if (string.IsNullOrWhiteSpace(tutorialLobbySceneName))
         {
-            Debug.Log("[TutorialOutpostObject] Association scene load is disabled until tutorial association scene is ready.", this);
+            Debug.LogWarning("[TutorialOutpostObject] TutorialLobbySceneName is empty.", this);
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(associationSceneName))
-        {
-            Debug.LogWarning("[TutorialOutpostObject] AssociationSceneName is empty.", this);
-            return false;
-        }
-
-        string sceneName = associationSceneName.Trim();
+        string sceneName = tutorialLobbySceneName.Trim();
         if (GameSceneManager.Instance != null)
             GameSceneManager.Instance.LoadScene(sceneName);
         else
@@ -229,7 +222,7 @@ public sealed class TutorialOutpostObject : MonoBehaviour
     private void ResolveCombatLauncher()
     {
         if (combatLauncher == null)
-            combatLauncher = FindFirstObjectByType<TutorialCombatLauncher>();
+            combatLauncher = TutorialCombatLauncher.EnsureSceneLauncher();
     }
 
     private void EnsureRenderersCached()

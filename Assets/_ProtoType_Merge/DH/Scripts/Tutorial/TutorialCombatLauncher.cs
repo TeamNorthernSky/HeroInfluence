@@ -7,6 +7,8 @@ using UnityEngine.SceneManagement;
 public sealed class TutorialCombatLauncher : MonoBehaviour
 {
     private const string DefaultPartyId = "TUTORIAL_PARTY";
+    private const string DefaultBattleSceneName = "TutorialBattleScene";
+    private const string DefaultReturnSceneName = "TutorialExploreScene";
 
     [Header("Scene")]
     [SerializeField] private string tutorialBattleSceneName;
@@ -34,8 +36,28 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
 
     public string ReturnSceneName
     {
-        get => string.IsNullOrWhiteSpace(returnSceneName) ? "TutorialExploreScene" : returnSceneName.Trim();
+        get => string.IsNullOrWhiteSpace(returnSceneName) ? DefaultReturnSceneName : returnSceneName.Trim();
         set => returnSceneName = value;
+    }
+
+    public static TutorialCombatLauncher EnsureSceneLauncher()
+    {
+        TutorialCombatLauncher launcher = FindFirstObjectByType<TutorialCombatLauncher>();
+        if (launcher != null)
+            return launcher;
+
+        TutorialCombatLauncher[] launchers = FindObjectsByType<TutorialCombatLauncher>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+        if (launchers != null && launchers.Length > 0)
+            return launchers[0];
+
+        GameObject root = new GameObject("[TutorialCombatLauncher]");
+        launcher = root.AddComponent<TutorialCombatLauncher>();
+        launcher.tutorialBattleSceneName = DefaultBattleSceneName;
+        launcher.returnSceneName = DefaultReturnSceneName;
+        launcher.allowBattleSceneLoad = true;
+        return launcher;
     }
 
     public bool BeginCombat(string enemyGroupKey, int enemyLevel)
@@ -62,7 +84,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
             return false;
         }
 
-        CombatContext context = CombatContext.Instance;
+        CombatContext context = CombatContext.EnsureInstance();
         if (context == null)
         {
             Debug.LogWarning("[TutorialCombatLauncher] CombatContext is missing.", this);
@@ -133,7 +155,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         allies = new List<SimulationAllyRuntimeData>();
         error = string.Empty;
 
-        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
         if (repository == null)
         {
             error = "The DontDestroyOnLoad tutorial repository is missing.";
@@ -194,7 +216,10 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
                     Mathf.RoundToInt(data.IngameStats.HP),
                     Mathf.RoundToInt(data.CurrentInfluence),
                     Mathf.RoundToInt(data.IngameStats.Influence),
-                    Mathf.RoundToInt(data.IngameStats.Atk));
+                    Mathf.RoundToInt(data.IngameStats.Atk),
+                    data.Level,
+                    data.Exp,
+                    data.MaxExp);
             }
 
             allies.Add(runtimeData);
@@ -211,7 +236,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
 
     private static void SaveCurrentPartyState()
     {
-        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
         if (repository == null)
             return;
 
@@ -235,9 +260,15 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
 
         float currentHp = Mathf.Clamp(storedState.CurrentHp, 0f, ingameStats.HP);
         float currentInfluence = Mathf.Clamp(storedState.CurrentIp, 0f, ingameStats.Influence);
+        int level = Mathf.Max(1, storedState.Level);
+        int maxExp = storedState.MaxExp > 0 ? storedState.MaxExp : data.MaxExp;
+        int exp = maxExp > 0
+            ? Mathf.Clamp(storedState.Exp, 0, maxExp)
+            : Mathf.Max(0, storedState.Exp);
+
         data.ApplyRuntimeState(
             data.UnitTemplateKey,
-            data.Level,
+            level,
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
@@ -246,8 +277,8 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
             data.CurrentWeaponStats,
             ingameStats,
             currentHp,
-            data.Exp,
-            data.MaxExp,
+            exp,
+            maxExp,
             data.SkillLevel,
             data.EquippedWeaponInstanceIndex,
             currentInfluence,
