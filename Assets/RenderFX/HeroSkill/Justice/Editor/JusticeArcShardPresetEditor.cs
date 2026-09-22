@@ -23,7 +23,7 @@ namespace JC.VFX.EditorTools
                 "내부=흰 심, 테두리=색 팔레트. 축소·페이드 시점은 서로 독립.",
                 MessageType.None);
 
-            if (GUILayout.Button("적용 — 재질·프리팹에 확정 기록", GUILayout.Height(26)))
+            if (GUILayout.Button(new GUIContent("적용 — 재질·프리팹에 확정 기록", "현재 프리셋의 파편 설정을 연결된 재질·프리팹에 적용하고 저장합니다. 프리뷰와 전투가 함께 사용합니다."), GUILayout.Height(26)))
                 Apply(p);
             JcPresetEditorUtil.DrawSaveButton(target, wide: true);   // 튜닝 저장 공식 규격
         }

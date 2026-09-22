@@ -12,6 +12,20 @@ namespace JC.VFX
     [CustomEditor(typeof(FlareImpactPreset))]
     public class FlareImpactPresetEditor : FlareOrbPresetEditorBase
     {
+        protected override void DrawBody()
+        {
+            if(!JcLuminaPresetEditorBridge.IsPartPreset(target)){base.DrawBody();return;}
+            var oldFlight=new System.Collections.Generic.HashSet<string>{"orbScale","summonOffset","chargeDuration","chargeGrowTime","speed","arcHeight","flightScale","targetHeight","trailTime","trailWidth","emberRate","emberSize","emberNoise","lingerTime"};
+            serializedObject.Update();var it=serializedObject.GetIterator();bool enter=true;
+            while(it.NextVisible(enter))
+            {
+                enter=false;
+                using(new EditorGUI.DisabledScope(it.propertyPath=="m_Script"||oldFlight.Contains(it.propertyPath)))
+                    EditorGUILayout.PropertyField(it,new GUIContent(it.displayName,it.tooltip),true);
+            }
+            serializedObject.ApplyModifiedProperties();
+            EditorGUILayout.HelpBox("이 프리셋은 착탄 부품을 제어합니다. 회색으로 표시된 옛 통합 오브의 이동값은 사용하지 않습니다. 오브 외형은 F0/F1/F2, 실제 비행은 작업대 아래 ‘실제 시전 · 투사체 이동’에서 조절합니다.",MessageType.Info);
+        }
         static string MatBurst    => DIR + "/Materials/FlareImpactBurst.mat";
         static string MatRing     => DIR + "/Materials/FlareImpactRing.mat";
         static string SkillPrefab => DIR + "/Prefabs/FlareBombSkill.prefab";
@@ -108,8 +122,10 @@ namespace JC.VFX
 
         static void LivePushStatic(FlareImpactPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryLivePush(p))return;
             foreach (var impact in Object.FindObjectsByType<FlareBombImpact>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(impact.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||impact.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (InDarkVariant(impact)) continue;   // 흑염 변형은 크림판 프리셋 스코프 밖
                 ApplySizes(impact.transform, p);
                 impact.BurstDuration = p.burstDuration;
@@ -130,6 +146,7 @@ namespace JC.VFX
             }
             foreach (var vfx in Object.FindObjectsByType<FlareBombVfx>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(vfx.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||vfx.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (InDarkVariant(vfx)) continue;   // 흑염 변형은 크림판 프리셋 스코프 밖
                 vfx.OrbScale = p.orbScale;
                 vfx.SummonOffset = p.summonOffset;
@@ -148,6 +165,7 @@ namespace JC.VFX
 
         public static void Apply(FlareImpactPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryApply(p))return;
             var matB = Load<Material>(MatBurst);
             FillBurst((n, f) => matB.SetFloat(n, f), (n, c) => matB.SetColor(n, c), p);
             matB.renderQueue = 3005;   // 최상단
@@ -202,6 +220,7 @@ namespace JC.VFX
 
         public static void Capture(FlareImpactPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryCapture(p))return;
             Undo.RecordObject(p, "Capture Flare Impact");
 
             var matB = Load<Material>(MatBurst);

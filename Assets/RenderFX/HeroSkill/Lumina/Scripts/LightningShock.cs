@@ -7,7 +7,7 @@ namespace JC.VFX
     /// ShockAura 쿼드 1장이 대상 트랜스폼을 따라다니며 _Seed 플리커로 명멸,
     /// duration 경과 시 페이드 후 자기 파괴한다. ChainLightningVfx가 템플릿에서 복제·Init.
     /// </summary>
-    public class LightningShock : MonoBehaviour
+    public class LightningShock : VfxEffect
     {
         [Tooltip("아우라 렌더러(자기 자신).")]
         [SerializeField] private Renderer auraRenderer;
@@ -26,6 +26,9 @@ namespace JC.VFX
         private static readonly int OpacityID = Shader.PropertyToID("_Opacity");
 
         public bool IsDone => !_running;
+        public override void Play(Transform origin, Transform target)
+            => Init(target, Vector3.up * .8f, 1.7f, 1f / Mathf.Max(.01f, PlaybackSpeed), .25f / Mathf.Max(.01f, PlaybackSpeed), 18f);
+        public override void Stop() { _running = false; IsPlaying = false; gameObject.SetActive(false); }
 
         public void Init(Transform target, Vector3 offset, float worldSize,
                          float duration, float fadeTime, float flickerRate)
@@ -39,6 +42,7 @@ namespace JC.VFX
             Follow();
             _t = 0f;
             _running = true;
+            IsPlaying = true;
             gameObject.SetActive(true);
         }
 
@@ -57,6 +61,8 @@ namespace JC.VFX
             if (_t >= _duration)
             {
                 _running = false;
+                IsPlaying = false;
+                RaiseFinished();
                 Destroy(gameObject);
             }
         }

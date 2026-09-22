@@ -13,15 +13,23 @@ MonoBehaviour:
   m_Name: FX_EnterTheJustice_Alter
   m_EditorClassIdentifier: 
   targets:
-    trailPrefab: {fileID: 3616402648774875410, guid: 3e132d4f01fc11d44814995a2b2efdd8,
+    trailPrefab: {fileID: 447569048696413417, guid: 7d38a5b7705932347afdd14080ea48cd,
       type: 3}
-    impactPrefab: {fileID: 738097252154879308, guid: 1f1be05faf5f3a14ba2a909f314c1acb,
+    impactPrefab: {fileID: 6656011004744042307, guid: eb6ff343c9aaefd4e99c194683d58de7,
       type: 3}
-    strokeMaterial: {fileID: 2100000, guid: 9470c10d9e0e50345bd69c2c06a66d0b, type: 2}
-    sparkMaterial: {fileID: 2100000, guid: 5f4ec539d9fa6be4ea60c8ed599be132, type: 2}
-    impactSparkMaterial: {fileID: 2100000, guid: e324b4fd5d0315749ab46c24113a619a,
+    strokeMaterial: {fileID: 2100000, guid: 6694dba9946029746b74b88ee31cb324, type: 2}
+    sparkMaterial: {fileID: 2100000, guid: 5eaf879880a9bc4459cf56a3a9bf80b9, type: 2}
+    impactSparkMaterial: {fileID: 2100000, guid: c2defa79ba8e6e0409e552ed8c037c73,
       type: 2}
-    flashMaterial: {fileID: 2100000, guid: 6e863cf8bd7025241932b4fff2a3194c, type: 2}
+    flashMaterial: {fileID: 2100000, guid: 126be9331839ae046b1cce330df4866c, type: 2}
+    vortexPrefab: {fileID: 0}
+    vortexMaterial: {fileID: 0}
+    slashPrefab: {fileID: 0}
+    slashMaterial: {fileID: 0}
+    arcStrokePrefab: {fileID: 0}
+    arcStrokeMaterial: {fileID: 0}
+    arcPointPrefab: {fileID: 0}
+    arcPointMaterial: {fileID: 0}
   trail:
     enabled: 1
     emission: 3.78
@@ -40,10 +48,12 @@ MonoBehaviour:
     midColor: {r: 1, g: 0.1, b: 0.11, a: 1}
     tailColor: {r: 0.5, g: 0.02, b: 0.04, a: 1}
     shapeRadius: 0.25
-    highlightColor: {r: 1, g: 1, b: 1, a: 1}
-    highlightRatio: 0
-    highlightEmission: 0
-    trailLifetime: 0.48
+    coreColor: {r: 1, g: 1, b: 1, a: 1}
+    coreEmission: 2
+    coreWidth: 0.35
+    coreSharpness: 2
+    bodyFalloff: 2.5
+    endFade: 0.15
     trailMinVertexDistance: 0.0139
   spark:
     enabled: 1
@@ -118,3 +128,134 @@ MonoBehaviour:
     flashOffset: {x: 0, y: 0, z: 0}
     flashFlipRotation: 0
     flashSortingFudge: -50
+  arcStroke:
+    enabled: 1
+    headColor: {r: 0.92, g: 0.97, b: 1, a: 1}
+    midColor: {r: 0.7, g: 0.85, b: 1, a: 1}
+    tailColor: {r: 0.32, g: 0.48, b: 0.72, a: 1}
+    emission: 1.2
+    chromaHold: 1
+    bodyFalloff: 2.5
+    edgeTaper: 0.25
+    angleStart: 210
+    angleEnd: 30
+    radius: 1.6
+    sweepDuration: 0.5
+    easeOut: 1
+    rateOverDistance: 6
+    emissionRamp: 0
+    emissionDecay: 0
+    maxParticles: 60
+    nozzleRadius: 0.2
+    nozzleThickness: 0.05
+    nozzleTilt: 0
+    thinDecay: 0
+    thinFarBoost: 2
+    strokeLifeMin: 0.6
+    strokeLifetime: 1.2
+    skipShortRemainder: 1
+    growRatio: 0.12
+    fadeRatio: 0.25
+    widthMin: 0.15
+    widthMax: 0.45
+    trailMinVertexDistance: 0.004
+    spawnOffset: {x: 0, y: -0.2, z: 0}
+  arcPoint:
+    enabled: 1
+    headColor: {r: 1, g: 1, b: 1, a: 1}
+    midColor: {r: 0.55, g: 0.8, b: 1, a: 1}
+    tailColor: {r: 0.25, g: 0.45, b: 0.85, a: 1}
+    emission: 2
+    chromaHold: 1
+    bodyFalloff: 2.5
+    edgeTaper: 0.25
+    angleStart: 210
+    angleEnd: 30
+    radius: 1.6
+    sweepDuration: 0.5
+    easeOut: 1
+    offsetMin: 0.3
+    offsetMax: 0.9
+    convergeExp: 1.5
+    rateOverDistance: 1.5
+    emissionRamp: 0
+    emissionDecay: 0
+    maxParticles: 20
+    nozzleThickness: 0.03
+    strokeLifeMin: 0.15
+    strokeLifetime: 0.35
+    skipShortRemainder: 1
+    growRatio: 0.12
+    fadeRatio: 0.25
+    widthMin: 0.05
+    widthMax: 0.15
+    trailMinVertexDistance: 0.004
+    spawnOffset: {x: 0, y: -0.2, z: 0}
+    extraLinger: 0.2
+  slash:
+    enabled: 1
+    headColor: {r: 0.92, g: 0.97, b: 1, a: 1}
+    midColor: {r: 0.7, g: 0.85, b: 1, a: 1}
+    tailColor: {r: 0.32, g: 0.48, b: 0.72, a: 1}
+    emission: 2
+    chromaHold: 1
+    coreColor: {r: 1, g: 1, b: 1, a: 1}
+    coreEmission: 2
+    coreWidth: 0.35
+    coreSharpness: 2
+    bodyFalloff: 2.5
+    endFade: 0.15
+    angleStart: 210
+    angleEnd: 30
+    radius: 1.6
+    nozzleRadius: 0.25
+    sweepDuration: 0.18
+    easeOut: 2
+    rateOverDistance: 10
+    maxParticles: 80
+    lifeMin: 0.06
+    lifeMax: 0.3
+    sizeMin: 0.04
+    sizeMax: 0.12
+    alphaHold: 0.4
+    trailMinVertexDistance: 0.004
+    fragmentRate: 4
+    fragmentSpread: 0.5
+    fragmentDriftMin: 0
+    fragmentDriftMax: 1.5
+    fragmentLifeMin: 0.1
+    fragmentLifeMax: 0.35
+    fragmentSizeMin: 0.02
+    fragmentSizeMax: 0.06
+    spawnOffset: {x: 0, y: -0.2, z: 0}
+    fadeOutExtraSeconds: 0.4
+  vortex:
+    enabled: 0
+    headColor: {r: 0.92, g: 0.97, b: 1, a: 1}
+    midColor: {r: 0.7, g: 0.85, b: 1, a: 1}
+    tailColor: {r: 0.32, g: 0.48, b: 0.72, a: 1}
+    emission: 2
+    chromaHold: 1
+    highlightColor: {r: 1, g: 1, b: 1, a: 1}
+    highlightRatio: 0.12
+    highlightEmission: 3
+    radiusStart: 0.55
+    radiusEnd: 1.6
+    height: 2.6
+    radiusCurve: 1.6
+    orbitSpeed: 8
+    orbitJitter: 0.25
+    travelSpeed: 6
+    travelDistance: 5
+    travelDelay: 0.12
+    rateOverTime: 120
+    maxParticles: 300
+    lifeMin: 0.45
+    lifeMax: 0.85
+    sizeMin: 0.03
+    sizeMax: 0.08
+    alphaHold: 0.45
+    trailMinVertexDistance: 0.004
+    duration: 0.9
+    fadeOutExtraSeconds: 0.5
+    spawnOffset: {x: 0, y: -0.6, z: 0}

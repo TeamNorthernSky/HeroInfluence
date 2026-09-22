@@ -7,6 +7,8 @@ public class TutorialCatalog : MonoBehaviour
 {
     private const float DefaultPlayerBaseInfluence = 100f;
 
+    public static TutorialCatalog Instance { get; private set; }
+
     [Header("Tutorial SO DataTables")]
     [SerializeField] private PlayerUnitDataTable playerUnitDataTable;
     [SerializeField] private EnemyUnitDataTable enemyUnitDataTable;
@@ -17,6 +19,7 @@ public class TutorialCatalog : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private bool loadOnAwake = true;
+    [SerializeField] private bool dontDestroyOnLoad = true;
 
     [Header("Debug")]
     [SerializeField] private List<string> loadedPlayerKeys = new List<string>();
@@ -43,8 +46,54 @@ public class TutorialCatalog : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        if (dontDestroyOnLoad)
+            DontDestroyOnLoad(gameObject);
+
         if (loadOnAwake)
             Reload();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
+    [ContextMenu("Destroy Tutorial Catalog")]
+    public void DestroyTutorialCatalog()
+    {
+        if (Application.isPlaying)
+            Destroy(gameObject);
+        else
+            DestroyImmediate(gameObject);
+    }
+
+    public static void DestroyInstance()
+    {
+        if (Instance == null)
+            return;
+
+        Instance.DestroyTutorialCatalog();
+    }
+
+    public static void DestroyAllTutorialCatalogs()
+    {
+        TutorialCatalog[] catalogs = FindObjectsByType<TutorialCatalog>(FindObjectsSortMode.None);
+        for (int i = 0; i < catalogs.Length; i++)
+        {
+            TutorialCatalog catalog = catalogs[i];
+            if (catalog == null)
+                continue;
+
+            catalog.DestroyTutorialCatalog();
+        }
     }
 
     [ContextMenu("Reload Tutorial Catalog")]
@@ -77,6 +126,25 @@ public class TutorialCatalog : MonoBehaviour
         EnsureLoaded();
         string key = string.IsNullOrWhiteSpace(weaponKey) ? string.Empty : weaponKey.Trim();
         return weaponLookup.TryGetValue(key, out template) && template != null;
+    }
+
+    public bool TryGetWeaponTemplate(int weaponIndex, out DHWeaponTemplate template)
+    {
+        EnsureLoaded();
+        template = null;
+        if (weaponIndex <= 0)
+            return false;
+
+        foreach (DHWeaponTemplate candidate in weaponLookup.Values)
+        {
+            if (candidate != null && candidate.NumericWeaponId == weaponIndex)
+            {
+                template = candidate;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public bool TryGetClassSkillTemplate(string skillKey, out DHClassSkillTemplate template)

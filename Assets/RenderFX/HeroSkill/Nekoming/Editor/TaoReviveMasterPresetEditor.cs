@@ -4,7 +4,7 @@ using UnityEditor;
 namespace JC.VFX
 {
     /// <summary>
-    /// T8(부활 오라 타이밍 마스터) 에디터 — B/A 공용이라 두 변종 프리팹(Tao_Revive_Basic/_Alter) 모두에 적용.
+    /// T8(부활 오라 타이밍 마스터) 에디터 — 연결된 부활 부품에만 적용하며 Basic·Alter 타이밍을 독립 조절합니다.
     /// 힐 9번(AuraMaster) 선례. 착지 오프셋은 스테퍼(위치 소유 ②)가 읽으므로 프리팹 베이크 대상이 아니다.
     /// </summary>
     [CustomEditor(typeof(TaoReviveMasterPreset))]
@@ -23,23 +23,23 @@ namespace JC.VFX
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
-                if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","이 프리셋을 참조하는 대상 프리팹에 현재 값을 확정합니다."), GUILayout.Height(30))) Apply(p);
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","대상 프리팹의 값을 현재 프리셋으로 읽습니다. 프리셋 파일 저장은 별도입니다."), GUILayout.Height(30))) Capture(p);
                 JcPresetEditorUtil.DrawSaveButton(target);
             }
-            EditorGUILayout.HelpBox("적용: 타이밍(페이드인/유지/아웃)을 Tao_Revive_Basic·_Alter 두 프리팹의 TaoReviveVfx 에 반영.\n" +
+            EditorGUILayout.HelpBox("적용: 타이밍(페이드인/유지/아웃)을 현재 에셋을 참조하는 TaoReviveVfx에만 반영.\n" +
                 "landOffset 은 스테퍼가 이 자산에서 직접 읽습니다(베이크 없음). livePreview 켜져 있으면 플레이 중 즉시 반영.", MessageType.Info);
         }
 
         void Apply(TaoReviveMasterPreset p)
         {
             int applied = 0;
-            foreach (var path in PrefabPaths)
+            foreach (var path in JcPresetPartTargets.Paths(p, PrefabPaths))
             {
                 if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null) continue;
                 var root = PrefabUtility.LoadPrefabContents(path);
                 var vfx = root.GetComponent<TaoReviveVfx>();
-                if (vfx == null) { PrefabUtility.UnloadPrefabContents(root); continue; }
+                if (vfx == null || !JcPresetPartTargets.References(vfx,p)) { PrefabUtility.UnloadPrefabContents(root); continue; }
                 var so = new SerializedObject(vfx);
                 so.FindProperty("fadeInTime").floatValue = p.fadeInTime;
                 so.FindProperty("sustainTime").floatValue = p.sustainTime;
@@ -55,11 +55,11 @@ namespace JC.VFX
 
         void Capture(TaoReviveMasterPreset p)
         {
-            foreach (var path in PrefabPaths)
+            foreach (var path in JcPresetPartTargets.Paths(p, PrefabPaths))
             {
                 var root = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 var vfx = root != null ? root.GetComponent<TaoReviveVfx>() : null;
-                if (vfx == null) continue;
+                if (vfx == null || !JcPresetPartTargets.References(vfx,p)) continue;
                 var so = new SerializedObject(vfx);
                 Undo.RecordObject(p, "Capture Tao Revive Master");
                 p.fadeInTime = so.FindProperty("fadeInTime").floatValue;

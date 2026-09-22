@@ -13,17 +13,19 @@ namespace JC.VFX
     public class ChargeOrbVfx : VfxEffect
     {
         [Header("References")]
+        [Tooltip("코어 렌더러(CoreInner). 페이드/프리뷰 MPB 적용 대상.")]
         [SerializeField] private Renderer coreRenderer;
+        [Tooltip("차징 구체 주변의 스파크 파티클 시스템입니다. 입자 조절값을 적용할 대상을 연결합니다.")]
         [SerializeField] private ParticleSystem sparks;
         [Tooltip("씬-공간 파티클 트레일 팔로워 프리팹(선택). Play 시 씬 루트에 1개 생성해 재사용.")]
         [SerializeField] private ChargeTrailFollower trailFollowerPrefab;
 
         [Header("Scale-In (월드 지름 기준)")]
-        [Tooltip("시작 월드 지름(m). 확정값 0.01")]
+        [Tooltip("차징 구체가 나타날 때의 월드 지름(m)입니다. 종료 크기까지 성장합니다.")]
         [SerializeField] private float startWorldSize = 0.015f;
         [Tooltip("최종 월드 지름(m).")]
         [SerializeField] private float endWorldSize = 0.11f;
-        [Tooltip("커지는 데 걸리는 시간(초). 확정값 0.5")]
+        [Tooltip("시작 크기에서 종료 크기까지 커지는 시간(초)입니다. 짧을수록 빠르게 커집니다.")]
         [SerializeField] private float growDuration = 0.5f;
 
         [Header("런타임 프리뷰")]
@@ -31,6 +33,7 @@ namespace JC.VFX
                  "개발 루프: 시전 → 프리셋 조절 → 재시전 → … → 플레이 종료 후 「프리팹에 적용」으로 저장.\n" +
                  "★변종은 제 프리셋을 물 것. LFL 소형 배리언트는 크기 고정이 필요하므로 비워 둔다.")]
         [SerializeField] private ChargeOrbPreset preset;
+        [Tooltip("켜면 변경한 설정을 실행 중인 이 효과에 갱신합니다. 파일 저장과는 별개이며 이미 시작된 시간표는 재시전하여 확인합니다.")]
         [SerializeField] private bool livePreview = true;
 
         private float _t;

@@ -788,6 +788,11 @@ public class BattleFlowManager : MonoBehaviour
     }
 
     /// <summary>이번 턴의 행동 권한을 요청합니다. 안내 중/이미 행동 중/행동 불가라면 false를 반환합니다.</summary>
+    public void ReleaseFailedPlayerAction(BattleCharactor actor)
+    {
+        if (CurrentUnit == actor && !playerActionResolved) playerActionClaimed = false;
+    }
+
     public bool TryClaimPlayerAction(BattleCharactor actor)
     {
         if (IsTurnPresentationPending) return false;

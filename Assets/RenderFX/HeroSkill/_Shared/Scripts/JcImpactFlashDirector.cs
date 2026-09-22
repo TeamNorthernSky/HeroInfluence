@@ -35,13 +35,23 @@ namespace JC.VFX
         [Tooltip("파티클이 모두 끝난 뒤 정리까지의 여유(초).")]
         [SerializeField, Min(0f)] private float extraLifetime = 0.3f;
 
+        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
         [SerializeField] private bool logLifecycle;
 
         public Vector3 Offset { get => offset; set => offset = value; }
         public bool FlipRotation { get => flipRotation; set => flipRotation = value; }
 
+        private bool _played;
+
+        private void Start()
+        {
+            // 피격 프리팹을 직접 생성하는 경로에서도 재생과 수명 정리를 시작합니다.
+            if (!_played) Play(null);
+        }
+
         public void Play(SkillEffectContext ctx)
         {
+            _played = true;
             Vector3 spawn = ctx != null ? ctx.SpawnPosition : transform.position;
 
             // 시전자 → 타깃 방향

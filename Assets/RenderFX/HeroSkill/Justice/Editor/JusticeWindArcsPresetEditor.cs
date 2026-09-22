@@ -17,7 +17,7 @@ namespace JC.VFX.EditorTools
             var p = (JusticeWindArcsPreset)target;
 
             EditorGUILayout.Space(8);
-            if (GUILayout.Button("적용 — 프리팹에 확정 기록", GUILayout.Height(26)))
+            if (GUILayout.Button(new GUIContent("적용 — 프리팹에 확정 기록", "현재 원호의 색·폭·생성·이동 설정을 연결된 프리팹에 적용하고 저장합니다. 프리뷰와 전투가 함께 사용합니다."), GUILayout.Height(26)))
                 Apply(p);
             JcPresetEditorUtil.DrawSaveButton(target, wide: true);   // 튜닝 저장 공식 규격
         }

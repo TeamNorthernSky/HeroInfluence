@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using ASBGridManager = ASB.Work.BattleGrid.BattleGridManager;
 
 public class TargetingVisualController : MonoBehaviour
 {
@@ -19,6 +20,7 @@ public class TargetingVisualController : MonoBehaviour
             selectableTargets.Add(target);
             ApplyVisualState(target);
         }
+        RefreshCellSelection();
     }
 
     public void ShowSelectableHostageTargets(IEnumerable<HostageBattleActor> targets)
@@ -31,6 +33,7 @@ public class TargetingVisualController : MonoBehaviour
             selectableHostageTargets.Add(target);
             ApplyHostageVisualState(target);
         }
+        RefreshCellSelection();
     }
 
     public void RemoveSelectableTarget(BattleCharactor target)
@@ -42,6 +45,7 @@ public class TargetingVisualController : MonoBehaviour
             hoveredTarget = null;
 
         ApplyVisualState(target);
+        RefreshCellSelection();
     }
 
     public void RemoveSelectableHostageTarget(HostageBattleActor target)
@@ -53,6 +57,7 @@ public class TargetingVisualController : MonoBehaviour
             hoveredHostageTarget = null;
 
         ApplyHostageVisualState(target);
+        RefreshCellSelection();
     }
 
     public void SetHoveredTarget(BattleCharactor target)
@@ -85,6 +90,7 @@ public class TargetingVisualController : MonoBehaviour
 
     public void ClearAll()
     {
+        ASBGridManager.Instance?.ClearSelectableCells();
         var unitsToClear = new List<BattleCharactor>(selectableTargets);
         if (hoveredTarget != null && !selectableTargets.Contains(hoveredTarget))
             unitsToClear.Add(hoveredTarget);
@@ -102,6 +108,12 @@ public class TargetingVisualController : MonoBehaviour
             ApplyVisualState(target);
         foreach (HostageBattleActor target in hostagesToClear)
             ApplyHostageVisualState(target);
+    }
+
+    private void RefreshCellSelection()
+    {
+        ASBGridManager.Instance?.SetSelectableUnits(selectableTargets);
+        ASBGridManager.Instance?.AddSelectableHostages(selectableHostageTargets);
     }
 
     private void ApplyVisualState(BattleCharactor target)

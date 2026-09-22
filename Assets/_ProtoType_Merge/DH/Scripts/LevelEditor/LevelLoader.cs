@@ -587,14 +587,17 @@ public class LevelLoader : MonoBehaviour
             return;
 
         var placements = levelData.TutorialObjectPlacements;
+        if (placements == null || placements.Count == 0)
+            return;
+
         Transform parent = GetTutorialObjectRoot(true);
         for (int i = 0; i < placements.Count; i++)
         {
             TutorialObjectPlacementData placement = placements[i];
-            if (!prefabRegistry.TryGetTutorialObjectPrefab(placement.PrefabKey, out GameObject prefab))
+            if (!prefabRegistry.TryGetTutorialPrefab(placement.PrefabKey, out GameObject prefab))
             {
                 Debug.LogWarning(
-                    $"LevelLoader could not find a tutorial object prefab for key '{placement.PrefabKey}'.",
+                    $"LevelLoader could not find a tutorial prefab for key '{placement.PrefabKey}'.",
                     this);
                 continue;
             }
@@ -817,22 +820,28 @@ public class LevelLoader : MonoBehaviour
         if (prefab == null || !IsPrefabFootprintInside(prefab, grid))
             return null;
 
-        TutorialBuildingObject placement = prefab.GetComponent<TutorialBuildingObject>();
-        Vector3 worldPosition;
-        if (placement != null)
-        {
-            Vector3 anchorWorldPosition = gridManager.GridToWorldCenter(grid);
-            anchorWorldPosition.y = gridManager.GetCellSurfaceY(grid);
-            worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
-        }
-        else
-        {
-            worldPosition = GetWorldPosition(prefab, grid);
-        }
-
+        Vector3 worldPosition = GetWorldPosition(prefab, grid);
         GameObject instance = Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
         ApplyMultiGridAnchor(instance, grid);
+        RefreshTutorialObjectAfterAnchorApplied(instance);
         return instance;
+    }
+
+    private static void RefreshTutorialObjectAfterAnchorApplied(GameObject instance)
+    {
+        if (instance == null)
+            return;
+
+        TutorialOutpostObject outpost = instance.GetComponent<TutorialOutpostObject>();
+        if (outpost != null)
+        {
+            outpost.RefreshStateVisuals();
+            return;
+        }
+
+        TutorialBuildingObject building = instance.GetComponent<TutorialBuildingObject>();
+        if (building != null)
+            building.RefreshInteractionOverlay();
     }
 
     private Vector3 GetMarkerWorldPosition(Vector2Int grid)

@@ -80,6 +80,9 @@ Assets/RPGTinyHeroWavePBR.meta
 CLAUDE.md
 /AGENTS.md
 Docs/
+# JC 공유 작업 문서와 Unity 메타는 버전 관리 대상
+!/Assets/_ProtoType_Merge/JC/Docs/
+!/Assets/_ProtoType_Merge/JC/Docs/**
 
 # MCP 의존성 (UPM이 로컬에 자동 배포하는 NuGet 산출물 — 팀원별 MCP 버전에 따라 달라짐)
 /Assets/Plugins/NuGet/

@@ -28,7 +28,7 @@ namespace JC.VFX
         public override void OnInspectorGUI()
         {
             bool live = EditorPrefs.GetBool(LiveKey, true);
-            bool newLive = EditorGUILayout.ToggleLeft("라이브 프리뷰 (씬 인스턴스에 즉시 반영, 비파괴)", live);
+            bool newLive = EditorGUILayout.ToggleLeft(new GUIContent("라이브 프리뷰 (씬 인스턴스에 즉시 반영, 비파괴)","현재 프리셋을 사용하는 살아 있는 이펙트에 조절값을 반영합니다. 파일 저장과는 별개입니다."), live);
             if (newLive != live) EditorPrefs.SetBool(LiveKey, newLive);
             EditorGUILayout.Space(2);
 
@@ -40,10 +40,10 @@ namespace JC.VFX
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) ApplyPreset();
-                if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) CapturePreset();
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","이 프리셋에 연결된 부품과 전용 재질에 현재 값을 확정합니다."), GUILayout.Height(30))) ApplyPreset();
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","연결된 부품과 재질의 값을 이 프리셋으로 읽습니다. 파일 저장은 별도입니다."), GUILayout.Height(30))) CapturePreset();
             }
-            EditorGUILayout.HelpBox(HelpText, MessageType.Info);
+            EditorGUILayout.HelpBox(JcLuminaPresetEditorBridge.IsPartPreset(target) ? "현재 연결된 부품만 적용·캡처합니다. 조절값은 다음 시전부터 반영되며, 라이브 프리뷰를 켜면 현재 인스턴스에도 반영됩니다. 프리뷰와 전투는 같은 에셋을 사용합니다." : HelpText, MessageType.Info);
         }
 
         protected static T Load<T>(string path) where T : Object => AssetDatabase.LoadAssetAtPath<T>(path);
@@ -53,7 +53,7 @@ namespace JC.VFX
 
         /// <summary>흑염(Dark) 변형 소속 여부. 크림판 프리셋의 라이브 푸시가 다크 변형을 덮지 않도록 스코프에서 제외.</summary>
         protected static bool InDarkVariant(Component c) =>
-            c != null && c.transform.root.name.Contains("Dark");
+            c != null && (c.transform.root.name.Contains("Dark") || c.GetComponentInParent<JcLuminaPartPresetBinder>() != null);
 
         // ---------- 셸 형태 공통 처리 ----------
 

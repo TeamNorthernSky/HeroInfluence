@@ -9,9 +9,16 @@ public enum EnemyBehaviorType
     Static = 1
 }
 
+public interface IGridEnemyObject
+{
+    Vector2Int GetCurrentGrid();
+    bool IsInteractionCell(Vector2Int grid);
+    void GetInteractionCells(List<Vector2Int> results);
+}
+
 [RequireComponent(typeof(EnemyIdentity))]
 [RequireComponent(typeof(EnemyComposition))]
-public class EnemyGridMover : MonoBehaviour
+public class EnemyGridMover : MonoBehaviour, IGridEnemyObject
 {
     public event System.Action<EnemyGridMover, Vector2Int> GridChanged;
     public event System.Action<EnemyGridMover, Vector2Int> MoveStepStarted;
@@ -72,6 +79,21 @@ public class EnemyGridMover : MonoBehaviour
     public Vector2Int GetCurrentGrid()
     {
         return currentGrid;
+    }
+
+    public bool IsInteractionCell(Vector2Int grid)
+    {
+        return GridManager.GridDistance(grid, currentGrid) == 1;
+    }
+
+    public void GetInteractionCells(List<Vector2Int> results)
+    {
+        if (results == null)
+            return;
+
+        results.Clear();
+        for (int i = 0; i < GridManager.Directions8.Length; i++)
+            results.Add(currentGrid + GridManager.Directions8[i]);
     }
 
     public bool HasTarget()

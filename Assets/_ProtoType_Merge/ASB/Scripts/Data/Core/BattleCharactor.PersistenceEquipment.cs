@@ -12,35 +12,41 @@ public partial class BattleCharactor
     /// </summary>
     public void LoadPersistentEquipment(int skillIdx, int weaponIdx, int skillLevel = 1, int equippedWeaponInstanceIndex = 0)
     {
+        castSelectedSkill = null;
         bool skillLoaded  = false;
         bool weaponLoaded = false;
 
         DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-        int safeSkillLevel = Mathf.Max(1, skillLevel);
         int resolvedWeaponLevel = ResolveWeaponLevel(equippedWeaponInstanceIndex);
 
-        if (catalog != null && skillIdx > 0)
+        if (catalog != null)
         {
-            SkillData resolved = catalog.GetSkillTemplate(skillIdx);
-            if (resolved == null)
+            int classIndex = skillIdx / 1000;
+            if (SourceData != null && catalog.TryGetPlayerUnitTemplate(SourceData.UnitTemplateKey, out var unitTemplate))
+                classIndex = unitTemplate.ClassIndex;
+            var learned = catalog.GetCurrentClassSkills(classIndex, Level);
+            if (learned.Count == 0 && SourceData == null && skillIdx > 0)
             {
-                resolved = TryResolveSkillDataForPlayerPattern(catalog, skillIdx);
+                var fallback = catalog.GetSkillTemplate(skillIdx);
+                if (fallback != null) learned.Add(fallback);
             }
-
-            if (resolved != null)
+            if (availableSkills == null) availableSkills = new List<SkillData>();
+            availableSkills.Clear();
+            foreach (var skill in learned)
             {
-                SkillData leveledSkill = CloneSkillData(resolved);
-                leveledSkill.skillValue = catalog.GetClassSkillValueAtLevel(skillIdx, safeSkillLevel);
-                leveledSkill.skillSubValue = catalog.GetClassSkillSubValueAtLevel(skillIdx, safeSkillLevel);
-
-                if (availableSkills == null) availableSkills = new List<SkillData>();
-                availableSkills.Clear();
-                availableSkills.Add(leveledSkill);
-                SelectedSkillData    = leveledSkill;
-                classSkillIndex      = leveledSkill.skillIndex;
-                selectedSkillIndex   = 0;
-                skillLoaded          = true;
+                var copy = CloneSkillData(skill);
+                copy.enhancementLevel = SourceData != null && GameManager.Instance?.Lab != null
+                    ? GameManager.Instance.Lab.GetSkillLevel(SourceData.UnitIndex, skill.skillIndex)
+                    : (HeroSkillRules.FamilyId(skill.skillIndex) == HeroSkillRules.FamilyId(skillIdx) ? Mathf.Clamp(skillLevel, 1, 6) : 1);
+                availableSkills.Add(copy);
             }
+            classSkillIndex = skillIdx;
+            selectedSkillIndex = 0;
+            for (int i = 0; i < availableSkills.Count; i++)
+                if (HeroSkillRules.FamilyId(availableSkills[i].skillIndex) == HeroSkillRules.FamilyId(skillIdx))
+                    selectedSkillIndex = i;
+            SelectedSkillData = availableSkills.Count > 0 ? availableSkills[selectedSkillIndex] : null;
+            skillLoaded = SelectedSkillData != null;
         }
 
         if (catalog != null && weaponIdx > 0)
@@ -151,6 +157,8 @@ public partial class BattleCharactor
         {
             skillIndex = source.skillIndex,
             skillKey = source.skillKey,
+            riskKey = source.riskKey,
+            enhancementLevel = source.enhancementLevel,
             category = source.category,
             slot = source.slot,
             skillClass = source.skillClass,

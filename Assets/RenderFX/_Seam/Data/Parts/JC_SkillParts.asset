@@ -1,0 +1,651 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2857e1fb91d0ec245874336ec59f76cc, type: 3}
+  m_Name: JC_SkillParts
+  m_EditorClassIdentifier: 
+  skills:
+  - skillIndex: 1010
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uB4F1\uC7A5! (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 3292e0932024c5447a1cebc301910f94, type: 2}
+    parts:
+    - cue: h1010_enter_trail
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 3616402648774875410, guid: 3e132d4f01fc11d44814995a2b2efdd8,
+        type: 3}
+      signal: 0
+    - cue: h1010_enter_impact
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 738097252154879308, guid: 1f1be05faf5f3a14ba2a909f314c1acb,
+        type: 3}
+      signal: 0
+  - skillIndex: 1011
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uB4F1\uC7A5! (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 340d677c293b31b4ca165b9e133cc1d0, type: 2}
+    parts:
+    - cue: h1010_enter_trail
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 447569048696413417, guid: 7d38a5b7705932347afdd14080ea48cd,
+        type: 3}
+      signal: 0
+    - cue: h1010_enter_impact
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 6656011004744042307, guid: eb6ff343c9aaefd4e99c194683d58de7,
+        type: 3}
+      signal: 0
+  - skillIndex: 1020
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 36d6f1c540208e444a6aea3490470770, type: 2}
+    parts:
+    - cue: h1020_punch_trail
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 3616402648774875410, guid: f88b6a0a6d0559742adbb7ab0e8d7d8a,
+        type: 3}
+      signal: 0
+    - cue: h1020_punch_impact
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 738097252154879308, guid: a0090a6b699eb6e469afcd724c3d66aa,
+        type: 3}
+      signal: 0
+  - skillIndex: 1021
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uD380\uCE58 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 53d432f1269e201498871cdc1dc8e94c, type: 2}
+    parts:
+    - cue: h1020_punch_trail
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 7561923070804316718, guid: ef496f7df1f308b40a2326b83a53b002,
+        type: 3}
+      signal: 0
+    - cue: h1020_punch_impact
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 3562288989252877534, guid: f19fa36b2393a2749ab2adb17d50566e,
+        type: 3}
+      signal: 0
+  - skillIndex: 1030
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uB300\uC26C (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 4f7ae28bb4897dd49a9692077bee2361, type: 2}
+    parts:
+    - cue: h1030_dash_trail
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 3616402648774875410, guid: 15218dc8ef0d266498789ff9460f4df7,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_arc
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 5014783889222747169, guid: a52020892572524458e5a533a9431063,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_point
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 5014783889222747169, guid: 3fbbbcaed39d3d545993a8564c93f05f,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_wind
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 2480173325109819924, guid: c649a9b17d65f7c44a99f73219defaee,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_shard
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 4231697358879776452, guid: 4ec27b6f611ce5449a6e450c4e99d442,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_vortex
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 4957818361431581012, guid: d13888d7fff69654e94c8545d27d8c62,
+        type: 3}
+      signal: 0
+  - skillIndex: 1031
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uB300\uC26C (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 7ae593e4da1b90e409ca8ef975f55f73, type: 2}
+    parts:
+    - cue: h1030_dash_trail
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 5627800422398149266, guid: bf1ab18cc1202bb469bcd12a16c0e1a6,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_arc
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 7922248667724201381, guid: 6613c31686a11254f913bd8c14a25351,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_point
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 7030609806206136022, guid: abcb29fdc16b2c142b924adee7741f2e,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_wind
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 3660970559736977656, guid: 64fa2bc26e7e11c499e20c274599b30e,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_shard
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 8083756017086973636, guid: 46ca4a1b53090024486719d6c6f06abf,
+        type: 3}
+      signal: 0
+    - cue: h1030_dash_vortex
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 446020432047559242, guid: e9bd429b94ace3f458d1b2bfaf4058fc,
+        type: 3}
+      signal: 0
+  - skillIndex: 1040
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uD06C\uB798\uC26C (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: cdfb7d33e4504684fa2381bdc84500b2, type: 2}
+    parts:
+    - cue: h1040_crash_impact
+      role: "\uC784\uC2DC \uD06C\uB798\uC2DC \uD53C\uACA9"
+      prefab: {fileID: 738097252154879308, guid: b7a8a564f819df5d13df553fe37de4eb,
+        type: 3}
+      signal: 0
+    - cue: h1040_sweep
+      role: "\uC784\uC2DC \uD68C\uC804 \uC774\uB3D9 \uADA4\uC801"
+      prefab: {fileID: 6608341629542669281, guid: 03060583efced6d45867e30b1b29f802,
+        type: 3}
+      signal: 0
+  - skillIndex: 1041
+    label: "\uC800\uC2A4\uD2F0\uC2A4 \uD06C\uB798\uC26C (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 1a6336ffd18abe042a835a70b9ffc19e, type: 2}
+    parts:
+    - cue: h1040_crash_impact
+      role: "\uC784\uC2DC \uD06C\uB798\uC2DC \uD53C\uACA9"
+      prefab: {fileID: 738097252154879308, guid: a8ed1916b9d123af868057978ee156eb,
+        type: 3}
+      signal: 0
+    - cue: h1040_sweep
+      role: "\uC784\uC2DC \uD68C\uC804 \uC774\uB3D9 \uADA4\uC801"
+      prefab: {fileID: 3549906358166272059, guid: 06315a6693371074fb19467758f30549,
+        type: 3}
+      signal: 0
+  - skillIndex: 2010
+    label: "\uD50C\uB808\uC5B4 \uBD04 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 2daf0e79184f7b341bc487b6446f0922, type: 2}
+    parts:
+    - cue: h2010_charge
+      role: "\uB3C5\uB9BD \uCC28\uC9D5\xB7\uC720\uC9C0"
+      prefab: {fileID: 9091187844815821790, guid: 412c83a6b7f0ff14a8b91b10ab6bb513,
+        type: 3}
+      signal: 0
+    - cue: h2010_flight
+      role: "\uC804\uD22C \uC774\uB3D9\uC744 \uC0AC\uC6A9\uD558\uB294 \uB3C5\uB9BD
+        \uAD6C\uCCB4"
+      prefab: {fileID: 48239427848257567, guid: 38ca255449e7fdd458c3c5e60a0d58b0,
+        type: 3}
+      signal: 0
+    - cue: h2010_impact
+      role: "\uAE30\uC874 \uD3ED\uBC1C \uC7AC\uB8CC\uC758 \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 2967804647225367718, guid: 934f962cbfebfc441b18e2f2d259ebdd,
+        type: 3}
+      signal: 0
+  - skillIndex: 2011
+    label: "\uD50C\uB808\uC5B4 \uBD04 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 098a5f35bc07d7e4d887a947e0cad3ba, type: 2}
+    parts:
+    - cue: h2010_charge
+      role: "\uB3C5\uB9BD \uCC28\uC9D5\xB7\uC720\uC9C0"
+      prefab: {fileID: 7279501774558855398, guid: 34349e07c5069d14d9c89402da82a954,
+        type: 3}
+      signal: 0
+    - cue: h2010_flight
+      role: "\uC804\uD22C \uC774\uB3D9\uC744 \uC0AC\uC6A9\uD558\uB294 \uB3C5\uB9BD
+        \uAD6C\uCCB4"
+      prefab: {fileID: 6564851316488231838, guid: 7e7010c1e1c5b214b9805af1af123eac,
+        type: 3}
+      signal: 0
+    - cue: h2010_impact
+      role: "\uAE30\uC874 \uD3ED\uBC1C \uC7AC\uB8CC\uC758 \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 2664640838536176174, guid: a389fa23d963e29488f03221b031ec80,
+        type: 3}
+      signal: 0
+  - skillIndex: 2020
+    label: "\uCCB4\uC778 \uB77C\uC774\uD305 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: e7b57a2638bcfd1479d2085d1cb8d409, type: 2}
+    parts:
+    - cue: h2020_main
+      role: "\uB3C5\uB9BD \uCD5C\uCD08 \uBC88\uAC1C"
+      prefab: {fileID: 7278002850584611110, guid: 3b2c84a62d2f5244c9085e9af7464a0f,
+        type: 3}
+      signal: 0
+    - cue: h2020_chain
+      role: "\uD655\uC815\uB41C \uD6C4\uC18D \uB300\uC0C1\uC6A9 \uB3C5\uB9BD \uBC88\uAC1C"
+      prefab: {fileID: 301094128171080461, guid: 1b2d7ed8da8cb3a4f8d32f95905f6466,
+        type: 3}
+      signal: 0
+    - cue: h2020_shock
+      role: "\uB3C5\uB9BD \uAC10\uC804 \uC7AC\uB8CC"
+      prefab: {fileID: 2676140367930380653, guid: 1fff6dd8ec6bae246b9f168844f9233c,
+        type: 3}
+      signal: 0
+  - skillIndex: 2021
+    label: "\uCCB4\uC778 \uB77C\uC774\uD305 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 6b1a9ed00779d16439c239fc601d981f, type: 2}
+    parts:
+    - cue: h2020_main
+      role: "\uB3C5\uB9BD \uCD5C\uCD08 \uBC88\uAC1C"
+      prefab: {fileID: 2388905962883123860, guid: 33ae4269ee3535149ade7957751f4b4d,
+        type: 3}
+      signal: 0
+    - cue: h2020_chain
+      role: "\uD655\uC815\uB41C \uD6C4\uC18D \uB300\uC0C1\uC6A9 \uB3C5\uB9BD \uBC88\uAC1C"
+      prefab: {fileID: 8412598994884921023, guid: 2c85b3e4940acbc4f84f4f9f87a761b2,
+        type: 3}
+      signal: 0
+    - cue: h2020_shock
+      role: "\uB3C5\uB9BD \uAC10\uC804 \uC7AC\uB8CC"
+      prefab: {fileID: 3429262520319932305, guid: 262d001c6f3c4894b911a9c6d4e7d579,
+        type: 3}
+      signal: 0
+  - skillIndex: 2030
+    label: "\uC194\uB77C \uD504\uB9AC\uC998 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 322e23a5052bbbd44920777d58582482, type: 2}
+    parts:
+    - cue: h2030_charge
+      role: "\uB3C5\uB9BD \uC0DD\uC131\xB7\uB300\uAE30. \uBC1C\uC0AC \uC2DC \uBE44\uD589
+        \uBD80\uD488\uC73C\uB85C \uC704\uCE58 \uC804\uB2EC"
+      prefab: {fileID: 119806168114961279, guid: 8aad92697738f3040b4b97cd618ae2b7,
+        type: 3}
+      signal: 1
+    - cue: h2030_flight
+      role: "\uB3C5\uB9BD \uBE44\uD589. \uB300\uC0C1\uC740 \uC804\uD22C \uD655\uC815
+        \uBAA9\uB85D"
+      prefab: {fileID: 1540390359689640203, guid: dd687a0be5aff4d419c0e61c32bf373f,
+        type: 3}
+      signal: 0
+    - cue: h2030_impact
+      role: "\uB3C5\uB9BD \uCC29\uD0C4\xB7\uD3ED\uBC1C"
+      prefab: {fileID: 7752307747855835479, guid: 6dd0bbb1fb8a6044cb4999589133977f,
+        type: 3}
+      signal: 0
+  - skillIndex: 2031
+    label: "\uC194\uB77C \uD504\uB9AC\uC998 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: fa322429f577ee34db3f3dfa04f09893, type: 2}
+    parts:
+    - cue: h2030_charge
+      role: "\uB3C5\uB9BD \uC0DD\uC131\xB7\uB300\uAE30. \uBC1C\uC0AC \uC2DC \uBE44\uD589
+        \uBD80\uD488\uC73C\uB85C \uC704\uCE58 \uC804\uB2EC"
+      prefab: {fileID: 5820094471521603703, guid: 4365f81e3a507794682a459bfbb31c5d,
+        type: 3}
+      signal: 1
+    - cue: h2030_flight
+      role: "\uB3C5\uB9BD \uBE44\uD589. \uB300\uC0C1\uC740 \uC804\uD22C \uD655\uC815
+        \uBAA9\uB85D"
+      prefab: {fileID: 4994265893342848794, guid: 341f5b57097870d46a1718b32147acdc,
+        type: 3}
+      signal: 0
+    - cue: h2030_impact
+      role: "\uB3C5\uB9BD \uCC29\uD0C4\xB7\uD3ED\uBC1C"
+      prefab: {fileID: 4199098024640730226, guid: 84affb030547eee47a96835999620214,
+        type: 3}
+      signal: 0
+  - skillIndex: 2040
+    label: "\uD504\uB9AC\uC998 \uC775\uC2A4\uD50C\uB85C\uC804 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 177e82f5ef912c84789fde1ab468c2ed, type: 2}
+    parts:
+    - cue: h2040_charge
+      role: "\uB3C5\uB9BD \uC0DD\uC131\xB7\uB300\uAE30. \uBC1C\uC0AC \uC2DC \uBE44\uD589
+        \uBD80\uD488\uC73C\uB85C \uC704\uCE58 \uC804\uB2EC"
+      prefab: {fileID: 1831707131061313542, guid: b788e547adfd8cf4f8ea28cafc486f1b,
+        type: 3}
+      signal: 1
+    - cue: h2040_flight
+      role: "\uB3C5\uB9BD \uBE44\uD589. \uB300\uC0C1\uC740 \uC804\uD22C \uD655\uC815
+        \uBAA9\uB85D"
+      prefab: {fileID: 1775054684065735845, guid: 6eba98f74f2438e4b9c10f9ea1dbe699,
+        type: 3}
+      signal: 0
+    - cue: h2040_impact
+      role: "\uB3C5\uB9BD \uCC29\uD0C4\xB7\uD3ED\uBC1C"
+      prefab: {fileID: 7664073652287817867, guid: 4a378309b12279d40a44f4eccc51ee4e,
+        type: 3}
+      signal: 0
+  - skillIndex: 2041
+    label: "\uD504\uB9AC\uC998 \uC775\uC2A4\uD50C\uB85C\uC804 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: aaa231658baa4cd4ea5b83500bdf433c, type: 2}
+    parts:
+    - cue: h2040_charge
+      role: "\uB3C5\uB9BD \uC0DD\uC131\xB7\uB300\uAE30. \uBC1C\uC0AC \uC2DC \uBE44\uD589
+        \uBD80\uD488\uC73C\uB85C \uC704\uCE58 \uC804\uB2EC"
+      prefab: {fileID: 1889470792628365048, guid: e8f31f1d40bd59041b0ab41823d7acf8,
+        type: 3}
+      signal: 1
+    - cue: h2040_flight
+      role: "\uB3C5\uB9BD \uBE44\uD589. \uB300\uC0C1\uC740 \uC804\uD22C \uD655\uC815
+        \uBAA9\uB85D"
+      prefab: {fileID: 2412475385603082262, guid: 0ee0184f85900ea48aa0d2b24024b9f2,
+        type: 3}
+      signal: 0
+    - cue: h2040_impact
+      role: "\uB3C5\uB9BD \uCC29\uD0C4\xB7\uD3ED\uBC1C"
+      prefab: {fileID: 7157556667147313934, guid: 77981c5296c464247aadcb8f8a1dd360,
+        type: 3}
+      signal: 0
+  - skillIndex: 3010
+    label: "\uBE14\uB799 \uB370\uBE4C \uD37C\uD399\uD2B8 \uC5D0\uC784 \uC0F7 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 0c951b14db8bf4c4d81e1e5beda61f00, type: 2}
+    parts:
+    - cue: h3010_muzzle
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCD1D\uAD6C"
+      prefab: {fileID: 5050432747773288951, guid: 93c87d4eceaba474faac34977d1bc322,
+        type: 3}
+      signal: 0
+    - cue: h3010_flight
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uD0C4\uB3C4"
+      prefab: {fileID: 6225767873392496729, guid: f3f63300dbfb00e41bf47776fd428a43,
+        type: 3}
+      signal: 0
+    - cue: h3010_impact
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 7924521583321020502, guid: bab77b1dcc9adbd45b1fbee1e34406b4,
+        type: 3}
+      signal: 0
+  - skillIndex: 3011
+    label: "\uBE14\uB799 \uB370\uBE4C \uD37C\uD399\uD2B8 \uC5D0\uC784 \uC0F7 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 5cd68bc0d8b087b4eb75b71827a009d2, type: 2}
+    parts:
+    - cue: h3010_muzzle
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCD1D\uAD6C"
+      prefab: {fileID: 1064640775140709930, guid: ea6e0f524be62bd42990c395b21d8d31,
+        type: 3}
+      signal: 0
+    - cue: h3010_flight
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uD0C4\uB3C4"
+      prefab: {fileID: 265258076398672165, guid: 4d2b77ad004f7f649864da66fcc1a2fc,
+        type: 3}
+      signal: 0
+    - cue: h3010_impact
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 1592657564307253088, guid: 2e760156887304446ac87d7adc905db4,
+        type: 3}
+      signal: 0
+  - skillIndex: 3020
+    label: "\uD504\uB860\uD2B8 \uB77C\uC778 \uBE0C\uB808\uC774\uD06C \uBD88\uB9BF
+      (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 662f593786a1e4447a0cc27f381218f1, type: 2}
+    parts:
+    - cue: h3020_muzzle
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCD1D\uAD6C"
+      prefab: {fileID: 1166678223671935550, guid: 745155376fafa344c83b340f3646c45e,
+        type: 3}
+      signal: 0
+    - cue: h3020_flight
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uD0C4\uB3C4"
+      prefab: {fileID: 9079567014682724595, guid: 805f2e82f764d5244bc7a15dd76e17f1,
+        type: 3}
+      signal: 0
+    - cue: h3020_impact
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 6913644695787683102, guid: 64f877257427c1e428edccd4d63c4013,
+        type: 3}
+      signal: 0
+  - skillIndex: 3021
+    label: "\uD504\uB860\uD2B8 \uB77C\uC778 \uBE0C\uB808\uC774\uD06C \uBD88\uB9BF
+      (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 84444fcccb092d340b030161ef33594d, type: 2}
+    parts:
+    - cue: h3020_muzzle
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCD1D\uAD6C"
+      prefab: {fileID: 483030922584046897, guid: 0ae76603e6dd6694e87126a5e14cd1b8,
+        type: 3}
+      signal: 0
+    - cue: h3020_flight
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uD0C4\uB3C4"
+      prefab: {fileID: 6001896649382555748, guid: 551f8e810f561a4468b0ab1f3815d171,
+        type: 3}
+      signal: 0
+    - cue: h3020_impact
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 7443220323132658600, guid: 1b8d6cad2f1221c49951f331c7d77cb8,
+        type: 3}
+      signal: 0
+  - skillIndex: 3030
+    label: "\uD2B8\uC708 \uD2B8\uB9AC\uAC70 \uB354\uBE14 \uBC84\uC2A4\uD2B8 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 7b05e537285a99849be856012154dfae, type: 2}
+    parts:
+    - cue: h3030_muzzle
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCD1D\uAD6C"
+      prefab: {fileID: 1380439628985787697, guid: 488965fc2f914ff4189c4701ac0d7fda,
+        type: 3}
+      signal: 0
+    - cue: h3030_flight
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uD0C4\uB3C4"
+      prefab: {fileID: 3265776820682391041, guid: bc88ca6f519965547871328a99d0990b,
+        type: 3}
+      signal: 0
+    - cue: h3030_impact
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 3617587359209751985, guid: 9466918fbf6126e41a0ec6e4bdbe254e,
+        type: 3}
+      signal: 0
+  - skillIndex: 3031
+    label: "\uD2B8\uC708 \uD2B8\uB9AC\uAC70 \uB354\uBE14 \uBC84\uC2A4\uD2B8 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: afe20f84a4653a0408b25c06860f2bf9, type: 2}
+    parts:
+    - cue: h3030_muzzle
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCD1D\uAD6C"
+      prefab: {fileID: 1186897699713922297, guid: 8b8191366465a38458e35eb487f7fede,
+        type: 3}
+      signal: 0
+    - cue: h3030_flight
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uD0C4\uB3C4"
+      prefab: {fileID: 8947341995828087622, guid: b90ef89ff36c075499317fedaca3e747,
+        type: 3}
+      signal: 0
+    - cue: h3030_impact
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 5092402592720773296, guid: 5adef7c175b05d14f9e9ba26ee12176e,
+        type: 3}
+      signal: 0
+  - skillIndex: 3040
+    label: "\uB370\uB4DC\uC5D4\uB4DC \uB77C\uC2A4\uD2B8 \uD2B8\uB9AC\uAC70 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: a622b7dd87a6dcf498180ffb5142fac4, type: 2}
+    parts:
+    - cue: h3040_muzzle
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCD1D\uAD6C"
+      prefab: {fileID: 7526348338809617354, guid: 8335fd26f315f5f46b62096fdfaa2d54,
+        type: 3}
+      signal: 0
+    - cue: h3040_flight
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uD0C4\uB3C4"
+      prefab: {fileID: 2417741493838690613, guid: 1bd6f82ecf01e3e419d33d350984378b,
+        type: 3}
+      signal: 0
+    - cue: h3040_impact
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 380620627015796470, guid: 280fe5a86b5b7134d99b650e573acaa6,
+        type: 3}
+      signal: 0
+  - skillIndex: 3041
+    label: "\uB370\uB4DC\uC5D4\uB4DC \uB77C\uC2A4\uD2B8 \uD2B8\uB9AC\uAC70 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 04d846752573e1c4fb27ac2fcbd53124, type: 2}
+    parts:
+    - cue: h3040_muzzle
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCD1D\uAD6C"
+      prefab: {fileID: 8145660142896938918, guid: fe8d39bdb1d038141a5344c94ea05f0b,
+        type: 3}
+      signal: 0
+    - cue: h3040_flight
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uD0C4\uB3C4"
+      prefab: {fileID: 176916465818873128, guid: a547b5abf09ccef4c83aee8d1d13f652,
+        type: 3}
+      signal: 0
+    - cue: h3040_impact
+      role: "\uC784\uC2DC \uC5D0\uC784 \uC0F7 \uC7AC\uC0AC\uC6A9, \uB3C5\uB9BD \uCC29\uD0C4"
+      prefab: {fileID: 5378559477357421532, guid: 8bc7b1daeb9f35d44a287994b26d9e00,
+        type: 3}
+      signal: 0
+  - skillIndex: 4010
+    label: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: b50ef1bb38f09244ba38a90818a1d72d, type: 2}
+    parts:
+    - cue: h4010_charge
+      role: "\uB3C5\uB9BD \uCC28\uC9D5"
+      prefab: {fileID: 4043865143903609799, guid: c3fcdf27f54a3f4458d252746a5274db,
+        type: 3}
+      signal: 0
+    - cue: h4010_flight
+      role: "\uC804\uD22C\uAC00 \uC774\uB3D9\uC744 \uAD6C\uB3D9\uD558\uB294 \uB3C5\uB9BD
+        \uD22C\uC0AC\uCCB4"
+      prefab: {fileID: 7726389985300732922, guid: a0c933e6062621e49b09f12052dfa234,
+        type: 3}
+      signal: 0
+    - cue: h4010_land
+      role: "\uB3C5\uB9BD \uD68C\uBCF5 \uCC29\uC9C0"
+      prefab: {fileID: 2245768356345251844, guid: 370b2a6e804978d4aa6a1cd829ebd636,
+        type: 3}
+      signal: 0
+  - skillIndex: 4011
+    label: "\uC544\uD508 \uAC70 \uB2E4 \uB0A0\uC544\uAC00\uB77C (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 366179c7a79fee54b91bad50dbc08bd3, type: 2}
+    parts:
+    - cue: h4010_charge
+      role: "\uB3C5\uB9BD \uCC28\uC9D5"
+      prefab: {fileID: 2050221807637347103, guid: f5d04292e91cb7e46a7d08152c588944,
+        type: 3}
+      signal: 0
+    - cue: h4010_flight
+      role: "\uC804\uD22C\uAC00 \uC774\uB3D9\uC744 \uAD6C\uB3D9\uD558\uB294 \uB3C5\uB9BD
+        \uD22C\uC0AC\uCCB4"
+      prefab: {fileID: 1697924425435355953, guid: 3b145aa619b72264098ae44c3837bcdd,
+        type: 3}
+      signal: 0
+    - cue: h4010_land
+      role: "\uB3C5\uB9BD \uD68C\uBCF5 \uCC29\uC9C0"
+      prefab: {fileID: 1645324473870433947, guid: 413e159599781414ea3cf6f72478e5ae,
+        type: 3}
+      signal: 0
+  - skillIndex: 4020
+    label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: b61009fcaf15a3c45a57297af5ac310d, type: 2}
+    parts:
+    - cue: h4020_spawn
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uB4F1\uC7A5"
+      prefab: {fileID: 2777668551892851515, guid: 4cc54880b590f8d45999864a10ee1f8c,
+        type: 3}
+      signal: 0
+    - cue: h4020_warp
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uC6CC\uD504"
+      prefab: {fileID: 2777668551892851515, guid: b53b82f0a4010384eb97bc2db984a941,
+        type: 3}
+      signal: 0
+    - cue: h4020_beam
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBE54\xB7\uCC29\uD0C4"
+      prefab: {fileID: 2777668551892851515, guid: 316690d192b6b36428c9368fb6be146f,
+        type: 3}
+      signal: 0
+  - skillIndex: 4021
+    label: "\uB110 \uC704\uD574 \uC900\uBE44\uD588\uC5B4 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: b0e3137d863e2c6498b96e4d07bb6b28, type: 2}
+    parts:
+    - cue: h4020_spawn
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uB4F1\uC7A5"
+      prefab: {fileID: 8900063451661120116, guid: bfb593c36ebabe84dac044686d18068d,
+        type: 3}
+      signal: 0
+    - cue: h4020_warp
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uC6CC\uD504"
+      prefab: {fileID: 370569248902000873, guid: 9776a73e1b697d44c9833a24e6b91941,
+        type: 3}
+      signal: 0
+    - cue: h4020_beam
+      role: "\uAE30\uC874 \uB3C5\uB9BD \uBE54\xB7\uCC29\uD0C4"
+      prefab: {fileID: 1936940180607932696, guid: 00d472303e9df6f478c1e27690da73c6,
+        type: 3}
+      signal: 0
+  - skillIndex: 4030
+    label: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790 (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: a8a879bc52856af42b84133ff31b622a, type: 2}
+    parts:
+    - cue: h4030_charge
+      role: "\uB3C5\uB9BD \uCC28\uC9D5"
+      prefab: {fileID: 632567416478381064, guid: 4c9103d52f6d61749b2de231c0089a4e,
+        type: 3}
+      signal: 0
+    - cue: h4030_flight
+      role: "\uC804\uD22C\uAC00 \uC774\uB3D9\uC744 \uAD6C\uB3D9\uD558\uB294 \uB3C5\uB9BD
+        \uD22C\uC0AC\uCCB4"
+      prefab: {fileID: 8360249971204413469, guid: b16b4b2e84d919c418054d48939e7ccd,
+        type: 3}
+      signal: 0
+    - cue: h4030_land
+      role: "\uB3C5\uB9BD \uD68C\uBCF5 \uCC29\uC9C0"
+      prefab: {fileID: 8863260499978062707, guid: 1b6b485cf9969a84a8c60158df84c8b8,
+        type: 3}
+      signal: 0
+    - cue: h4030_merge
+      role: "\uBC1C\uC0AC \uC9C1\uC804 \uD569\uB958 \uC12C\uAD11"
+      prefab: {fileID: 1325414078716741858, guid: 225c8669e7380bd41afd552563196fff,
+        type: 3}
+      signal: 0
+  - skillIndex: 4031
+    label: "\uC6B0\uB9AC \uB2E4 \uAC19\uC774 \uD798\uB0B4\uC790 (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: 2f4482aef6ece604ab144f40f35b434a, type: 2}
+    parts:
+    - cue: h4030_charge
+      role: "\uB3C5\uB9BD \uCC28\uC9D5"
+      prefab: {fileID: 8701776075173318065, guid: 97b7b0aeb1f1bae448a6beb3641ddd95,
+        type: 3}
+      signal: 0
+    - cue: h4030_flight
+      role: "\uC804\uD22C\uAC00 \uC774\uB3D9\uC744 \uAD6C\uB3D9\uD558\uB294 \uB3C5\uB9BD
+        \uD22C\uC0AC\uCCB4"
+      prefab: {fileID: 6790517777361698389, guid: 1c3eed91f23df814a96c67024cd1c58d,
+        type: 3}
+      signal: 0
+    - cue: h4030_land
+      role: "\uB3C5\uB9BD \uD68C\uBCF5 \uCC29\uC9C0"
+      prefab: {fileID: 2495209857197423675, guid: 4c77f417522d00c41b46ed0eeaa973fc,
+        type: 3}
+      signal: 0
+    - cue: h4030_merge
+      role: "\uBC1C\uC0AC \uC9C1\uC804 \uD569\uB958 \uC12C\uAD11"
+      prefab: {fileID: 4879444848388190392, guid: 8f6e302a21ba8024799a75b75d4f5f47,
+        type: 3}
+      signal: 0
+  - skillIndex: 4040
+    label: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC (\uAE30\uBCF8)"
+    presentation: {fileID: 11400000, guid: 631e4166175c59f4f9be2518411fad07, type: 2}
+    parts:
+    - cue: h4040_revive
+      role: "\uB3C5\uB9BD \uBD80\uD65C \uBD80\uD488"
+      prefab: {fileID: 1254262437887251148, guid: db35bb3fa65aa51438229e65ed5a7b06,
+        type: 3}
+      signal: 0
+    - cue: h4040_barrage
+      role: "\uC784\uC2DC Barrage \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 2760297799552719245, guid: d7990553a78789c48b4b6b137b7e2c26,
+        type: 3}
+      signal: 0
+    - cue: h4040_meteor
+      role: "\uAD50\uCCB4\uC6A9 \uD61C\uC131 \uBD80\uD488. \uD604\uD589 Barrage \uACBD\uB85C\uC5D0\uC11C\uB294
+        \uBBF8\uC0AC\uC6A9"
+      prefab: {fileID: 1697924425435355953, guid: 46394382001ef2d0c98543fcd56292b4,
+        type: 3}
+      signal: 0
+  - skillIndex: 4041
+    label: "\uC4F0\uB7EC\uC9C0\uBA74 \uC548 \uB3FC (\uAC15\uD654)"
+    presentation: {fileID: 11400000, guid: f5ebb19395734aa459962d4929eb28ca, type: 2}
+    parts:
+    - cue: h4040_revive
+      role: "\uB3C5\uB9BD \uBD80\uD65C \uBD80\uD488"
+      prefab: {fileID: 6837347664805525390, guid: 08cef641b6418604aa87e6417605d789,
+        type: 3}
+      signal: 0
+    - cue: h4040_barrage
+      role: "\uC784\uC2DC Barrage \uB3C5\uB9BD \uBD80\uD488"
+      prefab: {fileID: 6985655109017798903, guid: a0126c8b5c6096a47a1403484dbf1ef1,
+        type: 3}
+      signal: 0
+    - cue: h4040_meteor
+      role: "\uAD50\uCCB4\uC6A9 \uD61C\uC131 \uBD80\uD488. \uD604\uD589 Barrage \uACBD\uB85C\uC5D0\uC11C\uB294
+        \uBBF8\uC0AC\uC6A9"
+      prefab: {fileID: 1697924425435355953, guid: 2f4e7d4f8fceb1846885fc325f97824d,
+        type: 3}
+      signal: 0

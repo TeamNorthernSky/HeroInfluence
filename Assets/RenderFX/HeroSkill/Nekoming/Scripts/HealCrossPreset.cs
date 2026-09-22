@@ -14,6 +14,7 @@ namespace JC.VFX
         [Header("★따름 (변형 전용 — 힐 8번 공용 자산에선 끔)")]
         [Tooltip("켜면 트랜스폼(스폰·배치·바운스·크기·형태)을 Basic 프리셋에서 읽는다. Paw P3 의 Alter/Miss 는 기본 ON.")]
         public bool followBasic;
+        [Tooltip("Basic 따름이 켜져 있을 때 위치·형태 기준으로 읽을 프리셋입니다. 연결이 비어 있으면 자기 값을 사용합니다.")]
         public HealCrossPreset basicRef;
 
         /// <summary>트랜스폼 정본 — 변형이 따름이면 Basic.</summary>
@@ -72,7 +73,9 @@ namespace JC.VFX
         [Range(0f, 0.6f)] public float fadeOutFrac = 0.3f;
 
         [Header("룩 (십자 셰이더)")]
+        [Tooltip("이 시각 요소의 색입니다. HDR 색은 발광 강도와 함께 최종 밝기에 영향을 줍니다.")]
         [ColorUsage(true, true)] public Color color = new Color(0.35f, 1f, 0.45f);
+        [Tooltip("전체 밝기")]
         [Range(0f, 8f)] public float intensity = 2.2f;
         [Tooltip("팔 두께")]
         [Range(0.02f, 0.5f)] public float barWidth = 0.13f;

@@ -22,33 +22,53 @@ namespace JC.VFX
         [SerializeField] private bool livePreview = true;
 
         [Header("크기 / 위치 (월드 m)")]
+        [Tooltip("이 시각 요소의 가로 폭(m)입니다. 높일수록 좌우로 넓어집니다.")]
         [SerializeField] private float width = 1.6f;   // 지름
+        [Tooltip("이 시각 요소의 높이(m)입니다. 높일수록 위아래로 길어집니다.")]
         [SerializeField] private float height = 2.0f;
+        [Tooltip("바닥(중심) 기준 Y 오프셋(m). 0=착지점 지면")]
         [SerializeField] private float groundOffsetY = 0f;
 
         [Header("색 / 밝기 (livePreview 시 preset 사용)")]
+        [Tooltip("이 시각 요소의 색입니다. HDR 색은 발광 강도와 함께 최종 밝기에 영향을 줍니다.")]
         [ColorUsage(true, true)] [SerializeField] private Color color = new Color(1f, 0.85f, 0.28f);
+        [Tooltip("전체 밝기")]
         [Range(0f, 8f)] [SerializeField] private float intensity = 1.8f;
+        [Tooltip("전체 투명도(0=투명 ~ 1=불투명). intensity와 별개 최종 배수")]
         [Range(0f, 1f)] [SerializeField] private float opacity = 1.0f;
 
         [Header("세로 형태 / 실루엣")]
+        [Tooltip("바닥 얕은 페이드(지면 하드림 방지). 작게")]
         [Range(0f, 0.5f)] [SerializeField] private float bottomFade = 0.06f;
+        [Tooltip("상단 falloff. 클수록 아래에 몰리고 위로 빨리 옅어짐")]
         [Range(0.1f, 5f)] [SerializeField] private float verticalBias = 1.4f;
+        [Tooltip("좌우 가장자리 부드러움. 클수록 정면만 밝고 실루엣이 빨리 사라짐(딱딱한 세로 경계 방지)")]
         [Range(0.3f, 8f)] [SerializeField] private float facePower = 1.6f;
 
         [Header("상단 경계 (min==max → 평면)")]
+        [Tooltip("상단 경계 최소 높이(0~1, 기둥 높이 비율). TopMax와 같으면 경계가 평면")]
         [Range(0f, 1f)] [SerializeField] private float topMin = 0.70f;
+        [Tooltip("상단 경계 최대 높이(0~1). 1 미만이면 실린더 상단에서 잘리지 않음. 뾰족 정도 = TopMax-TopMin")]
         [Range(0f, 1f)] [SerializeField] private float topMax = 0.92f;
+        [Tooltip("상단 경계 페이드 폭. 0에 가까울수록 날카로운 평면 경계(선이 또렷), 크면 페더. 평면을 보려면 낮게 + verticalBias도 낮게")]
         [Range(0f, 0.5f)] [SerializeField] private float topSoft = 0.12f;
+        [Tooltip("불규칙 조각 밀도(원주)")]
         [Range(0.5f, 10f)] [SerializeField] private float topNoiseScale = 3.0f;
+        [Tooltip("상단 경계가 꿈틀대는 속도")]
         [Range(0f, 4f)] [SerializeField] private float topNoiseSpeed = 0.6f;
 
         [Header("세로 광선 / 일렁임 / 솟아남")]
+        [Tooltip("빛줄기 밀도(원주). 0=끔")]
         [Range(0f, 80f)] [SerializeField] private float streakTiling = 18f;
+        [Tooltip("빛줄기 대비 강도(미세하게). 노이즈 기반이라 규칙 밴딩 없음")]
         [Range(0f, 1f)] [SerializeField] private float streakStrength = 0.12f;
+        [Tooltip("위로 흐르는 속도")]
         [Range(-4f, 4f)] [SerializeField] private float streakScroll = 0.7f;
+        [Tooltip("전체 밝기 일렁이는 정도")]
         [Range(0f, 1f)] [SerializeField] private float wobbleAmount = 0.15f;
+        [Tooltip("일렁임 속도")]
         [Range(0f, 6f)] [SerializeField] private float wobbleSpeed = 1.2f;
+        [Tooltip("생성 시 높이 팝(솟아오름). 0=끔, 1=0에서 자라남. 페이드인 구간 동안 height×lerp")]
         [Range(0f, 1f)] [SerializeField] private float riseGrow = 0.4f;
 
         private MeshRenderer _mr;

@@ -18,9 +18,9 @@ namespace JC.VFX
         // ★소속 분기 — L10(LFL)/T7(Tao) 프리셋이면 제 스킬 프리팹만 만진다(힐과 완전 절연, 260807).
         bool IsTao => target != null &&
             UnityEditor.AssetDatabase.GetAssetPath(target).Replace('\\', '/').Contains("/Taosenaiyo/");
-        string OrbitPrefab => IsTao ? TAO + "/Prefabs/Tao_Revive" + Sfx + ".prefab"
+        string OrbitPrefab => JcPresetPartTargets.Path(target, IsTao ? TAO + "/Prefabs/Tao_Revive" + Sfx + ".prefab"
             : JcPresetEditorUtil.IsLfl(target) ? LFL + "/Prefabs/LFL_LandAura" + Sfx + ".prefab"
-            : DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab";
+            : DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab");
         // Tao 는 자식 이름이 다르다(OrbSparkles ↛ Sparkles).
         string SparkleChild => IsTao ? "Sparkles" : "OrbSparkles";
 
@@ -33,8 +33,8 @@ namespace JC.VFX
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
-                if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","이 프리셋을 참조하는 대상 프리팹에 현재 값을 확정합니다."), GUILayout.Height(30))) Apply(p);
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","대상 프리팹의 값을 현재 프리셋으로 읽습니다. 프리셋 파일 저장은 별도입니다."), GUILayout.Height(30))) Capture(p);
                 JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 값을 HealOrbit" + Sfx + " 프리팹의 OrbSparkles(PS)에 반영.\n" +

@@ -19,49 +19,78 @@ namespace JC.VFX.Seam
     public class JcWindArcsEffect : MonoBehaviour, ISkillEffectBehaviour
     {
         [Header("색 (원호마다 A↔B 랜덤 배합) — 바인더가 프리셋에서 채운다")]
+        [Tooltip("색 A — 흰 쪽.")]
         [SerializeField, ColorUsage(true, true)] private Color colorA = Color.white;
+        [Tooltip("색 B — 청 쪽.")]
         [SerializeField, ColorUsage(true, true)] private Color colorB = new Color(0.5f, 0.75f, 1f);
+        [Tooltip("본체 발광 배수.")]
         [SerializeField, Min(0f)] private float emission = 1.6f;
 
         [Header("궤도")]
+        [Tooltip("이 효과가 배치되거나 회전하는 반경(m)입니다. 높일수록 중심에서 멀어집니다.")]
         [SerializeField, Min(0.05f)] private float radius = 1.6f;
+        [Tooltip("반경 노이즈(±m). 원호마다 랜덤 가감")]
         [SerializeField, Min(0f)] private float radiusNoise = 0.25f;
+        [Tooltip("링 중심 높이(m)")]
         [SerializeField] private float orbitHeight = 0.35f;
+        [Tooltip("높이 노이즈(±m) — 겹이 위아래로도 흩어진다.")]
         [SerializeField, Min(0f)] private float heightNoise = 0.15f;
+        [Tooltip("원호 중심각 최소(도).")]
         [SerializeField, Range(30f, 360f)] private float arcSpanMin = 120f;
+        [Tooltip("원호 중심각 최대(도).")]
         [SerializeField, Range(30f, 360f)] private float arcSpanMax = 300f;
+        [Tooltip("회전면 랜덤 틸트 최대(±도) — 원호마다 궤도면이 흔들려 유체감이 산다.")]
         [SerializeField, Range(0f, 60f)] private float tiltMax = 18f;
+        [Tooltip("켜면 시계/반시계 랜덤")]
         [SerializeField] private bool bidirectional = true;
 
         [Header("타이밍")]
+        [Tooltip("한 원호가 호를 훑는 시간 최소(초). 짧을수록 순간적.")]
         [SerializeField, Min(0.05f)] private float sweepDurMin = 0.28f;
+        [Tooltip("한 원호가 호를 훑는 시간 최대(초).")]
         [SerializeField, Min(0.05f)] private float sweepDurMax = 0.45f;
+        [Tooltip("새 원호 생성 간격 최소(초).")]
         [SerializeField, Min(0.01f)] private float spawnIntMin = 0.05f;
+        [Tooltip("새 원호 생성 간격 최대(초).")]
         [SerializeField, Min(0.01f)] private float spawnIntMax = 0.12f;
+        [Tooltip("동시 최대 원호 수")]
         [SerializeField, Range(1, 32)] private int maxArcs = 14;
+        [Tooltip("원호를 뿌리는 창(초). 이후 스폰이 멈추고 잔존 원호는 자연 소멸한다.")]
         [SerializeField, Min(0.1f)] private float spawnWindow = 0.6f;
 
         [Header("리본 룩")]
+        [Tooltip("최대 두께 최소(m).")]
         [SerializeField, Min(0.01f)] private float widthMin = 0.12f;
+        [Tooltip("최대 두께 최대(m). Min과 벌릴수록 굵기가 제각각인 획이 된다.")]
         [SerializeField, Min(0.01f)] private float widthMax = 0.3f;
+        [Tooltip("리본 잔상 시간 최소(초). 원호마다 min~max 랜덤. 클수록 원호 전체가 오래 보임")]
         [SerializeField, Min(0.05f)] private float trailTimeMin = 0.25f;
+        [Tooltip("리본 잔상 시간 최대(초)")]
         [SerializeField, Min(0.05f)] private float trailTimeMax = 0.45f;
+        [Tooltip("원호별 전체 투명도 최소(0~1). 원호마다 min~max 랜덤 배수로 알파에 곱함")]
         [SerializeField, Range(0f, 1f)] private float alphaMin = 0.25f;
+        [Tooltip("원호별 전체 투명도 최대(0~1)")]
         [SerializeField, Range(0f, 1f)] private float alphaMax = 0.5f;
 
         [Header("밝은 심 겹")]
+        [Tooltip("가늘고 밝은 원호가 나올 확률(0~1).")]
         [SerializeField, Range(0f, 1f)] private float brightRatio = 0.25f;
+        [Tooltip("밝은 원호의 폭 배율(가늘게).")]
         [SerializeField, Range(0.05f, 1f)] private float brightWidthMul = 0.35f;
+        [Tooltip("밝은 원호의 알파 배율(진하게, 1 초과 허용 — 최종은 1로 클램프).")]
         [SerializeField, Range(1f, 4f)] private float brightAlphaMul = 1.8f;
 
         [Header("배치 · 재질")]
+        [Tooltip("스폰 지점(소켓) 기준 오프셋(m). 소켓 스케일은 무시된다.")]
         [SerializeField] private Vector3 spawnOffset = new Vector3(0f, -0.2f, 0f);
+        [Tooltip("리본 재질 — StrokeCore 계열을 낮은 감쇠로 써서 부드러운 띠를 만든다.")]
         [SerializeField] private Material ribbonMaterial;
 
         [Tooltip("켜면 궤도 중심이 매 프레임 이 오브젝트의 위치를 따라간다(용권풍처럼 이동하는 모체에 얹을 때).\n" +
                  "기본은 꺼짐 — 재생 순간의 위치에 고정된다(제자리 방사광).")]
         [SerializeField] private bool followRoot;
 
+        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
         [SerializeField] private bool logLifecycle;
 
         // 프리셋 바인더가 밀어넣는 값

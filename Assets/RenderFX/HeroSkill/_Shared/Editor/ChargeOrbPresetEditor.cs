@@ -17,7 +17,7 @@ namespace JC.VFX
         string MatSpark   => Lfl ? LFL + "/Materials/LFL_SparkAdditive" + Sfx + ".mat"       : DIR + "/Materials/SparkAdditive" + Sfx + ".mat";
         string MatStreak  => Lfl ? LFL + "/Materials/LFL_StreakAdditive" + Sfx + ".mat"      : DIR + "/Materials/StreakAdditive" + Sfx + ".mat";
         string MatSparkle => Lfl ? LFL + "/Materials/LFL_SparkleStarAdditive" + Sfx + ".mat" : DIR + "/Materials/SparkleStarAdditive" + Sfx + ".mat";
-        string OrbPrefab  => Lfl ? LFL + "/Prefabs/LFL_ChargeOrb" + Sfx + ".prefab"          : DIR + "/Prefabs/ChargeOrb" + Sfx + ".prefab";
+        string OrbPrefab  => JcPresetPartTargets.Path(target, Lfl ? LFL + "/Prefabs/LFL_ChargeOrb" + Sfx + ".prefab"          : DIR + "/Prefabs/ChargeOrb" + Sfx + ".prefab");
         string FollowerPrefab => Lfl ? LFL + "/Prefabs/LFL_ChargeTrailFollower" + Sfx + ".prefab" : DIR + "/Prefabs/ChargeTrailFollower" + Sfx + ".prefab";
 
         static readonly string[] TransformProps =
@@ -32,14 +32,14 @@ namespace JC.VFX
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
-                if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","연결된 프리팹·재질에 값을 확정합니다. 프리셋 저장은 별도입니다."), GUILayout.Height(30))) Apply(p);
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","연결된 프리팹·재질의 저장값을 현재 프리셋으로 가져옵니다."), GUILayout.Height(30))) Capture(p);
                 JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 값을 재질/오브/팔로워 프리팹에 일괄 반영.\n캡처: 현재 프리팹/재질 값을 이 프리셋으로 역방향 읽기.\n적용 후 새로 재생하면 반영됩니다.", MessageType.Info);
         }
 
-        static T Load<T>(string path) where T : Object => AssetDatabase.LoadAssetAtPath<T>(path);
+        T Load<T>(string path) where T : Object => JcPresetPartTargets.Resolve<T>(target,path);
 
         void Apply(ChargeOrbPreset p)
         {

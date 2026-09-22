@@ -18,6 +18,8 @@ namespace JC.VFX
                  "★경로를 코드에 하드코딩하지 않고 프리셋이 자기 대상을 들고 있게 한다 — " +
                  "저스티스에서 상수 하드코딩 때문에 다른 스킬 프리팹에 기록되는 오배선 사고가 있었다.")]
         public GameObject targetPrefab;
+        [Tooltip("총구·비행·착탄 분리 부품의 적용 대상입니다. 등록되어 있으면 단일 대상 대신 이 목록에만 적용합니다.")]
+        public GameObject[] targetParts = System.Array.Empty<GameObject>();
 
         [Header("── 시퀀스 ──")]
         [Tooltip("탄환이 총구를 떠나는 시각(초). 각 요소의 수명과 무관하다 — 요소는 자기 시계로 돈다.")]

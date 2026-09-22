@@ -32,6 +32,8 @@ public class InputHandler : MonoBehaviour
     // UI는 요청한 버튼이 아니라 실제 선택/취소 결과를 표시합니다.
     public event Action SelectionChanged;
     public PendingActionType PendingAction => pendingAction;
+    public SkillData PendingSkill { get; private set; }
+    private BattleCharactor selectionActor;
 
     [Tooltip("기존 씬의 턴 시작 자동 선택입니다. 개편 전투씬에서는 끄고 매 시전마다 스킬을 직접 선택합니다.")]
     [SerializeField] private bool selectSkillOnTurnStart = true;
@@ -284,7 +286,7 @@ public class InputHandler : MonoBehaviour
         }
     }
 
-    public void BeginPendingAction(PendingActionType actionType)
+    public void BeginPendingAction(PendingActionType actionType, int skillId = 0)
     {
         if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return;
         if (IsAutoBattleActive || isProcessingAction) return;
@@ -299,6 +301,10 @@ public class InputHandler : MonoBehaviour
             Debug.Log($"[InputHandler] 현재 시나리오에서 허용되지 않은 행동입니다: action={actionType}");
             return;
         }
+
+        ResetTargetingState();
+        if (actionType == PendingActionType.ClassSkill && skillId > 0 && !actor.TrySelectSkillForCast(skillId)) return;
+        selectionActor = actor;
 
         if (actionType == PendingActionType.ClassSkill && !TryGetSelectedSkill(actor, out _))
         {
@@ -338,6 +344,8 @@ public class InputHandler : MonoBehaviour
         }
 
         pendingAction = actionType;
+        TryResolveSkillData(actor, actionType, out var selected);
+        PendingSkill = selected;
         validTargets = targets;
         currentState = PlayerActionState.WaitingForTarget;
         targetingVisualController?.ShowSelectableTargets(validTargets);
@@ -396,6 +404,7 @@ public class InputHandler : MonoBehaviour
         }
 
         BattleCharactor hitUnit = RaycastUnitUnderCursor();
+        SkillActivationRules.TryResolveClick(actor, PendingSkill, hitUnit, RaycastCellUnderCursor(), out hitUnit);
         if (hitUnit == null || !validTargets.Contains(hitUnit))
         {
             SetHoverTarget(null);
@@ -428,13 +437,6 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
-        // 이번 턴의 행동 권한을 먼저 확보한다. 자동전투가 이미 실행 중이면 여기서 막힌다.
-        if (battleFlowManager != null && !battleFlowManager.TryClaimPlayerAction(actor))
-        {
-            Debug.Log($"[InputHandler] 이번 턴의 행동이 이미 진행 중이라 입력을 무시한다: actor={actor?.UnitName}");
-            return;
-        }
-
         // Hostages are not BattleCharactors. Validate and execute this route before the
         // normal BattleCharactor validity check, which correctly rejects a null hoverTarget.
         if (hoverHostageTarget != null)
@@ -447,6 +449,7 @@ public class InputHandler : MonoBehaviour
                 return;
             }
 
+            if (battleFlowManager != null && !battleFlowManager.TryClaimPlayerAction(actor)) return;
             StartCoroutine(ExecuteHostageActionRoutine(actor, hoverHostageTarget, pendingAction));
             return;
         }
@@ -462,6 +465,7 @@ public class InputHandler : MonoBehaviour
             return;
         }
 
+        if (battleFlowManager != null && !battleFlowManager.TryClaimPlayerAction(actor)) return;
         BattleCharactor target = hoverTarget;
         StartCoroutine(ProcessActionRoutine(actor, target, pendingAction));
     }
@@ -470,11 +474,13 @@ public class InputHandler : MonoBehaviour
     {
         isProcessingAction = true;
         bool executed = false;
+        SkillData requestedSkill = PendingSkill;
 
         switch (actionType)
         {
             case PendingActionType.ClassSkill:
-                if (!TryGetSelectedSkill(actor, out SkillData classSkill))
+                SkillData classSkill = requestedSkill;
+                if (classSkill == null)
                 {
                     Debug.LogWarning($"[InputHandler] 선택된 CSV 스킬이 없습니다: actor={actor.UnitName}");
                     break;
@@ -489,7 +495,7 @@ public class InputHandler : MonoBehaviour
                     Debug.LogWarning($"[InputHandler] 장착 무기가 없어 무기 스킬을 사용할 수 없습니다: actor={actor.UnitName}");
                     break;
                 }
-                SkillData convertedSkill = weapon.ToSkillData();
+                SkillData convertedSkill = requestedSkill;
                 if (convertedSkill == null)
                 {
                     Debug.LogWarning($"[InputHandler] 무기 스킬 변환 실패: weapon={weapon.WeaponName}");
@@ -508,6 +514,7 @@ public class InputHandler : MonoBehaviour
             Debug.LogWarning("[InputHandler] 행동 실행 실패(false 반환). 턴 대기를 유지하고 입력 상태를 초기화합니다.");
         }
 
+        if (!executed) battleFlowManager?.ReleaseFailedPlayerAction(actor);
         ResetTargetingState();
         isProcessingAction = false;
     }
@@ -560,6 +567,11 @@ public class InputHandler : MonoBehaviour
             return false;
         }
 
+        if (selectionActor == actor && PendingSkill != null && actionType == pendingAction)
+        {
+            skillData = PendingSkill;
+            return true;
+        }
         switch (actionType)
         {
             case PendingActionType.ClassSkill:
@@ -634,6 +646,7 @@ public class InputHandler : MonoBehaviour
         if (executed)
             PlayerSkillActionResolved?.Invoke(actor, null);
 
+        if (!executed) battleFlowManager?.ReleaseFailedPlayerAction(actor);
         ResetTargetingState();
         isProcessingAction = false;
     }
@@ -670,6 +683,22 @@ public class InputHandler : MonoBehaviour
         return null;
     }
 
+    private ASBGridCell RaycastCellUnderCursor()
+    {
+        if (raycastCamera == null) return null;
+        var hits = Physics.RaycastAll(raycastCamera.ScreenPointToRay(Input.mousePosition), maxRayDistance, selectionRaycastMask);
+        Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        foreach (var hit in hits)
+        {
+            if (hit.collider == null) continue;
+            var cell = hit.collider.GetComponentInParent<ASBGridCell>();
+            if (cell != null) return cell;
+            var unit = hit.collider.GetComponentInParent<BattleCharactor>();
+            if (unit != null && unit.OccupiedCell != null) return unit.OccupiedCell;
+        }
+        return null;
+    }
+
     private BattleCharactor RaycastUnitUnderCursor()
     {
         var ray = raycastCamera.ScreenPointToRay(Input.mousePosition);
@@ -693,7 +722,8 @@ public class InputHandler : MonoBehaviour
             if (hitUnit == null)
             {
                 ASBGridCell hitCell = hits[i].collider.GetComponentInParent<ASBGridCell>();
-                hitUnit = hitCell?.OccupyingUnit;
+                // 가장 가까운 빈 발판 뒤의 다른 유닛으로 클릭이 뚫리지 않게 합니다.
+                if (hitCell != null) return hitCell.OccupyingUnit;
             }
 
             if (hitUnit != null)
@@ -725,6 +755,9 @@ public class InputHandler : MonoBehaviour
 
     private void ResetTargetingState()
     {
+        selectionActor?.ClearSkillForCast();
+        selectionActor = null;
+        PendingSkill = null;
         targetingVisualController?.ClearAll();
         ClearAoEPreview();
         SetHoverTarget(null);

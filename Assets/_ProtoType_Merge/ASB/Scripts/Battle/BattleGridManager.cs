@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using ASB.Work.Battle.SkillExecution;
 
 namespace ASB.Work.BattleGrid
 {
@@ -14,6 +15,23 @@ namespace ASB.Work.BattleGrid
         [SerializeField] private Material AdditionalTargetMaterial;
         [SerializeField] private Material ClearMaterial;
         [SerializeField] private Material MainTargetHighlightMaterial;
+        [Header("Battle Tile Presentation")]
+        [Tooltip("개편 전투씬에서만 켭니다. 노랑 현재 턴, 보라 선택 가능, 빨강 확정 범위, 검정 선택 불가를 각각 유지합니다.")]
+        [SerializeField] private bool useBattleTilePresentation;
+        [Tooltip("현재 턴·행동 진행·전투 종료를 읽는 전투 흐름입니다. 전투 진행을 변경하지 않습니다.")]
+        [SerializeField] private BattleFlowManager flowManager;
+        [Tooltip("선택한 스킬의 직접 클릭 방식(유닛·열·진영)을 읽습니다.")]
+        [SerializeField] private InputHandler inputHandler;
+        [Tooltip("현재 행동 유닛의 노란 셀 재질입니다. 대상 선택을 취소하면 복원됩니다.")]
+        [SerializeField] private Material currentTurnMaterial;
+        [Tooltip("스킬 선택 중 직접 클릭할 수 없는 셀의 검정 재질입니다.")]
+        [SerializeField] private Material unavailableMaterial;
+        [Tooltip("JC_BattleUI_VFX/CellBox의 셀 투명도 설정입니다. 미연결이면 기존 재질 그대로 표시합니다.")]
+        [SerializeField] private BattleCellVisualSettings cellVisualSettings;
+        private readonly HashSet<GridCell> selectableCells = new HashSet<GridCell>();
+        private bool selectingTargets;
+        public bool UsesBattleTilePresentation => useBattleTilePresentation;
+
         public static BattleGridManager Instance { get; private set; }
 
         public Material MainTargetHighlightMat => MainTargetHighlightMaterial;
@@ -131,36 +149,22 @@ namespace ASB.Work.BattleGrid
             ClearPreviewHighlight();
             if (mainCell == null) return;
 
-            bool isFullSide = skill != null && skill.classSkillTarget == 2;
-
-            if (isFullSide)
-            {
-                mainCell.SetMainTargetHighlight();
-                _previewHighlightedCells.Add(mainCell);
-                if (splashCells != null)
-                {
-                    for (int i = 0; i < splashCells.Count; i++)
-                    {
-                        if (splashCells[i] == null) continue;
-                        splashCells[i].SetMainTargetHighlight();
-                        _previewHighlightedCells.Add(splashCells[i]);
-                    }
-                }
-                return;
-            }
-
+            bool allConfirmed = useBattleTilePresentation || (skill != null && skill.classSkillTarget == 2);
             mainCell.SetMainTargetHighlight();
             _previewMainTargetCell = mainCell;
-
-            if (splashCells != null)
+            // 랜덤·조건부 추가 타깃은 효과 계산에만 남기고 후보 셀은 미리 표시하지 않습니다.
+            bool randomExtras = SkillAreaPreviewHelper.HasRandomSecondaryTargets(skill);
+            if (splashCells != null && !(useBattleTilePresentation && randomExtras))
             {
-                for (int i = 0; i < splashCells.Count; i++)
+                foreach (var cell in splashCells)
                 {
-                    if (splashCells[i] == null) continue;
-                    splashCells[i].SetAdditionalHighlight();
-                    _previewHighlightedCells.Add(splashCells[i]);
+                    if (cell == null || cell == mainCell) continue;
+                    if (allConfirmed) cell.SetMainTargetHighlight();
+                    else cell.SetAdditionalHighlight();
+                    _previewHighlightedCells.Add(cell);
                 }
             }
+            RefreshTilePresentation();
         }
 
         public void ClearPreviewHighlight()
@@ -176,6 +180,80 @@ namespace ASB.Work.BattleGrid
             {
                 _previewMainTargetCell.ClearHighlight();
                 _previewMainTargetCell = null;
+            }
+            RefreshTilePresentation();
+        }
+
+        /// <summary>기존 입력이 계산한 직접 선택 대상을 셀 표시로 전달합니다.</summary>
+        public void SetSelectableUnits(IEnumerable<BattleCharactor> units)
+        {
+            if (!useBattleTilePresentation) return;
+            selectableCells.Clear();
+            selectingTargets = true;
+            var actor = flowManager != null ? flowManager.CurrentUnit : null;
+            var kind = SkillActivationRules.Kind(actor, inputHandler != null ? inputHandler.PendingSkill : null);
+            if (units != null)
+                foreach (var unit in units)
+                {
+                    var occupied = FindCellByUnit(unit);
+                    if (occupied == null) continue;
+                    foreach (var cell in cellsByCoords.Values)
+                    {
+                        bool sameSide = (cell.Coords.x >= 2) == (occupied.Coords.x >= 2);
+                        if (cell == occupied || (sameSide && (kind == SkillActivationKind.Side ||
+                            (kind == SkillActivationKind.Column && cell.Coords.x == occupied.Coords.x))))
+                            selectableCells.Add(cell);
+                    }
+                }
+            RefreshTilePresentation();
+        }
+
+        public void AddSelectableHostages(IEnumerable<HostageBattleActor> hostages)
+        {
+            if (!useBattleTilePresentation || hostages == null) return;
+            foreach (var hostage in hostages)
+            {
+                if (hostage == null) continue;
+                var cell = hostage.GetComponentInParent<GridCell>();
+                if (cell != null) selectableCells.Add(cell);
+            }
+            RefreshTilePresentation();
+        }
+
+        public void ClearSelectableCells()
+        {
+            selectingTargets = false;
+            selectableCells.Clear();
+            RefreshTilePresentation();
+        }
+
+        private void LateUpdate() => RefreshTilePresentation();
+
+        private void RefreshTilePresentation()
+        {
+            if (!useBattleTilePresentation) return;
+            bool ended = flowManager != null && flowManager.IsEndingBattle;
+            var current = !ended && flowManager != null ? FindCellByUnit(flowManager.CurrentUnit) : null;
+            bool choosing = !ended && selectingTargets && (flowManager == null || !flowManager.IsActionInProgress);
+            foreach (var cell in cellsByCoords.Values)
+            {
+                if (cell == null) continue;
+                Material material = ClearMaterial;
+                if (!ended)
+                {
+                    if (cell == _previewMainTargetCell || _previewHighlightedCells.Contains(cell)) material = MainTargetHighlightMaterial;
+                    else if (choosing) material = selectableCells.Contains(cell) ? TargetMaterial : unavailableMaterial;
+                    else if (cell == current) material = currentTurnMaterial;
+                }
+                cell.SetMaterial(material);
+                if (cellVisualSettings != null)
+                {
+                    float alpha = material == currentTurnMaterial ? cellVisualSettings.currentTurnAlpha :
+                        material == TargetMaterial ? cellVisualSettings.selectableAlpha :
+                        material == MainTargetHighlightMaterial ? cellVisualSettings.confirmedAreaAlpha :
+                        material == unavailableMaterial ? cellVisualSettings.unavailableAlpha : 1f;
+                    cellVisualSettings.Apply(cell, alpha);
+                }
             }
         }
 

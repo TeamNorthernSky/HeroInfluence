@@ -18,6 +18,7 @@ namespace JC.VFX
         [SerializeField] private Renderer[] fadeRenderers;
         [Tooltip("함께 재생/정지할 파티클들(Sparkles, SpikeBurst 등).")]
         [SerializeField] private ParticleSystem[] particleSystems;
+        [Tooltip("투사체 뒤에 잔상을 그리는 TrailRenderer입니다. 트레일 시간·길이 설정을 적용할 대상을 연결합니다.")]
         [SerializeField] private TrailRenderer trail;
 
         [Header("Size")]
@@ -39,7 +40,9 @@ namespace JC.VFX
         [SerializeField] private float trailLengthWorld = 2.5f;
 
         [Header("Arrival Burst")]
+        [Tooltip("도착 버스트가 기존 크기에서 확대되는 배수입니다. 1이면 추가 확대가 없습니다.")]
         [SerializeField] private float burstScaleMul = 1.5f;
+        [Tooltip("버스트 전체 재생 시간(초).")]
         [SerializeField] private float burstDuration = 0.3f;
 
         [Header("런타임 프리뷰")]
@@ -47,6 +50,7 @@ namespace JC.VFX
                  "개발 루프: 시전 → 프리셋 조절 → 재시전 → … → 플레이 종료 후 「프리팹에 적용」으로 저장.\n" +
                  "★변종은 제 프리셋을 물 것 — 은백 프리팹에 금 프리셋을 꽂으면 색이 금으로 덮인다.")]
         [SerializeField] private ProjectileOrbPreset preset;
+        [Tooltip("켜면 변경한 설정을 실행 중인 이 효과에 갱신합니다. 파일 저장과는 별개이며 이미 시작된 시간표는 재시전하여 확인합니다.")]
         [SerializeField] private bool livePreview = true;
 
         /// <summary>
@@ -127,6 +131,17 @@ namespace JC.VFX
         {
             Show(origin.position);
             Launch(target.position);
+        }
+
+        /// <summary>전투 시스템이 이동을 담당할 때 도착 위치에서 버스트만 재생합니다.</summary>
+        public void BurstAt(Vector3 position)
+        {
+            transform.position = position;
+            _state = State.Bursting;
+            _burstT = 0f;
+            if (trail) trail.emitting = false;
+            if (particleSystems != null) foreach (var ps in particleSystems) if (ps) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            OnImpact?.Invoke(this);
         }
 
         public override void Stop() => Hide();

@@ -1,0 +1,69 @@
+{
+  "algorithm": "Forge-derived OKLab anchor mapping + soft color gates + UV roof candidates",
+  "sourcePixelsUnmodified": true,
+  "previewOnly": true,
+  "buildings": [
+    {
+      "source": "C:\\Dev\\HeroInfluence\\Assets\\_ProtoType_Merge\\DH\\AlphaAsset\\AIAsset\\Building\\Texture\\BGHouse002.jpg",
+      "sha256": "5f8c2f229c4c3ae64246ce30b67d672081df0693080aec2a413bc04afce007c0",
+      "sourceSize": [
+        8192,
+        8192
+      ],
+      "outputSize": [
+        2048,
+        2048
+      ],
+      "geometry": {
+        "triangles": 4570,
+        "roofCandidateTriangles": 369
+      },
+      "roles": {
+        "wall": {
+          "anchorOklab": [
+            0.6561650633811951,
+            0.008329206146299839,
+            0.03627052530646324
+          ],
+          "meanWeight": 0.22264571487903595
+        },
+        "roof": {
+          "anchorOklab": [
+            0.38594692945480347,
+            -0.004794506821781397,
+            0.04455917328596115
+          ],
+          "meanWeight": 0.4073169231414795
+        },
+        "window": {
+          "anchorOklab": [
+            0.340970903635025,
+            -0.0423537977039814,
+            0.002541785128414631
+          ],
+          "meanWeight": 0.04411277547478676
+        },
+        "foliage": {
+          "anchorOklab": [
+            0.38074061274528503,
+            -0.02716616913676262,
+            0.06852297484874725
+          ],
+          "meanWeight": 0.13097050786018372
+        }
+      },
+      "variants": {
+        "A_Coral": {
+          "changedPixelFraction": 0.9931154251098633,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.0034526983896891275,
+          "overrides": {
+            "roofLightnessOffset": 0.035,
+            "floorTarget": "#B5B5B5",
+            "floorMaxHeight": 0.2
+          }
+        }
+      }
+    }
+  ]
+}

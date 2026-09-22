@@ -31,7 +31,8 @@ public class SkillPresentationCatalog : ScriptableObject
             BuildCache();
         }
 
-        _cache.TryGetValue(skillIndex, out SkillPresentationData result);
+        if (!_cache.TryGetValue(skillIndex, out SkillPresentationData result))
+            _cache.TryGetValue(HeroSkillRules.FamilyId(skillIndex), out result);
         return result;
     }
 

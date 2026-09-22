@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a2fd93ce458e93478a064c8c3d7f33f, type: 3}
   m_Name: DecorativeBuildingPrefabCatalog
   m_EditorClassIdentifier: 
-  decorativeBuildingPrefabs:
+  decorativeObjectPrefabs:
   - prefabKey: BGFactory001
     prefab: {fileID: 6409899147619144014, guid: a1b3acca7aa75bc4d848f23ec28a1191,
       type: 3}
@@ -143,4 +143,7 @@ MonoBehaviour:
       type: 3}
   - prefabKey: SM_Buildings_Port_02
     prefab: {fileID: 7212952195747501473, guid: 04bfc3ea828c24a4798857b2fd5001c5,
+      type: 3}
+  - prefabKey: Mt06-02
+    prefab: {fileID: 1504083688496665022, guid: 511979bc0ddf763459e4ca8bb3ff801c,
       type: 3}

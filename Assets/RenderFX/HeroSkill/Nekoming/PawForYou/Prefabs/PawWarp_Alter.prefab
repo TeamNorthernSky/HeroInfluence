@@ -58,11 +58,23 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2200540506755527175, guid: b53b82f0a4010384eb97bc2db984a941,
+        type: 3}
+      propertyPath: masterPreset
+      value: 
+      objectReference: {fileID: 11400000, guid: 0bb2cc366d8b5e6499eebe22e773b54f,
+        type: 2}
     - target: {fileID: 2777668551892851515, guid: b53b82f0a4010384eb97bc2db984a941,
         type: 3}
       propertyPath: m_Name
       value: PawWarp_Alter
       objectReference: {fileID: 0}
+    - target: {fileID: 4471813405455918491, guid: b53b82f0a4010384eb97bc2db984a941,
+        type: 3}
+      propertyPath: preset
+      value: 
+      objectReference: {fileID: 11400000, guid: 72f2ea336d9943a4c85c84b33163e499,
+        type: 2}
     - target: {fileID: 5280030132326235134, guid: b53b82f0a4010384eb97bc2db984a941,
         type: 3}
       propertyPath: size

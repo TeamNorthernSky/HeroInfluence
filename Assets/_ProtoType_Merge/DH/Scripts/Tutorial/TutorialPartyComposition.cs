@@ -11,104 +11,66 @@ public class TutorialPartyComposition : MonoBehaviour
         [SerializeField] private string unitTemplateKey;
         [SerializeField] private GameObject visualObject;
         [SerializeField] private Vector3 localPosition;
-        [SerializeField] private bool joinedAtStart;
 
         public string UnitTemplateKey => string.IsNullOrWhiteSpace(unitTemplateKey) ? string.Empty : unitTemplateKey.Trim();
         public GameObject VisualObject => visualObject;
         public Vector3 LocalPosition => localPosition;
-        public bool JoinedAtStart => joinedAtStart;
+
+        public void SetVisualObject(GameObject value)
+        {
+            visualObject = value;
+        }
     }
 
     [SerializeField] private List<TutorialPartyUnitSlot> unitSlots = new List<TutorialPartyUnitSlot>();
-    [SerializeField] private bool useTutorialProgressRepository = true;
+    [SerializeField] private Transform unitRoot;
+    [SerializeField] private LevelPrefabRegistry prefabRegistry;
 
-    private readonly HashSet<string> joinedUnitKeys = new HashSet<string>(StringComparer.Ordinal);
-
-    public bool HasAnyJoinedUnit => joinedUnitKeys.Count > 0;
+    public bool HasAnyJoinedUnit => HasAnyConfiguredUnitSlot();
 
     private void Awake()
     {
-        InitializeFromStartSlots();
+        ResolveReferences();
+        InitializePartyVisuals();
     }
 
-    public void InitializeFromStartSlots()
+    private void Start()
     {
-        joinedUnitKeys.Clear();
-
-        TutorialProgressRepository repository = useTutorialProgressRepository
-            ? TutorialProgressRepository.EnsureInstance()
-            : null;
-
-        if (repository != null && repository.HasAnyJoinedUnit)
-        {
-            ApplyJoinedUnits(repository.GetJoinedUnitTemplateKeys());
-        }
-        else
-        {
-            for (int i = 0; i < unitSlots.Count; i++)
-            {
-                TutorialPartyUnitSlot slot = unitSlots[i];
-                if (slot == null)
-                    continue;
-
-                if (slot.JoinedAtStart && !string.IsNullOrWhiteSpace(slot.UnitTemplateKey))
-                {
-                    joinedUnitKeys.Add(slot.UnitTemplateKey);
-                    repository?.SetUnitJoined(slot.UnitTemplateKey, true);
-                }
-            }
-        }
-
         ApplyVisualState();
     }
 
+    public void InitializePartyVisuals()
+    {
+        ApplyVisualState();
+    }
+
+    [Obsolete("Tutorial parties now start with every configured unit. This method is kept only for old scene hooks.")]
     public bool JoinUnit(string unitTemplateKey)
     {
         unitTemplateKey = NormalizeKey(unitTemplateKey);
-        if (string.IsNullOrWhiteSpace(unitTemplateKey))
-            return false;
-
-        if (!ContainsSlot(unitTemplateKey))
-            return false;
-
-        bool changed = joinedUnitKeys.Add(unitTemplateKey);
-        if (changed && useTutorialProgressRepository)
-            TutorialProgressRepository.EnsureInstance()?.SetUnitJoined(unitTemplateKey, true);
-
         ApplyVisualState();
-        return changed;
+        return !string.IsNullOrWhiteSpace(unitTemplateKey) && ContainsSlot(unitTemplateKey);
     }
 
+    [Obsolete("Tutorial parties now start with every configured unit. This method is kept only for old scene hooks.")]
     public void ApplyJoinedUnits(IEnumerable<string> unitTemplateKeys)
     {
-        joinedUnitKeys.Clear();
-
-        if (unitTemplateKeys != null)
-        {
-            foreach (string unitTemplateKey in unitTemplateKeys)
-            {
-                string normalized = NormalizeKey(unitTemplateKey);
-                if (!string.IsNullOrWhiteSpace(normalized) && ContainsSlot(normalized))
-                    joinedUnitKeys.Add(normalized);
-            }
-        }
-
         ApplyVisualState();
     }
 
     public bool IsJoined(string unitTemplateKey)
     {
         unitTemplateKey = NormalizeKey(unitTemplateKey);
-        return !string.IsNullOrWhiteSpace(unitTemplateKey) && joinedUnitKeys.Contains(unitTemplateKey);
+        return !string.IsNullOrWhiteSpace(unitTemplateKey) && ContainsSlot(unitTemplateKey);
     }
 
     public IReadOnlyList<string> GetJoinedUnitTemplateKeys()
     {
-        List<string> result = new List<string>(joinedUnitKeys.Count);
+        List<string> result = new List<string>(unitSlots.Count);
         for (int i = 0; i < unitSlots.Count; i++)
         {
             TutorialPartyUnitSlot slot = unitSlots[i];
-            if (slot == null || !joinedUnitKeys.Contains(slot.UnitTemplateKey))
+            if (slot == null || string.IsNullOrWhiteSpace(slot.UnitTemplateKey))
                 continue;
 
             result.Add(slot.UnitTemplateKey);
@@ -122,13 +84,70 @@ public class TutorialPartyComposition : MonoBehaviour
         for (int i = 0; i < unitSlots.Count; i++)
         {
             TutorialPartyUnitSlot slot = unitSlots[i];
-            if (slot == null || slot.VisualObject == null)
+            if (slot == null)
                 continue;
 
-            bool joined = joinedUnitKeys.Contains(slot.UnitTemplateKey);
-            slot.VisualObject.SetActive(joined);
-            slot.VisualObject.transform.localPosition = slot.LocalPosition;
+            GameObject visualObject = ResolveOrCreateVisual(slot);
+            if (visualObject == null)
+                continue;
+
+            visualObject.SetActive(true);
+            visualObject.transform.localPosition = slot.LocalPosition;
         }
+    }
+
+    private GameObject ResolveOrCreateVisual(TutorialPartyUnitSlot slot)
+    {
+        if (slot.VisualObject != null)
+            return slot.VisualObject;
+
+        string unitTemplateKey = slot.UnitTemplateKey;
+        if (string.IsNullOrWhiteSpace(unitTemplateKey))
+            return null;
+
+        ResolveReferences();
+        if (prefabRegistry == null ||
+            !prefabRegistry.TryGetTutorialHeroPrefab(unitTemplateKey, out GameObject prefab) ||
+            prefab == null)
+        {
+            Debug.LogWarning($"[TutorialPartyComposition] Tutorial hero prefab was not found. unitTemplateKey={unitTemplateKey}", this);
+            return null;
+        }
+
+        Transform parent = unitRoot != null ? unitRoot : transform;
+        GameObject instance = Instantiate(prefab, parent, false);
+        instance.name = $"{unitTemplateKey}_Tutorial";
+        instance.transform.localPosition = slot.LocalPosition;
+
+        TutorialUnitState tutorialUnitState = instance.GetComponent<TutorialUnitState>();
+        if (tutorialUnitState != null)
+            tutorialUnitState.InitializeFromTutorialState();
+
+        slot.SetVisualObject(instance);
+        RefreshMovementVisualController();
+        return instance;
+    }
+
+    private void RefreshMovementVisualController()
+    {
+        PartyMovementVisualController movementVisualController = GetComponent<PartyMovementVisualController>();
+        if (movementVisualController != null)
+            movementVisualController.CollectUnitTurnControllers();
+    }
+
+    private void ResolveReferences()
+    {
+        if (unitRoot == null)
+        {
+            Transform units = transform.Find("UnitRoot");
+            if (units == null)
+                units = transform.Find("Units");
+
+            unitRoot = units != null ? units : transform;
+        }
+
+        if (prefabRegistry == null)
+            prefabRegistry = FindFirstObjectByType<LevelPrefabRegistry>();
     }
 
     private bool ContainsSlot(string unitTemplateKey)
@@ -137,6 +156,18 @@ public class TutorialPartyComposition : MonoBehaviour
         {
             TutorialPartyUnitSlot slot = unitSlots[i];
             if (slot != null && string.Equals(slot.UnitTemplateKey, unitTemplateKey, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool HasAnyConfiguredUnitSlot()
+    {
+        for (int i = 0; i < unitSlots.Count; i++)
+        {
+            TutorialPartyUnitSlot slot = unitSlots[i];
+            if (slot != null && !string.IsNullOrWhiteSpace(slot.UnitTemplateKey))
                 return true;
         }
 

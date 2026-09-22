@@ -1,0 +1,220 @@
+{
+  "algorithm": "Forge-derived OKLab anchor mapping + soft color gates + UV roof candidates",
+  "sourcePixelsUnmodified": true,
+  "previewOnly": true,
+  "buildings": [
+    {
+      "source": "C:\\Dev\\HeroInfluence\\Assets\\_ProtoType_Merge\\DH\\AlphaAsset\\AIAsset\\Building\\Texture\\BGHouse002.jpg",
+      "sha256": "5f8c2f229c4c3ae64246ce30b67d672081df0693080aec2a413bc04afce007c0",
+      "sourceSize": [
+        8192,
+        8192
+      ],
+      "outputSize": [
+        2048,
+        2048
+      ],
+      "geometry": {
+        "triangles": 4570,
+        "roofCandidateTriangles": 369
+      },
+      "roles": {
+        "wall": {
+          "anchorOklab": [
+            0.6561650633811951,
+            0.008329206146299839,
+            0.03627052530646324
+          ],
+          "meanWeight": 0.22264571487903595
+        },
+        "roof": {
+          "anchorOklab": [
+            0.38594692945480347,
+            -0.004794506821781397,
+            0.04455917328596115
+          ],
+          "meanWeight": 0.4073169231414795
+        },
+        "window": {
+          "anchorOklab": [
+            0.340970903635025,
+            -0.0423537977039814,
+            0.002541785128414631
+          ],
+          "meanWeight": 0.04411277547478676
+        },
+        "foliage": {
+          "anchorOklab": [
+            0.38074061274528503,
+            -0.02716616913676262,
+            0.06852297484874725
+          ],
+          "meanWeight": 0.13097050786018372
+        }
+      },
+      "variants": {
+        "A_Coral": {
+          "changedPixelFraction": 0.9928162097930908,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.0033926169077555337
+        },
+        "B_Mint": {
+          "changedPixelFraction": 0.9929361343383789,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.000591278076171875
+        },
+        "C_Lavender": {
+          "changedPixelFraction": 0.9929652214050293,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.0034973621368408203
+        }
+      }
+    },
+    {
+      "source": "C:\\Dev\\HeroInfluence\\Assets\\_ProtoType_Merge\\DH\\AlphaAsset\\AIAsset\\Building\\Texture\\BGHigh002.jpg",
+      "sha256": "ffbd6b313f6d77b894bbb5990615dee781cbc8c6c0a4b13464940ccae75bbe49",
+      "sourceSize": [
+        8192,
+        8192
+      ],
+      "outputSize": [
+        2048,
+        2048
+      ],
+      "geometry": {
+        "triangles": 4578,
+        "roofCandidateTriangles": 318
+      },
+      "roles": {
+        "wall": {
+          "anchorOklab": [
+            0.7023470997810364,
+            0.00731205428019166,
+            0.025726063176989555
+          ],
+          "meanWeight": 0.36446821689605713
+        },
+        "roof": {
+          "anchorOklab": [
+            0.4316548705101013,
+            0.0008264098432846367,
+            0.015387576073408127
+          ],
+          "meanWeight": 0.33295267820358276
+        },
+        "window": {
+          "anchorOklab": [
+            0.41698241233825684,
+            -0.030568070709705353,
+            0.0017387090483680367
+          ],
+          "meanWeight": 0.08110824227333069
+        },
+        "foliage": {
+          "anchorOklab": [
+            0.43038272857666016,
+            -0.024972256273031235,
+            0.0670146718621254
+          ],
+          "meanWeight": 0.012604738585650921
+        }
+      },
+      "variants": {
+        "A_Coral": {
+          "changedPixelFraction": 0.9725894927978516,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.024502913157145183
+        },
+        "B_Mint": {
+          "changedPixelFraction": 0.9731953144073486,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.0011899471282958984
+        },
+        "C_Lavender": {
+          "changedPixelFraction": 0.9727087020874023,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.02526696523030599
+        }
+      }
+    },
+    {
+      "source": "C:\\Dev\\HeroInfluence\\Assets\\_ProtoType_Merge\\DH\\AlphaAsset\\AIAsset\\Building\\Texture\\BGFactory001.jpg",
+      "sha256": "ba32028c17e090b0904e24e5bf5e2913578afc9629d09194e823cdd6620ae6a2",
+      "sourceSize": [
+        8192,
+        8192
+      ],
+      "outputSize": [
+        2048,
+        2048
+      ],
+      "geometry": {
+        "triangles": 4642,
+        "roofCandidateTriangles": 586
+      },
+      "roles": {
+        "wall": {
+          "anchorOklab": [
+            0.6605804562568665,
+            0.011684531345963478,
+            0.042276013642549515
+          ],
+          "meanWeight": 0.20309700071811676
+        },
+        "roof": {
+          "anchorOklab": [
+            0.4294208884239197,
+            0.0011701093753799796,
+            0.02346825785934925
+          ],
+          "meanWeight": 0.49138426780700684
+        },
+        "window": {
+          "anchorOklab": [
+            0.37272903323173523,
+            -0.030417898669838905,
+            0.010804332792758942
+          ],
+          "meanWeight": 0.02254844456911087
+        },
+        "foliage": {
+          "anchorOklab": [
+            0.46616479754447937,
+            -0.014219959266483784,
+            0.06744508445262909
+          ],
+          "meanWeight": 0.06263577193021774
+        }
+      },
+      "variants": {
+        "A_Coral": {
+          "changedPixelFraction": 0.9693968296051025,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.0052347977956136065
+        },
+        "B_Mint": {
+          "changedPixelFraction": 0.9708082675933838,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.0020492871602376304
+        },
+        "C_Lavender": {
+          "changedPixelFraction": 0.9713706970214844,
+          "protectedPixelMaxError": 0,
+          "channelClipFraction": 0.0046540101369222
+        }
+      }
+    }
+  ],
+  "palette": {
+    "source": "C:\\Dev\\HeroInfluence\\Assets\\_ProtoType_Merge\\DH\\Resources\\Building\\256ColorNormal_2605201600.png",
+    "sha256": "dc94c29ef56c49a69d8ad3b3533aa49c4d919ad442e0970b3839f60d42a641be",
+    "cells": {
+      "10": "window",
+      "11": "wall",
+      "12": "wall",
+      "13": "roof",
+      "14": "roof",
+      "15": "foliage"
+    }
+  }
+}

@@ -138,8 +138,10 @@ namespace JC.VFX
 
         static void LivePushStatic(PrismExplosionPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryLivePush(p))return;
             foreach (var vfx in Object.FindObjectsByType<PrismExplosionVfx>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(vfx.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||vfx.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (InDarkVariant(vfx)) continue;
                 ApplyVfx(vfx, p);
                 foreach (var mr in vfx.GetComponentsInChildren<MeshRenderer>(true))
@@ -162,6 +164,7 @@ namespace JC.VFX
 
         public static void Apply(PrismExplosionPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryApply(p))return;
             void Bake(string path, System.Action<Material> fill, int queue)
             {
                 var m = Load<Material>(path);
@@ -188,6 +191,7 @@ namespace JC.VFX
 
             foreach (var vfx in Object.FindObjectsByType<PrismExplosionVfx>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(vfx.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||vfx.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (InDarkVariant(vfx)) continue;
                 foreach (var mr in vfx.GetComponentsInChildren<MeshRenderer>(true))
                     mr.SetPropertyBlock(null);
@@ -197,6 +201,7 @@ namespace JC.VFX
 
         public static void Capture(PrismExplosionPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryCapture(p))return;
             Undo.RecordObject(p, "Capture Prism Explosion");
 
             var mc = Load<Material>(MatCrystal);

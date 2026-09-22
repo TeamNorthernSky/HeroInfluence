@@ -142,8 +142,10 @@ namespace JC.VFX
 
         static void LivePushStatic(SolarPrismPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryLivePush(p))return;
             foreach (var vfx in Object.FindObjectsByType<SolarPrismVfx>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(vfx.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||vfx.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (InDarkVariant(vfx)) continue;
                 ApplyVfx(vfx, p);
                 ApplyEmbers(vfx, p);
@@ -167,6 +169,7 @@ namespace JC.VFX
 
         public static void Apply(SolarPrismPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryApply(p))return;
             var mc = Load<Material>(MatCrystal);
             FillCrystal((k, f) => mc.SetFloat(k, f), (k, c) => mc.SetColor(k, c), p);
             mc.renderQueue = 3001;
@@ -254,6 +257,7 @@ namespace JC.VFX
 
             foreach (var vfx in Object.FindObjectsByType<SolarPrismVfx>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(vfx.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||vfx.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (InDarkVariant(vfx)) continue;
                 foreach (var mr in vfx.GetComponentsInChildren<MeshRenderer>(true))
                     mr.SetPropertyBlock(null);
@@ -263,6 +267,7 @@ namespace JC.VFX
 
         public static void Capture(SolarPrismPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryCapture(p))return;
             Undo.RecordObject(p, "Capture Solar Prism");
 
             var mc = Load<Material>(MatCrystal);

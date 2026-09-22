@@ -1,7 +1,13 @@
 using PrimeTween;
 using UnityEngine;
 
-public class ItemObject : MonoBehaviour
+public interface IGridItemObject
+{
+    bool OccupiesGrid(Vector2Int grid, GridManager gridManager);
+    float CollectFromInteraction(Transform flyTarget);
+}
+
+public class ItemObject : MonoBehaviour, IGridItemObject
 {
     public ResourceType resourceType;
     public int amount;
@@ -67,6 +73,11 @@ public class ItemObject : MonoBehaviour
     public bool OccupiesGrid(Vector2Int grid, GridManager gridManager)
     {
         return GetCurrentGrid(gridManager) == grid;
+    }
+
+    public float CollectFromInteraction(Transform flyTarget)
+    {
+        return GetItem(flyTarget);
     }
 
     private void ResolveRegistry()

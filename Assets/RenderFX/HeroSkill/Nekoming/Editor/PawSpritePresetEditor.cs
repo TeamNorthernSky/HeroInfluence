@@ -35,8 +35,8 @@ namespace JC.VFX
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
-                if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","이 프리셋을 참조하는 대상 프리팹에 현재 값을 확정합니다."), GUILayout.Height(30))) Apply(p);
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","대상 프리팹의 값을 현재 프리셋으로 읽습니다. 프리셋 파일 저장은 별도입니다."), GUILayout.Height(30))) Capture(p);
                 JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 Paw(PawSprite)에 반영.\n형태(SDF) 항목은 프리셋+livePreview로만 구동됩니다(컴포넌트에 동명 필드 없음).", MessageType.Info);
@@ -51,7 +51,7 @@ namespace JC.VFX
         void Apply(PawSpritePreset p)
         {
             int applied = 0;
-            foreach (var path in PrefabPaths)
+            foreach (var path in JcPresetPartTargets.Paths(p, PrefabPaths))
             {
                 if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null) continue;
                 var root = PrefabUtility.LoadPrefabContents(path);
@@ -79,7 +79,7 @@ namespace JC.VFX
 
         void Capture(PawSpritePreset p)
         {
-            foreach (var path in PrefabPaths)
+            foreach (var path in JcPresetPartTargets.Paths(p, PrefabPaths))
             {
                 var root = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 if (root == null) continue;

@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e784527f640bea4c8add67e46164452, type: 3}
+  m_Name: BGWarehouse_002_Default
+  m_EditorClassIdentifier: 
+  buildingId: BGWarehouse_002
+  parts:
+  - hue: 74.22822
+    lightness: 0.63824743
+    saturation: 11.421012
+    ignoreSourceColorAndShading: 0
+  - hue: 140.25916
+    lightness: 0.50943244
+    saturation: 24.522015
+    ignoreSourceColorAndShading: 0
+  - hue: 202.29384
+    lightness: 0.3576235
+    saturation: 8.260773
+    ignoreSourceColorAndShading: 0
+  - hue: 104.11595
+    lightness: 0.38055894
+    saturation: 17.19015
+    ignoreSourceColorAndShading: 0
+  - hue: 17.199604
+    lightness: 0.64055556
+    saturation: 0.3951232
+    ignoreSourceColorAndShading: 0
+  - hue: 92.42424
+    lightness: 0.371656
+    saturation: 11.588707
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - accent

@@ -146,6 +146,13 @@ public class CombatContext : MonoBehaviour
     [SerializeField] private string simulationPartyId;
     [SerializeField] private System.Collections.Generic.List<SimulationAllyRuntimeData> simulationAllies =
         new System.Collections.Generic.List<SimulationAllyRuntimeData>();
+    [SerializeField] private string tutorialPartyId;
+    [SerializeField] private System.Collections.Generic.List<SimulationAllyRuntimeData> tutorialAllies =
+        new System.Collections.Generic.List<SimulationAllyRuntimeData>();
+    [SerializeField] private bool tutorialCombatActive;
+    // 탐사에서 전투 씬으로 넘겨주는 '어떤 튜토리얼 수업인가' 키. 구성(적 그룹)과는 별개 축이다.
+    [SerializeField] private string tutorialBattleKey;
+    [SerializeField] private int tutorialZoneId = -1;
 
     public CombatPartyPersistentData CombatParty => combatParty;
     // 일반 필드/거점/빌런연합 전투 정보. 이벤트 전투일 때는 null로 비운다.
@@ -157,9 +164,14 @@ public class CombatContext : MonoBehaviour
     public int EnemyLevel => Mathf.Max(1, enemyLevel);
     public BattleEntryMode EntryMode => entryMode;
     public bool IsSimulation => entryMode == BattleEntryMode.Simulation;
+    public bool IsTutorial => tutorialCombatActive;
     public string ReturnSceneName => returnSceneName ?? string.Empty;
     public string SimulationPartyId => simulationPartyId ?? string.Empty;
+    public string TutorialPartyId => tutorialPartyId ?? string.Empty;
+    public string TutorialBattleKey => tutorialBattleKey ?? string.Empty;
+    public int TutorialZoneId => tutorialZoneId;
     public System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> SimulationAllies => simulationAllies;
+    public System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> TutorialAllies => tutorialAllies;
 
     public bool TryGetSimulationAlly(int runtimeUnitIndex, out SimulationAllyRuntimeData runtimeData)
     {
@@ -170,6 +182,25 @@ public class CombatContext : MonoBehaviour
         for (int i = 0; i < simulationAllies.Count; i++)
         {
             SimulationAllyRuntimeData candidate = simulationAllies[i];
+            if (candidate != null && candidate.RuntimeUnitIndex == runtimeUnitIndex)
+            {
+                runtimeData = candidate;
+                return candidate.UnitData != null;
+            }
+        }
+
+        return false;
+    }
+
+    public bool TryGetTutorialAlly(int runtimeUnitIndex, out SimulationAllyRuntimeData runtimeData)
+    {
+        runtimeData = null;
+        if (!IsTutorial || tutorialAllies == null)
+            return false;
+
+        for (int i = 0; i < tutorialAllies.Count; i++)
+        {
+            SimulationAllyRuntimeData candidate = tutorialAllies[i];
             if (candidate != null && candidate.RuntimeUnitIndex == runtimeUnitIndex)
             {
                 runtimeData = candidate;
@@ -247,6 +278,68 @@ public class CombatContext : MonoBehaviour
         Clear();
     }
 
+    public bool BeginTutorial(
+        string partyId,
+        System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> allies,
+        string enemyGroupKey,
+        int nextEnemyLevel,
+        string nextReturnSceneName,
+        string nextTutorialBattleKey,
+        int nextTutorialZoneId)
+    {
+        Clear();
+        if (string.IsNullOrWhiteSpace(partyId) ||
+            string.IsNullOrWhiteSpace(enemyGroupKey) ||
+            allies == null ||
+            allies.Count == 0)
+        {
+            return false;
+        }
+
+        entryMode = BattleEntryMode.Normal;
+        tutorialCombatActive = true;
+        tutorialBattleKey = string.IsNullOrWhiteSpace(nextTutorialBattleKey)
+            ? string.Empty
+            : nextTutorialBattleKey.Trim();
+        tutorialZoneId = nextTutorialZoneId;
+        tutorialPartyId = partyId.Trim();
+        returnSceneName = string.IsNullOrWhiteSpace(nextReturnSceneName)
+            ? "TutorialExploreScene"
+            : nextReturnSceneName.Trim();
+
+        var unitIndices = new System.Collections.Generic.List<int>(allies.Count);
+        for (int i = 0; i < allies.Count; i++)
+        {
+            SimulationAllyRuntimeData ally = allies[i];
+            if (ally == null || ally.UnitData == null || ally.RuntimeUnitIndex <= 0)
+                continue;
+
+            tutorialAllies.Add(ally);
+            unitIndices.Add(ally.RuntimeUnitIndex);
+        }
+
+        if (unitIndices.Count == 0)
+        {
+            Clear();
+            return false;
+        }
+
+        RegisterCombatParty(tutorialPartyId, unitIndices);
+        RegisterCombatEnemy(
+            "TUTORIAL_ENEMY",
+            string.Empty,
+            enemyGroupKey.Trim(),
+            nextEnemyLevel,
+            CombatEnemySourceType.Tutorial);
+        SetCombatResult(CombatResult.None);
+        return true;
+    }
+
+    public void ClearTutorial()
+    {
+        Clear();
+    }
+
     public void RegisterCombatParty(string partyId, System.Collections.Generic.IReadOnlyList<int> unitIndices)
     {
         if (string.IsNullOrWhiteSpace(partyId))
@@ -318,9 +411,17 @@ public class CombatContext : MonoBehaviour
         entryMode = BattleEntryMode.Normal;
         returnSceneName = string.Empty;
         simulationPartyId = string.Empty;
+        tutorialPartyId = string.Empty;
+        tutorialCombatActive = false;
+        tutorialBattleKey = string.Empty;
+        tutorialZoneId = -1;
         if (simulationAllies == null)
             simulationAllies = new System.Collections.Generic.List<SimulationAllyRuntimeData>();
         else
             simulationAllies.Clear();
+        if (tutorialAllies == null)
+            tutorialAllies = new System.Collections.Generic.List<SimulationAllyRuntimeData>();
+        else
+            tutorialAllies.Clear();
     }
 }

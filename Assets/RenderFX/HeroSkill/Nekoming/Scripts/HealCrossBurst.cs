@@ -21,44 +21,71 @@ namespace JC.VFX
         [Header("런타임 프리뷰")]
         [Tooltip("지정하면 livePreview에서 이 프리셋 값을 매 프레임 반영(새 십자부터).")]
         [SerializeField] private HealCrossPreset preset;
+        [Tooltip("켜면 변경한 설정을 실행 중인 이 효과에 갱신합니다. 파일 저장과는 별개이며 이미 시작된 시간표는 재시전하여 확인합니다.")]
         [SerializeField] private bool livePreview = true;
 
         [Header("스폰")]
+        [Tooltip("동시 최대 십자 수")]
         [SerializeField] private int maxCrosses = 14;
+        [Tooltip("새 요소 생성 간격의 최솟값(초)입니다. 낮을수록 더 자주 생성될 수 있습니다.")]
         [SerializeField] private float spawnIntervalMin = 0.06f;
+        [Tooltip("새 요소 생성 간격의 최댓값(초)입니다. 높일수록 생성 사이의 간격이 길어질 수 있습니다.")]
         [SerializeField] private float spawnIntervalMax = 0.16f;
+        [Tooltip("생성되는 요소 수명의 최솟값(초)입니다. 최댓값과의 사이에서 지속 시간이 선택됩니다.")]
         [SerializeField] private float lifetimeMin = 0.9f;
+        [Tooltip("생성되는 요소 수명의 최댓값(초)입니다. 높일수록 일부 요소가 오래 남습니다.")]
         [SerializeField] private float lifetimeMax = 1.3f;
 
         [Header("배치 / 상승")]
+        [Tooltip("이 효과가 배치되거나 회전하는 반경(m)입니다. 높일수록 중심에서 멀어집니다.")]
         [SerializeField] private float radius = 0.7f;
+        [Tooltip("시작 높이(중심 기준, m). 보통 0=발밑")]
         [SerializeField] private float baseYOffset = 0.05f;
+        [Tooltip("최종(정착) 상승 속도 최소(m/s)")]
         [SerializeField] private float riseSpeedMin = 1.2f;
+        [Tooltip("최종(정착) 상승 속도 최대(m/s)")]
         [SerializeField] private float riseSpeedMax = 1.8f;
+        [Tooltip("초반 가속 배수. 1=등속(가속 없음), 클수록 초반에 최종속도×이배로 빠르게 솟음")]
         [Range(1f, 8f)] [SerializeField] private float riseAccelMul = 3.0f;
+        [Tooltip("초반 가속 시간(초). 초반 속도가 최종 속도로 잦아드는 시간(0=즉시 등속)")]
         [Range(0f, 1.5f)] [SerializeField] private float riseAccelTime = 0.25f;
 
         [Header("바운스 팝 / bob / 스핀")]
+        [Tooltip("스케일 팝 오버슛(스폰 시 튐). 0=팝 없음")]
         [Range(0f, 4f)] [SerializeField] private float popOvershoot = 2.0f;
+        [Tooltip("팝 구간 비율(수명 대비). 이 구간에서 0→오버슛→1")]
         [Range(0.05f, 0.6f)] [SerializeField] private float popFrac = 0.25f;
+        [Tooltip("종료 축소 구간 비율(수명 대비)")]
         [Range(0.05f, 0.6f)] [SerializeField] private float endFrac = 0.3f;
+        [Tooltip("상하 흔들림 진폭(m)")]
         [Range(0f, 0.3f)] [SerializeField] private float bobAmp = 0.05f;
+        [Tooltip("상하 흔들림 빈도(Hz)")]
         [Range(0f, 6f)] [SerializeField] private float bobFreq = 2.0f;
+        [Tooltip("면내 회전 최대(±도/초). 십자가 살짝 돎")]
         [Range(0f, 180f)] [SerializeField] private float spinMax = 25f;
         [Tooltip("빌보드 Y축만: 수직 유지·수평만 카메라 향함. 끄면 카메라 완전 정면")]
         [SerializeField] private bool billboardYOnly = true;
 
         [Header("크기 / 페이드")]
+        [Tooltip("생성되는 요소 크기의 최솟값(m)입니다. 최댓값과의 사이에서 크기가 선택됩니다.")]
         [SerializeField] private float sizeMin = 0.28f;
+        [Tooltip("생성되는 요소 크기의 최댓값(m)입니다. 최솟값과 벌릴수록 크기 차이가 커집니다.")]
         [SerializeField] private float sizeMax = 0.44f;
+        [Tooltip("페이드인 구간 비율(수명 대비)")]
         [Range(0f, 0.5f)] [SerializeField] private float fadeInFrac = 0.12f;
+        [Tooltip("페이드아웃 구간 비율(수명 대비)")]
         [Range(0f, 0.6f)] [SerializeField] private float fadeOutFrac = 0.3f;
 
         [Header("룩")]
+        [Tooltip("이 시각 요소의 색입니다. HDR 색은 발광 강도와 함께 최종 밝기에 영향을 줍니다.")]
         [ColorUsage(true, true)] [SerializeField] private Color color = new Color(0.35f, 1f, 0.45f);
+        [Tooltip("전체 밝기")]
         [Range(0f, 8f)] [SerializeField] private float intensity = 2.2f;
+        [Tooltip("십자 무늬 팔의 두께입니다. 높일수록 선이 굵어집니다.")]
         [Range(0.02f, 0.5f)] [SerializeField] private float barWidth = 0.13f;
+        [Tooltip("십자 무늬 팔의 길이입니다. 높일수록 중심에서 멀리 뻗습니다.")]
         [Range(0.1f, 0.5f)] [SerializeField] private float barLength = 0.42f;
+        [Tooltip("가장자리 부드러움")]
         [Range(0.001f, 0.3f)] [SerializeField] private float softness = 0.06f;
 
         private Vector3 _center;

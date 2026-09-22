@@ -96,9 +96,11 @@ public class LevelEditorWindow : EditorWindow
             "Tutorial",
             new[]
             {
-                LevelEditorBrushType.TutorialObject
+                LevelEditorBrushType.TutorialBuilding,
+                LevelEditorBrushType.TutorialEnemy,
+                LevelEditorBrushType.TutorialItem
             },
-            new[] { "TutorialObject" }),
+            new[] { "T.Building", "T.Enemy", "T.Item" }),
         new BrushGroup(
             "Etc",
             new[]
@@ -281,8 +283,14 @@ public class LevelEditorWindow : EditorWindow
         if (brushType == LevelEditorBrushType.DecorativeObject)
             DrawDecorativeObjectSelector(serializedController);
 
-        if (brushType == LevelEditorBrushType.TutorialObject)
+        if (brushType == LevelEditorBrushType.TutorialBuilding)
             DrawTutorialObjectSelector(serializedController);
+
+        if (brushType == LevelEditorBrushType.TutorialEnemy)
+            DrawTutorialEnemySelector(serializedController);
+
+        if (brushType == LevelEditorBrushType.TutorialItem)
+            DrawTutorialItemSelector(serializedController);
 
         if (brushType == LevelEditorBrushType.GateBlocker)
         {
@@ -535,8 +543,8 @@ public class LevelEditorWindow : EditorWindow
             return;
         }
 
-        IReadOnlyList<TutorialObjectPrefabEntry> entries = registry.TutorialObjectPrefabs;
-        if (entries == null || entries.Count == 0)
+        IReadOnlyList<TutorialObjectPrefabEntry> objectEntries = registry.TutorialObjectPrefabs;
+        if (objectEntries == null || objectEntries.Count == 0)
         {
             EditorGUILayout.HelpBox("LevelPrefabRegistry has no tutorial object entries.", MessageType.Info);
             EditorGUILayout.PropertyField(selectedKeyProperty);
@@ -544,18 +552,105 @@ public class LevelEditorWindow : EditorWindow
         }
 
         List<string> keys = new List<string>();
-        for (int i = 0; i < entries.Count; i++)
-        {
-            TutorialObjectPrefabEntry entry = entries[i];
-            if (string.IsNullOrWhiteSpace(entry.PrefabKey))
-                continue;
-
-            keys.Add(entry.PrefabKey);
-        }
+        AppendTutorialObjectKeys(objectEntries, keys);
 
         if (keys.Count == 0)
         {
             EditorGUILayout.HelpBox("Tutorial object entries do not have prefab keys.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        int selectedIndex = Mathf.Max(0, keys.IndexOf(selectedKeyProperty.stringValue));
+        int nextIndex = EditorGUILayout.Popup("Prefab Key", selectedIndex, keys.ToArray());
+        selectedKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
+    }
+
+    private static void AppendTutorialObjectKeys(
+        IReadOnlyList<TutorialObjectPrefabEntry> entries,
+        List<string> keys)
+    {
+        if (entries == null || keys == null)
+            return;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            TutorialObjectPrefabEntry entry = entries[i];
+            if (string.IsNullOrWhiteSpace(entry.PrefabKey) || keys.Contains(entry.PrefabKey))
+                continue;
+
+            keys.Add(entry.PrefabKey);
+        }
+    }
+
+    private void DrawTutorialItemSelector(SerializedObject serializedController)
+    {
+        SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedTutorialItemPrefabKey");
+
+        LevelPrefabRegistry registry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
+        if (registry == null)
+        {
+            EditorGUILayout.HelpBox("TutorialItem brush needs a LevelPrefabRegistry on the LevelLoader.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        IReadOnlyList<TutorialItemPrefabEntry> entries = registry.TutorialItemPrefabs;
+        if (entries == null || entries.Count == 0)
+        {
+            EditorGUILayout.HelpBox("LevelPrefabRegistry has no tutorial item entries.", MessageType.Info);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        List<string> keys = new List<string>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            TutorialItemPrefabEntry entry = entries[i];
+            if (string.IsNullOrWhiteSpace(entry.ItemPrefabKey))
+                continue;
+
+            keys.Add(entry.ItemPrefabKey);
+        }
+
+        if (keys.Count == 0)
+        {
+            EditorGUILayout.HelpBox("Tutorial item entries do not have prefab keys.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        int selectedIndex = Mathf.Max(0, keys.IndexOf(selectedKeyProperty.stringValue));
+        int nextIndex = EditorGUILayout.Popup("Prefab Key", selectedIndex, keys.ToArray());
+        selectedKeyProperty.stringValue = keys[Mathf.Clamp(nextIndex, 0, keys.Count - 1)];
+    }
+
+    private void DrawTutorialEnemySelector(SerializedObject serializedController)
+    {
+        SerializedProperty selectedKeyProperty = serializedController.FindProperty("selectedTutorialEnemyPrefabKey");
+
+        LevelPrefabRegistry registry = controller.LevelLoader != null ? controller.LevelLoader.PrefabRegistry : null;
+        if (registry == null)
+        {
+            EditorGUILayout.HelpBox("TutorialEnemy brush needs a LevelPrefabRegistry on the LevelLoader.", MessageType.Warning);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        IReadOnlyList<TutorialObjectPrefabEntry> entries = registry.TutorialEnemyPrefabs;
+        if (entries == null || entries.Count == 0)
+        {
+            EditorGUILayout.HelpBox("LevelPrefabRegistry has no tutorial enemy entries.", MessageType.Info);
+            EditorGUILayout.PropertyField(selectedKeyProperty);
+            return;
+        }
+
+        List<string> keys = new List<string>();
+        AppendTutorialObjectKeys(entries, keys);
+
+        if (keys.Count == 0)
+        {
+            EditorGUILayout.HelpBox("Tutorial enemy entries do not have prefab keys.", MessageType.Warning);
             EditorGUILayout.PropertyField(selectedKeyProperty);
             return;
         }
@@ -809,16 +904,40 @@ public class LevelEditorWindow : EditorWindow
                 EditorGUILayout.HelpBox($"Decorative prefab '{context.SelectedDecorativeObjectKey}' needs a DecorativeObjectPlacement component.", MessageType.Warning);
         }
 
-        if (context.BrushType == LevelEditorBrushType.TutorialObject)
+        if (context.BrushType == LevelEditorBrushType.TutorialBuilding)
         {
             if (context.PrefabRegistry == null)
-                EditorGUILayout.HelpBox("TutorialObject brush needs a LevelPrefabRegistry.", MessageType.Warning);
+                EditorGUILayout.HelpBox("TutorialBuilding brush needs a LevelPrefabRegistry.", MessageType.Warning);
             else if (string.IsNullOrWhiteSpace(context.SelectedTutorialObjectPrefabKey))
-                EditorGUILayout.HelpBox("TutorialObject brush needs a selected Prefab Key.", MessageType.Warning);
+                EditorGUILayout.HelpBox("TutorialBuilding brush needs a selected Prefab Key.", MessageType.Warning);
             else if (!context.PrefabRegistry.TryGetTutorialObjectPrefab(context.SelectedTutorialObjectPrefabKey, out GameObject tutorialPrefab))
-                EditorGUILayout.HelpBox($"TutorialObject prefab key '{context.SelectedTutorialObjectPrefabKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
+                EditorGUILayout.HelpBox($"TutorialBuilding prefab key '{context.SelectedTutorialObjectPrefabKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
             else if (tutorialPrefab.GetComponent<TutorialBuildingObject>() == null)
-                EditorGUILayout.HelpBox($"TutorialObject prefab '{context.SelectedTutorialObjectPrefabKey}' needs a TutorialBuildingObject component.", MessageType.Warning);
+                EditorGUILayout.HelpBox($"TutorialBuilding prefab '{context.SelectedTutorialObjectPrefabKey}' needs a TutorialBuildingObject component.", MessageType.Warning);
+        }
+
+        if (context.BrushType == LevelEditorBrushType.TutorialEnemy)
+        {
+            if (context.PrefabRegistry == null)
+                EditorGUILayout.HelpBox("TutorialEnemy brush needs a LevelPrefabRegistry.", MessageType.Warning);
+            else if (string.IsNullOrWhiteSpace(context.SelectedTutorialEnemyPrefabKey))
+                EditorGUILayout.HelpBox("TutorialEnemy brush needs a selected Prefab Key.", MessageType.Warning);
+            else if (!context.PrefabRegistry.TryGetTutorialObjectPrefab(context.SelectedTutorialEnemyPrefabKey, out GameObject tutorialPrefab))
+                EditorGUILayout.HelpBox($"TutorialEnemy prefab key '{context.SelectedTutorialEnemyPrefabKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
+            else if (tutorialPrefab.GetComponent<TutorialEnemyObject>() == null)
+                EditorGUILayout.HelpBox($"TutorialEnemy prefab '{context.SelectedTutorialEnemyPrefabKey}' needs a TutorialEnemyObject component.", MessageType.Warning);
+        }
+
+        if (context.BrushType == LevelEditorBrushType.TutorialItem)
+        {
+            if (context.PrefabRegistry == null)
+                EditorGUILayout.HelpBox("TutorialItem brush needs a LevelPrefabRegistry.", MessageType.Warning);
+            else if (string.IsNullOrWhiteSpace(context.SelectedTutorialItemPrefabKey))
+                EditorGUILayout.HelpBox("TutorialItem brush needs a selected Prefab Key.", MessageType.Warning);
+            else if (!context.PrefabRegistry.TryGetTutorialItemPrefab(context.SelectedTutorialItemPrefabKey, out GameObject tutorialPrefab))
+                EditorGUILayout.HelpBox($"TutorialItem prefab key '{context.SelectedTutorialItemPrefabKey}' was not found in the LevelPrefabRegistry.", MessageType.Warning);
+            else if (tutorialPrefab.GetComponent<TutorialItemObject>() == null)
+                EditorGUILayout.HelpBox($"TutorialItem prefab '{context.SelectedTutorialItemPrefabKey}' needs a TutorialItemObject component.", MessageType.Warning);
         }
 
         if (context.BrushType == LevelEditorBrushType.MainEvent)
@@ -1061,7 +1180,7 @@ public class LevelEditorWindow : EditorWindow
         for (int i = 0; i < levelData.TutorialObjectPlacements.Count; i++)
         {
             TutorialObjectPlacementData placement = levelData.TutorialObjectPlacements[i];
-            DrawFootprint(context, BuildFootprint(GetTutorialObjectPrefab(context, placement.PrefabKey), placement.GridPosition), new Color(0.55f, 0.75f, 1f, 0.10f), new Color(0.55f, 0.75f, 1f, 0.65f));
+            DrawFootprint(context, BuildFootprint(GetTutorialPrefab(context, placement.PrefabKey), placement.GridPosition), new Color(0.55f, 0.75f, 1f, 0.10f), new Color(0.55f, 0.75f, 1f, 0.65f));
         }
 
         for (int i = 0; i < levelData.GatePlacements.Count; i++)
@@ -1355,10 +1474,20 @@ public class LevelEditorWindow : EditorWindow
                     anchor,
                     context.SelectedDecorativeObjectKey);
                 break;
-            case LevelEditorBrushType.TutorialObject:
+            case LevelEditorBrushType.TutorialBuilding:
                 context.LevelData.SetTutorialObject(
                     anchor,
                     context.SelectedTutorialObjectPrefabKey);
+                break;
+            case LevelEditorBrushType.TutorialEnemy:
+                context.LevelData.SetTutorialObject(
+                    anchor,
+                    context.SelectedTutorialEnemyPrefabKey);
+                break;
+            case LevelEditorBrushType.TutorialItem:
+                context.LevelData.SetTutorialObject(
+                    anchor,
+                    context.SelectedTutorialItemPrefabKey);
                 break;
             case LevelEditorBrushType.HeroUnion:
                 context.LevelData.SetHeroUnion(anchor, context.SelectedHeroUnionPrefabKey);
@@ -1450,6 +1579,8 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedHeroUnionPrefabKey = controller.SelectedHeroUnionPrefabKey;
         context.SelectedDecorativeObjectKey = controller.SelectedDecorativeObjectKey;
         context.SelectedTutorialObjectPrefabKey = controller.SelectedTutorialObjectPrefabKey;
+        context.SelectedTutorialEnemyPrefabKey = controller.SelectedTutorialEnemyPrefabKey;
+        context.SelectedTutorialItemPrefabKey = controller.SelectedTutorialItemPrefabKey;
         context.SelectedMainEventPrefabKey = controller.SelectedMainEventPrefabKey;
         context.SelectedSubEventPrefabKey = controller.SelectedSubEventPrefabKey;
         context.SelectedGatePrefabKey = controller.SelectedGatePrefabKey;
@@ -1745,6 +1876,14 @@ public class LevelEditorWindow : EditorWindow
             brushType == LevelEditorBrushType.EnemySpawnPoint;
     }
 
+    private static bool IsTutorialPlacementBrush(LevelEditorBrushType brushType)
+    {
+        return brushType == LevelEditorBrushType.TutorialBuilding ||
+            brushType == LevelEditorBrushType.TutorialEnemy ||
+            brushType == LevelEditorBrushType.TutorialItem ||
+            brushType == LevelEditorBrushType.TutorialObject;
+    }
+
     private static bool CanPaintGroundTile(LevelEditorContext context, out string reason)
     {
         if (context.TileRegistry == null)
@@ -1793,7 +1932,7 @@ public class LevelEditorWindow : EditorWindow
             return true;
         }
 
-        if (context.BrushType == LevelEditorBrushType.TutorialObject)
+        if (IsTutorialPlacementBrush(context.BrushType))
         {
             if (!TryGetBrushPrefab(context, out GameObject tutorialPrefab, out reason))
                 return false;
@@ -1905,6 +2044,50 @@ public class LevelEditorWindow : EditorWindow
 
                 reason = null;
                 return true;
+            case LevelEditorBrushType.TutorialBuilding:
+                if (string.IsNullOrWhiteSpace(context.SelectedTutorialObjectPrefabKey))
+                {
+                    reason = "TutorialBuilding prefab key is missing.";
+                    return false;
+                }
+
+                prefab = GetTutorialObjectPrefab(context, context.SelectedTutorialObjectPrefabKey);
+                if (prefab == null)
+                {
+                    reason = $"TutorialBuilding prefab is missing for {context.SelectedTutorialObjectPrefabKey}.";
+                    return false;
+                }
+
+                if (prefab.GetComponent<TutorialBuildingObject>() == null)
+                {
+                    reason = $"TutorialBuilding prefab '{context.SelectedTutorialObjectPrefabKey}' needs a TutorialBuildingObject component.";
+                    return false;
+                }
+
+                reason = null;
+                return true;
+            case LevelEditorBrushType.TutorialEnemy:
+                if (string.IsNullOrWhiteSpace(context.SelectedTutorialEnemyPrefabKey))
+                {
+                    reason = "TutorialEnemy prefab key is missing.";
+                    return false;
+                }
+
+                prefab = GetTutorialObjectPrefab(context, context.SelectedTutorialEnemyPrefabKey);
+                if (prefab == null)
+                {
+                    reason = $"TutorialEnemy prefab is missing for {context.SelectedTutorialEnemyPrefabKey}.";
+                    return false;
+                }
+
+                if (prefab.GetComponent<TutorialEnemyObject>() == null)
+                {
+                    reason = $"TutorialEnemy prefab '{context.SelectedTutorialEnemyPrefabKey}' needs a TutorialEnemyObject component.";
+                    return false;
+                }
+
+                reason = null;
+                return true;
             case LevelEditorBrushType.TutorialObject:
                 if (string.IsNullOrWhiteSpace(context.SelectedTutorialObjectPrefabKey))
                 {
@@ -1919,9 +2102,31 @@ public class LevelEditorWindow : EditorWindow
                     return false;
                 }
 
-                if (prefab.GetComponent<TutorialBuildingObject>() == null)
+                if (!IsValidTutorialObjectPrefab(prefab))
                 {
-                    reason = $"TutorialObject prefab '{context.SelectedTutorialObjectPrefabKey}' needs a TutorialBuildingObject component.";
+                    reason = $"TutorialObject prefab '{context.SelectedTutorialObjectPrefabKey}' needs a TutorialBuildingObject or TutorialEnemyObject component.";
+                    return false;
+                }
+
+                reason = null;
+                return true;
+            case LevelEditorBrushType.TutorialItem:
+                if (string.IsNullOrWhiteSpace(context.SelectedTutorialItemPrefabKey))
+                {
+                    reason = "TutorialItem prefab key is missing.";
+                    return false;
+                }
+
+                prefab = GetTutorialItemPrefab(context, context.SelectedTutorialItemPrefabKey);
+                if (prefab == null)
+                {
+                    reason = $"TutorialItem prefab is missing for {context.SelectedTutorialItemPrefabKey}.";
+                    return false;
+                }
+
+                if (prefab.GetComponent<TutorialItemObject>() == null)
+                {
+                    reason = $"TutorialItem prefab '{context.SelectedTutorialItemPrefabKey}' needs a TutorialItemObject component.";
                     return false;
                 }
 
@@ -2058,7 +2263,7 @@ public class LevelEditorWindow : EditorWindow
         for (int i = 0; i < levelData.TutorialObjectPlacements.Count; i++)
         {
             TutorialObjectPlacementData placement = levelData.TutorialObjectPlacements[i];
-            if (FootprintsOverlap(footprint, BuildFootprint(GetTutorialObjectPrefab(context, placement.PrefabKey), placement.GridPosition)))
+            if (FootprintsOverlap(footprint, BuildFootprint(GetTutorialPrefab(context, placement.PrefabKey), placement.GridPosition)))
             {
                 reason = "TutorialObject overlaps this footprint.";
                 return true;
@@ -2226,7 +2431,7 @@ public class LevelEditorWindow : EditorWindow
         {
             TutorialObjectPlacementData placement = levelData.TutorialObjectPlacements[i];
             anchor = placement.GridPosition;
-            footprint = BuildFootprint(GetTutorialObjectPrefab(context, placement.PrefabKey), anchor);
+            footprint = BuildFootprint(GetTutorialPrefab(context, placement.PrefabKey), anchor);
             if (footprint.Contains(grid))
             {
                 label = "TutorialObject";
@@ -2448,6 +2653,30 @@ public class LevelEditorWindow : EditorWindow
                 : null;
     }
 
+    private static GameObject GetTutorialItemPrefab(LevelEditorContext context, string prefabKey)
+    {
+        return context.PrefabRegistry != null
+            && context.PrefabRegistry.TryGetTutorialItemPrefab(prefabKey, out GameObject prefab)
+                ? prefab
+                : null;
+    }
+
+    private static GameObject GetTutorialPrefab(LevelEditorContext context, string prefabKey)
+    {
+        GameObject prefab = GetTutorialObjectPrefab(context, prefabKey);
+        if (prefab != null)
+            return prefab;
+
+        return GetTutorialItemPrefab(context, prefabKey);
+    }
+
+    private static bool IsValidTutorialObjectPrefab(GameObject prefab)
+    {
+        return prefab != null &&
+               (prefab.GetComponent<TutorialBuildingObject>() != null ||
+                prefab.GetComponent<TutorialEnemyObject>() != null);
+    }
+
     private static void DrawEnemyEncounterZone(LevelEditorContext context, Vector2Int anchor, Color fill, Color outline)
     {
         DrawFootprint(context, BuildEncounterZone(anchor), fill, outline);
@@ -2592,6 +2821,8 @@ public class LevelEditorWindow : EditorWindow
         public string SelectedHeroUnionPrefabKey;
         public string SelectedDecorativeObjectKey;
         public string SelectedTutorialObjectPrefabKey;
+        public string SelectedTutorialEnemyPrefabKey;
+        public string SelectedTutorialItemPrefabKey;
         public string SelectedMainEventPrefabKey;
         public string SelectedSubEventPrefabKey;
         public string SelectedGatePrefabKey;

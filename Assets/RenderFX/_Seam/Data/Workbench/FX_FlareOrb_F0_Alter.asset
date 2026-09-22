@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47e4b63a97d8f4b428bf92238c201175, type: 3}
+  m_Name: FX_FlareOrb_F0_Alter
+  m_EditorClassIdentifier: 
+  variantSuffix: _Dark
+  shellRadius: 0.45
+  shellTipStart: 0.38
+  shellTipHeight: 0.09
+  shellTipPower: 4
+  shellYOffset: 0
+  shellBodyHeightRatio: 1
+  shellSpinSpeed: 157.78
+  tongueColor: {r: 0.5767125, g: 0.02385, b: 0.94499993, a: 1}
+  tongueHighlightColor: {r: 1.1540625, g: 0.63225, b: 1.3050001, a: 1}
+  tongueEmission: 1
+  backEmissionMul: 0.695
+  backOpacity: 0.755
+  backSpinSpeed: 34.52
+  coreColor: {r: 1.1721749, g: 0.7875, b: 1.3050001, a: 1}
+  coreMidColor: {r: 0.6129375, g: 0.08595001, b: 0.94499993, a: 1}
+  coreRimColor: {r: 1.43025, g: 0.79200006, b: 1.6199999, a: 1}
+  coreEmission: 1.35
+  coreBaseAlpha: 0.85
+  coreRimPower: 2.6
+  coreRimStrength: 0.9
+  coreNoiseScale: 2.6
+  coreNoiseSpeed: 0.5
+  coreSwirlSpeed: 0.4
+  rimRadius: 0.6
+  rimWidth: 0.15
+  rimHalo: 0.35
+  patternScale: 5.18
+  patternVStretch: 0.25
+  patternDetail: 0.626
+  ridgeMix: 0.577
+  taperSharp: 3.29
+  breakScale: 3.42
+  breakAmount: 0.282
+  patternThreshold: 0.352
+  edgeSoftRatio: 0
+  highlightShift: 0.07
+  flowSpeed: 2.55
+  waver: 0.05
+  waverSpeed: 2.5
+  spiralShear: 2
+  sCurveAmount: 0.278
+  sCurveFreq: 2.16
+  sCurveFollow: 1
+  sCurveUpperRatio: 0.4
+  tipErodeStart: 0.802
+  tipErodeStrength: 0.798
+  speckAmount: 0
+  speckScale: 2
+  lightColor: {r: 1, g: 0.85, b: 0.6, a: 1}
+  lightIntensity: 4
+  lightFlickerAmplitude: 1
+  lightRange: 6

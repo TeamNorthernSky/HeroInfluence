@@ -12,6 +12,10 @@ namespace ASB.Work.Battle.SkillExecution
     /// </summary>
     public static class SkillAreaPreviewHelper
     {
+        /// <summary>실행 핸들러가 무작위 보조 대상을 고르는 경우 후보 범위는 표시하지 않습니다.</summary>
+        public static bool HasRandomSecondaryTargets(SkillData skill) => skill != null &&
+            SkillExecutionRegistry.TryGetHandler(skill.skillKey, out ISkillEffectHandler handler) && handler is TargetAroundRandom;
+
         public static bool IsFullSideAttack(SkillData skill) =>
             skill != null && skill.classSkillTarget == 2;
 
@@ -28,6 +32,15 @@ namespace ASB.Work.Battle.SkillExecution
         {
             if (highlightedCellsOut == null)
             {
+                return;
+            }
+
+            if (ASBGridManager.Instance != null && ASBGridManager.Instance.UsesBattleTilePresentation)
+            {
+                highlightedMainTargetCellOut = mainCell;
+                ApplyMainHighlight(mainCell, highlightedCellsOut);
+                if (!HasRandomSecondaryTargets(skill) && splashCells != null)
+                    foreach (var cell in splashCells) ApplyMainHighlight(cell, highlightedCellsOut);
                 return;
             }
 
@@ -102,6 +115,8 @@ namespace ASB.Work.Battle.SkillExecution
             if (SkillExecutionRegistry.TryGetHandler(skill.skillKey, out ISkillEffectHandler handler)
                 && handler is TargetAroundRandom)
             {
+                if (gridManager.UsesBattleTilePresentation)
+                    return TryResolveSingleTargetCell(selectedTarget, gridManager, out mainCell);
                 return TryResolveTargetAroundRandomArea(selectedTarget, skill, gridManager, out mainCell, splashCells);
             }
 
@@ -111,7 +126,15 @@ namespace ASB.Work.Battle.SkillExecution
                 return false;
             }
 
-            if (IsSingleTargetSkill(skill))
+            if (HeroSkillRules.IsFamily(skill, 4040))
+            {
+                mainCell = centerCell;
+                int enemyX = caster.IsPlayer ? 2 : 0;
+                foreach (var coord in SkillTargetingMapper.GetFullSideBoardCoordinates(new Vector2Int(enemyX, 0)))
+                    if (gridManager.TryGetCell(coord, out var cell) && cell != null && cell != mainCell) splashCells.Add(cell);
+                return true;
+            }
+            if (IsSingleTargetSkill(skill) && !HeroSkillRules.IsFamily(skill, 1030) && skill.skillKey != "HCS005" && skill.skillKey != "HCS002")
             {
                 mainCell = centerCell;
                 return true;
@@ -161,7 +184,20 @@ namespace ASB.Work.Battle.SkillExecution
 
         private static HashSet<Vector2Int> ResolveHitCoordinates(SkillData skill, ASBGridCell centerCell)
         {
-            if (skill.classSkillTarget == 2)
+            if (HeroSkillRules.IsFamily(skill, 2030))
+            {
+                var column = SkillTargetingMapper.GetFullSideBoardCoordinates(centerCell.Coords);
+                column.RemoveWhere(c => c.x != centerCell.Coords.x);
+                return column;
+            }
+            if (HeroSkillRules.IsFamily(skill, 1030))
+            {
+                var cells = new HashSet<Vector2Int> { centerCell.Coords };
+                if (centerCell.OccupyingUnit != null && centerCell.OccupyingUnit.IsInFrontRow)
+                    cells.Add(centerCell.Coords + new Vector2Int(centerCell.Coords.x >= 2 ? 1 : -1, 0));
+                return cells;
+            }
+            if (skill.classSkillTarget == 2 || skill.skillKey == "HCS005" || skill.skillKey == "HCS002")
             {
                 return SkillTargetingMapper.GetFullSideBoardCoordinates(centerCell.Coords);
             }

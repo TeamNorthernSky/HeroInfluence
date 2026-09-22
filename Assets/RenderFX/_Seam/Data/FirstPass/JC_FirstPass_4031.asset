@@ -1,0 +1,131 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
+  m_Name: JC_FirstPass_4031
+  m_EditorClassIdentifier: 
+  SkillIndex: 4031
+  PresentationSchemaVersion: 1
+  AnimationStateName: 
+  AnimationTriggerOverride: 
+  TargetAnimationTriggerOverride: 
+  UseAnimEvent: 1
+  HitDelay: 0.25
+  HitSoundId: 0
+  SfxVolume: 1
+  EnableHitEffect: 1
+  HitEffectId: 98028
+  ProjectileVisual:
+    Prefab: {fileID: 6790517777361698389, guid: 1c3eed91f23df814a96c67024cd1c58d,
+      type: 3}
+    Speed: 7
+    Trajectory: 1
+    ArcHeight: 1.5
+    TrailTime: 0.4
+    TrackTarget: 1
+    AlignToVelocity: 1
+    ImpactVisualLifetime: 0.4
+    ArrivalRadius: 0.2
+    TimeoutGraceSeconds: 1
+    TimeoutSeconds: 5
+    DeliveryMode: 0
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
+    TargetFormationCenter: 0
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
+  MovePrepare:
+    Enabled: 0
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+  Move:
+    Enabled: 0
+    UseUnitMovement: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+  AttackPrepare:
+    Enabled: 0
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+  Attack:
+    Enabled: 1
+    Beats:
+    - AnimationStateName: Base Layer.ClassSkill_3
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 1
+      Cues:
+      - CueName: charge_r
+        EffectIds: eb7e0100
+        SoundIds: 
+        Operation: 0
+        InstanceKey: parts_lfl_charge_0
+        Anchor: 1
+        Socket: 11
+      - CueName: charge_l
+        EffectIds: eb7e0100
+        SoundIds: 
+        Operation: 0
+        InstanceKey: parts_lfl_charge_1
+        Anchor: 1
+        Socket: 10
+      - CueName: parts_merge
+        EffectIds: ed7e0100
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 1
+        Socket: 1
+      - CueName: parts_lfl_charge_off_0
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: parts_lfl_charge_0
+        Anchor: 0
+        Socket: 0
+      - CueName: parts_lfl_charge_off_1
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: parts_lfl_charge_1
+        Anchor: 0
+        Socket: 0
+  Return:
+    Enabled: 0
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+  Post:
+    Enabled: 0
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+    ExtraDelay: 0
+  MovingAttack:
+    Enabled: 0
+    AnimationStateName: 
+    AnimationBlendInSeconds: 0.1
+    EntryOffset: {x: -1.5, y: 0}
+    MidOffset: {x: 0, y: 0}
+    ExitOffset: {x: 1.5, y: 0}
+    PathSchemaVersion: 2
+    TopOffset: 1.5
+    BottomOffset: 1.5
+    SweepClearance: 0
+    FaceCurveTangent: 0
+    HitMode: 0
+    SingleAoEHitPathProgress: -1
+    PathSampleCount: 64
+    Cues: []

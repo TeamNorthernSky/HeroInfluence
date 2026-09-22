@@ -172,34 +172,19 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
 
     private bool ShowResolved(string key, object[] formatArgs)
     {
-        if (uiSheet == null)
-        {
-            Debug.LogWarning($"[Tutorial] UI 시트 없음(카탈로그 미할당/미매칭): key={key}", this);
-            return false;
-        }
-
-        TutorialUiEntry entry = uiSheet.Get(key);
-        if (entry == null)
-        {
-            Debug.LogWarning($"[Tutorial] UI 엔트리 없음: key={key}", this);
-            return false;
-        }
-
-        string view = string.IsNullOrWhiteSpace(entry.viewId) ? TutorialUiSheet.DefaultViewId : entry.viewId.Trim();
-        if (!string.Equals(view, TutorialUiSheet.DefaultViewId, StringComparison.Ordinal))
-        {
-            Debug.LogWarning($"[Tutorial] 미지원 viewId '{view}'(현재 '{TutorialUiSheet.DefaultViewId}'만): key={key}", this);
-            return false;
-        }
-
         if (tutorialUI == null)
         {
             Debug.LogWarning($"[Tutorial] TutorialBattleUI 미할당: key={key}", this);
             return false;
         }
 
-        string message = entry.message;
-        if (formatArgs != null && formatArgs.Length > 0)
+        // 코드-온리: 표시 문구/버튼은 씬 stepTexts/actionButtons가 key로 소유한다.
+        // 시트는 '있으면' 문구·하이라이트 보조로만 쓰고, 엔트리가 없어도(step3/step4 등) key만으로 표시한다.
+        TutorialUiEntry entry = uiSheet != null ? uiSheet.Get(key) : null;
+        string message = entry != null ? entry.message : null;
+        string highlight = entry != null ? entry.highlightActionId : null;
+
+        if (entry != null && formatArgs != null && formatArgs.Length > 0)
         {
             try
             {
@@ -208,11 +193,11 @@ public sealed class TutorialBattleDirector : MonoBehaviour, ITutorialBattleFlowH
             catch (FormatException e)
             {
                 Debug.LogWarning($"[Tutorial] UI 문구 형식 오류(key={key}): {e.Message}", this);
-                return false;
+                message = null;
             }
         }
 
-        return tutorialUI.TryShow(key, message, entry.highlightActionId);
+        return tutorialUI.TryShow(key, message, highlight);
     }
 
     // --- 결과창(전투 루프 밖) — BattleSceneManager가 호출 ---

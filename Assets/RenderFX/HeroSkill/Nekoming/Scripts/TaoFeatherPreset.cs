@@ -12,6 +12,7 @@ namespace JC.VFX
         [Header("★따름 (Alter 전용)")]
         [Tooltip("켜면 트랜스폼(형태·움직임)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON — B/A는 색만 다르다.")]
         public bool followBasic;
+        [Tooltip("Basic 따름이 켜져 있을 때 위치·형태 기준으로 읽을 프리셋입니다. 연결이 비어 있으면 자기 값을 사용합니다.")]
         public TaoFeatherPreset basicRef;
 
         /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>

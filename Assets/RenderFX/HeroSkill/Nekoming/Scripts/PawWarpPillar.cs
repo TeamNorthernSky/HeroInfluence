@@ -18,6 +18,7 @@ namespace JC.VFX
         [Header("런타임 프리뷰")]
         [Tooltip("지정하면 livePreview에서 이 프리셋 값을 매 프레임 반영.")]
         [SerializeField] private PawWarpPillarPreset preset;
+        [Tooltip("켜면 변경한 설정을 실행 중인 이 효과에 갱신합니다. 파일 저장과는 별개이며 이미 시작된 시간표는 재시전하여 확인합니다.")]
         [SerializeField] private bool livePreview = true;
 
         [Header("배치 / 타임라인 (livePreview 시 preset 사용)")]
@@ -37,8 +38,11 @@ namespace JC.VFX
         [Range(0f, 1f)] [SerializeField] private float narrow = 0.4f;
 
         [Header("룩 (livePreview 시 preset 사용)")]
+        [Tooltip("중심 코어의 색입니다. 테두리 색과 별도로 중심부의 인상을 조절합니다.")]
         [ColorUsage(true, true)] [SerializeField] private Color coreColor = Color.white;
+        [Tooltip("글로우(외곽 번짐) 색")]
         [ColorUsage(true, true)] [SerializeField] private Color glowColor = new Color(0.45f, 0.8f, 1f);
+        [Tooltip("전체 밝기")]
         [Range(0f, 10f)] [SerializeField] private float intensity = 3f;
 
         private Mesh _quad;
