@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: FX_JusticeDashWindArcs_Alter
   m_EditorClassIdentifier: 
   targets:
-    arcsPrefab: {fileID: 2480173325109819924, guid: c649a9b17d65f7c44a99f73219defaee,
+    arcsPrefab: {fileID: 3660970559736977656, guid: 64fa2bc26e7e11c499e20c274599b30e,
       type: 3}
-    ribbonMaterial: {fileID: 2100000, guid: 03a3f048900169d4daff2fa31f988dd2, type: 2}
+    ribbonMaterial: {fileID: 2100000, guid: afb5ec98e01b67143abaea23fd749738, type: 2}
   colorA: {r: 1, g: 1, b: 1, a: 1}
   colorB: {r: 1, g: 0.53, b: 0.5, a: 1}
   emission: 0.51

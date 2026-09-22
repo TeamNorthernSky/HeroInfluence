@@ -30,33 +30,49 @@ namespace JC.VFX.Seam
         [SerializeField] private Transform anchor;
 
         [Header("궤도 (xz 평면 · 시계 각도: 타깃 방향=12시 — 본 호와 동일 문법)")]
+        [Tooltip("호 시작각(도). 210 = 7시.")]
         [SerializeField] private float angleStart = 210f;
+        [Tooltip("호 끝각(도). 끝 < 시작 = 반시계, 끝 > 시작 = 시계, 차이 360 초과 = 한 바퀴 이상.")]
         [SerializeField] private float angleEnd = 30f;
+        [Tooltip("이 효과가 배치되거나 회전하는 반경(m)입니다. 높일수록 중심에서 멀어집니다.")]
         [SerializeField, Min(0.05f)] private float radius = 1.6f;
+        [Tooltip("호를 다 긋는 데 걸리는 시간(초).")]
         [SerializeField, Min(0.02f)] private float sweepDuration = 0.5f;
+        [Tooltip("주행 가속 곡선. 1=등속, 클수록 초반이 빠르고 끝에서 감속(촤악), 1 미만은 반대(끝에서 가속). ※방출 밀도(거리 기준)와 아래 점진·감소·수축 구간(호 위 위치 기준)은 이 값과 무관하게 형상이 유지된다.")]
         [SerializeField, Range(0.3f, 4f)] private float easeOut = 1f;
 
         [Header("수렴 (탄생 시 바깥 오프셋 → 수명 진행에 따라 본 궤도 합류)")]
+        [Tooltip("시작 오프셋 최소(m). 대시마다 [최소, 최대]에서 랜덤 = 노이즈.")]
         [SerializeField, Min(0f)] private float offsetMin = 0.3f;
+        [Tooltip("시작 오프셋 최대(m).")]
         [SerializeField, Min(0f)] private float offsetMax = 0.9f;
+        [Tooltip("복귀 곡선 지수. 1 = 선형 수렴, 클수록 초반에 빠르게 붙고 이후 궤도에 밀착.")]
         [SerializeField, Range(0.5f, 4f)] private float convergeExp = 1.5f;
 
         [Header("배치 · 정리")]
+        [Tooltip("스폰 지점(소켓) 기준 오프셋(m). 소켓 스케일은 무시된다.")]
         [SerializeField] private Vector3 spawnOffset = new Vector3(0f, -0.2f, 0f);
+        [Tooltip("주행 종료 후 잔광 여유(초).")]
         [SerializeField, Min(0f)] private float extraLinger = 0.2f;
 
         [Header("밀도 (호 위 위치 기준)")]
+        [Tooltip("생성 밀도의 점진 구간(호 전체=1.0, 호 위 위치 기준). 0 = 처음부터 풀 밀도.  0.25 = 호의 앞 25% 구간 동안 밀도가 0 → 100%로 선형 증가. 호의 시작은 성기고 진행할수록 빽빽해진다.")]
         [SerializeField, Range(0f, 0.5f)] private float emissionRamp = 0f;
+        [Tooltip("생성 밀도의 감소 구간(호 전체=1.0, 호 위 위치 기준). 0 = 끝까지 풀 밀도 유지(마지막에 한 번에 종료).  0.5 = 호의 중간부터 밀도가 100% → 0으로 선형 감소. 호의 끝으로 갈수록 획이 성겨진다.")]
         [SerializeField, Range(0f, 0.5f)] private float emissionDecay = 0f;
+        [Tooltip("풀 밀도일 때의 거리당 방출 수. 바인더가 프리셋에서 채운다.")]
         [SerializeField, Min(0f)] private float baseRateOverDistance = 1.5f;
 
         [Header("대시 일생 (수명 = 대시 길이 — 압축 없음)")]
+        [Tooltip("대시 수명 최소(초). 헤드를 따라 그리는 시간 = 대시 길이.")]
         [SerializeField, Min(0.02f)] private float strokeLifeMin = 0.15f;
+        [Tooltip("획 일생 최대(초). ★실제로는 「태어난 시점의 잔여 스윕 시간」을 넘지 못한다 — 스윕이 끝난 뒤까지 살아남아 제자리에서 굵어졌다 사라지는 획을 원천 차단한다.")]
         [SerializeField, Min(0.05f)] private float strokeLifeMax = 0.35f;
         [Tooltip("켜면: 스윕을 넘길 대시는 애초에 태어나지 않는다 → 연장 없이 스윕과 함께 종료.\n" +
                  "끄면: 말미 대시도 전부 태어나고, 스윕 종료 후 앵커가 등속으로 연장 주행하며 마저 그린다.")]
         [SerializeField] private bool skipShortRemainder = true;
 
+        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
         [SerializeField] private bool logLifecycle;
 
         const float SubStepTargetMeters = 0.15f;

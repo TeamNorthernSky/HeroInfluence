@@ -265,7 +265,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   crossMaterial: {fileID: 2100000, guid: eaba1107986ad6046a09ec9ca67f3ba2, type: 2}
-  preset: {fileID: 11400000, guid: 361dc76c9061dbd47a47cbc44f6d352f, type: 2}
+  preset: {fileID: 11400000, guid: 22fbcb66da81f1c4d9168b8452cd4efa, type: 2}
   livePreview: 1
   maxCrosses: 12
   spawnIntervalMin: 0.06
@@ -353,7 +353,7 @@ MonoBehaviour:
   featherBurst: {fileID: 2945772158979218827}
   crossBurst: {fileID: 6471452215390411610}
   sparkles: {fileID: 531274209888540250}
-  masterPreset: {fileID: 11400000, guid: 616cac85ff5fd3217c661cf4bcd78839, type: 2}
+  masterPreset: {fileID: 11400000, guid: c9ce3c0917be7fc408ec60d52dac3c6f, type: 2}
   livePreview: 1
   impactFlashColor: {r: 1, g: 0.9, b: 0.45, a: 1}
   flashSizeMul: 0.9

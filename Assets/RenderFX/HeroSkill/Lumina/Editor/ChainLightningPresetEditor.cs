@@ -117,8 +117,10 @@ namespace JC.VFX
 
         static void LivePushStatic(ChainLightningPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryLivePush(p))return;
             foreach (var vfx in Object.FindObjectsByType<ChainLightningVfx>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(vfx.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||vfx.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (InDarkVariant(vfx)) continue;   // 흑암 변형은 일반판 프리셋 스코프 밖
                 ApplyTimings(vfx, p);
                 foreach (var mr in vfx.GetComponentsInChildren<MeshRenderer>(true))
@@ -152,6 +154,7 @@ namespace JC.VFX
 
         public static void Apply(ChainLightningPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryApply(p))return;
             var matB = Load<Material>(MatBolt);
             FillBolt((k, f) => matB.SetFloat(k, f), (k, c) => matB.SetColor(k, c), p);
             matB.renderQueue = 3006;
@@ -203,6 +206,7 @@ namespace JC.VFX
 
             foreach (var vfx in Object.FindObjectsByType<ChainLightningVfx>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(vfx.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||vfx.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (InDarkVariant(vfx)) continue;
                 foreach (var mr in vfx.GetComponentsInChildren<MeshRenderer>(true))
                     mr.SetPropertyBlock(null);
@@ -212,6 +216,7 @@ namespace JC.VFX
 
         public static void Capture(ChainLightningPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryCapture(p))return;
             Undo.RecordObject(p, "Capture Chain Lightning");
 
             var matB = Load<Material>(MatBolt);

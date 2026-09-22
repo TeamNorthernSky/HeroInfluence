@@ -13,10 +13,13 @@ namespace JC.VFX
         [Header("런타임 프리뷰")]
         [Tooltip("지정하면 livePreview에서 이 프리셋 값을 매 프레임 반영.")]
         [SerializeField] private TaoMagicCirclePreset preset;
+        [Tooltip("켜면 변경한 설정을 실행 중인 이 효과에 갱신합니다. 파일 저장과는 별개이며 이미 시작된 시간표는 재시전하여 확인합니다.")]
         [SerializeField] private bool livePreview = true;
 
         [Header("크기 / 위치 (월드 m)")]
+        [Tooltip("이 효과가 배치되거나 회전하는 반경(m)입니다. 높일수록 중심에서 멀어집니다.")]
         [SerializeField] private float radius = 1.1f;
+        [Tooltip("위로 띄우는 높이(m). 장판 = z-fighting 방지 / 수직(배리지 손앞) = 위치 미세 조정(260807 작동 확장)")]
         [SerializeField] private float groundOffsetY = 0.02f;
         [Tooltip("전방 오프셋(m) — 수직 모드 전용(260807).")]
         [Range(0f, 5f)] [SerializeField] private float forwardOffset = 0f;
@@ -24,12 +27,16 @@ namespace JC.VFX
         [Header("등장 (선형보간, 260807 — livePreview 시 preset 사용)")]
         [Tooltip("등장 보간 시간(초). 0 = 즉시(기존 동작).")]
         [Range(0f, 2f)] [SerializeField] private float appearTime = 0f;
+        [Tooltip("등장 시작 크기 배율(0~1). appearTime 동안 1로 선형 증가.")]
         [Range(0f, 1f)] [SerializeField] private float appearStartScale = 0.3f;
+        [Tooltip("등장 시작 알파(0~1). appearTime 동안 1로 선형 증가 — 가산이라 밝기 배율로 작동.")]
         [Range(0f, 1f)] [SerializeField] private float appearStartAlpha = 0f;
         private float _appearT;
 
         [Header("색 (livePreview 시 preset 사용)")]
+        [Tooltip("이 시각 요소의 색입니다. HDR 색은 발광 강도와 함께 최종 밝기에 영향을 줍니다.")]
         [ColorUsage(true, true)] [SerializeField] private Color color = new Color(1f, 0.85f, 0.35f);
+        [Tooltip("전체 밝기")]
         [Range(0f, 8f)] [SerializeField] private float intensity = 2.2f;
 
         [Header("배치 모드")]

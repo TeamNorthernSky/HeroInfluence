@@ -107,8 +107,10 @@ namespace JC.VFX
 
         static void LivePushStatic(FlareOrbPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryLivePush(p))return;
             foreach (var shell in Object.FindObjectsByType<FlareOrbShell>(FindObjectsSortMode.None))
             {
+                if(shell.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||shell.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (IsAltShell(shell)) continue;   // Alt 계열은 F1 프리셋 관할
                 // ★변종 스코프(260730): 크림판 프리셋은 흑염을 건너뛰고, 흑염 프리셋은 흑염만 만진다.
                 if (InDarkVariant(shell) != WantsDark(p)) continue;
@@ -175,6 +177,7 @@ namespace JC.VFX
 
         public static void Apply(FlareOrbPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryApply(p))return;
             var core = Load<Material>(MatCore(p));
             core.SetColor("_ColorCore", p.coreColor);
             core.SetColor("_ColorMid", p.coreMidColor);
@@ -281,6 +284,7 @@ namespace JC.VFX
 
         public static void Capture(FlareOrbPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryCapture(p))return;
             Undo.RecordObject(p, "Capture Flare Orb F0");
 
             var core = Load<Material>(MatCore(p));

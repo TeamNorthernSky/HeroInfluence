@@ -60,7 +60,7 @@ MonoBehaviour:
     delay: 0
     timing: 3
     shotTiming: {fileID: 0}
-    pawTiming: {fileID: 11400000, guid: 6d92acfbe7a5ee84da3ba5a3d3054d4a, type: 2}
+    pawTiming: {fileID: 11400000, guid: 0bb2cc366d8b5e6499eebe22e773b54f, type: 2}
     anchor: 2
     offset: {x: 0, y: 0, z: 0}
     lifetime: 0
@@ -69,7 +69,7 @@ MonoBehaviour:
     delay: 0
     timing: 4
     shotTiming: {fileID: 0}
-    pawTiming: {fileID: 11400000, guid: 6d92acfbe7a5ee84da3ba5a3d3054d4a, type: 2}
+    pawTiming: {fileID: 11400000, guid: 0bb2cc366d8b5e6499eebe22e773b54f, type: 2}
     anchor: 3
     offset: {x: 0, y: 0, z: 0}
     lifetime: 0
@@ -78,7 +78,7 @@ MonoBehaviour:
     delay: 0
     timing: 4
     shotTiming: {fileID: 0}
-    pawTiming: {fileID: 11400000, guid: 6d92acfbe7a5ee84da3ba5a3d3054d4a, type: 2}
+    pawTiming: {fileID: 11400000, guid: 0bb2cc366d8b5e6499eebe22e773b54f, type: 2}
     anchor: 0
     offset: {x: 0, y: 0, z: 0}
     lifetime: 0

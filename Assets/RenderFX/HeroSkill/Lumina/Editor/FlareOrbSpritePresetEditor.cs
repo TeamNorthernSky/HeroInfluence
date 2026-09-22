@@ -86,8 +86,10 @@ namespace JC.VFX
 
         static void LivePushStatic(FlareOrbSpritePreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryLivePush(p))return;
             foreach (var aura in Object.FindObjectsByType<FlareOrbSpriteAura>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(aura.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||aura.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 // ★변종 스코프(260730): 크림판은 흑염을 건너뛰고, 흑염 프리셋은 흑염만 만진다.
                 if (InDarkVariant(aura) != WantsDark(p)) continue;
                 aura.worldSize = p.worldSize;
@@ -106,6 +108,7 @@ namespace JC.VFX
 
         public static void Apply(FlareOrbSpritePreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryApply(p))return;
             var mat = Load<Material>(MatSprite(p));
             FillSprite((n, f) => mat.SetFloat(n, f), (n, c) => mat.SetColor(n, c), p);
             mat.renderQueue = 3002;   // 코어 위, 최상단
@@ -128,6 +131,7 @@ namespace JC.VFX
 
             foreach (var aura in Object.FindObjectsByType<FlareOrbSpriteAura>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
+                if(aura.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||aura.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 var mr = aura.GetComponent<MeshRenderer>();
                 if (mr != null) mr.SetPropertyBlock(null);
             }
@@ -136,6 +140,7 @@ namespace JC.VFX
 
         public static void Capture(FlareOrbSpritePreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryCapture(p))return;
             Undo.RecordObject(p, "Capture Flare Orb F2");
 
             var mat = Load<Material>(MatSprite(p));

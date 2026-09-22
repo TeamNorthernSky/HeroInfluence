@@ -89,8 +89,9 @@ MonoBehaviour:
   flashMaterial: {fileID: 0}
   vortexMaterial: {fileID: 0}
   slashMaterial: {fileID: 0}
-  arcStrokeMaterial: {fileID: 2100000, guid: e732ad5307a0f2747ae6e436904cacca, type: 2}
+  arcStrokeMaterial: {fileID: 2100000, guid: 8694e41fa693c4240b0eaf93189762b5, type: 2}
   arcPointMaterial: {fileID: 0}
+  forceAlternate: 0
 --- !u!1 &8671799065338098291
 GameObject:
   m_ObjectHideFlags: 0
@@ -4905,7 +4906,7 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 0}
-  - {fileID: 2100000, guid: e732ad5307a0f2747ae6e436904cacca, type: 2}
+  - {fileID: 2100000, guid: 8694e41fa693c4240b0eaf93189762b5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -9,7 +9,7 @@ namespace JC.VFX
         const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo/Prefabs";
         // ★변종 인식(260807) — _Basic/_Alter 프리셋은 제 부품 프리팹(Tao_Revive±)만 만진다.
         string Sfx => JcPresetEditorUtil.VariantSuffix(target) ?? "_Alter";
-        string TaoPrefab => DIR + "/Tao_Revive" + Sfx + ".prefab";
+        string TaoPrefab => JcPresetPartTargets.Path(target, DIR + "/Tao_Revive" + Sfx + ".prefab");
 
         // 따름 잠금 — 색·밝기·불투명도 외 전부는 Basic 이 정본.
         static readonly string[] TransformProps =
@@ -26,8 +26,8 @@ namespace JC.VFX
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
-                if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","이 프리셋을 참조하는 대상 프리팹에 현재 값을 확정합니다."), GUILayout.Height(30))) Apply(p);
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","대상 프리팹의 값을 현재 프리셋으로 읽습니다. 프리셋 파일 저장은 별도입니다."), GUILayout.Height(30))) Capture(p);
                 JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 이 에셋을 preset으로 참조하는 AuraFlare(TaoAuraFlare)에 반영.\n플레어/펜선/상단 경계 항목은 프리셋+livePreview로만 구동됩니다.", MessageType.Info);

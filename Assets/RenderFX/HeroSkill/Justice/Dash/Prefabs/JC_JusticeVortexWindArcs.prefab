@@ -72,7 +72,7 @@ MonoBehaviour:
   brightWidthMul: 0.35
   brightAlphaMul: 1.8
   spawnOffset: {x: 0, y: -0.2, z: 0}
-  ribbonMaterial: {fileID: 2100000, guid: 9c0749e3a754a1e4da059667d2419392, type: 2}
+  ribbonMaterial: {fileID: 2100000, guid: 7407da8d4a98298498de8f3b64d47257, type: 2}
   followRoot: 0
   logLifecycle: 0
 --- !u!114 &4778210201720605082
@@ -89,4 +89,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   preset: {fileID: 11400000, guid: d9e168551925dc54190eaf22c70d04d4, type: 2}
   presetAlt: {fileID: 11400000, guid: d3f74ae637837d94894f8f3757e91269, type: 2}
-  ribbonMaterial: {fileID: 2100000, guid: 9c0749e3a754a1e4da059667d2419392, type: 2}
+  ribbonMaterial: {fileID: 2100000, guid: 7407da8d4a98298498de8f3b64d47257, type: 2}
+  forceAlternate: 0

@@ -36,7 +36,7 @@ Material:
     - _Steps: 0
     - _SwirlSpeed: 0.4
     m_Colors:
-    - _ColorCore: {r: 1.45, g: 1.28, b: 0.95, a: 1}
-    - _ColorMid: {r: 1.05, g: 0.66, b: 0.22, a: 1}
-    - _ColorRim: {r: 1.8, g: 1.55, b: 1, a: 1}
+    - _ColorCore: {r: 1.1721749, g: 0.7875, b: 1.3050001, a: 1}
+    - _ColorMid: {r: 0.6129375, g: 0.08595001, b: 0.94499993, a: 1}
+    - _ColorRim: {r: 1.43025, g: 0.79200006, b: 1.6199999, a: 1}
   m_BuildTextureStacks: []

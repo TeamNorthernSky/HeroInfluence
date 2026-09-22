@@ -15,6 +15,12 @@ namespace JC.VFX
             {
                 var fx=GetComponent<SolarPrismVfx>(); if(fx!=null) {int count=fx.UnitCount;ApplyVfx(fx,solar);if(fx.IsPlaying)fx.UnitCount=count;}
                 foreach(var im in GetComponentsInChildren<FlareBombImpact>(true)) ApplySolarImpact(im,solar);
+                foreach(var ps in GetComponentsInChildren<ParticleSystem>(true))
+                {
+                    if(!ps.name.Contains("Ember"))continue;
+                    var emission=ps.emission;emission.rateOverTime=solar.emberRate;
+                    var main=ps.main;main.startSize=new ParticleSystem.MinMaxCurve(solar.emberSize*.6f,solar.emberSize*1.3f);
+                }
             }
             else if(preset is PrismExplosionPreset prism)
             {

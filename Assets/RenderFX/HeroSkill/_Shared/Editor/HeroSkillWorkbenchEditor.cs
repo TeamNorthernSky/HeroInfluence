@@ -13,61 +13,76 @@ namespace JC.VFX.EditorTools
     {
         private readonly Dictionary<int,bool> folds=new Dictionary<int,bool>();
         private readonly Dictionary<int,Editor> materialEditors=new Dictionary<int,Editor>();
+        private readonly Dictionary<int,Editor> presetEditors=new Dictionary<int,Editor>();
         private JcSkillPartPreviewWindow player;
         private HeroSkillWorkbench Bench => (HeroSkillWorkbench)target;
         private void OnDisable()
         {
             if(player!=null){player.StopPart();DestroyImmediate(player);}
             foreach(var e in materialEditors.Values)if(e!=null)DestroyImmediate(e);
+            foreach(var e in presetEditors.Values)if(e!=null)DestroyImmediate(e);
         }
         private static GUIContent Label(string text,string tip)=>new GUIContent(text,tip);
         public override void OnInspectorGUI()
         {
             var bench=Bench;var skill=bench.Skill;
-            if(skill==null){DrawDefaultInspector();EditorGUILayout.HelpBox("스킬 대장 연결을 확인하세요.",MessageType.Error);return;}
+            if(skill==null){DrawDefaultInspector();return;}
             EditorGUILayout.LabelField(bench.key+" · "+skill.label,EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("공용 설정: 이 값을 사용하는 프리뷰와 전투에 함께 반영됩니다. 변경값은 다음 재생부터 적용되며 일부 효과는 즉시 갱신됩니다. 저장 버튼은 아래에 펼친 해당 에셋만 저장합니다.",MessageType.Info);
-            using(new EditorGUI.DisabledScope(true))EditorGUILayout.ObjectField(Label("실제 연출 데이터","실제 전투와 프리뷰가 함께 사용하는 연결입니다."),skill.presentation,typeof(SkillPresentationData),false);
+            EditorGUILayout.LabelField("프리뷰·전투 공용 프리셋",EditorStyles.miniLabel);
+            // 에셋을 직접 선택했을 때와 같은 CustomEditor를 사용합니다. 부품별 중복/추가 접기는 없습니다.
+            foreach(var preset in skill.parts.Where(p=>p.prefab!=null)
+                        .SelectMany(p=>FindPresets(p.prefab,skill.skillIndex%10!=0)).Distinct())
+                DrawPreset(preset);
+
+            EditorGUILayout.Space(12);
+            EditorGUILayout.LabelField("시전·부품 테스트",EditorStyles.boldLabel);
             using(new EditorGUI.DisabledScope(!EditorApplication.isPlaying))
             using(new EditorGUILayout.HorizontalScope())
             {
-                if(GUILayout.Button(Label("전체 스킬 선택","이 키의 스킬을 선택합니다. Game 뷰에서 대상을 클릭하면 실제 시전합니다.")))bench.rig?.SelectKey(bench.key);
-                if(GUILayout.Button(Label("시전 초기화","스킬 시전을 중단하고 위치·HP·부활 사용권을 복구합니다."))){player?.StopPart();bench.rig?.ResetPreview();}
+                if(GUILayout.Button(Label("전체 스킬 선택","선택 후 Game 뷰에서 대상을 클릭하면 시전합니다.")))bench.rig?.SelectKey(bench.key);
+                if(GUILayout.Button(Label("시전 초기화","시전을 중단하고 위치·HP·부활 사용권을 복구합니다."))){player?.StopPart();bench.rig?.ResetPreview();}
             }
             DrawProjectile(skill.presentation);
-            EditorGUILayout.Space();
             foreach(var part in skill.parts)
             {
                 if(part.prefab==null)continue;
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                EditorGUILayout.LabelField(PartName(part.cue),EditorStyles.boldLabel);
-                EditorGUILayout.LabelField(part.role,EditorStyles.wordWrappedMiniLabel);
-                using(new EditorGUI.DisabledScope(true))EditorGUILayout.ObjectField(Label("부품","현재 실제 연결된 프리팹입니다. 교체 후보는 위 역할 설명에 표시됩니다."),part.prefab,typeof(GameObject),false);
-                using(new EditorGUI.DisabledScope(!EditorApplication.isPlaying))
                 using(new EditorGUILayout.HorizontalScope())
+                using(new EditorGUI.DisabledScope(!EditorApplication.isPlaying))
                 {
-                    if(GUILayout.Button(Label("부품 재생","선택 부품만 검사합니다. 피해·회복 판정은 실행하지 않습니다."))){EnsurePlayer();player.PlayPart(part,bench.rig);}
+                    if(GUILayout.Button(Label(PartName(part.cue)+" 재생",part.role))){EnsurePlayer();player.PlayPart(part,bench.rig);}
                     if(part.signal&&GUILayout.Button(Label("발사 신호","검사 중인 차징 부품에서 비행을 시작합니다.")))player?.SignalPart();
-                    if(GUILayout.Button(Label("부품 중단","이 작업대가 검사 중인 부품을 정리합니다.")))player?.StopPart();
+                    if(GUILayout.Button(Label("중단","이 작업대가 검사 중인 부품을 정리합니다."),GUILayout.Width(48)))player?.StopPart();
                 }
-                var presets=FindPresets(part.prefab,skill.skillIndex%10!=0).ToArray();
-                foreach(var preset in presets)DrawAsset(preset,PartName(part.cue)+" · "+preset.name);
-                // 프리셋이 없는 임시 재료도 실제 컴포넌트와 재질에서 조절할 수 있습니다.
                 int detailKey=part.prefab.GetInstanceID();
                 bool show=folds.TryGetValue(detailKey,out var opened)&&opened;
-                show=EditorGUILayout.Foldout(show,Label("부품 자체 설정 · 고급","프리셋에 없는 임시 부품과 조립 설정을 직접 조절합니다. 프리셋이 제어하는 값은 프리셋이 우선합니다."),true);folds[detailKey]=show;
+                show=EditorGUILayout.Foldout(show,Label(PartName(part.cue)+" · 고급 부품 설정","프리셋 외의 연결·단독 재생 설정입니다. 위 프리셋이 제어하는 값은 프리셋이 우선합니다."),true);folds[detailKey]=show;
                 if(show)
                 {
+                    EditorGUILayout.ObjectField(Label("부품","실제 시전에 사용하는 프리팹입니다."),part.prefab,typeof(GameObject),false);
                     foreach(var c in part.prefab.GetComponentsInChildren<MonoBehaviour>(true))
                     {
                         if(c==null||c is JcLuminaPartPresetBinder||c.GetType().Name.EndsWith("Binder")||c.GetType().Name.EndsWith("Adapter"))continue;
                         DrawAsset(c,c.GetType().Name+" · "+c.name);
                     }
-                    if(presets.Length==0)foreach(var mat in part.prefab.GetComponentsInChildren<Renderer>(true).SelectMany(r=>r.sharedMaterials).Where(m=>m!=null).Distinct())DrawMaterial(mat);
+                    if(!FindPresets(part.prefab,skill.skillIndex%10!=0).Any())
+                        foreach(var mat in part.prefab.GetComponentsInChildren<Renderer>(true).SelectMany(r=>r.sharedMaterials).Where(m=>m!=null).Distinct())DrawMaterial(mat);
                 }
-                EditorGUILayout.EndVertical();
             }
             foreach(var assembly in FindAssemblies(skill))DrawAsset(assembly.GetComponent<JcVfxPartSequence>(),"부품 조립 시간 · "+assembly.name);
+        }
+        private void DrawPreset(ScriptableObject preset)
+        {
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField(preset.name,EditorStyles.boldLabel);
+            using(new EditorGUI.DisabledScope(true))
+                EditorGUILayout.ObjectField(Label("설정 에셋","원본 에셋과 같은 Inspector입니다. 이 값을 사용하는 프리뷰·전투에 함께 반영됩니다."),preset,preset.GetType(),false);
+            int id=preset.GetInstanceID();
+            if(!presetEditors.TryGetValue(id,out var editor)||editor==null){editor=CreateEditor(preset);presetEditors[id]=editor;}
+            editor.OnInspectorGUI();
+            if(preset is KAimShotPreset || (preset.GetType().Namespace=="JC.VFX" &&
+                (preset is FlareOrbPresetBase || preset is FlareOrbSpritePreset || preset is FlareImpactPreset || preset is SolarPrismPreset || preset is PrismExplosionPreset || preset is ChainLightningPreset)))
+                JcPresetEditorUtil.DrawSaveButton(preset,true);
+            if(GUILayout.Button(Label("저장값 복원","이 프리셋의 미저장 조절을 버리고 디스크에 저장된 값으로 되돌립니다. 실행 취소할 수 있습니다.")))Restore(preset);
         }
         private void EnsurePlayer(){if(player==null){player=CreateInstance<JcSkillPartPreviewWindow>();player.hideFlags=HideFlags.HideAndDontSave;}}
         private void DrawProjectile(SkillPresentationData data)
@@ -189,7 +204,8 @@ namespace JC.VFX.EditorTools
             if(!EditorApplication.isPlaying)return;
             foreach(var c in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include,FindObjectsSortMode.None))
             {
-                if(c is JcLuminaPartPresetBinder lumina&&lumina.preset==preset)lumina.ApplyNow();
+                if(c is JcFlareOrbPartPresetBinder orb && orb.Uses(preset))orb.ApplyNow();
+                else if(c is JcLuminaPartPresetBinder lumina&&lumina.preset==preset)lumina.ApplyNow();
                 else if(c is KAimShotVfx shot&&preset is KAimShotPreset p&&shot.UsesPreset(p))shot.PullFromPreset();
                 else if(c.GetType().Namespace=="JC.VFX"&&c.GetType().Name.EndsWith("Binder"))
                 {
@@ -200,7 +216,14 @@ namespace JC.VFX.EditorTools
         }
         public static IEnumerable<ScriptableObject> FindPresets(GameObject root,bool alternate)
         {
-            var found=new HashSet<ScriptableObject>();
+            var found=new List<ScriptableObject>();var seen=new HashSet<GameObject>();
+            CollectPresets(root,alternate,seen,found);
+            return found.Distinct();
+        }
+        private static void CollectPresets(GameObject root,bool alternate,HashSet<GameObject> seen,List<ScriptableObject> found)
+        {
+            if(root==null||!seen.Add(root))return;
+            var external=new List<GameObject>();
             foreach(var c in root.GetComponentsInChildren<MonoBehaviour>(true))
             {
                 if(c==null)continue;var so=new SerializedObject(c);var it=so.GetIterator();
@@ -208,10 +231,24 @@ namespace JC.VFX.EditorTools
                 while(it.Next(true))
                 {
                     if(two&&it.propertyPath==(alternate?"preset":"presetAlt"))continue;
-                    if(it.propertyType==SerializedPropertyType.ObjectReference&&it.objectReferenceValue is ScriptableObject p)found.Add(p);
+                    if(it.propertyPath.StartsWith("m_")||it.propertyType!=SerializedPropertyType.ObjectReference)continue;
+                    if(it.objectReferenceValue is ScriptableObject p)
+                    {
+                        found.Add(p);
+                        // 컨테이너가 별도 생성하는 자식만 따라갑니다. basicRef/미사용 옛 targets는 순회하지 않습니다.
+                        if(p is JusticeVortexPreset v && v.targets!=null)
+                        {
+                            if(v.useStroke)external.Add(v.targets.strokePrefab);
+                            if(v.usePoint)external.Add(v.targets.pointPrefab);
+                            external.Add(v.targets.windArcsPrefab);external.Add(v.targets.shardPrefab);
+                        }
+                    }
+                    var go=it.objectReferenceValue as GameObject;
+                    if(it.objectReferenceValue is Component comp)go=comp.gameObject;
+                    if(go!=null&&AssetDatabase.Contains(go)&&AssetDatabase.GetAssetPath(go)!=AssetDatabase.GetAssetPath(root))external.Add(go);
                 }
             }
-            return found.OrderBy(p=>p.name);
+            foreach(var next in external)CollectPresets(next,alternate,seen,found);
         }
         public static IEnumerable<GameObject> FindAssemblies(JcSkillPartsManifest.Skill skill)
         {
@@ -222,7 +259,7 @@ namespace JC.VFX.EditorTools
         private static string PartName(string cue)
         {
             var key=cue.Substring(cue.LastIndexOf('_')+1);
-            switch(key){case "charge":return "차징";case "flight":return "비행";case "impact":return "착탄";case "sweep":return "이동 궤적";case "muzzle":return "총구";case "main":return "최초 번개";case "chain":return "연쇄 번개";case "shock":return "감전";case "land":return "회복 착지";case "merge":return "합류";case "spawn":return "등장";case "warp":return "워프";case "beam":return "빔·착탄";case "revive":return "부활";case "barrage":return "전체공격";case "meteor":return "혜성 · 교체 후보";default:return cue;}
+            switch(key){case "vortex":return "소용돌이";case "trail":return "궤적";case "arc":return "호 획";case "point":return "포인트 획";case "wind":return "바람";case "shard":return "파편";case "charge":return "차징";case "flight":return "비행";case "impact":return "착탄";case "sweep":return "이동 궤적";case "muzzle":return "총구";case "main":return "최초 번개";case "chain":return "연쇄 번개";case "shock":return "감전";case "land":return "회복 착지";case "merge":return "합류";case "spawn":return "등장";case "warp":return "워프";case "beam":return "빔·착탄";case "revive":return "부활";case "barrage":return "전체공격";case "meteor":return "혜성 · 교체 후보";default:return cue;}
         }
     }
 }

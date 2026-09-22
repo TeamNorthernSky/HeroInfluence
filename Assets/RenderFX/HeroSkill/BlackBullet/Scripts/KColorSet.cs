@@ -21,13 +21,17 @@ namespace JC.VFX
     public class KColorSet
     {
         [Header("테두리 (축 방향 3스톱)")]
+        [Tooltip("효과가 시작되는 머리 구간의 색입니다. 중간·꼬리 색으로 이어집니다.")]
         [ColorUsage(true, true)] public Color headColor = new Color(0.85f, 0.95f, 1f, 1f);
+        [Tooltip("효과 중간 구간의 색입니다. 머리·꼬리 사이의 색 변화를 조절합니다.")]
         [ColorUsage(true, true)] public Color midColor = new Color(0.45f, 0.75f, 1f, 1f);
+        [Tooltip("효과 끝 또는 사라지기 직전 구간의 색입니다.")]
         [ColorUsage(true, true)] public Color tailColor = new Color(0.20f, 0.45f, 0.9f, 1f);
         [Tooltip("테두리 발광 배수. chromaHold와 함께 쓴다.")]
         [Range(0f, 24f)] public float edgeEmission = 2.0f;
 
         [Header("내부 (심)")]
+        [Tooltip("내부(심) 색 — 빛나는 흰색이 기본.")]
         [ColorUsage(true, true)] public Color innerColor = Color.white;
         [Tooltip("내부 발광 배수.")]
         [Range(0f, 24f)] public float innerEmission = 1.5f;
