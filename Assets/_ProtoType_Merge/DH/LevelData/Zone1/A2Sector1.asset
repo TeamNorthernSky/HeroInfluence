@@ -8960,7 +8960,15 @@ MonoBehaviour:
     blockerCells:
     - {x: 43, y: 19}
     - {x: 43, y: 20}
-  enemySpawnPointPlacements: []
+  enemySpawnPointPlacements:
+  - gridPosition: {x: 42, y: 19}
+    zoneId: zone_001
+    enemyGroupKey: UMT001
+    spawnChatZoneId: 0
+    spawnChatId: 1510100
+    encounterChatZoneId: 0
+    encounterChatId: 1520010
+    eventBattleKey: 
   heroUnionPlacement:
     hasPlacement: 1
     gridPosition: {x: 9, y: 8}

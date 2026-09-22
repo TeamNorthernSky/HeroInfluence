@@ -45,6 +45,7 @@ public class OutpostDoubleClickEntry : MonoBehaviour
 
         Outpost hitOutpost = hit.collider != null ? hit.collider.GetComponentInParent<Outpost>() : null;
         if (hitOutpost == null || hitOutpost.gameObject != gameObject) return;
+        if (!HasPlayerPartyAtInteractionCell(hitOutpost)) return;
 
         float now = Time.unscaledTime;
         if (lastClickTime > 0f && now - lastClickTime <= doubleClickThreshold)
@@ -63,6 +64,45 @@ public class OutpostDoubleClickEntry : MonoBehaviour
         if (DHGameEndState.IsEnding) return;
         if (GameSceneManager.Instance != null) GameSceneManager.Instance.LoadLobby();
         else SceneManager.LoadScene("HQLobbyScene");
+    }
+
+    private static bool HasPlayerPartyAtInteractionCell(Outpost targetOutpost)
+    {
+        if (targetOutpost == null)
+            return false;
+
+        PartyGridMover party = ResolvePlayerParty();
+        if (party == null || !party.gameObject.activeInHierarchy)
+            return false;
+
+        if (DefeatedPartyReturnController.IsPartyWaiting(party))
+            return false;
+
+        GridManager gridManager = Game.Grid != null ? Game.Grid : Object.FindFirstObjectByType<GridManager>();
+        if (gridManager == null)
+            return false;
+
+        Vector2Int partyGrid = party.GetCurrentGrid();
+        IReadOnlyList<Vector2Int> interactionCells = targetOutpost.GetAdjacentInteractionCells(gridManager);
+        if (interactionCells == null)
+            return false;
+
+        for (int i = 0; i < interactionCells.Count; i++)
+        {
+            if (interactionCells[i] == partyGrid)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static PartyGridMover ResolvePlayerParty()
+    {
+        PartyRegistry registry = Object.FindFirstObjectByType<PartyRegistry>();
+        if (registry != null && registry.PlayerParty != null)
+            return registry.PlayerParty;
+
+        return Object.FindFirstObjectByType<PartyGridMover>();
     }
 }
 

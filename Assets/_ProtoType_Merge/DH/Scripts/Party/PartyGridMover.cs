@@ -133,11 +133,13 @@ public class PartyGridMover : MonoBehaviour
     private void HandleRuntimeLevelLoaded(LevelLoader _)
     {
         RefreshHeroUnionStartAfterLevelLoad();
+        RefreshCurrentGridSurfaceHeight();
     }
 
     private void HandleRuntimeLayoutLoaded(LevelZoneLayoutLoader _)
     {
         RefreshHeroUnionStartAfterLevelLoad();
+        RefreshCurrentGridSurfaceHeight();
     }
 
     private void RefreshHeroUnionStartAfterLevelLoad()
@@ -158,6 +160,14 @@ public class PartyGridMover : MonoBehaviour
         SnapToGridPosition(startGrid, notifyMoveCompleted: false);
         canRefreshHeroUnionStartAfterLevelLoad = false;
         StartCoroutine(PersistCurrentGridWhenPartyDataReady(cachedIdentity));
+    }
+
+    private void RefreshCurrentGridSurfaceHeight()
+    {
+        if (!Application.isPlaying || isMoving || gridManager == null)
+            return;
+
+        transform.position = GetWorldPositionForGrid(currentGrid);
     }
 
     private void Update()

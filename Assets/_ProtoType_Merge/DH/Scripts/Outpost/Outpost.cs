@@ -185,6 +185,7 @@ public class Outpost : MonoBehaviour
             EnsureDefenderId();
 
         ApplyStateMaterial();
+        ApplyCompletionFlagIfPlaying();
     }
 
     public void ApplyProgressData(OutpostState nextState, string nextEnemyDefenderGroupKey, string nextDefenderEnemyId)
@@ -204,6 +205,7 @@ public class Outpost : MonoBehaviour
             EnsureDefenderId();
 
         ApplyStateMaterial();
+        ApplyCompletionFlagIfPlaying();
     }
 
     public void RefreshResolvedEnemyLevel()
@@ -283,6 +285,14 @@ public class Outpost : MonoBehaviour
 
         if (eventStateRepository.GetFlag(completionFlag))
             ApplyPlayerClaimedState(false);
+    }
+
+    private void ApplyCompletionFlagIfPlaying()
+    {
+        if (!Application.isPlaying)
+            return;
+
+        ApplyCompletionFlagIfAlreadySet(DHEventStateRepository.Instance);
     }
 
     private void ApplyStateMaterial()

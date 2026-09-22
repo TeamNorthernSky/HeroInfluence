@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -42,6 +43,7 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
         // 자기 본부 GO hit 여부 (자식 콜라이더 hit 포함)
         HeroUnionUnit hitHeroUnion = hit.collider != null ? hit.collider.GetComponentInParent<HeroUnionUnit>() : null;
         if (hitHeroUnion == null || hitHeroUnion.gameObject != gameObject) return;
+        if (!HasPlayerPartyAtInteractionCell(hitHeroUnion)) return;
 
         // 더블클릭 임계값 검사
         float now = Time.unscaledTime;
@@ -70,5 +72,40 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
             Debug.LogWarning("[HeroUnionDoubleClickEntry] GameSceneManager.Instance == null — 폴백 호출", this);
             UnityEngine.SceneManagement.SceneManager.LoadScene("HQLobbyScene");
         }
+    }
+
+    private static bool HasPlayerPartyAtInteractionCell(HeroUnionUnit heroUnion)
+    {
+        if (heroUnion == null)
+            return false;
+
+        PartyGridMover party = ResolvePlayerParty();
+        if (party == null || !party.gameObject.activeInHierarchy)
+            return false;
+
+        if (DefeatedPartyReturnController.IsPartyWaiting(party))
+            return false;
+
+        Vector2Int partyGrid = party.GetCurrentGrid();
+        IReadOnlyList<Vector2Int> interactionCells = heroUnion.GetInteractionCells();
+        if (interactionCells == null)
+            return false;
+
+        for (int i = 0; i < interactionCells.Count; i++)
+        {
+            if (interactionCells[i] == partyGrid)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static PartyGridMover ResolvePlayerParty()
+    {
+        PartyRegistry registry = Object.FindFirstObjectByType<PartyRegistry>();
+        if (registry != null && registry.PlayerParty != null)
+            return registry.PlayerParty;
+
+        return Object.FindFirstObjectByType<PartyGridMover>();
     }
 }
