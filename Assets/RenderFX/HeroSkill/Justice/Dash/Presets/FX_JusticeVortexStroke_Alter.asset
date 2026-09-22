@@ -23,12 +23,12 @@ MonoBehaviour:
     vortexMaterial: {fileID: 0}
     slashPrefab: {fileID: 0}
     slashMaterial: {fileID: 0}
-    arcStrokePrefab: {fileID: 5014783889222747169, guid: 34368804c9daa914892d33eb8a83e92a,
+    arcStrokePrefab: {fileID: 8611901290201109420, guid: f72d547a454085a4ca7386254c8480d9,
       type: 3}
-    arcStrokeMaterial: {fileID: 2100000, guid: 2b81e3f76cf5ad244962730c9482a33b, type: 2}
-    arcPointPrefab: {fileID: 5014783889222747169, guid: 52314a557f5d7a8458a0afc850abdf88,
+    arcStrokeMaterial: {fileID: 2100000, guid: cb2d9e7da44955b40a71bf13c35cce4f, type: 2}
+    arcPointPrefab: {fileID: 7674410979476553257, guid: f5ac3846604ea3c4cbba0184ca30b17f,
       type: 3}
-    arcPointMaterial: {fileID: 2100000, guid: 417c81c6877a1cc4d8fda42be2e0ac15, type: 2}
+    arcPointMaterial: {fileID: 2100000, guid: ac53b414e2fc06049b8044558f62db89, type: 2}
   trail:
     enabled: 1
     emission: 2.25

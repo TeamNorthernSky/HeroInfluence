@@ -19,6 +19,7 @@ namespace JC.VFX
     [Serializable]
     public class KElementLife
     {
+        [Tooltip("이 시각 요소를 표시할지 정합니다. 끄면 해당 요소를 사용하지 않습니다.")]
         public bool enabled = true;
 
         [Header("수명")]
@@ -39,7 +40,9 @@ namespace JC.VFX
         public KEase fadeOutEase = KEase.Linear;
 
         [Header("크기")]
+        [Tooltip("이 요소의 시작 크기입니다. 최대 크기보다 크게 두면 크게 나타난 뒤 줄어드는 팝 효과가 됩니다.")]
         public float startSize = 0.2f;
+        [Tooltip("확대 단계가 끝났을 때의 기준 크기입니다. 시작·종료 크기와 함께 크기 변화를 정합니다.")]
         public float maxSize = 0.45f;
         [Tooltip("축소 구간이 수렴하는 크기.")]
         public float endSize = 0.1f;
@@ -51,7 +54,9 @@ namespace JC.VFX
         [Range(0f, 1f)] public float holdEnd = 0.6f;
 
         [Header("보간")]
+        [Tooltip("시작 크기에서 최대 크기로 커지는 속도 곡선입니다. 전체 확대 시간은 별도 시간 항목을 따릅니다.")]
         public KEase expandEase = KEase.Linear;
+        [Tooltip("최대 크기에서 종료 크기로 줄어드는 속도 곡선입니다. 전체 축소 시간은 별도 시간 항목을 따릅니다.")]
         public KEase shrinkEase = KEase.Linear;
 
         [Header("배치")]

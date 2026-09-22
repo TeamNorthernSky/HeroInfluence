@@ -78,8 +78,8 @@ namespace ASB.Work.Battle.SkillExecution
             Register("HS5070", new DuelistSkillHandler());   // (1v1 시 데미지 증폭)
 
             //------------------적 (적 스킬 키 = EnemySkillKeyRules.Compose("FV"+숫자, 슬롯). 옛 200011 = 20001*10+1)
-            Register(EnemySkillKeyRules.Compose("FV20001", 1), new DamageSkillHandler());    //단일 공격
-            Register(EnemySkillKeyRules.Compose("FV20001", 2), new AoEDamageSkillHandler()); //열 공격
+            Register(EnemySkillKeyRules.Compose("FV20001", 1), new DamageSkillHandler());    //단일 타깃 공격X -> 표식      AI 내용 : 가장 가까운 캐릭터 1명 표적 지적
+            Register(EnemySkillKeyRules.Compose("FV20001", 2), new AoEDamageSkillHandler()); //십자 공격 -> 자폭
 
             Register(EnemySkillKeyRules.Compose("FV20002", 1), new DamageSkillHandler());    // 단일 공격
             Register(EnemySkillKeyRules.Compose("FV20002", 2), new AoEDamageSkillHandler()); // 원거리 난사(열 광역) — 구 단일힐에서 변경(알파 V4.0)

@@ -14,23 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 1010
   PresentationSchemaVersion: 1
+  AnimationRail: 0
+  PresentationArchetype: 1
+  SkillTimelines:
+  - CharacterKey: "\uD30C\uC774\uD130"
+    Timeline: {fileID: 11400000, guid: fb2520a064163bf42ba5830cf5712f9a, type: 2}
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
   HitDelay: 0
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
   EnableHitEffect: 1
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
@@ -52,14 +49,6 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
     Enabled: 0
     AnimationStateName: Base Layer.ClassSkill_1
@@ -72,6 +61,9 @@ MonoBehaviour:
       InstanceKey: 
       Anchor: 0
       Socket: 0
+      Timing: 0
+      Time: 0
+      CueId: 1d25814d7c6040c588121e6d8f03c82d
   Move:
     Enabled: 1
     UseUnitMovement: 1
@@ -86,7 +78,7 @@ MonoBehaviour:
     Enabled: 1
     Beats:
     - AnimationStateName: Base Layer.ClassSkill_1
-      BlendInSeconds: 0
+      BlendInSeconds: 0.05
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
       Cues:
@@ -97,10 +89,13 @@ MonoBehaviour:
         InstanceKey: 
         Anchor: 1
         Socket: 1
+        Timing: 0
+        Time: 0.24615386
+        CueId: 505bee9a733044a98d75ba4d0a8d8e79
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
-    BlendInSeconds: 0.001
+    BlendInSeconds: 0.05
   Post:
     Enabled: 1
     AnimationStateName: Base Layer.Taunt
@@ -113,6 +108,9 @@ MonoBehaviour:
       InstanceKey: 
       Anchor: 1
       Socket: 4
+      Timing: 0
+      Time: 0
+      CueId: 6319f7d263b14243886a5f24c87876ac
     ExtraDelay: 0
   MovingAttack:
     Enabled: 0

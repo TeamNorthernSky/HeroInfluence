@@ -31,19 +31,27 @@ namespace JC.VFX
         [SerializeField] private KAimShotPreset masterPreset;
 
         [Header("요소 참조")]
+        [Tooltip("총구 섬광을 그리는 컴포넌트입니다. 총구 색·크기 설정을 적용할 대상을 연결합니다.")]
         [SerializeField] private KStarBurstQuad muzzleQuad;
+        [Tooltip("탄두의 별 모양 화면을 그리는 컴포넌트입니다. 탄두 색·크기 설정을 적용할 대상을 연결합니다.")]
         [SerializeField] private KStarBurstQuad headQuad;
+        [Tooltip("착탄 스타버스트를 그리는 컴포넌트입니다. 착탄 색·크기 설정을 적용할 대상을 연결합니다.")]
         [SerializeField] private KStarBurstQuad impactQuad;
+        [Tooltip("탄두 뒤의 궤적을 그리는 컴포넌트입니다. 궤적 색·폭·수명 설정을 적용할 대상을 연결합니다.")]
         [SerializeField] private KBulletTrailStroke trailStroke;
 
         [Header("── 시퀀스 ──")]
+        [Tooltip("효과 생성 후 탄환이 출발할 때까지의 지연(초)입니다. 길수록 총구에서 대기하는 시간이 늘어납니다.")]
         public float launchDelay = 0.06f;
+        [Tooltip("탄환이 출발점에서 대상까지 이동하는 시간(초)입니다. 짧을수록 빠르게 도착합니다.")]
         public float travelTime = 0.12f;
 
         [Header("── 머즐 플래시 ──")]
+        [Tooltip("총구 섬광의 등장 지연·수명·크기·페이드 설정입니다.")]
         public KElementLife muzzleLife = new KElementLife();
 
         [Header("── 탄두 ──")]
+        [Tooltip("탄두의 독립 생명주기. 크기·페이드는 자기 시계로 돌고, 위치만 주행 진행도에 묶인다. 수명이 주행 시간보다 길면 탄착 지점에 잠시 머무르며 사라진다.")]
         public KElementLife bulletHead = new KElementLife();
 
         [Header("── 궤적 : 시간축 ──")]
@@ -53,11 +61,15 @@ namespace JC.VFX
         public float tailReachSeconds = 0.14f;
 
         [Header("── 궤적 : 공간 테이퍼 (머리↔꼬리) ──")]
+        [Tooltip("꼬리 굵기 / 머리 굵기 비율. 1이면 균일한 막대, 작을수록 꼬리가 가늘어진다. 머리(탄두) 쪽이 항상 최대 굵기 기준이다.")]
         [Range(0.01f, 1f)] public float trailTailWidthRatio = 0.30f;
+        [Tooltip("꼬리 휘도 / 머리 휘도 비율. 작을수록 꼬리가 옅어진다.")]
         [Range(0f, 1f)] public float trailTailBrightnessRatio = 0.22f;
+        [Tooltip("테이퍼 곡률. 1이면 선형, 클수록 머리 근처에서 급격히 굵어진다.")]
         [Range(0.2f, 6f)] public float trailTaperCurve = 1.15f;
 
         [Header("── 탄착 ──")]
+        [Tooltip("탄착 스타버스트의 독립 생명주기. · startDelay는 도착 시각(launchDelay + travelTime)에 맞추는 것이 기본이다. · offset은 타겟 루트 기준 위치 보정. 탄두가 도달하는 지점도 이 값을 따른다. · 팝 연출은 startSize를 maxSize보다 크게 잡으면 된다(크게 터진 뒤 수축).")]
         public KElementLife impactBurst = new KElementLife();
 
         [Header("── 색 (요소별 독립) ──")]
@@ -67,6 +79,7 @@ namespace JC.VFX
         [Tooltip("축=시간")] public KColorSet impactColors = new KColorSet();
 
         [Header("── 발사 지점 폴백 ──")]
+        [Tooltip("총구 소켓을 못 받았을 때 캐스터 루트 기준으로 쓸 오프셋.")]
         public Vector3 casterFallbackOffset = new Vector3(0.35f, 1.0f, 0.15f);
 
         /// <summary>에디터 스코프 판정용 — 이 인스턴스가 해당 프리셋을 실제로 참조하는지.</summary>

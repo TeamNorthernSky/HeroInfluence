@@ -21,25 +21,39 @@ namespace JC.VFX
         [SerializeField] private bool livePreview = true;
 
         [Header("크기 / 위치 (월드 m)")]
+        [Tooltip("중심장판 반지름(m). 이 안쪽은 항상 채워진 디스크")]
         [SerializeField] private float discRadius = 0.8f;
+        [Tooltip("레이가 닿는 외곽선 반지름(m). 디스크와 같거나 작으면 레이 없이 순수 원형 디스크")]
         [SerializeField] private float rayRadius = 1.1f;
+        [Tooltip("지면 위 오프셋(m). z-fight 방지용 소량")]
         [SerializeField] private float groundOffsetY = 0.02f;
 
         [Header("색 / 밝기 (livePreview 시 preset 사용)")]
+        [Tooltip("이 시각 요소의 색입니다. HDR 색은 발광 강도와 함께 최종 밝기에 영향을 줍니다.")]
         [ColorUsage(true, true)] [SerializeField] private Color color = new Color(1f, 0.88f, 0.35f);
+        [Tooltip("전체 밝기")]
         [Range(0f, 8f)] [SerializeField] private float intensity = 1.8f;
+        [Tooltip("전체 투명도(0~1). intensity와 별개 최종 배수")]
         [Range(0f, 1f)] [SerializeField] private float opacity = 1.0f;
 
         [Header("경계 수렴 / 레이 (뾰족별)")]
+        [Tooltip("외곽 수렴 폭(원호·레이 팁, 반지름 방향). 클수록 넓게 부드럽게 사라짐")]
         [Range(0.01f, 1f)] [SerializeField] private float edgeSoft = 0.35f;
+        [Tooltip("레이 옆면 소프트 폭(SDF 거리 기준). 클수록 옆면이 부드러움. 0=칼같은 옆면. 레이 두께보다 크면 레이가 흐려짐")]
         [Range(0f, 0.3f)] [SerializeField] private float sideSoft = 0.06f;
+        [Tooltip("중심 몰림. 클수록 중심만 밝고 경계로 빨리 어두워짐")]
         [Range(0.2f, 6f)] [SerializeField] private float centerFalloff = 1.6f;
+        [Tooltip("별 포인트 수(정수 반올림). 5=5망성, 6=6망성… 0=원판")]
         [Range(0f, 48f)] [SerializeField] private float rayDensity = 14f;
+        [Tooltip("별 형태: 1=직선 엣지 별(정통 망성) / 1 미만=뚱뚱·둥근 별 / 1 초과=오목 샤인(✦)")]
         [Range(0.5f, 8f)] [SerializeField] private float raySharp = 2.5f;
+        [Tooltip("레이 회전 속도(도/초). 음수=반대방향")]
         [Range(-180f, 180f)] [SerializeField] private float rayRotSpeed = 18f;
+        [Tooltip("골 플래토(주기 대비 평탄 비율). 0=연속 별, 클수록 포인트 사이 원호↑ = 디스크+돌출 레이 느낌")]
         [Range(0f, 0.95f)] [SerializeField] private float valleyWidth = 0f;
 
         [Header("솟아남")]
+        [Tooltip("생성 시 지름 팝(퍼짐). 0=끔, 1=0에서 자라남. 페이드인 구간 동안 diameter×lerp")]
         [Range(0f, 1f)] [SerializeField] private float spreadGrow = 0.5f;
 
         private MeshRenderer _mr;

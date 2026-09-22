@@ -817,6 +817,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2798479886320253830}
   - component: {fileID: 7285977087860915962}
+  - component: {fileID: 7119121438135710350}
   m_Layer: 0
   m_Name: h2010_charge_Alter
   m_TagString: Untagged
@@ -855,6 +856,21 @@ MonoBehaviour:
   _systems: []
   _followSocket: 1
   _fadeOutSeconds: 0.15
+--- !u!114 &7119121438135710350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7279501774558855398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f278d6cfc3b7f1e4b958da4523260577, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fieldPreset: {fileID: 11400000, guid: a21cdc70ee1f8e24cad07d880bcea91b, type: 2}
+  lanePreset: {fileID: 11400000, guid: f7dc2770ce9411e4c92f64b8a7a61e97, type: 2}
+  spritePreset: {fileID: 11400000, guid: 81c20781a9bc1254a93c3558a23bcb4c, type: 2}
 --- !u!1 &7571247582063335381
 GameObject:
   m_ObjectHideFlags: 0

@@ -25,6 +25,7 @@ namespace JC.VFX
         }
 
         [Header("── 대상 자산 ──")]
+        [Tooltip("적용·캡처할 프리팹과 재질 연결입니다. 다른 스킬 또는 변종을 지정하면 그 에셋이 수정될 수 있습니다.")]
         public TargetSet targets = new TargetSet();
 
         [Header("── 색 (원호마다 A↔B 사이 랜덤 배합) ──")]

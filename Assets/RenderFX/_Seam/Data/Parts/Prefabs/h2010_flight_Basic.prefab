@@ -43,6 +43,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5215802064053453459}
   - component: {fileID: 4699895944717284707}
+  - component: {fileID: 1523357987516661740}
   m_Layer: 0
   m_Name: h2010_flight_Basic
   m_TagString: Untagged
@@ -86,6 +87,21 @@ MonoBehaviour:
   targetOffset: {x: 0, y: 0.8, z: 0}
   arcHeight: 1.2
   externallyDriven: 1
+--- !u!114 &1523357987516661740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 48239427848257567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f278d6cfc3b7f1e4b958da4523260577, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fieldPreset: {fileID: 11400000, guid: cfa8fa30feb2021449c2e6af7d30650c, type: 2}
+  lanePreset: {fileID: 11400000, guid: 9c85c70e02e9f6f47bf6f8a91aab5f09, type: 2}
+  spritePreset: {fileID: 11400000, guid: f008e47c2336a6e47904c6daf871a8ab, type: 2}
 --- !u!1 &535251022100182877
 GameObject:
   m_ObjectHideFlags: 0

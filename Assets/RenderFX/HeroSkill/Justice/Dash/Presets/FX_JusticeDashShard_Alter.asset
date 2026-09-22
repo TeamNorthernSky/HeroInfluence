@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: FX_JusticeDashShard_Alter
   m_EditorClassIdentifier: 
   targets:
-    shardPrefab: {fileID: 4231697358879776452, guid: 4ec27b6f611ce5449a6e450c4e99d442,
+    shardPrefab: {fileID: 8083756017086973636, guid: 46ca4a1b53090024486719d6c6f06abf,
       type: 3}
-    shardMaterial: {fileID: 2100000, guid: 7adaefb95aab4c94dbb18bc7b9eec58c, type: 2}
+    shardMaterial: {fileID: 2100000, guid: f6612fdcf13d3a84eb415122cf1deadb, type: 2}
   headColor: {r: 1, g: 0.027025223, b: 0, a: 1}
   midColor: {r: 1, g: 0.059999943, b: 0, a: 1}
   tailColor: {r: 1, g: 1, b: 1, a: 1}

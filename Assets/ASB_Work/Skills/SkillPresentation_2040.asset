@@ -14,23 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 2040
   PresentationSchemaVersion: 1
+  AnimationRail: 0
+  PresentationArchetype: 0
+  SkillTimelines: []
   AnimationStateName: Base Layer.ClassSkill_1
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
   HitDelay: 0.25
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
   EnableHitEffect: 1
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
@@ -52,14 +47,6 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: fall_charge
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
     Enabled: 0
     AnimationStateName: 
@@ -90,6 +77,9 @@ MonoBehaviour:
         InstanceKey: fall_charge
         Anchor: 1
         Socket: 9
+        Timing: 0
+        Time: 0
+        CueId: 8d149d476dc74d02a1dc6d7997e384f5
   Return:
     Enabled: 0
     AnimationStateName: 

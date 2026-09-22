@@ -170,23 +170,54 @@ public class SkillPresentationEditorWindow : EditorWindow
         SerializedProperty schemaProp = so.FindProperty("PresentationSchemaVersion");
         bool isPhaseCue = schemaProp != null && schemaProp.intValue >= 1;
         EditorGUILayout.LabelField("Presentation Schema", isPhaseCue ? "PhaseCue (1)" : "Legacy (0)", EditorStyles.boldLabel);
-        using (new EditorGUI.DisabledScope(isPhaseCue))
+
+        // 체크박스로 양방향 전환한다. 어느 쪽으로 가도 데이터는 지워지지 않는다 —
+        // Legacy 슬롯과 Cue는 각각 다른 자리에 그대로 남고, '런타임이 어느 쪽을 읽는지'만 바뀐다.
+        // (BeginChangeCheck로 감싸 값이 실제로 바뀔 때만 쓴다. 열어보기만 해도 dirty가 되면 자산 YAML이 흔들린다.)
+        using (new EditorGUI.DisabledScope(schemaProp == null))
         {
-            if (GUILayout.Button("Upgrade To Phase Cue (Schema = 1)") && schemaProp != null)
+            EditorGUI.BeginChangeCheck();
+            bool next = EditorGUILayout.ToggleLeft("Phase Cue 사용 (Schema = 1)", isPhaseCue);
+            if (EditorGUI.EndChangeCheck() && schemaProp != null)
             {
-                schemaProp.intValue = 1;
-                isPhaseCue = true;
+                schemaProp.intValue = next ? 1 : 0;
+                isPhaseCue = next;
             }
         }
+
         EditorGUILayout.HelpBox(isPhaseCue
-            ? "PhaseCue: 이펙트/사운드는 아래 Presentation Phases의 Cue로만 재생됩니다. 빈 Cue = 의도적 무연출(레거시 폴백 아님)."
-            : "Legacy: 기존 director 경로(아래 Attack/Hit Effect·Sound id)를 사용합니다. Upgrade 시 Cue 경로로 전환됩니다.",
+            ? "PhaseCue: 이펙트/사운드는 아래 Presentation Phases의 Cue로만 재생됩니다. 빈 Cue = 의도적 무연출(레거시 폴백 아님).\n" +
+              "체크를 해제하면 Legacy 슬롯을 다시 읽습니다(Cue 데이터는 지워지지 않습니다)."
+            : "Legacy: 기존 director 경로(아래 Attack/Hit Effect·Sound id)를 사용합니다. 체크하면 Cue 경로로 전환됩니다.\n" +
+              "전환은 값을 옮기지 않습니다 — Cue를 채우기 전까지 이펙트·사운드가 재생되지 않습니다.",
             MessageType.Info);
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Animation Rail", EditorStyles.boldLabel);
+        SerializedProperty railProp = so.FindProperty("AnimationRail");
+        EditorGUILayout.PropertyField(railProp);
+        bool isTimelineRail = railProp != null && railProp.enumValueIndex == (int)AnimationRail.Timeline;
+        EditorGUILayout.PropertyField(so.FindProperty("PresentationArchetype"));
+        if (isTimelineRail)
+        {
+            EditorGUILayout.PropertyField(so.FindProperty("SkillTimelines"), true);
+            EditorGUILayout.HelpBox(
+                "Timeline Rail에서는 실제 Timeline의 Clip/Overlap/Marker가 애니메이션 시간의 원본입니다. " +
+                "아래 Phase 데이터는 롤백·마이그레이션용으로만 보존됩니다.", MessageType.Info);
+            if (GUILayout.Button("Skill Presentation Timeline Jig 열기"))
+                ASB.Work.EditorTools.Jig.SkillPresentationJigWindow.Open();
+        }
+        else
+        {
+            EditorGUILayout.HelpBox(
+                "Animator Rail에서는 기존 Phase/CrossFade 경로가 계속 사용됩니다.", MessageType.None);
+        }
 
         // ── 공용 (전 스키마) ──
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Animation (비우면 CSV/산술 폴백)", EditorStyles.boldLabel);
-        EditorGUILayout.PropertyField(so.FindProperty("AnimationStateName")); // base 컨트롤러 state 드롭다운
+        using (new EditorGUI.DisabledScope(isTimelineRail))
+            EditorGUILayout.PropertyField(so.FindProperty("AnimationStateName")); // Timeline Rail에서는 마이그레이션 원본
         EditorGUILayout.PropertyField(so.FindProperty("TargetAnimationTriggerOverride"));
 
         EditorGUILayout.Space();
@@ -211,9 +242,12 @@ public class SkillPresentationEditorWindow : EditorWindow
 
         // ── 신 방식 (Phase Cue, Schema=1) ──
         EditorGUILayout.Space();
-        _foldNew = EditorGUILayout.Foldout(_foldNew, "신 방식 — Presentation Phases (Schema=1)", true);
+        _foldNew = EditorGUILayout.Foldout(_foldNew,
+            isTimelineRail ? "Legacy Migration Data — Presentation Phases" : "Presentation Phases (Animator Rail)", true);
         if (_foldNew)
         {
+            using (new EditorGUI.DisabledScope(isTimelineRail))
+            {
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(so.FindProperty("MovePrepare"), true);
             EditorGUILayout.PropertyField(so.FindProperty("Move"), true);
@@ -229,6 +263,7 @@ public class SkillPresentationEditorWindow : EditorWindow
                             MovingAttackPathSceneTool.DrawInspectorControls(_selected);
                             so.Update();
             EditorGUI.indentLevel--;
+            }
         }
 
         so.ApplyModifiedProperties();

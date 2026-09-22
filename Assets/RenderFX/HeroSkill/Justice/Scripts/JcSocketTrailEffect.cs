@@ -57,6 +57,7 @@ namespace JC.VFX.Seam
         [Tooltip("방출을 끈 뒤 잔광이 다 사라질 때까지의 추가 여유(초).")]
         [SerializeField, Min(0f)] private float fadeOutExtraSeconds = 0.15f;
 
+        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
         [SerializeField] private bool logLifecycle;
 
         private Transform followTarget;

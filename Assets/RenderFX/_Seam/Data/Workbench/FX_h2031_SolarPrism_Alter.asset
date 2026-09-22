@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3874763273ed2b148ae66a1034636664, type: 3}
+  m_Name: FX_h2031_SolarPrism_Alter
+  m_EditorClassIdentifier: 
+  bodyColor: {r: 0.82, g: 0.9, b: 1.05, a: 1}
+  rimColor: {r: 1.45, g: 1.55, b: 1.75, a: 1}
+  crystalEmission: 1.3
+  bodyAlpha: 0.22
+  rimAlpha: 0.85
+  fresnelPow: 2.6
+  facetAmount: 0.65
+  flareColor: {r: 1.6, g: 1.65, b: 1.8, a: 1}
+  flareEmission: 1.8
+  spikeNarrow: 26
+  spikeFall: 3.5
+  diagRatio: 0.35
+  flareCoreSize: 0.16
+  flareThreshold: 0.94
+  flareSharp: 2.5
+  flareSize: 0.277
+  groundColor: {r: 1.2, g: 1.15, b: 0.95, a: 1}
+  groundEmission: 1.2
+  groundFalloff: 2.5
+  groundSize: 0.9
+  groundBase: 0.55
+  groundPulse: 0.45
+  unitCount: 3
+  spacing: 0.35
+  forwardOffset: 1.15
+  hoverHeight: 0.95
+  prismScale: 0.076
+  hoverAmp: 0.07
+  hoverFreq: 1.1
+  spinSpeed: 80
+  spinJitter: 0.15
+  summonTime: 0.35
+  summonStagger: 0.12
+  beltRadius: 1.414
+  beltLocalY: 0
+  beltAngleOffset: 45
+  emberRate: 7
+  emberSize: 0.03
+  launchSpeed: 12
+  launchStagger: 0.08
+  launchSpinMul: 3
+  launchArc: 0.2
+  targetHeight: 0.8
+  aimBlend: 0.18
+  launchTrailTime: 0.35
+  launchTrailWidth: 0.28
+  impactHotColor: {r: 1.7, g: 1.7, b: 1.85, a: 1}
+  impactGlowColor: {r: 0.75, g: 0.85, b: 1.5, a: 1}
+  impactEmission: 1.6
+  impactRingColor: {r: 0.8, g: 0.9, b: 1.4, a: 1}
+  impactBurstDuration: 0.55
+  impactRingDuration: 0.5
+  impactSize: 1.7
+  impactRingSize: 2

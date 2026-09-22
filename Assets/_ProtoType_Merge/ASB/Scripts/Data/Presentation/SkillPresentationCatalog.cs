@@ -16,7 +16,11 @@ public class SkillPresentationCatalog : ScriptableObject
         public SkillPresentationData Presentation;
     }
 
+    [Tooltip("긴급 롤백용. 켜면 에셋의 AnimationRail 값을 바꾸지 않고 모든 Timeline Rail을 Animator Rail로 우회합니다.")]
+    [SerializeField] private bool _forceAnimatorRail;
     [SerializeField] private Binding[] _bindings;
+
+    public bool ForceAnimatorRail => _forceAnimatorRail;
 
     private Dictionary<int, SkillPresentationData> _cache;
 

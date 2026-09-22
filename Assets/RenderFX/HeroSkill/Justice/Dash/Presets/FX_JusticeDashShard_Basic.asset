@@ -15,7 +15,7 @@ MonoBehaviour:
   targets:
     shardPrefab: {fileID: 4231697358879776452, guid: 4ec27b6f611ce5449a6e450c4e99d442,
       type: 3}
-    shardMaterial: {fileID: 2100000, guid: 7adaefb95aab4c94dbb18bc7b9eec58c, type: 2}
+    shardMaterial: {fileID: 2100000, guid: 684d8b6594bc394499451a9d24000dcc, type: 2}
   headColor: {r: 0, g: 0.106132984, b: 1, a: 1}
   midColor: {r: 0, g: 0.04706006, b: 0.6226415, a: 1}
   tailColor: {r: 1, g: 1, b: 1, a: 1}

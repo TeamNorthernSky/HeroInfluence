@@ -20,17 +20,26 @@ namespace JC.VFX.Seam
         [SerializeField] private Transform anchor;
 
         [Header("궤도 (xz 평면 · 시계 각도: 타깃 방향=12시)")]
+        [Tooltip("호 시작각(도). 210 = 7시.")]
         [SerializeField] private float angleStart = 210f;
+        [Tooltip("호 끝각(도). 끝 < 시작 = 반시계, 끝 > 시작 = 시계, 차이 360 초과 = 한 바퀴 이상.")]
         [SerializeField] private float angleEnd = 30f;
+        [Tooltip("이 효과가 배치되거나 회전하는 반경(m)입니다. 높일수록 중심에서 멀어집니다.")]
         [SerializeField, Min(0.05f)] private float radius = 1.6f;
+        [Tooltip("호를 다 긋는 데 걸리는 시간(초).")]
         [SerializeField, Min(0.02f)] private float sweepDuration = 0.5f;
+        [Tooltip("주행 가속 곡선. 1=등속, 클수록 초반이 빠르고 끝에서 감속(촤악), 1 미만은 반대(끝에서 가속). ※방출 밀도(거리 기준)와 아래 점진·감소·수축 구간(호 위 위치 기준)은 이 값과 무관하게 형상이 유지된다.")]
         [SerializeField, Range(0.3f, 4f)] private float easeOut = 1f;
 
         [Header("배치 · 정리")]
+        [Tooltip("스폰 지점(소켓) 기준 오프셋(m). 소켓 스케일은 무시된다.")]
         [SerializeField] private Vector3 spawnOffset = new Vector3(0f, -0.2f, 0f);
+        [Tooltip("주행 종료 후 잔광 여유(초).")]
         [SerializeField, Min(0f)] private float extraLinger = 0.5f;
+        [Tooltip("방출 종료 후 정리할 때 사용하는 최대 입자 수명(초)입니다. 실제 입자 수명보다 짧으면 잔상이 일찍 잘릴 수 있습니다.")]
         [SerializeField, Min(0f)] private float lifeMaxForCleanup = 0.7f;
 
+        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
         [SerializeField] private bool logLifecycle;
 
         /// <summary>서브스텝당 목표 이동 거리(m) — 방출 지점이 프레임당 크게 튀는 것을 막는다.</summary>

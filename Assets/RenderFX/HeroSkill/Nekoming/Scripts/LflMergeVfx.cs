@@ -21,6 +21,15 @@ namespace JC.VFX
     /// </summary>
     public class LflMergeVfx : VfxEffect
     {
+        [Tooltip("이 변종의 합류 시간·섬광 설정입니다. Basic과 Alter는 독립 프리셋을 사용합니다.")]
+        [SerializeField] private LflMergePreset preset;
+        public void PullFromPreset()
+        {
+            if(preset==null)return;
+            convergeTime=preset.convergeTime;holdTime=preset.holdTime;
+            flashColor=preset.flashColor;flashSizeMul=preset.flashSizeMul;
+        }
+
         [Header("References (프리팹 에셋 — 런타임 인스턴스화)")]
         [Tooltip("양손 오브(작은 것 — LFL 전용 차지 프리팹). ShowCharged 로 즉시 표시된다.")]
         [SerializeField] private ChargeOrbVfx orbPrefab;
@@ -42,7 +51,9 @@ namespace JC.VFX
         [Range(0.05f, 1f)] [SerializeField] private float convergeTime = 0.25f;
         [Tooltip("합쳐진 구체를 유지할 시간(초). 끝나는 순간 lfl_fire 가 이어받는다.")]
         [Range(0.05f, 1f)] [SerializeField] private float holdTime = 0.25f;
+        [Tooltip("프리셋이 없을 때 사용하는 합체 섬광 HDR 색상입니다.")]
         [ColorUsage(true, true)] [SerializeField] private Color flashColor = new Color(0.85f, 0.92f, 1f);
+        [Tooltip("프리셋이 없을 때 사용하는 섬광 크기 배수입니다.")]
         [Range(0.2f, 3f)] [SerializeField] private float flashSizeMul = 0.8f;
 
         private enum Phase { Idle, Converge, Hold }
@@ -57,6 +68,7 @@ namespace JC.VFX
         public override void Play(Transform origin, Transform target)
         {
             StopInternal();
+            PullFromPreset();
 
             Vector3 mp = transform.position;
             _startR = HandStart(origin, true, mp);

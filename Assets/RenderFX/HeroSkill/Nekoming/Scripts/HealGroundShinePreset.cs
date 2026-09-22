@@ -15,6 +15,7 @@ namespace JC.VFX
         [Header("★따름 (Alter 전용)")]
         [Tooltip("켜면 트랜스폼(반지름·위치)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON.")]
         public bool followBasic;
+        [Tooltip("Basic 따름이 켜져 있을 때 위치·형태 기준으로 읽을 프리셋입니다. 연결이 비어 있으면 자기 값을 사용합니다.")]
         public HealGroundShinePreset basicRef;
 
         /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
@@ -29,7 +30,9 @@ namespace JC.VFX
         public float groundOffsetY = 0.02f;
 
         [Header("색 / 밝기")]
+        [Tooltip("이 시각 요소의 색입니다. HDR 색은 발광 강도와 함께 최종 밝기에 영향을 줍니다.")]
         [ColorUsage(true, true)] public Color color = new Color(1f, 0.88f, 0.35f);
+        [Tooltip("전체 밝기")]
         [Range(0f, 8f)] public float intensity = 1.8f;
         [Tooltip("전체 투명도(0~1). intensity와 별개 최종 배수")]
         [Range(0f, 1f)] public float opacity = 1.0f;

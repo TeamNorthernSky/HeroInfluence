@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.Scripting.APIUpdating;
+using UnityEngine.Timeline;
 
 /// <summary>
 /// skillIndex로 매핑되는 스킬 연출 데이터.
@@ -22,6 +23,46 @@ public enum CustomImpactResolutionPolicy
     PerTargetImpact
 }
 
+/// <summary>
+/// 연출 애니메이션 재생 레일. Path A/B 하이브리드의 스킬 단위 선택자.
+/// Docs/SkillPresentation_PathA_Timeline런타임재생_구현지시서.md 참조.
+/// </summary>
+public enum AnimationRail
+{
+    /// <summary>Path B — Animator.CrossFade(named state) 경로. 현행이자 기본.</summary>
+    Animator,
+    /// <summary>Path A — TimelineAsset을 PlayableDirector로 직접 재생(opt-in).</summary>
+    Timeline
+}
+
+/// <summary>
+/// Timeline 템플릿과 검증 규칙을 선택하는 저작 분류. SchemaVersion/Cue 형식 및 AnimationRail과는 독립이다.
+/// </summary>
+public enum PresentationArchetype
+{
+    Stationary,
+    Melee,
+    Projectile,
+    AoE,
+    MovingAttack
+}
+
+/// <summary>
+/// Path A용 캐릭터별 베이크 Timeline 바인딩(지시서 §5).
+/// 저작 시점에 그 캐릭터의 클립(오버라이드 해석 포함)이 이미 구워진 전용 TimelineAsset을 가리킨다.
+/// 런타임은 이 매핑에서 시전 캐릭터 키로 선택만 하고, 클립 해석/에셋 뮤테이션을 하지 않는다.
+/// </summary>
+[Serializable]
+public class SkillTimelineBinding
+{
+    [Tooltip("이 Timeline을 사용할 캐릭터 키 = 시전자 unitName(예: '블래스터'). " +
+             "비워두면 모든 시전자에 적용(와일드카드/폴백) — 단일 캐릭터 파일럿에 편리.")]
+    public string CharacterKey;
+
+    [Tooltip("해당 캐릭터의 클립이 이미 구워진 전용 TimelineAsset.")]
+    public TimelineAsset Timeline;
+}
+
 [CreateAssetMenu(fileName = "SkillPresentation_New", menuName = "Battle/Skill Presentation Data")]
 public class SkillPresentationData : ScriptableObject
 {
@@ -29,11 +70,63 @@ public class SkillPresentationData : ScriptableObject
     [Tooltip("SkillData.skillIndex. SkillPresentationCatalog가 이 값으로 조회.")]
     public int SkillIndex;
 
-    [Tooltip("0 = Legacy(기존 director 경로), 1 = PhaseCue(새 Cue 경로). 자동 변경 금지 — 에디터 Upgrade 버튼으로만 전환.")]
+    [Tooltip("0 = Legacy(기존 director 경로), 1 = PhaseCue(새 Cue 경로). 자동 변경 금지 — 에디터의 " +
+             "'Phase Cue 사용' 체크박스로만 전환. 전환은 값을 옮기지 않고 '어느 쪽을 읽는지'만 바꾼다.")]
     public int PresentationSchemaVersion = 0;
 
     /// <summary>새 페이즈/Cue 구조가 활성인지.</summary>
     public bool IsPhaseCue => PresentationSchemaVersion >= 1;
+
+    [Header("Animation Rail (Path A — opt-in)")]
+    [Tooltip("Timeline이면 이 스킬은 PlayableDirector로 SkillTimelines를 재생한다(Path A). 기본은 Animator(Path B). " +
+             "지시서: Docs/SkillPresentation_PathA_Timeline런타임재생_구현지시서.md")]
+    public AnimationRail AnimationRail = AnimationRail.Animator;
+
+    [Tooltip("Timeline 템플릿/검증 분류. AnimationRail이나 PresentationSchemaVersion을 대신하지 않습니다.")]
+    public PresentationArchetype PresentationArchetype = PresentationArchetype.Stationary;
+
+    [Tooltip("AnimationRail=Timeline일 때만 사용. 파일럿은 캐릭터별 베이크 Variant — 시전 캐릭터 키로 조회(지시서 §5).")]
+    public List<SkillTimelineBinding> SkillTimelines = new List<SkillTimelineBinding>();
+
+    /// <summary>이 스킬이 Path A(Timeline 재생) 레일인지.</summary>
+    public bool IsTimelineRail => AnimationRail == AnimationRail.Timeline;
+
+    /// <summary>
+    /// 시전 캐릭터 키에 해당하는 베이크 Timeline을 찾는다(지시서 §5). 없으면 null.
+    /// 런타임은 클립 해석을 하지 않고 이 선택 결과만 재생한다.
+    /// </summary>
+    public TimelineAsset ResolveTimeline(string characterKey)
+    {
+        if (SkillTimelines == null) return null;
+
+        string key = characterKey?.Trim();
+        TimelineAsset wildcard = null;
+
+        for (int i = 0; i < SkillTimelines.Count; i++)
+        {
+            SkillTimelineBinding binding = SkillTimelines[i];
+            if (binding == null || binding.Timeline == null) continue;
+
+            string bindingKey = binding.CharacterKey?.Trim();
+
+            // CharacterKey가 비어 있으면 "모든 캐릭터"(와일드카드/폴백) — 단일 캐릭터 파일럿에 편리.
+            if (string.IsNullOrEmpty(bindingKey))
+            {
+                if (wildcard == null) wildcard = binding.Timeline;
+                continue;
+            }
+
+            // 정확 매칭(대소문자 무시 + 공백 정리로 오타 완화).
+            if (!string.IsNullOrEmpty(key)
+                && string.Equals(bindingKey, key, StringComparison.OrdinalIgnoreCase))
+            {
+                return binding.Timeline;
+            }
+        }
+
+        // 정확 매칭이 없으면 와일드카드(빈 키) 항목을 쓴다.
+        return wildcard;
+    }
 
     [Header("Animation State/Slot Override (empty uses SkillData/fallback)")]
     [Tooltip("이 스킬의 Animator state/slot. 비면 SkillData.StateName → 산술(ClassSkill_N/WeaponSkill_N) 폴백.")]
@@ -139,7 +232,9 @@ public class SkillPresentationData : ScriptableObject
 
     private void OnValidate()
     {
-        if (!IsPhaseCue)
+        // Schema와 Rail은 독립 축이다. Schema=1이어도 Timeline Rail이면 아래 Animator state/time 규칙은
+        // 실행 계약이 아니며, 실제 Cue/Marker 정합성은 SkillTimelineValidator가 검사한다.
+        if (!IsPhaseCue || IsTimelineRail)
         {
             return;
         }
@@ -219,7 +314,138 @@ public class SkillPresentationData : ScriptableObject
             {
                 Debug.LogWarning($"[SkillPresentation] {name}: {label}.Cues[{i}] {cue.Operation}은 EffectIds를 생성하지 않습니다. 별도 Spawn Cue로 분리하세요.", this);
             }
+
+            ValidateCueTiming(label, stateName, i, cue);
         }
+    }
+
+    /// <summary>
+    /// 데이터 시각(Timing != ClipEvent) Cue의 경계값 검증.
+    /// 클립 종료 판정이 normalizedTime 0.95에서 일어나므로(CharactorAnimationController) 그 이후는 발화가 보장되지 않는다.
+    /// </summary>
+    private void ValidateCueTiming(string label, string stateName, int index, CueBinding cue)
+    {
+        if (!cue.IsDataTimed)
+        {
+            return;
+        }
+
+        // 데이터 시각은 "그 state가 재생되는 동안"을 기준으로 하므로 state가 없으면 해석할 수 없다.
+        if (string.IsNullOrWhiteSpace(stateName))
+        {
+            Debug.LogWarning(
+                $"[SkillPresentation] {name}: {label}.Cues[{index}] Timing={cue.Timing}인데 AnimationStateName이 비어 있어 발화하지 않습니다.", this);
+            return;
+        }
+
+        if (cue.Timing != CueTimingSource.NormalizedTime)
+        {
+            // Seconds는 실제 재생 클립 길이를 알아야 검증할 수 있다(캐릭터별 오버라이드로 길이가 달라짐).
+            // Timeline 지그 생성 시점에 검증한다.
+            return;
+        }
+
+        if (cue.Time > 1f)
+        {
+            Debug.LogWarning(
+                $"[SkillPresentation] {name}: {label}.Cues[{index}] NormalizedTime={cue.Time:F3}이 0~1 범위를 벗어났습니다.", this);
+        }
+        else if (cue.Time >= CueFireGuaranteedNormalizedLimit)
+        {
+            Debug.LogWarning(
+                $"[SkillPresentation] {name}: {label}.Cues[{index}] NormalizedTime={cue.Time:F3}은 클립 종료 판정({CueFireGuaranteedNormalizedLimit:F2}) 이후라 " +
+                "발화가 보장되지 않습니다. 더 이른 시각으로 옮기거나 다음 페이즈의 이른 Cue로 이동하세요.", this);
+        }
+    }
+
+    /// <summary>
+    /// 발화가 보장되는 정규화 시각의 상한. CharactorAnimationController의 클립 종료 임계값과 같은 값이어야 한다.
+    /// (그 상수는 private이므로 여기서 복제한다 — 한쪽을 바꾸면 다른 쪽도 바꿀 것.)
+    /// </summary>
+    private const float CueFireGuaranteedNormalizedLimit = 0.95f;
+
+    /// <summary>
+    /// 모든 Cue에 CueId를 채운다. Timeline 지그가 마커 → CueBinding 역기입 대상을 특정하는 데 사용한다.
+    /// CueName은 페이즈/Beat 간 중복이 가능하고 리스트 순서도 바뀌므로 이름·인덱스로는 특정할 수 없다.
+    ///
+    /// ★OnValidate에서 호출하지 않는다 — 자산을 인스펙터로 열기만 해도 전 자산이 dirty가 되어
+    ///   YAML이 통째로 바뀐다. 지그가 실제로 필요할 때 명시적으로 호출하고, 그 커밋에서만 자산이 변한다.
+    /// </summary>
+    public bool EnsureCueIds()
+    {
+        bool changed = false;
+        foreach (PhaseBase phase in GetPhases())
+        {
+            if (phase is CuePhase cuePhase)
+            {
+                changed |= EnsureCueIds(cuePhase.Cues);
+            }
+        }
+
+        if (MovingAttack != null)
+        {
+            changed |= EnsureCueIds(MovingAttack.Cues);
+        }
+
+        if (Attack?.Beats != null)
+        {
+            for (int i = 0; i < Attack.Beats.Count; i++)
+            {
+                changed |= EnsureCueIds(Attack.Beats[i]?.Cues);
+            }
+        }
+
+        return changed;
+    }
+
+    /// <summary>
+    /// 이 연출의 모든 페이즈/Beat Cue를 순서대로 수집한다(Path A Timeline 레일 등록용, 지시서 §6).
+    /// <see cref="EnsureCueIds"/>와 같은 순회를 쓴다 — 한쪽만 바뀌지 않게 traversal을 일치시킨다.
+    /// </summary>
+    public void CollectAllCues(List<CueBinding> dest)
+    {
+        if (dest == null) return;
+
+        foreach (PhaseBase phase in GetPhases())
+        {
+            if (phase is CuePhase cuePhase && cuePhase.Cues != null)
+            {
+                dest.AddRange(cuePhase.Cues);
+            }
+        }
+
+        if (MovingAttack?.Cues != null)
+        {
+            dest.AddRange(MovingAttack.Cues);
+        }
+
+        if (Attack?.Beats != null)
+        {
+            for (int i = 0; i < Attack.Beats.Count; i++)
+            {
+                List<CueBinding> beatCues = Attack.Beats[i]?.Cues;
+                if (beatCues != null) dest.AddRange(beatCues);
+            }
+        }
+    }
+
+    private static bool EnsureCueIds(List<CueBinding> cues)
+    {
+        if (cues == null)
+        {
+            return false;
+        }
+
+        bool changed = false;
+        for (int i = 0; i < cues.Count; i++)
+        {
+            if (cues[i] != null)
+            {
+                changed |= cues[i].EnsureCueId();
+            }
+        }
+
+        return changed;
     }
 }
 
@@ -294,6 +520,20 @@ public enum SpawnAnchor
 }
 
 /// <summary>
+/// Cue의 발화 시점을 누가 정하는가.
+/// ClipEvent = 클립에 심긴 AniEvent_PresentationCue(현행). 나머지는 이 데이터의 Time에 드라이버가 발화.
+/// 같은 CueName의 진짜 클립 이벤트가 있으면 데이터 쪽이 스스로 물러난다(이중 발화 방지).
+/// </summary>
+public enum CueTimingSource
+{
+    ClipEvent,
+    /// <summary>Time = 0~1. 실제 시각 = Time * 클립길이. 클립 길이가 달라도 모션 대비 같은 지점(권장).</summary>
+    NormalizedTime,
+    /// <summary>Time = 초. 클립 이벤트와 같은 단위이나 캐릭터별 클립 길이 차이에 취약.</summary>
+    Seconds
+}
+
+/// <summary>
 /// 하나의 연출 Cue. 클립의 AniEvent_PresentationCue(cueName)가 이 CueName과 매칭되면
 /// EffectIds/SoundIds를 실행한다. 이펙트/사운드는 id 참조만, 동작은 프리팹, 배치는 Anchor/Socket.
 /// </summary>
@@ -317,6 +557,48 @@ public class CueBinding
     public SpawnAnchor Anchor = SpawnAnchor.CasterSocket;
     [Tooltip("Anchor=CasterSocket일 때 사용할 소켓. None이면 기본 공격 소켓(AttackEffectSocket).")]
     public UnitSocket Socket = UnitSocket.None;
+
+    [Header("Timing")]
+    [Tooltip("ClipEvent = 클립의 AniEvent_PresentationCue가 발화(현행 동작). " +
+             "NormalizedTime/Seconds = 이 데이터의 Time에 발화. 같은 이름의 클립 이벤트가 있으면 그쪽이 우선.")]
+    public CueTimingSource Timing = CueTimingSource.ClipEvent;
+
+    [Min(0f)]
+    [Tooltip("Timing이 ClipEvent가 아닐 때만 사용. NormalizedTime은 0~1(0.95 이상은 발화 보장 없음).")]
+    public float Time;
+
+    [HideInInspector]
+    [Tooltip("Timeline 지그의 마커 역기입 대상 식별자. 자동 생성이며 수동 편집 금지.")]
+    public string CueId;
+
+    /// <summary>이 Cue를 데이터 시각으로 발화해야 하는지.</summary>
+    public bool IsDataTimed => Timing != CueTimingSource.ClipEvent;
+
+    /// <summary>
+    /// 이 Cue가 발화할 시각(초). NormalizedTime이면 클립 길이를 곱한다.
+    /// stateLength가 0 이하면(길이 불명) 정규화 값을 해석할 수 없으므로 음수를 반환해 발화를 건너뛰게 한다.
+    /// </summary>
+    public float ResolveFireSeconds(float stateLength)
+    {
+        if (Timing == CueTimingSource.Seconds)
+        {
+            return Mathf.Max(0f, Time);
+        }
+
+        return stateLength > 0f ? Mathf.Max(0f, Time) * stateLength : -1f;
+    }
+
+    /// <summary>CueId가 비어 있으면 새로 만든다. 이미 있으면 유지한다.</summary>
+    public bool EnsureCueId()
+    {
+        if (!string.IsNullOrEmpty(CueId))
+        {
+            return false;
+        }
+
+        CueId = Guid.NewGuid().ToString("N");
+        return true;
+    }
 
     /// <summary>trim + 소문자 정규화된 CueName. 매칭/맵 키에 사용.</summary>
     public string NormalizedCueName =>

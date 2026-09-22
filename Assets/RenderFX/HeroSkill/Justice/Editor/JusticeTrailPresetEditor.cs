@@ -32,7 +32,7 @@ namespace JC.VFX
         public override void OnInspectorGUI()
         {
             bool restart = EditorPrefs.GetBool(RestartKey, true);
-            bool newRestart = EditorGUILayout.ToggleLeft("변경 시 파티클 재시작 (즉시 새 값으로 다시 뿜음)", restart);
+            bool newRestart = EditorGUILayout.ToggleLeft(new GUIContent("변경 시 파티클 재시작 (즉시 새 값으로 다시 뿜음)","이미 방출된 입자를 지우고 현재 설정으로 다시 방출합니다."), restart);
             if (newRestart != restart) EditorPrefs.SetBool(RestartKey, newRestart);
             base.OnInspectorGUI();
 
@@ -118,7 +118,7 @@ namespace JC.VFX
             foreach (var binder in Object.FindObjectsByType<JusticeTrailPresetBinder>(
                          FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
-                if (binder.Preset != p && binder.PresetAlt != p) continue;
+                if (binder.ActivePreset != p) continue;
 
                 binder.Apply(p);
                 if (!restart) continue;

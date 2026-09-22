@@ -28,6 +28,12 @@ public class CharactorAnimationController : MonoBehaviour
 
     public float CurrentAnimSpeed { get; private set; } = 1.0f;
 
+    /// <summary>
+    /// 이 컨트롤러가 구동하는 Animator. 연출 Cue 드라이버가 <b>같은</b> Animator의 상태·경과시간을 읽기 위해 노출한다.
+    /// (GetComponentInChildren으로 따로 찾으면 Animator가 여러 개인 프리팹에서 다른 것을 잡을 수 있다.)
+    /// </summary>
+    public Animator Animator => _animator;
+
     /// <summary>마지막 <see cref="WaitForSkillClipEnd"/> 호출에서 누적된 전투 배속 기준 대기 시간(초).</summary>
     public float LastClipWaitBattleSeconds { get; private set; }
 

@@ -11,8 +11,9 @@ namespace JC.VFX
     public class PawSpritePreset : ScriptableObject
     {
         [Header("★따름 (Alter/Miss 전용)")]
-        [Tooltip("켜면 트랜스폼(위치·크기·형태·움직임)을 Basic 프리셋에서 읽는다. Alter/Miss 는 기본 ON — 변종은 색만 다르고 형태·움직임 동일 규칙.")]
+        [Tooltip("켜면 위치·크기·형태·움직임을 연결된 Basic 프리셋에서 읽습니다. 끄면 이 프리셋의 값을 독립적으로 사용합니다. 색상은 각 변종에서 조절합니다.")]
         public bool followBasic;
+        [Tooltip("Basic 따름이 켜져 있을 때 위치·형태 기준으로 읽을 프리셋입니다. 연결이 비어 있으면 자기 값을 사용합니다.")]
         public PawSpritePreset basicRef;
 
         /// <summary>트랜스폼 정본 — Alter/Miss 가 따름이면 Basic.</summary>

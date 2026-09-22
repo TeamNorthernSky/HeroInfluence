@@ -88,8 +88,10 @@ namespace JC.VFX
 
         static void LivePushStatic(FlareOrbAltPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryLivePush(p))return;
             foreach (var shell in Object.FindObjectsByType<FlareOrbShell>(FindObjectsSortMode.None))
             {
+                if(shell.GetComponentInParent<JcFlareOrbPartPresetBinder>()!=null||shell.GetComponentInParent<JcLuminaPartPresetBinder>()!=null)continue;
                 if (!IsAltShell(shell)) continue;
                 // ★변종 스코프(260730): 크림판은 흑염을 건너뛰고, 흑염 프리셋은 흑염만 만진다.
                 if (InDarkVariant(shell) != WantsDark(p)) continue;
@@ -113,6 +115,7 @@ namespace JC.VFX
 
         public static void Apply(FlareOrbAltPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryApply(p))return;
             var lane = Load<Material>(MatLane(p));
             FillLaneCommon((n, f) => lane.SetFloat(n, f), (n, c) => lane.SetColor(n, c), p, false);
             lane.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Back);
@@ -150,6 +153,7 @@ namespace JC.VFX
 
         public static void Capture(FlareOrbAltPreset p)
         {
+            if(JcLuminaPresetEditorBridge.TryCapture(p))return;
             Undo.RecordObject(p, "Capture Flare Orb F1");
 
             var lane = Load<Material>(MatLane(p));

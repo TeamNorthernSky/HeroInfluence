@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
 using ASB.Work.Battle.Core;
 using ASB.Work.Battle.Sequence;
 using ASB.Work.Battle.SkillExecution;
@@ -89,6 +91,17 @@ public sealed class SkillPresentationDirector
     {
         _chainLightningTargets = BuildChainLightningTargets(contexts);
         _chainLightningActionInstanceId = actionInstanceId;
+    }
+
+    /// <summary>
+    /// 준비된 ChainLightning 임팩트 동기를 비활성화한다(actionId=0). Timeline에서 번개 VFX가 시작되지 않았을 때
+    /// (Projectile 마커 없음/인터럽트/시작 실패) 호출해, 존재하지 않는 target-specific 임팩트 신호를
+    /// 추가 타깃마다 타임아웃까지 기다리는 것을 막는다(<see cref="WaitForPresentationImpactRoutine"/>가 즉시 종료).
+    /// ★VFX가 정상 시작된 뒤에는 호출하지 않는다 — 신호 키 매칭이 깨진다.
+    /// </summary>
+    private void DisablePreparedChainImpactSynchronization()
+    {
+        _chainLightningActionInstanceId = 0;
     }
 
     private static List<Transform> BuildChainLightningTargets(IReadOnlyList<DamageContext> contexts)
@@ -236,7 +249,9 @@ public sealed class SkillPresentationDirector
         BattleVisualDirector visual = _battle.VisualDirector;
         if (actor == null || presentation == null || visual == null || !presentation.IsPhaseCue || actionInstanceId == 0) return;
 
-        var cueMap = new Dictionary<string, RuntimeCue>();
+        // 선언 순서를 보존한다 — 같은 프레임에 여러 Cue가 걸릴 때 리스트 순서로 발화하기 위해서다.
+        var runtimeCues = new List<RuntimeCue>();
+        var seenCueNames = new HashSet<string>();
         List<CueBinding> cues = activeCues ?? GetPrimaryAttackBeat(presentation)?.Cues;
         if (cues != null)
         {
@@ -244,14 +259,18 @@ public sealed class SkillPresentationDirector
             {
                 if (binding == null) continue;
                 string key = binding.NormalizedCueName;
-                if (string.IsNullOrEmpty(key) || cueMap.ContainsKey(key)) continue;
+                if (string.IsNullOrEmpty(key) || !seenCueNames.Add(key)) continue;
 
                 var cue = new RuntimeCue
                 {
+                    NormalizedCueName = key,
+                    CueId = binding.CueId,
                     Operation = binding.Operation,
                     InstanceKey = binding.NormalizedInstanceKey,
                     Anchor = binding.Anchor,
                     Socket = binding.Socket,
+                    Timing = binding.Timing,
+                    Time = binding.Time,
                 };
                 if (binding.EffectIds != null)
                 {
@@ -262,7 +281,7 @@ public sealed class SkillPresentationDirector
                     }
                 }
                 if (binding.SoundIds != null) cue.SoundIds.AddRange(binding.SoundIds);
-                cueMap[key] = cue;
+                runtimeCues.Add(cue);
             }
         }
 
@@ -292,7 +311,8 @@ public sealed class SkillPresentationDirector
         int expectedHash = !string.IsNullOrWhiteSpace(expectedStateName)
             ? Animator.StringToHash(expectedStateName.Trim())
             : 0;
-        context.SetActive(actionInstanceId, effectContext, cueMap, expectedHash);
+        context.SetActive(actionInstanceId, effectContext, runtimeCues, expectedHash,
+            $"{presentation.name} / state='{expectedStateName}'");
     }
 
     public static void ClearPresentationContext(BattleCharactor actor)
@@ -362,7 +382,8 @@ public sealed class SkillPresentationDirector
         if (_battle.HasPendingRevive && phase is AttackPreparePhase)
         {
             UnitEffectPresenter presenter = actor != null ? actor.GetComponent<UnitEffectPresenter>() : null;
-            presenter?.PresentationCue("revive");
+            // PlayState 이전이라 아직 기대 state에 진입하지 않았다 → State 게이트를 우회한다.
+            presenter?.PresentationCue("revive", bypassStateGate: true);
             _battle.TriggerPendingRevive();
         }
 
@@ -392,7 +413,8 @@ public sealed class SkillPresentationDirector
                     string cueName = phase.Cues[i]?.CueName;
                     if (!string.IsNullOrWhiteSpace(cueName))
                     {
-                        presenter.PresentationCue(cueName);
+                        // 애니 state가 없는 MovePrepare Cue는 이동 직전에 즉시 발화한다 → 게이트 우회.
+                        presenter.PresentationCue(cueName, bypassStateGate: true);
                     }
                 }
             }
@@ -737,6 +759,580 @@ public sealed class SkillPresentationDirector
             onHitCallback, deliveryGate, presentationTargets));
     }
 
+    // ──────────────────────────────────────────────────────────────
+    // Path A — Timeline 레일 재생기 (지시서 §4)
+    // ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Timeline 레일 스킬 재생: 캐릭터 Variant를 PlayableDirector로 틀고, 전투 배속을 그래프에 반영하며,
+    /// 재생 중 마커 알림(Cue/Impact/Projectile)을 처리하고, 완료까지 대기한 뒤 Idle로 복귀한다.
+    /// Cue/Impact/Projectile의 시점은 Timeline Signal이 소유한다. Impact·Projectile이 없던 스킬은 완료 시
+    /// 대미지 콜백을 1회 적용해 전투 상태 일관성과 무-hang을 보장한다(§10). 이동(MoveSignal)은 아직 미배선.
+    /// </summary>
+    private IEnumerator RunTimelineRailRoutine(
+        BattleCharactor actor, BattleCharactor target, SkillData skill, SkillPresentationData presentation,
+        Func<BattleHitResult> onHitCallback, HitDeliveryGate deliveryGate,
+        Transform targetTransform, Vector3 targetPosition, bool playTargetHitAnimation,
+        string sectionId = null, bool returnActorToIdle = true, TimelineRailPlaybackResult playbackResult = null)
+    {
+        // 피격 연출(대미지 + 피격 애니 + 데미지 팝업). Path B의 ResolveHitAction을 재사용한다 —
+        // 대미지 콜백만 부르면 HP는 깎이지만 피격 모션·데미지 팝업이 안 나온다.
+        string targetAnimTrigger = playTargetHitAnimation ? (skill?.ResolvedTargetAnimationTrigger ?? "Hit") : null;
+        bool hitResolved = false;
+        Coroutine hitRoutine = null;
+        void ResolveHit()
+        {
+            if (hitResolved) return;
+            hitResolved = true;
+            hitRoutine = _battle.StartCoroutine(
+                new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _battle.CurrentBattleSpeed, _battle.VisualDirector)
+                    .ExecuteRoutine(_battle));
+        }
+
+        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.UnitName) : null;
+
+        // 저장/빌드 검증에서 사전 차단하지만(§3), 런타임 도달 시에도 시퀀스는 반드시 종료한다 —
+        // 조용한 Path B 폴백은 하지 않고, 대미지 유실/행 hang을 막는다.
+        if (timeline == null)
+        {
+            Debug.LogError(
+                $"[PathA] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 '{actor?.UnitName}'의 Variant가 없습니다. " +
+                "피격 연출만 적용하고 종료합니다.", actor);
+            ResolveHit();
+            if (hitRoutine != null) yield return hitRoutine;
+            yield break;
+        }
+
+        if (!PresentationTimelineSections.TryResolve(timeline, sectionId,
+                out PresentationTimelineRange playbackRange, out string sectionError))
+        {
+            Debug.LogError(
+                $"[PathA] Timeline 구간을 해석하지 못했습니다(idx {presentation.SkillIndex}, section='{sectionId}'): {sectionError}",
+                timeline);
+            ResolveHit();
+            if (hitRoutine != null) yield return hitRoutine;
+            yield break;
+        }
+
+        PlayableDirector director = EnsureTimelineDirector(actor);
+        BindTimelineToActor(director, timeline, actor);
+
+        // 재생 중 Signal이 CueId로 발화할 수 있도록, 이 스킬의 모든 Cue를 컨텍스트에 id로 등록한다.
+        int actionInstanceId = NextActionInstanceId();
+        RegisterTimelineRailCues(actor, target, skill, presentation, actionInstanceId);
+
+        // ── ChainLightning(HS2020 등) 핸드오프 ──
+        // Projectile 마커에서 번개 VFX만 1회 시작하고, 대미지는 target-specific 임팩트 신호로 동기한다.
+        // ChainActionInstanceId/ChainTargets는 BattleManager가 캐스트 시작 시 준비한 값을 그대로 쓴다(여기서 재준비 금지).
+        bool isChainTimelineDelivery =
+            ChainState != null
+            && ChainRole == DamageRole.Primary
+            && ChainActionInstanceId > 0
+            && presentation?.ChainLightningEffectPrefab != null
+            && presentation.ProjectileVisual?.DeliveryMode == ProjectileDeliveryMode.ChainAdditionalTargets
+            && target != null;
+
+        bool chainStarted = false;
+        Coroutine chainPrimaryImpactRoutine = null;
+
+        // 마커 알림 → Cue 발화 / Impact 피격연출 / Projectile 발사. 시점 소유는 Timeline이 갖는다.
+        Coroutine projectileRoutine = null;
+        bool projectileLaunched = false;
+        void LaunchProjectile()
+        {
+            if (projectileLaunched) return;
+            projectileLaunched = true;
+            // Timeline과 병행 재생: 투사체를 별도 코루틴으로 날리고, 도착 시 피격연출을 적용한다.
+            projectileRoutine = _battle.StartCoroutine(
+                LaunchProjectileRoutine(actor, target, presentation, deliveryGate, ResolveHit));
+        }
+
+        IEnumerator WaitForChainPrimaryImpact()
+        {
+            // 주 타깃은 번개 도달(ChainActionInstanceId + target 인스턴스ID 키) 신호 이후 대미지 확정.
+            yield return WaitForPresentationImpactRoutine(target, presentation, deliveryGate);
+            if (deliveryGate == null || deliveryGate.ShouldPlayImpactPresentation) ResolveHit();
+        }
+
+        void StartChainLightning()
+        {
+            if (chainStarted) return;   // Retroactive/루프로 마커가 여러 번 와도 VFX는 1회
+            chainStarted = true;
+
+            bool ok = PlayChainLightningEffect(presentation, actor, target.transform, ChainTargets);
+            if (ok)
+            {
+                chainPrimaryImpactRoutine = _battle.StartCoroutine(WaitForChainPrimaryImpact());
+            }
+            else
+            {
+                // VFX 시작 실패 → 준비된 체인 임팩트 동기를 끄고(추가 타깃 타임아웃 방지) 주 타깃 폴백.
+                DisablePreparedChainImpactSynchronization();
+                ResolveHit();
+            }
+        }
+
+        PresentationSignalReceiver receiver = EnsureSignalReceiver(actor);
+        UnitAnimationEventRouter railRouter = actor.GetComponent<UnitAnimationEventRouter>();
+        // ★레일 재생 중에는 클립 AniEvent 기반 Cue를 억제한다 — 마커(id)가 발화를 소유하므로 클립의
+        //   AniEvent_PresentationCue와 이중 발화(이펙트 2번)를 막는다. finally에서 반드시 해제.
+        if (railRouter != null) railRouter.SuppressClipCues = true;
+        // 체인: Impact는 즉발하지 않고(대미지는 도달 신호가 소유), Projectile 마커로 VFX 시작.
+        Action onImpact = isChainTimelineDelivery ? null : (Action)ResolveHit;
+        Action onProjectile = isChainTimelineDelivery ? (Action)StartChainLightning : (Action)LaunchProjectile;
+        receiver.Configure(railRouter, onImpact, onProjectile,
+            playbackRange.Start, playbackRange.End);
+
+        bool stopped = false;
+        void OnStopped(PlayableDirector d) => stopped = true;
+        director.stopped += OnStopped;
+
+        // 피격/사망 인터럽트: 반응 CrossFade가 Timeline 포즈를 덮기 전에 director를 '동기' 정지시킨다.
+        // (플래그만 세우면 PlayableDirector가 같은/다음 프레임에 한 번 더 Evaluate해 Hit/Dead를 덮어쓴다.)
+        PresentationInterruptReason interrupt = PresentationInterruptReason.None;
+        void OnInterrupt(PresentationInterruptReason reason)
+        {
+            if (reason == PresentationInterruptReason.None) return;
+            interrupt = reason;
+            if (director != null) director.Stop();
+        }
+        if (actor != null) actor.PresentationInterruptRequested += OnInterrupt;
+        try
+        {
+            director.Play();
+            // Play()가 정지 상태의 Director 시간을 초기화할 수 있으므로 그래프를 먼저 연 뒤
+            // 구간 시작점으로 이동한다. 범위 밖 Retroactive Marker는 receiver가 차단한다.
+            director.time = playbackRange.Start;
+            director.Evaluate();
+            List<KeyValuePair<double, float>> holdMarks = CollectHoldMarks(timeline);
+            var holdDone = new bool[holdMarks.Count];
+            double holdPrevTime = playbackRange.Start;
+            while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
+            {
+                // Hold: (prev, now]에 걸린 미소비 Hold 마커에서 director를 정지시킨다(AniEvent_HoldBegin의 Timeline판).
+                for (int h = 0; h < holdMarks.Count; h++)
+                {
+                    if (holdDone[h]) continue;
+                    double ht = holdMarks[h].Key;
+                    if (ht <= holdPrevTime + 0.0001d || ht > director.time + 0.0001d) continue;
+                    holdDone[h] = true;
+                    yield return FreezeForHoldRoutine(director, holdMarks[h].Value,
+                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
+                }
+
+                float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
+                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed);   // 전투배속 × 구간속도
+                holdPrevTime = director.time;
+                if (director.time >= playbackRange.End - 0.0001d)
+                {
+                    break;
+                }
+                yield return null;
+            }
+        }
+        finally
+        {
+            if (actor != null) actor.PresentationInterruptRequested -= OnInterrupt;
+            director.stopped -= OnStopped;
+            director.Stop();               // 그래프 정리
+            director.playableAsset = null; // 다음 재생을 위해 바인딩 해제
+            receiver.ClearConfig();
+            if (railRouter != null) railRouter.SuppressClipCues = false;   // 클립 AniEvent Cue 억제 해제
+            ClearPresentationContext(actor);
+        }
+
+        if (playbackResult != null) playbackResult.Interrupt = interrupt;
+
+        // Actor Presentation 완료와 Delivery 완료를 분리한다. 정상 완료 && 생존 && 인터럽트 아님일 때만
+        // 즉시 Idle로 복귀시킨다(Hit/Dead 반응을 Idle로 덮지 않기 위함). 아래 Delivery(투사체/폴백)는
+        // 인터럽트와 무관하게 계속 진행해 '커밋된 공격은 1회 확정' 규칙을 지킨다.
+        if (returnActorToIdle && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
+        {
+            actor.Anim?.PlayIdleAnimation();
+        }
+
+        // ChainLightning: 마커에서 VFX가 시작됐으면 주 타깃 도달까지 기다린다(도달 시 ResolveHit).
+        // 시작 안 됐으면(마커 없음/인터럽트로 마커 전 종료) 준비된 동기를 끄고 아래 폴백으로 1회 확정한다.
+        // (VFX는 Timeline 그래프와 독립이라 finally의 director.Stop이 번개를 멈추지 않는다 — 종료 후에도 도달·발행 가능.)
+        if (isChainTimelineDelivery && !chainStarted)
+        {
+            DisablePreparedChainImpactSynchronization();
+        }
+        if (chainPrimaryImpactRoutine != null) yield return chainPrimaryImpactRoutine;
+
+        // 발사된 투사체가 있으면 도착까지 기다린다(도착 시 피격연출). 이 대기는 전투 Delivery만 막고
+        // 시전자의 애니메이션 소유권은 더 이상 막지 않는다.
+        if (projectileRoutine != null) yield return projectileRoutine;
+
+        // Impact도 투사체도 체인도 없던 스킬은 여기서 피격연출을 1회 보장한다(대미지+애니+팝업 유실 방지, §10).
+        if (!hitResolved) ResolveHit();
+        if (hitRoutine != null) yield return hitRoutine;
+    }
+
+    /// <summary>
+    /// 근거리 Timeline Rail의 소유권 핸드오프. 접근/복귀 로코모션은 기존 이동 Action이 담당하고,
+    /// 그 사이 공격 구간만 Timeline이 Animator를 소유한다.
+    /// </summary>
+    private IEnumerator RunMeleeTimelineRailRoutine(
+        BattleCharactor actor, BattleCharactor target, SkillData skill, SkillPresentationData presentation,
+        Func<BattleHitResult> onHitCallback, HitDeliveryGate deliveryGate,
+        Transform targetTransform, Vector3 targetPosition, bool playTargetHitAnimation,
+        CharactorAnimationController actorAnim, UnitMovementProfile movement,
+        bool shouldMove, bool shouldRotate, Vector3 originPosition, float originRotationY)
+    {
+        bool moveEnabled = presentation?.Move?.Enabled ?? true;
+        bool returnEnabled = presentation?.Return?.Enabled ?? true;
+
+        if (moveEnabled)
+        {
+            var approach = new ActionSequenceRunner();
+            EnqueueSkillApproach(approach, actor, target, actorAnim, movement, shouldMove, shouldRotate,
+                presentation?.Move, targetTransform);
+            yield return _battle.StartCoroutine(approach.RunAll(_battle));
+        }
+
+        // 공격 Timeline 종료 후 복귀 이동이 이어지므로 여기서는 Idle CrossFade를 넣지 않는다.
+        var playbackResult = new TimelineRailPlaybackResult();
+        yield return RunTimelineRailRoutine(
+            actor, target, skill, presentation, onHitCallback, deliveryGate,
+            targetTransform, targetPosition, playTargetHitAnimation,
+            sectionId: null, returnActorToIdle: false, playbackResult: playbackResult);
+
+        // 피격/사망으로 공격 Timeline이 끊긴 경우, 복귀 이동(MoveReturn)이나 Idle로 Hit/Dead 반응을 덮지 않는다(§1-3).
+        // Dead면 시체가 MoveReturn하지 않고, Hit면 반응이 유지된다. (위치 복구는 이번 파일럿 범위에서 생략.)
+        if (playbackResult.Interrupted)
+        {
+            yield break;
+        }
+
+        var tail = new ActionSequenceRunner();
+        if (returnEnabled)
+        {
+            EnqueueSkillReturn(tail, actorAnim, movement, shouldMove, shouldRotate,
+                originPosition, originRotationY, presentation?.Return);
+        }
+        else if (shouldRotate)
+        {
+            EnqueueSkillReturn(tail, actorAnim, movement, false, true,
+                originPosition, originRotationY, presentation?.Return);
+        }
+        tail.Enqueue(new ReturnToIdleAction(actor));
+        yield return _battle.StartCoroutine(tail.RunAll(_battle));
+    }
+
+    /// <summary>
+    /// Path A 투사체 발사(지시서 §4 ProjectileSignal). 스킬의 ProjectileVisual을 타깃으로 발사하고,
+    /// 도착 시 <paramref name="onArrive"/>(대미지)를 호출한다. 기존 <see cref="ProjectileImpactAction"/> 재사용.
+    /// 투사체가 없으면(비-원거리 등) 즉시 대미지를 적용해 유실을 막는다.
+    /// </summary>
+    private IEnumerator LaunchProjectileRoutine(BattleCharactor actor, BattleCharactor target,
+        SkillPresentationData presentation, HitDeliveryGate deliveryGate, Action onArrive)
+    {
+        ProjectileVisualData visual = presentation != null ? presentation.GetProjectileVisual() : null;
+        if (actor == null || visual == null || visual.Prefab == null)
+        {
+            onArrive?.Invoke();
+            yield break;
+        }
+
+        var projectile = new ProjectileImpactAction(
+            actor, target, visual, _battle.CurrentBattleSpeed, deliveryGate, presentation.SkillIndex);
+        yield return projectile.ExecuteRoutine(_battle);
+
+        onArrive?.Invoke();   // 도착 → 대미지
+    }
+
+    /// <summary>
+    /// AoE Timeline Rail. Actor Timeline과 다대상 Delivery를 분리하고, Impact/Projectile 마커는 기존
+    /// AoEApplyDamageAction을 정확히 한 번 시작하는 역할만 한다.
+    /// </summary>
+    private IEnumerator RunAoETimelineRailRoutine(
+        BattleCharactor actor, BattleCharactor primaryTarget, SkillData skill,
+        SkillPresentationData presentation, HitDeliveryGate deliveryGate,
+        List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks, int pairCount,
+        ProjectileVisualData projectileVisual)
+    {
+        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.UnitName) : null;
+        if (timeline == null)
+        {
+            Debug.LogError(
+                $"[PathA/AoE] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 '{actor?.UnitName}'의 Variant가 없습니다. " +
+                "AoE Delivery를 즉시 확정하고 종료합니다.", actor);
+            yield return new AoEApplyDamageAction(
+                    contexts, hitCallbacks, pairCount, _battle.CurrentBattleSpeed, _battle.VisualDirector,
+                    projectileVisual, deliveryGate)
+                .ExecuteRoutine(_battle);
+            yield break;
+        }
+
+        PlayableDirector director = EnsureTimelineDirector(actor);
+        BindTimelineToActor(director, timeline, actor);
+
+        var presentationTargets = new List<BattleCharactor>();
+        for (int i = 0; i < pairCount; i++)
+        {
+            BattleCharactor candidate = contexts[i]?.Target;
+            if (candidate != null && !presentationTargets.Contains(candidate)) presentationTargets.Add(candidate);
+        }
+
+        int actionInstanceId = NextActionInstanceId();
+        RegisterTimelineRailCues(actor, primaryTarget, skill, presentation, actionInstanceId, presentationTargets);
+
+        bool deliveryStarted = false;
+        Coroutine deliveryRoutine = null;
+        void ResolveDelivery()
+        {
+            if (deliveryStarted) return;
+            deliveryStarted = true;
+            // Path B와 동일: 커스텀 임팩트(SolarPrism 등, ImpactDeliveryMode=CustomEffectImpact)면 도착 신호
+            // (ImpactSignalBus)를 기다렸다가 대미지를 확정한다. 그 외 스킬은 CustomEffectImpactAction이 즉시
+            // 통과시켜 지금과 동일하게 즉시 적용된다(동작 불변). 신호 미도착 시 타임아웃 폴백도 내장.
+            deliveryRoutine = _battle.StartCoroutine(
+                new ASB.Work.Battle.Sequence.CustomEffectImpactAction(
+                        presentation, actionInstanceId, deliveryGate,
+                        new AoEApplyDamageAction(
+                            contexts, hitCallbacks, pairCount, _battle.CurrentBattleSpeed, _battle.VisualDirector,
+                            projectileVisual, deliveryGate))
+                    .ExecuteRoutine(_battle));
+        }
+
+        PresentationSignalReceiver receiver = EnsureSignalReceiver(actor);
+        UnitAnimationEventRouter railRouter = actor.GetComponent<UnitAnimationEventRouter>();
+        // ★레일 재생 중 클립 AniEvent Cue 억제(마커가 발화 소유 → 이중 발화 방지). finally에서 해제.
+        if (railRouter != null) railRouter.SuppressClipCues = true;
+        receiver.Configure(railRouter, ResolveDelivery, ResolveDelivery);
+
+        bool stopped = false;
+        void OnStopped(PlayableDirector d) => stopped = true;
+        director.stopped += OnStopped;
+
+        // 피격/사망 인터럽트: AoE 시전자도 반응 CrossFade가 Timeline 포즈를 덮기 전에 director를 동기 정지한다.
+        PresentationInterruptReason interrupt = PresentationInterruptReason.None;
+        void OnInterrupt(PresentationInterruptReason reason)
+        {
+            if (reason == PresentationInterruptReason.None) return;
+            interrupt = reason;
+            if (director != null) director.Stop();
+        }
+        if (actor != null) actor.PresentationInterruptRequested += OnInterrupt;
+        try
+        {
+            director.time = 0d;
+            director.Evaluate();
+            director.Play();
+            List<KeyValuePair<double, float>> holdMarks = CollectHoldMarks(timeline);
+            var holdDone = new bool[holdMarks.Count];
+            double holdPrevTime = 0d;
+            while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
+            {
+                // Hold: (prev, now]에 걸린 미소비 Hold 마커에서 director를 정지시킨다(AniEvent_HoldBegin의 Timeline판).
+                for (int h = 0; h < holdMarks.Count; h++)
+                {
+                    if (holdDone[h]) continue;
+                    double ht = holdMarks[h].Key;
+                    if (ht <= holdPrevTime + 0.0001d || ht > director.time + 0.0001d) continue;
+                    holdDone[h] = true;
+                    yield return FreezeForHoldRoutine(director, holdMarks[h].Value,
+                        () => stopped || actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
+                }
+
+                float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
+                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed);   // 전투배속 × 구간속도
+                holdPrevTime = director.time;
+                yield return null;
+            }
+        }
+        finally
+        {
+            if (actor != null) actor.PresentationInterruptRequested -= OnInterrupt;
+            director.stopped -= OnStopped;
+            director.Stop();
+            director.playableAsset = null;
+            receiver.ClearConfig();
+            if (railRouter != null) railRouter.SuppressClipCues = false;   // 클립 AniEvent Cue 억제 해제
+            ClearPresentationContext(actor);
+        }
+
+        // 캐릭터 포즈는 Delivery와 독립적으로 즉시 복귀하되, 사망/인터럽트 시에는 Idle로 Hit/Dead를 덮지 않는다.
+        // AoE Delivery(다대상 대미지)는 아래에서 인터럽트와 무관하게 계속 확정한다('커밋된 공격은 1회 확정').
+        if (actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
+        {
+            actor.Anim?.PlayIdleAnimation();
+        }
+
+        if (!deliveryStarted) ResolveDelivery();
+        if (deliveryRoutine != null) yield return deliveryRoutine;
+
+        for (int i = 0; i < pairCount; i++)
+        {
+            ReturnToIdleIfAlive(contexts[i]?.Target);
+        }
+    }
+
+    private static PlayableDirector EnsureTimelineDirector(BattleCharactor actor)
+    {
+        PlayableDirector director = actor.GetComponent<PlayableDirector>();
+        if (director == null) director = actor.gameObject.AddComponent<PlayableDirector>();
+        director.playOnAwake = false;
+        // 끝에서 멈추고 stopped를 발생시킨다(Hold/Loop면 stopped가 안 와 완료 대기가 hang).
+        director.extrapolationMode = DirectorWrapMode.None;
+        return director;
+    }
+
+    /// <summary>
+    /// 마커 알림 수신 컴포넌트를 확보한다. Director와 같은 GameObject에 있어야 마커 트랙 알림을 받는다.
+    /// </summary>
+    private static PresentationSignalReceiver EnsureSignalReceiver(BattleCharactor actor)
+    {
+        PresentationSignalReceiver receiver = actor.GetComponent<PresentationSignalReceiver>();
+        if (receiver == null) receiver = actor.gameObject.AddComponent<PresentationSignalReceiver>();
+        return receiver;
+    }
+
+    private static void BindTimelineToActor(PlayableDirector director, TimelineAsset timeline, BattleCharactor actor)
+    {
+        director.playableAsset = timeline;
+
+        Animator animator = actor.Anim != null ? actor.Anim.Animator : actor.GetComponentInChildren<Animator>();
+        if (animator == null) return;
+
+        // Animation Track을 이 캐릭터의 Animator에 바인딩한다(바인딩은 director 인스턴스에 저장 — 공유 에셋을 뮤테이트하지 않음).
+        foreach (TrackAsset track in timeline.GetOutputTracks())
+        {
+            if (track is AnimationTrack)
+            {
+                director.SetGenericBinding(track, animator);
+            }
+        }
+    }
+
+    /// <summary>전투 배속을 Director 그래프에 반영한다(§10). 그래프는 Play() 이후에만 유효하다. 배속 0 = 프리즈.</summary>
+    private static void ApplyBattleSpeedToDirector(PlayableDirector director, float battleSpeed)
+    {
+        if (director == null) return;
+        PlayableGraph graph = director.playableGraph;
+        if (!graph.IsValid()) return;
+
+        battleSpeed = Mathf.Max(0f, battleSpeed);
+        int rootCount = graph.GetRootPlayableCount();
+        for (int i = 0; i < rootCount; i++)
+        {
+            Playable root = graph.GetRootPlayable(i);
+            if (root.IsValid()) root.SetSpeed(battleSpeed);
+        }
+    }
+
+    /// <summary>Timeline의 PresentationHoldMarker 목록(시각, 정지시간). 재생 루프가 정지 지점을 찾는 데 쓴다.</summary>
+    private static List<KeyValuePair<double, float>> CollectHoldMarks(TimelineAsset timeline)
+    {
+        var list = new List<KeyValuePair<double, float>>();
+        if (timeline != null && timeline.markerTrack != null)
+        {
+            foreach (IMarker m in timeline.markerTrack.GetMarkers())
+            {
+                if (m is PresentationHoldMarker hm && hm.DurationSeconds > 0f)
+                {
+                    list.Add(new KeyValuePair<double, float>(hm.time, hm.DurationSeconds));
+                }
+            }
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// director를 <paramref name="holdTime"/> 지점에서 <paramref name="durationBattleSeconds"/>(배속-초)만큼
+    /// 정지시킨다(AniEvent_HoldBegin의 Timeline판). 루트 속도를 0으로 만들어 포즈·시간을 얼리고,
+    /// 배속-초 누적으로 대기한다(전투 배속이 높을수록 실제 정지 짧음 — HoldRoutine과 동일). 재개는 호출측 루프의
+    /// ApplyBattleSpeedToDirector가 다음 프레임에 정상 속도를 다시 걸어 처리한다.
+    /// </summary>
+    private IEnumerator FreezeForHoldRoutine(PlayableDirector director,
+        float durationBattleSeconds, System.Func<bool> abort)
+    {
+        if (director == null) yield break;
+        // ★director.Pause()로 실제로 동결한다. 루트 속도 0(SetSpeed)은 애니 출력만 멈추고 director.time은
+        //   계속 흘러 재생이 끝나버리므로(정지가 안 됨) hold에 쓸 수 없다.
+        director.Pause();
+
+        float elapsedBattle = 0f;
+        while (elapsedBattle < durationBattleSeconds)
+        {
+            if (director == null || director.playableAsset == null) yield break;
+            if (abort != null && abort()) break;
+            elapsedBattle += Time.deltaTime * Mathf.Max(0.01f, _battle.CurrentBattleSpeed);
+            yield return null;
+        }
+        if (director != null && director.playableAsset != null) director.Resume();
+    }
+
+    /// <summary>
+    /// Path A 재생 동안 Signal이 CueId로 발화할 수 있도록, 이 연출의 <b>모든</b> 페이즈/Beat Cue를
+    /// 컨텍스트에 등록한다(id 인덱스). 기존 <see cref="SetupPresentationContext"/>는 이름 중복을 미리 제거해
+    /// 동명 Cue를 누락하므로 Path A 전용으로 별도 등록한다.
+    ///
+    /// 발화 시점은 Timeline Signal이 소유하므로, 각 RuntimeCue를 <c>ClipEvent</c>로 등록해
+    /// normalizedTime 드라이버의 이중 발화를 차단한다(레일 배타, 지시서 §6). State 게이트도 불필요(hash 0).
+    /// </summary>
+    private void RegisterTimelineRailCues(BattleCharactor actor, BattleCharactor target, SkillData skill,
+        SkillPresentationData presentation, int actionInstanceId,
+        IReadOnlyList<BattleCharactor> presentationTargets = null)
+    {
+        BattleVisualDirector visual = _battle.VisualDirector;
+        if (actor == null || presentation == null || visual == null || actionInstanceId == 0) return;
+
+        var bindings = new List<CueBinding>();
+        presentation.CollectAllCues(bindings);
+
+        var runtimeCues = new List<RuntimeCue>(bindings.Count);
+        for (int i = 0; i < bindings.Count; i++)
+        {
+            CueBinding binding = bindings[i];
+            if (binding == null || string.IsNullOrEmpty(binding.CueId)) continue;   // Path A는 id로 발화
+
+            var cue = new RuntimeCue
+            {
+                NormalizedCueName = binding.NormalizedCueName,
+                CueId = binding.CueId,
+                Operation = binding.Operation,
+                InstanceKey = binding.NormalizedInstanceKey,
+                Anchor = binding.Anchor,
+                Socket = binding.Socket,
+                Timing = CueTimingSource.ClipEvent,   // 드라이버 이중 발화 차단(§6). Signal 경로는 Timing 무관.
+                Time = 0f,
+            };
+            if (binding.EffectIds != null)
+            {
+                foreach (int id in binding.EffectIds)
+                {
+                    GameObject prefab = visual.GetRegisteredEffect(id);
+                    if (prefab != null) cue.EffectPrefabs.Add(prefab);
+                }
+            }
+            if (binding.SoundIds != null) cue.SoundIds.AddRange(binding.SoundIds);
+            runtimeCues.Add(cue);
+        }
+
+        PresentationRuntimeContext context = actor.EnsurePresentationComponents();
+        if (context == null) return;
+
+        var effectContext = new SkillEffectContext
+        {
+            ActionInstanceId = actionInstanceId,
+            Caster = actor,
+            PrimaryTarget = target,
+            Targets = presentationTargets != null
+                ? new List<BattleCharactor>(presentationTargets)
+                : target != null ? new List<BattleCharactor> { target } : null,
+            TargetPosition = target != null ? target.transform.position : actor.transform.position,
+            SocketTransform = actor.GetComponent<UnitVisualProfile>()?.AttackEffectSocket ?? actor.transform,
+            PlaybackSpeed = _battle.CurrentBattleSpeed,
+            HitIndex = 0,
+            ReviveTarget = actor.PendingReviveTarget,
+        };
+
+        // State 게이트 불필요 — Timeline이 시점을 소유하고 by-id 발화가 게이트를 우회한다 → expectedHash 0.
+        context.SetActive(actionInstanceId, effectContext, runtimeCues, 0, $"{presentation.name} / PathA-Timeline");
+    }
+
     private IEnumerator RunSkillSequenceCoreInternal(
         BattleCharactor actor,
         ISkillTarget skillTarget,
@@ -789,6 +1385,34 @@ public sealed class SkillPresentationDirector
             : null;
 
         SkillPresentationData presentation = skill != null ? _battle.PresentationCatalog?.Get(skill.skillIndex) : null;
+
+        // Path A — Timeline 레일: 페이즈/CrossFade 시퀀스 대신 캐릭터 Variant Timeline을 재생한다(지시서 §8 단일 포크).
+        // 우선순위: 커스텀 시퀀스 레지스트리(위) > Timeline 레일(여기) > 기본 경로(아래).
+        bool forceAnimatorRail = _battle.PresentationCatalog != null
+                                 && _battle.PresentationCatalog.ForceAnimatorRail;
+        if (presentation != null && presentation.IsTimelineRail && !forceAnimatorRail)
+        {
+            if (presentation.PresentationArchetype == PresentationArchetype.Melee)
+            {
+                yield return RunMeleeTimelineRailRoutine(
+                    actor, target, skill, presentation, onHitCallback, deliveryGate,
+                    targetTransform, targetPosition, playTargetHitAnimation,
+                    actorAnim, movement, shouldMove, shouldRotate, originPosition, originRotationY);
+            }
+            else
+            {
+                yield return RunTimelineRailRoutine(actor, target, skill, presentation, onHitCallback, deliveryGate,
+                    targetTransform, targetPosition, playTargetHitAnimation);
+            }
+            yield break;
+        }
+        if (presentation != null && presentation.IsTimelineRail && forceAnimatorRail)
+        {
+            Debug.LogWarning(
+                $"[SkillPresentation] Kill Switch로 Timeline Rail을 Animator Rail로 우회합니다. skill={presentation.SkillIndex}",
+                presentation);
+        }
+
         int presentationActionInstanceId = presentation?.IsPhaseCue == true ? NextActionInstanceId() : 0;
         bool moveEnabled       = presentation?.Move?.Enabled ?? true;
         bool attackPrepEnabled = presentation?.AttackPrepare?.Enabled ?? true;
@@ -1274,6 +1898,30 @@ public sealed class SkillPresentationDirector
 
         SkillPresentationData presentation = skill != null ? _battle.PresentationCatalog?.Get(skill.skillIndex) : null;
         ProjectileVisualData projectileVisual = GetProjectileVisual(actor, skill, presentation);
+
+        bool forceAnimatorRail = _battle.PresentationCatalog != null
+                                 && _battle.PresentationCatalog.ForceAnimatorRail;
+        bool unsupportedMovingTimeline = presentation?.PresentationArchetype == PresentationArchetype.MovingAttack;
+        if (presentation != null && presentation.IsTimelineRail && !forceAnimatorRail && !unsupportedMovingTimeline)
+        {
+            yield return RunAoETimelineRailRoutine(
+                actor, primaryTarget, skill, presentation, deliveryGate,
+                contexts, hitCallbacks, pairCount, projectileVisual);
+            yield break;
+        }
+        if (presentation != null && presentation.IsTimelineRail && forceAnimatorRail)
+        {
+            Debug.LogWarning(
+                $"[SkillPresentation/AoE] Kill Switch로 Timeline Rail을 Animator Rail로 우회합니다. skill={presentation.SkillIndex}",
+                presentation);
+        }
+        else if (presentation != null && presentation.IsTimelineRail && unsupportedMovingTimeline)
+        {
+            Debug.LogWarning(
+                $"[SkillPresentation/AoE] MovingAttack Timeline 핸드오프는 아직 지원하지 않아 Animator Rail을 사용합니다. skill={presentation.SkillIndex}",
+                presentation);
+        }
+
         int presentationActionInstanceId = presentation?.IsPhaseCue == true ? NextActionInstanceId() : 0;
         bool moveEnabled       = presentation?.Move?.Enabled ?? true;
         bool attackPrepEnabled = presentation?.AttackPrepare?.Enabled ?? true;

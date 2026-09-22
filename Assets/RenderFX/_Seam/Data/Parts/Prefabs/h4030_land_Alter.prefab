@@ -156,7 +156,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2c0727ef9e815d8186f2a2ae2622e0a7, type: 2}
+  - {fileID: 2100000, guid: de533bb73c174024fb73f20fca82ecd7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5062,9 +5062,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trailMaterial: {fileID: 2100000, guid: b2cc8e7f59aeaf80ab29d390f829056c, type: 2}
-  preset: {fileID: 11400000, guid: e31c229ffb9dbb1991459427beb6f6e2, type: 2}
+  preset: {fileID: 11400000, guid: d2649ab6ebfd96040a3ad941bf703be5, type: 2}
   livePreview: 1
-  radius: 0.8
+  radius: 1
   radiusNoise: 0.05
   orbitHeight: 0.35
   arcSpanMinDeg: 130
@@ -5082,17 +5082,17 @@ MonoBehaviour:
   widthStartMax: 0.09
   colorGradient:
     serializedVersion: 2
-    key0: {r: 1, g: 0.9734123, b: 0.8459119, a: 0.6901961}
+    key0: {r: 1, g: 1, b: 1, a: 0.6901961}
     key1: {r: 1, g: 1, b: 1, a: 0.57254905}
-    key2: {r: 0, g: 0, b: 0, a: 0.20784314}
-    key3: {r: 0, g: 0, b: 0, a: 0}
+    key2: {r: 0, g: 0.23844004, b: 1, a: 0.22}
+    key3: {r: 0, g: 0, b: 0, a: 0.20784314}
     key4: {r: 0, g: 0, b: 0, a: 0}
     key5: {r: 0, g: 0, b: 0, a: 0}
     key6: {r: 0, g: 0, b: 0, a: 0}
     key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
+    ctime0: 386
     ctime1: 65535
-    ctime2: 0
+    ctime2: 65535
     ctime3: 0
     ctime4: 0
     ctime5: 0
@@ -5100,8 +5100,8 @@ MonoBehaviour:
     ctime7: 0
     atime0: 0
     atime1: 30840
-    atime2: 65535
-    atime3: 0
+    atime2: 64379
+    atime3: 65535
     atime4: 0
     atime5: 0
     atime6: 0
@@ -5109,8 +5109,8 @@ MonoBehaviour:
     m_Mode: 0
     m_ColorSpace: 0
     m_NumColorKeys: 2
-    m_NumAlphaKeys: 3
-  alphaMin: 0.4
+    m_NumAlphaKeys: 4
+  alphaMin: 0.482
   alphaMax: 0.7
 --- !u!1 &2495209857197423675
 GameObject:
@@ -5175,7 +5175,7 @@ MonoBehaviour:
   auraGlow: {fileID: 6763206681208667844}
   crossBurst: {fileID: 5875209588283725445}
   groundShine: {fileID: 19968371716205759}
-  masterPreset: {fileID: 11400000, guid: de8ed703f8cd81b7e94bee414d6e6a91, type: 2}
+  masterPreset: {fileID: 11400000, guid: 9fc58e2d326128444b0866a293aae562, type: 2}
   preset: {fileID: 11400000, guid: 19e919b3d16ac5f58408035c17392f80, type: 2}
   livePreview: 1
   orbSparkles: {fileID: 3164418487548948891}
@@ -5188,7 +5188,7 @@ MonoBehaviour:
   orbWorldSize: 0.25
   coreSize: 0.72
   rimSize: 1
-  duration: 3
+  duration: 2
   fadeInTime: 0.2
   fadeOutTime: 0.2
 --- !u!114 &4978012715940674268
@@ -5529,7 +5529,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f5cc52055db78c1c73af6fefc85ad4bd, type: 2}
+  - {fileID: 2100000, guid: 734472172314b0745bab22a1c2cbead5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5596,7 +5596,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   crossMaterial: {fileID: 2100000, guid: 4c3f3a4e217a732b439f2bbc6f972b60, type: 2}
-  preset: {fileID: 11400000, guid: d9debff8bd470207e8fea8c08d51d8cc, type: 2}
+  preset: {fileID: 11400000, guid: 6c9073df5637ec6469ed2cf3028b9e46, type: 2}
   livePreview: 1
   maxCrosses: 10
   spawnIntervalMin: 0.18
@@ -5615,7 +5615,7 @@ MonoBehaviour:
   bobAmp: 0
   bobFreq: 2
   spinMax: 0
-  billboardYOnly: 1
+  billboardYOnly: 0
   sizeMin: 0.11
   sizeMax: 0.16
   fadeInFrac: 0.16

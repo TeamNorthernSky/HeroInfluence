@@ -14,7 +14,7 @@ namespace JC.VFX
         string MatRimShell  => Lfl ? LFL + "/Materials/LFL_OrbitRimShell.mat"  : DIR + "/Materials/HealOrbitRimShell.mat";
         // ★변종 인식 — _Basic/_Alter 프리셋은 제 프리팹만 만진다.
         string Sfx => JcPresetEditorUtil.VariantSuffix(target) ?? "_Alter";
-        string OrbitPrefab => Lfl ? LFL + "/Prefabs/LFL_LandAura" + Sfx + ".prefab" : DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab";
+        string OrbitPrefab => JcPresetPartTargets.Path(target, Lfl ? LFL + "/Prefabs/LFL_LandAura" + Sfx + ".prefab" : DIR + "/Prefabs/HealOrbit" + Sfx + ".prefab");
 
         static readonly string[] TransformProps =
         {
@@ -29,15 +29,15 @@ namespace JC.VFX
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
-                if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","이 프리셋을 참조하는 대상 프리팹에 현재 값을 확정합니다."), GUILayout.Height(30))) Apply(p);
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","대상 프리팹의 값을 현재 프리셋으로 읽습니다. 프리셋 파일 저장은 별도입니다."), GUILayout.Height(30))) Capture(p);
                 JcPresetEditorUtil.DrawSaveButton(target);
             }
-            EditorGUILayout.HelpBox("적용: 이 값을 HealOrbit" + Sfx + " 프리팹(변종 자동 인식) + 공용 재질에 반영.\n" +
-                "⚠재질(CoreInner/RimShell)은 Basic·Alter 공용 — 색 베이크는 마지막 적용이 이깁니다(런타임 색은 라이브 MPB가 변종별로 정확).", MessageType.Info);
+            EditorGUILayout.HelpBox("적용: 이 값을 HealOrbit" + Sfx + " 프리팹(변종 자동 인식) + 연결된 재질에 반영.\n" +
+                "작업대 부품의 CoreInner/RimShell은 Basic·Alter별 전용 재질입니다.", MessageType.Info);
         }
 
-        static T Load<T>(string path) where T : Object => AssetDatabase.LoadAssetAtPath<T>(path);
+        T Load<T>(string path) where T : Object => JcPresetPartTargets.Resolve<T>(target,path);
 
         void Apply(HealOrbitPreset p)
         {

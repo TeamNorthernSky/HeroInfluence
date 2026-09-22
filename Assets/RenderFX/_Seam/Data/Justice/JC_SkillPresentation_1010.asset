@@ -89,7 +89,7 @@ MonoBehaviour:
     BlendInSeconds: 0.001
   Post:
     Enabled: 1
-    AnimationStateName: Base Layer.Taunt
+    AnimationStateName: Base Layer.JC_EnterJustice_Taunt
     BlendInSeconds: 0.1
     Cues:
     - CueName: cast

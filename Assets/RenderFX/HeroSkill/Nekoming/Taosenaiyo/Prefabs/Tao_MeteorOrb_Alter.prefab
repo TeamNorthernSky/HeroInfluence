@@ -187,6 +187,8 @@ MonoBehaviour:
   trailLengthWorld: 2.5
   burstScaleMul: 1.5
   burstDuration: 0.3
+  preset: {fileID: 0}
+  livePreview: 1
 --- !u!96 &3083038318793620389
 TrailRenderer:
   serializedVersion: 3

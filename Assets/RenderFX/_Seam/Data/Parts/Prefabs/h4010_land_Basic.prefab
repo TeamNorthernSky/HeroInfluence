@@ -5046,6 +5046,16 @@ PrefabInstance:
       propertyPath: colorGradient.m_ColorSpace
       value: -1
       objectReference: {fileID: 0}
+    - target: {fileID: 5678717179133712873, guid: 14b94c358ee8fd64cbd058b2db98420b,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: fab568a99fe954849acc0cac35fb32b6, type: 2}
+    - target: {fileID: 6546167637629376498, guid: 14b94c358ee8fd64cbd058b2db98420b,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 3b7d9a91b3e72274fad7f864606e829b, type: 2}
     - target: {fileID: 7698585027933182080, guid: 14b94c358ee8fd64cbd058b2db98420b,
         type: 3}
       propertyPath: billboardYOnly

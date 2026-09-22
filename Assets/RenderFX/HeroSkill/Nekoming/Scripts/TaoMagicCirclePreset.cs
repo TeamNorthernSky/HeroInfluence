@@ -12,6 +12,7 @@ namespace JC.VFX
         [Header("★따름 (Alter 전용)")]
         [Tooltip("켜면 트랜스폼(형태·움직임)을 Basic 프리셋에서 읽는다. Alter 는 기본 ON — B/A는 색만 다르다.")]
         public bool followBasic;
+        [Tooltip("Basic 따름이 켜져 있을 때 위치·형태 기준으로 읽을 프리셋입니다. 연결이 비어 있으면 자기 값을 사용합니다.")]
         public TaoMagicCirclePreset basicRef;
 
         /// <summary>트랜스폼 정본 — Alter 가 따름이면 Basic.</summary>
@@ -97,8 +98,11 @@ namespace JC.VFX
         [Range(0f, 3f)] public float spokeIntensity = 1f;
 
         [Header("룬 눈금 밴드 (0=끔)")]
+        [Tooltip("마법진 눈금이 배치되는 반경입니다. 셰이더의 UV 좌표 기준이며 높일수록 바깥쪽으로 이동합니다.")]
         [Range(0f, 1f)] public float tickRadius = 0.86f;
+        [Tooltip("마법진 눈금의 폭입니다. 높일수록 눈금이 굵어집니다.")]
         [Range(0.005f, 0.12f)] public float tickWidth = 0.045f;
+        [Tooltip("마법진 둘레 눈금의 개수입니다. 높일수록 눈금이 촘촘해집니다.")]
         [Range(4f, 128f)] public float tickCount = 48f;
         [Tooltip("눈금 채움 비율")]
         [Range(0.05f, 0.95f)] public float tickDuty = 0.45f;

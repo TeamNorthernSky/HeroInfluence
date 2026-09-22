@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trailMaterial: {fileID: 2100000, guid: 79e1d1f35db3224488e16f5315354543, type: 2}
-  preset: {fileID: 11400000, guid: 074ffbbef910de84da9469e602439a46, type: 2}
+  preset: {fileID: 11400000, guid: 14480bd913195254c96e5b950801d637, type: 2}
   livePreview: 1
   radius: 1
   radiusNoise: 0.05
@@ -309,7 +309,7 @@ MonoBehaviour:
   auraGlow: {fileID: 5787140086763186126}
   crossBurst: {fileID: 8513159436751090589}
   groundShine: {fileID: 7472659835271578934}
-  masterPreset: {fileID: 11400000, guid: 0fd0f8a54b7e7264496a385f756045da, type: 2}
+  masterPreset: {fileID: 11400000, guid: d1f8fd732ce3365478d54062a724c360, type: 2}
   preset: {fileID: 11400000, guid: fd4855e8c9ed07946969703c18c81635, type: 2}
   livePreview: 1
   orbSparkles: {fileID: 7376878801436884957}
@@ -495,7 +495,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 62526621517261f408a61aa89e9bd7d7, type: 2}
+  - {fileID: 2100000, guid: e60d512a29be9e14e811f5117947c26b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5513,7 +5513,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   crossMaterial: {fileID: 2100000, guid: 6bc66f74fe7ef8b4e9dabe7acf514120, type: 2}
-  preset: {fileID: 11400000, guid: ad850cda30a38294cab4455814630201, type: 2}
+  preset: {fileID: 11400000, guid: d09869cebb402e642b0df089cf0781c3, type: 2}
   livePreview: 1
   maxCrosses: 10
   spawnIntervalMin: 0.18
@@ -5603,7 +5603,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 65fc718cfc8033a409218d16e2ba272b, type: 2}
+  - {fileID: 2100000, guid: c114aa37df50dc847aeed6b42c8296d1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

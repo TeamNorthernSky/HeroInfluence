@@ -1,7 +1,9 @@
 {
   "name": "ASB.Battle.PlayModeTests",
   "rootNamespace": "",
-  "references": [],
+  "references": [
+    "Unity.Timeline"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

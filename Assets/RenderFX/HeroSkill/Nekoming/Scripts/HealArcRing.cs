@@ -40,9 +40,11 @@ namespace JC.VFX
         [Header("Timing")]
         [Tooltip("한 원호가 호를 훑는 시간(초). 짧을수록 순간적")]
         [SerializeField] private float sweepDurationMin = 0.28f;
+        [Tooltip("한 원호가 호를 훑는 시간 최대(초)")]
         [SerializeField] private float sweepDurationMax = 0.42f;
         [Tooltip("새 원호 생성 간격(초)")]
         [SerializeField] private float spawnIntervalMin = 0.06f;
+        [Tooltip("새 요소 생성 간격의 최댓값(초)입니다. 높일수록 생성 사이의 간격이 길어질 수 있습니다.")]
         [SerializeField] private float spawnIntervalMax = 0.16f;
         [Tooltip("동시 최대 원호 수")]
         [SerializeField] private int maxArcs = 12;

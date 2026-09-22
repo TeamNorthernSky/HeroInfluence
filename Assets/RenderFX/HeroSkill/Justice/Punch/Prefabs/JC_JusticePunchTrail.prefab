@@ -4777,7 +4777,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: be73d644d897a7245971117d0cd47664, type: 2}
+  - {fileID: 2100000, guid: d0a5b528bbd6a014cb9bf5c37c7fa9ee, type: 2}
   - {fileID: 2100000, guid: 9470c10d9e0e50345bd69c2c06a66d0b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -4906,10 +4906,15 @@ MonoBehaviour:
   presetAlt: {fileID: 11400000, guid: aa054fc1b61c18a49b05366441122a9a, type: 2}
   kind: 0
   applyMaterials: 1
-  strokeMaterial: {fileID: 2100000, guid: 1a5aab4b31e619c4ebd1f7e434c62ed0, type: 2}
+  strokeMaterial: {fileID: 2100000, guid: e45010160847de6499d765089975e6c9, type: 2}
   impactMaterial: {fileID: 0}
-  sparkMaterial: {fileID: 2100000, guid: be73d644d897a7245971117d0cd47664, type: 2}
+  sparkMaterial: {fileID: 2100000, guid: d0a5b528bbd6a014cb9bf5c37c7fa9ee, type: 2}
   flashMaterial: {fileID: 0}
+  vortexMaterial: {fileID: 0}
+  slashMaterial: {fileID: 0}
+  arcStrokeMaterial: {fileID: 0}
+  arcPointMaterial: {fileID: 0}
+  forceAlternate: 0
 --- !u!1 &7426273800200814891
 GameObject:
   m_ObjectHideFlags: 0
@@ -9687,8 +9692,8 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1a5aab4b31e619c4ebd1f7e434c62ed0, type: 2}
-  - {fileID: 2100000, guid: 1a5aab4b31e619c4ebd1f7e434c62ed0, type: 2}
+  - {fileID: 2100000, guid: e45010160847de6499d765089975e6c9, type: 2}
+  - {fileID: 2100000, guid: e45010160847de6499d765089975e6c9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

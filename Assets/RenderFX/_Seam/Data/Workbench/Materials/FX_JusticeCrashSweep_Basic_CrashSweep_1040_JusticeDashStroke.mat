@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: FX_JusticeCrashSweep_Basic_CrashSweep_1040_JusticeDashStroke
+  m_Shader: {fileID: 4800000, guid: 8080ebf4b37509b4e9db35d2daa2c0f1, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 10dfb449c4ca8184ba4199d7c8266b65, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BodyFalloff: 7.5
+    - _BodySoft: 0.05
+    - _CoreSharp: 4.26
+    - _CoreWidth: 0.168
+    - _EndFade: 0.24
+    - _ThinFarBoost: 2
+    - _ThinProgress: 0
+    - _ThinRadiusInner: 1
+    - _ThinRadiusOuter: 2
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CoreColor: {r: 2.32, g: 2.32, b: 2.32, a: 1}
+    - _ThinCenter: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
