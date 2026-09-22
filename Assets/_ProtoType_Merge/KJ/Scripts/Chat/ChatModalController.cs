@@ -215,13 +215,13 @@ public class ChatModalController : MonoBehaviour
         if (Time.frameCount == skipConfirmClosedFrame) return; // 확인/취소 입력은 채팅 진행에 재사용하지 않음
         if (!Input.GetMouseButtonDown(0)&&!Input.GetKeyDown(KeyCode.Space)) return;
         if (Time.frameCount == beginFrame) return; // 트리거를 누른 그 클릭은 무시
-        if (IsPointerOverButton()) return; // Skip 등 버튼 클릭은 대사 진행으로 취급하지 않음
+        if (IsPointerOverControl()) return; // 버튼·스크롤바 조작은 대사 진행으로 취급하지 않음
 
         manager.Advance();
     }
 
-    /// <summary>클릭 지점이 Button 위인지 — 버튼 클릭과 "화면 클릭=다음 대사"의 이중 반응 방지.</summary>
-    private static bool IsPointerOverButton()
+    /// <summary>클릭 지점이 Selectable 위인지 — 버튼·스크롤바(손잡이 포함)의 클릭과 대사 진행의 이중 반응 방지.</summary>
+    private static bool IsPointerOverControl()
     {
         EventSystem es = EventSystem.current;
         if (es == null) return false;
@@ -232,7 +232,7 @@ public class ChatModalController : MonoBehaviour
         for (int i = 0; i < results.Count; i++)
         {
             if (results[i].gameObject != null &&
-                results[i].gameObject.GetComponentInParent<Button>() != null)
+                results[i].gameObject.GetComponentInParent<Selectable>() != null)
                 return true;
         }
         return false;
