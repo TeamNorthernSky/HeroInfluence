@@ -159,6 +159,15 @@ namespace JC.VFX.Seam
             int hash = info.fullPathHash;
             float seconds = Mathf.Max(0f, info.normalizedTime) * info.length;
 
+            // 새 페이즈의 Cue 표가 먼저 등록되고 Animator가 뒤늦게 전환될 수 있다.
+            // 이전 상태의 경과 시간으로 새 페이즈의 동명 Cue를 발화하지 않는다.
+            // ASB의 데이터 시각 Cue 드라이버와 같은 상태 경계를 따른다.
+            int expected = t.ctx.ExpectedStateHash;
+            if (expected != 0 && expected != hash && expected != info.shortNameHash)
+            {
+                return;
+            }
+
             // 상태·액션이 바뀌었거나 시간이 되돌아갔으면 새 진입으로 보고 초기화한다.
             bool reentered = hash != t.stateHash
                              || t.ctx.CurrentActionInstanceId != t.actionId

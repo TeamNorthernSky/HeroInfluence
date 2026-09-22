@@ -91,6 +91,8 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         // IngameStats = 레벨·무기·성장 보너스가 반영된 전투 스냅샷(Max IP 포함).
         // 추가 스케일링(StatCalculator 경로)은 비활성화합니다.
         battle.SetLevelScaling(false);
+        // 능력치 스냅샷은 유지하되, 스킬 해금 판정에는 저장된 캐릭터 레벨을 사용합니다.
+        battle.ApplyCombatTuning(persistentData.Level, levelWeight, classWeight);
 
         string persistentSkillMatchKey = ResolvePersistentSkillMatchKey(persistentData, fallbackData);
         if (!string.IsNullOrWhiteSpace(persistentSkillMatchKey))
