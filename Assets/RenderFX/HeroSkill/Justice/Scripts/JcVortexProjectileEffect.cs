@@ -89,6 +89,7 @@ namespace JC.VFX.Seam
         [Tooltip("비행 종료 후 자식 잔상이 사라질 때까지 기다리는 여유(초).")]
         [SerializeField, Min(0f)] private float tailLinger = 1.2f;
 
+        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
         [SerializeField] private bool logLifecycle;
 
         /// <summary>자식 서브스텝 상한(16) × 목표 이동(0.15m). 프레임당 이 값을 넘으면 직선 글리치가 부활한다.</summary>

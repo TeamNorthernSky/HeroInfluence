@@ -32,15 +32,21 @@ namespace JC.VFX
         [Header("런타임 프리뷰")]
         [Tooltip("타이밍/착지점 마스터(T8, B/A 공용). 없으면 아래 필드값 사용.")]
         [SerializeField] private TaoReviveMasterPreset masterPreset;
+        [Tooltip("켜면 변경한 설정을 실행 중인 이 효과에 갱신합니다. 파일 저장과는 별개이며 이미 시작된 시간표는 재시전하여 확인합니다.")]
         [SerializeField] private bool livePreview = true;
 
         [Header("착지 플래시 (변종별 직렬화 — Basic 은백 / Alter 금)")]
+        [Tooltip("착지·부활 시 순간적으로 번쩍이는 섬광의 색입니다.")]
         [ColorUsage(true, true)] [SerializeField] private Color impactFlashColor = new Color(1f, 0.9f, 0.45f);
+        [Tooltip("종료 또는 착지 섬광 크기에 곱하는 배수입니다. 1이면 원래 크기를 유지합니다.")]
         [Range(0.2f, 3f)] [SerializeField] private float flashSizeMul = 0.9f;
 
         [Header("오라 타이밍 (masterPreset 없을 때 폴백)")]
+        [Tooltip("시작 페이드인 시간(초). 총 재생시간 기준")]
         [Range(0.05f, 1.5f)] [SerializeField] private float fadeInTime = 0.35f;
+        [Tooltip("유지 시간(초).")]
         [Range(0.2f, 8f)] [SerializeField] private float sustainTime = 2.6f;
+        [Tooltip("종료 페이드아웃 시간(초). 총 재생시간 끝에서 이 시간만큼 페이드")]
         [Range(0.05f, 2f)] [SerializeField] private float fadeOutTime = 0.5f;
 
         private enum Phase { Idle, In, Sustain, Out }

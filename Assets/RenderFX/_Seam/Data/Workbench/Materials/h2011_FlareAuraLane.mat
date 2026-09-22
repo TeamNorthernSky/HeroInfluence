@@ -63,6 +63,6 @@ Material:
     - _WidthNoiseAmount: 0.429
     - _WidthNoiseScale: 1.05
     m_Colors:
-    - _ColorHighlight: {r: 3.9739912, g: 2.6134977, b: 1.9620016, a: 1}
-    - _ColorTongue: {r: 0.735849, g: 0.35404044, b: 0.25222486, a: 1}
+    - _ColorHighlight: {r: 2.3420165, g: 1.4941828, b: 3.576592, a: 1}
+    - _ColorTongue: {r: 0.30880478, g: 0.16171312, b: 0.6622641, a: 1}
   m_BuildTextureStacks: []

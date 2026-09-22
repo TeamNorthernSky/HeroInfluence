@@ -41,7 +41,7 @@ namespace JC.VFX.EditorTools
                 turnLimit > 0f && p.turns > turnLimit ? MessageType.Warning : MessageType.Info);
 
             EditorGUILayout.Space(4);
-            if (GUILayout.Button("적용 — 프리팹에 확정 기록", GUILayout.Height(26)))
+            if (GUILayout.Button(new GUIContent("적용 — 프리팹에 확정 기록", "현재 용권풍의 시간·이동 설정을 연결된 컨테이너 프리팹에 적용하고 저장합니다. 자식의 색·두께는 각 자식 프리셋에서 조절합니다."), GUILayout.Height(26)))
                 Apply(p);
             JcPresetEditorUtil.DrawSaveButton(target, wide: true);   // 튜닝 저장 공식 규격
         }

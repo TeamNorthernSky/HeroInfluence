@@ -35,6 +35,7 @@ namespace JC.VFX
         [Tooltip("파티클이 모두 끝난 뒤 정리까지의 여유(초).")]
         [SerializeField, Min(0f)] private float extraLifetime = 0.3f;
 
+        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
         [SerializeField] private bool logLifecycle;
 
         public Vector3 Offset { get => offset; set => offset = value; }

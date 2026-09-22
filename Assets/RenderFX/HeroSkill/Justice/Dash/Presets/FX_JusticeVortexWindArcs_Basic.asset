@@ -15,7 +15,7 @@ MonoBehaviour:
   targets:
     arcsPrefab: {fileID: 2480173325109819924, guid: 0bbbca490e534c14182bf4740f319f3c,
       type: 3}
-    ribbonMaterial: {fileID: 2100000, guid: 9c0749e3a754a1e4da059667d2419392, type: 2}
+    ribbonMaterial: {fileID: 2100000, guid: 7407da8d4a98298498de8f3b64d47257, type: 2}
   colorA: {r: 1, g: 1, b: 1, a: 1}
   colorB: {r: 0.5, g: 0.75, b: 1, a: 1}
   emission: 0.51

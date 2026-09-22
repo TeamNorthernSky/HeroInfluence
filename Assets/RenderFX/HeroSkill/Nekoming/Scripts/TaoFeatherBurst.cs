@@ -19,36 +19,53 @@ namespace JC.VFX
         [Header("런타임 프리뷰")]
         [Tooltip("지정하면 livePreview에서 이 프리셋 값을 매 프레임 반영(새 깃털부터).")]
         [SerializeField] private TaoFeatherPreset preset;
+        [Tooltip("켜면 변경한 설정을 실행 중인 이 효과에 갱신합니다. 파일 저장과는 별개이며 이미 시작된 시간표는 재시전하여 확인합니다.")]
         [SerializeField] private bool livePreview = true;
 
         [Header("스폰")]
+        [Tooltip("동시 최대 깃털 수")]
         [SerializeField] private int maxFeathers = 10;
+        [Tooltip("새 요소 생성 간격의 최솟값(초)입니다. 낮을수록 더 자주 생성될 수 있습니다.")]
         [SerializeField] private float spawnIntervalMin = 0.12f;
+        [Tooltip("새 요소 생성 간격의 최댓값(초)입니다. 높일수록 생성 사이의 간격이 길어질 수 있습니다.")]
         [SerializeField] private float spawnIntervalMax = 0.3f;
+        [Tooltip("생성되는 요소 수명의 최솟값(초)입니다. 최댓값과의 사이에서 지속 시간이 선택됩니다.")]
         [SerializeField] private float lifetimeMin = 1.5f;
+        [Tooltip("생성되는 요소 수명의 최댓값(초)입니다. 높일수록 일부 요소가 오래 남습니다.")]
         [SerializeField] private float lifetimeMax = 2.3f;
+        [Tooltip("스폰 반경(m). 중심 주위 원판 내 랜덤")]
         [SerializeField] private float spawnRadius = 0.8f;
+        [Tooltip("시작 높이(중심 기준, m)")]
         [SerializeField] private float baseYOffset = 0.15f;
 
         [Header("모션")]
+        [Tooltip("상승 속도 최소(m/s)")]
         [SerializeField] private float riseSpeedMin = 0.45f;
+        [Tooltip("상승 속도 최대(m/s)")]
         [SerializeField] private float riseSpeedMax = 0.8f;
         [Tooltip("중심 둘레 나선 회전(도/초)")]
         [Range(-180f, 180f)] [SerializeField] private float spiralSpeed = 40f;
         [Tooltip("좌우 플러터 진폭(m)")]
         [Range(0f, 0.5f)] [SerializeField] private float swayAmp = 0.12f;
+        [Tooltip("플러터 빈도(Hz)")]
         [Range(0f, 6f)] [SerializeField] private float swayFreq = 1.4f;
         [Tooltip("자전(roll) 최대(±도/초)")]
         [Range(0f, 360f)] [SerializeField] private float spinMax = 90f;
 
         [Header("크기 / 페이드")]
+        [Tooltip("생성되는 요소 크기의 최솟값(m)입니다. 최댓값과의 사이에서 크기가 선택됩니다.")]
         [SerializeField] private float sizeMin = 0.18f;
+        [Tooltip("생성되는 요소 크기의 최댓값(m)입니다. 최솟값과 벌릴수록 크기 차이가 커집니다.")]
         [SerializeField] private float sizeMax = 0.3f;
+        [Tooltip("페이드인 구간 비율(수명 대비)")]
         [Range(0f, 0.5f)] [SerializeField] private float fadeInFrac = 0.15f;
+        [Tooltip("페이드아웃 구간 비율(수명 대비)")]
         [Range(0.05f, 0.9f)] [SerializeField] private float fadeOutFrac = 0.4f;
 
         [Header("룩 (깃털 셰이더)")]
+        [Tooltip("이 시각 요소의 색입니다. HDR 색은 발광 강도와 함께 최종 밝기에 영향을 줍니다.")]
         [ColorUsage(true, true)] [SerializeField] private Color color = new Color(1f, 0.9f, 0.55f);
+        [Tooltip("전체 밝기")]
         [Range(0f, 8f)] [SerializeField] private float intensity = 2.2f;
 
         private Vector3 _center;

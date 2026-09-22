@@ -31,5 +31,5 @@ Material:
     - _RingRadius: 0.6
     - _RingWidth: 0.15
     m_Colors:
-    - _Color: {r: 1.8, g: 1.55, b: 1, a: 1}
+    - _Color: {r: 1.43025, g: 0.79200006, b: 1.6199999, a: 1}
   m_BuildTextureStacks: []

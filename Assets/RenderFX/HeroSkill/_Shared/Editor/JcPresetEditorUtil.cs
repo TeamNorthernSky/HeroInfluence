@@ -27,10 +27,10 @@ namespace JC.VFX
 
             if (hasFollow)
             {
-                EditorGUILayout.PropertyField(follow, new GUIContent("Basic 따름 (Alter 전용)"));
+                EditorGUILayout.PropertyField(follow, new GUIContent("Basic 따름 (Alter 전용)","켜면 아래 트랜스폼 항목이 연결된 Basic을 따릅니다. 끄면 Alter 자신의 값을 독립적으로 사용합니다."));
                 if (follow.boolValue)
                 {
-                    EditorGUILayout.PropertyField(basicRef, new GUIContent("따를 Basic 프리셋"));
+                    EditorGUILayout.PropertyField(basicRef, new GUIContent("따를 Basic 프리셋", "위치·형태 기준으로 사용할 Basic 프리셋입니다. 향후 연결을 변경하거나 따름을 해제할 수 있습니다."));
                     if (basicRef.objectReferenceValue == null)
                         EditorGUILayout.HelpBox("따름이 켜져 있는데 Basic 프리셋이 비어 있습니다 — 자기 값이 쓰입니다.", MessageType.Warning);
                 }
@@ -42,7 +42,7 @@ namespace JC.VFX
 
             bool fold = EditorPrefs.GetBool(foldKey, true);
             bool newFold = EditorGUILayout.Foldout(fold,
-                locked ? "트랜스폼 — Basic 따름 중 (잠김)" : "트랜스폼", true, EditorStyles.foldoutHeader);
+                new GUIContent(locked ? "트랜스폼 — Basic 따름 중 (잠김)" : "트랜스폼", "위치·형태 관련 항목입니다. Basic 따름을 해제하면 여기서 독립 조절할 수 있습니다."), true, EditorStyles.foldoutHeader);
             if (newFold != fold) EditorPrefs.SetBool(foldKey, newFold);
             if (newFold)
                 using (new EditorGUI.DisabledScope(locked))
@@ -87,8 +87,8 @@ namespace JC.VFX
         {
             var label = wide ? "💾 디스크 저장 (조절값 파일 확정)" : "💾 저장";
             bool clicked = wide
-                ? GUILayout.Button(label, GUILayout.Height(30))
-                : GUILayout.Button(label, GUILayout.Height(30), GUILayout.Width(72));
+                ? GUILayout.Button(new GUIContent(label,"현재 프리셋 에셋만 디스크에 저장합니다. 다른 미저장 에셋은 저장하지 않습니다."), GUILayout.Height(30))
+                : GUILayout.Button(new GUIContent(label,"현재 프리셋 에셋만 디스크에 저장합니다. 다른 미저장 에셋은 저장하지 않습니다."), GUILayout.Height(30), GUILayout.Width(72));
             if (!clicked || target == null) return;
             EditorUtility.SetDirty(target);
             AssetDatabase.SaveAssetIfDirty(target);

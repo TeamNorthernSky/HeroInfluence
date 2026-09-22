@@ -16,8 +16,8 @@ MonoBehaviour:
     trailPrefab: {fileID: 3549906358166272059, guid: 06315a6693371074fb19467758f30549,
       type: 3}
     impactPrefab: {fileID: 0}
-    strokeMaterial: {fileID: 2100000, guid: 6a317e024bddd0c419ea4cc5a12271e0, type: 2}
-    sparkMaterial: {fileID: 2100000, guid: 6bc05041b5e22e744adfd4778d64256b, type: 2}
+    strokeMaterial: {fileID: 2100000, guid: 8d1225c3d29a45e4d908e04f47e55051, type: 2}
+    sparkMaterial: {fileID: 2100000, guid: b0a71d4342f7068438effca5271acf8f, type: 2}
     impactSparkMaterial: {fileID: 2100000, guid: 98753a6b70ee3a3479f813a4e7651f6a,
       type: 2}
     flashMaterial: {fileID: 2100000, guid: 7821046455974fc4fba7af61dc69ca66, type: 2}

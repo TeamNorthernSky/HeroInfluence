@@ -9,7 +9,7 @@ namespace JC.VFX
         const string DIR = "Assets/RenderFX/HeroSkill/Nekoming/Taosenaiyo";
         // ★변종 인식(260807) — _Basic/_Alter 프리셋은 제 변종의 프리팹·재질만 만진다(베이크 상호 오염 방지).
         string Sfx => JcPresetEditorUtil.VariantSuffix(target) ?? "_Alter";
-        string MeteorPrefab => DIR + "/Prefabs/Tao_MeteorOrb" + Sfx + ".prefab";
+        string MeteorPrefab => JcPresetPartTargets.Path(target, DIR + "/Prefabs/Tao_MeteorOrb" + Sfx + ".prefab");
         string CometMat => DIR + "/Materials/TaoComet" + Sfx + ".mat";
         string HeadMat => DIR + "/Materials/TaoCometHead" + Sfx + ".mat";
 
@@ -29,8 +29,8 @@ namespace JC.VFX
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) Apply(p);
-                if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) Capture(p);
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","이 프리셋을 참조하는 대상 프리팹에 현재 값을 확정합니다."), GUILayout.Height(30))) Apply(p);
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","대상 프리팹의 값을 현재 프리셋으로 읽습니다. 프리셋 파일 저장은 별도입니다."), GUILayout.Height(30))) Capture(p);
                 JcPresetEditorUtil.DrawSaveButton(target);
             }
             EditorGUILayout.HelpBox("적용: 비행 값은 Tao_MeteorOrb 프리팹(ProjectileVfx/CometShell)에, 혜성 룩은 TaoComet.mat에 베이크.\nlivePreview가 켜져 있으면 플레이 중에도 즉시 반영됩니다.", MessageType.Info);

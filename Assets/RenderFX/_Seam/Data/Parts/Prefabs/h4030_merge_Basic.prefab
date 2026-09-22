@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9575a608ad99c1843a35c0587936eb44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  preset: {fileID: 11400000, guid: 65a267dfe427f1645a3d775af17f65dd, type: 2}
   orbPrefab: {fileID: 801666146177681952, guid: 30cd12b46e7cbf94e953157c84093ff3,
     type: 3}
   mergedOrbPrefab: {fileID: 3693180747375586583, guid: b16b4b2e84d919c418054d48939e7ccd,

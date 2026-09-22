@@ -4786,7 +4786,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 78f83351d2fad88408bca81f27decea1, type: 2}
+  - {fileID: 2100000, guid: a59b7e732acb5c049a7ba58358bba218, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4909,4 +4909,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   preset: {fileID: 11400000, guid: 29e70fdbf4cc01bdedf9581a6430349d, type: 2}
   presetAlt: {fileID: 11400000, guid: 60014ab3975a717438fecff0a8774ac7, type: 2}
-  shardMaterial: {fileID: 2100000, guid: 78f83351d2fad88408bca81f27decea1, type: 2}
+  shardMaterial: {fileID: 2100000, guid: a59b7e732acb5c049a7ba58358bba218, type: 2}
+  forceAlternate: 0

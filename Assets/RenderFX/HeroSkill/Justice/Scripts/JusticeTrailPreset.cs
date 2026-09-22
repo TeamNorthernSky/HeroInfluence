@@ -44,13 +44,17 @@ namespace JC.VFX
             [Min(1)] public int maxParticles = 250;
 
             [Header("수명 · 속도")]
+            [Tooltip("생성되는 요소 수명의 최솟값(초)입니다. 최댓값과의 사이에서 지속 시간이 선택됩니다.")]
             [Range(0.01f, 2f)] public float lifeMin = 0.05f;
+            [Tooltip("생성되는 요소 수명의 최댓값(초)입니다. 높일수록 일부 요소가 오래 남습니다.")]
             [Range(0.01f, 2f)] public float lifeMax = 0.22f;
             [Tooltip("초기 속도(방향은 각 계열의 분포가 정한다).")]
             [Range(0f, 6f)] public float speedMin = 0f;
+            [Tooltip("발사 속도 최대(m/s).")]
             [Range(0f, 6f)] public float speedMax = 1.2f;
 
             [Header("크기")]
+            [Tooltip("생성되는 요소 크기의 최솟값(m)입니다. 최댓값과의 사이에서 크기가 선택됩니다.")]
             [Range(0.001f, 0.5f)] public float sizeMin = 0.020f;
             [Tooltip("최소값과 벌릴수록 편차가 커진다.")]
             [Range(0.001f, 0.5f)] public float sizeMax = 0.070f;
@@ -187,9 +191,13 @@ namespace JC.VFX
             [Range(0f, 6f)] public float emission = 1.6f;
             [Tooltip("한 번에 터지는 스파크 수.")]
             [Range(0, 200)] public int burstCount = 70;
+            [Tooltip("입자의 초기 속력 최솟값(m/s)입니다. 최댓값과의 사이에서 속력이 선택됩니다.")]
             [Range(0f, 40f)] public float speedMin = 6f;
+            [Tooltip("발사 속도 최대(m/s).")]
             [Range(0f, 40f)] public float speedMax = 16f;
+            [Tooltip("생성되는 요소 수명의 최솟값(초)입니다. 최댓값과의 사이에서 지속 시간이 선택됩니다.")]
             [Range(0.02f, 2f)] public float lifeMin = 0.25f;
+            [Tooltip("생성되는 요소 수명의 최댓값(초)입니다. 높일수록 일부 요소가 오래 남습니다.")]
             [Range(0.02f, 2f)] public float lifeMax = 0.55f;
 
             // 스파크는 Stretch 렌더라 화면상 모습이 세 값의 조합으로 정해진다.
@@ -296,8 +304,11 @@ namespace JC.VFX
             public bool enabled = true;
 
             [Header("색 (획 수명 진행: 머리 → 중간 → 꼬리)")]
+            [Tooltip("효과가 시작되는 머리 구간의 색입니다. 중간·꼬리 색으로 이어집니다.")]
             [ColorUsage(true, true)] public Color headColor = new Color(0.92f, 0.97f, 1f);
+            [Tooltip("효과 중간 구간의 색입니다. 머리·꼬리 사이의 색 변화를 조절합니다.")]
             [ColorUsage(true, true)] public Color midColor = new Color(0.70f, 0.85f, 1f);
+            [Tooltip("효과 끝 또는 사라지기 직전 구간의 색입니다.")]
             [ColorUsage(true, true)] public Color tailColor = new Color(0.32f, 0.48f, 0.72f);
             [Tooltip("본체 발광 배수.")]
             [Range(0f, 8f)] public float emission = 1.2f;
@@ -412,8 +423,11 @@ namespace JC.VFX
             public bool enabled = true;
 
             [Header("색 (획 수명 진행: 머리 → 중간 → 꼬리)")]
+            [Tooltip("효과가 시작되는 머리 구간의 색입니다. 중간·꼬리 색으로 이어집니다.")]
             [ColorUsage(true, true)] public Color headColor = Color.white;
+            [Tooltip("효과 중간 구간의 색입니다. 머리·꼬리 사이의 색 변화를 조절합니다.")]
             [ColorUsage(true, true)] public Color midColor = new Color(0.55f, 0.80f, 1f);
+            [Tooltip("효과 끝 또는 사라지기 직전 구간의 색입니다.")]
             [ColorUsage(true, true)] public Color tailColor = new Color(0.25f, 0.45f, 0.85f);
             [Tooltip("본체 발광 배수.")]
             [Range(0f, 8f)] public float emission = 2f;
@@ -421,15 +435,21 @@ namespace JC.VFX
             [Range(0f, 1f)] public float chromaHold = 1f;
 
             [Header("획 형태 (몸통 단면 — 전용 재질 소유라 본 획과 독립)")]
+            [Tooltip("몸통 단면 감쇠 지수. 클수록 중심의 얇은 심만 남아 샤프해진다. ※체감 폭 = 최대 두께 × 감쇠에 살아남는 비율.")]
             [Range(0.5f, 8f)] public float bodyFalloff = 2.5f;
             [Tooltip("획 양끝(길이 방향) 방추형 테이퍼 구간(획 길이 비율).")]
             [Range(0f, 0.5f)] public float edgeTaper = 0.25f;
 
             [Header("궤도 (본 호와 동일 문법 — 겹치려면 본 호와 같은 값으로 맞춘다)")]
+            [Tooltip("호 시작각(도). 210 = 7시.")]
             [Range(-360f, 720f)] public float angleStart = 210f;
+            [Tooltip("호 끝각(도). 끝 < 시작 = 반시계, 끝 > 시작 = 시계, 차이 360 초과 = 한 바퀴 이상.")]
             [Range(-360f, 720f)] public float angleEnd = 30f;
+            [Tooltip("이 효과가 배치되거나 회전하는 반경(m)입니다. 높일수록 중심에서 멀어집니다.")]
             [Range(0.2f, 6f)] public float radius = 1.6f;
+            [Tooltip("호를 다 긋는 데 걸리는 시간(초).")]
             [Range(0.05f, 3f)] public float sweepDuration = 0.5f;
+            [Tooltip("주행 가속 곡선. 1=등속, 클수록 초반이 빠르고 끝에서 감속(촤악), 1 미만은 반대(끝에서 가속). ※방출 밀도(거리 기준)와 아래 점진·감소·수축 구간(호 위 위치 기준)은 이 값과 무관하게 형상이 유지된다.")]
             [Range(0.3f, 4f)] public float easeOut = 1f;
 
             // ★대시 1개 = 입자 1개(260729 3차 확정). 탄생 위치가 곧 시작 오프셋이라
@@ -445,7 +465,9 @@ namespace JC.VFX
             [Header("대시 방출 (밀도 구간은 호 위 위치 기준)")]
             [Tooltip("헤드 이동 거리당 대시 등장 수. ★대시 1개 = 입자 1개라 본 획보다 훨씬 낮게(0.5~2 권장).")]
             [Range(0f, 60f)] public float rateOverDistance = 1.5f;
+            [Tooltip("생성 밀도의 점진 구간(호 전체=1.0, 호 위 위치 기준). 0 = 처음부터 풀 밀도.  0.25 = 호의 앞 25% 구간 동안 밀도가 0 → 100%로 선형 증가. 호의 시작은 성기고 진행할수록 빽빽해진다.")]
             [Range(0f, 0.5f)] public float emissionRamp = 0f;
+            [Tooltip("생성 밀도의 감소 구간(호 전체=1.0, 호 위 위치 기준). 0 = 끝까지 풀 밀도 유지(마지막에 한 번에 종료).  0.5 = 호의 중간부터 밀도가 100% → 0으로 선형 감소. 호의 끝으로 갈수록 획이 성겨진다.")]
             [Range(0f, 0.5f)] public float emissionDecay = 0f;
             [Tooltip("동시 대시 상한. 실제 개수는 방출률 × 수명으로 정해지며 이 값은 뚜껑이다.")]
             [Min(1)] public int maxParticles = 20;
@@ -467,16 +489,20 @@ namespace JC.VFX
             [Range(0.01f, 0.98f)] public float growRatio = 0.12f;
             [Tooltip("소멸 구간 — 자기 일생 비율(0~1). 증가+소멸 합이 0.99를 넘으면 자동 축소.")]
             [Range(0.01f, 0.98f)] public float fadeRatio = 0.25f;
+            [Tooltip("최대 두께 최소(m).")]
             [Range(0.005f, 2.5f)] public float widthMin = 0.05f;
+            [Tooltip("최대 두께 최대(m). Min과 벌릴수록 굵기가 제각각인 획이 된다.")]
             [Range(0.005f, 2.5f)] public float widthMax = 0.15f;
 
             // ★강제 수축(Thin Decay)은 포인트에서 폐지(260729) — 재조준이 수렴 q를 점프시켜
             // 위치 팝을 만들었고, 오버런 체계에서는 존재 이유(스윕 종료 강제 마무리)도 소멸했다.
 
             [Header("궤적")]
+            [Tooltip("획의 정점 간격(m). 작을수록 곡선이 매끄럽다.")]
             [Range(0.001f, 0.05f)] public float trailMinVertexDistance = 0.004f;
 
             [Header("배치")]
+            [Tooltip("스폰 지점(소켓) 기준 오프셋(m). 소켓 스케일은 무시된다.")]
             public Vector3 spawnOffset = new Vector3(0f, -0.2f, 0f);
             [Tooltip("주행 종료 후 잔광 여유(초).")]
             [Range(0f, 2f)] public float extraLinger = 0.2f;
@@ -718,6 +744,7 @@ namespace JC.VFX
         public const int TrailMaxParticlesLimit = 10;
 
         [Header("── 대상 자산 (적용·캡처가 쓰는 곳) ──")]
+        [Tooltip("적용·캡처할 프리팹과 재질 연결입니다. 다른 스킬 또는 변종을 지정하면 그 에셋이 수정될 수 있습니다.")]
         public TargetSet targets = new TargetSet();
 
         [Header("── 궤적 (PenStrokes · Local) ──")]
@@ -725,6 +752,7 @@ namespace JC.VFX
         public TrailGroup trail = new TrailGroup();
 
         [Header("── 입자 (SparkDots · World) ──")]
+        [Tooltip("궤적 주변으로 흩어지는 점 입자의 색·방출·수명 설정입니다.")]
         public SparkGroup spark = new SparkGroup();
 
         [Header("── 이펙트 객체 (궤적·입자가 함께 올라탄 오브젝트) ──")]
@@ -735,12 +763,15 @@ namespace JC.VFX
         public Vector3 socketOffset = Vector3.zero;
 
         [Header("── 타격 (스파크 · 하이라이트 · 섬광) ──")]
+        [Tooltip("착탄 시 발생하는 스파크와 섬광의 색·크기·수명 설정입니다.")]
         public ImpactGroup impact = new ImpactGroup();
 
         [Header("── 호 획 (앵커 주행) ──")]
+        [Tooltip("원호를 따라 그리는 선의 색·형태·잔상 설정입니다.")]
         public ArcStrokeGroup arcStroke = new ArcStrokeGroup();
 
         [Header("── 호 포인트 획 (액센트 가닥 — 바깥 오프셋 → 궤도 복귀) ──")]
+        [Tooltip("원호를 따라 움직이는 포인트 획의 색·두께·생성·이동 설정입니다.")]
         public ArcPointGroup arcPoint = new ArcPointGroup();
 
         // [레거시] 1차 완성(260729)과 함께 인스펙터에서 은닉 — 데이터·코드는 보존.

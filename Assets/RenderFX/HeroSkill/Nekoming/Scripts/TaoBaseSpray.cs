@@ -13,16 +13,23 @@ namespace JC.VFX
         [Header("런타임 프리뷰")]
         [Tooltip("지정하면 livePreview에서 이 프리셋 값을 매 프레임 반영.")]
         [SerializeField] private TaoBaseSprayPreset preset;
+        [Tooltip("켜면 변경한 설정을 실행 중인 이 효과에 갱신합니다. 파일 저장과는 별개이며 이미 시작된 시간표는 재시전하여 확인합니다.")]
         [SerializeField] private bool livePreview = true;
 
         [Header("크기 (livePreview 시 preset 사용)")]
+        [Tooltip("이 시각 요소의 가로 폭(m)입니다. 높일수록 좌우로 넓어집니다.")]
         [SerializeField] private float width = 0.9f;
+        [Tooltip("이 시각 요소의 높이(m)입니다. 높일수록 위아래로 길어집니다.")]
         [SerializeField] private float height = 0.7f;
+        [Tooltip("지면 위 띄우는 높이(m)")]
         [SerializeField] private float groundOffsetY = 0.02f;
+        [Tooltip("페이드인 동안 커지는 팝 정도")]
         [Range(0f, 1f)] [SerializeField] private float riseGrow = 0.4f;
 
         [Header("룩 (livePreview 시 preset 사용)")]
+        [Tooltip("갈퀴 색(진한 오렌지 권장)")]
         [ColorUsage(true, true)] [SerializeField] private Color sprayColor = new Color(1f, 0.62f, 0.12f);
+        [Tooltip("갈퀴 밝기")]
         [Range(0f, 10f)] [SerializeField] private float sprayIntensity = 4.5f;
 
         private MeshRenderer _mr;

@@ -16,8 +16,8 @@ MonoBehaviour:
     trailPrefab: {fileID: 3616402648774875410, guid: 15218dc8ef0d266498789ff9460f4df7,
       type: 3}
     impactPrefab: {fileID: 0}
-    strokeMaterial: {fileID: 2100000, guid: 1859ef92f2a27cb42a55718c3fef3bd8, type: 2}
-    sparkMaterial: {fileID: 2100000, guid: a2668eff6917fa4439896f9d7f0bdd53, type: 2}
+    strokeMaterial: {fileID: 2100000, guid: d31bddb59f7d0b8468507ad4dce80776, type: 2}
+    sparkMaterial: {fileID: 2100000, guid: e2cacf3c04a892a42993eeb85b6b7c49, type: 2}
     impactSparkMaterial: {fileID: 2100000, guid: e324b4fd5d0315749ab46c24113a619a,
       type: 2}
     flashMaterial: {fileID: 2100000, guid: 6e863cf8bd7025241932b4fff2a3194c, type: 2}
@@ -29,10 +29,10 @@ MonoBehaviour:
     slashMaterial: {fileID: 2100000, guid: 4a678e006a63af34b956e91de3daa508, type: 2}
     arcStrokePrefab: {fileID: 5014783889222747169, guid: a52020892572524458e5a533a9431063,
       type: 3}
-    arcStrokeMaterial: {fileID: 2100000, guid: e732ad5307a0f2747ae6e436904cacca, type: 2}
+    arcStrokeMaterial: {fileID: 2100000, guid: 8694e41fa693c4240b0eaf93189762b5, type: 2}
     arcPointPrefab: {fileID: 5014783889222747169, guid: 3fbbbcaed39d3d545993a8564c93f05f,
       type: 3}
-    arcPointMaterial: {fileID: 2100000, guid: bc296ef5a8304c64d821460aff423a2f, type: 2}
+    arcPointMaterial: {fileID: 2100000, guid: 57ac79b6ff3b3f94db1dc7c82817be3f, type: 2}
   trail:
     enabled: 1
     emission: 2.25

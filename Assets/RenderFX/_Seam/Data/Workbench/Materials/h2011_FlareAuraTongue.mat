@@ -52,6 +52,6 @@ Material:
     - _Waver: 0.05
     - _WaverSpeed: 2.5
     m_Colors:
-    - _ColorHighlight: {r: 1.45, g: 1.25, b: 0.8, a: 1}
-    - _ColorTongue: {r: 1.05, g: 0.62, b: 0.16, a: 1}
+    - _ColorHighlight: {r: 1.1540625, g: 0.63225, b: 1.3050001, a: 1}
+    - _ColorTongue: {r: 0.5767125, g: 0.02385, b: 0.94499993, a: 1}
   m_BuildTextureStacks: []

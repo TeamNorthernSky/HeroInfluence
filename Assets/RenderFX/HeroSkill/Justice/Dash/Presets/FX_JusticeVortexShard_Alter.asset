@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: FX_JusticeVortexShard_Alter
   m_EditorClassIdentifier: 
   targets:
-    shardPrefab: {fileID: 4231697358879776452, guid: da86082255585994b8754d6d614a4c91,
+    shardPrefab: {fileID: 8587392833637605040, guid: 634555140d0e76b499703f8b05b9db6c,
       type: 3}
-    shardMaterial: {fileID: 2100000, guid: 78f83351d2fad88408bca81f27decea1, type: 2}
+    shardMaterial: {fileID: 2100000, guid: 264a78546beb2094e82ad99dd569960e, type: 2}
   headColor: {r: 1, g: 0.027025223, b: 0, a: 1}
   midColor: {r: 1, g: 0.059999943, b: 0, a: 1}
   tailColor: {r: 1, g: 1, b: 1, a: 1}

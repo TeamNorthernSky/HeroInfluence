@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 namespace JC.VFX
 {
@@ -31,7 +32,7 @@ namespace JC.VFX
         public override void OnInspectorGUI()
         {
             bool live = EditorPrefs.GetBool(LiveKey, true);
-            bool newLive = EditorGUILayout.ToggleLeft("라이브 프리뷰 (씬에 상주하는 인스턴스에 즉시 반영, 비파괴)", live);
+            bool newLive = EditorGUILayout.ToggleLeft(new GUIContent("라이브 프리뷰 (씬에 상주하는 인스턴스에 즉시 반영, 비파괴)","이 프리셋을 사용하는 살아 있는 사격 이펙트에 조절값을 반영합니다. 디스크 저장과 별개입니다."), live);
             if (newLive != live) EditorPrefs.SetBool(LiveKey, newLive);
 
             EditorGUILayout.Space(2);
@@ -48,8 +49,8 @@ namespace JC.VFX
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("▶ 프리팹에 적용", GUILayout.Height(30))) ApplyPreset(false);
-                if (GUILayout.Button("● 현재값 캡처", GUILayout.Height(30))) CapturePreset();
+                if (GUILayout.Button(new GUIContent("▶ 프리팹에 적용","현재 스킬의 연결된 총구·비행·착탄 부품에 값을 확정합니다."), GUILayout.Height(30))) ApplyPreset(false);
+                if (GUILayout.Button(new GUIContent("● 현재값 캡처","이 프리셋을 참조하는 실제 부품의 저장값을 가져옵니다. 디스크 저장은 별도입니다."), GUILayout.Height(30))) CapturePreset();
             }
             EditorGUILayout.HelpBox(HelpText, MessageType.Info);
         }
@@ -170,24 +171,13 @@ namespace JC.VFX
         private void CapturePreset()
         {
             var p = Preset;
-            if (p.targetPrefab == null)
-            {
-                EditorUtility.DisplayDialog("적용 대상 없음",
-                    "프리셋의 'targetPrefab' 슬롯이 비어 있습니다.", "확인");
-                return;
-            }
-
-            var vfx = p.targetPrefab.GetComponentInChildren<KAimShotVfx>(true);
-            if (vfx == null)
-            {
-                EditorUtility.DisplayDialog("대상 없음", "대상 프리팹에 KAimShotVfx가 없습니다.", "확인");
-                return;
-            }
+            var candidates=(p.targetParts??new GameObject[0]).Concat(new[]{p.targetPrefab}).Where(g=>g!=null);
+            var vfx=candidates.SelectMany(g=>g.GetComponentsInChildren<KAimShotVfx>(true)).FirstOrDefault(v=>v.UsesPreset(p));
+            if(vfx==null){Debug.LogError("[KAimShotPreset] 이 프리셋을 참조하는 캡처 대상이 없습니다.",p);return;}
 
             Undo.RecordObject(p, "Capture K_AimShot Preset");
             CopyComponentToPreset(vfx, p);
             EditorUtility.SetDirty(p);
-            AssetDatabase.SaveAssets();
             Debug.Log("[KAimShotPresetEditor] 캡처 완료 (프리팹 → 프리셋)");
         }
 

@@ -78,6 +78,7 @@ namespace JC.VFX.Seam
         [Tooltip("전체 소멸까지의 여유(초). 획 일생이 더 길면 그쪽을 따른다.")]
         [SerializeField, Min(0f)] private float extraLinger = 0.2f;
 
+        [Tooltip("생성·재생·종료 과정을 Console에 기록합니다. 효과 외형에는 영향을 주지 않습니다.")]
         [SerializeField] private bool logLifecycle;
 
         /// <summary>서브스텝당 목표 이동 거리(m). 첫 세그먼트 직선화의 최대 길이가 된다.</summary>

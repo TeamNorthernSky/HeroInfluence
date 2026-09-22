@@ -24,6 +24,7 @@ namespace JC.VFX
         }
 
         [Header("── 대상 자산 ──")]
+        [Tooltip("적용·캡처할 프리팹과 재질 연결입니다. 다른 스킬 또는 변종을 지정하면 그 에셋이 수정될 수 있습니다.")]
         public TargetSet targets = new TargetSet();
 
         [Header("── 색 (테두리가 이 색을 쓴다 / 내부는 흰 심) ──")]
@@ -59,9 +60,13 @@ namespace JC.VFX
         [Range(0f, 1f)] public float cutMax = 0.75f;
 
         [Header("── 궤도 (호 획과 같은 문법 — 겹치려면 값을 맞춘다) ──")]
+        [Tooltip("호 시작각(도). 210 = 7시.")]
         [Range(-360f, 720f)] public float angleStart = 210f;
+        [Tooltip("호 끝각(도). 끝 < 시작 = 반시계, 끝 > 시작 = 시계, 차이 360 초과 = 한 바퀴 이상.")]
         [Range(-360f, 720f)] public float angleEnd = 30f;
+        [Tooltip("이 효과가 배치되거나 회전하는 반경(m)입니다. 높일수록 중심에서 멀어집니다.")]
         [Range(0.2f, 6f)] public float radius = 1.6f;
+        [Tooltip("호를 다 긋는 데 걸리는 시간(초).")]
         [Range(0.05f, 3f)] public float sweepDuration = 0.5f;
         [Tooltip("주행 가속 곡선. 1=등속, 클수록 초반이 빠르고 끝에서 감속.")]
         [Range(0.3f, 4f)] public float easeOut = 1f;

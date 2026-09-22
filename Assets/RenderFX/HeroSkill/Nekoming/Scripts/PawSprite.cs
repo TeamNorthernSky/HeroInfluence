@@ -14,6 +14,7 @@ namespace JC.VFX
         [Header("런타임 프리뷰")]
         [Tooltip("지정하면 livePreview에서 이 프리셋 값을 매 프레임 반영.")]
         [SerializeField] private PawSpritePreset preset;
+        [Tooltip("켜면 변경한 설정을 실행 중인 이 효과에 갱신합니다. 파일 저장과는 별개이며 이미 시작된 시간표는 재시전하여 확인합니다.")]
         [SerializeField] private bool livePreview = true;
 
         [Header("크기 / 거동")]
@@ -27,17 +28,27 @@ namespace JC.VFX
         [SerializeField] private bool anchorPin = true;
         [Tooltip("쿼드 로컬 접점(±0.5). (0,-0.27) ≈ 발바닥 하단(canvasScale 0.55 기준). 씬 뷰 기즈모(청록 구)로 확인.")]
         [SerializeField] private Vector2 anchorLocal = new Vector2(0f, -0.27f);
+        [Tooltip("둥실 bob 진폭(m)")]
         [Range(0f, 0.3f)] [SerializeField] private float bobAmp = 0.04f;
+        [Tooltip("둥실 bob 빈도(Hz)")]
         [Range(0f, 6f)] [SerializeField] private float bobFreq = 1.2f;
 
         [Header("룩 (livePreview 시 preset 사용)")]
+        [Tooltip("몸통 필 색(반투명 채움)")]
         [ColorUsage(true, true)] [SerializeField] private Color fillColor = new Color(0.85f, 0.9f, 1f);
+        [Tooltip("몸통 불투명도(배경 가림 정도)")]
         [Range(0f, 1f)] [SerializeField] private float fillOpacity = 0.8f;
+        [Tooltip("림(경계 밴드) 색")]
         [ColorUsage(true, true)] [SerializeField] private Color rimColor = Color.white;
+        [Tooltip("림 밝기")]
         [Range(0f, 8f)] [SerializeField] private float rimIntensity = 2.5f;
+        [Tooltip("외곽 글로우 색(실루엣 밖 번짐)")]
         [ColorUsage(true, true)] [SerializeField] private Color glowColor = new Color(0.8f, 0.9f, 1f);
+        [Tooltip("외곽 글로우 밝기")]
         [Range(0f, 8f)] [SerializeField] private float glowIntensity = 1.5f;
+        [Tooltip("패드 프린트 발광 색(HDR)")]
         [ColorUsage(true, true)] [SerializeField] private Color padColor = new Color(1f, 0.95f, 0.8f);
+        [Tooltip("패드 프린트 발광 세기")]
         [Range(0f, 8f)] [SerializeField] private float padIntensity = 2f;
         [Tooltip("워프 순간 플래시 색(발 변형 색과 매칭). 오케스트레이터가 읽어감.")]
         [ColorUsage(true, true)] [SerializeField] private Color warpFlashColor = Color.white;

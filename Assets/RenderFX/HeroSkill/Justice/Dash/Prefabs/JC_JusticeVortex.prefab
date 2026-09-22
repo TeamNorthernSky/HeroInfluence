@@ -82,3 +82,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   preset: {fileID: 11400000, guid: 29dfcc71a0045b548921366f399729f7, type: 2}
   presetAlt: {fileID: 11400000, guid: 13fa0b02ae611184ca4d5b289f17318e, type: 2}
+  forceAlternate: 0

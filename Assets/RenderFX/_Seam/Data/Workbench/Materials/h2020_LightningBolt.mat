@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: h2020_LightningBolt
+  m_Shader: {fileID: 4800000, guid: 1957b5d3ae80e074da0bf6674eaffa1b, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 3006
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _BranchCount: 2
+    - _BranchLen: 0.14
+    - _BranchSlope: 3.2
+    - _BranchWidthMul: 0.55
+    - _CoreWidth: 0.09
+    - _Emission: 1.6
+    - _EndPin: 0.12
+    - _GlowWidth: 0.42
+    - _HeadBoost: 2.2
+    - _HeadSize: 0.06
+    - _JitterAmp: 0.5
+    - _MicroFreq: 3
+    - _MicroJag: 0.18
+    - _Opacity: 1
+    - _Progress: 1
+    - _Seed: 0
+    - _SegCount: 14
+    - _Width: 0.18
+    m_Colors:
+    - _ColorCore: {r: 1.5, g: 1.65, b: 1.95, a: 1}
+    - _ColorGlow: {r: 0.37999994, g: 0.62, b: 1.55, a: 1}
+  m_BuildTextureStacks: []

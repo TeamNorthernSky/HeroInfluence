@@ -55,20 +55,30 @@ namespace JC.VFX
         [SerializeField] private bool livePreview = true;
 
         [Header("페이즈 타이밍 (초)")]
+        [Tooltip("발 등장 팝 시간(초)입니다. 길수록 해당 단계가 오래 지속됩니다.")]
         [Range(0.05f, 1f)] [SerializeField] private float appearTime = 0.25f;
+        [Tooltip("효과가 나타난 후 현재 상태를 유지하는 시간(초)입니다. 길수록 다음 단계가 늦게 시작됩니다.")]
         [Range(0f, 3f)] [SerializeField] private float holdTime = 0.5f;
+        [Tooltip("워프 소멸(스쿼시 축소) 시간(초)입니다. 길수록 해당 단계가 오래 지속됩니다.")]
         [Range(0.03f, 0.5f)] [SerializeField] private float warpOutTime = 0.12f;
         [Tooltip("워프 공백(소멸→재등장 사이) 시간. 블링크의 사라져 있는 시간")]
         [Range(0.03f, 0.5f)] [SerializeField] private float warpTravelTime = 0.1f;
+        [Tooltip("대상 머리 위 재등장 팝 시간(초)입니다. 길수록 해당 단계가 오래 지속됩니다.")]
         [Range(0.05f, 0.6f)] [SerializeField] private float warpInTime = 0.15f;
+        [Tooltip("광선 신장(발→대상) 시간(초)입니다. 길수록 해당 단계가 오래 지속됩니다.")]
         [Range(0.03f, 0.6f)] [SerializeField] private float beamExtendTime = 0.12f;
+        [Tooltip("광선 유지 시간(초)입니다. 길수록 해당 단계가 오래 지속됩니다.")]
         [Range(0.1f, 5f)] [SerializeField] private float beamSustainTime = 1.2f;
+        [Tooltip("종료 페이드아웃 시간(초). 총 재생시간 끝에서 이 시간만큼 페이드")]
         [Range(0.05f, 1.5f)] [SerializeField] private float fadeOutTime = 0.35f;
 
         [Header("팝 / 배치")]
+        [Tooltip("스케일 팝 오버슛(스폰 시 튐). 0=팝 없음")]
         [Range(0f, 4f)] [SerializeField] private float popOvershoot = 1.7f;
         // ★위치는 부품 프리셋이 정본(260805) — 발 = P1(spawnOffset/headOffset), 광선 시작 = P2(startOffset, 끝은 수직 낙하 고정).
+        [Tooltip("발 아래에서 광선이 시작되는 간격(m). ★음수 = 겹침 — 광선 머리를 글리프 뒤로 밀어넣어 소프트캡 이음새를 숨긴다(표준 기법).")]
         [Range(-0.6f, 0.6f)] [SerializeField] private float pawBeamGap = 0.12f;
+        [Tooltip("종료 또는 착지 섬광 크기에 곱하는 배수입니다. 1이면 원래 크기를 유지합니다.")]
         [Range(0.2f, 3f)] [SerializeField] private float flashSizeMul = 1f;
 
         [Header("구간 분할")]

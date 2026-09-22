@@ -25,10 +25,10 @@ MonoBehaviour:
     slashMaterial: {fileID: 0}
     arcStrokePrefab: {fileID: 5014783889222747169, guid: 34368804c9daa914892d33eb8a83e92a,
       type: 3}
-    arcStrokeMaterial: {fileID: 2100000, guid: 2b81e3f76cf5ad244962730c9482a33b, type: 2}
+    arcStrokeMaterial: {fileID: 2100000, guid: 8f971f45f85035c4ca0b40b9c9a728d8, type: 2}
     arcPointPrefab: {fileID: 5014783889222747169, guid: 52314a557f5d7a8458a0afc850abdf88,
       type: 3}
-    arcPointMaterial: {fileID: 2100000, guid: 417c81c6877a1cc4d8fda42be2e0ac15, type: 2}
+    arcPointMaterial: {fileID: 2100000, guid: 6cb56742738a235498632069eadd407d, type: 2}
   trail:
     enabled: 1
     emission: 2.25
