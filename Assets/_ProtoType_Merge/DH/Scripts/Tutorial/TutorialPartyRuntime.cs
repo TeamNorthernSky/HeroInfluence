@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -9,6 +10,7 @@ public class TutorialPartyRuntime : MonoBehaviour
     [Header("Interaction")]
     [SerializeField] private GridManager gridManager;
     [SerializeField] private CombatPromptService combatPromptService;
+    [SerializeField] private QuarterViewCameraFollower cameraFollower;
 
     [SerializeField] private TutorialPartyComposition composition;
     [SerializeField] private PartyGridMover gridMover;
@@ -28,11 +30,18 @@ public class TutorialPartyRuntime : MonoBehaviour
         if (gridMover == null)
             gridMover = GetComponent<PartyGridMover>();
 
+        // Tutorial progress is isolated from the main exploration MapProgressRepository.
+        // The shared mover normally persists party position for DHScene_3, so disable that path here.
+        gridMover?.SetPersistentStateEnabled(false);
+
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
 
         if (combatPromptService == null)
             combatPromptService = FindFirstObjectByType<CombatPromptService>();
+
+        if (cameraFollower == null)
+            cameraFollower = ResolveCameraFollower();
 
         interactionController = new PartyInteractionController(
             gridManager,
@@ -49,6 +58,7 @@ public class TutorialPartyRuntime : MonoBehaviour
         }
 
         composition?.InitializePartyVisuals();
+        StartCoroutine(RestoreTutorialPartyStateAfterGridMoverStart());
     }
 
     private void OnDestroy()
@@ -83,5 +93,45 @@ public class TutorialPartyRuntime : MonoBehaviour
     private void HandleMoveCompleted()
     {
         interactionController?.HandleMoveCompleted();
+    }
+
+    private IEnumerator RestoreTutorialPartyStateAfterGridMoverStart()
+    {
+        yield return null;
+
+        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
+        TutorialPartyProgressState state = repository != null ? repository.PartyState : null;
+        if (state == null || gridMover == null)
+            yield break;
+
+        if (state.HasCurrentGrid)
+            gridMover.SnapToGridPosition(state.CurrentGrid, notifyMoveCompleted: false);
+
+        if (state.HasRemainingMovePoints)
+            gridMover.SetRemainingMovePoints(state.RemainingMovePoints);
+
+        SnapCameraToParty();
+    }
+
+    private void SnapCameraToParty()
+    {
+        if (cameraFollower == null)
+            cameraFollower = ResolveCameraFollower();
+
+        if (cameraFollower == null || gridMover == null)
+            return;
+
+        cameraFollower.SetFollowTarget(gridMover.transform);
+        cameraFollower.SetFollowEnabled(true);
+        cameraFollower.SnapToFollowTarget();
+    }
+
+    private static QuarterViewCameraFollower ResolveCameraFollower()
+    {
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null && mainCamera.TryGetComponent(out QuarterViewCameraFollower follower))
+            return follower;
+
+        return FindFirstObjectByType<QuarterViewCameraFollower>();
     }
 }

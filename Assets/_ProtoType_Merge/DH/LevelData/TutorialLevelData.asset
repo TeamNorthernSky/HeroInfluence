@@ -8093,6 +8093,17 @@ MonoBehaviour:
   - {x: 33, y: 8}
   - {x: 32, y: 8}
   - {x: 31, y: 8}
+  - {x: 17, y: 6}
+  - {x: 18, y: 6}
+  - {x: 19, y: 6}
+  - {x: 15, y: 7}
+  - {x: 14, y: 7}
+  - {x: 13, y: 7}
+  - {x: 22, y: 7}
+  - {x: 23, y: 7}
+  - {x: 24, y: 7}
+  - {x: 25, y: 7}
+  - {x: 26, y: 7}
   itemPlacements: []
   outpostPlacements: []
   eventPlacements: []

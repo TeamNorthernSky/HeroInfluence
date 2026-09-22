@@ -90,6 +90,13 @@ public class PartyInteractionController
             return;
         }
 
+        if (gridManager.TryGetTutorialOutpostInteractionOwner(ownerParty.GetCurrentGrid(), out TutorialOutpostObject tutorialOutpost))
+        {
+            CancelPendingInteraction();
+            IsInputLocked = tutorialOutpost.TryInteract();
+            return;
+        }
+
         if (combatEncounterManager == null)
             return;
 

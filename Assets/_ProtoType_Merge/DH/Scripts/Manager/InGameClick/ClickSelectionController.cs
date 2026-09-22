@@ -116,7 +116,6 @@ public class ClickSelectionController : MonoBehaviour
     private void TryHandleClick()
     {
         PartyGridMover activeMover = partySelectionController != null ? partySelectionController.ActiveMover : null;
-        PartyRuntime activeRuntime = activeMover != null ? activeMover.GetComponent<PartyRuntime>() : null;
         if (mainCamera == null || gridManager == null || activeMover == null || pathfinder == null || marker == null)
             return;
 
@@ -141,7 +140,7 @@ public class ClickSelectionController : MonoBehaviour
             return;
         }
 
-        if (activeRuntime != null && activeRuntime.IsInputLocked)
+        if (IsPartyInputLocked(activeMover))
             return;
 
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -182,6 +181,19 @@ public class ClickSelectionController : MonoBehaviour
         return mover != null
             && mover.gameObject.activeInHierarchy
             && !DefeatedPartyReturnController.IsPartyWaiting(mover);
+    }
+
+    private static bool IsPartyInputLocked(PartyGridMover mover)
+    {
+        if (mover == null)
+            return false;
+
+        PartyRuntime runtime = mover.GetComponent<PartyRuntime>();
+        if (runtime != null && runtime.IsInputLocked)
+            return true;
+
+        CombatContext combatContext = CombatContext.Instance;
+        return combatContext != null && combatContext.IsTutorial;
     }
 
     private bool TryGetClosestLandHit(Ray ray, out RaycastHit landHit)
@@ -247,10 +259,9 @@ public class ClickSelectionController : MonoBehaviour
             return;
 
         PartyGridMover activeMover = partySelectionController != null ? partySelectionController.ActiveMover : null;
-        PartyRuntime activeRuntime = activeMover != null ? activeMover.GetComponent<PartyRuntime>() : null;
         bool shouldLockUI =
             (turnManager != null && turnManager.IsEnemyTurnRunning) ||
-            (activeMover != null && (activeMover.IsMoving || (activeRuntime != null && activeRuntime.IsInputLocked)));
+            (activeMover != null && (activeMover.IsMoving || IsPartyInputLocked(activeMover)));
         uiInputBlocker.SetLocked(shouldLockUI);
     }
 }

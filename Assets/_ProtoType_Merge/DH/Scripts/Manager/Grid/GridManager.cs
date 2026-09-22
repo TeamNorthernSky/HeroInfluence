@@ -450,6 +450,27 @@ public class GridManager : MonoBehaviour
         return false;
     }
 
+    public bool TryGetTutorialOutpostInteractionOwner(Vector2Int grid, out TutorialOutpostObject outpost)
+    {
+        outpost = null;
+
+        TutorialOutpostObject[] outposts = FindObjectsByType<TutorialOutpostObject>(FindObjectsSortMode.None);
+        for (int i = 0; i < outposts.Length; i++)
+        {
+            TutorialOutpostObject candidate = outposts[i];
+            if (candidate == null || !candidate.isActiveAndEnabled)
+                continue;
+
+            if (!candidate.IsInteractionCell(grid))
+                continue;
+
+            outpost = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
     public bool TryGetOutpostObjectAtGrid(Vector2Int grid, out Outpost outpost)
     {
         outpost = null;

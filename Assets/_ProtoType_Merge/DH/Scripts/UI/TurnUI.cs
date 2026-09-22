@@ -14,6 +14,9 @@ public class TurnUI : MonoBehaviour
 
     void UpdateUI()
     {
+        if (turnManager == null || dayText == null)
+            return;
+
         dayText.text = "Day : " + turnManager.GetDay().ToString();
     }
 }

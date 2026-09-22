@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
-public class DHFogProgressApplier : MonoBehaviour
+public sealed class TutorialFogProgressApplier : MonoBehaviour
 {
-    public static DHFogProgressApplier Instance { get; private set; }
+    public static TutorialFogProgressApplier Instance { get; private set; }
 
     private readonly List<FogGridManager.FogCellSnapshot> snapshotBuffer = new List<FogGridManager.FogCellSnapshot>();
     private FogGridManager currentFogGridManager;
@@ -19,8 +19,8 @@ public class DHFogProgressApplier : MonoBehaviour
         if (Instance != null)
             return;
 
-        var go = new GameObject("[DHFogProgressApplier]");
-        go.AddComponent<DHFogProgressApplier>();
+        GameObject root = new GameObject("[TutorialFogProgressApplier]");
+        root.AddComponent<TutorialFogProgressApplier>();
     }
 
     private void Awake()
@@ -87,12 +87,12 @@ public class DHFogProgressApplier : MonoBehaviour
     {
         yield return null;
         initializeCoroutine = null;
-        InitializeLoadedFogScene();
+        InitializeLoadedTutorialFogScene();
     }
 
-    private void InitializeLoadedFogScene()
+    private void InitializeLoadedTutorialFogScene()
     {
-        if (IsTutorialScene(SceneManager.GetActiveScene()))
+        if (!IsTutorialExploreScene(SceneManager.GetActiveScene()))
         {
             UnsubscribeCurrentFogGrid();
             return;
@@ -105,16 +105,15 @@ public class DHFogProgressApplier : MonoBehaviour
             return;
         }
 
-        MapProgressRepository repository = MapProgressRepository.Instance;
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
         if (repository == null)
             return;
 
         UnsubscribeCurrentFogGrid();
         currentFogGridManager = fogGridManager;
+        currentFogGridManager.SetCurrentDay(repository.CurrentTurn);
 
-        SyncCurrentDay(fogGridManager);
-
-        if (repository.HasFogProgress())
+        if (repository.HasFogProgress)
         {
             BuildSnapshotBuffer(repository.FogCells);
             isRestoring = true;
@@ -125,7 +124,6 @@ public class DHFogProgressApplier : MonoBehaviour
         currentFogGridManager.FogChanged -= HandleFogChanged;
         currentFogGridManager.FogChanged += HandleFogChanged;
 
-        RevealCurrentContext();
         SaveFogProgress();
     }
 
@@ -142,14 +140,14 @@ public class DHFogProgressApplier : MonoBehaviour
         if (currentFogGridManager == null)
             return;
 
-        MapProgressRepository repository = MapProgressRepository.Instance;
+        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
         if (repository == null)
             return;
 
         repository.ReplaceFogCells(currentFogGridManager.EnumerateKnownCells());
     }
 
-    private void BuildSnapshotBuffer(IReadOnlyList<FogProgressCell> progressCells)
+    private void BuildSnapshotBuffer(IReadOnlyList<TutorialFogProgressCell> progressCells)
     {
         snapshotBuffer.Clear();
 
@@ -158,7 +156,7 @@ public class DHFogProgressApplier : MonoBehaviour
 
         for (int i = 0; i < progressCells.Count; i++)
         {
-            FogProgressCell cell = progressCells[i];
+            TutorialFogProgressCell cell = progressCells[i];
             if (cell == null || cell.Visibility == FogVisibilityState.Unexplored)
                 continue;
 
@@ -169,32 +167,6 @@ public class DHFogProgressApplier : MonoBehaviour
         }
     }
 
-    private static void SyncCurrentDay(FogGridManager fogGridManager)
-    {
-        if (fogGridManager == null || GameManager.Instance == null)
-            return;
-
-        fogGridManager.SetCurrentDay(GameManager.Instance.CurrentDay);
-    }
-
-    private static void RevealCurrentContext()
-    {
-        if (ZoneEntryGuidanceController.IsActiveOrStoredActive)
-        {
-            ZoneEntryGuidanceController.ApplyStoredGuidanceIfNeeded()?.RevealAllowedPathCells();
-            return;
-        }
-
-        PartyFogRevealer partyFogRevealer = FindFirstObjectByType<PartyFogRevealer>();
-        partyFogRevealer?.RevealAllCurrentPartyPositions();
-
-        OutpostFogRevealer outpostFogRevealer = FindFirstObjectByType<OutpostFogRevealer>();
-        outpostFogRevealer?.RevealAllClaimedOutposts();
-
-        HeroUnionFogRevealer heroUnionFogRevealer = FindFirstObjectByType<HeroUnionFogRevealer>();
-        heroUnionFogRevealer?.RevealAllHeroUnions();
-    }
-
     private void UnsubscribeCurrentFogGrid()
     {
         if (currentFogGridManager != null)
@@ -203,10 +175,8 @@ public class DHFogProgressApplier : MonoBehaviour
         currentFogGridManager = null;
     }
 
-    private static bool IsTutorialScene(Scene scene)
+    private static bool IsTutorialExploreScene(Scene scene)
     {
-        return scene.IsValid() &&
-            !string.IsNullOrWhiteSpace(scene.name) &&
-            scene.name.StartsWith("Tutorial", System.StringComparison.Ordinal);
+        return scene.IsValid() && scene.name == "TutorialExploreScene";
     }
 }
