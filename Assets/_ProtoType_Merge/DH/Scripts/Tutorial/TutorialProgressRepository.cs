@@ -12,6 +12,9 @@ public class TutorialUnitProgressState
     [SerializeField] private int currentIp;
     [SerializeField] private int maxIp;
     [SerializeField] private int atk;
+    [SerializeField] private int level = 1;
+    [SerializeField] private int exp;
+    [SerializeField] private int maxExp;
 
     public string UnitTemplateKey => NormalizeKey(unitTemplateKey);
     public bool Joined => joined;
@@ -20,6 +23,9 @@ public class TutorialUnitProgressState
     public int CurrentIp => currentIp;
     public int MaxIp => maxIp;
     public int Atk => atk;
+    public int Level => Mathf.Max(1, level);
+    public int Exp => Mathf.Max(0, exp);
+    public int MaxExp => Mathf.Max(0, maxExp);
 
     public TutorialUnitProgressState()
     {
@@ -36,18 +42,34 @@ public class TutorialUnitProgressState
         joined = value;
     }
 
-    public void SetStats(int nextCurrentHp, int nextMaxHp, int nextCurrentIp, int nextMaxIp, int nextAtk)
+    public void SetStats(
+        int nextCurrentHp,
+        int nextMaxHp,
+        int nextCurrentIp,
+        int nextMaxIp,
+        int nextAtk,
+        int nextLevel = 1,
+        int nextExp = 0,
+        int nextMaxExp = 0)
     {
         currentHp = nextCurrentHp;
         maxHp = nextMaxHp;
         currentIp = nextCurrentIp;
         maxIp = nextMaxIp;
         atk = nextAtk;
+        level = Mathf.Max(1, nextLevel);
+        maxExp = Mathf.Max(0, nextMaxExp);
+        exp = maxExp > 0
+            ? Mathf.Clamp(nextExp, 0, maxExp)
+            : Mathf.Max(0, nextExp);
     }
 
     public void Normalize()
     {
         unitTemplateKey = NormalizeKey(unitTemplateKey);
+        level = Mathf.Max(1, level);
+        maxExp = Mathf.Max(0, maxExp);
+        exp = maxExp > 0 ? Mathf.Clamp(exp, 0, maxExp) : Mathf.Max(0, exp);
     }
 
     private static string NormalizeKey(string key)
@@ -458,7 +480,10 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         int maxHp,
         int currentIp,
         int maxIp,
-        int atk)
+        int atk,
+        int level = 1,
+        int exp = 0,
+        int maxExp = 0)
     {
         TutorialUnitProgressState state = GetOrCreateUnitState(unitTemplateKey);
         if (state == null)
@@ -469,7 +494,10 @@ public sealed class TutorialProgressRepository : MonoBehaviour
             Mathf.Max(0, maxHp),
             Mathf.Max(0, currentIp),
             Mathf.Max(0, maxIp),
-            Mathf.Max(0, atk));
+            Mathf.Max(0, atk),
+            Mathf.Max(1, level),
+            Mathf.Max(0, exp),
+            Mathf.Max(0, maxExp));
         NotifyChanged();
     }
 
