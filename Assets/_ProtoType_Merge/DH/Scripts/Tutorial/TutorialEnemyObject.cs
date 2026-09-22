@@ -128,10 +128,16 @@ public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
             return false;
         }
 
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
+        repository?.SetPendingCombatSource(TutorialCombatSourceType.Enemy, ObjectKey);
+
         combatStarting = true;
         bool started = combatLauncher.BeginCombat(EnemyGroupKey, EnemyLevel, TutorialBattleKey, TutorialZoneId);
         if (!started)
+        {
+            repository?.ClearPendingCombatSource();
             combatStarting = false;
+        }
 
         return started;
     }

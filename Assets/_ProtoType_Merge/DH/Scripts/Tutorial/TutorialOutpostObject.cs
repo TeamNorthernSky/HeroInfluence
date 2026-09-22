@@ -15,7 +15,10 @@ public sealed class TutorialOutpostObject : MonoBehaviour
     [Header("Combat")]
     [SerializeField] private string enemyGroupKey;
     [SerializeField, Min(1)] private int enemyLevel = 1;
-    [SerializeField] private bool triggerOnInteractionCellEnter = true;
+    [Tooltip("Tutorial battle flow key used by the tutorial battle scene, such as TUT_01.")]
+    [SerializeField] private string tutorialBattleKey;
+    [Tooltip("Tutorial flow zone id. -1 lets the battle side use its default.")]
+    [SerializeField, Min(-1)] private int tutorialZoneId = -1;
 
     [Header("Association Scene")]
     [SerializeField] private string associationSceneName;
@@ -32,10 +35,8 @@ public sealed class TutorialOutpostObject : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private TutorialBuildingObject buildingObject;
-    [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private TutorialCombatLauncher combatLauncher;
 
-    private PartyGridMover subscribedParty;
     private TutorialOutpostClaimState currentClaimState;
     private bool combatStarting;
 
@@ -43,6 +44,8 @@ public sealed class TutorialOutpostObject : MonoBehaviour
     public TutorialOutpostClaimState CurrentClaimState => currentClaimState;
     public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
     public int EnemyLevel => Mathf.Max(1, enemyLevel);
+    public string TutorialBattleKey => string.IsNullOrWhiteSpace(tutorialBattleKey) ? string.Empty : tutorialBattleKey.Trim();
+    public int TutorialZoneId => tutorialZoneId;
 
     private void Awake()
     {
@@ -55,13 +58,11 @@ public sealed class TutorialOutpostObject : MonoBehaviour
     {
         ResolveReferences();
         LoadStateFromRepository();
-        SubscribeParty();
         ApplyStateVisuals();
     }
 
     private void OnDisable()
     {
-        UnsubscribeParty();
         combatStarting = false;
     }
 
@@ -69,12 +70,6 @@ public sealed class TutorialOutpostObject : MonoBehaviour
     {
         enemyLevel = Mathf.Max(1, enemyLevel);
         ResolveReferences();
-    }
-
-    private void Update()
-    {
-        if (triggerOnInteractionCellEnter && subscribedParty == null)
-            SubscribeParty();
     }
 
     public void SetClaimState(TutorialOutpostClaimState nextState, bool persist)
@@ -91,6 +86,8 @@ public sealed class TutorialOutpostObject : MonoBehaviour
 
     public bool TryInteract()
     {
+        LoadStateFromRepository();
+
         if (currentClaimState == TutorialOutpostClaimState.HeroClaimed)
             return TryEnterAssociationScene();
 
@@ -103,8 +100,16 @@ public sealed class TutorialOutpostObject : MonoBehaviour
         ApplyStateVisuals();
     }
 
+    public bool IsInteractionCell(Vector2Int grid)
+    {
+        ResolveReferences();
+        return buildingObject != null && buildingObject.IsInteractionCell(grid);
+    }
+
     public bool TryStartCaptureCombat()
     {
+        LoadStateFromRepository();
+
         if (combatStarting)
             return false;
 
@@ -128,7 +133,7 @@ public sealed class TutorialOutpostObject : MonoBehaviour
         repository?.SetPendingCombatSource(TutorialCombatSourceType.Outpost, ObjectKey);
 
         combatStarting = true;
-        bool started = combatLauncher.BeginCombat(EnemyGroupKey, EnemyLevel);
+        bool started = combatLauncher.BeginCombat(EnemyGroupKey, EnemyLevel, TutorialBattleKey, TutorialZoneId);
         if (!started)
         {
             repository?.ClearPendingCombatSource();
@@ -159,17 +164,6 @@ public sealed class TutorialOutpostObject : MonoBehaviour
             SceneManager.LoadScene(sceneName);
 
         return true;
-    }
-
-    private void HandlePartyGridEntered(Vector2Int grid)
-    {
-        if (!triggerOnInteractionCellEnter || combatStarting || buildingObject == null)
-            return;
-
-        if (!buildingObject.IsInteractionCell(grid))
-            return;
-
-        TryInteract();
     }
 
     private void LoadStateFromRepository()
@@ -224,42 +218,12 @@ public sealed class TutorialOutpostObject : MonoBehaviour
         buildingObject.SetInteractionOverlayColor(color);
     }
 
-    private void SubscribeParty()
-    {
-        if (subscribedParty != null)
-            return;
-
-        ResolvePartyRegistry();
-        subscribedParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
-        if (subscribedParty == null)
-            return;
-
-        subscribedParty.GridEntered -= HandlePartyGridEntered;
-        subscribedParty.GridEntered += HandlePartyGridEntered;
-    }
-
-    private void UnsubscribeParty()
-    {
-        if (subscribedParty == null)
-            return;
-
-        subscribedParty.GridEntered -= HandlePartyGridEntered;
-        subscribedParty = null;
-    }
-
     private void ResolveReferences()
     {
         if (buildingObject == null)
             buildingObject = GetComponent<TutorialBuildingObject>();
 
-        ResolvePartyRegistry();
         ResolveCombatLauncher();
-    }
-
-    private void ResolvePartyRegistry()
-    {
-        if (partyRegistry == null)
-            partyRegistry = FindFirstObjectByType<PartyRegistry>();
     }
 
     private void ResolveCombatLauncher()

@@ -43,7 +43,45 @@ public sealed class TutorialCombatResultProcessor : MonoBehaviour
 
         repository.SetLastCombatResult(context.Result);
         repository.ApplyPendingCombatResult(context.Result);
+        ApplyInactiveObjectStates(repository);
+        ApplyOutpostStates(repository);
         context.ClearTutorial();
+    }
+
+    private static void ApplyInactiveObjectStates(TutorialProgressRepository repository)
+    {
+        if (repository == null)
+            return;
+
+        TutorialEnemyObject[] enemies = FindObjectsByType<TutorialEnemyObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            TutorialEnemyObject enemy = enemies[i];
+            if (enemy == null || !repository.IsObjectInactive(enemy.ObjectKey))
+                continue;
+
+            enemy.gameObject.SetActive(false);
+        }
+    }
+
+    private static void ApplyOutpostStates(TutorialProgressRepository repository)
+    {
+        if (repository == null)
+            return;
+
+        TutorialOutpostObject[] outposts = FindObjectsByType<TutorialOutpostObject>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+        for (int i = 0; i < outposts.Length; i++)
+        {
+            TutorialOutpostObject outpost = outposts[i];
+            if (outpost == null)
+                continue;
+
+            outpost.RefreshStateVisuals();
+        }
     }
 
     public static bool TryPersistAllies(

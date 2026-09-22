@@ -89,7 +89,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingKey: 
   buildingType: 1
-  anchorLocalOffset: {x: 0, y: 0, z: 0}
   showInteractionOverlay: 1
   associationOverlayColor: {r: 0, g: 0.35, b: 1, a: 0.28}
   enemyBaseOverlayColor: {r: 1, g: 0.15, b: 0.15, a: 0.28}
@@ -108,8 +107,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectKey: 
   initialClaimState: 0
-  enemyGroupKey: 
+  enemyGroupKey: FEP001
   enemyLevel: 1
+  tutorialBattleKey: 
+  tutorialZoneId: -1
   triggerOnInteractionCellEnter: 1
   associationSceneName: 
   allowAssociationSceneLoad: 0

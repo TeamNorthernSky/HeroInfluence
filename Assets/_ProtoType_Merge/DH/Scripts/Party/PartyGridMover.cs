@@ -35,6 +35,11 @@ public class PartyGridMover : MonoBehaviour
     public event Action MoveCompleted;
     public event Action<bool> MovementStateChanged;
 
+    public void SetPersistentStateEnabled(bool enabled)
+    {
+        usePersistentState = enabled;
+    }
+
     private void Awake()
     {
         fixedY = transform.position.y;
@@ -70,7 +75,7 @@ public class PartyGridMover : MonoBehaviour
         if (identity == null) return;
         cachedIdentity = identity;
 
-        if (!usePersistentState)
+        if (!ShouldUsePersistentState(identity))
         {
             currentGrid = gridManager != null ? gridManager.WorldToGrid(transform.position) : currentGrid;
             GridEntered?.Invoke(currentGrid);
@@ -140,7 +145,7 @@ public class PartyGridMover : MonoBehaviour
         if (!Application.isPlaying ||
             restoredPersistentPosition ||
             !canRefreshHeroUnionStartAfterLevelLoad ||
-            !usePersistentState ||
+            !ShouldUsePersistentState(cachedIdentity) ||
             gridManager == null ||
             cachedIdentity == null)
         {
@@ -214,6 +219,12 @@ public class PartyGridMover : MonoBehaviour
 
     // [JC 추가 260511] Snap도 영속화 (외부 위치 강제 변경 케이스 안전 처리)
     // [JC 추가 260514 R-1] notifyMoveCompleted 인자 — Start 영속 복원 시 MoveCompleted 발화 회피용 (false)
+    public void SetRemainingMovePoints(int amount)
+    {
+        movePointController?.SetRemaining(amount);
+        PersistLastGrid();
+    }
+
     public void SnapToGridPosition(Vector2Int grid, bool notifyMoveCompleted = true)
     {
         pathQueue.Clear();
@@ -277,7 +288,7 @@ public class PartyGridMover : MonoBehaviour
     // [JC 수정 260512] 머지 사이클: PartyPersistentRepository로 책임 이관됨
     private void PersistLastGrid()
     {
-        if (!usePersistentState)
+        if (!ShouldUsePersistentState())
             return;
 
         var identity = GetComponent<PartyIdentity>();
@@ -307,7 +318,7 @@ public class PartyGridMover : MonoBehaviour
 
     private void PersistPartyWorldState(PartyIdentity identity, Vector2Int grid)
     {
-        if (!usePersistentState)
+        if (!ShouldUsePersistentState(identity))
             return;
 
         if (identity == null)
@@ -328,7 +339,7 @@ public class PartyGridMover : MonoBehaviour
 
     private IEnumerator SnapToHeroUnionStartOrCurrentNextFrame(PartyIdentity identity)
     {
-        if (!usePersistentState)
+        if (!ShouldUsePersistentState(identity))
             yield break;
 
         yield return null;
@@ -351,7 +362,7 @@ public class PartyGridMover : MonoBehaviour
 
     private IEnumerator PersistCurrentGridWhenPartyDataReady(PartyIdentity identity)
     {
-        if (!usePersistentState)
+        if (!ShouldUsePersistentState(identity))
             yield break;
 
         const int maxAttempts = 5;
@@ -404,6 +415,34 @@ public class PartyGridMover : MonoBehaviour
         }
 
         return true;
+    }
+
+    private bool ShouldUsePersistentState()
+    {
+        PartyIdentity identity = cachedIdentity != null ? cachedIdentity : GetComponent<PartyIdentity>();
+        return ShouldUsePersistentState(identity);
+    }
+
+    private bool ShouldUsePersistentState(PartyIdentity identity)
+    {
+        if (!usePersistentState)
+            return false;
+
+        if (identity == null)
+            return true;
+
+        return !IsTutorialIdentity(identity);
+    }
+
+    private static bool IsTutorialIdentity(PartyIdentity identity)
+    {
+        return IsTutorialKey(identity.PartyId) || IsTutorialKey(identity.PlacementKey);
+    }
+
+    private static bool IsTutorialKey(string value)
+    {
+        return !string.IsNullOrWhiteSpace(value) &&
+            value.StartsWith("tutorial_", StringComparison.OrdinalIgnoreCase);
     }
 
     private static int GetSquaredGridDistance(Vector2Int left, Vector2Int right)

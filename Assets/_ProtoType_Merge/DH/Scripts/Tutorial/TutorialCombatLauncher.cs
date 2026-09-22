@@ -85,6 +85,8 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
             return false;
         }
 
+        SaveCurrentPartyState();
+
         if (!context.BeginTutorial(
                 DefaultPartyId,
                 allies,
@@ -205,6 +207,21 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         }
 
         return true;
+    }
+
+    private static void SaveCurrentPartyState()
+    {
+        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
+        if (repository == null)
+            return;
+
+        TutorialPartyRuntime party = FindFirstObjectByType<TutorialPartyRuntime>();
+        PartyGridMover mover = party != null ? party.GridMover : null;
+        if (mover == null)
+            return;
+
+        repository.SetPartyGrid(mover.GetCurrentGrid());
+        repository.SetRemainingMovePoints(mover.RemainingMovePoints);
     }
 
     private static void ApplyStoredUnitState(

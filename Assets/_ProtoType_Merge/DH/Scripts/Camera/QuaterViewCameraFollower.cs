@@ -96,6 +96,20 @@ public class QuarterViewCameraFollower : MonoBehaviour
         edgeScrollVelocity = Vector3.zero;
     }
 
+    public void SnapToFollowTarget()
+    {
+        if (followTarget == null)
+            return;
+
+        Vector3 followAnchor = followTarget.position;
+        smoothedFollowAnchor = new Vector3(followAnchor.x, 0f, followAnchor.z);
+        followVelocity = Vector3.zero;
+        hasSmoothedFollowAnchor = true;
+        RecenterOnFollowTarget();
+        ApplyCameraPositionFromCurrentState();
+        ClampCameraToMapBounds();
+    }
+
     public void SetFollowMapEdgeMoveConstraint(bool enabled)
     {
         constrainFollowToMapEdgeDuringMove = enabled;

@@ -99,7 +99,8 @@ public enum TutorialOutpostClaimState
 public enum TutorialCombatSourceType
 {
     None = 0,
-    Outpost = 1
+    Outpost = 1,
+    Enemy = 2
 }
 
 [Serializable]
@@ -573,11 +574,21 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         string sourceKey = PendingCombatSourceKey;
         ClearPendingCombatSource();
 
-        if (sourceType != TutorialCombatSourceType.Outpost || string.IsNullOrEmpty(sourceKey))
+        if (string.IsNullOrEmpty(sourceKey))
             return;
 
-        if (result == CombatResult.Victory)
-            SetOutpostState(sourceKey, TutorialOutpostClaimState.HeroClaimed);
+        if (result != CombatResult.Victory)
+            return;
+
+        switch (sourceType)
+        {
+            case TutorialCombatSourceType.Outpost:
+                SetOutpostState(sourceKey, TutorialOutpostClaimState.HeroClaimed);
+                break;
+            case TutorialCombatSourceType.Enemy:
+                MarkObjectInactive(sourceKey);
+                break;
+        }
     }
 
     [ContextMenu("Rebuild Lookup")]

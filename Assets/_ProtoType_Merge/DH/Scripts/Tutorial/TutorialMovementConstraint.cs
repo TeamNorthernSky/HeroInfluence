@@ -128,7 +128,10 @@ public class TutorialMovementConstraint : MonoBehaviour
     {
         int nextOrder = FindNextOrder(currentOrder);
         if (nextOrder == currentOrder)
+        {
+            CompleteAllMovementSteps();
             return;
+        }
 
         SetCurrentOrder(nextOrder);
     }
@@ -239,6 +242,34 @@ public class TutorialMovementConstraint : MonoBehaviour
         }
 
         return nextOrder == int.MaxValue ? order : nextOrder;
+    }
+
+    private void CompleteAllMovementSteps()
+    {
+        int completionOrder = FindCompletionOrder();
+        if (currentOrder != completionOrder)
+            currentOrder = completionOrder;
+
+        if (useTutorialProgressRepository)
+            TutorialProgressRepository.EnsureInstance()?.SetCurrentOrder(currentOrder);
+
+        RebuildLookup();
+        RefreshOverlay();
+    }
+
+    private int FindCompletionOrder()
+    {
+        int maxOrder = 0;
+        for (int i = 0; i < movementSteps.Count; i++)
+        {
+            TutorialMovementStep step = movementSteps[i];
+            if (step == null)
+                continue;
+
+            maxOrder = Mathf.Max(maxOrder, step.Order);
+        }
+
+        return Mathf.Max(1, maxOrder + 1);
     }
 
     private void RefreshOverlay()

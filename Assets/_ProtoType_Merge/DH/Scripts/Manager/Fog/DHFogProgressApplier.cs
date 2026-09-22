@@ -92,6 +92,12 @@ public class DHFogProgressApplier : MonoBehaviour
 
     private void InitializeLoadedFogScene()
     {
+        if (IsTutorialScene(SceneManager.GetActiveScene()))
+        {
+            UnsubscribeCurrentFogGrid();
+            return;
+        }
+
         FogGridManager fogGridManager = FindFirstObjectByType<FogGridManager>();
         if (fogGridManager == null)
         {
@@ -195,5 +201,12 @@ public class DHFogProgressApplier : MonoBehaviour
             currentFogGridManager.FogChanged -= HandleFogChanged;
 
         currentFogGridManager = null;
+    }
+
+    private static bool IsTutorialScene(Scene scene)
+    {
+        return scene.IsValid() &&
+            !string.IsNullOrWhiteSpace(scene.name) &&
+            scene.name.StartsWith("Tutorial", System.StringComparison.Ordinal);
     }
 }
