@@ -1435,7 +1435,7 @@ MonoBehaviour:
   enemyPlace: {fileID: 912453333}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
-  playerUnitId: 10001
+  playerUnitId: 10003
   playerGridNumber: 101
   additionalPreviewPlayers:
   - unitId: 10003
@@ -2123,6 +2123,7 @@ MonoBehaviour:
   sceneResultPanel: {fileID: 0}
   hideOnResult: []
   disableOnResult: []
+  showTurnArrow: 1
   turnArrow: {fileID: 0}
   turnArrowScreenOffset: {x: 0, y: 120}
   ClearMaterial: {fileID: 0}
@@ -3078,6 +3079,12 @@ MonoBehaviour:
   ClearMaterial: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   MainTargetHighlightMaterial: {fileID: 2100000, guid: e8e86b2d9652a0240b76abafde055fa9,
     type: 2}
+  useBattleTilePresentation: 0
+  flowManager: {fileID: 0}
+  inputHandler: {fileID: 0}
+  currentTurnMaterial: {fileID: 0}
+  unavailableMaterial: {fileID: 0}
+  cellVisualSettings: {fileID: 0}
 --- !u!4 &1738284057
 Transform:
   m_ObjectHideFlags: 0

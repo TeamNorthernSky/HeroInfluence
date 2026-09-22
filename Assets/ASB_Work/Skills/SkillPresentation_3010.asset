@@ -14,23 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 3010
   PresentationSchemaVersion: 1
+  AnimationRail: 1
+  PresentationArchetype: 0
+  SkillTimelines:
+  - CharacterKey: "\uC2A4\uD2B8\uB77C\uC774\uCEE4"
+    Timeline: {fileID: 11400000, guid: 61b0a2b7598ff8a4b9ffd59616910522, type: 2}
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
   HitDelay: 0
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
   EnableHitEffect: 1
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
@@ -47,14 +44,11 @@ MonoBehaviour:
     UsePreparedCharge: 0
     ChargeInstanceKey: 
     TargetFormationCenter: 0
-  AttackSfxClip: {fileID: 8300000, guid: aa82d1d64dc984b4c97628b17894648f, type: 3}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
@@ -78,13 +72,26 @@ MonoBehaviour:
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
       Cues:
-      - CueName: hit_fx
-        EffectIds: 2e040000
+      - CueName: fire
+        EffectIds: 8d230000
         SoundIds: 
         Operation: 0
         InstanceKey: 
         Anchor: 1
         Socket: 11
+        Timing: 0
+        Time: 0
+        CueId: b15ee999e55f46bebf6ce51e7c52087d
+      - CueName: hit_fx
+        EffectIds: 8d230000
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 1
+        Socket: 11
+        Timing: 0
+        Time: 0
+        CueId: 2ee9e8e3bf154b71b594d707b12769e4
   Return:
     Enabled: 0
     AnimationStateName: 
