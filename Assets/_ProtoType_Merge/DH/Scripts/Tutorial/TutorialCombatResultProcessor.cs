@@ -165,9 +165,14 @@ public sealed class TutorialCombatResultProcessor : MonoBehaviour
             int maxIp = Mathf.Max(0, Mathf.RoundToInt(player.MaxInfluence));
             int currentIp = Mathf.Clamp(Mathf.RoundToInt(player.CurrentInfluence), 0, maxIp);
             int atk = Mathf.Max(0, Mathf.RoundToInt(source.IngameStats.Atk));
+            int level = Mathf.Max(1, source.Level);
+            int maxExp = Mathf.Max(0, source.MaxExp);
+            int exp = maxExp > 0
+                ? Mathf.Clamp(source.Exp, 0, maxExp)
+                : Mathf.Max(0, source.Exp);
 
             repository.SetUnitJoined(unitTemplateKey, true);
-            repository.SetUnitStats(unitTemplateKey, currentHp, maxHp, currentIp, maxIp, atk);
+            repository.SetUnitStats(unitTemplateKey, currentHp, maxHp, currentIp, maxIp, atk, level, exp, maxExp);
             savedCount++;
         }
 

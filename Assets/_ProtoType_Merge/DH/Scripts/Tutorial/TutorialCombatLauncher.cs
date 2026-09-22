@@ -216,7 +216,10 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
                     Mathf.RoundToInt(data.IngameStats.HP),
                     Mathf.RoundToInt(data.CurrentInfluence),
                     Mathf.RoundToInt(data.IngameStats.Influence),
-                    Mathf.RoundToInt(data.IngameStats.Atk));
+                    Mathf.RoundToInt(data.IngameStats.Atk),
+                    data.Level,
+                    data.Exp,
+                    data.MaxExp);
             }
 
             allies.Add(runtimeData);
@@ -257,9 +260,15 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
 
         float currentHp = Mathf.Clamp(storedState.CurrentHp, 0f, ingameStats.HP);
         float currentInfluence = Mathf.Clamp(storedState.CurrentIp, 0f, ingameStats.Influence);
+        int level = Mathf.Max(1, storedState.Level);
+        int maxExp = storedState.MaxExp > 0 ? storedState.MaxExp : data.MaxExp;
+        int exp = maxExp > 0
+            ? Mathf.Clamp(storedState.Exp, 0, maxExp)
+            : Mathf.Max(0, storedState.Exp);
+
         data.ApplyRuntimeState(
             data.UnitTemplateKey,
-            data.Level,
+            level,
             data.BaseStats,
             data.LevelupStats,
             data.CurrentSkillIndex,
@@ -268,8 +277,8 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
             data.CurrentWeaponStats,
             ingameStats,
             currentHp,
-            data.Exp,
-            data.MaxExp,
+            exp,
+            maxExp,
             data.SkillLevel,
             data.EquippedWeaponInstanceIndex,
             currentInfluence,

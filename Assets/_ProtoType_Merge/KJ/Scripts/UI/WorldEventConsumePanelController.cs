@@ -5,8 +5,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// DH NPC 소비형 월드 이벤트를 탐사 화면 패널에 표시한다.
-/// 조건형 이벤트는 별도 스크린 스페이스 UI에서 처리한다.
+/// DHWorldEventCatalog에서 런타임 요청으로 전달된 소비형 이벤트를 표시한다.
+/// NPC형과 조건형 모두 같은 소비형 패널을 사용한다.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class WorldEventConsumePanelController : MonoBehaviour
@@ -32,6 +32,8 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
     private Image secondResultIcon;
     private TMP_Text secondResultAmountText;
+    private Vector2 resultIconPosition;
+    private Vector2 resultAmountPosition;
     private DHWorldEventRuntimeManager manager;
     private DHWorldEventPresentationRequest currentRequest;
     private int selectionFrame = -1;
@@ -82,7 +84,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
     private void OnPresentationChanged(DHWorldEventPresentationRequest request)
     {
-        if (request == null || request.Style != DHWorldEventPresentationStyle.NpcConsume)
+        if (request == null || request.EventType != DHWorldEventType.Consume)
             return;
 
         currentRequest = request;
@@ -93,7 +95,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
     private void OnPresentationClosed(DHWorldEventPresentationRequest request)
     {
-        if (request != null && request.Style != DHWorldEventPresentationStyle.NpcConsume)
+        if (request != null && request.EventType != DHWorldEventType.Consume)
             return;
 
         currentRequest = null;
@@ -102,10 +104,12 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
     private void Render(DHWorldEventPresentationRequest request)
     {
+        // 배경 이미지에 "월드 이벤트:"가 포함되어 있으므로 이벤트명만 표시한다.
+        // ConsumeNPC 테이블에는 이름 열이 없고, ConsumeCondition에는 이름이 있다.
         titleText.text = string.IsNullOrWhiteSpace(request.WorldEventName)
-            ? "월드 이벤트"
-            : $"월드 이벤트: {request.WorldEventName}";
-        messageText.text = request.MessageText;
+            ? "소비형 이벤트"
+            : request.WorldEventName;
+        messageText.text = request.IsWaitingFinalConfirm ? request.MessageText : request.DescriptionText;
         proceedText.text = request.ProceedText;
         declineText.text = request.DeclineText;
 
@@ -142,10 +146,10 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
         bool hasSecondResult = results.Count > 1;
         float y = hasSecondResult ? 35f : 0f;
-        SetLocalY(resultIcon.rectTransform, y);
-        SetLocalY(resultAmountText.rectTransform, y);
-        SetLocalY(secondResultIcon.rectTransform, -35f);
-        SetLocalY(secondResultAmountText.rectTransform, -35f);
+        resultIcon.rectTransform.anchoredPosition = resultIconPosition + Vector2.up * y;
+        resultAmountText.rectTransform.anchoredPosition = resultAmountPosition + Vector2.up * y;
+        secondResultIcon.rectTransform.anchoredPosition = resultIconPosition + Vector2.down * 35f;
+        secondResultAmountText.rectTransform.anchoredPosition = resultAmountPosition + Vector2.down * 35f;
     }
 
     private static void ApplyPreview(Image icon, TMP_Text amountText, DHWorldEventPreviewEntry entry, bool signed)
@@ -223,30 +227,37 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
     {
         Transform panel = FindTransform("WorldEventConsumePanel");
         panelRoot = panel.gameObject;
-        titleText = FindDirect<TMP_Text>("ConsumeEventTitle");
-        proceedButton = FindDirect<Button>("YesButton");
-        declineButton = FindDirect<Button>("NoButton");
+        titleText = FindDirect<TMP_Text>("world_event_name") ?? FindDirect<TMP_Text>("ConsumeEventTitle");
+        proceedButton = FindDirect<Button>("world_event_proceed") ?? FindDirect<Button>("YesButton");
+        declineButton = FindDirect<Button>("world_event_decline") ?? FindDirect<Button>("NoButton");
         proceedText = proceedButton.GetComponentInChildren<TMP_Text>(true);
         declineText = declineButton.GetComponentInChildren<TMP_Text>(true);
         costIcon = FindDirect<Image>("ResourceIcon");
-        resultIcon = FindDirect<Image>("EffectIcon");
+        resultIcon = FindDirect<Image>("RewardIcon") ?? FindDirect<Image>("EffectIcon");
+        messageText = FindDirect<TMP_Text>("world_event_description");
+        costAmountText = FindDirect<TMP_Text>("Consumed Resources");
+        resultAmountText = FindDirect<TMP_Text>("Rewards");
 
+        // 구 프리팹의 직속 텍스트만 위치로 보완한다. 새 그룹의 로컬 좌표는 사용하지 않는다.
         TMP_Text[] labels = panelRoot.GetComponentsInChildren<TMP_Text>(true);
         for (int i = 0; i < labels.Length; i++)
         {
             TMP_Text label = labels[i];
-            if (label == titleText || label == proceedText || label == declineText)
+            if (label == titleText || label == proceedText || label == declineText || label.transform.parent != panel)
                 continue;
 
             float x = label.rectTransform.anchoredPosition.x;
             float y = label.rectTransform.anchoredPosition.y;
-            if (y > -300f)
+            if (y > -300f && messageText == null)
                 messageText = label;
-            else if (x < 600f)
+            else if (y <= -300f && x < 600f && costAmountText == null)
                 costAmountText = label;
-            else
+            else if (y <= -300f && x >= 600f && resultAmountText == null)
                 resultAmountText = label;
         }
+
+        resultIconPosition = resultIcon.rectTransform.anchoredPosition;
+        resultAmountPosition = resultAmountText.rectTransform.anchoredPosition;
     }
 
     private void EnsureSecondResultView()
@@ -266,7 +277,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         for (int i = 0; i < children.Length; i++)
         {
             if (children[i].name == objectName)
-                return children[i].GetComponent<T>();
+                return children[i].GetComponent<T>() ?? children[i].GetComponentInChildren<T>(true);
         }
 
         return null;
@@ -297,10 +308,4 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         trigger.triggers.Add(entry);
     }
 
-    private static void SetLocalY(RectTransform rect, float y)
-    {
-        Vector2 position = rect.anchoredPosition;
-        position.y = -526f + y;
-        rect.anchoredPosition = position;
-    }
 }

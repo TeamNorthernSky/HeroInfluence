@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -8,6 +9,8 @@ public sealed class TutorialUnitState : MonoBehaviour
 
     [Header("Runtime Stats")]
     [SerializeField] private int level = 1;
+    [SerializeField] private int exp;
+    [SerializeField] private int maxExp;
     [SerializeField] private int currentHp;
     [SerializeField] private int maxHp;
     [SerializeField] private int currentIp;
@@ -20,6 +23,8 @@ public sealed class TutorialUnitState : MonoBehaviour
 
     public string UnitTemplateKey => NormalizeKey(unitTemplateKey);
     public int Level => level;
+    public int Exp => exp;
+    public int MaxExp => maxExp;
     public int CurrentHp => currentHp;
     public int MaxHp => maxHp;
     public int CurrentIp => currentIp;
@@ -36,6 +41,8 @@ public sealed class TutorialUnitState : MonoBehaviour
     {
         unitTemplateKey = NormalizeKey(unitTemplateKey);
         level = Mathf.Max(1, level);
+        maxExp = Mathf.Max(0, maxExp);
+        exp = maxExp > 0 ? Mathf.Clamp(exp, 0, maxExp) : Mathf.Max(0, exp);
         maxHp = Mathf.Max(0, maxHp);
         currentHp = Mathf.Clamp(currentHp, 0, maxHp);
         maxIp = Mathf.Max(0, maxIp);
@@ -97,7 +104,7 @@ public sealed class TutorialUnitState : MonoBehaviour
             return;
 
         TutorialUnitProgressState state = TutorialProgressRepository.EnsureInstance()?.GetOrCreateUnitState(unitTemplateKey);
-        state?.SetStats(currentHp, maxHp, currentIp, maxIp, atk);
+        state?.SetStats(currentHp, maxHp, currentIp, maxIp, atk, level, exp, maxExp);
     }
 
     private void ApplyTemplateDefaults()
@@ -113,6 +120,9 @@ public sealed class TutorialUnitState : MonoBehaviour
         }
 
         StatBlock baseStats = template.BaseStats;
+        level = Mathf.Max(1, level);
+        maxExp = ResolveMaxExp(level, catalog);
+        exp = maxExp > 0 ? Mathf.Clamp(exp, 0, maxExp) : Mathf.Max(0, exp);
         maxHp = Mathf.Max(0, Mathf.RoundToInt(baseStats.HP));
         currentHp = maxHp;
         maxIp = Mathf.Max(0, Mathf.RoundToInt(baseStats.Influence));
@@ -122,6 +132,9 @@ public sealed class TutorialUnitState : MonoBehaviour
 
     private void ApplyProgressState(TutorialUnitProgressState state)
     {
+        level = Mathf.Max(1, state.Level);
+        maxExp = Mathf.Max(0, state.MaxExp);
+        exp = maxExp > 0 ? Mathf.Clamp(state.Exp, 0, maxExp) : Mathf.Max(0, state.Exp);
         currentHp = Mathf.Max(0, state.CurrentHp);
         maxHp = Mathf.Max(currentHp, state.MaxHp);
         currentIp = Mathf.Max(0, state.CurrentIp);
@@ -131,7 +144,27 @@ public sealed class TutorialUnitState : MonoBehaviour
 
     private static bool HasStoredStats(TutorialUnitProgressState state)
     {
-        return state.MaxHp > 0 || state.MaxIp > 0 || state.Atk > 0;
+        return state.MaxHp > 0 || state.MaxIp > 0 || state.Atk > 0 || state.Level > 1 || state.Exp > 0 || state.MaxExp > 0;
+    }
+
+    private static int ResolveMaxExp(int targetLevel, TutorialCatalog catalog)
+    {
+        if (catalog == null)
+            return 0;
+
+        IReadOnlyList<DHUnitGrowthTemplate> growthTemplates = catalog.GetUnitGrowthTemplates();
+        if (growthTemplates == null)
+            return 0;
+
+        int safeLevel = Mathf.Max(1, targetLevel);
+        for (int i = 0; i < growthTemplates.Count; i++)
+        {
+            DHUnitGrowthTemplate growth = growthTemplates[i];
+            if (growth != null && growth.Level == safeLevel)
+                return Mathf.Max(0, growth.RequiredExperience);
+        }
+
+        return 0;
     }
 
     private static string NormalizeKey(string key)
