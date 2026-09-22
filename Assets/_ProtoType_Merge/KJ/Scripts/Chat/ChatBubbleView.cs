@@ -34,7 +34,7 @@ public class ChatBubbleView : MonoBehaviour
     [Header("초상화 (좌우 화자, 원형 마스크)")]
     [Tooltip("초상화 루트(원형 마스크 프레임). 화자가 있는 말풍선에서 활성화.")]
     [SerializeField] private GameObject portraitRoot;
-    [Tooltip("실제 초상화 스프라이트가 들어가는 이미지. 리소스 없으면 비활성(프레임 원만 표시).")]
+    [Tooltip("실제 초상화 이미지. 화자 초상화가 없으면 기본 미선택 프로필을 표시.")]
     [SerializeField] private Image portraitImage;
 
 
@@ -216,10 +216,11 @@ public class ChatBubbleView : MonoBehaviour
         portraitRoot.SetActive(show);
         if (!show || portraitImage == null) return;
 
-        Sprite sprite = ResolveSpeakerPortrait(profileKey, speaker);
+        Sprite sprite = ResolveSpeakerPortrait(profileKey, speaker)
+            ?? Resources.Load<Sprite>(PortraitResourceFolder + "UI_profile_hero_unselected");
 
         portraitImage.sprite = sprite;
         portraitImage.preserveAspect = true;
-        portraitImage.enabled = sprite != null; // 없으면 프레임 원(placeholder)만
+        portraitImage.enabled = sprite != null;
     }
 }
