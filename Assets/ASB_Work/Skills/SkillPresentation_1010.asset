@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 1010
   PresentationSchemaVersion: 1
-  AnimationRail: 1
+  AnimationRail: 0
   PresentationArchetype: 1
   SkillTimelines:
   - CharacterKey: "\uD30C\uC774\uD130"
