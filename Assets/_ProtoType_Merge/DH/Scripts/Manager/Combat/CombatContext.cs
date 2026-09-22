@@ -150,6 +150,9 @@ public class CombatContext : MonoBehaviour
     [SerializeField] private System.Collections.Generic.List<SimulationAllyRuntimeData> tutorialAllies =
         new System.Collections.Generic.List<SimulationAllyRuntimeData>();
     [SerializeField] private bool tutorialCombatActive;
+    // 탐사에서 전투 씬으로 넘겨주는 '어떤 튜토리얼 수업인가' 키. 구성(적 그룹)과는 별개 축이다.
+    [SerializeField] private string tutorialBattleKey;
+    [SerializeField] private int tutorialZoneId = -1;
 
     public CombatPartyPersistentData CombatParty => combatParty;
     // 일반 필드/거점/빌런연합 전투 정보. 이벤트 전투일 때는 null로 비운다.
@@ -165,6 +168,8 @@ public class CombatContext : MonoBehaviour
     public string ReturnSceneName => returnSceneName ?? string.Empty;
     public string SimulationPartyId => simulationPartyId ?? string.Empty;
     public string TutorialPartyId => tutorialPartyId ?? string.Empty;
+    public string TutorialBattleKey => tutorialBattleKey ?? string.Empty;
+    public int TutorialZoneId => tutorialZoneId;
     public System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> SimulationAllies => simulationAllies;
     public System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> TutorialAllies => tutorialAllies;
 
@@ -278,7 +283,9 @@ public class CombatContext : MonoBehaviour
         System.Collections.Generic.IReadOnlyList<SimulationAllyRuntimeData> allies,
         string enemyGroupKey,
         int nextEnemyLevel,
-        string nextReturnSceneName)
+        string nextReturnSceneName,
+        string nextTutorialBattleKey,
+        int nextTutorialZoneId)
     {
         Clear();
         if (string.IsNullOrWhiteSpace(partyId) ||
@@ -291,6 +298,10 @@ public class CombatContext : MonoBehaviour
 
         entryMode = BattleEntryMode.Normal;
         tutorialCombatActive = true;
+        tutorialBattleKey = string.IsNullOrWhiteSpace(nextTutorialBattleKey)
+            ? string.Empty
+            : nextTutorialBattleKey.Trim();
+        tutorialZoneId = nextTutorialZoneId;
         tutorialPartyId = partyId.Trim();
         returnSceneName = string.IsNullOrWhiteSpace(nextReturnSceneName)
             ? "TutorialExploreScene"
@@ -402,6 +413,8 @@ public class CombatContext : MonoBehaviour
         simulationPartyId = string.Empty;
         tutorialPartyId = string.Empty;
         tutorialCombatActive = false;
+        tutorialBattleKey = string.Empty;
+        tutorialZoneId = -1;
         if (simulationAllies == null)
             simulationAllies = new System.Collections.Generic.List<SimulationAllyRuntimeData>();
         else

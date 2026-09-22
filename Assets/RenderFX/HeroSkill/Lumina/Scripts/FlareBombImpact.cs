@@ -64,7 +64,7 @@ namespace JC.VFX
         private void Update()
         {
             if (!_running) return;
-            _t += Time.deltaTime;
+            _t += EffectDeltaTime;
             PushProgress();
             if (_t >= Mathf.Max(burstDuration, ringDuration))
             {

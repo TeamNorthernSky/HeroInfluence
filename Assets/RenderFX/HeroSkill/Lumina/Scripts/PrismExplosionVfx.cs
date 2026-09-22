@@ -15,6 +15,24 @@ namespace JC.VFX
     /// </summary>
     public class PrismExplosionVfx : VfxEffect
     {
+        public event System.Action<Vector3> Impacted;
+        public enum PartMode { Integrated, Charge, Flight }
+        [Tooltip("Integrated는 기존 전체, Charge는 생성·대기, Flight는 발사·비행 부품입니다.")]
+        [SerializeField] private PartMode partMode;
+        [Tooltip("발사 신호에서 차징의 실제 위치를 이어받는 독립 비행 부품입니다.")]
+        [SerializeField] private PrismExplosionVfx flightPartPrefab;
+        [Tooltip("도착 시 생성하는 독립 폭발 부품입니다.")]
+        [SerializeField] private FlareBombImpact impactPartPrefab;
+        private PrismExplosionVfx flightPart;
+        private IReadOnlyList<Transform> partTargets;
+        private bool deferLaunch;
+        public override void SetTargets(IReadOnlyList<VfxTarget> values)
+        {
+            var list = new List<Transform>();
+            if (values != null) foreach (var value in values) if (value.anchor != null) list.Add(value.anchor);
+            partTargets = list;
+        }
+
         [Header("Layout")]
         [Tooltip("캐스터 전방 거리(m).")]
         [SerializeField] private float forwardOffset = 1.5f;
@@ -210,18 +228,45 @@ namespace JC.VFX
             SetTrails(false, true);
             _unit.gameObject.SetActive(true);
             if (_embers != null) { _embers.Clear(); _embers.Play(); }
+            if (partMode == PartMode.Flight && !deferLaunch)
+            {
+                _t = summonTime; Update();
+                Launch(partTargets != null && partTargets.Count > 0 ? partTargets : new[] { target });
+            }
         }
 
         /// <summary>발사 시퀀스: 차지 중일 때만. 탄착점 = targets 평균 위치(진형 중앙).</summary>
         public void Launch(IReadOnlyList<Transform> targets)
         {
             if (!_charging || _sequencing) return;
+            if (partMode == PartMode.Charge && flightPartPrefab != null)
+            {
+                flightPart = Instantiate(flightPartPrefab, transform);
+                flightPart.PlaybackSpeed = PlaybackSpeed;
+                flightPart.deferLaunch = true;
+                flightPart.Play(_origin, _origin);
+                flightPart._t = _t; flightPart._yaw = _yaw; flightPart.Update();
+                flightPart._unit.SetPositionAndRotation(_unit.position, _unit.rotation);
+                if (_crystal != null && flightPart._crystal != null)
+                { flightPart._crystal.localScale = _crystal.localScale; flightPart._crystal.rotation = _crystal.rotation; }
+                _charging = false; _sequencing = true;
+                _unit.gameObject.SetActive(false);
+                flightPart.OnFinished += OnFlightFinished;
+                flightPart.Impacted += ForwardImpact;
+                flightPart.Launch(targets);
+                return;
+            }
             _sequencing = true;
             StartCoroutine(Sequence(targets));
         }
 
+        private void ForwardImpact(Vector3 position) => Impacted?.Invoke(position);
+        private void OnFlightFinished(VfxEffect effect)
+        { IsPlaying = false; _sequencing = false; RaiseFinished(); }
         public override void Stop()
         {
+            if (flightPart != null)
+            { flightPart.OnFinished -= OnFlightFinished; flightPart.Impacted -= ForwardImpact; flightPart.Stop(); Destroy(flightPart.gameObject); flightPart = null; }
             StopAllCoroutines();
             _charging = false;
             _sequencing = false;
@@ -283,7 +328,7 @@ namespace JC.VFX
             float t = 0f;
             while (t < riseTime)
             {
-                t += Time.deltaTime;
+                t += EffectDeltaTime;
                 float e = Mathf.Clamp01(t / Mathf.Max(riseTime, 0.01f));
                 float ease = e * e * (3f - 2f * e);   // smoothstep
                 Vector3 pos = startPos + Vector3.up * (riseHeight * ease);
@@ -295,7 +340,7 @@ namespace JC.VFX
                     Mathf.Sin(Time.time * tremorFreq * Mathf.PI * 2f * 1.31f + 1.7f) * trem,
                     Mathf.Sin(Time.time * tremorFreq * Mathf.PI * 2f * 0.77f + 3.9f) * trem);
                 _unit.position = pos + tremor;
-                _yaw += spinSpeed * (1f + (aimSpinMul - 1f) * e) * Time.deltaTime;
+                _yaw += spinSpeed * (1f + (aimSpinMul - 1f) * e) * EffectDeltaTime;
                 OrientCrystal(axis);
                 foreach (var f in _flares) SetOpacity(f, 1f - e);
                 if (_ground != null) SetOpacity(_ground, groundBase * (1f - e));
@@ -315,7 +360,7 @@ namespace JC.VFX
             Vector3 flightDir = (center - flyStart).normalized;
             while (ft < dur)
             {
-                ft += Time.deltaTime;
+                ft += EffectDeltaTime;
                 float e = Mathf.Clamp01(ft / dur);
                 float e2 = e * e;
                 Vector3 pos = Vector3.Lerp(flyStart, center, e2);
@@ -324,7 +369,7 @@ namespace JC.VFX
                 Vector3 vel = pos - prev;
                 prev = pos;
                 if (vel.sqrMagnitude > 1e-8f) flightDir = vel.normalized;
-                _yaw += spinSpeed * launchSpinMul * Time.deltaTime;
+                _yaw += spinSpeed * launchSpinMul * EffectDeltaTime;
                 OrientCrystal(flightDir);
                 // 나선 보조 트레일: 비행축 둘레 회전
                 if (_spirals.Length > 0)
@@ -344,15 +389,18 @@ namespace JC.VFX
             // ③ 대폭발 + 전체 연기
             SetTrails(false, false);
             if (_crystal != null) _crystal.gameObject.SetActive(false);
-            if (_impact != null) _impact.Play(center);
+            var impact = impactPartPrefab != null ? Instantiate(impactPartPrefab, transform) : _impact;
+            if (impact != null) { impact.PlaybackSpeed = PlaybackSpeed; impact.Play(center); }
+            Impacted?.Invoke(center);
             if (_smoke != null)
             {
                 _smoke.transform.position = center;
                 _smoke.Play();
             }
-            if (_impact != null)
-                while (_impact.IsPlaying) yield return null;
-            if (smokeLinger > 0f) yield return new WaitForSeconds(smokeLinger);
+            if (impact != null)
+                while (impact != null && impact.IsPlaying) yield return null;
+            if (impactPartPrefab != null && impact != null) Destroy(impact.gameObject);
+            if (smokeLinger > 0f) yield return new WaitForSeconds(smokeLinger / Mathf.Max(.01f, PlaybackSpeed));
 
             _unit.gameObject.SetActive(false);
             _charging = false;
@@ -364,7 +412,7 @@ namespace JC.VFX
         private void Update()
         {
             if (!_charging || _sequencing || _origin == null) return;
-            _t += Time.deltaTime;
+            _t += EffectDeltaTime;
 
             Vector3 fwd = _origin.forward; fwd.y = 0f; fwd = fwd.sqrMagnitude > 1e-4f ? fwd.normalized : Vector3.forward;
             Vector3 basePos = _origin.position + fwd * forwardOffset;
@@ -376,7 +424,7 @@ namespace JC.VFX
             Vector3 pos = basePos + Vector3.up * (hoverHeight + hover);
             _unit.position = pos;
 
-            _yaw += spinSpeed * Time.deltaTime;
+            _yaw += spinSpeed * EffectDeltaTime;
             if (_crystal != null)
             {
                 _crystal.rotation = Quaternion.Euler(0f, _yaw, 0f);

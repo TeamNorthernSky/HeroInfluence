@@ -820,22 +820,28 @@ public class LevelLoader : MonoBehaviour
         if (prefab == null || !IsPrefabFootprintInside(prefab, grid))
             return null;
 
-        TutorialBuildingObject placement = prefab.GetComponent<TutorialBuildingObject>();
-        Vector3 worldPosition;
-        if (placement != null)
-        {
-            Vector3 anchorWorldPosition = gridManager.GridToWorldCenter(grid);
-            anchorWorldPosition.y = gridManager.GetCellSurfaceY(grid);
-            worldPosition = placement.GetRootPositionForAnchor(anchorWorldPosition);
-        }
-        else
-        {
-            worldPosition = GetWorldPosition(prefab, grid);
-        }
-
+        Vector3 worldPosition = GetWorldPosition(prefab, grid);
         GameObject instance = Instantiate(prefab, worldPosition, prefab.transform.rotation, parent);
         ApplyMultiGridAnchor(instance, grid);
+        RefreshTutorialObjectAfterAnchorApplied(instance);
         return instance;
+    }
+
+    private static void RefreshTutorialObjectAfterAnchorApplied(GameObject instance)
+    {
+        if (instance == null)
+            return;
+
+        TutorialOutpostObject outpost = instance.GetComponent<TutorialOutpostObject>();
+        if (outpost != null)
+        {
+            outpost.RefreshStateVisuals();
+            return;
+        }
+
+        TutorialBuildingObject building = instance.GetComponent<TutorialBuildingObject>();
+        if (building != null)
+            building.RefreshInteractionOverlay();
     }
 
     private Vector3 GetMarkerWorldPosition(Vector2Int grid)

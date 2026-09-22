@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: FX_JusticeVortexContainer_Alter
   m_EditorClassIdentifier: 
   targets:
-    vortexPrefab: {fileID: 4957818361431581012, guid: d13888d7fff69654e94c8545d27d8c62,
+    vortexPrefab: {fileID: 446020432047559242, guid: e9bd429b94ace3f458d1b2bfaf4058fc,
       type: 3}
-    strokePrefab: {fileID: 5014783889222747169, guid: 34368804c9daa914892d33eb8a83e92a,
+    strokePrefab: {fileID: 8611901290201109420, guid: f72d547a454085a4ca7386254c8480d9,
       type: 3}
-    pointPrefab: {fileID: 5014783889222747169, guid: 52314a557f5d7a8458a0afc850abdf88,
+    pointPrefab: {fileID: 7674410979476553257, guid: f5ac3846604ea3c4cbba0184ca30b17f,
       type: 3}
-    windArcsPrefab: {fileID: 2480173325109819924, guid: 0bbbca490e534c14182bf4740f319f3c,
+    windArcsPrefab: {fileID: 4578970827829647634, guid: 7b9a53427b428544bbca66ad67a96fc6,
       type: 3}
-    shardPrefab: {fileID: 4231697358879776452, guid: da86082255585994b8754d6d614a4c91,
+    shardPrefab: {fileID: 8587392833637605040, guid: 634555140d0e76b499703f8b05b9db6c,
       type: 3}
   useStroke: 1
   usePoint: 1

@@ -46,18 +46,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectKey: 
-  enemyGroupKey: 
+  enemyGroupKey: FEP001
   enemyLevel: 1
-  triggerOnAdjacentPartyEnter: 1
+  tutorialBattleKey: TUT_01
+  tutorialZoneId: 1
   disableWhenObjectMarkedInactive: 1
   gridManager: {fileID: 0}
-  partyRegistry: {fileID: 0}
   enemyRegistry: {fileID: 0}
   combatLauncher: {fileID: 0}
-  drawInteractionGizmos: 1
-  occupiedCellColor: {r: 0.8, g: 0, b: 0, a: 0.65}
-  interactionCellColor: {r: 1, g: 0.35, b: 0, a: 0.35}
-  gizmoCellSize: {x: 0.9, y: 0.04, z: 0.9}
+  overlayController: {fileID: 0}
+  showInteractionOverlay: 1
+  overlayColor: {r: 1, g: 0.15, b: 0.15, a: 0.28}
 --- !u!1001 &7451008024367314182
 PrefabInstance:
   m_ObjectHideFlags: 0

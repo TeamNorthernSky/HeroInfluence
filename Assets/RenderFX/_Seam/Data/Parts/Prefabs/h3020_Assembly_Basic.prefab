@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3480965705672977430
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6363856974647324734}
+  - component: {fileID: 4740152079420897216}
+  - component: {fileID: 8361124001841880132}
+  m_Layer: 0
+  m_Name: h3020_Assembly_Basic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6363856974647324734
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3480965705672977430}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4740152079420897216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3480965705672977430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e90d0b61220bcd40835af63ef1c5a06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  steps:
+  - prefab: {fileID: 2426318163951518266, guid: 745155376fafa344c83b340f3646c45e,
+      type: 3}
+    delay: 0
+    timing: 0
+    shotTiming: {fileID: 0}
+    pawTiming: {fileID: 0}
+    anchor: 0
+    offset: {x: 0, y: 0, z: 0}
+    lifetime: 0
+  - prefab: {fileID: 264185160783446167, guid: 805f2e82f764d5244bc7a15dd76e17f1, type: 3}
+    delay: 0
+    timing: 1
+    shotTiming: {fileID: 11400000, guid: 18bf726a2f22bde44812d475ec4e10c3, type: 2}
+    pawTiming: {fileID: 0}
+    anchor: 0
+    offset: {x: 0, y: 0, z: 0}
+    lifetime: 0
+  - prefab: {fileID: 6724873276126466788, guid: 64f877257427c1e428edccd4d63c4013,
+      type: 3}
+    delay: 0
+    timing: 2
+    shotTiming: {fileID: 11400000, guid: 18bf726a2f22bde44812d475ec4e10c3, type: 2}
+    pawTiming: {fileID: 0}
+    anchor: 0
+    offset: {x: 0, y: 0, z: 0}
+    lifetime: 0
+--- !u!114 &8361124001841880132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3480965705672977430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5158e997164fe9849ab8609b2bdd283d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetSource: 0
+  safetyLifetimeSeconds: 8

@@ -1,0 +1,290 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+[DisallowMultipleComponent]
+[RequireComponent(typeof(TutorialBuildingObject))]
+public sealed class TutorialOutpostObject : MonoBehaviour
+{
+    [Header("Identity")]
+    [SerializeField] private string objectKey;
+
+    [Header("State")]
+    [SerializeField] private TutorialOutpostClaimState initialClaimState = TutorialOutpostClaimState.EnemyClaimed;
+
+    [Header("Combat")]
+    [SerializeField] private string enemyGroupKey;
+    [SerializeField, Min(1)] private int enemyLevel = 1;
+    [SerializeField] private bool triggerOnInteractionCellEnter = true;
+
+    [Header("Association Scene")]
+    [SerializeField] private string associationSceneName;
+    [SerializeField] private bool allowAssociationSceneLoad;
+
+    [Header("Visual")]
+    [SerializeField] private Renderer[] targetRenderers;
+    [SerializeField] private Material enemyClaimedMaterial;
+    [SerializeField] private Material heroClaimedMaterial;
+
+    [Header("Overlay")]
+    [SerializeField] private Color enemyClaimedOverlayColor = new Color(1f, 0.15f, 0.15f, 0.28f);
+    [SerializeField] private Color heroClaimedOverlayColor = new Color(0f, 0.35f, 1f, 0.28f);
+
+    [Header("References")]
+    [SerializeField] private TutorialBuildingObject buildingObject;
+    [SerializeField] private PartyRegistry partyRegistry;
+    [SerializeField] private TutorialCombatLauncher combatLauncher;
+
+    private PartyGridMover subscribedParty;
+    private TutorialOutpostClaimState currentClaimState;
+    private bool combatStarting;
+
+    public string ObjectKey => ResolveObjectKey();
+    public TutorialOutpostClaimState CurrentClaimState => currentClaimState;
+    public string EnemyGroupKey => string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
+    public int EnemyLevel => Mathf.Max(1, enemyLevel);
+
+    private void Awake()
+    {
+        ResolveReferences();
+        LoadStateFromRepository();
+        ApplyStateVisuals();
+    }
+
+    private void OnEnable()
+    {
+        ResolveReferences();
+        LoadStateFromRepository();
+        SubscribeParty();
+        ApplyStateVisuals();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeParty();
+        combatStarting = false;
+    }
+
+    private void OnValidate()
+    {
+        enemyLevel = Mathf.Max(1, enemyLevel);
+        ResolveReferences();
+    }
+
+    private void Update()
+    {
+        if (triggerOnInteractionCellEnter && subscribedParty == null)
+            SubscribeParty();
+    }
+
+    public void SetClaimState(TutorialOutpostClaimState nextState, bool persist)
+    {
+        if (currentClaimState == nextState && !persist)
+            return;
+
+        currentClaimState = nextState;
+        if (persist)
+            TutorialProgressRepository.EnsureInstance()?.SetOutpostState(ObjectKey, nextState);
+
+        ApplyStateVisuals();
+    }
+
+    public bool TryInteract()
+    {
+        if (currentClaimState == TutorialOutpostClaimState.HeroClaimed)
+            return TryEnterAssociationScene();
+
+        return TryStartCaptureCombat();
+    }
+
+    public void RefreshStateVisuals()
+    {
+        LoadStateFromRepository();
+        ApplyStateVisuals();
+    }
+
+    public bool TryStartCaptureCombat()
+    {
+        if (combatStarting)
+            return false;
+
+        if (currentClaimState != TutorialOutpostClaimState.EnemyClaimed)
+            return false;
+
+        if (string.IsNullOrWhiteSpace(EnemyGroupKey))
+        {
+            Debug.LogWarning("[TutorialOutpostObject] EnemyGroupKey is empty.", this);
+            return false;
+        }
+
+        ResolveCombatLauncher();
+        if (combatLauncher == null)
+        {
+            Debug.LogWarning("[TutorialOutpostObject] TutorialCombatLauncher is missing.", this);
+            return false;
+        }
+
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
+        repository?.SetPendingCombatSource(TutorialCombatSourceType.Outpost, ObjectKey);
+
+        combatStarting = true;
+        bool started = combatLauncher.BeginCombat(EnemyGroupKey, EnemyLevel);
+        if (!started)
+        {
+            repository?.ClearPendingCombatSource();
+            combatStarting = false;
+        }
+
+        return started;
+    }
+
+    public bool TryEnterAssociationScene()
+    {
+        if (!allowAssociationSceneLoad)
+        {
+            Debug.Log("[TutorialOutpostObject] Association scene load is disabled until tutorial association scene is ready.", this);
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(associationSceneName))
+        {
+            Debug.LogWarning("[TutorialOutpostObject] AssociationSceneName is empty.", this);
+            return false;
+        }
+
+        string sceneName = associationSceneName.Trim();
+        if (GameSceneManager.Instance != null)
+            GameSceneManager.Instance.LoadScene(sceneName);
+        else
+            SceneManager.LoadScene(sceneName);
+
+        return true;
+    }
+
+    private void HandlePartyGridEntered(Vector2Int grid)
+    {
+        if (!triggerOnInteractionCellEnter || combatStarting || buildingObject == null)
+            return;
+
+        if (!buildingObject.IsInteractionCell(grid))
+            return;
+
+        TryInteract();
+    }
+
+    private void LoadStateFromRepository()
+    {
+        currentClaimState = initialClaimState;
+        if (!Application.isPlaying)
+            return;
+
+        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
+        if (repository != null &&
+            repository.TryGetOutpostState(ObjectKey, out TutorialOutpostClaimState savedState))
+        {
+            currentClaimState = savedState;
+        }
+    }
+
+    private void ApplyStateVisuals()
+    {
+        ApplyMaterial();
+        ApplyOverlayColor();
+    }
+
+    private void ApplyMaterial()
+    {
+        Material material = currentClaimState == TutorialOutpostClaimState.HeroClaimed
+            ? heroClaimedMaterial
+            : enemyClaimedMaterial;
+
+        if (material == null)
+            return;
+
+        EnsureRenderersCached();
+        for (int i = 0; i < targetRenderers.Length; i++)
+        {
+            Renderer renderer = targetRenderers[i];
+            if (renderer == null)
+                continue;
+
+            renderer.sharedMaterial = material;
+        }
+    }
+
+    private void ApplyOverlayColor()
+    {
+        if (buildingObject == null)
+            return;
+
+        Color color = currentClaimState == TutorialOutpostClaimState.HeroClaimed
+            ? heroClaimedOverlayColor
+            : enemyClaimedOverlayColor;
+
+        buildingObject.SetInteractionOverlayColor(color);
+    }
+
+    private void SubscribeParty()
+    {
+        if (subscribedParty != null)
+            return;
+
+        ResolvePartyRegistry();
+        subscribedParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (subscribedParty == null)
+            return;
+
+        subscribedParty.GridEntered -= HandlePartyGridEntered;
+        subscribedParty.GridEntered += HandlePartyGridEntered;
+    }
+
+    private void UnsubscribeParty()
+    {
+        if (subscribedParty == null)
+            return;
+
+        subscribedParty.GridEntered -= HandlePartyGridEntered;
+        subscribedParty = null;
+    }
+
+    private void ResolveReferences()
+    {
+        if (buildingObject == null)
+            buildingObject = GetComponent<TutorialBuildingObject>();
+
+        ResolvePartyRegistry();
+        ResolveCombatLauncher();
+    }
+
+    private void ResolvePartyRegistry()
+    {
+        if (partyRegistry == null)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
+    }
+
+    private void ResolveCombatLauncher()
+    {
+        if (combatLauncher == null)
+            combatLauncher = FindFirstObjectByType<TutorialCombatLauncher>();
+    }
+
+    private void EnsureRenderersCached()
+    {
+        if (targetRenderers != null && targetRenderers.Length > 0)
+            return;
+
+        targetRenderers = GetComponentsInChildren<Renderer>(true);
+    }
+
+    private string ResolveObjectKey()
+    {
+        if (!string.IsNullOrWhiteSpace(objectKey))
+            return objectKey.Trim();
+
+        if (buildingObject != null && !string.IsNullOrWhiteSpace(buildingObject.BuildingKey))
+            return buildingObject.BuildingKey;
+
+        Vector2Int grid = buildingObject != null ? buildingObject.GetAnchorGrid() : Vector2Int.zero;
+        return $"tutorial_outpost:{grid.x}_{grid.y}";
+    }
+}

@@ -11,7 +11,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
     [Header("Scene")]
     [SerializeField] private string tutorialBattleSceneName;
     [SerializeField] private string returnSceneName = "TutorialExploreScene";
-    [SerializeField] private bool allowBattleSceneLoad;
+    [SerializeField] private bool allowBattleSceneLoad = true;
 
     [Header("Default Party")]
     [SerializeField] private List<string> defaultUnitTemplateKeys = new List<string>
@@ -40,10 +40,20 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
 
     public bool BeginCombat(string enemyGroupKey, int enemyLevel)
     {
-        return BeginCombat(enemyGroupKey, enemyLevel, ReturnSceneName);
+        return BeginCombat(enemyGroupKey, enemyLevel, string.Empty, -1, ReturnSceneName);
     }
 
-    public bool BeginCombat(string enemyGroupKey, int enemyLevel, string nextReturnSceneName)
+    public bool BeginCombat(string enemyGroupKey, int enemyLevel, string tutorialBattleKey, int tutorialZoneId)
+    {
+        return BeginCombat(enemyGroupKey, enemyLevel, tutorialBattleKey, tutorialZoneId, ReturnSceneName);
+    }
+
+    public bool BeginCombat(
+        string enemyGroupKey,
+        int enemyLevel,
+        string tutorialBattleKey,
+        int tutorialZoneId,
+        string nextReturnSceneName)
     {
         string groupKey = string.IsNullOrWhiteSpace(enemyGroupKey) ? string.Empty : enemyGroupKey.Trim();
         if (string.IsNullOrEmpty(groupKey))
@@ -80,7 +90,9 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
                 allies,
                 groupKey,
                 Mathf.Max(1, enemyLevel),
-                string.IsNullOrWhiteSpace(nextReturnSceneName) ? ReturnSceneName : nextReturnSceneName.Trim()))
+                string.IsNullOrWhiteSpace(nextReturnSceneName) ? ReturnSceneName : nextReturnSceneName.Trim(),
+                tutorialBattleKey,
+                tutorialZoneId))
         {
             context.ClearTutorial();
             Debug.LogWarning("[TutorialCombatLauncher] CombatContext.BeginTutorial failed.", this);
@@ -119,17 +131,40 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         allies = new List<SimulationAllyRuntimeData>();
         error = string.Empty;
 
-        if (defaultUnitTemplateKeys == null || defaultUnitTemplateKeys.Count == 0)
+        TutorialProgressRepository repository = TutorialProgressRepository.Instance;
+        if (repository == null)
         {
-            error = "Default unit list is empty.";
+            error = "The DontDestroyOnLoad tutorial repository is missing.";
             return false;
         }
 
-        TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
-        for (int i = 0; i < defaultUnitTemplateKeys.Count; i++)
+        List<string> unitTemplateKeys = repository.GetJoinedUnitTemplateKeys();
+        bool useInitialParty = unitTemplateKeys.Count == 0;
+        if (useInitialParty)
+            unitTemplateKeys = defaultUnitTemplateKeys != null
+                ? new List<string>(defaultUnitTemplateKeys)
+                : new List<string>();
+
+        if (unitTemplateKeys.Count == 0)
         {
-            string unitKey = defaultUnitTemplateKeys[i];
+            error = "Tutorial party is empty.";
+            return false;
+        }
+
+        for (int i = 0; i < unitTemplateKeys.Count; i++)
+        {
+            string unitKey = unitTemplateKeys[i];
             if (string.IsNullOrWhiteSpace(unitKey))
+                continue;
+
+            bool hasStoredState = repository.TryGetUnitState(
+                unitKey,
+                out TutorialUnitProgressState storedState) &&
+                storedState != null &&
+                storedState.MaxHp > 0;
+
+            // 행동 불능 유닛은 다음 전투 참가자에서 제외한다. 저장 상태 자체는 유지된다.
+            if (hasStoredState && storedState.CurrentHp <= 0)
                 continue;
 
             if (!TutorialCombatUnitFactory.TryCreateRuntimeData(
@@ -144,14 +179,21 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
             }
 
             UnitPersistentData data = runtimeData.UnitData;
-            repository.SetUnitJoined(data.UnitTemplateKey, true);
-            repository.SetUnitStats(
-                data.UnitTemplateKey,
-                Mathf.RoundToInt(data.CurrentHp),
-                Mathf.RoundToInt(data.IngameStats.HP),
-                Mathf.RoundToInt(data.CurrentInfluence),
-                Mathf.RoundToInt(data.IngameStats.Influence),
-                Mathf.RoundToInt(data.IngameStats.Atk));
+            if (hasStoredState)
+            {
+                ApplyStoredUnitState(data, storedState);
+            }
+            else
+            {
+                repository.SetUnitJoined(data.UnitTemplateKey, true);
+                repository.SetUnitStats(
+                    data.UnitTemplateKey,
+                    Mathf.RoundToInt(data.CurrentHp),
+                    Mathf.RoundToInt(data.IngameStats.HP),
+                    Mathf.RoundToInt(data.CurrentInfluence),
+                    Mathf.RoundToInt(data.IngameStats.Influence),
+                    Mathf.RoundToInt(data.IngameStats.Atk));
+            }
 
             allies.Add(runtimeData);
         }
@@ -163,6 +205,36 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         }
 
         return true;
+    }
+
+    private static void ApplyStoredUnitState(
+        UnitPersistentData data,
+        TutorialUnitProgressState storedState)
+    {
+        StatBlock ingameStats = data.IngameStats;
+        ingameStats.HP = Mathf.Max(1, storedState.MaxHp);
+        ingameStats.Atk = Mathf.Max(0, storedState.Atk);
+        ingameStats.Influence = Mathf.Max(0, storedState.MaxIp);
+
+        float currentHp = Mathf.Clamp(storedState.CurrentHp, 0f, ingameStats.HP);
+        float currentInfluence = Mathf.Clamp(storedState.CurrentIp, 0f, ingameStats.Influence);
+        data.ApplyRuntimeState(
+            data.UnitTemplateKey,
+            data.Level,
+            data.BaseStats,
+            data.LevelupStats,
+            data.CurrentSkillIndex,
+            data.CurrentWeaponKey,
+            data.CurrentWeaponIndex,
+            data.CurrentWeaponStats,
+            ingameStats,
+            currentHp,
+            data.Exp,
+            data.MaxExp,
+            data.SkillLevel,
+            data.EquippedWeaponInstanceIndex,
+            currentInfluence,
+            currentHp <= 0f);
     }
 
     private static void LoadBattleScene(string sceneName)

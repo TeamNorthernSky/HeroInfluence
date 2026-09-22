@@ -99,17 +99,22 @@ public class BattleSceneManager : MonoBehaviour
         yield return WaitForRemainingCueEffectsAndDeathAnimations();
         hostageScenarioController?.FlushResult();
 
+        CombatContext combatContext = CombatContext.Instance;
+        bool isSimulation = combatContext != null && combatContext.IsSimulation;
+        bool isTutorial = combatContext != null && combatContext.IsTutorial;
+
         // 1. 보상 계산 (Repository/JSON 변경 없음)
-        BattleRewardPlan plan = BattleResultPersistenceHandler.BuildBattleRewardPlan(
-            playerBattleCharactors, result, victoryEnemyExperienceSnapshot);
+        // 튜토리얼 전투는 일반 영속 저장소/보상 루프를 사용하지 않는다.
+        BattleRewardPlan plan = isTutorial
+            ? null
+            : BattleResultPersistenceHandler.BuildBattleRewardPlan(
+                playerBattleCharactors, result, victoryEnemyExperienceSnapshot);
 
         // 2. 레벨업 UI (TODO: 레벨업 UI가 생기면 여기서 yield return)
         // if (plan.UnitPreviews.Exists(u => u.HasLevelUp))
         //     yield return battleUIManager.ShowLevelUpSequence(plan);
 
         // 3. CombatContext 결과 설정
-        CombatContext combatContext = CombatContext.Instance;
-        bool isSimulation = combatContext != null && combatContext.IsSimulation;
         if (combatContext != null)
         {
             CombatResult mappedResult = result switch
@@ -124,8 +129,10 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         // 4. 승패 결과 UI (레벨업 스킬 슬롯 포함, Accept 버튼은 슬롯 모두 처리 후 활성화)
-        // [모의 전투] 보상/스킬은 지급되지 않으므로 plan을 넘기지 않아 미리보기 슬롯·스킬 팝업을 숨긴다.
-        BattleResultPanel resultPanel = battleUIManager?.ShowBattleResultUI(result, isSimulation ? null : plan);
+        // 모의/튜토리얼 전투는 일반 보상·스킬을 지급하지 않는다.
+        BattleResultPanel resultPanel = battleUIManager?.ShowBattleResultUI(
+            result,
+            isSimulation || isTutorial ? null : plan);
 
         // 결과창 표시 후·Accept 전: 튜토리얼 flow에 통지(비차단 오버레이 기본).
         if (resultPanel != null)
@@ -144,13 +151,22 @@ public class BattleSceneManager : MonoBehaviour
 
         // 6. 저장 (스킬 선택 결과 포함)
         var skillResults = resultPanel?.GetSkillResults() ?? new System.Collections.Generic.List<SkillSelectionResult>();
-        if (!isSimulation)
+        if (isTutorial)
+        {
+            if (!TutorialCombatResultProcessor.TryPersistAllies(playerBattleCharactors, out string tutorialSaveError))
+            {
+                Debug.LogError($"[BattleSceneManager] Tutorial ally save failed. {tutorialSaveError}", this);
+                returnSceneCoroutine = null;
+                yield break;
+            }
+        }
+        else if (!isSimulation)
         {
             BattleResultPersistenceHandler.CommitBattleRewardPlan(
                 plan, playerBattleCharactors, enemyBattleCharactors, result, skillResults);
         }
 
-        string simulationReturnScene = isSimulation && combatContext != null
+        string contextReturnScene = (isSimulation || isTutorial) && combatContext != null
             ? combatContext.ReturnSceneName
             : string.Empty;
         if (isSimulation && combatContext != null)
@@ -158,7 +174,7 @@ public class BattleSceneManager : MonoBehaviour
 
         // 8. 씬 전환
         // [JC 260514] returnSceneName 빈 값이라도 GameSceneManager.Instance.ExplorationScene fallback이 있으면 통과.
-        if (string.IsNullOrWhiteSpace(simulationReturnScene) &&
+        if (string.IsNullOrWhiteSpace(contextReturnScene) &&
             string.IsNullOrWhiteSpace(returnSceneName) &&
             GameSceneManager.Instance == null)
         {
@@ -167,7 +183,7 @@ public class BattleSceneManager : MonoBehaviour
             yield break;
         }
 
-        yield return StartCoroutine(TransitionToSceneRoutine(simulationReturnScene));
+        yield return StartCoroutine(TransitionToSceneRoutine(contextReturnScene));
     }
 
     private IEnumerator WaitForActivePresentationSequence()
@@ -431,7 +447,7 @@ public class BattleSceneManager : MonoBehaviour
         battleFlowManager.Initialize(allUnits, false);
 
         // 기본 경로는 '일반 전투'다. 튜토리얼은 진입 키가 매칭될 때만 켜지는 특수 케이스로 취급한다.
-        // 진입 키: 이벤트 전투 우선, 없으면 씬 override(§11.1).
+        // 진입 키 우선순위: 이벤트 전투 → 탐사에서 넘어온 CombatContext 튜토리얼 키 → 씬 override(테스트용, §11.1).
         bool hasEventBattle = combatContext != null && combatContext.HasEventBattle;
         int tutorialZoneId;
         string tutorialKey;
@@ -439,6 +455,12 @@ public class BattleSceneManager : MonoBehaviour
         {
             tutorialZoneId = combatContext.EventBattle.ZoneId;
             tutorialKey = combatContext.EventBattle.BattleKey;
+        }
+        else if (combatContext != null && combatContext.IsTutorial &&
+                 !string.IsNullOrWhiteSpace(combatContext.TutorialBattleKey))
+        {
+            tutorialZoneId = combatContext.TutorialZoneId;
+            tutorialKey = combatContext.TutorialBattleKey;
         }
         else if (!string.IsNullOrWhiteSpace(tutorialBattleKeyOverride))
         {

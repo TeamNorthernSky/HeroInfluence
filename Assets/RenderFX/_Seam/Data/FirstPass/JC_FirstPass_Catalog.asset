@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38960b429b0cabe448dabdc81018e88a, type: 3}
+  m_Name: JC_FirstPass_Catalog
+  m_EditorClassIdentifier: 
+  _bindings:
+  - SkillIndex: 1010
+    Presentation: {fileID: 11400000, guid: 3292e0932024c5447a1cebc301910f94, type: 2}
+  - SkillIndex: 1011
+    Presentation: {fileID: 11400000, guid: 340d677c293b31b4ca165b9e133cc1d0, type: 2}
+  - SkillIndex: 1020
+    Presentation: {fileID: 11400000, guid: 36d6f1c540208e444a6aea3490470770, type: 2}
+  - SkillIndex: 1021
+    Presentation: {fileID: 11400000, guid: 53d432f1269e201498871cdc1dc8e94c, type: 2}
+  - SkillIndex: 1030
+    Presentation: {fileID: 11400000, guid: 4f7ae28bb4897dd49a9692077bee2361, type: 2}
+  - SkillIndex: 1031
+    Presentation: {fileID: 11400000, guid: 7ae593e4da1b90e409ca8ef975f55f73, type: 2}
+  - SkillIndex: 1040
+    Presentation: {fileID: 11400000, guid: cdfb7d33e4504684fa2381bdc84500b2, type: 2}
+  - SkillIndex: 1041
+    Presentation: {fileID: 11400000, guid: 1a6336ffd18abe042a835a70b9ffc19e, type: 2}
+  - SkillIndex: 2010
+    Presentation: {fileID: 11400000, guid: 2daf0e79184f7b341bc487b6446f0922, type: 2}
+  - SkillIndex: 2011
+    Presentation: {fileID: 11400000, guid: 098a5f35bc07d7e4d887a947e0cad3ba, type: 2}
+  - SkillIndex: 2020
+    Presentation: {fileID: 11400000, guid: e7b57a2638bcfd1479d2085d1cb8d409, type: 2}
+  - SkillIndex: 2021
+    Presentation: {fileID: 11400000, guid: 6b1a9ed00779d16439c239fc601d981f, type: 2}
+  - SkillIndex: 2030
+    Presentation: {fileID: 11400000, guid: 322e23a5052bbbd44920777d58582482, type: 2}
+  - SkillIndex: 2031
+    Presentation: {fileID: 11400000, guid: fa322429f577ee34db3f3dfa04f09893, type: 2}
+  - SkillIndex: 2040
+    Presentation: {fileID: 11400000, guid: 177e82f5ef912c84789fde1ab468c2ed, type: 2}
+  - SkillIndex: 2041
+    Presentation: {fileID: 11400000, guid: aaa231658baa4cd4ea5b83500bdf433c, type: 2}
+  - SkillIndex: 3010
+    Presentation: {fileID: 11400000, guid: 0c951b14db8bf4c4d81e1e5beda61f00, type: 2}
+  - SkillIndex: 3011
+    Presentation: {fileID: 11400000, guid: 5cd68bc0d8b087b4eb75b71827a009d2, type: 2}
+  - SkillIndex: 3020
+    Presentation: {fileID: 11400000, guid: 662f593786a1e4447a0cc27f381218f1, type: 2}
+  - SkillIndex: 3021
+    Presentation: {fileID: 11400000, guid: 84444fcccb092d340b030161ef33594d, type: 2}
+  - SkillIndex: 3030
+    Presentation: {fileID: 11400000, guid: 7b05e537285a99849be856012154dfae, type: 2}
+  - SkillIndex: 3031
+    Presentation: {fileID: 11400000, guid: afe20f84a4653a0408b25c06860f2bf9, type: 2}
+  - SkillIndex: 3040
+    Presentation: {fileID: 11400000, guid: a622b7dd87a6dcf498180ffb5142fac4, type: 2}
+  - SkillIndex: 3041
+    Presentation: {fileID: 11400000, guid: 04d846752573e1c4fb27ac2fcbd53124, type: 2}
+  - SkillIndex: 4010
+    Presentation: {fileID: 11400000, guid: b50ef1bb38f09244ba38a90818a1d72d, type: 2}
+  - SkillIndex: 4011
+    Presentation: {fileID: 11400000, guid: 366179c7a79fee54b91bad50dbc08bd3, type: 2}
+  - SkillIndex: 4020
+    Presentation: {fileID: 11400000, guid: b61009fcaf15a3c45a57297af5ac310d, type: 2}
+  - SkillIndex: 4021
+    Presentation: {fileID: 11400000, guid: b0e3137d863e2c6498b96e4d07bb6b28, type: 2}
+  - SkillIndex: 4030
+    Presentation: {fileID: 11400000, guid: a8a879bc52856af42b84133ff31b622a, type: 2}
+  - SkillIndex: 4031
+    Presentation: {fileID: 11400000, guid: 2f4482aef6ece604ab144f40f35b434a, type: 2}
+  - SkillIndex: 4040
+    Presentation: {fileID: 11400000, guid: 631e4166175c59f4f9be2518411fad07, type: 2}
+  - SkillIndex: 4041
+    Presentation: {fileID: 11400000, guid: f5ebb19395734aa459962d4929eb28ca, type: 2}

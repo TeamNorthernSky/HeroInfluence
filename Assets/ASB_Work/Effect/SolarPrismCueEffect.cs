@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using JC.VFX;
 using UnityEngine;
@@ -6,11 +5,12 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class SolarPrismCueEffect : MonoBehaviour, ISkillEffectBehaviour, ISkillEffectHandle
 {
+    [Tooltip("독립 차징·비행·착탄을 연결할 솔라 프리즘입니다.")]
     [SerializeField] private SolarPrismVfx _solarPrism;
 
     private SkillEffectContext _context;
     private bool _launched;
-    private Coroutine _impactSignalRoutine;
+    private bool _impactNotified;
 
     private void Awake()
     {
@@ -23,7 +23,7 @@ public sealed class SolarPrismCueEffect : MonoBehaviour, ISkillEffectBehaviour, 
     public void Play(SkillEffectContext context)
     {
         _context = context;
-        _launched = false;
+        _launched = false; _impactNotified = false;
 
         if (_solarPrism == null || context == null)
         {
@@ -37,6 +37,10 @@ public sealed class SolarPrismCueEffect : MonoBehaviour, ISkillEffectBehaviour, 
                 : transform;
         Transform target = context.PrimaryTarget != null ? context.PrimaryTarget.transform : null;
 
+        _solarPrism.Impacted -= OnImpact;
+        _solarPrism.Impacted += OnImpact;
+        _solarPrism.PlaybackSpeed = context.PlaybackSpeed;
+        if (context.Targets != null && context.Targets.Count > 0) _solarPrism.UnitCount = context.Targets.Count;
         _solarPrism.Play(origin, target);
     }
 
@@ -73,42 +77,21 @@ public sealed class SolarPrismCueEffect : MonoBehaviour, ISkillEffectBehaviour, 
         }
 
         _solarPrism.Launch(targets);
-        if (_impactSignalRoutine != null) StopCoroutine(_impactSignalRoutine);
-        _impactSignalRoutine = StartCoroutine(PublishWhenImpactStarts());
+
         return true;
     }
 
-    private IEnumerator PublishWhenImpactStarts()
-            {
-                float elapsed = 0f;
-                const float timeout = 5f;
-                while (elapsed < timeout)
-                {
-                    FlareBombImpact[] impacts = GetComponentsInChildren<FlareBombImpact>(true);
-                    foreach (FlareBombImpact impact in impacts)
-                    {
-                        if (impact == null || !impact.IsPlaying) continue;
-                        if (_context != null && _context.ActionInstanceId > 0)
-                            SkillImpactSignalBus.PublishImpact(new ImpactKey(_context.ActionInstanceId), impact.transform.position, new[] { impact.transform });
-                        _impactSignalRoutine = null;
-                        yield break;
-                    }
-                    elapsed += Time.deltaTime;
-                    yield return null;
-                }
-                _impactSignalRoutine = null;
-            }
-        
-            public void Stop()
+    private void OnImpact(Vector3 position)
     {
-        if (_impactSignalRoutine != null)
-        {
-            StopCoroutine(_impactSignalRoutine);
-            _impactSignalRoutine = null;
-        }
-
+        if (_impactNotified || _context == null) return;
+        _impactNotified = true;
+        SkillImpactSignalBus.PublishImpact(new ImpactKey(_context.ActionInstanceId), position);
+    }
+    public void Stop()
+    {
         if (_solarPrism != null)
         {
+            _solarPrism.Impacted -= OnImpact;
             _solarPrism.Stop();
         }
 

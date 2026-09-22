@@ -5,6 +5,8 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class BattleSkillButtonVisual : MonoBehaviour
 {
+    [Tooltip("JC_BattleUI_VFX/SkillBTN_SweepGlow의 공통 설정입니다. 연결하면 아래 개별 시각 설정보다 우선합니다.")]
+    [SerializeField] private BattleSkillSweepSettings sharedSettings;
     [Tooltip("출전 버튼의 스윕 셰이더를 재사용하는 사용 가능 효과입니다. 클릭을 가로채지 않는 Image를 연결합니다.")]
     [SerializeField] private Image availableEffect;
     [Tooltip("선택 중 유지할 테두리입니다. 호버 여부와 관계없이 선택 상태를 표시합니다.")]
@@ -58,8 +60,15 @@ public class BattleSkillButtonVisual : MonoBehaviour
     {
         if (available && !wasAvailable) started = Time.unscaledTime;
         wasAvailable = available;
-        if (availableEffect != null) availableEffect.gameObject.SetActive(available && showAvailableEffect);
+        bool useShared = sharedSettings != null && sharedSettings.isActiveAndEnabled;
+        if (availableEffect != null) availableEffect.gameObject.SetActive(available && (useShared ? sharedSettings.showAvailableEffect : showAvailableEffect));
         if (selectedFrame != null) selectedFrame.gameObject.SetActive(selected);
+        if (useShared)
+        {
+            sharedSettings.Apply(availableInstance, selectedInstance);
+            if (availableInstance != null) availableInstance.SetFloat("_SweepTime", Time.unscaledTime - started);
+            return;
+        }
         if (availableInstance != null)
         {
             availableInstance.SetColor("_GlowColor", availableColor);
