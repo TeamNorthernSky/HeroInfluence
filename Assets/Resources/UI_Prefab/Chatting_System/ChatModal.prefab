@@ -2236,6 +2236,8 @@ MonoBehaviour:
     type: 3}
   choiceButtonPrefab: {fileID: 7330407326072799749, guid: 5e933de3bf4632b4f9ce625848f75181,
     type: 3}
+  rewardResultPrefab: {fileID: 1283078649332861563, guid: ce536ec7dd3debc4eaff331c80b10020,
+    type: 3}
   skipButton: {fileID: 7146297021543665856}
   skipConfirmPopup: {fileID: 7733980569550872437}
   skipYesButton: {fileID: 4120817355820544197}

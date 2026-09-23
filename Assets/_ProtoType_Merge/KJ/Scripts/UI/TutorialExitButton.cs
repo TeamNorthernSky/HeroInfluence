@@ -9,9 +9,8 @@ public class TutorialExitButton : MonoBehaviour
 
     private void Awake()
     {
-        if (exitButton == null)
-            exitButton = GetComponent<Button>();
-
+        exitButton = GetComponent<Button>();
+        
         if (exitButton != null)
             exitButton.onClick.AddListener(goNextScene);
         else
@@ -28,11 +27,11 @@ public class TutorialExitButton : MonoBehaviour
     {
         if (isLoading) return;
         isLoading = true;
+        TutorialProgressRepository.ClearProgress(); 
+        TutorialCatalog.DestroyAllTutorialCatalogs();
         if (GameSceneManager.Instance != null)
             GameSceneManager.Instance.LoadSceneAsync("DHScene_3");
-            //GameSceneManager.Instance.LoadScene("DHScene_3");
         else
             SceneManager.LoadSceneAsync("DHScene_3");
-            //SceneManager.LoadScene("DHScene_3");
     }
 }

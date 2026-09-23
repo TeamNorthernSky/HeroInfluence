@@ -26,6 +26,7 @@ public class ChatModalController : MonoBehaviour
     [Header("하위 프리팹")]
     [SerializeField] private ChatBubbleView bubblePrefab;
     [SerializeField] private ChoiceButtonView choiceButtonPrefab;
+    [SerializeField] private ChatRewardResultView rewardResultPrefab;
 
     [Header("스킵")]
     [SerializeField] private Button skipButton;
@@ -42,6 +43,11 @@ public class ChatModalController : MonoBehaviour
     private bool choicesVisible;
     private int beginFrame; // 소환 당시 클릭이 첫 대사를 즉시 넘기는 것 방지
     private int skipConfirmClosedFrame = -1; // 팝업을 닫은 입력의 같은 프레임 대사 진행 차단
+    private int choiceSelectedFrame = -1;
+    private DHEventEffectRuntimeManager effectManager;
+    private bool dispatchingChatEffect;
+    private bool hasRewardResult;
+    private bool waitingForRewardClose;
 
     /// <summary>대화 소환. 이미 떠 있으면 재활성 후 해당 대화로 재시작(중복 생성 방지).</summary>
     private bool isClosing;
@@ -153,7 +159,7 @@ public class ChatModalController : MonoBehaviour
     private void SkipChat()
     {
         CloseSkipConfirm();
-        manager?.SkipToEnd();
+        RunChatAction(() => manager?.SkipToEnd());
     }
 
     /// <summary>[KJ 260723] 마지막 대사이거나 선택지 표시 중이면 스킵 버튼 비활성화 (매 노드 표시 후 호출).</summary>
@@ -174,6 +180,8 @@ public class ChatModalController : MonoBehaviour
 
         onClosed = closedCallback;
         isClosing = false;
+        hasRewardResult = false;
+        waitingForRewardClose = false;
         beginFrame = Time.frameCount;
         manager = ChatManager.Instance;
 
@@ -187,7 +195,10 @@ public class ChatModalController : MonoBehaviour
         manager.OnChatShown += HandleChatShown;
         manager.OnBranchShown += HandleBranchShown;
         manager.OnChatEnded += HandleChatEnded;
-        manager.StartChat(zoneId, startChatId);
+        effectManager = DHEventEffectRuntimeManager.EnsureInstance();
+        DHEventRewardRuntimeManager.EnsureInstance();
+        effectManager.EffectDispatched += HandleRewardDispatched;
+        RunChatAction(() => manager.StartChat(zoneId, startChatId));
     }
 
     private static int ResolveDefaultZoneId(int startChatId)
@@ -213,11 +224,12 @@ public class ChatModalController : MonoBehaviour
         if (manager == null || !manager.IsRunning || choicesVisible) return;
         if (skipConfirmPopup != null && skipConfirmPopup.activeSelf) return; // 스킵 확인 중엔 진행 정지
         if (Time.frameCount == skipConfirmClosedFrame) return; // 확인/취소 입력은 채팅 진행에 재사용하지 않음
+        if (Time.frameCount == choiceSelectedFrame) return;
         if (!Input.GetMouseButtonDown(0)&&!Input.GetKeyDown(KeyCode.Space)) return;
         if (Time.frameCount == beginFrame) return; // 트리거를 누른 그 클릭은 무시
         if (IsPointerOverControl()) return; // 버튼·스크롤바 조작은 대사 진행으로 취급하지 않음
 
-        manager.Advance();
+        RunChatAction(() => manager.Advance());
     }
 
     /// <summary>클릭 지점이 Selectable 위인지 — 버튼·스크롤바(손잡이 포함)의 클릭과 대사 진행의 이중 반응 방지.</summary>
@@ -260,7 +272,7 @@ public class ChatModalController : MonoBehaviour
             }
 
             ChoiceButtonView view = Instantiate(choiceButtonPrefab, choiceLayout.SpawnParent);
-            view.Bind(option.SelectionText, () => manager?.Select(option), state.IsInteractable);
+            view.Bind(option.SelectionText, () => SelectChoice(option, view), state.IsInteractable);
             activeChoices.Add(view.gameObject);
         }
 
@@ -281,7 +293,72 @@ public class ChatModalController : MonoBehaviour
 
     private void HandleChatEnded()
     {
+        if (isClosing || waitingForRewardClose) return;
+        if (hasRewardResult && contentRoot != null && choiceButtonPrefab != null)
+        {
+            waitingForRewardClose = true;
+            ChoiceButtonView endButton = Instantiate(choiceButtonPrefab, contentRoot);
+            endButton.Bind("브리핑 종료", Close, true);
+            if (skipButton != null) skipButton.interactable = false;
+            StartCoroutine(ScrollToBottomNextFrame());
+            return;
+        }
         Close();
+    }
+
+    private void SelectChoice(DHEventBranchTemplate option, ChoiceButtonView view)
+    {
+        if (!choicesVisible || isClosing || manager == null || !manager.IsRunning ||
+            view == null || !activeChoices.Contains(view.gameObject) ||
+            choiceSelectedFrame == Time.frameCount) return;
+
+        choiceSelectedFrame = Time.frameCount;
+        // Select가 다음 대사를 동기적으로 추가하므로 답변 기록을 먼저 넣는다.
+        SpawnChoiceHistory(view.Text);
+        ClearChoices();
+        if (choiceLayout != null) choiceLayout.PlayHide();
+        RunChatAction(() => manager.Select(option));
+    }
+
+    private void RunChatAction(Action action)
+    {
+        bool wasDispatching = dispatchingChatEffect;
+        dispatchingChatEffect = true;
+        try { action(); }
+        finally { dispatchingChatEffect = wasDispatching; }
+    }
+
+    private void HandleRewardDispatched(DHEventEffectToken token)
+    {
+        if (!dispatchingChatEffect || rewardResultPrefab == null || contentRoot == null) return;
+        if (token == null || token.kind != DHEventEffectKind.Reward) return;
+        if (DHEventRewardRuntimeManager.Instance == null || !DHEventRewardRuntimeManager.Instance.isActiveAndEnabled) return;
+        if (!int.TryParse(token.payload, out int rewardId) || rewardId <= 0) return;
+        EventScriptCatalog catalog = EventScriptCatalog.Instance;
+        if (catalog == null || !catalog.TryGetEventRewardTemplate(rewardId, out DHEventRewardTemplate reward)) return;
+        ChatRewardResultView result = Instantiate(rewardResultPrefab, contentRoot);
+        result.Bind(reward);
+        hasRewardResult = true;
+        StartCoroutine(ScrollToBottomNextFrame());
+    }
+
+    private void SpawnChoiceHistory(string text)
+    {
+        if (contentRoot == null || choiceButtonPrefab == null) return;
+
+        Transform header = choiceLayout != null && choiceLayout.SpawnParent != null
+            ? choiceLayout.SpawnParent.Find("AnswerHeader") : null;
+        if (header != null)
+        {
+            GameObject historyHeader = Instantiate(header.gameObject, contentRoot, false);
+            historyHeader.SetActive(true);
+            foreach (Graphic graphic in historyHeader.GetComponentsInChildren<Graphic>(true))
+                graphic.raycastTarget = false;
+        }
+
+        ChoiceButtonView answer = Instantiate(choiceButtonPrefab, contentRoot);
+        answer.BindHistory(text);
+        StartCoroutine(ScrollToBottomNextFrame());
     }
 
     private void SpawnBubble(DHEventChatTemplate chat)
@@ -350,6 +427,9 @@ public class ChatModalController : MonoBehaviour
 
     private void UnsubscribeFromManager()
     {
+        if (effectManager != null)
+            effectManager.EffectDispatched -= HandleRewardDispatched;
+        effectManager = null;
         if (manager == null)
         {
             return;
