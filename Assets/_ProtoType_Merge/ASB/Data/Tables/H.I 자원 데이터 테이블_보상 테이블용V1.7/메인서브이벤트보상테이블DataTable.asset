@@ -9,14 +9,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a873c9e1bb2f624b8d26325bfe02def, type: 3}
+  m_Script: {fileID: 11500000, guid: 0263ad0f5c86bd24aa94f0cf425da725, type: 3}
   m_Name: "\uBA54\uC778\uC11C\uBE0C\uC774\uBCA4\uD2B8\uBCF4\uC0C1\uD14C\uC774\uBE14DataTable"
   m_EditorClassIdentifier: 
   DataList:
   - reward_id: 101111
-    money: 0
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-1 \uC2B9\uB9AC / \uB8E8\uBBF8\uB098
+      '\uB098\uB77D' \uB8E8\uD2B8"
+    money: 500
     medal: 0
-    gem: 10
+    gem: 0
+    supply: 10
+    EXP: 0
     Rumina_IP: -50
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -38,9 +42,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 101121
-    money: 0
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-1 \uC2B9\uB9AC / \uB124\uCF54\uBC0D
+      \uC7AC\uC559 \uB8E8\uD2B8"
+    money: 500
     medal: 0
-    gem: 15
+    gem: 0
+    supply: 15
+    EXP: 0
     Rumina_IP: -20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -62,9 +70,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 101102
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-1 \uD328\uBC30"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -86,9 +97,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 101201
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-2 \uD074\uB9AC\uC5B4 / \uC18C\uB140
+      \uB3D9\uD589"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -110,9 +125,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 101202
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-2 \uD328\uBC30"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -134,9 +152,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102101
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC / \uC778\uC9C8 \uC815\uBCF4
+      \uD655\uBCF4"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -158,9 +180,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102102
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uD328\uBC30"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -182,9 +207,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102201
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -206,9 +234,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102202
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uD328\uBC30"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -230,9 +261,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102301
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -254,9 +288,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102302
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -278,9 +315,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 103101
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B83 \uD074\uB9AC\uC5B4 / \uC778\uC9C8
+      3\uBA85 \uBD80\uC0C1"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 260
     Rumina_IP: -50
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -302,9 +343,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 103102
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B83 \uD074\uB9AC\uC5B4 / \uC778\uC9C8
+      1~2\uBA85 \uBD80\uC0C1"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 260
     Rumina_IP: -20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -326,9 +371,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 103103
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B83 \uD074\uB9AC\uC5B4 / \uC778\uC9C8
+      \uBAA8\uB450 \uAD6C\uCD9C"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 260
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -350,9 +399,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 103104
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B83 \uD328\uBC30"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -374,9 +426,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 104101
+    reward_name: "\uC11C\uBE0C\uD018\uC2A4\uD2B81 \uC644\uB8CC / \uBE14\uB799\uBD88\uB9BF
+      \uC704\uC784\xB7\uBB3C\uAC74 \uBC18\uD658"
     money: 0
     medal: 0
-    gem: 20
+    gem: 0
+    supply: 20
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -398,9 +454,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 104102
-    money: 0
+    reward_name: "\uC11C\uBE0C\uD018\uC2A4\uD2B81 \uC644\uB8CC / \uBB3C\uAC74 \uC555\uC218\xB7\uC2DC\uBBFC
+      \uCC98\uBC8C"
+    money: 100
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -422,9 +482,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 104103
+    reward_name: "\uC11C\uBE0C\uD018\uC2A4\uD2B81 \uD328\uBC30"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -446,9 +509,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 105101
+    reward_name: "\uC11C\uBE0C\uD018\uC2A4\uD2B82 \uC644\uB8CC / \uBA54\uC778 \uD074\uB9AC\uC5B4
+      \uC804 \uC228\uC740 \uC790\uC6D0 \uBCF4\uC0C1"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -470,9 +537,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 105102
+    reward_name: "\uC11C\uBE0C\uD018\uC2A4\uD2B82 \uC644\uB8CC / \uBA54\uC778 \uD074\uB9AC\uC5B4
+      \uD6C4 \uC804\uC6D0 IP \uBCF4\uC0C1"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -494,9 +565,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 105103
+    reward_name: "\uC11C\uBE0C\uD018\uC2A4\uD2B82 \uD328\uBC30"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -518,9 +592,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102131
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC / \uC18C\uB140 \uB3D9\uD589"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -542,9 +619,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102132
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uD328\uBC30 / \uC18C\uB140 \uB3D9\uD589"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -566,9 +646,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102141
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC / \uD3B8\uC758\uC810
+      \uBE4C\uB7F0 \uC644\uB8CC"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -590,9 +674,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102151
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC / \uD3B8\uC758\uC810
+      \uBE4C\uB7F0 \uC644\uB8CC + \uC18C\uB140 \uB3D9\uD589"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 25
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -614,9 +702,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102211
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC / \uB8E8\uBBF8\uB098
+      \uB098\uB77D"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -25
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -638,9 +730,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102212
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uD328\uBC30 / \uB8E8\uBBF8\uB098
+      \uB098\uB77D"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -662,9 +758,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102221
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC / \uB124\uCF54\uBC0D
+      \uC7AC\uC559"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -686,9 +786,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102222
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uD328\uBC30 / \uB124\uCF54\uBC0D
+      \uC7AC\uC559"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -710,9 +814,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102231
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC / \uC18C\uB140 \uB3D9\uD589"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -734,9 +841,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102232
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uD328\uBC30 / \uC18C\uB140 \uB3D9\uD589"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -758,9 +868,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102311
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC / \uB8E8\uBBF8\uB098
+      \uB098\uB77D"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -25
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -782,9 +896,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102312
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 / \uB8E8\uBBF8\uB098
+      \uB098\uB77D"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -806,9 +924,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102321
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC / \uB124\uCF54\uBC0D
+      \uC7AC\uC559"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -830,9 +952,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102322
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 / \uB124\uCF54\uBC0D
+      \uC7AC\uC559"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -854,9 +980,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102331
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC / \uC18C\uB140 \uB3D9\uD589"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -878,9 +1007,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102332
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 / \uC18C\uB140 \uB3D9\uD589"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -902,9 +1034,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 106101
+    reward_name: "1\uAD6C\uC5ED_UMT \uC544\uB180\uB4DC \uC804\uD22C \uC2B9\uB9AC"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -926,9 +1061,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 106102
+    reward_name: "1\uAD6C\uC5ED_UMT \uC544\uB180\uB4DC \uC804\uD22C \uC2B9\uB9AC
+      / \uB8E8\uBBF8\uB098 \uB098\uB77D"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -950,9 +1089,13 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 106103
+    reward_name: "1\uAD6C\uC5ED_UMT \uC544\uB180\uB4DC \uC804\uD22C \uC2B9\uB9AC
+      / \uB124\uCF54\uBC0D \uC7AC\uC559"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: 20
     Rumina_ATK: 0
     Rumina_MaxHP: 0
@@ -974,9 +1117,12 @@ MonoBehaviour:
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 106104
+    reward_name: "1\uAD6C\uC5ED_UMT \uC544\uB180\uB4DC \uC804\uD22C \uD328\uBC30"
     money: 0
     medal: 0
     gem: 0
+    supply: 0
+    EXP: 0
     Rumina_IP: -10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
