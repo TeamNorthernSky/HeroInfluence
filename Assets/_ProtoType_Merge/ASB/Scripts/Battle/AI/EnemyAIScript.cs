@@ -86,16 +86,72 @@ namespace EnemyAI
                 }
             }
 
-            // 4) 최종 후보군에서 성향(최저 HP)으로 선택합니다.
-            BattleCharactor chosenTarget = GetLowestHpTarget(finalCandidates);
+            // 4) 전열 70% / 후열 30%를 먼저 결정한 뒤, 선택된 열에서 균등 랜덤으로 선택합니다.
+            // 선택된 열에 유효 대상이 없으면 반대 열로 폴백해 턴이 소실되지 않게 합니다.
+            BattleCharactor chosenTarget = GetRandomTargetByRow(finalCandidates);
             if (chosenTarget == null)
             {
                 return EnemyActionDecision.SkipTurn();
             }
 
-            //Debug.Log(
-            //    $"[EnemyAI/Debug] Lowest HP target selected: self={self.UnitName} -> target={chosenTarget.UnitName}, hp={chosenTarget.CurrentHp:0.#}");
             return EnemyActionDecision.Create(chosenTarget, actionType, selectedSkill);
+        }
+
+        private static BattleCharactor GetRandomTargetByRow(List<BattleCharactor> candidates)
+        {
+            if (candidates == null || candidates.Count == 0)
+            {
+                return null;
+            }
+
+            var frontRow = new List<BattleCharactor>();
+            var backRow = new List<BattleCharactor>();
+            var unclassified = new List<BattleCharactor>();
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                BattleCharactor candidate = candidates[i];
+                if (candidate == null || candidate.IsDead)
+                {
+                    continue;
+                }
+
+                bool isFront = TargetingHelper.IsUnitInFrontRow(candidate);
+                bool isBack = TargetingHelper.IsUnitInBackRow(candidate);
+
+                if (isFront)
+                {
+                    frontRow.Add(candidate);
+                }
+
+                if (isBack)
+                {
+                    backRow.Add(candidate);
+                }
+
+                if (!isFront && !isBack)
+                {
+                    unclassified.Add(candidate);
+                }
+            }
+
+            bool chooseFront = UnityEngine.Random.Range(0, 100) < 70;
+            List<BattleCharactor> selectedRow = chooseFront ? frontRow : backRow;
+            List<BattleCharactor> fallbackRow = chooseFront ? backRow : frontRow;
+
+            if (selectedRow.Count == 0)
+            {
+                selectedRow = fallbackRow;
+            }
+
+            if (selectedRow.Count == 0)
+            {
+                selectedRow = unclassified;
+            }
+
+            return selectedRow.Count == 0
+                ? null
+                : selectedRow[UnityEngine.Random.Range(0, selectedRow.Count)];
         }
     }
 

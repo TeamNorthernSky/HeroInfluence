@@ -1,0 +1,157 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
+  m_Name: "\uC120\uD0DD\uD615\uC120\uD0DD\uACB0\uACFC_ChoiceResult1_Schema"
+  m_EditorClassIdentifier: 
+  schemaGuid: 83d8a9963f344da99d332664695d8b9c
+  sourceWorkbookGuid: ada259ca8b9a3a7418dee29177012d17
+  sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/H.I \uC774\uBCA4\uD2B8
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.61.xlsx"
+  workbookFileName: "H.I \uC774\uBCA4\uD2B8 \uB370\uC774\uD130 \uD14C\uC774\uBE14
+    V1.61"
+  sourceSheetName: "\uC120\uD0DD\uD615 (\uC120\uD0DD\uACB0\uACFC)"
+  physicalSheetId: 09379955009322cfc3588a8f0cdd011a6e465b00
+  logicalSheetKey: "\uC120\uD0DD\uD615\uC120\uD0DD\uACB0\uACFC"
+  templateClassName: ChoiceResult1
+  templateSignature: dict=0|result_group_id:String:Comma|world_event_accept:String:Comma|target_scope:Int:Comma|effect_type:Int:Comma|effect_amount:Int:Comma|note:String:Comma
+  className: ChoiceResult1
+  outputAssetName: "\uC120\uD0DD\uD615\uC120\uD0DD\uACB0\uACFCDataTable"
+  targetTableAssetGuid: c83ac402e7d598b4781d3ddda64f5da8
+  targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I \uC774\uBCA4\uD2B8
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.61/\uC120\uD0DD\uD615\uC120\uD0DD\uACB0\uACFCDataTable.asset"
+  headerRowIndex: 1
+  dataStartRowIndex: 2
+  useDictionary: 0
+  requireUniqueKey: 0
+  duplicateKeyPolicy: 0
+  Columns:
+  - sourceColumnIndex: 0
+    sourceHeaderName: result_group_id
+    fieldName: result_group_id
+    displayName: result_group_id
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: world_event_accept
+    fieldName: world_event_accept
+    displayName: world_event_accept
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: target_scope
+    fieldName: target_scope
+    displayName: target_scope
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: effect_type
+    fieldName: effect_type
+    displayName: effect_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: effect_amount
+    fieldName: effect_amount
+    displayName: effect_amount
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: note
+    fieldName: note
+    displayName: note
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 0
+    sourceHeaderName: "\uACB0\uACFC \uADF8\uB8F9 id\n(\uC120\uD0DD\uC9C0 \uD14C\uC774\uBE14
+      \uCC38\uC870)"
+    fieldName: Field_01
+    displayName: "\uACB0\uACFC \uADF8\uB8F9 id\n(\uC120\uD0DD\uC9C0 \uD14C\uC774\uBE14
+      \uCC38\uC870)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 \uD45C\uC2DC \uC218\uB77D
+      \uB300\uC0AC"
+    fieldName: Field_02
+    displayName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 \uD45C\uC2DC \uC218\uB77D \uB300\uC0AC"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: "\uC801\uC6A9 \uB300\uC0C1\n(0 \uC5C6\uC74C / 1 \uC7AC\uD654
+      / \n2 \uD30C\uD2F0 \uC804\uC6D0)"
+    fieldName: Field_03
+    displayName: "\uC801\uC6A9 \uB300\uC0C1\n(0 \uC5C6\uC74C / 1 \uC7AC\uD654 / \n2
+      \uD30C\uD2F0 \uC804\uC6D0)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: "\uD6A8\uACFC \uC885\uB958\n(\uC801\uC6A9 \uB300\uC0C1\uC5D0
+      \uB530\uB77C \uC801\uC6A9)\n0 \uC5C6\uC74C: 0 None\n1 \uACF5\uC6A9 \uC7AC\uD654:
+      0 Money / 1 Medal \n/ 2 Jam / 3 Supply\n2 \uD30C\uD2F0 \uC804\uC6D0: 0 CurrentIP
+      / 1 CurrentHP / \n2 MaxIP / 3 MaxHP / 4 ATK"
+    fieldName: Field_04
+    displayName: "\uD6A8\uACFC \uC885\uB958\n(\uC801\uC6A9 \uB300\uC0C1\uC5D0 \uB530\uB77C
+      \uC801\uC6A9)\n0 \uC5C6\uC74C: 0 None\n1 \uACF5\uC6A9 \uC7AC\uD654: 0 Money
+      / 1 Medal \n/ 2 Jam / 3 Supply\n2 \uD30C\uD2F0 \uC804\uC6D0: 0 CurrentIP /
+      1 CurrentHP / \n2 MaxIP / 3 MaxHP / 4 ATK"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: "\uC801\uC6A9 \uC218\uCE58\n(\uD68D\uB4DD\xB7\uC99D\uAC00 +
+      /\n \uCC28\uAC10\xB7\uD328\uB110\uD2F0 -)"
+    fieldName: Field_05
+    displayName: "\uC801\uC6A9 \uC218\uCE58\n(\uD68D\uB4DD\xB7\uC99D\uAC00 + /\n
+      \uCC28\uAC10\xB7\uD328\uB110\uD2F0 -)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0

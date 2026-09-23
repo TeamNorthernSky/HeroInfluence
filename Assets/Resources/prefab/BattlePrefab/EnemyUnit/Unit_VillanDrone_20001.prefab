@@ -207,6 +207,7 @@ GameObject:
   - component: {fileID: 2814075382195252519}
   - component: {fileID: 5054122524393523709}
   - component: {fileID: 4491695532318287345}
+  - component: {fileID: 9101334684557027301}
   m_Layer: 9
   m_Name: Unit_VillanDrone_20001
   m_TagString: Untagged
@@ -323,6 +324,8 @@ MonoBehaviour:
     skillKey: 
     category: 0
     slot: 0
+    riskKey: 
+    enhancementLevel: 1
     skillClass: MiddleVillian
     acquireLevel: 1
     skillName: "\uC911\uAE09 \uBE4C\uB7F0 \uC2A4\uD0AC1"
@@ -350,6 +353,8 @@ MonoBehaviour:
     skillKey: 
     category: 0
     slot: 0
+    riskKey: 
+    enhancementLevel: 1
     skillClass: MiddleVillian
     acquireLevel: 1
     skillName: "\uC911\uAE09 \uBE4C\uB7F0 \uC2A4\uD0AC2"
@@ -439,6 +444,32 @@ CapsuleCollider:
   m_Height: 1.6
   m_Direction: 1
   m_Center: {x: 0, y: 0.7, z: 0}
+--- !u!114 &9101334684557027301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4367654367480254008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ebc33a41f287f64192f9322d07f9cbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AttackEffectSocket: {fileID: 5163858137772836812}
+  HitEffectSocket: {fileID: 0}
+  DamagePopupSocket: {fileID: 0}
+  HitDamagePopupDelay: 0
+  HitAnimationDelay: 0
+  HoldArrow: {fileID: 0}
+  TargetArrowPrefab: {fileID: 0}
+  ArrowHitPoint: {fileID: 0}
+  ArrowLifetime: 1.5
+  ArrowDamagePopupDelay: 0.2
+  ArrowHitAnimationDelay: 0.2
+  ArrowTrailPrefab: {fileID: 0}
+  ArcHeight: 2
+  TrailFadeDuration: 0.3
 --- !u!1 &5213149365578200818
 GameObject:
   m_ObjectHideFlags: 0
@@ -716,8 +747,121 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 157893389019940681, guid: 9c910d6491ada3f4c8b16ce03e536aec,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3884401019938747076}
+    - targetCorrespondingSourceObject: {fileID: 7125264849477321901, guid: 9c910d6491ada3f4c8b16ce03e536aec,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 116978045491984911}
+    - targetCorrespondingSourceObject: {fileID: 4419735421594401176, guid: 9c910d6491ada3f4c8b16ce03e536aec,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6779031275870209934}
   m_SourcePrefab: {fileID: 100100000, guid: 9c910d6491ada3f4c8b16ce03e536aec, type: 3}
+--- !u!4 &496017183975682300 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6274906922847999361, guid: 9c910d6491ada3f4c8b16ce03e536aec,
+    type: 3}
+  m_PrefabInstance: {fileID: 5906127423495382397}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &3350578459379717329 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9189985103424909740, guid: 9c910d6491ada3f4c8b16ce03e536aec,
+    type: 3}
+  m_PrefabInstance: {fileID: 5906127423495382397}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &3680779244281979344 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7125264849477321901, guid: 9c910d6491ada3f4c8b16ce03e536aec,
+    type: 3}
+  m_PrefabInstance: {fileID: 5906127423495382397}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &116978045491984911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3680779244281979344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08d70e1ad944de34caa5f416a4b30205, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 496017183975682300}
+  localAxis: {x: 0, y: 1, z: 0}
+  degreesPerSecond: 720
+  syncBattleSpeed: 1
+  owner: {fileID: 2192088080362514127}
+--- !u!4 &5163858137772836812 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1612132555137966769, guid: 9c910d6491ada3f4c8b16ce03e536aec,
+    type: 3}
+  m_PrefabInstance: {fileID: 5906127423495382397}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6036570259166077492 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 157893389019940681, guid: 9c910d6491ada3f4c8b16ce03e536aec,
+    type: 3}
+  m_PrefabInstance: {fileID: 5906127423495382397}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3884401019938747076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6036570259166077492}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 146ad4c43a6e80a489b19f3e7f229a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  extraRise: 0
+  bobAmplitude: 0
+  bobSpeed: 2
+  movementRoot: {fileID: 5025542702445776418}
+  localForwardAxis: {x: 0, y: 0, z: 1}
+  tiltAxis: {x: 1, y: 0, z: 0}
+  maxLeanAngle: 15
+  speedForMaxLean: 3
+  leanSmooth: 8
+  teleportDistanceThreshold: 3
+  recoilAngle: 12
+  recoilSign: 1
+  recoilDecay: 120
+  hitDisplaceDir: {x: 0, y: 0, z: -1}
+  hitDisplaceDist: 0
+  hitDecay: 6
+  deathDropDistance: 0
+  deathSettleSpeed: 4
+  owner: {fileID: 2192088080362514127}
+--- !u!1 &7827478715410603237 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4419735421594401176, guid: 9c910d6491ada3f4c8b16ce03e536aec,
+    type: 3}
+  m_PrefabInstance: {fileID: 5906127423495382397}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6779031275870209934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7827478715410603237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08d70e1ad944de34caa5f416a4b30205, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 3350578459379717329}
+  localAxis: {x: 0, y: 1, z: 0}
+  degreesPerSecond: 720
+  syncBattleSpeed: 1
+  owner: {fileID: 2192088080362514127}
 --- !u!4 &8358823447667683889 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2735451038626781004, guid: 9c910d6491ada3f4c8b16ce03e536aec,
