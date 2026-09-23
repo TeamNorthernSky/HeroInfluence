@@ -46,7 +46,7 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
     private void Update()
     {
         if (current == null) return;
-        GameObject panel = current.EventType == DHWorldEventType.Reward ? rewardPanel : choicePanel;
+        GameObject panel = current.Style == DHWorldEventPresentationStyle.ConditionReward ? rewardPanel : choicePanel;
         if (!panel.activeSelf) panel.SetActive(true);
     }
 
@@ -87,7 +87,7 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
 
     private void OnPresentationChanged(DHWorldEventPresentationRequest request)
     {
-        if (request == null || (request.EventType != DHWorldEventType.Reward && request.EventType != DHWorldEventType.Choice))
+        if (!IsConditionRewardOrChoiceRequest(request))
         {
             current = null;
             rewardPanel.SetActive(false);
@@ -95,7 +95,7 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
             return;
         }
         current = request;
-        if (request.EventType == DHWorldEventType.Reward)
+        if (request.Style == DHWorldEventPresentationStyle.ConditionReward)
         {
             RenderReward(request);
             choicePanel.SetActive(false);
@@ -117,6 +117,13 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
         current = null;
         rewardPanel.SetActive(false);
         choicePanel.SetActive(false);
+    }
+
+    private static bool IsConditionRewardOrChoiceRequest(DHWorldEventPresentationRequest request)
+    {
+        return request != null &&
+               (request.Style == DHWorldEventPresentationStyle.ConditionReward ||
+                request.Style == DHWorldEventPresentationStyle.ConditionChoice);
     }
 
     private static string Message(DHWorldEventPresentationRequest request)
