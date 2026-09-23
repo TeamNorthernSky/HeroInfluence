@@ -6,20 +6,21 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
 {
     public static DHWorldEventCatalog Instance { get; private set; }
 
-    [Header("Consume Event Tables")]
-    [SerializeField] private ConsumeNPCDataTable consumeNpcTable;
-    [SerializeField] private ConsumeConditionDataTable consumeConditionTable;
+    // 이벤트 데이터 테이블 V1.6. 소비형 결과는 시트 구조가 V1.3과 같아 ConsumeResultDataTable을 그대로 씁니다.
+    [Header("Consume Event Tables (V1.6)")]
+    [SerializeField] private ConsumeNPC1DataTable consumeNpcTableV16;
+    [SerializeField] private ConsumeCondition1DataTable consumeConditionTableV16;
     [SerializeField] private ConsumeResultDataTable consumeResultTable;
 
-    [Header("Reward Event Tables")]
-    [SerializeField] private RewardNPCDataTable rewardNpcTable;
-    [SerializeField] private RewardConditionDataTable rewardConditionTable;
+    [Header("Reward Event Tables (V1.6)")]
+    [SerializeField] private RewardNPC1DataTable rewardNpcTableV16;
+    [SerializeField] private RewardCondition1DataTable rewardConditionTableV16;
 
-    [Header("Choice Event Tables")]
-    [SerializeField] private ChoiceNPCDataTable choiceNpcTable;
-    [SerializeField] private ChoiceConditionDataTable choiceConditionTable;
-    [SerializeField] private ChoiceOptionDataTable choiceOptionTable;
-    [SerializeField] private ChoiceResultDataTable choiceResultTable;
+    [Header("Choice Event Tables (V1.6)")]
+    [SerializeField] private ChoiceNPC1DataTable choiceNpcTableV16;
+    [SerializeField] private ChoiceCondition1DataTable choiceConditionTableV16;
+    [SerializeField] private ChoiceOption1DataTable choiceOptionTableV16;
+    [SerializeField] private ChoiceResult1DataTable choiceResultTableV16;
 
     [Header("Settings")]
     [SerializeField] private bool loadOnAwake = true;
@@ -60,16 +61,16 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
     {
         ClearCache();
 
-        LoadChoiceOptions(choiceOptionTable);
-        LoadChoiceResults(choiceResultTable);
+        LoadChoiceOptions(choiceOptionTableV16);
+        LoadChoiceResults(choiceResultTableV16);
         LoadConsumeResults(consumeResultTable);
 
-        LoadConsumeNpcEvents(consumeNpcTable);
-        LoadConsumeConditionEvents(consumeConditionTable);
-        LoadRewardNpcEvents(rewardNpcTable);
-        LoadRewardConditionEvents(rewardConditionTable);
-        LoadChoiceNpcEvents(choiceNpcTable);
-        LoadChoiceConditionEvents(choiceConditionTable);
+        LoadConsumeNpcEvents(consumeNpcTableV16);
+        LoadConsumeConditionEvents(consumeConditionTableV16);
+        LoadRewardNpcEvents(rewardNpcTableV16);
+        LoadRewardConditionEvents(rewardConditionTableV16);
+        LoadChoiceNpcEvents(choiceNpcTableV16);
+        LoadChoiceConditionEvents(choiceConditionTableV16);
 
         isLoaded = true;
         Debug.Log($"[DHWorldEventCatalog] Loaded events={eventLookup.Count}, zones={eventsByZone.Count}, choiceResults={choiceResultsByGroupId.Count}.", this);
@@ -114,256 +115,6 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
         return true;
     }
 
-    private void LoadConsumeNpcEvents(ConsumeNPCDataTable table)
-    {
-        if (table == null)
-            return;
-
-        for (int i = 0; i < table.DataList.Count; i++)
-        {
-            ConsumeNPCData row = table.DataList[i];
-            if (row == null)
-                continue;
-
-            string eventId = NormalizeKey(row.world_event_id);
-            AddEvent(new DHWorldEventTemplate(
-                eventId,
-                row.zone_no,
-                DHWorldEventType.Consume,
-                DHWorldEventSourceType.Npc,
-                string.Empty,
-                row.npc_type,
-                row.world_event_description,
-                row.world_event_accept,
-                row.world_event_cancel,
-                row.world_event_proceed,
-                row.world_event_decline,
-                row.result_id,
-                row.note,
-                null,
-                null,
-                GetConsumeResults(row.world_event_id, row.result_id)));
-        }
-    }
-
-    private void LoadConsumeConditionEvents(ConsumeConditionDataTable table)
-    {
-        if (table == null)
-            return;
-
-        for (int i = 0; i < table.DataList.Count; i++)
-        {
-            ConsumeConditionData row = table.DataList[i];
-            if (row == null)
-                continue;
-
-            string eventId = NormalizeKey(row.world_event_id);
-            AddEvent(new DHWorldEventTemplate(
-                eventId,
-                row.zone_no,
-                DHWorldEventType.Consume,
-                DHWorldEventSourceType.Condition,
-                row.world_event_name,
-                row.npc_type,
-                row.world_event_description,
-                row.world_event_accept,
-                row.world_event_cancel,
-                row.world_event_proceed,
-                row.world_event_decline,
-                row.result_id,
-                row.note,
-                new[] { BuildCondition(row.trigger_condition_type, row.trigger_condition_target, row.trigger_condition_stat_type, row.trigger_condition_calculation_type, row.trigger_condition_operator.ToString(), row.trigger_condition_value) },
-                null,
-                GetConsumeResults(row.world_event_id, row.result_id)));
-        }
-    }
-
-    private void LoadRewardNpcEvents(RewardNPCDataTable table)
-    {
-        if (table == null)
-            return;
-
-        for (int i = 0; i < table.DataList.Count; i++)
-        {
-            RewardNPCData row = table.DataList[i];
-            if (row == null)
-                continue;
-
-            AddEvent(new DHWorldEventTemplate(
-                row.world_event_id,
-                row.zone_no,
-                DHWorldEventType.Reward,
-                DHWorldEventSourceType.Npc,
-                row.world_event_name,
-                row.npc_type,
-                row.world_event_description,
-                string.Empty,
-                string.Empty,
-                row.world_event_proceed,
-                string.Empty,
-                string.Empty,
-                row.note,
-                null,
-                null,
-                null,
-                BuildRewardEntries(row.reward_type_1, row.reward_amount_1, row.reward_type_2, row.reward_amount_2)));
-        }
-    }
-
-    private void LoadRewardConditionEvents(RewardConditionDataTable table)
-    {
-        if (table == null)
-            return;
-
-        for (int i = 0; i < table.DataList.Count; i++)
-        {
-            RewardConditionData row = table.DataList[i];
-            if (row == null)
-                continue;
-
-            AddEvent(new DHWorldEventTemplate(
-                row.world_event_id,
-                row.zone_no,
-                DHWorldEventType.Reward,
-                DHWorldEventSourceType.Condition,
-                row.world_event_name,
-                row.npc_type,
-                row.world_event_description,
-                string.Empty,
-                string.Empty,
-                row.world_event_proceed,
-                string.Empty,
-                string.Empty,
-                row.note,
-                new[] { BuildCondition(row.trigger_condition_type, row.trigger_condition_target, row.trigger_condition_stat_type, row.trigger_condition_calculation_type, row.trigger_condition_operator.ToString(), row.trigger_condition_value) },
-                null,
-                null,
-                BuildRewardEntries(row.reward_type_1, row.reward_amount_1, row.reward_type_2, row.reward_amount_2)));
-        }
-    }
-
-    private void LoadChoiceNpcEvents(ChoiceNPCDataTable table)
-    {
-        if (table == null)
-            return;
-
-        for (int i = 0; i < table.DataList.Count; i++)
-        {
-            ChoiceNPCData row = table.DataList[i];
-            if (row == null)
-                continue;
-
-            AddEvent(new DHWorldEventTemplate(
-                row.world_event_id,
-                row.zone_no,
-                DHWorldEventType.Choice,
-                DHWorldEventSourceType.Npc,
-                row.world_event_name,
-                row.npc_type,
-                row.world_event_description,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                row.note,
-                null,
-                GetChoiceList(row.world_event_id, row.choice_1_id, row.choice_2_id)));
-        }
-    }
-
-    private void LoadChoiceConditionEvents(ChoiceConditionDataTable table)
-    {
-        if (table == null)
-            return;
-
-        for (int i = 0; i < table.DataList.Count; i++)
-        {
-            ChoiceConditionData row = table.DataList[i];
-            if (row == null)
-                continue;
-
-            AddEvent(new DHWorldEventTemplate(
-                row.world_event_id,
-                row.zone_no,
-                DHWorldEventType.Choice,
-                DHWorldEventSourceType.Condition,
-                row.world_event_name,
-                row.npc_type,
-                row.world_event_description,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                row.note,
-                new[] { BuildCondition(row.trigger_condition_type, row.trigger_condition_target, row.trigger_condition_stat_type, row.trigger_condition_calculation_type, row.trigger_condition_operator.ToString(), row.trigger_condition_value) },
-                GetChoiceList(row.world_event_id, row.choice_1_id, row.choice_2_id)));
-        }
-    }
-
-    private void LoadChoiceOptions(ChoiceOptionDataTable table)
-    {
-        if (table == null)
-            return;
-
-        for (int i = 0; i < table.DataList.Count; i++)
-        {
-            ChoiceOptionData row = table.DataList[i];
-            if (row == null)
-                continue;
-
-            string eventId = NormalizeKey(row.world_event_id);
-            if (string.IsNullOrWhiteSpace(eventId))
-                continue;
-
-            if (!choicesByEventId.TryGetValue(eventId, out List<DHWorldEventChoiceTemplate> list))
-                choicesByEventId[eventId] = list = new List<DHWorldEventChoiceTemplate>();
-
-            list.Add(new DHWorldEventChoiceTemplate(
-                row.choice_id,
-                row.choice_text,
-                BuildCondition(row.enable_condition_type, row.enable_condition_target, row.enable_condition_unit, row.enable_condition_calculation_type, row.enable_condition_operator.ToString(), row.enable_condition_value),
-                row.use_ip_success_rate_bonus,
-                row.base_success_rate,
-                row.success_result_group_id,
-                row.failure_result_group_id,
-                row.note));
-        }
-    }
-
-    private void LoadChoiceResults(ChoiceResultDataTable table)
-    {
-        if (table == null)
-            return;
-
-        for (int i = 0; i < table.DataList.Count; i++)
-        {
-            ChoiceResultData row = table.DataList[i];
-            if (row == null)
-                continue;
-
-            string resultGroupId = NormalizeKey(row.result_group_id);
-            if (string.IsNullOrWhiteSpace(resultGroupId))
-                continue;
-
-            if (!choiceResultsByGroupId.TryGetValue(resultGroupId, out List<DHWorldEventResultTemplate> list))
-                choiceResultsByGroupId[resultGroupId] = list = new List<DHWorldEventResultTemplate>();
-
-            list.Add(new DHWorldEventResultTemplate(
-                DHWorldEventResultKind.ChoiceEffect,
-                resultGroupId,
-                row.effect_order,
-                row.target_scope,
-                row.effect_type,
-                row.effect_amount,
-                row.note));
-        }
-
-        foreach (List<DHWorldEventResultTemplate> list in choiceResultsByGroupId.Values)
-            list.Sort((a, b) => a.Order.CompareTo(b.Order));
-    }
-
     private void LoadConsumeResults(ConsumeResultDataTable table)
     {
         if (table == null)
@@ -387,6 +138,262 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
             AddConsumeEffect(list, DHWorldEventResultKind.ResourceCost, resultId, 2, row.cost_resource_type_2, row.cost_resource_amount_2, row.note);
             AddConsumeEffect(list, DHWorldEventResultKind.StatusEffect, resultId, 3, row.status_type_1, row.status_amount_per_event_1, row.note);
             AddConsumeEffect(list, DHWorldEventResultKind.StatusEffect, resultId, 4, row.status_type_2, row.status_amount_per_event_2, row.note);
+        }
+    }
+
+    // ─── V1.6 로더 ───────────────────────────────────────────────────────
+    // V1.6 시트 변경점:
+    //  - 조건형 3종: zone_no 삭제 → 0 (조건 이벤트는 GetAllEvents로 조회되어 구역 무관)
+    //  - 보상형/선택형 NPC형: world_event_name 삭제 → 빈 문자열 (UI 기본 제목 사용)
+    //  - 보상형: world_event_accept 추가, 선택형: world_event_cancel/decline 추가
+    //  - 선택지: success/failure_result_group_id → success/failure_choice_result_id 이름 변경
+    //  - 선택결과: effect_order 삭제 → 그룹 내 행 순서, world_event_accept 추가(미사용)
+
+    private void LoadConsumeNpcEvents(ConsumeNPC1DataTable table)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            ConsumeNPC1Data row = table.DataList[i];
+            if (row == null)
+                continue;
+
+            string eventId = NormalizeKey(row.world_event_id);
+            AddEvent(new DHWorldEventTemplate(
+                eventId,
+                row.zone_no,
+                DHWorldEventType.Consume,
+                DHWorldEventSourceType.Npc,
+                string.Empty,
+                row.npc_type,
+                row.world_event_description,
+                row.world_event_accept,
+                row.world_event_cancel,
+                row.world_event_proceed,
+                row.world_event_decline,
+                row.result_id,
+                row.note,
+                null,
+                null,
+                GetConsumeResults(row.world_event_id, row.result_id)));
+        }
+    }
+
+    private void LoadConsumeConditionEvents(ConsumeCondition1DataTable table)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            ConsumeCondition1Data row = table.DataList[i];
+            if (row == null)
+                continue;
+
+            string eventId = NormalizeKey(row.world_event_id);
+            AddEvent(new DHWorldEventTemplate(
+                eventId,
+                0,
+                DHWorldEventType.Consume,
+                DHWorldEventSourceType.Condition,
+                row.world_event_name,
+                row.npc_type,
+                row.world_event_description,
+                row.world_event_accept,
+                row.world_event_cancel,
+                row.world_event_proceed,
+                row.world_event_decline,
+                row.result_id,
+                row.note,
+                new[] { BuildCondition(row.trigger_condition_type, row.trigger_condition_target, row.trigger_condition_stat_type, row.trigger_condition_calculation_type, row.trigger_condition_operator.ToString(), row.trigger_condition_value) },
+                null,
+                GetConsumeResults(row.world_event_id, row.result_id)));
+        }
+    }
+
+    private void LoadRewardNpcEvents(RewardNPC1DataTable table)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            RewardNPC1Data row = table.DataList[i];
+            if (row == null)
+                continue;
+
+            AddEvent(new DHWorldEventTemplate(
+                row.world_event_id,
+                row.zone_no,
+                DHWorldEventType.Reward,
+                DHWorldEventSourceType.Npc,
+                string.Empty,
+                row.npc_type,
+                row.world_event_description,
+                row.world_event_accept,
+                string.Empty,
+                row.world_event_proceed,
+                string.Empty,
+                string.Empty,
+                row.note,
+                null,
+                null,
+                null,
+                BuildRewardEntries(row.reward_type_1, row.reward_amount_1, row.reward_type_2, row.reward_amount_2)));
+        }
+    }
+
+    private void LoadRewardConditionEvents(RewardCondition1DataTable table)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            RewardCondition1Data row = table.DataList[i];
+            if (row == null)
+                continue;
+
+            AddEvent(new DHWorldEventTemplate(
+                row.world_event_id,
+                0,
+                DHWorldEventType.Reward,
+                DHWorldEventSourceType.Condition,
+                row.world_event_name,
+                row.npc_type,
+                row.world_event_description,
+                row.world_event_accept,
+                string.Empty,
+                row.world_event_proceed,
+                string.Empty,
+                string.Empty,
+                row.note,
+                new[] { BuildCondition(row.trigger_condition_type, row.trigger_condition_target, row.trigger_condition_stat_type, row.trigger_condition_calculation_type, row.trigger_condition_operator.ToString(), row.trigger_condition_value) },
+                null,
+                null,
+                BuildRewardEntries(row.reward_type_1, row.reward_amount_1, row.reward_type_2, row.reward_amount_2)));
+        }
+    }
+
+    private void LoadChoiceNpcEvents(ChoiceNPC1DataTable table)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            ChoiceNPC1Data row = table.DataList[i];
+            if (row == null)
+                continue;
+
+            AddEvent(new DHWorldEventTemplate(
+                row.world_event_id,
+                row.zone_no,
+                DHWorldEventType.Choice,
+                DHWorldEventSourceType.Npc,
+                string.Empty,
+                row.npc_type,
+                row.world_event_description,
+                string.Empty,
+                row.world_event_cancel,
+                string.Empty,
+                row.world_event_decline,
+                string.Empty,
+                row.note,
+                null,
+                GetChoiceList(row.world_event_id, row.choice_1_id, row.choice_2_id)));
+        }
+    }
+
+    private void LoadChoiceConditionEvents(ChoiceCondition1DataTable table)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            ChoiceCondition1Data row = table.DataList[i];
+            if (row == null)
+                continue;
+
+            AddEvent(new DHWorldEventTemplate(
+                row.world_event_id,
+                0,
+                DHWorldEventType.Choice,
+                DHWorldEventSourceType.Condition,
+                row.world_event_name,
+                row.npc_type,
+                row.world_event_description,
+                string.Empty,
+                row.world_event_cancel,
+                string.Empty,
+                row.world_event_decline,
+                string.Empty,
+                row.note,
+                new[] { BuildCondition(row.trigger_condition_type, row.trigger_condition_target, row.trigger_condition_stat_type, row.trigger_condition_calculation_type, row.trigger_condition_operator.ToString(), row.trigger_condition_value) },
+                GetChoiceList(row.world_event_id, row.choice_1_id, row.choice_2_id)));
+        }
+    }
+
+    private void LoadChoiceOptions(ChoiceOption1DataTable table)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            ChoiceOption1Data row = table.DataList[i];
+            if (row == null)
+                continue;
+
+            string eventId = NormalizeKey(row.world_event_id);
+            if (string.IsNullOrWhiteSpace(eventId))
+                continue;
+
+            if (!choicesByEventId.TryGetValue(eventId, out List<DHWorldEventChoiceTemplate> list))
+                choicesByEventId[eventId] = list = new List<DHWorldEventChoiceTemplate>();
+
+            list.Add(new DHWorldEventChoiceTemplate(
+                row.choice_id,
+                row.choice_text,
+                BuildCondition(row.enable_condition_type, row.enable_condition_target, row.enable_condition_unit, row.enable_condition_calculation_type, row.enable_condition_operator.ToString(), row.enable_condition_value),
+                row.use_ip_success_rate_bonus,
+                row.base_success_rate,
+                row.success_choice_result_id,
+                row.failure_choice_result_id,
+                row.note));
+        }
+    }
+
+    private void LoadChoiceResults(ChoiceResult1DataTable table)
+    {
+        if (table == null)
+            return;
+
+        for (int i = 0; i < table.DataList.Count; i++)
+        {
+            ChoiceResult1Data row = table.DataList[i];
+            if (row == null)
+                continue;
+
+            string resultGroupId = NormalizeKey(row.result_group_id);
+            if (string.IsNullOrWhiteSpace(resultGroupId))
+                continue;
+
+            if (!choiceResultsByGroupId.TryGetValue(resultGroupId, out List<DHWorldEventResultTemplate> list))
+                choiceResultsByGroupId[resultGroupId] = list = new List<DHWorldEventResultTemplate>();
+
+            // effect_order 컬럼이 없어졌으므로 그룹 내 행 순서(1부터)를 order로 사용합니다.
+            list.Add(new DHWorldEventResultTemplate(
+                DHWorldEventResultKind.ChoiceEffect,
+                resultGroupId,
+                list.Count + 1,
+                row.target_scope,
+                row.effect_type,
+                row.effect_amount,
+                row.note));
         }
     }
 
