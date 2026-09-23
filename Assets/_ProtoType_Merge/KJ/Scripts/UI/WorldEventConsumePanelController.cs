@@ -84,7 +84,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
     private void OnPresentationChanged(DHWorldEventPresentationRequest request)
     {
-        if (request == null || request.EventType != DHWorldEventType.Consume)
+        if (!IsConditionConsumeRequest(request))
             return;
 
         currentRequest = request;
@@ -95,11 +95,17 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
 
     private void OnPresentationClosed(DHWorldEventPresentationRequest request)
     {
-        if (request != null && request.EventType != DHWorldEventType.Consume)
+        if (currentRequest == null || (request != null && request.WorldEventId != currentRequest.WorldEventId))
             return;
 
         currentRequest = null;
         panelRoot.SetActive(false);
+    }
+
+    private static bool IsConditionConsumeRequest(DHWorldEventPresentationRequest request)
+    {
+        return request != null &&
+               request.Style == DHWorldEventPresentationStyle.ConditionConsume;
     }
 
     private void Render(DHWorldEventPresentationRequest request)

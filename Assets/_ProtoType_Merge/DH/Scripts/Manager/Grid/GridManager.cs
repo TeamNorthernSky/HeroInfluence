@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.SceneManagement;
 
 public enum EnemyEncounterZoneState
 {
@@ -81,6 +82,12 @@ public class GridManager : MonoBehaviour
     public Transform GroundRaycastTransform => landTransform;
     public static Vector2Int[] Directions8 => directions8;
 
+    private static bool IsTutorialSceneActive()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        return activeScene.IsValid() && activeScene.name.StartsWith("Tutorial", System.StringComparison.Ordinal);
+    }
+
     private void Awake()
     {
         if (cellSize <= 0f)
@@ -92,13 +99,13 @@ public class GridManager : MonoBehaviour
         if (itemRegistry == null)
             itemRegistry = FindFirstObjectByType<ItemRegistry>();
 
-        if (tutorialItemRegistry == null)
+        if (IsTutorialSceneActive() && tutorialItemRegistry == null)
             tutorialItemRegistry = FindFirstObjectByType<TutorialItemRegistry>();
 
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
 
-        if (tutorialEnemyRegistry == null)
+        if (IsTutorialSceneActive() && tutorialEnemyRegistry == null)
             tutorialEnemyRegistry = FindFirstObjectByType<TutorialEnemyRegistry>();
 
         if (heroUnionRegistry == null)
@@ -137,13 +144,13 @@ public class GridManager : MonoBehaviour
         if (itemRegistry == null)
             itemRegistry = FindFirstObjectByType<ItemRegistry>();
 
-        if (tutorialItemRegistry == null)
+        if (IsTutorialSceneActive() && tutorialItemRegistry == null)
             tutorialItemRegistry = FindFirstObjectByType<TutorialItemRegistry>();
 
         if (enemyRegistry == null)
             enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
 
-        if (tutorialEnemyRegistry == null)
+        if (IsTutorialSceneActive() && tutorialEnemyRegistry == null)
             tutorialEnemyRegistry = FindFirstObjectByType<TutorialEnemyRegistry>();
 
         if (outpostRegistry == null)
@@ -359,6 +366,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetTutorialItemObjectAtGrid(Vector2Int grid, out TutorialItemObject itemObject)
     {
         itemObject = null;
+        if (!IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<TutorialItemObject> items = tutorialItemRegistry != null
             ? tutorialItemRegistry.Items
@@ -425,6 +434,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetTutorialBuildingObjectAtGrid(Vector2Int grid, out TutorialBuildingObject building, Transform ignoredTransform = null)
     {
         building = null;
+        if (!IsTutorialSceneActive())
+            return false;
 
         TutorialBuildingObject[] buildings = FindObjectsByType<TutorialBuildingObject>(FindObjectsSortMode.None);
         for (int i = 0; i < buildings.Length; i++)
@@ -453,6 +464,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetTutorialOutpostInteractionOwner(Vector2Int grid, out TutorialOutpostObject outpost)
     {
         outpost = null;
+        if (!IsTutorialSceneActive())
+            return false;
 
         TutorialOutpostObject[] outposts = FindObjectsByType<TutorialOutpostObject>(FindObjectsSortMode.None);
         for (int i = 0; i < outposts.Length; i++)
@@ -690,6 +703,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetTutorialEnemyObjectAtGrid(Vector2Int grid, out TutorialEnemyObject enemy, Transform ignoredTransform = null)
     {
         enemy = null;
+        if (!IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<TutorialEnemyObject> enemies = tutorialEnemyRegistry != null
             ? tutorialEnemyRegistry.Enemies
@@ -787,20 +802,24 @@ public class GridManager : MonoBehaviour
             return EnemyEncounterZoneState.EnemyOccupied;
         }
 
-        IReadOnlyList<TutorialEnemyObject> tutorialEnemies = tutorialEnemyRegistry != null
-            ? tutorialEnemyRegistry.Enemies
-            : FindObjectsByType<TutorialEnemyObject>(FindObjectsSortMode.None);
-        for (int i = 0; i < tutorialEnemies.Count; i++)
+        IReadOnlyList<TutorialEnemyObject> tutorialEnemies = null;
+        if (IsTutorialSceneActive())
         {
-            TutorialEnemyObject enemy = tutorialEnemies[i];
-            if (enemy == null || !enemy.isActiveAndEnabled)
-                continue;
+            tutorialEnemies = tutorialEnemyRegistry != null
+                ? tutorialEnemyRegistry.Enemies
+                : FindObjectsByType<TutorialEnemyObject>(FindObjectsSortMode.None);
+            for (int i = 0; i < tutorialEnemies.Count; i++)
+            {
+                TutorialEnemyObject enemy = tutorialEnemies[i];
+                if (enemy == null || !enemy.isActiveAndEnabled)
+                    continue;
 
-            if (enemy.GetCurrentGrid() != grid)
-                continue;
+                if (enemy.GetCurrentGrid() != grid)
+                    continue;
 
-            owner = enemy;
-            return EnemyEncounterZoneState.EnemyOccupied;
+                owner = enemy;
+                return EnemyEncounterZoneState.EnemyOccupied;
+            }
         }
 
         int ownerCount = 0;
@@ -812,11 +831,14 @@ public class GridManager : MonoBehaviour
             return EnemyEncounterZoneState.OverlappedEnemyZone;
         }
 
-        CountTutorialEnemyInteractionOwners(grid, tutorialEnemies, ref ownerCount, ref singleOwner);
-        if (ownerCount > 1)
+        if (tutorialEnemies != null)
         {
-            owner = null;
-            return EnemyEncounterZoneState.OverlappedEnemyZone;
+            CountTutorialEnemyInteractionOwners(grid, tutorialEnemies, ref ownerCount, ref singleOwner);
+            if (ownerCount > 1)
+            {
+                owner = null;
+                return EnemyEncounterZoneState.OverlappedEnemyZone;
+            }
         }
 
         if (ownerCount == 1)
@@ -884,6 +906,9 @@ public class GridManager : MonoBehaviour
     public bool TryGetTutorialEnemyEncounterZoneOwner(Vector2Int grid, out TutorialEnemyObject enemy)
     {
         enemy = null;
+        if (!IsTutorialSceneActive())
+            return false;
+
         if (GetGridEnemyEncounterZoneState(grid, out IGridEnemyObject owner) != EnemyEncounterZoneState.SingleEnemyZone)
             return false;
 
