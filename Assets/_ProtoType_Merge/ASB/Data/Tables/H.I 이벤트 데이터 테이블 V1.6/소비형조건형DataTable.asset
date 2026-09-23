@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e81b1301ab299bf41851ab551e7390b3, type: 3}
+  m_Name: "\uC18C\uBE44\uD615\uC870\uAC74\uD615DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - world_event_id: C_IF_001
+    trigger_condition_type: 0
+    trigger_condition_target: 2
+    trigger_condition_stat_type: 0
+    trigger_condition_calculation_type: 0
+    trigger_condition_operator: 0
+    trigger_condition_value: 20
+    world_event_name: "\uBCF4\uC11D\uC774 \uBC18\uC9DD!"
+    npc_type: 4
+    world_event_description: "\uC6B0\uB9AC \uBCF4\uC11D\uC774 \uC65C\uC774\uB9AC
+      \uB9CE\uC544\uC84C\uC9C0 \uC880 \uC368\uB3C4 \uB418\uACA0\uB294\uB370?"
+    world_event_accept: "\uB09C \uBCF4\uC11D\uC774 \uC88B\uC544!"
+    world_event_cancel: "\uADF8\uB798 \uC57C\uAEF4\uC368\uC57C\uC9C0"
+    world_event_proceed: "\uBE68\uB9AC\uC4F0\uC790!"
+    world_event_decline: "\uC544\uB2C8! \uADF8\uB798\uB3C4 \uC544\uAEF4\uC57C\uC9C0"
+    result_id: C_IF_01_001_Result_001
+    note: 

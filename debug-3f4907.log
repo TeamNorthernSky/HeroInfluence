@@ -322,3 +322,8 @@
 {"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_start","data":{"path":"C:/HeroInfluencetmp/Assets/_ProtoType_Merge/ASB/Data/Excel/1구역 전투 테이블 V4.0.xlsx"},"timestamp":1789529213820}
 {"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1789529213820}
 {"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_done","data":{"sheetCount":2},"timestamp":1789529214143}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1790124989582}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1790125033452}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_start","data":{"path":"C:/HeroInfluencetmp/Assets/_ProtoType_Merge/ASB/Data/Excel/H.I 알파 전투 밸런스 데이터 테이블 V5.1.xlsx"},"timestamp":1790125036732}
+{"sessionId":"3f4907","hypothesisId":"H3","location":"ExcelParser.Parse","message":"dto_type_assembly","data":{"fullName":"ASB.ExcelImport.Editor.ExcelSheetParseResult","assembly":"ASB.ExcelImport.Editor"},"timestamp":1790125036733}
+{"sessionId":"3f4907","hypothesisId":"H1","location":"ExcelEditorWindow.BakeData","message":"step1_done","data":{"sheetCount":6},"timestamp":1790125037642}

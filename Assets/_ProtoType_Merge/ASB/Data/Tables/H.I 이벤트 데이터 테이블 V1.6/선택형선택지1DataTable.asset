@@ -1,0 +1,330 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 282998106573b5240bb05e8206554037, type: 3}
+  m_Name: "\uC120\uD0DD\uD615\uC120\uD0DD\uC9C01DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - choice_id: S_NPC_01_001_C1
+    world_event_id: S_NPC_01_001
+    choice_text: "\uC815\uC815\uB2F9\uB2F9\uD55C \uC2B9\uBD80\uB2E4!"
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 3300%p
+    success_choice_result_id: S_NPC_01_001_C1_S
+    failure_choice_result_id: S_NPC_01_001_C1_F
+    note: 
+  - choice_id: S_NPC_01_001_C2
+    world_event_id: S_NPC_01_001
+    choice_text: "\uB0B4 \uAC00\uC704\uB294 \uC8FC\uBA39\uB3C4 \uC774\uAE34\uB2E4!"
+    enable_condition_unit: 1
+    enable_condition_type: 2
+    enable_condition_target: 4
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 50
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 2500%p
+    success_choice_result_id: S_NPC_01_001_C2_S
+    failure_choice_result_id: S_NPC_01_001_C2_F
+    note: 
+  - choice_id: S_NPC_01_002_C1
+    world_event_id: S_NPC_01_002
+    choice_text: "\uD78C\uD2B8\uB97C \uD558\uB098 \uC4F0\uACA0\uC2B5\uB2C8\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 7000%p
+    success_choice_result_id: S_NPC_01_002_C1_S
+    failure_choice_result_id: S_NPC_01_002_C1_F
+    note: 
+  - choice_id: S_NPC_01_002_C2
+    world_event_id: S_NPC_01_002
+    choice_text: "\uD78C\uD2B8 \uC5C6\uC774 \uBC14\uB85C \uB9DE\uD788\uACA0\uC2B5\uB2C8\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 4000%p
+    success_choice_result_id: S_NPC_01_002_C2_S
+    failure_choice_result_id: S_NPC_01_002_C2_F
+    note: 
+  - choice_id: S_NPC_01_003_C1
+    world_event_id: S_NPC_01_003
+    choice_text: "\uC0C1\uC790\uB97C \uD754\uB4E4\uC5B4\uBCF4\uACE0 \uACE0\uB978\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 7000%p
+    success_choice_result_id: S_NPC_01_003_C1_S
+    failure_choice_result_id: S_NPC_01_003_C1_F
+    note: 
+  - choice_id: S_NPC_01_003_C2
+    world_event_id: S_NPC_01_003
+    choice_text: "\uB0B4 \uAC10\uC740 \uD655\uC2E4\uD574. \uBC14\uB85C \uACE0\uB978\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 4000%p
+    success_choice_result_id: S_NPC_01_003_C2_S
+    failure_choice_result_id: S_NPC_01_003_C2_F
+    note: 
+  - choice_id: S_NPC_01_004_C1
+    world_event_id: S_NPC_01_004
+    choice_text: "\uC218\uB808\uB97C \uD568\uAED8 \uC218\uB9AC\uD55C\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 7000%p
+    success_choice_result_id: S_NPC_01_004_C1_S
+    failure_choice_result_id: S_NPC_01_004_C1_F
+    note: 
+  - choice_id: S_NPC_01_004_C2
+    world_event_id: S_NPC_01_004
+    choice_text: "\uC0C8 \uBD80\uD488\uC744 \uC0AC\uC11C \uC644\uBCBD\uD558\uAC8C
+      \uACE0\uCE5C\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 4000%p
+    success_choice_result_id: S_NPC_01_004_C2_S
+    failure_choice_result_id: S_NPC_01_004_C2_F
+    note: 
+  - choice_id: S_NPC_01_005_C1
+    world_event_id: S_NPC_01_005
+    choice_text: "\uB450\uAEBC\uC6CC \uBCF4\uC774\uB294 \uBD09\uD22C\uB97C \uACE0\uB978\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 7000%p
+    success_choice_result_id: S_NPC_01_005_C1_S
+    failure_choice_result_id: S_NPC_01_005_C1_F
+    note: 
+  - choice_id: S_NPC_01_005_C2
+    world_event_id: S_NPC_01_005
+    choice_text: "\uBC18\uC9DD\uC774\uB294 \uC791\uC740 \uC0C1\uC790\uB97C \uACE0\uB978\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 4000%p
+    success_choice_result_id: S_NPC_01_005_C2_S
+    failure_choice_result_id: S_NPC_01_005_C2_F
+    note: 
+  - choice_id: S_NPC_04_001_C1
+    world_event_id: S_NPC_04_001
+    choice_text: "\uD655\uC778\uB41C \uC774\uB3D9 \uACBD\uB85C\uB9CC \uCD94\uC801\uD55C\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 6000%p
+    success_choice_result_id: S_NPC_04_001_C1_S
+    failure_choice_result_id: S_NPC_04_001_C1_F
+    note: 
+  - choice_id: S_NPC_04_001_C2
+    world_event_id: S_NPC_04_001
+    choice_text: "\uB188\uC758 \uC740\uC2E0\uCC98\uB85C \uBC14\uB85C \uCCD0\uB4E4\uC5B4\uAC04\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 3000%p
+    success_choice_result_id: S_NPC_04_001_C2_S
+    failure_choice_result_id: S_NPC_04_001_C2_F
+    note: 
+  - choice_id: S_NPC_04_002_C1
+    world_event_id: S_NPC_04_002
+    choice_text: "\uAE30\uBCF8 \uD6C8\uB828\uBD80\uD130 \uCC28\uADFC\uCC28\uADFC
+      \uBC1B\uB294\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 6000%p
+    success_choice_result_id: S_NPC_04_002_C1_S
+    failure_choice_result_id: S_NPC_04_002_C1_F
+    note: 
+  - choice_id: S_NPC_04_002_C2
+    world_event_id: S_NPC_04_002
+    choice_text: "\uCD5C\uACE0 \uB09C\uC774\uB3C4 \uD6C8\uB828\uC5D0 \uB3C4\uC804\uD55C\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 3000%p
+    success_choice_result_id: S_NPC_04_002_C2_S
+    failure_choice_result_id: S_NPC_04_002_C2_F
+    note: 
+  - choice_id: S_NPC_04_003_C1
+    world_event_id: S_NPC_04_003
+    choice_text: "\uC785\uAD6C \uC8FC\uBCC0\uC758 \uC218\uC815\uB9CC \uCC44\uAD74\uD55C\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 6000%p
+    success_choice_result_id: S_NPC_04_003_C1_S
+    failure_choice_result_id: S_NPC_04_003_C1_F
+    note: 
+  - choice_id: S_NPC_04_003_C2
+    world_event_id: S_NPC_04_003
+    choice_text: "\uAC00\uC7A5 \uAE4A\uC740 \uACF3\uC758 \uAD11\uB9E5\uAE4C\uC9C0
+      \uB4E4\uC5B4\uAC04\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 3000%p
+    success_choice_result_id: S_NPC_04_003_C2_S
+    failure_choice_result_id: S_NPC_04_003_C2_F
+    note: 
+  - choice_id: S_NPC_04_004_C1
+    world_event_id: S_NPC_04_004
+    choice_text: "\uB0A8\uC740 \uBCF4\uAE09\uD488\uC744 \uC548\uC804\uD55C \uACF3\uC73C\uB85C
+      \uC62E\uAE34\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 6000%p
+    success_choice_result_id: S_NPC_04_004_C1_S
+    failure_choice_result_id: S_NPC_04_004_C1_F
+    note: 
+  - choice_id: S_NPC_04_004_C2
+    world_event_id: S_NPC_04_004
+    choice_text: "\uB3C4\uC801\uC744 \uCD94\uACA9\uD574 \uBE7C\uC557\uAE34 \uBB3C\uC790\uB97C
+      \uB418\uCC3E\uB294\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 3000%p
+    success_choice_result_id: S_NPC_04_004_C2_S
+    failure_choice_result_id: S_NPC_04_004_C2_F
+    note: 
+  - choice_id: S_NPC_04_005_C1
+    world_event_id: S_NPC_04_005
+    choice_text: "\uC815\uD574\uC9C4 \uBCF4\uC218\uB9CC \uBC1B\uACE0 \uAC70\uB798\uB97C
+      \uB3D5\uB294\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 6000%p
+    success_choice_result_id: S_NPC_04_005_C1_S
+    failure_choice_result_id: S_NPC_04_005_C1_F
+    note: 
+  - choice_id: S_NPC_04_005_C2
+    world_event_id: S_NPC_04_005
+    choice_text: "\uBCF4\uC218 \uB300\uC2E0 \uBA54\uB2EC\uC744 \uAC78\uACE0 \uCD94\uAC00
+      \uD611\uC0C1\uD55C\uB2E4."
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 3000%p
+    success_choice_result_id: S_NPC_04_005_C2_S
+    failure_choice_result_id: S_NPC_04_005_C2_F
+    note: 
+  - choice_id: S_IF_001_C1
+    world_event_id: S_IF_001
+    choice_text: "\uC544 \uC2EC\uC2EC\uD558\uB2E4"
+    enable_condition_unit: 0
+    enable_condition_type: 0
+    enable_condition_target: 0
+    enable_condition_calculation_type: 0
+    enable_condition_operator: 0
+    enable_condition_value: 0
+    use_ip_success_rate_bonus: 0
+    base_success_rate: 4000%p
+    success_choice_result_id: S_IF_001_C1_S
+    failure_choice_result_id: S_IF_001_C1_F
+    note: 
+  - choice_id: S_IF_001_C2
+    world_event_id: S_IF_001
+    choice_text: "\uBB54\uAC00 \uC624\uB298\uC740 \uC880 \uC870\uC6A9\uD55C\uB370\u2026"
+    enable_condition_unit: 5
+    enable_condition_type: 2
+    enable_condition_target: 4
+    enable_condition_calculation_type: 1
+    enable_condition_operator: 0
+    enable_condition_value: 30
+    use_ip_success_rate_bonus: 1
+    base_success_rate: 2500%p
+    success_choice_result_id: S_IF_001_C2_S
+    failure_choice_result_id: S_IF_001_C2_F
+    note: 

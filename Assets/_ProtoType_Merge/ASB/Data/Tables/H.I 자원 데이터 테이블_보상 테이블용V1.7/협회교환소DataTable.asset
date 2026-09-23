@@ -1,0 +1,231 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ce4851c997eaf34eace0f60463893f7, type: 3}
+  m_Name: "\uD611\uD68C\uAD50\uD658\uC18CDataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - exchange_room_level: 1
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    get_resource_type: 1
+    get_resource_amount: 3
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    get_resource_type: 2
+    get_resource_amount: 5
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    get_resource_type: 3
+    get_resource_amount: 10
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 1
+    cost_resource_amount: 5
+    get_resource_type: 1
+    get_resource_amount: 5
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 1
+    cost_resource_amount: 5
+    get_resource_type: 2
+    get_resource_amount: 3
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 1
+    cost_resource_amount: 5
+    get_resource_type: 3
+    get_resource_amount: 3
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 2
+    cost_resource_amount: 5
+    get_resource_type: 1
+    get_resource_amount: 2
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 2
+    cost_resource_amount: 5
+    get_resource_type: 2
+    get_resource_amount: 5
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 2
+    cost_resource_amount: 5
+    get_resource_type: 3
+    get_resource_amount: 10
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 3
+    cost_resource_amount: 5
+    get_resource_type: 1
+    get_resource_amount: 1
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 3
+    cost_resource_amount: 5
+    get_resource_type: 2
+    get_resource_amount: 3
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 3
+    cost_resource_amount: 5
+    get_resource_type: 3
+    get_resource_amount: 5
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    get_resource_type: 1
+    get_resource_amount: 4
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    get_resource_type: 2
+    get_resource_amount: 6
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    get_resource_type: 3
+    get_resource_amount: 11
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 1
+    cost_resource_amount: 5
+    get_resource_type: 1
+    get_resource_amount: 6
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 1
+    cost_resource_amount: 5
+    get_resource_type: 2
+    get_resource_amount: 4
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 1
+    cost_resource_amount: 5
+    get_resource_type: 3
+    get_resource_amount: 4
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 2
+    cost_resource_amount: 5
+    get_resource_type: 1
+    get_resource_amount: 3
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 2
+    cost_resource_amount: 5
+    get_resource_type: 2
+    get_resource_amount: 6
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 2
+    cost_resource_amount: 5
+    get_resource_type: 3
+    get_resource_amount: 11
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 3
+    cost_resource_amount: 5
+    get_resource_type: 1
+    get_resource_amount: 2
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 3
+    cost_resource_amount: 5
+    get_resource_type: 2
+    get_resource_amount: 4
+    note: 
+  - exchange_room_level: 2
+    cost_resource_type: 3
+    cost_resource_amount: 5
+    get_resource_type: 3
+    get_resource_amount: 6
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    get_resource_type: 1
+    get_resource_amount: 6
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    get_resource_type: 2
+    get_resource_amount: 9
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    get_resource_type: 3
+    get_resource_amount: 15
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 1
+    cost_resource_amount: 5
+    get_resource_type: 1
+    get_resource_amount: 8
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 1
+    cost_resource_amount: 5
+    get_resource_type: 2
+    get_resource_amount: 7
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 1
+    cost_resource_amount: 5
+    get_resource_type: 3
+    get_resource_amount: 8
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 2
+    cost_resource_amount: 5
+    get_resource_type: 1
+    get_resource_amount: 5
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 2
+    cost_resource_amount: 5
+    get_resource_type: 2
+    get_resource_amount: 9
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 2
+    cost_resource_amount: 5
+    get_resource_type: 3
+    get_resource_amount: 15
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 3
+    cost_resource_amount: 5
+    get_resource_type: 1
+    get_resource_amount: 4
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 3
+    cost_resource_amount: 5
+    get_resource_type: 2
+    get_resource_amount: 7
+    note: 
+  - exchange_room_level: 1
+    cost_resource_type: 3
+    cost_resource_amount: 5
+    get_resource_type: 3
+    get_resource_amount: 10
+    note: 

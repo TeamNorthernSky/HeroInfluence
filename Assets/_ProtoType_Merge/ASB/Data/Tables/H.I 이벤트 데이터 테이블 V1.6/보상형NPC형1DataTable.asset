@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b219addbeb80e144a7ef6fd7ad2adca, type: 3}
+  m_Name: "\uBCF4\uC0C1\uD615NPC\uD6151DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - world_event_id: R_NPC_01_001
+    zone_no: 1
+    npc_type: 3
+    world_event_description: "\uC544\uC774\uAD6C~ \uB0B4 \uC0C8\uB07C. \uC694\uC998
+      \uBC25\uC740 \uBA39\uACE0 \uB2E4\uB2C8\uB294\uAC70\uC57C? \uC774\uAC78\uB85C
+      \uCE5C\uAD6C\uB4E4\uC774\uB791 \uB9DB\uC788\uB294 \uAC70 \uC0AC\uBA39\uC5B4"
+    world_event_proceed: "\uAC10\uC0AC\uD569\uB2C8\uB2E4~ ^^"
+    world_event_accept: "\uC544\uC720~ \uADC0\uC5EC\uC6B4 \uB0B4 \uC0C8\uB07C"
+    reward_type_1: 1
+    reward_amount_1: 700
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 
+  - world_event_id: R_NPC_01_002
+    zone_no: 1
+    npc_type: 1
+    world_event_description: "\uD788\uC5B4\uB85C\uAC00 \uC9C4\uB2E4\uB294 \uAC74\u2026.
+      \uB098\uB85C\uC120 \uC0C1\uC0C1\uC870\uCC28 \uD560 \uC218 \uC5C6\uC5B4"
+    world_event_proceed: "\uB2F9\uC5F0\uD558\uC9C0 \uC6B0\uB9AC\uB294 \uCD5C\uAC15\uC778\uB370"
+    world_event_accept: "\uC5ED\uC2DC \uD788\uC5B4\uB85C"
+    reward_type_1: 3
+    reward_amount_1: 3
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 
+  - world_event_id: R_NPC_01_003
+    zone_no: 1
+    npc_type: 4
+    world_event_description: "\uAC1C\uC131\uC774 \uC5C6\uB294 \uC2DC\uBBFC\uC774\uB77C\uB3C4
+      \uD788\uC5B4\uB85C\uAC00 \uB420 \uC218 \uC788\uC744\uAE4C\uC694?"
+    world_event_proceed: "\uB10C \uD788\uC5B4\uB85C\uAC00 \uB420\uC218\uC788\uB2E4!"
+    world_event_accept: "\uC5F4\uC2EC\uD788 \uB178\uB825\uD560\uAED8\uC694"
+    reward_type_1: 0
+    reward_amount_1: 10
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 
+  - world_event_id: R_NPC_04_001
+    zone_no: 4
+    npc_type: 0
+    world_event_description: "\uC624\uB798 \uB3D9\uC548 \uC9C0\uCF1C\uBD24\uC5B4\uC694.
+      \uD798\uB4E0 \uC0C1\uD669\uC5D0\uC11C\uB3C4 \uBB3C\uB7EC\uC11C\uC9C0 \uC54A\uB294
+      \uBAA8\uC2B5"
+    world_event_proceed: "\uAE30\uB300\uC5D0 \uBD80\uD765\uD558\uACA0\uC2B5\uB2C8\uB2E4"
+    world_event_accept: "\uACC4\uC18D\uD574\uC11C \uC9C0\uCF1C\uBCF4\uACA0\uC2B5\uB2C8\uB2E4."
+    reward_type_1: 0
+    reward_amount_1: 15
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 
+  - world_event_id: R_NPC_04_002
+    zone_no: 4
+    npc_type: 1
+    world_event_description: "\uC2F8\uC6B0\uB294 \uAC70 \uBD24\uC5B4\uC694! \uBE4C\uB7F0
+      \uB140\uC11D\uB4E4\uC744 \uC2DC\uC6D0\uD558\uAC8C \uB0A0\uB9AC\uB294 \uAC70\uC694!"
+    world_event_proceed: "\uD558\uD558\uD558\uD558. \uAC10\uC0AC\uD569\uB2C8\uB2E4."
+    world_event_accept: "\uC791\uC9C0\uB9CC \uAC10\uC0AC\uD55C \uB9C8\uC74C\uC5D0
+      \uB4DC\uB9AC\uB294 \uAC70\uC5D0\uC694"
+    reward_type_1: 1
+    reward_amount_1: 1500
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 
+  - world_event_id: R_NPC_04_003
+    zone_no: 4
+    npc_type: 2
+    world_event_description: "\uBE4C\uB7F0\uC740 \uC65C \uACC4\uC18D \uD788\uC5B4\uB85C\uB791
+      \uC2F8\uC6B0\uB294 \uAC78\uAE4C\uC5EC"
+    world_event_proceed: "\uC138\uC0C1 \uC774\uCE58\uAC00 \uADF8\uB798"
+    world_event_accept: "\uADF8\uB7F0 \uB140\uC11D\uB4E4\uC740 \uC544\uB9C8 \uCD5C\uC57D\uCCB4
+      \uB140\uC11D\uB4E4\uC774\uACA0\uC9C0"
+    reward_type_1: 3
+    reward_amount_1: 5
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 
+  - world_event_id: R_NPC_04_004
+    zone_no: 4
+    npc_type: 3
+    world_event_description: "\uAE38\uC5D0\uC11C \uC608\uC05C \uB3CC\uC744 \uC8FC\uC6E0\uB294\uB370
+      \uC790\uAFB8 \uBE5B\uC774 \uB098\uC11C \uC790\uB124\uB4E4\uC774 \uC880 \uAC00\uC9C0\uACE0
+      \uAC00"
+    world_event_proceed: "\uC800\uD76C\uAC00 \uCC98\uB9AC\uD574 \uB4DC\uB9B4\uAED8\uC694"
+    world_event_accept: "\uADF8\uB798\uADF8\uB798. \uBB38\uC81C\uAC00 \uC0DD\uACA8\uB3C4
+      \uB2E4\uC2DC \uC8FC\uC9C0\uB9D0\uACE0"
+    reward_type_1: 2
+    reward_amount_1: 5
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 
+  - world_event_id: R_NPC_04_005
+    zone_no: 4
+    npc_type: 3
+    world_event_description: "\uC81C \uAE30\uC900\uC5D0\uC11C \uC5EC\uB7EC\uBD84\uB4E4\uC740
+      \uD569\uACA9\uC810\uC774\uB124\uC694. \uB2E4\uC18C \uC544\uC26C\uC6B4 \uC810\uC774
+      \uB9CE\uC9C0\uB9CC \uC2E0\uC778\uC774\uB77C\uB294 \uC810\uC744 \uAC10\uC548\uD558\uBA74\u2026"
+    world_event_proceed: "\uBB50\uC5D0 \uB300\uD55C \uD569\uACA9\uC774\uC8E0?"
+    world_event_accept: "\uBCC4 \uAC74 \uC544\uB2C8\uC5D0\uC694. \uC800\uB9CC\uC758
+      \uD3C9\uAC00\uAC00 \uC788\uC73C\uB2C8\uAE50\uC694."
+    reward_type_1: 4
+    reward_amount_1: 5
+    reward_type_2: 0
+    reward_amount_2: 0
+    note: 

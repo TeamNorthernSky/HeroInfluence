@@ -1,0 +1,126 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f871cfb0ea8a72478b90dbbf3ae7f0f, type: 3}
+  m_Name: "\uC18C\uBE44\uD615\uACB0\uACFCDataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - world_event_id: C_NPC_01_001
+    result_id: C_NPC_01_001_Result_01
+    cost_resource_type_1: 0
+    cost_resource_amount_1: 300
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 0
+    status_amount_per_event_1: 3
+    status_type_2: 0
+    status_amount_per_event_2: 0
+    note: 
+  - world_event_id: C_NPC_01_002
+    result_id: C_NPC_01_001_Result_02
+    cost_resource_type_1: 0
+    cost_resource_amount_1: 300
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 1
+    status_amount_per_event_1: 5
+    status_type_2: 0
+    status_amount_per_event_2: 3
+    note: 
+  - world_event_id: C_NPC_01_003
+    result_id: C_NPC_01_001_Result_03
+    cost_resource_type_1: 0
+    cost_resource_amount_1: 400
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 4
+    status_amount_per_event_1: 3
+    status_type_2: 0
+    status_amount_per_event_2: 0
+    note: 
+  - world_event_id: C_NPC_01_004
+    result_id: C_NPC_01_001_Result_04
+    cost_resource_type_1: 1
+    cost_resource_amount_1: 5
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 1
+    status_amount_per_event_1: 10
+    status_type_2: 0
+    status_amount_per_event_2: 0
+    note: 
+  - world_event_id: C_NPC_04_001
+    result_id: C_NPC_04_001_Result_001
+    cost_resource_type_1: 0
+    cost_resource_amount_1: 1300
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 0
+    status_amount_per_event_1: 10
+    status_type_2: 4
+    status_amount_per_event_2: 5
+    note: "\uC790\uBCF8\uC801\uC73C\uB85C \uC5EC\uC720\uAC00 \uC788\uB2E4\uACE0 \uC0DD\uAC01\uD558\uB294
+      \uC720\uC800\uB97C \uC704\uD55C \uC774\uBCA4\uD2B8"
+  - world_event_id: C_NPC_04_002
+    result_id: C_NPC_04_001_Result_002
+    cost_resource_type_1: 1
+    cost_resource_amount_1: 7
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 1
+    status_amount_per_event_1: 15
+    status_type_2: 0
+    status_amount_per_event_2: 0
+    note: 
+  - world_event_id: C_NPC_04_003
+    result_id: C_NPC_04_001_Result_003
+    cost_resource_type_1: 2
+    cost_resource_amount_1: 7
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 4
+    status_amount_per_event_1: 5
+    status_type_2: 0
+    status_amount_per_event_2: 0
+    note: 
+  - world_event_id: C_NPC_04_004
+    result_id: C_NPC_04_001_Result_004
+    cost_resource_type_1: 0
+    cost_resource_amount_1: 1000
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 0
+    status_amount_per_event_1: 7
+    status_type_2: 0
+    status_amount_per_event_2: 0
+    note: 
+  - world_event_id: C_NPC_04_005
+    result_id: C_NPC_04_001_Result_005
+    cost_resource_type_1: 0
+    cost_resource_amount_1: 1100
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 4
+    status_amount_per_event_1: 3
+    status_type_2: 0
+    status_amount_per_event_2: 0
+    note: 
+  - world_event_id: C_IF_01_001
+    result_id: C_IF_01_001_Result_001
+    cost_resource_type_1: 2
+    cost_resource_amount_1: 3
+    cost_resource_type_2: 0
+    cost_resource_amount_2: 0
+    status_type_1: 4
+    status_amount_per_event_1: 3
+    status_type_2: 0
+    status_amount_per_event_2: 0
+    note: 

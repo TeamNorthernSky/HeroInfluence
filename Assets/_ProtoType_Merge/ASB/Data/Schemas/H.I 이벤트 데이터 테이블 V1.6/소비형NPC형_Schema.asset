@@ -1,0 +1,220 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
+  m_Name: "\uC18C\uBE44\uD615NPC\uD615_Schema"
+  m_EditorClassIdentifier: 
+  schemaGuid: 2743eadd37a04c99972214d245f5df70
+  sourceWorkbookGuid: 390e6cab2bd1c634c9011503bdf5c486
+  sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/H.I \uC774\uBCA4\uD2B8
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.6.xlsx"
+  workbookFileName: "H.I \uC774\uBCA4\uD2B8 \uB370\uC774\uD130 \uD14C\uC774\uBE14
+    V1.6"
+  sourceSheetName: "\uC18C\uBE44\uD615 (NPC\uD615)"
+  physicalSheetId: 07ab9f72165d7f67995cf455420c838bf7bfaaf8
+  logicalSheetKey: "\uC18C\uBE44\uD615npc\uD615"
+  templateClassName: ConsumeNPC1
+  templateSignature: dict=0|world_event_id:String:Comma|zone_no:Int:Comma|npc_type:Int:Comma|world_event_description:String:Comma|world_event_proceed:String:Comma|world_event_decline:String:Comma|world_event_accept:String:Comma|world_event_cancel:String:Comma|result_id:String:Comma|note:String:Comma
+  className: ConsumeNPC1
+  outputAssetName: "\uC18C\uBE44\uD615NPC\uD615DataTable"
+  targetTableAssetGuid: 4291ad8c8a7e26f40a6c77e3d4c9c5dc
+  targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I \uC774\uBCA4\uD2B8
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V1.6/\uC18C\uBE44\uD615NPC\uD615DataTable.asset"
+  headerRowIndex: 1
+  dataStartRowIndex: 2
+  useDictionary: 0
+  requireUniqueKey: 0
+  duplicateKeyPolicy: 0
+  Columns:
+  - sourceColumnIndex: 0
+    sourceHeaderName: world_event_id
+    fieldName: world_event_id
+    displayName: world_event_id
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: zone_no
+    fieldName: zone_no
+    displayName: zone_no
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: npc_type
+    fieldName: npc_type
+    displayName: npc_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: world_event_description
+    fieldName: world_event_description
+    displayName: world_event_description
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: world_event_proceed
+    fieldName: world_event_proceed
+    displayName: world_event_proceed
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: world_event_decline
+    fieldName: world_event_decline
+    displayName: world_event_decline
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: world_event_accept
+    fieldName: world_event_accept
+    displayName: world_event_accept
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: world_event_cancel
+    fieldName: world_event_cancel
+    displayName: world_event_cancel
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 8
+    sourceHeaderName: result_id
+    fieldName: result_id
+    displayName: result_id
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 9
+    sourceHeaderName: note
+    fieldName: note
+    displayName: note
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 0
+    sourceHeaderName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 id"
+    fieldName: Field_01
+    displayName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 id"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: "\uAD6C\uC5ED\uBA85"
+    fieldName: "\uAD6C\uC5ED\uBA85"
+    displayName: "\uAD6C\uC5ED\uBA85"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: "NPC\n(0 \uC131\uC778 \uB0A8\uC131 / 1 \uC131\uC778 \uC5EC\uC131
+      / 2 \uD560\uBA38\uB2C8 / 3 \uC18C\uB144 )\n(\uC6D4\uB4DC \uBC30\uCE58 \uD655\uC778\uC6A9)"
+    fieldName: Field_03
+    displayName: "NPC\n(0 \uC131\uC778 \uB0A8\uC131 / 1 \uC131\uC778 \uC5EC\uC131
+      / 2 \uD560\uBA38\uB2C8 / 3 \uC18C\uB144 )\n(\uC6D4\uB4DC \uBC30\uCE58 \uD655\uC778\uC6A9)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 \uD45C\uC2DC \uB300\uC0AC"
+    fieldName: Field_04
+    displayName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 \uD45C\uC2DC \uB300\uC0AC"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: "\uC774\uBCA4\uD2B8 \uC9C4\uD589"
+    fieldName: Field_05
+    displayName: "\uC774\uBCA4\uD2B8 \uC9C4\uD589"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 5
+    sourceHeaderName: "\uC774\uBCA4\uD2B8 \uBBF8\uC9C4\uD589"
+    fieldName: Field_06
+    displayName: "\uC774\uBCA4\uD2B8 \uBBF8\uC9C4\uD589"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 6
+    sourceHeaderName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 \uD45C\uC2DC \uC218\uB77D
+      \uB300\uC0AC"
+    fieldName: Field_07
+    displayName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 \uD45C\uC2DC \uC218\uB77D \uB300\uC0AC"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 7
+    sourceHeaderName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 \uD45C\uC2DC \uCDE8\uC18C
+      \uB300\uC0AC"
+    fieldName: Field_08
+    displayName: "\uC6D4\uB4DC \uC774\uBCA4\uD2B8 \uD45C\uC2DC \uCDE8\uC18C \uB300\uC0AC"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 8
+    sourceHeaderName: "\uACB0\uACFC ID"
+    fieldName: Field_09
+    displayName: "\uACB0\uACFC ID"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 9
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0

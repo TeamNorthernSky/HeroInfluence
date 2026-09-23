@@ -1,0 +1,204 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e375cdd432d62dd4fb22faf1370af0fc, type: 3}
+  m_Name: "\uD611\uD68C\uAC74\uC124DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - room_type: "\uBCF8\uBD80 Lv.2"
+    action_type: 1
+    to_room_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3000
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 10
+    room_action_condition: "\uC5C6\uC74C"
+    note: 
+  - room_type: "\uBCF8\uBD80 Lv.3"
+    action_type: 1
+    to_room_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uBCF8\uBD80 Lv.2"
+    note: Max
+  - room_type: "\uD64D\uBCF4\uBD80 Lv.1"
+    action_type: 0
+    to_room_level: 1
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2000
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 10
+    room_action_condition: "\uC5C6\uC74C"
+    note: 
+  - room_type: "\uD64D\uBCF4\uBD80 Lv.2"
+    action_type: 1
+    to_room_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 10
+    room_action_condition: "\uD64D\uBCF4\uBD80 Lv.1"
+    note: 
+  - room_type: "\uD64D\uBCF4\uBD80 Lv.3"
+    action_type: 1
+    to_room_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uD64D\uBCF4\uBD80 Lv.2"
+    note: 
+  - room_type: "\uD64D\uBCF4\uBD80 Lv.4"
+    action_type: 1
+    to_room_level: 4
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uD64D\uBCF4\uBD80 Lv.3"
+    note: 
+  - room_type: "\uD64D\uBCF4\uBD80 Lv.5"
+    action_type: 1
+    to_room_level: 5
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 20
+    room_action_condition: "\uD64D\uBCF4\uBD80 Lv.4"
+    note: Max
+  - room_type: "\uACF5\uBC29 Lv.1"
+    action_type: 0
+    to_room_level: 1
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uD64D\uBCF4\uBD80 Lv.1"
+    note: 
+  - room_type: "\uACF5\uBC29 Lv.2"
+    action_type: 1
+    to_room_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uACF5\uBC29 Lv.1"
+    note: 
+  - room_type: "\uACF5\uBC29 Lv.3"
+    action_type: 1
+    to_room_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 20
+    room_action_condition: "\uACF5\uBC29 Lv.2"
+    note: 
+  - room_type: "\uACF5\uBC29 Lv.4"
+    action_type: 1
+    to_room_level: 4
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 4500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 20
+    room_action_condition: "\uACF5\uBC29 Lv.3"
+    note: Max
+  - room_type: "\uC5F0\uAD6C\uC18C Lv.1"
+    action_type: 0
+    to_room_level: 1
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uD64D\uBCF4\uBD80 Lv.1"
+    note: 
+  - room_type: "\uC5F0\uAD6C\uC18C Lv.2"
+    action_type: 1
+    to_room_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uC5F0\uAD6C\uC18C Lv.1"
+    note: 
+  - room_type: "\uC5F0\uAD6C\uC18C Lv.3"
+    action_type: 1
+    to_room_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 20
+    room_action_condition: "\uC5F0\uAD6C\uC18C Lv.2"
+    note: 
+  - room_type: "\uC5F0\uAD6C\uC18C Lv.4"
+    action_type: 1
+    to_room_level: 4
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 4500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 20
+    room_action_condition: "\uC5F0\uAD6C\uC18C Lv.3"
+    note: Max
+  - room_type: "\uAD50\uD658\uC18C Lv.1"
+    action_type: 0
+    to_room_level: 1
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uACF5\uBC29 Lv.1 + \uC5F0\uAD6C\uC18C Lv.1"
+    note: 
+  - room_type: "\uAD50\uD658\uC18C Lv.2"
+    action_type: 1
+    to_room_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uAD50\uD658\uC18C Lv.1"
+    note: 
+  - room_type: "\uAD50\uD658\uC18C Lv.3"
+    action_type: 1
+    to_room_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 20
+    room_action_condition: "\uAD50\uD658\uC18C Lv.2"
+    note: Max
+  - room_type: "\uD6C8\uB828\uC2E4 Lv.1"
+    action_type: 0
+    to_room_level: 1
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uACF5\uBC29 Lv.1 + \uC5F0\uAD6C\uC18C Lv.1"
+    note: 
+  - room_type: "\uD6C8\uB828\uC2E4 Lv.2"
+    action_type: 1
+    to_room_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 15
+    room_action_condition: "\uD6C8\uB828\uC2E4 Lv.1"
+    note: 
+  - room_type: "\uD6C8\uB828\uC2E4 Lv.3"
+    action_type: 1
+    to_room_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 3500
+    cost_resource_2_type: 3
+    cost_resource_2_amount: 20
+    room_action_condition: "\uD6C8\uB828\uC2E4 Lv.2"
+    note: Max
