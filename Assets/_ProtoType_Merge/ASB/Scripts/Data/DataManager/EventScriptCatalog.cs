@@ -39,7 +39,6 @@ public class EventScriptCatalog : MonoBehaviour
 
     [Header("Reward Tables")]
     [SerializeField] private MainSubEventRewardDataTable mainSubEventRewardTable;
-    [SerializeField] private WorldEventRewardDataTable worldEventRewardTable;
 
     [Header("Settings")]
     [SerializeField] private bool loadOnAwake       = true;
@@ -66,8 +65,6 @@ public class EventScriptCatalog : MonoBehaviour
         = new Dictionary<int, Dictionary<string, DHEventBattleUnitTemplate>>();
     private readonly Dictionary<int, MainSubEventRewardData> mainSubRewardLookup
         = new Dictionary<int, MainSubEventRewardData>();
-    private readonly Dictionary<int, WorldEventRewardData> worldRewardLookup
-        = new Dictionary<int, WorldEventRewardData>();
     private readonly Dictionary<int, DHEventRewardTemplate> rewardTemplateLookup
         = new Dictionary<int, DHEventRewardTemplate>();
 
@@ -303,27 +300,6 @@ public class EventScriptCatalog : MonoBehaviour
         return mainSubRewardLookup.TryGetValue(rewardId, out reward);
     }
 
-    public bool TryGetWorldEventReward(int rewardId, out WorldEventRewardData reward)
-    {
-        EnsureLoaded();
-        reward = null;
-        if (rewardId <= 0)
-            return false;
-
-        return worldRewardLookup.TryGetValue(rewardId, out reward);
-    }
-
-    public bool TryGetAnyEventReward(int rewardId, out MainSubEventRewardData mainSubReward, out WorldEventRewardData worldReward)
-    {
-        mainSubReward = null;
-        worldReward = null;
-
-        if (TryGetMainSubEventReward(rewardId, out mainSubReward))
-            return true;
-
-        return TryGetWorldEventReward(rewardId, out worldReward);
-    }
-
     public bool TryGetEventRewardTemplate(int rewardId, out DHEventRewardTemplate reward)
     {
         EnsureLoaded();
@@ -351,7 +327,6 @@ public class EventScriptCatalog : MonoBehaviour
         }
 
         LoadMainSubRewardTable(mainSubEventRewardTable, mainSubRewardLookup, rewardTemplateLookup, "Global", "Reward/MainSub");
-        LoadWorldRewardTable(worldEventRewardTable, worldRewardLookup, rewardTemplateLookup, "Global", "Reward/World");
 
         isLoaded = true;
         LogCatalogSummary();
@@ -613,37 +588,6 @@ public class EventScriptCatalog : MonoBehaviour
         }
     }
 
-    private void LoadWorldRewardTable(
-                                      WorldEventRewardDataTable table,
-                                      Dictionary<int, WorldEventRewardData> lookup,
-                                      Dictionary<int, DHEventRewardTemplate> templateLookup,
-                                      string zoneLabel, string source)
-    {
-        if (table == null)
-            return;
-
-        for (int i = 0; i < table.DataList.Count; i++)
-        {
-            WorldEventRewardData row = table.DataList[i];
-            if (row == null || row.reward_id <= 0)
-                continue;
-
-            if (lookup.ContainsKey(row.reward_id))
-            {
-                Debug.LogWarning($"[EventScriptCatalog] {zoneLabel} duplicate world reward id '{row.reward_id}'({source}) skipped.", this);
-                continue;
-            }
-
-            lookup.Add(row.reward_id, row);
-            AddRewardTemplate(
-                templateLookup,
-                ConvertWorldRewardTemplate(row),
-                row.reward_id,
-                zoneLabel,
-                source);
-        }
-    }
-
     private void AddRewardTemplate(
         Dictionary<int, DHEventRewardTemplate> lookup,
         DHEventRewardTemplate template,
@@ -677,27 +621,6 @@ public class EventScriptCatalog : MonoBehaviour
             row.gem,
             row.supply,
             row.EXP,
-            BuildCharacterRewards(
-                row.Rumina_MaxHP, row.Rumina_ATK, row.Rumina_DEF, row.Rumina_IP, row.Rumina_Heal,
-                row.Justice_MaxHP, row.Justice_ATK, row.Justice_Def, row.Justice_IP, row.Justice_Heal,
-                row.BlackBullet_MaxHP, row.BlackBullet_ATK, row.BlackBullet_Def, row.BlackBullet_IP, row.BlackBullet_Heal,
-                row.Nekoming_MaxHP, row.Nekoming_ATK, row.Nekoming_Def, row.Nekoming_IP, row.Nekoming_Heal));
-    }
-
-    private static DHEventRewardTemplate ConvertWorldRewardTemplate(WorldEventRewardData row)
-    {
-        if (row == null || row.reward_id <= 0)
-            return null;
-
-        return new DHEventRewardTemplate(
-            row.reward_id,
-            string.Empty,
-            DHEventRewardSourceType.World,
-            row.money,
-            row.medal,
-            row.gem,
-            0,
-            0,
             BuildCharacterRewards(
                 row.Rumina_MaxHP, row.Rumina_ATK, row.Rumina_DEF, row.Rumina_IP, row.Rumina_Heal,
                 row.Justice_MaxHP, row.Justice_ATK, row.Justice_Def, row.Justice_IP, row.Justice_Heal,
@@ -852,7 +775,7 @@ public class EventScriptCatalog : MonoBehaviour
             int battleUnitCount = battleUnitByZone.TryGetValue(zoneId, out var bu) ? bu.Count : 0;
             sb.Append($" | zone {zoneId}: Chat {chatCount}, Branch {branchCount}, BattleGroup {battleGroupCount}, BattleUnit {battleUnitCount}");
         }
-        sb.Append($" | Rewards: MainSub {mainSubRewardLookup.Count}, World {worldRewardLookup.Count}");
+        sb.Append($" | Rewards: MainSub {mainSubRewardLookup.Count}");
         Debug.Log(sb.ToString(), this);
     }
 
@@ -885,7 +808,6 @@ public class EventScriptCatalog : MonoBehaviour
         battleUnitByZone.Clear();
         battleUnitTemplateByZone.Clear();
         mainSubRewardLookup.Clear();
-        worldRewardLookup.Clear();
         rewardTemplateLookup.Clear();
         isLoaded = false;
     }

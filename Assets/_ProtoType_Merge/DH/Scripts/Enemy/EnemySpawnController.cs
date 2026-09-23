@@ -52,7 +52,7 @@ public class EnemySpawnController : MonoBehaviour
         // Gate threats are runtime mobile enemies. Their encounter chat is attached by GateThreatController.
         string sourceKey = $"gate_threat_{MapProgressKey.NormalizeSegment(zoneId)}";
         placementKey = CreateRuntimeEnemyPlacementKey(sourceKey);
-        if (TrySpawnAtGrid(spawnGrid, placementKey, ResolveSpawnEnemyGroupKey(enemyGroupKey), MapProgressKey.NormalizeSegment(zoneId), out spawnedEnemy))
+        if (TrySpawnAtGrid(spawnGrid, placementKey, ResolveSpawnEnemyGroupKey(zoneId, enemyGroupKey), MapProgressKey.NormalizeSegment(zoneId), out spawnedEnemy))
             return true;
 
         placementKey = string.Empty;
@@ -257,8 +257,11 @@ public class EnemySpawnController : MonoBehaviour
         if (string.IsNullOrWhiteSpace(groupKey))
             return false;
 
-        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
-        return templateCatalog != null && templateCatalog.TryGetEnemyGroupTemplate(groupKey, out _);
+        EventScriptCatalog eventCatalog = EventScriptCatalog.Instance;
+        int zoneNumber = ResolveZoneNumber(state.ZoneId);
+        return eventCatalog != null &&
+            zoneNumber > 0 &&
+            eventCatalog.TryGetBattleEnemyGroupTemplate(zoneNumber, groupKey, out _);
     }
 
     private static bool IsRuntimeEnemyState(EnemyWorldState state)
@@ -372,27 +375,36 @@ public class EnemySpawnController : MonoBehaviour
             return false;
         }
 
-        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
-        if (templateCatalog == null)
+        EventScriptCatalog eventCatalog = EventScriptCatalog.Instance;
+        if (eventCatalog == null)
         {
-            Debug.LogWarning("EnemySpawnController could not find a DHCsvTemplateCatalog in the scene.", this);
+            Debug.LogWarning("EnemySpawnController could not find an EventScriptCatalog in the scene.", this);
             return false;
         }
 
-        if (!templateCatalog.TryGetEnemyGroupTemplate(enemyGroupKey, out DHEnemyGroupTemplate groupData))
+        int zoneNumber = ResolveZoneNumber(zoneId);
+        if (zoneNumber <= 0)
         {
-            Debug.LogWarning($"EnemySpawnController could not find an enemy group CSV index '{enemyGroupKey}'.", this);
+            Debug.LogWarning($"EnemySpawnController could not resolve zone id '{zoneId}' for event battle enemy group '{enemyGroupKey}'.", this);
             return false;
         }
 
-        return enemyBootstrap.InitializeEnemyGroupFromCsv(
+        if (!eventCatalog.TryGetBattleEnemyGroupTemplate(zoneNumber, enemyGroupKey, out DHEventBattleGroupTemplate groupData))
+        {
+            Debug.LogWarning($"EnemySpawnController could not find an event battle enemy group '{enemyGroupKey}' in zone {zoneNumber}.", this);
+            return false;
+        }
+
+        return enemyBootstrap.InitializeEnemyGroupFromEventBattle(
             groupData,
+            eventCatalog,
             prefabRegistry,
             grid,
             behaviorType,
             placementKey,
             EnemyPlacementSource.Runtime,
             enemyGroupKey,
+            zoneNumber,
             enemyLevel,
             zoneId);
     }
@@ -443,21 +455,38 @@ public class EnemySpawnController : MonoBehaviour
         return lastUnderscore > 0 ? remainder.Substring(0, lastUnderscore) : remainder;
     }
 
-    private string ResolveSpawnEnemyGroupKey(string requestedEnemyGroupKey)
+    private static int ResolveZoneNumber(string zoneId)
     {
-        // Spawn-point chat data is independent; this fallback only decides which enemy group appears.
+        string normalized = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalized))
+            return 0;
+
+        if (normalized.StartsWith("zone_", System.StringComparison.Ordinal))
+            normalized = normalized.Substring("zone_".Length);
+
+        return int.TryParse(normalized, out int zoneNumber) ? Mathf.Max(0, zoneNumber) : 0;
+    }
+
+    private string ResolveSpawnEnemyGroupKey(string zoneId, string requestedEnemyGroupKey)
+    {
+        // Spawn-point chat data is independent; this fallback only decides which event battle group appears.
         string fallbackKey = string.IsNullOrWhiteSpace(runtimeEnemyGroupKey) ? "FEP002" : runtimeEnemyGroupKey.Trim();
         string normalizedRequest = string.IsNullOrWhiteSpace(requestedEnemyGroupKey) ? string.Empty : requestedEnemyGroupKey.Trim();
-        if (string.IsNullOrWhiteSpace(normalizedRequest))
+
+        EventScriptCatalog eventCatalog = EventScriptCatalog.Instance;
+        int zoneNumber = ResolveZoneNumber(zoneId);
+        if (eventCatalog == null || zoneNumber <= 0)
+            return string.IsNullOrWhiteSpace(normalizedRequest) ? fallbackKey : normalizedRequest;
+
+        if (!string.IsNullOrWhiteSpace(normalizedRequest) &&
+            eventCatalog.TryGetBattleEnemyGroupTemplate(zoneNumber, normalizedRequest, out _))
+            return normalizedRequest;
+
+        if (!string.IsNullOrWhiteSpace(fallbackKey) &&
+            eventCatalog.TryGetBattleEnemyGroupTemplate(zoneNumber, fallbackKey, out _))
             return fallbackKey;
 
-        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
-        if (templateCatalog == null)
-            return fallbackKey;
-
-        return templateCatalog.TryGetEnemyGroupTemplate(normalizedRequest, out _)
-            ? normalizedRequest
-            : fallbackKey;
+        return normalizedRequest;
     }
 
     private string ResolveRuntimeEnemyGroupKey(EnemyWorldState state)

@@ -32,7 +32,7 @@ public class InteractionCellOverlayController : MonoBehaviour
     [SerializeField] private Color playerInteractionColor = new Color(0f, 0.35f, 1f, 0.28f);
     [SerializeField] private Color neutralInteractionColor = new Color(1f, 0.85f, 0f, 0.28f);
     [SerializeField] private Color mainEventInteractionColor = new Color(0.2f, 0.9f, 1f, 0.32f);
-    [SerializeField, Range(0.1f, 1.2f)] private float cellScale = 0.92f;
+    [SerializeField, Range(1f, 1.2f)] private float cellScale = 1f;
     [SerializeField] private float yOffset = 0.035f;
     [SerializeField, Min(0.02f)] private float refreshInterval = 0.15f;
 
@@ -168,8 +168,8 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int i = 0; i < set.Cells.Count; i++)
             {
                 Vector2Int grid = set.Cells[i];
-                desiredCells[grid] = OverlayCellType.External;
-                externalDesiredCellColors[grid] = set.Color;
+                if (TrySetDesiredCell(grid, OverlayCellType.External))
+                    externalDesiredCellColors[grid] = set.Color;
             }
         }
     }
@@ -311,15 +311,19 @@ public class InteractionCellOverlayController : MonoBehaviour
         }
     }
 
-    private void TrySetDesiredCell(Vector2Int grid, OverlayCellType type)
+    private bool TrySetDesiredCell(Vector2Int grid, OverlayCellType type)
     {
+        if (gridManager != null && gridManager.HasObstacle(grid))
+            return false;
+
         if (desiredCells.TryGetValue(grid, out OverlayCellType existing)
             && GetPriority(existing) >= GetPriority(type))
         {
-            return;
+            return false;
         }
 
         desiredCells[grid] = type;
+        return true;
     }
 
     private void HideRemovedZones()
@@ -400,7 +404,7 @@ public class InteractionCellOverlayController : MonoBehaviour
         position.y = gridManager.GetCellSurfaceY(grid) + yOffset;
         instance.GameObject.transform.position = position;
 
-        float size = Mathf.Max(0.01f, gridManager.CellSize * cellScale);
+        float size = Mathf.Max(0.01f, gridManager.CellSize * Mathf.Max(1f, cellScale));
         instance.GameObject.transform.localScale = new Vector3(size, 1f, size);
 
         Color color = type == OverlayCellType.External && externalDesiredCellColors.TryGetValue(grid, out Color externalColor)
@@ -695,7 +699,7 @@ public class InteractionCellOverlayController : MonoBehaviour
 
     private void OnValidate()
     {
-        cellScale = Mathf.Clamp(cellScale, 0.1f, 1.2f);
+        cellScale = Mathf.Clamp(cellScale, 1f, 1.2f);
         refreshInterval = Mathf.Max(0.02f, refreshInterval);
         if (overlappedZoneColor.a < 0.35f)
             overlappedZoneColor.a = 0.55f;

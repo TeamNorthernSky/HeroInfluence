@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6473873035720111039}
   - component: {fileID: 8704672647974888147}
   - component: {fileID: 838628718244506848}
+  - component: {fileID: -623904025251878823}
   m_Layer: 7
   m_Name: Composite
   m_TagString: Untagged
@@ -50,8 +51,12 @@ MonoBehaviour:
   outpostType: 1
   resourcePerTurn: 5
   outpostState: 1
-  enemyDefenderGroupIndex: 30003
+  enemyDefenderGroupKey: 30003
   defenderEnemyId: 
+  zoneId: 
+  resolvedEnemyLevel: 1
+  defenderCombatChatId: 0
+  completionFlagName: 
   targetRenderer: {fileID: 6573462692588238153}
   unclaimedMaterial: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
   enemyClaimedMaterial: {fileID: 2100000, guid: 3e2ad20a4e069194e8b78dbdcc9a37f9,
@@ -96,6 +101,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0.3, z: 0}
+--- !u!114 &-623904025251878823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5376767619373386511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9221b28ec6414634eab27c502258aaa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &5546241060916931021
 PrefabInstance:
   m_ObjectHideFlags: 0
