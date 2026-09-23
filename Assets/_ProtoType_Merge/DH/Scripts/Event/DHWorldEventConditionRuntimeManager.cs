@@ -11,8 +11,7 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
 
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private TurnManager turnManager;
-    [SerializeField] private LevelZoneLayoutLoader layoutLoader;
-    [SerializeField] private bool conditionEventsEnabled;
+    [SerializeField] private bool conditionEventsEnabled = true;
     [SerializeField] private bool checkOnEnable = true;
     [SerializeField] private bool logChecks;
 
@@ -109,11 +108,11 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
             return false;
 
         PartyGridMover party = ResolvePlayerParty();
-        if (!TryResolveCurrentZoneNo(party, out int zoneNo))
+        if (party == null)
             return false;
 
         int currentTurn = turnManager != null ? turnManager.GetDay() : 0;
-        IReadOnlyList<DHWorldEventTemplate> events = catalog.GetEventsByZone(zoneNo);
+        IReadOnlyList<DHWorldEventTemplate> events = catalog.GetAllEvents();
         for (int i = 0; i < events.Count; i++)
         {
             DHWorldEventTemplate template = events[i];
@@ -152,9 +151,6 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
             subscribedToEconomy = true;
         }
 
-        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
-        LevelZoneLayoutLoader.RuntimeLayoutLoaded += HandleRuntimeLayoutLoaded;
-
         DHWorldEventRuntimeManager runtimeManager = DHWorldEventRuntimeManager.EnsureInstance();
         runtimeManager.PresentationClosed -= HandlePresentationClosed;
         runtimeManager.PresentationClosed += HandlePresentationClosed;
@@ -179,7 +175,6 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
             Game.Economy.OnResourceChanged -= HandleResourceChanged;
 
         subscribedToEconomy = false;
-        LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
 
         if (DHWorldEventRuntimeManager.Instance != null)
             DHWorldEventRuntimeManager.Instance.PresentationClosed -= HandlePresentationClosed;
@@ -195,42 +190,9 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
         RequestCheck();
     }
 
-    private void HandleRuntimeLayoutLoaded(LevelZoneLayoutLoader loader)
-    {
-        layoutLoader = loader;
-        RequestCheck();
-    }
-
     private void HandlePresentationClosed(DHWorldEventPresentationRequest _)
     {
         RequestCheck();
-    }
-
-    private bool TryResolveCurrentZoneNo(PartyGridMover party, out int zoneNo)
-    {
-        zoneNo = 0;
-        if (party == null)
-            return false;
-
-        ResolveReferences();
-        if (layoutLoader == null)
-            return false;
-
-        Vector2Int grid = party.GetCurrentGrid();
-        IReadOnlyList<LoadedLevelZoneData> zones = layoutLoader.LoadedZones;
-        for (int i = 0; i < zones.Count; i++)
-        {
-            LoadedLevelZoneData zone = zones[i];
-            Vector2Int min = zone.Anchor;
-            Vector2Int max = zone.Anchor + zone.Size - Vector2Int.one;
-            if (grid.x < min.x || grid.x > max.x || grid.y < min.y || grid.y > max.y)
-                continue;
-
-            zoneNo = ParseZoneNo(zone.ZoneId);
-            return zoneNo > 0;
-        }
-
-        return false;
     }
 
     private PartyGridMover ResolvePlayerParty()
@@ -245,26 +207,5 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
             partyRegistry = FindFirstObjectByType<PartyRegistry>();
         if (turnManager == null)
             turnManager = FindFirstObjectByType<TurnManager>();
-        if (layoutLoader == null)
-            layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
-    }
-
-    private static int ParseZoneNo(string zoneId)
-    {
-        string normalized = MapProgressKey.NormalizeSegment(zoneId);
-        if (string.IsNullOrWhiteSpace(normalized))
-            return 0;
-
-        int value = 0;
-        for (int i = 0; i < normalized.Length; i++)
-        {
-            char c = normalized[i];
-            if (!char.IsDigit(c))
-                continue;
-
-            value = checked(value * 10 + (c - '0'));
-        }
-
-        return value;
     }
 }

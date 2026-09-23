@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TutorialMovementConstraint : MonoBehaviour
 {
@@ -47,6 +48,7 @@ public class TutorialMovementConstraint : MonoBehaviour
     private PartyGridMover subscribedParty;
 
     public static bool IsActive =>
+        IsTutorialSceneActive() &&
         instance != null &&
         instance.isActiveAndEnabled &&
         instance.constraintEnabled;
@@ -58,6 +60,12 @@ public class TutorialMovementConstraint : MonoBehaviour
     }
 
     public int CurrentOrder => currentOrder;
+
+    private static bool IsTutorialSceneActive()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        return activeScene.IsValid() && activeScene.name.StartsWith("Tutorial", System.StringComparison.Ordinal);
+    }
 
     private void Awake()
     {
