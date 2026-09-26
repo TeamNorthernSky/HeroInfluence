@@ -339,6 +339,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: CommonMode_VillanGun
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 98f03289130be7c48b1d39972f69184b,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: ce8fd2279bcc92545b308c31cabadc81, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:

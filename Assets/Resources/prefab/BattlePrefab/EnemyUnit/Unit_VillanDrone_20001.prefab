@@ -821,7 +821,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   extraRise: 0
-  bobAmplitude: 0
+  bobAmplitude: 0.1
   bobSpeed: 2
   movementRoot: {fileID: 5025542702445776418}
   localForwardAxis: {x: 0, y: 0, z: 1}
@@ -830,6 +830,10 @@ MonoBehaviour:
   speedForMaxLean: 3
   leanSmooth: 8
   teleportDistanceThreshold: 3
+  moveThreshold: 0.05
+  attackAngle: -30
+  attackHoldSeconds: 0.3
+  attackPitchSpeed: 180
   recoilAngle: 12
   recoilSign: 1
   recoilDecay: 120

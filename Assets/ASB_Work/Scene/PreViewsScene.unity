@@ -324,7 +324,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabCatalog: {fileID: 0}
-  prefabManager: {fileID: 0}
+  prefabManager: {fileID: 1037960358}
   debugSpawnRequests: []
   spawnOnStart: 0
 --- !u!1 &253823589
@@ -1435,7 +1435,7 @@ MonoBehaviour:
   enemyPlace: {fileID: 912453333}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
-  playerUnitId: 10003
+  playerUnitId: 20001
   playerGridNumber: 101
   additionalPreviewPlayers:
   - unitId: 10003
@@ -1655,7 +1655,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabCatalog: {fileID: 0}
-  prefabManager: {fileID: 0}
+  prefabManager: {fileID: 1037960358}
   debugSpawnRequests: []
   spawnOnStart: 1
   _corpseRemovalDelay: 0.8
@@ -1857,7 +1857,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed22305be1ad20a4a8c78aeb341e4ad0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  catalog: {fileID: 0}
+  catalog: {fileID: 11400000, guid: 90e0c13cfe2c06146a477ef2871b0f2f, type: 2}
   prefabs:
   - index: 10001
     prefab: {fileID: 7563937201503599213, guid: 6a0b6b1fb6a9eaf4980f72999fcc7e51,

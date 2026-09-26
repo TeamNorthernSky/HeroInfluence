@@ -37,6 +37,12 @@ public class CharactorAnimationController : MonoBehaviour
     /// <summary>마지막 <see cref="WaitForSkillClipEnd"/> 호출에서 누적된 전투 배속 기준 대기 시간(초).</summary>
     public float LastClipWaitBattleSeconds { get; private set; }
 
+    /// <summary>
+    /// 스킬(공격) 애니메이션 재생이 요청될 때 발생. <b>Animator 유무와 무관하게</b> 발화하므로,
+    /// 클립이 없는 유닛(예: 드론)의 스크립트 기반 공격 연출 트리거로 쓸 수 있다. skill이 null이면 기본 공격.
+    /// </summary>
+    public event System.Action<SkillData> SkillAnimationPlayed;
+
     public bool IsHitEventReached { get; private set; }
 
     /// <summary>AniEvent_HoldBegin으로 애니가 프리즈(정지)된 상태인지. WaitHit 등 타임아웃 시계는 이 동안 멈춰야 한다.</summary>
@@ -263,6 +269,9 @@ public class CharactorAnimationController : MonoBehaviour
     /// </summary>
     public void PlaySkillAnimation(SkillData skill)
     {
+        // Animator/클립 없는 유닛도 공격 시점을 알 수 있도록 guard보다 먼저 발화한다.
+        SkillAnimationPlayed?.Invoke(skill);
+
         if (_animator == null)
         {
             return;
