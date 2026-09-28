@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 public enum DHEventRewardSourceType
 {
-    MainSub = 0,
-    World = 1
+    MainSub = 0
 }
 
 [Serializable]

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 494060577626947422}
   - component: {fileID: 8521844722801733158}
   - component: {fileID: 3579854251900779421}
+  - component: {fileID: -6611721590170301513}
   m_Layer: 10
   m_Name: HeroUnionZ2
   m_TagString: Untagged
@@ -97,6 +98,18 @@ MonoBehaviour:
   syncAnchorFromTransformOnAwake: 0
   drawOccupiedCellsGizmo: 1
   drawAdjacentCellsGizmo: 0
+--- !u!114 &-6611721590170301513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3392802035522500956}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9221b28ec6414634eab27c502258aaa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1445647386689708393
 PrefabInstance:
   m_ObjectHideFlags: 0

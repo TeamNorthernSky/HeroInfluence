@@ -158,7 +158,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
             return;
         }
 
-        ChatModalController.Show(eventBattle.ZoneId, modalChatId);
+        ChatModalController.Show(eventBattle.ZoneId, modalChatId, RequestWorldEventConditionCheck);
     }
 
     public static void AssignCurrentEventBattleSourceMainEvent(string eventKey)
@@ -172,6 +172,11 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
             return;
 
         context.EventBattle.SourceMainEventKey = normalizedKey;
+    }
+
+    private static void RequestWorldEventConditionCheck()
+    {
+        DHWorldEventConditionRuntimeManager.EnsureInstance()?.RequestCheck();
     }
 
     public static void SetPendingMainEventSource(string eventKey)

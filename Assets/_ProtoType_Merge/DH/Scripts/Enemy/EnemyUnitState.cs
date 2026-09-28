@@ -33,6 +33,33 @@ public class EnemyUnitState : MonoBehaviour
         SetIncapacitated(false);
     }
 
+    public void InitializeFromTemplate(DHEventBattleUnitTemplate template)
+    {
+        if (template == null)
+            return;
+
+        baseStats = new StatBlock(
+            template.BaseMaxHp,
+            template.BaseAtk,
+            template.BaseDef,
+            0f,
+            template.Speed,
+            template.CriticalRate,
+            0f,
+            template.CounterRate);
+
+        StatBlock levelupStats = new StatBlock(
+            template.LevelGrowthMaxHp,
+            template.LevelGrowthAtk,
+            template.LevelGrowthDef,
+            0f,
+            0f);
+
+        ingameStats = UnitStatCalculator.CalculateLevelAdjustedBaseStats(baseStats, levelupStats, Level);
+        currentHp = Mathf.Max(0f, ingameStats.HP);
+        SetIncapacitated(false);
+    }
+
     public void SetUnitTemplateKey(string nextUnitTemplateKey)
     {
         unitTemplateKey = string.IsNullOrWhiteSpace(nextUnitTemplateKey)

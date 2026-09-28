@@ -24,6 +24,11 @@ namespace JC.Indicators
 
         private static readonly List<JcMovementIndicatorController> Controllers = new List<JcMovementIndicatorController>();
         private readonly List<Vector3> points = new List<Vector3>();
+        private readonly List<Vector3> rawPoints = new List<Vector3>(), terrainPoints = new List<Vector3>();
+        private readonly JcIndicatorTerrainPath terrainPath = new JcIndicatorTerrainPath();
+        private readonly JcIndicatorGroundShadow pathProjection = new JcIndicatorGroundShadow(), markerProjection = new JcIndicatorGroundShadow();
+        private int rawReachable;
+        private Vector3 previousShadowOffset;
         private readonly JcIndicatorPathMesh pathBuilder = new JcIndicatorPathMesh();
         private readonly JcIndicatorMarkerMesh markerBuilder = new JcIndicatorMarkerMesh();
         private JcMovementIndicatorSettings previousMarkerSettings;
@@ -100,19 +105,18 @@ namespace JC.Indicators
         public void RenderPath(IReadOnlyList<Vector3> path, int reachable)
         {
             int newReachable = Mathf.Clamp(reachable, 0, Mathf.Max(0, path.Count - 1));
-            bool changed = points.Count != path.Count || reachableSegments != newReachable;
-            if (!changed) for (int i = 0; i < path.Count; i++) if (points[i] != path[i]) { changed = true; break; }
-            bool sameDestination = hasPath && path.Count >= 2 && points.Count >= 2
-                && (path[path.Count - 1] - points[points.Count - 1]).sqrMagnitude < .000001f;
+            bool changed = rawPoints.Count != path.Count || rawReachable != newReachable;
+            if (!changed) for (int i = 0; i < path.Count; i++) if (rawPoints[i] != path[i]) { changed = true; break; }
+            bool sameDestination = hasPath && path.Count >= 2 && rawPoints.Count >= 2
+                && (path[path.Count - 1] - rawPoints[rawPoints.Count - 1]).sqrMagnitude < .000001f;
             if (!sameDestination) flickerInitialized = false;
-            points.Clear(); pathLength = 0;
+            rawPoints.Clear();
             for (int i = 0; i < path.Count; i++)
             {
-                points.Add(path[i]);
-                if (i > 0) pathLength += Vector2.Distance(new Vector2(path[i - 1].x, path[i - 1].z), new Vector2(path[i].x, path[i].z));
+                rawPoints.Add(path[i]);
             }
-            reachableSegments = newReachable;
-            hasPath = points.Count >= 2 && pathLength > .00001f; geometryDirty |= changed;
+            rawReachable = newReachable;
+            hasPath = rawPoints.Count >= 2; geometryDirty |= changed;
         }
         public void HidePath()
         {
@@ -143,6 +147,18 @@ namespace JC.Indicators
             }
             if (originalMarkerRenderer != null) originalMarkerRenderer.forceRenderingOff = true;
             var s = Settings;
+            // 등록된 셀 표면만 사용하므로 건물이나 캐릭터를 높이로 잘못 인식하지 않는다.
+            if (hasPath)
+            {
+                float radius = s.lineWidth + (s.dashGlowStrength > 0 ? 2 * s.dashGlowWidth : 0);
+                pathLength = terrainPath.Build(rawPoints, rawReachable, gridManager, s.terrainRampLength,
+                    radius, terrainPoints, out int terrainReachable);
+                bool changed = points.Count != terrainPoints.Count || reachableSegments != terrainReachable;
+                if (!changed) for (int i = 0; i < points.Count; i++)
+                    if (points[i] != terrainPoints[i]) { changed = true; break; }
+                if (changed) { points.Clear(); points.AddRange(terrainPoints); geometryDirty = true; }
+                reachableSegments = terrainReachable;
+            }
             float size = gridManager.CellSize * s.markerSize;
             if (!markerGeometryBuilt || !SameMarkerGeometry(s, previousMarkerSettings) || previousMarkerSize != size)
             {
@@ -151,14 +167,25 @@ namespace JC.Indicators
             }
             float lift = s.floatHeight + s.bobAmplitude * Mathf.Sin(clock * s.bobFrequency * Mathf.PI * 2);
             Vector3 shadowOffset = new Vector3(Mathf.Cos(s.shadowAngle * Mathf.Deg2Rad), 0, Mathf.Sin(s.shadowAngle * Mathf.Deg2Rad)) * s.shadowDistance;
-            bool showPath = hasPath && pathRenderer.isActiveAndEnabled;
+            bool showPath = hasPath && pathLength > .00001f && pathRenderer.isActiveAndEnabled;
             UpdateFlicker(s, clock, showPath);
             var pulse = new JcIndicatorPulse(s, flickerFrontRemaining, flickerDirection, flickerInitialized && showPath);
             bool showMarker = destinationMarker.gameObject.activeInHierarchy;
             Vector3 basePosition = destinationMarker.position;
-            if (geometryDirty || previousWidth != s.lineWidth || previousSoftness != s.shadowSoftness)
+            basePosition.y = JcIndicatorTerrainPath.SurfaceHeight(gridManager, basePosition, size * .5f - .0001f)
+                + JcIndicatorTerrainPath.Clearance;
+            bool rebuildShadow = geometryDirty || previousWidth != s.lineWidth || previousSoftness != s.shadowSoftness
+                || previousShadowOffset != shadowOffset || pathProjection.TerrainChanged(gridManager);
+            bool rebuildMarkerShadow = previousSoftness != s.shadowSoftness || previousShadowOffset != shadowOffset
+                || size != previousMarkerSize || basePosition != previousMarkerPosition || !markerGeometryBuilt
+                || markerShadowMesh.vertexCount == 0 || markerProjection.TerrainChanged(gridManager);
+            pathShadow.transform.position = shadowOffset;
+            markerShadow.transform.position = basePosition + shadowOffset;
+            markerShadow.transform.localScale = Vector3.one * size;
+            if (rebuildShadow)
             {
                 pathBuilder.Build(shadowMesh, points, reachableSegments, s.lineWidth * .5f + s.shadowSoftness + .006f);
+                pathProjection.Project(shadowMesh, pathShadow.transform.localToWorldMatrix, gridManager);
                 previousWidth = s.lineWidth; previousSoftness = s.shadowSoftness;
             }
             bool moving = clock != previousVisualClock && s.flowSpeed > 0;
@@ -169,24 +196,26 @@ namespace JC.Indicators
                 pathBuilder.UpdateLift(pathMesh, glowMesh, pulse, s.flickerLiftHeight);
             previousPathSettings = s; previousVisualClock = clock; previousPulseFront = flickerFrontRemaining;
             previousMarkerActive = showMarker; previousMarkerPosition = basePosition; previousMarkerSize = size;
+            previousShadowOffset = shadowOffset;
             geometryDirty = false;
             pathVisual.enabled = showPath && s.opacity > 0;
             pathShadow.enabled = showPath && s.opacity * s.shadowOpacity > 0;
             pathGlow.enabled = showPath && s.opacity > 0 && s.dashGlowStrength > 0 && s.dashGlowWidth > 0;
             pathVisual.transform.position = Vector3.up * lift;
             pathGlow.transform.position = Vector3.up * lift;
-            pathShadow.transform.position = shadowOffset - Vector3.up * .005f;
 
             markerVisual.enabled = showMarker && s.opacity > 0;
             markerShadow.enabled = showMarker && s.opacity * s.shadowOpacity > 0;
             markerVisual.transform.position = basePosition + Vector3.up * (Mathf.Max(0, lift + s.markerHeightOffset) + .003f
                 + s.flickerLiftHeight * pulse.Evaluate(0));
-            markerShadow.transform.position = basePosition + shadowOffset - Vector3.up * .005f;
             markerVisual.transform.localScale = Vector3.one * size;
             // Quad UV extends beyond the square so even maximum blur has enough geometry.
             float extent = .5f + (s.shadowSoftness + .006f) / size;
-            markerShadow.transform.localScale = Vector3.one * size;
-            if (markerShadowMesh.bounds.extents.x < extent || markerShadowMesh.bounds.extents.x > extent + .001f) BuildMarkerShadowMesh(extent);
+            if (rebuildMarkerShadow)
+            {
+                BuildMarkerShadowMesh(extent);
+                markerProjection.Project(markerShadowMesh, markerShadow.transform.localToWorldMatrix, gridManager);
+            }
             Apply(pathVisual, s, false, false, 1, clock);
             Apply(pathShadow, s, false, true, 1, clock);
             Apply(pathGlow, s, false, false, 1, clock);

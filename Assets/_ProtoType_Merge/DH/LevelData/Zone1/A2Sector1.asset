@@ -8963,7 +8963,7 @@ MonoBehaviour:
   enemySpawnPointPlacements:
   - gridPosition: {x: 42, y: 19}
     zoneId: zone_001
-    enemyGroupKey: UMT001
+    enemyGroupKey: BE161
     spawnChatZoneId: 0
     spawnChatId: 1510100
     encounterChatZoneId: 0

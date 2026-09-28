@@ -13,6 +13,22 @@ public class ChoiceButtonView : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text label;
 
+    public string Text => label != null ? label.text : string.Empty;
+
+    /// <summary>선택 완료된 답변을 대화 기록용으로 표시한다.</summary>
+    public void BindHistory(string text)
+    {
+        Bind(text, null);
+        if (button != null)
+        {
+            button.enabled = false;
+            Destroy(button);
+            button = null;
+        }
+        foreach (Graphic graphic in GetComponentsInChildren<Graphic>(true))
+            graphic.raycastTarget = false;
+    }
+
     /// <summary>버튼 문구와 클릭 동작 설정. 재사용 대비 기존 리스너 제거 후 등록.</summary>
     public void Bind(string text, Action onClick, bool interactable = true)
     {
