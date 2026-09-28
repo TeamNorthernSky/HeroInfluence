@@ -108,7 +108,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectKey: 
   initialClaimState: 0
-  enemyGroupKey: FEP001
+  enemyGroupKey: TUFEP002
   enemyLevel: 1
   tutorialBattleKey: 
   tutorialZoneId: -1
