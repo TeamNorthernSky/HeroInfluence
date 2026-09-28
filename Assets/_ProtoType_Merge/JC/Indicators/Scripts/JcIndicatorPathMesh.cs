@@ -26,7 +26,7 @@ namespace JC.Indicators
             source = points; solid.Clear(); glow.Clear(); distances.Clear(); totalLength = 0;
             for (int i = 0; i < points.Count; i++)
             {
-                if (i > 0) totalLength += Vector2.Distance(XZ(points[i - 1]), XZ(points[i]));
+                if (i > 0) totalLength += Vector3.Distance(points[i - 1], points[i]);
                 distances.Add(totalLength);
             }
             if (points.Count >= 2 && totalLength > .00001f)
@@ -219,7 +219,7 @@ namespace JC.Indicators
             float length = 0;
             for (int i = 0; i < points.Count; i++)
             {
-                if (i > 0) length += Vector2.Distance(XZ(points[i - 1]), XZ(points[i]));
+                if (i > 0) length += Vector3.Distance(points[i - 1], points[i]);
                 distances.Add(length);
             }
             for (int i = 0; i + 1 < points.Count; i++)

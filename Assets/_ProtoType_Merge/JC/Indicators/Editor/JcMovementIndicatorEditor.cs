@@ -15,7 +15,7 @@ namespace JC.Indicators.EditorTools
             new[] { "중심 수렴 하이라이트", "highlightColor|하이라이트 색상", "highlightColorCyclePeriod|색상 왕복 주기 (초)", "highlightStrength|하이라이트 강도", "waveWidth|파동 띠 폭", "waveSpeed|파동 속도", "wavePeriod|파동 주기 (초)" },
             new[] { "부유감", "floatHeight|공통 부유 높이", "markerHeightOffset|도착 문양 높이 오프셋", "bobAmplitude|흔들림 진폭", "bobFrequency|흔들림 횟수 / 초" },
             new[] { "그림자", "shadowColor|그림자 색상", "shadowOpacity|그림자 농도", "shadowDistance|그림자 거리", "shadowAngle|그림자 방향 (도)", "shadowSoftness|그림자 번짐" },
-            new[] { "경로 점선", "lineWidth|선 굵기", "dashLength|점선 길이", "dashGap|점선 간격", "flowSpeed|플로우 속도" },
+            new[] { "경로 점선", "lineWidth|선 굵기", "dashLength|점선 길이", "dashGap|점선 간격", "flowSpeed|플로우 속도", "terrainRampLength|지형 경사 연결 길이 (월드)" },
             new[] { "점선 글로우", "dashGlowWidth|번짐 폭", "dashGlowStrength|번짐 강도" },
             new[] { "플리커링과 상승", "dashFlickerStrength|흰색 반짝임 강도", "flickerLiftHeight|추가 상승 높이 (월드)", "dashFlickerSpeed|패턴 진행 속도", "dashFlickerRiseSpeed|전환·상승 속도 (배)", "dashFlickerFallSpeed|복귀·하강 속도 (배)", "dashFlickerDirection|진행 방향" }
         };

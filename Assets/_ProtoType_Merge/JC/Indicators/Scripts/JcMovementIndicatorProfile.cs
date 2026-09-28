@@ -56,6 +56,8 @@ namespace JC.Indicators
         public float dashGap;
         [Min(0), Tooltip("도착지점을 향해 흐르는 초당 월드 거리입니다. 0은 점선을 정지합니다.")]
         public float flowSpeed;
+        [Min(.01f), Tooltip("지형 높이가 달라지는 경계의 낮은 쪽에 만드는 경사의 수평 길이(월드 단위)입니다. 최소 0.01이며, 짧은 구간에서는 자동으로 줄입니다. 기존 부유 높이와 두께는 유지하며 프로파일 캡처·저장 대상입니다.")]
+        public float terrainRampLength;
         [ColorUsage(true, true), Tooltip("고정 문양 위로 지나가는 밝은 띠의 색입니다. HDR 값을 사용할 수 있고 알파는 강도에 곱해집니다.")]
         public Color highlightColor;
         [Min(0), Tooltip("중심 수렴 하이라이트가 현재 도착 가능/불가능 색과 하이라이트 색 사이를 선형 왕복하는 전체 주기(초)입니다. 2는 편도 1초이며, 0은 기존 고정색 가산 표시입니다. 파동 발생 주기·투명도와 독립적입니다.")]
@@ -109,7 +111,7 @@ namespace JC.Indicators
             lineWidth = .075f, dashLength = .18f, dashGap = .105f, flowSpeed = .65f,
             highlightColor = new Color(.8f, 1, .86f, 1), highlightStrength = 1.2f,
             waveWidth = .085f, waveSpeed = .55f, wavePeriod = 1.8f,
-            extensionVersion = 7, markerThickness = .06f, commonThickness = .0468f, flickerLiftHeight = .05f,
+            extensionVersion = 8, terrainRampLength = .25f, markerThickness = .06f, commonThickness = .0468f, flickerLiftHeight = .05f,
             bevelWidth = .012f, curveSegments = 16, sideBrightness = .55f,
             markerHeightOffset = 0, highlightColorCyclePeriod = 0,
             dashGlowWidth = .035f, dashGlowStrength = .25f,
@@ -176,6 +178,12 @@ namespace JC.Indicators
                 s.extensionVersion = 7;
             }
             s.commonThickness = Mathf.Max(.001f, s.commonThickness);
+            if (s.extensionVersion < 8)
+            {
+                s.terrainRampLength = Default.terrainRampLength;
+                s.extensionVersion = 8;
+            }
+            s.terrainRampLength = Mathf.Max(.01f, s.terrainRampLength);
             s.flickerLiftHeight = Mathf.Max(0, s.flickerLiftHeight);
             s.borderWidth = Mathf.Clamp(s.borderWidth, .01f, .3f);
             s.cornerRadius = Mathf.Clamp(s.cornerRadius, 0, .5f);
