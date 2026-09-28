@@ -153,6 +153,12 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     /// <summary>스킬/무기 매칭 원본(접미사 없음). 플레이어는 클래스명(UnitType)이 들어감 — 표시엔 <see cref="DisplayName"/> 사용.</summary>
     public string UnitName => string.IsNullOrWhiteSpace(unitName) ? gameObject.name : unitName;
 
+    /// <summary>
+    /// 유닛 템플릿 Index(아군 "10002", 적 "20002" 등). 스포너 Initialize가 템플릿의 Index로 채운다.
+    /// Timeline 레일의 캐릭터 키로 쓰이며, 스킬 매칭용 <see cref="UnitName"/>과는 별개다. 미설정이면 빈 문자열.
+    /// </summary>
+    public string TemplateIndex { get; private set; } = string.Empty;
+
     // [JC 260621] 표시 전용 이름(히어로명). 스킬매칭키(unitName=클래스명)와 분리. 비면 UnitName 폴백(적 유닛 호환).
     private string displayName;
     /// <summary>UI 표시·로그용 히어로명. 미설정 시 UnitName 폴백.</summary>
@@ -890,6 +896,17 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         InvalidatePrototypeSkillWeaponCache();
         RefreshAvailableSkillsForInspector(forceRefresh: true);
         RefreshAvailableWeapons(forceRefresh: true);
+    }
+
+    /// <summary>유닛 템플릿 Index 설정. 비어 있으면 무시(기존 값 유지).</summary>
+    public void SetTemplateIndex(string index)
+    {
+        if (string.IsNullOrWhiteSpace(index))
+        {
+            return;
+        }
+
+        TemplateIndex = index.Trim();
     }
 
     /// <summary>[JC 260621] UI 표시용 히어로명 설정(스킬매칭 unitName과 별개). 비면 UnitName 폴백.</summary>

@@ -55,8 +55,9 @@ public enum PresentationArchetype
 [Serializable]
 public class SkillTimelineBinding
 {
-    [Tooltip("이 Timeline을 사용할 캐릭터 키 = 시전자 unitName(예: '블래스터'). " +
-             "비워두면 모든 시전자에 적용(와일드카드/폴백) — 단일 캐릭터 파일럿에 편리.")]
+    [Tooltip("이 Timeline을 사용할 캐릭터 키 = 시전자 유닛 템플릿 Index(예: '10002', '20002'). " +
+             "과도기 호환으로 unitName(예: '블래스터')도 매칭된다(Index 우선). " +
+             "비워두면 모든 시전자에 적용(와일드카드/폴백).")]
     public string CharacterKey;
 
     [Tooltip("해당 캐릭터의 클립이 이미 구워진 전용 TimelineAsset.")]
@@ -97,9 +98,21 @@ public class SkillPresentationData : ScriptableObject
     /// </summary>
     public TimelineAsset ResolveTimeline(string characterKey)
     {
+        return ResolveTimeline(characterKey, null);
+    }
+
+    /// <summary>
+    /// 시전자 템플릿 Index로 Timeline을 찾는다. 우선순위:
+    /// ① Index 일치 → ② unitName 일치(과도기 호환) → ③ 빈 키(와일드카드) → null.
+    /// 비교는 대소문자 무시 + trim.
+    /// </summary>
+    public TimelineAsset ResolveTimeline(string templateIndex, string unitName)
+    {
         if (SkillTimelines == null) return null;
 
-        string key = characterKey?.Trim();
+        string indexKey = templateIndex?.Trim();
+        string nameKey = unitName?.Trim();
+        TimelineAsset nameMatch = null;
         TimelineAsset wildcard = null;
 
         for (int i = 0; i < SkillTimelines.Count; i++)
@@ -109,23 +122,31 @@ public class SkillPresentationData : ScriptableObject
 
             string bindingKey = binding.CharacterKey?.Trim();
 
-            // CharacterKey가 비어 있으면 "모든 캐릭터"(와일드카드/폴백) — 단일 캐릭터 파일럿에 편리.
+            // CharacterKey가 비어 있으면 "모든 캐릭터"(와일드카드/폴백).
             if (string.IsNullOrEmpty(bindingKey))
             {
                 if (wildcard == null) wildcard = binding.Timeline;
                 continue;
             }
 
-            // 정확 매칭(대소문자 무시 + 공백 정리로 오타 완화).
-            if (!string.IsNullOrEmpty(key)
-                && string.Equals(bindingKey, key, StringComparison.OrdinalIgnoreCase))
+            if (KeyEquals(bindingKey, indexKey))
             {
                 return binding.Timeline;
             }
+
+            if (nameMatch == null && KeyEquals(bindingKey, nameKey))
+            {
+                nameMatch = binding.Timeline;
+            }
         }
 
-        // 정확 매칭이 없으면 와일드카드(빈 키) 항목을 쓴다.
-        return wildcard;
+        return nameMatch != null ? nameMatch : wildcard;
+    }
+
+    private static bool KeyEquals(string bindingKey, string key)
+    {
+        return !string.IsNullOrEmpty(key)
+               && string.Equals(bindingKey, key, StringComparison.OrdinalIgnoreCase);
     }
 
     [Header("Animation State/Slot Override (empty uses SkillData/fallback)")]

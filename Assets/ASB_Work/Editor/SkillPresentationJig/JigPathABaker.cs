@@ -29,8 +29,8 @@ namespace ASB.Work.EditorTools.Jig
             if (data == null) { error = "연출 자산이 비어 있습니다."; return null; }
             if (characterPrefab == null) { error = "캐릭터 프리팹이 비어 있습니다."; return null; }
 
-            // 1) 캐릭터 키(unitName) + Animator
-            string characterKey = ResolveCharacterKey(characterPrefab);
+            // 1) 캐릭터 키(템플릿 Index, 없으면 unitName) + Animator
+            string characterKey = ResolveBakeKey(characterPrefab);
             Animator animator = characterPrefab.GetComponentInChildren<Animator>();
             if (animator == null || animator.runtimeAnimatorController == null)
             {
@@ -128,7 +128,7 @@ namespace ASB.Work.EditorTools.Jig
             EditorUtility.SetDirty(timeline);
 
             // 6) 스킬에 연결: Rail=Timeline + SkillTimelines 갱신
-            ConnectToSkill(data, characterKey, timeline);
+            ConnectToSkill(data, characterKey, ResolveUnitName(characterPrefab), timeline);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.ImportAsset(path);
@@ -142,10 +142,46 @@ namespace ASB.Work.EditorTools.Jig
             return timeline;
         }
 
-        private static string ResolveCharacterKey(GameObject characterPrefab)
+        /// <summary>
+        /// 프리팹 이름의 마지막 '_' 뒤 숫자를 템플릿 Index로 읽는다(예: Unit_VillanGun_20002 → "20002").
+        /// 런타임 스포너가 같은 `_{Index}` 규칙으로 프리팹을 찾으므로 BattleCharactor.TemplateIndex와 일치한다. 없으면 null.
+        /// </summary>
+        public static string ResolveTemplateIndex(GameObject characterPrefab)
         {
+            if (characterPrefab == null) return null;
+
+            string name = characterPrefab.name;
+            int underscore = name.LastIndexOf('_');
+            if (underscore < 0 || underscore == name.Length - 1) return null;
+
+            string suffix = name.Substring(underscore + 1).Trim();
+            for (int i = 0; i < suffix.Length; i++)
+            {
+                if (!char.IsDigit(suffix[i])) return null;
+            }
+            return suffix;
+        }
+
+        /// <summary>과도기 폴백용 unitName(프리팹 BattleCharactor 직렬화 값, 없으면 프리팹 이름).</summary>
+        public static string ResolveUnitName(GameObject characterPrefab)
+        {
+            if (characterPrefab == null) return null;
             var bc = characterPrefab.GetComponentInChildren<BattleCharactor>();
             return bc != null ? bc.UnitName : characterPrefab.name;
+        }
+
+        /// <summary>굽기 시 기록할 CharacterKey. 템플릿 Index 우선, 없으면 unitName으로 폴백(경고).</summary>
+        public static string ResolveBakeKey(GameObject characterPrefab)
+        {
+            string index = ResolveTemplateIndex(characterPrefab);
+            if (!string.IsNullOrEmpty(index)) return index;
+
+            string unitName = ResolveUnitName(characterPrefab);
+            Debug.LogWarning(
+                $"[JigPathABaker] 프리팹 '{characterPrefab?.name}' 이름에서 템플릿 Index(_숫자)를 찾지 못해 " +
+                $"unitName '{unitName}'을 CharacterKey로 사용합니다.",
+                characterPrefab);
+            return unitName;
         }
 
         private static string ResolvePrimaryStateName(SkillPresentationData data)
@@ -161,24 +197,16 @@ namespace ASB.Work.EditorTools.Jig
             return data.AnimationStateName;
         }
 
-        private static void ConnectToSkill(SkillPresentationData data, string characterKey, TimelineAsset timeline)
+        private static void ConnectToSkill(SkillPresentationData data, string characterKey, string legacyUnitName,
+            TimelineAsset timeline)
         {
             Undo.RecordObject(data, "Path A Variant 연결");
 
             data.AnimationRail = AnimationRail.Timeline;
             if (data.SkillTimelines == null) data.SkillTimelines = new List<SkillTimelineBinding>();
 
-            // 같은 캐릭터 키 항목이 있으면 갱신, 없으면 추가.
-            SkillTimelineBinding entry = null;
-            for (int i = 0; i < data.SkillTimelines.Count; i++)
-            {
-                SkillTimelineBinding b = data.SkillTimelines[i];
-                if (b != null && string.Equals(b.CharacterKey, characterKey, System.StringComparison.OrdinalIgnoreCase))
-                {
-                    entry = b;
-                    break;
-                }
-            }
+            // 같은 캐릭터 항목이 있으면 갱신, 없으면 추가. Index 키 우선, 없으면 과도기 unitName 키 항목을 갱신한다.
+            SkillTimelineBinding entry = FindBinding(data, characterKey) ?? FindBinding(data, legacyUnitName);
             if (entry == null)
             {
                 entry = new SkillTimelineBinding();
@@ -188,6 +216,22 @@ namespace ASB.Work.EditorTools.Jig
             entry.Timeline = timeline;
 
             EditorUtility.SetDirty(data);
+        }
+
+        private static SkillTimelineBinding FindBinding(SkillPresentationData data, string key)
+        {
+            string trimmed = key?.Trim();
+            if (string.IsNullOrEmpty(trimmed)) return null;
+
+            for (int i = 0; i < data.SkillTimelines.Count; i++)
+            {
+                SkillTimelineBinding b = data.SkillTimelines[i];
+                if (b != null && string.Equals(b.CharacterKey?.Trim(), trimmed, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return b;
+                }
+            }
+            return null;
         }
 
         private static void EnsureFolder()

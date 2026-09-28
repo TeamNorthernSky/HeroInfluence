@@ -23,6 +23,14 @@ public class BattleCharactorEditor : Editor
             }
         }
 
+        // 런타임 전용(비직렬화) 템플릿 Index — 스포너 Initialize가 채운다. Timeline 레일 캐릭터 키.
+        using (new EditorGUI.DisabledScope(true))
+        {
+            string templateIndex = battleCharactor.TemplateIndex;
+            EditorGUILayout.TextField("Template Index (runtime)",
+                string.IsNullOrEmpty(templateIndex) ? "(미설정)" : templateIndex);
+        }
+
         SerializedProperty iterator = serializedObject.GetIterator();
         bool enterChildren = true;
         while (iterator.NextVisible(enterChildren))

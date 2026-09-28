@@ -789,14 +789,15 @@ public sealed class SkillPresentationDirector
                     .ExecuteRoutine(_battle));
         }
 
-        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.UnitName) : null;
+        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
 
         // 저장/빌드 검증에서 사전 차단하지만(§3), 런타임 도달 시에도 시퀀스는 반드시 종료한다 —
         // 조용한 Path B 폴백은 하지 않고, 대미지 유실/행 hang을 막는다.
         if (timeline == null)
         {
             Debug.LogError(
-                $"[PathA] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 '{actor?.UnitName}'의 Variant가 없습니다. " +
+                $"[PathA] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 " +
+                $"(index '{actor?.TemplateIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
                 "피격 연출만 적용하고 종료합니다.", actor);
             ResolveHit();
             if (hitRoutine != null) yield return hitRoutine;
@@ -1052,11 +1053,12 @@ public sealed class SkillPresentationDirector
         List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks, int pairCount,
         ProjectileVisualData projectileVisual)
     {
-        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.UnitName) : null;
+        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
         if (timeline == null)
         {
             Debug.LogError(
-                $"[PathA/AoE] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 '{actor?.UnitName}'의 Variant가 없습니다. " +
+                $"[PathA/AoE] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 " +
+                $"(index '{actor?.TemplateIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
                 "AoE Delivery를 즉시 확정하고 종료합니다.", actor);
             yield return new AoEApplyDamageAction(
                     contexts, hitCallbacks, pairCount, _battle.CurrentBattleSpeed, _battle.VisualDirector,

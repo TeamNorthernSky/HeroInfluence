@@ -1,0 +1,169 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43dfc12f652c64d45b326b84321ad2ce, type: 3}
+  m_Name: "BranchDB\uC11C\uBE0C\uD018\uC2A4\uD2B8DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - Branch_ID: 10502
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE006
+    "\uBE44\uACE0": "\uC131\uB09C \uBE4C\uB7F0 \uC804\uD22C"
+  - Branch_ID: 10503
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 1060010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 10503
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 1070010
+    Trigger_Effect: Set_Flag_SubEvent1Defeated
+    "\uBE44\uACE0": "\uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 10601
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uBE14\uB799\uBD88\uB9BF\uC5D0\uAC8C \uB9E1\uAE34\uB2E4."
+    Target_Talk_ID: 1060200
+    Trigger_Effect: Set_Flag_SubEvent1BlackBulletRoute
+    "\uBE44\uACE0": "\uBB3C\uAC74 \uBC18\uD658"
+  - Branch_ID: 10601
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uBE4C\uB7F0\uC5D0\uAC8C\uC11C \uBB3C\uAC74\uC744 \uC555\uC218\uD55C\uB2E4."
+    Target_Talk_ID: 1060300
+    Trigger_Effect: Set_Flag_SubEvent1GoodsConfiscated
+    "\uBE44\uACE0": "\uBB3C\uAC74 \uC555\uC218"
+  - Branch_ID: 10602
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_104101\
+
+      Set_Flag_SubEvent1VillainReturned\
+
+      Set_Flag_SubEvent1Complete\
+
+      Set_Flag_SubEvent1CitizenAssaultReported\
+
+      Disable_Flag_SubEvent1RetryAvailable'
+    "\uBE44\uACE0": "\uBB3C\uAC74 \uBC18\uD658 \uBCF4\uC0C1"
+  - Branch_ID: 10603
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_104102\
+
+      Set_Flag_SubEvent1GoodsConfiscated\
+
+      Set_Flag_SubEvent1Complete\
+
+      Disable_Flag_SubEvent1RetryAvailable'
+    "\uBE44\uACE0": "\uBB3C\uAC74 \uC555\uC218 \uBCF4\uC0C1"
+  - Branch_ID: 10702
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_SubEvent1Defeated!=1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_104103\
+
+      Set_Flag_SubEvent1Defeated\
+
+      Set_Flag_SubEvent1RetryAvailable'
+    "\uBE44\uACE0": "\uCD5C\uCD08 \uD328\uBC30"
+  - Branch_ID: 10702
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_SubEvent1RetryAvailable
+    "\uBE44\uACE0": "\uC7AC\uD328\uBC30"
+  - Branch_ID: 10801
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE158
+    "\uBE44\uACE0": "\uD3B8\uC758\uC810 \uBE4C\uB7F0 \uC804\uD22C"
+  - Branch_ID: 10802
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 1090010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 10802
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 1350010
+    Trigger_Effect: Set_Flag_SubEvent2Defeated
+    "\uBE44\uACE0": "\uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 10901
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Set_Flag_SubEvent2Complete\
+
+      Disable_Flag_SubEvent2RetryAvailable\
+
+      Reveal_Fog_Level2\
+
+      Reward_105101'
+    "\uBE44\uACE0": "\uD3B8\uC758\uC810 \uC11C\uBE0C\uD018\uC2A4\uD2B8 \uC644\uB8CC"
+  - Branch_ID: 13501
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_SubEvent2Defeated!=1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_105103\
+
+      Set_Flag_SubEvent2Defeated\
+
+      Set_Flag_SubEvent2RetryAvailable'
+    "\uBE44\uACE0": "\uCD5C\uCD08 \uD328\uBC30"
+  - Branch_ID: 13501
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_SubEvent2RetryAvailable
+    "\uBE44\uACE0": "\uC7AC\uD328\uBC30"

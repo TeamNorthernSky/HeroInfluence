@@ -128,6 +128,55 @@ public class SkillTimelineValidatorTests
             "null wildcard가 유효한 정확 키를 가리면 안 됩니다.");
     }
 
+    // ── Index 우선 조회(Index → unitName → wildcard) ───────────────
+
+    [Test]
+    public void ResolveTimelineByIndex_IndexWinsOverNameAndWildcard()
+    {
+        TimelineAsset wild = NewTimeline(1d);
+        TimelineAsset byName = NewTimeline(1d);
+        TimelineAsset byIndex = NewTimeline(1d);
+        ScriptableObject data = NewData(rail: "Timeline");
+        // 이름 항목을 앞에 둬도 Index 항목이 이겨야 한다(순서 무관).
+        SetSkillTimelines(data, new (string, TimelineAsset)[] { ("", wild), ("블래스터", byName), ("10002", byIndex) });
+
+        Assert.That(ResolveTimeline(data, "10002", "블래스터"), Is.SameAs(byIndex),
+            "Index 일치가 이름 일치보다 우선해야 합니다.");
+    }
+
+    [Test]
+    public void ResolveTimelineByIndex_FallsBackToName_ThenWildcard_ThenNull()
+    {
+        TimelineAsset wild = NewTimeline(1d);
+        TimelineAsset byName = NewTimeline(1d);
+        ScriptableObject data = NewData(rail: "Timeline");
+        SetSkillTimelines(data, new (string, TimelineAsset)[] { ("블래스터", byName), ("", wild) });
+
+        Assert.That(ResolveTimeline(data, "10002", "블래스터"), Is.SameAs(byName),
+            "Index가 없으면 이름 일치로 폴백해야 합니다(과도기 호환).");
+        Assert.That(ResolveTimeline(data, "20002", "빌런연합 소총수"), Is.SameAs(wild),
+            "Index·이름 모두 없으면 wildcard로 폴백해야 합니다.");
+
+        ScriptableObject noWild = NewData(rail: "Timeline");
+        SetSkillTimelines(noWild, new (string, TimelineAsset)[] { ("블래스터", byName) });
+        Assert.That(ResolveTimeline(noWild, "20002", "빌런연합 소총수"), Is.Null,
+            "일치 항목도 wildcard도 없으면 null이어야 합니다.");
+    }
+
+    [Test]
+    public void ResolveTimelineByIndex_TrimsAndIgnoresCase_EmptyIndexUsesName()
+    {
+        TimelineAsset byIndex = NewTimeline(1d);
+        TimelineAsset byName = NewTimeline(1d);
+        ScriptableObject data = NewData(rail: "Timeline");
+        SetSkillTimelines(data, new (string, TimelineAsset)[] { (" 20002 ", byIndex), (" Villan_Gun ", byName) });
+
+        Assert.That(ResolveTimeline(data, "20002  ", null), Is.SameAs(byIndex), "trim 후 Index가 일치해야 합니다.");
+        Assert.That(ResolveTimeline(data, "", "villan_gun"), Is.SameAs(byName),
+            "Index가 비어 있으면 대소문자 무시 이름 매칭을 해야 합니다.");
+        Assert.That(ResolveTimeline(data, null, null), Is.Null, "키가 모두 없으면 wildcard가 없을 때 null이어야 합니다.");
+    }
+
     // ── 헬퍼 ─────────────────────────────────────────────────────
 
     private int RunCoverage(TimelineAsset timeline)
@@ -194,7 +243,15 @@ public class SkillTimelineValidatorTests
 
     private static TimelineAsset ResolveTimeline(ScriptableObject data, string key)
     {
-        return (TimelineAsset)DataType.GetMethod("ResolveTimeline").Invoke(data, new object[] { key });
+        // 오버로드(1인자/2인자)가 있으므로 시그니처를 명시한다.
+        MethodInfo method = DataType.GetMethod("ResolveTimeline", new[] { typeof(string) });
+        return (TimelineAsset)method.Invoke(data, new object[] { key });
+    }
+
+    private static TimelineAsset ResolveTimeline(ScriptableObject data, string templateIndex, string unitName)
+    {
+        MethodInfo method = DataType.GetMethod("ResolveTimeline", new[] { typeof(string), typeof(string) });
+        return (TimelineAsset)method.Invoke(data, new object[] { templateIndex, unitName });
     }
 
     private TimelineAsset NewTimeline(double duration)

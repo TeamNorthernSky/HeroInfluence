@@ -55,6 +55,7 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
             string skillMatchKey = ResolveSkillMatchKey(data);
             battle.SetUnitNameForSkillMatching(skillMatchKey);
             battle.SetDisplayName(data.Name); // [JC 260621] 표시명=히어로명(스킬매칭키=클래스명과 분리)
+            battle.SetTemplateIndex(data.Index);
         }
         else
         {
@@ -106,6 +107,7 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
 
         // [JC 260621] 표시명=히어로명(template.Name). 스킬매칭키(클래스명/UnitType)와 분리.
         battle.SetDisplayName(ResolveDisplayName(persistentData, fallbackData));
+        battle.SetTemplateIndex(ResolvePersistentTemplateIndex(persistentData, fallbackData));
 
         battle.LoadPersistentEquipment(
             persistentData.CurrentSkillIndex,
@@ -166,6 +168,21 @@ public class CharactorScript : MonoBehaviour, IUnitIdentifier
         }
 
         return null;
+    }
+
+    // UnitTemplateKey는 형식이 보장되지 않으므로 그대로 쓰지 않고, 카탈로그 템플릿의 Index를 우선한다.
+    private static string ResolvePersistentTemplateIndex(UnitPersistentData persistentData, UnitData fallbackData)
+    {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (persistentData != null && catalog != null &&
+            !string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey) &&
+            catalog.TryGetPlayerTemplate(persistentData.UnitTemplateKey, out UnitData template) &&
+            template != null && !string.IsNullOrWhiteSpace(template.Index))
+        {
+            return template.Index;
+        }
+
+        return fallbackData != null ? fallbackData.Index : null;
     }
 
     private static string ResolvePersistentSkillMatchKey(UnitPersistentData persistentData, UnitData fallbackData)

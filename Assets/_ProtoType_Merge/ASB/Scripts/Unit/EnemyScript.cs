@@ -53,6 +53,7 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         {
             baseStats = data.baseStats;
             battle.SetUnitNameForSkillMatching(data.Name);
+            battle.SetTemplateIndex(data.Index);
         }
         else
         {
@@ -119,6 +120,8 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             battle.SetUnitNameForSkillMatching(fallbackData.Name);
         }
 
+        battle.SetTemplateIndex(ResolvePersistentTemplateIndex(persistentData, fallbackData));
+
         int resolvedSkillIndex = ExtractSkillIndexFromPersistent(persistentData, fallbackData);
         int resolvedWeaponIndex = ExtractWeaponIndexFromPersistent(persistentData);
         battle.LoadPersistentEquipment(resolvedSkillIndex, resolvedWeaponIndex);
@@ -134,6 +137,21 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
 
         enemyData = fallbackData;
         EnsureAIReady();
+    }
+
+    // UnitTemplateKey는 형식이 보장되지 않으므로 그대로 쓰지 않고, 카탈로그 템플릿의 Index를 우선한다.
+    private static string ResolvePersistentTemplateIndex(EnemyUnitPersistentData persistentData, EnemyData fallbackData)
+    {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (persistentData != null && catalog != null &&
+            !string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey) &&
+            catalog.TryGetEnemyTemplate(persistentData.UnitTemplateKey, out EnemyData template) &&
+            template != null && !string.IsNullOrWhiteSpace(template.Index))
+        {
+            return template.Index;
+        }
+
+        return fallbackData != null ? fallbackData.Index : null;
     }
 
     public IEnumerator RunAITurn(BattleManager battleManager, BattleFlowManager flowManager)

@@ -276,7 +276,7 @@ namespace ASB.Work.EditorTools.Jig
             if (_presentation == null || !_presentation.IsTimelineRail) return;
 
             string key = ResolveCharacterKey();
-            TimelineAsset timeline = _runtimeTimeline != null ? _runtimeTimeline : _presentation.ResolveTimeline(key);
+            TimelineAsset timeline = _runtimeTimeline != null ? _runtimeTimeline : ResolveConnectedTimeline();
             List<SkillTimelineValidationMessage> messages = SkillTimelineValidator.Validate(_presentation, key, timeline);
 
             EditorGUILayout.LabelField("Runtime Timeline 검증", EditorStyles.boldLabel);
@@ -498,7 +498,7 @@ namespace ASB.Work.EditorTools.Jig
         private void OpenConnectedVariant()
         {
             string key = ResolveCharacterKey();
-            TimelineAsset timeline = _presentation.ResolveTimeline(key);
+            TimelineAsset timeline = ResolveConnectedTimeline();
             if (timeline == null)
             {
                 EditorUtility.DisplayDialog("Variant 없음",
@@ -548,12 +548,20 @@ namespace ASB.Work.EditorTools.Jig
             OpenTimelineWindow();
         }
 
+        // 표시·검증 메시지용 키. 굽기와 같은 규칙(템플릿 Index 우선, 없으면 unitName).
         private string ResolveCharacterKey()
         {
-            BattleCharactor bc = _characterPrefab != null
-                ? _characterPrefab.GetComponentInChildren<BattleCharactor>()
-                : null;
-            return bc != null ? bc.UnitName : _characterPrefab != null ? _characterPrefab.name : null;
+            string index = JigPathABaker.ResolveTemplateIndex(_characterPrefab);
+            return !string.IsNullOrEmpty(index) ? index : JigPathABaker.ResolveUnitName(_characterPrefab);
+        }
+
+        // 런타임과 같은 우선순위(Index → unitName → 빈 키)로 연결된 Variant를 찾는다.
+        private TimelineAsset ResolveConnectedTimeline()
+        {
+            if (_presentation == null) return null;
+            return _presentation.ResolveTimeline(
+                JigPathABaker.ResolveTemplateIndex(_characterPrefab),
+                JigPathABaker.ResolveUnitName(_characterPrefab));
         }
 
         private void WriteBack()
