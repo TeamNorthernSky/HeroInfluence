@@ -23,14 +23,27 @@ public class LabManager : MonoBehaviour
 
     // 협회-연구소 시트: to_skill_level 2/3/4/5 도달 시 비용. 인덱스 = toLevel - 2.
     // 소모 자원: 자금(Money) + 히어로 메달(Chip). [JC 260617] 인스펙터 편집 가능하도록 직렬화.
-    [Header("스킬 강화 비용 (인스펙터 편집 — +1/+2/+3/+4/+5 도달 기준)")]
+    [Header("이전 스킬 강화 비용 (호환용 보존, 실제 비용은 AssociationResourceCatalog 사용)")]
     // [JC 260617] V1.0 프로토타입 자원 밸런스 '협회-연구소' 시트 기준.
     [Tooltip("필요 자금 (+1/+2/+3/+4/+5 도달)")]
     [SerializeField] private int[] upgradeCostMoney = { 400, 600, 800, 1000, 1000 };
     [Tooltip("필요 히어로 메달 (+1/+2/+3/+4/+5 도달)")]
     [SerializeField] private int[] upgradeCostChip  = {   5,   6,   8,  10, 10 };
-    public IReadOnlyList<int> UpgradeCostMoney => upgradeCostMoney;
-    public IReadOnlyList<int> UpgradeCostChip => upgradeCostChip;
+    public IReadOnlyList<int> UpgradeCostMoney => GetCatalogCosts(ResourceType.Money);
+    public IReadOnlyList<int> UpgradeCostChip => GetCatalogCosts(ResourceType.Chip);
+
+    private static int[] GetCatalogCosts(ResourceType resource)
+    {
+        var result = new int[MaxSkillLevel - BaseSkillLevel];
+        for (int i = 0; i < result.Length; i++)
+        {
+            result[i] = -1;
+            if (AssociationCosts.TryLab(i + 2, out var row)
+                && AssociationCosts.TryPair(row.Costs, ResourceType.Chip, out int money, out int chip))
+                result[i] = resource == ResourceType.Money ? money : chip;
+        }
+        return result;
+    }
 
     // 클래스명 → 클래스 인덱스(스킬 인덱스 첫 자리 체계와 동일).
     private static readonly Dictionary<string, int> ClassNameToIndex = new Dictionary<string, int>
@@ -76,8 +89,9 @@ public class LabManager : MonoBehaviour
 
     public bool IsUnlocked() => GetDepartmentLevel() >= 1;
 
-    /// <summary>+1은 연구소 1, +2는 연구소 2, +3~+5는 연구소 3단계에서 순차 강화합니다.</summary>
-    public static int RequiredLabLevelFor(int toSkillLevel) => Mathf.Clamp(toSkillLevel - 1, 1, 3);
+    /// <summary>카탈로그의 목표 스킬 레벨에 대응하는 시설 레벨. 미등록 단계는 진행 불가.</summary>
+    public static int RequiredLabLevelFor(int toSkillLevel)
+        => AssociationCosts.TryLab(toSkillLevel, out var row) ? row.RequiredLabLevel : int.MaxValue;
 
     // ─── 영웅 클래스 해석 ──────────────────────────────────────
     public bool TryResolveClass(int unitIndex, out string className, out int classIndex)
@@ -176,11 +190,8 @@ public class LabManager : MonoBehaviour
         money = -1; chip = -1;
         int level = GetSkillLevel(unitIndex, skillIndex);
         if (level >= MaxSkillLevel) return false;
-        int idx = level - 1; // 현재 level→level+1 비용 인덱스 (level1→idx0 = toLevel2)
-        if (idx < 0 || idx >= upgradeCostMoney.Length) return false;
-        money = upgradeCostMoney[idx];
-        chip = idx < upgradeCostChip.Length ? upgradeCostChip[idx] : 0;
-        return true;
+        return AssociationCosts.TryLab(level + 1, out var row)
+            && AssociationCosts.TryPair(row.Costs, ResourceType.Chip, out money, out chip);
     }
 
     /// <summary>강화 가능 여부(해금 + 연구소 레벨 선행 게이트). 자원 충족은 호출자 확인.</summary>
@@ -192,7 +203,8 @@ public class LabManager : MonoBehaviour
         int level = GetSkillLevel(unitIndex, skillIndex);
         if (level >= MaxSkillLevel) return false;
         int toLevel = level + 1;
-        return GetDepartmentLevel() >= RequiredLabLevelFor(toLevel);
+        return GetNextUpgradeCost(unitIndex, skillIndex, out _, out _)
+            && GetDepartmentLevel() >= RequiredLabLevelFor(toLevel);
     }
 
     /// <summary>스킬 강화 한 단계: 레벨 +1. 자원 차감은 호출자(LabModalController)가 별도 처리.

@@ -162,15 +162,19 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         if (gm == null || gm.Publicity == null || gm.Economy == null) return;
         if (selectedUnitIndex < 0) return;
         if (progressCount <= 0) return;
-        int total = gm.Publicity.GetProgressCost() * progressCount;
-        if (!gm.Publicity.CanProgress(selectedUnitIndex, progressCount)) return;
+        int count = progressCount;
+        int costPer = gm.Publicity.GetProgressCost();
+        long totalAmount = (long)costPer * count;
+        if (costPer < 0 || totalAmount > int.MaxValue) return;
+        int total = (int)totalAmount;
+        if (!gm.Publicity.CanProgress(selectedUnitIndex, count)) return;
         if (!gm.Economy.Has(ResourceType.Money, total)) return;
-        if (!gm.Economy.Spend(ResourceType.Money, total))
+        if (total > 0 && !gm.Economy.Spend(ResourceType.Money, total))
         {
             Debug.LogError($"[Publicity] Spend 실패: Money {total}");
             return;
         }
-        if (!gm.Publicity.TryProgress(selectedUnitIndex, progressCount))
+        if (!gm.Publicity.TryProgress(selectedUnitIndex, count))
         {
             Debug.LogError("[Publicity] TryProgress 실패 — 차감 롤백");
             gm.Economy.Add(ResourceType.Money, total); // [JC 260618] 자원 유실 방지 롤백
@@ -189,7 +193,8 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         bool hasSelection = TryResolveSelected(out var unit, out var template);
         int pool = gm.Publicity.CurrentPool;
         int costPer = gm.Publicity.GetProgressCost();
-        int total = costPer * progressCount;
+        long total = (long)costPer * progressCount;
+        bool costKnown = costPer >= 0 && total <= int.MaxValue;
         bool unlocked = gm.Publicity.IsUnlocked();
 
         // 영웅 영역
@@ -207,10 +212,10 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         if (selectPromptGo != null) selectPromptGo.SetActive(!hasSelection);
 
         // Info Value 4종
-        if (cost1ValueText != null) cost1ValueText.text = $"{costPer:N0}";
+        if (cost1ValueText != null) cost1ValueText.text = costPer >= 0 ? $"{costPer:N0}" : "—";
         if (availableValueText != null) availableValueText.text = $"{pool}";
         if (countValueText != null) countValueText.text = $"{progressCount}";
-        if (totalCostValueText != null) totalCostValueText.text = $"{total:N0}";
+        if (totalCostValueText != null) totalCostValueText.text = costKnown ? $"{total:N0}" : "—";
 
         // 선택 영웅의 IP 잔여 용량(MaxIP까지) — 진행 횟수 상한 산정에 사용.
         int capacity = hasSelection ? gm.Publicity.GetRemainingCapacity(unit.UnitIndex) : pool;
@@ -228,7 +233,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         // Confirm 가능 여부
         bool poolOk = pool >= progressCount && progressCount > 0;
         bool capacityOk = !hasSelection || progressCount <= capacity;
-        bool moneyOk = gm.Economy.Has(ResourceType.Money, total);
+        bool moneyOk = costKnown && gm.Economy.Has(ResourceType.Money, (int)total);
         bool canConfirm = unlocked && hasSelection && poolOk && capacityOk && moneyOk;
         if (btnConfirm != null) btnConfirm.interactable = canConfirm;
         if (disabledOverlay != null) disabledOverlay.SetActive(!canConfirm);
@@ -238,6 +243,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         {
             string msg = null;
             if (!unlocked) msg = "홍보 기능이 활성화되지 않았습니다.";
+            else if (!costKnown) msg = "비용 정보가 없거나 처리 가능한 금액을 초과했습니다.";
             else if (!hasSelection) msg = "영웅을 선택해 주세요.";
             else if (pool <= 0) msg = "이번 주 진행 가능 횟수를 모두 사용했습니다.";
             else if (capacity <= 0) msg = $"이미 최대 I.P({(hasSelection ? Mathf.RoundToInt(unit.IngameStats.Influence) : PublicityManager.MaxIP)})에 도달했습니다.";
