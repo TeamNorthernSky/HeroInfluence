@@ -92,13 +92,7 @@ public class BattleVisualDirector : MonoBehaviour
     // SoundRegistry id로 재생(0이면 무시).
     private void PlaySound(int soundId, Transform at, float volume)
     {
-        if (SoundManager.Instance == null || soundId == 0)
-        {
-            return;
-        }
-
-        Vector3 pos = at != null ? at.position : Vector3.zero;
-        SoundManager.Instance.PlayById(soundId, pos, volume);
+        // Legacy ASB SoundManager was removed. Battle audio should route through the shared audio layer later.
     }
 
     public void ShowDamagePopup(BattleHitResult result)
