@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f9f0a2220f04ec4ea3cb0f1fd5818b2, type: 3}
+  m_Name: "\uD611\uD68C\uD64D\uBCF4\uBD80DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - publicity_level: 1
+    cost_resource_type: 0
+    cost_resource_amount: 100
+    status_type: 0
+    ip_amount_per_charge: 1
+    ip_charge_limit: 50
+    ip_charge_cycle: 7
+    note: "\uC0AC\uC6A9\uD558\uC9C0 \uC54A\uACE0 \uB0A8\uC740 IP\uB294 \uB2E4\uC74C
+      \uC8FC\uAE30\uB85C \uC774\uC6D4"
+  - publicity_level: 2
+    cost_resource_type: 0
+    cost_resource_amount: 90
+    status_type: 0
+    ip_amount_per_charge: 1
+    ip_charge_limit: 55
+    ip_charge_cycle: 7
+    note: 
+  - publicity_level: 3
+    cost_resource_type: 0
+    cost_resource_amount: 80
+    status_type: 0
+    ip_amount_per_charge: 1
+    ip_charge_limit: 60
+    ip_charge_cycle: 7
+    note: 
+  - publicity_level: 4
+    cost_resource_type: 0
+    cost_resource_amount: 70
+    status_type: 0
+    ip_amount_per_charge: 1
+    ip_charge_limit: 65
+    ip_charge_cycle: 7
+    note: 
+  - publicity_level: 5
+    cost_resource_type: 0
+    cost_resource_amount: 60
+    status_type: 0
+    ip_amount_per_charge: 1
+    ip_charge_limit: 70
+    ip_charge_cycle: 7
+    note: 

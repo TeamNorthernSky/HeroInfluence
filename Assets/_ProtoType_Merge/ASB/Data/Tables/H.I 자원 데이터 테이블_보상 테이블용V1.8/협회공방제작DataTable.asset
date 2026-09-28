@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96fc4e5b919640243980112962385a00, type: 3}
+  m_Name: "\uD611\uD68C\uACF5\uBC29\uC81C\uC791DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - required_workshop_level: 2
+    producible_equipment_group: "\uC911\uAE09 \uCF54\uC5B4"
+    weapon_index_list:
+    - 310102
+    - 310202
+    - 310302
+    - 310402
+    - 310502
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 50
+    note: "\uC7A5\uBE44\uBCC4 \uC2A4\uD14C\uC774\uD130\uC2A4 \uBC0F \uC7A5\uBE44
+      \uC2A4\uD0AC\uC740 \uC804\uD22C \uD14C\uC774\uBE14 \uCC38\uC870"
+  - required_workshop_level: 3
+    producible_equipment_group: "\uC0C1\uAE09 \uCF54\uC5B4"
+    weapon_index_list:
+    - 310103
+    - 310203
+    - 310303
+    - 310403
+    - 310503
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 2000
+    cost_resource_2_type: 2
+    cost_resource_2_amount: 100
+    note: 

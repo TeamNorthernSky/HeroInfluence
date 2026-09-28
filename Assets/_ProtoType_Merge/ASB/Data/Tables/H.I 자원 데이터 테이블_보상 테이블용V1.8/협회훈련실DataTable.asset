@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41e3dadb84b2a234f83f784b7c79858c, type: 3}
+  m_Name: "\uD611\uD68C\uD6C8\uB828\uC2E4DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - required_training_room_level: 1
+    training_name: "\uACF5\uACA9\uB825 \uD2B8\uB808\uC774\uB2DD Lv1"
+    cost_resource_type: 0
+    cost_resource_amount: 1000
+    status_type: 4
+    status_amount_per_training: 5
+    training_count_per_unit: 1
+    training_condition: 
+    note: 
+  - required_training_room_level: 2
+    training_name: "\uACF5\uACA9\uB825 \uD2B8\uB808\uC774\uB2DD Lv2"
+    cost_resource_type: 0
+    cost_resource_amount: 1200
+    status_type: 4
+    status_amount_per_training: 10
+    training_count_per_unit: 1
+    training_condition: "\uACF5\uACA9\uB825 \uD2B8\uB808\uC774\uB2DD Lv1"
+    note: 
+  - required_training_room_level: 3
+    training_name: "\uACF5\uACA9\uB825 \uD2B8\uB808\uC774\uB2DD Lv3"
+    cost_resource_type: 0
+    cost_resource_amount: 1400
+    status_type: 4
+    status_amount_per_training: 15
+    training_count_per_unit: 1
+    training_condition: "\uACF5\uACA9\uB825 \uD2B8\uB808\uC774\uB2DD Lv2"
+    note: 
+  - required_training_room_level: 1
+    training_name: "\uC0DD\uBA85\uB825 \uD2B8\uB808\uC774\uB2DD Lv1"
+    cost_resource_type: 0
+    cost_resource_amount: 1000
+    status_type: 3
+    status_amount_per_training: 5
+    training_count_per_unit: 1
+    training_condition: 
+    note: 
+  - required_training_room_level: 2
+    training_name: "\uC0DD\uBA85\uB825 \uD2B8\uB808\uC774\uB2DD Lv2"
+    cost_resource_type: 0
+    cost_resource_amount: 1200
+    status_type: 3
+    status_amount_per_training: 10
+    training_count_per_unit: 1
+    training_condition: "\uC0DD\uBA85\uB825 \uD2B8\uB808\uC774\uB2DD Lv1"
+    note: 
+  - required_training_room_level: 3
+    training_name: "\uC0DD\uBA85\uB825 \uD2B8\uB808\uC774\uB2DD Lv3"
+    cost_resource_type: 0
+    cost_resource_amount: 1400
+    status_type: 3
+    status_amount_per_training: 15
+    training_count_per_unit: 1
+    training_condition: "\uC0DD\uBA85\uB825 \uD2B8\uB808\uC774\uB2DD Lv2"
+    note: 
