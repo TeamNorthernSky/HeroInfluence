@@ -220,8 +220,11 @@ namespace ASB.Work.EditorTools.Jig
             {
                 float preview = JigPreviewPlayback.Speed;
                 float region = JigPreviewPlayback.CurrentRegionSpeed();
+                string hold = JigPreviewPlayback.IsHolding
+                    ? $" · Hold 중 (남은 {JigPreviewPlayback.HoldRemaining:0.00}s)"
+                    : string.Empty;
                 EditorGUILayout.LabelField(
-                    $"재생 중 · 프리뷰 {preview:0.##}x × 구간 {region:0.##}x = 현재 {preview * region:0.##}x",
+                    $"재생 중 · 프리뷰 {preview:0.##}x × 구간 {region:0.##}x = 현재 {preview * region:0.##}x{hold}",
                     EditorStyles.miniLabel);
                 Repaint();   // 재생 중에는 창을 계속 갱신해 상태 표시가 살아 있게 한다.
             }

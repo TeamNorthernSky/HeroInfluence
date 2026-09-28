@@ -46,7 +46,9 @@ namespace ASB.Work.EditorTools.Jig
         private sealed class SpawnedFx
         {
             public GameObject Go;
-            public double BornAt;
+            // 누적 시뮬레이션 시간(초). Timeline 시각 차이가 아니라 dt 합으로 센다 —
+            // Hold로 Timeline이 멈춰 있는 동안에도 이펙트는 계속 나이를 먹어야 수명 판정이 맞다.
+            public double AgeSeconds;
             public ParticleSystem[] Roots;
         }
         private static readonly List<SpawnedFx> _spawned = new List<SpawnedFx>();
@@ -148,12 +150,21 @@ namespace ASB.Work.EditorTools.Jig
                 if (Crossed(prevTime, nowTime, _fires[i].FireTime))
                 {
                     _fired.Add(i);
-                    FireOne(_fires[i], nowTime);
+                    FireOne(_fires[i]);
                 }
             }
 
             double dt = nowTime - prevTime;
-            if (dt > 0d) DriveAndReap(dt, nowTime);
+            if (dt > 0d) DriveAndReap(dt);
+        }
+
+        /// <summary>
+        /// Cue 발화 없이 스폰된 이펙트만 dt만큼 진행한다. Hold 중(Timeline 정지)에 쓴다 —
+        /// 런타임도 Hold 동안 director만 멈추고 파티클은 계속 재생된다.
+        /// </summary>
+        public static void DriveOnly(double dt)
+        {
+            if (dt > 0d) DriveAndReap(dt);
         }
 
         /// <summary>이번 tick에 발화 시각을 지났는지. 순수 함수(테스트 대상).</summary>
@@ -162,7 +173,7 @@ namespace ASB.Work.EditorTools.Jig
             return prevTime < fireTime && fireTime <= nowTime;
         }
 
-        private static void FireOne(JigCueFire f, double now)
+        private static void FireOne(JigCueFire f)
         {
             // 사운드 — 앵커 무관(2D). Held는 수집 단계에서 이미 제외됨.
             if (SoundEnabled && SoundRegistry != null && f.SoundIds != null)
@@ -181,7 +192,7 @@ namespace ASB.Work.EditorTools.Jig
                 for (int i = 0; i < f.EffectIds.Count; i++)
                 {
                     GameObject prefab = EffectRegistry.Get(f.EffectIds[i]);
-                    if (prefab != null) SpawnEffect(prefab, anchor, now);
+                    if (prefab != null) SpawnEffect(prefab, anchor);
                 }
             }
         }
@@ -190,16 +201,16 @@ namespace ASB.Work.EditorTools.Jig
         // 이펙트 스폰 / 파티클 dt 증분 구동 / 수명
         // ──────────────────────────────────────────────────────────────
 
-        private static void SpawnEffect(GameObject prefab, Transform anchor, double now)
+        private static void SpawnEffect(GameObject prefab, Transform anchor)
         {
             Vector3 pos = anchor != null ? anchor.position : Vector3.zero;
             Quaternion rot = anchor != null ? anchor.rotation : Quaternion.identity;
             GameObject go = Object.Instantiate(prefab, pos, rot, anchor);
             go.hideFlags |= HideFlags.DontSaveInEditor;   // DontSave 금지
-            _spawned.Add(new SpawnedFx { Go = go, BornAt = now, Roots = CollectRootSystems(go) });
+            _spawned.Add(new SpawnedFx { Go = go, AgeSeconds = 0d, Roots = CollectRootSystems(go) });
         }
 
-        private static void DriveAndReap(double dt, double now)
+        private static void DriveAndReap(double dt)
         {
             for (int i = _spawned.Count - 1; i >= 0; i--)
             {
@@ -216,7 +227,8 @@ namespace ASB.Work.EditorTools.Jig
                     if (ps.IsAlive(true)) alive = true;
                 }
 
-                double age = now - fx.BornAt;
+                fx.AgeSeconds += dt;
+                double age = fx.AgeSeconds;
                 bool overCap = age > EffectSafetyCapSeconds;
                 bool deadPastGrace = !alive && age > ReapGraceSeconds;
                 if (overCap || deadPastGrace)
@@ -244,6 +256,14 @@ namespace ASB.Work.EditorTools.Jig
             }
             return roots.ToArray();
         }
+
+        // ── 테스트 전용(EditMode 테스트가 reflection으로 호출). 파티클 없이 수명 누적·정리만 검증한다. ──
+        internal static void AddSpawnedForTest(GameObject go) =>
+            _spawned.Add(new SpawnedFx { Go = go, AgeSeconds = 0d, Roots = new ParticleSystem[0] });
+
+        internal static int SpawnedCountForTest => _spawned.Count;
+
+        internal static double AgeOfSpawnedForTest(int index) => _spawned[index].AgeSeconds;
 
         private static void DestroyAllSpawned()
         {
