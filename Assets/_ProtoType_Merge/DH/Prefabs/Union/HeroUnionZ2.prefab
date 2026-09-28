@@ -74,7 +74,7 @@ MonoBehaviour:
   initialState: 0
   currentState: 0
   captureChatZoneId: 2
-  captureChatId: 0
+  captureChatId: 4010010
   autoPlayWhenInitiallyClaimed: 0
   gridManager: {fileID: 0}
   targetRenderer: {fileID: 274276484162403821}

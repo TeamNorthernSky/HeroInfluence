@@ -38,6 +38,21 @@ MonoBehaviour:
   - prefabKey: Main_2-3
     prefab: {fileID: -4997627292347206012, guid: 7175d99d8cb2aae4a9dd3d20c0481621,
       type: 3}
+  - prefabKey: Main_3-1
+    prefab: {fileID: -4997627292347206012, guid: 570ce9e005b46da48bd356f2541c375d,
+      type: 3}
+  - prefabKey: Main_3-2
+    prefab: {fileID: -4997627292347206012, guid: a97fc5070780326449286e31a72ef794,
+      type: 3}
+  - prefabKey: Main_3-3
+    prefab: {fileID: -4997627292347206012, guid: 56f3798ae20d14b41b4f6a0f0bb4167c,
+      type: 3}
+  - prefabKey: Main_4-1
+    prefab: {fileID: -4997627292347206012, guid: 74834b3e3d16f1e43a022dfa2344e89b,
+      type: 3}
+  - prefabKey: Main_4-2
+    prefab: {fileID: -4997627292347206012, guid: 99a0fbc17a501784ca6a0419866f9cb2,
+      type: 3}
   subEventPrefabs:
   - prefabKey: Sub_1
     prefab: {fileID: 280840444368205281, guid: 5fffb83a0ae8dee42992a3de3c444a48, type: 3}
@@ -47,3 +62,7 @@ MonoBehaviour:
   - prefabKey: Sub_2-2
     prefab: {fileID: 2578186627216865515, guid: 903340cead13d9e4fafd77292b84a87f,
       type: 3}
+  - prefabKey: Sub_3
+    prefab: {fileID: 280840444368205281, guid: ed7d879587f26ec458641911fb1dabfb, type: 3}
+  - prefabKey: Sub_4
+    prefab: {fileID: 280840444368205281, guid: c1b6371e60ef7a24597293f3068d7a56, type: 3}

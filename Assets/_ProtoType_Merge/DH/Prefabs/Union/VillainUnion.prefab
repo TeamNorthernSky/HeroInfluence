@@ -72,9 +72,9 @@ MonoBehaviour:
   baseId: villain_union_base_001
   defenderEnemyGroupKey: FEP004S1
   defenderEnemyId: 
-  zoneId: 
+  zoneId: zone_002
   resolvedEnemyLevel: 1
-  defenderCombatChatId: 0
+  defenderCombatChatId: 4220010
   gridManager: {fileID: 0}
 --- !u!114 &8712180153613904357
 MonoBehaviour:
