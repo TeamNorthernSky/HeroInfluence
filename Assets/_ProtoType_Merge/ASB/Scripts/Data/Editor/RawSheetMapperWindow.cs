@@ -29,6 +29,7 @@ namespace ASB.ExcelImport.Editor
         private Vector2 _rawListScroll;
         private Vector2 _columnScroll;
         private Vector2 _previewScroll;
+        private Vector2 _templateScroll;
 
         [MenuItem("Tools/Excel Importer/Raw Sheet Mapper")]
         public static void ShowWindow()
@@ -314,6 +315,12 @@ namespace ASB.ExcelImport.Editor
             EditorGUILayout.HelpBox(
                 "Templates are NOT auto-applied. Copy creates a NEW schema for THIS sheet from the chosen template.",
                 MessageType.Info);
+
+            // 후보가 적으면 딱 맞는 높이, 많으면 최대 높이에서 스크롤
+            const float rowHeight = 22f;
+            const float maxListHeight = 220f;
+            float listHeight = Mathf.Min(_templateCandidates.Count * rowHeight + 8f, maxListHeight);
+            _templateScroll = EditorGUILayout.BeginScrollView(_templateScroll, GUI.skin.box, GUILayout.Height(listHeight));
             for (int i = 0; i < _templateCandidates.Count; i++)
             {
                 ExcelSheetSchemaSO template = _templateCandidates[i];
@@ -329,10 +336,13 @@ namespace ASB.ExcelImport.Editor
                     if (GUILayout.Button("Copy as Template", GUILayout.Width(140f)))
                     {
                         CopyFromTemplate(raw, template);
+                        // 리스트/스키마가 그리는 도중 바뀌므로 이번 프레임 레이아웃을 중단
+                        GUIUtility.ExitGUI();
                     }
                 }
                 EditorGUILayout.EndHorizontal();
             }
+            EditorGUILayout.EndScrollView();
         }
 
         private void DrawSchemaFields()
