@@ -88,14 +88,19 @@ public class PreviewBattleSceneManager : MonoBehaviour
         BattleCharactor actor = SpawnPlayerPreviewUnit();
         List<BattleCharactor> allies = SpawnAdditionalPlayerPreviewUnits();
         List<BattleCharactor> targets = SpawnEnemyPreviewUnits();
-        BattleCharactor target = targets.Count > 0 ? targets[0] : null;
-        BattleCharactor allyTarget = allies.Count > 0 ? allies[0] : null;
+
+        List<BattleCharactor> players = new List<BattleCharactor>();
+        if (actor != null)
+        {
+            players.Add(actor);
+        }
+        players.AddRange(allies);
 
         BattleGridManager.Instance?.RebuildCache();
 
         if (previewController != null)
         {
-            previewController.SetUnits(actor, target, allyTarget);
+            previewController.SetUnits(actor, players, targets);
         }
         else
         {

@@ -1435,7 +1435,7 @@ MonoBehaviour:
   enemyPlace: {fileID: 912453333}
   playerSpawner: {fileID: 173310004}
   enemySpawner: {fileID: 912453334}
-  playerUnitId: 20001
+  playerUnitId: 10003
   playerGridNumber: 101
   additionalPreviewPlayers:
   - unitId: 10003
@@ -2179,7 +2179,7 @@ MonoBehaviour:
   previewAllyTarget: {fileID: 0}
   selectedSkillIndex: 1010
   ignoreSkillCost: 1
-  preventPreviewTargetDeath: 1
+  preventPreviewDeaths: 1
 --- !u!4 &1306616269
 Transform:
   m_ObjectHideFlags: 0

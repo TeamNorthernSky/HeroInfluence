@@ -363,101 +363,17 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             case EnemyActionType.ClassSkill:
             {
                 SkillData classSkill = decision != null ? decision.SelectedSkill : self.SelectedSkillData;
-                return classSkill != null ? PrepareEnemySkillExecutionCopy(classSkill) : null;
+                return classSkill != null ? EnemySkillExecutionPreparer.Prepare(classSkill) : null;
             }
 
             case EnemyActionType.WeaponSkill:
                 return self.EquippedWeaponData != null
-                    ? PrepareEnemySkillExecutionCopy(self.EquippedWeaponData.ToSkillData())
+                    ? EnemySkillExecutionPreparer.Prepare(self.EquippedWeaponData.ToSkillData())
                     : null;
 
             default:
                 return null;
         }
-    }
-
-    /// <summary>적 스킬 실행용 복사본. 애니 필드가 비어 있으면 EnemyDataSheet 폴백 기본값을 채웁니다(원본 SkillData는 변경하지 않음).</summary>
-    private static SkillData PrepareEnemySkillExecutionCopy(SkillData source)
-    {
-        if (source == null)
-        {
-            return null;
-        }
-
-        SkillData copy = CloneSkillData(source);
-        if (!NeedsEnemyAnimationFallback(copy))
-        {
-            return copy;
-        }
-
-        if (string.IsNullOrWhiteSpace(copy.AnimationTrigger))
-        {
-            copy.AnimationTrigger = "Attack";
-        }
-
-        if (copy.HitDelay <= 0f)
-        {
-            copy.HitDelay = 0.25f;
-        }
-
-        if (copy.TotalDelay <= 0f)
-        {
-            copy.TotalDelay = 0.5f;
-        }
-
-        if (string.IsNullOrWhiteSpace(copy.TargetAnimationTrigger))
-        {
-            copy.TargetAnimationTrigger = "Hit";
-        }
-
-        copy.UseAnimEvent = false;
-        return copy;
-    }
-
-    private static bool NeedsEnemyAnimationFallback(SkillData skill)
-    {
-        if (skill == null)
-        {
-            return false;
-        }
-
-        return string.IsNullOrWhiteSpace(skill.AnimationTrigger)
-               || string.IsNullOrWhiteSpace(skill.TargetAnimationTrigger)
-               || skill.HitDelay <= 0f
-               || skill.TotalDelay <= 0f;
-    }
-
-    private static SkillData CloneSkillData(SkillData source)
-    {
-        return new SkillData
-        {
-            skillIndex = source.skillIndex,
-            skillKey = source.skillKey,
-            category = source.category,
-            slot = source.slot,
-            skillClass = source.skillClass,
-            acquireLevel = source.acquireLevel,
-            skillName = source.skillName,
-            description = source.description,
-            ipCost = source.ipCost,
-            classSkillEffect = source.classSkillEffect,
-            classSkillRange = source.classSkillRange,
-            EnemySkill1Range = source.EnemySkill1Range,
-            EnemySkill2Range = source.EnemySkill2Range,
-            classSkillRangeLine = source.classSkillRangeLine,
-            classSkillTarget = source.classSkillTarget,
-            boundary = source.boundary != null ? new List<int>(source.boundary) : new List<int>(),
-            multiTargetType = source.multiTargetType,
-            multiTargetCount = source.multiTargetCount,
-            skillValue = source.skillValue,
-            skillSubValue = source.skillSubValue,
-            AnimationTrigger = source.AnimationTrigger,
-            StateName = source.StateName,
-            UseAnimEvent = source.UseAnimEvent,
-            HitDelay = source.HitDelay,
-            TotalDelay = source.TotalDelay,
-            TargetAnimationTrigger = source.TargetAnimationTrigger
-        };
     }
 
 #if UNITY_EDITOR

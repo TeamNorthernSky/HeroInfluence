@@ -1,13 +1,35 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
+
+public enum PreviewEnemySkillKind
+{
+    ClassSkill,
+    WeaponSkill
+}
+
+public sealed class PreviewEnemySkillOption
+{
+    public PreviewEnemySkillOption(PreviewEnemySkillKind kind, SkillData skill, string label)
+    {
+        Kind = kind;
+        Skill = skill;
+        Label = label;
+    }
+
+    public PreviewEnemySkillKind Kind { get; }
+    public SkillData Skill { get; }
+    public string Label { get; }
+    public int SkillIndex => Skill != null ? Skill.skillIndex : 0;
+}
 
 /// <summary>
 /// PreviewScene 전용 실행 샌드박스. BattleManager.ExecuteGridSkill을 그대로 태워서
 /// 애니메이션·이펙트·사운드·투사체·대미지 팝업까지 실제 전투와 동일한 흐름으로 재생한다.
-/// SkillPresentationEditorWindow(데이터 편집)와 책임을 분리하기 위해 이 컨트롤러만 PreviewScene에 둔다.
 /// </summary>
 public class SkillPresentationPreviewController : MonoBehaviour
 {
@@ -18,61 +40,67 @@ public class SkillPresentationPreviewController : MonoBehaviour
     [SerializeField] private BattleCharactor previewAllyTarget;
     [SerializeField] private int selectedSkillIndex;
     [SerializeField] private bool ignoreSkillCost = true;
-    [SerializeField, Tooltip("프리뷰 중 적 타깃의 HP를 최소 1로 유지해 사망 처리와 모델 비활성화를 막습니다.")]
-    private bool preventPreviewTargetDeath = true;
+    [FormerlySerializedAs("preventPreviewTargetDeath")]
+    [SerializeField, Tooltip("프리뷰 중 시전자 반대 진영의 HP를 최소 1로 유지해 사망 처리와 모델 비활성화를 막습니다.")]
+    private bool preventPreviewDeaths = true;
 
+    private readonly List<BattleCharactor> _previewPlayers = new List<BattleCharactor>();
+    private readonly List<BattleCharactor> _previewEnemies = new List<BattleCharactor>();
+    private readonly Dictionary<BattleCharactor, UnitSnapshot> _unitSnapshots =
+        new Dictionary<BattleCharactor, UnitSnapshot>();
+    private readonly Dictionary<BattleCharactor, Action<float, float>> _deathGuardHandlers =
+        new Dictionary<BattleCharactor, Action<float, float>>();
+
+    private BattleCharactor _selectedEnemyActor;
+    private BattleCharactor _selectedEnemyTarget;
+    private PreviewEnemySkillKind _selectedEnemySkillKind;
+    private int _selectedEnemySkillIndex;
     private bool _isPlaying;
     private Coroutine _playRoutine;
-    private bool _isRestoringPreviewEnemyHp;
-    private UnitSnapshot _actorSnapshot;
-    private UnitSnapshot _targetSnapshot;
-    private UnitSnapshot _allyTargetSnapshot;
+    private bool _isRestoringPreviewUnitHp;
 
     public bool IsPlaying => _isPlaying;
     public string ActorName => previewActor != null ? previewActor.UnitName : "-";
     public string TargetName => previewTarget != null ? previewTarget.UnitName : "-";
-            // Scene-view path editor uses these only as preview anchors; runtime battle code never depends on this controller.
-            public Transform PreviewActorTransform => previewActor != null ? previewActor.transform : null;
-            public Transform PreviewTargetTransform => previewTarget != null ? previewTarget.transform : null;
+    public Transform PreviewActorTransform => previewActor != null ? previewActor.transform : null;
+    public Transform PreviewTargetTransform => previewTarget != null ? previewTarget.transform : null;
+    public IReadOnlyList<BattleCharactor> PreviewPlayers => _previewPlayers;
+    public IReadOnlyList<BattleCharactor> PreviewEnemies => _previewEnemies;
+    public BattleCharactor SelectedEnemyActor => _selectedEnemyActor;
+    public BattleCharactor SelectedEnemyTarget => _selectedEnemyTarget;
+    public PreviewEnemySkillKind SelectedEnemySkillKind => _selectedEnemySkillKind;
+    public int SelectedEnemySkillIndex => _selectedEnemySkillIndex;
 
-    // ── 아군(부활 대상) 수동 제어: 부활 스킬 미리보기용. previewAllyTarget 우선, 없으면 previewTarget. ──
     private BattleCharactor AllyUnit => previewAllyTarget != null ? previewAllyTarget : previewTarget;
     public bool HasAllyTarget => AllyUnit != null;
     public string AllyTargetName => AllyUnit != null ? AllyUnit.UnitName : "-";
     public bool IsAllyTargetDead => AllyUnit != null && AllyUnit.IsDead;
 
-    /// <summary>미리보기에서 아군(부활 대상)을 쓰러뜨린다. 부활 스킬 연출 확인용.</summary>
-    public void KillAllyTarget()
+    public bool CanPlaySelectedEnemySkill
     {
-        BattleCharactor ally = AllyUnit;
-        if (ally == null || ally.IsDead)
+        get
         {
-            return;
+            SanitizeEnemySelections();
+            return !_isPlaying &&
+                   battleManager != null &&
+                   _selectedEnemyActor != null &&
+                   !_selectedEnemyActor.IsDead &&
+                   _selectedEnemyTarget != null &&
+                   !_selectedEnemyTarget.IsDead &&
+                   FindSelectedEnemySkillOption() != null;
         }
-        ally.TakeDamage(ally.MaxHp * 2f);
-    }
-
-    /// <summary>미리보기에서 아군(부활 대상)을 풀피로 되살린다.</summary>
-    public void ReviveAllyTarget()
-    {
-        BattleCharactor ally = AllyUnit;
-        if (ally == null || !ally.IsDead)
-        {
-            return;
-        }
-        ally.Revive(1f);
     }
 
     private void Awake()
     {
         if (battleManager == null)
         {
-            battleManager = Object.FindFirstObjectByType<BattleManager>();
+            battleManager = FindFirstObjectByType<BattleManager>();
         }
 
         if (visualDirector == null)
         {
-            visualDirector = Object.FindFirstObjectByType<BattleVisualDirector>();
+            visualDirector = FindFirstObjectByType<BattleVisualDirector>();
         }
 
         if (battleManager == null)
@@ -85,20 +113,15 @@ public class SkillPresentationPreviewController : MonoBehaviour
             Debug.LogWarning("[SkillPresentationPreviewController] visualDirector를 찾지 못했습니다. 인스펙터에서 연결해주세요.");
         }
 
-        if (previewActor == null)
-        {
-            Debug.LogWarning("[SkillPresentationPreviewController] previewActor가 비어 있습니다. 인스펙터에서 연결해주세요.");
-        }
-
-        if (previewTarget == null)
-        {
-            Debug.LogWarning("[SkillPresentationPreviewController] previewTarget이 비어 있습니다. 인스펙터에서 연결해주세요.");
-        }
-
         if (DHCsvTemplateCatalog.Instance == null)
         {
             Debug.LogWarning("[SkillPresentationPreviewController] DHCsvTemplateCatalog.Instance가 아직 준비되지 않았습니다.");
         }
+    }
+
+    private void OnDisable()
+    {
+        UnhookDeathGuards();
     }
 
     public void SetSelectedSkillIndex(int skillIndex)
@@ -106,19 +129,107 @@ public class SkillPresentationPreviewController : MonoBehaviour
         selectedSkillIndex = skillIndex;
     }
 
+    /// <summary>
+    /// 기존 프리뷰/핫키 호출부 호환용 오버로드입니다.
+    /// 이미 전체 로스터를 받은 상태라면 목록은 보존하고 기본 actor/target만 교체합니다.
+    /// </summary>
     public void SetUnits(BattleCharactor actor, BattleCharactor target, BattleCharactor allyTarget = null)
     {
         previewActor = actor;
         previewTarget = target;
-        previewAllyTarget = allyTarget;
+        previewAllyTarget = allyTarget != null ? allyTarget : FindFirstOtherPlayer(actor);
 
-        RestoreUnit(previewActor);
-        RestoreUnit(previewTarget);
-        RestoreUnit(previewAllyTarget);
+        PruneRoster(_previewPlayers);
+        PruneRoster(_previewEnemies);
+        AddUnique(_previewPlayers, actor);
+        AddUnique(_previewPlayers, allyTarget);
+        AddUnique(_previewEnemies, target);
 
-        _actorSnapshot = UnitSnapshot.Capture(previewActor);
-        _targetSnapshot = UnitSnapshot.Capture(previewTarget);
-        _allyTargetSnapshot = UnitSnapshot.Capture(previewAllyTarget);
+        PrepareRosterState();
+    }
+
+    /// <summary>PreViewsScene에서 생성된 전체 플레이어/적 로스터를 등록합니다.</summary>
+    public void SetUnits(
+        BattleCharactor primaryPlayer,
+        IReadOnlyList<BattleCharactor> players,
+        IReadOnlyList<BattleCharactor> enemies)
+    {
+        _previewPlayers.Clear();
+        _previewEnemies.Clear();
+        CopyUnique(players, _previewPlayers);
+        CopyUnique(enemies, _previewEnemies);
+        AddUnique(_previewPlayers, primaryPlayer);
+
+        previewActor = primaryPlayer != null
+            ? primaryPlayer
+            : FindFirstValid(_previewPlayers, requireAlive: false);
+        previewTarget = FindFirstValid(_previewEnemies, requireAlive: false);
+        previewAllyTarget = FindFirstOtherPlayer(previewActor);
+
+        PrepareRosterState();
+    }
+
+    public void SetSelectedEnemyActor(BattleCharactor actor)
+    {
+        if (actor == null || !_previewEnemies.Contains(actor))
+        {
+            return;
+        }
+
+        _selectedEnemyActor = actor;
+        SanitizeEnemySkillSelection();
+    }
+
+    public void SetSelectedEnemyTarget(BattleCharactor target)
+    {
+        if (target != null && _previewPlayers.Contains(target))
+        {
+            _selectedEnemyTarget = target;
+        }
+    }
+
+    public void SetSelectedEnemySkill(PreviewEnemySkillKind kind, int skillIndex)
+    {
+        _selectedEnemySkillKind = kind;
+        _selectedEnemySkillIndex = skillIndex;
+        SanitizeEnemySkillSelection();
+    }
+
+    public List<PreviewEnemySkillOption> GetSelectedEnemySkillOptions()
+    {
+        return BuildEnemySkillOptions(_selectedEnemyActor);
+    }
+
+    public string GetPreviewUnitLabel(BattleCharactor unit)
+    {
+        if (unit == null)
+        {
+            return "Missing Unit";
+        }
+
+        string grid = unit.OccupiedCell != null ? unit.OccupiedCell.name : "No Grid";
+        string state = unit.IsDead ? " (Dead)" : string.Empty;
+        return $"{grid} | {unit.gameObject.name} | {unit.DisplayName}{state}";
+    }
+
+    public void KillAllyTarget()
+    {
+        BattleCharactor ally = AllyUnit;
+        if (ally == null || ally.IsDead)
+        {
+            return;
+        }
+        ally.TakeDamage(ally.MaxHp * 2f);
+    }
+
+    public void ReviveAllyTarget()
+    {
+        BattleCharactor ally = AllyUnit;
+        if (ally == null || !ally.IsDead)
+        {
+            return;
+        }
+        ally.Revive(1f);
     }
 
     public void PlaySelectedSkill()
@@ -153,26 +264,28 @@ public class SkillPresentationPreviewController : MonoBehaviour
             Debug.LogWarning($"[SkillPresentationPreviewController] skillIndex {selectedSkillIndex} has no valid preview target.");
             return;
         }
-        SkillPresentationData presentation = visualDirector != null ? visualDirector.GetPresentation(selectedSkillIndex) : null;
-        if (presentation == null)
-        {
-            Debug.LogWarning($"[SkillPresentationPreviewController] skillIndex {selectedSkillIndex}에 대한 SkillPresentationData가 없습니다 (Catalog 연결/데이터 누락 확인 필요).");
-        }
-
-        Debug.Log(
-            $"[SkillPresentationPreviewController] Play skillIndex={selectedSkillIndex}, skillName={source.skillName}, " +
-            $"actor={previewActor.UnitName}, target={executionTarget.UnitName}, " +
-            $"battleManager={(battleManager != null)}, visualDirector={(visualDirector != null)}, " +
-            $"csvCatalog={(DHCsvTemplateCatalog.Instance != null)}");
 
         SkillData clone = CloneForPreview(source);
-        if (ignoreSkillCost)
+        BeginPreparedSkill(previewActor, executionTarget, clone, "Player");
+    }
+
+    public void PlaySelectedEnemySkill()
+    {
+        if (_isPlaying)
         {
-            clone.IPCost = 0;
+            return;
         }
 
-        _isPlaying = true;
-        _playRoutine = StartCoroutine(PlayRoutine(clone, executionTarget));
+        SanitizeEnemySelections();
+        PreviewEnemySkillOption option = FindSelectedEnemySkillOption();
+        if (_selectedEnemyActor == null || _selectedEnemyTarget == null || option == null)
+        {
+            Debug.LogWarning("[SkillPresentationPreviewController] 적 공격자/스킬/대상 중 유효하지 않은 항목이 있어 실행을 막습니다.");
+            return;
+        }
+
+        SkillData prepared = EnemySkillExecutionPreparer.Prepare(option.Skill);
+        BeginPreparedSkill(_selectedEnemyActor, _selectedEnemyTarget, prepared, "Enemy");
     }
 
     public void ResetPreview()
@@ -183,116 +296,115 @@ public class SkillPresentationPreviewController : MonoBehaviour
             _playRoutine = null;
         }
 
+        UnhookDeathGuards();
         _isPlaying = false;
 
-        previewActor?.GetComponent<PresentationRuntimeContext>()?.Clear();
-        previewTarget?.GetComponent<PresentationRuntimeContext>()?.Clear();
-        previewAllyTarget?.GetComponent<PresentationRuntimeContext>()?.Clear();
+        foreach (BattleCharactor unit in CollectPreviewUnits())
+        {
+            unit?.GetComponent<PresentationRuntimeContext>()?.Clear();
+        }
 
-        RestoreSnapshotOrUnit(_actorSnapshot, previewActor);
-        RestoreSnapshotOrUnit(_targetSnapshot, previewTarget);
-        RestoreSnapshotOrUnit(_allyTargetSnapshot, previewAllyTarget);
+        RestoreAllSnapshots();
 
-        // TODO: 남아있는 임시 VFX/투사체 정리는 이번 스코프에서 구현하지 않는다.
+        // TODO: 남아있는 임시 VFX/투사체 정리는 별도 프리뷰 인스턴스 추적 기능에서 처리한다.
     }
 
-    private IEnumerator PlayRoutine(SkillData clonedSkill, BattleCharactor executionTarget)
+    private void BeginPreparedSkill(
+        BattleCharactor actor,
+        BattleCharactor target,
+        SkillData preparedSkill,
+        string sourceLabel)
+    {
+        if (_isPlaying)
+        {
+            return;
+        }
+
+        if (battleManager == null || actor == null || target == null || preparedSkill == null)
+        {
+            Debug.LogWarning($"[SkillPresentationPreviewController] {sourceLabel} 스킬 실행에 필요한 참조가 비어 있습니다.");
+            return;
+        }
+
+        SkillPresentationData presentation = visualDirector != null
+            ? visualDirector.GetPresentation(preparedSkill.skillIndex)
+            : null;
+        if (presentation == null)
+        {
+            Debug.LogWarning(
+                $"[SkillPresentationPreviewController] skillIndex {preparedSkill.skillIndex}에 대한 " +
+                "SkillPresentationData가 없습니다 (Catalog 연결/데이터 누락 확인 필요).");
+        }
+
+        if (ignoreSkillCost)
+        {
+            preparedSkill.IPCost = 0;
+        }
+
+        Debug.Log(
+            $"[SkillPresentationPreviewController] Play source={sourceLabel}, " +
+            $"skillIndex={preparedSkill.skillIndex}, skillName={preparedSkill.skillName}, " +
+            $"actor={actor.UnitName}, target={target.UnitName}");
+
+        _isPlaying = true;
+        _playRoutine = StartCoroutine(PlayRoutine(actor, target, preparedSkill));
+    }
+
+    private IEnumerator PlayRoutine(BattleCharactor actor, BattleCharactor executionTarget, SkillData preparedSkill)
     {
         try
         {
-            // 부활 스킬(ClassSkillEffect=2)이고 대상이 '이미' 죽어있으면, 복구(되살리기)하지 않고 그대로 둔다.
-            //  → 안 그러면 RestoreUnit이 되살렸다가 아래에서 다시 쓰러뜨려 '죽는 모션'이 한 번 더 재생된다.
-            bool isRevive = clonedSkill != null && clonedSkill.classSkillEffect == 2;
+            List<BattleCharactor> units = CollectPreviewUnits(actor, executionTarget);
+            bool isRevive = preparedSkill.classSkillEffect == 2;
             bool keepTargetDead = isRevive && executionTarget != null && executionTarget.IsDead;
 
-            if (!(keepTargetDead && ReferenceEquals(previewActor, executionTarget)))
+            for (int i = 0; i < units.Count; i++)
             {
-                RestoreUnit(previewActor);
-            }
-            if (!(keepTargetDead && ReferenceEquals(previewTarget, executionTarget)))
-            {
-                RestoreUnit(previewTarget);
-            }
-            if (!(keepTargetDead && ReferenceEquals(previewAllyTarget, executionTarget)))
-            {
-                RestoreUnit(previewAllyTarget);
+                BattleCharactor unit = units[i];
+                if (keepTargetDead && ReferenceEquals(unit, executionTarget))
+                {
+                    continue;
+                }
+                RestoreUnit(unit);
             }
 
-            _actorSnapshot = UnitSnapshot.Capture(previewActor);
-            _targetSnapshot = UnitSnapshot.Capture(previewTarget);
-            _allyTargetSnapshot = UnitSnapshot.Capture(previewAllyTarget);
+            CaptureSnapshots(units);
 
-            // 부활 스킬 미리보기 보정:
-            //  - 부활은 전투당 1회 제한이므로 매 재생마다 시전자 플래그를 리셋(반복 재생 가능).
-            //  - ExecuteGridSkill 가드가 '죽은 대상'을 요구하므로, 대상이 '살아있을 때만' 조용히 쓰러뜨린다.
-            //    (이미 죽어있으면 위에서 복구를 건너뛰었으므로 그대로 부활 연출만 재생된다)
             if (isRevive)
             {
-                if (previewActor != null)
-                {
-                    previewActor.HasUsedRevive = false;
-                }
+                actor.HasUsedRevive = false;
                 if (executionTarget != null && !executionTarget.IsDead)
                 {
                     executionTarget.TakeDamage(executionTarget.MaxHp * 2f);
                 }
             }
 
-            bool protectEnemiesFromDeath =
-                preventPreviewTargetDeath &&
-                ReferenceEquals(executionTarget, previewTarget);
-
-            var deathGuardHandlers = new System.Collections.Generic.Dictionary<BattleCharactor, System.Action<float, float>>();
-            if (protectEnemiesFromDeath)
-            {
-                BattleCharactor[] sceneUnits = Object.FindObjectsByType<BattleCharactor>(
-                    FindObjectsInactive.Include,
-                    FindObjectsSortMode.None);
-
-                for (int i = 0; i < sceneUnits.Length; i++)
-                {
-                    BattleCharactor enemy = sceneUnits[i];
-                    if (enemy == null || enemy.TeamType == TeamType.Player)
-                    {
-                        continue;
-                    }
-
-                    BattleCharactor protectedEnemy = enemy;
-                    System.Action<float, float> handler = (currentHp, maxHp) =>
-                        KeepPreviewEnemyAlive(protectedEnemy, currentHp);
-                    protectedEnemy.OnHpChanged += handler;
-                    deathGuardHandlers.Add(protectedEnemy, handler);
-                }
-            }
+            HookDeathGuards(actor, units);
 
             bool executed = false;
             try
             {
-                yield return battleManager.ExecuteGridSkill(previewActor, executionTarget, clonedSkill, success => executed = success);
+                yield return battleManager.ExecuteGridSkill(
+                    actor,
+                    executionTarget,
+                    preparedSkill,
+                    success => executed = success);
             }
             finally
             {
-                foreach (var pair in deathGuardHandlers)
-                {
-                    if (pair.Key != null)
-                    {
-                        pair.Key.OnHpChanged -= pair.Value;
-                    }
-                }
+                UnhookDeathGuards();
             }
 
             if (!executed)
             {
-                Debug.LogWarning($"[SkillPresentationPreviewController] skillIndex {clonedSkill.skillIndex} 실행이 실패했습니다 (executed=false).");
+                Debug.LogWarning(
+                    $"[SkillPresentationPreviewController] skillIndex {preparedSkill.skillIndex} 실행이 실패했습니다 (executed=false).");
             }
-
-            // 정상 종료 시 위치/회전은 BattleManager의 EnqueueSkillReturn/ReturnToIdleAction이 복구하므로 여기서 별도 처리하지 않는다.
         }
         finally
         {
-            RestoreSnapshotOrUnit(_actorSnapshot, previewActor);
-            RestoreSnapshotOrUnit(_targetSnapshot, previewTarget);
-        RestoreSnapshotOrUnit(_allyTargetSnapshot, previewAllyTarget);
+            UnhookDeathGuards();
+            RestoreAllSnapshots();
             _isPlaying = false;
             _playRoutine = null;
         }
@@ -307,16 +419,266 @@ public class SkillPresentationPreviewController : MonoBehaviour
 
         return previewTarget;
     }
-    private void KeepPreviewEnemyAlive(BattleCharactor enemy, float currentHp)
+
+    private void PrepareRosterState()
     {
-        if (_isRestoringPreviewEnemyHp || enemy == null || currentHp > 0f)
+        foreach (BattleCharactor unit in CollectPreviewUnits())
+        {
+            RestoreUnit(unit);
+        }
+
+        CaptureSnapshots(CollectPreviewUnits());
+        SanitizeEnemySelections();
+    }
+
+    private void SanitizeEnemySelections()
+    {
+        PruneRoster(_previewPlayers);
+        PruneRoster(_previewEnemies);
+
+        if (_selectedEnemyActor == null || !_previewEnemies.Contains(_selectedEnemyActor) || _selectedEnemyActor.IsDead)
+        {
+            _selectedEnemyActor = FindFirstValid(_previewEnemies, requireAlive: true)
+                                  ?? FindFirstValid(_previewEnemies, requireAlive: false);
+        }
+
+        if (_selectedEnemyTarget == null || !_previewPlayers.Contains(_selectedEnemyTarget) || _selectedEnemyTarget.IsDead)
+        {
+            _selectedEnemyTarget = FindFirstValid(_previewPlayers, requireAlive: true)
+                                   ?? FindFirstValid(_previewPlayers, requireAlive: false);
+        }
+
+        SanitizeEnemySkillSelection();
+    }
+
+    private void SanitizeEnemySkillSelection()
+    {
+        List<PreviewEnemySkillOption> options = BuildEnemySkillOptions(_selectedEnemyActor);
+        for (int i = 0; i < options.Count; i++)
+        {
+            PreviewEnemySkillOption option = options[i];
+            if (option.Kind == _selectedEnemySkillKind && option.SkillIndex == _selectedEnemySkillIndex)
+            {
+                return;
+            }
+        }
+
+        if (options.Count > 0)
+        {
+            _selectedEnemySkillKind = options[0].Kind;
+            _selectedEnemySkillIndex = options[0].SkillIndex;
+        }
+        else
+        {
+            _selectedEnemySkillKind = PreviewEnemySkillKind.ClassSkill;
+            _selectedEnemySkillIndex = 0;
+        }
+    }
+
+    private PreviewEnemySkillOption FindSelectedEnemySkillOption()
+    {
+        List<PreviewEnemySkillOption> options = BuildEnemySkillOptions(_selectedEnemyActor);
+        for (int i = 0; i < options.Count; i++)
+        {
+            PreviewEnemySkillOption option = options[i];
+            if (option.Kind == _selectedEnemySkillKind && option.SkillIndex == _selectedEnemySkillIndex)
+            {
+                return option;
+            }
+        }
+        return null;
+    }
+
+    private static List<PreviewEnemySkillOption> BuildEnemySkillOptions(BattleCharactor enemy)
+    {
+        var options = new List<PreviewEnemySkillOption>();
+        if (enemy == null)
+        {
+            return options;
+        }
+
+        if (enemy.availableSkills != null)
+        {
+            for (int i = 0; i < enemy.availableSkills.Count; i++)
+            {
+                SkillData skill = enemy.availableSkills[i];
+                if (skill == null)
+                {
+                    continue;
+                }
+
+                options.Add(new PreviewEnemySkillOption(
+                    PreviewEnemySkillKind.ClassSkill,
+                    skill,
+                    $"[Class] {skill.skillIndex} | {skill.skillName}"));
+            }
+        }
+
+        if (enemy.EquippedWeaponData != null)
+        {
+            SkillData weaponSkill = enemy.EquippedWeaponData.ToSkillData();
+            if (weaponSkill != null)
+            {
+                options.Add(new PreviewEnemySkillOption(
+                    PreviewEnemySkillKind.WeaponSkill,
+                    weaponSkill,
+                    $"[Weapon] {weaponSkill.skillIndex} | {weaponSkill.skillName}"));
+            }
+        }
+
+        return options;
+    }
+
+    private void HookDeathGuards(BattleCharactor actor, List<BattleCharactor> units)
+    {
+        UnhookDeathGuards();
+        if (!preventPreviewDeaths || actor == null || units == null)
         {
             return;
         }
 
-        _isRestoringPreviewEnemyHp = true;
-        enemy.InitializeCurrentState(1f, enemy.CurrentInfluence);
-        _isRestoringPreviewEnemyHp = false;
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleCharactor unit = units[i];
+            if (unit == null || ReferenceEquals(unit, actor) || unit.TeamType == actor.TeamType)
+            {
+                continue;
+            }
+
+            BattleCharactor protectedUnit = unit;
+            Action<float, float> handler = (currentHp, maxHp) =>
+                KeepPreviewUnitAlive(protectedUnit, currentHp);
+            protectedUnit.OnHpChanged += handler;
+            _deathGuardHandlers[protectedUnit] = handler;
+        }
+    }
+
+    private void UnhookDeathGuards()
+    {
+        foreach (KeyValuePair<BattleCharactor, Action<float, float>> pair in _deathGuardHandlers)
+        {
+            if (pair.Key != null)
+            {
+                pair.Key.OnHpChanged -= pair.Value;
+            }
+        }
+        _deathGuardHandlers.Clear();
+    }
+
+    private void KeepPreviewUnitAlive(BattleCharactor unit, float currentHp)
+    {
+        if (_isRestoringPreviewUnitHp || unit == null || currentHp > 0f)
+        {
+            return;
+        }
+
+        _isRestoringPreviewUnitHp = true;
+        unit.InitializeCurrentState(1f, unit.CurrentInfluence);
+        _isRestoringPreviewUnitHp = false;
+    }
+
+    private void CaptureSnapshots(List<BattleCharactor> units)
+    {
+        _unitSnapshots.Clear();
+        if (units == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleCharactor unit = units[i];
+            if (unit != null)
+            {
+                _unitSnapshots[unit] = UnitSnapshot.Capture(unit);
+            }
+        }
+    }
+
+    private void RestoreAllSnapshots()
+    {
+        foreach (KeyValuePair<BattleCharactor, UnitSnapshot> pair in _unitSnapshots)
+        {
+            if (pair.Key != null && pair.Value != null)
+            {
+                pair.Value.Restore();
+            }
+        }
+    }
+
+    private List<BattleCharactor> CollectPreviewUnits(
+        BattleCharactor additionalA = null,
+        BattleCharactor additionalB = null)
+    {
+        var units = new List<BattleCharactor>();
+        CopyUnique(_previewPlayers, units);
+        CopyUnique(_previewEnemies, units);
+        AddUnique(units, previewActor);
+        AddUnique(units, previewTarget);
+        AddUnique(units, previewAllyTarget);
+        AddUnique(units, additionalA);
+        AddUnique(units, additionalB);
+        return units;
+    }
+
+    private BattleCharactor FindFirstOtherPlayer(BattleCharactor primary)
+    {
+        for (int i = 0; i < _previewPlayers.Count; i++)
+        {
+            BattleCharactor candidate = _previewPlayers[i];
+            if (candidate != null && !ReferenceEquals(candidate, primary))
+            {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static BattleCharactor FindFirstValid(List<BattleCharactor> units, bool requireAlive)
+    {
+        if (units == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleCharactor unit = units[i];
+            if (unit != null && (!requireAlive || !unit.IsDead))
+            {
+                return unit;
+            }
+        }
+        return null;
+    }
+
+    private static void PruneRoster(List<BattleCharactor> units)
+    {
+        if (units != null)
+        {
+            units.RemoveAll(unit => unit == null);
+        }
+    }
+
+    private static void CopyUnique(IReadOnlyList<BattleCharactor> source, List<BattleCharactor> destination)
+    {
+        if (source == null || destination == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < source.Count; i++)
+        {
+            AddUnique(destination, source[i]);
+        }
+    }
+
+    private static void AddUnique(List<BattleCharactor> units, BattleCharactor unit)
+    {
+        if (units != null && unit != null && !units.Contains(unit))
+        {
+            units.Add(unit);
+        }
     }
 
     private static void RestoreUnit(BattleCharactor unit)
@@ -324,6 +686,11 @@ public class SkillPresentationPreviewController : MonoBehaviour
         if (unit == null)
         {
             return;
+        }
+
+        if (!unit.gameObject.activeSelf)
+        {
+            unit.gameObject.SetActive(true);
         }
 
         if (unit.IsDead)
@@ -335,17 +702,6 @@ public class SkillPresentationPreviewController : MonoBehaviour
         unit.InitializeCurrentHpToMax();
     }
 
-    private static void RestoreSnapshotOrUnit(UnitSnapshot snapshot, BattleCharactor fallbackUnit)
-    {
-        if (snapshot != null)
-        {
-            snapshot.Restore();
-            return;
-        }
-
-        RestoreUnit(fallbackUnit);
-    }
-
     private static void ClearStatusEffects(BattleCharactor unit)
     {
         if (unit == null || unit.ActiveStatusEffects == null || unit.ActiveStatusEffects.Count == 0)
@@ -353,16 +709,14 @@ public class SkillPresentationPreviewController : MonoBehaviour
             return;
         }
 
-        List<StatusEffectType> effectTypes = new List<StatusEffectType>();
+        var effectTypes = new List<StatusEffectType>();
         for (int i = 0; i < unit.ActiveStatusEffects.Count; i++)
         {
             StatusEffectInstance effect = unit.ActiveStatusEffects[i];
-            if (effect == null || effect.effectType == StatusEffectType.none)
+            if (effect != null && effect.effectType != StatusEffectType.none)
             {
-                continue;
+                effectTypes.Add(effect.effectType);
             }
-
-            effectTypes.Add(effect.effectType);
         }
 
         for (int i = 0; i < effectTypes.Count; i++)
@@ -380,6 +734,7 @@ public class SkillPresentationPreviewController : MonoBehaviour
         private readonly Quaternion rotation;
         private readonly GridCellRef occupiedCell;
         private readonly List<StatusEffectInstance> statusEffects;
+        private readonly bool hasUsedRevive;
 
         private UnitSnapshot(BattleCharactor unit)
         {
@@ -390,6 +745,7 @@ public class SkillPresentationPreviewController : MonoBehaviour
             rotation = unit.transform.rotation;
             occupiedCell = unit.OccupiedCell;
             statusEffects = CloneStatusEffects(unit);
+            hasUsedRevive = unit.HasUsedRevive;
         }
 
         public static UnitSnapshot Capture(BattleCharactor unit)
@@ -404,13 +760,17 @@ public class SkillPresentationPreviewController : MonoBehaviour
                 return;
             }
 
+            if (!unit.gameObject.activeSelf)
+            {
+                unit.gameObject.SetActive(true);
+            }
+
             if (unit.IsDead && hp > 0f)
             {
                 unit.Revive(1f);
             }
 
             unit.transform.SetPositionAndRotation(position, rotation);
-
             if (occupiedCell != null)
             {
                 unit.AssignToCell(occupiedCell);
@@ -423,11 +783,12 @@ public class SkillPresentationPreviewController : MonoBehaviour
             }
 
             unit.InitializeCurrentState(hp, influence);
+            unit.HasUsedRevive = hasUsedRevive;
         }
 
         private static List<StatusEffectInstance> CloneStatusEffects(BattleCharactor source)
         {
-            List<StatusEffectInstance> clones = new List<StatusEffectInstance>();
+            var clones = new List<StatusEffectInstance>();
             if (source == null || source.ActiveStatusEffects == null)
             {
                 return clones;
@@ -436,14 +797,11 @@ public class SkillPresentationPreviewController : MonoBehaviour
             for (int i = 0; i < source.ActiveStatusEffects.Count; i++)
             {
                 StatusEffectInstance effect = source.ActiveStatusEffects[i];
-                if (effect == null || effect.effectType == StatusEffectType.none)
+                if (effect != null && effect.effectType != StatusEffectType.none)
                 {
-                    continue;
+                    clones.Add(CloneStatusEffect(effect));
                 }
-
-                clones.Add(CloneStatusEffect(effect));
             }
-
             return clones;
         }
 
@@ -484,7 +842,9 @@ public class SkillPresentationPreviewController : MonoBehaviour
             EnemySkill2Range = source.EnemySkill2Range,
             classSkillRangeLine = source.classSkillRangeLine,
             classSkillTarget = source.classSkillTarget,
-            boundary = new List<int>(source.boundary),
+            boundary = source.boundary != null
+                ? new List<int>(source.boundary)
+                : new List<int>(),
             multiTargetCount = source.multiTargetCount,
             multiTargetType = source.multiTargetType,
             skillValue = source.skillValue,
@@ -494,7 +854,7 @@ public class SkillPresentationPreviewController : MonoBehaviour
             UseAnimEvent = source.UseAnimEvent,
             HitDelay = source.HitDelay,
             TotalDelay = source.TotalDelay,
-            TargetAnimationTrigger = source.TargetAnimationTrigger,
+            TargetAnimationTrigger = source.TargetAnimationTrigger
         };
     }
 }
