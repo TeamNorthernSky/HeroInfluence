@@ -42,6 +42,8 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedTutorialItemPrefabKey;
     [SerializeField] private string selectedMainEventPrefabKey;
     [SerializeField] private string selectedSubEventPrefabKey;
+    [SerializeField] private string selectedWorldEventId;
+    [SerializeField] private DHWorldEventType selectedWorldEventType = DHWorldEventType.Consume;
     [SerializeField] private string selectedGatePrefabKey = "horizon";
     [SerializeField] private string selectedGateId = "gate_001";
     [SerializeField] private string selectedGateFirstZoneId = "zone_001";
@@ -112,6 +114,10 @@ public class LevelEditorController : MonoBehaviour
     public string SelectedTutorialItemPrefabKey => string.IsNullOrWhiteSpace(selectedTutorialItemPrefabKey) ? string.Empty : selectedTutorialItemPrefabKey.Trim();
     public string SelectedMainEventPrefabKey => string.IsNullOrWhiteSpace(selectedMainEventPrefabKey) ? string.Empty : selectedMainEventPrefabKey.Trim();
     public string SelectedSubEventPrefabKey => string.IsNullOrWhiteSpace(selectedSubEventPrefabKey) ? string.Empty : selectedSubEventPrefabKey.Trim();
+    public string SelectedWorldEventId => string.IsNullOrWhiteSpace(selectedWorldEventId) ? string.Empty : selectedWorldEventId.Trim();
+    public DHWorldEventType SelectedWorldEventType => selectedWorldEventType == DHWorldEventType.None
+        ? DHWorldEventType.Consume
+        : selectedWorldEventType;
     public string SelectedGatePrefabKey => string.IsNullOrWhiteSpace(selectedGatePrefabKey) ? string.Empty : selectedGatePrefabKey.Trim();
     public string SelectedGateId => selectedGateId;
     public string SelectedGateFirstZoneId => selectedGateFirstZoneId;
@@ -251,6 +257,12 @@ public class LevelEditorController : MonoBehaviour
 
                 levelData.SetSubEvent(grid, selectedSubEventPrefabKey);
                 break;
+            case LevelEditorBrushType.WorldEvent:
+                if (string.IsNullOrWhiteSpace(SelectedWorldEventId))
+                    return;
+
+                levelData.SetWorldEvent(grid, SelectedWorldEventId, SelectedWorldEventType);
+                break;
             case LevelEditorBrushType.GateBlocker:
                 ApplyGateBrush(grid);
                 break;
@@ -335,6 +347,8 @@ public class LevelEditorController : MonoBehaviour
         selectedMapEventKind = MapEventKind.Consume;
         selectedMapEventRequireAmount = Mathf.Max(1, selectedMapEventRequireAmount);
         selectedMapEventEffectAmount = Mathf.Max(0, selectedMapEventEffectAmount);
+        if (selectedWorldEventType == DHWorldEventType.None)
+            selectedWorldEventType = DHWorldEventType.Consume;
     }
 
     private void DrawPlacedCells()
@@ -368,6 +382,9 @@ public class LevelEditorController : MonoBehaviour
 
         for (int i = 0; i < levelData.SubEventPlacements.Count; i++)
             DrawCell(levelData.SubEventPlacements[i].GridPosition, subEventColor, y, size);
+
+        for (int i = 0; i < levelData.WorldEventPlacements.Count; i++)
+            DrawCell(levelData.WorldEventPlacements[i].GridPosition, eventColor, y, size);
 
         for (int i = 0; i < levelData.GatePlacements.Count; i++)
         {

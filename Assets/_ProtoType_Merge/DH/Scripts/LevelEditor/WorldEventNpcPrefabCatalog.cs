@@ -7,7 +7,14 @@ using UnityEngine;
     menuName = "DH Work/Prefab Catalogs/World Event NPC Prefab Catalog")]
 public sealed class WorldEventNpcPrefabCatalog : ScriptableObject
 {
+    [SerializeField] private WorldEventObject worldEventBasePrefab;
     [SerializeField] private List<WorldEventNpcPrefabEntry> npcPrefabs = new List<WorldEventNpcPrefabEntry>();
+
+    public bool TryGetWorldEventPrefab(out WorldEventObject prefab)
+    {
+        prefab = worldEventBasePrefab;
+        return prefab != null;
+    }
 
     public bool TryGetNpcPrefab(int npcType, out GameObject prefab)
     {

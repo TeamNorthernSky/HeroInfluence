@@ -195,6 +195,18 @@ public class InteractionCellOverlayController : MonoBehaviour
 
                 TrySetDesiredCell(grid, OverlayCellType.MainEvent);
             }
+
+            MultiGridOccupant occupant = mainEvent.GetComponent<MultiGridOccupant>();
+            if (occupant != null)
+            {
+                IReadOnlyList<Vector2Int> occupiedCells = occupant.GetOccupiedCells();
+                for (int cellIndex = 0; cellIndex < occupiedCells.Count; cellIndex++)
+                    TrySetVisibleDesiredCell(occupiedCells[cellIndex], OverlayCellType.MainEvent);
+            }
+            else
+            {
+                TrySetVisibleDesiredCell(mainEvent.GetCurrentGrid(gridManager), OverlayCellType.MainEvent);
+            }
         }
     }
 
@@ -211,6 +223,8 @@ public class InteractionCellOverlayController : MonoBehaviour
                 continue;
 
             Vector2Int enemyGrid = enemy.GetCurrentGrid();
+            TrySetVisibleDesiredCell(enemyGrid, OverlayCellType.Enemy);
+
             for (int y = -1; y <= 1; y++)
             {
                 for (int x = -1; x <= 1; x++)
@@ -236,6 +250,14 @@ public class InteractionCellOverlayController : MonoBehaviour
                 }
             }
         }
+    }
+
+    private bool TrySetVisibleDesiredCell(Vector2Int grid, OverlayCellType type)
+    {
+        if (hideFoggedCells && fogGridManager != null && !fogGridManager.IsVisible(grid))
+            return false;
+
+        return TrySetDesiredCell(grid, type);
     }
 
     private void AddOutpostInteractionCells()

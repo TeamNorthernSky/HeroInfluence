@@ -15,6 +15,7 @@ public class LevelLoader : MonoBehaviour
     private const string EventRootName = "EventRoot";
     private const string MainEventRootName = "MainEventRoot";
     private const string SubEventRootName = "SubEventRoot";
+    private const string WorldEventRootName = "WorldEventRoot";
     private const string EnemyRootName = "EnemyRoot";
     private const string HeroUnionRootName = "HeroUnionRoot";
     private const string VillainUnionRootName = "VillainUnionRoot";
@@ -40,6 +41,7 @@ public class LevelLoader : MonoBehaviour
     [SerializeField] private Transform eventRoot;
     [SerializeField] private Transform mainEventRoot;
     [SerializeField] private Transform subEventRoot;
+    [SerializeField] private Transform worldEventRoot;
     [FormerlySerializedAs("stayEnemyRoot")]
     [SerializeField] private Transform enemyRoot;
     [SerializeField] private Transform heroUnionRoot;
@@ -114,6 +116,7 @@ public class LevelLoader : MonoBehaviour
         SpawnEvents();
         SpawnMainEvents();
         SpawnSubEvents();
+        SpawnWorldEvents();
         SpawnEnemyPlacements();
         SpawnEnemySpawnPoints();
         SpawnUniqueBuildings();
@@ -420,6 +423,47 @@ public class LevelLoader : MonoBehaviour
         return repository != null && repository.IsSubEventCompleted(eventKey);
     }
 
+    private void SpawnWorldEvents()
+    {
+        if (prefabRegistry == null)
+            return;
+
+        IReadOnlyList<WorldEventPlacementData> worldEventPlacements = levelData.WorldEventPlacements;
+        if (worldEventPlacements.Count == 0)
+            return;
+
+        if (!prefabRegistry.TryGetWorldEventPrefab(out WorldEventObject worldEventPrefab))
+        {
+            Debug.LogWarning("LevelLoader could not find a world event base prefab.", this);
+            return;
+        }
+
+        Transform parent = GetWorldEventRoot(true);
+        for (int i = 0; i < worldEventPlacements.Count; i++)
+        {
+            WorldEventPlacementData placement = worldEventPlacements[i];
+            if (Application.isPlaying && IsWorldEventCompleted(placement.WorldEventId))
+                continue;
+
+            WorldEventObject worldEvent = SpawnComponent(worldEventPrefab, placement.GridPosition, parent);
+            if (worldEvent != null)
+                worldEvent.ApplyInitialData(placement.WorldEventId);
+        }
+    }
+
+    private static bool IsWorldEventCompleted(string worldEventId)
+    {
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null)
+            return false;
+
+        string normalizedId = MapProgressKey.NormalizeSegment(worldEventId);
+        string progressKey = string.IsNullOrWhiteSpace(normalizedId)
+            ? "world_event"
+            : $"world_event_{normalizedId}";
+        return repository.IsEventCompleted(progressKey);
+    }
+
     private void SpawnEnemyPlacements()
     {
         var enemyPlacements = levelData.EnemyPlacements;
@@ -620,6 +664,7 @@ public class LevelLoader : MonoBehaviour
         ClearChildren(GetEventRoot(false));
         ClearChildren(GetMainEventRoot(false));
         ClearChildren(GetSubEventRoot(false));
+        ClearChildren(GetWorldEventRoot(false));
         ClearChildren(GetHeroUnionRoot(false));
         ClearChildren(GetVillainUnionRoot(false));
         ClearChildren(GetDecorativeObjectRoot(false));
@@ -727,6 +772,9 @@ public class LevelLoader : MonoBehaviour
 
     private Transform GetSubEventRoot(bool createIfMissing) =>
         GetSpawnRoot(ref subEventRoot, SubEventRootName, createIfMissing);
+
+    private Transform GetWorldEventRoot(bool createIfMissing) =>
+        GetSpawnRoot(ref worldEventRoot, WorldEventRootName, createIfMissing);
 
     private Transform GetEnemyRoot(bool createIfMissing) =>
         GetSpawnRoot(ref enemyRoot, EnemyRootName, createIfMissing);

@@ -13,6 +13,7 @@ public class LevelData : ScriptableObject
     private static readonly IReadOnlyList<TutorialObjectPlacementData> EmptyTutorialObjectPlacements = Array.Empty<TutorialObjectPlacementData>();
     private static readonly IReadOnlyList<MainEventPlacementData> EmptyMainEventPlacements = Array.Empty<MainEventPlacementData>();
     private static readonly IReadOnlyList<SubEventPlacementData> EmptySubEventPlacements = Array.Empty<SubEventPlacementData>();
+    private static readonly IReadOnlyList<WorldEventPlacementData> EmptyWorldEventPlacements = Array.Empty<WorldEventPlacementData>();
     private static readonly IReadOnlyList<GatePlacementData> EmptyGatePlacements = Array.Empty<GatePlacementData>();
     private static readonly IReadOnlyList<EnemySpawnPointPlacementData> EmptyEnemySpawnPointPlacements = Array.Empty<EnemySpawnPointPlacementData>();
 
@@ -37,6 +38,7 @@ public class LevelData : ScriptableObject
     [SerializeField] private List<TutorialObjectPlacementData> tutorialObjectPlacements = new List<TutorialObjectPlacementData>();
     [SerializeField] private List<MainEventPlacementData> mainEventPlacements = new List<MainEventPlacementData>();
     [SerializeField] private List<SubEventPlacementData> subEventPlacements = new List<SubEventPlacementData>();
+    [SerializeField] private List<WorldEventPlacementData> worldEventPlacements = new List<WorldEventPlacementData>();
     [SerializeField] private List<GatePlacementData> gatePlacements = new List<GatePlacementData>();
     [SerializeField] private List<EnemySpawnPointPlacementData> enemySpawnPointPlacements = new List<EnemySpawnPointPlacementData>();
     [SerializeField] private UniqueBuildingPlacementData heroUnionPlacement;
@@ -61,6 +63,8 @@ public class LevelData : ScriptableObject
         mainEventPlacements != null ? mainEventPlacements : EmptyMainEventPlacements;
     public IReadOnlyList<SubEventPlacementData> SubEventPlacements =>
         subEventPlacements != null ? subEventPlacements : EmptySubEventPlacements;
+    public IReadOnlyList<WorldEventPlacementData> WorldEventPlacements =>
+        worldEventPlacements != null ? worldEventPlacements : EmptyWorldEventPlacements;
     public IReadOnlyList<GatePlacementData> GatePlacements => gatePlacements != null ? gatePlacements : EmptyGatePlacements;
     public IReadOnlyList<EnemySpawnPointPlacementData> EnemySpawnPointPlacements =>
         enemySpawnPointPlacements != null ? enemySpawnPointPlacements : EmptyEnemySpawnPointPlacements;
@@ -144,6 +148,11 @@ public class LevelData : ScriptableObject
     public bool HasSubEventAt(Vector2Int grid)
     {
         return TryGetSubEventAt(grid, out _);
+    }
+
+    public bool HasWorldEventAt(Vector2Int grid)
+    {
+        return TryGetWorldEventAt(grid, out _);
     }
 
     public bool HasHeroUnionAt(Vector2Int grid)
@@ -270,6 +279,27 @@ public class LevelData : ScriptableObject
         }
 
         subEventPlacement = default;
+        return false;
+    }
+
+    public bool TryGetWorldEventAt(Vector2Int grid, out WorldEventPlacementData worldEventPlacement)
+    {
+        if (worldEventPlacements == null)
+        {
+            worldEventPlacement = default;
+            return false;
+        }
+
+        for (int i = 0; i < worldEventPlacements.Count; i++)
+        {
+            if (worldEventPlacements[i].GridPosition != grid)
+                continue;
+
+            worldEventPlacement = worldEventPlacements[i];
+            return true;
+        }
+
+        worldEventPlacement = default;
         return false;
     }
 
@@ -429,6 +459,16 @@ public class LevelData : ScriptableObject
         subEventPlacements.Add(new SubEventPlacementData(grid, prefabKey));
     }
 
+    public void SetWorldEvent(Vector2Int grid, string worldEventId, DHWorldEventType eventType)
+    {
+        if (!IsInsideGrid(grid) || string.IsNullOrWhiteSpace(worldEventId))
+            return;
+
+        EnsureWorldEventPlacements();
+        RemoveAllPlacementsAt(grid);
+        worldEventPlacements.Add(new WorldEventPlacementData(grid, worldEventId, eventType));
+    }
+
     public void SetGatePlacement(
         string gateId,
         string firstZoneId,
@@ -544,6 +584,11 @@ public class LevelData : ScriptableObject
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
     }
 
+    public void RemoveWorldEventAt(Vector2Int grid)
+    {
+        worldEventPlacements?.RemoveAll(x => x.GridPosition == grid);
+    }
+
     public void RemoveGateBlockerAt(Vector2Int grid)
     {
         if (gatePlacements == null)
@@ -576,6 +621,7 @@ public class LevelData : ScriptableObject
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
         mainEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
+        worldEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         tutorialObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         RemoveGateBlockerAt(grid);
         enemySpawnPointPlacements?.RemoveAll(x => x.GridPosition == grid);
@@ -616,6 +662,7 @@ public class LevelData : ScriptableObject
         decorativeObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         mainEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
+        worldEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         tutorialObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         RemoveGateBlockerAt(grid);
         enemySpawnPointPlacements?.RemoveAll(x => x.GridPosition == grid);
@@ -632,6 +679,7 @@ public class LevelData : ScriptableObject
         decorativeObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         mainEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
+        worldEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         tutorialObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         RemoveGateBlockerAt(grid);
         enemySpawnPointPlacements?.RemoveAll(x => x.GridPosition == grid);
@@ -649,6 +697,8 @@ public class LevelData : ScriptableObject
         decorativeObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         mainEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
+        worldEventPlacements?.RemoveAll(x => x.GridPosition == grid);
+        tutorialObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         RemoveGateBlockerAt(grid);
         enemySpawnPointPlacements?.RemoveAll(x => x.GridPosition == grid);
         ClearUniquePlacementsAt(grid);
@@ -712,6 +762,11 @@ public class LevelData : ScriptableObject
         for (int i = 0; i < subEventPlacements.Count; i++)
             subEventPlacements[i] = subEventPlacements[i].Normalized();
 
+        EnsureWorldEventPlacements();
+        worldEventPlacements.RemoveAll(x => string.IsNullOrWhiteSpace(x.WorldEventId));
+        for (int i = 0; i < worldEventPlacements.Count; i++)
+            worldEventPlacements[i] = worldEventPlacements[i].Normalized();
+
         EnsureGatePlacements();
         for (int i = gatePlacements.Count - 1; i >= 0; i--)
         {
@@ -757,6 +812,11 @@ public class LevelData : ScriptableObject
     private void EnsureSubEventPlacements()
     {
         subEventPlacements ??= new List<SubEventPlacementData>();
+    }
+
+    private void EnsureWorldEventPlacements()
+    {
+        worldEventPlacements ??= new List<WorldEventPlacementData>();
     }
 
     private void EnsureGatePlacements()
@@ -1026,6 +1086,30 @@ public struct SubEventPlacementData
     public SubEventPlacementData Normalized()
     {
         return new SubEventPlacementData(gridPosition, PrefabKey);
+    }
+}
+
+[Serializable]
+public struct WorldEventPlacementData
+{
+    [SerializeField] private Vector2Int gridPosition;
+    [SerializeField] private string worldEventId;
+    [SerializeField] private DHWorldEventType eventType;
+
+    public WorldEventPlacementData(Vector2Int gridPosition, string worldEventId, DHWorldEventType eventType)
+    {
+        this.gridPosition = gridPosition;
+        this.worldEventId = string.IsNullOrWhiteSpace(worldEventId) ? string.Empty : worldEventId.Trim();
+        this.eventType = eventType;
+    }
+
+    public Vector2Int GridPosition => gridPosition;
+    public string WorldEventId => string.IsNullOrWhiteSpace(worldEventId) ? string.Empty : worldEventId.Trim();
+    public DHWorldEventType EventType => eventType;
+
+    public WorldEventPlacementData Normalized()
+    {
+        return new WorldEventPlacementData(gridPosition, WorldEventId, eventType);
     }
 }
 

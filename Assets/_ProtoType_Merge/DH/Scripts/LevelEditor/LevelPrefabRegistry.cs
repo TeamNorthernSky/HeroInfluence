@@ -212,6 +212,15 @@ public class LevelPrefabRegistry : MonoBehaviour
         return false;
     }
 
+    public bool TryGetWorldEventPrefab(out WorldEventObject prefab)
+    {
+        if (worldEventNpcCatalog != null && worldEventNpcCatalog.TryGetWorldEventPrefab(out prefab))
+            return true;
+
+        prefab = null;
+        return false;
+    }
+
     public bool TryGetGatePrefab(string prefabKey, out GateFootprint prefab)
     {
         if (gateCatalog != null && gateCatalog.TryGetGatePrefab(prefabKey, out prefab))

@@ -67,6 +67,14 @@ public sealed class WorldEventObject : MonoBehaviour
         return GetCurrentGrid(targetGridManager) == grid;
     }
 
+    public void ApplyInitialData(string nextWorldEventId)
+    {
+        worldEventId = string.IsNullOrWhiteSpace(nextWorldEventId) ? string.Empty : nextWorldEventId.Trim();
+
+        if (Application.isPlaying && spawnNpcVisualOnEnable)
+            RefreshNpcVisual();
+    }
+
     public bool TryTrigger(PartyGridMover party, Action<WorldEventObject> closedCallback = null)
     {
         if (!Application.isPlaying || isTriggering)
