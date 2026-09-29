@@ -11,6 +11,9 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class WorldEventConsumePanelController : MonoBehaviour
 {
+    [SerializeField] private Sprite influenceIcon;
+    [SerializeField] private Sprite healthIcon;
+    [SerializeField] private Sprite attackIcon;
     private static readonly Color NormalButtonColor = Color.white;
     private static readonly Color NormalTextColor = new Color32(20, 70, 151, 255);
     private static readonly Color SelectedButtonColor = new Color32(17, 72, 174, 255);
@@ -158,7 +161,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         secondResultAmountText.rectTransform.anchoredPosition = resultAmountPosition + Vector2.down * 35f;
     }
 
-    private static void ApplyPreview(Image icon, TMP_Text amountText, DHWorldEventPreviewEntry entry, bool signed)
+    private void ApplyPreview(Image icon, TMP_Text amountText, DHWorldEventPreviewEntry entry, bool signed)
     {
         bool visible = entry != null;
         icon.gameObject.SetActive(visible);
@@ -172,7 +175,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         amountText.color = signed && entry.Amount < 0 ? NegativeAmountColor : PositiveAmountColor;
     }
 
-    private static Sprite ResolveIcon(DHWorldEventPreviewEntry entry)
+    private Sprite ResolveIcon(DHWorldEventPreviewEntry entry)
     {
         if (entry.Group == DHWorldEventPreviewGroup.Cost &&
             DHWorldEventCodeMap.TryGetResourceType(entry.TypeCode, out ResourceType costType))
@@ -182,7 +185,7 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
             DHWorldEventCodeMap.TryGetRewardType(entry.TypeCode, out DHWorldEventRewardType rewardType))
         {
             if (rewardType == DHWorldEventRewardType.CurrentIP)
-                return Sprites.UI.Status(UIStatusIconType.IP);
+                return influenceIcon;
             if (DHWorldEventCodeMap.TryGetRewardResourceType(rewardType, out ResourceType rewardResource))
                 return Sprites.UI.Resource(rewardResource);
         }
@@ -193,12 +196,12 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
             {
                 case DHWorldEventStatusType.CurrentIP:
                 case DHWorldEventStatusType.MaxIP:
-                    return Sprites.UI.Status(UIStatusIconType.IP);
+                    return influenceIcon;
                 case DHWorldEventStatusType.CurrentHP:
                 case DHWorldEventStatusType.MaxHP:
-                    return Sprites.UI.Status(UIStatusIconType.HP);
+                    return healthIcon;
                 case DHWorldEventStatusType.Atk:
-                    return Sprites.UI.Status(UIStatusIconType.ATK);
+                    return attackIcon;
             }
         }
 

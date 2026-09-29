@@ -196,6 +196,7 @@ GameObject:
   m_Component:
   - component: {fileID: 63707399964760256}
   - component: {fileID: 4480877344590340288}
+  - component: {fileID: 1072723075502566594}
   m_Layer: 0
   m_Name: WorldEventObject
   m_TagString: Untagged
@@ -237,6 +238,20 @@ MonoBehaviour:
   visualRoot: {fileID: 0}
   prefabRegistry: {fileID: 0}
   spawnNpcVisualOnEnable: 1
+--- !u!114 &1072723075502566594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2263691777699172704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90468b93ccc7ac146921e71f7da9b297, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 4480877344590340288}
+  message: {fileID: 4208466146828198057}
 --- !u!1 &6991601751931934949
 GameObject:
   m_ObjectHideFlags: 0
@@ -364,8 +379,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB3C4\uC801\uC774 \uB418\uACE0 \uC2F6\uC740 \uC790\uB294\n10\uC6D0\uC744
-    \uB0B4\uB194\uB77C!"
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -393,12 +407,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 40
+  m_fontSize: 30
   m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 24
-  m_fontSizeMax: 40
+  m_fontSizeMin: 16
+  m_fontSizeMax: 30
   m_fontStyle: 1
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 4096
