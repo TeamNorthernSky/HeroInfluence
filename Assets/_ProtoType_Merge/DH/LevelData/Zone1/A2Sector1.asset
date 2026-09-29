@@ -8958,6 +8958,16 @@ MonoBehaviour:
     prefabKey: Sub_1
   - gridPosition: {x: 14, y: 21}
     prefabKey: Sub_2-2
+  worldEventPlacements:
+  - gridPosition: {x: 16, y: 7}
+    worldEventId: C_NPC_01_001
+    eventType: 1
+  - gridPosition: {x: 18, y: 7}
+    worldEventId: R_NPC_01_001
+    eventType: 2
+  - gridPosition: {x: 20, y: 7}
+    worldEventId: S_NPC_01_001
+    eventType: 3
   gatePlacements:
   - gateId: gate_001
     firstZoneId: zone_001
