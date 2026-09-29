@@ -486,6 +486,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7689151272290663358}
   - component: {fileID: 2231899072576401888}
+  - component: {fileID: 3666202236205512905}
   m_Layer: 5
   m_Name: WorldEventNpcScreenUI
   m_TagString: Untagged
@@ -530,6 +531,22 @@ MonoBehaviour:
   consumePanel: {fileID: 531092960694131460}
   rewardPanel: {fileID: 1513022800891747063}
   choicePanel: {fileID: 7199487945501273460}
+  consumeProceed: {fileID: 0}
+  consumeDecline: {fileID: 0}
+  rewardProceed: {fileID: 0}
+  choiceDecline: {fileID: 0}
+--- !u!225 &3666202236205512905
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1432555189835251777}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 1
 --- !u!1 &1513022800891747063
 GameObject:
   m_ObjectHideFlags: 0
