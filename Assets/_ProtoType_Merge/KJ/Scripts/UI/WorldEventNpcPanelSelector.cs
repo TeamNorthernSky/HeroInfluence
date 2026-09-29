@@ -19,6 +19,9 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private string cancelId;
     private bool buttonsBound;
     private int inputFrame = -1;
+    private Button resultClickArea;
+    private DHWorldEventPresentationRequest lastConfirmRequest;
+    private int resultShownFrame = -1;
 
     private void OnEnable()
     {
@@ -58,30 +61,19 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             template == null || template.SourceType != DHWorldEventSourceType.Npc)
             return;
 
-        ShowForEventType(eventId.Trim()[0], template);
-    }
-
-    public static bool MatchesEventType(char eventTypeID, DHWorldEventType eventType)
-    {
-        switch (char.ToUpperInvariant(eventTypeID))
-        {
-            case 'C': return eventType == DHWorldEventType.Consume;
-            case 'R': return eventType == DHWorldEventType.Reward;
-            case 'S': return eventType == DHWorldEventType.Choice;
-            default: return false;
-        }
+        ShowForEventType(template.EventType, template);
     }
 
     // SpeechView에서 조회한 종류를 그대로 사용한다. 여기서 ID로 다시 조회하지 않는다.
-    public void ShowForEventType(char eventTypeID, DHWorldEventTemplate template)
+    public void ShowForEventType(DHWorldEventType eventTypeID, DHWorldEventTemplate template)
     {
         HideAll();
         if (template == null || template.SourceType != DHWorldEventSourceType.Npc ||
-            !MatchesEventType(eventTypeID, template.EventType)) return;
+            eventTypeID != template.EventType) return;
         if (!gameObject.activeSelf) gameObject.SetActive(true);
 
         GameObject target = null;
-        switch (template.EventType)
+        switch (eventTypeID)
         {
             case DHWorldEventType.Consume: target = consumePanel; break;
             case DHWorldEventType.Reward: target = rewardPanel; break;
@@ -111,6 +103,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         if (consumePanel != null) consumePanel.SetActive(false);
         if (rewardPanel != null) rewardPanel.SetActive(false);
         if (choicePanel != null) choicePanel.SetActive(false);
+        if (resultClickArea != null) resultClickArea.gameObject.SetActive(false);
     }
 
     private void OnPresentationChanged(DHWorldEventPresentationRequest request)
@@ -141,6 +134,22 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         choiceDecline.onClick.AddListener(OnChoiceCancel);
         choiceButtons[0].onClick.AddListener(OnChoiceOne);
         choiceButtons[1].onClick.AddListener(OnChoiceTwo);
+        // 결과를 닫는 클릭이 뒤의 맵/다른 버튼으로 전달되지 않도록 화면 전체에서 받는다.
+        var clickRoot = new GameObject("ResultClickArea", typeof(RectTransform), typeof(Image), typeof(Button));
+        clickRoot.layer = gameObject.layer;
+        clickRoot.transform.SetParent(transform, false);
+        var rect = (RectTransform)clickRoot.transform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = rect.offsetMax = Vector2.zero;
+        var image = clickRoot.GetComponent<Image>();
+        image.color = Color.clear;
+        image.raycastTarget = true;
+        resultClickArea = clickRoot.GetComponent<Button>();
+        resultClickArea.targetGraphic = image;
+        resultClickArea.transition = Selectable.Transition.None;
+        resultClickArea.onClick.AddListener(OnResultClick);
+        clickRoot.SetActive(false);
         buttonsBound = true;
     }
 
@@ -149,9 +158,19 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         current = request;
         bool live = manager != null && ReferenceEquals(manager.CurrentRequest, request);
         bool confirm = request.IsWaitingFinalConfirm;
+        bool waitForClick = confirm && request.EventType == DHWorldEventType.Consume;
+        if (waitForClick && !ReferenceEquals(lastConfirmRequest, request))
+        {
+            lastConfirmRequest = request;
+            resultShownFrame = Time.frameCount;
+        }
+        resultClickArea.gameObject.SetActive(waitForClick);
+        resultClickArea.interactable = live;
+        if (waitForClick) resultClickArea.transform.SetAsLastSibling();
         if (request.EventType == DHWorldEventType.Consume)
         {
-            SetButton(consumeProceed, confirm ? "확인" : request.ProceedText, live && (confirm || request.CanProceed));
+            consumeProceed.gameObject.SetActive(!confirm);
+            SetButton(consumeProceed, request.ProceedText, live && request.CanProceed);
             consumeDecline.gameObject.SetActive(!confirm);
             SetButton(consumeDecline, request.DeclineText, live);
         }
@@ -208,8 +227,14 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private void OnProceed()
     {
         if (!CanSubmit(current != null && current.EventType == DHWorldEventType.Reward ? rewardProceed : consumeProceed)) return;
-        if (current.IsWaitingFinalConfirm) manager.ConfirmCurrentMessage();
-        else manager.SelectProceed();
+        manager.SelectProceed();
+    }
+
+    private void OnResultClick()
+    {
+        if (current == null || !current.IsWaitingFinalConfirm ||
+            Time.frameCount == resultShownFrame || !CanSubmit(resultClickArea)) return;
+        manager.ConfirmCurrentMessage();
     }
 
     private void OnDecline() { if (CanSubmit(consumeDecline)) manager.SelectDecline(); }
@@ -220,6 +245,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private void OnDestroy()
     {
         if (!buttonsBound) return;
+        if (resultClickArea != null) resultClickArea.onClick.RemoveListener(OnResultClick);
         if (consumeProceed != null) consumeProceed.onClick.RemoveListener(OnProceed);
         if (consumeDecline != null) consumeDecline.onClick.RemoveListener(OnDecline);
         if (rewardProceed != null) rewardProceed.onClick.RemoveListener(OnProceed);

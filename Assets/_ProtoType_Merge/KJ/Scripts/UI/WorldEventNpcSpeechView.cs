@@ -11,7 +11,7 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
     [SerializeField] private WorldEventNpcPanelSelector answerPanel;
 
     private string lastId;
-    public char eventTypeID;
+    public DHWorldEventType eventTypeID = DHWorldEventType.None;
     private DHWorldEventCatalog lastCatalog;
     private DHWorldEventPresentationRequest lastRequest;
     private bool initialized;
@@ -27,7 +27,6 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
         var catalog = DHWorldEventCatalog.Instance;
         var request = DHWorldEventRuntimeManager.Instance != null ? DHWorldEventRuntimeManager.Instance.CurrentRequest : null;
         string id = source.WorldEventId;
-        eventTypeID = string.IsNullOrEmpty(id) ? '\0' : char.ToUpperInvariant(id[0]);
         if (request != null && request.WorldEventId != id) request = null;
         // 월드 프리팹은 화면 Canvas의 씬 인스턴스를 직접 직렬화할 수 없으므로 런타임에 찾는다.
         if (request != null && answerPanel == null)
@@ -42,13 +41,17 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
         lastCatalog = catalog;
         lastRequest = request;
         string text = string.Empty;
-        if (catalog != null && catalog.TryGetEvent(id, out var template) &&
-            template.SourceType == DHWorldEventSourceType.Npc &&
-            WorldEventNpcPanelSelector.MatchesEventType(eventTypeID, template.EventType))
+        eventTypeID = DHWorldEventType.None;
+        if (catalog != null && catalog.TryGetEvent(id, out var template) && template != null)
         {
-            text = request != null ? request.MessageText : template.Description;
-            if (request != null && answerPanel != null)
-                answerPanel.ShowForEventType(eventTypeID, template);
+            eventTypeID = template.EventType;
+            if (template.SourceType == DHWorldEventSourceType.Npc)
+            {
+                text = request != null ? request.MessageText : template.Description;
+                if (request != null && answerPanel != null)
+                    answerPanel.ShowForEventType(eventTypeID, template);
+            }
+            else if (answerPanel != null) answerPanel.HideForEventId(id);
         }
         else if (answerPanel != null) answerPanel.HideForEventId(id);
         if (message != null) message.text = text;
