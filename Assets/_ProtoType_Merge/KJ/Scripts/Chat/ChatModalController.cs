@@ -44,6 +44,7 @@ public class ChatModalController : MonoBehaviour
     private int beginFrame; // 소환 당시 클릭이 첫 대사를 즉시 넘기는 것 방지
     private int skipConfirmClosedFrame = -1; // 팝업을 닫은 입력의 같은 프레임 대사 진행 차단
     private int choiceSelectedFrame = -1;
+    private bool waitForSkipInputRelease; // 스킵 팝업을 닫은 키/클릭이 아직 눌려 있는 동안 대사 진행 차단
     private DHEventEffectRuntimeManager effectManager;
     private bool dispatchingChatEffect;
     private bool hasRewardResult;
@@ -149,6 +150,7 @@ public class ChatModalController : MonoBehaviour
     {
         if (skipConfirmPopup == null || !skipConfirmPopup.activeSelf) return;
         skipConfirmClosedFrame = Time.frameCount;
+        waitForSkipInputRelease = true;
         skipConfirmPopup.SetActive(false);
     }
 
@@ -223,6 +225,12 @@ public class ChatModalController : MonoBehaviour
     {
         if (manager == null || !manager.IsRunning || choicesVisible) return;
         if (skipConfirmPopup != null && skipConfirmPopup.activeSelf) return; // 스킵 확인 중엔 진행 정지
+        // 팝업을 닫은 키/클릭을 뗄 때까지는 대사 진행 입력으로 받지 않는다 (실행 순서와 무관하게 차단)
+        if (waitForSkipInputRelease)
+        {
+            if (Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0)) return;
+            waitForSkipInputRelease = false;
+        }
         if (Time.frameCount == skipConfirmClosedFrame) return; // 확인/취소 입력은 채팅 진행에 재사용하지 않음
         if (Time.frameCount == choiceSelectedFrame) return;
         if (!Input.GetMouseButtonDown(0)&&!Input.GetKeyDown(KeyCode.Space)) return;
