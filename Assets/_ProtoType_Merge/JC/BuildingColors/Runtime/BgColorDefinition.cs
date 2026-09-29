@@ -15,9 +15,11 @@ namespace JC.BuildingColors
         [Tooltip("원본 비교용 텍스처입니다. 비어 있으면 재질 기본 흰색을 사용합니다.")] public Texture2D original;
         [Tooltip("색상 조절의 시작 텍스처입니다. 원본 또는 승인된 초기 시안입니다.")] public Texture2D source;
         [Tooltip("R=벽, G=지붕, B=창문, A=식생의 가중치입니다. 선형 데이터로 임포트합니다.")] public Texture2D maskParts;
-        [Tooltip("R=바닥 블록, G=파츠 13(문 손잡이), B=파츠 14(건물별 추가 분리 영역), A=파츠 15(측면 상자)의 가중치입니다. 선형 데이터로 임포트합니다.")] public Texture2D maskFloor;
+        [Tooltip("R=바닥 블록, G=파츠 13(문 손잡이), B/A=파츠 14/15(건물별 추가 분리 영역)의 가중치입니다. 선형 데이터로 임포트합니다.")] public Texture2D maskFloor;
         [Tooltip("추가 파츠 5~8의 RGBA 가중치입니다.")] public Texture2D maskExtra;
         [Tooltip("추가 파츠 9~12의 RGBA 가중치입니다.")] public Texture2D maskExtra2;
+        [Tooltip("추가 파츠 16~19의 RGBA 가중치입니다. 현관문 목재 등 독립 색상 영역에 사용합니다.")] public Texture2D maskExtra3;
+        [Tooltip("추가 파츠 20~23의 RGBA 가중치입니다.")] public Texture2D maskExtra4;
     }
     [Serializable] public sealed class BgMeshBinding
     {
@@ -37,7 +39,7 @@ namespace JC.BuildingColors
         [Tooltip("인스펙터에 표시할 건물별 파츠 이름입니다.")] public string[] partNames;
         [Tooltip("초기값 복원 시 사용할 목표값입니다. 옥상 바닥은 채도 0입니다.")] public BgPartColor[] defaults;
         [Tooltip("공유 UV를 분리한 건물의 원본·파생 메시 연결입니다.")] public BgMeshBinding[] meshes;
-        public const int Capacity=16;
+        public const int Capacity=24;
         public static readonly string[] LegacyIds={"wall","roof","window","foliage","floor"};
         public string[] Ids=>partIds!=null&&partIds.Length==initial?.Length?partIds:LegacyIds;
         public string[] Names=>partNames!=null&&partNames.Length==initial?.Length?partNames:PartNames;
@@ -61,6 +63,21 @@ namespace JC.BuildingColors
                 }
             }
             // 추가 분리 전 옥상 바닥면·간판 면에 적용하던 색을 기존 씬과 프로필에서 승계합니다.
+            if(buildingId=="BGStore001"||buildingId=="BGStore002"){
+                foreach(var pair in new[]{new[]{"sign_face","entrance_awning"},new[]{"sign_rim","accent"},new[]{"door_wood","roof_floor"}}){
+                    if(Array.IndexOf(sourceIds,pair[0])>=0)continue;
+                    int to=Array.IndexOf(Ids,pair[0]),from=Array.IndexOf(sourceIds,pair[1]);
+                    if(to>=0&&from>=0&&from<values.Length)result[to]=values[from];
+                }
+            }
+            // Store002의 기존 조정값을 새로 분리한 소품 영역으로 승계합니다.
+            if(buildingId=="BGStore002"){
+                foreach(var pair in new[]{new[]{"table","roof_floor"},new[]{"chairs","roof_floor"},new[]{"lamp_body","vent_trim"},new[]{"lamp_glass","roof_floor"},new[]{"awning_accent","roof_floor"},new[]{"coffee_cup","accent"}}){
+                    if(Array.IndexOf(sourceIds,pair[0])>=0)continue;
+                    int to=Array.IndexOf(Ids,pair[0]),from=Array.IndexOf(sourceIds,pair[1]);
+                    if(to>=0&&from>=0&&from<values.Length)result[to]=values[from];
+                }
+            }
             string splitId=buildingId=="BGHigh002"?"roof_deck":buildingId=="BGOffice002"?"sign_face":null;
             if(splitId!=null&&Array.IndexOf(sourceIds,splitId)<0){
                 int to=Array.IndexOf(Ids,splitId),from=Array.IndexOf(sourceIds,buildingId=="BGHigh002"?"floor":"vent_body");
