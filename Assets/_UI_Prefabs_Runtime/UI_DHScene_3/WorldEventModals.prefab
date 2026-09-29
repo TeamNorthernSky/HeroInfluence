@@ -514,6 +514,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4dad3b7971f8ebf47adcae62fe9771d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  influenceIcon: {fileID: 21300000, guid: 384d4b6db3d7d1344bfac73409cbf59f, type: 3}
+  healthIcon: {fileID: 21300000, guid: 0ed4628f8d9867c4fb281acaa33474bc, type: 3}
+  attackIcon: {fileID: 21300000, guid: 8e0f689f9da3d8b48bdf6d58a58d3325, type: 3}
 --- !u!114 &7613654523714791070
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -526,6 +529,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ad11148e7dc7c7498fcfc3ef31c64b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  influenceIcon: {fileID: 21300000, guid: 384d4b6db3d7d1344bfac73409cbf59f, type: 3}
+  healthIcon: {fileID: 21300000, guid: 0ed4628f8d9867c4fb281acaa33474bc, type: 3}
+  attackIcon: {fileID: 21300000, guid: 8e0f689f9da3d8b48bdf6d58a58d3325, type: 3}
 --- !u!1 &258250843766416429
 GameObject:
   m_ObjectHideFlags: 0

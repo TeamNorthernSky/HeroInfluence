@@ -15,6 +15,13 @@ public class ChoiceButtonView : MonoBehaviour
 
     public string Text => label != null ? label.text : string.Empty;
 
+    /// <summary>숫자 단축키도 실제 버튼의 활성 조건과 클릭 이벤트를 사용한다.</summary>
+    public void ClickFromShortcut()
+    {
+        if (button == null || !button.IsActive() || !button.IsInteractable()) return;
+        button.onClick.Invoke();
+    }
+
     /// <summary>선택 완료된 답변을 대화 기록용으로 표시한다.</summary>
     public void BindHistory(string text)
     {
