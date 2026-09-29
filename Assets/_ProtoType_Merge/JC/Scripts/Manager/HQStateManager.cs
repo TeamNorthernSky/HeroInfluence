@@ -15,13 +15,13 @@ public class HQStateManager : MonoBehaviour
     [Header("초기 단계 — 본부만 1, 나머지 0(미해금)")]
     [SerializeField] private int hqInitialLevel = 1;
 
-    [Header("업그레이드 비용 폴백 (List 엔트리 없는 부서·단계에 적용)")]
+    [Header("이전 비용 데이터 (호환용 보존, 실제 비용은 AssociationResourceCatalog 사용)")]
     [SerializeField] private int defaultCostMoney = 1000;
     [SerializeField] private int defaultCostChip;
     [SerializeField] private int defaultCostCrystal;
     [SerializeField] private int defaultCostSupply;
 
-    [Header("부서·단계별 업그레이드 비용 (추후 CSV 로드 갈아끼움)")]
+    [Header("이전 부서·단계 비용 (미사용)")]
     [SerializeField] private List<UpgradeCostEntry> upgradeCosts = new List<UpgradeCostEntry>();
 
     [Header("부서별 선행 조건 (부서 N이 1단계 되려면 의존 부서들이 모두 충족)")]
@@ -91,6 +91,12 @@ public class HQStateManager : MonoBehaviour
 
     public int GetMaxLevel(HQDepartment d)
     {
+        int catalogMax = 0;
+        // 본부·의무실은 초기 Lv1이므로 건설 행 없이 Lv2부터 시작한다.
+        int first = d == HQDepartment.Headquarters || d == HQDepartment.Infirmary ? 2 : 1;
+        for (int level = first; AssociationCosts.TryBuild(d, level, out _); level++)
+            catalogMax = level;
+        if (catalogMax > 0) return catalogMax;
         if (maxLevels != null)
         {
             for (int i = 0; i < maxLevels.Count; i++)
@@ -114,25 +120,8 @@ public class HQStateManager : MonoBehaviour
 
     public IReadOnlyDictionary<ResourceType, int> GetUpgradeCost(HQDepartment d, int currentLevel)
     {
-        var entry = FindCostEntry(d, currentLevel);
-        return new Dictionary<ResourceType, int>
-        {
-            { ResourceType.Money, entry != null ? entry.money : defaultCostMoney },
-            { ResourceType.Chip, entry != null ? entry.chip : defaultCostChip },
-            { ResourceType.Crystal, entry != null ? entry.crystal : defaultCostCrystal },
-            { ResourceType.Supply, entry != null ? entry.supply : defaultCostSupply },
-        };
-    }
-
-    private UpgradeCostEntry FindCostEntry(HQDepartment d, int fromLevel)
-    {
-        if (upgradeCosts == null) return null;
-        for (int i = 0; i < upgradeCosts.Count; i++)
-        {
-            var e = upgradeCosts[i];
-            if (e != null && e.department == d && e.fromLevel == fromLevel) return e;
-        }
-        return null;
+        return AssociationCosts.TryBuild(d, currentLevel + 1, out var row)
+            && AssociationCosts.TryConvert(row.Costs, out var costs) ? costs : null;
     }
 
     public bool ArePrerequisitesMet(HQDepartment d)
@@ -203,7 +192,7 @@ public class HQStateManager : MonoBehaviour
     {
         if (GetLevel(d) >= GetMaxLevel(d)) return false;
         if (!ArePrerequisitesMet(d)) return false;
-        return true;
+        return GetUpgradeCost(d, GetLevel(d)) != null;
     }
 
     public bool TryUpgrade(HQDepartment d, out int beforeLevel, out int afterLevel)

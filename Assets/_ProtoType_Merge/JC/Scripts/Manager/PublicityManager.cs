@@ -18,7 +18,15 @@ public class PublicityManager : MonoBehaviour
     [SerializeField] private int lastChargeDay; // 마지막 충전이 발생한 day. OnUnlocked/Advance 시 갱신.
 
     // 단계별 수치 — 추후 CSV로 갈아끼움. 인스펙터 변경 불필요(사용자 결정).
-    public static readonly int[] CostPerLevel = { 100, 90, 80, 70, 60 };
+    public static int[] CostPerLevel
+    {
+        get
+        {
+            var result = new int[MaxLevel];
+            for (int i = 0; i < result.Length; i++) result[i] = GetProgressCostAt(i + 1);
+            return result;
+        }
+    }
     public static readonly int[] WeeklyMaxPerLevel = { 50, 55, 60, 65, 70 };
     public const int WeekTurnInterval = 7;
     public const int MaxLevel = 5;
@@ -107,10 +115,12 @@ public class PublicityManager : MonoBehaviour
 
     public int GetProgressCost()
     {
-        int level = GetCurrentLevel();
-        if (level <= 0) return CostPerLevel[0];
-        return CostPerLevel[Mathf.Clamp(level - 1, 0, CostPerLevel.Length - 1)];
+        return GetProgressCostAt(GetCurrentLevel());
     }
+
+    public static int GetProgressCostAt(int level)
+        => AssociationCosts.TryPromotion(level, out var row)
+            && AssociationCosts.TryMoney(row.Cost, out int money) ? money : -1;
 
     public int GetIP(int unitIndex)
     {
@@ -151,6 +161,7 @@ public class PublicityManager : MonoBehaviour
     public bool CanProgress(int count)
     {
         if (!IsUnlocked()) return false;
+        if (GetProgressCost() < 0) return false;
         if (count <= 0) return false;
         if (count > currentPool) return false;
         return true;

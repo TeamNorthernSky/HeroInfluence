@@ -28,11 +28,12 @@ public sealed class HQUpgradeLayoutView : MonoBehaviour
         currentEffect.text = Effect(dept, level, hq);
         nextEffect.text = maxed ? "최고 단계에 도달했습니다." : Effect(dept, level + 1, hq);
         string unmet = hq.GetUnmetReasonText(dept);
-        requirements.text = string.IsNullOrEmpty(unmet) ? "조건 충족" : unmet;
+        requirements.text = !maxed && costs == null ? "비용 정보가 없습니다." : string.IsNullOrEmpty(unmet) ? "조건 충족" : unmet;
         requirements.color = string.IsNullOrEmpty(unmet) ? new Color(.15f,.3f,.8f) : new Color(.75f,.12f,.12f);
         money.text = maxed ? "-" : Ratio(ResourceType.Money, economy, costs);
         supply.text = maxed ? "-" : Ratio(ResourceType.Supply, economy, costs);
         extraCosts.text = "";
+        if (costs == null) return;
         foreach (var pair in costs)
             if (!maxed && pair.Value > 0 && (pair.Key == ResourceType.Chip || pair.Key == ResourceType.Crystal))
                 extraCosts.text += (pair.Key == ResourceType.Chip ? "메달 " : "크리스탈 ") + Ratio(pair.Key, economy, costs) + "  ";
@@ -47,6 +48,7 @@ public sealed class HQUpgradeLayoutView : MonoBehaviour
 
     private static string Ratio(ResourceType type, EconomyManager economy, IReadOnlyDictionary<ResourceType,int> costs)
     {
+        if (costs == null) return "—";
         costs.TryGetValue(type, out int need);
         int have = economy != null ? economy.Get(type) : 0;
         string color = have >= need ? "365CFF" : "C00000";
@@ -75,8 +77,9 @@ public sealed class HQUpgradeLayoutView : MonoBehaviour
             case HQDepartment.Headquarters:
                 return $"• 매 턴 획득 자금 {hq.GetTurnIncomeAt(dept, level):N0}\n• 시설 건설 / 업그레이드";
             case HQDepartment.Publicity:
-                int i = Mathf.Clamp(level - 1, 0, PublicityManager.CostPerLevel.Length - 1);
-                return $"• 홍보 1회 비용 {PublicityManager.CostPerLevel[i]:N0}\n• 주간 홍보 한도 {PublicityManager.WeeklyMaxPerLevel[i]}";
+                int cost = PublicityManager.GetProgressCostAt(level);
+                int i = Mathf.Clamp(level - 1, 0, PublicityManager.WeeklyMaxPerLevel.Length - 1);
+                return $"• 홍보 1회 비용 {(cost >= 0 ? cost.ToString("N0") : "—")}\n• 주간 홍보 한도 {PublicityManager.WeeklyMaxPerLevel[i]}";
             case HQDepartment.Training: return $"• 능력치 훈련 가능\n• 훈련 최대 Lv{Mathf.Min(level, 3)}";
             case HQDepartment.Research: return $"• 히어로 스킬 강화\n• 스킬 강화 최대 Lv{Mathf.Min(level + 1, 5)}";
             case HQDepartment.Infirmary: return "• 히어로 체력 회복\n• 전투 불능 히어로 소생";
