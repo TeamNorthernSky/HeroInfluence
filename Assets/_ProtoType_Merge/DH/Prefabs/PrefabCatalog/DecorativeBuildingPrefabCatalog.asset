@@ -74,18 +74,6 @@ MonoBehaviour:
   - prefabKey: BigHeroGem
     prefab: {fileID: 4477385489227928754, guid: 00ef6148a8e41484188d45d4b46a9fa3,
       type: 3}
-  - prefabKey: Bridge01
-    prefab: {fileID: 7178258451458262173, guid: 2e1fe42c9f1181340877bc44b255d64f,
-      type: 3}
-  - prefabKey: Bridge02
-    prefab: {fileID: 6100472768684354945, guid: c0ab908edb51b8949b19eca46e37a9b8,
-      type: 3}
-  - prefabKey: Bridge03
-    prefab: {fileID: 5878245969387717596, guid: 93a5e22e8cf1c4443ad014862f8fb03c,
-      type: 3}
-  - prefabKey: Bridge04
-    prefab: {fileID: 8401425473160265838, guid: 628c97d3474a9bf4491494a24b345529,
-      type: 3}
   - prefabKey: TrainStation
     prefab: {fileID: 1966605014292293228, guid: 56a7606a3ef9aa84da01c2e3b35c2084,
       type: 3}
@@ -113,28 +101,6 @@ MonoBehaviour:
   - prefabKey: Fence_03-1
     prefab: {fileID: 7340383589336225116, guid: 0b3d5d077fbdeb240a133afa2b609f23,
       type: 3}
-  - prefabKey: Mt01
-    prefab: {fileID: 8280457189905265404, guid: c66fe52629926d64f8b920010a309135,
-      type: 3}
-  - prefabKey: Mt02
-    prefab: {fileID: 2215981523752404015, guid: a54102cc945563d4e857cbacddfef994,
-      type: 3}
-  - prefabKey: Mt03
-    prefab: {fileID: 4184490161617201779, guid: a5a44380ff9d88844a6e0444fd9321a1,
-      type: 3}
-  - prefabKey: Mt04
-    prefab: {fileID: 864305407314633105, guid: 17c4e89262bc9b9428cb58029b5f6654, type: 3}
-  - prefabKey: Mt05
-    prefab: {fileID: 6343825663565746163, guid: 35b3cd5df1c971e4d9ac6fa5b5a98985,
-      type: 3}
-  - prefabKey: Mt06
-    prefab: {fileID: 5672684345775405761, guid: 389c162039dfe154eac2c47ed600dc07,
-      type: 3}
-  - prefabKey: Mt07
-    prefab: {fileID: 864305407314633105, guid: f2e83172c2b4b324d97ef416c0153cf6, type: 3}
-  - prefabKey: Mt08
-    prefab: {fileID: 4726933744781495713, guid: 421ba67fbe6087a40a33deae7cbc465e,
-      type: 3}
   - prefabKey: Ship
     prefab: {fileID: 6128556338955728587, guid: 2d36de989e61b7c4bad8a694b14c0344,
       type: 3}
@@ -144,6 +110,15 @@ MonoBehaviour:
   - prefabKey: SM_Buildings_Port_02
     prefab: {fileID: 7212952195747501473, guid: 04bfc3ea828c24a4798857b2fd5001c5,
       type: 3}
-  - prefabKey: Mt06-02
-    prefab: {fileID: 1504083688496665022, guid: 511979bc0ddf763459e4ca8bb3ff801c,
+  - prefabKey: Bridge
+    prefab: {fileID: 2808066875616175992, guid: 26d980284870099459eed7472d090be2,
+      type: 3}
+  - prefabKey: Mount01
+    prefab: {fileID: 7882594373862586639, guid: 52ca99466dfa9d74f95f9ac9c3f8f22c,
+      type: 3}
+  - prefabKey: Mount02
+    prefab: {fileID: 5708925337397429534, guid: 019c0b27a86f38d41b3d9c1874785d47,
+      type: 3}
+  - prefabKey: Mount03
+    prefab: {fileID: 4019794648730754150, guid: 7bf6518ff64fedc4a9589c68862915cf,
       type: 3}
