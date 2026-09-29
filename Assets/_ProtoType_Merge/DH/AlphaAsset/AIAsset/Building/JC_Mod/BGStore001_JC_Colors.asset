@@ -15,14 +15,14 @@ MonoBehaviour:
   buildingId: BGStore001
   prefab: {fileID: 7914387537086795669, guid: 4adc28f376aa2d9448283f571d346ea1, type: 3}
   recolorShader: {fileID: 4800000, guid: 81d3ea1c9ef6b804d86d5127ba6a1e43, type: 3}
-  classificationNote: "JC \uC7AC\uC81C\uC791 \uBAA8\uB378 \uC804\uC6A9 14\uAC1C \uC0C9\uC0C1
-    \uC601\uC5ED\uC785\uB2C8\uB2E4. \uAE30\uBCF8\uC0C9\uC5D0 \uBCA0\uC774\uD06C \uADF8\uB9BC\uC790\xB7AO\uAC00
-    \uC5C6\uC73C\uBA70, \uC870\uBA85\uACFC \uADF8\uB9BC\uC790\uB294 \uC52C \uC170\uC774\uB354\uAC00
-    \uCC98\uB9AC\uD569\uB2C8\uB2E4. \uC6D0\uBCF8 \uC5D0\uC14B\uACFC \uC774\uC804
-    \uD504\uB85C\uD544\uC740 \uBCC4\uB3C4 \uBCF4\uC874\uB429\uB2C8\uB2E4. \uAC19\uC740
-    \uD30C\uCE20 ID\uC758 \uAD6C\uD615 \uD504\uB85C\uD544\uC744 \uBD88\uB7EC\uC62C
-    \uC218 \uC788\uC73C\uB098 \uC0C8\uB85C \uBD84\uB9AC\uD55C \uC601\uC5ED\uC740
-    \uAE30\uBCF8\uC0C9\uC744 \uC0AC\uC6A9\uD569\uB2C8\uB2E4."
+  classificationNote: "JC Store001 \uC804\uC6A9 17\uAC1C \uC0C9\uC0C1 \uC601\uC5ED\uC785\uB2C8\uB2E4.
+    \uC625\uC0C1 \uBC14\uB2E5\uACFC \uD604\uAD00\uBB38 \uBAA9\uC7AC\uB97C \uAC01\uAC01
+    \uC870\uC808\uD569\uB2C8\uB2E4. \uC678\uBCBD\xB7\uCC3D\uD2C0 \uBAB0\uB529, \uD604\uAD00
+    \uCC28\uC591, \uAC04\uD310 \uBA74\uACFC \uC591\uAC01 \uD14C\uB450\uB9AC\uB3C4
+    \uBCC4\uB3C4 \uD56D\uBAA9\uC785\uB2C8\uB2E4. \uAE30\uC874 \uD504\uB85C\uD544\uC758
+    \uC625\uC0C1 \uBC14\uB2E5 \uC0C9\uC0C1\uC744 \uC0C8 \uBAA9\uC7AC \uD56D\uBAA9\uC5D0
+    \uC2B9\uACC4\uD558\uBA70 \uC774\uD6C4\uC5D0\uB294 \uB3C5\uB9BD\uC801\uC73C\uB85C
+    \uC800\uC7A5\uB429\uB2C8\uB2E4."
   bindings:
   - material: {fileID: 2100000, guid: 21b49a80bc5d9814caf328c423f4b75d, type: 2}
     original: {fileID: 2800000, guid: 05d5eab858d00234e8af93bfee1ea351, type: 3}
@@ -31,6 +31,7 @@ MonoBehaviour:
     maskFloor: {fileID: 2800000, guid: 878ff43ee95e71742b055ca80a7b9995, type: 3}
     maskExtra: {fileID: 2800000, guid: c354b2aed908a344ab3189a71621d46f, type: 3}
     maskExtra2: {fileID: 2800000, guid: df94270827532af4fa0f051fae3ed91c, type: 3}
+    maskExtra3: {fileID: 2800000, guid: 972bf9a4dbeae8048adf429ea98531bd, type: 3}
   initial:
   - hue: 90
     lightness: 1
@@ -88,6 +89,18 @@ MonoBehaviour:
     lightness: 0.9053192
     saturation: 1.6392047
     ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
   partIds:
   - wall
   - roof
@@ -103,21 +116,27 @@ MonoBehaviour:
   - vent_body
   - vent_trim
   - door_handle
+  - sign_face
+  - sign_rim
+  - door_wood
   partNames:
   - "\uBCBD\xB7\uAE30\uB465"
   - "\uC9C0\uBD95\xB7\uC8FC\uC694 \uD14C\uB450\uB9AC"
   - "\uCC3D\xB7\uBB38 \uC720\uB9AC"
   - "\uC2DD\uC0DD"
   - "\uAE30\uB2E8\xB7\uCE35\uAC04 \uB760\xB7\uACC4\uB2E8"
-  - "\uC625\uC0C1 \uBC14\uB2E5\xB7\uAC00\uAD6C"
-  - "\uD604\uAD00 \uCC28\uC591\xB7\uC0C1\uC9D5 \uC7A5\uC2DD"
+  - "\uC625\uC0C1 \uBC14\uB2E5"
+  - "\uD604\uAD00 \uCC28\uC591"
   - "\uD654\uBD84\xB7\uC678\uBD80 \uC18C\uD488"
   - "\uD759"
-  - "\uCC3D\uD2C0\xB7\uBCF4\uC870 \uC7A5\uC2DD"
+  - "\uC678\uBCBD\xB7\uCC3D\uD2C0 \uBAB0\uB529"
   - "\uBB38\uD2C0"
   - "\uC124\uBE44 \uBCF8\uCCB4"
   - "\uC124\uBE44\xB7\uB7A8\uD504 \uBD80\uD488"
   - "\uBB38 \uC190\uC7A1\uC774"
+  - "\uAC04\uD310 \uBA74"
+  - "\uAC04\uD310 \uD14C\uB450\uB9AC"
+  - "\uD604\uAD00\uBB38 \uBAA9\uC7AC"
   defaults:
   - hue: 90
     lightness: 1
@@ -174,5 +193,17 @@ MonoBehaviour:
   - hue: 17.277885
     lightness: 0.9053192
     saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
     ignoreSourceColorAndShading: 0
   meshes: []

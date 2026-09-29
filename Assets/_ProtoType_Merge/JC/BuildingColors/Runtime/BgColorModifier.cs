@@ -39,7 +39,7 @@ namespace JC.BuildingColors
             var root=GetComponentInParent<BgColorRoot>();var scope=root?root.targetRoot:null;
             var renderers=searchEntireScene?AllSceneRenderers():root?root.TargetRenderers:(scope?scope.GetComponentsInChildren<Renderer>(true):AllSceneRenderers());
             var found=new List<Target>();
-            foreach(var r in renderers){if(r.gameObject.scene!=gameObject.scene)continue;var mats=r.sharedMaterials;
+            foreach(var r in renderers){if(!r||r.gameObject.scene!=gameObject.scene)continue;var mats=r.sharedMaterials;
                 for(int slot=0;slot<mats.Length;slot++)for(int i=0;i<definition.bindings.Length;i++)if(mats[slot]==definition.bindings[i].material){
                     found.Add(new Target{renderer=r,slot=slot,binding=i});break;
                 }
@@ -49,14 +49,14 @@ namespace JC.BuildingColors
             RestoreTargets();foreach(var t in found){t.previous=new MaterialPropertyBlock();t.renderer.GetPropertyBlock(t.previous,t.slot);targets.Add(t);}
             BindMeshes();appliedHash=int.MinValue;
         }
-        Renderer[] AllSceneRenderers(){var list=new List<Renderer>();foreach(var g in gameObject.scene.GetRootGameObjects())list.AddRange(g.GetComponentsInChildren<Renderer>(true));return list.ToArray();}
+        Renderer[] AllSceneRenderers(){var list=new List<Renderer>();var scene=gameObject.scene;if(scene.IsValid()&&scene.isLoaded)foreach(var g in scene.GetRootGameObjects())list.AddRange(g.GetComponentsInChildren<Renderer>(true));return list.ToArray();}
         void BindMeshes()
         {
             foreach(var t in targets){var f=t.renderer?t.renderer.GetComponent<MeshFilter>():null;if(!f||meshTargets.Exists(m=>m.filter==f))continue;
                 foreach(var b in definition.meshes??Array.Empty<BgMeshBinding>())if(b.original&&b.separated&&(f.sharedMesh==b.original||f.sharedMesh==b.separated)){meshTargets.Add(new MeshTarget{filter=f,original=b.original,separated=b.separated});appliedHash=int.MinValue;break;}
             }
         }
-        void RestoreTargets(){foreach(var m in meshTargets)if(m.filter&&(m.filter.sharedMesh==m.separated||m.filter.sharedMesh==m.original))m.filter.sharedMesh=m.original;meshTargets.Clear();foreach(var t in targets)if(t.renderer)t.renderer.SetPropertyBlock(t.previous.isEmpty?null:t.previous,t.slot);targets.Clear();}
+        void RestoreTargets(){foreach(var m in meshTargets)if(m.filter&&(m.filter.sharedMesh==m.separated||m.filter.sharedMesh==m.original))m.filter.sharedMesh=m.original;meshTargets.Clear();foreach(var t in targets)if(t.renderer&&t.slot<t.renderer.sharedMaterials.Length)t.renderer.SetPropertyBlock(t.previous==null||t.previous.isEmpty?null:t.previous,t.slot);targets.Clear();}
         int Hash(){unchecked{int h=definition.GetInstanceID()*31+(showOriginal?1:0)+highlightedPart*71;foreach(var p in parts)h=(((h*31+p.hue.GetHashCode())*31+p.lightness.GetHashCode())*31+p.saturation.GetHashCode())*31+(p.ignoreSourceColorAndShading?1:0);return h;}}
         public void EnsureParts()
         {
@@ -77,7 +77,7 @@ namespace JC.BuildingColors
             Status=null;
             if(!processor){if(!definition.recolorShader||!definition.recolorShader.isSupported){Status="색상 셰이더를 사용할 수 없습니다.";return;}processor=new Material(definition.recolorShader){hideFlags=HideFlags.HideAndDontSave};}
             while(outputs.Count<definition.bindings.Length)outputs.Add(null);
-            bool changed=false;var changes=new Vector4[16];var flatColors=new Vector4[16];
+            bool changed=false;var changes=new Vector4[BgColorDefinition.Capacity];var flatColors=new Vector4[BgColorDefinition.Capacity];
             for(int i=0;i<parts.Length;i++){
                 var a=definition.initial[i];var p=parts[i];float sat=Mathf.Clamp(p.saturation,0,100);float ratio=sat==0?0:(a.saturation>.025f?sat/a.saturation:-1);
                 changes[i]=new Vector4(Mathf.Clamp01(p.lightness)-a.lightness,(sat-a.saturation)*.004f,Mathf.DeltaAngle(a.hue,p.hue)*Mathf.Deg2Rad,ratio);
@@ -95,7 +95,7 @@ namespace JC.BuildingColors
                 // Split UV atlases retain the original 2048 texels per page.
                 int w=Mathf.Min(source.width,4096),h=Mathf.Min(source.height,4096);
                 if(!outputs[i]||outputs[i].width!=w||outputs[i].height!=h){DestroyOutput(i);outputs[i]=new RenderTexture(w,h,0,RenderTextureFormat.ARGB32,RenderTextureReadWrite.sRGB){name=definition.buildingId+" 색상 미리보기",hideFlags=HideFlags.HideAndDontSave,useMipMap=true,autoGenerateMips=true,wrapMode=source.wrapMode,filterMode=FilterMode.Bilinear};outputs[i].Create();}
-                processor.SetTexture("_Parts",b.maskParts);processor.SetTexture("_Floor",b.maskFloor);processor.SetTexture("_Extra",b.maskExtra?b.maskExtra:Texture2D.blackTexture);processor.SetTexture("_Extra2",b.maskExtra2?b.maskExtra2:Texture2D.blackTexture);
+                processor.SetTexture("_Parts",b.maskParts);processor.SetTexture("_Floor",b.maskFloor);processor.SetTexture("_Extra",b.maskExtra?b.maskExtra:Texture2D.blackTexture);processor.SetTexture("_Extra2",b.maskExtra2?b.maskExtra2:Texture2D.blackTexture);processor.SetTexture("_Extra3",b.maskExtra3?b.maskExtra3:Texture2D.blackTexture);processor.SetTexture("_Extra4",b.maskExtra4?b.maskExtra4:Texture2D.blackTexture);
                 var prev=RenderTexture.active;bool write=GL.sRGBWrite;try{GL.sRGBWrite=QualitySettings.activeColorSpace==ColorSpace.Linear;Graphics.Blit(source,outputs[i],processor);}finally{RenderTexture.active=prev;GL.sRGBWrite=write;}
                 textures[i]=outputs[i];
             }

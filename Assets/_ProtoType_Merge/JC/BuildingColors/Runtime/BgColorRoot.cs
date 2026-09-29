@@ -10,16 +10,28 @@ namespace JC.BuildingColors
         public BgColorModifier[] Children=>GetComponentsInChildren<BgColorModifier>(true);
         Renderer[] cachedRenderers;
         double nextScan;
+        Transform cachedScope;
+        bool cachedPlaying;
+        void OnEnable() => InvalidateTargets();
+        void OnDisable() => InvalidateTargets();
+        void OnDestroy() => InvalidateTargets();
+        void InvalidateTargets(){cachedRenderers=null;cachedScope=null;nextScan=0;}
+        bool CacheInvalid(){
+            if(cachedRenderers==null||cachedScope!=targetRoot||cachedPlaying!=Application.IsPlaying(gameObject))return true;
+            foreach(var renderer in cachedRenderers)if(!renderer)return true;
+            return false;
+        }
         public Renderer[] TargetRenderers {
             get {
-                if(cachedRenderers==null||Time.realtimeSinceStartupAsDouble>=nextScan){
+                if(CacheInvalid()||Time.realtimeSinceStartupAsDouble>=nextScan){
                     if(targetRoot)cachedRenderers=targetRoot.GetComponentsInChildren<Renderer>(true);
-                    else{var list=new List<Renderer>();foreach(var g in gameObject.scene.GetRootGameObjects())list.AddRange(g.GetComponentsInChildren<Renderer>(true));cachedRenderers=list.ToArray();}
+                    else{var list=new List<Renderer>();var scene=gameObject.scene;if(scene.IsValid()&&scene.isLoaded)foreach(var g in scene.GetRootGameObjects())list.AddRange(g.GetComponentsInChildren<Renderer>(true));cachedRenderers=list.ToArray();}
                     nextScan=Time.realtimeSinceStartupAsDouble+2;
+                    cachedScope=targetRoot;cachedPlaying=Application.IsPlaying(gameObject);
                 }
                 return cachedRenderers;
             }
         }
-        public void RefreshTargets(){cachedRenderers=null;foreach(var c in Children){c.InvalidatePreview();c.Rebind();c.ApplyNow();}}
+        public void RefreshTargets(){InvalidateTargets();foreach(var c in Children){c.InvalidatePreview();c.Rebind();c.ApplyNow();}}
     }
 }
