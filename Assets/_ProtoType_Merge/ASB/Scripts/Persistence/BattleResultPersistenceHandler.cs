@@ -73,12 +73,10 @@ public static class BattleResultPersistenceHandler
             PersistentUnitRepository.SimulateExpProgress(src, gainedExp,
                 out int newLevel, out int newExp, out int newMaxExp);
 
-            // 임시: UnitGrowthExpData 기반 스터디 스킬 경로 사용
-            // TODO: LevelUpData.skill + SkillData.acquireLevel 데이터 정비 후 아래로 교체
-            // candidates = SkillUnlockResolver.GetUnlockCandidates(player.UnitName, src.Level, newLevel, src.CurrentSkillIndex);
+            // 전투 스킬 목록과 동일한 acquireLevel 기준. 선택 결과가 아닌 자동 해금 안내 목록입니다.
             int classIndex = int.TryParse(src.UnitTemplateKey, out int parsed) ? parsed : -1;
             List<int> candidates = (gainedExp > 0 && classIndex > 0)
-                ? DHCsvTemplateCatalog.Instance?.GetNewlyUnlockedStudySkills(classIndex, src.Level, newLevel) ?? new List<int>()
+                ? SkillUnlockResolver.GetUnlockCandidates(classIndex, src.Level, newLevel)
                 : new List<int>();
             Debug.Log($"[BattleRewardPlan] {player.UnitName} | templateKey={src.UnitTemplateKey} classIndex={classIndex} oldLv={src.Level} newLv={newLevel} gainedExp={gainedExp} candidates={candidates.Count}");
 

@@ -15,7 +15,7 @@ Shader "Hidden/JC/BuildingRecolor"
   #ifdef UNITY_COLORSPACE_GAMMA
   linearColor=GammaToLinearSpace(linearColor);
   #endif
-  float4 m=tex2D(_Parts,i.uv);float4 e=tex2D(_Extra,i.uv),f=tex2D(_Extra2,i.uv);float weights[16]={m.r,m.g,m.b,m.a,tex2D(_Floor,i.uv).r,e.r,e.g,e.b,e.a,f.r,f.g,f.b,f.a,0,0,0};
+  float4 m=tex2D(_Parts,i.uv);float4 e=tex2D(_Extra,i.uv),f=tex2D(_Extra2,i.uv),floorMask=tex2D(_Floor,i.uv);float weights[16]={m.r,m.g,m.b,m.a,floorMask.r,e.r,e.g,e.b,e.a,f.r,f.g,f.b,f.a,floorMask.g,floorMask.b,floorMask.a};
   float sum=0;for(int j=0;j<_PartCount;j++)sum+=weights[j];float norm=max(1,sum);
   if(_Highlight>=0&&_Highlight<_PartCount){float weight=weights[(int)_Highlight]/norm;float3 view=lerp(linearColor*.3,float3(1,.03,.5),weight);return float4(view,src.a);}
   float3 lab=toLab(linearColor);float chroma=length(lab.yz);float hue=atan2(lab.z,lab.y);float3 edited=lab;

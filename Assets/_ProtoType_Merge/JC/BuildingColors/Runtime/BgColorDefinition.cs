@@ -15,7 +15,7 @@ namespace JC.BuildingColors
         [Tooltip("원본 비교용 텍스처입니다. 비어 있으면 재질 기본 흰색을 사용합니다.")] public Texture2D original;
         [Tooltip("색상 조절의 시작 텍스처입니다. 원본 또는 승인된 초기 시안입니다.")] public Texture2D source;
         [Tooltip("R=벽, G=지붕, B=창문, A=식생의 가중치입니다. 선형 데이터로 임포트합니다.")] public Texture2D maskParts;
-        [Tooltip("바닥 블록 영역의 가중치입니다. 선형 데이터로 임포트합니다.")] public Texture2D maskFloor;
+        [Tooltip("R=바닥 블록, G=파츠 13(문 손잡이), B=파츠 14(진입차단봉 포인트), A=파츠 15(측면 상자)의 가중치입니다. 선형 데이터로 임포트합니다.")] public Texture2D maskFloor;
         [Tooltip("추가 파츠 5~8의 RGBA 가중치입니다.")] public Texture2D maskExtra;
         [Tooltip("추가 파츠 9~12의 RGBA 가중치입니다.")] public Texture2D maskExtra2;
     }
@@ -37,7 +37,7 @@ namespace JC.BuildingColors
         [Tooltip("인스펙터에 표시할 건물별 파츠 이름입니다.")] public string[] partNames;
         [Tooltip("초기값 복원 시 사용할 목표값입니다. 옥상 바닥은 채도 0입니다.")] public BgPartColor[] defaults;
         [Tooltip("공유 UV를 분리한 건물의 원본·파생 메시 연결입니다.")] public BgMeshBinding[] meshes;
-        public const int Capacity=13;
+        public const int Capacity=16;
         public static readonly string[] LegacyIds={"wall","roof","window","foliage","floor"};
         public string[] Ids=>partIds!=null&&partIds.Length==initial?.Length?partIds:LegacyIds;
         public string[] Names=>partNames!=null&&partNames.Length==initial?.Length?partNames:PartNames;
@@ -48,8 +48,18 @@ namespace JC.BuildingColors
             if(values==null)return result;
             var sourceIds=ids!=null&&ids.Length==values.Length?ids:LegacyIds;
             for(int i=0;i<values.Length&&i<sourceIds.Length;i++){int to=Array.IndexOf(Ids,sourceIds[i]);if(to>=0&&to<result.Length)result[to]=values[i];}
+            // 분리 전 손잡이는 환풍구 본체의 색을 사용했습니다. 기존 조정값을 승계합니다.
+            if(buildingId=="BGHouse001"&&Array.IndexOf(sourceIds,"door_handle")<0){int to=Array.IndexOf(Ids,"door_handle"),from=Array.IndexOf(sourceIds,"vent_body");if(to>=0&&from>=0&&from<values.Length)result[to]=values[from];}
             // Old RowHouse profiles painted the central front with accent.
             if(buildingId=="BGRowHouse002"&&Array.IndexOf(sourceIds,"central_block")<0){int to=Array.IndexOf(Ids,"central_block"),from=Array.IndexOf(sourceIds,"accent");if(to>=0&&from>=0&&from<values.Length)result[to]=values[from];}
+            // Store004에서 분리한 영역은 이전 프로필의 동일한 외장 색을 승계합니다.
+            if(buildingId=="BGStore004"||buildingId=="BGStore004_JC_Comparison"){
+                foreach(var pair in new[]{new[]{"bollard_accent","accent"},new[]{"side_box","pot"}}){
+                    if(Array.IndexOf(sourceIds,pair[0])>=0)continue;
+                    int to=Array.IndexOf(Ids,pair[0]),from=Array.IndexOf(sourceIds,pair[1]);
+                    if(to>=0&&from>=0&&from<values.Length)result[to]=values[from];
+                }
+            }
             return result;
         }
         public static bool ValidValues(BgPartColor[] values,string[] ids)
