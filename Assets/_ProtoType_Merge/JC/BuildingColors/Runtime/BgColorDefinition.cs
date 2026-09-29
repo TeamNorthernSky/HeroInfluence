@@ -15,7 +15,7 @@ namespace JC.BuildingColors
         [Tooltip("원본 비교용 텍스처입니다. 비어 있으면 재질 기본 흰색을 사용합니다.")] public Texture2D original;
         [Tooltip("색상 조절의 시작 텍스처입니다. 원본 또는 승인된 초기 시안입니다.")] public Texture2D source;
         [Tooltip("R=벽, G=지붕, B=창문, A=식생의 가중치입니다. 선형 데이터로 임포트합니다.")] public Texture2D maskParts;
-        [Tooltip("R=바닥 블록, G=파츠 13(문 손잡이), B=파츠 14(진입차단봉 포인트), A=파츠 15(측면 상자)의 가중치입니다. 선형 데이터로 임포트합니다.")] public Texture2D maskFloor;
+        [Tooltip("R=바닥 블록, G=파츠 13(문 손잡이), B=파츠 14(건물별 추가 분리 영역), A=파츠 15(측면 상자)의 가중치입니다. 선형 데이터로 임포트합니다.")] public Texture2D maskFloor;
         [Tooltip("추가 파츠 5~8의 RGBA 가중치입니다.")] public Texture2D maskExtra;
         [Tooltip("추가 파츠 9~12의 RGBA 가중치입니다.")] public Texture2D maskExtra2;
     }
@@ -59,6 +59,12 @@ namespace JC.BuildingColors
                     int to=Array.IndexOf(Ids,pair[0]),from=Array.IndexOf(sourceIds,pair[1]);
                     if(to>=0&&from>=0&&from<values.Length)result[to]=values[from];
                 }
+            }
+            // 추가 분리 전 옥상 바닥면·간판 면에 적용하던 색을 기존 씬과 프로필에서 승계합니다.
+            string splitId=buildingId=="BGHigh002"?"roof_deck":buildingId=="BGOffice002"?"sign_face":null;
+            if(splitId!=null&&Array.IndexOf(sourceIds,splitId)<0){
+                int to=Array.IndexOf(Ids,splitId),from=Array.IndexOf(sourceIds,buildingId=="BGHigh002"?"floor":"vent_body");
+                if(to>=0&&from>=0&&from<values.Length)result[to]=values[from];
             }
             return result;
         }

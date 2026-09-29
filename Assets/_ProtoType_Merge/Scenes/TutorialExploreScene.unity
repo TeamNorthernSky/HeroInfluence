@@ -22930,7 +22930,7 @@ MonoBehaviour:
   heroUnionCatalog: {fileID: 11400000, guid: 8a49bd5614ad29d4b889cf03b9b1a3da, type: 2}
   villainUnionBasePrefab: {fileID: 7581908882623703925, guid: f21b9a302e7e7d946a5552b6e362f64c,
     type: 3}
-  decorativeObjectCatalog: {fileID: 11400000, guid: 8555554ac6e7b3a40824fb2d67312231,
+  decorativeObjectCatalog: {fileID: 11400000, guid: c1e83b7d206cb9a4f8d8b303bb8c5a88,
     type: 2}
   tutorialObjectCatalog: {fileID: 11400000, guid: f92c0a0d4cf105343bcbebd9c5259b1c,
     type: 2}
