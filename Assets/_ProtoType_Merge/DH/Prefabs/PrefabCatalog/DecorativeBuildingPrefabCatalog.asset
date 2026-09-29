@@ -20,10 +20,10 @@ MonoBehaviour:
     prefab: {fileID: 8172164364183093230, guid: f574b5cc63608804bba8b72eea20b2bc,
       type: 3}
   - prefabKey: BGHigh001
-    prefab: {fileID: 6764690245435158181, guid: d565a2469eb69d4429e4761a0322b881,
+    prefab: {fileID: 6764690245435158181, guid: 1e8c730fd31d4fa4ea24284b8b8e148b,
       type: 3}
   - prefabKey: BGHigh002
-    prefab: {fileID: 7889785538580591138, guid: 45d27e8e992f16940b9d4c4962563661,
+    prefab: {fileID: 7889785538580591138, guid: 5208161f8c8a66b4cae710a3cfbfdf6c,
       type: 3}
   - prefabKey: BGHigh003
     prefab: {fileID: 1145379394044673432, guid: e7f0d3047185158418bea0c4391fec47,
@@ -32,30 +32,30 @@ MonoBehaviour:
     prefab: {fileID: 8736176874502331982, guid: 6d237498f0aa33f4abbe70a42080b03c,
       type: 3}
   - prefabKey: BGHouse001
-    prefab: {fileID: 2292214188101383093, guid: 79dd3463630b3ca48addbda5fdbfe50f,
+    prefab: {fileID: 2292214188101383093, guid: 6a714e09a4f6bd747a78fc9b67113922,
       type: 3}
   - prefabKey: BGHouse002
-    prefab: {fileID: 7660221021570841454, guid: 2c7a5602cd7a2a549bf5696fbc38d9e1,
+    prefab: {fileID: 7660221021570841454, guid: ec07cc4da27335d4d9d105d3189f94fa,
       type: 3}
   - prefabKey: BGOffice001
-    prefab: {fileID: 6106123662000733858, guid: 8203604898a668141b0e48b74e9cfa54,
+    prefab: {fileID: 6106123662000733858, guid: 92d719ab86812ab4a966e9d9382fed07,
       type: 3}
   - prefabKey: BGOffice002
-    prefab: {fileID: 211925836079301260, guid: 57fa3bf46c5cbe9458bcb764f7ad7968, type: 3}
+    prefab: {fileID: 211925836079301260, guid: 13daf80e5d97df645975d991929956be, type: 3}
   - prefabKey: BGRowHouse001
     prefab: {fileID: 507173090067462353, guid: d012f1a113cc3c842a88bcd60da46309, type: 3}
   - prefabKey: BGRowHouse002
     prefab: {fileID: 2123447965230796313, guid: 7bac3970904ec954faefd3c88963f393,
       type: 3}
   - prefabKey: BGStore001
-    prefab: {fileID: 7914387537086795669, guid: 3614d2be691e774499dbcf59732072ef,
+    prefab: {fileID: 7914387537086795669, guid: 4adc28f376aa2d9448283f571d346ea1,
       type: 3}
   - prefabKey: BGStore002
-    prefab: {fileID: 69924128716512221, guid: 541ebf4e9a2e5664684a519959bf8a6c, type: 3}
+    prefab: {fileID: 69924128716512221, guid: a163d860dc98b0a49a6733ac804cbab8, type: 3}
   - prefabKey: BGStore003
     prefab: {fileID: 106364087087084287, guid: 51071bfddc7d02442b2bdc5a90f962b6, type: 3}
   - prefabKey: BGStore004
-    prefab: {fileID: 8865873040631196466, guid: 51da2671a7320b5488f8aea6968e749a,
+    prefab: {fileID: 8865873040631196466, guid: 70ff0e2679e40af499a8732a7d7bfff4,
       type: 3}
   - prefabKey: BGStore005
     prefab: {fileID: 5825440346530419896, guid: 7b1f76068b2250643abf8c316d6bcf8b,

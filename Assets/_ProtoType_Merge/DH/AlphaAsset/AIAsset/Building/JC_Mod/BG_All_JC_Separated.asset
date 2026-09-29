@@ -115,25 +115,25 @@ MonoBehaviour:
       lightness: 1
       saturation: 0.000009313226
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.75282323
-      saturation: 39.03917
+    - hue: 32.458244
+      lightness: 0.53153914
+      saturation: 49.740444
       ignoreSourceColorAndShading: 0
-    - hue: 256.43576
-      lightness: 0.5389753
-      saturation: 34.236553
+    - hue: 264.85797
+      lightness: 0.62127674
+      saturation: 21.114584
       ignoreSourceColorAndShading: 0
     - hue: 133.6374
       lightness: 0.35369703
       saturation: 14.397416
       ignoreSourceColorAndShading: 0
-    - hue: 91.5944
-      lightness: 0.7602642
-      saturation: 4.3492503
+    - hue: 32.520985
+      lightness: 0.53233945
+      saturation: 49.731853
       ignoreSourceColorAndShading: 0
-    - hue: 77.9899
-      lightness: 0.8435668
-      saturation: 16.645641
+    - hue: 100.766785
+      lightness: 0.9645975
+      saturation: 20.350674
       ignoreSourceColorAndShading: 0
     - hue: 73.58144
       lightness: 0.75282323
@@ -147,9 +147,9 @@ MonoBehaviour:
       lightness: 0.55545485
       saturation: 25.118418
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 88.03664
+      lightness: 0.85731936
+      saturation: 43.19654
       ignoreSourceColorAndShading: 0
     - hue: 17.277885
       lightness: 0.9053192
@@ -188,21 +188,21 @@ MonoBehaviour:
       lightness: 1
       saturation: 0.000009313226
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.75282323
-      saturation: 39.03917
+    - hue: 283.38403
+      lightness: 0.68390435
+      saturation: 18.044313
       ignoreSourceColorAndShading: 0
     - hue: 256.43576
       lightness: 0.5389753
       saturation: 34.236553
       ignoreSourceColorAndShading: 0
-    - hue: 133.6374
-      lightness: 0.35369703
-      saturation: 14.397416
+    - hue: 133.75745
+      lightness: 0.56877315
+      saturation: 24.476856
       ignoreSourceColorAndShading: 0
-    - hue: 91.5944
-      lightness: 0.7602642
-      saturation: 4.3492503
+    - hue: 272.7738
+      lightness: 0.490596
+      saturation: 12.337834
       ignoreSourceColorAndShading: 0
     - hue: 77.9899
       lightness: 0.8435668
@@ -220,13 +220,13 @@ MonoBehaviour:
       lightness: 0.55545485
       saturation: 25.118418
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 90
+      lightness: 0.61169994
+      saturation: 0.0000056968997
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 273.18695
+      lightness: 0.4482256
+      saturation: 11.470943
       ignoreSourceColorAndShading: 0
     - hue: 17.277885
       lightness: 0.9053192
@@ -236,9 +236,13 @@ MonoBehaviour:
       lightness: 0.6647152
       saturation: 3.073385
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 75.20365
+      lightness: 0.541934
+      saturation: 28.519342
+      ignoreSourceColorAndShading: 0
+    - hue: 272.7738
+      lightness: 0.490596
+      saturation: 12.337834
       ignoreSourceColorAndShading: 0
     partIds:
     - wall
@@ -255,6 +259,7 @@ MonoBehaviour:
     - vent_body
     - vent_trim
     - door_handle
+    - roof_deck
   - buildingId: BGHigh003
     parts:
     - hue: 80.17445
@@ -357,17 +362,17 @@ MonoBehaviour:
       lightness: 1
       saturation: 0.000009313226
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.75282323
-      saturation: 39.03917
+    - hue: 62.455914
+      lightness: 0.88882935
+      saturation: 18.763458
       ignoreSourceColorAndShading: 0
     - hue: 256.43576
       lightness: 0.5389753
       saturation: 34.236553
       ignoreSourceColorAndShading: 0
-    - hue: 133.6374
-      lightness: 0.35369703
-      saturation: 14.397416
+    - hue: 134.13855
+      lightness: 0.6222646
+      saturation: 30.870518
       ignoreSourceColorAndShading: 0
     - hue: 91.5944
       lightness: 0.7602642
@@ -430,53 +435,53 @@ MonoBehaviour:
       lightness: 1
       saturation: 0.000009313226
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.75282323
-      saturation: 39.03917
+    - hue: 27.711397
+      lightness: 0.7572156
+      saturation: 21.696894
       ignoreSourceColorAndShading: 0
-    - hue: 256.43576
-      lightness: 0.5389753
-      saturation: 34.236553
+    - hue: 263.10568
+      lightness: 0.66377354
+      saturation: 11.541191
       ignoreSourceColorAndShading: 0
-    - hue: 133.6374
-      lightness: 0.35369703
-      saturation: 14.397416
+    - hue: 134.69498
+      lightness: 0.52765745
+      saturation: 30.21553
       ignoreSourceColorAndShading: 0
     - hue: 91.5944
       lightness: 0.7602642
       saturation: 4.3492503
       ignoreSourceColorAndShading: 0
-    - hue: 77.9899
-      lightness: 0.8435668
-      saturation: 16.645641
+    - hue: 49.431976
+      lightness: 0.58873343
+      saturation: 26.430971
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.75282323
-      saturation: 39.03917
+    - hue: 22.458448
+      lightness: 0.7616315
+      saturation: 35.45935
       ignoreSourceColorAndShading: 0
-    - hue: 31.085646
-      lightness: 0.6647152
-      saturation: 3.073385
-      ignoreSourceColorAndShading: 0
-    - hue: 63.38495
-      lightness: 0.55545485
-      saturation: 25.118418
+    - hue: 261.09268
+      lightness: 0.5242287
+      saturation: 10.76624
       ignoreSourceColorAndShading: 0
     - hue: 63.38495
       lightness: 0.55545485
       saturation: 25.118418
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 67.24395
+      lightness: 0.6424363
+      saturation: 12.54145
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 251.61426
+      lightness: 0.7939063
+      saturation: 17.038862
       ignoreSourceColorAndShading: 0
-    - hue: 31.085646
-      lightness: 0.6647152
-      saturation: 3.073385
+    - hue: 90
+      lightness: 0.67033327
+      saturation: 0.0000062429654
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.47268358
+      saturation: 0.000004402209
       ignoreSourceColorAndShading: 0
     - hue: 17.277885
       lightness: 0.9053192
@@ -500,32 +505,32 @@ MonoBehaviour:
   - buildingId: BGOffice001
     parts:
     - hue: 90
-      lightness: 1
-      saturation: 0.000009313226
+      lightness: 0.8442273
+      saturation: 0.00000786248
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.75282323
-      saturation: 39.03917
+    - hue: 81.99949
+      lightness: 0.91744316
+      saturation: 20.266138
       ignoreSourceColorAndShading: 0
-    - hue: 256.43576
-      lightness: 0.5389753
-      saturation: 34.236553
+    - hue: 255.4147
+      lightness: 0.8319536
+      saturation: 9.335983
       ignoreSourceColorAndShading: 0
     - hue: 133.6374
       lightness: 0.35369703
       saturation: 14.397416
       ignoreSourceColorAndShading: 0
-    - hue: 91.5944
-      lightness: 0.7602642
-      saturation: 4.3492503
+    - hue: 90
+      lightness: 0.8838011
+      saturation: 0.000008231039
       ignoreSourceColorAndShading: 0
-    - hue: 77.9899
-      lightness: 0.8435668
-      saturation: 16.645641
+    - hue: 131.25648
+      lightness: 0.6692711
+      saturation: 15.203453
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.75282323
-      saturation: 39.03917
+    - hue: 222.4839
+      lightness: 0.7579425
+      saturation: 14.727936
       ignoreSourceColorAndShading: 0
     - hue: 31.085646
       lightness: 0.6647152
@@ -535,13 +540,13 @@ MonoBehaviour:
       lightness: 0.55545485
       saturation: 25.118418
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 90
+      lightness: 0.49555367
+      saturation: 0.000004615203
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 90
+      lightness: 0.7173641
+      saturation: 0.0000066809735
       ignoreSourceColorAndShading: 0
     - hue: 17.277885
       lightness: 0.9053192
@@ -572,57 +577,61 @@ MonoBehaviour:
     - door_handle
   - buildingId: BGOffice002
     parts:
-    - hue: 90
-      lightness: 1
-      saturation: 0.000009313226
+    - hue: 18.822308
+      lightness: 0.8055789
+      saturation: 18.564184
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.75282323
-      saturation: 39.03917
+    - hue: 16.289589
+      lightness: 0.78154796
+      saturation: 32.09315
       ignoreSourceColorAndShading: 0
-    - hue: 256.43576
-      lightness: 0.5389753
-      saturation: 34.236553
+    - hue: 198.4251
+      lightness: 0.85587054
+      saturation: 9.2843895
       ignoreSourceColorAndShading: 0
-    - hue: 133.6374
-      lightness: 0.35369703
-      saturation: 14.397416
+    - hue: 135.37856
+      lightness: 0.6843167
+      saturation: 43.934715
       ignoreSourceColorAndShading: 0
-    - hue: 91.5944
-      lightness: 0.7602642
-      saturation: 4.3492503
+    - hue: 18.275476
+      lightness: 0.4719315
+      saturation: 7.5358253
       ignoreSourceColorAndShading: 0
     - hue: 77.9899
       lightness: 0.8435668
       saturation: 16.645641
       ignoreSourceColorAndShading: 0
-    - hue: 73.58144
-      lightness: 0.75282323
-      saturation: 39.03917
+    - hue: 27.999804
+      lightness: 0.56040275
+      saturation: 16.861597
       ignoreSourceColorAndShading: 0
-    - hue: 31.085646
-      lightness: 0.6647152
-      saturation: 3.073385
+    - hue: 32.285435
+      lightness: 0.34721267
+      saturation: 15.187323
       ignoreSourceColorAndShading: 0
     - hue: 63.38495
       lightness: 0.55545485
       saturation: 25.118418
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 71.262
+      lightness: 0.56704223
+      saturation: 19.568249
+      ignoreSourceColorAndShading: 0
+    - hue: 18.741112
+      lightness: 0.46954286
+      saturation: 10.340236
       ignoreSourceColorAndShading: 0
     - hue: 17.277885
       lightness: 0.9053192
       saturation: 1.6392047
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 90
+      lightness: 0.65977097
+      saturation: 0.000006144596
       ignoreSourceColorAndShading: 0
-    - hue: 31.085646
-      lightness: 0.6647152
-      saturation: 3.073385
+    - hue: 98.162796
+      lightness: 0.7140908
+      saturation: 34.993282
       ignoreSourceColorAndShading: 0
     - hue: 17.277885
       lightness: 0.9053192
@@ -643,6 +652,7 @@ MonoBehaviour:
     - vent_body
     - vent_trim
     - door_handle
+    - sign_face
   - buildingId: BGRowHouse001
     parts:
     - hue: 90
@@ -955,69 +965,69 @@ MonoBehaviour:
     - accent2
   - buildingId: BGStore004
     parts:
-    - hue: 90
-      lightness: 1
-      saturation: 0.000009313226
+    - hue: 95.28773
+      lightness: 0.7313589
+      saturation: 4.81134
       ignoreSourceColorAndShading: 0
     - hue: 142.54832
       lightness: 0.42747808
       saturation: 21.878466
       ignoreSourceColorAndShading: 0
-    - hue: 256.43576
-      lightness: 0.5389753
-      saturation: 34.236553
+    - hue: 230.59706
+      lightness: 0.78118384
+      saturation: 14.779661
       ignoreSourceColorAndShading: 0
     - hue: 27.532671
       lightness: 0.5108109
       saturation: 44.991295
       ignoreSourceColorAndShading: 0
-    - hue: 91.5944
-      lightness: 0.7602642
-      saturation: 4.3492503
+    - hue: 267.88458
+      lightness: 0.68294555
+      saturation: 5.300618
       ignoreSourceColorAndShading: 0
-    - hue: 77.9899
-      lightness: 0.8435668
-      saturation: 16.645641
+    - hue: 78.21812
+      lightness: 0.5470071
+      saturation: 8.274301
       ignoreSourceColorAndShading: 0
     - hue: 88.39558
       lightness: 0.8228685
       saturation: 39.5169
       ignoreSourceColorAndShading: 0
-    - hue: 31.085646
-      lightness: 0.6647152
-      saturation: 3.073385
+    - hue: 33.199535
+      lightness: 0.44133955
+      saturation: 31.965166
       ignoreSourceColorAndShading: 0
-    - hue: 63.38495
-      lightness: 0.55545485
-      saturation: 25.118418
+    - hue: 90
+      lightness: 0.7173641
+      saturation: 0.0000066809735
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 90
+      lightness: 0.9904503
+      saturation: 0.000009224287
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 140.94159
+      lightness: 0.5332772
+      saturation: 36.542377
       ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 90
+      lightness: 0.77890307
+      saturation: 0.0000072541
       ignoreSourceColorAndShading: 0
-    - hue: 31.085646
-      lightness: 0.6647152
-      saturation: 3.073385
-      ignoreSourceColorAndShading: 0
-    - hue: 17.277885
-      lightness: 0.9053192
-      saturation: 1.6392047
+    - hue: 90
+      lightness: 0.64916635
+      saturation: 0.000006045833
       ignoreSourceColorAndShading: 0
     - hue: 17.277885
       lightness: 0.9053192
       saturation: 1.6392047
       ignoreSourceColorAndShading: 0
-    - hue: 31.085646
-      lightness: 0.6647152
-      saturation: 3.073385
+    - hue: 90
+      lightness: 0.9904503
+      saturation: 0.000009224287
+      ignoreSourceColorAndShading: 0
+    - hue: 33.199535
+      lightness: 0.44133955
+      saturation: 31.965166
       ignoreSourceColorAndShading: 0
     partIds:
     - wall
