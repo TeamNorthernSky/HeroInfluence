@@ -77,7 +77,7 @@ public class EnemySpawnController : MonoBehaviour
 
         // Replacement enemies are static runtime enemies spawned from a completed/disabled main event.
         DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
-        if (templateCatalog == null || !templateCatalog.TryGetEnemyGroupTemplate(normalizedGroupKey, out _))
+        if (templateCatalog == null || !templateCatalog.TryGetEnemyGroupTemplate(normalizedGroupKey, out DHEnemyGroupTemplate groupData))
             return false;
 
         MapProgressRepository progressRepository = MapProgressRepository.Instance;
@@ -97,7 +97,7 @@ public class EnemySpawnController : MonoBehaviour
 
         string zoneId = ResolveZoneId(spawnGrid);
         int enemyLevel = ResolveZoneEnemyLevel(zoneId);
-        if (TrySpawnAtGrid(spawnGrid, placementKey, normalizedGroupKey, zoneId, enemyLevel, EnemyBehaviorType.Static, out spawnedEnemy))
+        if (TrySpawnCsvEnemyAtGrid(spawnGrid, placementKey, normalizedGroupKey, groupData, zoneId, enemyLevel, EnemyBehaviorType.Static, out spawnedEnemy))
             return true;
 
         placementKey = string.Empty;
@@ -115,6 +115,57 @@ public class EnemySpawnController : MonoBehaviour
             ResolveZoneEnemyLevelFromPlacementKey(placementKey),
             EnemyBehaviorType.Mobile,
             out spawnedEnemy);
+    }
+
+    private bool TrySpawnCsvEnemyAtGrid(
+        Vector2Int spawnGrid,
+        string placementKey,
+        string enemyGroupKey,
+        DHEnemyGroupTemplate groupData,
+        string zoneId,
+        int enemyLevel,
+        EnemyBehaviorType behaviorType,
+        out EnemyGridMover spawnedEnemy)
+    {
+        spawnedEnemy = null;
+        if (groupData == null || !TryResolveSpawnGrid(spawnGrid, out Vector2Int resolvedSpawnGrid))
+            return false;
+
+        EnemyGridMover spawnPrefab = ResolveEnemyPrefab(behaviorType);
+        if (spawnPrefab == null)
+            return false;
+
+        spawnedEnemy = Instantiate(spawnPrefab, Vector3.zero, Quaternion.identity, enemyRoot);
+        EnemyIdentity enemyIdentity = spawnedEnemy.GetComponent<EnemyIdentity>();
+        if (enemyIdentity != null)
+        {
+            enemyIdentity.SetPlacementSource(EnemyPlacementSource.Runtime);
+            enemyIdentity.SetPlacementKey(placementKey);
+            enemyIdentity.SetEnemyGroupKey(enemyGroupKey);
+        }
+
+        spawnedEnemy.InitializePlacementIdentity(placementKey);
+        spawnedEnemy.SnapToGridPosition(resolvedSpawnGrid);
+
+        EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
+        if (enemyBootstrap == null ||
+            !enemyBootstrap.InitializeEnemyGroupFromCsv(
+                groupData,
+                prefabRegistry,
+                resolvedSpawnGrid,
+                behaviorType,
+                placementKey,
+                EnemyPlacementSource.Runtime,
+                enemyGroupKey,
+                enemyLevel,
+                zoneId))
+        {
+            Destroy(spawnedEnemy.gameObject);
+            spawnedEnemy = null;
+            return false;
+        }
+
+        return true;
     }
 
     private bool TrySpawnAtGrid(
