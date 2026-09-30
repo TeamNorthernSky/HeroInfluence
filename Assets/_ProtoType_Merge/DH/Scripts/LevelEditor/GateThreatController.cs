@@ -140,6 +140,9 @@ public class GateThreatController : MonoBehaviour
         MapProgressRepository repository = MapProgressRepository.Instance;
         // Clearing an outpost still opens connected gates, but also resets that zone's threat timer.
         repository?.BeginZoneThreat(outpost.ZoneId, ResolveCurrentDay());
+        if (HasLiveThreatEnemyInZone(outpost.ZoneId, string.Empty))
+            return;
+
         OpenGatesForZone(outpost.ZoneId);
     }
 
