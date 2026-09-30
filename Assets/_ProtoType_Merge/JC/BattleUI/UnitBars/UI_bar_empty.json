@@ -1,0 +1,47 @@
+{
+    "slots": [
+        {
+            "enabled": true,
+            "label": "슬롯",
+            "referenceColor": {
+                "r": 0.3294117748737335,
+                "g": 0.6666666865348816,
+                "b": 0.0941176488995552,
+                "a": 1.0
+            },
+            "hueRadius": 180.0,
+            "hueFalloff": 0.0,
+            "chromaMin": 0.0,
+            "chromaSoft": 0.0010000000474974514,
+            "useLightGate": false,
+            "lightMin": 0.0,
+            "lightMax": 1.0,
+            "lightSoft": 0.07999999821186066,
+            "absoluteMode": true,
+            "targetColor": {
+                "r": 0.16470588743686677,
+                "g": 0.1921568661928177,
+                "b": 0.250980406999588,
+                "a": 1.0
+            },
+            "hueShift": 0.0,
+            "chromaScale": 1.0,
+            "chromaOffset": 0.0,
+            "lightScale": 1.0,
+            "lightOffset": 0.0,
+            "tighten": 0.0,
+            "anchorWindow": 45.0
+        }
+    ],
+    "boundary": {
+        "enabled": false,
+        "slotA": 0,
+        "slotB": 1,
+        "distRadius": 0.07999999821186066,
+        "distFalloff": 0.07999999821186066,
+        "residualSuppress": 0.0,
+        "smoothRadius": 0
+    },
+    "batchSkipDeltaE": 0.11999999731779099,
+    "dither": false
+}
