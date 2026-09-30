@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GateThreatController : MonoBehaviour
 {
+    private const string DefaultStartZoneId = "zone_001";
+
     [SerializeField] private TurnManager turnManager;
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
@@ -15,6 +17,7 @@ public class GateThreatController : MonoBehaviour
     private readonly List<GateRuntimeController> gates = new List<GateRuntimeController>();
     private readonly List<EnemySpawnPoint> spawnPoints = new List<EnemySpawnPoint>();
     private string currentPartyZoneId;
+    private bool initialThreatTimerEnsured;
 
     public static GateThreatController Instance { get; private set; }
 
@@ -52,6 +55,8 @@ public class GateThreatController : MonoBehaviour
 
         if (DHGameEndState.IsEnding)
             return;
+
+        EnsureInitialZoneThreatTimer();
 
         string zoneId = ResolvePartyZoneId();
         EnsureZoneEnemyLevel(zoneId);
@@ -133,7 +138,7 @@ public class GateThreatController : MonoBehaviour
             return;
 
         MapProgressRepository repository = MapProgressRepository.Instance;
-        // Claiming an outpost starts the zone threat timer and opens connected gates.
+        // Clearing an outpost still opens connected gates, but also resets that zone's threat timer.
         repository?.BeginZoneThreat(outpost.ZoneId, ResolveCurrentDay());
         OpenGatesForZone(outpost.ZoneId);
     }
@@ -143,7 +148,8 @@ public class GateThreatController : MonoBehaviour
         if (heroUnion == null || !heroUnion.IsClaimedByHero)
             return;
 
-        EndThreatsConnectedToZone(heroUnion.ZoneId);
+        // A zone starts counting from its HeroUnion claim. Gate opening itself remains tied to outpost clear.
+        BeginThreatTimerIfNeeded(heroUnion.ZoneId, ResolveCurrentDay());
     }
 
     public IEnumerator ResolvePendingThreatsBeforeEnemyTurn()
@@ -201,6 +207,38 @@ public class GateThreatController : MonoBehaviour
             repository.BeginZoneThreat(state.ZoneId, ResolveCurrentDay());
             OpenGatesForZone(state.ZoneId);
         }
+    }
+
+    private void EnsureInitialZoneThreatTimer()
+    {
+        if (initialThreatTimerEnsured)
+            return;
+
+        if (BeginThreatTimerIfNeeded(DefaultStartZoneId, ResolveCurrentDay()))
+            initialThreatTimerEnsured = true;
+    }
+
+    private bool BeginThreatTimerIfNeeded(string zoneId, int day)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return false;
+
+        if (!ShouldRunThreatForZone(normalizedZoneId))
+            return false;
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository == null)
+            return false;
+
+        if (repository.TryGetZoneThreatState(normalizedZoneId, out ZoneThreatProgressState state) &&
+            state != null &&
+            state.Active)
+        {
+            return true;
+        }
+
+        return repository.BeginZoneThreat(normalizedZoneId, day) != null;
     }
 
     private void EnsureZoneEnemyLevel(string zoneId)
@@ -331,12 +369,7 @@ public class GateThreatController : MonoBehaviour
         int day = Mathf.Max(1, evaluationDay);
         ZoneThreatProgressState state;
         if (!repository.TryGetZoneThreatState(currentPartyZoneId, out state) || state == null || !state.Active)
-        {
-            if (!HasClaimedOutpostInZone(currentPartyZoneId))
-                return;
-
-            state = repository.BeginZoneThreat(currentPartyZoneId, day);
-        }
+            return;
 
         if (state == null || !state.Active)
             return;
@@ -583,26 +616,6 @@ public class GateThreatController : MonoBehaviour
         repository?.EndZoneThreat(zoneId);
     }
 
-    private void EndThreatsConnectedToZone(string zoneId)
-    {
-        MapProgressRepository repository = MapProgressRepository.Instance;
-        if (repository == null)
-            return;
-
-        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
-        repository.EndZoneThreat(normalizedZoneId);
-
-        for (int i = 0; i < gates.Count; i++)
-        {
-            GateRuntimeController gate = gates[i];
-            if (gate == null || !gate.ContainsZone(normalizedZoneId))
-                continue;
-
-            repository.EndZoneThreat(gate.FirstZoneId);
-            repository.EndZoneThreat(gate.SecondZoneId);
-        }
-    }
-
     private bool ShouldRunThreatForZone(string zoneId)
     {
         string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
@@ -628,32 +641,6 @@ public class GateThreatController : MonoBehaviour
             {
                 return true;
             }
-        }
-
-        return false;
-    }
-
-    private bool HasClaimedOutpostInZone(string zoneId)
-    {
-        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
-        if (string.IsNullOrWhiteSpace(normalizedZoneId))
-            return false;
-
-        if (outpostRegistry == null)
-            outpostRegistry = FindFirstObjectByType<OutpostRegistry>();
-
-        if (outpostRegistry == null)
-            return false;
-
-        IReadOnlyList<Outpost> outposts = outpostRegistry.Outposts;
-        for (int i = 0; i < outposts.Count; i++)
-        {
-            Outpost outpost = outposts[i];
-            if (outpost == null || !outpost.IsPlayerClaimed)
-                continue;
-
-            if (string.Equals(outpost.ZoneId, normalizedZoneId, System.StringComparison.Ordinal))
-                return true;
         }
 
         return false;

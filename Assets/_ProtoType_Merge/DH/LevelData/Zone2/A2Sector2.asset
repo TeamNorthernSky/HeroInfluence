@@ -8658,82 +8658,7 @@ MonoBehaviour:
     resourceType: 3
     amount: 5
   outpostPlacements: []
-  eventPlacements:
-  - gridPosition: {x: 14, y: 11}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 5, y: 9}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 9, y: 3}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 21, y: 3}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 25, y: 14}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 44, y: 14}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 46, y: 20}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 28, y: 22}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 45, y: 27}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 30, y: 31}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 24, y: 24}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 12, y: 35}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 4, y: 35}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 9, y: 32}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 34, y: 27}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
+  eventPlacements: []
   enemyPlacements: []
   decorativeObjectPlacements:
   - gridPosition: {x: 32, y: 30}
@@ -9305,6 +9230,52 @@ MonoBehaviour:
     prefabKey: Sub_4
   - gridPosition: {x: 16, y: 28}
     prefabKey: Sub_3
+  worldEventPlacements:
+  - gridPosition: {x: 5, y: 9}
+    worldEventId: R_NPC_04_001
+    eventType: 2
+  - gridPosition: {x: 14, y: 11}
+    worldEventId: R_NPC_04_002
+    eventType: 2
+  - gridPosition: {x: 12, y: 35}
+    worldEventId: R_NPC_04_003
+    eventType: 2
+  - gridPosition: {x: 24, y: 24}
+    worldEventId: R_NPC_04_004
+    eventType: 2
+  - gridPosition: {x: 46, y: 20}
+    worldEventId: R_NPC_04_005
+    eventType: 2
+  - gridPosition: {x: 9, y: 3}
+    worldEventId: C_NPC_04_001
+    eventType: 1
+  - gridPosition: {x: 9, y: 32}
+    worldEventId: C_NPC_04_002
+    eventType: 1
+  - gridPosition: {x: 28, y: 22}
+    worldEventId: C_NPC_04_003
+    eventType: 1
+  - gridPosition: {x: 30, y: 31}
+    worldEventId: C_NPC_04_004
+    eventType: 1
+  - gridPosition: {x: 44, y: 14}
+    worldEventId: C_NPC_04_005
+    eventType: 1
+  - gridPosition: {x: 4, y: 35}
+    worldEventId: S_NPC_04_001
+    eventType: 3
+  - gridPosition: {x: 34, y: 27}
+    worldEventId: S_NPC_04_002
+    eventType: 3
+  - gridPosition: {x: 45, y: 27}
+    worldEventId: S_NPC_04_003
+    eventType: 3
+  - gridPosition: {x: 25, y: 14}
+    worldEventId: S_NPC_04_004
+    eventType: 3
+  - gridPosition: {x: 21, y: 3}
+    worldEventId: S_NPC_04_005
+    eventType: 3
   gatePlacements:
   - gateId: gate_001
     firstZoneId: zone_001

@@ -13,6 +13,7 @@ public class EnemyTurnController : MonoBehaviour
     [SerializeField] private CombatEncounterManager combatEncounterManager;
     [SerializeField] private CombatPromptService combatPromptService;
     [SerializeField] private GridManager gridManager;
+    [SerializeField] private LevelZoneLayoutLoader layoutLoader;
 
     private readonly List<TargetCandidate> targetCandidates = new List<TargetCandidate>();
     private EnemyTurnSessionRepository turnSessionRepository;
@@ -212,6 +213,13 @@ public class EnemyTurnController : MonoBehaviour
             return;
         }
 
+        if (enemy.CurrentTargetType == EnemyTargetType.Party &&
+            (!IsValidPartyTarget(enemy, enemy.CurrentTarget as PartyGridMover)))
+        {
+            enemy.ClearTarget();
+            return;
+        }
+
         Vector2Int enemyGrid = enemy.GetCurrentGrid();
         Vector2Int targetGrid = GetTargetGrid(enemy.CurrentTargetType, enemy.CurrentTarget);
 
@@ -224,8 +232,10 @@ public class EnemyTurnController : MonoBehaviour
         targetCandidates.Clear();
 
         Vector2Int enemyGrid = enemy.GetCurrentGrid();
-        // Current mobile enemies only chase claimed HeroUnions; outpost branches remain for target-type compatibility.
-        CollectTargetCandidates();
+        string enemyZoneId = ResolveEnemyZoneId(enemy);
+        // Mobile threats pursue the player party inside their own zone first. If the party is absent or waiting after defeat,
+        // they fall back to that zone's claimed HeroUnion.
+        CollectTargetCandidates(enemyZoneId);
 
         TargetCandidate? selectedCandidate = GetClosestCandidate(enemyGrid);
         if (selectedCandidate.HasValue)
@@ -237,9 +247,36 @@ public class EnemyTurnController : MonoBehaviour
         enemy.ClearTarget();
     }
 
-    private void CollectTargetCandidates()
+    private void CollectTargetCandidates(string enemyZoneId)
     {
         if (gridManager == null)
+            return;
+
+        if (TryCollectPartyTarget(enemyZoneId))
+            return;
+
+        CollectHeroUnionTargets(enemyZoneId);
+    }
+
+    private bool TryCollectPartyTarget(string enemyZoneId)
+    {
+        if (string.IsNullOrWhiteSpace(enemyZoneId) || partyRegistry == null)
+            return false;
+
+        PartyGridMover party = partyRegistry.PlayerParty;
+        if (!IsPartyInZoneTargetable(party, enemyZoneId))
+            return false;
+
+        targetCandidates.Add(new TargetCandidate(
+            EnemyTargetType.Party,
+            party,
+            party.GetCurrentGrid()));
+        return true;
+    }
+
+    private void CollectHeroUnionTargets(string enemyZoneId)
+    {
+        if (string.IsNullOrWhiteSpace(enemyZoneId))
             return;
 
         if (heroUnionRegistry != null)
@@ -248,8 +285,12 @@ public class EnemyTurnController : MonoBehaviour
             for (int i = 0; i < heroUnions.Count; i++)
             {
                 HeroUnionUnit heroUnion = heroUnions[i];
-                if (heroUnion == null || !heroUnion.IsClaimedByHero)
+                if (heroUnion == null ||
+                    !heroUnion.IsClaimedByHero ||
+                    !string.Equals(heroUnion.ZoneId, enemyZoneId, System.StringComparison.Ordinal))
+                {
                     continue;
+                }
 
                 targetCandidates.Add(new TargetCandidate(
                     EnemyTargetType.HeroUnion,
@@ -427,6 +468,10 @@ public class EnemyTurnController : MonoBehaviour
                 if (target is HeroUnionUnit heroUnion)
                     return heroUnion.GetCurrentGrid();
                 break;
+            case EnemyTargetType.Party:
+                if (target is PartyGridMover party)
+                    return party.GetCurrentGrid();
+                break;
         }
 
         return target != null && gridManager != null
@@ -461,6 +506,71 @@ public class EnemyTurnController : MonoBehaviour
         }
 
         return IsAdjacent(enemyGrid, targetGrid);
+    }
+
+    private bool IsValidPartyTarget(EnemyGridMover enemy, PartyGridMover party)
+    {
+        string enemyZoneId = ResolveEnemyZoneId(enemy);
+        return IsPartyInZoneTargetable(party, enemyZoneId);
+    }
+
+    private bool IsPartyInZoneTargetable(PartyGridMover party, string enemyZoneId)
+    {
+        if (party == null || DefeatedPartyReturnController.IsPartyWaiting(party))
+            return false;
+
+        if (string.IsNullOrWhiteSpace(enemyZoneId))
+            return false;
+
+        return TryResolveZoneId(party.GetCurrentGrid(), out string partyZoneId) &&
+            string.Equals(partyZoneId, enemyZoneId, System.StringComparison.Ordinal);
+    }
+
+    private string ResolveEnemyZoneId(EnemyGridMover enemy)
+    {
+        if (enemy == null)
+            return string.Empty;
+
+        string placementKey = ResolveEnemyPlacementKey(enemy);
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (repository != null &&
+            !string.IsNullOrWhiteSpace(placementKey) &&
+            repository.TryGetEnemyState(placementKey, out EnemyWorldState state) &&
+            state != null &&
+            !string.IsNullOrWhiteSpace(state.ZoneId))
+        {
+            return MapProgressKey.NormalizeSegment(state.ZoneId);
+        }
+
+        return TryResolveZoneId(enemy.GetCurrentGrid(), out string gridZoneId)
+            ? gridZoneId
+            : string.Empty;
+    }
+
+    private bool TryResolveZoneId(Vector2Int grid, out string zoneId)
+    {
+        zoneId = string.Empty;
+
+        if (layoutLoader == null)
+            layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+
+        if (layoutLoader == null)
+            return false;
+
+        IReadOnlyList<LoadedLevelZoneData> zones = layoutLoader.LoadedZones;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            LoadedLevelZoneData zone = zones[i];
+            Vector2Int min = zone.Anchor;
+            Vector2Int max = zone.Anchor + zone.Size - Vector2Int.one;
+            if (grid.x < min.x || grid.x > max.x || grid.y < min.y || grid.y > max.y)
+                continue;
+
+            zoneId = MapProgressKey.NormalizeSegment(zone.ZoneId);
+            return !string.IsNullOrWhiteSpace(zoneId);
+        }
+
+        return false;
     }
 
     private static List<Vector2Int> TrimPathToMovePoints(List<Vector2Int> path, int movePoints)
@@ -608,6 +718,9 @@ public class EnemyTurnController : MonoBehaviour
 
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
+
+        if (layoutLoader == null)
+            layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
     }
 }
 

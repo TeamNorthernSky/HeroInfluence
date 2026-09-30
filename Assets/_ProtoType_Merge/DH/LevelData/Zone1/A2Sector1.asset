@@ -8430,6 +8430,22 @@ MonoBehaviour:
   - {x: 48, y: 21}
   - {x: 43, y: 21}
   - {x: 43, y: 18}
+  - {x: 10, y: 27}
+  - {x: 11, y: 27}
+  - {x: 12, y: 27}
+  - {x: 13, y: 27}
+  - {x: 14, y: 27}
+  - {x: 15, y: 27}
+  - {x: 15, y: 28}
+  - {x: 15, y: 29}
+  - {x: 17, y: 29}
+  - {x: 17, y: 28}
+  - {x: 17, y: 27}
+  - {x: 18, y: 27}
+  - {x: 19, y: 27}
+  - {x: 20, y: 27}
+  - {x: 21, y: 27}
+  - {x: 22, y: 27}
   itemPlacements:
   - gridPosition: {x: 7, y: 9}
     resourceType: 0
@@ -8520,57 +8536,7 @@ MonoBehaviour:
     outpostType: 0
     resourcePerTurn: 1000
     initialState: 1
-  eventPlacements:
-  - gridPosition: {x: 16, y: 19}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 24, y: 11}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 37, y: 12}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 41, y: 15}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 33, y: 23}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 41, y: 25}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 45, y: 34}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 25, y: 25}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 16, y: 31}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
-  - gridPosition: {x: 8, y: 25}
-    eventKind: 0
-    eventType: 2
-    requireAmount: 100
-    effectAmount: 3
+  eventPlacements: []
   enemyPlacements: []
   decorativeObjectPlacements:
   - gridPosition: {x: 22, y: 17}
@@ -8959,14 +8925,38 @@ MonoBehaviour:
   - gridPosition: {x: 14, y: 21}
     prefabKey: Sub_2-2
   worldEventPlacements:
-  - gridPosition: {x: 16, y: 7}
-    worldEventId: C_NPC_01_001
-    eventType: 1
-  - gridPosition: {x: 18, y: 7}
+  - gridPosition: {x: 16, y: 31}
     worldEventId: R_NPC_01_001
     eventType: 2
-  - gridPosition: {x: 20, y: 7}
+  - gridPosition: {x: 32, y: 7}
+    worldEventId: R_NPC_01_002
+    eventType: 2
+  - gridPosition: {x: 24, y: 11}
+    worldEventId: C_NPC_01_001
+    eventType: 1
+  - gridPosition: {x: 16, y: 19}
+    worldEventId: C_NPC_01_002
+    eventType: 1
+  - gridPosition: {x: 8, y: 25}
+    worldEventId: C_NPC_01_003
+    eventType: 1
+  - gridPosition: {x: 41, y: 25}
+    worldEventId: C_NPC_01_004
+    eventType: 1
+  - gridPosition: {x: 37, y: 12}
     worldEventId: S_NPC_01_001
+    eventType: 3
+  - gridPosition: {x: 25, y: 25}
+    worldEventId: S_NPC_01_002
+    eventType: 3
+  - gridPosition: {x: 33, y: 23}
+    worldEventId: S_NPC_01_003
+    eventType: 3
+  - gridPosition: {x: 41, y: 15}
+    worldEventId: S_NPC_01_004
+    eventType: 3
+  - gridPosition: {x: 45, y: 33}
+    worldEventId: S_NPC_01_005
     eventType: 3
   gatePlacements:
   - gateId: gate_001
@@ -8981,9 +8971,9 @@ MonoBehaviour:
   - gridPosition: {x: 42, y: 19}
     zoneId: zone_001
     enemyGroupKey: BE161
-    spawnChatZoneId: 1
-    spawnChatId: 1510100
-    encounterChatZoneId: 1
+    spawnChatZoneId: 0
+    spawnChatId: 1510010
+    encounterChatZoneId: 0
     encounterChatId: 1520010
     eventBattleKey: 
   heroUnionPlacement:
