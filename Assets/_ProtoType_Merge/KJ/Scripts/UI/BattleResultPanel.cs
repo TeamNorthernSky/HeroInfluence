@@ -221,6 +221,9 @@ public class BattleResultPanel : MonoBehaviour
     {
         if (accepted || pendingSlotCount > 0) return;
         accepted = true;
+        // 조기 확인 시 표시만 최종값으로 정리한다. 보상 저장은 기존 OnAccepted 경로에서 한 번만 수행한다.
+        foreach (var card in GetComponentsInChildren<HeroInfoResult>(true))
+            card.CompleteRewardPresentation();
         OnAccepted?.Invoke();
     }
 

@@ -1,12 +1,28 @@
 # 전투씬 UI — 현재 구현 구조
 
-최종 갱신: 2026-09-18
+최종 갱신: 2026-09-30 (HP/IP 회복·부활, 결과 EXP·랭크 연출)
 대상: Unity 2022.3.62f3 / `TmpBattleScene`  
 2026-09-15까지의 단계:  우상단 네 버튼·좌상단 턴 순서·하단 배경 배치 사용자 검수 완료. 하단 좌측 현재 행동 유닛 정보 이관·비플레이 검증 완료. 코어스킬 사용자 작동 확인 완료. 히어로 4슬롯·매 시전 수동 선택 구현 및 비플레이 검증 완료, 사용자 플레이 검수 대기. 빌런 툴팁 출력은 사용자 확인 완료. 텍스트 자동 크기를 보완했으며 보완분은 사용자 검수 대기다. 하단 우측 고정 설명까지 구현·비플레이 검증 완료했으며, 7단계의 사용자 플레이 검수를 기다린다. 후속 4인 결과창(EXP·랭크 포함)과 시작/매 유닛 턴 팝업도 구현·비플레이 검증 완료했으며 사용자 플레이 검수 대기다.
 
 이 문서는 **현재 실제로 사용하는 구조를 설명하는 유지보수 진입점**이다. 변경 이력이나 전체 구현 계획을 대신하지 않는다. 코드·씬 변경이 적용될 때마다 같은 파일의 해당 설명을 갱신한다. 다른 PC에서도 읽을 수 있도록 본문의 `Assets/...` 표기는 프로젝트 루트 기준이며, 클릭 가능한 링크는 현재 JC/Docs 폴더에서 대상 파일까지의 상대 경로를 사용한다.
 
 기획·데이터 불일치, 미결선, 팀 협의 및 최종 정리 사항은 [재확인 사항 및 후속 처리 보고서](BattleSceneUI_FollowUps.md)에서 계속 갱신한다. 이 문서의 실제 구현 설명과 구분한다.
+
+## 2026-09-29 — 머리 위 HP/IP 개편
+
+기존 `ASB/Scripts/Battle/Core/UnitHPBar.cs`가 HP/IP 이벤트를 계속 담당한다. 카메라 회전을 매 프레임 따라가며, 생성 당시 회전 고정과 화면 여백 100px 강제 초기화를 제거했다. 모델별 기준 높이는 유닛 프리팹에서 유지한다. 화면 여백·폭·행 두께·행 간격·글자 크기는 `JC_BattleUI_VFX/UnitBars`의 `BattleUnitBarVisualSettings`에서 조절한다. 기본 여백은 (0,34), 폭은 170(1080px 기준), 행 높이 22·간격 6·글자 17(프리팹 기준)이다. 설정이 없는 씬은 기존 유닛의 여백·폭을 사용한다.
+
+외형 정본은 `JC/BattleUI/UnitBars/HPCanvas_Battle.prefab`이다. 기존 `Resources/UI_Prefab/Battle_Scene/HPCanvas.prefab`의 Variant이며, 기존 공용 원본과 고정 정보창의 Variant는 수정하지 않았다. 위쪽 초록 HP와 아래쪽 파란 IP, 어두운 빈 게이지, 현재값/최대값을 사용한다. HP/frame은 `_Ui_Sprites/Icon/Bar` 원본을 재사용하고 파란 IP/빈 게이지는 기존 UI Recolor Forge로 파생했다. 재현용 색상 프리셋 JSON을 이미지 옆에 저장했다.
+
+아군 5개, 현재 적 12개, 공통 드론 1개, 기존 적 3개 등 총 21개 유닛 프리팹의 월드 바를 공통 Variant에 연결했다. 적은 HP만 표시한다. 각 바의 회전·배율·숫자 연결을 통일했으며, 게이지 밖의 모델·전투 컴포넌트 4,074개 직렬화 기록은 보존했다. 기존 고급 몬스터의 HP 숫자가 IP 항목에 연결된 오류도 바 재연결로 해소했다. 후속 소모 연출은 공용 Variant에만 추가하여 21개 유닛을 다시 편집하지 않았다. 새 수치 관리 시스템은 없으며 설정용 컴포넌트만 추가했다.
+
+소모된 구간은 `Loss` 이미지로 표시한다. 실제 수치·숫자는 즉시 반영하고, 남은 HP는 초록/IP는 파랑을 유지한다. HP 소모 구간은 빨강→주황→노랑으로 0.5초, IP 소모 구간은 흰색으로 0.2초 동안 감소한다. 시간은 감소량·전투 배속과 무관하며 `Time.timeScale`이 0일 때는 멈춘다. HP/IP 각각 Linear/Accelerate/Decelerate/Custom 곡선과 시간을 설정할 수 있고 기본은 Linear다. HP Gradient는 속도 곡선이 아닌 경과 시간에 따라 변한다. 0초는 즉시 완료한다. 연속 피격은 현재 표시 길이에서 최신 목표로 시간을 재시작하며, 중복 이벤트는 재시작하지 않는다. 최대치 변경·재활성화는 즉시 동기화한다.
+
+회복·부활은 같은 표시 레이어를 재사용하여 증가 구간만 흰색→밝고 채도가 낮은 연두/하늘색으로 채운 뒤 원래 HP/IP 색으로 전환한다. 숫자는 실제값을 즉시 표시한다. `UnitBars`의 Hp Recovery / Ip Recovery에서 시간·곡선, Recovery Colors에서 색을 설정한다. 기본 HP 0.5초, IP 0.2초다. 부활은 HP 0부터 부활 체력까지 회복 연출한다. 한 턴 1회 변화 전제이며 별도 연속 연출 큐는 두지 않는다. 밝은 구간에서도 숫자가 보이도록 HP/IP TMP 재질의 검은 외곽선을 활성화했다. 현재 전투 중 IP 획득의 일반 호출 경로는 없고, 결과 보정 `ApplyInfluenceDeltaFromMax`와 테스트용 `SetInfluence` 경로를 확인했다. IP 증가 이벤트가 오면 동일 연출이 적용된다.
+
+설정은 `TmpBattleScene`과 독립 테스트씬의 `JC_Testbed_BattleRuntime.prefab`에 저장되어 Z 초기화 후에도 재생성된다. `UnitHPBar`만 사망 시 HP 잔상 완료까지 표시를 유지하며, 실제 피해 계산·사망 판정·턴 진행·유닛 제거 코드는 변경하지 않았다. 유닛이 먼저 제거되면 바도 함께 사라진다. 이 경우는 사용자 직접 플레이 검수 항목이다.
+
+1차 참조 검사 21개 프리팹 오류 0 및 비플레이 동작 검사 23항목 통과. 후속 감소 연출은 별도 비플레이 36항목, 두 씬의 저장 설정과 21개 프리팹 상속 검사, 4개 시간 지점의 정적 렌더를 확인했다. 플레이는 실행하지 않았다. 실제 동작·가독성·사망 전 제거는 사용자 검수 대기다. 상세 변경·조절 위치·검증 근거는 [머리 위 HP/IP 작업 기록](20260929-battle-unit-bars-ee60cbe6f1.md)을 참조한다.
 
 
 ## 2026-09-16 재개분 — 기획 피드백의 현재 구현
@@ -361,7 +377,7 @@ HP는 기존 `Assets/_Ui_Sprites/Icon/Bar/UI_bar_frame.png`와 `UI_bar_fill(HP).
 
 ### 보존한 옛 표시
 
-`HeroInfoWindow`와 옛 `Rank`는 이름·초상화 부모·HP/IP·랭크 및 기존 컴포넌트 참조를 보존한 채 GameObject만 비활성화했다. 새 정보 컨트롤러는 하나만 활성이다. 최종 사용자 검증 후 정리할 후보이며 지금 삭제하지 않는다. 유닛 위 월드 HP/IP는 별도의 기존 `UnitHPBar.cs` 그대로다.
+`HeroInfoWindow`와 옛 `Rank`는 이름·초상화 부모·HP/IP·랭크 및 기존 컴포넌트 참조를 보존한 채 GameObject만 비활성화했다. 새 정보 컨트롤러는 하나만 활성이다. 최종 사용자 검증 후 정리할 후보이며 지금 삭제하지 않는다. 유닛 위 월드 HP/IP는 별도의 기존 `UnitHPBar.cs`가 담당하며, 2026-09-29에 이 컴포넌트의 카메라 정렬과 표시 외형을 개편했다.
 
 ### 코어스킬 버튼 — 기존 무기스킬 연결 유지
 
@@ -518,10 +534,14 @@ BattleFlowManager.OnBattleEnded 또는 컨트롤러 비활성 → 설명 비우�
 - `BattleResultView.sceneHeroSlots`: 좌상·우상·좌하·우하의 4카드. 값은 기존 PartyFormation.PackFrontFirst 순서로 배치하며, context에서 누락된 preview는 뒤에 보충한다. 4인 초과 입력은 경고 후 표시 상한을 지킨다. 공용 PartyFormation의 위치 칸 수는 변경하지 않았다.
 - `BattleResultPanel`: Show/OnAccepted/GetSkillResults 외부 계약 유지. 스킬 획득/교체는 기존 순서대로 처리하며 그동안 ResultContent만 숨긴다. 확인 listener는 자신의 callback만 재연결하고 Show마다 확인 1회만 통지한다. 외부 listener를 전체 삭제하지 않는다.
 - `HeroInfoResult`: portraitImage가 연결된 카드만 새 표시 경로를 사용한다. 초상화는 기존 Sprites.Portrait.HeroByUnit, 이름은 preview.UnitName, IP는 OldInfluence → NewInfluence. 랭크는 UnitRankLookup.GetRank(NewLevel)와 씬의 rankSprites를 사용하며 불명 랭크는 숨긴다.
-- EXP는 `BattleResultPersistenceHandler`가 `PersistentUnitRepository.SimulateExpProgress`를 통해 저장 없이 계산한 값이다. UnitRewardPreview.HasExpPreview / OldExp / OldMaxExp / NewExp / NewMaxExp를 추가했다. 게이지와 숫자는 **보상 적용 후 잔여 EXP / 다음 필요 EXP**, 획득량은 별도 +숫자다. 여러 레벨 상승 계산을 UI에서 복제하지 않는다. 분모가 없거나 0이면 게이지 0, 숫자 -로 표시하며 임의 최대 랭크로 단정하지 않는다.
+- EXP는 `BattleResultPersistenceHandler`가 `PersistentUnitRepository.SimulateExpProgress`를 통해 저장 없이 계산한 값이다. UnitRewardPreview.HasExpPreview / OldExp / OldMaxExp / NewExp / NewMaxExp를 추가했다. 게이지와 숫자는 보상 전 값에서 획득량만큼 진행한 뒤 **보상 적용 후 잔여 EXP / 다음 필요 EXP**에 도달하며, 획득량은 별도 +숫자다. 표시용 스냅샷에 같은 SimulateExpProgress를 호출해 레벨 경계별 구간을 얻으며 성장 규칙을 UI에 복제하거나 실제 보상·저장 데이터를 변경하지 않는다. 분모가 없거나 0이면 게이지 0, 숫자 -로 표시하며 임의 최대 랭크로 단정하지 않는다.
 - 모의 전투 plan=null은 기존 보상 미지급 정책을 유지한다. 카드의 예전 보상 문구를 지우고 가능한 파티 초상화만 보여 준다. 실제 보상 저장은 기존 BattleSceneManager가 확인 후 Commit하는 시점 그대로다.
 - 결과/EXP 바/IP/랭크는 프로젝트 기존 Sprite를 사용한다. `UI_box_profilerFrame.png`에는 예시 저스티스 그림까지 포함되어 있으므로 공용 프레임으로 사용하지 않았다. PortraitFrame은 씬의 단색 Image로 둘렀다. 결과 제목·확인 버튼은 글자가 포함된 기존 이미지다.
 - 편집: ResultPanel을 켠 뒤 자식 RectTransform을 조절한다. 초기 저장 상태는 ResultPanel 비활성. 새 계층은 Scale=1, LayoutGroup 없음. 기존 172개 Transform의 위치·크기·스케일 값은 보존했다.
+
+**2026-09-30 결과 연출:** `JC_BattleUI_VFX/ResultRewards`의 `BattleResultRewardVisualSettings`에서 Exp Gain의 Duration/Curve, Exp Gain Colors, Rank Flash Duration을 설정한다. EXP는 구간당 기본 0.5초, 흰색→밝은 연노랑→기존 노랑이다. 레벨 경계에서 가득 찬 프레임을 표시한 뒤 0으로 초기화하고 다음 필요 EXP를 분모로 남은 획득량을 계속 채운다. 어두운 ExpTrack 위의 ExpGain으로 획득 구간을 구분한다. 랭크가 상승했다면 EXP 완료 뒤 이전 아이콘→백색→최종 랭크 아이콘으로 총 0.5초 1회 강조한다. 여러 랭크 상승도 최종 랭크로 한 번만 강조한다. 카드마다 재질을 복제하고 종료 시 기존 재질을 복원한다.
+
+카드가 실제 활성화되는 시점부터 네 카드가 동시에 시작하므로 스킬 습득 안내 중에는 진행하지 않는다. 결과 연출은 unscaled 시간으로 timeScale=0에서도 진행한다. 확인을 먼저 누르면 최종 표시로 맞추고 기존 OnAccepted 1회·저장 계약을 유지한다. TmpBattleScene과 독립 테스트씬 런타임 프리팹에 설정과 레이어를 저장했으며 Z 재생성에도 유지된다. 설정/연결이 없는 기존 결과 경로는 즉시 표시한다. 비플레이 43항목·두 씬 참조/상속·정적 렌더 확인 완료, 실제 전투/저장/귀환은 사용자 플레이 검수 대기다.
 
 **다른 씬의 호환 경로:** BattleUIManager.sceneResultPanel / BattleResultView.sceneHeroSlots가 비어 있으면 기존 승패 프리팹 생성과 카드 생성 경로를 유지한다. HeroInfoResult.portraitImage가 비어 있는 기존 카드는 기존 초상화 생성·EXP 문구·IP 증감량 표시를 유지한다. 공용 승패/카드 프리팹 원본은 변경하지 않았다. DHScene_3의 전투 생략·도주 실패 결과에도 적용되는 공용 코드이므로 해당 경로 플레이 검수를 포함한다. PopupEnterSubmitter가 이름으로 찾는 새 확인 버튼 이름은 **Accept**다.
 
@@ -688,3 +708,6 @@ ResultPanel과 확인 버튼은 숨기는 대상 밖에 둔다. 자동/배속의
 - [전투 스킬 선택 취소 구현](20260914-battle-skill-cancel-0b124ee881.md)
 - [전투씬 하단 우측 고정 설명 — c084bd161c](20260915-battle-description-c084bd161c.md)
 - [반격으로 적 사망 후 전투가 멈추는 문제 — ASB 인수인계](20260914-ASB-counterattack-battle-stall.md)
+
+
+2026-09-30 사용자 확인: HP/IP 및 결과 연출이 잘 작동하는 것으로 보인다는 피드백을 받았고, 커밋부터 main 동기화까지 진행하도록 승인받았다. 구체적인 개별 테스트 항목을 모두 수행했다고 확대 해석하지 않는다.
