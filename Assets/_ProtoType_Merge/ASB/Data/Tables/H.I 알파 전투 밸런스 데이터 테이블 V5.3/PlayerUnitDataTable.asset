@@ -24,7 +24,7 @@ MonoBehaviour:
     CriticalRate: 0.15
     CounterRate: 0.15
     ReduceRate: 0.15
-    Speed: 1
+    Speed: 0
     ClassSkillIndexList:
     - HS1010
     - HS1020
@@ -54,7 +54,7 @@ MonoBehaviour:
     CriticalRate: 0.3
     CounterRate: 0.1
     ReduceRate: 0.2
-    Speed: 3
+    Speed: 2
     ClassSkillIndexList:
     - HS2010
     - HS2020
@@ -84,7 +84,7 @@ MonoBehaviour:
     CriticalRate: 0.2
     CounterRate: 0.05
     ReduceRate: 0.1
-    Speed: 2
+    Speed: 3
     ClassSkillIndexList:
     - HS3010
     - HS3020
@@ -113,7 +113,7 @@ MonoBehaviour:
     CriticalRate: 0.1
     CounterRate: 0.1
     ReduceRate: 0.15
-    Speed: 2
+    Speed: 1
     ClassSkillIndexList:
     - HS4010
     - HS4020

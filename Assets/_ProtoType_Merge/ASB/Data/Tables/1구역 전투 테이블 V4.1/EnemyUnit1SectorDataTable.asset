@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DataList:
   - EnemyIndex: FV20001
-    EnemyName: "\uB9C8\uC5D0\uC2A4\uD2B8\uB85C\uBD07"
+    EnemyName: "\uADF8\uB0E5 \uB4DC\uB860"
     EnemyConcept: "\uD504\uB85C\uD30C\uAC04\uB2E4\uC6A9 \uB4DC\uB860"
     UnitMaxHP: 5
     UnitATK: 10
@@ -23,38 +23,34 @@ MonoBehaviour:
     CounterRate: 0.1
     ReduceRate: 0.1
     Speed: 2
-    EnemySkill1_Name: "\uD0C0\uAE43 \uC9C0\uC815"
-    EnemySkill1_Description: "\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uD788\uC5B4\uB85C
-      1\uBA85\uC744 \uD45C\uC801\uC73C\uB85C \uC9C0\uC815"
-    EnemySkill1Effect: 4
-    EnemySkill1Range: 0
-    EnemySkill1RangeLine: 0
+    EnemySkill1_Name: "\uC704\uD611 \uC0AC\uACA9"
+    EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
+      {EnemySkill1Value} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
+    EnemySkill1Effect: 0
+    EnemySkill1Range: 2
+    EnemySkill1RangeLine: 1
     EnemySkill1Target: 0
     EnemySkill1MultiTarget: 
     EnemySkill1_MultiTargetType: 0
     EnemySkill1_MultiTargetCount: 0
-    EnemySkill1Value: 0
+    EnemySkill1Value: 1
     EnemySkill1SubValue: 0
-    EnemySkill2_Name: "\uC790\uD3ED"
-    EnemySkill2_Description: "\uD0C0\uAE43 \uC720\uB2DB\uC744 \uD5A5\uD574 \uC804\uC9C4
-      \uD6C4 \uC790\uD3ED\n\uD0C0\uAE43 \uC720\uB2DB\uC5D0\uAC8C {EnemySkill2Value}\n\uD0C0\uAE43
-      \uC778\uC811 \uC720\uB2DB\uC5D0\uAC8C {EnemySkill2SubValue}\uB97C \uC900 \uB4A4
-      \uC790\uC2E0\uC758 \uCCB4\uB825 0 \uCC98\uB9AC"
+    EnemySkill2_Name: 
+    EnemySkill2_Description: 
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
-    EnemySkill2Target: 1
-    EnemySkill2MultiTarget: 01000000030000000500000007000000
+    EnemySkill2Target: 0
+    EnemySkill2MultiTarget: 
     EnemySkill2_MultiTargetType: 0
     EnemySkill2_MultiTargetCount: 0
-    EnemySkill2Value: 1
-    EnemySkill2SubValue: 0.3
-    EnemySkill3_Name: "(1\uD134) \uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uD788\uC5B4\uB85C
-      1\uBA85\uC744 \uD45C\uC801\uC73C\uB85C \uC9C0\uC815 (\uAC00\uC7A5 \uAC00\uAE4C\uC6B4
-      \uC720\uB2DB\uC774 \uB458 \uC774\uC0C1\uC77C \uACBD\uC6B0 \uB300\uC0C1\uC740
-      \uB79C\uB364)\n(2\uD134) \uD574\uB2F9 \uC720\uB2DB\uC5D0\uAC8C '\uC790\uD3ED'
-      \uC2E4\uD589 - \uB300\uBBF8\uC9C0 \uACC4\uC0B0 \uD6C4 \uB9C8\uC5D0\uC2A4\uD2B8\uB85C\uBD07
-      \uC804\uC7A5 \uC81C\uAC70"
+    EnemySkill2Value: 0
+    EnemySkill2SubValue: 0
+    EnemySkill3_Name: "(\uB9E4\uD134) \uC784\uC758\uC758 \uC801\uC5D0\uAC8C \uC704\uD611
+      \uC0AC\uACA9\n - \uB300\uC0C1 1\uCC28 \uD310\uC815: \uC804\uC5F4\uC758 \uC801
+      70%, \uD6C4\uC5F4\uC758 \uC801 30%\n - \uB300\uC0C1 2\uCC28 \uD310\uC815(\uAC19\uC740
+      \uC5F4\uC758 \uC801\uC774 \uC5EC\uB7FF\uC77C \uACBD\uC6B0): \uB3D9\uC77C\uD55C
+      \uD655\uB960\uB85C \uB79C\uB364 \uACB0\uC815"
     EnemySkill3_Description: 15
     EnemySkill3Effect: 5
     EnemySkill3Range: 1
@@ -79,11 +75,11 @@ MonoBehaviour:
     UnitDEF: 6
     CriticalRate: 0.1
     CounterRate: 0.1
-    ReduceRate: 0.1
+    ReduceRate: 0.25
     Speed: 3
     EnemySkill1_Name: "\uC6D0\uAC70\uB9AC \uC0AC\uACA9"
-    EnemySkill1_Description: "\uC0C1\uB300 \uC804\uC5F4 \uB610\uB294 \uD6C4\uC5F4
-      \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C {EnemySkill1Value} \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
+      {EnemySkill1Value} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
@@ -93,16 +89,17 @@ MonoBehaviour:
     EnemySkill1_MultiTargetCount: 0
     EnemySkill1Value: 1
     EnemySkill1SubValue: 0
-    EnemySkill2_Name: 
-    EnemySkill2_Description: 
+    EnemySkill2_Name: "\uC6D0\uAC70\uB9AC \uB09C\uC0AC"
+    EnemySkill2_Description: "\uC0C1\uB300 1\uC5F4\uC5D0 {EnemySkill2Value} \uB300\uBBF8\uC9C0\uB97C
+      \uC900\uB2E4."
     EnemySkill2Effect: 0
-    EnemySkill2Range: 0
-    EnemySkill2RangeLine: 0
-    EnemySkill2Target: 0
-    EnemySkill2MultiTarget: 
+    EnemySkill2Range: 1
+    EnemySkill2RangeLine: 1
+    EnemySkill2Target: 1
+    EnemySkill2MultiTarget: 09000000
     EnemySkill2_MultiTargetType: 0
     EnemySkill2_MultiTargetCount: 0
-    EnemySkill2Value: 0
+    EnemySkill2Value: 0.6
     EnemySkill2SubValue: 0
     EnemySkill3_Name: "(\uB9E4 \uD134) '\uC6D0\uAC70\uB9AC \uC0AC\uACA9' \uC2E4\uD589\n\uC6B0\uC120
       \uC21C\uC704\n1. \uAC19\uC740 \uD589\uC5D0 \uC788\uB294 \uD788\uC5B4\uB85C\uB97C
@@ -136,12 +133,12 @@ MonoBehaviour:
     UnitATK: 6
     UnitDEF: 8
     CriticalRate: 0.1
-    CounterRate: 0.1
+    CounterRate: 0.25
     ReduceRate: 0.1
     Speed: 0
     EnemySkill1_Name: "\uBC29\uD328 \uCE58\uAE30"
-    EnemySkill1_Description: "\uC0C1\uB300 \uC804\uC5F4 \uC6B0\uC120 \uB2E8\uC77C
-      \uC720\uB2DB\uC5D0\uAC8C {EnemySkill1Value} \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill1_Description: "\uC0C1\uB300 \uC804\uC5F4 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
+      {EnemySkill1Value} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
     EnemySkill1Range: 0
     EnemySkill1RangeLine: 0
@@ -154,11 +151,7 @@ MonoBehaviour:
     EnemySkill2_Name: "\uB300\uC2E0 \uB9DE\uAE30"
     EnemySkill2_Description: "\uB2E4\uC74C \uC790\uC2E0\uC758 \uCC28\uB840\uAE4C\uC9C0
       \uC544\uAD70 \uC720\uB2DB\uC744 \uACF5\uACA9\uD558\uB294 \uD50C\uB808\uC774\uC5B4\uC758
-      \uB2E8\uC77C \uACF5\uACA9\uC744 1\uD68C \uB9C9\uAE30 (\uB300\uC0C1 \uC704\uCE58\uB85C
-      \uC774\uB3D9\uD574 \uD53C\uD574\uB97C \uB300\uC2E0 \uBC1B\uACE0 \uC6D0\uB798
-      \uC704\uCE58\uB85C \uBCF5\uADC0)\n(\uB2E8, \uC790\uC2E0\uC744 \uACF5\uACA9\uD558\uB294
-      \uB2E8\uC77C \uACF5\uACA9\uC774\uB098 \uAD11\uC5ED \uD53C\uD574\uB294 \uB9C9\uAE30
-      \uB300\uC0C1\uC73C\uB85C \uCDE8\uAE09\uD558\uC9C0 \uC54A\uC74C)"
+      \uB2E8\uC77C \uACF5\uACA9\uC744 1\uD68C \uBC29\uC5B4\uD55C\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
@@ -171,7 +164,9 @@ MonoBehaviour:
     EnemySkill3_Name: "(\uB9E4 \uD134) \n- \uC544\uAD70 \uC720\uB2DB \uC911, \uCCB4\uB825
       30% \uBBF8\uB9CC \uC720\uB2DB\uC774 1\uBA85 \uC774\uC0C1 \uC788\uB294 \uACBD\uC6B0,
       '\uB300\uC2E0 \uB9DE\uAE30' \uC2E4\uD589\n- \uC544\uB2CC \uACBD\uC6B0 \uAC00\uC7A5
-      \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC5D0\uAC8C '\uBC29\uD328 \uCE58\uAE30' \uC2E4\uD589"
+      \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC5D0\uAC8C '\uBC29\uD328 \uCE58\uAE30\uFF07
+      \uC2E4\uD589 (\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC774 \uC5EC\uB7FF\uC77C
+      \uACBD\uC6B0, \uB79C\uB364 \uC120\uD0DD)"
     EnemySkill3_Description: 30
     EnemySkill3Effect: 10
     EnemySkill3Range: 2
@@ -199,21 +194,21 @@ MonoBehaviour:
     ReduceRate: 0.15
     Speed: 2
     EnemySkill1_Name: "\uCDA9\uC804 \uD3EC\uACA9"
-    EnemySkill1_Description: "(1\uD134) \uD788\uC5B4\uB85C 1\uBA85 \uB610\uB294 \uD574\uB2F9
-      \uD0C0\uC77C\uC744 \uC9C0\uC815\uD558\uACE0 \uD53C\uD574 \uBC94\uC704 \uD45C\uC2DC\n(2\uD134)
-      \uD574\uB2F9 \uC720\uB2DB\uC5D0\uAC8C {EnemySkill1Value} \uB9CC\uD07C \uB300\uBBF8\uC9C0\n(2\uD134\uC774
-      \uC624\uAE30 \uC804, \uBB34\uC778 \uC911\uD3EC\uD0D1\uC774 \uB300\uBBF8\uC9C0\uB97C
-      \uBC1B\uC744 \uC2DC, \uC2A4\uD0AC \uCDE8\uC18C \u2192 2\uD134\uC9F8 \uB2E4\uC2DC
-      \uCDA9\uC804 \uC2DC\uC791)"
+    EnemySkill1_Description: "\uCDA9\uC804 \uD3EC\uACA9\t(1\uD134) \uD788\uC5B4\uB85C
+      1\uBA85 \uB610\uB294 \uD574\uB2F9 \uD0C0\uC77C\uC744 \uC9C0\uC815\uD558\uACE0
+      \uD53C\uD574 \uBC94\uC704 \uD45C\uC2DC\n(2\uD134) \uB300\uC0C1 \uC720\uB2DB\uC5D0\uAC8C
+      {EnemySkill1Value} \uB9CC\uD07C \uB300\uBBF8\uC9C0, \uC8FC\uBCC0 \uC720\uB2DB\uC5D0\uAC8C
+      {EnemySkill1SubValue} \uB300\uBBF8\uC9C0 \n(3\uD134) \uD734\uC2DD (\uCC28\uB840
+      \uC2A4\uD0B5)"
     EnemySkill1Effect: 0
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
-    EnemySkill1Target: 0
-    EnemySkill1MultiTarget: 
+    EnemySkill1Target: 1
+    EnemySkill1MultiTarget: 0000000001000000030000000500000007000000
     EnemySkill1_MultiTargetType: 0
     EnemySkill1_MultiTargetCount: 0
     EnemySkill1Value: 1.2
-    EnemySkill1SubValue: 0
+    EnemySkill1SubValue: 1
     EnemySkill2_Name: 
     EnemySkill2_Description: 
     EnemySkill2Effect: 0
@@ -225,8 +220,11 @@ MonoBehaviour:
     EnemySkill2_MultiTargetCount: 0
     EnemySkill2Value: 0
     EnemySkill2SubValue: 0
-    EnemySkill3_Name: "(\uB9E4 \uD134) \uB79C\uB364 \uD788\uC5B4\uB85C 1\uBA85\uC744
-      \uB300\uC0C1\uC73C\uB85C '\uCDA9\uC804 \uD3EC\uACA9' \uC2E4\uD589"
+    EnemySkill3_Name: "(\uB9E4 \uD134) \uC801 \uD788\uC5B4\uB85C 1\uBA85\uC744 \uB300\uC0C1\uC73C\uB85C
+      '\uCDA9\uC804 \uD3EC\uACA9\u2019 \uC2E4\uD589\n - \uB300\uC0C1 \uC120\uD0DD
+      \uC2DC, \uC8FC\uBCC0 \uC720\uB2DB\uC774 \uAC00\uC7A5 \uB9CE\uC740 \uC720\uB2DB
+      \uC6B0\uC120\n - \uC8FC\uBCC0 \uC720\uB2DB \uC218\uAC00 \uAC00\uC7A5 \uB9CE\uC740
+      \uC720\uB2DB\uC774 \uC5EC\uB7FF\uC77C \uACBD\uC6B0 \uB79C\uB364"
     EnemySkill3_Description: 60
     EnemySkill3Effect: 20
     EnemySkill3Range: 3
@@ -246,48 +244,49 @@ MonoBehaviour:
   - EnemyIndex: FV20005
     EnemyName: "\uBE4C\uB7F0\uC5F0\uD569 \uAC15\uD654\uBCD1"
     EnemyConcept: "\uB300\uD615 \uCCB4\uAE09 \uC555\uBC15\uD615 \uBE4C\uB7F0"
-    UnitMaxHP: 10
+    UnitMaxHP: 40
     UnitATK: 6
     UnitDEF: 6
     CriticalRate: 0.25
     CounterRate: 0.2
     ReduceRate: 0.2
     Speed: 1
-    EnemySkill1_Name: "\uAC15\uD0C0"
-    EnemySkill1_Description: "\uC0C1\uB300 \uC804\uC5F4 \uC6B0\uC120 \uB2E8\uC77C
-      \uC720\uB2DB\uC5D0\uAC8C {EnemySkill1Value} \uB9CC\uD07C \uB300\uBBF8\uC9C0"
+    EnemySkill1_Name: "\uD30C\uB3D9\uD0C4"
+    EnemySkill1_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB\uC5D0\uAC8C
+      {EnemySkill1Value} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
     EnemySkill1Effect: 0
-    EnemySkill1Range: 0
-    EnemySkill1RangeLine: 0
+    EnemySkill1Range: 1
+    EnemySkill1RangeLine: 1
     EnemySkill1Target: 0
     EnemySkill1MultiTarget: 
     EnemySkill1_MultiTargetType: 0
     EnemySkill1_MultiTargetCount: 0
-    EnemySkill1Value: 1.2
+    EnemySkill1Value: 1
     EnemySkill1SubValue: 0
-    EnemySkill2_Name: "\uAD00\uD1B5"
-    EnemySkill2_Description: "\uD788\uC5B4\uB85C \uC720\uB2DB 1\uCCB4\uC5D0 {EnemySkill2Value}
-      \uB9CC\uD07C \uB300\uBBF8\uC9C0\uB97C \uC8FC\uACE0, \uD574\uB2F9 \uD589\uC5D0
-      \uD6C4\uC5F4\uC5D0 \uC788\uB294 \uD788\uC5B4\uB85C\uC5D0\uAC8C {EnemySkill2SubValue}\uB97C
-      \uC900\uB2E4."
+    EnemySkill2_Name: "\uC5F0\uACA9"
+    EnemySkill2_Description: "\uC0C1\uB300 \uB2E8\uC77C \uC720\uB2DB 1\uCCB4\uC5D0
+      {EnemySkill2Value} \uB300\uBBF8\uC9C0\uB97C \uC8FC\uACE0, \uB79C\uB364 \uD788\uC5B4\uB85C
+      1\uCCB4\uC5D0 {EnemySkill2SubValue} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
     EnemySkill2Effect: 0
     EnemySkill2Range: 0
     EnemySkill2RangeLine: 0
     EnemySkill2Target: 1
-    EnemySkill2MultiTarget: 07000000
-    EnemySkill2_MultiTargetType: 0
-    EnemySkill2_MultiTargetCount: 0
-    EnemySkill2Value: 1.2
-    EnemySkill2SubValue: 1
-    EnemySkill3_Name: "(\uB9E4 \uD134)\n- \uAC19\uC740 \uD589\uC5D0 \uD788\uC5B4\uB85C\uAC00
-      \uC5C6\uB294 \uACBD\uC6B0, '\uBC1C\uD1B1 \uD6C4\uB9AC\uAE30' \uC2E4\uD589\n-
-      \uAC19\uC740 \uD589\uC5D0 \uD788\uC5B4\uB85C\uAC00 1\uBA85 \uC788\uB294 \uACBD\uC6B0,
-      '\uBC1C\uD1B1 \uD6C4\uB9AC\uAE30' \uC2E4\uD589\n- \uAC19\uC740 \uD589\uC5D0
-      \uD788\uC5B4\uB85C\uAC00 2\uBA85 \uC788\uB294 \uACBD\uC6B0, '\uBC15\uCE58\uAE30'
-      \uC2E4\uD589"
+    EnemySkill2MultiTarget: 000000000100000002000000030000000400000005000000060000000700000008000000
+    EnemySkill2_MultiTargetType: 1
+    EnemySkill2_MultiTargetCount: 1
+    EnemySkill2Value: 1
+    EnemySkill2SubValue: 0.8
+    EnemySkill3_Name: "(\uB9E4 \uD134)\n1) \uC0AC\uC6A9 \uC2A4\uD0AC \uC120\uC815
+      (\uD30C\uB3D9\uD0C4 60%, \uC5F0\uACA9 40%)\n2) \uD30C\uB3D9\uD0C4 \uB300\uC0C1
+      \uD310\uC815: \uBAA8\uB4E0 \uC720\uB2DB \uB3D9\uC77C \uD655\uB960 \uB79C\uB364
+      \uC9C0\uC815\n3) \uC5F0\uACA9 \uB300\uC0C1 \uD310\uC815\n - \uB300\uC0C11:
+      \uD55C \uC5F4 \uB0B4\uC5D0 \uB3D9\uC77C \uD655\uB960\uB85C \uB79C\uB364 \uC9C0\uC815(\uC804\uC5F4\uC774
+      \uC788\uC744 \uACBD\uC6B0 \uC804\uC5F4 \uC6B0\uC120)\n - \uB300\uC0C12: \uD55C
+      \uC5F4 \uB0B4\uC5D0 \uB3D9\uC77C \uD655\uB960\uB85C \uB79C\uB364 \uC9C0\uC815(\uD6C4\uC5F4\uC774
+      \uC788\uC744 \uACBD\uC6B0 \uD6C4\uC5F4 \uC6B0\uC120)"
     EnemySkill3_Description: 80
     EnemySkill3Effect: 0
-    EnemySkill3Range: 7
+    EnemySkill3Range: 10
     EnemySkill3RangeLine: 5
     EnemySkill3Target: 3
     EnemySkill3MultiTarget: 

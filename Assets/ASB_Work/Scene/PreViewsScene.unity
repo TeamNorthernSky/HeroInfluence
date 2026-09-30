@@ -1445,7 +1445,7 @@ MonoBehaviour:
   previewEnemies:
   - unitId: 20001
     gridNumber: 200
-  - unitId: 20001
+  - unitId: 20005
     gridNumber: 201
   - unitId: 20001
     gridNumber: 202
@@ -2042,6 +2042,74 @@ MonoBehaviour:
   transparentMat: {fileID: 2100000, guid: 866f43f59f0db524cac9bf4e80bcc29e, type: 2}
   targetMat: {fileID: 0}
   additionalTargetMat: {fileID: 0}
+--- !u!1001 &1277894729
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3.0925474
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.00000047683716
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.09542483
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8235576205935683001, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8719378173835673347, guid: e95388d94cba67f47bd71cbc288bcc24,
+        type: 3}
+      propertyPath: m_Name
+      value: CommonMode_VillanGun
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e95388d94cba67f47bd71cbc288bcc24, type: 3}
 --- !u!1 &1283536121
 GameObject:
   m_ObjectHideFlags: 0
@@ -3512,3 +3580,4 @@ SceneRoots:
   - {fileID: 1306616269}
   - {fileID: 390279903}
   - {fileID: 1037960359}
+  - {fileID: 1277894729}

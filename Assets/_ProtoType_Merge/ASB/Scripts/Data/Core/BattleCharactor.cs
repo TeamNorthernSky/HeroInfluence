@@ -443,10 +443,10 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
     }
 
-    /// <summary>Applies an IP delta based on maximum IP. ratio 0.1 = +10% max IP.</summary>
-    public void ApplyInfluenceDeltaFromMax(float ratio)
+    /// <summary>Applies a fixed IP delta and clamps the result to the valid IP range.</summary>
+    public void ApplyInfluenceDelta(float amount)
     {
-        CurrentInfluence = Mathf.Clamp(CurrentInfluence + MaxInfluence * ratio, 0f, MaxInfluence);
+        CurrentInfluence = Mathf.Clamp(CurrentInfluence + amount, 0f, MaxInfluence);
         OnInfluenceChanged?.Invoke(CurrentInfluence, MaxInfluence);
     }
 

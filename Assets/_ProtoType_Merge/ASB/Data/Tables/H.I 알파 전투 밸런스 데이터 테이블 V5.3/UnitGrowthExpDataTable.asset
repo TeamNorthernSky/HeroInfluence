@@ -23,47 +23,47 @@ MonoBehaviour:
     Character4StudySkill: HS4010
   - Level: 2
     Rank: D
-    NeedExpieriencePoint: 60
+    NeedExpieriencePoint: 15
     AddIP: 10
     Character1StudySkill: HS1020
-    Character2StudySkill: HS2030
+    Character2StudySkill: HS2010
     Character3StudySkill: HS3020
     Character4StudySkill: HS4020
   - Level: 3
     Rank: C
-    NeedExpieriencePoint: 130
-    AddIP: 10
+    NeedExpieriencePoint: 75
+    AddIP: 20
     Character1StudySkill: HS1030
-    Character2StudySkill: HS2040
+    Character2StudySkill: HS2030
     Character3StudySkill: HS3030
     Character4StudySkill: HS4030
   - Level: 4
     Rank: B
-    NeedExpieriencePoint: 230
+    NeedExpieriencePoint: 150
     AddIP: 10
     Character1StudySkill: HS1040
-    Character2StudySkill: HS2010
+    Character2StudySkill: HS2040
     Character3StudySkill: HS3040
     Character4StudySkill: HS4040
   - Level: 5
     Rank: A
-    NeedExpieriencePoint: 350
+    NeedExpieriencePoint: 255
     AddIP: 10
     Character1StudySkill: HS1011
-    Character2StudySkill: HS2011
+    Character2StudySkill: HS2021
     Character3StudySkill: HS3011
     Character4StudySkill: HS4011
   - Level: 6
     Rank: S
-    NeedExpieriencePoint: 490
+    NeedExpieriencePoint: 390
     AddIP: 10
     Character1StudySkill: HS1021
-    Character2StudySkill: HS2021
+    Character2StudySkill: HS2011
     Character3StudySkill: HS3021
     Character4StudySkill: HS4021
   - Level: 7
     Rank: SS
-    NeedExpieriencePoint: 690
+    NeedExpieriencePoint: 525
     AddIP: 10
     Character1StudySkill: HS1031
     Character2StudySkill: HS2031
@@ -71,7 +71,7 @@ MonoBehaviour:
     Character4StudySkill: HS4031
   - Level: 8
     Rank: SSS
-    NeedExpieriencePoint: 880
+    NeedExpieriencePoint: 675
     AddIP: 20
     Character1StudySkill: HS1041
     Character2StudySkill: HS2041
