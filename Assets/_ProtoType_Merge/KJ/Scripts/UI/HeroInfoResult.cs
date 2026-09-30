@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class HeroInfoResult : MonoBehaviour
 {
@@ -13,8 +14,10 @@ public class HeroInfoResult : MonoBehaviour
     [SerializeField] private Image portraitImage;
     [Tooltip("결과 캐릭터 이름을 표시합니다.")]
     [SerializeField] private TMP_Text unitNameText;
-    [Tooltip("보상 적용 후 EXP 비율을 표시합니다. Image Type은 Filled로 설정합니다.")]
+    [Tooltip("EXP의 기존 구간을 표시합니다. 획득 연출 종료 후 최종 비율로 맞춥니다. Image Type은 Filled입니다.")]
     [SerializeField] private Image expFill;
+    [Tooltip("EXP 충전 구간 전용 이미지입니다. 기존 ExpFill 뒤에 배치하고 같은 스프라이트·크기를 사용합니다. 미연결 카드는 기존 즉시 표시를 유지합니다.")]
+    [SerializeField] private Image expGainFill;
     [Tooltip("보상 적용 후 잔여 EXP / 다음 레벨 필요 EXP를 표시합니다. 데이터가 없으면 -를 표시합니다.")]
     [SerializeField] private TMP_Text expProgressText;
     [Tooltip("성장 테이블에서 조회한 보상 적용 후 랭크 아이콘입니다. 알 수 없는 랭크는 숨깁니다.")]
@@ -24,6 +27,174 @@ public class HeroInfoResult : MonoBehaviour
 
     private const string ProfileFolder = "UI_Sprite/UI_Icon/CharacterProfile_temp/";
     //private const string fileName = "character icon sample";
+
+    private struct ExpStep { public int From, To, Maximum; }
+    private enum RewardPhase { Idle, Pending, Exp, Boundary, Rank, Complete }
+    private readonly List<ExpStep> expSteps = new List<ExpStep>();
+    private UnitRewardPreview rewardPreview;
+    private BattleResultRewardVisualSettings rewardSettings;
+    private RewardPhase phase;
+    private int stepIndex;
+    private float elapsed, progress;
+    private Sprite oldRank, newRank;
+    private Material gainMaterial, flashMaterial, originalRankMaterial;
+    private bool rankMaterialCaptured;
+    private static readonly int Effect = Shader.PropertyToID("_Effect");
+    private static readonly int EffectColor = Shader.PropertyToID("_EffectColor");
+
+    private void Update()
+    {
+        // 카드가 비활성인 스킬 안내 중에는 Update가 실행되지 않아 진행되지 않는다.
+        if (isActiveAndEnabled) AdvanceRewardPresentation(Time.unscaledDeltaTime);
+    }
+
+    private void AdvanceRewardPresentation(float delta)
+    {
+        if (phase != RewardPhase.Idle && phase != RewardPhase.Complete && rewardSettings == null)
+        { CompleteRewardPresentation(); return; }
+        if (phase == RewardPhase.Pending)
+        {
+            if (expSteps.Count == 0) BeginRankFlash();
+            else BeginExpStep();
+            return;
+        }
+        if (phase == RewardPhase.Boundary)
+        {
+            stepIndex++;
+            if (stepIndex < expSteps.Count) BeginExpStep();
+            else { ShowFinalExp(); BeginRankFlash(); }
+            return;
+        }
+        if (phase == RewardPhase.Exp)
+        {
+            var motion = rewardSettings != null ? rewardSettings.expGain : null;
+            float duration = motion != null ? Mathf.Max(0f, motion.duration) : 0f;
+            elapsed += Mathf.Max(0f, delta);
+            float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+            progress = Mathf.Max(progress, motion != null ? motion.Evaluate(t) : t);
+            var step = expSteps[stepIndex];
+            float value = Mathf.Lerp(step.From, step.To, progress);
+            expGainFill.fillAmount = value / step.Maximum;
+            SetEffect(expGainFill, gainMaterial, rewardSettings.expGainColors != null ? rewardSettings.expGainColors.Evaluate(t) : Color.white, 1f);
+            if (expProgressText != null) expProgressText.text = $"{Mathf.FloorToInt(value)} / {step.Maximum}";
+            if (t >= 1f)
+            {
+                expFill.fillAmount = (float)step.To / step.Maximum;
+                expGainFill.enabled = false;
+                // 가득 찬 프레임을 표시한 뒤 다음 프레임에 다음 레벨의 0으로 전환한다.
+                phase = RewardPhase.Boundary;
+            }
+        }
+        else if (phase == RewardPhase.Rank)
+        {
+            elapsed += Mathf.Max(0f, delta);
+            float duration = rewardSettings != null ? Mathf.Max(0f, rewardSettings.rankFlashDuration) : 0f;
+            float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
+            rankImage.sprite = t < 0.5f ? oldRank : newRank;
+            SetEffect(rankImage, flashMaterial, Color.white, t < 0.5f ? t * 2f : (1f - t) * 2f);
+            if (t >= 1f) CompleteRewardPresentation();
+        }
+    }
+
+    private void BeginExpStep()
+    {
+        elapsed = progress = 0f;
+        var step = expSteps[stepIndex];
+        expFill.fillAmount = (float)step.From / step.Maximum;
+        expGainFill.fillAmount = expFill.fillAmount;
+        expGainFill.enabled = true;
+        SetEffect(expGainFill, gainMaterial, Color.white, 1f);
+        if (expProgressText != null) expProgressText.text = $"{step.From} / {step.Maximum}";
+        phase = RewardPhase.Exp;
+        if (rewardSettings.expGain == null || rewardSettings.expGain.duration <= 0f)
+        { ShowFinalExp(); BeginRankFlash(); }
+    }
+
+    private void BeginRankFlash()
+    {
+        if (rewardPreview == null || !rewardPreview.HasLevelUp || oldRank == null || newRank == null || oldRank == newRank || rankImage == null ||
+            flashMaterial == null || rewardSettings == null || rewardSettings.rankFlashDuration <= 0f)
+        { CompleteRewardPresentation(); return; }
+        rankImage.sprite = oldRank;
+        rankImage.enabled = true;
+        rankImage.material = flashMaterial;
+        SetEffect(rankImage, flashMaterial, Color.white, 0f);
+        elapsed = 0f;
+        phase = RewardPhase.Rank;
+    }
+
+    private static void SetEffect(Image image, Material material, Color color, float amount)
+    {
+        if (material == null || image == null) return;
+        material.SetColor(EffectColor, color); material.SetFloat(Effect, amount);
+        // Mask 하위에서는 Unity가 만든 스텐실 재질에도 같은 표시값을 전달한다.
+        var rendered = image.materialForRendering;
+        if (rendered != null && rendered != material)
+        { rendered.SetColor(EffectColor, color); rendered.SetFloat(Effect, amount); }
+    }
+
+    private Sprite FindRank(int level)
+    {
+        string rank = UnitRankLookup.GetRank(level);
+        if (rankSprites != null)
+            foreach (var sprite in rankSprites)
+                if (sprite != null && sprite.name == "UI_icon_rank" + rank) return sprite;
+        return null;
+    }
+
+    private bool BuildExpSteps(UnitRewardPreview preview)
+    {
+        expSteps.Clear();
+        if (!preview.HasExpPreview || preview.GainedExp <= 0 || preview.OldMaxExp <= 0) return true;
+        // 표시용 스냅샷만 생성한다. Repository의 실제 유닛이나 보상을 변경하지 않는다.
+        var snapshot = new UnitPersistentData(preview.UnitIndex, string.Empty, preview.OldLevel,
+            default, default, 0, 0, default, default, 0f, preview.OldExp, preview.OldMaxExp);
+        PersistentUnitRepository.SimulateExpProgress(snapshot, preview.GainedExp, out int finalLevel, out int finalExp, out int finalMax);
+        if (finalLevel != preview.NewLevel || finalExp != preview.NewExp || finalMax != preview.NewMaxExp) return false;
+        int remaining = preview.GainedExp, consumed = 0, current = preview.OldExp, maximum = preview.OldMaxExp;
+        while (remaining > 0 && maximum > 0)
+        {
+            int amount = Mathf.Min(remaining, maximum - current);
+            if (amount <= 0) return false;
+            expSteps.Add(new ExpStep { From = current, To = current + amount, Maximum = maximum });
+            consumed += amount; remaining -= amount;
+            PersistentUnitRepository.SimulateExpProgress(snapshot, consumed, out _, out current, out maximum);
+        }
+        return true;
+    }
+
+    private void ShowFinalExp()
+    {
+        if (rewardPreview == null) return;
+        bool valid = rewardPreview.HasExpPreview && rewardPreview.NewMaxExp > 0;
+        if (expFill != null) expFill.fillAmount = valid ? Mathf.Clamp01((float)rewardPreview.NewExp / rewardPreview.NewMaxExp) : 0f;
+        if (expProgressText != null) expProgressText.text = valid ? $"{rewardPreview.NewExp} / {rewardPreview.NewMaxExp}" : "-";
+        if (expGainFill != null) expGainFill.enabled = false;
+    }
+
+    public void CompleteRewardPresentation()
+    {
+        if (rewardPreview == null) return;
+        ShowFinalExp();
+        if (rankImage != null)
+        {
+            rankImage.sprite = newRank; rankImage.enabled = newRank != null;
+            if (rankMaterialCaptured) rankImage.material = originalRankMaterial;
+        }
+        phase = RewardPhase.Complete;
+    }
+
+    private void ReleaseRewardMaterials()
+    {
+        if (expGainFill != null) { expGainFill.enabled = false; expGainFill.material = null; }
+        if (rankImage != null && rankMaterialCaptured) rankImage.material = originalRankMaterial;
+        if (gainMaterial != null) { if (Application.isPlaying) Destroy(gainMaterial); else DestroyImmediate(gainMaterial); }
+        if (flashMaterial != null) { if (Application.isPlaying) Destroy(flashMaterial); else DestroyImmediate(flashMaterial); }
+        gainMaterial = flashMaterial = null;
+        rankMaterialCaptured = false;
+    }
+
+    private void OnDestroy() => ReleaseRewardMaterials();
 
     public void Apply(UnitRewardPreview preview)
     {
@@ -74,6 +245,8 @@ public class HeroInfoResult : MonoBehaviour
 
     public void ClearDisplay()
     {
+        phase = RewardPhase.Idle; rewardPreview = null; expSteps.Clear();
+        ReleaseRewardMaterials();
         if (portraitImage != null) { portraitImage.sprite = null; portraitImage.enabled = false; }
         if (rankImage != null) { rankImage.sprite = null; rankImage.enabled = false; }
         if (unitNameText != null) unitNameText.text = "";
@@ -104,22 +277,25 @@ public class HeroInfoResult : MonoBehaviour
         if (unitNameText != null) unitNameText.text = preview.UnitName ?? "";
         if (expValueText != null) expValueText.text = $"+{preview.GainedExp}";
         if (ipValueText != null) ipValueText.text = $"{preview.OldInfluence:F0} → {preview.NewInfluence:F0}";
-        if (preview.HasExpPreview && preview.NewMaxExp > 0)
+        rewardPreview = preview;
+        oldRank = FindRank(preview.OldLevel); newRank = FindRank(preview.NewLevel);
+        rewardSettings = BattleResultRewardVisualSettings.ForScene(gameObject.scene);
+        if (rewardSettings == null || rewardSettings.tintMaterial == null || expGainFill == null || expFill == null || !BuildExpSteps(preview))
+        { CompleteRewardPresentation(); return; }
+        gainMaterial = new Material(rewardSettings.tintMaterial) { hideFlags = HideFlags.HideAndDontSave };
+        flashMaterial = new Material(rewardSettings.tintMaterial) { hideFlags = HideFlags.HideAndDontSave };
+        expGainFill.material = gainMaterial;
+        if (rankImage != null)
         {
-            if (expFill != null) expFill.fillAmount = Mathf.Clamp01((float)preview.NewExp / preview.NewMaxExp);
-            if (expProgressText != null) expProgressText.text = $"{preview.NewExp} / {preview.NewMaxExp}";
+            originalRankMaterial = rankImage.material; rankMaterialCaptured = true;
+            rankImage.sprite = oldRank; rankImage.enabled = oldRank != null;
         }
-        string rank = UnitRankLookup.GetRank(preview.NewLevel);
-        if (rankImage != null && rankSprites != null)
+        if (preview.HasExpPreview && preview.OldMaxExp > 0)
         {
-            foreach (var sprite in rankSprites)
-                if (sprite != null && sprite.name == "UI_icon_rank" + rank)
-                {
-                    rankImage.sprite = sprite;
-                    rankImage.enabled = true;
-                    break;
-                }
+            expFill.fillAmount = Mathf.Clamp01((float)preview.OldExp / preview.OldMaxExp);
+            if (expProgressText != null) expProgressText.text = $"{preview.OldExp} / {preview.OldMaxExp}";
         }
+        stepIndex = 0; phase = RewardPhase.Pending;
     }
 
     public static Sprite LoadPortraitByPartySlot(int unitIndex)
