@@ -1,12 +1,14 @@
 using TMPro;
 using UnityEngine;
 
-/// <summary>WorldEventObject의 ID로 기본 대사를 조회하고, 상호작용 중에는 수락/거절 대사를 표시한다.</summary>
+/// <summary>상호작용 전에는 물음표를, 상호작용 중에는 이벤트 대사 말풍선을 표시한다.</summary>
 [DisallowMultipleComponent]
 public sealed class WorldEventNpcSpeechView : MonoBehaviour
 {
     [SerializeField] private WorldEventObject source;
     [SerializeField] private TMP_Text message;
+    [SerializeField] private GameObject questionBubble;
+    [SerializeField] private GameObject dialogueBubble;
 
     [SerializeField] private WorldEventNpcPanelSelector answerPanel;
 
@@ -41,13 +43,15 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
         lastCatalog = catalog;
         lastRequest = request;
         string text = string.Empty;
+        bool interacting = false;
         eventTypeID = DHWorldEventType.None;
         if (catalog != null && catalog.TryGetEvent(id, out var template) && template != null)
         {
             eventTypeID = template.EventType;
             if (template.SourceType == DHWorldEventSourceType.Npc)
             {
-                text = request != null ? request.MessageText : template.Description;
+                interacting = request != null;
+                text = interacting ? request.MessageText : string.Empty;
                 if (request != null && answerPanel != null)
                     answerPanel.ShowForEventType(eventTypeID, template);
             }
@@ -55,5 +59,7 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
         }
         else if (answerPanel != null) answerPanel.HideForEventId(id);
         if (message != null) message.text = text;
+        if (questionBubble != null) questionBubble.SetActive(!interacting);
+        if (dialogueBubble != null) dialogueBubble.SetActive(interacting);
     }
 }
