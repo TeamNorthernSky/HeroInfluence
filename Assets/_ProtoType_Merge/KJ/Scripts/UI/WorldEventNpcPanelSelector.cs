@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 /// <summary>이벤트 ID의 카탈로그 종류에 따라 NPC 선택지 패널 하나만 표시한다.</summary>
 [DisallowMultipleComponent]
@@ -23,6 +24,69 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private Button resultClickArea;
     private DHWorldEventPresentationRequest lastConfirmRequest;
     private int resultShownFrame = -1;
+    private int choicesShownFrame = -1;
+    private DHWorldEventPresentationRequest lastShortcutRequest;
+    private readonly List<Button> shortcutButtons = new List<Button>();
+    private GameObject questList;
+    private bool questListHidden;
+    private string questEventId;
+    private bool choiceSubmitted;
+
+    private void SetQuestListHidden(bool hidden)
+    {
+        if (questList == null && hidden)
+        {
+            // UIModulePlacer가 재배치한 이후에도 같은 탐사 Canvas 안에서 찾는다.
+            for (Transform scope = transform.parent; scope != null && questList == null; scope = scope.parent)
+                foreach (Transform child in scope.GetComponentsInChildren<Transform>(true))
+                    if (child.name == "Quest") { questList = child.gameObject; break; }
+        }
+        if (questList == null) return;
+        if (hidden || questListHidden) questList.SetActive(!hidden);
+        questListHidden = hidden;
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && resultClickArea != null &&
+            resultClickArea.isActiveAndEnabled && resultClickArea.IsInteractable())
+        {
+            resultClickArea.onClick.Invoke();
+            return;
+        }
+
+        for (int number = 1; number <= 9; number++)
+        {
+            if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + number - 1)) ||
+                Input.GetKeyDown((KeyCode)((int)KeyCode.Keypad1 + number - 1)))
+            {
+                ClickNumberedChoice(number);
+                return;
+            }
+        }
+    }
+
+    private void ClickNumberedChoice(int number)
+    {
+        if (number < 1 || number > 9 || current == null || current.IsWaitingFinalConfirm ||
+            manager == null || !ReferenceEquals(manager.CurrentRequest, current) ||
+            Time.frameCount == choicesShownFrame || Time.frameCount == inputFrame) return;
+
+        GameObject panel = current.EventType == DHWorldEventType.Consume ? consumePanel :
+            current.EventType == DHWorldEventType.Reward ? rewardPanel : choicePanel;
+        if (panel == null || !panel.activeInHierarchy) return;
+        shortcutButtons.Clear();
+        panel.GetComponentsInChildren(false, shortcutButtons);
+        // 회색 선택지도 번호를 유지한다. 표시 위치 기준 위→아래, 같은 높이는 왼쪽→오른쪽.
+        shortcutButtons.Sort((a, b) =>
+        {
+            int y = b.transform.position.y.CompareTo(a.transform.position.y);
+            return y != 0 ? y : a.transform.position.x.CompareTo(b.transform.position.x);
+        });
+        if (number > shortcutButtons.Count) return;
+        Button button = shortcutButtons[number - 1];
+        if (button.isActiveAndEnabled && button.IsInteractable()) button.onClick.Invoke();
+    }
 
     private void OnEnable()
     {
@@ -44,6 +108,8 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             manager.PresentationClosed -= OnPresentationClosed;
         }
         manager = null;
+        questEventId = null;
+        choiceSubmitted = false;
         HideAll();
     }
 
@@ -105,6 +171,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         if (rewardPanel != null) rewardPanel.SetActive(false);
         if (choicePanel != null) choicePanel.SetActive(false);
         if (resultClickArea != null) resultClickArea.gameObject.SetActive(false);
+        SetQuestListHidden(false);
     }
 
     private void OnPresentationChanged(DHWorldEventPresentationRequest request)
@@ -116,7 +183,11 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private void OnPresentationClosed(DHWorldEventPresentationRequest request)
     {
         if (request == null || request.WorldEventId == displayedEventId)
+        {
+            questEventId = null;
+            choiceSubmitted = false;
             HideAll();
+        }
     }
 
     private void BindButtons()
@@ -156,10 +227,22 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
 
     private void Render(DHWorldEventPresentationRequest request)
     {
+        if (!ReferenceEquals(lastShortcutRequest, request))
+        {
+            lastShortcutRequest = request;
+            choicesShownFrame = Time.frameCount;
+        }
         current = request;
+        if (questEventId != request.WorldEventId)
+        {
+            questEventId = request.WorldEventId;
+            choiceSubmitted = false;
+        }
+        SetQuestListHidden(!request.IsWaitingFinalConfirm && !choiceSubmitted);
         bool live = manager != null && ReferenceEquals(manager.CurrentRequest, request);
         bool confirm = request.IsWaitingFinalConfirm;
-        bool waitForClick = confirm && request.EventType == DHWorldEventType.Consume;
+        bool waitForClick = confirm && (request.EventType == DHWorldEventType.Consume ||
+            request.EventType == DHWorldEventType.Choice);
         if (waitForClick && !ReferenceEquals(lastConfirmRequest, request))
         {
             lastConfirmRequest = request;
@@ -179,6 +262,12 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             SetButton(rewardProceed, request.ProceedText, live && request.CanProceed);
         else if (request.EventType == DHWorldEventType.Choice)
         {
+            if (confirm)
+            {
+                foreach (Button button in choiceButtons) button.gameObject.SetActive(false);
+                choiceDecline.gameObject.SetActive(false);
+                return;
+            }
             cancelId = null;
             int index = 0;
             foreach (var option in request.ChoiceOptions)
@@ -222,6 +311,11 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             current == null || manager == null || !ReferenceEquals(manager.CurrentRequest, current) ||
             Time.frameCount == inputFrame) return false;
         inputFrame = Time.frameCount;
+        if (!current.IsWaitingFinalConfirm)
+        {
+            choiceSubmitted = true;
+            SetQuestListHidden(false);
+        }
         return true;
     }
 
@@ -239,7 +333,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     }
 
     private void OnDecline() { if (CanSubmit(consumeDecline)) manager.SelectDecline(); }
-    private void OnChoiceCancel() { if (CanSubmit(choiceDecline)) manager.SelectChoice(cancelId); }
+    private void OnChoiceCancel() { if (CanSubmit(choiceDecline)) manager.SelectDecline(); }
     private void OnChoiceOne() { if (CanSubmit(choiceButtons[0])) manager.SelectChoice(choiceIds[0]); }
     private void OnChoiceTwo() { if (CanSubmit(choiceButtons[1])) manager.SelectChoice(choiceIds[1]); }
 
