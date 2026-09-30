@@ -13,7 +13,8 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private DHWorldEventRuntimeManager manager;
     private string displayedEventId;
     private DHWorldEventPresentationRequest current;
-    private Button consumeProceed, consumeDecline, rewardProceed, choiceDecline;
+    [SerializeField] private Button consumeProceed, consumeDecline, rewardProceed, choiceDecline;
+    
     private Button[] choiceButtons;
     private string[] choiceIds = new string[2];
     private string cancelId;
