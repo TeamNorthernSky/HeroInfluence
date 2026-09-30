@@ -1,0 +1,5361 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3613edb1e81eb446927ec7b2d85719d, type: 3}
+  m_Name: "ChatDB\uBA54\uC778\uD018\uC2A4\uD2B8DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - Chat_ID: 1020010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\u2026\uADF8\uB7EC\uB2C8\uAE4C. \uD611\uD68C\uAC00 \uD3ED\uBC1C\uD558\uACE0,
+      \uBAA8\uC5EC \uC788\uB358 \uD788\uC5B4\uB85C\uB4E4\uC740 \uBAA8\uB450 \uC911\uD658\uC790\uC2E4
+      \uD589\uC774\uB780 \uAC70\uC9C0?"
+    IMG_Res: 
+    Next_Chat_ID: 1020020
+    Branch_Group_ID: 0
+  - Chat_ID: 1020020
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC9C0\uAE08 \uC6C0\uC9C1\uC77C \uC218 \uC788\uB294 \uD788\uC5B4\uB85C\uB294
+      \uB108\uD76C \uB137 \uBFD0\uC774\uACE0?"
+    IMG_Res: 
+    Next_Chat_ID: 1020030
+    Branch_Group_ID: 0
+  - Chat_ID: 1020030
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB807\uB2E4! \uC6B0\uB9AC\uAC00 \uC624\uB85C\uB77C\uB97C
+      \uB418\uCC3E\uC544\uC57C \uD55C\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1020040
+    Branch_Group_ID: 0
+  - Chat_ID: 1020040
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uB3C4\uC2DC\uBCF4\uB2E4 \uB0A0\uC544\uAC04 \uC9C0\uBD95\uBD80\uD130
+      \uB418\uCC3E\uC544\uC57C \uD558\uB294 \uAC70 \uC544\uB2C8\uC57C?"
+    IMG_Res: 
+    Next_Chat_ID: 1020050
+    Branch_Group_ID: 0
+  - Chat_ID: 1020050
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uADF8\uAC70 \uAC74\uB108\uD3B8 \uC544\uD30C\uD2B8 \uC625\uC0C1\uC5D0
+      \uAC78\uB824\uC788\uB358\uB370"
+    IMG_Res: 
+    Next_Chat_ID: 1020060
+    Branch_Group_ID: 0
+  - Chat_ID: 1020060
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC57C\uD638 \uD574\uB0C8\uB124. \uC774\uC81C \uC9D1\uC73C\uB85C
+      \uAC08\uAE4C?"
+    IMG_Res: 
+    Next_Chat_ID: 1020070
+    Branch_Group_ID: 0
+  - Chat_ID: 1020070
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1020080
+    Branch_Group_ID: 0
+  - Chat_ID: 1020080
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uB450\uBD84 \uBAA8\uB450 \uC9D1\uC911\uD574\uC8FC\uC138\uC694!
+      \uD611\uD68C\uAC00 \uC5C6\uB294 \uC9C0\uAE08, \uC800\uD76C\uB77C\uB3C4 \uC815\uC2E0\uC744
+      \uCC28\uB824\uC57C \uD574\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1020090
+    Branch_Group_ID: 0
+  - Chat_ID: 1020090
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC0AC\uC2E4\uC774 \uADF8\uB807\uAE30\uB294 \uD55C\uB370\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1020100
+    Branch_Group_ID: 0
+  - Chat_ID: 1020100
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uB8E8\uBBF8\uB098\uAC00 \uBB34\uAE30\uACE0\uC5D0\uC11C \uD30C\uAD34\uAD11\uC120\uB9CC
+      \uC548 \uAC08\uACBC\uC5B4\uB3C4 \uC774\uB7F0 \uC77C\uC740 \uC5C6\uC5C8\uB2E8
+      \uB9D0\uC774\uC9C0?"
+    IMG_Res: 
+    Next_Chat_ID: 1020110
+    Branch_Group_ID: 0
+  - Chat_ID: 1020110
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uD558! \uD6C8\uB828\uC2E4\uC744 \uC548 \uBE4C\uB824\uC900 \uD611\uD68C
+      \uD0D3\uC774\uC57C!"
+    IMG_Res: 
+    Next_Chat_ID: 1020120
+    Branch_Group_ID: 0
+  - Chat_ID: 1020120
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC7A0\uAE50. \uADF8\uAC8C \uBB34\uC2A8 \uC18C\uB9AC\uC57C?"
+    IMG_Res: 
+    Next_Chat_ID: 1020130
+    Branch_Group_ID: 0
+  - Chat_ID: 1020130
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uBAB0\uB790\uAD6C\uB098?"
+    IMG_Res: 
+    Next_Chat_ID: 1020140
+    Branch_Group_ID: 0
+  - Chat_ID: 1020140
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uADF8\u2026\uD611\uD68C\uAC00 \uD30C\uAD34\uB41C \uAC8C\u2026\uC544\uBB34\uB798\uB3C4
+      \uC800\uD76C \uC9C0\uBD84\uC774 \uC788\uC5B4\uC11C...\uD5E4\uD5E4\u2026\uD750\uC73C\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1020150
+    Branch_Group_ID: 0
+  - Chat_ID: 1020150
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uD5C8\uB098 \uC5B8\uC81C\uAE4C\uC9C0\uACE0 \uACFC\uAC70\uB9CC
+      \uB3CC\uC544\uBCF4\uACE0 \uC788\uC5B4\uC120 \uC548 \uB418\uB294 \uBC95\uC774\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1020160
+    Branch_Group_ID: 0
+  - Chat_ID: 1020160
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1020170
+    Branch_Group_ID: 0
+  - Chat_ID: 1020170
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBA38\uB9BF\uC18D\uC5D0\uC11C \uC628\uAC16 \uC0DD\uAC01\uC774
+      \uC624\uACE0\uAC04\uB2E4...)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10101
+  - Chat_ID: 1020200
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uB044\uC559! \uC8C4\uC1A1\uD574\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1020210
+    Branch_Group_ID: 0
+  - Chat_ID: 1020210
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774 \uC790\uC2DD! \uB124\uCF54\uBC0D\uC744 \uC6B8\uB838\uACA0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1020220
+    Branch_Group_ID: 0
+  - Chat_ID: 1020220
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD55C\uBC14\uD0D5 \uC18C\uB780\uC774 \uC77C\uACE0, \uC6B0\uB9AC\uB294
+      \uC8FC\uBCC0\uC744 \uC21C\uCC30\uD558\uBA70 \uBE4C\uB7F0 \uC5F0\uD569\uC5D0
+      \uAD00\uD55C \uB2E8\uC11C\uB97C \uCC3E\uAE30\uB85C \uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 0
+  - Chat_ID: 1020300
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB0A9\uB4DD\uD588\uC73C\uBA74 \uBE68\uB9AC \uAC00\uC790."
+    IMG_Res: 
+    Next_Chat_ID: 1020310
+    Branch_Group_ID: 0
+  - Chat_ID: 1020310
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uB4E4 \uBB34\uC0AC\uD788 \uB3CC\uC544\uC654\uC73C\uBA74
+      \uC88B\uACA0\uC5B4\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1020320
+    Branch_Group_ID: 0
+  - Chat_ID: 1020320
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC8FC\uBCC0\uC744 \uC21C\uCC30\uD558\uBA70
+      \uBE4C\uB7F0 \uC5F0\uD569\uC5D0 \uB300\uD55C \uB2E8\uC11C\uB97C \uCC3E\uAE30\uB85C
+      \uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 0
+  - Chat_ID: 1110010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC57D\uD0C8\uAFBC\uB4E4\uC774 \uD611\uD68C \uC794\uD574 \uC544\uB798
+      \uBB3B\uD600\uC788\uB358 \uC0C1\uC790\uB97C \uB4A4\uC9C0\uACE0 \uC788\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11103
+  - Chat_ID: 1110100
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uC774\uAC78 \uBC14\uCE58\uBA74 \uBE4C\uB7F0 \uC5F0\uD569\uB3C4
+      \uC6B0\uB9B4 \uBC1B\uC544\uC8FC\uACA0\uC9C0!"
+    IMG_Res: 
+    Next_Chat_ID: 1110110
+    Branch_Group_ID: 0
+  - Chat_ID: 1110110
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uD611\uD68C\uC758 \uBB3C\uC790\uB97C \uB0B4\uB824\uB194\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1110120
+    Branch_Group_ID: 0
+  - Chat_ID: 1110120
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uD788\uC5B4\uB85C\uAC00 \uC544\uC9C1 \uB0A8\uC544 \uC788\uC5C8\uC5B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1110130
+    Branch_Group_ID: 0
+  - Chat_ID: 1110130
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC751. \uC720\uAC10\uC774\uC9C0?"
+    IMG_Res: 
+    Next_Chat_ID: 1110140
+    Branch_Group_ID: 0
+  - Chat_ID: 1110140
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uD765, \uB0A8\uC740 \uD788\uC5B4\uB85C\uB77C \uD574\uBD10\uC57C,
+      \uADF8\uB0E5 \uC7A1\uC878\uC774\uC9C0!"
+    IMG_Res: 
+    Next_Chat_ID: 1110150
+    Branch_Group_ID: 0
+  - Chat_ID: 1110150
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uB4E3\uC790\uD558\uB2C8 \uC9C0\uB098\uAC00\uB294 \uBAA8\uB4E0
+      \uAE38\uC744 \uC465\uB300\uBC2D\uC774 \uB418\uB294 \uD3D0\uAE09 \uD788\uC5B4\uB85C\uB4E4\uC774
+      \uC788\uB2E4\uB358\uB370.."
+    IMG_Res: 
+    Next_Chat_ID: 1110160
+    Branch_Group_ID: 0
+  - Chat_ID: 1110160
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uC544\uBB34\uB3C4 \uC548 \uBC1B\uC544\uC918\uC11C \uC790\uAE30\uB4E4\uB07C\uB9AC
+      \uBB49\uCCE4\uB2E4\uACE0 \uB9D0\uC774\uC57C\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1110170
+    Branch_Group_ID: 0
+  - Chat_ID: 1110170
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB108\uD76C\uB4E4\uC774\uB2C8?"
+    IMG_Res: 
+    Next_Chat_ID: 1110180
+    Branch_Group_ID: 0
+  - Chat_ID: 1110180
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uBC14\uB85C \uB2E8\uC815\uC9D3\uC9C0 \uB9C8\uC138\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1110190
+    Branch_Group_ID: 0
+  - Chat_ID: 1110190
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC544\uB2C8\uB77C\uACE4 \uD560 \uC218 \uC5C6\uC9C0."
+    IMG_Res: 
+    Next_Chat_ID: 1110200
+    Branch_Group_ID: 0
+  - Chat_ID: 1110200
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC57D\uD0C8\uC740 \uAE08\uBB3C\uC774\uB2E4! \uB3C4\uB85C \uBC14\uB2E5\uC5D0
+      \uB3CC\uB824\uC918\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1110210
+    Branch_Group_ID: 0
+  - Chat_ID: 1110210
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uD558?! \uC774\uAC74 \uC6B0\uB9AC \uD53C\uB540 \uD758\uB824\uC11C
+      \uD30C\uB0B8 \uAC70\uAC70\uB4E0? \uD798\uC73C\uB85C \uBE8F\uC5B4\uBCF4\uB358\uAC00!"
+    IMG_Res: 
+    Next_Chat_ID: 1110900
+    Branch_Group_ID: 11102
+  - Chat_ID: 1110900
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC804\uD22C \uC885\uB8CC"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11104
+  - Chat_ID: 1120010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC57D\uD0C8\uAFBC\uB4E4\uC740 \uD769\uC5B4\uC9C0\uACE0 \uD55C
+      \uBA85\uB9CC \uB0A8\uC558\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1120020
+    Branch_Group_ID: 0
+  - Chat_ID: 1120020
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uD56D\uBCF5! \uD56D\uBCF5\uD55C\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1120030
+    Branch_Group_ID: 0
+  - Chat_ID: 1120030
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uD611\uD68C \uBB3C\uC790\uB294 \uB3CC\uB824\uB193\uACA0\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1120040
+    Branch_Group_ID: 0
+  - Chat_ID: 1120040
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADF8\uAC70 \uC6B0\uB9AC \uAC70\uC57C. \uBC14\uB2E5\uC5D0 \uBB3B\uC9C0
+      \uB9C8."
+    IMG_Res: 
+    Next_Chat_ID: 1120050
+    Branch_Group_ID: 0
+  - Chat_ID: 1120050
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC544\uAE4C \uBE4C\uB7F0 \uC5F0\uD569 \uAC00\uC785\uC774\uB2C8
+      \uBB50\uB2C8 \uD558\uB358\uB370, \uADF8\uAC8C \uBB34\uC2A8 \uC18C\uB9B4\uAE4C?"
+    IMG_Res: 
+    Next_Chat_ID: 1120060
+    Branch_Group_ID: 0
+  - Chat_ID: 1120060
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uC774 \uAD6C\uC5ED \uC740\uD589\uC5D0\uC11C \uBE4C\uB7F0 \uC5F0\uD569\uC774
+      \uC0AC\uB78C\uC744 \uBAA8\uC9D1\uD558\uACE0 \uC788\uC5C8\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1120070
+    Branch_Group_ID: 0
+  - Chat_ID: 1120070
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC740\uD589\uC744 \uC810\uAC70\uD588\uB2E4\uB294 \uB73B\uC778\uAC00\uC694?"
+    IMG_Res: 
+    Next_Chat_ID: 1120080
+    Branch_Group_ID: 0
+  - Chat_ID: 1120080
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB798 \uD1B5\uC9F8\uB85C \uBA39\uC5C8\uB2E4\uB2C8\uAE4C?"
+    IMG_Res: 
+    Next_Chat_ID: 1120090
+    Branch_Group_ID: 0
+  - Chat_ID: 1120090
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uD655\uC2E4\uD574?"
+    IMG_Res: 
+    Next_Chat_ID: 1120100
+    Branch_Group_ID: 0
+  - Chat_ID: 1120100
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uC911\uC559 \uAD11\uC7A5 \uCABD\uC5D0 \uAE43\uBC1C\uAE4C\uC9C0
+      \uAC78\uC5C8\uB2E4\uACE0!"
+    IMG_Res: 
+    Next_Chat_ID: 1120110
+    Branch_Group_ID: 0
+  - Chat_ID: 1120110
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uBBFF\uAE30 \uC5B4\uB824\uC6B4\uB370\u2026\uBC1C\uAC00\uB77D\uB9CC
+      \uC9C0\uC838\uBCFC\uAE4C?"
+    IMG_Res: 
+    Next_Chat_ID: 1120120
+    Branch_Group_ID: 0
+  - Chat_ID: 1120120
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB108 \uD788\uC5B4\uB85C \uB9DE\uC9C0? \uC77C\uB2E8 \uC815\uBCF4\uB294
+      \uD655\uC778\uD560 \uD544\uC694\uB294 \uC788\uACA0\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1120130
+    Branch_Group_ID: 0
+  - Chat_ID: 1120130
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uADF8 \uC804\uC5D0 \uC800 \uB9C8\uBC95\uC0AC\uBD80\uD130 \uB9D0\uB824\uC918!"
+    IMG_Res: 
+    Next_Chat_ID: 1120140
+    Branch_Group_ID: 0
+  - Chat_ID: 1120140
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC544\uC9C1 \uC544\uBB34\uAC83\uB3C4 \uC548 \uD588\uAC70\uB4E0?"
+    IMG_Res: 
+    Next_Chat_ID: 1120150
+    Branch_Group_ID: 0
+  - Chat_ID: 1120150
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB8E8\uBBF8\uB098\uB97C \uC5B4\uB5BB\uAC8C \uD560\uAE4C?)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12504
+  - Chat_ID: 1120200
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB8E8\uBBF8\uB098, \uC9C1\uC811 \uAC81\uC904 \uD544\uC694\uB294
+      \uC5C6\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1120210
+    Branch_Group_ID: 0
+  - Chat_ID: 1120210
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uB9DE\uB2E4! \uB124\uAC00 \uC804\uC124\uC758 \uD751\uB9C8\uBC95\uC0AC
+      \uB098\uB77D\uC774\uB77C\uB3C4 \uB418\uB0D0!"
+    IMG_Res: 
+    Next_Chat_ID: 1120220
+    Branch_Group_ID: 0
+  - Chat_ID: 1120220
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uD788\uC5B4\uB85C\uAC00 \uCD5C\uC18C\uD55C\uC758 \uC724\uB9AC\uC758\uC2DD\uC740
+      \uC788\uC5B4\uC57C\uC9C0!"
+    IMG_Res: 
+    Next_Chat_ID: 1120230
+    Branch_Group_ID: 0
+  - Chat_ID: 1120230
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uBB50\uAC00 \uC5B4\uC9F8?!"
+    IMG_Res: 
+    Next_Chat_ID: 1120240
+    Branch_Group_ID: 0
+  - Chat_ID: 1120240
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC57C \uC7A0\uAE4C-"
+    IMG_Res: 
+    Next_Chat_ID: 1120250
+    Branch_Group_ID: 0
+  - Chat_ID: 1120250
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB8E8\uBBF8\uB098\uAC00 \uC57D\uD0C8\uAFBC\uC758 \uC5BC\uAD74\uC5D0
+      \uBC88\uAC2F\uBD88\uC744 \uBC15\uC544\uBC84\uB838\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1120260
+    Branch_Group_ID: 0
+  - Chat_ID: 1120260
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uADFC\uCC98\uC5D0 \uC228\uC5B4\uBCF4\uB358 \uC57D\uD0C8\uAFBC\uB4E4\uC774
+      \uAC81\uC5D0 \uC9C8\uB824 \uB098\uB77D\uC774 \uC7AC\uB9BC\uD588\uB2E4 \uC678\uCE58\uBA70
+      \uB2EC\uC544\uB0AC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12503
+  - Chat_ID: 1120300
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB124\uCF54\uBC0D, \uC800 \uC0AC\uB78C\uC744 \uC9C4\uC815\uC2DC\uCF1C
+      \uC918."
+    IMG_Res: 
+    Next_Chat_ID: 1120310
+    Branch_Group_ID: 0
+  - Chat_ID: 1120310
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uB124? \uC81C\uAC00 \uD560 \uC218 \uC788\uC744\uAE4C\uC694?"
+    IMG_Res: 
+    Next_Chat_ID: 1120320
+    Branch_Group_ID: 0
+  - Chat_ID: 1120320
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uC5B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1120330
+    Branch_Group_ID: 0
+  - Chat_ID: 1120330
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB124\uCF54\uBC0D\uC774 \uB2E4\uAC00\uAC00\uC790 \uC794\uD574\uAC00
+      \uBB34\uB108\uC838 \uADF8\uB97C \uB36E\uCCE4\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1120340
+    Branch_Group_ID: 0
+  - Chat_ID: 1120340
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uC800 \uC5EC\uC790\uAC00 \uC7AC\uC559\uC744 \uBD88\uB7EC\uB4E4\uC600\uB2E4!
+      \uB3C4\uB9DD\uCCD0!"
+    IMG_Res: 
+    Next_Chat_ID: 1120341
+    Branch_Group_ID: 0
+  - Chat_ID: 1120341
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC57D\uD0C8\uAFBC\uC774 \uBE44\uBA85\uC744 \uC9C0\uB974\uBA70
+      \uB2EC\uC544\uB0AC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1120350
+    Branch_Group_ID: 0
+  - Chat_ID: 1120350
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC6B0\uC5F0\uC774\uC5D0\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1120360
+    Branch_Group_ID: 0
+  - Chat_ID: 1120360
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC815\uB9D0 \uC644\uBCBD\uD55C \uC124\uB4DD\uC774\uC57C."
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12505
+  - Chat_ID: 1130010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC57D\uD0C8\uAFBC\uB4E4\uC758 \uAE30\uC138\uC5D0 \uD788\uC5B4\uB85C\uB4E4\uC774
+      \uBC00\uB838\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1130020
+    Branch_Group_ID: 0
+  - Chat_ID: 1130020
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uC774\uACBC\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1130030
+    Branch_Group_ID: 0
+  - Chat_ID: 1130030
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC774\uAC74 \uAF64 \uC624\uB798 \uB180\uB9BC\uAC10\uC774 \uB418\uACA0\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1130040
+    Branch_Group_ID: 0
+  - Chat_ID: 1130040
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC544\uC9C1 \uB05D\uB098\uC9C0 \uC54A\uC558\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1130050
+    Branch_Group_ID: 0
+  - Chat_ID: 1130050
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC5F0\uB9C9\uC744 \uD130\uB728\uB9B0\uB2E4. \uBAA8\uB450 \uB4A4\uB85C
+      \uBB3C\uB7EC\uB098!"
+    IMG_Res: 
+    Next_Chat_ID: 1130060
+    Branch_Group_ID: 0
+  - Chat_ID: 1130060
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uB8E8\uBBF8\uB098, \uC800\uC2A4\uD2F0\uC2A4\uB97C \uC7A1\uC544\uC8FC\uC138\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1130070
+    Branch_Group_ID: 0
+  - Chat_ID: 1130070
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC7A1\uC558\uC5B4. \uBE68\uB9AC \uAC00."
+    IMG_Res: 
+    Next_Chat_ID: 1130080
+    Branch_Group_ID: 0
+  - Chat_ID: 1130080
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB4DC\uB860 \uC5F0\uB9C9\uC774 \uC794\uD574 \uC0AC\uC774\uB97C
+      \uB4A4\uB36E\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1130090
+    Branch_Group_ID: 0
+  - Chat_ID: 1130090
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB098\uB294 \uC77C\uD589\uC744 \uD611\uD68C\uB85C \uBCF5\uADC0\uC2DC\uCF30\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1130100
+    Branch_Group_ID: 0
+  - Chat_ID: 1130100
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB0B4 \uBD88\uCC30\uC774\uC57C. \uB2E4\uC74C\uC5D4 \uB354 \uC8FC\uC758\uD574\uC57C\uACA0\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11201
+  - Chat_ID: 1140010
+    Chat_Type: 0
+    Char_Name: "\uC57D\uD0C8\uAFBC"
+    Char_Profile: 
+    Message_Text: "\uB610 \uC654\uC5B4? \uC774\uBC88\uC5D0\uB3C4 \uBB3C\uC790\uB9CC
+      \uB450\uACE0 \uAC00!"
+    IMG_Res: 
+    Next_Chat_ID: 1140020
+    Branch_Group_ID: 0
+  - Chat_ID: 1140020
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uAC19\uC740 \uD328\uBC30\uB294 \uBC18\uBCF5\uD558\uC9C0 \uC54A\uB294\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1140030
+    Branch_Group_ID: 0
+  - Chat_ID: 1140030
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uC774\uACA8\uC57C\uACA0\uC9C0?"
+    IMG_Res: 
+    Next_Chat_ID: 1140040
+    Branch_Group_ID: 0
+  - Chat_ID: 1140040
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB0A0\uB824\uBC84\uB9AC\uACA0\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1140050
+    Branch_Group_ID: 0
+  - Chat_ID: 1140050
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uAC19\uC774 \uAC00\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1140060
+    Branch_Group_ID: 0
+  - Chat_ID: 1140060
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC57D\uD0C8\uAFBC\uB4E4\uACFC \uB2E4\uC2DC \uACA9\uB3CC\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1110900
+    Branch_Group_ID: 11102
+  - Chat_ID: 1150010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uACE8\uBAA9\uC5D0\uC11C \uD55C \uC18C\uB144\uC774 \uBE4C\uB7F0\uB4E4\uC5D0\uAC8C
+      \uB458\uB7EC\uC2F8\uC600\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11501
+  - Chat_ID: 1150100
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD615\uC744 \uBD24\uB2E4\uBA74 \uB9D0\uD574! \uD615\uC740 \uC5B4\uB514\uB85C
+      \uAC14\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1150110
+    Branch_Group_ID: 0
+  - Chat_ID: 1150110
+    Chat_Type: 0
+    Char_Name: "\uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uAF2C\uB9F9\uC774\uAC00 \uAC81\uB3C4 \uC5C6\uC774."
+    IMG_Res: 
+    Next_Chat_ID: 1150120
+    Branch_Group_ID: 0
+  - Chat_ID: 1150120
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uADF8 \uC544\uC774\uC5D0\uAC8C\uC11C \uB5A8\uC5B4\uC838\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1150130
+    Branch_Group_ID: 0
+  - Chat_ID: 1150130
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD788\uC5B4\uB85C? \uB2A6\uC5C8\uC796\uC544!"
+    IMG_Res: 
+    Next_Chat_ID: 1150140
+    Branch_Group_ID: 0
+  - Chat_ID: 1150140
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC560\uAC00 \uCC38 \uB9D0\uC774\u2026\uAC70\uCE58\uB124?"
+    IMG_Res: 
+    Next_Chat_ID: 1150150
+    Branch_Group_ID: 0
+  - Chat_ID: 1150150
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uCC38\uC544."
+    IMG_Res: 
+    Next_Chat_ID: 1150160
+    Branch_Group_ID: 0
+  - Chat_ID: 1150160
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC774\uB7F0 \uC704\uD5D8\uD55C \uACF3\uC5D4 \uC65C \uC654\uB2C8?"
+    IMG_Res: 
+    Next_Chat_ID: 1150170
+    Branch_Group_ID: 0
+  - Chat_ID: 1150170
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uB098\uB3C4 \uC774\uB7F0 \uC778\uAC04\uB4E4 \uC788\uB294 \uAC70\uB9AC\uC5D0
+      \uC624\uACE0 \uC2EB\uC5C8\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1150180
+    Branch_Group_ID: 0
+  - Chat_ID: 1150180
+    Chat_Type: 0
+    Char_Name: "\uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC5B4\uC774! \uC9C0\uAE08 \uB098 \uBCF4\uACE0 \uD55C \uC18C\uB9AC\uB0D0!
+      \uAC74\uBC29\uC9C4 \uAF2C\uB9F9\uC774\uAC00!"
+    IMG_Res: 
+    Next_Chat_ID: 1150190
+    Branch_Group_ID: 0
+  - Chat_ID: 1150190
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uAF2C\uB9F9\uC774\uB77C \uD558\uB294 \uB124\uAC00 \uB354 \uAC74\uBC29\uC9C0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1150200
+    Branch_Group_ID: 0
+  - Chat_ID: 1150200
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC5B4\uB9B0 \uC544\uC774\uC758 \uB9D0\uC5D0 \uD718\uB458\uB9AC\uB294
+      \uB108\uD76C\uC758 \uADFC\uC131\uC744 \uC54C\uACA0\uAD6C\uB098!"
+    IMG_Res: 
+    Next_Chat_ID: 1150210
+    Branch_Group_ID: 0
+  - Chat_ID: 1150210
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uC81C\uBD80\uD130 \uC774\uBAB8\uC774 \uB108\uD76C\uB97C
+      \uC0C1\uB300\uD558\uACA0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1150220
+    Branch_Group_ID: 0
+  - Chat_ID: 1150220
+    Chat_Type: 0
+    Char_Name: "\uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uB2E5\uCE58\uACE0 \uBD99\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1150230
+    Branch_Group_ID: 0
+  - Chat_ID: 1150230
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1150900
+    Branch_Group_ID: 11502
+  - Chat_ID: 1150900
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC804\uD22C \uC885\uB8CC"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11503
+  - Chat_ID: 1160010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBE4C\uB7F0\uB4E4\uC740 \uB2EC\uC544\uB098\uACE0 \uC18C\uB144\uC774
+      \uC228\uC744 \uACE8\uB790\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1160020
+    Branch_Group_ID: 0
+  - Chat_ID: 1160020
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uAC14\uC9C0?"
+    IMG_Res: 
+    Next_Chat_ID: 1160030
+    Branch_Group_ID: 0
+  - Chat_ID: 1160030
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uAC14\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1160040
+    Branch_Group_ID: 0
+  - Chat_ID: 1160040
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD765, \uC7AC\uC218 \uC5C6\uAC8C \uD615\uB9CC \uB098\uAC00\uC9C0
+      \uC54A\uC558\uC5B4\uB3C4 \uC5BC\uAD74 \uBCFC \uC77C \uC5C6\uC5C8\uB294\uB370."
+    IMG_Res: 
+    Next_Chat_ID: 1160050
+    Branch_Group_ID: 0
+  - Chat_ID: 1160050
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uD615\uC744 \uCC3E\uB2C8?"
+    IMG_Res: 
+    Next_Chat_ID: 1160060
+    Branch_Group_ID: 0
+  - Chat_ID: 1160060
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC751. \uBE4C\uB7F0 \uC5F0\uD569\uC774 \uCE68\uACF5\uD55C \uB0A0\uC5D0
+      \uAC11\uC790\uAE30 \uC0AC\uB77C\uC84C\uAC70\uB4E0."
+    IMG_Res: 
+    Next_Chat_ID: 1160070
+    Branch_Group_ID: 0
+  - Chat_ID: 1160070
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC544\uB9C8\uB3C4 \uC740\uD589\uC73C\uB85C \uAC00\uC9C0 \uC54A\uC558\uC744\uAE4C?"
+    IMG_Res: 
+    Next_Chat_ID: 1160080
+    Branch_Group_ID: 0
+  - Chat_ID: 1160080
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC740\uD589?"
+    IMG_Res: 
+    Next_Chat_ID: 1160090
+    Branch_Group_ID: 0
+  - Chat_ID: 1160090
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC804\uC5D0\uB3C4 \uBE4C\uB7F0 \uC5F0\uD569\uC744 \uCC3E\uC558\uAC70\uB4E0,
+      \uAC54\uB4E4\uC774 \uC740\uD589\uC744 \uBA39\uC5C8\uB2E4\uB358\uB370 \uAC70\uAE30
+      \uC788\uC744\uC9C0\uB3C4?"
+    IMG_Res: 
+    Next_Chat_ID: 1160100
+    Branch_Group_ID: 0
+  - Chat_ID: 1160100
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADF8\uB7FC \uC544\uAE4C \uBE4C\uB7F0\uB4E4\uC5D0\uAC8C \uD615\uC758
+      \uD589\uBC29\uC740 \uC65C \uBB3C\uC740 \uAC70\uC57C?"
+    IMG_Res: 
+    Next_Chat_ID: 1160110
+    Branch_Group_ID: 0
+  - Chat_ID: 1160110
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uB760\uAEBC\uC6CC\uC11C."
+    IMG_Res: 
+    Next_Chat_ID: 1160120
+    Branch_Group_ID: 0
+  - Chat_ID: 1160120
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1160130
+    Branch_Group_ID: 0
+  - Chat_ID: 1160130
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC694\uC998 \uC560\uB4E4\uC740 \uB2E4 \uC774\uB798?"
+    IMG_Res: 
+    Next_Chat_ID: 1160140
+    Branch_Group_ID: 0
+  - Chat_ID: 1160140
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uD5E4\uD5E4...\uC774\uB300\uB85C \uB3CC\uB824\uBCF4\uB0B4\uAE30\uB294
+      \uC704\uD5D8\uD558\uB2C8\uAE4C \uAC19\uC774 \uAC00\uB294 \uAC8C \uC5B4\uB5A8\uAE4C\uC694?"
+    IMG_Res: 
+    Next_Chat_ID: 1160150
+    Branch_Group_ID: 0
+  - Chat_ID: 1160150
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC88B\uC544! \uB0A0 \uC798 \uC9C0\uD0A4\uB77C\uACE0."
+    IMG_Res: 
+    Next_Chat_ID: 1160160
+    Branch_Group_ID: 0
+  - Chat_ID: 1160160
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uCC38 \uC27D\uAC8C \uB9D0\uD55C\uB2E4\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1160170
+    Branch_Group_ID: 0
+  - Chat_ID: 1160170
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC18C\uB144\uC774 \uD569\uB958\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1160180
+    Branch_Group_ID: 0
+  - Chat_ID: 1160180
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBE4C\uB7F0 \uAC70\uC810\uC758 \uC704\uCE58\uB97C \uC54C\uC544\uB0C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11302
+  - Chat_ID: 1170010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBE4C\uB7F0\uB4E4\uC758 \uACF5\uACA9\uC5D0 \uC77C\uD589\uC774
+      \uACE8\uBAA9\uC73C\uB85C \uBC00\uB838\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1170020
+    Branch_Group_ID: 0
+  - Chat_ID: 1170020
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC73C\uC545! \uD788\uC5B4\uB85C\uB4E4\uB3C4 \uC4F8\uBAA8 \uC5C6\uB124!"
+    IMG_Res: 
+    Next_Chat_ID: 1170030
+    Branch_Group_ID: 0
+  - Chat_ID: 1170030
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC7E4 \uC785\uBD80\uD130 \uC5B4\uB5BB\uAC8C \uD574\uBD10!"
+    IMG_Res: 
+    Next_Chat_ID: 1170040
+    Branch_Group_ID: 0
+  - Chat_ID: 1170040
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uBA74\uBAA9 \uC5C6\uB2E4. \uD558\uC9C0\uB9CC \uB2E4\uC74C\uC5D0\uB294
+      \uBC18\uB4DC\uC2DC!"
+    IMG_Res: 
+    Next_Chat_ID: 1170050
+    Branch_Group_ID: 0
+  - Chat_ID: 1170050
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC800 \uC560\uBD80\uD130 \uAD6C\uD574\uC57C-"
+    IMG_Res: 
+    Next_Chat_ID: 1170060
+    Branch_Group_ID: 0
+  - Chat_ID: 1170060
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC774\uBBF8 \uB3C4\uB9DD\uAC14\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1170070
+    Branch_Group_ID: 0
+  - Chat_ID: 1170070
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uBE60\uB974\uB124!"
+    IMG_Res: 
+    Next_Chat_ID: 1170080
+    Branch_Group_ID: 0
+  - Chat_ID: 1170080
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC800\uD76C\uB3C4 \uBE68\uB9AC \uBB3C\uB7EC\uB098\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1170090
+    Branch_Group_ID: 0
+  - Chat_ID: 1170090
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uD611\uD68C\uB85C \uD6C4\uD1F4\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1170100
+    Branch_Group_ID: 0
+  - Chat_ID: 1170100
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC7AC\uC815\uBE44 \uD6C4 \uB2E4\uC2DC \uB3CC\uC544\uC624\uC790.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11304
+  - Chat_ID: 1180010
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uBB50\uC57C \uB610 \uC654\uB124?"
+    IMG_Res: 
+    Next_Chat_ID: 1180020
+    Branch_Group_ID: 0
+  - Chat_ID: 1180020
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB10C \uB610 \uC65C \uC5EC\uAE44\uC5B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1180030
+    Branch_Group_ID: 0
+  - Chat_ID: 1180030
+    Chat_Type: 0
+    Char_Name: "\uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC65C \uB2E4 \uC790\uAFB8 \uC5EC\uAE38 \uCC3E\uC544\uC624\uB0D0\uACE0!"
+    IMG_Res: 
+    Next_Chat_ID: 1180040
+    Branch_Group_ID: 0
+  - Chat_ID: 1180040
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uBE4C\uB7F0\uC774 \uC788\uB294 \uD55C \uC6B0\uB9AC\uC758 \uB3C4\uC804\uC740
+      \uC601\uC6D0\uD788 \uACC4\uC18D\uB420 \uAC83\uC774\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1180050
+    Branch_Group_ID: 0
+  - Chat_ID: 1180050
+    Chat_Type: 0
+    Char_Name: "\uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC57C! \uB9C9\uC544!"
+    IMG_Res: 
+    Next_Chat_ID: 1180060
+    Branch_Group_ID: 0
+  - Chat_ID: 1180060
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB2E4\uC2DC \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1150900
+    Branch_Group_ID: 11502
+  - Chat_ID: 1190010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAE38\uBAA9\uC5D0\uC11C \uBE4C\uB7F0\uB4E4\uC774 \uB465\uAE00\uAC8C
+      \uBAA8\uC5EC \uC18D\uC0AD\uC600\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11901
+  - Chat_ID: 1190100
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uBB50\uC57C. \uAE38 \uD55C\uAC00\uC6B4\uB370\uC11C \uB2E4\uB4E4
+      \uBAA8\uC5EC\uC11C."
+    IMG_Res: 
+    Next_Chat_ID: 1190110
+    Branch_Group_ID: 0
+  - Chat_ID: 1190110
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC27F. \uBB54\uAC00 \uB5A0\uB4E4\uACE0 \uC788\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1190120
+    Branch_Group_ID: 0
+  - Chat_ID: 1190120
+    Chat_Type: 0
+    Char_Name: "\uAC81 \uB9CE\uC740 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC740\uD589 \uC9C0\uD558\uC5D0\uC11C \uBC24\uB9C8\uB2E4 \uBCBD
+      \uAE01\uB294 \uC18C\uB9AC\uAC00 \uB09C\uB300."
+    IMG_Res: 
+    Next_Chat_ID: 1190130
+    Branch_Group_ID: 0
+  - Chat_ID: 1190130
+    Chat_Type: 0
+    Char_Name: "\uC218\uB2E4\uC2A4\uB7EC\uC6B4 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC7A1\uC544\uB454 \uC0AC\uB78C\uB4E4\uC774 \uB0B4\uB294 \uC18C\uB9AC\uACA0\uC9C0."
+    IMG_Res: 
+    Next_Chat_ID: 1190140
+    Branch_Group_ID: 0
+  - Chat_ID: 1190140
+    Chat_Type: 0
+    Char_Name: "\uC544\uB294 \uCC99\uD558\uB294 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC785\uB3C4 \uB9C9\uC558\uB294\uB370 \uC5B4\uB5BB\uAC8C \uC18C\uB9AC\uB97C
+      \uB0B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1190150
+    Branch_Group_ID: 0
+  - Chat_ID: 1190150
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC218\uC900\uB3C4 \uD615\uD3B8\uC5C6\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1190160
+    Branch_Group_ID: 0
+  - Chat_ID: 1190160
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uBC29\uAE08 \uC7A1\uC544\uB454 \uC0AC\uB78C\uC774\uB77C\uACE0
+      \uD588\uC9C0. \uC740\uD589\uC5D0 \uC778\uC9C8\uC774 \uC788\uB098\uBD10?"
+    IMG_Res: 
+    Next_Chat_ID: 1190170
+    Branch_Group_ID: 0
+  - Chat_ID: 1190170
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC2DC\uBBFC\uC774 \uBD99\uC7A1\uD614\uB2E4\uBA74 \uC9C0\uB098\uCE60
+      \uC218 \uC5C6\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1190180
+    Branch_Group_ID: 0
+  - Chat_ID: 1190180
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC811\uADFC \uBC29\uBC95\uC744 \uC815\uD558\uC790.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11902
+  - Chat_ID: 1190200
+    Chat_Type: 0
+    Char_Name: "\uAC81 \uB9CE\uC740 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC740\uD589 \uC9C0\uD558\uC5D0\uC11C \uBC24\uB9C8\uB2E4 \uBCBD
+      \uAE01\uB294 \uC18C\uB9AC\uAC00 \uB09C\uB300."
+    IMG_Res: 
+    Next_Chat_ID: 1190210
+    Branch_Group_ID: 0
+  - Chat_ID: 1190210
+    Chat_Type: 0
+    Char_Name: "\uC218\uB2E4\uC2A4\uB7EC\uC6B4 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC7A1\uC544\uB454 \uC0AC\uB78C\uB4E4\uC774 \uB0B4\uB294 \uC18C\uB9AC\uACA0\uC9C0."
+    IMG_Res: 
+    Next_Chat_ID: 1190220
+    Branch_Group_ID: 0
+  - Chat_ID: 1190220
+    Chat_Type: 0
+    Char_Name: "\uC544\uB294 \uCC99\uD558\uB294 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC785\uB3C4 \uB9C9\uC558\uB294\uB370 \uC5B4\uB5BB\uAC8C \uC18C\uB9AC\uB97C
+      \uB0B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1190230
+    Branch_Group_ID: 0
+  - Chat_ID: 1190230
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uAD34\uB2F4\uCE58\uACE0 \uC2DC\uC2DC\uD558\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1190240
+    Branch_Group_ID: 0
+  - Chat_ID: 1190240
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC7A0\uAE50, \uC7A1\uC544\uB454 \uC0AC\uB78C\uC774\uB77C\uACE0
+      \uD588\uC5B4\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1190250
+    Branch_Group_ID: 0
+  - Chat_ID: 1190250
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uC774 \uC788\uB098\uBCF8\uB370?"
+    IMG_Res: 
+    Next_Chat_ID: 1190260
+    Branch_Group_ID: 0
+  - Chat_ID: 1190260
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC811\uADFC \uBC29\uBC95\uC744 \uC815\uD558\uC790.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11902
+  - Chat_ID: 1190300
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC9C0\uAE08 \uB36E\uCE5C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1190310
+    Branch_Group_ID: 0
+  - Chat_ID: 1190310
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC545\uB2F9\uB4E4\uC774\uC5EC! \uC815\uC758\uC758 \uAE30\uC2B5\uC774\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1190320
+    Branch_Group_ID: 0
+  - Chat_ID: 1190320
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uAE30\uC2B5\uC744 \uC678\uCE58\uBA74 \uC608\uACE0\uC796\uC544."
+    IMG_Res: 
+    Next_Chat_ID: 1190330
+    Branch_Group_ID: 0
+  - Chat_ID: 1190330
+    Chat_Type: 0
+    Char_Name: "\uAC81 \uB9CE\uC740 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uD788, \uD788\uC5B4\uB85C\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1190340
+    Branch_Group_ID: 0
+  - Chat_ID: 1190340
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774\uBBF8 \uB2A6\uC5C8\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1190350
+    Branch_Group_ID: 0
+  - Chat_ID: 1190350
+    Chat_Type: 0
+    Char_Name: "\uC218\uB2E4\uC2A4\uB7EC\uC6B4 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uBB34\uAE30 \uB4E4\uC5B4! \uBE68\uB9AC!"
+    IMG_Res: 
+    Next_Chat_ID: 1190360
+    Branch_Group_ID: 0
+  - Chat_ID: 1190360
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAD34\uB2F4 \uBAA8\uC784\uD68C\uC740 \uC21C\uC2DD\uAC04\uC5D0
+      \uC804\uC7A5\uC73C\uB85C \uBC14\uB00C\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1190900
+    Branch_Group_ID: 11903
+  - Chat_ID: 1190400
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADF8 \uAD34\uB2F4, \uB4B7\uC774\uC57C\uAE30\uB3C4 \uC788\uB294\uB370."
+    IMG_Res: 
+    Next_Chat_ID: 1190410
+    Branch_Group_ID: 0
+  - Chat_ID: 1190410
+    Chat_Type: 0
+    Char_Name: "\uC218\uB2E4\uC2A4\uB7EC\uC6B4 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uBB50? \uC9C4\uC9DC?"
+    IMG_Res: 
+    Next_Chat_ID: 1190420
+    Branch_Group_ID: 0
+  - Chat_ID: 1190420
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uAC00\uAE4C\uC774 \uC640. \uC544\uC8FC \uBB34\uC11C\uC6B4 \uC598\uAE30\uAC70\uB4E0."
+    IMG_Res: 
+    Next_Chat_ID: 1190430
+    Branch_Group_ID: 0
+  - Chat_ID: 1190430
+    Chat_Type: 0
+    Char_Name: "\uAC81 \uB9CE\uC740 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC5B4\uB450\uC6CC\uC11C \uC798 \uC548 \uBCF4\uC5EC."
+    IMG_Res: 
+    Next_Chat_ID: 1190440
+    Branch_Group_ID: 0
+  - Chat_ID: 1190440
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBE4C\uB7F0\uB4E4\uC774 \uBE14\uB799\uBD88\uB9BF\uC5D0\uAC8C
+      \uBC14\uC9DD \uBD99\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1190450
+    Branch_Group_ID: 0
+  - Chat_ID: 1190450
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uB4A4\uC5D0 \uD788\uC5B4\uB85C\uAC00 \uC11C \uC788\uB2E4\uB294
+      \uC774\uC57C\uAE30. \uC54C\uC544?"
+    IMG_Res: 
+    Next_Chat_ID: 1190460
+    Branch_Group_ID: 0
+  - Chat_ID: 1190460
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAD34\uB2F4 \uBAA8\uC784\uD68C\uC740 \uC21C\uC2DD\uAC04\uC5D0
+      \uC804\uC7A5\uC73C\uB85C \uBC14\uB00C\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1190900
+    Branch_Group_ID: 11903
+  - Chat_ID: 1190900
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC804\uD22C \uC885\uB8CC"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 11904
+  - Chat_ID: 1200010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAE38\uBAA9\uC774 \uC870\uC6A9\uD574\uC9C0\uACE0 \uBE4C\uB7F0\uB4E4\uC758
+      \uC9D0\uC744 \uD655\uC778\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12001
+  - Chat_ID: 1200100
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC740\uD589\uC5D0 \uC0AC\uB78C\uAE4C\uC9C0 \uC7A1\uC544\uB480\uB2E4\uACE0?"
+    IMG_Res: 
+    Next_Chat_ID: 1200110
+    Branch_Group_ID: 0
+  - Chat_ID: 1200110
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uAD34\uB2F4\uC774 \uC544\uB2C8\uB77C \uACBD\uBE44 \uBD88\uD3C9\uC774\uC5C8\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1200120
+    Branch_Group_ID: 0
+  - Chat_ID: 1200120
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD615\uC774 \uAC70\uAE30 \uC788\uC73C\uBA74 \uC9C4\uC9DC \uC4F8\uBAA8\uC5C6\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1200130
+    Branch_Group_ID: 0
+  - Chat_ID: 1200130
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB798\uB3C4 \uC778\uC9C8 \uC815\uBCF4\uB294 \uC911\uC694\uD574\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1200140
+    Branch_Group_ID: 0
+  - Chat_ID: 1200140
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uAC00\uC11C \uB2E4 \uAEBC\uB0B4\uBA74 \uB418\uC796\uC544."
+    IMG_Res: 
+    Next_Chat_ID: 1200150
+    Branch_Group_ID: 0
+  - Chat_ID: 1200150
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC740\uD589 \uC548\uC5D0 \uC778\uC9C8\uC774 \uC788\uB2E4\uB294
+      \uB2E8\uC11C\uB97C \uD655\uBCF4\uD588\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1200160
+    Branch_Group_ID: 0
+  - Chat_ID: 1200160
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC2DC\uBBFC\uC774 \uAE30\uB2E4\uB9B0\uB2E4. \uC11C\uB450\uB974\uC790!"
+    IMG_Res: 
+    Next_Chat_ID: 1200170
+    Branch_Group_ID: 0
+  - Chat_ID: 1200170
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD615\uC740 \uB0B4\uAC00 \uBA3C\uC800 \uD63C\uB0BC \uAC70\uC57C."
+    IMG_Res: 
+    Next_Chat_ID: 1200180
+    Branch_Group_ID: 0
+  - Chat_ID: 1200180
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB9C8\uC74C\uB300\uB85C \uD574. \uC6B0\uC120 \uAE38\uBD80\uD130
+      \uAC00\uC790."
+    IMG_Res: 
+    Next_Chat_ID: 1200190
+    Branch_Group_ID: 0
+  - Chat_ID: 1200190
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uB2E4\uC2DC \uC740\uD589\uC744 \uD5A5\uD574
+      \uC774\uB3D9\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12002
+  - Chat_ID: 1200200
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uBC29\uAE08 \uBD84\uBA85 \uC778\uC9C8\uC774\uB77C\uACE0 \uD588\uC5B4\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1200210
+    Branch_Group_ID: 0
+  - Chat_ID: 1200210
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC740\uD589 \uC9C0\uD558\uC5D0 \uAC00\uB454 \uAC83 \uAC19\uC544."
+    IMG_Res: 
+    Next_Chat_ID: 1200220
+    Branch_Group_ID: 0
+  - Chat_ID: 1200220
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC9C1\uC811 \uAC00\uC11C \uD655\uC778\uD558\uBA74 \uB3FC."
+    IMG_Res: 
+    Next_Chat_ID: 1200230
+    Branch_Group_ID: 0
+  - Chat_ID: 1200230
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC740\uD589 \uC548\uC5D0 \uC778\uC9C8\uC774 \uC788\uB2E4\uB294
+      \uB2E8\uC11C\uB97C \uD655\uBCF4\uD588\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1200240
+    Branch_Group_ID: 0
+  - Chat_ID: 1200240
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC2DC\uBBFC\uC744 \uAD6C\uD558\uB294 \uAC83\uC774 \uCD5C\uC6B0\uC120\uC774\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1200250
+    Branch_Group_ID: 0
+  - Chat_ID: 1200250
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uB2E4\uC2DC \uC740\uD589\uC744 \uD5A5\uD574
+      \uC774\uB3D9\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12002
+  - Chat_ID: 1210010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAD34\uB2F4\uC5D0 \uBE60\uC9C4 \uBE4C\uB7F0\uB4E4\uC5D0\uAC8C
+      \uC77C\uD589\uC774 \uBC00\uB838\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12110
+  - Chat_ID: 1210020
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC815\uC758\uC758 \uAE30\uC2B5\uC774 \uC2E4\uD328\uD558\uB2E4\uB2C8!"
+    IMG_Res: 
+    Next_Chat_ID: 1210030
+    Branch_Group_ID: 0
+  - Chat_ID: 1210030
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC608\uACE0\uD55C \uC21C\uAC04\uBD80\uD130 \uAE30\uC2B5\uC740
+      \uC544\uB2C8\uC5C8\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1210040
+    Branch_Group_ID: 0
+  - Chat_ID: 1210040
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uB9D0\uD558\uAE30 \uC804\uC5D0 \uB0A0\uB9B4\uAC8C."
+    IMG_Res: 
+    Next_Chat_ID: 1210050
+    Branch_Group_ID: 0
+  - Chat_ID: 1210050
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADF8\uAC83\uB3C4 \uC548 \uB3FC. \uC77C\uB2E8 \uBB3C\uB7EC\uB098."
+    IMG_Res: 
+    Next_Chat_ID: 1210060
+    Branch_Group_ID: 0
+  - Chat_ID: 1210060
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC5F0\uB9C9\uC744 \uD3BC\uCE60\uAC8C\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1210070
+    Branch_Group_ID: 0
+  - Chat_ID: 1210070
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uAD34\uB2F4 \uD558\uB098\uB294 \uB354 \uC0DD\uAE30\uACA0\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1210080
+    Branch_Group_ID: 0
+  - Chat_ID: 1210080
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uD611\uD68C\uB85C \uBB3C\uB7EC\uB098 \uC7AC\uC804\uD22C\uB97C
+      \uC900\uBE44\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12101
+  - Chat_ID: 1210100
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uBB50\uC57C, \uB610 \uC9C4 \uAC70\uC57C?"
+    IMG_Res: 
+    Next_Chat_ID: 1210110
+    Branch_Group_ID: 0
+  - Chat_ID: 1210110
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uBA74\uBAA9 \uC5C6\uB2E4. \uB2E4\uC74C\uC5D0\uB294 \uBC18\uB4DC\uC2DC!"
+    IMG_Res: 
+    Next_Chat_ID: 1210120
+    Branch_Group_ID: 0
+  - Chat_ID: 1210120
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uBC18\uB4DC\uC2DC\uB294 \uC774\uAE34 \uB4A4\uC5D0 \uB9D0\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1210130
+    Branch_Group_ID: 0
+  - Chat_ID: 1210130
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uB9D0\uB9CC \uBA4B\uC788\uACE0 \uBCC4\uAC70 \uC5C6\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1210140
+    Branch_Group_ID: 0
+  - Chat_ID: 1210140
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uB124\uAC00 \uD558\uB358\uAC00!"
+    IMG_Res: 
+    Next_Chat_ID: 1210150
+    Branch_Group_ID: 0
+  - Chat_ID: 1210150
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB458 \uB2E4 \uADF8\uB9CC. \uC77C\uB2E8 \uBB3C\uB7EC\uB098."
+    IMG_Res: 
+    Next_Chat_ID: 1210160
+    Branch_Group_ID: 0
+  - Chat_ID: 1210160
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC5F0\uB9C9\uC744 \uD3BC\uCE5C\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1210170
+    Branch_Group_ID: 0
+  - Chat_ID: 1210170
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uBB3C\uB7EC\uB0A0\uAC8C\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1210180
+    Branch_Group_ID: 0
+  - Chat_ID: 1210180
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD611\uD68C\uB85C \uBB3C\uB7EC\uB0AC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12101
+  - Chat_ID: 1220010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC19\uC740 \uAE38\uBAA9\uC5D0\uC11C \uBE4C\uB7F0\uB4E4\uC774
+      \uC5EC\uC804\uD788 \uAD34\uB2F4 \uC911\uC774\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12210
+  - Chat_ID: 1220020
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uACB0\uB9D0\uC774 \uB2E4\uB97C \uAC83\uC774\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1220030
+    Branch_Group_ID: 0
+  - Chat_ID: 1220030
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC9C1\uC811 \uB9CC\uB4E0 \uC18C\uBB38\uC744 \uAD34\uB2F4\uC774\uB77C
+      \uBD80\uB974\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1220040
+    Branch_Group_ID: 0
+  - Chat_ID: 1220040
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB9D0 \uB9CE\uC740 \uC21C\uC11C\uB300\uB85C \uB0A0\uC544\uC640."
+    IMG_Res: 
+    Next_Chat_ID: 1220050
+    Branch_Group_ID: 0
+  - Chat_ID: 1220050
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uBC29\uC2EC\uD558\uC9C0 \uB9D0\uC544\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1220060
+    Branch_Group_ID: 0
+  - Chat_ID: 1220060
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB2E4\uC2DC \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1190900
+    Branch_Group_ID: 11903
+  - Chat_ID: 1220100
+    Chat_Type: 0
+    Char_Name: "\uC218\uB2E4\uC2A4\uB7EC\uC6B4 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uD328\uBC30\uD55C \uD788\uC5B4\uB85C\uAC00 \uAF2C\uB9F9\uC774\uAE4C\uC9C0
+      \uB370\uB824\uC654\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1220110
+    Branch_Group_ID: 0
+  - Chat_ID: 1220110
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uAD34\uB2F4\uBCF4\uB2E4 \uB124 \uC5BC\uAD74\uC774 \uB354 \uBB34\uC11C\uC6CC."
+    IMG_Res: 
+    Next_Chat_ID: 1220120
+    Branch_Group_ID: 0
+  - Chat_ID: 1220120
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88 \uAD34\uB2F4\uC740 \uD3C9\uC774 \uBC15\uD558\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1220130
+    Branch_Group_ID: 0
+  - Chat_ID: 1220130
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uACB0\uB9D0\uC774 \uB2E4\uB97C \uAC83\uC774\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1220140
+    Branch_Group_ID: 0
+  - Chat_ID: 1220140
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB9D0 \uB9CE\uC740 \uC21C\uC11C\uB300\uB85C \uB0A0\uC544\uC640."
+    IMG_Res: 
+    Next_Chat_ID: 1220150
+    Branch_Group_ID: 0
+  - Chat_ID: 1220150
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB2E4\uC2DC \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1190900
+    Branch_Group_ID: 11903
+  - Chat_ID: 1230010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC740\uD589\uC73C\uB85C \uD5A5\uD558\uB294 \uAD50\uCC28\uB85C\uC5D0
+      \uAC80\uBB38\uC18C\uAC00 \uAE38\uC744 \uB9C9\uC558\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12301
+  - Chat_ID: 1230100
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC80\uBB38\uC18C \uBE4C\uB7F0\uB4E4\uC774 \uB8E8\uBBF8\uB098\uB97C
+      \uC54C\uC544\uBD24\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1230110
+    Branch_Group_ID: 0
+  - Chat_ID: 1230110
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uB098\uB77D\uC774\uB2E4! \uC18C\uBB38\uBCF4\uB2E4 \uC791\uC796\uC544?"
+    IMG_Res: 
+    Next_Chat_ID: 1230120
+    Branch_Group_ID: 0
+  - Chat_ID: 1230120
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uD55C \uBC88\uB9CC \uB354 \uBD88\uB7EC\uBD10."
+    IMG_Res: 
+    Next_Chat_ID: 1230130
+    Branch_Group_ID: 0
+  - Chat_ID: 1230130
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC218\uBA85\uC774 \uC9E7\uC544\uC9C4 \uAC78 \uCD95\uD558\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1230140
+    Branch_Group_ID: 0
+  - Chat_ID: 1230140
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAE38 \uBE44\uCF1C. \uC6B0\uB9AC\uB294 \uC9C0\uB098\uAC04\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1230150
+    Branch_Group_ID: 0
+  - Chat_ID: 1230150
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC7A0\uAE50! \uD788\uC5B4\uB85C\uB294 \uC0C1\uB3C4\uB355\uB3C4
+      \uC5C6\uB098! \uC9C0\uB098\uAC00\uB824\uBA74 \uD1B5\uD589\uC138\uB97C \uB0B4\uC154\uC57C\uC9C0!"
+    IMG_Res: 
+    Next_Chat_ID: 1230151
+    Branch_Group_ID: 0
+  - Chat_ID: 1230151
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD1B5\uD589\uC138 \uB0B4\uBA74 \uBCF4\uB0B4\uC8FC\uB098\u2026?)"
+    IMG_Res: 
+    Next_Chat_ID: 1230160
+    Branch_Group_ID: 0
+  - Chat_ID: 1230160
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC804\uD22C\uC5D0 \uB3CC\uC785\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1230900
+    Branch_Group_ID: 12302
+  - Chat_ID: 1230200
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC80\uBB38\uC18C \uBE4C\uB7F0\uB4E4\uC774 \uB124\uCF54\uBC0D\uC744
+      \uAC00\uB9AC\uCF30\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1230210
+    Branch_Group_ID: 0
+  - Chat_ID: 1230210
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uD558\uC580 \uC7AC\uC559\uC774 \uC654\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1230220
+    Branch_Group_ID: 0
+  - Chat_ID: 1230220
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC65C \uC81C\uAC00 \uBA3C\uC800 \uC7AC\uC559\uC774 \uB410\uC8E0?!"
+    IMG_Res: 
+    Next_Chat_ID: 1230230
+    Branch_Group_ID: 0
+  - Chat_ID: 1230230
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC21C\uC11C\uAC00 \uC788\uC5C8\uAD6C\uB098."
+    IMG_Res: 
+    Next_Chat_ID: 1230240
+    Branch_Group_ID: 0
+  - Chat_ID: 1230240
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uADFC\uAC70 \uC5C6\uB294 \uC18C\uBB38\uC73C\uB85C \uC2DC\uBBFC\uC744
+      \uBAA8\uC695\uD558\uC9C0 \uB9C8\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1230250
+    Branch_Group_ID: 0
+  - Chat_ID: 1230250
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAE38\uC744 \uBE44\uCF1C."
+    IMG_Res: 
+    Next_Chat_ID: 1230260
+    Branch_Group_ID: 0
+  - Chat_ID: 1230260
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uD798\uC73C\uB85C \uC9C0\uB098\uAC00 \uBD10!"
+    IMG_Res: 
+    Next_Chat_ID: 1230900
+    Branch_Group_ID: 12302
+  - Chat_ID: 1230300
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC18C\uB144\uC774 \uAC80\uBB38\uC18C\uB97C \uC704\uC544\uB798\uB85C
+      \uD6D1\uC5B4\uBD24\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1230310
+    Branch_Group_ID: 0
+  - Chat_ID: 1230310
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC800 \uC0AC\uB78C\uB4E4, \uD1B5\uD589\uB8CC\uB098 \uB72F\uB294
+      \uAC83 \uAC19\uC740\uB370."
+    IMG_Res: 
+    Next_Chat_ID: 1230320
+    Branch_Group_ID: 0
+  - Chat_ID: 1230320
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uAC74\uBC29\uC9C4 \uAF2C\uB9F9\uC774\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1230330
+    Branch_Group_ID: 0
+  - Chat_ID: 1230330
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD2C0\uB9B0 \uB9D0 \uD588\uC5B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1230340
+    Branch_Group_ID: 0
+  - Chat_ID: 1230340
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC5C6\uB294\uB370."
+    IMG_Res: 
+    Next_Chat_ID: 1230350
+    Branch_Group_ID: 0
+  - Chat_ID: 1230350
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB458 \uB2E4 \uB3C4\uBC1C\uD558\uC9C0 \uB9C8."
+    IMG_Res: 
+    Next_Chat_ID: 1230360
+    Branch_Group_ID: 0
+  - Chat_ID: 1230360
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC804\uBD80 \uC7A1\uC544!"
+    IMG_Res: 
+    Next_Chat_ID: 1230900
+    Branch_Group_ID: 12302
+  - Chat_ID: 1230400
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC80\uBB38\uC18C \uBE4C\uB7F0\uB4E4\uC774 \uC190\uC744 \uB0B4\uBC00\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1230410
+    Branch_Group_ID: 0
+  - Chat_ID: 1230410
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uD1B5\uD589\uC99D\uACFC \uD1B5\uD589\uB8CC!"
+    IMG_Res: 
+    Next_Chat_ID: 1230420
+    Branch_Group_ID: 0
+  - Chat_ID: 1230420
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC2DC\uBBFC\uC758 \uAE38\uC5D0 \uD1B5\uD589\uB8CC\uB97C \uBD99\uC774\uB2E4\uB2C8!"
+    IMG_Res: 
+    Next_Chat_ID: 1230430
+    Branch_Group_ID: 0
+  - Chat_ID: 1230430
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC601\uC218\uC99D\uC740 \uC8FC\uB098?"
+    IMG_Res: 
+    Next_Chat_ID: 1230440
+    Branch_Group_ID: 0
+  - Chat_ID: 1230440
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB0E5 \uCE58\uC6B0\uC790."
+    IMG_Res: 
+    Next_Chat_ID: 1230450
+    Branch_Group_ID: 0
+  - Chat_ID: 1230450
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB9C8\uC9C0\uB9C9\uC73C\uB85C \uACBD\uACE0\uD55C\uB2E4. \uAE38\uC744
+      \uBE44\uCF1C."
+    IMG_Res: 
+    Next_Chat_ID: 1230460
+    Branch_Group_ID: 0
+  - Chat_ID: 1230460
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC2EB\uB2E4\uBA74 \uD798\uC73C\uB85C \uC9C0\uB098\uAC00\uB358\uAC00!"
+    IMG_Res: 
+    Next_Chat_ID: 1230900
+    Branch_Group_ID: 12302
+  - Chat_ID: 1230900
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC804\uD22C \uC885\uB8CC"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12303
+  - Chat_ID: 1240010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC80\uBB38\uC18C\uAC00 \uBB34\uB108\uC9C0\uACE0 \uAD50\uCC28\uB85C\uAC00
+      \uC870\uC6A9\uD574\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12401
+  - Chat_ID: 1240100
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uB098\uB77D\uC774 \uAE38\uC744 \uB6AB\uC5C8\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1240110
+    Branch_Group_ID: 0
+  - Chat_ID: 1240110
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uCAD3\uC544\uAC00\uC11C \uB9C8\uC800 \uB0A0\uB824\uB3C4 \uB3FC?"
+    IMG_Res: 
+    Next_Chat_ID: 1240120
+    Branch_Group_ID: 0
+  - Chat_ID: 1240120
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uAE38 \uC5F4\uB838\uC796\uC544. \uCC38\uC544."
+    IMG_Res: 
+    Next_Chat_ID: 1240130
+    Branch_Group_ID: 0
+  - Chat_ID: 1240130
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAD50\uCC28\uB85C\uB97C \uC9C0\uB098 \uACC4\uC18D \uC774\uB3D9\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1240140
+    Branch_Group_ID: 0
+  - Chat_ID: 1240140
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC740\uD589\uC774 \uC788\uB294 \uBC29\uD5A5\uC73C\uB85C \uAC78\uC74C\uC744
+      \uC62E\uACBC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12402
+  - Chat_ID: 1240200
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC80\uBB38\uC18C \uCC28\uB2E8\uAE30\uAC00 \uBE4C\uB7F0 \uCABD\uC73C\uB85C
+      \uC4F0\uB7EC\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1240210
+    Branch_Group_ID: 0
+  - Chat_ID: 1240210
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB3C4 \uC6B0\uC5F0\uC774\uC5D0\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1240220
+    Branch_Group_ID: 0
+  - Chat_ID: 1240220
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC6B0\uC5F0\uC774 \uAE38\uAE4C\uC9C0 \uC798 \uCE58\uC6CC\uC8FC\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1240230
+    Branch_Group_ID: 0
+  - Chat_ID: 1240230
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC2DC\uBBFC\uC758 \uAE38\uC740 \uB2E4\uC2DC \uC5F4\uB838\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1240240
+    Branch_Group_ID: 0
+  - Chat_ID: 1240240
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAD50\uCC28\uB85C\uB97C \uC9C0\uB098 \uACC4\uC18D \uC774\uB3D9\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1240250
+    Branch_Group_ID: 0
+  - Chat_ID: 1240250
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589\uC774 \uC788\uB294 \uBC29\uD5A5\uC73C\uB85C
+      \uAC78\uC74C\uC744 \uC62E\uACBC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12402
+  - Chat_ID: 1240300
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD615\uCC98\uB7FC \uC798\uB09C \uCC99\uD558\uB294 \uC0AC\uB78C
+      \uBABB \uBD24\uC5B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1240310
+    Branch_Group_ID: 0
+  - Chat_ID: 1240310
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC2DC\uB044\uB7EC\uC6B4 \uB188 \uD558\uB098\uAC00 \uC55E\uCABD\uC73C\uB85C
+      \uAC14\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1240320
+    Branch_Group_ID: 0
+  - Chat_ID: 1240320
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC5ED\uC2DC \uBBFC\uD3D0\uB9CC \uB0A8\uACBC\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1240330
+    Branch_Group_ID: 0
+  - Chat_ID: 1240330
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB798\uB3C4 \uBC29\uD5A5\uC740 \uB9DE\uB294 \uAC83 \uAC19\uC544\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1240340
+    Branch_Group_ID: 0
+  - Chat_ID: 1240340
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAD50\uCC28\uB85C\uB97C \uC9C0\uB098 \uACC4\uC18D \uC774\uB3D9\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1240350
+    Branch_Group_ID: 0
+  - Chat_ID: 1240350
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC18C\uB144\uC740 \uD22C\uB35C\uB300\uBA70 \uB2E4\uC2DC \uC55E\uC7A5\uC130\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12402
+  - Chat_ID: 1240400
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uBD88\uBC95 \uAC80\uBB38\uC18C \uCCA0\uAC70 \uC644\uB8CC!"
+    IMG_Res: 
+    Next_Chat_ID: 1240410
+    Branch_Group_ID: 0
+  - Chat_ID: 1240410
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uCCA0\uAC70\uBE44\uB294 \uBABB \uBC1B\uACA0\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1240420
+    Branch_Group_ID: 0
+  - Chat_ID: 1240420
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uAE38\uC740 \uC5F4\uB838\uC796\uC544."
+    IMG_Res: 
+    Next_Chat_ID: 1240430
+    Branch_Group_ID: 0
+  - Chat_ID: 1240430
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAD50\uCC28\uB85C\uB97C \uC9C0\uB098 \uACC4\uC18D \uC774\uB3D9\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1240440
+    Branch_Group_ID: 0
+  - Chat_ID: 1240440
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589\uC774 \uC788\uB294 \uBC29\uD5A5\uC73C\uB85C
+      \uAC78\uC74C\uC744 \uC62E\uACBC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12402
+  - Chat_ID: 1250010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC80\uBB38\uC18C\uB97C \uB118\uC9C0 \uBABB\uD558\uACE0 \uD1F4\uB85C\uAC00
+      \uC881\uC544\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12501
+  - Chat_ID: 1250100
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uB098\uB77D\uB3C4 \uBCC4\uAC83 \uC544\uB2C8\uC5C8\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1250110
+    Branch_Group_ID: 0
+  - Chat_ID: 1250110
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uC785\uBD80\uD130 \uB0A0\uB9B4 \uAC70\uC57C."
+    IMG_Res: 
+    Next_Chat_ID: 1250120
+    Branch_Group_ID: 0
+  - Chat_ID: 1250120
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC18C\uBB38\uC740 \uC870\uC6A9\uD574\uC9C0\uACA0\uB124 \uADF8\uB798."
+    IMG_Res: 
+    Next_Chat_ID: 1250130
+    Branch_Group_ID: 0
+  - Chat_ID: 1250130
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC5F0\uB9C9\uC744 \uCE58\uACE0 \uBB3C\uB7EC\uB098."
+    IMG_Res: 
+    Next_Chat_ID: 1250140
+    Branch_Group_ID: 0
+  - Chat_ID: 1250140
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uAD50\uCC28\uB85C\uC5D0\uC11C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12502
+  - Chat_ID: 1250200
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uD558\uC580 \uC7AC\uC559\uC744 \uBAB0\uC544\uB0C8\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1250210
+    Branch_Group_ID: 0
+  - Chat_ID: 1250210
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC7AC\uC559\uC774 \uC544\uB2C8\uB77C\uB2C8\uAE4C\uC694\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1250220
+    Branch_Group_ID: 0
+  - Chat_ID: 1250220
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C \uC2B9\uB9AC\uB85C \uBC14\uB85C\uC7A1\uACA0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1250230
+    Branch_Group_ID: 0
+  - Chat_ID: 1250230
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC5F0\uB9C9\uC744 \uCE58\uACE0 \uBB3C\uB7EC\uB098."
+    IMG_Res: 
+    Next_Chat_ID: 1250240
+    Branch_Group_ID: 0
+  - Chat_ID: 1250240
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uAD50\uCC28\uB85C\uC5D0\uC11C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12502
+  - Chat_ID: 1250300
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC544\uC9C1 \uD615\uB3C4 \uBABB \uCC3E\uC558\uB294\uB370, \uC9C4\uC9DC
+      \uC4F8\uBAA8\uC5C6\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1250310
+    Branch_Group_ID: 0
+  - Chat_ID: 1250310
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uAE38\uC744 \uC5F4\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1250320
+    Branch_Group_ID: 0
+  - Chat_ID: 1250320
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uADF8 \uB9D0\uC740 \uAF2D \uC9C0\uCF1C."
+    IMG_Res: 
+    Next_Chat_ID: 1250330
+    Branch_Group_ID: 0
+  - Chat_ID: 1250330
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC5F0\uB9C9\uC744 \uCE58\uACE0 \uBB3C\uB7EC\uB098."
+    IMG_Res: 
+    Next_Chat_ID: 1250340
+    Branch_Group_ID: 0
+  - Chat_ID: 1250340
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uAD50\uCC28\uB85C\uC5D0\uC11C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12502
+  - Chat_ID: 1250400
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uBB3C\uB7EC\uB098\uC9C0\uB9CC \uD3EC\uAE30\uD558\uC9C0 \uC54A\uB294\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1250410
+    Branch_Group_ID: 0
+  - Chat_ID: 1250410
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uB9D0\uC740 \uB2EC\uB9AC\uBA74\uC11C \uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1250420
+    Branch_Group_ID: 0
+  - Chat_ID: 1250420
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC774\uCABD \uAE38\uC774 \uBE44\uC5C8\uC5B4\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1250430
+    Branch_Group_ID: 0
+  - Chat_ID: 1250430
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC5F0\uB9C9\uC744 \uCE58\uACE0 \uBB3C\uB7EC\uB098."
+    IMG_Res: 
+    Next_Chat_ID: 1250440
+    Branch_Group_ID: 0
+  - Chat_ID: 1250440
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uAD50\uCC28\uB85C\uC5D0\uC11C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12502
+  - Chat_ID: 1260010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAD50\uCC28\uB85C\uB85C \uB3CC\uC544\uC624\uC790 \uAC80\uBB38\uC18C
+      \uBE4C\uB7F0\uB4E4\uC774 \uB2E4\uC2DC \uAE38\uC744 \uB9C9\uC558\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12610
+  - Chat_ID: 1260020
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uAE38\uC744 \uB418\uCC3E\uC73C\uB7EC
+      \uC654\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1260030
+    Branch_Group_ID: 0
+  - Chat_ID: 1260030
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC7AC\uBC29\uBB38 \uD560\uC778\uC740 \uD544\uC694 \uC5C6\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1260040
+    Branch_Group_ID: 0
+  - Chat_ID: 1260040
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D4 \uC9C4\uC9DC \uBE44\uCF1C."
+    IMG_Res: 
+    Next_Chat_ID: 1260050
+    Branch_Group_ID: 0
+  - Chat_ID: 1260050
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uBAA8\uB450 \uC870\uC2EC\uD574\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1260060
+    Branch_Group_ID: 0
+  - Chat_ID: 1260060
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC80\uBB38\uC18C\uC640 \uB2E4\uC2DC \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1230900
+    Branch_Group_ID: 12302
+  - Chat_ID: 1260100
+    Chat_Type: 0
+    Char_Name: "\uAC80\uBB38\uC18C \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uAF2C\uB9F9\uC774\uAE4C\uC9C0 \uB610 \uB370\uB824\uC654\uB0D0?"
+    IMG_Res: 
+    Next_Chat_ID: 1260110
+    Branch_Group_ID: 0
+  - Chat_ID: 1260110
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D4 \uB108\uD76C\uAC00 \uBE44\uD0AC \uCC28\uB840\uC57C."
+    IMG_Res: 
+    Next_Chat_ID: 1260120
+    Branch_Group_ID: 0
+  - Chat_ID: 1260120
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC633\uC740 \uB9D0\uC774\uB2E4! \uAE38\uC744 \uC5F4\uC5B4\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1260130
+    Branch_Group_ID: 0
+  - Chat_ID: 1260130
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uB458\uC774 \uC8FD\uC774 \uC798 \uB9DE\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1260140
+    Branch_Group_ID: 0
+  - Chat_ID: 1260140
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D4 \uC9C4\uC9DC \uBE44\uCF1C."
+    IMG_Res: 
+    Next_Chat_ID: 1260150
+    Branch_Group_ID: 0
+  - Chat_ID: 1260150
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uBAA8\uB450 \uC870\uC2EC\uD574\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1260160
+    Branch_Group_ID: 0
+  - Chat_ID: 1260160
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC80\uBB38\uC18C\uC640 \uB2E4\uC2DC \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1230900
+    Branch_Group_ID: 12302
+  - Chat_ID: 1270010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC740\uD589\uC73C\uB85C \uAC00\uB294 \uC606\uAE38\uC5D0\uC11C
+      UMT \uC9C0\uB9DD\uC0DD\uB4E4\uC774 \uD3EC\uC704\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12701
+  - Chat_ID: 1270100
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(UMT \uC9C0\uB9DD\uC0DD\uB4E4\uC774 \uB8E8\uBBF8\uB098\uB97C \uC54C\uC544\uBD24\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1270110
+    Branch_Group_ID: 0
+  - Chat_ID: 1270110
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uB124\uB188\uC774 \uD6C4\uBC30\uB4E4\uC744 \uAD34\uB86D\uD78C
+      \uB098\uB77D\uC774\uAD70!"
+    IMG_Res: 
+    Next_Chat_ID: 1270120
+    Branch_Group_ID: 0
+  - Chat_ID: 1270120
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uD6C4\uBC30? \uC57D\uD0C8\uAFBC \uC598\uAE30\uC57C?"
+    IMG_Res: 
+    Next_Chat_ID: 1270130
+    Branch_Group_ID: 0
+  - Chat_ID: 1270130
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC5C5\uACC4 \uC778\uB9E5\uC774 \uCC38 \uC881\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1270140
+    Branch_Group_ID: 0
+  - Chat_ID: 1270140
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC6B0\uB9B0 \uC9C0\uB098\uAC08 \uAC70\uC57C. \uBE44\uCF1C."
+    IMG_Res: 
+    Next_Chat_ID: 1270150
+    Branch_Group_ID: 0
+  - Chat_ID: 1270150
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uB108\uD76C\uB97C \uC7A1\uC544 \uC2E4\uC801\uC744 \uC138\uC6CC
+      UMT\uC5D0 \uC785\uB2E8\uD558\uACA0\uB2E4! \uB458\uB7EC\uC2F8!"
+    IMG_Res: 
+    Next_Chat_ID: 1270160
+    Branch_Group_ID: 0
+  - Chat_ID: 1270160
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uD3EC\uC704\uB9DD\uC744 \uB6AB\uAE30 \uC704\uD574
+      \uB9DE\uC130\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1270900
+    Branch_Group_ID: 12702
+  - Chat_ID: 1270200
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(UMT \uC9C0\uB9DD\uC0DD\uB4E4\uC774 \uB124\uCF54\uBC0D\uC744 \uAC00\uB9AC\uCF30\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1270210
+    Branch_Group_ID: 0
+  - Chat_ID: 1270210
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uC7AC\uC559 \uC55E\uC5D0\uC11C\uB3C4 \uBB3C\uB7EC\uC11C\uC9C0
+      \uC54A\uB294\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1270220
+    Branch_Group_ID: 0
+  - Chat_ID: 1270220
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC65C \uC800\uB97C \uBCF4\uBA70 \uAC01\uC624\uD558\uB294 \uAC70\uC8E0?!"
+    IMG_Res: 
+    Next_Chat_ID: 1270230
+    Branch_Group_ID: 0
+  - Chat_ID: 1270230
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC6A9\uAE30\uB9CC\uD07C\uC740 \uC778\uC815\uD558\uB9C8!"
+    IMG_Res: 
+    Next_Chat_ID: 1270240
+    Branch_Group_ID: 0
+  - Chat_ID: 1270240
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uD558\uC9C0\uB9CC \uAE38\uC740 \uBE44\uCF1C."
+    IMG_Res: 
+    Next_Chat_ID: 1270250
+    Branch_Group_ID: 0
+  - Chat_ID: 1270250
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uC2E4\uC801\uC73C\uB85C \uB9CC\uB4E4\uC5B4 \uC8FC\uB9C8!"
+    IMG_Res: 
+    Next_Chat_ID: 1270260
+    Branch_Group_ID: 0
+  - Chat_ID: 1270260
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uD3EC\uC704\uB9DD\uC744 \uB6AB\uAE30 \uC704\uD574
+      \uB9DE\uC130\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1270900
+    Branch_Group_ID: 12702
+  - Chat_ID: 1270300
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC18C\uB144\uC774 \uC9C0\uB9DD\uC0DD\uB4E4\uC758 \uC5BC\uAD74\uC744
+      \uC0B4\uD3C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1270310
+    Branch_Group_ID: 0
+  - Chat_ID: 1270310
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD615\uCC98\uB7FC \uC2DC\uB044\uB7EC\uC6B4 \uC0AC\uB78C \uBABB
+      \uBD24\uC5B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1270320
+    Branch_Group_ID: 0
+  - Chat_ID: 1270320
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uADF8 \uD5C8\uC138\uC7C1\uC774 \uB3D9\uC0DD\uC774\uB0D0?"
+    IMG_Res: 
+    Next_Chat_ID: 1270330
+    Branch_Group_ID: 0
+  - Chat_ID: 1270330
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD5C8\uC138\uC7C1\uC774\uB294 \uB9DE\uC544. \uC5B4\uB514\uB85C
+      \uAC14\uB294\uB370?"
+    IMG_Res: 
+    Next_Chat_ID: 1270340
+    Branch_Group_ID: 0
+  - Chat_ID: 1270340
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uC54C\uB824\uC8FC\uAE30 \uC2EB\uC740\uB370!"
+    IMG_Res: 
+    Next_Chat_ID: 1270350
+    Branch_Group_ID: 0
+  - Chat_ID: 1270350
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB7FC \uB9DE\uACE0 \uB9D0\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1270360
+    Branch_Group_ID: 0
+  - Chat_ID: 1270360
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774 \uC560\uAC00 \uB9C8\uC74C\uC5D0 \uB4DC\uB294 \uC18C\uB9AC\uB97C
+      \uD558\uB124?"
+    IMG_Res: 
+    Next_Chat_ID: 1270370
+    Branch_Group_ID: 0
+  - Chat_ID: 1270370
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADF8\uB7F0 \uAC78\uB85C \uCE5C\uD574\uC9C0\uC9C0 \uB9C8. \uC804\uD22C
+      \uC900\uBE44\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1270900
+    Branch_Group_ID: 12702
+  - Chat_ID: 1270400
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBE4C\uB7F0\uB4E4\uC774 \uBB34\uAE30\uB97C \uAEBC\uB0B4\uACE0
+      \uD3EC\uC704\uD558\uAE30 \uC2DC\uC791\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1270410
+    Branch_Group_ID: 0
+  - Chat_ID: 1270410
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uD788\uC5B4\uB85C\uB97C \uC7A1\uC544 UMT \uC785\uB2E8 \uC2E4\uC801\uC744
+      \uC138\uC6B4\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1270420
+    Branch_Group_ID: 0
+  - Chat_ID: 1270420
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uAFC8\uC744 \uC704\uD574 \uC545\uD589\uC744 \uD0DD\uD558\uB2E4\uB2C8!"
+    IMG_Res: 
+    Next_Chat_ID: 1270430
+    Branch_Group_ID: 0
+  - Chat_ID: 1270430
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB798\uC11C UMT\uAC00 \uBB50\uAE38\uB798?"
+    IMG_Res: 
+    Next_Chat_ID: 1270440
+    Branch_Group_ID: 0
+  - Chat_ID: 1270440
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAE38\uC744 \uBE44\uCF1C."
+    IMG_Res: 
+    Next_Chat_ID: 1270450
+    Branch_Group_ID: 0
+  - Chat_ID: 1270450
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uC2EB\uB2E4\uBA74 \uC4F0\uB7EC\uB728\uB9AC\uACE0 \uAC00\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1270460
+    Branch_Group_ID: 0
+  - Chat_ID: 1270460
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uD3EC\uC704\uB9DD\uC744 \uB6AB\uAE30 \uC704\uD574
+      \uB9DE\uC130\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1270900
+    Branch_Group_ID: 12702
+  - Chat_ID: 1270900
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC804\uD22C \uC885\uB8CC"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12703
+  - Chat_ID: 1280010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(UMT \uC9C0\uB9DD\uC0DD\uB4E4\uC774 \uBB34\uAE30\uB97C \uBC84\uB9AC\uACE0
+      \uD769\uC5B4\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12801
+  - Chat_ID: 1280100
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uB300\uC120\uBC30\uB2D8\uC744 \uBAB0\uB77C\uBD40\uC2B5\uB2C8\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1280110
+    Branch_Group_ID: 0
+  - Chat_ID: 1280110
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC7E4\uB4E4 \uC65C \uC790\uAFB8 \uB098\uBCF4\uACE0 \uB098\uB77D\uC774\uB798?"
+    IMG_Res: 
+    Next_Chat_ID: 1280120
+    Branch_Group_ID: 0
+  - Chat_ID: 1280120
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uB124 \uD589\uBCF4\uAC00 \uB098\uB77D \uADF8 \uC790\uCCB4\uB77C\uC11C?"
+    IMG_Res: 
+    Next_Chat_ID: 1280130
+    Branch_Group_ID: 0
+  - Chat_ID: 1280130
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC8FD\uC744\uB798?!"
+    IMG_Res: 
+    Next_Chat_ID: 1280140
+    Branch_Group_ID: 0
+  - Chat_ID: 1280140
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589\uC774 \uC788\uB294 \uBC29\uD5A5\uC73C\uB85C
+      \uAC78\uC74C\uC744 \uC62E\uACBC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12802
+  - Chat_ID: 1280200
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC9C0\uB9DD\uC0DD\uC774 \uB124\uCF54\uBC0D \uC55E\uC5D0\uC11C
+      \uBC1C\uC744 \uD5DB\uB514\uB3A0\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1280210
+    Branch_Group_ID: 0
+  - Chat_ID: 1280210
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uAD1C\uCC2E\uC73C\uC138\uC694?"
+    IMG_Res: 
+    Next_Chat_ID: 1280220
+    Branch_Group_ID: 0
+  - Chat_ID: 1280220
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774\uBBF8 \uB3C4\uB9DD\uAC14\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1280230
+    Branch_Group_ID: 0
+  - Chat_ID: 1280230
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uD3EC\uC704\uB9DD\uC740 \uBB34\uB108\uC84C\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1280240
+    Branch_Group_ID: 0
+  - Chat_ID: 1280240
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC606\uAE38\uC774 \uC5F4\uB838\uB2E4. \uACC4\uC18D \uC774\uB3D9\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1280250
+    Branch_Group_ID: 0
+  - Chat_ID: 1280250
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589\uC774 \uC788\uB294 \uBC29\uD5A5\uC73C\uB85C
+      \uAC78\uC74C\uC744 \uC62E\uACBC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12802
+  - Chat_ID: 1280300
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBE4C\uB7F0 \uC911 \uD55C\uBA85\uC774 \uC885\uC774\uB97C \uB5A8\uC5B4\uB728\uB838\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1280310
+    Branch_Group_ID: 0
+  - Chat_ID: 1280310
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774\uAC8C \uBB50\uC57C? \uC9C0\uC6D0\uC11C?"
+    IMG_Res: 
+    Next_Chat_ID: 1280320
+    Branch_Group_ID: 0
+  - Chat_ID: 1280320
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC7A0\uAE50. \uC774\uAC70 \uB0B4 \uD615 \uAC74\uB370?"
+    IMG_Res: 
+    Next_Chat_ID: 1280330
+    Branch_Group_ID: 0
+  - Chat_ID: 1280330
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADF8\uB7FC \uAC00\uCD9C\uD55C \uAC8C \uBE4C\uB7F0 \uC5F0\uD569\uC5D0
+      \uB4E4\uC5B4\uAC00\uB824\uB294 \uAC70\uC600\uC5B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1280340
+    Branch_Group_ID: 0
+  - Chat_ID: 1280340
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC608\uC0C1\uC740 \uD588\uC9C0\uB9CC \uB610 \uC774\uB7EC\uB124.
+      \uC774\uBC88\uC5D0\uC57C\uB9D0\uB85C \uBC84\uB987\uC744 \uB2E8\uB2E8\uD788
+      \uACE0\uCCD0\uC918\uC57C\uACA0\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1280350
+    Branch_Group_ID: 0
+  - Chat_ID: 1280350
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC18C\uB144\uC740 \uC9C0\uC6D0\uC11C\uB97C \uAD6C\uAE30\uBA70
+      \uC55E\uC7A5\uC130\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12802
+  - Chat_ID: 1280400
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uD3EC\uC704\uB9DD \uB3CC\uD30C \uC644\uB8CC!"
+    IMG_Res: 
+    Next_Chat_ID: 1280410
+    Branch_Group_ID: 0
+  - Chat_ID: 1280410
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC2E4\uC801\uC740 \uC6B0\uB9AC\uAC00 \uCC59\uACBC\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1280420
+    Branch_Group_ID: 0
+  - Chat_ID: 1280420
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uACBD\uBE44\uAC00 \uC624\uAE30 \uC804\uC5D0 \uAC00\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1280430
+    Branch_Group_ID: 0
+  - Chat_ID: 1280430
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC606\uAE38\uC774 \uC5F4\uB838\uB2E4. \uACC4\uC18D \uC774\uB3D9\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1280440
+    Branch_Group_ID: 0
+  - Chat_ID: 1280440
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589\uC774 \uC788\uB294 \uBC29\uD5A5\uC73C\uB85C
+      \uAC78\uC74C\uC744 \uC62E\uACBC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12802
+  - Chat_ID: 1290010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD3EC\uC704\uB9DD\uC744 \uB6AB\uC9C0 \uBABB\uD558\uACE0 \uC77C\uD589\uC774
+      \uD769\uC5B4\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12901
+  - Chat_ID: 1290100
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uB098\uB77D\uC744 \uBAB0\uC544\uB0C8\uB2E4! \uBCC4\uAC70 \uC544\uB2C8\uC5C8\uAD6C\uB9CC!"
+    IMG_Res: 
+    Next_Chat_ID: 1290110
+    Branch_Group_ID: 0
+  - Chat_ID: 1290110
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774\uC774\uC775...! \uB0B4 \uBA85\uC608, \uB0B4 \uC790\uC874\uC2EC\uC774\u2026!"
+    IMG_Res: 
+    Next_Chat_ID: 1290120
+    Branch_Group_ID: 0
+  - Chat_ID: 1290120
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC77C\uB2E8 \uC6B0\uB9AC \uBAA9\uC228\uBD80\uD130 \uCC59\uAE30\uC790."
+    IMG_Res: 
+    Next_Chat_ID: 1290130
+    Branch_Group_ID: 0
+  - Chat_ID: 1290130
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uD611\uD68C\uB85C \uB3CC\uC544\uAC00 \uC7AC\uC815\uBE44\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1290140
+    Branch_Group_ID: 0
+  - Chat_ID: 1290140
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC606\uAE38\uC5D0\uC11C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12902
+  - Chat_ID: 1290200
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uC7AC\uC559\uC744 \uC774\uACA8\uB0C8\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1290210
+    Branch_Group_ID: 0
+  - Chat_ID: 1290210
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC800\uB294 \uC7AC\uC559\uC774 \uC544\uB2C8\uB77C\uB2C8\uAE4C\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1290220
+    Branch_Group_ID: 0
+  - Chat_ID: 1290220
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uC624\uD574\uB3C4 \uC2B9\uB9AC\uB3C4 \uBC14\uB85C\uC7A1\uACA0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1290230
+    Branch_Group_ID: 0
+  - Chat_ID: 1290230
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uD611\uD68C\uB85C \uB3CC\uC544\uAC00 \uC7AC\uC815\uBE44\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1290240
+    Branch_Group_ID: 0
+  - Chat_ID: 1290240
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC606\uAE38\uC5D0\uC11C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12902
+  - Chat_ID: 1290300
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD615\uB3C4 \uBABB \uCC3E\uACE0 \uC9C0\uAE30\uAE4C\uC9C0 \uD588\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1290310
+    Branch_Group_ID: 0
+  - Chat_ID: 1290310
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC2DC \uC624\uBA74 \uB3FC."
+    IMG_Res: 
+    Next_Chat_ID: 1290320
+    Branch_Group_ID: 0
+  - Chat_ID: 1290320
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D4 \uAF2D \uC774\uACA8."
+    IMG_Res: 
+    Next_Chat_ID: 1290330
+    Branch_Group_ID: 0
+  - Chat_ID: 1290330
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uD611\uD68C\uB85C \uB3CC\uC544\uAC00 \uC7AC\uC815\uBE44\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1290340
+    Branch_Group_ID: 0
+  - Chat_ID: 1290340
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC606\uAE38\uC5D0\uC11C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12902
+  - Chat_ID: 1290400
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uD6C4\uD1F4\uD55C\uB2E4! \uD558\uC9C0\uB9CC \uB05D\uC740 \uC544\uB2C8\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1290410
+    Branch_Group_ID: 0
+  - Chat_ID: 1290410
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uB610 \uD6C4\uD1F4\uD558\uAC8C?"
+    IMG_Res: 
+    Next_Chat_ID: 1290420
+    Branch_Group_ID: 0
+  - Chat_ID: 1290420
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC774\uCABD \uAE38\uC774 \uBE44\uC5C8\uC5B4\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1290430
+    Branch_Group_ID: 0
+  - Chat_ID: 1290430
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uD611\uD68C\uB85C \uB3CC\uC544\uAC00 \uC7AC\uC815\uBE44\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1290440
+    Branch_Group_ID: 0
+  - Chat_ID: 1290440
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC606\uAE38\uC5D0\uC11C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 12902
+  - Chat_ID: 1300010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC606\uAE38\uB85C \uB3CC\uC544\uC624\uC790 UMT \uC9C0\uB9DD\uC0DD\uB4E4\uC774
+      \uB2E4\uC2DC \uD3EC\uC704\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 13010
+  - Chat_ID: 1300020
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uC6B0\uB9AC\uAC00 \uAE38\uC744 \uC5F0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1300030
+    Branch_Group_ID: 0
+  - Chat_ID: 1300030
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uAE38\uC744 \uC5F4\uC5B4\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1300040
+    Branch_Group_ID: 0
+  - Chat_ID: 1300040
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC7AC\uBC29\uBB38 \uD61C\uD0DD\uC740 \uD544\uC694 \uC5C6\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1300050
+    Branch_Group_ID: 0
+  - Chat_ID: 1300050
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB05D\uB0B4\uC790."
+    IMG_Res: 
+    Next_Chat_ID: 1300060
+    Branch_Group_ID: 0
+  - Chat_ID: 1300060
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD3EC\uC704\uB9DD\uACFC \uB2E4\uC2DC \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1270900
+    Branch_Group_ID: 12702
+  - Chat_ID: 1300100
+    Chat_Type: 0
+    Char_Name: "UMT \uC9C0\uB9DD\uC0DD"
+    Char_Profile: 
+    Message_Text: "\uD5C8\uC138\uC7C1\uC774\uC758 \uB3D9\uC0DD\uB3C4 \uB610 \uC654\uAD70!"
+    IMG_Res: 
+    Next_Chat_ID: 1300110
+    Branch_Group_ID: 0
+  - Chat_ID: 1300110
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD615 \uC695\uC740 \uD574\uB3C4 \uB0B4\uAC00 \uD574!"
+    IMG_Res: 
+    Next_Chat_ID: 1300120
+    Branch_Group_ID: 0
+  - Chat_ID: 1300120
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uAC00\uC871 \uAD8C\uD55C\uC774 \uD655\uC2E4\uD558\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1300130
+    Branch_Group_ID: 0
+  - Chat_ID: 1300130
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uC6B0\uB9AC\uAC00 \uAE38\uC744 \uC5F0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1300140
+    Branch_Group_ID: 0
+  - Chat_ID: 1300140
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB05D\uB0B4\uC790."
+    IMG_Res: 
+    Next_Chat_ID: 1300150
+    Branch_Group_ID: 0
+  - Chat_ID: 1300150
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uD3EC\uC704\uB9DD\uBD80\uD130 \uB04A\uC5B4\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1300160
+    Branch_Group_ID: 0
+  - Chat_ID: 1300160
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD3EC\uC704\uB9DD\uACFC \uB2E4\uC2DC \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1270900
+    Branch_Group_ID: 12702
+  - Chat_ID: 1030010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBE4C\uB7F0 \uC5F0\uD569\uC774 \uC810\uB839\uD55C \uC911\uC559\uC740\uD589\uC774
+      \uBCF4\uC600\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10300
+  - Chat_ID: 1030100
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC740\uD589 \uB4A4\uD3B8\uC5D0 \uD615\uC774 \uC788\uC744 \uAC70\uC608\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1030110
+    Branch_Group_ID: 0
+  - Chat_ID: 1030110
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD3D0\uAE30\uBB3C \uBCF4\uAD00\uC18C\uC5D0\uC11C \uC2E0\uC74C\uC774
+      \uB4E4\uB838\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1030120
+    Branch_Group_ID: 0
+  - Chat_ID: 1030120
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144\uC758 \uD615"
+    Char_Profile: 
+    Message_Text: "\uB204\uAC00 \uC880 \uAEBC\uB0B4 \uC918!"
+    IMG_Res: 
+    Next_Chat_ID: 1030130
+    Branch_Group_ID: 0
+  - Chat_ID: 1030130
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC815\uB9D0 \uB05D\uAE4C\uC9C0 \uC4F8\uBAA8\uC5C6\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1030140
+    Branch_Group_ID: 0
+  - Chat_ID: 1030140
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144\uC758 \uD615"
+    Char_Profile: 
+    Message_Text: "\uAD6C\uD558\uB7EC \uC640 \uB193\uACE0 \uCCAB\uB9C8\uB514\uAC00
+      \uADF8\uAC70\uB0D0?"
+    IMG_Res: 
+    Next_Chat_ID: 1030150
+    Branch_Group_ID: 0
+  - Chat_ID: 1030150
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uAC10\uB3D9\uC801\uC778 \uAC00\uC871 \uC0C1\uBD09\uC774\uC57C."
+    IMG_Res: 
+    Next_Chat_ID: 1030160
+    Branch_Group_ID: 0
+  - Chat_ID: 1030160
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC740\uD589 \uC548 \uC0C1\uD669\uBD80\uD130 \uB9D0\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1030170
+    Branch_Group_ID: 0
+  - Chat_ID: 1030170
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144\uC758 \uD615"
+    Char_Profile: 
+    Message_Text: "\uAE08\uACE0\uB97C \uC5F4\uC5B4\uC92C\uB354\uB2C8 \uBC14\uB85C
+      \uBC84\uB9AC\uB354\uB77C."
+    IMG_Res: 
+    Next_Chat_ID: 1030180
+    Branch_Group_ID: 0
+  - Chat_ID: 1030180
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uADF8\uAC78 \uC790\uB791\uCC98\uB7FC \uB9D0\uD558\uC9C0 \uB9C8."
+    IMG_Res: 
+    Next_Chat_ID: 1030190
+    Branch_Group_ID: 0
+  - Chat_ID: 1030190
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144\uC758 \uD615"
+    Char_Profile: 
+    Message_Text: "\uC9C0\uD558 \uB300\uAE30\uC2E4\uC5D0 \uC778\uC9C8\uB3C4 \uC138
+      \uBA85 \uC788\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1030200
+    Branch_Group_ID: 0
+  - Chat_ID: 1030200
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8 \uC815\uBCF4\uAC00 \uB9DE\uB294\uC9C0 \uD655\uC778\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10319
+  - Chat_ID: 1030500
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uADF8 \uC815\uBCF4\uB294 \uC911\uC694\uD574\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1030510
+    Branch_Group_ID: 0
+  - Chat_ID: 1030510
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uD615\uC774 \uCC98\uC74C\uC73C\uB85C \uB3C4\uC6C0\uC774 \uB410\uB124\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1030520
+    Branch_Group_ID: 0
+  - Chat_ID: 1030520
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144\uC758 \uD615"
+    Char_Profile: 
+    Message_Text: "\uCC98\uC74C\uC774\uB77C\uB2C8!"
+    IMG_Res: 
+    Next_Chat_ID: 1030530
+    Branch_Group_ID: 0
+  - Chat_ID: 1030530
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8 \uC704\uCE58\uB97C \uC791\uC804 \uC9C0\uB3C4\uC5D0
+      \uD45C\uC2DC\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1030540
+    Branch_Group_ID: 0
+  - Chat_ID: 1030540
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC18C\uB144\uACFC \uD615\uC740 \uC548\uC804\uD55C \uACF3\uC73C\uB85C
+      \uBB3C\uB7EC\uB0AC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033010
+    Branch_Group_ID: 0
+  - Chat_ID: 1030600
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8 \uC815\uBCF4\uB294 \uC774\uBBF8 \uC54C\uACE0 \uC788\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1030610
+    Branch_Group_ID: 0
+  - Chat_ID: 1030610
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144\uC758 \uD615"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB7FC \uB0B4\uAC00 \uC65C \uC4F0\uB808\uAE30\uD1B5\uC5D0\uC11C\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1030620
+    Branch_Group_ID: 0
+  - Chat_ID: 1030620
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144"
+    Char_Profile: 
+    Message_Text: "\uC9C4\uC9DC \uB05D\uAE4C\uC9C0 \uC4F8\uBAA8\uC5C6\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1030630
+    Branch_Group_ID: 0
+  - Chat_ID: 1030630
+    Chat_Type: 0
+    Char_Name: "\uC18C\uB144\uC758 \uD615"
+    Char_Profile: 
+    Message_Text: "\uB0B4 \uBAA9\uC228\uC740 \uC911\uC694\uD558\uC9C0\uB3C4 \uC54A\uC544?!"
+    IMG_Res: 
+    Next_Chat_ID: 1030640
+    Branch_Group_ID: 0
+  - Chat_ID: 1030640
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD615\uC81C\uB294 \uD2F0\uACA9\uB300\uBA70 \uC548\uC804\uD55C
+      \uACF3\uC73C\uB85C \uBB3C\uB7EC\uB0AC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033010
+    Branch_Group_ID: 0
+  - Chat_ID: 1033010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uB9C8\uCE68\uB0B4 \uC911\uC559\uC740\uD589
+      \uC55E\uC5D0 \uB3C4\uCC29\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033020
+    Branch_Group_ID: 0
+  - Chat_ID: 1033020
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC774\uC81C\uC57C \uBB38 \uC55E\uC774\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1033030
+    Branch_Group_ID: 0
+  - Chat_ID: 1033030
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC624\uB85C\uB77C\uC758 \uC7AC\uC0B0\uACFC \uC2DC\uBBFC\uC744
+      \uB418\uCC3E\uB294\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1033040
+    Branch_Group_ID: 0
+  - Chat_ID: 1033040
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC7A0\uAE50. \uB4E4\uC5B4\uAC00\uAE30 \uC804\uC5D0 \uC0C1\uD669\uBD80\uD130
+      \uD655\uC778\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1033050
+    Branch_Group_ID: 0
+  - Chat_ID: 1033050
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB0E5 \uBB38\uC9F8\uB85C \uB0A0\uB9AC\uBA74 \uBE60\uB974\uC796\uC544."
+    IMG_Res: 
+    Next_Chat_ID: 1033060
+    Branch_Group_ID: 0
+  - Chat_ID: 1033060
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC548\uC5D0 \uB204\uAC00 \uC788\uB294\uC9C0\uB3C4 \uBAA8\uB974\uB294\uB370?"
+    IMG_Res: 
+    Next_Chat_ID: 1033070
+    Branch_Group_ID: 0
+  - Chat_ID: 1033070
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8 \uC815\uBCF4\uAC00 \uC788\uB2E4\uBA74 \uBA3C\uC800
+      \uD655\uC778\uD574\uC57C \uD574\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1033100
+    Branch_Group_ID: 0
+  - Chat_ID: 1033100
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC815\uBB38\uACFC \uD6C4\uBB38, \uC9C0\uD558 \uCD9C\uC785\uAD6C\uB97C
+      \uC0B4\uD3C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033110
+    Branch_Group_ID: 0
+  - Chat_ID: 1033110
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC815\uBA74\uC5D0\uC11C \uC2DC\uC120\uC744 \uB04C\uACA0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1033120
+    Branch_Group_ID: 0
+  - Chat_ID: 1033120
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC2DC\uC120\uB9CC \uB04C\uBA74 \uC88B\uACA0\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1033130
+    Branch_Group_ID: 0
+  - Chat_ID: 1033130
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uD6C4\uBB38\uC740 \uBCBD\uC774 \uC587\uC544 \uBCF4\uC5EC."
+    IMG_Res: 
+    Next_Chat_ID: 1033140
+    Branch_Group_ID: 0
+  - Chat_ID: 1033140
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC9C0\uD558 \uCABD\uC740 \uC548\uC744 \uC0B4\uD53C\uAE30 \uC88B\uC544
+      \uBCF4\uC5EC\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1033150
+    Branch_Group_ID: 0
+  - Chat_ID: 1033150
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAC00\uB2A5\uD55C \uC0C1\uD669\uC744 \uC815\uB9AC\uD558\uACE0
+      \uC791\uC804\uC744 \uAC80\uD1A0\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1033160
+    Branch_Group_ID: 0
+  - Chat_ID: 1033160
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC740\uD589\uC5D0 \uB4E4\uC5B4\uAC08 \uBC29\uBC95\uC744 \uC120\uD0DD\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10301
+  - Chat_ID: 1033180
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC911\uC559\uC740\uD589\uC744 \uC810\uAC70\uD55C \uBE4C\uB7F0\uB4E4\uC740
+      \uB4E4\uC5B4\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1033190
+    Branch_Group_ID: 0
+  - Chat_ID: 1033190
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC815\uBA74 \uB3CC\uD30C\uB77C?"
+    IMG_Res: 
+    Next_Chat_ID: 1033200
+    Branch_Group_ID: 0
+  - Chat_ID: 1033200
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uC744 \uD480\uACE0 \uC989\uC2DC \uD56D\uBCF5\uD558\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1033210
+    Branch_Group_ID: 0
+  - Chat_ID: 1033210
+    Chat_Type: 0
+    Char_Name: "\uC740\uD589 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC815\uBB38\uC5D0 \uD788\uC5B4\uB85C\uB2E4! \uC778\uC9C8\uC744
+      \uBC29\uD328\uB85C \uC138\uC6CC!"
+    IMG_Res: 
+    Next_Chat_ID: 1033220
+    Branch_Group_ID: 0
+  - Chat_ID: 1033220
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD63C\uB780 \uC18D\uC5D0\uC11C \uC778\uC9C8\uB4E4\uC774 \uACF5\uACA9\uC5D0
+      \uB178\uCD9C\uB410\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033230
+    Branch_Group_ID: 0
+  - Chat_ID: 1033230
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC778\uC9C8\uB4E4\uC774 \uC704\uD611\uBC1B\uC558\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033240
+    Branch_Group_ID: 0
+  - Chat_ID: 1033240
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uB4E4\uC774 \uB2E4\uCCE4\uCE58\uACA0\uC5B4\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1033250
+    Branch_Group_ID: 0
+  - Chat_ID: 1033250
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB354 \uB2E4\uCE58\uAE30 \uC804\uC5D0 \uBC00\uC5B4\uBD99\uC774\uBA74
+      \uB3FC!"
+    IMG_Res: 
+    Next_Chat_ID: 1033260
+    Branch_Group_ID: 0
+  - Chat_ID: 1033260
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC815\uBB38\uC744 \uB3CC\uD30C\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033270
+    Branch_Group_ID: 0
+  - Chat_ID: 1033270
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC778\uC9C8\uB4E4\uC774 \uD788\uC5B4\uB85C\uB4E4\uC744 \uBC14\uB77C\uBD24\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10314
+  - Chat_ID: 1033340
+    Chat_Type: 0
+    Char_Name: "\uC5B4\uC774\uAC00 \uC5C6\uB294 \uC778\uC9C8"
+    Char_Profile: 
+    Message_Text: "\uD584\uC2A4\uD130 \uAD6C\uD55C\uB2E4\uACE0 \uD611\uD68C\uB97C
+      \uD130\uB728\uB9B0 \uADF8 \uD788\uC5B4\uB85C\uB4E4\uC774\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1033350
+    Branch_Group_ID: 0
+  - Chat_ID: 1033350
+    Chat_Type: 0
+    Char_Name: "\uAC81\uC5D0 \uC9C8\uB9B0 \uC778\uC9C8"
+    Char_Profile: 
+    Message_Text: "\uC800\uB9AC \uAEBC\uC838\uB77C! \uC774 \uC0AC\uD0C4\uB4E4\uB9B0
+      \uC545\uADC0\uC57C!"
+    IMG_Res: 
+    Next_Chat_ID: 1033360
+    Branch_Group_ID: 0
+  - Chat_ID: 1033360
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uB450\uB824\uC6CC \uB9D0\uB77C! \uBC18\uB4DC\uC2DC \uC9C0\uD0A4\uACA0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1033361
+    Branch_Group_ID: 0
+  - Chat_ID: 1033361
+    Chat_Type: 0
+    Char_Name: "\uC5B4\uC774\uAC00 \uC5C6\uB294 \uC778\uC9C8"
+    Char_Profile: 
+    Message_Text: "\uB3C4\uC640\uC918\uC694! \uBE4C\uB7F0 \uC5F0\uD569!"
+    IMG_Res: 
+    Next_Chat_ID: 1033362
+    Branch_Group_ID: 0
+  - Chat_ID: 1033362
+    Chat_Type: 0
+    Char_Name: "\uC740\uD589 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC774\uB9AC \uC575\uAE30\uC9C0 \uB9C8!"
+    IMG_Res: 
+    Next_Chat_ID: 1033363
+    Branch_Group_ID: 0
+  - Chat_ID: 1033363
+    Chat_Type: 0
+    Char_Name: "\uC740\uD589 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uB108\uD76C \uBB34\uC2A8 \uC9D3\uC744 \uD558\uACE0 \uB2E4\uB2CC
+      \uAC70\uC57C!"
+    IMG_Res: 
+    Next_Chat_ID: 1033364
+    Branch_Group_ID: 0
+  - Chat_ID: 1033364
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uD584\uC2A4\uD130???"
+    IMG_Res: 
+    Next_Chat_ID: 1033370
+    Branch_Group_ID: 0
+  - Chat_ID: 1033370
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBD88\uC548\uD55C \uC778\uC9C8\uB4E4\uC744 \uB4A4\uB85C\uD558\uACE0
+      \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1039000
+    Branch_Group_ID: 10303
+  - Chat_ID: 1033520
+    Chat_Type: 0
+    Char_Name: "\uC778\uC9C8"
+    Char_Profile: 
+    Message_Text: "\uD788\uC5B4\uB85C\uB2E4! \uC6B0\uB9B4 \uAD6C\uD558\uB7EC \uC654\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1033530
+    Branch_Group_ID: 0
+  - Chat_ID: 1033530
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uBAA8\uB450 \uBCBD \uB4A4\uB85C \uD53C\uD558\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1033540
+    Branch_Group_ID: 0
+  - Chat_ID: 1033540
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC5C4\uD638\uD560\uAC8C. \uC55E\uC73C\uB85C \uAC00."
+    IMG_Res: 
+    Next_Chat_ID: 1033550
+    Branch_Group_ID: 0
+  - Chat_ID: 1033550
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC778\uC9C8\uC744 \uAC10\uC2F8\uBA70 \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1039000
+    Branch_Group_ID: 10303
+  - Chat_ID: 1033610
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589 \uD6C4\uBB38\uC73C\uB85C \uC870\uC6A9\uD788
+      \uC811\uADFC\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033620
+    Branch_Group_ID: 0
+  - Chat_ID: 1033620
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uACBD\uBE44 \uB458. \uC18C\uB9AC \uC5C6\uC774 \uC9C0\uB098\uAC00\uC790."
+    IMG_Res: 
+    Next_Chat_ID: 1033630
+    Branch_Group_ID: 0
+  - Chat_ID: 1033630
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC740\uBC00\uD55C \uC815\uC758\uB3C4 \uC815\uC758\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1033640
+    Branch_Group_ID: 0
+  - Chat_ID: 1033640
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uBB38\uC774 \uC7A0\uACBC\uC5B4. \uB179\uC774\uBA74 \uB3FC."
+    IMG_Res: 
+    Next_Chat_ID: 1033650
+    Branch_Group_ID: 0
+  - Chat_ID: 1033650
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC791\uAC8C. \uC815\uB9D0 \uC791\uAC8C \uC5F4\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1033660
+    Branch_Group_ID: 0
+  - Chat_ID: 1033660
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC54C\uC558\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1033670
+    Branch_Group_ID: 0
+  - Chat_ID: 1033670
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC791\uC740 \uBD88\uAF43\uC774 \uAE08\uACE0 \uBC30\uAD00\uC73C\uB85C
+      \uBC88\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033680
+    Branch_Group_ID: 0
+  - Chat_ID: 1033680
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uB8E8\uBBF8\uB098, \uBCBD\uC774 \uBD89\uC5B4\uC84C\uC5B4\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1033690
+    Branch_Group_ID: 0
+  - Chat_ID: 1033690
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774 \uAC74\uBB3C, \uC65C \uC774\uB807\uAC8C \uC798 \uD0C0?"
+    IMG_Res: 
+    Next_Chat_ID: 1033700
+    Branch_Group_ID: 0
+  - Chat_ID: 1033700
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD3ED\uBC1C\uC774 \uC740\uD589 \uB0B4\uBD80\uB97C \uB4A4\uD754\uB4E4\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033710
+    Branch_Group_ID: 0
+  - Chat_ID: 1033710
+    Chat_Type: 0
+    Char_Name: "\uC740\uD589 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uAE30\uC2B5\uC774\uB2E4! \uC778\uC9C8\uBD80\uD130 \uBD99\uC7A1\uC544!"
+    IMG_Res: 
+    Next_Chat_ID: 1033720
+    Branch_Group_ID: 0
+  - Chat_ID: 1033720
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC778\uC9C8\uB4E4\uC774 \uD3ED\uBC1C\uB85C \uB2E4\uCE58\uACE0
+      \uB9D0\uC558\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1033730
+    Branch_Group_ID: 0
+  - Chat_ID: 1033730
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uAE30\uC2B5\uC740 \uC131\uACF5\uD588\uC796\uC544. \uD55C\uC794
+      \uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1033740
+    Branch_Group_ID: 0
+  - Chat_ID: 1033740
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uC744 \uC9C0\uD0A4\uBA70 \uB3CC\uD30C\uD55C\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1033750
+    Branch_Group_ID: 0
+  - Chat_ID: 1033750
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC5F0\uAE30 \uC18D\uC5D0\uC11C \uC804\uD22C\uC5D0
+      \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1039000
+    Branch_Group_ID: 10304
+  - Chat_ID: 1034200
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC9C0\uD558 \uD1B5\uB85C\uB85C \uC778\uC9C8
+      \uAD6C\uC5ED\uC5D0 \uC811\uADFC\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1034210
+    Branch_Group_ID: 0
+  - Chat_ID: 1034210
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uACBD\uBE44\uB97C \uC18D\uC5EC\uC11C \uBB38\uC744 \uC5F4\uAC8C
+      \uD558\uC790."
+    IMG_Res: 
+    Next_Chat_ID: 1034220
+    Branch_Group_ID: 0
+  - Chat_ID: 1034220
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uB0B4\uAC00 \uC545\uB2F9 \uC5ED\uD560\uC744 \uD558\uACA0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1034230
+    Branch_Group_ID: 0
+  - Chat_ID: 1034230
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uD3C9\uC18C\uBCF4\uB2E4 \uBAA9\uC18C\uB9AC\uB9CC \uB0AE\uCDB0."
+    IMG_Res: 
+    Next_Chat_ID: 1034240
+    Branch_Group_ID: 0
+  - Chat_ID: 1034240
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8 \uC778\uACC4 \uBA85\uB839\uC774\uB2E4. \uBB38\uC744
+      \uC5F4\uC5B4\uB77C."
+    IMG_Res: 
+    Next_Chat_ID: 1034250
+    Branch_Group_ID: 0
+  - Chat_ID: 1034250
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uBCF8\uBD80 \uC9C1\uD1B5 \uBA85\uB839\uC774\uC57C. \uD655\uC778\uD558\uBA74
+      \uB2A6\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1034260
+    Branch_Group_ID: 0
+  - Chat_ID: 1034260
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBB38 \uB108\uBA38\uC758 \uBE4C\uB7F0\uB4E4\uC774 \uB300\uD654\uB97C
+      \uC5FF\uB4E4\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1034270
+    Branch_Group_ID: 0
+  - Chat_ID: 1034270
+    Chat_Type: 0
+    Char_Name: "\uC740\uD589 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uC800 \uBAA9\uC18C\uB9AC, \uC800\uC2A4\uD2F0\uC2A4 \uC544\uB2C8\uC57C?"
+    IMG_Res: 
+    Next_Chat_ID: 1034280
+    Branch_Group_ID: 0
+  - Chat_ID: 1034280
+    Chat_Type: 0
+    Char_Name: "\uC740\uD589 \uBE4C\uB7F0"
+    Char_Profile: 
+    Message_Text: "\uBE14\uB799\uBD88\uB9BF\uB3C4 \uC788\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1034290
+    Branch_Group_ID: 0
+  - Chat_ID: 1034290
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uADF8\uB7EC\uACE0\uBCF4\uB2C8 \uC6B0\uB9AC \uC5BC\uAD74 \uD314\uB824\uC788\uC5C8\uC9C0?"
+    IMG_Res: 
+    Next_Chat_ID: 1034300
+    Branch_Group_ID: 0
+  - Chat_ID: 1034300
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uBC1C\uAC01\uC774\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1034310
+    Branch_Group_ID: 0
+  - Chat_ID: 1034310
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uC774 \uC704\uD5D8\uD574\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1034320
+    Branch_Group_ID: 0
+  - Chat_ID: 1034320
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774\uC81C \uB9C8\uC74C \uB193\uACE0 \uC2F8\uC6CC\uB3C4 \uB418\uC9C0?"
+    IMG_Res: 
+    Next_Chat_ID: 1034330
+    Branch_Group_ID: 0
+  - Chat_ID: 1034330
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uC774 \uB2E4\uCE58\uC9C0 \uC54A\uAC8C \uC870\uC2EC\uD574!"
+    IMG_Res: 
+    Next_Chat_ID: 1034340
+    Branch_Group_ID: 0
+  - Chat_ID: 1034340
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC740\uD589\uC744 \uC810\uAC70\uD55C \uBE4C\uB7F0\uB4E4\uACFC
+      \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1039000
+    Branch_Group_ID: 10306
+  - Chat_ID: 1039000
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC804\uD22C \uC885\uB8CC"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10305
+  - Chat_ID: 1040010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC911\uC559\uC740\uD589\uC758 \uC804\uD22C\uAC00 \uB05D\uB098\uACE0
+      \uC778\uC9C8 \uC0C1\uD0DC\uB97C \uD655\uC778\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10401
+  - Chat_ID: 1040100
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC138 \uBD84 \uBAA8\uB450 \uD06C\uAC8C \uB2E4\uCCE4\uC5B4\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1040110
+    Branch_Group_ID: 0
+  - Chat_ID: 1040110
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uAD6C\uD588\uC9C0\uB9CC \uC9C0\uD0A4\uC9C0 \uBABB\uD588\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1040120
+    Branch_Group_ID: 0
+  - Chat_ID: 1040120
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uD6C4\uD68C\uB294 \uCE58\uB8CC \uB4A4\uC5D0 \uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1040130
+    Branch_Group_ID: 0
+  - Chat_ID: 1040130
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAD6C\uC870\uB300\uB97C \uBD80\uB974\uACE0 \uC740\uD589\uC744
+      \uBD09\uC1C4\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1040140
+    Branch_Group_ID: 0
+  - Chat_ID: 1040140
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC911\uC559\uC740\uD589\uC740 \uD0C8\uD658\uB410\uC9C0\uB9CC
+      \uB300\uAC00\uB294 \uCEF8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10411
+  - Chat_ID: 1040200
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uBD80\uC0C1\uC790\uB294 \uC788\uC9C0\uB9CC \uBAA8\uB450 \uC0DD\uC874\uD588\uC5B4\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1040210
+    Branch_Group_ID: 0
+  - Chat_ID: 1040210
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2A6\uC9C0 \uC54A\uC544\uC11C \uB2E4\uD589\uC774\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1040220
+    Branch_Group_ID: 0
+  - Chat_ID: 1040220
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uB05D\uAE4C\uC9C0 \uCC45\uC784\uC9C0\uACE0 \uCE58\uB8CC\uD558\uACA0\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1040230
+    Branch_Group_ID: 0
+  - Chat_ID: 1040230
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uAD6C\uC870\uB300\uB97C \uBD80\uB974\uACE0 \uC740\uD589\uC744
+      \uBD09\uC1C4\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1040240
+    Branch_Group_ID: 0
+  - Chat_ID: 1040240
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC778\uC9C8\uB4E4\uC740 \uCE58\uB8CC\uB97C \uBC1B\uC73C\uBA70
+      \uC740\uD589\uC744 \uB098\uC130\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10412
+  - Chat_ID: 1040300
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uC740 \uBAA8\uB450 \uBB34\uC0AC\uD574\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1040310
+    Branch_Group_ID: 0
+  - Chat_ID: 1040310
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC644\uBCBD\uD55C \uAD6C\uC870\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1040320
+    Branch_Group_ID: 0
+  - Chat_ID: 1040320
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC544\uC9C1 \uC740\uD589 \uC815\uB9AC\uAC00 \uB0A8\uC558\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1040330
+    Branch_Group_ID: 0
+  - Chat_ID: 1040330
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC9C0\uD558 \uAD6C\uCD9C \uC791\uC804\uC744 \uB5A0\uC62C\uB838\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10410
+  - Chat_ID: 1040400
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uB0B4 \uC545\uB2F9 \uC5F0\uAE30\uAC00 \uBAA8\uB450\uB97C \uAD6C\uD588\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1040410
+    Branch_Group_ID: 0
+  - Chat_ID: 1040410
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uB4E4\uD0A8 \uC5F0\uAE30\uB97C \uC131\uACF5\uC774\uB77C \uBD80\uB974\uC9C4
+      \uC54A\uC544."
+    IMG_Res: 
+    Next_Chat_ID: 1040420
+    Branch_Group_ID: 0
+  - Chat_ID: 1040420
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB458 \uB2E4 \uC2DC\uB044\uB7EC\uC6CC."
+    IMG_Res: 
+    Next_Chat_ID: 1040430
+    Branch_Group_ID: 0
+  - Chat_ID: 1040430
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC778\uC9C8\uB4E4\uC740 \uC6C3\uC73C\uBA70 \uC740\uD589 \uBC16\uC73C\uB85C
+      \uB098\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10413
+  - Chat_ID: 1040500
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC624\uB85C\uB77C \uC911\uC559\uC740\uD589\uC744 \uB418\uCC3E\uC558\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1040510
+    Branch_Group_ID: 0
+  - Chat_ID: 1040510
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uB3C4 \uBAA8\uB450 \uC548\uC804\uD574\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1040520
+    Branch_Group_ID: 0
+  - Chat_ID: 1040520
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC774\uC81C \uB3C8\uBCF4\uB2E4 \uAE30\uB85D\uBD80\uD130 \uC9C0\uCF1C."
+    IMG_Res: 
+    Next_Chat_ID: 1040530
+    Branch_Group_ID: 0
+  - Chat_ID: 1040530
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC778\uC9C8\uB4E4\uC740 \uC548\uB3C4\uD558\uBA70 \uC740\uD589
+      \uBC16\uC73C\uB85C \uB098\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10413
+  - Chat_ID: 1310010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC740\uD589 \uC810\uB839\uC804\uC5D0\uC11C \uBC00\uB824 \uD1F4\uB85C\uAC00
+      \uC881\uC544\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 13101
+  - Chat_ID: 1310100
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC778\uC9C8\uC740 \uB300\uD53C\uD588\uC9C0\uB9CC \uC9C0\uD558
+      \uCD9C\uAD6C\uAC00 \uB9C9\uD614\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1310110
+    Branch_Group_ID: 0
+  - Chat_ID: 1310110
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC0B4\uC544 \uB098\uAC00\uC57C \uB2E4\uC2DC \uB4E4\uC5B4\uC62C
+      \uC218 \uC788\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1310120
+    Branch_Group_ID: 0
+  - Chat_ID: 1310120
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uACFC \uAC70\uC810\uC744 \uB450\uACE0 \uAC08 \uC218\uB294
+      \uC5C6\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1310130
+    Branch_Group_ID: 0
+  - Chat_ID: 1310130
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC9C0\uAE08\uC740 \uD6C4\uD1F4\uD55C\uB2E4. \uACBD\uBE44 \uBC30\uCE58\uB97C
+      \uAE30\uC5B5\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1310140
+    Branch_Group_ID: 0
+  - Chat_ID: 1310140
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uAC19\uC740 \uC2E4\uC218 \uC548 \uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1310150
+    Branch_Group_ID: 0
+  - Chat_ID: 1310150
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589 \uBC16\uC73C\uB85C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10307
+  - Chat_ID: 1310200
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC815\uBB38 \uD654\uB825\uC5D0 \uBC00\uB824 \uC778\uC9C8\uC744
+      \uC5C4\uD638\uD558\uAE30 \uC5B4\uB824\uC6E0\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1310210
+    Branch_Group_ID: 0
+  - Chat_ID: 1310210
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC0B4\uC544 \uB098\uAC00\uC57C \uB2E4\uC2DC \uB4E4\uC5B4\uC62C
+      \uC218 \uC788\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1310220
+    Branch_Group_ID: 0
+  - Chat_ID: 1310220
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uACFC \uAC70\uC810\uC744 \uB450\uACE0 \uAC08 \uC218\uB294
+      \uC5C6\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1310230
+    Branch_Group_ID: 0
+  - Chat_ID: 1310230
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC9C0\uAE08\uC740 \uD6C4\uD1F4\uD55C\uB2E4. \uACBD\uBE44 \uBC30\uCE58\uB97C
+      \uAE30\uC5B5\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1310240
+    Branch_Group_ID: 0
+  - Chat_ID: 1310240
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uAC19\uC740 \uC2E4\uC218 \uC548 \uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1310250
+    Branch_Group_ID: 0
+  - Chat_ID: 1310250
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589 \uBC16\uC73C\uB85C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10307
+  - Chat_ID: 1310300
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD3ED\uBC1C \uC5F0\uAE30 \uB54C\uBB38\uC5D0 \uC544\uAD70\uC758
+      \uC2DC\uC57C\uB3C4 \uAC00\uB824\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1310310
+    Branch_Group_ID: 0
+  - Chat_ID: 1310310
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC0B4\uC544 \uB098\uAC00\uC57C \uB2E4\uC2DC \uB4E4\uC5B4\uC62C
+      \uC218 \uC788\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1310320
+    Branch_Group_ID: 0
+  - Chat_ID: 1310320
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uACFC \uAC70\uC810\uC744 \uB450\uACE0 \uAC08 \uC218\uB294
+      \uC5C6\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1310330
+    Branch_Group_ID: 0
+  - Chat_ID: 1310330
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC9C0\uAE08\uC740 \uD6C4\uD1F4\uD55C\uB2E4. \uACBD\uBE44 \uBC30\uCE58\uB97C
+      \uAE30\uC5B5\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1310340
+    Branch_Group_ID: 0
+  - Chat_ID: 1310340
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uAC19\uC740 \uC2E4\uC218 \uC548 \uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1310350
+    Branch_Group_ID: 0
+  - Chat_ID: 1310350
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589 \uBC16\uC73C\uB85C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10307
+  - Chat_ID: 1310400
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC608\uC0C1\uD558\uC9C0 \uBABB\uD55C \uACBD\uBE44 \uC99D\uC6D0\uC73C\uB85C
+      \uBC00\uB838\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1310410
+    Branch_Group_ID: 0
+  - Chat_ID: 1310410
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC0B4\uC544 \uB098\uAC00\uC57C \uB2E4\uC2DC \uB4E4\uC5B4\uC62C
+      \uC218 \uC788\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1310420
+    Branch_Group_ID: 0
+  - Chat_ID: 1310420
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uACFC \uAC70\uC810\uC744 \uB450\uACE0 \uAC08 \uC218\uB294
+      \uC5C6\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1310430
+    Branch_Group_ID: 0
+  - Chat_ID: 1310430
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC9C0\uAE08\uC740 \uD6C4\uD1F4\uD55C\uB2E4. \uACBD\uBE44 \uBC30\uCE58\uB97C
+      \uAE30\uC5B5\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1310440
+    Branch_Group_ID: 0
+  - Chat_ID: 1310440
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uAC19\uC740 \uC2E4\uC218 \uC548 \uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1310450
+    Branch_Group_ID: 0
+  - Chat_ID: 1310450
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uC740\uD589 \uBC16\uC73C\uB85C \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 10307
+  - Chat_ID: 1320010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC7AC\uC815\uBE44\uD55C \uC77C\uD589\uC774 \uC911\uC559\uC740\uD589
+      \uC55E\uC5D0 \uB2E4\uC2DC \uBAA8\uC600\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 13201
+  - Chat_ID: 1320100
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uBC18\uB4DC\uC2DC \uC740\uD589\uC744
+      \uB418\uCC3E\uB294\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1320110
+    Branch_Group_ID: 0
+  - Chat_ID: 1320110
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uACBD\uBE44 \uAD50\uB300\uC640 \uD1F4\uB85C \uBAA8\uB450 \uD655\uC778\uD588\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1320120
+    Branch_Group_ID: 0
+  - Chat_ID: 1320120
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC900\uBE44\uB410\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1320130
+    Branch_Group_ID: 0
+  - Chat_ID: 1320130
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uB3C4 \uAF2D \uC9C0\uCF1C\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1320140
+    Branch_Group_ID: 0
+  - Chat_ID: 1320140
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uAC19\uC740 \uACBD\uB85C\uB85C \uB2E4\uC2DC
+      \uC9C4\uC785\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1039000
+    Branch_Group_ID: 13202
+  - Chat_ID: 1320200
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uBC18\uB4DC\uC2DC \uC740\uD589\uC744
+      \uB418\uCC3E\uB294\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1320210
+    Branch_Group_ID: 0
+  - Chat_ID: 1320210
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uACBD\uBE44 \uAD50\uB300\uC640 \uD1F4\uB85C \uBAA8\uB450 \uD655\uC778\uD588\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1320220
+    Branch_Group_ID: 0
+  - Chat_ID: 1320220
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC900\uBE44\uB410\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1320230
+    Branch_Group_ID: 0
+  - Chat_ID: 1320230
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uB3C4 \uAF2D \uC9C0\uCF1C\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1320240
+    Branch_Group_ID: 0
+  - Chat_ID: 1320240
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uAC19\uC740 \uACBD\uB85C\uB85C \uB2E4\uC2DC
+      \uC9C4\uC785\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1039000
+    Branch_Group_ID: 13203
+  - Chat_ID: 1320300
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uBC18\uB4DC\uC2DC \uC740\uD589\uC744
+      \uB418\uCC3E\uB294\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1320310
+    Branch_Group_ID: 0
+  - Chat_ID: 1320310
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uACBD\uBE44 \uAD50\uB300\uC640 \uD1F4\uB85C \uBAA8\uB450 \uD655\uC778\uD588\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1320320
+    Branch_Group_ID: 0
+  - Chat_ID: 1320320
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC900\uBE44\uB410\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1320330
+    Branch_Group_ID: 0
+  - Chat_ID: 1320330
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uB3C4 \uAF2D \uC9C0\uCF1C\uC694."
+    IMG_Res: 
+    Next_Chat_ID: 1320340
+    Branch_Group_ID: 0
+  - Chat_ID: 1320340
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uAC19\uC740 \uACBD\uB85C\uB85C \uB2E4\uC2DC
+      \uC9C4\uC785\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1039000
+    Branch_Group_ID: 13204
+  - Chat_ID: 1320400
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uB294 \uBC18\uB4DC\uC2DC \uB418\uCC3E\uB294\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1320410
+    Branch_Group_ID: 0
+  - Chat_ID: 1320410
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uACBD\uBE44 \uAD50\uB300\uC640 \uD1F4\uB85C \uBAA8\uB450 \uD655\uC778\uD588\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1320420
+    Branch_Group_ID: 0
+  - Chat_ID: 1320420
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D0\uC57C\uB9D0\uB85C \uB2E4 \uB0A0\uB9B4 \uC900\uBE44\uB410\uC5B4."
+    IMG_Res: 
+    Next_Chat_ID: 1320430
+    Branch_Group_ID: 0
+  - Chat_ID: 1320430
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC778\uC9C8\uC740 \uC9C0\uCF1C\uC57C \uD574\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1320440
+    Branch_Group_ID: 0
+  - Chat_ID: 1320440
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uAC19\uC740 \uACBD\uB85C\uB85C \uB2E4\uC2DC \uC9C4\uC785\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1039000
+    Branch_Group_ID: 13205
+  - Chat_ID: 1500010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC740\uD589 \uD1B5\uC2E0\uAE30\uC5D0 \uBE4C\uB7F0 \uC5F0\uD569\uC758
+      \uC5F0\uB77D\uC774 \uC7A1\uD614\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1500020
+    Branch_Group_ID: 0
+  - Chat_ID: 1500020
+    Chat_Type: 0
+    Char_Name: "\uC728\uB9AC\uC544"
+    Char_Profile: 
+    Message_Text: "\uC120\uBC1C\uB300, \uC0C1\uD669\uC744 \uBCF4\uACE0\uD574."
+    IMG_Res: 
+    Next_Chat_ID: 1500030
+    Branch_Group_ID: 0
+  - Chat_ID: 1500030
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC120\uBC1C\uB300\uB294 \uC5C6\uB2E4. \uC740\uD589\uC740 \uC6B0\uB9AC\uAC00
+      \uB418\uCC3E\uC558\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1500040
+    Branch_Group_ID: 0
+  - Chat_ID: 1500040
+    Chat_Type: 0
+    Char_Name: "\uC728\uB9AC\uC544"
+    Char_Profile: 
+    Message_Text: "\uD788\uC5B4\uB85C \uD611\uD68C? \uB108\uD76C \uC790\uD3ED\uD55C
+      \uAC8C \uC544\uB2C8\uC5C8\uC5B4?"
+    IMG_Res: 
+    Next_Chat_ID: 1500050
+    Branch_Group_ID: 0
+  - Chat_ID: 1500050
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uCC38 \uAE38\uACE0 \uAE34 \uC774\uC57C\uAE30\uC9C0."
+    IMG_Res: 
+    Next_Chat_ID: 1500060
+    Branch_Group_ID: 0
+  - Chat_ID: 1500060
+    Chat_Type: 0
+    Char_Name: "\uC728\uB9AC\uC544"
+    Char_Profile: 
+    Message_Text: "\uD765, \uC740\uD589 \uD558\uB098\uB85C \uB3C4\uC2DC\uB97C \uB418\uCC3E\uC558\uB2E4\uACE0
+      \uCC29\uAC01\uD558\uC9C0 \uB9C8."
+    IMG_Res: 
+    Next_Chat_ID: 1500070
+    Branch_Group_ID: 0
+  - Chat_ID: 1500070
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uCC29\uAC01\uC774 \uC544\uB2C8\uB2E4! \uB2E4\uC74C\uC740 \uB124
+      \uCC28\uB840\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1500080
+    Branch_Group_ID: 0
+  - Chat_ID: 1500080
+    Chat_Type: 0
+    Char_Name: "\uC728\uB9AC\uC544"
+    Char_Profile: 
+    Message_Text: "\uD6C4\uD6C4, \uAC00\uC9C4 \uAC83\uB3C4 \uC5C6\uB294 \uC8FC\uC81C\uC5D0
+      \uB2F9\uB2F9\uD558\uAE34."
+    IMG_Res: 
+    Next_Chat_ID: 1500090
+    Branch_Group_ID: 0
+  - Chat_ID: 1500090
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADF8\uAC74 \uB108\uB3C4 \uB9C8\uCC2C\uAC00\uC9C0 \uC544\uB0D0?"
+    IMG_Res: 
+    Next_Chat_ID: 1500100
+    Branch_Group_ID: 0
+  - Chat_ID: 1500100
+    Chat_Type: 0
+    Char_Name: "\uC728\uB9AC\uC544"
+    Char_Profile: 
+    Message_Text: "\uD558?"
+    IMG_Res: 
+    Next_Chat_ID: 1500110
+    Branch_Group_ID: 0
+  - Chat_ID: 1500110
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uD56D\uBCF5\uD55C \uC560\uB4E4\uC774 \uADF8\uB7EC\uB358\uB370
+      \uB108\uB124 \uB204\uC9C4\uC138 \uD3ED\uD0C4 \uB9DE\uC558\uB2E4\uBA70?"
+    IMG_Res: 
+    Next_Chat_ID: 1500120
+    Branch_Group_ID: 0
+  - Chat_ID: 1500120
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADF8\uAC83 \uB54C\uBB38\uC5D0 \uBD80\uB3C4\uB0A0 \uC704\uAE30\uB77C\uACE0."
+    IMG_Res: 
+    Next_Chat_ID: 1500130
+    Branch_Group_ID: 0
+  - Chat_ID: 1500130
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC138\uAE08\uB0B4\uB294 \uBE4C\uB7F0\uC774\uB77C\uB2C8, \uADC0\uD558\uB124\uC694\u2026!"
+    IMG_Res: 
+    Next_Chat_ID: 1500140
+    Branch_Group_ID: 0
+  - Chat_ID: 1500140
+    Chat_Type: 0
+    Char_Name: "\uC728\uB9AC\uC544"
+    Char_Profile: 
+    Message_Text: "\uD558\uC544?!! \uC138\uAE08\uC744 \uB0B4\uB294 \uAC74 \uAE30\uBCF8
+      \uC0C1\uC2DD \uC544\uB2C8\uC57C?!"
+    IMG_Res: 
+    Next_Chat_ID: 1500150
+    Branch_Group_ID: 0
+  - Chat_ID: 1500150
+    Chat_Type: 0
+    Char_Name: "\uC728\uB9AC\uC544"
+    Char_Profile: 
+    Message_Text: "\uC548 \uB0B4\uBA74 \uAD6D\uC138\uCCAD\uC774 \uCCD0\uB4E4\uC5B4\uC624\uB294\uB370!"
+    IMG_Res: 
+    Next_Chat_ID: 1500160
+    Branch_Group_ID: 0
+  - Chat_ID: 1500160
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uBB50\uB77C\uB294 \uAC70\uC57C? \uC6B0\uB9AC\uBCF4\uB2E4 \uAD6D\uC138\uCCAD\uC774
+      \uBB34\uC11C\uC6CC?"
+    IMG_Res: 
+    Next_Chat_ID: 1500170
+    Branch_Group_ID: 0
+  - Chat_ID: 1500170
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uC138\uAE08\uC744 \uBC1B\uC73C\uB7EC \uC624\uB294 \uAD6D\uC138\uCCAD\uC740
+      \uBB34\uC12D\uB2E4\uAD6C? \uC9C0\uAD6C \uB05D\uAE4C\uC9C0 \uCAD3\uC544\uC628\uB2E4\uAD6C?"
+    IMG_Res: 
+    Next_Chat_ID: 1500180
+    Branch_Group_ID: 0
+  - Chat_ID: 1500180
+    Chat_Type: 0
+    Char_Name: "\uC728\uB9AC\uC544"
+    Char_Profile: 
+    Message_Text: "\uC6B0\uB9AC \uD68C\uC0AC\uAC00 \uD798\uB4E4\uB4E0 \uB9D0\uB4E0
+      \uBB34\uC2A8 \uC0C1\uAD00\uC774\uC57C?! \uC794\uB9D0 \uB9D0\uACE0 \uCCD0\uB4E4\uC5B4
+      \uC624\uB358\uAC00!"
+    IMG_Res: 
+    Next_Chat_ID: 1500190
+    Branch_Group_ID: 0
+  - Chat_ID: 1500190
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uD1B5\uC2E0\uC774 \uAC70\uCE60\uAC8C \uB04A\uACBC\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1500200
+    Branch_Group_ID: 0
+  - Chat_ID: 1500200
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBE4C\uB7F0 \uC5F0\uD569 \uBCF8\uBD80\uB85C \uAC00\uB294 \uAE38\uC774
+      \uC5F4\uB838\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 0
+  - Chat_ID: 1510010
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "UMT \uB2E8\uC7A5 \uC544\uB180\uB4DC. \uAD6C\uC5ED \uC9C4\uC785\uC744
+      \uBCF4\uACE0\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1510020
+    Branch_Group_ID: 0
+  - Chat_ID: 1510020
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uB204\uAD6C\u2026?"
+    IMG_Res: 
+    Next_Chat_ID: 1510030
+    Branch_Group_ID: 0
+  - Chat_ID: 1510030
+    Chat_Type: 0
+    Char_Name: "\uC728\uB9AC\uC544"
+    Char_Profile: 
+    Message_Text: "\uC88B\uC544. \uC544\uB180\uB4DC! \uC5B4\uC11C \uADF8 \uB9DD\uD560
+      \uB188\uB4E4\uC744 \uB0A0\uB824\uBC84\uB824!"
+    IMG_Res: 
+    Next_Chat_ID: 1510040
+    Branch_Group_ID: 0
+  - Chat_ID: 1510040
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC218\uC2E0 \uC644\uB8CC. \uC545\uC744 \uC9D1\uD589\uD55C\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1510050
+    Branch_Group_ID: 0
+  - Chat_ID: 1510050
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC7A0\uC2DC\uD6C4 \uD3ED\uBC1C\uC801\uC778 \uAD49\uC74C\uC774
+      \uBC18\uBCF5\uC801\uC73C\uB85C \uC6B8\uB9AC\uBA70 \uC810\uC810 \uCEE4\uC838\uC628\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1510060
+    Branch_Group_ID: 0
+  - Chat_ID: 1510060
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC5B4"
+    IMG_Res: 
+    Next_Chat_ID: 1510070
+    Branch_Group_ID: 0
+  - Chat_ID: 1510070
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC124\uB9C8, \uC774\uAC8C \uB2EC\uB9AC\uB294 \uC18C\uB9AC\u2026?"
+    IMG_Res: 
+    Next_Chat_ID: 1510080
+    Branch_Group_ID: 0
+  - Chat_ID: 1510080
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC800\uB188\uC774 \uC6B0\uB9AC\uD55C\uD14C \uC628\uB2E4! \uC5B4\uC11C
+      \uB9C9\uC544!"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 0
+  - Chat_ID: 1520010
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB545\uC744 \uBD80\uC218\uBA70 \uB2EC\uB824\uC624\uB294 \uAC70\uD55C\uACFC
+      \uB9C8\uC8FC\uCCE4\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 15201
+  - Chat_ID: 1520100
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB108\uD76C\uAC00 \uC740\uD589\uACFC \uD568\uAED8 \uC778\uC9C8\uAE4C\uC9C0
+      \uB9D0\uC544\uBA39\uC740 \uD788\uC5B4\uB85C\uB4E4\uC778\uAC00?"
+    IMG_Res: 
+    Next_Chat_ID: 1520110
+    Branch_Group_ID: 0
+  - Chat_ID: 1520110
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADF8\uB7F0 \uC18C\uB9AC\uB294 \uD558\uC9C0 \uB9D0\uC544\uC8FC\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1520120
+    Branch_Group_ID: 0
+  - Chat_ID: 1520120
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB0B4 \uC774\uB984\uC740 \uC544\uB180\uB4DC. \uBE4C\uB7F0 \uC5F0\uD569\uC758
+      \uC218\uC88C \uC720\uB9AC\uC544\uB2D8\uC758 \uCE5C\uC704\uB2E8\uC7A5."
+    IMG_Res: 
+    Next_Chat_ID: 1520130
+    Branch_Group_ID: 0
+  - Chat_ID: 1520130
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC545\uC740 \uC545\uC73C\uB85C \uC9D5\uBC8C\uD558\uB294 \uBC95.
+      \uB364\uBCBC\uB77C."
+    IMG_Res: 
+    Next_Chat_ID: 1520140
+    Branch_Group_ID: 0
+  - Chat_ID: 1520140
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(UMT\uC640 \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1520900
+    Branch_Group_ID: 15202
+  - Chat_ID: 1520200
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC804\uC124\uC758 \uB098\uB77D\uC774 \uD788\uC5B4\uB85C\uB85C
+      \uC804\uD5A5\uD558\uB2E4\uB2C8?"
+    IMG_Res: 
+    Next_Chat_ID: 1520210
+    Branch_Group_ID: 0
+  - Chat_ID: 1520210
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC9C4\uC815\uD55C \uD63C\uB3C8\uC740 \uC120\uC545\uC744 \uAD6C\uBD84
+      \uC548 \uD55C\uB2E4\uB294 \uAC74\uAC00?"
+    IMG_Res: 
+    Next_Chat_ID: 1520220
+    Branch_Group_ID: 0
+  - Chat_ID: 1520220
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB610 \uADF8\uB534 \uC18C\uB9AC \uC785\uC73C\uB85C \uC9C0\uAEC4\uC5EC
+      \uBD10!"
+    IMG_Res: 
+    Next_Chat_ID: 1520230
+    Branch_Group_ID: 0
+  - Chat_ID: 1520230
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB0B4 \uC774\uB984\uC740 \uC544\uB180\uB4DC. \uBE4C\uB7F0 \uC5F0\uD569\uC758
+      \uC218\uC88C \uC720\uB9AC\uC544\uB2D8\uC758 \uCE5C\uC704\uB2E8\uC7A5."
+    IMG_Res: 
+    Next_Chat_ID: 1520240
+    Branch_Group_ID: 0
+  - Chat_ID: 1520240
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC61B \uC804\uC124\uC5D0\uAC8C \uAC00\uB974\uCE68\uC744 \uCCAD\uD55C\uB2E4!
+      \uB364\uBCBC\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1520241
+    Branch_Group_ID: 0
+  - Chat_ID: 1520241
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC8FD\uC778\uB2E4!!!"
+    IMG_Res: 
+    Next_Chat_ID: 1520250
+    Branch_Group_ID: 0
+  - Chat_ID: 1520250
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(UMT\uC640 \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1520900
+    Branch_Group_ID: 15202
+  - Chat_ID: 1520300
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC18C\uBB38\uC758 \uD558\uC580\uC7AC\uC559\uACFC \uB9C8\uC8FC\uD558\uAC8C
+      \uB420 \uC904\uC774\uC57C."
+    IMG_Res: 
+    Next_Chat_ID: 1520310
+    Branch_Group_ID: 0
+  - Chat_ID: 1520310
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uD788\uC5B4\uB85C \uD611\uD68C\uB3C4 \uAC08 \uB54C\uAE4C\uC9C0
+      \uAC14\uB098."
+    IMG_Res: 
+    Next_Chat_ID: 1520320
+    Branch_Group_ID: 0
+  - Chat_ID: 1520320
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uB300\uCCB4 \uADF8\uB7F0 \uC18C\uBB38\uC740 \uC5B4\uB514\uC5D0\uC11C
+      \uD37C\uC9C0\uB294 \uAC70\uC5D0\uC694?!"
+    IMG_Res: 
+    Next_Chat_ID: 1520330
+    Branch_Group_ID: 0
+  - Chat_ID: 1520330
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uADFC\uBCF8\uC740\u2026\uB108\uC9C0\u2026"
+    IMG_Res: 
+    Next_Chat_ID: 1520340
+    Branch_Group_ID: 0
+  - Chat_ID: 1520340
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC545\uC740 \uC545\uC73C\uB85C \uC9D5\uBC8C\uD558\uB294 \uBC95.
+      \uB364\uBCBC\uB77C."
+    IMG_Res: 
+    Next_Chat_ID: 1520350
+    Branch_Group_ID: 0
+  - Chat_ID: 1520350
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(UMT\uC640 \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1520900
+    Branch_Group_ID: 15202
+  - Chat_ID: 1520400
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB108\uD76C\uAC00 \uC608\uC758 \uD788\uC5B4\uB85C\uB4E4\uC774\uAD70.
+      \uD788\uC5B4\uB85C \uB300\uC811 \uC548 \uD574\uC92C\uB2E4\uACE0 \uD611\uD68C\uB97C
+      \uD130\uB728\uB838\uB2E4\uB358."
+    IMG_Res: 
+    Next_Chat_ID: 1520410
+    Branch_Group_ID: 0
+  - Chat_ID: 1520410
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uD6C8\uB828\uC774\uC5C8\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1520420
+    Branch_Group_ID: 0
+  - Chat_ID: 1520420
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC0C1\uAD00 \uC5C6\uC9C0. \uB0B4 \uC774\uB984\uC740 \uC544\uB180\uB4DC.
+      \uBE4C\uB7F0 \uC5F0\uD569\uC758 \uC218\uC88C \uC720\uB9AC\uC544\uB2D8\uC758
+      \uCE5C\uC704\uB2E8\uC7A5."
+    IMG_Res: 
+    Next_Chat_ID: 1520430
+    Branch_Group_ID: 0
+  - Chat_ID: 1520430
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB364\uBCBC\uB77C."
+    IMG_Res: 
+    Next_Chat_ID: 1520440
+    Branch_Group_ID: 0
+  - Chat_ID: 1520440
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(UMT\uC640 \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1520900
+    Branch_Group_ID: 15202
+  - Chat_ID: 1520500
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB610 \uD328\uBC30\uD558\uB7EC \uB3CC\uC544\uC654\uB098?"
+    IMG_Res: 
+    Next_Chat_ID: 1520510
+    Branch_Group_ID: 0
+  - Chat_ID: 1520510
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uAC19\uC740 \uB18D\uB2F4\uC740 \uB450 \uBC88 \uC548 \uC6C3\uC5B4\uC918."
+    IMG_Res: 
+    Next_Chat_ID: 1520520
+    Branch_Group_ID: 0
+  - Chat_ID: 1520520
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "UMT\uC758 \uC9C4\uACA9\uC740 \uC5EC\uAE30\uC11C \uB9C9\uB294\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1520530
+    Branch_Group_ID: 0
+  - Chat_ID: 1520530
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uADF8 \uC2E0\uB150\uC9F8 \uBD80\uC234\uC8FC\uB9C8!"
+    IMG_Res: 
+    Next_Chat_ID: 1520540
+    Branch_Group_ID: 0
+  - Chat_ID: 1520540
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(UMT\uC640 \uC804\uD22C\uC5D0 \uB4E4\uC5B4\uAC14\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1520900
+    Branch_Group_ID: 15202
+  - Chat_ID: 1520900
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC804\uD22C \uC885\uB8CC"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 15203
+  - Chat_ID: 1530020
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC544\uB180\uB4DC\uAC00 \uD55C\uCABD \uBB34\uB98E\uC744 \uAFC7\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1530030
+    Branch_Group_ID: 0
+  - Chat_ID: 1530030
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uD06C\uC73D, \uC544\uC9C1 \uADFC\uC721 \uB2E8\uB828\uC774 \uBD80\uC871\uD588\uB098."
+    IMG_Res: 
+    Next_Chat_ID: 1530040
+    Branch_Group_ID: 0
+  - Chat_ID: 1530040
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uBB50 \uC774\uB7F0 \uC778\uAC04\uC774 \uB2E4 \uC788\uC5B4!"
+    IMG_Res: 
+    Next_Chat_ID: 1530050
+    Branch_Group_ID: 0
+  - Chat_ID: 1530050
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC2DC\uB294 \uC624\uC9C0 \uB9C8\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1530060
+    Branch_Group_ID: 0
+  - Chat_ID: 1530060
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB098\uB294 \uB2E4\uC2DC \uB3CC\uC544\uC628\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1530070
+    Branch_Group_ID: 0
+  - Chat_ID: 1530070
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC544\uB180\uB4DC\uAC00 \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1530080
+    Branch_Group_ID: 15206
+  - Chat_ID: 1530120
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC544\uB180\uB4DC\uAC00 \uD55C\uCABD \uBB34\uB98E\uC744 \uAFC7\uC5C8\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1530130
+    Branch_Group_ID: 0
+  - Chat_ID: 1530130
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC774\uAC83\uC774 \uC5ED\uC2DC \uB098\uB77D\uC758 \uD798\uC778\uAC00!"
+    IMG_Res: 
+    Next_Chat_ID: 1530140
+    Branch_Group_ID: 0
+  - Chat_ID: 1530140
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB8E8\uBBF8\uB098! \uB9C8\uBC95\uC18C\uB140 \uB8E8\uBBF8\uB098\uB77C\uB2C8\uAE4C!
+      \uB8E8\uBBF8\uB098\uB77C\uACE0 \uBD88\uB7EC!"
+    IMG_Res: 
+    Next_Chat_ID: 1530150
+    Branch_Group_ID: 0
+  - Chat_ID: 1530150
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uC774\uAC83\uC73C\uB85C \uB05D\uC774\uB77C \uC0DD\uAC01\uD558\uC9C0
+      \uB9C8\uB77C, \uB098\uB77D!"
+    IMG_Res: 
+    Next_Chat_ID: 1530160
+    Branch_Group_ID: 0
+  - Chat_ID: 1530160
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uB8E8! \uBBF8! \uB098!!!!!!"
+    IMG_Res: 
+    Next_Chat_ID: 1530170
+    Branch_Group_ID: 0
+  - Chat_ID: 1530170
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\u2026\uBCF5\uADC0\uD558\uC790."
+    IMG_Res: 
+    Next_Chat_ID: 1530180
+    Branch_Group_ID: 0
+  - Chat_ID: 1530180
+    Chat_Type: 0
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC544\uB180\uB4DC\uAC00 \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 15204
+  - Chat_ID: 1530270
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC544\uB180\uB4DC\uC758 \uBC1C\uBC11 \uB3C4\uB85C\uAC00 \uAC11\uC790\uAE30
+      \uBB34\uB108\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1530280
+    Branch_Group_ID: 0
+  - Chat_ID: 1530280
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uD558\uC580 \uC7AC\uC559\uC758 \uD798\uC740 \uC774\uC815\uB3C4\uC778\uAC00\u2026!"
+    IMG_Res: 
+    Next_Chat_ID: 1530290
+    Branch_Group_ID: 0
+  - Chat_ID: 1530290
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC544\uB2C8\uB77C\uB2C8\uAE4C\uC694!"
+    IMG_Res: 
+    Next_Chat_ID: 1530300
+    Branch_Group_ID: 0
+  - Chat_ID: 1530300
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC74C\uC5D4 \uB300\uBE44\uD574\uC11C \uC624\uACA0\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1530310
+    Branch_Group_ID: 0
+  - Chat_ID: 1530310
+    Chat_Type: 0
+    Char_Name: "\uB124\uCF54\uBC0D"
+    Char_Profile: 
+    Message_Text: "\uC804 \uC544\uBB34\uAC83\uB3C4 \uC548 \uD588\uC5B4\uC694! \uC5EC\uB7EC\uBD84\uC740
+      \uBBFF\uC5B4\uC8FC\uC2DC\uC8E0?!"
+    IMG_Res: 
+    Next_Chat_ID: 1530320
+    Branch_Group_ID: 0
+  - Chat_ID: 1530320
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uBAA8\uB450\uAC00 \uC2DC\uC120\uC744 \uD68C\uD53C\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1530330
+    Branch_Group_ID: 0
+  - Chat_ID: 1530330
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC544\uB180\uB4DC\uAC00 \uCCA0\uC218\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 15205
+  - Chat_ID: 1530620
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC544\uB180\uB4DC\uC758 \uB3CC\uC9C4\uC5D0 \uD788\uC5B4\uB85C\uB4E4\uC774
+      \uC4F0\uB7EC\uC84C\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1530630
+    Branch_Group_ID: 0
+  - Chat_ID: 1530630
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uD765, \uD788\uC5B4\uB85C\uB294 \uACA8\uC6B0 \uC774\uC815\uB3C4\uB0D0."
+    IMG_Res: 
+    Next_Chat_ID: 1530640
+    Branch_Group_ID: 0
+  - Chat_ID: 1530640
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uB4DC\uB860\uC73C\uB85C UMT\uC758 \uC2DC\uC57C\uB97C \uB9C9\uC558\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1530650
+    Branch_Group_ID: 0
+  - Chat_ID: 1530650
+    Chat_Type: 0
+    Char_Name: "\uBE14\uB799\uBD88\uB9BF"
+    Char_Profile: 
+    Message_Text: "\uB610 \uC5F0\uB9C9 \uC2E0\uC138\uB124."
+    IMG_Res: 
+    Next_Chat_ID: 1530660
+    Branch_Group_ID: 0
+  - Chat_ID: 1530660
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uC774\uB300\uB85C \uB05D\uB098\uB9AC\uB77C \uC0DD\uAC01\uD558\uC9C0
+      \uB9C8\uB77C!"
+    IMG_Res: 
+    Next_Chat_ID: 1530670
+    Branch_Group_ID: 0
+  - Chat_ID: 1530670
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uAC70\uAE30 \uC788\uC5C8\uAD6C\uB098!"
+    IMG_Res: 
+    Next_Chat_ID: 1530680
+    Branch_Group_ID: 0
+  - Chat_ID: 1530680
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC57C! \uB2E4\uC2DC \uC5EC\uAE30\uB85C \uC624\uC796\uC544!"
+    IMG_Res: 
+    Next_Chat_ID: 1530690
+    Branch_Group_ID: 0
+  - Chat_ID: 1530690
+    Chat_Type: 2
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(\uC6B0\uB9AC\uB294 \uD611\uD68C\uB85C \uBCF5\uADC0\uD574 \uC7AC\uC804\uD22C\uB97C
+      \uC900\uBE44\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 15207
+  - Chat_ID: 1530710
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB2E4\uC2DC \uB098\uD0C0\uB0AC\uAD70. \uC774\uBC88\uC5D0\uC57C\uB9D0\uB85C
+      \uB05D\uB098\uC8FC\uB9C8."
+    IMG_Res: 
+    Next_Chat_ID: 1530720
+    Branch_Group_ID: 0
+  - Chat_ID: 1530720
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uADF8 \uB9D0\uC740 \uC6B0\uB9AC\uAC00 \uD560 \uB9D0\uC774\uB2E4!"
+    IMG_Res: 
+    Next_Chat_ID: 1530730
+    Branch_Group_ID: 0
+  - Chat_ID: 1530730
+    Chat_Type: 0
+    Char_Name: "\uB8E8\uBBF8\uB098"
+    Char_Profile: 
+    Message_Text: "\uC774\uBC88\uC5D4 \uC548 \uB193\uCCD0."
+    IMG_Res: 
+    Next_Chat_ID: 1530740
+    Branch_Group_ID: 0
+  - Chat_ID: 1530740
+    Chat_Type: 0
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "(UMT\uC640 \uB2E4\uC2DC \uACA9\uB3CC\uD588\uB2E4.)"
+    IMG_Res: 
+    Next_Chat_ID: 1520900
+    Branch_Group_ID: 15202
+  - Chat_ID: 1560010
+    Chat_Type: 0
+    Char_Name: "\uC544\uB180\uB4DC"
+    Char_Profile: 
+    Message_Text: "\uB610 \uC654\uB2E4."
+    IMG_Res: 
+    Next_Chat_ID: 1560020
+    Branch_Group_ID: 0
+  - Chat_ID: 1560020
+    Chat_Type: 1
+    Char_Name: 
+    Char_Profile: 
+    Message_Text: "\uC774 \uC790\uC2DD \uC9C4\uC9DC\uB85C \uB610 \uC654\uB124! \uB9C9\uC544!"
+    IMG_Res: 
+    Next_Chat_ID: 1560030
+    Branch_Group_ID: 0
+  - Chat_ID: 1560030
+    Chat_Type: 0
+    Char_Name: "\uC800\uC2A4\uD2F0\uC2A4"
+    Char_Profile: 
+    Message_Text: "\uBA87 \uBC88\uC774\uB4E0 \uB9C9\uC544\uC8FC\uB9C8!"
+    IMG_Res: 
+    Next_Chat_ID: 0
+    Branch_Group_ID: 0
