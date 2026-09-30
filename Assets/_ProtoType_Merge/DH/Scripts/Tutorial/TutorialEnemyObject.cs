@@ -106,6 +106,7 @@ public sealed class TutorialEnemyObject : MonoBehaviour, IGridEnemyObject
 
         results.Clear();
         Vector2Int currentGrid = GetCurrentGrid();
+        results.Add(currentGrid);
         for (int i = 0; i < AdjacentOffsets.Length; i++)
             results.Add(currentGrid + AdjacentOffsets[i]);
     }

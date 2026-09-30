@@ -6,6 +6,22 @@ using UnityEngine;
 /// </summary>
 public static class SkillUnlockResolver
 {
+    /// <summary>전투와 동일한 클래스 스킬 표의 습득 레벨로 신규·강화를 한 건씩 반환합니다.</summary>
+    public static List<int> GetUnlockCandidates(int classIndex, int oldLevel, int newLevel)
+    {
+        var result = new List<int>();
+        if (newLevel <= oldLevel || DHCsvTemplateCatalog.Instance == null) return result;
+        var skills = DHCsvTemplateCatalog.Instance.GetSkillsByClassIndex(classIndex);
+        if (skills == null) return result;
+        skills = new List<SkillData>(skills);
+        skills.Sort((a, b) => a == null ? (b == null ? 0 : 1) : b == null ? -1 :
+            a.acquireLevel != b.acquireLevel ? a.acquireLevel.CompareTo(b.acquireLevel) : a.skillIndex.CompareTo(b.skillIndex));
+        foreach (var skill in skills)
+            if (skill != null && skill.acquireLevel > oldLevel && skill.acquireLevel <= newLevel && !result.Contains(skill.skillIndex))
+                result.Add(skill.skillIndex);
+        return result;
+    }
+
     /// <summary>
     /// oldLevel → newLevel 구간에서 선택 가능한 스킬 후보 skillIndex 목록을 반환합니다.
     /// LevelUpData.skill == true 인 레벨이 구간에 없으면 빈 목록을 반환합니다.

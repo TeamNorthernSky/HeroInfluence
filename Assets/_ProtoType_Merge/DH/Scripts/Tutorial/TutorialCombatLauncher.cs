@@ -52,6 +52,9 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         if (launchers != null && launchers.Length > 0)
             return launchers[0];
 
+        if (!Application.isPlaying)
+            return null;
+
         GameObject root = new GameObject("[TutorialCombatLauncher]");
         launcher = root.AddComponent<TutorialCombatLauncher>();
         launcher.tutorialBattleSceneName = DefaultBattleSceneName;

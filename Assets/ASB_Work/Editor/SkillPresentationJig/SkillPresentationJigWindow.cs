@@ -326,13 +326,10 @@ namespace ASB.Work.EditorTools.Jig
                 if (!eff) JigCuePreview.OnEffectToggledOff();
             }
 
-            JigCuePreview.SoundRegistry = (SoundRegistry)EditorGUILayout.ObjectField(
-                "Sound Registry", JigCuePreview.SoundRegistry, typeof(SoundRegistry), false);
             JigCuePreview.EffectRegistry = (EffectRegistry)EditorGUILayout.ObjectField(
                 "Effect Registry", JigCuePreview.EffectRegistry, typeof(EffectRegistry), false);
 
-            if ((JigCuePreview.SoundEnabled && JigCuePreview.SoundRegistry == null)
-                || (JigCuePreview.EffectEnabled && JigCuePreview.EffectRegistry == null))
+            if (JigCuePreview.EffectEnabled && JigCuePreview.EffectRegistry == null)
             {
                 EditorGUILayout.HelpBox(
                     "레지스트리 자산을 지정하세요(프로젝트에 정확히 1개면 자동 선택됩니다).",

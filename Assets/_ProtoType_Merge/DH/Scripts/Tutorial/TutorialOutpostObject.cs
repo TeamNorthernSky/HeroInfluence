@@ -68,7 +68,8 @@ public sealed class TutorialOutpostObject : MonoBehaviour
     private void OnValidate()
     {
         enemyLevel = Mathf.Max(1, enemyLevel);
-        ResolveReferences();
+        if (buildingObject == null)
+            buildingObject = GetComponent<TutorialBuildingObject>();
     }
 
     public void SetClaimState(TutorialOutpostClaimState nextState, bool persist)

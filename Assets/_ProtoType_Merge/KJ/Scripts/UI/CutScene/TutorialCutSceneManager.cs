@@ -7,6 +7,15 @@ using UnityEngine.EventSystems;
 
 public class TutorialCutSceneManager : MonoBehaviour
 {
+    public enum CutScene
+    {
+        None,
+        Opening,
+        Ending
+    }
+
+    public CutScene currentCutSceneState = CutScene.None;
+
     public List<GameObject> CutScenes;
     [SerializeField] private GameObject skipPopup;
     private readonly List<RaycastResult> pointerHits = new List<RaycastResult>();
@@ -47,7 +56,21 @@ public class TutorialCutSceneManager : MonoBehaviour
                 GoNextCutScene();
                 return;
             }
-            GoTutorialExploreScene();
+
+            switch (currentCutSceneState)
+            {
+                case CutScene.Opening:
+                    GoTutorialExploreScene();
+                    break;
+
+                case CutScene.Ending:
+                    AfterEndCutScene();
+                    break;
+
+                default:
+                    Debug.Log($"currentCutSceneState가 {currentCutSceneState.ToString()} 입니다!");
+                    break;
+            }
         }
     }
 
@@ -85,7 +108,22 @@ public class TutorialCutSceneManager : MonoBehaviour
     {
         if (skipPopup == null || !skipPopup.activeSelf) return;
         CloseSkipPopup();
-        GoTutorialExploreScene();
+
+        switch (currentCutSceneState)
+        {
+            case CutScene.Opening:
+                GoTutorialExploreScene();
+                break;
+
+            case CutScene.Ending:
+                AfterEndCutScene();
+                break;
+            
+            default:
+                Debug.Log($"currentCutSceneState가 {currentCutSceneState.ToString()} 입니다!");
+                break;
+        }
+
     }
 
     void GoNextCutScene()
@@ -96,7 +134,7 @@ public class TutorialCutSceneManager : MonoBehaviour
         currentImage.gameObject.SetActive(true);
     }
     
-    public void GoTutorialExploreScene()
+    private void GoTutorialExploreScene()
     {
         SceneManager.LoadScene("TutorialExploreScene");
     }
@@ -108,5 +146,10 @@ public class TutorialCutSceneManager : MonoBehaviour
         --currentIndex;
         currentImage = CutScenes[currentIndex];
 
+    }
+
+    private void AfterEndCutScene()
+    {
+        return;
     }
 }

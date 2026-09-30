@@ -357,8 +357,8 @@ public class LabModalController : MonoBehaviour
         if (gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) + 1 != selStageLevel) return;
         if (!gm.Lab.GetNextUpgradeCost(selectedUnitIndex, skill.NumericSkillId, out int money, out int chip)) return;
         if (!gm.Economy.Has(ResourceType.Money, money) || !gm.Economy.Has(ResourceType.Chip, chip)) return;
-        if (!gm.Economy.Spend(ResourceType.Money, money)) return;
-        if (!gm.Economy.Spend(ResourceType.Chip, chip)) { gm.Economy.Add(ResourceType.Money, money); return; }
+        if (money > 0 && !gm.Economy.Spend(ResourceType.Money, money)) return;
+        if (chip > 0 && !gm.Economy.Spend(ResourceType.Chip, chip)) { gm.Economy.Add(ResourceType.Money, money); return; }
         if (!gm.Lab.TryUpgradeSkill(selectedUnitIndex, skill.NumericSkillId))
         {
             gm.Economy.Add(ResourceType.Money, money);

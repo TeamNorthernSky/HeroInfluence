@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2ad9b15b8f9493c8f2e0f4fdb96a3d1, type: 3}
   m_Name: WorldEventNpcPrefabCatalog
   m_EditorClassIdentifier: 
+  worldEventBasePrefab: {fileID: 4480877344590340288, guid: be9a181c1139958489f56c0197d88e50,
+    type: 3}
   npcPrefabs:
   - npcType: 0
-    prefab: {fileID: 0}
+    prefab: {fileID: 919132149155446097, guid: 24af56a6c1456b742908d17cb2816da4, type: 3}
   - npcType: 1
-    prefab: {fileID: 0}
+    prefab: {fileID: 919132149155446097, guid: aa66c94280b59c141aa43a63241d18bc, type: 3}
   - npcType: 2
-    prefab: {fileID: 0}
+    prefab: {fileID: 919132149155446097, guid: 6b787c1501c1efe418ca2f3d4d2a902e, type: 3}
   - npcType: 3
-    prefab: {fileID: 0}
+    prefab: {fileID: 919132149155446097, guid: 3695195f6a433e04c90d722fcb428dbf, type: 3}

@@ -8,6 +8,9 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
 {
+    [SerializeField] private Sprite influenceIcon;
+    [SerializeField] private Sprite healthIcon;
+    [SerializeField] private Sprite attackIcon;
     private static readonly Color Blue = new Color32(0, 55, 155, 255);
     private static readonly Color Red = new Color32(175, 0, 0, 255);
     private GameObject rewardPanel;
@@ -63,13 +66,13 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
         FitText(rewardProceedText, 18);
         rewardRows.Add(new PreviewRow(null,
             Find<Image>(rewardPanel.transform, "RewardIcon"),
-            Find<TMP_Text>(rewardPanel.transform, "RewardAmountText")));
+            Find<TMP_Text>(rewardPanel.transform, "RewardAmountText"), IconFor));
         choiceTitle = Find<TMP_Text>(choicePanel.transform, "world_event_name", "ChoiceEventTitle");
         choiceMessage = Find<TMP_Text>(choicePanel.transform, "world_event_description", "MessageText");
         FitText(choiceTitle, 24);
         FitText(choiceMessage, 22);
-        cards.Add(new ChoiceCard(Find<Button>(choicePanel.transform, "ChoiceLeftButton")));
-        cards.Add(new ChoiceCard(Find<Button>(choicePanel.transform, "ChoiceRightButton")));
+        cards.Add(new ChoiceCard(Find<Button>(choicePanel.transform, "ChoiceLeftButton"), IconFor));
+        cards.Add(new ChoiceCard(Find<Button>(choicePanel.transform, "ChoiceRightButton"), IconFor));
         choiceCancel = Find<Button>(choicePanel.transform, "ChoiceCancelButton");
         cancelText = choiceCancel.GetComponentInChildren<TMP_Text>(true);
     }
@@ -240,12 +243,12 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
         text.overflowMode = TextOverflowModes.Ellipsis;
     }
 
-    private static Sprite IconFor(DHWorldEventPreviewEntry entry)
+    private Sprite IconFor(DHWorldEventPreviewEntry entry)
     {
         if (entry.Group == DHWorldEventPreviewGroup.Reward &&
             DHWorldEventCodeMap.TryGetRewardType(entry.TypeCode, out DHWorldEventRewardType reward))
         {
-            if (reward == DHWorldEventRewardType.CurrentIP) return Sprites.UI.Status(UIStatusIconType.IP);
+            if (reward == DHWorldEventRewardType.CurrentIP) return influenceIcon;
             if (DHWorldEventCodeMap.TryGetRewardResourceType(reward, out ResourceType resource)) return Sprites.UI.Resource(resource);
         }
         // 선택 결과의 TypeCode는 자원/스탯이 겹친다. PreviewBuilder가 제공하는 enum 이름으로 구분한다.
@@ -255,9 +258,9 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
             case "Chip": return Sprites.UI.Resource(ResourceType.Chip);
             case "Crystal": return Sprites.UI.Resource(ResourceType.Crystal);
             case "Supply": return Sprites.UI.Resource(ResourceType.Supply);
-            case "CurrentIP": case "MaxIP": return Sprites.UI.Status(UIStatusIconType.IP);
-            case "CurrentHP": case "MaxHP": return Sprites.UI.Status(UIStatusIconType.HP);
-            case "Atk": return Sprites.UI.Status(UIStatusIconType.ATK);
+            case "CurrentIP": case "MaxIP": return influenceIcon;
+            case "CurrentHP": case "MaxHP": return healthIcon;
+            case "Atk": return attackIcon;
             default: return null;
         }
     }
@@ -267,8 +270,10 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
         public readonly TMP_Text Label, Amount;
         public readonly Image Icon;
         public readonly Vector2 IconOrigin, AmountOrigin;
-        public PreviewRow(TMP_Text label, Image icon, TMP_Text amount)
+        private readonly Func<DHWorldEventPreviewEntry, Sprite> resolveIcon;
+        public PreviewRow(TMP_Text label, Image icon, TMP_Text amount, Func<DHWorldEventPreviewEntry, Sprite> resolveIcon)
         {
+            this.resolveIcon = resolveIcon;
             Label = label; Icon = icon; Amount = amount;
             IconOrigin = icon.rectTransform.anchoredPosition;
             AmountOrigin = amount.rectTransform.anchoredPosition;
@@ -280,13 +285,13 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
             TMP_Text amount = Instantiate(Amount, Amount.transform.parent);
             if (label != null) label.name = suffix + "Label";
             icon.name = suffix + "Icon"; amount.name = suffix + "Amount";
-            return new PreviewRow(label, icon, amount);
+            return new PreviewRow(label, icon, amount, resolveIcon);
         }
         public void Show(DHWorldEventPreviewEntry entry)
         {
             Icon.gameObject.SetActive(true); Amount.gameObject.SetActive(true);
             if (Label != null) Label.gameObject.SetActive(true);
-            Icon.sprite = IconFor(entry); Icon.enabled = Icon.sprite != null;
+            Icon.sprite = resolveIcon(entry); Icon.enabled = Icon.sprite != null;
             Icon.preserveAspect = true;
             Amount.text = Icon.sprite != null ? entry.Amount.ToString() : entry.Label + " " + entry.Amount;
             Amount.color = entry.Amount < 0 ? Red : Blue;
@@ -304,7 +309,7 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
         public string ChoiceId;
         private readonly TMP_Text title, chance, bonus;
         private readonly List<PreviewRow> rows = new List<PreviewRow>();
-        public ChoiceCard(Button button)
+        public ChoiceCard(Button button, Func<DHWorldEventPreviewEntry, Sprite> resolveIcon)
         {
             Button = button;
             title = Find<TMP_Text>(button.transform, "ChoiceTitle");
@@ -313,12 +318,12 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
             FitText(title, 20);
             FitText(bonus, 18);
             rows.Add(new PreviewRow(Find<TMP_Text>(button.transform, "SuccessLabel"),
-                Find<Image>(button.transform, "SuccessRewardIcon"), Find<TMP_Text>(button.transform, "SuccessRewardAmount")));
+                Find<Image>(button.transform, "SuccessRewardIcon"), Find<TMP_Text>(button.transform, "SuccessRewardAmount"), resolveIcon));
             // 기존 오른쪽 카드의 실패 행도 풀에 포함해, 실패 결과가 없는 다음 이벤트에서 숨긴다.
             foreach (Transform child in button.GetComponentsInChildren<Transform>(true))
                 if (child.name == "FailureLabel")
                     rows.Add(new PreviewRow(child.GetComponent<TMP_Text>(), Find<Image>(button.transform, "FailurePenaltyIcon"),
-                        Find<TMP_Text>(button.transform, "FailurePenaltyAmount")));
+                        Find<TMP_Text>(button.transform, "FailurePenaltyAmount"), resolveIcon));
         }
         public void Render(DHWorldEventChoicePresentationOption option, bool usesIp)
         {

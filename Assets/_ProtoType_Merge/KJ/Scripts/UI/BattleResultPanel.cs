@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class BattleResultPanel : MonoBehaviour
 {
-    [Header("Skill Selection")]
+    [Header("Skill Notifications")]
     [SerializeField] private SkillSelectionPanel getSkillSlotPrefab;
 
     public event System.Action OnAccepted;
@@ -176,30 +176,31 @@ public class BattleResultPanel : MonoBehaviour
             if (!preview.HasLevelUp || (preview.UnlockCandidateSkillIds?.Count ?? 0) == 0)
                 continue;
 
-            SkillSelectionPanel slot = Instantiate(getSkillSlotPrefab, view.skillSlotParent, false);
-            slot.Setup(preview);
-            slot.gameObject.SetActive(false); // 자기 차례에만 활성
-
-            pendingSlotCount++;
-
-            int unitIndex = preview.UnitIndex;
-            Button acceptButton = view.acceptButton;
-            slot.OnCompleted += (selectedSkillId) =>
+            // 여러 레벨 상승으로 기본판과 강화판이 함께 해금되어도 모두 안내합니다.
+            foreach (int unlockedSkillId in preview.UnlockCandidateSkillIds)
             {
-                if (selectedSkillId >= 0)
-                    skillResults.Add(new SkillSelectionResult { UnitIndex = unitIndex, SelectedSkillId = selectedSkillId });
+                SkillSelectionPanel slot = Instantiate(getSkillSlotPrefab, view.skillSlotParent, false);
+                slot.Setup(preview, unlockedSkillId);
+                slot.gameObject.SetActive(false); // 자기 차례에만 활성
 
-                ActivateNextSkillSlot(); // 다음 창 팝업(현재 창은 SkillSelectionPanel이 스스로 Destroy)
+                pendingSlotCount++;
 
-                pendingSlotCount--;
-                if (pendingSlotCount <= 0)
+                Button acceptButton = view.acceptButton;
+                slot.OnCompleted += (selectedSkillId) =>
                 {
-                    // [KJ 260729] 마지막 스킬 창까지 처리된 뒤에 결과 내용을 노출한다.
-                    RevealResultContent();
-                    if (acceptButton != null) acceptButton.gameObject.SetActive(true);
-                }
-            };
-            skillQueue.Add(slot);
+                    // 자동 해금 안내입니다. CurrentSkillIndex를 덮어쓰지 않습니다.
+                    ActivateNextSkillSlot(); // 다음 창 팝업(현재 창은 SkillSelectionPanel이 스스로 Destroy)
+
+                    pendingSlotCount--;
+                    if (pendingSlotCount <= 0)
+                    {
+                        // [KJ 260729] 마지막 스킬 창까지 처리된 뒤에 결과 내용을 노출한다.
+                        RevealResultContent();
+                        if (acceptButton != null) acceptButton.gameObject.SetActive(true);
+                    }
+                };
+                skillQueue.Add(slot);
+            }
         }
 
         // 첫 창만 팝업

@@ -33,6 +33,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
     [SerializeField, Min(0f)] private float checkInterval = 0.1f;
     [SerializeField] private Vector3 partyFocusOffset = new Vector3(0f, 0.8f, 0f);
     [SerializeField, Min(0f)] private float boundsPadding;
+    [SerializeField, Min(0f)] private float partyDepthMargin = 0.15f;
 
     private readonly HashSet<DecorativeObjectPlacement> fadedObjects = new HashSet<DecorativeObjectPlacement>();
     private readonly HashSet<DecorativeObjectPlacement> currentOccluders = new HashSet<DecorativeObjectPlacement>();
@@ -135,6 +136,11 @@ public class PartyOcclusionFadeController : MonoBehaviour
             if (decorativeObject == null || !decorativeObject.isActiveAndEnabled)
                 continue;
 
+            if (!decorativeObject.TryGetRenderBounds(out Bounds bounds, boundsPadding))
+                continue;
+            if (!IsBoundsBetweenCameraAndParty(bounds, ray.direction, from, segmentLength))
+                continue;
+
             if (tuning.preciseBuildingOcclusion && JcBuildingMeshOcclusion.IsBuilding(decorativeObject))
             {
                 if (!buildingMeshOcclusion.IsOccluded(decorativeObject, from, partyPosition, tuning))
@@ -142,8 +148,6 @@ public class PartyOcclusionFadeController : MonoBehaviour
             }
             else
             {
-                if (!decorativeObject.TryGetRenderBounds(out Bounds bounds, boundsPadding))
-                    continue;
                 if (!bounds.IntersectRay(ray, out float distance) || distance > segmentLength)
                     continue;
             }
@@ -168,6 +172,8 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
             if (!target.TryGetRenderBounds(out Bounds bounds, boundsPadding))
                 continue;
+            if (!IsBoundsBetweenCameraAndParty(bounds, ray.direction, ray.origin, segmentLength))
+                continue;
             if (!bounds.IntersectRay(ray, out float distance) || distance > segmentLength)
                 continue;
 
@@ -175,6 +181,20 @@ public class PartyOcclusionFadeController : MonoBehaviour
             targetClearSince.Remove(target);
             target.SetOcclusionFadeAlpha(occludedAlpha, transparentOverrideMaterial);
         }
+    }
+
+    private bool IsBoundsBetweenCameraAndParty(Bounds bounds, Vector3 rayDirection, Vector3 cameraPosition, float segmentLength)
+    {
+        float centerProjection = Vector3.Dot(bounds.center - cameraPosition, rayDirection);
+        Vector3 extents = bounds.extents;
+        float projectedRadius =
+            Mathf.Abs(rayDirection.x) * extents.x +
+            Mathf.Abs(rayDirection.y) * extents.y +
+            Mathf.Abs(rayDirection.z) * extents.z;
+        float nearProjection = centerProjection - projectedRadius;
+        float farProjection = centerProjection + projectedRadius;
+
+        return farProjection > 0f && nearProjection < segmentLength && farProjection < segmentLength - partyDepthMargin;
     }
 
     private void RestoreNoLongerOccluding(bool moving, JcBuildingSilhouetteSettings tuning, float now)

@@ -17,7 +17,7 @@ using UnityEngine;
 ///   EquippedWeaponInstanceIndex+IngameStats를 갱신하고, 전투 진입(CharactorScript)이 LoadPersistentEquipment로
 ///   넘기면 ASB가 ResolveWeaponLevel+GetWeaponSkillValueAtLevel로 스킬 계수까지 레벨별 적용한다.
 ///
-/// 비용 수치는 기획 미확정 임시값이다(구 테이블 이식 + 등차 외삽). 확정 시 CraftTable/EnhanceTable만 교체한다.
+/// 제작·강화 비용과 필요 공방 레벨은 AssociationResourceCatalog에서 조회한다.
 /// 설계: docs/superpowers/specs/2026-07-29-workshop-phase2-design.md
 /// </summary>
 [DisallowMultipleComponent]
@@ -35,37 +35,6 @@ public class WorkshopManager : MonoBehaviour
     /// <summary>기본 보유 코어(HC001). 제작 대상이 아니다.</summary>
     public const int DefaultWeaponIndex = 1;
     public const string DefaultWeaponKey = "HC001";
-
-    private struct CraftCost
-    {
-        public int reqLevel, money, crystal;
-        public CraftCost(int r, int m, int c) { reqLevel = r; money = m; crystal = c; }
-    }
-
-    // [KJ 260729] 필요 공방레벨 상한은 3이다. HQStateManager.defaultMaxLevel=3이고 GameManager.prefab의
-    //   maxLevels 오버라이드에 Workshop(2) 항목이 없어 공방은 Lv.3을 넘지 못한다. 4를 요구하면 영구 도달 불가.
-    //   기획이 상한을 올리면 이 테이블과 함께 부서 maxLevel도 조정해야 한다.
-    private const int MaxDepartmentLevel = 3;
-
-    // 제작: weaponIndex(2~5) → (필요 공방레벨, 자금, 수정). 코어 1은 기본 보유라 항목이 없다.
-    // 임시값 — 구 CraftTable[tier2]/[tier3]을 이식하고 코어 4·5는 +400/+5 등차로 외삽. 기획 확정 시 교체.
-    private static readonly Dictionary<int, CraftCost> CraftTable = new Dictionary<int, CraftCost>
-    {
-        { 2, new CraftCost(2,  800, 10) },
-        { 3, new CraftCost(3, 1200, 15) },
-        { 4, new CraftCost(MaxDepartmentLevel, 1600, 20) },
-        { 5, new CraftCost(MaxDepartmentLevel, 2000, 25) },
-    };
-
-    // 강화: [toLevel-2] → (필요 공방레벨, 자금, 수정). 티어 폐지로 전 코어 공통 4행.
-    // 임시값 — 구 EnhanceTable 하급(tier1) 행 채택. 기획 확정 시 교체.
-    private static readonly int[,] EnhanceTable =
-    {
-        { 1,                    400,  5 },   // toLv2
-        { 2,                    600,  6 },   // toLv3
-        { 3,                    800,  8 },   // toLv4
-        { MaxDepartmentLevel,  1000, 10 },   // toLv5 — 구 테이블은 4를 요구했으나 도달 불가라 3으로 낮춤
-    };
 
     [Serializable]
     public class WeaponEntry
@@ -135,8 +104,11 @@ public class WorkshopManager : MonoBehaviour
     public bool GetCraftCost(int weaponIndex, out int reqLevel, out int money, out int crystal)
     {
         reqLevel = -1; money = -1; crystal = -1;
-        if (!CraftTable.TryGetValue(weaponIndex, out var c)) return false;
-        reqLevel = c.reqLevel; money = c.money; crystal = c.crystal;
+        var catalog = AssociationResourceCatalog.Instance;
+        if (!IsValidWeaponIndex(weaponIndex) || weaponIndex == DefaultWeaponIndex || catalog == null) return false;
+        if (!catalog.TryGetCraftTemplate(ResolveWeaponKey(weaponIndex), out var row)
+            || !AssociationCosts.TryPair(row.Costs, ResourceType.Crystal, out money, out crystal)) return false;
+        reqLevel = row.RequiredWorkshopLevel;
         return true;
     }
 
@@ -176,16 +148,16 @@ public class WorkshopManager : MonoBehaviour
         return 0;
     }
 
-    /// <summary>currentLevel → currentLevel+1 강화 비용. 티어 폐지로 전 코어 공통이다.</summary>
+    /// <summary>해당 코어의 currentLevel → currentLevel+1 카탈로그 비용.</summary>
     public bool GetEnhanceCost(int weaponIndex, int currentLevel, out int reqLevel, out int money, out int crystal)
     {
         reqLevel = -1; money = -1; crystal = -1;
         if (!IsValidWeaponIndex(weaponIndex)) return false;
         if (currentLevel < BaseWeaponLevel || currentLevel >= MaxWeaponLevel) return false;
-        int row = currentLevel - BaseWeaponLevel;   // current1 → row0(=toLv2)
-        reqLevel = EnhanceTable[row, 0];
-        money    = EnhanceTable[row, 1];
-        crystal  = EnhanceTable[row, 2];
+        var catalog = AssociationResourceCatalog.Instance;
+        if (catalog == null || !catalog.TryGetEnforceTemplate(ResolveWeaponKey(weaponIndex), currentLevel + 1, out var row)
+            || !AssociationCosts.TryPair(row.Costs, ResourceType.Crystal, out money, out crystal)) return false;
+        reqLevel = row.RequiredWorkshopLevel;
         return true;
     }
 

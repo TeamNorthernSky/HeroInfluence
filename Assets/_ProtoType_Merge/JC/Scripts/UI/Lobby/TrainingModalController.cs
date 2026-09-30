@@ -250,7 +250,7 @@ public class TrainingModalController : MonoBehaviour
         int cost = gm.Training.GetNextCost(selectedUnitIndex, stat);
         if (cost < 0) return;
         if (!gm.Economy.Has(ResourceType.Money, cost)) return;
-        if (!gm.Economy.Spend(ResourceType.Money, cost)) return;
+        if (cost > 0 && !gm.Economy.Spend(ResourceType.Money, cost)) return;
         if (!gm.Training.TryTrain(selectedUnitIndex, stat))
         {
             gm.Economy.Add(ResourceType.Money, cost); // 롤백

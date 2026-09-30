@@ -27,12 +27,11 @@ namespace ASB.Work.EditorTools.Jig
     public static class JigCuePreview
     {
         // ── 토글 (창에서 조절) ──
-        public static bool SoundEnabled = true;
+        public static bool SoundEnabled = false;
         public static bool EffectEnabled = false;
 
         // ── 레지스트리 (창에서 선택, 프로젝트에 1개면 자동) ──
         public static EffectRegistry EffectRegistry;
-        public static SoundRegistry SoundRegistry;
 
         /// <summary>안전 상한(초). IsAlive 기반 제거가 원칙이고 이건 비정상 프리팹 누수 방지용 — 일반 이펙트를 자르지 않을 만큼 길게.</summary>
         private const double EffectSafetyCapSeconds = 8d;
@@ -176,11 +175,11 @@ namespace ASB.Work.EditorTools.Jig
         private static void FireOne(JigCueFire f)
         {
             // 사운드 — 앵커 무관(2D). Held는 수집 단계에서 이미 제외됨.
-            if (SoundEnabled && SoundRegistry != null && f.SoundIds != null)
+            if (false)
             {
                 for (int i = 0; i < f.SoundIds.Count; i++)
                 {
-                    AudioClip clip = SoundRegistry.Get(f.SoundIds[i]);
+                    AudioClip clip = null;
                     if (clip != null) PlayClip(clip);
                 }
             }
@@ -301,7 +300,6 @@ namespace ASB.Work.EditorTools.Jig
         public static void AutoResolveRegistries()
         {
             if (EffectRegistry == null) EffectRegistry = FindSingle<EffectRegistry>();
-            if (SoundRegistry == null) SoundRegistry = FindSingle<SoundRegistry>();
         }
 
         private static T FindSingle<T>() where T : Object

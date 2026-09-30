@@ -1234,7 +1234,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c429064c647db694e82b525e17a17838, type: 2}
+  - {fileID: 2100000, guid: 4773fdba417ab6b47ac33902d060605e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1263,7 +1263,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 81264966}
-  m_Mesh: {fileID: -7751908766410430623, guid: 9aa7a0703721fa94e865255650f64157, type: 3}
+  m_Mesh: {fileID: -4437917716227991075, guid: 7e95a73e9e640564482ca26019d9de24, type: 3}
 --- !u!1 &81802790
 GameObject:
   m_ObjectHideFlags: 0
@@ -7744,7 +7744,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c429064c647db694e82b525e17a17838, type: 2}
+  - {fileID: 2100000, guid: 4773fdba417ab6b47ac33902d060605e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7773,7 +7773,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 839202512}
-  m_Mesh: {fileID: -7751908766410430623, guid: 9aa7a0703721fa94e865255650f64157, type: 3}
+  m_Mesh: {fileID: -4437917716227991075, guid: 7e95a73e9e640564482ca26019d9de24, type: 3}
 --- !u!224 &854149236 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3016289515256439851, guid: e29955c1e2b386840bd031f03c596d34,
@@ -8369,7 +8369,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 24f5ef7c3ba12654cb055f872feb03b9, type: 2}
+  - {fileID: 2100000, guid: 732fb7631aec3cb45b9643ab5b8177ba, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8398,7 +8398,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 885711320}
-  m_Mesh: {fileID: 4910611039589781254, guid: 1978359ca6b40c042b44c05bcab9cdae, type: 3}
+  m_Mesh: {fileID: 5579941606430928574, guid: d40fde545ef60f94287d9b2093448b97, type: 3}
 --- !u!1 &888120798
 GameObject:
   m_ObjectHideFlags: 0
@@ -14287,7 +14287,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c429064c647db694e82b525e17a17838, type: 2}
+  - {fileID: 2100000, guid: 4773fdba417ab6b47ac33902d060605e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -14316,7 +14316,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1277196515}
-  m_Mesh: {fileID: -7751908766410430623, guid: 9aa7a0703721fa94e865255650f64157, type: 3}
+  m_Mesh: {fileID: -4437917716227991075, guid: 7e95a73e9e640564482ca26019d9de24, type: 3}
 --- !u!114 &1294869201 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1650005853710116054, guid: 84f1cc0a884961c419cc368e0f93fb45,
@@ -16652,7 +16652,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 24f5ef7c3ba12654cb055f872feb03b9, type: 2}
+  - {fileID: 2100000, guid: 732fb7631aec3cb45b9643ab5b8177ba, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -16681,7 +16681,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1514443744}
-  m_Mesh: {fileID: 4910611039589781254, guid: 1978359ca6b40c042b44c05bcab9cdae, type: 3}
+  m_Mesh: {fileID: 5579941606430928574, guid: d40fde545ef60f94287d9b2093448b97, type: 3}
 --- !u!1 &1520315722
 GameObject:
   m_ObjectHideFlags: 0
@@ -16750,7 +16750,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 24f5ef7c3ba12654cb055f872feb03b9, type: 2}
+  - {fileID: 2100000, guid: 732fb7631aec3cb45b9643ab5b8177ba, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -16779,7 +16779,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1520315722}
-  m_Mesh: {fileID: 4910611039589781254, guid: 1978359ca6b40c042b44c05bcab9cdae, type: 3}
+  m_Mesh: {fileID: 5579941606430928574, guid: d40fde545ef60f94287d9b2093448b97, type: 3}
 --- !u!43 &1523810760
 Mesh:
   m_ObjectHideFlags: 0
@@ -18544,7 +18544,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c429064c647db694e82b525e17a17838, type: 2}
+  - {fileID: 2100000, guid: 4773fdba417ab6b47ac33902d060605e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -18573,7 +18573,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1736435792}
-  m_Mesh: {fileID: -7751908766410430623, guid: 9aa7a0703721fa94e865255650f64157, type: 3}
+  m_Mesh: {fileID: -4437917716227991075, guid: 7e95a73e9e640564482ca26019d9de24, type: 3}
 --- !u!1 &1737602386
 GameObject:
   m_ObjectHideFlags: 0
@@ -19241,7 +19241,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 24f5ef7c3ba12654cb055f872feb03b9, type: 2}
+  - {fileID: 2100000, guid: 732fb7631aec3cb45b9643ab5b8177ba, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -19270,7 +19270,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1817006217}
-  m_Mesh: {fileID: 4910611039589781254, guid: 1978359ca6b40c042b44c05bcab9cdae, type: 3}
+  m_Mesh: {fileID: 5579941606430928574, guid: d40fde545ef60f94287d9b2093448b97, type: 3}
 --- !u!1 &1831349786
 GameObject:
   m_ObjectHideFlags: 0
@@ -23067,6 +23067,914 @@ MonoBehaviour:
   materialTemplate: {fileID: 0}
   generatedRootName: Generated Tile Meshes
   markChunksReflectionProbeStatic: 1
+--- !u!1 &712966793
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 712966794}
+  - component: {fileID: 712966795}
+  m_Layer: 0
+  m_Name: BGHouse001
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &712966794
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 712966793}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1327263448}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &712966795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 712966793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 0492afafc28d43347b17c91250ded7bf, type: 2}
+  profile: {fileID: 11400000, guid: 7e576e23d0235974e8e4b2046de6f221, type: 2}
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+--- !u!1 &1327263446
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1327263448}
+  - component: {fileID: 1327263447}
+  m_Layer: 0
+  m_Name: BG_ColorModifier_JC
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1327263447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1327263446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7879681bfd9cb0543ae4ed073bed3252, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  profile: {fileID: 11400000, guid: 042fb1cf82d10fc44b21df91941a27e5, type: 2}
+  targetRoot: {fileID: 0}
+--- !u!4 &1327263448
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1327263446}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1585302376}
+  - {fileID: 239710380}
+  - {fileID: 465088853}
+  - {fileID: 51987096}
+  - {fileID: 1344641515}
+  - {fileID: 712966794}
+  - {fileID: 1963457357}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1963457356
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1963457357}
+  - component: {fileID: 1963457358}
+  m_Layer: 0
+  m_Name: BGHouse002
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1963457357
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1963457356}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1327263448}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1963457358
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1963457356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: a9c021cd4c52a4345b160233d9490f2c, type: 2}
+  profile: {fileID: 11400000, guid: 3c78c2d87dd4cd046be1b57cc3d1e803, type: 2}
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+--- !u!4 &1344641515
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1344641514}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1327263448}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &465088852
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 465088853}
+  - component: {fileID: 465088854}
+  m_Layer: 0
+  m_Name: BGStore004
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &51987096
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51987095}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1327263448}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1344641514
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1344641515}
+  - component: {fileID: 1344641516}
+  m_Layer: 0
+  m_Name: BGHigh002
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &465088853
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 465088852}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1327263448}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &51987097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51987095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 0f14983c13904884fba0a65649f84896, type: 2}
+  profile: {fileID: 11400000, guid: ffc6f4a23ee4ad744a9a6bee58888332, type: 2}
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+--- !u!4 &239710380
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 239710379}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1327263448}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1585302376
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1585302375}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1327263448}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1344641516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1344641514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 94ebadf3e9ea97d4ba3bde58c2879437, type: 2}
+  profile: {fileID: 11400000, guid: 8ec9eb177d367ab40974084e76193dca, type: 2}
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+--- !u!114 &239710381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 239710379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 5e2ef7abaf9796241af2fc434115382f, type: 2}
+  profile: {fileID: 11400000, guid: 20d89b5b1168eca42b1ad01e79cb591e, type: 2}
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+--- !u!1 &1585302375
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1585302376}
+  - component: {fileID: 1585302377}
+  m_Layer: 0
+  m_Name: BGStore001
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1585302377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1585302375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: af144cc7d2e01a24cac57c52de2d8b12, type: 2}
+  profile: {fileID: 11400000, guid: 3ae3c233fe3ff73418064d0ce63750e8, type: 2}
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 133.6374
+    lightness: 0.35369703
+    saturation: 14.397416
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 73.58144
+    lightness: 0.75282323
+    saturation: 39.03917
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - roof
+  - window
+  - foliage
+  - floor
+  - roof_floor
+  - entrance_awning
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+--- !u!1 &51987095
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 51987096}
+  - component: {fileID: 51987097}
+  m_Layer: 0
+  m_Name: BGStore002
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &465088854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 465088852}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45adbfc6432c0140ba554768137076e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  definition: {fileID: 11400000, guid: 103e81596830fe54fabf20cab343cca1, type: 2}
+  profile: {fileID: 11400000, guid: 53b47e92c19c93349a3a85f66e89c258, type: 2}
+  parts:
+  - hue: 90
+    lightness: 1
+    saturation: 0.000009313226
+    ignoreSourceColorAndShading: 0
+  - hue: 142.54832
+    lightness: 0.42747808
+    saturation: 21.878466
+    ignoreSourceColorAndShading: 0
+  - hue: 256.43576
+    lightness: 0.5389753
+    saturation: 34.236553
+    ignoreSourceColorAndShading: 0
+  - hue: 27.532671
+    lightness: 0.5108109
+    saturation: 44.991295
+    ignoreSourceColorAndShading: 0
+  - hue: 91.5944
+    lightness: 0.7602642
+    saturation: 4.3492503
+    ignoreSourceColorAndShading: 0
+  - hue: 77.9899
+    lightness: 0.8435668
+    saturation: 16.645641
+    ignoreSourceColorAndShading: 0
+  - hue: 88.39558
+    lightness: 0.8228685
+    saturation: 39.5169
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 63.38495
+    lightness: 0.55545485
+    saturation: 25.118418
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 17.277885
+    lightness: 0.9053192
+    saturation: 1.6392047
+    ignoreSourceColorAndShading: 0
+  - hue: 31.085646
+    lightness: 0.6647152
+    saturation: 3.073385
+    ignoreSourceColorAndShading: 0
+  partIds:
+  - wall
+  - sign_green
+  - window
+  - sign_red
+  - floor
+  - roof_floor
+  - sign_yellow
+  - pot
+  - soil
+  - accent
+  - door_frame
+  - vent_body
+  - vent_trim
+  - door_handle
+  - bollard_accent
+  - side_box
+  showOriginal: 0
+  highlightedPart: -1
+  searchEntireScene: 0
+--- !u!1 &239710379
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 239710380}
+  - component: {fileID: 239710381}
+  m_Layer: 0
+  m_Name: BGHigh001
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -23104,3 +24012,4 @@ SceneRoots:
   - {fileID: 118590017}
   - {fileID: 1953944606}
   - {fileID: 1050741659}
+  - {fileID: 1327263448}

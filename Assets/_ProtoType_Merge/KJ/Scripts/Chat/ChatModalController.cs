@@ -44,10 +44,13 @@ public class ChatModalController : MonoBehaviour
     private int beginFrame; // 소환 당시 클릭이 첫 대사를 즉시 넘기는 것 방지
     private int skipConfirmClosedFrame = -1; // 팝업을 닫은 입력의 같은 프레임 대사 진행 차단
     private int choiceSelectedFrame = -1;
+    private bool waitForSkipInputRelease; // 스킵 팝업을 닫은 키/클릭이 아직 눌려 있는 동안 대사 진행 차단
     private DHEventEffectRuntimeManager effectManager;
     private bool dispatchingChatEffect;
     private bool hasRewardResult;
     private bool waitingForRewardClose;
+    private ChoiceButtonView briefingEndButton;
+    private int briefingEndShownFrame = -1;
 
     /// <summary>대화 소환. 이미 떠 있으면 재활성 후 해당 대화로 재시작(중복 생성 방지).</summary>
     private bool isClosing;
@@ -119,8 +122,8 @@ public class ChatModalController : MonoBehaviour
     }
 
     /// <summary>
-    /// [KJ 260729] ESC 처리 — ChatModal이 열려 있는 동안 ESC로는 대화가 닫히지 않는다.
-    /// 스킵 확인 팝업이 떠 있으면 팝업만 닫고(타이틀 종료팝업과 동일), 아니면 스킵 확인 팝업을 연다.
+    /// ESC 처리 — 스킵 확인 팝업이 떠 있으면 팝업만 닫는다.
+    /// 마지막 대사의 ESC 진행은 Update에서 스페이스바와 동일하게 처리하고, 진행 중에는 스킵 확인 팝업을 연다.
     /// 처리했으면 true — 상위 ESC 로직(ModalManager.CloseTop / 시스템 메뉴)을 막는다.
     /// </summary>
     public static bool HandleEscape()
@@ -134,7 +137,11 @@ public class ChatModalController : MonoBehaviour
             return true;
         }
 
-        // 마지막 대사/선택지 표시 중(스킵 불가)이면 팝업을 열지 않되, ESC는 소비해 대화가 닫히지 않게 한다.
+        // 마지막 대사 진행/브리핑 종료는 Update의 공통 입력 가드를 사용한다.
+        if (current.waitingForRewardClose || (current.manager != null && current.manager.IsAtFinalChat))
+            return true;
+
+        // 선택지 표시 중(스킵 불가)이면 팝업을 열지 않되, ESC는 소비한다.
         if (current.skipButton == null || current.skipButton.interactable)
             current.OpenSkipConfirm();
         return true;
@@ -149,6 +156,7 @@ public class ChatModalController : MonoBehaviour
     {
         if (skipConfirmPopup == null || !skipConfirmPopup.activeSelf) return;
         skipConfirmClosedFrame = Time.frameCount;
+        waitForSkipInputRelease = true;
         skipConfirmPopup.SetActive(false);
     }
 
@@ -182,6 +190,8 @@ public class ChatModalController : MonoBehaviour
         isClosing = false;
         hasRewardResult = false;
         waitingForRewardClose = false;
+        briefingEndButton = null;
+        briefingEndShownFrame = -1;
         beginFrame = Time.frameCount;
         manager = ChatManager.Instance;
 
@@ -221,15 +231,50 @@ public class ChatModalController : MonoBehaviour
 
     private void Update()
     {
-        if (manager == null || !manager.IsRunning || choicesVisible) return;
+        if (isClosing || (!waitingForRewardClose && (manager == null || !manager.IsRunning))) return;
         if (skipConfirmPopup != null && skipConfirmPopup.activeSelf) return; // 스킵 확인 중엔 진행 정지
+        // 팝업을 닫은 키/클릭을 뗄 때까지는 대사 진행 입력으로 받지 않는다 (실행 순서와 무관하게 차단)
+        if (waitForSkipInputRelease)
+        {
+            if (Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0)) return;
+            waitForSkipInputRelease = false;
+        }
         if (Time.frameCount == skipConfirmClosedFrame) return; // 확인/취소 입력은 채팅 진행에 재사용하지 않음
         if (Time.frameCount == choiceSelectedFrame) return;
-        if (!Input.GetMouseButtonDown(0)&&!Input.GetKeyDown(KeyCode.Space)) return;
+        if (waitingForRewardClose)
+        {
+            if (Time.frameCount == briefingEndShownFrame || ModalManager.Top != gameObject) return;
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Escape))
+                briefingEndButton?.ClickFromShortcut();
+            return;
+        }
+        if (choicesVisible)
+        {
+            if (Time.frameCount == beginFrame || ModalManager.Top != gameObject) return;
+            HandleChoiceShortcut();
+            return;
+        }
+        if (!Input.GetMouseButtonDown(0) && !Input.GetKeyDown(KeyCode.Space) &&
+            !(Input.GetKeyDown(KeyCode.Escape) && manager.IsAtFinalChat && ModalManager.Top == gameObject)) return;
         if (Time.frameCount == beginFrame) return; // 트리거를 누른 그 클릭은 무시
         if (IsPointerOverControl()) return; // 버튼·스크롤바 조작은 대사 진행으로 취급하지 않음
 
         RunChatAction(() => manager.Advance());
+    }
+
+    private void HandleChoiceShortcut()
+    {
+        // 표시된 순서대로 1~9에 대응한다. 비활성 선택지도 번호를 유지한다.
+        int count = Mathf.Min(activeChoices.Count, 9);
+        for (int i = 0; i < count; i++)
+        {
+            if (!Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i)) &&
+                !Input.GetKeyDown((KeyCode)((int)KeyCode.Keypad1 + i))) continue;
+
+            if (activeChoices[i] != null)
+                activeChoices[i].GetComponent<ChoiceButtonView>()?.ClickFromShortcut();
+            return; // 콜백이 다음 선택지를 만들어도 같은 프레임에는 한 번만 선택한다.
+        }
     }
 
     /// <summary>클릭 지점이 Selectable 위인지 — 버튼·스크롤바(손잡이 포함)의 클릭과 대사 진행의 이중 반응 방지.</summary>
@@ -297,8 +342,14 @@ public class ChatModalController : MonoBehaviour
         if (hasRewardResult && contentRoot != null && choiceButtonPrefab != null)
         {
             waitingForRewardClose = true;
-            ChoiceButtonView endButton = Instantiate(choiceButtonPrefab, contentRoot);
-            endButton.Bind("브리핑 종료", Close, true);
+            briefingEndShownFrame = Time.frameCount;
+            var topSpace = new GameObject("BriefingEndTopSpace", typeof(RectTransform), typeof(UnityEngine.UI.LayoutElement));
+            topSpace.transform.SetParent(contentRoot, false);
+            var spaceLayout = topSpace.GetComponent<UnityEngine.UI.LayoutElement>();
+            spaceLayout.minHeight = spaceLayout.preferredHeight = 10f;
+            spaceLayout.flexibleHeight = 0f;
+            briefingEndButton = Instantiate(choiceButtonPrefab, contentRoot);
+            briefingEndButton.Bind("브리핑 종료", Close, true);
             if (skipButton != null) skipButton.interactable = false;
             StartCoroutine(ScrollToBottomNextFrame());
             return;

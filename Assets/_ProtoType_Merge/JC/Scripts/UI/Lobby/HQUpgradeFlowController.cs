@@ -205,10 +205,10 @@ public class HQUpgradeFlowController : MonoBehaviour
         }
 
         // Costs
-        if (costMoneyText != null) costMoneyText.text = currentCost[ResourceType.Money].ToString("N0");
-        if (costChipText != null) costChipText.text = currentCost[ResourceType.Chip].ToString("N0");
-        if (costCrystalText != null) costCrystalText.text = currentCost[ResourceType.Crystal].ToString("N0");
-        if (costSupplyText != null) costSupplyText.text = currentCost[ResourceType.Supply].ToString("N0");
+        if (costMoneyText != null) costMoneyText.text = currentCost != null ? currentCost[ResourceType.Money].ToString("N0") : "—";
+        if (costChipText != null) costChipText.text = currentCost != null ? currentCost[ResourceType.Chip].ToString("N0") : "—";
+        if (costCrystalText != null) costCrystalText.text = currentCost != null ? currentCost[ResourceType.Crystal].ToString("N0") : "—";
+        if (costSupplyText != null) costSupplyText.text = currentCost != null ? currentCost[ResourceType.Supply].ToString("N0") : "—";
 
     }
 
@@ -239,6 +239,8 @@ public class HQUpgradeFlowController : MonoBehaviour
                 msg = gm.HQ != null ? gm.HQ.GetUnmetReasonText(currentDept) : "선행 조건이 필요합니다.";
             //else if (turnUsed)
             //    msg = "이번 턴에 이미 건설, 또는 업그레이드를 진행했습니다.";
+            else if (currentCost == null && !maxed)
+                msg = "비용 정보가 없습니다.";
             else if (!canAfford)
                 msg = "자원이 부족합니다.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
@@ -277,6 +279,7 @@ public class HQUpgradeFlowController : MonoBehaviour
     {
         var gm = GameManager.Instance;
         if (gm == null || gm.HQ == null || gm.Economy == null) return;
+        currentCost = gm.HQ.GetUpgradeCost(currentDept, gm.HQ.GetLevel(currentDept));
         if (!CheckAfford(gm.Economy)) return;
         // [JC 260618] CanUpgrade 사전 가드 — 차감 전에 업그레이드 가능 여부 확정(턴 사용/선행조건/최고단계 레이스 차단).
         if (!gm.HQ.CanUpgrade(currentDept))

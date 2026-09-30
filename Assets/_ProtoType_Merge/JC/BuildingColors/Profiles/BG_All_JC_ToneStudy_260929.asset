@@ -1,0 +1,1227 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f8612ae8aae6824da758733a999f616, type: 3}
+  m_Name: BG_All_JC_ToneStudy_260929
+  m_EditorClassIdentifier: 
+  buildings:
+  - buildingId: BGFactory001
+    parts:
+    - hue: 74.682594
+      lightness: 0.70700943
+      saturation: 10.292039
+      ignoreSourceColorAndShading: 0
+    - hue: 143.00377
+      lightness: 0.5261216
+      saturation: 11.340463
+      ignoreSourceColorAndShading: 0
+    - hue: 160.1559
+      lightness: 0.4371016
+      saturation: 7.893159
+      ignoreSourceColorAndShading: 0
+    - hue: 133.02484
+      lightness: 0.522592
+      saturation: 27.265833
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.57573736
+      saturation: 0.000005085794
+      ignoreSourceColorAndShading: 0
+    - hue: 80.00056
+      lightness: 0.54
+      saturation: 0
+      ignoreSourceColorAndShading: 0
+    - hue: 89.0908
+      lightness: 0.47291398
+      saturation: 11.138295
+      ignoreSourceColorAndShading: 0
+    - hue: 94.30743
+      lightness: 0.32513204
+      saturation: 11.422067
+      ignoreSourceColorAndShading: 0
+    - hue: 97.61809
+      lightness: 0.44241646
+      saturation: 13.587907
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - pot
+    - soil
+    - accent
+  - buildingId: BGFactory002
+    parts:
+    - hue: 72.610344
+      lightness: 0.7470911
+      saturation: 3.0445929
+      ignoreSourceColorAndShading: 0
+    - hue: 252.23125
+      lightness: 0.46260357
+      saturation: 6.9367504
+      ignoreSourceColorAndShading: 0
+    - hue: 167.62354
+      lightness: 0.42318383
+      saturation: 6.586317
+      ignoreSourceColorAndShading: 0
+    - hue: 128.89319
+      lightness: 0.38585377
+      saturation: 18.471544
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.58319885
+      saturation: 0.0000052402174
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.54
+      saturation: 0.0000041322714
+      ignoreSourceColorAndShading: 0
+    - hue: 82.6018
+      lightness: 0.41633025
+      saturation: 8.160109
+      ignoreSourceColorAndShading: 0
+    - hue: 82.2254
+      lightness: 0.438733
+      saturation: 9.081449
+      ignoreSourceColorAndShading: 0
+    - hue: 72.65029
+      lightness: 0.25295264
+      saturation: 8.984372
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - pot
+    - soil
+    - accent
+  - buildingId: BGHigh001
+    parts:
+    - hue: 90
+      lightness: 0.82
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 32.458244
+      lightness: 0.5457696
+      saturation: 21.289938
+      ignoreSourceColorAndShading: 0
+    - hue: 264.85797
+      lightness: 0.55457455
+      saturation: 13.068034
+      ignoreSourceColorAndShading: 0
+    - hue: 133.6374
+      lightness: 0.35369703
+      saturation: 14.397416
+      ignoreSourceColorAndShading: 0
+    - hue: 32.520985
+      lightness: 0.5695528
+      saturation: 11.9959
+      ignoreSourceColorAndShading: 0
+    - hue: 100.766785
+      lightness: 0.9645975
+      saturation: 20.350674
+      ignoreSourceColorAndShading: 0
+    - hue: 73.58144
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 88.03664
+      lightness: 0.85731936
+      saturation: 43.19654
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.8184575
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGHigh002
+    parts:
+    - hue: 90
+      lightness: 0.82
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 283.38403
+      lightness: 0.68390435
+      saturation: 18.044313
+      ignoreSourceColorAndShading: 0
+    - hue: 256.43576
+      lightness: 0.5175389
+      saturation: 13.857017
+      ignoreSourceColorAndShading: 0
+    - hue: 133.75745
+      lightness: 0.56877315
+      saturation: 24.476856
+      ignoreSourceColorAndShading: 0
+    - hue: 272.7738
+      lightness: 0.5507682
+      saturation: 9.913571
+      ignoreSourceColorAndShading: 0
+    - hue: 77.9899
+      lightness: 0.8435668
+      saturation: 16.645641
+      ignoreSourceColorAndShading: 0
+    - hue: 73.58144
+      lightness: 0.75282323
+      saturation: 39.03917
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.61169994
+      saturation: 0.0000056968997
+      ignoreSourceColorAndShading: 0
+    - hue: 273.18695
+      lightness: 0.5213466
+      saturation: 9.589255
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 75.20365
+      lightness: 0.541934
+      saturation: 28.519342
+      ignoreSourceColorAndShading: 0
+    - hue: 272.7738
+      lightness: 0.55520856
+      saturation: 4.9511423
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+    - roof_deck
+  - buildingId: BGHigh003
+    parts:
+    - hue: 80.17445
+      lightness: 0.7328303
+      saturation: 6.010761
+      ignoreSourceColorAndShading: 0
+    - hue: 92.94508
+      lightness: 0.665612
+      saturation: 17.702032
+      ignoreSourceColorAndShading: 0
+    - hue: 225.3896
+      lightness: 0.5506213
+      saturation: 11.335595
+      ignoreSourceColorAndShading: 0
+    - hue: 137.6437
+      lightness: 0.34162074
+      saturation: 16.357023
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.5606404
+      saturation: 0.000004773346
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.597595
+      saturation: 0.0000056968997
+      ignoreSourceColorAndShading: 0
+    - hue: 81.96106
+      lightness: 0.60829115
+      saturation: 7.182773
+      ignoreSourceColorAndShading: 0
+    - hue: 91.04692
+      lightness: 0.44879434
+      saturation: 8.205632
+      ignoreSourceColorAndShading: 0
+    - hue: 92.6608
+      lightness: 0.73079544
+      saturation: 11.7214775
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - pot
+    - soil
+    - accent
+  - buildingId: BGHigh004
+    parts:
+    - hue: 90
+      lightness: 0.82
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 15.207712
+      lightness: 0.626835
+      saturation: 15.18691
+      ignoreSourceColorAndShading: 0
+    - hue: 178.31197
+      lightness: 0.4711622
+      saturation: 6.900194
+      ignoreSourceColorAndShading: 0
+    - hue: 133.41559
+      lightness: 0.697686
+      saturation: 36.02089
+      ignoreSourceColorAndShading: 0
+    - hue: 89.159546
+      lightness: 0.52428776
+      saturation: 3.4419699
+      ignoreSourceColorAndShading: 0
+    - hue: 87.58601
+      lightness: 0.54
+      saturation: 0
+      ignoreSourceColorAndShading: 0
+    - hue: 86.791916
+      lightness: 0.5102018
+      saturation: 6.822753
+      ignoreSourceColorAndShading: 0
+    - hue: 102.67175
+      lightness: 0.35938174
+      saturation: 7.8146634
+      ignoreSourceColorAndShading: 0
+    - hue: 103.22144
+      lightness: 0.37387997
+      saturation: 8.420426
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - pot
+    - soil
+    - accent
+  - buildingId: BGHouse001
+    parts:
+    - hue: 90
+      lightness: 0.82
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 62.455914
+      lightness: 0.68
+      saturation: 15.510154
+      ignoreSourceColorAndShading: 0
+    - hue: 256.43576
+      lightness: 0.5175389
+      saturation: 13.857017
+      ignoreSourceColorAndShading: 0
+    - hue: 134.13855
+      lightness: 0.6222646
+      saturation: 30.870518
+      ignoreSourceColorAndShading: 0
+    - hue: 91.5944
+      lightness: 0.6721189
+      saturation: 4.3492503
+      ignoreSourceColorAndShading: 0
+    - hue: 77.9899
+      lightness: 0.66
+      saturation: 4.9912786
+      ignoreSourceColorAndShading: 0
+    - hue: 73.58144
+      lightness: 0.7020528
+      saturation: 22.261583
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.8184575
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.8184575
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGHouse002
+    parts:
+    - hue: 90
+      lightness: 0.82
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    - hue: 27.711397
+      lightness: 0.65860784
+      saturation: 16.736965
+      ignoreSourceColorAndShading: 0
+    - hue: 263.10568
+      lightness: 0.5736981
+      saturation: 10.341078
+      ignoreSourceColorAndShading: 0
+    - hue: 134.69498
+      lightness: 0.52765745
+      saturation: 30.21553
+      ignoreSourceColorAndShading: 0
+    - hue: 91.5944
+      lightness: 0.6721189
+      saturation: 4.3492503
+      ignoreSourceColorAndShading: 0
+    - hue: 49.431976
+      lightness: 0.58873343
+      saturation: 26.430971
+      ignoreSourceColorAndShading: 0
+    - hue: 22.458448
+      lightness: 0.7068973
+      saturation: 21.619724
+      ignoreSourceColorAndShading: 0
+    - hue: 261.09268
+      lightness: 0.5242287
+      saturation: 10.76624
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 67.24395
+      lightness: 0.6475836
+      saturation: 9.983189
+      ignoreSourceColorAndShading: 0
+    - hue: 251.61426
+      lightness: 0.74603903
+      saturation: 11.046915
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.67033327
+      saturation: 0.0000062429654
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.47268358
+      saturation: 0.000004402209
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGOffice001
+    parts:
+    - hue: 90
+      lightness: 0.78169096
+      saturation: 0.00000786248
+      ignoreSourceColorAndShading: 0
+    - hue: 81.99949
+      lightness: 0.68
+      saturation: 16.170654
+      ignoreSourceColorAndShading: 0
+    - hue: 255.4147
+      lightness: 0.6
+      saturation: 8.986179
+      ignoreSourceColorAndShading: 0
+    - hue: 133.6374
+      lightness: 0.35369703
+      saturation: 14.397416
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.7
+      saturation: 0.000008231039
+      ignoreSourceColorAndShading: 0
+    - hue: 131.25648
+      lightness: 0.6692711
+      saturation: 15.203453
+      ignoreSourceColorAndShading: 0
+    - hue: 222.4839
+      lightness: 0.7048684
+      saturation: 13.556151
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.5521099
+      saturation: 0.000004615203
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.6962866
+      saturation: 0.0000066809735
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+  - buildingId: BGOffice002
+    parts:
+    - hue: 18.822308
+      lightness: 0.76623154
+      saturation: 13.284545
+      ignoreSourceColorAndShading: 0
+    - hue: 16.289589
+      lightness: 0.670774
+      saturation: 19.495428
+      ignoreSourceColorAndShading: 0
+    - hue: 198.4251
+      lightness: 0.6
+      saturation: 8.949088
+      ignoreSourceColorAndShading: 0
+    - hue: 135.37856
+      lightness: 0.6843167
+      saturation: 43.934715
+      ignoreSourceColorAndShading: 0
+    - hue: 18.275476
+      lightness: 0.5423692
+      saturation: 7.355013
+      ignoreSourceColorAndShading: 0
+    - hue: 77.9899
+      lightness: 0.8435668
+      saturation: 16.645641
+      ignoreSourceColorAndShading: 0
+    - hue: 27.999804
+      lightness: 0.5962215
+      saturation: 14.905983
+      ignoreSourceColorAndShading: 0
+    - hue: 32.285435
+      lightness: 0.34721267
+      saturation: 15.187323
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 71.262
+      lightness: 0.59857744
+      saturation: 11.374757
+      ignoreSourceColorAndShading: 0
+    - hue: 18.741112
+      lightness: 0.53520286
+      saturation: 9.089319
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.65977097
+      saturation: 0.000006144596
+      ignoreSourceColorAndShading: 0
+    - hue: 98.162796
+      lightness: 0.7140908
+      saturation: 34.993282
+      ignoreSourceColorAndShading: 0
+    - hue: 71.57288
+      lightness: 0.7131035
+      saturation: 22.626955
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+    - sign_face
+  - buildingId: BGRowHouse001
+    parts:
+    - hue: 90
+      lightness: 0.7350839
+      saturation: 0.000006777325
+      ignoreSourceColorAndShading: 0
+    - hue: 95.201935
+      lightness: 0.68
+      saturation: 8.12617
+      ignoreSourceColorAndShading: 0
+    - hue: 214.14182
+      lightness: 0.47678837
+      saturation: 5.97722
+      ignoreSourceColorAndShading: 0
+    - hue: 141.01773
+      lightness: 0.5398483
+      saturation: 32.075287
+      ignoreSourceColorAndShading: 0
+    - hue: 87.43574
+      lightness: 0.5316597
+      saturation: 0.39870727
+      ignoreSourceColorAndShading: 0
+    - hue: 133.6313
+      lightness: 0.61311775
+      saturation: 4.9968386
+      ignoreSourceColorAndShading: 0
+    - hue: 74.85458
+      lightness: 0.53134924
+      saturation: 7.147414
+      ignoreSourceColorAndShading: 0
+    - hue: 76.77076
+      lightness: 0.76085794
+      saturation: 20.971443
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.5954677
+      saturation: 0.000005545725
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - pot
+    - soil
+    - accent
+  - buildingId: BGRowHouse002
+    parts:
+    - hue: 76.98212
+      lightness: 0.7236403
+      saturation: 6.077579
+      ignoreSourceColorAndShading: 0
+    - hue: 222.6763
+      lightness: 0.68
+      saturation: 6.6719136
+      ignoreSourceColorAndShading: 0
+    - hue: 213.42316
+      lightness: 0.6
+      saturation: 4.384946
+      ignoreSourceColorAndShading: 0
+    - hue: 115.746605
+      lightness: 0.4607426
+      saturation: 24.55801
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.63401943
+      saturation: 0.0000062920035
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.5823574
+      saturation: 0.0000052914393
+      ignoreSourceColorAndShading: 0
+    - hue: 79.71939
+      lightness: 0.50665826
+      saturation: 7.429105
+      ignoreSourceColorAndShading: 0
+    - hue: 88.77837
+      lightness: 0.47378808
+      saturation: 5.885132
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.64156526
+      saturation: 0.0000058969235
+      ignoreSourceColorAndShading: 0
+    - hue: 70.0419
+      lightness: 0.68
+      saturation: 1.5892471
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - pot
+    - soil
+    - accent
+    - central_block
+  - buildingId: BGStore001
+    parts:
+    - hue: 76.095764
+      lightness: 0.8101536
+      saturation: 13.130514
+      ignoreSourceColorAndShading: 0
+    - hue: 38.896088
+      lightness: 0.57170993
+      saturation: 20.589228
+      ignoreSourceColorAndShading: 0
+    - hue: 206.82942
+      lightness: 0.58985555
+      saturation: 11.978756
+      ignoreSourceColorAndShading: 0
+    - hue: 123.063126
+      lightness: 0.7727615
+      saturation: 35.78619
+      ignoreSourceColorAndShading: 0
+    - hue: 17.659443
+      lightness: 0.5776272
+      saturation: 4.086463
+      ignoreSourceColorAndShading: 0
+    - hue: 17.68297
+      lightness: 0.5761777
+      saturation: 3.7712681
+      ignoreSourceColorAndShading: 0
+    - hue: 134.9641
+      lightness: 0.604515
+      saturation: 22.698238
+      ignoreSourceColorAndShading: 0
+    - hue: 31.08537
+      lightness: 0.6647152
+      saturation: 3.0734105
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 38.747177
+      lightness: 0.6089831
+      saturation: 11.979593
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.5484099
+      saturation: 0.0000045621896
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.7173641
+      saturation: 0.0000066809735
+      ignoreSourceColorAndShading: 0
+    - hue: 73.58144
+      lightness: 0.7020528
+      saturation: 22.261583
+      ignoreSourceColorAndShading: 0
+    - hue: 31.727455
+      lightness: 0.56815624
+      saturation: 11.984387
+      ignoreSourceColorAndShading: 0
+    - hue: 65.83667
+      lightness: 0.6164567
+      saturation: 34.353214
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+    - sign_face
+    - sign_rim
+    - door_wood
+  - buildingId: BGStore002
+    parts:
+    - hue: 90
+      lightness: 0.7836796
+      saturation: 0.000007908782
+      ignoreSourceColorAndShading: 0
+    - hue: 140.55028
+      lightness: 0.6479386
+      saturation: 20.94866
+      ignoreSourceColorAndShading: 0
+    - hue: 255.46356
+      lightness: 0.56610626
+      saturation: 9.428322
+      ignoreSourceColorAndShading: 0
+    - hue: 127.12657
+      lightness: 0.66222584
+      saturation: 26.07834
+      ignoreSourceColorAndShading: 0
+    - hue: 144.6456
+      lightness: 0.59768355
+      saturation: 11.428041
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.6309433
+      saturation: 0.0000065842733
+      ignoreSourceColorAndShading: 0
+    - hue: 146.9827
+      lightness: 0.5700955
+      saturation: 15.166575
+      ignoreSourceColorAndShading: 0
+    - hue: 31.995804
+      lightness: 0.6858939
+      saturation: 25.031767
+      ignoreSourceColorAndShading: 0
+    - hue: 63.38495
+      lightness: 0.55545485
+      saturation: 25.118418
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.7592564
+      saturation: 0.0000075832068
+      ignoreSourceColorAndShading: 0
+    - hue: 71.88272
+      lightness: 0.5735011
+      saturation: 10.512105
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.8392483
+      saturation: 0.000007816108
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 141.45004
+      lightness: 0.70169854
+      saturation: 24.310307
+      ignoreSourceColorAndShading: 0
+    - hue: 140.83401
+      lightness: 0.53351283
+      saturation: 11.97227
+      ignoreSourceColorAndShading: 0
+    - hue: 73.77499
+      lightness: 0.5354424
+      saturation: 24.275648
+      ignoreSourceColorAndShading: 0
+    - hue: 73.77499
+      lightness: 0.5354424
+      saturation: 24.275648
+      ignoreSourceColorAndShading: 0
+    - hue: 31.085646
+      lightness: 0.6647152
+      saturation: 3.073385
+      ignoreSourceColorAndShading: 0
+    - hue: 92.51379
+      lightness: 0.89613616
+      saturation: 36.835064
+      ignoreSourceColorAndShading: 0
+    - hue: 109.04065
+      lightness: 0.78
+      saturation: 6.546471
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 1
+      saturation: 0.000009313226
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - entrance_awning
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+    - sign_face
+    - sign_rim
+    - table
+    - chairs
+    - lamp_body
+    - lamp_glass
+    - awning_accent
+    - coffee_cup
+  - buildingId: BGStore003
+    parts:
+    - hue: 82.861534
+      lightness: 0.71599424
+      saturation: 8.72165
+      ignoreSourceColorAndShading: 0
+    - hue: 35.10995
+      lightness: 0.46675077
+      saturation: 11.238425
+      ignoreSourceColorAndShading: 0
+    - hue: 177.63486
+      lightness: 0.49245054
+      saturation: 10.717666
+      ignoreSourceColorAndShading: 0
+    - hue: 102.394005
+      lightness: 0.4528857
+      saturation: 16.00951
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.56317335
+      saturation: 0.000004825769
+      ignoreSourceColorAndShading: 0
+    - hue: 87.0676
+      lightness: 0.5497014
+      saturation: 0
+      ignoreSourceColorAndShading: 0
+    - hue: 88.64103
+      lightness: 0.40474603
+      saturation: 9.282709
+      ignoreSourceColorAndShading: 0
+    - hue: 95.521904
+      lightness: 0.61014354
+      saturation: 7.2776427
+      ignoreSourceColorAndShading: 0
+    - hue: 34.69481
+      lightness: 0.48
+      saturation: 11.886145
+      ignoreSourceColorAndShading: 0
+    - hue: 32.648396
+      lightness: 0.48
+      saturation: 17.04452
+      ignoreSourceColorAndShading: 0
+    - hue: 53.08509
+      lightness: 0.6758255
+      saturation: 42.83702
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.51253414
+      saturation: 0.000004773346
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - pot
+    - soil
+    - accent
+    - sign_face
+    - sign_symbol
+    - accent2
+  - buildingId: BGStore004
+    parts:
+    - hue: 95.28773
+      lightness: 0.73654354
+      saturation: 4.81134
+      ignoreSourceColorAndShading: 0
+    - hue: 142.54832
+      lightness: 0.52311295
+      saturation: 17.485512
+      ignoreSourceColorAndShading: 0
+    - hue: 230.59706
+      lightness: 0.6
+      saturation: 11.696269
+      ignoreSourceColorAndShading: 0
+    - hue: 27.532671
+      lightness: 0.568946
+      saturation: 23.070513
+      ignoreSourceColorAndShading: 0
+    - hue: 267.88458
+      lightness: 0.6373255
+      saturation: 5.300618
+      ignoreSourceColorAndShading: 0
+    - hue: 78.21812
+      lightness: 0.5749525
+      saturation: 4.7517776
+      ignoreSourceColorAndShading: 0
+    - hue: 88.39558
+      lightness: 0.7405777
+      saturation: 22.337467
+      ignoreSourceColorAndShading: 0
+    - hue: 33.199535
+      lightness: 0.44133955
+      saturation: 31.965166
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.7173641
+      saturation: 0.0000066809735
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.9904503
+      saturation: 0.000009224287
+      ignoreSourceColorAndShading: 0
+    - hue: 140.94159
+      lightness: 0.5766302
+      saturation: 11.963066
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.77890307
+      saturation: 0.0000072541
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.64916635
+      saturation: 0.000006045833
+      ignoreSourceColorAndShading: 0
+    - hue: 17.277885
+      lightness: 0.9053192
+      saturation: 1.6392047
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.9904503
+      saturation: 0.000009224287
+      ignoreSourceColorAndShading: 0
+    - hue: 33.199535
+      lightness: 0.44133955
+      saturation: 31.965166
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - sign_green
+    - window
+    - sign_red
+    - floor
+    - roof_floor
+    - sign_yellow
+    - pot
+    - soil
+    - accent
+    - door_frame
+    - vent_body
+    - vent_trim
+    - door_handle
+    - bollard_accent
+    - side_box
+  - buildingId: BGStore005
+    parts:
+    - hue: 76.002235
+      lightness: 0.72084785
+      saturation: 11.363394
+      ignoreSourceColorAndShading: 0
+    - hue: 246.37878
+      lightness: 0.44601557
+      saturation: 10.710414
+      ignoreSourceColorAndShading: 0
+    - hue: 196.55794
+      lightness: 0.44456765
+      saturation: 8.677806
+      ignoreSourceColorAndShading: 0
+    - hue: 100.1611
+      lightness: 0.4265211
+      saturation: 14.52557
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.5110353
+      saturation: 0.0000037467175
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.54
+      saturation: 0.0000040230657
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.51816297
+      saturation: 0.000004825769
+      ignoreSourceColorAndShading: 0
+    - hue: 267.14804
+      lightness: 0.48
+      saturation: 14.165777
+      ignoreSourceColorAndShading: 0
+    - hue: 263.52905
+      lightness: 0.3729121
+      saturation: 33.82853
+      ignoreSourceColorAndShading: 0
+    - hue: 103.03752
+      lightness: 0.46650258
+      saturation: 0.31426573
+      ignoreSourceColorAndShading: 0
+    - hue: 82.82711
+      lightness: 0.50682074
+      saturation: 22.987984
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - roof_floor
+    - accent
+    - sign_face
+    - standing_sign
+    - side_entrance
+    - warning_paint
+  - buildingId: BGWarehouse_001
+    parts:
+    - hue: 90
+      lightness: 0.68
+      saturation: 0.0000042407605
+      ignoreSourceColorAndShading: 0
+    - hue: 264.71716
+      lightness: 0.51548743
+      saturation: 4.966038
+      ignoreSourceColorAndShading: 0
+    - hue: 181.76291
+      lightness: 0.48096576
+      saturation: 10.192749
+      ignoreSourceColorAndShading: 0
+    - hue: 98.73538
+      lightness: 0.48945832
+      saturation: 15.228471
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.4974314
+      saturation: 0.0000034651694
+      ignoreSourceColorAndShading: 0
+    - hue: 90
+      lightness: 0.39027876
+      saturation: 0.0000036347542
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - accent
+  - buildingId: BGWarehouse_002
+    parts:
+    - hue: 74.22822
+      lightness: 0.699299
+      saturation: 10.55357
+      ignoreSourceColorAndShading: 0
+    - hue: 140.25916
+      lightness: 0.53471625
+      saturation: 17.698717
+      ignoreSourceColorAndShading: 0
+    - hue: 202.29384
+      lightness: 0.43593058
+      saturation: 8.153754
+      ignoreSourceColorAndShading: 0
+    - hue: 104.11595
+      lightness: 0.38055894
+      saturation: 17.19015
+      ignoreSourceColorAndShading: 0
+    - hue: 17.199604
+      lightness: 0.61825
+      saturation: 0.3951232
+      ignoreSourceColorAndShading: 0
+    - hue: 92.42424
+      lightness: 0.371656
+      saturation: 11.588707
+      ignoreSourceColorAndShading: 0
+    partIds:
+    - wall
+    - roof
+    - window
+    - foliage
+    - floor
+    - accent

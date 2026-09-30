@@ -152,6 +152,7 @@ public class ExchangeModalController : MonoBehaviour
         if (gm == null || gm.Economy == null) return;
         ResourceType src = CycleOrder[selectedSourceIndex];
         int unit = ExchangeData.GetBatchUnit(src);
+        if (unit <= 0) { amountPaid = 0; Refresh(); return; }
         int held = gm.Economy.Get(src);
         int maxBatches = held / unit;
         if (maxBatches < 1) { amountPaid = unit; Refresh(); return; }
@@ -178,6 +179,7 @@ public class ExchangeModalController : MonoBehaviour
         if (!TryGetTarget(selectedTargetRow, out ResourceType target)) return;
 
         int unit = ExchangeData.GetBatchUnit(src);
+        if (unit <= 0) return;
         int level = gm.HQ != null ? gm.HQ.GetLevel(HQDepartment.Exchange) : 0;
         if (level < 1) return;
         if (gm.Economy.Get(src) < unit) return;
@@ -186,7 +188,9 @@ public class ExchangeModalController : MonoBehaviour
         int perBatch = ExchangeData.GetReceivePerBatch(src, target, level);
         if (perBatch <= 0) return;
         if (gm.Economy.IsAtMax(target)) return;
-        int received = batches * perBatch;
+        long receivedAmount = (long)batches * perBatch;
+        if (receivedAmount > int.MaxValue || receivedAmount > gm.Economy.GetMax(target) - (long)gm.Economy.Get(target)) return;
+        int received = (int)receivedAmount;
         int cost = batches * unit;
 
         if (!gm.Economy.Has(src, cost)) return;
@@ -209,12 +213,12 @@ public class ExchangeModalController : MonoBehaviour
         int held = gm.Economy.Get(src);
         int level = gm.HQ != null ? gm.HQ.GetLevel(HQDepartment.Exchange) : 0;
         bool unlocked = level >= 1;
-        int maxBatches = held / unit;
-        bool affordable = maxBatches >= 1;
+        int maxBatches = unit > 0 ? held / unit : 0;
+        bool affordable = unit > 0 && maxBatches >= 1;
 
-        if (affordable) amountPaid = Mathf.Clamp(amountPaid, unit, maxBatches * unit);
+        if (affordable) amountPaid = Mathf.Clamp(amountPaid / unit, 1, maxBatches) * unit;
         else amountPaid = unit;
-        int batches = Mathf.Max(1, amountPaid / unit);
+        int batches = unit > 0 ? Mathf.Max(1, amountPaid / unit) : 0;
 
         // 지불 재화
         if (sourceIcon != null) { sourceIcon.sprite = GetIcon(src); sourceIcon.enabled = sourceIcon.sprite != null; }
@@ -241,11 +245,11 @@ public class ExchangeModalController : MonoBehaviour
             if (row.icon != null) { row.icon.sprite = GetIcon(target); row.icon.enabled = row.icon.sprite != null; }
             if (row.nameText != null) row.nameText.text = GetKoreanName(target);
 
-            int received = 0;
+            long received = 0;
             if (valid)
             {
                 int perBatch = ExchangeData.GetReceivePerBatch(src, target, level);
-                received = batches * perBatch;
+                received = (long)batches * perBatch;
             }
             if (row.receiveText != null) row.receiveText.text = valid ? $"{received:N0}" : "-";
             if (row.disabledOverlay != null) row.disabledOverlay.SetActive(!valid || !unlocked);
@@ -259,7 +263,9 @@ public class ExchangeModalController : MonoBehaviour
         if (unlocked && affordable && selectedTargetRow >= 0 && TryGetTarget(selectedTargetRow, out ResourceType selTarget))
         {
             int perBatch = ExchangeData.GetReceivePerBatch(src, selTarget, level);
-            canConfirm = perBatch > 0 && (batches * perBatch) > 0 && !gm.Economy.IsAtMax(selTarget);
+            long received = (long)batches * perBatch;
+            canConfirm = received > 0 && received <= int.MaxValue
+                && received <= gm.Economy.GetMax(selTarget) - (long)gm.Economy.Get(selTarget);
         }
         if (btnConfirm != null) btnConfirm.interactable = canConfirm;
         if (confirmDisabledOverlay != null) confirmDisabledOverlay.SetActive(!canConfirm);
@@ -268,6 +274,7 @@ public class ExchangeModalController : MonoBehaviour
         {
             string msg = null;
             if (!unlocked) msg = "교환소가 활성화되지 않았습니다.";
+            else if (unit <= 0) msg = "교환 비용 정보가 없습니다.";
             else if (!affordable) msg = $"교환에 필요한 최소 {unit:N0} {GetKoreanName(src)}이(가) 부족합니다.";
             else if (selectedTargetRow < 0) msg = "교환 받을 자원을 선택하세요.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));

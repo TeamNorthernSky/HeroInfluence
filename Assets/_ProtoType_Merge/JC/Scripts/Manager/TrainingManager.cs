@@ -35,14 +35,24 @@ public class TrainingManager : MonoBehaviour
     [SerializeField] private float[] atkGainPerLevel = { 5f, 10f, 15f };
     [Tooltip("체력 강화 증가량 (레벨 1/2/3 도달 시 가산분)")]
     [SerializeField] private float[] hpGainPerLevel = { 5f, 10f, 15f };
-    [Tooltip("1회 강화 비용 — 자금 (레벨 1/2/3 도달 시)")]
+    [Tooltip("이전 비용 데이터. 호환용 보존이며 실제 비용은 AssociationResourceCatalog 사용")]
     [SerializeField] private int[] costPerLevel = { 1000, 1200, 1400 };
     public const int MaxTrainingLevel = 3;
 
     // 외부 읽기 접근(표시/툴팁용). 편집은 인스펙터에서.
     public IReadOnlyList<float> AtkGainPerLevel => atkGainPerLevel;
     public IReadOnlyList<float> HpGainPerLevel => hpGainPerLevel;
-    public IReadOnlyList<int> CostPerLevel => costPerLevel;
+    public IReadOnlyList<int> CostPerLevel
+    {
+        get
+        {
+            var result = new int[MaxTrainingLevel];
+            for (int i = 0; i < result.Length; i++)
+                result[i] = AssociationCosts.TryTraining(TrainingStat.Attack, i + 1, out var row)
+                    && AssociationCosts.TryMoney(row.Cost, out int money) ? money : -1;
+            return result;
+        }
+    }
 
     [Serializable]
     public class TrainingEntry
@@ -91,8 +101,8 @@ public class TrainingManager : MonoBehaviour
     {
         int level = GetLevel(unitIndex, stat);
         if (level >= GetMaxTrainableLevel()) return -1;
-        if (level >= costPerLevel.Length) return -1;
-        return costPerLevel[level];
+        return AssociationCosts.TryTraining(stat, level + 1, out var row)
+            && AssociationCosts.TryMoney(row.Cost, out int money) ? money : -1;
     }
 
     /// <summary>다음 단계 진행 시 해당 스탯 증가량. 더 못 올리면 0.</summary>
@@ -109,7 +119,7 @@ public class TrainingManager : MonoBehaviour
     public bool CanTrain(int unitIndex, TrainingStat stat)
     {
         if (!IsUnlocked()) return false;
-        return GetLevel(unitIndex, stat) < GetMaxTrainableLevel();
+        return GetNextCost(unitIndex, stat) >= 0;
     }
 
     /// <summary>

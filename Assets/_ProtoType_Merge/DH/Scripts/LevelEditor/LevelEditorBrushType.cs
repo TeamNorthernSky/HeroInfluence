@@ -19,5 +19,6 @@ public enum LevelEditorBrushType
     TutorialBuilding = 17,
     TutorialItem = 18,
     TutorialObject = 20,
-    TutorialEnemy = 21
+    TutorialEnemy = 21,
+    WorldEvent = 22
 }

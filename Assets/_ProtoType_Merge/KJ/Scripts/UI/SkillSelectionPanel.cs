@@ -1,139 +1,72 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>자동 해금된 스킬 한 개를 안내합니다. 확인은 장착·해금 상태를 변경하지 않습니다.</summary>
 public class SkillSelectionPanel : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI unitNameText;
-    [SerializeField] private TextMeshProUGUI rankText;
-    [SerializeField] private TextMeshProUGUI levelUpText;
-    [SerializeField] private TMP_Dropdown skillDropdown;
+    [Tooltip("신규 습득 또는 강화 안내 문구입니다. 제목과 나머지 레이아웃은 공통입니다.")]
+    [SerializeField] private TextMeshProUGUI announcementText;
+    [Tooltip("이번에 해금된 스킬의 이름입니다.")]
+    [SerializeField] private TextMeshProUGUI skillNameText;
+    [Tooltip("이번 스킬의 현재 강화 계수를 반영한 효과 설명입니다.")]
+    [SerializeField] private TextMeshProUGUI effectText;
+    [Tooltip("이번에 해금된 스킬의 아이콘입니다.")]
+    [SerializeField] private Image skillImage;
+    [Tooltip("스킬을 습득한 히어로의 원형 초상화입니다.")]
+    [SerializeField] private Image portraitImage;
+    [Tooltip("안내를 닫고 다음 스킬 또는 전투 결과를 표시합니다. 해금 취소 기능은 없습니다.")]
     [SerializeField] private Button confirmButton;
-    [SerializeField] private Button cancelButton;
-    [SerializeField] private TextMeshProUGUI prevSkillText;
-    [SerializeField] private TextMeshProUGUI nextSkillText;
-    [SerializeField] private Transform portrait;
 
-    private List<int> candidateSkillIds = new List<int>();
+    // 기존 호출 계약 유지. 알림 완료는 -1로 전달하여 이전의 단일 장착 변경을 하지 않습니다.
+    public event System.Action<int> OnCompleted;
+    private bool completed;
 
-    public event System.Action<int> OnCompleted; // 확인: selectedSkillId, 취소: -1
-
-    private void Awake()
-    {
-        if (prevSkillText == null)
-        {
-            Transform t = transform.Find("PrevSkill/Explanation/Text");
-            if (t != null) prevSkillText = t.GetComponent<TextMeshProUGUI>();
-        }
-
-        if (nextSkillText == null)
-        {
-            Transform t = transform.Find("NextSkill/Explanation/Text");
-            if (t != null) nextSkillText = t.GetComponent<TextMeshProUGUI>();
-        }
-
-        confirmButton?.onClick.AddListener(OnConfirm);
-        cancelButton?.onClick.AddListener(OnCancel);
-        skillDropdown?.onValueChanged.AddListener(OnDropdownChanged);
-    }
+    private void Awake() => confirmButton?.onClick.AddListener(OnConfirm);
 
     public void Setup(UnitRewardPreview preview)
     {
-        if (unitNameText != null)
-            unitNameText.text = preview.UnitName;
-
-        if (rankText != null)
-            rankText.text = UnitRankLookup.GetRank(preview.NewLevel);
-
-        if (levelUpText != null)
-            levelUpText.text = $"Lv.{preview.OldLevel} → {preview.NewLevel}";
-
-        // 초상화
-        if (portrait != null)
-        {
-            // [JC 260621] 포트레이트 = PortraitLibrary(키=HeroIndex).
-            Sprite sp = Sprites.Portrait.HeroByUnit(preview.UnitIndex);
-            if (sp != null)
-            {
-                GameObject rawObj = new GameObject("Portrait_Image", typeof(RectTransform), typeof(Image));
-                rawObj.transform.SetParent(portrait, false);
-                rawObj.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
-                RectTransform rt = rawObj.GetComponent<RectTransform>();
-                rt.anchorMin = Vector2.zero;
-                rt.anchorMax = Vector2.one;
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                rawObj.GetComponent<Image>().sprite = sp;
-            }
-        }
-
-        // 현재 ClassSkill 정보 표시
-        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
-
-        DHClassSkillTemplate currentSkill = null;
-        catalog?.TryGetClassSkillTemplate(preview.CurrentClassSkillId, out currentSkill);
-        if (prevSkillText != null)
-            prevSkillText.text = currentSkill != null ? SkillDescriptionBuilder.Build(currentSkill) : "-";
-
-        candidateSkillIds.Clear();
-        var options = new List<TMP_Dropdown.OptionData>();
-        foreach (int skillId in preview.UnlockCandidateSkillIds)
-        {
-            DHClassSkillTemplate skillTemplate = null;
-            catalog?.TryGetClassSkillTemplate(skillId, out skillTemplate);
-            string label = skillTemplate != null ? skillTemplate.SkillName : $"Skill {skillId}";
-            options.Add(new TMP_Dropdown.OptionData(label));
-            candidateSkillIds.Add(skillId);
-        }
-
-        if (skillDropdown != null)
-        {
-            skillDropdown.ClearOptions();
-            skillDropdown.AddOptions(options);
-            skillDropdown.value = 0;
-            skillDropdown.RefreshShownValue();
-        }
-
-        // 첫 번째 후보 스킬 정보 표시
-        UpdateNextSkillText(0);
+        int id = preview.UnlockCandidateSkillIds != null && preview.UnlockCandidateSkillIds.Count > 0
+            ? preview.UnlockCandidateSkillIds[0] : 0;
+        Setup(preview, id);
     }
 
-    private void OnDropdownChanged(int index)
+    public void Setup(UnitRewardPreview preview, int skillId)
     {
-        UpdateNextSkillText(index);
+        completed = false;
+        bool upgraded = HeroSkillRules.IsCurrentHeroSkill(skillId) && HeroSkillRules.FamilyId(skillId) != skillId;
+        if (announcementText != null)
+            announcementText.text = upgraded ? "히어로의 스킬이 강화되었습니다!" : "새로운 히어로 스킬을 습득했습니다!";
+        var catalog = DHCsvTemplateCatalog.Instance;
+        DHClassSkillTemplate skill = null;
+        catalog?.TryGetClassSkillTemplate(skillId, out skill);
+        int level = GameManager.Instance != null && GameManager.Instance.Lab != null
+            ? GameManager.Instance.Lab.GetSkillLevel(preview.UnitIndex, skillId) : 1;
+        level = Mathf.Max(1, level);
+        if (skillNameText != null) skillNameText.text = skill != null ? skill.SkillName : $"스킬 {skillId}";
+        if (effectText != null)
+        {
+            float value = skill != null ? catalog.GetClassSkillValueAtLevel(skillId, level) : 0;
+            float subValue = skill != null ? catalog.GetClassSkillSubValueAtLevel(skillId, level) : 0;
+            effectText.text = skill != null
+                ? ClassSkillTooltipText.ReplaceBattleCoefficients(skill.Description, "ClassSkill", value, subValue)
+                : "스킬 정보를 불러올 수 없습니다.";
+        }
+        SetSprite(skillImage, Sprites.Icon.ClassSkill(skillId, level));
+        SetSprite(portraitImage, Sprites.Portrait.HeroByUnit(preview.UnitIndex));
     }
 
-    private void UpdateNextSkillText(int index)
+    private static void SetSprite(Image image, Sprite sprite)
     {
-        if (nextSkillText == null || index < 0 || index >= candidateSkillIds.Count) return;
-
-        DHClassSkillTemplate nextSkill = null;
-        DHCsvTemplateCatalog.Instance?.TryGetClassSkillTemplate(candidateSkillIds[index], out nextSkill);
-        nextSkillText.text = nextSkill != null ? SkillDescriptionBuilder.Build(nextSkill) : "-";
+        if (image == null) return;
+        image.sprite = sprite;
+        image.enabled = sprite != null;
     }
-
-    private bool completed = false;
 
     private void OnConfirm()
     {
         if (completed) return;
         completed = true;
-        int selectedId = (skillDropdown != null && skillDropdown.value < candidateSkillIds.Count)
-            ? candidateSkillIds[skillDropdown.value]
-            : -1;
-        // [KJ 260729] Destroy는 프레임 끝에 처리되므로 루트를 먼저 끈다.
-        //   그러지 않으면 OnCompleted가 켜는 다음 창과 한 프레임 겹쳐 보인다.
-        gameObject.SetActive(false);
-        OnCompleted?.Invoke(selectedId);
-        Destroy(gameObject);
-    }
-
-    private void OnCancel()
-    {
-        if (completed) return;
-        completed = true;
-        // [KJ 260729] OnConfirm과 동일 — 다음 창과의 1프레임 겹침 방지.
         gameObject.SetActive(false);
         OnCompleted?.Invoke(-1);
         Destroy(gameObject);
