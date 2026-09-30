@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class BattleResultPanel : MonoBehaviour
+public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 {
     [Header("Skill Notifications")]
     [SerializeField] private SkillSelectionPanel getSkillSlotPrefab;
@@ -17,6 +18,10 @@ public class BattleResultPanel : MonoBehaviour
     private int currentSkillIndex = 0;
     private Button boundAcceptButton;
     private bool accepted;
+    private enum PresentationStage { ExpRank, IP, Complete }
+    private PresentationStage presentationStage;
+    private bool presentationReady;
+    private readonly List<HeroInfoResult> presentationCards = new List<HeroInfoResult>();
 
     // [KJ 260729] 스킬 획득 창이 전부 사라진 뒤에 결과 내용을 노출한다.
     //   기존에는 결과 패널 위에 스킬 창이 겹쳐 떠 있었다(GetSkillParent가 결과 패널의 자식이고
@@ -29,6 +34,8 @@ public class BattleResultPanel : MonoBehaviour
         foreach (var slot in skillQueue)
             if (slot != null) { slot.gameObject.SetActive(false); Destroy(slot.gameObject); }
         accepted = false;
+        presentationReady = false;
+        presentationCards.Clear();
         skillResults.Clear();
         pendingSlotCount = 0;
         skillQueue.Clear();
@@ -59,6 +66,14 @@ public class BattleResultPanel : MonoBehaviour
         var ordered = PartyFormation.PackFrontFirst(context != null ? context.CombatParty?.UnitIndices : null);
 
         BuildSlots(plan, view, ordered);
+        foreach (var card in GetComponentsInChildren<HeroInfoResult>(true))
+            if (card != null && card.gameObject.activeSelf)
+            {
+                presentationCards.Add(card);
+                card.HoldIPPresentation();
+            }
+        presentationStage = PresentationStage.ExpRank;
+        presentationReady = true;
         BuildSkillSlots(plan, result, view, ordered);
 
         // [KJ 260729] 스킬 획득 창이 있으면 결과 내용을 숨겨 두고, 마지막 창이 닫힐 때 노출한다.
@@ -132,7 +147,10 @@ public class BattleResultPanel : MonoBehaviour
         if (view.heroIndex == null || view.heroInfoResultPrefab == null) return;
 
         foreach (Transform child in view.heroIndex)
+        {
+            child.gameObject.SetActive(false);
             Destroy(child.gameObject);
+        }
 
         if (orderedUnitIndices == null) return;
 
@@ -216,6 +234,57 @@ public class BattleResultPanel : MonoBehaviour
     }
 
     public List<SkillSelectionResult> GetSkillResults() => skillResults;
+
+    private bool CanAdvancePresentation()
+    {
+        if (!presentationReady || accepted || pendingSlotCount > 0 || !isActiveAndEnabled) return false;
+        var view = GetComponent<BattleResultView>();
+        return view != null && (view.resultContent == null || view.resultContent.activeInHierarchy);
+    }
+
+    private void LateUpdate()
+    {
+        if (CanAdvancePresentation()) AdvancePresentationStage();
+    }
+
+    private void AdvancePresentationStage()
+    {
+        if (presentationStage == PresentationStage.ExpRank)
+        {
+            foreach (var card in presentationCards)
+                if (card != null && !card.IsExpRankComplete) return;
+            presentationStage = PresentationStage.IP;
+            foreach (var card in presentationCards)
+                if (card != null) card.ReleaseIPPresentation();
+        }
+        if (presentationStage == PresentationStage.IP)
+        {
+            foreach (var card in presentationCards)
+                if (card != null && !card.IsIPComplete) return;
+            presentationStage = PresentationStage.Complete;
+        }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left || !CanAdvancePresentation()) return;
+        var hit = eventData.pointerPressRaycast.gameObject ?? eventData.pointerCurrentRaycast.gameObject ?? eventData.rawPointerPress;
+        if (boundAcceptButton != null && hit != null && hit.transform.IsChildOf(boundAcceptButton.transform)) return;
+        AdvancePresentationStage();
+        if (presentationStage == PresentationStage.ExpRank)
+        {
+            // 같은 클릭으로 IP까지 건너뛰지 않는다. 진행 중 랭크 플래시도 재시작/생략하지 않는다.
+            foreach (var card in presentationCards)
+                if (card != null) card.SkipExpToRankFlash();
+            AdvancePresentationStage();
+        }
+        else if (presentationStage == PresentationStage.IP)
+        {
+            foreach (var card in presentationCards)
+                if (card != null) card.SkipIPToCompletionEcho();
+            AdvancePresentationStage();
+        }
+    }
 
     private void Accept()
     {
