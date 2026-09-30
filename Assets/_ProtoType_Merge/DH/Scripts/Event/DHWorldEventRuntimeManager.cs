@@ -18,6 +18,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
     private DHWorldEventTemplate runningTemplate;
     private string runningProgressKey;
     private Action runningClosedCallback;
+    private bool awaitingChoiceResultConfirmation;
     private DHWorldEventPresentationRequest currentRequest;
 
     public bool IsRunning => isRunning;
@@ -157,8 +158,9 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
                 runningSource);
         }
 
-        CompleteRunningEvent();
-        EndCurrentEvent(true);
+        awaitingChoiceResultConfirmation = true;
+        currentRequest = BuildChoiceResultRequest(results);
+        PresentationChanged?.Invoke(currentRequest);
         return true;
     }
 
@@ -235,6 +237,14 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
     {
         if (!CanHandleInput(DHWorldEventPresentationStep.Accept))
             return false;
+
+        if (awaitingChoiceResultConfirmation)
+        {
+            awaitingChoiceResultConfirmation = false;
+            CompleteRunningEvent();
+            EndCurrentEvent(true);
+            return true;
+        }
 
         if (!DHWorldEventResultApplier.TryApply(runningTemplate, runningParty, out string reason))
         {
@@ -434,6 +444,33 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
             DHWorldEventPreviewBuilder.Build(runningTemplate));
     }
 
+    private DHWorldEventPresentationRequest BuildChoiceResultRequest(IReadOnlyList<DHWorldEventResultTemplate> results)
+    {
+        return new DHWorldEventPresentationRequest(
+            runningTemplate,
+            DHWorldEventPresentationStep.Accept,
+            ResolveChoiceResultMessage(results),
+            true,
+            string.Empty,
+            null,
+            DHWorldEventPreviewBuilder.BuildChoiceResult(results));
+    }
+
+    private static string ResolveChoiceResultMessage(IReadOnlyList<DHWorldEventResultTemplate> results)
+    {
+        if (results == null)
+            return string.Empty;
+
+        for (int i = 0; i < results.Count; i++)
+        {
+            string message = results[i].MessageText;
+            if (!string.IsNullOrWhiteSpace(message))
+                return message;
+        }
+
+        return string.Empty;
+    }
+
     private bool TryFindCurrentChoice(string choiceId, out DHWorldEventChoicePresentationOption option)
     {
         option = null;
@@ -495,6 +532,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
         runningTemplate = null;
         runningProgressKey = string.Empty;
         runningClosedCallback = null;
+        awaitingChoiceResultConfirmation = false;
         currentRequest = null;
 
         if (logEvents && closedRequest != null)
