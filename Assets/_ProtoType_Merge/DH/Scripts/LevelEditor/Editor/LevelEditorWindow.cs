@@ -310,7 +310,7 @@ public class LevelEditorWindow : EditorWindow
         if (brushType == LevelEditorBrushType.EnemySpawnPoint)
         {
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnZoneId"), new GUIContent("Zone"));
-            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnEnemyGroupKey"), new GUIContent("CSV Group"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnEnemyGroupKey"), new GUIContent("Enemy Group"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnChatId"), new GUIContent("Spawn Chat"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedEnemySpawnEncounterChatId"), new GUIContent("Meet Chat"));
         }

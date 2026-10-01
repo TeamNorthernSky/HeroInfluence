@@ -16,10 +16,14 @@ MonoBehaviour:
     type: 3}
   npcPrefabs:
   - npcType: 0
-    prefab: {fileID: 919132149155446097, guid: 24af56a6c1456b742908d17cb2816da4, type: 3}
+    prefab: {fileID: 1720866835831745556, guid: fb144cc5da02ad640b901bca0633c424,
+      type: 3}
   - npcType: 1
-    prefab: {fileID: 919132149155446097, guid: aa66c94280b59c141aa43a63241d18bc, type: 3}
+    prefab: {fileID: 3183641201039459982, guid: 61475e70bc4f2e246bf6ad1364ce493c,
+      type: 3}
   - npcType: 2
-    prefab: {fileID: 919132149155446097, guid: 6b787c1501c1efe418ca2f3d4d2a902e, type: 3}
+    prefab: {fileID: 6086658358218158458, guid: 99bab3d82d692654593e4059343bb44e,
+      type: 3}
   - npcType: 3
-    prefab: {fileID: 919132149155446097, guid: 3695195f6a433e04c90d722fcb428dbf, type: 3}
+    prefab: {fileID: 5988322803893661214, guid: 4122db595955e9a49ad83c52026402eb,
+      type: 3}

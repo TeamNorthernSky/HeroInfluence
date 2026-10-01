@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public sealed class WorldEventObject : MonoBehaviour
@@ -19,6 +20,7 @@ public sealed class WorldEventObject : MonoBehaviour
 
     private WorldEventRegistry worldEventRegistry;
     private GameObject spawnedNpcVisual;
+    private Coroutine npcVisualRetryCoroutine;
     private bool isTriggering;
 
     public string WorldEventId => string.IsNullOrWhiteSpace(worldEventId) ? string.Empty : worldEventId.Trim();
@@ -44,12 +46,13 @@ public sealed class WorldEventObject : MonoBehaviour
         worldEventRegistry?.Register(this);
 
         if (Application.isPlaying && spawnNpcVisualOnEnable)
-            RefreshNpcVisual();
+            RequestNpcVisualRefresh();
     }
 
     private void OnDisable()
     {
         worldEventRegistry?.Unregister(this);
+        StopNpcVisualRetry();
     }
 
     public Vector2Int GetCurrentGrid(GridManager targetGridManager = null)
@@ -72,7 +75,7 @@ public sealed class WorldEventObject : MonoBehaviour
         worldEventId = string.IsNullOrWhiteSpace(nextWorldEventId) ? string.Empty : nextWorldEventId.Trim();
 
         if (Application.isPlaying && spawnNpcVisualOnEnable)
-            RefreshNpcVisual();
+            RequestNpcVisualRefresh();
     }
 
     public bool TryTrigger(PartyGridMover party, Action<WorldEventObject> closedCallback = null)
@@ -111,12 +114,45 @@ public sealed class WorldEventObject : MonoBehaviour
     [ContextMenu("Refresh NPC Visual")]
     public void RefreshNpcVisual()
     {
-        if (!TryResolveTemplate(out DHWorldEventTemplate template) || template.NpcType <= 0)
+        TryRefreshNpcVisual();
+    }
+
+    private void RequestNpcVisualRefresh()
+    {
+        if (TryRefreshNpcVisual())
             return;
+
+        if (!isActiveAndEnabled || npcVisualRetryCoroutine != null)
+            return;
+
+        npcVisualRetryCoroutine = StartCoroutine(RetryRefreshNpcVisual());
+    }
+
+    private IEnumerator RetryRefreshNpcVisual()
+    {
+        const int retryFrames = 8;
+        for (int i = 0; i < retryFrames; i++)
+        {
+            yield return null;
+
+            if (!isActiveAndEnabled)
+                break;
+
+            if (TryRefreshNpcVisual())
+                break;
+        }
+
+        npcVisualRetryCoroutine = null;
+    }
+
+    private bool TryRefreshNpcVisual()
+    {
+        if (!TryResolveTemplate(out DHWorldEventTemplate template) || template.NpcType < 0)
+            return false;
 
         LevelPrefabRegistry registry = ResolvePrefabRegistry();
         if (registry == null || !registry.TryGetWorldEventNpcPrefab(template.NpcType, out GameObject prefab) || prefab == null)
-            return;
+            return false;
 
         Transform root = visualRoot != null ? visualRoot : transform;
         if (spawnedNpcVisual != null)
@@ -129,8 +165,18 @@ public sealed class WorldEventObject : MonoBehaviour
 
         spawnedNpcVisual = Instantiate(prefab, root);
         spawnedNpcVisual.transform.localPosition = Vector3.zero;
-        spawnedNpcVisual.transform.localRotation = Quaternion.identity;
+        spawnedNpcVisual.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
         spawnedNpcVisual.transform.localScale = Vector3.one;
+        return true;
+    }
+
+    private void StopNpcVisualRetry()
+    {
+        if (npcVisualRetryCoroutine == null)
+            return;
+
+        StopCoroutine(npcVisualRetryCoroutine);
+        npcVisualRetryCoroutine = null;
     }
 
     public void Complete()
