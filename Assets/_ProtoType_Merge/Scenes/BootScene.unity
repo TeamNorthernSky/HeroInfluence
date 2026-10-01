@@ -222,8 +222,26 @@ MonoBehaviour:
   clipCatalog: {fileID: 11400000, guid: e4ce7ff02a863be418f00b463c2d2ff2, type: 2}
   bgmSource: {fileID: 2114214704}
   sfxSource: {fileID: 1666768554}
+  masterVolume: 1
   bgmVolume: 1
   sfxVolume: 1
+  playBgmOnSceneLoaded: 1
+  stopBgmWhenSceneHasNoBinding: 0
+  sceneBgmBindings:
+  - sceneName: TitleScene
+    bgmKey: TitleScene
+  - sceneName: DHScene_3
+    bgmKey: ExploreScene
+  - sceneName: HQLobbyScene
+    bgmKey: UnionScene
+  - sceneName: TmpBattleScene
+    bgmKey: BattleScene
+  - sceneName: TutorialExploreScene
+    bgmKey: ExploreScene
+  - sceneName: TutorialBattleScene
+    bgmKey: BattleScene
+  - sceneName: TutorialUnionScene
+    bgmKey: UnionScene
   dontDestroyOnLoad: 1
 --- !u!4 &1434841220
 Transform:

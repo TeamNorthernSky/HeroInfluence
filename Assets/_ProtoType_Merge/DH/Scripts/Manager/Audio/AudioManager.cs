@@ -1,16 +1,29 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public sealed class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
 
+    [Header("Catalog")]
     [SerializeField] private DHAudioClipCatalog clipCatalog;
+
+    [Header("Sources")]
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
+
+    [Header("Volumes")]
     [SerializeField, Range(0f, 1f)] private float masterVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float bgmVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float sfxVolume = 1f;
+
+    [Header("Scene BGM")]
+    [SerializeField] private bool playBgmOnSceneLoaded = true;
+    [SerializeField] private bool stopBgmWhenSceneHasNoBinding;
+    [SerializeField] private List<DHSceneBgmBinding> sceneBgmBindings = new List<DHSceneBgmBinding>();
+
+    [Header("Lifetime")]
     [SerializeField] private bool dontDestroyOnLoad = true;
 
     private readonly Dictionary<string, float> sfxBlockedUntil = new Dictionary<string, float>();
@@ -35,6 +48,22 @@ public sealed class AudioManager : MonoBehaviour
 
         ResolveAudioSources();
         ApplyVolumes();
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    private void Start()
+    {
+        if (Instance == this && playBgmOnSceneLoaded)
+            PlayBgmForScene(SceneManager.GetActiveScene().name);
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
     }
 
     public void PlayBgm(string key)
@@ -97,6 +126,18 @@ public sealed class AudioManager : MonoBehaviour
         sfxSource.PlayOneShot(entry.Clip, GetSfxPlaybackVolume(entry));
     }
 
+    public void PlayBgmForScene(string sceneName)
+    {
+        if (TryGetSceneBgmKey(sceneName, out string bgmKey))
+        {
+            PlayBgm(bgmKey);
+            return;
+        }
+
+        if (stopBgmWhenSceneHasNoBinding)
+            StopBgm();
+    }
+
     public void SetMasterVolume(float volume)
     {
         masterVolume = Mathf.Clamp01(volume);
@@ -124,6 +165,26 @@ public sealed class AudioManager : MonoBehaviour
         return TryGetEntryFromList(clipCatalog != null ? clipCatalog.SfxClips : null, key, out entry);
     }
 
+    public bool TryGetSceneBgmKey(string sceneName, out string bgmKey)
+    {
+        string normalizedSceneName = NormalizeSceneName(sceneName);
+        if (!string.IsNullOrWhiteSpace(normalizedSceneName) && sceneBgmBindings != null)
+        {
+            for (int i = 0; i < sceneBgmBindings.Count; i++)
+            {
+                DHSceneBgmBinding binding = sceneBgmBindings[i];
+                if (string.Equals(binding.SceneName, normalizedSceneName, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    bgmKey = binding.BgmKey;
+                    return !string.IsNullOrWhiteSpace(bgmKey);
+                }
+            }
+        }
+
+        bgmKey = string.Empty;
+        return false;
+    }
+
     private static bool TryGetEntryFromList(
         IReadOnlyList<DHAudioClipEntry> entries,
         string key,
@@ -145,6 +206,14 @@ public sealed class AudioManager : MonoBehaviour
 
         entry = default;
         return false;
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (Instance != this || !playBgmOnSceneLoaded)
+            return;
+
+        PlayBgmForScene(scene.name);
     }
 
     private void ResolveAudioSources()
@@ -178,4 +247,19 @@ public sealed class AudioManager : MonoBehaviour
     {
         return masterVolume * sfxVolume * entry.DefaultVolume;
     }
+
+    private static string NormalizeSceneName(string sceneName)
+    {
+        return string.IsNullOrWhiteSpace(sceneName) ? string.Empty : sceneName.Trim();
+    }
+}
+
+[System.Serializable]
+public struct DHSceneBgmBinding
+{
+    [SerializeField] private string sceneName;
+    [SerializeField] private string bgmKey;
+
+    public string SceneName => string.IsNullOrWhiteSpace(sceneName) ? string.Empty : sceneName.Trim();
+    public string BgmKey => DHAudioClipCatalog.NormalizeKey(bgmKey);
 }
