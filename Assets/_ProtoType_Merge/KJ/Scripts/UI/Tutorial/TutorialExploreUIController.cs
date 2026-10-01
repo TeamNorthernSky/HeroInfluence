@@ -7,6 +7,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
     [Tooltip("설명 패널을 표시할 순서대로 등록합니다. 번호는 0부터 시작합니다.")]
     [SerializeField] private GameObject[] panels = System.Array.Empty<GameObject>();
     [SerializeField] private UnityEngine.UI.Button nextButton;
+    private TutorialPublicityExplanationView publicityExplanation;
 
     public int CurrentPanelIndex { get; private set; } = -1;
     public bool IsShowing => CurrentPanelIndex >= 0;
@@ -21,6 +22,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         initialized = true;
         HideTutorial();
         if (nextButton != null) nextButton.onClick.AddListener(ShowNextPanel);
+        publicityExplanation = GetComponent<TutorialPublicityExplanationView>();
     }
 
     private void OnDestroy()
@@ -41,6 +43,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         CurrentPanelIndex = index;
         if (nextButton != null) nextButton.gameObject.SetActive(true);
         panels[index].SetActive(true);
+        if (publicityExplanation != null) publicityExplanation.ShowStep(index);
     }
 
     /// <summary>다음 설명을 표시한다. 마지막 패널 다음에는 닫는다.</summary>
@@ -55,6 +58,7 @@ public sealed class TutorialExploreUIController : MonoBehaviour
 
     public void HideTutorial()
     {
+        if (publicityExplanation != null) publicityExplanation.Hide();
         foreach (GameObject panel in panels)
             if (IsValidPanel(panel)) panel.SetActive(false);
         if (nextButton != null && !transform.IsChildOf(nextButton.transform))
