@@ -159,7 +159,7 @@ GameObject:
   - component: {fileID: 8745406413156085812}
   - component: {fileID: 3923235336960489239}
   - component: {fileID: 2551173665710036070}
-  - component: {fileID: 6653117375689280541}
+  - component: {fileID: 1158628469816489535}
   m_Layer: 5
   m_Name: Game_Clear_Panel
   m_TagString: Untagged
@@ -227,7 +227,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6653117375689280541
+--- !u!114 &1158628469816489535
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -236,17 +236,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 3118079539795110818}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3cb24448fbd1e14dbee742c82b1f1f5, type: 3}
+  m_Script: {fileID: 11500000, guid: 63c28ba7dcb59fe4ca1870d26d7c9e4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  backgroundSprite: {fileID: 0}
-  backgroundPreserveAspect: 0
-  pressLeftBtnSprite: {fileID: 0}
-  fadeInDuration: 0
-  waitBeforePressDuration: 0
-  fadeOutDuration: 0.3
-  titleFadeInDuration: 0.3
-  titleSceneName: Ending CutScene
+  endingSceneName: Ending CutScene
 --- !u!1 &4284144908079100275
 GameObject:
   m_ObjectHideFlags: 0
