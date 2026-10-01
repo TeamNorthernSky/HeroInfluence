@@ -42,16 +42,42 @@ public class HeroInfoResult : MonoBehaviour
     private static readonly int Effect = Shader.PropertyToID("_Effect");
     private static readonly int EffectColor = Shader.PropertyToID("_EffectColor");
 
+    private BattleResultIPPresentation ipPresentation;
+    private bool ipStageReleased = true;
+    public bool IsExpRankComplete => rewardPreview == null || phase == RewardPhase.Complete;
+    public bool IsIPComplete => ipPresentation == null || ipPresentation.IsComplete;
+
+    public void HoldIPPresentation() => ipStageReleased = false;
+    public void ReleaseIPPresentation() => ipStageReleased = true;
+
+    public void SkipExpToRankFlash()
+    {
+        if (IsExpRankComplete || phase == RewardPhase.Rank) return;
+        ShowFinalExp();
+        BeginRankFlash();
+    }
+
+    public void SkipIPToCompletionEcho() => ipPresentation?.SkipToCompletionEcho();
+
+    private void OnEnable() => ipPresentation?.RestorePendingDisplay();
+
     private void Update()
     {
         // 카드가 비활성인 스킬 안내 중에는 Update가 실행되지 않아 진행되지 않는다.
-        if (isActiveAndEnabled) AdvanceRewardPresentation(Time.unscaledDeltaTime);
+        if (isActiveAndEnabled)
+            AdvancePresentation(Time.unscaledDeltaTime);
+    }
+
+    private void AdvancePresentation(float delta)
+    {
+        AdvanceRewardPresentation(delta);
+        if (IsExpRankComplete && ipStageReleased) ipPresentation?.Tick(delta);
     }
 
     private void AdvanceRewardPresentation(float delta)
     {
         if (phase != RewardPhase.Idle && phase != RewardPhase.Complete && rewardSettings == null)
-        { CompleteRewardPresentation(); return; }
+        { CompleteExpRankPresentation(); return; }
         if (phase == RewardPhase.Pending)
         {
             if (expSteps.Count == 0) BeginRankFlash();
@@ -92,7 +118,7 @@ public class HeroInfoResult : MonoBehaviour
             float t = duration > 0f ? Mathf.Clamp01(elapsed / duration) : 1f;
             rankImage.sprite = t < 0.5f ? oldRank : newRank;
             SetEffect(rankImage, flashMaterial, Color.white, t < 0.5f ? t * 2f : (1f - t) * 2f);
-            if (t >= 1f) CompleteRewardPresentation();
+            if (t >= 1f) CompleteExpRankPresentation();
         }
     }
 
@@ -114,7 +140,7 @@ public class HeroInfoResult : MonoBehaviour
     {
         if (rewardPreview == null || !rewardPreview.HasLevelUp || oldRank == null || newRank == null || oldRank == newRank || rankImage == null ||
             flashMaterial == null || rewardSettings == null || rewardSettings.rankFlashDuration <= 0f)
-        { CompleteRewardPresentation(); return; }
+        { CompleteExpRankPresentation(); return; }
         rankImage.sprite = oldRank;
         rankImage.enabled = true;
         rankImage.material = flashMaterial;
@@ -174,6 +200,12 @@ public class HeroInfoResult : MonoBehaviour
 
     public void CompleteRewardPresentation()
     {
+        CompleteExpRankPresentation();
+        ipPresentation?.CompleteImmediately();
+    }
+
+    private void CompleteExpRankPresentation()
+    {
         if (rewardPreview == null) return;
         ShowFinalExp();
         if (rankImage != null)
@@ -194,7 +226,16 @@ public class HeroInfoResult : MonoBehaviour
         rankMaterialCaptured = false;
     }
 
-    private void OnDestroy() => ReleaseRewardMaterials();
+    private void OnDestroy()
+    {
+        ipPresentation?.Dispose();
+        ReleaseRewardMaterials();
+    }
+
+    private void OnDisable()
+    {
+        if (ipPresentation != null && ipPresentation.HasStarted) CompleteRewardPresentation();
+    }
 
     public void Apply(UnitRewardPreview preview)
     {
@@ -245,6 +286,8 @@ public class HeroInfoResult : MonoBehaviour
 
     public void ClearDisplay()
     {
+        ipPresentation?.Dispose(); ipPresentation = null;
+        ipStageReleased = true;
         phase = RewardPhase.Idle; rewardPreview = null; expSteps.Clear();
         ReleaseRewardMaterials();
         if (portraitImage != null) { portraitImage.sprite = null; portraitImage.enabled = false; }
@@ -278,10 +321,13 @@ public class HeroInfoResult : MonoBehaviour
         if (expValueText != null) expValueText.text = $"+{preview.GainedExp}";
         if (ipValueText != null) ipValueText.text = $"{preview.OldInfluence:F0} → {preview.NewInfluence:F0}";
         rewardPreview = preview;
+        var ipSettings = BattleResultIPGainSettings.ForScene(gameObject.scene);
+        if (ipValueText != null && ipSettings != null && preview.InfluenceDelta >= 0)
+            ipPresentation = new BattleResultIPPresentation(ipValueText, preview.OldInfluence, preview.NewInfluence, ipSettings);
         oldRank = FindRank(preview.OldLevel); newRank = FindRank(preview.NewLevel);
         rewardSettings = BattleResultRewardVisualSettings.ForScene(gameObject.scene);
         if (rewardSettings == null || rewardSettings.tintMaterial == null || expGainFill == null || expFill == null || !BuildExpSteps(preview))
-        { CompleteRewardPresentation(); return; }
+        { CompleteExpRankPresentation(); return; }
         gainMaterial = new Material(rewardSettings.tintMaterial) { hideFlags = HideFlags.HideAndDontSave };
         flashMaterial = new Material(rewardSettings.tintMaterial) { hideFlags = HideFlags.HideAndDontSave };
         expGainFill.material = gainMaterial;

@@ -13,7 +13,7 @@ public static class WeaponTooltipText
         var catalog = DHCsvTemplateCatalog.Instance;
         var sb = new StringBuilder();
 
-        sb.AppendLine($"<b>[스킬] {wd.WeaponSkillName}</b>  (IP {wd.IpCost})");
+        sb.AppendLine($"<b>[스킬] {wd.WeaponSkillName}</b>");
         sb.Append(BuildSkillEffect(wd, weaponIndex, level, catalog));
 
         if (catalog != null && catalog.TryGetWeaponBonusAtLevel(weaponIndex, level, out var st))
@@ -41,7 +41,6 @@ public static class WeaponTooltipText
         if (wd == null) return string.Empty;
         var catalog = DHCsvTemplateCatalog.Instance;
         var sb = new StringBuilder();
-        sb.AppendLine($"(IP {wd.IpCost})");
         sb.Append(BuildSkillEffect(wd, weaponIndex, level, catalog, percentageValues));
         return sb.ToString();
     }
@@ -57,7 +56,6 @@ public static class WeaponTooltipText
 
         // 카탈로그 미로드 폴백 — 행 자체 값으로 표시
         var sb = new StringBuilder();
-        sb.AppendLine($"(IP {wd.IPCost})");
         string valStr = wd.WeaponSkillEffect == 0 ? $"×{wd.WeaponSkillValue:0.##}" : $"{wd.WeaponSkillValue:0.##}";
         string subStr = wd.WeaponSkillEffect == 0 ? $"×{wd.WeaponSkillSubValue:0.##}" : $"{wd.WeaponSkillSubValue:0.##}";
         sb.Append(percentageValues

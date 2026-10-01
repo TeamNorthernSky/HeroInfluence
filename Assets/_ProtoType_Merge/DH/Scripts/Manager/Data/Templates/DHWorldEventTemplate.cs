@@ -229,6 +229,7 @@ public readonly struct DHWorldEventResultTemplate
 {
     public DHWorldEventResultKind ResultKind { get; }
     public string ResultGroupId { get; }
+    public string MessageText { get; }
     public int Order { get; }
     public int TargetScope { get; }
     public int EffectType { get; }
@@ -254,9 +255,23 @@ public readonly struct DHWorldEventResultTemplate
         int effectType,
         int effectAmount,
         string note)
+        : this(resultKind, resultGroupId, string.Empty, order, targetScope, effectType, effectAmount, note)
+    {
+    }
+
+    public DHWorldEventResultTemplate(
+        DHWorldEventResultKind resultKind,
+        string resultGroupId,
+        string messageText,
+        int order,
+        int targetScope,
+        int effectType,
+        int effectAmount,
+        string note)
     {
         ResultKind = resultKind;
         ResultGroupId = string.IsNullOrWhiteSpace(resultGroupId) ? string.Empty : resultGroupId.Trim();
+        MessageText = string.IsNullOrWhiteSpace(messageText) ? string.Empty : messageText.Trim().Replace("\\n", "\n");
         Order = order;
         TargetScope = targetScope;
         EffectType = effectType;

@@ -1,0 +1,988 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43dfc12f652c64d45b326b84321ad2ce, type: 3}
+  m_Name: "BranchDB\uBA54\uC778\uC774\uBCA4\uD2B8DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - Branch_ID: 40200
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1RetryAvailable!=1
+    Selection_Text: 
+    Target_Talk_ID: 4020020
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-1 \uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 40200
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4050010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-1 \uC7AC\uC804\uD22C \uB8E8\uD2B8"
+  - Branch_ID: 40201
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uC2DC\uC704\uB300\uB97C \uB3D5\uB294\uB2E4"
+    Target_Talk_ID: 4020180
+    Trigger_Effect: Set_Flag_MainQuest3-1HelpProtesters
+    "\uBE44\uACE0": "\uD589\uB3D9 \uC120\uD0DD / \uC2DC\uC704\uB300 \uD611\uC870"
+  - Branch_ID: 40201
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: "\uB458 \uB2E4 \uC81C\uC555\uD55C\uB2E4"
+    Target_Talk_ID: 4020250
+    Trigger_Effect: Set_Flag_MainQuest3-1Subjugation
+    "\uBE44\uACE0": "\uD589\uB3D9 \uC120\uD0DD / \uC804\uC6D0 \uD1A0\uBC8C"
+  - Branch_ID: 40202
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1HelpProtesters==1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE401
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC2DC\uC704\uB300 \uD611\uC870 \uC804\uD22C"
+  - Branch_ID: 40202
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1Subjugation==1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE402
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC804\uC6D0 \uD1A0\uBC8C \uC804\uD22C"
+  - Branch_ID: 40203
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4030010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 40203
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4040010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 40301
+    Selection_Index: 1C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1HelpProtesters==1
+    Selection_Text: 
+    Target_Talk_ID: 4030050
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC774\uC804 \uC120\uD0DD / \uC2DC\uC704\uB300 \uD611\uC870"
+  - Branch_ID: 40301
+    Selection_Index: 2C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1Subjugation==1
+    Selection_Text: 
+    Target_Talk_ID: 4030140
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC774\uC804 \uC120\uD0DD / \uC804\uC6D0 \uD1A0\uBC8C"
+  - Branch_ID: 40302
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_201101\
+
+      Set_Flag_MainQuest3-1Complete\
+
+      Set_Flag_MainQuest3Complete\
+
+      Disable_MainQuest3-2\
+
+      Disable_MainQuest3-3'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-1 \uC2B9\uB9AC \uBCF4\uC0C1
+      / \uBA54\uC778 \uD018\uC2A4\uD2B8 1 \uC644\uB8CC / \uB300\uCCB4 \uD018\uC2A4\uD2B8
+      \uBE44\uD65C\uC131\uD654"
+  - Branch_ID: 40401
+    Selection_Index: 1C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1HelpProtesters==1
+    Selection_Text: 
+    Target_Talk_ID: 4040030
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC774\uC804 \uC120\uD0DD / \uC2DC\uC704\uB300 \uD611\uC870"
+  - Branch_ID: 40401
+    Selection_Index: 2C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1Subjugation==1
+    Selection_Text: 
+    Target_Talk_ID: 4040060
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC774\uC804 \uC120\uD0DD / \uC804\uC6D0 \uD1A0\uBC8C"
+  - Branch_ID: 40402
+    Selection_Index: 1C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1Defeated!=1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_201102\
+
+      Set_Flag_MainQuest3-1Defeated\
+
+      Set_Flag_MainQuest3-1RetryAvailable'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-1 \uCD5C\uCD08 \uD328\uBC30
+      \uBCF4\uC0C1 / \uC7AC\uC804\uD22C \uD574\uAE08"
+  - Branch_ID: 40402
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_MainQuest3-1RetryAvailable
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-1 \uC7AC\uD328\uBC30 / \uBCF4\uC0C1
+      \uC911\uBCF5 \uC9C0\uAE09 \uBC29\uC9C0"
+  - Branch_ID: 40501
+    Selection_Index: 1C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1HelpProtesters==1
+    Selection_Text: 
+    Target_Talk_ID: 4050030
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC774\uC804 \uC120\uD0DD / \uC2DC\uC704\uB300 \uD611\uC870"
+  - Branch_ID: 40501
+    Selection_Index: 2C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1Subjugation==1
+    Selection_Text: 
+    Target_Talk_ID: 4050060
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC774\uC804 \uC120\uD0DD / \uC804\uC6D0 \uD1A0\uBC8C"
+  - Branch_ID: 40502
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1HelpProtesters==1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE401
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC2DC\uC704\uB300 \uD611\uC870 \uC7AC\uC804\uD22C"
+  - Branch_ID: 40502
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1Subjugation==1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE402
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC804\uC6D0 \uD1A0\uBC8C \uC7AC\uC804\uD22C"
+  - Branch_ID: 40503
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4030010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC7AC\uC804\uD22C \uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 40503
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4040010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 3-1 \uC7AC\uC804\uD22C \uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 40600
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-2RetryAvailable!=1
+    Selection_Text: 
+    Target_Talk_ID: 4060020
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-2 \uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 40600
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4090010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-2 \uC7AC\uC804\uD22C \uB8E8\uD2B8"
+  - Branch_ID: 40601
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE412
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-2 \uB85C\uB2C8 \uC804\uD22C"
+  - Branch_ID: 40602
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4070010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 40602
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4080010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 40701
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_201201\
+
+      Set_Flag_MainQuest3-2Complete\
+
+      Set_Flag_MainQuest3Complete\
+
+      Disable_MainQuest3-1\
+
+      Disable_MainQuest3-3'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-2 \uC2B9\uB9AC / \uB85C\uB2C8
+      \uBCF5\uADC0"
+  - Branch_ID: 40801
+    Selection_Index: 1C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-2Defeated!=1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_201202\
+
+      Set_Flag_MainQuest3-2Defeated\
+
+      Set_Flag_MainQuest3-2RetryAvailable'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-2 \uCD5C\uCD08 \uD328\uBC30"
+  - Branch_ID: 40801
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_MainQuest3-2RetryAvailable
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-2 \uC7AC\uD328\uBC30"
+  - Branch_ID: 40901
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE412
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-2 \uB85C\uB2C8 \uC7AC\uC804\uD22C"
+  - Branch_ID: 40902
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4070010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uC7AC\uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 40902
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4080010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uC7AC\uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 41000
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-3RetryAvailable!=1
+    Selection_Text: 
+    Target_Talk_ID: 4100020
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-3 \uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 41000
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4130010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-3 \uC7AC\uC804\uD22C \uB8E8\uD2B8"
+  - Branch_ID: 41001
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE413
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-3 \uC804\uD22C"
+  - Branch_ID: 41002
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4110010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 3-3 \uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 41002
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4120010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 3-3 \uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 41101
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_201301\
+
+      Set_Flag_MainQuest3-3EngineerAccompany\
+
+      Set_Flag_MainQuest3-3Complete\
+
+      Set_Flag_MainQuest3Complete\
+
+      Disable_MainQuest3-1\
+
+      Disable_MainQuest3-2'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-3 \uC2B9\uB9AC \uBCF4\uC0C1
+      / \uACF5\uB3CC\uC774 \uB3D9\uD589 / \uBA54\uC778 \uD018\uC2A4\uD2B8 1 \uC644\uB8CC
+      / \uB300\uCCB4 \uD018\uC2A4\uD2B8 \uBE44\uD65C\uC131\uD654"
+  - Branch_ID: 41201
+    Selection_Index: 1C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-3Defeated!=1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_201302\
+
+      Set_Flag_MainQuest3-3Defeated\
+
+      Set_Flag_MainQuest3-3RetryAvailable'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-3 \uCD5C\uCD08 \uD328\uBC30
+      \uBCF4\uC0C1 / \uC7AC\uC804\uD22C \uD574\uAE08"
+  - Branch_ID: 41201
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_MainQuest3-3RetryAvailable
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-3 \uC7AC\uD328\uBC30 / \uBCF4\uC0C1
+      \uC911\uBCF5 \uC9C0\uAE09 \uBC29\uC9C0"
+  - Branch_ID: 41301
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE413
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 3-3 \uC7AC\uC804\uD22C"
+  - Branch_ID: 41302
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4110010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 3-3 \uC7AC\uC804\uD22C \uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 41302
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4120010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 3-3 \uC7AC\uC804\uD22C \uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 41400
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest4-1RetryAvailable!=1
+    Selection_Text: 
+    Target_Talk_ID: 4140020
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-1 \uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 41400
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4170010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-1 \uC7AC\uC804\uD22C \uB8E8\uD2B8"
+  - Branch_ID: 41401
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-3EngineerAccompany==1
+    Selection_Text: 
+    Target_Talk_ID: 4140200
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uACF5\uB3CC\uC774 \uC5F0\uACC4"
+  - Branch_ID: 41401
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1HelpProtesters==1
+    Selection_Text: 
+    Target_Talk_ID: 4140100
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uC5F0\uACC4"
+  - Branch_ID: 41401
+    Selection_Index: 3
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4140300
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uBC29\uC5B4\uC120"
+  - Branch_ID: 41410
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE423
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uC5F0\uACC4 / \uC804\uC5F4 \uBD95\uAD34"
+  - Branch_ID: 41420
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE424
+    "\uBE44\uACE0": "\uACF5\uB3CC\uC774 \uC5F0\uACC4 / \uD6C4\uC5F4 \uBB34\uB825\uD654"
+  - Branch_ID: 41430
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE422
+    "\uBE44\uACE0": "\uAE30\uBCF8 / \uC804\uC5F4\xB7\uD6C4\uC5F4 \uC628\uC804"
+  - Branch_ID: 41490
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4150010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 4-1 \uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 41490
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4160010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 4-1 \uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 41501
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-3EngineerAccompany==1
+    Selection_Text: 
+    Target_Talk_ID: 4150200
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uACF5\uB3CC\uC774 \uACB0\uACFC"
+  - Branch_ID: 41501
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1HelpProtesters==1
+    Selection_Text: 
+    Target_Talk_ID: 4150100
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uACB0\uACFC"
+  - Branch_ID: 41501
+    Selection_Index: 3
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4150300
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uACB0\uACFC"
+  - Branch_ID: 41590
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_202101\
+
+      Set_Flag_MainQuest4-1Complete\
+
+      Set_Flag_MainQuest4Complete\
+
+      Disable_MainQuest4-2'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-1 \uC2B9\uB9AC"
+  - Branch_ID: 41601
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-3EngineerAccompany==1
+    Selection_Text: 
+    Target_Talk_ID: 4160200
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uACF5\uB3CC\uC774 \uD328\uBC30 \uACB0\uACFC"
+  - Branch_ID: 41601
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1HelpProtesters==1
+    Selection_Text: 
+    Target_Talk_ID: 4160100
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uD328\uBC30 \uACB0\uACFC"
+  - Branch_ID: 41601
+    Selection_Index: 3
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4160300
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uD328\uBC30 \uACB0\uACFC"
+  - Branch_ID: 41690
+    Selection_Index: 1C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest4-1Defeated!=1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_202102\
+
+      Set_Flag_MainQuest4-1Defeated\
+
+      Set_Flag_MainQuest4-1RetryAvailable'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-1 \uCD5C\uCD08 \uD328\uBC30"
+  - Branch_ID: 41690
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_MainQuest4-1RetryAvailable
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-1 \uC7AC\uD328\uBC30"
+  - Branch_ID: 41701
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-3EngineerAccompany==1
+    Selection_Text: 
+    Target_Talk_ID: 4170200
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uACF5\uB3CC\uC774 \uC7AC\uC804\uD22C"
+  - Branch_ID: 41701
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1HelpProtesters==1
+    Selection_Text: 
+    Target_Talk_ID: 4170100
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uC7AC\uC804\uD22C"
+  - Branch_ID: 41701
+    Selection_Index: 3
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4170300
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uC7AC\uC804\uD22C"
+  - Branch_ID: 41710
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE423
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uC5F0\uACC4 \uC7AC\uC804\uD22C"
+  - Branch_ID: 41720
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE424
+    "\uBE44\uACE0": "\uACF5\uB3CC\uC774 \uC5F0\uACC4 \uC7AC\uC804\uD22C"
+  - Branch_ID: 41730
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE422
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uC7AC\uC804\uD22C"
+  - Branch_ID: 41790
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4150010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 4-1 \uC7AC\uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 41790
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4160010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 4-1 \uC7AC\uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 41800
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest4-2RetryAvailable!=1
+    Selection_Text: 
+    Target_Talk_ID: 4180020
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-2 \uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 41800
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4210010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-2 \uC7AC\uC804\uD22C \uB8E8\uD2B8"
+  - Branch_ID: 41801
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-2Complete==1
+    Selection_Text: 
+    Target_Talk_ID: 4180100
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uBCF5\uADC0 \uB8E8\uD2B8"
+  - Branch_ID: 41801
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4180200
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC9C0\uD718\uAD00 \uBD80\uC7AC \uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 41810
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE421
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uBCF5\uADC0 / \uC0AC\uAE30 \uC0C1\uC2B9 UMT"
+  - Branch_ID: 41820
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE425
+    "\uBE44\uACE0": "\uAE30\uBCF8 / \uC9C0\uD718\uAD00 \uBD80\uC7AC UMT"
+  - Branch_ID: 41890
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4190010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 4-2 \uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 41890
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4200010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 4-2 \uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 41901
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-2Complete==1
+    Selection_Text: 
+    Target_Talk_ID: 4190100
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uBCF5\uADC0 \uACB0\uACFC"
+  - Branch_ID: 41901
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4190200
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uACB0\uACFC"
+  - Branch_ID: 41990
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_202201\
+
+      Set_Flag_MainQuest4-2Complete\
+
+      Set_Flag_MainQuest4Complete\
+
+      Disable_MainQuest4-1'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-2 \uC2B9\uB9AC"
+  - Branch_ID: 42001
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-2Complete==1
+    Selection_Text: 
+    Target_Talk_ID: 4200100
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uBCF5\uADC0 \uD328\uBC30 \uACB0\uACFC"
+  - Branch_ID: 42001
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4200200
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uD328\uBC30 \uACB0\uACFC"
+  - Branch_ID: 42090
+    Selection_Index: 1C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest4-2Defeated!=1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_202202\
+
+      Set_Flag_MainQuest4-2Defeated\
+
+      Set_Flag_MainQuest4-2RetryAvailable'
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-2 \uCD5C\uCD08 \uD328\uBC30"
+  - Branch_ID: 42090
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_MainQuest4-2RetryAvailable
+    "\uBE44\uACE0": "\uBA54\uC778 \uD018\uC2A4\uD2B8 4-2 \uC7AC\uD328\uBC30"
+  - Branch_ID: 42101
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-2Complete==1
+    Selection_Text: 
+    Target_Talk_ID: 4210100
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uBCF5\uADC0 \uC7AC\uC804\uD22C"
+  - Branch_ID: 42101
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4210200
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uC7AC\uC804\uD22C"
+  - Branch_ID: 42110
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE421
+    "\uBE44\uACE0": "\uB85C\uB2C8 \uBCF5\uADC0 \uC7AC\uC804\uD22C"
+  - Branch_ID: 42120
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE425
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uC7AC\uC804\uD22C"
+  - Branch_ID: 42190
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4190010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 4-2 \uC7AC\uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 42190
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4200010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBA54\uC778 4-2 \uC7AC\uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 42200
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuestBoss2RetryAvailable!=1
+    Selection_Text: 
+    Target_Talk_ID: 4220020
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBCF4\uC2A4 \uD018\uC2A4\uD2B8 2 \uAE30\uBCF8 \uB8E8\uD2B8"
+  - Branch_ID: 42200
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4250010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uBCF4\uC2A4 \uD018\uC2A4\uD2B8 2 \uC7AC\uC804\uD22C \uB8E8\uD2B8"
+  - Branch_ID: 42201
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE490
+    "\uBE44\uACE0": "\uC728\uB9AC\uC544 \uCD5C\uC885\uC804"
+  - Branch_ID: 42202
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4230010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uCD5C\uC885\uC804 \uC2B9\uB9AC"
+  - Branch_ID: 42202
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4240010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uCD5C\uC885\uC804 \uD328\uBC30"
+  - Branch_ID: 42301
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_203101\
+
+      Set_Flag_MainQuestBoss2Complete'
+    "\uBE44\uACE0": "\uCD5C\uC885\uC804 \uC2B9\uB9AC \uBCF4\uC0C1 / \uC5D0\uD544\uB85C\uADF8
+      \uC9C4\uC785"
+  - Branch_ID: 42401
+    Selection_Index: 1C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuestBoss2Defeated!=1
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_203102\
+
+      Set_Flag_MainQuestBoss2Defeated\
+
+      Set_Flag_MainQuestBoss2RetryAvailable'
+    "\uBE44\uACE0": "\uCD5C\uC885\uC804 \uCD5C\uCD08 \uD328\uBC30"
+  - Branch_ID: 42401
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Set_Flag_MainQuestBoss2RetryAvailable
+    "\uBE44\uACE0": "\uCD5C\uC885\uC804 \uC7AC\uD328\uBC30"
+  - Branch_ID: 42501
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE490
+    "\uBE44\uACE0": "\uC728\uB9AC\uC544 \uCD5C\uC885\uC804 \uC7AC\uC804\uD22C"
+  - Branch_ID: 42502
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4230010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uCD5C\uC885\uC804 \uC7AC\uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 42502
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4240010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uCD5C\uC885\uC804 \uC7AC\uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 43601
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-2Complete==1
+    Selection_Text: 
+    Target_Talk_ID: 4361020
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uB85C\uB2C8\uC640 \uB9CC\uB0A8(\uBA54\uC778 3-2 \uC644\uB8CC)"
+  - Branch_ID: 0
+    Selection_Index: 2A
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 
+    "\uBE44\uACE0": 
+  - Branch_ID: 0
+    Selection_Index: 
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uAE30\uBCF8 \uC870\uC6B0"

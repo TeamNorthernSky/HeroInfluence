@@ -18,7 +18,7 @@ public static class ClassSkillTooltipText
         return (percentageValues
             ? ReplaceBattleCoefficients(d, "ClassSkill", v, sub)
             : d.Replace("{ClassSkillValue}", vStr).Replace("{ClassSkillSubValue}", subStr))
-            + $"\n협회 강화 {(level <= 1 ? "기본" : "+" + (level - 1))} · 리스크 확률 {HeroSkillRules.RiskChance(level) * 100f:0}%";
+            + $"\n협회 강화 {(level <= 1 ? "기본" : "+" + (level - 1))}";
     }
 
     /// <summary>[임시 브리지 260805] ASB BattleCharactor 가 아직 SkillData 를 노출(KJ SkillButtonTooltip 소비).
@@ -38,7 +38,7 @@ public static class ClassSkillTooltipText
         return (percentageValues
             ? ReplaceBattleCoefficients(d, "ClassSkill", s.skillValue, s.skillSubValue)
             : d.Replace("{ClassSkillValue}", vStr).Replace("{ClassSkillSubValue}", subStr))
-            + $"\n협회 강화 {(level <= 1 ? "기본" : "+" + (level - 1))} · 리스크 확률 {HeroSkillRules.RiskChance(level) * 100f:0}%";
+            + $"\n협회 강화 {(level <= 1 ? "기본" : "+" + (level - 1))}";
     }
     /// <summary>전투 표시용 계수 토큰만 백분율로 바꿉니다. IP·횟수·기존 숫자는 변경하지 않습니다.</summary>
     internal static string ReplaceBattleCoefficients(string description, string prefix, float value, float subValue)

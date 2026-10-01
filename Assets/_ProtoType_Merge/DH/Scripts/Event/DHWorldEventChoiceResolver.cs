@@ -126,12 +126,25 @@ public static class DHWorldEventChoiceResolver
                 builder.Append(c);
         }
 
-        return float.TryParse(
-            builder.ToString(),
-            NumberStyles.Float,
-            CultureInfo.InvariantCulture,
-            out float value)
-            ? value
-            : 0f;
+        if (!float.TryParse(
+                builder.ToString(),
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out float value))
+        {
+            return 0f;
+        }
+
+        string normalized = raw.Trim().ToUpperInvariant();
+        if (normalized.Contains("%P") || normalized.EndsWith("P", System.StringComparison.Ordinal))
+            return value / 100f;
+
+        if (!normalized.Contains("%") && Mathf.Abs(value) <= 1f)
+            return value * 100f;
+
+        if (value > 100f)
+            return value / 100f;
+
+        return value;
     }
 }

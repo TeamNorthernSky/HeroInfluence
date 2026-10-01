@@ -131,6 +131,9 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
 
     private static string Message(DHWorldEventPresentationRequest request)
     {
+        if (request != null && request.IsWaitingFinalConfirm)
+            return string.IsNullOrWhiteSpace(request.MessageText) ? request.DescriptionText : request.MessageText;
+
         return string.IsNullOrWhiteSpace(request.DisabledReason)
             ? request.DescriptionText
             : request.DescriptionText + "\n" + UnavailableMessage(request.DisabledReason);
@@ -171,6 +174,17 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
         choiceTitle.text = string.IsNullOrWhiteSpace(request.WorldEventName) ? "선택형 이벤트" : request.WorldEventName;
         choiceMessage.text = Message(request);
         cancelId = null;
+        if (request.IsWaitingFinalConfirm)
+        {
+            for (int i = 0; i < cards.Count; i++)
+                cards[i].Button.gameObject.SetActive(false);
+
+            cancelText.text = "\uD655\uC778";
+            choiceCancel.interactable = true;
+            choiceCancel.gameObject.SetActive(true);
+            return;
+        }
+
         int index = 0;
         DHWorldEventTemplate template = null;
         if (DHWorldEventCatalog.Instance != null)
@@ -219,6 +233,12 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
 
     private void OnCancel()
     {
+        if (current != null && current.IsWaitingFinalConfirm && choiceCancel.interactable && CanSubmit(DHWorldEventType.Choice))
+        {
+            manager.ConfirmCurrentMessage();
+            return;
+        }
+
         if (choiceCancel.interactable && !string.IsNullOrEmpty(cancelId) && CanSubmit(DHWorldEventType.Choice))
             manager.SelectChoice(cancelId);
     }

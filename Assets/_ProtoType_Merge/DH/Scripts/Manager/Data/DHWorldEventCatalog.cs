@@ -389,6 +389,7 @@ public sealed class DHWorldEventCatalog : MonoBehaviour
             list.Add(new DHWorldEventResultTemplate(
                 DHWorldEventResultKind.ChoiceEffect,
                 resultGroupId,
+                row.world_event_accept,
                 list.Count + 1,
                 row.target_scope,
                 row.effect_type,
