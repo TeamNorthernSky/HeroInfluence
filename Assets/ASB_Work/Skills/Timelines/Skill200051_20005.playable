@@ -329,20 +329,6 @@ MonoBehaviour:
     m_ScenePreview: 1
   m_DurationMode: 0
   m_MarkerTrack: {fileID: 4243743452583643204}
---- !u!114 &41253475610907715
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b9f0b70f2822b1439a1f6b75599521f, type: 3}
-  m_Name: Presentation Hold Marker
-  m_EditorClassIdentifier: 
-  m_Time: 0.15
-  _durationSeconds: 0.05
 --- !u!114 &1486202139630233513
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -408,7 +394,6 @@ MonoBehaviour:
     - {fileID: 8459121555820833879}
     - {fileID: -6079528104584193264}
     - {fileID: 2983912598449466527}
-    - {fileID: 41253475610907715}
 --- !u!114 &7228190562714446115
 MonoBehaviour:
   m_ObjectHideFlags: 1

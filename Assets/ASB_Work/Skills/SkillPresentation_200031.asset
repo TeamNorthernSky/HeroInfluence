@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
-  m_Name: SkillPresentation_200021
+  m_Name: SkillPresentation_200031
   m_EditorClassIdentifier: 
-  SkillIndex: 200021
+  SkillIndex: 200031
   PresentationSchemaVersion: 1
   AnimationRail: 1
   PresentationArchetype: 0
   SkillTimelines:
-  - CharacterKey: 20002
-    Timeline: {fileID: 11400000, guid: 03d9990b5218d7344ac87f46f65fbe71, type: 2}
+  - CharacterKey: 20003
+    Timeline: {fileID: 11400000, guid: 5610a9fd182fd5845bf84a2dbb4067fe, type: 2}
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -71,17 +71,7 @@ MonoBehaviour:
       BlendInSeconds: 0
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
-      Cues:
-      - CueName: 
-        EffectIds: 
-        SoundIds: 
-        Operation: 0
-        InstanceKey: 
-        Anchor: 0
-        Socket: 0
-        Timing: 0
-        Time: 0
-        CueId: 33ac080f912143cdbbb50bf6ada54c29
+      Cues: []
   Return:
     Enabled: 1
     AnimationStateName: 

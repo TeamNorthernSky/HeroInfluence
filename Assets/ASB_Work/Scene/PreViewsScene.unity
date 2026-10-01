@@ -3455,17 +3455,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerUnitDataTable: {fileID: 11400000, guid: 7377f5f81ed19444787d168f9dce8ebb,
+  playerUnitDataTable: {fileID: 11400000, guid: b4122d1793c299d4cab67f9cfedaa4e5,
     type: 2}
-  enemyUnitInfoDataTable: {fileID: 11400000, guid: e76cb054dd6579c48862410bc6d9929f,
+  enemyUnitInfoDataTable: {fileID: 11400000, guid: 58b1efb7032b6d9449411e9388f8f172,
     type: 2}
-  playerWeaponDataTable: {fileID: 11400000, guid: cf9d6f78837c56c4f93f88803f090b6f,
+  playerWeaponDataTable: {fileID: 11400000, guid: 7d79b2f4688a59d46892dfc21a1d8026,
     type: 2}
-  classSkillDataTable: {fileID: 11400000, guid: efefb0955fb007540ac909271643ab0f,
+  classSkillDataTable: {fileID: 11400000, guid: c335171227ab4b44faaab663c54d0239,
     type: 2}
-  unitGrowthExpDataTable: {fileID: 11400000, guid: 3a3582c35af186b4bb20d742a3a2b548,
+  unitGrowthExpDataTable: {fileID: 11400000, guid: 48e95fdabbaae5a4daaa578fbb52c037,
     type: 2}
-  enemyGroupDataTable: {fileID: 11400000, guid: a2e3aec4ec0ac164686a3cfb66e5b18f,
+  enemyGroupDataTable: {fileID: 11400000, guid: 4ff84c791b474d44b96f3ce299faa0bf,
     type: 2}
   sector4EnemyUnitDataTable: {fileID: 0}
   sector4EnemyGroupDataTable: {fileID: 0}

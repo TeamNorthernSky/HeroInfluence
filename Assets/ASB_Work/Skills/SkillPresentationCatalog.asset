@@ -62,3 +62,11 @@ MonoBehaviour:
     Presentation: {fileID: 11400000, guid: aa07bed621be37f46a0df7afc4731e25, type: 2}
   - SkillIndex: 200052
     Presentation: {fileID: 11400000, guid: 8366967fd0824fc458874ea8e5391bdb, type: 2}
+  - SkillIndex: 200012
+    Presentation: {fileID: 11400000, guid: 60576fb17b8fb374093d61421b7a35f8, type: 2}
+  - SkillIndex: 200022
+    Presentation: {fileID: 11400000, guid: d385d40fbf33d454e9a2bb6c364c94b2, type: 2}
+  - SkillIndex: 200031
+    Presentation: {fileID: 11400000, guid: 101d7283e4833db44ba309ec4bfdd0f3, type: 2}
+  - SkillIndex: 200032
+    Presentation: {fileID: 11400000, guid: c769188f49186a14e8b7ae597df8184d, type: 2}
