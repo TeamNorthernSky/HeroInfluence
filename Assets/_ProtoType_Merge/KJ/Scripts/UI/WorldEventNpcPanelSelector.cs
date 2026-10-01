@@ -31,6 +31,21 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private bool questListHidden;
     private string questEventId;
     private bool choiceSubmitted;
+    private static int resultConfirmedFrame = -1;
+
+    // 종료로 요청이 사라진 뒤에도 같은 프레임의 ESC는 시스템 메뉴에서 사용하지 않는다.
+    public static bool BlocksSystemMenuEscape
+    {
+        get
+        {
+            if (resultConfirmedFrame == Time.frameCount) return true;
+            var request = DHWorldEventRuntimeManager.Instance != null
+                ? DHWorldEventRuntimeManager.Instance.CurrentRequest : null;
+            return request != null && request.SourceType == DHWorldEventSourceType.Npc &&
+                request.IsWaitingFinalConfirm &&
+                (request.EventType == DHWorldEventType.Consume || request.EventType == DHWorldEventType.Choice);
+        }
+    }
 
     private void SetQuestListHidden(bool hidden)
     {
@@ -48,7 +63,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && resultClickArea != null &&
+        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Escape)) && resultClickArea != null &&
             resultClickArea.isActiveAndEnabled && resultClickArea.IsInteractable())
         {
             resultClickArea.onClick.Invoke();
@@ -329,6 +344,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     {
         if (current == null || !current.IsWaitingFinalConfirm ||
             Time.frameCount == resultShownFrame || !CanSubmit(resultClickArea)) return;
+        resultConfirmedFrame = Time.frameCount;
         manager.ConfirmCurrentMessage();
     }
 
