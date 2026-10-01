@@ -12,6 +12,8 @@ public class ExplorationHUDController : MonoBehaviour
 {
     [Header("턴/주/일 텍스트 (비우면 이름 자동 탐색)")]
     [SerializeField] private TextMeshProUGUI turnWeekDayText; // Text_TurnWeekDay
+    [Tooltip("표시할 최대 턴 수. 0 이하이면 35를 사용합니다.")]
+    public int maxTurn;
 
     [Header("턴 종료 버튼 / TurnManager (비우면 자동 탐색)")]
     [SerializeField] private Button nextTurnButton;           // BTN_Explor_NextTurn
@@ -126,6 +128,13 @@ public class ExplorationHUDController : MonoBehaviour
     {
         if (turnWeekDayText == null) return;
         int day = ResolveCurrentDay();
+        if (turnWeekDayText.transform.parent != null &&
+            turnWeekDayText.transform.parent.name == "Current Turn Info")
+        {
+            int displayMaxTurn = maxTurn > 0 ? maxTurn : 35;
+            turnWeekDayText.text = $"{day}/{displayMaxTurn}";
+            return;
+        }
         int week = (day - 1) / DaysPerWeek + 1;
         int dayInWeek = (day - 1) % DaysPerWeek + 1;
         turnWeekDayText.text = $"{day}턴  {week}주  {dayInWeek}일";
