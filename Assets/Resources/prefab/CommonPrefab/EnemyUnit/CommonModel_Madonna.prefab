@@ -263,8 +263,13 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: f68c8cb442b1b4a42b8d8d18450f4ffa,
         type: 3}
       propertyPath: m_Name
-      value: Madonna.001
+      value: CommonModel_Madonna
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: f68c8cb442b1b4a42b8d8d18450f4ffa,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 53a7bb01c299b4d4f86243ef3f7af0ac, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -297,6 +302,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8815890462982266424}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f68c8cb442b1b4a42b8d8d18450f4ffa,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1059907416894372604}
   m_SourcePrefab: {fileID: 100100000, guid: f68c8cb442b1b4a42b8d8d18450f4ffa, type: 3}
 --- !u!4 &1058092600567035071 stripped
 Transform:
@@ -356,6 +365,22 @@ MonoBehaviour:
   overheadSocketObject: {fileID: 0}
   frontProjectileSocketObject: {fileID: 0}
   visualRoot: {fileID: 0}
+--- !u!114 &1059907416894372604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6012436771117230455}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b3a68e7fbb1ebd45af8f874bc1dd619, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lockLeftHand: 1
+  lockRightHand: 1
+  leftHandRestEuler: {x: -4.111, y: -1.781, z: -8.397}
+  rightHandRestEuler: {x: -1.863, y: -2.813, z: 2.727}
 --- !u!4 &6357859809722643405 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: f68c8cb442b1b4a42b8d8d18450f4ffa,

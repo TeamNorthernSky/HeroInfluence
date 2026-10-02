@@ -8,4 +8,12 @@ namespace ASB.Work.Battle.SkillExecution
     {
         SkillExecutionResult Execute(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillData additionalSkillData);
     }
+
+    /// <summary>
+    /// 피해·회복·상태이상 결과가 없어도 시전 연출을 1회 재생해야 하는 핸들러 표시(소환 등).
+    /// BattleManager가 연출을 마친 뒤 OnPostExecution을 실행한다. 미구현 핸들러는 현행대로 연출 없음.
+    /// </summary>
+    public interface ICastOnlyPresentationHandler
+    {
+    }
 }

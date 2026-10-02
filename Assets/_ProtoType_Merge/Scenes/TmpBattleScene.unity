@@ -2008,7 +2008,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55641ff6ea58232498da66741bfe785b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabCatalog: {fileID: 0}
+  prefabCatalog: {fileID: 11400000, guid: 90e0c13cfe2c06146a477ef2871b0f2f, type: 2}
   prefabManager: {fileID: 0}
   debugSpawnRequests:
   - unitId: 
@@ -12576,7 +12576,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c51124d7b0f5be4c8be26e31d253b89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabCatalog: {fileID: 0}
+  prefabCatalog: {fileID: 11400000, guid: 90e0c13cfe2c06146a477ef2871b0f2f, type: 2}
   prefabManager: {fileID: 0}
   debugSpawnRequests:
   - unitId: 

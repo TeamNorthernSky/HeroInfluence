@@ -14,6 +14,7 @@ namespace ASB.Work.Battle.Sequence
         private readonly float _duration;
         private readonly string _animationStateName;
         private readonly float _blendInSeconds;
+        private readonly bool _keepCurrentAnimation;
 
         public MoveToOriginAction(
             CharactorAnimationController anim,
@@ -21,7 +22,8 @@ namespace ASB.Work.Battle.Sequence
             Quaternion originalRotation,
             float duration,
             string animationStateName,
-            float blendInSeconds)
+            float blendInSeconds,
+            bool keepCurrentAnimation = false)
         {
             _anim = anim;
             _origin = origin;
@@ -29,6 +31,7 @@ namespace ASB.Work.Battle.Sequence
             _duration = duration;
             _animationStateName = animationStateName;
             _blendInSeconds = blendInSeconds;
+            _keepCurrentAnimation = keepCurrentAnimation;
         }
 
         public override IEnumerator ExecuteRoutine(MonoBehaviour host)
@@ -39,7 +42,8 @@ namespace ASB.Work.Battle.Sequence
             }
 
             yield return _anim.StartCoroutine(_anim.MoveToOrigin(
-                _origin, _originalRotation, _duration, _animationStateName, _blendInSeconds));
+                _origin, _originalRotation, _duration, _animationStateName, _blendInSeconds,
+                _keepCurrentAnimation));
         }
     }
 }

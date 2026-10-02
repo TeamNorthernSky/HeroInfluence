@@ -30,17 +30,20 @@ public class PresentationSignalMarker : Marker, INotification, INotificationOpti
 
     [Tooltip("선택: CueId(자동 생성 GUID). 넣으면 CueName보다 우선하며 동명 Cue를 정확히 특정합니다. 이름이 유니크하면 비워도 됨.")]
     [SerializeField] private string _cueId;
+    [SerializeField, Min(0)] private int _targetSlot;
 
     public PresentationSignalKind Kind => _kind;
     public string CueName => _cueName;
     public string CueId => _cueId;
+    public int TargetSlot => _targetSlot;
 
     /// <summary>런타임에 값 주입용(Jig '굽기'에서 마커 생성 시 설정).</summary>
-    public void Configure(PresentationSignalKind kind, string cueName, string cueId = null)
+    public void Configure(PresentationSignalKind kind, string cueName, string cueId = null, int targetSlot = 0)
     {
         _kind = kind;
         _cueName = cueName;
         _cueId = cueId;
+        _targetSlot = Mathf.Max(0, targetSlot);
     }
 
     PropertyName INotification.id => new PropertyName("PresentationSignal");

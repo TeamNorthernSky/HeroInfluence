@@ -19,7 +19,9 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
 
     private UnitAnimationEventRouter _router;
     private Action _onImpact;
+    private Action<int> _onImpactSlot;
     private Action _onProjectile;
+    private Action<PresentationMoveMarker> _onMove;
     private double _activeStart = double.NegativeInfinity;
     private double _activeEnd = double.PositiveInfinity;
 
@@ -36,7 +38,21 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
     {
         _router = router;
         _onImpact = onImpact;
+        _onImpactSlot = null;
         _onProjectile = onProjectile;
+        _onMove = null;
+        _activeStart = activeStart;
+        _activeEnd = activeEnd;
+    }
+
+    public void ConfigureForPlan(UnitAnimationEventRouter router, Action<int> onImpactSlot,
+        Action<PresentationMoveMarker> onMove, double activeStart, double activeEnd)
+    {
+        _router = router;
+        _onImpact = null;
+        _onImpactSlot = onImpactSlot;
+        _onProjectile = null;
+        _onMove = onMove;
         _activeStart = activeStart;
         _activeEnd = activeEnd;
     }
@@ -45,13 +61,21 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
     {
         _router = null;
         _onImpact = null;
+        _onImpactSlot = null;
         _onProjectile = null;
+        _onMove = null;
         _activeStart = double.NegativeInfinity;
         _activeEnd = double.PositiveInfinity;
     }
 
     public void OnNotify(Playable origin, INotification notification, object context)
     {
+        if (notification is PresentationMoveMarker move)
+        {
+            if (move.time >= _activeStart - 0.0001d && move.time <= _activeEnd + 0.0001d)
+                _onMove?.Invoke(move);
+            return;
+        }
         if (!(notification is PresentationSignalMarker marker)) return;
         if (marker.time < _activeStart - 0.0001d || marker.time > _activeEnd + 0.0001d) return;
 
@@ -68,7 +92,8 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
                 else _router?.PresentationCueByName(marker.CueName);
                 break;
             case PresentationSignalKind.Impact:
-                _onImpact?.Invoke();
+                if (_onImpactSlot != null) _onImpactSlot(marker.TargetSlot);
+                else _onImpact?.Invoke();
                 break;
             case PresentationSignalKind.Projectile:
                 _onProjectile?.Invoke();

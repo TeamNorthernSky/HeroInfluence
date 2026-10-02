@@ -17,6 +17,170 @@ public sealed class TimelineRailPlayModeTests
 
     private const int SkillIndex = 990201;
 
+    [UnityTest]
+    public IEnumerator MultiTargetPlan_PlaysTwoSegmentsAndCommitsEachSlotOnce()
+    {
+        Fixture fixture = BuildFixture(0.12d);
+        TimelineAsset second = ScriptableObject.CreateInstance<TimelineAsset>();
+        AnimationClip secondClip = new AnimationClip { name = "SecondSegment", frameRate = 30f };
+        GameObject secondTargetObject = new GameObject("TimelineRailSecondTarget");
+        try
+        {
+            Type characterType = fixture.CharacterType;
+            Component secondTarget = CreateInitializedUnit(secondTargetObject, characterType, false, 1f);
+            secondTargetObject.transform.position = new Vector3(5f, 0f, 0f);
+            var track = second.CreateTrack<AnimationTrack>(null, "Animation");
+            secondClip.SetCurve(string.Empty, typeof(Transform), "m_LocalPosition.x",
+                AnimationCurve.Linear(0f, 0f, 0.12f, 0f));
+            track.CreateClip(secondClip);
+            AddImpactMarker(fixture.Timeline, 0.05d);
+            AddImpactMarker(second, 0.05d);
+            AddMoveMarkers(second, 0.02d, 0.08d);
+            SetEnumField(fixture.Data.GetType(), fixture.Data, "PresentationArchetype", "Melee");
+            foreach (string fieldName in new[] { "Move", "Return" })
+            {
+                object phase = fixture.Data.GetType().GetField(fieldName).GetValue(fixture.Data);
+                phase.GetType().GetField("Enabled").SetValue(phase, false);
+            }
+
+            Type bindingType = FindRuntimeType("SkillTimelineBinding");
+            Type segmentType = FindRuntimeType("SkillTimelineSegment");
+            Type listType = typeof(List<>).MakeGenericType(bindingType);
+            var bindings = (IList)Activator.CreateInstance(listType);
+            var two = Activator.CreateInstance(bindingType);
+            bindingType.GetField("CharacterKey").SetValue(two,
+                characterType.GetProperty("UnitName").GetValue(fixture.Actor));
+            bindingType.GetField("TargetCount").SetValue(two, 2);
+            var segmentList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(segmentType));
+            foreach (TimelineAsset timeline in new[] { fixture.Timeline, second })
+            {
+                object segment = Activator.CreateInstance(segmentType);
+                segmentType.GetField("Timeline").SetValue(segment, timeline);
+                segmentType.GetField("TargetSlot").SetValue(segment, segmentList.Count + 1);
+                segmentList.Add(segment);
+            }
+            bindingType.GetField("Segments").SetValue(two, segmentList);
+            bindings.Add(two);
+            fixture.Data.GetType().GetField("SkillTimelines").SetValue(fixture.Data, bindings);
+
+            Type contextType = FindRuntimeType("ASB.Work.Battle.Core.DamageContext");
+            var contexts = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(contextType));
+            foreach (object target in new[] { fixture.Target, secondTarget })
+            {
+                object context = Activator.CreateInstance(contextType);
+                contextType.GetField("Caster").SetValue(context, fixture.Actor);
+                contextType.GetField("Target").SetValue(context, target);
+                contextType.GetField("SkillIndex").SetValue(context, SkillIndex);
+                contexts.Add(context);
+            }
+            Type callbackType = fixture.OnHit.GetType();
+            var callbacks = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(callbackType));
+            bool firstResolvedBeforeSecond = false;
+            Action countFirst = () =>
+            {
+                fixture.HitBox[0]++;
+                PlayableDirector current = fixture.ActorObject.GetComponent<PlayableDirector>();
+                firstResolvedBeforeSecond = current != null && current.playableAsset == fixture.Timeline;
+            };
+            Type hitResultType = FindRuntimeType("ASB.Work.Battle.Core.BattleHitResult");
+            callbacks.Add(Expression.Lambda(callbackType,
+                Expression.Block(Expression.Invoke(Expression.Constant(countFirst)),
+                    Expression.Default(hitResultType))).Compile());
+            int secondHits = 0;
+            Action countSecond = () => secondHits++;
+            callbacks.Add(Expression.Lambda(callbackType,
+                Expression.Block(Expression.Invoke(Expression.Constant(countSecond)),
+                    Expression.Default(hitResultType))).Compile());
+
+            MethodInfo canRun = fixture.PresentationDirector.GetType().GetMethod("CanRunMultiTargetPlan");
+            FieldInfo forceAnimator = fixture.Catalog.GetType().GetField("_forceAnimatorRail", AllInstance);
+            forceAnimator.SetValue(fixture.Catalog, true);
+            Assert.That((bool)canRun.Invoke(fixture.PresentationDirector,
+                new[] { fixture.Actor, fixture.Skill, contexts }), Is.False);
+            forceAnimator.SetValue(fixture.Catalog, false);
+            PropertyInfo chainState = fixture.PresentationDirector.GetType().GetProperty("ChainState");
+            chainState.SetValue(fixture.PresentationDirector,
+                Activator.CreateInstance(chainState.PropertyType));
+            Assert.That((bool)canRun.Invoke(fixture.PresentationDirector,
+                new[] { fixture.Actor, fixture.Skill, contexts }), Is.False);
+            chainState.SetValue(fixture.PresentationDirector, null);
+            Type sequenceRegistry = FindRuntimeType("SkillPresentationSequenceRegistry");
+            IDictionary customSequences = (IDictionary)sequenceRegistry
+                .GetField("_map", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
+            string skillKey = (string)fixture.Skill.GetType().GetField("skillKey").GetValue(fixture.Skill);
+            customSequences[skillKey] = null;
+            Assert.That((bool)canRun.Invoke(fixture.PresentationDirector,
+                new[] { fixture.Actor, fixture.Skill, contexts }), Is.False);
+            customSequences.Remove(skillKey);
+            Assert.That((bool)canRun.Invoke(fixture.PresentationDirector,
+                new[] { fixture.Actor, fixture.Skill, contexts }), Is.True);
+            MethodInfo run = fixture.PresentationDirector.GetType().GetMethod("RunMultiTargetSkillSequence");
+            IEnumerator routine = (IEnumerator)run.Invoke(fixture.PresentationDirector,
+                new[] { fixture.Actor, fixture.Skill, contexts, callbacks });
+            var coroutine = ((MonoBehaviour)fixture.Manager).StartCoroutine(routine);
+            Assert.That((bool)fixture.PresentationDirector.GetType().GetProperty("IsSequenceRunning")
+                .GetValue(fixture.PresentationDirector), Is.True);
+            PlayableDirector director = null;
+            bool sawSecond = false;
+            bool reachedSecondApproach = false;
+            float elapsed = 0f;
+            while (elapsed < 3f)
+            {
+                director = fixture.ActorObject.GetComponent<PlayableDirector>();
+                if (director != null && director.playableAsset == second) sawSecond = true;
+                if (director != null && director.playableAsset == second && director.time >= 0.08d &&
+                    Mathf.Abs(fixture.ActorObject.transform.position.x - 3.8f) < 0.25f)
+                    reachedSecondApproach = true;
+                if (director != null && director.playableAsset == null && fixture.HitBox[0] == 1 && secondHits == 1)
+                    break;
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            Assert.That(sawSecond, Is.True, "두 번째 Timeline 세그먼트를 재생해야 합니다.");
+            Assert.That(firstResolvedBeforeSecond, Is.True, "첫 Impact 마커가 두 번째 세그먼트 전에 확정돼야 합니다.");
+            Assert.That(reachedSecondApproach, Is.True,
+                "Move End에서 두 번째 대상의 접근 지점까지 Timeline 시간에 맞춰 이동해야 합니다.");
+            Assert.That(fixture.HitBox[0], Is.EqualTo(1));
+            Assert.That(secondHits, Is.EqualTo(1));
+            Assert.That(director.playableAsset, Is.Null);
+        }
+        finally
+        {
+            fixture.Dispose();
+            UnityEngine.Object.DestroyImmediate(secondTargetObject);
+            UnityEngine.Object.DestroyImmediate(second);
+            UnityEngine.Object.DestroyImmediate(secondClip);
+        }
+    }
+
+    private static void AddImpactMarker(TimelineAsset timeline, double time)
+    {
+        if (timeline.markerTrack == null) timeline.CreateMarkerTrack();
+        Type markerType = FindRuntimeType("PresentationSignalMarker");
+        MethodInfo create = typeof(TrackAsset).GetMethods()
+            .Single(method => method.Name == "CreateMarker" && method.IsGenericMethodDefinition);
+        object marker = create.MakeGenericMethod(markerType).Invoke(timeline.markerTrack,
+            new object[] { time });
+        Type kindType = FindRuntimeType("PresentationSignalKind");
+        markerType.GetMethod("Configure").Invoke(marker,
+            new[] { Enum.Parse(kindType, "Impact"), null, null, (object)0 });
+    }
+
+    private static void AddMoveMarkers(TimelineAsset timeline, double start, double end)
+    {
+        Type markerType = FindRuntimeType("PresentationMoveMarker");
+        Type boundaryType = FindRuntimeType("PresentationSectionBoundary");
+        MethodInfo create = typeof(TrackAsset).GetMethods()
+            .Single(method => method.Name == "CreateMarker" && method.IsGenericMethodDefinition);
+        foreach (var entry in new[] { (start, "Start"), (end, "End") })
+        {
+            object marker = create.MakeGenericMethod(markerType).Invoke(timeline.markerTrack,
+                new object[] { entry.Item1 });
+            markerType.GetMethod("Configure").Invoke(marker,
+                new[] { Enum.Parse(boundaryType, entry.Item2), (object)0 });
+        }
+    }
+
     /// <summary>
     /// Marker가 없는 합성 Timeline: 종료 폴백이 히트 콜백을 1회만 부르고 Director를 정리하는지(smoke).
     /// </summary>

@@ -63,6 +63,13 @@ namespace ASB.Work.Battle.Sequence
             }
         }
 
+        /// <summary>Resolve damage, popup and the surviving target's reaction in the marker frame.</summary>
+        public void ExecuteImmediate()
+        {
+            ResolveDamageAndPresentation();
+            if (ShouldPlayHitAnimation()) PlayHitAnimation();
+        }
+
         private void GetHitDelays(out float damagePopupDelay, out float hitAnimationDelay)
         {
             UnitVisualProfile actorProfile = _actor?.GetComponent<UnitVisualProfile>();

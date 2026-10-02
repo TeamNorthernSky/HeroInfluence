@@ -53,6 +53,14 @@ public enum PresentationArchetype
 /// 런타임은 이 매핑에서 시전 캐릭터 키로 선택만 하고, 클립 해석/에셋 뮤테이션을 하지 않는다.
 /// </summary>
 [Serializable]
+public class SkillTimelineSegment
+{
+    public TimelineAsset Timeline;
+    [Tooltip("이 세그먼트의 기본 대상 순번(1=주 대상, 2=첫 추가 대상…). 마커 TargetSlot=0이 이 값을 따릅니다.")]
+    [Min(1)] public int TargetSlot = 1;
+}
+
+[Serializable]
 public class SkillTimelineBinding
 {
     [Tooltip("이 Timeline을 사용할 캐릭터 키 = 시전자 유닛 템플릿 Index(예: '10002', '20002'). " +
@@ -62,6 +70,17 @@ public class SkillTimelineBinding
 
     [Tooltip("해당 캐릭터의 클립이 이미 구워진 전용 TimelineAsset.")]
     public TimelineAsset Timeline;
+
+    [Tooltip("이 바인딩을 사용할 시전 대상 수. 0은 대상 수 무관 기본 바인딩입니다.")]
+    [Min(0)] public int TargetCount;
+    [Tooltip("분리형 플랜. 비어 있지 않으면 Timeline 대신 이 순서대로 이어 재생합니다.")]
+    public List<SkillTimelineSegment> Segments = new List<SkillTimelineSegment>();
+}
+
+public enum TimelineImpactTiming
+{
+    TargetProfileDelay,
+    MarkerFrame
 }
 
 [CreateAssetMenu(fileName = "SkillPresentation_New", menuName = "Battle/Skill Presentation Data")]
@@ -88,6 +107,9 @@ public class SkillPresentationData : ScriptableObject
 
     [Tooltip("AnimationRail=Timeline일 때만 사용. 파일럿은 캐릭터별 베이크 Variant — 시전 캐릭터 키로 조회(지시서 §5).")]
     public List<SkillTimelineBinding> SkillTimelines = new List<SkillTimelineBinding>();
+    [Tooltip("Path A Impact 처리 방식. TargetProfileDelay는 대상 프로필 지연 후 확정하고, " +
+             "MarkerFrame은 Impact 마커 프레임에 즉시 확정합니다.")]
+    public TimelineImpactTiming ImpactTiming = TimelineImpactTiming.TargetProfileDelay;
 
     /// <summary>이 스킬이 Path A(Timeline 재생) 레일인지.</summary>
     public bool IsTimelineRail => AnimationRail == AnimationRail.Timeline;
@@ -108,39 +130,97 @@ public class SkillPresentationData : ScriptableObject
     /// </summary>
     public TimelineAsset ResolveTimeline(string templateIndex, string unitName)
     {
-        if (SkillTimelines == null) return null;
+        SkillTimelineBinding binding = ResolveBinding(templateIndex, unitName, 0);
+        if (binding == null) return null;
+        if (binding.Timeline != null) return binding.Timeline;
+        return binding.Segments != null && binding.Segments.Count > 0
+            ? binding.Segments[0]?.Timeline
+            : null;
+    }
 
-        string indexKey = templateIndex?.Trim();
-        string nameKey = unitName?.Trim();
-        TimelineAsset nameMatch = null;
-        TimelineAsset wildcard = null;
+    public bool TryResolvePlan(string templateIndex, string unitName, int targetCount,
+        List<SkillTimelineSegment> destination)
+    {
+        if (destination == null) return false;
+        destination.Clear();
+        SkillTimelineBinding binding = ResolveBinding(templateIndex, unitName, targetCount);
+        if (binding == null) return false;
 
-        for (int i = 0; i < SkillTimelines.Count; i++)
+        if (binding.Segments != null && binding.Segments.Count > 0)
         {
-            SkillTimelineBinding binding = SkillTimelines[i];
-            if (binding == null || binding.Timeline == null) continue;
-
-            string bindingKey = binding.CharacterKey?.Trim();
-
-            // CharacterKey가 비어 있으면 "모든 캐릭터"(와일드카드/폴백).
-            if (string.IsNullOrEmpty(bindingKey))
+            for (int i = 0; i < binding.Segments.Count; i++)
             {
-                if (wildcard == null) wildcard = binding.Timeline;
-                continue;
+                SkillTimelineSegment segment = binding.Segments[i];
+                if (segment == null || segment.Timeline == null || segment.TargetSlot < 1)
+                {
+                    destination.Clear();
+                    return false;
+                }
+                destination.Add(segment);
             }
-
-            if (KeyEquals(bindingKey, indexKey))
-            {
-                return binding.Timeline;
-            }
-
-            if (nameMatch == null && KeyEquals(bindingKey, nameKey))
-            {
-                nameMatch = binding.Timeline;
-            }
+            return true;
         }
 
-        return nameMatch != null ? nameMatch : wildcard;
+        if (binding.Timeline == null) return false;
+        destination.Add(new SkillTimelineSegment { Timeline = binding.Timeline, TargetSlot = 1 });
+        return true;
+    }
+
+    public bool HasMultiTargetPlan(string templateIndex, string unitName)
+    {
+        if (SkillTimelines == null) return false;
+        for (int tier = 0; tier < 3; tier++)
+        {
+            bool foundTier = false;
+            for (int i = 0; i < SkillTimelines.Count; i++)
+            {
+                SkillTimelineBinding binding = SkillTimelines[i];
+                if (!MatchesTier(binding, templateIndex, unitName, tier)) continue;
+                foundTier = true;
+                if (binding.TargetCount > 0 || (binding.Segments != null && binding.Segments.Count > 0))
+                    return true;
+            }
+            if (foundTier) return false;
+        }
+        return false;
+    }
+
+    private SkillTimelineBinding ResolveBinding(string templateIndex, string unitName, int targetCount)
+    {
+        if (SkillTimelines == null) return null;
+        for (int tier = 0; tier < 3; tier++)
+        {
+            SkillTimelineBinding best = null;
+            int bestRank = int.MaxValue;
+            int bestDistance = int.MaxValue;
+            for (int i = 0; i < SkillTimelines.Count; i++)
+            {
+                SkillTimelineBinding candidate = SkillTimelines[i];
+                if (!MatchesTier(candidate, templateIndex, unitName, tier)) continue;
+                int count = Mathf.Max(0, candidate.TargetCount);
+                int rank = targetCount > 0 && count == targetCount ? 0
+                    : count == 0 ? 1
+                    : count < targetCount ? 2 : 3;
+                int distance = rank == 2 ? -count : count;
+                if (best == null || rank < bestRank || (rank == bestRank && distance < bestDistance))
+                {
+                    best = candidate;
+                    bestRank = rank;
+                    bestDistance = distance;
+                }
+            }
+            if (best != null) return best;
+        }
+        return null;
+    }
+
+    private static bool MatchesTier(SkillTimelineBinding binding, string templateIndex, string unitName, int tier)
+    {
+        if (binding == null) return false;
+        string key = binding.CharacterKey?.Trim();
+        if (tier == 0) return !string.IsNullOrEmpty(key) && KeyEquals(key, templateIndex?.Trim());
+        if (tier == 1) return !string.IsNullOrEmpty(key) && KeyEquals(key, unitName?.Trim());
+        return string.IsNullOrEmpty(key);
     }
 
     private static bool KeyEquals(string bindingKey, string key)

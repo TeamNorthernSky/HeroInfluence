@@ -59,10 +59,11 @@ public class SkillPresentationDataEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("PresentationArchetype"));
         if (isTimelineRail)
         {
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("ImpactTiming"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("SkillTimelines"), true);
             EditorGUILayout.HelpBox(
-                "Timeline 레일(Path A): Character Key가 시전자 unitName(예: '블래스터')과 일치하는 Timeline을 재생합니다.\n" +
-                "Character Key를 비워두면 모든 시전자에 적용됩니다(와일드카드) — 단일 캐릭터 파일럿이면 그냥 비워두세요.",
+                "다중 대상: TargetCount별 바인딩을 선택합니다. 분리형은 Segments를 순서대로 채우세요. " +
+                "Impact/Move 마커의 TargetSlot 0은 세그먼트 슬롯을 따릅니다.",
                 MessageType.Info);
         }
 

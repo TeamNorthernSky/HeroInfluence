@@ -24,6 +24,12 @@ namespace ASB.Work.EditorTools.Jig
         public static List<SkillTimelineValidationMessage> Validate(
             SkillPresentationData data, string characterKey, TimelineAsset timeline)
         {
+            return ValidateTimeline(data, characterKey, timeline, true);
+        }
+
+        private static List<SkillTimelineValidationMessage> ValidateTimeline(
+            SkillPresentationData data, string characterKey, TimelineAsset timeline, bool validateBindings)
+        {
             var result = new List<SkillTimelineValidationMessage>();
             if (data == null)
             {
@@ -31,7 +37,7 @@ namespace ASB.Work.EditorTools.Jig
                 return result;
             }
 
-            if (!data.IsTimelineRail)
+            if (!data.IsTimelineRail && validateBindings)
             {
                 // §4: Animator Rail이라도 즉시 반환하지 않고 남은 SkillTimelines 구조를 먼저 검증한다.
                 // dangling/null 바인딩은 정리 대상(Error), 모두 유효하면 Migration Data(Info), 비면 정상(Info).
@@ -39,7 +45,7 @@ namespace ASB.Work.EditorTools.Jig
                 return result;
             }
 
-            ValidateBindings(data, result);
+            if (validateBindings) ValidateBindings(data, result);
             if (timeline == null)
             {
                 Add(result, SkillTimelineValidationSeverity.Error,
@@ -80,11 +86,312 @@ namespace ASB.Work.EditorTools.Jig
             return false;
         }
 
+        public static List<SkillTimelineValidationMessage> ValidatePlan(
+            SkillPresentationData data, string characterKey, int targetCount)
+        {
+            var result = new List<SkillTimelineValidationMessage>();
+            if (data == null)
+            {
+                Add(result, SkillTimelineValidationSeverity.Error, "SkillPresentationData가 없습니다.");
+                return result;
+            }
+            ValidateBindings(data, result);
+            var segments = new List<SkillTimelineSegment>();
+            if (!data.TryResolvePlan(characterKey, null, targetCount, segments))
+            {
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    $"'{characterKey}' 대상 {targetCount}명 플랜을 찾지 못했습니다.");
+                return result;
+            }
+
+            Append(result, ValidateSegmentsDirect(data, characterKey, targetCount, segments));
+            return result;
+        }
+
+        public static List<SkillTimelineValidationMessage> ValidateBindingUsage(
+            SkillPresentationData data, int bindingIndex, int segmentIndex)
+        {
+            var result = new List<SkillTimelineValidationMessage>();
+            if (!TryGetBinding(data, bindingIndex, result, out SkillTimelineBinding binding))
+                return result;
+
+            if (segmentIndex == 0)
+            {
+                if (binding.Segments != null && binding.Segments.Count > 0)
+                {
+                    Add(result, SkillTimelineValidationSeverity.Info,
+                        "Segments가 있어 binding.Timeline은 런타임 플랜에서 무시됩니다.");
+                    Append(result, ValidateTimeline(
+                        data, binding.CharacterKey, binding.Timeline, false));
+                    return result;
+                }
+            }
+            else
+            {
+                int index = segmentIndex - 1;
+                if (binding.Segments == null || index < 0 || index >= binding.Segments.Count
+                    || binding.Segments[index] == null)
+                {
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"바인딩 {bindingIndex}의 세그먼트 {segmentIndex}가 더 이상 존재하지 않습니다.");
+                    return result;
+                }
+            }
+
+            Append(result, ValidateExactBindingPlan(data, bindingIndex));
+            return result;
+        }
+
+        public static List<SkillTimelineValidationMessage> ValidateExactBindingPlan(
+            SkillPresentationData data, int bindingIndex)
+        {
+            var result = new List<SkillTimelineValidationMessage>();
+            if (!TryGetBinding(data, bindingIndex, result, out SkillTimelineBinding binding))
+                return result;
+
+            var segments = new List<SkillTimelineSegment>();
+            if (binding.Segments != null && binding.Segments.Count > 0)
+            {
+                segments.AddRange(binding.Segments);
+                if (binding.Timeline != null)
+                    Add(result, SkillTimelineValidationSeverity.Info,
+                        "Segments가 있어 binding.Timeline은 런타임 플랜에서 무시됩니다.");
+            }
+            else
+            {
+                segments.Add(new SkillTimelineSegment { Timeline = binding.Timeline, TargetSlot = 1 });
+            }
+
+            Append(result, ValidateSegmentsDirect(data, binding.CharacterKey, binding.TargetCount, segments));
+            return result;
+        }
+
+        public static List<SkillTimelineValidationMessage> ValidateProvisionalUsage(
+            SkillPresentationData data, string characterKey, int targetCount,
+            int segmentIndex, int targetSlot, TimelineAsset timeline)
+        {
+            var segments = new List<SkillTimelineSegment>
+            {
+                new SkillTimelineSegment { Timeline = timeline, TargetSlot = targetSlot }
+            };
+            List<SkillTimelineValidationMessage> result =
+                ValidateSegmentsDirect(data, characterKey, targetCount, segments);
+            for (int i = 0; i < result.Count; i++)
+                result[i].Message = $"세그먼트 {segmentIndex}: " + result[i].Message;
+            return result;
+        }
+
+        public static List<SkillTimelineValidationMessage> ValidateProvisionalPlan(
+            SkillPresentationData data, string characterKey, int targetCount,
+            IReadOnlyList<SkillTimelineSegment> draftSegments)
+        {
+            return ValidateSegmentsDirect(data, characterKey, targetCount, draftSegments);
+        }
+
+        private static List<SkillTimelineValidationMessage> ValidateSegmentsDirect(
+            SkillPresentationData data, string characterKey, int targetCount,
+            IReadOnlyList<SkillTimelineSegment> segments)
+        {
+            var result = new List<SkillTimelineValidationMessage>();
+            if (data == null)
+            {
+                Add(result, SkillTimelineValidationSeverity.Error, "SkillPresentationData가 없습니다.");
+                return result;
+            }
+            if (segments == null || segments.Count == 0)
+            {
+                Add(result, SkillTimelineValidationSeverity.Error, "플랜에 세그먼트가 없습니다.");
+                return result;
+            }
+
+            var impacts = new Dictionary<int, int>();
+            var heldInstanceKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var cueBindings = new List<CueBinding>();
+            data.CollectAllCues(cueBindings);
+
+            for (int i = 0; i < segments.Count; i++)
+            {
+                SkillTimelineSegment segment = segments[i];
+                if (segment == null)
+                {
+                    Add(result, SkillTimelineValidationSeverity.Error, $"세그먼트 {i + 1}이 null입니다.");
+                    continue;
+                }
+                if (segment.TargetSlot < 1)
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"세그먼트 {i + 1}의 TargetSlot은 1 이상이어야 합니다.");
+                else if (targetCount > 0 && segment.TargetSlot > targetCount)
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"세그먼트 {i + 1}의 슬롯 {segment.TargetSlot}이 대상 수 {targetCount}을 넘습니다.");
+
+                TimelineAsset timeline = segment.Timeline;
+                List<SkillTimelineValidationMessage> timelineMessages =
+                    ValidateTimeline(data, characterKey, timeline, false);
+                for (int m = 0; m < timelineMessages.Count; m++)
+                    Add(result, timelineMessages[m].Severity,
+                        $"세그먼트 {i + 1}: {timelineMessages[m].Message}");
+                if (timeline == null || timeline.markerTrack == null) continue;
+
+                var ordered = new List<IMarker>();
+                foreach (IMarker raw in timeline.markerTrack.GetMarkers()) ordered.Add(raw);
+                ordered.Sort((a, b) => a.time.CompareTo(b.time));
+
+                var moves = new List<PresentationMoveMarker>();
+                for (int markerIndex = 0; markerIndex < ordered.Count; markerIndex++)
+                {
+                    IMarker raw = ordered[markerIndex];
+                    if (raw is PresentationMoveMarker move) moves.Add(move);
+                    if (!(raw is PresentationSignalMarker signal)) continue;
+                    if (signal.Kind == PresentationSignalKind.Cue)
+                        ValidateHeldCueFlow(signal, cueBindings, heldInstanceKeys, i + 1, result);
+                    if (signal.Kind == PresentationSignalKind.Projectile)
+                        Add(result, SkillTimelineValidationSeverity.Error,
+                            $"세그먼트 {i + 1}: 다중 대상 플랜의 Projectile 마커는 지원하지 않습니다.");
+                    if (signal.Kind != PresentationSignalKind.Impact) continue;
+                    int slot = signal.TargetSlot > 0 ? signal.TargetSlot : segment.TargetSlot;
+                    if (targetCount > 0 && slot > targetCount)
+                        Add(result, SkillTimelineValidationSeverity.Warning,
+                            $"세그먼트 {i + 1}: {signal.time:F3}s Impact 슬롯 {slot}이 대상 수를 넘어서 무시됩니다.");
+                    impacts[slot] = impacts.TryGetValue(slot, out int count) ? count + 1 : 1;
+                }
+
+                ValidateMovePairs(data, targetCount, segment, i + 1, moves, result);
+            }
+
+            if (targetCount > 0)
+                for (int slot = 1; slot <= targetCount; slot++)
+                    if (!impacts.ContainsKey(slot))
+                        Add(result, SkillTimelineValidationSeverity.Warning,
+                            $"슬롯 {slot}에 Impact가 없어 플랜 종료 시 확정합니다.");
+            foreach (KeyValuePair<int, int> impact in impacts)
+                if (impact.Value > 1)
+                    Add(result, SkillTimelineValidationSeverity.Warning,
+                        $"슬롯 {impact.Key}의 Impact가 {impact.Value}개입니다(첫 번째만 적용).");
+            foreach (string key in heldInstanceKeys)
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    $"플랜 종료 시 held InstanceKey '{key}'가 남습니다. 이 플랜 안에 Stop Cue가 필요합니다.");
+            return result;
+        }
+
+        private static void ValidateMovePairs(SkillPresentationData data, int targetCount,
+            SkillTimelineSegment segment, int segmentNumber, List<PresentationMoveMarker> moves,
+            List<SkillTimelineValidationMessage> result)
+        {
+            if (moves.Count > 0 && data.PresentationArchetype != PresentationArchetype.Melee)
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    $"세그먼트 {segmentNumber}: Move 마커는 Melee에서만 사용할 수 있습니다.");
+            moves.Sort((a, b) => a.time.CompareTo(b.time));
+            PresentationMoveMarker start = null;
+            for (int i = 0; i < moves.Count; i++)
+            {
+                PresentationMoveMarker move = moves[i];
+                int slot = move.TargetSlot > 0 ? move.TargetSlot : segment.TargetSlot;
+                if (targetCount > 0 && slot > targetCount)
+                    Add(result, SkillTimelineValidationSeverity.Warning,
+                        $"세그먼트 {segmentNumber}: {move.time:F3}s Move 슬롯 {slot}이 대상 수를 넘어서 무시됩니다.");
+                if (move.Boundary == PresentationSectionBoundary.Start)
+                {
+                    if (start != null)
+                        Add(result, SkillTimelineValidationSeverity.Error,
+                            $"세그먼트 {segmentNumber}: Move Start가 이전 End 전에 나왔습니다(구간 겹침).");
+                    start = move;
+                }
+                else
+                {
+                    int startSlot = start != null
+                        ? (start.TargetSlot > 0 ? start.TargetSlot : segment.TargetSlot)
+                        : -1;
+                    if (start == null || move.time <= start.time || startSlot != slot)
+                        Add(result, SkillTimelineValidationSeverity.Error,
+                            $"세그먼트 {segmentNumber}: Move Start/End 시간 또는 슬롯이 맞지 않습니다.");
+                    start = null;
+                }
+            }
+            if (start != null)
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    $"세그먼트 {segmentNumber}: Move Start에 대응하는 End가 없습니다.");
+        }
+
+        private static void ValidateHeldCueFlow(PresentationSignalMarker marker,
+            List<CueBinding> cueBindings, HashSet<string> heldInstanceKeys, int segmentNumber,
+            List<SkillTimelineValidationMessage> result)
+        {
+            CueBinding cue = ResolveCueBinding(marker, cueBindings);
+            if (cue == null) return;
+            string key = cue.NormalizedInstanceKey;
+            if (cue.Operation == CueOperation.Spawn)
+            {
+                if (string.IsNullOrEmpty(key)) return;
+                if (!heldInstanceKeys.Add(key))
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"세그먼트 {segmentNumber} {marker.time:F3}s: held InstanceKey '{key}'가 활성 상태에서 다시 Spawn됩니다.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(key))
+            {
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    $"세그먼트 {segmentNumber} {marker.time:F3}s: {cue.Operation} Cue에 InstanceKey가 없습니다.");
+                return;
+            }
+            if (!heldInstanceKeys.Contains(key))
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    $"세그먼트 {segmentNumber} {marker.time:F3}s: Spawn되지 않은 InstanceKey '{key}'에 {cue.Operation}을 실행합니다.");
+            if (cue.Operation == CueOperation.Stop) heldInstanceKeys.Remove(key);
+        }
+
+        private static CueBinding ResolveCueBinding(PresentationSignalMarker marker, List<CueBinding> cues)
+        {
+            if (!string.IsNullOrWhiteSpace(marker.CueId))
+            {
+                for (int i = 0; i < cues.Count; i++)
+                    if (cues[i] != null && string.Equals(cues[i].CueId, marker.CueId, StringComparison.Ordinal))
+                        return cues[i];
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(marker.CueName)) return null;
+            CueBinding match = null;
+            int count = 0;
+            for (int i = 0; i < cues.Count; i++)
+            {
+                CueBinding cue = cues[i];
+                if (cue == null || !string.Equals(cue.NormalizedCueName, marker.CueName,
+                        StringComparison.OrdinalIgnoreCase)) continue;
+                match = cue;
+                count++;
+            }
+            return count == 1 ? match : null;
+        }
+
+        private static bool TryGetBinding(SkillPresentationData data, int bindingIndex,
+            List<SkillTimelineValidationMessage> result, out SkillTimelineBinding binding)
+        {
+            binding = null;
+            if (data == null || data.SkillTimelines == null
+                || bindingIndex < 0 || bindingIndex >= data.SkillTimelines.Count)
+            {
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    "선택한 바인딩이 더 이상 존재하지 않습니다. 사용처를 다시 스캔하세요.");
+                return false;
+            }
+            binding = data.SkillTimelines[bindingIndex];
+            if (binding != null) return true;
+            Add(result, SkillTimelineValidationSeverity.Error, $"바인딩 {bindingIndex}가 null입니다.");
+            return false;
+        }
+
+        private static void Append(List<SkillTimelineValidationMessage> destination,
+            IReadOnlyList<SkillTimelineValidationMessage> source)
+        {
+            if (source == null) return;
+            for (int i = 0; i < source.Count; i++) destination.Add(source[i]);
+        }
+
         private static void ValidateBindings(SkillPresentationData data,
             List<SkillTimelineValidationMessage> result)
         {
             var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            int wildcardCount = 0;
             if (data.SkillTimelines == null || data.SkillTimelines.Count == 0)
             {
                 Add(result, SkillTimelineValidationSeverity.Error, "SkillTimelines 바인딩이 비어 있습니다.");
@@ -101,17 +408,30 @@ namespace ASB.Work.EditorTools.Jig
                 }
 
                 string key = binding.CharacterKey != null ? binding.CharacterKey.Trim() : string.Empty;
-                if (string.IsNullOrEmpty(key)) wildcardCount++;
-                else if (!keys.Add(key))
-                    Add(result, SkillTimelineValidationSeverity.Error, $"CharacterKey '{key}'가 중복되었습니다.");
+                string identity = key + "\u001f" + binding.TargetCount;
+                if (!keys.Add(identity))
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"CharacterKey '{(string.IsNullOrEmpty(key) ? "(wildcard)" : key)}', TargetCount {binding.TargetCount}가 중복되었습니다.");
 
-                if (binding.Timeline == null)
+                bool hasSegments = binding.Segments != null && binding.Segments.Count > 0;
+                if (binding.Timeline == null && !hasSegments)
                     Add(result, SkillTimelineValidationSeverity.Error,
                         $"CharacterKey '{(string.IsNullOrEmpty(key) ? "(wildcard)" : key)}'의 Timeline 참조가 비어 있습니다.");
+                if (hasSegments && binding.Timeline != null)
+                    Add(result, SkillTimelineValidationSeverity.Info,
+                        $"바인딩 {i}: Segments가 있어 binding.Timeline은 런타임 플랜에서 무시됩니다.");
+                if (hasSegments)
+                    for (int s = 0; s < binding.Segments.Count; s++)
+                    {
+                        SkillTimelineSegment segment = binding.Segments[s];
+                        if (segment == null || segment.Timeline == null || segment.TargetSlot < 1)
+                            Add(result, SkillTimelineValidationSeverity.Error,
+                                $"바인딩 {i} 세그먼트 {s + 1}의 Timeline/TargetSlot이 유효하지 않습니다.");
+                        else if (binding.TargetCount > 0 && segment.TargetSlot > binding.TargetCount)
+                            Add(result, SkillTimelineValidationSeverity.Error,
+                                $"바인딩 {i} 세그먼트 {s + 1} 슬롯 {segment.TargetSlot}이 대상 수 {binding.TargetCount}를 넘습니다.");
+                    }
             }
-
-            if (wildcardCount > 1)
-                Add(result, SkillTimelineValidationSeverity.Error, "Wildcard CharacterKey 바인딩이 둘 이상입니다.");
         }
 
         private static void ValidateMarkers(SkillPresentationData data, TimelineAsset timeline,
@@ -129,6 +449,7 @@ namespace ASB.Work.EditorTools.Jig
             var cueIds = new HashSet<string>(StringComparer.Ordinal);
             var definedCueIds = new HashSet<string>(StringComparer.Ordinal);
             var definedCueNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var firstCueByName = new Dictionary<string, CueBinding>(StringComparer.OrdinalIgnoreCase);
             var cueBindings = new List<CueBinding>();
             data.CollectAllCues(cueBindings);
             for (int i = 0; i < cueBindings.Count; i++)
@@ -142,7 +463,10 @@ namespace ASB.Work.EditorTools.Jig
 
                 string cueName = cue.NormalizedCueName;
                 if (!string.IsNullOrEmpty(cueName))
+                {
                     definedCueNames[cueName] = definedCueNames.TryGetValue(cueName, out int count) ? count + 1 : 1;
+                    if (!firstCueByName.ContainsKey(cueName)) firstCueByName.Add(cueName, cue);
+                }
             }
 
             foreach (IMarker raw in timeline.markerTrack.GetMarkers())
@@ -151,10 +475,7 @@ namespace ASB.Work.EditorTools.Jig
                 switch (marker.Kind)
                 {
                     case PresentationSignalKind.Cue:
-                        if (string.IsNullOrWhiteSpace(marker.CueId))
-                            Add(result, SkillTimelineValidationSeverity.Warning,
-                                $"{marker.time:F3}s Cue Marker에 CueId가 없습니다. 이름 폴백은 동명 Cue에 안전하지 않습니다.");
-                        else if (!cueIds.Add(marker.CueId))
+                        if (!string.IsNullOrWhiteSpace(marker.CueId) && !cueIds.Add(marker.CueId))
                             Add(result, SkillTimelineValidationSeverity.Error,
                                 $"CueId '{marker.CueId}' Marker가 중복되었습니다.");
 
@@ -178,6 +499,13 @@ namespace ASB.Work.EditorTools.Jig
                         {
                             Add(result, SkillTimelineValidationSeverity.Error,
                                 $"{marker.time:F3}s Cue Marker 이름 '{marker.CueName}'이 둘 이상의 데이터 Cue와 일치합니다. CueId를 사용하세요.");
+                        }
+                        else if (firstCueByName.TryGetValue(marker.CueName, out CueBinding matchedCue)
+                                 && string.IsNullOrWhiteSpace(matchedCue.CueId))
+                        {
+                            Add(result, SkillTimelineValidationSeverity.Error,
+                                $"{marker.time:F3}s Cue Marker 이름 '{marker.CueName}'은 유일하지만 데이터 CueId가 비어 " +
+                                "런타임 RegisterTimelineRailCues에서 등록되지 않습니다. CueId 수리를 실행하세요.");
                         }
                         break;
                     case PresentationSignalKind.Impact:
@@ -352,12 +680,29 @@ namespace ASB.Work.EditorTools.Jig
                     continue;
                 }
 
-                if (binding.Timeline == null)
+                bool hasSegments = binding.Segments != null && binding.Segments.Count > 0;
+                bool hasValidTimeline = binding.Timeline != null;
+                if (hasSegments)
+                {
+                    hasValidTimeline = true;
+                    for (int s = 0; s < binding.Segments.Count; s++)
+                    {
+                        SkillTimelineSegment segment = binding.Segments[s];
+                        if (segment != null && segment.Timeline != null && segment.TargetSlot >= 1) continue;
+                        Add(result, SkillTimelineValidationSeverity.Error,
+                            $"Animator Rail의 SkillTimelines[{i}].Segments[{s}]가 유효하지 않습니다. 정리하세요.");
+                        hasValidTimeline = false;
+                        anyError = true;
+                    }
+                }
+
+                if (!hasValidTimeline)
                 {
                     string key = binding.CharacterKey != null ? binding.CharacterKey.Trim() : string.Empty;
                     Add(result, SkillTimelineValidationSeverity.Error,
                         $"Animator Rail이지만 CharacterKey '{(string.IsNullOrEmpty(key) ? "(wildcard)" : key)}'의 " +
-                        "Timeline 참조가 비어 있습니다(미설정 또는 dangling GUID). SkillTimelines를 정리하세요.");
+                        "Timeline 참조가 비어 있고 Segments도 유효하지 않습니다(미설정 또는 dangling GUID). " +
+                        "SkillTimelines를 정리하세요.");
                     anyError = true;
                 }
             }
@@ -393,8 +738,10 @@ namespace ASB.Work.EditorTools.Jig
             bool hasActiveAnimationTrack = false;
             foreach (TrackAsset track in timeline.GetOutputTracks())
             {
-                if (!(track is AnimationTrack)) continue;
+                if (!(track is AnimationTrack animation)) continue;
                 if (track.muted) continue;
+                if (track.parent is AnimationTrack) continue;
+                if (animation.applyAvatarMask && animation.avatarMask != null) continue;
                 hasActiveAnimationTrack = true;
                 foreach (TimelineClip clip in track.GetClips()) clips.Add(clip);
             }
@@ -408,7 +755,7 @@ namespace ASB.Work.EditorTools.Jig
                 if (!hasActiveAnimationTrack)
                 {
                     Add(result, SkillTimelineValidationSeverity.Error,
-                        $"{label} 범위에 활성 Animation Track이 없습니다(트랙 없음 또는 전부 muted).");
+                        $"{label} 범위에 전신 기본 Animation Track이 없습니다.");
                     continue;
                 }
 

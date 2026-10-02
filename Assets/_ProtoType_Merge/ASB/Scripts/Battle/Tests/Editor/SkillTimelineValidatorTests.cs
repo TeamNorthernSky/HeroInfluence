@@ -20,6 +20,7 @@ public class SkillTimelineValidatorTests
     private static Type DataType => FindRuntimeType("SkillPresentationData");
     private static Type RailType => FindRuntimeType("AnimationRail");
     private static Type BindingType => FindRuntimeType("SkillTimelineBinding");
+    private static Type SegmentType => FindRuntimeType("SkillTimelineSegment");
 
     [TearDown]
     public void TearDown()
@@ -69,6 +70,22 @@ public class SkillTimelineValidatorTests
         TimelineAsset timeline = NewTimeline(1d);
         GetOrCreateAnimationTrack(timeline); // 클립 없는 트랙
         Assert.That(RunCoverage(timeline), Is.GreaterThan(0), "클립 없는 트랙은 전 구간 공백입니다.");
+    }
+
+    [Test]
+    public void Coverage_MaskedOverrideCannotHideBaseGap()
+    {
+        TimelineAsset timeline = NewTimeline(1d);
+        TimelineClip baseClip = AddClip(timeline, 0d, 0.3d);
+        SetExtrapolation(baseClip, "None", "None");
+        AnimationTrack masked = timeline.CreateTrack<AnimationTrack>(GetOrCreateAnimationTrack(timeline), "Masked");
+        masked.applyAvatarMask = true;
+        masked.avatarMask = Track(new AvatarMask());
+        var clip = Track(new AnimationClip { name = "mask" });
+        TimelineClip filler = masked.CreateClip(clip);
+        filler.start = 0d;
+        filler.duration = 1d;
+        Assert.That(RunCoverage(timeline), Is.GreaterThan(0));
     }
 
     // ── §4 SkillTimelines 구조 검증 ───────────────────────────────
@@ -177,6 +194,148 @@ public class SkillTimelineValidatorTests
         Assert.That(ResolveTimeline(data, null, null), Is.Null, "키가 모두 없으면 wildcard가 없을 때 null이어야 합니다.");
     }
 
+    [Test]
+    public void Plan_ExactTargetCountThenDefaultThenNearestSmaller()
+    {
+        TimelineAsset one = NewTimeline(1d);
+        TimelineAsset two = NewTimeline(1d);
+        TimelineAsset fallback = NewTimeline(1d);
+        ScriptableObject data = NewData("Timeline");
+        SetPlanBindings(data, ("20005", 0, fallback), ("20005", 1, one), ("20005", 2, two));
+        Assert.That(ResolvePlanFirst(data, "20005", 2), Is.SameAs(two));
+        Assert.That(ResolvePlanFirst(data, "20005", 3), Is.SameAs(fallback));
+        Assert.That(ResolveTimeline(data, "20005"), Is.SameAs(fallback));
+
+        SetPlanBindings(data, ("20005", 1, one), ("20005", 2, two));
+        Assert.That(ResolvePlanFirst(data, "20005", 3), Is.SameAs(two));
+    }
+
+    [Test]
+    public void Plan_SegmentsAndKeyTierArePreserved()
+    {
+        TimelineAsset indexTimeline = NewTimeline(1d);
+        TimelineAsset nameTimeline = NewTimeline(1d);
+        ScriptableObject data = NewData("Timeline");
+        SetPlanBindings(data, ("unitName", 2, nameTimeline), ("20005", 1, indexTimeline));
+        Assert.That(ResolvePlanFirst(data, "20005", 2, "unitName"), Is.SameAs(indexTimeline));
+        Assert.That((bool)DataType.GetMethod("HasMultiTargetPlan").Invoke(data,
+            new object[] { "20005", "unitName" }), Is.True);
+    }
+
+    [Test]
+    public void Bindings_OnlySameKeyAndTargetCountDuplicateIsError()
+    {
+        TimelineAsset timeline = NewTimeline(1d);
+        AddClip(timeline, 0d, 1d);
+        timeline.CreateMarkerTrack();
+        ScriptableObject data = NewData("Timeline");
+        SetPlanBindings(data, ("20005", 1, timeline), ("20005", 2, timeline));
+        Assert.That(HasErrorContaining(Validate(data, "20005", timeline), "중복"), Is.False);
+        SetPlanBindings(data, ("20005", 1, timeline), ("20005", 1, timeline));
+        Assert.That(HasErrorContaining(Validate(data, "20005", timeline), "중복"), Is.True);
+    }
+
+    [Test]
+    public void Plan_MoveSlotMismatch_ReportsError()
+    {
+        TimelineAsset timeline = NewTimeline(1d);
+        AddClip(timeline, 0d, 1d);
+        timeline.CreateMarkerTrack();
+        AddMoveMarker(timeline, 0.1d, "Start", 2);
+        AddMoveMarker(timeline, 0.5d, "End", 1);
+        ScriptableObject data = NewData("Timeline");
+        DataType.GetField("PresentationArchetype").SetValue(data,
+            Enum.Parse(DataType.GetField("PresentationArchetype").FieldType, "Melee"));
+        SetPlanBindings(data, ("20005", 2, timeline));
+        Assert.That(HasErrorContaining(ValidatePlan(data, "20005", 2), "Start/End"), Is.True);
+    }
+
+    [Test]
+    public void Plan_ProjectileMarker_ReportsError()
+    {
+        TimelineAsset timeline = NewTimeline(1d);
+        AddClip(timeline, 0d, 1d);
+        timeline.CreateMarkerTrack();
+        AddSignalMarker(timeline, 0.2d, "Projectile", 0);
+        ScriptableObject data = NewData("Timeline");
+        SetPlanBindings(data, ("20005", 2, timeline));
+        Assert.That(HasErrorContaining(ValidatePlan(data, "20005", 2), "Projectile"), Is.True);
+    }
+
+    [Test]
+    public void BindingUsage_ValidatesRequestedBindingWithoutResolvingAnotherOne()
+    {
+        TimelineAsset valid = NewTimeline(1d);
+        AddClip(valid, 0d, 1d);
+        valid.CreateMarkerTrack();
+        TimelineAsset invalid = NewTimeline(1d);
+        invalid.CreateMarkerTrack();
+        ScriptableObject data = NewData("Timeline");
+        SetPlanBindings(data, ("20005", 1, valid), ("20005", 1, invalid));
+
+        Assert.That(HasErrorContaining(ValidateBindingUsage(data, 0, 0), "Animation Track"), Is.False);
+        Assert.That(HasErrorContaining(ValidateBindingUsage(data, 1, 0), "Animation Track"), Is.True);
+    }
+
+    [Test]
+    public void ProvisionalPlan_AllowsHeldEffectToStopInLaterSegment()
+    {
+        ScriptableObject data = NewData("Timeline");
+        AddCue(data, "spawn", "spawn-id", "Spawn", "trail");
+        AddCue(data, "stop", "stop-id", "Stop", "trail");
+
+        TimelineAsset first = NewTimeline(1d);
+        AddClip(first, 0d, 1d);
+        first.CreateMarkerTrack();
+        AddCueMarker(first, 0.2d, "spawn", "spawn-id");
+        TimelineAsset second = NewTimeline(1d);
+        AddClip(second, 0d, 1d);
+        second.CreateMarkerTrack();
+        AddCueMarker(second, 0.2d, "stop", "stop-id");
+
+        object oneSegment = NewSegmentList((first, 1));
+        object twoSegments = NewSegmentList((first, 1), (second, 2));
+        Assert.That(HasErrorContaining(ValidateProvisionalPlan(data, "20005", 2, oneSegment),
+            "플랜 종료 시 held"), Is.True);
+        Assert.That(HasErrorContaining(ValidateProvisionalPlan(data, "20005", 2, twoSegments),
+            "플랜 종료 시 held"), Is.False);
+    }
+
+    [Test]
+    public void BindingUsage_UsesWholePlanForHeldEffectFlow()
+    {
+        ScriptableObject data = NewData("Timeline");
+        AddCue(data, "spawn", "spawn-id", "Spawn", "trail");
+        AddCue(data, "stop", "stop-id", "Stop", "trail");
+
+        TimelineAsset first = NewTimeline(1d);
+        AddClip(first, 0d, 1d);
+        first.CreateMarkerTrack();
+        AddCueMarker(first, 0.2d, "spawn", "spawn-id");
+        TimelineAsset second = NewTimeline(1d);
+        AddClip(second, 0d, 1d);
+        second.CreateMarkerTrack();
+        AddCueMarker(second, 0.2d, "stop", "stop-id");
+        SetSegmentPlanBinding(data, "20005", 2, (first, 1), (second, 2));
+
+        Assert.That(HasErrorContaining(ValidateBindingUsage(data, 0, 1), "플랜 종료 시 held"),
+            Is.False, "세그먼트 사용처 검증은 같은 바인딩의 다음 세그먼트 Stop까지 포함해야 합니다.");
+    }
+
+    [Test]
+    public void Marker_Defaults_AreInheritedSlotAndMoveStart()
+    {
+        Type signalType = FindRuntimeType("PresentationSignalMarker");
+        Type moveType = FindRuntimeType("PresentationMoveMarker");
+        var signal = (ScriptableObject)ScriptableObject.CreateInstance(signalType);
+        var move = (ScriptableObject)ScriptableObject.CreateInstance(moveType);
+        _created.Add(signal);
+        _created.Add(move);
+        Assert.That((int)signalType.GetProperty("TargetSlot").GetValue(signal), Is.EqualTo(0));
+        Assert.That(moveType.GetProperty("Boundary").GetValue(move).ToString(), Is.EqualTo("Start"));
+        Assert.That((int)moveType.GetProperty("TargetSlot").GetValue(move), Is.EqualTo(0));
+    }
+
     // ── 헬퍼 ─────────────────────────────────────────────────────
 
     private int RunCoverage(TimelineAsset timeline)
@@ -239,6 +398,130 @@ public class SkillTimelineValidatorTests
             list.Add(binding);
         }
         DataType.GetField("SkillTimelines").SetValue(data, list);
+    }
+
+    private object ValidatePlan(ScriptableObject data, string key, int targetCount)
+    {
+        MethodInfo validate = ValidatorType.GetMethod("ValidatePlan", BindingFlags.Public | BindingFlags.Static);
+        return validate.Invoke(null, new object[] { data, key, targetCount });
+    }
+
+    private object ValidateBindingUsage(ScriptableObject data, int bindingIndex, int segmentIndex)
+    {
+        MethodInfo validate = ValidatorType.GetMethod("ValidateBindingUsage",
+            BindingFlags.Public | BindingFlags.Static);
+        return validate.Invoke(null, new object[] { data, bindingIndex, segmentIndex });
+    }
+
+    private object ValidateProvisionalPlan(ScriptableObject data, string key, int targetCount,
+        object segments)
+    {
+        MethodInfo validate = ValidatorType.GetMethod("ValidateProvisionalPlan",
+            BindingFlags.Public | BindingFlags.Static);
+        return validate.Invoke(null, new[] { (object)data, key, targetCount, segments });
+    }
+
+    private static object NewSegmentList(params (TimelineAsset timeline, int slot)[] entries)
+    {
+        Type listType = typeof(List<>).MakeGenericType(SegmentType);
+        var list = (IList)Activator.CreateInstance(listType);
+        foreach (var entry in entries)
+        {
+            object segment = Activator.CreateInstance(SegmentType);
+            SegmentType.GetField("Timeline").SetValue(segment, entry.timeline);
+            SegmentType.GetField("TargetSlot").SetValue(segment, entry.slot);
+            list.Add(segment);
+        }
+        return list;
+    }
+
+    private static void AddCue(ScriptableObject data, string name, string id,
+        string operation, string instanceKey)
+    {
+        Type cueType = FindRuntimeType("CueBinding");
+        Type operationType = FindRuntimeType("CueOperation");
+        object cue = Activator.CreateInstance(cueType);
+        cueType.GetField("CueName").SetValue(cue, name);
+        cueType.GetField("CueId").SetValue(cue, id);
+        cueType.GetField("Operation").SetValue(cue, Enum.Parse(operationType, operation));
+        cueType.GetField("InstanceKey").SetValue(cue, instanceKey);
+        object phase = DataType.GetField("AttackPrepare").GetValue(data);
+        var cues = (IList)phase.GetType().GetField("Cues").GetValue(phase);
+        cues.Add(cue);
+    }
+
+    private static void AddCueMarker(TimelineAsset timeline, double time, string name, string id)
+    {
+        Type type = FindRuntimeType("PresentationSignalMarker");
+        Type kindType = FindRuntimeType("PresentationSignalKind");
+        object marker = AddMarker(timeline, type, time);
+        type.GetMethod("Configure").Invoke(marker,
+            new[] { Enum.Parse(kindType, "Cue"), (object)name, id, 0 });
+    }
+
+    private void SetPlanBindings(ScriptableObject data,
+        params (string key, int count, TimelineAsset timeline)[] entries)
+    {
+        Type listType = typeof(List<>).MakeGenericType(BindingType);
+        var list = (IList)Activator.CreateInstance(listType);
+        foreach (var entry in entries)
+        {
+            object binding = Activator.CreateInstance(BindingType);
+            BindingType.GetField("CharacterKey").SetValue(binding, entry.key);
+            BindingType.GetField("TargetCount").SetValue(binding, entry.count);
+            BindingType.GetField("Timeline").SetValue(binding, entry.timeline);
+            list.Add(binding);
+        }
+        DataType.GetField("SkillTimelines").SetValue(data, list);
+    }
+
+    private static void SetSegmentPlanBinding(ScriptableObject data, string key, int count,
+        params (TimelineAsset timeline, int slot)[] segments)
+    {
+        Type listType = typeof(List<>).MakeGenericType(BindingType);
+        var bindings = (IList)Activator.CreateInstance(listType);
+        object binding = Activator.CreateInstance(BindingType);
+        BindingType.GetField("CharacterKey").SetValue(binding, key);
+        BindingType.GetField("TargetCount").SetValue(binding, count);
+        BindingType.GetField("Segments").SetValue(binding, NewSegmentList(segments));
+        bindings.Add(binding);
+        DataType.GetField("SkillTimelines").SetValue(data, bindings);
+    }
+
+    private static TimelineAsset ResolvePlanFirst(ScriptableObject data, string index, int count,
+        string unitName = null)
+    {
+        Type listType = typeof(List<>).MakeGenericType(SegmentType);
+        var destination = (IList)Activator.CreateInstance(listType);
+        bool found = (bool)DataType.GetMethod("TryResolvePlan").Invoke(data,
+            new object[] { index, unitName, count, destination });
+        Assert.That(found, Is.True);
+        return (TimelineAsset)SegmentType.GetField("Timeline").GetValue(destination[0]);
+    }
+
+    private static object AddMarker(TimelineAsset timeline, Type markerType, double time)
+    {
+        MethodInfo create = typeof(TrackAsset).GetMethods()
+            .Single(method => method.Name == "CreateMarker" && method.IsGenericMethodDefinition);
+        return create.MakeGenericMethod(markerType).Invoke(timeline.markerTrack, new object[] { time });
+    }
+
+    private static void AddMoveMarker(TimelineAsset timeline, double time, string boundary, int slot)
+    {
+        Type type = FindRuntimeType("PresentationMoveMarker");
+        Type boundaryType = FindRuntimeType("PresentationSectionBoundary");
+        object marker = AddMarker(timeline, type, time);
+        type.GetMethod("Configure").Invoke(marker,
+            new[] { Enum.Parse(boundaryType, boundary), (object)slot });
+    }
+
+    private static void AddSignalMarker(TimelineAsset timeline, double time, string kind, int slot)
+    {
+        Type type = FindRuntimeType("PresentationSignalMarker");
+        Type kindType = FindRuntimeType("PresentationSignalKind");
+        object marker = AddMarker(timeline, type, time);
+        type.GetMethod("Configure").Invoke(marker,
+            new[] { Enum.Parse(kindType, kind), null, null, (object)slot });
     }
 
     private static TimelineAsset ResolveTimeline(ScriptableObject data, string key)

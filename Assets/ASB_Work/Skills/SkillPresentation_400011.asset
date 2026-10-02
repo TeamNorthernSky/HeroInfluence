@@ -13,26 +13,24 @@ MonoBehaviour:
   m_Name: SkillPresentation_400011
   m_EditorClassIdentifier: 
   SkillIndex: 400011
-  PresentationSchemaVersion: 0
-  AnimationRail: 0
-  SkillTimelines: []
+  PresentationSchemaVersion: 1
+  AnimationRail: 1
+  PresentationArchetype: 0
+  SkillTimelines:
+  - CharacterKey: 40001
+    Timeline: {fileID: 11400000, guid: d8d1263d898f0b34091ed0bd251ccef6, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 0
   HitDelay: 0.25
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
   EnableHitEffect: 1
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
@@ -54,14 +52,6 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
@@ -79,7 +69,17 @@ MonoBehaviour:
     Cues: []
   Attack:
     Enabled: 1
-    Beats: []
+    Beats:
+    - AnimationStateName: Base Layer.ClassSkill_1
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 0
+      Cues: []
+    - AnimationStateName: Base Layer.ClassSkill_2
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 1
+      Cues: []
   Return:
     Enabled: 1
     AnimationStateName: 

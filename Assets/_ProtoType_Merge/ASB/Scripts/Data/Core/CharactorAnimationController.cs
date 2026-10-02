@@ -647,9 +647,10 @@ public class CharactorAnimationController : MonoBehaviour
             }
         
             public IEnumerator MoveToOrigin(Vector3 origin, Quaternion originalRotation, float duration,
-        string animationStateName = null, float blendInSeconds = CrossFadeDuration)
+        string animationStateName = null, float blendInSeconds = CrossFadeDuration,
+        bool keepCurrentAnimation = false)
     {
-        if (_animator != null)
+        if (_animator != null && !keepCurrentAnimation)
         {
             string stateName = string.IsNullOrWhiteSpace(animationStateName) ? "MoveReturn" : animationStateName.Trim();
             PlayState(stateName, Mathf.Max(0f, blendInSeconds));

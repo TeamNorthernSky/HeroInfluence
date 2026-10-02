@@ -382,6 +382,25 @@ public class BattleManager : MonoBehaviour
         // 연출이 확정하지 못한(취소·타임아웃) 히트를 규칙 계층이 나중에 일괄 확정하기 위한 목록.
         // 연출은 확정 '시점'만 정하고 '여부'는 정하지 못한다. 각 항목은 멱등하다(두 번 호출해도 1회만 적용).
         var pendingCommits = new List<Func<BattleHitResult>>();
+        Func<BattleHitResult> PrepareDamageCommit(DamageContext damageContext)
+        {
+            if (!damageContext.IsCounterAttack && !damageContext.CanTriggerCounter)
+                damageContext.CanTriggerCounter = CanTriggerCounterattack(damageContext);
+
+            BattleHitResult predicted = PredictDamage(damageContext);
+            bool committed = false;
+            Func<BattleHitResult> commit = () =>
+            {
+                if (committed) return null;
+                committed = true;
+                BattleHitResult hit = CommitDamage(damageContext, predicted);
+                result.RecordDamageResult(damageContext, hit);
+                totalDamageDealt += hit?.AppliedDamage ?? 0f;
+                return hit;
+            };
+            pendingCommits.Add(commit);
+            return commit;
+        }
         Presentation.ChainState = null; // 캐스트마다 초기화(이전 체인 상태 누수 방지)
         Presentation.ResetCastState();
 
@@ -440,30 +459,7 @@ public class BattleManager : MonoBehaviour
                         continue;
                     }
 
-                    if (!damageContext.IsCounterAttack && !damageContext.CanTriggerCounter)
-                    {
-                        damageContext.CanTriggerCounter = CanTriggerCounterattack(damageContext);
-                    }
-
-                    BattleHitResult predicted = PredictDamage(damageContext);
-
-                    // 멱등 확정. 연출이 임팩트 시점에 호출하지만, 호출하지 않아도(취소·타임아웃)
-                    // 루틴 종료 전 스윕이 반드시 확정한다.
-                    bool committed = false;
-                    Func<BattleHitResult> commit = () =>
-                    {
-                        if (committed)
-                        {
-                            return null;
-                        }
-
-                        committed = true;
-                        BattleHitResult r = CommitDamage(damageContext, predicted);
-                        result.RecordDamageResult(damageContext, r);
-                        totalDamageDealt += r?.AppliedDamage ?? 0f;
-                        return r;
-                    };
-                    pendingCommits.Add(commit);
+                    Func<BattleHitResult> commit = PrepareDamageCommit(damageContext);
 
                     aoeContexts.Add(damageContext);
                     hitCallbacks.Add(commit);
@@ -489,6 +485,35 @@ public class BattleManager : MonoBehaviour
                     Presentation.PrepareChainTargets(result.DamageContexts, 0);
                 }
 
+                var slotContexts = new List<DamageContext>();
+                for (int i = 0; i < result.DamageContexts.Count; i++)
+                {
+                    DamageContext damageContext = result.DamageContexts[i];
+                    if (damageContext != null && damageContext.Target != null &&
+                        !damageContext.Target.IsDead && damageContext.Target.CurrentHp > 0f)
+                        slotContexts.Add(damageContext);
+                }
+
+                SkillData planSkill = slotContexts.Count > 0
+                    ? SkillPresentationDirector.TryGetSkillDataForDamageContext(slotContexts[0])
+                    : null;
+                if (slotContexts.Count > 0 && Presentation.CanRunMultiTargetPlan(
+                        slotContexts[0].Caster, planSkill, slotContexts))
+                {
+                    var slotCallbacks = new List<Func<BattleHitResult>>(slotContexts.Count);
+                    float maxDelay = 0f;
+                    for (int i = 0; i < slotContexts.Count; i++)
+                    {
+                        slotCallbacks.Add(PrepareDamageCommit(slotContexts[i]));
+                        maxDelay = Mathf.Max(maxDelay, slotContexts[i].DelayAfter);
+                    }
+
+                    yield return StartCoroutine(Presentation.RunMultiTargetSkillSequence(
+                        slotContexts[0].Caster, planSkill, slotContexts, slotCallbacks));
+                    if (maxDelay > 0f) yield return WaitForBattleSeconds(maxDelay);
+                }
+                else
+                {
                 bool chainPrimaryPresented = false;
                 for (int i = 0; i < result.DamageContexts.Count; i++)
                 {
@@ -509,34 +534,11 @@ public class BattleManager : MonoBehaviour
                         && damageContext.Role == DamageRole.Additional
                         && Presentation.ChainState.IsCancelled;
 
-                    if (!damageContext.IsCounterAttack && !damageContext.CanTriggerCounter)
-                    {
-                        damageContext.CanTriggerCounter = CanTriggerCounterattack(damageContext);
-                    }
-
                     // ResolveSkillHitRoutine이 읽을 현재 컨텍스트 역할.
                     Presentation.ChainRole = damageContext.Role;
 
-                    BattleHitResult predicted = PredictDamage(damageContext);
                     var deliveryGate = new HitDeliveryGate();
-
-                    // 멱등 확정. 연출이 임팩트 시점에 호출하지만, 호출하지 않아도(취소·타임아웃)
-                    // 루틴 종료 전 스윕이 반드시 확정한다.
-                    bool committed = false;
-                    Func<BattleHitResult> onHitCallback = () =>
-                    {
-                        if (committed)
-                        {
-                            return null;
-                        }
-
-                        committed = true;
-                        BattleHitResult r = CommitDamage(damageContext, predicted);
-                        result.RecordDamageResult(damageContext, r);
-                        totalDamageDealt += r?.AppliedDamage ?? 0f;
-                        return r;
-                    };
-                    pendingCommits.Add(onHitCallback);
+                    Func<BattleHitResult> onHitCallback = PrepareDamageCommit(damageContext);
 
                     // 체인이 끊겼으면 볼트가 오지 않으므로 기다리지 않는다. 피해만 즉시 확정하고 다음 대상으로.
                     if (skipChainPresentation)
@@ -601,6 +603,7 @@ public class BattleManager : MonoBehaviour
                     {
                         yield return WaitForBattleSeconds(delay);
                     }
+                }
                 }
             }
         }
@@ -750,6 +753,21 @@ public class BattleManager : MonoBehaviour
                 // 투사체 전달 결과와 무관하게 적용한다. 연출은 규칙을 취소할 수 없다.
                 ApplyStatusEffect(statusContext);
             }
+        }
+
+        // 결과가 없는 시전 전용 스킬(소환 등)도 시전 연출을 1회 거친 뒤 사후 효과(OnPostExecution)를 실행한다.
+        // 대상 없이 제자리 시전으로 재생한다(접근·회전 없음). 핸들러가 ICastOnlyPresentationHandler로 opt-in한 경우만.
+        if (result.Handler is ICastOnlyPresentationHandler
+            && result.Caster != null && !result.Caster.IsDead && result.Skill != null
+            && result.DamageContexts.Count == 0 && result.HealContexts.Count == 0
+            && (result.StatusEffectContexts == null || result.StatusEffectContexts.Count == 0))
+        {
+            var castQueue = new ASB.Work.Battle.Command.BattleActionQueue();
+            castQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
+                result.Caster, null, SkillPresentationDirector.ResolveSkillAnimationData(result.Skill),
+                playBasicAttackAnimation: false, playTargetHitAnimation: false,
+                onHitCallback: () => null, deliveryGate: new HitDeliveryGate()));
+            yield return StartCoroutine(castQueue.RunAll(this));
         }
 
         var counterRequests = CollectCounterAttackRequests(result);

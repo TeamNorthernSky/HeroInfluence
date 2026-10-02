@@ -19,7 +19,7 @@ using ASB.Work.Battle.SkillExecution;
 /// MonoBehaviour가 아니다. 코루틴은 BattleManager를 host로 삼아 실행하므로
 /// 씬/프리팹에 컴포넌트를 추가할 필요가 없고 직렬화 값도 건드리지 않는다.
 /// </summary>
-public sealed class SkillPresentationDirector
+public sealed partial class SkillPresentationDirector
 {
     private readonly BattleManager _battle;
     private int _activeSequenceCount;
@@ -784,9 +784,12 @@ public sealed class SkillPresentationDirector
         {
             if (hitResolved) return;
             hitResolved = true;
-            hitRoutine = _battle.StartCoroutine(
-                new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger, _battle.CurrentBattleSpeed, _battle.VisualDirector)
-                    .ExecuteRoutine(_battle));
+            var hit = new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger,
+                _battle.CurrentBattleSpeed, _battle.VisualDirector);
+            if (presentation.ImpactTiming == TimelineImpactTiming.MarkerFrame)
+                hit.ExecuteImmediate();
+            else
+                hitRoutine = _battle.StartCoroutine(hit.ExecuteRoutine(_battle));
         }
 
         TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
@@ -1831,7 +1834,8 @@ public sealed class SkillPresentationDirector
         bool shouldRotate,
         Vector3 originPosition,
         float originRotationY,
-        ReturnPhase returnPhase)
+        ReturnPhase returnPhase,
+        bool keepCurrentAnimation = false)
     {
         if (runner == null || actorAnim == null || (!shouldMove && !shouldRotate))
         {
@@ -1847,7 +1851,7 @@ public sealed class SkillPresentationDirector
 
         runner.Enqueue(new MoveToOriginAction(
             actorAnim, originPosition, originRotation, duration / _battle.CurrentBattleSpeed,
-            animationStateName, blendInSeconds));
+            animationStateName, blendInSeconds, keepCurrentAnimation));
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
@@ -20,8 +21,27 @@ namespace ASB.Work.EditorTools.Jig
             GetWindow<SkillPresentationJigWindow>("Cue Timeline Jig");
         }
 
+        public static void Open(TimelineAsset timeline)
+        {
+            SkillPresentationJigWindow window =
+                GetWindow<SkillPresentationJigWindow>("Cue Timeline Jig");
+            window.SetRuntimeTimeline(timeline);
+            window.Show();
+        }
+
+        [MenuItem("Assets/Skill Presentation Jig에서 열기", false, 2100)]
+        private static void OpenSelectedTimeline()
+        {
+            if (Selection.activeObject is TimelineAsset timeline) Open(timeline);
+        }
+
+        [MenuItem("Assets/Skill Presentation Jig에서 열기", true)]
+        private static bool ValidateOpenSelectedTimeline() =>
+            Selection.activeObject is TimelineAsset;
+
         private SkillPresentationData _presentation;
         private GameObject _characterPrefab;
+        private TimelineAsset _selectedTimelineAsset;
 
         private JigBuildResult _build;
         private TimelineAsset _runtimeTimeline;
@@ -40,10 +60,10 @@ namespace ASB.Work.EditorTools.Jig
         {
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
 
-            bool runtimeMode = _presentation != null && _presentation.IsTimelineRail;
+            bool runtimeMode = _selectedTimelineAsset != null;
             EditorGUILayout.HelpBox(runtimeMode
-                    ? "Runtime Timeline 모드입니다. 실제 전투에서 재생되는 캐릭터 Variant가 시간·클립·블렌드·Marker의 원본입니다.\n" +
-                      "Section은 Timeline 안의 구간 라벨이며 Phase 순서를 대체 실행하지 않습니다."
+                    ? "TimelineAsset 직접 편집 모드입니다. 선택한 하나의 Timeline 안에서 전신 트랙과 " +
+                      "상·하체 Override 트랙을 함께 편집하고 미리봅니다."
                     : "Legacy Animator Rail 모드입니다. Editor/ 아래 임시 근사 Timeline으로 Phase Cue 시간을 편집합니다.\n" +
                       "이 Timeline은 런타임 자산이 아니며 Phase/local time이 원본입니다.",
                 runtimeMode ? MessageType.Info : MessageType.Warning);
@@ -100,6 +120,16 @@ namespace ASB.Work.EditorTools.Jig
         {
             EditorGUILayout.LabelField("입력", EditorStyles.boldLabel);
 
+            TimelineAsset nextTimeline = (TimelineAsset)EditorGUILayout.ObjectField(
+                "Runtime Timeline", _selectedTimelineAsset, typeof(TimelineAsset), false);
+            if (nextTimeline != _selectedTimelineAsset) SetRuntimeTimeline(nextTimeline);
+            if (GUILayout.Button("Timeline 창의 현재 에셋 가져오기"))
+            {
+                TimelineAsset inspected = TimelineEditor.inspectedAsset;
+                if (inspected != null) SetRuntimeTimeline(inspected);
+                else _report.Add("Timeline 창에서 검사 중인 TimelineAsset이 없습니다.");
+            }
+
             EditorGUI.BeginChangeCheck();
             _presentation = (SkillPresentationData)EditorGUILayout.ObjectField(
                 "연출 자산", _presentation, typeof(SkillPresentationData), false);
@@ -109,9 +139,6 @@ namespace ASB.Work.EditorTools.Jig
             {
                 // 입력이 바뀌면 기존 지그는 무효다.
                 _build = null;
-                _runtimeTimeline = null;
-                _runtimeSections.Clear();
-                _selectedSection = 0;
                 JigPreviewPlayback.SetFullRange();
                 _report.Clear();
             }
@@ -122,6 +149,11 @@ namespace ASB.Work.EditorTools.Jig
                     $"'{_presentation.name}'은 Schema=0(Legacy)입니다. 'Phase Cue 사용'을 켜고 페이즈·Cue를 채운 뒤 사용하세요.",
                     MessageType.Error);
             }
+
+            if (_selectedTimelineAsset != null && _characterPrefab == null)
+                EditorGUILayout.HelpBox(
+                    "프리팹 없이도 Timeline 에셋을 열고 편집할 수 있습니다. 포즈 미리보기만 비활성화됩니다.",
+                    MessageType.Info);
         }
 
         private void DrawActions()
@@ -137,21 +169,21 @@ namespace ASB.Work.EditorTools.Jig
                 }
             }
 
-            // Path A(Timeline 레일) Variant 굽기 — 지그 생성 없이도 가능(연출 + 캐릭터만 있으면).
             using (new EditorGUI.DisabledScope(_presentation == null || _characterPrefab == null))
             {
-                if (GUILayout.Button("▶ Runtime Timeline Variant로 마이그레이션", GUILayout.Height(26)))
+                if (GUILayout.Button("Runtime Timeline 에셋 생성 (자동 연결 안 함)", GUILayout.Height(26)))
                 {
-                    BakePathA();
+                    BakeStandaloneTimeline();
                 }
             }
 
-            // 이미 구운 Variant를 프리뷰(캐릭터 바인딩)로 다시 열어 편집.
-            using (new EditorGUI.DisabledScope(_presentation == null || _characterPrefab == null || !_presentation.IsTimelineRail))
+            using (new EditorGUI.DisabledScope(_selectedTimelineAsset == null))
             {
-                if (GUILayout.Button("구운 Variant 편집 열기 (프리뷰 바인딩)"))
+                if (GUILayout.Button(_characterPrefab != null
+                        ? "선택 Timeline 열기 (상·하체 트랙 프리뷰)"
+                        : "선택 Timeline 에셋 열기", GUILayout.Height(26)))
                 {
-                    OpenConnectedVariant();
+                    OpenVariantForEditing(_selectedTimelineAsset);
                 }
             }
 
@@ -171,15 +203,18 @@ namespace ASB.Work.EditorTools.Jig
                 }
             }
 
-            using (new EditorGUI.DisabledScope(_build == null))
+            using (new EditorGUI.DisabledScope(_build == null && _selectedTimelineAsset == null))
             {
                 if (GUILayout.Button("Timeline 창 열기 · 프리뷰 다시 선택"))
                 {
-                    if (JigPreviewInstance.Current != null)
+                    if (_selectedTimelineAsset != null)
+                        OpenVariantForEditing(_selectedTimelineAsset);
+                    else
                     {
-                        Selection.activeGameObject = JigPreviewInstance.Current;
+                        if (JigPreviewInstance.Current != null)
+                            Selection.activeGameObject = JigPreviewInstance.Current;
+                        OpenTimelineWindow();
                     }
-                    OpenTimelineWindow();
                 }
             }
 
@@ -235,7 +270,7 @@ namespace ASB.Work.EditorTools.Jig
             EditorGUILayout.LabelField("Timeline Section", EditorStyles.boldLabel);
             if (_runtimeTimeline == null)
             {
-                EditorGUILayout.HelpBox("연결된 Runtime Timeline을 먼저 여세요.", MessageType.Info);
+                EditorGUILayout.HelpBox("Runtime Timeline을 직접 선택해 여세요.", MessageType.Info);
                 return;
             }
 
@@ -276,11 +311,11 @@ namespace ASB.Work.EditorTools.Jig
 
         private void DrawRuntimeDiagnostics()
         {
-            if (_presentation == null || !_presentation.IsTimelineRail) return;
+            if (_presentation == null || _selectedTimelineAsset == null) return;
 
             string key = ResolveCharacterKey();
-            TimelineAsset timeline = _runtimeTimeline != null ? _runtimeTimeline : ResolveConnectedTimeline();
-            List<SkillTimelineValidationMessage> messages = SkillTimelineValidator.Validate(_presentation, key, timeline);
+            List<SkillTimelineValidationMessage> messages =
+                SkillTimelineValidator.Validate(_presentation, key, _selectedTimelineAsset);
 
             EditorGUILayout.LabelField("Runtime Timeline 검증", EditorStyles.boldLabel);
             if (messages.Count == 0)
@@ -298,6 +333,19 @@ namespace ASB.Work.EditorTools.Jig
                         : MessageType.Info;
                 EditorGUILayout.HelpBox(messages[i].Message, type);
             }
+        }
+
+        private void SetRuntimeTimeline(TimelineAsset timeline)
+        {
+            _selectedTimelineAsset = timeline;
+            _runtimeTimeline = timeline;
+            _runtimeSections.Clear();
+            if (timeline != null)
+                PresentationTimelineSections.CollectSectionIds(timeline, _runtimeSections);
+            _selectedSection = 0;
+            JigPreviewPlayback.SetFullRange();
+            JigPreviewInstance.DestroyInstance();
+            Repaint();
         }
 
         /// <summary>
@@ -466,6 +514,23 @@ namespace ASB.Work.EditorTools.Jig
             OpenTimelineWindow();
         }
 
+        private void BakeStandaloneTimeline()
+        {
+            _report.Clear();
+            TimelineAsset timeline = JigPathABaker.Bake(_presentation, _characterPrefab, out string error);
+            if (timeline == null)
+            {
+                _report.Add("Timeline 생성 실패: " + error);
+                EditorUtility.DisplayDialog("Timeline 생성 실패", error, "확인");
+                return;
+            }
+
+            SetRuntimeTimeline(timeline);
+            _report.Add($"독립 Timeline 생성 완료: {AssetDatabase.GetAssetPath(timeline)}");
+            _report.Add("SkillPresentationData에는 자동 연결하지 않았습니다.");
+            OpenVariantForEditing(timeline);
+        }
+
         /// <summary>Timeline 창을 띄운다. Window ▸ Sequencing ▸ Timeline 을 찾아 들어가지 않아도 되게 한다.</summary>
         private static void OpenTimelineWindow()
         {
@@ -474,38 +539,6 @@ namespace ASB.Work.EditorTools.Jig
                 Debug.LogWarning("[Jig] Timeline 창을 자동으로 열지 못했습니다. " +
                                  "Window ▸ Sequencing ▸ Timeline 을 직접 열어주세요.");
             }
-        }
-
-        private void BakePathA()
-        {
-            var timeline = JigPathABaker.Bake(_presentation, _characterPrefab, out string error);
-            if (timeline == null)
-            {
-                EditorUtility.DisplayDialog("Path A 굽기 실패", error ?? "알 수 없는 오류", "확인");
-                return;
-            }
-
-            EditorGUIUtility.PingObject(timeline);
-            OpenVariantForEditing(timeline);   // 캐릭터에 바인딩된 프리뷰로 열기(애니 보면서 편집)
-            EditorUtility.DisplayDialog("Path A Variant 생성 완료",
-                $"{AssetDatabase.GetAssetPath(timeline)}\n\n" +
-                "캐릭터에 바인딩된 프리뷰로 열었습니다. Timeline 창에서 플레이헤드를 끌면 포즈가 움직입니다.\n" +
-                "클립 Split/속도/블렌드, 마커 위치, (투사체면) 발사 시점을 다듬으세요. 콘솔에 배치 요약이 있습니다.",
-                "확인");
-        }
-
-        /// <summary>이 스킬에 연결된(캐릭터 키 일치) Variant를 프리뷰로 다시 연다.</summary>
-        private void OpenConnectedVariant()
-        {
-            string key = ResolveCharacterKey();
-            TimelineAsset timeline = ResolveConnectedTimeline();
-            if (timeline == null)
-            {
-                EditorUtility.DisplayDialog("Variant 없음",
-                    $"'{key}' 캐릭터에 연결된 Timeline Variant를 찾지 못했습니다. 먼저 '굽기'를 하세요.", "확인");
-                return;
-            }
-            OpenVariantForEditing(timeline);
         }
 
         /// <summary>
@@ -521,7 +554,7 @@ namespace ASB.Work.EditorTools.Jig
             _selectedSection = 0;
             JigPreviewPlayback.SetFullRange();
             int cueCount = JigCuePreview.SetFiresFromTimeline(_presentation, timeline, _report);
-            _report.Add($"Runtime Timeline Cue 프리뷰 {cueCount}개를 연결했습니다.");
+            _report.Add($"Runtime Timeline Cue 프리뷰 {cueCount}개를 불러왔습니다.");
 
             GameObject preview = JigPreviewInstance.Create(_characterPrefab, out string err);
             if (preview == null)
@@ -553,15 +586,6 @@ namespace ASB.Work.EditorTools.Jig
         {
             string index = JigPathABaker.ResolveTemplateIndex(_characterPrefab);
             return !string.IsNullOrEmpty(index) ? index : JigPathABaker.ResolveUnitName(_characterPrefab);
-        }
-
-        // 런타임과 같은 우선순위(Index → unitName → 빈 키)로 연결된 Variant를 찾는다.
-        private TimelineAsset ResolveConnectedTimeline()
-        {
-            if (_presentation == null) return null;
-            return _presentation.ResolveTimeline(
-                JigPathABaker.ResolveTemplateIndex(_characterPrefab),
-                JigPathABaker.ResolveUnitName(_characterPrefab));
         }
 
         private void WriteBack()

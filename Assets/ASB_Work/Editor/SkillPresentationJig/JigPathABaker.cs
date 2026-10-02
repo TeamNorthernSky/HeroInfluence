@@ -46,14 +46,15 @@ namespace ASB.Work.EditorTools.Jig
     }
 
     /// <summary>
-    /// 스킬 연출 + 캐릭터 프리팹 → Path A 런타임 Variant TimelineAsset을 굽는다(지시서 §9).
+    /// 스킬 연출 + 캐릭터 프리팹 → 독립 Runtime TimelineAsset을 굽는다.
     ///
     /// - <b>Attack-only 굽기</b>: Attack.Beats를 순서대로 클립으로 넣고 BlendInSeconds만큼 겹친다
     ///   (배치는 Legacy 지그와 같은 <see cref="JigPhaseLayout.ComputeBlendBoundaries"/>).
     ///   Timeline 레일은 MovePrepare/AttackPrepare/Post를 실행하지 않으므로 거기에 내용이 있으면 중단한다.
     /// - Cue 마커는 Timing별(NormalizedTime/Seconds/ClipEvent)로 자기 Beat 기준 시각에 놓는다.
     /// - Delivery(Impact/Projectile) 마커는 Animator 레일에서 첫 히트가 처리되는 시점과 같은 규칙으로 놓는다.
-    /// - 계산(<see cref="Plan"/>)이 전부 성공한 뒤에만 에셋을 만들고, SO 연결은 마지막에 한다.
+    /// - 계산(<see cref="Plan"/>)이 전부 성공한 뒤에만 에셋을 만든다.
+    /// - 결과 Timeline은 SkillPresentationData에 자동 연결하지 않는다. 연결은 런타임 데이터 저작 단계에서 직접 한다.
     ///
     /// ★런타임 타입(PresentationSignalMarker)만 쓴다 — 에디터 전용 CueMarker는 빌드에서 깨지므로 굽지 않는다.
     /// ★결과물은 런타임 폴더(Editor 아님)에 저장해 빌드에 포함되게 한다.
@@ -101,7 +102,7 @@ namespace ASB.Work.EditorTools.Jig
             }
             EnsureFolder();
 
-            // 4) 생성. 도중 예외가 나면 만든 파일을 지우고, SO 연결은 모든 생성이 끝난 뒤에만 한다.
+            // 4) 생성. 도중 예외가 나면 만든 파일을 지운다.
             if (data.EnsureCueIds()) EditorUtility.SetDirty(data);
 
             TimelineAsset timeline;
@@ -121,8 +122,6 @@ namespace ASB.Work.EditorTools.Jig
             {
                 data.PresentationArchetype = PresentationArchetype.Projectile;
             }
-            ConnectToSkill(data, characterKey, ResolveUnitName(characterPrefab), timeline);
-
             AssetDatabase.SaveAssets();
             AssetDatabase.ImportAsset(path);
 
@@ -558,43 +557,6 @@ namespace ASB.Work.EditorTools.Jig
                 $"unitName '{unitName}'을 CharacterKey로 사용합니다.",
                 characterPrefab);
             return unitName;
-        }
-
-        private static void ConnectToSkill(SkillPresentationData data, string characterKey, string legacyUnitName,
-            TimelineAsset timeline)
-        {
-            Undo.RecordObject(data, "Path A Variant 연결");
-
-            data.AnimationRail = AnimationRail.Timeline;
-            if (data.SkillTimelines == null) data.SkillTimelines = new List<SkillTimelineBinding>();
-
-            // 같은 캐릭터 항목이 있으면 갱신, 없으면 추가. Index 키 우선, 없으면 과도기 unitName 키 항목을 갱신한다.
-            SkillTimelineBinding entry = FindBinding(data, characterKey) ?? FindBinding(data, legacyUnitName);
-            if (entry == null)
-            {
-                entry = new SkillTimelineBinding();
-                data.SkillTimelines.Add(entry);
-            }
-            entry.CharacterKey = characterKey;
-            entry.Timeline = timeline;
-
-            EditorUtility.SetDirty(data);
-        }
-
-        private static SkillTimelineBinding FindBinding(SkillPresentationData data, string key)
-        {
-            string trimmed = key?.Trim();
-            if (string.IsNullOrEmpty(trimmed)) return null;
-
-            for (int i = 0; i < data.SkillTimelines.Count; i++)
-            {
-                SkillTimelineBinding b = data.SkillTimelines[i];
-                if (b != null && string.Equals(b.CharacterKey?.Trim(), trimmed, System.StringComparison.OrdinalIgnoreCase))
-                {
-                    return b;
-                }
-            }
-            return null;
         }
 
         private static void EnsureFolder()

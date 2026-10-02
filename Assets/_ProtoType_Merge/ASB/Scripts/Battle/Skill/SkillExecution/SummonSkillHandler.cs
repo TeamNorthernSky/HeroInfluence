@@ -2,8 +2,8 @@ namespace ASB.Work.Battle.SkillExecution
 {
     // 소환 스킬(FV40001_3 절망의 굴레, FV40004_1 율리아를 가둔 장막): 시전자 BossController 설정대로 미니언 소환.
     // 데미지 없음. target은 실행 파이프라인 통과용이라 소환 결과엔 쓰지 않음(AI가 유효한 살아있는 대상 1명을 넘긴다).
-    // 소환은 캐스트 종료 후(OnPostExecution, 반격 처리 뒤)에 실행한다.
-    public sealed class SummonSkillHandler : ISkillEffectHandler
+    // 소환은 캐스트 종료 후(OnPostExecution, 반격 처리 뒤)에 실행한다. 시전 연출은 그 전에 1회 재생된다.
+    public sealed class SummonSkillHandler : ISkillEffectHandler, ICastOnlyPresentationHandler
     {
         public SkillExecutionResult Execute(
             BattleCharactor caster, BattleCharactor target,

@@ -70,3 +70,7 @@ MonoBehaviour:
     Presentation: {fileID: 11400000, guid: 101d7283e4833db44ba309ec4bfdd0f3, type: 2}
   - SkillIndex: 200032
     Presentation: {fileID: 11400000, guid: c769188f49186a14e8b7ae597df8184d, type: 2}
+  - SkillIndex: 400012
+    Presentation: {fileID: 11400000, guid: 46add072fdd664d4593d64feace09868, type: 2}
+  - SkillIndex: 400013
+    Presentation: {fileID: 11400000, guid: 2b3989f7070fbf141bda8f6efcce8cbd, type: 2}

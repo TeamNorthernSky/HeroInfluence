@@ -338,11 +338,21 @@ namespace ASB.Work.Battle.SkillExecution
     //------------------- 단일 + 랜덤
     public sealed class HitTargetAroundRandomHandler : TargetAroundRandom
     {
+        private static readonly HashSet<int> MissingSubValueWarnings = new HashSet<int>();
 
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
-            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target, HeroSkillRules.IsFamily(skillData, 2020) ? skillData.skillSubValue : skillData.skillValue, skillData.skillIndex, skillData.classSkillRange, true));
-            Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (skillValue={skillData.skillValue:F2})");
+            float multiplier = skillData.skillSubValue;
+            if (multiplier <= 0f)
+            {
+                if (MissingSubValueWarnings.Add(skillData.skillIndex))
+                    Debug.LogWarning($"[Skill/DefaultDamage] Missing skillSubValue; using skillValue. " +
+                        $"key={skillData.skillKey}, index={skillData.skillIndex}");
+                multiplier = skillData.skillValue;
+            }
+            result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target,
+                multiplier, skillData.skillIndex, skillData.classSkillRange, true));
+            Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (multiplier={multiplier:F2})");
         }
     }
 

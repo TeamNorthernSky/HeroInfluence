@@ -15,10 +15,23 @@ MonoBehaviour:
   SkillIndex: 200052
   PresentationSchemaVersion: 1
   AnimationRail: 1
-  PresentationArchetype: 0
+  PresentationArchetype: 1
   SkillTimelines:
   - CharacterKey: 20005
-    Timeline: {fileID: 11400000, guid: b405f997c2ccf8d41a453e5cff808b64, type: 2}
+    Timeline: {fileID: 0}
+    TargetCount: 1
+    Segments:
+    - Timeline: {fileID: 11400000, guid: 5b1db78bfc5b16646959651cbf8bf2d7, type: 2}
+      TargetSlot: 1
+  - CharacterKey: 20005
+    Timeline: {fileID: 0}
+    TargetCount: 2
+    Segments:
+    - Timeline: {fileID: 11400000, guid: 5b1db78bfc5b16646959651cbf8bf2d7, type: 2}
+      TargetSlot: 1
+    - Timeline: {fileID: 11400000, guid: a09b80084ae72784986b0c2c6e3166cb, type: 2}
+      TargetSlot: 2
+  ImpactTiming: 1
   AnimationStateName: Base Layer.ClassSkill_2
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -79,7 +92,7 @@ MonoBehaviour:
       Cues: []
   Return:
     Enabled: 1
-    AnimationStateName: 
+    AnimationStateName: MoveForward
     BlendInSeconds: 0.1
   Post:
     Enabled: 1
