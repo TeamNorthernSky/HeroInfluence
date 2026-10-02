@@ -129,13 +129,9 @@ public class GateLifecycleController : MonoBehaviour
         if (repository == null || !repository.TryGetGateState(gate.GateId, out GateProgressState state) || state == null || !state.Open)
             return;
 
-        if (TryGetConnectedThreatElapsedTurns(repository, gate, out int threatElapsedTurns))
+        if (HasConnectedActiveThreat(repository, gate))
         {
-            // If a connected zone has an active threat timer, that timer is the authoritative close countdown.
-            if (threatElapsedTurns < OpenDurationTurns)
-                return;
-
-            gate.CloseGate(day);
+            // Active threat timers are resolved by GateThreatController so paused off-zone timers cannot close gates.
             return;
         }
 
@@ -147,45 +143,18 @@ public class GateLifecycleController : MonoBehaviour
         gate.CloseGate(day);
     }
 
-    private static bool TryGetConnectedThreatElapsedTurns(
-        MapProgressRepository repository,
-        GateRuntimeController gate,
-        out int elapsedTurns)
+    private static bool HasConnectedActiveThreat(MapProgressRepository repository, GateRuntimeController gate)
     {
-        elapsedTurns = 0;
-        bool foundActiveThreat = false;
-
-        if (TryGetThreatElapsedTurns(repository, gate.FirstZoneId, out int firstElapsedTurns))
-        {
-            elapsedTurns = Mathf.Max(elapsedTurns, firstElapsedTurns);
-            foundActiveThreat = true;
-        }
-
-        if (TryGetThreatElapsedTurns(repository, gate.SecondZoneId, out int secondElapsedTurns))
-        {
-            elapsedTurns = Mathf.Max(elapsedTurns, secondElapsedTurns);
-            foundActiveThreat = true;
-        }
-
-        return foundActiveThreat;
+        return HasActiveThreat(repository, gate.FirstZoneId) ||
+            HasActiveThreat(repository, gate.SecondZoneId);
     }
 
-    private static bool TryGetThreatElapsedTurns(
-        MapProgressRepository repository,
-        string zoneId,
-        out int elapsedTurns)
+    private static bool HasActiveThreat(MapProgressRepository repository, string zoneId)
     {
-        elapsedTurns = 0;
-        if (repository == null ||
-            !repository.TryGetZoneThreatState(zoneId, out ZoneThreatProgressState threatState) ||
-            threatState == null ||
-            !threatState.Active)
-        {
-            return false;
-        }
-
-        elapsedTurns = threatState.AccumulatedTurns;
-        return true;
+        return repository != null &&
+            repository.TryGetZoneThreatState(zoneId, out ZoneThreatProgressState threatState) &&
+            threatState != null &&
+            threatState.Active;
     }
 
     private void RegisterSceneGates()
