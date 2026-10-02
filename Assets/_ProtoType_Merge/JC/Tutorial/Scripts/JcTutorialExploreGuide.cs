@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -62,11 +62,66 @@ namespace JC.Tutorial
         private void Start()
         {
             JcTutorialGuideView.BindWordWrapping(quest); JcTutorialGuideView.BindWordWrapping(introTitle);
+            ApplyQuestShadow();
+            InstallScrollGuards();
             BindRepository(); CaptureItems();
             nextTurnButton = nextTurn != null ? nextTurn.GetComponent<Button>() : null;
             if (turnManager != null) originalTurnControl = turnManager.TurnControlEnabled;
             if (nextTurnButton != null) originalTurnButton = nextTurnButton.interactable;
             turnStateCaptured = true;
+        }
+        private readonly List<(TMP_Text text, Material original, Material shadow)> questMaterials = new List<(TMP_Text, Material, Material)>();
+        private void ApplyQuestShadow()
+        {
+            if (quest == null || questMaterials.Count > 0) return;
+            // TMP 전용 Underlay를 인스턴스 머티리얼에만 적용한다. 공유 폰트/다른 씬은 변경하지 않는다.
+            foreach (var text in quest.transform.parent.parent.GetComponentsInChildren<TMP_Text>(true))
+            {
+                var original = text.fontSharedMaterial;
+                if (original == null || !original.HasProperty("_UnderlayColor")) continue;
+                var shadow = new Material(original) { name = original.name + " (Tutorial Shadow)", hideFlags = HideFlags.HideAndDontSave };
+                shadow.EnableKeyword("UNDERLAY_ON");
+                shadow.SetColor("_UnderlayColor", new Color(.015f, .025f, .04f, .92f));
+                shadow.SetFloat("_UnderlayOffsetX", 1); shadow.SetFloat("_UnderlayOffsetY", -1);
+                shadow.SetFloat("_UnderlayDilate", .12f); shadow.SetFloat("_UnderlaySoftness", .16f);
+                text.fontSharedMaterial = shadow; text.UpdateMeshPadding();
+                questMaterials.Add((text, original, shadow));
+            }
+            foreach (var image in quest.transform.parent.parent.GetComponentsInChildren<Image>(true))
+            {
+                if (image.GetComponent<Shadow>() != null) continue;
+                var shadow = image.gameObject.AddComponent<Shadow>();
+                shadow.effectColor = new Color(.015f, .025f, .04f, .92f);
+                shadow.effectDistance = new Vector2(2, -2); shadow.useGraphicAlpha = true;
+                questImageShadows.Add(shadow);
+            }
+        }
+        private readonly List<Shadow> questImageShadows = new List<Shadow>();
+        private void InstallScrollGuards()
+        {
+            if (nextTurn != null) JcTutorialScrollGuard.Install(nextTurn.parent as RectTransform);
+            foreach (var image in FindObjectsByType<RawImage>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (image.gameObject.scene == gameObject.scene && image.name == "MiniMap")
+                    JcTutorialScrollGuard.Install(image.rectTransform);
+        }
+        public void PrepareForSceneExit()
+        {
+            exiting = true; Hide();
+            // 진행 초기화로 시작 안내가 되살아나지 않도록 갱신을 중단하고 즉시 숨긴다.
+            if (view != null) { view.SetPanelSuppressed(true); view.RenderPresentation(0, 1); }
+            enabled = false;
+        }
+        private bool exiting;
+        private void OnDestroy()
+        {
+            foreach (var entry in questMaterials)
+            {
+                if (entry.text != null && entry.text.fontSharedMaterial == entry.shadow) entry.text.fontSharedMaterial = entry.original;
+                if (entry.shadow != null) { if (Application.isPlaying) Destroy(entry.shadow); else DestroyImmediate(entry.shadow); }
+            }
+            questMaterials.Clear();
+            foreach (var shadow in questImageShadows) if (shadow != null) { if (Application.isPlaying) Destroy(shadow); else DestroyImmediate(shadow); }
+            questImageShadows.Clear();
         }
         private void OnLevelLoaded(LevelLoader loader) { if (loader == levelLoader) CaptureItems(); }
         private void CaptureItems()
@@ -97,6 +152,7 @@ namespace JC.Tutorial
 
         public void RefreshPresentation(float time)
         {
+            if (exiting) { Hide(); return; }
             BindRepository();
             float delta = lastTime < 0 ? 0 : Mathf.Clamp(time - lastTime, 0, .1f); lastTime = time;
             if (view == null || goal == null || repository == null || grid == null || movement == null || parties == null) { Hide(); return; }
@@ -273,7 +329,46 @@ namespace JC.Tutorial
         private void SetContinue(bool visible) { if (continueButton != null && continueButton.gameObject.activeSelf != visible) continueButton.gameObject.SetActive(visible); }
         private void HideMarker() { if (goal != null) goal.Present(false, Vector3.zero, 1, 0); }
         private void ShowMarker(Vector2Int cell, float time)
-        { movement.SetGuidanceTarget(this, cell); Vector3 p = grid.GridToWorldCenter(cell); p.y = grid.GetCellSurfaceY(cell); goal.Present(true, p, grid.CellSize, time, !IsSelected(cell, time)); }
+        {
+            movement.SetGuidanceTarget(this, cell);
+            Vector3 p = grid.GridToWorldCenter(cell); p.y = grid.GetCellSurfaceY(cell);
+            bool selected = IsSelected(cell, time);
+            goal.Present(true, p, grid.CellSize, time, !selected, TargetTop(cell), selected ? null : GuidancePath(cell, time));
+        }
+        private AStarPathfinder guidePathfinder;
+        private Vector2Int pathStart, pathGoal;
+        private float nextPathRefresh;
+        private readonly List<Vector3> guidePath = new List<Vector3>();
+        private IReadOnlyList<Vector3> GuidancePath(Vector2Int target, float time)
+        {
+            var party = parties.PlayerParty;
+            if (party == null) return null;
+            var start = party.GetCurrentGrid();
+            if (guidePath.Count > 0 && start == pathStart && target == pathGoal && time < nextPathRefresh) return guidePath;
+            pathStart = start; pathGoal = target; nextPathRefresh = time + .25f; guidePath.Clear();
+            if (guidePathfinder == null) guidePathfinder = FindFirstObjectByType<AStarPathfinder>();
+            if (guidePathfinder == null) return null;
+            var cells = guidePathfinder.FindPath(start, target, party.transform, maxVisitedNodes: 4096);
+            if (cells == null && grid.HasInteractionTarget(target))
+                cells = guidePathfinder.FindPathToAdjacent(start, target, party.transform, maxVisitedNodes: 4096);
+            if (cells == null) return null;
+            foreach (var cell in cells) { var point = grid.GridToWorldCenter(cell); point.y = grid.GetCellSurfaceY(cell); guidePath.Add(point); }
+            // 상호작용 위치까지 장식 선을 연결한다. 실제 이동 판정은 기존 미리보기가 수행한다.
+            if (cells.Count > 0 && cells[cells.Count-1] != target) { var end = grid.GridToWorldCenter(target); end.y = grid.GetCellSurfaceY(target); guidePath.Add(end); }
+            return guidePath;
+        }
+        private float TargetTop(Vector2Int cell)
+        {
+            Component target = null;
+            if (grid.TryGetGridItemObjectAtGrid(cell, out var item)) target = item as Component;
+            if (target == null && grid.TryGetTutorialEnemyObjectAtGrid(cell, out var tutorialEnemy)) target = tutorialEnemy;
+            if (target == null && grid.TryGetEnemyObjectAtGrid(cell, out var enemy)) target = enemy;
+            if (target == null) return float.NegativeInfinity;
+            float top = target.transform.position.y;
+            foreach (var renderer in target.GetComponentsInChildren<Renderer>())
+                if (renderer.enabled) top = Mathf.Max(top, renderer.bounds.max.y);
+            return top;
+        }
         private RectTransform FindGauge(PartyGridMover party, float time)
         {
             if (movementGauge != null && movementGauge.gameObject.activeInHierarchy) return movementGauge;

@@ -253,10 +253,14 @@ public class GateThreatController : MonoBehaviour
     private void HandleEnemyDefeated(string placementKey)
     {
         string normalizedPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
+        if (string.IsNullOrWhiteSpace(normalizedPlacementKey))
+            return;
+
         MapProgressRepository repository = MapProgressRepository.Instance;
         if (repository == null)
             return;
 
+        HashSet<string> affectedZoneIds = new HashSet<string>();
         IReadOnlyList<ZoneThreatProgressState> states = repository.ZoneThreatStates;
         for (int i = 0; i < states.Count; i++)
         {
@@ -267,13 +271,70 @@ public class GateThreatController : MonoBehaviour
                 continue;
             }
 
-            repository.ClearZoneThreatEnemy(state.ZoneId);
-            if (HasLiveThreatEnemyInZone(state.ZoneId, normalizedPlacementKey))
-                continue;
-
-            repository.BeginZoneThreat(state.ZoneId, ResolveCurrentDay());
-            RefreshGateOpenStateForZone(state.ZoneId);
+            string normalizedZoneId = MapProgressKey.NormalizeSegment(state.ZoneId);
+            if (!string.IsNullOrWhiteSpace(normalizedZoneId))
+                affectedZoneIds.Add(normalizedZoneId);
         }
+
+        // Runtime threat keys carry their zone. This keeps gate reopening resilient even if
+        // the active-threat key was reset or missed before the enemy defeat callback arrives.
+        string zoneIdFromPlacementKey = TryResolveZoneIdFromGateThreatPlacementKey(normalizedPlacementKey);
+        if (!string.IsNullOrWhiteSpace(zoneIdFromPlacementKey))
+            affectedZoneIds.Add(zoneIdFromPlacementKey);
+
+        if (repository.TryGetEnemyState(normalizedPlacementKey, out EnemyWorldState defeatedEnemyState) &&
+            IsGateThreatPlacementKey(normalizedPlacementKey))
+        {
+            string zoneIdFromEnemyState = MapProgressKey.NormalizeSegment(defeatedEnemyState.ZoneId);
+            if (!string.IsNullOrWhiteSpace(zoneIdFromEnemyState))
+                affectedZoneIds.Add(zoneIdFromEnemyState);
+        }
+
+        foreach (string affectedZoneId in affectedZoneIds)
+        {
+            HandleZoneThreatEnemyDefeated(repository, affectedZoneId, normalizedPlacementKey);
+        }
+    }
+
+    private void HandleZoneThreatEnemyDefeated(MapProgressRepository repository, string zoneId, string defeatedPlacementKey)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return;
+
+        repository.ClearZoneThreatEnemy(normalizedZoneId);
+        if (HasLiveThreatEnemyInZone(normalizedZoneId, defeatedPlacementKey))
+            return;
+
+        // Defeating a threat happens during the current player/enemy flow. The next pre-enemy-turn
+        // evaluation uses current day + 1, so restart from that boundary to avoid counting this turn twice.
+        repository.BeginZoneThreat(normalizedZoneId, ResolveCurrentDay() + 1);
+        RefreshGateOpenStateForZone(normalizedZoneId);
+    }
+
+    private static bool IsGateThreatPlacementKey(string placementKey)
+    {
+        string normalizedPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
+        return !string.IsNullOrWhiteSpace(normalizedPlacementKey) &&
+               normalizedPlacementKey.StartsWith("runtime_enemy_gate_threat_", System.StringComparison.Ordinal);
+    }
+
+    private static string TryResolveZoneIdFromGateThreatPlacementKey(string placementKey)
+    {
+        string normalizedPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
+        const string prefix = "runtime_enemy_gate_threat_";
+        if (string.IsNullOrWhiteSpace(normalizedPlacementKey) ||
+            !normalizedPlacementKey.StartsWith(prefix, System.StringComparison.Ordinal))
+        {
+            return string.Empty;
+        }
+
+        string remainder = normalizedPlacementKey.Substring(prefix.Length);
+        int lastSeparator = remainder.LastIndexOf('_');
+        if (lastSeparator <= 0)
+            return string.Empty;
+
+        return MapProgressKey.NormalizeSegment(remainder.Substring(0, lastSeparator));
     }
 
     private void HandleEventFlagChanged(string flagName, bool value)

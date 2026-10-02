@@ -206,6 +206,10 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         if (heroUnion == null)
             return false;
 
+        var savedRoute = MapProgressRepository.Instance?.ZoneEntryGuidanceState?.AllowedPathCells;
+        if (savedRoute == null || savedRoute.Count == 0 || partyGrid != savedRoute[savedRoute.Count - 1])
+            return false;
+
         if (!IsRequiredHeroUnion(heroUnion) || !heroUnion.IsInteractionCell(partyGrid))
             return false;
 
@@ -390,6 +394,10 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 
         Vector2Int start = party.GetCurrentGrid();
         IReadOnlyList<Vector2Int> interactionCells = heroUnion.GetInteractionCells();
+        Vector2 center = Vector2.zero;
+        for (int i = 0; i < interactionCells.Count; i++) center += (Vector2)interactionCells[i];
+        if (interactionCells.Count > 0) center /= interactionCells.Count;
+        float bestCenterDistance = float.PositiveInfinity;
         for (int i = 0; i < interactionCells.Count; i++)
         {
             Vector2Int candidate = interactionCells[i];
@@ -407,8 +415,14 @@ public class ZoneEntryGuidanceController : MonoBehaviour
             if (candidatePath == null || candidatePath.Count == 0)
                 continue;
 
-            if (bestPath == null || candidatePath.Count < bestPath.Count)
+            // 건물 앞 상호작용 줄의 중앙을 우선하고, 같은 중앙 거리에서 짧은 경로를 택한다.
+            float centerDistance = ((Vector2)candidate - center).sqrMagnitude;
+            if (bestPath == null || centerDistance < bestCenterDistance
+                || (Mathf.Approximately(centerDistance, bestCenterDistance) && candidatePath.Count < bestPath.Count))
+            {
                 bestPath = candidatePath;
+                bestCenterDistance = centerDistance;
+            }
         }
 
         return bestPath != null && bestPath.Count > 0;

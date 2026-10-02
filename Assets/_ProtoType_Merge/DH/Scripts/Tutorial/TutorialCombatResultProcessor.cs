@@ -127,9 +127,18 @@ public sealed class TutorialCombatResultProcessor : MonoBehaviour
         }
     }
 
+    public static int RequiredExperienceAfter(int level)
+    {
+        var rows = TutorialCatalog.Instance?.GetUnitGrowthTemplates();
+        int next = int.MaxValue, required = 0;
+        if (rows != null) foreach (var row in rows)
+            if (row != null && row.Level > level && row.Level < next) { next = row.Level; required = Mathf.Max(0, row.RequiredExperience); }
+        return required;
+    }
+
     public static bool TryPersistAllies(
         IReadOnlyList<BattleCharactor> playerUnits,
-        out string error)
+        out string error, BattleRewardPlan growthPlan = null)
     {
         error = string.Empty;
 
@@ -171,6 +180,16 @@ public sealed class TutorialCombatResultProcessor : MonoBehaviour
                 ? Mathf.Clamp(source.Exp, 0, maxExp)
                 : Mathf.Max(0, source.Exp);
 
+            var growth = growthPlan?.UnitPreviews?.Find(p => p.IsTutorial && p.UnitIndex == source.UnitIndex);
+            if (growthPlan != null && growthPlan.Result == BattleResult.Victory && growth != null && growth.NewLevel > level)
+            {
+                level = growth.NewLevel; exp = growth.NewExp; maxExp = growth.NewMaxExp;
+                var stats = UnitStatCalculator.CalculateIngameStats(source.BaseStats, source.LevelupStats, level,
+                    source.CurrentWeaponStats, source.EventBonusStats, TutorialCatalog.Instance.GetUnitGrowthTemplates());
+                maxHp = Mathf.Max(1, Mathf.CeilToInt(stats.HP)); atk = Mathf.Max(0, Mathf.RoundToInt(stats.Atk));
+                maxIp = Mathf.Max(0, Mathf.RoundToInt(stats.Influence));
+                currentHp = Mathf.Min(currentHp, maxHp); currentIp = Mathf.Min(currentIp, maxIp);
+            }
             repository.SetUnitJoined(unitTemplateKey, true);
             repository.SetUnitStats(unitTemplateKey, currentHp, maxHp, currentIp, maxIp, atk, level, exp, maxExp);
             savedCount++;

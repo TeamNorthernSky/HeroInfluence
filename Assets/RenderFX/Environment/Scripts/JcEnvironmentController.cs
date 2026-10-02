@@ -1,12 +1,13 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 namespace JC.Env
 {
     /// <summary>
     /// 환경 프로파일 적용기 — 씬에 하나 두고, 프로파일 값을 RenderSettings·스카이박스 재질·디렉셔널 라이트에 반영한다.
     ///
-    /// 적용은 명시 호출(ApplyNow / 에디터 버튼)·플레이 시작 시(applyOnStart)만 — 매 프레임 덮어쓰지 않아
+    /// 적용은 명시 호출·플레이 시작·소속 씬의 활성 전환 시만 — 매 프레임 덮어쓰지 않아
     /// 에디터에서 씬 값을 직접 스윕하는 튜닝 흐름과 싸우지 않는다.
     /// 낮/밤 전환은 ApplyBlend(a, b, t) — 턴 이벤트 연동은 추후.
     ///
@@ -24,7 +25,8 @@ namespace JC.Env
                  "★여기 꽂힌 라이트가 RenderSettings.sun(Sun Source)에도 결선된다 — Procedural 하늘의 태양 원반이 이 방향을 따른다.")]
         [SerializeField] private Light directionalLight;
 
-        [Tooltip("플레이 시작 시 프로파일을 1회 적용.")]
+        [Tooltip("플레이 시작 시 프로파일을 적용합니다. 추가 로드된 씬은 활성 씬이 될 때까지 기다립니다.\n" +
+                 "다른 씬에서 돌아오거나 컴포넌트를 다시 켜면 마지막 적용 상태를 복원합니다. OFF이면 명시 적용 전까지 자동 적용하지 않습니다.")]
         [SerializeField] private bool applyOnStart = true;
 
         [Tooltip("★씬별 방위 보정(도, Y축) — 씬마다 카메라 방위가 다를 때(탐사=-Z 시점, 전투=+X 시점 등)\n" +
@@ -34,6 +36,11 @@ namespace JC.Env
 
         /// <summary>플레이 중 하늘 파라미터 편집용 인스턴스 — 에셋 오염 방지.</summary>
         private Material _runtimeSky;
+        private Material _runtimeSkySource;
+        private bool _started;
+        private JcEnvironmentProfile _requestedA;
+        private JcEnvironmentProfile _requestedB;
+        private float _requestedBlend;
 
         public JcEnvironmentProfile Profile { get => profile; set => profile = value; }
 
@@ -47,10 +54,48 @@ namespace JC.Env
         /// <summary>Skybox/Cubemap·Panoramic 계열의 하늘 회전(도). Procedural 에는 없다 — HasProperty 가드로 걸러진다.</summary>
         private static readonly int ID_Rotation = Shader.PropertyToID("_Rotation");
 
+        private void OnEnable()
+        {
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
+            if (_started) RestoreRequestedEnvironment();
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        }
+
+        private void OnDestroy()
+        {
+            ReleaseRuntimeSky();
+        }
+
         private void Start()
         {
-            if (applyOnStart) ApplyNow();
+            _started = true;
+            RestoreRequestedEnvironment();
         }
+
+        private void OnActiveSceneChanged(Scene previous, Scene next)
+        {
+            if (_started && next == gameObject.scene) RestoreRequestedEnvironment();
+        }
+
+        private void RestoreRequestedEnvironment()
+        {
+            // 명시 적용/보간 상태도 보존하므로 additive 왕복 시 기본 낮 프로파일로 돌아가지 않는다.
+            if (_requestedA != null)
+            {
+                if (_requestedB != null) ApplyBlend(_requestedA, _requestedB, _requestedBlend);
+                else Apply(_requestedA);
+            }
+            else if (applyOnStart) ApplyNow();
+        }
+
+        // Additive 로드의 Start는 SetActiveScene보다 먼저 실행될 수 있다.
+        // 그때 RenderSettings를 쓰면 현재 로딩씬의 환경을 바꾸므로 요청만 기억해 둔다.
+        private bool CanApply => !Application.isPlaying ||
+            (isActiveAndEnabled && gameObject.scene == SceneManager.GetActiveScene());
 
         [ContextMenu("프로파일 적용")]
         public void ApplyNow() => Apply(profile);
@@ -59,6 +104,9 @@ namespace JC.Env
         public void Apply(JcEnvironmentProfile p)
         {
             if (p == null) return;
+            _requestedA = p;
+            _requestedB = null;
+            if (!CanApply) return;
 
             var light = ResolveLight();
 
@@ -75,7 +123,7 @@ namespace JC.Env
             if (p.alignSkyToSun) WriteSkyRotation(sky, p.skySunAzimuth, sunRot);
 
             // Sun Source — Procedural 하늘의 태양 원반이 실제 조명 방향을 따르게 한다
-            if (light != null) RenderSettings.sun = light;
+            RenderSettings.sun = light;
 
             // ② 환경광(디퓨즈 IBL)
             ApplyAmbient(p.ambientSource, p.ambientIntensity, p.ambientSky, p.ambientEquator, p.ambientGround);
@@ -104,6 +152,10 @@ namespace JC.Env
         {
             if (a == null || b == null) { Apply(a != null ? a : b); return; }
             t = Mathf.Clamp01(t);
+            _requestedA = a;
+            _requestedB = b;
+            _requestedBlend = t;
+            if (!CanApply) return;
 
             var light = ResolveLight();
 
@@ -119,18 +171,26 @@ namespace JC.Env
             if (a.driveSkyboxParams || b.driveSkyboxParams)
             {
                 if (sameMat)
+                {
+                    // 제어를 끈 끝점은 프로파일의 미사용 숫자가 아니라 재질 원본값이다.
+                    Color SkyColor(JcEnvironmentProfile p, int id, Color value) =>
+                        p.driveSkyboxParams || sky == null || !sky.HasProperty(id) ? value : sky.GetColor(id);
+                    float SkyFloat(JcEnvironmentProfile p, int id, float value) =>
+                        p.driveSkyboxParams || sky == null || !sky.HasProperty(id) ? value : sky.GetFloat(id);
                     WriteSkyParams(sky,
-                        Color.Lerp(a.skyTint, b.skyTint, t),
-                        Color.Lerp(a.skyGroundColor, b.skyGroundColor, t),
-                        Mathf.Lerp(a.atmosphereThickness, b.atmosphereThickness, t),
-                        Mathf.Lerp(a.skyExposure, b.skyExposure, t),
-                        Mathf.Lerp(a.sunSize, b.sunSize, t),
-                        Mathf.Lerp(a.sunSizeConvergence, b.sunSizeConvergence, t));
+                        Color.Lerp(SkyColor(a, ID_SkyTint, a.skyTint), SkyColor(b, ID_SkyTint, b.skyTint), t),
+                        Color.Lerp(SkyColor(a, ID_GroundColor, a.skyGroundColor), SkyColor(b, ID_GroundColor, b.skyGroundColor), t),
+                        Mathf.Lerp(SkyFloat(a, ID_AtmosphereThickness, a.atmosphereThickness), SkyFloat(b, ID_AtmosphereThickness, b.atmosphereThickness), t),
+                        Mathf.Lerp(SkyFloat(a, ID_Exposure, a.skyExposure), SkyFloat(b, ID_Exposure, b.skyExposure), t),
+                        Mathf.Lerp(SkyFloat(a, ID_SunSize, a.sunSize), SkyFloat(b, ID_SunSize, b.sunSize), t),
+                        Mathf.Lerp(SkyFloat(a, ID_SunSizeConvergence, a.sunSizeConvergence), SkyFloat(b, ID_SunSizeConvergence, b.sunSizeConvergence), t));
+                }
                 else
                 {
                     var s = t < 0.5f ? a : b;
-                    WriteSkyParams(sky, s.skyTint, s.skyGroundColor, s.atmosphereThickness,
-                        s.skyExposure, s.sunSize, s.sunSizeConvergence);
+                    if (s.driveSkyboxParams)
+                        WriteSkyParams(sky, s.skyTint, s.skyGroundColor, s.atmosphereThickness,
+                            s.skyExposure, s.sunSize, s.sunSizeConvergence);
                 }
             }
 
@@ -145,7 +205,7 @@ namespace JC.Env
                         : (t < 0.5f ? a.skySunAzimuth : b.skySunAzimuth), sunRot);
             }
 
-            if (light != null) RenderSettings.sun = light;
+            RenderSettings.sun = light;
 
             // ② 환경광 — 소스가 다르면 t 0.5 에서 전환(모드는 보간 대상이 아니다)
             var srcMode = t < 0.5f ? a.ambientSource : b.ambientSource;
@@ -177,11 +237,12 @@ namespace JC.Env
         /// </summary>
         public void CaptureInto(JcEnvironmentProfile target)
         {
-            if (target == null) return;
+            if (target == null || !CanApply) return;
 
             // ① 하늘 — 현행 재질을 정본으로 기록하고, 파라미터도 함께 읽어온다
-            target.skyboxMaterial = RenderSettings.skybox;
             var m = RenderSettings.skybox;
+            // 저장할 프로파일에 플레이 전용 재질 참조가 들어가지 않게 원본을 기록한다.
+            target.skyboxMaterial = m != null && m == _runtimeSky ? _runtimeSkySource : m;
             if (m != null && target.driveSkyboxParams)
             {
                 if (m.HasProperty(ID_SkyTint)) target.skyTint = m.GetColor(ID_SkyTint);
@@ -225,19 +286,43 @@ namespace JC.Env
         /// <summary>스카이박스를 지정하고, 실제로 파라미터를 쓸 대상 재질을 돌려준다.</summary>
         private Material ApplySkybox(Material src)
         {
-            if (src == null) return RenderSettings.skybox;
+            if (src == null) src = RenderSettings.skybox;
+            if (src != null && src == _runtimeSky) src = _runtimeSkySource;
+            if (src == null) return null;
 
             // 플레이 중에는 인스턴스로 — 에셋에 실험값이 스미지 않게(에디트 모드는 에셋 직접 = 의도된 튜닝)
             Material target = src;
             if (Application.isPlaying)
             {
                 if (_runtimeSky == null || _runtimeSky.shader != src.shader)
-                    _runtimeSky = new Material(src);
+                {
+                    ReleaseRuntimeSky();
+                    _runtimeSky = new Material(src)
+                    {
+                        name = src.name + " (JC Environment Runtime)",
+                        hideFlags = HideFlags.DontSave
+                    };
+                }
+                // 같은 셰이더라도 다른 HDRI 텍스처/키워드/회전일 수 있다.
+                // 옵션을 끌 때도 이전 프로파일의 덮어쓴 값 대신 원본 값으로 돌아간다.
+                _runtimeSky.CopyPropertiesFromMaterial(src);
+                _runtimeSkySource = src;
                 target = _runtimeSky;
             }
 
             if (RenderSettings.skybox != target) RenderSettings.skybox = target;
             return target;
+        }
+
+        private void ReleaseRuntimeSky()
+        {
+            if (_runtimeSky == null) return;
+            // 이미 다른 씬이 하늘을 소유하면 그 씬의 RenderSettings를 건드리지 않는다.
+            if (RenderSettings.skybox == _runtimeSky) RenderSettings.skybox = _runtimeSkySource;
+            if (Application.isPlaying) Destroy(_runtimeSky);
+            else DestroyImmediate(_runtimeSky);
+            _runtimeSky = null;
+            _runtimeSkySource = null;
         }
 
         /// <summary>하늘 파라미터를 재질에 기록. 셰이더에 해당 프로퍼티가 없으면 조용히 건너뛴다.</summary>
@@ -320,11 +405,16 @@ namespace JC.Env
 
         private Light ResolveLight()
         {
-            if (directionalLight != null) return directionalLight;
-            foreach (var l in FindObjectsByType<Light>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
-                if (l.type == LightType.Directional) { directionalLight = l; return l; }
-            Debug.LogWarning("[JcEnvironment] 씬에서 디렉셔널 라이트를 찾지 못했습니다.", this);
+            if (IsLocalSun(directionalLight)) return directionalLight;
+            if (IsLocalSun(RenderSettings.sun)) return directionalLight = RenderSettings.sun;
+            foreach (var root in gameObject.scene.GetRootGameObjects())
+                foreach (var l in root.GetComponentsInChildren<Light>())
+                    if (IsLocalSun(l)) return directionalLight = l;
+            Debug.LogWarning("[JcEnvironment] 소속 씬에서 활성 디렉셔널 라이트를 찾지 못했습니다.", this);
             return null;
         }
+
+        private bool IsLocalSun(Light light) => light != null && light.isActiveAndEnabled &&
+            light.type == LightType.Directional && light.gameObject.scene == gameObject.scene;
     }
 }

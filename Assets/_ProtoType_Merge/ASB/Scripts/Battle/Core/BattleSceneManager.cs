@@ -106,7 +106,7 @@ public class BattleSceneManager : MonoBehaviour
         // 1. 보상 계산 (Repository/JSON 변경 없음)
         // 튜토리얼 전투는 일반 영속 저장소/보상 루프를 사용하지 않는다.
         BattleRewardPlan plan = isTutorial
-            ? null
+            ? BuildTutorialResultDisplay(playerBattleCharactors, result)
             : BattleResultPersistenceHandler.BuildBattleRewardPlan(
                 playerBattleCharactors, result, victoryEnemyExperienceSnapshot);
 
@@ -129,10 +129,10 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         // 4. 승패 결과 UI (레벨업 스킬 슬롯 포함, Accept 버튼은 슬롯 모두 처리 후 활성화)
-        // 모의/튜토리얼 전투는 일반 보상·스킬을 지급하지 않는다.
+        // 튜토리얼은 전용 성장 계획을 표시하고 일반 보상 저장소에는 지급하지 않는다.
         BattleResultPanel resultPanel = battleUIManager?.ShowBattleResultUI(
             result,
-            isTutorial ? BuildTutorialResultDisplay(playerBattleCharactors, result) : isSimulation ? null : plan);
+            isSimulation && !isTutorial ? null : plan);
 
         // 결과창 표시 후·Accept 전: 튜토리얼 flow에 통지(비차단 오버레이 기본).
         if (resultPanel != null)
@@ -153,7 +153,7 @@ public class BattleSceneManager : MonoBehaviour
         var skillResults = resultPanel?.GetSkillResults() ?? new System.Collections.Generic.List<SkillSelectionResult>();
         if (isTutorial)
         {
-            if (!TutorialCombatResultProcessor.TryPersistAllies(playerBattleCharactors, out string tutorialSaveError))
+            if (!TutorialCombatResultProcessor.TryPersistAllies(playerBattleCharactors, out string tutorialSaveError, plan))
             {
                 Debug.LogError($"[BattleSceneManager] Tutorial ally save failed. {tutorialSaveError}", this);
                 returnSceneCoroutine = null;
@@ -186,7 +186,7 @@ public class BattleSceneManager : MonoBehaviour
         yield return StartCoroutine(TransitionToSceneRoutine(contextReturnScene));
     }
 
-    // 표시 전용 스냅샷. 튜토리얼에는 경험치/IP 보상을 추가하거나 일반 저장소에 쓰지 않는다.
+    // 튜토리얼 첫 승리는 현재 전용 성장표의 2레벨(D)까지 성장한다. 최종 확인 시 전용 저장소에만 반영한다.
     private static BattleRewardPlan BuildTutorialResultDisplay(IReadOnlyList<BattleCharactor> players, BattleResult result)
     {
         var display=new BattleRewardPlan { Result=result };
@@ -194,12 +194,26 @@ public class BattleSceneManager : MonoBehaviour
         foreach(var player in players) {
             var src=player!=null?player.SourceData:null;if(src==null)continue;
             display.UnitPreviews.Add(new UnitRewardPreview {
-                UnitIndex=src.UnitIndex,UnitTemplateKey=src.UnitTemplateKey,UnitName=player.DisplayName,
+                UnitIndex=src.UnitIndex,UnitTemplateKey=src.UnitTemplateKey,IsTutorial=true,UnitName=player.DisplayName,
                 OldLevel=src.Level,NewLevel=src.Level,HasExpPreview=true,
                 OldExp=src.Exp,NewExp=src.Exp,OldMaxExp=src.MaxExp,NewMaxExp=src.MaxExp,
                 OldInfluence=player.CurrentInfluence,NewInfluence=player.CurrentInfluence
             });
         }
+        // 첫 승리의 교육용 성장만 적용한다. 이미 2레벨 이상이면 다시 보상하지 않는다.
+        var catalog = TutorialCatalog.Instance;
+        if (result == BattleResult.Victory && catalog != null)
+            foreach (var preview in display.UnitPreviews)
+            {
+                if (preview.OldLevel >= 2) continue;
+                preview.NewLevel = 2;
+                preview.OldMaxExp = TutorialCombatResultProcessor.RequiredExperienceAfter(preview.OldLevel);
+                preview.GainedExp = Mathf.Max(0, preview.OldMaxExp - preview.OldExp);
+                preview.NewExp = 0;
+                preview.NewMaxExp = TutorialCombatResultProcessor.RequiredExperienceAfter(2);
+                foreach (var skill in catalog.GetCurrentClassSkills(preview.UnitTemplateKey, 2))
+                    if (skill.acquireLevel > preview.OldLevel) preview.UnlockCandidateSkillIds.Add(skill.skillIndex);
+            }
         return display;
     }
 

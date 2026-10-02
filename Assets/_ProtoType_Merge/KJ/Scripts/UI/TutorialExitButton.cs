@@ -27,11 +27,6 @@ public class TutorialExitButton : MonoBehaviour
     {
         if (isLoading) return;
         isLoading = true;
-        TutorialProgressRepository.ClearProgress(); 
-        TutorialCatalog.DestroyAllTutorialCatalogs();
-        if (GameSceneManager.Instance != null)
-            GameSceneManager.Instance.LoadSceneAsync("DHScene_3");
-        else
-            SceneManager.LoadSceneAsync("DHScene_3");
+        JC.Tutorial.JcTutorialExitTransition.Begin();
     }
 }
