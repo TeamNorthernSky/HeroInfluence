@@ -136,7 +136,7 @@ public class TutorialCutSceneManager : MonoBehaviour
     
     private void GoTutorialExploreScene()
     {
-        SceneManager.LoadScene("TutorialExploreScene");
+        SceneFadeController.LoadSceneWithFadeIfNeeded("TutorialExploreScene");
     }
 
     void GoPreviousCutScene()

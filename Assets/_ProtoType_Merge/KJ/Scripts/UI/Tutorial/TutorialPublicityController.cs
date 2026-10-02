@@ -5,6 +5,8 @@ using UnityEngine.UI;
 /// <summary>튜토리얼 협회 홍보: 템플릿 키 선택, 전용 자금 지출, 전용 IP 증가.</summary>
 public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionOwner
 {
+    public const int TutorialMaxIp = 40;
+    public const int MaxProgressPerAction = 20;
     [SerializeField] private string[] heroKeys = { "10001", "10002", "10003", "10004" };
     [SerializeField] private TutorialCatalog catalog;
     [SerializeField] private GameObject modalPublicityRoot;
@@ -16,8 +18,14 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     [SerializeField] private Slider progressSlider;
     public string SelectedKey { get; private set; }
     public System.Collections.Generic.IReadOnlyList<string> HeroKeys => heroKeys;
+    public int Count => count;
+    public int MaxCount => MaximumCount();
+    /// <summary>홍보 확정이 성공한 누적 횟수. 튜토리얼 안내가 "진행을 눌렀다"를 감지하는 데 쓴다.</summary>
+    public int ConfirmCount { get; private set; }
+    public bool IsModalOpen => modalPublicityRoot != null && modalPublicityRoot.activeInHierarchy;
     private int count;
     private float nextRefresh;
+    private TextMeshProUGUI countCaption;
 
     private TutorialProgressRepository Repository => TutorialProgressRepository.EnsureInstance();
 
@@ -81,6 +89,23 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         Refresh();
     }
 
+    /// <summary>홍보 안내를 처음부터 시작할 때만 튜토리얼 영웅의 IP를 준비한다.</summary>
+    public void BeginExplanation(string key)
+    {
+        if (!TryGetHero(key, out var state, out _)) return;
+        // 안내의 두 차례 홍보(20 + 20)를 끝낼 수 있도록 튜토리얼 자원만 준비한다.
+        var repo = Repository;
+        int requiredMoney = TutorialMaxIp * TutorialPublicityState.CostPerProgress;
+        repo.SetResource(ResourceType.Money, Mathf.Max(repo.GetResource(ResourceType.Money), requiredMoney));
+        TutorialPublicityState.Get(repo).EnsureAvailableCount(TutorialMaxIp);
+        Repository.SetUnitStats(key, state.CurrentHp, state.MaxHp, 0, TutorialMaxIp,
+            state.Atk, state.Level, state.Exp, state.MaxExp);
+        foreach (var unit in FindObjectsByType<TutorialUnitState>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (unit.gameObject.scene == gameObject.scene && unit.UnitTemplateKey == key)
+                unit.InitializeFromTutorialState();
+        SelectHero(key);
+    }
+
     public void ClearHeroSelection() { SelectedKey = null; count = 0; Refresh(); }
     public void CloseModal() { if (modalPublicityRoot != null) modalPublicityRoot.SetActive(false); }
     private void Decrease() => SetCount(count - 1);
@@ -97,7 +122,8 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     {
         if (!TryGetHero(SelectedKey, out var state, out _)) return 0;
         var budget = TutorialPublicityState.Get(Repository);
-        return budget != null ? Mathf.Min(budget.Pool, Mathf.Max(0, state.MaxIp - state.CurrentIp)) : 0;
+        return budget != null ? Mathf.Min(MaxProgressPerAction,
+            Mathf.Min(budget.Pool, Mathf.Max(0, state.MaxIp - state.CurrentIp))) : 0;
     }
 
     public void Confirm()
@@ -106,6 +132,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         if (TutorialPublicityState.Get(Repository).TryProgress(SelectedKey, count))
         {
             count = 0;
+            ConfirmCount++;
             // 탐사씬 안에서 홍보한 경우, 월드 영웅이 예전 IP를 다시 저장하지 않게 동기화한다.
             foreach (var unit in FindObjectsByType<TutorialUnitState>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (unit.gameObject.scene == gameObject.scene && unit.UnitTemplateKey == SelectedKey)
@@ -132,7 +159,10 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
             heroProfileImage.enabled = true;
             heroProfileImage.sprite = selected ? Sprites.Portrait.Hero(SelectedKey) : Sprites.Portrait.Unselected;
         }
-        if (currentIPText != null) currentIPText.text = selected ? $"현재 IP : {state.CurrentIp}" : "현재 IP : -";
+        if (currentIPText != null)
+            currentIPText.text = selected
+                ? $"현재 IP : {state.CurrentIp}"
+                : "현재 IP : -";
         if (selectPromptGo != null) selectPromptGo.SetActive(!selected);
         if (cost1ValueText != null) cost1ValueText.text = $"{TutorialPublicityState.CostPerProgress:N0}";
         if (availableValueText != null) availableValueText.text = $"{budget.Pool}";
@@ -142,9 +172,13 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         {
             progressSlider.wholeNumbers = true;
             progressSlider.minValue = 0;
-            progressSlider.maxValue = Mathf.Max(1, maximum);
+            // 전체 눈금은 40을 유지하고 실제 선택값은 MaximumCount에서 20 이하로 제한한다.
+            progressSlider.maxValue = TutorialMaxIp;
             progressSlider.SetValueWithoutNotify(count);
             progressSlider.interactable = maximum > 0;
+            if (countCaption == null && progressSlider.transform.parent != null)
+                countCaption = progressSlider.transform.parent.Find("CountCaption")?.GetComponent<TextMeshProUGUI>();
+            if (countCaption != null) countCaption.text = $"홍보 횟수 <color=#6A4CC8>{count}</color> 회";
         }
         if (btnPrev != null) btnPrev.interactable = count > 0;
         if (btnNext != null) btnNext.interactable = count < maximum;
@@ -154,9 +188,9 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         if (stateInfoText != null)
         {
             string message = !selected ? "영웅을 선택해 주세요." :
-                (state.CurrentIp >= state.MaxIp ? "이미 최대 IP에 도달했습니다." :
-                (budget.Pool <= 0 ? "진행 가능 횟수를 모두 사용했습니다." :
-                (!affordable ? "튜토리얼 자금이 부족합니다." : "")));
+                (budget.Pool <= 0 ? "이번 주 진행 가능 횟수를 모두 사용했습니다." :
+                (state.CurrentIp >= state.MaxIp ? $"이미 최대 I.P({state.MaxIp})에 도달했습니다." :
+                (!affordable ? "자원이 부족합니다." : "")));
             stateInfoText.text = message;
             stateInfoText.gameObject.SetActive(message.Length > 0);
         }

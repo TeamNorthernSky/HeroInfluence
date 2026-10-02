@@ -158,7 +158,7 @@ public class TutorialCellEventController : MonoBehaviour
         }
 
         if (!string.IsNullOrWhiteSpace(mainExplorationSceneName))
-            SceneManager.LoadScene(mainExplorationSceneName.Trim());
+            SceneFadeController.LoadSceneWithFadeIfNeeded(mainExplorationSceneName.Trim());
     }
 
     private void ResolveReferences()

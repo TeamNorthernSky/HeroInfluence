@@ -62,14 +62,15 @@ public class GameSceneManager : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(sceneName))
             return;
-        SceneManager.LoadScene(sceneName, mode);
+
+        SceneFadeController.LoadSceneWithFadeIfNeeded(sceneName, mode);
     }
 
     public AsyncOperation LoadSceneAsync(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
     {
         if (string.IsNullOrWhiteSpace(sceneName))
             return null;
-        return SceneManager.LoadSceneAsync(sceneName, mode);
+        return SceneFadeController.LoadSceneAsyncWithFade(sceneName, mode);
     }
 
     public bool SetActiveSceneByName(string sceneName)

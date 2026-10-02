@@ -134,7 +134,7 @@ public sealed class SimulationBattleLauncher : MonoBehaviour
             if (GameSceneManager.Instance != null)
                 GameSceneManager.Instance.LoadScene(BattleSceneName);
             else
-                SceneManager.LoadScene(BattleSceneName);
+                SceneFadeController.LoadSceneWithFadeIfNeeded(BattleSceneName);
             return true;
         }
         catch (Exception ex)

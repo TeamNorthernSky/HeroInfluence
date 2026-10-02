@@ -63,7 +63,7 @@ public class OutpostDoubleClickEntry : MonoBehaviour
     {
         if (DHGameEndState.IsEnding) return;
         if (GameSceneManager.Instance != null) GameSceneManager.Instance.LoadLobby();
-        else SceneManager.LoadScene("HQLobbyScene");
+        else SceneFadeController.LoadSceneWithFadeIfNeeded("HQLobbyScene");
     }
 
     private static bool HasPlayerPartyAtInteractionCell(Outpost targetOutpost)

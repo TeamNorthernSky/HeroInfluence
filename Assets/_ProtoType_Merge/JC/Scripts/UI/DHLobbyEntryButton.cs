@@ -88,6 +88,6 @@ public class DHLobbyEntryButton : MonoBehaviour
         }
 
         Debug.Log($"[DHLobbyEntryButton] → {LobbyScene}");
-        SceneManager.LoadScene(LobbyScene);
+        SceneFadeController.LoadSceneWithFadeIfNeeded(LobbyScene);
     }
 }

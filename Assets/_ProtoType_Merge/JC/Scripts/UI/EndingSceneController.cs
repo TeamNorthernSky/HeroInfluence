@@ -91,7 +91,7 @@ public class EndingSceneController : MonoBehaviour
                 if (GameSceneManager.Instance != null)
                     GameSceneManager.Instance.LoadScene(titleSceneName);
                 else
-                    UnityEngine.SceneManagement.SceneManager.LoadScene(titleSceneName);
+                    SceneFadeController.LoadSceneWithFadeIfNeeded(titleSceneName);
         }
     }
 }
