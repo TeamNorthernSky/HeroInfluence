@@ -253,10 +253,14 @@ public class GateThreatController : MonoBehaviour
     private void HandleEnemyDefeated(string placementKey)
     {
         string normalizedPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
+        if (string.IsNullOrWhiteSpace(normalizedPlacementKey))
+            return;
+
         MapProgressRepository repository = MapProgressRepository.Instance;
         if (repository == null)
             return;
 
+        HashSet<string> affectedZoneIds = new HashSet<string>();
         IReadOnlyList<ZoneThreatProgressState> states = repository.ZoneThreatStates;
         for (int i = 0; i < states.Count; i++)
         {
@@ -271,9 +275,22 @@ public class GateThreatController : MonoBehaviour
             if (HasLiveThreatEnemyInZone(state.ZoneId, normalizedPlacementKey))
                 continue;
 
-            repository.BeginZoneThreat(state.ZoneId, ResolveCurrentDay());
-            RefreshGateOpenStateForZone(state.ZoneId);
+    private static string TryResolveZoneIdFromGateThreatPlacementKey(string placementKey)
+    {
+        string normalizedPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
+        const string prefix = "runtime_enemy_gate_threat_";
+        if (string.IsNullOrWhiteSpace(normalizedPlacementKey) ||
+            !normalizedPlacementKey.StartsWith(prefix, System.StringComparison.Ordinal))
+        {
+            return string.Empty;
         }
+
+        string remainder = normalizedPlacementKey.Substring(prefix.Length);
+        int lastSeparator = remainder.LastIndexOf('_');
+        if (lastSeparator <= 0)
+            return string.Empty;
+
+        return MapProgressKey.NormalizeSegment(remainder.Substring(0, lastSeparator));
     }
 
     private void HandleEventFlagChanged(string flagName, bool value)
