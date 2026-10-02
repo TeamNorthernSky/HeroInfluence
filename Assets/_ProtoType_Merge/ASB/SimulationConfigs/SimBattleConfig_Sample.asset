@@ -15,25 +15,25 @@ MonoBehaviour:
   allies:
   - Enabled: 1
     UnitTemplateKey: 10004
-    Level: 18
+    Level: 12
     WeaponKey: 
     SkillIndex: 4010
     HpRatio: 1
   - Enabled: 1
     UnitTemplateKey: 10001
-    Level: 18
+    Level: 12
     WeaponKey: 
     SkillIndex: 1010
     HpRatio: 1
   - Enabled: 1
     UnitTemplateKey: 10002
-    Level: 18
+    Level: 12
     WeaponKey: 
     SkillIndex: 2010
     HpRatio: 1
   - Enabled: 1
     UnitTemplateKey: 10003
-    Level: 18
+    Level: 12
     WeaponKey: 
     SkillIndex: 3010
     HpRatio: 1

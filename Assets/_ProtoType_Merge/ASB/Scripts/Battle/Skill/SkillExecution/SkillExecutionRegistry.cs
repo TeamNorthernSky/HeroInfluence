@@ -99,17 +99,18 @@ namespace ASB.Work.Battle.SkillExecution
             Register(EnemySkillKeyRules.Compose("FV20004", 1), new DamageSkillHandler());    // 기모으기: 2턴째 단일공격
             Register(EnemySkillKeyRules.Compose("FV20004", 2), new AoEDamageSkillHandler()); // 포탑 범위공격(선등록; AI 회전은 후속)
 
-            Register(EnemySkillKeyRules.Compose("FV40001", 1), new AoEDamageSkillHandler()); // 나락의 폭풍(열 광역)
-            Register(EnemySkillKeyRules.Compose("FV40001", 2), new AoEDamageSkillHandler()); // 공멸의 궤적(행 광역)
+            // 율리아 전투(BE490)는 2구역 이벤트 전투라 숫자 키(40001_1)로도 들어오므로 RegisterEnemy로 두 키를 함께 등록한다.
+            RegisterEnemy("FV40001", 1, new AoEDamageSkillHandler()); // 나락의 폭풍(열 광역)
+            RegisterEnemy("FV40001", 2, new AoEDamageSkillHandler()); // 공멸의 궤적(행 광역)
 
-            Register(EnemySkillKeyRules.Compose("FV40002", 3), new AoEDamageSkillHandler()); // 나락의 폭풍(열)
-            Register(EnemySkillKeyRules.Compose("FV40003", 3), new AoEDamageSkillHandler()); // 공멸의 궤적(행)
+            RegisterEnemy("FV40002", 3, new AoEDamageSkillHandler()); // 나락의 폭풍(열)
+            RegisterEnemy("FV40003", 3, new AoEDamageSkillHandler()); // 공멸의 궤적(행)
 
-            Register(EnemySkillKeyRules.Compose("FV40005", 1), new SelfDestructRowAoEHandler()); // 절망의 굴렁쇠: 돌진+행광역+자폭
+            RegisterEnemy("FV40005", 1, new SelfDestructRowAoEHandler()); // 절망의 굴렁쇠: 돌진+행광역+자폭
 
             // 소환 스킬(시전자 BossController._skillSummonEntries 설정대로 소환). 데미지 없음, target은 파이프라인 통과용.
-            Register(EnemySkillKeyRules.Compose("FV40001", 3), new SummonSkillHandler()); // 절망의 굴레(소환)
-            Register(EnemySkillKeyRules.Compose("FV40004", 1), new SummonSkillHandler()); // 율리아를 가둔 장막: FV40001_3과 동일
+            RegisterEnemy("FV40001", 3, new SummonSkillHandler()); // 절망의 굴레(소환)
+            RegisterEnemy("FV40004", 1, new SummonSkillHandler()); // 율리아를 가둔 장막: FV40001_3과 동일
 
             //------------------장비(무기 스킬) — HCS00X 매핑 (X = 무기 스킬 종류)
             Register("HCS001", new DamageSkillHandler());                    // 1. 단일 공격
@@ -145,6 +146,19 @@ namespace ASB.Work.Battle.SkillExecution
             }
 
             Handlers.Add(skillKey, handler);
+        }
+
+        // 카탈로그 키(FV40001_1)와 이벤트 전투 키(40001_1)를 같은 핸들러 인스턴스에 연결한다.
+        private static void RegisterEnemy(string enemyKey, int slot, ISkillEffectHandler handler)
+        {
+            string catalogKey = EnemySkillKeyRules.Compose(enemyKey, slot);
+            Register(catalogKey, handler);
+
+            string eventKey = EnemySkillKeyRules.ToNumericKey(catalogKey);
+            if (eventKey != catalogKey)
+            {
+                Register(eventKey, handler);
+            }
         }
     }
 }

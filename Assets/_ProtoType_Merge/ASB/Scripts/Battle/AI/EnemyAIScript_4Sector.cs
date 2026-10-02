@@ -272,7 +272,10 @@ namespace EnemyAI
         }
     }
 
-    // 절망의 굴렁쇠: 돌진 + 대상 행 광역 + 자폭. 자해는 SelfDestructRowAoEHandler가 처리.
+    // 절망의 굴렁쇠: 자기 행(같은 Coords.y, 패턴 3 방향)의 히어로 진영으로 돌진 + 행 광역 + 자폭. 자해는 SelfDestructRowAoEHandler가 처리.
+    // - 전열/후열 무관하게 같은 행만 노린다. 행 전체 피해는 스킬 범위 [3,7]이 담당하므로 대상은 돌진이 먼저 닿는 쪽(가까운 열)을 고른다.
+    // - 전장 전체에서 같은 행에 히어로가 없으면 돌진할 곳이 없으므로 피해 없이 사라진다(최대체력 자해 → 사망 → 시체 제거).
+    // - 도발 대상이 다른 행이면 Skip을 돌려주고, BaseEnemyAI가 도발을 포기해 원래 목록으로 다시 고른다.
     public sealed class EAI_40005 : BaseEnemyAI
     {
         public override int Index => 40005;
@@ -286,13 +289,76 @@ namespace EnemyAI
             }
 
             SkillData skill = ResolveSkillBySlot(self, 1);   // FV40005_1
-            BattleCharactor target = GetLowestHpTarget(validTargets);
-            if (skill == null || target == null)
+            if (skill == null || !TryGetCoords(self, out Vector2Int selfCoords))
             {
                 return EnemyActionDecision.SkipTurn();
             }
 
-            return EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, skill);
+            BattleCharactor target = FindSameRowTarget(self, selfCoords, validTargets);
+            if (target != null)
+            {
+                return EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, skill);
+            }
+
+            // 도발 호출이면 목록이 도발자 1명뿐이므로 전장 전체로 다시 확인한다.
+            // 같은 행에 히어로가 남아 있으면 Skip → BaseEnemyAI가 도발을 포기하고 원래 목록으로 재호출한다.
+            if (FindSameRowTarget(self, selfCoords, GetAllOpponents(validTargets)) != null)
+            {
+                return EnemyActionDecision.SkipTurn();
+            }
+
+            return EnemyActionDecision.SelfAction(() =>
+            {
+                if (!self.IsDead)
+                {
+                    self.TakeDamage(self.MaxHp);
+                }
+            });
+        }
+
+        // 전장의 살아있는 히어로 전체. BattleFlowManager가 없으면(테스트 등) 넘겨받은 목록을 쓴다.
+        private static List<BattleCharactor> GetAllOpponents(List<BattleCharactor> fallback)
+        {
+            BattleFlowManager flow = UnityEngine.Object.FindFirstObjectByType<BattleFlowManager>();
+            return flow != null ? flow.GetAlivePlayerUnits() : fallback;
+        }
+
+        // 같은 행의 상대 진영 유닛 중 시전자와 x가 가장 가까운(먼저 닿는) 대상.
+        private static BattleCharactor FindSameRowTarget(BattleCharactor self, Vector2Int selfCoords, List<BattleCharactor> candidates)
+        {
+            BattleCharactor best = null;
+            int bestDistance = int.MaxValue;
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                BattleCharactor c = candidates[i];
+                if (c == null || c.IsDead || c.IsPlayer == self.IsPlayer
+                    || !TryGetCoords(c, out Vector2Int coords) || coords.y != selfCoords.y)
+                {
+                    continue;
+                }
+
+                int distance = Mathf.Abs(coords.x - selfCoords.x);
+                if (distance < bestDistance)
+                {
+                    best = c;
+                    bestDistance = distance;
+                }
+            }
+
+            return best;
+        }
+
+        private static bool TryGetCoords(BattleCharactor unit, out Vector2Int coords)
+        {
+            ASB.Work.BattleGrid.GridCell cell = unit.OccupiedCell;
+            if (cell == null)
+            {
+                ASB.Work.BattleGrid.BattleGridManager gm = ASB.Work.BattleGrid.BattleGridManager.Instance;
+                cell = gm != null ? gm.FindCellByUnit(unit) : null;
+            }
+
+            coords = cell != null ? cell.Coords : default;
+            return cell != null;
         }
 
         private static SkillData ResolveSkillBySlot(BattleCharactor self, int slot)

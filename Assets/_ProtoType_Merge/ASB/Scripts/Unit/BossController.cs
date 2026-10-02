@@ -31,7 +31,7 @@ public sealed class BossController : MonoBehaviour
     [Serializable]
     public struct SkillSummonEntry
     {
-        [Tooltip("이 스킬키로 시전되면 소환. 예: FV40001_3")]
+        [Tooltip("이 스킬키로 시전되면 소환. 예: FV40001_3 (이벤트 전투의 40001_3도 같은 스킬로 매칭)")]
         public string SkillKey;
 
         [Tooltip("소환할 미니언 EnemyData.Index. 예: FV40005")]
@@ -276,7 +276,7 @@ public sealed class BossController : MonoBehaviour
         for (int i = 0; i < _skillSummonEntries.Count; i++)
         {
             SkillSummonEntry e = _skillSummonEntries[i];
-            if (e.SkillKey != skillKey || string.IsNullOrWhiteSpace(e.MinionEnemyId))
+            if (!EnemySkillKeyRules.IsSameSkill(e.SkillKey, skillKey) || string.IsNullOrWhiteSpace(e.MinionEnemyId))
             {
                 continue;
             }
