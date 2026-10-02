@@ -20,6 +20,8 @@ public class ClickSelectionController : MonoBehaviour
 
     [Header("Path Preview")]
     [SerializeField] private PathPreviewRenderer pathPreviewRenderer;
+    [SerializeField, Tooltip("미완료 구역 진입 시 다음 실제 이동 목표에 표시하는 튜토리얼 화살표 셰이더입니다. 씬 참조로 빌드에 포함하며, 비워두면 노란 경로와 화살표 안내를 표시하지 않습니다.")]
+    private Shader zoneGuidanceArrowShader;
 
     [Header("UI Input")]
     [SerializeField] private UIInputBlocker uiInputBlocker;
@@ -60,8 +62,14 @@ public class ClickSelectionController : MonoBehaviour
         moveCommandPreviewController.Initialize();
     }
 
+    private void OnDisable()
+    {
+        moveCommandPreviewController?.HideGuidance();
+    }
+
     private void OnDestroy()
     {
+        moveCommandPreviewController?.Dispose();
         if (partySelectionController != null)
         {
             partySelectionController.ActiveMoverChanged -= HandleActiveMoverChanged;
@@ -78,10 +86,8 @@ public class ClickSelectionController : MonoBehaviour
     {
         RefreshUILockState();
 
-        // [JC 260513] 모달 활성 등 World 입력 차단 조건 통합 가드.
-        if (WorldInputGate.IsBlocked) return;
-
-        if (Input.GetMouseButtonDown(0))
+        // 스크롤/포인터 이탈은 클릭만 차단하며 월드 안내는 계속 갱신한다.
+        if (!WorldInputGate.IsBlocked && Input.GetMouseButtonDown(0))
             TryHandleClick();
 
         PartyGridMover activeMover = partySelectionController != null ? partySelectionController.ActiveMover : null;
@@ -94,6 +100,9 @@ public class ClickSelectionController : MonoBehaviour
 
         if (activeMover != null && activeMover.IsMoving)
             moveCommandPreviewController?.UpdateRealtimePathPreview(activeMover);
+
+        moveCommandPreviewController?.UpdateGuidance(activeMover, zoneGuidanceArrowShader,
+            gameObject.scene == UnityEngine.SceneManagement.SceneManager.GetActiveScene());
     }
 
     public void ClearMovePreview()
@@ -136,7 +145,10 @@ public class ClickSelectionController : MonoBehaviour
         if (activeMover.IsMoving)
         {
             activeMover.StopMovement();
-            moveCommandPreviewController?.RecomputePathForCurrent(activeMover);
+            if (ZoneEntryGuidanceController.IsActive)
+                moveCommandPreviewController?.ClearPreview();
+            else
+                moveCommandPreviewController?.RecomputePathForCurrent(activeMover);
             return;
         }
 

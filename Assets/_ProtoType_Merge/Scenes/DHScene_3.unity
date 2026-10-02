@@ -190626,6 +190626,7 @@ MonoBehaviour:
   rayDistance: 500
   cameraFollower: {fileID: 1128058705}
   pathPreviewRenderer: {fileID: 347558455}
+  zoneGuidanceArrowShader: {fileID: 4800000, guid: c5fe5486de6ae6c41931c6b3ce53cc28, type: 3}
   uiInputBlocker: {fileID: 390268228}
   validMarkerColor: {r: 0, g: 1, b: 0, a: 1}
   invalidMarkerColor: {r: 1, g: 0, b: 0, a: 1}

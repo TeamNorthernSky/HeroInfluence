@@ -47,6 +47,8 @@ public class HeroInfoResult : MonoBehaviour
     public bool IsExpRankComplete => rewardPreview == null || phase == RewardPhase.Complete;
     public bool IsIPComplete => ipPresentation == null || ipPresentation.IsComplete;
 
+    public bool PresentationPaused { get; set; }
+
     public void HoldIPPresentation() => ipStageReleased = false;
     public void ReleaseIPPresentation() => ipStageReleased = true;
 
@@ -64,7 +66,7 @@ public class HeroInfoResult : MonoBehaviour
     private void Update()
     {
         // 카드가 비활성인 스킬 안내 중에는 Update가 실행되지 않아 진행되지 않는다.
-        if (isActiveAndEnabled)
+        if (isActiveAndEnabled && !PresentationPaused)
             AdvancePresentation(Time.unscaledDeltaTime);
     }
 
@@ -161,7 +163,8 @@ public class HeroInfoResult : MonoBehaviour
 
     private Sprite FindRank(int level)
     {
-        string rank = UnitRankLookup.GetRank(level);
+        string rank = rewardPreview != null && rewardPreview.IsTutorial
+            ? UnitRankLookup.ResolveRank(TutorialCatalog.Instance?.GetUnitGrowthTemplates(), level) : UnitRankLookup.GetRank(level);
         if (rankSprites != null)
             foreach (var sprite in rankSprites)
                 if (sprite != null && sprite.name == "UI_icon_rank" + rank) return sprite;
@@ -172,6 +175,13 @@ public class HeroInfoResult : MonoBehaviour
     {
         expSteps.Clear();
         if (!preview.HasExpPreview || preview.GainedExp <= 0 || preview.OldMaxExp <= 0) return true;
+        if (preview.IsTutorial)
+        {
+            // 튜토리얼은 전용 표의 1→2레벨 계획이며 일반 성장 카탈로그를 조회하지 않는다.
+            if (preview.NewLevel != preview.OldLevel + 1 || preview.NewExp != 0) return false;
+            expSteps.Add(new ExpStep { From = preview.OldExp, To = preview.OldMaxExp, Maximum = preview.OldMaxExp });
+            return true;
+        }
         // 표시용 스냅샷만 생성한다. Repository의 실제 유닛이나 보상을 변경하지 않는다.
         var snapshot = new UnitPersistentData(preview.UnitIndex, string.Empty, preview.OldLevel,
             default, default, 0, 0, default, default, 0f, preview.OldExp, preview.OldMaxExp);
@@ -286,6 +296,7 @@ public class HeroInfoResult : MonoBehaviour
 
     public void ClearDisplay()
     {
+        PresentationPaused = false;
         ipPresentation?.Dispose(); ipPresentation = null;
         ipStageReleased = true;
         phase = RewardPhase.Idle; rewardPreview = null; expSteps.Clear();

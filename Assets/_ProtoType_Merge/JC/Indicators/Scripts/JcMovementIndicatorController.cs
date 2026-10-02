@@ -43,6 +43,46 @@ namespace JC.Indicators
         private Transform boundMarker;
         private bool originalMarkerForceRenderingOff;
         private bool markerReachable = true, hasPath, geometryDirty = true;
+        private bool showingGuidance;
+        private JcMovementIndicatorController guidanceLayer;
+        private Vector3 guidanceDestination;
+        private static readonly Color GuidanceColor = new Color(1f, .76f, .025f, 1f);
+        private bool ShowDestination => showingGuidance || destinationMarker.gameObject.activeInHierarchy;
+        private Vector3 DestinationPosition => showingGuidance ? guidanceDestination : destinationMarker.position;
+
+        // 안내는 선택된 목적지가 아니므로 기존 마커 콜라이더를 켜지 않는다.
+        public void SetGuidanceDestination(Vector3 position)
+        {
+            showingGuidance = true;
+            guidanceDestination = position;
+        }
+
+        // 같은 메시/지형/셰이더 구현을 재사용하되 별도 PathPreviewRenderer에 연결한다.
+        // 기본 이동 미리보기의 Hide/RenderPath 호출이 노란 안내를 지우지 않는다.
+        public void RenderGuidance(IReadOnlyList<Vector3> path)
+        {
+            if (path == null || path.Count < 2) { HideGuidance(); return; }
+            if (guidanceLayer == null)
+            {
+                var host = new GameObject("Zone Guidance Indicator (Generated)") { hideFlags = HideFlags.DontSave };
+                host.transform.SetParent(transform, false);
+                var guidePath = host.AddComponent<PathPreviewRenderer>();
+                var markerHost = new GameObject("Guidance Destination") { hideFlags = HideFlags.DontSave, layer = destinationMarker.gameObject.layer };
+                markerHost.transform.SetParent(host.transform, false);
+                markerHost.SetActive(false);
+                guidanceLayer = host.AddComponent<JcMovementIndicatorController>();
+                guidanceLayer.Configure(guidePath, markerHost.transform, gridManager, indicatorShader, null);
+            }
+            guidanceLayer.Settings = Settings;
+            guidanceLayer.RenderPath(path, path.Count - 1);
+            guidanceLayer.SetGuidanceDestination(path[path.Count - 1]);
+        }
+
+        public void HideGuidance()
+        {
+            if (guidanceLayer != null) guidanceLayer.HidePath();
+            if (showingGuidance) HidePath();
+        }
         private int reachableSegments;
         private float previousWidth = -1, previousSoftness = -1;
         private bool startedInPlay;
@@ -104,6 +144,7 @@ namespace JC.Indicators
         public void SetDestinationState(bool reachable) => markerReachable = reachable;
         public void RenderPath(IReadOnlyList<Vector3> path, int reachable)
         {
+            showingGuidance = false;
             int newReachable = Mathf.Clamp(reachable, 0, Mathf.Max(0, path.Count - 1));
             bool changed = rawPoints.Count != path.Count || rawReachable != newReachable;
             if (!changed) for (int i = 0; i < path.Count; i++) if (rawPoints[i] != path[i]) { changed = true; break; }
@@ -120,6 +161,7 @@ namespace JC.Indicators
         }
         public void HidePath()
         {
+            showingGuidance = false;
             hasPath = false; flickerInitialized = false;
             if (pathVisual != null) pathVisual.enabled = false;
             if (pathShadow != null) pathShadow.enabled = false;
@@ -170,8 +212,8 @@ namespace JC.Indicators
             bool showPath = hasPath && pathLength > .00001f && pathRenderer.isActiveAndEnabled;
             UpdateFlicker(s, clock, showPath);
             var pulse = new JcIndicatorPulse(s, flickerFrontRemaining, flickerDirection, flickerInitialized && showPath);
-            bool showMarker = destinationMarker.gameObject.activeInHierarchy;
-            Vector3 basePosition = destinationMarker.position;
+            bool showMarker = ShowDestination;
+            Vector3 basePosition = DestinationPosition;
             basePosition.y = JcIndicatorTerrainPath.SurfaceHeight(gridManager, basePosition, size * .5f - .0001f)
                 + JcIndicatorTerrainPath.Clearance;
             bool rebuildShadow = geometryDirty || previousWidth != s.lineWidth || previousSoftness != s.shadowSoftness
@@ -259,10 +301,10 @@ namespace JC.Indicators
         private void Apply(MeshRenderer renderer, JcMovementIndicatorSettings s, bool marker, bool shadow, float size, float clock)
         {
             block.Clear();
-            Color color = marker && !markerReachable ? s.unreachableColor : s.reachableColor;
+            Color color = showingGuidance ? GuidanceColor : (marker && !markerReachable ? s.unreachableColor : s.reachableColor);
             block.SetColor("_Color", shadow ? s.shadowColor : color);
-            block.SetColor("_UnreachableColor", s.unreachableColor);
-            block.SetColor("_HighlightColor", s.highlightColor);
+            block.SetColor("_UnreachableColor", showingGuidance ? GuidanceColor : s.unreachableColor);
+            block.SetColor("_HighlightColor", showingGuidance ? GuidanceColor : s.highlightColor);
             block.SetFloat("_MarkerColorCycle", s.highlightColorCyclePeriod);
             block.SetVector("_DashGlow", new Vector4(s.dashGlowWidth, s.dashGlowStrength, 0, 0));
             block.SetVector("_FlickerPulse", new Vector4(flickerFrontRemaining, FlickerUnit(s), 0, flickerInitialized ? 1 : 0));
@@ -279,9 +321,9 @@ namespace JC.Indicators
             block.SetFloat("_Shadow", shadow ? 1 : 0);
             block.SetFloat("_Softness", shadow ? s.shadowSoftness / size : 0);
             block.SetFloat("_Clock", clock);
-            Vector3 center = destinationMarker.position;
+            Vector3 center = DestinationPosition;
             if (shadow) center += new Vector3(Mathf.Cos(s.shadowAngle * Mathf.Deg2Rad), 0, Mathf.Sin(s.shadowAngle * Mathf.Deg2Rad)) * s.shadowDistance;
-            block.SetVector("_MarkerClip", new Vector4(center.x, center.z, gridManager.CellSize * s.markerSize, destinationMarker.gameObject.activeInHierarchy ? 1 : 0));
+            block.SetVector("_MarkerClip", new Vector4(center.x, center.z, gridManager.CellSize * s.markerSize, ShowDestination ? 1 : 0));
             renderer.SetPropertyBlock(block);
         }
         private void EnsureVisuals()
@@ -332,6 +374,10 @@ namespace JC.Indicators
         }
         private void DisposeVisuals()
         {
+            if (guidanceLayer != null) DestroyOwned(guidanceLayer.gameObject);
+            guidanceLayer = null;
+            if (showingGuidance) hasPath = false;
+            showingGuidance = false;
             DestroyOwned(visualRoot); DestroyOwned(pathMesh); DestroyOwned(shadowMesh); DestroyOwned(glowMesh); DestroyOwned(markerMesh); DestroyOwned(markerShadowMesh);
             DestroyOwned(material); DestroyOwned(shadowMaterial); DestroyOwned(markerMaterial);
             visualRoot = null; pathVisual = pathShadow = pathGlow = markerVisual = markerShadow = null;
