@@ -984,7 +984,7 @@ MonoBehaviour:
     EnemySkill2Range: 1
     EnemySkill2RangeLine: 1
     EnemySkill2Target: 1
-    EnemySkill2MultiTarget: 02000000
+    EnemySkill2MultiTarget: 0700000003000000
     EnemySkill2_MultiTargetType: 0
     EnemySkill2_MultiTargetCount: 0
     EnemySkill2Value: 1.8
@@ -1147,7 +1147,7 @@ MonoBehaviour:
     EnemySkill3Range: 1
     EnemySkill3RangeLine: 1
     EnemySkill3Target: 1
-    EnemySkill3MultiTarget: 02000000
+    EnemySkill3MultiTarget: 0700000003000000
     EnemySkill3_MultiTargetType: 0
     EnemySkill3_MultiTargetCount: 0
     EnemySkill3Value: 1.8
@@ -1271,7 +1271,7 @@ MonoBehaviour:
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
     EnemySkill1Target: 1
-    EnemySkill1MultiTarget: 02000000
+    EnemySkill1MultiTarget: 0700000003000000
     EnemySkill1_MultiTargetType: 0
     EnemySkill1_MultiTargetCount: 0
     EnemySkill1Value: 2.3

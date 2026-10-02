@@ -22,16 +22,37 @@ public sealed class EventBattlePlanBuilderTests
     [Test]
     public void GuardSkill_EventAndCatalogKeysResolveToSameHandler()
     {
-        Type registryType = FindRuntimeType("ASB.Work.Battle.SkillExecution.SkillExecutionRegistry");
-        MethodInfo lookup = registryType.GetMethod("TryGetHandler", BindingFlags.Public | BindingFlags.Static);
-        Assert.That(lookup, Is.Not.Null);
+        AssertSameHandler("FV20003_2", "20003_2", "GuardSkillHandler");
+    }
 
-        object[] catalogArgs = { "FV20003_2", null };
-        object[] eventArgs = { "20003_2", null };
-        Assert.That((bool)lookup.Invoke(null, catalogArgs), Is.True);
-        Assert.That((bool)lookup.Invoke(null, eventArgs), Is.True);
-        Assert.That(catalogArgs[1].GetType().Name, Is.EqualTo("GuardSkillHandler"));
-        Assert.That(eventArgs[1], Is.SameAs(catalogArgs[1]));
+    // 율리아 전투(BE490)는 2구역 이벤트 전투라 숫자 키로 들어온다. 카탈로그 키와 같은 핸들러여야 한다.
+    [TestCase("FV40001_1", "40001_1", "AoEDamageSkillHandler")]
+    [TestCase("FV40001_2", "40001_2", "AoEDamageSkillHandler")]
+    [TestCase("FV40001_3", "40001_3", "SummonSkillHandler")]
+    [TestCase("FV40002_3", "40002_3", "AoEDamageSkillHandler")]
+    [TestCase("FV40003_3", "40003_3", "AoEDamageSkillHandler")]
+    [TestCase("FV40004_1", "40004_1", "SummonSkillHandler")]
+    [TestCase("FV40005_1", "40005_1", "SelfDestructRowAoEHandler")]
+    public void Sector4Skill_EventAndCatalogKeysResolveToSameHandler(string catalogKey, string eventKey, string handlerName)
+    {
+        AssertSameHandler(catalogKey, eventKey, handlerName);
+    }
+
+    // BossController 소환 매칭: FV 접두어 유무는 무시하고 적 번호·슬롯이 같아야 같은 스킬.
+    [TestCase("FV40001_3", "40001_3", true)]
+    [TestCase("40001_3", "FV40001_3", true)]
+    [TestCase("FV40001_3", " FV40001_3 ", true)]
+    [TestCase("FV40001_3", "40001_1", false)]
+    [TestCase("FV40001_3", "40004_1", false)]
+    [TestCase("FV40001_3", "", false)]
+    [TestCase(null, "40001_3", false)]
+    public void IsSameSkill_IgnoresCatalogPrefix(string a, string b, bool expected)
+    {
+        MethodInfo method = FindRuntimeType("EnemySkillKeyRules")
+            .GetMethod("IsSameSkill", BindingFlags.Public | BindingFlags.Static);
+        Assert.That(method, Is.Not.Null);
+
+        Assert.That((bool)method.Invoke(null, new object[] { a, b }), Is.EqualTo(expected));
     }
 
     [TestCase("")]
@@ -88,6 +109,20 @@ public sealed class EventBattlePlanBuilderTests
     }
 
     // ----- reflection helpers -----
+
+    private static void AssertSameHandler(string catalogKey, string eventKey, string handlerName)
+    {
+        Type registryType = FindRuntimeType("ASB.Work.Battle.SkillExecution.SkillExecutionRegistry");
+        MethodInfo lookup = registryType.GetMethod("TryGetHandler", BindingFlags.Public | BindingFlags.Static);
+        Assert.That(lookup, Is.Not.Null);
+
+        object[] catalogArgs = { catalogKey, null };
+        object[] eventArgs = { eventKey, null };
+        Assert.That((bool)lookup.Invoke(null, catalogArgs), Is.True, $"{catalogKey} 핸들러 미등록");
+        Assert.That((bool)lookup.Invoke(null, eventArgs), Is.True, $"{eventKey} 핸들러 미등록");
+        Assert.That(catalogArgs[1].GetType().Name, Is.EqualTo(handlerName));
+        Assert.That(eventArgs[1], Is.SameAs(catalogArgs[1]));
+    }
 
     private static bool InvokeTryBuildFromEventBattleKey(
         int zoneId, string battleKey, int enemyLevel, out object plan, out string error)

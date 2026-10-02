@@ -45,4 +45,28 @@ public static class EnemySkillKeyRules
         enemyKey = skillKey.Substring(0, sep);
         return true;
     }
+
+    /// <summary>
+    /// 이벤트 전투 경로가 만드는 숫자형 키로 바꾼다. 예: "FV40001_3" => "40001_3", "40001_3" => "40001_3".
+    /// 규격에 안 맞으면 Trim한 원본을 돌려준다.
+    /// </summary>
+    public static string ToNumericKey(string skillKey)
+    {
+        string trimmed = skillKey?.Trim() ?? string.Empty;
+        if (!TryParse(trimmed, out string enemyKey, out int slot))
+        {
+            return trimmed;
+        }
+        return Compose(BattleScenarioUnitKey.Normalize(enemyKey), slot);
+    }
+
+    /// <summary>카탈로그 키(FV40001_3)와 이벤트 전투 키(40001_3)를 같은 스킬로 취급해 비교한다.</summary>
+    public static bool IsSameSkill(string a, string b)
+    {
+        if (string.IsNullOrWhiteSpace(a) || string.IsNullOrWhiteSpace(b))
+        {
+            return false;
+        }
+        return string.Equals(ToNumericKey(a), ToNumericKey(b), System.StringComparison.Ordinal);
+    }
 }

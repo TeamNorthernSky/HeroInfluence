@@ -331,7 +331,7 @@ MonoBehaviour:
     EnemySkill1Range: 1
     EnemySkill1RangeLine: 1
     EnemySkill1Target: 1
-    EnemySkill1MultiTarget: 02000000
+    EnemySkill1MultiTarget: 0300000007000000
     EnemySkill1_MultiTargetType: 0
     EnemySkill1_MultiTargetCount: 0
     EnemySkill1Value: 2.3
