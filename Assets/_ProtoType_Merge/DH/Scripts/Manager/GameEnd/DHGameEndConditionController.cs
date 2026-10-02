@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DHGameEndConditionController : MonoBehaviour
@@ -11,21 +12,35 @@ public class DHGameEndConditionController : MonoBehaviour
     [SerializeField, Min(1)] private int gameOverTurnLimit = 35;
     [SerializeField] private bool evaluateCurrentTurnOnStart = true;
 
+    [Header("Clear Flags")]
+    [SerializeField] private bool enableFlagGameClear = true;
+    [Tooltip("Any enabled event flag in this list triggers game clear. Prefixes like Flag_ or Set_Flag_ are allowed.")]
+    [SerializeField] private List<string> gameClearFlagNames = new List<string>();
+    [SerializeField] private bool evaluateClearFlagsOnStart = true;
+
     private bool isEnding;
+    private DHEventStateRepository eventStateRepository;
 
     private void Start()
     {
         ResolveReferences();
         SubscribeTurnManager();
+        SubscribeEventStateRepository();
 
         if (evaluateCurrentTurnOnStart)
             EvaluateTurnLimit(ResolveCurrentTurn());
+
+        if (evaluateClearFlagsOnStart)
+            EvaluateGameClearFlags();
     }
 
     private void OnDestroy()
     {
         if (turnManager != null)
             turnManager.DayAdvanced -= HandleDayAdvanced;
+
+        if (eventStateRepository != null)
+            eventStateRepository.FlagChanged -= HandleEventFlagChanged;
     }
 
     private void HandleDayAdvanced(int currentTurn)
@@ -40,6 +55,49 @@ public class DHGameEndConditionController : MonoBehaviour
 
         if (currentTurn >= gameOverTurnLimit)
             BeginGameEnd(DHGameEndResult.GameOver);
+    }
+
+    private void HandleEventFlagChanged(string flagName, bool value)
+    {
+        if (!value)
+            return;
+
+        EvaluateGameClearFlag(flagName);
+    }
+
+    private void EvaluateGameClearFlags()
+    {
+        if (!enableFlagGameClear || isEnding || eventStateRepository == null || gameClearFlagNames == null)
+            return;
+
+        for (int i = 0; i < gameClearFlagNames.Count; i++)
+        {
+            string flagName = gameClearFlagNames[i];
+            if (!string.IsNullOrWhiteSpace(flagName) && eventStateRepository.GetFlag(flagName))
+            {
+                BeginGameEnd(DHGameEndResult.Clear);
+                return;
+            }
+        }
+    }
+
+    private void EvaluateGameClearFlag(string changedFlagName)
+    {
+        if (!enableFlagGameClear || isEnding || string.IsNullOrWhiteSpace(changedFlagName) || gameClearFlagNames == null)
+            return;
+
+        for (int i = 0; i < gameClearFlagNames.Count; i++)
+        {
+            string flagName = gameClearFlagNames[i];
+            if (string.IsNullOrWhiteSpace(flagName))
+                continue;
+
+            if (DHEventStateRepository.NormalizeFlagName(flagName) == changedFlagName)
+            {
+                BeginGameEnd(DHGameEndResult.Clear);
+                return;
+            }
+        }
     }
 
     private void BeginGameEnd(DHGameEndResult result)
@@ -82,6 +140,19 @@ public class DHGameEndConditionController : MonoBehaviour
 
         turnManager.DayAdvanced -= HandleDayAdvanced;
         turnManager.DayAdvanced += HandleDayAdvanced;
+    }
+
+    private void SubscribeEventStateRepository()
+    {
+        if (!enableFlagGameClear)
+            return;
+
+        eventStateRepository = DHEventStateRepository.EnsureInstance();
+        if (eventStateRepository == null)
+            return;
+
+        eventStateRepository.FlagChanged -= HandleEventFlagChanged;
+        eventStateRepository.FlagChanged += HandleEventFlagChanged;
     }
 
     private void ShowResult(DHGameEndResult result)
