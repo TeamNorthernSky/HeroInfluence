@@ -1882,8 +1882,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04183d26245e91748881a96b2c0a7f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tutorialBattleSceneName: TmpBattleScene
-  returnSceneName: TutorialLobbyScene
+  tutorialBattleSceneName: TutorialBattleScene
+  returnSceneName: TutorialExploreScene
   allowBattleSceneLoad: 1
   defaultUnitTemplateKeys:
   - 10001
@@ -6630,8 +6630,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04183d26245e91748881a96b2c0a7f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tutorialBattleSceneName: TmpBattleScene
-  returnSceneName: TutorialLobbyScene
+  tutorialBattleSceneName: TutorialBattleScene
+  returnSceneName: TutorialExploreScene
   allowBattleSceneLoad: 1
   defaultUnitTemplateKeys:
   - 10001
@@ -34577,8 +34577,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04183d26245e91748881a96b2c0a7f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tutorialBattleSceneName: TmpBattleScene
-  returnSceneName: TutorialLobbyScene
+  tutorialBattleSceneName: TutorialBattleScene
+  returnSceneName: TutorialExploreScene
   allowBattleSceneLoad: 1
   defaultUnitTemplateKeys:
   - 10001
@@ -37033,8 +37033,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04183d26245e91748881a96b2c0a7f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tutorialBattleSceneName: TmpBattleScene
-  returnSceneName: TutorialLobbyScene
+  tutorialBattleSceneName: TutorialBattleScene
+  returnSceneName: TutorialExploreScene
   allowBattleSceneLoad: 1
   defaultUnitTemplateKeys:
   - 10001
