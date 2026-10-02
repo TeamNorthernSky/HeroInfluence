@@ -17,7 +17,7 @@ MonoBehaviour:
   AnimationRail: 1
   PresentationArchetype: 0
   SkillTimelines:
-  - CharacterKey: "\uC2A4\uD2B8\uB77C\uC774\uCEE4"
+  - CharacterKey: 10003
     Timeline: {fileID: 11400000, guid: 61b0a2b7598ff8a4b9ffd59616910522, type: 2}
   AnimationStateName: 
   AnimationTriggerOverride: 
