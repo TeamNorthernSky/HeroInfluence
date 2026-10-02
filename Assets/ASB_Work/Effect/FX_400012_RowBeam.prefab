@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1485238337852503493
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5776436898553230355}
+  - component: {fileID: 7806840775492369216}
+  - component: {fileID: 2980816324719156339}
+  m_Layer: 0
+  m_Name: FX_400012_RowBeam
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5776436898553230355
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1485238337852503493}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7806840775492369216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1485238337852503493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56a59165cf9862845816f34b55782b43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _boltTemplate: {fileID: 3945740796124406347, guid: c912456cef5272a48b509413ed1d920c,
+    type: 3}
+  _shockTemplate: {fileID: 5157378175598160411, guid: c912456cef5272a48b509413ed1d920c,
+    type: 3}
+  _axis: 1
+  _lineCount: 1
+  _lineSpacing: 0.3
+  _endExtension: 2.5
+  _height: 0.8
+  _widthRatio: 0.6
+  _drawTime: 0.08
+  _lineStagger: 0.05
+  _holdTime: 0.3
+  _fadeTime: 1
+  _flickerRate: 18
+  _shockTargets: 1
+  _shockSize: 1.7
+  _shockDuration: 1
+  _shockFadeTime: 0.25
+  _overrideColors: 1
+  _coreColor: {r: 1.481, g: 1.275, b: 1.658, a: 1}
+  _glowColor: {r: 0.986, g: 0.323, b: 1.318, a: 1}
+  _shockBodyColor: {r: 0.209, g: 0.06, b: 0.289, a: 1}
+  _shockCenterColor: {r: 0.642, g: 0.238, b: 0.935, a: 1}
+--- !u!114 &2980816324719156339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1485238337852503493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2755cb819f95bf84c8fa7523d9c15404, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fallbackSeconds: 6

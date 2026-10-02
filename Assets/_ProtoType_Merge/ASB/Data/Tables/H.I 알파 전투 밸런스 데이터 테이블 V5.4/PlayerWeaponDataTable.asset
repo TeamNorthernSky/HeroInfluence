@@ -1,0 +1,250 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c00474ebb4011841ac8466b4b88d30b, type: 3}
+  m_Name: PlayerWeaponDataTable
+  m_EditorClassIdentifier: 
+  DataList:
+  - WeaponIndex: HC001
+    WeaponName: "\uAE30\uBCF8 \uCF54\uC5B4"
+    WaeponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uAC00\uC7A5
+      \uAE30\uBCF8\uC801\uC778 \uD615\uD0DC\uB85C \uB2E4\uB8E8\uB294 \uCF54\uC5B4.
+      \uC548\uC815\uC801\uC778 \uB2E8\uC77C \uACF5\uACA9\uC744 \uC0AC\uC6A9\uD560
+      \uC218 \uC788\uB2E4."
+    BonusMaxHPLv1: 0
+    BonusMaxHPLv2: 0
+    BonusMaxHPLv3: 0
+    BonusMaxHPLv4: 0
+    BonusMaxHPLv5: 0
+    BonusATKLv1: 1
+    BonusATKLv2: 2
+    BonusATKLv3: 3
+    BonusATKLv4: 4
+    BonusATKLv5: 5
+    BonusDEFLv1: 0
+    BonusDEFLv2: 0
+    BonusDEFLv3: 0
+    BonusDEFLv4: 0
+    BonusDEFLv5: 0
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: HCS001
+    WeaponSkillName: "\uC82C \uD30C\uC6CC"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801
+      1\uBA85\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C \uC900\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 0
+    WeaponSkillRange: 0
+    WeaponSkillRangeLine: 0
+    WeaponSkillTarget: 0
+    WeaponSkillMultiTarget: 
+    WeaponSkill_MultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValueLv1: 0.8
+    WeaponSkillSubValueLv1: 0
+    WeaponSkillValueLv2: 0.9
+    WeaponSkillSubValueLv2: 0
+    WeaponSkillValueLv3: 1
+    WeaponSkillSubValueLv3: 0
+    WeaponSkillValueLv4: 1.1
+    WeaponSkillSubValueLv4: 0
+    WeaponSkillValueLv5: 1.2
+    WeaponSkillSubValueLv5: 0
+  - WeaponIndex: HC002
+    WeaponName: "\uAD11\uC5ED \uCF54\uC5B4"
+    WaeponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uB113\uAC8C
+      \uD655\uC0B0\uC2DC\uD0A4\uB294 \uCF54\uC5B4. \uB2E4\uC218\uC758 \uC801\uC744
+      \uB3D9\uC2DC\uC5D0 \uACF5\uACA9\uD560 \uC218 \uC788\uB2E4."
+    BonusMaxHPLv1: 0
+    BonusMaxHPLv2: 0
+    BonusMaxHPLv3: 0
+    BonusMaxHPLv4: 0
+    BonusMaxHPLv5: 0
+    BonusATKLv1: 1
+    BonusATKLv2: 2
+    BonusATKLv3: 3
+    BonusATKLv4: 4
+    BonusATKLv5: 5
+    BonusDEFLv1: 0
+    BonusDEFLv2: 0
+    BonusDEFLv3: 0
+    BonusDEFLv4: 0
+    BonusDEFLv5: 0
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: HCS002
+    WeaponSkillName: "\uC82C \uC775\uC2A4\uD50C\uB85C\uC804"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uD3ED\uBC1C\uC2DC\uCF1C
+      \uBAA8\uB4E0 \uC801\uC5D0\uAC8C {WeaponSkillValue} \uB300\uBBF8\uC9C0\uB97C
+      \uC900\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 0
+    WeaponSkillRange: 1
+    WeaponSkillRangeLine: 1
+    WeaponSkillTarget: 2
+    WeaponSkillMultiTarget: 
+    WeaponSkill_MultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValueLv1: 0.3
+    WeaponSkillSubValueLv1: 0
+    WeaponSkillValueLv2: 0.4
+    WeaponSkillSubValueLv2: 0
+    WeaponSkillValueLv3: 0.5
+    WeaponSkillSubValueLv3: 0
+    WeaponSkillValueLv4: 0.6
+    WeaponSkillSubValueLv4: 0
+    WeaponSkillValueLv5: 0.7
+    WeaponSkillSubValueLv5: 0
+  - WeaponIndex: HC003
+    WeaponName: "\uBC29\uC5B4 \uCF54\uC5B4"
+    WaeponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
+      \uD615\uC131\uD558\uB294 \uCF54\uC5B4. \uC801\uC758 \uACF5\uACA9\uC73C\uB85C\uBD80\uD130
+      \uC544\uAD70\uC744 \uC9C0\uCF1C\uB0B8\uB2E4."
+    BonusMaxHPLv1: 0
+    BonusMaxHPLv2: 0
+    BonusMaxHPLv3: 0
+    BonusMaxHPLv4: 0
+    BonusMaxHPLv5: 0
+    BonusATKLv1: 0
+    BonusATKLv2: 0
+    BonusATKLv3: 0
+    BonusATKLv4: 0
+    BonusATKLv5: 0
+    BonusDEFLv1: 1
+    BonusDEFLv2: 2
+    BonusDEFLv3: 3
+    BonusDEFLv4: 4
+    BonusDEFLv5: 5
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: HCS003
+    WeaponSkillName: "\uC82C \uC2E4\uB4DC"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uBCF4\uD638\uB9C9\uC744
+      \uC0DD\uC131\uD55C\uB2E4. \uC0AC\uC6A9\uD55C \uD788\uC5B4\uB85C\uAC00 \uB2E4\uC74C
+      \uC790\uC2E0\uC758 \uC21C\uC11C\uAE4C\uC9C0 \uBC1B\uB294 \uB300\uBBF8\uC9C0\uAC00
+      {WeaponSkillValue} \uAC10\uC18C\uD55C\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 3
+    WeaponSkillRange: 1
+    WeaponSkillRangeLine: 1
+    WeaponSkillTarget: 0
+    WeaponSkillMultiTarget: 
+    WeaponSkill_MultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValueLv1: 0.3
+    WeaponSkillSubValueLv1: 0
+    WeaponSkillValueLv2: 0.35
+    WeaponSkillSubValueLv2: 0
+    WeaponSkillValueLv3: 0.4
+    WeaponSkillSubValueLv3: 0
+    WeaponSkillValueLv4: 0.45
+    WeaponSkillSubValueLv4: 0
+    WeaponSkillValueLv5: 0.5
+    WeaponSkillSubValueLv5: 0
+  - WeaponIndex: HC004
+    WeaponName: "\uD68C\uBCF5 \uCF54\uC5B4"
+    WaeponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC744 \uCE58\uC720
+      \uC5D0\uB108\uC9C0\uB85C \uBCC0\uD658\uD558\uB294 \uCF54\uC5B4. \uBD80\uC0C1\uB2F9\uD55C
+      \uC544\uAD70\uC744 \uD68C\uBCF5\uC2DC\uD0A8\uB2E4."
+    BonusMaxHPLv1: 1
+    BonusMaxHPLv2: 2
+    BonusMaxHPLv3: 3
+    BonusMaxHPLv4: 4
+    BonusMaxHPLv5: 5
+    BonusATKLv1: 0
+    BonusATKLv2: 0
+    BonusATKLv3: 0
+    BonusATKLv4: 0
+    BonusATKLv5: 0
+    BonusDEFLv1: 0
+    BonusDEFLv2: 0
+    BonusDEFLv3: 0
+    BonusDEFLv4: 0
+    BonusDEFLv5: 0
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: HCS004
+    WeaponSkillName: "\uC82C \uB9AC\uCEE4\uBC84\uB9AC"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC544\uAD70
+      1\uBA85\uC758 \uCCB4\uB825\uC744 {WeaponSkillValue} \uD68C\uBCF5\uD55C\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 1
+    WeaponSkillRange: 1
+    WeaponSkillRangeLine: 1
+    WeaponSkillTarget: 0
+    WeaponSkillMultiTarget: 
+    WeaponSkill_MultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValueLv1: 0.3
+    WeaponSkillSubValueLv1: 0
+    WeaponSkillValueLv2: 0.35
+    WeaponSkillSubValueLv2: 0
+    WeaponSkillValueLv3: 0.4
+    WeaponSkillSubValueLv3: 0
+    WeaponSkillValueLv4: 0.45
+    WeaponSkillSubValueLv4: 0
+    WeaponSkillValueLv5: 0.5
+    WeaponSkillSubValueLv5: 0
+  - WeaponIndex: HC005
+    WeaponName: "\uC704\uC555 \uCF54\uC5B4"
+    WaeponDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC801\uC758
+      \uC804\uC758\uB97C \uAEBE\uB294 \uCF54\uC5B4. \uC801 \uC804\uCCB4\uC758 \uBC29\uC5B4
+      \uB2A5\uB825\uC744 \uC57D\uD654\uC2DC\uD0A8\uB2E4."
+    BonusMaxHPLv1: 1
+    BonusMaxHPLv2: 2
+    BonusMaxHPLv3: 3
+    BonusMaxHPLv4: 4
+    BonusMaxHPLv5: 5
+    BonusATKLv1: 0
+    BonusATKLv2: 0
+    BonusATKLv3: 0
+    BonusATKLv4: 0
+    BonusATKLv5: 0
+    BonusDEFLv1: 0
+    BonusDEFLv2: 0
+    BonusDEFLv3: 0
+    BonusDEFLv4: 0
+    BonusDEFLv5: 0
+    BonusCriticalRate: 0
+    BonusCounterRate: 0
+    BonusReduceRate: 0
+    BonusSpeed: 0
+    WeaponSkillIndex: HCS005
+    WeaponSkillName: "\uC82C \uD504\uB808\uC154"
+    WeaponSkillDescription: "\uD788\uC5B4\uB85C\uC82C\uC758 \uD798\uC73C\uB85C \uC555\uBC15\uD558\uC5EC
+      \uBAA8\uB4E0 \uC801\uC758 \uBC29\uC5B4\uB825\uC744 1\uD134 \uB3D9\uC548 {WeaponSkillValue}
+      \uAC10\uC18C\uC2DC\uD0A8\uB2E4."
+    IPCost: 0
+    WeaponSkillEffect: 4
+    WeaponSkillRange: 1
+    WeaponSkillRangeLine: 1
+    WeaponSkillTarget: 2
+    WeaponSkillMultiTarget: 
+    WeaponSkill_MultiTargetType: 0
+    WeaponSkillMultiTargetCount: 0
+    WeaponSkillValueLv1: 0.1
+    WeaponSkillSubValueLv1: 0
+    WeaponSkillValueLv2: 0.15
+    WeaponSkillSubValueLv2: 0
+    WeaponSkillValueLv3: 0.2
+    WeaponSkillSubValueLv3: 0
+    WeaponSkillValueLv4: 0.25
+    WeaponSkillSubValueLv4: 0
+    WeaponSkillValueLv5: 0.3
+    WeaponSkillSubValueLv5: 0

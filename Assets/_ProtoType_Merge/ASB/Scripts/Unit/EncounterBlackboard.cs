@@ -57,6 +57,9 @@ public sealed class EncounterBlackboard : MonoBehaviour
     private BattleCharactor _reservedSource;   // 예약한 증폭기(생존검사에 사용, 문자열 id 미사용)
     private bool _releaseUsedThisRound;        // 라운드당 능력개방 1회 게이트
 
+    /// <summary>증폭기의 능력개방이 실제로 예약됐을 때 한 번 발생하는 연출 알림.</summary>
+    public event Action<int, BattleCharactor> YuliaSkillReserved;
+
     private BattleFlowManager _flow;
 
     private void OnEnable()
@@ -130,6 +133,8 @@ public sealed class EncounterBlackboard : MonoBehaviour
     /// <summary>
     /// 사망한 참여자가 만든 율리아 예약을 즉시 무효화한다.
     /// 이번 라운드에 능력개방을 사용했다는 게이트는 유지해, 사망으로 추가 예약 기회를 만들지 않는다.
+    /// [2026-10-02 변경] 증폭기 사망 시 더 이상 호출하지 않는다 — 예약한 증폭기가 죽어도 율리아는 예약 스킬을
+    /// 반드시 사용한다(EncounterParticipant.HandleDied 참고). 수동 정리용으로만 남긴다.
     /// </summary>
     public void ClearYuliaReservationFrom(BattleCharactor source)
     {
@@ -158,15 +163,21 @@ public sealed class EncounterBlackboard : MonoBehaviour
 
     // ── 율리아 스킬 예약 API (증폭기 능력개방 ↔ 율리아 소비) ──
 
-    /// <summary>읽기전용: 이번 라운드 소켓 예약 가능 여부(확률 소비 전 검사). 소켓1은 소켓2를 덮을 여지도 true.</summary>
+    /// <summary>
+    /// 읽기전용: 이번 라운드 소켓 예약 가능 여부(확률 소비 전 검사).
+    /// [2026-10-02 변경] 율리아에게 대기 중인 예약이 있으면 어떤 소켓도 예약할 수 없다(덮어쓰기 금지).
+    /// 예전의 '소켓1이 대기 중인 소켓2 예약을 덮어쓰는 우선 규칙'은 제거했다. 라운드당 1회 게이트는 유지.
+    /// </summary>
     public bool CanReserveYulia(int socket)
     {
         if (socket != 1 && socket != 2) return false;
-        if (!_releaseUsedThisRound) return true;
-        return socket == 1 && _reservedSocket == 2;   // 소켓1 우선 override 여지
+        return _reservedSocket == 0 && !_releaseUsedThisRound;
     }
 
-    /// <summary>증폭기 능력개방 시 호출. 라운드당 1회 + 소켓1 우선(소켓2 예약 덮어쓰기). 성공 시 true.</summary>
+    /// <summary>
+    /// 증폭기 능력개방 시 호출. 대기 예약이 없고 이번 라운드에 아직 개방이 없을 때만 성공.
+    /// [2026-10-02 변경] 대기 예약 덮어쓰기(소켓1 우선) 제거 — 예약은 율리아가 쓸 때까지 고정된다.
+    /// </summary>
     public bool TryReserveYulia(int socket, BattleCharactor source)
     {
         if (source == null || (socket != 1 && socket != 2))
@@ -174,40 +185,32 @@ public sealed class EncounterBlackboard : MonoBehaviour
             Debug.LogWarning($"[Encounter] TryReserveYulia 잘못된 인자: socket={socket}, source={(source != null ? source.UnitName : "null")}");
             return false;
         }
-        if (!_releaseUsedThisRound)
-        {
-            _reservedSocket = socket; _reservedSource = source; _releaseUsedThisRound = true;
-            return true;
-        }
-        if (socket == 1 && _reservedSocket == 2)   // 소켓1 우선
-        {
-            _reservedSocket = 1; _reservedSource = source;
-            return true;
-        }
-        return false;
-    }
+        if (_reservedSocket != 0 || _releaseUsedThisRound) return false;
 
-    /// <summary>율리아가 조회만(소비 금지). 예약한 증폭기가 무효(사망/미참여)면 예약을 정리하고 false.</summary>
-    public bool TryPeekYuliaReservation(BattleFlowManager flow, out int socket, out BattleCharactor source)
-    {
-        socket = 0; source = null;
-        if (_reservedSocket == 0) return false;
-
-        bool alive = _reservedSource != null && !_reservedSource.IsDead
-                     && flow != null && flow.Participants.Contains(_reservedSource);
-        if (!alive)
-        {
-            _reservedSocket = 0; _reservedSource = null;   // 무효 예약 정리
-            return false;
-        }
-        socket = _reservedSocket; source = _reservedSource;
+        _reservedSocket = socket; _reservedSource = source; _releaseUsedThisRound = true;
+        YuliaSkillReserved?.Invoke(socket, source);
         return true;
     }
 
-    /// <summary>율리아가 non-Skip 결정을 확정하는 커밋에서만 호출(정확히 1회). 슬롯/소스 일치 시에만 비움.</summary>
+    /// <summary>
+    /// 율리아가 조회만(소비 금지). 대기 예약이 있으면 true.
+    /// [2026-10-02 변경] 예약한 증폭기의 생존·참여 여부를 더 이상 검사하지 않는다 — 증폭기가 죽어도 예약 스킬을 쓴다.
+    /// flow 인자는 호출부 호환을 위해 남겼고 사용하지 않는다. source는 사망·파괴됐을 수 있다(로그 용도로만 쓸 것).
+    /// </summary>
+    public bool TryPeekYuliaReservation(BattleFlowManager flow, out int socket, out BattleCharactor source)
+    {
+        socket = _reservedSocket;
+        source = _reservedSource;
+        return _reservedSocket != 0;
+    }
+
+    /// <summary>
+    /// 율리아가 non-Skip 결정을 확정하는 커밋에서만 호출(정확히 1회).
+    /// [2026-10-02 변경] 덮어쓰기가 금지돼 대기 예약은 항상 1개이고, 예약한 증폭기가 파괴됐을 수 있으므로 소켓만 비교한다.
+    /// </summary>
     public void ConsumeYuliaReservationIfMatch(int socket, BattleCharactor source)
     {
-        if (_reservedSocket == socket && _reservedSource == source)
+        if (_reservedSocket == socket)
         {
             _reservedSocket = 0; _reservedSource = null;
         }

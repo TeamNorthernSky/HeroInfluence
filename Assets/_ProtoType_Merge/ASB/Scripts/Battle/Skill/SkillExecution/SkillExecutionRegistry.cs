@@ -85,7 +85,10 @@ namespace ASB.Work.Battle.SkillExecution
             Register(EnemySkillKeyRules.Compose("FV20002", 2), new AoEDamageSkillHandler()); // 원거리 난사(열 광역) — 구 단일힐에서 변경(알파 V4.0)
 
             Register(EnemySkillKeyRules.Compose("FV20003", 1), new DamageSkillHandler());    // 단일공격
-            Register(EnemySkillKeyRules.Compose("FV20003", 2), new GuardSkillHandler()); // 대신 맞기(피해 가로채기) — 200032
+            // 이벤트 전투는 enemyIndex로부터 숫자 키(20003_2)를 생성하므로 두 키를 같은 보호 핸들러에 연결한다.
+            var guardHandler = new GuardSkillHandler();
+            Register(EnemySkillKeyRules.Compose("FV20003", 2), guardHandler); // 대신 맞기(피해 가로채기) — 200032
+            Register(EnemySkillKeyRules.Compose("20003", 2), guardHandler);
 
             // 빌런연합 강화병(FV20005) — 알파 V4.0
             Register(EnemySkillKeyRules.Compose("FV20005", 1), new DamageSkillHandler());          // 파동탄(단일 데미지)

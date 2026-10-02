@@ -1109,6 +1109,13 @@ public class BattleManager : MonoBehaviour
                 continue;
             }
 
+            // [2026-10-02 변경] 반격에 쓸 스킬(선택 스킬)이 근거리일 때만 반격한다. 확률 판정 전에 거른다.
+            if (!IsMeleeSkillRange(defender, skill))
+            {
+                Debug.Log($"[Combat] {defender.UnitName} 반격 스킬({skill.skillIndex})이 근거리가 아니어서 반격 제외");
+                continue;
+            }
+
             if (!CombatCalculator.RollCounter(defender)) continue;
 
             requests.Add(new CounterAttackRequest(defender, originalCaster, skill));
@@ -1136,6 +1143,12 @@ public class BattleManager : MonoBehaviour
         if (req.Skill.classSkillEffect == ClassSkillEffect_Heal
             || req.Skill.classSkillEffect == ClassSkillEffect_Revive
             || req.Skill.classSkillEffect == ClassSkillEffect_Buff)
+        {
+            yield break;
+        }
+
+        // [2026-10-02 변경] 근거리 반격 스킬만 실행한다. 수집 단계에서 이미 거르지만, 다른 경로로 만든 요청도 막는 방어선.
+        if (!IsMeleeSkillRange(req.Defender, req.Skill))
         {
             yield break;
         }

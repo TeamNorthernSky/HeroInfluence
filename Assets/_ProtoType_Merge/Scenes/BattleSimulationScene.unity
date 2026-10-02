@@ -122,63 +122,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &320332751
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 320332753}
-  - component: {fileID: 320332754}
-  - component: {fileID: 320332755}
-  m_Layer: 0
-  m_Name: DataManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &320332753
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &320332754
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1213a2ec935c07c4183b16fa65cfc702, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &320332755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 320332751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 407c923e952858047875ef90f3fb4584, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1336593378
 GameObject:
   m_ObjectHideFlags: 0
@@ -486,8 +429,6 @@ MonoBehaviour:
     enemyBattleUnitTable: {fileID: 0}
   mainSubEventRewardTable: {fileID: 11400000, guid: 5f847ee124bbb204ea01035e8d8bb8db,
     type: 2}
-  worldEventRewardTable: {fileID: 11400000, guid: 226001ddc22bdb94aaec2f0cd83d7b20,
-    type: 2}
   loadOnAwake: 1
   dontDestroyOnLoad: 1
 --- !u!114 &1884577819
@@ -502,17 +443,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerUnitDataTable: {fileID: 11400000, guid: f4e069b905c70c748aec0057882b4997,
+  playerUnitDataTable: {fileID: 11400000, guid: b4122d1793c299d4cab67f9cfedaa4e5,
     type: 2}
-  enemyUnitInfoDataTable: {fileID: 11400000, guid: 57f54f0152ff09f46bd32397d1ca3b5e,
+  enemyUnitInfoDataTable: {fileID: 11400000, guid: 58b1efb7032b6d9449411e9388f8f172,
     type: 2}
-  playerWeaponDataTable: {fileID: 11400000, guid: cf9d6f78837c56c4f93f88803f090b6f,
+  playerWeaponDataTable: {fileID: 11400000, guid: 7d79b2f4688a59d46892dfc21a1d8026,
     type: 2}
-  classSkillDataTable: {fileID: 11400000, guid: efefb0955fb007540ac909271643ab0f,
+  classSkillDataTable: {fileID: 11400000, guid: c335171227ab4b44faaab663c54d0239,
     type: 2}
-  unitGrowthExpDataTable: {fileID: 11400000, guid: 3a3582c35af186b4bb20d742a3a2b548,
+  unitGrowthExpDataTable: {fileID: 11400000, guid: 48e95fdabbaae5a4daaa578fbb52c037,
     type: 2}
-  enemyGroupDataTable: {fileID: 11400000, guid: 6adb67ae246e04d40819ad7652d7565f,
+  enemyGroupDataTable: {fileID: 11400000, guid: 4ff84c791b474d44b96f3ce299faa0bf,
     type: 2}
   sector4EnemyUnitDataTable: {fileID: 11400000, guid: 88de00416d03edd4eba0696dbedff063,
     type: 2}
@@ -529,7 +470,7 @@ MonoBehaviour:
       Atk: 9
       DEF: 5
       Luck: 0
-      Speed: 1
+      Speed: 0
       CriticalRate: 0.15
       CritMultiplier: 1.5
       CounterRate: 0.15
@@ -555,7 +496,7 @@ MonoBehaviour:
       Atk: 12
       DEF: 4
       Luck: 0
-      Speed: 3
+      Speed: 2
       CriticalRate: 0.3
       CritMultiplier: 1.5
       CounterRate: 0.1
@@ -581,7 +522,7 @@ MonoBehaviour:
       Atk: 12
       DEF: 2
       Luck: 0
-      Speed: 2
+      Speed: 3
       CriticalRate: 0.2
       CritMultiplier: 1.5
       CounterRate: 0.05
@@ -607,7 +548,7 @@ MonoBehaviour:
       Atk: 8
       DEF: 6
       Luck: 0
-      Speed: 2
+      Speed: 1
       CriticalRate: 0.1
       CritMultiplier: 1.5
       CounterRate: 0.1
@@ -628,7 +569,7 @@ MonoBehaviour:
   cachedEnemyTemplates:
   - Index: 20001
     UnitType: 
-    Name: "\uB9C8\uC5D0\uC2A4\uD2B8\uB85C\uBD07"
+    Name: "\uADF8\uB0E5 \uB4DC\uB860"
     baseStats:
       HP: 5
       Atk: 10
@@ -652,11 +593,11 @@ MonoBehaviour:
       AvoidRate: 0
       influence: 0
     IsEnemyRow: 1
-    UnitAI: "(1\uD134) \uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uD788\uC5B4\uB85C 1\uBA85\uC744
-      \uD45C\uC801\uC73C\uB85C \uC9C0\uC815 (\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC774
-      \uB458 \uC774\uC0C1\uC77C \uACBD\uC6B0 \uB300\uC0C1\uC740 \uB79C\uB364)\n(2\uD134)
-      \uD574\uB2F9 \uC720\uB2DB\uC5D0\uAC8C '\uC790\uD3ED' \uC2E4\uD589 - \uB300\uBBF8\uC9C0
-      \uACC4\uC0B0 \uD6C4 \uB9C8\uC5D0\uC2A4\uD2B8\uB85C\uBD07 \uC804\uC7A5 \uC81C\uAC70"
+    UnitAI: "(\uB9E4\uD134) \uC784\uC758\uC758 \uC801\uC5D0\uAC8C \uC704\uD611 \uC0AC\uACA9\n
+      - \uB300\uC0C1 1\uCC28 \uD310\uC815: \uC804\uC5F4\uC758 \uC801 70%, \uD6C4\uC5F4\uC758
+      \uC801 30%\n - \uB300\uC0C1 2\uCC28 \uD310\uC815(\uAC19\uC740 \uC5F4\uC758
+      \uC801\uC774 \uC5EC\uB7FF\uC77C \uACBD\uC6B0): \uB3D9\uC77C\uD55C \uD655\uB960\uB85C
+      \uB79C\uB364 \uACB0\uC815"
     ExperiencePoint: 15
     DropItem1Index: 
     DropItem1Count: 
@@ -673,7 +614,7 @@ MonoBehaviour:
       CriticalRate: 0.1
       CritMultiplier: 1.5
       CounterRate: 0.1
-      AvoidRate: 0.1
+      AvoidRate: 0.25
       influence: 0
     levelupStats:
       HP: 3
@@ -711,7 +652,7 @@ MonoBehaviour:
       Speed: 0
       CriticalRate: 0.1
       CritMultiplier: 1.5
-      CounterRate: 0.1
+      CounterRate: 0.25
       AvoidRate: 0.1
       influence: 0
     levelupStats:
@@ -729,7 +670,9 @@ MonoBehaviour:
     UnitAI: "(\uB9E4 \uD134) \n- \uC544\uAD70 \uC720\uB2DB \uC911, \uCCB4\uB825 30%
       \uBBF8\uB9CC \uC720\uB2DB\uC774 1\uBA85 \uC774\uC0C1 \uC788\uB294 \uACBD\uC6B0,
       '\uB300\uC2E0 \uB9DE\uAE30' \uC2E4\uD589\n- \uC544\uB2CC \uACBD\uC6B0 \uAC00\uC7A5
-      \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC5D0\uAC8C '\uBC29\uD328 \uCE58\uAE30' \uC2E4\uD589"
+      \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC5D0\uAC8C '\uBC29\uD328 \uCE58\uAE30\uFF07
+      \uC2E4\uD589 (\uAC00\uC7A5 \uAC00\uAE4C\uC6B4 \uC720\uB2DB\uC774 \uC5EC\uB7FF\uC77C
+      \uACBD\uC6B0, \uB79C\uB364 \uC120\uD0DD)"
     ExperiencePoint: 30
     DropItem1Index: 
     DropItem1Count: 
@@ -760,8 +703,11 @@ MonoBehaviour:
       AvoidRate: 0
       influence: 0
     IsEnemyRow: 1
-    UnitAI: "(\uB9E4 \uD134) \uB79C\uB364 \uD788\uC5B4\uB85C 1\uBA85\uC744 \uB300\uC0C1\uC73C\uB85C
-      '\uCDA9\uC804 \uD3EC\uACA9' \uC2E4\uD589"
+    UnitAI: "(\uB9E4 \uD134) \uC801 \uD788\uC5B4\uB85C 1\uBA85\uC744 \uB300\uC0C1\uC73C\uB85C
+      '\uCDA9\uC804 \uD3EC\uACA9\u2019 \uC2E4\uD589\n - \uB300\uC0C1 \uC120\uD0DD
+      \uC2DC, \uC8FC\uBCC0 \uC720\uB2DB\uC774 \uAC00\uC7A5 \uB9CE\uC740 \uC720\uB2DB
+      \uC6B0\uC120\n - \uC8FC\uBCC0 \uC720\uB2DB \uC218\uAC00 \uAC00\uC7A5 \uB9CE\uC740
+      \uC720\uB2DB\uC774 \uC5EC\uB7FF\uC77C \uACBD\uC6B0 \uB79C\uB364"
     ExperiencePoint: 60
     DropItem1Index: 
     DropItem1Count: 
@@ -770,7 +716,7 @@ MonoBehaviour:
     UnitType: 
     Name: "\uBE4C\uB7F0\uC5F0\uD569 \uAC15\uD654\uBCD1"
     baseStats:
-      HP: 10
+      HP: 40
       Atk: 6
       DEF: 6
       Luck: 0
@@ -781,7 +727,7 @@ MonoBehaviour:
       AvoidRate: 0.2
       influence: 0
     levelupStats:
-      HP: 7
+      HP: 10
       Atk: 5
       DEF: 3
       Luck: 0
@@ -792,12 +738,14 @@ MonoBehaviour:
       AvoidRate: 0
       influence: 0
     IsEnemyRow: 1
-    UnitAI: "(\uB9E4 \uD134)\n- \uAC19\uC740 \uD589\uC5D0 \uD788\uC5B4\uB85C\uAC00
-      \uC5C6\uB294 \uACBD\uC6B0, '\uBC1C\uD1B1 \uD6C4\uB9AC\uAE30' \uC2E4\uD589\n-
-      \uAC19\uC740 \uD589\uC5D0 \uD788\uC5B4\uB85C\uAC00 1\uBA85 \uC788\uB294 \uACBD\uC6B0,
-      '\uBC1C\uD1B1 \uD6C4\uB9AC\uAE30' \uC2E4\uD589\n- \uAC19\uC740 \uD589\uC5D0
-      \uD788\uC5B4\uB85C\uAC00 2\uBA85 \uC788\uB294 \uACBD\uC6B0, '\uBC15\uCE58\uAE30'
-      \uC2E4\uD589"
+    UnitAI: "(\uB9E4 \uD134)\n1) \uC0AC\uC6A9 \uC2A4\uD0AC \uC120\uC815 (\uD30C\uB3D9\uD0C4
+      60%, \uC5F0\uACA9 40%)\n2) \uD30C\uB3D9\uD0C4 \uB300\uC0C1 \uD310\uC815: \uBAA8\uB4E0
+      \uC720\uB2DB \uB3D9\uC77C \uD655\uB960 \uB79C\uB364 \uC9C0\uC815\n3) \uC5F0\uACA9
+      \uB300\uC0C1 \uD310\uC815\n - \uB300\uC0C11: \uD55C \uC5F4 \uB0B4\uC5D0 \uB3D9\uC77C
+      \uD655\uB960\uB85C \uB79C\uB364 \uC9C0\uC815(\uC804\uC5F4\uC774 \uC788\uC744
+      \uACBD\uC6B0 \uC804\uC5F4 \uC6B0\uC120)\n - \uB300\uC0C12: \uD55C \uC5F4 \uB0B4\uC5D0
+      \uB3D9\uC77C \uD655\uB960\uB85C \uB79C\uB364 \uC9C0\uC815(\uD6C4\uC5F4\uC774
+      \uC788\uC744 \uACBD\uC6B0 \uD6C4\uC5F4 \uC6B0\uC120)"
     ExperiencePoint: 80
     DropItem1Index: 
     DropItem1Count: 
@@ -1355,7 +1303,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 1956195432}
   - {fileID: 1348185595}
-  - {fileID: 320332753}
   - {fileID: 1336593381}
   - {fileID: 1858113517}
   - {fileID: 1884577820}

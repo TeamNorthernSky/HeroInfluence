@@ -385,6 +385,19 @@ public class BattleFlowManager : MonoBehaviour
         playerActionResolved = true;
     }
 
+    /// <summary>
+    /// '적 전멸' 외의 승리 조건(예: 보스 처치)이 충족됐을 때 호출한다. 진행 중인 행동이 끝나면 루프가 승리로 종료한다.
+    /// 이미 종료됐거나 다른 종료가 먼저 요청돼 있으면 무시한다.
+    /// </summary>
+    public void RequestVictory(string reason)
+    {
+        if (battleEnded || battleEndRequested) return;
+
+        battleEndRequested = true;
+        requestedBattleResult = BattleResult.Victory;
+        Log($"[BattleFlow] 승리 조건 충족: {reason}");
+    }
+
     private bool CheckSideAlive(bool isPlayer)
     {
         for (int i = 0; i < participants.Count; i++)

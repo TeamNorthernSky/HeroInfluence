@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 7117822009342659152}
   - component: {fileID: 2593296678257442717}
   - component: {fileID: 8468139069637002395}
+  - component: {fileID: 1399793619614571259}
   m_Layer: 9
   m_Name: Unit_VillanMadonna_40001
   m_TagString: Untagged
@@ -71,6 +72,20 @@ Transform:
   - {fileID: 210875102116153210}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!114 &1399793619614571259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8180298766699557435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8a8d46f6c9b31443ad3ad00ba409a58, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  _timeline: {fileID: 11400000, guid: 843a25db05351e2419e90a58e75b5e48, type: 2}
+  _blackboard: {fileID: 0}
 --- !u!114 &7348020022028271465
 MonoBehaviour:
   m_ObjectHideFlags: 0

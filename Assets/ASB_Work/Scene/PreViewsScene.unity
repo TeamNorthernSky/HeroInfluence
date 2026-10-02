@@ -1440,6 +1440,8 @@ MonoBehaviour:
   additionalPreviewPlayers:
   - unitId: 10003
     gridNumber: 100
+  - unitId: 10001
+    gridNumber: 1
   enemyUnitId: 10002
   enemyGridNumber: 201
   previewEnemies:

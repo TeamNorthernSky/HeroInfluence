@@ -98,8 +98,8 @@ public sealed class EncounterParticipant : MonoBehaviour
         EncounterBlackboard bb = ResolveBlackboard();
         if (bb == null) return;
 
-        // 동일 인스턴스가 부활하기 전에 오래된 예약이 다시 유효해지는 것을 막는다.
-        bb.ClearYuliaReservationFrom(_self);
+        // [2026-10-02 변경] 증폭기가 죽어도 율리아 예약은 유지한다 — 율리아는 다음 스킬 턴에 예약 스킬을 반드시 쓴다.
+        // 예전에는 여기서 bb.ClearYuliaReservationFrom(_self)로 이 증폭기가 만든 예약을 무효화했다.
         bb.MarkParticipantDestroyed(_participantId);
 
         // 이미 부활 페이즈에 진입한 뒤 재사망한 경우 PhaseAdvanced가 다시 오지 않는다.

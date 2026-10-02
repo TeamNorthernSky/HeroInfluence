@@ -18,7 +18,7 @@ MonoBehaviour:
   PresentationArchetype: 0
   SkillTimelines:
   - CharacterKey: 40001
-    Timeline: {fileID: 11400000, guid: d8d1263d898f0b34091ed0bd251ccef6, type: 2}
+    Timeline: {fileID: 11400000, guid: 8c00af7dc4ff7dd4e8f70515be8cf0a5, type: 2}
     TargetCount: 0
     Segments: []
   ImpactTiming: 0
@@ -79,7 +79,17 @@ MonoBehaviour:
       BlendInSeconds: 0
       AdvanceOnEvent: 0
       WaitForHitEvent: 1
-      Cues: []
+      Cues:
+      - CueName: trajectory_beam
+        EffectIds: 8c1a0600
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 2
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 805d3c2cf5bb4f358f2c1439e39e1a75
   Return:
     Enabled: 1
     AnimationStateName: 

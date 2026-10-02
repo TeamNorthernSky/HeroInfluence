@@ -628,20 +628,6 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     private void DisableVisuals()
     {
-        foreach (var renderer in originalColors.Keys)
-        {
-            if (renderer == null)
-            {
-                continue;
-            }
-
-            Material material = renderer.material;
-            if (material != null && material.HasProperty("_Color"))
-            {
-                material.color = Color.black;
-            }
-        }
-
         var canvases = GetComponentsInChildren<Canvas>(true);
         for (int i = 0; i < canvases.Length; i++)
         {

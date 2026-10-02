@@ -19,6 +19,21 @@ public sealed class EventBattlePlanBuilderTests
     private static Type SourceType => FindRuntimeType("EventBattlePlanSource");
     private static Type CatalogType => FindRuntimeType("EventScriptCatalog");
 
+    [Test]
+    public void GuardSkill_EventAndCatalogKeysResolveToSameHandler()
+    {
+        Type registryType = FindRuntimeType("ASB.Work.Battle.SkillExecution.SkillExecutionRegistry");
+        MethodInfo lookup = registryType.GetMethod("TryGetHandler", BindingFlags.Public | BindingFlags.Static);
+        Assert.That(lookup, Is.Not.Null);
+
+        object[] catalogArgs = { "FV20003_2", null };
+        object[] eventArgs = { "20003_2", null };
+        Assert.That((bool)lookup.Invoke(null, catalogArgs), Is.True);
+        Assert.That((bool)lookup.Invoke(null, eventArgs), Is.True);
+        Assert.That(catalogArgs[1].GetType().Name, Is.EqualTo("GuardSkillHandler"));
+        Assert.That(eventArgs[1], Is.SameAs(catalogArgs[1]));
+    }
+
     [TestCase("")]
     [TestCase("   ")]
     public void TryBuildFromEventBattleKey_EmptyBattleKey_FailsFast(string battleKey)
