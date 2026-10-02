@@ -64,6 +64,8 @@ public class BattleFlowManager : MonoBehaviour
     private bool battleEnded;
     private bool battleEndRequested;
     private BattleResult requestedBattleResult = BattleResult.Defeat;
+    // 이번 전투의 적 그룹 키(일반 전투만). 그룹별 즉시 승리 조건 판정에 쓴다.
+    private string enemyGroupKey = string.Empty;
 
     private readonly Dictionary<int, FlowLockRecord> flowLocks = new Dictionary<int, FlowLockRecord>();
     private readonly Dictionary<int, PlayerActionConstraintRecord> playerActionConstraints =
@@ -151,6 +153,7 @@ public class BattleFlowManager : MonoBehaviour
         battleEnded = false;
         battleEndRequested = false;
         requestedBattleResult = BattleResult.Defeat;
+        enemyGroupKey = ResolveEnemyGroupKey();
         RefreshQueue();
 
         Debug.Log($"[BattleFlow] Initialize 완료. participants={participants.Count}, queue={turnQueue.Count}");
@@ -396,6 +399,36 @@ public class BattleFlowManager : MonoBehaviour
         battleEndRequested = true;
         requestedBattleResult = BattleResult.Victory;
         Log($"[BattleFlow] 승리 조건 충족: {reason}");
+    }
+
+    /// <summary>
+    /// 그룹별 '처치하면 남은 적과 관계없이 즉시 승리'하는 유닛인지 판정한다.
+    /// 아직 율리아 보스전 하나뿐이라 코드로 분기한다. 사례가 늘면 데이터(SO 또는 EnemyGroupDataTable 열)로 옮길 것.
+    /// unitIndex는 BattleCharactor.TemplateIndex(숫자 형식, 예: "40001")다.
+    /// </summary>
+    private static bool IsInstantVictoryUnit(string groupKey, string unitIndex)
+    {
+        switch (groupKey)
+        {
+            case "BE490": // 율리아 보스전: 율리아(FV40001)
+                return unitIndex == "40001";
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// 일반 전투의 적 그룹 키. 이벤트 전투는 그룹 키가 아니라 BattleKey로 스폰하므로(EnemySpawner와 같은 우선순위) 빈 값을 돌려준다.
+    /// </summary>
+    private static string ResolveEnemyGroupKey()
+    {
+        CombatContext context = CombatContext.Instance;
+        if (context == null || context.HasEventBattle || context.CombatEnemy == null)
+        {
+            return string.Empty;
+        }
+
+        return context.CombatEnemy.EnemyGroupKey;
     }
 
     private bool CheckSideAlive(bool isPlayer)
@@ -899,6 +932,11 @@ public class BattleFlowManager : MonoBehaviour
             }
 
             CurrentUnit = null;
+        }
+
+        if (!deadUnit.IsPlayer && IsInstantVictoryUnit(enemyGroupKey, deadUnit.TemplateIndex))
+        {
+            RequestVictory($"{enemyGroupKey} 보스 처치: {deadUnit.UnitName}");
         }
     }
 

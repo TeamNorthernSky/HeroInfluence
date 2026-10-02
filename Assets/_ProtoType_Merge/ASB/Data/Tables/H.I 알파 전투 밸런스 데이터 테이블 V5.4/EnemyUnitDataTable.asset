@@ -17,7 +17,7 @@ MonoBehaviour:
     EnemyName: "\uADF8\uB0E5 \uB4DC\uB860"
     EnemyConcept: "\uD504\uB85C\uD30C\uAC04\uB2E4\uC6A9 \uB4DC\uB860"
     UnitMaxHP: 5
-    UnitATK: 10
+    UnitATK: 4
     UnitDEF: 5
     CriticalRate: 0.1
     CounterRate: 0.1
