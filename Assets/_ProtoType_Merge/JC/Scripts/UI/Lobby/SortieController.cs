@@ -630,7 +630,7 @@ public class SortieController : MonoBehaviour
     private void LoadExploration()
     {
         if (GameSceneManager.Instance != null) GameSceneManager.Instance.LoadScene(ExplorationScene);
-        else SceneManager.LoadScene(ExplorationScene);
+        else SceneFadeController.LoadSceneWithFadeIfNeeded(ExplorationScene);
     }
 
 }

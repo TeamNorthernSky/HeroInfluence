@@ -40,6 +40,6 @@ public class CombatSceneEntryController : MonoBehaviour
         if (GameSceneManager.Instance != null)
             GameSceneManager.Instance.LoadScene(battleSceneName);
         else
-            UnityEngine.SceneManagement.SceneManager.LoadScene(battleSceneName);
+            SceneFadeController.LoadSceneWithFadeIfNeeded(battleSceneName);
     }
 }

@@ -31,6 +31,12 @@ public sealed class TutorialPublicityState : MonoBehaviour
         if (repository != null) repository.ProgressChanged -= RefreshBudget;
     }
 
+    public void EnsureAvailableCount(int minimum)
+    {
+        RefreshBudget();
+        pool = Mathf.Max(pool, minimum);
+    }
+
     private void RefreshBudget()
     {
         if (repository == null) return;

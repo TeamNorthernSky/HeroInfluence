@@ -263,6 +263,6 @@ public class DefeatedPartyReturnController : MonoBehaviour
             return;
         }
 
-        SceneManager.LoadScene(FallbackLobbySceneName);
+        SceneFadeController.LoadSceneWithFadeIfNeeded(FallbackLobbySceneName);
     }
 }

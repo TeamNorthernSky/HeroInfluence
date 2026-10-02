@@ -46,7 +46,7 @@ public sealed class GameClearPanelController : MonoBehaviour
             if (GameSceneManager.Instance != null)
                 GameSceneManager.Instance.LoadScene(endingSceneName);
             else
-                SceneManager.LoadScene(endingSceneName);
+                SceneFadeController.LoadSceneWithFadeIfNeeded(endingSceneName);
         }
         catch (Exception exception)
         {

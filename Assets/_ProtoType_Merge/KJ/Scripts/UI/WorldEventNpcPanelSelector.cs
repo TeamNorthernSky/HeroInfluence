@@ -63,6 +63,13 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
 
     private void Update()
     {
+        if (current != null && current.EventType == DHWorldEventType.Choice &&
+            current.IsWaitingFinalConfirm &&
+            (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Escape)))
+        {
+            OnChoiceCancel();
+            return;
+        }
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Escape)) && resultClickArea != null &&
             resultClickArea.isActiveAndEnabled && resultClickArea.IsInteractable())
         {
@@ -264,8 +271,13 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             resultShownFrame = Time.frameCount;
         }
         resultClickArea.gameObject.SetActive(waitForClick);
-        resultClickArea.interactable = live;
-        if (waitForClick) resultClickArea.transform.SetAsLastSibling();
+        resultClickArea.interactable = live && request.EventType != DHWorldEventType.Choice;
+        if (waitForClick)
+        {
+            resultClickArea.transform.SetAsLastSibling();
+            // 선택 결과는 확인 버튼으로만 닫고, 뒤쪽 화면으로의 클릭은 계속 막는다.
+            if (request.EventType == DHWorldEventType.Choice) choicePanel.transform.SetAsLastSibling();
+        }
         if (request.EventType == DHWorldEventType.Consume)
         {
             consumeProceed.gameObject.SetActive(!confirm);
@@ -280,7 +292,8 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             if (confirm)
             {
                 foreach (Button button in choiceButtons) button.gameObject.SetActive(false);
-                choiceDecline.gameObject.SetActive(false);
+                choiceDecline.gameObject.SetActive(true);
+                SetButton(choiceDecline, "확인", live);
                 return;
             }
             cancelId = null;
@@ -349,7 +362,17 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     }
 
     private void OnDecline() { if (CanSubmit(consumeDecline)) manager.SelectDecline(); }
-    private void OnChoiceCancel() { if (CanSubmit(choiceDecline)) manager.SelectDecline(); }
+    private void OnChoiceCancel()
+    {
+        if (current != null && current.IsWaitingFinalConfirm)
+        {
+            if (Time.frameCount == resultShownFrame || !CanSubmit(choiceDecline)) return;
+            resultConfirmedFrame = Time.frameCount;
+            manager.ConfirmCurrentMessage();
+            return;
+        }
+        if (CanSubmit(choiceDecline)) manager.SelectDecline();
+    }
     private void OnChoiceOne() { if (CanSubmit(choiceButtons[0])) manager.SelectChoice(choiceIds[0]); }
     private void OnChoiceTwo() { if (CanSubmit(choiceButtons[1])) manager.SelectChoice(choiceIds[1]); }
 

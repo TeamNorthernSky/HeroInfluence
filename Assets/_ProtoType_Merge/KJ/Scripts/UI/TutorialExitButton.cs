@@ -27,6 +27,6 @@ public class TutorialExitButton : MonoBehaviour
     {
         if (isLoading) return;
         isLoading = true;
-        JC.Tutorial.JcTutorialExitTransition.Begin();
+        JC.Tutorial.JcTutorialExitTransition.Begin("DHScene_3");
     }
 }

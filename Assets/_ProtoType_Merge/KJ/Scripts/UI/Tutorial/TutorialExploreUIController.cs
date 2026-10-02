@@ -13,16 +13,53 @@ public sealed class TutorialExploreUIController : MonoBehaviour
     public bool IsShowing => CurrentPanelIndex >= 0;
     private int lastChangeFrame = -1;
     private bool initialized;
+    private const string PublicityIntroSeenKey = "KJ.Tutorial.Publicity.AfterFirstVictory";
+    private CombatContext victoryReturnContext;
 
-    private void Awake() => Initialize();
+    private void Awake()
+    {
+        Initialize();
+        // 결과 처리기가 복귀 후 컨텍스트를 비우기 전에 이번 전투의 승리를 기억한다.
+        var context = CombatContext.Instance;
+        if (gameObject.scene.name == "TutorialExploreScene" && context != null &&
+            context.IsTutorial && context.Result == CombatResult.Victory &&
+            context.ReturnSceneName == gameObject.scene.name)
+            victoryReturnContext = context;
+    }
+
+    private System.Collections.IEnumerator Start()
+    {
+        if (victoryReturnContext == null) yield break;
+        var repository = TutorialProgressRepository.EnsureInstance();
+        if (repository == null || repository.IsMessageSeen(PublicityIntroSeenKey)) yield break;
+
+        // DH 결과 처리기의 상태 복원 및 ClearTutorial 완료를 기다린다.
+        while (victoryReturnContext != null && victoryReturnContext.IsTutorial)
+            yield return null;
+        yield return null;
+
+        if (repository == null || repository.LastCombatResult != CombatResult.Victory ||
+            repository.IsMessageSeen(PublicityIntroSeenKey)) yield break;
+        if (!IsShowing) ShowPanel(0);
+        if (IsShowing) repository.MarkMessageSeen(PublicityIntroSeenKey);
+        victoryReturnContext = null;
+    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void Update()
+    {
+        // 디버그 재실행: 홍보 안내의 시작 상태를 준비하고 첫 안내부터 표시한다.
+        if (Input.GetKeyDown(KeyCode.F6)) ShowPanel(0);
+    }
+#endif
 
     private void Initialize()
     {
         if (initialized) return;
         initialized = true;
+        publicityExplanation = GetComponent<TutorialPublicityExplanationView>();
         HideTutorial();
         if (nextButton != null) nextButton.onClick.AddListener(ShowNextPanel);
-        publicityExplanation = GetComponent<TutorialPublicityExplanationView>();
     }
 
     private void OnDestroy()
@@ -41,7 +78,13 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         }
         HideTutorial();
         CurrentPanelIndex = index;
-        if (nextButton != null) nextButton.gameObject.SetActive(true);
+        // 설명 패널이 버튼의 자식일 수 있으므로 오브젝트는 유지하고 클릭만 막는다.
+        bool requiresAction = publicityExplanation != null && publicityExplanation.RequiresAction(index);
+        if (nextButton != null)
+        {
+            nextButton.gameObject.SetActive(true);
+            nextButton.interactable = !requiresAction;
+        }
         panels[index].SetActive(true);
         if (publicityExplanation != null) publicityExplanation.ShowStep(index);
     }

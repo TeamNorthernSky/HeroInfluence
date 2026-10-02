@@ -22,6 +22,7 @@ public class TutorialCutSceneManager : MonoBehaviour
     private int popupClosedFrame = -1;
     private int currentIndex = 0;
     private GameObject currentImage = null;
+    private bool transitioning;
     // Start is called before the first frame update
     void Start()
     {
@@ -35,6 +36,7 @@ public class TutorialCutSceneManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (transitioning) return;
         if (skipPopup != null && skipPopup.activeSelf)
         {
             if (Input.GetKeyDown(KeyCode.Escape)) CloseSkipPopup();
@@ -136,7 +138,7 @@ public class TutorialCutSceneManager : MonoBehaviour
     
     private void GoTutorialExploreScene()
     {
-        SceneManager.LoadScene("TutorialExploreScene");
+        SceneFadeController.LoadSceneWithFadeIfNeeded("TutorialExploreScene");
     }
 
     void GoPreviousCutScene()
@@ -150,6 +152,11 @@ public class TutorialCutSceneManager : MonoBehaviour
 
     private void AfterEndCutScene()
     {
-        return;
+        if (transitioning) return;
+        transitioning = true;
+        Time.timeScale = 1f;
+        if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
+        else DHGameProgressResetService.ResetDHProgress();
+        SceneFadeController.LoadSceneWithFadeIfNeeded("TitleScene");
     }
 }
