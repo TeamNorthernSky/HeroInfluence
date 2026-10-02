@@ -13,14 +13,20 @@ public sealed class BattleUnitPrefabEntry
 {
     [SerializeField] private string unitKey;
     [SerializeField] private GameObject prefab;
+    [Tooltip("이 프리팹(외형)을 함께 쓰는 다른 데이터 인덱스. 예: 소총수 20002 프리팹을 인질극 소총수 20006도 사용. " +
+             "스탯·스킬·AI는 각 인덱스의 테이블 행을 그대로 쓰고, 프리팹만 이 항목을 공유한다.")]
+    [SerializeField] private List<string> additionalUnitKeys = new List<string>();
 
     public string UnitKey => unitKey;
     public GameObject Prefab => prefab;
+    public IReadOnlyList<string> AdditionalUnitKeys => additionalUnitKeys;
 }
 
 /// <summary>
 /// Shared source of truth for Player and Enemy battle unit prefabs.
 /// Keys are matched exactly with StringComparer.Ordinal after trimming whitespace.
+/// 데이터 인덱스(스탯·스킬·AI)와 외형(프리팹)을 분리한다: 한 항목 = 프리팹 1개 + 그 프리팹을 쓰는 인덱스들
+/// (대표 unitKey + additionalUnitKeys).
 /// </summary>
 [CreateAssetMenu(fileName = "BattleUnitPrefabCatalog", menuName = "Battle/Unit Prefab Catalog")]
 public sealed class BattleUnitPrefabCatalog : ScriptableObject
@@ -111,14 +117,35 @@ public sealed class BattleUnitPrefabCatalog : ScriptableObject
                 continue;
             }
 
-            if (lookup.ContainsKey(key))
-            {
-                Debug.LogError($"[BattleUnitPrefabCatalog] Duplicate {side} unit key '{key}'.", this);
-                continue;
-            }
+            AddKey(lookup, side, key, entry.Prefab);
 
-            lookup.Add(key, entry.Prefab);
+            IReadOnlyList<string> aliases = entry.AdditionalUnitKeys;
+            if (aliases == null)
+                continue;
+
+            for (int a = 0; a < aliases.Count; a++)
+            {
+                string alias = NormalizeKey(aliases[a]);
+                if (string.IsNullOrEmpty(alias))
+                {
+                    Debug.LogWarning($"[BattleUnitPrefabCatalog] {side} key '{key}' has an empty additional key.", this);
+                    continue;
+                }
+
+                AddKey(lookup, side, alias, entry.Prefab);
+            }
         }
+    }
+
+    private void AddKey(Dictionary<string, GameObject> lookup, BattleUnitPrefabSide side, string key, GameObject prefab)
+    {
+        if (lookup.ContainsKey(key))
+        {
+            Debug.LogError($"[BattleUnitPrefabCatalog] Duplicate {side} unit key '{key}'.", this);
+            return;
+        }
+
+        lookup.Add(key, prefab);
     }
 
     private static bool TryGetFromLookup(

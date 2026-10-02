@@ -219,14 +219,9 @@ public class EnemySpawner : MonoBehaviour
         if (TryGetRegisteredEnemyPrefab(trimmedIndex, out GameObject registeredPrefab))
             return registeredPrefab;
 
-        string suffix = $"_{trimmedIndex}";
-
-        GameObject[] all = Resources.LoadAll<GameObject>("prefab/BattlePrefab/EnemyUnit");
-        foreach (GameObject prefab in all)
-        {
-            if (prefab.name.EndsWith(suffix))
-                return prefab;
-        }
+        GameObject fallback = FindUnregisteredPrefabInResources(trimmedIndex);
+        if (fallback != null)
+            return fallback;
 
         Debug.LogError($"[EnemySpawner] Prefab not found. Index={trimmedIndex}");
         return null;
@@ -622,6 +617,9 @@ public class EnemySpawner : MonoBehaviour
         return go;
     }
 
+    // [2026-10-02 변경] 조회 순서: ① BattleUnitPrefabCatalog(데이터 인덱스 → 대표 키·추가 인덱스) ②
+    // 데이터에 명시된 리소스 경로 ③ 미등록 유닛만 Resources `_{key}` 검색(경고). 예전에는 경로가 있으면
+    // 카탈로그를 보지 않고 바로 로드해, 이벤트 전투가 옛 Monster 프리팹을 썼다.
     private GameObject ResolvePlanPrefab(EnemySpawnEntry entry)
     {
         string key = !string.IsNullOrWhiteSpace(entry.PrefabKey)
@@ -631,10 +629,7 @@ public class EnemySpawner : MonoBehaviour
             return null;
 
         key = key.Trim();
-
-        // 리소스 경로(이벤트 PrefabResourcePath 등)면 직접 로드.
-        if (key.Contains("/"))
-            return Resources.Load<GameObject>(key);
+        bool isResourcePath = key.Contains("/");
 
         string dataIndex = entry.Data != null && !string.IsNullOrWhiteSpace(entry.Data.Index)
             ? entry.Data.Index.Trim()
@@ -645,19 +640,33 @@ public class EnemySpawner : MonoBehaviour
             return registeredPrefab;
         }
 
-        if (!string.Equals(dataIndex, key, StringComparison.Ordinal) &&
+        if (!isResourcePath && !string.Equals(dataIndex, key, StringComparison.Ordinal) &&
             TryGetRegisteredEnemyPrefab(key, out registeredPrefab))
         {
             return registeredPrefab;
         }
 
-        // 그 외(일반=Index): FindPrefab과 동일 규칙(prefab/BattlePrefab/EnemyUnit 아래 이름이 _{key}로 끝나는 프리팹).
+        if (isResourcePath)
+            return Resources.Load<GameObject>(key);
+
+        return FindUnregisteredPrefabInResources(key);
+    }
+
+    // 카탈로그 미등록 유닛 전용 폴백. 같은 번호의 옛 프리팹이 함께 있으면 이름순으로 잘못 잡힐 수 있으므로 경고한다.
+    private GameObject FindUnregisteredPrefabInResources(string key)
+    {
         string suffix = $"_{key}";
         GameObject[] all = Resources.LoadAll<GameObject>("prefab/BattlePrefab/EnemyUnit");
         for (int i = 0; i < all.Length; i++)
         {
-            if (all[i] != null && all[i].name.EndsWith(suffix))
-                return all[i];
+            if (all[i] == null || !all[i].name.EndsWith(suffix))
+                continue;
+
+            Debug.LogWarning(
+                $"[EnemySpawner] BattleUnitPrefabCatalog에 '{key}'가 없어 Resources 프리팹 '{all[i].name}'로 대체합니다. " +
+                "카탈로그에 등록하세요(같은 외형이면 기존 항목의 추가 인덱스로).",
+                this);
+            return all[i];
         }
 
         return null;

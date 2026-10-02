@@ -133,9 +133,11 @@ public static class EnemySpawnPlanBuilder
                 continue;
 
             EnemyData spawnData = BuildEventEnemyData(unit);
+            // [2026-10-02 변경] 경로 미지정 시 옛 Monster 프리팹 하드코딩 대신 데이터 인덱스를 넘겨
+            // EnemySpawner가 BattleUnitPrefabCatalog(대표 키 + 추가 인덱스)에서 외형을 찾게 한다.
             string prefabKey = !string.IsNullOrWhiteSpace(unit.PrefabResourcePath)
                 ? unit.PrefabResourcePath.Trim()
-                : ResolveEventFallbackPrefabPath(unit.UnitKey);
+                : spawnData.Index;
             entries.Add(new EnemySpawnEntry(spawnData, unit.Slot, prefabKey, unit.Skills, unit.UnitKey));
         }
 
@@ -172,18 +174,6 @@ public static class EnemySpawnPlanBuilder
             UnitAI = unit.UnitAI,
             ExperiencePoint = Mathf.Max(0, unit.ExperiencePoint)
         };
-    }
-
-    // EnemySpawner.FindEventEnemyPrefab의 하드코딩 폴백과 동일 규칙(PrefabResourcePath 미지정 시).
-    // [TEMP:EVENTBUILD] Phase 7 완결 시 프리팹 규약 통일 예정.
-    private static string ResolveEventFallbackPrefabPath(string unitKey)
-    {
-        string normalized = BattleScenarioUnitKey.Normalize(unitKey);
-        if (normalized == "20007")
-            return "prefab/BattlePrefab/EnemyUnit/Unit_AdvancedMonster_20003";
-        if (normalized == "20006")
-            return "prefab/BattlePrefab/EnemyUnit/Unit_MiddleMonster_20002";
-        return "prefab/BattlePrefab/EnemyUnit/Unit_LowerMonster_20001";
     }
 
     private static EnemyData CloneForSpawn(EnemyData source)
