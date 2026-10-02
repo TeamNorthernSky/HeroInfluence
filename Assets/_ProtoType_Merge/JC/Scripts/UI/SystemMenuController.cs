@@ -33,6 +33,8 @@ public class SystemMenuController : MonoBehaviour
 
         if (!Input.GetKeyDown(KeyCode.Escape)) return;
 
+        if (WorldEventNpcPanelSelector.BlocksSystemMenuEscape) return;
+
         // [JC 260619] DH 엔딩 시퀀스(대형 아이콘 출력) 진행 중에는 ESC로 시스템 메뉴를 열지 않는다.
         if (DHGameEndState.IsEnding) return;
 

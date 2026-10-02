@@ -6,6 +6,13 @@ public class GateThreatController : MonoBehaviour
 {
     private const string DefaultStartZoneId = "zone_001";
 
+    [System.Serializable]
+    private struct ZoneGateOpenCondition
+    {
+        public string zoneId;
+        public string clearFlagName;
+    }
+
     [SerializeField] private TurnManager turnManager;
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
@@ -14,10 +21,15 @@ public class GateThreatController : MonoBehaviour
     [SerializeField] private LevelZoneLayoutLoader layoutLoader;
     [SerializeField] private GridManager gridManager;
 
+    [Header("Gate Open Conditions")]
+    [SerializeField] private List<ZoneGateOpenCondition> zoneGateOpenConditions = new List<ZoneGateOpenCondition>();
+
     private readonly List<GateRuntimeController> gates = new List<GateRuntimeController>();
     private readonly List<EnemySpawnPoint> spawnPoints = new List<EnemySpawnPoint>();
+    private readonly HashSet<string> gateBlockerDeferredThreatZones = new HashSet<string>();
     private string currentPartyZoneId;
     private bool initialThreatTimerEnsured;
+    private DHEventStateRepository eventStateRepository;
 
     public static GateThreatController Instance { get; private set; }
 
@@ -38,12 +50,15 @@ public class GateThreatController : MonoBehaviour
         ResolveReferences();
         Outpost.OutpostClaimed += HandleOutpostClaimed;
         HeroUnionUnit.HeroUnionStateChanged += HandleHeroUnionStateChanged;
+        SubscribeEventStateRepository();
     }
 
     private void OnDisable()
     {
         Outpost.OutpostClaimed -= HandleOutpostClaimed;
         HeroUnionUnit.HeroUnionStateChanged -= HandleHeroUnionStateChanged;
+        if (eventStateRepository != null)
+            eventStateRepository.FlagChanged -= HandleEventFlagChanged;
 
         if (Instance == this)
             Instance = null;
@@ -105,7 +120,17 @@ public class GateThreatController : MonoBehaviour
         if (gate == null || gates.Contains(gate))
             return;
 
+        bool matchingGateAlreadyOpen = HasOpenGateWithSameId(gate);
         gates.Add(gate);
+
+        if (!Application.isPlaying)
+            return;
+
+        if (matchingGateAlreadyOpen)
+            gate.SetOpen(true, ResolveCurrentDay(), true);
+
+        RefreshGateOpenStateForZone(gate.FirstZoneId);
+        RefreshGateOpenStateForZone(gate.SecondZoneId);
     }
 
     public void UnregisterGate(GateRuntimeController gate)
@@ -114,6 +139,28 @@ public class GateThreatController : MonoBehaviour
             return;
 
         gates.Remove(gate);
+    }
+
+    private bool HasOpenGateWithSameId(GateRuntimeController gate)
+    {
+        if (gate == null || string.IsNullOrWhiteSpace(gate.GateId))
+            return false;
+
+        for (int i = 0; i < gates.Count; i++)
+        {
+            GateRuntimeController existingGate = gates[i];
+            if (existingGate == null ||
+                existingGate == gate ||
+                !existingGate.IsOpen ||
+                !string.Equals(existingGate.GateId, gate.GateId, System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public void RegisterSpawnPoint(EnemySpawnPoint spawnPoint)
@@ -138,12 +185,9 @@ public class GateThreatController : MonoBehaviour
             return;
 
         MapProgressRepository repository = MapProgressRepository.Instance;
-        // Clearing an outpost still opens connected gates, but also resets that zone's threat timer.
+        // Outpost claims refresh threat state. Gates open only after the configured zone-clear flag is set.
         repository?.BeginZoneThreat(outpost.ZoneId, ResolveCurrentDay());
-        if (HasLiveThreatEnemyInZone(outpost.ZoneId, string.Empty))
-            return;
-
-        OpenGatesForZone(outpost.ZoneId);
+        RefreshGateOpenStateForZone(outpost.ZoneId);
     }
 
     private void HandleHeroUnionStateChanged(HeroUnionUnit heroUnion)
@@ -175,14 +219,34 @@ public class GateThreatController : MonoBehaviour
         if (repository == null)
             yield break;
 
-        IReadOnlyList<ZoneThreatProgressState> states = repository.ZoneThreatStates;
-        for (int i = 0; i < states.Count; i++)
+        if (repository.TryGetZoneThreatState(currentPartyZoneId, out ZoneThreatProgressState state) &&
+            state != null &&
+            state.Active &&
+            state.PendingThreatSpawn)
         {
-            ZoneThreatProgressState state = states[i];
-            if (state == null || !state.Active || !state.PendingThreatSpawn)
+            yield return ResolvePendingThreatSpawn(state.ZoneId);
+        }
+
+        if (gateBlockerDeferredThreatZones.Count == 0)
+            yield break;
+
+        List<string> deferredZones = new List<string>(gateBlockerDeferredThreatZones);
+        for (int i = 0; i < deferredZones.Count; i++)
+        {
+            string deferredZoneId = deferredZones[i];
+            if (string.Equals(deferredZoneId, currentPartyZoneId, System.StringComparison.Ordinal))
                 continue;
 
-            yield return ResolvePendingThreatSpawn(state.ZoneId);
+            if (!repository.TryGetZoneThreatState(deferredZoneId, out ZoneThreatProgressState deferredState) ||
+                deferredState == null ||
+                !deferredState.Active ||
+                !deferredState.PendingThreatSpawn)
+            {
+                gateBlockerDeferredThreatZones.Remove(deferredZoneId);
+                continue;
+            }
+
+            yield return ResolvePendingThreatSpawn(deferredState.ZoneId);
         }
     }
 
@@ -208,7 +272,28 @@ public class GateThreatController : MonoBehaviour
                 continue;
 
             repository.BeginZoneThreat(state.ZoneId, ResolveCurrentDay());
-            OpenGatesForZone(state.ZoneId);
+            RefreshGateOpenStateForZone(state.ZoneId);
+        }
+    }
+
+    private void HandleEventFlagChanged(string flagName, bool value)
+    {
+        if (!value || string.IsNullOrWhiteSpace(flagName))
+            return;
+
+        string normalizedFlagName = DHEventStateRepository.NormalizeFlagName(flagName);
+        for (int i = 0; i < zoneGateOpenConditions.Count; i++)
+        {
+            ZoneGateOpenCondition condition = zoneGateOpenConditions[i];
+            if (!string.Equals(
+                    DHEventStateRepository.NormalizeFlagName(condition.clearFlagName),
+                    normalizedFlagName,
+                    System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            RefreshGateOpenStateForZone(condition.zoneId);
         }
     }
 
@@ -390,6 +475,9 @@ public class GateThreatController : MonoBehaviour
         if (HasLiveThreatEnemyInZone(currentPartyZoneId, string.Empty))
             return;
 
+        if (!HasSpawnPointInZone(currentPartyZoneId))
+            return;
+
         int elapsedTurns = state.AccumulateUntilDay(day);
         if (elapsedTurns < GateLifecycleController.ResolveOpenDurationTurns())
             return;
@@ -428,18 +516,23 @@ public class GateThreatController : MonoBehaviour
 
         if (HasLiveThreatEnemyInZone(normalizedZoneId, string.Empty))
         {
+            gateBlockerDeferredThreatZones.Remove(normalizedZoneId);
             repository.ClearZoneThreatSpawnPending(normalizedZoneId);
             yield break;
         }
-
-        // When the threat matures, connected gates close before the enemy appears.
-        CloseGatesForZone(normalizedZoneId);
-        repository.ClearZoneThreatSpawnPending(normalizedZoneId);
 
         if (repository.TryGetZoneThreatState(normalizedZoneId, out ZoneThreatProgressState state) &&
             state != null &&
             HasLiveThreatEnemy(state))
         {
+            gateBlockerDeferredThreatZones.Remove(normalizedZoneId);
+            repository.ClearZoneThreatSpawnPending(normalizedZoneId);
+            yield break;
+        }
+
+        if (IsPlayerPartyOnGateBlockerForZone(normalizedZoneId))
+        {
+            gateBlockerDeferredThreatZones.Add(normalizedZoneId);
             yield break;
         }
 
@@ -447,16 +540,29 @@ public class GateThreatController : MonoBehaviour
             enemySpawnController = FindFirstObjectByType<EnemySpawnController>();
 
         if (enemySpawnController == null)
+        {
+            gateBlockerDeferredThreatZones.Remove(normalizedZoneId);
+            repository.ClearZoneThreatSpawnPending(normalizedZoneId);
             yield break;
+        }
 
         if (TrySpawnThreatEnemy(normalizedZoneId, out string placementKey, out EnemySpawnPoint spawnPoint))
         {
+            // Close the connected gates only after a threat enemy was actually spawned.
+            CloseGatesForZone(normalizedZoneId);
+            gateBlockerDeferredThreatZones.Remove(normalizedZoneId);
+            repository.ClearZoneThreatSpawnPending(normalizedZoneId);
             repository.SetZoneThreatEnemy(normalizedZoneId, placementKey);
             bool chatClosed = false;
             // Spawn chat is optional; when present, enemy movement waits until the modal closes.
             if (TryShowSpawnChat(spawnPoint, placementKey, () => chatClosed = true))
                 yield return new WaitUntil(() => chatClosed);
+
+            yield break;
         }
+
+        gateBlockerDeferredThreatZones.Remove(normalizedZoneId);
+        repository.ClearZoneThreatSpawnPending(normalizedZoneId);
     }
 
     private bool HasLiveThreatEnemy(ZoneThreatProgressState state)
@@ -548,6 +654,25 @@ public class GateThreatController : MonoBehaviour
         return false;
     }
 
+    private bool HasSpawnPointInZone(string zoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return false;
+
+        for (int i = 0; i < spawnPoints.Count; i++)
+        {
+            EnemySpawnPoint spawnPoint = spawnPoints[i];
+            if (spawnPoint != null &&
+                string.Equals(spawnPoint.ZoneId, normalizedZoneId, System.StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private bool TryShowSpawnChat(EnemySpawnPoint spawnPoint, string placementKey, System.Action onClosed = null)
     {
         if (spawnPoint == null || spawnPoint.SpawnChatZoneId <= 0 || spawnPoint.SpawnChatId <= 0)
@@ -601,6 +726,50 @@ public class GateThreatController : MonoBehaviour
         }
     }
 
+    private void RefreshGateOpenStateForZone(string zoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return;
+
+        if (!IsZoneClearedForGateOpen(normalizedZoneId))
+            return;
+
+        if (HasLiveThreatEnemyInZone(normalizedZoneId, string.Empty))
+            return;
+
+        OpenGatesForZone(normalizedZoneId);
+    }
+
+    private bool IsZoneClearedForGateOpen(string zoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return false;
+
+        SubscribeEventStateRepository();
+        if (eventStateRepository == null)
+            return false;
+
+        for (int i = 0; i < zoneGateOpenConditions.Count; i++)
+        {
+            ZoneGateOpenCondition condition = zoneGateOpenConditions[i];
+            if (!string.Equals(
+                    MapProgressKey.NormalizeSegment(condition.zoneId),
+                    normalizedZoneId,
+                    System.StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            string clearFlagName = DHEventStateRepository.NormalizeFlagName(condition.clearFlagName);
+            if (!string.IsNullOrWhiteSpace(clearFlagName) && eventStateRepository.GetFlag(clearFlagName))
+                return true;
+        }
+
+        return false;
+    }
+
     private void CloseGatesForZone(string zoneId)
     {
         int day = ResolveCurrentDay();
@@ -625,28 +794,9 @@ public class GateThreatController : MonoBehaviour
         if (string.IsNullOrWhiteSpace(normalizedZoneId))
             return false;
 
-        for (int i = 0; i < gates.Count; i++)
-        {
-            GateRuntimeController gate = gates[i];
-            if (gate == null || !gate.ContainsZone(normalizedZoneId))
-                continue;
-
-            string firstZoneId = gate.FirstZoneId;
-            string secondZoneId = gate.SecondZoneId;
-            if (!string.Equals(firstZoneId, normalizedZoneId, System.StringComparison.Ordinal) &&
-                !IsHeroUnionClaimed(firstZoneId))
-            {
-                return true;
-            }
-
-            if (!string.Equals(secondZoneId, normalizedZoneId, System.StringComparison.Ordinal) &&
-                !IsHeroUnionClaimed(secondZoneId))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        // Threat timers belong to the zone that owns the spawn point.
+        // Adjacent HeroUnion state must not stop a previous zone's timer after the player crosses a gate.
+        return HasSpawnPointInZone(normalizedZoneId);
     }
 
     private bool IsHeroUnionClaimed(string zoneId)
@@ -662,6 +812,34 @@ public class GateThreatController : MonoBehaviour
         return repository != null &&
             repository.TryGetHeroUnionState(normalizedZoneId, out HeroUnionState state) &&
             state == HeroUnionState.ClaimedByHero;
+    }
+
+    private bool IsPlayerPartyOnGateBlockerForZone(string zoneId)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return false;
+
+        if (partyRegistry == null)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
+
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == null)
+            return false;
+
+        Vector2Int partyGrid = party.GetCurrentGrid();
+        for (int i = 0; i < gates.Count; i++)
+        {
+            GateRuntimeController gate = gates[i];
+            if (gate != null &&
+                gate.ContainsZone(normalizedZoneId) &&
+                gate.ContainsBlockerCell(partyGrid))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private string ResolvePartyZoneId()
@@ -710,6 +888,22 @@ public class GateThreatController : MonoBehaviour
             layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
         if (gridManager == null)
             gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
+    }
+
+    private void SubscribeEventStateRepository()
+    {
+        DHEventStateRepository repository = Application.isPlaying
+            ? DHEventStateRepository.EnsureInstance()
+            : DHEventStateRepository.Instance;
+        if (eventStateRepository == repository)
+            return;
+
+        if (eventStateRepository != null)
+            eventStateRepository.FlagChanged -= HandleEventFlagChanged;
+
+        eventStateRepository = repository;
+        if (eventStateRepository != null)
+            eventStateRepository.FlagChanged += HandleEventFlagChanged;
     }
 
     private int ResolveCurrentDay()

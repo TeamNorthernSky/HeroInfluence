@@ -203,24 +203,10 @@ public class EnemyUnitBootstrap : MonoBehaviour
         ClearUnitStateChildren();
 
         enemyComposition.EnsureSlotCount(members.Count);
-
         for (int i = 0; i < members.Count; i++)
-        {
-            CsvEnemyGroupMember member = members[i];
-            string templateKey = member.EnemyUnitIndex.ToString();
-            templateCatalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate template);
-            prefabRegistry.TryGetEnemyUnitPrefab(member.EnemyUnitIndex, out EnemyUnitState unitPrefab);
-
-            EnemyUnitState unitState = Instantiate(unitPrefab, transform);
-            unitState.transform.localPosition = GetExplorationUnitLocalPosition(i);
-            unitState.transform.localRotation = Quaternion.identity;
-            unitState.SetUnitTemplateKey(templateKey);
-            unitState.SetLevel(enemyLevel);
-            unitState.InitializeFromTemplate(template);
-
-            unitStates.Add(unitState);
             enemyComposition.SetUnitIndexAt(i, -1);
-        }
+
+        CreateCsvRepresentativeUnit(members[0], templateCatalog, prefabRegistry, enemyLevel);
 
         if (unitStates.Count == 0)
             return false;
@@ -563,21 +549,9 @@ public class EnemyUnitBootstrap : MonoBehaviour
 
         enemyComposition.EnsureSlotCount(members.Count);
         for (int i = 0; i < members.Count; i++)
-        {
-            CsvEnemyGroupMember member = members[i];
-            string templateKey = member.EnemyUnitIndex.ToString();
-            templateCatalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate template);
-            prefabRegistry.TryGetEnemyUnitPrefab(member.EnemyUnitIndex, out EnemyUnitState unitPrefab);
-
-            EnemyUnitState unitState = Instantiate(unitPrefab, transform);
-            unitState.transform.localPosition = GetExplorationUnitLocalPosition(i);
-            unitState.transform.localRotation = Quaternion.identity;
-            unitState.SetUnitTemplateKey(templateKey);
-            unitState.SetLevel(enemyLevel);
-            unitState.InitializeFromTemplate(template);
-            unitStates.Add(unitState);
             enemyComposition.SetUnitIndexAt(i, -1);
-        }
+
+        CreateCsvRepresentativeUnit(members[0], templateCatalog, prefabRegistry, enemyLevel);
 
         return unitStates.Count > 0;
     }
@@ -599,22 +573,49 @@ public class EnemyUnitBootstrap : MonoBehaviour
 
         enemyComposition.EnsureSlotCount(members.Count);
         for (int i = 0; i < members.Count; i++)
-        {
-            EventBattleEnemyGroupMember member = members[i];
-            eventCatalog.TryGetBattleEnemyUnitTemplate(zoneId, member.UnitKey, out DHEventBattleUnitTemplate template);
-            prefabRegistry.TryGetEnemyUnitPrefab(member.NumericUnitKey, out EnemyUnitState unitPrefab);
-
-            EnemyUnitState unitState = Instantiate(unitPrefab, transform);
-            unitState.transform.localPosition = GetExplorationUnitLocalPosition(i);
-            unitState.transform.localRotation = Quaternion.identity;
-            unitState.SetUnitTemplateKey(member.UnitKey);
-            unitState.SetLevel(enemyLevel);
-            unitState.InitializeFromTemplate(template);
-            unitStates.Add(unitState);
             enemyComposition.SetUnitIndexAt(i, -1);
-        }
+
+        CreateEventBattleRepresentativeUnit(members[0], eventCatalog, prefabRegistry, zoneId, enemyLevel);
 
         return unitStates.Count > 0;
+    }
+
+    private void CreateCsvRepresentativeUnit(
+        CsvEnemyGroupMember member,
+        DHCsvTemplateCatalog templateCatalog,
+        LevelPrefabRegistry prefabRegistry,
+        int enemyLevel)
+    {
+        string templateKey = member.EnemyUnitIndex.ToString();
+        templateCatalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate template);
+        prefabRegistry.TryGetEnemyUnitPrefab(member.EnemyUnitIndex, out EnemyUnitState unitPrefab);
+
+        EnemyUnitState unitState = Instantiate(unitPrefab, transform);
+        unitState.transform.localPosition = Vector3.zero;
+        unitState.transform.localRotation = Quaternion.identity;
+        unitState.SetUnitTemplateKey(templateKey);
+        unitState.SetLevel(enemyLevel);
+        unitState.InitializeFromTemplate(template);
+        unitStates.Add(unitState);
+    }
+
+    private void CreateEventBattleRepresentativeUnit(
+        EventBattleEnemyGroupMember member,
+        EventScriptCatalog eventCatalog,
+        LevelPrefabRegistry prefabRegistry,
+        int zoneId,
+        int enemyLevel)
+    {
+        eventCatalog.TryGetBattleEnemyUnitTemplate(zoneId, member.UnitKey, out DHEventBattleUnitTemplate template);
+        prefabRegistry.TryGetEnemyUnitPrefab(member.NumericUnitKey, out EnemyUnitState unitPrefab);
+
+        EnemyUnitState unitState = Instantiate(unitPrefab, transform);
+        unitState.transform.localPosition = Vector3.zero;
+        unitState.transform.localRotation = Quaternion.identity;
+        unitState.SetUnitTemplateKey(member.UnitKey);
+        unitState.SetLevel(enemyLevel);
+        unitState.InitializeFromTemplate(template);
+        unitStates.Add(unitState);
     }
 
     private void ClearUnitStateChildren()

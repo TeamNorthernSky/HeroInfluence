@@ -93,6 +93,11 @@ public class GateRuntimeController : MonoBehaviour
              string.Equals(SecondZoneId, normalizedZoneId, System.StringComparison.Ordinal));
     }
 
+    public bool ContainsBlockerCell(Vector2Int grid)
+    {
+        return blockerCells.Contains(grid);
+    }
+
     public bool TryGetOtherZoneId(string zoneId, out string otherZoneId)
     {
         otherZoneId = string.Empty;

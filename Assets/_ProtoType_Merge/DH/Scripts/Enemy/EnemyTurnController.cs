@@ -14,6 +14,7 @@ public class EnemyTurnController : MonoBehaviour
     [SerializeField] private CombatPromptService combatPromptService;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private LevelZoneLayoutLoader layoutLoader;
+    [SerializeField] private MobileEnemyRaidController mobileEnemyRaidController;
 
     private readonly List<TargetCandidate> targetCandidates = new List<TargetCandidate>();
     private EnemyTurnSessionRepository turnSessionRepository;
@@ -102,12 +103,18 @@ public class EnemyTurnController : MonoBehaviour
         if (enemy == null || enemy.IsStatic || movePoints < 0)
             yield break;
 
+        if (TryHandleHeroUnionRaid(enemy))
+            yield break;
+
         ValidateCurrentTarget(enemy);
 
         if (!enemy.HasTarget())
             AcquireTarget(enemy);
 
         if (!enemy.HasTarget())
+            yield break;
+
+        if (TryHandleHeroUnionRaid(enemy))
             yield break;
 
         PartyGridMover adjacentParty = FindAdjacentParty(enemy.GetCurrentGrid());
@@ -178,11 +185,17 @@ public class EnemyTurnController : MonoBehaviour
         if (interruptedByCombat)
             yield break;
 
+        if (TryHandleHeroUnionRaid(enemy))
+            yield break;
+
         int remainingMovePoints = Mathf.Max(0, movePoints - usedSteps);
         turnSessionRepository?.SetCurrentEnemy(
             ResolveEnemyPlacementKey(enemy),
             enemy.EnemyId,
             remainingMovePoints);
+
+        if (TryHandleHeroUnionRaid(enemy))
+            yield break;
 
         adjacentParty = FindAdjacentParty(enemy.GetCurrentGrid());
         if (adjacentParty != null)
@@ -404,6 +417,15 @@ public class EnemyTurnController : MonoBehaviour
         Vector2Int targetGrid)
     {
         Vector2Int enemyGrid = enemy.GetCurrentGrid();
+        if (targetType == EnemyTargetType.Party)
+        {
+            return pathfinder.FindPathToAdjacent(
+                enemyGrid,
+                targetGrid,
+                enemy.transform,
+                true);
+        }
+
         List<Vector2Int> bestPath = null;
         Vector2Int bestApproachGrid = enemyGrid;
 
@@ -721,6 +743,17 @@ public class EnemyTurnController : MonoBehaviour
 
         if (layoutLoader == null)
             layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+
+        if (mobileEnemyRaidController == null)
+            mobileEnemyRaidController = MobileEnemyRaidController.EnsureSceneInstance();
+    }
+
+    private bool TryHandleHeroUnionRaid(EnemyGridMover enemy)
+    {
+        if (mobileEnemyRaidController == null)
+            mobileEnemyRaidController = MobileEnemyRaidController.EnsureSceneInstance();
+
+        return mobileEnemyRaidController != null && mobileEnemyRaidController.TryHandleRaid(enemy);
     }
 }
 

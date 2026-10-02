@@ -2,26 +2,28 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum DHAudioClipCategory
-{
-    Bgm,
-    Sfx,
-    Ui,
-    Battle,
-    BattleEnd,
-    Explore
-}
-
 [CreateAssetMenu(
     fileName = "DHAudioClipCatalog",
     menuName = "DH Work/Audio/Audio Clip Catalog")]
 public sealed class DHAudioClipCatalog : ScriptableObject
 {
-    [SerializeField] private List<DHAudioClipEntry> clips = new List<DHAudioClipEntry>();
+    [SerializeField] private List<DHAudioClipEntry> bgmClips = new List<DHAudioClipEntry>();
+    [SerializeField] private List<DHAudioClipEntry> sfxClips = new List<DHAudioClipEntry>();
 
     private Dictionary<string, DHAudioClipEntry> lookup;
+    private List<DHAudioClipEntry> cachedClips;
 
-    public IReadOnlyList<DHAudioClipEntry> Clips => clips;
+    public IReadOnlyList<DHAudioClipEntry> Clips
+    {
+        get
+        {
+            EnsureClipCache();
+            return cachedClips;
+        }
+    }
+
+    public IReadOnlyList<DHAudioClipEntry> BgmClips => bgmClips;
+    public IReadOnlyList<DHAudioClipEntry> SfxClips => sfxClips;
 
     public bool TryGetClip(string key, out AudioClip clip)
     {
@@ -58,6 +60,7 @@ public sealed class DHAudioClipCatalog : ScriptableObject
     private void OnValidate()
     {
         lookup = null;
+        cachedClips = null;
     }
 
     private void EnsureLookup()
@@ -66,12 +69,28 @@ public sealed class DHAudioClipCatalog : ScriptableObject
             return;
 
         lookup = new Dictionary<string, DHAudioClipEntry>(StringComparer.OrdinalIgnoreCase);
-        if (clips == null)
+        AddToLookup(bgmClips);
+        AddToLookup(sfxClips);
+    }
+
+    private void EnsureClipCache()
+    {
+        if (cachedClips != null)
             return;
 
-        for (int i = 0; i < clips.Count; i++)
+        cachedClips = new List<DHAudioClipEntry>();
+        AddToCache(bgmClips);
+        AddToCache(sfxClips);
+    }
+
+    private void AddToLookup(List<DHAudioClipEntry> source)
+    {
+        if (source == null)
+            return;
+
+        for (int i = 0; i < source.Count; i++)
         {
-            DHAudioClipEntry entry = clips[i];
+            DHAudioClipEntry entry = source[i];
             string key = NormalizeKey(entry.Key);
             if (string.IsNullOrWhiteSpace(key) || lookup.ContainsKey(key))
                 continue;
@@ -79,20 +98,27 @@ public sealed class DHAudioClipCatalog : ScriptableObject
             lookup.Add(key, entry);
         }
     }
+
+    private void AddToCache(List<DHAudioClipEntry> source)
+    {
+        if (source == null)
+            return;
+
+        for (int i = 0; i < source.Count; i++)
+            cachedClips.Add(source[i]);
+    }
 }
 
 [Serializable]
 public struct DHAudioClipEntry
 {
     [SerializeField] private string key;
-    [SerializeField] private DHAudioClipCategory category;
     [SerializeField] private AudioClip clip;
     [SerializeField, Range(0f, 1f)] private float defaultVolume;
     [SerializeField] private bool loop;
     [SerializeField] private bool allowOverlap;
 
     public string Key => DHAudioClipCatalog.NormalizeKey(key);
-    public DHAudioClipCategory Category => category;
     public AudioClip Clip => clip;
     public float DefaultVolume => defaultVolume <= 0f ? 1f : defaultVolume;
     public bool Loop => loop;
@@ -100,14 +126,12 @@ public struct DHAudioClipEntry
 
     public DHAudioClipEntry(
         string key,
-        DHAudioClipCategory category,
         AudioClip clip,
         float defaultVolume,
         bool loop,
         bool allowOverlap)
     {
         this.key = DHAudioClipCatalog.NormalizeKey(key);
-        this.category = category;
         this.clip = clip;
         this.defaultVolume = Mathf.Clamp01(defaultVolume);
         this.loop = loop;

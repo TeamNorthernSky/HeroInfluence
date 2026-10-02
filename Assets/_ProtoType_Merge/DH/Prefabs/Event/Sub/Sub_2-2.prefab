@@ -154,7 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   eventKey: SubQuest2-2
   zoneId: 1
-  chatId: 1090010
+  chatId: 1050010
   gridManager: {fileID: 0}
 --- !u!1 &8890966973476983561
 GameObject:

@@ -361,20 +361,20 @@ public class MoveCommandPreviewController
         if (gridManager.TryGetEnemyObjectAtGrid(clickedGrid, out EnemyGridMover enemy))
         {
             previewEnemyTarget = enemy;
-            return TryResolveApproachGrid(
+            return TryResolveEnemyApproachGrid(
                 activeMover,
                 enemy.GetCurrentGrid(),
-                GetEnemyEncounterCandidates(enemy),
+                enemy,
                 out destinationGrid);
         }
 
         if (gridManager.TryGetTutorialEnemyObjectAtGrid(clickedGrid, out TutorialEnemyObject tutorialEnemy))
         {
             previewTutorialEnemyTarget = tutorialEnemy;
-            return TryResolveApproachGrid(
+            return TryResolveEnemyApproachGrid(
                 activeMover,
                 tutorialEnemy.GetCurrentGrid(),
-                GetEnemyEncounterCandidates(tutorialEnemy),
+                tutorialEnemy,
                 out destinationGrid);
         }
 
@@ -395,7 +395,7 @@ public class MoveCommandPreviewController
         if (gridManager.TryGetMainEventObjectAtGrid(clickedGrid, out MainEventObject mainEvent))
         {
             previewMainEventTarget = mainEvent;
-            return TryResolveApproachGrid(
+            return TryResolveMainEventApproachGrid(
                 activeMover,
                 mainEvent.GetCurrentGrid(gridManager),
                 mainEvent.GetInteractionCells(gridManager),
@@ -443,6 +443,82 @@ public class MoveCommandPreviewController
         }
 
         return candidates;
+    }
+
+    private bool TryResolveEnemyApproachGrid(
+        PartyGridMover activeMover,
+        Vector2Int enemyGrid,
+        IGridEnemyObject enemy,
+        out Vector2Int destinationGrid)
+    {
+        Vector2Int moverGrid = activeMover.GetCurrentGrid();
+        destinationGrid = moverGrid;
+
+        if (enemy == null || pathfinder == null || gridManager == null)
+            return false;
+
+        if (IsEnemyEncounterCellFor(enemy, moverGrid))
+            return true;
+
+        List<Vector2Int> path = pathfinder.FindPathToAdjacent(
+            moverGrid,
+            enemyGrid,
+            activeMover.transform,
+            false,
+            EnemyEncounterPathMode.BlockEncounterZones,
+            false,
+            MainEventInteractionPathMode.BlockInteractionCells,
+            PreviewPathMaxVisitedNodes,
+            candidate => IsEnemyEncounterCellFor(enemy, candidate));
+
+        if (path == null || path.Count == 0)
+            return false;
+
+        destinationGrid = path[path.Count - 1];
+        return true;
+    }
+
+    private bool IsEnemyEncounterCellFor(IGridEnemyObject enemy, Vector2Int grid)
+    {
+        return gridManager != null &&
+            gridManager.GetGridEnemyEncounterZoneState(grid, out IGridEnemyObject owner) == EnemyEncounterZoneState.SingleEnemyZone &&
+            owner == enemy;
+    }
+
+    private bool TryResolveMainEventApproachGrid(
+        PartyGridMover activeMover,
+        Vector2Int mainEventGrid,
+        IReadOnlyList<Vector2Int> interactionCells,
+        out Vector2Int destinationGrid)
+    {
+        Vector2Int moverGrid = activeMover.GetCurrentGrid();
+        destinationGrid = moverGrid;
+
+        if (interactionCells == null || interactionCells.Count == 0 || pathfinder == null)
+            return false;
+
+        for (int i = 0; i < interactionCells.Count; i++)
+        {
+            if (interactionCells[i] == moverGrid)
+                return true;
+        }
+
+        List<Vector2Int> path = pathfinder.FindPathToAny(
+            moverGrid,
+            interactionCells,
+            mainEventGrid,
+            activeMover.transform,
+            false,
+            EnemyEncounterPathMode.BlockEncounterZones,
+            false,
+            MainEventInteractionPathMode.BlockInteractionCells,
+            PreviewPathMaxVisitedNodes);
+
+        if (path == null || path.Count == 0)
+            return false;
+
+        destinationGrid = path[path.Count - 1];
+        return true;
     }
 
     private List<Vector2Int> FindPlayerPreviewPath(

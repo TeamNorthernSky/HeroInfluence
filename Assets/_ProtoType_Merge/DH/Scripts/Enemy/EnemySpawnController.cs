@@ -4,6 +4,26 @@ using UnityEngine.Serialization;
 
 public class EnemySpawnController : MonoBehaviour
 {
+    private enum SpawnGroupSource
+    {
+        None,
+        EventBattle,
+        CsvFallback
+    }
+
+    private readonly struct SpawnGroupResolution
+    {
+        public SpawnGroupResolution(string groupKey, SpawnGroupSource source)
+        {
+            GroupKey = groupKey;
+            Source = source;
+        }
+
+        public string GroupKey { get; }
+        public SpawnGroupSource Source { get; }
+        public bool IsValid => Source != SpawnGroupSource.None && !string.IsNullOrWhiteSpace(GroupKey);
+    }
+
     [Header("References")]
     [SerializeField] private GridManager gridManager;
     [SerializeField] private EnemyRegistry enemyRegistry;
@@ -12,6 +32,7 @@ public class EnemySpawnController : MonoBehaviour
 
     [Header("Spawn Rules")]
     [FormerlySerializedAs("runtimeEnemyGroupIndex")]
+    [Tooltip("Fallback CSV enemy group key used only when the spawn point's event battle group key is missing or invalid.")]
     [SerializeField] private string runtimeEnemyGroupKey = "FEP002";
     [SerializeField, Min(1)] private int nextRuntimeEnemySequence = 1;
 
@@ -52,7 +73,9 @@ public class EnemySpawnController : MonoBehaviour
         // Gate threats are runtime mobile enemies. Their encounter chat is attached by GateThreatController.
         string sourceKey = $"gate_threat_{MapProgressKey.NormalizeSegment(zoneId)}";
         placementKey = CreateRuntimeEnemyPlacementKey(sourceKey);
-        if (TrySpawnAtGrid(spawnGrid, placementKey, ResolveSpawnEnemyGroupKey(zoneId, enemyGroupKey), MapProgressKey.NormalizeSegment(zoneId), out spawnedEnemy))
+        SpawnGroupResolution groupResolution = ResolveSpawnEnemyGroupKey(zoneId, enemyGroupKey);
+        if (groupResolution.IsValid &&
+            TrySpawnAtGrid(spawnGrid, placementKey, groupResolution, MapProgressKey.NormalizeSegment(zoneId), out spawnedEnemy))
             return true;
 
         placementKey = string.Empty;
@@ -105,12 +128,12 @@ public class EnemySpawnController : MonoBehaviour
         return false;
     }
 
-    private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey, string enemyGroupKey, string zoneId, out EnemyGridMover spawnedEnemy)
+    private bool TrySpawnAtGrid(Vector2Int spawnGrid, string placementKey, SpawnGroupResolution groupResolution, string zoneId, out EnemyGridMover spawnedEnemy)
     {
         return TrySpawnAtGrid(
             spawnGrid,
             placementKey,
-            enemyGroupKey,
+            groupResolution,
             zoneId,
             ResolveZoneEnemyLevelFromPlacementKey(placementKey),
             EnemyBehaviorType.Mobile,
@@ -171,7 +194,7 @@ public class EnemySpawnController : MonoBehaviour
     private bool TrySpawnAtGrid(
         Vector2Int spawnGrid,
         string placementKey,
-        string enemyGroupKey,
+        SpawnGroupResolution groupResolution,
         string zoneId,
         int enemyLevel,
         EnemyBehaviorType behaviorType,
@@ -191,14 +214,14 @@ public class EnemySpawnController : MonoBehaviour
         {
             enemyIdentity.SetPlacementSource(EnemyPlacementSource.Runtime);
             enemyIdentity.SetPlacementKey(placementKey);
-            enemyIdentity.SetEnemyGroupKey(enemyGroupKey);
+            enemyIdentity.SetEnemyGroupKey(groupResolution.GroupKey);
         }
 
         spawnedEnemy.InitializePlacementIdentity(placementKey);
         spawnedEnemy.SnapToGridPosition(resolvedSpawnGrid);
 
         EnemyUnitBootstrap enemyBootstrap = spawnedEnemy.GetComponent<EnemyUnitBootstrap>();
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, resolvedSpawnGrid, placementKey, enemyGroupKey, enemyLevel, zoneId, behaviorType))
+        if (!TryInitializeResolvedRuntimeEnemyGroup(enemyBootstrap, spawnedEnemy, resolvedSpawnGrid, placementKey, groupResolution, enemyLevel, zoneId, behaviorType))
         {
             Destroy(spawnedEnemy.gameObject);
             spawnedEnemy = null;
@@ -308,11 +331,40 @@ public class EnemySpawnController : MonoBehaviour
         if (string.IsNullOrWhiteSpace(groupKey))
             return false;
 
+        if (IsMainEventReplacementState(state))
+        {
+            DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+            return templateCatalog != null && templateCatalog.TryGetEnemyGroupTemplate(groupKey, out _);
+        }
+
+        SpawnGroupResolution groupResolution = ResolveStoredRuntimeEnemyGroupKey(state.ZoneId, groupKey);
+        if (groupResolution.Source == SpawnGroupSource.CsvFallback)
+            return true;
+
+        if (groupResolution.Source == SpawnGroupSource.EventBattle)
+            return true;
+
+        return false;
+    }
+
+    private SpawnGroupResolution ResolveStoredRuntimeEnemyGroupKey(string zoneId, string groupKey)
+    {
+        string normalizedKey = string.IsNullOrWhiteSpace(groupKey) ? string.Empty : groupKey.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+            return new SpawnGroupResolution(string.Empty, SpawnGroupSource.None);
+
         EventScriptCatalog eventCatalog = EventScriptCatalog.Instance;
-        int zoneNumber = ResolveZoneNumber(state.ZoneId);
-        return eventCatalog != null &&
+        int zoneNumber = ResolveZoneNumber(zoneId);
+        if (eventCatalog != null &&
             zoneNumber > 0 &&
-            eventCatalog.TryGetBattleEnemyGroupTemplate(zoneNumber, groupKey, out _);
+            eventCatalog.TryGetBattleEnemyGroupTemplate(zoneNumber, normalizedKey, out _))
+            return new SpawnGroupResolution(normalizedKey, SpawnGroupSource.EventBattle);
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (templateCatalog != null && templateCatalog.TryGetEnemyGroupTemplate(normalizedKey, out _))
+            return new SpawnGroupResolution(normalizedKey, SpawnGroupSource.CsvFallback);
+
+        return new SpawnGroupResolution(string.Empty, SpawnGroupSource.None);
     }
 
     private static bool IsRuntimeEnemyState(EnemyWorldState state)
@@ -322,6 +374,15 @@ public class EnemySpawnController : MonoBehaviour
 
         return !string.IsNullOrWhiteSpace(state.PlacementKey) &&
             state.PlacementKey.StartsWith("runtime_enemy_", System.StringComparison.Ordinal);
+    }
+
+    private static bool IsMainEventReplacementState(EnemyWorldState state)
+    {
+        string normalizedPlacementKey = state != null
+            ? MapProgressKey.NormalizeSegment(state.PlacementKey)
+            : string.Empty;
+        return !string.IsNullOrWhiteSpace(normalizedPlacementKey) &&
+            normalizedPlacementKey.StartsWith("runtime_enemy_main_event_replacement_", System.StringComparison.Ordinal);
     }
 
     private static bool HasMatchingEnemyInScene(string placementKey, string enemyId)
@@ -373,7 +434,19 @@ public class EnemySpawnController : MonoBehaviour
 
         EnemyUnitBootstrap enemyBootstrap = instance.GetComponent<EnemyUnitBootstrap>();
         int enemyLevel = ResolveZoneEnemyLevel(state.ZoneId);
-        if (!TryInitializeRuntimeEnemyGroup(enemyBootstrap, instance, state.Grid, state.PlacementKey, groupKey, enemyLevel, state.ZoneId, behaviorType))
+        bool initialized = IsMainEventReplacementState(state)
+            ? TryInitializeCsvRuntimeEnemyGroup(enemyBootstrap, state.Grid, state.PlacementKey, groupKey, enemyLevel, state.ZoneId, behaviorType)
+            : TryInitializeResolvedRuntimeEnemyGroup(
+                enemyBootstrap,
+                instance,
+                state.Grid,
+                state.PlacementKey,
+                ResolveStoredRuntimeEnemyGroupKey(state.ZoneId, groupKey),
+                enemyLevel,
+                state.ZoneId,
+                behaviorType);
+
+        if (!initialized)
         {
             Destroy(instance.gameObject);
             return false;
@@ -388,6 +461,34 @@ public class EnemySpawnController : MonoBehaviour
 
         restoredEnemy = instance;
         return true;
+    }
+
+    private bool TryInitializeCsvRuntimeEnemyGroup(
+        EnemyUnitBootstrap enemyBootstrap,
+        Vector2Int grid,
+        string placementKey,
+        string enemyGroupKey,
+        int enemyLevel,
+        string zoneId,
+        EnemyBehaviorType behaviorType)
+    {
+        if (enemyBootstrap == null)
+            return false;
+
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
+        if (templateCatalog == null || !templateCatalog.TryGetEnemyGroupTemplate(enemyGroupKey, out DHEnemyGroupTemplate groupData))
+            return false;
+
+        return enemyBootstrap.InitializeEnemyGroupFromCsv(
+            groupData,
+            prefabRegistry,
+            grid,
+            behaviorType,
+            placementKey,
+            EnemyPlacementSource.Runtime,
+            enemyGroupKey,
+            enemyLevel,
+            zoneId);
     }
 
     public static void ApplyEventEncounterBinding(
@@ -405,6 +506,40 @@ public class EnemySpawnController : MonoBehaviour
             binding = enemy.gameObject.AddComponent<EnemyEventEncounterBinding>();
 
         binding.Initialize(encounterChatZoneId, encounterChatId, eventBattleKey, placementKey);
+    }
+
+    private bool TryInitializeResolvedRuntimeEnemyGroup(
+        EnemyUnitBootstrap enemyBootstrap,
+        EnemyGridMover enemy,
+        Vector2Int grid,
+        string placementKey,
+        SpawnGroupResolution groupResolution,
+        int enemyLevel,
+        string zoneId,
+        EnemyBehaviorType behaviorType)
+    {
+        if (!groupResolution.IsValid)
+            return false;
+
+        if (groupResolution.Source == SpawnGroupSource.CsvFallback)
+            return TryInitializeCsvRuntimeEnemyGroup(
+                enemyBootstrap,
+                grid,
+                placementKey,
+                groupResolution.GroupKey,
+                enemyLevel,
+                zoneId,
+                behaviorType);
+
+        return TryInitializeRuntimeEnemyGroup(
+            enemyBootstrap,
+            enemy,
+            grid,
+            placementKey,
+            groupResolution.GroupKey,
+            enemyLevel,
+            zoneId,
+            behaviorType);
     }
 
     private bool TryInitializeRuntimeEnemyGroup(
@@ -518,26 +653,27 @@ public class EnemySpawnController : MonoBehaviour
         return int.TryParse(normalized, out int zoneNumber) ? Mathf.Max(0, zoneNumber) : 0;
     }
 
-    private string ResolveSpawnEnemyGroupKey(string zoneId, string requestedEnemyGroupKey)
+    private SpawnGroupResolution ResolveSpawnEnemyGroupKey(string zoneId, string requestedEnemyGroupKey)
     {
-        // Spawn-point chat data is independent; this fallback only decides which event battle group appears.
+        // Spawn points use zone battle-table groups. The controller fallback remains a shared CSV group for incomplete data.
         string fallbackKey = string.IsNullOrWhiteSpace(runtimeEnemyGroupKey) ? "FEP002" : runtimeEnemyGroupKey.Trim();
         string normalizedRequest = string.IsNullOrWhiteSpace(requestedEnemyGroupKey) ? string.Empty : requestedEnemyGroupKey.Trim();
 
         EventScriptCatalog eventCatalog = EventScriptCatalog.Instance;
         int zoneNumber = ResolveZoneNumber(zoneId);
-        if (eventCatalog == null || zoneNumber <= 0)
-            return string.IsNullOrWhiteSpace(normalizedRequest) ? fallbackKey : normalizedRequest;
-
         if (!string.IsNullOrWhiteSpace(normalizedRequest) &&
+            eventCatalog != null &&
+            zoneNumber > 0 &&
             eventCatalog.TryGetBattleEnemyGroupTemplate(zoneNumber, normalizedRequest, out _))
-            return normalizedRequest;
+            return new SpawnGroupResolution(normalizedRequest, SpawnGroupSource.EventBattle);
 
+        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
         if (!string.IsNullOrWhiteSpace(fallbackKey) &&
-            eventCatalog.TryGetBattleEnemyGroupTemplate(zoneNumber, fallbackKey, out _))
-            return fallbackKey;
+            templateCatalog != null &&
+            templateCatalog.TryGetEnemyGroupTemplate(fallbackKey, out _))
+            return new SpawnGroupResolution(fallbackKey, SpawnGroupSource.CsvFallback);
 
-        return normalizedRequest;
+        return new SpawnGroupResolution(string.Empty, SpawnGroupSource.None);
     }
 
     private string ResolveRuntimeEnemyGroupKey(EnemyWorldState state)
