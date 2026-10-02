@@ -316,7 +316,10 @@ public class HeroInfoResult : MonoBehaviour
     {
         ClearDisplay();
         if (preview == null) return;
-        SetPortrait(preview.UnitIndex);
+        if(!string.IsNullOrWhiteSpace(preview.UnitTemplateKey)) {
+            portraitImage.sprite=Sprites.Portrait.Hero(preview.UnitTemplateKey);
+            portraitImage.enabled=portraitImage.sprite!=null;
+        } else SetPortrait(preview.UnitIndex);
         if (unitNameText != null) unitNameText.text = preview.UnitName ?? "";
         if (expValueText != null) expValueText.text = $"+{preview.GainedExp}";
         if (ipValueText != null) ipValueText.text = $"{preview.OldInfluence:F0} → {preview.NewInfluence:F0}";

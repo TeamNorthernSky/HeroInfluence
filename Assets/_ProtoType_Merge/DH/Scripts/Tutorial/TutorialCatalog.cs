@@ -173,6 +173,66 @@ public class TutorialCatalog : MonoBehaviour
         return skillDataByNumericId.TryGetValue(skillIndex, out SkillData data) ? data : null;
     }
 
+    /// <summary>튜토리얼 유닛의 네 스킬 계열을 현재 레벨의 기본/상위 변형으로 조회합니다.</summary>
+    public List<SkillData> GetCurrentClassSkills(string unitKey, int level, bool includeLocked = false)
+    {
+        var choices = new Dictionary<int, SkillData>();
+        if (!TryGetPlayerUnitTemplate(unitKey, out DHPlayerUnitTemplate unit) || unit.ClassSkillIndices == null)
+            return new List<SkillData>();
+
+        foreach (int id in unit.ClassSkillIndices)
+        {
+            SkillData skill = GetSkillTemplate(id);
+            if (skill == null) continue;
+            int family = HeroSkillRules.FamilyId(skill.skillIndex);
+            bool basic = family == skill.skillIndex;
+            if (skill.acquireLevel > level && !(includeLocked && basic)) continue;
+            if (!choices.TryGetValue(family, out SkillData previous) || skill.acquireLevel > previous.acquireLevel)
+                choices[family] = skill;
+        }
+
+        var result = new List<SkillData>(choices.Values);
+        result.Sort((a, b) => HeroSkillRules.FamilyId(a.skillIndex).CompareTo(HeroSkillRules.FamilyId(b.skillIndex)));
+        return result;
+    }
+
+    /// <summary>튜토리얼의 기본 코어 장비를 전투용 복사본으로 반환합니다. 일반 저장소의 강화값은 사용하지 않습니다.</summary>
+    public bool TryGetBattleWeapon(int weaponIndex, out WeaponData weapon)
+    {
+        weapon = null;
+        if (!TryGetWeaponTemplate(weaponIndex, out DHWeaponTemplate src)) return false;
+        weapon = new WeaponData
+        {
+            WeaponIndex = src.NumericWeaponId,
+            weaponKey = src.WeaponKey,
+            weaponClass = src.WeaponClass,
+            WeaponName = src.WeaponName,
+            WeaponDescription = src.WeaponDescription,
+            BonusHP = src.BonusHPLv1,
+            BonusATK = src.BonusATKLv1,
+            BonusDEF = src.BonusDEFLv1,
+            BonusCriticalRate = src.BonusCriticalRate,
+            BonusCounterRate = src.BonusCounterRate,
+            BonusReduceRate = src.BonusReduceRate,
+            BonusSpeed = src.BonusSpeed,
+            WeaponSkillIndex = src.WeaponSkillIndex,
+            weaponSkillKey = src.WeaponSkillKey,
+            WeaponSkillName = src.WeaponSkillName,
+            WeaponSkillDescription = src.WeaponSkillDescription,
+            IPCost = src.IpCost,
+            WeaponSkillEffect = src.WeaponSkillEffect,
+            WeaponSkillRange = src.WeaponSkillRange,
+            WeaponSkillRangeLine = src.WeaponSkillRangeLine,
+            WeaponSkillTarget = src.WeaponSkillTarget,
+            WeaponSkillMultiTarget = src.WeaponSkillMultiTarget != null ? new List<int>(src.WeaponSkillMultiTarget) : new List<int>(),
+            WeaponSkillMultiTargetType = src.WeaponSkillMultiTargetType,
+            WeaponSkillMultiTargetCount = src.WeaponSkillMultiTargetCount,
+            WeaponSkillValue = src.WeaponSkillValueLv1,
+            WeaponSkillSubValue = src.WeaponSkillSubValueLv1
+        };
+        return true;
+    }
+
     public bool TryGetEnemyGroupTemplate(string groupKey, out DHEnemyGroupTemplate group)
     {
         EnsureLoaded();

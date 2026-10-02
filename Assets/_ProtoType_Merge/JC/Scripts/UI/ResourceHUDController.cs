@@ -14,7 +14,10 @@ public class ResourceHUDController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI crystalText; // Text_Crystal → ResourceType.Crystal
     [SerializeField] private TextMeshProUGUI supplyText;  // Text_Supply  → ResourceType.Supply
 
+    [Tooltip("켜면 이 HUD만 튜토리얼 저장소의 보유량을 표시합니다. 일반 경제·보상은 변경하지 않습니다. 씬에 저장됩니다.")]
+    public bool useTutorialResources;
     private EconomyManager subscribed;
+    private TutorialProgressRepository tutorialSubscribed;
 
     private void Awake() => ResolveMissing();
 
@@ -23,9 +26,10 @@ public class ResourceHUDController : MonoBehaviour
     private void OnDisable()
     {
         if (subscribed != null) { subscribed.OnResourceChanged -= OnResourceChanged; subscribed = null; }
+        if (tutorialSubscribed != null) { tutorialSubscribed.TutorialResourceChanged -= OnResourceChanged; tutorialSubscribed = null; }
     }
 
-    private void Update() { if (subscribed == null) TrySubscribe(); }
+    private void Update() { if (useTutorialResources ? tutorialSubscribed == null : subscribed == null) TrySubscribe(); }
 
     private void ResolveMissing()
     {
@@ -43,6 +47,17 @@ public class ResourceHUDController : MonoBehaviour
 
     private void TrySubscribe()
     {
+        if (useTutorialResources)
+        {
+            if (subscribed != null) { subscribed.OnResourceChanged -= OnResourceChanged; subscribed = null; }
+            var progress = TutorialProgressRepository.Instance;
+            if (progress == null || tutorialSubscribed != null) return;
+            tutorialSubscribed = progress;
+            tutorialSubscribed.TutorialResourceChanged += OnResourceChanged;
+            Refresh();
+            return;
+        }
+        if (tutorialSubscribed != null) { tutorialSubscribed.TutorialResourceChanged -= OnResourceChanged; tutorialSubscribed = null; }
         var gm = GameManager.Instance;
         if (gm == null || gm.Economy == null || subscribed != null) return;
         subscribed = gm.Economy;
@@ -54,11 +69,27 @@ public class ResourceHUDController : MonoBehaviour
 
     private void Refresh()
     {
+        if (useTutorialResources)
+        {
+            var progress = TutorialProgressRepository.Instance;
+            if (progress == null) return;
+            if (moneyText != null) moneyText.text = progress.GetResource(ResourceType.Money).ToString("N0");
+            if (medalText != null) medalText.text = progress.GetResource(ResourceType.Chip).ToString("N0");
+            if (crystalText != null) crystalText.text = progress.GetResource(ResourceType.Crystal).ToString("N0");
+            if (supplyText != null) supplyText.text = progress.GetResource(ResourceType.Supply).ToString("N0");
+            return;
+        }
         var gm = GameManager.Instance;
         if (gm == null || gm.Economy == null) return;
         if (moneyText != null)   moneyText.text   = gm.Economy.Get(ResourceType.Money).ToString("N0");
         if (medalText != null)   medalText.text   = gm.Economy.Get(ResourceType.Chip).ToString("N0");
         if (crystalText != null) crystalText.text = gm.Economy.Get(ResourceType.Crystal).ToString("N0");
         if (supplyText != null)  supplyText.text  = gm.Economy.Get(ResourceType.Supply).ToString("N0");
+    }
+    public RectTransform GetResourceAnchor(ResourceType type)
+    {
+        ResolveMissing();
+        TMP_Text label = type == ResourceType.Chip ? medalText : type == ResourceType.Crystal ? crystalText : type == ResourceType.Supply ? supplyText : moneyText;
+        return label != null ? label.rectTransform : null;
     }
 }

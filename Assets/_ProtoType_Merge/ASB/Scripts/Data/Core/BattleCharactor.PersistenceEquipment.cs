@@ -7,12 +7,22 @@ using UnityEngine;
 /// </summary>
 public partial class BattleCharactor
 {
+    /// <summary>현재 유닛의 장비와 스킬 UI가 튜토리얼 전용 카탈로그를 사용하는지 나타냅니다.</summary>
+    public bool UsesTutorialEquipment { get; private set; }
+
     /// <summary>
     /// 카탈로그 인덱스로 스킬·무기 데이터를 직접 주입합니다.
     /// </summary>
     public void LoadPersistentEquipment(int skillIdx, int weaponIdx, int skillLevel = 1, int equippedWeaponInstanceIndex = 0)
     {
         castSelectedSkill = null;
+        UsesTutorialEquipment = SourceData != null && CombatContext.Instance != null &&
+            CombatContext.Instance.TryGetTutorialAlly(SourceData.UnitIndex, out _);
+        if (UsesTutorialEquipment)
+        {
+            LoadTutorialEquipment(skillIdx, weaponIdx, skillLevel);
+            return;
+        }
         bool skillLoaded  = false;
         bool weaponLoaded = false;
 
@@ -69,6 +79,42 @@ public partial class BattleCharactor
         if (skillLoaded || weaponLoaded)
         {
             Debug.Log($"[Combat/Init] {UnitName} Load Success (S:{skillIdx}, W:{weaponIdx})");
+        }
+    }
+
+    private void LoadTutorialEquipment(int skillIdx, int weaponIdx, int skillLevel)
+    {
+        if (availableSkills == null) availableSkills = new List<SkillData>();
+        if (availableWeapons == null) availableWeapons = new List<WeaponData>();
+        availableSkills.Clear();
+        availableWeapons.Clear();
+        SelectedSkillData = null;
+        EquippedWeaponData = null;
+        classSkillIndex = skillIdx;
+        selectedSkillIndex = 0;
+        equippedWeaponIndex = 0;
+
+        TutorialCatalog catalog = TutorialCatalog.Instance;
+        if (catalog == null)
+        {
+            Debug.LogError($"[Combat/Init] TutorialCatalog이 없어 튜토리얼 장비를 읽을 수 없습니다: {UnitName}", this);
+            return;
+        }
+
+        foreach (SkillData skill in catalog.GetCurrentClassSkills(SourceData.UnitTemplateKey, Level))
+        {
+            SkillData copy = CloneSkillData(skill);
+            copy.enhancementLevel = HeroSkillRules.FamilyId(skill.skillIndex) == HeroSkillRules.FamilyId(skillIdx)
+                ? Mathf.Clamp(skillLevel, 1, 6) : 1;
+            if (HeroSkillRules.FamilyId(skill.skillIndex) == HeroSkillRules.FamilyId(skillIdx))
+                selectedSkillIndex = availableSkills.Count;
+            availableSkills.Add(copy);
+        }
+        SelectedSkillData = availableSkills.Count > 0 ? availableSkills[selectedSkillIndex] : null;
+        if (weaponIdx > 0 && catalog.TryGetBattleWeapon(weaponIdx, out WeaponData weapon))
+        {
+            availableWeapons.Add(weapon);
+            EquippedWeaponData = weapon;
         }
     }
 

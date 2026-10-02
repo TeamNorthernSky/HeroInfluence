@@ -149,7 +149,14 @@ public class SkillButtonController : MonoBehaviour
         {
             var catalog = DHCsvTemplateCatalog.Instance;
             var bases = new List<SkillData>();
-            if (unit != null && unit.IsPlayer && unit.SourceData != null && catalog != null &&
+            // 표시와 실제 시전 후보가 같은 카탈로그를 사용해야 합니다.
+            // 튜토리얼은 일반 DataStorage가 없거나 다른 버전이어도 전용 유닛 데이터를 유지합니다.
+            if (unit != null && unit.IsPlayer && unit.SourceData != null && unit.UsesTutorialEquipment)
+            {
+                if (TutorialCatalog.Instance != null)
+                    bases = TutorialCatalog.Instance.GetCurrentClassSkills(unit.SourceData.UnitTemplateKey, unit.Level, true);
+            }
+            else if (unit != null && unit.IsPlayer && unit.SourceData != null && catalog != null &&
                 catalog.TryGetPlayerUnitTemplate(unit.SourceData.UnitTemplateKey, out var playerTemplate))
                 bases = catalog.GetCurrentClassSkills(playerTemplate.ClassIndex, unit.Level, true);
             for (int i = 0; i < heroSlots.Length; i++)
@@ -161,7 +168,8 @@ public class SkillButtonController : MonoBehaviour
                 if (bases.Count == 0 && i == 0) shown = connected;
                 slot.skill = shown;
                 bool locked = shown != null && shown.acquireLevel > unit.Level;
-                bool wired = shown != null && !locked;
+                bool wired = shown != null && !locked && unit.availableSkills != null &&
+                    unit.availableSkills.Exists(s => s != null && s.skillIndex == shown.skillIndex && s.acquireLevel <= unit.Level);
                 if (slot.button != null) slot.button.interactable = wired && !locked;
                 if (slot.name != null) slot.name.text = shown != null ? shown.skillName : "-";
                 if (slot.icon != null)
@@ -250,7 +258,13 @@ public class SkillButtonController : MonoBehaviour
         var gm = GameManager.Instance;
         int unitIndex = unit.SourceData != null ? unit.SourceData.UnitIndex : 0;
         string body;
-        if (action == PendingActionType.WeaponSkill && unit.EquippedWeaponData != null)
+        if (unit.UsesTutorialEquipment)
+        {
+            // 같은 ID의 일반 전투 템플릿/협회 강화값이 전용 설명을 덮어쓰지 않도록 실제 시전 데이터를 표시합니다.
+            body = ClassSkillTooltipText.ReplaceBattleCoefficients(skill.description,
+                action == PendingActionType.WeaponSkill ? "WeaponSkill" : "ClassSkill", skill.skillValue, skill.skillSubValue);
+        }
+        else if (action == PendingActionType.WeaponSkill && unit.EquippedWeaponData != null)
         {
             int weaponIndex = unit.EquippedWeaponIndex > 0 ? unit.EquippedWeaponIndex : (unit.SourceData?.CurrentWeaponIndex ?? 0);
             int level = gm != null && gm.Workshop != null && unitIndex > 0 ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(weaponIndex)) : 1;

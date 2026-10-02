@@ -132,7 +132,7 @@ public class BattleSceneManager : MonoBehaviour
         // 모의/튜토리얼 전투는 일반 보상·스킬을 지급하지 않는다.
         BattleResultPanel resultPanel = battleUIManager?.ShowBattleResultUI(
             result,
-            isSimulation || isTutorial ? null : plan);
+            isTutorial ? BuildTutorialResultDisplay(playerBattleCharactors, result) : isSimulation ? null : plan);
 
         // 결과창 표시 후·Accept 전: 튜토리얼 flow에 통지(비차단 오버레이 기본).
         if (resultPanel != null)
@@ -184,6 +184,23 @@ public class BattleSceneManager : MonoBehaviour
         }
 
         yield return StartCoroutine(TransitionToSceneRoutine(contextReturnScene));
+    }
+
+    // 표시 전용 스냅샷. 튜토리얼에는 경험치/IP 보상을 추가하거나 일반 저장소에 쓰지 않는다.
+    private static BattleRewardPlan BuildTutorialResultDisplay(IReadOnlyList<BattleCharactor> players, BattleResult result)
+    {
+        var display=new BattleRewardPlan { Result=result };
+        if(players==null)return display;
+        foreach(var player in players) {
+            var src=player!=null?player.SourceData:null;if(src==null)continue;
+            display.UnitPreviews.Add(new UnitRewardPreview {
+                UnitIndex=src.UnitIndex,UnitTemplateKey=src.UnitTemplateKey,UnitName=player.DisplayName,
+                OldLevel=src.Level,NewLevel=src.Level,HasExpPreview=true,
+                OldExp=src.Exp,NewExp=src.Exp,OldMaxExp=src.MaxExp,NewMaxExp=src.MaxExp,
+                OldInfluence=player.CurrentInfluence,NewInfluence=player.CurrentInfluence
+            });
+        }
+        return display;
     }
 
     private IEnumerator WaitForActivePresentationSequence()
