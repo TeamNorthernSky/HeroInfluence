@@ -15,6 +15,8 @@ public class MoveCommandPreviewController
     private readonly float rayDistance;
 
     private Vector2Int markerGrid;
+    private Vector2Int selectedCell;
+    private Vector2Int resolvedSelectionCell;
     private bool hasMarkerGrid;
     private List<Vector2Int> previewPath;
     private List<Vector2Int> movePath;
@@ -103,12 +105,14 @@ public class MoveCommandPreviewController
             return;
         }
 
-        if (!TutorialMovementConstraint.IsTargetAllowed(requestedDestinationGrid, activeMover))
+        if (!TutorialMovementConstraint.IsSelectionAllowed(clickedGrid, requestedDestinationGrid, activeMover))
         {
             ClearPreview();
             return;
         }
 
+        selectedCell = clickedGrid;
+        resolvedSelectionCell = requestedDestinationGrid;
         Vector2Int partyGrid = activeMover.GetCurrentGrid();
         List<Vector2Int> path = FindPlayerPreviewPath(
             activeMover,
@@ -213,6 +217,12 @@ public class MoveCommandPreviewController
 
     private void ConfirmMove(PartyGridMover activeMover)
     {
+        if (!TutorialMovementConstraint.IsSelectionAllowed(selectedCell, resolvedSelectionCell, activeMover))
+        {
+            ClearPreview();
+            return;
+        }
+
         bool isItemOrEventTarget = hasMarkerGrid
             && gridManager != null
             && (gridManager.TryGetGridItemObjectAtGrid(markerGrid, out _)

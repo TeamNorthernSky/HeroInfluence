@@ -46,6 +46,8 @@ public class TutorialMovementConstraint : MonoBehaviour
     private readonly List<Vector2Int> currentTargetCells = new List<Vector2Int>();
     private bool lookupDirty = true;
     private PartyGridMover subscribedParty;
+    private Object guidanceOwner;
+    private Vector2Int? guidanceTarget;
 
     public static bool IsActive =>
         IsTutorialSceneActive() &&
@@ -60,6 +62,12 @@ public class TutorialMovementConstraint : MonoBehaviour
     }
 
     public int CurrentOrder => currentOrder;
+
+    // 표시 전용 조회. 안내 연출은 이 목록을 읽으며 이동 순서를 변경하지 않는다.
+    public IReadOnlyList<Vector2Int> CurrentTargetCells
+    {
+        get { EnsureLookup(); return currentTargetCells; }
+    }
 
     private static bool IsTutorialSceneActive()
     {
@@ -119,6 +127,29 @@ public class TutorialMovementConstraint : MonoBehaviour
         return instance.IsAllowed(targetCell, party);
     }
 
+    // 안내 목표는 원본 이동 순서/저장 데이터를 바꾸지 않고 기존 입력 제한에만 적용한다.
+    // null 목표는 설명/턴 종료처럼 이동을 안내하지 않는 단계에서 모든 이동 선택을 막는다.
+    public void SetGuidanceTarget(Object owner, Vector2Int? target)
+    {
+        if (owner == null) return;
+        guidanceOwner = owner;
+        guidanceTarget = target;
+    }
+
+    public void ClearGuidanceTarget(Object owner)
+    {
+        if (guidanceOwner != owner) return;
+        guidanceOwner = null;
+        guidanceTarget = null;
+    }
+
+    public static bool IsSelectionAllowed(Vector2Int clickedCell, Vector2Int resolvedCell, PartyGridMover party)
+    {
+        if (!IsActive) return true;
+        // 적 클릭은 접근 가능한 인접 칸으로 변환되므로 안내가 가리킨 원래 칸으로 비교한다.
+        return instance.IsAllowed(instance.guidanceOwner != null ? clickedCell : resolvedCell, party);
+    }
+
     public void SetCurrentOrder(int order)
     {
         if (currentOrder == order)
@@ -174,6 +205,8 @@ public class TutorialMovementConstraint : MonoBehaviour
 
     private bool IsAllowed(Vector2Int targetCell, PartyGridMover party)
     {
+        if (guidanceOwner != null)
+            return guidanceTarget.HasValue && guidanceTarget.Value == targetCell;
         EnsureLookup();
 
         if (allowCurrentPartyCell && party != null && party.GetCurrentGrid() == targetCell)

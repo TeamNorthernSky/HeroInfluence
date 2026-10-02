@@ -10,6 +10,8 @@ public class UnitRewardPreview
 {
     public int UnitIndex;
     public string UnitName;
+    // 일반 저장소를 거치지 않는 튜토리얼 결과의 초상화 식별자. 미설정이면 기존 UnitIndex 조회를 사용한다.
+    public string UnitTemplateKey;
     public int OldLevel;
     public int NewLevel;
     public int GainedExp;
