@@ -7,7 +7,7 @@ namespace JC.Tutorial
     [DisallowMultipleComponent, AddComponentMenu("JC Tutorial/이동 목표 표식")]
     public sealed class JcTutorialWorldMarker : MonoBehaviour
     {
-        [Tooltip("파란 바닥과 입체 화살표를 그리는 전용 셰이더입니다. 씬 참조로 빌드에 포함합니다.")] public Shader indicatorShader;
+        [Tooltip("입체 금색 화살표와 대체 바닥 메시의 셰이더입니다. 정상 연결 시 바닥은 구역 안내 렌더러를 사용합니다.")] public Shader indicatorShader;
         [Min(.1f), Tooltip("타일 한 칸에 대한 바닥 표식의 크기입니다. 1이면 한 칸입니다.")] public float size = .88f;
         [Min(0), Tooltip("지면 위 바닥 높이(월드 단위)입니다. 기본 이동 표식보다 낮게 배치합니다.")] public float height = .012f;
         [ColorUsage(true,true), Tooltip("두께가 있는 바닥 블록의 색상입니다. 불투명 메시이므로 알파값은 사용하지 않습니다.")] public Color floorColor = new Color(.025f,.30f,1f,.95f);
@@ -27,8 +27,11 @@ namespace JC.Tutorial
         [Range(0, 1), Tooltip("화살표에 대한 바닥 왕복의 위상차(주기 비율)입니다. 0.25이면 1/4주기 어긋나며 공통 주기는 유지합니다.")] public float floorBobPhase = .25f;
         [Min(.1f), Tooltip("바닥 위 스윕 샤인이 한 번 지나가는 시간(초)입니다.")] public float sweepPeriod = 2.4f;
         [Min(0), Tooltip("바닥 스윕 샤인의 밝기입니다. 0이면 스윕을 끕니다.")] public float sweepIntensity = 1.6f;
-        [Tooltip("기존 이동 인디케이터입니다. 동일한 메시 생성기와 현재 설정으로 바닥 형상을 공유합니다.")]
+        [Tooltip("기존 이동 인디케이터입니다. 구역 전환의 노란 안내 레이어를 바닥 목표로 재사용합니다.")]
         public JcMovementIndicatorController movementIndicator;
+        [Min(0), Tooltip("목표 오브젝트 위와 화살표 끝 사이의 여유(타일 크기 비율)입니다.")]
+        public float objectClearance = .18f;
+        private readonly Vector3[] guidancePoint = new Vector3[2];
         private JcMovementIndicatorSettings builtSettings;
         private float builtCellSize = -1;
         private GameObject visual, arrow;
@@ -41,9 +44,9 @@ namespace JC.Tutorial
         private Color builtArrow, builtPoint;
         private float builtFloorThickness = -1, builtBevel = -1, builtCornerCut = -1;
 
-        public void Present(bool visible, Vector3 position, float cellSize, float time, bool showFloor = true)
+        public void Present(bool visible, Vector3 position, float cellSize, float time, bool showFloor = true, float objectTop = float.NegativeInfinity, System.Collections.Generic.IReadOnlyList<Vector3> path = null)
         {
-            if (!visible || !isActiveAndEnabled || indicatorShader == null) { if (visual != null) visual.SetActive(false); return; }
+            if (!visible || !isActiveAndEnabled || indicatorShader == null) { if (visual != null) visual.SetActive(false); if (movementIndicator != null) movementIndicator.HideGuidance(); return; }
             if (visual == null) Build();
             if (builtThickness != arrowThickness || builtArrowSize != arrowSize || builtArrow != arrowColor || builtPoint != pointColor || builtFloorThickness != floorThickness || builtBevel != bevel || builtCornerCut != cornerCut) BuildMeshes();
             visual.SetActive(true); visual.transform.position = position + Vector3.up * height;
@@ -55,10 +58,15 @@ namespace JC.Tutorial
                 new JcIndicatorMarkerMesh().Build(floorMesh,style,cellSize*style.markerSize);
                 builtSettings=style;builtCellSize=cellSize;
             }
-            floorRenderer.enabled=showFloor;
+            // 구역 전환의 노란 안내 레이어를 그대로 사용한다. 길이0 경로는 바닥 목적지만 표시한다.
+            floorRenderer.enabled = showFloor && movementIndicator == null;
+            if (movementIndicator != null) {
+                if (showFloor) { guidancePoint[0] = guidancePoint[1] = position; movementIndicator.RenderGuidance(path != null && path.Count >= 2 ? path : guidancePoint); }
+                else movementIndicator.HideGuidance();
+            }
             floorRenderer.transform.localScale=Vector3.one*style.markerSize;
             floorRenderer.transform.localPosition=Vector3.up*(floorBobTravel*(.5f+.5f*Mathf.Sin(phase+floorBobPhase*Mathf.PI*2)));
-            arrow.transform.localPosition = Vector3.up * (arrowHeight + bobAmplitude * Mathf.Sin(phase));
+            arrow.transform.localPosition = Vector3.up * (Mathf.Max(arrowHeight, (objectTop - position.y) / Mathf.Max(.01f, cellSize) + objectClearance + arrowSize * .52f + bobAmplitude) + bobAmplitude * Mathf.Sin(phase));
             arrow.transform.localRotation = Quaternion.Euler(0, time * rotationSpeed, 0);
             arrow.transform.localScale = Vector3.one * arrowSize;
             block.Clear(); block.SetColor("_Color",floorColor); block.SetFloat("_Mode",0); block.SetFloat("_Clock",time); block.SetFloat("_Intensity",intensity);
@@ -104,6 +112,7 @@ namespace JC.Tutorial
         }
         private void OnDisable()
         {
+            if (movementIndicator != null) movementIndicator.HideGuidance();
             Dispose(visual); Dispose(floorMesh); Dispose(arrowMesh); Dispose(material);
             visual=null; floorMesh=null; arrowMesh=null; material=null; builtThickness=-1;
         }

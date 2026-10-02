@@ -7704,10 +7704,10 @@ MonoBehaviour:
   - "\uC804\uD22C \xB7 \uC9C0\uC6D0 \uC548\uB0B4"
   - "\uC804\uD22C \xB7 \uACB0\uACFC \uD655\uC778"
   - "\uC804\uD22C \uC548\uB0B4"
-  resultPanelSize: {x: 620, y: 166}
-  resultPanelPosition: {x: -620, y: -93}
+  resultPanelSize: {x: 660, y: 250}
+  resultPanelPosition: {x: 0, y: 0}
   resultShield: {fileID: 2099978197}
-  resultNoticeDuration: 3
+  resultNoticeDuration: 5
 --- !u!1 &1180811849
 GameObject:
   m_ObjectHideFlags: 0

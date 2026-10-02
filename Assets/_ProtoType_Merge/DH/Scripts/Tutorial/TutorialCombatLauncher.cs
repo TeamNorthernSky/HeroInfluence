@@ -256,7 +256,9 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
         UnitPersistentData data,
         TutorialUnitProgressState storedState)
     {
-        StatBlock ingameStats = data.IngameStats;
+        // 저장된 튜토리얼 레벨의 방어/속도 등도 다음 전투에 반영한다.
+        StatBlock ingameStats = UnitStatCalculator.CalculateIngameStats(data.BaseStats, data.LevelupStats,
+            storedState.Level, data.CurrentWeaponStats, data.EventBonusStats, TutorialCatalog.Instance.GetUnitGrowthTemplates());
         ingameStats.HP = Mathf.Max(1, storedState.MaxHp);
         ingameStats.Atk = Mathf.Max(0, storedState.Atk);
         ingameStats.Influence = Mathf.Max(0, storedState.MaxIp);

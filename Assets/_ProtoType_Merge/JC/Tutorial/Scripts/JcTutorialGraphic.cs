@@ -33,6 +33,8 @@ namespace JC.Tutorial
         private float arrowCorner=3;
         [SerializeField, Min(0), Tooltip("화살표가 대상에서 멀어졌다 돌아오는 왕복 폭(Canvas 단위)입니다.")]
         private float arrowBobTravel=4;
+        private bool opaqueFill;
+        public void SetOpaqueFill(bool value) { if (opaqueFill == value) return; opaqueFill = value; SetVerticesDirty(); }
         private float sweepClock;
         public void AnimateSweep(float time) { sweepClock = time; if(shape == Shape.Frame || shape == Shape.Arrow)SetVerticesDirty(); }
         private void LateUpdate() { if(shape == Shape.Frame)AnimateSweep(Time.unscaledTime); }
@@ -144,6 +146,7 @@ namespace JC.Tutorial
             if (shape == Shape.Panel)
             {
                 Color fill = Color.Lerp(lowerColor, color, .7f);
+                if (opaqueFill) fill.a = 1;
                 Add(vh, r.center, fill);
                 for (int i = 0; i < count; i++)
                 { Vector2 p = RoundedPoint(r, corner, i, perCorner); Add(vh, p, fill); }

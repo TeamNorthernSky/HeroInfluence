@@ -16,8 +16,16 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
     // [JC 260628] 스킬 획득 창 순차 표시용(한 번에 하나씩, 전열→후열 순)
     private readonly List<SkillSelectionPanel> skillQueue = new List<SkillSelectionPanel>();
     private int currentSkillIndex = 0;
+    public SkillSelectionPanel CurrentSkillNotice => currentSkillIndex < skillQueue.Count ? skillQueue[currentSkillIndex] : null;
+    public bool HasPendingSkillNotices => pendingSlotCount > 0;
     private Button boundAcceptButton;
     private bool accepted;
+    private bool tutorialNoticeBlocked;
+    public void SetTutorialNoticeBlocked(bool blocked)
+    {
+        tutorialNoticeBlocked = blocked;
+        foreach (var card in presentationCards) if (card != null) card.PresentationPaused = blocked;
+    }
     private enum PresentationStage { ExpRank, IP, Complete }
     private PresentationStage presentationStage;
     private bool presentationReady;
@@ -34,6 +42,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
         foreach (var slot in skillQueue)
             if (slot != null) { slot.gameObject.SetActive(false); Destroy(slot.gameObject); }
         accepted = false;
+        tutorialNoticeBlocked = false;
         presentationReady = false;
         presentationCards.Clear();
         skillResults.Clear();
@@ -237,7 +246,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
     private bool CanAdvancePresentation()
     {
-        if (!presentationReady || accepted || pendingSlotCount > 0 || !isActiveAndEnabled) return false;
+        if (tutorialNoticeBlocked || !presentationReady || accepted || pendingSlotCount > 0 || !isActiveAndEnabled) return false;
         var view = GetComponent<BattleResultView>();
         return view != null && (view.resultContent == null || view.resultContent.activeInHierarchy);
     }
@@ -288,7 +297,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
     private void Accept()
     {
-        if (accepted || pendingSlotCount > 0) return;
+        if (tutorialNoticeBlocked || accepted || pendingSlotCount > 0) return;
         accepted = true;
         // 조기 확인 시 표시만 최종값으로 정리한다. 보상 저장은 기존 OnAccepted 경로에서 한 번만 수행한다.
         foreach (var card in GetComponentsInChildren<HeroInfoResult>(true))

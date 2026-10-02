@@ -21,6 +21,7 @@ public class SkillSelectionPanel : MonoBehaviour
     // 기존 호출 계약 유지. 알림 완료는 -1로 전달하여 이전의 단일 장착 변경을 하지 않습니다.
     public event System.Action<int> OnCompleted;
     private bool completed;
+    public Button ConfirmButton => confirmButton;
 
     private void Awake() => confirmButton?.onClick.AddListener(OnConfirm);
 
@@ -37,6 +38,17 @@ public class SkillSelectionPanel : MonoBehaviour
         bool upgraded = HeroSkillRules.IsCurrentHeroSkill(skillId) && HeroSkillRules.FamilyId(skillId) != skillId;
         if (announcementText != null)
             announcementText.text = upgraded ? "히어로의 스킬이 강화되었습니다!" : "새로운 히어로 스킬을 습득했습니다!";
+        if (preview.IsTutorial)
+        {
+            var learned = TutorialCatalog.Instance?.GetSkillTemplate(skillId);
+            if (skillNameText != null) skillNameText.text = learned != null ? learned.skillName : $"스킬 {skillId}";
+            if (effectText != null) effectText.text = learned != null
+                ? ClassSkillTooltipText.ReplaceBattleCoefficients(learned.description, "ClassSkill", learned.skillValue, learned.skillSubValue)
+                : "스킬 정보를 불러올 수 없습니다.";
+            SetSprite(skillImage, Sprites.Icon.ClassSkill(skillId, 1));
+            SetSprite(portraitImage, Sprites.Portrait.Hero(preview.UnitTemplateKey));
+            return;
+        }
         var catalog = DHCsvTemplateCatalog.Instance;
         DHClassSkillTemplate skill = null;
         catalog?.TryGetClassSkillTemplate(skillId, out skill);
