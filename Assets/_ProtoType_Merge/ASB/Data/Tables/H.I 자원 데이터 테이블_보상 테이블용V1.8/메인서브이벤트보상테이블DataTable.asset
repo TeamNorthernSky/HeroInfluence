@@ -21,22 +21,22 @@ MonoBehaviour:
     gem: 0
     supply: 10
     EXP: 0
-    Rumina_IP: -50
+    Rumina_IP: -7
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 10
+    Justice_IP: 9
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 10
+    BlackBullet_IP: 9
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 10
+    Nekoming_IP: 9
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -49,385 +49,28 @@ MonoBehaviour:
     gem: 0
     supply: 15
     EXP: 0
-    Rumina_IP: -20
+    Rumina_IP: 9
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -20
+    Justice_IP: 9
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -20
+    BlackBullet_IP: 9
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -50
+    Nekoming_IP: -7
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 101102
     reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-1 \uD328\uBC30"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -50
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 101201
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-2 \uD074\uB9AC\uC5B4 / \uC18C\uB140
-      \uB3D9\uD589"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: 20
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: 20
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: 20
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: 20
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 101202
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-2 \uD328\uBC30"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102101
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC / \uC778\uC9C8 \uC815\uBCF4
-      \uD655\uBCF4"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: 20
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: 20
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: 20
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: 20
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102102
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uD328\uBC30"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102201
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: 20
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: 20
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: 20
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: 20
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102202
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uD328\uBC30"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102301
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: 20
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: 20
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: 20
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: 20
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102302
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 103101
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B83 \uD074\uB9AC\uC5B4 / \uC778\uC9C8
-      3\uBA85 \uBD80\uC0C1"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -50
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -50
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -50
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -50
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 103102
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B83 \uD074\uB9AC\uC5B4 / \uC778\uC9C8
-      1~2\uBA85 \uBD80\uC0C1"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -20
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -20
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -20
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -20
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 103103
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B83 \uD074\uB9AC\uC5B4 / \uC778\uC9C8
-      \uBAA8\uB450 \uAD6C\uCD9C"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: 50
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: 50
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: 50
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: 50
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 103104
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B83 \uD328\uBC30"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 104101
-    reward_name: "\uC11C\uBE0C\uD018\uC2A4\uD2B81 \uC644\uB8CC / \uBE14\uB799\uBD88\uB9BF
-      \uC704\uC784\xB7\uBB3C\uAC74 \uBC18\uD658"
     money: 0
     medal: 0
     gem: 0
@@ -443,12 +86,369 @@ MonoBehaviour:
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -50
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
     Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 101201
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-2 \uD074\uB9AC\uC5B4 / \uC18C\uB140
+      \uB3D9\uD589"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 5
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 5
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 5
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 5
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 101202
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B81-2 \uD328\uBC30"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102101
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC / \uC778\uC9C8 \uC815\uBCF4
+      \uD655\uBCF4"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 5
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 5
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 5
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 5
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102102
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uD328\uBC30"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102201
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 5
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 5
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 5
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 5
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102202
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uD328\uBC30"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102301
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 5
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 5
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 5
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 5
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102302
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 103101
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B8 \uBCF4\uC2A41 \uD074\uB9AC\uC5B4
+      / \uC778\uC9C8 3\uBA85 \uBD80\uC0C1(\uC0C1\uC758 \uD544\uC694)"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: -10
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: -10
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: -10
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: -10
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 103102
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B8 \uBCF4\uC2A41 \uD074\uB9AC\uC5B4
+      / \uC778\uC9C8 1~2\uBA85 \uBD80\uC0C1"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 103103
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B8 \uBCF4\uC2A41 \uD074\uB9AC\uC5B4
+      / \uC778\uC9C8 \uBAA8\uB450 \uAD6C\uCD9C"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 10
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 10
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 10
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 10
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 103104
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B8 \uBCF4\uC2A41 \uD328\uBC30"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 104101
+    reward_name: "\uC11C\uBE0C\uD018\uC2A4\uD2B81 \uC644\uB8CC / \uBE14\uB799\uBD88\uB9BF
+      \uC704\uC784\xB7\uBB3C\uAC74 \uBC18\uD658"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 9
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 9
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: -7
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 9
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -461,22 +461,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 20
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -488,50 +488,50 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 105101
     reward_name: "\uC11C\uBE0C\uD018\uC2A4\uD2B82 \uC644\uB8CC / \uBA54\uC778 \uD074\uB9AC\uC5B4
-      \uC804 \uC228\uC740 \uC790\uC6D0 \uBCF4\uC0C1"
+      \uC804 \uC790\uC6D0 \uBCF4\uC0C1"
     money: 0
     medal: 0
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -544,22 +544,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 20
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -571,22 +571,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -598,22 +598,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 20
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -625,22 +625,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -653,50 +653,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 20
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102151
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-1 \uC2B9\uB9AC / \uD3B8\uC758\uC810
-      \uBE4C\uB7F0 \uC644\uB8CC + \uC18C\uB140 \uB3D9\uD589"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: 25
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: 25
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: 25
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: 25
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -709,22 +681,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -25
+    Rumina_IP: -7
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 9
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 9
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 9
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -737,22 +709,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -765,22 +737,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 9
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 9
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 9
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -25
+    Nekoming_IP: -7
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -793,28 +765,248 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
     Nekoming_Def: 0
   - reward_id: 102231
     reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uC2B9\uB9AC / \uC18C\uB140 \uB3D9\uD589"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 5
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 5
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 5
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 5
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102232
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uD328\uBC30 / \uC18C\uB140 \uB3D9\uD589"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102311
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC / \uB8E8\uBBF8\uB098
+      \uB098\uB77D"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: -7
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 9
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 9
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 9
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102312
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 / \uB8E8\uBBF8\uB098
+      \uB098\uB77D"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102321
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC / \uB124\uCF54\uBC0D
+      \uC7AC\uC559"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 9
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 9
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 9
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: -7
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102322
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 / \uB124\uCF54\uBC0D
+      \uC7AC\uC559"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102331
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC / \uC18C\uB140 \uB3D9\uD589"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 5
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 5
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 5
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 5
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 102332
+    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 / \uC18C\uB140 \uB3D9\uD589"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 0
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 0
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 0
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 106101
+    reward_name: "1\uAD6C\uC5ED_UMT \uC544\uB180\uB4DC \uC804\uD22C \uC2B9\uB9AC"
     money: 0
     medal: 0
     gem: 0
@@ -840,226 +1032,6 @@ MonoBehaviour:
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
     Nekoming_Def: 0
-  - reward_id: 102232
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-2 \uD328\uBC30 / \uC18C\uB140 \uB3D9\uD589"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102311
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC / \uB8E8\uBBF8\uB098
-      \uB098\uB77D"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -25
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102312
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 / \uB8E8\uBBF8\uB098
-      \uB098\uB77D"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102321
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC / \uB124\uCF54\uBC0D
-      \uC7AC\uC559"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -25
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102322
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 / \uB124\uCF54\uBC0D
-      \uC7AC\uC559"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102331
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uC2B9\uB9AC / \uC18C\uB140 \uB3D9\uD589"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: 20
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: 20
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: 20
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: 20
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 102332
-    reward_name: "\uBA54\uC778\uD018\uC2A4\uD2B82-3 \uD328\uBC30 / \uC18C\uB140 \uB3D9\uD589"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: -10
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: -10
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: -10
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: -10
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
-  - reward_id: 106101
-    reward_name: "1\uAD6C\uC5ED_UMT \uC544\uB180\uB4DC \uC804\uD22C \uC2B9\uB9AC"
-    money: 0
-    medal: 0
-    gem: 0
-    supply: 0
-    EXP: 0
-    Rumina_IP: 20
-    Rumina_ATK: 0
-    Rumina_MaxHP: 0
-    Rumina_Heal: 0
-    Rumina_DEF: 0
-    Justice_IP: 20
-    Justice_ATK: 0
-    Justice_MaxHP: 0
-    Justice_Heal: 0
-    Justice_Def: 0
-    BlackBullet_IP: 20
-    BlackBullet_ATK: 0
-    BlackBullet_MaxHP: 0
-    BlackBullet_Heal: 0
-    BlackBullet_Def: 0
-    Nekoming_IP: 20
-    Nekoming_ATK: 0
-    Nekoming_MaxHP: 0
-    Nekoming_Heal: 0
-    Nekoming_Def: 0
   - reward_id: 106102
     reward_name: "1\uAD6C\uC5ED_UMT \uC544\uB180\uB4DC \uC804\uD22C \uC2B9\uB9AC
       / \uB8E8\uBBF8\uB098 \uB098\uB77D"
@@ -1068,22 +1040,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -20
+    Rumina_IP: -17
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 19
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 19
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 20
+    Nekoming_IP: 19
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1096,22 +1068,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 19
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 19
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 19
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -20
+    Nekoming_IP: -17
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1123,22 +1095,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1150,22 +1122,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -20
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1177,22 +1149,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1204,22 +1176,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -20
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1231,22 +1203,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1258,22 +1230,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -20
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1285,22 +1257,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1312,22 +1284,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -20
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1339,22 +1311,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1366,22 +1338,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -20
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1393,22 +1365,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1420,22 +1392,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1447,22 +1419,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 20
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 20
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 20
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 20
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1474,22 +1446,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 50
+    Rumina_IP: 10
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 50
+    Justice_IP: 10
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 50
+    BlackBullet_IP: 10
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 50
+    Nekoming_IP: 10
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1501,22 +1473,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1528,22 +1500,22 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: 25
+    Rumina_IP: 5
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: 25
+    Justice_IP: 5
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: 25
+    BlackBullet_IP: 5
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: 25
+    Nekoming_IP: 5
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
@@ -1555,22 +1527,76 @@ MonoBehaviour:
     gem: 0
     supply: 0
     EXP: 0
-    Rumina_IP: -10
+    Rumina_IP: 0
     Rumina_ATK: 0
     Rumina_MaxHP: 0
     Rumina_Heal: 0
     Rumina_DEF: 0
-    Justice_IP: -10
+    Justice_IP: 0
     Justice_ATK: 0
     Justice_MaxHP: 0
     Justice_Heal: 0
     Justice_Def: 0
-    BlackBullet_IP: -10
+    BlackBullet_IP: 0
     BlackBullet_ATK: 0
     BlackBullet_MaxHP: 0
     BlackBullet_Heal: 0
     BlackBullet_Def: 0
-    Nekoming_IP: -10
+    Nekoming_IP: 0
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 207001
+    reward_name: "2\uAD6C\uC5ED_UMT \uC544\uB180\uB4DC \uC804\uD22C \uC2B9\uB9AC"
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 10
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 10
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 10
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 10
+    Nekoming_ATK: 0
+    Nekoming_MaxHP: 0
+    Nekoming_Heal: 0
+    Nekoming_Def: 0
+  - reward_id: 0
+    reward_name: 
+    money: 0
+    medal: 0
+    gem: 0
+    supply: 0
+    EXP: 0
+    Rumina_IP: 132
+    Rumina_ATK: 0
+    Rumina_MaxHP: 0
+    Rumina_Heal: 0
+    Rumina_DEF: 0
+    Justice_IP: 216
+    Justice_ATK: 0
+    Justice_MaxHP: 0
+    Justice_Heal: 0
+    Justice_Def: 0
+    BlackBullet_IP: 200
+    BlackBullet_ATK: 0
+    BlackBullet_MaxHP: 0
+    BlackBullet_Heal: 0
+    BlackBullet_Def: 0
+    Nekoming_IP: 132
     Nekoming_ATK: 0
     Nekoming_MaxHP: 0
     Nekoming_Heal: 0
