@@ -28,7 +28,7 @@ public class SaveSlotPanel : MonoBehaviour
     [SerializeField] private Button tutorialNoButton;
     [SerializeField] private Button tutorialCancleButton;
 
-    private const string TutorialScene = "TutorialScene";
+    private const string TutorialScene = "TutorialExploreScene";
     private const string GameScene = "GameLoadScene";
 
     private int pendingSlotIndex = -1;
@@ -116,10 +116,10 @@ public class SaveSlotPanel : MonoBehaviour
             SaveSlotRepository.Save(pendingSlotIndex);
             SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
             SaveSlotRepository.IsContinue = false;             // [KJ 260714] 새 게임 — 이전 이어하기 플래그가 남지 않도록 명시 리셋
-            SceneFadeController.LoadSceneWithFadeIfNeeded(GameScene);
+            //SceneFadeController.LoadSceneWithFadeIfNeeded(GameScene);
 
             //튜토리얼 씬이 없으므로 임시 비활성화
-            //tutorialPopup?.SetActive(true);
+            tutorialPopup?.SetActive(true);
         }
     }
 
@@ -129,8 +129,8 @@ public class SaveSlotPanel : MonoBehaviour
         SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
         SaveSlotRepository.IsContinue = false;             // [KJ 260714] 새 게임 — 이전 이어하기 플래그가 남지 않도록 명시 리셋
         tutorialPopup?.SetActive(false);
-        //SceneFadeController.LoadSceneWithFadeIfNeeded(TutorialScene);
-        SceneFadeController.LoadSceneWithFadeIfNeeded(GameScene);
+        SceneFadeController.LoadSceneWithFadeIfNeeded(TutorialScene);
+        //SceneFadeController.LoadSceneWithFadeIfNeeded(GameScene);
     }
 
     private void OnTutorialNo()
