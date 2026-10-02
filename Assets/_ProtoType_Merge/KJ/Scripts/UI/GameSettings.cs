@@ -39,12 +39,14 @@ public static class GameSettings
 
     public static void ApplyBGMVolume(float value)
     {
+        if (AudioManager.Instance != null) AudioManager.Instance.SetBgmVolume(value);
         PlayerPrefs.SetFloat(KeyBGM, value);
         PlayerPrefs.Save();
     }
 
     public static void ApplyEffectVolume(float value)
     {
+        if (AudioManager.Instance != null) AudioManager.Instance.SetSfxVolume(value);
         PlayerPrefs.SetFloat(KeyEffect, value);
         PlayerPrefs.Save();
     }
@@ -55,10 +57,22 @@ public static class GameSettings
     private static void ApplyOnBoot()
     {
         LoadAndApplyAll();
+        // AudioManager는 씬 오브젝트라 부팅 시점엔 없다. 씬 로드마다 저장값을 다시 넣어 준다.
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += (_, _) => ApplyToAudioManager();
     }
 
     public static void LoadAndApplyAll()
     {
+        // 마스터는 AudioListener로 전체에 적용 — AudioManager 마스터는 건드리지 않는다(이중 감쇠 방지).
         AudioListener.volume = MasterVolume;
+        ApplyToAudioManager();
+    }
+
+    private static void ApplyToAudioManager()
+    {
+        AudioManager audio = AudioManager.Instance;
+        if (audio == null) return;
+        audio.SetBgmVolume(BGMVolume);
+        audio.SetSfxVolume(EffectVolume);
     }
 }

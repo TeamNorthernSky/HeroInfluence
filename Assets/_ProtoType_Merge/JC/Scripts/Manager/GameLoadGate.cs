@@ -71,7 +71,7 @@ public class GameLoadGate : MonoBehaviour
         // [JC 260514] GameSceneManager Instance 경유 (fallback SceneManager).
         var op = GameSceneManager.Instance != null
             ? GameSceneManager.Instance.LoadSceneAsync(dhSceneName, LoadSceneMode.Additive)
-            : SceneManager.LoadSceneAsync(dhSceneName, LoadSceneMode.Additive);
+            : SceneFadeController.LoadSceneAsyncWithFade(dhSceneName, LoadSceneMode.Additive);
         if (op == null)
         {
             Debug.LogError($"[GameLoadGate] {dhSceneName} 로드 실패. Build Settings 확인");

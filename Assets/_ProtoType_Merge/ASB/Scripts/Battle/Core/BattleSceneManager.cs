@@ -169,6 +169,16 @@ public class BattleSceneManager : MonoBehaviour
         string contextReturnScene = (isSimulation || isTutorial) && combatContext != null
             ? combatContext.ReturnSceneName
             : string.Empty;
+        // 최종 보스 승리는 탐사 복귀 대신 엔딩으로 연결한다. 패배/도주는 기존 복귀 경로 유지.
+        if (!isSimulation && !isTutorial && result == BattleResult.Victory &&
+            combatContext != null && combatContext.CombatEnemy != null &&
+            combatContext.CombatEnemy.SourceType == CombatEnemySourceType.VillainUnionDefender)
+        {
+            contextReturnScene = "Ending CutScene";
+            VillainUnionDefenderService.RemoveDefenderParty(combatContext.CombatEnemy.EnemyId);
+            combatContext.Clear();
+            DHGameEndState.BeginEnding();
+        }
         if (isSimulation && combatContext != null)
             combatContext.ClearSimulation();
 

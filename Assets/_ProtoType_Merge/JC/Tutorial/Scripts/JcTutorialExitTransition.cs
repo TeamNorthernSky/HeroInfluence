@@ -8,12 +8,12 @@ namespace JC.Tutorial
     public sealed class JcTutorialExitTransition : MonoBehaviour
     {
         private static JcTutorialExitTransition active;
-        public static void Begin()
+        public static void Begin(string destination = "DHScene_3")
         {
             if (active != null) return;
             var host = new GameObject("Tutorial Exit Transition");
             DontDestroyOnLoad(host); active = host.AddComponent<JcTutorialExitTransition>();
-            active.StartCoroutine(active.Transition());
+            active.StartCoroutine(active.Transition(destination));
         }
         public static void HideTutorialPresentation()
         {
@@ -24,7 +24,7 @@ namespace JC.Tutorial
                 if (guide.view != null) { guide.view.SetPanelSuppressed(true); guide.view.SetVisible(false); guide.view.RenderPresentation(0,1); }
             }
         }
-        private IEnumerator Transition()
+        private IEnumerator Transition(string destination)
         {
             ModalManager.Register(gameObject);
             HideTutorialPresentation();
@@ -42,7 +42,7 @@ namespace JC.Tutorial
             // 튜토리얼 전투에서 남은 빈 일반 카탈로그가 새 씬의 정상 카탈로그를
             // 중복 싱글턴으로 제거하지 않도록 Destroy 처리가 끝난 뒤 로드한다.
             yield return null;
-            var load = GameSceneManager.Instance != null ? GameSceneManager.Instance.LoadSceneAsync("DHScene_3") : SceneManager.LoadSceneAsync("DHScene_3");
+            var load = GameSceneManager.Instance != null ? GameSceneManager.Instance.LoadSceneAsync(destination) : SceneFadeController.LoadSceneAsyncWithFade(destination);
             if (load != null) yield return load;
             // 새 씬의 Start 및 첫 UI 배치를 암전 안에서 마친다.
             yield return null;

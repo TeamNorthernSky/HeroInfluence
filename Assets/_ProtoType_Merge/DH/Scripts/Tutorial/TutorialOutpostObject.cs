@@ -155,7 +155,7 @@ public sealed class TutorialOutpostObject : MonoBehaviour
         if (GameSceneManager.Instance != null)
             GameSceneManager.Instance.LoadScene(sceneName);
         else
-            SceneManager.LoadScene(sceneName);
+            SceneFadeController.LoadSceneWithFadeIfNeeded(sceneName);
 
         return true;
     }

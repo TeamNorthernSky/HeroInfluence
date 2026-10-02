@@ -15,8 +15,8 @@ EditorBuildSettings:
     path: Assets/_ProtoType_Merge/Scenes/GameLoadScene.unity
     guid: a01ad3d45f8c09244ae9de5a4ba9eafe
   - enabled: 1
-    path: Assets/_ProtoType_Merge/Scenes/HQLobbyScene.unity
-    guid: 020b80720ecefee47ba9f5085b507d0a
+    path: Assets/_ProtoType_Merge/Scenes/Opening CutScene.unity
+    guid: 5518364cfef354f47976f701fcb805b4
   - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/DHScene_3.unity
     guid: e7a8b8bd9e730b7aaa5a3d539450020a
@@ -24,8 +24,8 @@ EditorBuildSettings:
     path: Assets/_ProtoType_Merge/Scenes/TmpBattleScene.unity
     guid: 8baa5ae0ba4fbff47823cb73e6d0cadb
   - enabled: 1
-    path: Assets/_ProtoType_Merge/Scenes/BattleSimulationScene.unity
-    guid: bcfc7d632972ea64ab85a67f4050febd
+    path: Assets/_ProtoType_Merge/Scenes/HQLobbyScene.unity
+    guid: 020b80720ecefee47ba9f5085b507d0a
   - enabled: 1
     path: Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity
     guid: 542c4c0a0f5127046a707224436e0ed3

@@ -70,7 +70,7 @@ public class HeroUnionDoubleClickEntry : MonoBehaviour
         else
         {
             Debug.LogWarning("[HeroUnionDoubleClickEntry] GameSceneManager.Instance == null — 폴백 호출", this);
-            UnityEngine.SceneManagement.SceneManager.LoadScene("HQLobbyScene");
+            SceneFadeController.LoadSceneWithFadeIfNeeded("HQLobbyScene");
         }
     }
 

@@ -80,6 +80,6 @@ public class DHGameEndManager : MonoBehaviour
         }
 
         if (!string.IsNullOrWhiteSpace(fallbackTitleSceneName))
-            SceneManager.LoadScene(fallbackTitleSceneName);
+            SceneFadeController.LoadSceneWithFadeIfNeeded(fallbackTitleSceneName);
     }
 }
