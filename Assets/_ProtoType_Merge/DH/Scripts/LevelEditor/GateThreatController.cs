@@ -271,9 +271,53 @@ public class GateThreatController : MonoBehaviour
                 continue;
             }
 
-            repository.ClearZoneThreatEnemy(state.ZoneId);
-            if (HasLiveThreatEnemyInZone(state.ZoneId, normalizedPlacementKey))
-                continue;
+            string normalizedZoneId = MapProgressKey.NormalizeSegment(state.ZoneId);
+            if (!string.IsNullOrWhiteSpace(normalizedZoneId))
+                affectedZoneIds.Add(normalizedZoneId);
+        }
+
+        // Runtime threat keys carry their zone. This keeps gate reopening resilient even if
+        // the active-threat key was reset or missed before the enemy defeat callback arrives.
+        string zoneIdFromPlacementKey = TryResolveZoneIdFromGateThreatPlacementKey(normalizedPlacementKey);
+        if (!string.IsNullOrWhiteSpace(zoneIdFromPlacementKey))
+            affectedZoneIds.Add(zoneIdFromPlacementKey);
+
+        if (repository.TryGetEnemyState(normalizedPlacementKey, out EnemyWorldState defeatedEnemyState) &&
+            IsGateThreatPlacementKey(normalizedPlacementKey))
+        {
+            string zoneIdFromEnemyState = MapProgressKey.NormalizeSegment(defeatedEnemyState.ZoneId);
+            if (!string.IsNullOrWhiteSpace(zoneIdFromEnemyState))
+                affectedZoneIds.Add(zoneIdFromEnemyState);
+        }
+
+        foreach (string affectedZoneId in affectedZoneIds)
+        {
+            HandleZoneThreatEnemyDefeated(repository, affectedZoneId, normalizedPlacementKey);
+        }
+    }
+
+    private void HandleZoneThreatEnemyDefeated(MapProgressRepository repository, string zoneId, string defeatedPlacementKey)
+    {
+        string normalizedZoneId = MapProgressKey.NormalizeSegment(zoneId);
+        if (string.IsNullOrWhiteSpace(normalizedZoneId))
+            return;
+
+        repository.ClearZoneThreatEnemy(normalizedZoneId);
+        if (HasLiveThreatEnemyInZone(normalizedZoneId, defeatedPlacementKey))
+            return;
+
+        // Defeating a threat happens during the current player/enemy flow. The next pre-enemy-turn
+        // evaluation uses current day + 1, so restart from that boundary to avoid counting this turn twice.
+        repository.BeginZoneThreat(normalizedZoneId, ResolveCurrentDay() + 1);
+        RefreshGateOpenStateForZone(normalizedZoneId);
+    }
+
+    private static bool IsGateThreatPlacementKey(string placementKey)
+    {
+        string normalizedPlacementKey = MapProgressKey.NormalizeSegment(placementKey);
+        return !string.IsNullOrWhiteSpace(normalizedPlacementKey) &&
+               normalizedPlacementKey.StartsWith("runtime_enemy_gate_threat_", System.StringComparison.Ordinal);
+    }
 
     private static string TryResolveZoneIdFromGateThreatPlacementKey(string placementKey)
     {
