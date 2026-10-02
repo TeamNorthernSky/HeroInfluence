@@ -142,9 +142,9 @@ MonoBehaviour:
     Enemy4: FV20001
     Enemy4Slot: 5
     Enemy5: FV20003
-    Enemy5Slot: 1
+    Enemy5Slot: 4
     Enemy6: FV20003
-    Enemy6Slot: 3
+    Enemy6Slot: 6
     MinLevel: 4
     MaxLevel: 5
   - EnemyIndex: BE490
@@ -166,70 +166,70 @@ MonoBehaviour:
   - EnemyIndex: BE423
     EnemyGroupName: "\uBA54\uC778 4-1(\uC2DC\uC704\uB300 \uC5F0\uACC4 / \uC804\uC5F4
       \uBD95\uAD34\xB7\uD6C4\uC5F4 \uC794\uC874)"
-    Enemy1: 
-    Enemy1Slot: 0
-    Enemy2: 
-    Enemy2Slot: 0
-    Enemy3: 
-    Enemy3Slot: 0
+    Enemy1: FV20001
+    Enemy1Slot: 5
+    Enemy2: FV20002
+    Enemy2Slot: 4
+    Enemy3: FV20002
+    Enemy3Slot: 6
     Enemy4: 
     Enemy4Slot: 0
     Enemy5: 
     Enemy5Slot: 0
     Enemy6: 
     Enemy6Slot: 0
-    MinLevel: 0
-    MaxLevel: 0
+    MinLevel: 4
+    MaxLevel: 6
   - EnemyIndex: BE424
     EnemyGroupName: "\uBA54\uC778 4-1(\uACF5\uB3CC\uC774 \uC5F0\uACC4 / \uD6C4\uC5F4
       \uBB34\uB825\uD654\xB7\uC804\uC5F4 \uC794\uC874)"
-    Enemy1: 
-    Enemy1Slot: 0
-    Enemy2: 
-    Enemy2Slot: 0
-    Enemy3: 
-    Enemy3Slot: 0
+    Enemy1: FV20001
+    Enemy1Slot: 2
+    Enemy2: FV20003
+    Enemy2Slot: 1
+    Enemy3: FV20003
+    Enemy3Slot: 3
     Enemy4: 
     Enemy4Slot: 0
     Enemy5: 
     Enemy5Slot: 0
     Enemy6: 
     Enemy6Slot: 0
-    MinLevel: 0
-    MaxLevel: 0
+    MinLevel: 4
+    MaxLevel: 6
   - EnemyIndex: BE425
     EnemyGroupName: "\uBA54\uC778 4-2(\uAE30\uBCF8 / \uC9C0\uD718\uAD00 \uBD80\uC7AC\xB7\uC0AC\uAE30
       \uC800\uD558 UMT)"
-    Enemy1: 
-    Enemy1Slot: 0
-    Enemy2: 
-    Enemy2Slot: 0
-    Enemy3: 
-    Enemy3Slot: 0
-    Enemy4: 
-    Enemy4Slot: 0
+    Enemy1: FV20001
+    Enemy1Slot: 2
+    Enemy2: FV20001
+    Enemy2Slot: 5
+    Enemy3: FV20002
+    Enemy3Slot: 6
+    Enemy4: FV20003
+    Enemy4Slot: 4
     Enemy5: 
     Enemy5Slot: 0
     Enemy6: 
     Enemy6Slot: 0
-    MinLevel: 0
-    MaxLevel: 0
+    MinLevel: 4
+    MaxLevel: 6
   - EnemyIndex: BE261
     EnemyGroupName: "UMT \uC544\uB180\uB4DC \uC804\uD22C"
-    Enemy1: 
-    Enemy1Slot: 0
-    Enemy2: 
-    Enemy2Slot: 0
-    Enemy3: 
-    Enemy3Slot: 0
+    Enemy1: FV20002
+    Enemy1Slot: 6
+    Enemy2: FV20003
+    Enemy2Slot: 4
+    Enemy3: FV20005
+    Enemy3Slot: 2
     Enemy4: 
     Enemy4Slot: 0
     Enemy5: 
     Enemy5Slot: 0
     Enemy6: 
     Enemy6Slot: 0
-    MinLevel: 0
-    MaxLevel: 0
+    MinLevel: 4
+    MaxLevel: 6
   - EnemyIndex: "\uC801\uAD70 \uC720\uB2DB\n\uC778\uB371\uC2A4"
     EnemyGroupName: "\uC720\uB2DB \uADF8\uB8F9\uBA85"
     Enemy1: "\uC720\uB2DB \uC885\uB958"
