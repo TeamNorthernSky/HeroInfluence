@@ -230,7 +230,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     {
         JcPointerInput.ClearScroll(this);
         if (!edgeScrollEnabled || !followEnabled || followTarget == null || Time.deltaTime <= 0f ||
-            (blockEdgeScrollOverButtons && JcPointerInput.Inside && IsPointerOverBlockingUI()))
+            (blockEdgeScrollOverButtons && IsPointerOverBlockingUI()))
         {
             edgeScrollVelocity = Vector3.zero;
             return;
@@ -595,13 +595,18 @@ public class QuarterViewCameraFollower : MonoBehaviour
     /// </summary>
     private static bool IsPointerOverBlockingUI()
     {
+        Vector2 pointer = JcPointerInput.ScreenPosition;
+        // 일반 화면 밖 스크롤은 유지하되, 튜토리얼 UI 보호 영역에서 이어지는 방향은 막는다.
+        if (!JcPointerInput.Inside)
+            return JC.Tutorial.JcTutorialScrollGuard.BlocksOutsideScreen(pointer, new Vector2(Screen.width, Screen.height));
+
         EventSystem eventSystem = EventSystem.current;
         if (eventSystem == null)
             return false;
 
         PointerEventData pointerEventData = new PointerEventData(eventSystem)
         {
-            position = Input.mousePosition
+            position = pointer
         };
 
         UiRaycastResults.Clear();

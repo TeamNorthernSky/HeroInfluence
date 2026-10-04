@@ -28,6 +28,17 @@ public static class JcPointerInput
     public static Vector2 Size => new Vector2(Screen.width, Screen.height);
 #endif
     public static bool Inside => Position.x >= 0 && Position.y >= 0 && Position.x < Size.x && Position.y < Size.y;
+    /// <summary>표시 창 좌표를 Unity UI·카메라가 사용하는 현재 렌더 픽셀 좌표로 변환한다.</summary>
+    public static Vector2 ScreenPosition
+    {
+        get
+        {
+            Vector2 size = Size;
+            if (size.x <= 0 || size.y <= 0) return Input.mousePosition;
+            Vector2 point = Position;
+            return new Vector2(point.x * Screen.width / size.x, point.y * Screen.height / size.y);
+        }
+    }
     public static Vector2 ScrollDirection => CanControl && scrollOwner != null && Time.frameCount - scrollFrame <= 1
         ? scrollDirection : Vector2.zero;
 
