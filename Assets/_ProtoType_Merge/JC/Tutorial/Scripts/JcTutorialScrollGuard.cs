@@ -10,6 +10,22 @@ namespace JC.Tutorial
         public RectTransform content;
         private bool passThroughContent;
         public bool IsRaycastLocationValid(Vector2 point, Camera camera) => content != null && (!passThroughContent || !RectTransformUtility.RectangleContainsScreenPoint(content, point, camera));
+        public static bool BlocksOutsideScreen(Vector2 point, Vector2 screenSize)
+        {
+            if (screenSize.x <= 0 || screenSize.y <= 0) return false;
+            // 포인터가 지나간 화면 경계의 UI를 검사한다. 내부 클릭 통과 여부와 스크롤 차단은 분리한다.
+            var edgePoint = new Vector2(Mathf.Clamp(point.x, 0, screenSize.x - .01f),
+                Mathf.Clamp(point.y, 0, screenSize.y - .01f));
+            foreach (var guard in FindObjectsByType<JcTutorialScrollGuard>(FindObjectsSortMode.None))
+            {
+                if (!guard.isActiveAndEnabled || guard.gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene()) continue;
+                var canvas = guard.GetComponentInParent<Canvas>();
+                if (canvas == null || !canvas.isActiveAndEnabled) continue;
+                var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                if (RectTransformUtility.RectangleContainsScreenPoint((RectTransform)guard.transform, edgePoint, camera)) return true;
+            }
+            return false;
+        }
         public static void Install(RectTransform target)
         {
             if (target == null || target.GetComponentInChildren<JcTutorialScrollGuard>(true) != null) return;

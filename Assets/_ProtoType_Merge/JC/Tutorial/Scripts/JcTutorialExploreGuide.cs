@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -34,6 +35,11 @@ namespace JC.Tutorial
         [Min(0), Tooltip("이동불가 경로를 선택한 후 설명을 띄우기까지의 시간(초)입니다. 붉은 경로를 먼저 보여 줍니다.")] public float blockedPreviewDuration = .65f;
         [Tooltip("초기 이동 학습이 끝난 뒤 기존 턴 종료를 허용하는 담당자입니다.")] public TutorialTurnManager turnManager;
         [Min(.1f), Tooltip("시작 목표가 한 번 점멸하고 테두리가 수렴하는 시간(초)입니다. 표시 시간 / 이 값만큼 반복하며 기본값은 3회입니다.")] public float introPulsePeriod = 2.5f / 3;
+        [Header("튜토리얼 시작 카메라 구도")]
+        [Tooltip("파티에 즉시 고정한 뒤 카메라를 이동할 화면 비율입니다. X 양수는 오른쪽, Y 음수는 아래쪽이며 배경과 목표는 반대 방향으로 보입니다. 0이면 이동하지 않습니다. 튜토리얼 첫 진입에만 적용하며 일반 탐사에는 적용하지 않습니다.")]
+        public Vector2 initialCameraViewOffset = new Vector2(.04f, -.06f);
+        [Min(0), Tooltip("시작 메시지 박스가 사라진 뒤 구도 조정에 걸리는 실제 시간(초)입니다. 0이면 즉시 적용합니다. 파티 추적·줌 설정은 유지합니다.")]
+        public float initialCameraMoveDuration = .6f;
         [Header("이동 안내")]
         [TextArea, Tooltip("목표를 선택하기 전에 표시하는 안내입니다.")] public string selectText = "빛나는 목표 위치를 눌러 이동 경로를 확인하세요.";
         [TextArea, Tooltip("목표 선택 후 표시하는 안내입니다.")] public string confirmText = "목표 위치를 한 번 더 누르면 이동합니다.";
@@ -55,6 +61,8 @@ namespace JC.Tutorial
         private float nextGaugeSearch;
         private bool showingIntro, releaseShieldPending, turnStateCaptured, originalTurnControl, originalTurnButton;
         private Button nextTurnButton;
+        private Coroutine initialCameraMove;
+        private bool initialCameraMovePending;
         public int PresentationOpenedFrame { get; private set; } = -1;
         public string CurrentGuideStep { get; private set; }
 
@@ -69,6 +77,34 @@ namespace JC.Tutorial
             if (turnManager != null) originalTurnControl = turnManager.TurnControlEnabled;
             if (nextTurnButton != null) originalTurnButton = nextTurnButton.interactable;
             turnStateCaptured = true;
+            initialCameraMovePending = Application.isPlaying && repository != null && repository.CurrentTurn == 1 && !Seen("intro");
+        }
+        private IEnumerator AdjustInitialCameraView()
+        {
+            // 시작 박스를 숨긴 프레임이 끝난 뒤 구도만 조정한다. 파티의 즉시 고정은 유지한다.
+            yield return null;
+            yield return null;
+            if (exiting || !isActiveAndEnabled || parties == null || parties.PlayerParty == null) yield break;
+            var camera = Camera.main;
+            var follower = camera != null ? camera.GetComponent<QuarterViewCameraFollower>() : null;
+            if (follower == null || camera.gameObject.scene != gameObject.scene) yield break;
+            var party = parties.PlayerParty;
+            var plane = new Plane(Vector3.up, party.transform.position);
+            var centerRay = camera.ViewportPointToRay(new Vector3(.5f, .5f, 0));
+            var shiftedRay = camera.ViewportPointToRay(new Vector3(.5f + initialCameraViewOffset.x, .5f + initialCameraViewOffset.y, 0));
+            if (!plane.Raycast(centerRay, out float centerDistance) || !plane.Raycast(shiftedRay, out float shiftedDistance)) yield break;
+            Vector3 offset = shiftedRay.GetPoint(shiftedDistance) - centerRay.GetPoint(centerDistance);
+            offset.y = 0;
+            float elapsed = 0;
+            while (!exiting && isActiveAndEnabled && party != null)
+            {
+                float progress = initialCameraMoveDuration <= 0 ? 1 : Mathf.Clamp01(elapsed / initialCameraMoveDuration);
+                follower.FocusWorldPosition(party.transform.position + offset * Mathf.SmoothStep(0, 1, progress));
+                if (progress >= 1) break;
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            initialCameraMove = null;
         }
         private readonly List<(TMP_Text text, Material original, Material shadow)> questMaterials = new List<(TMP_Text, Material, Material)>();
         private void ApplyQuestShadow()
@@ -225,6 +261,10 @@ namespace JC.Tutorial
             }
             if (Seen("exhausted") && !Seen("restored") && repository.CurrentTurn > 1)
             {
+                // 체험용 이전 선택은 새 턴에 사용하지 않는다. 노란 목표보다 먼저 경로와 목적지를 지운다.
+                foreach (var selection in FindObjectsByType<ClickSelectionController>(FindObjectsSortMode.None))
+                    if (selection.gameObject.scene == gameObject.scene) selection.ClearMovePreview();
+                selectedSince = -1;
                 // 회복 안내는 확인 클릭을 요구하지 않고 자원 수집 안내에 이어 표시한다.
                 Mark("restored");
             }
@@ -297,6 +337,11 @@ namespace JC.Tutorial
         {
             Mark("intro"); showingIntro = false; SetIntroVisible(false);
             releaseShieldPending = true;
+            if (initialCameraMovePending && !exiting)
+            {
+                initialCameraMovePending = false;
+                initialCameraMove = StartCoroutine(AdjustInitialCameraView());
+            }
         }
         private void LateUpdate() => ReleaseDismissedInput(Input.GetMouseButton(0));
         private void ReleaseDismissedInput(bool pointerHeld)
@@ -415,6 +460,7 @@ namespace JC.Tutorial
         }
         private void OnDisable()
         {
+            if (initialCameraMove != null) { StopCoroutine(initialCameraMove); initialCameraMove = null; }
             LevelLoader.RuntimeLevelLoaded -= OnLevelLoaded;
             // 전투 시작 실패 시 pending이 해제된다. 실제 씬 이탈 때만 재진입 방지 기록을 남긴다.
             if (Application.isPlaying && repository != null && repository.PendingCombatSourceType == TutorialCombatSourceType.Enemy) Mark("first-combat");
