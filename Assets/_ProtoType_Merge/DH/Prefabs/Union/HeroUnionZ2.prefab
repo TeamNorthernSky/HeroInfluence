@@ -77,7 +77,7 @@ MonoBehaviour:
   captureChatId: 4010010
   autoPlayWhenInitiallyClaimed: 0
   gridManager: {fileID: 0}
-  targetRenderer: {fileID: 0}
+  targetRenderer: {fileID: 3342196178278837753}
   neutralMaterial: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
   claimedMaterial: {fileID: 2100000, guid: 9afd7964a2d9e064980b47c796d05e5c, type: 2}
 --- !u!114 &3579854251900779421
@@ -188,6 +188,16 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: bba6371ad42f93f49a6e65c49a495565,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
+    - target: {fileID: -7511558181221131132, guid: bba6371ad42f93f49a6e65c49a495565,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 48fef82b7e9c05b43b20cba00b5e9871, type: 2}
     - target: {fileID: 919132149155446097, guid: bba6371ad42f93f49a6e65c49a495565,
         type: 3}
       propertyPath: m_Name
@@ -198,6 +208,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bba6371ad42f93f49a6e65c49a495565, type: 3}
+--- !u!23 &3342196178278837753 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: bba6371ad42f93f49a6e65c49a495565,
+    type: 3}
+  m_PrefabInstance: {fileID: 4152398118804582781}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4479658224657995414 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bba6371ad42f93f49a6e65c49a495565,

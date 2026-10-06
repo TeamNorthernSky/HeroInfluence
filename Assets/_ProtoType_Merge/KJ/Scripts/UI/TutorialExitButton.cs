@@ -6,6 +6,7 @@ public class TutorialExitButton : MonoBehaviour
 {
     [SerializeField] private Button exitButton;
     private bool isLoading;
+    private string openingCutSceneName = "Opening CutScene";
 
     private void Awake()
     {
@@ -27,6 +28,6 @@ public class TutorialExitButton : MonoBehaviour
     {
         if (isLoading) return;
         isLoading = true;
-        JC.Tutorial.JcTutorialExitTransition.Begin("DHScene_3");
+        JC.Tutorial.JcTutorialExitTransition.Begin(openingCutSceneName);
     }
 }
