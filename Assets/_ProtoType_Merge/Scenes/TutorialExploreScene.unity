@@ -480,7 +480,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC9C4\uD589\uBC84\uD2BC\uC744 \uB20C\uB7EC\uC8FC\uC138\uC694\r"
+  m_text: "\uc2ac\ub77c\uc774\ub354 \ub610\ub294 + / \u2212 \ubc84\ud2bc\uc73c\ub85c\n\ud64d\ubcf4 \ud69f\uc218\ub97c 25\ud68c\ub85c \uc124\uc815\ud558\uc138\uc694."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -1882,8 +1882,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04183d26245e91748881a96b2c0a7f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tutorialBattleSceneName: TmpBattleScene
-  returnSceneName: TutorialLobbyScene
+  tutorialBattleSceneName: TutorialBattleScene
+  returnSceneName: TutorialExploreScene
   allowBattleSceneLoad: 1
   defaultUnitTemplateKeys:
   - 10001
@@ -4093,7 +4093,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC9C4\uD589\uC744 \uB20C\uB7EC\uC8FC\uC138\uC694\r\n"
+  m_text: "\uc800\uc2a4\ud2f0\uc2a4\uc758 IP\uac00 25 \uc99d\uac00\ud588\uc2b5\ub2c8\ub2e4.\n\uc790\uae08 2,500\uacfc \uc9c4\ud589 \uac00\ub2a5 \ud69f\uc218\n25\ud68c\uac00 \uc0ac\uc6a9\ub418\uc5c8\uc2b5\ub2c8\ub2e4.\n\ub0a8\uc740 IP \uc6a9\ub7c9\uc744\nMAX \ubc84\ud2bc\uc73c\ub85c \ucc44\uc6cc \ubd05\uc2dc\ub2e4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -6630,8 +6630,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04183d26245e91748881a96b2c0a7f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tutorialBattleSceneName: TmpBattleScene
-  returnSceneName: TutorialLobbyScene
+  tutorialBattleSceneName: TutorialBattleScene
+  returnSceneName: TutorialExploreScene
   allowBattleSceneLoad: 1
   defaultUnitTemplateKeys:
   - 10001
@@ -11545,8 +11545,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uD655\uC778  \u203A"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
+  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
+  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -13382,7 +13382,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC9C4\uD589\uC744 \uB20C\uB7EC\uC8FC\uC138\uC694\r\n"
+  m_text: "25\ud68c\uac00 \uc124\uc815\ub418\uc5c8\uc2b5\ub2c8\ub2e4.\n\uc9c4\ud589 \ubc84\ud2bc\uc744 \ub2e4\uc2dc \ud074\ub9ad\ud558\uc5ec\n\uc800\uc2a4\ud2f0\uc2a4\uc758 IP\ub97c 50\uae4c\uc9c0 \ub192\uc774\uc138\uc694."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -17805,7 +17805,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "25\uAE4C\uC9C0 \uC124\uC815\uD574\uC8FC\uC138\uC694.\r"
+  m_text: "\ud64d\ubcf4 1\ud68c\uc5d0\ub294 \uc790\uae08 100\uc774 \ud544\uc694\ud558\uba70,\n\uc601\uc6c5\uc758 IP\uac00 1 \uc99d\uac00\ud569\ub2c8\ub2e4.\n\ud55c \ubc88\uc5d0 \ucd5c\ub300 25\ud68c\uae4c\uc9c0\n\uc9c4\ud589\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.\n\uc9c4\ud589\ud560 \ud69f\uc218\ub97c \uc9c1\uc811 \uc815\ud574 \ubd05\uc2dc\ub2e4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -18287,8 +18287,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uBAA9\uD45C \uC704\uCE58\uAE4C\uC9C0 \uC774\uB3D9\uD558\uC138\uC694"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
+  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
+  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -19838,6 +19838,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1004272264}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1004272268 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5201458142181338958, guid: 84f1cc0a884961c419cc368e0f93fb45,
+    type: 3}
+  m_PrefabInstance: {fileID: 1004272264}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
 --- !u!224 &1004272266 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6842025648053105861, guid: 84f1cc0a884961c419cc368e0f93fb45,
@@ -20578,8 +20590,7 @@ PrefabInstance:
     - target: {fileID: 976755729409086326, guid: e29955c1e2b386840bd031f03c596d34,
         type: 3}
       propertyPath: m_text
-      value: "\uD64D\uBCF4\uBD80\uB294 \uC601\uC6C5\uB4E4\uC758 \uD65C\uB3D9\uC744\r\n\uC2DC\uBBFC\uB4E4\uC5D0\uAC8C
-        \uC54C\uB824 I.P\uB97C \uC62C\uB9AC\uB294\r\n\uD575\uC2EC \uAC74\uBB3C\uC785\uB2C8\uB2E4.\r"
+      value: "\ud64d\ubcf4\ud560 \uc601\uc6c5\uc744 \uba3c\uc800 \uc120\ud0dd\ud569\ub2c8\ub2e4.\n\uc774\ubc88\uc5d0\ub294 \uc800\uc2a4\ud2f0\uc2a4\uc758\n\uc601\ud5a5\ub825(IP)\uc744 \ub192\uc5ec \ubd05\uc2dc\ub2e4."
       objectReference: {fileID: 0}
     - target: {fileID: 976755729409086326, guid: e29955c1e2b386840bd031f03c596d34,
         type: 3}
@@ -20654,8 +20665,7 @@ PrefabInstance:
     - target: {fileID: 4807838124649469397, guid: e29955c1e2b386840bd031f03c596d34,
         type: 3}
       propertyPath: m_text
-      value: "\uD64D\uBCF4\uAC8C\uC774\uC9C0\uB97C \uB4DC\uB798\uADF8\uD558\uC5EC\n\uD64D\uBCF4
-        \uC218\uCE58\uB97C \uC870\uC808\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
+      value: "\uc601\uc6c5 \ubaa9\ub85d\uc5d0\uc11c\n\uc800\uc2a4\ud2f0\uc2a4\ub97c \ud074\ub9ad\ud558\uc138\uc694."
       objectReference: {fileID: 0}
     - target: {fileID: 4807838124649469397, guid: e29955c1e2b386840bd031f03c596d34,
         type: 3}
@@ -20817,6 +20827,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5861907765883651986, guid: e29955c1e2b386840bd031f03c596d34,
+        type: 3}
+      propertyPath: publicityEntryGuide
+      value:
+      objectReference: {fileID: 101362128}
+    - target: {fileID: 5861907765883651986, guid: e29955c1e2b386840bd031f03c596d34,
+        type: 3}
+      propertyPath: publicityEntryButton
+      value:
+      objectReference: {fileID: 1004272268}
     - target: {fileID: 5861907765883651986, guid: e29955c1e2b386840bd031f03c596d34,
         type: 3}
       propertyPath: panels.Array.size
@@ -21473,7 +21493,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD64D\uBCF4 \uCD5C\uB300\uCE58\uB85C \uC124\uC815\uD574\uC8FC\uC138\uC694"
+  m_text: "\uc9c4\ud589 \ubc84\ud2bc\uc744 \ud074\ub9ad\ud558\uc5ec\n25\ud68c \ud64d\ubcf4\ub97c \ud655\uc815\ud558\uc138\uc694."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -22435,8 +22455,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD64D\uBCF4\uB294 \uD69F\uC218\uB294 4\uD134\uB9C8\uB2E4 \uAC31\uC2E0\uB418\uACE0\r\n\uC0AC\uC6A9\uD558\uC9C0
-    \uC54A\uC740 \uB9CC\uD07C \uC774\uC6D4\uB429\uB2C8\uB2E4.\r"
+  m_text: "MAX\ub294 \ud55c \ubc88\uc5d0 \uc9c4\ud589\ud560 \uc218 \uc788\ub294\n\ucd5c\ub300 \ud69f\uc218\ub97c \uc124\uc815\ud569\ub2c8\ub2e4.\n\ub0a8\uc740 \uc9c4\ud589 \uac00\ub2a5 \ud69f\uc218\uc640\n\uc601\uc6c5\uc758 IP \uc6a9\ub7c9\uc744 \ud568\uaed8 \ud655\uc778\ud569\ub2c8\ub2e4.\nMAX \ubc84\ud2bc\uc744 \ud074\ub9ad\ud558\uc138\uc694."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -24260,8 +24279,8 @@ MonoBehaviour:
   m_text: "\uBE5B\uB098\uB294 \uBAA9\uD45C \uC704\uCE58\uB97C \uB20C\uB7EC \uC774\uB3D9
     \uACBD\uB85C\uB97C \uD655\uC778\uD558\uC138\uC694."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
+  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
+  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -24575,7 +24594,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB2E4\uC2DC \uB2EB\uAE30 \uBC84\uD2BC\uC744 \uB20C\uB7EC\uC8FC\uC138\uC694\r"
+  m_text: "\ud64d\ubcf4\ub97c \uc644\ub8cc\ud588\uc2b5\ub2c8\ub2e4!\n\uc9c4\ud589 \uac00\ub2a5 \ud69f\uc218\ub294 4\ud134\ub9c8\ub2e4 \uac31\uc2e0\ub418\uba70,\n\uc0ac\uc6a9\ud558\uc9c0 \uc54a\uc740 \ud69f\uc218\ub294\n\ub2e4\uc74c \uac31\uc2e0\uc73c\ub85c \uc774\uc6d4\ub429\ub2c8\ub2e4.\n\ub2eb\uae30 \ubc84\ud2bc\uc744 \ud074\ub9ad\ud574\n\ud0d0\uc0ac \ud654\uba74\uc73c\ub85c \ub3cc\uc544\uac00\uc138\uc694."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -27178,8 +27197,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC9C4\uD589 \uC815\uB3C4 \uB9CC\uD07C \r\n\uAC00\uB2A5\uD69F\uC218\uAC00
-    \uAC10\uC18C\uB418\uACE0 \r\nI.P\uAC00 \uC0C1\uC2B9\uD569\uB2C8\uB2E4.\r"
+  m_text: "25\ud68c \uc9c4\ud589\uc5d0\ub294\n\uc790\uae08 2,500\uc774 \ud544\uc694\ud569\ub2c8\ub2e4.\n\uc9c4\ud589 \ubc84\ud2bc\uc744 \ub204\ub974\uba74 \uc790\uae08\uacfc\n\uc9c4\ud589 \uac00\ub2a5 \ud69f\uc218\uac00 \ucc28\uac10\ub418\uace0,\n\uc601\uc6c5\uc758 IP\uac00 \uc99d\uac00\ud569\ub2c8\ub2e4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -32856,58 +32874,68 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dimPanel: {fileID: 0}
-  publicity: {fileID: 0}
+  publicity: {fileID: 799728449}
   tutorialHeroKey: 10001
   steps:
   - panelIndex: 1
     advance: 0
+    message: "홍보할 영웅을 먼저 선택합니다.\n이번에는 저스티스의\n영향력(IP)을 높여 봅시다."
     targetCount: 0
-    highlightIndices: 
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   - panelIndex: 2
-    advance: 0
+    advance: 6
+    message: "영웅 목록에서\n저스티스를 클릭하세요."
     targetCount: 0
-    highlightIndices: 
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   - panelIndex: 3
     advance: 0
+    message: "홍보 1회에는 자금 100이 필요하며,\n영웅의 IP가 1 증가합니다.\n한 번에 최대 25회까지\n진행할 수 있습니다.\n진행할 횟수를 직접 정해 봅시다."
     targetCount: 0
-    highlightIndices: 
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   - panelIndex: 4
-    advance: 0
-    targetCount: 0
-    highlightIndices: 
+    advance: 2
+    message: "슬라이더 또는 + / − 버튼으로\n홍보 횟수를 25회로 설정하세요."
+    targetCount: 25
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   - panelIndex: 5
     advance: 0
+    message: "25회 진행에는\n자금 2,500이 필요합니다.\n진행 버튼을 누르면 자금과\n진행 가능 횟수가 차감되고,\n영웅의 IP가 증가합니다."
     targetCount: 0
-    highlightIndices: 
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   - panelIndex: 6
-    advance: 0
+    advance: 4
+    message: "진행 버튼을 클릭하여\n25회 홍보를 확정하세요."
     targetCount: 0
-    highlightIndices: 
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   - panelIndex: 7
     advance: 0
+    message: "저스티스의 IP가 25 증가했습니다.\n자금 2,500과 진행 가능 횟수\n25회가 사용되었습니다.\n남은 IP 용량을\nMAX 버튼으로 채워 봅시다."
     targetCount: 0
-    highlightIndices: 
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   - panelIndex: 8
-    advance: 0
+    advance: 3
+    message: "MAX는 한 번에 진행할 수 있는\n최대 횟수를 설정합니다.\n남은 진행 가능 횟수와\n영웅의 IP 용량을 함께 확인합니다.\nMAX 버튼을 클릭하세요."
     targetCount: 0
-    highlightIndices: 
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   - panelIndex: 9
-    advance: 0
+    advance: 4
+    message: "25회가 설정되었습니다.\n진행 버튼을 다시 클릭하여\n저스티스의 IP를 50까지 높이세요."
     targetCount: 0
-    highlightIndices: 
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   - panelIndex: 10
-    advance: 0
+    advance: 5
+    message: "홍보를 완료했습니다!\n진행 가능 횟수는 4턴마다 갱신되며,\n사용하지 않은 횟수는\n다음 갱신으로 이월됩니다.\n닫기 버튼을 클릭해\n탐사 화면으로 돌아가세요."
     targetCount: 0
-    highlightIndices: 
+    highlightIndices: []
     explanationPanel: {fileID: 0}
   highlightPools: []
   backgroundSource: {fileID: 0}
@@ -34577,8 +34605,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04183d26245e91748881a96b2c0a7f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tutorialBattleSceneName: TmpBattleScene
-  returnSceneName: TutorialLobbyScene
+  tutorialBattleSceneName: TutorialBattleScene
+  returnSceneName: TutorialExploreScene
   allowBattleSceneLoad: 1
   defaultUnitTemplateKeys:
   - 10001
@@ -36822,8 +36850,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uD654\uBA74\uC744 \uB204\uB974\uBA74 \uBC14\uB85C \uC2DC\uC791\uD569\uB2C8\uB2E4"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
+  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
+  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -37033,8 +37061,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04183d26245e91748881a96b2c0a7f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tutorialBattleSceneName: TmpBattleScene
-  returnSceneName: TutorialLobbyScene
+  tutorialBattleSceneName: TutorialBattleScene
+  returnSceneName: TutorialExploreScene
   allowBattleSceneLoad: 1
   defaultUnitTemplateKeys:
   - 10001
@@ -38109,8 +38137,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uD0D0\uC0AC \xB7 \uC774\uB3D9 \uC548\uB0B4"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f085454091a00184bac02fa653b4d493, type: 2}
-  m_sharedMaterial: {fileID: -3628662645323694341, guid: f085454091a00184bac02fa653b4d493,
+  m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
+  m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -39017,7 +39045,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2036408209
 RectTransform:
   m_ObjectHideFlags: 0

@@ -26,7 +26,10 @@ public sealed class PublicityLayoutView : MonoBehaviour
     private void RefreshCaption()
     {
         if (countSource == null || countCaption == null) return;
-        string caption = "홍보 횟수 <color=#6A4CC8>" + countSource.text + "</color> 회";
+        var tutorial = GetComponentInParent<TutorialPublicityController>();
+        string caption = tutorial != null
+            ? $"{tutorial.Count} / {tutorial.AvailableCount}"
+            : "홍보 횟수 <color=#6A4CC8>" + countSource.text + "</color> 회";
         if (countCaption.text != caption) countCaption.text = caption;
         if (resetButton != null && countSlider != null)
             resetButton.interactable = countSlider.interactable && countSlider.value > countSlider.minValue;

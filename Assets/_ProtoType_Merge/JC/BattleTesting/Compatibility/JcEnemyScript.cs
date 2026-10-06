@@ -1,0 +1,464 @@
+// [JC 독립 구현 대응표 / 기준 JC 0705af74]
+// 원본 파일: Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs
+// 원본 객체: EnemyScript -> JcEnemyScript
+// 동일 이름의 함수는 원본 함수와 1:1 대응합니다. 별도 변경 함수에는 차이를 추가로 명시합니다.
+// 목적: ASB 원본과 본게임 참조를 수정하지 않고 테스트 전투 제어를 독립시킵니다.
+// 공용 데이터·유닛·모델·연출 에셋은 원본을 참조합니다. 이 파일은 자동 동기화되지 않습니다.
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using UnityEngine;
+using EnemyAI;
+
+/// <summary>
+/// CSV 기반 적 데이터 보관. Combat tuning은 BattleCharactor에만 반영하고,
+/// 에디터 OnValidate에서 BattleCharactor를 덮어쓰지 않습니다.
+/// </summary>
+public class JcEnemyScript : MonoBehaviour, IUnitIdentifier
+{
+    [Tooltip("공용 CSV 카탈로그에서 읽은 적의 원본 데이터입니다. 테스트 세션은 별도 전투 인스턴스에 적용합니다.")]
+    public UnitData enemyData;
+    private EnemyAI.IEnemyAI currentAI;
+    // 원본 대응: RunAITurn. 미래 직접 조작/지정 반복도 같은 실행 파이프라인에 진입합니다.
+    public System.Func<BattleCharactor, JcBattleManager, JcBattleFlowManager, IEnumerator> ActionProvider;
+    [Header("Debug")]
+    [Tooltip("적의 AI 선택과 대상 정보를 Console에 출력합니다.")]
+    [SerializeField] private bool enableAIDebugLog = true;
+
+
+    [Header("Flat Stats (Inspector tuning)")]
+    [Tooltip("데이터가 없는 원본 초기화 경로의 호환 스탯입니다. JC 전투는 지정 테이블 값을 적용합니다.")]
+    [SerializeField] private StatBlock inspectorBaseStats;
+
+    public UnitData Data
+    {
+        get => enemyData;
+        set => enemyData = value;
+    }
+
+    /// <summary>런타임 전투 식별자. 영속 저장소 키로 사용하지 마세요(인스턴스마다 달라짐).</summary>
+    public string UnitID
+    {
+        get
+        {
+            if (enemyData == null || string.IsNullOrWhiteSpace(enemyData.Index))
+            {
+                return gameObject.GetInstanceID().ToString();
+            }
+
+            return $"{enemyData.Index.Trim()}_{gameObject.GetInstanceID()}";
+        }
+    }
+
+    // 원본 함수 대응: EnemyScript.Initialize (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+
+    public void Initialize(UnitData data = null)
+    {
+        enemyData = data;
+        BattleCharactor battle = GetComponent<BattleCharactor>();
+        if (battle == null)
+        {
+            return;
+        }
+
+        StatBlock baseStats;
+        if (data != null)
+        {
+            baseStats = data.baseStats;
+            battle.SetUnitNameForSkillMatching(data.Name);
+            battle.SetTemplateIndex(data.Index);
+        }
+        else
+        {
+            baseStats = inspectorBaseStats;
+            battle.SetUnitNameForSkillMatching(battle.UnitName);
+        }
+
+        battle.SetBaseStats(baseStats);
+        battle.SetLevelScaling(false);
+        battle.RecalculateStats();
+
+        // 적 스킬 인덱스 규칙: enemyIndex * 10 + slot(1/2).
+        // 기본 슬롯은 첫 번째(1)로 저장하고, ResolveSelectedSkill에서 classSkillIndex 우선 매칭합니다.
+        if (data != null
+            && !string.IsNullOrWhiteSpace(data.Index)
+            && int.TryParse(data.Index.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int enemyIndexNum))
+        {
+            int defaultSkillSlot = 1;
+            int combinedSkillIndex = (enemyIndexNum * 10) + defaultSkillSlot;
+            battle.SetClassSkillIndex(combinedSkillIndex);
+        }
+
+        battle.ResolveSelectedSkill();
+        battle.InitializeCurrentHpToMax();
+        battle.MarkInitializedFromDataPipeline();
+
+        EnemyData typedEnemyData = data as EnemyData;
+        enemyData = typedEnemyData ?? data;
+        if (typedEnemyData != null)
+            battle.SetExperienceReward(typedEnemyData.ExperiencePoint);
+        EnsureAIReady();
+
+        string id = UnitID;
+        string nm = data != null ? data.Name : "null";
+        Debug.Log($"[JcEnemyScript] Initialize: name={nm}, id='{id}'");
+    }
+
+    // 원본 함수 대응: EnemyScript.Initialize (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+
+    public void Initialize(EnemyUnitPersistentData persistentData, EnemyData fallbackData = null)
+    {
+        if (persistentData == null)
+        {
+            Initialize(fallbackData);
+            return;
+        }
+
+        enemyData = fallbackData;
+        BattleCharactor battle = GetComponent<BattleCharactor>();
+        if (battle == null)
+        {
+            return;
+        }
+
+        battle.BindPersistentEnemySourceData(persistentData);
+        battle.SetExperienceReward(fallbackData != null ? fallbackData.ExperiencePoint : 0f);
+        battle.SetBaseStats(persistentData.IngameStats);
+        battle.SetLevelScaling(false);
+
+        if (!string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey))
+        {
+            battle.SetUnitNameForSkillMatching(persistentData.UnitTemplateKey);
+        }
+        else if (fallbackData != null)
+        {
+            battle.SetUnitNameForSkillMatching(fallbackData.Name);
+        }
+
+        battle.SetTemplateIndex(ResolvePersistentTemplateIndex(persistentData, fallbackData));
+
+        int resolvedSkillIndex = ExtractSkillIndexFromPersistent(persistentData, fallbackData);
+        int resolvedWeaponIndex = ExtractWeaponIndexFromPersistent(persistentData);
+        battle.LoadPersistentEquipment(resolvedSkillIndex, resolvedWeaponIndex);
+
+        battle.RecalculateStats();
+        battle.InitializeCurrentState(persistentData.CurrentHp, persistentData.CurrentInfluence);
+        battle.MarkInitializedFromDataPipeline(true);
+        Debug.Log(
+            $"[Stats/Persistent] {battle.UnitName} uses precomputed snapshot. " +
+            $"LevelScaling=false, " +
+            $"FinalStats HP={battle.FinalStats.HP}, Atk={battle.FinalStats.Atk}, DEF={battle.FinalStats.DEF}, " +
+            $"MaxIP={battle.MaxInfluence:0.#}, CurrentIP={battle.CurrentInfluence:0.#}");
+
+        enemyData = fallbackData;
+        EnsureAIReady();
+    }
+
+    // UnitTemplateKey는 형식이 보장되지 않으므로 그대로 쓰지 않고, 카탈로그 템플릿의 Index를 우선한다.
+    // 원본 함수 대응: EnemyScript.ResolvePersistentTemplateIndex (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+    private static string ResolvePersistentTemplateIndex(EnemyUnitPersistentData persistentData, EnemyData fallbackData)
+    {
+        DHCsvTemplateCatalog catalog = DHCsvTemplateCatalog.Instance;
+        if (persistentData != null && catalog != null &&
+            !string.IsNullOrWhiteSpace(persistentData.UnitTemplateKey) &&
+            catalog.TryGetEnemyTemplate(persistentData.UnitTemplateKey, out EnemyData template) &&
+            template != null && !string.IsNullOrWhiteSpace(template.Index))
+        {
+            return template.Index;
+        }
+
+        return fallbackData != null ? fallbackData.Index : null;
+    }
+
+    // 원본 함수 대응: EnemyScript.RunAITurn (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+
+    public IEnumerator RunAITurn(JcBattleManager battleManager, JcBattleFlowManager flowManager)
+    {
+        BattleCharactor self = GetComponent<BattleCharactor>();
+        if (self == null || self.IsDead || battleManager == null)
+        {
+            yield break;
+        }
+
+        if (ActionProvider != null)
+        {
+            yield return ActionProvider(self, battleManager, flowManager);
+            yield break;
+        }
+        if (!EnsureAIReady())
+        {
+            Debug.LogError($"[JcEnemyScript] AI 초기화 실패로 적 턴을 건너뜁니다: unit={self.UnitName}");
+            yield break;
+        }
+
+        HostageScenarioController hostageScenario = HostageScenarioController.Active;
+        if (hostageScenario != null &&
+            hostageScenario.TryPrepareThreat(self, out HostageBattleActor hostageTarget))
+        {
+            yield return StartCoroutine(hostageScenario.ExecuteThreat(self, hostageTarget));
+            yield break;
+        }
+
+        List<BattleCharactor> targets = flowManager != null
+            ? flowManager.GetAlivePlayerUnits()
+            : new List<BattleCharactor>();
+
+        //if (enableAIDebugLog)
+        //{
+        //    Debug.Log(
+        //        $"[EnemyAI/Debug] RunAITurn start: self={self.UnitName}, aiNull={currentAI == null}, targets={targets.Count} [{FormatTargets(targets)}]");
+        //}
+
+        EnemyActionDecision decision = currentAI != null ? currentAI.DecideAction(self, targets) : null;
+
+        // 최종 결정 확정 후 상태변경을 정확히 1회 커밋(순수 판정과 분리, 도발 이중호출 안전).
+        decision?.Commit?.Invoke();
+
+        // 자기행동(충전 시작/응축/불발)·스킵: 스킬 실행 없이 턴 소비.
+        if (decision != null && (decision.Skip || decision.IsSelfAction))
+        {
+            if (enableAIDebugLog)
+            {
+                Debug.Log($"[EnemyAI/Debug] {(decision.IsSelfAction ? "SelfAction" : "SkipTurn")}: self={self.UnitName}");
+            }
+
+            yield return new WaitForSeconds(0.5f);
+            yield break;
+        }
+
+        BattleCharactor target = decision != null ? decision.Target : null;
+
+        if (enableAIDebugLog)
+        {
+            string actionTypeLabel = decision != null ? decision.ActionType.ToString() : "DecisionNull";
+            string targetLabel = target != null ? target.UnitName : "null";
+            string skillLabel = decision != null && decision.SelectedSkill != null ? decision.SelectedSkill.skillName : "null";
+            //Debug.Log(
+            //    $"[EnemyAI/Debug] DecideAction result: self={self.UnitName}, action={actionTypeLabel}, target={targetLabel}, selectedSkill={skillLabel}");
+        }
+
+        if (target == null)
+        {
+            target = targets.Find(t => t != null && !t.IsDead);
+            if (target == null)
+            {
+                Debug.LogWarning($"[JcEnemyScript] AI 타겟이 없어 행동을 건너뜁니다: unit={self.UnitName}");
+                yield break;
+            }
+
+            Debug.LogWarning(
+                $"[JcEnemyScript] AI 결정 실패. 턴을 스킵합니다: unit={self.UnitName}, aiNull={currentAI == null}, aliveTargets={targets.Count}, targetList=[{FormatTargets(targets)}]");
+            yield break;
+        }
+
+        EnemyActionType actionType = decision != null ? decision.ActionType : EnemyActionType.ClassSkill;
+        SkillData highlightSkill = ResolveEnemyExecutionSkill(self, decision, actionType);
+
+        // 타겟 발판 하이라이트 표시 후 0.5초 대기
+        flowManager?.ShowTargetHighlight(self, target, highlightSkill);
+        yield return new WaitForSeconds(0.5f);
+
+        switch (actionType)
+        {
+            case EnemyActionType.ClassSkill:
+                if (highlightSkill != null)
+                {
+                    // 적(this)이 자기 공격 도중 반격으로 파괴돼도 코루틴이 끊기지 않도록 BattleManager를 호스트로 사용한다.
+                    yield return battleManager.StartCoroutine(battleManager.ExecuteGridSkill(self, target, highlightSkill));
+                }
+                else
+                {
+                    Debug.LogWarning($"[JcEnemyScript] ClassSkill 선택이지만 스킬이 없어 턴을 스킵합니다: unit={self.UnitName}");
+                }
+                break;
+
+            case EnemyActionType.WeaponSkill:
+                if (highlightSkill != null)
+                {
+                    // 적(this)이 자기 공격 도중 반격으로 파괴돼도 코루틴이 끊기지 않도록 BattleManager를 호스트로 사용한다.
+                    yield return battleManager.StartCoroutine(battleManager.ExecuteGridSkill(self, target, highlightSkill));
+                }
+                else
+                {
+                    Debug.LogWarning($"[JcEnemyScript] WeaponSkill 선택이지만 무기가 없어 턴을 스킵합니다: unit={self.UnitName}");
+                }
+                break;
+
+            default:
+                Debug.LogWarning($"[JcEnemyScript] 알 수 없는 액션 타입으로 턴을 스킵합니다: unit={self.UnitName}");
+                break;
+        }
+
+        flowManager?.ClearTargetHighlight();
+    }
+
+    // 원본 함수 대응: EnemyScript.EnsureAIReady (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+
+    public bool EnsureAIReady()
+    {
+        if (currentAI != null)
+        {
+            return true;
+        }
+
+        int aiIndex = ResolveAiIndex(enemyData);
+        currentAI = JcEnemyAIFactory.CreateAI(aiIndex);
+        bool success = currentAI != null;
+        if (enableAIDebugLog)
+        {
+            string aiType = (enemyData as EnemyData)?.UnitAI;
+            Debug.Log(
+                $"[EnemyAI/Debug] EnsureAIReady: unit={name}, aiTypeRaw='{aiType}', aiIndex={aiIndex}, success={success}");
+        }
+
+        return success;
+    }
+
+    // 원본 함수 대응: EnemyScript.ResolveAiIndex (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+
+    private static int ResolveAiIndex(UnitData data)
+    {
+        EnemyData typedEnemyData = data as EnemyData;
+        if (typedEnemyData == null)
+        {
+            return 20001;
+        }
+
+        // 1) UnitAI에 명시적 숫자가 있으면 그대로 사용(수동 오버라이드).
+        string aiType = typedEnemyData.UnitAI;
+        if (!string.IsNullOrWhiteSpace(aiType) && int.TryParse(aiType.Trim(), out int aiIndex))
+        {
+            return aiIndex;
+        }
+
+        // 2) UnitAI가 설명 텍스트인 경우: 4구역(4000x) 유닛과 개별 적용한 2000x 유닛만 유닛 Index를 AI 인덱스로 사용한다.
+        //    (EnemyData.Index는 "40002" 형태이며, "FV40002" 같은 형식도 숫자만 추출해 대응.)
+        //    2000x는 튜토리얼 이후 순차 적용 예정이라 총잡이(20002)·방패병(20003)만 먼저 전용 AI를 연결하고,
+        //    나머지 2000x는 기존 동작(20001)을 유지한다. → 대상을 늘리려면 IsDedicatedAi2000x에 추가.
+        string indexDigits = System.Text.RegularExpressions.Regex.Match(
+            typedEnemyData.Index ?? string.Empty, @"\d+").Value;
+        if (int.TryParse(indexDigits, out int indexAi)
+            && ((indexAi >= 40000 && indexAi < 50000) || IsDedicatedAi2000x(indexAi)))
+        {
+            return indexAi;
+        }
+
+        return 20001;
+    }
+
+    /// <summary>2000x 중 전용 AI를 개별 적용한 유닛(빌런연합 총잡이·방패병).</summary>
+    private static bool IsDedicatedAi2000x(int index) => index == 20002 || index == 20003;
+
+    // 원본 함수 대응: EnemyScript.ExtractWeaponIndexFromPersistent (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+
+    private static int ExtractWeaponIndexFromPersistent(EnemyUnitPersistentData persistentData)
+    {
+        if (persistentData == null)
+        {
+            return 0;
+        }
+
+        System.Reflection.PropertyInfo weaponProp =
+            persistentData.GetType().GetProperty("CurrentWeaponIndex", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+        if (weaponProp != null && weaponProp.GetValue(persistentData) is int propWeapon && propWeapon > 0)
+        {
+            return propWeapon;
+        }
+
+        System.Reflection.FieldInfo weaponField = persistentData.GetType().GetField(
+            "currentWeaponIndex",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+        if (weaponField != null && weaponField.GetValue(persistentData) is int fieldWeapon && fieldWeapon > 0)
+        {
+            return fieldWeapon;
+        }
+
+        return 0;
+    }
+
+    // 원본 함수 대응: EnemyScript.ExtractSkillIndexFromPersistent (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+
+    private static int ExtractSkillIndexFromPersistent(EnemyUnitPersistentData persistentData, EnemyData fallbackData)
+    {
+        return EnemySkillIndexResolver.ResolveSkillIndexFromPersistent(persistentData, fallbackData);
+    }
+
+    // 원본 함수 대응: EnemyScript.FormatTargets (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+
+    private static string FormatTargets(List<BattleCharactor> targets)
+    {
+        if (targets == null || targets.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var labels = new List<string>(targets.Count);
+        for (int i = 0; i < targets.Count; i++)
+        {
+            BattleCharactor t = targets[i];
+            if (t == null)
+            {
+                labels.Add("null");
+                continue;
+            }
+
+            labels.Add($"{t.UnitName}(dead={t.IsDead},hp={t.CurrentHp:0.#},isPlayer={t.IsPlayer})");
+        }
+
+        return string.Join(", ", labels);
+    }
+
+    // 원본 함수 대응: EnemyScript.ResolveEnemyExecutionSkill (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+
+    private static SkillData ResolveEnemyExecutionSkill(
+        BattleCharactor self,
+        EnemyActionDecision decision,
+        EnemyActionType actionType)
+    {
+        switch (actionType)
+        {
+            case EnemyActionType.ClassSkill:
+            {
+                SkillData classSkill = decision != null ? decision.SelectedSkill : self.SelectedSkillData;
+                return classSkill != null ? EnemySkillExecutionPreparer.Prepare(classSkill) : null;
+            }
+
+            case EnemyActionType.WeaponSkill:
+                return self.EquippedWeaponData != null
+                    ? EnemySkillExecutionPreparer.Prepare(self.EquippedWeaponData.ToSkillData())
+                    : null;
+
+            default:
+                return null;
+        }
+    }
+
+#if UNITY_EDITOR
+    // 원본 함수 대응: EnemyScript.OnValidate (Assets/_ProtoType_Merge/ASB/Scripts/Unit/EnemyScript.cs)
+    private void OnValidate()
+    {
+        if (Application.isPlaying)
+        {
+            return;
+        }
+
+        var battle = GetComponent<BattleCharactor>();
+        if (battle == null)
+        {
+            return;
+        }
+
+        if (enemyData != null && !string.IsNullOrWhiteSpace(enemyData.Name))
+        {
+            battle.SetUnitNameForSkillMatching(enemyData.Name);
+        }
+
+        StatBlock baseStats = inspectorBaseStats;
+
+        battle.SetBaseStats(baseStats);
+        battle.SetLevelScaling(false);
+        battle.RecalculateStats(false);
+        battle.ResolveSelectedSkill(false);
+    }
+#endif
+}

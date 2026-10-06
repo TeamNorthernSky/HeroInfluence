@@ -122,6 +122,12 @@ public class QuarterViewCameraFollower : MonoBehaviour
         edgeScrollVelocity = Vector3.zero;
     }
 
+    // 현재 팬 위치를 포함한 추적 기준점이다. 추가 구도 보정 시 기존 화면을 유지한다.
+    public Vector3 GetFocusWorldPosition()
+    {
+        return GetCurrentFollowAnchor() + panOffset;
+    }
+
     public void FocusWorldPosition(Vector3 worldPosition)
     {
         Vector3 anchor = GetCurrentFollowAnchor();
@@ -230,7 +236,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     {
         JcPointerInput.ClearScroll(this);
         if (!edgeScrollEnabled || !followEnabled || followTarget == null || Time.deltaTime <= 0f ||
-            (blockEdgeScrollOverButtons && JcPointerInput.Inside && IsPointerOverBlockingUI()))
+            (blockEdgeScrollOverButtons && IsPointerOverBlockingUI()))
         {
             edgeScrollVelocity = Vector3.zero;
             return;
@@ -595,13 +601,18 @@ public class QuarterViewCameraFollower : MonoBehaviour
     /// </summary>
     private static bool IsPointerOverBlockingUI()
     {
+        Vector2 pointer = JcPointerInput.ScreenPosition;
+        // 일반 화면 밖 스크롤은 유지하되, 튜토리얼 UI 보호 영역에서 이어지는 방향은 막는다.
+        if (!JcPointerInput.Inside)
+            return JC.Tutorial.JcTutorialScrollGuard.BlocksOutsideScreen(pointer, new Vector2(Screen.width, Screen.height));
+
         EventSystem eventSystem = EventSystem.current;
         if (eventSystem == null)
             return false;
 
         PointerEventData pointerEventData = new PointerEventData(eventSystem)
         {
-            position = Input.mousePosition
+            position = pointer
         };
 
         UiRaycastResults.Clear();
