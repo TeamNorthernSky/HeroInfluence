@@ -62,8 +62,6 @@ public class PartyInteractionController
             return;
 
         HandleAdjacentHeroUnionProximity(enteredGrid);
-        HandleAdjacentOutpostProximity(enteredGrid);
-        HandleVillainUnionProximity(enteredGrid);
     }
 
     public void HandleMoveCompleted()
@@ -83,24 +81,32 @@ public class PartyInteractionController
         if (ZoneEntryGuidanceController.IsActive)
             return;
 
-        if (gridManager.TryGetTutorialEnemyEncounterZoneOwner(ownerParty.GetCurrentGrid(), out TutorialEnemyObject tutorialEnemy))
+        Vector2Int currentGrid = ownerParty.GetCurrentGrid();
+
+        if (gridManager.TryGetTutorialEnemyEncounterZoneOwner(currentGrid, out TutorialEnemyObject tutorialEnemy))
         {
             CancelPendingInteraction();
             IsInputLocked = tutorialEnemy.TryStartTutorialCombat();
             return;
         }
 
-        if (gridManager.TryGetTutorialOutpostInteractionOwner(ownerParty.GetCurrentGrid(), out TutorialOutpostObject tutorialOutpost))
+        if (gridManager.TryGetTutorialOutpostInteractionOwner(currentGrid, out TutorialOutpostObject tutorialOutpost))
         {
             CancelPendingInteraction();
             IsInputLocked = tutorialOutpost.TryInteract();
             return;
         }
 
+        if (HandleAdjacentOutpostProximity(currentGrid))
+            return;
+
+        if (HandleVillainUnionProximity(currentGrid))
+            return;
+
         if (combatEncounterManager == null)
             return;
 
-        if (!gridManager.TryGetEnemyEncounterZoneOwner(ownerParty.GetCurrentGrid(), out EnemyGridMover enemy))
+        if (!gridManager.TryGetEnemyEncounterZoneOwner(currentGrid, out EnemyGridMover enemy))
             return;
 
         CancelPendingInteraction();
@@ -200,21 +206,22 @@ public class PartyInteractionController
         return started;
     }
 
-    private void HandleAdjacentOutpostProximity(Vector2Int enteredGrid)
+    private bool HandleAdjacentOutpostProximity(Vector2Int enteredGrid)
     {
         if (!TryGetOutpostAtInteractionCell(enteredGrid, out Outpost outpost))
-            return;
+            return false;
 
         if (!outpost.IsClaimableByPlayer)
-            return;
+            return false;
 
         BeginAdjacentOutpostClaim(outpost, enteredGrid);
+        return true;
     }
 
-    private void HandleVillainUnionProximity(Vector2Int enteredGrid)
+    private bool HandleVillainUnionProximity(Vector2Int enteredGrid)
     {
         if (!TryGetVillainUnionAtInteractionCell(enteredGrid, out VillainUnionBase villainUnionBase))
-            return;
+            return false;
 
         CancelPendingInteraction();
         if (TryShowDefenderCombatChat(
@@ -223,10 +230,11 @@ public class PartyInteractionController
                 () => BeginVillainUnionDefenderCombat(villainUnionBase)))
         {
             IsInputLocked = true;
-            return;
+            return true;
         }
 
         BeginVillainUnionDefenderCombat(villainUnionBase);
+        return true;
     }
 
     private void OnAdjacentEventCellEntered(Vector2Int eventGrid)
