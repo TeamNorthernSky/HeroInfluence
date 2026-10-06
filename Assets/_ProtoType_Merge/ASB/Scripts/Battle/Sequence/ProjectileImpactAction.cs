@@ -93,6 +93,8 @@ namespace ASB.Work.Battle.Sequence
                 yield break;
             }
 
+            ChargeHoldEffect chargeVisual = instance.GetComponent<ChargeHoldEffect>();
+            chargeVisual?.BeginFlight(_battleSpeed);
             // 체인 2차 등은 원점을 명시적으로 오버라이드(1차 도착 좌표). 없으면 기존 소켓 원점 사용.
             Vector3 start;
             if (_originOverride.HasValue)
@@ -109,7 +111,7 @@ namespace ASB.Work.Battle.Sequence
                 Transform origin = ResolveOrigin(_actor);
                 start = origin != null ? origin.position : _actor.transform.position;
             }
-            Vector3 destination = _destinationOverride ?? (_target != null ? _target.transform.position : start);
+            Vector3 destination = _destinationOverride ?? (_target != null ? _target.transform.position + _visual.TargetOffset : start);
 
             Transform tr = instance.transform;
             if (_existingInstance != null)
@@ -135,8 +137,12 @@ namespace ASB.Work.Battle.Sequence
 
             Transform tracked = (!centerMode && _visual.TrackTarget && _target != null) ? _target.transform : null;
 
-            float distance = Vector3.Distance(start, destination);
+            Vector3 timingDestination = _visual.PreserveRootFlightTime && !centerMode
+                ? destination - _visual.TargetOffset : destination;
+            float distance = Vector3.Distance(start, timingDestination);
             float expectedFlightSeconds = distance / Mathf.Max(0.01f, _visual.Speed);
+            if (_visual.Trajectory != ProjectileTrajectoryType.OverheadDrop)
+                expectedFlightSeconds *= ProjectileAcceleration.DurationScale(_visual.Acceleration, _visual.AccelerationMultiplier);
             float grace = Mathf.Max(0.1f, _visual.TimeoutGraceSeconds);
             float safetyTimeoutSeconds = expectedFlightSeconds + grace;
             float elapsed = 0f;
@@ -168,6 +174,7 @@ namespace ASB.Work.Battle.Sequence
                 }
 
                 tr.position = pos;
+                chargeVisual?.UpdateFlightVisual(pos - lastPos, elapsed / Mathf.Max(.001f, expectedFlightSeconds));
                 lastPos = pos;
 
                 if (arrived)
@@ -191,9 +198,15 @@ namespace ASB.Work.Battle.Sequence
 
             // 도착: 연출 훅 발화 → 전투는 즉시 진행(도착 프레임에 피해). 비주얼은 잔상 후 자체 소멸.
             orbVisual?.BurstAt(ImpactPoint);
+            chargeVisual?.HideAtImpact();
+            if (_visual.HideVisualOnArrival) instance.GetComponent<JC.VFX.JcSimpleVisualPart>()?.Stop();
             hook?.OnImpact(ImpactPoint);
             EndTrails(trails);
-            host.StartCoroutine(DestroyAfter(instance, Mathf.Max(0f, _visual.ImpactVisualLifetime), _battleSpeed));
+            float visualLifetime = Mathf.Max(0f, _visual.ImpactVisualLifetime);
+            var volume = instance.GetComponent<JC.VFX.FlareVolumeVisual>();
+            if (volume != null && volume.preset != null)
+                visualLifetime = Mathf.Max(visualLifetime, volume.preset.trailLifetime);
+            host.StartCoroutine(DestroyAfter(instance, visualLifetime, _battleSpeed));
 
             Complete(ProjectileDeliveryResult.Arrived);
         }

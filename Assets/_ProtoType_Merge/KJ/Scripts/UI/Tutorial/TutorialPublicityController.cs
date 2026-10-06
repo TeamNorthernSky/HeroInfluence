@@ -1,14 +1,15 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>튜토리얼 협회 홍보: 템플릿 키 선택, 전용 자금 지출, 전용 IP 증가.</summary>
 public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionOwner
 {
-    public const int TutorialMaxIp = 50;
-    public const int MaxProgressPerAction = 25;
-    public enum PracticeInput { Unrestricted, Blocked, HeroSelection, Count, Max, Confirm, Close }
+    public const int TutorialMaxIp = 40;
+    public const int PracticeCount = 20;
+    public enum PracticeInput { Unrestricted, Blocked, HeroSelection, Count, Max, Confirm, Close, CountAndConfirm }
     private PracticeInput practiceInput;
+    private int practiceCount = PracticeCount;
     public int MaximizeCount { get; private set; }
     public Button ConfirmButton => btnConfirm;
     public Button CloseButton => btnClose;
@@ -32,8 +33,16 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         countValueText != null ? countValueText.transform.parent.gameObject : null,
         totalCostValueText != null ? totalCostValueText.transform.parent.gameObject : null
     };
-    private bool Allows(PracticeInput input) => practiceInput == PracticeInput.Unrestricted || practiceInput == input;
-    public void SetPracticeInput(PracticeInput input) { practiceInput = input; Refresh(); }
+    private bool Allows(PracticeInput input) => practiceInput == PracticeInput.Unrestricted || practiceInput == input ||
+        (practiceInput == PracticeInput.CountAndConfirm && (input == PracticeInput.Count || input == PracticeInput.Confirm));
+    private bool MatchesPracticeCount =>
+        (practiceInput != PracticeInput.Confirm && practiceInput != PracticeInput.CountAndConfirm) || count == practiceCount;
+    public void SetPracticeInput(PracticeInput input, int targetCount = PracticeCount)
+    {
+        practiceInput = input;
+        practiceCount = targetCount > 0 ? targetCount : PracticeCount;
+        Refresh();
+    }
     [SerializeField] private string[] heroKeys = { "10001", "10002", "10003", "10004" };
     [SerializeField] private TutorialCatalog catalog;
     [SerializeField] private GameObject modalPublicityRoot;
@@ -47,7 +56,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     public System.Collections.Generic.IReadOnlyList<string> HeroKeys => heroKeys;
     public int Count => count;
     public int MaxCount => MaximumCount();
-    // 표시 분모는 남은 전체 홍보 횟수이며, 한 번의 진행 상한(25)과 구분한다.
+    // 분모는 남은 홍보 횟수이며, 고정 슬라이더 눈금(40)과 실습 목표(20)와 구분한다.
     public int AvailableCount => TutorialPublicityState.Get(Repository)?.Pool ?? 0;
     /// <summary>홍보 확정이 성공한 누적 횟수. 튜토리얼 안내가 "진행을 눌렀다"를 감지하는 데 쓴다.</summary>
     public int ConfirmCount { get; private set; }
@@ -105,7 +114,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         {
             int hp = Mathf.RoundToInt(template.BaseStats.HP);
             int ip = Mathf.RoundToInt(template.BaseStats.Influence);
-            state.SetStats(hp, hp, ip, ip, Mathf.RoundToInt(template.BaseStats.Atk));
+            state.SetStats(hp, hp, 0, ip, Mathf.RoundToInt(template.BaseStats.Atk));
         }
         return true;
     }
@@ -123,11 +132,11 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     public void BeginExplanation(string key)
     {
         if (!TryGetHero(key, out var state, out _)) return;
-        // 안내의 두 차례 홍보(25 + 25)를 끝낼 수 있도록 튜토리얼 자원만 준비한다.
+        // 안내의 두 차례 홍보(20 + 20)를 끝낼 수 있도록 튜토리얼 자원만 준비한다.
         var repo = Repository;
         int requiredMoney = TutorialMaxIp * TutorialPublicityState.CostPerProgress;
         repo.SetResource(ResourceType.Money, Mathf.Max(repo.GetResource(ResourceType.Money), requiredMoney));
-        TutorialPublicityState.Get(repo).EnsureAvailableCount(TutorialMaxIp);
+        TutorialPublicityState.Get(repo).PreparePractice(TutorialMaxIp);
         Repository.SetUnitStats(key, state.CurrentHp, state.MaxHp, 0, TutorialMaxIp,
             state.Atk, state.Level, state.Exp, state.MaxExp);
         foreach (var unit in FindObjectsByType<TutorialUnitState>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -161,14 +170,14 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     {
         if (!TryGetHero(SelectedKey, out var state, out _)) return 0;
         var budget = TutorialPublicityState.Get(Repository);
-        return budget != null ? Mathf.Min(MaxProgressPerAction,
+        return budget != null ? Mathf.Min(TutorialMaxIp,
             Mathf.Min(budget.Pool, Mathf.Max(0, state.MaxIp - state.CurrentIp))) : 0;
     }
 
     public void Confirm()
     {
         if (!Allows(PracticeInput.Confirm)) return;
-        if (practiceInput == PracticeInput.Confirm && count != MaxProgressPerAction) return;
+        if (!MatchesPracticeCount) return;
         if (!TryGetHero(SelectedKey, out _, out _)) return;
         if (TutorialPublicityState.Get(Repository).TryProgress(SelectedKey, count))
         {
@@ -192,8 +201,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         count = Mathf.Clamp(count, 0, maximum);
         long cost = (long)count * TutorialPublicityState.CostPerProgress;
         bool affordable = cost <= repo.GetResource(ResourceType.Money);
-        bool canConfirm = selected && count > 0 && affordable && Allows(PracticeInput.Confirm) &&
-            (practiceInput != PracticeInput.Confirm || count == MaxProgressPerAction);
+        bool canConfirm = selected && count > 0 && affordable && Allows(PracticeInput.Confirm) && MatchesPracticeCount;
         if (heroSilhouette != null) heroSilhouette.SetActive(false);
         if (heroProfileImage != null)
         {
@@ -214,8 +222,8 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         {
             progressSlider.wholeNumbers = true;
             progressSlider.minValue = 0;
-            // 1회 진행 상한 25를 눈금에도 반영한다. 남은 IP/예산은 MaximumCount에서 제한한다.
-            progressSlider.maxValue = MaxProgressPerAction;
+            // 실습 목표 20과 독립적으로 0~40 눈금을 유지한다. 남은 IP/예산은 MaximumCount에서 제한한다.
+            progressSlider.maxValue = TutorialMaxIp;
             progressSlider.SetValueWithoutNotify(count);
             progressSlider.interactable = maximum > 0 && Allows(PracticeInput.Count);
             if (CountCaption != null) CountCaption.text = $"{count} / {AvailableCount}";

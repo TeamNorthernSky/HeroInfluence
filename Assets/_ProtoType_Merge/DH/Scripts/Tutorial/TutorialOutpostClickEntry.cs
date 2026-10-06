@@ -12,6 +12,7 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
 
     private TutorialOutpostObject outpost;
     private float lastClickTime = -1f;
+    private bool entering;
 
     private void Awake()
     {
@@ -22,7 +23,7 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
 
     private void Update()
     {
-        if (DHGameEndState.IsEnding)
+        if (DHGameEndState.IsEnding || entering)
             return;
 
         if (!Input.GetMouseButtonDown(0))
@@ -38,7 +39,7 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
             return;
 
         if (!TryHitThisOutpost())
-            return;
+        { lastClickTime = -1f; return; }
 
         if (outpost == null)
             return;
@@ -50,7 +51,7 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
         if (requireDoubleClick && !ConsumeDoubleClick())
             return;
 
-        outpost.TryEnterTutorialLobbyScene();
+        entering = outpost.TryEnterTutorialLobbyScene();
     }
 
     private bool TryHitThisOutpost()
@@ -84,4 +85,5 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
         lastClickTime = now;
         return false;
     }
+    private void OnDisable() { lastClickTime = -1f; entering = false; }
 }

@@ -25,6 +25,8 @@ namespace JC.VFX
         [Tooltip("탄착점에서 링을 내릴 거리(m). 적 몸통 명중 시 지면까지의 높이.")]
         [SerializeField] private float ringGroundOffset = 0.8f;
 
+        [Tooltip("켜면 원샷 종료 후 생성된 루트를 정리합니다. 전투용 플레어봄 부품에만 사용하며 공유 복합 효과는 끕니다.")]
+        [SerializeField] private bool destroyOnFinish;
         private float _t;
         private bool _running;
         private MaterialPropertyBlock _mpb;
@@ -72,6 +74,7 @@ namespace JC.VFX
                 IsPlaying = false;
                 SetActiveAll(false);
                 RaiseFinished();
+                if (destroyOnFinish && Application.isPlaying) Destroy(gameObject);
             }
         }
 
@@ -80,6 +83,7 @@ namespace JC.VFX
             _mpb ??= new MaterialPropertyBlock();
             float burstP = Mathf.Clamp01(_t / Mathf.Max(burstDuration, 0.01f));
             float ringP = Mathf.Clamp01(_t / Mathf.Max(ringDuration, 0.01f));
+            GetComponent<FlareVolumeBurst>()?.Sample(burstP);
             if (burstRenderers != null)
                 foreach (var r in burstRenderers)
                     if (r != null) SetProgress(r, burstP);
@@ -95,6 +99,8 @@ namespace JC.VFX
 
         private void SetActiveAll(bool on)
         {
+            var volume = GetComponent<FlareVolumeBurst>();
+            if (volume != null && volume.fire != null) volume.fire.gameObject.SetActive(on);
             if (burstRenderers != null)
                 foreach (var r in burstRenderers)
                     if (r != null) r.gameObject.SetActive(on);

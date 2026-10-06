@@ -1,18 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>일반 건물만 대상으로 하는 Collider 없는 선분/삼각형 검사. 원본 메시별로 한 번만 읽는다.</summary>
+/// <summary>등록된 가림 대상의 실제 메시와 카메라→파티 단일 선분을 검사한다. 원본 메시별로 한 번만 읽는다.</summary>
 public sealed class JcBuildingMeshOcclusion
 {
-    // DHScene_3의 일반 건물 프리팹 키. 이름이 비슷한 장식까지 포함하지 않는다.
-    private static readonly HashSet<string> BuildingKeys = new HashSet<string>
-    {
-        "BGHouse001", "BGHouse002", "BGOffice001", "BGOffice002",
-        "BGRowHouse001", "BGRowHouse002", "BGFactory001", "BGFactory002",
-        "BGWarehouse_001", "BGWarehouse_002", "BGHigh001", "BGHigh002", "BGHigh003", "BGHigh004",
-        "BGStore001", "BGStore002", "BGStore003", "BGStore004", "BGStore005"
-    };
-
     private sealed class MeshData
     {
         public Vector3[] vertices;
@@ -20,27 +11,10 @@ public sealed class JcBuildingMeshOcclusion
     }
 
     private readonly Dictionary<Mesh, MeshData> meshes = new Dictionary<Mesh, MeshData>();
-    private readonly Dictionary<DecorativeObjectPlacement, MeshFilter[]> parts = new Dictionary<DecorativeObjectPlacement, MeshFilter[]>();
+    private readonly Dictionary<Component, MeshFilter[]> parts = new Dictionary<Component, MeshFilter[]>();
     public int CachedMeshCount => meshes.Count;
-    public static bool IsBuilding(DecorativeObjectPlacement item) => item != null && BuildingKeys.Contains(item.PrefabKey);
     public void Clear() { meshes.Clear(); parts.Clear(); }
-    public void Remove(DecorativeObjectPlacement item) => parts.Remove(item);
-
-    public bool IsOccluded(DecorativeObjectPlacement item, Vector3 camera, Vector3 party, JcBuildingSilhouetteSettings settings)
-    {
-        Vector3 center = party + settings.occlusionBoxOffset;
-        if (settings.occlusionCenterPriority && Blocked(item, camera, center)) return true;
-        Vector3 half = settings.occlusionBoxSize * 0.5f;
-        int hits = 0;
-        for (int i = 0; i < 8; i++)
-        {
-            Vector3 point = center + Vector3.Scale(half, new Vector3((i & 1) == 0 ? -1 : 1,
-                (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
-            if (Blocked(item, camera, point) && ++hits >= settings.occlusionRequiredCorners) return true;
-            if (hits + 7 - i < settings.occlusionRequiredCorners) return false;
-        }
-        return false;
-    }
+    public void Remove(Component item) => parts.Remove(item);
 
     public static bool IntersectsSegment(Bounds bounds, Vector3 from, Vector3 to)
     {
@@ -50,10 +24,9 @@ public sealed class JcBuildingMeshOcclusion
             (bounds.IntersectRay(new Ray(from, delta / length), out float distance) && distance <= length));
     }
 
-    private bool Blocked(DecorativeObjectPlacement item, Vector3 from, Vector3 to)
+    public bool IsOccluded(Component item, Vector3 from, Vector3 to)
     {
-        // 중심만으로 후보를 거르지 않고 각 판정점으로 향하는 선분을 먼저 검사한다.
-        if (!item.TryGetRenderBounds(out Bounds bounds) || !IntersectsSegment(bounds, from, to)) return false;
+        if (item == null || !item.gameObject.activeInHierarchy) return false;
         if (!parts.TryGetValue(item, out var filters))
             parts.Add(item, filters = item.GetComponentsInChildren<MeshFilter>(true));
         foreach (var filter in filters)
@@ -66,11 +39,11 @@ public sealed class JcBuildingMeshOcclusion
             {
                 data = null;
                 if (mesh.isReadable) data = new MeshData { vertices = mesh.vertices, triangles = mesh.triangles };
-                else Debug.LogWarning($"[JC 건물 가림] {mesh.name}: Read/Write가 꺼져 있어 해당 부품은 Bounds 판정으로 대체합니다.", item);
+                else Debug.LogWarning($"[건물 가림] {mesh.name}: 실제 표면을 검사하려면 모델 Import Settings의 Read/Write를 켜야 합니다. 이 메시의 가림 판정은 생략합니다.", item);
                 meshes.Add(mesh, data);
             }
-            // 새 모델의 설정 누락 시 파티가 완전히 가려지는 문제를 피하고 한 번만 경고한다.
-            if (data == null) return true;
+            // 읽기 실패를 가림으로 간주하면 산의 빈 Bounds 영역도 투명해지는 문제가 재발한다.
+            if (data == null) continue;
             Vector3 localFrom = filter.transform.InverseTransformPoint(from);
             Vector3 localDelta = filter.transform.InverseTransformPoint(to) - localFrom;
             for (int i = 0; i + 2 < data.triangles.Length; i += 3)

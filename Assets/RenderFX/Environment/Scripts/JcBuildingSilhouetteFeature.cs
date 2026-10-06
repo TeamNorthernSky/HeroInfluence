@@ -13,6 +13,21 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
     [Tooltip("DH PartyOcclusionFadeController의 대체 머티리얼과 같은 자산을 지정하세요.")]
     public Material silhouetteMaterial;
 
+    private static UnityEngine.Object tutorialOwner;
+    private static Transform tutorialTarget, cachedTutorialTarget;
+    private static Renderer[] tutorialRenderers;
+    private static Color tutorialColor;
+    public static void SetTutorialHighlight(UnityEngine.Object owner, Transform target, Color color)
+    {
+        if (owner == null || target == null) return;
+        tutorialOwner = owner; tutorialTarget = target; tutorialColor = color;
+        if (cachedTutorialTarget != target || tutorialRenderers == null)
+        { cachedTutorialTarget = target; tutorialRenderers = target.GetComponentsInChildren<Renderer>(true); }
+    }
+    public static void ClearTutorialHighlight(UnityEngine.Object owner)
+    { if (tutorialOwner == owner) { tutorialOwner = null; tutorialTarget = null; } }
+    private MaskPass tutorialMaskPass;
+    private CompositePass tutorialCompositePass;
     private MaskPass maskPass;
     private CompositePass compositePass;
     private ShadowRemovalPass shadowRemovalPass;
@@ -20,7 +35,12 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
     public override void Create()
     {
         maskPass?.Dispose();
+        tutorialMaskPass?.Dispose();
         shadowRemovalPass?.Dispose();
+        tutorialMaskPass = new MaskPass("_JcTutorialBuildingMask");
+        tutorialMaskPass.renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents + 1);
+        tutorialCompositePass = new CompositePass(tutorialMaskPass);
+        tutorialCompositePass.renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.BeforeRenderingTransparents + 2);
         maskPass = new MaskPass();
         compositePass = new CompositePass(maskPass);
         shadowRemovalPass = new ShadowRemovalPass(maskPass);
@@ -46,11 +66,28 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         if (!PartyOcclusionFadeController.TryHasFadedObjects(scene, out bool hasFaded) || hasFaded)
             renderer.EnqueuePass(shadowRemovalPass);
         renderer.EnqueuePass(compositePass);
+        if (tutorialOwner != null && tutorialTarget != null && tutorialTarget.gameObject.scene == scene)
+        {
+            var highlight = JcBuildingSilhouetteSettings.Default;
+            float pulse = .5f + .5f * Mathf.Sin(Time.unscaledTime * Mathf.PI * 2 / 1.6f);
+            highlight.opacity = 0;
+            highlight.outlineColor = tutorialColor * Mathf.Lerp(1.3f, 2.2f, pulse);
+            highlight.outlineOpacity = 1;
+            highlight.outlineWidthMode = JcBuildingOutlineWidthMode.ScreenPixels;
+            highlight.outlineWidth = Mathf.Lerp(3, 5, pulse);
+            tutorialMaskPass.Setup(true, highlight, renderingData.cameraData.camera);
+            tutorialMaskPass.explicitRenderers = tutorialRenderers;
+            tutorialMaskPass.overrideMaterial = silhouetteMaterial;
+            tutorialCompositePass.Setup(silhouetteMaterial, compositeIndex);
+            renderer.EnqueuePass(tutorialMaskPass);
+            renderer.EnqueuePass(tutorialCompositePass);
+        }
     }
 
     protected override void Dispose(bool disposing)
     {
         maskPass?.Dispose();
+        tutorialMaskPass?.Dispose();
         shadowRemovalPass?.Dispose();
     }
 
@@ -68,6 +105,9 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         private Color outline;
         private Vector4 pixelSize;
         public RTHandle Mask { get; private set; }
+        public Renderer[] explicitRenderers;
+        public Material overrideMaterial;
+        private readonly string maskName;
 
         public void Setup(bool enabled, JcBuildingSilhouetteSettings tuning, Camera camera)
         {
@@ -91,8 +131,9 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
 
         public void ClearTuning(CommandBuffer cmd) => cmd.SetGlobalVector(TuningId, Vector4.zero);
 
-        public MaskPass()
+        public MaskPass(string name = "_JcBuildingSilhouetteMask")
         {
+            maskName = name;
             // 그림자 제외 색을 기존 외곽선보다 먼저 적용한다. 깊이 입력은 URP가 준비한다.
             renderPassEvent = (RenderPassEvent)((int)RenderPassEvent.AfterRenderingOpaques + 1);
             ConfigureInput(ScriptableRenderPassInput.Depth);
@@ -112,7 +153,7 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             desc.autoGenerateMips = false;
             RTHandle target = Mask;
             RenderingUtils.ReAllocateIfNeeded(ref target, desc, FilterMode.Bilinear,
-                TextureWrapMode.Clamp, name: "_JcBuildingSilhouetteMask");
+                TextureWrapMode.Clamp, name: maskName);
             Mask = target;
             ConfigureTarget(Mask);
             ConfigureClear(ClearFlag.Color, Color.clear);
@@ -122,6 +163,18 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
         {
             CommandBuffer cmd = CommandBufferPool.Get("JC Building Silhouette Tuning");
             WriteTuning(cmd);
+            if (overrideMaterial != null && explicitRenderers != null)
+            {
+                int pass = overrideMaterial.FindPass("SilhouetteMask");
+                if (pass >= 0) foreach (var target in explicitRenderers)
+                {
+                    if (target == null || !target.enabled || !target.gameObject.activeInHierarchy) continue;
+                    Mesh mesh = target is SkinnedMeshRenderer skin ? skin.sharedMesh : target.GetComponent<MeshFilter>()?.sharedMesh;
+                    if (mesh == null) continue;
+                    for (int i = 0; i < mesh.subMeshCount; i++) cmd.DrawRenderer(target, overrideMaterial, i, pass);
+                }
+                context.ExecuteCommandBuffer(cmd); CommandBufferPool.Release(cmd); return;
+            }
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
             DrawingSettings draw = CreateDrawingSettings(MaskTag, ref renderingData, SortingCriteria.None);

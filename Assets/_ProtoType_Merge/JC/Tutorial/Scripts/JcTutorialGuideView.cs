@@ -19,6 +19,8 @@ namespace JC.Tutorial
         public JcTutorialGraphic pointer;
         [Tooltip("수직 또는 수평의 큰 분절 화살표로 가리킬 대상입니다. 탐사 턴 종료 버튼을 연결합니다.")]
         public RectTransform centeredPointerTarget;
+        [Tooltip("레거시 분절 화살표입니다. 현재 튜토리얼에서는 사용하지 않습니다.")]
+        public bool useLegacySegmentedArrow;
         [Min(20), Tooltip("대상 위아래 또는 좌우에 배치되는 분절 화살표의 최대 너비(Canvas 단위)입니다.")]
         public float centeredPointerWidth=150;
         [Min(6), Tooltip("큰 분절 화살표로 안내하는 대상의 강조 테두리 두께입니다.")]
@@ -46,7 +48,7 @@ namespace JC.Tutorial
         [Min(.1f), Tooltip("테두리 밝기가 한 번 왕복하는 시간(초)입니다. 게임 시간 배율과 무관합니다.")]
         public float pulsePeriod = 1.6f;
         [Tooltip("클릭 대상 강조색입니다. 실제 적용값은 씬에 저장됩니다.")]
-        public Color accent = new Color(.48f, 1f, .82f, 1);
+        public Color accent = new Color(25f / 255f, 1f, 84f / 255f, 1);
         [Min(0), Tooltip("강조 테두리와 대상 UI 사이의 여유입니다. Canvas 기준 단위입니다.")]
         public float focusPadding = 9;
         [Min(0), Tooltip("포인터가 대상 UI 위에서 떨어지는 거리입니다. Canvas 기준 단위입니다.")]
@@ -57,16 +59,83 @@ namespace JC.Tutorial
         [Tooltip("안내 패널이 마우스 입력을 받는지 정합니다. 탐사의 조작 안내 중에는 끄고 확인 설명창에서만 켭니다.")]
         public bool blockPanelRaycasts = true;
 
+        public enum FocusPresentation { PointerAbove, ResourceBlock, Spotlight, BorderOnly, DimmedExplanation }
+        [System.Serializable]
+        public sealed class ResourceRegion
+        {
+            public RectTransform target, background;
+            [Tooltip("통합 자원 배경 그림의 구획. 좌하단 원점의 0~1 범위입니다.")]
+            public Rect normalizedBounds;
+        }
+        public ResourceRegion[] resourceRegions = System.Array.Empty<ResourceRegion>();
+        [Tooltip("씬에 배치한 안내 디밍입니다. 대상과 메시지 영역은 밝게 유지합니다.")]
+        public JcTutorialSpotlight spotlight;
+        private FocusPresentation focusPresentation;
         private bool visible;
+        [System.Serializable]
+        public sealed class ContentEdit
+        {
+            public string sourceTitle, sourceBody, title, body;
+        }
+        [System.Serializable]
+        private sealed class ContentEdits { public System.Collections.Generic.List<ContentEdit> edits; }
+        [SerializeField, Tooltip("플레이 UI 편집 도구가 저장한 안내 문구입니다. 진행 조건과 자원 수치는 바꾸지 않습니다.")]
+        private System.Collections.Generic.List<ContentEdit> contentEdits = new System.Collections.Generic.List<ContentEdit>();
+        private string sourceTitle, sourceBody;
+        public bool IsContentText(TMP_Text text) => text != null && (text == heading || text == message);
+        public bool HasEditedCurrentContent => contentEdits.Exists(e => e.sourceTitle == sourceTitle && e.sourceBody == sourceBody);
+        public string CaptureCurrentContentTexts()
+        {
+            string title = heading != null ? heading.text : null, body = message != null ? message.text : null;
+            if (heading != null) CaptureContentEdit(heading, title);
+            return message != null ? CaptureContentEdit(message, body) : JsonUtility.ToJson(new ContentEdits { edits = contentEdits });
+        }
+        public string CaptureContentEdit(TMP_Text text, string value)
+        {
+            var edit = contentEdits.Find(e => e.sourceTitle == sourceTitle && e.sourceBody == sourceBody);
+            if (edit == null) { edit = new ContentEdit { sourceTitle = sourceTitle, sourceBody = sourceBody, title = heading != null ? heading.text : sourceTitle, body = message != null ? message.text : sourceBody }; contentEdits.Add(edit); }
+            if (text == heading) edit.title = value; else edit.body = value;
+            SetContent(sourceTitle, sourceBody);
+            return JsonUtility.ToJson(new ContentEdits { edits = contentEdits });
+        }
+        public void SetContentEdits(string json) => contentEdits = JsonUtility.FromJson<ContentEdits>(json).edits ?? new System.Collections.Generic.List<ContentEdit>();
         private RectTransform focus;
         private readonly Vector3[] corners = new Vector3[4];
         public bool IsRequestedVisible => visible;
 
         private void Awake() { BindWordWrapping(message); if (panel != null) panel.alpha = 0; SetVisible(false); }
         public void SetContent(string title, string body)
-        { BindWordWrapping(message); if (heading != null && heading.text != title) heading.text = title; if (message != null && message.text != body) message.text = body; }
-        public void SetVisible(bool value, RectTransform target = null) { visible = value; focus = value ? target : null; }
-        private void LateUpdate() => RenderPresentation(Time.unscaledTime, Time.unscaledDeltaTime);
+        {
+            sourceTitle = title; sourceBody = body;
+            var edit = contentEdits.Find(e => e.sourceTitle == title && e.sourceBody == body);
+            if (edit != null) { title = edit.title; body = edit.body; }
+            BindWordWrapping(message); if (heading != null && heading.text != title) heading.text = title; if (message != null && message.text != body) message.text = body;
+        }
+        public void SetVisible(bool value, RectTransform target = null, FocusPresentation presentation = FocusPresentation.PointerAbove)
+        {
+            visible = value; focus = value ? target : null; focusPresentation = presentation;
+            if (spotlight != null && (!value || (presentation != FocusPresentation.Spotlight && presentation != FocusPresentation.DimmedExplanation))) spotlight.gameObject.SetActive(false);
+        }
+        [Min(0), Tooltip("탐사 본문이 있는 메시지 박스의 최소 높이(Canvas 단위)입니다. 긴 본문은 필요한 만큼 더 늘어납니다.")]
+        public float minimumMessageHeight = 340;
+        [Min(0), Tooltip("본문 아래에 확보할 확인 버튼과 여백의 높이(Canvas 단위)입니다.")]
+        public float messageBottomSpace = 86;
+        public void FitMessageLayout()
+        {
+            if (panel == null || message == null) return;
+            var card = panel.transform as RectTransform;
+            var text = message.rectTransform;
+            if (card == null || text.parent != card) return;
+            float width = Mathf.Max(1, card.rect.width - 64);
+            float height = Mathf.Max(120, message.GetPreferredValues(message.text, width, Mathf.Infinity).y + 8);
+            const float top = 73;
+            card.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(minimumMessageHeight, top + height + messageBottomSpace));
+            text.anchorMin = text.anchorMax = new Vector2(.5f, 1);
+            text.pivot = new Vector2(.5f, 1);
+            text.anchoredPosition = new Vector2(0, -top);
+            text.sizeDelta = new Vector2(width, height);
+        }
+        private void LateUpdate() { if (visible) FitMessageLayout(); RenderPresentation(Time.unscaledTime, Time.unscaledDeltaTime); }
 
         // 비플레이 정적 렌더 검증에도 사용한다. 입력·게임 상태를 변경하지 않는다.
         public void RenderPresentation(float time, float delta)
@@ -77,6 +146,13 @@ namespace JC.Tutorial
                 panel.blocksRaycasts = visible && !suppressPanel && blockPanelRaycasts;
             }
             bool showFocus = visible && focus != null && focus.gameObject.activeInHierarchy;
+            bool dimmed = visible && (focusPresentation == FocusPresentation.DimmedExplanation ||
+                (showFocus && focusPresentation == FocusPresentation.Spotlight));
+            if (spotlight != null)
+            {
+                spotlight.SetTargets(!suppressPanel && panel != null ? panel.transform as RectTransform : null, focus);
+                spotlight.gameObject.SetActive(dimmed);
+            }
             if (focusFrame == null || pointer == null) return;
             focusFrame.gameObject.SetActive(showFocus); pointer.gameObject.SetActive(showFocus);
             if(convergingOutlines!=null)foreach(var outline in convergingOutlines)if(outline!=null)outline.gameObject.SetActive(showFocus);
@@ -88,6 +164,23 @@ namespace JC.Tutorial
             Camera targetCamera = targetCanvas != null && targetCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? targetCanvas.worldCamera : null;
             Camera overlayCamera = overlayCanvas != null && overlayCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? overlayCanvas.worldCamera : null;
             focus.GetWorldCorners(corners);
+            if (focusPresentation == FocusPresentation.ResourceBlock && resourceRegions != null)
+                foreach (var region in resourceRegions)
+                    if (region != null && region.target == focus && region.background != null)
+                    {
+                        var background = region.background;
+                        var area = region.normalizedBounds;
+                        var bounds = background.rect;
+                        var lo = bounds.min + Vector2.Scale(bounds.size, area.min);
+                        var hi = bounds.min + Vector2.Scale(bounds.size, area.max);
+                        corners[0] = background.TransformPoint(new Vector3(lo.x, lo.y));
+                        corners[1] = background.TransformPoint(new Vector3(lo.x, hi.y));
+                        corners[2] = background.TransformPoint(new Vector3(hi.x, hi.y));
+                        corners[3] = background.TransformPoint(new Vector3(hi.x, lo.y));
+                        var sourceCanvas = background.GetComponentInParent<Canvas>();
+                        targetCamera = sourceCanvas != null && sourceCanvas.renderMode != RenderMode.ScreenSpaceOverlay ? sourceCanvas.worldCamera : null;
+                        break;
+                    }
             Vector2 min = new Vector2(float.PositiveInfinity, float.PositiveInfinity), max = -min;
             for (int i = 0; i < corners.Length; i++)
             {
@@ -95,8 +188,9 @@ namespace JC.Tutorial
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, RectTransformUtility.WorldToScreenPoint(targetCamera, corners[i]), overlayCamera, out local);
                 min = Vector2.Min(min, local); max = Vector2.Max(max, local);
             }
-            min = Vector2.Max(min - Vector2.one * focusPadding, parent.rect.min + Vector2.one * 2);
-            max = Vector2.Min(max + Vector2.one * focusPadding, parent.rect.max - Vector2.one * 2);
+            float padding = focusPresentation == FocusPresentation.ResourceBlock ? 0 : focusPadding;
+            min = Vector2.Max(min - Vector2.one * padding, parent.rect.min + Vector2.one * 2);
+            max = Vector2.Min(max + Vector2.one * padding, parent.rect.max - Vector2.one * 2);
             if (max.x <= min.x || max.y <= min.y) { focusFrame.gameObject.SetActive(false); pointer.gameObject.SetActive(false); return; }
             float pulse = .5f + .5f * Mathf.Sin(time * Mathf.PI * 2 / Mathf.Max(.1f, pulsePeriod));
             var rect = focusFrame.rectTransform;
@@ -117,9 +211,10 @@ namespace JC.Tutorial
                     o.rectTransform.localPosition=(lo+hi)*.5f;o.rectTransform.sizeDelta=hi-lo;
                     o.color=new Color(accent.r,accent.g,accent.b,Mathf.Sin(progress*Mathf.PI)*.65f);o.AnimateSweep(time);
                 }
+            if (focusPresentation == FocusPresentation.Spotlight || focusPresentation == FocusPresentation.BorderOnly) { pointer.gameObject.SetActive(false); return; }
             if(compactPointerSize==Vector2.zero)compactPointerSize=pointer.rectTransform.sizeDelta;
             pointer.color = accent;
-            if(focus == centeredPointerTarget) {
+            if(useLegacySegmentedArrow && focus == centeredPointerTarget) {
                 pointer.AimFromCenter(min,max,centeredPointerWidth,ConvergenceExpansion+8);
                 if(animatedPointerTarget!=focus) { animatedPointerTarget=focus;pointerElapsed=0; }
                 pointerElapsed+=Mathf.Max(0,delta);
@@ -128,15 +223,18 @@ namespace JC.Tutorial
                 return;
             }
             pointer.SetShape(JcTutorialGraphic.Shape.Pointer);
-            pointer.rectTransform.localRotation=Quaternion.identity;
+            pointer.rectTransform.localRotation = focusPresentation == FocusPresentation.ResourceBlock ? Quaternion.Euler(0, 0, 180) : Quaternion.identity;
             pointer.rectTransform.sizeDelta=compactPointerSize;
             float halfPointer = pointer.rectTransform.rect.height * .5f;
             pointer.rectTransform.localPosition = new Vector3((min.x + max.x) * .5f,
-                Mathf.Min(parent.rect.yMax - halfPointer - 2, max.y + pointerGap + pointerTravel * pulse + halfPointer), 0);
+                focusPresentation == FocusPresentation.ResourceBlock
+                    ? Mathf.Max(parent.rect.yMin + halfPointer + 2, min.y - pointerGap - pointerTravel * pulse - halfPointer)
+                    : Mathf.Min(parent.rect.yMax - halfPointer - 2, max.y + pointerGap + pointerTravel * pulse + halfPointer), 0);
         }
 
         private void OnDisable()
         {
+            if (spotlight != null) spotlight.gameObject.SetActive(false);
             if (focusFrame != null) focusFrame.gameObject.SetActive(false);
             if (pointer != null) pointer.gameObject.SetActive(false);
             if(convergingOutlines!=null)foreach(var o in convergingOutlines)if(o!=null)o.gameObject.SetActive(false);

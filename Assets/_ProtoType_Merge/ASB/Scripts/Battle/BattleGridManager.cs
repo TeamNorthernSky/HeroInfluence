@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using ASB.Work.Battle.SkillExecution;
 
@@ -29,6 +29,8 @@ namespace ASB.Work.BattleGrid
         [Tooltip("JC_BattleUI_VFX/CellBox의 셀 투명도 설정입니다. 미연결이면 기존 재질 그대로 표시합니다.")]
         [SerializeField] private BattleCellVisualSettings cellVisualSettings;
         private readonly HashSet<GridCell> selectableCells = new HashSet<GridCell>();
+        // 입력에서 확정한 직접 선택 대상의 진형만 비선택 셀 표시를 허용합니다.
+        private readonly HashSet<bool> selectableSides = new HashSet<bool>();
         private bool selectingTargets;
         public bool UsesBattleTilePresentation => useBattleTilePresentation;
 
@@ -189,6 +191,7 @@ namespace ASB.Work.BattleGrid
         {
             if (!useBattleTilePresentation) return;
             selectableCells.Clear();
+            selectableSides.Clear();
             selectingTargets = true;
             var actor = flowManager != null ? flowManager.CurrentUnit : null;
             var kind = SkillActivationRules.Kind(actor, inputHandler != null ? inputHandler.PendingSkill : null);
@@ -197,6 +200,7 @@ namespace ASB.Work.BattleGrid
                 {
                     var occupied = FindCellByUnit(unit);
                     if (occupied == null) continue;
+                    selectableSides.Add(occupied.Coords.x >= 2);
                     foreach (var cell in cellsByCoords.Values)
                     {
                         bool sameSide = (cell.Coords.x >= 2) == (occupied.Coords.x >= 2);
@@ -215,7 +219,11 @@ namespace ASB.Work.BattleGrid
             {
                 if (hostage == null) continue;
                 var cell = hostage.GetComponentInParent<GridCell>();
-                if (cell != null) selectableCells.Add(cell);
+                if (cell != null)
+                {
+                    selectableCells.Add(cell);
+                    selectableSides.Add(cell.Coords.x >= 2);
+                }
             }
             RefreshTilePresentation();
         }
@@ -224,6 +232,7 @@ namespace ASB.Work.BattleGrid
         {
             selectingTargets = false;
             selectableCells.Clear();
+            selectableSides.Clear();
             RefreshTilePresentation();
         }
 
@@ -242,7 +251,8 @@ namespace ASB.Work.BattleGrid
                 if (!ended)
                 {
                     if (cell == _previewMainTargetCell || _previewHighlightedCells.Contains(cell)) material = MainTargetHighlightMaterial;
-                    else if (choosing) material = selectableCells.Contains(cell) ? TargetMaterial : unavailableMaterial;
+                    else if (choosing) material = selectableCells.Contains(cell) ? TargetMaterial :
+                        selectableSides.Contains(cell.Coords.x >= 2) ? unavailableMaterial : ClearMaterial;
                     else if (cell == current) material = currentTurnMaterial;
                 }
                 cell.SetMaterial(material);
@@ -252,7 +262,12 @@ namespace ASB.Work.BattleGrid
                         material == TargetMaterial ? cellVisualSettings.selectableAlpha :
                         material == MainTargetHighlightMaterial ? cellVisualSettings.confirmedAreaAlpha :
                         material == unavailableMaterial ? cellVisualSettings.unavailableAlpha : 1f;
-                    cellVisualSettings.Apply(cell, alpha);
+                    var visualState = material == ClearMaterial ? BattleCellVisualState.Hidden :
+                        material == currentTurnMaterial ? BattleCellVisualState.CurrentTurn :
+                        material == TargetMaterial ? BattleCellVisualState.Selectable :
+                        material == MainTargetHighlightMaterial ? BattleCellVisualState.ConfirmedArea :
+                        material == unavailableMaterial ? BattleCellVisualState.Unavailable : BattleCellVisualState.Hidden;
+                    cellVisualSettings.Apply(cell, alpha, visualState);
                 }
             }
         }

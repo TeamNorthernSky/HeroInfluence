@@ -86,6 +86,9 @@ public class SkillPresentationDataEditor : Editor
         using (new EditorGUI.DisabledScope(enHit != null && !enHit.boolValue))
         {
             EditorGUILayout.PropertyField(serializedObject.FindProperty("HitEffectId"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("HitEffectAtTargetRoot"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("HitEffectOffset"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("ScaleHitEffectWithBattleSpeed"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("HitSoundId"));
         }
         EditorGUILayout.PropertyField(serializedObject.FindProperty("SfxVolume"));

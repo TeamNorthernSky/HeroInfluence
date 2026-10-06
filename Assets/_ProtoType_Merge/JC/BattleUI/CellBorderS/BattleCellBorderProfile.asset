@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74639ac919714a44f99350284ecbe0cd, type: 3}
+  m_Name: BattleCellBorderProfile
+  m_EditorClassIdentifier: 
+  settings:
+    currentTurn:
+      shape:
+        size: {x: 3.3, y: 3.3}
+        padding: 0.23
+        cornerRadius: 0.55
+        curveSegments: 14
+        outerWidth: 0.05
+        mainWidth: 0.15
+        innerWidth: 0.035
+        depth: 0.08
+        floatHeight: 0.1
+      showOuter: 1
+      showInner: 1
+      outlineColor: {r: 1, g: 0.8078432, b: 0, a: 1}
+      mainColor: {r: 1, g: 0.8086575, b: 0, a: 0.39607844}
+      allowSweep: 1
+      useFill: 1
+      fillColor: {r: 1, g: 0.95463896, b: 0.56289303, a: 1}
+      fillOpacity: 0.079
+      fillTexture: {fileID: 0}
+    selectable:
+      shape:
+        size: {x: 3.3, y: 3.3}
+        padding: 0.14
+        cornerRadius: 0.55
+        curveSegments: 14
+        outerWidth: 0.05
+        mainWidth: 0.15
+        innerWidth: 0.035
+        depth: 0.08
+        floatHeight: 0.1
+      showOuter: 1
+      showInner: 1
+      outlineColor: {r: 0.21585597, g: 1, b: 0.19999999, a: 1}
+      mainColor: {r: 0.21568629, g: 1, b: 0.20000002, a: 0.30588236}
+      allowSweep: 1
+      useFill: 1
+      fillColor: {r: 0.21568629, g: 1, b: 0.20000002, a: 1}
+      fillOpacity: 0.13
+      fillTexture: {fileID: 0}
+    confirmedArea:
+      shape:
+        size: {x: 3.3, y: 3.3}
+        padding: 0.14
+        cornerRadius: 0.55
+        curveSegments: 14
+        outerWidth: 0.05
+        mainWidth: 0.15
+        innerWidth: 0.035
+        depth: 0.08
+        floatHeight: 0.1
+      showOuter: 1
+      showInner: 1
+      outlineColor: {r: 1, g: 0.121568635, b: 0.10196079, a: 1}
+      mainColor: {r: 1, g: 0.12, b: 0.1, a: 0.39607844}
+      allowSweep: 1
+      useFill: 1
+      fillColor: {r: 1, g: 0.61320746, b: 0.61320746, a: 1}
+      fillOpacity: 0.16
+      fillTexture: {fileID: 0}
+    unavailable:
+      shape:
+        size: {x: 3.3, y: 3.3}
+        padding: 0.14
+        cornerRadius: 0.55
+        curveSegments: 14
+        outerWidth: 0.05
+        mainWidth: 0.15
+        innerWidth: 0.035
+        depth: 0.11
+        floatHeight: 0.1
+      showOuter: 1
+      showInner: 1
+      outlineColor: {r: 0.2, g: 0.22, b: 0.25, a: 1}
+      mainColor: {r: 0.13, g: 0.14, b: 0.16, a: 1}
+      allowSweep: 0
+      useFill: 1
+      fillColor: {r: 0.41509432, g: 0.30740476, b: 0.30740476, a: 1}
+      fillOpacity: 0.25
+      fillTexture: {fileID: 0}
+    bobPeriod: 1.8
+    bobAmplitude: 0.15
+    resyncDuration: 0.3
+    useSweep: 1
+    sweepColor: {r: 1, g: 1, b: 1, a: 1}
+    sweepIntensity: 2
+    sweepWidth: 0.12
+    sweepSoftness: 0.5
+    sweepTilt: 18
+    sweepDuration: 0.8
+    sweepInterval: 1.5
+    reverseSweep: 0

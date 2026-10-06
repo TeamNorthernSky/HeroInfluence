@@ -32,12 +32,14 @@ public class PartyOcclusionFadeController : MonoBehaviour
     [SerializeField, Range(0.05f, 1f)] private float occludedAlpha = 0.45f;
     [SerializeField, Min(0f)] private float checkInterval = 0.1f;
     [SerializeField] private Vector3 partyFocusOffset = new Vector3(0f, 0.8f, 0f);
+    [Tooltip("가림 후보 검색용 Bounds의 전체 크기에 더할 월드 거리입니다. 0은 원래 크기이며, 실제 투명화 여부는 메시 표면과 파티 기준점까지의 선분 교차로 결정합니다. 씬·프리팹에 저장됩니다.")]
     [SerializeField, Min(0f)] private float boundsPadding;
 
     private readonly HashSet<DecorativeObjectPlacement> fadedObjects = new HashSet<DecorativeObjectPlacement>();
     private readonly HashSet<DecorativeObjectPlacement> currentOccluders = new HashSet<DecorativeObjectPlacement>();
     private readonly HashSet<PartyOcclusionFadeTarget> fadedTargets = new HashSet<PartyOcclusionFadeTarget>();
     private readonly HashSet<PartyOcclusionFadeTarget> currentTargetOccluders = new HashSet<PartyOcclusionFadeTarget>();
+    private readonly JcBuildingMeshOcclusion meshOcclusion = new JcBuildingMeshOcclusion();
     private float nextCheckTime;
 
     private void Awake()
@@ -58,6 +60,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
         ActiveControllers.Remove(this);
         UnsubscribeRegistry();
         RestoreAll();
+        meshOcclusion.Clear();
     }
 
     private void LateUpdate()
@@ -91,12 +94,11 @@ public class PartyOcclusionFadeController : MonoBehaviour
             return;
         }
 
-        Ray ray = new Ray(from, segment / segmentLength);
         currentOccluders.Clear();
         currentTargetOccluders.Clear();
 
-        AddDecorativeOccluders(ray, segmentLength);
-        AddFadeTargetOccluders(ray, segmentLength);
+        AddDecorativeOccluders(from, to);
+        AddFadeTargetOccluders(from, to);
 
         RestoreNoLongerOccluding();
         RestoreTargetsNoLongerOccluding();
@@ -110,7 +112,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
             fadedTargets.Add(target);
     }
 
-    private void AddDecorativeOccluders(Ray ray, float segmentLength)
+    private void AddDecorativeOccluders(Vector3 from, Vector3 to)
     {
         if (decorativeObjectRegistry == null)
             return;
@@ -124,7 +126,9 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
             if (!decorativeObject.TryGetRenderBounds(out Bounds bounds, boundsPadding))
                 continue;
-            if (!bounds.IntersectRay(ray, out float distance) || distance > segmentLength)
+            if (!JcBuildingMeshOcclusion.IntersectsSegment(bounds, from, to))
+                continue;
+            if (!meshOcclusion.IsOccluded(decorativeObject, from, to))
                 continue;
 
             currentOccluders.Add(decorativeObject);
@@ -132,7 +136,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
         }
     }
 
-    private void AddFadeTargetOccluders(Ray ray, float segmentLength)
+    private void AddFadeTargetOccluders(Vector3 from, Vector3 to)
     {
         if (occlusionFadeTargetRegistry == null)
             return;
@@ -146,7 +150,9 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
             if (!target.TryGetRenderBounds(out Bounds bounds, boundsPadding))
                 continue;
-            if (!bounds.IntersectRay(ray, out float distance) || distance > segmentLength)
+            if (!JcBuildingMeshOcclusion.IntersectsSegment(bounds, from, to))
+                continue;
+            if (!meshOcclusion.IsOccluded(target, from, to))
                 continue;
 
             currentTargetOccluders.Add(target);
@@ -207,6 +213,8 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
         fadedObjects.Remove(decorativeObject);
         currentOccluders.Remove(decorativeObject);
+        if (decorativeObject != null)
+            meshOcclusion.Remove(decorativeObject);
     }
 
     private void HandleFadeTargetUnregistered(PartyOcclusionFadeTarget target)
@@ -216,6 +224,8 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
         fadedTargets.Remove(target);
         currentTargetOccluders.Remove(target);
+        if (target != null)
+            meshOcclusion.Remove(target);
     }
 
     private void SubscribeRegistry()

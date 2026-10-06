@@ -3,11 +3,12 @@ using UnityEngine.UI;
 
 namespace JC.Tutorial
 {
-    // 미니맵 내부 클릭은 통과시키고, 버튼 영역은 자식 버튼 뒤에서 빈틈과 바깥 24 Canvas 단위를 보호한다.
+    // 미니맵 보호와 다음 턴 버튼에서 이어지는 외부 스크롤 구간을 구분한다.
     [RequireComponent(typeof(Image), typeof(CameraEdgeScrollBlocker))]
     public sealed class JcTutorialScrollGuard : MonoBehaviour, ICanvasRaycastFilter
     {
         public RectTransform content;
+        private bool outsideButtonBands;
         private bool passThroughContent;
         public bool IsRaycastLocationValid(Vector2 point, Camera camera) => content != null && (!passThroughContent || !RectTransformUtility.RectangleContainsScreenPoint(content, point, camera));
         public static bool BlocksOutsideScreen(Vector2 point, Vector2 screenSize)
@@ -22,11 +23,38 @@ namespace JC.Tutorial
                 var canvas = guard.GetComponentInParent<Canvas>();
                 if (canvas == null || !canvas.isActiveAndEnabled) continue;
                 var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                if (guard.outsideButtonBands)
+                {
+                    var rect = guard.content.rect;
+                    // 그림의 우측 띠는 버튼 높이, 아래 띠는 버튼 너비를 기준으로 한다.
+                    // 두 축을 모서리로 투영하지 않아 우하단 바깥 모서리까지 차단이 퍼지지 않는다.
+                    var right = ScreenBounds(guard.content, Rect.MinMaxRect(rect.xMin, rect.yMin - 40, rect.xMax, rect.yMax + 8), camera);
+                    var bottom = ScreenBounds(guard.content, Rect.MinMaxRect(rect.xMin + 16, rect.yMin, rect.xMax, rect.yMax), camera);
+                    if (ContainsOutsideButtonBands(point, screenSize, right, bottom)) return true;
+                    continue;
+                }
                 if (RectTransformUtility.RectangleContainsScreenPoint((RectTransform)guard.transform, edgePoint, camera)) return true;
             }
             return false;
         }
-        public static void Install(RectTransform target)
+        public static bool ContainsOutsideButtonBands(Vector2 point, Vector2 screenSize, Rect right, Rect bottom)
+            => screenSize.x > 0 && screenSize.y > 0 &&
+               ((point.x >= screenSize.x && point.y >= 0 && point.y < screenSize.y && point.y >= right.yMin && point.y <= right.yMax) ||
+                (point.y < 0 && point.x >= 0 && point.x < screenSize.x && point.x >= bottom.xMin && point.x <= bottom.xMax));
+
+        private static Rect ScreenBounds(RectTransform target, Rect local, Camera camera)
+        {
+            Vector2 min = new Vector2(float.PositiveInfinity, float.PositiveInfinity), max = -min;
+            for (int i = 0; i < 4; i++)
+            {
+                var corner = new Vector3(i >= 2 ? local.xMax : local.xMin, i == 1 || i == 2 ? local.yMax : local.yMin, 0);
+                var point = RectTransformUtility.WorldToScreenPoint(camera, target.TransformPoint(corner));
+                min = Vector2.Min(min, point); max = Vector2.Max(max, point);
+            }
+            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+        }
+
+        public static void Install(RectTransform target, bool buttonBands = false)
         {
             if (target == null || target.GetComponentInChildren<JcTutorialScrollGuard>(true) != null) return;
             if (target.GetComponent<CameraEdgeScrollBlocker>() == null) target.gameObject.AddComponent<CameraEdgeScrollBlocker>();
@@ -34,12 +62,14 @@ namespace JC.Tutorial
             var go = new GameObject("Tutorial Edge Scroll Guard", typeof(RectTransform), typeof(JcTutorialScrollGuard));
             go.layer = target.gameObject.layer; go.transform.SetParent(target, false); go.transform.SetAsFirstSibling();
             var guard = go.GetComponent<JcTutorialScrollGuard>(); guard.content = target; guard.passThroughContent = target.GetComponent<RawImage>() != null;
+            guard.outsideButtonBands = buttonBands;
             var rect = (RectTransform)go.transform; rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.one * -24; rect.offsetMax = Vector2.one * 24;
+            float padding = buttonBands ? 0 : 24;
+            rect.offsetMin = Vector2.one * -padding; rect.offsetMax = Vector2.one * padding;
             if (target.rect.width < 1 || target.rect.height < 1)
             {
                 rect.anchorMin = rect.anchorMax = target.pivot;
-                rect.sizeDelta = (Vector2)bounds.size + Vector2.one * 48;
+                rect.sizeDelta = (Vector2)bounds.size + Vector2.one * (padding * 2);
                 rect.localPosition = bounds.center;
             }
             var image = go.GetComponent<Image>(); image.color = Color.clear; image.raycastTarget = true; image.canvasRenderer.cullTransparentMesh = false;
