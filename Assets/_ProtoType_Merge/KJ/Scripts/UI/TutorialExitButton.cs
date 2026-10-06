@@ -28,6 +28,9 @@ public class TutorialExitButton : MonoBehaviour
     {
         if (isLoading) return;
         isLoading = true;
+        // 튜토리얼에서 사용한 협회/강화 상태를 본 게임에 넘기지 않는다.
+        if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
+        else DHGameProgressResetService.ResetDHProgress();
         JC.Tutorial.JcTutorialExitTransition.Begin(openingCutSceneName);
     }
 }
