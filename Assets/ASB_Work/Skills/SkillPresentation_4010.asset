@@ -14,25 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 4010
   PresentationSchemaVersion: 1
+  AnimationRail: 1
+  PresentationArchetype: 2
+  SkillTimelines:
+  - CharacterKey: 10004
+    Timeline: {fileID: 11400000, guid: 59788898ad81ef948a869a03f410ff31, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
   HitDelay: 0.25
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 0
-  AttackEffectId: 0
   EnableHitEffect: 1
-  HitEffectId: 4015
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
+  HitEffectId: 98019
   ProjectileVisual:
-    Prefab: {fileID: 1697924425435355953, guid: 3b145aa619b72264098ae44c3837bcdd,
+    Prefab: {fileID: 7726389985300732922, guid: a0c933e6062621e49b09f12052dfa234,
       type: 3}
     Speed: 7
     Trajectory: 1
@@ -45,35 +45,19 @@ MonoBehaviour:
     TimeoutGraceSeconds: 1
     TimeoutSeconds: 5
     DeliveryMode: 0
-    UsePreparedCharge: 1
-    ChargeInstanceKey: heal_projectile
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
     TargetFormationCenter: 0
   ImpactDeliveryMode: 0
   CustomImpactTimeoutSeconds: 5
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
-    Cues:
-    - CueName: heal_cast
-      EffectIds:
-      - 4013
-      SoundIds: []
-      Operation: 0
-      InstanceKey: heal_projectile
-      Anchor: 1
-      Socket: 10
+    Cues: []
   Move:
     Enabled: 1
     UseUnitMovement: 1
@@ -91,7 +75,17 @@ MonoBehaviour:
       BlendInSeconds: 0
       AdvanceOnEvent: 0
       WaitForHitEvent: 1
-      Cues: []
+      Cues:
+      - CueName: heal_cast
+        EffectIds: e27e0100
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 1
+        Socket: 11
+        Timing: 0
+        Time: 0
+        CueId: b05d4f63350145fe838fe66c390f406c
   Return:
     Enabled: 0
     AnimationStateName: 

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
-  m_Name: SkillPresentation_4030
+  m_Name: SkillPresentation_4031
   m_EditorClassIdentifier: 
-  SkillIndex: 4030
+  SkillIndex: 4031
   PresentationSchemaVersion: 1
   AnimationRail: 1
   PresentationArchetype: 2
@@ -30,9 +30,9 @@ MonoBehaviour:
   HitSoundId: 0
   SfxVolume: 1
   EnableHitEffect: 1
-  HitEffectId: 98025
+  HitEffectId: 98028
   ProjectileVisual:
-    Prefab: {fileID: 8360249971204413469, guid: b16b4b2e84d919c418054d48939e7ccd,
+    Prefab: {fileID: 6790517777361698389, guid: 1c3eed91f23df814a96c67024cd1c58d,
       type: 3}
     Speed: 7
     Trajectory: 1
@@ -77,7 +77,7 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: charge_r
-        EffectIds: e87e0100
+        EffectIds: eb7e0100
         SoundIds: 
         Operation: 0
         InstanceKey: parts_lfl_charge_0
@@ -87,7 +87,7 @@ MonoBehaviour:
         Time: 0
         CueId: f189114889174cb692abbb09170c893f
       - CueName: charge_l
-        EffectIds: e87e0100
+        EffectIds: eb7e0100
         SoundIds: 
         Operation: 0
         InstanceKey: parts_lfl_charge_1
@@ -97,7 +97,7 @@ MonoBehaviour:
         Time: 0
         CueId: d20c449ba9b44e16a0116a0c71a5b808
       - CueName: parts_merge
-        EffectIds: ea7e0100
+        EffectIds: ed7e0100
         SoundIds: 
         Operation: 0
         InstanceKey: 

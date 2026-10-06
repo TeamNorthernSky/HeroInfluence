@@ -14,23 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 4020
   PresentationSchemaVersion: 1
+  AnimationRail: 1
+  PresentationArchetype: 0
+  SkillTimelines:
+  - CharacterKey: 10004
+    Timeline: {fileID: 11400000, guid: 5e0b973187e49cc4996fa5c9fc56ebdd, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
   HitDelay: 0.25
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 0
-  AttackEffectId: 0
   EnableHitEffect: 0
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
@@ -47,19 +47,11 @@ MonoBehaviour:
     UsePreparedCharge: 0
     ChargeInstanceKey: holy_charge
     TargetFormationCenter: 0
-  ImpactDeliveryMode: 0
-  CustomImpactTimeoutSeconds: 5
+  ImpactDeliveryMode: 1
+  CustomImpactTimeoutSeconds: 8
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
   MovePrepare:
     Enabled: 0
     AnimationStateName: 
@@ -84,12 +76,15 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: charge
-        EffectIds: b50f0000
+        EffectIds: e67e0100
         SoundIds: 
         Operation: 0
         InstanceKey: 
-        Anchor: 1
-        Socket: 11
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: b454b13c9b28451e8df9b52f548246e3
   Return:
     Enabled: 0
     AnimationStateName: 

@@ -773,23 +773,38 @@ public sealed partial class SkillPresentationDirector
         BattleCharactor actor, BattleCharactor target, SkillData skill, SkillPresentationData presentation,
         Func<BattleHitResult> onHitCallback, HitDeliveryGate deliveryGate,
         Transform targetTransform, Vector3 targetPosition, bool playTargetHitAnimation,
-        string sectionId = null, bool returnActorToIdle = true, TimelineRailPlaybackResult playbackResult = null)
+        string sectionId = null, bool returnActorToIdle = true, TimelineRailPlaybackResult playbackResult = null,
+        IReadOnlyList<BattleCharactor> presentationTargets = null)
     {
         // 피격 연출(대미지 + 피격 애니 + 데미지 팝업). Path B의 ResolveHitAction을 재사용한다 —
         // 대미지 콜백만 부르면 HP는 깎이지만 피격 모션·데미지 팝업이 안 나온다.
         string targetAnimTrigger = playTargetHitAnimation ? (skill?.ResolvedTargetAnimationTrigger ?? "Hit") : null;
         bool hitResolved = false;
         Coroutine hitRoutine = null;
+        int actionInstanceId = 0;
+        // Path B(ResolveSkillHitWithPresentationDeliveryRoutine)와 동일: 커스텀 임팩트 스킬은 이펙트의 착탄 신호를
+        // 기다린 뒤 피격 연출을 적용한다. Cue 등록 이후에만 켠다(등록 전 폴백 경로는 신호가 올 수 없다).
+        bool waitCustomImpact = false;
         void ResolveHit()
         {
             if (hitResolved) return;
             hitResolved = true;
             var hit = new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger,
                 _battle.CurrentBattleSpeed, _battle.VisualDirector);
-            if (presentation.ImpactTiming == TimelineImpactTiming.MarkerFrame)
+            if (waitCustomImpact)
+                hitRoutine = _battle.StartCoroutine(WaitCustomImpactThenHit(hit));
+            else if (presentation.ImpactTiming == TimelineImpactTiming.MarkerFrame)
                 hit.ExecuteImmediate();
             else
                 hitRoutine = _battle.StartCoroutine(hit.ExecuteRoutine(_battle));
+        }
+        IEnumerator WaitCustomImpactThenHit(ResolveHitAction hit)
+        {
+            yield return ASB.Work.Battle.Sequence.CustomEffectImpactAction.WaitForImpactRoutine(
+                presentation, actionInstanceId, deliveryGate);
+            if (deliveryGate != null && !deliveryGate.ShouldPlayImpactPresentation) yield break;
+            if (presentation.ImpactTiming == TimelineImpactTiming.MarkerFrame) hit.ExecuteImmediate();
+            else yield return hit.ExecuteRoutine(_battle);
         }
 
         TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
@@ -822,8 +837,9 @@ public sealed partial class SkillPresentationDirector
         BindTimelineToActor(director, timeline, actor);
 
         // 재생 중 Signal이 CueId로 발화할 수 있도록, 이 스킬의 모든 Cue를 컨텍스트에 id로 등록한다.
-        int actionInstanceId = NextActionInstanceId();
-        RegisterTimelineRailCues(actor, target, skill, presentation, actionInstanceId);
+        // presentationTargets: 광역 힐(4030) 등 Path B와 같은 다중 대상 컨텍스트를 Cue에 전달한다.
+        actionInstanceId = NextActionInstanceId();
+        RegisterTimelineRailCues(actor, target, skill, presentation, actionInstanceId, presentationTargets);
 
         // ── ChainLightning(HS2020 등) 핸드오프 ──
         // Projectile 마커에서 번개 VFX만 1회 시작하고, 대미지는 target-specific 임팩트 신호로 동기한다.
@@ -838,6 +854,8 @@ public sealed partial class SkillPresentationDirector
 
         bool chainStarted = false;
         Coroutine chainPrimaryImpactRoutine = null;
+        waitCustomImpact = !isChainTimelineDelivery
+                           && presentation.ImpactDeliveryMode == SkillImpactDeliveryMode.CustomEffectImpact;
 
         // 마커 알림 → Cue 발화 / Impact 피격연출 / Projectile 발사. 시점 소유는 Timeline이 갖는다.
         Coroutine projectileRoutine = null;
@@ -908,6 +926,9 @@ public sealed partial class SkillPresentationDirector
             // 구간 시작점으로 이동한다. 범위 밖 Retroactive Marker는 receiver가 차단한다.
             director.time = playbackRange.Start;
             director.Evaluate();
+            // Animator 레일의 AttackPrepare 시작 훅과 같은 시점: 부활 대기가 있으면 재생 시작에서 확정한다(멱등).
+            // revive 이펙트는 Timeline의 revive 마커가 발화한다.
+            if (_battle.HasPendingRevive) _battle.TriggerPendingRevive();
             List<KeyValuePair<double, float>> holdMarks = CollectHoldMarks(timeline);
             var holdDone = new bool[holdMarks.Count];
             double holdPrevTime = playbackRange.Start;
@@ -1128,6 +1149,7 @@ public sealed partial class SkillPresentationDirector
             director.time = 0d;
             director.Evaluate();
             director.Play();
+            if (_battle.HasPendingRevive) _battle.TriggerPendingRevive();
             List<KeyValuePair<double, float>> holdMarks = CollectHoldMarks(timeline);
             var holdDone = new bool[holdMarks.Count];
             double holdPrevTime = 0d;
@@ -1422,7 +1444,8 @@ public sealed partial class SkillPresentationDirector
 
                 var playbackResult = new TimelineRailPlaybackResult();
                 yield return RunTimelineRailRoutine(actor, target, skill, presentation, onHitCallback, deliveryGate,
-                    targetTransform, targetPosition, playTargetHitAnimation, playbackResult: playbackResult);
+                    targetTransform, targetPosition, playTargetHitAnimation, playbackResult: playbackResult,
+                    presentationTargets: presentationTargets);
 
                 // 피격/사망으로 끊긴 경우 Hit/Dead 반응을 덮지 않도록 복귀 회전을 생략한다.
                 if (rotateForTimeline && actor != null && !actor.IsDead && !playbackResult.Interrupted)

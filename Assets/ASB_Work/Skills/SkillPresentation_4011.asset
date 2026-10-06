@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
-  m_Name: SkillPresentation_4030
+  m_Name: SkillPresentation_4011
   m_EditorClassIdentifier: 
-  SkillIndex: 4030
+  SkillIndex: 4011
   PresentationSchemaVersion: 1
   AnimationRail: 1
   PresentationArchetype: 2
   SkillTimelines:
   - CharacterKey: 10004
-    Timeline: {fileID: 11400000, guid: 65ba0d1a529069249838b8db2c39f6d1, type: 2}
+    Timeline: {fileID: 11400000, guid: 59788898ad81ef948a869a03f410ff31, type: 2}
     TargetCount: 0
     Segments: []
   ImpactTiming: 0
@@ -30,9 +30,9 @@ MonoBehaviour:
   HitSoundId: 0
   SfxVolume: 1
   EnableHitEffect: 1
-  HitEffectId: 98025
+  HitEffectId: 98021
   ProjectileVisual:
-    Prefab: {fileID: 8360249971204413469, guid: b16b4b2e84d919c418054d48939e7ccd,
+    Prefab: {fileID: 1697924425435355953, guid: 3b145aa619b72264098ae44c3837bcdd,
       type: 3}
     Speed: 7
     Trajectory: 1
@@ -59,7 +59,7 @@ MonoBehaviour:
     BlendInSeconds: 0.1
     Cues: []
   Move:
-    Enabled: 0
+    Enabled: 1
     UseUnitMovement: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
@@ -71,61 +71,21 @@ MonoBehaviour:
   Attack:
     Enabled: 1
     Beats:
-    - AnimationStateName: Base Layer.ClassSkill_3
+    - AnimationStateName: Base Layer.ClassSkill_1
       BlendInSeconds: 0
       AdvanceOnEvent: 0
       WaitForHitEvent: 1
       Cues:
-      - CueName: charge_r
-        EffectIds: e87e0100
-        SoundIds: 
-        Operation: 0
-        InstanceKey: parts_lfl_charge_0
-        Anchor: 1
-        Socket: 11
-        Timing: 0
-        Time: 0
-        CueId: f189114889174cb692abbb09170c893f
-      - CueName: charge_l
-        EffectIds: e87e0100
-        SoundIds: 
-        Operation: 0
-        InstanceKey: parts_lfl_charge_1
-        Anchor: 1
-        Socket: 10
-        Timing: 0
-        Time: 0
-        CueId: d20c449ba9b44e16a0116a0c71a5b808
-      - CueName: parts_merge
-        EffectIds: ea7e0100
+      - CueName: heal_cast
+        EffectIds: e47e0100
         SoundIds: 
         Operation: 0
         InstanceKey: 
         Anchor: 1
-        Socket: 1
+        Socket: 11
         Timing: 0
         Time: 0
-        CueId: 781e0310a94544609aa08b38da343d33
-      - CueName: parts_lfl_charge_off_0
-        EffectIds: 
-        SoundIds: 
-        Operation: 2
-        InstanceKey: parts_lfl_charge_0
-        Anchor: 0
-        Socket: 0
-        Timing: 0
-        Time: 0
-        CueId: e7ccbac4ec7e4990816b93b123749305
-      - CueName: parts_lfl_charge_off_1
-        EffectIds: 
-        SoundIds: 
-        Operation: 2
-        InstanceKey: parts_lfl_charge_1
-        Anchor: 0
-        Socket: 0
-        Timing: 0
-        Time: 0
-        CueId: 2912ca8ac9404b579202bdddfcd49001
+        CueId: b05d4f63350145fe838fe66c390f406c
   Return:
     Enabled: 0
     AnimationStateName: 
