@@ -659,7 +659,6 @@ public class LevelData : ScriptableObject
         outpostPlacements.RemoveAll(x => x.GridPosition == grid);
         eventPlacements.RemoveAll(x => x.GridPosition == grid);
         enemyPlacements?.RemoveAll(x => x.GridPosition == grid);
-        decorativeObjectPlacements?.RemoveAll(x => x.GridPosition == grid);
         mainEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         subEventPlacements?.RemoveAll(x => x.GridPosition == grid);
         worldEventPlacements?.RemoveAll(x => x.GridPosition == grid);
