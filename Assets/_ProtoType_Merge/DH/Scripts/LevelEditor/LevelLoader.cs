@@ -108,6 +108,7 @@ public class LevelLoader : MonoBehaviour
         if (clearExistingBeforeLoad)
             ClearSpawnedObjects();
 
+        RegisterGroundTiles();
         GenerateTileMeshes();
         SpawnObstacles();
         SpawnGates();
@@ -652,6 +653,7 @@ public class LevelLoader : MonoBehaviour
 
     private void ClearSpawnedObjects()
     {
+        gridManager?.ClearLevelGroundCells();
         gridManager?.ClearLevelObstacleCells();
         gridManager?.ClearGateBlockerCells();
 
@@ -682,6 +684,13 @@ public class LevelLoader : MonoBehaviour
             return;
 
         tileMeshGenerator.Generate(levelData);
+    }
+
+    private void RegisterGroundTiles()
+    {
+        IReadOnlyList<TilePlacementData> placements = levelData.GroundTilePlacements;
+        for (int i = 0; i < placements.Count; i++)
+            gridManager?.RegisterLevelGroundCell(placements[i].GridPosition);
     }
 
     private void ClearChildren(Transform root)

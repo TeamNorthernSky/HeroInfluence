@@ -1,21 +1,21 @@
 # 튜토리얼 수정 내역과 팀 담당 영역 및 실제 게임 후속 요구
 
-작성일: 2026-10-05. 대상 독자: JC 및 관련 기능 담당 팀원.
+작성일: 2026-10-05. 갱신일: 2026-10-06. 대상 독자: JC 및 관련 기능 담당 팀원.
 
-후속 상태(2026-10-06): 아래 백업 범위는 제품 코드의 미커밋 변경사항으로 복원했습니다. 기존 전투 테스트 작업을 보존했고 공용 Regular 폰트의 기존 문자와 백업 문자를 병합했습니다. 일반 게임의 4턴 갱신 및 25회 규칙은 여전히 후속 요구입니다. 아래 적용 상태·검증 설명은 10월 5일 작성 당시의 기준이며, “이미 커밋한 내용”의 집계 범위는 요청대로 10월 4일 커밋으로 유지합니다.
+**현재 상태:** 백업했던 홍보 튜토리얼과 UI 수정은 10월 6일 복원 후 기능 커밋 `00054757`과 [PR 122](https://github.com/TeamNorthernSky/HeroInfluence/pull/122)로 main에 병합했습니다. 인계 기준 커밋은 병합 커밋 `61baaa9228644ff7c2d60e34bc93513e221e77ed`입니다. 일반 게임과 튜토리얼 예산의 4턴 충전, 일반 홍보의 25회 진행 조건은 구현되지 않은 후속 요구로 남아 있습니다.
 
-이 문서는 **2026년 10월 4일에 커밋한 수정**과 **백업 후 롤백하여 현재 코드에 적용되지 않은 수정**을 정리합니다. “이미 커밋한 내용”은 10월 4일 기능 커밋 `185c75e8`만을 뜻하며, 10월 2일 등 이전 커밋의 전투·성장·드론 수정 내역은 이 문서의 범위에서 제외합니다. 팀원 수정본과 비교할 때 보존해야 할 기능과, 튜토리얼 화면 수정만으로 해결되지 않는 실제 게임 요구사항을 확인하는 데 사용합니다.
+이 문서는 **10월 4일의 이동·스크롤·시작 구도 수정**과 **백업·롤백을 거쳐 10월 6일에 복원하고 커밋한 홍보 및 UI 수정**을 구분해 정리합니다. 최초 요청의 “이미 커밋한 내용”은 10월 4일 기능 커밋 `185c75e8`만을 뜻하며, 새로 반영한 10월 6일 내용은 별도 항목으로 추가했습니다. 10월 2일 등 이전 커밋의 전투·성장·드론 수정 내역과 별도의 율리아 전투 테스트 구현은 이 보고서의 범위에서 제외합니다. 다른 팀원 담당 영역에 가한 변경과 실제 게임에 남은 요구사항을 확인하는 인계 자료입니다.
 
 ## 현재 적용 상태와 비교 기준
 
 | 구분 | 상태 | 확인 기준 |
 |---|---|---|
 | 2026-10-04 커밋한 이동·스크롤·시작 구도 수정 | 현재 JC에 유지 | 기능 커밋 `185c75e8`, PR 121 병합 `0705af745ea262e5c31b0d222f87f9df7f224530` |
-| 홍보 흐름과 UI 등 최신 수정 | 백업에만 보관, 제품 코드에서 롤백 완료 | [백업 폴더](C:/Dev/_Backup/Tutorial_Work_261004), `manifest.json`의 13개 파일 |
+| 홍보 흐름·UI·크리스탈 구도·폰트 수정 | 복원 후 main 병합 완료 | 기능 커밋 `00054757`, PR 122 병합 `61baaa92`. 백업 13개 중 제품 변경 12개 반영 |
 | 일반 홍보의 4턴 갱신 및 25회 진행 규칙 | 수정 요구가 남아 있음 | 일반 `PublicityManager`와 `PublicityModalController`, 튜토리얼 `TutorialPublicityState` 대조 |
-| 최신 백업본의 실제 화면 검수 | 완료로 판단하지 않음 | 컴파일 및 로직 검증 완료, 마지막 배치 수정은 Unity 연결 시간초과로 화면 검증 미완료 |
+| 최신 배치의 실제 화면 검수 | 사용자 플레이 검수 대기 | 복원 후 외부 C# 컴파일 통과. 최종 메시지 폭과 MAX·진행 단계의 정보 강조는 실제 화면 검증 미완료 |
 
-백업은 수정 파일 전체와 기준 버전, 기존 `.meta`, 변경 패치 및 검증 기록을 포함합니다. 이번 롤백은 미커밋 변경 13개에 적용했으며 이전 커밋과 브랜치 이력은 유지했습니다. 아래의 “백업 구현”은 현재 게임에 반영된 기능이라는 뜻이 아닙니다. 문서 작성 시 원격을 새로 조회하지 않았으므로, 이후 팀원 수정 여부는 다음 작업에서 확인해야 합니다.
+10월 5일 백업·롤백 당시의 13개 파일은 수정본, 기준 버전, 기존 `.meta`, 패치와 검증 기록으로 보관했습니다. 10월 6일 복원에서는 기존 전투 테스트 변경과 메타데이터를 보존하고 Regular 폰트의 기존 문자와 백업 문자를 병합했습니다. 이후 제품 변경 12개를 커밋하고 JC와 main의 로컬·원격 동기화를 완료했습니다. `ProjectSettings.asset`의 환경 자동 변경은 커밋에서 제외했습니다. 백업은 복원 전후 비교용 기록이며, 아래 구현 설명은 현재 프로젝트 파일을 기준으로 합니다. PR 122 전체는 별도 전투 테스트와 문서를 포함한 176개 파일이므로 이 보고서의 튜토리얼 변경 수와 구분합니다.
 
 ## 2026년 10월 4일에 커밋한 수정
 
@@ -30,7 +30,7 @@
 | JC | [JcTutorialExploreGuide.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs) | 새 턴에 이전 붉은 경로와 목적지 표식을 제거. 시작 안내가 사라진 후 우하단으로 구도 보정 |
 | JC | [JcTutorialScrollGuard.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialScrollGuard.cs) | 화면 밖 포인터를 화면 경계에 투영하여 활성 튜토리얼 UI 보호 영역 검사 |
 
-이 커밋에서 다른 팀원 담당 파일을 수정한 대상은 **DH의 카메라 스크립트 한 개**입니다. ASB 및 KJ 스크립트, 전투 프리팹, 씬 에셋은 이 커밋의 변경 파일에 포함되지 않습니다. 뒤에 정리한 KJ 홍보 파일 수정은 백업에만 보관된 별도 범위입니다.
+이 커밋에서 다른 팀원 담당 파일을 수정한 대상은 **DH의 카메라 스크립트 한 개**입니다. ASB 및 KJ 스크립트, 전투 프리팹, 씬 에셋은 이 커밋의 변경 파일에 포함되지 않습니다. 뒤에 정리한 KJ 홍보 파일 수정은 10월 6일 커밋에 포함된 별도 범위입니다.
 
 ### 새 턴의 이동 인디케이터 정리
 
@@ -46,49 +46,50 @@ DH 카메라의 일반 추적·줌 동작은 유지합니다. 공용 좌표 변�
 
 시작 시 파티에 즉시 고정하는 기존 카메라 동작을 유지합니다. “목표 위치까지 이동하세요” 시작 메시지가 사라진 뒤 화면 비율을 기준으로 구도를 조금 우하단으로 보정합니다. 기본값은 화면 오프셋 `(0.04, -0.06)`, 이동 시간 `0.6초`이며 JC 안내 컴포넌트에서 조절합니다. 별도의 파티 추적 완화 기능인 `SmoothToFollowTarget`은 최종 채택 기능에 포함하지 않았습니다.
 
-크리스탈 목표 단계의 추가 구도 보정은 이 커밋에 포함되지 않으며 뒤의 백업 수정 범위입니다.
+크리스탈 목표 단계의 추가 구도 보정은 10월 4일 커밋에 포함되지 않으며, 뒤의 10월 6일 반영 범위입니다.
 
-## 백업에만 남아 있는 수정
+## 2026년 10월 6일에 복원·커밋한 수정
 
-백업의 `working-tree`는 수정본, `base`는 롤백 기준 커밋의 파일입니다. 다음 13개 전체를 보관했으며 현재 제품 코드는 기준 커밋 상태입니다.
+기능 커밋은 `000547579ffd9e6b7b34feeb31a133dd753e6f27`이며, 2026-10-06 10:29:55(KST)에 작성하고 같은 날 10:31:38에 PR 122로 병합했습니다. 백업 기준 커밋은 `0705af74`이며, 백업의 `working-tree`와 `base`는 각각 당시 수정본과 기준 버전입니다. 아래 KJ 5개, DH 1개, JC 2개, 씬 2개, 폰트 2개가 이번 튜토리얼 제품 변경 12개입니다.
 
 ### KJ 홍보 담당 파일
 
-| 백업 파일 | 수정 내용 | 공용 기능에 미치는 영향 |
+| 현재 파일 | 수정 내용 | 공용 기능에 미치는 영향 |
 |---|---|---|
-| [TutorialExploreUIController.cs](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialExploreUIController.cs) | 첫 전투 후 기능 설명, 실제 홍보 버튼 안내, 창이 열린 뒤 실습 시작, 종료 시 안내 완료 기록 | 기존 HUD 버튼 클릭 이벤트와 기존 설명 패널을 사용. 튜토리얼 안내 중 ESC 차단 상태 제공 |
-| [TutorialPublicityController.cs](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialPublicityController.cs) | 저스티스 IP 0/50 및 자원 준비, 수동 선택, 한 번에 25회, 단계별 조작 제한, 실제 횟수와 비용 갱신 | 튜토리얼 저장소만 사용. 일반 `PublicityManager` 수치는 변경하지 않음 |
-| [TutorialPublicityExplanationView.cs](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialPublicityExplanationView.cs) | 안내와 실제 과제의 단계 일치, 영웅 선택 조건, MAX 실제 클릭 확인, 실제 정보 강조, 예시 UI 숨김, 박스 배치 및 복원 | 기존 Step와 패널 구조 유지. 실습용 자동 영웅 선택 함수는 남겨 두고 호출하지 않음 |
-| [TutorialPublicityHeroCard.cs](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialPublicityHeroCard.cs) | 카드의 영웅 키와 소유 컨트롤러 읽기 노출 | 실제 저스티스 카드를 찾아 강조. 카드 선택 로직 유지 |
-| [PublicityLayoutView.cs](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/KJ/Scripts/UI/Lobby/PublicityLayoutView.cs) | 튜토리얼에서 횟수 표시를 `현재 설정 / 남은 홍보 횟수`로 갱신 | 공용 파일 수정이지만 튜토리얼 컨트롤러가 있을 때만 새 표기 사용. 일반 모달의 기존 표기 유지 |
+| [TutorialExploreUIController.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialExploreUIController.cs) | 첫 전투 후 기능 설명, 실제 홍보 버튼 안내, 창이 열린 뒤 실습 시작, 종료 시 안내 완료 기록 | 기존 HUD 버튼 클릭 이벤트와 기존 설명 패널을 사용. 튜토리얼 안내 중 ESC 차단 상태 제공 |
+| [TutorialPublicityController.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialPublicityController.cs) | 저스티스 IP 0/50 및 자원 준비, 수동 선택, 한 번에 25회, 단계별 조작 제한, 실제 횟수와 비용 갱신 | 튜토리얼 저장소만 사용. 일반 `PublicityManager` 수치는 변경하지 않음 |
+| [TutorialPublicityExplanationView.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialPublicityExplanationView.cs) | 안내와 실제 과제의 단계 일치, 영웅 선택 조건, MAX 실제 클릭 확인, 실제 정보 강조, 예시 UI 숨김, 박스 배치 및 복원 | 기존 Step와 패널 구조 유지. 실습용 자동 영웅 선택 함수는 남겨 두고 호출하지 않음 |
+| [TutorialPublicityHeroCard.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialPublicityHeroCard.cs) | 카드의 영웅 키와 소유 컨트롤러 읽기 노출 | 실제 저스티스 카드를 찾아 강조. 카드 선택 로직 유지 |
+| [PublicityLayoutView.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/KJ/Scripts/UI/Lobby/PublicityLayoutView.cs) | 튜토리얼에서 횟수 표시를 `현재 설정 / 남은 홍보 횟수`로 갱신 | 공용 파일 수정이지만 튜토리얼 컨트롤러가 있을 때만 새 표기 사용. 일반 모달의 기존 표기 유지 |
 
 홍보 첫 안내가 보이지 않거나 예시 영웅과 `I.P : 25`가 남아 있던 화면은 실제 창 위의 `SharedPublicityPanel` 예시와 관련된 문제였습니다. 이 예시를 비활성화하고 기존 안내 배경이 문구를 덮지 않도록 순서를 고쳤습니다. 실제 미선택 IP 표시는 기존 일반 모달과 같은 `현재 IP : -` 형식을 사용합니다. 이 사례를 일반 게임 IP 저장 오류라고 판단하지 않습니다.
 
-저스티스 강조 때문에 목록에서 카드를 떼어내면 LayoutGroup이 나머지 슬롯 높이를 다시 계산했습니다. 백업본에서는 영웅 카드의 원래 부모를 유지하면서 임시 Canvas의 표시 순서만 올립니다. 안내 종료 시 임시 표시 설정을 복원합니다. 설명 박스는 저스티스 슬롯 좌측에 여백을 두고 배치합니다.
+저스티스 강조 때문에 목록에서 카드를 떼어내면 LayoutGroup이 나머지 슬롯 높이를 다시 계산했습니다. 현재 구현에서는 영웅 카드의 원래 부모를 유지하면서 임시 Canvas의 표시 순서만 올립니다. 안내 종료 시 임시 표시 설정을 복원합니다. 설명 박스는 저스티스 슬롯 좌측에 여백을 두고 배치합니다.
 
 실제 슬라이더, ± 버튼, 횟수 표시, I.P 정보 네 행과 제목을 함께 밝게 표시합니다. MAX와 진행 단계도 정보 영역을 보여 주되 입력은 해당 단계의 버튼만 허용합니다. 마지막 수정에서는 문구 폭 460, 배경 폭 512, 본문 글자 크기 상한 30으로 줄이고 왼쪽으로 이동했습니다. 노란 테두리는 실제 UI 사각형을 기준으로 계산하며 안내 박스와 간격을 유지합니다. 수치는 기준 Canvas 단위입니다.
 
 ### DH 카메라와 JC 연결
 
-| 백업 파일 | 수정 내용 | 적용 범위 |
+| 현재 파일 | 수정 내용 | 적용 범위 |
 |---|---|---|
-| [QuaterViewCameraFollower.cs](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/DH/Scripts/Camera/QuaterViewCameraFollower.cs) | 기존 팬 오프셋을 포함한 현재 화면 중심을 조회하는 `GetFocusWorldPosition` 추가 | 보정 기준 조회만 추가. 기존 추적이나 일반 탐사 자동 이동 규칙은 변경하지 않음 |
-| [JcTutorialExploreGuide.cs](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs) | 크리스탈 목표 단계에 우하단 구도 보정 추가, 현재 팬 유지, 크리스탈 명칭, KJ 홍보 안내가 기존 메시지와 차단 영역을 사용하도록 연결 | 시작 구도 보정은 이미 커밋됨. 크리스탈 단계 보정과 홍보 연결은 백업에만 있음 |
-| [SystemMenuController.cs](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/JC/Scripts/UI/SystemMenuController.cs) | 홍보 안내 중 ESC로 실습 창이나 진행을 우회하는 동작 차단 | 안내 종료 후 기존 시스템 메뉴 동작 유지 |
+| [QuaterViewCameraFollower.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/DH/Scripts/Camera/QuaterViewCameraFollower.cs) | 기존 팬 오프셋을 포함한 현재 화면 중심을 조회하는 `GetFocusWorldPosition` 추가 | 보정 기준 조회만 추가. 기존 추적이나 일반 탐사 자동 이동 규칙은 변경하지 않음 |
+| [JcTutorialExploreGuide.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/JC/Tutorial/Scripts/JcTutorialExploreGuide.cs) | 크리스탈 목표 단계에 우하단 구도 보정 추가, 현재 팬 유지, 크리스탈 명칭, KJ 홍보 안내가 기존 메시지와 차단 영역을 사용하도록 연결 | 시작 구도 보정은 10월 4일 반영. 크리스탈 단계 보정과 홍보 연결은 10월 6일 반영 |
+| [SystemMenuController.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/JC/Scripts/UI/SystemMenuController.cs) | 홍보 안내 중 ESC로 실습 창이나 진행을 우회하는 동작 차단 | 안내 종료 후 기존 시스템 메뉴 동작 유지 |
 
-### 씬과 자동 갱신 파일
+### 씬과 공용 폰트
 
-| 백업 파일 | 내용 |
+| 현재 파일 | 내용 |
 |---|---|
-| [TutorialExploreScene.unity](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity) | 기존 홍보 도입 참조와 10단계 조건 및 문구 연결, 예시 비활성, 안내 폰트 통일 |
-| [TutorialBattleScene.unity](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_ProtoType_Merge/Scenes/TutorialBattleScene.unity) | 튜토리얼 안내 텍스트를 홍보 안내의 NotoSansKR-Regular SDF 폰트로 통일 |
-| [NotoSansKR-Light SDF.asset](<C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_SharedAsset/Font/NotoSansKR-Light SDF.asset>) | 자동 갱신된 폰트 데이터도 보존. 기능 변경 실적으로 분류하지 않음 |
-| [NotoSansKR-Regular SDF.asset](<C:/Dev/_Backup/Tutorial_Work_261004/working-tree/Assets/_SharedAsset/Font/NotoSansKR-Regular SDF.asset>) | 위와 동일 |
-| [ProjectSettings.asset](C:/Dev/_Backup/Tutorial_Work_261004/working-tree/ProjectSettings/ProjectSettings.asset) | 당시 작업트리 변경 전체를 보존. 별도의 게임 기능 수정으로 계산하지 않음 |
+| [TutorialExploreScene.unity](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity) | 기존 홍보 도입 참조와 10단계 조건 및 문구 연결, 예시 비활성, 안내 폰트 통일 |
+| [TutorialBattleScene.unity](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/Scenes/TutorialBattleScene.unity) | 튜토리얼 안내 텍스트를 홍보 안내의 NotoSansKR-Regular SDF 폰트로 통일 |
+| [NotoSansKR-Light SDF.asset](<C:/Dev/HeroInfluence/Assets/_SharedAsset/Font/NotoSansKR-Light SDF.asset>) | 필요한 글리프 캐시를 포함해 커밋. 별도의 게임 규칙 변경은 없음 |
+| [NotoSansKR-Regular SDF.asset](<C:/Dev/HeroInfluence/Assets/_SharedAsset/Font/NotoSansKR-Regular SDF.asset>) | 안내 폰트 통일에 사용. 복원 시 기존 전투 작업 문자와 백업 문자를 병합해 커밋 |
+
+`ProjectSettings.asset`은 백업 13개 중 나머지 한 개로, `MCP_DEPS` 3→6의 환경 자동 변경을 보존했으나 PR 122에는 포함하지 않았습니다. 홍보 규칙이나 튜토리얼 기능 수정으로 계산하지 않습니다.
 
 안내 폰트 통일은 튜토리얼 안내용 텍스트를 대상으로 했습니다. 일반 게임 UI 전체의 폰트 교체 작업은 포함하지 않았습니다. 기존 에셋의 GUID와 씬 참조를 사용했습니다.
 
-### 백업된 홍보 실습 순서
+### 현재 홍보 실습 순서
 
 전투 승리 후 기능 설명을 디밍과 입력 및 스크롤 차단 상태로 표시합니다. 화면 클릭으로 실제 HUD 홍보 버튼 안내로 넘어갑니다. 강조한 홍보 버튼을 눌러 실제 창이 열린 다음 아래 실습을 시작합니다.
 
@@ -107,7 +108,7 @@ DH 카메라의 일반 추적·줌 동작은 유지합니다. 공용 좌표 변�
 
 실습 준비는 첫 안내 시작 시 한 번 수행하고 패널 전환마다 반복하지 않습니다. 저스티스의 선택은 비워 둡니다. 튜토리얼 자금은 최소 5,000, 남은 홍보 횟수는 최소 50을 확보하고 현재 HP, 레벨과 EXP 등 나머지 진행값은 보존합니다. `IP 0/50`, 25회씩 두 번이라는 설정은 이 실습을 완료하기 위한 준비입니다.
 
-첫 횟수 표시는 `0 / 50`, 첫 진행 전 설정 완료는 `25 / 50`, 첫 진행 후에는 `0 / 25`, 두 번째 설정 완료는 `25 / 25`입니다. 분모는 남은 전체 홍보 횟수이며 한 번에 진행하는 상한 25와 구분합니다.
+초기 공유 풀 50인 기본 실습에서는 첫 횟수 표시가 `0 / 50`, 첫 진행 전 설정 완료가 `25 / 50`, 첫 진행 후가 `0 / 25`, 두 번째 설정 완료가 `25 / 25`입니다. 분모는 남은 전체 홍보 횟수이며 한 번에 진행하는 상한 25와 구분합니다. 준비 함수는 풀을 최소 50으로 확보하므로, 기존 저장 상태에 50보다 많은 횟수가 있으면 이를 줄이지 않고 실제 잔여량을 표시합니다.
 
 ## 실제 게임에서 수정해야 하는 홍보 규칙
 
@@ -115,7 +116,7 @@ DH 카메라의 일반 추적·줌 동작은 유지합니다. 공용 좌표 변�
 
 기획 원문은 [H.I 튜토리얼 통합 기획서 2.0v](<D:/SVN/2_Documents/튜토리얼/H.I 튜토리얼 통합 기획서_2.0v.pptx>)의 32번과 35번 슬라이드를 확인했습니다. 32번 요청사항은 “진행 정도 최대 25까지”, “25 미만 시 진행 불가”입니다. 35번은 4턴마다 갱신하며 미사용 횟수를 이월한다고 설명합니다.
 
-| 항목 | 기획 기준 | 현재 일반 게임 | 백업 튜토리얼 | 후속 상태 |
+| 항목 | 기획 기준 | 현재 일반 게임 | 현재 튜토리얼 | 후속 상태 |
 |---|---|---|---|---|
 | 갱신 간격 | 4턴 | `WeekTurnInterval = 7` | 예산 코드도 7턴, 안내만 4턴 | 실제 게임 및 튜토리얼 예산 수정 필요 |
 | 미사용 횟수 | 이월 | 풀에 추가 충전하는 방식으로 이미 이월 | 동일하게 누적 | 4턴으로 바꿀 때 이월 보존 필요 |
@@ -127,7 +128,7 @@ DH 카메라의 일반 추적·줌 동작은 유지합니다. 공용 좌표 변�
 
 ### 갱신 주기 수정 대상
 
-일반 게임의 [PublicityManager.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/JC/Scripts/Manager/PublicityManager.cs)는 `WeekTurnInterval` 7을 기준으로 `OnTurnAdvanced`에서 풀을 충전합니다. 튜토리얼의 [TutorialPublicityState.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialPublicityState.cs)는 경과 턴을 7로 나누어 충전 횟수를 계산합니다. 이 파일은 최신 백업 변경 13개에 포함되지 않으며 현재도 7턴입니다.
+일반 게임의 [PublicityManager.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/JC/Scripts/Manager/PublicityManager.cs)는 `WeekTurnInterval` 7을 기준으로 `OnTurnAdvanced`에서 풀을 충전합니다. 튜토리얼의 [TutorialPublicityState.cs](C:/Dev/HeroInfluence/Assets/_ProtoType_Merge/KJ/Scripts/UI/Tutorial/TutorialPublicityState.cs)는 경과 턴을 7로 나누어 충전 횟수를 계산합니다. 이 파일은 백업 변경 13개와 PR 122의 변경 파일에 포함되지 않으며 현재도 7턴입니다.
 
 두 경로를 4턴 기준으로 맞추고 미사용 풀의 누적을 유지해야 합니다. 해금 시 첫 지급과 다음 충전의 기준 턴, 저장된 `lastChargeDay`의 처리도 함께 확인합니다. 일반 UI의 “이번 주 진행 가능 횟수” 문구는 새 주기와 맞춰 정리해야 합니다. 튜토리얼 안내만 4턴으로 고치거나 실습 시작 시 풀을 채우는 것으로는 일반 게임의 갱신 규칙이 바뀌지 않습니다.
 
@@ -137,7 +138,7 @@ DH 카메라의 일반 추적·줌 동작은 유지합니다. 공용 좌표 변�
 
 기획을 그대로 적용하면 한 번에 확정할 수 있는 횟수는 25입니다. 슬라이더와 MAX 표시, 진행 버튼 활성 조건뿐 아니라 매니저의 실제 처리 검증도 같은 규칙을 따라야 합니다. 자금 차감과 실패 시 반환, 풀 차감과 IP 적립의 기존 처리는 보존합니다.
 
-백업본은 실습의 `PracticeInput.Confirm`에서 25를 요구하지만, 실습 밖의 `Unrestricted` 경로에서는 25 미만을 확정할 수 있습니다. `TutorialPublicityState.TryProgress` 자체에도 25 조건이 없습니다. 따라서 백업을 복원하더라도 모든 홍보 처리 경로의 규칙이 통일된 것은 아닙니다.
+현재 튜토리얼 컨트롤러는 실습의 `PracticeInput.Confirm`에서 25를 요구하지만, 실습 밖의 `Unrestricted` 경로에서는 25 미만을 확정할 수 있습니다. `TutorialPublicityState.TryProgress` 자체에도 25 조건이 없습니다. 복원·병합은 완료됐지만 모든 홍보 처리 경로의 규칙이 통일된 상태는 아닙니다.
 
 기획 확인이 필요한 사례도 있습니다. 영웅의 잔여 IP가 1에서 24이거나 풀 또는 자금이 25회에 부족하면, 25회 고정 조건에서는 홍보할 수 없습니다. 이때 예외적으로 적은 횟수를 허용할지, 계속 금지할지 확인한 뒤 UI 설명과 처리 조건을 맞춰야 합니다. 현재 두 슬라이드의 명시 요청은 25 미만 불가이며, 이번 문서에서 예외를 새로 확정하지 않습니다.
 
@@ -145,7 +146,7 @@ DH 카메라의 일반 추적·줌 동작은 유지합니다. 공용 좌표 변�
 
 | 수치 | 의미 | 현재 결정 |
 |---|---|---|
-| 저스티스 실습 IP 0/50 | 튜토리얼 시작 상태와 두 차례 실습 목표 | 백업본에만 적용 |
+| 저스티스 실습 IP 0/50 | 튜토리얼 시작 상태와 두 차례 실습 목표 | 현재 튜토리얼에 적용, 일반 영웅 수치 변경 없음 |
 | 진행 25회 | 한 번에 진행하는 횟수 조건 | 실습 구현, 실제 게임 규칙은 후속 수정 필요 |
 | 남은 횟수 50 | 실습 두 번을 위한 공유 홍보 풀 | 영웅 IP 상한과 별도 |
 | 일반 영웅 최대 IP | 각 유닛의 `IngameStats.Influence` | 이번 작업에서 전역 수치 변경 없음 |
@@ -167,16 +168,16 @@ DH 카메라의 일반 추적·줌 동작은 유지합니다. 공용 좌표 변�
 | 항목 | 확인 내용과 처리 범위 |
 |---|---|
 | 미선택 영웅 IP | 일반 모달은 이미 `현재 IP : -`를 사용합니다. 튜토리얼 예시의 고정 `I.P : 25` 노출과 구분합니다. |
-| 네 영웅 슬롯과 배치 | 백업 수정은 튜토리얼 강조 과정에서 슬롯 부모를 유지하는 처리입니다. 일반 슬롯 프리팹을 일괄 교체하지 않았습니다. |
-| 슬라이더 및 정보 갱신 | 백업에서는 실제 Count와 비용, 실제 횟수 표시를 사용합니다. 일반 모달의 정보 값도 기존 Refresh에서 갱신하므로 같은 고정 숫자 증상이 있다고 단정하지 않습니다. |
-| 크리스탈 명칭 | 백업 안내에서 “아티펙트 수정”을 “크리스탈”로 변경했습니다. `ResourceType.Crystal` 데이터 키를 유지하며 공용 `TopBar 1.prefab`의 기존 “크리스탈” 표기와 맞췄습니다. 씬별 UI 검수에서 같은 용어를 확인합니다. |
+| 네 영웅 슬롯과 배치 | 현재 수정은 튜토리얼 강조 과정에서 슬롯 부모를 유지하는 처리입니다. 일반 슬롯 프리팹을 일괄 교체하지 않았습니다. |
+| 슬라이더 및 정보 갱신 | 현재 튜토리얼에서는 실제 Count와 비용, 실제 횟수 표시를 사용합니다. 일반 모달의 정보 값도 기존 Refresh에서 갱신하므로 같은 고정 숫자 증상이 있다고 단정하지 않습니다. |
+| 크리스탈 명칭 | 튜토리얼 안내에서 “아티펙트 수정”을 “크리스탈”로 변경했습니다. `ResourceType.Crystal` 데이터 키를 유지하며 공용 `TopBar 1.prefab`의 기존 “크리스탈” 표기와 맞췄습니다. 씬별 UI 검수에서 같은 용어를 확인합니다. |
 | 경계 스크롤 | 공용 포인터 좌표 정합은 이미 반영됐습니다. 화면 크기, UI Raycast, 화면 밖 보호 영역을 함께 회귀 확인합니다. |
 
 위 항목들은 일반 게임에서 새 오류를 모두 발견했다는 목록이 아닙니다. 이번 변경의 영향 때문에 확인해야 할 항목과, 이미 정상적인 일반 동작을 유지해야 할 조건입니다.
 
-## 팀원 수정본을 채택할 때 확인할 내용
+## 팀 전달 및 이후 변경을 통합할 때 확인할 내용
 
-다음 작업에서 최신 팀원 변경과 기준 커밋, 백업 수정본을 비교합니다. KJ가 담당 홍보 튜토리얼을 수정했다면 다음 기능이 포함됐는지 확인합니다.
+현재 구현은 main에 반영됐습니다. 이후 KJ 또는 다른 담당 팀원의 수정본을 통합할 때는 PR 122의 적용본과 비교해 다음 기능이 유지되는지 확인합니다. 백업 파일을 최신 파일 위에 일괄 덮어쓰지 않습니다.
 
 - 첫 전투 복귀 후 기능 설명, 실제 홍보 버튼 안내, 실제 창 진입 순서.
 - 저스티스 수동 선택 단계와 해당 단계의 문구 일치.
@@ -187,7 +188,7 @@ DH 카메라의 일반 추적·줌 동작은 유지합니다. 공용 좌표 변�
 - 실제 슬라이더와 비용 및 횟수 표시, 미선택 IP 표시, 네 슬롯의 안정적인 배치.
 - 메시지와 강조 영역의 간격, 단계별 정보 영역 디밍 해제, 안내 폰트 통일.
 
-팀원 수정본을 채택할 때도 **일반 게임의 4턴 갱신과 25회 진행 검증**은 별도로 확인해야 합니다. 튜토리얼이 잘 진행된다는 결과만으로 일반 게임 규칙이 반영됐다고 판단하지 않습니다.
+이후 팀원 수정본을 통합할 때도 **일반 게임의 4턴 갱신과 25회 진행 검증**은 별도로 확인해야 합니다. 튜토리얼이 잘 진행된다는 결과만으로 일반 게임 규칙이 반영됐다고 판단하지 않습니다.
 
 기존 Inspector에 등록한 카탈로그, 에셋과 스크립트를 재사용하고 참조를 보존합니다. 타팀 등록 항목을 새 사본으로 교체하거나 별도의 병행 시스템을 붙이는 변경은 진행 전에 이유와 영향을 사용자에게 설명하고, 사용자를 통해 담당 팀원의 승인을 확인합니다. 이 문서는 그러한 구조 개편을 승인하거나 팀원에게 전달한 기록이 아닙니다.
 
@@ -195,17 +196,25 @@ DH 카메라의 일반 추적·줌 동작은 유지합니다. 공용 좌표 변�
 
 10월 4일 커밋의 실제 변경을 대조하여 위 4개 파일과 기능 범위를 확인했습니다. 사용자 플레이 검수에서는 새 턴에 붉은 표식이 먼저 사라지는지, 축소 창과 전체 화면에서 미니맵·다음 턴 버튼의 경계 스크롤 차단이 맞는지, 시작 메시지가 사라진 뒤 카메라 구도가 보정되는지 확인합니다. 이 문서 수정 과정에서는 플레이 테스트를 실행하지 않았습니다.
 
-백업된 홍보 수정은 Unity 참조를 사용한 전체 Assembly-CSharp 외부 컴파일을 통과했고, 실제 컨트롤러와 상태 코드를 사용하되 Unity UI 및 저장소를 대체한 로직 검사 30개를 통과했습니다. 직전 UI 수정은 편집 모드 임시 씬에서 첫 안내, 네 슬롯, 정보 영역과 복원 동작을 확인했습니다. **마지막 폭 460 조정 및 MAX와 진행 단계의 추가 정보 강조는 Unity 연결 시간초과로 화면 검증을 완료하지 못했습니다.** 이전 배치 검증 결과를 최신 화면 검증으로 대체하지 않습니다.
+백업 전 홍보 수정은 Unity 참조를 사용한 전체 Assembly-CSharp 외부 컴파일과, 실제 컨트롤러·상태 코드를 사용하되 Unity UI 및 저장소를 대체한 로직 검사 30개를 통과했습니다. 직전 배치는 편집 모드 임시 씬에서 첫 안내, 네 슬롯, 정보 영역과 종료 시 복원을 확인했습니다. 이 결과는 당시 검증이며 복원 후 새 플레이 테스트의 결과로 계산하지 않습니다.
 
-현재 남은 작업은 팀원 수정본 비교와 채택 결정, 채택한 튜토리얼의 사용자 플레이 검수, 일반 게임 홍보 규칙 수정입니다. 첫 전투와 홍보 구간의 정리는 전체 튜토리얼 기획 구간 완료를 뜻하지 않습니다. 이후 협회 및 다른 학습 구간은 별도로 범위를 확인해야 합니다.
+10월 6일 복원 후 커밋·병합 준비에서는 현재 소스의 전체 런타임 외부 C# 컴파일과 추가 JC Editor 스크립트의 외부 컴파일이 모두 오류 없이 통과했습니다. 이는 소스 컴파일 검증이며 Unity 내부 컴파일·씬 재로드 완료나 실제 화면 배치를 확인한 결과는 아닙니다. Unity 연결 시간초과로 최종 에디터 상태를 재확인하지 못했고, 새 플레이 테스트도 실행하지 않았습니다. **최종 본문 폭 460, 메시지와 노란 강조 영역의 간격, MAX·진행 단계의 I.P 정보 영역 디밍 해제는 사용자 플레이 검수 대기입니다.** 이전 UI 검증으로 최신 화면 검수를 대체하지 않습니다.
+
+현재 남은 작업은 반영된 튜토리얼의 사용자 플레이 검수, 일반 게임과 튜토리얼 예산의 4턴 충전 정합, 전체 홍보 처리 경로의 25회 검증입니다. 주기별 지급량과 잔여 IP 25 미만의 예외 여부는 기획 확인이 필요합니다. 첫 전투 이후 홍보 구간 정리는 전체 튜토리얼 완료를 뜻하지 않으며, 협회 및 다른 학습 구간은 별도 범위입니다.
+
+최신 화면 검수에서는 홍보 첫 안내와 빈 선택 상태, 저스티스 수동 선택과 네 슬롯 유지, 초기 `0 / 50` 및 두 차례 확정 후 수치, MAX 실제 클릭, 설명 박스 줄바꿈과 강조 영역 간격을 확인합니다. Count·MAX·진행 단계에서 I.P 정보 전체와 슬라이더·횟수 표시가 밝게 보이는지, 안내 종료 후 입력·스크롤·ESC가 복원되는지, 크리스탈 목표가 버튼에 가리지 않는지도 확인합니다.
 
 ## 근거 자료
 
 - 2026-10-04 기능 커밋 `185c75e8`의 변경 목록과 diff: DH 카메라 1개 및 JC 스크립트 3개. PR 121 병합 `0705af74`에 포함.
+- 2026-10-06 기능 커밋 `00054757`과 [PR 122](https://github.com/TeamNorthernSky/HeroInfluence/pull/122): 위 제품 변경 12개를 포함. 병합 기준 `61baaa92`.
+- [복원 검증](C:/Dev/_scratchpad/tutorial-restore-350661f4b9/restore-result.json): 기존 변경·메타데이터 보존과 폰트 문자 병합. 이 기록의 `committed: false`는 복원 직후 상태이며 이후 커밋은 PR 122 기록을 따름.
+- [10월 6일 커밋 설명](C:/Dev/_txt/261006_CommitSND.txt), [PR 설명](C:/Dev/_txt/261006_PR_SND.txt): 반영 범위와 후속 요구.
+- [10월 6일 외부 컴파일 자료](C:/Dev/_scratchpad/delivery-261006-ccdde2834a): 런타임·Editor 컴파일 응답 파일과 검증 DLL, 전달 기록.
 - [백업 manifest](C:/Dev/_Backup/Tutorial_Work_261004/manifest.json): 변경 13개와 기준 커밋, 파일 해시.
-- [전체 변경 패치](C:/Dev/_Backup/Tutorial_Work_261004/changes.patch): 기준 커밋 대비 최신 미커밋 변경.
+- [전체 변경 패치](C:/Dev/_Backup/Tutorial_Work_261004/changes.patch): 백업 당시 기준 커밋 대비 미커밋 변경 기록.
 - [롤백 검증](C:/Dev/_Backup/Tutorial_Work_261004/rollback-result.json): 기준 HEAD 유지, 작업트리 정리와 패치 재적용 검사.
-- [최신 컴파일 기록](C:/Dev/_Backup/Tutorial_Work_261004/evidence/publicity-layout-fe89a0eb15/compile.log), [로직 검증 기록](C:/Dev/_Backup/Tutorial_Work_261004/evidence/publicity-layout-fe89a0eb15/logic-validation.log).
+- [백업 전 컴파일 기록](C:/Dev/_Backup/Tutorial_Work_261004/evidence/publicity-layout-fe89a0eb15/compile.log), [로직 검증 기록](C:/Dev/_Backup/Tutorial_Work_261004/evidence/publicity-layout-fe89a0eb15/logic-validation.log).
 - [직전 UI 편집 모드 검증](C:/Dev/_Backup/Tutorial_Work_261004/evidence/publicity-ui-a25a8b6c30/edit-validation.json): 최신 박스 폭 및 강조 확장 이전의 검증.
 
-이번 문서 작성에서는 제품 코드 복원, 일반 게임 규칙 구현, 커밋 및 원격 동기화를 수행하지 않았습니다.
+이번 갱신은 보고서와 백업 폴더의 보고서 사본에만 적용했습니다. 제품 코드의 복원·커밋·동기화는 위의 10월 6일 완료 기록을 반영한 것이며, 이번 문서 갱신에서 일반 게임 후속 규칙을 구현하거나 추가 커밋하지 않았습니다.

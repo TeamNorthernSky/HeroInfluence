@@ -28,8 +28,6 @@ public class BattleManager : MonoBehaviour
     internal const int ClassSkillEffect_Buff = 3;
 
     internal const float AnimEventTimeoutSeconds = 2f;
-    private const float GuardSwapDuration = 0.25f; // 대신 맞기 자리 교환 이동 시간
-    private const float GuardSwapBlend = 0.1f;      // 이동 애니 블렌드
 
     // 다중 아군 힐에서 주 대상 이후 인접 아군 힐 이펙트를 순차로 낼 때의 스태거 간격(배속-시간, 초).
     private const float MultiHealStaggerSeconds = 0.15f;
@@ -341,6 +339,10 @@ public class BattleManager : MonoBehaviour
         {
             return; // 광역 핸들러 제외(단일 공격만 가로채기 — 대상이 1이어도 AoE는 제외)
         }
+        if (result.DamageContexts.Any(ctx => ctx != null && ctx.IsCounterAttack))
+        {
+            return; // 반격은 보호 버프를 소비하거나 자리 교환하지 않는다.
+        }
 
         // 플레이어 → 적 데미지 컨텍스트의 '원래 대상'이 정확히 하나일 때만 가로챈다.
         BattleCharactor ward = null;
@@ -358,7 +360,7 @@ public class BattleManager : MonoBehaviour
         if (flow == null) return;
 
         BattleCharactor guardian = GuardLink.FindGuardianFor(ward, flow.Participants);
-        if (guardian == null || guardian.IsDead || guardian == ward) return;
+        if (guardian == null) return;
 
         for (int i = 0; i < result.DamageContexts.Count; i++)
         {
@@ -367,7 +369,7 @@ public class BattleManager : MonoBehaviour
             ctx.RedirectedFrom = ward;   // 원래 대상 B 기억(연출용)
             ctx.Target = guardian;       // 데미지·사망·카운터·이벤트가 A를 따라감
         }
-        guardian.ClearGuard();           // 1회 소비
+        ward.RemoveStatusEffect(StatusEffectType.guarded); // 재지정 시점에 1회 소비
     }
 
     public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null)
@@ -408,35 +410,16 @@ public class BattleManager : MonoBehaviour
         // 4040처럼 부활 Cue가 공격 연출의 AttackPrepare 페이즈에 있는 경우, 그 시점에 트리거되어야 하기 때문.
         _pendingReviveCommit = BuildPendingReviveCommit(result, pendingCommits);
 
-        // 대신 맞기 연출용: 재지정 시 스왑할 가디언(A)/피보호자(B)와 원위치.
-        BattleCharactor guardSwapA = null, guardSwapB = null;
-        Vector3 guardSwapAOrigin = Vector3.zero, guardSwapBOrigin = Vector3.zero;
-        Quaternion guardSwapARot = Quaternion.identity, guardSwapBRot = Quaternion.identity;
+        // 대신 맞기 연출: 캐스트마다 새 인스턴스(반격이 이 루틴을 재진입하므로 공유 상태 금지).
+        var guardSwap = new GuardSwapPresenter(this);
 
         if (result.DamageContexts != null)
         {
             TryApplyGuardRedirect(result); // 대신 맞기: 단일 공격이 보호 중 대상에 들어오면 가디언으로 재지정
 
-            // 재지정됐으면 A↔B 동시 자리 교환(연출 진입). transform만 이동, OccupiedCell 불변.
-            for (int gi = 0; gi < result.DamageContexts.Count; gi++)
-            {
-                DamageContext gc = result.DamageContexts[gi];
-                if (gc != null && gc.RedirectedFrom != null) { guardSwapA = gc.Target; guardSwapB = gc.RedirectedFrom; break; }
-            }
-            if (guardSwapA != null && guardSwapB != null && guardSwapA.Anim != null && guardSwapB.Anim != null
-                && !guardSwapA.IsDead && !guardSwapB.IsDead)
-            {
-                guardSwapAOrigin = guardSwapA.transform.position; guardSwapARot = guardSwapA.transform.rotation;
-                guardSwapBOrigin = guardSwapB.transform.position; guardSwapBRot = guardSwapB.transform.rotation;
-                Coroutine gInA = guardSwapA.Anim.StartCoroutine(guardSwapA.Anim.MoveToPosition(guardSwapBOrigin, GuardSwapDuration, null, GuardSwapBlend));
-                Coroutine gInB = guardSwapB.Anim.StartCoroutine(guardSwapB.Anim.MoveToPosition(guardSwapAOrigin, GuardSwapDuration, null, GuardSwapBlend));
-                yield return gInA; // 두 이동을 동시 시작 → 순차 대기 = 병렬 실행
-                yield return gInB;
-            }
-            else
-            {
-                guardSwapA = null; guardSwapB = null; // 스왑 조건 미충족 → 복귀 없음
-            }
+            // 재지정됐으면 A↔B 자리 교환(move → 원래 방향 → Idle). transform만 이동, OccupiedCell 불변.
+            // 조건 미충족이면 아무것도 하지 않고, 이후 Exit도 동작하지 않는다.
+            yield return StartCoroutine(guardSwap.Enter(result.DamageContexts));
 
             bool isAoE = result.Handler is BaseAoESkillHandler;
 
@@ -612,18 +595,9 @@ public class BattleManager : MonoBehaviour
         // 이 한 줄이 "연출은 피해를 취소할 수 없다"를 보장한다.
         FlushPendingCommits(pendingCommits);
 
-        // 대신 맞기 연출: 자리 원복. B는 반드시 복귀, A는 생존 시 복귀(#7).
-        if (guardSwapA != null && guardSwapB != null)
-        {
-            Coroutine gBackB = guardSwapB.Anim != null
-                ? guardSwapB.Anim.StartCoroutine(guardSwapB.Anim.MoveToOrigin(guardSwapBOrigin, guardSwapBRot, GuardSwapDuration, null, GuardSwapBlend))
-                : null;
-            Coroutine gBackA = (!guardSwapA.IsDead && guardSwapA.Anim != null)
-                ? guardSwapA.Anim.StartCoroutine(guardSwapA.Anim.MoveToOrigin(guardSwapAOrigin, guardSwapARot, GuardSwapDuration, null, GuardSwapBlend))
-                : null;
-            if (gBackB != null) yield return gBackB;
-            if (gBackA != null) yield return gBackA;
-        }
+        // 대신 맞기 연출: 자리 원복. 피해 확정(위 스윕) 이후에만 실행한다 — 연출은 피해를 지연·취소하지 못한다.
+        // A 생존: Hit 종료 후 A·B 복귀 / A 사망: B만 A 시체가 사라진 뒤 복귀.
+        yield return StartCoroutine(guardSwap.Exit());
 
         if (result.HealContexts != null && result.HealContexts.Count > 0)
         {
@@ -728,7 +702,8 @@ public class BattleManager : MonoBehaviour
         if (result.StatusEffectContexts != null && result.StatusEffectContexts.Count > 0)
         {
             // 피해/회복이 없는 코어도 한 번의 시전 연출을 거친 뒤 효과를 확정합니다.
-            if (result.DamageContexts.Count == 0 && result.HealContexts.Count == 0 && result.Skill != null)
+            if (result.DamageContexts.Count == 0 && result.HealContexts.Count == 0 && result.Skill != null
+                && !(result.Handler is GuardSkillHandler))
             {
                 var statusTargets = result.StatusEffectContexts.Select(c => c.Target)
                     .Where(t => t != null && !t.IsDead).Distinct().ToList();

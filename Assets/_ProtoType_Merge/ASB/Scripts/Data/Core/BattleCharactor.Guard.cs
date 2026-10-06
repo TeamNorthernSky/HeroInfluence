@@ -1,37 +1,77 @@
 using System.Collections.Generic;
 
-// 대신 맞기(피해 가로채기): 가디언(A)이 보호 대상(B)을 소유하는 단일 진실원본.
-// - B에 상태를 걸지 않는다(만료 타이밍이 B 턴에 얽히는 것을 피함). 만료는 A의 턴 시작에서 처리(BattleFlowManager).
-// - 전투 시작 리셋은 BattleCharactor.PersistenceEquipment.cs의 MarkInitializedFromDataPipeline에서.
+// 대신 맞기 버프는 보호 대상에게 저장한다. source가 현재 보호자이며 버프 하나가 공격 1회를 뜻한다.
 public partial class BattleCharactor
 {
-    private BattleCharactor guardedAlly;                 // A가 보호 중인 B (없으면 null)
-    public BattleCharactor GuardedAlly => guardedAlly;
-    public bool IsGuarding => guardedAlly != null && !guardedAlly.IsDead;
+    public BattleCharactor GuardSource
+    {
+        get
+        {
+            StatusEffectInstance effect = Effects.GetStatusEffect(StatusEffectType.guarded);
+            BattleCharactor source = effect?.source;
+            return source != null && source != this && !source.IsDead && !source.IsIncapacitated
+                && !IsDead && !IsIncapacitated && source.IsPlayer == IsPlayer ? source : null;
+        }
+    }
 
-    public void BeginGuard(BattleCharactor ally) { guardedAlly = ally; }
-    public void ClearGuard() { guardedAlly = null; }
+    public void RemoveGuardedFromSource(BattleCharactor source)
+    {
+        if (Effects.RemoveStatusEffectFromSource(StatusEffectType.guarded, source))
+            RecalculateStats(applyCurrentHpClamp: true);
+    }
+
+    // [호환] JC/BattleTesting/Compatibility(전투 코드 복사본)가 옛 보호자 소유 API를 부른다.
+    // 같은 guarded 상태이상으로 위임하므로 판정은 신규 경로와 같다. 신규 코드는 GuardSkillHandler의 상태이상 결과를 쓴다.
+    private BattleCharactor legacyGuardedAlly; // ClearGuard가 참여자 목록 없이 해제할 수 있게 마지막 보호 대상만 기억
+
+    public void BeginGuard(BattleCharactor ally)
+    {
+        if (ally == null || ally == this) return;
+        ally.ApplyStatusEffect(new StatusEffectInstance
+        {
+            effectType = StatusEffectType.guarded,
+            category = StatusEffectCategory.buff,
+            remainingTurns = 1,
+            source = this
+        });
+        legacyGuardedAlly = ally;
+    }
+
+    public void ClearGuard()
+    {
+        if (legacyGuardedAlly != null) legacyGuardedAlly.RemoveGuardedFromSource(this);
+        legacyGuardedAlly = null;
+    }
 }
 
-// B의 가디언을 후보 목록에서 찾는다(단일 소스 스캔, B에는 역참조를 두지 않음 → desync 회피).
 public static class GuardLink
 {
     public static BattleCharactor FindGuardianFor(BattleCharactor ward, IReadOnlyList<BattleCharactor> candidates)
     {
-        if (ward == null || candidates == null)
-        {
-            return null;
-        }
+        if (ward == null || candidates == null) return null;
 
-        for (int i = 0; i < candidates.Count; i++)
+        BattleCharactor source = ward.GuardSource;
+        if (source != null)
         {
-            BattleCharactor u = candidates[i];
-            if (u != null && u != ward && !u.IsDead && u.GuardedAlly == ward)
+            for (int i = 0; i < candidates.Count; i++)
             {
-                return u;
+                if (candidates[i] == source) return source;
             }
         }
 
+        // 사망·무력화·전투 이탈 등으로 보호자가 유효하지 않으면 표시도 즉시 정리한다.
+        if (ward.HasStatusEffect(StatusEffectType.guarded))
+            ward.RemoveStatusEffect(StatusEffectType.guarded);
         return null;
+    }
+
+    public static void ExpireFromSource(BattleCharactor source, IReadOnlyList<BattleCharactor> candidates)
+    {
+        if (source == null || candidates == null) return;
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            BattleCharactor ward = candidates[i];
+            if (ward != null) ward.RemoveGuardedFromSource(source);
+        }
     }
 }

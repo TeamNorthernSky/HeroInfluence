@@ -79,6 +79,11 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private bool constrainFollowToMapEdgeDuringMove;
     private bool holdFollowXAtMapEdge;
     private bool holdFollowZAtMapEdge;
+    private bool externalInputLocked;
+    private bool externalFocusLocked;
+    private Vector3 externalFocusWorldPosition;
+
+    public bool IsExternalInputLocked => externalInputLocked;
 
     public void SetFollowTarget(Transform target)
     {
@@ -88,6 +93,16 @@ public class QuarterViewCameraFollower : MonoBehaviour
     public void SetFollowEnabled(bool enabled)
     {
         followEnabled = enabled;
+    }
+
+    public void SetExternalInputLocked(bool locked)
+    {
+        externalInputLocked = locked;
+        if (!locked)
+            return;
+
+        edgeScrollVelocity = Vector3.zero;
+        JcPointerInput.ClearScroll(this);
     }
 
     public void RecenterOnFollowTarget()
@@ -138,6 +153,32 @@ public class QuarterViewCameraFollower : MonoBehaviour
         ClampPanOffset();
     }
 
+    public void SnapFocusWorldPosition(Vector3 worldPosition)
+    {
+        Vector3 anchor = GetCurrentFollowAnchor();
+        smoothedFollowAnchor = new Vector3(anchor.x, 0f, anchor.z);
+        followVelocity = Vector3.zero;
+        hasSmoothedFollowAnchor = true;
+        FocusWorldPosition(worldPosition);
+        ApplyCameraPositionFromCurrentState();
+        ClampCameraToMapBounds();
+    }
+
+    public void LockExternalFocusWorldPosition(Vector3 worldPosition)
+    {
+        externalFocusWorldPosition = new Vector3(worldPosition.x, 0f, worldPosition.z);
+        externalFocusLocked = true;
+        SetExternalInputLocked(true);
+        followVelocity = Vector3.zero;
+        ApplyCameraPositionFromExternalFocus(true);
+    }
+
+    public void UnlockExternalFocus()
+    {
+        externalFocusLocked = false;
+        SetExternalInputLocked(false);
+    }
+
     private void Awake()
     {
         targetCamera = GetComponent<Camera>();
@@ -171,11 +212,19 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private void OnDisable()
     {
         edgeScrollVelocity = Vector3.zero;
+        externalFocusLocked = false;
+        externalInputLocked = false;
         JcPointerInput.ClearScroll(this);
     }
 
     private void LateUpdate()
     {
+        if (externalFocusLocked)
+        {
+            ApplyCameraPositionFromExternalFocus(false);
+            return;
+        }
+
         if (!followEnabled || followTarget == null)
             return;
 
@@ -460,6 +509,21 @@ public class QuarterViewCameraFollower : MonoBehaviour
             anchor.z + panOffset.z + positionOffset.z);
     }
 
+    private void ApplyCameraPositionFromExternalFocus(bool instantRotation)
+    {
+        transform.position = new Vector3(
+            externalFocusWorldPosition.x,
+            positionOffset.y,
+            externalFocusWorldPosition.z + positionOffset.z);
+
+        Quaternion desiredFixedRot = Quaternion.Euler(fixedEulerAngles);
+        transform.rotation = instantRotation
+            ? desiredFixedRot
+            : Quaternion.Slerp(transform.rotation, desiredFixedRot, 1f - Mathf.Exp(-rotationLerp * Time.deltaTime));
+
+        ClampCameraToMapBounds();
+    }
+
     private bool TryGetViewportGroundRect(Plane groundPlane, out Rect rect)
     {
         rect = default;
@@ -637,7 +701,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private bool IsCameraInputBlocked()
     {
         // 화면 밖은 경계 스크롤에 허용하되, 게임 클릭 게이트와는 구분한다.
-        if (!JcPointerInput.CanControl || ModalManager.HasAny || WorldInputGate.IsTurnResolving)
+        if (externalInputLocked || !JcPointerInput.CanControl || ModalManager.HasAny || WorldInputGate.IsTurnResolving)
             return true;
 
         if (!blockCameraInputDuringCombatPrompt)

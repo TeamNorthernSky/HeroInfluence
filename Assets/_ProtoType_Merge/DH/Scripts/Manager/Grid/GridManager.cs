@@ -73,9 +73,11 @@ public class GridManager : MonoBehaviour
     // 전제 조건: Land 월드 중심 = (0, 0, 0)
     // 필요 시 인스펙터에서 원점 오프셋 확장 가능
     private Vector3 gridOrigin = Vector3.zero;
+    private readonly HashSet<Vector2Int> levelGroundCells = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> levelObstacleCells = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> gateBlockerCells = new HashSet<Vector2Int>();
     private readonly Dictionary<Vector2Int, float> cellSurfaceYOffsetByGrid = new Dictionary<Vector2Int, float>();
+    private bool levelGroundCellsRegistered;
 
     public float CellSize => cellSize;
     public Transform LandTransform => landTransform;
@@ -246,6 +248,35 @@ public class GridManager : MonoBehaviour
             return true;
 
         return useLegacyObstacleColliderFallback && HasBlockingCollider(grid, obstacleLayerMask);
+    }
+
+    public void ClearLevelGroundCells()
+    {
+        levelGroundCells.Clear();
+        levelGroundCellsRegistered = false;
+    }
+
+    public void RegisterLevelGroundCell(Vector2Int grid)
+    {
+        levelGroundCells.Add(grid);
+        levelGroundCellsRegistered = true;
+    }
+
+    public void RegisterLevelGroundCells(IEnumerable<Vector2Int> grids)
+    {
+        if (grids == null)
+            return;
+
+        foreach (Vector2Int grid in grids)
+            levelGroundCells.Add(grid);
+
+        if (levelGroundCells.Count > 0)
+            levelGroundCellsRegistered = true;
+    }
+
+    public bool HasLevelGroundCell(Vector2Int grid)
+    {
+        return !levelGroundCellsRegistered || levelGroundCells.Contains(grid);
     }
 
     public void ClearLevelObstacleCells()
@@ -1103,6 +1134,9 @@ public class GridManager : MonoBehaviour
 
     public bool CanEnterCell(Vector2Int grid, Vector2Int destination, Transform selfTransform = null, bool ignoreFogVisibility = false, bool allowItemCells = false)
     {
+        if (!HasLevelGroundCell(grid))
+            return false;
+
         if (HasObstacle(grid))
             return false;
 
@@ -1141,6 +1175,9 @@ public class GridManager : MonoBehaviour
 
     public bool CanOccupyCell(Vector2Int grid, Transform selfTransform = null, bool ignoreFogVisibility = false)
     {
+        if (!HasLevelGroundCell(grid))
+            return false;
+
         if (HasObstacle(grid))
             return false;
 

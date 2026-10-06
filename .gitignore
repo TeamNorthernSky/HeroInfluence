@@ -178,3 +178,7 @@ Assets/_ProtoType_Merge/CLAUDE.md.meta
 
 # GitHub Copilot이 생성한 Azure 보일러플레이트 — 프로젝트 무관
 /.github/copilot-instructions.md
+
+# 발표 자료 출력물
+/presentation_output/
+/presentation_build/

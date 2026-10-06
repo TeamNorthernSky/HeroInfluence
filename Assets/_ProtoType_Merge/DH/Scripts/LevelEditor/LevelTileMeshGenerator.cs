@@ -225,7 +225,7 @@ public class LevelTileMeshGenerator : MonoBehaviour
                 batches.Add(key, batch);
             }
 
-            AddTileQuad(batch, grid, sprite, obstacleYOffset);
+            AddTileQuad(batch, grid, sprite, obstacleYOffset, true);
         }
 
         foreach (KeyValuePair<TileBatchKey, TileBatch> pair in batches)
@@ -292,14 +292,22 @@ public class LevelTileMeshGenerator : MonoBehaviour
         tileRoot.SetParent(transform, false);
     }
 
-    private void AddTileQuad(TileBatch batch, Vector2Int grid, Sprite sprite, float tileYOffset)
+    private void AddTileQuad(
+        TileBatch batch,
+        Vector2Int grid,
+        Sprite sprite,
+        float tileYOffset,
+        bool useCellSurfaceY = false)
     {
         float size = gridManager != null ? Mathf.Max(0.01f, gridManager.CellSize) : 1f;
         float half = size * 0.5f;
         Vector3 center = gridManager != null
             ? gridManager.GridToWorldCenter(grid)
             : new Vector3(grid.x * size, 0f, grid.y * size);
-        center.y = gridManager != null ? gridManager.GetLandSurfaceY() + tileYOffset : tileYOffset;
+        if (gridManager != null)
+            center.y = (useCellSurfaceY ? gridManager.GetCellSurfaceY(grid) : gridManager.GetLandSurfaceY()) + tileYOffset;
+        else
+            center.y = tileYOffset;
 
         int start = batch.Vertices.Count;
         batch.Vertices.Add(new Vector3(center.x - half, center.y, center.z - half));

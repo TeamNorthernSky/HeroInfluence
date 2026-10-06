@@ -595,6 +595,20 @@ public class CharactorAnimationController : MonoBehaviour
         return info.normalizedTime >= threshold;
     }
 
+    /// <summary>
+    /// stateName 반응이 끝났는지(레이어 0). <see cref="IsStateNearEnd"/>와 달리 진입 전이 중에는 false다.
+    /// 다음 상태가 stateName(진입·재진입 전이)이면 false, 현재 상태가 stateName이면 normalizedTime ≥ threshold,
+    /// 현재·다음 모두 stateName이 아니면 true.
+    /// </summary>
+    public bool IsStateOverOrAbsent(string stateName, float threshold = 0.9f)
+    {
+        if (_animator == null) return true;
+        if (_animator.GetNextAnimatorStateInfo(0).IsName(stateName)) return false;
+        AnimatorStateInfo current = _animator.GetCurrentAnimatorStateInfo(0);
+        if (!current.IsName(stateName)) return true;
+        return current.normalizedTime >= threshold;
+    }
+
     /// <summary>레거시 호출 호환.</summary>
     public void PlayLegacyTrigger(string triggerName) => PlayGenericAnimation(triggerName);
 

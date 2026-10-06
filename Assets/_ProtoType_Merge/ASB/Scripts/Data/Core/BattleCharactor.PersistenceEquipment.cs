@@ -130,7 +130,7 @@ public partial class BattleCharactor
         ClearCharge();      // 충전 예약(+charging 마커) 리셋 — AI 인스턴스 재사용 대비
         ResetEnergyStack(); // 에너지 스택 리셋
         SetPendingRest(false); // 포탑 사이클(휴식 예약) 리셋
-        ClearGuard(); // 대신 맞기 보호 링크 리셋
+        RemoveStatusEffect(StatusEffectType.guarded); // 이전 전투의 대신 맞기 버프 리셋
         ResetIncapacitation(); // 무력화(다운) 상태 리셋
 
         if (!preserveInjectedEquipment)

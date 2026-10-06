@@ -158,6 +158,12 @@ namespace ASB.Work.Battle.SkillExecution
                 case StatusEffectType.healBan:
                     SetHealBan(context.Caster, context.Target, context.DurationTurn);
                     break;
+                case StatusEffectType.guarded:
+                    if (context.Caster != context.Target && !context.Caster.IsDead
+                        && !context.Caster.IsIncapacitated && !context.Target.IsIncapacitated
+                        && context.Caster.IsPlayer == context.Target.IsPlayer)
+                        context.Target.ApplyStatusEffect(CreateStatusEffectInstance(context));
+                    break;
                 case StatusEffectType.bleed:
                 case StatusEffectType.poison:
                 case StatusEffectType.attack_up:
@@ -191,6 +197,7 @@ namespace ASB.Work.Battle.SkillExecution
             {
                 case StatusEffectType.attack_up:
                 case StatusEffectType.damage_taken_down:
+                case StatusEffectType.guarded:
                 case StatusEffectType.defense_up:
                     return StatusEffectCategory.buff;
                 case StatusEffectType.poison:
