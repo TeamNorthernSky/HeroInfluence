@@ -33,19 +33,7 @@ public sealed class JcBuildingSilhouetteController : MonoBehaviour
     private void OnDestroy() => Controllers.Remove(this);
     private void OnValidate() => settings = settings.Sanitized();
 
-    private void OnDrawGizmosSelected()
-    {
-        var value = Settings;
-        if (!value.showOcclusionBox) return;
-        foreach (var registry in FindObjectsByType<PartyRegistry>(FindObjectsSortMode.None))
-        {
-            if (registry.gameObject.scene != gameObject.scene || registry.PlayerParty == null) continue;
-            Vector3 center = registry.PlayerParty.transform.position + value.occlusionBoxOffset;
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawWireCube(center, value.occlusionBoxSize);
-            Gizmos.DrawSphere(center, 0.04f);
-        }
-    }
+
 
     [ContextMenu("프리셋 불러오기")]
     public void LoadPreset()
