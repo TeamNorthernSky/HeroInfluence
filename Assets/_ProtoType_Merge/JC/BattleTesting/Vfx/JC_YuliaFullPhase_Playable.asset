@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a96f92577f8d9124793cbf0730aa79e5, type: 3}
+  m_Name: JC_YuliaFullPhase_Playable
+  m_EditorClassIdentifier: 
+  settings:
+    allies:
+    - unitKey: 10001
+      slot: 5
+      level: 6
+      hpRatio: 1
+      initialIP: 100
+      weaponKey: 
+      weaponLevel: 3
+      attackTraining: 1
+      healthTraining: 3
+      skillLevels: 02000000020000000200000002000000
+    - unitKey: 10002
+      slot: 1
+      level: 6
+      hpRatio: 1
+      initialIP: 100
+      weaponKey: 
+      weaponLevel: 3
+      attackTraining: 1
+      healthTraining: 3
+      skillLevels: 02000000020000000200000002000000
+    - unitKey: 10003
+      slot: 3
+      level: 6
+      hpRatio: 1
+      initialIP: 100
+      weaponKey: 
+      weaponLevel: 3
+      attackTraining: 1
+      healthTraining: 3
+      skillLevels: 02000000020000000200000002000000
+    - unitKey: 10004
+      slot: 2
+      level: 6
+      hpRatio: 1
+      initialIP: 100
+      weaponKey: 
+      weaponLevel: 3
+      attackTraining: 1
+      healthTraining: 3
+      skillLevels: 02000000020000000200000002000000
+    enemyPreset: {fileID: 11400000, guid: 5a2ee9a0980ab2a4db3cdd07624aed95, type: 2}
+    alliesCannotDie: 0
+    useFixedSeed: 1
+    seed: 1006

@@ -35,10 +35,10 @@ namespace JC.Tutorial
         [Min(0), Tooltip("이동불가 경로를 선택한 후 설명을 띄우기까지의 시간(초)입니다. 붉은 경로를 먼저 보여 줍니다.")] public float blockedPreviewDuration = .65f;
         [Tooltip("초기 이동 학습이 끝난 뒤 기존 턴 종료를 허용하는 담당자입니다.")] public TutorialTurnManager turnManager;
         [Min(.1f), Tooltip("시작 목표가 한 번 점멸하고 테두리가 수렴하는 시간(초)입니다. 표시 시간 / 이 값만큼 반복하며 기본값은 3회입니다.")] public float introPulsePeriod = 2.5f / 3;
-        [Header("튜토리얼 시작 카메라 구도")]
-        [Tooltip("파티에 즉시 고정한 뒤 카메라를 이동할 화면 비율입니다. X 양수는 오른쪽, Y 음수는 아래쪽이며 배경과 목표는 반대 방향으로 보입니다. 0이면 이동하지 않습니다. 튜토리얼 첫 진입에만 적용하며 일반 탐사에는 적용하지 않습니다.")]
+        [Header("튜토리얼 카메라 구도")]
+        [Tooltip("파티에 즉시 고정한 뒤 카메라를 이동할 화면 비율입니다. X 양수는 오른쪽, Y 음수는 아래쪽이며 배경과 목표는 반대 방향으로 보입니다. 0이면 이동하지 않습니다. 시작 안내가 닫힐 때와 크리스탈 수집 목표가 처음 표시될 때 각각 한 번 적용하며 일반 탐사에는 적용하지 않습니다.")]
         public Vector2 initialCameraViewOffset = new Vector2(.04f, -.06f);
-        [Min(0), Tooltip("시작 메시지 박스가 사라진 뒤 구도 조정에 걸리는 실제 시간(초)입니다. 0이면 즉시 적용합니다. 파티 추적·줌 설정은 유지합니다.")]
+        [Min(0), Tooltip("시작 안내 종료 및 크리스탈 수집 안내의 구도 조정에 걸리는 실제 시간(초)입니다. 0이면 즉시 적용합니다. 파티 추적·줌 설정은 유지합니다.")]
         public float initialCameraMoveDuration = .6f;
         [Header("이동 안내")]
         [TextArea, Tooltip("목표를 선택하기 전에 표시하는 안내입니다.")] public string selectText = "빛나는 목표 위치를 눌러 이동 경로를 확인하세요.";
@@ -63,6 +63,7 @@ namespace JC.Tutorial
         private Button nextTurnButton;
         private Coroutine initialCameraMove;
         private bool initialCameraMovePending;
+        private bool externalPresentation;
         public int PresentationOpenedFrame { get; private set; } = -1;
         public string CurrentGuideStep { get; private set; }
 
@@ -79,32 +80,42 @@ namespace JC.Tutorial
             turnStateCaptured = true;
             initialCameraMovePending = Application.isPlaying && repository != null && repository.CurrentTurn == 1 && !Seen("intro");
         }
-        private IEnumerator AdjustInitialCameraView()
+        private IEnumerator AdjustCameraView(bool preserveCurrentView = false, string seenKey = null)
         {
-            // 시작 박스를 숨긴 프레임이 끝난 뒤 구도만 조정한다. 파티의 즉시 고정은 유지한다.
-            yield return null;
-            yield return null;
-            if (exiting || !isActiveAndEnabled || parties == null || parties.PlayerParty == null) yield break;
-            var camera = Camera.main;
-            var follower = camera != null ? camera.GetComponent<QuarterViewCameraFollower>() : null;
-            if (follower == null || camera.gameObject.scene != gameObject.scene) yield break;
-            var party = parties.PlayerParty;
-            var plane = new Plane(Vector3.up, party.transform.position);
-            var centerRay = camera.ViewportPointToRay(new Vector3(.5f, .5f, 0));
-            var shiftedRay = camera.ViewportPointToRay(new Vector3(.5f + initialCameraViewOffset.x, .5f + initialCameraViewOffset.y, 0));
-            if (!plane.Raycast(centerRay, out float centerDistance) || !plane.Raycast(shiftedRay, out float shiftedDistance)) yield break;
-            Vector3 offset = shiftedRay.GetPoint(shiftedDistance) - centerRay.GetPoint(centerDistance);
-            offset.y = 0;
-            float elapsed = 0;
-            while (!exiting && isActiveAndEnabled && party != null)
+            try
             {
-                float progress = initialCameraMoveDuration <= 0 ? 1 : Mathf.Clamp01(elapsed / initialCameraMoveDuration);
-                follower.FocusWorldPosition(party.transform.position + offset * Mathf.SmoothStep(0, 1, progress));
-                if (progress >= 1) break;
-                elapsed += Time.unscaledDeltaTime;
+                // 안내 박스가 사라지고 카메라 추적이 갱신된 뒤 현재 화면을 기준으로 보정한다.
                 yield return null;
+                yield return null;
+                if (exiting || !isActiveAndEnabled || parties == null || parties.PlayerParty == null) yield break;
+                var camera = Camera.main;
+                var follower = camera != null ? camera.GetComponent<QuarterViewCameraFollower>() : null;
+                if (follower == null || camera.gameObject.scene != gameObject.scene) yield break;
+                var party = parties.PlayerParty;
+                var plane = new Plane(Vector3.up, party.transform.position);
+                var centerRay = camera.ViewportPointToRay(new Vector3(.5f, .5f, 0));
+                var shiftedRay = camera.ViewportPointToRay(new Vector3(.5f + initialCameraViewOffset.x, .5f + initialCameraViewOffset.y, 0));
+                if (!plane.Raycast(centerRay, out float centerDistance) || !plane.Raycast(shiftedRay, out float shiftedDistance)) yield break;
+                Vector3 offset = shiftedRay.GetPoint(shiftedDistance) - centerRay.GetPoint(centerDistance);
+                offset.y = 0;
+                Vector3 partyStart = party.transform.position;
+                // 크리스탈 단계는 기존 팬을 유지한다. 파티 중심으로 되돌린 뒤 이동하지 않는다.
+                Vector3 origin = preserveCurrentView ? follower.GetFocusWorldPosition() : partyStart;
+                float elapsed = 0;
+                while (!exiting && isActiveAndEnabled && party != null)
+                {
+                    float progress = initialCameraMoveDuration <= 0 ? 1 : Mathf.Clamp01(elapsed / initialCameraMoveDuration);
+                    follower.FocusWorldPosition(origin + (party.transform.position - partyStart) + offset * Mathf.SmoothStep(0, 1, progress));
+                    if (progress >= 1)
+                    {
+                        if (seenKey != null) Mark(seenKey);
+                        break;
+                    }
+                    elapsed += Time.unscaledDeltaTime;
+                    yield return null;
+                }
             }
-            initialCameraMove = null;
+            finally { initialCameraMove = null; }
         }
         private readonly List<(TMP_Text text, Material original, Material shadow)> questMaterials = new List<(TMP_Text, Material, Material)>();
         private void ApplyQuestShadow()
@@ -188,6 +199,7 @@ namespace JC.Tutorial
 
         public void RefreshPresentation(float time)
         {
+            if (externalPresentation) return;
             if (exiting) { Hide(); return; }
             BindRepository();
             float delta = lastTime < 0 ? 0 : Mathf.Clamp(time - lastTime, 0, .1f); lastTime = time;
@@ -302,7 +314,10 @@ namespace JC.Tutorial
                 }
                 bool selected = IsSelected(nearest.cell, time);
                 ShowAction("collect", "자원 수집", selected && time - selectedSince >= confirmDelay ? confirmText : $"표시된 {ResourceName(nearest.type)}을 수집하세요.");
-                ShowMarker(nearest.cell, time); return;
+                ShowMarker(nearest.cell, time);
+                if (Application.isPlaying && nearest.type == ResourceType.Crystal && !Seen("crystal-camera-view") && initialCameraMove == null)
+                    initialCameraMove = StartCoroutine(AdjustCameraView(true, "crystal-camera-view"));
+                return;
             }
             var enemies = TutorialEnemyRegistry.Instance; TutorialEnemyObject enemy = null;
             if (enemies != null)
@@ -326,6 +341,7 @@ namespace JC.Tutorial
         }
         public void ContinueExplanation()
         {
+            if (externalPresentation) return;
             if (ModalManager.Top != explanationShield || releaseShieldPending) return;
             if (showingIntro) { DismissIntro(); return; }
             if (explanationKey == null) return;
@@ -340,12 +356,13 @@ namespace JC.Tutorial
             if (initialCameraMovePending && !exiting)
             {
                 initialCameraMovePending = false;
-                initialCameraMove = StartCoroutine(AdjustInitialCameraView());
+                initialCameraMove = StartCoroutine(AdjustCameraView());
             }
         }
         private void LateUpdate() => ReleaseDismissedInput(Input.GetMouseButton(0));
         private void ReleaseDismissedInput(bool pointerHeld)
         {
+            if (externalPresentation) return;
             // UI 클릭 처리와 월드 Update가 끝난 뒤 해제한다. 자동 종료 중 누르고 있으면 놓을 때까지 보호한다.
             if (!releaseShieldPending || pointerHeld) return;
             releaseShieldPending = false; SetShield(false);
@@ -371,6 +388,13 @@ namespace JC.Tutorial
         }
         private void SetQuest(string text) { if (quest != null && quest.text != text) quest.text = text; }
         private void SetShield(bool visible) { if (explanationShield != null && explanationShield.activeSelf != visible) explanationShield.SetActive(visible); }
+        // 전투 복귀 후 기존 KJ 홍보 안내가 같은 메시지·차단 패널을 사용한다.
+        public void SetExternalPresentation(bool active)
+        {
+            if (externalPresentation == active) return;
+            Hide();
+            externalPresentation = active;
+        }
         private void SetContinue(bool visible) { if (continueButton != null && continueButton.gameObject.activeSelf != visible) continueButton.gameObject.SetActive(visible); }
         private void HideMarker() { if (goal != null) goal.Present(false, Vector3.zero, 1, 0); }
         private void ShowMarker(Vector2Int cell, float time)
@@ -468,7 +492,7 @@ namespace JC.Tutorial
             repository = null; Hide();
         }
         public static string ResourceName(ResourceType type)
-        { return type == ResourceType.Chip ? "히어로 메달" : type == ResourceType.Crystal ? "아티펙트 수정" : type == ResourceType.Supply ? "건설 자재" : "자금"; }
+        { return type == ResourceType.Chip ? "히어로 메달" : type == ResourceType.Crystal ? "크리스탈" : type == ResourceType.Supply ? "건설 자재" : "자금"; }
         private static string ResourceUse(ResourceType type)
         { return type == ResourceType.Chip ? "히어로 스킬 강화에 사용하는 자원입니다." : type == ResourceType.Crystal ? "히어로 코어 제작과 강화에 사용하는 자원입니다." : type == ResourceType.Supply ? "협회 시설의 건설과 승급에 사용하는 자원입니다." : "협회 운영과 다양한 강화에 사용하는 기본 자원입니다."; }
     }
