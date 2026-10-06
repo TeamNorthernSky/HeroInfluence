@@ -14,23 +14,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 3030
   PresentationSchemaVersion: 1
-  AnimationStateName: 
+  AnimationRail: 1
+  PresentationArchetype: 0
+  SkillTimelines:
+  - CharacterKey: 10003
+    Timeline: {fileID: 11400000, guid: c89bb4ae9ac95d14b86f0caf95aa36b8, type: 2}
+    TargetCount: 0
+    Segments: []
+  - CharacterKey: 10003
+    Timeline: {fileID: 11400000, guid: c89bb4ae9ac95d14b86f0caf95aa36b8, type: 2}
+    TargetCount: 2
+    Segments: []
+  ImpactTiming: 0
+  AnimationStateName: Base Layer.ClassSkill_1
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
   HitDelay: 0.25
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
-  EnableHitEffect: 1
+  EnableHitEffect: 0
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
@@ -47,16 +51,13 @@ MonoBehaviour:
     UsePreparedCharge: 0
     ChargeInstanceKey: 
     TargetFormationCenter: 0
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
   MovePrepare:
-    Enabled: 1
+    Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []
@@ -73,25 +74,31 @@ MonoBehaviour:
   Attack:
     Enabled: 1
     Beats:
-    - AnimationStateName: Base Layer.ClassSkill_3
+    - AnimationStateName: Base Layer.ClassSkill_1
       BlendInSeconds: 0.1
       AdvanceOnEvent: 0
-      WaitForHitEvent: 0
+      WaitForHitEvent: 1
       Cues:
-      - CueName: fx_right
-        EffectIds: 2e040000
+      - CueName: fire
+        EffectIds: de7e0100
         SoundIds: 
         Operation: 0
         InstanceKey: 
         Anchor: 1
         Socket: 11
-      - CueName: fx_left
-        EffectIds: 2e040000
+        Timing: 0
+        Time: 0
+        CueId: 728a0dc5e34c49cc93b861a3560a32a2
+      - CueName: fire_left
+        EffectIds: de7e0100
         SoundIds: 
         Operation: 0
         InstanceKey: 
         Anchor: 1
         Socket: 10
+        Timing: 0
+        Time: 0
+        CueId: 0da1ee4f224b4d14a6b37a71914df8fa
   Return:
     Enabled: 0
     AnimationStateName: 

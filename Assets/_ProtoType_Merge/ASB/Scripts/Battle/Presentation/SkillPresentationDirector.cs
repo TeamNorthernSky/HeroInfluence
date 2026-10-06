@@ -1089,6 +1089,9 @@ public sealed partial class SkillPresentationDirector
         {
             if (deliveryStarted) return;
             deliveryStarted = true;
+            // Path B(ResolveAoEHitWithPresentationDeliveryRoutine)와 동일: 히트 시점에 대기 중인 커스텀 이펙트를 발사시킨다
+            // (2040 낙하형: CustomImpactSignalInstanceKey 핸들 Signal 후 핸들 제거 → Timeline 종료 정리에서 Stop되지 않음).
+            SignalCustomImpactEffectAtHit(actor, presentation);
             // Path B와 동일: 커스텀 임팩트(SolarPrism 등, ImpactDeliveryMode=CustomEffectImpact)면 도착 신호
             // (ImpactSignalBus)를 기다렸다가 대미지를 확정한다. 그 외 스킬은 CustomEffectImpactAction이 즉시
             // 통과시켜 지금과 동일하게 즉시 적용된다(동작 불변). 신호 미도착 시 타임아웃 폴백도 내장.
@@ -1406,8 +1409,29 @@ public sealed partial class SkillPresentationDirector
             }
             else
             {
+                // Animator 레일과 같은 회전 규칙: Move가 켜진 회전형 유닛만 재생 전에 대상 쪽으로 돌고, 끝나면 원래 방향으로 돌아온다.
+                // 비-Melee Timeline은 이동하지 않는다. 복귀는 빈 MoveReturn 대신 현재(Idle) 애니메이션을 유지한다.
+                bool rotateForTimeline = (presentation.Move?.Enabled ?? true) && shouldRotate;
+                if (rotateForTimeline)
+                {
+                    var approach = new ActionSequenceRunner();
+                    EnqueueSkillApproach(approach, actor, target, actorAnim, movement, false, true,
+                        presentation.Move, targetTransform);
+                    yield return _battle.StartCoroutine(approach.RunAll(_battle));
+                }
+
+                var playbackResult = new TimelineRailPlaybackResult();
                 yield return RunTimelineRailRoutine(actor, target, skill, presentation, onHitCallback, deliveryGate,
-                    targetTransform, targetPosition, playTargetHitAnimation);
+                    targetTransform, targetPosition, playTargetHitAnimation, playbackResult: playbackResult);
+
+                // 피격/사망으로 끊긴 경우 Hit/Dead 반응을 덮지 않도록 복귀 회전을 생략한다.
+                if (rotateForTimeline && actor != null && !actor.IsDead && !playbackResult.Interrupted)
+                {
+                    var tail = new ActionSequenceRunner();
+                    EnqueueSkillReturn(tail, actorAnim, movement, false, true, originPosition, originRotationY,
+                        presentation.Return, keepCurrentAnimation: true);
+                    yield return _battle.StartCoroutine(tail.RunAll(_battle));
+                }
             }
             yield break;
         }

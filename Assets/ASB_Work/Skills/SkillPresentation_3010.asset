@@ -18,7 +18,10 @@ MonoBehaviour:
   PresentationArchetype: 0
   SkillTimelines:
   - CharacterKey: 10003
-    Timeline: {fileID: 11400000, guid: 61b0a2b7598ff8a4b9ffd59616910522, type: 2}
+    Timeline: {fileID: 11400000, guid: 1af9ef9f5c4a0c24b8eab9c413720980, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 

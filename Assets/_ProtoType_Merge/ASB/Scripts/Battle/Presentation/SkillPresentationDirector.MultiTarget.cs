@@ -128,11 +128,23 @@ public sealed partial class SkillPresentationDirector
         ResolveSkillMovement(actor, primary, skill, out UnitMovementProfile movement,
             out bool shouldMove, out bool shouldRotate, out Vector3 originPosition,
             out float originRotationY, primary != null ? primary.transform : null);
-        if (melee && (presentation.Move == null || presentation.Move.Enabled))
+        bool moveEnabled = presentation.Move == null || presentation.Move.Enabled;
+        if (melee && moveEnabled)
         {
             var approach = new ActionSequenceRunner();
             EnqueueSkillApproach(approach, actor, primary, actor.Anim, movement, shouldMove,
                 shouldRotate, presentation.Move);
+            yield return _battle.StartCoroutine(approach.RunAll(_battle));
+        }
+
+        // 비-Melee는 Animator 레일과 같은 회전 규칙: Move가 켜진 회전형 유닛만 대상 쪽으로 돌고 끝나면 복귀한다.
+        // Move가 꺼진 스킬(예: 3030 더블 공격)은 대상 쪽으로 돌지 않는다.
+        bool rotateForPlan = !melee && moveEnabled && shouldRotate;
+        bool faceSegmentTargets = melee || rotateForPlan;
+        if (rotateForPlan)
+        {
+            var approach = new ActionSequenceRunner();
+            EnqueueSkillApproach(approach, actor, primary, actor.Anim, movement, false, true, presentation.Move);
             yield return _battle.StartCoroutine(approach.RunAll(_battle));
         }
 
@@ -223,7 +235,7 @@ public sealed partial class SkillPresentationDirector
                 BattleCharactor target = slotContexts[segmentSlot - 1]?.Target;
                 RetargetPlanContext(actor, target);
                 // 이 세그먼트의 Move가 같은 대상으로 가면 회전은 Move 보간이 맡는다(시작 프레임 스냅 방지).
-                if (!MovesToSlot(activeSpans, segmentSlot)) FacePlanTarget(actor, target);
+                if (faceSegmentTargets && !MovesToSlot(activeSpans, segmentSlot)) FacePlanTarget(actor, target);
                 // Rebuild the graph on this same frame. Play() on an already Playing director
                 // can otherwise keep the previous segment's graph on some Unity versions.
                 if (s > 0) director.Stop();
@@ -261,8 +273,19 @@ public sealed partial class SkillPresentationDirector
             }
 
             if (actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
+            {
                 yield return HandoffMultiTargetPlan(actor, director, presentation, melee,
                     movement, shouldMove, shouldRotate, originPosition, originRotationY);
+
+                // 비-Melee 회전 복귀: 핸드오프로 Idle이 된 상태를 유지한 채 원래 방향으로 돌아온다(빈 MoveReturn 미사용).
+                if (rotateForPlan && actor != null && !actor.IsDead)
+                {
+                    var tail = new ActionSequenceRunner();
+                    EnqueueSkillReturn(tail, actor.Anim, movement, false, true, originPosition, originRotationY,
+                        presentation.Return, keepCurrentAnimation: true);
+                    yield return _battle.StartCoroutine(tail.RunAll(_battle));
+                }
+            }
         }
         finally
         {
