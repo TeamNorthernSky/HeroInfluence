@@ -458,6 +458,14 @@ public class BattleSceneManager : MonoBehaviour
         SyncGridOccupancy(sceneUnits);
         CollectParticipantsAfterInitialize(sceneUnits);
 
+        // 튜토리얼 전투: 아군은 HP 1 아래로 내려가지 않는다(사망 불가).
+        // Initialize 이후여야 한다 — 제약값이 MaxHp로 클램프되므로 그 전엔 0이 된다.
+        if (combatContext != null && combatContext.IsTutorial)
+        {
+            foreach (BattleCharactor player in playerBattleCharactors)
+                player?.AddMinimumHpConstraint(1f, this);
+        }
+
         // 실제 스폰 계획의 보상 합계를 전투 시작 전에 스냅샷한다.
         // 이후 시체 GameObject가 제거돼도 승리 보상은 이 순수 값으로 계산된다.
         victoryEnemyExperienceSnapshot = enemySpawner != null && enemySpawner.HasSuccessfulSpawnPlanRewardSnapshot
