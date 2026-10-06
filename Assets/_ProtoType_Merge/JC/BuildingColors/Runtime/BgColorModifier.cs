@@ -13,7 +13,7 @@ namespace JC.BuildingColors
         [Tooltip("이 건물만 원본 텍스처로 비교합니다. 조정값과 프로필은 유지됩니다.")] public bool showOriginal;
         [Tooltip("선택한 파츠 영역을 분홍색으로 강조합니다. -1은 일반 표시입니다. 프로필에는 저장하지 않습니다.")] public int highlightedPart=-1;
         [Tooltip("부모의 대상 범위 밖에 있는 특수 건물도 같은 씬 전체에서 찾습니다. 전용 재질이 일치하는 건물에만 적용됩니다.")] public bool searchEntireScene;
-        sealed class Target {public Renderer renderer; public int slot,binding; public MaterialPropertyBlock previous;}
+        sealed class Target {public Renderer renderer; public int slot,binding; public Material material; public MaterialPropertyBlock previous;}
         sealed class MeshTarget {public MeshFilter filter;public Mesh original,separated;}
         readonly List<MeshTarget> meshTargets=new List<MeshTarget>();
         readonly List<Target> targets=new List<Target>();
@@ -32,7 +32,16 @@ namespace JC.BuildingColors
         void OnDisable(){Release();}
         void OnDestroy(){Release();}
         void Update(){if(!definition){Release();return;} if(Time.realtimeSinceStartupAsDouble>=nextScan||TargetMaterialChanged()){Rebind();nextScan=Time.realtimeSinceStartupAsDouble+2;}ApplyNow();}
-        bool TargetMaterialChanged(){foreach(var t in targets){if(!t.renderer)return true;var materials=t.renderer.sharedMaterials;if(t.slot>=materials.Length||t.binding>=definition.bindings.Length||materials[t.slot]!=definition.bindings[t.binding].material)return true;}return false;}
+        bool TargetMaterialChanged(){foreach(var t in targets){if(!t.renderer)return true;var materials=t.renderer.sharedMaterials;if(t.slot>=materials.Length||FindBinding(t.renderer,t.slot,materials[t.slot])!=t.binding||t.material!=definition.bindings[t.binding].material)return true;}return false;}
+        int FindBinding(Renderer renderer,int slot,Material material)
+        {
+            for(int i=0;i<definition.bindings.Length;i++)if(material==definition.bindings[i].material)return i;
+            // DH의 가림 재질은 일시적인 표시 전환이다. 이미 연결된 슬롯의 색상 텍스처와 UV 메시를 유지한다.
+            // 가림 재질을 사용하는 다른 건물은 새 대상으로 등록하지 않고, 실제 재질 교체는 기존대로 재탐색한다.
+            if(material&&material.shader&&material.shader.name=="JC/Environment/Building Silhouette")
+                foreach(var t in targets)if(t.renderer==renderer&&t.slot==slot&&t.binding<definition.bindings.Length&&t.material==definition.bindings[t.binding].material)return t.binding;
+            return -1;
+        }
         public void Rebind()
         {
             if(!definition||definition.bindings==null){Release();return;}
@@ -40,11 +49,12 @@ namespace JC.BuildingColors
             var renderers=searchEntireScene?AllSceneRenderers():root?root.TargetRenderers:(scope?scope.GetComponentsInChildren<Renderer>(true):AllSceneRenderers());
             var found=new List<Target>();
             foreach(var r in renderers){if(!r||r.gameObject.scene!=gameObject.scene)continue;var mats=r.sharedMaterials;
-                for(int slot=0;slot<mats.Length;slot++)for(int i=0;i<definition.bindings.Length;i++)if(mats[slot]==definition.bindings[i].material){
-                    found.Add(new Target{renderer=r,slot=slot,binding=i});break;
+                for(int slot=0;slot<mats.Length;slot++){int binding=FindBinding(r,slot,mats[slot]);if(binding>=0){
+                    found.Add(new Target{renderer=r,slot=slot,binding=binding,material=definition.bindings[binding].material});
+                }
                 }
             }
-            bool same=found.Count==targets.Count;for(int i=0;same&&i<found.Count;i++)same=found[i].renderer==targets[i].renderer&&found[i].slot==targets[i].slot&&found[i].binding==targets[i].binding;
+            bool same=found.Count==targets.Count;for(int i=0;same&&i<found.Count;i++)same=found[i].renderer==targets[i].renderer&&found[i].slot==targets[i].slot&&found[i].binding==targets[i].binding&&found[i].material==targets[i].material;
             if(same){BindMeshes();return;}
             RestoreTargets();foreach(var t in found){t.previous=new MaterialPropertyBlock();t.renderer.GetPropertyBlock(t.previous,t.slot);targets.Add(t);}
             BindMeshes();appliedHash=int.MinValue;

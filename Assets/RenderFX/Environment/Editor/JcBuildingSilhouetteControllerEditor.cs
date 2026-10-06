@@ -15,14 +15,7 @@ public sealed class JcBuildingSilhouetteControllerEditor : Editor
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("반투명 실시간 조절", EditorStyles.boldLabel);
         var settings = serializedObject.FindProperty("settings");
-        DrawProperty(settings.FindPropertyRelative("holdBuildingFadeWhileMoving"), "이동 중 반투명 유지");
-        DrawProperty(settings.FindPropertyRelative("buildingRestoreDelay"), "복원 대기 시간 (초)");
-        DrawProperty(settings.FindPropertyRelative("preciseBuildingOcclusion"), "일반 건물 메시 정밀 판정");
-        DrawProperty(settings.FindPropertyRelative("occlusionBoxOffset"), "판정 상자 중심 오프셋");
-        DrawProperty(settings.FindPropertyRelative("occlusionBoxSize"), "판정 상자 전체 크기");
-        DrawProperty(settings.FindPropertyRelative("occlusionCenterPriority"), "중심점 가림 시 즉시 적용");
-        DrawProperty(settings.FindPropertyRelative("occlusionRequiredCorners"), "최소 가림 꼭지점 수");
-        DrawProperty(settings.FindPropertyRelative("showOcclusionBox"), "Scene 뷰 판정 상자 표시");
+        EditorGUILayout.HelpBox("가림 판정은 DH 원래 방식인 카메라→파티 기준점의 단일 Ray/Bounds 검사입니다. 가림이 해소되면 다음 검사에서 복원합니다. 판정 기준점과 검사 간격은 PartyOcclusionFadeController에서 조절합니다.", MessageType.Info);
         EditorGUILayout.Space();
         DrawProperty(settings.FindPropertyRelative("fillColor"), "채움 색상");
         DrawProperty(settings.FindPropertyRelative("opacity"), "채움 불투명도");

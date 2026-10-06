@@ -25530,7 +25530,7 @@ MonoBehaviour:
     allies:
     - unitKey: 10001
       slot: 5
-      level: 6
+      level: 3
       hpRatio: 1
       initialIP: 100
       weaponKey: 
@@ -25540,7 +25540,7 @@ MonoBehaviour:
       skillLevels: 02000000020000000200000002000000
     - unitKey: 10002
       slot: 1
-      level: 6
+      level: 3
       hpRatio: 1
       initialIP: 100
       weaponKey: 
@@ -25550,7 +25550,7 @@ MonoBehaviour:
       skillLevels: 02000000020000000200000002000000
     - unitKey: 10003
       slot: 3
-      level: 6
+      level: 3
       hpRatio: 1
       initialIP: 100
       weaponKey: 
@@ -25560,7 +25560,7 @@ MonoBehaviour:
       skillLevels: 02000000020000000200000002000000
     - unitKey: 10004
       slot: 2
-      level: 6
+      level: 3
       hpRatio: 1
       initialIP: 100
       weaponKey: 
