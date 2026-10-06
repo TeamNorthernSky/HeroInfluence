@@ -13,6 +13,6 @@ public class BootSceneController : MonoBehaviour
         if (GameSceneManager.Instance != null)
             GameSceneManager.Instance.LoadScene(firstScene.ToString());
         else
-            SceneFadeController.LoadSceneWithFadeIfNeeded(firstScene.ToString());
+            UnityEngine.SceneManagement.SceneManager.LoadScene(firstScene.ToString());
     }
 }

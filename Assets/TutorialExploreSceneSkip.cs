@@ -47,7 +47,7 @@ public class TutorialExploreSceneSkip : MonoBehaviour
     {
         if (isLoading) return;
         isLoading = true;
-        JC.Tutorial.JcTutorialExitTransition.Begin();
+        JC.Tutorial.JcTutorialExitTransition.Begin("Opening CutScene");
     }
 
     private void OpenPopup()

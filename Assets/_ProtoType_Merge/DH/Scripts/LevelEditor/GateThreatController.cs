@@ -617,7 +617,12 @@ public class GateThreatController : MonoBehaviour
             bool chatClosed = false;
             // Spawn chat is optional; when present, enemy movement waits until the modal closes.
             if (TryShowSpawnChat(spawnPoint, placementKey, () => chatClosed = true))
+            {
                 yield return new WaitUntil(() => chatClosed);
+                // ChatModalController destroys its modal at the end of the close frame.
+                // Give it one frame before the enemy turn can open the encounter chat.
+                yield return null;
+            }
 
             yield break;
         }

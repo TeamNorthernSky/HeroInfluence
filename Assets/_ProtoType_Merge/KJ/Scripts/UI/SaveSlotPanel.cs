@@ -30,8 +30,6 @@ public class SaveSlotPanel : MonoBehaviour
 
     private const string TutorialScene = "TutorialExploreScene";
     private const string GameScene = "GameLoadScene";
-    private const string openingCutScene = "Opening CutScene";
-
     private int pendingSlotIndex = -1;
 
     private void Awake()
@@ -106,7 +104,7 @@ public class SaveSlotPanel : MonoBehaviour
         if (pendingSlotIndex < 0) return;
 
         SaveSlotData data = SaveSlotRepository.Load(pendingSlotIndex);
-        if (data.hasData)
+        if (data.hasData) // 저장할 데이터가 있으면
         {
             SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
             SaveSlotRepository.IsContinue = true;              // [KJ 260714] 이어하기 — GameLoadGate가 복원 분기로 진입
@@ -130,7 +128,7 @@ public class SaveSlotPanel : MonoBehaviour
         SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
         SaveSlotRepository.IsContinue = false;             // [KJ 260714] 새 게임 — 이전 이어하기 플래그가 남지 않도록 명시 리셋
         tutorialPopup?.SetActive(false);
-        SceneFadeController.LoadSceneWithFadeIfNeeded(openingCutScene);
+        SceneFadeController.LoadSceneWithFadeIfNeeded(TutorialScene);
         //SceneFadeController.LoadSceneWithFadeIfNeeded(GameScene);
     }
 
@@ -140,7 +138,7 @@ public class SaveSlotPanel : MonoBehaviour
         SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
         SaveSlotRepository.IsContinue = false;             // [KJ 260714] 새 게임 — 이전 이어하기 플래그가 남지 않도록 명시 리셋
         tutorialPopup?.SetActive(false);
-        SceneFadeController.LoadSceneWithFadeIfNeeded(GameScene);
+        SceneFadeController.LoadSceneWithFadeIfNeeded(TutorialScene);
     }
 
     private void OnTutorialCancle()
