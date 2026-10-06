@@ -340,6 +340,30 @@ namespace ASB.Work.Battle.SkillExecution
     {
         private static readonly HashSet<int> MissingSubValueWarnings = new HashSet<int>();
 
+        protected override List<BattleCharactor> SelectAdditionalTargets(
+            BattleCharactor caster, BattleCharactor mainTarget,
+            List<BattleCharactor> candidates, SkillData skillData)
+        {
+            if (skillData.skillIndex != 200052)
+                return base.SelectAdditionalTargets(caster, mainTarget, candidates, skillData);
+
+            // 강화병 연격의 둘째 타격은 후열 우선이며 대상은 첫 타격과 달라야 한다.
+            // 패턴 후보 내 후열이 없을 때에는 살아 있는 상대 전체에서 후열을 찾는다.
+            BattleFlowManager flow = UnityEngine.Object.FindFirstObjectByType<BattleFlowManager>();
+            IEnumerable<BattleCharactor> all = flow != null
+                ? (IEnumerable<BattleCharactor>)flow.Participants
+                : UnityEngine.Object.FindObjectsByType<BattleCharactor>(
+                    FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var opponents = new List<BattleCharactor>();
+            foreach (BattleCharactor unit in all)
+                if (unit != null && !unit.IsDead && unit != mainTarget && unit.IsPlayer != caster.IsPlayer)
+                    opponents.Add(unit);
+            List<BattleCharactor> back = opponents.FindAll(TargetingHelper.IsUnitInBackRow);
+            List<BattleCharactor> pool = back.Count > 0 ? back : opponents;
+            return pool.Count == 0 ? new List<BattleCharactor>()
+                : new List<BattleCharactor> { pool[UnityEngine.Random.Range(0, pool.Count)] };
+        }
+
         protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
         {
             float multiplier = skillData.skillSubValue;

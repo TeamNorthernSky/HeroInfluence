@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
-  m_Name: SkillPresentation_2010
+  m_Name: SkillPresentation_2011
   m_EditorClassIdentifier: 
-  SkillIndex: 2010
+  SkillIndex: 2011
   PresentationSchemaVersion: 1
   AnimationRail: 1
   PresentationArchetype: 2
@@ -30,9 +30,10 @@ MonoBehaviour:
   HitSoundId: 0
   SfxVolume: 1
   EnableHitEffect: 1
-  HitEffectId: 98003
+  HitEffectId: 98005
   ProjectileVisual:
-    Prefab: {fileID: 48239427848257567, guid: 38ca255449e7fdd458c3c5e60a0d58b0, type: 3}
+    Prefab: {fileID: 6564851316488231838, guid: 7e7010c1e1c5b214b9805af1af123eac,
+      type: 3}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
@@ -76,7 +77,7 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: cast
-        EffectIds: d27e0100
+        EffectIds: d47e0100
         SoundIds: 
         Operation: 0
         InstanceKey: charge

@@ -14,9 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 2040
   PresentationSchemaVersion: 1
-  AnimationRail: 0
+  AnimationRail: 1
   PresentationArchetype: 0
-  SkillTimelines: []
+  SkillTimelines:
+  - CharacterKey: 10002
+    Timeline: {fileID: 11400000, guid: c7e87fca704bba4448d125fb740fcb8c, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: Base Layer.ClassSkill_1
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -71,7 +76,7 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: charge
-        EffectIds: f8070000
+        EffectIds: d87e0100
         SoundIds: 
         Operation: 0
         InstanceKey: fall_charge

@@ -304,10 +304,9 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             return aiIndex;
         }
 
-        // 2) UnitAI가 설명 텍스트인 경우: 4구역(4000x) 유닛과 개별 적용한 2000x 유닛만 유닛 Index를 AI 인덱스로 사용한다.
+        // 2) UnitAI가 비어 있거나 설명 텍스트인 경우: 전용 AI가 있는 유닛은 Index로 연결한다.
         //    (EnemyData.Index는 "40002" 형태이며, "FV40002" 같은 형식도 숫자만 추출해 대응.)
-        //    2000x는 튜토리얼 이후 순차 적용 예정이라 총잡이(20002)·방패병(20003)만 먼저 전용 AI를 연결하고,
-        //    나머지 2000x는 기존 동작(20001)을 유지한다. → 대상을 늘리려면 IsDedicatedAi2000x에 추가.
+        //    2구역 전투 표의 20002~20005는 각각 전용 AI를 사용한다.
         string indexDigits = System.Text.RegularExpressions.Regex.Match(
             typedEnemyData.Index ?? string.Empty, @"\d+").Value;
         if (int.TryParse(indexDigits, out int indexAi)
@@ -319,8 +318,8 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         return 20001;
     }
 
-    /// <summary>2000x 중 전용 AI를 개별 적용한 유닛(빌런연합 총잡이·방패병).</summary>
-    private static bool IsDedicatedAi2000x(int index) => index == 20002 || index == 20003;
+    /// <summary>2000x 중 전용 AI를 적용한 유닛.</summary>
+    private static bool IsDedicatedAi2000x(int index) => index >= 20002 && index <= 20005;
 
     private static int ExtractWeaponIndexFromPersistent(EnemyUnitPersistentData persistentData)
     {

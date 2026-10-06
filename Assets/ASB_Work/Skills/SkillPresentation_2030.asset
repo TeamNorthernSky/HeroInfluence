@@ -17,8 +17,11 @@ MonoBehaviour:
   AnimationRail: 1
   PresentationArchetype: 0
   SkillTimelines:
-  - CharacterKey: "\uBE14\uB798\uC2A4\uD130"
-    Timeline: {fileID: 11400000, guid: 68a88984b6a138344baa18343cd56f94, type: 2}
+  - CharacterKey: 10002
+    Timeline: {fileID: 11400000, guid: 001e1715159e78d4cac812a00c08a1e2, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: Base Layer.ClassSkill_4
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -73,7 +76,7 @@ MonoBehaviour:
       WaitForHitEvent: 1
       Cues:
       - CueName: charge
-        EffectIds: ee070000
+        EffectIds: d67e0100
         SoundIds: 
         Operation: 0
         InstanceKey: col_charge

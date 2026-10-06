@@ -17,8 +17,11 @@ MonoBehaviour:
   AnimationRail: 1
   PresentationArchetype: 0
   SkillTimelines:
-  - CharacterKey: "\uBE14\uB798\uC2A4\uD130"
-    Timeline: {fileID: 11400000, guid: 1dd23ccfd4be44f48b56203e559d76d7, type: 2}
+  - CharacterKey: 10002
+    Timeline: {fileID: 11400000, guid: d3c0bcca7c715ad4e9b357b7f4449f41, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -48,7 +51,7 @@ MonoBehaviour:
   CustomImpactTimeoutSeconds: 5
   CustomImpactResolutionPolicy: 2
   CustomImpactSignalInstanceKey: 
-  ChainLightningEffectPrefab: {fileID: 175146618285826147, guid: c912456cef5272a48b509413ed1d920c,
+  ChainLightningEffectPrefab: {fileID: 6273042869431690215, guid: 71f5bab9970bef74384bdbbfe6147db9,
     type: 3}
   MovePrepare:
     Enabled: 1
@@ -72,17 +75,7 @@ MonoBehaviour:
       BlendInSeconds: 0
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
-      Cues:
-      - CueName: 
-        EffectIds: 
-        SoundIds: 
-        Operation: 0
-        InstanceKey: 
-        Anchor: 0
-        Socket: 0
-        Timing: 0
-        Time: 0
-        CueId: 5cf76e0ef0474034bf0e1fd052355af2
+      Cues: []
     - AnimationStateName: Base Layer.ClassSkill_3
       BlendInSeconds: 0
       AdvanceOnEvent: 0

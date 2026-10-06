@@ -374,7 +374,7 @@ namespace ASB.Work.Battle.SkillExecution
 
             List<BattleCharactor> candidates = TargetAroundRandomHelper.CollectValidAdditionalTargets(
                 caster, target, skillData, centerCell);
-            List<BattleCharactor> selectedTargets = TargetAroundRandomHelper.SelectAdditionalTargets(candidates, skillData);
+            List<BattleCharactor> selectedTargets = SelectAdditionalTargets(caster, target, candidates, skillData);
             for (int i = 0; i < selectedTargets.Count; i++)
             {
                 BattleCharactor extraTarget = selectedTargets[i];
@@ -410,6 +410,13 @@ namespace ASB.Work.Battle.SkillExecution
             }
 
             return result;
+        }
+
+        protected virtual List<BattleCharactor> SelectAdditionalTargets(
+            BattleCharactor caster, BattleCharactor mainTarget,
+            List<BattleCharactor> candidates, SkillData skillData)
+        {
+            return TargetAroundRandomHelper.SelectAdditionalTargets(candidates, skillData);
         }
 
         protected virtual void ApplyMainEffect(

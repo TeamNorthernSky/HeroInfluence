@@ -16,14 +16,14 @@ namespace EnemyAI
         protected override EnemyActionDecision DetermineSpecificAction(
             BattleCharactor self, List<BattleCharactor> validTargets, bool canUseSkill)
         {
-            if (self == null || validTargets == null || validTargets.Count == 0)
+            if (self == null || validTargets == null)
             {
                 return EnemyActionDecision.SkipTurn();
             }
 
             // 사이클: 충전 → 발사 → 휴식 → (반복). 모두 순수 판정, 상태변경은 Commit으로만.
 
-            // [발사] 충전 중이면 고정 타일 점유자에게 단일공격. 발사 후 '휴식 예약'.
+            // [발사] 충전 중이면 고정 타일을 중심으로 포격. 발사 후 '휴식 예약'.
             if (self.IsCharging)
             {
                 SkillData fireSkill = self.ReservedChargeSkill;
@@ -51,8 +51,11 @@ namespace EnemyAI
                 return EnemyActionDecision.SkipTurn();
             }
 
-            SkillData chargeSkill = ResolveSkillBySlot(self, 1);          // FV20004_1 단일공격
-            BattleCharactor target = GetLowestHpTarget(validTargets);
+            SkillData chargeSkill = ResolveSkillBySlot(self, 1);
+            List<BattleCharactor> candidates = chargeSkill == null ? new List<BattleCharactor>()
+                : TargetingHelper.GetValidTargetsForSkillData(self, chargeSkill)
+                    .Where(t => validTargets.Contains(t)).ToList();
+            BattleCharactor target = SelectMostClustered(candidates);
             if (chargeSkill == null || target == null)
             {
                 return EnemyActionDecision.SkipTurn();
@@ -73,6 +76,34 @@ namespace EnemyAI
         private static SkillData ResolveSkillBySlot(BattleCharactor self, int slot)
         {
             return self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == (20004 * 10) + slot);
+        }
+
+        private static BattleCharactor SelectMostClustered(List<BattleCharactor> candidates)
+        {
+            if (candidates == null || candidates.Count == 0) return null;
+            BattleFlowManager flow = UnityEngine.Object.FindFirstObjectByType<BattleFlowManager>();
+            IEnumerable<BattleCharactor> all = flow != null
+                ? (IEnumerable<BattleCharactor>)flow.Participants
+                : UnityEngine.Object.FindObjectsByType<BattleCharactor>(
+                    FindObjectsInactive.Include, FindObjectsSortMode.None);
+            int mostNearby = -1;
+            var ties = new List<BattleCharactor>();
+            foreach (BattleCharactor candidate in candidates)
+            {
+                if (candidate == null || candidate.IsDead || candidate.OccupiedCell == null) continue;
+                Vector2Int center = candidate.OccupiedCell.Coords;
+                int nearby = 0;
+                foreach (BattleCharactor other in all)
+                {
+                    if (other == null || other == candidate || other.IsDead ||
+                        other.IsPlayer != candidate.IsPlayer || other.OccupiedCell == null) continue;
+                    Vector2Int delta = other.OccupiedCell.Coords - center;
+                    if (Mathf.Abs(delta.x) + Mathf.Abs(delta.y) == 1) nearby++;
+                }
+                if (nearby > mostNearby) { mostNearby = nearby; ties.Clear(); }
+                if (nearby == mostNearby) ties.Add(candidate);
+            }
+            return ties.Count == 0 ? null : ties[UnityEngine.Random.Range(0, ties.Count)];
         }
     }
 

@@ -10,29 +10,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
-  m_Name: SkillPresentation_2010
+  m_Name: SkillPresentation_2021
   m_EditorClassIdentifier: 
-  SkillIndex: 2010
+  SkillIndex: 2021
   PresentationSchemaVersion: 1
   AnimationRail: 1
-  PresentationArchetype: 2
+  PresentationArchetype: 0
   SkillTimelines:
   - CharacterKey: 10002
-    Timeline: {fileID: 11400000, guid: 3be935cb8ee942d438d22b76ef70f710, type: 2}
+    Timeline: {fileID: 11400000, guid: d3c0bcca7c715ad4e9b357b7f4449f41, type: 2}
     TargetCount: 0
     Segments: []
   ImpactTiming: 0
-  AnimationStateName: Base Layer.ClassSkill_2
+  AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
-  UseAnimEvent: 1
-  HitDelay: 0
+  UseAnimEvent: 0
+  HitDelay: 0.25
   HitSoundId: 0
   SfxVolume: 1
   EnableHitEffect: 1
-  HitEffectId: 98003
+  HitEffectId: 0
   ProjectileVisual:
-    Prefab: {fileID: 48239427848257567, guid: 38ca255449e7fdd458c3c5e60a0d58b0, type: 3}
+    Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
@@ -43,23 +43,24 @@ MonoBehaviour:
     ArrivalRadius: 0.2
     TimeoutGraceSeconds: 1
     TimeoutSeconds: 5
-    DeliveryMode: 0
+    DeliveryMode: 1
     UsePreparedCharge: 0
     ChargeInstanceKey: 
     TargetFormationCenter: 0
   ImpactDeliveryMode: 0
   CustomImpactTimeoutSeconds: 5
-  CustomImpactResolutionPolicy: 0
+  CustomImpactResolutionPolicy: 2
   CustomImpactSignalInstanceKey: 
-  ChainLightningEffectPrefab: {fileID: 0}
+  ChainLightningEffectPrefab: {fileID: 2077068970523408211, guid: 13f0464d4ed223a499037c9f4a63b3f9,
+    type: 3}
   MovePrepare:
-    Enabled: 0
+    Enabled: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
     Cues: []
   Move:
     Enabled: 0
-    UseUnitMovement: 0
+    UseUnitMovement: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
   AttackPrepare:
@@ -70,31 +71,16 @@ MonoBehaviour:
   Attack:
     Enabled: 1
     Beats:
-    - AnimationStateName: Base Layer.ClassSkill_2
-      BlendInSeconds: 0.1
+    - AnimationStateName: Base Layer.WeaponSkill_3
+      BlendInSeconds: 0
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 0
+      Cues: []
+    - AnimationStateName: Base Layer.ClassSkill_3
+      BlendInSeconds: 0
       AdvanceOnEvent: 0
       WaitForHitEvent: 1
-      Cues:
-      - CueName: cast
-        EffectIds: d27e0100
-        SoundIds: 
-        Operation: 0
-        InstanceKey: charge
-        Anchor: 1
-        Socket: 8
-        Timing: 0
-        Time: 0
-        CueId: e75fc17a37fb4404ad76dd0e52344a29
-      - CueName: fire
-        EffectIds: 
-        SoundIds: 
-        Operation: 2
-        InstanceKey: charge
-        Anchor: 1
-        Socket: 8
-        Timing: 0
-        Time: 0
-        CueId: 4ff979ea293a4618a136e36f3f28a68b
+      Cues: []
   Return:
     Enabled: 0
     AnimationStateName: 
@@ -107,7 +93,7 @@ MonoBehaviour:
     ExtraDelay: 0
   MovingAttack:
     Enabled: 0
-    AnimationStateName: Base Layer.ClassSkill_4
+    AnimationStateName: 
     AnimationBlendInSeconds: 0.1
     EntryOffset: {x: -1.5, y: 0}
     MidOffset: {x: 0, y: 0}

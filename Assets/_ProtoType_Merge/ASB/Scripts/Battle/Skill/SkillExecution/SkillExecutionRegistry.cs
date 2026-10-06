@@ -81,23 +81,19 @@ namespace ASB.Work.Battle.SkillExecution
             Register(EnemySkillKeyRules.Compose("FV20001", 1), new DamageSkillHandler());    //단일 타깃 공격X -> 표식      AI 내용 : 가장 가까운 캐릭터 1명 표적 지적
             Register(EnemySkillKeyRules.Compose("FV20001", 2), new AoEDamageSkillHandler()); //십자 공격 -> 자폭
 
-            Register(EnemySkillKeyRules.Compose("FV20002", 1), new DamageSkillHandler());    // 단일 공격
-            Register(EnemySkillKeyRules.Compose("FV20002", 2), new AoEDamageSkillHandler()); // 원거리 난사(열 광역) — 구 단일힐에서 변경(알파 V4.0)
+            RegisterEnemy("FV20002", 1, new DamageSkillHandler());    // 원거리 사격
+            RegisterEnemy("FV20002", 2, new AoEDamageSkillHandler()); // 원거리 난사
 
-            Register(EnemySkillKeyRules.Compose("FV20003", 1), new DamageSkillHandler());    // 단일공격
-            // 이벤트 전투는 enemyIndex로부터 숫자 키(20003_2)를 생성하므로 두 키를 같은 보호 핸들러에 연결한다.
-            var guardHandler = new GuardSkillHandler();
-            Register(EnemySkillKeyRules.Compose("FV20003", 2), guardHandler); // 대신 맞기(피해 가로채기) — 200032
-            Register(EnemySkillKeyRules.Compose("20003", 2), guardHandler);
+            RegisterEnemy("FV20003", 1, new DamageSkillHandler());
+            RegisterEnemy("FV20003", 2, new GuardSkillHandler()); // 대신 맞기
 
             // 빌런연합 강화병(FV20005) — 알파 V4.0
-            Register(EnemySkillKeyRules.Compose("FV20005", 1), new DamageSkillHandler());          // 파동탄(단일 데미지)
-            Register(EnemySkillKeyRules.Compose("FV20005", 2), new HitTargetAroundRandomHandler()); // 연격(단일 + 랜덤 1체)
+            RegisterEnemy("FV20005", 1, new DamageSkillHandler());
+            RegisterEnemy("FV20005", 2, new HitTargetAroundRandomHandler());
 
             //------------------ 포탑(FV20004) + 4구역 율리아 진영(FV40001~40005)
-            // 기모으기 2턴째 단일공격(1턴 충전은 EAI_20004가 오케스트레이션). 응축/한턴쉼은 AI가 SelfAction/Skip으로 처리(등록 불필요).
-            Register(EnemySkillKeyRules.Compose("FV20004", 1), new DamageSkillHandler());    // 기모으기: 2턴째 단일공격
-            Register(EnemySkillKeyRules.Compose("FV20004", 2), new AoEDamageSkillHandler()); // 포탑 범위공격(선등록; AI 회전은 후속)
+            // 충전 포격은 중심 1.2배, 십자 주변 1.0배(표의 skillValue/subValue)를 사용한다.
+            RegisterEnemy("FV20004", 1, new PiercingDashSkillHandler());
 
             // 율리아 전투(BE490)는 2구역 이벤트 전투라 숫자 키(40001_1)로도 들어오므로 RegisterEnemy로 두 키를 함께 등록한다.
             RegisterEnemy("FV40001", 1, new AoEDamageSkillHandler()); // 나락의 폭풍(열 광역)

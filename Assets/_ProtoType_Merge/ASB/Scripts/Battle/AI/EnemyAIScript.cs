@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
@@ -169,92 +168,16 @@ namespace EnemyAI
                 return EnemyActionDecision.SkipTurn();
             }
 
-            int enemyIndex = ResolveEnemyIndex(self);
-            int skill1Index = (enemyIndex * 10) + 1;
-            int skill2Index = (enemyIndex * 10) + 2;
-
-            SkillData skill1 = self.availableSkills != null
-                ? self.availableSkills.FirstOrDefault(s => s != null && s.skillIndex == skill1Index)
-                : null;
-            SkillData skill2 = self.availableSkills != null
-                ? self.availableSkills.FirstOrDefault(s => s != null && s.skillIndex == skill2Index)
-                : null;
-
-            List<BattleCharactor> GetValidCandidates(SkillData skill)
-            {
-                if (skill == null)
-                {
-                    return new List<BattleCharactor>();
-                }
-
-                List<BattleCharactor> skillTargets = TargetingHelper.GetValidTargetsForSkillData(self, skill);
-                return skillTargets.Intersect(validTargets).ToList();
-            }
-
-            EnemyActionType finalAction = EnemyActionType.ClassSkill;
-            SkillData finalSkill;
-            List<BattleCharactor> finalCandidates;
-
-            if (canUseSkill)
-            {
-                int roll = UnityEngine.Random.Range(0, 100);
-                SkillData primarySkill = (roll < 70) ? skill1 : skill2;
-                SkillData secondarySkill = (roll < 70) ? skill2 : skill1;
-
-                finalSkill = primarySkill;
-                finalCandidates = GetValidCandidates(primarySkill);
-
-                // 1) primary 스킬 타겟 불가 -> secondary 스킬 시도
-                if (finalCandidates.Count == 0)
-                {
-                    finalSkill = secondarySkill;
-                    finalCandidates = GetValidCandidates(secondarySkill);
-                }
-            }
-            else
-            {
-                finalSkill = null;
-                finalCandidates = new List<BattleCharactor>();
-            }
-
-            // 2) 스킬 경로 모두 실패 -> 스킵
-            if (finalCandidates.Count == 0)
-            {
-                return EnemyActionDecision.SkipTurn();
-            }
-
-            BattleCharactor target = GetLowestHpTarget(finalCandidates);
-            if (target == null)
-            {
-                return EnemyActionDecision.SkipTurn();
-            }
-
-            return EnemyActionDecision.Create(target, finalAction, finalSkill);
-        }
-
-        private static int ResolveEnemyIndex(BattleCharactor self)
-        {
-            if (self == null)
-            {
-                return 20002;
-            }
-
-            EnemyScript enemyScript = self.GetComponent<EnemyScript>();
-            if (enemyScript != null
-                && enemyScript.Data != null
-                && !string.IsNullOrWhiteSpace(enemyScript.Data.Index)
-                && int.TryParse(enemyScript.Data.Index.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed))
-            {
-                return parsed;
-            }
-
-            int fromSkill = EnemyAiIndexHelper.TryResolveEnemyIndexFromClassSkill(self);
-            if (fromSkill > 0)
-            {
-                return fromSkill;
-            }
-
-            return 20002;
+            // 기획: 매 턴 원거리 사격. 같은 행에서는 HP가 낮은 대상,
+            // 같은 행이 비면 가장 가까운 대상을 선택한다.
+            if (!canUseSkill) return EnemyActionDecision.SkipTurn();
+            SkillData shot = self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == 200021);
+            if (shot == null) return EnemyActionDecision.SkipTurn();
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, shot)
+                .Where(t => validTargets.Contains(t)).ToList();
+            BattleCharactor target = EnemyAiTargetRules.PickSameRowThenLowestHpOrNearest(self, candidates);
+            return target == null ? EnemyActionDecision.SkipTurn()
+                : EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, shot);
         }
     }
 
@@ -285,9 +208,12 @@ namespace EnemyAI
                 }
             }
 
-            // 아니면 방패 치기(단일)로 최저 HP 적 공격.
+            // 아니면 방패 치기: 가장 가까운 적, 동거리면 무작위.
             SkillData strike = ResolveSkillBySlot(self, 1);         // FV20003_1
-            BattleCharactor target = GetLowestHpTarget(validTargets);
+            List<BattleCharactor> candidates = strike == null ? new List<BattleCharactor>()
+                : TargetingHelper.GetValidTargetsForSkillData(self, strike)
+                    .Where(t => validTargets.Contains(t)).ToList();
+            BattleCharactor target = EnemyAiTargetRules.PickNearest(self, candidates);
             if (!canUseSkill || strike == null || target == null)
             {
                 return EnemyActionDecision.SkipTurn();
@@ -321,6 +247,78 @@ namespace EnemyAI
         private static SkillData ResolveSkillBySlot(BattleCharactor self, int slot)
         {
             return self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == (20003 * 10) + slot);
+        }
+    }
+
+    public sealed class EAI_20005 : BaseEnemyAI
+    {
+        public override int Index => 20005;
+
+        protected override EnemyActionDecision DetermineSpecificAction(
+            BattleCharactor self, List<BattleCharactor> validTargets, bool canUseSkill)
+        {
+            if (self == null || !canUseSkill || validTargets == null || validTargets.Count == 0)
+                return EnemyActionDecision.SkipTurn();
+
+            SkillData wave = self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == 200051);
+            SkillData combo = self.availableSkills?.FirstOrDefault(s => s != null && s.skillIndex == 200052);
+            bool useWave = UnityEngine.Random.Range(0, 100) < 60;
+            SkillData skill = useWave ? wave : combo;
+            if (skill == null) skill = useWave ? combo : wave;
+            if (skill == null) return EnemyActionDecision.SkipTurn();
+
+            List<BattleCharactor> candidates = TargetingHelper.GetValidTargetsForSkillData(self, skill)
+                .Where(t => validTargets.Contains(t)).ToList();
+            // 연격 첫 타격은 전열 우선. 파동탄은 모든 유효 대상이 같은 확률이다.
+            if (skill == combo)
+            {
+                List<BattleCharactor> front = candidates.Where(TargetingHelper.IsUnitInFrontRow).ToList();
+                if (front.Count > 0) candidates = front;
+            }
+            if (candidates.Count == 0) return EnemyActionDecision.SkipTurn();
+            BattleCharactor target = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+            return EnemyActionDecision.Create(target, EnemyActionType.ClassSkill, skill);
+        }
+    }
+
+    internal static class EnemyAiTargetRules
+    {
+        internal static BattleCharactor PickSameRowThenLowestHpOrNearest(
+            BattleCharactor self, List<BattleCharactor> candidates)
+        {
+            if (self == null || candidates == null || candidates.Count == 0) return null;
+            var selfCell = self.OccupiedCell;
+            if (selfCell != null)
+            {
+                List<BattleCharactor> sameRow = candidates
+                    .Where(t => t != null && t.OccupiedCell != null && t.OccupiedCell.Coords.y == selfCell.Coords.y)
+                    .ToList();
+                if (sameRow.Count > 0)
+                {
+                    float lowestHp = sameRow.Min(t => t.CurrentHp);
+                    List<BattleCharactor> lowest = sameRow.Where(t => Mathf.Approximately(t.CurrentHp, lowestHp)).ToList();
+                    return lowest[UnityEngine.Random.Range(0, lowest.Count)];
+                }
+            }
+            return PickNearest(self, candidates);
+        }
+
+        internal static BattleCharactor PickNearest(BattleCharactor self, List<BattleCharactor> candidates)
+        {
+            if (self == null || candidates == null || candidates.Count == 0) return null;
+            var selfCell = self.OccupiedCell;
+            if (selfCell == null) return candidates[UnityEngine.Random.Range(0, candidates.Count)];
+            int nearest = int.MaxValue;
+            var ties = new List<BattleCharactor>();
+            foreach (BattleCharactor target in candidates)
+            {
+                if (target == null || target.IsDead || target.OccupiedCell == null) continue;
+                Vector2Int delta = target.OccupiedCell.Coords - selfCell.Coords;
+                int distance = Mathf.Abs(delta.x) + Mathf.Abs(delta.y);
+                if (distance < nearest) { nearest = distance; ties.Clear(); }
+                if (distance == nearest) ties.Add(target);
+            }
+            return ties.Count == 0 ? null : ties[UnityEngine.Random.Range(0, ties.Count)];
         }
     }
 }
