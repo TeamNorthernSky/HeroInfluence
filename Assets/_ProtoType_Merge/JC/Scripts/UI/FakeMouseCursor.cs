@@ -115,7 +115,7 @@ public class FakeMouseCursor : MonoBehaviour
     {
         return new Texture2D(width, height, TextureFormat.RGBA32, false)
         {
-            name = name, alphaIsTransparency = true, filterMode = FilterMode.Bilinear,
+            name = name, filterMode = FilterMode.Bilinear,
             wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.HideAndDontSave
         };
     }
