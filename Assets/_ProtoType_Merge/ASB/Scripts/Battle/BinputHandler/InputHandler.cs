@@ -129,6 +129,8 @@ public class InputHandler : MonoBehaviour
         }
 
 
+#if UNITY_EDITOR
+        // 턴 스킵 단축키는 에디터 전용 디버그 기능 — 빌드에서는 컴파일되지 않는다.
         // [JC 260513] 키 4: 아무 행동 없이 턴 종료(스킵). hover/선택 상태 자동 해제.
         if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4))
         {
@@ -145,6 +147,7 @@ public class InputHandler : MonoBehaviour
             SkipCurrentTurn();
             return;
         }
+#endif
 
         if (currentState != PlayerActionState.WaitingForTarget)
         {
@@ -209,6 +212,7 @@ public class InputHandler : MonoBehaviour
         ResetTargetingState();
     }
 
+#if UNITY_EDITOR
     // [JC 260513] 키 4 스킵 처리. hover/선택 무관 즉시 발화. target=null → BattleFlowManager가 다음 턴으로.
     private void SkipCurrentTurn()
     {
@@ -226,6 +230,7 @@ public class InputHandler : MonoBehaviour
         PlayerSkillActionResolved?.Invoke(actor, null);
         Debug.Log($"[InputHandler] 턴 스킵: {actor.UnitName}");
     }
+#endif
 
     public void BindUnitDeathEvents(IEnumerable<BattleCharactor> units)
     {
