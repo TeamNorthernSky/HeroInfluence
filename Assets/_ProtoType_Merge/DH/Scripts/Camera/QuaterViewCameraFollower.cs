@@ -122,6 +122,12 @@ public class QuarterViewCameraFollower : MonoBehaviour
         edgeScrollVelocity = Vector3.zero;
     }
 
+    // 현재 팬 위치를 포함한 추적 기준점이다. 추가 구도 보정 시 기존 화면을 유지한다.
+    public Vector3 GetFocusWorldPosition()
+    {
+        return GetCurrentFollowAnchor() + panOffset;
+    }
+
     public void FocusWorldPosition(Vector3 worldPosition)
     {
         Vector3 anchor = GetCurrentFollowAnchor();

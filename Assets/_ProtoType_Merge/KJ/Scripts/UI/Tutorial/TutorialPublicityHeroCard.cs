@@ -18,6 +18,8 @@ public sealed class TutorialPublicityHeroCard : MonoBehaviour, IPointerEnterHand
     private TutorialPublicityController owner;
     private string key;
     private bool hovering;
+    public string HeroKey => key;
+    public TutorialPublicityController Owner => owner;
 
     private void OnEnable() { if (button != null) button.onClick.AddListener(Select); }
     private void OnDisable() { if (button != null) button.onClick.RemoveListener(Select); }
