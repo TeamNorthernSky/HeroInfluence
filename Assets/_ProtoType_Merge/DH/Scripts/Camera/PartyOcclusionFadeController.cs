@@ -33,15 +33,11 @@ public class PartyOcclusionFadeController : MonoBehaviour
     [SerializeField, Min(0f)] private float checkInterval = 0.1f;
     [SerializeField] private Vector3 partyFocusOffset = new Vector3(0f, 0.8f, 0f);
     [SerializeField, Min(0f)] private float boundsPadding;
-    [SerializeField, Min(0f)] private float partyDepthMargin = 0.15f;
 
     private readonly HashSet<DecorativeObjectPlacement> fadedObjects = new HashSet<DecorativeObjectPlacement>();
     private readonly HashSet<DecorativeObjectPlacement> currentOccluders = new HashSet<DecorativeObjectPlacement>();
-    private readonly Dictionary<DecorativeObjectPlacement, float> clearSince = new Dictionary<DecorativeObjectPlacement, float>();
     private readonly HashSet<PartyOcclusionFadeTarget> fadedTargets = new HashSet<PartyOcclusionFadeTarget>();
     private readonly HashSet<PartyOcclusionFadeTarget> currentTargetOccluders = new HashSet<PartyOcclusionFadeTarget>();
-    private readonly Dictionary<PartyOcclusionFadeTarget, float> targetClearSince = new Dictionary<PartyOcclusionFadeTarget, float>();
-    private readonly JcBuildingMeshOcclusion buildingMeshOcclusion = new JcBuildingMeshOcclusion();
     private float nextCheckTime;
 
     private void Awake()
@@ -62,7 +58,6 @@ public class PartyOcclusionFadeController : MonoBehaviour
         ActiveControllers.Remove(this);
         UnsubscribeRegistry();
         RestoreAll();
-        buildingMeshOcclusion.Clear();
     }
 
     private void LateUpdate()
@@ -100,15 +95,11 @@ public class PartyOcclusionFadeController : MonoBehaviour
         currentOccluders.Clear();
         currentTargetOccluders.Clear();
 
-        JcBuildingSilhouetteSettings tuning = JcBuildingSilhouetteController.TryGetSettings(cameraToUse, out JcBuildingSilhouetteSettings currentTuning)
-            ? currentTuning
-            : JcBuildingSilhouetteSettings.Default;
-
-        AddDecorativeOccluders(from, party.transform.position, ray, segmentLength, tuning);
+        AddDecorativeOccluders(ray, segmentLength);
         AddFadeTargetOccluders(ray, segmentLength);
 
-        RestoreNoLongerOccluding(party.IsMoving, tuning, Time.unscaledTime);
-        RestoreTargetsNoLongerOccluding(party.IsMoving, tuning, Time.unscaledTime);
+        RestoreNoLongerOccluding();
+        RestoreTargetsNoLongerOccluding();
 
         fadedObjects.Clear();
         foreach (DecorativeObjectPlacement decorativeObject in currentOccluders)
@@ -119,12 +110,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
             fadedTargets.Add(target);
     }
 
-    private void AddDecorativeOccluders(
-        Vector3 from,
-        Vector3 partyPosition,
-        Ray ray,
-        float segmentLength,
-        JcBuildingSilhouetteSettings tuning)
+    private void AddDecorativeOccluders(Ray ray, float segmentLength)
     {
         if (decorativeObjectRegistry == null)
             return;
@@ -138,22 +124,10 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
             if (!decorativeObject.TryGetRenderBounds(out Bounds bounds, boundsPadding))
                 continue;
-            if (!IsBoundsBetweenCameraAndParty(bounds, ray.direction, from, segmentLength))
+            if (!bounds.IntersectRay(ray, out float distance) || distance > segmentLength)
                 continue;
 
-            if (tuning.preciseBuildingOcclusion && JcBuildingMeshOcclusion.IsBuilding(decorativeObject))
-            {
-                if (!buildingMeshOcclusion.IsOccluded(decorativeObject, from, partyPosition, tuning))
-                    continue;
-            }
-            else
-            {
-                if (!bounds.IntersectRay(ray, out float distance) || distance > segmentLength)
-                    continue;
-            }
-
             currentOccluders.Add(decorativeObject);
-            clearSince.Remove(decorativeObject);
             decorativeObject.SetOcclusionFadeAlpha(occludedAlpha, transparentOverrideMaterial);
         }
     }
@@ -172,98 +146,32 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
             if (!target.TryGetRenderBounds(out Bounds bounds, boundsPadding))
                 continue;
-            if (!IsBoundsBetweenCameraAndParty(bounds, ray.direction, ray.origin, segmentLength))
-                continue;
             if (!bounds.IntersectRay(ray, out float distance) || distance > segmentLength)
                 continue;
 
             currentTargetOccluders.Add(target);
-            targetClearSince.Remove(target);
             target.SetOcclusionFadeAlpha(occludedAlpha, transparentOverrideMaterial);
         }
     }
 
-    private bool IsBoundsBetweenCameraAndParty(Bounds bounds, Vector3 rayDirection, Vector3 cameraPosition, float segmentLength)
-    {
-        float centerProjection = Vector3.Dot(bounds.center - cameraPosition, rayDirection);
-        Vector3 extents = bounds.extents;
-        float projectedRadius =
-            Mathf.Abs(rayDirection.x) * extents.x +
-            Mathf.Abs(rayDirection.y) * extents.y +
-            Mathf.Abs(rayDirection.z) * extents.z;
-        float nearProjection = centerProjection - projectedRadius;
-        float farProjection = centerProjection + projectedRadius;
-
-        return farProjection > 0f && nearProjection < segmentLength && farProjection < segmentLength - partyDepthMargin;
-    }
-
-    private void RestoreNoLongerOccluding(bool moving, JcBuildingSilhouetteSettings tuning, float now)
+    private void RestoreNoLongerOccluding()
     {
         foreach (DecorativeObjectPlacement decorativeObject in fadedObjects)
         {
             if (decorativeObject == null || currentOccluders.Contains(decorativeObject))
                 continue;
 
-            if (decorativeObject.isActiveAndEnabled && JcBuildingMeshOcclusion.IsBuilding(decorativeObject))
-            {
-                bool hold = moving && tuning.holdBuildingFadeWhileMoving;
-                if (hold)
-                    clearSince.Remove(decorativeObject);
-                else if (tuning.buildingRestoreDelay > 0f)
-                {
-                    if (!clearSince.TryGetValue(decorativeObject, out float since))
-                    {
-                        since = now;
-                        clearSince.Add(decorativeObject, since);
-                    }
-
-                    hold = now - since < tuning.buildingRestoreDelay;
-                }
-
-                if (hold)
-                {
-                    currentOccluders.Add(decorativeObject);
-                    decorativeObject.SetOcclusionFadeAlpha(occludedAlpha, transparentOverrideMaterial);
-                    continue;
-                }
-            }
-
-            clearSince.Remove(decorativeObject);
             decorativeObject.RestoreOcclusionFade();
         }
     }
 
-    private void RestoreTargetsNoLongerOccluding(bool moving, JcBuildingSilhouetteSettings tuning, float now)
+    private void RestoreTargetsNoLongerOccluding()
     {
         foreach (PartyOcclusionFadeTarget target in fadedTargets)
         {
             if (target == null || currentTargetOccluders.Contains(target))
                 continue;
 
-            bool hold = moving && tuning.holdBuildingFadeWhileMoving;
-            if (hold)
-            {
-                targetClearSince.Remove(target);
-            }
-            else if (tuning.buildingRestoreDelay > 0f)
-            {
-                if (!targetClearSince.TryGetValue(target, out float since))
-                {
-                    since = now;
-                    targetClearSince.Add(target, since);
-                }
-
-                hold = now - since < tuning.buildingRestoreDelay;
-            }
-
-            if (hold)
-            {
-                currentTargetOccluders.Add(target);
-                target.SetOcclusionFadeAlpha(occludedAlpha, transparentOverrideMaterial);
-                continue;
-            }
-
-            targetClearSince.Remove(target);
             target.RestoreOcclusionFade();
         }
     }
@@ -288,10 +196,8 @@ public class PartyOcclusionFadeController : MonoBehaviour
 
         fadedObjects.Clear();
         currentOccluders.Clear();
-        clearSince.Clear();
         fadedTargets.Clear();
         currentTargetOccluders.Clear();
-        targetClearSince.Clear();
     }
 
     private void HandleDecorativeObjectUnregistered(DecorativeObjectPlacement decorativeObject)
@@ -300,10 +206,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
             decorativeObject.RestoreOcclusionFade();
 
         fadedObjects.Remove(decorativeObject);
-        clearSince.Remove(decorativeObject);
         currentOccluders.Remove(decorativeObject);
-        if (decorativeObject != null)
-            buildingMeshOcclusion.Remove(decorativeObject);
     }
 
     private void HandleFadeTargetUnregistered(PartyOcclusionFadeTarget target)
@@ -312,7 +215,6 @@ public class PartyOcclusionFadeController : MonoBehaviour
             target.RestoreOcclusionFade();
 
         fadedTargets.Remove(target);
-        targetClearSince.Remove(target);
         currentTargetOccluders.Remove(target);
     }
 

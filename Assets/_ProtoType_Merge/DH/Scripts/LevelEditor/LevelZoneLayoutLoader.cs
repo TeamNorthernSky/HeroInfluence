@@ -271,6 +271,8 @@ public class LevelZoneLayoutLoader : MonoBehaviour
     {
         Vector2Int offset = zone.Anchor;
 
+        RegisterGroundTiles(levelData, offset);
+
         if (generateTileMeshes && tileMeshGenerator != null)
             tileMeshGenerator.Generate(levelData, offset, false);
 
@@ -289,6 +291,13 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
         if (spawnUniqueBuildingsFromZones)
             SpawnUniqueBuildings(zone, levelData, offset);
+    }
+
+    private void RegisterGroundTiles(LevelData levelData, Vector2Int offset)
+    {
+        var placements = levelData.GroundTilePlacements;
+        for (int i = 0; i < placements.Count; i++)
+            gridManager?.RegisterLevelGroundCell(placements[i].GridPosition + offset);
     }
 
     private void SpawnObstacles(LevelData levelData, Vector2Int offset)
@@ -811,6 +820,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
     private void ClearSpawnedObjects()
     {
+        gridManager?.ClearLevelGroundCells();
         gridManager?.ClearLevelObstacleCells();
         gridManager?.ClearGateBlockerCells();
 

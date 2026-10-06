@@ -198,6 +198,12 @@ public class MoveCommandPreviewController
             return;
         }
 
+        if (!gridManager.HasLevelGroundCell(requestedDestinationGrid))
+        {
+            ClearPreview();
+            return;
+        }
+
         if (!TutorialMovementConstraint.IsSelectionAllowed(clickedGrid, requestedDestinationGrid, activeMover))
         {
             ClearPreview();
