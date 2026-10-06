@@ -68,14 +68,16 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
     {
         return enableClickNavigation
             && eventData != null
-            && eventData.button == PointerEventData.InputButton.Left;
+            && eventData.button == PointerEventData.InputButton.Left
+            && (cameraFollower == null || !cameraFollower.IsExternalInputLocked);
     }
 
     private bool CanHandleDrag(PointerEventData eventData)
     {
         return enableDragNavigation
             && eventData != null
-            && eventData.button == PointerEventData.InputButton.Left;
+            && eventData.button == PointerEventData.InputButton.Left
+            && (cameraFollower == null || !cameraFollower.IsExternalInputLocked);
     }
 
     private void MoveCameraToPointer(PointerEventData eventData)
