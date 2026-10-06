@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -126,7 +126,8 @@ public sealed class TutorialUnitState : MonoBehaviour
         maxHp = Mathf.Max(0, Mathf.RoundToInt(baseStats.HP));
         currentHp = maxHp;
         maxIp = Mathf.Max(0, Mathf.RoundToInt(baseStats.Influence));
-        currentIp = Mathf.Clamp(Mathf.RoundToInt(baseStats.Influence), 0, maxIp);
+        // 처음 생성하는 튜토리얼 영웅만 0으로 시작한다. 저장된 진행값은 위의 ApplyProgressState에서 복원한다.
+        currentIp = useTutorialProgressRepository ? 0 : Mathf.Clamp(Mathf.RoundToInt(baseStats.Influence), 0, maxIp);
         atk = Mathf.Max(0, Mathf.RoundToInt(baseStats.Atk));
     }
 

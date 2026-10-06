@@ -142,7 +142,8 @@ public sealed class TutorialExploreUIController : MonoBehaviour
         guide.view.blockPanelRaycasts = false;
         guide.view.centeredPointerTarget = target;
         guide.view.SetContent("탐사 · 홍보", message);
-        guide.view.SetVisible(true, target);
+        // 도입용 디밍과 대상 승격은 기존 경로를 유지하고 큰 분절 화살표만 제외한다.
+        guide.view.SetVisible(true, target, JC.Tutorial.JcTutorialGuideView.FocusPresentation.BorderOnly);
     }
 
     private void OnPublicityEntryClicked()

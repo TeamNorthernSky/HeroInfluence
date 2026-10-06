@@ -267,6 +267,12 @@ public class SkillPresentationData : ScriptableObject
     [Range(0f, 1f)] public float SfxVolume = 1f;
     public bool EnableHitEffect = true;
     public int HitEffectId;
+    [Tooltip("피격 소켓 또는 루트에서 더할 월드 이펙트 오프셋(m). 투사체 명중 높이와 함께 조절합니다. 기본 0은 기존 위치입니다.")]
+    public Vector3 HitEffectOffset;
+    [Tooltip("켜면 피격 소켓 대신 대상 루트를 기준으로 오프셋을 적용합니다. 루트 기준 투사체 명중점과 폭발 위치를 일치시킬 때 사용합니다.")]
+    public bool HitEffectAtTargetRoot;
+    [Tooltip("피격 VFX 재생 시간을 전투 배속에 맞춥니다. 끄면 기존 1배속 재생을 유지합니다.")]
+    public bool ScaleHitEffectWithBattleSpeed;
 
     [Header("Projectile Impact (Skill-specific)")]
     [Tooltip("Actual projectile presentation used by ranged offensive skills. This lives on the presentation asset, never in CSV SkillData.")]
@@ -562,6 +568,16 @@ public class ProjectileVisualData
     [Min(0.01f)] public float Speed = 6f;
     public ProjectileTrajectoryType Trajectory = ProjectileTrajectoryType.Arc;
     [Min(0f)] public float ArcHeight = 1.2f;
+    [Tooltip("비행 진행 가속량. 0은 기존 등속, 1은 이차 가속입니다. 가속 배율이 1이면 기존 총 비행 시간을 유지합니다.")]
+    [Range(0f, 1f)] public float Acceleration;
+    [Tooltip("초기 속도를 유지하고 가속도만 곱합니다. 1은 기존 곡선이며 2는 가속도 2배입니다. 커지면 도착 시간이 짧아집니다.")]
+    [Range(1f,4f)] public float AccelerationMultiplier = 1f;
+    [Tooltip("개별 대상 루트에서 더할 월드 명중 오프셋(m). 기본 0은 기존 동작입니다.")]
+    public Vector3 TargetOffset;
+    [Tooltip("켜면 높이 보정 전 대상 루트까지의 거리로 비행 시간을 계산하여 기존 명중 시간을 유지합니다.")]
+    public bool PreserveRootFlightTime;
+    [Tooltip("도착 순간 정적 구체를 숨깁니다. 잔상 수명은 ImpactVisualLifetime으로 별도 조절하며 기본값은 기존 동작입니다.")]
+    public bool HideVisualOnArrival;
     [Min(0.01f)] public float TrailTime = 0.4f;
     [Tooltip("Visual endpoint follows the locked target while it remains valid.")]
     public bool TrackTarget;

@@ -35,6 +35,11 @@ Shader "JC/Indicators/Movement"
                 float _SideBrightness, _MarkerColorCycle;
                 float _DotRadius, _Opacity, _Mode, _Shadow, _Softness, _Clock;
             CBUFFER_END
+            // Only populated on the tutorial guidance layer; the actual preview is unchanged.
+            float4 _PreviewClipSegments[128];
+            int _PreviewClipCount;
+            float _PreviewClipRadius, _PreviewClipAll;
+            float4 _PreviewClipMarker;
             Varyings Vert(Attributes v)
             {
                 Varyings o;
@@ -69,6 +74,17 @@ Shader "JC/Indicators/Movement"
             }
             half4 Frag(Varyings i) : SV_Target
             {
+                clip(.5 - _PreviewClipAll);
+                if (_PreviewClipMarker.z > 0)
+                    clip(Box((i.worldXZ - _PreviewClipMarker.xy) / _PreviewClipMarker.z,
+                        .5, _PreviewClipMarker.w) - .005);
+                [loop] for (int segment = 0; segment < _PreviewClipCount; segment++)
+                {
+                    float4 ends = _PreviewClipSegments[segment];
+                    float2 delta = ends.zw - ends.xy;
+                    float t = saturate(dot(i.worldXZ - ends.xy, delta) / max(dot(delta, delta), .000001));
+                    clip(length(i.worldXZ - (ends.xy + delta * t)) - _PreviewClipRadius);
+                }
                 float sd;
                 float wave = 0;
                 bool solidMarker = _Mode > 1.5 && _Mode < 2.5;

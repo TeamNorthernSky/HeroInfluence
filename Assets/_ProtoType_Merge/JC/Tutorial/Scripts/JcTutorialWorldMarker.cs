@@ -61,7 +61,7 @@ namespace JC.Tutorial
             // 구역 전환의 노란 안내 레이어를 그대로 사용한다. 길이0 경로는 바닥 목적지만 표시한다.
             floorRenderer.enabled = showFloor && movementIndicator == null;
             if (movementIndicator != null) {
-                if (showFloor) { guidancePoint[0] = guidancePoint[1] = position; movementIndicator.RenderGuidance(path != null && path.Count >= 2 ? path : guidancePoint); }
+                if (showFloor) { guidancePoint[0] = guidancePoint[1] = position; movementIndicator.RenderGuidance(path != null && path.Count >= 2 ? path : guidancePoint, preferActualPreview: true); }
                 else movementIndicator.HideGuidance();
             }
             floorRenderer.transform.localScale=Vector3.one*style.markerSize;

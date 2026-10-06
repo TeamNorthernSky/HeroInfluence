@@ -2,6 +2,20 @@ using UnityEngine;
 
 namespace ASB.Work.Battle.Sequence
 {
+    /// <summary>기존 초기 속도 (1-a)를 유지하며 이차 가속 항만 배율로 조절합니다.</summary>
+    public static class ProjectileAcceleration
+    {
+        public static float Progress(float timeFraction, float amount, float multiplier)
+        {
+            float u=Mathf.Max(0,timeFraction), a=Mathf.Clamp01(amount);
+            return Mathf.Clamp01((1-a)*u+a*Mathf.Max(1,multiplier)*u*u);
+        }
+        public static float DurationScale(float amount,float multiplier)
+        {
+            float a=Mathf.Clamp01(amount), b=1-a, c=a*Mathf.Max(1,multiplier);
+            return c<.000001f?1:2/(b+Mathf.Sqrt(b*b+4*c));
+        }
+    }
     /// <summary>
     /// 투사체 "경로 전략". "어떻게 나는가"와 "언제 도착했는가"만 소유하고 전투는 모른다.
     /// ProjectileImpactAction이 배속 반영 dt로 매 프레임 Step을 호출한다.
@@ -40,6 +54,9 @@ namespace ASB.Work.Battle.Sequence
         private Vector3 _end;
         private float _arcHeight;
         private float _flightDur;
+        private float _acceleration;
+        private float _accelerationMultiplier;
+        private Vector3 _targetOffset;
         private float _t;
 
         public void Init(Vector3 start, Vector3 end, ProjectileVisualData data)
@@ -48,7 +65,11 @@ namespace ASB.Work.Battle.Sequence
             _end = end;
             _arcHeight = data != null ? Mathf.Max(0f, data.ArcHeight) : 0f;
             float speed = data != null ? Mathf.Max(0.01f, data.Speed) : 6f;
-            float dist = Vector3.Distance(start, end);
+            _acceleration = data != null ? Mathf.Clamp01(data.Acceleration) : 0f;
+            _accelerationMultiplier = data != null ? data.AccelerationMultiplier : 1f;
+            _targetOffset = data != null ? data.TargetOffset : Vector3.zero;
+            Vector3 timingEnd = data != null && data.PreserveRootFlightTime ? end - _targetOffset : end;
+            float dist = Vector3.Distance(start, timingEnd);
             _flightDur = dist > 0.001f ? dist / speed : 0.0001f;
             _t = 0f;
         }
@@ -58,11 +79,12 @@ namespace ASB.Work.Battle.Sequence
             // 추적형: 끝점만 대상 현재 위치를 따라간다. 도착 판정은 여전히 t >= 1.
             if (trackedTarget != null)
             {
-                _end = trackedTarget.position;
+                _end = trackedTarget.position + _targetOffset;
             }
 
             _t += dtBattle / _flightDur;
-            float t = Mathf.Clamp01(_t);
+            float clock = Mathf.Clamp01(_t);
+            float t = ProjectileAcceleration.Progress(clock, _acceleration, _accelerationMultiplier);
             Vector3 p = Vector3.Lerp(_start, _end, t);
             p.y += _arcHeight * 4f * t * (1f - t);
             position = p;
@@ -83,6 +105,9 @@ namespace ASB.Work.Battle.Sequence
         private Vector3 _start;
         private Vector3 _end;
         private float _flightDur;
+        private float _acceleration;
+        private float _accelerationMultiplier;
+        private Vector3 _targetOffset;
         private float _t;
 
         public void Init(Vector3 start, Vector3 end, ProjectileVisualData data)
@@ -90,7 +115,11 @@ namespace ASB.Work.Battle.Sequence
             _start = start;
             _end = end;
             float speed = data != null ? Mathf.Max(0.01f, data.Speed) : 6f;
-            float dist = Vector3.Distance(start, end);
+            _acceleration = data != null ? Mathf.Clamp01(data.Acceleration) : 0f;
+            _accelerationMultiplier = data != null ? data.AccelerationMultiplier : 1f;
+            _targetOffset = data != null ? data.TargetOffset : Vector3.zero;
+            Vector3 timingEnd = data != null && data.PreserveRootFlightTime ? end - _targetOffset : end;
+            float dist = Vector3.Distance(start, timingEnd);
             _flightDur = dist > 0.001f ? dist / speed : 0.0001f;
             _t = 0f;
         }
@@ -99,11 +128,12 @@ namespace ASB.Work.Battle.Sequence
         {
             if (trackedTarget != null)
             {
-                _end = trackedTarget.position;
+                _end = trackedTarget.position + _targetOffset;
             }
 
             _t += dtBattle / _flightDur;
-            float t = Mathf.Clamp01(_t);
+            float clock = Mathf.Clamp01(_t);
+            float t = ProjectileAcceleration.Progress(clock, _acceleration, _accelerationMultiplier);
             position = Vector3.Lerp(_start, _end, t);
 
             if (t >= 1f)

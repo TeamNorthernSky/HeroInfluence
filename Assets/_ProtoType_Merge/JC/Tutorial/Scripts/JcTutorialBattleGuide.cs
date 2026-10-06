@@ -30,6 +30,8 @@ namespace JC.Tutorial
 
         private bool resultStarted, skillStarted, noticeOpen, releasePending;
         private float resultElapsed;
+        private int instructionStep = -1;
+        private bool instructionDismissPending;
         private BattleResultPanel result;
         private Button lockedButton;
         private bool originalInteractable;
@@ -44,13 +46,14 @@ namespace JC.Tutorial
         private void Update() { RefreshPresentation(); AdvanceResultNotice(Time.unscaledDeltaTime); }
         public void AdvanceResultNotice(float delta)
         {
-            if (!noticeOpen) return;
+            if (!noticeOpen || instructionStep >= 0) return;
             resultElapsed += Mathf.Max(0, delta);
             if (resultElapsed >= resultNoticeDuration) DismissResult();
         }
         public void DismissResult()
         {
             if (!noticeOpen) return;
+            if (instructionStep >= 0) instructionDismissPending = true;
             noticeOpen = false; releasePending = true;
             if (dim != null) dim.gameObject.SetActive(false);
             view.SetPanelSuppressed(true); view.SetVisible(false);
@@ -60,6 +63,14 @@ namespace JC.Tutorial
         {
             if (!releasePending || held) return;
             releasePending = false;
+            if (instructionDismissPending)
+            {
+                int step = instructionStep;
+                instructionDismissPending = false; instructionStep = -1;
+                // 기존 버튼 이벤트가 전투 플로 잠금을 해제한다. 월드 클릭 처리가 끝난 뒤 한 번만 호출한다.
+                if (continueButtons != null && step >= 0 && step < continueButtons.Length && continueButtons[step] != null)
+                    continueButtons[step].onClick.Invoke();
+            }
             UnlockInput();
             RefreshPresentation();
         }
@@ -125,14 +136,21 @@ namespace JC.Tutorial
             foreach (var background in layoutPanel.GetComponentsInChildren<JcTutorialGraphic>(true)) background.SetOpaqueFill(active == 2);
             if (active != 2)
             {
-                noticeOpen = releasePending = false; UnlockInput();
+                bool instruction = active == 0 || active == 1;
+                if (!instruction) { noticeOpen = releasePending = instructionDismissPending = false; instructionStep = -1; UnlockInput(); }
+                else if (instructionStep != active)
+                {
+                    instructionStep = active; instructionDismissPending = false;
+                    BeginNotice(null);
+                }
                 if (layoutPanel != null)
                 {
                     layoutPanel.anchorMin = originalAnchorMin; layoutPanel.anchorMax = originalAnchorMax;
                     layoutPanel.sizeDelta = originalSize; layoutPanel.anchoredPosition = originalPosition;
                 }
                 view.SetContent(active >= 0 && headings != null && active < headings.Length ? headings[active] : "전투 안내", "");
-                view.SetPanelSuppressed(false); view.SetVisible(active >= 0, focus);
+                view.SetPanelSuppressed(instruction && !noticeOpen);
+                view.SetVisible(active >= 0 && (!instruction || noticeOpen), instruction ? null : focus);
                 return;
             }
             if (result == null && resultAccept != null) result = resultAccept.GetComponentInParent<BattleResultPanel>();
@@ -169,7 +187,9 @@ namespace JC.Tutorial
         }
         private void OnDisable()
         {
+            instructionStep = -1; instructionDismissPending = false; noticeOpen = releasePending = false;
             UnlockInput();
+            if (dim != null) dim.gameObject.SetActive(false);
             if (layoutPanel != null) foreach (var background in layoutPanel.GetComponentsInChildren<JcTutorialGraphic>(true)) background.SetOpaqueFill(false);
             if (body != null) body.text = originalBody;
             if (view != null) { view.SetPanelSuppressed(false); view.SetVisible(false); }

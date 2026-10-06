@@ -5,7 +5,7 @@ using UnityEngine;
 public sealed class TutorialPublicityState : MonoBehaviour
 {
     public const int CostPerProgress = 100;
-    public const int WeeklyAllowance = 50;
+    public const int WeeklyAllowance = 40;
     private TutorialProgressRepository repository;
     private int pool = WeeklyAllowance;
     private int lastChargeTurn;
@@ -35,6 +35,13 @@ public sealed class TutorialPublicityState : MonoBehaviour
     {
         RefreshBudget();
         pool = Mathf.Max(pool, minimum);
+    }
+
+    /// <summary>홍보 실습 시작 때만 남은 횟수와 충전 기준 턴을 준비한다. 패널 전환에서는 호출하지 않는다.</summary>
+    public void PreparePractice(int availableCount)
+    {
+        pool = Mathf.Max(0, availableCount);
+        lastChargeTurn = repository.CurrentTurn;
     }
 
     private void RefreshBudget()

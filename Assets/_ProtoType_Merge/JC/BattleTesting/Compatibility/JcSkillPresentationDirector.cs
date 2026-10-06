@@ -1111,8 +1111,19 @@ public sealed partial class JcSkillPresentationDirector
             yield break;
         }
 
+        GameObject prepared = null;
+        if (visual.UsePreparedCharge && !string.IsNullOrEmpty(visual.ChargeInstanceKey))
+        {
+            var context = actor.GetComponent<PresentationRuntimeContext>();
+            if (context != null && context.TryGetHandle(visual.ChargeInstanceKey, out ISkillEffectHandle handle))
+            {
+                prepared = (handle as Component)?.gameObject;
+                context.RemoveHandle(visual.ChargeInstanceKey);
+            }
+        }
         var projectile = new ProjectileImpactAction(
-            actor, target, visual, _battle.CurrentBattleSpeed, deliveryGate, presentation.SkillIndex);
+            actor, target, visual, _battle.CurrentBattleSpeed, deliveryGate, presentation.SkillIndex,
+            existingInstance: prepared);
         yield return projectile.ExecuteRoutine(_battle);
 
         onArrive?.Invoke();   // 도착 → 대미지

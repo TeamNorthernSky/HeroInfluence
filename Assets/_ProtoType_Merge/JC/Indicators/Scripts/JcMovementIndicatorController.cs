@@ -46,6 +46,9 @@ namespace JC.Indicators
         private bool showingGuidance;
         private JcMovementIndicatorController guidanceLayer;
         private Vector3 guidanceDestination;
+        private JcMovementIndicatorController guidanceOccluder;
+        private const int MaxPreviewClipSegments = 128;
+        private readonly Vector4[] previewClipSegments = new Vector4[MaxPreviewClipSegments];
         private static readonly Color GuidanceColor = new Color(1f, .76f, .025f, 1f);
         private bool ShowDestination => showingGuidance || destinationMarker.gameObject.activeInHierarchy;
         private Vector3 DestinationPosition => showingGuidance ? guidanceDestination : destinationMarker.position;
@@ -59,7 +62,7 @@ namespace JC.Indicators
 
         // 같은 메시/지형/셰이더 구현을 재사용하되 별도 PathPreviewRenderer에 연결한다.
         // 기본 이동 미리보기의 Hide/RenderPath 호출이 노란 안내를 지우지 않는다.
-        public void RenderGuidance(IReadOnlyList<Vector3> path)
+        public void RenderGuidance(IReadOnlyList<Vector3> path, bool preferActualPreview = false)
         {
             if (path == null || path.Count < 2) { HideGuidance(); return; }
             if (guidanceLayer == null)
@@ -74,6 +77,7 @@ namespace JC.Indicators
                 guidanceLayer.Configure(guidePath, markerHost.transform, gridManager, indicatorShader, null);
             }
             guidanceLayer.Settings = Settings;
+            guidanceLayer.guidanceOccluder = preferActualPreview ? this : null;
             guidanceLayer.RenderPath(path, path.Count - 1);
             guidanceLayer.SetGuidanceDestination(path[path.Count - 1]);
         }
@@ -301,6 +305,7 @@ namespace JC.Indicators
         private void Apply(MeshRenderer renderer, JcMovementIndicatorSettings s, bool marker, bool shadow, float size, float clock)
         {
             block.Clear();
+            ApplyPreviewClip();
             Color color = showingGuidance ? GuidanceColor : (marker && !markerReachable ? s.unreachableColor : s.reachableColor);
             block.SetColor("_Color", shadow ? s.shadowColor : color);
             block.SetColor("_UnreachableColor", showingGuidance ? GuidanceColor : s.unreachableColor);
@@ -325,6 +330,32 @@ namespace JC.Indicators
             if (shadow) center += new Vector3(Mathf.Cos(s.shadowAngle * Mathf.Deg2Rad), 0, Mathf.Sin(s.shadowAngle * Mathf.Deg2Rad)) * s.shadowDistance;
             block.SetVector("_MarkerClip", new Vector4(center.x, center.z, gridManager.CellSize * s.markerSize, ShowDestination ? 1 : 0));
             renderer.SetPropertyBlock(block);
+        }
+        // 튜토리얼 안내만 실제 미리보기의 연속 경로 영역을 비운다.
+        // 점선 사이에도 노란 점선이 끼어들지 않도록 경로의 폭 전체를 제외한다.
+        private void ApplyPreviewClip()
+        {
+            var source = showingGuidance ? guidanceOccluder : null;
+            bool active = source != null && source.IsReady && source.pathRenderer.isActiveAndEnabled;
+            int count = active && source.hasPath ? source.rawPoints.Count - 1 : 0;
+            var style = active ? source.Settings : Settings;
+            bool marker = active && source.destinationMarker.gameObject.activeInHierarchy && style.opacity > 0;
+            if (style.opacity <= 0) count = 0;
+            // 비정상적으로 긴 미리보기에서는 일부만 마스킹해 중복을 남기지 않는다.
+            block.SetFloat("_PreviewClipAll", count > MaxPreviewClipSegments ? 1 : 0);
+            count = Mathf.Clamp(count, 0, MaxPreviewClipSegments);
+            for (int i = 0; i < count; i++)
+            {
+                var a = source.rawPoints[i]; var b = source.rawPoints[i + 1];
+                previewClipSegments[i] = new Vector4(a.x, a.z, b.x, b.z);
+            }
+            block.SetInt("_PreviewClipCount", count);
+            if (count > 0) block.SetVectorArray("_PreviewClipSegments", previewClipSegments);
+            block.SetFloat("_PreviewClipRadius", style.lineWidth * .5f +
+                (style.dashGlowStrength > 0 ? style.dashGlowWidth : 0) + .005f);
+            Vector3 position = marker ? source.destinationMarker.position : Vector3.zero;
+            block.SetVector("_PreviewClipMarker", new Vector4(position.x, position.z,
+                marker ? source.gridManager.CellSize * style.markerSize : 0, style.cornerRadius));
         }
         private void EnsureVisuals()
         {
