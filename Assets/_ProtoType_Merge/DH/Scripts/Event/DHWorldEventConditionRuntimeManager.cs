@@ -90,7 +90,15 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
     private IEnumerator CheckAfterFrame()
     {
         yield return null;
+
+        while (conditionEventsEnabled && IsChatRunning())
+            yield return null;
+
         checkQueued = false;
+
+        if (!conditionEventsEnabled)
+            yield break;
+
         TryStartFirstSatisfiedEvent();
     }
 
@@ -98,6 +106,12 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
     {
         if (!conditionEventsEnabled)
             return false;
+
+        if (IsChatRunning())
+        {
+            RequestCheck();
+            return false;
+        }
 
         DHWorldEventRuntimeManager runtimeManager = DHWorldEventRuntimeManager.EnsureInstance();
         if (runtimeManager == null || runtimeManager.IsRunning)
@@ -134,6 +148,11 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    private static bool IsChatRunning()
+    {
+        return ChatManager.Instance != null && ChatManager.Instance.IsRunning;
     }
 
     private void Subscribe()
