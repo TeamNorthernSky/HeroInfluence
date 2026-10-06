@@ -23,6 +23,8 @@ public class TutorialCutSceneManager : MonoBehaviour
     private int currentIndex = 0;
     private GameObject currentImage = null;
     private bool transitioning;
+
+    //public string nextScene = "DHScene_3";
     // Start is called before the first frame update
     void Start()
     {
@@ -62,7 +64,7 @@ public class TutorialCutSceneManager : MonoBehaviour
             switch (currentCutSceneState)
             {
                 case CutScene.Opening:
-                    GoTutorialExploreScene();
+                    GoMainExploreScene();
                     break;
 
                 case CutScene.Ending:
@@ -114,7 +116,7 @@ public class TutorialCutSceneManager : MonoBehaviour
         switch (currentCutSceneState)
         {
             case CutScene.Opening:
-                GoTutorialExploreScene();
+                GoMainExploreScene();
                 break;
 
             case CutScene.Ending:
@@ -139,6 +141,12 @@ public class TutorialCutSceneManager : MonoBehaviour
     private void GoTutorialExploreScene()
     {
         SceneFadeController.LoadSceneWithFadeIfNeeded("TutorialExploreScene");
+    }
+    private void GoMainExploreScene()
+    {
+        // 튜토리얼 시설 상태를 넘기지 않고 새 게임 초기화를 거친다.
+        SaveSlotRepository.IsContinue = false;
+        SceneFadeController.LoadSceneWithFadeIfNeeded("GameLoadScene");
     }
 
     void GoPreviousCutScene()
