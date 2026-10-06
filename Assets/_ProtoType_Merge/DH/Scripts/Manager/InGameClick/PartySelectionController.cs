@@ -152,6 +152,6 @@ public class PartySelectionController
         if (cameraFollower == null || activeMover == null)
             return;
 
-        cameraFollower.SetFollowMapEdgeMoveConstraint(isMoving);
+        cameraFollower.SetFollowMapEdgeMoveConstraint(false);
     }
 }
