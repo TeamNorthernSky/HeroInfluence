@@ -18,8 +18,12 @@ public class CharactorAnimationController : MonoBehaviour
     private const float StateEnterWaitTimeoutSeconds = 0.1f;
     private const float SkillClipEndNormalizedThreshold = 0.95f;
     private const float SkillClipEndLoopGuardSeconds = 5f;
+    private const float IdleSpeedVariation = 0.15f;
 
     [SerializeField] private Animator _animator;
+    private float _idleStartNormalizedTime;
+    private float _idleStateLengthSeconds = 1f;
+    private float _idleSpeedMultiplier = 1f;
 
     /// <summary>
     /// 이미 경고를 낸 (누락 상태명) 집합. 시전마다 같은 경고가 반복되는 것을 막는다.
@@ -61,15 +65,72 @@ public class CharactorAnimationController : MonoBehaviour
         CurrentAnimSpeed = Mathf.Max(0.01f, speedMultiplier);
 
         // 홀드(프리즈) 중에는 배속 값만 갱신하고 애니는 계속 정지시킨다(재개 시 최신 배속 적용).
-        if (_animator != null && !IsHolding)
+        ApplyAnimationSpeed();
+    }
+
+    private void Update()
+    {
+        // Animator 전이와 트리거로 Idle 진입/이탈하는 경우에도 Idle 배속만 적용한다.
+        ApplyAnimationSpeed();
+    }
+
+    private void ApplyAnimationSpeed()
+    {
+        if (_animator == null || IsHolding)
         {
-            _animator.speed = CurrentAnimSpeed;
+            return;
+        }
+
+        bool isIdle = false;
+        if (_animator.isActiveAndEnabled && _animator.runtimeAnimatorController != null)
+        {
+            isIdle = _animator.IsInTransition(0)
+                ? _animator.GetNextAnimatorStateInfo(0).IsName(StateIdle)
+                : _animator.GetCurrentAnimatorStateInfo(0).IsName(StateIdle);
+        }
+
+        float speed = CurrentAnimSpeed * (isIdle ? _idleSpeedMultiplier : 1f);
+        if (!Mathf.Approximately(_animator.speed, speed))
+        {
+            _animator.speed = speed;
         }
     }
 
     private void Awake()
     {
+        // 유닛마다 고정된 시각적 위상. UnityEngine.Random을 소비하면 전투 난수 순서가 바뀔 수 있다.
+        uint hash = unchecked((uint)GetInstanceID());
+        unchecked
+        {
+            hash ^= hash >> 16;
+            hash *= 0x7feb352d;
+            hash ^= hash >> 15;
+            hash *= 0x846ca68b;
+            hash ^= hash >> 16;
+        }
+        _idleStartNormalizedTime = (hash & 0x00ffffff) / 16777216f;
+        uint speedHash = unchecked(hash * 0x9e3779b9u);
+        float speedT = (speedHash & 0x00ffffff) / 16777216f;
+        _idleSpeedMultiplier = Mathf.Lerp(1f - IdleSpeedVariation, 1f + IdleSpeedVariation, speedT);
         CacheAnimator();
+    }
+
+    private void Start()
+    {
+        if (_animator == null || !_animator.isActiveAndEnabled || _animator.IsInTransition(0))
+        {
+            return;
+        }
+
+        AnimatorStateInfo state = _animator.GetCurrentAnimatorStateInfo(0);
+        if (!state.IsName(StateIdle))
+        {
+            return;
+        }
+
+        _idleStateLengthSeconds = Mathf.Max(0.01f, state.length);
+        _animator.Play(StateIdle, 0, _idleStartNormalizedTime);
+        ApplyAnimationSpeed();
     }
 
     private void OnValidate()
@@ -118,13 +179,14 @@ public class CharactorAnimationController : MonoBehaviour
         }
         float blend = Mathf.Max(0f, blendSeconds);
         Debug.Log($"[IdleDiag] AniEvent_ReturnIdle → CrossFade Idle (blend={blend:F2}) — 클립 이벤트가 Idle 전환 수행");
+        float idleOffsetSeconds = _idleStartNormalizedTime * _idleStateLengthSeconds;
         if (blend <= 0f)
         {
-            _animator.CrossFadeInFixedTime(StateIdle, 0f, 0, 0f);
+            _animator.CrossFadeInFixedTime(StateIdle, 0f, 0, idleOffsetSeconds);
         }
         else
         {
-            _animator.CrossFadeInFixedTime(StateIdle, blend, 0, 0f);
+            _animator.CrossFadeInFixedTime(StateIdle, blend, 0, idleOffsetSeconds);
         }
     }
 
@@ -163,10 +225,7 @@ public class CharactorAnimationController : MonoBehaviour
 
         IsHolding = false;
         _holdRoutine = null;
-        if (_animator != null)
-        {
-            _animator.speed = CurrentAnimSpeed; // 최신 배속으로 재개
-        }
+        ApplyAnimationSpeed(); // 최신 전투 배속과 현재 상태의 Idle 배속으로 재개
     }
 
     private void OnDisable()
@@ -188,6 +247,7 @@ public class CharactorAnimationController : MonoBehaviour
         if (_animator == null || string.IsNullOrWhiteSpace(stateName)) return;
         if (!TryResolveExistingState(stateName, out string resolved)) return;
 
+        if (resolved != StateIdle && !IsHolding) _animator.speed = CurrentAnimSpeed;
         if (blendSeconds <= 0f) { _animator.Play(resolved, 0, 0f); return; }
         _animator.CrossFadeInFixedTime(resolved, blendSeconds, 0, 0f);
     }
@@ -276,6 +336,9 @@ public class CharactorAnimationController : MonoBehaviour
         {
             return;
         }
+
+        // 공격 시작 프레임부터 Idle 전용 배속을 해제한다.
+        if (!IsHolding) _animator.speed = CurrentAnimSpeed;
 
         if (skill == null)
         {
@@ -523,7 +586,7 @@ public class CharactorAnimationController : MonoBehaviour
             return;
         }
 
-        _animator.CrossFade(StateIdle, CrossFadeDuration);
+        _animator.CrossFade(StateIdle, CrossFadeDuration, 0, _idleStartNormalizedTime);
     }
 
     /// <summary>피격·사망·부활 등 범용 연출. Has Exit Time 영향을 받지 않도록 CrossFade로 즉시 전환합니다.</summary>
@@ -533,6 +596,8 @@ public class CharactorAnimationController : MonoBehaviour
         {
             return;
         }
+
+        if (actionType.Trim() != "Revive" && !IsHolding) _animator.speed = CurrentAnimSpeed;
 
         switch (actionType.Trim())
         {
@@ -546,7 +611,7 @@ public class CharactorAnimationController : MonoBehaviour
                 break;
             case "Revive":
                 _animator.SetBool(BoolIsDead, false);
-                _animator.CrossFade(StateIdle, CrossFadeDuration);
+                _animator.CrossFade(StateIdle, CrossFadeDuration, 0, _idleStartNormalizedTime);
                 break;
             default:
                 _animator.CrossFade(actionType.Trim(), 0.05f, 0, 0f);

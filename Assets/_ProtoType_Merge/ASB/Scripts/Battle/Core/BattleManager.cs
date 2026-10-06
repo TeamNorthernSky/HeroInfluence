@@ -564,7 +564,9 @@ public class BattleManager : MonoBehaviour
                     }
                     else
                     {
-                        SkillData hitAnimSkill = SkillPresentationDirector.ResolveSkillAnimationData(SkillPresentationDirector.TryGetSkillDataForDamageContext(damageContext));
+                        SkillData hitAnimSkill = SkillPresentationDirector.ResolveSkillAnimationData(
+                            TryGetCoreSkillPresentationData(damageContext)
+                            ?? SkillPresentationDirector.TryGetSkillDataForDamageContext(damageContext));
                         var actionQueue = new ASB.Work.Battle.Command.BattleActionQueue();
                         actionQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
                             damageContext.Caster,
@@ -811,6 +813,32 @@ public class BattleManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// 코어(무기) 스킬의 연출용 SkillData. 시전자의 장착 무기 스킬 번호와 일치하고 카탈로그에 그 번호의 연출이
+    /// 있을 때만 무기 SkillData를 돌려준다. 그 외(클래스 스킬, 연출 없는 코어 스킬)는 null → 기존 조회 경로 그대로.
+    /// </summary>
+    private SkillData TryGetCoreSkillPresentationData(DamageContext context)
+    {
+        WeaponData weapon = context?.Caster != null ? context.Caster.EquippedWeaponData : null;
+        if (weapon == null || weapon.WeaponSkillIndex <= 0 || weapon.WeaponSkillIndex != context.SkillIndex)
+        {
+            return null;
+        }
+
+        if (_presentationCatalog == null || _presentationCatalog.Get(context.SkillIndex) == null)
+        {
+            return null;
+        }
+
+        SkillData skill = weapon.ToSkillData();
+        // 무기 데이터는 피격 트리거가 비어 있다. 기존 기본값(Hit)과 같은 피격 반응을 유지한다.
+        if (string.IsNullOrEmpty(skill.TargetAnimationTrigger))
+        {
+            skill.TargetAnimationTrigger = "Hit";
+        }
+        return skill;
     }
 
     /// <summary>

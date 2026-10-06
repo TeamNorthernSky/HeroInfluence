@@ -98,3 +98,5 @@ MonoBehaviour:
     Presentation: {fileID: 11400000, guid: 46add072fdd664d4593d64feace09868, type: 2}
   - SkillIndex: 400013
     Presentation: {fileID: 11400000, guid: 2b3989f7070fbf141bda8f6efcce8cbd, type: 2}
+  - SkillIndex: 1
+    Presentation: {fileID: 11400000, guid: f6a051f7dcefaf8419360d54c2c7a7bb, type: 2}

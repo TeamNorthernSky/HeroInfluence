@@ -1826,12 +1826,15 @@ public sealed partial class SkillPresentationDirector
             && (skill?.classSkillEffect == BattleManager.ClassSkillEffect_Heal || skill?.classSkillEffect == BattleManager.ClassSkillEffect_Revive)
             && presentation?.GetProjectileVisual() != null;
 
+        // 연출이 접근을 강제하면(코어 스킬 근접 연출 등) 원거리 유닛(RotateOnly)도 근접 유닛처럼 다가간다.
+        // 플래그가 꺼진 기존 연출은 판정이 그대로다(!shouldMove 조건은 기존 경우에 항상 참).
+        bool forceApproach = presentation?.Move != null && presentation.Move.Enabled && presentation.Move.ForceApproach;
         shouldMove = movement != null
-            && !movement.RotateOnly
+            && (forceApproach || !movement.RotateOnly)
             && hasTarget
             && !isFriendlyProjectile
             && BattleManager.IsMeleeSkillRange(actor, skill);
-        shouldRotate = hasTarget && ((movement != null && movement.RotateOnly) || isFriendlyProjectile);
+        shouldRotate = hasTarget && !shouldMove && ((movement != null && movement.RotateOnly) || isFriendlyProjectile);
     }
 
     public void EnqueueSkillApproach(

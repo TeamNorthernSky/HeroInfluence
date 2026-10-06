@@ -738,6 +738,9 @@ public class MovePhase : PhaseBase
     [Tooltip("유닛 이동 프로필로 접근/복귀. 실제 이동 여부는 런타임 조건과 AND.")]
     public bool UseUnitMovement = true;
 
+    [Tooltip("켜면 유닛 이동 프로필의 RotateOnly(원거리)와 무관하게 대상에게 접근한다. 근접 사거리 스킬에만 적용된다.")]
+    public bool ForceApproach;
+
     [AnimatorStateDropdown]
     [Tooltip("접근 이동 중 재생할 Animator state. 비어 있으면 기존 MoveForward를 사용.")]
     public string AnimationStateName;
