@@ -9,6 +9,7 @@ using UnityEngine;
 /// </summary>
 public partial class BattleCharactor
 {
+    public event System.Action<BattleCharactor> OnIncapacitated;
     /// <summary>참여자가 phase>=2일 때 true로 세팅. 코어는 블랙보드를 참조하지 않는다.</summary>
     public bool CanBeIncapacitated { get; set; }
 
@@ -25,7 +26,9 @@ public partial class BattleCharactor
         IsIncapacitated = true;
         _incapRoundsLeft = 2;               // 2 라운드(확정). 라운드 경계마다 감소.
         currentHp = 0f;                     // 다운. IsDead=false / OnDied 미발화 → 파괴 카운트 무관.
+        RemoveStatusEffect(StatusEffectType.guarded);
         OnHpChanged?.Invoke(CurrentHp, MaxHp);
+        OnIncapacitated?.Invoke(this);
         return true;
     }
 

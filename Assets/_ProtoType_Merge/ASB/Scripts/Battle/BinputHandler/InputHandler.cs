@@ -68,6 +68,8 @@ public class InputHandler : MonoBehaviour
 
         if (targetingVisualController == null)
             targetingVisualController = FindFirstObjectByType<TargetingVisualController>();
+        if (targetingVisualController == null)
+            targetingVisualController = gameObject.AddComponent<TargetingVisualController>();
 
         if (battleFlowManager == null)
             battleFlowManager = FindFirstObjectByType<BattleFlowManager>();

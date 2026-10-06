@@ -141,6 +141,9 @@ public class BattleFlowManager : MonoBehaviour
             participants.AddRange(initialParticipants.Where(u => u != null));
         }
 
+        foreach (BattleCharactor participant in participants)
+            participant.RemoveStatusEffect(StatusEffectType.guarded);
+
         SubscribeAllUnitDeathEvents();
         inputHandler?.BindUnitDeathEvents(participants);
 
@@ -355,7 +358,10 @@ public class BattleFlowManager : MonoBehaviour
     {
         if (unit == null) return;
 
+        GuardLink.ExpireFromSource(unit, participants);
+        unit.RemoveStatusEffect(StatusEffectType.guarded);
         unit.OnDied -= HandleUnitDied;
+        unit.OnIncapacitated -= HandleUnitIncapacitated;
         unit.ClearOccupiedCell();
         participants.Remove(unit);
         if (CurrentUnit == unit)
@@ -516,7 +522,7 @@ public class BattleFlowManager : MonoBehaviour
             }
 
             CurrentUnit = unit;
-            CurrentUnit.ClearGuard(); // 대신 맞기: 가디언의 다음 턴 시작 시 미소비 보호 링크 만료(기절/스킵 포함)
+            GuardLink.ExpireFromSource(CurrentUnit, participants); // 보호자의 턴 시작에 미소비 버프 만료
 
             // 이전 턴 입력 상태를 먼저 정리한다 (UI의 BeginPendingAction이 덮어쓰이지 않도록).
             inputHandler?.ClearSelectionState();
@@ -901,6 +907,8 @@ public class BattleFlowManager : MonoBehaviour
 
         unit.OnDied -= HandleUnitDied;
         unit.OnDied += HandleUnitDied;
+        unit.OnIncapacitated -= HandleUnitIncapacitated;
+        unit.OnIncapacitated += HandleUnitIncapacitated;
     }
 
     private void UnsubscribeAllUnitDeathEvents()
@@ -914,6 +922,7 @@ public class BattleFlowManager : MonoBehaviour
             }
 
             unit.OnDied -= HandleUnitDied;
+            unit.OnIncapacitated -= HandleUnitIncapacitated;
         }
     }
 
@@ -923,6 +932,9 @@ public class BattleFlowManager : MonoBehaviour
         {
             return;
         }
+
+        deadUnit.RemoveStatusEffect(StatusEffectType.guarded);
+        GuardLink.ExpireFromSource(deadUnit, participants);
 
         if (CurrentUnit == deadUnit)
         {
@@ -938,6 +950,13 @@ public class BattleFlowManager : MonoBehaviour
         {
             RequestVictory($"{enemyGroupKey} 보스 처치: {deadUnit.UnitName}");
         }
+    }
+
+    private void HandleUnitIncapacitated(BattleCharactor unit)
+    {
+        if (unit == null) return;
+        unit.RemoveStatusEffect(StatusEffectType.guarded);
+        GuardLink.ExpireFromSource(unit, participants);
     }
 
     /// <summary>

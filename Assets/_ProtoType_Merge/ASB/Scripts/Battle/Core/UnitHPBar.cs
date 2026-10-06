@@ -34,6 +34,8 @@ public class UnitHPBar : MonoBehaviour
     [SerializeField] private TMP_Text hpGaugeText;
     [Tooltip("현재 IP / 최대 IP 텍스트입니다.")]
     [SerializeField] private TMP_Text ipGaugeText;
+    [Tooltip("대신 맞기 버프가 있을 때만 표시하는 텍스트 배지입니다.")]
+    [SerializeField] private TMP_Text guardBadge;
     [Tooltip("기준 높이에 더하는 월드 Y 보정값입니다. 기존 설정 호환용이며 0이면 추가 보정하지 않습니다.")]
     public float YaxisValue = 0f;
 
@@ -115,9 +117,11 @@ public class UnitHPBar : MonoBehaviour
             subscribedCharacter = battleCharactor;
             subscribedCharacter.OnHpChanged += UpdateHPBar;
             subscribedCharacter.OnInfluenceChanged += UpdateIPBar;
+            subscribedCharacter.OnStatusEffectsChanged += RefreshGuardBadge;
             UpdateHPBar(battleCharactor.CurrentHp, battleCharactor.MaxHp);
             UpdateIPBar(battleCharactor.CurrentInfluence, battleCharactor.MaxInfluence);
         }
+        RefreshGuardBadge();
         UpdateScreenPosition();
     }
 
@@ -134,7 +138,14 @@ public class UnitHPBar : MonoBehaviour
         if (subscribedCharacter == null) return;
         subscribedCharacter.OnHpChanged -= UpdateHPBar;
         subscribedCharacter.OnInfluenceChanged -= UpdateIPBar;
+        subscribedCharacter.OnStatusEffectsChanged -= RefreshGuardBadge;
         subscribedCharacter = null;
+    }
+
+    private void RefreshGuardBadge()
+    {
+        if (guardBadge != null)
+            guardBadge.gameObject.SetActive(battleCharactor != null && battleCharactor.GuardSource != null);
     }
 
     private void LateUpdate()
@@ -309,6 +320,7 @@ public class UnitHPBar : MonoBehaviour
         if (ipFillImage == null) ipFillImage = Find<Image>(hpBarRect, "IP Background/IP Fill", "IP Fill", "IPFill");
         if (hpGaugeText == null) hpGaugeText = Find<TMP_Text>(hpBarRect, "HP Background/HP GaugeText", "HP GaugeText");
         if (ipGaugeText == null) ipGaugeText = Find<TMP_Text>(hpBarRect, "IP Background/IP GaugeText", "IP GaugeText");
+        if (guardBadge == null) guardBadge = Find<TMP_Text>(hpBarRect, "Guard Badge");
         if (ipBarRect == null) ipBarRect = hpBarRect.Find("IP Background") as RectTransform;
         if (ipBarRect == null) ipBarRect = transform.Find("IPCanvas") as RectTransform;
         if (ipCanvas == null && ipBarRect != null) ipCanvas = ipBarRect.GetComponent<Canvas>();

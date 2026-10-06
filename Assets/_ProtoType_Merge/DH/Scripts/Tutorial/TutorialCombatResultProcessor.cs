@@ -183,12 +183,15 @@ public sealed class TutorialCombatResultProcessor : MonoBehaviour
             var growth = growthPlan?.UnitPreviews?.Find(p => p.IsTutorial && p.UnitIndex == source.UnitIndex);
             if (growthPlan != null && growthPlan.Result == BattleResult.Victory && growth != null && growth.NewLevel > level)
             {
+                int previousMaxHp = maxHp;
                 level = growth.NewLevel; exp = growth.NewExp; maxExp = growth.NewMaxExp;
                 var stats = UnitStatCalculator.CalculateIngameStats(source.BaseStats, source.LevelupStats, level,
                     source.CurrentWeaponStats, source.EventBonusStats, TutorialCatalog.Instance.GetUnitGrowthTemplates());
                 maxHp = Mathf.Max(1, Mathf.CeilToInt(stats.HP)); atk = Mathf.Max(0, Mathf.RoundToInt(stats.Atk));
                 maxIp = Mathf.Max(0, Mathf.RoundToInt(stats.Influence));
-                currentHp = Mathf.Min(currentHp, maxHp); currentIp = Mathf.Min(currentIp, maxIp);
+                if (!player.IsDead)
+                    currentHp = Mathf.Clamp(currentHp + Mathf.Max(0, maxHp - previousMaxHp), 1, maxHp);
+                currentIp = Mathf.Min(currentIp, maxIp);
             }
             repository.SetUnitJoined(unitTemplateKey, true);
             repository.SetUnitStats(unitTemplateKey, currentHp, maxHp, currentIp, maxIp, atk, level, exp, maxExp);

@@ -14,6 +14,9 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     public event Action<BattleCharactor> OnDied;
     public event Action<float, float> OnHpChanged;
     public event Action<float, float> OnInfluenceChanged;
+    public event Action OnStatusEffectsChanged;
+
+    internal void NotifyStatusEffectsChanged() => OnStatusEffectsChanged?.Invoke();
 
     /// <summary>
     /// 피격/사망 등으로 진행 중인 스킬 연출(Timeline)을 즉시 중단해야 할 때 발생한다.
@@ -612,6 +615,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
         IsDead = true;
         currentHp = 0f;
+        RemoveStatusEffect(StatusEffectType.guarded);
 
         // 대열 경계(minX/maxX)는 '생존한' 팀원만으로 계산된다. 죽은 순간 경계가 바뀌므로
         // 남은 팀원의 대열 패시브(전열 CounterRate / 후열 CriticalRate)를 다시 계산해야 한다.
@@ -649,6 +653,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
 
         IsDead = false;
+        RemoveStatusEffect(StatusEffectType.guarded);
         float ratio = Mathf.Clamp01(hpRatio);
         currentHp = Mathf.Clamp(MaxHp * ratio, 1f, MaxHp);
 

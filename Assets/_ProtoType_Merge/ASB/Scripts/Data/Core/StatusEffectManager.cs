@@ -100,6 +100,7 @@ public sealed class StatusEffectManager
             Debug.Log($"[Status] 적용: {owner.UnitName} effect={effect.effectType} turns={Mathf.Max(1, effect.remainingTurns)}");
         }
 
+        owner.NotifyStatusEffectsChanged();
         return RequiresStatRecalculation(effect.effectType);
     }
 
@@ -111,7 +112,21 @@ public sealed class StatusEffectManager
         }
 
         bool removed = activeEffects.RemoveAll(x => x != null && x.effectType == effectType) > 0;
+        if (removed) owner?.NotifyStatusEffectsChanged();
         return removed && RequiresStatRecalculation(effectType);
+    }
+
+    public bool RemoveStatusEffectFromSource(StatusEffectType effectType, BattleCharactor source)
+    {
+        if (source == null || activeEffects.Count == 0) return false;
+        bool removed = activeEffects.RemoveAll(x => x != null && x.effectType == effectType && x.source == source) > 0;
+        if (removed) owner?.NotifyStatusEffectsChanged();
+        return removed && RequiresStatRecalculation(effectType);
+    }
+
+    public StatusEffectInstance GetStatusEffect(StatusEffectType effectType)
+    {
+        return activeEffects.Find(x => x != null && x.effectType == effectType && x.remainingTurns > 0);
     }
 
     public bool HasStatusEffect(StatusEffectType effectType)
@@ -131,6 +146,7 @@ public sealed class StatusEffectManager
             return null;
         }
 
+        bool removed = false;
         for (int i = activeEffects.Count - 1; i >= 0; i--)
         {
             StatusEffectInstance effect = activeEffects[i];
@@ -141,12 +157,15 @@ public sealed class StatusEffectManager
 
             if (effect.remainingTurns > 0 && effect.source != null && !effect.source.IsDead)
             {
+                if (removed) owner?.NotifyStatusEffectsChanged();
                 return effect.source;
             }
 
             activeEffects.RemoveAt(i);
+            removed = true;
         }
 
+        if (removed) owner?.NotifyStatusEffectsChanged();
         return null;
     }
 
@@ -197,6 +216,7 @@ public sealed class StatusEffectManager
             return false;
         }
 
+        bool changed = false;
         for (int i = 0; i < activeEffects.Count; i++)
         {
             StatusEffectInstance effect = activeEffects[i];
@@ -205,7 +225,12 @@ public sealed class StatusEffectManager
                 continue;
             }
 
-            if (effect.effectType != StatusEffectType.damage_taken_down) effect.remainingTurns -= 1;
+            if (effect.effectType != StatusEffectType.damage_taken_down
+                && effect.effectType != StatusEffectType.guarded)
+            {
+                effect.remainingTurns -= 1;
+                changed = true;
+            }
         }
 
         bool removedStatModifier = false;
@@ -223,8 +248,10 @@ public sealed class StatusEffectManager
             }
 
             activeEffects.RemoveAt(i);
+            changed = true;
         }
 
+        if (changed) owner?.NotifyStatusEffectsChanged();
         return removedStatModifier;
     }
 
