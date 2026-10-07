@@ -29,6 +29,8 @@ namespace JC.Tutorial
         [Min(0), Tooltip("바닥 스윕 샤인의 밝기입니다. 0이면 스윕을 끕니다.")] public float sweepIntensity = 1.6f;
         [Tooltip("기존 이동 인디케이터입니다. 구역 전환의 노란 안내 레이어를 바닥 목표로 재사용합니다.")]
         public JcMovementIndicatorController movementIndicator;
+        // 튜토리얼은 기존처럼 안내 레이어를 소유한다. 탐사의 화살표 전용 재사용은 스타일만 참조한다.
+        public bool ControlsMovementGuidance { get; set; } = true;
         [Min(0), Tooltip("목표 오브젝트 위와 화살표 끝 사이의 여유(타일 크기 비율)입니다.")]
         public float objectClearance = .18f;
         private readonly Vector3[] guidancePoint = new Vector3[2];
@@ -46,7 +48,7 @@ namespace JC.Tutorial
 
         public void Present(bool visible, Vector3 position, float cellSize, float time, bool showFloor = true, float objectTop = float.NegativeInfinity, System.Collections.Generic.IReadOnlyList<Vector3> path = null)
         {
-            if (!visible || !isActiveAndEnabled || indicatorShader == null) { if (visual != null) visual.SetActive(false); if (movementIndicator != null) movementIndicator.HideGuidance(); return; }
+            if (!visible || !isActiveAndEnabled || indicatorShader == null) { if (visual != null) visual.SetActive(false); if (ControlsMovementGuidance && movementIndicator != null) movementIndicator.HideGuidance(); return; }
             if (visual == null) Build();
             if (builtThickness != arrowThickness || builtArrowSize != arrowSize || builtArrow != arrowColor || builtPoint != pointColor || builtFloorThickness != floorThickness || builtBevel != bevel || builtCornerCut != cornerCut) BuildMeshes();
             visual.SetActive(true); visual.transform.position = position + Vector3.up * height;
@@ -59,8 +61,8 @@ namespace JC.Tutorial
                 builtSettings=style;builtCellSize=cellSize;
             }
             // 구역 전환의 노란 안내 레이어를 그대로 사용한다. 길이0 경로는 바닥 목적지만 표시한다.
-            floorRenderer.enabled = showFloor && movementIndicator == null;
-            if (movementIndicator != null) {
+            floorRenderer.enabled = showFloor && (movementIndicator == null || !ControlsMovementGuidance);
+            if (ControlsMovementGuidance && movementIndicator != null) {
                 if (showFloor) { guidancePoint[0] = guidancePoint[1] = position; movementIndicator.RenderGuidance(path != null && path.Count >= 2 ? path : guidancePoint, preferActualPreview: true); }
                 else movementIndicator.HideGuidance();
             }
@@ -112,7 +114,7 @@ namespace JC.Tutorial
         }
         private void OnDisable()
         {
-            if (movementIndicator != null) movementIndicator.HideGuidance();
+            if (ControlsMovementGuidance && movementIndicator != null) movementIndicator.HideGuidance();
             Dispose(visual); Dispose(floorMesh); Dispose(arrowMesh); Dispose(material);
             visual=null; floorMesh=null; arrowMesh=null; material=null; builtThickness=-1;
         }
