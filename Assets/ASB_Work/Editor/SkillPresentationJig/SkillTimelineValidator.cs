@@ -72,6 +72,7 @@ namespace ASB.Work.EditorTools.Jig
                     $"Animation Track이 {animationTracks}개입니다. 동일 Animator 중복 바인딩 의도를 확인하세요.");
 
             ValidateMarkers(data, timeline, result);
+            ValidateSfxMarkers(timeline, FindSfxCatalog(timeline), result);
             ValidateSections(timeline, result);
             ValidateSpeedMarkers(timeline, result);
             ValidateAnimationCoverage(timeline, result);
@@ -540,6 +541,89 @@ namespace ASB.Work.EditorTools.Jig
             if (!expectsProjectile && !hasImpact)
                 Add(result, SkillTimelineValidationSeverity.Warning,
                     "Impact Marker가 없습니다. 현재 런타임은 Timeline 종료 시 1회 폴백하지만 명시 Marker를 권장합니다.");
+        }
+
+        private static DHAudioClipCatalog FindSfxCatalog(TimelineAsset timeline)
+        {
+            if (timeline.markerTrack == null) return null;
+            bool hasSfx = false;
+            foreach (IMarker raw in timeline.markerTrack.GetMarkers())
+                if (raw is PresentationSfxMarker) { hasSfx = true; break; }
+            if (!hasSfx) return null;
+
+            string[] guids = AssetDatabase.FindAssets("t:DHAudioClipCatalog");
+            const string runtimeCatalogPath = "Assets/_ProtoType_Merge/DH/Audio/DHAudioClipCatalog.asset";
+            DHAudioClipCatalog fallback = null;
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                DHAudioClipCatalog catalog = AssetDatabase.LoadAssetAtPath<DHAudioClipCatalog>(path);
+                if (catalog == null) continue;
+                if (string.Equals(path, runtimeCatalogPath, StringComparison.OrdinalIgnoreCase))
+                    return catalog;
+                if (fallback == null) fallback = catalog;
+            }
+            return fallback;
+        }
+
+        private static void ValidateSfxMarkers(TimelineAsset timeline, DHAudioClipCatalog catalog,
+            List<SkillTimelineValidationMessage> result)
+        {
+            if (timeline.markerTrack == null) return;
+            bool warnedMissingCatalog = false;
+            const double epsilon = 0.0001d;
+            foreach (IMarker raw in timeline.markerTrack.GetMarkers())
+            {
+                if (!(raw is PresentationSfxMarker marker)) continue;
+                string key = marker.SfxKey;
+                if (string.IsNullOrEmpty(key))
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        $"{marker.time:F3}s SFX Marker의 키가 비어 있습니다.");
+
+                if (marker.time < -epsilon || marker.time > timeline.duration + epsilon)
+                    Add(result, SkillTimelineValidationSeverity.Warning,
+                        $"{marker.time:F3}s SFX Marker가 Timeline 길이(0~{timeline.duration:F3}s) 밖에 있습니다.");
+
+                // 현재 SkillTimelineBinding/Segment에는 SectionId가 없어 모든 사용처가 전체 구간이다.
+                if (catalog == null)
+                {
+                    if (!warnedMissingCatalog)
+                    {
+                        Add(result, SkillTimelineValidationSeverity.Warning,
+                            "DHAudioClipCatalog를 찾지 못해 SFX 키를 검증할 수 없습니다.");
+                        warnedMissingCatalog = true;
+                    }
+                    continue;
+                }
+                if (string.IsNullOrEmpty(key)) continue;
+
+                if (TryFindAudioEntry(catalog.SfxClips, key, out DHAudioClipEntry sfx))
+                {
+                    if (sfx.Clip == null)
+                        Add(result, SkillTimelineValidationSeverity.Warning,
+                            $"{marker.time:F3}s SFX 키 '{key}'에 AudioClip이 없어 실제 재생은 무음입니다.");
+                }
+                else if (TryFindAudioEntry(catalog.BgmClips, key, out _))
+                    Add(result, SkillTimelineValidationSeverity.Warning,
+                        $"{marker.time:F3}s '{key}'는 SFX가 아닌 BGM 키입니다.");
+                else
+                    Add(result, SkillTimelineValidationSeverity.Warning,
+                        $"{marker.time:F3}s SFX 키 '{key}'가 카탈로그 SfxClips에 없습니다.");
+            }
+        }
+
+        private static bool TryFindAudioEntry(IReadOnlyList<DHAudioClipEntry> entries, string key,
+            out DHAudioClipEntry entry)
+        {
+            if (entries != null)
+                for (int i = 0; i < entries.Count; i++)
+                    if (string.Equals(entries[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        entry = entries[i];
+                        return true;
+                    }
+            entry = default;
+            return false;
         }
 
         private static void ValidateSections(TimelineAsset timeline,

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Playables;
 
@@ -6,6 +8,7 @@ using UnityEngine.Playables;
 /// Path A Timeline 재생 중 <see cref="PresentationSignalMarker"/> 알림을 받아 라우팅한다(지시서 §6):
 ///   Cue    → 라우터의 <c>PresentationCueById</c>(이름 충돌 없이 id로 발화)
 ///   Impact → 대미지 콜백 1회
+///   SFX    → <see cref="PresentationSfxPlayer"/>로 DH 효과음 재생
 /// 재생기가 재생 전에 <see cref="Configure"/>로 라우터/콜백을 주입하고, 종료 시 <see cref="ClearConfig"/>한다.
 ///
 /// ★알림 수신은 이 컴포넌트가 PlayableDirector와 같은 GameObject에 있을 때 동작한다(마커 트랙 알림 대상).
@@ -24,6 +27,17 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
     private Action<PresentationMoveMarker> _onMove;
     private double _activeStart = double.NegativeInfinity;
     private double _activeEnd = double.PositiveInfinity;
+    private bool _sfxConfigured;
+    private readonly HashSet<PresentationSfxMarker> _playedSfx =
+        new HashSet<PresentationSfxMarker>(SfxMarkerReferenceComparer.Instance);
+
+    private sealed class SfxMarkerReferenceComparer : IEqualityComparer<PresentationSfxMarker>
+    {
+        public static readonly SfxMarkerReferenceComparer Instance = new SfxMarkerReferenceComparer();
+
+        public bool Equals(PresentationSfxMarker x, PresentationSfxMarker y) => ReferenceEquals(x, y);
+        public int GetHashCode(PresentationSfxMarker marker) => RuntimeHelpers.GetHashCode(marker);
+    }
 
     public void Configure(UnitAnimationEventRouter router, Action onImpact, Action onProjectile = null)
     {
@@ -43,6 +57,8 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _onMove = null;
         _activeStart = activeStart;
         _activeEnd = activeEnd;
+        _sfxConfigured = true;
+        _playedSfx.Clear();
     }
 
     public void ConfigureForPlan(UnitAnimationEventRouter router, Action<int> onImpactSlot,
@@ -55,6 +71,8 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _onMove = onMove;
         _activeStart = activeStart;
         _activeEnd = activeEnd;
+        _sfxConfigured = true;
+        _playedSfx.Clear();
     }
 
     public void ClearConfig()
@@ -66,10 +84,28 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _onMove = null;
         _activeStart = double.NegativeInfinity;
         _activeEnd = double.PositiveInfinity;
+        _sfxConfigured = false;
+        _playedSfx.Clear();
     }
 
     public void OnNotify(Playable origin, INotification notification, object context)
     {
+        if (notification is PresentationSfxMarker sfx)
+        {
+            if (!_sfxConfigured || sfx.time < _activeStart - 0.0001d ||
+                sfx.time > _activeEnd + 0.0001d) return;
+
+            string key = sfx.SfxKey;
+            if (string.IsNullOrEmpty(key)) return;
+
+            bool duplicate = !_playedSfx.Add(sfx);
+            if (LogSignals)
+                Debug.Log($"[PathA-SFX] '{key}' 마커 도달 ({sfx.time:F3}s, 중복 무시={duplicate})", this);
+            if (!duplicate)
+                PresentationSfxPlayer.Play(key);
+            return;
+        }
+
         if (notification is PresentationMoveMarker move)
         {
             if (move.time >= _activeStart - 0.0001d && move.time <= _activeEnd + 0.0001d)
