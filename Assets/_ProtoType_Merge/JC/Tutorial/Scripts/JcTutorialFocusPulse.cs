@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace JC.Tutorial
 {
@@ -18,7 +18,7 @@ namespace JC.Tutorial
         [Min(0), Tooltip("수렴 테두리가 바깥에서 시작하는 추가 거리(Canvas 단위)입니다.")]
         public float expansion = 24;
         [Tooltip("수렴 테두리와 글로우 색상입니다.")]
-        public Color accent = new Color(.5f, 1f, .86f, 1);
+        public Color accent = new Color(25f / 255f, 1f, 84f / 255f, 1);
         [Tooltip("이동력 박스를 가리키며 함께 반짝이는 큰 화살표입니다. 클릭 판정은 없습니다.")]
         public JcTutorialGraphic pointer;
         [Tooltip("큰 안내 화살표의 너비(Canvas 단위)입니다. 세로 길이는 화면 중앙부터 대상까지 자동 계산합니다.")]

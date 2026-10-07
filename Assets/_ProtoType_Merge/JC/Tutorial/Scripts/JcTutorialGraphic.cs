@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
@@ -20,7 +20,7 @@ namespace JC.Tutorial
         [SerializeField, Tooltip("패널 배경에 30% 섞을 보조 색입니다.")]
         private Color lowerColor = new Color(.025f, .065f, .09f, .96f);
         [SerializeField, Tooltip("패널의 윤곽선 색입니다. 강조 테두리는 Graphic의 Color를 사용합니다.")]
-        private Color borderColor = new Color(.42f, .94f, .8f, .5f);
+        private Color borderColor = new Color(25f / 255f, 1f, 84f / 255f, .5f);
         [SerializeField, Min(0), Tooltip("안내 테두리의 최소 두께입니다. 모든 클릭 안내에 공통 적용합니다.")]
         private float emphasisWidth = 6;
         [SerializeField, Min(.1f), Tooltip("안내 테두리를 따라 빛이 한 바퀴 도는 시간(초)입니다.")]

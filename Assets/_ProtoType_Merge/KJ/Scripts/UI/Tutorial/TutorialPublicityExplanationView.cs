@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,7 +16,8 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         CountMax,       // 진행할 홍보 횟수가 최대치가 되면
         Confirmed,      // 진행(확정)이 성공하면
         ModalClosed,    // 홍보 패널이 닫히면
-        HeroSelected    // 지정 영웅을 직접 선택하면 (기존 직렬화 번호 유지)
+        HeroSelected,   // 지정 영웅을 직접 선택하면 (기존 직렬화 번호 유지)
+        CountAndConfirmed // 횟수를 조정한 뒤 실제 진행이 성공하면 (기존 직렬화 번호 유지)
     }
 
     [Serializable]
@@ -26,21 +27,195 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         public int panelIndex;
         [Tooltip("클릭 또는 실제 홍보 조작 중 이 단계의 완료 조건입니다. 조작 단계는 조건 충족 전 넘어가지 않습니다.")]
         public AdvanceCondition advance = AdvanceCondition.Click;
-        [TextArea, Tooltip("기존 설명 패널에 표시할 문구입니다. 비어 있으면 기존 문구를 유지합니다.")]
+        [HideInInspector] // 이전 편집 저장본 호환용. 표시 문구는 sceneMessage에서 편집합니다.
         public string message;
-        [Tooltip("advance가 CountEquals일 때 맞춰야 할 횟수")]
+        [Tooltip("CountEquals에서 맞출 횟수 또는 Confirmed·CountAndConfirmed에서 허용할 확정 횟수입니다. 확정 단계의 0은 기본 실습 20회를 사용합니다.")]
         public int targetCount;
         [Tooltip("Highlight Pools에서 강조할 대상의 번호(0부터). 여러 개 지정할 수 있습니다.")]
         public List<int> highlightIndices = new List<int>();
         [Tooltip("강조 대상을 올릴 기존 설명 패널입니다. 비어 있으면 현재 Panels 항목을 사용합니다.")]
         public GameObject explanationPanel;
+        [HideInInspector]
+        public bool useAuthoredPresentation;
+        [HideInInspector]
+        public MessagePresentation authoredPresentation;
+        [HideInInspector]
+        public List<OverlayPresentation> authoredOverlays = new List<OverlayPresentation>();
+        [Header("씬에서 편집하는 안내 배치")]
+        public RectTransform messageBox;
+        public TMPro.TMP_Text sceneMessage, sceneHint;
+        public RectTransform practiceLayer;
+        public List<SceneOverlay> sceneOverlays = new List<SceneOverlay>();
+    }
+
+    [Serializable]
+    public sealed class SceneOverlay
+    {
+        public string key;
+        public RectTransform rect;
+    }
+
+    [Serializable]
+    public sealed class ElementPresentation
+    {
+        public Vector2 anchorMin, anchorMax, pivot, position, size;
+        public Vector3 scale;
+        public Quaternion rotation;
+        public float fontSize, fontSizeMin, fontSizeMax, characterSpacing, lineSpacing, wordSpacing, paragraphSpacing;
+        public bool autoSize, wordWrapping, hasImage, hasImageEnabled, imageEnabled, active;
+        public Color color, imageColor;
+        public Vector4 margin;
+        public TMPro.FontStyles fontStyle;
+        public TMPro.TextAlignmentOptions alignment;
+        public static ElementPresentation Capture(RectTransform rect, TMPro.TMP_Text text = null)
+        {
+            if (rect == null) return null;
+            var result = new ElementPresentation { anchorMin = rect.anchorMin, anchorMax = rect.anchorMax,
+                pivot = rect.pivot, position = rect.anchoredPosition, size = rect.sizeDelta,
+                scale = rect.localScale, rotation = rect.localRotation, active = rect.gameObject.activeSelf };
+            var image = rect.GetComponent<UnityEngine.UI.Image>();
+            if (image != null) { result.hasImage = true; result.imageColor = image.color; result.hasImageEnabled = true; result.imageEnabled = image.enabled; }
+            if (text != null)
+            {
+                result.fontSize = text.fontSize; result.fontSizeMin = text.fontSizeMin; result.fontSizeMax = text.fontSizeMax;
+                result.autoSize = text.enableAutoSizing; result.wordWrapping = text.enableWordWrapping;
+                result.characterSpacing = text.characterSpacing; result.lineSpacing = text.lineSpacing;
+                result.wordSpacing = text.wordSpacing; result.paragraphSpacing = text.paragraphSpacing;
+                result.margin = text.margin; result.fontStyle = text.fontStyle;
+                result.color = text.color; result.alignment = text.alignment;
+            }
+            return result;
+        }
+        public void Apply(RectTransform rect, TMPro.TMP_Text text = null)
+        {
+            if (rect == null) return;
+            rect.anchorMin = anchorMin; rect.anchorMax = anchorMax; rect.pivot = pivot;
+            rect.anchoredPosition = position; rect.sizeDelta = size; rect.localScale = scale; rect.localRotation = rotation;
+            rect.gameObject.SetActive(active);
+            var image = rect.GetComponent<UnityEngine.UI.Image>();
+            if (hasImage && image != null) { image.color = imageColor; if (hasImageEnabled) image.enabled = imageEnabled; }
+            if (text == null) return;
+            text.fontSize = fontSize; text.fontSizeMin = fontSizeMin; text.fontSizeMax = fontSizeMax;
+            text.enableAutoSizing = autoSize; text.enableWordWrapping = wordWrapping;
+            text.characterSpacing = characterSpacing; text.lineSpacing = lineSpacing; text.color = color; text.alignment = alignment;
+            text.wordSpacing = wordSpacing; text.paragraphSpacing = paragraphSpacing; text.margin = margin; text.fontStyle = fontStyle;
+        }
+    }
+    [Serializable]
+    public sealed class MessagePresentation
+    {
+        public ElementPresentation message, hint, background;
+        public string hintText;
+        public bool textInBackground, hintInBackground;
+    }
+    [Serializable]
+    public sealed class OverlayPresentation
+    {
+        public string key, childPath;
+        public ElementPresentation element;
+    }
+    [Serializable]
+    private sealed class OverlayEdits
+    {
+        public List<OverlayPresentation> elements = new List<OverlayPresentation>();
+    }
+    // 씬에 배치된 영역을 이전 편집 저장본의 키로 연결한다.
+    private readonly Dictionary<string, RectTransform> generatedOverlays = new Dictionary<string, RectTransform>();
+    private static Transform TargetTransform(UnityEngine.Object target)
+        => target is Component component ? component.transform : target is GameObject go ? go.transform : null;
+    public bool IsOverlayElement(UnityEngine.Object target)
+    {
+        var rect = TargetTransform(target);
+        if (current == null || rect == null || current.messageBox != null) return false;
+        foreach (var root in generatedOverlays.Values)
+            if (root != null && (rect == root || rect.IsChildOf(root))) return true;
+        return false;
+    }
+    public string CaptureOverlayPresentation(UnityEngine.Object target = null)
+    {
+        if (current == null) return null;
+        if (current.authoredOverlays == null) current.authoredOverlays = new List<OverlayPresentation>();
+        var selected = TargetTransform(target);
+        foreach (var pair in generatedOverlays)
+        {
+            var root = pair.Value;
+            if (root == null || (target != null && (selected == null || (selected != root && !selected.IsChildOf(root))))) continue;
+            foreach (var rect in root.GetComponentsInChildren<RectTransform>(true))
+            {
+                string path = rect == root ? "" : rect.name;
+                for (var parent = rect.parent; rect != root && parent != null && parent != root; parent = parent.parent) path = parent.name + "/" + path;
+                var saved = current.authoredOverlays.Find(e => e.key == pair.Key && e.childPath == path);
+                // Undo는 이미 편집한 요소만 재보관한다. 다른 영역의 기본 배치를 고정하지 않는다.
+                if (target == null && saved == null) continue;
+                if (saved == null) { saved = new OverlayPresentation { key = pair.Key, childPath = path }; current.authoredOverlays.Add(saved); }
+                saved.element = ElementPresentation.Capture(rect);
+            }
+        }
+        return JsonUtility.ToJson(new OverlayEdits { elements = current.authoredOverlays });
+    }
+    public void SetOverlayPresentation(int panelIndex, string json)
+    {
+        var step = FindStep(panelIndex);
+        if (step == null) throw new ArgumentException("홍보 안내 단계가 없습니다: " + panelIndex);
+        step.authoredOverlays = JsonUtility.FromJson<OverlayEdits>(json)?.elements ?? new List<OverlayPresentation>();
+        generatedOverlays.Clear();
+        if (step.sceneOverlays != null) foreach (var overlay in step.sceneOverlays)
+            if (overlay != null && overlay.rect != null) generatedOverlays[overlay.key] = overlay.rect;
+        ApplyOverlayPresentation(step);
+        generatedOverlays.Clear();
+    }
+    private void ApplyOverlayPresentation(Step step)
+    {
+        if (step.authoredOverlays == null) return;
+        foreach (var edit in step.authoredOverlays)
+            if (edit != null && generatedOverlays.TryGetValue(edit.key, out var root) && root != null)
+                edit.element?.Apply(string.IsNullOrEmpty(edit.childPath) ? root : root.Find(edit.childPath) as RectTransform);
+    }
+    public int CurrentPanelIndex => current != null ? current.panelIndex : -1;
+    public TMPro.TMP_Text CurrentMessage => messageText;
+    public bool IsMessageElement(UnityEngine.Object target)
+    {
+        var component = target as Component;
+        var go = target as GameObject;
+        var transform = component != null ? component.transform : go != null ? go.transform : null;
+        return current != null && current.messageBox == null && transform != null && (transform == messageBackground ||
+            (messageText != null && transform == messageText.transform) || (hintText != null && transform == hintText.transform));
+    }
+    public string CaptureMessagePresentation()
+    {
+        if (current == null || messageText == null) return null;
+        current.message = messageText.text;
+        current.useAuthoredPresentation = true;
+        current.authoredPresentation = new MessagePresentation {
+            message = ElementPresentation.Capture(messageText.rectTransform, messageText),
+            hint = hintText != null ? ElementPresentation.Capture(hintText.rectTransform, hintText) : null,
+            background = ElementPresentation.Capture(messageBackground), hintText = hintText != null ? hintText.text : null,
+            textInBackground = messageBackground != null && messageText.transform.IsChildOf(messageBackground),
+            hintInBackground = messageBackground != null && hintText != null && hintText.transform.IsChildOf(messageBackground) };
+        return JsonUtility.ToJson(current.authoredPresentation);
+    }
+    public void SetMessagePresentation(int panelIndex, string message, string json)
+    {
+        var step = FindStep(panelIndex);
+        if (step == null) throw new ArgumentException("홍보 안내 단계가 없습니다: " + panelIndex);
+        step.message = message;
+        step.useAuthoredPresentation = true;
+        step.authoredPresentation = JsonUtility.FromJson<MessagePresentation>(json);
+        if (step.messageBox == null || step.sceneMessage == null) return;
+        messageBackground = step.messageBox;
+        step.authoredPresentation.background?.Apply(step.messageBox);
+        ApplyMessageText(step.authoredPresentation.message, step.sceneMessage, step.authoredPresentation.textInBackground);
+        ApplyMessageText(step.authoredPresentation.hint, step.sceneHint, step.authoredPresentation.hintInBackground);
+        step.sceneMessage.text = message;
+        if (step.sceneHint != null && step.authoredPresentation.hintText != null) step.sceneHint.text = step.authoredPresentation.hintText;
+        messageBackground = null;
     }
 
     [SerializeField] private GameObject dimPanel;
     [SerializeField] private TutorialPublicityController publicity;
-    [Tooltip("홍보 실습에서 직접 선택할 영웅 키입니다. 시작 시 이 영웅의 IP를 0/50으로 준비하며 자동 선택하지 않습니다.")]
+    [Tooltip("홍보 실습에서 직접 선택할 영웅 키입니다. 시작 시 이 영웅의 IP를 0/40으로 준비하며 자동 선택하지 않습니다.")]
     [SerializeField] private string tutorialHeroKey = "10001";
-    [Tooltip("기존 설명 패널별 문구와 완료 조건입니다. 실제 선택·횟수·확정·닫기 조건을 설정합니다.")]
+    [Tooltip("기존 설명 패널별 완료 조건과 씬 UI 참조입니다. 문구와 배치는 해당 씬 오브젝트에서 편집합니다.")]
     [SerializeField] private Step[] steps = Array.Empty<Step>();
     [SerializeField] private List<GameObject> highlightPools = new List<GameObject>();
     [SerializeField] private GameObject backgroundSource;
@@ -54,19 +229,9 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
     private int maximizeCountAtStart, shownFrame;
     private bool practicePrepared, awaitingRelease;
     private GameObject currentPanel;
-    private readonly List<KeyValuePair<GameObject, bool>> hiddenExamples = new List<KeyValuePair<GameObject, bool>>();
+    [SerializeField] private GameObject legacyPreview;
     private TMPro.TMP_Text messageText, hintText;
-    private string originalMessage, originalHint;
-    private readonly List<KeyValuePair<RectTransform, Vector2>> messagePositions = new List<KeyValuePair<RectTransform, Vector2>>();
-    private readonly List<KeyValuePair<RectTransform, Vector2>> messageSizes = new List<KeyValuePair<RectTransform, Vector2>>();
-    private readonly List<KeyValuePair<TMPro.TMP_Text, Vector2>> messageFonts = new List<KeyValuePair<TMPro.TMP_Text, Vector2>>();
-    private readonly List<GameObject> dimRegions = new List<GameObject>();
-    private UnityEngine.UI.Image dimImage;
-    private Color originalDimColor;
     private RectTransform messageBackground;
-    private const float MessageWidth = 460f, MessagePadding = 26f, HeroMessageGap = 60f;
-    // 공용 팝업 이미지에 들어 있는 I.P 제목 높이도 정보 강조 범위에 포함한다.
-    private const float InformationHeaderHeight = 90f;
 
     public void EndPractice()
     {
@@ -86,13 +251,11 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
 
     private void HideSharedPreview()
     {
-        var preview = transform.Find("ClickToContinue/SharedPublicityPanel");
-        if (preview != null) preview.gameObject.SetActive(false);
+        if (legacyPreview != null) legacyPreview.SetActive(false);
     }
 
     private sealed class SortingState
     {
-        public GameObject border;
         public RectTransform rect;
         public Transform parent;
         public int sibling;
@@ -106,6 +269,14 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         public int sortingLayer, sortingOrder;
     }
     private readonly List<SortingState> sortingStates = new List<SortingState>();
+    public bool IsTemporarilyPromotedTarget(UnityEngine.Object target)
+    {
+        var component = target as Component;
+        var go = target as GameObject;
+        var rect = component != null ? component.transform : go != null ? go.transform : null;
+        return rect != null && sortingStates.Exists(s => !s.keepParent && s.rect != null &&
+            (rect == s.rect || rect.IsChildOf(s.rect)));
+    }
 
     private TutorialPublicityController Publicity
     {
@@ -148,28 +319,15 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         PrepareMessage(currentPanel, current);
         PrepareBackground(panelIndex);
         ShowHighlights(current);
+
     }
 
     public void Hide()
     {
         current = null;
-        RestoreDim();
         RestoreSorting();
-        foreach (var size in messageSizes)
-            if (size.Key != null) size.Key.sizeDelta = size.Value;
-        messageSizes.Clear();
-        foreach (var font in messageFonts)
-            if (font.Key != null) { font.Key.fontSize = font.Value.x; font.Key.fontSizeMax = font.Value.y; }
-        messageFonts.Clear();
+        generatedOverlays.Clear();
         messageBackground = null;
-        foreach (var position in messagePositions)
-            if (position.Key != null) position.Key.anchoredPosition = position.Value;
-        messagePositions.Clear();
-        foreach (var example in hiddenExamples)
-            if (example.Key != null) example.Key.SetActive(example.Value);
-        hiddenExamples.Clear();
-        if (messageText != null) messageText.text = originalMessage;
-        if (hintText != null) hintText.text = originalHint;
         messageText = hintText = null;
         currentPanel = null;
         if (publicity != null && practicePrepared)
@@ -257,7 +415,9 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
             case AdvanceCondition.CountEquals: return p.SelectedKey == tutorialHeroKey && p.Count == step.targetCount;
             case AdvanceCondition.CountMax: return p.SelectedKey == tutorialHeroKey &&
                 p.MaximizeCount > maximizeCountAtStart && p.Count > 0 && p.Count == p.MaxCount;
-            case AdvanceCondition.Confirmed: return p.SelectedKey == tutorialHeroKey && p.ConfirmCount > confirmCountAtStart;
+            case AdvanceCondition.Confirmed:
+            case AdvanceCondition.CountAndConfirmed:
+                return p.SelectedKey == tutorialHeroKey && p.ConfirmCount > confirmCountAtStart;
             default: return false;
         }
     }
@@ -284,11 +444,12 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         {
             case AdvanceCondition.HeroSelected: input = TutorialPublicityController.PracticeInput.HeroSelection; break;
             case AdvanceCondition.CountEquals: input = TutorialPublicityController.PracticeInput.Count; break;
+            case AdvanceCondition.CountAndConfirmed: input = TutorialPublicityController.PracticeInput.CountAndConfirm; break;
             case AdvanceCondition.CountMax: input = TutorialPublicityController.PracticeInput.Max; break;
             case AdvanceCondition.Confirmed: input = TutorialPublicityController.PracticeInput.Confirm; break;
             case AdvanceCondition.ModalClosed: input = TutorialPublicityController.PracticeInput.Close; break;
         }
-        Publicity.SetPracticeInput(input);
+        Publicity.SetPracticeInput(input, current.targetCount);
     }
 
     private List<GameObject> PracticeTargets(AdvanceCondition advance)
@@ -305,9 +466,11 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
             case AdvanceCondition.CountEquals:
             case AdvanceCondition.CountMax:
             case AdvanceCondition.Confirmed:
+            case AdvanceCondition.CountAndConfirmed:
                 targets.AddRange(InformationTargets());
                 if (advance == AdvanceCondition.CountMax && p.MaxButton != null) targets.Add(p.MaxButton.gameObject);
-                if (advance == AdvanceCondition.Confirmed && p.ConfirmButton != null) targets.Add(p.ConfirmButton.gameObject);
+                if ((advance == AdvanceCondition.Confirmed || advance == AdvanceCondition.CountAndConfirmed) &&
+                    p.ConfirmButton != null) targets.Add(p.ConfirmButton.gameObject);
                 break;
             case AdvanceCondition.ModalClosed:
                 if (p.CloseButton != null) targets.Add(p.CloseButton.gameObject);
@@ -328,201 +491,52 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         return targets;
     }
 
+    // 씬 오브젝트를 그대로 표시하며 위치·크기·문자 설정을 덮어쓰지 않는다.
     private void PrepareMessage(GameObject panel, Step step)
     {
-        if (panel == null || string.IsNullOrEmpty(step.message)) return;
-        var background = panel.transform.Find("TutorialGuideBackground");
-        if (background == null)
-        {
-            // 배경이 없는 기존 패널도 다른 설명 패널에 배치된 배경을 빌려 사용한다.
-            foreach (var candidate in GetComponentsInChildren<Transform>(true))
-                if (candidate.name == "TutorialGuideBackground") { background = candidate; break; }
-            if (background != null) Promote(background.gameObject, panel.transform);
-        }
-        if (background != null) background.SetAsFirstSibling();
-        foreach (Transform child in panel.transform)
-        {
-            // 이전의 예시 슬라이더·카드가 실제 조작 대상 위에 겹치지 않게 임시로 숨긴다.
-            if (child.name == "Text (TMP)")
-            {
-                messageText = child.GetComponent<TMPro.TMP_Text>();
-                if (messageText != null) { originalMessage = messageText.text; messageText.text = step.message; }
-            }
-            else if (child.name == "TutorialContinueHint")
-            {
-                hintText = child.GetComponent<TMPro.TMP_Text>();
-                if (hintText != null)
-                {
-                    originalHint = hintText.text;
-                    hintText.text = step.advance == AdvanceCondition.Click ? "아무 곳이나 클릭하면 계속합니다." : "안내한 조작을 완료하면 계속합니다.";
-                }
-            }
-            else if (child.name != "TutorialGuideBackground")
-            {
-                hiddenExamples.Add(new KeyValuePair<GameObject, bool>(child.gameObject, child.gameObject.activeSelf));
-                child.gameObject.SetActive(false);
-            }
-        }
-        // 실제 영웅 목록은 우측에 있으므로 기존 안내 상자를 좌측으로 옮겨 가림을 피한다.
-        messageBackground = background as RectTransform;
-        SetMessageWidth(messageBackground, MessageWidth + MessagePadding * 2);
-        MoveMessageLeft(messageBackground);
-        if (messageText != null)
-        {
-            ReduceMessageFont(messageText, 30f);
-            SetMessageWidth(messageText.rectTransform, MessageWidth);
-            MoveMessageLeft(messageText.rectTransform);
-            messageText.transform.SetAsLastSibling();
-        }
-        if (hintText != null)
-        {
-            ReduceMessageFont(hintText, 22f);
-            SetMessageWidth(hintText.rectTransform, MessageWidth);
-            MoveMessageLeft(hintText.rectTransform);
-            hintText.transform.SetAsLastSibling();
-        }
-    }
-
-    private void ReduceMessageFont(TMPro.TMP_Text text, float size)
-    {
-        messageFonts.Add(new KeyValuePair<TMPro.TMP_Text, Vector2>(text, new Vector2(text.fontSize, text.fontSizeMax)));
-        text.fontSize = Mathf.Min(text.fontSize, size);
-        text.fontSizeMax = Mathf.Min(text.fontSizeMax, size);
-    }
-
-    private void SetMessageWidth(RectTransform rect, float width)
-    {
-        if (rect == null) return;
-        messageSizes.Add(new KeyValuePair<RectTransform, Vector2>(rect, rect.sizeDelta));
-        rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-    }
-
-    private void PositionHeroMessage(RectTransform hero, RectTransform panel)
-    {
-        if (messageText == null || hero == null || panel == null) return;
-        var corners = new Vector3[4];
-        hero.GetWorldCorners(corners);
-        Vector2 left = panel.InverseTransformPoint(corners[0]);
-        Vector2 top = panel.InverseTransformPoint(corners[1]);
-        float x = left.x - HeroMessageGap - (MessageWidth + MessagePadding * 2) * .5f;
-        float y = (left.y + top.y) * .5f;
-        if (messageBackground != null)
-        {
-            messageBackground.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 220f);
-            messageBackground.anchoredPosition = new Vector2(x, y);
-        }
-        messageText.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 160f);
-        messageText.rectTransform.anchoredPosition = new Vector2(x, y);
-        if (hintText != null) hintText.rectTransform.anchoredPosition = new Vector2(x, y - 80f);
-    }
-
-    private void MoveMessageLeft(RectTransform rect)
-    {
-        if (rect == null) return;
-        messagePositions.Add(new KeyValuePair<RectTransform, Vector2>(rect, rect.anchoredPosition));
-        rect.anchoredPosition = new Vector2(-690f, rect.anchoredPosition.y);
+        messageBackground = step.messageBox;
+        messageText = step.sceneMessage;
+        hintText = step.sceneHint;
     }
 
     private void ShowHighlights(Step step)
     {
         var dim = currentPanel != null ? currentPanel : dimPanel;
         if (dim == null) return;
-        // 실제 입력 대상은 현재 Explanation의 자식, 배경용 UI는 그 아래에 둔다.
-        transform.SetAsLastSibling();
         var targets = PracticeTargets(step.advance);
         if (step.highlightIndices != null && highlightPools != null)
             foreach (int index in step.highlightIndices)
                 if (index >= 0 && index < highlightPools.Count) targets.Add(highlightPools[index]);
-        Canvas.ForceUpdateCanvases();
         foreach (var target in targets)
         {
-            if (target == null || target == dim ||
-                transform.IsChildOf(target.transform) ||
-                (dim != null && dim.transform.IsChildOf(target.transform))) continue;
+            if (target == null || target == dim || transform.IsChildOf(target.transform) ||
+                dim.transform.IsChildOf(target.transform)) continue;
             HideBackgroundCopy(target.transform);
-            Promote(target, dim.transform);
+            Promote(target, step.practiceLayer != null ? step.practiceLayer : dim.transform);
         }
-        Canvas.ForceUpdateCanvases();
-        var informationTargets = InformationTargets();
-        var gaugeGroup = sortingStates.FindAll(s => s.rect != null && informationTargets.Contains(s.rect.gameObject));
-        bool hasGauge = (step.advance == AdvanceCondition.CountEquals ||
-            step.advance == AdvanceCondition.CountMax || step.advance == AdvanceCondition.Confirmed) &&
-            gaugeGroup.Exists(s => s.rect.GetComponent<UnityEngine.UI.Slider>() != null);
-        if (hasGauge)
-        {
-            Rect bounds = TargetBounds((RectTransform)dim.transform, gaugeGroup);
-            bounds.yMax += InformationHeaderHeight;
-            KeepMessageClear((RectTransform)dim.transform, bounds);
-            gaugeGroup[0].border = CreateBoundsBorder((RectTransform)dim.transform, bounds);
-            OpenDimWindow((RectTransform)dim.transform, bounds);
-        }
-        foreach (var state in sortingStates)
-        {
-            if (state.rect.name == "TutorialGuideBackground") continue;
-            if (hasGauge && gaugeGroup.Contains(state)) continue;
-            state.border = state.rect.name == "Rest Count"
-                ? CreateBoundsBorder((RectTransform)dim.transform, new List<SortingState> { state })
-                : CreateHighlightBorder(state.rect);
-            if (state.rect.GetComponent<TutorialPublicityHeroCard>() != null)
-                PositionHeroMessage(state.rect, (RectTransform)dim.transform);
-        }
+        // 디밍·강조는 씬에 저장된 사각형이다. 실습 대상의 표시 순서만 올린다.
+        generatedOverlays.Clear();
+        if (step.sceneOverlays != null)
+            foreach (var overlay in step.sceneOverlays)
+                if (overlay != null && overlay.rect != null) generatedOverlays[overlay.key] = overlay.rect;
     }
 
-    private void KeepMessageClear(RectTransform panel, Rect information)
-    {
-        if (messageBackground == null) return;
-        var corners = new Vector3[4];
-        messageBackground.GetWorldCorners(corners);
-        float right = panel.InverseTransformPoint(corners[2]).x;
-        float shift = Mathf.Min(0, information.xMin - 32f - right);
-        if (shift == 0) return;
-        messageBackground.anchoredPosition += new Vector2(shift, 0);
-        if (messageText != null) messageText.rectTransform.anchoredPosition += new Vector2(shift, 0);
-        if (hintText != null) hintText.rectTransform.anchoredPosition += new Vector2(shift, 0);
-    }
+    private bool IsNestedMessage(RectTransform rect) => rect != null && messageBackground != null &&
+        rect != messageBackground && rect.IsChildOf(messageBackground);
 
-    private void OpenDimWindow(RectTransform panel, Rect window)
+    private void ApplyMessageText(ElementPresentation saved, TMPro.TMP_Text text, bool nestedCoordinates)
     {
-        dimImage = panel.GetComponent<UnityEngine.UI.Image>();
-        if (dimImage == null) return;
-        originalDimColor = dimImage.color;
-        var transparent = originalDimColor; transparent.a = 0;
-        dimImage.color = transparent;
-        // 원래 전체 화면 Graphic은 클릭을 차단한다. 실제 조작 대상은 그 위에 둔다.
-        Rect full = panel.rect;
-        window.xMin = Mathf.Clamp(window.xMin - 8, full.xMin, full.xMax);
-        window.xMax = Mathf.Clamp(window.xMax + 8, full.xMin, full.xMax);
-        window.yMin = Mathf.Clamp(window.yMin - 8, full.yMin, full.yMax);
-        window.yMax = Mathf.Clamp(window.yMax + 8, full.yMin, full.yMax);
-        AddDimRegion(panel, Rect.MinMaxRect(full.xMin, window.yMax, full.xMax, full.yMax));
-        AddDimRegion(panel, Rect.MinMaxRect(full.xMin, full.yMin, full.xMax, window.yMin));
-        AddDimRegion(panel, Rect.MinMaxRect(full.xMin, window.yMin, window.xMin, window.yMax));
-        AddDimRegion(panel, Rect.MinMaxRect(window.xMax, window.yMin, full.xMax, window.yMax));
-    }
-
-    private void AddDimRegion(RectTransform panel, Rect bounds)
-    {
-        if (bounds.width <= 0 || bounds.height <= 0) return;
-        var region = new GameObject("TutorialDimRegion", typeof(RectTransform), typeof(UnityEngine.UI.Image));
-        var rect = (RectTransform)region.transform;
-        rect.SetParent(panel, false);
-        rect.anchorMin = rect.anchorMax = panel.pivot;
-        rect.anchoredPosition = bounds.center;
-        rect.sizeDelta = bounds.size;
-        rect.SetAsFirstSibling();
-        var image = region.GetComponent<UnityEngine.UI.Image>();
-        image.color = originalDimColor;
-        image.raycastTarget = false;
-        dimRegions.Add(region);
-    }
-
-    private void RestoreDim()
-    {
-        if (dimImage != null) dimImage.color = originalDimColor;
-        dimImage = null;
-        foreach (var region in dimRegions)
-            if (region != null) { region.SetActive(false); if (Application.isPlaying) Destroy(region); else DestroyImmediate(region); }
-        dimRegions.Clear();
+        if (saved == null || text == null) return;
+        var rect = text.rectTransform;
+        if (nestedCoordinates || !IsNestedMessage(rect)) { saved.Apply(rect, text); return; }
+        // 이전 저장본은 설명 패널 좌표다. 그 좌표로 적용한 뒤 배경 자식 좌표로 변환한다.
+        var parent = rect.parent;
+        rect.SetParent(messageBackground.parent, false);
+        saved.Apply(rect, text);
+        var size = rect.rect.size; var position = rect.position;
+        rect.SetParent(parent, true);
+        rect.anchorMin = rect.anchorMax = ((RectTransform)parent).pivot;
+        rect.sizeDelta = size; rect.position = position;
     }
 
     private void HideBackgroundCopy(Transform target)
@@ -580,82 +594,11 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         rect.SetAsLastSibling();
     }
 
-    private static GameObject CreateBoundsBorder(RectTransform parent, List<SortingState> targets)
-        => CreateBoundsBorder(parent, TargetBounds(parent, targets));
-
-    private static Rect TargetBounds(RectTransform parent, List<SortingState> targets)
-    {
-        Vector2 min = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
-        Vector2 max = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
-        var corners = new Vector3[4];
-        foreach (var state in targets)
-        {
-            var rect = state.rect;
-            // 문자열의 textBounds는 갱신 시점에 따라 달라질 수 있으므로 실제 UI 사각형을 사용한다.
-            rect.GetWorldCorners(corners);
-            foreach (var point in corners)
-            {
-                Vector2 local = parent.InverseTransformPoint(point);
-                min = Vector2.Min(min, local); max = Vector2.Max(max, local);
-            }
-        }
-        return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
-    }
-
-    private static GameObject CreateBoundsBorder(RectTransform parent, Rect bounds)
-    {
-        var border = CreateHighlightBorder(parent);
-        var borderRect = (RectTransform)border.transform;
-        borderRect.anchorMin = borderRect.anchorMax = parent.pivot;
-        borderRect.pivot = new Vector2(.5f, .5f);
-        borderRect.anchoredPosition = bounds.center;
-        borderRect.sizeDelta = bounds.size + new Vector2(16, 16);
-        return border;
-    }
-
-    private static GameObject CreateHighlightBorder(RectTransform target)
-    {
-        var root = new GameObject("TutorialHighlightBorder", typeof(RectTransform), typeof(UnityEngine.UI.LayoutElement));
-        root.GetComponent<UnityEngine.UI.LayoutElement>().ignoreLayout = true;
-        var rect = (RectTransform)root.transform;
-        rect.SetParent(target, false);
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = new Vector2(-4, -4);
-        rect.offsetMax = new Vector2(4, 4);
-        AddBorderEdge(rect, "Top", new Vector2(0, 1), Vector2.one, new Vector2(0, -3), Vector2.zero);
-        AddBorderEdge(rect, "Bottom", Vector2.zero, new Vector2(1, 0), Vector2.zero, new Vector2(0, 3));
-        AddBorderEdge(rect, "Left", Vector2.zero, new Vector2(0, 1), Vector2.zero, new Vector2(3, 0));
-        AddBorderEdge(rect, "Right", new Vector2(1, 0), Vector2.one, new Vector2(-3, 0), Vector2.zero);
-        return root;
-    }
-
-    private static void AddBorderEdge(RectTransform parent, string name, Vector2 min, Vector2 max,
-        Vector2 offsetMin, Vector2 offsetMax)
-    {
-        var edge = new GameObject(name, typeof(RectTransform), typeof(UnityEngine.UI.Image));
-        var rect = (RectTransform)edge.transform;
-        rect.SetParent(parent, false);
-        rect.anchorMin = min;
-        rect.anchorMax = max;
-        rect.offsetMin = offsetMin;
-        rect.offsetMax = offsetMax;
-        var image = edge.GetComponent<UnityEngine.UI.Image>();
-        image.color = new Color(1f, .82f, .15f, 1f);
-        image.raycastTarget = false;
-    }
-
     private void RestoreSorting()
     {
         for (int i = sortingStates.Count - 1; i >= 0; i--)
         {
             var s = sortingStates[i];
-            if (s.border != null)
-            {
-                s.border.SetActive(false);
-                if (Application.isPlaying) Destroy(s.border);
-                else DestroyImmediate(s.border);
-            }
             if (s.keepParent)
             {
                 // GraphicRaycaster는 Canvas에 의존하므로 먼저 해제한다.

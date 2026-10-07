@@ -965,24 +965,98 @@ MonoBehaviour:
     Selection_Index: 1A
     Trigger_Type: Flag
     Trigger_Value:
+    - Flag_UMT2RetryAvailable==1
+    Selection_Text: 
+    Target_Talk_ID: 4361610
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC7AC\uC804\uD22C"
+  - Branch_ID: 43601
+    Selection_Index: 2C
+    Trigger_Type: Flag
+    Trigger_Value:
     - Flag_MainQuest3-2Complete==1
     Selection_Text: 
     Target_Talk_ID: 4361020
     Trigger_Effect: 
     "\uBE44\uACE0": "\uB85C\uB2C8\uC640 \uB9CC\uB0A8(\uBA54\uC778 3-2 \uC644\uB8CC)"
-  - Branch_ID: 0
-    Selection_Index: 2A
-    Trigger_Type: 
-    Trigger_Value: []
+  - Branch_ID: 43601
+    Selection_Index: 3C
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1Complete==1
+    - Flag_MainQuest3-1HelpProtesters
     Selection_Text: 
-    Target_Talk_ID: 0
+    Target_Talk_ID: 4361210
     Trigger_Effect: 
-    "\uBE44\uACE0": 
-  - Branch_ID: 0
-    Selection_Index: 
+    "\uBE44\uACE0": "\uC2DC\uC704\uB300 \uBCF4\uD638(\uBA54\uC778 3-1 \uC644\uB8CC)"
+  - Branch_ID: 43601
+    Selection_Index: 4A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_MainQuest3-1Complete==1
+    - Flag_MainQuest3-1Subjugation
+    Selection_Text: 
+    Target_Talk_ID: 4361310
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC804\uC6D0 \uD1A0\uBC8C(\uBA54\uC778 3-1 \uC644\uB8CC)"
+  - Branch_ID: 43601
+    Selection_Index: 5
     Trigger_Type: 
     Trigger_Value: []
     Selection_Text: 
-    Target_Talk_ID: 0
+    Target_Talk_ID: 4361410
     Trigger_Effect: 
     "\uBE44\uACE0": "\uAE30\uBCF8 \uC870\uC6B0"
+  - Branch_ID: 43602
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: Start_BE261
+    "\uBE44\uACE0": "\uC804\uD22C \uC9C4\uC785"
+  - Branch_ID: 43603
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==1
+    Selection_Text: 
+    Target_Talk_ID: 4362010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "\uC804\uD22C \uC2B9\uB9AC"
+  - Branch_ID: 43603
+    Selection_Index: 2A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_BattleResult==0
+    Selection_Text: 
+    Target_Talk_ID: 4362110
+    Trigger_Effect: Set_Flag_UMT2RetryAvailable
+    "\uBE44\uACE0": "\uC804\uD22C \uD328\uBC30"
+  - Branch_ID: 43604
+    Selection_Index: 1
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 0
+    Trigger_Effect: 'Reward_207001\
+
+      Set_Flag_UMT2Clear'
+    "\uBE44\uACE0": "\uC804\uD22C \uC2B9\uB9AC \uBCF4\uC0C1"
+  - Branch_ID: 43605
+    Selection_Index: 1A
+    Trigger_Type: Flag
+    Trigger_Value:
+    - Flag_UMT2Clear
+    Selection_Text: 
+    Target_Talk_ID: 4360011
+    Trigger_Effect: 
+    "\uBE44\uACE0": "UMT \uC7AC\uB4F1\uC7A5"
+  - Branch_ID: 43605
+    Selection_Index: 2
+    Trigger_Type: 
+    Trigger_Value: []
+    Selection_Text: 
+    Target_Talk_ID: 4363010
+    Trigger_Effect: 
+    "\uBE44\uACE0": "UMT \uCD5C\uCD08 \uB4F1\uC7A5"

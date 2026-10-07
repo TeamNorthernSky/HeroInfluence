@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -35,7 +35,7 @@ public class SystemMenuController : MonoBehaviour
 
         if (WorldEventNpcPanelSelector.BlocksSystemMenuEscape) return;
         // 홍보 실습은 지정된 닫기 단계까지 유지한다. ESC로 실제 창을 닫으면 과제가 진행 불가능해진다.
-        if (TutorialExploreUIController.BlocksSystemMenuEscape) return;
+        if (TutorialExploreUIController.BlocksSystemMenuEscape || JC.Tutorial.JcTutorialExploreGuide.BlocksSystemMenuEscape) return;
 
         // [JC 260619] DH 엔딩 시퀀스(대형 아이콘 출력) 진행 중에는 ESC로 시스템 메뉴를 열지 않는다.
         if (DHGameEndState.IsEnding) return;

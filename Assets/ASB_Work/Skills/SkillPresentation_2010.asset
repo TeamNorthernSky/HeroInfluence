@@ -21,7 +21,7 @@ MonoBehaviour:
     Timeline: {fileID: 11400000, guid: 3be935cb8ee942d438d22b76ef70f710, type: 2}
     TargetCount: 0
     Segments: []
-  ImpactTiming: 0
+  ImpactTiming: 1
   AnimationStateName: Base Layer.ClassSkill_2
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -31,11 +31,19 @@ MonoBehaviour:
   SfxVolume: 1
   EnableHitEffect: 1
   HitEffectId: 98003
+  ScaleHitEffectWithBattleSpeed: 1
+  HitEffectAtTargetRoot: 1
+  HitEffectOffset: {x: 0, y: 0.8, z: 0}
   ProjectileVisual:
     Prefab: {fileID: 48239427848257567, guid: 38ca255449e7fdd458c3c5e60a0d58b0, type: 3}
     Speed: 6
     Trajectory: 1
-    ArcHeight: 1.2
+    ArcHeight: 0.35
+    Acceleration: 0.8
+    AccelerationMultiplier: 3
+    TargetOffset: {x: 0, y: 0.8, z: 0}
+    PreserveRootFlightTime: 1
+    HideVisualOnArrival: 1
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -44,8 +52,8 @@ MonoBehaviour:
     TimeoutGraceSeconds: 1
     TimeoutSeconds: 5
     DeliveryMode: 0
-    UsePreparedCharge: 0
-    ChargeInstanceKey: 
+    UsePreparedCharge: 1
+    ChargeInstanceKey: charge
     TargetFormationCenter: 0
   ImpactDeliveryMode: 0
   CustomImpactTimeoutSeconds: 5
@@ -88,7 +96,7 @@ MonoBehaviour:
       - CueName: fire
         EffectIds: 
         SoundIds: 
-        Operation: 2
+        Operation: 1
         InstanceKey: charge
         Anchor: 1
         Socket: 8

@@ -20,6 +20,7 @@ public class TutorialCutSceneManager : MonoBehaviour
     [SerializeField] private GameObject skipPopup;
     private readonly List<RaycastResult> pointerHits = new List<RaycastResult>();
     private int popupClosedFrame = -1;
+    // 다음에 표시할 컷의 인덱스. 표시 중인 마지막 컷은 currentIndex - 1이다.
     private int currentIndex = 0;
     private GameObject currentImage = null;
     private bool transitioning;
@@ -33,6 +34,9 @@ public class TutorialCutSceneManager : MonoBehaviour
         {
             item.gameObject.SetActive(false);
         }
+        currentIndex = 0;
+        currentImage = null;
+        if (CutScenes.Count > 0) GoNextCutScene();
     }
 
     // Update is called once per frame
@@ -151,10 +155,10 @@ public class TutorialCutSceneManager : MonoBehaviour
 
     void GoPreviousCutScene()
     {
-        if (currentIndex < 1) return;
+        if (currentIndex <= 1) return;
         currentImage.gameObject.SetActive(false);
         --currentIndex;
-        currentImage = CutScenes[currentIndex];
+        currentImage = CutScenes[currentIndex - 1];
 
     }
 

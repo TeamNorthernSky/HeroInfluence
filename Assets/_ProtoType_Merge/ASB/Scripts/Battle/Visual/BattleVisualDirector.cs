@@ -38,7 +38,7 @@ public class BattleVisualDirector : MonoBehaviour
         PlaySound(presentation.HitSoundId, targetTransform, presentation.SfxVolume);
     }
 
-    public void PlayHitEffect(BattleCharactor target, int skillIndex)
+    public void PlayHitEffect(BattleCharactor target, int skillIndex, float playbackSpeed = 1f)
     {
         SkillPresentationData presentation = _catalog?.Get(skillIndex);
         if (presentation == null)
@@ -53,6 +53,7 @@ public class BattleVisualDirector : MonoBehaviour
         Transform socket = profile != null && profile.HitEffectSocket != null
             ? profile.HitEffectSocket
             : (target != null ? target.transform : null);
+        if (presentation.HitEffectAtTargetRoot && target != null) socket = target.transform;
 
         if (presentation.EnableHitEffect)
         {
@@ -60,7 +61,7 @@ public class BattleVisualDirector : MonoBehaviour
             // 재료 프리팹은 프리젠터/이벤트가 담당 → director는 스폰하지 않음.
             if (prefab != null && socket != null)
             {
-                GameObject instance = Instantiate(prefab, socket.position, socket.rotation);
+                GameObject instance = Instantiate(prefab, socket.position + presentation.HitEffectOffset, socket.rotation);
 
                 // HealOrbitVfx는 parameterless Play()로는 현재 루트 좌표를 쓰므로,
                 // 힐 대상의 월드 좌표를 명시해 발밑에서 시작시킨다. 이 호출은 프리팹의
@@ -72,7 +73,12 @@ public class BattleVisualDirector : MonoBehaviour
                 }
                 else
                 {
-                    instance.GetComponent<JC.VFX.VfxEffect>()?.Play();
+                    var effect = instance.GetComponent<JC.VFX.VfxEffect>();
+                    if (effect != null)
+                    {
+                        if (presentation.ScaleHitEffectWithBattleSpeed) effect.PlaybackSpeed = playbackSpeed;
+                        effect.Play();
+                    }
                 }
             }
         }

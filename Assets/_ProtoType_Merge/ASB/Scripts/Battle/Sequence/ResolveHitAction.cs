@@ -100,7 +100,7 @@ namespace ASB.Work.Battle.Sequence
                 return;
             }
 
-            _visual?.PlayHitEffect(_target, result.SkillIndex);
+            _visual?.PlayHitEffect(_target, result.SkillIndex, _battleSpeed);
             _visual?.ShowDamagePopup(result);
         }
 

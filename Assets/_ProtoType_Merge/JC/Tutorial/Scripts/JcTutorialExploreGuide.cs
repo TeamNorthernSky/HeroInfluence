@@ -10,6 +10,18 @@ namespace JC.Tutorial
     public sealed class JcTutorialExploreGuide : MonoBehaviour
     {
         private const string Prefix = "jc.explore.guide.v2.";
+        private const string PublicityCompletedKey = "KJ.Tutorial.Publicity.AfterFirstVictory";
+        [Header("홍보 이후 점령전·협회 안내")]
+        public TutorialOutpostObject captureOutpost;
+        [SerializeField, Tooltip("레벨 재생성 후 점령 대상을 다시 찾을 기존 건물 식별자입니다.")]
+        private string captureOutpostKey = "tutorial_outpost:38_8";
+        public Vector2Int captureEntryCell = new Vector2Int(38, 7);
+        private bool showingAssociationEntry;
+        [Header("홍보 이후 화면 이동 안내")]
+        [TextArea, Tooltip("홍보를 마친 뒤 디밍된 설명 창에서 한 번 안내하는 카메라 이동 방법입니다.")]
+        public string cameraScrollExplanation = "화면 밖에도 이동할 수 있는 목표가 있습니다.\nW A S D 키로 지도를 위·왼쪽·아래·오른쪽으로 움직일 수 있습니다.\n확인 후 D키를 눌러 오른쪽의 목표를 찾아보세요.";
+        [TextArea, Tooltip("설명 확인 후 목표가 화면 안에 들어올 때까지 표시하는 실습 안내입니다. 이동력은 사용하지 않습니다.")]
+        public string cameraScrollPractice = "D키를 누르고 있으면 지도가 오른쪽으로 이동합니다.\n빛나는 목표가 화면 안에 들어올 때까지 이동하세요.\n필요하면 W A S D 키로 화면 위치를 조절할 수 있습니다.";
         [Header("기존 씬 연결")]
         [Tooltip("현재 이동 목표를 읽습니다. 이동 순서·규칙은 변경하지 않습니다.")] public TutorialMovementConstraint movement;
         [Tooltip("목표 위치와 지면 높이를 읽는 그리드입니다.")] public GridManager grid;
@@ -66,6 +78,15 @@ namespace JC.Tutorial
         private bool externalPresentation;
         public int PresentationOpenedFrame { get; private set; } = -1;
         public string CurrentGuideStep { get; private set; }
+        private bool awaitingTutorialTurn;
+        private int guidedTurn;
+        // 설명 차단막은 월드/스크롤 차단을 유지하고 턴 종료 버튼의 클릭만 통과시킨다.
+        public RectTransform AllowedInputTarget => awaitingTutorialTurn && explanationKey == null &&
+            !releaseShieldPending && !WorldInputGate.IsTurnResolving && turnManager != null &&
+            !turnManager.IsTurnAdvancing && turnManager.CurrentTurn == guidedTurn ? nextTurn : null;
+        public static bool BlocksSystemMenuEscape => ModalManager.Top != null &&
+            ModalManager.Top.GetComponent<JcTutorialDismissSurface>() is JcTutorialDismissSurface surface &&
+            surface.guide != null && surface.guide.isActiveAndEnabled && !surface.guide.externalPresentation;
 
         private void OnEnable() { LevelLoader.RuntimeLevelLoaded += OnLevelLoaded; }
         private void Start()
@@ -73,7 +94,7 @@ namespace JC.Tutorial
             JcTutorialGuideView.BindWordWrapping(quest); JcTutorialGuideView.BindWordWrapping(introTitle);
             ApplyQuestShadow();
             InstallScrollGuards();
-            BindRepository(); CaptureItems();
+            BindRepository(); CaptureItems(); ResolveCaptureOutpost();
             nextTurnButton = nextTurn != null ? nextTurn.GetComponent<Button>() : null;
             if (turnManager != null) originalTurnControl = turnManager.TurnControlEnabled;
             if (nextTurnButton != null) originalTurnButton = nextTurnButton.interactable;
@@ -146,7 +167,7 @@ namespace JC.Tutorial
         private readonly List<Shadow> questImageShadows = new List<Shadow>();
         private void InstallScrollGuards()
         {
-            if (nextTurn != null) JcTutorialScrollGuard.Install(nextTurn.parent as RectTransform);
+            if (nextTurn != null) JcTutorialScrollGuard.Install(nextTurn, true);
             foreach (var image in FindObjectsByType<RawImage>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (image.gameObject.scene == gameObject.scene && image.name == "MiniMap")
                     JcTutorialScrollGuard.Install(image.rectTransform);
@@ -161,6 +182,7 @@ namespace JC.Tutorial
         private bool exiting;
         private void OnDestroy()
         {
+            JcBuildingSilhouetteFeature.ClearTutorialHighlight(this);
             foreach (var entry in questMaterials)
             {
                 if (entry.text != null && entry.text.fontSharedMaterial == entry.shadow) entry.text.fontSharedMaterial = entry.original;
@@ -170,7 +192,32 @@ namespace JC.Tutorial
             foreach (var shadow in questImageShadows) if (shadow != null) { if (Application.isPlaying) Destroy(shadow); else DestroyImmediate(shadow); }
             questImageShadows.Clear();
         }
-        private void OnLevelLoaded(LevelLoader loader) { if (loader == levelLoader) CaptureItems(); }
+        private void OnLevelLoaded(LevelLoader loader)
+        {
+            if (loader != levelLoader) return;
+            // 레벨 로더가 기존 오브젝트를 폐기하므로 다음 갱신에서 새 인스턴스를 찾는다.
+            captureOutpost = null;
+            showingAssociationEntry = false;
+            CaptureItems();
+        }
+        private void ResolveCaptureOutpost()
+        {
+            if (captureOutpost != null && captureOutpost.gameObject.scene == gameObject.scene)
+            {
+                captureOutpostKey = captureOutpost.ObjectKey;
+                return;
+            }
+            captureOutpost = null;
+            if (string.IsNullOrEmpty(captureOutpostKey)) return;
+            foreach (var root in gameObject.scene.GetRootGameObjects())
+            foreach (var candidate in root.GetComponentsInChildren<TutorialOutpostObject>(true))
+            {
+                if (candidate.gameObject.scene != gameObject.scene || candidate.ObjectKey != captureOutpostKey) continue;
+                captureOutpost = candidate;
+                showingAssociationEntry = false;
+                return;
+            }
+        }
         private void CaptureItems()
         {
             items.Clear();
@@ -205,11 +252,20 @@ namespace JC.Tutorial
             float delta = lastTime < 0 ? 0 : Mathf.Clamp(time - lastTime, 0, .1f); lastTime = time;
             if (view == null || goal == null || repository == null || grid == null || movement == null || parties == null) { Hide(); return; }
             ObserveCombat();
-            if (repository.TutorialCompleted || Seen("first-combat") || repository.PendingCombatSourceType == TutorialCombatSourceType.Enemy || !movement.isActiveAndEnabled || !movement.ConstraintEnabled) { Hide(); return; }
+            if (repository.TutorialCompleted || repository.PendingCombatSourceType != TutorialCombatSourceType.None || !movement.isActiveAndEnabled || !movement.ConstraintEnabled) { Hide(); return; }
             var party = parties.PlayerParty;
             if (party == null) { Hide(); return; }
             movement.SetGuidanceTarget(this, null);
+            JcBuildingSilhouetteFeature.ClearTutorialHighlight(this);
             bool otherModal = ModalManager.HasAny && ModalManager.Top != explanationShield;
+            if (awaitingTutorialTurn && !otherModal)
+            {
+                if (WorldInputGate.IsTurnResolving || (turnManager != null && turnManager.IsTurnAdvancing)) return;
+                if (repository.CurrentTurn > guidedTurn && party.RemainingMovePoints > 0)
+                {
+                    awaitingTutorialTurn = false; SetShield(false); view.SetVisible(false);
+                }
+            }
             if (otherModal || WorldInputGate.IsTurnResolving)
             {
                 if (movementGaugePulse != null) movementGaugePulse.Suspend(true);
@@ -219,12 +275,13 @@ namespace JC.Tutorial
             }
             if (movementGaugePulse != null) movementGaugePulse.Suspend(false);
             if (releaseShieldPending) return;
+            if (Seen("first-combat")) { RefreshPostBattleGuidance(party, time); return; }
             bool learningMovement = repository.CurrentTurn == 1 && !Seen("exhausted") && !Seen("restored");
             SetTurnAvailable(!learningMovement);
             if (explanationKey != null)
             {
                 CurrentGuideStep = explanationKey;
-                SetShield(true); SetContinue(true); view.SetVisible(true, explanationFocus); HideMarker(); return;
+                SetShield(true); SetContinue(true); view.SetVisible(true, explanationFocus, ExplanationStyle(explanationKey)); HideMarker(); return;
             }
             bool hasTarget = movement.CurrentTargetCells.Count > 0;
             bool moving = party.IsMoving;
@@ -240,10 +297,11 @@ namespace JC.Tutorial
             }
             EndIntro();
             if (moving) { ShowAction("moving", "탐사 · 이동", movingText); HideMarker(); return; }
-            if (movement.CurrentOrder == 2 && !Seen("move-gauge-pulse") && movementGauge != null && movementGaugePulse != null)
+            if (movement.CurrentOrder == 2 && !Seen("move-gauge-pulse") && movementGauge != null)
             {
-                movementGaugePulse.Begin(movementGauge);
-                Mark("move-gauge-pulse");
+                if (movementGaugePulse != null) movementGaugePulse.Stop();
+                Explain("move-gauge-pulse", "이동력 확인", "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다.", movementGauge, time);
+                return;
             }
             // 두 번의 실제 이동 후 도착이 필요 없는 체험용 목표를 표시한다. 이동력·이동 순서는 변경하지 않는다.
             if (party.RemainingMovePoints <= 0)
@@ -304,7 +362,7 @@ namespace JC.Tutorial
                 if (!repository.IsItemCollected(item.key) || Seen("resource-" + item.type)) continue;
                 Explain("resource-" + item.type, ResourceName(item.type) + " 획득",
                     $"{ResourceName(item.type)} {item.amount}개를 획득했습니다. {ResourceUse(item.type)}\n보유량은 화면 상단에서 확인할 수 있습니다.",
-                    resourceHud != null ? resourceHud.GetResourceAnchor(item.type) : null, time); return;
+                    ResourceBlock(item.type), time); return;
             }
             if (nearest != null)
             {
@@ -331,13 +389,110 @@ namespace JC.Tutorial
             ShowAction("enemy-approach", "첫 전투", "표시된 빌런을 선택한 뒤 한 번 더 눌러 접근하세요.");
             ShowMarker(enemy.GetCurrentGrid(), time);
         }
+        private void RefreshPostBattleGuidance(PartyGridMover party, float time)
+        {
+            ResolveCaptureOutpost();
+            // 복귀 상태 복원과 홍보의 마지막 확인이 끝나기 전에는 이동을 허용하지 않는다.
+            if (!repository.IsMessageSeen(PublicityCompletedKey) || captureOutpost == null)
+            {
+                view.SetVisible(false); HideMarker(); SetTurnAvailable(false); return;
+            }
+            bool claimed = repository.TryGetOutpostState(captureOutpost.ObjectKey, out var state) &&
+                state == TutorialOutpostClaimState.HeroClaimed;
+            if (claimed)
+            {
+                if (!showingAssociationEntry)
+                {
+                    foreach (var selection in FindObjectsByType<ClickSelectionController>(FindObjectsSortMode.None))
+                        if (selection.gameObject.scene == gameObject.scene) selection.ClearMovePreview();
+                    showingAssociationEntry = true;
+                }
+                if (!Seen("association-entry-explanation"))
+                {
+                    SetTurnAvailable(false);
+                    movement.SetGuidanceTarget(this, null);
+                    if (explanationKey != "association-entry-explanation")
+                        Explain("association-entry-explanation", "협회 입장", "점령한 건물을 더블클릭하여 협회에 입장할 수 있습니다.\n이 안내를 닫은 뒤, 연녹색 외곽선으로 강조된 건물을 더블클릭하세요.", null, time);
+                    return;
+                }
+                CurrentGuideStep = "association-entry";
+                SetShield(false); SetContinue(false); view.SetVisible(false);
+                JcBuildingSilhouetteFeature.SetTutorialHighlight(this, captureOutpost.transform, view.accent);
+                SetQuest("점령한 건물을 더블클릭하세요");
+                SetTurnAvailable(false);
+                movement.SetGuidanceTarget(this, null);
+                HideMarker();
+                return;
+            }
+            showingAssociationEntry = false;
+            if (!Seen("camera-scroll-explanation"))
+            {
+                SetTurnAvailable(false);
+                SetQuest("W A S D 키로 화면을 이동하는 방법을 확인하세요");
+                // 설명을 매 프레임 다시 열면 클릭을 연 프레임으로 취급하여 닫을 수 없다.
+                if (explanationKey != "camera-scroll-explanation")
+                    Explain("camera-scroll-explanation", "화면 이동", cameraScrollExplanation, null, time);
+                return;
+            }
+            if (!Seen("camera-scroll-practice") && !party.IsMoving)
+            {
+                var camera = Camera.main;
+                Vector3 target = grid.GridToWorldCenter(captureEntryCell);
+                target.y = grid.GetCellSurfaceY(captureEntryCell);
+                bool visible = camera != null && camera.gameObject.scene == gameObject.scene &&
+                    IsCaptureTargetVisible(camera.WorldToViewportPoint(target));
+                if (!visible)
+                {
+                    SetTurnAvailable(false);
+                    SetQuest("D키로 오른쪽 화면을 이동하여 목표를 찾으세요");
+                    ShowAction("camera-scroll-practice", "화면 이동 연습", cameraScrollPractice);
+                    ShowMarker(captureEntryCell, time);
+                    // 카메라는 기존 WASD 입력을 사용하고, 목표를 찾는 동안 월드 이동 선택만 막는다.
+                    movement.SetGuidanceTarget(this, null);
+                    return;
+                }
+                Mark("camera-scroll-practice");
+            }
+            SetTurnAvailable(true);
+            if (party.IsMoving)
+            {
+                ShowAction("capture-moving", "점령전으로 이동", movingText); HideMarker(); return;
+            }
+            if (party.RemainingMovePoints <= 0)
+            {
+                SetQuest("턴을 종료하여 이동력을 회복하세요");
+                ShowAction("end-turn", "다음 턴", "턴 종료 버튼을 눌러 이동력을 회복한 뒤\n목표 지점으로 계속 이동하세요.", nextTurn);
+                HideMarker(); return;
+            }
+            SetQuest("표시된 전투 진입 지점으로 이동하세요");
+            ShowAction("capture-approach", "건물 점령", "표시된 목표 지점을 선택한 뒤\n한 번 더 눌러 이동하세요.");
+            ShowMarker(captureEntryCell, time);
+        }
+        // 우측 퀘스트·상하 HUD에서 떨어진 영역에 목표가 들어와야 클릭 안내로 전환한다.
+        internal static bool IsCaptureTargetVisible(Vector3 viewport)
+            => viewport.z > 0 && viewport.x >= .12f && viewport.x <= .78f &&
+               viewport.y >= .24f && viewport.y <= .86f;
+
+        private RectTransform ResourceBlock(ResourceType type)
+        {
+            // HUD 숫자가 아닌 아이콘·숫자를 포함한 기존 블록 Image의 경계를 사용한다.
+            var label = resourceHud != null ? resourceHud.GetResourceAnchor(type) : null;
+            if (label == null) return null;
+            return label.parent is RectTransform block && block.GetComponent<Image>() != null ? block : label;
+        }
+        private static JcTutorialGuideView.FocusPresentation ExplanationStyle(string key)
+        {
+            if (key == "camera-scroll-explanation" || key == "association-entry-explanation") return JcTutorialGuideView.FocusPresentation.DimmedExplanation;
+            if (key == "exhausted" || key == "move-gauge-pulse") return JcTutorialGuideView.FocusPresentation.Spotlight;
+            return key != null && key.StartsWith("resource-") ? JcTutorialGuideView.FocusPresentation.ResourceBlock : JcTutorialGuideView.FocusPresentation.PointerAbove;
+        }
         private void Explain(string key, string title, string text, RectTransform focus, float time)
         {
             explanationKey = key; explanationFocus = focus;
             PresentationOpenedFrame = Time.frameCount;
             view.blockPanelRaycasts = true;
             CurrentGuideStep = key; view.SetContent("탐사 · " + title, text);
-            SetShield(true); SetContinue(true); view.SetVisible(true, focus); HideMarker();
+            SetShield(true); SetContinue(true); view.SetVisible(true, focus, ExplanationStyle(key)); HideMarker();
         }
         public void ContinueExplanation()
         {
@@ -369,9 +524,12 @@ namespace JC.Tutorial
         }
         private void ShowAction(string step, string title, string text, RectTransform focus = null)
         {
-            CurrentGuideStep = step; SetShield(false); SetContinue(false);
+            CurrentGuideStep = step;
+            bool turnGuidance = step == "end-turn";
+            if (turnGuidance && !awaitingTutorialTurn) { awaitingTutorialTurn = true; guidedTurn = repository.CurrentTurn; }
+            SetShield(turnGuidance); SetContinue(false);
             view.blockPanelRaycasts = false;
-            view.SetContent(title, text); view.SetVisible(true, focus);
+            view.SetContent(title, text); view.SetVisible(true, focus, turnGuidance ? JcTutorialGuideView.FocusPresentation.Spotlight : JcTutorialGuideView.FocusPresentation.PointerAbove);
         }
         private void SetTurnAvailable(bool available)
         {
@@ -473,12 +631,13 @@ namespace JC.Tutorial
             if (introBox != null) introBox.gameObject.SetActive(value);
             if (introTitle != null) introTitle.gameObject.SetActive(value);
         }
-        private void EndIntro() { showingIntro = false; SetIntroVisible(false); SetShield(false); }
+        private void EndIntro() { if (!showingIntro) return; showingIntro = false; SetIntroVisible(false); SetShield(false); }
         private void Hide()
         {
+            JcBuildingSilhouetteFeature.ClearTutorialHighlight(this);
             if (movement != null) movement.ClearGuidanceTarget(this);
             if (movementGaugePulse != null) movementGaugePulse.Stop();
-            releaseShieldPending = false; showingIntro = false;
+            releaseShieldPending = false; showingIntro = false; awaitingTutorialTurn = false;
             if (view != null) view.SetVisible(false);
             HideMarker(); SetContinue(false); SetShield(false); SetIntroVisible(false); SetTurnAvailable(true);
         }
