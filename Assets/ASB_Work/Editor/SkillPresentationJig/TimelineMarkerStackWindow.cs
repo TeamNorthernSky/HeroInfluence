@@ -88,6 +88,9 @@ namespace ASB.Work.EditorTools.Jig
                     }
                     return "Signal · " + signal.Kind;
 
+                case PresentationSfxMarker sfx:
+                    return "SFX · " + (string.IsNullOrEmpty(sfx.SfxKey) ? "(키 없음)" : sfx.SfxKey);
+
                 case PresentationSpeedMarker speed:
                     return $"Speed · {speed.Speed:0.##}x";
 
@@ -115,6 +118,7 @@ namespace ASB.Work.EditorTools.Jig
                 }
             }
             if (marker is PresentationSpeedMarker) return new Color(0.35f, 0.85f, 0.40f);
+            if (marker is PresentationSfxMarker) return new Color(0.98f, 0.68f, 0.22f);
             if (marker is PresentationSectionMarker section)
                 return section.Boundary == PresentationSectionBoundary.Start
                     ? new Color(0.35f, 0.55f, 1.00f)
@@ -202,6 +206,7 @@ namespace ASB.Work.EditorTools.Jig
                 }
             }
             if (marker is CueMarker) return 20;
+            if (marker is PresentationSfxMarker) return 21;
             if (marker is PresentationSpeedMarker) return 30;
             return 100;
         }
@@ -430,6 +435,16 @@ namespace ASB.Work.EditorTools.Jig
 
     [CustomTimelineEditor(typeof(PresentationSpeedMarker))]
     public sealed class PresentationSpeedMarkerStackEditor : MarkerEditor
+    {
+        public override MarkerDrawOptions GetMarkerOptions(IMarker marker) =>
+            TimelineMarkerStackOverlay.Options(marker);
+
+        public override void DrawOverlay(IMarker marker, MarkerUIStates uiState, MarkerOverlayRegion region) =>
+            TimelineMarkerStackOverlay.Draw(marker, region);
+    }
+
+    [CustomTimelineEditor(typeof(PresentationSfxMarker))]
+    public sealed class PresentationSfxMarkerStackEditor : MarkerEditor
     {
         public override MarkerDrawOptions GetMarkerOptions(IMarker marker) =>
             TimelineMarkerStackOverlay.Options(marker);
