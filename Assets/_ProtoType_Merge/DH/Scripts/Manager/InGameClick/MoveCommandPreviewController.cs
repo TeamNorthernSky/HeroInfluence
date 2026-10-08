@@ -83,6 +83,7 @@ public class MoveCommandPreviewController
             var host = new GameObject("Zone Guidance Arrow (Generated)") { hideFlags = HideFlags.DontSave, layer = marker.gameObject.layer };
             host.transform.SetParent(pathPreviewRenderer.transform, false);
             guidanceArrow = host.AddComponent<JC.Tutorial.JcTutorialWorldMarker>();
+            guidanceArrow.ControlsMovementGuidance = false;
             guidanceArrow.indicatorShader = arrowShader;
             guidanceArrow.movementIndicator = indicator;
         }
