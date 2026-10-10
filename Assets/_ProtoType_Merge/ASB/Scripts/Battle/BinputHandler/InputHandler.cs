@@ -537,7 +537,7 @@ public class InputHandler : MonoBehaviour
             return;
 
         if (!HostageFriendlyFireResolver.TryGetPreviewCells(hostage, skill,
-                out ASBGridCell mainCell, out List<ASBGridCell> previewCells))
+                out ASBGridCell mainCell, out List<ASBGridCell> previewCells, actor))
             return;
 
         var splashCells = new List<ASBGridCell>();

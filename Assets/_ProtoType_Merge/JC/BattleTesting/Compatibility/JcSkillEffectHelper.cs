@@ -44,7 +44,7 @@ namespace ASB.Work.Battle.SkillExecution
                 IsRangedAttack = skillRange > 0,
                 BonusCritRate = bonusCritRate,
                 TargetAvoidRateReduction = targetAvoidRateReduction,
-                CanTriggerCounter = !isAdditionalHit && !isCounterAttack && skillRange == 0 && target.IsInFrontRow,
+                CanTriggerCounter = !isAdditionalHit && !isCounterAttack && skillRange == 0 && target.IsFrontRow(),
                 IsCounterAttack = isCounterAttack
             };
             context.IsCritical = sharedIsCritical ?? JcCombatCalculator.RollCritical(context);
@@ -79,7 +79,7 @@ namespace ASB.Work.Battle.SkillExecution
                 IsRangedAttack = skillRange > 0,
                 BonusCritRate = bonusCritRate,
                 TargetAvoidRateReduction = targetAvoidRateReduction,
-                CanTriggerCounter = !isAdditionalHit && !isCounterAttack && skillRange == 0 && target.IsInFrontRow,
+                CanTriggerCounter = !isAdditionalHit && !isCounterAttack && skillRange == 0 && target.IsFrontRow(),
                 IsCounterAttack = isCounterAttack
             };
             context.IsCritical = JcCombatCalculator.RollCritical(context);

@@ -41,8 +41,39 @@ namespace ASB.Work.Battle.SkillExecution
             }
 
             var result = SkillExecutionResult.SuccessResult(context.Caster, context.Skill);
+            // 인질 부수피해가 이 칸 목록을 그대로 쓴다(범위 계산을 핸들러 하나로 통일).
+            result.AffectedCells = new List<ASBGridCell>(context.ResolvedCells);
             ApplySkill(context, result);
             return result;
+        }
+
+        /// <summary>
+        /// 유닛 없이 중심 칸만으로 이 핸들러의 타격 칸을 해석합니다(인질이 중심인 경우 등).
+        /// Execute와 같은 <see cref="ResolveAffectedArea"/>를 사용합니다.
+        /// </summary>
+        public List<ASBGridCell> ResolveAreaCells(BattleCharactor caster, SkillData skillData, ASBGridCell centerCell)
+        {
+            if (skillData == null || centerCell == null)
+            {
+                return new List<ASBGridCell>();
+            }
+
+            var context = new SkillExecutionContext
+            {
+                Caster = caster,
+                Skill = skillData,
+                SelectedCell = centerCell,
+                PrimaryCell = centerCell
+            };
+
+            ResolveAffectedArea(context);
+            return context.ResolvedCells;
+        }
+
+        /// <summary>주 대상 칸이 아닌 범위 칸에 맞는 대상의 배율. 인질 부수피해도 이 값을 쓴다.</summary>
+        public virtual float ResolveSplashMultiplier(SkillData skillData)
+        {
+            return skillData != null ? skillData.skillValue : 0f;
         }
 
         /// <summary>데미지 적용 없이 최종 타격 대상만 해석합니다. 발판 프리뷰용.</summary>
@@ -235,8 +266,13 @@ namespace ASB.Work.Battle.SkillExecution
             else if (HeroSkillRules.IsFamily(context.Skill, 1030))
             {
                 coords = new HashSet<Vector2Int> { context.PrimaryCell.Coords };
-                if (context.PrimaryTarget.IsInFrontRow)
-                    coords.Add(context.PrimaryCell.Coords + new Vector2Int(context.Caster.IsPlayer ? 1 : -1, 0));
+                // 인질 중심(PrimaryTarget 없음)은 고정 좌표로 전열 판정한다(적 전열 x==2, 아군 전열 x==1).
+                bool isFrontRow = context.PrimaryTarget != null
+                    ? context.PrimaryTarget.IsInFrontRow
+                    : context.PrimaryCell.Coords.x == 1 || context.PrimaryCell.Coords.x == 2;
+                bool towardEnemySide = context.Caster != null ? context.Caster.IsPlayer : context.PrimaryCell.Coords.x >= 2;
+                if (isFrontRow)
+                    coords.Add(context.PrimaryCell.Coords + new Vector2Int(towardEnemySide ? 1 : -1, 0));
             }
             else if (context.Skill.classSkillTarget == 2 || context.Skill.skillKey == "HCS005" || context.Skill.skillKey == "HCS002")
             {
@@ -372,13 +408,24 @@ namespace ASB.Work.Battle.SkillExecution
                 return SkillExecutionResult.Failed();
             }
 
-            List<BattleCharactor> candidates = TargetAroundRandomHelper.CollectValidAdditionalTargets(
-                caster, target, skillData, centerCell);
-            List<BattleCharactor> selectedTargets = SelectAdditionalTargets(caster, target, candidates, skillData);
+            // 타격 칸은 중심 1칸뿐이다. 주변 칸은 아래 무작위 선택으로만 맞는다(인질 부수피해도 이 목록을 따른다).
+            result.AffectedCells = new List<ASB.Work.BattleGrid.GridCell> { centerCell };
+
+            // 후보: 패턴 내 상대 유닛 + (플레이어 공격이면) 안전한 인질. 한 풀에서 같은 확률로 뽑는다.
+            var candidates = new List<ISkillTarget>(TargetAroundRandomHelper.CollectValidAdditionalTargets(
+                caster, target, skillData, centerCell));
+            candidates.AddRange(TargetAroundRandomHelper.CollectHostageCandidates(caster, skillData, centerCell));
+
+            List<ISkillTarget> selectedTargets = SelectAdditionalTargets(caster, target, candidates, skillData);
             for (int i = 0; i < selectedTargets.Count; i++)
             {
-                BattleCharactor extraTarget = selectedTargets[i];
-                if (extraTarget == null)
+                if (selectedTargets[i] is HostageBattleActor hostage)
+                {
+                    ApplyAdditionalHostageDamage(caster, hostage, skillData, result);
+                    continue;
+                }
+
+                if (!(selectedTargets[i] is BattleCharactor extraTarget) || extraTarget == null)
                 {
                     continue;
                 }
@@ -412,11 +459,30 @@ namespace ASB.Work.Battle.SkillExecution
             return result;
         }
 
-        protected virtual List<BattleCharactor> SelectAdditionalTargets(
+        protected virtual List<ISkillTarget> SelectAdditionalTargets(
             BattleCharactor caster, BattleCharactor mainTarget,
-            List<BattleCharactor> candidates, SkillData skillData)
+            List<ISkillTarget> candidates, SkillData skillData)
         {
             return TargetAroundRandomHelper.SelectAdditionalTargets(candidates, skillData);
+        }
+
+        /// <summary>
+        /// 인질이 주 대상일 때의 추가 인질. 인질 대상 경로는 인질 피해만 처리하므로 후보는 주변 인질로 한정한다.
+        /// </summary>
+        public List<HostageBattleActor> PickAdditionalHostages(
+            BattleCharactor caster, HostageBattleActor mainHostage,
+            SkillData skillData, ASB.Work.BattleGrid.GridCell centerCell)
+        {
+            List<HostageBattleActor> candidates =
+                TargetAroundRandomHelper.CollectHostageCandidates(caster, skillData, centerCell);
+            candidates.Remove(mainHostage);
+            return TargetAroundRandomHelper.SelectAdditionalTargets(candidates, skillData);
+        }
+
+        /// <summary>추가 대상 1명에게 적용하는 배율. 기본은 주 배율과 같다.</summary>
+        public virtual float ResolveAdditionalMultiplier(SkillData skillData)
+        {
+            return skillData != null ? skillData.skillValue : 0f;
         }
 
         protected virtual void ApplyMainEffect(
@@ -443,6 +509,11 @@ namespace ASB.Work.Battle.SkillExecution
 
         // 추가 데미지 구현
         protected virtual void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
+        {
+        }
+
+        // 추가 대상으로 뽑힌 인질 피해 구현
+        protected virtual void ApplyAdditionalHostageDamage(BattleCharactor caster, HostageBattleActor hostage, SkillData skillData, SkillExecutionResult result)
         {
         }
 

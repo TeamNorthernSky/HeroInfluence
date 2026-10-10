@@ -413,6 +413,25 @@ public class BattleManager : MonoBehaviour
         // 대신 맞기 연출: 캐스트마다 새 인스턴스(반격이 이 루틴을 재진입하므로 공유 상태 금지).
         var guardSwap = new GuardSwapPresenter(this);
 
+        // 인질(시민) 피해: 전투 파이프라인(CommitDamage)을 타지 않고 ApplyFriendlyDamage로 확정한다.
+        // 체인 볼트가 닿는 시점에 적용하고, 연출이 취소·누락돼도 아래 스윕이 1회 확정한다(멱등).
+        var hostageCommits = new List<Func<BattleHitResult>>(result.HostageHitContexts.Count);
+        for (int i = 0; i < result.HostageHitContexts.Count; i++)
+        {
+            HostageHitContext hostageHit = result.HostageHitContexts[i];
+            bool hostageCommitted = false;
+            Func<BattleHitResult> hostageCommit = () =>
+            {
+                if (hostageCommitted) return null;
+                hostageCommitted = true;
+                if (HostageFriendlyFireResolver.ApplyHits(new[] { hostageHit }).Count > 0)
+                    _visualDirector?.PlayHitEffectAt(hostageHit.Hostage.transform, hostageHit.SkillIndex);
+                return null;
+            };
+            hostageCommits.Add(hostageCommit);
+            pendingCommits.Add(hostageCommit);
+        }
+
         if (result.DamageContexts != null)
         {
             TryApplyGuardRedirect(result); // 대신 맞기: 단일 공격이 보호 중 대상에 들어오면 가디언으로 재지정
@@ -461,11 +480,11 @@ public class BattleManager : MonoBehaviour
                 Presentation.ChainState = Presentation.ResolveChainStateForCast(result);
                 if (Presentation.ChainState != null)
                 {
-                    Presentation.PrepareChainTargets(result.DamageContexts, SkillPresentationDirector.NextActionInstanceId());
+                    Presentation.PrepareChainTargets(result.DamageContexts, result.HostageHitContexts, SkillPresentationDirector.NextActionInstanceId());
                 }
                 else
                 {
-                    Presentation.PrepareChainTargets(result.DamageContexts, 0);
+                    Presentation.PrepareChainTargets(result.DamageContexts, result.HostageHitContexts, 0);
                 }
 
                 var slotContexts = new List<DamageContext>();
@@ -588,6 +607,27 @@ public class BattleManager : MonoBehaviour
                     {
                         yield return WaitForBattleSeconds(delay);
                     }
+                }
+
+                // 체인이 주변 인질을 뽑았으면 볼트가 그 인질에 닿은 뒤 피해를 확정한다(적 추가 대상과 같은 규칙).
+                for (int i = 0; i < hostageCommits.Count; i++)
+                {
+                    HostageHitContext hostageHit = result.HostageHitContexts[i];
+                    bool chainBroken = Presentation.ChainState != null && Presentation.ChainState.IsCancelled;
+                    if (!chainBroken && hostageHit?.Hostage != null)
+                    {
+                        if (Presentation.ChainState != null && chainPrimaryPresented && Presentation.ChainActionInstanceId > 0)
+                        {
+                            yield return Presentation.WaitForPresentationImpactRoutine(
+                                hostageHit.Hostage.transform, _presentationCatalog?.Get(hostageHit.SkillIndex));
+                        }
+                        else
+                        {
+                            yield return WaitForBattleSeconds(0.12f);
+                        }
+                    }
+
+                    hostageCommits[i]();
                 }
                 }
             }
@@ -931,12 +971,15 @@ public class BattleManager : MonoBehaviour
 
         bool hitApplied = false;
 
+        // 맞을 인질(핸들러 범위 + 체인이 뽑은 주변 인질)은 연출 전에 규칙으로 확정해 둔다.
+        List<HostageHitContext> hostageHits = HostageFriendlyFireResolver.BuildSkillHits(actor, target, skillData);
+
         // 피해는 인질 규칙(ApplyFriendlyDamage, 스플래시 포함)으로 분기하고, 연출은 적 대상과 동일한
         // 공유 엔진(SkillActionCommand → RunSkillSequenceCore)을 재사용한다. 인질은 ISkillTarget으로만
         // 참여하므로 BattleCharactor로 캐스팅/컴포넌트 추가하지 않는다. 피격 리액션/데미지팝업은 인질에 없음.
         System.Func<BattleHitResult> onHit = () =>
         {
-            List<HostageBattleActor> hitHostages = HostageFriendlyFireResolver.ApplySkillDamage(actor, target, skillData);
+            List<HostageBattleActor> hitHostages = HostageFriendlyFireResolver.ApplyHits(hostageHits);
             for (int i = 0; i < hitHostages.Count; i++)
             {
                 HostageBattleActor hitHostage = hitHostages[i];
@@ -949,9 +992,11 @@ public class BattleManager : MonoBehaviour
         };
 
         // 인질 경로는 ApplySkillExecutionResultRoutine(적 피해 파이프라인)을 우회하므로 체인 상태를 직접 초기화한다.
-        // (이전 캐스트 누수 방지 + 인질은 추가 체인 대상이 없는 단일 대상 Primary 볼트로 처리)
+        // (이전 캐스트 누수 방지 + Primary 볼트로 처리. 체인이 뽑은 주변 인질은 번개가 이어지도록 대상만 넘기고,
+        //  피해는 onHit에서 함께 확정한다 — 도달 신호 동기는 하지 않으므로 id 0)
         Presentation.ChainState = null;
         Presentation.ResetCastState();
+        Presentation.PrepareChainTargets(null, hostageHits, 0);
         Presentation.ChainRole = DamageRole.Primary;
         _pendingReviveCommit = null; // 인질 경로는 부활을 만들지 않는다. 이전 캐스트 잔여 참조 제거.
 
@@ -1059,17 +1104,20 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        // 인질 부수피해의 중심 칸은 피해 확정 '전'에 스냅샷한다.
+        // 인질 부수피해 칸은 피해 확정 '전'에 스냅샷한다. 칸은 핸들러가 이번 실행에서 해석한 범위를 그대로 쓴다.
         // 확정 뒤에 판정하면 대상이 이번 공격으로 죽었는지에 따라 결과가 뒤집힌다.
-        GridCellRef hostageCollateralCenter =
-            HostageFriendlyFireResolver.CaptureCollateralCenter(actor, target, classSkillRow);
+        List<GridCellRef> hostageCollateralCells =
+            HostageFriendlyFireResolver.CaptureCollateralCells(actor, target, classSkillRow, result);
 
         bool executed = false;
         yield return StartCoroutine(ApplySkillExecutionResultRoutine(result, success => executed = success));
 
         if (executed)
         {
-            HostageFriendlyFireResolver.ApplyCollateralDamage(actor, hostageCollateralCenter, classSkillRow);
+            List<HostageBattleActor> collateralHits =
+                HostageFriendlyFireResolver.ApplyCollateralDamage(actor, hostageCollateralCells, classSkillRow);
+            for (int i = 0; i < collateralHits.Count; i++)
+                _visualDirector?.PlayHitEffectAt(collateralHits[i].transform, classSkillRow.skillIndex);
             OnActionExecuted?.Invoke(GetSkillDisplayName(classSkillRow));
             OnSkillResolved?.Invoke(new SkillResolutionContext(
                 actor,
@@ -1094,28 +1142,17 @@ public class BattleManager : MonoBehaviour
 
         // 투사체 전달 결과는 더 이상 반격 성립에 관여하지 않는다. 연출은 규칙을 취소할 수 없다.
         var candidates = result.DamageContexts
-            .Where(ctx => ctx != null && ctx.CanTriggerCounter)
+            .Where(ctx => ctx != null && ctx.CanTriggerCounter && CounterattackRules.IsEligibleHit(ctx))
             .Select(ctx => ctx.Target)
             .Distinct()
-            .Where(t => t != null && !t.IsDead && t.IsPlayer != originalCaster.IsPlayer);
+            .Where(t => t != null && !t.IsDead && t.IsFrontRow() && t.IsPlayer != originalCaster.IsPlayer);
 
         foreach (BattleCharactor defender in candidates)
         {
             SkillData skill = defender.SelectedSkillData;
-            if (skill == null) continue;
-
-            if (skill.classSkillEffect == ClassSkillEffect_Heal
-                || skill.classSkillEffect == ClassSkillEffect_Revive
-                || skill.classSkillEffect == ClassSkillEffect_Buff)
+            if (!CounterattackRules.CanDefenderCounter(defender, skill))
             {
-                Debug.Log($"[Combat] {defender.UnitName} 반격 스킬({skill.skillIndex})이 데미지 스킬이 아니어서 반격 제외");
-                continue;
-            }
-
-            // [2026-10-02 변경] 반격에 쓸 스킬(선택 스킬)이 근거리일 때만 반격한다. 확률 판정 전에 거른다.
-            if (!IsMeleeSkillRange(defender, skill))
-            {
-                Debug.Log($"[Combat] {defender.UnitName} 반격 스킬({skill.skillIndex})이 근거리가 아니어서 반격 제외");
+                Debug.Log($"[Combat] {defender.UnitName} 반격 제외: 전열/상태/공격 스킬 조건 불충족 (skill={skill?.skillIndex.ToString() ?? "null"})");
                 continue;
             }
 
@@ -1143,20 +1180,13 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        if (req.Skill.classSkillEffect == ClassSkillEffect_Heal
-            || req.Skill.classSkillEffect == ClassSkillEffect_Revive
-            || req.Skill.classSkillEffect == ClassSkillEffect_Buff)
+        // 수집 후 위치나 충전 상태가 바뀌어도 실행 시점의 조건을 적용한다.
+        if (!CounterattackRules.CanDefenderCounter(req.Defender, req.Skill))
         {
             yield break;
         }
 
-        // [2026-10-02 변경] 근거리 반격 스킬만 실행한다. 수집 단계에서 이미 거르지만, 다른 경로로 만든 요청도 막는 방어선.
-        if (!IsMeleeSkillRange(req.Defender, req.Skill))
-        {
-            yield break;
-        }
-
-        Debug.Log($"[Combat] {req.Defender.UnitName} 근접 반격 발동! (계수 0.5)");
+        Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 0.5)");
 
         // 반격은 커스텀 핸들러를 무시하고 기본 데미지 경로만 사용합니다.
         // Influence 소모 없음, 데미지 계수 0.5, 반격은 반격을 유발하지 않습니다.
@@ -1287,7 +1317,7 @@ public class BattleManager : MonoBehaviour
             CanTriggerCounter = options.CanTriggerCounter
                 && !options.IsCounterAttack
                 && IsMeleeSkillRange(actor, skillData)
-                && target.IsInFrontRow,
+                && target.IsFrontRow(),
             IsCounterAttack = options.IsCounterAttack
         };
         context.IsCritical = CombatCalculator.RollCritical(context);
@@ -1391,12 +1421,7 @@ public class BattleManager : MonoBehaviour
 
     private static bool CanTriggerCounterattack(DamageContext context)
     {
-        if (context == null || context.IsCounterAttack || context.Caster == null || context.Target == null)
-        {
-            return false;
-        }
-
-        if (context.Target.IsDead || !context.Target.IsInFrontRow)
+        if (!CounterattackRules.IsEligibleHit(context))
         {
             return false;
         }
@@ -1420,7 +1445,8 @@ public class BattleManager : MonoBehaviour
         }
 
 
-        return IsMeleeSkillRange(context.Caster, matchedSkill);
+        return matchedSkill.classSkillEffect == ClassSkillEffect_Damage
+            && IsMeleeSkillRange(context.Caster, matchedSkill);
     }
 
     internal static bool IsMeleeSkillRange(BattleCharactor actor, SkillData skillData)

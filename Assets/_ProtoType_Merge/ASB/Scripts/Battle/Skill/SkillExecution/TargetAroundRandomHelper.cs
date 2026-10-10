@@ -100,24 +100,53 @@ namespace ASB.Work.Battle.SkillExecution
             return validTargets;
         }
 
-        public static List<BattleCharactor> SelectAdditionalTargets(
-            List<BattleCharactor> candidates,
+        /// <summary>
+        /// 패턴(중심 제외, 중심과 같은 진영) 칸에 있는 안전한 인질. 플레이어의 공격 스킬일 때만 후보가 된다.
+        /// </summary>
+        public static List<HostageBattleActor> CollectHostageCandidates(
+            BattleCharactor caster,
+            SkillData skill,
+            ASBGridCell centerCell)
+        {
+            var hostages = new List<HostageBattleActor>();
+            ASBGridManager gridManager = ASBGridManager.Instance;
+            if (centerCell == null || gridManager == null || !HostageFriendlyFireResolver.CanTargetHostages(caster, skill))
+            {
+                return hostages;
+            }
+
+            var splashCells = new List<ASBGridCell>();
+            CollectSplashCells(centerCell.Coords, skill, gridManager, centerCell, splashCells);
+            for (int i = 0; i < splashCells.Count; i++)
+            {
+                HostageBattleActor hostage = splashCells[i].GetComponentInChildren<HostageBattleActor>(true);
+                if (hostage != null && hostage.IsSafe && !hostages.Contains(hostage))
+                {
+                    hostages.Add(hostage);
+                }
+            }
+
+            return hostages;
+        }
+
+        public static List<T> SelectAdditionalTargets<T>(
+            List<T> candidates,
             SkillData skill)
         {
             if (candidates == null || candidates.Count == 0 || skill == null)
             {
-                return new List<BattleCharactor>();
+                return new List<T>();
             }
 
             if (skill.multiTargetType != MultiTargetTypeRandom)
             {
-                return new List<BattleCharactor>(candidates);
+                return new List<T>(candidates);
             }
 
             int pickCount = Mathf.Max(1, skill.multiTargetCount);
             pickCount = Mathf.Min(pickCount, candidates.Count);
-            var pool = new List<BattleCharactor>(candidates);
-            var picked = new List<BattleCharactor>(pickCount);
+            var pool = new List<T>(candidates);
+            var picked = new List<T>(pickCount);
             for (int i = 0; i < pickCount; i++)
             {
                 int index = Random.Range(0, pool.Count);

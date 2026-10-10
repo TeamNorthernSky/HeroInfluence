@@ -13,6 +13,14 @@ namespace ASB.Work.Battle.SkillExecution
         public List<DamageContext> DamageContexts { get; private set; } = new List<DamageContext>();
         public List<HealContext> HealContexts { get; private set; } = new List<HealContext>();
         public List<StatusEffectContext> StatusEffectContexts { get; private set; } = new List<StatusEffectContext>();
+        /// <summary>인질(시민) 피해. 전투유닛 파이프라인(CommitDamage) 대신 ApplyFriendlyDamage로 확정한다.</summary>
+        public List<HostageHitContext> HostageHitContexts { get; private set; } = new List<HostageHitContext>();
+
+        /// <summary>
+        /// 핸들러가 실제로 해석한 타격 칸. 인질 부수피해 범위의 단일 원본이다.
+        /// null이면 핸들러가 칸을 해석하지 않은 경로(기본 경로·전용 Execute)다.
+        /// </summary>
+        public List<ASB.Work.BattleGrid.GridCell>? AffectedCells { get; set; }
         public CombatEventStream EventStream { get; private set; } = new CombatEventStream();
         private readonly List<BattleHitResult> resolvedHitResults = new List<BattleHitResult>();
         public IReadOnlyList<ICombatEvent> Events => EventStream.Events;
@@ -73,6 +81,17 @@ namespace ASB.Work.Battle.SkillExecution
             if (context.Caster != null && context.Target != null)
             {
                 DamageContexts.Add(context);
+                Success = true;
+            }
+
+            return this;
+        }
+
+        public SkillExecutionResult AddHostageHit(HostageHitContext context)
+        {
+            if (context != null && context.Caster != null && context.Hostage != null)
+            {
+                HostageHitContexts.Add(context);
                 Success = true;
             }
 

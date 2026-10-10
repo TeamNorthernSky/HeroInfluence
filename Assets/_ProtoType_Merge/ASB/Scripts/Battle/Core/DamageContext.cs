@@ -31,4 +31,18 @@ namespace ASB.Work.Battle.Core
         /// <summary>대신 맞기로 재지정되기 전 원래 대상(B). null=재지정 안 됨. 연출 스왑 앵커용.</summary>
         public BattleCharactor RedirectedFrom;
     }
+
+    /// <summary>
+    /// 인질(시민) 피해 컨텍스트. 전투 규칙(크리/반격/사망)을 타지 않고 ApplyFriendlyDamage로만 확정한다.
+    /// 체인 라이트닝 등 TargetAroundRandom이 시민을 추가 대상으로 뽑으면 Role=Additional로 생성된다.
+    /// </summary>
+    public class HostageHitContext
+    {
+        public BattleCharactor Caster;
+        public HostageBattleActor Hostage;
+        public DamageRole Role = DamageRole.Primary;
+        /// <summary>인질 방어력 적용 전 피해(시전자 공격력 × 배율).</summary>
+        public float RawDamage;
+        public int SkillIndex;
+    }
 }

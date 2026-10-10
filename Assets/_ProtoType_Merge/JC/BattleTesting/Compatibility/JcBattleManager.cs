@@ -1138,28 +1138,17 @@ public class JcBattleManager : MonoBehaviour
 
         // 투사체 전달 결과는 더 이상 반격 성립에 관여하지 않는다. 연출은 규칙을 취소할 수 없다.
         var candidates = result.DamageContexts
-            .Where(ctx => ctx != null && ctx.CanTriggerCounter)
+            .Where(ctx => ctx != null && ctx.CanTriggerCounter && CounterattackRules.IsEligibleHit(ctx))
             .Select(ctx => ctx.Target)
             .Distinct()
-            .Where(t => t != null && !t.IsDead && t.IsPlayer != originalCaster.IsPlayer);
+            .Where(t => t != null && !t.IsDead && t.IsFrontRow() && t.IsPlayer != originalCaster.IsPlayer);
 
         foreach (BattleCharactor defender in candidates)
         {
             SkillData skill = defender.SelectedSkillData;
-            if (skill == null) continue;
-
-            if (skill.classSkillEffect == ClassSkillEffect_Heal
-                || skill.classSkillEffect == ClassSkillEffect_Revive
-                || skill.classSkillEffect == ClassSkillEffect_Buff)
+            if (!CounterattackRules.CanDefenderCounter(defender, skill))
             {
-                Debug.Log($"[Combat] {defender.UnitName} 반격 스킬({skill.skillIndex})이 데미지 스킬이 아니어서 반격 제외");
-                continue;
-            }
-
-            // [2026-10-02 변경] 반격에 쓸 스킬(선택 스킬)이 근거리일 때만 반격한다. 확률 판정 전에 거른다.
-            if (!IsMeleeSkillRange(defender, skill))
-            {
-                Debug.Log($"[Combat] {defender.UnitName} 반격 스킬({skill.skillIndex})이 근거리가 아니어서 반격 제외");
+                Debug.Log($"[Combat] {defender.UnitName} 반격 제외: 전열/상태/공격 스킬 조건 불충족 (skill={skill?.skillIndex.ToString() ?? "null"})");
                 continue;
             }
 
@@ -1189,20 +1178,13 @@ public class JcBattleManager : MonoBehaviour
             yield break;
         }
 
-        if (req.Skill.classSkillEffect == ClassSkillEffect_Heal
-            || req.Skill.classSkillEffect == ClassSkillEffect_Revive
-            || req.Skill.classSkillEffect == ClassSkillEffect_Buff)
+        // 수집 후 위치나 충전 상태가 바뀌어도 실행 시점의 조건을 적용한다.
+        if (!CounterattackRules.CanDefenderCounter(req.Defender, req.Skill))
         {
             yield break;
         }
 
-        // [2026-10-02 변경] 근거리 반격 스킬만 실행한다. 수집 단계에서 이미 거르지만, 다른 경로로 만든 요청도 막는 방어선.
-        if (!IsMeleeSkillRange(req.Defender, req.Skill))
-        {
-            yield break;
-        }
-
-        Debug.Log($"[Combat] {req.Defender.UnitName} 근접 반격 발동! (계수 0.5)");
+        Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 0.5)");
 
         // 반격은 커스텀 핸들러를 무시하고 기본 데미지 경로만 사용합니다.
         // Influence 소모 없음, 데미지 계수 0.5, 반격은 반격을 유발하지 않습니다.
@@ -1338,7 +1320,7 @@ public class JcBattleManager : MonoBehaviour
             CanTriggerCounter = options.CanTriggerCounter
                 && !options.IsCounterAttack
                 && IsMeleeSkillRange(actor, skillData)
-                && target.IsInFrontRow,
+                && target.IsFrontRow(),
             IsCounterAttack = options.IsCounterAttack
         };
         context.IsCritical = JcCombatCalculator.RollCritical(context);
@@ -1459,12 +1441,7 @@ public class JcBattleManager : MonoBehaviour
 
     private static bool CanTriggerCounterattack(DamageContext context)
     {
-        if (context == null || context.IsCounterAttack || context.Caster == null || context.Target == null)
-        {
-            return false;
-        }
-
-        if (context.Target.IsDead || !context.Target.IsInFrontRow)
+        if (!CounterattackRules.IsEligibleHit(context))
         {
             return false;
         }
@@ -1488,7 +1465,8 @@ public class JcBattleManager : MonoBehaviour
         }
 
 
-        return IsMeleeSkillRange(context.Caster, matchedSkill);
+        return matchedSkill.classSkillEffect == ClassSkillEffect_Damage
+            && IsMeleeSkillRange(context.Caster, matchedSkill);
     }
 
     // 원본 함수 대응: BattleManager.IsMeleeSkillRange (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Core/BattleManager.cs)

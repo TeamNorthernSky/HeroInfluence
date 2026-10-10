@@ -72,7 +72,7 @@ public sealed class SectorTwoEnemyAiTests
 
         Type handlerType = FindType("ASB.Work.Battle.SkillExecution.HitTargetAroundRandomHandler");
         object handler = Activator.CreateInstance(handlerType);
-        IList candidates = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(FindType("BattleCharactor")));
+        IList candidates = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(FindType("ISkillTarget")));
         candidates.Add(back);
         object selected = handlerType.GetMethod("SelectAdditionalTargets", BindingFlags.NonPublic | BindingFlags.Instance)
             .Invoke(handler, new[] { self, front, candidates, combo });

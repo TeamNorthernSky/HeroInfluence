@@ -617,8 +617,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         currentHp = 0f;
         RemoveStatusEffect(StatusEffectType.guarded);
 
-        // 대열 경계(minX/maxX)는 '생존한' 팀원만으로 계산된다. 죽은 순간 경계가 바뀌므로
-        // 남은 팀원의 대열 패시브(전열 CounterRate / 후열 CriticalRate)를 다시 계산해야 한다.
+        // 사망 후 남은 팀원의 대열 패시브(고정 전열 CounterRate / 후열 CriticalRate)를 다시 계산한다.
         // IsDead=true 이후에 호출해야 이 유닛이 경계 계산에서 빠진다.
         RefreshFormationPassiveStatsForAllUnits();
 
@@ -807,8 +806,8 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     }
     private void ApplyFormationPassiveModifiers()
     {
-        // CounterRate는 현재 0~1 스케일을 사용하므로 +30%는 +0.3으로 적용합니다.
-        if (IsInFrontRow)
+        // 고정 전열(아군 x=1, 적군 x=2)에 CounterRate +30%를 적용합니다.
+        if (IsFrontRow())
         {
             finalStats.CounterRate += 0.3f;
         }

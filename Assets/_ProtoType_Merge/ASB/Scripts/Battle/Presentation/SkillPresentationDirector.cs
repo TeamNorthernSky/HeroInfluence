@@ -89,7 +89,16 @@ public sealed partial class SkillPresentationDirector
     /// <summary>이번 캐스트의 체인 추가 대상을 준비한다.</summary>
     public void PrepareChainTargets(IReadOnlyList<DamageContext> contexts, int actionInstanceId)
     {
-        _chainLightningTargets = BuildChainLightningTargets(contexts);
+        PrepareChainTargets(contexts, null, actionInstanceId);
+    }
+
+    /// <summary>이번 캐스트의 체인 추가 대상(전투유닛 + 체인이 뽑은 인질)을 준비한다.</summary>
+    public void PrepareChainTargets(
+        IReadOnlyList<DamageContext> contexts,
+        IReadOnlyList<HostageHitContext> hostageHits,
+        int actionInstanceId)
+    {
+        _chainLightningTargets = BuildChainLightningTargets(contexts, hostageHits);
         _chainLightningActionInstanceId = actionInstanceId;
     }
 
@@ -104,24 +113,41 @@ public sealed partial class SkillPresentationDirector
         _chainLightningActionInstanceId = 0;
     }
 
-    private static List<Transform> BuildChainLightningTargets(IReadOnlyList<DamageContext> contexts)
+    private static List<Transform> BuildChainLightningTargets(
+        IReadOnlyList<DamageContext> contexts,
+        IReadOnlyList<HostageHitContext> hostageHits)
     {
         var targets = new List<Transform>();
         var seen = new HashSet<Transform>();
-        if (contexts == null)
+
+        if (contexts != null)
         {
-            return targets;
+            for (int i = 0; i < contexts.Count; i++)
+            {
+                DamageContext context = contexts[i];
+                Transform targetTransform = context?.Role == DamageRole.Additional && context.Target != null
+                    ? context.Target.transform
+                    : null;
+                if (targetTransform != null && seen.Add(targetTransform))
+                {
+                    targets.Add(targetTransform);
+                }
+            }
         }
 
-        for (int i = 0; i < contexts.Count; i++)
+        // 체인이 뽑은 인질도 번개가 이어지는 끝점이다(BattleManager가 이 순서대로 도달을 기다린다).
+        if (hostageHits != null)
         {
-            DamageContext context = contexts[i];
-            Transform targetTransform = context?.Role == DamageRole.Additional && context.Target != null
-                ? context.Target.transform
-                : null;
-            if (targetTransform != null && seen.Add(targetTransform))
+            for (int i = 0; i < hostageHits.Count; i++)
             {
-                targets.Add(targetTransform);
+                HostageHitContext hit = hostageHits[i];
+                Transform hostageTransform = hit?.Role == DamageRole.Additional && hit.Hostage != null
+                    ? hit.Hostage.transform
+                    : null;
+                if (hostageTransform != null && seen.Add(hostageTransform))
+                {
+                    targets.Add(hostageTransform);
+                }
             }
         }
 
@@ -134,12 +160,21 @@ public sealed partial class SkillPresentationDirector
         SkillPresentationData presentation,
         HitDeliveryGate deliveryGate = null)
     {
-        if (target == null || _chainLightningActionInstanceId <= 0)
+        return WaitForPresentationImpactRoutine(target != null ? target.transform : null, presentation, deliveryGate);
+    }
+
+    /// <summary>체인 볼트가 해당 Transform(인질 등)에 실제로 닿을 때까지 기다린다. 체인 연출이 없으면 즉시 반환.</summary>
+    public IEnumerator WaitForPresentationImpactRoutine(
+        Transform targetTransform,
+        SkillPresentationData presentation,
+        HitDeliveryGate deliveryGate = null)
+    {
+        if (targetTransform == null || _chainLightningActionInstanceId <= 0)
         {
             yield break;
         }
 
-        ImpactKey key = new ImpactKey(_chainLightningActionInstanceId, target.transform.GetInstanceID());
+        ImpactKey key = new ImpactKey(_chainLightningActionInstanceId, targetTransform.GetInstanceID());
         yield return CustomEffectImpactAction.WaitForImpactKeyRoutine(presentation, key, deliveryGate, false);
     }
 

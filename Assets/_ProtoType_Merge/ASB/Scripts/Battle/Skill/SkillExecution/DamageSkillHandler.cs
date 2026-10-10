@@ -289,6 +289,12 @@ namespace ASB.Work.Battle.SkillExecution
 
     public sealed class PiercingDashSkillHandler : BaseAoESkillHandler
     {
+        // 뒤 칸(주 대상 외)은 skillSubValue로 맞는다. 뒤 칸 인질도 같은 배율.
+        public override float ResolveSplashMultiplier(SkillData skillData)
+        {
+            return skillData != null ? skillData.skillSubValue : 0f;
+        }
+
         protected override void ApplySkill(SkillExecutionContext context, SkillExecutionResult result)
         {
             foreach (var target in context.ResolvedTargets)
@@ -340,9 +346,9 @@ namespace ASB.Work.Battle.SkillExecution
     {
         private static readonly HashSet<int> MissingSubValueWarnings = new HashSet<int>();
 
-        protected override List<BattleCharactor> SelectAdditionalTargets(
+        protected override List<ISkillTarget> SelectAdditionalTargets(
             BattleCharactor caster, BattleCharactor mainTarget,
-            List<BattleCharactor> candidates, SkillData skillData)
+            List<ISkillTarget> candidates, SkillData skillData)
         {
             if (skillData.skillIndex != 200052)
                 return base.SelectAdditionalTargets(caster, mainTarget, candidates, skillData);
@@ -360,11 +366,11 @@ namespace ASB.Work.Battle.SkillExecution
                     opponents.Add(unit);
             List<BattleCharactor> back = opponents.FindAll(TargetingHelper.IsUnitInBackRow);
             List<BattleCharactor> pool = back.Count > 0 ? back : opponents;
-            return pool.Count == 0 ? new List<BattleCharactor>()
-                : new List<BattleCharactor> { pool[UnityEngine.Random.Range(0, pool.Count)] };
+            return pool.Count == 0 ? new List<ISkillTarget>()
+                : new List<ISkillTarget> { pool[UnityEngine.Random.Range(0, pool.Count)] };
         }
 
-        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
+        public override float ResolveAdditionalMultiplier(SkillData skillData)
         {
             float multiplier = skillData.skillSubValue;
             if (multiplier <= 0f)
@@ -374,6 +380,26 @@ namespace ASB.Work.Battle.SkillExecution
                         $"key={skillData.skillKey}, index={skillData.skillIndex}");
                 multiplier = skillData.skillValue;
             }
+            return multiplier;
+        }
+
+        protected override void ApplyAdditionalHostageDamage(BattleCharactor caster, HostageBattleActor hostage, SkillData skillData, SkillExecutionResult result)
+        {
+            // 추가 대상 인질도 적 추가 대상과 같은 배율(skillSubValue)을 쓴다. 확정은 볼트 도달 시 BattleManager가 한다.
+            result.AddHostageHit(new HostageHitContext
+            {
+                Caster = caster,
+                Hostage = hostage,
+                Role = DamageRole.Additional,
+                RawDamage = HostageFriendlyFireResolver.ComputeRawDamage(caster, ResolveAdditionalMultiplier(skillData)),
+                SkillIndex = skillData.skillIndex
+            });
+            Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> Hostage {hostage.HostageId} (additional)");
+        }
+
+        protected override void ApplyAdditionaDamage(BattleCharactor caster, BattleCharactor target, SkillData skillData, SkillExecutionResult result)
+        {
+            float multiplier = ResolveAdditionalMultiplier(skillData);
             result.AddDamage(SkillEffectHelper.ApplyStandardDamage(caster, target,
                 multiplier, skillData.skillIndex, skillData.classSkillRange, true));
             Debug.Log($"[Skill/DefaultDamage] {caster.UnitName} -> {target.UnitName} (multiplier={multiplier:F2})");
