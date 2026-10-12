@@ -32,7 +32,8 @@ public static class GameSettings
 
     public static void ApplyMasterVolume(float value)
     {
-        AudioListener.volume = value;
+        value = Mathf.Clamp01(value);
+        if (AudioManager.Instance != null) AudioManager.Instance.SetMasterVolume(value);
         PlayerPrefs.SetFloat(KeyMaster, value);
         PlayerPrefs.Save();
     }
@@ -63,8 +64,7 @@ public static class GameSettings
 
     public static void LoadAndApplyAll()
     {
-        // 마스터는 AudioListener로 전체에 적용 — AudioManager 마스터는 건드리지 않는다(이중 감쇠 방지).
-        AudioListener.volume = MasterVolume;
+        // 전체 음량은 AudioManager에서 적용한다. 이전 출력 감쇠는 해제한다.
         ApplyToAudioManager();
     }
 
@@ -72,6 +72,7 @@ public static class GameSettings
     {
         AudioManager audio = AudioManager.Instance;
         if (audio == null) return;
+        audio.SetMasterVolume(MasterVolume);
         audio.SetBgmVolume(BGMVolume);
         audio.SetSfxVolume(EffectVolume);
     }

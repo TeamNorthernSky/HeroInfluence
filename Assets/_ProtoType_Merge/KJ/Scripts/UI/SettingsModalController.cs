@@ -122,6 +122,26 @@ public class SettingsModalController : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    public void OnDefaultButtonClicked()
+    {
+        const float defaultVolume = 0.5f;
+        GameSettings.ApplyMasterVolume(defaultVolume);
+        GameSettings.ApplyBGMVolume(defaultVolume);
+        GameSettings.ApplyEffectVolume(defaultVolume);
+        SetVolumeSlider(MasterVolume, defaultVolume);
+        SetVolumeSlider(BackGroundVolume, defaultVolume);
+        SetVolumeSlider(EffectVolume, defaultVolume);
+    }
+
+    private static void SetVolumeSlider(Slider slider, float value)
+    {
+        if (slider == null) return;
+        slider.SetValueWithoutNotify(value);
+        TMP_Text valueText = slider.transform.parent?.Find("Value")?.GetComponent<TMP_Text>();
+        if (valueText != null)
+            valueText.text = Mathf.RoundToInt(value * 100f).ToString();
+    }
+
     public void OnControlButtonClicked()
     {
         if (CurrentPanel == ControlPanel) return;
