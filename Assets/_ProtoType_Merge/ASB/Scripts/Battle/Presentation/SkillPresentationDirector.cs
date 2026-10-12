@@ -776,7 +776,9 @@ public sealed partial class SkillPresentationDirector
         UnitMovementProfile movement, Vector3 originPosition, float originRotationY, ReturnPhase returnPhase)
     {
         if (movement == null) return;
-        EnqueueSkillReturn(runner, actorAnim, movement, true, false, originPosition, originRotationY, returnPhase);
+        // MovingAttack은 접근음 경로(EnqueueSkillApproach)를 타지 않으므로 복귀음도 내지 않는다.
+        EnqueueSkillReturn(runner, actorAnim, movement, true, false, originPosition, originRotationY, returnPhase,
+            playMoveSfx: false);
     }
 
     public IEnumerator RunSkillSequenceCore(
@@ -1911,6 +1913,11 @@ public sealed partial class SkillPresentationDirector
 
         if (shouldMove && movement != null)
         {
+            // 접근 페이즈 시작음. MoveToTarget이 0.1초 회전 후 위치 이동하므로 실제 이동보다 약 0.1초 먼저 난다(의도).
+            string sfxKey = MovementSfxKeyResolver.ResolveApproach(movePhase, movement);
+            if (!string.IsNullOrEmpty(sfxKey))
+                runner.Enqueue(new PlaySfxAction(sfxKey));
+
             runner.Enqueue(new MoveToTargetAction(
                 actorAnim, targetTransform, movement.ApproachDistance, movement.MoveDuration / _battle.CurrentBattleSpeed,
                 animationStateName, blendInSeconds));
@@ -1931,7 +1938,8 @@ public sealed partial class SkillPresentationDirector
         Vector3 originPosition,
         float originRotationY,
         ReturnPhase returnPhase,
-        bool keepCurrentAnimation = false)
+        bool keepCurrentAnimation = false,
+        bool playMoveSfx = true)
     {
         if (runner == null || actorAnim == null || (!shouldMove && !shouldRotate))
         {
@@ -1944,6 +1952,14 @@ public sealed partial class SkillPresentationDirector
         float duration = shouldMove
             ? (movement != null ? movement.ReturnDuration : 0.15f)
             : (movement != null ? movement.RotateReturnDuration : 0.15f);
+
+        // 복귀 페이즈 시작음. 회전만 복귀하는 경우는 재생하지 않는다.
+        if (shouldMove && playMoveSfx)
+        {
+            string sfxKey = MovementSfxKeyResolver.ResolveReturn(returnPhase, movement);
+            if (!string.IsNullOrEmpty(sfxKey))
+                runner.Enqueue(new PlaySfxAction(sfxKey));
+        }
 
         runner.Enqueue(new MoveToOriginAction(
             actorAnim, originPosition, originRotation, duration / _battle.CurrentBattleSpeed,

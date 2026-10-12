@@ -15,6 +15,7 @@ public class BattleSceneManager : MonoBehaviour
     private const float CueEffectWaitTimeoutSeconds = EffectFallbackRelease.DefaultFallbackSeconds + 0.5f;
     private const float DeathAnimationWaitTimeoutSeconds = 1.2f;
     private const float DeathAnimationEndThreshold = 0.95f;
+    private const float ResultPanelMaxWaitSeconds = 5f;
 
     [Header("Prototype Boot")]
     [Tooltip("Prototype 전용: 씬에 배치된 BattleCharactor를 그대로 초기화해 전투를 시작합니다.")]
@@ -95,8 +96,12 @@ public class BattleSceneManager : MonoBehaviour
 
     private IEnumerator PostBattleSequence(BattleResult result)
     {
-        yield return WaitForActivePresentationSequence();
-        yield return WaitForRemainingCueEffectsAndDeathAnimations();
+        float resultPanelDeadline = Time.realtimeSinceStartup + ResultPanelMaxWaitSeconds;
+        yield return WaitForActivePresentationSequence(resultPanelDeadline);
+        if (Time.realtimeSinceStartup < resultPanelDeadline)
+            yield return WaitForRemainingCueEffectsAndDeathAnimations(resultPanelDeadline);
+        if (Time.realtimeSinceStartup >= resultPanelDeadline)
+            Debug.LogWarning($"[BattleSceneManager] Result presentation exceeded {ResultPanelMaxWaitSeconds:0.##}s. Continuing to result UI.", this);
         hostageScenarioController?.FlushResult();
 
         CombatContext combatContext = CombatContext.Instance;
@@ -227,7 +232,7 @@ public class BattleSceneManager : MonoBehaviour
         return display;
     }
 
-    private IEnumerator WaitForActivePresentationSequence()
+    private IEnumerator WaitForActivePresentationSequence(float resultPanelDeadline)
     {
         BattleManager battleManager = battleFlowManager != null ? battleFlowManager.BattleManager : null;
         if (battleManager == null)
@@ -235,15 +240,16 @@ public class BattleSceneManager : MonoBehaviour
             yield break;
         }
 
-        yield return new WaitUntil(() => !battleManager.Presentation.IsSequenceRunning);
+        yield return new WaitUntil(() => !battleManager.Presentation.IsSequenceRunning
+            || Time.realtimeSinceStartup >= resultPanelDeadline);
     }
 
-    private IEnumerator WaitForRemainingCueEffectsAndDeathAnimations()
+    private IEnumerator WaitForRemainingCueEffectsAndDeathAnimations(float resultPanelDeadline)
     {
         float elapsed = 0f;
         float deathAnimationElapsed = 0f;
         HashSet<BattleCharactor> observedDeathAnimations = new HashSet<BattleCharactor>();
-        while (elapsed < CueEffectWaitTimeoutSeconds)
+        while (elapsed < CueEffectWaitTimeoutSeconds && Time.realtimeSinceStartup < resultPanelDeadline)
         {
             bool waitingForCueEffects = HasActiveOneShotCueEffects();
             bool waitingForDeathAnimation = deathAnimationElapsed < DeathAnimationWaitTimeoutSeconds
@@ -262,7 +268,8 @@ public class BattleSceneManager : MonoBehaviour
             yield return null;
         }
 
-        LogCueEffectWaitTimeout();
+        if (elapsed >= CueEffectWaitTimeoutSeconds)
+            LogCueEffectWaitTimeout();
     }
 
     private bool HasPendingDeathAnimations(HashSet<BattleCharactor> observedDeathAnimations)

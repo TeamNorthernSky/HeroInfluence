@@ -65,6 +65,10 @@ public class SkillPresentationDataEditor : Editor
                 "다중 대상: TargetCount별 바인딩을 선택합니다. 분리형은 Segments를 순서대로 채우세요. " +
                 "Impact/Move 마커의 TargetSlot 0은 세그먼트 슬롯을 따릅니다.",
                 MessageType.Info);
+
+            // 근접 Timeline도 접근/복귀 이동은 Move/Return 페이즈 액션이 담당한다(아래 Phases는 비활성 표시라 키만 따로 노출).
+            DrawOptionalProperty("Move.SfxKey", "Move Sfx Key (접근 시작음)");
+            DrawOptionalProperty("Return.SfxKey", "Return Sfx Key (복귀 시작음)");
         }
 
         // ── 공용 (전 스키마) ──
@@ -124,5 +128,12 @@ public class SkillPresentationDataEditor : Editor
         }
 
         serializedObject.ApplyModifiedProperties();
+    }
+
+    private void DrawOptionalProperty(string path, string label)
+    {
+        SerializedProperty property = serializedObject.FindProperty(path);
+        if (property != null)
+            EditorGUILayout.PropertyField(property, new GUIContent(label));
     }
 }

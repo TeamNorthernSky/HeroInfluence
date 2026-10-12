@@ -19,4 +19,10 @@ public class UnitMovementProfile : MonoBehaviour
     [Header("Ranged (RotateOnly = true)")]
     public float RotateDuration = 0.15f;
     public float RotateReturnDuration = 0.2f;
+
+    [Header("Movement SFX (DHAudioClipCatalog SfxClips 키)")]
+    [Tooltip("근접 접근 이동 시작 시 재생할 효과음 키. 스킬 MovePhase.SfxKey가 있으면 그쪽이 우선. 비면 무음.")]
+    public string ApproachSfxKey;
+    [Tooltip("근접 복귀 이동 시작 시 재생할 효과음 키. 스킬 ReturnPhase.SfxKey가 있으면 그쪽이 우선. 비면 무음.")]
+    public string ReturnSfxKey;
 }

@@ -763,6 +763,8 @@ public class MovePhase : PhaseBase
     [Min(0f)]
     [Tooltip("현재 상태에서 접근 이동 애니로 전환할 블렌드 시간(초). 0이면 즉시 전환.")]
     public float BlendInSeconds = 0.1f;
+    [Tooltip("접근 이동 시작 시 재생할 효과음 키(DHAudioClipCatalog). 비면 유닛 이동 프로필의 ApproachSfxKey를 사용. MovingAttack 접근에는 적용되지 않는다.")]
+    public string SfxKey;
 }
 
 [Serializable]
@@ -799,6 +801,8 @@ public class ReturnPhase : PhaseBase
     [Min(0f)]
     [Tooltip("현재 상태에서 복귀 이동 애니로 전환할 블렌드 시간(초). 0이면 즉시 전환.")]
     public float BlendInSeconds = 0.1f;
+    [Tooltip("복귀 이동 시작 시 재생할 효과음 키(DHAudioClipCatalog). 비면 유닛 이동 프로필의 ReturnSfxKey를 사용. MovingAttack 복귀에는 적용되지 않는다.")]
+    public string SfxKey;
 }
 
 [Serializable]
