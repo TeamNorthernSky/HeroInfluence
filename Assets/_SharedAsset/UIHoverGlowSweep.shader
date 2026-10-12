@@ -25,6 +25,7 @@ Shader "UI/HoverGlowSweep"
         _GleamTilt ("Gleam Tilt deg", Range(-90,90)) = 18
         _GleamScale ("Gleam Travel Scale", Range(0.2,3)) = 1.2
         _GleamWidth ("Gleam UV Width", Range(0.05,2)) = 1.0
+        _GleamSoftness ("Gleam Edge Softness 0 Original", Range(0,0.1)) = 0
         _SweepDelay ("Sweep Start Delay (s)", Range(0,10)) = 0.5
         _SweepDuration ("Sweep Duration (s)", Range(0.05,10)) = 0.4
         _SweepCycle ("Sweep Cycle (s)", Range(0.1,30)) = 1.4
@@ -99,6 +100,7 @@ Shader "UI/HoverGlowSweep"
             float _GleamTilt;
             float _GleamScale;
             float _GleamWidth;
+            float _GleamSoftness;
             float _SweepDelay;
             float _SweepDuration;
             float _SweepCycle;
@@ -215,6 +217,16 @@ Shader "UI/HoverGlowSweep"
                 // 버튼 uv를 기울이고(_GleamTilt) 폭 보정(_GleamWidth) 후 스크롤 → gleam 텍스처 좌표
                 float gx = ((uv.x - 0.5) - tA * (uv.y - 0.5)) / _GleamWidth - off + 0.5;
                 float gleamA = tex2D(_GleamTex, float2(gx, uv.y)).a; // Clamp wrap = 텍스처 밖 알파 0
+                // 띠 진행축의 알파만 가중 평균합니다. 0은 기존 샘플을 그대로 유지합니다.
+                if (_GleamSoftness > 0.0)
+                {
+                    float d = _GleamSoftness;
+                    gleamA = gleamA * 0.375
+                        + tex2D(_GleamTex, float2(gx - d, uv.y)).a * 0.25
+                        + tex2D(_GleamTex, float2(gx + d, uv.y)).a * 0.25
+                        + tex2D(_GleamTex, float2(gx - 2.0 * d, uv.y)).a * 0.0625
+                        + tex2D(_GleamTex, float2(gx + 2.0 * d, uv.y)).a * 0.0625;
+                }
                 float sweep = gleamA * active * _SweepIntensity * baseA;
 
                 // ===== 글로우+스윕 색 합성(가산) =====

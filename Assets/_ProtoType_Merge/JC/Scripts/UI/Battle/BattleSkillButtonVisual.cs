@@ -36,6 +36,9 @@ public class BattleSkillButtonVisual : MonoBehaviour
     private Material selectedSource;
     private float started;
     private bool wasAvailable;
+    private bool wasSelected;
+    private float selectedStarted;
+    private readonly Vector3[] selectedCorners = new Vector3[4];
 
     private void Awake()
     {
@@ -58,6 +61,9 @@ public class BattleSkillButtonVisual : MonoBehaviour
     /// <summary>SkillButtonControllerから受け取った実際の使用可否と選択状態を表示します。</summary>
     public void SetState(bool available, bool selected)
     {
+        if (selected && !wasSelected) selectedStarted = Time.unscaledTime;
+        wasSelected = selected;
+        if (selectedInstance != null) selectedInstance.SetFloat("_SelectedTime", Time.unscaledTime - selectedStarted);
         if (available && !wasAvailable) started = Time.unscaledTime;
         wasAvailable = available;
         bool useShared = sharedSettings != null && sharedSettings.isActiveAndEnabled;
@@ -66,6 +72,7 @@ public class BattleSkillButtonVisual : MonoBehaviour
         if (useShared)
         {
             sharedSettings.Apply(availableInstance, selectedInstance);
+            UpdateOrbitPixelSize();
             if (availableInstance != null) availableInstance.SetFloat("_SweepTime", Time.unscaledTime - started);
             return;
         }
@@ -88,6 +95,24 @@ public class BattleSkillButtonVisual : MonoBehaviour
     }
 
     private void OnDisable() => SetState(false, false);
+
+    private void UpdateOrbitPixelSize()
+    {
+        if (selectedInstance == null || selectedFrame == null) return;
+        var canvas = selectedFrame.canvas;
+        var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        selectedFrame.rectTransform.GetWorldCorners(selectedCorners);
+        var bottomLeft = RectTransformUtility.WorldToScreenPoint(camera, selectedCorners[0]);
+        float width = Vector2.Distance(bottomLeft, RectTransformUtility.WorldToScreenPoint(camera, selectedCorners[3]));
+        float height = Vector2.Distance(bottomLeft, RectTransformUtility.WorldToScreenPoint(camera, selectedCorners[1]));
+        if (selectedFrame.preserveAspect && selectedFrame.sprite != null)
+        {
+            float aspect = selectedFrame.sprite.rect.width / Mathf.Max(1, selectedFrame.sprite.rect.height);
+            if (width / Mathf.Max(1, height) > aspect) width = height * aspect;
+            else height = width / aspect;
+        }
+        selectedInstance.SetVector("_OrbitUVPerPixel", new Vector4(1 / Mathf.Max(1, width), 1 / Mathf.Max(1, height), 0, 0));
+    }
 
     private void OnDestroy()
     {
