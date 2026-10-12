@@ -110,7 +110,8 @@ namespace JC.VFX.EditorTools
             if (cfg.extraCatalogs != null)
             {
                 for (int i = 0; i < cfg.extraCatalogs.Length; i++)
-                    Collect(cfg.extraCatalogs[i], "_bindings", "SkillIndex", "Presentation", order, map, overridden);
+                    Collect(cfg.extraCatalogs[i], "_bindings", "SkillIndex", "Presentation", order, map, overridden,
+                        preserveTimelineRail: true);
             }
 
             var so = new SerializedObject(cfg.mergedCatalog);
@@ -138,7 +139,8 @@ namespace JC.VFX.EditorTools
         /// 이미 있는 키를 다시 만나면 값을 갈아끼우되 **원래 자리는 유지**한다(순서 안정).
         /// </summary>
         private static void Collect(Object source, string arrayName, string keyName, string valueName,
-            List<int> order, Dictionary<int, Object> map, List<int> overriddenOut)
+            List<int> order, Dictionary<int, Object> map, List<int> overriddenOut,
+            bool preserveTimelineRail = false)
         {
             var so = new SerializedObject(source);
             SerializedProperty arr = so.FindProperty(arrayName);
@@ -153,6 +155,13 @@ namespace JC.VFX.EditorTools
 
                 if (map.ContainsKey(key))
                 {
+                    // FirstPass 등 추가 카탈로그의 구 Animator 연출로 이미 베이크된 Timeline 연출을
+                    // 덮으면 캐릭터별 Signal Cue가 사라진다. 명시적인 JC 카탈로그 오버라이드는 유지한다.
+                    if (preserveTimelineRail
+                        && map[key] is SkillPresentationData current && current.IsTimelineRail
+                        && value is SkillPresentationData incoming && !incoming.IsTimelineRail)
+                        continue;
+
                     overriddenOut?.Add(key);
                     map[key] = value;
                 }

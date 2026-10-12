@@ -59,6 +59,12 @@ public class InputHandler : MonoBehaviour
     private readonly HashSet<BattleCharactor> deathSubscribedUnits = new HashSet<BattleCharactor>();
     private bool isProcessingAction;
 
+    // 좌클릭은 뗄 때 확정한다. 누른 대상과 뗀 순간의 대상이 같을 때만 공격하고,
+    // 누른 채 대상을 벗어나 떼면 공격을 취소한다(스킬 선택 상태는 유지).
+    private bool isPressArmed;
+    private BattleCharactor pressedTarget;
+    private HostageBattleActor pressedHostageTarget;
+
     public bool IsAutoBattleActive { get; set; }
 
     private void Awake()
@@ -188,13 +194,47 @@ public class InputHandler : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            {
-                return;
-            }
-
-            TryExecutePendingAction(actor);
+            ArmPress();
         }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            ReleasePress(actor);
+        }
+    }
+
+    private void ArmPress()
+    {
+        bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        pressedTarget = overUi ? null : hoverTarget;
+        pressedHostageTarget = overUi ? null : hoverHostageTarget;
+        isPressArmed = pressedTarget != null || pressedHostageTarget != null;
+    }
+
+    private void ReleasePress(BattleCharactor actor)
+    {
+        if (!isPressArmed)
+        {
+            return;
+        }
+
+        bool overUi = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        bool sameTarget = !overUi && hoverTarget == pressedTarget && hoverHostageTarget == pressedHostageTarget;
+        ClearPress();
+        if (!sameTarget)
+        {
+            Debug.Log("[InputHandler] 누른 대상을 벗어나 손을 떼어 공격을 취소했습니다.");
+            return;
+        }
+
+        TryExecutePendingAction(actor);
+    }
+
+    private void ClearPress()
+    {
+        isPressArmed = false;
+        pressedTarget = null;
+        pressedHostageTarget = null;
     }
 
     /// <summary>사용자 입력으로 선택을 비웁니다. 자동전투·공격 실행 중에는 false를 반환하고 유지합니다.</summary>
@@ -765,6 +805,7 @@ public class InputHandler : MonoBehaviour
         selectionActor?.ClearSkillForCast();
         selectionActor = null;
         PendingSkill = null;
+        ClearPress();
         targetingVisualController?.ClearAll();
         ClearAoEPreview();
         SetHoverTarget(null);

@@ -93,9 +93,9 @@ public class PlayerSpawner : MonoBehaviour
         if (combatContext != null && combatContext.IsSimulation)
             return SpawnFromSimulationContext(combatContext);
 
-        // 튜토리얼: 탐사에서 넘어온 아군 런타임 데이터로 우선 스폰. 실패 시 아래 폴백으로 진행한다.
-        if (combatContext != null && combatContext.IsTutorial && SpawnFromTutorialContext(combatContext))
-            return true;
+        // 튜토리얼은 유닛별 지정 칸을 사용한다. 실패 시 일반 파티 배치로 폴백하지 않는다.
+        if (combatContext != null && combatContext.IsTutorial)
+            return SpawnFromTutorialContext(combatContext);
 
         // Persistent 우선 스폰. 실패 시 기존 디버그(=CSV 폴백 역할) 리스트로 폴백합니다.
         if (SpawnFromPersistentRepository())
@@ -398,18 +398,10 @@ public class PlayerSpawner : MonoBehaviour
             return false;
         }
 
-        List<int> sortedGrids = new List<int>(gridSlots.Keys);
-        sortedGrids.Sort();
-        if (combatUnitIndices.Count > sortedGrids.Count)
-        {
-            Debug.LogError(
-                $"[PlayerSpawner] Tutorial party exceeds available grids. units={combatUnitIndices.Count}, grids={sortedGrids.Count}",
-                this);
-            return false;
-        }
-
         var unitTemplates = new UnitData[combatUnitIndices.Count];
         var runtimeUnits = new UnitPersistentData[combatUnitIndices.Count];
+        var spawnGrids = new int[combatUnitIndices.Count];
+        var occupiedGrids = new HashSet<int>();
         for (int i = 0; i < combatUnitIndices.Count; i++)
         {
             int runtimeUnitIndex = combatUnitIndices[i];
@@ -438,7 +430,20 @@ public class PlayerSpawner : MonoBehaviour
                 return false;
             }
 
-            int gridNumber = sortedGrids[i];
+            if (!TryGetTutorialGridNumber(persistentData.UnitTemplateKey, out int gridNumber))
+            {
+                Debug.LogError(
+                    $"[PlayerSpawner] Tutorial ally has no assigned grid. key='{persistentData.UnitTemplateKey}'",
+                    this);
+                return false;
+            }
+
+            if (!occupiedGrids.Add(gridNumber))
+            {
+                Debug.LogError($"[PlayerSpawner] Tutorial grid is assigned more than once. grid={gridNumber}", this);
+                return false;
+            }
+
             if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null)
             {
                 Debug.LogError($"[PlayerSpawner] Tutorial grid cell is missing. grid={gridNumber}", this);
@@ -447,12 +452,13 @@ public class PlayerSpawner : MonoBehaviour
 
             unitTemplates[i] = csvUnitData;
             runtimeUnits[i] = persistentData;
+            spawnGrids[i] = gridNumber;
         }
 
         var spawnedGrids = new List<int>();
         for (int i = 0; i < runtimeUnits.Length; i++)
         {
-            int gridNumber = sortedGrids[i];
+            int gridNumber = spawnGrids[i];
             if (SpawnPersistentUnit(unitTemplates[i], runtimeUnits[i], gridNumber) == null)
             {
                 for (int j = 0; j < spawnedGrids.Count; j++)
@@ -463,6 +469,19 @@ public class PlayerSpawner : MonoBehaviour
         }
 
         return runtimeUnits.Length > 0;
+    }
+
+    private static bool TryGetTutorialGridNumber(string unitTemplateKey, out int gridNumber)
+    {
+        // Grid_X_Y -> X * 100 + Y. 사망한 유닛의 칸은 비워 둬 다음 전투에서 자리가 당겨지지 않는다.
+        switch (unitTemplateKey?.Trim())
+        {
+            case "10001": gridNumber = 101; return true; // 저스티스: Grid_1_1
+            case "10002": gridNumber = 1; return true;   // 루미나: Grid_0_1
+            case "10003": gridNumber = 2; return true;   // 블랙 불릿: Grid_0_2
+            case "10004": gridNumber = 0; return true;   // 네코밍: Grid_0_0
+            default: gridNumber = 0; return false;
+        }
     }
 
     private bool SpawnFromPersistentRepository()

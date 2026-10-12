@@ -74,3 +74,29 @@ MonoBehaviour:
     Presentation: {fileID: 11400000, guid: 46add072fdd664d4593d64feace09868, type: 2}
   - SkillIndex: 400013
     Presentation: {fileID: 11400000, guid: 2b3989f7070fbf141bda8f6efcce8cbd, type: 2}
+  - SkillIndex: 1
+    Presentation: {fileID: 11400000, guid: f6a051f7dcefaf8419360d54c2c7a7bb, type: 2}
+  - SkillIndex: 2011
+    Presentation: {fileID: 11400000, guid: 2ae6dd16fafe2d64788425b271fda40c, type: 2}
+  - SkillIndex: 2021
+    Presentation: {fileID: 11400000, guid: 35a047552d1a6b246b2bcbb99d2235ca, type: 2}
+  - SkillIndex: 2031
+    Presentation: {fileID: 11400000, guid: 860933789a8cedf40a9c3d15b82c4fd1, type: 2}
+  - SkillIndex: 2041
+    Presentation: {fileID: 11400000, guid: 47bc75980cf674e4da8ed3ae3b3243b5, type: 2}
+  - SkillIndex: 3011
+    Presentation: {fileID: 11400000, guid: a2d70d208ffe6f748969c39422eaa97a, type: 2}
+  - SkillIndex: 3021
+    Presentation: {fileID: 11400000, guid: aed4da49d97486249b3a7ab4493accde, type: 2}
+  - SkillIndex: 3031
+    Presentation: {fileID: 11400000, guid: 030a06e23ecb4854cac5180bfd8e203b, type: 2}
+  - SkillIndex: 3041
+    Presentation: {fileID: 11400000, guid: ee359e274b547114283bc34c2d49e50e, type: 2}
+  - SkillIndex: 4011
+    Presentation: {fileID: 11400000, guid: 3f2694af2bda4e843ab42c375b1c5cc8, type: 2}
+  - SkillIndex: 4021
+    Presentation: {fileID: 11400000, guid: 5c0ab59bf56a19f449386be0a8e1f1a1, type: 2}
+  - SkillIndex: 4031
+    Presentation: {fileID: 11400000, guid: 110961d317041214aa835f320f77a15d, type: 2}
+  - SkillIndex: 4041
+    Presentation: {fileID: 11400000, guid: 8a11c00b6c7760e49b4cc9b98e305a58, type: 2}

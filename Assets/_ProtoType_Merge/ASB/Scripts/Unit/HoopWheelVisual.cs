@@ -1,0 +1,282 @@
+using UnityEngine;
+
+/// <summary>
+/// 절망의 굴렁쇠(FV40005) 임시 외형. 원본 원기둥(Model) 대신 톱니 바퀴를 만들어 띄우고 회전시킨다.
+/// <list type="bullet">
+/// <item>외형: 링 + 금속판 8개 + 보라 에너지 링 3개. 소환 시 아래에서 솟아오른 뒤 부유·회전.</item>
+/// <item>원기둥 재등장 방지: BattleCharactor.EnableVisuals(부활·초기 상태 설정)가 Awake 때 기록한 렌더러를 다시 켜므로,
+///   직후 발생하는 OnHpChanged에서 살아 있으면 Model 렌더러를 다시 끈다.</item>
+/// <item>사망: 바퀴를 숨기고 파괴 이펙트를 씬 루트에 생성한다(시체 제거보다 오래 남아야 한다).</item>
+/// <item>돌진 위치 유지: 시퀀스가 <see cref="BeginDashHold"/>를 부르면 원위치를 기억한다. 반격·자해까지 끝난 뒤 발행되는
+///   BattleManager.OnSkillResolved에서 살아 있으면 원위치로 되돌린다. 사망 시에는 그 자리를 유지하고, 부활하면 되돌린다.</item>
+/// </list>
+/// transform·렌더러만 만지고 게임 상태는 바꾸지 않는다. 원본: JcYuliaUnitVfx(JC 전투 테스트 씬).
+/// </summary>
+[DisallowMultipleComponent]
+public sealed class HoopWheelVisual : MonoBehaviour
+{
+    private const string JcVisualTypeName = "JcYuliaUnitVfx";
+    private const float WheelRadius = .48f;
+    private const float WheelHeight = .72f;
+    private const float SummonDropDistance = .7f;
+    private const float SpinDegreesPerSecond = 35f;
+    private const float HoverFrequency = 2.3f;
+
+    [Tooltip("피격·사망·부활 이벤트원이자 돌진으로 움직이는 루트. 프리팹 루트의 BattleCharactor를 연결한다.")]
+    [SerializeField] private BattleCharactor owner;
+    [Tooltip("숨길 원본 외형(원기둥) 루트. 이 하위 Renderer만 끈다.")]
+    [SerializeField] private Transform modelRoot;
+    [SerializeField] private HoopVfxPreset preset;
+
+    private Transform _wheel;
+    private Mesh _wheelMesh;
+    private bool _built;
+    private bool _deadVisual;
+    private float _spawnElapsed;
+    private float _spin;
+    private bool _dashHoldActive;
+    private Vector3 _dashHome;
+    private bool _ownerSubscribed;
+    private BattleManager _subscribedBattle;
+
+    /// <summary>충전·궤적 이펙트 기준점. 바퀴가 없으면 루트.</summary>
+    public Transform WheelCenter => _wheel != null && _wheel.gameObject.activeInHierarchy ? _wheel : transform;
+    public HoopVfxPreset Preset => preset;
+    internal bool IsDashHoldActive => _dashHoldActive;
+
+    private void OnEnable()
+    {
+        if (owner != null && !_ownerSubscribed)
+        {
+            owner.OnHpChanged += HandleHpChanged;
+            owner.OnDied += HandleDied;
+            _ownerSubscribed = true;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (owner != null && _ownerSubscribed)
+        {
+            owner.OnHpChanged -= HandleHpChanged;
+            owner.OnDied -= HandleDied;
+            _ownerSubscribed = false;
+        }
+        SubscribeBattle(null);
+    }
+
+    private void Start()
+    {
+        // JC 전투 테스트 씬은 같은 프리팹에 자체 외형(JcYuliaUnitVfx)을 Instantiate 직후 붙인다 → 이중 외형 방지.
+        // ASB 코드가 JC 타입에 의존하지 않도록 문자열 타입명으로 조회한다.
+        if (GetComponent(JcVisualTypeName) != null)
+        {
+            enabled = false;
+            return;
+        }
+
+        if (owner == null || preset == null)
+        {
+            Debug.LogWarning($"[HoopWheelVisual] owner/preset 미연결 → 원본 외형 유지. ({name})", this);
+            enabled = false;
+            return;
+        }
+
+        if (modelRoot == null)
+        {
+            modelRoot = transform.Find("Model");
+            Debug.LogWarning($"[HoopWheelVisual] modelRoot 미연결 → 자식 'Model'로 폴백({(modelRoot != null ? "찾음" : "없음")}). ({name})", this);
+        }
+
+        BuildWheel();
+        if (owner.IsDead)
+        {
+            _deadVisual = true;
+            _wheel.gameObject.SetActive(false);
+        }
+        else
+        {
+            HoopVfxEffect.Spawn(preset, HoopEffectKind.Summon, transform.position);
+        }
+    }
+
+    private void LateUpdate()
+    {
+        // BattleManager는 씬마다 다르고 생성 순서도 보장되지 않아 지연 구독한다.
+        if (!ReferenceEquals(_subscribedBattle, BattleManager.Instance))
+        {
+            SubscribeBattle(BattleManager.Instance);
+        }
+
+        if (!_built || _deadVisual || owner == null || owner.IsDead) return;
+
+        float battleSpeed = BattleManager.Instance != null ? Mathf.Max(0f, BattleManager.Instance.CurrentBattleSpeed) : 1f;
+        float dt = Time.deltaTime * battleSpeed;
+        _spawnElapsed += dt;
+
+        Vector3 p = Vector3.up * WheelHeight;
+        p.y += Mathf.Sin(_spawnElapsed * HoverFrequency) * preset.hoverHeight;
+        p.y -= Mathf.Max(0f, 1f - _spawnElapsed / preset.summonSeconds) * SummonDropDistance;
+        _wheel.localPosition = p;
+
+        _spin = (_spin + dt * SpinDegreesPerSecond) % 360f;
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            _wheel.rotation = Quaternion.LookRotation(cam.transform.position - _wheel.position, Vector3.up)
+                              * Quaternion.Euler(0f, 0f, _spin);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_wheelMesh != null) Destroy(_wheelMesh);
+    }
+
+    /// <summary>돌진 도착 위치를 유지한다. home은 돌진 전 루트 월드 위치.</summary>
+    public void BeginDashHold(Vector3 home)
+    {
+        _dashHoldActive = true;
+        _dashHome = home;
+    }
+
+    // 반격 드레인 + OnPostExecution(자해) 이후 발행된다. 살아남았으면(자해 무효 등 예외) 원위치로 되돌린다.
+    internal void HandleSkillResolved(SkillResolutionContext context)
+    {
+        if (!_dashHoldActive || context == null || owner == null || context.Actor != owner) return;
+        if (owner.IsDead) return;   // 사망: 파괴 이펙트가 도착 위치에 나오도록 유지. 부활 시 되돌린다.
+        RestoreDashHome();
+    }
+
+    private void RestoreDashHome()
+    {
+        if (!_dashHoldActive) return;
+        _dashHoldActive = false;
+        if (owner != null) owner.transform.position = _dashHome;
+    }
+
+    private void HandleHpChanged(float current, float max)
+    {
+        if (!_built || owner == null || owner.IsDead || current <= 0f) return;
+
+        // EnableVisuals가 원본 렌더러를 다시 켰을 수 있다(부활·초기 상태 설정) → 항상 재보장.
+        SetModelRenderersEnabled(false);
+        if (_deadVisual)
+        {
+            _deadVisual = false;
+            _wheel.gameObject.SetActive(true);
+            RestoreDashHome();
+        }
+    }
+
+    private void HandleDied(BattleCharactor _)
+    {
+        if (!_built || _deadVisual) return;
+        _deadVisual = true;
+        HoopVfxEffect.Spawn(preset, HoopEffectKind.WheelBreak, _wheel.position);
+        _wheel.gameObject.SetActive(false);
+    }
+
+    private void SubscribeBattle(BattleManager battle)
+    {
+        if (_subscribedBattle != null) _subscribedBattle.OnSkillResolved -= HandleSkillResolved;
+        _subscribedBattle = battle;
+        if (_subscribedBattle != null) _subscribedBattle.OnSkillResolved += HandleSkillResolved;
+    }
+
+    private void SetModelRenderersEnabled(bool value)
+    {
+        if (modelRoot == null) return;
+        Renderer[] renderers = modelRoot.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null) renderers[i].enabled = value;
+        }
+    }
+
+    private void BuildWheel()
+    {
+        SetModelRenderersEnabled(false);
+
+        _wheel = new GameObject("HoopWheelVisual").transform;
+        _wheel.SetParent(transform, false);
+        _wheel.localPosition = Vector3.up * (WheelHeight - SummonDropDistance);
+        _wheelMesh = CreateTorus(WheelRadius, .055f);
+        _wheel.gameObject.AddComponent<MeshFilter>().sharedMesh = _wheelMesh;
+        _wheel.gameObject.AddComponent<MeshRenderer>().sharedMaterial = preset.frameMaterial;
+
+        // 금속 외곽 프레임 8개(톱니처럼 보이는 부분). 정식 모델 대신 쓰는 임시 외형.
+        Mesh cube = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
+        for (int i = 0; i < 8; i++)
+        {
+            float a = i * Mathf.PI * .25f;
+            var frame = new GameObject("WheelFramePlate");
+            frame.transform.SetParent(_wheel, false);
+            frame.transform.localPosition = new Vector3(Mathf.Cos(a) * WheelRadius, Mathf.Sin(a) * WheelRadius, 0f);
+            frame.transform.localRotation = Quaternion.Euler(0f, 0f, a * Mathf.Rad2Deg);
+            frame.transform.localScale = new Vector3(.16f, .09f, .12f);
+            frame.AddComponent<MeshFilter>().sharedMesh = cube;
+            frame.AddComponent<MeshRenderer>().sharedMaterial = preset.frameMaterial;
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            var go = new GameObject("VioletWheelArc");
+            go.transform.SetParent(_wheel, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.sharedMaterial = preset.energyMaterial;
+            line.useWorldSpace = false;
+            line.positionCount = 65;
+            line.widthMultiplier = preset.lineWidth * (i == 0 ? .7f : .35f);
+            line.startColor = line.endColor = i == 0 ? preset.core : preset.energy;
+            float radius = .38f + i * .07f;
+            for (int n = 0; n < 65; n++)
+            {
+                float a = n / 64f * Mathf.PI * 2f;
+                line.SetPosition(n, new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, .012f));
+            }
+        }
+
+        _built = true;
+    }
+
+    private static Mesh CreateTorus(float radius, float tube)
+    {
+        const int rings = 48, sides = 8;
+        var v = new Vector3[(rings + 1) * (sides + 1)];
+        var uv = new Vector2[v.Length];
+        var triangles = new int[rings * sides * 6];
+        for (int r = 0; r <= rings; r++)
+        {
+            for (int s = 0; s <= sides; s++)
+            {
+                float a = r / (float)rings * Mathf.PI * 2f;
+                float b = s / (float)sides * Mathf.PI * 2f;
+                int n = r * (sides + 1) + s;
+                v[n] = new Vector3(Mathf.Cos(a) * (radius + Mathf.Cos(b) * tube),
+                                   Mathf.Sin(a) * (radius + Mathf.Cos(b) * tube),
+                                   Mathf.Sin(b) * tube);
+                uv[n] = new Vector2(r / (float)rings, s / (float)sides);
+            }
+        }
+
+        int t = 0;
+        for (int r = 0; r < rings; r++)
+        {
+            for (int s = 0; s < sides; s++)
+            {
+                int n = r * (sides + 1) + s;
+                triangles[t++] = n; triangles[t++] = n + 1; triangles[t++] = n + sides + 1;
+                triangles[t++] = n + 1; triangles[t++] = n + sides + 2; triangles[t++] = n + sides + 1;
+            }
+        }
+
+        var mesh = new Mesh { name = "HoopTemporaryWheel" };
+        mesh.vertices = v;
+        mesh.uv = uv;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        return mesh;
+    }
+}
