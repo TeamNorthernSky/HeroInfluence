@@ -115,6 +115,11 @@ public class ExplorationHeroBoxController : MonoBehaviour
             if (unit != null && catalog != null && !string.IsNullOrWhiteSpace(unit.UnitTemplateKey))
                 catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out template);
 
+            // [KJ 261008] 탐사 카드도 현재 영웅 레벨에 맞춰 랭크 배지를 갱신한다.
+            var rankBadge = slot.root != null ? slot.root.GetComponentInChildren<HeroRankBadge>(true) : null;
+            if (rankBadge != null)
+                rankBadge.SetRank(unit != null ? UnitRankLookup.GetRank(unit.Level) : UnitRankLookup.Unknown);
+
             if (slot.profile != null)
             {
                 // [JC 260621] 포트레이트 = unitIndex(=HeroIndex) 기준 PortraitLibrary 해석.

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class BootSceneController : MonoBehaviour
 {
-    public enum FirstSceneTarget { TestScene, TitleScene }
+    public enum FirstSceneTarget { TitleScene }
 
     [SerializeField] private FirstSceneTarget firstScene = FirstSceneTarget.TitleScene;
 

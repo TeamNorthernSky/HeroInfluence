@@ -4272,8 +4272,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 5886719826135203195}
         m_TargetAssemblyTypeName: SettingsModalController, Assembly-CSharp
-        m_MethodName: OnControlButtonClicked
-        m_Mode: 1
+        m_MethodName: OnDefaultButtonClicked
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
