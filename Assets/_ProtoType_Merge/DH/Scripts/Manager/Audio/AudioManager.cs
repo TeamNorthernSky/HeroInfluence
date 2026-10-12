@@ -12,6 +12,7 @@ public sealed class AudioManager : MonoBehaviour
     [Header("Sources")]
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
+    [SerializeField, Min(1)] private int timedSfxInitialPoolSize = 2;
 
     [Header("Volumes")]
     [SerializeField, Range(0f, 1f)] private float masterVolume = 1f;
@@ -27,6 +28,7 @@ public sealed class AudioManager : MonoBehaviour
     [SerializeField] private bool dontDestroyOnLoad = true;
 
     private readonly Dictionary<string, float> sfxBlockedUntil = new Dictionary<string, float>();
+    private readonly List<AudioSource> timedSfxSources = new List<AudioSource>();
     private string currentBgmKey;
     private float currentBgmDefaultVolume = 1f;
 
@@ -124,6 +126,47 @@ public sealed class AudioManager : MonoBehaviour
         }
 
         sfxSource.PlayOneShot(entry.Clip, GetSfxPlaybackVolume(entry));
+    }
+
+    public void PlaySfxForDuration(string key, float durationSeconds)
+    {
+        if (clipCatalog == null)
+            return;
+
+        string normalizedKey = DHAudioClipCatalog.NormalizeKey(key);
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+            return;
+
+        if (!TryGetSfxEntry(normalizedKey, out DHAudioClipEntry entry) || entry.Clip == null)
+            return;
+
+        float clampedDuration = Mathf.Max(0f, durationSeconds);
+        if (clampedDuration <= 0f)
+            return;
+
+        float playbackDuration = Mathf.Min(clampedDuration, entry.Clip.length);
+        if (!entry.AllowOverlap)
+        {
+            if (sfxBlockedUntil.TryGetValue(entry.Key, out float blockedUntil) &&
+                Time.unscaledTime < blockedUntil)
+            {
+                return;
+            }
+
+            sfxBlockedUntil[entry.Key] = Time.unscaledTime + playbackDuration;
+        }
+
+        AudioSource source = GetAvailableTimedSfxSource();
+        if (source == null)
+            return;
+
+        source.Stop();
+        source.clip = entry.Clip;
+        source.loop = false;
+        source.volume = GetSfxPlaybackVolume(entry);
+        source.Play();
+
+        StartCoroutine(StopTimedSfxAfter(source, playbackDuration));
     }
 
     public void PlayBgmForScene(string sceneName)
@@ -226,6 +269,8 @@ public sealed class AudioManager : MonoBehaviour
 
         bgmSource.playOnAwake = false;
         sfxSource.playOnAwake = false;
+
+        EnsureTimedSfxPool();
     }
 
     private void ApplyVolumes()
@@ -246,6 +291,46 @@ public sealed class AudioManager : MonoBehaviour
     private float GetSfxPlaybackVolume(DHAudioClipEntry entry)
     {
         return masterVolume * sfxVolume * entry.DefaultVolume;
+    }
+
+    private void EnsureTimedSfxPool()
+    {
+        int targetCount = Mathf.Max(1, timedSfxInitialPoolSize);
+        while (timedSfxSources.Count < targetCount)
+            timedSfxSources.Add(CreateTimedSfxSource());
+    }
+
+    private AudioSource GetAvailableTimedSfxSource()
+    {
+        for (int i = 0; i < timedSfxSources.Count; i++)
+        {
+            AudioSource source = timedSfxSources[i];
+            if (source != null && !source.isPlaying)
+                return source;
+        }
+
+        AudioSource newSource = CreateTimedSfxSource();
+        timedSfxSources.Add(newSource);
+        return newSource;
+    }
+
+    private AudioSource CreateTimedSfxSource()
+    {
+        AudioSource source = gameObject.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.loop = false;
+        return source;
+    }
+
+    private System.Collections.IEnumerator StopTimedSfxAfter(AudioSource source, float durationSeconds)
+    {
+        yield return new WaitForSecondsRealtime(durationSeconds);
+
+        if (source == null)
+            yield break;
+
+        source.Stop();
+        source.clip = null;
     }
 
     private static string NormalizeSceneName(string sceneName)
