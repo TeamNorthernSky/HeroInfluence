@@ -8130,16 +8130,17 @@ MonoBehaviour:
     prefabKey: HeroUnion
   - gridPosition: {x: 38, y: 8}
     prefabKey: Outpost
-  - gridPosition: {x: 31, y: 7}
-    prefabKey: TutorialEnemy
   - gridPosition: {x: 27, y: 7}
     prefabKey: ChipItem
   - gridPosition: {x: 26, y: 6}
     prefabKey: CrystalItem
   - gridPosition: {x: 28, y: 6}
     prefabKey: SupplyItem
+  - gridPosition: {x: 32, y: 7}
+    prefabKey: TutorialEnemy
   mainEventPlacements: []
   subEventPlacements: []
+  worldEventPlacements: []
   gatePlacements: []
   enemySpawnPointPlacements: []
   heroUnionPlacement:
