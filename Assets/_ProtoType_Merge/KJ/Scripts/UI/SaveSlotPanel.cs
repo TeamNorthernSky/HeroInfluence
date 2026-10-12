@@ -30,7 +30,9 @@ public class SaveSlotPanel : MonoBehaviour
 
     private const string TutorialScene = "TutorialExploreScene";
     private const string GameScene = "GameLoadScene";
+    private const string OpeningCutScene = "Opening CutScene";
     private int pendingSlotIndex = -1;
+    private bool tutorialSelectionPending;
 
     private void Awake()
     {
@@ -62,7 +64,29 @@ public class SaveSlotPanel : MonoBehaviour
 
     private void OnEnable()
     {
+        ModalManager.OnStackChanged += HandleModalStackChanged;
         RefreshSlots();
+    }
+
+    private void OnDisable()
+    {
+        ModalManager.OnStackChanged -= HandleModalStackChanged;
+        if (tutorialSelectionPending)
+        {
+            tutorialSelectionPending = false;
+            pendingSlotIndex = -1;
+            tutorialPopup?.SetActive(false);
+        }
+    }
+
+    private void HandleModalStackChanged()
+    {
+        // ESC도 ModalManager를 통해 팝업을 숨기므로 같은 선택 취소를 적용한다.
+        if (tutorialSelectionPending && tutorialPopup != null && !tutorialPopup.activeInHierarchy)
+        {
+            tutorialSelectionPending = false;
+            pendingSlotIndex = -1;
+        }
     }
 
     private void RefreshSlots()
@@ -72,7 +96,9 @@ public class SaveSlotPanel : MonoBehaviour
             SaveSlotData data = SaveSlotRepository.Load(i);
             TMP_Text label = slotButtons[i].GetComponentInChildren<TMP_Text>();
             if (label != null)
-                label.text = data.hasData ? $"Slot {i + 1}\n{data.savedAt}" : $"Slot {i + 1}\n- 비어있음 -";
+                label.text = data.hasData
+                    ? $"<b>슬롯 {i + 1}</b>\n<size=32>{data.savedAt}\n저장됨</size>"
+                    : $"<b>슬롯 {i + 1}</b>\n<size=32>저장 가능</size>";
 
             // [KJ 260716] 데이터 유무별 슬롯 배경 교체 (스프라이트 미할당 시 기존 이미지 유지)
             Sprite slotSprite = data.hasData ? slotFilledSprite : slotEmptySprite;
@@ -112,37 +138,39 @@ public class SaveSlotPanel : MonoBehaviour
         }
         else
         {
-            SaveSlotRepository.Save(pendingSlotIndex);
-            SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
-            SaveSlotRepository.IsContinue = false;             // [KJ 260714] 새 게임 — 이전 이어하기 플래그가 남지 않도록 명시 리셋
-            //SceneFadeController.LoadSceneWithFadeIfNeeded(GameScene);
-
-            //튜토리얼 씬이 없으므로 임시 비활성화
+            // 시작을 확정하기 전에는 슬롯 파일과 전역 슬롯 선택을 변경하지 않는다.
+            tutorialSelectionPending = true;
             tutorialPopup?.SetActive(true);
         }
     }
 
     private void OnTutorialYes()
     {
+        if (!tutorialSelectionPending || pendingSlotIndex < 0) return;
         SaveSlotRepository.Save(pendingSlotIndex);
         SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
         SaveSlotRepository.IsContinue = false;             // [KJ 260714] 새 게임 — 이전 이어하기 플래그가 남지 않도록 명시 리셋
         tutorialPopup?.SetActive(false);
+        //튜토리얼 하면 튜토리얼씬
         SceneFadeController.LoadSceneWithFadeIfNeeded(TutorialScene);
-        //SceneFadeController.LoadSceneWithFadeIfNeeded(GameScene);
     }
 
     private void OnTutorialNo()
     {
+        if (!tutorialSelectionPending || pendingSlotIndex < 0) return;
         SaveSlotRepository.Save(pendingSlotIndex);
         SaveSlotRepository.CurrentSlot = pendingSlotIndex; // [KJ 260703] 저장 대상 슬롯 전달
         SaveSlotRepository.IsContinue = false;             // [KJ 260714] 새 게임 — 이전 이어하기 플래그가 남지 않도록 명시 리셋
         tutorialPopup?.SetActive(false);
-        SceneFadeController.LoadSceneWithFadeIfNeeded(TutorialScene);
+
+        //튜토리얼 안하면 오프닝 컷씬
+        SceneFadeController.LoadSceneWithFadeIfNeeded(OpeningCutScene);
     }
 
     private void OnTutorialCancle()
     {
-        tutorialPopup.SetActive(false);
+        tutorialSelectionPending = false;
+        pendingSlotIndex = -1;
+        tutorialPopup?.SetActive(false);
     }
 }
