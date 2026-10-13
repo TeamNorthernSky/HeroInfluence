@@ -17,13 +17,12 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
     private GameObject choicePanel;
     private TMP_Text rewardTitle, rewardMessage, rewardProceedText;
     private TMP_Text choiceTitle, choiceMessage;
-    private Button rewardProceed, choiceCancel;
-    private TMP_Text cancelText;
+    private Button rewardProceed, choiceConfirm;
+    private TMP_Text confirmText;
     private readonly List<PreviewRow> rewardRows = new List<PreviewRow>();
     private readonly List<ChoiceCard> cards = new List<ChoiceCard>();
     private DHWorldEventRuntimeManager manager;
     private DHWorldEventPresentationRequest current;
-    private string cancelId;
     private int inputFrame = -1;
 
     private void Awake()
@@ -73,14 +72,14 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
         FitText(choiceMessage, 22);
         cards.Add(new ChoiceCard(Find<Button>(choicePanel.transform, "ChoiceLeftButton"), IconFor));
         cards.Add(new ChoiceCard(Find<Button>(choicePanel.transform, "ChoiceRightButton"), IconFor));
-        choiceCancel = Find<Button>(choicePanel.transform, "ChoiceCancelButton");
-        cancelText = choiceCancel.GetComponentInChildren<TMP_Text>(true);
+        choiceConfirm = Find<Button>(choicePanel.transform, "ChoiceCancelButton");
+        confirmText = choiceConfirm.GetComponentInChildren<TMP_Text>(true);
     }
 
     private void BindButtons()
     {
         rewardProceed.onClick.AddListener(OnProceed);
-        choiceCancel.onClick.AddListener(OnCancel);
+        choiceConfirm.onClick.AddListener(OnConfirm);
         foreach (ChoiceCard card in cards)
         {
             ChoiceCard target = card;
@@ -173,15 +172,14 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
     {
         choiceTitle.text = string.IsNullOrWhiteSpace(request.WorldEventName) ? "선택형 이벤트" : request.WorldEventName;
         choiceMessage.text = Message(request);
-        cancelId = null;
         if (request.IsWaitingFinalConfirm)
         {
             for (int i = 0; i < cards.Count; i++)
                 cards[i].Button.gameObject.SetActive(false);
 
-            cancelText.text = "\uD655\uC778";
-            choiceCancel.interactable = true;
-            choiceCancel.gameObject.SetActive(true);
+            confirmText.text = "\uD655\uC778";
+            choiceConfirm.interactable = true;
+            choiceConfirm.gameObject.SetActive(true);
             return;
         }
 
@@ -191,14 +189,7 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
             DHWorldEventCatalog.Instance.TryGetEvent(request.WorldEventId, out template);
         foreach (DHWorldEventChoicePresentationOption option in request.ChoiceOptions)
         {
-            if (option == null) continue;
-            if (option.IsCancel)
-            {
-                cancelId = option.ChoiceId;
-                cancelText.text = option.ChoiceText;
-                choiceCancel.interactable = option.IsEnabled;
-                continue;
-            }
+            if (option == null || option.IsCancel) continue;
             // 카탈로그는 choice_1_id/choice_2_id 두 선택지를 제공한다.
             if (index >= cards.Count) break;
             bool usesIp = false;
@@ -208,7 +199,7 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
             cards[index++].Render(option, usesIp);
         }
         for (; index < cards.Count; index++) cards[index].Button.gameObject.SetActive(false);
-        choiceCancel.gameObject.SetActive(!string.IsNullOrEmpty(cancelId));
+        choiceConfirm.gameObject.SetActive(false);
     }
 
     private bool CanSubmit(DHWorldEventType type)
@@ -231,16 +222,12 @@ public sealed class WorldEventRewardChoicePanelController : MonoBehaviour
             manager.SelectChoice(card.ChoiceId);
     }
 
-    private void OnCancel()
+    private void OnConfirm()
     {
-        if (current != null && current.IsWaitingFinalConfirm && choiceCancel.interactable && CanSubmit(DHWorldEventType.Choice))
+        if (current != null && current.IsWaitingFinalConfirm && choiceConfirm.interactable && CanSubmit(DHWorldEventType.Choice))
         {
             manager.ConfirmCurrentMessage();
-            return;
         }
-
-        if (choiceCancel.interactable && !string.IsNullOrEmpty(cancelId) && CanSubmit(DHWorldEventType.Choice))
-            manager.SelectChoice(cancelId);
     }
 
     private static T Find<T>(Transform root, params string[] names) where T : Component

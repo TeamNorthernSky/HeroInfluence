@@ -1951,6 +1951,34 @@ public sealed partial class SkillPresentationDirector
     }
 
     /// <summary>
+    /// 광역 커스텀 연출용 피해 확정 델리게이트. 몇 번 호출돼도 대상별 hit callback은 한 번만 실행한다.
+    /// </summary>
+    internal static Action CreateAoEHitApplier(
+        BattleCharactor actor,
+        IReadOnlyList<DamageContext> contexts,
+        IReadOnlyList<Func<BattleHitResult>> hitCallbacks,
+        int pairCount,
+        float battleSpeed,
+        BattleVisualDirector visual)
+    {
+        bool applied = false;
+        return () =>
+        {
+            if (applied)
+            {
+                return;
+            }
+
+            applied = true;
+            for (int i = 0; i < pairCount; i++)
+            {
+                new ResolveHitAction(actor, contexts[i]?.Target, hitCallbacks[i], "Hit", battleSpeed, visual)
+                    .ExecuteImmediate();
+            }
+        };
+    }
+
+    /// <summary>
     /// 광역 스킬: 시전 애니 1회, HitDelay 시점에 전 타겟 동시 피격·데미지, 이후 전원 Idle 복귀.
     /// </summary>
     public IEnumerator RunAoESkillSequence(List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks,
@@ -1987,6 +2015,26 @@ public sealed partial class SkillPresentationDirector
 
         BattleCharactor primaryTarget = leadContext.Target;
         SkillData skill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(leadContext));
+
+        // 특이 광역 스킬 커스텀 연출 탈출구(등록 없으면 no-op → 아래 기본 광역 시퀀서).
+        // 연출은 1회, 피해 확정은 기존 hit callback 계약 그대로 대상마다 한 번(1회 가드).
+        if (skill != null && SkillPresentationSequenceRegistry.TryGetAoE(skill.skillKey, out IAoESkillPresentationSequence aoeSequence))
+        {
+            var aoeTargets = new List<BattleCharactor>(pairCount);
+            for (int i = 0; i < pairCount; i++)
+            {
+                if (contexts[i]?.Target != null)
+                {
+                    aoeTargets.Add(contexts[i].Target);
+                }
+            }
+
+            Action applyHits = CreateAoEHitApplier(actor, contexts, hitCallbacks, pairCount,
+                _battle.CurrentBattleSpeed, _battle.VisualDirector);
+            yield return _battle.StartCoroutine(aoeSequence.Run(_battle, actor, primaryTarget, skill, aoeTargets, applyHits));
+            yield break;
+        }
+
         ApplyPresentationOverride(skill);
         actor.EnsureAnimationController();
         CharactorAnimationController actorAnim = actor.Anim;

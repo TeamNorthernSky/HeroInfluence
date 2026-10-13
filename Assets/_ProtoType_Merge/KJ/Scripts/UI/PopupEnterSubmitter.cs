@@ -164,6 +164,10 @@ public sealed class PopupEnterSubmitter : MonoBehaviour
         switch (rootName)
         {
             case "ExitPopup":
+            case "SavePopup":
+            case "SaveCompletedPopup":
+            case "ToTitlePopup":
+            case "QuitGamePopup":
             case "TutorialPopup":
             case "Modal_Settings":
                 return FindNamedButton(topModal.transform, "Accept Button");

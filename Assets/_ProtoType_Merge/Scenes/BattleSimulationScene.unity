@@ -415,9 +415,9 @@ MonoBehaviour:
     chatSubTable: {fileID: 11400000, guid: 559b2f64547c065468b64e1249eee2ea, type: 2}
     branchMainTable: {fileID: 11400000, guid: 53c47cf1403d0f34d8739102993b4d4b, type: 2}
     branchSubTable: {fileID: 11400000, guid: 5be90688e90174943b2e972981131d8f, type: 2}
-    enemyBattleGroupTable: {fileID: 11400000, guid: 16e78525ba0216845a83b5eaab2e4d47,
+    enemyBattleGroupTable: {fileID: 11400000, guid: 751447153aa7c8a429f2a2c570f35d81,
       type: 2}
-    enemyBattleUnitTable: {fileID: 11400000, guid: cbb4286e6406a304191ef82bb779512c,
+    enemyBattleUnitTable: {fileID: 11400000, guid: cac12e2cd29c6b54ebf215c78e3b51f2,
       type: 2}
   - zoneId: 4
     zoneLabel: "4\uAD6C\uC5ED"
@@ -425,8 +425,10 @@ MonoBehaviour:
     chatSubTable: {fileID: 11400000, guid: be3c66b416cf5234abe4348b6a2406d9, type: 2}
     branchMainTable: {fileID: 11400000, guid: f9d212d24a81cc1459d64672e74318d3, type: 2}
     branchSubTable: {fileID: 11400000, guid: 7337d01912ce74148bbd2ae06a43b4ae, type: 2}
-    enemyBattleGroupTable: {fileID: 0}
-    enemyBattleUnitTable: {fileID: 0}
+    enemyBattleGroupTable: {fileID: 11400000, guid: 7f521ec11ff8e0642abaad827e6b4843,
+      type: 2}
+    enemyBattleUnitTable: {fileID: 11400000, guid: eac0d97ea3d8e95409e75d10545a4586,
+      type: 2}
   mainSubEventRewardTable: {fileID: 11400000, guid: 5f847ee124bbb204ea01035e8d8bb8db,
     type: 2}
   loadOnAwake: 1
@@ -443,17 +445,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerUnitDataTable: {fileID: 11400000, guid: b4122d1793c299d4cab67f9cfedaa4e5,
+  playerUnitDataTable: {fileID: 11400000, guid: e6c8877c70aaa8c47a9b46bb87dec069,
     type: 2}
-  enemyUnitInfoDataTable: {fileID: 11400000, guid: 58b1efb7032b6d9449411e9388f8f172,
+  enemyUnitInfoDataTable: {fileID: 11400000, guid: bec3b733dc94cc242a6f4b87f05f64ed,
     type: 2}
-  playerWeaponDataTable: {fileID: 11400000, guid: 7d79b2f4688a59d46892dfc21a1d8026,
+  playerWeaponDataTable: {fileID: 11400000, guid: e94e37bebb96a814ab4d0bac4007f2ec,
     type: 2}
-  classSkillDataTable: {fileID: 11400000, guid: c335171227ab4b44faaab663c54d0239,
+  classSkillDataTable: {fileID: 11400000, guid: 9a086d8f8427e404cad97d1371c38396,
     type: 2}
-  unitGrowthExpDataTable: {fileID: 11400000, guid: 48e95fdabbaae5a4daaa578fbb52c037,
+  unitGrowthExpDataTable: {fileID: 11400000, guid: 553a4c165c3d0424ea3947a429526c7b,
     type: 2}
-  enemyGroupDataTable: {fileID: 11400000, guid: 4ff84c791b474d44b96f3ce299faa0bf,
+  enemyGroupDataTable: {fileID: 11400000, guid: 9e51f7da4488a3741949b5a87d1c8644,
     type: 2}
   sector4EnemyUnitDataTable: {fileID: 11400000, guid: 88de00416d03edd4eba0696dbedff063,
     type: 2}
