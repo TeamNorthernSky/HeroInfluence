@@ -13,6 +13,7 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
     [SerializeField] private LevelZoneLayoutLoader levelZoneLayoutLoader;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private QuarterViewCameraFollower cameraFollower;
+    [SerializeField] private PartyRegistry partyRegistry;
 
     [Header("Input")]
     [SerializeField] private bool enableClickNavigation = true;
@@ -83,8 +84,13 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
     private void MoveCameraToPointer(PointerEventData eventData)
     {
         ResolveReferences();
-        if (minimapRect == null || gridManager == null || cameraFollower == null || !TryGetGridSize(out Vector2Int gridSize))
+        if (minimapRect == null ||
+            gridManager == null ||
+            cameraFollower == null ||
+            !TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int gridSize))
+        {
             return;
+        }
 
         Camera eventCamera = eventData.pressEventCamera;
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
@@ -102,14 +108,14 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
         normalizedX = Mathf.Clamp01(normalizedX);
         normalizedY = Mathf.Clamp01(normalizedY);
 
-        Vector3 worldPosition = MinimapToWorldPosition(normalizedX, normalizedY, gridSize);
+        Vector3 worldPosition = MinimapToWorldPosition(normalizedX, normalizedY, viewOrigin, gridSize);
         cameraFollower.FocusWorldPosition(worldPosition);
     }
 
-    private Vector3 MinimapToWorldPosition(float normalizedX, float normalizedY, Vector2Int gridSize)
+    private Vector3 MinimapToWorldPosition(float normalizedX, float normalizedY, Vector2Int viewOrigin, Vector2Int gridSize)
     {
-        float gridX = normalizedX * Mathf.Max(1, gridSize.x) - 0.5f;
-        float gridY = normalizedY * Mathf.Max(1, gridSize.y) - 0.5f;
+        float gridX = viewOrigin.x + normalizedX * Mathf.Max(1, gridSize.x) - 0.5f;
+        float gridY = viewOrigin.y + normalizedY * Mathf.Max(1, gridSize.y) - 0.5f;
 
         Vector3 origin = gridManager.GridToWorldCenter(Vector2Int.zero);
         Vector3 xAxis = gridManager.GridToWorldCenter(Vector2Int.right) - origin;
@@ -143,6 +149,52 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
         return false;
     }
 
+    private bool TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int gridSize)
+    {
+        if (TryGetCurrentPartyZone(out LoadedLevelZoneData zone))
+        {
+            viewOrigin = zone.Anchor;
+            gridSize = zone.Size;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
+        viewOrigin = Vector2Int.zero;
+        return TryGetGridSize(out gridSize);
+    }
+
+    private bool TryGetCurrentPartyZone(out LoadedLevelZoneData currentZone)
+    {
+        currentZone = default;
+        if (levelZoneLayoutLoader == null ||
+            levelZoneLayoutLoader.LoadedZones == null ||
+            levelZoneLayoutLoader.LoadedZones.Count == 0)
+        {
+            return false;
+        }
+
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == null)
+            return false;
+
+        Vector2Int partyGrid = party.GetCurrentGrid();
+        var zones = levelZoneLayoutLoader.LoadedZones;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            LoadedLevelZoneData zone = zones[i];
+            if (zone.Size.x <= 0 || zone.Size.y <= 0)
+                continue;
+
+            RectInt bounds = new RectInt(zone.Anchor, zone.Size);
+            if (!bounds.Contains(partyGrid))
+                continue;
+
+            currentZone = zone;
+            return true;
+        }
+
+        return false;
+    }
+
     private void ResolveReferences()
     {
         if (minimapImage == null)
@@ -173,6 +225,9 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
 
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
+
+        if (partyRegistry == null)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
 
         if (cameraFollower == null)
         {

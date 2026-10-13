@@ -17,6 +17,9 @@ public class MinimapController : MonoBehaviour
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
+    [SerializeField] private EnemyRegistry enemyRegistry;
+    [SerializeField] private MainEventRegistry mainEventRegistry;
+    [SerializeField] private SubEventRegistry subEventRegistry;
 
     [Header("Draw Options")]
     [SerializeField] private bool drawOnEnable = true;
@@ -34,15 +37,41 @@ public class MinimapController : MonoBehaviour
     [SerializeField] private Color enemyBuildingColor = new Color(1f, 0f, 0f, 1f);
     [SerializeField] private Color neutralOutpostColor = new Color(1f, 0.85f, 0f, 1f);
 
+    [Header("Strategic Object Icons")]
+    [SerializeField] private bool showStrategicObjectIcons = true;
+    [SerializeField] private Image strategicIconPrefab;
+    [SerializeField] private Sprite playerBuildingSprite;
+    [SerializeField] private Sprite enemyBuildingSprite;
+    [SerializeField] private Sprite neutralBuildingSprite;
+    [SerializeField] private Sprite eventOrStaticEnemySprite;
+    [SerializeField] private Sprite mobileEnemySprite;
+    [SerializeField] private Sprite subEventSprite;
+    [SerializeField] private Sprite gateSprite;
+
+    [Header("Strategic Object Icon Scales")]
+    [SerializeField, Min(0.1f)] private float outpostIconScale = 1f;
+    [SerializeField, Min(0.1f)] private float heroUnionIconScale = 1f;
+    [SerializeField, Min(0.1f)] private float villainUnionIconScale = 1f;
+    [SerializeField, Min(0.1f)] private float mainEventIconScale = 1f;
+    [SerializeField, Min(0.1f)] private float staticEnemyIconScale = 1f;
+    [SerializeField, Min(0.1f)] private float mobileEnemyIconScale = 1f;
+    [SerializeField, Min(0.1f)] private float subEventIconScale = 1f;
+    [SerializeField, Min(0.1f)] private float gateIconScale = 1f;
+
     [Header("Party Icons")]
     [SerializeField] private bool showPartyIcons = true;
+    [SerializeField] private Sprite playerPartySprite;
+    [SerializeField, Min(0.1f)] private float playerPartyIconScale = 1f;
     [SerializeField] private Color partyIconColor = new Color(0f, 1f, 0.1f, 1f);
     [SerializeField, Min(0.1f)] private float partyIconScale = 1f;
 
     private Texture2D minimapTexture;
     private Vector2Int textureSize;
     private Vector2Int currentGridSize;
+    private Vector2Int currentViewOrigin;
+    private string currentViewZoneId = string.Empty;
     private float nextPartyIconRefreshTime;
+    private readonly List<Image> strategicIconPool = new List<Image>();
     private readonly List<Image> partyIconPool = new List<Image>();
     private readonly HashSet<Vector2Int> obstacleCellCache = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> dirtyCells = new HashSet<Vector2Int>();
@@ -99,44 +128,55 @@ public class MinimapController : MonoBehaviour
     {
         ResolveReferences();
 
-        if (targetImage == null || !TryGetGridSize(out Vector2Int gridSize))
+        if (targetImage == null || !TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int gridSize, out string zoneId))
             return;
 
+        currentViewOrigin = viewOrigin;
         currentGridSize = gridSize;
+        currentViewZoneId = zoneId;
         EnsureTexture(gridSize);
         RebuildObstacleCellCache();
-        DrawCells(gridSize);
+        DrawCells(viewOrigin, gridSize);
         DrawStrategicObjects(gridSize);
         minimapTexture.Apply(false);
         targetImage.texture = minimapTexture;
         dirtyCells.Clear();
         hasPendingTextureApply = false;
 
+        DrawStrategicObjectIcons(gridSize);
         DrawPartyIcons(gridSize);
     }
 
     public void RefreshPartyIconsOnly()
     {
+        ResolveReferences();
+
+        if (!TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int resolvedGridSize, out string zoneId))
+        {
+            HidePartyIcons(0);
+            return;
+        }
+
+        if (currentGridSize != resolvedGridSize || currentViewOrigin != viewOrigin || currentViewZoneId != zoneId)
+        {
+            Refresh();
+            return;
+        }
+
         if (!showPartyIcons)
         {
             HidePartyIcons(0);
             return;
         }
 
-        ResolveReferences();
-
         Vector2Int gridSize = currentGridSize;
         if (gridSize.x <= 0 || gridSize.y <= 0)
         {
-            if (!TryGetGridSize(out gridSize))
-            {
-                HidePartyIcons(0);
-                return;
-            }
-
-            currentGridSize = gridSize;
+            Refresh();
+            return;
         }
 
+        RefreshStrategicObjectIconsOnly(gridSize);
         DrawPartyIcons(gridSize);
     }
 
@@ -146,13 +186,13 @@ public class MinimapController : MonoBehaviour
         Refresh();
     }
 
-    private void DrawCells(Vector2Int gridSize)
+    private void DrawCells(Vector2Int viewOrigin, Vector2Int gridSize)
     {
         for (int y = 0; y < gridSize.y; y++)
         {
             for (int x = 0; x < gridSize.x; x++)
             {
-                Vector2Int grid = new Vector2Int(x, y);
+                Vector2Int grid = viewOrigin + new Vector2Int(x, y);
                 minimapTexture.SetPixel(x, y, GetCellColor(grid));
             }
         }
@@ -264,10 +304,13 @@ public class MinimapController : MonoBehaviour
 
     private void DrawStrategicCell(Vector2Int grid, Color color, Vector2Int gridSize)
     {
-        if (!IsGridInMinimap(grid, gridSize))
+        if (!TryGlobalToMinimapGrid(grid, out Vector2Int localGrid))
             return;
 
-        minimapTexture.SetPixel(grid.x, grid.y, color);
+        if (!IsGridInMinimap(localGrid, gridSize))
+            return;
+
+        minimapTexture.SetPixel(localGrid.x, localGrid.y, color);
     }
 
     private bool TryGetStrategicCellColor(Vector2Int grid, out Color color)
@@ -414,6 +457,435 @@ public class MinimapController : MonoBehaviour
         };
     }
 
+    private void DrawStrategicObjectIcons(Vector2Int gridSize)
+    {
+        if (!showStrategicObjectIcons || targetImage == null)
+        {
+            HideStrategicIcons(0);
+            return;
+        }
+
+        ResolveIconRoot();
+
+        int iconIndex = 0;
+        iconIndex = DrawOutpostIcons(gridSize, iconIndex);
+        iconIndex = DrawHeroUnionIcons(gridSize, iconIndex);
+        iconIndex = DrawVillainUnionIcons(gridSize, iconIndex);
+        iconIndex = DrawGateIcons(gridSize, iconIndex);
+        iconIndex = DrawMainEventIcons(gridSize, iconIndex);
+        iconIndex = DrawEnemyIcons(gridSize, iconIndex, EnemyBehaviorType.Static);
+        iconIndex = DrawSubEventIcons(gridSize, iconIndex);
+        iconIndex = DrawEnemyIcons(gridSize, iconIndex, EnemyBehaviorType.Mobile);
+
+        HideStrategicIcons(iconIndex);
+    }
+
+    private void RefreshStrategicObjectIconsOnly(Vector2Int gridSize)
+    {
+        DrawStrategicObjectIcons(gridSize);
+    }
+
+    private int DrawOutpostIcons(Vector2Int gridSize, int iconIndex)
+    {
+        Outpost[] fallbackOutposts = null;
+        IReadOnlyList<Outpost> outposts = outpostRegistry != null ? outpostRegistry.Outposts : null;
+        int count = outposts != null ? outposts.Count : 0;
+        bool useFallback = count == 0;
+
+        if (useFallback)
+        {
+            fallbackOutposts = FindObjectsByType<Outpost>(FindObjectsSortMode.None);
+            count = fallbackOutposts.Length;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            Outpost outpost = useFallback ? fallbackOutposts[i] : outposts[i];
+            if (outpost == null || !outpost.isActiveAndEnabled)
+                continue;
+
+            Sprite sprite = GetOutpostMinimapSprite(outpost.outpostState);
+            iconIndex = TryDrawStrategicIcon(outpost, sprite, outpostIconScale, gridSize, outpost.GetAnchorGrid(gridManager), iconIndex);
+        }
+
+        return iconIndex;
+    }
+
+    private int DrawMainEventIcons(Vector2Int gridSize, int iconIndex)
+    {
+        MainEventObject[] fallbackEvents = null;
+        IReadOnlyList<MainEventObject> mainEvents = mainEventRegistry != null ? mainEventRegistry.MainEvents : null;
+        int count = mainEvents != null ? mainEvents.Count : 0;
+        bool useFallback = count == 0;
+
+        if (useFallback)
+        {
+            fallbackEvents = FindObjectsByType<MainEventObject>(FindObjectsSortMode.None);
+            count = fallbackEvents.Length;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            MainEventObject mainEvent = useFallback ? fallbackEvents[i] : mainEvents[i];
+            if (mainEvent == null || !mainEvent.isActiveAndEnabled)
+                continue;
+
+            iconIndex = TryDrawStrategicIcon(
+                mainEvent,
+                eventOrStaticEnemySprite,
+                mainEventIconScale,
+                gridSize,
+                mainEvent.GetCurrentGrid(gridManager),
+                iconIndex);
+        }
+
+        return iconIndex;
+    }
+
+    private int DrawSubEventIcons(Vector2Int gridSize, int iconIndex)
+    {
+        SubEventObject[] fallbackEvents = null;
+        IReadOnlyList<SubEventObject> subEvents = subEventRegistry != null ? subEventRegistry.SubEvents : null;
+        int count = subEvents != null ? subEvents.Count : 0;
+        bool useFallback = count == 0;
+
+        if (useFallback)
+        {
+            fallbackEvents = FindObjectsByType<SubEventObject>(FindObjectsSortMode.None);
+            count = fallbackEvents.Length;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            SubEventObject subEvent = useFallback ? fallbackEvents[i] : subEvents[i];
+            if (subEvent == null || !subEvent.isActiveAndEnabled)
+                continue;
+
+            iconIndex = TryDrawStrategicIcon(
+                subEvent,
+                subEventSprite,
+                subEventIconScale,
+                gridSize,
+                subEvent.GetCurrentGrid(gridManager),
+                iconIndex);
+        }
+
+        return iconIndex;
+    }
+
+    private int DrawEnemyIcons(Vector2Int gridSize, int iconIndex, EnemyBehaviorType targetBehaviorType)
+    {
+        EnemyGridMover[] fallbackEnemies = null;
+        IReadOnlyList<EnemyGridMover> enemies = enemyRegistry != null ? enemyRegistry.Enemies : null;
+        int count = enemies != null ? enemies.Count : 0;
+        bool useFallback = count == 0;
+
+        if (useFallback)
+        {
+            fallbackEnemies = FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None);
+            count = fallbackEnemies.Length;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            EnemyGridMover enemy = useFallback ? fallbackEnemies[i] : enemies[i];
+            if (enemy == null || !enemy.isActiveAndEnabled)
+                continue;
+
+            if (enemy.BehaviorType != targetBehaviorType)
+                continue;
+
+            Sprite sprite = enemy.BehaviorType == EnemyBehaviorType.Mobile
+                ? mobileEnemySprite
+                : eventOrStaticEnemySprite;
+            float scale = enemy.BehaviorType == EnemyBehaviorType.Mobile
+                ? mobileEnemyIconScale
+                : staticEnemyIconScale;
+            iconIndex = TryDrawStrategicIcon(enemy, sprite, scale, gridSize, enemy.GetCurrentGrid(), iconIndex);
+        }
+
+        return iconIndex;
+    }
+
+    private int DrawGateIcons(Vector2Int gridSize, int iconIndex)
+    {
+        if (gateSprite == null)
+            return iconIndex;
+
+        GateRuntimeController[] gates = FindObjectsByType<GateRuntimeController>(FindObjectsSortMode.None);
+        List<Vector2Int> gateCells = new List<Vector2Int>();
+        for (int i = 0; i < gates.Length; i++)
+        {
+            GateRuntimeController gate = gates[i];
+            if (gate == null || !gate.isActiveAndEnabled)
+                continue;
+
+            gateCells.Clear();
+            gate.CollectTeleportCells(gateCells);
+            if (!TryGetCellsMinimapRect(gateCells, out Vector2 centerLocalGrid, out Vector2 sizeInCells))
+                continue;
+
+            sizeInCells = MakeSquareSize(sizeInCells);
+            Image icon = GetStrategicIcon(iconIndex);
+            ApplyStrategicIcon(icon, gateSprite, gateIconScale, centerLocalGrid, gridSize, sizeInCells);
+            iconIndex++;
+        }
+
+        return iconIndex;
+    }
+
+    private int DrawHeroUnionIcons(Vector2Int gridSize, int iconIndex)
+    {
+        HeroUnionUnit[] fallbackHeroUnions = null;
+        IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry != null ? heroUnionRegistry.HeroUnions : null;
+        int count = heroUnions != null ? heroUnions.Count : 0;
+        bool useFallback = count == 0;
+
+        if (useFallback)
+        {
+            fallbackHeroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
+            count = fallbackHeroUnions.Length;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            HeroUnionUnit heroUnion = useFallback ? fallbackHeroUnions[i] : heroUnions[i];
+            if (heroUnion == null || !heroUnion.isActiveAndEnabled)
+                continue;
+
+            Sprite sprite = heroUnion.IsClaimedByHero ? playerBuildingSprite : neutralBuildingSprite;
+            iconIndex = TryDrawStrategicIcon(heroUnion, sprite, heroUnionIconScale, gridSize, heroUnion.GetCurrentGrid(), iconIndex);
+        }
+
+        return iconIndex;
+    }
+
+    private int DrawVillainUnionIcons(Vector2Int gridSize, int iconIndex)
+    {
+        VillainUnionBase[] fallbackBases = null;
+        IReadOnlyList<VillainUnionBase> bases = villainUnionBaseRegistry != null
+            ? villainUnionBaseRegistry.VillainUnionBases
+            : null;
+        int count = bases != null ? bases.Count : 0;
+        bool useFallback = count == 0;
+
+        if (useFallback)
+        {
+            fallbackBases = FindObjectsByType<VillainUnionBase>(FindObjectsSortMode.None);
+            count = fallbackBases.Length;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            VillainUnionBase villainUnionBase = useFallback ? fallbackBases[i] : bases[i];
+            if (villainUnionBase == null || !villainUnionBase.isActiveAndEnabled)
+                continue;
+
+            iconIndex = TryDrawStrategicIcon(
+                villainUnionBase,
+                enemyBuildingSprite,
+                villainUnionIconScale,
+                gridSize,
+                villainUnionBase.GetAnchorGrid(),
+                iconIndex);
+        }
+
+        return iconIndex;
+    }
+
+    private int TryDrawStrategicIcon(
+        Component component,
+        Sprite sprite,
+        float iconScale,
+        Vector2Int gridSize,
+        Vector2Int fallbackGrid,
+        int iconIndex)
+    {
+        if (component == null || sprite == null)
+            return iconIndex;
+
+        if (!TryGetComponentMinimapRect(component, fallbackGrid, out Vector2 centerLocalGrid, out Vector2 sizeInCells))
+            return iconIndex;
+
+        Image icon = GetStrategicIcon(iconIndex);
+        ApplyStrategicIcon(icon, sprite, iconScale, centerLocalGrid, gridSize, sizeInCells);
+        return iconIndex + 1;
+    }
+
+    private bool TryGetComponentMinimapRect(
+        Component component,
+        Vector2Int fallbackGrid,
+        out Vector2 centerLocalGrid,
+        out Vector2 sizeInCells)
+    {
+        centerLocalGrid = Vector2.zero;
+        sizeInCells = Vector2.one;
+
+        if (component == null)
+            return false;
+
+        MultiGridOccupant occupant = component.GetComponent<MultiGridOccupant>();
+        if (occupant == null)
+        {
+            if (!TryGlobalToMinimapGrid(fallbackGrid, out Vector2Int localGrid))
+                return false;
+
+            centerLocalGrid = new Vector2(localGrid.x + 0.5f, localGrid.y + 0.5f);
+            sizeInCells = Vector2.one;
+            return true;
+        }
+
+        IReadOnlyList<Vector2Int> occupiedCells = occupant.GetOccupiedCells();
+        if (occupiedCells == null || occupiedCells.Count == 0)
+            return false;
+
+        Vector2Int min = occupiedCells[0];
+        Vector2Int max = occupiedCells[0];
+        bool hasVisibleCell = false;
+
+        for (int i = 0; i < occupiedCells.Count; i++)
+        {
+            Vector2Int cell = occupiedCells[i];
+            min = Vector2Int.Min(min, cell);
+            max = Vector2Int.Max(max, cell);
+
+            if (TryGlobalToMinimapGrid(cell, out _))
+                hasVisibleCell = true;
+        }
+
+        if (!hasVisibleCell)
+            return false;
+
+        BuildLocalRect(min, max, out centerLocalGrid, out sizeInCells);
+        return true;
+    }
+
+    private bool TryGetCellsMinimapRect(
+        IReadOnlyList<Vector2Int> cells,
+        out Vector2 centerLocalGrid,
+        out Vector2 sizeInCells)
+    {
+        centerLocalGrid = Vector2.zero;
+        sizeInCells = Vector2.one;
+
+        if (cells == null || cells.Count == 0)
+            return false;
+
+        Vector2Int min = cells[0];
+        Vector2Int max = cells[0];
+        bool hasVisibleCell = false;
+
+        for (int i = 0; i < cells.Count; i++)
+        {
+            Vector2Int cell = cells[i];
+            min = Vector2Int.Min(min, cell);
+            max = Vector2Int.Max(max, cell);
+
+            if (TryGlobalToMinimapGrid(cell, out _))
+                hasVisibleCell = true;
+        }
+
+        if (!hasVisibleCell)
+            return false;
+
+        BuildLocalRect(min, max, out centerLocalGrid, out sizeInCells);
+        return true;
+    }
+
+    private void BuildLocalRect(
+        Vector2Int globalMin,
+        Vector2Int globalMax,
+        out Vector2 centerLocalGrid,
+        out Vector2 sizeInCells)
+    {
+        Vector2Int localMin = globalMin - currentViewOrigin;
+        Vector2Int localMax = globalMax - currentViewOrigin;
+        centerLocalGrid = new Vector2(
+            (localMin.x + localMax.x + 1f) * 0.5f,
+            (localMin.y + localMax.y + 1f) * 0.5f);
+        sizeInCells = new Vector2(localMax.x - localMin.x + 1, localMax.y - localMin.y + 1);
+    }
+
+    private static Vector2 MakeSquareSize(Vector2 sizeInCells)
+    {
+        float maxSize = Mathf.Max(sizeInCells.x, sizeInCells.y);
+        return new Vector2(maxSize, maxSize);
+    }
+
+    private void ApplyStrategicIcon(
+        Image icon,
+        Sprite sprite,
+        float iconScale,
+        Vector2 centerLocalGrid,
+        Vector2Int gridSize,
+        Vector2 sizeInCells)
+    {
+        if (icon == null || iconRoot == null)
+            return;
+
+        RectTransform iconTransform = icon.rectTransform;
+        icon.sprite = sprite;
+        icon.color = Color.white;
+        iconTransform.anchoredPosition = GridCenterToMinimapPosition(centerLocalGrid, gridSize);
+        Vector2 cellSize = GetCellSize(gridSize);
+        float scale = Mathf.Max(0.1f, iconScale);
+        iconTransform.sizeDelta = new Vector2(
+            cellSize.x * sizeInCells.x * scale,
+            cellSize.y * sizeInCells.y * scale);
+        iconTransform.SetAsLastSibling();
+
+        if (!icon.gameObject.activeSelf)
+            icon.gameObject.SetActive(true);
+    }
+
+    private Sprite GetOutpostMinimapSprite(OutpostState state)
+    {
+        return state switch
+        {
+            OutpostState.Claimed => playerBuildingSprite,
+            OutpostState.EnemyClaimed => enemyBuildingSprite,
+            _ => neutralBuildingSprite
+        };
+    }
+
+    private Image GetStrategicIcon(int index)
+    {
+        while (strategicIconPool.Count <= index)
+            strategicIconPool.Add(CreateStrategicIcon());
+
+        return strategicIconPool[index];
+    }
+
+    private Image CreateStrategicIcon()
+    {
+        ResolveIconRoot();
+
+        Image icon = strategicIconPrefab != null
+            ? Instantiate(strategicIconPrefab, iconRoot)
+            : new GameObject("Strategic Minimap Icon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
+
+        RectTransform rectTransform = icon.rectTransform;
+        rectTransform.SetParent(iconRoot, false);
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.zero;
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.localScale = Vector3.one;
+
+        icon.raycastTarget = false;
+        icon.preserveAspect = false;
+        icon.gameObject.SetActive(false);
+        return icon;
+    }
+
+    private void HideStrategicIcons(int firstHiddenIndex)
+    {
+        for (int i = firstHiddenIndex; i < strategicIconPool.Count; i++)
+        {
+            if (strategicIconPool[i] != null)
+                strategicIconPool[i].gameObject.SetActive(false);
+        }
+    }
+
     private void DrawPartyIcons(Vector2Int gridSize)
     {
         if (!showPartyIcons || targetImage == null)
@@ -429,10 +901,11 @@ public class MinimapController : MonoBehaviour
         if (party != null && party.isActiveAndEnabled)
         {
             Vector2Int grid = party.GetCurrentGrid();
-            if (IsGridInMinimap(grid, gridSize))
+            if (TryGlobalToMinimapGrid(grid, out Vector2Int localGrid) && IsGridInMinimap(localGrid, gridSize))
             {
                 Image icon = GetPartyIcon(iconIndex);
-                ApplyIcon(icon, grid, gridSize, partyIconColor, GetCellIconSize(gridSize, partyIconScale));
+                float scale = playerPartySprite != null ? playerPartyIconScale : partyIconScale;
+                ApplyIcon(icon, localGrid, gridSize, partyIconColor, GetCellIconSize(gridSize, scale));
                 iconIndex++;
             }
         }
@@ -446,9 +919,11 @@ public class MinimapController : MonoBehaviour
             return;
 
         RectTransform iconTransform = icon.rectTransform;
+        icon.sprite = playerPartySprite;
         iconTransform.anchoredPosition = GridToMinimapPosition(grid, gridSize);
         iconTransform.sizeDelta = new Vector2(size, size);
-        icon.color = color;
+        icon.color = playerPartySprite != null ? Color.white : color;
+        iconTransform.SetAsLastSibling();
 
         if (!icon.gameObject.activeSelf)
             icon.gameObject.SetActive(true);
@@ -494,18 +969,29 @@ public class MinimapController : MonoBehaviour
 
     private Vector2 GridToMinimapPosition(Vector2Int grid, Vector2Int gridSize)
     {
+        return GridCenterToMinimapPosition(new Vector2(grid.x + 0.5f, grid.y + 0.5f), gridSize);
+    }
+
+    private Vector2 GridCenterToMinimapPosition(Vector2 centerGrid, Vector2Int gridSize)
+    {
         Rect rect = iconRoot != null ? iconRoot.rect : targetImage.rectTransform.rect;
-        float normalizedX = (grid.x + 0.5f) / Mathf.Max(1, gridSize.x);
-        float normalizedY = (grid.y + 0.5f) / Mathf.Max(1, gridSize.y);
+        float normalizedX = centerGrid.x / Mathf.Max(1, gridSize.x);
+        float normalizedY = centerGrid.y / Mathf.Max(1, gridSize.y);
         return new Vector2(normalizedX * rect.width, normalizedY * rect.height);
+    }
+
+    private Vector2 GetCellSize(Vector2Int gridSize)
+    {
+        Rect rect = iconRoot != null ? iconRoot.rect : targetImage.rectTransform.rect;
+        return new Vector2(
+            rect.width / Mathf.Max(1, gridSize.x),
+            rect.height / Mathf.Max(1, gridSize.y));
     }
 
     private float GetCellIconSize(Vector2Int gridSize, float scale)
     {
-        Rect rect = iconRoot != null ? iconRoot.rect : targetImage.rectTransform.rect;
-        float width = rect.width / Mathf.Max(1, gridSize.x);
-        float height = rect.height / Mathf.Max(1, gridSize.y);
-        return Mathf.Min(width, height) * scale;
+        Vector2 cellSize = GetCellSize(gridSize);
+        return Mathf.Min(cellSize.x, cellSize.y) * scale;
     }
 
     private static bool IsGridInMinimap(Vector2Int grid, Vector2Int gridSize)
@@ -583,6 +1069,65 @@ public class MinimapController : MonoBehaviour
         return false;
     }
 
+    private bool TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int gridSize, out string zoneId)
+    {
+        if (TryGetCurrentPartyZone(out LoadedLevelZoneData zone))
+        {
+            viewOrigin = zone.Anchor;
+            gridSize = zone.Size;
+            zoneId = zone.ZoneId ?? string.Empty;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
+        viewOrigin = Vector2Int.zero;
+        zoneId = string.Empty;
+        return TryGetGridSize(out gridSize);
+    }
+
+    private bool TryGetCurrentPartyZone(out LoadedLevelZoneData currentZone)
+    {
+        currentZone = default;
+
+        if (!HasLoadedZoneData)
+            return false;
+
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == null)
+            return false;
+
+        return TryGetZoneAtGrid(party.GetCurrentGrid(), out currentZone);
+    }
+
+    private bool TryGetZoneAtGrid(Vector2Int grid, out LoadedLevelZoneData currentZone)
+    {
+        currentZone = default;
+        if (!HasLoadedZoneData)
+            return false;
+
+        IReadOnlyList<LoadedLevelZoneData> zones = levelZoneLayoutLoader.LoadedZones;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            LoadedLevelZoneData zone = zones[i];
+            if (zone.Size.x <= 0 || zone.Size.y <= 0)
+                continue;
+
+            RectInt bounds = new RectInt(zone.Anchor, zone.Size);
+            if (!bounds.Contains(grid))
+                continue;
+
+            currentZone = zone;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool TryGlobalToMinimapGrid(Vector2Int globalGrid, out Vector2Int localGrid)
+    {
+        localGrid = globalGrid - currentViewOrigin;
+        return IsGridInMinimap(localGrid, currentGridSize);
+    }
+
     private void EnsureTexture(Vector2Int gridSize)
     {
         if (minimapTexture != null && textureSize == gridSize)
@@ -637,14 +1182,14 @@ public class MinimapController : MonoBehaviour
 
     private void RedrawCell(Vector2Int grid)
     {
-        if (minimapTexture == null || !IsGridInMinimap(grid, currentGridSize))
+        if (minimapTexture == null || !TryGlobalToMinimapGrid(grid, out Vector2Int localGrid))
             return;
 
         Color color = GetCellColor(grid);
         if (TryGetStrategicCellColor(grid, out Color strategicColor))
             color = strategicColor;
 
-        minimapTexture.SetPixel(grid.x, grid.y, color);
+        minimapTexture.SetPixel(localGrid.x, localGrid.y, color);
         hasPendingTextureApply = true;
     }
 
@@ -750,6 +1295,15 @@ public class MinimapController : MonoBehaviour
 
         if (villainUnionBaseRegistry == null)
             villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();
+
+        if (enemyRegistry == null)
+            enemyRegistry = FindFirstObjectByType<EnemyRegistry>();
+
+        if (mainEventRegistry == null)
+            mainEventRegistry = FindFirstObjectByType<MainEventRegistry>();
+
+        if (subEventRegistry == null)
+            subEventRegistry = FindFirstObjectByType<SubEventRegistry>();
     }
 
     private void ResolveIconRoot()

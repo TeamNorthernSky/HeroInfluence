@@ -13,6 +13,7 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
     [SerializeField] private LevelZoneLayoutData levelZoneLayoutData;
     [SerializeField] private LevelZoneLayoutLoader levelZoneLayoutLoader;
     [SerializeField] private GridManager gridManager;
+    [SerializeField] private PartyRegistry partyRegistry;
 
     [Header("Display")]
     [SerializeField] private bool drawEveryFrame = true;
@@ -53,7 +54,10 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
         ResolveReferences();
         EnsureLines();
 
-        if (minimapRect == null || targetCamera == null || gridManager == null || !TryGetGridSize(out Vector2Int gridSize))
+        if (minimapRect == null ||
+            targetCamera == null ||
+            gridManager == null ||
+            !TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int gridSize))
         {
             SetLinesVisible(false);
             return;
@@ -66,7 +70,7 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
         }
 
         Rect rect = minimapRect.rect;
-        Vector2 center = WorldToMinimapPosition(cameraGroundCenter, gridSize, rect);
+        Vector2 center = WorldToMinimapPosition(cameraGroundCenter, viewOrigin, gridSize, rect);
         SetFixedBoxCorners(center, rect);
         ApplyLines();
     }
@@ -84,7 +88,7 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
         return true;
     }
 
-    private Vector2 WorldToMinimapPosition(Vector3 worldPosition, Vector2Int gridSize, Rect rect)
+    private Vector2 WorldToMinimapPosition(Vector3 worldPosition, Vector2Int viewOrigin, Vector2Int gridSize, Rect rect)
     {
         Vector3 origin = gridManager.GridToWorldCenter(Vector2Int.zero);
         Vector3 xAxis = gridManager.GridToWorldCenter(Vector2Int.right) - origin;
@@ -94,8 +98,10 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
         float gridX = xAxis.sqrMagnitude > Mathf.Epsilon ? Vector3.Dot(delta, xAxis) / xAxis.sqrMagnitude : 0f;
         float gridY = yAxis.sqrMagnitude > Mathf.Epsilon ? Vector3.Dot(delta, yAxis) / yAxis.sqrMagnitude : 0f;
 
-        float normalizedX = (gridX + 0.5f) / Mathf.Max(1, gridSize.x);
-        float normalizedY = (gridY + 0.5f) / Mathf.Max(1, gridSize.y);
+        float localGridX = gridX - viewOrigin.x;
+        float localGridY = gridY - viewOrigin.y;
+        float normalizedX = (localGridX + 0.5f) / Mathf.Max(1, gridSize.x);
+        float normalizedY = (localGridY + 0.5f) / Mathf.Max(1, gridSize.y);
 
         Vector2 position = new Vector2(normalizedX * rect.width, normalizedY * rect.height);
         if (clampToMinimap)
@@ -216,6 +222,52 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
         return false;
     }
 
+    private bool TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int gridSize)
+    {
+        if (TryGetCurrentPartyZone(out LoadedLevelZoneData zone))
+        {
+            viewOrigin = zone.Anchor;
+            gridSize = zone.Size;
+            return gridSize.x > 0 && gridSize.y > 0;
+        }
+
+        viewOrigin = Vector2Int.zero;
+        return TryGetGridSize(out gridSize);
+    }
+
+    private bool TryGetCurrentPartyZone(out LoadedLevelZoneData currentZone)
+    {
+        currentZone = default;
+        if (levelZoneLayoutLoader == null ||
+            levelZoneLayoutLoader.LoadedZones == null ||
+            levelZoneLayoutLoader.LoadedZones.Count == 0)
+        {
+            return false;
+        }
+
+        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (party == null)
+            return false;
+
+        Vector2Int partyGrid = party.GetCurrentGrid();
+        var zones = levelZoneLayoutLoader.LoadedZones;
+        for (int i = 0; i < zones.Count; i++)
+        {
+            LoadedLevelZoneData zone = zones[i];
+            if (zone.Size.x <= 0 || zone.Size.y <= 0)
+                continue;
+
+            RectInt bounds = new RectInt(zone.Anchor, zone.Size);
+            if (!bounds.Contains(partyGrid))
+                continue;
+
+            currentZone = zone;
+            return true;
+        }
+
+        return false;
+    }
+
     private void ResolveReferences()
     {
         if (minimapImage == null)
@@ -249,6 +301,9 @@ public class MinimapCameraViewportOverlay : MonoBehaviour
 
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
+
+        if (partyRegistry == null)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
     }
 
     private void OnValidate()

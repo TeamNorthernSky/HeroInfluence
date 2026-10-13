@@ -56,6 +56,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     [Header("Reset")]
     [SerializeField] private KeyCode resetKey = KeyCode.Y;
+    [SerializeField] private KeyCode recenterKey = KeyCode.Space;
 
     private static readonly List<RaycastResult> UiRaycastResults = new List<RaycastResult>();
     private static readonly Vector3[] ViewportCorners =
@@ -81,6 +82,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private bool holdFollowZAtMapEdge;
     private bool externalInputLocked;
     private bool externalFocusLocked;
+    private Transform externalFocusTarget;
     private Vector3 externalFocusWorldPosition;
 
     public bool IsExternalInputLocked => externalInputLocked;
@@ -166,6 +168,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public void LockExternalFocusWorldPosition(Vector3 worldPosition)
     {
+        externalFocusTarget = null;
         externalFocusWorldPosition = new Vector3(worldPosition.x, 0f, worldPosition.z);
         externalFocusLocked = true;
         SetExternalInputLocked(true);
@@ -173,9 +176,33 @@ public class QuarterViewCameraFollower : MonoBehaviour
         ApplyCameraPositionFromExternalFocus(true);
     }
 
-    public void UnlockExternalFocus()
+    public void LockExternalFocusTarget(Transform target, bool snapImmediately = true)
     {
+        if (target == null)
+            return;
+
+        externalFocusTarget = target;
+        externalFocusWorldPosition = FlattenFocusPosition(target.position);
+        externalFocusLocked = true;
+        SetExternalInputLocked(true);
+        followVelocity = Vector3.zero;
+
+        if (snapImmediately)
+            ApplyCameraPositionFromExternalFocus(true);
+    }
+
+    public void UnlockExternalFocus(bool preserveCurrentFocus = false)
+    {
+        if (preserveCurrentFocus && externalFocusLocked)
+        {
+            if (externalFocusTarget != null)
+                externalFocusWorldPosition = FlattenFocusPosition(externalFocusTarget.position);
+
+            FocusWorldPosition(externalFocusWorldPosition);
+        }
+
         externalFocusLocked = false;
+        externalFocusTarget = null;
         SetExternalInputLocked(false);
     }
 
@@ -206,6 +233,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         {
             HandleKeyboardPanning();
             HandleResetInput();
+            HandleRecenterInput();
         }
     }
 
@@ -213,6 +241,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     {
         edgeScrollVelocity = Vector3.zero;
         externalFocusLocked = false;
+        externalFocusTarget = null;
         externalInputLocked = false;
         JcPointerInput.ClearScroll(this);
     }
@@ -403,6 +432,19 @@ public class QuarterViewCameraFollower : MonoBehaviour
         edgeScrollEnabled = true;
     }
 
+    private void HandleRecenterInput()
+    {
+        if (!Input.GetKeyDown(recenterKey))
+            return;
+
+        if (followTarget == null)
+            return;
+
+        RecenterOnFollowTarget();
+        positionOffset = new Vector3(0f, defaultZoomY, defaultZoomZ);
+        SnapToFollowTarget();
+    }
+
     private void ApplyZoomDepthOffset()
     {
         if (!keepTargetCenteredOnZoom)
@@ -511,6 +553,9 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void ApplyCameraPositionFromExternalFocus(bool instantRotation)
     {
+        if (externalFocusTarget != null)
+            externalFocusWorldPosition = FlattenFocusPosition(externalFocusTarget.position);
+
         transform.position = new Vector3(
             externalFocusWorldPosition.x,
             positionOffset.y,
@@ -522,6 +567,11 @@ public class QuarterViewCameraFollower : MonoBehaviour
             : Quaternion.Slerp(transform.rotation, desiredFixedRot, 1f - Mathf.Exp(-rotationLerp * Time.deltaTime));
 
         ClampCameraToMapBounds();
+    }
+
+    private static Vector3 FlattenFocusPosition(Vector3 worldPosition)
+    {
+        return new Vector3(worldPosition.x, 0f, worldPosition.z);
     }
 
     private bool TryGetViewportGroundRect(Plane groundPlane, out Rect rect)

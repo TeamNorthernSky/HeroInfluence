@@ -15,6 +15,10 @@ public class EnemyTurnController : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private LevelZoneLayoutLoader layoutLoader;
     [SerializeField] private MobileEnemyRaidController mobileEnemyRaidController;
+    [SerializeField] private QuarterViewCameraFollower cameraFollower;
+
+    [Header("Camera")]
+    [SerializeField, Min(0f)] private float enemyCameraReturnDelay = 0.5f;
 
     private readonly List<TargetCandidate> targetCandidates = new List<TargetCandidate>();
     private EnemyTurnSessionRepository turnSessionRepository;
@@ -142,6 +146,7 @@ public class EnemyTurnController : MonoBehaviour
 
         if (movePath != null && movePath.Count > 1)
         {
+            LockCameraToEnemy(enemy);
             yield return enemy.MoveAlongPath(
                 movePath,
                 (movingEnemy, arrivedGrid, stepsUsed) =>
@@ -167,6 +172,7 @@ public class EnemyTurnController : MonoBehaviour
                     pendingCombatRemainingMovePoints = remainingMovePointsDuringMove;
                     return false;
                 });
+            yield return UnlockEnemyCameraFocusAfterDelay();
         }
 
         if (interruptedDuringMove)
@@ -746,6 +752,40 @@ public class EnemyTurnController : MonoBehaviour
 
         if (mobileEnemyRaidController == null)
             mobileEnemyRaidController = MobileEnemyRaidController.EnsureSceneInstance();
+
+        if (cameraFollower == null)
+            cameraFollower = ResolveCameraFollower();
+    }
+
+    private void LockCameraToEnemy(EnemyGridMover enemy)
+    {
+        if (enemy == null)
+            return;
+
+        if (cameraFollower == null)
+            cameraFollower = ResolveCameraFollower();
+
+        cameraFollower?.LockExternalFocusTarget(enemy.transform);
+    }
+
+    private IEnumerator UnlockEnemyCameraFocusAfterDelay()
+    {
+        if (enemyCameraReturnDelay > 0f)
+            yield return new WaitForSeconds(enemyCameraReturnDelay);
+
+        if (cameraFollower == null)
+            yield break;
+
+        cameraFollower.UnlockExternalFocus();
+    }
+
+    private static QuarterViewCameraFollower ResolveCameraFollower()
+    {
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null && mainCamera.TryGetComponent(out QuarterViewCameraFollower follower))
+            return follower;
+
+        return FindFirstObjectByType<QuarterViewCameraFollower>();
     }
 
     private bool TryHandleHeroUnionRaid(EnemyGridMover enemy)
