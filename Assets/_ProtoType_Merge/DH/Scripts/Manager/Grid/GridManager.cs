@@ -250,6 +250,11 @@ public class GridManager : MonoBehaviour
         return useLegacyObstacleColliderFallback && HasBlockingCollider(grid, obstacleLayerMask);
     }
 
+    public bool HasRegisteredObstacleOrGateBlocker(Vector2Int grid)
+    {
+        return levelObstacleCells.Contains(grid) || gateBlockerCells.Contains(grid);
+    }
+
     public void ClearLevelGroundCells()
     {
         levelGroundCells.Clear();

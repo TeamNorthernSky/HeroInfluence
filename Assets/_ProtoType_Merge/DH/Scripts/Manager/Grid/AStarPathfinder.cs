@@ -27,7 +27,8 @@ public class AStarPathfinder : MonoBehaviour
         EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
-        int maxVisitedNodes = 0)
+        int maxVisitedNodes = 0,
+        int maxPathCost = 0)
     {
         if (start == goal)
             return new List<Vector2Int> { start };
@@ -71,6 +72,8 @@ public class AStarPathfinder : MonoBehaviour
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
+                if (maxPathCost > 0 && tentativeG > maxPathCost)
+                    continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))
                     continue;
@@ -93,7 +96,8 @@ public class AStarPathfinder : MonoBehaviour
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
         int maxVisitedNodes = 0,
-        System.Func<Vector2Int, bool> isValidAdjacentCell = null)
+        System.Func<Vector2Int, bool> isValidAdjacentCell = null,
+        int maxPathCost = 0)
     {
         if (IsValidAdjacentDestination(start, target, isValidAdjacentCell))
             return new List<Vector2Int> { start };
@@ -133,6 +137,8 @@ public class AStarPathfinder : MonoBehaviour
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
+                if (maxPathCost > 0 && tentativeG > maxPathCost)
+                    continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))
                     continue;
@@ -164,7 +170,8 @@ public class AStarPathfinder : MonoBehaviour
         EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
-        int maxVisitedNodes = 0)
+        int maxVisitedNodes = 0,
+        int maxPathCost = 0)
     {
         if (goals == null || goals.Count == 0)
             return null;
@@ -206,6 +213,8 @@ public class AStarPathfinder : MonoBehaviour
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
+                if (maxPathCost > 0 && tentativeG > maxPathCost)
+                    continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))
                     continue;
@@ -231,6 +240,77 @@ public class AStarPathfinder : MonoBehaviour
         }
 
         return false;
+    }
+
+    public List<Vector2Int> FindPathUntil(
+        Vector2Int start,
+        Vector2Int heuristicTarget,
+        System.Func<Vector2Int, bool> isTerminalCell,
+        System.Func<Vector2Int, bool> isAllowedSearchCell = null,
+        Transform selfTransform = null,
+        bool ignoreFogVisibility = false,
+        EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
+        bool allowItemCells = false,
+        MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
+        int maxVisitedNodes = 0,
+        int maxPathCost = 0)
+    {
+        if (isTerminalCell == null)
+            return null;
+
+        if (isTerminalCell(start))
+            return new List<Vector2Int> { start };
+
+        var openSet = new MinHeap();
+        openSet.Enqueue(start, Heuristic(start, heuristicTarget), 0);
+        var closedSet = new HashSet<Vector2Int>();
+        var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+        var gScore = new Dictionary<Vector2Int, float> { [start] = 0f };
+        int insertionOrder = 1;
+
+        while (openSet.Count > 0)
+        {
+            Vector2Int current = openSet.Dequeue();
+            if (closedSet.Contains(current))
+                continue;
+
+            if (current != start && isTerminalCell(current))
+                return ReconstructPath(cameFrom, current);
+
+            closedSet.Add(current);
+            if (maxVisitedNodes > 0 && closedSet.Count >= maxVisitedNodes)
+                return null;
+
+            Vector2Int[] orderedDirections = GetOrderedDirections(current, heuristicTarget);
+            for (int i = 0; i < orderedDirections.Length; i++)
+            {
+                Vector2Int neighbor = current + orderedDirections[i];
+
+                if (closedSet.Contains(neighbor))
+                    continue;
+
+                if (isAllowedSearchCell != null && !isAllowedSearchCell(neighbor))
+                    continue;
+
+                bool isTerminal = isTerminalCell(neighbor);
+                Vector2Int pathGoalForRules = isTerminal ? neighbor : heuristicTarget;
+                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
+                    continue;
+
+                float tentativeG = GetOrInfinity(gScore, current) + 1f;
+                if (maxPathCost > 0 && tentativeG > maxPathCost)
+                    continue;
+
+                if (tentativeG >= GetOrInfinity(gScore, neighbor))
+                    continue;
+
+                cameFrom[neighbor] = current;
+                gScore[neighbor] = tentativeG;
+                openSet.Enqueue(neighbor, tentativeG + Heuristic(neighbor, heuristicTarget), insertionOrder++);
+            }
+        }
+
+        return null;
     }
 
     private bool CanEnterPathCell(
