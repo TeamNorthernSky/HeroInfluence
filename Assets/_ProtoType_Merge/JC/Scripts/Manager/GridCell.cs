@@ -6,10 +6,7 @@
 [System.Serializable]
 public struct GridCell
 {
-    public enum VisibilityState : byte { Unexplored, Fogged, Visible }
-
     public TerrainType terrainType;
-    public VisibilityState visibility;
     public bool isWalkable;
 
     /// <summary>
@@ -32,7 +29,6 @@ public struct GridCell
         return new GridCell
         {
             terrainType = TerrainType.Plain,
-            visibility = VisibilityState.Unexplored,
             isWalkable = true,
             occupantId = -1,
             eventId = -1,

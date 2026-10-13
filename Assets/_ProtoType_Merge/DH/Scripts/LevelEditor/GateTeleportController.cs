@@ -131,8 +131,6 @@ public class GateTeleportController : MonoBehaviour
 
         teleporting = true;
         suppressUntilFrame = Time.frameCount + 1;
-        // Teleport owns the first reveal step; general party fog reveal is suppressed for this frame.
-        ZoneEntryGuidanceController.SuppressGeneralFogRevealForTeleport();
         string destinationZoneId = ResolveDestinationZoneId(sourceGate, currentGrid, destinationGrid);
         observedParty.SnapToGridPosition(destinationGrid, notifyMoveCompleted: false);
         ZoneEntryGuidanceController.EnsureInstance()?.TryBeginAfterTeleport(destinationGrid, observedParty, destinationZoneId);

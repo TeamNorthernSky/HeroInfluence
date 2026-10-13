@@ -21,12 +21,10 @@ public class InteractionCellOverlayController : MonoBehaviour
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
     [SerializeField] private VillainUnionBaseRegistry villainUnionBaseRegistry;
     [SerializeField] private MainEventRegistry mainEventRegistry;
-    [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private Transform overlayRoot;
     [SerializeField] private GameObject overlayPrefab;
 
     [Header("Display")]
-    [SerializeField] private bool hideFoggedCells = true;
     [SerializeField] private Color singleZoneColor = new Color(1f, 0f, 0f, 0.28f);
     [SerializeField] private Color overlappedZoneColor = new Color(0.55f, 0f, 0f, 0.55f);
     [SerializeField] private Color playerInteractionColor = new Color(0f, 0.35f, 1f, 0.28f);
@@ -190,9 +188,6 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
             {
                 Vector2Int grid = interactionCells[cellIndex];
-                if (hideFoggedCells && fogGridManager != null && !fogGridManager.IsVisible(grid))
-                    continue;
-
                 TrySetDesiredCell(grid, OverlayCellType.MainEvent);
             }
 
@@ -240,9 +235,6 @@ public class InteractionCellOverlayController : MonoBehaviour
                         continue;
                     }
 
-                    if (hideFoggedCells && fogGridManager != null && !fogGridManager.IsVisible(grid))
-                        continue;
-
                     OverlayCellType type = state == EnemyEncounterZoneState.OverlappedEnemyZone
                         ? OverlayCellType.OverlappedEnemy
                         : OverlayCellType.Enemy;
@@ -254,9 +246,6 @@ public class InteractionCellOverlayController : MonoBehaviour
 
     private bool TrySetVisibleDesiredCell(Vector2Int grid, OverlayCellType type)
     {
-        if (hideFoggedCells && fogGridManager != null && !fogGridManager.IsVisible(grid))
-            return false;
-
         return TrySetDesiredCell(grid, type);
     }
 
@@ -277,9 +266,6 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
             {
                 Vector2Int grid = interactionCells[cellIndex];
-                if (hideFoggedCells && fogGridManager != null && !fogGridManager.IsVisible(grid))
-                    continue;
-
                 TrySetDesiredCell(grid, type);
             }
         }
@@ -301,9 +287,6 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
             {
                 Vector2Int grid = interactionCells[cellIndex];
-                if (hideFoggedCells && fogGridManager != null && !fogGridManager.IsVisible(grid))
-                    continue;
-
                 TrySetDesiredCell(grid, heroUnion.IsClaimedByHero ? OverlayCellType.Player : OverlayCellType.Neutral);
             }
         }
@@ -325,9 +308,6 @@ public class InteractionCellOverlayController : MonoBehaviour
             for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
             {
                 Vector2Int grid = interactionCells[cellIndex];
-                if (hideFoggedCells && fogGridManager != null && !fogGridManager.IsVisible(grid))
-                    continue;
-
                 TrySetDesiredCell(grid, OverlayCellType.Enemy);
             }
         }
@@ -628,8 +608,6 @@ public class InteractionCellOverlayController : MonoBehaviour
         if (mainEventRegistry == null)
             mainEventRegistry = FindFirstObjectByType<MainEventRegistry>();
 
-        if (fogGridManager == null)
-            fogGridManager = FindFirstObjectByType<FogGridManager>();
     }
 
     private void EnsureOverlayRoot()

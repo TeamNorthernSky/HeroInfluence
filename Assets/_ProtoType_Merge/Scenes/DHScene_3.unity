@@ -68490,10 +68490,8 @@ MonoBehaviour:
   heroUnionRegistry: {fileID: 1889454946}
   villainUnionBaseRegistry: {fileID: 106732308}
   mainEventRegistry: {fileID: 444641141}
-  fogGridManager: {fileID: 964046517}
   overlayRoot: {fileID: 639429862}
   overlayPrefab: {fileID: 0}
-  hideFoggedCells: 1
   singleZoneColor: {r: 1, g: 0, b: 0, a: 0.28}
   overlappedZoneColor: {r: 1, g: 0, b: 0, a: 0.55}
   playerInteractionColor: {r: 0, g: 0.35, b: 1, a: 0.28}
@@ -98111,164 +98109,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 368574633}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &964046514
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 964046518}
-  - component: {fileID: 964046517}
-  - component: {fileID: 964046516}
-  - component: {fileID: 964046515}
-  - component: {fileID: 964046519}
-  - component: {fileID: 964046520}
-  - component: {fileID: 964046521}
-  - component: {fileID: 964046522}
-  m_Layer: 0
-  m_Name: FogSystem
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &964046515
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964046514}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b6eb5a7f9c4d944ca428aeb707ee37c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  turnManager: {fileID: 207868834}
-  fogGridManager: {fileID: 964046517}
-  partyFogRevealer: {fileID: 964046516}
-  outpostFogRevealer: {fileID: 964046520}
-  heroUnionFogRevealer: {fileID: 964046522}
---- !u!114 &964046516
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964046514}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb6b7d29de0c7d843895fe869a4f0a4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  partyRegistry: {fileID: 1919126566}
-  fogGridManager: {fileID: 964046517}
-  revealRadius: 4
-  useRoundedMask: 1
-  revealCurrentPositionsOnEnable: 1
---- !u!114 &964046517
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964046514}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c111c800a78d2e48a9ea51f5047e1f0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enableRefogByDay: 0
-  refogDelayDays: 3
-  restrictToGridBounds: 1
-  gridSize: {x: 100, y: 40}
---- !u!4 &964046518
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964046514}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &964046519
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964046514}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 937327e5c0a104040af203cbb6792757, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fogGridManager: {fileID: 964046517}
-  gridManager: {fileID: 1870279752}
-  levelZoneLayoutData: {fileID: 11400000, guid: 6f9c3b27fcb728143b933f1f43ec8527,
-    type: 2}
-  levelData: {fileID: 11400000, guid: cb4033f385e21c144931e45e5cacb703, type: 2}
-  gridSize: {x: 100, y: 40}
-  syncGridSizeWithLevelSource: 1
---- !u!114 &964046520
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964046514}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f0e7de0b1d3cce4998e9ad96218f5d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gridManager: {fileID: 1870279752}
-  fogGridManager: {fileID: 964046517}
-  levelZoneLayoutLoader: {fileID: 7906642696841274099}
-  outpostRegistry: {fileID: 337973925}
-  revealRadius: 1
-  fogZoneOnClaim: 1
-  revealClaimedOutpostsOnEnable: 1
---- !u!114 &964046521
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964046514}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e8eb42b38852dd4ead6b3552503c02f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enemyRegistry: {fileID: 2000643499}
-  fogGridManager: {fileID: 964046517}
-  hideChildCanvases: 1
-  hideColliders: 0
---- !u!114 &964046522
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 964046514}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44ac855b9482e344e8e28b683498a773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fogGridManager: {fileID: 964046517}
-  heroUnionRegistry: {fileID: 1889454946}
-  revealRadius: 1
-  revealHeroUnionsOnEnable: 1
 --- !u!1 &964233074
 GameObject:
   m_ObjectHideFlags: 0
@@ -149425,17 +149265,14 @@ MonoBehaviour:
   levelZoneLayoutData: {fileID: 0}
   levelZoneLayoutLoader: {fileID: 0}
   gridManager: {fileID: 1870279752}
-  fogGridManager: {fileID: 964046517}
   partyRegistry: {fileID: 1919126566}
   outpostRegistry: {fileID: 337973925}
   heroUnionRegistry: {fileID: 1889454946}
   villainUnionBaseRegistry: {fileID: 106732308}
   drawOnEnable: 1
-  useFogVisibility: 1
   partyIconRefreshInterval: 0.1
   filterMode: 0
   unexploredColor: {r: 0, g: 0, b: 0, a: 1}
-  foggedColor: {r: 0.08, g: 0.08, b: 0.08, a: 1}
   visibleColor: {r: 0.22, g: 0.28, b: 0.24, a: 1}
   fallbackColor: {r: 0.22, g: 0.28, b: 0.24, a: 1}
   obstacleColor: {r: 0, g: 0, b: 0, a: 1}
@@ -194134,7 +193971,6 @@ MonoBehaviour:
   heroUnionLayerMask:
     serializedVersion: 2
     m_Bits: 1024
-  fogGridManager: {fileID: 964046517}
   itemRegistry: {fileID: 1628434450}
   tutorialItemRegistry: {fileID: 0}
   enemyRegistry: {fileID: 2000643499}

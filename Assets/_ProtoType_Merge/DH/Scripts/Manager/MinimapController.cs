@@ -13,7 +13,6 @@ public class MinimapController : MonoBehaviour
     [SerializeField] private LevelZoneLayoutData levelZoneLayoutData;
     [SerializeField] private LevelZoneLayoutLoader levelZoneLayoutLoader;
     [SerializeField] private GridManager gridManager;
-    [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private HeroUnionRegistry heroUnionRegistry;
@@ -21,13 +20,10 @@ public class MinimapController : MonoBehaviour
 
     [Header("Draw Options")]
     [SerializeField] private bool drawOnEnable = true;
-    [SerializeField] private bool useFogVisibility = true;
     [SerializeField, Min(0f)] private float partyIconRefreshInterval = 0.1f;
     [SerializeField] private FilterMode filterMode = FilterMode.Point;
 
     [Header("Cell Colors")]
-    [SerializeField] private Color unexploredColor = new Color(0f, 0f, 0f, 1f);
-    [SerializeField] private Color foggedColor = new Color(0.08f, 0.08f, 0.08f, 0.65f);
     [SerializeField] private Color visibleColor = new Color(0.22f, 0.28f, 0.24f, 1f);
     [SerializeField] private Color fallbackColor = new Color(0.22f, 0.28f, 0.24f, 1f);
     [SerializeField] private Color obstacleColor = new Color(0f, 0f, 0f, 1f);
@@ -67,7 +63,6 @@ public class MinimapController : MonoBehaviour
         ResolveReferences();
 
         SubscribeToLevelLoaders();
-        SubscribeToFogGridManager();
         SubscribeToHeroUnionStateChanges();
 
         if (drawOnEnable)
@@ -77,7 +72,6 @@ public class MinimapController : MonoBehaviour
     private void OnDisable()
     {
         UnsubscribeFromLevelLoaders();
-        UnsubscribeFromFogGridManager();
         UnsubscribeFromHeroUnionStateChanges();
     }
 
@@ -149,22 +143,6 @@ public class MinimapController : MonoBehaviour
     public void SetLevelData(LevelData nextLevelData)
     {
         levelData = nextLevelData;
-        Refresh();
-    }
-
-    public void SetFogGridManager(FogGridManager nextFogGridManager)
-    {
-        if (fogGridManager == nextFogGridManager)
-            return;
-
-        if (isActiveAndEnabled && fogGridManager != null)
-            UnsubscribeFromFogGridManager();
-
-        fogGridManager = nextFogGridManager;
-
-        if (isActiveAndEnabled && fogGridManager != null)
-            SubscribeToFogGridManager();
-
         Refresh();
     }
 
@@ -286,7 +264,7 @@ public class MinimapController : MonoBehaviour
 
     private void DrawStrategicCell(Vector2Int grid, Color color, Vector2Int gridSize)
     {
-        if (!IsGridInMinimap(grid, gridSize) || IsUnexplored(grid))
+        if (!IsGridInMinimap(grid, gridSize))
             return;
 
         minimapTexture.SetPixel(grid.x, grid.y, color);
@@ -537,22 +515,7 @@ public class MinimapController : MonoBehaviour
 
     private Color GetCellColor(Vector2Int grid)
     {
-        if (!useFogVisibility || fogGridManager == null)
-            return IsObstacleCell(grid) ? obstacleColor : fallbackColor;
-
-        FogVisibilityState visibility = fogGridManager.GetVisibility(grid);
-        if (visibility == FogVisibilityState.Unexplored)
-            return MakeOpaque(unexploredColor);
-
-        if (IsObstacleCell(grid))
-            return obstacleColor;
-
-        return visibility switch
-        {
-            FogVisibilityState.Visible => visibleColor,
-            FogVisibilityState.Fogged => foggedColor,
-            _ => MakeOpaque(unexploredColor)
-        };
+        return IsObstacleCell(grid) ? obstacleColor : fallbackColor;
     }
 
     private bool IsObstacleCell(Vector2Int grid)
@@ -590,13 +553,6 @@ public class MinimapController : MonoBehaviour
             obstacleCellCache.Add(obstacleCells[i]);
     }
 
-    private bool IsUnexplored(Vector2Int grid)
-    {
-        return useFogVisibility
-            && fogGridManager != null
-            && fogGridManager.GetVisibility(grid) == FogVisibilityState.Unexplored;
-    }
-
     private static Color MakeOpaque(Color color)
     {
         color.a = 1f;
@@ -620,12 +576,6 @@ public class MinimapController : MonoBehaviour
         if (levelData != null)
         {
             gridSize = levelData.GridSize;
-            return gridSize.x > 0 && gridSize.y > 0;
-        }
-
-        if (fogGridManager != null)
-        {
-            gridSize = fogGridManager.GridSize;
             return gridSize.x > 0 && gridSize.y > 0;
         }
 
@@ -668,22 +618,6 @@ public class MinimapController : MonoBehaviour
         hasPendingTextureApply = false;
     }
 
-    private void HandleFogChanged()
-    {
-        if (dirtyCells.Count > 0)
-            return;
-
-        Refresh();
-    }
-
-    private void HandleFogCellVisibilityChanged(Vector2Int grid, FogVisibilityState visibility)
-    {
-        if (!IsGridInMinimap(grid, currentGridSize))
-            return;
-
-        dirtyCells.Add(grid);
-    }
-
     private void ApplyDirtyCells()
     {
         if (minimapTexture == null || dirtyCells.Count == 0)
@@ -707,31 +641,11 @@ public class MinimapController : MonoBehaviour
             return;
 
         Color color = GetCellColor(grid);
-        if (!IsUnexplored(grid) && TryGetStrategicCellColor(grid, out Color strategicColor))
+        if (TryGetStrategicCellColor(grid, out Color strategicColor))
             color = strategicColor;
 
         minimapTexture.SetPixel(grid.x, grid.y, color);
         hasPendingTextureApply = true;
-    }
-
-    private void SubscribeToFogGridManager()
-    {
-        if (fogGridManager == null)
-            return;
-
-        fogGridManager.FogChanged -= HandleFogChanged;
-        fogGridManager.FogChanged += HandleFogChanged;
-        fogGridManager.CellVisibilityChanged -= HandleFogCellVisibilityChanged;
-        fogGridManager.CellVisibilityChanged += HandleFogCellVisibilityChanged;
-    }
-
-    private void UnsubscribeFromFogGridManager()
-    {
-        if (fogGridManager == null)
-            return;
-
-        fogGridManager.FogChanged -= HandleFogChanged;
-        fogGridManager.CellVisibilityChanged -= HandleFogCellVisibilityChanged;
     }
 
     private void SubscribeToLevelLoaders()
@@ -824,9 +738,6 @@ public class MinimapController : MonoBehaviour
 
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
-
-        if (fogGridManager == null)
-            fogGridManager = FindFirstObjectByType<FogGridManager>();
 
         if (partyRegistry == null)
             partyRegistry = FindFirstObjectByType<PartyRegistry>();

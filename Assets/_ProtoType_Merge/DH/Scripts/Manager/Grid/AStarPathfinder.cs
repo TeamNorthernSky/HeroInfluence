@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public enum EnemyEncounterPathMode
@@ -23,7 +23,7 @@ public class AStarPathfinder : MonoBehaviour
         Vector2Int start,
         Vector2Int goal,
         Transform selfTransform = null,
-        bool ignoreFogVisibility = false,
+        bool ignoreVisibilityRules = false,
         EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
@@ -35,7 +35,7 @@ public class AStarPathfinder : MonoBehaviour
 
         if (gridManager != null)
         {
-            if (!CanEnterPathCell(goal, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
+            if (!CanEnterPathCell(goal, goal, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                 return null;
         }
 
@@ -68,7 +68,7 @@ public class AStarPathfinder : MonoBehaviour
                 if (closedSet.Contains(neighbor))
                     continue;
 
-                if (gridManager != null && !CanEnterPathCell(neighbor, goal, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
+                if (gridManager != null && !CanEnterPathCell(neighbor, goal, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
@@ -91,7 +91,7 @@ public class AStarPathfinder : MonoBehaviour
         Vector2Int start,
         Vector2Int target,
         Transform selfTransform = null,
-        bool ignoreFogVisibility = false,
+        bool ignoreVisibilityRules = false,
         EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
@@ -133,7 +133,7 @@ public class AStarPathfinder : MonoBehaviour
 
                 bool isTerminalAdjacent = IsValidAdjacentDestination(neighbor, target, isValidAdjacentCell);
                 Vector2Int pathGoalForRules = isTerminalAdjacent ? neighbor : target;
-                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
+                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
@@ -166,7 +166,7 @@ public class AStarPathfinder : MonoBehaviour
         IReadOnlyList<Vector2Int> goals,
         Vector2Int heuristicTarget,
         Transform selfTransform = null,
-        bool ignoreFogVisibility = false,
+        bool ignoreVisibilityRules = false,
         EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
@@ -209,7 +209,7 @@ public class AStarPathfinder : MonoBehaviour
 
                 bool isTerminalGoal = ContainsGrid(goals, neighbor);
                 Vector2Int pathGoalForRules = isTerminalGoal ? neighbor : heuristicTarget;
-                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
+                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
@@ -248,7 +248,7 @@ public class AStarPathfinder : MonoBehaviour
         System.Func<Vector2Int, bool> isTerminalCell,
         System.Func<Vector2Int, bool> isAllowedSearchCell = null,
         Transform selfTransform = null,
-        bool ignoreFogVisibility = false,
+        bool ignoreVisibilityRules = false,
         EnemyEncounterPathMode enemyEncounterPathMode = EnemyEncounterPathMode.Ignore,
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
@@ -294,7 +294,7 @@ public class AStarPathfinder : MonoBehaviour
 
                 bool isTerminal = isTerminalCell(neighbor);
                 Vector2Int pathGoalForRules = isTerminal ? neighbor : heuristicTarget;
-                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreFogVisibility, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
+                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
@@ -317,7 +317,7 @@ public class AStarPathfinder : MonoBehaviour
         Vector2Int grid,
         Vector2Int goal,
         Transform selfTransform,
-        bool ignoreFogVisibility,
+        bool ignoreVisibilityRules,
         EnemyEncounterPathMode enemyEncounterPathMode,
         bool allowItemCells,
         MainEventInteractionPathMode mainEventInteractionPathMode)
@@ -352,7 +352,7 @@ public class AStarPathfinder : MonoBehaviour
             return false;
         }
 
-        return gridManager.CanEnterCell(grid, goal, selfTransform, ignoreFogVisibility, allowItemCells);
+        return gridManager.CanEnterCell(grid, goal, selfTransform, ignoreVisibilityRules, allowItemCells);
     }
 
     private static Vector2Int[] GetOrderedDirections(Vector2Int current, Vector2Int goal)
@@ -495,3 +495,4 @@ public class AStarPathfinder : MonoBehaviour
         }
     }
 }
+

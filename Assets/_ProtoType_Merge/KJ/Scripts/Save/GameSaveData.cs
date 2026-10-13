@@ -40,7 +40,6 @@ public class GameSaveData : ScriptableObject
     public List<PartyWorldState> partyWorldStates = new List<PartyWorldState>();
     public List<EnemyWorldState> enemyWorldStates = new List<EnemyWorldState>();
     public List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
-    public List<FogProgressCell> fogCells = new List<FogProgressCell>();
     public List<LevelZoneSelectionState> levelZoneSelections = new List<LevelZoneSelectionState>();
     public List<HeroUnionProgressState> heroUnionStates = new List<HeroUnionProgressState>();
     public List<GateProgressState> gateStates = new List<GateProgressState>();

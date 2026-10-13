@@ -12,7 +12,6 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
     [SerializeField] private List<PartyWorldState> partyWorldStates = new List<PartyWorldState>();
     [SerializeField] private List<EnemyWorldState> enemyWorldStates = new List<EnemyWorldState>();
     [SerializeField] private List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
-    [SerializeField] private List<FogProgressCell> fogCells = new List<FogProgressCell>();
     [SerializeField] private List<LevelZoneSelectionState> levelZoneSelections = new List<LevelZoneSelectionState>();
     [SerializeField] private List<HeroUnionProgressState> heroUnionStates = new List<HeroUnionProgressState>();
     [SerializeField] private List<GateProgressState> gateStates = new List<GateProgressState>();
@@ -38,7 +37,6 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         CopyPartyWorldStates(repository.PartyWorldStates, partyWorldStates);
         CopyEnemyWorldStates(repository.EnemyWorldStates, enemyWorldStates);
         CopyOutpostStates(repository.OutpostStates, outpostStates);
-        CopyFogCells(repository.FogCells, fogCells);
         CopyLevelZoneSelections(repository.LevelZoneSelections, levelZoneSelections);
         CopyHeroUnionStates(repository.HeroUnionStates, heroUnionStates);
         CopyGateStates(repository.GateStates, gateStates);
@@ -62,7 +60,6 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         ReplacePartyWorldStates(data.partyWorldStates, partyWorldStates);
         ReplaceEnemyWorldStates(data.enemyWorldStates, enemyWorldStates);
         ReplaceOutpostStates(data.outpostStates, outpostStates);
-        ReplaceFogCells(data.fogCells, fogCells);
         ReplaceLevelZoneSelections(data.levelZoneSelections, levelZoneSelections);
         ReplaceHeroUnionStates(data.heroUnionStates, heroUnionStates);
         ReplaceGateStates(data.gateStates, gateStates);
@@ -86,7 +83,6 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         CopyPartyWorldStates(data.partyWorldStates, partyWorldStates);
         CopyEnemyWorldStates(data.enemyWorldStates, enemyWorldStates);
         CopyOutpostStates(data.outpostStates, outpostStates);
-        CopyFogCells(data.fogCells, fogCells);
         CopyLevelZoneSelections(data.levelZoneSelections, levelZoneSelections);
         CopyHeroUnionStates(data.heroUnionStates, heroUnionStates);
         CopyGateStates(data.gateStates, gateStates);
@@ -106,7 +102,6 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
         partyWorldStates.Clear();
         enemyWorldStates.Clear();
         outpostStates.Clear();
-        fogCells.Clear();
         levelZoneSelections.Clear();
         heroUnionStates.Clear();
         gateStates.Clear();
@@ -206,25 +201,6 @@ public sealed class DHMapProgressSnapshotSection : DHTurnStartSnapshotSection
             OutpostProgressState state = source[i];
             if (state != null)
                 target.Add(new OutpostProgressState(state.OutpostKey, state.State, state.EnemyDefenderGroupKey, state.DefenderEnemyId));
-        }
-    }
-
-    private static void ReplaceFogCells(List<FogProgressCell> target, IReadOnlyList<FogProgressCell> source)
-    {
-        target.Clear();
-        CopyFogCells(source, target);
-    }
-
-    private static void CopyFogCells(IReadOnlyList<FogProgressCell> source, List<FogProgressCell> target)
-    {
-        if (source == null || target == null)
-            return;
-
-        for (int i = 0; i < source.Count; i++)
-        {
-            FogProgressCell cell = source[i];
-            if (cell != null)
-                target.Add(new FogProgressCell(cell.Grid, cell.Visibility, cell.LastRevealedDay));
         }
     }
 

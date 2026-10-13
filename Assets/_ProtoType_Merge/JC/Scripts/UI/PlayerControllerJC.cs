@@ -11,7 +11,6 @@ public class PlayerControllerJC : MonoBehaviour
     [SerializeField] private float moveSpeed = 8f;
 
     private PlayGridManagerJC grid;
-    private PlayFogManagerJC fogOfWar;
     private Vector2Int currentGridPos;
     private Vector3 targetWorldPos;
     private bool hasTarget;
@@ -28,15 +27,12 @@ public class PlayerControllerJC : MonoBehaviour
             return;
         }
 
-        fogOfWar = FindFirstObjectByType<PlayFogManagerJC>();
-
         currentGridPos = PlayGridManagerJC.WorldToGrid(transform.position);
         targetWorldPos = PlayGridManagerJC.GridToWorld(currentGridPos);
         targetWorldPos.y = transform.position.y;
         transform.position = targetWorldPos;
 
         // 시작 위치 시야 공개
-        fogOfWar?.UpdatePlayerVisibility(currentGridPos, sightRadius);
     }
 
     private void Update()
@@ -83,7 +79,6 @@ public class PlayerControllerJC : MonoBehaviour
         if (movingGridPos != currentGridPos)
         {
             currentGridPos = movingGridPos;
-            fogOfWar?.UpdatePlayerVisibility(currentGridPos, sightRadius);
         }
 
         if (Vector3.Distance(transform.position, targetWorldPos) < 0.01f)
@@ -91,7 +86,6 @@ public class PlayerControllerJC : MonoBehaviour
             transform.position = targetWorldPos;
             hasTarget = false;
             currentGridPos = PlayGridManagerJC.WorldToGrid(transform.position);
-            fogOfWar?.UpdatePlayerVisibility(currentGridPos, sightRadius);
         }
     }
 }

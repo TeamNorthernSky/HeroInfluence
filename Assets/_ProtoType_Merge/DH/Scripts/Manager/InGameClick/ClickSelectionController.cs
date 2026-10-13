@@ -190,12 +190,6 @@ public class ClickSelectionController : MonoBehaviour
         if (gridManager.HasOtherPlayer(clickedGrid, activeMover.transform))
             return;
 
-        if ((moveRangeController == null || !moveRangeController.IsMoveRangeActive)
-            && !gridManager.IsVisibleCell(clickedGrid))
-        {
-            return;
-        }
-
         if (moveCommandPreviewController.TryConfirmMoveAtGrid(clickedGrid, activeMover))
         {
             partySelectionController.FocusActiveMover();
