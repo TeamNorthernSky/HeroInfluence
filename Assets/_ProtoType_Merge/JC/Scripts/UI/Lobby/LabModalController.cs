@@ -8,9 +8,8 @@ using UnityEngine.UI;
 /// <summary>
 /// 연구소 모달 컨트롤러 — [JC 260617] 공방형 stage-select 모델로 재작성(샘플 레이아웃).
 /// 좌측 영웅 프로필, 중앙 스킬 행 × 강화단계 셀(ClassSkill 아이콘 + 상태 프레임).
-///   - 스킬 rep 아이콘 좌클릭: 습득 스킬이면 즉시 장착 변경(EquipSkill).
-///   - 다음 강화 가능 단계 셀 좌클릭 → 2자원(자금+메달) 비용 표시 → [진행] 으로 1단계 강화.
-///   - 단계 우클릭 / 단계 외 모달 영역 클릭 → 선택 해제.
+///   - 스킬 행 좌클릭 → 다음 단계의 2자원(자금+메달) 비용 표시 → [진행] 으로 1단계 강화.
+///   - 취소 / 행 외 모달 영역 클릭 → 선택 해제.
 ///   - 분류(스킬)·단계 롤오버 시 LobbyTooltip. 강화 완료 시 StateInfo 토스트(5초).
 /// 백엔드 = LabManager(+DH PersistentUnitRepository.SetSkillLevel 전투 동기). 비용=인스펙터(LabManager).
 /// </summary>
@@ -94,12 +93,6 @@ public class LabModalController : MonoBehaviour
     [SerializeField] private TMP_Text costChipText;
     [SerializeField] private TMP_Text stateInfoText;
 
-    [Header("강화 단계 프레임 스프라이트 (Resources)")]
-    [SerializeField] private string cellEmptyPath    = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame";
-    [SerializeField] private string cellSelectedPath = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Selected)";
-    [SerializeField] private string cellLockedPath   = "UI_Sprite/UI_HQLobby/Popup/UI_box_Frame(Locked)";
-    [SerializeField] private string cellFinishedPath = "UI_Sprite/UI_HQLobby/Popup/UI_,mark_finished";
-
     // [JC 260618] 스킬 아이콘 경로/변형 수는 HeroIconLibrary(SO)로 이관됨. 폴백 규약도 SO가 보유.
 
     [Header("툴팁 문구")]
@@ -123,15 +116,6 @@ public class LabModalController : MonoBehaviour
 
     private LabManager subLab;
     private EconomyManager subEco;
-    private readonly Dictionary<string, Sprite> cache = new Dictionary<string, Sprite>();
-
-    private Sprite Load(string p)
-    {
-        if (string.IsNullOrEmpty(p)) return null;
-        if (!cache.TryGetValue(p, out var s)) { s = Resources.Load<Sprite>(p); cache[p] = s; }
-        return s;
-    }
-
     private Sprite GetSkillIcon(int order, int level)
     {
         // [JC 260618] 아이콘 해석을 HeroIconLibrary로 이관. 정체성 키=skillIndex, order는 폴백(시각 동등)용.
@@ -212,17 +196,32 @@ public class LabModalController : MonoBehaviour
         {
             int cr = r;
             var row = rows[r];
+            if (row?.rowRoot != null)
+            {
+                var equippedView = row.rowRoot.GetComponent<LabEquippedRowView>();
+                if (equippedView != null) equippedView.SelectionManaged = true;
+                var rowButton = row.rowRoot.GetComponent<Button>();
+                if (rowButton == null) rowButton = row.rowRoot.AddComponent<Button>();
+                rowButton.transition = Selectable.Transition.None;
+                rowButton.targetGraphic = row.cardImage;
+                if (row.cardImage != null) row.cardImage.raycastTarget = true;
+                rowButton.onClick.AddListener(() => OnRowClicked(cr));
+                foreach (var hover in row.rowRoot.GetComponentsInChildren<LabSkillHover>(true))
+                    if (hover.gameObject != row.rowRoot) hover.enabled = false;
+                var rowHover = row.rowRoot.GetComponent<LabSkillHover>();
+                if (rowHover == null) rowHover = row.rowRoot.AddComponent<LabSkillHover>();
+                rowHover.Bind(this, cr, -1);
+                rowHover.enabled = true;
+            }
             if (row?.skillButton != null)
             {
-                row.skillButton.onClick.AddListener(() => OnSkillClicked(cr));
-                var rh = row.skillButton.GetComponent<LabSkillHover>(); if (rh != null) rh.Bind(this, cr, -1);
+                // 자식 버튼이 행 클릭을 가로채지 않도록 합니다.
+                if (row.skillButton.gameObject != row.rowRoot) row.skillButton.enabled = false;
             }
             if (row?.stages != null)
                 for (int k = 0; k < row.stages.Length; k++)
                 {
-                    if (row.stages[k]?.clickHandler != null) row.stages[k].clickHandler.Bind(this, cr, k);
-                    var sr = row.stages[k]?.root != null ? row.stages[k].root.GetComponent<LabSkillHover>() : null;
-                    if (sr != null) sr.Bind(this, cr, k);
+                    if (row.stages[k]?.clickHandler != null) row.stages[k].clickHandler.enabled = false;
                 }
         }
     }
@@ -306,17 +305,17 @@ public class LabModalController : MonoBehaviour
         if (gm != null && gm.Lab != null) gm.Lab.EnsureDefaultEquipped(unitIndex);
     }
 
-    // ─── rep 스킬 클릭 → 장착 변경 ──────────────────────────────
-    private void OnSkillClicked(int rowIndex)
+    // ─── 행 클릭 → 현재 스킬의 다음 강화 단계 선택 ───────────────
+    private void OnRowClicked(int rowIndex)
     {
         var gm = GameManager.Instance;
         if (gm == null || gm.Lab == null || selectedUnitIndex < 0) return;
         if (rowIndex < 0 || rowIndex >= boundSkills.Count) return;
         var skill = boundSkills[rowIndex];
-        if (!gm.Lab.IsSkillLearned(selectedUnitIndex, skill)) return; // 미습득은 장착 불가
-        if (gm.Lab.GetEquippedSkillIndex(selectedUnitIndex) != skill.NumericSkillId)
-            gm.Lab.EquipSkill(selectedUnitIndex, skill.NumericSkillId);
-        ClearSelection();
+        if (!gm.Lab.IsSkillLearned(selectedUnitIndex, skill)) return;
+        if (!gm.Lab.CanUpgradeSkill(selectedUnitIndex, skill.NumericSkillId)) return;
+        selRow = rowIndex;
+        selStageLevel = gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) + 1;
         Refresh();
     }
 
@@ -389,7 +388,7 @@ public class LabModalController : MonoBehaviour
     // [JC 260619] 본문은 공유 헬퍼 ClassSkillTooltipText로 이관(HeroInfo 모달과 공용).
     private static string EffectText(DHClassSkillTemplate s, int level) => ClassSkillTooltipText.BuildDesc(s, level);
 
-    /// <summary>[JC 260617] 리치 스킬 툴팁 호버 콜백. stageIndex -1=rep(1레벨 정보), 0~3=단계(현재↔다음 비교).</summary>
+    /// <summary>행 호버 시 해당 스킬의 현재 단계와 다음 단계를 비교한다. 최고 단계/미습득은 단일 정보.</summary>
     public void OnSkillHover(int rowIndex, int stageIndex, bool enter)
     {
         if (!enter) { if (SkillTooltip.Instance != null) SkillTooltip.Instance.Hide(); return; }
@@ -398,19 +397,18 @@ public class LabModalController : MonoBehaviour
         if (selectedUnitIndex < 0 || rowIndex < 0 || rowIndex >= boundSkills.Count || rowIndex >= rows.Count) return;
         var skill = boundSkills[rowIndex];
         var row = rows[rowIndex];
-        int level = Mathf.Max(1, gm.Lab.IsSkillLearned(selectedUnitIndex, skill) ? gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) : 1);
+        bool learned = gm.Lab.IsSkillLearned(selectedUnitIndex, skill);
+        int level = Mathf.Max(1, learned ? gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) : 1);
+        var rt = row.rowRoot != null ? row.rowRoot.transform as RectTransform : null;
 
-        if (stageIndex < 0)
+        if (!learned || level >= LabManager.MaxSkillLevel)
         {
-            var rt = row.skillButton != null ? row.skillButton.transform as RectTransform : null;
-            SkillTooltip.Instance.ShowInfo(GetSkillIcon(rowIndex, level), SkillName(skill), EffectText(skill, level), rt);
+            string label = !learned ? "미습득" : "최고 단계";
+            SkillTooltip.Instance.ShowInfo(GetSkillIcon(rowIndex, level), $"{SkillName(skill)} ({label})", EffectText(skill, level), rt);
         }
         else
         {
-            int stageLevel = stageIndex + 2; // 셀0→Lv2
-            int cur = stageLevel - 1, next = stageLevel;
-            var cellRoot = (row.stages != null && stageIndex < row.stages.Length && row.stages[stageIndex] != null) ? row.stages[stageIndex].root : null;
-            var rt = cellRoot != null ? cellRoot.transform as RectTransform : null;
+            int cur = level, next = level + 1;
             SkillTooltip.Instance.ShowCompare(
                 GetSkillIcon(rowIndex, cur),  $"{SkillName(skill)} {(cur == 1 ? "기본" : "+" + (cur - 1))}",  EffectText(skill, cur),
                 GetSkillIcon(rowIndex, next), $"{SkillName(skill)} +{next - 1}", EffectText(skill, next), rt);
@@ -455,8 +453,6 @@ public class LabModalController : MonoBehaviour
         if (hasHero) boundSkills.AddRange(lab.GetClassSkills(selectedUnitIndex));
         int equipped = hasHero ? lab.GetEquippedSkillIndex(selectedUnitIndex) : 0;
 
-        Sprite sEmpty = Load(cellEmptyPath), sSel = Load(cellSelectedPath), sLock = Load(cellLockedPath), sFin = Load(cellFinishedPath);
-
         for (int r = 0; r < rows.Count; r++)
         {
             var row = rows[r];
@@ -495,10 +491,7 @@ public class LabModalController : MonoBehaviour
                 bool filled = learned && level >= stageLevel;          // 이미 강화한 단계
                 bool isNext = learned && level + 1 == stageLevel && lab.CanUpgradeSkill(selectedUnitIndex, skill.NumericSkillId);
                 bool stageLocked = !filled && !isNext;                 // 강화 불가(잠금)
-                bool isSel = selRow == r && selStageLevel == stageLevel;
-
-                // 프레임 = 박스(선택 시 강조). 상태(완료/잠금)는 오버레이 마크로 표시.
-                if (cell.frame != null) { var fs = isSel ? sSel : sEmpty; cell.frame.sprite = fs; cell.frame.enabled = fs != null; }
+                // 기존 셀 이미지는 프리팹 값을 유지. 선택 강조는 행 카드에서 처리한다.
                 if (cell.contentIcon != null) { var sp = GetSkillIcon(r, stageLevel); cell.contentIcon.sprite = sp; cell.contentIcon.enabled = sp != null; }
                 if (cell.finishedMark != null) cell.finishedMark.SetActive(filled);          // 이미 강화 오버레이
                 if (cell.lockMark != null) cell.lockMark.SetActive(stageLocked);              // 잠금 오버레이

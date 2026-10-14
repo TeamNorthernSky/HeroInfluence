@@ -74,6 +74,8 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         if (btnConfirm != null) btnConfirm.onClick.AddListener(Confirm);
         if (btnPrev != null) btnPrev.onClick.AddListener(Decrease);
         if (btnNext != null) btnNext.onClick.AddListener(Increase);
+        PublicityButtonHoldRepeat.Attach(btnPrev);
+        PublicityButtonHoldRepeat.Attach(btnNext);
         if (btnMax != null) btnMax.onClick.AddListener(Maximize);
         if (progressSlider != null) progressSlider.onValueChanged.AddListener(OnSliderChanged);
         ClearHeroSelection();

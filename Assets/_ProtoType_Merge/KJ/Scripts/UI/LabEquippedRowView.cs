@@ -14,6 +14,7 @@ public sealed class LabEquippedRowView : MonoBehaviour
     public CanvasGroup lockMarkerVisibility;
     public Image lockedOverlay;
     public Button[] rowButtons;
+    public bool SelectionManaged { get; set; }
 
     private void LateUpdate()
     {
@@ -28,6 +29,7 @@ public sealed class LabEquippedRowView : MonoBehaviour
             markerVisibility.alpha = 0f;
             markerVisibility.blocksRaycasts = false;
         }
+        if (SelectionManaged) return;
         if (background != null) background.sprite = equipped ? equippedSprite : normalSprite;
         Color color = equipped ? Color.white : Color.black;
         if (nameText != null) nameText.color = color;

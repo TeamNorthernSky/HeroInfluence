@@ -124,7 +124,7 @@ public class SettingsModalController : MonoBehaviour
 
     public void OnDefaultButtonClicked()
     {
-        const float defaultVolume = 0.5f;
+        const float defaultVolume = 1.0f;
         GameSettings.ApplyMasterVolume(defaultVolume);
         GameSettings.ApplyBGMVolume(defaultVolume);
         GameSettings.ApplyEffectVolume(defaultVolume);

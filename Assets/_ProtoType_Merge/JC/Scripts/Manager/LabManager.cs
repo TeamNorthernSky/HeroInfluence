@@ -84,7 +84,7 @@ public class LabManager : MonoBehaviour
     public int GetDepartmentLevel()
     {
         var gm = GameManager.Instance;
-        return gm != null && gm.HQ != null ? gm.HQ.GetLevel(HQDepartment.Research) : 0;
+        return gm != null && gm.HQ != null ? gm.HQ.GetLevel(HQDepartment.Lab) : 0;
     }
 
     public bool IsUnlocked() => GetDepartmentLevel() >= 1;

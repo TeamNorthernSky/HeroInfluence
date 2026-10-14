@@ -62,7 +62,7 @@ public sealed class HQUpgradeLayoutView : MonoBehaviour
             case HQDepartment.Headquarters: return "협회의 운영과 시설 확장을 지원합니다.";
             case HQDepartment.Publicity: return "히어로를 홍보하여 IP를 올립니다.";
             case HQDepartment.Workshop: return "히어로 코어를 제작하고 강화합니다.";
-            case HQDepartment.Research: return "히어로의 스킬을 강화합니다.";
+            case HQDepartment.Lab: return "히어로의 스킬을 강화합니다.";
             case HQDepartment.Training: return "훈련으로 히어로의 능력치를 올립니다.";
             case HQDepartment.Infirmary: return "다친 히어로의 체력을 회복합니다.";
             default: return "보유 자원을 다른 자원으로 교환합니다.";
@@ -78,10 +78,11 @@ public sealed class HQUpgradeLayoutView : MonoBehaviour
                 return $"• 매 턴 획득 자금 {hq.GetTurnIncomeAt(dept, level):N0}\n• 시설 건설 / 업그레이드";
             case HQDepartment.Publicity:
                 int cost = PublicityManager.GetProgressCostAt(level);
-                int i = Mathf.Clamp(level - 1, 0, PublicityManager.WeeklyMaxPerLevel.Length - 1);
-                return $"• 홍보 1회 비용 {(cost >= 0 ? cost.ToString("N0") : "—")}\n• 주간 홍보 한도 {PublicityManager.WeeklyMaxPerLevel[i]}";
+                if (!PublicityManager.TryGetPromotionRules(level, out var promotion))
+                    return "홍보 데이터 확인 필요";
+                return $"• 홍보 1회 비용 {(cost >= 0 ? cost.ToString("N0") : "—")}\n• {promotion.InfluenceChargeCycle}턴마다 홍보 {promotion.InfluenceChargeLimit}회\n• 1회당 IP +{promotion.InfluenceAmountPerCharge}";
             case HQDepartment.Training: return $"• 능력치 훈련 가능\n• 훈련 최대 Lv{Mathf.Min(level, 3)}";
-            case HQDepartment.Research: return $"• 히어로 스킬 강화\n• 스킬 강화 최대 Lv{Mathf.Min(level + 1, 5)}";
+            case HQDepartment.Lab: return $"• 히어로 스킬 강화\n• 스킬 강화 최대 Lv{Mathf.Min(level + 1, 5)}";
             case HQDepartment.Infirmary: return "• 히어로 체력 회복\n• 전투 불능 히어로 소생";
             case HQDepartment.Workshop: return "• 히어로 코어 제작 / 강화\n• 코어 장착 변경";
             default: return "• 자원 교환";

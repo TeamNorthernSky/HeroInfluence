@@ -222,6 +222,7 @@ MonoBehaviour:
   clipCatalog: {fileID: 11400000, guid: e4ce7ff02a863be418f00b463c2d2ff2, type: 2}
   bgmSource: {fileID: 2114214704}
   sfxSource: {fileID: 1666768554}
+  timedSfxInitialPoolSize: 2
   masterVolume: 1
   bgmVolume: 1
   sfxVolume: 1
@@ -417,9 +418,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 043c7964c030da945a4fd1175ba425fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uname: 0
-  integer: 0
-  firstScene: 1
+  firstScene: 0
 --- !u!4 &1931858799
 Transform:
   m_ObjectHideFlags: 0
