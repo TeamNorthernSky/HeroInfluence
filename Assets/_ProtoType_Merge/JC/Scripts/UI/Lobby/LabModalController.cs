@@ -92,6 +92,7 @@ public class LabModalController : MonoBehaviour
     [SerializeField] private TMP_Text costMoneyText;
     [SerializeField] private TMP_Text costChipText;
     [SerializeField] private TMP_Text stateInfoText;
+    private TMP_Text requiredLabLevelText;
 
     // [JC 260618] 스킬 아이콘 경로/변형 수는 HeroIconLibrary(SO)로 이관됨. 폴백 규약도 SO가 보유.
 
@@ -188,6 +189,7 @@ public class LabModalController : MonoBehaviour
     private void Awake()
     {
         EnsureFifthEnhancementStage();
+        CreateRequiredLabLevelText();
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnCancel != null) btnCancel.onClick.AddListener(OnCancel);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
@@ -313,7 +315,8 @@ public class LabModalController : MonoBehaviour
         if (rowIndex < 0 || rowIndex >= boundSkills.Count) return;
         var skill = boundSkills[rowIndex];
         if (!gm.Lab.IsSkillLearned(selectedUnitIndex, skill)) return;
-        if (!gm.Lab.CanUpgradeSkill(selectedUnitIndex, skill.NumericSkillId)) return;
+        // 레벨이 부족해도 다음 강화 비용과 필요 레벨은 확인할 수 있다.
+        if (!gm.Lab.GetNextUpgradeCost(selectedUnitIndex, skill.NumericSkillId, out _, out _)) return;
         selRow = rowIndex;
         selStageLevel = gm.Lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) + 1;
         Refresh();
@@ -432,6 +435,37 @@ public class LabModalController : MonoBehaviour
     }
 
     // ─── Refresh ────────────────────────────────────────────
+    private void CreateRequiredLabLevelText()
+    {
+        if (requiredLabLevelText != null || costChipText == null) return;
+        var costRoot = costChipText.transform.parent as RectTransform;
+        if (costRoot == null || costRoot.parent == null) return;
+        requiredLabLevelText = Instantiate(costChipText, costRoot.parent, false);
+        requiredLabLevelText.name = "RequiredLabLevel";
+        requiredLabLevelText.text = "";
+        requiredLabLevelText.raycastTarget = false;
+        requiredLabLevelText.fontSize = 26;
+        requiredLabLevelText.enableAutoSizing = false;
+        requiredLabLevelText.alignment = TextAlignmentOptions.MidlineLeft;
+        requiredLabLevelText.color = new Color(1f, 0.35f, 0.35f);
+        var rect = requiredLabLevelText.rectTransform;
+        rect.anchorMin = rect.anchorMax = costRoot.anchorMin;
+        rect.pivot = new Vector2(0, 0.5f);
+        rect.sizeDelta = new Vector2(250, costRoot.sizeDelta.y);
+        rect.anchoredPosition = costRoot.anchoredPosition +
+            new Vector2(costRoot.sizeDelta.x * (1f - costRoot.pivot.x) + 18,
+                costRoot.sizeDelta.y * (0.5f - costRoot.pivot.y));
+        requiredLabLevelText.gameObject.SetActive(false);
+    }
+
+    private void UpdateRequiredLabLevelText(int requiredLevel, int currentLevel)
+    {
+        if (requiredLabLevelText == null) return;
+        bool levelTooLow = requiredLevel > 0 && currentLevel < requiredLevel;
+        requiredLabLevelText.gameObject.SetActive(levelTooLow);
+        requiredLabLevelText.text = levelTooLow ? $"Lv.{requiredLevel}이 필요합니다" : "";
+    }
+
     private void Refresh()
     {
         var gm = GameManager.Instance;
@@ -506,6 +540,10 @@ public class LabModalController : MonoBehaviour
         if (showCost) lab.GetNextUpgradeCost(selectedUnitIndex, boundSkills[selRow].NumericSkillId, out reqM, out reqC);
         if (costMoneyText != null) costMoneyText.text = showCost ? $"{reqM:N0}" : "—";
         if (costChipText != null) costChipText.text = showCost ? $"{reqC:N0}" : "—";
+
+        int requiredLevel = showCost && AssociationCosts.TryLab(selStageLevel, out var rule)
+            ? rule.RequiredLabLevel : 0;
+        UpdateRequiredLabLevelText(requiredLevel, lab.GetDepartmentLevel());
 
         bool canConfirm = showCost && gm.Economy.Has(ResourceType.Money, reqM) && gm.Economy.Has(ResourceType.Chip, reqC)
                           && lab.CanUpgradeSkill(selectedUnitIndex, boundSkills[selRow].NumericSkillId);

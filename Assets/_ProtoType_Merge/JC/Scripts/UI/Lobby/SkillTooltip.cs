@@ -133,7 +133,7 @@ public class SkillTooltip : MonoBehaviour
         if (tipBRect != null) tipBRect.sizeDelta = new Vector2(tipBRootBaseW + extraWidth, tipBRect.sizeDelta.y);
         if (tipBDescPanel != null) tipBDescPanel.sizeDelta = new Vector2(tipBDescPanelBaseW + extraWidth, tipBDescPanel.sizeDelta.y);
         if (tipBDesc != null) tipBDesc.rectTransform.sizeDelta = new Vector2(tipBDescBaseW + extraWidth, tipBDesc.rectTransform.sizeDelta.y);
-        SizeDescPanel(tipBDescPanel, tipBDescBaseH, tipBDesc);
+        SkillTooltipCardLayout.Info(tipBRect, tipBIcon, tipBName, tipBDesc, tipBDescPanel, extraWidth, iconDeltaX);
         tipBRoot.SetActive(true);
         transform.SetAsLastSibling();
         var ctr = Center(target);
@@ -141,6 +141,7 @@ public class SkillTooltip : MonoBehaviour
         // [JC 260619] extraY: 호출처별 추가 Y 오프셋(HeroInfo 모달은 +250로 위로 올림).
         // [JC 260622] extraX: 호출처별 추가 X 오프셋(전투 스킬버튼은 인스펙터 tooltipOffset으로 위치 조정).
         tipBRect.position = new Vector3(ctr.x + infoOffset.x + extraX, ctr.y + infoOffset.y + extraY, tipBRect.position.z);
+        SkillTooltipCardLayout.KeepOnScreen(tipBRect);
     }
 
     public void ShowCompare(Sprite curIcon, string curName, string curEffect,
@@ -154,12 +155,14 @@ public class SkillTooltip : MonoBehaviour
         if (tipCNextName != null) tipCNextName.text = nextName;
         if (tipCCurEffect != null) tipCCurEffect.text = curEffect;
         if (tipCNextEffect != null) tipCNextEffect.text = nextEffect;
-        SizeDescPanel(tipCDescPanel, tipCDescBaseH, tipCCurEffect, tipCNextEffect);
+        SkillTooltipCardLayout.Compare(tipCRect, tipCCurIcon, tipCCurName, tipCCurEffect,
+            tipCNextIcon, tipCNextName, tipCNextEffect, tipCDescPanel);
         tipCRoot.SetActive(true);
         transform.SetAsLastSibling();
         var ctr = Center(target);
         tipCRect.pivot = new Vector2(0.5f, 1f); // 상단-중앙
         tipCRect.position = new Vector3(ctr.x + compareOffset.x, ctr.y + compareOffset.y, tipCRect.position.z);
+        SkillTooltipCardLayout.KeepOnScreen(tipCRect);
     }
 
     public void Hide()

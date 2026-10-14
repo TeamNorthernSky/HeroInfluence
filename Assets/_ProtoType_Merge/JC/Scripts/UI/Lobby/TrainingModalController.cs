@@ -8,9 +8,9 @@ using UnityEngine.UI;
 /// <summary>
 /// 트레이닝 모달 컨트롤러 — [JC 260617] 공방형 stage-select 모델로 재작성.
 /// 좌측 영웅 프로필, 중앙 2분류행(공격력/생명력) × 강화단계 셀(아이콘+상태프레임).
-///   - 다음 강화 가능 단계 셀만 좌클릭으로 선택 → 비용 표시 → 하단 [진행] 으로 1단계 강화.
+///   - 카드 전체 좌클릭으로 다음 훈련 단계 선택 → 비용 표시 → 하단 [진행]으로 1단계 강화.
 ///   - 단계 우클릭 또는 단계 아이콘 외 모달 영역 클릭 → 선택 해제.
-///   - 분류/단계 롤오버 시 LobbyTooltip 표시.
+///   - 카드 호버 시 현재 능력치와 다음 훈련 후 능력치를 비교 표시.
 /// 백엔드 = TrainingManager(영웅 BaseStats 영구 가산). 단계 수치/비용은 TrainingManager 인스펙터 값 사용.
 /// </summary>
 [DisallowMultipleComponent]
@@ -113,6 +113,22 @@ public class TrainingModalController : MonoBehaviour
             var row = rows[r];
             if (row == null) continue;
             int rowIndex = r;
+            if (row.cardImage != null)
+            {
+                var root = row.cardImage.gameObject;
+                if (row.cardButton != null && row.cardButton.gameObject != root)
+                    row.cardButton.enabled = false;
+                row.cardButton = root.GetComponent<Button>();
+                if (row.cardButton == null) row.cardButton = root.AddComponent<Button>();
+                row.cardButton.targetGraphic = row.cardImage;
+                row.cardButton.transition = Selectable.Transition.None;
+                row.cardImage.raycastTarget = true;
+                foreach (var tooltip in root.GetComponentsInChildren<LobbyTooltipTrigger>(true))
+                    tooltip.enabled = false;
+                var hover = root.GetComponent<TrainingCardHover>();
+                if (hover == null) hover = root.AddComponent<TrainingCardHover>();
+                hover.Bind(this, rowIndex);
+            }
             if (row.cardButton != null)
                 row.cardButton.onClick.AddListener(() => OnTrainingCardClicked(rowIndex));
             if (row.categoryIcon != null)
@@ -125,7 +141,11 @@ public class TrainingModalController : MonoBehaviour
                 row.categoryTooltip.SetContent(row.stat == TrainingStat.Attack ? atkCategoryTip : hpCategoryTip);
             if (row.stages != null)
                 for (int k = 0; k < row.stages.Length; k++)
-                    if (row.stages[k]?.clickHandler != null) row.stages[k].clickHandler.Bind(this, r, k);
+                    if (row.stages[k]?.clickHandler != null)
+                    {
+                        if (row.cardImage != null) row.stages[k].clickHandler.enabled = false;
+                        else row.stages[k].clickHandler.Bind(this, r, k);
+                    }
         }
 
     }
@@ -147,6 +167,7 @@ public class TrainingModalController : MonoBehaviour
     }
     private void OnDisable()
     {
+        if (SkillTooltip.Instance != null) SkillTooltip.Instance.Hide();
         if (LobbyUIRegistry.RosterView != null) LobbyUIRegistry.RosterView.EndSelection();
         // [JC 260617] 닫힐 때(모든 경로) 선택 영웅·완료 토스트 초기화 → 재진입 시 미선택 상태
         selectedUnitIndex = -1;
@@ -207,6 +228,35 @@ public class TrainingModalController : MonoBehaviour
         var training = GameManager.Instance != null ? GameManager.Instance.Training : null;
         if (training == null || selectedUnitIndex < 0 || rowIndex < 0 || rowIndex >= rows.Count) return;
         OnStageCellClicked(rowIndex, training.GetLevel(selectedUnitIndex, rows[rowIndex].stat), false);
+    }
+
+    public void OnTrainingCardHover(int rowIndex, bool enter)
+    {
+        var tooltip = SkillTooltip.Instance;
+        if (tooltip == null) return;
+        if (!enter) { tooltip.Hide(); return; }
+        var gm = GameManager.Instance;
+        var repo = PersistentUnitRepository.Instance;
+        if (gm == null || gm.Training == null || repo == null || selectedUnitIndex < 0
+            || rowIndex < 0 || rowIndex >= rows.Count
+            || !repo.TryGetUnit(selectedUnitIndex, out var unit) || unit == null) return;
+        var row = rows[rowIndex];
+        if (row == null || row.cardImage == null) return;
+        var training = gm.Training;
+        int level = training.GetLevel(selectedUnitIndex, row.stat);
+        float current = row.stat == TrainingStat.Attack ? unit.IngameStats.Atk : unit.IngameStats.HP;
+        var icon = row.categoryIcon != null ? row.categoryIcon.sprite : row.categorySprite;
+        var target = row.cardImage.rectTransform;
+        string name = StatName(row.stat);
+        if (level >= training.GetMaxTrainableLevel())
+        {
+            string reason = level >= TrainingManager.MaxTrainingLevel ? "최고 단계" : "훈련실 업그레이드 필요";
+            tooltip.ShowInfo(icon, name, $"{name} {current:0.##}\n{reason}", target);
+            return;
+        }
+        float gain = training.GetNextGain(selectedUnitIndex, row.stat);
+        tooltip.ShowCompare(icon, $"{name} 훈련 Lv.{level}", $"{name} {current:0.##}",
+            icon, $"{name} 훈련 Lv.{level + 1}", $"{name} {current:0.##} → {current + gain:0.##}\n(+{gain:0.##})", target);
     }
 
     // ─── 단계 선택/해제 (핸들러 콜백) ───────────────────────────
