@@ -12,8 +12,7 @@ public static class JcBuildingSilhouetteSetup
     public const string PresetPath = "Assets/RenderFX/Environment/Profiles/BUILDING_Silhouette_Default.asset";
     private static readonly string[] RendererPaths =
     {
-        "Assets/Settings/URP-HighFidelity-Renderer.asset",
-        "Assets/_ProtoType_Merge/JC/URP-JC-Renderer.asset"
+        "Assets/Settings/URP-HighFidelity-Renderer.asset"
     };
 
     [MenuItem("JC/건물 실루엣/JC_Environment에 조절 오브젝트 설치")]

@@ -54,7 +54,8 @@ namespace JC.BattleTesting
                 var body=description.GetComponentsInChildren<TMP_Text>(true).FirstOrDefault(t=>t.name=="Body");
                 if(body!=null)
                 {
-                    var go=new GameObject("DescriptionViewport",typeof(RectTransform),typeof(RectMask2D),typeof(ScrollRect));
+                    var existing = description.Find("DescriptionViewport");
+                    var go=existing != null ? existing.gameObject : new GameObject("DescriptionViewport",typeof(RectTransform),typeof(RectMask2D),typeof(ScrollRect));
                     var vp=(RectTransform)go.transform;vp.SetParent(description,false);vp.anchorMin=Vector2.zero;vp.anchorMax=Vector2.one;vp.pivot=Vector2.zero;vp.anchoredPosition=new Vector2(20,12);vp.sizeDelta=new Vector2(-40,-116);
                     body.rectTransform.SetParent(vp,false);body.enableAutoSizing=false;body.fontSize=21;body.overflowMode=TextOverflowModes.Overflow;body.raycastTarget=true;
                     var fit=body.GetComponent<ContentSizeFitter>()??body.gameObject.AddComponent<ContentSizeFitter>();fit.verticalFit=ContentSizeFitter.FitMode.PreferredSize;

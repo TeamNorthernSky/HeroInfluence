@@ -89,7 +89,7 @@ namespace JC.BattleTesting
             Prepare(party, enemy, battleScene, false);
         }
 
-        // 튜토리얼의 안내 UI와 배경은 보존하고 저장된 공통 카메라만 연결합니다.
+        // 호출 API는 유지합니다. 튜토리얼 배경은 보존하고 공통 카메라와 HUD를 연결합니다.
         public static void PrepareCameraOnly(string battleScene)
         {
             Prepare(null, null, battleScene, true);
@@ -153,7 +153,7 @@ namespace JC.BattleTesting
                     root.name.StartsWith("BGHouse", StringComparison.Ordinal) || root.name.StartsWith("BGStore", StringComparison.Ordinal)))
                     foreach (var renderer in root.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
             if (background != null) background.SetActive(true);
-            if (!cameraOnly) Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(scene);
+            Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(scene);
             battleCamera = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Camera>()).FirstOrDefault(c => c.CompareTag("MainCamera"));
             if (battleCamera == null) return;
             var roots = scene.GetRootGameObjects();
