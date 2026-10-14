@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace JC.VFX
 {
@@ -52,6 +52,14 @@ namespace JC.VFX
 
         private void OnEnable() => SyncFromTransform();
 
+        // 전투 프로필 편집에서는 순간 복귀를 금지하고 구도 전환을 세션에 맡깁니다.
+        public void ConfigureForBattleProfile()
+        {
+            resetMouseButton = -1;
+            showHint = false;
+            SyncFromTransform();
+        }
+
         /// <summary>현재 트랜스폼 각도를 내부 상태로 가져온다(씬에 놓인 초기 각도 존중).</summary>
         private void SyncFromTransform()
         {
@@ -69,7 +77,7 @@ namespace JC.VFX
             if (!Input.GetMouseButton(1)) return;
 
             // ── 초기화 (우클릭 홀드 + 휠 클릭) ──────────────────────
-            if (Input.GetMouseButtonDown(resetMouseButton)) { ResetView(); return; }
+            if (resetMouseButton >= 0 && Input.GetMouseButtonDown(resetMouseButton)) { ResetView(); return; }
 
             // ── 시점 ────────────────────────────────────────────────
             float mx = Input.GetAxis("Mouse X") * lookSensitivity;

@@ -71440,7 +71440,7 @@ Transform:
   m_GameObject: {fileID: 675802026}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7069834, y: -0, z: -0, w: 0.7072302}
-  m_LocalPosition: {x: 23, y: 0.01, z: 3}
+  m_LocalPosition: {x: 23, y: 0.01, z: 2}
   m_LocalScale: {x: 2307.9207, y: 280.7172, z: 50.52}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -132752,6 +132752,36 @@ PrefabInstance:
       propertyPath: lastFocusDistance
       value: 9.766197
       objectReference: {fileID: 0}
+    - target: {fileID: 3136638437364523112, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3603926273389974080, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474867874806112334, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5580355867198636091, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6680928800251633420, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6860923313018303114, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7212362747402680660, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
         type: 3}
       propertyPath: m_Name
@@ -132760,7 +132790,12 @@ PrefabInstance:
     - target: {fileID: 7212362747402680660, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7336019243025009619, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
+        type: 3}
+      propertyPath: status
+      value: "OFF: DH \uC6D0\uBCF8 \uC678\uD615"
       objectReference: {fileID: 0}
     - target: {fileID: 7936297287042733371, guid: a00f205a9eb6ead4a8d338a3c4062ed9,
         type: 3}

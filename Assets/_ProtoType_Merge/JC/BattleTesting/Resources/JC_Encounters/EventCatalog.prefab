@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2962050631742115035
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6925297671332979279}
+  - component: {fileID: 4343285787822175022}
+  m_Layer: 0
+  m_Name: EventCatalog
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6925297671332979279
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2962050631742115035}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4343285787822175022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2962050631742115035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76daf4ac3de77a148a51130eee8e9a2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  zones:
+  - zoneId: 1
+    zoneLabel: "1\uAD6C\uC5ED"
+    chatMainTable: {fileID: 11400000, guid: cc516af73d5a5ff4aa0f25adf30e2969, type: 2}
+    chatSubTable: {fileID: 11400000, guid: dc46515d99a20aa43bc0454f417f691c, type: 2}
+    branchMainTable: {fileID: 11400000, guid: 9965e1b11932dab4a889cc0850870a34, type: 2}
+    branchSubTable: {fileID: 11400000, guid: f576d04fb7468e5429fd65912debfcad, type: 2}
+    enemyBattleGroupTable: {fileID: 11400000, guid: 751447153aa7c8a429f2a2c570f35d81,
+      type: 2}
+    enemyBattleUnitTable: {fileID: 11400000, guid: cac12e2cd29c6b54ebf215c78e3b51f2,
+      type: 2}
+  - zoneId: 2
+    zoneLabel: "2\uAD6C\uC5ED"
+    chatMainTable: {fileID: 11400000, guid: 65effe05b0d60624a82a4e21f1a2f20e, type: 2}
+    chatSubTable: {fileID: 11400000, guid: 1204d582156b8124590e96794622593c, type: 2}
+    branchMainTable: {fileID: 11400000, guid: af93f3d4e2ed0b64f92238b78cfd4733, type: 2}
+    branchSubTable: {fileID: 11400000, guid: 19f865d5eb4b1a841bfe4d5617570f8f, type: 2}
+    enemyBattleGroupTable: {fileID: 11400000, guid: 7f521ec11ff8e0642abaad827e6b4843,
+      type: 2}
+    enemyBattleUnitTable: {fileID: 11400000, guid: eac0d97ea3d8e95409e75d10545a4586,
+      type: 2}
+  mainSubEventRewardTable: {fileID: 11400000, guid: 402b3d833cd119449a5ff30a77b2d79f,
+    type: 2}
+  loadOnAwake: 1
+  dontDestroyOnLoad: 0

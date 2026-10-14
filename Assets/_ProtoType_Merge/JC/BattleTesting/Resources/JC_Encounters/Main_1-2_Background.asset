@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6b2b050630537a449cd90a2a4234cdf, type: 3}
+  m_Name: Main_1-2_Background
+  m_EditorClassIdentifier: 
+  sourceScene: Assets/_ProtoType_Merge/Scenes/DHScene_3.unity
+  encounterKey: Main_1-2
+  captureHalfSize: {x: 12, y: 12}
+  visualPrefab: {fileID: 3553266204063110837, guid: e3458e47421ab80499c18ac46aa5e5c4,
+    type: 3}
+  fitBattleRoad: 1
+  sourceRoadEdges: {x: -4.5, y: 1.5}
+  battleRoadWidth: 11.5
+  roadsideClearance: 5
+  fittedVisualPrefab: {fileID: 47980213458202654, guid: 3291854d9c87b3741baff3bd68b8310b,
+    type: 3}
+  useDetailBackground: 1
+  detailVisualPrefab: {fileID: 753720416559005809, guid: 432f7c91f95016d40bb3504df783dc86,
+    type: 3}
+  battleOffset: {x: 0, y: 0, z: 0}
+  scale: 3
+  yaw: 90
+  showEncounterProps: 1
+  adjustments: []
+  extractionReport: "\uD48D\uACBD 71 / \uC778\uCE74\uC6B4\uD130 \uC815\uC801 \uC18C\uD488
+    0\n\uAE30\uC900\uC810 (22.00, 0.01, 7.00) / \uC6D0\uBCF8 \uBC18\uACBD (12.00,
+    12.00)\n\uC9C4\uD615 \uC8FC\uBCC0 \uD655\uC778: Scenery/BGHouse002_JC(Clone)__c0c43784bafd\r\n\uC9C4\uD615
+    \uC8FC\uBCC0 \uD655\uC778: Scenery/BGHouse001_JC(Clone)__116b4a0c90a9\r\n\uC9C4\uD615
+    \uC8FC\uBCC0 \uD655\uC778: Scenery/Mount02(Clone)__22d9bf268f44\r\n"

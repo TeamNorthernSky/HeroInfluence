@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace JC.BattleTesting
     // ASB/Scripts/Unit/BossController 페이즈 효과, EnemySpawner의 생성·시체 부활.
     // JC 전용 진입점입니다. CombatContext/Repository/보상/저장에는 쓰지 않으며 원본 씬은 변경하지 않습니다.
     [DefaultExecutionOrder(-500)]
-    public sealed class JcBattleTestSession : MonoBehaviour
+    public sealed partial class JcBattleTestSession : MonoBehaviour
     {
         [Tooltip("편집 중인 초기 설정입니다. 적용 및 재시작 버튼으로 전투에 반영하며, 아군 불사만 즉시 적용합니다.")]
         public JcBattleTestSettings settings = new JcBattleTestSettings();
@@ -47,6 +47,223 @@ namespace JC.BattleTesting
         [Tooltip("씬 종료 버튼으로 이동할 씬입니다. 비우면 테스트 전투를 정지합니다. Editor에서는 Play Mode를 종료합니다.")]
         public string exitScene;
 
+        [Header("카메라 구도 테스트")]
+        [Tooltip("기존 전투 카메라입니다. 비어 있으면 MainCamera를 사용하며 시작 시 기존 구도를 보관합니다.")]
+        public Camera viewCamera;
+        [Tooltip("켜면 전투 시작 시 기존 구도에서 쿼터뷰 A로 선형 이동합니다.")]
+        public bool startInQuarterView = true;
+        [Tooltip("F6/F7 구도 저장 에셋입니다. 비어 있으면 기본 카메라 프로필을 사용합니다.")]
+        public JcBattleCameraProfile cameraProfile;
+        [Tooltip("F6 편집용 초안입니다. 적용과 프로필 저장은 별도 버튼으로 수행합니다.")]
+        public JcBattleCameraPose cameraDraftA = new JcBattleCameraPose();
+        [Tooltip("F7 편집용 초안입니다. F8에서 현재 자세를 가져올 수 없습니다.")]
+        public JcBattleCameraPose cameraDraftB = new JcBattleCameraPose();
+        private JC.VFX.JcFreeCamera freeCameraControl;
+        private JcInputHandler cameraBlockedInput;
+        private bool previousInputEnabled;
+        private float originalCameraFov, viewStartFov, viewEndFov;
+        private float appliedDraftFov, appliedPerspectiveStrength;
+        private Vector3 appliedDraftPosition, appliedDraftRotation;
+        public bool FreeCameraActive => freeCameraControl != null && freeCameraControl.enabled;
+        public bool CanCaptureCamera => cameraCaptured && requestedView >= 0 && requestedView < 2 && !viewMoving;
+        public int CurrentCameraView => requestedView;
+        private Vector3 CameraFramingCenter => playerPlace != null && enemyPlace != null
+            ? (playerPlace.position + enemyPlace.position) * .5f : Vector3.zero;
+        public void LoadCameraProfile()
+        {
+            if (cameraProfile == null) cameraProfile = Resources.Load<JcBattleCameraProfile>("JC_BattleCamera_Default");
+            if (cameraProfile == null) return;
+            cameraDraftA = cameraProfile.viewA.Copy(); cameraDraftB = cameraProfile.viewB.Copy();
+        }
+        public bool CaptureCurrentCamera()
+        {
+            if (!CanCaptureCamera || viewCamera == null) return false;
+            var pose = requestedView == 0 ? cameraDraftA : cameraDraftB;
+            pose.Capture(viewCamera, CameraFramingCenter);
+            RememberCameraDraft(pose);
+            return true;
+        }
+        public void SetFreeCamera(bool active)
+        {
+            if (!cameraCaptured || viewCamera == null) return;
+            if (active)
+            {
+                if (FreeCameraActive) return;
+                viewMoving = false;
+                if (freeCameraControl == null)
+                {
+                    freeCameraControl = viewCamera.GetComponent<JC.VFX.JcFreeCamera>();
+                    if (freeCameraControl == null) freeCameraControl = viewCamera.gameObject.AddComponent<JC.VFX.JcFreeCamera>();
+                    freeCameraControl.enabled = false;
+                    freeCameraControl.ConfigureForBattleProfile();
+                }
+                cameraBlockedInput = FindObjectOfType<JcInputHandler>();
+                previousInputEnabled = cameraBlockedInput != null && cameraBlockedInput.enabled;
+                if (cameraBlockedInput != null) cameraBlockedInput.enabled = false;
+                freeCameraControl.enabled = true;
+            }
+            else
+            {
+                if (freeCameraControl != null) freeCameraControl.enabled = false;
+                if (cameraBlockedInput != null) cameraBlockedInput.enabled = previousInputEnabled;
+                cameraBlockedInput = null;
+            }
+        }
+        [Tooltip("각 전환의 소요 시간(초)입니다. 가감속 없이 이동하며 일시정지와 배속에 영향받지 않습니다.")]
+        [Min(0.05f)] public float cameraTransitionSeconds = 0.65f;
+        [Tooltip("기본 쿼터뷰 A(아군 좌하단/적 우상단)로 이동하는 키입니다.")]
+        public KeyCode quarterViewAKey = KeyCode.F6;
+        [Tooltip("쿼터뷰 B(아군 좌상단/적 우하단)로 이동하는 키입니다.")]
+        public KeyCode quarterViewBKey = KeyCode.F7;
+        [Tooltip("실행 시작 시 보관한 기존 기본 뷰로 이동하는 키입니다. 타겟 선택 상태는 유지합니다.")]
+        public KeyCode originalViewKey = KeyCode.F8;
+
+        private Vector3 originalCameraPosition, viewStartPosition, viewEndPosition;
+        private Quaternion originalCameraRotation, viewStartRotation, viewEndRotation;
+        private float viewElapsed, viewDuration;
+        private bool cameraCaptured, viewMoving;
+        private int requestedView = -1;
+        private GameObject cameraToolbar;
+        private readonly TMPro.TMP_Text[] cameraViewLabels = new TMPro.TMP_Text[3];
+
+        private void InitializeCameraViews()
+        {
+            if (viewCamera == null) viewCamera = Camera.main;
+            if (viewCamera == null || playerPlace == null || enemyPlace == null) return;
+            originalCameraPosition = viewCamera.transform.position;
+            originalCameraRotation = viewCamera.transform.rotation;
+            originalCameraFov = viewCamera.fieldOfView;
+            LoadCameraProfile();
+            cameraCaptured = true;
+            requestedView = 2;
+            BuildCameraToolbar();
+            if (startInQuarterView) SelectCameraView(0);
+        }
+
+        // 기존 카메라를 유지해 타겟 선택 등의 카메라 참조를 보존합니다.
+        public void SelectCameraView(int view)
+        {
+            if (!cameraCaptured || viewCamera == null || view < 0 || view > 2) return;
+            SetFreeCamera(false);
+            viewStartFov = viewCamera.fieldOfView;
+            viewEndFov = originalCameraFov;
+            viewStartPosition = viewCamera.transform.position;
+            viewStartRotation = viewCamera.transform.rotation;
+            viewEndPosition = originalCameraPosition;
+            viewEndRotation = originalCameraRotation;
+            if (view != 2)
+            {
+                var pose = view == 0 ? cameraDraftA : cameraDraftB;
+                pose.Resolve(CameraFramingCenter, out viewEndPosition, out viewEndRotation, out viewEndFov);
+                RememberCameraDraft(pose);
+            }
+            requestedView = view;
+            viewElapsed = 0f;
+            viewDuration = Mathf.Max(0.05f, cameraTransitionSeconds);
+            viewMoving = true;
+        }
+
+        private void RememberCameraDraft(JcBattleCameraPose pose)
+        {
+            appliedDraftPosition = pose.position;
+            appliedDraftRotation = pose.rotation;
+            appliedDraftFov = pose.fieldOfView;
+            appliedPerspectiveStrength = pose.perspectiveStrength;
+        }
+
+        // Inspector 변경, Undo, 저장 프로필 불러오기를 모두 같은 경로로 반영합니다.
+        private void RefreshCameraDraft()
+        {
+            if (!cameraCaptured || viewCamera == null || requestedView < 0 || requestedView > 1) return;
+            var pose = requestedView == 0 ? cameraDraftA : cameraDraftB;
+            if (appliedDraftPosition.Equals(pose.position) &&
+                appliedDraftRotation.Equals(pose.rotation) &&
+                Mathf.Approximately(appliedDraftFov, pose.fieldOfView) &&
+                Mathf.Approximately(appliedPerspectiveStrength, pose.perspectiveStrength)) return;
+            SelectCameraView(requestedView);
+        }
+
+        private void UpdateCameraViews()
+        {
+            if (!cameraCaptured || viewCamera == null) return;
+            RefreshCameraDraft();
+            var events = UnityEngine.EventSystems.EventSystem.current;
+            var selected = events != null ? events.currentSelectedGameObject : null;
+            bool editing = selected != null && (selected.GetComponent<UnityEngine.UI.InputField>() != null || selected.GetComponent<TMPro.TMP_InputField>() != null);
+            if (!editing && modalMessage == null)
+            {
+                if (Input.GetKeyDown(quarterViewAKey)) SelectCameraView(0);
+                else if (Input.GetKeyDown(quarterViewBKey)) SelectCameraView(1);
+                else if (Input.GetKeyDown(originalViewKey)) SelectCameraView(2);
+            }
+            if (viewMoving)
+            {
+                viewElapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(viewElapsed / viewDuration);
+                viewCamera.transform.SetPositionAndRotation(Vector3.Lerp(viewStartPosition, viewEndPosition, t), Quaternion.Slerp(viewStartRotation, viewEndRotation, t));
+                viewCamera.fieldOfView = Mathf.Lerp(viewStartFov, viewEndFov, t);
+                if (t >= 1f) viewMoving = false;
+            }
+            string[] names = { "구도 A", "구도 B", "기본" };
+            KeyCode[] keys = { quarterViewAKey, quarterViewBKey, originalViewKey };
+            for (int i = 0; i < cameraViewLabels.Length; i++)
+                if (cameraViewLabels[i] != null) cameraViewLabels[i].text = (requestedView == i ? "> " : "") + names[i] + " [" + keys[i] + "]";
+        }
+
+        [Tooltip("카메라 버튼에 사용할 한글 글꼴입니다. 씬의 Noto Sans KR 글꼴을 명시적으로 연결합니다.")]
+        public TMPro.TMP_FontAsset cameraToolbarFont;
+
+        private void BuildCameraToolbar()
+        {
+            cameraToolbar = new GameObject("JC_CameraViewToolbar", typeof(RectTransform), typeof(Canvas), typeof(UnityEngine.UI.CanvasScaler), typeof(UnityEngine.UI.GraphicRaycaster));
+            cameraToolbar.transform.SetParent(transform, false);
+            var canvas = cameraToolbar.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 90;
+            var scaler = cameraToolbar.GetComponent<UnityEngine.UI.CanvasScaler>();
+            scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = 0.5f;
+            var font = cameraToolbarFont;
+            if (font == null)
+            {
+                var existingText = FindObjectsOfType<TMPro.TMP_Text>(true).FirstOrDefault(x => x.gameObject.scene == gameObject.scene && x.name == "ActorName" && x.font != null);
+                font = existingText != null ? existingText.font : TMPro.TMP_Settings.defaultFontAsset;
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                int view = i;
+                var buttonObject = new GameObject("CameraView_" + i, typeof(RectTransform), typeof(UnityEngine.UI.Image), typeof(UnityEngine.UI.Button));
+                buttonObject.transform.SetParent(cameraToolbar.transform, false);
+                var rect = buttonObject.GetComponent<RectTransform>();
+                rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1f, 1f);
+                rect.anchoredPosition = new Vector2(-16f - (2 - i) * 104f, -12f);
+                rect.sizeDelta = new Vector2(98f, 30f);
+                buttonObject.GetComponent<UnityEngine.UI.Image>().color = new Color(0.05f, 0.1f, 0.2f, 0.9f);
+                buttonObject.GetComponent<UnityEngine.UI.Button>().onClick.AddListener(() => { if (modalMessage == null) SelectCameraView(view); });
+                var labelObject = new GameObject("Label", typeof(RectTransform), typeof(TMPro.TextMeshProUGUI));
+                labelObject.transform.SetParent(buttonObject.transform, false);
+                var labelRect = labelObject.GetComponent<RectTransform>();
+                labelRect.anchorMin = Vector2.zero; labelRect.anchorMax = Vector2.one;
+                labelRect.offsetMin = labelRect.offsetMax = Vector2.zero;
+                var label = labelObject.GetComponent<TMPro.TextMeshProUGUI>();
+                label.font = font; label.fontSize = 14; label.enableAutoSizing = true; label.fontSizeMin = 11; label.fontSizeMax = 14; label.enableWordWrapping = false; label.alignment = TMPro.TextAlignmentOptions.Center;
+                label.raycastTarget = false;
+                cameraViewLabels[i] = label;
+            }
+        }
+
+        private void RestoreCameraViews()
+        {
+            SetFreeCamera(false);
+            if (cameraCaptured && viewCamera != null) viewCamera.fieldOfView = originalCameraFov;
+            // 테스트 세션 종료 시 편집 구도를 복구한다. 플레이 중 구도 전환은 모두 선형 보간한다.
+            if (cameraCaptured && viewCamera != null)
+                viewCamera.transform.SetPositionAndRotation(originalCameraPosition, originalCameraRotation);
+            cameraCaptured = viewMoving = false;
+            if (cameraToolbar != null) Destroy(cameraToolbar);
+        }
+
         public string Status { get; private set; } = "준비 중";
         public IJcBossActionProvider ManualProvider { get; set; }
         public JcYuliaEncounterRules Rules { get; private set; }
@@ -64,9 +281,15 @@ namespace JC.BattleTesting
         private float savedTimeScale = 1;
         private IDisposable modalLock;
 
-        private void Start() => ApplyAndRestart();
+        private void Start()
+        {
+            Resources.Load<JcBattleHudLayout>("JC_BattleHud_Layout")?.ApplyTopRightButtons(gameObject.scene);
+            InitializeCameraViews();
+            ApplyAndRestart();
+        }
         private void Update()
         {
+            UpdateCameraViews();
             if (applied == null) return;
             foreach (var actor in runtimeUnits.Where(x => x != null && x.IsPlayer))
             {
@@ -106,6 +329,12 @@ namespace JC.BattleTesting
                 if (!unitPrefabs.TryGetPlayerPrefab(setup.unitKey, out var prefab) || prefab == null) throw new InvalidOperationException("히어로 프리팹이 없습니다: " + setup.unitKey);
                 prepared.Add(JcTestDataAssembler.PrepareAlly(setup, catalog));
             }
+            preparedEventPlan = null;
+            if (candidate.enemyPreset != null && candidate.enemyPreset.IsEventBattle)
+            {
+                ValidateEventPreset(candidate.enemyPreset);
+                return prepared;
+            }
             var preset = candidate.enemyPreset;
             if (preset == null || preset.enemyLevel < 1 || preset.startPhase < 1 || preset.startPhase > 3 || preset.bossSlot < 1 || preset.bossSlot > 6) throw new InvalidOperationException("적 프리셋 설정이 올바르지 않습니다.");
             if (preset.fullEncounter && (preset.startPhase != 1 || preset.bossSlot == 4 || preset.bossSlot == 6)) throw new InvalidOperationException("전체 보스전은 1페이즈로 시작하며 증폭기 슬롯 4/6과 보스 슬롯이 중복될 수 없습니다.");
@@ -120,7 +349,7 @@ namespace JC.BattleTesting
             if (!Application.isPlaying || restarting) return;
             if (flow != null && flow.IsActionInProgress && !resultModal) { Status = "행동이 끝난 뒤 재시작해 주세요."; return; }
             List<JcTestDataAssembler.PreparedAlly> prepared;
-            try { prepared = Prepare(settings); }
+            try { EnsureEventCatalog(); prepared = Prepare(settings); PrepareDynamicBackground(); }
             catch (Exception ex) { Status = ex.Message; Debug.LogError("[JC 전투 테스트] " + Status, this); return; }
             StartCoroutine(RestartRoutine(prepared));
         }
@@ -145,10 +374,10 @@ namespace JC.BattleTesting
             applied = JsonUtility.FromJson<JcBattleTestSettings>(JsonUtility.ToJson(settings));
             appliedPreset = Instantiate(settings.enemyPreset); applied.enemyPreset = appliedPreset;
             JcBattleRandom.Reset(applied.useFixedSeed, applied.seed);
-            Rules = new JcYuliaEncounterRules(appliedPreset.startPhase, !appliedPreset.fullEncounter);
+            Rules = appliedPreset.IsEventBattle ? null : new JcYuliaEncounterRules(appliedPreset.startPhase, !appliedPreset.fullEncounter);
             finalizedResult = BattleResult.None;
             blackboard.ResetAll(); blackboard.ExternalPhasePolicy = true;
-            blackboard.SetTestPhase(Rules.Phase, false);
+            blackboard.SetTestPhase(Rules != null ? Rules.Phase : 1, false);
             spawner.TestSpawn = SpawnSummon;
             spawner.TestRevive = ReviveCorpse;
             foreach (var data in prepared)
@@ -162,9 +391,16 @@ namespace JC.BattleTesting
                 runtimeUnits.Add(actor); unitSlots[actor] = data.Setup.slot;
                 if (settings.alliesCannotDie) immortal[actor] = actor.AddMinimumHpConstraint(1, this);
             }
-            boss = SpawnEnemy(Rules.Phase == 3 ? 40004 : 40001, appliedPreset.bossSlot);
-            if (appliedPreset.fullEncounter) { SpawnEnemy(40002, 4); SpawnEnemy(40003, 6); }
-            execution.DamageTakenPolicy = target => target == boss && Rules.Phase == 3 ? Rules.VeilDamageMultiplier : 1;
+            boss = null;
+            if (appliedPreset.IsEventBattle)
+                foreach (var entry in preparedEventPlan.Entries) SpawnEventEnemy(entry);
+            else
+            {
+                boss = SpawnEnemy(Rules.Phase == 3 ? 40004 : 40001, appliedPreset.bossSlot);
+                if (appliedPreset.fullEncounter) { SpawnEnemy(40002, 4); SpawnEnemy(40003, 6); }
+            }
+            ApplyEncounterBackground(appliedPreset.IsEventBattle ? appliedPreset.background : null);
+            execution.DamageTakenPolicy = target => Rules != null && target == boss && Rules.Phase == 3 ? Rules.VeilDamageMultiplier : 1;
             flow.OnBattleEnded -= BattleEnded; flow.OnBattleEnded += BattleEnded;
             // 원본 BattleSceneManager 새 씬 진입 대응: 씬을 다시 로드하지 않으므로 종료된 UI 상태만 복원합니다.
             foreach (var order in FindObjectsByType<JcTurnOrderUI>(FindObjectsInactive.Include, FindObjectsSortMode.None)) order.gameObject.SetActive(true);
@@ -175,7 +411,7 @@ namespace JC.BattleTesting
             flow.AfterAction = ResolveActionBoundary;
             flow.SkippedBossAction = ReportSkippedBoss;
             foreach (var unit in runtimeUnits) execution.ApplyBattleSpeedToUnit(unit);
-            Status = "전투 진행 중 / 페이즈 " + Rules.Phase;
+            Status = appliedPreset.IsEventBattle ? "전투 진행 중 / " + appliedPreset.encounterKey : "전투 진행 중 / 페이즈 " + Rules.Phase;
             restarting = false;
             flow.StartBattleLoop();
         }
@@ -263,6 +499,13 @@ namespace JC.BattleTesting
         }
         private IEnumerator ResolveActionBoundary(BattleCharactor actor, bool skipped)
         {
+            if (appliedPreset.IsEventBattle)
+            {
+                bool enemiesDefeated = !runtimeUnits.Any(x => x != null && !x.IsPlayer && !x.IsDead);
+                finalizedResult = JcYuliaEncounterRules.EvaluateResult(enemiesDefeated, runtimeUnits.Any(x => x != null && x.IsPlayer && !x.IsDead));
+                Status = appliedPreset.encounterKey + " / " + finalizedResult;
+                yield break;
+            }
             if (Rules.EvaluateAfterAction(boss.CurrentHp / boss.MaxHp))
             {
                 if (Rules.Phase == 3)
@@ -391,6 +634,9 @@ namespace JC.BattleTesting
         }
         private void OnDisable()
         {
+            ClearPendingDynamicBackground();
+            RestoreEncounterBackground();
+            RestoreCameraViews();
             ManualProvider?.CancelPending(); CloseModal();
             foreach (var handle in immortal.Values) handle.Dispose(); immortal.Clear();
             foreach (var handle in chargeModifiers.Values) handle.Dispose(); chargeModifiers.Clear();

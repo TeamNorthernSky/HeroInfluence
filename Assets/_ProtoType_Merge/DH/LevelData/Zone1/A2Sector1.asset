@@ -9800,7 +9800,7 @@ MonoBehaviour:
     prefabKey: Mount01
   - gridPosition: {x: 3, y: 21}
     prefabKey: Mount03
-  - gridPosition: {x: 23, y: 3}
+  - gridPosition: {x: 23, y: 2}
     prefabKey: Mount02
   tutorialObjectPlacements: []
   mainEventPlacements:
