@@ -293,6 +293,7 @@ public class PartyInteractionController
         mapEvent.Interact(ownerParty);
         AdjacentMapEventDetected?.Invoke(mapEvent);
         IsInputLocked = false;
+        RequestMoveRangeRefresh();
     }
 
     private IEnumerator InvokeDelayedWorldEventInteraction(Vector2Int worldEventGrid)
@@ -430,6 +431,7 @@ public class PartyInteractionController
 
         pendingInteractionCoroutine = null;
         IsInputLocked = false;
+        RequestMoveRangeRefresh();
     }
 
     private static float CollectItem(Vector2Int itemGrid, IGridItemObject itemObject, Transform flyTarget)
@@ -556,16 +558,35 @@ public class PartyInteractionController
     private void HandleMainEventClosed(MainEventObject mainEvent)
     {
         IsInputLocked = false;
+        RequestMoveRangeRefresh();
     }
 
     private void HandleSubEventClosed(SubEventObject subEvent)
     {
         IsInputLocked = false;
+        RequestMoveRangeRefresh();
     }
 
     private void HandleWorldEventClosed(WorldEventObject worldEvent)
     {
         IsInputLocked = false;
+        RequestMoveRangeRefresh();
+    }
+
+    private void RequestMoveRangeRefresh()
+    {
+        if (coroutineOwner == null)
+            return;
+
+        coroutineOwner.StartCoroutine(RefreshMoveRangeNextFrame());
+    }
+
+    private static IEnumerator RefreshMoveRangeNextFrame()
+    {
+        yield return null;
+
+        MoveRangeController moveRangeController = UnityEngine.Object.FindFirstObjectByType<MoveRangeController>();
+        moveRangeController?.RefreshForCurrentParty();
     }
 
     private static bool IsAdjacentOrSame(Vector2Int a, Vector2Int b)

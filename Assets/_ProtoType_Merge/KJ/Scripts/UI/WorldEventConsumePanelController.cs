@@ -186,6 +186,8 @@ public sealed class WorldEventConsumePanelController : MonoBehaviour
         {
             if (rewardType == DHWorldEventRewardType.CurrentIP)
                 return influenceIcon;
+            if (rewardType == DHWorldEventRewardType.CurrentHP)
+                return healthIcon;
             if (DHWorldEventCodeMap.TryGetRewardResourceType(rewardType, out ResourceType rewardResource))
                 return Sprites.UI.Resource(rewardResource);
         }

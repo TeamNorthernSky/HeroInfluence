@@ -5,6 +5,8 @@ using UnityEngine.Serialization;
 
 public class EnemyTurnController : MonoBehaviour
 {
+    private const int EventEncounterCombatStartWaitFrames = 3;
+
     [Header("References")]
     [SerializeField] private EnemyRegistry enemyRegistry;
     [SerializeField] private PartyRegistry partyRegistry;
@@ -387,10 +389,36 @@ public class EnemyTurnController : MonoBehaviour
                     eventEncounterClosed = true;
                 }))
         {
+            // The chat can request a battle and then spend a few frames fading/loading the battle scene.
+            // Hold the enemy turn as soon as the encounter chat opens so TurnManager cannot advance the day in that gap.
+            InterruptForCombat(enemy, remainingMovePoints);
+
             yield return new WaitUntil(() => eventEncounterClosed);
 
+            if (!eventEncounterStartedCombat)
+            {
+                yield return WaitForEventEncounterCombatStart(started => eventEncounterStartedCombat = started);
+            }
+
             if (eventEncounterStartedCombat)
-                InterruptForCombat(enemy, remainingMovePoints);
+            {
+                onComplete?.Invoke(true);
+                yield break;
+            }
+
+            Debug.LogWarning(
+                $"Enemy event encounter chat closed without starting event battle. Falling back to normal combat. Enemy='{ResolveEnemyPlacementKey(enemy)}'",
+                this);
+
+            if (party != null && enemy != null && IsAdjacent(party.GetCurrentGrid(), enemy.GetCurrentGrid()))
+            {
+                bool fallbackCombatStarted = combatEncounterManager.BeginCombat(party, enemy);
+                if (fallbackCombatStarted)
+                {
+                    onComplete?.Invoke(true);
+                    yield break;
+                }
+            }
 
             onComplete?.Invoke(true);
             yield break;
@@ -405,6 +433,32 @@ public class EnemyTurnController : MonoBehaviour
 
         InterruptForCombat(enemy, remainingMovePoints);
         onComplete?.Invoke(true);
+    }
+
+    private IEnumerator WaitForEventEncounterCombatStart(System.Action<bool> onComplete)
+    {
+        for (int i = 0; i < EventEncounterCombatStartWaitFrames; i++)
+        {
+            if (HasActiveEventBattleCombat())
+            {
+                onComplete?.Invoke(true);
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        onComplete?.Invoke(HasActiveEventBattleCombat());
+    }
+
+    private bool HasActiveEventBattleCombat()
+    {
+        CombatContext context = CombatContext.Instance;
+        return context != null &&
+            context.HasEventBattle &&
+            context.Result == CombatResult.None &&
+            combatEncounterManager != null &&
+            combatEncounterManager.IsCombatActive;
     }
 
     private void InterruptForCombat(EnemyGridMover enemy, int remainingMovePoints)

@@ -187,8 +187,9 @@ public class TurnManager : MonoBehaviour
         EnemyTurnSessionRepository sessionRepository = EnemyTurnSessionRepository.Instance;
         if (sessionRepository != null && sessionRepository.ShouldResumeAfterCombat)
         {
+            // Combat interrupted the enemy turn. Keep exploration UI in enemy-turn state while the battle scene loads;
+            // sending EnemyTurnStateChanged(false) here makes move-range UI refresh as if a player turn had started.
             enemyTurnRunning = false;
-            EnemyTurnStateChanged?.Invoke(false);
             yield break;
         }
 
