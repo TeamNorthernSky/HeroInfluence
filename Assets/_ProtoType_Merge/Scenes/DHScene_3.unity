@@ -148372,17 +148372,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a51c2bcf3e4d7479e17e4bc83d71cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerUnitDataTable: {fileID: 11400000, guid: e6c8877c70aaa8c47a9b46bb87dec069,
+  playerUnitDataTable: {fileID: 11400000, guid: 82be87431bb79154da39acda1d4805b4,
     type: 2}
-  enemyUnitInfoDataTable: {fileID: 11400000, guid: bec3b733dc94cc242a6f4b87f05f64ed,
+  enemyUnitInfoDataTable: {fileID: 11400000, guid: 84e0b75a34f164443b7bb5addf696deb,
     type: 2}
-  playerWeaponDataTable: {fileID: 11400000, guid: e94e37bebb96a814ab4d0bac4007f2ec,
+  playerWeaponDataTable: {fileID: 11400000, guid: 73400c927726ef04a882c4c069a303b4,
     type: 2}
-  classSkillDataTable: {fileID: 11400000, guid: 9a086d8f8427e404cad97d1371c38396,
+  classSkillDataTable: {fileID: 11400000, guid: fcb0693ae3b57504a988fd8928453ac3,
     type: 2}
-  unitGrowthExpDataTable: {fileID: 11400000, guid: 553a4c165c3d0424ea3947a429526c7b,
+  unitGrowthExpDataTable: {fileID: 11400000, guid: 3002617db5b3c4b45962369c19a07c95,
     type: 2}
-  enemyGroupDataTable: {fileID: 11400000, guid: 9e51f7da4488a3741949b5a87d1c8644,
+  enemyGroupDataTable: {fileID: 11400000, guid: 57bae4e9670486e438f28ceb78ffd0b0,
     type: 2}
   sector4EnemyUnitDataTable: {fileID: 11400000, guid: 88de00416d03edd4eba0696dbedff063,
     type: 2}
@@ -148857,9 +148857,9 @@ MonoBehaviour:
     chatSubTable: {fileID: 11400000, guid: dc46515d99a20aa43bc0454f417f691c, type: 2}
     branchMainTable: {fileID: 11400000, guid: 9965e1b11932dab4a889cc0850870a34, type: 2}
     branchSubTable: {fileID: 11400000, guid: f576d04fb7468e5429fd65912debfcad, type: 2}
-    enemyBattleGroupTable: {fileID: 11400000, guid: 751447153aa7c8a429f2a2c570f35d81,
+    enemyBattleGroupTable: {fileID: 11400000, guid: 57ab13dc33fd17f4495930929162e22b,
       type: 2}
-    enemyBattleUnitTable: {fileID: 11400000, guid: cac12e2cd29c6b54ebf215c78e3b51f2,
+    enemyBattleUnitTable: {fileID: 11400000, guid: 3b7473e3dcec23e4a9459d245dac1fda,
       type: 2}
   - zoneId: 2
     zoneLabel: "2\uAD6C\uC5ED"
@@ -148867,9 +148867,9 @@ MonoBehaviour:
     chatSubTable: {fileID: 11400000, guid: 1204d582156b8124590e96794622593c, type: 2}
     branchMainTable: {fileID: 11400000, guid: af93f3d4e2ed0b64f92238b78cfd4733, type: 2}
     branchSubTable: {fileID: 11400000, guid: 19f865d5eb4b1a841bfe4d5617570f8f, type: 2}
-    enemyBattleGroupTable: {fileID: 11400000, guid: 7f521ec11ff8e0642abaad827e6b4843,
+    enemyBattleGroupTable: {fileID: 11400000, guid: 0622e59eeea540e419bfe0198159e49f,
       type: 2}
-    enemyBattleUnitTable: {fileID: 11400000, guid: eac0d97ea3d8e95409e75d10545a4586,
+    enemyBattleUnitTable: {fileID: 11400000, guid: 7cee3e7df27a69d4bbcc98db13924adf,
       type: 2}
   mainSubEventRewardTable: {fileID: 11400000, guid: 402b3d833cd119449a5ff30a77b2d79f,
     type: 2}
@@ -148887,15 +148887,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82642162af683574a8c09b857ae70252, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buildTable: {fileID: 11400000, guid: bcba7dde5e3b79d4b948b901d0862a66, type: 2}
-  workshopTable: {fileID: 11400000, guid: 24f6591e008ac9d45a193210b2fa63f9, type: 2}
-  workshopEnforceTable: {fileID: 11400000, guid: 3d516d2a69548ce49b18d06a2bdb1853,
+  buildTable: {fileID: 11400000, guid: dbbefa0e7a90a6a4c937b80985aaca8f, type: 2}
+  workshopTable: {fileID: 11400000, guid: 08e4a0745b9513447b37b4dd339f4c70, type: 2}
+  workshopEnforceTable: {fileID: 11400000, guid: 7223ba3b6a26c4444bf02a5388a824bf,
     type: 2}
-  exchangeTable: {fileID: 11400000, guid: 6aabd2f1bda8b484a8ed06258303d8e2, type: 2}
-  labTable: {fileID: 11400000, guid: a4d030d162104e847bb94ba8fd8de55d, type: 2}
-  fundTable: {fileID: 11400000, guid: 0e8af1dd2f4035c4494ac3c7e741aea7, type: 2}
-  promotionTable: {fileID: 11400000, guid: 3eee041290194584bb7b00a0f32dfde2, type: 2}
-  trainingTable: {fileID: 11400000, guid: f207979e53e442040a648306813eaf8a, type: 2}
+  exchangeTable: {fileID: 11400000, guid: 3bdf4585cf9b1fc409412f4c668824e2, type: 2}
+  labTable: {fileID: 11400000, guid: f08c4943562f45b48b40218d02c03176, type: 2}
+  fundTable: {fileID: 11400000, guid: 674766bb0e00f7041b4366d710cc1ded, type: 2}
+  promotionTable: {fileID: 11400000, guid: a4ea448797171bc49931631644d84beb, type: 2}
+  trainingTable: {fileID: 11400000, guid: debdb1ba50468f644b35f3dfee38cf51, type: 2}
   loadOnAwake: 1
   dontDestroyOnLoad: 1
 --- !u!114 &1412590609
