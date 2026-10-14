@@ -153,10 +153,8 @@ public class ExchangeModalController : MonoBehaviour
         ResourceType src = CycleOrder[selectedSourceIndex];
         int unit = ExchangeData.GetBatchUnit(src);
         if (unit <= 0) { amountPaid = 0; Refresh(); return; }
-        int held = gm.Economy.Get(src);
-        int maxBatches = held / unit;
-        if (maxBatches < 1) { amountPaid = unit; Refresh(); return; }
-        int batches = Mathf.Clamp(amountPaid / unit + dir, 1, maxBatches);
+        int maxBatches = int.MaxValue / unit;
+        int batches = (int)Math.Max(1L, Math.Min((long)amountPaid / unit + dir, maxBatches));
         amountPaid = batches * unit;
         Refresh();
     }
@@ -196,7 +194,7 @@ public class ExchangeModalController : MonoBehaviour
         if (!gm.Economy.Has(src, cost)) return;
         if (!gm.Economy.Spend(src, cost)) { Debug.LogError($"[Exchange] Spend 실패: {src} {cost}"); return; }
         gm.Economy.Add(target, received);
-        StepAmount(0); // 보유 감소 반영 + 재클램프
+        Refresh(); // 선택량 유지, 보유 감소에 따른 진행 가능 여부 갱신
     }
 
     // 취소: 모달 닫기(다른 협회 팝업의 취소와 동작 통일). 다음에 열 때 OnEnable에서 초기화됨.
@@ -213,11 +211,9 @@ public class ExchangeModalController : MonoBehaviour
         int held = gm.Economy.Get(src);
         int level = gm.HQ != null ? gm.HQ.GetLevel(HQDepartment.Exchange) : 0;
         bool unlocked = level >= 1;
-        int maxBatches = unit > 0 ? held / unit : 0;
-        bool affordable = unit > 0 && maxBatches >= 1;
-
-        if (affordable) amountPaid = Mathf.Clamp(amountPaid / unit, 1, maxBatches) * unit;
-        else amountPaid = unit;
+        int maxBatches = unit > 0 ? int.MaxValue / unit : 0;
+        amountPaid = unit > 0 ? Math.Max(1, Math.Min(amountPaid / unit, maxBatches)) * unit : 0;
+        bool affordable = unit > 0 && held >= amountPaid;
         int batches = unit > 0 ? Mathf.Max(1, amountPaid / unit) : 0;
 
         // 지불 재화
@@ -230,8 +226,8 @@ public class ExchangeModalController : MonoBehaviour
             amountText.text = $"{amountPaid:N0}";
             amountText.color = affordable ? amountNormalColor : amountInsufficientColor;
         }
-        if (btnAmountUp != null) btnAmountUp.interactable = unlocked && affordable && batches < maxBatches;
-        if (btnAmountDown != null) btnAmountDown.interactable = unlocked && affordable && batches > 1;
+        if (btnAmountUp != null) btnAmountUp.interactable = unlocked && unit > 0 && batches < maxBatches;
+        if (btnAmountDown != null) btnAmountDown.interactable = unlocked && unit > 0 && batches > 1;
 
         // 수령 재화 3행
         for (int r = 0; r < targetRows.Length; r++)
@@ -275,7 +271,10 @@ public class ExchangeModalController : MonoBehaviour
             string msg = null;
             if (!unlocked) msg = "교환소가 활성화되지 않았습니다.";
             else if (unit <= 0) msg = "교환 비용 정보가 없습니다.";
-            else if (!affordable) msg = $"교환에 필요한 최소 {unit:N0} {GetKoreanName(src)}이(가) 부족합니다.";
+            else if (selectedTargetRow >= 0 && TryGetTarget(selectedTargetRow, out ResourceType messageTarget))
+                msg = $"{GetKoreanName(src)}{(src == ResourceType.Chip || src == ResourceType.Crystal ? "을" : "를")} " +
+                    $"{GetKoreanName(messageTarget)}{(messageTarget == ResourceType.Crystal ? "으로" : "로")} 선택하시겠습니까?";
+            else if (!affordable) msg = $"선택한 교환에 필요한 {amountPaid:N0} {GetKoreanName(src)}이(가) 부족합니다.";
             else if (selectedTargetRow < 0) msg = "교환 받을 자원을 선택하세요.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;
@@ -286,8 +285,21 @@ public class ExchangeModalController : MonoBehaviour
     {
         target = ResourceType.Money;
         if (rowIndex < 0 || rowIndex >= CycleOrder.Length - 1) return false;
-        target = CycleOrder[(selectedSourceIndex + 1 + rowIndex) % CycleOrder.Length];
-        return ExchangeData.CanExchange(CycleOrder[selectedSourceIndex], target);
+        // 행 번호와 클릭 연결은 유지하면서 교환 불가능한 자원을 마지막에 배정한다.
+        int slot = 0;
+        for (int pass = 0; pass < 2; pass++)
+        {
+            for (int offset = 1; offset < CycleOrder.Length; offset++)
+            {
+                ResourceType candidate = CycleOrder[(selectedSourceIndex + offset) % CycleOrder.Length];
+                bool valid = ExchangeData.CanExchange(CycleOrder[selectedSourceIndex], candidate);
+                if (valid != (pass == 0)) continue;
+                if (slot++ != rowIndex) continue;
+                target = candidate;
+                return valid;
+            }
+        }
+        return false;
     }
 
     private Sprite GetIcon(ResourceType type)

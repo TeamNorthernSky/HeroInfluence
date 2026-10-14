@@ -1078,7 +1078,6 @@ GameObject:
   - component: {fileID: 7347750998509176109}
   - component: {fileID: 3939096523106573264}
   - component: {fileID: 5027353751861234209}
-  - component: {fileID: 1080526487730218953}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -1133,7 +1132,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC5F0\uAD6C\uC18C Lv.1"
+  m_text: "\uC5F0\uAD6C\uC18C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -1203,22 +1202,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &1080526487730218953
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1551748599551731592}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fce4c092099d9b419054b71bb98a828, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  department: 3
-  prefix: "\uC5F0\uAD6C\uC18C"
-  label: {fileID: 5027353751861234209}
-  showWhenLocked: 0
 --- !u!1 &1589015839160626366
 GameObject:
   m_ObjectHideFlags: 0
@@ -5981,11 +5964,9 @@ MonoBehaviour:
   lockedButton: {fileID: 4470837229798074837}
   unlockedButton: {fileID: 4632744738017986816}
   facilityModal: {fileID: 1920546220820987810}
-  buildInfo: "\uC5F0\uAD6C\uC18C\uB97C \uAC74\uC124\uD569\uB2C8\uB2E4."
   buildDesc: "\uD788\uC5B4\uB85C\uC758 \uC2A4\uD0AC\uC744 \uAC15\uD654\uD560 \uC218
     \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uD64D\uBCF4\uBD80 Lv.1"
-  upgradeInfo: "\uC5F0\uAD6C\uC18C\uB97C \uC5C5\uADF8\uB808\uC774\uB4DC \uD569\uB2C8\uB2E4."
   upgradeDesc: "\uB354 \uB192\uC740 \uB4F1\uAE09\uC758 \uC2A4\uD0AC \uAC15\uD654\uB97C
     \uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   lockedHoverComponents:

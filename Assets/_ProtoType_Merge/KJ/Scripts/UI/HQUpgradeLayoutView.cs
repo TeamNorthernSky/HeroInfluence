@@ -23,8 +23,8 @@ public sealed class HQUpgradeLayoutView : MonoBehaviour
         description.text = Description(dept);
         if (facilitySprites != null && (int)dept < facilitySprites.Length)
             facilityImage.sprite = facilitySprites[(int)dept];
-        currentEffectTitle.text = $"Lv{level} 효과";
-        nextEffectTitle.text = maxed ? "최고 레벨" : $"Lv{level + 1} 효과";
+        currentEffectTitle.text = "현재 레벨";
+        nextEffectTitle.text = maxed ? "최고 레벨" : "다음 레벨";
         currentEffect.text = Effect(dept, level, hq);
         nextEffect.text = maxed ? "최고 단계에 도달했습니다." : Effect(dept, level + 1, hq);
         string unmet = hq.GetUnmetReasonText(dept);

@@ -431,7 +431,6 @@ GameObject:
   - component: {fileID: 9164337489895603557}
   - component: {fileID: 1324041601439319551}
   - component: {fileID: 4909246624876545727}
-  - component: {fileID: 7762499161600348649}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -486,7 +485,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC758\uBB34\uC2E4 Lv.1"
+  m_text: "\uC758\uBB34\uC2E4"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -556,22 +555,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &7762499161600348649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 729274387021607540}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fce4c092099d9b419054b71bb98a828, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  department: 5
-  prefix: "\uC758\uBB34\uC2E4"
-  label: {fileID: 4909246624876545727}
-  showWhenLocked: 0
 --- !u!1 &845965046955861097
 GameObject:
   m_ObjectHideFlags: 0
@@ -1654,6 +1637,7 @@ GameObject:
   - component: {fileID: 8635556551941983165}
   - component: {fileID: 8070567794508563295}
   - component: {fileID: 8484302883696095468}
+  - component: {fileID: 2261788738653135337}
   m_Layer: 0
   m_Name: StateInfoBox
   m_TagString: Untagged
@@ -1719,6 +1703,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &2261788738653135337
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2212473077039297573}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &2525650186467383994
 GameObject:
   m_ObjectHideFlags: 0
@@ -3017,6 +3013,7 @@ GameObject:
   - component: {fileID: 6741107894352679639}
   - component: {fileID: 4014408439589377828}
   - component: {fileID: 7449885428561823218}
+  - component: {fileID: 4194486916891159540}
   m_Layer: 0
   m_Name: Modal_Infirmary
   m_TagString: Untagged
@@ -3158,6 +3155,20 @@ MonoBehaviour:
   healSprite: {fileID: 0}
   disabledHealSprite: {fileID: 0}
   reviveLabel: {fileID: 0}
+--- !u!114 &4194486916891159540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4418712407900619276}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 516a17233c1706143a5efc069c36534f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visibleSeconds: 2
+  fadeSeconds: 0.5
 --- !u!1 &4752605871434443032
 GameObject:
   m_ObjectHideFlags: 0
@@ -3665,11 +3676,9 @@ MonoBehaviour:
   lockedButton: {fileID: 6083984259345963818}
   unlockedButton: {fileID: 2042791635086271749}
   facilityModal: {fileID: 4418712407900619276}
-  buildInfo: "\uC758\uBB34\uC2E4\uC744 \uAC74\uC124\uD569\uB2C8\uB2E4."
   buildDesc: "\uB2E4\uCE5C \uD788\uC5B4\uB85C\uC758 \uCCB4\uB825\uC744 \uD68C\uBCF5\uD569\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uC5F0\uAD6C\uC18C Lv.1 + \uACF5\uBC29
     Lv.1"
-  upgradeInfo: 
   upgradeDesc: 
   lockedHoverComponents:
   - {fileID: 4424539200109489504}

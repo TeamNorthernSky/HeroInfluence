@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 3190611017278739784}
   - component: {fileID: 1134576504152968641}
   - component: {fileID: 3046069780600365766}
-  - component: {fileID: 6368593430946243571}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -66,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uBCF8\uBD80 Lv.1"
+  m_text: "\uBCF8\uBD80"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -136,22 +135,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &6368593430946243571
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 123976024961605887}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fce4c092099d9b419054b71bb98a828, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  department: 0
-  prefix: "\uBCF8\uBD80"
-  label: {fileID: 3046069780600365766}
-  showWhenLocked: 0
 --- !u!1 &128709223598562342
 GameObject:
   m_ObjectHideFlags: 0
@@ -6866,7 +6849,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   label: {fileID: 3046069780600365766}
-  format: "\uBCF8\uBD80 Lv.{0}"
+  format: "\uBCF8\uBD80"
 --- !u!114 &4790853838476786304 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7274341455243575431, guid: 6bf19d8f70a69ed4d8933aee52ca8e77,

@@ -117,8 +117,8 @@ public class WorkshopManager : MonoBehaviour
         if (!IsUnlocked()) return false;
         if (!IsValidWeaponIndex(weaponIndex)) return false;
         if (IsOwned(weaponIndex)) return false;
-        if (!GetCraftCost(weaponIndex, out int reqLevel, out _, out _)) return false;
-        return GetDepartmentLevel() >= reqLevel;
+        // 공방 해금 후 제작은 시설 레벨과 관계없이 허용한다.
+        return GetCraftCost(weaponIndex, out _, out _, out _);
     }
 
     /// <summary>코어 제작: 인스턴스 생성 + 계정 소유 등록. 자원 차감·장착은 호출자 담당.</summary>
