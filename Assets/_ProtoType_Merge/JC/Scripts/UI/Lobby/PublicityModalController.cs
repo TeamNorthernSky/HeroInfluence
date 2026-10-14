@@ -50,6 +50,8 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
         if (btnPrev != null) btnPrev.onClick.AddListener(() => SetCount(progressCount - 1));
         if (btnNext != null) btnNext.onClick.AddListener(() => SetCount(progressCount + 1));
+        PublicityButtonHoldRepeat.Attach(btnPrev);
+        PublicityButtonHoldRepeat.Attach(btnNext);
         if (btnMax != null) btnMax.onClick.AddListener(SetCountToMax);
         if (progressSlider != null) progressSlider.onValueChanged.AddListener(OnSliderChanged);
     }
@@ -63,6 +65,10 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
         if (roster != null) roster.BeginSelection(OnHeroSelected);
         else Debug.LogWarning("[PublicityModalController] LobbyUIRegistry.RosterView 없음 — 영웅 선택 불가.");
         Refresh();
+    }
+    private void Start()
+    {
+        gameObject.SetActive(false);
     }
     private void OnDisable()
     {
@@ -246,7 +252,7 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
             else if (!costKnown) msg = "비용 정보가 없거나 처리 가능한 금액을 초과했습니다.";
             else if (!hasSelection) msg = "영웅을 선택해 주세요.";
             else if (pool <= 0) msg = "이번 주 진행 가능 횟수를 모두 사용했습니다.";
-            else if (capacity <= 0) msg = $"이미 최대 I.P({(hasSelection ? Mathf.RoundToInt(unit.IngameStats.Influence) : PublicityManager.MaxIP)})에 도달했습니다.";
+            else if (capacity <= 0) msg = $"이미 최대 I.P에 도달했습니다.";
             else if (!moneyOk) msg = "자원이 부족합니다.";
             stateInfoText.gameObject.SetActive(!string.IsNullOrEmpty(msg));
             if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;

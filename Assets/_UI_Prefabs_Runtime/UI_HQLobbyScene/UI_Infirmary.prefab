@@ -453,11 +453,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 3891067424456432211}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 91.646774, y: -4.582339}
-  m_SizeDelta: {x: 185, y: 50.405727}
-  m_Pivot: {x: 0, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 90}
+  m_SizeDelta: {x: 185, y: 50.40573}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1324041601439319551
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3666,7 +3666,7 @@ MonoBehaviour:
   unlockedButton: {fileID: 2042791635086271749}
   facilityModal: {fileID: 4418712407900619276}
   buildInfo: "\uC758\uBB34\uC2E4\uC744 \uAC74\uC124\uD569\uB2C8\uB2E4."
-  buildDesc: 
+  buildDesc: "\uB2E4\uCE5C \uD788\uC5B4\uB85C\uC758 \uCCB4\uB825\uC744 \uD68C\uBCF5\uD569\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uC5F0\uAD6C\uC18C Lv.1 + \uACF5\uBC29
     Lv.1"
   upgradeInfo: 

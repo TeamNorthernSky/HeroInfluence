@@ -85,6 +85,9 @@ public static class AssociationCosts
     {
         row = null;
         var catalog = AssociationResourceCatalog.Instance;
+        // GameManager 초기화가 Catalog.Awake보다 먼저 실행되어도 배치된 테이블을 조회한다.
+        if (catalog == null)
+            catalog = UnityEngine.Object.FindFirstObjectByType<AssociationResourceCatalog>(UnityEngine.FindObjectsInactive.Include);
         if (catalog == null || level < 1) return false;
         var rows = catalog.GetPromotionTemplates(level);
         if (rows.Count != 1) return false;
