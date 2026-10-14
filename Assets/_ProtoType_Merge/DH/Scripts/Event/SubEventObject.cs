@@ -98,10 +98,12 @@ public class SubEventObject : MonoBehaviour
         pendingClosedCallback = closedCallback;
         SubscribeEventBattleRequested();
         // Sub events are item/map-event style triggers, but may still launch event battles from chat effects.
+        JC.BattleTesting.JcArnoldBattlePresentation.SetFixedOrigin(transform, ZoneId, EventKey);
         ChatModalController.Show(ZoneId, ChatId, HandleChatClosed);
 
         if (!chatManager.IsRunning)
         {
+            JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
             isTriggering = false;
             eventBattleRequestedDuringTrigger = false;
             pendingClosedCallback = null;
@@ -114,6 +116,7 @@ public class SubEventObject : MonoBehaviour
 
     private void HandleChatClosed()
     {
+        JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
         isTriggering = false;
         UnsubscribeEventBattleRequested();
         Action<SubEventObject> closedCallback = pendingClosedCallback;

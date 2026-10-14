@@ -107,7 +107,7 @@ Shader "JC/VFX/TaoAuraFlare"
                 float h01 = saturate(IN.positionOS.y / max(_YExtent, 1e-4) * 0.5 + 0.5);
                 float3 flared = IN.positionOS.xyz;
                 float prof = lerp(1.0 - h01, h01, _FlareUp);   // 0=바닥 벌어짐(벨) / 1=위로 벌어짐(스커트 콘)
-                flared.xz *= 1.0 + _Flare * pow(prof, _FlareCurve);
+                flared.xz *= 1.0 + _Flare * pow(saturate(prof), _FlareCurve);
                 VertexPositionInputs p = GetVertexPositionInputs(flared);
                 OUT.positionHCS = p.positionCS;
                 OUT.posOS = IN.positionOS.xyz;

@@ -1,0 +1,8 @@
+풍경 87 / 인카운터 정적 소품 1
+기준점 (8.00, 0.01, 16.00) / 원본 반경 (12.00, 12.00)
+소품: EncounterProps/tactical+chest+3d+model__f5ad173190a3 ← MainEventSystemAndRoot/Main_1-1(Clone)/ch1_main 1-1.001/tactical+chest+3d+model
+진형 주변 확인: EncounterProps/tactical+chest+3d+model__f5ad173190a3
+진형 주변 확인: Scenery/BGHouse001_JC(Clone)__630cffa41389
+진형 주변 확인: Scenery/BGHouse002_JC(Clone)__c7a68525f185
+진형 주변 확인: Scenery/Mount03(Clone)__e3a3c649bfac
+진형 주변 확인: Scenery/Mount02(Clone)__22d9bf268f44

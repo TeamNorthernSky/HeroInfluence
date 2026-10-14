@@ -1,0 +1,5 @@
+풍경 71 / 인카운터 정적 소품 0
+기준점 (22.00, 0.01, 7.00) / 원본 반경 (12.00, 12.00)
+진형 주변 확인: Scenery/BGHouse002_JC(Clone)__c0c43784bafd
+진형 주변 확인: Scenery/BGHouse001_JC(Clone)__116b4a0c90a9
+진형 주변 확인: Scenery/Mount02(Clone)__22d9bf268f44

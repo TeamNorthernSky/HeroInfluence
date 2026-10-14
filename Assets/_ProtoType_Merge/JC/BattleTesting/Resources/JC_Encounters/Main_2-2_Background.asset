@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6b2b050630537a449cd90a2a4234cdf, type: 3}
+  m_Name: Main_2-2_Background
+  m_EditorClassIdentifier: 
+  sourceScene: Assets/_ProtoType_Merge/Scenes/DHScene_3.unity
+  encounterKey: Main_2-2
+  captureHalfSize: {x: 12, y: 12}
+  visualPrefab: {fileID: 3113868929852663447, guid: 5fec01f5412b4d346b81ba434bce0c9d,
+    type: 3}
+  fitBattleRoad: 1
+  sourceRoadEdges: {x: -1.5, y: 4.5}
+  battleRoadWidth: 11.5
+  roadsideClearance: 5
+  fittedVisualPrefab: {fileID: 8555667217004710946, guid: 88a29943500166d4b82845a0c5284ffe,
+    type: 3}
+  useDetailBackground: 0
+  detailVisualPrefab: {fileID: 0}
+  battleOffset: {x: 0, y: 0, z: 0}
+  scale: 3
+  yaw: 0
+  showEncounterProps: 1
+  adjustments: []
+  extractionReport: "\uD48D\uACBD 126 / \uC778\uCE74\uC6B4\uD130 \uC815\uC801 \uC18C\uD488
+    3\n\uAE30\uC900\uC810 (24.00, 0.01, 19.00) / \uC6D0\uBCF8 \uBC18\uACBD (12.00,
+    12.00)\n\uC18C\uD488: EncounterProps/\uD1B5\uD589\uC99D \uBC15\uC2A4_UV_\uC0C8\uBA54\uC26C__a224c91b59f8
+    \u2190 MainEventSystemAndRoot/Main_2-2(Clone)/ch1_main 2-2.001/\uD1B5\uD589\uC99D
+    \uBC15\uC2A4_UV_\uC0C8\uBA54\uC26C\r\n\uC9C4\uD615 \uC8FC\uBCC0 \uD655\uC778:
+    EncounterProps/\uD1B5\uD589\uC99D \uBC15\uC2A4_UV_\uC0C8\uBA54\uC26C__a224c91b59f8\r\n\uC18C\uD488:
+    EncounterProps/\uD1B5\uD589\uC99D \uC81C\uC2DC.001__509178655dd3 \u2190 MainEventSystemAndRoot/Main_2-2(Clone)/ch1_main
+    2-2.001/\uD1B5\uD589\uC99D \uC81C\uC2DC.001\r\n\uC9C4\uD615 \uC8FC\uBCC0 \uD655\uC778:
+    EncounterProps/\uD1B5\uD589\uC99D \uC81C\uC2DC.001__509178655dd3\r\n\uC18C\uD488:
+    EncounterProps/\uD1B5\uD589\uC99D \uC81C\uC2DC.002__65527efe0f43 \u2190 MainEventSystemAndRoot/Main_2-2(Clone)/ch1_main
+    2-2.001/\uD1B5\uD589\uC99D \uC81C\uC2DC.002\r\n\uC9C4\uD615 \uC8FC\uBCC0 \uD655\uC778:
+    EncounterProps/\uD1B5\uD589\uC99D \uC81C\uC2DC.002__65527efe0f43\r\n\uC9C4\uD615
+    \uC8FC\uBCC0 \uD655\uC778: Scenery/BGHouse001_JC(Clone)__214e1504b574\r\n\uC9C4\uD615
+    \uC8FC\uBCC0 \uD655\uC778: Scenery/Fence_01 1(Clone)__5ef30d91e9ec\r\n\uC9C4\uD615
+    \uC8FC\uBCC0 \uD655\uC778: Scenery/Fence_02 2(Clone)__1850e3e4a2e1\r\n"
