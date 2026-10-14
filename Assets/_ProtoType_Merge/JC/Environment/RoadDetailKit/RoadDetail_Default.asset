@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 046fbfb55896ab445a205a3ee5b5c7d7, type: 3}
+  m_Name: RoadDetail_Default
+  m_EditorClassIdentifier: 
+  roadWidth: 11.5
+  segmentLength: 6
+  sidewalkWidth: 4.8
+  sidewalkHeight: 0.48
+  rounding: 0.045
+  stripeWidth: 0.55
+  stripeGap: 0.45
+  crossingDepth: 2.8
+  paintColor: {r: 0.82, g: 0.8, b: 0.7, a: 1}
+  wear: 0.12
+  parallax: 0.006
+  treePrefab: {fileID: 3907437927009769779, guid: ecabb5f502facb440817b04f2724cd4a,
+    type: 3}
+  treeHeight: 4.8
+  seed: 1202

@@ -1,3 +1,8 @@
+// [본게임 공유 자산 / 2026-10-13] 테스트 폴더 전용 셰이더가 아닙니다.
+// 본게임 Unit_VillanWheel_40005 -> ASB_Work/Effect/Hoop/HoopVfxPreset.asset ->
+// JC_YuliaEnergy.mat / JC_YuliaSmoke.mat이 이 셰이더를 참조합니다. 삭제·GUID 변경 시 본게임 연출도 깨집니다.
+// JC_DespairWheelFrame.mat도 같은 본게임 프리셋이 공유합니다(프레임 재질은 별도 URP 셰이더 사용).
+// 현재 위치와 참조를 유지하며, 1차 완성 후 리팩토링 검토 때 본게임·테스트 양쪽 의존성을 함께 확인합니다.
 Shader "JC/BattleTesting/YuliaEnergy"
 {
     Properties

@@ -43,6 +43,12 @@ namespace JC.Tutorial
         public int ResultOpenedFrame { get; private set; } = -1;
         public int VisibleStep { get; private set; } = -1;
 
+        private void Start()
+        {
+            // 직접 씬에서 실행해도 본게임과 같은 HUD를 사용합니다. 안내의 실제 참조는 유지합니다.
+            Resources.Load<JC.BattleTesting.JcBattleHudLayout>("JC_BattleHud_Layout")?.Apply(gameObject.scene);
+        }
+
         private void Update() { RefreshPresentation(); AdvanceResultNotice(Time.unscaledDeltaTime); }
         public void AdvanceResultNotice(float delta)
         {

@@ -141,7 +141,7 @@ Shader "JC/Environment/Region Tint Lit"
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
                 // ── A축: 명도(무채색 맵) × 높이 그라데이션 × 하단 음영 ──
-                half  t     = pow(input.heightT, _GradientPower);
+                half  t     = pow(saturate(input.heightT), _GradientPower);
                 half3 grey  = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb * _BaseColor.rgb;
                 half3 col   = grey * lerp(_BottomColor.rgb, _TopColor.rgb, t);
                 col *= lerp(1.0h - _BottomShade, 1.0h, t);

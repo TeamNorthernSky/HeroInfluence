@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(ToggleButton))]
 public class BattleSpeedToggleButton : MonoBehaviour
@@ -23,6 +23,7 @@ public class BattleSpeedToggleButton : MonoBehaviour
             toggleButton = GetComponent<ToggleButton>();
 
         bool isFast = Mathf.Approximately(BattleRuntimeSettings.BattleSpeed, fastSpeed);
+        toggleButton.EnablePressedAppearance();
         toggleButton.SetState(isFast, false);
         toggleButton.OnValueChanged += OnToggled;
     }

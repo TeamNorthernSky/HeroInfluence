@@ -1,4 +1,4 @@
-// [JC 독립 구현 대응표 / 기준 JC 0705af74]
+﻿// [JC 독립 구현 대응표 / 기준 JC 0705af74]
 // 원본 파일: Assets/_ProtoType_Merge/KJ/Scripts/UI/SkillButtonController.cs
 // 원본 객체: SkillButtonController -> JcSkillButtonController
 // 동일 이름의 함수는 원본 함수와 1:1 대응합니다. 별도 변경 함수에는 차이를 추가로 명시합니다.
@@ -260,9 +260,10 @@ public class JcSkillButtonController : MonoBehaviour
         }
 
         var action = inputHandler != null ? inputHandler.PendingAction : PendingActionType.None;
-        SkillData skill = null;
+        SkillData skill = CurrentSkillData;
+        // 선택한 스킬을 우선 유지하고, 선택 전에는 호버 설명을 표시합니다.
         // 버튼 자체를 기억하고 현재 턴의 데이터를 읽어, 호버한 채 턴이 바뀌어도 이전 유닛 정보가 남지 않습니다.
-        if (hoveredSkillButton != null && hoveredSkillButton.isActiveAndEnabled && hoveredSkillButton.IsInteractable())
+        if (skill == null && hoveredSkillButton != null && hoveredSkillButton.isActiveAndEnabled && hoveredSkillButton.IsInteractable())
         {
             if (toggle2 != null && hoveredSkillButton.gameObject == toggle2.gameObject)
             {
@@ -329,7 +330,17 @@ public class JcSkillButtonController : MonoBehaviour
     private void SetDescription(string title, string body, SkillData skill)
     {
         if (descriptionTitle != null) descriptionTitle.text = title;
-        if (descriptionBody != null) descriptionBody.text = body;
+        if (descriptionBody != null && descriptionBody.text != body)
+        {
+            descriptionBody.text = body;
+            var scroll = descriptionBody.GetComponentInParent<ScrollRect>();
+            if (scroll != null)
+            {
+                scroll.StopMovement();
+                // 내용이 바뀌면 기존 스크롤 위치를 남기지 않고 맨 위에서 읽습니다.
+                scroll.content.anchoredPosition = Vector2.zero;
+            }
+        }
         if (descriptionTags == null) return;
         for (int i = 0; i < descriptionTags.Length; i++)
         {

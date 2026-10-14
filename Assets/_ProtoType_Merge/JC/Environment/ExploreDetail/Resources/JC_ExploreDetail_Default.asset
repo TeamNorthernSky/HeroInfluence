@@ -1,0 +1,166 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fdb88612c16a7a4a864d7753c4353c2, type: 3}
+  m_Name: JC_ExploreDetail_Default
+  m_EditorClassIdentifier: 
+  enableDetails: 1
+  sceneNames:
+  - DHScene_3
+  roadSurface: 1
+  whiteCrosswalks: 1
+  roundSidewalk: 1
+  sidewalkCurb: 1
+  roadsideCurb: 1
+  roadTexturePrefix: Road_
+  sidewalkTexture: tilemap_01
+  grassTexture: tilemap_04
+  cornerRadius: 0.28
+  curbTint: {r: 0.72, g: 0.72, b: 0.72, a: 1}
+  jointWidth: 0.008
+  curbBlockLength: 0.5
+  jointTint: {r: 0.46, g: 0.46, b: 0.46, a: 1}
+  curbWidth: 0.1
+  curbBevel: 0.012
+  roadsideHeight: 0.08
+  flatGrassCurbHeight: 0.012
+  flatBoundaryTolerance: 0.03
+  naturalRoadEdges: 1
+  soilEdgeWidth: 0.09
+  pathApronLength: 0.14
+  entrancePavingTint: {r: 0.59, g: 0.59, b: 0.59, a: 1}
+  entranceRoadFraction: 0.5
+  entranceMarkerWidth: 0.03
+  entranceMarkerHeight: 0.024
+  soilEdgeTint: {r: 0.52, g: 0.46, b: 0.32, a: 1}
+  edgeGrassTint: {r: 0.43, g: 0.51, b: 0.27, a: 1}
+  roadEdgeShader: {fileID: 4800000, guid: 4fb09a87714ca804e968987934757db5, type: 3}
+  pathEdgeRules:
+  - texture: {fileID: 2800000, guid: 3b4255a0c8fa21646bf34a896470a7ea, type: 3}
+    left: {x: -1, y: -1}
+    right: {x: 0.4609375, y: 0.6640625}
+    bottom: {x: 0.296875, y: 0.5}
+    top: {x: -1, y: -1}
+  - texture: {fileID: 2800000, guid: 99510a497f4620a41ac93b0b44ea06a9, type: 3}
+    left: {x: 0.4609375, y: 0.6640625}
+    right: {x: 0.46875, y: 0.671875}
+    bottom: {x: -1, y: -1}
+    top: {x: -1, y: -1}
+  - texture: {fileID: 2800000, guid: 482eb44718305b94d8d247c882085ceb, type: 3}
+    left: {x: 0.4609375, y: 0.671875}
+    right: {x: 0.4609375, y: 0.671875}
+    bottom: {x: 0.40625, y: 0.59375}
+    top: {x: -1, y: -1}
+  - texture: {fileID: 2800000, guid: 8200cf0f966382c45a8060cb80252d75, type: 3}
+    left: {x: 0.4609375, y: 0.6640625}
+    right: {x: -1, y: -1}
+    bottom: {x: 0.5, y: 0.6953125}
+    top: {x: -1, y: -1}
+  - texture: {fileID: 2800000, guid: d1c04804aa0a7634aab19aa1d4fc9f0a, type: 3}
+    left: {x: -1, y: -1}
+    right: {x: -1, y: -1}
+    bottom: {x: 0.296875, y: 0.5}
+    top: {x: 0.3046875, y: 0.5}
+  - texture: {fileID: 2800000, guid: 824a289dd899a894b902782639b4c755, type: 3}
+    left: {x: -1, y: -1}
+    right: {x: 0.40625, y: 0.6015625}
+    bottom: {x: 0.296875, y: 0.5}
+    top: {x: 0.296875, y: 0.5}
+  - texture: {fileID: 2800000, guid: 77fc4da13933163498927ceca3f38f26, type: 3}
+    left: {x: -1, y: -1}
+    right: {x: -1, y: -1}
+    bottom: {x: -1, y: -1}
+    top: {x: -1, y: -1}
+  - texture: {fileID: 2800000, guid: c54e68707198b114f83d1391fa2a8299, type: 3}
+    left: {x: 0.40625, y: 0.6015625}
+    right: {x: 0.3984375, y: 0.609375}
+    bottom: {x: 0.40625, y: 0.59375}
+    top: {x: 0.3984375, y: 0.59375}
+  - texture: {fileID: 2800000, guid: c8b1bc439f8afec43ae86961be5e6c7f, type: 3}
+    left: {x: -1, y: -1}
+    right: {x: -1, y: -1}
+    bottom: {x: 0.3984375, y: 0.6015625}
+    top: {x: 0.3984375, y: 0.6015625}
+  - texture: {fileID: 2800000, guid: 54f5417ccce06c84db9809c79833848d, type: 3}
+    left: {x: 0.40625, y: 0.6015625}
+    right: {x: 0.3984375, y: 0.609375}
+    bottom: {x: -1, y: -1}
+    top: {x: -1, y: -1}
+  - texture: {fileID: 2800000, guid: 371063d1dd1d2ac43be078118d8dd7df, type: 3}
+    left: {x: -1, y: -1}
+    right: {x: -1, y: -1}
+    bottom: {x: 0.5, y: 0.6953125}
+    top: {x: 0.5, y: 0.703125}
+  - texture: {fileID: 2800000, guid: a620dd0bd8c2c754faa946fa28fc672f, type: 3}
+    left: {x: 0.40625, y: 0.6015625}
+    right: {x: -1, y: -1}
+    bottom: {x: 0.5, y: 0.703125}
+    top: {x: 0.5, y: 0.703125}
+  - texture: {fileID: 2800000, guid: 3d74a331d026c674c9073d2422eeda88, type: 3}
+    left: {x: -1, y: -1}
+    right: {x: 0.328125, y: 0.53125}
+    bottom: {x: -1, y: -1}
+    top: {x: 0.296875, y: 0.5}
+  - texture: {fileID: 2800000, guid: 06fdbed9224712b49838e838e3b01d1b, type: 3}
+    left: {x: 0.328125, y: 0.53125}
+    right: {x: 0.328125, y: 0.5390625}
+    bottom: {x: -1, y: -1}
+    top: {x: -1, y: -1}
+  - texture: {fileID: 2800000, guid: b7f5040374aaae04c96b9947605845a0, type: 3}
+    left: {x: 0.328125, y: 0.53125}
+    right: {x: 0.328125, y: 0.5390625}
+    bottom: {x: -1, y: -1}
+    top: {x: 0.3984375, y: 0.59375}
+  - texture: {fileID: 2800000, guid: ac254b32b86ee0943aa3782df9f49bb1, type: 3}
+    left: {x: 0.3359375, y: 0.53125}
+    right: {x: -1, y: -1}
+    bottom: {x: -1, y: -1}
+    top: {x: 0.5, y: 0.703125}
+  - texture: {fileID: 2800000, guid: ec717cb2872bb8041a56409f63d7fa22, type: 3}
+    left: {x: -1, y: -1}
+    right: {x: 0.4609375, y: 0.6640625}
+    bottom: {x: 0.296875, y: 0.5}
+    top: {x: -1, y: -1}
+  roadNormalStrength: 0.25
+  roadGrainStrength: 0.35
+  canalBanks: 1
+  cartoonWater: 1
+  bridgeWaterPassage: 1
+  bridgeDeckThickness: 0.1
+  waterTexture: tilemap_02
+  bankWidth: 0.4
+  bankCapWidth: 0.07
+  bankTint: {r: 0.57, g: 0.59, b: 0.58, a: 1}
+  bankPanelLength: 0.8
+  bankJointStrength: 0.15
+  bankWetStrength: 0.22
+  bankExcludedLandCells: []
+  waterTint: {r: 0.24813095, g: 0.4308631, b: 0.6415094, a: 1}
+  waterEdgeTint: {r: 0.38833508, g: 0.57198757, b: 0.6603774, a: 1}
+  waterFlowDirection: {x: 1, y: 0}
+  waterFollowCanal: 1
+  waterFlowSpeed: 0.131
+  waterWaveSize: 1.23
+  waterWaveStrength: 0.035
+  waterWaveVisibility: 0.43
+  waterRippleSize: 0.382
+  waterRippleStrength: 0.0571
+  waterRippleVisibility: 1
+  waterRippleSpeed: 0.621
+  waterFlowStreakStrength: 0.0688
+  waterShine: 0.12
+  waterEdgeWidth: 0.05
+  waterShader: {fileID: 4800000, guid: 6fd5608cdb332684c823b437da8ed24d, type: 3}
+  bankShader: {fileID: 4800000, guid: b44630300158c2249ae5b88fd075a5d6, type: 3}
+  curbMesh: {fileID: 4300000, guid: 72bdc00136e804c4cb47af66ef22effe, type: 2}
+  curbMaterial: {fileID: 2100000, guid: 7d0a209a3d8e7f1469001b9430cbdc88, type: 2}
+  roadNormal: {fileID: 2800000, guid: d1e58fb32b7a1524882356ba2ccaf485, type: 3}
+  roadGrain: {fileID: 2800000, guid: 3d3df34bca62cb646b368a6337b9b629, type: 3}

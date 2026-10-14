@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace JC.BattleTesting
@@ -49,8 +49,10 @@ namespace JC.BattleTesting
             new JcAllySetup { unitKey = "10003", slot = 3 },
             new JcAllySetup { unitKey = "10004", slot = 2 }
         };
-        [Tooltip("적 전투 초기 조건입니다. 프리셋 변경은 아군 및 카메라·환경 설정을 바꾸지 않습니다.")]
+        [Tooltip("적 전투 초기 조건입니다. 인카운터 프리셋은 배경도 함께 바꾸며 아군·카메라 설정은 유지합니다.")]
         public JcEnemyPreset enemyPreset;
+        [Tooltip("동적 전투 배경의 입력 좌표와 공간 설정입니다. 프리셋 세 위치 외에도 좌표를 직접 지정합니다.")]
+        public JcDynamicBattleSettings dynamicBackground = new JcDynamicBattleSettings();
         [Tooltip("켜면 아군은 피해로 HP가 1 미만으로 내려가지 않습니다. 즉시 적용하며 사망자를 부활시키지 않습니다.")]
         public bool alliesCannotDie;
         [Tooltip("전투 판정용 난수의 시작 시드를 고정합니다. 같은 설정과 행동 순서로 비교할 때 사용합니다.")]

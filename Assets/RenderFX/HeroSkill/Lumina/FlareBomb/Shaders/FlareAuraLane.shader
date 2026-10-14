@@ -72,8 +72,6 @@ Shader "Testbed/FlareBomb/FlareAuraLane"
             #pragma fragment frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            #define TWO_PI 6.2831853
-
             // 사인 기반 정수 해시: 등간격 입력에서도 이웃 상관이 없다
             // (곱셈-frac 해시는 레인 인덱스처럼 선형 증가하는 입력에서 램프 아티팩트 발생)
             float shash(float n){ return frac(sin(n * 127.1 + 311.7) * 43758.5453); }

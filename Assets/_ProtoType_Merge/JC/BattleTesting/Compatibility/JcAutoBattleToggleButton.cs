@@ -1,4 +1,4 @@
-// [JC 테스트 씬 전용 / 기준 0705af74]
+﻿// [JC 테스트 씬 전용 / 기준 0705af74]
 // 원본: Assets/_ProtoType_Merge/KJ/Scripts/UI/AutoBattleToggleButton.cs
 // 원본 객체 AutoBattleToggleButton → JcAutoBattleToggleButton. 동일 이름 함수는 원본 함수와 1:1 대응합니다.
 // 차이: JC 전투 흐름/입력을 참조하며 원본 씬·컴포넌트·데이터를 수정하지 않습니다.
@@ -25,6 +25,7 @@ public class JcAutoBattleToggleButton : MonoBehaviour
         if (toggleButton == null)
             toggleButton = GetComponent<ToggleButton>();
 
+        toggleButton.EnablePressedAppearance();
         toggleButton.SetState(JcBattleRuntimeSettings.IsAutoBattle, false);
         toggleButton.OnValueChanged += OnToggled;
     }

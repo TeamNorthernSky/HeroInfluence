@@ -143,6 +143,7 @@ public sealed class TutorialCombatLauncher : MonoBehaviour
             return false;
         }
 
+        JC.BattleTesting.JcArnoldBattlePresentation.PrepareCameraOnly(sceneName);
         LoadBattleScene(sceneName);
         return true;
     }

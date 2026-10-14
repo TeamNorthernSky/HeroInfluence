@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace JC.BattleTesting
 {
     public enum JcBossActionMode { NormalAI, RepeatSkill }
@@ -8,6 +8,19 @@ namespace JC.BattleTesting
     [CreateAssetMenu(menuName = "JC/전투 테스트/적 프리셋", fileName = "JcEnemyPreset")]
     public sealed class JcEnemyPreset : ScriptableObject
     {
+        [Header("고정 인카운터 (비우면 기존 율리아 테스트)")]
+        [Tooltip("원본 인카운터 식별자입니다. 예: Main_1-2. Clone 접미사는 사용하지 않습니다.")]
+        public string encounterKey;
+        [Tooltip("본게임 이벤트 전투 키입니다. 공용 EnemySpawnPlanBuilder에서 적·스킬·시나리오를 읽습니다.")]
+        public string eventBattleKey;
+        [Tooltip("이벤트 전투 테이블의 구역 번호입니다.")]
+        public int eventZoneId = 1;
+        [Tooltip("해당 인카운터에서 추출한 배경과 배치 보정입니다. 원본 탐사씬은 변경하지 않습니다.")]
+        public JcEncounterBackground background;
+        [Tooltip("고정 배경 대신 조우 좌표로 런타임 배경을 생성합니다.")]
+        public bool dynamicBackground;
+        public bool IsEventBattle => !string.IsNullOrWhiteSpace(eventBattleKey);
+
         [Tooltip("전체 보스전이면 증폭기와 자동 페이즈 전환을 포함합니다. 단독 테스트는 시작 페이즈를 고정합니다.")]
         public bool fullEncounter;
         [Tooltip("단독 테스트 시작 페이즈입니다. 3은 독립 HP를 가진 장막 상태로 시작합니다.")]

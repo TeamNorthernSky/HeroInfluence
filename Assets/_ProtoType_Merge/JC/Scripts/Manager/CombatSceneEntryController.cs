@@ -37,6 +37,7 @@ public class CombatSceneEntryController : MonoBehaviour
         }
 
         // [JC 260514] GameSceneManager 컴포넌트 격상 — Instance 경유 호출.
+        JC.BattleTesting.JcArnoldBattlePresentation.Prepare(party, enemy, battleSceneName);
         if (GameSceneManager.Instance != null)
             GameSceneManager.Instance.LoadScene(battleSceneName);
         else

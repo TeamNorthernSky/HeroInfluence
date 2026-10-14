@@ -85,8 +85,6 @@ Shader "Testbed/FlareBomb/FlareAuraSprite"
             #pragma fragment frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            #define TWO_PI 6.2831853
-
             float shash(float n){ return frac(sin(n * 127.1 + 311.7) * 43758.5453); }
             float shash2(float a, float b){ return frac(sin(a * 127.1 + b * 269.5 + 74.7) * 43758.5453); }
             float hash21(float2 p){ p = frac(p*float2(123.34,345.45)); p += dot(p, p+34.345); return frac(p.x*p.y); }
