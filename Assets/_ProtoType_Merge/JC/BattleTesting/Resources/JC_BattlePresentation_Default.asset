@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 114c37d007afe4d47a204fc24b44df38, type: 3}
+  m_Name: JC_BattlePresentation_Default
+  m_EditorClassIdentifier: 
+  events:
+  - eventKey: MainQuest4-2
+    zoneId: 2
+    overrideAnchor: 0
+    anchor: {x: 91, y: 0.01, z: 19}
+    axis: 0
+  - eventKey: MainQuest4-1
+    zoneId: 2
+    overrideAnchor: 0
+    anchor: {x: 75, y: 0.01, z: 32}
+    axis: 0
+  - eventKey: MainQuest3-3
+    zoneId: 2
+    overrideAnchor: 0
+    anchor: {x: 74, y: 0.01, z: 8}
+    axis: 0
+  - eventKey: MainQuest3-2
+    zoneId: 2
+    overrideAnchor: 0
+    anchor: {x: 69, y: 0.01, z: 19}
+    axis: 0
+  - eventKey: MainQuest3-1
+    zoneId: 2
+    overrideAnchor: 0
+    anchor: {x: 54, y: 0.01, z: 27}
+    axis: 0
+  - eventKey: MainQuest2-3
+    zoneId: 1
+    overrideAnchor: 0
+    anchor: {x: 41, y: 0.01, z: 11}
+    axis: 0
+  - eventKey: MainQuest2-2
+    zoneId: 1
+    overrideAnchor: 0
+    anchor: {x: 24, y: 0.01, z: 19}
+    axis: 0
+  - eventKey: MainQuest2-1
+    zoneId: 1
+    overrideAnchor: 0
+    anchor: {x: 11, y: 0.01, z: 31}
+    axis: 0
+  - eventKey: MainQuest1-2
+    zoneId: 1
+    overrideAnchor: 0
+    anchor: {x: 22, y: 0.01, z: 7}
+    axis: 0
+  - eventKey: MainQuest1-1
+    zoneId: 1
+    overrideAnchor: 0
+    anchor: {x: 8, y: 0.01, z: 16}
+    axis: 0
+  unitBarPrefab: {fileID: 5706818950162666526, guid: e4ceaee7eda4ed64a948da46a0cc5ba7,
+    type: 3}
+  hostageWidthScale: 0.85
+  hostageThicknessScale: 0.85
+  hostageBorder: {r: 0.09803922, g: 1, b: 0.32941177, a: 1}

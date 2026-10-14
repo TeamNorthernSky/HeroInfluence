@@ -1,0 +1,11 @@
+풍경 126 / 인카운터 정적 소품 3
+기준점 (24.00, 0.01, 19.00) / 원본 반경 (12.00, 12.00)
+소품: EncounterProps/통행증 박스_UV_새메쉬__a224c91b59f8 ← MainEventSystemAndRoot/Main_2-2(Clone)/ch1_main 2-2.001/통행증 박스_UV_새메쉬
+진형 주변 확인: EncounterProps/통행증 박스_UV_새메쉬__a224c91b59f8
+소품: EncounterProps/통행증 제시.001__509178655dd3 ← MainEventSystemAndRoot/Main_2-2(Clone)/ch1_main 2-2.001/통행증 제시.001
+진형 주변 확인: EncounterProps/통행증 제시.001__509178655dd3
+소품: EncounterProps/통행증 제시.002__65527efe0f43 ← MainEventSystemAndRoot/Main_2-2(Clone)/ch1_main 2-2.001/통행증 제시.002
+진형 주변 확인: EncounterProps/통행증 제시.002__65527efe0f43
+진형 주변 확인: Scenery/BGHouse001_JC(Clone)__214e1504b574
+진형 주변 확인: Scenery/Fence_01 1(Clone)__5ef30d91e9ec
+진형 주변 확인: Scenery/Fence_02 2(Clone)__1850e3e4a2e1

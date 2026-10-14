@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fae16e1541ca8c438cdf98044d6b1a6, type: 3}
+  m_Name: JC_BattleSurface_Default
+  m_EditorClassIdentifier: 
+  enableDetails: 1
+  roadShader: {fileID: 4800000, guid: e91affa1535ddad48bebb8b7eb23ffde, type: 3}
+  plainAsphalt: {fileID: 2800000, guid: fcf9213a46b766b4e8676e56b3b30ca5, type: 3}
+  lineWidth: 0.15
+  dashLength: 2.5
+  dashGap: 3.5
+  crosswalkEmboss: 0.045
+  scatterNature: 1
+  naturePrefabs:
+  - {fileID: 1594212709678646406, guid: 4f28212eee499f1499b0df2301965120, type: 3}
+  - {fileID: 3944011731411511214, guid: d3c50a60618dc504fb925725b7c31842, type: 3}
+  - {fileID: 7932592869799666462, guid: 289e4dd7712a826438d38da57abf6b3f, type: 3}
+  propLimit: 28
+  propSpacing: 4
+  seed: 731

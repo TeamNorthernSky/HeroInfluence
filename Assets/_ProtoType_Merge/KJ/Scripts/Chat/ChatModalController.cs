@@ -189,6 +189,12 @@ public class ChatModalController : MonoBehaviour
         if (choiceLayout != null) choiceLayout.ApplyHiddenImmediate();
         UnsubscribeFromManager();
 
+        // 이전 대화의 종료 이벤트가 새 모달의 Close/조우 취소 콜백을 실행하지 않도록
+        // 새 콜백과 구독을 등록하기 전에 이전 세션을 끝냅니다.
+        ChatManager nextManager = ChatManager.Instance;
+        if (nextManager != null && nextManager.IsRunning)
+            nextManager.EndChat();
+
         onClosed = closedCallback;
         isClosing = false;
         hasRewardResult = false;
@@ -196,7 +202,7 @@ public class ChatModalController : MonoBehaviour
         briefingEndButton = null;
         briefingEndShownFrame = -1;
         beginFrame = Time.frameCount;
-        manager = ChatManager.Instance;
+        manager = nextManager;
 
         if (manager == null)
         {

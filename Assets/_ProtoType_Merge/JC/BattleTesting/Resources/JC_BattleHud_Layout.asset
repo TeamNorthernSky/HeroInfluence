@@ -1,0 +1,168 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f024fba4958ec174ba3044a6f9bc6bce, type: 3}
+  m_Name: JC_BattleHud_Layout
+  m_EditorClassIdentifier: 
+  layoutJson: '{"items": [{"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_2",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 16.0, "y": -74.0}, "size":
+    {"x": -32.0, "y": 64.0}}, {"path": "BattleSceneCanvas/TurnOrderPanel", "rect":
+    true, "anchorMin": {"x": 0.5, "y": 1.0}, "anchorMax": {"x": 0.5, "y": 1.0}, "pivot":
+    {"x": 0.5, "y": 1.0}, "position": {"x": 0.0, "y": -12.0}, "size": {"x": 535.0,
+    "y": 142.27295}}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/StatsArea/IpValue",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 34.0, "y": -143.0}, "size":
+    {"x": -34.0, "y": 28.0}, "fontSize": 19.3}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_4/UnconnectedLabel",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 72.0, "y": -46.0}, "size":
+    {"x": -90.0, "y": 16.0}}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/StatsArea",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 136.0, "y": -8.0}, "size":
+    {"x": -152.0, "y": 180.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/Button_Skill/SkillButtonFrame",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 0.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 0.0}, "position": {"x": 0.0, "y": 0.0}, "size":
+    {"x": 0.0, "y": 0.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": -310.0}, "size":
+    {"x": 0.0, "y": 296.0}}, {"path": "BattleSceneCanvas/BottomPanel/SkillDescriptionPanel",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 0.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 0.0}, "position": {"x": 0.0, "y": 12.0}, "size":
+    {"x": 0.0, "y": -630.0}}, {"path": "BattleSceneCanvas/BottomPanel/CoreSkillPanel/Button_Skill_2/SkillButtonFrame",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 0.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 0.0}, "position": {"x": 0.0, "y": 0.0}, "size":
+    {"x": 0.0, "y": 0.0}}, {"path": "BattleSceneCanvas/BottomPanel/SkillDescriptionPanel/EffectTag/Label",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 4.0, "y": -1.0}, "size":
+    {"x": 100.0, "y": 24.0}, "fontSize": 15.0}, {"path": "BattleSceneCanvas/BottomPanel/CoreSkillPanel/Title",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 96.0, "y": -18.0}, "size":
+    {"x": -120.0, "y": 40.0}, "fontSize": 23.0}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/Button_Skill/SkillIcon",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 10.0, "y": -8.0}, "size":
+    {"x": 48.0, "y": 48.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_2/SkillIcon",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 10.0, "y": -8.0}, "size":
+    {"x": 48.0, "y": 48.0}}, {"path": "BattleSceneCanvas/BottomPanel/SkillDescriptionPanel/RangeTag",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 136.0, "y": -66.0}, "size":
+    {"x": 108.0, "y": 26.0}}, {"path": "BattleSceneCanvas/BottomPanel/SkillDescriptionPanel/EffectTag",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 20.0, "y": -66.0}, "size":
+    {"x": 108.0, "y": 26.0}}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/StatsArea/IpIcon",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": -143.0}, "size":
+    {"x": 24.0, "y": 24.0}}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/StatsArea/HpLabel",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": -86.0}, "size":
+    {"x": 36.0, "y": 24.0}, "fontSize": 16.55}, {"path": "BattleSceneCanvas/BottomPanel/CoreSkillPanel",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": -216.0}, "size":
+    {"x": 0.0, "y": 80.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_4/SkillName",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 72.0, "y": -6.0}, "size":
+    {"x": -90.0, "y": 46.0}, "fontSize": 22.0}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_2/SkillName",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 72.0, "y": -6.0}, "size":
+    {"x": -90.0, "y": 46.0}, "fontSize": 22.0}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/StatsArea/Rank",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": -49.0}, "size":
+    {"x": 0.0, "y": 26.0}, "fontSize": 17.95}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/Button_Skill",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 16.0, "y": 0.0}, "size":
+    {"x": -32.0, "y": 64.0}}, {"path": "BattleSceneCanvas/BottomPanel/CoreSkillPanel/Button_Skill_2",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 16.0, "y": 0.0}, "size":
+    {"x": -32.0, "y": 76.0}}, {"path": "BattleSceneCanvas/BottomPanel/CoreSkillPanel/Button_Skill_2/SkillIcon",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 12.0, "y": -10.0}, "size":
+    {"x": 56.0, "y": 56.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/Button_Skill/SkillButtonFrame/SelectedOverlay",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 0.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 0.0}, "position": {"x": 0.0, "y": 0.0}, "size":
+    {"x": 0.0, "y": 0.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_3/UnconnectedLabel",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 72.0, "y": -46.0}, "size":
+    {"x": -90.0, "y": 16.0}}, {"path": "BattleSceneCanvas/BottomPanel/SkillDescriptionPanel/Title",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 20.0, "y": -14.0}, "size":
+    {"x": -40.0, "y": 44.0}, "fontSize": 25.0}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/StatsArea/HpBar/Fill",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 0.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 0.0}, "position": {"x": 0.0, "y": 0.0}, "size":
+    {"x": 0.0, "y": 0.0}}, {"path": "BattleSceneCanvas/BottomPanel/SkillDescriptionPanel/TargetTag/Label",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 4.0, "y": -1.0}, "size":
+    {"x": 100.0, "y": 24.0}, "fontSize": 15.0}, {"path": "BattleSceneCanvas/BottomPanel/CoreSkillPanel/Button_Skill_2/BaseHoverOverlay",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 0.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 0.0}, "position": {"x": 0.0, "y": 0.0}, "size":
+    {"x": 0.0, "y": 0.0}}, {"path": "BattleSceneCanvas/BottomPanel/SkillDescriptionPanel/RangeTag/Label",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 4.0, "y": -1.0}, "size":
+    {"x": 100.0, "y": 24.0}, "fontSize": 15.0}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_3/SkillName",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 72.0, "y": -6.0}, "size":
+    {"x": -90.0, "y": 46.0}, "fontSize": 22.0}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/StatsArea/HpValue",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 40.0, "y": -86.0}, "size":
+    {"x": -40.0, "y": 24.0}, "fontSize": 16.55}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/StatsArea/HpBar",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": -119.0}, "size":
+    {"x": 0.0, "y": 8.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_4",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 16.0, "y": -222.0}, "size":
+    {"x": -32.0, "y": 64.0}}, {"path": "BattleSceneCanvas/BottomPanel", "rect": true,
+    "anchorMin": {"x": 0.0, "y": 0.0}, "anchorMax": {"x": 0.22, "y": 1.0}, "pivot":
+    {"x": 0.0, "y": 0.0}, "position": {"x": 12.0, "y": 16.0}, "size": {"x": -24.0,
+    "y": -32.0}}, {"path": "BattleSceneCanvas/BottomPanel/CoreSkillPanel/Button_Skill_2/SelectedOverlay",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 0.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 0.0}, "position": {"x": 0.0, "y": 0.0}, "size":
+    {"x": 0.0, "y": 0.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_3",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 16.0, "y": -148.0}, "size":
+    {"x": -32.0, "y": 64.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_3/SkillIcon",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 10.0, "y": -8.0}, "size":
+    {"x": 48.0, "y": 48.0}}, {"path": "BattleSceneCanvas/BottomPanel/SkillDescriptionPanel/Body",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": 0.0}, "size":
+    {"x": 0.0, "y": 0.0}, "fontSize": 21.0}, {"path": "BattleSceneCanvas/BottomPanel/SkillDescriptionPanel/TargetTag",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 252.0, "y": -66.0}, "size":
+    {"x": 108.0, "y": 26.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_4/SkillIcon",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 10.0, "y": -8.0}, "size":
+    {"x": 48.0, "y": 48.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/HeroSkillSlot_2/UnconnectedLabel",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 72.0, "y": -46.0}, "size":
+    {"x": -90.0, "y": 16.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/Button_Skill/UnconnectedLabel",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 72.0, "y": -46.0}, "size":
+    {"x": -90.0, "y": 16.0}}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/PortraitArea/Portrait",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": 0.0}, "size":
+    {"x": 104.0, "y": 136.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/Button_Skill/SkillButtonFrame/BaseHoverOverlay",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 0.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 0.0}, "position": {"x": 0.0, "y": 0.0}, "size":
+    {"x": 0.0, "y": 0.0}}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/PortraitArea",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 0.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 16.0, "y": -16.0}, "size":
+    {"x": 104.0, "y": 150.0}}, {"path": "BattleSceneCanvas/BottomPanel/HeroSkillPanel/Button_Skill/SkillName",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 72.0, "y": -6.0}, "size":
+    {"x": -90.0, "y": 46.0}, "fontSize": 22.0}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": -12.0}, "size":
+    {"x": 0.0, "y": 196.0}}, {"path": "BattleSceneCanvas/BottomPanel/ActorInfoPanel/StatsArea/ActorName",
+    "rect": true, "anchorMin": {"x": 0.0, "y": 1.0}, "anchorMax": {"x": 1.0, "y":
+    1.0}, "pivot": {"x": 0.0, "y": 1.0}, "position": {"x": 0.0, "y": -8.0}, "size":
+    {"x": 0.0, "y": 38.0}, "fontSize": 26.0}]}'
+  surface: {fileID: 21300000, guid: 0f88c698c10549bcae159fda3377afb4, type: 3}
+  border: {fileID: 21300000, guid: 52e4fd96bedf47808c43d01b581b33a4, type: 3}
+  topRightButtonScale: 0.8

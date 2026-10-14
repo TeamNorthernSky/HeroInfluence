@@ -137,10 +137,12 @@ public class MainEventObject : MonoBehaviour
         // Main events pass their source key into effect/battle runtime so victory can complete this object later.
         DHEventEffectRuntimeManager.EnsureInstance().SetActiveMainEventSource(EventKey);
         DHEventBattleRuntimeManager.SetPendingMainEventSource(EventKey);
+        JC.BattleTesting.JcArnoldBattlePresentation.SetFixedOrigin(transform, ZoneId, EventKey);
         ChatModalController.Show(ZoneId, ChatId, HandleChatClosed);
 
         if (!chatManager.IsRunning)
         {
+            JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
             isTriggering = false;
             eventBattleRequestedDuringTrigger = false;
             pendingClosedCallback = null;
@@ -168,6 +170,7 @@ public class MainEventObject : MonoBehaviour
 
     private void HandleChatClosed()
     {
+        JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
         isTriggering = false;
         UnsubscribeEventBattleRequested();
         DHEventEffectRuntimeManager.Instance?.ClearActiveMainEventSource(EventKey);
