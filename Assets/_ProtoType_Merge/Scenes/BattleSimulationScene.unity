@@ -1469,8 +1469,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bccf70521a8db9e4782c09759ec7d027, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   clipCatalog: {fileID: 11400000, guid: e4ce7ff02a863be418f00b463c2d2ff2, type: 2}
   bgmSource: {fileID: 6802927748187883038}
   sfxSource: {fileID: 8780950329451275388}

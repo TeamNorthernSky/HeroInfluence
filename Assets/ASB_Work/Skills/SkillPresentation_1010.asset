@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 1010
   PresentationSchemaVersion: 1
-  AnimationRail: 0
+  AnimationRail: 1
   PresentationArchetype: 1
   SkillTimelines:
   - CharacterKey: "\uD30C\uC774\uD130"
     Timeline: {fileID: 11400000, guid: fb2520a064163bf42ba5830cf5712f9a, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -28,11 +31,19 @@ MonoBehaviour:
   SfxVolume: 1
   EnableHitEffect: 1
   HitEffectId: 0
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -49,6 +60,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx: []
   MovePrepare:
     Enabled: 0
     AnimationStateName: Base Layer.ClassSkill_1
@@ -67,8 +79,10 @@ MonoBehaviour:
   Move:
     Enabled: 1
     UseUnitMovement: 1
+    ForceApproach: 0
     AnimationStateName: Base Layer.MoveForward
     BlendInSeconds: 0
+    SfxKey: 
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -96,6 +110,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
     BlendInSeconds: 0.05
+    SfxKey: 
   Post:
     Enabled: 1
     AnimationStateName: Base Layer.Taunt

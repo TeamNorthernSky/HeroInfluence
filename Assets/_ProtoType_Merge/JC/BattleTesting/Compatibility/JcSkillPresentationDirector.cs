@@ -326,6 +326,7 @@ public sealed partial class JcSkillPresentationDirector
             HitIndex = 0,
             // 부활 스킬(4040): 공격 대상(적)과 다른 부활 아군에 이펙트를 꽂기 위한 참조. 부활 없으면 null.
             ReviveTarget = actor.PendingReviveTarget,
+            Presentation = presentation,
         };
         string expectedStateName = !string.IsNullOrWhiteSpace(activeStateName)
             ? activeStateName
@@ -1426,6 +1427,7 @@ public sealed partial class JcSkillPresentationDirector
             PlaybackSpeed = _battle.CurrentBattleSpeed,
             HitIndex = 0,
             ReviveTarget = actor.PendingReviveTarget,
+            Presentation = presentation,
         };
 
         // State 게이트 불필요 — Timeline이 시점을 소유하고 by-id 발화가 게이트를 우회한다 → expectedHash 0.
@@ -2044,7 +2046,8 @@ public sealed partial class JcSkillPresentationDirector
             {
                 for (int i = 0; i < pairCount; i++)
                     new ResolveHitAction(actor, contexts[i]?.Target, hitCallbacks[i], "Hit",
-                        _battle.CurrentBattleSpeed, _battle.VisualDirector).ExecuteImmediate();
+                        _battle.CurrentBattleSpeed, _battle.VisualDirector,
+                        contexts[i]?.Role ?? DamageRole.Primary).ExecuteImmediate();
             });
             yield break;
         }

@@ -14,31 +14,53 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 1010
   PresentationSchemaVersion: 1
+  AnimationRail: 1
+  PresentationArchetype: 1
+  SkillTimelines:
+  - CharacterKey: 10001
+    Timeline: {fileID: 11400000, guid: b8827f853d4b2d543b6b0a6ca83cfe5e, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
   HitDelay: 0
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
   EnableHitEffect: 1
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
+  ProjectileVisual:
+    Prefab: {fileID: 0}
+    Speed: 6
+    Trajectory: 1
+    ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    HideVisualOnArrival: 0
+    TrailTime: 0.4
+    TrackTarget: 0
+    AlignToVelocity: 1
+    ImpactVisualLifetime: 0.3
+    ArrivalRadius: 0.2
+    TimeoutGraceSeconds: 1
+    TimeoutSeconds: 5
+    DeliveryMode: 0
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
+    TargetFormationCenter: 0
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx: []
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
@@ -51,11 +73,16 @@ MonoBehaviour:
       InstanceKey: fist_trail
       Anchor: 1
       Socket: 1
+      Timing: 0
+      Time: 0
+      CueId: db53d5d060dc47d9870ed1418d1aca53
   Move:
     Enabled: 1
     UseUnitMovement: 1
+    ForceApproach: 0
     AnimationStateName: Base Layer.MoveForward
     BlendInSeconds: 0
+    SfxKey: 
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -76,6 +103,9 @@ MonoBehaviour:
         InstanceKey: 
         Anchor: 1
         Socket: 1
+        Timing: 0
+        Time: 0
+        CueId: dad5789bab5045e4a694124cf8d6da5a
       - CueName: fist_trail_off
         EffectIds: 
         SoundIds: 
@@ -83,10 +113,14 @@ MonoBehaviour:
         InstanceKey: fist_trail
         Anchor: 1
         Socket: 1
+        Timing: 0
+        Time: 0
+        CueId: bd7d017d9f774089bd4eff1cbcc1e6d7
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
     BlendInSeconds: 0.001
+    SfxKey: 
   Post:
     Enabled: 1
     AnimationStateName: Base Layer.JC_EnterJustice_Taunt
@@ -99,6 +133,9 @@ MonoBehaviour:
       InstanceKey: 
       Anchor: 1
       Socket: 4
+      Timing: 0
+      Time: 0
+      CueId: 2e56f0a8649348e88debd8807e10d4f7
     ExtraDelay: 0
   MovingAttack:
     Enabled: 0

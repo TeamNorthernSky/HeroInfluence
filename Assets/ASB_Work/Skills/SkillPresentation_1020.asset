@@ -14,28 +14,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 1020
   PresentationSchemaVersion: 1
+  AnimationRail: 0
+  PresentationArchetype: 0
+  SkillTimelines: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
   HitDelay: 0.25
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
   EnableHitEffect: 1
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -52,14 +56,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
+  EventSfx: []
   MovePrepare:
     Enabled: 0
     AnimationStateName: Base Layer.ClassSkill_1
@@ -68,8 +65,10 @@ MonoBehaviour:
   Move:
     Enabled: 1
     UseUnitMovement: 1
+    ForceApproach: 0
     AnimationStateName: Base Layer.MoveForward
     BlendInSeconds: 0
+    SfxKey: 
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -90,6 +89,9 @@ MonoBehaviour:
         InstanceKey: 
         Anchor: 1
         Socket: 1
+        Timing: 0
+        Time: 0
+        CueId: 088ec1ea471640d3b65829642b13b3cb
     - AnimationStateName: Base Layer.ClassSkill_2
       BlendInSeconds: 0.07
       AdvanceOnEvent: 0
@@ -102,10 +104,14 @@ MonoBehaviour:
         InstanceKey: 
         Anchor: 1
         Socket: 2
+        Timing: 0
+        Time: 0
+        CueId: 78e021600226466788ad92d7d1476f69
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
     BlendInSeconds: 0.001
+    SfxKey: 
   Post:
     Enabled: 0
     AnimationStateName: 

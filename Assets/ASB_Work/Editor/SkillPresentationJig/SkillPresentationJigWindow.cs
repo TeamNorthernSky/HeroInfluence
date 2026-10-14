@@ -175,6 +175,10 @@ namespace ASB.Work.EditorTools.Jig
                 {
                     BakeStandaloneTimeline();
                 }
+                if (GUILayout.Button("빈 Runtime Timeline 에셋 생성 (수동 저작)", GUILayout.Height(26)))
+                {
+                    CreateEmptyRuntimeTimeline();
+                }
             }
 
             using (new EditorGUI.DisabledScope(_selectedTimelineAsset == null))
@@ -528,6 +532,24 @@ namespace ASB.Work.EditorTools.Jig
             SetRuntimeTimeline(timeline);
             _report.Add($"독립 Timeline 생성 완료: {AssetDatabase.GetAssetPath(timeline)}");
             _report.Add("SkillPresentationData에는 자동 연결하지 않았습니다.");
+            OpenVariantForEditing(timeline);
+        }
+
+        private void CreateEmptyRuntimeTimeline()
+        {
+            _report.Clear();
+            TimelineAsset timeline = JigPathABaker.CreateEmptyRuntimeTimeline(
+                _presentation, _characterPrefab, out string error);
+            if (timeline == null)
+            {
+                _report.Add("빈 Runtime Timeline 생성 실패: " + error);
+                EditorUtility.DisplayDialog("Timeline 생성 실패", error, "확인");
+                return;
+            }
+
+            SetRuntimeTimeline(timeline);
+            _report.Add($"빈 Runtime Timeline 생성 완료: {AssetDatabase.GetAssetPath(timeline)}");
+            _report.Add("Animation Track과 Marker Track만 만들었습니다. 클립·런타임 마커를 저작한 뒤 연출 자산에 직접 연결하세요.");
             OpenVariantForEditing(timeline);
         }
 

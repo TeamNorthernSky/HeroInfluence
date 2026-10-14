@@ -130,6 +130,8 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
             if (!shocked && t >= _drawTime)
             {
                 shocked = true;
+                // 번개 줄이 다 그어져 감전이 시작되는 순간(1회).
+                PresentationSfxEvents.PlayEffectImpact(ctx?.Presentation, 0);
                 SpawnShocks(ctx);
             }
             yield return null;

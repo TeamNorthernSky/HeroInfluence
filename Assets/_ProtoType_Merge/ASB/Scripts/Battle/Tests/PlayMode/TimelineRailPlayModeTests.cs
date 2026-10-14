@@ -26,6 +26,8 @@ public sealed class TimelineRailPlayModeTests
         GameObject secondTargetObject = new GameObject("TimelineRailSecondTarget");
         try
         {
+            Vector3 startingPosition = fixture.ActorObject.transform.position;
+            Quaternion startingRotation = fixture.ActorObject.transform.rotation;
             Type characterType = fixture.CharacterType;
             Component secondTarget = CreateInitializedUnit(secondTargetObject, characterType, false, 1f);
             secondTargetObject.transform.position = new Vector3(5f, 0f, 0f);
@@ -36,6 +38,7 @@ public sealed class TimelineRailPlayModeTests
             AddImpactMarker(fixture.Timeline, 0.05d);
             AddImpactMarker(second, 0.05d);
             AddMoveMarkers(second, 0.02d, 0.08d);
+            AddReturnMarkers(second, 0.09d, 0.115d);
             SetEnumField(fixture.Data.GetType(), fixture.Data, "PresentationArchetype", "Melee");
             foreach (string fieldName in new[] { "Move", "Return" })
             {
@@ -143,6 +146,11 @@ public sealed class TimelineRailPlayModeTests
             Assert.That(fixture.HitBox[0], Is.EqualTo(1));
             Assert.That(secondHits, Is.EqualTo(1));
             Assert.That(director.playableAsset, Is.Null);
+            Assert.That(Vector3.Distance(fixture.ActorObject.transform.position, startingPosition),
+                Is.LessThan(0.05f),
+                "마지막 세그먼트의 Return 마커가 시전 시작 위치로 복귀해야 합니다.");
+            Assert.That(Quaternion.Angle(fixture.ActorObject.transform.rotation, startingRotation),
+                Is.LessThan(1f), "Return 마커가 시전 시작 회전으로 복귀해야 합니다.");
         }
         finally
         {
@@ -178,6 +186,79 @@ public sealed class TimelineRailPlayModeTests
                 new object[] { entry.Item1 });
             markerType.GetMethod("Configure").Invoke(marker,
                 new[] { Enum.Parse(boundaryType, entry.Item2), (object)0 });
+        }
+    }
+
+    private static void AddReturnMarkers(TimelineAsset timeline, double start, double end)
+    {
+        Type markerType = FindRuntimeType("PresentationReturnMarker");
+        Type boundaryType = FindRuntimeType("PresentationSectionBoundary");
+        MethodInfo create = typeof(TrackAsset).GetMethods()
+            .Single(method => method.Name == "CreateMarker" && method.IsGenericMethodDefinition);
+        foreach (var entry in new[] { (start, "Start"), (end, "End") })
+        {
+            object marker = create.MakeGenericMethod(markerType).Invoke(timeline.markerTrack,
+                new object[] { entry.Item1 });
+            markerType.GetMethod("Configure").Invoke(marker,
+                new[] { Enum.Parse(boundaryType, entry.Item2) });
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator SingleTargetTimeline_MoveAndReturnMarkers_RestoreStartPosition()
+    {
+        Fixture fixture = BuildFixture(0.3d);
+        float previousSpeed = (float)fixture.Manager.GetType()
+            .GetProperty("CurrentBattleSpeed").GetValue(fixture.Manager);
+        try
+        {
+            fixture.Manager.GetType().GetMethod("ChangeBattleSpeed").Invoke(fixture.Manager,
+                new object[] { 0.1f });
+            fixture.ActorObject.transform.position = new Vector3(3f, 0f, 0f);
+            fixture.TargetObject.transform.position = Vector3.zero;
+            Vector3 origin = fixture.ActorObject.transform.position;
+            fixture.Timeline.CreateMarkerTrack();
+            AddMoveMarkers(fixture.Timeline, 0.03d, 0.12d);
+            AddImpactMarker(fixture.Timeline, 0.15d);
+            AddReturnMarkers(fixture.Timeline, 0.18d, 0.27d);
+            SetEnumField(fixture.Data.GetType(), fixture.Data, "PresentationArchetype", "Melee");
+            foreach (string fieldName in new[] { "Move", "Return" })
+            {
+                object phase = fixture.Data.GetType().GetField(fieldName).GetValue(fixture.Data);
+                phase.GetType().GetField("Enabled").SetValue(phase, false);
+            }
+
+            ((MonoBehaviour)fixture.Manager).StartCoroutine(fixture.CreateRoutine());
+            bool sawApproach = false;
+            float maxApproachDistance = 0f;
+            float elapsed = 0f;
+            while (elapsed < 6f)
+            {
+                PlayableDirector director = fixture.ActorObject.GetComponent<PlayableDirector>();
+                if (director != null && director.playableAsset == fixture.Timeline &&
+                    director.time >= 0.03d && director.time < 0.18d)
+                {
+                    maxApproachDistance = Mathf.Max(maxApproachDistance,
+                        Vector3.Distance(fixture.ActorObject.transform.position, origin));
+                    if (maxApproachDistance > 0.5f) sawApproach = true;
+                }
+                if (director != null && director.playableAsset == null && fixture.HitBox[0] == 1)
+                    break;
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            Assert.That(sawApproach, Is.True,
+                $"Move 마커 구간에서 대상 쪽으로 이동해야 합니다(max={maxApproachDistance:F3}).");
+            Assert.That(Vector3.Distance(fixture.ActorObject.transform.position, origin), Is.LessThan(0.05f),
+                "Return 마커 구간에서 시전 시작 위치로 돌아와야 합니다.");
+            Assert.That(fixture.HitBox[0], Is.EqualTo(1));
+        }
+        finally
+        {
+            fixture.Manager.GetType().GetMethod("ChangeBattleSpeed").Invoke(fixture.Manager,
+                new object[] { previousSpeed });
+            fixture.Dispose();
         }
     }
 

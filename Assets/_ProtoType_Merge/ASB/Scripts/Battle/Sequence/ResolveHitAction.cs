@@ -17,15 +17,18 @@ namespace ASB.Work.Battle.Sequence
         private readonly string _targetAnimTrigger;
         private readonly float _battleSpeed;
         private readonly BattleVisualDirector _visual;
+        private readonly DamageRole _role;
 
         /// <param name="targetAnimTrigger">타겟에 재생할 애니메이션 트리거. null이면 피격 애니 생략.</param>
+        /// <param name="role">피해 역할. Additional이면 Event SFX의 AdditionalHit 줄을 우선 재생한다.</param>
         public ResolveHitAction(
             BattleCharactor actor,
             BattleCharactor target,
             Func<BattleHitResult> onHit,
             string targetAnimTrigger,
             float battleSpeed,
-            BattleVisualDirector visual = null)
+            BattleVisualDirector visual = null,
+            DamageRole role = DamageRole.Primary)
         {
             _actor = actor;
             _target = target;
@@ -33,6 +36,7 @@ namespace ASB.Work.Battle.Sequence
             _targetAnimTrigger = targetAnimTrigger;
             _battleSpeed = Mathf.Max(0.01f, battleSpeed);
             _visual = visual;
+            _role = role;
         }
 
         public override IEnumerator ExecuteRoutine(MonoBehaviour host)
@@ -102,6 +106,11 @@ namespace ASB.Work.Battle.Sequence
 
             _visual?.PlayHitEffect(_target, result.SkillIndex, _battleSpeed);
             _visual?.ShowDamagePopup(result);
+
+            // 피격음은 실제 피해일 때만(회복·빗나감 제외). PlayHitEffect는 회복 경로도 공유하므로 여기서 판정한다.
+            // 인질 경로는 Target=null 더미 결과를 돌려주고 피해가 적용됐을 때 직접 PlayHit을 호출한다.
+            if (_visual != null && result.Target != null && !result.IsHeal && !result.IsMiss)
+                PresentationSfxEvents.PlayHit(_visual.GetPresentation(result.SkillIndex), _actor, _role);
         }
 
         private bool ShouldSkipHitPresentation(BattleHitResult result)

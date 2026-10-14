@@ -601,7 +601,8 @@ public class JcBattleManager : MonoBehaviour
                                 onHitCallback,
                                 JcSkillPresentationDirector.ResolveAdditionalChainTargetAnimationTrigger(chainPresentation, chainSkill),
                                 _currentBattleSpeed,
-                                _visualDirector).ExecuteRoutine(this);
+                                _visualDirector,
+                                DamageRole.Additional).ExecuteRoutine(this);
                         }
                         else
                         {
@@ -613,7 +614,8 @@ public class JcBattleManager : MonoBehaviour
                                 onHitCallback,
                                 targetAnimTrigger: null,
                                 battleSpeed: _currentBattleSpeed,
-                                visual: _visualDirector).ExecuteRoutine(this);
+                                visual: _visualDirector,
+                                role: DamageRole.Additional).ExecuteRoutine(this);
                         }
                     }
                     else
@@ -986,6 +988,8 @@ public class JcBattleManager : MonoBehaviour
                 if (hitHostage != null)
                     _visualDirector?.PlayHitEffectAt(hitHostage.transform, skillData.skillIndex);
             }
+            if (hitHostages.Count > 0 && _visualDirector != null)
+                PresentationSfxEvents.PlayHit(_visualDirector.GetPresentation(skillData.skillIndex), actor, DamageRole.Primary);
             hitApplied = hitHostages.Count > 0;
             // 인질은 BattleCharactor가 아니므로 Target=null(피격애니/팝업 skip). 피해는 위에서 이미 적용.
             return new BattleHitResult { Target = null, Damage = 0f, SkillIndex = skillData.skillIndex };

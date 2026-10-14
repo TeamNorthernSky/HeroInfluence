@@ -22,6 +22,8 @@ public class SkillEffectContext
     public float PlaybackSpeed = 1f;
     /// <summary>다단히트에서 몇 번째 타격인지(0-base). 단일 타격은 0.</summary>
     public int HitIndex;
+    /// <summary>이 연출의 스킬 데이터. 재료가 Event SFX(EffectImpact)를 재생할 때 읽는다. 없으면 null(무음).</summary>
+    public SkillPresentationData Presentation;
 
     /// <summary>프리팹별 Anchor 값을 안전하게 전달하기 위한 스냅샷.</summary>
     public SkillEffectContext CreateSnapshot(Transform socketTransform, Vector3 spawnPosition)
@@ -38,6 +40,7 @@ public class SkillEffectContext
             SocketTransform = socketTransform,
             PlaybackSpeed = PlaybackSpeed,
             HitIndex = HitIndex,
+            Presentation = Presentation,
         };
     }
 }

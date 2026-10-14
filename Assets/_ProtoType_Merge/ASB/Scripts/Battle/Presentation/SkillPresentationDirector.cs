@@ -339,6 +339,7 @@ public sealed partial class SkillPresentationDirector
             HitIndex = 0,
             // 부활 스킬(4040): 공격 대상(적)과 다른 부활 아군에 이펙트를 꽂기 위한 참조. 부활 없으면 null.
             ReviveTarget = actor.PendingReviveTarget,
+            Presentation = presentation,
         };
         string expectedStateName = !string.IsNullOrWhiteSpace(activeStateName)
             ? activeStateName
@@ -804,14 +805,17 @@ public sealed partial class SkillPresentationDirector
     /// Timeline 레일 스킬 재생: 캐릭터 Variant를 PlayableDirector로 틀고, 전투 배속을 그래프에 반영하며,
     /// 재생 중 마커 알림(Cue/Impact/Projectile)을 처리하고, 완료까지 대기한 뒤 Idle로 복귀한다.
     /// Cue/Impact/Projectile의 시점은 Timeline Signal이 소유한다. Impact·Projectile이 없던 스킬은 완료 시
-    /// 대미지 콜백을 1회 적용해 전투 상태 일관성과 무-hang을 보장한다(§10). 이동(MoveSignal)은 아직 미배선.
+    /// 대미지 콜백을 1회 적용해 전투 상태 일관성과 무-hang을 보장한다(§10).
     /// </summary>
     private IEnumerator RunTimelineRailRoutine(
         BattleCharactor actor, BattleCharactor target, SkillData skill, SkillPresentationData presentation,
         Func<BattleHitResult> onHitCallback, HitDeliveryGate deliveryGate,
         Transform targetTransform, Vector3 targetPosition, bool playTargetHitAnimation,
         string sectionId = null, bool returnActorToIdle = true, TimelineRailPlaybackResult playbackResult = null,
-        IReadOnlyList<BattleCharactor> presentationTargets = null)
+        IReadOnlyList<BattleCharactor> presentationTargets = null,
+        Vector3? movementOrigin = null, Quaternion? movementOriginRotation = null,
+        UnitMovementProfile movement = null, bool shouldMove = false,
+        MovingAttackPath.Points? movingAttackPoints = null)
     {
         // 피격 연출(대미지 + 피격 애니 + 데미지 팝업). Path B의 ResolveHitAction을 재사용한다 —
         // 대미지 콜백만 부르면 HP는 깎이지만 피격 모션·데미지 팝업이 안 나온다.
@@ -870,7 +874,27 @@ public sealed partial class SkillPresentationDirector
             yield break;
         }
 
+        List<PlanMoveSpan> moveSpans = CollectPlanMoveSpans(timeline, 1);
+        List<PlanReturnSpan> returnSpans = CollectPlanReturnSpans(timeline);
+        TimelineMovingAttackSpan movingAttackSpan = movingAttackPoints.HasValue && presentation.MovingAttack != null
+            ? CollectMovingAttackSpan(timeline, movingAttackPoints.Value,
+                presentation.MovingAttack.PathSampleCount)
+            : null;
+        if (moveSpans == null || returnSpans == null || MovementSpansOverlap(moveSpans, returnSpans) ||
+            moveSpans.Exists(span => span.Slot != 1) ||
+            (movingAttackPoints.HasValue && (movingAttackSpan == null || moveSpans.Count > 0 ||
+                returnSpans.Exists(span => span.Start.time < movingAttackSpan.End.time))))
+        {
+            Debug.LogError($"[PathA] 이동 공격/Move/Return 마커 구간이 올바르지 않습니다: {timeline.name}", timeline);
+            ResolveHit();
+            if (hitRoutine != null) yield return hitRoutine;
+            yield break;
+        }
+        Vector3 origin = movementOrigin ?? actor.transform.position;
+        Quaternion originRotation = movementOriginRotation ?? actor.transform.rotation;
+
         PlayableDirector director = EnsureTimelineDirector(actor);
+        PresentationSignalReceiver receiver = EnsureSignalReceiver(actor);
         BindTimelineToActor(director, timeline, actor);
 
         // 재생 중 Signal이 CueId로 발화할 수 있도록, 이 스킬의 모든 Cue를 컨텍스트에 id로 등록한다.
@@ -931,7 +955,6 @@ public sealed partial class SkillPresentationDirector
             }
         }
 
-        PresentationSignalReceiver receiver = EnsureSignalReceiver(actor);
         UnitAnimationEventRouter railRouter = actor.GetComponent<UnitAnimationEventRouter>();
         // ★레일 재생 중에는 클립 AniEvent 기반 Cue를 억제한다 — 마커(id)가 발화를 소유하므로 클립의
         //   AniEvent_PresentationCue와 이중 발화(이펙트 2번)를 막는다. finally에서 반드시 해제.
@@ -941,6 +964,71 @@ public sealed partial class SkillPresentationDirector
         Action onProjectile = isChainTimelineDelivery ? (Action)StartChainLightning : (Action)LaunchProjectile;
         receiver.Configure(railRouter, onImpact, onProjectile,
             playbackRange.Start, playbackRange.End);
+        void OnMove(PresentationMoveMarker marker)
+        {
+            foreach (PlanMoveSpan span in moveSpans)
+            {
+                if (marker == span.Start && !span.Started)
+                {
+                    Transform destination = target != null ? target.transform : targetTransform;
+                    if (destination == null) return;
+                    span.Started = true;
+                    span.From = actor.transform.position;
+                    span.FromRotation = actor.transform.rotation;
+                    Vector3 away = span.From - destination.position;
+                    away.y = 0f;
+                    if (away.sqrMagnitude < 0.0001f) away = -actor.transform.forward;
+                    away.Normalize();
+                    span.To = destination.position + away * (movement != null ? movement.ApproachDistance : 1.2f);
+                    span.To.y = span.From.y;
+                    span.ToRotation = Quaternion.LookRotation(-away, Vector3.up);
+                    if (shouldMove)
+                    {
+                        string key = MovementSfxKeyResolver.ResolveApproach(presentation.Move, movement);
+                        if (!string.IsNullOrEmpty(key)) PresentationSfxPlayer.Play(key);
+                    }
+                    return;
+                }
+                if (marker == span.End && span.Started && !span.Completed)
+                {
+                    actor.transform.SetPositionAndRotation(span.To, span.ToRotation);
+                    span.Completed = true;
+                    return;
+                }
+            }
+        }
+        void OnReturn(PresentationReturnMarker marker)
+        {
+            foreach (PlanReturnSpan span in returnSpans)
+            {
+                if (marker == span.Start && !span.Started)
+                {
+                    if (movingAttackSpan != null)
+                    {
+                        UpdateMovingAttack(actor, movingAttackSpan, presentation.MovingAttack,
+                            movingAttackSpan.End.time);
+                        MirrorMovingAttackReturnState(actor, presentation.Return);
+                    }
+                    span.Started = true;
+                    span.From = actor.transform.position;
+                    span.FromRotation = actor.transform.rotation;
+                    // MovingAttack 복귀는 Animator 경로(EnqueueMovingAttackReturn)처럼 복귀음을 내지 않는다.
+                    if (shouldMove && movingAttackSpan == null)
+                    {
+                        string key = MovementSfxKeyResolver.ResolveReturn(presentation.Return, movement);
+                        if (!string.IsNullOrEmpty(key)) PresentationSfxPlayer.Play(key);
+                    }
+                    return;
+                }
+                if (marker == span.End && span.Started && !span.Completed)
+                {
+                    actor.transform.SetPositionAndRotation(origin, originRotation);
+                    span.Completed = true;
+                    return;
+                }
+            }
+        }
+        receiver.ConfigureMovementCallbacks(OnMove, OnReturn);
 
         bool stopped = false;
         void OnStopped(PlayableDirector d) => stopped = true;
@@ -971,6 +1059,9 @@ public sealed partial class SkillPresentationDirector
             double holdPrevTime = playbackRange.Start;
             while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
             {
+                UpdatePlanMove(actor, moveSpans, director.time);
+                UpdateMovingAttack(actor, movingAttackSpan, presentation.MovingAttack, director.time);
+                UpdatePlanReturn(actor, returnSpans, director.time, origin, originRotation);
                 // Hold: (prev, now]에 걸린 미소비 Hold 마커에서 director를 정지시킨다(AniEvent_HoldBegin의 Timeline판).
                 for (int h = 0; h < holdMarks.Count; h++)
                 {
@@ -991,6 +1082,14 @@ public sealed partial class SkillPresentationDirector
                 }
                 yield return null;
             }
+            if (actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
+            {
+                SnapUnfinishedPlanMoves(actor, moveSpans);
+                if (movingAttackSpan != null && !movingAttackSpan.Completed)
+                    UpdateMovingAttack(actor, movingAttackSpan, presentation.MovingAttack,
+                        movingAttackSpan.End.time);
+                SnapUnfinishedPlanReturns(actor, returnSpans, origin, originRotation);
+            }
         }
         finally
         {
@@ -998,6 +1097,10 @@ public sealed partial class SkillPresentationDirector
             director.stopped -= OnStopped;
             director.Stop();               // 그래프 정리
             director.playableAsset = null; // 다음 재생을 위해 바인딩 해제
+            // 그래프 해제 시 AnimationTrack의 마지막 루트 포즈가 다시 기록될 수 있다.
+            if (actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None &&
+                returnSpans.Exists(span => span.Completed))
+                actor.transform.SetPositionAndRotation(origin, originRotation);
             receiver.ClearConfig();
             if (railRouter != null) railRouter.SuppressClipCues = false;   // 클립 AniEvent Cue 억제 해제
             ClearPresentationContext(actor);
@@ -1044,8 +1147,11 @@ public sealed partial class SkillPresentationDirector
     {
         bool moveEnabled = presentation?.Move?.Enabled ?? true;
         bool returnEnabled = presentation?.Return?.Enabled ?? true;
+        TimelineAsset movementTimeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+        bool timelineOwnsMove = HasTimelineMove(movementTimeline);
+        bool timelineOwnsReturn = HasTimelineReturn(movementTimeline);
 
-        if (moveEnabled)
+        if (moveEnabled && !timelineOwnsMove)
         {
             var approach = new ActionSequenceRunner();
             EnqueueSkillApproach(approach, actor, target, actorAnim, movement, shouldMove, shouldRotate,
@@ -1058,7 +1164,9 @@ public sealed partial class SkillPresentationDirector
         yield return RunTimelineRailRoutine(
             actor, target, skill, presentation, onHitCallback, deliveryGate,
             targetTransform, targetPosition, playTargetHitAnimation,
-            sectionId: null, returnActorToIdle: false, playbackResult: playbackResult);
+            sectionId: null, returnActorToIdle: false, playbackResult: playbackResult,
+            movementOrigin: originPosition, movementOriginRotation: Quaternion.Euler(0f, originRotationY, 0f),
+            movement: movement, shouldMove: shouldMove);
 
         // 피격/사망으로 공격 Timeline이 끊긴 경우, 복귀 이동(MoveReturn)이나 Idle로 Hit/Dead 반응을 덮지 않는다(§1-3).
         // Dead면 시체가 MoveReturn하지 않고, Hit면 반응이 유지된다. (위치 복구는 이번 파일럿 범위에서 생략.)
@@ -1068,18 +1176,80 @@ public sealed partial class SkillPresentationDirector
         }
 
         var tail = new ActionSequenceRunner();
-        if (returnEnabled)
+        if (returnEnabled && !timelineOwnsReturn)
         {
             EnqueueSkillReturn(tail, actorAnim, movement, shouldMove, shouldRotate,
                 originPosition, originRotationY, presentation?.Return);
         }
-        else if (shouldRotate)
+        else if (shouldRotate && !timelineOwnsReturn)
         {
             EnqueueSkillReturn(tail, actorAnim, movement, false, true,
                 originPosition, originRotationY, presentation?.Return);
         }
         tail.Enqueue(new ReturnToIdleAction(actor));
         yield return _battle.StartCoroutine(tail.RunAll(_battle));
+    }
+
+    /// <summary>
+    /// MovingAttack keeps its approach action and formation-relative path data. The
+    /// Timeline owns the attack clip, path interval, Cue/Impact signals and optional return.
+    /// </summary>
+    private IEnumerator RunMovingAttackTimelineRailRoutine(
+        BattleCharactor actor, BattleCharactor target, SkillData skill,
+        SkillPresentationData presentation, Func<BattleHitResult> onHitCallback,
+        HitDeliveryGate deliveryGate, Transform targetTransform, Vector3 targetPosition,
+        bool playTargetHitAnimation, CharactorAnimationController actorAnim,
+        UnitMovementProfile movement, Vector3 originPosition, float originRotationY)
+    {
+        if (movement == null || presentation?.Move?.Enabled != true ||
+            !TryBuildMovingAttackPlan(actor, actorAnim, presentation, new[] { target },
+                out MovingAttackPlan plan,
+                fallbackCenter: target == null ? targetPosition : (Vector3?)null))
+        {
+            Debug.LogError($"[PathA] MovingAttack 경로를 구성할 수 없습니다: {presentation?.SkillIndex}", actor);
+            yield return RunTimelineRailRoutine(actor, target, skill, presentation, onHitCallback,
+                deliveryGate, targetTransform, targetPosition, playTargetHitAnimation);
+            yield break;
+        }
+
+        TimelineAsset timeline = presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName);
+        TimelineMovingAttackSpan movingSpan = timeline != null
+            ? CollectMovingAttackSpan(timeline, plan.PathPoints, presentation.MovingAttack.PathSampleCount)
+            : null;
+        if (movingSpan == null)
+        {
+            Debug.LogError($"[PathA] MovingAttack Start/End 마커가 없습니다: {presentation.SkillIndex}", timeline);
+            yield return RunTimelineRailRoutine(actor, target, skill, presentation, onHitCallback,
+                deliveryGate, targetTransform, targetPosition, playTargetHitAnimation);
+            yield break;
+        }
+
+        var approach = new ActionSequenceRunner();
+        EnqueueMovingAttackApproach(approach, plan, actorAnim, movement, presentation.Move);
+        yield return _battle.StartCoroutine(approach.RunAll(_battle));
+        if (actor == null || actor.IsDead) yield break;
+
+        var playbackResult = new TimelineRailPlaybackResult();
+        yield return RunTimelineRailRoutine(actor, target, skill, presentation, onHitCallback,
+            deliveryGate, targetTransform, targetPosition, playTargetHitAnimation,
+            returnActorToIdle: false, playbackResult: playbackResult,
+            movementOrigin: originPosition,
+            movementOriginRotation: Quaternion.Euler(0f, originRotationY, 0f),
+            movement: movement, shouldMove: true, movingAttackPoints: plan.PathPoints);
+        if (playbackResult.Interrupted || actor == null || actor.IsDead) yield break;
+
+        var tail = new ActionSequenceRunner();
+        if (presentation.Return?.Enabled == true &&
+            (!HasTimelineReturn(timeline) ||
+             Vector3.Distance(actor.transform.position, originPosition) > 0.05f))
+            EnqueueMovingAttackReturn(tail, actorAnim, movement, originPosition, originRotationY,
+                presentation.Return);
+        tail.Enqueue(new ReturnToIdleAction(actor));
+        yield return _battle.StartCoroutine(tail.RunAll(_battle));
+
+        // Animator MovingAttack 경로와 같은 후딜: 경과=곡선 이동 구간, TotalDelay 잔여(최소 0.2초)를 기다린다.
+        float movingElapsed = (float)(movingSpan.End.time - movingSpan.Start.time);
+        yield return _battle.WaitForBattleSeconds(Mathf.Max(skill.TotalDelay - movingElapsed, 0.2f));
     }
 
     /// <summary>
@@ -1123,7 +1293,8 @@ public sealed partial class SkillPresentationDirector
         BattleCharactor actor, BattleCharactor primaryTarget, SkillData skill,
         SkillPresentationData presentation, HitDeliveryGate deliveryGate,
         List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks, int pairCount,
-        ProjectileVisualData projectileVisual)
+        ProjectileVisualData projectileVisual, MovingAttackPlan movingAttackPlan = null,
+        UnitMovementProfile movement = null, float originRotationY = 0f)
     {
         TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
         if (timeline == null)
@@ -1137,6 +1308,41 @@ public sealed partial class SkillPresentationDirector
                     projectileVisual, deliveryGate)
                 .ExecuteRoutine(_battle);
             yield break;
+        }
+
+        // MovingAttack SingleTarget은 Animator 경로처럼 첫 대상만 연출 타격한다.
+        int deliveryCount = movingAttackPlan?.Presentation.HitMode == MovingAttackHitMode.SingleTarget
+            ? Mathf.Min(1, pairCount) : pairCount;
+        List<DamageContext> deliveryContexts = deliveryCount == pairCount
+            ? contexts : contexts.GetRange(0, deliveryCount);
+        List<Func<BattleHitResult>> deliveryCallbacks = deliveryCount == pairCount
+            ? hitCallbacks : hitCallbacks.GetRange(0, deliveryCount);
+
+        TimelineMovingAttackSpan movingAttackSpan = movingAttackPlan != null
+            ? CollectMovingAttackSpan(timeline, movingAttackPlan.PathPoints,
+                movingAttackPlan.Presentation.PathSampleCount)
+            : null;
+        List<PlanReturnSpan> returnSpans = movingAttackPlan != null
+            ? CollectPlanReturnSpans(timeline)
+            : null;
+        if (movingAttackPlan != null && (movingAttackSpan == null || returnSpans == null ||
+            returnSpans.Exists(span => span.Start.time < movingAttackSpan.End.time)))
+        {
+            Debug.LogError($"[PathA/AoE] MovingAttack/Return 마커가 올바르지 않아 대미지만 확정합니다: {timeline.name}", timeline);
+            yield return new AoEApplyDamageAction(
+                    deliveryContexts, deliveryCallbacks, deliveryCount, _battle.CurrentBattleSpeed,
+                    _battle.VisualDirector, projectileVisual, deliveryGate)
+                .ExecuteRoutine(_battle);
+            yield break;
+        }
+
+        Quaternion originRotation = Quaternion.Euler(0f, originRotationY, 0f);
+        if (movingAttackPlan != null)
+        {
+            var approach = new ActionSequenceRunner();
+            EnqueueMovingAttackApproach(approach, movingAttackPlan, actor.Anim, movement, presentation.Move);
+            yield return _battle.StartCoroutine(approach.RunAll(_battle));
+            if (actor == null || actor.IsDead) yield break;
         }
 
         PlayableDirector director = EnsureTimelineDirector(actor);
@@ -1168,16 +1374,78 @@ public sealed partial class SkillPresentationDirector
                 new ASB.Work.Battle.Sequence.CustomEffectImpactAction(
                         presentation, actionInstanceId, deliveryGate,
                         new AoEApplyDamageAction(
-                            contexts, hitCallbacks, pairCount, _battle.CurrentBattleSpeed, _battle.VisualDirector,
+                            deliveryContexts, deliveryCallbacks, deliveryCount,
+                            _battle.CurrentBattleSpeed, _battle.VisualDirector,
                             projectileVisual, deliveryGate))
                     .ExecuteRoutine(_battle));
+        }
+
+        // MovingAttack SequentialAoE: Animator 경로(MovingAttackPresentationAction)처럼 곡선 경로가 각 대상에
+        // 가장 가까워지는 진행도에서 대상별로 타격한다(대상마다 피격 이펙트·피격 처리). Impact 마커는 쓰지 않는다.
+        bool sequentialHits = movingAttackSpan != null &&
+                              movingAttackPlan.Presentation.HitMode == MovingAttackHitMode.SequentialAoE;
+        float[] sequentialThresholds = null;
+        bool[] sequentialApplied = null;
+        var sequentialRoutines = new List<Coroutine>();
+        if (sequentialHits)
+        {
+            sequentialThresholds = new float[pairCount];
+            sequentialApplied = new bool[pairCount];
+            for (int i = 0; i < pairCount; i++)
+            {
+                BattleCharactor hitTarget = contexts[i]?.Target;
+                sequentialThresholds[i] = hitTarget == null
+                    ? 1f
+                    : MovingAttackPath.FindNearestProgress(movingAttackSpan.Samples, movingAttackSpan.CumulativeLengths,
+                        movingAttackSpan.SampleCount, hitTarget.transform.position);
+            }
+        }
+        void TriggerSequentialHits(float progress)
+        {
+            for (int i = 0; i < pairCount; i++)
+            {
+                if (sequentialApplied[i] || progress < sequentialThresholds[i]) continue;
+                sequentialApplied[i] = true;
+                if (contexts[i]?.Target == null) continue;
+                sequentialRoutines.Add(_battle.StartCoroutine(new AoEApplyDamageAction(
+                        new List<DamageContext> { contexts[i] }, new List<Func<BattleHitResult>> { hitCallbacks[i] }, 1,
+                        _battle.CurrentBattleSpeed, _battle.VisualDirector, projectileVisual, deliveryGate)
+                    .ExecuteRoutine(_battle)));
+            }
         }
 
         PresentationSignalReceiver receiver = EnsureSignalReceiver(actor);
         UnitAnimationEventRouter railRouter = actor.GetComponent<UnitAnimationEventRouter>();
         // ★레일 재생 중 클립 AniEvent Cue 억제(마커가 발화 소유 → 이중 발화 방지). finally에서 해제.
         if (railRouter != null) railRouter.SuppressClipCues = true;
-        receiver.Configure(railRouter, ResolveDelivery, ResolveDelivery);
+        Action onDelivery = sequentialHits ? null : (Action)ResolveDelivery;
+        receiver.Configure(railRouter, onDelivery, onDelivery);
+        if (movingAttackSpan != null)
+        {
+            void OnReturn(PresentationReturnMarker marker)
+            {
+                foreach (PlanReturnSpan span in returnSpans)
+                {
+                    if (marker == span.Start && !span.Started)
+                    {
+                        UpdateMovingAttack(actor, movingAttackSpan, presentation.MovingAttack,
+                            movingAttackSpan.End.time);
+                        MirrorMovingAttackReturnState(actor, presentation.Return);
+                        span.Started = true;
+                        span.From = actor.transform.position;
+                        span.FromRotation = actor.transform.rotation;
+                        return;
+                    }
+                    if (marker == span.End && span.Started && !span.Completed)
+                    {
+                        actor.transform.SetPositionAndRotation(movingAttackPlan.OriginPosition, originRotation);
+                        span.Completed = true;
+                        return;
+                    }
+                }
+            }
+            receiver.ConfigureMovementCallbacks(null, OnReturn);
+        }
 
         bool stopped = false;
         void OnStopped(PlayableDirector d) => stopped = true;
@@ -1203,6 +1471,15 @@ public sealed partial class SkillPresentationDirector
             double holdPrevTime = 0d;
             while (!stopped && actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
             {
+                if (movingAttackSpan != null)
+                {
+                    UpdateMovingAttack(actor, movingAttackSpan, presentation.MovingAttack, director.time);
+                    if (sequentialHits && director.time >= movingAttackSpan.Start.time)
+                        TriggerSequentialHits(Mathf.Clamp01((float)((director.time - movingAttackSpan.Start.time) /
+                            (movingAttackSpan.End.time - movingAttackSpan.Start.time))));
+                    UpdatePlanReturn(actor, returnSpans, director.time,
+                        movingAttackPlan.OriginPosition, originRotation);
+                }
                 // Hold: (prev, now]에 걸린 미소비 Hold 마커에서 director를 정지시킨다(AniEvent_HoldBegin의 Timeline판).
                 for (int h = 0; h < holdMarks.Count; h++)
                 {
@@ -1219,6 +1496,15 @@ public sealed partial class SkillPresentationDirector
                 holdPrevTime = director.time;
                 yield return null;
             }
+            if (movingAttackSpan != null && actor != null && !actor.IsDead &&
+                interrupt == PresentationInterruptReason.None)
+            {
+                if (!movingAttackSpan.Completed)
+                    UpdateMovingAttack(actor, movingAttackSpan, presentation.MovingAttack,
+                        movingAttackSpan.End.time);
+                SnapUnfinishedPlanReturns(actor, returnSpans,
+                    movingAttackPlan.OriginPosition, originRotation);
+            }
         }
         finally
         {
@@ -1226,6 +1512,10 @@ public sealed partial class SkillPresentationDirector
             director.stopped -= OnStopped;
             director.Stop();
             director.playableAsset = null;
+            if (movingAttackSpan != null && actor != null && !actor.IsDead &&
+                interrupt == PresentationInterruptReason.None &&
+                returnSpans.Exists(span => span.Completed))
+                actor.transform.SetPositionAndRotation(movingAttackPlan.OriginPosition, originRotation);
             receiver.ClearConfig();
             if (railRouter != null) railRouter.SuppressClipCues = false;   // 클립 AniEvent Cue 억제 해제
             ClearPresentationContext(actor);
@@ -1235,11 +1525,23 @@ public sealed partial class SkillPresentationDirector
         // AoE Delivery(다대상 대미지)는 아래에서 인터럽트와 무관하게 계속 확정한다('커밋된 공격은 1회 확정').
         if (actor != null && !actor.IsDead && interrupt == PresentationInterruptReason.None)
         {
+            if (movingAttackPlan != null && presentation.Return?.Enabled == true &&
+                (!HasTimelineReturn(timeline) ||
+                 Vector3.Distance(actor.transform.position, movingAttackPlan.OriginPosition) > 0.05f))
+            {
+                var tail = new ActionSequenceRunner();
+                EnqueueMovingAttackReturn(tail, actor.Anim, movement,
+                    movingAttackPlan.OriginPosition, originRotationY, presentation.Return);
+                yield return _battle.StartCoroutine(tail.RunAll(_battle));
+            }
             actor.Anim?.PlayIdleAnimation();
         }
 
-        if (!deliveryStarted) ResolveDelivery();
+        // 순차 타격은 끊겼거나 경로 끝에 못 닿은 대상도 여기서 1회 확정한다(피격 연출 포함).
+        if (sequentialHits) TriggerSequentialHits(1f);
+        else if (!deliveryStarted) ResolveDelivery();
         if (deliveryRoutine != null) yield return deliveryRoutine;
+        foreach (Coroutine sequentialRoutine in sequentialRoutines) yield return sequentialRoutine;
 
         for (int i = 0; i < pairCount; i++)
         {
@@ -1272,14 +1574,21 @@ public sealed partial class SkillPresentationDirector
         director.playableAsset = timeline;
 
         Animator animator = actor.Anim != null ? actor.Anim.Animator : actor.GetComponentInChildren<Animator>();
-        if (animator == null) return;
+        PresentationSignalReceiver receiver = null;
 
         // Animation Track을 이 캐릭터의 Animator에 바인딩한다(바인딩은 director 인스턴스에 저장 — 공유 에셋을 뮤테이트하지 않음).
         foreach (TrackAsset track in timeline.GetOutputTracks())
         {
-            if (track is AnimationTrack)
+            if (track is AnimationTrack && animator != null)
             {
                 director.SetGenericBinding(track, animator);
+            }
+            else if (track is PresentationMarkerTrack markerTrack
+                     && (markerTrack.Role == PresentationMarkerTrackRole.Sfx ||
+                         markerTrack.Role == PresentationMarkerTrackRole.GameplayEvents))
+            {
+                if (receiver == null) receiver = EnsureSignalReceiver(actor);
+                director.SetGenericBinding(track, receiver);
             }
         }
     }
@@ -1405,6 +1714,7 @@ public sealed partial class SkillPresentationDirector
             PlaybackSpeed = _battle.CurrentBattleSpeed,
             HitIndex = 0,
             ReviveTarget = actor.PendingReviveTarget,
+            Presentation = presentation,
         };
 
         // State 게이트 불필요 — Timeline이 시점을 소유하고 by-id 발화가 게이트를 우회한다 → expectedHash 0.
@@ -1468,9 +1778,20 @@ public sealed partial class SkillPresentationDirector
         // 우선순위: 커스텀 시퀀스 레지스트리(위) > Timeline 레일(여기) > 기본 경로(아래).
         bool forceAnimatorRail = _battle.PresentationCatalog != null
                                  && _battle.PresentationCatalog.ForceAnimatorRail;
-        if (presentation != null && presentation.IsTimelineRail && !forceAnimatorRail)
+        bool unsupportedMovingTimeline = presentation?.PresentationArchetype == PresentationArchetype.MovingAttack &&
+            (presentation.MovingAttack == null || !presentation.MovingAttack.Enabled ||
+             presentation.MovingAttack.HitMode != MovingAttackHitMode.SingleTarget);
+        if (presentation != null && presentation.IsTimelineRail && !forceAnimatorRail && !unsupportedMovingTimeline)
         {
-            if (presentation.PresentationArchetype == PresentationArchetype.Melee)
+            if (presentation.PresentationArchetype == PresentationArchetype.MovingAttack &&
+                presentation.MovingAttack?.Enabled == true)
+            {
+                yield return RunMovingAttackTimelineRailRoutine(
+                    actor, target, skill, presentation, onHitCallback, deliveryGate,
+                    targetTransform, targetPosition, playTargetHitAnimation,
+                    actorAnim, movement, originPosition, originRotationY);
+            }
+            else if (presentation.PresentationArchetype == PresentationArchetype.Melee)
             {
                 yield return RunMeleeTimelineRailRoutine(
                     actor, target, skill, presentation, onHitCallback, deliveryGate,
@@ -1481,8 +1802,11 @@ public sealed partial class SkillPresentationDirector
             {
                 // Animator 레일과 같은 회전 규칙: Move가 켜진 회전형 유닛만 재생 전에 대상 쪽으로 돌고, 끝나면 원래 방향으로 돌아온다.
                 // 비-Melee Timeline은 이동하지 않는다. 복귀는 빈 MoveReturn 대신 현재(Idle) 애니메이션을 유지한다.
+                TimelineAsset movementTimeline = presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName);
+                bool timelineOwnsMove = HasTimelineMove(movementTimeline);
+                bool timelineOwnsReturn = HasTimelineReturn(movementTimeline);
                 bool rotateForTimeline = (presentation.Move?.Enabled ?? true) && shouldRotate;
-                if (rotateForTimeline)
+                if (rotateForTimeline && !timelineOwnsMove)
                 {
                     var approach = new ActionSequenceRunner();
                     EnqueueSkillApproach(approach, actor, target, actorAnim, movement, false, true,
@@ -1493,10 +1817,12 @@ public sealed partial class SkillPresentationDirector
                 var playbackResult = new TimelineRailPlaybackResult();
                 yield return RunTimelineRailRoutine(actor, target, skill, presentation, onHitCallback, deliveryGate,
                     targetTransform, targetPosition, playTargetHitAnimation, playbackResult: playbackResult,
-                    presentationTargets: presentationTargets);
+                    presentationTargets: presentationTargets, movementOrigin: originPosition,
+                    movementOriginRotation: Quaternion.Euler(0f, originRotationY, 0f),
+                    movement: movement, shouldMove: shouldMove);
 
                 // 피격/사망으로 끊긴 경우 Hit/Dead 반응을 덮지 않도록 복귀 회전을 생략한다.
-                if (rotateForTimeline && actor != null && !actor.IsDead && !playbackResult.Interrupted)
+                if (rotateForTimeline && !timelineOwnsReturn && actor != null && !actor.IsDead && !playbackResult.Interrupted)
                 {
                     var tail = new ActionSequenceRunner();
                     EnqueueSkillReturn(tail, actorAnim, movement, false, true, originPosition, originRotationY,
@@ -1510,6 +1836,11 @@ public sealed partial class SkillPresentationDirector
         {
             Debug.LogWarning(
                 $"[SkillPresentation] Kill Switch로 Timeline Rail을 Animator Rail로 우회합니다. skill={presentation.SkillIndex}",
+                presentation);
+        }
+        else if (presentation != null && presentation.IsTimelineRail && unsupportedMovingTimeline)
+        {
+            Debug.LogWarning($"[PathA] 지원하지 않는 MovingAttack 설정은 Animator 레일로 재생합니다: {presentation.SkillIndex}",
                 presentation);
         }
 
@@ -1988,7 +2319,8 @@ public sealed partial class SkillPresentationDirector
             applied = true;
             for (int i = 0; i < pairCount; i++)
             {
-                new ResolveHitAction(actor, contexts[i]?.Target, hitCallbacks[i], "Hit", battleSpeed, visual)
+                new ResolveHitAction(actor, contexts[i]?.Target, hitCallbacks[i], "Hit", battleSpeed, visual,
+                        contexts[i]?.Role ?? DamageRole.Primary)
                     .ExecuteImmediate();
             }
         };
@@ -2067,12 +2399,42 @@ public sealed partial class SkillPresentationDirector
 
         bool forceAnimatorRail = _battle.PresentationCatalog != null
                                  && _battle.PresentationCatalog.ForceAnimatorRail;
-        bool unsupportedMovingTimeline = presentation?.PresentationArchetype == PresentationArchetype.MovingAttack;
+        MovingAttackPlan movingTimelinePlan = null;
+        TimelineMovingAttackSpan movingTimelineSpan = null;
+        bool movingTimelineRequested = presentation?.PresentationArchetype == PresentationArchetype.MovingAttack;
+        MovingAttackHitMode? movingHitMode = presentation?.MovingAttack?.HitMode;
+        if (movingTimelineRequested && presentation.IsTimelineRail &&
+            (movingHitMode == MovingAttackHitMode.SingleTarget || movingHitMode == MovingAttackHitMode.SequentialAoE) &&
+            presentation.Move?.Enabled == true && movement != null)
+        {
+            var candidates = new List<BattleCharactor>();
+            for (int i = 0; i < pairCount; i++)
+                if (contexts[i]?.Target != null) candidates.Add(contexts[i].Target);
+            TimelineAsset movingTimeline = TryBuildMovingAttackPlan(actor, actorAnim, presentation, candidates,
+                    out movingTimelinePlan)
+                ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+            movingTimelineSpan = movingTimeline != null
+                ? CollectMovingAttackSpan(movingTimeline, movingTimelinePlan.PathPoints,
+                    movingTimelinePlan.Presentation.PathSampleCount)
+                : null;
+            List<PlanReturnSpan> movingReturnSpans = movingTimeline != null ? CollectPlanReturnSpans(movingTimeline) : null;
+            if (movingReturnSpans == null ||
+                movingReturnSpans.Exists(span => movingTimelineSpan != null && span.Start.time < movingTimelineSpan.End.time))
+                movingTimelineSpan = null;
+        }
+        bool unsupportedMovingTimeline = movingTimelineRequested && movingTimelineSpan == null;
         if (presentation != null && presentation.IsTimelineRail && !forceAnimatorRail && !unsupportedMovingTimeline)
         {
             yield return RunAoETimelineRailRoutine(
                 actor, primaryTarget, skill, presentation, deliveryGate,
-                contexts, hitCallbacks, pairCount, projectileVisual);
+                contexts, hitCallbacks, pairCount, projectileVisual,
+                movingTimelineSpan != null ? movingTimelinePlan : null, movement, originRotationY);
+            if (movingTimelineSpan != null)
+            {
+                // Animator MovingAttack 경로와 같은 후딜: 경과=곡선 이동 구간, TotalDelay 잔여(최소 0.2초)를 기다린다.
+                float movingElapsed = (float)(movingTimelineSpan.End.time - movingTimelineSpan.Start.time);
+                yield return _battle.WaitForBattleSeconds(Mathf.Max(skill.TotalDelay - movingElapsed, 0.2f));
+            }
             yield break;
         }
         if (presentation != null && presentation.IsTimelineRail && forceAnimatorRail)
@@ -2084,7 +2446,7 @@ public sealed partial class SkillPresentationDirector
         else if (presentation != null && presentation.IsTimelineRail && unsupportedMovingTimeline)
         {
             Debug.LogWarning(
-                $"[SkillPresentation/AoE] MovingAttack Timeline 핸드오프는 아직 지원하지 않아 Animator Rail을 사용합니다. skill={presentation.SkillIndex}",
+                $"[SkillPresentation/AoE] MovingAttack Timeline 구성이 유효하지 않아 Animator 레일을 사용합니다. skill={presentation.SkillIndex}",
                 presentation);
         }
 

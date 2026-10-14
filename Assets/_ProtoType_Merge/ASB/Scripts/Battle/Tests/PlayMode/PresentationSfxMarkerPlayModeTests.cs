@@ -83,11 +83,57 @@ public class PresentationSfxMarkerPlayModeTests
         }
     }
 
+    [UnityTest]
+    public IEnumerator Director_BoundSoundTrack_RoutesSfx()
+    {
+        Type markerType = FindType("PresentationSfxMarker");
+        Type receiverType = FindType("PresentationSignalReceiver");
+        Type trackType = FindType("PresentationMarkerTrack");
+        FieldInfo sinkField = FindType("PresentationSfxPlayer").GetField(
+            "SinkOverride", BindingFlags.NonPublic | BindingFlags.Static);
+        object previousSink = sinkField.GetValue(null);
+        var heard = new List<string>();
+        var actor = new GameObject("BoundSoundTrackTest");
+        var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+        try
+        {
+            sinkField.SetValue(null, new Action<string>(key => heard.Add(key)));
+            timeline.durationMode = TimelineAsset.DurationMode.FixedLength;
+            timeline.fixedDuration = 0.3d;
+            TrackAsset soundTrack = timeline.CreateTrack(trackType, null, "Sound");
+            Type roleType = FindType("PresentationMarkerTrackRole");
+            trackType.GetMethod("SetRole").Invoke(soundTrack,
+                new[] { Enum.Parse(roleType, "Sfx") });
+            AddMarker(soundTrack, markerType, 0.1d, "BoundSound");
+
+            var receiver = (MonoBehaviour)actor.AddComponent(receiverType);
+            var director = actor.AddComponent<PlayableDirector>();
+            director.playableAsset = timeline;
+            director.SetGenericBinding(soundTrack, receiver);
+            Configure(receiverType, receiver);
+            director.Play();
+            float deadline = Time.realtimeSinceStartup + 0.5f;
+            while (!heard.Contains("BoundSound") && Time.realtimeSinceStartup < deadline)
+                yield return null;
+
+            Assert.That(heard.Count(key => key == "BoundSound"), Is.EqualTo(1));
+        }
+        finally
+        {
+            sinkField.SetValue(null, previousSink);
+            UnityEngine.Object.Destroy(actor);
+            UnityEngine.Object.Destroy(timeline);
+        }
+    }
+
     private static void AddMarker(TimelineAsset timeline, Type markerType, double time, string key)
+        => AddMarker(timeline.markerTrack, markerType, time, key);
+
+    private static void AddMarker(TrackAsset track, Type markerType, double time, string key)
     {
         MethodInfo create = typeof(TrackAsset).GetMethods()
             .Single(method => method.Name == "CreateMarker" && method.IsGenericMethodDefinition);
-        object marker = create.MakeGenericMethod(markerType).Invoke(timeline.markerTrack, new object[] { time });
+        object marker = create.MakeGenericMethod(markerType).Invoke(track, new object[] { time });
         markerType.GetMethod("Configure").Invoke(marker, new object[] { key });
     }
 

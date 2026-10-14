@@ -97,6 +97,15 @@ namespace ASB.Work.EditorTools.Jig
                 case PresentationSectionMarker section:
                     return $"Section · {section.SectionId} · {section.Boundary}";
 
+                case PresentationHoldMarker hold:
+                    return $"Hold · {hold.DurationSeconds:0.##}s";
+
+                case PresentationMoveMarker move:
+                    return $"Move · {move.Boundary} · Target {move.TargetSlot}";
+
+                case PresentationReturnMarker returnMarker:
+                    return $"Return · {returnMarker.Boundary}";
+
                 case CueMarker cue:
                     string phase = string.IsNullOrWhiteSpace(cue.PhaseLabel) ? string.Empty : " · " + cue.PhaseLabel;
                     return "Jig Cue · " + (string.IsNullOrWhiteSpace(cue.CueName) ? "(이름 없음)" : cue.CueName) + phase;
@@ -119,6 +128,8 @@ namespace ASB.Work.EditorTools.Jig
             }
             if (marker is PresentationSpeedMarker) return new Color(0.35f, 0.85f, 0.40f);
             if (marker is PresentationSfxMarker) return new Color(0.98f, 0.68f, 0.22f);
+            if (marker is PresentationMoveMarker) return new Color(0.28f, 0.80f, 0.72f);
+            if (marker is PresentationReturnMarker) return new Color(0.85f, 0.52f, 0.88f);
             if (marker is PresentationSectionMarker section)
                 return section.Boundary == PresentationSectionBoundary.Start
                     ? new Color(0.35f, 0.55f, 1.00f)
@@ -208,6 +219,8 @@ namespace ASB.Work.EditorTools.Jig
             if (marker is CueMarker) return 20;
             if (marker is PresentationSfxMarker) return 21;
             if (marker is PresentationSpeedMarker) return 30;
+            if (marker is PresentationMoveMarker) return 40;
+            if (marker is PresentationReturnMarker) return 41;
             return 100;
         }
     }
@@ -455,6 +468,36 @@ namespace ASB.Work.EditorTools.Jig
 
     [CustomTimelineEditor(typeof(PresentationSectionMarker))]
     public sealed class PresentationSectionMarkerStackEditor : MarkerEditor
+    {
+        public override MarkerDrawOptions GetMarkerOptions(IMarker marker) =>
+            TimelineMarkerStackOverlay.Options(marker);
+
+        public override void DrawOverlay(IMarker marker, MarkerUIStates uiState, MarkerOverlayRegion region) =>
+            TimelineMarkerStackOverlay.Draw(marker, region);
+    }
+
+    [CustomTimelineEditor(typeof(PresentationHoldMarker))]
+    public sealed class PresentationHoldMarkerStackEditor : MarkerEditor
+    {
+        public override MarkerDrawOptions GetMarkerOptions(IMarker marker) =>
+            TimelineMarkerStackOverlay.Options(marker);
+
+        public override void DrawOverlay(IMarker marker, MarkerUIStates uiState, MarkerOverlayRegion region) =>
+            TimelineMarkerStackOverlay.Draw(marker, region);
+    }
+
+    [CustomTimelineEditor(typeof(PresentationMoveMarker))]
+    public sealed class PresentationMoveMarkerStackEditor : MarkerEditor
+    {
+        public override MarkerDrawOptions GetMarkerOptions(IMarker marker) =>
+            TimelineMarkerStackOverlay.Options(marker);
+
+        public override void DrawOverlay(IMarker marker, MarkerUIStates uiState, MarkerOverlayRegion region) =>
+            TimelineMarkerStackOverlay.Draw(marker, region);
+    }
+
+    [CustomTimelineEditor(typeof(PresentationReturnMarker))]
+    public sealed class PresentationReturnMarkerStackEditor : MarkerEditor
     {
         public override MarkerDrawOptions GetMarkerOptions(IMarker marker) =>
             TimelineMarkerStackOverlay.Options(marker);

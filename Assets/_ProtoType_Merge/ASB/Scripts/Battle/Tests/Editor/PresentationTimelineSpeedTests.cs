@@ -125,6 +125,21 @@ public class PresentationTimelineSpeedTests
         Assert.That(SpeedAt(timeline, 2.5d), Is.EqualTo(1.0f).Within(1e-5f), "Section 중간재생도 이전 마커 상속");
     }
 
+    [Test]
+    public void SpeedAt_CustomSpeedTrack_ReadsMarkerAtOriginalTime()
+    {
+        TimelineAsset timeline = NewTimeline();
+        Type trackType = FindRuntimeType("PresentationMarkerTrack");
+        TrackAsset speedTrack = Track(timeline.CreateTrack(trackType, null, "Speed"));
+        Type roleType = FindRuntimeType("PresentationMarkerTrackRole");
+        trackType.GetMethod("SetRole").Invoke(speedTrack,
+            new[] { Enum.Parse(roleType, "Speed") });
+
+        CreateSpeedMarker(speedTrack, 0.5d, 0.25f);
+        Assert.That(SpeedAt(timeline, 0.499d), Is.EqualTo(1f).Within(1e-5f));
+        Assert.That(SpeedAt(timeline, 0.5d), Is.EqualTo(0.25f).Within(1e-5f));
+    }
+
     private float SpeedAt(TimelineAsset timeline, double time)
     {
         object r = SpeedType.GetMethod("SpeedAt").Invoke(null, new object[] { timeline, time });
@@ -141,12 +156,15 @@ public class PresentationTimelineSpeedTests
     }
 
     private static void CreateSpeedMarker(TimelineAsset timeline, double time, float speed)
+        => CreateSpeedMarker(timeline.markerTrack, time, speed);
+
+    private static void CreateSpeedMarker(TrackAsset track, double time, float speed)
     {
         MethodInfo create = typeof(TrackAsset).GetMethods(BindingFlags.Instance | BindingFlags.Public)
             .First(m => m.Name == "CreateMarker" && !m.IsGenericMethod
                         && m.GetParameters().Length == 2
                         && m.GetParameters()[0].ParameterType == typeof(Type));
-        object marker = create.Invoke(timeline.markerTrack, new object[] { SpeedMarkerType, time });
+        object marker = create.Invoke(track, new object[] { SpeedMarkerType, time });
         SpeedMarkerType.GetMethod("Configure").Invoke(marker, new object[] { speed });
     }
 

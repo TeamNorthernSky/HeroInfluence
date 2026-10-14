@@ -68,6 +68,46 @@ namespace ASB.Work.EditorTools.Jig
         private const string OnHitFunctionName = "AniEvent_OnHit";
         private const double FallbackDeliveryRatio = 0.6d;
 
+        /// <summary>
+        /// Attack-only 굽기 범위와 무관하게 수동 저작용 Runtime Timeline을 만든다.
+        /// 기존 Variant나 연출 데이터는 변경하지 않는다.
+        /// </summary>
+        public static TimelineAsset CreateEmptyRuntimeTimeline(
+            SkillPresentationData data, GameObject characterPrefab, out string error)
+        {
+            error = null;
+            if (data == null) { error = "연출 자산이 비어 있습니다."; return null; }
+            if (characterPrefab == null) { error = "캐릭터 프리팹이 비어 있습니다."; return null; }
+
+            string path = RuntimePath(data, ResolveBakeKey(characterPrefab));
+            if (AssetDatabase.LoadMainAssetAtPath(path) != null || System.IO.File.Exists(path))
+            {
+                error = $"이미 Runtime Timeline Variant가 있습니다: {path}\n기존 에셋을 열어 편집하거나 이름을 정한 뒤 다시 시도하세요.";
+                return null;
+            }
+
+            EnsureFolder();
+            try
+            {
+                var timeline = ScriptableObject.CreateInstance<TimelineAsset>();
+                AssetDatabase.CreateAsset(timeline, path);
+                timeline.CreateTrack<AnimationTrack>(null, "Animation");
+                timeline.CreateMarkerTrack();
+                EditorUtility.SetDirty(timeline);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.ImportAsset(path);
+                return timeline;
+            }
+            catch (System.Exception e)
+            {
+                if (AssetDatabase.LoadMainAssetAtPath(path) != null)
+                    AssetDatabase.DeleteAsset(path);
+                error = $"빈 Runtime Timeline 생성에 실패했습니다: {e.Message}";
+                Debug.LogException(e);
+                return null;
+            }
+        }
+
         public static TimelineAsset Bake(SkillPresentationData data, GameObject characterPrefab, out string error)
         {
             error = null;
@@ -93,8 +133,7 @@ namespace ASB.Work.EditorTools.Jig
             }
 
             // 3) 런타임 폴더 + 결정적 경로. 기존 Variant는 덮어쓰지 않는다(저작 내용 보호).
-            string safeKey = string.IsNullOrEmpty(characterKey) ? "Any" : SanitizeFileName(characterKey);
-            string path = $"{RuntimeFolder}/Skill{data.SkillIndex}_{safeKey}.playable";
+            string path = RuntimePath(data, characterKey);
             if (AssetDatabase.LoadAssetAtPath<TimelineAsset>(path) != null)
             {
                 error = $"이미 Runtime Timeline Variant가 있습니다: {path}\n기존 Variant를 열어 편집하거나 명시적으로 이름을 바꾼 뒤 다시 시도하세요.";
@@ -565,6 +604,12 @@ namespace ASB.Work.EditorTools.Jig
             {
                 AssetDatabase.CreateFolder(RuntimeFolderParent, RuntimeFolderName);
             }
+        }
+
+        private static string RuntimePath(SkillPresentationData data, string characterKey)
+        {
+            string safeKey = string.IsNullOrEmpty(characterKey) ? "Any" : SanitizeFileName(characterKey);
+            return $"{RuntimeFolder}/Skill{data.SkillIndex}_{safeKey}.playable";
         }
 
         private static string SanitizeFileName(string s)
