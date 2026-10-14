@@ -189,7 +189,7 @@ MonoBehaviour:
   chatId: 4060010
   gridManager: {fileID: 0}
   interactionRadius: 1
-  replacementEnemyGroupKey: A2FEP001
+  replacementEnemyGroupKey: A2FEP007
 --- !u!1001 &1714473891093552149
 PrefabInstance:
   m_ObjectHideFlags: 0
