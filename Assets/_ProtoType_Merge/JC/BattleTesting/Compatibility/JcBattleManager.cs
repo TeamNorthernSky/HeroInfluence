@@ -4,6 +4,9 @@
 // 동일 이름의 함수는 원본 함수와 1:1 대응합니다. 별도 변경 함수에는 차이를 추가로 명시합니다.
 // 목적: ASB 원본과 본게임 참조를 수정하지 않고 테스트 전투 제어를 독립시킵니다.
 // 공용 데이터·유닛·모델·연출 에셋은 원본을 참조합니다. 이 파일은 자동 동기화되지 않습니다.
+// [사용 범위 / 2026-10-13] JC_BattleTestScene 전용 실행기. 본게임 TmpBattleScene/TutorialBattleScene은 ASB BattleManager를 사용합니다.
+// ASB 3a636dee가 테스트 반격 규칙도 맞췄으며, CounterattackRules/BattleCharactor는 양쪽 공용입니다.
+// 이 파일이 테스트용이어도 BattleTesting/Vfx의 본게임 공유 재질 3개·JcYuliaEnergy.shader까지 일괄 삭제하면 안 됩니다.
 using System;
 using System.Collections;
 using System.Collections.Generic;

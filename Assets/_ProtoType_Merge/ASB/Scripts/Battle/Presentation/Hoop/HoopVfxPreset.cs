@@ -2,8 +2,11 @@ using UnityEngine;
 
 /// <summary>
 /// 절망의 굴렁쇠(FV40005) 외형·돌진·파괴 연출 설정. 수치·대상 판정은 소유하지 않는다.
-/// 원본: JC_YuliaVfxPreset(JC 전투 테스트 씬 전용). 재질은 JC 에셋을 읽기 참조만 한다
-/// — JC 에셋을 제거하게 되면 그때 재질·셰이더를 복사하고 셰이더 이름·GUID를 재연결한다.
+/// 원본: JcYuliaVfxPreset. 실행 설정은 본게임용으로 독립되어 있다.
+/// [2026-10-13 JC 결정] 재질은 현재 JC 경로의 공유 참조를 유지하고, 1차 완성 후 리팩토링을 검토한다.
+/// HoopVfxPreset.asset -> JC/BattleTesting/Vfx/JC_YuliaEnergy.mat, JC_YuliaSmoke.mat, JC_DespairWheelFrame.mat.
+/// 앞의 두 재질은 JcYuliaEnergy.shader도 공유한다. 테스트 폴더라는 이유로 이 자산·meta를 삭제하면 본게임도 깨진다.
+/// JC 프리셋의 수치 변경은 이 프리셋과 자동 동기화되지 않지만, 공유 재질·셰이더 수정은 양쪽에 영향을 준다.
 /// </summary>
 [CreateAssetMenu(menuName = "ASB/Battle/Hoop VFX Preset", fileName = "HoopVfxPreset")]
 public sealed class HoopVfxPreset : ScriptableObject

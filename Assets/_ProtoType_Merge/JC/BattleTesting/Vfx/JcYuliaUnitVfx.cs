@@ -6,6 +6,9 @@ namespace JC.BattleTesting.Vfx
     // 대응: ASB AmplifierOrbHealthVisual.HandleHpChanged, BattleCharactor.OnHpChanged/OnDied,
     // UnitVisualProfile의 외형/소켓. 원본 모델은 JC 런타임 인스턴스에서만 제어합니다.
     // 참고: motion_09(굴렁쇠), motion_10(정지장), 애니메이션 기획 slide 11~12(증폭기 소멸/복구).
+    // [이름 기반 호환 참조 / 2026-10-13] ASB HoopWheelVisual.Start가 "JcYuliaUnitVfx"를 조회해
+    // JC 테스트씬의 이중 외형을 방지합니다. 클래스 이름 변경·제거 시 그 문자열 검사도 함께 검토하십시오.
+    // 본게임 외형 실행은 ASB HoopWheelVisual 담당이며, 이 클래스 자체를 본게임에서 실행하는 구조는 아닙니다.
     public sealed class JcYuliaUnitVfx : MonoBehaviour
     {
         private BattleCharactor actor;
