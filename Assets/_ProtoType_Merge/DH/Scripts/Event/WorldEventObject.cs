@@ -2,9 +2,11 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+[ExecuteAlways]
 public sealed class WorldEventObject : MonoBehaviour
 {
     public static event Action<WorldEventObject, PartyGridMover> EventInteracted;
+    private const string EditorPreviewVisualName = "__WorldEventNpcPreview";
 
     [Header("World Event")]
     [SerializeField] private string worldEventId;
@@ -22,6 +24,9 @@ public sealed class WorldEventObject : MonoBehaviour
     private GameObject spawnedNpcVisual;
     private Coroutine npcVisualRetryCoroutine;
     private bool isTriggering;
+#if UNITY_EDITOR
+    private bool editorPreviewRefreshQueued;
+#endif
 
     public string WorldEventId => string.IsNullOrWhiteSpace(worldEventId) ? string.Empty : worldEventId.Trim();
     public bool OneShot => oneShot;
@@ -47,12 +52,20 @@ public sealed class WorldEventObject : MonoBehaviour
 
         if (Application.isPlaying && spawnNpcVisualOnEnable)
             RequestNpcVisualRefresh();
+        else if (!Application.isPlaying)
+            QueueEditorNpcVisualRefresh();
     }
 
     private void OnDisable()
     {
         worldEventRegistry?.Unregister(this);
         StopNpcVisualRetry();
+    }
+
+    private void OnValidate()
+    {
+        if (!Application.isPlaying)
+            QueueEditorNpcVisualRefresh();
     }
 
     public Vector2Int GetCurrentGrid(GridManager targetGridManager = null)
@@ -76,6 +89,8 @@ public sealed class WorldEventObject : MonoBehaviour
 
         if (Application.isPlaying && spawnNpcVisualOnEnable)
             RequestNpcVisualRefresh();
+        else if (!Application.isPlaying)
+            QueueEditorNpcVisualRefresh();
     }
 
     public bool TryTrigger(PartyGridMover party, Action<WorldEventObject> closedCallback = null)
@@ -114,7 +129,10 @@ public sealed class WorldEventObject : MonoBehaviour
     [ContextMenu("Refresh NPC Visual")]
     public void RefreshNpcVisual()
     {
-        TryRefreshNpcVisual();
+        if (Application.isPlaying)
+            TryRefreshNpcVisual();
+        else
+            RefreshEditorNpcVisual();
     }
 
     private void RequestNpcVisualRefresh()
@@ -155,19 +173,104 @@ public sealed class WorldEventObject : MonoBehaviour
             return false;
 
         Transform root = visualRoot != null ? visualRoot : transform;
-        if (spawnedNpcVisual != null)
-        {
-            if (Application.isPlaying)
-                Destroy(spawnedNpcVisual);
-            else
-                DestroyImmediate(spawnedNpcVisual);
-        }
+        DestroyNpcVisual(spawnedNpcVisual);
+        DestroyNamedChild(root, EditorPreviewVisualName);
 
-        spawnedNpcVisual = Instantiate(prefab, root);
-        spawnedNpcVisual.transform.localPosition = Vector3.zero;
-        spawnedNpcVisual.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-        spawnedNpcVisual.transform.localScale = Vector3.one;
+        spawnedNpcVisual = CreateNpcVisual(prefab, root, string.Empty, HideFlags.None);
         return true;
+    }
+
+    private void QueueEditorNpcVisualRefresh()
+    {
+#if UNITY_EDITOR
+        if (editorPreviewRefreshQueued || !CanUseEditorPreview())
+            return;
+
+        editorPreviewRefreshQueued = true;
+        UnityEditor.EditorApplication.delayCall += RefreshQueuedEditorNpcVisual;
+#endif
+    }
+
+#if UNITY_EDITOR
+    private void RefreshQueuedEditorNpcVisual()
+    {
+        editorPreviewRefreshQueued = false;
+        if (this == null || Application.isPlaying)
+            return;
+
+        RefreshEditorNpcVisual();
+    }
+#endif
+
+    private void RefreshEditorNpcVisual()
+    {
+        if (!CanUseEditorPreview())
+            return;
+
+        ResolveReferences();
+
+        Transform root = visualRoot != null ? visualRoot : transform;
+        DestroyNamedChild(root, EditorPreviewVisualName);
+
+        if (!TryResolveTemplate(out DHWorldEventTemplate template) || template.NpcType < 0)
+            return;
+
+        LevelPrefabRegistry registry = ResolvePrefabRegistry();
+        if (registry == null || !registry.TryGetWorldEventNpcPrefab(template.NpcType, out GameObject prefab) || prefab == null)
+            return;
+
+        spawnedNpcVisual = CreateNpcVisual(
+            prefab,
+            root,
+            EditorPreviewVisualName,
+            HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild);
+    }
+
+    private bool CanUseEditorPreview()
+    {
+        return !Application.isPlaying
+            && gameObject != null
+            && gameObject.scene.IsValid()
+            && gameObject.scene.isLoaded;
+    }
+
+    private static GameObject CreateNpcVisual(GameObject prefab, Transform root, string overrideName, HideFlags hideFlags)
+    {
+        GameObject instance = Instantiate(prefab, root);
+        if (!string.IsNullOrWhiteSpace(overrideName))
+            instance.name = overrideName;
+
+        instance.hideFlags = hideFlags;
+        instance.transform.localPosition = Vector3.zero;
+        instance.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+        instance.transform.localScale = Vector3.one;
+        return instance;
+    }
+
+    private static void DestroyNpcVisual(GameObject visual)
+    {
+        if (visual == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(visual);
+        else
+            DestroyImmediate(visual);
+    }
+
+    private static void DestroyNamedChild(Transform root, string childName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(childName))
+            return;
+
+        for (int i = root.childCount - 1; i >= 0; i--)
+        {
+            Transform child = root.GetChild(i);
+            if (child == null || child.name != childName)
+                continue;
+
+            DestroyNpcVisual(child.gameObject);
+        }
     }
 
     private void StopNpcVisualRetry()
@@ -234,7 +337,9 @@ public sealed class WorldEventObject : MonoBehaviour
         if (string.IsNullOrWhiteSpace(WorldEventId))
             return false;
 
-        DHWorldEventCatalog catalog = DHWorldEventCatalog.Instance;
+        DHWorldEventCatalog catalog = DHWorldEventCatalog.Instance != null
+            ? DHWorldEventCatalog.Instance
+            : FindFirstObjectByType<DHWorldEventCatalog>();
         return catalog != null && catalog.TryGetEvent(WorldEventId, out template) && template != null;
     }
 

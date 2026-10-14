@@ -9,6 +9,8 @@ public interface IGridItemObject
 
 public class ItemObject : MonoBehaviour, IGridItemObject
 {
+    private const string PickupSfxKey = "Explore_Item";
+
     public ResourceType resourceType;
     public int amount;
 
@@ -50,6 +52,7 @@ public class ItemObject : MonoBehaviour, IGridItemObject
 
         isCollecting = true;
         Game.Economy?.Add(resourceType, amount);
+        AudioManager.Instance?.PlaySfx(PickupSfxKey);
 
         ItemRegistry.PickupMotionSettings motion = ResolvePickupMotion();
 
