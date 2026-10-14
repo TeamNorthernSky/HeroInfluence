@@ -5,7 +5,6 @@ using UnityEngine;
 public class MoveRangeController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private ExplorationMovementModeController modeController;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private Transform lineRoot;
@@ -31,8 +30,7 @@ public class MoveRangeController : MonoBehaviour
     private Coroutine pendingDelayedRefreshCoroutine;
     private bool isMoverMoving;
 
-    public bool IsMoveRangeActive =>
-        modeController != null && modeController.UsesMoveRange;
+    public bool IsMoveRangeActive => true;
 
     private readonly struct GridLineSegment
     {
@@ -177,9 +175,6 @@ public class MoveRangeController : MonoBehaviour
 
     private void ResolveReferences()
     {
-        if (modeController == null)
-            modeController = FindFirstObjectByType<ExplorationMovementModeController>();
-
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
 
@@ -311,9 +306,6 @@ public class MoveRangeController : MonoBehaviour
             return false;
 
         if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
-            return false;
-
-        if (!TutorialMovementConstraint.IsSelectionAllowed(grid, grid, mover))
             return false;
 
         if (IsOtherPartyCell(grid, mover))
