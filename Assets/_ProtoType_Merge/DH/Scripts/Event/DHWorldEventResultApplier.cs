@@ -195,6 +195,9 @@ public static class DHWorldEventResultApplier
         if (rewardType == DHWorldEventRewardType.CurrentIP)
             return ApplyCurrentIpToParty(amount, party);
 
+        if (rewardType == DHWorldEventRewardType.CurrentHP)
+            return ApplyCurrentHpToParty(amount, party);
+
         if (!DHWorldEventCodeMap.TryGetRewardResourceType(rewardType, out ResourceType resourceType))
             return false;
 
@@ -223,6 +226,28 @@ public static class DHWorldEventResultApplier
                 continue;
 
             appliedAny |= repository.ApplyEventRewardStats(unitIndex, 0f, 0f, 0f, amount, 0f);
+        }
+
+        return appliedAny;
+    }
+
+    private static bool ApplyCurrentHpToParty(int amount, PartyGridMover party)
+    {
+        if (!TryGetTargetUnitIndices(0, party, out IReadOnlyList<int> unitIndices))
+            return false;
+
+        PersistentUnitRepository repository = PersistentUnitRepository.Instance;
+        if (repository == null)
+            return false;
+
+        bool appliedAny = false;
+        for (int i = 0; i < unitIndices.Count; i++)
+        {
+            int unitIndex = unitIndices[i];
+            if (unitIndex <= 0)
+                continue;
+
+            appliedAny |= repository.ApplyEventRewardStats(unitIndex, 0f, 0f, 0f, 0f, amount);
         }
 
         return appliedAny;

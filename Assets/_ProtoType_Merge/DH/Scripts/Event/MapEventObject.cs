@@ -77,8 +77,15 @@ public class MapEventObject : MonoBehaviour
 
         // Map events are one-shot per cell and are restored by MapProgressRepository completion keys.
         MarkEventCompleted();
+        RequestMoveRangeRefresh();
         Destroy(gameObject);
         return true;
+    }
+
+    private static void RequestMoveRangeRefresh()
+    {
+        MoveRangeController moveRangeController = UnityEngine.Object.FindFirstObjectByType<MoveRangeController>();
+        moveRangeController?.RequestRefreshAfterSceneSetup(2);
     }
 
     private void MarkEventCompleted()

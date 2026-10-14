@@ -86,6 +86,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private Vector3 externalFocusWorldPosition;
 
     public bool IsExternalInputLocked => externalInputLocked;
+    public bool IsManualNavigationLocked => externalInputLocked || IsFollowTargetPartyMoving();
 
     public void SetFollowTarget(Transform target)
     {
@@ -228,6 +229,15 @@ public class QuarterViewCameraFollower : MonoBehaviour
         }
 
         if (JcPointerInput.Inside) HandleZoomInput();
+
+        bool manualNavigationBlocked = IsManualNavigationLocked;
+        if (manualNavigationBlocked)
+        {
+            edgeScrollVelocity = Vector3.zero;
+            JcPointerInput.ClearScroll(this);
+            return;
+        }
+
         HandleEdgeScrolling();
         if (JcPointerInput.Inside)
         {
@@ -761,6 +771,15 @@ public class QuarterViewCameraFollower : MonoBehaviour
             combatPromptService = FindFirstObjectByType<CombatPromptService>();
 
         return combatPromptService != null && combatPromptService.IsOpen;
+    }
+
+    private bool IsFollowTargetPartyMoving()
+    {
+        if (followTarget == null)
+            return false;
+
+        PartyGridMover mover = followTarget.GetComponentInParent<PartyGridMover>();
+        return mover != null && mover.IsMoving;
     }
 }
 

@@ -19,6 +19,7 @@ public class MoveRangeController : MonoBehaviour
     [SerializeField, Min(16)] private int maxSearchCells = 1000;
 
     private readonly HashSet<Vector2Int> reachableCells = new HashSet<Vector2Int>();
+    private readonly HashSet<Vector2Int> interactableTargetCells = new HashSet<Vector2Int>();
     private readonly Queue<Vector2Int> frontier = new Queue<Vector2Int>();
     private readonly Dictionary<Vector2Int, int> costs = new Dictionary<Vector2Int, int>();
     private readonly List<LineRenderer> linePool = new List<LineRenderer>();
@@ -220,6 +221,7 @@ public class MoveRangeController : MonoBehaviour
     public void ClearRange()
     {
         reachableCells.Clear();
+        interactableTargetCells.Clear();
         costs.Clear();
         frontier.Clear();
         gridLineSegments.Clear();
@@ -284,6 +286,12 @@ public class MoveRangeController : MonoBehaviour
                 if (costs.TryGetValue(next, out int knownCost) && knownCost <= nextCost)
                     continue;
 
+                if (IsInteractableTargetCell(next, mover))
+                {
+                    interactableTargetCells.Add(next);
+                    continue;
+                }
+
                 if (!CanEnterMoveRangeCell(next, mover))
                     continue;
 
@@ -305,6 +313,9 @@ public class MoveRangeController : MonoBehaviour
         if (gridManager.HasRegisteredObstacleOrGateBlocker(grid))
             return false;
 
+        if (gridManager.HasMoveRangeBlockingInteractionOccupant(grid, mover != null ? mover.transform : null))
+            return false;
+
         if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
             return false;
 
@@ -324,6 +335,20 @@ public class MoveRangeController : MonoBehaviour
             return false;
 
         return true;
+    }
+
+    private bool IsInteractableTargetCell(Vector2Int grid, PartyGridMover mover)
+    {
+        if (gridManager == null)
+            return false;
+
+        if (!gridManager.HasLevelGroundCell(grid))
+            return false;
+
+        if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
+            return false;
+
+        return gridManager.HasMoveRangeBlockingInteractionOccupant(grid, mover != null ? mover.transform : null);
     }
 
     private bool IsOtherPartyCell(Vector2Int grid, PartyGridMover mover)
@@ -364,6 +389,14 @@ public class MoveRangeController : MonoBehaviour
         gridLineSegments.Clear();
         gridLineKeys.Clear();
         foreach (Vector2Int grid in reachableCells)
+        {
+            AddGridLineSegment(grid, new Vector2Int(0, 1), new Vector2Int(1, 1));
+            AddGridLineSegment(grid, new Vector2Int(1, 1), new Vector2Int(1, 0));
+            AddGridLineSegment(grid, new Vector2Int(1, 0), new Vector2Int(0, 0));
+            AddGridLineSegment(grid, new Vector2Int(0, 0), new Vector2Int(0, 1));
+        }
+
+        foreach (Vector2Int grid in interactableTargetCells)
         {
             AddGridLineSegment(grid, new Vector2Int(0, 1), new Vector2Int(1, 1));
             AddGridLineSegment(grid, new Vector2Int(1, 1), new Vector2Int(1, 0));

@@ -972,6 +972,16 @@ public class GridManager : MonoBehaviour
         return HasItem(grid) || HasOutpost(grid) || HasEvent(grid) || HasWorldEvent(grid) || HasMainEvent(grid) || HasSubEvent(grid) || HasEnemy(grid) || HasHeroUnion(grid) || HasVillainUnionBase(grid);
     }
 
+    public bool HasMoveRangeBlockingInteractionOccupant(Vector2Int grid, Transform selfTransform = null)
+    {
+        return HasItem(grid)
+            || HasEvent(grid)
+            || HasWorldEvent(grid)
+            || HasMainEvent(grid)
+            || HasSubEvent(grid)
+            || HasEnemy(grid, selfTransform);
+    }
+
     public bool IsVisibleCell(Vector2Int grid)
     {
         return true;
