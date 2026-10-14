@@ -7,6 +7,8 @@ using UnityEngine;
 [RequireComponent(typeof(PartyComposition))]
 public class PartyGridMover : MonoBehaviour
 {
+    private const string MoveLoopSfxKey = "Explore_Move";
+
     [Header("References")]
     [SerializeField] private GridManager gridManager;
 
@@ -60,6 +62,7 @@ public class PartyGridMover : MonoBehaviour
     {
         LevelLoader.RuntimeLevelLoaded -= HandleRuntimeLevelLoaded;
         LevelZoneLayoutLoader.RuntimeLayoutLoaded -= HandleRuntimeLayoutLoaded;
+        StopMoveLoopSfx();
     }
 
     // [JC 추가 260511] 위치 영속화: PartyPersistentData.LastGrid가 있으면 그 위치로 복원
@@ -562,7 +565,22 @@ public class PartyGridMover : MonoBehaviour
             return;
 
         isMoving = moving;
+        if (isMoving)
+            PlayMoveLoopSfx();
+        else
+            StopMoveLoopSfx();
+
         MovementStateChanged?.Invoke(isMoving);
+    }
+
+    private static void PlayMoveLoopSfx()
+    {
+        AudioManager.Instance?.PlayLoopingSfx(MoveLoopSfxKey);
+    }
+
+    private static void StopMoveLoopSfx()
+    {
+        AudioManager.Instance?.StopLoopingSfx(MoveLoopSfxKey);
     }
 
     private void NotifyPathUpdated()

@@ -425,6 +425,9 @@ public static class DHGameStateRestoreService
         Object.FindFirstObjectByType<MinimapController>()?.Refresh();
         Object.FindFirstObjectByType<MinimapCameraViewportOverlay>()?.Refresh();
         Object.FindFirstObjectByType<InteractionCellOverlayController>()?.RequestRefresh();
+        MoveRangeController moveRangeController = Object.FindFirstObjectByType<MoveRangeController>();
+        moveRangeController?.RefreshForCurrentParty();
+        moveRangeController?.RequestRefreshAfterSceneSetup();
         Object.FindFirstObjectByType<PartyMovePointGaugeManager>()?.RefreshExistingParties();
         Object.FindFirstObjectByType<PartyMovePointWorldGaugeManager>()?.RefreshExistingParties();
     }
