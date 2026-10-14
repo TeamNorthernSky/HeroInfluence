@@ -16,7 +16,11 @@ MonoBehaviour:
   PresentationSchemaVersion: 1
   AnimationRail: 1
   PresentationArchetype: 2
-  SkillTimelines: []
+  SkillTimelines:
+  - CharacterKey: 10002
+    Timeline: {fileID: 11400000, guid: 3be935cb8ee942d438d22b76ef70f710, type: 2}
+    TargetCount: 0
+    Segments: []
   ImpactTiming: 1
   AnimationStateName: Base Layer.ClassSkill_2
   AnimationTriggerOverride: 
