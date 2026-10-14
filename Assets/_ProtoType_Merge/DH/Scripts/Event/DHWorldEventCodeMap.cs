@@ -13,7 +13,8 @@ public enum DHWorldEventRewardType
     Money = 1,
     Crystal = 2,
     Medal = 3,
-    Supply = 4
+    Supply = 4,
+    CurrentHP = 5
 }
 
 public static class DHWorldEventCodeMap
@@ -83,6 +84,9 @@ public static class DHWorldEventCodeMap
                 return true;
             case 4:
                 rewardType = DHWorldEventRewardType.Supply;
+                return true;
+            case 5:
+                rewardType = DHWorldEventRewardType.CurrentHP;
                 return true;
             default:
                 rewardType = default;
