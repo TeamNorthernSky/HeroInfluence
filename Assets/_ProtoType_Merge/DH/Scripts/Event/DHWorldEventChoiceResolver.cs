@@ -110,7 +110,7 @@ public static class DHWorldEventChoiceResolver
         if (!DHWorldEventChoiceConditionEvaluator.TryGetAverageCurrentInfluence(party, out float averageCurrentInfluence))
             averageCurrentInfluence = 0f;
 
-        return Mathf.Clamp(baseRate + averageCurrentInfluence + 0.5f, 0f, 100f);
+        return Mathf.Clamp(baseRate + averageCurrentInfluence * 0.5f, 0f, 100f);
     }
 
     private static float ParsePercent(string raw)

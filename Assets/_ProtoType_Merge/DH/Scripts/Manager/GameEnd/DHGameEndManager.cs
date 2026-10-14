@@ -15,8 +15,10 @@ public class DHGameEndManager : MonoBehaviour
 
     [Header("Scene")]
     [SerializeField] private string fallbackTitleSceneName = "TitleScene";
+    [SerializeField] private string clearEndingSceneName = "Ending CutScene";
 
     private bool returnToTitleStarted;
+    private bool clearEndingStarted;
 
     private void Awake()
     {
@@ -29,7 +31,7 @@ public class DHGameEndManager : MonoBehaviour
         DHGameEndState.BeginEnding();
 
         if (result == DHGameEndResult.Clear)
-            ShowPanel(clearPanel);
+            LoadClearEndingNow();
         else
             ShowPanel(gameOverPanel);
     }
@@ -69,6 +71,29 @@ public class DHGameEndManager : MonoBehaviour
             GameManager.Instance.ResetForNewGame();
         else
             DHGameProgressResetService.ResetDHProgress();
+    }
+
+    private void LoadClearEndingNow()
+    {
+        if (clearEndingStarted)
+            return;
+
+        clearEndingStarted = true;
+        Time.timeScale = 1f;
+
+        HidePanels();
+        ResetProgressForTitle();
+
+        if (string.IsNullOrWhiteSpace(clearEndingSceneName))
+            return;
+
+        if (GameSceneManager.Instance != null)
+        {
+            GameSceneManager.Instance.LoadScene(clearEndingSceneName);
+            return;
+        }
+
+        SceneFadeController.LoadSceneWithFadeIfNeeded(clearEndingSceneName);
     }
 
     private void LoadTitleScene()

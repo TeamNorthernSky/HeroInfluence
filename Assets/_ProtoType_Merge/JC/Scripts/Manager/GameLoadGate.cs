@@ -112,6 +112,11 @@ public class GameLoadGate : MonoBehaviour
         Scene dh = SceneManager.GetSceneByName(dhSceneName);
         if (dh.IsValid())
             SceneManager.SetActiveScene(dh);
+
+        MoveRangeController moveRangeController = FindFirstObjectByType<MoveRangeController>();
+        moveRangeController?.RefreshForCurrentParty();
+        moveRangeController?.RequestRefreshAfterSceneSetup();
+
         yield return SceneManager.UnloadSceneAsync(gameObject.scene);
     }
 

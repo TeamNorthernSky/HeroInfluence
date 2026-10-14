@@ -28,6 +28,8 @@ public sealed class AudioManager : MonoBehaviour
     [SerializeField] private bool dontDestroyOnLoad = true;
 
     private readonly Dictionary<string, float> sfxBlockedUntil = new Dictionary<string, float>();
+    private readonly Dictionary<string, AudioSource> loopingSfxSources = new Dictionary<string, AudioSource>();
+    private readonly Dictionary<string, Coroutine> loopingSfxStopCoroutines = new Dictionary<string, Coroutine>();
     private readonly List<AudioSource> timedSfxSources = new List<AudioSource>();
     private string currentBgmKey;
     private float currentBgmDefaultVolume = 1f;
@@ -169,6 +171,57 @@ public sealed class AudioManager : MonoBehaviour
         StartCoroutine(StopTimedSfxAfter(source, playbackDuration));
     }
 
+    public void PlayLoopingSfx(string key)
+    {
+        if (clipCatalog == null)
+            return;
+
+        string normalizedKey = DHAudioClipCatalog.NormalizeKey(key);
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+            return;
+
+        if (!TryGetSfxEntry(normalizedKey, out DHAudioClipEntry entry) || entry.Clip == null)
+            return;
+
+        if (loopingSfxSources.TryGetValue(entry.Key, out AudioSource existingSource) &&
+            existingSource != null &&
+            existingSource.isPlaying)
+        {
+            CancelScheduledLoopingSfxStop(entry.Key);
+            existingSource.loop = true;
+            existingSource.volume = GetSfxPlaybackVolume(entry);
+            return;
+        }
+
+        AudioSource source = existingSource != null ? existingSource : CreateLoopingSfxSource(entry.Key);
+        CancelScheduledLoopingSfxStop(entry.Key);
+        source.Stop();
+        source.clip = entry.Clip;
+        source.loop = true;
+        source.volume = GetSfxPlaybackVolume(entry);
+        source.Play();
+    }
+
+    public void StopLoopingSfx(string key)
+    {
+        string normalizedKey = DHAudioClipCatalog.NormalizeKey(key);
+        if (string.IsNullOrWhiteSpace(normalizedKey))
+            return;
+
+        if (!loopingSfxSources.TryGetValue(normalizedKey, out AudioSource source) || source == null)
+            return;
+
+        CancelScheduledLoopingSfxStop(normalizedKey);
+        if (!source.isPlaying || source.clip == null)
+        {
+            StopLoopingSfxImmediately(source);
+            return;
+        }
+
+        float remainingSeconds = Mathf.Max(0f, source.clip.length - source.time);
+        loopingSfxStopCoroutines[normalizedKey] = StartCoroutine(StopLoopingSfxAfterCurrentCycle(normalizedKey, source, remainingSeconds));
+    }
+
     public void PlayBgmForScene(string sceneName)
     {
         if (TryGetSceneBgmKey(sceneName, out string bgmKey))
@@ -185,6 +238,7 @@ public sealed class AudioManager : MonoBehaviour
     {
         masterVolume = Mathf.Clamp01(volume);
         ApplyBgmSourceVolume();
+        RefreshLoopingSfxVolumes();
     }
 
     public void SetBgmVolume(float volume)
@@ -196,6 +250,7 @@ public sealed class AudioManager : MonoBehaviour
     public void SetSfxVolume(float volume)
     {
         sfxVolume = Mathf.Clamp01(volume);
+        RefreshLoopingSfxVolumes();
     }
 
     public bool TryGetBgmEntry(string key, out DHAudioClipEntry entry)
@@ -320,6 +375,57 @@ public sealed class AudioManager : MonoBehaviour
         source.playOnAwake = false;
         source.loop = false;
         return source;
+    }
+
+    private AudioSource CreateLoopingSfxSource(string key)
+    {
+        AudioSource source = gameObject.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.loop = true;
+        loopingSfxSources[key] = source;
+        return source;
+    }
+
+    private void RefreshLoopingSfxVolumes()
+    {
+        foreach (KeyValuePair<string, AudioSource> pair in loopingSfxSources)
+        {
+            AudioSource source = pair.Value;
+            if (source == null)
+                continue;
+
+            if (TryGetSfxEntry(pair.Key, out DHAudioClipEntry entry))
+                source.volume = GetSfxPlaybackVolume(entry);
+        }
+    }
+
+    private void CancelScheduledLoopingSfxStop(string key)
+    {
+        if (!loopingSfxStopCoroutines.TryGetValue(key, out Coroutine coroutine) || coroutine == null)
+            return;
+
+        StopCoroutine(coroutine);
+        loopingSfxStopCoroutines.Remove(key);
+    }
+
+    private System.Collections.IEnumerator StopLoopingSfxAfterCurrentCycle(string key, AudioSource source, float remainingSeconds)
+    {
+        if (remainingSeconds > 0f)
+            yield return new WaitForSecondsRealtime(remainingSeconds);
+
+        if (source != null)
+            StopLoopingSfxImmediately(source);
+
+        loopingSfxStopCoroutines.Remove(key);
+    }
+
+    private static void StopLoopingSfxImmediately(AudioSource source)
+    {
+        if (source == null)
+            return;
+
+        source.Stop();
+        source.clip = null;
     }
 
     private System.Collections.IEnumerator StopTimedSfxAfter(AudioSource source, float durationSeconds)

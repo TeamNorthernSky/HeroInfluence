@@ -25,7 +25,7 @@ public class GridManager : MonoBehaviour
         new Vector2Int(-1, 1)
     };
 
-    [Header("Grid 湲곗? ?ㅻ툕?앺듃")]
+    [Header("Grid 기준 오브젝트")]
     [SerializeField] private Transform landTransform;
 
     [Header("Grid Settings")]
@@ -33,7 +33,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private float cellSize = 1f;
 
     [Header("Obstacle Settings")]
-    [Tooltip("???덉씠?댁뿉 ?덈뒗 肄쒕씪?대뜑???μ븷臾쇰줈 媛꾩＜?⑸땲??")]
+    [Tooltip("이 레이어에 있는 콜라이더를 장애물로 간주합니다.")]
     [SerializeField] private LayerMask obstacleLayerMask;
     [SerializeField] private bool useLegacyObstacleColliderFallback;
     [SerializeField] private LayerMask eventLayerMask;
@@ -54,7 +54,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private WorldEventRegistry worldEventRegistry;
     [SerializeField] private MainEventRegistry mainEventRegistry;
     [SerializeField] private SubEventRegistry subEventRegistry;
-    [Tooltip("? ?뚯빱釉?寃???? ? ?ш린 ?鍮?泥댄겕 諛뺤뒪 鍮꾩쑉(?덈Т ?щ㈃ ?ㅽ깘, ?덈Т ?묒쑝硫??듦낵).")]
+    [Tooltip("각 셀의 장애물 검사에 사용할 셀 크기 대비 체크 박스 비율입니다. 너무 크면 오탐, 너무 작으면 누락될 수 있습니다.")]
     [SerializeField, Range(0.1f, 1f)] private float obstacleCheckFill = 0.9f;
 
     [Header("Debug Gizmos")]
@@ -68,8 +68,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int debugRMax = 15;
     [SerializeField, Range(0.01f, 0.5f)] private float debugCenterSphereRadius = 0.08f;
 
-    // ?꾩젣 議곌굔: Land ?붾뱶 以묒떖 = (0, 0, 0)
-    // ?꾩슂 ???몄뒪?숉꽣?먯꽌 ?먯젏 ?ㅽ봽???뺤옣 媛??
+    // 전제 조건: Land 월드 중심 = (0, 0, 0)
+    // 필요 시 인스펙터에서 원점 오프셋을 확장할 수 있다.
     private Vector3 gridOrigin = Vector3.zero;
     private readonly HashSet<Vector2Int> levelGroundCells = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> levelObstacleCells = new HashSet<Vector2Int>();
@@ -1306,13 +1306,13 @@ public class GridManager : MonoBehaviour
         return dx <= 1 && dy <= 1 && (dx != 0 || dy != 0);
     }
 
-    // Land??y ?믪씠??留욎떠 marker/player瑜??щ젮?볤린 ?꾪븳 ?ы띁
+    // Land의 y 높이에 맞춰 marker/player를 올려놓기 위한 헬퍼.
     public float GetLandSurfaceY()
     {
         if (landTransform == null)
             return 0.01f;
 
-        // BoxCollider媛 ?덉쑝硫?bounds ?곷떒 ?ъ슜
+        // BoxCollider가 있으면 bounds 상단을 사용한다.
         if (landTransform.TryGetComponent<Collider>(out var col))
             return (col.bounds.max.y+0.01f);
 
