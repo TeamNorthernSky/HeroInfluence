@@ -56,7 +56,11 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  EventSfx: []
+  EventSfx:
+  - Event: 0
+    Key: Battle_Hit03
+    DurationSeconds: 0
+    Occurrence: -1
   MovePrepare:
     Enabled: 0
     AnimationStateName: Base Layer.MoveForward
@@ -68,7 +72,7 @@ MonoBehaviour:
     ForceApproach: 0
     AnimationStateName: Base Layer.Dash
     BlendInSeconds: 0.1
-    SfxKey: 
+    SfxKey: Explore_Move
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -96,7 +100,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
     BlendInSeconds: 0
-    SfxKey: 
+    SfxKey: Explore_Move
   Post:
     Enabled: 1
     AnimationStateName: 
