@@ -41,6 +41,8 @@ public sealed class GuardSwapPresenter
     private Quaternion _guardianRotation;
     private Quaternion _wardRotation;
     private bool _entered;
+    // 가디언의 자리 교환음. Exit 시점엔 가디언 시체가 이미 제거됐을 수 있어 Enter에서 미리 해석해 둔다.
+    private string _swapSfxKey;
 
     public GuardSwapPresenter(BattleManager host)
     {
@@ -79,6 +81,8 @@ public sealed class GuardSwapPresenter
         _wardOrigin = ward.transform.position;
         _wardRotation = ward.transform.rotation;
         _entered = true;
+        _swapSfxKey = UnitSfxProfile.ResolveKey(guardian, UnitSfxEvent.GuardSwap);
+        UnitSfxProfile.PlayKey(_swapSfxKey);
 
         // 두 이동을 동시 시작 → 순차 대기 = 병렬 실행
         Coroutine guardianIn = _host.StartCoroutine(MoveAndSettle(_guardian, _wardOrigin, _guardianRotation));
@@ -112,6 +116,7 @@ public sealed class GuardSwapPresenter
         Coroutine wardBack = CanMove(_ward)
             ? _host.StartCoroutine(MoveAndSettle(_ward, _wardOrigin, _wardRotation))
             : null;
+        if (guardianBack != null || wardBack != null) UnitSfxProfile.PlayKey(_swapSfxKey);
         if (guardianBack != null) yield return guardianBack;
         if (wardBack != null) yield return wardBack;
     }

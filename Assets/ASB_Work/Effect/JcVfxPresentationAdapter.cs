@@ -20,6 +20,7 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
     private TaoBarrageVfx _barrage;
     private PawForYouVfx _paw;
     private JcVfxPartSequence _parts;
+    private int _impactCount;
 
     private void Start()
     {
@@ -36,6 +37,7 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
     {
         StopRunningEffect();
         _context = context;
+        _impactCount = 0;
         _effect = GetComponent<VfxEffect>();
         Transform caster = context?.Caster != null ? context.Caster.transform : null;
         BattleCharactor targetUnit = targetSource == TargetSource.ReviveTarget ? context?.ReviveTarget : context?.PrimaryTarget;
@@ -64,6 +66,8 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
     private void OnTargetsImpacted()
     {
         if (_context == null) return;
+        // 연타형(Barrage 등)은 여러 번 착탄하므로 순번을 붙여 Event SFX의 Occurrence가 고르게 한다.
+        PresentationSfxEvents.PlayEffectImpact(_context.Presentation, _impactCount++);
         var targets = _context.Targets?.Where(u => u != null).Select(u => u.transform).ToArray() ?? Array.Empty<Transform>();
         SkillImpactSignalBus.PublishImpact(new ImpactKey(_context.ActionInstanceId), _context.TargetPosition, targets);
     }

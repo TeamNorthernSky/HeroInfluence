@@ -6,6 +6,7 @@ public static class PresentationSfxPlayer
 {
     // EditMode 테스트에서 실제 AudioSource 대신 호출을 기록한다.
     internal static Action<string> SinkOverride;
+    internal static Action<string, float> TimedSinkOverride;
     private static bool s_WarnedMissingManager;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -13,6 +14,7 @@ public static class PresentationSfxPlayer
     {
         s_WarnedMissingManager = false;
         SinkOverride = null;
+        TimedSinkOverride = null;
     }
 
     public static void Play(string key)
@@ -27,6 +29,38 @@ public static class PresentationSfxPlayer
         if (manager != null)
         {
             manager.PlaySfx(key);
+            return;
+        }
+
+        if (s_WarnedMissingManager) return;
+        s_WarnedMissingManager = true;
+        Debug.LogWarning("[PathA-SFX] AudioManager가 없어 Timeline 효과음을 재생하지 못했습니다. BootScene부터 실행하세요.");
+    }
+
+    public static void PlayForDuration(string key, float durationSeconds)
+    {
+        if (durationSeconds <= 0f)
+        {
+            Play(key);
+            return;
+        }
+
+        if (TimedSinkOverride != null)
+        {
+            TimedSinkOverride(key, durationSeconds);
+            return;
+        }
+
+        if (SinkOverride != null)
+        {
+            SinkOverride(key);
+            return;
+        }
+
+        AudioManager manager = AudioManager.Instance;
+        if (manager != null)
+        {
+            manager.PlaySfxForDuration(key, durationSeconds);
             return;
         }
 

@@ -42,8 +42,11 @@ namespace ASB.Work.EditorTools.Jig
                 // §4: Animator Rail이라도 즉시 반환하지 않고 남은 SkillTimelines 구조를 먼저 검증한다.
                 // dangling/null 바인딩은 정리 대상(Error), 모두 유효하면 Migration Data(Info), 비면 정상(Info).
                 ValidateAnimatorRailBindings(data, result);
+                ValidateEventSfx(data, result); // Event SFX는 레일과 무관하게 코드 훅에서 재생된다.
                 return result;
             }
+
+            ValidateEventSfx(data, result);
 
             if (validateBindings) ValidateBindings(data, result);
             if (timeline == null)
@@ -72,6 +75,7 @@ namespace ASB.Work.EditorTools.Jig
                     $"Animation Track이 {animationTracks}개입니다. 동일 Animator 중복 바인딩 의도를 확인하세요.");
 
             ValidateMarkers(data, timeline, result);
+            ValidateMovementMarkers(data, timeline, result);
             ValidateSfxMarkers(timeline, FindSfxCatalog(timeline), result);
             ValidateSections(timeline, result);
             ValidateSpeedMarkers(timeline, result);
@@ -231,17 +235,15 @@ namespace ASB.Work.EditorTools.Jig
                 for (int m = 0; m < timelineMessages.Count; m++)
                     Add(result, timelineMessages[m].Severity,
                         $"세그먼트 {i + 1}: {timelineMessages[m].Message}");
-                if (timeline == null || timeline.markerTrack == null) continue;
+                if (timeline == null) continue;
 
-                var ordered = new List<IMarker>();
-                foreach (IMarker raw in timeline.markerTrack.GetMarkers()) ordered.Add(raw);
+                var ordered = new List<IMarker>(PresentationTimelineMarkers.OfType<PresentationSignalMarker>(timeline));
                 ordered.Sort((a, b) => a.time.CompareTo(b.time));
 
-                var moves = new List<PresentationMoveMarker>();
+                var moves = new List<PresentationMoveMarker>(PresentationTimelineMarkers.OfType<PresentationMoveMarker>(timeline));
                 for (int markerIndex = 0; markerIndex < ordered.Count; markerIndex++)
                 {
                     IMarker raw = ordered[markerIndex];
-                    if (raw is PresentationMoveMarker move) moves.Add(move);
                     if (!(raw is PresentationSignalMarker signal)) continue;
                     if (signal.Kind == PresentationSignalKind.Cue)
                         ValidateHeldCueFlow(signal, cueBindings, heldInstanceKeys, i + 1, result);
@@ -311,6 +313,104 @@ namespace ASB.Work.EditorTools.Jig
             if (start != null)
                 Add(result, SkillTimelineValidationSeverity.Error,
                     $"세그먼트 {segmentNumber}: Move Start에 대응하는 End가 없습니다.");
+        }
+
+        private static void ValidateMovementMarkers(SkillPresentationData data, TimelineAsset timeline,
+            List<SkillTimelineValidationMessage> result)
+        {
+            var moves = new List<PresentationMoveMarker>(PresentationTimelineMarkers.OfType<PresentationMoveMarker>(timeline));
+            var returns = new List<PresentationReturnMarker>(PresentationTimelineMarkers.OfType<PresentationReturnMarker>(timeline));
+            var movingAttacks = new List<PresentationMovingAttackMarker>(
+                PresentationTimelineMarkers.OfType<PresentationMovingAttackMarker>(timeline));
+            moves.Sort((a, b) => a.time.CompareTo(b.time));
+            returns.Sort((a, b) => a.time.CompareTo(b.time));
+            movingAttacks.Sort((a, b) => a.time.CompareTo(b.time));
+
+            bool expectsMovingAttack = data.PresentationArchetype == PresentationArchetype.MovingAttack;
+            if (expectsMovingAttack && (data.MovingAttack == null || !data.MovingAttack.Enabled))
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    "MovingAttack Archetype인데 연출 데이터의 MovingAttack이 꺼져 있습니다.");
+            if (expectsMovingAttack && data.MovingAttack != null &&
+                data.MovingAttack.HitMode == MovingAttackHitMode.SingleAoE)
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    "현재 MovingAttack Timeline 재생은 SingleTarget/SequentialAoE HitMode만 지원합니다.");
+            if (expectsMovingAttack && movingAttacks.Count != 2)
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    "MovingAttack Timeline에는 곡선 이동 Start/End 마커가 각 1개 필요합니다.");
+            if (!expectsMovingAttack && movingAttacks.Count > 0)
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    "MovingAttack 마커를 사용하려면 Archetype을 MovingAttack으로 설정하세요.");
+            if (movingAttacks.Count > 0 && moves.Count > 0)
+                Add(result, SkillTimelineValidationSeverity.Error,
+                    "MovingAttack 곡선 이동과 일반 Move 마커를 함께 사용할 수 없습니다.");
+            if (movingAttacks.Count == 2)
+            {
+                PresentationMovingAttackMarker start = movingAttacks[0];
+                PresentationMovingAttackMarker end = movingAttacks[1];
+                if (start.Boundary != PresentationSectionBoundary.Start ||
+                    end.Boundary != PresentationSectionBoundary.End ||
+                    start.time < 0d || end.time <= start.time ||
+                    end.time > timeline.duration + 0.0001d)
+                    Add(result, SkillTimelineValidationSeverity.Error,
+                        "MovingAttack Start/End의 순서 또는 시간이 올바르지 않습니다.");
+                foreach (PresentationReturnMarker ret in returns)
+                    if (ret.time > start.time && ret.time < end.time - 0.0001d)
+                        Add(result, SkillTimelineValidationSeverity.Error,
+                            "Return 마커가 MovingAttack 곡선 이동 구간 안에 있습니다.");
+            }
+
+            var moveRanges = new List<KeyValuePair<double, double>>();
+            PresentationMoveMarker moveStart = null;
+            foreach (PresentationMoveMarker marker in moves)
+            {
+                if (marker.TargetSlot < 0)
+                    Add(result, SkillTimelineValidationSeverity.Error, $"{marker.time:F3}s Move 슬롯이 음수입니다.");
+                if (marker.Boundary == PresentationSectionBoundary.Start)
+                {
+                    if (moveStart != null)
+                        Add(result, SkillTimelineValidationSeverity.Error, "Move 구간이 겹칩니다.");
+                    moveStart = marker;
+                }
+                else
+                {
+                    if (moveStart == null || marker.time <= moveStart.time ||
+                        marker.TargetSlot != moveStart.TargetSlot)
+                        Add(result, SkillTimelineValidationSeverity.Error, "Move Start/End 시간 또는 슬롯이 맞지 않습니다.");
+                    else moveRanges.Add(new KeyValuePair<double, double>(moveStart.time, marker.time));
+                    moveStart = null;
+                }
+                if (marker.time < 0d || marker.time > timeline.duration + 0.0001d)
+                    Add(result, SkillTimelineValidationSeverity.Error, $"{marker.time:F3}s Move 마커가 Timeline 범위를 벗어났습니다.");
+            }
+            if (moveStart != null)
+                Add(result, SkillTimelineValidationSeverity.Error, "Move Start에 대응하는 End가 없습니다.");
+
+            PresentationReturnMarker returnStart = null;
+            foreach (PresentationReturnMarker marker in returns)
+            {
+                if (marker.Boundary == PresentationSectionBoundary.Start)
+                {
+                    if (returnStart != null)
+                        Add(result, SkillTimelineValidationSeverity.Error, "Return 구간이 겹칩니다.");
+                    returnStart = marker;
+                }
+                else
+                {
+                    if (returnStart == null || marker.time <= returnStart.time)
+                        Add(result, SkillTimelineValidationSeverity.Error, "Return Start/End 시간이 맞지 않습니다.");
+                    else
+                        foreach (KeyValuePair<double, double> range in moveRanges)
+                            if (range.Key < marker.time && returnStart.time < range.Value)
+                                Add(result, SkillTimelineValidationSeverity.Error, "Move와 Return 구간이 겹칩니다.");
+                    returnStart = null;
+                }
+                if (marker.time < 0d || marker.time > timeline.duration + 0.0001d)
+                    Add(result, SkillTimelineValidationSeverity.Error, $"{marker.time:F3}s Return 마커가 Timeline 범위를 벗어났습니다.");
+            }
+            if (returnStart != null)
+                Add(result, SkillTimelineValidationSeverity.Error, "Return Start에 대응하는 End가 없습니다.");
+            if (moves.Count > 0 && data.PresentationArchetype != PresentationArchetype.Melee)
+                Add(result, SkillTimelineValidationSeverity.Error, "Move 마커는 Melee에서만 사용할 수 있습니다.");
         }
 
         private static void ValidateHeldCueFlow(PresentationSignalMarker marker,
@@ -538,19 +638,31 @@ namespace ASB.Work.EditorTools.Jig
                 Add(result, SkillTimelineValidationSeverity.Error,
                     "ChainLightning Timeline에 Impact Marker가 있습니다. 대미지는 번개 도달 신호가 소유하므로 " +
                     "Impact 마커(즉발)를 제거하세요.");
-            if (!expectsProjectile && !hasImpact)
+            // MovingAttack SequentialAoE는 곡선 경로 진행도로 대상마다 타격하므로 Impact 마커를 쓰지 않는다.
+            bool sequentialMovingAttack = data.PresentationArchetype == PresentationArchetype.MovingAttack
+                                          && data.MovingAttack != null && data.MovingAttack.Enabled
+                                          && data.MovingAttack.HitMode == MovingAttackHitMode.SequentialAoE;
+            if (sequentialMovingAttack && hasImpact)
+                Add(result, SkillTimelineValidationSeverity.Warning,
+                    "SequentialAoE MovingAttack은 경로 진행도로 대상마다 타격하므로 Impact Marker를 무시합니다. 제거하세요.");
+            if (!expectsProjectile && !hasImpact && !sequentialMovingAttack)
                 Add(result, SkillTimelineValidationSeverity.Warning,
                     "Impact Marker가 없습니다. 현재 런타임은 Timeline 종료 시 1회 폴백하지만 명시 Marker를 권장합니다.");
         }
 
         private static DHAudioClipCatalog FindSfxCatalog(TimelineAsset timeline)
         {
-            if (timeline.markerTrack == null) return null;
             bool hasSfx = false;
-            foreach (IMarker raw in timeline.markerTrack.GetMarkers())
-                if (raw is PresentationSfxMarker) { hasSfx = true; break; }
-            if (!hasSfx) return null;
+            foreach (PresentationSfxMarker marker in PresentationTimelineMarkers.OfType<PresentationSfxMarker>(timeline))
+            {
+                hasSfx = true;
+                break;
+            }
+            return hasSfx ? LoadSfxCatalog() : null;
+        }
 
+        private static DHAudioClipCatalog LoadSfxCatalog()
+        {
             string[] guids = AssetDatabase.FindAssets("t:DHAudioClipCatalog");
             const string runtimeCatalogPath = "Assets/_ProtoType_Merge/DH/Audio/DHAudioClipCatalog.asset";
             DHAudioClipCatalog fallback = null;
@@ -569,12 +681,12 @@ namespace ASB.Work.EditorTools.Jig
         private static void ValidateSfxMarkers(TimelineAsset timeline, DHAudioClipCatalog catalog,
             List<SkillTimelineValidationMessage> result)
         {
-            if (timeline.markerTrack == null) return;
             bool warnedMissingCatalog = false;
             const double epsilon = 0.0001d;
-            foreach (IMarker raw in timeline.markerTrack.GetMarkers())
+            // 마커가 자동 계산 길이(duration)를 늘릴 수 있어 duration 비교만으로는 늦은 마커를 못 잡는다 → 애니 끝과도 비교.
+            double animationEnd = LastAnimationClipEnd(timeline);
+            foreach (PresentationSfxMarker marker in PresentationTimelineMarkers.OfType<PresentationSfxMarker>(timeline))
             {
-                if (!(raw is PresentationSfxMarker marker)) continue;
                 string key = marker.SfxKey;
                 if (string.IsNullOrEmpty(key))
                     Add(result, SkillTimelineValidationSeverity.Error,
@@ -583,6 +695,10 @@ namespace ASB.Work.EditorTools.Jig
                 if (marker.time < -epsilon || marker.time > timeline.duration + epsilon)
                     Add(result, SkillTimelineValidationSeverity.Warning,
                         $"{marker.time:F3}s SFX Marker가 Timeline 길이(0~{timeline.duration:F3}s) 밖에 있습니다.");
+                else if (animationEnd > 0d && marker.time > animationEnd + epsilon)
+                    Add(result, SkillTimelineValidationSeverity.Warning,
+                        $"{marker.time:F3}s SFX Marker가 애니메이션 종료({animationEnd:F3}s) 이후에 있습니다. " +
+                        "구간 끝에서 발화하지 않거나 재생을 늘릴 수 있습니다. 코드 시점 소리라면 Event SFX를 쓰세요.");
 
                 // 현재 SkillTimelineBinding/Segment에는 SectionId가 없어 모든 사용처가 전체 구간이다.
                 if (catalog == null)
@@ -609,6 +725,68 @@ namespace ASB.Work.EditorTools.Jig
                 else
                     Add(result, SkillTimelineValidationSeverity.Warning,
                         $"{marker.time:F3}s SFX 키 '{key}'가 카탈로그 SfxClips에 없습니다.");
+            }
+        }
+
+        private static double LastAnimationClipEnd(TimelineAsset timeline)
+        {
+            double end = 0d;
+            foreach (TrackAsset track in timeline.GetOutputTracks())
+            {
+                if (!(track is AnimationTrack)) continue;
+                foreach (TimelineClip clip in track.GetClips())
+                    if (clip.end > end) end = clip.end;
+            }
+            return end;
+        }
+
+        /// <summary>
+        /// SkillPresentationData.EventSfx 검증. 빈 키는 Error, 카탈로그 불일치는 SFX 마커와 같은 Warning.
+        /// Hit 계열 줄의 Occurrence는 런타임이 무시하므로 Warning.
+        /// </summary>
+        private static void ValidateEventSfx(SkillPresentationData data, List<SkillTimelineValidationMessage> result)
+        {
+            List<PresentationEventSfx> entries = data.EventSfx;
+            if (entries == null || entries.Count == 0) return;
+
+            DHAudioClipCatalog catalog = LoadSfxCatalog();
+            bool warnedMissingCatalog = false;
+            for (int i = 0; i < entries.Count; i++)
+            {
+                PresentationEventSfx entry = entries[i];
+                if (entry == null) continue;
+
+                string label = $"Event SFX[{i}] {entry.Event}";
+                string key = DHAudioClipCatalog.NormalizeKey(entry.Key);
+                if (string.IsNullOrEmpty(key))
+                    Add(result, SkillTimelineValidationSeverity.Error, $"{label}의 키가 비어 있습니다.");
+
+                if (entry.Event != PresentationSfxEvent.EffectImpact && entry.Occurrence >= 0)
+                    Add(result, SkillTimelineValidationSeverity.Warning,
+                        $"{label}: Occurrence({entry.Occurrence})는 EffectImpact에만 적용되어 무시됩니다.");
+
+                if (string.IsNullOrEmpty(key)) continue;
+                if (catalog == null)
+                {
+                    if (!warnedMissingCatalog)
+                    {
+                        Add(result, SkillTimelineValidationSeverity.Warning,
+                            "DHAudioClipCatalog를 찾지 못해 Event SFX 키를 검증할 수 없습니다.");
+                        warnedMissingCatalog = true;
+                    }
+                    continue;
+                }
+
+                if (TryFindAudioEntry(catalog.SfxClips, key, out DHAudioClipEntry sfx))
+                {
+                    if (sfx.Clip == null)
+                        Add(result, SkillTimelineValidationSeverity.Warning,
+                            $"{label} 키 '{key}'에 AudioClip이 없어 실제 재생은 무음입니다.");
+                }
+                else if (TryFindAudioEntry(catalog.BgmClips, key, out _))
+                    Add(result, SkillTimelineValidationSeverity.Warning, $"{label} '{key}'는 SFX가 아닌 BGM 키입니다.");
+                else
+                    Add(result, SkillTimelineValidationSeverity.Warning, $"{label} 키 '{key}'가 카탈로그 SfxClips에 없습니다.");
             }
         }
 
@@ -668,11 +846,9 @@ namespace ASB.Work.EditorTools.Jig
         private static void ValidateSpeedMarkers(TimelineAsset timeline,
             List<SkillTimelineValidationMessage> result)
         {
-            if (timeline.markerTrack == null) return;   // Marker Track 부재는 ValidateMarkers가 이미 처리
-
             var speedMarkers = new List<PresentationSpeedMarker>();
-            foreach (IMarker raw in timeline.markerTrack.GetMarkers())
-                if (raw is PresentationSpeedMarker sm) speedMarkers.Add(sm);
+            foreach (PresentationSpeedMarker marker in PresentationTimelineMarkers.OfType<PresentationSpeedMarker>(timeline))
+                speedMarkers.Add(marker);
             if (speedMarkers.Count == 0) return;   // 속도 마커는 선택 기능
 
             double duration = timeline.duration;

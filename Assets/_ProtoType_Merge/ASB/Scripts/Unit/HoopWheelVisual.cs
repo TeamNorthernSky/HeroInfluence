@@ -97,6 +97,7 @@ public sealed class HoopWheelVisual : MonoBehaviour
         else
         {
             HoopVfxEffect.Spawn(preset, HoopEffectKind.Summon, transform.position);
+            UnitSfxProfile.Play(owner, UnitSfxEvent.Summon);
         }
     }
 
@@ -174,6 +175,7 @@ public sealed class HoopWheelVisual : MonoBehaviour
         if (!_built || _deadVisual) return;
         _deadVisual = true;
         HoopVfxEffect.Spawn(preset, HoopEffectKind.WheelBreak, _wheel.position);
+        UnitSfxProfile.Play(owner, UnitSfxEvent.Death);
         _wheel.gameObject.SetActive(false);
     }
 

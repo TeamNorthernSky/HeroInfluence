@@ -84,6 +84,13 @@ namespace ASB.Work.Battle.Sequence
                 {
                     _visual?.PlayHitEffect(hitTarget, result.SkillIndex);
                     _visual?.ShowDamagePopup(result);
+
+                    // 피격음은 실제 피해일 때만. 같은 시전자의 동시 피격은 PresentationSfxEvents가 1회로 묶는다.
+                    if (_visual != null && !result.IsHeal && !result.IsMiss)
+                    {
+                        DamageContext context = _contexts[i];
+                        PresentationSfxEvents.PlayHit(_visual.GetPresentation(result.SkillIndex), context.Caster, context.Role);
+                    }
                 }
 
                 // TakeDamage -> Die가 이미 Dead를 재생한 경우 Hit으로 사망 상태를 덮어쓰지 않습니다.

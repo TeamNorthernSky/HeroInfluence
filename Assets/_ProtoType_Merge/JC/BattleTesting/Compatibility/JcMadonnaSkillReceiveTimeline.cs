@@ -25,6 +25,8 @@ public sealed class JcMadonnaSkillReceiveTimeline : MonoBehaviour
     private BattleCharactor _boss;
     private JcBattleFlowManager _flow;
     private PlayableDirector _director;
+    // 흡수 Timeline 전용 SFX 수신기. 보스 루트의 수신기는 보스 스킬 Timeline이 Configure하므로 공유하지 않는다.
+    private PresentationSignalReceiver _receiver;
     private Coroutine _speedRoutine;
     private IDisposable _flowLock;
 
@@ -95,6 +97,7 @@ public sealed class JcMadonnaSkillReceiveTimeline : MonoBehaviour
             player.transform.SetParent(transform, false);
             _director = player.AddComponent<PlayableDirector>();
             _director.playOnAwake = false;
+            _receiver = player.AddComponent<PresentationSignalReceiver>();
         }
 
         _director.playableAsset = _timeline;
@@ -102,8 +105,12 @@ public sealed class JcMadonnaSkillReceiveTimeline : MonoBehaviour
         foreach (TrackAsset track in _timeline.GetOutputTracks())
         {
             if (track is AnimationTrack) _director.SetGenericBinding(track, animator);
+            else if (track is PresentationMarkerTrack markerTrack && markerTrack.Role == PresentationMarkerTrackRole.Sfx)
+                _director.SetGenericBinding(track, _receiver);
         }
 
+        // SFX 마커만 쓴다(Cue/Impact 콜백 없음).
+        _receiver.Configure(null, null);
         _director.time = 0d;
         if (_flow != null) _flowLock = _flow.AcquireFlowLock(this, "마돈나 스킬 흡수");
         try
@@ -133,6 +140,7 @@ public sealed class JcMadonnaSkillReceiveTimeline : MonoBehaviour
             yield return null;
         }
         _speedRoutine = null;
+        if (_receiver != null) _receiver.ClearConfig();
         ReleaseFlowLock();
     }
 
@@ -154,6 +162,7 @@ public sealed class JcMadonnaSkillReceiveTimeline : MonoBehaviour
             _speedRoutine = null;
         }
         if (_director != null && _director.state == PlayState.Playing) _director.Stop();
+        if (_receiver != null) _receiver.ClearConfig();
         ReleaseFlowLock();
     }
 

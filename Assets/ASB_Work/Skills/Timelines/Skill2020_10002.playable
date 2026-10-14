@@ -27,7 +27,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.6997901648283005
+  m_Time: 0.36666666666666664
   _kind: 2
   _cueName: 
   _cueId: 
@@ -58,6 +58,56 @@ MonoBehaviour:
     - {fileID: -9019501715178613169}
     - {fileID: -1801097066939679310}
     - {fileID: -7548885164658307306}
+--- !u!114 &-7140499703829920096
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
+  m_Name: Sound
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips: []
+  m_Markers:
+    m_Objects:
+    - {fileID: 4379999398270019511}
+    - {fileID: 3310360097551097165}
+  role: 4
+--- !u!114 &-5171627674081419619
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
+  m_Name: Speed
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips: []
+  m_Markers:
+    m_Objects: []
+  role: 2
 --- !u!114 &-1801097066939679310
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -70,7 +120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62dd47085fb715741b7d8a4ee9f474fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.866666704416275
+  m_Time: 0.666666676600774
   _sectionId: Attack
   _boundary: 1
 --- !u!114 &11400000
@@ -88,12 +138,44 @@ MonoBehaviour:
   m_Version: 0
   m_Tracks:
   - {fileID: 7552872511581188226}
+  - {fileID: -5171627674081419619}
+  - {fileID: -7140499703829920096}
   m_FixedDuration: 0
   m_EditorSettings:
     m_Framerate: 60
     m_ScenePreview: 1
   m_DurationMode: 0
   m_MarkerTrack: {fileID: -7265356438125267210}
+--- !u!114 &3310360097551097165
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.36666666666666664
+  _sfxKey: Battle_Elec01
+  _durationSeconds: 0
+--- !u!114 &4379999398270019511
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0
+  _sfxKey: Battle_PreSkill03
+  _durationSeconds: 0
 --- !u!114 &7552872511581188226
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -119,13 +201,13 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: 7835862709378150323}
-    m_Duration: 0.5333333611488342
+    m_Duration: 0.36666666666666664
     m_TimeScale: 1
     m_ParentTrack: {fileID: 7552872511581188226}
     m_EaseInDuration: 0
     m_EaseOutDuration: 0
     m_BlendInDuration: -1
-    m_BlendOutDuration: -1
+    m_BlendOutDuration: 0.033333333333333326
     m_MixInCurve:
       serializedVersion: 2
       m_Curve:
@@ -181,11 +263,11 @@ MonoBehaviour:
     m_Recordable: 0
     m_PostExtrapolationMode: 1
     m_PreExtrapolationMode: 1
-    m_PostExtrapolationTime: 0.1166666388511658
+    m_PostExtrapolationTime: 0
     m_PreExtrapolationTime: 0
     m_DisplayName: Attack.Beats[0] (Base Layer.WeaponSkill_3)
   - m_Version: 1
-    m_Start: 0.65
+    m_Start: 0.3333333333333333
     m_ClipIn: 0
     m_Asset: {fileID: 7677406371277401211}
     m_Duration: 0.3333333432674408
@@ -193,7 +275,7 @@ MonoBehaviour:
     m_ParentTrack: {fileID: 7552872511581188226}
     m_EaseInDuration: 0
     m_EaseOutDuration: 0
-    m_BlendInDuration: -1
+    m_BlendInDuration: 0.033333333333333326
     m_BlendOutDuration: -1
     m_MixInCurve:
       serializedVersion: 2

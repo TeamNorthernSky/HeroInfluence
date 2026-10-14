@@ -1,5 +1,55 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7183170359492187855
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
+  m_Name: Speed
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips: []
+  m_Markers:
+    m_Objects: []
+  role: 2
+--- !u!114 &-3431977865709145923
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
+  m_Name: Sound
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips: []
+  m_Markers:
+    m_Objects:
+    - {fileID: 9114829610560118678}
+    - {fileID: 4906955913935260225}
+  role: 4
 --- !u!114 &-1232183232083955605
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -30,6 +80,8 @@ MonoBehaviour:
   m_Version: 0
   m_Tracks:
   - {fileID: 4972761203441067005}
+  - {fileID: -7183170359492187855}
+  - {fileID: -3431977865709145923}
   m_FixedDuration: 0
   m_EditorSettings:
     m_Framerate: 60
@@ -100,6 +152,21 @@ MonoBehaviour:
   m_Time: 0
   _sectionId: Attack
   _boundary: 0
+--- !u!114 &4906955913935260225
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 1.6376581192016602
+  _sfxKey: Battle_Meteor
+  _durationSeconds: 0
 --- !u!114 &4972761203441067005
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -187,7 +254,7 @@ MonoBehaviour:
     m_Recordable: 0
     m_PostExtrapolationMode: 1
     m_PreExtrapolationMode: 1
-    m_PostExtrapolationTime: 0
+    m_PostExtrapolationTime: Infinity
     m_PreExtrapolationTime: 0
     m_DisplayName: Attack.Beats[0] (ClassSkill_1)
   m_Markers:
@@ -244,3 +311,18 @@ MonoBehaviour:
   _cueName: charge
   _cueId: 8d149d476dc74d02a1dc6d7997e384f5
   _targetSlot: 0
+--- !u!114 &9114829610560118678
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.19797362387180328
+  _sfxKey: Battle_Create
+  _durationSeconds: 0

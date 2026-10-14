@@ -11,6 +11,7 @@ public sealed class SolarPrismCueEffect : MonoBehaviour, ISkillEffectBehaviour, 
     private SkillEffectContext _context;
     private bool _launched;
     private bool _impactNotified;
+    private int _impactCount;
 
     private void Awake()
     {
@@ -23,7 +24,7 @@ public sealed class SolarPrismCueEffect : MonoBehaviour, ISkillEffectBehaviour, 
     public void Play(SkillEffectContext context)
     {
         _context = context;
-        _launched = false; _impactNotified = false;
+        _launched = false; _impactNotified = false; _impactCount = 0;
 
         if (_solarPrism == null || context == null)
         {
@@ -83,7 +84,12 @@ public sealed class SolarPrismCueEffect : MonoBehaviour, ISkillEffectBehaviour, 
 
     private void OnImpact(Vector3 position)
     {
-        if (_impactNotified || _context == null) return;
+        if (_context == null) return;
+
+        // 크리스탈마다 착탄음(순번은 Event SFX의 Occurrence가 고른다). 아래 가드는 피해 신호만 1회로 막는다.
+        PresentationSfxEvents.PlayEffectImpact(_context.Presentation, _impactCount++);
+
+        if (_impactNotified) return;
         _impactNotified = true;
         SkillImpactSignalBus.PublishImpact(new ImpactKey(_context.ActionInstanceId), position);
     }

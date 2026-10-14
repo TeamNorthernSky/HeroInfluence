@@ -27,7 +27,7 @@ MonoBehaviour:
   - SkillIndex: 1030
     Presentation: {fileID: 11400000, guid: 4f7ae28bb4897dd49a9692077bee2361, type: 2}
   - SkillIndex: 1040
-    Presentation: {fileID: 11400000, guid: cdfb7d33e4504684fa2381bdc84500b2, type: 2}
+    Presentation: {fileID: 11400000, guid: c80e18f3a4b53514db71924f5636b5e3, type: 2}
   - SkillIndex: 2020
     Presentation: {fileID: 11400000, guid: 5ea3d1c11081d3f4e8ac22feaf49e541, type: 2}
   - SkillIndex: 2030
@@ -105,4 +105,4 @@ MonoBehaviour:
   - SkillIndex: 1031
     Presentation: {fileID: 11400000, guid: 7ae593e4da1b90e409ca8ef975f55f73, type: 2}
   - SkillIndex: 1041
-    Presentation: {fileID: 11400000, guid: 1a6336ffd18abe042a835a70b9ffc19e, type: 2}
+    Presentation: {fileID: 11400000, guid: b79e204e1ec6e384c85c27486f090204, type: 2}

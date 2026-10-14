@@ -251,6 +251,39 @@ public class SkillTimelineValidatorTests
     }
 
     [Test]
+    public void ReturnMarker_MissingEnd_ReportsError()
+    {
+        TimelineAsset timeline = NewTimeline(1d);
+        AddClip(timeline, 0d, 1d);
+        timeline.CreateMarkerTrack();
+        AddReturnMarker(timeline, 0.3d, "Start");
+        ScriptableObject data = NewData("Timeline");
+        SetPlanBindings(data, ("20005", 1, timeline));
+
+        Assert.That(HasErrorContaining(Validate(data, "20005", timeline),
+            "Return Start에 대응하는 End"), Is.True);
+    }
+
+    [Test]
+    public void ReturnMarker_OverlappingMove_ReportsError()
+    {
+        TimelineAsset timeline = NewTimeline(1d);
+        AddClip(timeline, 0d, 1d);
+        timeline.CreateMarkerTrack();
+        AddMoveMarker(timeline, 0.1d, "Start", 1);
+        AddMoveMarker(timeline, 0.5d, "End", 1);
+        AddReturnMarker(timeline, 0.3d, "Start");
+        AddReturnMarker(timeline, 0.8d, "End");
+        ScriptableObject data = NewData("Timeline");
+        DataType.GetField("PresentationArchetype").SetValue(data,
+            Enum.Parse(DataType.GetField("PresentationArchetype").FieldType, "Melee"));
+        SetPlanBindings(data, ("20005", 1, timeline));
+
+        Assert.That(HasErrorContaining(Validate(data, "20005", timeline),
+            "Move와 Return 구간이 겹칩니다"), Is.True);
+    }
+
+    [Test]
     public void Plan_ProjectileMarker_ReportsError()
     {
         TimelineAsset timeline = NewTimeline(1d);
@@ -513,6 +546,15 @@ public class SkillTimelineValidatorTests
         object marker = AddMarker(timeline, type, time);
         type.GetMethod("Configure").Invoke(marker,
             new[] { Enum.Parse(boundaryType, boundary), (object)slot });
+    }
+
+    private static void AddReturnMarker(TimelineAsset timeline, double time, string boundary)
+    {
+        Type type = FindRuntimeType("PresentationReturnMarker");
+        Type boundaryType = FindRuntimeType("PresentationSectionBoundary");
+        object marker = AddMarker(timeline, type, time);
+        type.GetMethod("Configure").Invoke(marker,
+            new[] { Enum.Parse(boundaryType, boundary) });
     }
 
     private static void AddSignalMarker(TimelineAsset timeline, double time, string kind, int slot)

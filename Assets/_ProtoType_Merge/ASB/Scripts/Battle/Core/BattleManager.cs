@@ -425,7 +425,11 @@ public class BattleManager : MonoBehaviour
                 if (hostageCommitted) return null;
                 hostageCommitted = true;
                 if (HostageFriendlyFireResolver.ApplyHits(new[] { hostageHit }).Count > 0)
+                {
                     _visualDirector?.PlayHitEffectAt(hostageHit.Hostage.transform, hostageHit.SkillIndex);
+                    if (_visualDirector != null)
+                        PresentationSfxEvents.PlayHit(_visualDirector.GetPresentation(hostageHit.SkillIndex), hostageHit.Caster, hostageHit.Role);
+                }
                 return null;
             };
             hostageCommits.Add(hostageCommit);
@@ -566,7 +570,8 @@ public class BattleManager : MonoBehaviour
                                 onHitCallback,
                                 SkillPresentationDirector.ResolveAdditionalChainTargetAnimationTrigger(chainPresentation, chainSkill),
                                 _currentBattleSpeed,
-                                _visualDirector).ExecuteRoutine(this);
+                                _visualDirector,
+                                DamageRole.Additional).ExecuteRoutine(this);
                         }
                         else
                         {
@@ -578,7 +583,8 @@ public class BattleManager : MonoBehaviour
                                 onHitCallback,
                                 targetAnimTrigger: null,
                                 battleSpeed: _currentBattleSpeed,
-                                visual: _visualDirector).ExecuteRoutine(this);
+                                visual: _visualDirector,
+                                role: DamageRole.Additional).ExecuteRoutine(this);
                         }
                     }
                     else
@@ -986,6 +992,8 @@ public class BattleManager : MonoBehaviour
                 if (hitHostage != null)
                     _visualDirector?.PlayHitEffectAt(hitHostage.transform, skillData.skillIndex);
             }
+            if (hitHostages.Count > 0 && _visualDirector != null)
+                PresentationSfxEvents.PlayHit(_visualDirector.GetPresentation(skillData.skillIndex), actor, DamageRole.Primary);
             hitApplied = hitHostages.Count > 0;
             // 인질은 BattleCharactor가 아니므로 Target=null(피격애니/팝업 skip). 피해는 위에서 이미 적용.
             return new BattleHitResult { Target = null, Damage = 0f, SkillIndex = skillData.skillIndex };
@@ -1118,6 +1126,8 @@ public class BattleManager : MonoBehaviour
                 HostageFriendlyFireResolver.ApplyCollateralDamage(actor, hostageCollateralCells, classSkillRow);
             for (int i = 0; i < collateralHits.Count; i++)
                 _visualDirector?.PlayHitEffectAt(collateralHits[i].transform, classSkillRow.skillIndex);
+            if (collateralHits.Count > 0 && _visualDirector != null)
+                PresentationSfxEvents.PlayHit(_visualDirector.GetPresentation(classSkillRow.skillIndex), actor, DamageRole.Additional);
             OnActionExecuted?.Invoke(GetSkillDisplayName(classSkillRow));
             OnSkillResolved?.Invoke(new SkillResolutionContext(
                 actor,
