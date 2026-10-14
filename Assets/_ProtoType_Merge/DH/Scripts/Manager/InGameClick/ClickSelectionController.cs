@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -22,6 +23,7 @@ public class ClickSelectionController : MonoBehaviour
     [SerializeField] private PathPreviewRenderer pathPreviewRenderer;
     [SerializeField, Tooltip("미완료 구역 진입 시 다음 실제 이동 목표에 표시하는 튜토리얼 화살표 셰이더입니다. 씬 참조로 빌드에 포함하며, 비워두면 노란 경로와 화살표 안내를 표시하지 않습니다.")]
     private Shader zoneGuidanceArrowShader;
+    [SerializeField] private MoveRangeController moveRangeController;
 
     [Header("UI Input")]
     [SerializeField] private UIInputBlocker uiInputBlocker;
@@ -32,6 +34,7 @@ public class ClickSelectionController : MonoBehaviour
 
     private PartySelectionController partySelectionController;
     private MoveCommandPreviewController moveCommandPreviewController;
+    private Coroutine pendingMoveRangeRefreshCoroutine;
 
     private void Start()
     {
@@ -41,6 +44,9 @@ public class ClickSelectionController : MonoBehaviour
         if (cameraFollower == null && mainCamera != null)
             cameraFollower = mainCamera.GetComponent<QuarterViewCameraFollower>();
 
+        if (moveRangeController == null)
+            moveRangeController = FindFirstObjectByType<MoveRangeController>();
+
         partySelectionController = new PartySelectionController(partyRegistry, cameraFollower, rayDistance);
         moveCommandPreviewController = new MoveCommandPreviewController(
             gridManager,
@@ -49,7 +55,8 @@ public class ClickSelectionController : MonoBehaviour
             pathPreviewRenderer,
             validMarkerColor,
             invalidMarkerColor,
-            rayDistance);
+            rayDistance,
+            moveRangeController);
 
         partySelectionController.ActiveMoverChanged += HandleActiveMoverChanged;
         partySelectionController.ActiveMoverPathUpdated += HandleActiveMoverPathUpdated;
@@ -60,6 +67,7 @@ public class ClickSelectionController : MonoBehaviour
 
         partySelectionController.Initialize();
         moveCommandPreviewController.Initialize();
+        moveRangeController?.RefreshForMover(partySelectionController.ActiveMover);
     }
 
     private void OnDisable()
@@ -69,6 +77,12 @@ public class ClickSelectionController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (pendingMoveRangeRefreshCoroutine != null)
+        {
+            StopCoroutine(pendingMoveRangeRefreshCoroutine);
+            pendingMoveRangeRefreshCoroutine = null;
+        }
+
         moveCommandPreviewController?.Dispose();
         if (partySelectionController != null)
         {
@@ -176,9 +190,6 @@ public class ClickSelectionController : MonoBehaviour
         if (gridManager.HasOtherPlayer(clickedGrid, activeMover.transform))
             return;
 
-        if (!gridManager.IsVisibleCell(clickedGrid))
-            return;
-
         if (moveCommandPreviewController.TryConfirmMoveAtGrid(clickedGrid, activeMover))
         {
             partySelectionController.FocusActiveMover();
@@ -245,6 +256,7 @@ public class ClickSelectionController : MonoBehaviour
     private void HandleActiveMoverChanged(PartyGridMover _)
     {
         moveCommandPreviewController?.ClearPreview();
+        moveRangeController?.RefreshForMover(partySelectionController != null ? partySelectionController.ActiveMover : null);
     }
 
     private void HandleActiveMoverPathUpdated(System.Collections.Generic.List<Vector2Int> remainingPath)
@@ -255,14 +267,34 @@ public class ClickSelectionController : MonoBehaviour
     private void HandleActiveMoverMoveCompleted()
     {
         moveCommandPreviewController?.HandleMoveCompleted();
+        moveRangeController?.RefreshForMover(partySelectionController != null ? partySelectionController.ActiveMover : null);
     }
 
     private void HandleEnemyTurnStateChanged(bool isEnemyTurnRunning)
     {
         if (!isEnemyTurnRunning)
+        {
+            QueueMoveRangeRefreshNextFrame();
             return;
+        }
 
         moveCommandPreviewController?.ClearPreview();
+        moveRangeController?.Hide();
+    }
+
+    private void QueueMoveRangeRefreshNextFrame()
+    {
+        if (pendingMoveRangeRefreshCoroutine != null)
+            StopCoroutine(pendingMoveRangeRefreshCoroutine);
+
+        pendingMoveRangeRefreshCoroutine = StartCoroutine(RefreshMoveRangeNextFrame());
+    }
+
+    private IEnumerator RefreshMoveRangeNextFrame()
+    {
+        yield return null;
+        pendingMoveRangeRefreshCoroutine = null;
+        moveRangeController?.RefreshForMover(partySelectionController != null ? partySelectionController.ActiveMover : null);
     }
 
     private void RefreshUILockState()

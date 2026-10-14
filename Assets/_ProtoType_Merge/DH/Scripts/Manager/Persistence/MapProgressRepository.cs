@@ -17,7 +17,6 @@ public class MapProgressRepository : MonoBehaviour
     [SerializeField] private List<PartyWorldState> partyWorldStates = new List<PartyWorldState>();
     [SerializeField] private List<EnemyWorldState> enemyWorldStates = new List<EnemyWorldState>();
     [SerializeField] private List<OutpostProgressState> outpostStates = new List<OutpostProgressState>();
-    [SerializeField] private List<FogProgressCell> fogCells = new List<FogProgressCell>();
     [SerializeField] private List<LevelZoneSelectionState> levelZoneSelections = new List<LevelZoneSelectionState>();
     [SerializeField] private List<HeroUnionProgressState> heroUnionStates = new List<HeroUnionProgressState>();
     [SerializeField] private List<GateProgressState> gateStates = new List<GateProgressState>();
@@ -48,7 +47,6 @@ public class MapProgressRepository : MonoBehaviour
     public IReadOnlyList<PartyWorldState> PartyWorldStates => partyWorldStates;
     public IReadOnlyList<EnemyWorldState> EnemyWorldStates => enemyWorldStates;
     public IReadOnlyList<OutpostProgressState> OutpostStates => outpostStates;
-    public IReadOnlyList<FogProgressCell> FogCells => fogCells;
     public IReadOnlyList<LevelZoneSelectionState> LevelZoneSelections => levelZoneSelections;
     public IReadOnlyList<HeroUnionProgressState> HeroUnionStates => heroUnionStates;
     public IReadOnlyList<GateProgressState> GateStates => gateStates;
@@ -377,32 +375,6 @@ public class MapProgressRepository : MonoBehaviour
             state.SetDefeated(false);
     }
 
-    public void ReplaceFogCells(IEnumerable<FogGridManager.FogCellSnapshot> snapshots)
-    {
-        fogCells.Clear();
-
-        if (snapshots == null)
-            return;
-
-        foreach (FogGridManager.FogCellSnapshot snapshot in snapshots)
-        {
-            if (snapshot.Visibility == FogVisibilityState.Unexplored)
-                continue;
-
-            fogCells.Add(new FogProgressCell(snapshot.Grid, snapshot.Visibility, snapshot.LastRevealedDay));
-        }
-    }
-
-    public bool HasFogProgress()
-    {
-        return fogCells.Count > 0;
-    }
-
-    public void ClearFogProgress()
-    {
-        fogCells.Clear();
-    }
-
     public bool TryGetLevelZoneSelection(string layoutId, string zoneId, out int selectedCandidateIndex)
     {
         selectedCandidateIndex = -1;
@@ -605,7 +577,6 @@ public class MapProgressRepository : MonoBehaviour
         IEnumerable<PartyWorldState> restoredPartyWorldStates,
         IEnumerable<EnemyWorldState> restoredEnemyWorldStates,
         IEnumerable<OutpostProgressState> restoredOutpostStates,
-        IEnumerable<FogProgressCell> restoredFogCells,
         IEnumerable<LevelZoneSelectionState> restoredLevelZoneSelections,
         IEnumerable<HeroUnionProgressState> restoredHeroUnionStates,
         IEnumerable<GateProgressState> restoredGateStates,
@@ -626,7 +597,6 @@ public class MapProgressRepository : MonoBehaviour
         ReplaceList(partyWorldStates, restoredPartyWorldStates);
         ReplaceList(enemyWorldStates, restoredEnemyWorldStates);
         ReplaceList(outpostStates, restoredOutpostStates);
-        ReplaceList(fogCells, restoredFogCells);
         ReplaceList(levelZoneSelections, restoredLevelZoneSelections);
         ReplaceList(heroUnionStates, restoredHeroUnionStates);
         ReplaceList(gateStates, restoredGateStates);
@@ -645,7 +615,6 @@ public class MapProgressRepository : MonoBehaviour
         partyWorldStates.Clear();
         enemyWorldStates.Clear();
         outpostStates.Clear();
-        fogCells.Clear();
         levelZoneSelections.Clear();
         heroUnionStates.Clear();
         gateStates.Clear();

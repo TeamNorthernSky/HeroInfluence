@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.SceneManagement;
@@ -25,7 +25,7 @@ public class GridManager : MonoBehaviour
         new Vector2Int(-1, 1)
     };
 
-    [Header("Grid 기준 오브젝트")]
+    [Header("Grid 湲곗? ?ㅻ툕?앺듃")]
     [SerializeField] private Transform landTransform;
 
     [Header("Grid Settings")]
@@ -33,7 +33,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private float cellSize = 1f;
 
     [Header("Obstacle Settings")]
-    [Tooltip("이 레이어에 있는 콜라이더는 장애물로 간주합니다.")]
+    [Tooltip("???덉씠?댁뿉 ?덈뒗 肄쒕씪?대뜑???μ븷臾쇰줈 媛꾩＜?⑸땲??")]
     [SerializeField] private LayerMask obstacleLayerMask;
     [SerializeField] private bool useLegacyObstacleColliderFallback;
     [SerializeField] private LayerMask eventLayerMask;
@@ -41,7 +41,6 @@ public class GridManager : MonoBehaviour
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private bool useLegacyEnemyColliderFallback;
     [SerializeField] private LayerMask heroUnionLayerMask;
-    [SerializeField] private FogGridManager fogGridManager;
     [SerializeField] private ItemRegistry itemRegistry;
     [SerializeField] private TutorialItemRegistry tutorialItemRegistry;
     [SerializeField] private EnemyRegistry enemyRegistry;
@@ -55,8 +54,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private WorldEventRegistry worldEventRegistry;
     [SerializeField] private MainEventRegistry mainEventRegistry;
     [SerializeField] private SubEventRegistry subEventRegistry;
-    [SerializeField] private bool restrictMovementToVisibleCells = true;
-    [Tooltip("셀 워커블 검사 시, 셀 크기 대비 체크 박스 비율(너무 크면 오탐, 너무 작으면 통과).")]
+    [Tooltip("? ?뚯빱釉?寃???? ? ?ш린 ?鍮?泥댄겕 諛뺤뒪 鍮꾩쑉(?덈Т ?щ㈃ ?ㅽ깘, ?덈Т ?묒쑝硫??듦낵).")]
     [SerializeField, Range(0.1f, 1f)] private float obstacleCheckFill = 0.9f;
 
     [Header("Debug Gizmos")]
@@ -70,8 +68,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int debugRMax = 15;
     [SerializeField, Range(0.01f, 0.5f)] private float debugCenterSphereRadius = 0.08f;
 
-    // 전제 조건: Land 월드 중심 = (0, 0, 0)
-    // 필요 시 인스펙터에서 원점 오프셋 확장 가능
+    // ?꾩젣 議곌굔: Land ?붾뱶 以묒떖 = (0, 0, 0)
+    // ?꾩슂 ???몄뒪?숉꽣?먯꽌 ?먯젏 ?ㅽ봽???뺤옣 媛??
     private Vector3 gridOrigin = Vector3.zero;
     private readonly HashSet<Vector2Int> levelGroundCells = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> levelObstacleCells = new HashSet<Vector2Int>();
@@ -94,9 +92,6 @@ public class GridManager : MonoBehaviour
     {
         if (cellSize <= 0f)
             cellSize = 1f;
-
-        if (fogGridManager == null)
-            fogGridManager = FindFirstObjectByType<FogGridManager>();
 
         if (itemRegistry == null)
             itemRegistry = FindFirstObjectByType<ItemRegistry>();
@@ -248,6 +243,11 @@ public class GridManager : MonoBehaviour
             return true;
 
         return useLegacyObstacleColliderFallback && HasBlockingCollider(grid, obstacleLayerMask);
+    }
+
+    public bool HasRegisteredObstacleOrGateBlocker(Vector2Int grid)
+    {
+        return levelObstacleCells.Contains(grid) || gateBlockerCells.Contains(grid);
     }
 
     public void ClearLevelGroundCells()
@@ -974,10 +974,7 @@ public class GridManager : MonoBehaviour
 
     public bool IsVisibleCell(Vector2Int grid)
     {
-        if (!restrictMovementToVisibleCells || fogGridManager == null)
-            return true;
-
-        return fogGridManager.IsVisible(grid);
+        return true;
     }
 
     public bool TryGetAdjacentItemGrid(Vector2Int grid, out Vector2Int itemGrid)
@@ -1132,7 +1129,7 @@ public class GridManager : MonoBehaviour
         return heroUnion.IsInteractionCell(grid);
     }
 
-    public bool CanEnterCell(Vector2Int grid, Vector2Int destination, Transform selfTransform = null, bool ignoreFogVisibility = false, bool allowItemCells = false)
+    public bool CanEnterCell(Vector2Int grid, Vector2Int destination, Transform selfTransform = null, bool ignoreVisibilityRules = false, bool allowItemCells = false)
     {
         if (!HasLevelGroundCell(grid))
             return false;
@@ -1144,9 +1141,6 @@ public class GridManager : MonoBehaviour
             return false;
 
         if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
-            return false;
-
-        if (!ignoreFogVisibility && !IsVisibleCell(grid))
             return false;
 
         if (HasTutorialBuilding(grid, selfTransform))
@@ -1173,7 +1167,7 @@ public class GridManager : MonoBehaviour
         return true;
     }
 
-    public bool CanOccupyCell(Vector2Int grid, Transform selfTransform = null, bool ignoreFogVisibility = false)
+    public bool CanOccupyCell(Vector2Int grid, Transform selfTransform = null, bool ignoreVisibilityRules = false)
     {
         if (!HasLevelGroundCell(grid))
             return false;
@@ -1185,9 +1179,6 @@ public class GridManager : MonoBehaviour
             return false;
 
         if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
-            return false;
-
-        if (!ignoreFogVisibility && !IsVisibleCell(grid))
             return false;
 
         if (HasTutorialBuilding(grid, selfTransform))
@@ -1315,13 +1306,13 @@ public class GridManager : MonoBehaviour
         return dx <= 1 && dy <= 1 && (dx != 0 || dy != 0);
     }
 
-    // Land의 y 높이에 맞춰 marker/player를 올려놓기 위한 헬퍼
+    // Land??y ?믪씠??留욎떠 marker/player瑜??щ젮?볤린 ?꾪븳 ?ы띁
     public float GetLandSurfaceY()
     {
         if (landTransform == null)
             return 0.01f;
 
-        // BoxCollider가 있으면 bounds 상단 사용
+        // BoxCollider媛 ?덉쑝硫?bounds ?곷떒 ?ъ슜
         if (landTransform.TryGetComponent<Collider>(out var col))
             return (col.bounds.max.y+0.01f);
 
@@ -1396,4 +1387,5 @@ public class GridManager : MonoBehaviour
     }
 
 }
+
 

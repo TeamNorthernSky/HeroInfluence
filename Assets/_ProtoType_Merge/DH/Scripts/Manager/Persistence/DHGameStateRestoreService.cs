@@ -61,7 +61,6 @@ public static class DHGameStateRestoreService
             data.partyWorldStates,
             data.enemyWorldStates,
             data.outpostStates,
-            data.fogCells,
             data.levelZoneSelections,
             data.heroUnionStates,
             data.gateStates,
@@ -423,7 +422,6 @@ public static class DHGameStateRestoreService
         Object.FindFirstObjectByType<SubEventRegistry>()?.RegisterExistingSubEvents();
         Object.FindFirstObjectByType<MultiGridOccupantRegistry>()?.RefreshSceneOccupants();
         Object.FindFirstObjectByType<OutpostRegistry>()?.RegisterExistingOutposts();
-        Object.FindFirstObjectByType<EnemyFogVisibilitySystem>()?.RefreshAll();
         Object.FindFirstObjectByType<MinimapController>()?.Refresh();
         Object.FindFirstObjectByType<MinimapCameraViewportOverlay>()?.Refresh();
         Object.FindFirstObjectByType<InteractionCellOverlayController>()?.RequestRefresh();

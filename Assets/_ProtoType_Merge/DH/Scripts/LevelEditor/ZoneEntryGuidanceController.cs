@@ -7,20 +7,13 @@ using UnityEngine.SceneManagement;
 public class ZoneEntryGuidanceController : MonoBehaviour
 {
     private const string GameObjectName = "[ZoneEntryGuidanceController]";
-    // Teleport reveal is delayed so the guided path becomes the first visible area in a new zone.
-    private const int TeleportRevealSuppressFrameCount = 2;
-    // Padding widens fog visibility only. It must not be treated as extra movement permission.
-    private const int VisualRevealPadding = 1;
 
     // The allowed path is both the movement restriction and the persisted route for re-entry restore.
     private readonly HashSet<Vector2Int> allowedPathCells = new HashSet<Vector2Int>();
-    private readonly List<Vector2Int> pathBuffer = new List<Vector2Int>();
 
     private string activeZoneId = string.Empty;
     private string requiredHeroUnionId = string.Empty;
     private Coroutine sceneRefreshCoroutine;
-    private Coroutine revealRefreshCoroutine;
-    private static int suppressGeneralFogRevealUntilFrame = -1;
 
     public static ZoneEntryGuidanceController Instance { get; private set; }
     public static bool IsActive => IsGuidanceActiveForCurrentPartyZone();
@@ -33,8 +26,6 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         }
     }
     public static bool IsActiveOrStoredActive => IsGuidanceActiveForCurrentPartyZone() || HasStoredGuidanceForCurrentPartyZone();
-    public static bool SuppressGeneralFogReveal =>
-        IsGuidanceActiveForCurrentPartyZone() || Time.frameCount <= suppressGeneralFogRevealUntilFrame;
 
     public bool Active { get; private set; }
     public string ActiveZoneId => activeZoneId;
@@ -86,13 +77,6 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         return controller;
     }
 
-    public static void SuppressGeneralFogRevealForTeleport()
-    {
-        suppressGeneralFogRevealUntilFrame = Mathf.Max(
-            suppressGeneralFogRevealUntilFrame,
-            Time.frameCount + TeleportRevealSuppressFrameCount);
-    }
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -123,11 +107,6 @@ public class ZoneEntryGuidanceController : MonoBehaviour
             sceneRefreshCoroutine = null;
         }
 
-        if (revealRefreshCoroutine != null)
-        {
-            StopCoroutine(revealRefreshCoroutine);
-            revealRefreshCoroutine = null;
-        }
     }
 
     public static bool IsCellAllowed(Vector2Int grid)
@@ -258,74 +237,6 @@ public class ZoneEntryGuidanceController : MonoBehaviour
             allowedPathCells.Add(savedCells[i]);
 
         // Restore reuses the saved route exactly instead of recalculating around changed runtime objects.
-        RevealAllowedPathCells();
-    }
-
-    public void RevealAllowedPathCells()
-    {
-        if (!Active || allowedPathCells.Count == 0)
-            return;
-
-        FogGridManager fogGridManager = FindFirstObjectByType<FogGridManager>();
-        if (fogGridManager == null)
-            return;
-
-        pathBuffer.Clear();
-        pathBuffer.AddRange(allowedPathCells);
-        // Reveal can be broader than movement so the path and HeroUnion read clearly through fog.
-        AppendVisualPaddingCells(pathBuffer);
-        AppendRequiredHeroUnionRevealCells(pathBuffer);
-        fogGridManager.RevealCells(pathBuffer);
-    }
-
-    private static void AppendVisualPaddingCells(List<Vector2Int> cells)
-    {
-        if (cells == null || VisualRevealPadding <= 0)
-            return;
-
-        int baseCount = cells.Count;
-        for (int i = 0; i < baseCount; i++)
-        {
-            Vector2Int center = cells[i];
-            for (int x = -VisualRevealPadding; x <= VisualRevealPadding; x++)
-            {
-                for (int y = -VisualRevealPadding; y <= VisualRevealPadding; y++)
-                {
-                    if (x == 0 && y == 0)
-                        continue;
-
-                    Vector2Int paddedCell = center + new Vector2Int(x, y);
-                    if (!cells.Contains(paddedCell))
-                        cells.Add(paddedCell);
-                }
-            }
-        }
-    }
-
-    private void AppendRequiredHeroUnionRevealCells(List<Vector2Int> cells)
-    {
-        if (cells == null)
-            return;
-
-        HeroUnionUnit heroUnion = ResolveHeroUnion(activeZoneId);
-        if (heroUnion == null || !IsRequiredHeroUnion(heroUnion))
-            return;
-
-        IReadOnlyList<Vector2Int> interactionCells = heroUnion.GetInteractionCells();
-        for (int i = 0; i < interactionCells.Count; i++)
-            cells.Add(interactionCells[i]);
-
-        MultiGridOccupant occupant = heroUnion.GetComponent<MultiGridOccupant>();
-        if (occupant != null)
-        {
-            IReadOnlyList<Vector2Int> occupiedCells = occupant.GetOccupiedCells();
-            for (int i = 0; i < occupiedCells.Count; i++)
-                cells.Add(occupiedCells[i]);
-
-            return;
-        }
-
-        cells.Add(heroUnion.GetCurrentGrid());
     }
 
     private void BeginGuidance(string zoneId, HeroUnionUnit heroUnion, List<Vector2Int> path, bool saveProgress)
@@ -342,37 +253,14 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         if (saveProgress)
             MapProgressRepository.Instance?.BeginZoneEntryGuidance(activeZoneId, requiredHeroUnionId, path);
 
-        RevealAllowedPathCells();
-        QueueRevealAllowedPathCells();
-    }
-
-    private void QueueRevealAllowedPathCells()
-    {
-        if (!Application.isPlaying || !isActiveAndEnabled)
-            return;
-
-        if (revealRefreshCoroutine != null)
-            StopCoroutine(revealRefreshCoroutine);
-
-        revealRefreshCoroutine = StartCoroutine(RevealAllowedPathCellsNextFrame());
-    }
-
-    private IEnumerator RevealAllowedPathCellsNextFrame()
-    {
-        yield return null;
-        revealRefreshCoroutine = null;
-        RevealAllowedPathCells();
     }
 
     private void CompleteGuidance()
     {
         string completedZoneId = activeZoneId;
-        // Completion is permanent per zone; revisits return to normal movement and fog reveal.
+        // Completion is permanent per zone; revisits return to normal movement.
         MapProgressRepository.Instance?.CompleteZoneEntryGuidance(completedZoneId);
         ClearRuntimeState();
-
-        PartyFogRevealer partyFogRevealer = FindFirstObjectByType<PartyFogRevealer>();
-        partyFogRevealer?.RevealAllCurrentPartyPositions();
     }
 
     private void ClearRuntimeState()

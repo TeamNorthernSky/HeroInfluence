@@ -224,7 +224,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
             zoneId,
             behaviorType);
 
-        RefreshFogVisibilityBinding();
         hasInitialized = true;
         return true;
     }
@@ -299,7 +298,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
             zoneKey,
             behaviorType);
 
-        RefreshFogVisibilityBinding();
         hasInitialized = true;
         return true;
     }
@@ -472,7 +470,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(zoneId))
             mapProgressRepository.SetEnemyZone(placementKey, zoneId);
 
-        RefreshFogVisibilityBinding();
         hasInitialized = true;
         return true;
     }
@@ -528,7 +525,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(zoneKey))
             mapProgressRepository.SetEnemyZone(placementKey, zoneKey);
 
-        RefreshFogVisibilityBinding();
         hasInitialized = true;
         return true;
     }
@@ -846,15 +842,6 @@ public class EnemyUnitBootstrap : MonoBehaviour
         }
 
         return Mathf.Max(1, fallbackLevel);
-    }
-
-    private void RefreshFogVisibilityBinding()
-    {
-        if (enemyUnit == null)
-            return;
-
-        EnemyFogVisibilitySystem fogVisibilitySystem = FindFirstObjectByType<EnemyFogVisibilitySystem>();
-        fogVisibilitySystem?.RefreshEnemyBinding(enemyUnit);
     }
 
     private readonly struct CsvEnemyGroupMember

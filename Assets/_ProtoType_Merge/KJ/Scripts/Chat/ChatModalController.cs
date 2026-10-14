@@ -37,6 +37,9 @@ public class ChatModalController : MonoBehaviour
 
     private static ChatModalController current;
 
+    // 대사가 끝난 뒤 보상 브리핑을 보고 있는 시간도 포함한다.
+    public static bool IsOpen => current != null && current.gameObject.activeInHierarchy;
+
     private ChatManager manager;
     private Action onClosed;
     private readonly List<GameObject> activeChoices = new List<GameObject>();

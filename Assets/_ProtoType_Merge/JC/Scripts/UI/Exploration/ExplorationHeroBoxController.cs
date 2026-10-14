@@ -37,6 +37,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
     // [JC 260625] slots 길이에 맞춰 Awake에서 할당(고정 4 → IndexOutOfRange 방지). slots 5+ 설정해도 안전.
     private int[] boundUnits = System.Array.Empty<int>();
     private GameObject[] ipMaxIcons = System.Array.Empty<GameObject>();
+    private Image[] defeatedOverlays = System.Array.Empty<Image>();
     private EconomyManager subEco; // 갱신 트리거(자원/IP 변동) 용
     private float nextRefresh;     // [JC 260616] 스탯/HP/IP 변동 주기적 재반영 타이머
 
@@ -44,6 +45,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
     {
         boundUnits = new int[slots != null ? slots.Length : 0];
         ipMaxIcons = new GameObject[boundUnits.Length];
+        defeatedOverlays = new Image[boundUnits.Length];
         for (int i = 0; i < slots.Length; i++)
         {
             if (slots[i]?.root != null)
@@ -55,6 +57,28 @@ public class ExplorationHeroBoxController : MonoBehaviour
                         break;
                     }
             int ci = i;
+            if (slots[i]?.root != null)
+            {
+                var source = slots[i].root.GetComponent<Image>();
+                if (source != null)
+                {
+                    var cover = new GameObject("DefeatedOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    cover.transform.SetParent(slots[i].root.transform, false);
+                    var rect = (RectTransform)cover.transform;
+                    rect.anchorMin = Vector2.zero;
+                    rect.anchorMax = Vector2.one;
+                    rect.offsetMin = rect.offsetMax = Vector2.zero;
+                    var overlay = cover.GetComponent<Image>();
+                    overlay.sprite = source.sprite;
+                    overlay.type = source.type;
+                    overlay.preserveAspect = source.preserveAspect;
+                    overlay.material = Resources.Load<Material>("UI/DefeatedCardOverlay");
+                    overlay.color = new Color(0.5f, 0.5f, 0.5f, 0.65f);
+                    overlay.raycastTarget = true;
+                    defeatedOverlays[i] = overlay;
+                    cover.SetActive(false);
+                }
+            }
             if (slots[i]?.button != null) slots[i].button.onClick.AddListener(() => OnSlotClicked(ci));
         }
     }
@@ -112,6 +136,7 @@ public class ExplorationHeroBoxController : MonoBehaviour
             UnitPersistentData unit = null;
             DHPlayerUnitTemplate template = null;
             if (unitRepo != null) unitRepo.TryGetUnit(unitIndex, out unit);
+            ApplySlotAvailability(i, unit);
             if (unit != null && catalog != null && !string.IsNullOrWhiteSpace(unit.UnitTemplateKey))
                 catalog.TryGetPlayerUnitTemplate(unit.UnitTemplateKey, out template);
 
@@ -152,9 +177,23 @@ public class ExplorationHeroBoxController : MonoBehaviour
     private static bool IsIpAtMax(float current, float maximum)
         => maximum > 0f && current >= maximum;
 
+    private void ApplySlotAvailability(int i, UnitPersistentData unit)
+    {
+        bool defeated = unit != null && (unit.IsIncapacitated || unit.CurrentHp <= 0f);
+        if (slots[i].button != null) slots[i].button.interactable = unit != null && !defeated;
+        if (defeatedOverlays[i] != null)
+        {
+            defeatedOverlays[i].gameObject.SetActive(defeated);
+            if (defeated) defeatedOverlays[i].transform.SetAsLastSibling();
+        }
+    }
+
     private void OnSlotClicked(int i)
     {
         if (i < 0 || i >= boundUnits.Length || boundUnits[i] <= 0) return;
+        var repo = PersistentUnitRepository.Instance;
+        if (repo == null || !repo.TryGetUnit(boundUnits[i], out var unit) ||
+            unit.IsIncapacitated || unit.CurrentHp <= 0f) return;
         var cui = CommonUIManager.Instance;
         if (cui == null) return;
         // [JC 260619] 탐사 멤버 클릭 → 로비와 동일 레이아웃(Modal_HeroInfo)으로 통일. HeroStatusModal 우선선택 폐기.

@@ -55,7 +55,7 @@ public class PlayGridManagerJC : MonoBehaviour
 
     /// <summary>
     /// 셀을 값 복사로 반환. 범위 밖이면 default 반환.
-    /// 셀을 변경하려면 PlayGridManagerJC의 변경 메서드(PlaceObject, RemoveObject, RevealArea 등)를 사용할 것.
+    /// 셀을 변경하려면 PlayGridManagerJC의 변경 메서드(PlaceObject, RemoveObject 등)를 사용할 것.
     /// </summary>
     public GridCell GetCell(int x, int y)
     {
@@ -190,44 +190,6 @@ public class PlayGridManagerJC : MonoBehaviour
     }
 
     // --- 시야 ---
-
-    /// <summary>
-    /// 지정 위치 주변 시야 범위 내 셀을 Visible로 설정.
-    /// </summary>
-    public void RevealArea(Vector2Int center, int radius)
-    {
-        int r2 = radius * radius;
-        int minX = Mathf.Max(0, center.x - radius);
-        int maxX = Mathf.Min(width - 1, center.x + radius);
-        int minY = Mathf.Max(0, center.y - radius);
-        int maxY = Mathf.Min(height - 1, center.y + radius);
-
-        for (int y = minY; y <= maxY; y++)
-        {
-            int dy = y - center.y;
-            int dy2 = dy * dy;
-            for (int x = minX; x <= maxX; x++)
-            {
-                int dx = x - center.x;
-                if (dx * dx + dy2 <= r2)
-                {
-                    cells[y * width + x].visibility = GridCell.VisibilityState.Visible;
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// 현재 Visible인 셀들을 Fogged로 전환 (턴 종료 시 등).
-    /// </summary>
-    public void FogAllVisible()
-    {
-        for (int i = 0; i < cells.Length; i++)
-        {
-            if (cells[i].visibility == GridCell.VisibilityState.Visible)
-                cells[i].visibility = GridCell.VisibilityState.Fogged;
-        }
-    }
 
     // --- 전체 셀 배열 접근 (시각화, 세이브 등) ---
 

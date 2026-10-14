@@ -9,7 +9,6 @@ public enum DHEventEffectKind
     DisableFlag,
     StartBattle,
     Reward,
-    RevealFog,
     DisableEvent,
     Unknown
 }
@@ -83,7 +82,6 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
     private const string StartBattlePrefix = "Start_Battle_";
     private const string StartBattleEventPrefix = "Start_BE";
     private const string RewardPrefix = "Reward_";
-    private const string RevealFogPrefix = "Reveal_Fog_";
     private const string DisablePrefix = "Disable_";
 
     public static DHEventEffectRuntimeManager Instance { get; private set; }
@@ -100,7 +98,6 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
     public event Action<string> BattleRequested;
     public event Action<DHEventBattleEffectRequest> EventBattleRequested;
     public event Action<string> RewardRequested;
-    public event Action<string> FogRevealRequested;
     public event Action<string> EventDisableRequested;
     public event Action<string> UnknownEffectReceived;
     public event Action<DHEventEffectToken> EffectDispatched;
@@ -198,10 +195,6 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
                 LogUnhandled(token);
                 RewardRequested?.Invoke(token.payload);
                 break;
-            case DHEventEffectKind.RevealFog:
-                LogUnhandled(token);
-                FogRevealRequested?.Invoke(token.payload);
-                break;
             case DHEventEffectKind.DisableEvent:
                 LogUnhandled(token);
                 ApplyEventDisable(token.payload);
@@ -265,9 +258,6 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
 
         if (token.StartsWith(RewardPrefix, StringComparison.Ordinal))
             return new DHEventEffectToken(token, DHEventEffectKind.Reward, token.Substring(RewardPrefix.Length).Trim());
-
-        if (token.StartsWith(RevealFogPrefix, StringComparison.Ordinal))
-            return new DHEventEffectToken(token, DHEventEffectKind.RevealFog, token.Substring(RevealFogPrefix.Length).Trim());
 
         if (token.StartsWith(DisablePrefix, StringComparison.Ordinal))
             return new DHEventEffectToken(token, DHEventEffectKind.DisableEvent, token.Substring(DisablePrefix.Length).Trim());

@@ -68,31 +68,6 @@ public class PartyWorldState
 }
 
 [Serializable]
-public class FogProgressCell
-{
-    [SerializeField] private Vector2Int grid;
-    [SerializeField] private FogVisibilityState visibility;
-    [SerializeField] private int lastRevealedDay;
-
-    public Vector2Int Grid => grid;
-    public FogVisibilityState Visibility => visibility;
-    public int LastRevealedDay => lastRevealedDay;
-
-    public FogProgressCell(Vector2Int grid, FogVisibilityState visibility, int lastRevealedDay)
-    {
-        this.grid = grid;
-        this.visibility = visibility;
-        this.lastRevealedDay = Mathf.Max(1, lastRevealedDay);
-    }
-
-    public void Apply(FogVisibilityState nextVisibility, int nextLastRevealedDay)
-    {
-        visibility = nextVisibility;
-        lastRevealedDay = Mathf.Max(1, nextLastRevealedDay);
-    }
-}
-
-[Serializable]
 public class LevelZoneSelectionState
 {
     [SerializeField] private string layoutId;
@@ -328,7 +303,7 @@ public class ZoneEnemyLevelState
 }
 
 [Serializable]
-// Stores the forced first-entry path to a zone HeroUnion. These cells are movement permission, not just fog reveal.
+// Stores the forced first-entry path to a zone HeroUnion.
 public class ZoneEntryGuidanceProgressState
 {
     [SerializeField] private bool active;

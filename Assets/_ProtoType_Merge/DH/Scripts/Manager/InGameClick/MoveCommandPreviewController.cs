@@ -13,6 +13,7 @@ public class MoveCommandPreviewController
     private readonly Color validMarkerColor;
     private readonly Color invalidMarkerColor;
     private readonly float rayDistance;
+    private readonly MoveRangeController moveRangeController;
 
     private Vector2Int markerGrid;
     private Vector2Int selectedCell;
@@ -30,7 +31,6 @@ public class MoveCommandPreviewController
     private EnemyGridMover previewEnemyTarget;
     private TutorialEnemyObject previewTutorialEnemyTarget;
     private MainEventObject previewMainEventTarget;
-    private WorldEventObject previewWorldEventTarget;
     private JC.Tutorial.JcTutorialWorldMarker guidanceArrow;
     private JC.Indicators.JcMovementIndicatorController guidanceIndicator;
     private Vector3 guidanceWorld;
@@ -132,7 +132,8 @@ public class MoveCommandPreviewController
         PathPreviewRenderer pathPreviewRenderer,
         Color validMarkerColor,
         Color invalidMarkerColor,
-        float rayDistance)
+        float rayDistance,
+        MoveRangeController moveRangeController = null)
     {
         this.gridManager = gridManager;
         this.pathfinder = pathfinder;
@@ -141,6 +142,7 @@ public class MoveCommandPreviewController
         this.validMarkerColor = validMarkerColor;
         this.invalidMarkerColor = invalidMarkerColor;
         this.rayDistance = rayDistance;
+        this.moveRangeController = moveRangeController;
     }
 
     public void Initialize()
@@ -170,7 +172,6 @@ public class MoveCommandPreviewController
         previewEnemyTarget = null;
         previewTutorialEnemyTarget = null;
         previewMainEventTarget = null;
-        previewWorldEventTarget = null;
 
         if (marker != null)
         {
@@ -191,7 +192,6 @@ public class MoveCommandPreviewController
 
         previewEnemyTarget = null;
         previewMainEventTarget = null;
-        previewWorldEventTarget = null;
 
         if (!TryResolveDestinationGrid(activeMover, clickedGrid, out Vector2Int requestedDestinationGrid))
         {
@@ -206,6 +206,14 @@ public class MoveCommandPreviewController
         }
 
         if (!TutorialMovementConstraint.IsSelectionAllowed(clickedGrid, requestedDestinationGrid, activeMover))
+        {
+            ClearPreview();
+            return;
+        }
+
+        if (moveRangeController != null
+            && moveRangeController.IsMoveRangeActive
+            && !moveRangeController.AllowsCell(requestedDestinationGrid))
         {
             ClearPreview();
             return;
@@ -307,14 +315,6 @@ public class MoveCommandPreviewController
         if (previewMainEventTarget != null
             && gridManager.TryGetMainEventObjectAtGrid(clickedGrid, out MainEventObject mainEvent)
             && mainEvent == previewMainEventTarget)
-        {
-            ConfirmMove(activeMover);
-            return true;
-        }
-
-        if (previewWorldEventTarget != null
-            && gridManager.TryGetWorldEventObjectAtGrid(clickedGrid, out WorldEventObject worldEvent)
-            && worldEvent == previewWorldEventTarget)
         {
             ConfirmMove(activeMover);
             return true;
@@ -520,13 +520,6 @@ public class MoveCommandPreviewController
                 out destinationGrid);
         }
 
-        if (gridManager.TryGetWorldEventObjectAtGrid(clickedGrid, out WorldEventObject worldEvent))
-        {
-            previewWorldEventTarget = worldEvent;
-            destinationGrid = worldEvent.GetCurrentGrid(gridManager);
-            return true;
-        }
-
         if (!gridManager.TryGetHeroUnionObjectAtGrid(clickedGrid, out HeroUnionUnit heroUnion))
             return true;
 
@@ -588,6 +581,13 @@ public class MoveCommandPreviewController
         if (IsEnemyEncounterCellFor(enemy, moverGrid))
             return true;
 
+        if (moveRangeController != null && moveRangeController.IsMoveRangeActive)
+        {
+            List<Vector2Int> candidates = GetEnemyEncounterCandidates(enemy);
+            if (!ContainsMoveRangeAllowedCell(candidates))
+                return false;
+        }
+
         List<Vector2Int> path = pathfinder.FindPathToAdjacent(
             moverGrid,
             enemyGrid,
@@ -597,7 +597,8 @@ public class MoveCommandPreviewController
             false,
             MainEventInteractionPathMode.BlockInteractionCells,
             PreviewPathMaxVisitedNodes,
-            candidate => IsEnemyEncounterCellFor(enemy, candidate));
+            candidate => IsEnemyEncounterCellFor(enemy, candidate),
+            activeMover.RemainingMovePoints);
 
         if (path == null || path.Count == 0)
             return false;
@@ -631,6 +632,13 @@ public class MoveCommandPreviewController
                 return true;
         }
 
+        if (moveRangeController != null
+            && moveRangeController.IsMoveRangeActive
+            && !ContainsMoveRangeAllowedCell(interactionCells))
+        {
+            return false;
+        }
+
         List<Vector2Int> path = pathfinder.FindPathToAny(
             moverGrid,
             interactionCells,
@@ -640,7 +648,8 @@ public class MoveCommandPreviewController
             EnemyEncounterPathMode.BlockEncounterZones,
             false,
             MainEventInteractionPathMode.BlockInteractionCells,
-            PreviewPathMaxVisitedNodes);
+            PreviewPathMaxVisitedNodes,
+            activeMover.RemainingMovePoints);
 
         if (path == null || path.Count == 0)
             return false;
@@ -665,9 +674,32 @@ public class MoveCommandPreviewController
             EnemyEncounterPathMode.BlockEncounterZones,
             false,
             MainEventInteractionPathMode.BlockInteractionCells,
-            PreviewPathMaxVisitedNodes);
+            PreviewPathMaxVisitedNodes,
+            activeMover.RemainingMovePoints);
         if (strictPath != null && strictPath.Count > 0)
             return strictPath;
+
+        if (moveRangeController != null && moveRangeController.IsMoveRangeActive)
+        {
+            List<Vector2Int> earlyMainEventInteractionPath = pathfinder.FindPathUntil(
+                partyGrid,
+                requestedDestinationGrid,
+                grid => gridManager.TryGetMainEventAtInteractionCell(grid, out _),
+                grid => moveRangeController.AllowsCell(grid),
+                activeMover.transform,
+                false,
+                EnemyEncounterPathMode.BlockEncounterZones,
+                false,
+                MainEventInteractionPathMode.AllowSingleInteractionCellPassage,
+                PreviewPathMaxVisitedNodes,
+                activeMover.RemainingMovePoints);
+
+            if (earlyMainEventInteractionPath != null && earlyMainEventInteractionPath.Count > 0)
+            {
+                destinationGrid = earlyMainEventInteractionPath[earlyMainEventInteractionPath.Count - 1];
+                return earlyMainEventInteractionPath;
+            }
+        }
 
         List<Vector2Int> fallbackPath = pathfinder.FindPath(
             partyGrid,
@@ -677,7 +709,8 @@ public class MoveCommandPreviewController
             EnemyEncounterPathMode.AllowSingleEncounterZonePassage,
             false,
             MainEventInteractionPathMode.AllowSingleInteractionCellPassage,
-            PreviewPathMaxVisitedNodes);
+            PreviewPathMaxVisitedNodes,
+            activeMover.RemainingMovePoints);
         if (fallbackPath == null || fallbackPath.Count == 0)
             return null;
 
@@ -723,7 +756,15 @@ public class MoveCommandPreviewController
             approachCandidates,
             moverGrid,
             targetGrid);
+        if (moveRangeController != null && moveRangeController.IsMoveRangeActive)
+            orderedCandidates.RemoveAll(candidate => !moveRangeController.AllowsCell(candidate));
+
         int candidateCheckCount = Mathf.Min(MaxApproachPathCandidateChecks, orderedCandidates.Count);
+        if (candidateCheckCount == 0)
+        {
+            destinationGrid = moverGrid;
+            return false;
+        }
 
         for (int i = 0; i < candidateCheckCount; i++)
         {
@@ -736,7 +777,8 @@ public class MoveCommandPreviewController
                 EnemyEncounterPathMode.BlockEncounterZones,
                 false,
                 MainEventInteractionPathMode.BlockInteractionCells,
-                PreviewPathMaxVisitedNodes);
+                PreviewPathMaxVisitedNodes,
+                activeMover.RemainingMovePoints);
             if (candidatePath == null || candidatePath.Count == 0)
                 continue;
 
@@ -825,6 +867,20 @@ public class MoveCommandPreviewController
         }
 
         return count;
+    }
+
+    private bool ContainsMoveRangeAllowedCell(IReadOnlyList<Vector2Int> cells)
+    {
+        if (cells == null || moveRangeController == null)
+            return false;
+
+        for (int i = 0; i < cells.Count; i++)
+        {
+            if (moveRangeController.AllowsCell(cells[i]))
+                return true;
+        }
+
+        return false;
     }
 
     private List<Vector2Int> AdjustPathForSpecialDestination(List<Vector2Int> path)

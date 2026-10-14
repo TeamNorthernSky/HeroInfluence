@@ -15,6 +15,8 @@ public class SelectedSkillHighlight : MonoBehaviour, IPointerEnterHandler, IPoin
     [SerializeField] private ToggleButton toggle;
     [Tooltip("선택 시 상시 켜질 외곽선 오버레이 GameObject.")]
     [SerializeField] private GameObject selectedOverlay;
+    [Tooltip("자동전투·배속 등의 ON 순환광 표시입니다. 연결하면 기존 ToggleButton의 상태를 읽어 순환광을 재생하며 호버 중에도 유지합니다. 비우면 기존 고정 오버레이 동작을 유지합니다.")]
+    [SerializeField] private BattleSkillButtonVisual stateVisual;
 
     private bool hovered;
 
@@ -26,6 +28,7 @@ public class SelectedSkillHighlight : MonoBehaviour, IPointerEnterHandler, IPoin
     private void OnDisable()
     {
         hovered = false;
+        if (stateVisual != null) stateVisual.SetState(false, false);
         if (selectedOverlay != null) selectedOverlay.SetActive(false);
     }
 
@@ -34,6 +37,11 @@ public class SelectedSkillHighlight : MonoBehaviour, IPointerEnterHandler, IPoin
 
     private void Update()
     {
+        if (stateVisual != null)
+        {
+            stateVisual.SetState(false, toggle != null && toggle.IsOn);
+            return;
+        }
         if (selectedOverlay == null) return;
         bool show = toggle != null && toggle.IsOn && !hovered;
         if (selectedOverlay.activeSelf != show) selectedOverlay.SetActive(show);
