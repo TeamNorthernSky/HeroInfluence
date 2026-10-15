@@ -62,6 +62,7 @@ public class WorkshopModalController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI costMoneyText;
     [SerializeField] private GameObject goldBadge;
     [SerializeField] private TextMeshProUGUI costCrystalText;
+    private TextMeshProUGUI requiredWorkshopLevelText;
     [SerializeField] private GameObject crystalBadge;
     [SerializeField] private Button btnConfirm;
     [SerializeField] private TextMeshProUGUI btnConfirmLabel;
@@ -78,6 +79,7 @@ public class WorkshopModalController : MonoBehaviour
 
     private void Awake()
     {
+        CreateRequiredWorkshopLevelText();
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
 
         if (btnConfirm != null)
@@ -229,7 +231,10 @@ public class WorkshopModalController : MonoBehaviour
             if (c.icon != null) { var sp = CoreIcon(i); c.icon.sprite = sp; c.icon.enabled = sp != null; }
             if (c.nameText != null) c.nameText.text = CoreName(i);
             if (c.levelText != null) c.levelText.text = owned ? $"Lv.{level}" : NoValue;
-            if (c.selectedFrame != null) c.selectedFrame.SetActive(i == selectedCore);
+            if (c.selectedFrame != null) c.selectedFrame.SetActive(false);
+            var cardView = c.button != null ? c.button.GetComponent<WorkshopCoreCardView>() : null;
+            if (cardView != null)
+                cardView.SetEquipped(owned && hasHero && ws.GetEquippedWeaponIndex(selectedUnitIndex) == wi);
             if (c.lockMark != null) c.lockMark.SetActive(!owned);
         }
 
@@ -304,9 +309,9 @@ public class WorkshopModalController : MonoBehaviour
             {
                 cond = $"현재 공방 Lv.{deptLevel} / 필요 Lv.{reqLevel}";
                 levelShort = deptLevel < reqLevel;
-                if (levelShort)
+                if (levelShort && owned)
                 {
-                    primary = $"공방 Lv.{reqLevel} 필요";
+                    primary = "강화";
                 }
                 else
                 {
@@ -326,9 +331,41 @@ public class WorkshopModalController : MonoBehaviour
         if (costMoneyText != null) costMoneyText.text = costKnown ? $"{money:N0}" : NoValue;
         if (goldBadge != null) goldBadge.SetActive(lackMoney);
         if (costCrystalText != null) costCrystalText.text = costKnown ? $"{crystal:N0}" : NoValue;
+        UpdateRequiredWorkshopLevelText(costKnown ? reqLevel : 0, deptLevel);
         if (crystalBadge != null) crystalBadge.SetActive(lackCrystal);
         if (btnConfirmLabel != null) btnConfirmLabel.text = primary;
         if (btnConfirm != null) btnConfirm.interactable = enabled;
+    }
+
+    private void CreateRequiredWorkshopLevelText()
+    {
+        if (requiredWorkshopLevelText != null || costCrystalText == null) return;
+        var costRoot = costCrystalText.transform.parent as RectTransform;
+        if (costRoot == null || costRoot.parent == null) return;
+        requiredWorkshopLevelText = Instantiate(costCrystalText, costRoot.parent, false);
+        requiredWorkshopLevelText.name = "RequiredWorkshopLevel";
+        requiredWorkshopLevelText.text = "";
+        requiredWorkshopLevelText.raycastTarget = false;
+        requiredWorkshopLevelText.fontSize = 26;
+        requiredWorkshopLevelText.enableAutoSizing = false;
+        requiredWorkshopLevelText.alignment = TextAlignmentOptions.MidlineLeft;
+        requiredWorkshopLevelText.color = new Color(1f, 0.35f, 0.35f);
+        var rect = requiredWorkshopLevelText.rectTransform;
+        rect.anchorMin = rect.anchorMax = costRoot.anchorMin;
+        rect.pivot = new Vector2(0, 0.5f);
+        rect.sizeDelta = new Vector2(250, costRoot.sizeDelta.y);
+        rect.anchoredPosition = costRoot.anchoredPosition +
+            new Vector2(costRoot.sizeDelta.x * (1f - costRoot.pivot.x) + 18,
+                costRoot.sizeDelta.y * (0.5f - costRoot.pivot.y));
+        requiredWorkshopLevelText.gameObject.SetActive(false);
+    }
+
+    private void UpdateRequiredWorkshopLevelText(int requiredLevel, int currentLevel)
+    {
+        if (requiredWorkshopLevelText == null) return;
+        bool levelTooLow = requiredLevel > 0 && currentLevel < requiredLevel;
+        requiredWorkshopLevelText.gameObject.SetActive(levelTooLow);
+        requiredWorkshopLevelText.text = levelTooLow ? $"Lv.{requiredLevel}이 필요합니다" : "";
     }
 
     /// <summary>영웅 미선택이면 「영웅 선택」 안내(비활성), 선택되면 「장착」/「장착중」.</summary>

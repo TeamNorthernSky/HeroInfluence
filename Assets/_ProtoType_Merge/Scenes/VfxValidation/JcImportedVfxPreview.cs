@@ -29,6 +29,10 @@ namespace JC.VFX.Validation
         public int excludedIncompletePrefabs;
 
         [Header("공간 기준 표시")]
+        [Tooltip("바닥의 표시만 전환합니다. 충돌체는 유지됩니다.")]
+        public bool showGround = true;
+        [Range(0, 10), Tooltip("이펙트 생성 위치, 기준 큐브, 카메라 초점을 함께 올립니다. 바닥과 그리드는 이동하지 않습니다.")]
+        public float heightOffset;
         [Tooltip("플레이 중 옅은 1m 간격 바닥 그리드를 표시합니다. 효과 재생에는 영향을 주지 않습니다.")]
         public bool showGroundGrid = true;
         [Tooltip("플레이 중 카메라 반대편에 불투명 배경 벽을 표시합니다.")]
@@ -36,6 +40,12 @@ namespace JC.VFX.Validation
         [Tooltip("이펙트 생성 원점을 바닥면 중심으로 하는 1.5m 사각 와이어 큐브를 표시합니다. 효과의 실제 범위가 아닌 고정 크기 기준입니다.")]
         public bool showOriginFrame = true;
         private GameObject guideRoot, gridGuide, frameGuide, backdropGuide;
+        private Renderer groundRenderer;
+        private bool originalGroundVisible;
+        private Vector3 baseOriginPosition;
+        private Vector3 baseFramePosition;
+        private float appliedHeightOffset;
+        private bool heightReplayPending;
         private readonly List<Material> guideMaterials = new List<Material>();
 
         private readonly List<int> visible = new List<int>();
@@ -59,7 +69,6 @@ namespace JC.VFX.Validation
         private float pitch = 20;
         private float targetHeight = .5f;
         private Vector2 settingsScroll;
-        private Vector3 focusPosition;
         private GUISkin panelSkin;
         private readonly List<Texture2D> uiTextures = new List<Texture2D>();
         private GUIStyle frameStatusStyle;
@@ -69,7 +78,9 @@ namespace JC.VFX.Validation
 
         private void Start()
         {
+            if (effectOrigin != null) baseOriginPosition = effectOrigin.position;
             BuildSpatialGuides();
+            ApplyHeightOffset();
             Refilter();
             SetDepth(true);
             ResetCamera();
@@ -78,7 +89,15 @@ namespace JC.VFX.Validation
 
         private void Update()
         {
-            if (repeat && !paused && Time.unscaledTime >= nextReplay) Replay();
+            ApplyHeightOffset();
+            // 월드 공간 입자가 이전 위치에 남지 않도록 드래그가 끝난 뒤 한 번 재생합니다.
+            if (heightReplayPending && GUIUtility.hotControl == 0)
+            {
+                bool wasPaused = paused;
+                Replay();
+                if (wasPaused) Pause(true);
+            }
+            if (!heightReplayPending && repeat && !paused && Time.unscaledTime >= nextReplay) Replay();
             if (!searchFocused)
             {
                 if (Input.GetKeyDown(KeyCode.R)) Replay();
@@ -105,7 +124,7 @@ namespace JC.VFX.Validation
             float left = PanelWidth / Mathf.Max(1, Screen.width);
             previewCamera.rect = new Rect(left, 0, 1 - left, 1);
             var rotation = Quaternion.Euler(pitch, yaw, 0);
-            var target = focusPosition + Vector3.up * targetHeight;
+            var target = (effectOrigin != null ? effectOrigin.position : baseOriginPosition) + Vector3.up * targetHeight;
             previewCamera.transform.SetPositionAndRotation(target - rotation * Vector3.forward * distance, rotation);
         }
 
@@ -114,6 +133,8 @@ namespace JC.VFX.Validation
             if (guideRoot != null || effectOrigin == null) return;
             var ground = GameObject.Find("Ground");
             var renderer = ground != null ? ground.GetComponent<Renderer>() : null;
+            groundRenderer = renderer;
+            if (groundRenderer != null) originalGroundVisible = groundRenderer.enabled;
             if (renderer == null || renderer.sharedMaterial == null) return;
             guideRoot = new GameObject("Spatial Guides (Preview Only)");
             guideRoot.transform.SetParent(transform, false);
@@ -136,6 +157,7 @@ namespace JC.VFX.Validation
             gridGuide.transform.SetParent(guideRoot.transform, false);
             frameGuide = new GameObject("Effect Origin - 1.5m Wire Cube");
             frameGuide.transform.SetParent(guideRoot.transform, false);
+            baseFramePosition = frameGuide.transform.position;
             var gridMaterial = GuideMaterial(renderer.sharedMaterial, new Color(.27f, .29f, .31f));
             var frameMaterial = GuideMaterial(renderer.sharedMaterial, new Color(.5f, .68f, .73f));
             var wallMaterial = GuideMaterial(renderer.sharedMaterial, new Color(.16f, .18f, .21f));
@@ -185,9 +207,11 @@ namespace JC.VFX.Validation
 
         private void UpdateSpatialGuides()
         {
+            if (groundRenderer != null) groundRenderer.enabled = showGround;
             if (guideRoot == null) return;
             gridGuide.SetActive(showGroundGrid);
             frameGuide.SetActive(showOriginFrame);
+            if (effectOrigin != null) frameGuide.transform.position = baseFramePosition + effectOrigin.position - baseOriginPosition;
             backdropGuide.SetActive(showBackdrop);
             if (previewCamera == null || effectOrigin == null) return;
             var away = effectOrigin.position - previewCamera.transform.position;
@@ -239,6 +263,7 @@ namespace JC.VFX.Validation
 
         private void Replay()
         {
+            heightReplayPending = false;
             if (selected < 0 || selected >= entries.Length) return;
             Clear();
             var e = entries[selected];
@@ -301,8 +326,17 @@ namespace JC.VFX.Validation
             yaw = -35;
             pitch = 20;
             targetHeight = .5f;
-            focusPosition = instance != null ? instance.transform.position : effectOrigin.position;
             PositionCamera();
+        }
+
+        private void ApplyHeightOffset()
+        {
+            heightOffset = Mathf.Clamp(heightOffset, 0, 10);
+            if (effectOrigin == null) return;
+            effectOrigin.position = baseOriginPosition + Vector3.up * heightOffset;
+            if (Mathf.Approximately(appliedHeightOffset, heightOffset)) return;
+            appliedHeightOffset = heightOffset;
+            heightReplayPending = true;
         }
 
         private Texture2D UiTexture(Color color)
@@ -321,7 +355,9 @@ namespace JC.VFX.Validation
             {
                 states[i].background = i >= 4 && selected != null ? selected : normal;
                 // 에디터 스킨에서 상속된 고해상도 아틀라스와 9-slice 경계를 사용하지 않습니다.
+#if UNITY_EDITOR
                 states[i].scaledBackgrounds = Array.Empty<Texture2D>();
+#endif
                 states[i].textColor = i >= 4 && selected != null ? new Color(.06f, .09f, .14f) : Color.white;
             }
             style.border = new RectOffset();
@@ -442,6 +478,12 @@ namespace JC.VFX.Validation
             GUILayout.BeginArea(new Rect(8, settingsTop, panel - 16, Mathf.Max(80, Screen.height - settingsTop - 8)), GUI.skin.box);
             settingsScroll = GUILayout.BeginScrollView(settingsScroll, false, true);
             Label("재생 및 화면 조절", contentWidth);
+            Label($"공통 높이: {heightOffset:F2} m", contentWidth);
+            heightOffset = GUILayout.HorizontalSlider(heightOffset, 0, 10, GUILayout.Width(contentWidth));
+            if (Button("높이 초기화 (0 m)", contentWidth)) heightOffset = 0;
+            Label("이펙트·프레임·카메라가 함께 이동합니다. 조절을 마치면 효과를 다시 재생합니다.", contentWidth);
+            showGround = GUILayout.Toggle(showGround, new GUIContent((showGround ? "[ON] " : "[OFF] ") + "바닥면 표시", "보이는 바닥면만 전환하며 충돌체는 유지합니다."), GUILayout.Width(contentWidth), GUILayout.Height(44));
+            showGroundGrid = GUILayout.Toggle(showGroundGrid, new GUIContent((showGroundGrid ? "[ON] " : "[OFF] ") + "바닥 그리드 표시", "바닥면 표시와 독립적으로 1m 격자를 전환합니다."), GUILayout.Width(contentWidth), GUILayout.Height(44));
             Label("← / → 선택 · R 재생 · 우클릭 회전 · 휠 확대", contentWidth);
             GUILayout.BeginHorizontal();
             if (Button("이전", contentWidth / 2 - 4)) Step(-1);
@@ -471,7 +513,7 @@ namespace JC.VFX.Validation
             scale = GUILayout.HorizontalSlider(scale, .1f, 5, GUILayout.Width(contentWidth));
             Label($"카메라 거리: {distance:F1}", contentWidth);
             distance = GUILayout.HorizontalSlider(distance, 2, 100, GUILayout.Width(contentWidth));
-            Label($"카메라 기준 높이: {targetHeight:F1}", contentWidth);
+            Label($"카메라 추가 초점 높이: {targetHeight:F1}", contentWidth);
             targetHeight = GUILayout.HorizontalSlider(targetHeight, 0, 15, GUILayout.Width(contentWidth));
             Label($"목록 제외: 데모 스크립트 {excludedScriptedPrefabs}개 · 참조 누락 {excludedIncompletePrefabs}개", contentWidth);
             Label("그래프는 기본 이벤트로 실행합니다. 투사체 이동·타격 등 데모 스크립트 연동은 별도 검증 대상입니다.", contentWidth);
@@ -510,6 +552,7 @@ namespace JC.VFX.Validation
 
         private void OnDestroy()
         {
+            if (groundRenderer != null) groundRenderer.enabled = originalGroundVisible;
             Clear();
             if (panelSkin != null) Destroy(panelSkin);
             foreach (var texture in uiTextures) if (texture != null) Destroy(texture);

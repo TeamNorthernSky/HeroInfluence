@@ -141,10 +141,10 @@ MonoBehaviour:
   unlockFlow: {fileID: 0}
   hqButton: {fileID: 0}
   buildModePrompt: {fileID: 7844570066045368609}
-  highlightColor: {r: 0.35, g: 1, b: 0.45, a: 1}
+  highlightColor: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   constructInfoPrefab: {fileID: 7254843887424473688, guid: 8760a6e22811c174cae130a77fe08d39,
     type: 3}
-  hqUpgradeInfo: "\uBCF8\uBD80\uB97C \uC5C5\uADF8\uB808\uC774\uB4DC \uD569\uB2C8\uB2E4."
+  hqUpgradeInfo: 
   hqUpgradeDesc: "\uB9E4 \uD134 \uC5BB\uB294 \uC790\uAE08\uC774 \uC99D\uAC00\uD569\uB2C8\uB2E4."
   maxLevelMessage: "\uC5C5\uADF8\uB808\uC774\uB4DC\uAC00 \uCD5C\uACE0 \uB2E8\uACC4\uC785\uB2C8\uB2E4."
   infoOffset: {x: 0, y: 0}

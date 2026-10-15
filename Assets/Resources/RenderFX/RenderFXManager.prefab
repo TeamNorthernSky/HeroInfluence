@@ -44,8 +44,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73537b8b14af2394ab9f50ae459fa389, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fogEnabledByDefault: 1
-  logToggle: 1
-  activePreset: {fileID: 11400000, guid: 372a5e1476327004babdf99a7c0184db, type: 2}
-  fogMaterial: {fileID: 2100000, guid: d916019a810e45143a55da2442e04f66, type: 2}
-  applyPresetOnSceneLoad: 1

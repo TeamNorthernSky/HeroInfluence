@@ -72,10 +72,8 @@ MonoBehaviour:
   lockedButton: {fileID: 2016182558586089212}
   unlockedButton: {fileID: 944898615772114561}
   facilityModal: {fileID: 6996265483053847483}
-  buildInfo: "\uD64D\uBCF4\uBD80\uB97C \uAC74\uC124\uD569\uB2C8\uB2E4."
   buildDesc: "\uC601\uC6C5\uC758 I.P\uB97C \uCDA9\uC804\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: 
-  upgradeInfo: "\uD64D\uBCF4\uBD80\uB97C \uC5C5\uADF8\uB808\uC774\uB4DC \uD569\uB2C8\uB2E4."
   upgradeDesc: "I.P \uCDA9\uC804 \uD6A8\uC728\uC774 \uC99D\uAC00\uD569\uB2C8\uB2E4."
   lockedHoverComponents:
   - {fileID: 8283055244895574198}
@@ -166,7 +164,6 @@ GameObject:
   - component: {fileID: 6861214866457558481}
   - component: {fileID: 5180788614036129389}
   - component: {fileID: 4945012977702498346}
-  - component: {fileID: 1186073249817660251}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -221,7 +218,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD64D\uBCF4\uBD80 Lv.1"
+  m_text: "\uD64D\uBCF4\uBD80"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -291,22 +288,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &1186073249817660251
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8783304711165284378}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fce4c092099d9b419054b71bb98a828, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  department: 1
-  prefix: "\uD64D\uBCF4\uBD80"
-  label: {fileID: 4945012977702498346}
-  showWhenLocked: 0
 --- !u!1001 &3036246903313156400
 PrefabInstance:
   m_ObjectHideFlags: 0

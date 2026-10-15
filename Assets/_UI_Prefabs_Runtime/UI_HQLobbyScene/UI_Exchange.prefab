@@ -2518,12 +2518,10 @@ MonoBehaviour:
   lockedButton: {fileID: 4921853968088878011}
   unlockedButton: {fileID: 6715761639717884771}
   facilityModal: {fileID: 8764276205412261622}
-  buildInfo: "\uAD50\uD658\uC18C\uB97C \uAC74\uC124\uD569\uB2C8\uB2E4."
   buildDesc: "\uBCF4\uC720\uD55C \uC790\uC6D0\uC744 \uB2E4\uB978 \uC790\uC6D0\uC73C\uB85C
     \uAD50\uD658\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   buildCondition: "\uD544\uC694 \uC870\uAC74: \uC5F0\uAD6C\uC18C Lv.1 + \uACF5\uBC29
     Lv.1"
-  upgradeInfo: "\uAD50\uD658\uC18C\uB97C \uC5C5\uADF8\uB808\uC774\uB4DC \uD569\uB2C8\uB2E4."
   upgradeDesc: "\uC790\uC6D0 \uAD50\uD658 \uD6A8\uC728\uC774 \uC99D\uAC00\uD569\uB2C8\uB2E4."
   lockedHoverComponents:
   - {fileID: 3261812971407130097}
@@ -5647,7 +5645,6 @@ GameObject:
   - component: {fileID: 8352401936520330819}
   - component: {fileID: 8717379853089007275}
   - component: {fileID: 1538473317926802330}
-  - component: {fileID: 8212223985930088351}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -5702,7 +5699,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uAD50\uD658\uC18C Lv.1"
+  m_text: "\uAD50\uD658\uC18C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -5772,22 +5769,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &8212223985930088351
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7295366284196060768}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2fce4c092099d9b419054b71bb98a828, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  department: 6
-  prefix: "\uAD50\uD658\uC18C"
-  label: {fileID: 1538473317926802330}
-  showWhenLocked: 0
 --- !u!1 &7419837825313649889
 GameObject:
   m_ObjectHideFlags: 0

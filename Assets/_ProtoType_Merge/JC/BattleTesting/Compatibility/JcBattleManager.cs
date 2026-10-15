@@ -30,8 +30,6 @@ public class JcBattleManager : MonoBehaviour
     public event Action<string> OnActionExecuted;
     public event Action<SkillResolutionContext> OnSkillResolved;
 
-    /// <summary>UI 등 외부에서 배속 변경을 요청할 때 발생시킵니다. JcAutoBattleController.OnAutoBattleToggleRequested와 동일한 패턴.</summary>
-    public static event Action<float> OnBattleSpeedChangeRequested;
 
     internal const int ClassSkillEffect_Damage = 0;
     internal const int ClassSkillEffect_Heal = 1;
@@ -136,7 +134,6 @@ public class JcBattleManager : MonoBehaviour
             battleFlowManager = FindObjectOfType<JcBattleFlowManager>();
         }
 
-        OnBattleSpeedChangeRequested += ChangeBattleSpeed;
         ChangeBattleSpeed(JcBattleRuntimeSettings.BattleSpeed);
     }
 
@@ -252,7 +249,6 @@ public class JcBattleManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        OnBattleSpeedChangeRequested -= ChangeBattleSpeed;
 
         if (Instance == this)
         {

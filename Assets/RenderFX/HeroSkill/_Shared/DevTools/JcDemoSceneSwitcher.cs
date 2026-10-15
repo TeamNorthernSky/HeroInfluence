@@ -22,6 +22,7 @@ namespace JC.VFX.Seam
     [DisallowMultipleComponent]
     public class JcDemoSceneSwitcher : MonoBehaviour
     {
+#if JC_LEGACY_VFX_DEMO
         private struct Entry
         {
             public KeyCode key;
@@ -66,15 +67,12 @@ namespace JC.VFX.Seam
         ///   게다가 DontDestroyOnLoad 로 살아남아 본 게임 씬까지 따라다닌다.
         ///   데모용 도구가 본 게임 흐름에 끼어들 이유가 없다.
         ///
-        /// 되살리는 법: 아래 Enabled 를 true 로 바꾸고,
+        /// 되살리는 법: Scripting Define Symbols에 JC_LEGACY_VFX_DEMO를 추가하고,
         ///   <b>File → Build Settings 에 Entries 의 씬들을 추가</b>한다. 둘 다 해야 동작한다.
         /// </summary>
-        private const bool Enabled = false;
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
-            if (!Enabled) return;                                            // 레거시 — 생성 자체를 안 한다
             if (FindAnyObjectByType<JcDemoSceneSwitcher>() != null) return;   // 중복 방지
 
             var go = new GameObject("[JC] DemoSceneSwitcher");
@@ -84,7 +82,6 @@ namespace JC.VFX.Seam
 
         private void Update()
         {
-            if (!Enabled) return;
             if (!InDemoScene()) return;   // 데모 씬 밖에서는 키를 먹지 않는다
 
             for (int i = 0; i < Entries.Length; i++)
@@ -113,7 +110,6 @@ namespace JC.VFX.Seam
 
         private void OnGUI()
         {
-            if (!Enabled) return;
             if (!ShowOverlay) return;
             if (!InDemoScene()) return;   // 부트씬·본게임 씬에 안내가 뜨지 않게
 
@@ -140,5 +136,6 @@ namespace JC.VFX.Seam
                     "<color=#7fd0ff>" + message + "</color>", style);
             }
         }
+#endif
     }
 }

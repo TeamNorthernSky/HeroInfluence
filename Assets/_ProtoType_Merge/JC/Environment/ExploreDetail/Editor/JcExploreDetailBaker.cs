@@ -17,6 +17,13 @@ namespace JC.EnvironmentDetail.Editor
         public const string Root = "Assets/_ProtoType_Merge/JC/Environment/ExploreDetail";
         const string CatalogPath = Root + "/Resources/JC_ExploreDetail_Bakes.asset";
         const string OutputPath = Root + "/Baked";
+        static bool DisplayOnlyDependency(string path) =>
+            path == Root + "/CalmCanalWater.shader" || path == Root + "/JcWaterProfile.cs" ||
+            path == Root + "/JcWaterController.cs" || path == Root + "/Editor/JcWaterEditor.cs" ||
+            path == Root + "/Resources/JC_Water_Default.asset" ||
+            path == Root + "/Editor/JcWaterValidation.cs" ||
+            path == Root + "/Editor/JcExploreDetailBakeValidation.cs" ||
+            path == Root + "/Editor/JcExploreDetailEditor.cs";
         public static string Settings(JcExploreDetailProfile profile)
         {
             var copy = Object.Instantiate(profile);
@@ -31,7 +38,8 @@ namespace JC.EnvironmentDetail.Editor
         }
         public static string CheckDependencies(JcExploreDetailBake bake)
         {
-            foreach (var item in bake.dependencies)
+            // 저장된 과거 베이크에도 같은 제외 규칙을 적용합니다. 생성기·메시 입력 검사는 유지합니다.
+            foreach (var item in bake.dependencies.Where(x=>!DisplayOnlyDependency(x.path)))
                 if (!File.Exists(item.path) || SourceDependencyHash(item.path) != item.hash)
                     return "베이크 입력 에셋 변경: " + item.path;
             return null;
@@ -191,7 +199,7 @@ namespace JC.EnvironmentDetail.Editor
             while (iterator.Next(true)) if (iterator.propertyType == SerializedPropertyType.ObjectReference) add(iterator.objectReferenceValue);
             foreach (string path in AssetDatabase.FindAssets("t:MonoScript", new[] { Root }).Select(AssetDatabase.GUIDToAssetPath)) paths.Add(path);
             foreach (string path in paths.SelectMany(p => AssetDatabase.GetDependencies(p, true)).Distinct().OrderBy(p => p, StringComparer.Ordinal))
-                if (path.StartsWith("Assets/", StringComparison.Ordinal) && !path.StartsWith(OutputPath + "/", StringComparison.Ordinal) && path != CatalogPath &&
+                if (!DisplayOnlyDependency(path) && path.StartsWith("Assets/", StringComparison.Ordinal) && !path.StartsWith(OutputPath + "/", StringComparison.Ordinal) && path != CatalogPath &&
                     path != AssetDatabase.GetAssetPath(overlay.profile))
                     yield return new JcExploreDetailBake.Dependency { path = path, hash = SourceDependencyHash(path) };
         }
@@ -232,6 +240,7 @@ namespace JC.EnvironmentDetail.Editor
                             copy.SetTexture(id, Texture(copy.GetTexture(id))); break;
                     }
                 }
+                if(copy.HasProperty("_UseWaterTime"))copy.SetFloat("_UseWaterTime",0);
                 AssetDatabase.CreateAsset(copy, folder + "/Material_" + next++ + ".mat");
                 if (block.isEmpty) copies[source] = copy;
                 return copy;
@@ -260,7 +269,7 @@ namespace JC.EnvironmentDetail.Editor
             {
                 var bake = catalog?.Find(scene.path);
                 string reason = bake == null ? "확정 베이크 없음" : JcExploreDetailBaker.CheckDependencies(bake);
-                // Player에서 읽을 수 없는 에셋 내용 변경도 원본 복귀 정책에 전달합니다.
+                // Player에서 읽을 수 없는 에셋 변경은 진단 경고로 전달합니다. 확정 외형은 유지합니다.
                 var entry = catalog?.scenes.FirstOrDefault(x => x.scenePath == scene.path);
                 if (entry != null && entry.buildInputWarning != reason)
                 { entry.buildInputWarning = reason; EditorUtility.SetDirty(catalog); AssetDatabase.SaveAssetIfDirty(catalog); }

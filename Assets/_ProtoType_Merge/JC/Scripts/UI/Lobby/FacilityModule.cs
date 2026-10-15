@@ -16,10 +16,8 @@ public class FacilityModule : MonoBehaviour
     [SerializeField] private GameObject facilityModal;
 
     [Header("안내 문구")]
-    [TextArea] public string buildInfo;
     [TextArea] public string buildDesc;
     [TextArea] public string buildCondition;
-    [TextArea] public string upgradeInfo;
     [TextArea] public string upgradeDesc;
 
     [Header("잠금 placeholder 비상호작용 토글 대상 (호버 컴포넌트들)")]
@@ -72,8 +70,8 @@ public class FacilityModule : MonoBehaviour
         if (gm == null || gm.HQ == null) return ("", "", "");
         int lv = gm.HQ.GetLevel(department);
         int max = gm.HQ.GetMaxLevel(department);
-        if (lv == 0) return (buildInfo, buildDesc, buildCondition);
+        if (lv == 0) return ("", buildDesc, buildCondition);
         if (lv >= max) return (maxMsg, "", "");
-        return (upgradeInfo, upgradeDesc, "");
+        return ("", upgradeDesc, "");
     }
 }
