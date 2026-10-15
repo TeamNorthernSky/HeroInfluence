@@ -313,9 +313,6 @@ public class MoveRangeController : MonoBehaviour
         if (gridManager.HasRegisteredObstacleOrGateBlocker(grid))
             return false;
 
-        if (gridManager.HasMoveRangeBlockingInteractionOccupant(grid, mover != null ? mover.transform : null))
-            return false;
-
         if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
             return false;
 

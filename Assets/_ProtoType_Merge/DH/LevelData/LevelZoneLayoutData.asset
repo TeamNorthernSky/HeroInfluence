@@ -14,19 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   layoutId: layout_001
   displayName: New Zone Layout
-  totalGridSize: {x: 100, y: 40}
+  totalGridSize: {x: 110, y: 45}
   zones:
   - zoneId: zone_001
     zoneType: 0
     anchor: {x: 0, y: 0}
-    size: {x: 50, y: 40}
+    size: {x: 50, y: 45}
     optional: 0
     candidates:
     - {fileID: 11400000, guid: cb4033f385e21c144931e45e5cacb703, type: 2}
   - zoneId: zone_002
     zoneType: 0
     anchor: {x: 50, y: 0}
-    size: {x: 50, y: 40}
+    size: {x: 60, y: 45}
     optional: 0
     candidates:
     - {fileID: 11400000, guid: 571541ec4c3d6b9499ef940b9422499a, type: 2}
