@@ -103,7 +103,7 @@ namespace JC.EnvironmentDetail.Editor
     {
         public override void OnInspectorGUI(){EditorGUILayout.HelpBox("설정은 생성용 초안입니다. 수정만으로 외형이 바뀌지 않습니다. 편집 모드에서 JC_ExploreDetail의 재생성 → 베이크 확정을 사용하세요. 런타임은 확정본만 사용합니다.",MessageType.Info);
             serializedObject.Update();
-            DrawPropertiesExcluding(serializedObject,"waterTint","waterEdgeTint","waterFollowCanal","waterFlowSpeed","waterWaveSize","waterWaveStrength","waterWaveVisibility","waterRippleSize","waterRippleStrength","waterRippleVisibility","waterRippleSpeed","waterFlowStreakStrength","waterShine","waterEdgeWidth");
+            DrawPropertiesExcluding(serializedObject,"m_Script");
             serializedObject.ApplyModifiedProperties();
             EditorGUILayout.HelpBox("물 외형은 JC_WorldDressing / JC_Water에서 실시간 조절합니다. 아래 수로 방향은 방향 지도의 하류 기준이며 재베이크가 필요합니다.",MessageType.Info);
             if(GUILayout.Button(new GUIContent("물 실시간 설정 선택","현재 씬의 JC_Water를 선택합니다. 지형을 재생성하지 않습니다.")))
