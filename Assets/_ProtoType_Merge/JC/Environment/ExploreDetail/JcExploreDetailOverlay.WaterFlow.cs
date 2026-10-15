@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,7 +11,7 @@ namespace JC.EnvironmentDetail
         void BuildWaterFlowMap(Dictionary<Vector2Int,Cell> cells, Material material)
         {
             material.SetFloat("_FollowCanal",0);
-            if(!profile.waterFollowCanal)return;
+
             var water=cells.Where(p=>p.Value.kind==5).ToDictionary(p=>p.Key,p=>p.Value);
             if(water.Count==0)return;
             var preferred=profile.waterFlowDirection.sqrMagnitude>.0001f?profile.waterFlowDirection.normalized:Vector2.right;

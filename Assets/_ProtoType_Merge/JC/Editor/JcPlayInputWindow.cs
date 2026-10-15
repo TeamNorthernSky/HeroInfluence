@@ -37,12 +37,13 @@ public sealed class JcPlayInputWindow : EditorWindow
 [Overlay(typeof(SceneView), "jc-play-input", "마우스 스크롤-커서 제어", true)]
 public sealed class JcPlayInputOverlay : Overlay
 {
-    [SerializeField] private bool collapsed;
+    [UnityEngine.Serialization.FormerlySerializedAs("collapsed")]
+    [SerializeField] private bool settingsCollapsed;
     public override VisualElement CreatePanelContent()
     {
         var root = new ScrollView { style = { width = 330, maxHeight = 460, paddingLeft = 8, paddingRight = 8,
             paddingTop = 6, paddingBottom = 6, backgroundColor = new Color(.16f, .16f, .16f, .98f) } };
-        root.Add(new IMGUIContainer(() => JcPlayInputGui.Draw(ref collapsed)));
+        root.Add(new IMGUIContainer(() => JcPlayInputGui.Draw(ref settingsCollapsed)));
         return root;
     }
 }

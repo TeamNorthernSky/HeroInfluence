@@ -13,13 +13,12 @@ using UnityEngine;
 /// 자동 전투 컨트롤러.
 /// 플레이어 턴에 랜덤 액션/타겟을 선택해 BattleManager로 실행합니다.
 /// JcInputHandler.IsAutoBattleActive 플래그로 수동 입력을 차단합니다.
-/// UI에서 OnAutoBattleToggleRequested 이벤트를 발생시켜 자동 전투를 제어합니다.
+/// UI에서 IsAutoBattle을 설정하여 자동 전투를 제어합니다.
 /// </summary>
 [DisallowMultipleComponent]
 public class JcAutoBattleController : MonoBehaviour
 {
     /// <summary>UI 버튼 등 외부에서 자동 전투 토글을 요청할 때 발생시킵니다.</summary>
-    public static event Action<bool> OnAutoBattleToggleRequested;
 
     [Tooltip("JC 전투의 현재 턴과 종료 상태를 읽는 흐름입니다. 본게임 흐름을 연결하지 않습니다.")]
     [SerializeField] private JcBattleFlowManager flowManager;
@@ -79,7 +78,6 @@ public class JcAutoBattleController : MonoBehaviour
         if (flowManager != null)
             flowManager.OnTurnStarted += OnTurnStarted;
 
-        OnAutoBattleToggleRequested += HandleToggleRequest;
         IsAutoBattle = JcBattleRuntimeSettings.IsAutoBattle;
     }
 
@@ -90,17 +88,9 @@ public class JcAutoBattleController : MonoBehaviour
         if (flowManager != null)
             flowManager.OnTurnStarted -= OnTurnStarted;
 
-        OnAutoBattleToggleRequested -= HandleToggleRequest;
 
         if (inputHandler != null)
             inputHandler.IsAutoBattleActive = false;
-    }
-
-    // 원본 함수 대응: AutoBattleController.HandleToggleRequest (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Core/AutoBattleController.cs)
-
-    private void HandleToggleRequest(bool enable)
-    {
-        IsAutoBattle = enable;
     }
 
     [ContextMenu("자동 전투 ON")]

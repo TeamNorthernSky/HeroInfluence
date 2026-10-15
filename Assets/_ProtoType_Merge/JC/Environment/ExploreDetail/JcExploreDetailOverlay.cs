@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -19,16 +19,22 @@ namespace JC.EnvironmentDetail
         readonly Dictionary<MeshFilter,MeshFilter> visualCopies=new Dictionary<MeshFilter,MeshFilter>();
         readonly List<UnityEngine.Object> owned=new List<UnityEngine.Object>();
         GameObject output;
+        JcWaterController waterController;
+        void BindWater(){waterController=JcWaterController.Ensure(this);waterController.Bind(output);}
         struct Cell { public Vector3 center; public float size; public int kind; public Texture2D texture; public Vector2 uvMin,uvMax; }
         static readonly Vector2Int[] dirs={Vector2Int.left,Vector2Int.right,Vector2Int.down,Vector2Int.up};
         static Vector2Int Key(Vector3 p)=>new Vector2Int(Mathf.RoundToInt(p.x*1000),Mathf.RoundToInt(p.z*1000));
         static Vector2Int Neighbor(Cell c,int d)=>Key(c.center+new Vector3(dirs[d].x,0,dirs[d].y)*c.size);
         static void Dispose(UnityEngine.Object o){if(o==null)return;if(Application.isPlaying)Destroy(o);else DestroyImmediate(o);}
         public void Restore()
+        { ReleaseVisual(true); }
+        void ReleaseVisual(bool releaseWater)
         {
+            if(releaseWater && waterController!=null)waterController.Unbind();
             foreach(var pair in originals)if(pair.Key!=null)pair.Key.forceRenderingOff=pair.Value;
             originals.Clear();visualCopies.Clear();if(output!=null){output.SetActive(false);Dispose(output);}output=null;
             foreach(var o in owned)Dispose(o);owned.Clear();
+            appliedBake=null;appliedPrefab=null;
         }
         #if UNITY_EDITOR
         MeshFilter[] Sources() => JcExploreDetailBake.Sources(gameObject.scene);

@@ -321,7 +321,9 @@ namespace JC.VFX.Validation
             {
                 states[i].background = i >= 4 && selected != null ? selected : normal;
                 // 에디터 스킨에서 상속된 고해상도 아틀라스와 9-slice 경계를 사용하지 않습니다.
+#if UNITY_EDITOR
                 states[i].scaledBackgrounds = Array.Empty<Texture2D>();
+#endif
                 states[i].textColor = i >= 4 && selected != null ? new Color(.06f, .09f, .14f) : Color.white;
             }
             style.border = new RectOffset();
