@@ -603,7 +603,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
         int enemyLevel)
     {
         eventCatalog.TryGetBattleEnemyUnitTemplate(zoneId, member.UnitKey, out DHEventBattleUnitTemplate template);
-        prefabRegistry.TryGetEnemyUnitPrefab(member.NumericUnitKey, out EnemyUnitState unitPrefab);
+        TryResolveEventBattlePrefab(prefabRegistry, member.NumericUnitKey, out EnemyUnitState unitPrefab, out _);
 
         EnemyUnitState unitState = Instantiate(unitPrefab, transform);
         unitState.transform.localPosition = Vector3.zero;
@@ -780,7 +780,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
                 return false;
             }
 
-            if (!prefabRegistry.TryGetEnemyUnitPrefab(member.NumericUnitKey, out _))
+            if (!TryResolveEventBattlePrefab(prefabRegistry, member.NumericUnitKey, out _, out _))
             {
                 Debug.LogWarning(
                     $"Event battle enemy group '{enemyGroupKey}' references missing enemy unit prefab index '{member.NumericUnitKey}'.",
@@ -790,6 +790,38 @@ public class EnemyUnitBootstrap : MonoBehaviour
         }
 
         return true;
+    }
+
+    // Event unit IDs may append one combat-variant digit to a five-digit field prefab key.
+    private static bool TryResolveEventBattlePrefab(
+        LevelPrefabRegistry prefabRegistry,
+        int eventUnitIndex,
+        out EnemyUnitState unitPrefab,
+        out int resolvedPrefabIndex)
+    {
+        unitPrefab = null;
+        resolvedPrefabIndex = 0;
+        if (prefabRegistry == null || eventUnitIndex <= 0)
+            return false;
+
+        if (prefabRegistry.TryGetEnemyUnitPrefab(eventUnitIndex, out unitPrefab))
+        {
+            resolvedPrefabIndex = eventUnitIndex;
+            return true;
+        }
+
+        // Six-digit IDs use the first five digits as their shared exploration prefab key.
+        if (eventUnitIndex >= 100000 && eventUnitIndex <= 999999)
+        {
+            int sharedPrefabIndex = eventUnitIndex / 10;
+            if (prefabRegistry.TryGetEnemyUnitPrefab(sharedPrefabIndex, out unitPrefab))
+            {
+                resolvedPrefabIndex = sharedPrefabIndex;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static int ResolveEventBattleEnemyLevel(DHEventBattleGroupTemplate groupData, int fallbackLevel)
