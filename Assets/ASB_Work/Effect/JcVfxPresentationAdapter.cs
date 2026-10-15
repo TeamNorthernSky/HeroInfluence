@@ -53,7 +53,12 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
         _effect.SetTargets(targets);
         _effect.PlaybackSpeed = Mathf.Max(0.01f, context?.PlaybackSpeed ?? 1f);
         _parts = _effect as JcVfxPartSequence;
-        if (_parts != null) { _parts.MuzzleSocket = context.SocketTransform; _parts.Impacted += OnTargetsImpacted; }
+        if (_parts != null)
+        {
+            _parts.MuzzleSocket = context.SocketTransform;
+            _parts.Impacted += OnTargetsImpacted;
+            _parts.PartStarted += OnPartStarted;
+        }
         _barrage = _effect as TaoBarrageVfx;
         if (_barrage != null) _barrage.OnTargetsImpacted += OnTargetsImpacted;
         _paw = _effect as PawForYouVfx;
@@ -71,6 +76,7 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
         var targets = _context.Targets?.Where(u => u != null).Select(u => u.transform).ToArray() ?? Array.Empty<Transform>();
         SkillImpactSignalBus.PublishImpact(new ImpactKey(_context.ActionInstanceId), _context.TargetPosition, targets);
     }
+    private void OnPartStarted(int stepIndex) => PresentationSfxEvents.PlayEffectStep(_context?.Presentation, stepIndex);
     public bool Signal(SkillEffectContext context) { Stop(); return true; }
     public void Stop() { StopRunningEffect(); Destroy(gameObject); }
     private IEnumerator SafetyCleanupRoutine(float seconds) { yield return new WaitForSeconds(Mathf.Max(0.1f, seconds)); _safetyRoutine = null; Stop(); }
@@ -84,7 +90,11 @@ public sealed class JcVfxPresentationAdapter : MonoBehaviour, ISkillEffectBehavi
         _barrage = null;
         if (_paw != null) _paw.OnTargetImpacted -= OnTargetsImpacted;
         _paw = null;
-        if (_parts != null) _parts.Impacted -= OnTargetsImpacted;
+        if (_parts != null)
+        {
+            _parts.Impacted -= OnTargetsImpacted;
+            _parts.PartStarted -= OnPartStarted;
+        }
         _parts = null;
         if (_effect != null) { _effect.OnFinished -= OnEffectFinished; if (_played) _effect.Stop(); }
         _played = false;

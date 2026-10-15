@@ -126,6 +126,65 @@ public class PresentationSfxMarkerPlayModeTests
         }
     }
 
+#if UNITY_EDITOR
+    [UnityTest]
+    public IEnumerator BlackBullet3010_ActualTimeline_RoutesBothSfxMarkers()
+    {
+        var timeline = UnityEditor.AssetDatabase.LoadAssetAtPath<TimelineAsset>(
+            "Assets/ASB_Work/Skills/Timelines/Skill3010_10003.playable");
+        Assert.That(timeline, Is.Not.Null);
+
+        Type receiverType = FindType("PresentationSignalReceiver");
+        FieldInfo sinkField = FindType("PresentationSfxPlayer").GetField(
+            "SinkOverride", BindingFlags.NonPublic | BindingFlags.Static);
+        object previousSink = sinkField.GetValue(null);
+        var heard = new List<string>();
+        var actor = new GameObject("BlackBullet3010SfxTest");
+        bool previousIgnore = LogAssert.ignoreFailingMessages;
+        try
+        {
+            // The animation clip has gameplay events; this probe has no battle actor to receive them.
+            LogAssert.ignoreFailingMessages = true;
+            sinkField.SetValue(null, new Action<string>(key => heard.Add(key)));
+            var receiver = (MonoBehaviour)actor.AddComponent(receiverType);
+            var animator = actor.AddComponent<Animator>();
+            var director = actor.AddComponent<PlayableDirector>();
+            director.playableAsset = timeline;
+            int soundTracks = 0;
+            int soundMarkers = 0;
+            foreach (TrackAsset track in timeline.GetOutputTracks())
+            {
+                if (track is AnimationTrack)
+                    director.SetGenericBinding(track, animator);
+                else if (track.GetType().Name == "PresentationMarkerTrack" &&
+                    track.GetType().GetProperty("Role")?.GetValue(track)?.ToString() == "Sfx")
+                {
+                    director.SetGenericBinding(track, receiver);
+                    soundTracks++;
+                    soundMarkers += track.GetMarkers().Count();
+                    Assert.That(director.GetGenericBinding(track), Is.SameAs(receiver));
+                }
+            }
+            Assert.That(soundTracks, Is.EqualTo(1));
+            Assert.That(soundMarkers, Is.EqualTo(2));
+            Configure(receiverType, receiver);
+            director.Play();
+
+            float deadline = Time.realtimeSinceStartup + 2f;
+            while (heard.Count < 2 && Time.realtimeSinceStartup < deadline)
+                yield return null;
+
+            Assert.That(heard, Is.EqualTo(new[] { "Battle_PreSkill02", "Battle_LongHit01" }));
+        }
+        finally
+        {
+            LogAssert.ignoreFailingMessages = previousIgnore;
+            sinkField.SetValue(null, previousSink);
+            UnityEngine.Object.Destroy(actor);
+        }
+    }
+#endif
+
     private static void AddMarker(TimelineAsset timeline, Type markerType, double time, string key)
         => AddMarker(timeline.markerTrack, markerType, time, key);
 

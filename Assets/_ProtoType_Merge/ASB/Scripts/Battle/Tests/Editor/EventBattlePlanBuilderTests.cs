@@ -9,8 +9,8 @@ using NUnit.Framework;
 /// (BattleLogicalSlotMapTests와 동일 패턴).
 ///
 /// 여기서는 카탈로그 데이터가 필요 없는 fail-fast 가드(§9-2)만 결정적으로 검증한다.
-/// 스탯/스킬/인질 스냅샷 동등성(§9-1, BE002~BE005)은 EventScriptCatalog(DHScene_3 로드 SO)와
-/// BattleScenarioCatalog 데이터가 있어야 하며, EditMode 주입 수단이 없어 별도 픽스처/런타임 검증이 필요하다
+/// 스탯/스킬 스냅샷 동등성(§9-1, BE002~BE005)은 EventScriptCatalog(DHScene_3 로드 SO)가
+/// 있어야 하며, EditMode 주입 수단이 없어 별도 픽스처/런타임 검증이 필요하다
 /// (아래 SnapshotEquivalence_RequiresCatalogFixture 참조).
 /// </summary>
 public sealed class EventBattlePlanBuilderTests
@@ -97,8 +97,8 @@ public sealed class EventBattlePlanBuilderTests
 
     /// <summary>
     /// §9-1 동등성 스냅샷(UnitKey/슬롯/레벨, HP/ATK/DEF/경험치+전투스탯, PrefabKey/SourceUnitKey,
-    /// 스킬 개수·순서·전체 필드, 인질 슬롯·HP·초기HP·위협 설정 / BE002~BE004 + 시나리오 없는 BE005)은
-    /// EventScriptCatalog(DHScene_3 로드) + BattleScenarioCatalog 데이터가 필요하다.
+    /// 스킬 개수·순서·전체 필드 / BE002~BE005)는
+    /// EventScriptCatalog(DHScene_3 로드) 데이터가 필요하다.
     /// EditMode에서 카탈로그 주입 수단이 없어 현재는 런타임(DHScene_3 경유) 또는 전용 픽스처가 있어야 한다.
     /// 픽스처(카탈로그 SO 주입 하네스) 마련 후 활성화할 것.
     /// </summary>

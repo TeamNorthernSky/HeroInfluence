@@ -848,7 +848,7 @@ public sealed partial class SkillPresentationDirector
             else yield return hit.ExecuteRoutine(_battle);
         }
 
-        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
 
         // 저장/빌드 검증에서 사전 차단하지만(§3), 런타임 도달 시에도 시퀀스는 반드시 종료한다 —
         // 조용한 Path B 폴백은 하지 않고, 대미지 유실/행 hang을 막는다.
@@ -856,7 +856,7 @@ public sealed partial class SkillPresentationDirector
         {
             Debug.LogError(
                 $"[PathA] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 " +
-                $"(index '{actor?.TemplateIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
+                $"(index '{actor?.TemplateIndex}', presentation '{actor?.PresentationIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
                 "피격 연출만 적용하고 종료합니다.", actor);
             ResolveHit();
             if (hitRoutine != null) yield return hitRoutine;
@@ -1147,7 +1147,7 @@ public sealed partial class SkillPresentationDirector
     {
         bool moveEnabled = presentation?.Move?.Enabled ?? true;
         bool returnEnabled = presentation?.Return?.Enabled ?? true;
-        TimelineAsset movementTimeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+        TimelineAsset movementTimeline = actor != null ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
         bool timelineOwnsMove = HasTimelineMove(movementTimeline);
         bool timelineOwnsReturn = HasTimelineReturn(movementTimeline);
 
@@ -1212,7 +1212,7 @@ public sealed partial class SkillPresentationDirector
             yield break;
         }
 
-        TimelineAsset timeline = presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName);
+        TimelineAsset timeline = presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName);
         TimelineMovingAttackSpan movingSpan = timeline != null
             ? CollectMovingAttackSpan(timeline, plan.PathPoints, presentation.MovingAttack.PathSampleCount)
             : null;
@@ -1296,12 +1296,12 @@ public sealed partial class SkillPresentationDirector
         ProjectileVisualData projectileVisual, MovingAttackPlan movingAttackPlan = null,
         UnitMovementProfile movement = null, float originRotationY = 0f)
     {
-        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
         if (timeline == null)
         {
             Debug.LogError(
                 $"[PathA/AoE] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 " +
-                $"(index '{actor?.TemplateIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
+                $"(index '{actor?.TemplateIndex}', presentation '{actor?.PresentationIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
                 "AoE Delivery를 즉시 확정하고 종료합니다.", actor);
             yield return new AoEApplyDamageAction(
                     contexts, hitCallbacks, pairCount, _battle.CurrentBattleSpeed, _battle.VisualDirector,
@@ -1802,7 +1802,7 @@ public sealed partial class SkillPresentationDirector
             {
                 // Animator 레일과 같은 회전 규칙: Move가 켜진 회전형 유닛만 재생 전에 대상 쪽으로 돌고, 끝나면 원래 방향으로 돌아온다.
                 // 비-Melee Timeline은 이동하지 않는다. 복귀는 빈 MoveReturn 대신 현재(Idle) 애니메이션을 유지한다.
-                TimelineAsset movementTimeline = presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName);
+                TimelineAsset movementTimeline = presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName);
                 bool timelineOwnsMove = HasTimelineMove(movementTimeline);
                 bool timelineOwnsReturn = HasTimelineReturn(movementTimeline);
                 bool rotateForTimeline = (presentation.Move?.Enabled ?? true) && shouldRotate;
@@ -2412,7 +2412,7 @@ public sealed partial class SkillPresentationDirector
                 if (contexts[i]?.Target != null) candidates.Add(contexts[i].Target);
             TimelineAsset movingTimeline = TryBuildMovingAttackPlan(actor, actorAnim, presentation, candidates,
                     out movingTimelinePlan)
-                ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+                ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
             movingTimelineSpan = movingTimeline != null
                 ? CollectMovingAttackSpan(movingTimeline, movingTimelinePlan.PathPoints,
                     movingTimelinePlan.Presentation.PathSampleCount)

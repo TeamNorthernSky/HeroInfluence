@@ -742,7 +742,7 @@ namespace ASB.Work.EditorTools.Jig
 
         /// <summary>
         /// SkillPresentationData.EventSfx 검증. 빈 키는 Error, 카탈로그 불일치는 SFX 마커와 같은 Warning.
-        /// Hit 계열 줄의 Occurrence는 런타임이 무시하므로 Warning.
+        /// EffectImpact/EffectStep 이외 줄의 Occurrence는 런타임이 무시하므로 Warning.
         /// </summary>
         private static void ValidateEventSfx(SkillPresentationData data, List<SkillTimelineValidationMessage> result)
         {
@@ -761,9 +761,10 @@ namespace ASB.Work.EditorTools.Jig
                 if (string.IsNullOrEmpty(key))
                     Add(result, SkillTimelineValidationSeverity.Error, $"{label}의 키가 비어 있습니다.");
 
-                if (entry.Event != PresentationSfxEvent.EffectImpact && entry.Occurrence >= 0)
+                if (entry.Event != PresentationSfxEvent.EffectImpact
+                    && entry.Event != PresentationSfxEvent.EffectStep && entry.Occurrence >= 0)
                     Add(result, SkillTimelineValidationSeverity.Warning,
-                        $"{label}: Occurrence({entry.Occurrence})는 EffectImpact에만 적용되어 무시됩니다.");
+                        $"{label}: Occurrence({entry.Occurrence})는 EffectImpact/EffectStep에만 적용되어 무시됩니다.");
 
                 if (string.IsNullOrEmpty(key)) continue;
                 if (catalog == null)

@@ -77,6 +77,37 @@ public static class PresentationSfxEvents
         }
     }
 
+    /// <summary>실제 회복이 확정된 대상마다 재생한다. 첫 대상과 인접 대상은 별도 키를 사용한다.</summary>
+    public static void PlayHeal(SkillPresentationData presentation, bool additional)
+    {
+        List<PresentationEventSfx> entries = presentation != null ? presentation.EventSfx : null;
+        if (entries == null) return;
+
+        PresentationSfxEvent evt = additional && HasEvent(entries, PresentationSfxEvent.AdditionalHeal)
+            ? PresentationSfxEvent.AdditionalHeal
+            : PresentationSfxEvent.Heal;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            PresentationEventSfx entry = entries[i];
+            if (entry != null && entry.Event == evt) PlayEntry(entry);
+        }
+    }
+
+    /// <summary>조립형 VFX 부품이 실제로 시작한 순서에 맞춰 재생한다.</summary>
+    public static void PlayEffectStep(SkillPresentationData presentation, int stepIndex)
+    {
+        List<PresentationEventSfx> entries = presentation != null ? presentation.EventSfx : null;
+        if (entries == null) return;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            PresentationEventSfx entry = entries[i];
+            if (entry == null || entry.Event != PresentationSfxEvent.EffectStep) continue;
+            if (entry.Occurrence >= 0 && entry.Occurrence != stepIndex) continue;
+            PlayEntry(entry);
+        }
+    }
+
     private static bool HasEvent(List<PresentationEventSfx> entries, PresentationSfxEvent evt)
     {
         for (int i = 0; i < entries.Count; i++)

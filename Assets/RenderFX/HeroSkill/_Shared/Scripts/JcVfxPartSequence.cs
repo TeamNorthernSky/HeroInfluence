@@ -9,6 +9,7 @@ namespace JC.VFX
     public sealed class JcVfxPartSequence : VfxEffect
     {
         public event Action Impacted;
+        public event Action<int> PartStarted;
         public enum Anchor { Caster, Target, PawCaster, PawTarget }
         public enum Timing { Fixed, ShotLaunch, ShotImpact, PawDeparture, PawArrival }
         public Transform MuzzleSocket { get; set; }
@@ -39,14 +40,14 @@ namespace JC.VFX
             impacted = false;
             IsPlaying = true;
             pending = steps.Length;
-            foreach (var step in steps) StartCoroutine(RunPart(step, origin, target));
+            for (int i = 0; i < steps.Length; i++) StartCoroutine(RunPart(steps[i], i, origin, target));
             StartCoroutine(WaitForParts());
         }
         private IEnumerator Delay(float seconds)
         {
             for (float t = 0; t < seconds; t += EffectDeltaTime) yield return null;
         }
-        private IEnumerator RunPart(Step step, Transform origin, Transform target)
+        private IEnumerator RunPart(Step step, int stepIndex, Transform origin, Transform target)
         {
             if (step.prefab == null) { pending--; yield break; }
             yield return Delay(ResolveDelay(step));
@@ -68,6 +69,7 @@ namespace JC.VFX
             if (effect is PawForYouVfx paw) paw.OnTargetImpacted += OnImpact;
             if (effect is KAimShotVfx shot) shot.SetMuzzleSocket(MuzzleSocket);
             effect.Play(anchor, target);
+            PartStarted?.Invoke(stepIndex);
             // 안전 상한은 연출 판정을 대신하지 않고, 잘못 설정된 부품의 잔존만 방지합니다.
             float limit = step.lifetime > 0 ? step.lifetime : 15f;
             for (float t = 0; effect != null && effect.IsPlaying && t < limit; t += EffectDeltaTime)

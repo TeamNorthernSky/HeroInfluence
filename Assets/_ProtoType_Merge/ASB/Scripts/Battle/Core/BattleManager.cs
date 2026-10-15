@@ -682,6 +682,7 @@ public class BattleManager : MonoBehaviour
                 }
 
                 HealContext capturedHeal = healContext;
+                bool additionalHeal = firstHealPresented;
                 bool healCommitted = false;
                 Func<BattleHitResult> healCallback = () =>
                 {
@@ -698,6 +699,8 @@ public class BattleManager : MonoBehaviour
                     else
                     {
                         capturedHeal.Target.ApplyHeal(capturedHeal.HealAmount);
+                        PresentationSfxEvents.PlayHeal(
+                            _visualDirector?.GetPresentation(capturedHeal.SkillIndex), additionalHeal);
                     }
                     return new BattleHitResult
                     {
