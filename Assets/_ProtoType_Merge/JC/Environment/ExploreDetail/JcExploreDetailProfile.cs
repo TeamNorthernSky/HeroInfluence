@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 namespace JC.EnvironmentDetail
 {
     [CreateAssetMenu(menuName="JC/환경/탐사 외형 보강 설정")]
@@ -98,37 +98,9 @@ namespace JC.EnvironmentDetail
         public float bankWetStrength=.22f;
         [Tooltip("호안 생성에서 제외할 육지 셀의 월드 X/Z 중심 좌표입니다. 교량·특수 구조물 구간에 사용합니다.")]
         public Vector2Int[] bankExcludedLandCells=new Vector2Int[0];
-        [Header("수면 · 흐름")]
-        [Tooltip("수로 중앙의 물색입니다.")]
-        public Color waterTint=new Color(.135f,.33f,.39f,1);
-        [Tooltip("호안 가까운 수면의 밝은 색상입니다. 실제 수심 판정은 아닙니다.")]
-        public Color waterEdgeTint=new Color(.265f,.465f,.50f,1);
-        [Tooltip("물결 이동 방향입니다. 월드 X/Z 방향으로 적용합니다.")]
+        [Header("수로 구조")]
+        [Tooltip("각 수역의 하류를 선택하는 월드 X/Z 기준 방향입니다. 변경 후 재베이크합니다. 실시간 물 표현은 JC_Water에서 조절합니다.")]
         public Vector2 waterFlowDirection=new Vector2(1,0);
-        [Tooltip("연결된 수로를 따라 흐릅니다. 방향 값은 각 수역의 하류 선택 기준입니다.")]
-        public bool waterFollowCanal=true;
-        [Range(0,.2f),Tooltip("수로를 따라 이동하는 속도입니다. 0이어도 잔물결 자체 일렁임은 별도 설정으로 움직입니다.")]
-        public float waterFlowSpeed=.035f;
-        [Range(.3f,4f),Tooltip("큰 물결 무늬의 크기입니다.")]
-        public float waterWaveSize=1.8f;
-        [Range(0,.3f),Tooltip("수면 물결의 밝기 변화와 반사 흔들림 강도입니다.")]
-        public float waterWaveStrength=.07f;
-        [Range(0,3f),Tooltip("큰 물결의 밝고 어두운 음영 가시성입니다. 조명 반사와 독립적이며 0이면 추가 음영만 끕니다. 물결 강도가 0이면 나타나지 않습니다.")]
-        public float waterWaveVisibility=1f;
-        [Range(.1f,1f),Tooltip("작은 잔물결 사이의 간격입니다. 큰 물결과 독립적으로 조절합니다.")]
-        public float waterRippleSize=.32f;
-        [Range(0,.15f),Tooltip("잔물결의 표면 기울기와 반사 흔들림 강도입니다. 흰색 패턴은 생성하지 않습니다.")]
-        public float waterRippleStrength=.035f;
-        [Range(0,3f),Tooltip("잔물결의 유색 음영 가시성입니다. 1이 기본이며 반사가 약한 구도에서도 보이게 합니다. 0이면 추가 음영만 끕니다.")]
-        public float waterRippleVisibility=1f;
-        [Range(0,1f),Tooltip("잔물결이 일렁이는 속도입니다. 0이면 자체 일렁임을 멈춥니다.")]
-        public float waterRippleSpeed=.25f;
-        [InspectorName("Water Flow Variation"),Range(0,.15f),Tooltip("수면 전체를 흐르는 큰 불규칙 색 변화의 강도입니다. 흰색 선 무늬는 생성하지 않습니다.")]
-        public float waterFlowStreakStrength=.025f;
-        [Range(0,.5f),Tooltip("수면의 부드러운 빛 반사 강도입니다.")]
-        public float waterShine=.12f;
-        [Range(.01f,.2f),Tooltip("물가의 가느다란 밝은 띠 폭입니다.")]
-        public float waterEdgeWidth=.05f;
         [Tooltip("빌드에서 유지할 카툰 수면 셰이더 참조입니다.")]
         public Shader waterShader;
         [Tooltip("빌드에서 유지할 콘크리트 호안 셰이더 참조입니다.")]
