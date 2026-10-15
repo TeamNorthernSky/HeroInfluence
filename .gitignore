@@ -106,7 +106,6 @@ Docs/
 /Assets/_ProtoType_Merge/ASB/Animation/TmpModel
 /Assets/_ProtoType_Merge/ASB/Data/RawImports/
 /Assets/_ProtoType_Merge/ASB/Data/RawImports.meta
-/Assets/GabrielAguiarProductions
 /packageTool/build
 
 
@@ -116,8 +115,6 @@ Docs/
 
 
 /PromptFile
-/Assets/Hovl Studio
-/Assets/Hovl Studio.meta
 ///////////임시 테스트/////////////
 
 #임시 테스트 용도
@@ -166,6 +163,15 @@ Assets/_ProtoType_Merge/CLAUDE.md.meta
 *_BASE_*
 *_LOCAL_*
 *_REMOTE_*
+# Ultra Mega 실제 에셋: mergetool의 *_BASE_* 규칙에서 경로별 예외
+!/Assets/GabrielAguiarProductions/Models/Gun/TurretA_Base_A.FBX
+!/Assets/GabrielAguiarProductions/Models/Gun/TurretA_Base_A.FBX.meta
+!/Assets/GabrielAguiarProductions/Models/Gun/Materials/TurretA_Base_Normal.png
+!/Assets/GabrielAguiarProductions/Models/Gun/Materials/TurretA_Base_Normal.png.meta
+!/Assets/GabrielAguiarProductions/Models/Gun/Materials/TurretA_Base_AO.png
+!/Assets/GabrielAguiarProductions/Models/Gun/Materials/TurretA_Base_AO.png.meta
+!/Assets/GabrielAguiarProductions/Models/Gun/Materials/TurretA_Base_MetallicSmoothness.png
+!/Assets/GabrielAguiarProductions/Models/Gun/Materials/TurretA_Base_MetallicSmoothness.png.meta
 # mergetool 백업
 *.orig
 *_BACKUP_*

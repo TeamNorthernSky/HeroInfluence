@@ -16,6 +16,8 @@ public class PresentationSfxMarkerTests
     private readonly List<string> _calls = new List<string>();
     private FieldInfo _sinkField;
     private object _previousSink;
+    private FieldInfo _timedSinkField;
+    private object _previousTimedSink;
     private TimelineAsset _timeline;
     private MonoBehaviour _receiver;
 
@@ -34,6 +36,11 @@ public class PresentationSfxMarkerTests
         Assert.That(_sinkField, Is.Not.Null);
         _previousSink = _sinkField.GetValue(null);
         _sinkField.SetValue(null, new Action<string>(key => _calls.Add(key)));
+        _timedSinkField = FindType("PresentationSfxPlayer").GetField(
+            "TimedSinkOverride", BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.That(_timedSinkField, Is.Not.Null);
+        _previousTimedSink = _timedSinkField.GetValue(null);
+        _timedSinkField.SetValue(null, null);
 
         _timeline = Track(ScriptableObject.CreateInstance<TimelineAsset>());
         _timeline.durationMode = TimelineAsset.DurationMode.FixedLength;
@@ -47,6 +54,7 @@ public class PresentationSfxMarkerTests
     public void TearDown()
     {
         if (_sinkField != null) _sinkField.SetValue(null, _previousSink);
+        if (_timedSinkField != null) _timedSinkField.SetValue(null, _previousTimedSink);
         for (int i = _created.Count - 1; i >= 0; i--)
             if (_created[i] != null) UnityEngine.Object.DestroyImmediate(_created[i]);
         _created.Clear();
@@ -86,6 +94,28 @@ public class PresentationSfxMarkerTests
         Configure(0d, 1d);
         Notify(first);
         Assert.That(_calls, Has.Count.EqualTo(3));
+    }
+
+    [Test]
+    public void Receiver_TimedMarkerPassesDurationToPlayer()
+    {
+        object marker = AddSfx(0.2d, "Battle_Hit01");
+        MarkerType.GetField("_durationSeconds", BindingFlags.NonPublic | BindingFlags.Instance)
+            .SetValue(marker, 0.35f);
+        string playedKey = null;
+        float playedDuration = 0f;
+        _timedSinkField.SetValue(null, new Action<string, float>((key, duration) =>
+        {
+            playedKey = key;
+            playedDuration = duration;
+        }));
+
+        Configure(0d, 1d);
+        Notify(marker);
+
+        Assert.That(playedKey, Is.EqualTo("Battle_Hit01"));
+        Assert.That(playedDuration, Is.EqualTo(0.35f));
+        Assert.That(_calls, Is.Empty);
     }
 
     [Test]

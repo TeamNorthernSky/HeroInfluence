@@ -25,6 +25,7 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
     private Action<int> _onImpactSlot;
     private Action _onProjectile;
     private Action<PresentationMoveMarker> _onMove;
+    private Action<PresentationReturnMarker> _onReturn;
     private double _activeStart = double.NegativeInfinity;
     private double _activeEnd = double.PositiveInfinity;
     private bool _sfxConfigured;
@@ -55,6 +56,7 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _onImpactSlot = null;
         _onProjectile = onProjectile;
         _onMove = null;
+        _onReturn = null;
         _activeStart = activeStart;
         _activeEnd = activeEnd;
         _sfxConfigured = true;
@@ -64,15 +66,30 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
     public void ConfigureForPlan(UnitAnimationEventRouter router, Action<int> onImpactSlot,
         Action<PresentationMoveMarker> onMove, double activeStart, double activeEnd)
     {
+        ConfigureForPlanWithReturn(router, onImpactSlot, onMove, null, activeStart, activeEnd);
+    }
+
+    public void ConfigureForPlanWithReturn(UnitAnimationEventRouter router, Action<int> onImpactSlot,
+        Action<PresentationMoveMarker> onMove, Action<PresentationReturnMarker> onReturn,
+        double activeStart, double activeEnd)
+    {
         _router = router;
         _onImpact = null;
         _onImpactSlot = onImpactSlot;
         _onProjectile = null;
         _onMove = onMove;
+        _onReturn = onReturn;
         _activeStart = activeStart;
         _activeEnd = activeEnd;
         _sfxConfigured = true;
         _playedSfx.Clear();
+    }
+
+    public void ConfigureMovementCallbacks(Action<PresentationMoveMarker> onMove,
+        Action<PresentationReturnMarker> onReturn)
+    {
+        _onMove = onMove;
+        _onReturn = onReturn;
     }
 
     public void ClearConfig()
@@ -82,6 +99,7 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _onImpactSlot = null;
         _onProjectile = null;
         _onMove = null;
+        _onReturn = null;
         _activeStart = double.NegativeInfinity;
         _activeEnd = double.PositiveInfinity;
         _sfxConfigured = false;
@@ -102,14 +120,27 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
             if (LogSignals)
                 Debug.Log($"[PathA-SFX] '{key}' 마커 도달 ({sfx.time:F3}s, 중복 무시={duplicate})", this);
             if (!duplicate)
-                PresentationSfxPlayer.Play(key);
+            {
+                if (sfx.DurationSeconds > 0f)
+                    PresentationSfxPlayer.PlayForDuration(key, sfx.DurationSeconds);
+                else
+                    PresentationSfxPlayer.Play(key);
+            }
             return;
         }
 
         if (notification is PresentationMoveMarker move)
         {
+            if (LogSignals) Debug.Log($"[PathA-Move] {move.Boundary} @ {move.time:F3}s", this);
             if (move.time >= _activeStart - 0.0001d && move.time <= _activeEnd + 0.0001d)
                 _onMove?.Invoke(move);
+            return;
+        }
+        if (notification is PresentationReturnMarker returnMarker)
+        {
+            if (LogSignals) Debug.Log($"[PathA-Return] {returnMarker.Boundary} @ {returnMarker.time:F3}s", this);
+            if (returnMarker.time >= _activeStart - 0.0001d && returnMarker.time <= _activeEnd + 0.0001d)
+                _onReturn?.Invoke(returnMarker);
             return;
         }
         if (!(notification is PresentationSignalMarker marker)) return;

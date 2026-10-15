@@ -4,6 +4,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class TutorialItemObject : MonoBehaviour, IGridItemObject
 {
+    private const string PickupSfxKey = "Explore_Item";
+
     [Header("Reward")]
     [SerializeField] private string itemKey;
     [SerializeField] private ResourceType resourceType = ResourceType.Money;
@@ -64,6 +66,7 @@ public sealed class TutorialItemObject : MonoBehaviour, IGridItemObject
         TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
         repository?.MarkItemCollected(ItemKey);
         repository?.AddResource(resourceType, amount);
+        AudioManager.Instance?.PlaySfx(PickupSfxKey);
 
         TutorialItemRegistry.PickupMotionSettings motion = ResolvePickupMotion();
         if (TryPlayPickupMotion(flyTarget, motion, out float duration))

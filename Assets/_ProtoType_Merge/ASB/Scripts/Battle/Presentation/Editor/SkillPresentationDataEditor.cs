@@ -93,13 +93,14 @@ public class SkillPresentationDataEditor : Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("HitEffectAtTargetRoot"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("HitEffectOffset"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("ScaleHitEffectWithBattleSpeed"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("HitSoundId"));
         }
-        EditorGUILayout.PropertyField(serializedObject.FindProperty("SfxVolume"));
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Projectile Impact (공용)", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(serializedObject.FindProperty("ProjectileVisual"), true);
+
+        EditorGUILayout.Space();
+        DrawEventSfxSection(serializedObject);
 
         // ── 신 방식 (Phase Cue, Schema=1) ──
         EditorGUILayout.Space();
@@ -116,18 +117,48 @@ public class SkillPresentationDataEditor : Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Attack"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Return"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("Post"), true);
-        
-                    EditorGUILayout.Space();
-                    EditorGUILayout.LabelField("Moving Attack (진입 이동 + 공격)", EditorStyles.boldLabel);
-                            EditorGUILayout.PropertyField(serializedObject.FindProperty("MovingAttack"), true);
-                            serializedObject.ApplyModifiedProperties();
-                            MovingAttackPathSceneTool.DrawInspectorControls(target as SkillPresentationData);
-                            serializedObject.Update();
             EditorGUI.indentLevel--;
             }
+
+            DrawLegacyHitSound(serializedObject);
         }
 
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Moving Attack 경로", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("MovingAttack"), true);
         serializedObject.ApplyModifiedProperties();
+        MovingAttackPathSceneTool.DrawInspectorControls(target as SkillPresentationData);
+        serializedObject.Update();
+
+        serializedObject.ApplyModifiedProperties();
+    }
+
+    /// <summary>
+    /// 코드 시점 효과음(Event SFX). Hit/Impact 섹션 끝에 둔다 — 위의 명중 시점·임팩트 전달 설정이 이 소리들의 시점을 정한다.
+    /// 편집 창(SkillPresentationEditorWindow)도 같은 함수를 쓴다.
+    /// </summary>
+    internal static void DrawEventSfxSection(SerializedObject so)
+    {
+        EditorGUILayout.LabelField("명중 사운드 (Event SFX)", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(so.FindProperty("EventSfx"), true);
+        EditorGUILayout.HelpBox(
+            "Hit = 피해 확정(대상별, 같은 시전자의 동시 피격은 1회)\n" +
+            "AdditionalHit = 추가 대상 피해(체인 연쇄·스플래시 등). 줄이 없으면 Hit 사용\n" +
+            "EffectImpact = VFX 착탄 순간. Occurrence로 착탄 순번 지정(-1 = 매 착탄)\n" +
+            "시전·발사·휘두름 소리는 Timeline SFX 마커에 넣으세요. 같은 순간을 양쪽에 넣으면 두 번 울립니다.",
+            MessageType.Info);
+    }
+
+    /// <summary>재생되지 않는 레거시 Hit 사운드 슬롯. 직렬화 호환을 위해 필드는 남기고 Legacy 접이식 안에 비활성 표시한다.</summary>
+    internal static void DrawLegacyHitSound(SerializedObject so)
+    {
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("레거시 Hit 사운드 (현재 재생되지 않음 — Event SFX 사용)", EditorStyles.miniBoldLabel);
+        using (new EditorGUI.DisabledScope(true))
+        {
+            EditorGUILayout.PropertyField(so.FindProperty("HitSoundId"));
+            EditorGUILayout.PropertyField(so.FindProperty("SfxVolume"));
+        }
     }
 
     private void DrawOptionalProperty(string path, string label)

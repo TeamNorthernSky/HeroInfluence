@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(ToggleButton))]
 public class AutoBattleToggleButton : MonoBehaviour
@@ -20,6 +20,7 @@ public class AutoBattleToggleButton : MonoBehaviour
         if (toggleButton == null)
             toggleButton = GetComponent<ToggleButton>();
 
+        toggleButton.EnablePressedAppearance();
         toggleButton.SetState(BattleRuntimeSettings.IsAutoBattle, false);
         toggleButton.OnValueChanged += OnToggled;
     }

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
@@ -27,14 +27,14 @@ namespace JC.EnvironmentDetail.Editor
         }
         static void QueueCheck()
         {
-            if(Application.isPlaying || EditorApplication.isCompiling || checkQueued) return;
+            if(EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling || checkQueued) return;
             checkQueued=true;
             EditorApplication.delayCall+=CheckChangedInputs;
         }
         static void CheckChangedInputs()
         {
             checkQueued=false;
-            if(Application.isPlaying || EditorApplication.isCompiling) return;
+            if(EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling) return;
             foreach(var overlay in Resources.FindObjectsOfTypeAll<JcExploreDetailOverlay>())
             {
                 if(!overlay.gameObject.scene.IsValid() || !overlay.isActiveAndEnabled || overlay.IsPreview) continue;
@@ -44,20 +44,20 @@ namespace JC.EnvironmentDetail.Editor
                 try { reason=bake.Compare(JcExploreDetailBake.CaptureInputs(overlay.gameObject.scene)) ?? JcExploreDetailBaker.CheckDependencies(bake); }
                 catch(System.Exception e) { reason="입력 구조 확인 실패: "+e.Message; }
                 int id=overlay.GetInstanceID();
+                overlay.ReportEditorInputChange(reason);
                 if(reason==null) { warnings.Remove(id); continue; }
                 if(!warnings.TryGetValue(id,out var previous) || previous!=reason)
-                { warnings[id]=reason; Debug.LogWarning("[JC Bake] "+reason+" 자동 재생성하지 않습니다.",overlay); }
-                if(!overlay.ForceBakedOnMismatch && overlay.VisualRoot!=null) overlay.ShowOriginal();
+                { warnings[id]=reason; Debug.LogWarning("[JC Bake] "+reason+" 마지막 확정 베이크를 유지합니다. 자동 재생성하지 않습니다.",overlay); }
             }
         }
         static void Opened(Scene scene, OpenSceneMode mode)
         {
-            if (Application.isPlaying) return;
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
             EditorApplication.delayCall += () => { if (scene.IsValid() && scene.isLoaded && !Application.isPlaying) JcExploreDetailOverlay.Ensure(scene)?.Refresh(); };
         }
         static void ApplyLoaded()
         {
-            if (Application.isPlaying) return;
+            if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling) return;
             for (int i = 0; i < SceneManager.sceneCount; i++) JcExploreDetailOverlay.Ensure(SceneManager.GetSceneAt(i))?.Refresh();
         }
         static void RestoreAll() { foreach (var c in Resources.FindObjectsOfTypeAll<JcExploreDetailOverlay>()) if (c.gameObject.scene.IsValid()) c.Restore(); }
@@ -76,7 +76,8 @@ namespace JC.EnvironmentDetail.Editor
             var c=(JcExploreDetailOverlay)target;
             EditorGUI.BeginChangeCheck(); DrawDefaultInspector();
             if(EditorGUI.EndChangeCheck()) c.Refresh();
-            EditorGUILayout.HelpBox(c.Status ?? "미적용", MessageType.Info);
+            EditorGUILayout.HelpBox(c.Status ?? "미적용", c.Status!=null && c.Status.Contains("재베이크 필요") ? MessageType.Warning : MessageType.Info);
+            EditorGUILayout.HelpBox("편집·플레이 모두 입력이 달라져도 마지막 확정 베이크와 물을 유지합니다. 변경된 지형을 반영하려면 편집 모드에서 재생성 후 베이크를 확정하세요.",MessageType.Info);
             if (GUILayout.Button(new GUIContent("원본 변경 검사", "현재 DH 입력과 확정본을 비교합니다. 외형을 재생성하지 않습니다.")))
                 Debug.Log("[JC Bake] " + JcExploreDetailBaker.Check(c), c);
             using(new EditorGUI.DisabledScope(Application.isPlaying))
@@ -101,7 +102,15 @@ namespace JC.EnvironmentDetail.Editor
     public sealed class JcExploreDetailProfileEditor:UnityEditor.Editor
     {
         public override void OnInspectorGUI(){EditorGUILayout.HelpBox("설정은 생성용 초안입니다. 수정만으로 외형이 바뀌지 않습니다. 편집 모드에서 JC_ExploreDetail의 재생성 → 베이크 확정을 사용하세요. 런타임은 확정본만 사용합니다.",MessageType.Info);
-            DrawDefaultInspector();
+            serializedObject.Update();
+            DrawPropertiesExcluding(serializedObject,"waterTint","waterEdgeTint","waterFollowCanal","waterFlowSpeed","waterWaveSize","waterWaveStrength","waterWaveVisibility","waterRippleSize","waterRippleStrength","waterRippleVisibility","waterRippleSpeed","waterFlowStreakStrength","waterShine","waterEdgeWidth");
+            serializedObject.ApplyModifiedProperties();
+            EditorGUILayout.HelpBox("물 외형은 JC_WorldDressing / JC_Water에서 실시간 조절합니다. 아래 수로 방향은 방향 지도의 하류 기준이며 재베이크가 필요합니다.",MessageType.Info);
+            if(GUILayout.Button(new GUIContent("물 실시간 설정 선택","현재 씬의 JC_Water를 선택합니다. 지형을 재생성하지 않습니다.")))
+            {
+                var overlay=JcExploreDetailOverlay.Ensure(SceneManager.GetActiveScene());
+                if(overlay!=null)Selection.activeGameObject=JcWaterController.Ensure(overlay).gameObject;
+            }
             if(GUILayout.Button(new GUIContent("흙길 타일 경계 다시 분석","DH 레지스트리의 ParkRoad 이미지에서 입구 폭과 방향을 읽습니다. 원본 텍스처는 변경하지 않습니다. 변경 후 설정 저장을 누르세요."))){JcPathEdgeAnalyzer.Analyze((JcExploreDetailProfile)target);}
             if(GUILayout.Button(new GUIContent("설정 저장","현재 탐사 외형 설정을 에셋에 저장합니다. 씬은 저장하지 않습니다."))){EditorUtility.SetDirty(target);AssetDatabase.SaveAssetIfDirty(target);}
         }

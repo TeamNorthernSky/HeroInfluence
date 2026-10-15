@@ -4,6 +4,9 @@
 // 동일 이름의 함수는 원본 함수와 1:1 대응합니다. 별도 변경 함수에는 차이를 추가로 명시합니다.
 // 목적: ASB 원본과 본게임 참조를 수정하지 않고 테스트 전투 제어를 독립시킵니다.
 // 공용 데이터·유닛·모델·연출 에셋은 원본을 참조합니다. 이 파일은 자동 동기화되지 않습니다.
+// [사용 범위 / 2026-10-13] JC_BattleTestScene 전용 실행기. 본게임 TmpBattleScene/TutorialBattleScene은 ASB BattleManager를 사용합니다.
+// ASB 3a636dee가 테스트 반격 규칙도 맞췄으며, CounterattackRules/BattleCharactor는 양쪽 공용입니다.
+// 이 파일이 테스트용이어도 BattleTesting/Vfx의 본게임 공유 재질 3개·JcYuliaEnergy.shader까지 일괄 삭제하면 안 됩니다.
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,8 +30,6 @@ public class JcBattleManager : MonoBehaviour
     public event Action<string> OnActionExecuted;
     public event Action<SkillResolutionContext> OnSkillResolved;
 
-    /// <summary>UI 등 외부에서 배속 변경을 요청할 때 발생시킵니다. JcAutoBattleController.OnAutoBattleToggleRequested와 동일한 패턴.</summary>
-    public static event Action<float> OnBattleSpeedChangeRequested;
 
     internal const int ClassSkillEffect_Damage = 0;
     internal const int ClassSkillEffect_Heal = 1;
@@ -133,7 +134,6 @@ public class JcBattleManager : MonoBehaviour
             battleFlowManager = FindObjectOfType<JcBattleFlowManager>();
         }
 
-        OnBattleSpeedChangeRequested += ChangeBattleSpeed;
         ChangeBattleSpeed(JcBattleRuntimeSettings.BattleSpeed);
     }
 
@@ -249,7 +249,6 @@ public class JcBattleManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        OnBattleSpeedChangeRequested -= ChangeBattleSpeed;
 
         if (Instance == this)
         {
@@ -598,7 +597,8 @@ public class JcBattleManager : MonoBehaviour
                                 onHitCallback,
                                 JcSkillPresentationDirector.ResolveAdditionalChainTargetAnimationTrigger(chainPresentation, chainSkill),
                                 _currentBattleSpeed,
-                                _visualDirector).ExecuteRoutine(this);
+                                _visualDirector,
+                                DamageRole.Additional).ExecuteRoutine(this);
                         }
                         else
                         {
@@ -610,7 +610,8 @@ public class JcBattleManager : MonoBehaviour
                                 onHitCallback,
                                 targetAnimTrigger: null,
                                 battleSpeed: _currentBattleSpeed,
-                                visual: _visualDirector).ExecuteRoutine(this);
+                                visual: _visualDirector,
+                                role: DamageRole.Additional).ExecuteRoutine(this);
                         }
                     }
                     else
@@ -983,6 +984,8 @@ public class JcBattleManager : MonoBehaviour
                 if (hitHostage != null)
                     _visualDirector?.PlayHitEffectAt(hitHostage.transform, skillData.skillIndex);
             }
+            if (hitHostages.Count > 0 && _visualDirector != null)
+                PresentationSfxEvents.PlayHit(_visualDirector.GetPresentation(skillData.skillIndex), actor, DamageRole.Primary);
             hitApplied = hitHostages.Count > 0;
             // 인질은 BattleCharactor가 아니므로 Target=null(피격애니/팝업 skip). 피해는 위에서 이미 적용.
             return new BattleHitResult { Target = null, Damage = 0f, SkillIndex = skillData.skillIndex };

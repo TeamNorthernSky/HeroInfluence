@@ -52,7 +52,15 @@ public class TutorialExploreSceneSkip : MonoBehaviour
 
     private void OpenPopup()
     {
+        if (skipPopup == null || isLoading) return;
+        skipPopup.transform.SetAsLastSibling();
         skipPopup.SetActive(true);
+        var popupCanvas = skipPopup.GetComponent<Canvas>();
+        if (popupCanvas != null)
+        {
+            popupCanvas.overrideSorting = true;
+            popupCanvas.sortingOrder = 1100;
+        }
     }
 
     private void ClosePopup()

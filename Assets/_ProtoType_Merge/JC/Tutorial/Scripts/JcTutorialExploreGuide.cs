@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -43,8 +43,8 @@ namespace JC.Tutorial
         [Tooltip("첫 안내 박스를 향해 수렴하는 장식 테두리입니다. 클릭 판정은 갖지 않습니다.")] public JcTutorialGraphic[] introOutlines;
         [Min(.1f), Tooltip("첫 안내가 자동으로 닫히는 시간(초)입니다. 화면을 클릭하면 더 일찍 닫힙니다.")] public float introDuration = 2.5f;
         [Min(0), Tooltip("수렴 테두리가 박스 바깥에서 시작하는 여유(Canvas 단위)입니다. 0이면 크기 변화가 없습니다.")] public float introOutlineExpansion = 80;
-        [Tooltip("이동불가 체험용 위치입니다. 실제로 도착해야 하는 이동 순서에는 추가하지 않습니다.")] public Transform blockedMoveTarget;
-        [Min(0), Tooltip("이동불가 경로를 선택한 후 설명을 띄우기까지의 시간(초)입니다. 붉은 경로를 먼저 보여 줍니다.")] public float blockedPreviewDuration = .65f;
+        [HideInInspector, Tooltip("이전 씬 참조 보존용입니다. 현재 안내에서는 사용하지 않습니다.")] public Transform blockedMoveTarget;
+        [HideInInspector, Min(0), Tooltip("이전 씬 데이터 보존용입니다. 현재 안내에서는 사용하지 않습니다.")] public float blockedPreviewDuration = .65f;
         [Tooltip("초기 이동 학습이 끝난 뒤 기존 턴 종료를 허용하는 담당자입니다.")] public TutorialTurnManager turnManager;
         [Min(.1f), Tooltip("시작 목표가 한 번 점멸하고 테두리가 수렴하는 시간(초)입니다. 표시 시간 / 이 값만큼 반복하며 기본값은 3회입니다.")] public float introPulsePeriod = 2.5f / 3;
         [Header("튜토리얼 카메라 구도")]
@@ -56,7 +56,7 @@ namespace JC.Tutorial
         [TextArea, Tooltip("목표를 선택하기 전에 표시하는 안내입니다.")] public string selectText = "빛나는 목표 위치를 눌러 이동 경로를 확인하세요.";
         [TextArea, Tooltip("목표 선택 후 표시하는 안내입니다.")] public string confirmText = "목표 위치를 한 번 더 누르면 이동합니다.";
         [TextArea, Tooltip("파티가 실제로 이동하는 동안 표시하는 안내입니다.")] public string movingText = "목표 위치로 이동 중입니다.";
-        [TextArea, Tooltip("이동력이 0일 때 확인을 기다리는 설명입니다.")] public string exhaustedText = "이동력을 모두 사용하면 이번 턴에는 더 이동할 수 없습니다.";
+        [TextArea, Tooltip("이동력이 0일 때 현재 셀 표시와 턴 종료를 함께 안내하는 문구입니다.")] public string exhaustedText = "이동력을 모두 사용했습니다.\n이동 가능한 그리드는 파티가 있는 한 칸만 표시됩니다.\n턴 종료 버튼을 눌러 이동력을 회복하세요.";
         [Min(0), Tooltip("목표 선택 후 재클릭 안내가 나타나는 시간(초)입니다. 0이면 즉시 표시합니다.")] public float confirmDelay = 1f;
 
         private sealed class ItemTarget
@@ -303,31 +303,20 @@ namespace JC.Tutorial
                 Explain("move-gauge-pulse", "이동력 확인", "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다.", movementGauge, time);
                 return;
             }
-            // 두 번의 실제 이동 후 도착이 필요 없는 체험용 목표를 표시한다. 이동력·이동 순서는 변경하지 않는다.
+            // 새 이동 범위 UI는 범위 밖 클릭을 막습니다. 클릭 체험 없이 현재 셀과 턴 종료를 안내합니다.
             if (party.RemainingMovePoints <= 0)
             {
-                if (!Seen("exhausted") && !hasTarget && blockedMoveTarget != null)
-                {
-                    SetQuest("다음 목표를 눌러 이동 가능한지 확인하세요");
-                    var blockedCell = grid.WorldToGrid(blockedMoveTarget.position);
-                    movement.SetGuidanceTarget(this, blockedCell);
-                    bool selected = IsSelected(blockedCell, time);
-                    if (!selected || time - selectedSince < blockedPreviewDuration)
-                    {
-                        ShowAction("blocked-preview", "탐사 · 이동 확인", selected
-                            ? "붉은 경로는 이번 턴에 이동할 수 없는 경로입니다."
-                            : "빛나는 목표 위치를 눌러 이동할 수 있는지 확인하세요.");
-                        if (selected) HideMarker(); else ShowMarker(blockedCell, time);
-                        return;
-                    }
-                }
                 if (!Seen("exhausted"))
                 {
-                    SetQuest("이동불가 이유를 확인하세요");
-                    Explain("exhausted", "이동력 소진", exhaustedText, FindGauge(party, time), time); return;
+                    Mark("exhausted");
+                    var moveRange = FindFirstObjectByType<MoveRangeController>();
+                    moveRange?.RefreshForMover(party);
                 }
-                SetQuest("다음 턴을 시작하세요");
-                ShowAction("end-turn", "다음 턴", "턴 종료 버튼을 눌러 이동력을 회복하세요.", nextTurn); HideMarker(); return;
+                SetTurnAvailable(true);
+                SetQuest("턴 종료 버튼을 눌러 이동력을 회복하세요");
+                ShowAction("end-turn", "이동력 소진 · 다음 턴", exhaustedText, nextTurn);
+                HideMarker();
+                return;
             }
             if (Seen("exhausted") && !Seen("restored") && repository.CurrentTurn > 1)
             {

@@ -12,10 +12,15 @@ public sealed class FacilityAvailabilityHint : MonoBehaviour
     private Button owner;
     private TMP_Text info, description;
 
-    private void Awake()
+    private void Awake() => ResolveReferences();
+
+    private void ResolveReferences()
     {
-        group = GetComponent<CanvasGroup>();
-        owner = transform.parent ? transform.parent.GetComponent<Button>() : null;
+        if (group == null) group = GetComponent<CanvasGroup>();
+        if (group == null) group = gameObject.AddComponent<CanvasGroup>();
+        owner = GetComponentInParent<Button>();
+        if (icon == null) icon = transform.Find("AvailabilityIcon")?.GetComponent<Image>();
+        if (message == null) message = transform.Find("AvailabilityMessage")?.GetComponent<TMP_Text>();
         foreach (var text in GetComponentsInChildren<TMP_Text>(true))
         {
             if (text.name == "Info") info = text;
@@ -25,6 +30,7 @@ public sealed class FacilityAvailabilityHint : MonoBehaviour
 
     private void LateUpdate()
     {
+        ResolveReferences();
         foreach (var text in GetComponentsInChildren<TMP_Text>(true))
             if (text != message) text.gameObject.SetActive(false);
         var gm = GameManager.Instance;
@@ -34,16 +40,33 @@ public sealed class FacilityAvailabilityHint : MonoBehaviour
             foreach (var facility in LobbyUIRegistry.Facilities)
                 if (facility != null && (facility.LockedButton == owner || facility.UnlockedButton == owner))
                 { dept = facility.Department; found = true; break; }
-        bool eligible = found && gm != null && gm.HQ != null && gm.Economy != null && gm.HQ.CanUpgrade(dept);
-        int level = eligible ? gm.HQ.GetLevel(dept) : 0;
-        if (eligible)
-            foreach (var cost in gm.HQ.GetUpgradeCost(dept, level))
-                if (!gm.Economy.Has(cost.Key, cost.Value)) { eligible = false; break; }
+        int level = found && gm != null && gm.HQ != null ? gm.HQ.GetLevel(dept) : 0;
+        // Match the room highlight/click rules; affordability is checked by the confirmation modal.
+        bool eligible = found && (level == 0
+            ? HQBuildModeController.IsBuildable(dept)
+            : HQBuildModeController.IsUpgradeable(dept));
+        Render(eligible, level);
+    }
+
+    private void Render(bool eligible, int level)
+    {
         group.alpha = eligible ? 1f : 0f;
         group.blocksRaycasts = false;
         group.interactable = false;
-        if (!eligible) return;
-        icon.sprite = level == 0 ? canBuild : canUpgrade;
-        message.text = (info != null ? info.text : "") + "\n" + (description != null ? description.text : "");
+        if (icon != null)
+        {
+            icon.gameObject.SetActive(eligible);
+            icon.enabled = eligible;
+            icon.sprite = level == 0 ? canBuild : canUpgrade;
+        }
+        if (message != null)
+        {
+            message.gameObject.SetActive(eligible);
+            message.enabled = eligible;
+            string title = info != null ? info.text : "";
+            if (string.IsNullOrWhiteSpace(title)) title = level == 0 ? "건설 가능" : "업그레이드 가능";
+            string body = description != null ? description.text : "";
+            message.text = string.IsNullOrWhiteSpace(body) ? title : title + "\n" + body;
+        }
     }
 }

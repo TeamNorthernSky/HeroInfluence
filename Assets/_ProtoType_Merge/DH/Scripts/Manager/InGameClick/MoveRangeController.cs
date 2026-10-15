@@ -5,7 +5,6 @@ using UnityEngine;
 public class MoveRangeController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private ExplorationMovementModeController modeController;
     [SerializeField] private GridManager gridManager;
     [SerializeField] private PartyRegistry partyRegistry;
     [SerializeField] private Transform lineRoot;
@@ -20,6 +19,7 @@ public class MoveRangeController : MonoBehaviour
     [SerializeField, Min(16)] private int maxSearchCells = 1000;
 
     private readonly HashSet<Vector2Int> reachableCells = new HashSet<Vector2Int>();
+    private readonly HashSet<Vector2Int> interactableTargetCells = new HashSet<Vector2Int>();
     private readonly Queue<Vector2Int> frontier = new Queue<Vector2Int>();
     private readonly Dictionary<Vector2Int, int> costs = new Dictionary<Vector2Int, int>();
     private readonly List<LineRenderer> linePool = new List<LineRenderer>();
@@ -28,10 +28,10 @@ public class MoveRangeController : MonoBehaviour
 
     private PartyGridMover currentMover;
     private Material runtimeDefaultLineMaterial;
+    private Coroutine pendingDelayedRefreshCoroutine;
     private bool isMoverMoving;
 
-    public bool IsMoveRangeActive =>
-        modeController != null && modeController.UsesMoveRange;
+    public bool IsMoveRangeActive => true;
 
     private readonly struct GridLineSegment
     {
@@ -87,9 +87,95 @@ public class MoveRangeController : MonoBehaviour
 
     private void Awake()
     {
-        if (modeController == null)
-            modeController = FindFirstObjectByType<ExplorationMovementModeController>();
+        ResolveReferences();
+    }
 
+    private void OnEnable()
+    {
+        RefreshForCurrentParty();
+        RequestRefreshAfterSceneSetup();
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        pendingDelayedRefreshCoroutine = null;
+        BindMover(null);
+        Hide();
+    }
+
+    public void RequestRefreshAfterSceneSetup(int frameCount = 8)
+    {
+        if (!isActiveAndEnabled)
+            return;
+
+        if (pendingDelayedRefreshCoroutine != null)
+            StopCoroutine(pendingDelayedRefreshCoroutine);
+
+        pendingDelayedRefreshCoroutine = StartCoroutine(RefreshAfterSceneSetup(Mathf.Max(1, frameCount)));
+    }
+
+    private IEnumerator RefreshAfterSceneSetup(int frameCount)
+    {
+        for (int i = 0; i < frameCount; i++)
+        {
+            yield return null;
+            isMoverMoving = false;
+            RefreshForCurrentParty();
+        }
+
+        pendingDelayedRefreshCoroutine = null;
+    }
+
+    public void RefreshForCurrentParty()
+    {
+        ResolveReferences();
+
+        PartyGridMover mover = ResolvePlayerParty();
+        RefreshForMover(mover);
+    }
+
+    private PartyGridMover ResolvePlayerParty()
+    {
+        PartyGridMover mover = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (mover != null && mover.gameObject.activeInHierarchy)
+            return mover;
+
+        PartyGridMover fallback = null;
+        int fallbackCount = 0;
+        PartyGridMover[] movers = FindObjectsByType<PartyGridMover>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < movers.Length; i++)
+        {
+            PartyGridMover candidate = movers[i];
+            if (candidate == null || !candidate.gameObject.activeInHierarchy)
+                continue;
+
+            fallback = candidate;
+            fallbackCount++;
+
+            PartyIdentity identity = candidate.GetComponent<PartyIdentity>();
+            if (identity == null)
+                continue;
+
+            if (partyRegistry != null && partyRegistry.TryGetPartyById(identity.PartyId, out PartyGridMover registered) && registered == candidate)
+                return candidate;
+
+            if (string.Equals(identity.PartyId, "player", System.StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(identity.PartyId, "party", System.StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(identity.PartyId, "main", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return candidate;
+            }
+        }
+
+        if (fallbackCount == 1)
+            return fallback;
+
+        return mover;
+    }
+
+    private void ResolveReferences()
+    {
         if (gridManager == null)
             gridManager = FindFirstObjectByType<GridManager>();
 
@@ -98,32 +184,6 @@ public class MoveRangeController : MonoBehaviour
 
         if (lineRoot == null)
             lineRoot = transform;
-    }
-
-    private void OnEnable()
-    {
-        RefreshForCurrentParty();
-        StartCoroutine(RefreshAfterSceneSetup());
-    }
-
-    private void OnDisable()
-    {
-        StopAllCoroutines();
-        BindMover(null);
-        Hide();
-    }
-
-    private IEnumerator RefreshAfterSceneSetup()
-    {
-        yield return null;
-        isMoverMoving = false;
-        RefreshForCurrentParty();
-    }
-
-    public void RefreshForCurrentParty()
-    {
-        PartyGridMover mover = partyRegistry != null ? partyRegistry.PlayerParty : null;
-        RefreshForMover(mover);
     }
 
     public void RefreshForMover(PartyGridMover mover)
@@ -161,6 +221,7 @@ public class MoveRangeController : MonoBehaviour
     public void ClearRange()
     {
         reachableCells.Clear();
+        interactableTargetCells.Clear();
         costs.Clear();
         frontier.Clear();
         gridLineSegments.Clear();
@@ -225,6 +286,12 @@ public class MoveRangeController : MonoBehaviour
                 if (costs.TryGetValue(next, out int knownCost) && knownCost <= nextCost)
                     continue;
 
+                if (IsInteractableTargetCell(next, mover))
+                {
+                    interactableTargetCells.Add(next);
+                    continue;
+                }
+
                 if (!CanEnterMoveRangeCell(next, mover))
                     continue;
 
@@ -246,10 +313,10 @@ public class MoveRangeController : MonoBehaviour
         if (gridManager.HasRegisteredObstacleOrGateBlocker(grid))
             return false;
 
-        if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
+        if (gridManager.HasMoveRangeBlockingInteractionOccupant(grid, mover != null ? mover.transform : null))
             return false;
 
-        if (!TutorialMovementConstraint.IsSelectionAllowed(grid, grid, mover))
+        if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
             return false;
 
         if (IsOtherPartyCell(grid, mover))
@@ -268,6 +335,20 @@ public class MoveRangeController : MonoBehaviour
             return false;
 
         return true;
+    }
+
+    private bool IsInteractableTargetCell(Vector2Int grid, PartyGridMover mover)
+    {
+        if (gridManager == null)
+            return false;
+
+        if (!gridManager.HasLevelGroundCell(grid))
+            return false;
+
+        if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
+            return false;
+
+        return gridManager.HasMoveRangeBlockingInteractionOccupant(grid, mover != null ? mover.transform : null);
     }
 
     private bool IsOtherPartyCell(Vector2Int grid, PartyGridMover mover)
@@ -308,6 +389,14 @@ public class MoveRangeController : MonoBehaviour
         gridLineSegments.Clear();
         gridLineKeys.Clear();
         foreach (Vector2Int grid in reachableCells)
+        {
+            AddGridLineSegment(grid, new Vector2Int(0, 1), new Vector2Int(1, 1));
+            AddGridLineSegment(grid, new Vector2Int(1, 1), new Vector2Int(1, 0));
+            AddGridLineSegment(grid, new Vector2Int(1, 0), new Vector2Int(0, 0));
+            AddGridLineSegment(grid, new Vector2Int(0, 0), new Vector2Int(0, 1));
+        }
+
+        foreach (Vector2Int grid in interactableTargetCells)
         {
             AddGridLineSegment(grid, new Vector2Int(0, 1), new Vector2Int(1, 1));
             AddGridLineSegment(grid, new Vector2Int(1, 1), new Vector2Int(1, 0));

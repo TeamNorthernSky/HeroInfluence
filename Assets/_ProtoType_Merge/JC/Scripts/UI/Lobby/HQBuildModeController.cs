@@ -21,7 +21,6 @@ public class HQBuildModeController : MonoBehaviour
     [SerializeField] private Color highlightColor = new Color(0.35f, 1f, 0.45f, 1f);
     [Header("안내 프리팹 + 본부 문구")]
     [SerializeField] private GameObject constructInfoPrefab;
-    [TextArea][SerializeField] private string hqUpgradeInfo = "본부를 업그레이드 합니다.";
     [TextArea][SerializeField] private string hqUpgradeDesc = "매 턴 얻는 자금이 증가합니다.";
     [TextArea][SerializeField] private string maxLevelMessage = "업그레이드가 최고 단계입니다.";
     [SerializeField] private Vector2 infoOffset = Vector2.zero;
@@ -219,7 +218,7 @@ public class HQBuildModeController : MonoBehaviour
         if (gm == null || gm.HQ == null) return (maxLevelMessage, "", ""); // [JC 260629] null 가드(타 헬퍼와 정합)
         int lv = gm.HQ.GetLevel(HQDepartment.Headquarters);
         int max = gm.HQ.GetMaxLevel(HQDepartment.Headquarters);
-        return lv >= max ? (maxLevelMessage, "", "") : (hqUpgradeInfo, hqUpgradeDesc, "");
+        return lv >= max ? (maxLevelMessage, "", "") : ("", hqUpgradeDesc, "");
     }
     private void SpawnInfo(Button posBtn, (string info, string desc, string cond) t, bool dim)
     {

@@ -31,11 +31,19 @@ MonoBehaviour:
   SfxVolume: 1
   EnableHitEffect: 1
   HitEffectId: 0
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 2.5
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -52,6 +60,11 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: fall_charge
   ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx:
+  - Event: 2
+    Key: Battle_Explosion
+    DurationSeconds: 0
+    Occurrence: 0
   MovePrepare:
     Enabled: 0
     AnimationStateName: 
@@ -60,8 +73,10 @@ MonoBehaviour:
   Move:
     Enabled: 0
     UseUnitMovement: 1
+    ForceApproach: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -89,6 +104,7 @@ MonoBehaviour:
     Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   Post:
     Enabled: 0
     AnimationStateName: 

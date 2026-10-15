@@ -18,6 +18,7 @@ public class SkillPresentationEditorWindow : EditorWindow
     private Vector2 _listScroll;
     private Vector2 _detailScroll;
     private bool _foldNew = true;
+    private bool _foldHit = true;
     private int _newSkillIndexInput;
 
     private int _selectedTab; // 0 = Data Edit, 1 = Runtime Preview
@@ -204,8 +205,10 @@ public class SkillPresentationEditorWindow : EditorWindow
             EditorGUILayout.HelpBox(
                 "Timeline Rail에서는 실제 Timeline의 Clip/Overlap/Marker가 애니메이션 시간의 원본입니다. " +
                 "아래 Phase 데이터는 롤백·마이그레이션용으로만 보존됩니다.", MessageType.Info);
-            if (GUILayout.Button("Skill Presentation Timeline Jig 열기"))
-                ASB.Work.EditorTools.Jig.SkillPresentationJigWindow.Open();
+
+            // 근접 Timeline도 접근/복귀 이동은 Move/Return 페이즈 액션이 담당한다(아래 Phases는 비활성 표시라 키만 따로 노출).
+            EditorGUILayout.PropertyField(so.FindProperty("Move.SfxKey"), new GUIContent("Move Sfx Key (접근 시작음)"));
+            EditorGUILayout.PropertyField(so.FindProperty("Return.SfxKey"), new GUIContent("Return Sfx Key (복귀 시작음)"));
         }
         else
         {
@@ -215,30 +218,58 @@ public class SkillPresentationEditorWindow : EditorWindow
 
         // ── 공용 (전 스키마) ──
         EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Animation (비우면 CSV/산술 폴백)", EditorStyles.boldLabel);
-        using (new EditorGUI.DisabledScope(isTimelineRail))
-            EditorGUILayout.PropertyField(so.FindProperty("AnimationStateName")); // Timeline Rail에서는 마이그레이션 원본
-        EditorGUILayout.PropertyField(so.FindProperty("TargetAnimationTriggerOverride"));
-
-        EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Hit Timing", EditorStyles.boldLabel);
-        EditorGUILayout.PropertyField(so.FindProperty("UseAnimEvent"));
-        EditorGUILayout.PropertyField(so.FindProperty("HitDelay"));
-
-        EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Hit / 타겟 피격 (공용: 전 스키마)", EditorStyles.boldLabel);
-        SerializedProperty enableHitEffect = so.FindProperty("EnableHitEffect");
-        EditorGUILayout.PropertyField(enableHitEffect);
-        using (new EditorGUI.DisabledScope(enableHitEffect != null && !enableHitEffect.boolValue))
+        _foldHit = EditorGUILayout.Foldout(_foldHit, "Hit / Impact", true);
+        if (_foldHit)
         {
-            EditorGUILayout.PropertyField(so.FindProperty("HitEffectId"));  // EffectRegistry id
-            EditorGUILayout.PropertyField(so.FindProperty("HitSoundId"));   // SoundRegistry id
-        }
-        EditorGUILayout.PropertyField(so.FindProperty("SfxVolume"));
+            EditorGUI.indentLevel++;
+            EditorGUILayout.LabelField("대상 반응", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(so.FindProperty("TargetAnimationTriggerOverride"));
 
-        EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Projectile Impact (공용)", EditorStyles.boldLabel);
-        EditorGUILayout.PropertyField(so.FindProperty("ProjectileVisual"), true);
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("명중 시점", EditorStyles.boldLabel);
+            if (isTimelineRail)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("ImpactTiming"));
+                EditorGUILayout.LabelField("Animator 우회 시 사용", EditorStyles.miniBoldLabel);
+            }
+            SerializedProperty useAnimEvent = so.FindProperty("UseAnimEvent");
+            EditorGUILayout.PropertyField(useAnimEvent);
+            using (new EditorGUI.DisabledScope(useAnimEvent != null && useAnimEvent.boolValue))
+                EditorGUILayout.PropertyField(so.FindProperty("HitDelay"));
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("피격 이펙트", EditorStyles.boldLabel);
+            SerializedProperty enableHitEffect = so.FindProperty("EnableHitEffect");
+            EditorGUILayout.PropertyField(enableHitEffect);
+            using (new EditorGUI.DisabledScope(enableHitEffect != null && !enableHitEffect.boolValue))
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("HitEffectId"));
+                EditorGUILayout.PropertyField(so.FindProperty("HitEffectAtTargetRoot"));
+                EditorGUILayout.PropertyField(so.FindProperty("HitEffectOffset"));
+                EditorGUILayout.PropertyField(so.FindProperty("ScaleHitEffectWithBattleSpeed"));
+            }
+            EditorGUILayout.HelpBox(
+                "HitEffectId는 명중 시 자동 생성하는 이펙트입니다. Cue.EffectIds와 Timeline Cue 마커의 이펙트는 각 Cue에서 따로 설정합니다.",
+                MessageType.Info);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("투사체 / 임팩트 전달", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(so.FindProperty("ProjectileVisual"), true);
+            SerializedProperty impactDeliveryMode = so.FindProperty("ImpactDeliveryMode");
+            EditorGUILayout.PropertyField(impactDeliveryMode);
+            if (impactDeliveryMode != null &&
+                impactDeliveryMode.enumValueIndex == (int)SkillImpactDeliveryMode.CustomEffectImpact)
+            {
+                EditorGUILayout.PropertyField(so.FindProperty("CustomImpactTimeoutSeconds"));
+                EditorGUILayout.PropertyField(so.FindProperty("CustomImpactResolutionPolicy"));
+                EditorGUILayout.PropertyField(so.FindProperty("CustomImpactSignalInstanceKey"));
+            }
+            EditorGUILayout.PropertyField(so.FindProperty("ChainLightningEffectPrefab"));
+
+            EditorGUILayout.Space();
+            SkillPresentationDataEditor.DrawEventSfxSection(so);
+            EditorGUI.indentLevel--;
+        }
 
         // ── 신 방식 (Phase Cue, Schema=1) ──
         EditorGUILayout.Space();
@@ -255,16 +286,19 @@ public class SkillPresentationEditorWindow : EditorWindow
             EditorGUILayout.PropertyField(so.FindProperty("Attack"), true); // Beats + 각 beat AnimationStateName/ Cue 드롭다운
             EditorGUILayout.PropertyField(so.FindProperty("Return"), true);
             EditorGUILayout.PropertyField(so.FindProperty("Post"), true);
-        
-                    EditorGUILayout.Space();
-                    EditorGUILayout.LabelField("Moving Attack (진입 이동 + 공격)", EditorStyles.boldLabel);
-                            EditorGUILayout.PropertyField(so.FindProperty("MovingAttack"), true);
-                            so.ApplyModifiedProperties();
-                            MovingAttackPathSceneTool.DrawInspectorControls(_selected);
-                            so.Update();
             EditorGUI.indentLevel--;
             }
+
+            SkillPresentationDataEditor.DrawLegacyHitSound(so);
         }
+
+        // Animator/Timeline 모두 formation-relative MovingAttack 경로를 읽는다.
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Moving Attack 경로", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(so.FindProperty("MovingAttack"), true);
+        so.ApplyModifiedProperties();
+        MovingAttackPathSceneTool.DrawInspectorControls(_selected);
+        so.Update();
 
         so.ApplyModifiedProperties();
 

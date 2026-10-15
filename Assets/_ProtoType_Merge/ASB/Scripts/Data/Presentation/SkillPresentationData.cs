@@ -295,6 +295,14 @@ public class SkillPresentationData : ScriptableObject
     [Tooltip("ChainAdditionalTargets 전달 시 시전자→주 타깃→추가 타깃 순으로 재생할 ChainLightningVfx 프리팹. 일반 투사체 Prefab과 별도로 유지한다.")]
     public GameObject ChainLightningEffectPrefab;
 
+    // ─────────────────────────────────────────────
+    // Event SFX (전 스키마 공용) — Timeline 마커로 시점을 맞출 수 없는 소리(피해 확정·VFX 착탄).
+    // 시점은 코드 훅이 알리고, 키는 여기서 정한다. PresentationSfxEvents가 재생한다.
+    // ─────────────────────────────────────────────
+    [Header("Event SFX (전 스키마 공용)")]
+    [Tooltip("코드 시점 효과음. 같은 이벤트 여러 줄은 모두 재생된다. 시전·발사처럼 Timeline 시각에 묶인 소리는 Timeline SFX 마커에 둔다.")]
+    public List<PresentationEventSfx> EventSfx = new List<PresentationEventSfx>();
+
     /// <summary>
     /// 스킬별 투사체 데이터를 반환한다. 유효 조건은 "Prefab != null"뿐이며 JC 컴포넌트를 확인하지 않는다.
     /// 프리팹이 없으면 null을 반환해 기존 즉시 히트/레거시 화살 흐름으로 폴백한다.
@@ -609,6 +617,31 @@ public enum ProjectileTrajectoryType
     Arc,
     // 적 바로 위로 로프트한 뒤 수직으로 낙하한다(낙하형 단일 대상). ArcHeight를 대상 위 체공 높이로 사용.
     OverheadDrop
+}
+
+/// <summary>코드가 시점을 정하는 효과음 이벤트. Timeline 마커가 담당하지 않는 순간만 둔다.</summary>
+public enum PresentationSfxEvent
+{
+    // 피해 확정(대상별). 회복·빗나감은 제외.
+    Hit,
+    // 추가 대상(DamageRole.Additional: 체인 연쇄·스플래시 등) 피해 확정. 줄이 없으면 Hit 줄로 대체.
+    AdditionalHit,
+    // VFX가 스스로 정한 착탄·발동 순간. Occurrence로 착탄 순번을 고른다.
+    EffectImpact
+}
+
+/// <summary>Event SFX 한 줄. 키는 DHAudioClipCatalog SfxClips 정식 키.</summary>
+[Serializable]
+public class PresentationEventSfx
+{
+    public PresentationSfxEvent Event;
+    [Tooltip("DHAudioClipCatalog SfxClips 정식 키(예: Battle_Elec02).")]
+    public string Key;
+    [Min(0f)]
+    [Tooltip("효과음 재생 길이(초). 0이면 원본 클립을 끝까지 재생합니다.")]
+    public float DurationSeconds;
+    [Tooltip("EffectImpact 전용. -1 = 매 착탄, 0 = 첫 착탄, n = n+1번째 착탄. Hit 계열에서는 무시됩니다.")]
+    public int Occurrence = -1;
 }
 
 /// <summary>투사체 전달 방식. Single=시전자 원점에서 각 타깃으로. ChainAdditionalTargets=1차 도착점에서 2차로 체인.</summary>

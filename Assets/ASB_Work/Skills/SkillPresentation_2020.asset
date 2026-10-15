@@ -31,11 +31,19 @@ MonoBehaviour:
   SfxVolume: 1
   EnableHitEffect: 1
   HitEffectId: 0
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -53,6 +61,15 @@ MonoBehaviour:
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 6273042869431690215, guid: 71f5bab9970bef74384bdbbfe6147db9,
     type: 3}
+  EventSfx:
+  - Event: 0
+    Key: Battle_Elec02
+    DurationSeconds: 0
+    Occurrence: -1
+  - Event: 1
+    Key: Battle_Elec03
+    DurationSeconds: 0.5
+    Occurrence: -1
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
@@ -61,8 +78,10 @@ MonoBehaviour:
   Move:
     Enabled: 0
     UseUnitMovement: 1
+    ForceApproach: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -85,6 +104,7 @@ MonoBehaviour:
     Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   Post:
     Enabled: 0
     AnimationStateName: 

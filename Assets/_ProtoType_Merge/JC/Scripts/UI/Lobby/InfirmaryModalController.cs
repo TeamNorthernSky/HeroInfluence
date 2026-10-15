@@ -32,16 +32,26 @@ public class InfirmaryModalController : MonoBehaviour
     private readonly List<InfirmaryUnitRow> spawnedRows = new List<InfirmaryUnitRow>();
     private InfirmaryManager subscribedInf;
     private EconomyManager subscribedEco;
+    private InfirmaryNoticeView noticeView;
+    private string unavailableMessage;
+    private bool canHealAll;
+    private bool reviveAllMode;
 
     private void Awake()
     {
+        noticeView = GetComponent<InfirmaryNoticeView>();
+        if (noticeView == null) noticeView = gameObject.AddComponent<InfirmaryNoticeView>();
+        noticeView.Configure(stateInfoBox != null ? stateInfoBox : stateInfoText != null ? stateInfoText.gameObject : null);
+        if (healAllDisabledOverlay != null)
+            foreach (var graphic in healAllDisabledOverlay.GetComponentsInChildren<Graphic>(true))
+                graphic.raycastTarget = false;
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnHealAll != null) btnHealAll.onClick.AddListener(OnHealAll);
         if (rowTemplate != null) rowTemplate.gameObject.SetActive(false);
     }
 
     private void OnEnable() { TrySubscribe(); Refresh(); }
-    private void OnDisable() { Unsubscribe(); ClearRows(); }
+    private void OnDisable() { if (noticeView != null) noticeView.Hide(); Unsubscribe(); ClearRows(); }
     private void Update()
     {
         if (subscribedInf == null || subscribedEco == null) TrySubscribe();
@@ -125,21 +135,41 @@ public class InfirmaryModalController : MonoBehaviour
     }
 
     // ─── 전체 회복 ──────────────────────────────────────────────
-    // 부활은 제외(비용·의미가 달라 개별 확인). 생존·회복가능 유닛만 순차 회복.
+    // 쓰러진 유닛이 있으면 무료 전체 부활, 없으면 전체 회복.
     private void OnHealAll()
     {
         var gm = GameManager.Instance;
         if (gm == null || gm.Infirmary == null || gm.Economy == null) return;
 
+        Refresh();
+        if (!canHealAll)
+        {
+            if (stateInfoText != null)
+                stateInfoText.text = string.IsNullOrEmpty(unavailableMessage)
+                    ? "회복 가능한 히어로 유닛이 없습니다." : unavailableMessage;
+            noticeView.Show();
+            return;
+        }
+        noticeView.Hide();
+
+        bool reviveThisClick = reviveAllMode;
         List<int> units = ResolveVisitingUnits();
         foreach (int idx in units)
-            if (gm.Infirmary.CanHeal(idx)) TryHealOne(idx);
+        {
+            if (reviveThisClick)
+            {
+                if (gm.Infirmary.CanRevive(idx)) gm.Infirmary.TryRevive(idx);
+            }
+            else if (gm.Infirmary.CanHeal(idx)) TryHealOne(idx);
+        }
         Refresh();
     }
 
     // ─── Refresh ────────────────────────────────────────────────
     private void Refresh()
     {
+        canHealAll = false;
+        reviveAllMode = false;
         var gm = GameManager.Instance;
         if (gm == null || gm.Infirmary == null || gm.Economy == null) return;
         if (rowTemplate == null || content == null) return;
@@ -150,6 +180,7 @@ public class InfirmaryModalController : MonoBehaviour
         List<int> units = ResolveVisitingUnits();
         int healableCount = 0;
         int revivableCount = 0;
+        int downedCount = 0;
         int healAllTotal = 0;
         int healCost = gm.Infirmary.GetHealCost();
 
@@ -162,18 +193,32 @@ public class InfirmaryModalController : MonoBehaviour
             row.Bind(idx, unit, gm.Infirmary, OnRowAction);
             spawnedRows.Add(row);
 
-            if (gm.Infirmary.CanHeal(idx)) { healableCount++; healAllTotal += healCost; }
-            else if (gm.Infirmary.CanRevive(idx)) revivableCount++;
+            if (unit.CurrentHp <= 0f)
+            {
+                downedCount++;
+                if (gm.Infirmary.CanRevive(idx)) revivableCount++;
+            }
+            else if (unit.CurrentHp < unit.IngameStats.HP && !gm.Infirmary.HealedThisTurn(idx))
+            {
+                // 필요한 비용은 보유 자금과 무관하게 회복 대상 전체의 합계로 표시한다.
+                healableCount++;
+                healAllTotal += healCost;
+            }
         }
 
         bool unlocked = gm.Infirmary.IsUnlocked;
         bool visited = HQVisitState.Instance != null && HQVisitState.Instance.HasVisitingParty;
         bool healAllAffordable = healableCount > 0 && gm.Economy.Has(ResourceType.Money, healAllTotal);
-        bool canHealAll = unlocked && visited && healAllAffordable;
+        reviveAllMode = downedCount > 0;
+        canHealAll = unlocked && visited && (reviveAllMode ? revivableCount > 0 : healAllAffordable);
 
-        if (btnHealAll != null) btnHealAll.interactable = canHealAll;
+        // 실행 불가 상태도 클릭해서 사유를 확인할 수 있다. 회복은 OnHealAll에서 검사한다.
+        if (btnHealAll != null) btnHealAll.interactable = true;
         if (healAllDisabledOverlay != null) healAllDisabledOverlay.SetActive(!canHealAll);
-        if (totalCostText != null) totalCostText.text = $"{healAllTotal} 골드";
+        if (totalCostText != null) totalCostText.text = $"{(reviveAllMode ? 0 : healAllTotal)} 골드";
+        if (btnHealAll != null)
+            foreach (var label in btnHealAll.GetComponentsInChildren<TMP_Text>(true))
+                label.text = reviveAllMode ? "전체 부활" : "전체 회복";
 
         if (stateInfoText != null)
         {
@@ -182,10 +227,10 @@ public class InfirmaryModalController : MonoBehaviour
             else if (!visited) msg = "협회를 방문한 상태에서만 이용할 수 있습니다.";
             else if (units.Count == 0) msg = "회복할 영웅이 없습니다.";
             // [KJ] 부활 가능한 유닛이 있으면 조치할 게 남은 것 → 안내 숨김(부활 후 회복까지 같은 턴에 가능).
-            else if (healableCount == 0 && revivableCount == 0) msg = "회복 가능한 히어로 유닛이 없습니다.";
-            GameObject toggleTarget = stateInfoBox != null ? stateInfoBox : stateInfoText.gameObject;
-            toggleTarget.SetActive(!string.IsNullOrEmpty(msg));
-            if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;
+            else if (reviveAllMode && revivableCount == 0) msg = "현재 부활 가능한 히어로 유닛이 없습니다.";
+            else if (!reviveAllMode && healableCount == 0) msg = "회복 가능한 히어로 유닛이 없습니다.";
+            else if (!reviveAllMode && !healAllAffordable) msg = "전체회복에 필요한 자금이 부족합니다.";
+            unavailableMessage = msg;
         }
     }
 

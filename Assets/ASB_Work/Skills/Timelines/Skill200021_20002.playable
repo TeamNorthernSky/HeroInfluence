@@ -137,6 +137,30 @@ MonoBehaviour:
     - {fileID: 6990468190937330304}
     - {fileID: -525002156093431563}
     - {fileID: 1016292317399520857}
+--- !u!114 &-3805657123624246200
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
+  m_Name: Sound
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips: []
+  m_Markers:
+    m_Objects: []
+  role: 4
 --- !u!114 &-525002156093431563
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -153,6 +177,7 @@ MonoBehaviour:
   _kind: 1
   _cueName: 
   _cueId: 
+  _targetSlot: 0
 --- !u!114 &-398894524601163197
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -190,6 +215,8 @@ MonoBehaviour:
   m_Version: 0
   m_Tracks:
   - {fileID: -8350829936321376994}
+  - {fileID: 6583887268026466327}
+  - {fileID: -3805657123624246200}
   m_FixedDuration: 0
   m_EditorSettings:
     m_Framerate: 60
@@ -231,6 +258,30 @@ MonoBehaviour:
   m_Time: 0
   _sectionId: Attack
   _boundary: 0
+--- !u!114 &6583887268026466327
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
+  m_Name: Speed
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips: []
+  m_Markers:
+    m_Objects: []
+  role: 2
 --- !u!114 &6990468190937330304
 MonoBehaviour:
   m_ObjectHideFlags: 1

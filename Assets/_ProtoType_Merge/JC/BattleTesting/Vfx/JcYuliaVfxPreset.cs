@@ -2,6 +2,11 @@ using UnityEngine;
 
 namespace JC.BattleTesting.Vfx
 {
+    // [본게임 공유 주의 / 2026-10-13] 이 설정 클래스는 JC 테스트용이지만 아래 재질 3개는 본게임도 사용합니다.
+    // ASB_Work/Effect/Hoop/HoopVfxPreset.asset이 JC_YuliaEnergy.mat, JC_YuliaSmoke.mat,
+    // JC_DespairWheelFrame.mat을 직접 참조합니다. 앞의 두 재질은 JcYuliaEnergy.shader도 공유합니다.
+    // 테스트 폴더 정리 시 이 4개 자산과 .meta를 삭제하지 마십시오. 재질 수정은 본게임 굴렁쇠에도 반영됩니다.
+    // 양쪽 프리셋의 색·시간 값은 별개이며 자동 동기화되지 않습니다. 현재 공유 유지, 1차 완성 후 리팩토링 검토.
     // 대응: RenderFX/HeroSkill의 ProjectileOrbPreset/ChainLightningPreset. 수치·대상 판정은 소유하지 않습니다.
     // 참고: 이기석/전투 컨셉/율리아 애니메이션 연출 기획_1.1, motion_01/09/10/11, amplifier_design_v2.
     [CreateAssetMenu(menuName = "JC/전투 테스트/율리아 VFX 설정", fileName = "JC_YuliaVfxPreset")]
@@ -13,9 +18,9 @@ namespace JC.BattleTesting.Vfx
         [ColorUsage(true, true)] public Color core = new Color(2.4f, 1.6f, 3f, 1);
         [Tooltip("증폭기와 굴렁쇠 파괴 연기의 색입니다. 알파는 최대 불투명도입니다.")]
         public Color smoke = new Color(.12f, .035f, .19f, .65f);
-        [Tooltip("선과 구체를 그리는 JC 전용 가산 재질입니다.")] public Material energyMaterial;
-        [Tooltip("부드러운 파괴 연기의 JC 전용 알파 재질입니다.")] public Material smokeMaterial;
-        [Tooltip("굴렁쇠 임시 외곽 프레임 재질입니다. 정식 모델이 오면 별도 외형으로 교체할 수 있습니다.")] public Material frameMaterial;
+        [Tooltip("선과 구체를 그리는 가산 재질입니다. 기본 JC_YuliaEnergy는 본게임 굴렁쇠도 공유하므로 재질 수정은 양쪽에 반영되며 삭제하면 안 됩니다.")] public Material energyMaterial;
+        [Tooltip("파괴 연기 재질입니다. 기본 JC_YuliaSmoke와 그 셰이더는 본게임 굴렁쇠도 공유하므로 테스트 전용으로 보고 삭제하지 마십시오.")] public Material smokeMaterial;
+        [Tooltip("굴렁쇠 외곽 프레임 재질입니다. 기본 JC_DespairWheelFrame은 본게임도 공유합니다. 교체·삭제 전 ASB HoopVfxPreset의 참조도 확인하십시오.")] public Material frameMaterial;
         [Tooltip("번개 중심선 두께(m)입니다. 외곽 빛은 이 값의 3배입니다.")]
         [Min(.005f)] public float lineWidth = .055f;
         [Tooltip("피격 섬광과 에너지 축적 표시의 지속 시간(전투 배속 기준 초)입니다.")]

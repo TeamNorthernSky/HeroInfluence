@@ -1,4 +1,4 @@
-// [JC 테스트 씬 전용 / 기준 0705af74]
+﻿// [JC 테스트 씬 전용 / 기준 0705af74]
 // 원본: Assets/_ProtoType_Merge/KJ/Scripts/UI/BattleSpeedToggleButton.cs
 // 원본 객체 BattleSpeedToggleButton → JcBattleSpeedToggleButton. 동일 이름 함수는 원본 함수와 1:1 대응합니다.
 // 차이: JC 전투 흐름/입력을 참조하며 원본 씬·컴포넌트·데이터를 수정하지 않습니다.
@@ -30,6 +30,7 @@ public class JcBattleSpeedToggleButton : MonoBehaviour
             toggleButton = GetComponent<ToggleButton>();
 
         bool isFast = Mathf.Approximately(JcBattleRuntimeSettings.BattleSpeed, fastSpeed);
+        toggleButton.EnablePressedAppearance();
         toggleButton.SetState(isFast, false);
         toggleButton.OnValueChanged += OnToggled;
     }

@@ -51,6 +51,9 @@ public sealed class TutorialTurnManager : MonoBehaviour
         ResetPartyMovePoints();
         TutorialTurnAdvanced?.Invoke(nextTurn);
 
+        // Refresh both the visible grid and the click gate after movement is restored.
+        FindFirstObjectByType<MoveRangeController>()?.RefreshForCurrentParty();
+
         turnAdvancing = false;
         RefreshTurnText();
     }

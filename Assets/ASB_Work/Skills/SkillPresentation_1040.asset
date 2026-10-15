@@ -14,28 +14,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 1040
   PresentationSchemaVersion: 1
+  AnimationRail: 1
+  PresentationArchetype: 4
+  SkillTimelines:
+  - CharacterKey: 10001
+    Timeline: {fileID: 11400000, guid: ae5f7fd58cd7302429a98edc2c1f1e9f, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 0
   HitDelay: 0.25
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
   EnableHitEffect: 1
-  HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
+  HitEffectId: 95030
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -52,14 +60,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
+  EventSfx: []
   MovePrepare:
     Enabled: 0
     AnimationStateName: 
@@ -68,8 +69,10 @@ MonoBehaviour:
   Move:
     Enabled: 1
     UseUnitMovement: 1
+    ForceApproach: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -82,6 +85,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: Base Layer.ClassSkill_4
     BlendInSeconds: 0.1
+    SfxKey: 
   Post:
     Enabled: 0
     AnimationStateName: 
@@ -100,14 +104,27 @@ MonoBehaviour:
     BottomOffset: 2
     SweepClearance: 0
     FaceCurveTangent: 0
-    HitMode: 0
+    HitMode: 2
     SingleAoEHitPathProgress: -1
     PathSampleCount: 64
     Cues:
-    - CueName: impact
-      EffectIds: 
+    - CueName: parts_crash_on
+      EffectIds: d07e0100
       SoundIds: 
       Operation: 0
-      InstanceKey: 
+      InstanceKey: parts_crash
+      Anchor: 1
+      Socket: 1
+      Timing: 0
+      Time: 0
+      CueId: e9789f90e91c437e925e4c2fc3a5ec04
+    - CueName: parts_crash_off
+      EffectIds: 
+      SoundIds: 
+      Operation: 2
+      InstanceKey: parts_crash
       Anchor: 0
       Socket: 0
+      Timing: 0
+      Time: 0
+      CueId: 2dbcfd64bf364fa6b8acd626266ce8c3
