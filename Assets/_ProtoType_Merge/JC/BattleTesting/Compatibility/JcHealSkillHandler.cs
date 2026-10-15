@@ -4,7 +4,9 @@
 // 동일 이름의 함수는 원본 함수와 1:1 대응합니다. 별도 변경 함수에는 차이를 추가로 명시합니다.
 // 목적: ASB 원본과 본게임 참조를 수정하지 않고 테스트 전투 제어를 독립시킵니다.
 // 공용 데이터·유닛·모델·연출 에셋은 원본을 참조합니다. 이 파일은 자동 동기화되지 않습니다.
+using ASB.Work.BattleGrid;
 using UnityEngine;
+using ASBGridCell = ASB.Work.BattleGrid.GridCell;
 
 namespace ASB.Work.Battle.SkillExecution
 {
@@ -141,40 +143,39 @@ namespace ASB.Work.Battle.SkillExecution
                         skill.skillIndex, skill.classSkillRange));
         }
     }
-    public sealed class JcHealTargetAroundRandomHandler : JcTargetAroundRandom
+    /// <summary>4030/4031: 네코밍 최대 HP를 기준으로 살아 있는 아군 전체를 회복한다.</summary>
+    public sealed class JcHealAllAlliesSkillHandler : JcBaseAoESkillHandler
     {
-        // 원본 함수 대응: HealSkillHandler.ApplyMainEffect (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Skill/SkillExecution/HealSkillHandler.cs)
-        protected override void ApplyMainEffect(
-            BattleCharactor caster,
-            BattleCharactor target,
-            SkillData skillData,
-            SkillExecutionResult result)
+        // 원본 함수 대응: HealAllAlliesSkillHandler.ResolveAffectedArea (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Skill/SkillExecution/HealSkillHandler.cs)
+        protected override void ResolveAffectedArea(JcSkillExecutionContext context)
         {
-            AddCasterBasedHeal(caster, target, skillData, result, skillData.skillValue);
+            if (context?.PrimaryCell == null)
+                return;
+
+            context.ResolvedCells.Add(context.PrimaryCell);
+            var grid = BattleGridManager.Instance;
+            if (grid == null)
+                return;
+
+            foreach (var coords in SkillTargetingMapper.GetFullSideBoardCoordinates(context.PrimaryCell.Coords))
+            {
+                if (grid.TryGetCell(coords, out ASBGridCell cell)
+                    && cell != null && !context.ResolvedCells.Contains(cell))
+                    context.ResolvedCells.Add(cell);
+            }
         }
 
-        // 원본 함수 대응: HealSkillHandler.ApplyHeal (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Skill/SkillExecution/HealSkillHandler.cs)
-
+        // 원본 함수 대응: HealAllAlliesSkillHandler.ApplyHeal (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Skill/SkillExecution/HealSkillHandler.cs)
         protected override void ApplyHeal(
             BattleCharactor caster,
             BattleCharactor target,
             SkillData skillData,
+            int count,
             SkillExecutionResult result)
         {
-            AddCasterBasedHeal(caster, target, skillData, result, skillData.skillSubValue);
-        }
-
-        // 원본 함수 대응: HealSkillHandler.AddCasterBasedHeal (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Skill/SkillExecution/HealSkillHandler.cs)
-
-        private static void AddCasterBasedHeal(
-            BattleCharactor caster,
-            BattleCharactor target,
-            SkillData skillData,
-            SkillExecutionResult result, float coefficient)
-        {
-            float heal = caster.MaxHp * coefficient;
+            float heal = caster.MaxHp * skillData.skillValue;
             result.AddHeal(caster, target, heal, skillData.skillIndex);
-            Debug.Log($"[Skill/TargetAroundRandomHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
+            Debug.Log($"[Skill/AllAlliesHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
         }
     }
     /// <summary>

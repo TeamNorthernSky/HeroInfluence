@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using ASB.Work.Battle.Core;
 using UnityEngine;
 
@@ -22,6 +23,8 @@ namespace ASB.Work.Battle.Sequence
         private readonly Vector3? _originOverride;
         private readonly Vector3? _destinationOverride;
         private readonly GameObject _existingInstance;
+        // 동시 발사(ExecuteParallel)가 정한 공통 도착 시간. 0이면 거리/속도 기준.
+        private float _arrivalSecondsOverride;
 
         public ProjectileDeliveryResult DeliveryResult { get; private set; } = ProjectileDeliveryResult.Arrived;
         public bool WasCancelled => DeliveryResult == ProjectileDeliveryResult.Cancelled;
@@ -40,6 +43,62 @@ namespace ASB.Work.Battle.Sequence
             _originOverride = originOverride;
             _destinationOverride = destinationOverride;
             _existingInstance = existingInstance;
+        }
+
+        /// <summary>
+        /// 한 번의 시전에 대상별 구체를 같은 프레임에 발사하고 모두 도착할 때까지 기다린다.
+        /// 모든 구체는 같은 순간 착탄한다: 지정값(SimultaneousArrivalSeconds)이 없으면 가장 먼 대상의 비행 시간을 쓴다.
+        /// </summary>
+        public static IEnumerator ExecuteParallel(
+            MonoBehaviour host, BattleCharactor actor, IReadOnlyList<BattleCharactor> targets,
+            ProjectileVisualData visual, float battleSpeed, HitDeliveryGate deliveryGate,
+            int skillIndex, GameObject preparedPrimary = null)
+        {
+            if (host == null || targets == null)
+                yield break;
+
+            var projectiles = new List<ProjectileImpactAction>();
+            var seen = new HashSet<BattleCharactor>();
+            for (int i = 0; i < targets.Count; i++)
+            {
+                BattleCharactor target = targets[i];
+                if (target == null || target.IsDead || !seen.Add(target))
+                    continue;
+
+                bool primary = projectiles.Count == 0;
+                projectiles.Add(new ProjectileImpactAction(
+                    actor, target, visual, battleSpeed, primary ? deliveryGate : null, skillIndex,
+                    existingInstance: primary ? preparedPrimary : null));
+            }
+
+            // 발사와 같은 프레임에 계산하므로 각 구체의 출발점·도착점이 실제 비행과 일치한다.
+            float arrivalSeconds = visual != null ? visual.SimultaneousArrivalSeconds : 0f;
+            if (arrivalSeconds <= 0f)
+            {
+                for (int i = 0; i < projectiles.Count; i++)
+                    arrivalSeconds = Mathf.Max(arrivalSeconds, projectiles[i].EstimateFlightSeconds());
+            }
+
+            var flights = new List<Coroutine>(projectiles.Count);
+            for (int i = 0; i < projectiles.Count; i++)
+            {
+                projectiles[i]._arrivalSecondsOverride = arrivalSeconds;
+                flights.Add(host.StartCoroutine(projectiles[i].ExecuteRoutine(host)));
+            }
+
+            for (int i = 0; i < flights.Count; i++)
+                yield return flights[i];
+        }
+
+        /// <summary>지금 발사하면 걸릴 비행 시간(가속 보정 포함, 배속 반영 전). 발사 불가면 0.</summary>
+        private float EstimateFlightSeconds()
+        {
+            if (_actor == null || _visual == null || _visual.Prefab == null
+                || (!_destinationOverride.HasValue && (_target == null || _target.IsDead)))
+                return 0f;
+
+            Vector3 start = ResolveStart();
+            return FlightSecondsFor(start, ResolveDestination(start), out _);
         }
 
         public override IEnumerator ExecuteRoutine(MonoBehaviour host)
@@ -95,23 +154,8 @@ namespace ASB.Work.Battle.Sequence
 
             ChargeHoldEffect chargeVisual = instance.GetComponent<ChargeHoldEffect>();
             chargeVisual?.BeginFlight(_battleSpeed);
-            // 체인 2차 등은 원점을 명시적으로 오버라이드(1차 도착 좌표). 없으면 기존 소켓 원점 사용.
-            Vector3 start;
-            if (_originOverride.HasValue)
-            {
-                start = _originOverride.Value;
-            }
-            else if (_existingInstance != null)
-            {
-                // 재사용(차징) 인스턴스는 차징하던 현재 위치에서 발사(원점으로 순간이동 방지).
-                start = _existingInstance.transform.position;
-            }
-            else
-            {
-                Transform origin = ResolveOrigin(_actor);
-                start = origin != null ? origin.position : _actor.transform.position;
-            }
-            Vector3 destination = _destinationOverride ?? (_target != null ? _target.transform.position + _visual.TargetOffset : start);
+            Vector3 start = ResolveStart();
+            Vector3 destination = ResolveDestination(start);
 
             Transform tr = instance.transform;
             if (_existingInstance != null)
@@ -137,12 +181,13 @@ namespace ASB.Work.Battle.Sequence
 
             Transform tracked = (!centerMode && _visual.TrackTarget && _target != null) ? _target.transform : null;
 
-            Vector3 timingDestination = _visual.PreserveRootFlightTime && !centerMode
-                ? destination - _visual.TargetOffset : destination;
-            float distance = Vector3.Distance(start, timingDestination);
-            float expectedFlightSeconds = distance / Mathf.Max(0.01f, _visual.Speed);
-            if (_visual.Trajectory != ProjectileTrajectoryType.OverheadDrop)
-                expectedFlightSeconds *= ProjectileAcceleration.DurationScale(_visual.Acceleration, _visual.AccelerationMultiplier);
+            float expectedFlightSeconds = FlightSecondsFor(start, destination, out float distance);
+            if (_arrivalSecondsOverride > 0f && trajectory is IFixedArrivalTrajectory fixedArrival)
+            {
+                // 동시 착탄: 시간만 공통값으로 바꾸고 포물선·가속 곡선은 그대로 둔다. 타임아웃도 같은 기준.
+                fixedArrival.SetArrivalSeconds(_arrivalSecondsOverride);
+                expectedFlightSeconds = _arrivalSecondsOverride;
+            }
             float grace = Mathf.Max(0.1f, _visual.TimeoutGraceSeconds);
             float safetyTimeoutSeconds = expectedFlightSeconds + grace;
             float elapsed = 0f;
@@ -317,6 +362,38 @@ namespace ASB.Work.Battle.Sequence
                     }
                 }
             }
+        }
+
+        private Vector3 ResolveStart()
+        {
+            // 체인 2차 등은 원점을 명시적으로 오버라이드(1차 도착 좌표). 없으면 기존 소켓 원점 사용.
+            if (_originOverride.HasValue)
+                return _originOverride.Value;
+
+            // 재사용(차징) 인스턴스는 차징하던 현재 위치에서 발사(원점으로 순간이동 방지).
+            if (_existingInstance != null)
+                return _existingInstance.transform.position;
+
+            Transform origin = ResolveOrigin(_actor);
+            return origin != null ? origin.position : _actor.transform.position;
+        }
+
+        private Vector3 ResolveDestination(Vector3 start)
+        {
+            return _destinationOverride ?? (_target != null ? _target.transform.position + _visual.TargetOffset : start);
+        }
+
+        /// <summary>거리/속도 기준 비행 시간(가속 보정 포함, 배속 반영 전).</summary>
+        private float FlightSecondsFor(Vector3 start, Vector3 destination, out float distance)
+        {
+            bool centerMode = _destinationOverride.HasValue;
+            Vector3 timingDestination = _visual.PreserveRootFlightTime && !centerMode
+                ? destination - _visual.TargetOffset : destination;
+            distance = Vector3.Distance(start, timingDestination);
+            float seconds = distance / Mathf.Max(0.01f, _visual.Speed);
+            if (_visual.Trajectory != ProjectileTrajectoryType.OverheadDrop)
+                seconds *= ProjectileAcceleration.DurationScale(_visual.Acceleration, _visual.AccelerationMultiplier);
+            return seconds;
         }
 
         private static Transform ResolveOrigin(BattleCharactor actor)

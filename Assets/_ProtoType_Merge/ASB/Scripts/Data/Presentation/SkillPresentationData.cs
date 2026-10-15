@@ -584,6 +584,8 @@ public class ProjectileVisualData
     public Vector3 TargetOffset;
     [Tooltip("켜면 높이 보정 전 대상 루트까지의 거리로 비행 시간을 계산하여 기존 명중 시간을 유지합니다.")]
     public bool PreserveRootFlightTime;
+    [Tooltip("여러 대상에게 동시에 발사할 때(4030/4031 광역 힐) 모든 투사체의 도착 시간(초, 배속 1 기준). 0이면 가장 먼 대상의 비행 시간에 맞춥니다. 포물선·가속 곡선 모양은 유지됩니다.")]
+    [Min(0f)] public float SimultaneousArrivalSeconds;
     [Tooltip("도착 순간 정적 구체를 숨깁니다. 잔상 수명은 ImpactVisualLifetime으로 별도 조절하며 기본값은 기존 동작입니다.")]
     public bool HideVisualOnArrival;
     [Min(0.01f)] public float TrailTime = 0.4f;

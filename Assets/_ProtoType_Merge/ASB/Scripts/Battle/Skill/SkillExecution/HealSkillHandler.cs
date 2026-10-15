@@ -1,4 +1,6 @@
+using ASB.Work.BattleGrid;
 using UnityEngine;
+using ASBGridCell = ASB.Work.BattleGrid.GridCell;
 
 namespace ASB.Work.Battle.SkillExecution
 {
@@ -126,35 +128,38 @@ namespace ASB.Work.Battle.SkillExecution
                         skill.skillIndex, skill.classSkillRange));
         }
     }
-    public sealed class HealTargetAroundRandomHandler : TargetAroundRandom
+    /// <summary>4030/4031: 네코밍 최대 HP를 기준으로 살아 있는 아군 전체를 회복한다.</summary>
+    public sealed class HealAllAlliesSkillHandler : BaseAoESkillHandler
     {
-        protected override void ApplyMainEffect(
-            BattleCharactor caster,
-            BattleCharactor target,
-            SkillData skillData,
-            SkillExecutionResult result)
+        protected override void ResolveAffectedArea(SkillExecutionContext context)
         {
-            AddCasterBasedHeal(caster, target, skillData, result, skillData.skillValue);
+            if (context?.PrimaryCell == null)
+                return;
+
+            // 테이블의 대상 유형과 무관하게 선택 대상부터 같은 편 보드 전체를 순회한다.
+            context.ResolvedCells.Add(context.PrimaryCell);
+            var grid = BattleGridManager.Instance;
+            if (grid == null)
+                return;
+
+            foreach (var coords in SkillTargetingMapper.GetFullSideBoardCoordinates(context.PrimaryCell.Coords))
+            {
+                if (grid.TryGetCell(coords, out ASBGridCell cell)
+                    && cell != null && !context.ResolvedCells.Contains(cell))
+                    context.ResolvedCells.Add(cell);
+            }
         }
 
         protected override void ApplyHeal(
             BattleCharactor caster,
             BattleCharactor target,
             SkillData skillData,
+            int count,
             SkillExecutionResult result)
         {
-            AddCasterBasedHeal(caster, target, skillData, result, skillData.skillSubValue);
-        }
-
-        private static void AddCasterBasedHeal(
-            BattleCharactor caster,
-            BattleCharactor target,
-            SkillData skillData,
-            SkillExecutionResult result, float coefficient)
-        {
-            float heal = caster.MaxHp * coefficient;
+            float heal = caster.MaxHp * skillData.skillValue;
             result.AddHeal(caster, target, heal, skillData.skillIndex);
-            Debug.Log($"[Skill/TargetAroundRandomHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
+            Debug.Log($"[Skill/AllAlliesHeal] {caster.UnitName} -> {target.UnitName} heal={heal:F1}");
         }
     }
     /// <summary>

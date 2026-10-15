@@ -662,10 +662,10 @@ public class JcBattleManager : MonoBehaviour
 
         if (result.HealContexts != null && result.HealContexts.Count > 0)
         {
-            // 다중 아군 힐: 시전 애니는 첫(주) 대상에서 1회만 재생하고, 인접 아군은 시전을 다시 돌리지 않고
-            // 짧은 딜레이(스태거) 후 힐 이펙트 + 힐만 적용한다. (첫 대상만 투척/Cue 등 전체 연출 수행)
+            bool simultaneousHeal = result.HealContexts.Exists(
+                heal => heal != null && HeroSkillRules.FamilyId(heal.SkillIndex) == 4030);
+            // 4030/4031은 첫 적중에 전체 회복을 확정하고, 다른 다중 힐은 기존 순차 연출을 사용한다.
             bool firstHealPresented = false;
-            BattleCharactor previousHealTarget = null;
             var groupHealPresentationTargets = new List<BattleCharactor>();
             foreach (HealContext context in result.HealContexts)
             {
@@ -694,8 +694,14 @@ public class JcBattleManager : MonoBehaviour
                     continue;
                 }
 
+                if (simultaneousHeal && firstHealPresented)
+                {
+                    continue;
+                }
+
                 HealContext capturedHeal = healContext;
                 bool healCommitted = false;
+                bool presentationReachedImpact = false;
                 Func<BattleHitResult> healCallback = () =>
                 {
                     if (healCommitted)
@@ -704,6 +710,33 @@ public class JcBattleManager : MonoBehaviour
                     }
 
                     healCommitted = true;
+                    if (simultaneousHeal)
+                    {
+                        BattleHitResult primaryHit = null;
+                        foreach (HealContext groupHeal in result.HealContexts)
+                        {
+                            if (groupHeal?.Caster == null || groupHeal.Target == null
+                                || groupHeal.Target.IsDead || groupHeal.IsRevive)
+                                continue;
+
+                            groupHeal.Target.ApplyHeal(groupHeal.HealAmount);
+                            var hit = new BattleHitResult
+                            {
+                                Target = groupHeal.Target,
+                                Damage = groupHeal.HealAmount,
+                                IsHeal = true,
+                                SkillIndex = groupHeal.SkillIndex
+                            };
+                            if (groupHeal == capturedHeal) primaryHit = hit;
+                            else if (presentationReachedImpact)
+                            {
+                                _visualDirector?.PlayHitEffect(groupHeal.Target, groupHeal.SkillIndex, _currentBattleSpeed);
+                                _visualDirector?.ShowDamagePopup(hit);
+                            }
+                        }
+                        return primaryHit;
+                    }
+
                     if (capturedHeal.IsRevive)
                     {
                         capturedHeal.Target.Revive(capturedHeal.ReviveHpRatio);
@@ -733,26 +766,21 @@ public class JcBattleManager : MonoBehaviour
                         healAnimSkill,
                         playBasicAttackAnimation: false,
                         playTargetHitAnimation: false,
-                        onHitCallback: healCallback,
+                        onHitCallback: () =>
+                        {
+                            presentationReachedImpact = true;
+                            return healCallback();
+                        },
                         deliveryGate: new HitDeliveryGate(),
                         presentationTargets: HeroSkillRules.FamilyId(healContext.SkillIndex) == 4030 ? groupHealPresentationTargets : null));
                     yield return StartCoroutine(healQueue.RunAll(this));
-                    previousHealTarget = healContext.Target;
                 }
                 else
                 {
                     // 인접 아군: 시전 애니 없이 스태거 딜레이 후 힐 이펙트 + 힐.
                     yield return WaitForBattleSeconds(MultiHealStaggerSeconds);
-                    if (HeroSkillRules.FamilyId(healContext.SkillIndex) == 4030 && previousHealTarget != null)
-                    {
-                        yield return PlayGroupHealBounceProjectile(
-                            previousHealTarget,
-                            healContext.Target,
-                            healContext.SkillIndex);
-                    }
                     _visualDirector?.PlayHitEffect(healContext.Target, healContext.SkillIndex);
                     healCallback();
-                    previousHealTarget = healContext.Target;
                 }
             }
         }
@@ -902,35 +930,6 @@ public class JcBattleManager : MonoBehaviour
         {
             pendingCommits[i]?.Invoke();
         }
-    }
-
-    // 원본 함수 대응: BattleManager.PlayGroupHealBounceProjectile (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Core/BattleManager.cs)
-
-    private IEnumerator PlayGroupHealBounceProjectile(
-        BattleCharactor source,
-        BattleCharactor target,
-        int skillIndex)
-    {
-        if (source == null || target == null || source.IsDead || target.IsDead)
-        {
-            yield break;
-        }
-
-        ProjectileVisualData projectileVisual = _presentationCatalog?.Get(skillIndex)?.GetProjectileVisual();
-        if (projectileVisual == null)
-        {
-            yield break;
-        }
-
-        var projectile = new ProjectileImpactAction(
-            source,
-            target,
-            projectileVisual,
-            _currentBattleSpeed,
-            null,
-            skillIndex,
-            originOverride: source.transform.position);
-        yield return projectile.ExecuteRoutine(this);
     }
 
     // 원본 함수 대응: BattleManager.ApplyStatusEffect (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Core/BattleManager.cs)
