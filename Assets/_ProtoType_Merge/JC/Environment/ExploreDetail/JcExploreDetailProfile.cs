@@ -6,7 +6,7 @@ namespace JC.EnvironmentDetail
     {
         [Tooltip("다음 씬 적용 시 베이크 표시를 사용할지 정합니다. 플레이 중 수치 변경은 자동 반영하지 않습니다. 이동·충돌·이벤트 판정은 항상 원본입니다.")]
         public bool enableDetails=true;
-        [Tooltip("원본이 달라져도 마지막 확정 베이크를 강제 표시합니다. 새 맵과 겹칠 수 있습니다. 실행 시작 시 적용되며 외형 수치는 재베이크 전까지 반영되지 않습니다.")]
+        [HideInInspector] // 이전 에셋 호환용. 현재는 항상 확정본을 유지합니다.
         public bool forceBakedOnMismatch;
         [Tooltip("자동 적용할 테스트베드 탐사씬 이름입니다. 전투씬에는 적용하지 않습니다.")]
         public string[] sceneNames={"DHScene_3"};

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: JC_ExploreDetail_Default
   m_EditorClassIdentifier: 
   enableDetails: 1
+  forceBakedOnMismatch: 0
   sceneNames:
   - DHScene_3
   roadSurface: 1

@@ -7,13 +7,17 @@ namespace JC.EnvironmentDetail
 {
     public sealed partial class JcExploreDetailOverlay
     {
-        [SerializeField, Tooltip("원본과 불일치해도 마지막 확정 베이크를 표시합니다. 새 맵과 겹칠 수 있습니다. 자동 재생성하지 않습니다.")]
+        // 과거 씬 직렬화 호환용. 현재는 실행/편집 모두 확정 외형 유지 정책입니다.
+        [SerializeField, HideInInspector]
         bool forceBakedOnMismatch;
         public bool ForceBakedOnMismatch { get => forceBakedOnMismatch; set => forceBakedOnMismatch = value; }
         public bool IsPreview { get; private set; }
         public GameObject VisualRoot => output;
         public JcExploreDetailBake SelectedBake => selectedBake;
+        public bool KeepBakeOnMismatch => true;
         JcExploreDetailBake selectedBake;
+        JcExploreDetailBake appliedBake;
+        GameObject appliedPrefab;
         bool initialized, runtimeEnabled, applyQueued;
         string lastWarning;
         // Editor 전용 에셋 의존성 검증을 연결합니다. Player에는 파일 검색을 넣지 않습니다.
@@ -79,17 +83,16 @@ namespace JC.EnvironmentDetail
         // 기존 호출부 호환용입니다. force도 재생성을 의미하지 않습니다.
         public void Refresh(bool force = false)
         {
-            IsPreview = false;
             if (!initialized || !Application.isPlaying)
             {
                 selectedBake = JcExploreDetailBakeCatalog.Load()?.Find(gameObject.scene.path);
                 runtimeEnabled = profile != null && profile.enableDetails;
             }
             initialized = true;
-            Restore();
-            if (!isActiveAndEnabled || !runtimeEnabled) { status = "OFF: DH 원본 외형"; return; }
+            waterController=JcWaterController.Ensure(this);
+            if (!isActiveAndEnabled || !runtimeEnabled) { Restore(); IsPreview=false; status = "OFF: DH 원본 외형"; return; }
             if (selectedBake == null || selectedBake.prefab == null)
-            { Warn("확정 베이크가 없습니다. DH 원본을 표시합니다."); return; }
+            { Warn("확정 베이크가 없습니다. " + (output!=null?"기존 표시를 유지합니다.":"표시 가능한 확정본이 없어 DH 원본을 표시합니다.")); return; }
             string mismatch;
             try
             {
@@ -102,23 +105,42 @@ namespace JC.EnvironmentDetail
             catch (Exception e) { mismatch = "입력 구조 확인 실패: " + e.Message; }
             if (mismatch != null)
             {
-                Warn(mismatch + (forceBakedOnMismatch ? " 강제 베이크 표시 중." : " DH 원본을 표시합니다."));
-                if (!forceBakedOnMismatch) return;
+                Warn(mismatch + " 마지막 확정 베이크 유지 중 (재베이크 필요).");
             }
+            GameObject candidate=null;
             try
             {
-                // 배치 좌표는 생성 당시 월드 기준. 관리 루트의 TRS가 외형에 추가 적용되지 않게 합니다.
-                output = Instantiate(selectedBake.prefab);
-                output.name = "JC_ExploreDetail_Visuals"; output.hideFlags = HideFlags.DontSave;
-                output.transform.SetParent(transform, true);
                 var key=JcExploreDetailBake.CreateKeyResolver(gameObject.scene);
                 var sources = JcExploreDetailBake.Sources(gameObject.scene).ToDictionary(f => key(f.transform));
-                foreach (var input in selectedBake.inputs.Where(x => x.replace))
-                    if (sources.TryGetValue(input.key, out var source))
-                    { var r = source.GetComponent<MeshRenderer>(); originals[r] = r.forceRenderingOff; r.forceRenderingOff = true; }
+                var replaced=selectedBake.inputs.Where(x=>x.replace && sources.ContainsKey(x.key))
+                    .Select(x=>sources[x.key].GetComponent<MeshRenderer>()).Distinct().ToArray();
+                if(output==null || appliedBake!=selectedBake || appliedPrefab!=selectedBake.prefab || IsPreview)
+                {
+                    // 준비 실패 시 기존 표시와 물 재질을 건드리지 않습니다.
+                    candidate=Instantiate(selectedBake.prefab);
+                    candidate.SetActive(false);
+                    candidate.name="JC_ExploreDetail_Visuals";candidate.hideFlags=HideFlags.DontSave;
+                    candidate.transform.SetParent(transform,true);
+                    if(candidate.GetComponentsInChildren<MeshFilter>(true).Any(f=>f.sharedMesh==null) ||
+                       candidate.GetComponentsInChildren<MeshRenderer>(true).Any(r=>r.sharedMaterials.Any(m=>m==null || m.shader==null)))
+                        throw new InvalidOperationException("확정본의 메시 또는 재질이 누락되었습니다.");
+                    waterController.Bind(candidate); // 새 재질 준비 실패 시 이전 연결을 유지합니다.
+                    ReleaseVisual(false);
+                    output=candidate;candidate=null;appliedBake=selectedBake;appliedPrefab=selectedBake.prefab;IsPreview=false;
+                    output.SetActive(true);
+                }
+                // 같은 확정본의 중복 로드 알림에서는 메시/물 재질을 재생성하지 않습니다.
+                foreach(var r in originals.Keys.Where(r=>r==null || !replaced.Contains(r)).ToArray())
+                { if(r!=null)r.forceRenderingOff=originals[r];originals.Remove(r); }
+                foreach(var r in replaced)
+                { if(!originals.ContainsKey(r))originals.Add(r,r.forceRenderingOff);r.forceRenderingOff=true; }
                 if (mismatch == null) { lastWarning = null; status = "BAKED: " + selectedBake.createdUtc + " / " + selectedBake.report; }
             }
-            catch (Exception e) { Restore(); Warn("베이크 적용 실패: " + e.Message + " / DH 원본 복원"); }
+            catch (Exception e)
+            {
+                if(candidate!=null){candidate.SetActive(false);Dispose(candidate);}
+                Warn("베이크 적용 실패: " + e.Message + (output!=null?" / 기존 표시와 물 연결 유지":" / 적용 가능한 외형이 없어 DH 원본 표시"));
+            }
         }
         void Warn(string reason)
         {
@@ -127,6 +149,13 @@ namespace JC.EnvironmentDetail
             lastWarning = reason; Debug.LogWarning("[JC World Dressing] " + reason, this);
         }
         public void ShowOriginal() { Restore(); IsPreview = false; status = "DH 원본 표시 (수동)"; }
+        // 편집기 변경 감지는 표시 객체를 제거하지 않고 상태만 알립니다.
+        public void ReportEditorInputChange(string reason)
+        {
+            if (Application.isPlaying || output == null || IsPreview || selectedBake==null || appliedBake!=selectedBake || appliedPrefab!=selectedBake.prefab) return;
+            status = reason == null ? "BAKED: " + selectedBake.createdUtc + " / " + selectedBake.report :
+                reason + " 마지막 확정 베이크 유지 중 (재베이크 필요).";
+        }
 
 #if UNITY_EDITOR
         public JcExploreDetailBake.Input[] PreviewInputs { get; private set; }
@@ -147,6 +176,7 @@ namespace JC.EnvironmentDetail
                 var key=JcExploreDetailBake.CreateKeyResolver(gameObject.scene);
                 var replaced = new System.Collections.Generic.HashSet<string>(originals.Keys.Select(r => key(r.transform)));
                 foreach (var input in PreviewInputs) input.replace = replaced.Contains(input.key);
+                BindWater();
                 IsPreview = true; status = "PREVIEW (미확정): " + status;
             }
             catch { Refresh(); throw; }

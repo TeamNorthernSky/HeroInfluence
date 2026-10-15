@@ -96,10 +96,6 @@ public class LabModalController : MonoBehaviour
 
     // [JC 260618] 스킬 아이콘 경로/변형 수는 HeroIconLibrary(SO)로 이관됨. 폴백 규약도 SO가 보유.
 
-    [Header("툴팁 문구")]
-    [SerializeField] private string lockedStageTip = "연구소 업그레이드 필요";
-    [SerializeField] private string notLearnedTip  = "아직 습득하지 않은 스킬";
-
     [Header("훈련실과 동일한 카드 표시")]
     [SerializeField] private Sprite cardNormalSprite;
     [SerializeField] private Sprite cardSelectedSprite;
