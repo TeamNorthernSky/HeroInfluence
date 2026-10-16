@@ -1,5 +1,20 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5506318565069389871
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.7566666975617409
+  _sfxKey: Battle_Hit02
+  _durationSeconds: 0
 --- !u!114 &-5083223311166653866
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -28,6 +43,139 @@ MonoBehaviour:
     - {fileID: 8475400124305095024}
     - {fileID: 4594050423060502832}
     - {fileID: 3507477117983643348}
+    - {fileID: -342818570804015279}
+    - {fileID: 7835957085102525162}
+    - {fileID: 928551565977213706}
+    - {fileID: -4779126231471553252}
+    - {fileID: 2068490293364331112}
+    - {fileID: -4524424534015505134}
+    - {fileID: 2743214696086373265}
+    - {fileID: 7383929260239661905}
+--- !u!114 &-4894381557509144978
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
+  m_Name: Sound
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips: []
+  m_Markers:
+    m_Objects:
+    - {fileID: -811595278863410164}
+    - {fileID: -5506318565069389871}
+  role: 4
+--- !u!114 &-4779126231471553252
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1675940f59683d34ca68374fac43622e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 1.4133334085345268
+  _boundary: 1
+  _positionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &-4524424534015505134
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.001
+  _kind: 0
+  _cueName: fist_trail_on_l
+  _cueId: 6e7ea47f2583406ab0c20e32f6d3a77a
+  _targetSlot: 0
+--- !u!114 &-4119528113821493211
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
+  m_Name: MoveFWD_Normal_InPlace_NoWeapon
+  m_EditorClassIdentifier: 
+  m_Clip: {fileID: 1827226128182048838, guid: b79b7d2190ec84f4ca4dcead6ee30a7d, type: 3}
+  m_Position: {x: 0, y: 0, z: 0}
+  m_EulerAngles: {x: 0, y: 0, z: 0}
+  m_UseTrackMatchFields: 1
+  m_MatchTargetFields: 63
+  m_RemoveStartOffset: 1
+  m_ApplyFootIK: 1
+  m_Loop: 0
+  m_Version: 1
+  m_Rotation: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &-3858953414869349854
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
+  m_Name: RollBWD_Battle_InPlace_NoWeapon
+  m_EditorClassIdentifier: 
+  m_Clip: {fileID: 1827226128182048838, guid: 03deb9f948c4da142b1d5034b7c552ec, type: 3}
+  m_Position: {x: 0, y: 0, z: 0}
+  m_EulerAngles: {x: 0, y: 0, z: 0}
+  m_UseTrackMatchFields: 1
+  m_MatchTargetFields: 63
+  m_RemoveStartOffset: 1
+  m_ApplyFootIK: 1
+  m_Loop: 0
+  m_Version: 1
+  m_Rotation: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &-3844846062955193032
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -40,7 +188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62dd47085fb715741b7d8a4ee9f474fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.8633333966135979
+  m_Time: 1.1133333966135979
   _sectionId: Attack
   _boundary: 1
 --- !u!114 &-2356736261551685923
@@ -55,9 +203,64 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62dd47085fb715741b7d8a4ee9f474fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0
+  m_Time: 0.25
   _sectionId: Attack
   _boundary: 0
+--- !u!114 &-811595278863410164
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.3648718073964119
+  _sfxKey: Battle_Hit01
+  _durationSeconds: 0
+--- !u!114 &-342818570804015279
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9137a1fc07e541b782e1dd38f6104b52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0
+  _boundary: 0
+  _targetSlot: 1
+  _positionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _rotationPortion: 0.35
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73,6 +276,8 @@ MonoBehaviour:
   m_Version: 0
   m_Tracks:
   - {fileID: 1112143288459621389}
+  - {fileID: 4706389726584167736}
+  - {fileID: -4894381557509144978}
   m_FixedDuration: 0
   m_EditorSettings:
     m_Framerate: 60
@@ -101,6 +306,44 @@ MonoBehaviour:
   m_Loop: 0
   m_Version: 1
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &928551565977213706
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1675940f59683d34ca68374fac43622e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 1.1133333966135979
+  _boundary: 0
+  _positionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &1112143288459621389
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -123,7 +366,7 @@ MonoBehaviour:
   m_Children: []
   m_Clips:
   - m_Version: 1
-    m_Start: 0
+    m_Start: 0.25
     m_ClipIn: 0
     m_Asset: {fileID: 9148534573578346637}
     m_Duration: 0.46666669845581055
@@ -132,7 +375,7 @@ MonoBehaviour:
     m_EaseInDuration: 0
     m_EaseOutDuration: 0
     m_BlendInDuration: -1
-    m_BlendOutDuration: -1
+    m_BlendOutDuration: 0.07000000029802322
     m_MixInCurve:
       serializedVersion: 2
       m_Curve:
@@ -192,10 +435,61 @@ MonoBehaviour:
     m_PreExtrapolationTime: 0
     m_DisplayName: Attack.Beats[0] (Base Layer.ClassSkill_1)
   - m_Version: 1
-    m_Start: 0.3966666981577873
+    m_Start: 0.6466666981577873
     m_ClipIn: 0
     m_Asset: {fileID: 774510365298771790}
     m_Duration: 0.46666669845581055
+    m_TimeScale: 1
+    m_ParentTrack: {fileID: 1112143288459621389}
+    m_EaseInDuration: 0
+    m_EaseOutDuration: 0
+    m_BlendInDuration: 0.07000000029802322
+    m_BlendOutDuration: -1
+    m_MixInCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    m_MixOutCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    m_BlendInCurveMode: 0
+    m_BlendOutCurveMode: 0
+    m_ExposedParameterNames: []
+    m_AnimationCurves: {fileID: 0}
+    m_Recordable: 0
+    m_PostExtrapolationMode: 1
+    m_PreExtrapolationMode: 1
+    m_PostExtrapolationTime: 0
+    m_PreExtrapolationTime: 0
+    m_DisplayName: Attack.Beats[1] (Base Layer.ClassSkill_2)
+  - m_Version: 1
+    m_Start: 0
+    m_ClipIn: 0
+    m_Asset: {fileID: -4119528113821493211}
+    m_Duration: 0.25
     m_TimeScale: 1
     m_ParentTrack: {fileID: 1112143288459621389}
     m_EaseInDuration: 0
@@ -259,7 +553,76 @@ MonoBehaviour:
     m_PreExtrapolationMode: 1
     m_PostExtrapolationTime: 0
     m_PreExtrapolationTime: 0
-    m_DisplayName: Attack.Beats[1] (Base Layer.ClassSkill_2)
+    m_DisplayName: "Move (\uC811\uADFC)"
+  - m_Version: 1
+    m_Start: 1.1133333966135979
+    m_ClipIn: 0
+    m_Asset: {fileID: -3858953414869349854}
+    m_Duration: 0.4000000134110451
+    m_TimeScale: 1
+    m_ParentTrack: {fileID: 1112143288459621389}
+    m_EaseInDuration: 0
+    m_EaseOutDuration: 0
+    m_BlendInDuration: -1
+    m_BlendOutDuration: -1
+    m_MixInCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    m_MixOutCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    m_BlendInCurveMode: 0
+    m_BlendOutCurveMode: 0
+    m_ExposedParameterNames: []
+    m_AnimationCurves: {fileID: 0}
+    m_Recordable: 0
+    m_PostExtrapolationMode: 1
+    m_PreExtrapolationMode: 1
+    m_PostExtrapolationTime: Infinity
+    m_PreExtrapolationTime: 0
+    m_DisplayName: "Return (\uBCF5\uADC0)"
   m_Markers:
     m_Objects: []
   m_InfiniteClipPreExtrapolation: 0
@@ -280,6 +643,40 @@ MonoBehaviour:
   m_OpenClipOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
   m_ApplyOffsets: 0
+--- !u!114 &2068490293364331112
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.001
+  _kind: 0
+  _cueName: fist_trail_on
+  _cueId: 0a18a50d2c1941e8b28ba1204e15beb6
+  _targetSlot: 0
+--- !u!114 &2743214696086373265
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.9866666981577874
+  _kind: 0
+  _cueName: fist_trail_off
+  _cueId: 3666733ed6ba4f50ad923c6d49c16034
+  _targetSlot: 0
 --- !u!114 &3507477117983643348
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -292,7 +689,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0
+  m_Time: 0.251
   _kind: 1
   _cueName: 
   _cueId: 
@@ -309,11 +706,92 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.5066666975617409
+  m_Time: 0.7566666975617409
   _kind: 0
   _cueName: impact
   _cueId: 78e021600226466788ad92d7d1476f69
   _targetSlot: 0
+--- !u!114 &4706389726584167736
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69abdfe3a85934348a3986db70df7ab6, type: 3}
+  m_Name: Speed
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips: []
+  m_Markers:
+    m_Objects: []
+  role: 2
+--- !u!114 &7383929260239661905
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.9866666981577874
+  _kind: 0
+  _cueName: fist_trail_off_l
+  _cueId: 698e6dc53e8b4e34a7909fa4620f56da
+  _targetSlot: 0
+--- !u!114 &7835957085102525162
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9137a1fc07e541b782e1dd38f6104b52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.25
+  _boundary: 1
+  _targetSlot: 1
+  _positionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  _rotationPortion: 0.35
 --- !u!114 &8475400124305095024
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -326,7 +804,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.1148718073964119
+  m_Time: 0.3648718073964119
   _kind: 0
   _cueName: impact
   _cueId: 088ec1ea471640d3b65829642b13b3cb

@@ -5,7 +5,7 @@ using UnityEngine;
 
 /// <summary>
 /// 자동 전투 컨트롤러.
-/// 플레이어 턴에 랜덤 액션/타겟을 선택해 BattleManager로 실행합니다.
+/// 플레이어 턴에 클래스 스킬 슬롯의 스킬과 무기 스킬 중 랜덤 액션/타겟을 선택해 BattleManager로 실행합니다.
 /// InputHandler.IsAutoBattleActive 플래그로 수동 입력을 차단합니다.
 /// UI에서 OnAutoBattleToggleRequested 이벤트를 발생시켜 자동 전투를 제어합니다.
 /// </summary>
@@ -109,31 +109,14 @@ public class AutoBattleController : MonoBehaviour
             inputHandler.IsAutoBattleActive = true;
 
         // 유효한 액션 후보 수집 (타겟 존재 + Influence 충분)
-        var candidates = new List<(PendingActionType actionType, List<BattleCharactor> targets)>();
+        // 클래스 스킬 슬롯의 스킬 전부와 무기 스킬이 후보다.
+        var candidates = new List<AutoBattleCandidate>();
 
-        // ClassSkill
-        actor.ResolveSelectedSkill();
-        if (actor.SelectedSkillData != null &&
-            actor.CurrentInfluence >= actor.SelectedSkillData.IPCost)
-        {
-            var classTargets = new List<BattleCharactor>(
-                TargetingHelper.GetValidTargets(actor, PendingActionType.ClassSkill));
-            if (classTargets.Count > 0)
-                candidates.Add((PendingActionType.ClassSkill, classTargets));
-        }
+        foreach (SkillData classSkill in actor.ClassSkillSlots)
+            TryAddCandidate(candidates, actor, PendingActionType.ClassSkill, classSkill);
 
-        // WeaponSkill
         if (actor.EquippedWeaponData != null)
-        {
-            var weaponSkill = actor.EquippedWeaponData.ToSkillData();
-            if (weaponSkill != null && actor.CurrentInfluence >= weaponSkill.IPCost)
-            {
-                var weaponTargets = new List<BattleCharactor>(
-                    TargetingHelper.GetValidTargets(actor, PendingActionType.WeaponSkill));
-                if (weaponTargets.Count > 0)
-                    candidates.Add((PendingActionType.WeaponSkill, weaponTargets));
-            }
-        }
+            TryAddCandidate(candidates, actor, PendingActionType.WeaponSkill, actor.EquippedWeaponData.ToSkillData());
 
         // 후보가 없으면 턴 스킵
         if (candidates.Count == 0)
@@ -145,19 +128,15 @@ public class AutoBattleController : MonoBehaviour
         }
 
         // 랜덤 액션·타겟 선택
-        var selected = candidates[UnityEngine.Random.Range(0, candidates.Count)];
-        PendingActionType actionType = selected.actionType;
-        BattleCharactor target = selected.targets[UnityEngine.Random.Range(0, selected.targets.Count)];
+        AutoBattleCandidate selected = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        PendingActionType actionType = selected.ActionType;
+        SkillData skill = selected.Skill;
+        BattleCharactor target = selected.Targets[UnityEngine.Random.Range(0, selected.Targets.Count)];
 
-        Debug.Log($"[AutoBattle] {actor.UnitName}: {actionType} → {target.UnitName}");
-
-        actor.ResolveSelectedSkill();
-        SkillData highlightSkill = actionType == PendingActionType.ClassSkill
-            ? actor.SelectedSkillData
-            : actor.EquippedWeaponData?.ToSkillData();
+        Debug.Log($"[AutoBattle] {actor.UnitName}: {actionType}({skill.skillIndex}) → {target.UnitName}");
 
         // 타겟 발판 하이라이트 표시 후 대기
-        flowManager?.ShowTargetHighlight(actor, target, highlightSkill);
+        flowManager?.ShowTargetHighlight(actor, target, skill);
         float speed = BattleManager.Instance != null ? BattleManager.Instance.CurrentBattleSpeed : 1f;
         yield return new WaitForSeconds(thinkDelay / Mathf.Max(0.01f, speed));
 
@@ -190,20 +169,9 @@ public class AutoBattleController : MonoBehaviour
 
         // 실행
         bool executed = false;
-        switch (actionType)
-        {
-            case PendingActionType.ClassSkill:
-                yield return StartCoroutine(
-                    battleManager.ExecuteGridSkill(actor, target, highlightSkill,
-                        success => executed = success));
-                break;
-
-            case PendingActionType.WeaponSkill:
-                yield return StartCoroutine(
-                    battleManager.ExecuteGridSkill(actor, target, highlightSkill,
-                        success => executed = success));
-                break;
-        }
+        yield return StartCoroutine(
+            battleManager.ExecuteGridSkill(actor, target, skill,
+                success => executed = success));
 
         flowManager?.ClearTargetHighlight();
 
@@ -217,5 +185,30 @@ public class AutoBattleController : MonoBehaviour
         }
 
         if (inputHandler != null) inputHandler.IsAutoBattleActive = false;
+    }
+
+    /// <summary>IP가 충분하고 유효 타겟이 있는 스킬만 후보에 넣습니다.</summary>
+    private static void TryAddCandidate(List<AutoBattleCandidate> candidates, BattleCharactor actor,
+        PendingActionType actionType, SkillData skill)
+    {
+        if (skill == null || actor.CurrentInfluence < skill.IPCost) return;
+
+        List<BattleCharactor> targets = TargetingHelper.GetValidTargetsForSkillData(actor, skill);
+        if (targets.Count > 0)
+            candidates.Add(new AutoBattleCandidate(actionType, skill, targets));
+    }
+
+    private readonly struct AutoBattleCandidate
+    {
+        public readonly PendingActionType ActionType;
+        public readonly SkillData Skill;
+        public readonly List<BattleCharactor> Targets;
+
+        public AutoBattleCandidate(PendingActionType actionType, SkillData skill, List<BattleCharactor> targets)
+        {
+            ActionType = actionType;
+            Skill = skill;
+            Targets = targets;
+        }
     }
 }

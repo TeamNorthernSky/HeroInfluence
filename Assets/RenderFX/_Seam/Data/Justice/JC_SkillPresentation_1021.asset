@@ -14,28 +14,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 1021
   PresentationSchemaVersion: 1
+  AnimationRail: 1
+  PresentationArchetype: 1
+  SkillTimelines:
+  - CharacterKey: 10001
+    Timeline: {fileID: 11400000, guid: 48df66fd310061648a5b37cc61a31f93, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
   UseAnimEvent: 1
   HitDelay: 0.25
-  AttackSoundId: 0
   HitSoundId: 0
   SfxVolume: 1
-  EnableAttackEffect: 1
-  AttackEffectId: 0
   EnableHitEffect: 1
   HitEffectId: 0
-  ProjectilePrefab: {fileID: 0}
-  FlightTime: 0.3
-  TrajectoryType: 0
-  ArcHeight: 2
-  ScaleByCellSize: 0
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    SimultaneousArrivalSeconds: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -52,23 +61,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
-  AttackSfxClip: {fileID: 0}
-  HitSfxClip: {fileID: 0}
-  AttackEffectPrefab: {fileID: 0}
-  AttackEffectPositionOffset: {x: 0, y: 0, z: 0}
-  AttackEffectRotationOffset: {x: 0, y: 0, z: 0}
-  HitEffectPrefab: {fileID: 0}
-  HitEffectPositionOffset: {x: 0, y: 0, z: 0}
-  HitEffectRotationOffset: {x: 0, y: 0, z: 0}
-  EventSfx:
-  - Event: 0
-    Key: Battle_Hit01
-    DurationSeconds: 0
-    Occurrence: -1
-  - Event: 0
-    Key: Battle_Hit02
-    DurationSeconds: 0
-    Occurrence: -1
+  EventSfx: []
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
@@ -81,6 +74,9 @@ MonoBehaviour:
       InstanceKey: fist_trail_r
       Anchor: 1
       Socket: 1
+      Timing: 0
+      Time: 0
+      CueId: 0a18a50d2c1941e8b28ba1204e15beb6
     - CueName: fist_trail_on_l
       EffectIds: 04240000
       SoundIds: 
@@ -88,9 +84,13 @@ MonoBehaviour:
       InstanceKey: fist_trail_l
       Anchor: 1
       Socket: 2
+      Timing: 0
+      Time: 0
+      CueId: 6e7ea47f2583406ab0c20e32f6d3a77a
   Move:
     Enabled: 1
     UseUnitMovement: 1
+    ForceApproach: 0
     AnimationStateName: Base Layer.MoveForward
     BlendInSeconds: 0
     SfxKey: Explore_Move
@@ -114,6 +114,9 @@ MonoBehaviour:
         InstanceKey: 
         Anchor: 1
         Socket: 1
+        Timing: 0
+        Time: 0
+        CueId: 088ec1ea471640d3b65829642b13b3cb
     - AnimationStateName: Base Layer.ClassSkill_2
       BlendInSeconds: 0.07
       AdvanceOnEvent: 0
@@ -126,6 +129,9 @@ MonoBehaviour:
         InstanceKey: 
         Anchor: 1
         Socket: 2
+        Timing: 0
+        Time: 0
+        CueId: 78e021600226466788ad92d7d1476f69
       - CueName: fist_trail_off
         EffectIds: 
         SoundIds: 
@@ -133,6 +139,9 @@ MonoBehaviour:
         InstanceKey: fist_trail_r
         Anchor: 1
         Socket: 1
+        Timing: 0
+        Time: 0
+        CueId: 3666733ed6ba4f50ad923c6d49c16034
       - CueName: fist_trail_off_l
         EffectIds: 
         SoundIds: 
@@ -140,6 +149,9 @@ MonoBehaviour:
         InstanceKey: fist_trail_l
         Anchor: 1
         Socket: 2
+        Timing: 0
+        Time: 0
+        CueId: 698e6dc53e8b4e34a7909fa4620f56da
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn

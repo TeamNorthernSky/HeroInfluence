@@ -81,6 +81,14 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
 
     [HideInInspector] public List<SkillData> availableSkills = new List<SkillData>();
     public SkillData SelectedSkillData { get; private set; }
+
+    // 전투 진입 시 레벨로 사용 가능한 클래스 스킬을 계열 순서로 정리한 슬롯입니다.
+    private readonly List<SkillData> classSkillSlots = new List<SkillData>();
+    public IReadOnlyList<SkillData> ClassSkillSlots => classSkillSlots;
+    /// <summary>클래스 스킬 첫 슬롯입니다. 아군의 기본 선택 스킬과 반격 스킬로 씁니다.</summary>
+    public SkillData FirstClassSkillSlot => classSkillSlots.Count > 0 ? classSkillSlots[0] : null;
+    /// <summary>반격 스킬입니다. 아군은 클래스 스킬 첫 슬롯, 적은 선택 스킬을 씁니다.</summary>
+    public SkillData CounterSkill => IsPlayer ? FirstClassSkillSlot : SelectedSkillData;
     public UnitPersistentData SourceData { get; private set; }
     public EnemyUnitPersistentData SourceEnemyData { get; private set; }
     public float ExperienceReward { get; private set; }
@@ -339,6 +347,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         level = Mathf.Max(1, level);
 
         RefreshAvailableSkillsForInspector(forceSkillWeaponRefresh);
+        RebuildClassSkillSlots();
         ResolveSelectedSkill(false);
         RefreshAvailableWeapons(forceSkillWeaponRefresh);
         ResolveEquippedWeapon(false);
@@ -796,6 +805,7 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         IsDead = false;
 
         RefreshAvailableSkillsForInspector(forceRefresh: true);
+        RebuildClassSkillSlots();
         ResolveSelectedSkill(true);
         RefreshAvailableWeapons(forceRefresh: true);
         ResolveEquippedWeapon(true);
@@ -1149,6 +1159,28 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         ResolveSelectedSkill(false);
     }
 
+    /// <summary>
+    /// 레벨로 사용 가능한 클래스 스킬을 계열마다 하나(가장 높은 습득 단계)씩 골라 계열 순서로 슬롯에 넣습니다.
+    /// 전투 UI 영웅 스킬 슬롯(GetCurrentClassSkills)과 같은 규칙입니다.
+    /// </summary>
+    private void RebuildClassSkillSlots()
+    {
+        classSkillSlots.Clear();
+        if (availableSkills == null) return;
+
+        var byFamily = new Dictionary<int, SkillData>();
+        foreach (SkillData skill in availableSkills)
+        {
+            if (skill == null || skill.acquireLevel > Level) continue;
+            int family = HeroSkillRules.FamilyId(skill.skillIndex);
+            if (!byFamily.TryGetValue(family, out SkillData previous) || skill.acquireLevel > previous.acquireLevel)
+                byFamily[family] = skill;
+        }
+
+        classSkillSlots.AddRange(byFamily.Values);
+        classSkillSlots.Sort((a, b) => HeroSkillRules.FamilyId(a.skillIndex).CompareTo(HeroSkillRules.FamilyId(b.skillIndex)));
+    }
+
     public void ResolveSelectedSkill(bool emitWarning = true)
     {
         if (castSelectedSkill != null)
@@ -1156,9 +1188,10 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             SelectedSkillData = castSelectedSkill;
             return;
         }
-        if (SourceData != null && SourceData.CurrentSkillIndex > 0)
+        // 아군은 장착 스킬(CurrentSkillIndex) 대신 클래스 스킬 첫 슬롯을 기본 스킬로 씁니다.
+        if (SourceData != null && FirstClassSkillSlot != null)
         {
-            classSkillIndex = SourceData.CurrentSkillIndex;
+            classSkillIndex = FirstClassSkillSlot.skillIndex;
         }
         else if (SourceEnemyData != null)
         {

@@ -14,9 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SkillIndex: 1030
   PresentationSchemaVersion: 1
-  AnimationRail: 0
-  PresentationArchetype: 0
-  SkillTimelines: []
+  AnimationRail: 1
+  PresentationArchetype: 1
+  SkillTimelines:
+  - CharacterKey: 10001
+    Timeline: {fileID: 11400000, guid: efc5116a30a6a6d47b00906beb5844cc, type: 2}
+    TargetCount: 0
+    Segments: []
   ImpactTiming: 0
   AnimationStateName: 
   AnimationTriggerOverride: 
@@ -39,6 +43,7 @@ MonoBehaviour:
     AccelerationMultiplier: 1
     TargetOffset: {x: 0, y: 0, z: 0}
     PreserveRootFlightTime: 0
+    SimultaneousArrivalSeconds: 0
     HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
@@ -62,10 +67,20 @@ MonoBehaviour:
     DurationSeconds: 0
     Occurrence: -1
   MovePrepare:
-    Enabled: 0
-    AnimationStateName: Base Layer.MoveForward
+    Enabled: 1
+    AnimationStateName: 
     BlendInSeconds: 0
-    Cues: []
+    Cues:
+    - CueName: fist_trail_on
+      EffectIds: 46230000
+      SoundIds: 
+      Operation: 0
+      InstanceKey: foot_trail
+      Anchor: 1
+      Socket: 6
+      Timing: 0
+      Time: 0
+      CueId: 2c73c55e816d494d9ff2c513ed3e5b0b
   Move:
     Enabled: 1
     UseUnitMovement: 1
@@ -87,15 +102,25 @@ MonoBehaviour:
       WaitForHitEvent: 0
       Cues:
       - CueName: impact
-        EffectIds: 
+        EffectIds: 492300004a2300004c2300004d2300004e230000
         SoundIds: 
         Operation: 0
         InstanceKey: 
         Anchor: 1
-        Socket: 6
+        Socket: 4
         Timing: 0
         Time: 0
         CueId: 28853ee36a6b4a118a6d46dcfdc46cc9
+      - CueName: fist_trail_off
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: foot_trail
+        Anchor: 1
+        Socket: 6
+        Timing: 0
+        Time: 0
+        CueId: f9027f253ca9414ab1af7ce997c04514
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn

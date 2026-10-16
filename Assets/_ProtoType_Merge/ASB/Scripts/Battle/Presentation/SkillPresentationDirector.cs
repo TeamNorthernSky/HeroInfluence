@@ -1304,7 +1304,8 @@ public sealed partial class SkillPresentationDirector
         SkillPresentationData presentation, HitDeliveryGate deliveryGate,
         List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks, int pairCount,
         ProjectileVisualData projectileVisual, MovingAttackPlan movingAttackPlan = null,
-        UnitMovementProfile movement = null, float originRotationY = 0f)
+        UnitMovementProfile movement = null, float originRotationY = 0f,
+        Vector3? movementOrigin = null, bool shouldMove = false)
     {
         TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
         if (timeline == null)
@@ -1332,7 +1333,12 @@ public sealed partial class SkillPresentationDirector
             ? CollectMovingAttackSpan(timeline, movingAttackPlan.PathPoints,
                 movingAttackPlan.Presentation.PathSampleCount)
             : null;
-        List<PlanReturnSpan> returnSpans = movingAttackPlan != null
+        // 근접 광역(1030 관통 돌진 등): 단일 근접 레일과 같은 Move/Return 마커 구간으로
+        // 주 대상 앞까지 이동했다가 시전 위치로 돌아온다. 마커가 없으면 제자리 재생(기존 동작).
+        bool meleeMovement = movingAttackPlan == null &&
+                             presentation.PresentationArchetype == PresentationArchetype.Melee;
+        List<PlanMoveSpan> moveSpans = meleeMovement ? CollectPlanMoveSpans(timeline, 1) : null;
+        List<PlanReturnSpan> returnSpans = movingAttackPlan != null || meleeMovement
             ? CollectPlanReturnSpans(timeline)
             : null;
         if (movingAttackPlan != null && (movingAttackSpan == null || returnSpans == null ||
@@ -1345,8 +1351,19 @@ public sealed partial class SkillPresentationDirector
                 .ExecuteRoutine(_battle);
             yield break;
         }
+        if (meleeMovement && (moveSpans == null || returnSpans == null ||
+            MovementSpansOverlap(moveSpans, returnSpans) || moveSpans.Exists(span => span.Slot != 1)))
+        {
+            Debug.LogError($"[PathA/AoE] Move/Return 마커 구간이 올바르지 않아 대미지만 확정합니다: {timeline.name}", timeline);
+            yield return new AoEApplyDamageAction(
+                    deliveryContexts, deliveryCallbacks, deliveryCount, _battle.CurrentBattleSpeed,
+                    _battle.VisualDirector, projectileVisual, deliveryGate)
+                .ExecuteRoutine(_battle);
+            yield break;
+        }
 
         Quaternion originRotation = Quaternion.Euler(0f, originRotationY, 0f);
+        Vector3 meleeOrigin = movementOrigin ?? actor.transform.position;
         if (movingAttackPlan != null)
         {
             var approach = new ActionSequenceRunner();
@@ -1456,6 +1473,66 @@ public sealed partial class SkillPresentationDirector
             }
             receiver.ConfigureMovementCallbacks(null, OnReturn);
         }
+        else if (meleeMovement)
+        {
+            void OnMeleeMove(PresentationMoveMarker marker)
+            {
+                foreach (PlanMoveSpan span in moveSpans)
+                {
+                    if (marker == span.Start && !span.Started)
+                    {
+                        if (primaryTarget == null) return;
+                        span.Started = true;
+                        span.From = actor.transform.position;
+                        span.FromRotation = actor.transform.rotation;
+                        Vector3 away = span.From - primaryTarget.transform.position;
+                        away.y = 0f;
+                        if (away.sqrMagnitude < 0.0001f) away = -actor.transform.forward;
+                        away.Normalize();
+                        span.To = primaryTarget.transform.position + away * (movement != null ? movement.ApproachDistance : 1.2f);
+                        span.To.y = span.From.y;
+                        span.ToRotation = Quaternion.LookRotation(-away, Vector3.up);
+                        if (shouldMove)
+                        {
+                            string key = MovementSfxKeyResolver.ResolveApproach(presentation.Move, movement);
+                            if (!string.IsNullOrEmpty(key)) PresentationSfxPlayer.Play(key);
+                        }
+                        return;
+                    }
+                    if (marker == span.End && span.Started && !span.Completed)
+                    {
+                        actor.transform.SetPositionAndRotation(span.To, span.ToRotation);
+                        span.Completed = true;
+                        return;
+                    }
+                }
+            }
+            void OnMeleeReturn(PresentationReturnMarker marker)
+            {
+                foreach (PlanReturnSpan span in returnSpans)
+                {
+                    if (marker == span.Start && !span.Started)
+                    {
+                        span.Started = true;
+                        span.From = actor.transform.position;
+                        span.FromRotation = actor.transform.rotation;
+                        if (shouldMove)
+                        {
+                            string key = MovementSfxKeyResolver.ResolveReturn(presentation.Return, movement);
+                            if (!string.IsNullOrEmpty(key)) PresentationSfxPlayer.Play(key);
+                        }
+                        return;
+                    }
+                    if (marker == span.End && span.Started && !span.Completed)
+                    {
+                        actor.transform.SetPositionAndRotation(meleeOrigin, originRotation);
+                        span.Completed = true;
+                        return;
+                    }
+                }
+            }
+            receiver.ConfigureMovementCallbacks(OnMeleeMove, OnMeleeReturn);
+        }
 
         bool stopped = false;
         void OnStopped(PlayableDirector d) => stopped = true;
@@ -1490,6 +1567,11 @@ public sealed partial class SkillPresentationDirector
                     UpdatePlanReturn(actor, returnSpans, director.time,
                         movingAttackPlan.OriginPosition, originRotation);
                 }
+                else if (meleeMovement)
+                {
+                    UpdatePlanMove(actor, moveSpans, director.time);
+                    UpdatePlanReturn(actor, returnSpans, director.time, meleeOrigin, originRotation);
+                }
                 // Hold: (prev, now]에 걸린 미소비 Hold 마커에서 director를 정지시킨다(AniEvent_HoldBegin의 Timeline판).
                 for (int h = 0; h < holdMarks.Count; h++)
                 {
@@ -1515,6 +1597,12 @@ public sealed partial class SkillPresentationDirector
                 SnapUnfinishedPlanReturns(actor, returnSpans,
                     movingAttackPlan.OriginPosition, originRotation);
             }
+            if (meleeMovement && actor != null && !actor.IsDead &&
+                interrupt == PresentationInterruptReason.None)
+            {
+                SnapUnfinishedPlanMoves(actor, moveSpans);
+                SnapUnfinishedPlanReturns(actor, returnSpans, meleeOrigin, originRotation);
+            }
         }
         finally
         {
@@ -1526,6 +1614,11 @@ public sealed partial class SkillPresentationDirector
                 interrupt == PresentationInterruptReason.None &&
                 returnSpans.Exists(span => span.Completed))
                 actor.transform.SetPositionAndRotation(movingAttackPlan.OriginPosition, originRotation);
+            // 그래프 해제 시 AnimationTrack의 마지막 루트 포즈가 다시 기록될 수 있다(단일 근접 레일과 동일).
+            if (meleeMovement && actor != null && !actor.IsDead &&
+                interrupt == PresentationInterruptReason.None &&
+                returnSpans.Exists(span => span.Completed))
+                actor.transform.SetPositionAndRotation(meleeOrigin, originRotation);
             receiver.ClearConfig();
             if (railRouter != null) railRouter.SuppressClipCues = false;   // 클립 AniEvent Cue 억제 해제
             ClearPresentationContext(actor);
@@ -2455,7 +2548,8 @@ public sealed partial class SkillPresentationDirector
             yield return RunAoETimelineRailRoutine(
                 actor, primaryTarget, skill, presentation, deliveryGate,
                 contexts, hitCallbacks, pairCount, projectileVisual,
-                movingTimelineSpan != null ? movingTimelinePlan : null, movement, originRotationY);
+                movingTimelineSpan != null ? movingTimelinePlan : null, movement, originRotationY,
+                originPosition, shouldMove);
             if (movingTimelineSpan != null)
             {
                 // Animator MovingAttack 경로와 같은 후딜: 경과=곡선 이동 구간, TotalDelay 잔여(최소 0.2초)를 기다린다.

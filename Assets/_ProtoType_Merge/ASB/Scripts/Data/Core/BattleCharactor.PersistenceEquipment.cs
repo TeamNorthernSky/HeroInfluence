@@ -16,6 +16,7 @@ public partial class BattleCharactor
     public void LoadPersistentEquipment(int skillIdx, int weaponIdx, int skillLevel = 1, int equippedWeaponInstanceIndex = 0)
     {
         castSelectedSkill = null;
+        classSkillSlots.Clear();
         UsesTutorialEquipment = SourceData != null && CombatContext.Instance != null &&
             CombatContext.Instance.TryGetTutorialAlly(SourceData.UnitIndex, out _);
         if (UsesTutorialEquipment)
@@ -50,12 +51,8 @@ public partial class BattleCharactor
                     : (HeroSkillRules.FamilyId(skill.skillIndex) == HeroSkillRules.FamilyId(skillIdx) ? Mathf.Clamp(skillLevel, 1, 6) : 1);
                 availableSkills.Add(copy);
             }
-            classSkillIndex = skillIdx;
-            selectedSkillIndex = 0;
-            for (int i = 0; i < availableSkills.Count; i++)
-                if (HeroSkillRules.FamilyId(availableSkills[i].skillIndex) == HeroSkillRules.FamilyId(skillIdx))
-                    selectedSkillIndex = i;
-            SelectedSkillData = availableSkills.Count > 0 ? availableSkills[selectedSkillIndex] : null;
+            RebuildClassSkillSlots();
+            SelectFirstClassSkillSlot(skillIdx);
             skillLoaded = SelectedSkillData != null;
         }
 
@@ -106,11 +103,10 @@ public partial class BattleCharactor
             SkillData copy = CloneSkillData(skill);
             copy.enhancementLevel = HeroSkillRules.FamilyId(skill.skillIndex) == HeroSkillRules.FamilyId(skillIdx)
                 ? Mathf.Clamp(skillLevel, 1, 6) : 1;
-            if (HeroSkillRules.FamilyId(skill.skillIndex) == HeroSkillRules.FamilyId(skillIdx))
-                selectedSkillIndex = availableSkills.Count;
             availableSkills.Add(copy);
         }
-        SelectedSkillData = availableSkills.Count > 0 ? availableSkills[selectedSkillIndex] : null;
+        RebuildClassSkillSlots();
+        SelectFirstClassSkillSlot(skillIdx);
         if (weaponIdx > 0 && catalog.TryGetBattleWeapon(weaponIdx, out WeaponData weapon))
         {
             availableWeapons.Add(weapon);
@@ -136,12 +132,22 @@ public partial class BattleCharactor
         if (!preserveInjectedEquipment)
         {
             RefreshAvailableSkillsForInspector(forceRefresh: true);
+            RebuildClassSkillSlots();
             ResolveSelectedSkill(true);
             RefreshAvailableWeapons(forceRefresh: true);
             ResolveEquippedWeapon(true);
         }
 
         isInitialized = true;
+    }
+
+    /// <summary>클래스 스킬 첫 슬롯을 기본 선택 스킬로 둡니다. 슬롯이 비면 저장된 스킬 인덱스를 그대로 남깁니다.</summary>
+    private void SelectFirstClassSkillSlot(int fallbackSkillIdx)
+    {
+        SkillData first = FirstClassSkillSlot;
+        classSkillIndex = first != null ? first.skillIndex : fallbackSkillIdx;
+        selectedSkillIndex = first != null ? Mathf.Max(0, availableSkills.IndexOf(first)) : 0;
+        SelectedSkillData = availableSkills.Count > 0 ? availableSkills[selectedSkillIndex] : null;
     }
 
     private static SkillData TryResolveSkillDataForPlayerPattern(DHCsvTemplateCatalog catalog, int skillIdx)
