@@ -30,6 +30,7 @@ public static class PresentationSfxEvents
     /// <summary>
     /// 피해 확정 순간(대상별 호출). 추가 대상이면 AdditionalHit 줄, 없으면 Hit 줄을 재생한다.
     /// 같은 시전자의 광역·동시 연쇄는 프레임당 1회로 묶고, 다른 시전자의 동시 공격은 각각 재생한다.
+    /// PlayPerHit가 켜진 항목은 같은 프레임이어도 매 타격마다 재생한다.
     /// 회복·빗나감 판정은 호출자가 한다.
     /// </summary>
     public static void PlayHit(SkillPresentationData presentation, BattleCharactor caster, DamageRole role)
@@ -50,12 +51,12 @@ public static class PresentationSfxEvents
         }
 
         int casterId = caster != null ? caster.GetInstanceID() : 0;
-        if (!s_PlayedHits.Add((casterId, presentation.GetInstanceID(), evt))) return;
+        bool firstHitThisFrame = s_PlayedHits.Add((casterId, presentation.GetInstanceID(), evt));
 
         for (int i = 0; i < entries.Count; i++)
         {
             PresentationEventSfx entry = entries[i];
-            if (entry != null && entry.Event == evt) PlayEntry(entry);
+            if (entry != null && entry.Event == evt && (firstHitThisFrame || entry.PlayPerHit)) PlayEntry(entry);
         }
     }
 
