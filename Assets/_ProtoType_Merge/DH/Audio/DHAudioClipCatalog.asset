@@ -264,3 +264,8 @@ MonoBehaviour:
     defaultVolume: 1
     loop: 0
     allowOverlap: 1
+  - key: Battle_Spinhit_Single
+    clip: {fileID: 8300000, guid: 2d6b4bd526e80ba4a9dd6ff3bb01fd6d, type: 3}
+    defaultVolume: 1
+    loop: 0
+    allowOverlap: 1

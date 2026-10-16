@@ -8,6 +8,8 @@ namespace JC.EnvironmentDetail.Editor
     {
         static readonly Dictionary<string,string> Labels = new Dictionary<string,string>
         {
+            {"directionalWaveMix","방향성 물결 혼합"},{"waveElongation","물결 늘어짐"},{"waveBendStrength","굴곡 강도"},{"waveBendSize","굴곡 크기 (m)"},{"waveBendSpeed","형태 변화 속도 (m/s)"},{"directionalWaveAngle","흐름 대비 각도"},
+            {"fakeHighlightStrength","페이크 하이라이트 강도"},{"fakeHighlightColor","페이크 하이라이트 색"},{"fakeHighlightWidth","페이크 하이라이트 폭"},{"fakeHighlightTilt","페이크 물결 선택 기울기"},{"fakeHighlightShadow","페이크 그림자 영향"},
             {"surfaceOpacity","수면 불투명도"},{"depthAbsorption","수심 흡수"},{"basinDepth","수중 공간 깊이 (m)"},{"basinColor","수중 바닥 색"},
             {"underwaterCapsule","수중 캡슐 표시"},{"capsuleDepth","캡슐 잠김 깊이 (m)"},{"capsuleSpeed","캡슐 속도 (m/s)"},
             {"broadNormal","큰 물결 노멀맵"},{"detailNormal","잔물결 노멀맵"},
@@ -16,8 +18,7 @@ namespace JC.EnvironmentDetail.Editor
             {"baseColor","중앙 물색"},{"edgeColor","물가 색"},{"edgeColorWidth","물가색 범위 (m)"},
             {"edgeVariation","물가색 불규칙성"},{"edgeVariationSize","물가색 변화 크기 (m)"},
             {"waveShading","물결 음영 강도"},{"waveShadeSize","큰 물결 크기 (m)"},{"waveShadeSoftness","물결 음영 부드러움"},
-            {"streakBend","주선 최대 굽힘"},{"streakBendVariation","굽힘 변동폭 (비율)"},{"streakStrengthVariation","강도 변동폭 (비율)"},{"streakColor","스트레이크 색"},{"streakStrength","스트레이크 강도"},{"streakDensity","스트레이크 밀도"},
-            {"streakTransitionRatio","생성·삭제 시간 비율"},{"streakHoldMultiplier","유지시간 계수"},{"streakHoldVariation","유지시간 변동폭 (비율)"},{"streakLengthVariation","길이 다양성"},{"streakWidthVariation","폭 다양성"},{"streakLength","주선 최대 길이 (m)"},{"streakWidth","주선 최대 폭 기준 (m)"},{"streakSoftness","생성·삭제 경계 부드러움"},{"streakWaveLink","물결 요철 연동"},
+            {"highlightStrength","하이라이트 강도"},{"highlightRoughness","하이라이트 폭 / 거칠기"},{"highlightSoftness","하이라이트 경계 부드러움"},{"sparkleStrength","잔반짝임 강도"},
             {"followCanal","수로 따라 흐름"},{"direction","공통 방향 (X/Z)"},{"flowSpeed","흐름 속도 (m/s)"},
             {"shadowStrength","그림자 영향"},{"reflection","반사 강도"},
             {"reflectionClarity","반사 선명도"},{"reflectionFresnel","시선 각도 영향"},
@@ -55,7 +56,7 @@ namespace JC.EnvironmentDetail.Editor
                 using(new EditorGUI.DisabledScope(disabled))
                     EditorGUILayout.PropertyField(child,new GUIContent(Labels.TryGetValue(child.name,out var label)?label:child.displayName,child.tooltip),true);
             }while(child.NextVisible(false));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("paused"),new GUIContent("애니메이션 일시정지","물의 이동·요철·스트레이크를 함께 멈춥니다. 설정 저장에는 포함되지 않습니다."));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("paused"),new GUIContent("애니메이션 일시정지","물의 이동·요철를 함께 멈춥니다. 설정 저장에는 포함되지 않습니다."));
             bool changed=EditorGUI.EndChangeCheck(); serializedObject.ApplyModifiedProperties();
             if(changed){c.Apply();EditorApplication.QueuePlayerLoopUpdate();SceneView.RepaintAll();}
             using(new EditorGUI.DisabledScope(c.Profile==null))

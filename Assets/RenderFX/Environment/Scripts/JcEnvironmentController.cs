@@ -9,7 +9,6 @@ namespace JC.Env
     ///
     /// 적용은 명시 호출·플레이 시작·소속 씬의 활성 전환 시만 — 매 프레임 덮어쓰지 않아
     /// 에디터에서 씬 값을 직접 스윕하는 튜닝 흐름과 싸우지 않는다.
-    /// 낮/밤 전환은 ApplyBlend(a, b, t) — 턴 이벤트 연동은 추후.
     ///
     /// ★260902 구조 개편: 하늘 파라미터를 프로파일이 소유하고 이 컴포넌트가 재질에 기록한다.
     ///   에디트 모드에서는 재질 에셋을 직접 갱신(=의도된 튜닝),
@@ -22,7 +21,7 @@ namespace JC.Env
         [SerializeField] private JcEnvironmentProfile profile;
 
         [Tooltip("씬의 태양(디렉셔널). 비우면 씬에서 자동 탐색.\n" +
-                 "★여기 꽂힌 라이트가 RenderSettings.sun(Sun Source)에도 결선된다 — Procedural 하늘의 태양 원반이 이 방향을 따른다.")]
+                 "지정한 라이트는 RenderSettings.sun(Sun Source)에도 연결됩니다.")]
         [SerializeField] private Light directionalLight;
 
         [Tooltip("플레이 시작 시 프로파일을 적용합니다. 추가 로드된 씬은 활성 씬이 될 때까지 기다립니다.\n" +
@@ -38,21 +37,28 @@ namespace JC.Env
         private Material _runtimeSky;
         private Material _runtimeSkySource;
         private bool _started;
-        private JcEnvironmentProfile _requestedA;
-        private JcEnvironmentProfile _requestedB;
-        private float _requestedBlend;
+        private JcEnvironmentProfile _requestedProfile;
 
         public JcEnvironmentProfile Profile { get => profile; set => profile = value; }
 
-        // ── 셰이더 프로퍼티 ID (Procedural Skybox 기준. 커스텀 셰이더도 같은 이름을 쓰면 그대로 동작) ──
-        private static readonly int ID_SkyTint = Shader.PropertyToID("_SkyTint");
-        private static readonly int ID_GroundColor = Shader.PropertyToID("_GroundColor");
-        private static readonly int ID_AtmosphereThickness = Shader.PropertyToID("_AtmosphereThickness");
+        // ── 셰이더 프로퍼티 ID (셰이더가 지원하는 이름에만 적용) ──
+        private static readonly int ID_SkyTint = Shader.PropertyToID("_Tint");
         private static readonly int ID_Exposure = Shader.PropertyToID("_Exposure");
-        private static readonly int ID_SunSize = Shader.PropertyToID("_SunSize");
-        private static readonly int ID_SunSizeConvergence = Shader.PropertyToID("_SunSizeConvergence");
-        /// <summary>Skybox/Cubemap·Panoramic 계열의 하늘 회전(도). Procedural 에는 없다 — HasProperty 가드로 걸러진다.</summary>
+        /// <summary>Skybox/Cubemap·Panoramic 계열의 하늘 회전(도). 미지원 셰이더는 HasProperty 가드로 걸러진다.</summary>
         private static readonly int ID_Rotation = Shader.PropertyToID("_Rotation");
+
+        private void Update()
+        {
+            if (CanApply) Shader.SetGlobalFloat("_JcSkyCloudTime", Time.time);
+        }
+
+        private static void WriteCloudParams(Material sky, float speed, float offset, float opacity)
+        {
+            if (sky == null || !sky.HasProperty("_CloudSpeed")) return;
+            sky.SetFloat("_CloudSpeed", speed);
+            sky.SetFloat("_CloudOffset", offset);
+            sky.SetFloat("_CloudOpacity", opacity);
+        }
 
         private void OnEnable()
         {
@@ -83,12 +89,8 @@ namespace JC.Env
 
         private void RestoreRequestedEnvironment()
         {
-            // 명시 적용/보간 상태도 보존하므로 additive 왕복 시 기본 낮 프로파일로 돌아가지 않는다.
-            if (_requestedA != null)
-            {
-                if (_requestedB != null) ApplyBlend(_requestedA, _requestedB, _requestedBlend);
-                else Apply(_requestedA);
-            }
+            // 명시 적용 프로파일을 additive 씬 왕복 후에도 복원합니다.
+            if (_requestedProfile != null) Apply(_requestedProfile);
             else if (applyOnStart) ApplyNow();
         }
 
@@ -104,8 +106,7 @@ namespace JC.Env
         public void Apply(JcEnvironmentProfile p)
         {
             if (p == null) return;
-            _requestedA = p;
-            _requestedB = null;
+            _requestedProfile = p;
             if (!CanApply) return;
 
             var light = ResolveLight();
@@ -115,18 +116,19 @@ namespace JC.Env
 
             // ① 하늘 — 모든 환경광의 원본이므로 가장 먼저
             var sky = ApplySkybox(p.skyboxMaterial);
+            WriteCloudParams(sky, p.skyCloudSpeed, p.skyCloudOffset, p.skyCloudOpacity);
             if (p.driveSkyboxParams) WriteSkyParams(sky,
-                p.skyTint, p.skyGroundColor, p.atmosphereThickness, p.skyExposure, p.sunSize, p.sunSizeConvergence);
+                p.skyTint, p.skyExposure);
 
             // ①-b 하늘↔태양 방위 정합 — driveSkyboxParams 와 무관하게 동작한다.
-            //     (HDRI 를 쓸 때 driveSkyboxParams 는 꺼 두는 것이 정석인데, 정합이 필요한 상황도 바로 그때다)
             if (p.alignSkyToSun) WriteSkyRotation(sky, p.skySunAzimuth, sunRot);
 
-            // Sun Source — Procedural 하늘의 태양 원반이 실제 조명 방향을 따르게 한다
+            // 전역 Sun Source에 씬의 디렉셔널 라이트를 연결합니다.
             RenderSettings.sun = light;
 
             // ② 환경광(디퓨즈 IBL)
-            ApplyAmbient(p.ambientSource, p.ambientIntensity, p.ambientSky, p.ambientEquator, p.ambientGround);
+            RenderSettings.ambientMode = AmbientMode.Skybox;
+            RenderSettings.ambientIntensity = p.ambientIntensity;
 
             // ④ 반사(스펙큘러 IBL)
             RenderSettings.reflectionIntensity = p.reflectionIntensity;
@@ -140,90 +142,6 @@ namespace JC.Env
             }
 
             // 하늘·앰비언트가 바뀌었으므로 SH(앰비언트 프로브)와 환경 반사를 재계산
-            DynamicGI.UpdateEnvironment();
-        }
-
-        /// <summary>
-        /// 두 프로파일 사이 보간 적용(t: 0=a, 1=b) — 낮→밤 전환 연출용.
-        /// ★260902: 하늘도 <b>파라미터 보간</b>으로 매끄럽게 전환된다(구 방식은 t 0.5 재질 스왑).
-        /// 단 두 프로파일의 스카이박스 재질이 다르면 셰이더가 다를 수 있어 t 0.5 에서 스왑한다.
-        /// </summary>
-        public void ApplyBlend(JcEnvironmentProfile a, JcEnvironmentProfile b, float t)
-        {
-            if (a == null || b == null) { Apply(a != null ? a : b); return; }
-            t = Mathf.Clamp01(t);
-            _requestedA = a;
-            _requestedB = b;
-            _requestedBlend = t;
-            if (!CanApply) return;
-
-            var light = ResolveLight();
-
-            // 태양 회전을 먼저 확정(하늘 정합이 참조).
-            var sunRot = WithYawOffset(Quaternion.Slerp(
-                Quaternion.Euler(a.lightEuler), Quaternion.Euler(b.lightEuler), t));
-
-            // ① 하늘 — 같은 재질이면 파라미터 보간, 다르면 t 0.5 스왑 후 목표 파라미터
-            bool sameMat = a.skyboxMaterial == b.skyboxMaterial;
-            var srcMat = sameMat ? a.skyboxMaterial : (t < 0.5f ? a.skyboxMaterial : b.skyboxMaterial);
-            var sky = ApplySkybox(srcMat);
-
-            if (a.driveSkyboxParams || b.driveSkyboxParams)
-            {
-                if (sameMat)
-                {
-                    // 제어를 끈 끝점은 프로파일의 미사용 숫자가 아니라 재질 원본값이다.
-                    Color SkyColor(JcEnvironmentProfile p, int id, Color value) =>
-                        p.driveSkyboxParams || sky == null || !sky.HasProperty(id) ? value : sky.GetColor(id);
-                    float SkyFloat(JcEnvironmentProfile p, int id, float value) =>
-                        p.driveSkyboxParams || sky == null || !sky.HasProperty(id) ? value : sky.GetFloat(id);
-                    WriteSkyParams(sky,
-                        Color.Lerp(SkyColor(a, ID_SkyTint, a.skyTint), SkyColor(b, ID_SkyTint, b.skyTint), t),
-                        Color.Lerp(SkyColor(a, ID_GroundColor, a.skyGroundColor), SkyColor(b, ID_GroundColor, b.skyGroundColor), t),
-                        Mathf.Lerp(SkyFloat(a, ID_AtmosphereThickness, a.atmosphereThickness), SkyFloat(b, ID_AtmosphereThickness, b.atmosphereThickness), t),
-                        Mathf.Lerp(SkyFloat(a, ID_Exposure, a.skyExposure), SkyFloat(b, ID_Exposure, b.skyExposure), t),
-                        Mathf.Lerp(SkyFloat(a, ID_SunSize, a.sunSize), SkyFloat(b, ID_SunSize, b.sunSize), t),
-                        Mathf.Lerp(SkyFloat(a, ID_SunSizeConvergence, a.sunSizeConvergence), SkyFloat(b, ID_SunSizeConvergence, b.sunSizeConvergence), t));
-                }
-                else
-                {
-                    var s = t < 0.5f ? a : b;
-                    if (s.driveSkyboxParams)
-                        WriteSkyParams(sky, s.skyTint, s.skyGroundColor, s.atmosphereThickness,
-                            s.skyExposure, s.sunSize, s.sunSizeConvergence);
-                }
-            }
-
-            // ①-b 하늘↔태양 정합 — 하늘 그림이 다르면 태양 방위도 다르므로 기준값을 함께 보간한다
-            //     (같은 재질이면 두 값이 같으니 보간은 항등이 된다)
-            if (a.alignSkyToSun || b.alignSkyToSun)
-            {
-                bool align = t < 0.5f ? a.alignSkyToSun : b.alignSkyToSun;
-                if (align)
-                    WriteSkyRotation(sky, sameMat
-                        ? Mathf.LerpAngle(a.skySunAzimuth, b.skySunAzimuth, t)
-                        : (t < 0.5f ? a.skySunAzimuth : b.skySunAzimuth), sunRot);
-            }
-
-            RenderSettings.sun = light;
-
-            // ② 환경광 — 소스가 다르면 t 0.5 에서 전환(모드는 보간 대상이 아니다)
-            var srcMode = t < 0.5f ? a.ambientSource : b.ambientSource;
-            ApplyAmbient(srcMode,
-                Mathf.Lerp(a.ambientIntensity, b.ambientIntensity, t),
-                Color.Lerp(a.ambientSky, b.ambientSky, t),
-                Color.Lerp(a.ambientEquator, b.ambientEquator, t),
-                Color.Lerp(a.ambientGround, b.ambientGround, t));
-
-            RenderSettings.reflectionIntensity = Mathf.Lerp(a.reflectionIntensity, b.reflectionIntensity, t);
-
-            if (light != null)
-            {
-                light.color = Color.Lerp(a.lightColor, b.lightColor, t);
-                light.intensity = Mathf.Lerp(a.lightIntensity, b.lightIntensity, t);
-                light.transform.rotation = sunRot;
-            }
-
             DynamicGI.UpdateEnvironment();
         }
 
@@ -246,19 +164,18 @@ namespace JC.Env
             if (m != null && target.driveSkyboxParams)
             {
                 if (m.HasProperty(ID_SkyTint)) target.skyTint = m.GetColor(ID_SkyTint);
-                if (m.HasProperty(ID_GroundColor)) target.skyGroundColor = m.GetColor(ID_GroundColor);
-                if (m.HasProperty(ID_AtmosphereThickness)) target.atmosphereThickness = m.GetFloat(ID_AtmosphereThickness);
                 if (m.HasProperty(ID_Exposure)) target.skyExposure = m.GetFloat(ID_Exposure);
-                if (m.HasProperty(ID_SunSize)) target.sunSize = m.GetFloat(ID_SunSize);
-                if (m.HasProperty(ID_SunSizeConvergence)) target.sunSizeConvergence = m.GetFloat(ID_SunSizeConvergence);
+            }
+
+            if (m != null && m.HasProperty("_CloudSpeed"))
+            {
+                target.skyCloudSpeed = m.GetFloat("_CloudSpeed");
+                target.skyCloudOffset = m.GetFloat("_CloudOffset");
+                target.skyCloudOpacity = m.GetFloat("_CloudOpacity");
             }
 
             // ② 환경광
-            target.ambientSource = FromUnity(RenderSettings.ambientMode);
             target.ambientIntensity = RenderSettings.ambientIntensity;
-            target.ambientSky = RenderSettings.ambientSkyColor;
-            target.ambientEquator = RenderSettings.ambientEquatorColor;
-            target.ambientGround = RenderSettings.ambientGroundColor;
 
             // ④ 반사
             target.reflectionIntensity = RenderSettings.reflectionIntensity;
@@ -326,16 +243,11 @@ namespace JC.Env
         }
 
         /// <summary>하늘 파라미터를 재질에 기록. 셰이더에 해당 프로퍼티가 없으면 조용히 건너뛴다.</summary>
-        private static void WriteSkyParams(Material m, Color tint, Color ground,
-            float thickness, float exposure, float sunSize, float sunConvergence)
+        private static void WriteSkyParams(Material m, Color tint, float exposure)
         {
             if (m == null) return;
             if (m.HasProperty(ID_SkyTint)) m.SetColor(ID_SkyTint, tint);
-            if (m.HasProperty(ID_GroundColor)) m.SetColor(ID_GroundColor, ground);
-            if (m.HasProperty(ID_AtmosphereThickness)) m.SetFloat(ID_AtmosphereThickness, thickness);
             if (m.HasProperty(ID_Exposure)) m.SetFloat(ID_Exposure, exposure);
-            if (m.HasProperty(ID_SunSize)) m.SetFloat(ID_SunSize, sunSize);
-            if (m.HasProperty(ID_SunSizeConvergence)) m.SetFloat(ID_SunSizeConvergence, sunConvergence);
         }
 
         /// <summary>
@@ -374,31 +286,6 @@ namespace JC.Env
 
         /// <summary>씬의 태양(디렉셔널). 에디터 도구용 — 없으면 null.</summary>
         public Light SunLight => ResolveLight();
-
-        private static void ApplyAmbient(JcAmbientSource source, float intensity,
-            Color sky, Color equator, Color ground)
-        {
-            RenderSettings.ambientMode = ToUnity(source);
-            RenderSettings.ambientIntensity = intensity;
-            // Gradient/Flat 에서만 실제로 쓰이지만, 왕복 일관을 위해 항상 기록해 둔다
-            RenderSettings.ambientSkyColor = sky;
-            RenderSettings.ambientEquatorColor = equator;
-            RenderSettings.ambientGroundColor = ground;
-        }
-
-        private static AmbientMode ToUnity(JcAmbientSource s) => s switch
-        {
-            JcAmbientSource.Gradient => AmbientMode.Trilight,
-            JcAmbientSource.Flat => AmbientMode.Flat,
-            _ => AmbientMode.Skybox,
-        };
-
-        private static JcAmbientSource FromUnity(AmbientMode m) => m switch
-        {
-            AmbientMode.Trilight => JcAmbientSource.Gradient,
-            AmbientMode.Flat => JcAmbientSource.Flat,
-            _ => JcAmbientSource.Skybox,
-        };
 
         private Quaternion WithYawOffset(Quaternion baseRot)
             => Quaternion.AngleAxis(lightYawOffset, Vector3.up) * baseRot;

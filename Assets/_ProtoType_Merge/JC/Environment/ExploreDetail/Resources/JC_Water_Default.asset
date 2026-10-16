@@ -27,34 +27,34 @@ MonoBehaviour:
     capsuleSpeed: 0.65
     broadNormal: {fileID: 2800000, guid: b1d4c7bc3cf2a2d47a5ed2f6c8d71737, type: 3}
     detailNormal: {fileID: 2800000, guid: e9797cd51921c6a409427a98e1cd7f7e, type: 3}
-    broadNormalStrength: 0.24
-    detailNormalStrength: 0.12
-    detailNormalSize: 0.32
-    rippleSpeed: 0.08
+    broadNormalStrength: 0.503
+    detailNormalStrength: 0.207
+    detailNormalSize: 0.56
+    rippleSpeed: 0.277
+    directionalWaveMix: 0
+    waveElongation: 5
+    waveBendStrength: 0.65
+    waveBendSize: 4
+    waveBendSpeed: 0.08
+    directionalWaveAngle: 0
     waveShading: 0.455
     waveShadeSize: 2.56
     waveShadeSoftness: 0.863
-    streakColor: {r: 0.72, g: 0.87, b: 0.95, a: 1}
-    streakStrength: 0.499
-    streakStrengthVariation: 0.716
-    streakDensity: 0.304
-    streakLength: 2.29
-    streakWidth: 0.121
-    streakLengthVariation: 0.502
-    streakWidthVariation: 0.543
-    streakBend: 1
-    streakBendVariation: 0.25
-    streakHoldMultiplier: 3.32
-    streakHoldVariation: 0.668
-    streakTransitionRatio: 1
-    streakSoftness: 0.278
-    streakWaveLink: 0.768
+    highlightStrength: 7.01
+    highlightRoughness: 0.444
+    highlightSoftness: 0.756
+    sparkleStrength: 1.6
+    fakeHighlightStrength: 0.22
+    fakeHighlightColor: {r: 0.7, g: 0.85, b: 1, a: 1}
+    fakeHighlightWidth: 0.112
+    fakeHighlightTilt: 0.056
+    fakeHighlightShadow: 0.238
     followCanal: 1
     direction: {x: 1, y: 0}
     flowSpeed: 0.331
     shadowStrength: 0.414
-    reflection: 0.584
-    reflectionClarity: 0.502
+    reflection: 0.374
+    reflectionClarity: 0.571
     reflectionFresnel: 0.45
     reflectionDistortion: 0.012
     planarReflection: 1
