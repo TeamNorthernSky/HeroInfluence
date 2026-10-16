@@ -584,6 +584,8 @@ public class ProjectileVisualData
     public Vector3 TargetOffset;
     [Tooltip("켜면 높이 보정 전 대상 루트까지의 거리로 비행 시간을 계산하여 기존 명중 시간을 유지합니다.")]
     public bool PreserveRootFlightTime;
+    [Tooltip("여러 대상에게 동시에 발사할 때(4030/4031 광역 힐) 모든 투사체의 도착 시간(초, 배속 1 기준). 0이면 가장 먼 대상의 비행 시간에 맞춥니다. 포물선·가속 곡선 모양은 유지됩니다.")]
+    [Min(0f)] public float SimultaneousArrivalSeconds;
     [Tooltip("도착 순간 정적 구체를 숨깁니다. 잔상 수명은 ImpactVisualLifetime으로 별도 조절하며 기본값은 기존 동작입니다.")]
     public bool HideVisualOnArrival;
     [Min(0.01f)] public float TrailTime = 0.4f;
@@ -627,7 +629,12 @@ public enum PresentationSfxEvent
     // 추가 대상(DamageRole.Additional: 체인 연쇄·스플래시 등) 피해 확정. 줄이 없으면 Hit 줄로 대체.
     AdditionalHit,
     // VFX가 스스로 정한 착탄·발동 순간. Occurrence로 착탄 순번을 고른다.
-    EffectImpact
+    EffectImpact,
+    // 회복 확정 시점. 첫 대상과 인접 대상을 구분한다.
+    Heal,
+    AdditionalHeal,
+    // 조립형 VFX의 부품 시작 시점. Occurrence는 0부터 시작하는 부품 인덱스다.
+    EffectStep
 }
 
 /// <summary>Event SFX 한 줄. 키는 DHAudioClipCatalog SfxClips 정식 키.</summary>
@@ -640,7 +647,7 @@ public class PresentationEventSfx
     [Min(0f)]
     [Tooltip("효과음 재생 길이(초). 0이면 원본 클립을 끝까지 재생합니다.")]
     public float DurationSeconds;
-    [Tooltip("EffectImpact 전용. -1 = 매 착탄, 0 = 첫 착탄, n = n+1번째 착탄. Hit 계열에서는 무시됩니다.")]
+    [Tooltip("EffectImpact는 착탄 순번, EffectStep은 부품 인덱스. -1이면 모두 재생합니다. 그 외 이벤트에서는 무시됩니다.")]
     public int Occurrence = -1;
 }
 

@@ -3,6 +3,8 @@ using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 namespace JC.EnvironmentDetail.Editor
 {
     public static class JcWaterValidation
@@ -24,19 +26,47 @@ namespace JC.EnvironmentDetail.Editor
             try
             {
                 check(water.RendererCount>0 && water.MaterialCount==1,"수면 렌더러와 공통 물 재질 연결");
-                water.Settings.baseColor=Color.magenta;water.Settings.foamDensity=.73f;water.Settings.flowSpeed=.21f;water.Apply();
-                check(live().GetColor("_BaseColor")==Color.magenta && Mathf.Approximately(live().GetVector("_Foam").y,.73f),"물색·포말 즉시 갱신");
+                water.Settings.baseColor=Color.magenta;water.Settings.streakDensity=.73f;water.Settings.flowSpeed=.21f;water.Apply();
+                check(live().GetColor("_BaseColor")==Color.magenta && Mathf.Approximately(live().GetVector("_Streak").y,.73f),"물색·스트레이크 즉시 갱신");
                 check(Mathf.Approximately(live().GetVector("_Flow").z,.21f),"흐름 속도 즉시 갱신");
-                water.Settings.waveShading=.47f;water.Settings.waveShadeSize=2.3f;water.Settings.waveShadeSoftness=.8f;water.Settings.foamCurvature=1.4f;water.Apply();
-                check(Vector4.Distance(live().GetVector("_WaveShade"),new Vector4(.47f,2.3f,.8f,0))<.0001f && Mathf.Approximately(live().GetFloat("_FoamCurvature"),1.4f),"음영·곡선 조절 즉시 갱신");
-                var copied=water.Settings.Copy();
-                check(Mathf.Approximately(copied.waveShading,.47f) && Mathf.Approximately(copied.foamCurvature,1.4f),"설정 복사에 음영·곡선 포함");
+                water.Settings.streakLength=.75f;water.Settings.streakWidth=.12f;
+                water.Settings.edgeVariation=.6f;water.Settings.edgeVariationSize=4;water.Apply();
+                check(Mathf.Approximately(live().GetVector("_Streak").z,.75f) && Mathf.Approximately(live().GetVector("_Streak").w,.12f),"스트레이크 길이·폭 실시간 전달");
+                check(Vector4.Distance(live().GetVector("_EdgeVariation"),new Vector4(.6f,4,0,0))<.0001f,"물가색 불규칙성 보존");
+                check(live().GetTexture("_StreakPattern")!=null && live().GetTexture("_StreakPattern").wrapMode==TextureWrapMode.Clamp,"줄기 묶음 질감 로드·테두리 반복 방지");
+                check(live().GetTexture("_NormalBroad")!=null && live().GetTexture("_NormalDetail")!=null,"큰 물결·잔물결 노멀맵 연결");
+                water.Settings.broadNormalStrength=.31f;water.Settings.detailNormalStrength=.17f;water.Settings.detailNormalSize=.42f;water.Settings.rippleSpeed=.09f;water.Apply();
+                check(Vector4.Distance(live().GetVector("_Normals"),new Vector4(.31f,.17f,.42f,.09f))<.0001f,"두 노멀 강도·크기·속도 실시간 반영");
+                check(!live().HasProperty("_ReflectionWave"),"분리된 반사 전용 물결 설정 제거");
+                check(live().GetTexture("_FlowMap").name=="JC constrained canal flow","확정 메시 기반 흐름 보정 연결");
+                var waterMap=live().GetTexture("_FlowMap") as Texture2D;
+                check(waterMap.format==TextureFormat.RGBAHalf && live().GetFloat("_StreakWaterMask")==1,"흐름 지도 수면 마스크 연결");
+                var waterPixels=waterMap.GetPixels();
+                check(waterPixels.Any(c=>c.b>.9f)&&waterPixels.Any(c=>c.b<.1f),"수면 마스크가 물과 육지를 구분");
+                var wet=new bool[225];var raw=Enumerable.Repeat(new Color(.8f,.9f,0,1),225).ToArray();
+                for(int y=0;y<15;y++)for(int x=0;x<15;x++)wet[y*15+x]=(x>=6&&x<=8&&y<=13)||(y>=11&&y<=13);
+                var fixedFlow=JcWaterFlowConstraint.Constrain(raw,wet,15,15);
+                check(Mathf.Approximately(fixedFlow[5*15+7].r,.5f)&&fixedFlow[5*15+7].g==1,"T자 진입부 수로 평행 유지");
+                check(fixedFlow[12*15+2].r==1&&Mathf.Approximately(fixedFlow[12*15+2].g,.5f),"T자 가로 수로 평행 유지");
+                check(fixedFlow[12*15+7].r>.5f&&fixedFlow[12*15+7].g>.5f,"T자 교차 내부 합류 방향 유지");
+                check(raw.All(c=>c==new Color(.8f,.9f,0,1)),"흐름 지도 원본 배열 불변");
+                water.Settings.reflection=.72f;water.Settings.reflectionClarity=.8f;water.Settings.reflectionDistortion=.02f;water.Apply();
+                check(Mathf.Approximately(live().GetVector("_Reflection").x,.72f),"반사 강도 적용");
+                check(!live().HasProperty("_Highlight") && !live().HasProperty("_CrossFlow") && !live().HasProperty("_ShoreHighlight"),"곡선·횡방향·물가 하이라이트 셰이더 설정 제거");
+                check(!typeof(JcWaterSettings).GetFields().Any(f=>f.Name.StartsWith("highlight") || f.Name.StartsWith("shore") || f.Name.StartsWith("morph")),"폐기된 인스펙터 필드 제거");
+                water.Settings.waveShading=.47f;water.Settings.waveShadeSize=2.3f;water.Settings.waveShadeSoftness=.8f;water.Apply();
+                check(Vector4.Distance(live().GetVector("_WaveShade"),new Vector4(.47f,2.3f,.8f,0))<.0001f,"음영 조절 즉시 갱신");
                 water.Settings.waveShading=0;water.Apply();
-                check(live().GetVector("_WaveShade").x==0 && Mathf.Approximately(live().GetVector("_Foam").y,.73f),"음영만 끄면 포말 설정 보존");
-                water.Settings.foamOpacity=.4f;water.Settings.foamFade=.3f;water.Apply();
-                check(Mathf.Approximately(live().GetFloat("_FoamOpacity"),.4f) && Mathf.Approximately(live().GetFloat("_FoamFade"),.3f),"포말 투명도·소멸 보간 즉시 반영");
-                copied=water.Settings.Copy();
-                check(Mathf.Approximately(copied.foamOpacity,.4f) && Mathf.Approximately(copied.foamFade,.3f),"포말 투명도·소멸 보간 저장 복사");
+                check(live().GetVector("_WaveShade").x==0 && Mathf.Approximately(live().GetVector("_Streak").y,.73f),"음영만 끄면 스트레이크 설정 보존");
+                water.Settings.streakLengthVariation=.45f;water.Settings.streakWidthVariation=.7f;
+                water.Settings.streakStrength=0;water.Settings.streakSoftness=.13f;water.Settings.streakWaveLink=.8f;water.Apply();
+                check(live().GetVector("_Streak").x==0 && Mathf.Approximately(live().GetVector("_Reflection").x,.72f),"스트레이크만 끄면 반사 유지");
+                check(Vector4.Distance(live().GetVector("_StreakShape"),new Vector4(.13f,.8f,.45f,.7f))<.0001f,"소멸·요철·길이 및 폭 다양성 즉시 갱신");
+                water.Settings.streakStrengthVariation=.6f;water.Settings.streakHoldMultiplier=2;water.Settings.streakHoldVariation=.25f;water.Settings.streakTransitionRatio=.4f;water.Apply();
+                check(Vector4.Distance(live().GetVector("_StreakLifetime"),new Vector4(2,.25f,.4f,.6f))<.0001f,"수명·생성삭제·강도 감소 비율 실시간 적용");
+                var copied=water.Settings.Copy();
+                check(copied.streakHoldMultiplier==2&&copied.streakHoldVariation==.25f&&copied.streakTransitionRatio==.4f&&copied.streakStrengthVariation==.6f,"유지시간 설정 복사·저장 직렬화");
+                check(copied.streakSoftness==.13f && copied.streakWaveLink==.8f && copied.streakLength==.75f && copied.streakLengthVariation==.45f && copied.streakWidthVariation==.7f,"스트레이크 설정 복사");
                 check(root==overlay.VisualRoot && meshes.SequenceEqual(root.GetComponentsInChildren<MeshFilter>().Select(x=>x.sharedMesh)),"재생성 없이 동일 메시 유지");
                 check(banks.SequenceEqual(renderers.SelectMany(r=>r.sharedMaterials).Where(m=>m!=null && m.shader.name=="JC/Environment/Canal Bank")),"호안 슬롯 보존");
                 check(originalJson==EditorJsonUtility.ToJson(originalWater),"베이크 원본 재질 불변");
@@ -51,6 +81,22 @@ namespace JC.EnvironmentDetail.Editor
                 var old=live();overlay.Refresh();
                 check(old==live() && water.RendererCount>0 && live().GetColor("_BaseColor")==Color.magenta,"같은 베이크 재표시는 물 재질·임시 설정 보존");
                 water.LoadSaved();check(water.Settings.baseColor==water.Profile.settings.baseColor,"저장값 불러오기");
+                check(live().renderQueue==(int)RenderQueue.Transparent,"수면 투명 렌더 큐");
+                water.Settings.surfaceOpacity=.42f;water.Settings.depthAbsorption=.7f;water.Apply();
+                check(Vector4.Distance(live().GetVector("_Transmission"),new Vector4(.42f,.7f,0,0))<.0001f,"수면 투과·수심 흡수 실시간 적용");
+                var u=water.Underwater;check(u!=null&&u.WetCount>0&&u.HasRoute,"확정 수면 범위와 수중 이동 경로 생성");
+                bool inWater=true;for(int n=0;n<=64;n++)
+                {
+                    u.Tick(water.Settings,n*4);var pos=u.Capsule.position;
+                    inWater&=u.Contains(pos)&&u.Contains(pos+Vector3.right*.3f)&&u.Contains(pos-Vector3.right*.3f)&&u.Contains(pos+Vector3.forward*1.1f)&&u.Contains(pos-Vector3.forward*1.1f);
+                    inWater&=pos.y+.21f<u.RouteA.y;
+                }
+                check(inWater,"왕복 전 구간 캡슐이 수면 아래·수로 안에 유지");
+                check(u.Capsule.GetComponent<Collider>()==null,"실루엣 시제품 게임 충돌 없음");
+                water.Settings.underwaterCapsule=false;water.Apply();check(!u.Capsule.gameObject.activeSelf,"캡슐 표시 토글");
+                water.Settings.underwaterCapsule=true;water.Apply();check(u.Capsule.gameObject.activeSelf,"캡슐 재표시");
+                water.enabled=false;check(water.Underwater==null,"비활성 시 수중 공간 해제");water.enabled=true;
+                CheckReflection(water,renderers.First(r=>r.sharedMaterials.Any(water.Owns)),check);
                 check(!ShaderUtil.GetShaderMessages(originalWater.shader).Any(m=>m.severity.ToString()=="Error"),"수면 셰이더 컴파일");
                 report.Insert(0,$"물 비플레이 검사 {count}개 통과\n");return report.ToString();
             }
@@ -58,6 +104,35 @@ namespace JC.EnvironmentDetail.Editor
             {
                 JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(saved),water.Settings);water.Paused=paused;water.enabled=true;water.Apply();
             }
+        }
+        static void CheckReflection(JcWaterController water,Renderer surface,Action<bool,string> check)
+        {
+            var go=new GameObject("JC reflection validation"){hideFlags=HideFlags.HideAndDontSave};
+            var camera=go.AddComponent<Camera>();camera.enabled=false;
+            camera.transform.position=surface.bounds.center+new Vector3(3,6,-8);
+            camera.transform.LookAt(surface.bounds.center);camera.farClipPlane=200;camera.aspect=1;
+            var target=new RenderTexture(64,64,24);target.Create();
+            bool culling=GL.invertCulling;float pass=Shader.GetGlobalFloat("_JcWaterReflectionPass");
+            var request=new UniversalRenderPipeline.SingleCameraRequest{destination=target};
+            var block=new MaterialPropertyBlock();
+            try
+            {
+                water.Settings.planarReflection=true;water.Settings.reflection=.7f;water.Apply();
+                RenderPipeline.SubmitRenderRequest(camera,request);
+                surface.GetPropertyBlock(block);
+                check(water.ReflectionViewCount>0 && block.GetFloat("_PlanarAvailable")==1 && block.GetTexture("_PlanarReflection")!=null,"원근 카메라 반사 영상 생성·수면 연결");
+                camera.orthographic=true;camera.orthographicSize=8;
+                RenderPipeline.SubmitRenderRequest(camera,request);
+                check(GL.invertCulling==culling && Shader.GetGlobalFloat("_JcWaterReflectionPass")==pass,"직교 카메라 렌더·전역 렌더 상태 복원");
+                water.Settings.planarReflection=false;water.Apply();
+                surface.GetPropertyBlock(block);
+                check(water.ReflectionViewCount==0 && block.GetFloat("_PlanarAvailable")==0,"반사 끄기 시 카메라·텍스처 해제 및 바인딩 제거");
+                water.Settings.planarReflection=true;water.Apply();RenderPipeline.SubmitRenderRequest(camera,request);
+                water.enabled=false;
+                check(water.ReflectionViewCount==0,"컴포넌트 비활성화 시 반사 리소스 해제");
+                water.enabled=true;
+            }
+            finally {camera.targetTexture=null;UnityEngine.Object.DestroyImmediate(go);target.Release();UnityEngine.Object.DestroyImmediate(target);}
         }
     }
 }

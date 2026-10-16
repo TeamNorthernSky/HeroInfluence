@@ -144,21 +144,7 @@ MonoBehaviour:
   bankJointStrength: 0.15
   bankWetStrength: 0.22
   bankExcludedLandCells: []
-  waterTint: {r: 0.24813095, g: 0.4308631, b: 0.6415094, a: 1}
-  waterEdgeTint: {r: 0.38833508, g: 0.57198757, b: 0.6603774, a: 1}
   waterFlowDirection: {x: 1, y: 0}
-  waterFollowCanal: 1
-  waterFlowSpeed: 0.131
-  waterWaveSize: 1.23
-  waterWaveStrength: 0.035
-  waterWaveVisibility: 0.43
-  waterRippleSize: 0.382
-  waterRippleStrength: 0.0571
-  waterRippleVisibility: 1
-  waterRippleSpeed: 0.621
-  waterFlowStreakStrength: 0.0688
-  waterShine: 0.12
-  waterEdgeWidth: 0.05
   waterShader: {fileID: 4800000, guid: 6fd5608cdb332684c823b437da8ed24d, type: 3}
   bankShader: {fileID: 4800000, guid: b44630300158c2249ae5b88fd075a5d6, type: 3}
   curbMesh: {fileID: 4300000, guid: 72bdc00136e804c4cb47af66ef22effe, type: 2}

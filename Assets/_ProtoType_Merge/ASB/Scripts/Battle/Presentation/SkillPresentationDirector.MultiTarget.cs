@@ -56,7 +56,7 @@ public sealed partial class SkillPresentationDirector
         if (presentation == null || !presentation.IsTimelineRail ||
             (presentation.PresentationArchetype != PresentationArchetype.Stationary &&
              presentation.PresentationArchetype != PresentationArchetype.Melee) ||
-            !presentation.HasMultiTargetPlan(actor.TemplateIndex, actor.UnitName))
+            !presentation.HasMultiTargetPlan(actor.PresentationIndex, actor.UnitName))
             return false;
 
         for (int i = 0; i < slotContexts.Count; i++)
@@ -95,7 +95,7 @@ public sealed partial class SkillPresentationDirector
         SkillPresentationData presentation = skill != null ? _battle.PresentationCatalog?.Get(skill.skillIndex) : null;
         var segments = new List<SkillTimelineSegment>();
         bool validPlan = presentation != null &&
-            presentation.TryResolvePlan(actor.TemplateIndex, actor.UnitName, count, segments);
+            presentation.TryResolvePlan(actor.PresentationIndex, actor.UnitName, count, segments);
         if (validPlan)
         {
             segments.RemoveAll(segment => segment.TargetSlot > count);
@@ -136,7 +136,7 @@ public sealed partial class SkillPresentationDirector
         if (!validPlan)
         {
             Debug.LogError($"[PathA] Multi-target plan missing or invalid. skill={skill?.skillIndex}, " +
-                $"actor={actor.TemplateIndex}/{actor.UnitName}, targets={count}", actor);
+                $"actor={actor.TemplateIndex}(presentation {actor.PresentationIndex})/{actor.UnitName}, targets={count}", actor);
             for (int i = 0; i < count; i++)
             {
                 var hit = new ResolveHitAction(actor, slotContexts[i]?.Target, slotCallbacks[i],

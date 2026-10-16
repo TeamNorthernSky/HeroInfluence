@@ -162,6 +162,13 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
     /// </summary>
     public string TemplateIndex { get; private set; } = string.Empty;
 
+    private string presentationIndex;
+    /// <summary>
+    /// Timeline 레일 조회 키. 기본=<see cref="TemplateIndex"/>. 네임드 변형(예: 아놀드 200051)은 전투씬 빌더가 정한
+    /// 전투 동작 키(예: 20005)라서 기준 유닛의 Timeline을 쓴다. 데이터 키(TemplateIndex)는 바뀌지 않는다.
+    /// </summary>
+    public string PresentationIndex => string.IsNullOrWhiteSpace(presentationIndex) ? TemplateIndex : presentationIndex;
+
     // [JC 260621] 표시 전용 이름(히어로명). 스킬매칭키(unitName=클래스명)와 분리. 비면 UnitName 폴백(적 유닛 호환).
     private string displayName;
     /// <summary>UI 표시·로그용 히어로명. 미설정 시 UnitName 폴백.</summary>
@@ -897,6 +904,12 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
         }
 
         TemplateIndex = index.Trim();
+    }
+
+    /// <summary>Timeline 레일 조회 키 설정. 비면 해제(<see cref="TemplateIndex"/> 사용).</summary>
+    public void SetPresentationIndex(string index)
+    {
+        presentationIndex = string.IsNullOrWhiteSpace(index) ? null : index.Trim();
     }
 
     /// <summary>[JC 260621] UI 표시용 히어로명 설정(스킬매칭 unitName과 별개). 비면 UnitName 폴백.</summary>

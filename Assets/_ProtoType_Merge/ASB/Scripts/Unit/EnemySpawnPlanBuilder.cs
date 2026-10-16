@@ -138,7 +138,20 @@ public static class EnemySpawnPlanBuilder
             string prefabKey = !string.IsNullOrWhiteSpace(unit.PrefabResourcePath)
                 ? unit.PrefabResourcePath.Trim()
                 : spawnData.Index;
-            entries.Add(new EnemySpawnEntry(spawnData, unit.Slot, prefabKey, unit.Skills, unit.UnitKey));
+
+            // 네임드 변형(예: 아놀드 200051)은 데이터 키·이름·스탯은 그대로 두고 전투 동작만 기준 유닛(20005)으로 맞춘다.
+            // 판단은 여기서만 하고, 결과는 PrefabKey·UnitAI·스킬 번호/키·BattleBehaviorKey로 명시 전달한다.
+            string battleBehaviorKey = string.Empty;
+            if (EnemyBaseUnitRules.TryGetBaseUnitKey(unit.UnitKey, out string behaviorKey))
+            {
+                battleBehaviorKey = behaviorKey;
+                prefabKey = behaviorKey;
+                // EnemyScript.ResolveAiIndex는 숫자 UnitAI를 수동 오버라이드로 우선 사용한다.
+                spawnData.UnitAI = behaviorKey;
+                RekeyEventSkills(unit.Skills, behaviorKey);
+            }
+
+            entries.Add(new EnemySpawnEntry(spawnData, unit.Slot, prefabKey, unit.Skills, unit.UnitKey, battleBehaviorKey));
         }
 
         if (entries.Count == 0)
@@ -148,6 +161,24 @@ public static class EnemySpawnPlanBuilder
         }
 
         return true;
+    }
+
+    // 스킬 번호·키를 전투 동작 키 기준으로 다시 매긴다(이름·설명·수치는 유지). EventBattlePlanSource.TryBuildUnits가
+    // 호출마다 새 SkillData를 만들므로 제자리 수정한다. 규칙은 EventBattlePlanSource.TryAddEventBattleSkill과 같다.
+    private static void RekeyEventSkills(List<SkillData> skills, string behaviorKey)
+    {
+        if (skills == null || !int.TryParse(behaviorKey, out int behaviorIndex))
+            return;
+
+        for (int i = 0; i < skills.Count; i++)
+        {
+            SkillData skill = skills[i];
+            if (skill == null)
+                continue;
+
+            skill.skillIndex = (behaviorIndex * 10) + skill.slot;
+            skill.skillKey = EnemySkillKeyRules.Compose(behaviorKey, skill.slot);
+        }
     }
 
     // EnemySpawner.BuildEventEnemyData와 동일한 전투 진입용 EnemyData 규약.

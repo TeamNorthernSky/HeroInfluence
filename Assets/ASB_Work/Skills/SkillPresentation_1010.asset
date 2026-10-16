@@ -82,7 +82,7 @@ MonoBehaviour:
     ForceApproach: 0
     AnimationStateName: Base Layer.MoveForward
     BlendInSeconds: 0
-    SfxKey: 
+    SfxKey: Explore_Move
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -110,7 +110,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
     BlendInSeconds: 0.05
-    SfxKey: 
+    SfxKey: Explore_Move
   Post:
     Enabled: 1
     AnimationStateName: Base Layer.Taunt

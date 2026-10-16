@@ -62,7 +62,7 @@ namespace ASB.Work.Battle.SkillExecution
             // 서포터
             Register("HS4010", new TargetHPPerHeal());      // 대상 체력 비례 힐
             Register("HS4020", new HolyBulletHpRecoveryHandler());    // 단일 공격 + HP 회복
-            Register("HS4030", new HealTargetAroundRandomHandler()); // 광역 힐 + 인접 무작위 1명
+            Register("HS4030", new HealAllAlliesSkillHandler()); // 4030/4031: 살아 있는 아군 전체 회복
             Register("HS4040", new RebirthSkillHandler());    // 부활 + 적 전체 공격
             Register("HS4050", new TargetLowerHPMoreHeal()); // 긴급 힐
             Register("HS4060", new AoEDamageSkillHandler()); //전체 공격

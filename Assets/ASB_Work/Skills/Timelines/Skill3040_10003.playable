@@ -243,6 +243,21 @@ MonoBehaviour:
   m_Time: 0
   _sectionId: Attack
   _boundary: 0
+--- !u!114 &2186062525189083301
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0.02
+  _sfxKey: Battle_PreSkill02
+  _durationSeconds: 0
 --- !u!114 &2835956789947574401
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -293,7 +308,9 @@ MonoBehaviour:
   m_Children: []
   m_Clips: []
   m_Markers:
-    m_Objects: []
+    m_Objects:
+    - {fileID: 2186062525189083301}
+    - {fileID: 7807261295241769140}
   role: 4
 --- !u!114 &6594199879618933263
 MonoBehaviour:
@@ -309,3 +326,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Time: 0.2716131806373596
   _durationSeconds: 0.25
+--- !u!114 &7807261295241769140
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0.273
+  _sfxKey: Battle_LongHit01
+  _durationSeconds: 0

@@ -29,25 +29,30 @@ public sealed class EnemySpawnEntry
     public EnemyData Data { get; }
     // 1~6 논리 슬롯. 전투씬에서 BattleLogicalSlotMap으로 GridCell에 매핑한다.
     public int CombatSlot { get; }
-    // Resources 프리팹 식별(일반=EnemyData.Index, 이벤트=PrefabResourcePath 우선).
+    // 프리팹 식별 키(일반=EnemyData.Index, 이벤트=빌더가 정한 키). EnemySpawner.ResolvePlanPrefab 조회 순서:
+    // Data.Index 카탈로그 → PrefabKey 카탈로그 → PrefabKey가 경로면 Resources.Load → 미등록 Resources `_{key}` 검색.
     public string PrefabKey { get; }
     // 이벤트=명시 스킬 목록, 일반=null/빈값(EnemyData.Index 규칙으로 기본 스킬 유도).
     public IReadOnlyList<SkillData> ExplicitSkills { get; }
     // 이벤트 인질 시나리오 필터용 원본 유닛 키(일반 전투는 빈 문자열).
     public string SourceUnitKey { get; }
+    // 전투 동작 키. 비면 Data.Index와 같은 의미. 네임드 변형이 기준 유닛의 동작·연출을 쓸 때 그 유닛 키(예: 20005).
+    public string BattleBehaviorKey { get; }
 
     public EnemySpawnEntry(
         EnemyData data,
         int combatSlot,
         string prefabKey,
         IReadOnlyList<SkillData> explicitSkills = null,
-        string sourceUnitKey = null)
+        string sourceUnitKey = null,
+        string battleBehaviorKey = null)
     {
         Data = data;
         CombatSlot = combatSlot;
         PrefabKey = string.IsNullOrWhiteSpace(prefabKey) ? string.Empty : prefabKey.Trim();
         ExplicitSkills = explicitSkills;
         SourceUnitKey = string.IsNullOrWhiteSpace(sourceUnitKey) ? string.Empty : sourceUnitKey.Trim();
+        BattleBehaviorKey = string.IsNullOrWhiteSpace(battleBehaviorKey) ? string.Empty : battleBehaviorKey.Trim();
     }
 
     public bool HasExplicitSkills => ExplicitSkills != null && ExplicitSkills.Count > 0;

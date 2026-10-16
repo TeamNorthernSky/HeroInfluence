@@ -60,6 +60,15 @@ MonoBehaviour:
   HitEffectPrefab: {fileID: 0}
   HitEffectPositionOffset: {x: 0, y: 0, z: 0}
   HitEffectRotationOffset: {x: 0, y: 0, z: 0}
+  EventSfx:
+  - Event: 0
+    Key: Battle_Hit01
+    DurationSeconds: 0
+    Occurrence: -1
+  - Event: 0
+    Key: Battle_Hit02
+    DurationSeconds: 0
+    Occurrence: -1
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
@@ -84,6 +93,7 @@ MonoBehaviour:
     UseUnitMovement: 1
     AnimationStateName: Base Layer.MoveForward
     BlendInSeconds: 0
+    SfxKey: Explore_Move
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -134,6 +144,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn
     BlendInSeconds: 0.001
+    SfxKey: Explore_Move
   Post:
     Enabled: 0
     AnimationStateName: 

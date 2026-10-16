@@ -28,7 +28,7 @@ public class AStarPathfinder : MonoBehaviour
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
         int maxVisitedNodes = 0,
-        int maxPathCost = 0)
+        int maxPathCost = -1)
     {
         if (start == goal)
             return new List<Vector2Int> { start };
@@ -72,7 +72,7 @@ public class AStarPathfinder : MonoBehaviour
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
-                if (maxPathCost > 0 && tentativeG > maxPathCost)
+                if (maxPathCost >= 0 && tentativeG > maxPathCost)
                     continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))
@@ -97,7 +97,7 @@ public class AStarPathfinder : MonoBehaviour
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
         int maxVisitedNodes = 0,
         System.Func<Vector2Int, bool> isValidAdjacentCell = null,
-        int maxPathCost = 0)
+        int maxPathCost = -1)
     {
         if (IsValidAdjacentDestination(start, target, isValidAdjacentCell))
             return new List<Vector2Int> { start };
@@ -137,7 +137,7 @@ public class AStarPathfinder : MonoBehaviour
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
-                if (maxPathCost > 0 && tentativeG > maxPathCost)
+                if (maxPathCost >= 0 && tentativeG > maxPathCost)
                     continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))
@@ -171,7 +171,7 @@ public class AStarPathfinder : MonoBehaviour
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
         int maxVisitedNodes = 0,
-        int maxPathCost = 0)
+        int maxPathCost = -1)
     {
         if (goals == null || goals.Count == 0)
             return null;
@@ -213,7 +213,7 @@ public class AStarPathfinder : MonoBehaviour
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
-                if (maxPathCost > 0 && tentativeG > maxPathCost)
+                if (maxPathCost >= 0 && tentativeG > maxPathCost)
                     continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))
@@ -253,7 +253,7 @@ public class AStarPathfinder : MonoBehaviour
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
         int maxVisitedNodes = 0,
-        int maxPathCost = 0)
+        int maxPathCost = -1)
     {
         if (isTerminalCell == null)
             return null;
@@ -298,7 +298,7 @@ public class AStarPathfinder : MonoBehaviour
                     continue;
 
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
-                if (maxPathCost > 0 && tentativeG > maxPathCost)
+                if (maxPathCost >= 0 && tentativeG > maxPathCost)
                     continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))

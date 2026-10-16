@@ -17,6 +17,21 @@ MonoBehaviour:
   _cueName: parts_crash_on
   _cueId: e9789f90e91c437e925e4c2fc3a5ec04
   _targetSlot: 0
+--- !u!114 &-5295054133347385369
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0.5333333611488342
+  _sfxKey: Battle_Teasing
+  _durationSeconds: 0
 --- !u!114 &-4344465857832522359
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -39,6 +54,21 @@ MonoBehaviour:
   m_Loop: 0
   m_Version: 1
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &-3472784739296626096
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0.019999999552965164
+  _sfxKey: Battle_Spin01
+  _durationSeconds: 0
 --- !u!114 &-2510292761542805023
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -92,7 +122,10 @@ MonoBehaviour:
   m_Children: []
   m_Clips: []
   m_Markers:
-    m_Objects: []
+    m_Objects:
+    - {fileID: -3472784739296626096}
+    - {fileID: 6589328625727847691}
+    - {fileID: -5295054133347385369}
   role: 4
 --- !u!114 &-1258391111810615583
 MonoBehaviour:
@@ -128,8 +161,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1675940f59683d34ca68374fac43622e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Time: 0.4333333596587181
   _boundary: 0
   _positionCurve:
@@ -201,6 +234,21 @@ MonoBehaviour:
   m_Loop: 0
   m_Version: 1
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &6589328625727847691
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0.4333333596587181
+  _sfxKey: Battle_Spinhit
+  _durationSeconds: 0
 --- !u!114 &6771178232173286426
 MonoBehaviour:
   m_ObjectHideFlags: 1

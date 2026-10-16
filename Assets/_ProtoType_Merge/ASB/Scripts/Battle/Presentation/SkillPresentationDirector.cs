@@ -848,7 +848,7 @@ public sealed partial class SkillPresentationDirector
             else yield return hit.ExecuteRoutine(_battle);
         }
 
-        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
 
         // 저장/빌드 검증에서 사전 차단하지만(§3), 런타임 도달 시에도 시퀀스는 반드시 종료한다 —
         // 조용한 Path B 폴백은 하지 않고, 대미지 유실/행 hang을 막는다.
@@ -856,7 +856,7 @@ public sealed partial class SkillPresentationDirector
         {
             Debug.LogError(
                 $"[PathA] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 " +
-                $"(index '{actor?.TemplateIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
+                $"(index '{actor?.TemplateIndex}', presentation '{actor?.PresentationIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
                 "피격 연출만 적용하고 종료합니다.", actor);
             ResolveHit();
             if (hitRoutine != null) yield return hitRoutine;
@@ -927,7 +927,7 @@ public sealed partial class SkillPresentationDirector
             projectileLaunched = true;
             // Timeline과 병행 재생: 투사체를 별도 코루틴으로 날리고, 도착 시 피격연출을 적용한다.
             projectileRoutine = _battle.StartCoroutine(
-                LaunchProjectileRoutine(actor, target, presentation, deliveryGate, ResolveHit));
+                LaunchProjectileRoutine(actor, target, presentation, deliveryGate, ResolveHit, presentationTargets));
         }
 
         IEnumerator WaitForChainPrimaryImpact()
@@ -1147,7 +1147,7 @@ public sealed partial class SkillPresentationDirector
     {
         bool moveEnabled = presentation?.Move?.Enabled ?? true;
         bool returnEnabled = presentation?.Return?.Enabled ?? true;
-        TimelineAsset movementTimeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+        TimelineAsset movementTimeline = actor != null ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
         bool timelineOwnsMove = HasTimelineMove(movementTimeline);
         bool timelineOwnsReturn = HasTimelineReturn(movementTimeline);
 
@@ -1212,7 +1212,7 @@ public sealed partial class SkillPresentationDirector
             yield break;
         }
 
-        TimelineAsset timeline = presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName);
+        TimelineAsset timeline = presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName);
         TimelineMovingAttackSpan movingSpan = timeline != null
             ? CollectMovingAttackSpan(timeline, plan.PathPoints, presentation.MovingAttack.PathSampleCount)
             : null;
@@ -1258,7 +1258,8 @@ public sealed partial class SkillPresentationDirector
     /// 투사체가 없으면(비-원거리 등) 즉시 대미지를 적용해 유실을 막는다.
     /// </summary>
     private IEnumerator LaunchProjectileRoutine(BattleCharactor actor, BattleCharactor target,
-        SkillPresentationData presentation, HitDeliveryGate deliveryGate, Action onArrive)
+        SkillPresentationData presentation, HitDeliveryGate deliveryGate, Action onArrive,
+        IReadOnlyList<BattleCharactor> presentationTargets = null)
     {
         ProjectileVisualData visual = presentation != null ? presentation.GetProjectileVisual() : null;
         if (actor == null || visual == null || visual.Prefab == null)
@@ -1277,6 +1278,15 @@ public sealed partial class SkillPresentationDirector
                 context.RemoveHandle(visual.ChargeInstanceKey);
             }
         }
+        if (HeroSkillRules.FamilyId(presentation.SkillIndex) == 4030 && presentationTargets != null)
+        {
+            yield return ProjectileImpactAction.ExecuteParallel(
+                _battle, actor, presentationTargets, visual, _battle.CurrentBattleSpeed,
+                deliveryGate, presentation.SkillIndex, prepared);
+            onArrive?.Invoke();
+            yield break;
+        }
+
         var projectile = new ProjectileImpactAction(
             actor, target, visual, _battle.CurrentBattleSpeed, deliveryGate, presentation.SkillIndex,
             existingInstance: prepared);
@@ -1296,12 +1306,12 @@ public sealed partial class SkillPresentationDirector
         ProjectileVisualData projectileVisual, MovingAttackPlan movingAttackPlan = null,
         UnitMovementProfile movement = null, float originRotationY = 0f)
     {
-        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+        TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
         if (timeline == null)
         {
             Debug.LogError(
                 $"[PathA/AoE] Timeline 레일 스킬(idx {presentation.SkillIndex})인데 캐릭터 " +
-                $"(index '{actor?.TemplateIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
+                $"(index '{actor?.TemplateIndex}', presentation '{actor?.PresentationIndex}', name '{actor?.UnitName}')의 Variant가 없습니다. " +
                 "AoE Delivery를 즉시 확정하고 종료합니다.", actor);
             yield return new AoEApplyDamageAction(
                     contexts, hitCallbacks, pairCount, _battle.CurrentBattleSpeed, _battle.VisualDirector,
@@ -1802,7 +1812,7 @@ public sealed partial class SkillPresentationDirector
             {
                 // Animator 레일과 같은 회전 규칙: Move가 켜진 회전형 유닛만 재생 전에 대상 쪽으로 돌고, 끝나면 원래 방향으로 돌아온다.
                 // 비-Melee Timeline은 이동하지 않는다. 복귀는 빈 MoveReturn 대신 현재(Idle) 애니메이션을 유지한다.
-                TimelineAsset movementTimeline = presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName);
+                TimelineAsset movementTimeline = presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName);
                 bool timelineOwnsMove = HasTimelineMove(movementTimeline);
                 bool timelineOwnsReturn = HasTimelineReturn(movementTimeline);
                 bool rotateForTimeline = (presentation.Move?.Enabled ?? true) && shouldRotate;
@@ -1890,7 +1900,7 @@ public sealed partial class SkillPresentationDirector
         
                             EnqueueMovingAttackSequence(runner, spinSweepPlan, actor, target, skill, presentation,
                                 presentationActionInstanceId, actorAnim,
-                                host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId, targetPosition, targetTransform),
+                                host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId, targetPosition, targetTransform, presentationTargets),
                                 null,
                                 ResolveMovingAttackOutgoingBlendInSeconds(presentation, returnEnabled && movement != null),
                                 elapsed => sequenceBattleElapsed += elapsed);
@@ -1913,7 +1923,7 @@ public sealed partial class SkillPresentationDirector
                             (beat, index) => ResolveAttackBeatState(actorAnim, skill, presentation, beat, index),
                             (beat, stateName) => SetupPresentationContext(actor, target, skill, presentation, presentationActionInstanceId, beat?.Cues, stateName, presentationTargets,
                                 targetPositionOverride: target == null ? targetPosition : (Vector3?)null),
-                            host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId, targetPosition, targetTransform),
+                            host => ResolveSkillHitWithPresentationDeliveryRoutine(host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, presentation, presentationActionInstanceId, targetPosition, targetTransform, presentationTargets),
                             _battle.CurrentBattleSpeed,
                             BattleManager.AnimEventTimeoutSeconds,
                             postBlendAfterLastBeatSeconds,
@@ -1927,7 +1937,7 @@ public sealed partial class SkillPresentationDirector
                         runner.Enqueue(new PlaySkillAnimAction(actorAnim, skill, playBasicAttackAnimation, actor));
                         runner.Enqueue(new WaitHitAction(actorAnim, skill, _battle.CurrentBattleSpeed, elapsed => sequenceBattleElapsed += elapsed, BattleManager.AnimEventTimeoutSeconds));
                         runner.Enqueue(new ASB.Work.Battle.Sequence.RunRoutineAction(host => ResolveSkillHitRoutine(
-                            host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, targetPosition, targetTransform)));
+                            host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, targetPosition, targetTransform, presentationTargets)));
                         if (!string.IsNullOrEmpty(targetState))
                             runner.Enqueue(new WaitClipEndAction(actorAnim, targetState, elapsed => sequenceBattleElapsed += elapsed));
                     }
@@ -1978,7 +1988,8 @@ public sealed partial class SkillPresentationDirector
                 SkillPresentationData presentation,
                 int actionInstanceId,
                 Vector3? targetPositionOverride = null,
-                Transform targetTransformOverride = null)
+                Transform targetTransformOverride = null,
+                IReadOnlyList<BattleCharactor> presentationTargets = null)
             {
                 yield return ASB.Work.Battle.Sequence.CustomEffectImpactAction.WaitForImpactRoutine(
                     presentation, actionInstanceId, deliveryGate);
@@ -1988,7 +1999,8 @@ public sealed partial class SkillPresentationDirector
                 }
 
                 yield return ResolveSkillHitRoutine(
-                    host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate, targetPositionOverride, targetTransformOverride);
+                    host, actor, target, onHitCallback, targetAnimTrigger, playTargetHitAnimation, skill, deliveryGate,
+                    targetPositionOverride, targetTransformOverride, presentationTargets);
             }
         
             public IEnumerator ResolveAoEHitWithPresentationDeliveryRoutine(
@@ -2074,7 +2086,8 @@ public sealed partial class SkillPresentationDirector
 
     public IEnumerator ResolveSkillHitRoutine(MonoBehaviour host, BattleCharactor actor, BattleCharactor target,
         Func<BattleHitResult> onHitCallback, string targetAnimTrigger, bool playTargetHitAnimation, SkillData skill,
-        HitDeliveryGate deliveryGate, Vector3? targetPositionOverride = null, Transform targetTransformOverride = null)
+        HitDeliveryGate deliveryGate, Vector3? targetPositionOverride = null, Transform targetTransformOverride = null,
+        IReadOnlyList<BattleCharactor> presentationTargets = null)
     {
         SkillPresentationData presentation = skill != null ? _battle.PresentationCatalog?.Get(skill.skillIndex) : null;
         // 체인 번개의 1차 지점: 전투유닛은 자기 transform, 인질 등은 override transform.
@@ -2118,6 +2131,20 @@ public sealed partial class SkillPresentationDirector
                     preparedCharge = (chargeHandle as Component)?.gameObject;
                     chargeCtx.RemoveHandle(projectileVisual.ChargeInstanceKey);
                 }
+            }
+
+            if (skill != null && HeroSkillRules.FamilyId(skill.skillIndex) == 4030
+                && presentationTargets != null && presentationTargets.Count > 0)
+            {
+                yield return ProjectileImpactAction.ExecuteParallel(
+                    host, actor, presentationTargets, projectileVisual, _battle.CurrentBattleSpeed,
+                    deliveryGate, skill.skillIndex, preparedCharge);
+                if (deliveryGate != null && !deliveryGate.ShouldPlayImpactPresentation)
+                    yield break;
+
+                yield return new ResolveHitAction(actor, target, onHitCallback, targetAnimTrigger,
+                    _battle.CurrentBattleSpeed, _battle.VisualDirector).ExecuteRoutine(host);
+                yield break;
             }
 
             // 인질 등 BattleCharactor가 아닌 타깃은 target이 null이라, 목적지를 명시(destinationOverride)해야
@@ -2412,7 +2439,7 @@ public sealed partial class SkillPresentationDirector
                 if (contexts[i]?.Target != null) candidates.Add(contexts[i].Target);
             TimelineAsset movingTimeline = TryBuildMovingAttackPlan(actor, actorAnim, presentation, candidates,
                     out movingTimelinePlan)
-                ? presentation.ResolveTimeline(actor.TemplateIndex, actor.UnitName) : null;
+                ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
             movingTimelineSpan = movingTimeline != null
                 ? CollectMovingAttackSpan(movingTimeline, movingTimelinePlan.PathPoints,
                     movingTimelinePlan.Presentation.PathSampleCount)

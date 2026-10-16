@@ -307,7 +307,8 @@ MonoBehaviour:
   m_Children: []
   m_Clips: []
   m_Markers:
-    m_Objects: []
+    m_Objects:
+    - {fileID: -2088382416743739312}
   role: 4
 --- !u!114 &-4214303655052638608
 MonoBehaviour:
@@ -326,6 +327,21 @@ MonoBehaviour:
   _cueName: charge
   _cueId: b454b13c9b28451e8df9b52f548246e3
   _targetSlot: 0
+--- !u!114 &-2088382416743739312
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_Time: 0.02
+  _sfxKey: Battle_PreSkill01
+  _durationSeconds: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

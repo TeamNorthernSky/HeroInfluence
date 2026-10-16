@@ -29,6 +29,16 @@ namespace ASB.Work.Battle.Sequence
         bool Step(float dtBattle, Transform trackedTarget, out Vector3 position);
     }
 
+    /// <summary>
+    /// 거리와 무관하게 도착 시간을 지정할 수 있는 궤적. 동시 발사에서 모든 투사체를 같은 순간에 착탄시킬 때 쓴다.
+    /// 진행 곡선(가속·포물선)은 정규화 시간 기준이라 시간만 바뀌고 모양은 유지된다.
+    /// </summary>
+    public interface IFixedArrivalTrajectory
+    {
+        /// <summary>Init 이후 호출. arrivalSeconds는 가속 보정을 포함한 실제 도착 시간(배속 반영 전).</summary>
+        void SetArrivalSeconds(float arrivalSeconds);
+    }
+
     /// <summary>ProjectileVisualData.Trajectory로 궤적 구현을 선택한다.</summary>
     public static class ProjectileTrajectoryFactory
     {
@@ -48,7 +58,7 @@ namespace ASB.Work.Battle.Sequence
     }
 
     /// <summary>포물선. 도착 = 정해진 비행 거리 완료(t &gt;= 1). ArrivalRadius는 사용하지 않는다.</summary>
-    public sealed class ArcTrajectory : IProjectileTrajectory
+    public sealed class ArcTrajectory : IProjectileTrajectory, IFixedArrivalTrajectory
     {
         private Vector3 _start;
         private Vector3 _end;
@@ -72,6 +82,13 @@ namespace ASB.Work.Battle.Sequence
             float dist = Vector3.Distance(start, timingEnd);
             _flightDur = dist > 0.001f ? dist / speed : 0.0001f;
             _t = 0f;
+        }
+
+        public void SetArrivalSeconds(float arrivalSeconds)
+        {
+            // 도착 = Progress가 1이 되는 clock(DurationScale) × _flightDur.
+            float scale = ProjectileAcceleration.DurationScale(_acceleration, _accelerationMultiplier);
+            _flightDur = Mathf.Max(0.0001f, arrivalSeconds / scale);
         }
 
         public bool Step(float dtBattle, Transform trackedTarget, out Vector3 position)
@@ -100,7 +117,7 @@ namespace ASB.Work.Battle.Sequence
     }
 
     /// <summary>직선. 도착 = 정해진 비행 거리 완료(t &gt;= 1). ArrivalRadius는 사용하지 않는다.</summary>
-    public sealed class StraightTrajectory : IProjectileTrajectory
+    public sealed class StraightTrajectory : IProjectileTrajectory, IFixedArrivalTrajectory
     {
         private Vector3 _start;
         private Vector3 _end;
@@ -122,6 +139,12 @@ namespace ASB.Work.Battle.Sequence
             float dist = Vector3.Distance(start, timingEnd);
             _flightDur = dist > 0.001f ? dist / speed : 0.0001f;
             _t = 0f;
+        }
+
+        public void SetArrivalSeconds(float arrivalSeconds)
+        {
+            float scale = ProjectileAcceleration.DurationScale(_acceleration, _accelerationMultiplier);
+            _flightDur = Mathf.Max(0.0001f, arrivalSeconds / scale);
         }
 
         public bool Step(float dtBattle, Transform trackedTarget, out Vector3 position)
