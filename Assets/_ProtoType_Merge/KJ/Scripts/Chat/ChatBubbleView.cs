@@ -17,6 +17,55 @@ public class ChatBubbleView : MonoBehaviour
     private const int TypePlayer = 1;    // 플레이어 — 우측
     private const int TypeNarration = 2; // 상황 설명 — 가운데
 
+    public RectTransform EntranceRoot => messageText != null ? messageText.transform.parent as RectTransform : null;
+
+    private string speakerName;
+    private string speakerProfile;
+    private int speakerType;
+    private LayoutElement compactRowLayout;
+
+    public bool HasSameSpeaker(ChatBubbleView previous) => previous != null &&
+        speakerType != TypeNarration && speakerType == previous.speakerType &&
+        !string.IsNullOrEmpty(speakerName) && speakerName == previous.speakerName &&
+        speakerProfile == previous.speakerProfile;
+
+    public void HideRepeatedSpeaker()
+    {
+        if (portraitRoot == null) return;
+        // Keep the portrait column's width so consecutive messages line up.
+        var group = portraitRoot.GetComponent<CanvasGroup>();
+        if (group == null) group = portraitRoot.AddComponent<CanvasGroup>();
+        group.alpha = 0f;
+        group.interactable = group.blocksRaycasts = false;
+        var layout = portraitRoot.GetComponent<LayoutElement>();
+        if (layout != null) layout.minHeight = layout.preferredHeight = 0f;
+        LayoutRebuilder.MarkLayoutForRebuild((RectTransform)transform);
+    }
+
+    public void JoinPreviousSpeaker(ChatBubbleView previous)
+    {
+        HideRepeatedSpeaker();
+        if (rowLayout != null)
+        {
+            var stack = transform.parent != null ? transform.parent.GetComponent<VerticalLayoutGroup>() : null;
+            int top = Mathf.RoundToInt(Mathf.Max(0f, 8f - (stack != null ? stack.spacing : 0f)));
+            rowLayout.padding = new RectOffset(rowLayout.padding.left, rowLayout.padding.right,
+                top, rowLayout.padding.bottom);
+        }
+
+        if (previous == null || previous.EntranceRoot == null || previous.rowLayout == null) return;
+        // The first portrait may be taller than its message. Let it extend down
+        // its own column instead of leaving a large gap before the next message.
+        if (previous.compactRowLayout == null)
+            previous.compactRowLayout = previous.gameObject.AddComponent<LayoutElement>();
+        var compact = previous.compactRowLayout;
+        compact.enabled = true;
+        compact.layoutPriority = 3;
+        compact.minHeight = compact.preferredHeight =
+            LayoutUtility.GetPreferredHeight(previous.EntranceRoot) + previous.rowLayout.padding.vertical;
+        LayoutRebuilder.MarkLayoutForRebuild((RectTransform)previous.transform);
+    }
+
     [Tooltip("좌/우 정렬을 담당하는 행(row) 레이아웃. childAlignment 로 말풍선 박스 위치 결정.")]
     [SerializeField] private HorizontalLayoutGroup rowLayout;
     [SerializeField] private TMP_Text nameText;
@@ -122,6 +171,7 @@ public class ChatBubbleView : MonoBehaviour
     /// </summary>
     public void Bind(string charName, string message, int type, string profileKey = null)
     {
+        if (compactRowLayout != null) compactRowLayout.enabled = false;
         bool isPlayer = type == TypePlayer;
         bool isNarration = type == TypeNarration;
         // 오른쪽 대사는 플레이어인 협회장의 이름과 초상화로 통일한다.
@@ -130,6 +180,10 @@ public class ChatBubbleView : MonoBehaviour
             charName = "협회장";
             profileKey = "UI_Sprite/UI_Chatting/UI_profile_NPC_commander";
         }
+
+        speakerName = (charName ?? string.Empty).Trim();
+        speakerProfile = (profileKey ?? string.Empty).Trim();
+        speakerType = type;
 
         if (nameText != null)
         {
@@ -214,6 +268,8 @@ public class ChatBubbleView : MonoBehaviour
         if (portraitRoot == null) return;
 
         portraitRoot.SetActive(show);
+        var group = portraitRoot.GetComponent<CanvasGroup>();
+        if (group != null) group.alpha = 1f;
         if (!show || portraitImage == null) return;
 
         Sprite sprite = ResolveSpeakerPortrait(profileKey, speaker)

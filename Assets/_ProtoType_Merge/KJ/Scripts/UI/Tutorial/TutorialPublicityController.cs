@@ -37,6 +37,8 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         (practiceInput == PracticeInput.CountAndConfirm && (input == PracticeInput.Count || input == PracticeInput.Confirm));
     private bool MatchesPracticeCount =>
         (practiceInput != PracticeInput.Confirm && practiceInput != PracticeInput.CountAndConfirm) || count == practiceCount;
+    private bool IsCountPractice => practiceInput == PracticeInput.Count || practiceInput == PracticeInput.CountAndConfirm;
+    private bool PracticeCountReached => IsCountPractice && count >= practiceCount;
     public void SetPracticeInput(PracticeInput input, int targetCount = PracticeCount)
     {
         practiceInput = input;
@@ -163,8 +165,14 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     private void OnSliderChanged(float value) => SetCount(Mathf.RoundToInt(value));
     public void SetCount(int value)
     {
-        if (!Allows(PracticeInput.Count)) return;
-        count = Mathf.Clamp(value, 0, MaximumCount());
+        if (!Allows(PracticeInput.Count) || PracticeCountReached)
+        {
+            Refresh();
+            return;
+        }
+        int maximum = MaximumCount();
+        if (IsCountPractice) maximum = Mathf.Min(maximum, practiceCount);
+        count = Mathf.Clamp(value, 0, maximum);
         Refresh();
     }
 
@@ -227,11 +235,11 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
             // 실습 목표 20과 독립적으로 0~40 눈금을 유지한다. 남은 IP/예산은 MaximumCount에서 제한한다.
             progressSlider.maxValue = TutorialMaxIp;
             progressSlider.SetValueWithoutNotify(count);
-            progressSlider.interactable = maximum > 0 && Allows(PracticeInput.Count);
+            progressSlider.interactable = maximum > 0 && Allows(PracticeInput.Count) && !PracticeCountReached;
             if (CountCaption != null) CountCaption.text = $"{count} / {AvailableCount}";
         }
-        if (btnPrev != null) btnPrev.interactable = count > 0 && Allows(PracticeInput.Count);
-        if (btnNext != null) btnNext.interactable = count < maximum && Allows(PracticeInput.Count);
+        if (btnPrev != null) btnPrev.interactable = count > 0 && Allows(PracticeInput.Count) && !PracticeCountReached;
+        if (btnNext != null) btnNext.interactable = count < maximum && Allows(PracticeInput.Count) && !PracticeCountReached;
         if (btnMax != null) btnMax.interactable = maximum > 0 && Allows(PracticeInput.Max);
         if (btnClose != null) btnClose.interactable = Allows(PracticeInput.Close);
         if (btnConfirm != null) btnConfirm.interactable = canConfirm;
