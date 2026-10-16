@@ -31841,16 +31841,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9eb8a8c545a878e43a054e691f01d4e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerUnitDataTable: {fileID: 11400000, guid: a673973a4d271324e955da5301530a9b,
+  playerUnitDataTable: {fileID: 11400000, guid: 82be87431bb79154da39acda1d4805b4,
     type: 2}
-  enemyUnitDataTable: {fileID: 11400000, guid: 3cf1d8be660b58b44ad2378adc6216e6, type: 2}
-  playerWeaponDataTable: {fileID: 11400000, guid: a56cfd481122b0248974e0cdf9947775,
+  enemyUnitDataTable: {fileID: 11400000, guid: 84e0b75a34f164443b7bb5addf696deb, type: 2}
+  playerWeaponDataTable: {fileID: 11400000, guid: 73400c927726ef04a882c4c069a303b4,
     type: 2}
-  classSkillDataTable: {fileID: 11400000, guid: e82901a00e46c3c45b52dad7c1abf537,
+  classSkillDataTable: {fileID: 11400000, guid: fcb0693ae3b57504a988fd8928453ac3,
     type: 2}
-  unitGrowthExpDataTable: {fileID: 11400000, guid: 3ce686d40d441b2488977b3e4ed8cdfe,
+  unitGrowthExpDataTable: {fileID: 11400000, guid: 3002617db5b3c4b45962369c19a07c95,
     type: 2}
-  enemyGroupDataTable: {fileID: 11400000, guid: bece0abea0e56314abc5a7c7d93213d0,
+  enemyGroupDataTable: {fileID: 11400000, guid: 57bae4e9670486e438f28ceb78ffd0b0,
     type: 2}
   loadOnAwake: 1
   dontDestroyOnLoad: 1

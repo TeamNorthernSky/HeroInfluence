@@ -8,16 +8,22 @@ namespace JC.EnvironmentDetail.Editor
     {
         static readonly Dictionary<string,string> Labels = new Dictionary<string,string>
         {
+            {"surfaceOpacity","수면 불투명도"},{"depthAbsorption","수심 흡수"},{"basinDepth","수중 공간 깊이 (m)"},{"basinColor","수중 바닥 색"},
+            {"underwaterCapsule","수중 캡슐 표시"},{"capsuleDepth","캡슐 잠김 깊이 (m)"},{"capsuleSpeed","캡슐 속도 (m/s)"},
+            {"broadNormal","큰 물결 노멀맵"},{"detailNormal","잔물결 노멀맵"},
+            {"broadNormalStrength","큰 물결 기울기"},{"detailNormalStrength","잔물결 기울기"},
+            {"detailNormalSize","잔물결 크기 (m)"},{"rippleSpeed","잔물결 자체 속도 (m/s)"},
             {"baseColor","중앙 물색"},{"edgeColor","물가 색"},{"edgeColorWidth","물가색 범위 (m)"},
-            {"waveShading","물결 음영 강도"},{"waveShadeSize","물결 음영 크기 (m)"},{"waveShadeSoftness","물결 음영 부드러움"},
-            {"foamCurvature","포말 곡선 변형"},
-            {"foamOpacity","포말 불투명도"},{"foamFade","포말 사라짐 부드러움"},
-            {"foamColor","포말 색"},{"foamSize","포말 간격 (m)"},{"foamDensity","포말 밀도"},
-            {"foamThickness","포말 두께"},{"foamLength","포말 길이 비율"},{"followCanal","수로 따라 흐름"},
-            {"direction","공통 방향 (X/Z)"},{"flowSpeed","흐름 속도 (m/s)"},{"morphSpeed","형태 변화 속도"},
-            {"morphAmount","형태 변화량"},{"shoreFoam","물가 포말 사용"},{"shoreWidth","물가 포말 폭 (m)"},
-            {"shoreBreakup","물가 포말 끊김"},{"shoreSpeed","물가 포말 변화 속도"},
-            {"shadowStrength","그림자 영향"},{"reflection","보조 반사"}
+            {"edgeVariation","물가색 불규칙성"},{"edgeVariationSize","물가색 변화 크기 (m)"},
+            {"waveShading","물결 음영 강도"},{"waveShadeSize","큰 물결 크기 (m)"},{"waveShadeSoftness","물결 음영 부드러움"},
+            {"streakBend","주선 최대 굽힘"},{"streakBendVariation","굽힘 변동폭 (비율)"},{"streakStrengthVariation","강도 변동폭 (비율)"},{"streakColor","스트레이크 색"},{"streakStrength","스트레이크 강도"},{"streakDensity","스트레이크 밀도"},
+            {"streakTransitionRatio","생성·삭제 시간 비율"},{"streakHoldMultiplier","유지시간 계수"},{"streakHoldVariation","유지시간 변동폭 (비율)"},{"streakLengthVariation","길이 다양성"},{"streakWidthVariation","폭 다양성"},{"streakLength","주선 최대 길이 (m)"},{"streakWidth","주선 최대 폭 기준 (m)"},{"streakSoftness","생성·삭제 경계 부드러움"},{"streakWaveLink","물결 요철 연동"},
+            {"followCanal","수로 따라 흐름"},{"direction","공통 방향 (X/Z)"},{"flowSpeed","흐름 속도 (m/s)"},
+            {"shadowStrength","그림자 영향"},{"reflection","반사 강도"},
+            {"reflectionClarity","반사 선명도"},{"reflectionFresnel","시선 각도 영향"},
+            {"reflectionDistortion","반사 물결 왜곡"},
+            {"planarReflection","주변 풍경 평면 반사"},{"reflectionResolution","반사 해상도"},
+            {"reflectionUpdateInterval","반사 갱신 간격"},{"reflectionLayers","반사 대상 레이어"}
         };
         double nextRepaint;
         void OnEnable()=>EditorApplication.update+=AnimatePreview;
@@ -36,6 +42,7 @@ namespace JC.EnvironmentDetail.Editor
             EditorGUILayout.HelpBox("변경 즉시 수면에 반영됩니다. 조절값은 임시이며 ‘현재 값 저장’을 눌러야 씬 재로드·플레이 종료 후에도 유지됩니다. 물 높이·범위·호안·하류 기준은 기존 드레싱에서 재베이크합니다.",MessageType.Info);
             using(new EditorGUI.DisabledScope(true))EditorGUILayout.ObjectField(new GUIContent("저장 프로필","씬 간 공유되는 물 설정 저장 에셋입니다."),c.Profile,typeof(JcWaterProfile),false);
             EditorGUILayout.LabelField("연결 상태",$"수면 렌더러 {c.RendererCount}개 / 재질 {c.MaterialCount}개");
+            EditorGUILayout.LabelField("반사 촬영",$"카메라·수면 높이 조합 {c.ReflectionViewCount}개");
             if(c.RendererCount==0)EditorGUILayout.HelpBox("적용 중인 카툰 수면이 없습니다. 드레싱 베이크 상태와 Cartoon Water 설정을 확인하세요.",MessageType.Warning);
             EditorGUI.BeginChangeCheck();
             var settings=serializedObject.FindProperty("settings"); var child=settings.Copy(); var end=settings.GetEndProperty();
@@ -43,11 +50,12 @@ namespace JC.EnvironmentDetail.Editor
             {
                 if(SerializedProperty.EqualContents(child,end))break;
                 bool disabled=(child.name=="direction" && settings.FindPropertyRelative("followCanal").boolValue) ||
-                    (child.name.StartsWith("shore") && child.name!="shoreFoam" && !settings.FindPropertyRelative("shoreFoam").boolValue);
+                    ((child.name=="reflectionResolution" || child.name=="reflectionUpdateInterval" || child.name=="reflectionLayers") &&
+                     (!settings.FindPropertyRelative("planarReflection").boolValue || settings.FindPropertyRelative("reflection").floatValue<=0));
                 using(new EditorGUI.DisabledScope(disabled))
                     EditorGUILayout.PropertyField(child,new GUIContent(Labels.TryGetValue(child.name,out var label)?label:child.displayName,child.tooltip),true);
             }while(child.NextVisible(false));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("paused"),new GUIContent("애니메이션 일시정지","물의 이동·형태 변화·물가 포말을 함께 멈춥니다. 설정 저장에는 포함되지 않습니다."));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("paused"),new GUIContent("애니메이션 일시정지","물의 이동·요철·스트레이크를 함께 멈춥니다. 설정 저장에는 포함되지 않습니다."));
             bool changed=EditorGUI.EndChangeCheck(); serializedObject.ApplyModifiedProperties();
             if(changed){c.Apply();EditorApplication.QueuePlayerLoopUpdate();SceneView.RepaintAll();}
             using(new EditorGUI.DisabledScope(c.Profile==null))
