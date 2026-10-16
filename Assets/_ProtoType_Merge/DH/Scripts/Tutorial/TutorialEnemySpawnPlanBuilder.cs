@@ -99,8 +99,12 @@ public static class TutorialEnemySpawnPlanBuilder
         if (catalog == null || unitTemplate == null || skills == null)
             return;
 
-        string skillKey = EnemySkillKeyRules.Compose(unitTemplate.EnemyKey, slot);
-        SkillData skill = catalog.GetSkillTemplate(skillKey);
+        // 카탈로그는 원본 EnemyIndex("FV20001_1")로 키를 등록하고 EnemyKey는 숫자("20001")라 키 조회가 어긋난다.
+        // 함께 등록된 숫자 인덱스(enemyId*10+slot)로 찾는다. 0이면 클래스 스킬 숫자 ID(HCS001→1)와 겹치므로 막는다.
+        if (unitTemplate.NumericEnemyId <= 0)
+            return;
+
+        SkillData skill = catalog.GetSkillTemplate((unitTemplate.NumericEnemyId * 10) + slot);
         if (skill != null)
             skills.Add(skill);
     }

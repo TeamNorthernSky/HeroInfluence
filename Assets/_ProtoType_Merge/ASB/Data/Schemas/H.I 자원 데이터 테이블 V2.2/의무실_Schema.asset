@@ -1,0 +1,127 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705d13343f9baca48aab5b26c9a5c3ad, type: 3}
+  m_Name: "\uC758\uBB34\uC2E4_Schema"
+  m_EditorClassIdentifier: 
+  schemaGuid: d14444d6bdc847cf808641c6888d03c8
+  sourceWorkbookGuid: 07bf1ce7de02d1646a230f5d68a01dd2
+  sourceWorkbookPath: "Assets/_ProtoType_Merge/ASB/Data/Excel/H.I \uC790\uC6D0 \uB370\uC774\uD130
+    \uD14C\uC774\uBE14 V2.2.xlsx"
+  workbookFileName: "H.I \uC790\uC6D0 \uB370\uC774\uD130 \uD14C\uC774\uBE14 V2.2"
+  sourceSheetName: "\uC758\uBB34\uC2E4"
+  physicalSheetId: 5cb5a6cdc2eb339313a3653dcdb14c8a2badbfab
+  logicalSheetKey: "\uC758\uBB34\uC2E4"
+  templateClassName: MedicalOffice
+  templateSignature: dict=0|infirmary_level:Int:Comma|cost_resource_type:Int:Comma|cost_resource_amount:Int:Comma|hp_recovery_amount:Percent:Comma|note:String:Comma
+  className: MedicalOffice
+  outputAssetName: "\uC758\uBB34\uC2E4DataTable"
+  targetTableAssetGuid: d8639bdbc4b98784ea824db6c132c7c6
+  targetTableAssetPath: "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I \uC790\uC6D0
+    \uB370\uC774\uD130 \uD14C\uC774\uBE14 V2.2/\uC758\uBB34\uC2E4DataTable.asset"
+  headerRowIndex: 1
+  dataStartRowIndex: 2
+  useDictionary: 0
+  requireUniqueKey: 0
+  duplicateKeyPolicy: 0
+  Columns:
+  - sourceColumnIndex: 0
+    sourceHeaderName: infirmary_level
+    fieldName: infirmary_level
+    displayName: infirmary_level
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: cost_resource_type
+    fieldName: cost_resource_type
+    displayName: cost_resource_type
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: cost_resource_amount
+    fieldName: cost_resource_amount
+    displayName: cost_resource_amount
+    fieldType: 1
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: hp_recovery_amount
+    fieldName: hp_recovery_amount
+    displayName: hp_recovery_amount
+    fieldType: 4
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: note
+    fieldName: note
+    displayName: note
+    fieldType: 0
+    listDelimiter: 0
+    include: 1
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 0
+    sourceHeaderName: "\uC758\uBB34\uC2E4 \uB808\uBCA8"
+    fieldName: Field_01
+    displayName: "\uC758\uBB34\uC2E4 \uB808\uBCA8"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 1
+  - sourceColumnIndex: 1
+    sourceHeaderName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB958\n(0 \uC790\uAE08 1
+      \uBA54\uB2EC 2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldName: Field_02
+    displayName: "\uC18C\uBAA8 \uC790\uC6D0 \uC885\uB958\n(0 \uC790\uAE08 1 \uBA54\uB2EC
+      2 \uC218\uC815 3 \uC790\uC7AC)"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 2
+    sourceHeaderName: "1\uD68C\uB2F9 \uC18C\uBAA8 \uC790\uC6D0\uB7C9"
+    fieldName: Field_03
+    displayName: "1\uD68C\uB2F9 \uC18C\uBAA8 \uC790\uC6D0\uB7C9"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 3
+    sourceHeaderName: "1\uD68C\uB2F9 \uD68C\uBCF5\uB7C9"
+    fieldName: Field_04
+    displayName: "1\uD68C\uB2F9 \uD68C\uBCF5\uB7C9"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0
+  - sourceColumnIndex: 4
+    sourceHeaderName: "\uBE44\uACE0"
+    fieldName: "\uBE44\uACE0"
+    displayName: "\uBE44\uACE0"
+    fieldType: 0
+    listDelimiter: 0
+    include: 0
+    defaultValue: 
+    isKey: 0

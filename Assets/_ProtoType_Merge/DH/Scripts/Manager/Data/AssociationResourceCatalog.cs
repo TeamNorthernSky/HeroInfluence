@@ -12,7 +12,7 @@ public sealed class AssociationResourceCatalog : MonoBehaviour
 
     public static AssociationResourceCatalog Instance { get; private set; }
 
-    [Header("Association Resource Tables (V1.7)")]
+    [Header("Association Resource Tables (V2.2)")]
     [SerializeField] private AssociationBuildDataTable buildTable;
     [SerializeField] private AssociationWorkshopDataTable workshopTable;
     [SerializeField] private AssociationWorkshopEnforceDataTable workshopEnforceTable;
@@ -21,6 +21,7 @@ public sealed class AssociationResourceCatalog : MonoBehaviour
     [SerializeField] private AssociationFundDataTable fundTable;
     [SerializeField] private AssociationPromotionDataTable promotionTable;
     [SerializeField] private AssociationTrainingDataTable trainingTable;
+    [SerializeField] private MedicalOfficeDataTable infirmaryTable;
 
     [Header("Settings")]
     [SerializeField] private bool loadOnAwake = true;
@@ -44,6 +45,8 @@ public sealed class AssociationResourceCatalog : MonoBehaviour
         = new Dictionary<int, List<DHAssociationPromotionTemplate>>();
     private readonly Dictionary<int, List<DHAssociationTrainingTemplate>> trainingsByRoomLevel
         = new Dictionary<int, List<DHAssociationTrainingTemplate>>();
+    private readonly Dictionary<int, DHAssociationInfirmaryTemplate> infirmaryByLevel
+        = new Dictionary<int, DHAssociationInfirmaryTemplate>();
 
     private bool isLoaded;
 
@@ -79,6 +82,7 @@ public sealed class AssociationResourceCatalog : MonoBehaviour
         LoadFundTable();
         LoadPromotionTable();
         LoadTrainingTable();
+        LoadInfirmaryTable();
 
         isLoaded = true;
         LogCatalogSummary();
@@ -150,6 +154,12 @@ public sealed class AssociationResourceCatalog : MonoBehaviour
         return trainingsByRoomLevel.TryGetValue(trainingRoomLevel, out List<DHAssociationTrainingTemplate> templates)
             ? new List<DHAssociationTrainingTemplate>(templates)
             : new List<DHAssociationTrainingTemplate>();
+    }
+
+    public bool TryGetInfirmaryTemplate(int infirmaryLevel, out DHAssociationInfirmaryTemplate template)
+    {
+        EnsureLoaded();
+        return infirmaryByLevel.TryGetValue(infirmaryLevel, out template);
     }
 
     private void LoadBuildTable()
@@ -430,6 +440,41 @@ public sealed class AssociationResourceCatalog : MonoBehaviour
         }
     }
 
+    private void LoadInfirmaryTable()
+    {
+        if (infirmaryTable == null)
+        {
+            Debug.LogWarning("[AssociationResourceCatalog] Infirmary table is not assigned.", this);
+            return;
+        }
+
+        for (int i = 0; i < infirmaryTable.DataList.Count; i++)
+        {
+            MedicalOfficeData row = infirmaryTable.DataList[i];
+            if (row == null || row.infirmary_level < 1 ||
+                float.IsNaN(row.hp_recovery_amount) || float.IsInfinity(row.hp_recovery_amount) ||
+                row.hp_recovery_amount < 0f || row.hp_recovery_amount > 1f)
+            {
+                Debug.LogWarning($"[AssociationResourceCatalog] Invalid infirmary row at index {i} skipped.", this);
+                continue;
+            }
+
+            if (infirmaryByLevel.ContainsKey(row.infirmary_level))
+            {
+                Debug.LogWarning($"[AssociationResourceCatalog] Duplicate infirmary level {row.infirmary_level} skipped.", this);
+                continue;
+            }
+
+            DHAssociationResourceCost cost = CreateSingleResource(
+                row.cost_resource_type, row.cost_resource_amount, "infirmary cost", i);
+            if (cost == null)
+                continue;
+
+            infirmaryByLevel.Add(row.infirmary_level, new DHAssociationInfirmaryTemplate(
+                row.infirmary_level, cost, row.hp_recovery_amount, row.note));
+        }
+    }
+
     private List<DHAssociationResourceCost> CreateCosts(
         int resource1Type,
         int resource1Amount,
@@ -518,6 +563,7 @@ public sealed class AssociationResourceCatalog : MonoBehaviour
         fundsByMainBaseLevel.Clear();
         promotionsByPublicityLevel.Clear();
         trainingsByRoomLevel.Clear();
+        infirmaryByLevel.Clear();
         isLoaded = false;
     }
 
@@ -538,7 +584,8 @@ public sealed class AssociationResourceCatalog : MonoBehaviour
             $"Lab {labBySkillGroupAndLevel.Count}, " +
             $"Fund {CountEntries(fundsByMainBaseLevel)}, " +
             $"Promotion {CountEntries(promotionsByPublicityLevel)}, " +
-            $"Training {CountEntries(trainingsByRoomLevel)}.",
+            $"Training {CountEntries(trainingsByRoomLevel)}, " +
+            $"Infirmary {infirmaryByLevel.Count}.",
             this);
     }
 

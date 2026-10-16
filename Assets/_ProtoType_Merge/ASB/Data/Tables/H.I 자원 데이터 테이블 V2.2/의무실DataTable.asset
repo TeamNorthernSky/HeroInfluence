@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cf7560f6b9c98b458546e25b679eb4f, type: 3}
+  m_Name: "\uC758\uBB34\uC2E4DataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - infirmary_level: 1
+    cost_resource_type: 0
+    cost_resource_amount: 1000
+    hp_recovery_amount: 1
+    note: 
+  - infirmary_level: 2
+    cost_resource_type: 0
+    cost_resource_amount: 800
+    hp_recovery_amount: 1
+    note: 
+  - infirmary_level: 3
+    cost_resource_type: 0
+    cost_resource_amount: 500
+    hp_recovery_amount: 1
+    note: 
