@@ -358,6 +358,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetItemObjectAtGrid(Vector2Int grid, out ItemObject itemObject)
     {
         itemObject = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<ItemObject> items = itemRegistry != null
             ? itemRegistry.Items
@@ -468,10 +470,18 @@ public class GridManager : MonoBehaviour
         if (!IsTutorialSceneActive())
             return false;
 
-        TutorialBuildingObject[] buildings = FindObjectsByType<TutorialBuildingObject>(FindObjectsSortMode.None);
-        for (int i = 0; i < buildings.Length; i++)
+        // Tutorial buildings already register their required MultiGridOccupant.
+        // Reuse that list so range searches do not scan the scene for every cell.
+        IReadOnlyList<MultiGridOccupant> occupants = multiGridOccupantRegistry != null
+            ? multiGridOccupantRegistry.Occupants
+            : FindObjectsByType<MultiGridOccupant>(FindObjectsSortMode.None);
+        for (int i = 0; i < occupants.Count; i++)
         {
-            TutorialBuildingObject candidate = buildings[i];
+            MultiGridOccupant occupant = occupants[i];
+            if (occupant == null)
+                continue;
+
+            TutorialBuildingObject candidate = occupant.GetComponent<TutorialBuildingObject>();
             if (candidate == null || !candidate.isActiveAndEnabled)
                 continue;
 
@@ -518,6 +528,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetOutpostObjectAtGrid(Vector2Int grid, out Outpost outpost)
     {
         outpost = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<Outpost> outposts = outpostRegistry != null
             ? outpostRegistry.Outposts
@@ -539,6 +551,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetEventObjectAtGrid(Vector2Int grid, out MapEventObject mapEvent)
     {
         mapEvent = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<MapEventObject> mapEvents = mapEventRegistry != null
             ? mapEventRegistry.MapEvents
@@ -577,6 +591,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetWorldEventObjectAtGrid(Vector2Int grid, out WorldEventObject worldEvent)
     {
         worldEvent = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<WorldEventObject> worldEvents = worldEventRegistry != null
             ? worldEventRegistry.WorldEvents
@@ -598,6 +614,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetMainEventObjectAtGrid(Vector2Int grid, out MainEventObject mainEvent)
     {
         mainEvent = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<MainEventObject> mainEvents = mainEventRegistry != null
             ? mainEventRegistry.MainEvents
@@ -619,6 +637,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetMainEventAtInteractionCell(Vector2Int grid, out MainEventObject mainEvent)
     {
         mainEvent = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         if (mainEventRegistry != null)
             return mainEventRegistry.TryGetEventAtInteractionCell(grid, this, out mainEvent);
@@ -644,6 +664,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetSubEventObjectAtGrid(Vector2Int grid, out SubEventObject subEvent)
     {
         subEvent = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<SubEventObject> subEvents = subEventRegistry != null
             ? subEventRegistry.SubEvents
@@ -665,6 +687,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetEnemyObjectAtGrid(Vector2Int grid, out EnemyGridMover enemy, Transform ignoredTransform = null)
     {
         enemy = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<EnemyGridMover> enemies = enemyRegistry != null
             ? enemyRegistry.Enemies
@@ -764,6 +788,8 @@ public class GridManager : MonoBehaviour
     public EnemyEncounterZoneState GetEnemyEncounterZoneState(Vector2Int grid, out EnemyGridMover owner)
     {
         owner = null;
+        if (IsTutorialSceneActive())
+            return EnemyEncounterZoneState.None;
 
         IReadOnlyList<EnemyGridMover> enemies = enemyRegistry != null
             ? enemyRegistry.Enemies
@@ -817,9 +843,11 @@ public class GridManager : MonoBehaviour
     {
         owner = null;
 
-        IReadOnlyList<EnemyGridMover> runtimeEnemies = enemyRegistry != null
-            ? enemyRegistry.Enemies
-            : FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None);
+        IReadOnlyList<EnemyGridMover> runtimeEnemies = IsTutorialSceneActive()
+            ? System.Array.Empty<EnemyGridMover>()
+            : enemyRegistry != null
+                ? enemyRegistry.Enemies
+                : FindObjectsByType<EnemyGridMover>(FindObjectsSortMode.None);
         for (int i = 0; i < runtimeEnemies.Count; i++)
         {
             EnemyGridMover enemy = runtimeEnemies[i];
@@ -1081,6 +1109,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetAdjacentHeroUnionObject(Vector2Int grid, out HeroUnionUnit heroUnion)
     {
         heroUnion = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         HeroUnionUnit[] heroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
         for (int i = 0; i < heroUnions.Length; i++)
@@ -1102,6 +1132,8 @@ public class GridManager : MonoBehaviour
     public bool TryGetVillainUnionBaseAtGrid(Vector2Int grid, out VillainUnionBase villainUnionBase)
     {
         villainUnionBase = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<VillainUnionBase> bases = villainUnionBaseRegistry != null
             ? villainUnionBaseRegistry.VillainUnionBases
@@ -1271,6 +1303,8 @@ public class GridManager : MonoBehaviour
     private bool TryGetHeroUnionByMultiGrid(Vector2Int grid, out HeroUnionUnit heroUnion, Transform ignoredTransform = null)
     {
         heroUnion = null;
+        if (IsTutorialSceneActive())
+            return false;
 
         IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry != null
             ? heroUnionRegistry.HeroUnions

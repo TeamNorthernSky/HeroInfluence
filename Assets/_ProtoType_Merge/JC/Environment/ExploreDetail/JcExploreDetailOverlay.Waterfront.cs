@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,12 +72,9 @@ namespace JC.EnvironmentDetail
             Material wm=null,bm=null;
             if(profile.cartoonWater)
             {
-                wm=new Material(ws){hideFlags=HideFlags.DontSave};owned.Add(wm);wm.SetColor("_BaseColor",profile.waterTint);wm.SetColor("_EdgeColor",profile.waterEdgeTint);
-                var flow=profile.waterFlowDirection.sqrMagnitude>.0001f?profile.waterFlowDirection.normalized:Vector2.right;
-                wm.SetVector("_Flow",new Vector4(flow.x,flow.y,profile.waterFlowSpeed,profile.waterWaveSize));
-                wm.SetVector("_Ripple",new Vector4(profile.waterRippleSize,profile.waterRippleStrength,profile.waterRippleSpeed,profile.waterFlowStreakStrength));
-                wm.SetFloat("_WaveStrength",profile.waterWaveStrength);wm.SetFloat("_Shine",profile.waterShine);wm.SetFloat("_EdgeWidth",profile.waterEdgeWidth);
-                wm.SetFloat("_WaveVisibility",profile.waterWaveVisibility);wm.SetFloat("_RippleVisibility",profile.waterRippleVisibility);
+                wm=new Material(ws){hideFlags=HideFlags.DontSave};owned.Add(wm);
+                var waterProfile=Resources.Load<JcWaterProfile>("JC_Water_Default");
+                (waterProfile!=null?waterProfile.settings:new JcWaterSettings()).Apply(wm);
             }
             if(profile.canalBanks)
             {

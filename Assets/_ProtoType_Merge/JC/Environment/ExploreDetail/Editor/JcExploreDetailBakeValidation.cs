@@ -99,10 +99,10 @@ namespace JC.EnvironmentDetail.Editor
                 assert(overlay.VisualRoot==null,"처음부터 확정본이 없으면 원본 표시");
                 entry.current = bake; overlay.Refresh();
                 var visual = overlay.VisualRoot;
-                float tint = overlay.profile.waterWaveStrength;
-                overlay.profile.waterWaveStrength = tint + .1f;
+                var direction = overlay.profile.waterFlowDirection;
+                overlay.profile.waterFlowDirection = direction + Vector2.up;
                 try { assert(overlay.VisualRoot == visual, "초안 변경만으로 재생성하지 않음"); }
-                finally { overlay.profile.waterWaveStrength = tint; }
+                finally { overlay.profile.waterFlowDirection = direction; }
                 assert(meshes.SequenceEqual(sources.Select(f => f.sharedMesh)), "원본 MeshFilter 참조 보존");
                 assert(sources.Select((f, i) => f.GetComponent<MeshRenderer>().sharedMaterials.SequenceEqual(materials[i])).All(x => x), "원본 재질 참조 보존");
                 assert(colliders.SequenceEqual(scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Collider>(true))), "Collider 보존");
