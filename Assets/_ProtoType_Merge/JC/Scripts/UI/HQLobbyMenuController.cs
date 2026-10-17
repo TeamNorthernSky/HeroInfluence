@@ -43,6 +43,7 @@ public class HQLobbyMenuController : MonoBehaviour
 
     private const int DaysPerWeek = 7;
     private EconomyManager subscribedEco;
+    private ResourceHUDController resourceHud;
 
     private string ExplorationScene => GameSceneManager.Instance != null
         ? GameSceneManager.Instance.ExplorationScene
@@ -196,6 +197,14 @@ public class HQLobbyMenuController : MonoBehaviour
 
     private void RefreshResources()
     {
+        // The shared TopBar owns these labels and their gain animation.
+        if (resourceHud == null) resourceHud = FindFirstObjectByType<ResourceHUDController>();
+        if (resourceHud != null && resourceHud.isActiveAndEnabled && !resourceHud.useTutorialResources &&
+            (moneyText == null || resourceHud.GetResourceAnchor(ResourceType.Money) == moneyText.rectTransform) &&
+            (medalText == null || resourceHud.GetResourceAnchor(ResourceType.Chip) == medalText.rectTransform) &&
+            (crystalText == null || resourceHud.GetResourceAnchor(ResourceType.Crystal) == crystalText.rectTransform) &&
+            (supplyText == null || resourceHud.GetResourceAnchor(ResourceType.Supply) == supplyText.rectTransform))
+            return;
         var gm = GameManager.Instance;
         if (gm == null || gm.Economy == null) return;
         if (moneyText != null) moneyText.text = gm.Economy.Get(ResourceType.Money).ToString("N0");

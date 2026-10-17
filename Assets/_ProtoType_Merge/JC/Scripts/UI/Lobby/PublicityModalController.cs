@@ -147,7 +147,12 @@ public class PublicityModalController : MonoBehaviour, IHeroSelectionOwner
 
     private void SetCountToMax()
     {
-        progressCount = EffectiveMaxCount();
+        var gm = GameManager.Instance;
+        int costPer = gm != null && gm.Publicity != null ? gm.Publicity.GetProgressCost() : -1;
+        int affordable = gm != null && gm.Economy != null && costPer >= 0
+            ? (costPer == 0 ? int.MaxValue : Mathf.Max(0, gm.Economy.Get(ResourceType.Money)) / costPer)
+            : 0;
+        progressCount = Mathf.Min(EffectiveMaxCount(), affordable);
         Refresh();
     }
 
