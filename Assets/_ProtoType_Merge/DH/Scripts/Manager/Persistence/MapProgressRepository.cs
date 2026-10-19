@@ -24,6 +24,10 @@ public class MapProgressRepository : MonoBehaviour
     [SerializeField] private List<ZoneEnemyLevelState> zoneEnemyLevelStates = new List<ZoneEnemyLevelState>();
     [SerializeField] private ZoneEntryGuidanceProgressState zoneEntryGuidanceState = new ZoneEntryGuidanceProgressState();
 
+    // Runtime-only reservation survives scene changes, but is not part of saved map progress.
+    private int automaticEndTurnDay;
+    private string automaticEndTurnPartyId = string.Empty;
+
     private readonly HashSet<string> collectedItemLookup = new HashSet<string>();
     private readonly HashSet<string> completedEventLookup = new HashSet<string>();
     private readonly HashSet<string> completedMainEventLookup = new HashSet<string>();
@@ -39,6 +43,9 @@ public class MapProgressRepository : MonoBehaviour
     private readonly Dictionary<string, ZoneEnemyLevelState> zoneEnemyLevelStateLookup = new Dictionary<string, ZoneEnemyLevelState>();
 
     public string MapId => mapId;
+    public int AutomaticEndTurnDay => automaticEndTurnDay;
+    public string AutomaticEndTurnPartyId => automaticEndTurnPartyId;
+    public bool HasPendingAutomaticEndTurn => automaticEndTurnDay > 0;
     public IReadOnlyList<string> CollectedItemKeys => collectedItemKeys;
     public IReadOnlyList<string> CompletedEventKeys => completedEventKeys;
     public IReadOnlyList<string> CompletedMainEventKeys => completedMainEventKeys;
@@ -78,6 +85,21 @@ public class MapProgressRepository : MonoBehaviour
             return;
 
         mapId = MapProgressKey.NormalizeSegment(nextMapId);
+    }
+
+    public void ReserveAutomaticEndTurn(int turnDay, string partyId)
+    {
+        if (turnDay <= 0 || string.IsNullOrWhiteSpace(partyId))
+            return;
+
+        automaticEndTurnDay = turnDay;
+        automaticEndTurnPartyId = partyId;
+    }
+
+    public void ClearAutomaticEndTurn()
+    {
+        automaticEndTurnDay = 0;
+        automaticEndTurnPartyId = string.Empty;
     }
 
     public bool IsItemCollected(string itemKey)
@@ -603,10 +625,12 @@ public class MapProgressRepository : MonoBehaviour
         ReplaceList(zoneThreatStates, restoredZoneThreatStates);
         ReplaceList(zoneEnemyLevelStates, restoredZoneEnemyLevelStates);
         RestoreZoneEntryGuidance(restoredZoneEntryGuidanceState);
+        ClearAutomaticEndTurn();
         RebuildLookups();
     }
     public void ClearAllProgress()
     {
+        ClearAutomaticEndTurn();
         collectedItemKeys.Clear();
         completedEventKeys.Clear();
         completedMainEventKeys.Clear();

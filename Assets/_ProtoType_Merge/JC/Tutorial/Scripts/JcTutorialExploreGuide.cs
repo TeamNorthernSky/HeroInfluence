@@ -390,6 +390,8 @@ namespace JC.Tutorial
                 state == TutorialOutpostClaimState.HeroClaimed;
             if (claimed)
             {
+                var associationFocus = TutorialBuildingFocusTarget.Resolve(this, captureOutpost.transform,
+                    view.focusFrame != null ? view.focusFrame.rectTransform.parent as RectTransform : null);
                 if (!showingAssociationEntry)
                 {
                     foreach (var selection in FindObjectsByType<ClickSelectionController>(FindObjectsSortMode.None))
@@ -401,12 +403,14 @@ namespace JC.Tutorial
                     SetTurnAvailable(false);
                     movement.SetGuidanceTarget(this, null);
                     if (explanationKey != "association-entry-explanation")
-                        Explain("association-entry-explanation", "협회 입장", "점령한 건물을 더블클릭하여 협회에 입장할 수 있습니다.\n이 안내를 닫은 뒤, 연녹색 외곽선으로 강조된 건물을 더블클릭하세요.", null, time);
+                        Explain("association-entry-explanation", "협회 입장", "점령한 건물을 더블클릭하여 협회에 입장할 수 있습니다.\n이 안내를 닫은 뒤, 빛 테두리로 강조된 건물을 더블클릭하세요.", associationFocus, time);
                     return;
                 }
                 CurrentGuideStep = "association-entry";
-                SetShield(false); SetContinue(false); view.SetVisible(false);
-                JcBuildingSilhouetteFeature.SetTutorialHighlight(this, captureOutpost.transform, view.accent);
+                SetShield(false); SetContinue(false);
+                view.blockPanelRaycasts = false;
+                view.SetContent("협회 입장", "빛 테두리로 강조된 건물을 더블클릭하세요.");
+                view.SetVisible(true, associationFocus, JcTutorialGuideView.FocusPresentation.BorderOnly);
                 SetQuest("점령한 건물을 더블클릭하세요");
                 SetTurnAvailable(false);
                 movement.SetGuidanceTarget(this, null);

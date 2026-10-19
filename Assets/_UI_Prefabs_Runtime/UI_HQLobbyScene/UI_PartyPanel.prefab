@@ -214,6 +214,7 @@ GameObject:
   - component: {fileID: 6214454569702050072}
   - component: {fileID: 6284350085534886930}
   - component: {fileID: 8932274298493893193}
+  - component: {fileID: 6464961952572326171}
   m_Layer: 0
   m_Name: Panel
   m_TagString: Untagged
@@ -278,6 +279,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &6464961952572326171
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2324848799494515739}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2730545781955648725
 GameObject:
   m_ObjectHideFlags: 0
@@ -816,6 +829,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4546934858724091818}
   - component: {fileID: 3870649424871510642}
+  - component: {fileID: 7717981383473851573}
   m_Layer: 0
   m_Name: Modal
   m_TagString: Untagged
@@ -862,3 +876,19 @@ MonoBehaviour:
   wantsDim: 1
   dimClosesModal: 0
   dimAlpha: 0.75
+--- !u!114 &7717981383473851573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6792716622519135123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c03356dced4d8b4cbc0b3676e8b6b14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  content: {fileID: 6214454569702050072}
+  contentGroup: {fileID: 6464961952572326171}
+  duration: 0.28
+  initialScale: 0.08

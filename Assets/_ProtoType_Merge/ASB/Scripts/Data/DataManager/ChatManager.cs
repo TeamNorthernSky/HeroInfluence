@@ -18,6 +18,7 @@ public class ChatManager : MonoBehaviour
     private int currentZoneId;
     private DHEventChatTemplate currentChat;
     private DHEventBranchTemplate pendingAutoBranch;
+    private bool pendingAutoBranchNeedsInput;
 
     public event Action<DHEventChatTemplate> OnChatShown;
     public event Action<IReadOnlyList<ChatBranchOptionState>> OnBranchShown;
@@ -25,11 +26,11 @@ public class ChatManager : MonoBehaviour
 
     public bool IsRunning { get; private set; }
 
-    /// <summary>[KJ 260723] 현재 대사가 더 진행할 곳 없는 마지막 대사인지 (선택지·자동 분기·다음 대사 전부 없음).</summary>
+    /// <summary>종료·전투·보상 직전의 대사. 스킵으로 통과하지 않고 추가 입력을 기다린다.</summary>
     public bool IsAtFinalChat =>
         IsRunning && currentChat != null &&
-        currentOptionStates.Count == 0 && pendingAutoBranch == null &&
-        currentChat.NextChatId <= 0;
+        currentOptionStates.Count == 0 &&
+        (pendingAutoBranch != null ? pendingAutoBranchNeedsInput : currentChat.NextChatId <= 0);
     public int CurrentZoneId => currentZoneId;
     public DHEventChatTemplate CurrentChat => currentChat;
     public IReadOnlyList<DHEventBranchTemplate> CurrentOptions => currentOptions.ToArray();
@@ -132,7 +133,7 @@ public class ChatManager : MonoBehaviour
 
     /// <summary>
     /// [KJ 260723] 스킵: 선택지 노드 또는 마지막 대사에 도달할 때까지 자동 진행 (창을 닫지 않음).
-    /// 자동 분기(빈 선택 텍스트)는 통과하고, 선택지가 표시되면 선택 대기 상태로 정지한다.
+    /// 일반 자동 분기는 통과한다. 선택지 또는 종료·전투·보상 분기 앞에서는 입력을 기다린다.
     /// </summary>
     public void SkipToEnd()
     {
@@ -140,7 +141,7 @@ public class ChatManager : MonoBehaviour
         for (int step = 0; step < maxSteps && IsRunning && currentChat != null; step++)
         {
             if (currentOptionStates.Count > 0) return; // 선택지 표시 중 → 선택 대기
-            if (pendingAutoBranch == null && currentChat.NextChatId <= 0) return; // 마지막 대사 → 표시한 채 정지
+            if (IsAtFinalChat) return; // 종료·전투·보상 직전 대사를 표시한 채 추가 입력 대기
 
             Advance();
         }
@@ -317,6 +318,7 @@ public class ChatManager : MonoBehaviour
                     if (isAvailable)
                     {
                         pendingAutoBranch = option;
+                        pendingAutoBranchNeedsInput = RequiresFinalInput(option);
                         OnBranchShown?.Invoke(EmptyOptionStates);
                         return;
                     }
@@ -337,6 +339,15 @@ public class ChatManager : MonoBehaviour
         }
 
         OnBranchShown?.Invoke(currentOptionStates.Count > 0 ? currentOptionStates.ToArray() : EmptyOptionStates);
+    }
+
+    private static bool RequiresFinalInput(DHEventBranchTemplate option)
+    {
+        if (option.TargetTalkId <= 0) return true;
+        foreach (var effect in DHEventEffectRuntimeManager.ParseEffects(option.TriggerEffect))
+            if (effect.kind == DHEventEffectKind.StartBattle || effect.kind == DHEventEffectKind.Reward)
+                return true;
+        return false;
     }
 
     private bool IsBranchAvailable(DHEventBranchTemplate option)
