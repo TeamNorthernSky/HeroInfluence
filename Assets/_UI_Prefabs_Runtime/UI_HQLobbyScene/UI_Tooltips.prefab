@@ -108,7 +108,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7edb775d22469f44a9eb8534a18d9dfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  backgroundGroup: {fileID: 0}
   buttonsGroup: {fileID: 0}
+  overlayGroup: {fileID: 0}
   modalsGroup: {fileID: 0}
   tooltipsGroup: {fileID: 4229827534284884282}
 --- !u!1 &4530416700329793604
@@ -367,6 +369,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4229827534284884282}
     m_Modifications:
+    - target: {fileID: 5516036181983218294, guid: 2f60a2856cc900a4bafe2e47b4f2342d,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7082509775569509535, guid: 2f60a2856cc900a4bafe2e47b4f2342d,
         type: 3}
       propertyPath: m_Name

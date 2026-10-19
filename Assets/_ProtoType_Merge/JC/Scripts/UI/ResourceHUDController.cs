@@ -18,6 +18,10 @@ public class ResourceHUDController : MonoBehaviour
     public bool useTutorialResources;
     private EconomyManager subscribed;
     private TutorialProgressRepository tutorialSubscribed;
+    private readonly ResourceGainNumberMotion moneyMotion = new ResourceGainNumberMotion();
+    private readonly ResourceGainNumberMotion medalMotion = new ResourceGainNumberMotion();
+    private readonly ResourceGainNumberMotion crystalMotion = new ResourceGainNumberMotion();
+    private readonly ResourceGainNumberMotion supplyMotion = new ResourceGainNumberMotion();
 
     private void Awake() => ResolveMissing();
 
@@ -27,9 +31,27 @@ public class ResourceHUDController : MonoBehaviour
     {
         if (subscribed != null) { subscribed.OnResourceChanged -= OnResourceChanged; subscribed = null; }
         if (tutorialSubscribed != null) { tutorialSubscribed.TutorialResourceChanged -= OnResourceChanged; tutorialSubscribed = null; }
+        ResetMotions();
     }
 
-    private void Update() { if (useTutorialResources ? tutorialSubscribed == null : subscribed == null) TrySubscribe(); }
+    private void Update()
+    {
+        if (useTutorialResources ? tutorialSubscribed == null : subscribed == null) TrySubscribe();
+        // Resource rewards can arrive while an NPC dialogue pauses the game.
+        float delta = Time.unscaledDeltaTime;
+        moneyMotion.Advance(delta);
+        medalMotion.Advance(delta);
+        crystalMotion.Advance(delta);
+        supplyMotion.Advance(delta);
+    }
+
+    private void ResetMotions()
+    {
+        moneyMotion.Reset();
+        medalMotion.Reset();
+        crystalMotion.Reset();
+        supplyMotion.Reset();
+    }
 
     private void ResolveMissing()
     {
@@ -54,6 +76,7 @@ public class ResourceHUDController : MonoBehaviour
             if (progress == null || tutorialSubscribed != null) return;
             tutorialSubscribed = progress;
             tutorialSubscribed.TutorialResourceChanged += OnResourceChanged;
+            ResetMotions();
             Refresh();
             return;
         }
@@ -62,6 +85,7 @@ public class ResourceHUDController : MonoBehaviour
         if (gm == null || gm.Economy == null || subscribed != null) return;
         subscribed = gm.Economy;
         subscribed.OnResourceChanged += OnResourceChanged;
+        ResetMotions();
         Refresh();
     }
 
@@ -73,18 +97,18 @@ public class ResourceHUDController : MonoBehaviour
         {
             var progress = TutorialProgressRepository.Instance;
             if (progress == null) return;
-            if (moneyText != null) moneyText.text = progress.GetResource(ResourceType.Money).ToString("N0");
-            if (medalText != null) medalText.text = progress.GetResource(ResourceType.Chip).ToString("N0");
-            if (crystalText != null) crystalText.text = progress.GetResource(ResourceType.Crystal).ToString("N0");
-            if (supplyText != null) supplyText.text = progress.GetResource(ResourceType.Supply).ToString("N0");
+            moneyMotion.Set(moneyText, progress.GetResource(ResourceType.Money));
+            medalMotion.Set(medalText, progress.GetResource(ResourceType.Chip));
+            crystalMotion.Set(crystalText, progress.GetResource(ResourceType.Crystal));
+            supplyMotion.Set(supplyText, progress.GetResource(ResourceType.Supply));
             return;
         }
         var gm = GameManager.Instance;
         if (gm == null || gm.Economy == null) return;
-        if (moneyText != null)   moneyText.text   = gm.Economy.Get(ResourceType.Money).ToString("N0");
-        if (medalText != null)   medalText.text   = gm.Economy.Get(ResourceType.Chip).ToString("N0");
-        if (crystalText != null) crystalText.text = gm.Economy.Get(ResourceType.Crystal).ToString("N0");
-        if (supplyText != null)  supplyText.text  = gm.Economy.Get(ResourceType.Supply).ToString("N0");
+        moneyMotion.Set(moneyText, gm.Economy.Get(ResourceType.Money));
+        medalMotion.Set(medalText, gm.Economy.Get(ResourceType.Chip));
+        crystalMotion.Set(crystalText, gm.Economy.Get(ResourceType.Crystal));
+        supplyMotion.Set(supplyText, gm.Economy.Get(ResourceType.Supply));
     }
     public RectTransform GetResourceAnchor(ResourceType type)
     {

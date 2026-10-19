@@ -32,6 +32,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private string questEventId;
     private bool choiceSubmitted;
     private static int resultConfirmedFrame = -1;
+    private readonly Dictionary<Button, NpcPreview> previews = new Dictionary<Button, NpcPreview>();
 
     // 종료로 요청이 사라진 뒤에도 같은 프레임의 ESC는 시스템 메뉴에서 사용하지 않는다.
     public static bool BlocksSystemMenuEscape
@@ -177,7 +178,8 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             new DHWorldEventPresentationRequest(template, DHWorldEventPresentationStep.Description,
                 template.Description, false, string.Empty,
                 template.EventType == DHWorldEventType.Choice ?
-                    DHWorldEventChoiceResolver.BuildPresentationOptions(template, null, template.DeclineText, DHWorldEventCatalog.Instance) : null));
+                    DHWorldEventChoiceResolver.BuildPresentationOptions(template, null, template.DeclineText, DHWorldEventCatalog.Instance) : null,
+                DHWorldEventPreviewBuilder.Build(template)));
     }
 
     public void HideForEventId(string eventId)
@@ -284,9 +286,15 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             SetButton(consumeProceed, request.ProceedText, live && request.CanProceed);
             consumeDecline.gameObject.SetActive(!confirm);
             SetButton(consumeDecline, request.DeclineText, live);
+            ShowPreview(consumeProceed, request.PreviewEntries);
+            Arrange(consumePanel, consumeProceed, consumeDecline);
         }
         else if (request.EventType == DHWorldEventType.Reward)
+        {
             SetButton(rewardProceed, request.ProceedText, live && request.CanProceed);
+            ShowPreview(rewardProceed, request.PreviewEntries);
+            Arrange(rewardPanel, rewardProceed);
+        }
         else if (request.EventType == DHWorldEventType.Choice)
         {
             if (confirm)
@@ -294,6 +302,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 foreach (Button button in choiceButtons) button.gameObject.SetActive(false);
                 choiceDecline.gameObject.SetActive(true);
                 SetButton(choiceDecline, "확인", live);
+                Arrange(choicePanel, choiceDecline);
                 return;
             }
             cancelId = null;
@@ -313,6 +322,11 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 SetButton(button, option.ChoiceText, live && option.IsEnabled);
                 var chance = button.transform.Find("SuccessChance").GetComponent<TMP_Text>();
                 chance.text = option.SuccessRateText;
+                var preview = GetPreview(button);
+                preview.Begin(true);
+                preview.Add(option.SuccessPreviewEntries, "성공 시");
+                preview.Add(option.FailurePreviewEntries, "실패 시");
+                preview.End();
             }
             for (; index < choiceButtons.Length; index++)
             {
@@ -320,6 +334,158 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 choiceButtons[index].gameObject.SetActive(false);
             }
             choiceDecline.gameObject.SetActive(cancelId != null);
+            Arrange(choicePanel, choiceButtons[0], choiceButtons[1], choiceDecline);
+        }
+    }
+
+    private NpcPreview GetPreview(Button button)
+    {
+        if (!previews.TryGetValue(button, out var preview))
+        {
+            preview = new NpcPreview(button);
+            previews.Add(button, preview);
+        }
+        return preview;
+    }
+
+    private void ShowPreview(Button button, IReadOnlyList<DHWorldEventPreviewEntry> entries)
+    {
+        var preview = GetPreview(button);
+        preview.Begin(false);
+        preview.Add(entries, null);
+        preview.End();
+    }
+
+    private static void Arrange(GameObject panel, params Button[] buttons)
+    {
+        float top = 0;
+        foreach (var button in buttons)
+        {
+            if (!button.gameObject.activeSelf) continue;
+            var rect = (RectTransform)button.transform;
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, 1);
+            rect.anchoredPosition = new Vector2(0, -top);
+            top += rect.sizeDelta.y + 12;
+        }
+        ((RectTransform)panel.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(0, top - 12));
+    }
+
+    // Display-only rows reuse the button's font. They never receive pointer input.
+    private sealed class NpcPreview
+    {
+        private readonly Button button;
+        private readonly TMP_Text label;
+        private readonly List<Image> icons = new List<Image>();
+        private readonly List<TMP_Text> texts = new List<TMP_Text>();
+        private int count;
+        private float rowTop;
+
+        public NpcPreview(Button button)
+        {
+            this.button = button;
+            label = button.transform.Find("Label").GetComponent<TMP_Text>();
+        }
+
+        public void Begin(bool choice)
+        {
+            count = 0;
+            rowTop = choice ? 94 : 64;
+        }
+
+        public void Add(IReadOnlyList<DHWorldEventPreviewEntry> entries, string outcome)
+        {
+            foreach (var entry in entries)
+            {
+                if (entry == null || entry.Amount == 0) continue;
+                if (count == texts.Count)
+                {
+                    var iconObject = new GameObject("PreviewIcon_" + count, typeof(RectTransform), typeof(Image));
+                    iconObject.layer = button.gameObject.layer;
+                    iconObject.transform.SetParent(button.transform, false);
+                    var icon = iconObject.GetComponent<Image>();
+                    icon.raycastTarget = false;
+                    icon.preserveAspect = true;
+                    icons.Add(icon);
+                    var text = Instantiate(label, button.transform);
+                    text.name = "PreviewText_" + count;
+                    text.raycastTarget = false;
+                    text.enableAutoSizing = true;
+                    text.fontSizeMin = 14;
+                    text.fontSizeMax = 19;
+                    text.alignment = TextAlignmentOptions.MidlineLeft;
+                    texts.Add(text);
+                }
+                bool cost = entry.Group == DHWorldEventPreviewGroup.Cost;
+                var iconView = icons[count];
+                var textView = texts[count];
+                iconView.sprite = Icon(entry);
+                iconView.gameObject.SetActive(iconView.sprite != null);
+                textView.gameObject.SetActive(true);
+                float y = rowTop + count * 32;
+                Place(iconView.rectTransform, 16, y, 26, 26);
+                Place(textView.rectTransform, 50, y, 284, 28);
+                string prefix = outcome ?? (cost ? "소모" : entry.Amount < 0 ? "감소" : "보상");
+                textView.text = prefix + "  " + Name(entry.Label) + " " +
+                    (cost ? "−" : entry.Amount > 0 ? "+" : "") + entry.Amount;
+                textView.color = cost || entry.Amount < 0 ? new Color32(185, 35, 45, 255) : new Color32(20, 70, 151, 255);
+                count++;
+            }
+        }
+
+        public void End()
+        {
+            for (int i = count; i < texts.Count; i++)
+            {
+                icons[i].gameObject.SetActive(false);
+                texts[i].gameObject.SetActive(false);
+            }
+            float height = count == 0 ? 110 : rowTop + count * 32 + 10;
+            ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            Place(label.rectTransform, 21, 10, 308, count == 0 ? 76 : 44);
+            var chance = button.transform.Find("SuccessChance") as RectTransform;
+            if (chance != null) Place(chance, 21, 56, 308, 32);
+        }
+
+        private static void Place(RectTransform rect, float x, float y, float width, float height)
+        {
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
+            rect.anchoredPosition = new Vector2(x, -y);
+            rect.sizeDelta = new Vector2(width, height);
+        }
+
+        private static Sprite Icon(DHWorldEventPreviewEntry entry)
+        {
+            switch (entry.Label)
+            {
+                case "Money": return Sprites.UI.Resource(ResourceType.Money);
+                case "Chip": case "Medal": return Sprites.UI.Resource(ResourceType.Chip);
+                case "Crystal": return Sprites.UI.Resource(ResourceType.Crystal);
+                case "Supply": return Sprites.UI.Resource(ResourceType.Supply);
+            }
+            switch (entry.Label)
+            {
+                case "CurrentIP": case "MaxIP": return Sprites.UI.Status(UIStatusIconType.IP);
+                case "CurrentHP": case "MaxHP": return Sprites.UI.Status(UIStatusIconType.HP);
+                case "Atk": return Sprites.UI.Status(UIStatusIconType.ATK);
+                default: return null;
+            }
+        }
+
+        private static string Name(string value)
+        {
+            switch (value)
+            {
+                case "Money": return "자금";
+                case "Chip": case "Medal": return "칩";
+                case "Crystal": return "크리스탈";
+                case "Supply": return "보급품";
+                case "CurrentIP": return "IP";
+                case "MaxIP": return "최대 IP";
+                case "CurrentHP": return "체력";
+                case "MaxHP": return "최대 체력";
+                case "Atk": return "공격력";
+                default: return value;
+            }
         }
     }
 

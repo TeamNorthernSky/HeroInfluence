@@ -10,18 +10,17 @@ public class ExplorationCoreCardView : MonoBehaviour
     [SerializeField] private Image background;
     [SerializeField] private Image icon;
     [SerializeField] private TMP_Text nameText;
-    [SerializeField] private GameObject equippedBadge;
     [SerializeField] private GameObject unavailableOverlay;
     [SerializeField] private Sprite normalSprite;
     [SerializeField] private Sprite equippedSprite;
 
     public Button Button => button;
 
-    public void BindTooltip(int index, string coreName, Sprite coreIcon)
+    public void BindTooltip(int index, string coreName, Sprite coreIcon, int unitIndex = 0)
     {
         var hover = GetComponent<CoreSelectionTooltip>();
         if (!hover) hover = gameObject.AddComponent<CoreSelectionTooltip>();
-        hover.Bind(index, coreName, coreIcon, nameText.font);
+        hover.Bind(index, coreName, coreIcon, nameText.font, unitIndex);
     }
 
     public void SetState(string coreName, Sprite coreIcon, bool available, bool equipped, bool canEquip)
@@ -30,7 +29,6 @@ public class ExplorationCoreCardView : MonoBehaviour
         icon.sprite = coreIcon;
         icon.enabled = coreIcon != null;
         background.sprite = equipped ? equippedSprite : normalSprite;
-        equippedBadge.SetActive(equipped);
         unavailableOverlay.SetActive(!available);
         button.interactable = available && canEquip && !equipped;
     }

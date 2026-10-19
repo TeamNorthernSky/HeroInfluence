@@ -87,7 +87,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
             tip.ShowInfo(
                 Sprites.Icon.ClassSkill(sd.skillIndex, lv),
                 $"{sd.skillName} Lv.{lv}",
-                ClassSkillTooltipText.BuildDesc(sd, lv),
+                ClassSkillTooltipText.BuildDesc(sd, lv, caster: currentUnit),
                 target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
         }
         else
@@ -104,7 +104,7 @@ public class SkillButtonTooltip : MonoBehaviour, IPointerEnterHandler, IPointerE
             tip.ShowInfo(
                 Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl),
                 $"{wd.WeaponSkillName} Lv.{wl}",
-                WeaponTooltipText.BuildWeaponSkillDesc(wd, wIdx, wl),
+                WeaponTooltipText.BuildWeaponSkillDesc(wd, wIdx, wl, caster: currentUnit),
                 target, extraY: tooltipOffset.y, extraX: tooltipOffset.x);
         }
     }

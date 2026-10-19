@@ -261,19 +261,19 @@ public class SkillButtonController : MonoBehaviour
         if (unit.UsesTutorialEquipment)
         {
             // 같은 ID의 일반 전투 템플릿/협회 강화값이 전용 설명을 덮어쓰지 않도록 실제 시전 데이터를 표시합니다.
-            body = ClassSkillTooltipText.ReplaceBattleCoefficients(skill.description,
-                action == PendingActionType.WeaponSkill ? "WeaponSkill" : "ClassSkill", skill.skillValue, skill.skillSubValue);
+            body = SkillTooltipNumbers.Build(skill.description,
+                action == PendingActionType.WeaponSkill ? "WeaponSkill" : "ClassSkill", skill.skillValue, skill.skillSubValue, caster: unit, attackEffect: skill.classSkillEffect == 0);
         }
         else if (action == PendingActionType.WeaponSkill && unit.EquippedWeaponData != null)
         {
             int weaponIndex = unit.EquippedWeaponIndex > 0 ? unit.EquippedWeaponIndex : (unit.SourceData?.CurrentWeaponIndex ?? 0);
             int level = gm != null && gm.Workshop != null && unitIndex > 0 ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(weaponIndex)) : 1;
-            body = WeaponTooltipText.BuildWeaponSkillDesc(unit.EquippedWeaponData, weaponIndex, level, percentageValues: true);
+            body = WeaponTooltipText.BuildWeaponSkillDesc(unit.EquippedWeaponData, weaponIndex, level, caster: unit);
         }
         else
         {
             int level = gm != null && gm.Lab != null && unitIndex > 0 ? gm.Lab.GetSkillLevel(unitIndex, skill.skillIndex) : (unit.SourceData?.SkillLevel ?? 1);
-            body = ClassSkillTooltipText.BuildDesc(skill, level, percentageValues: true);
+            body = ClassSkillTooltipText.BuildDesc(skill, level, caster: unit);
         }
         SetDescription(skill.skillName, body, skill);
     }

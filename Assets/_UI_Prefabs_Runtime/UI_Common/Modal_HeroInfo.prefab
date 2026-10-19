@@ -3880,6 +3880,7 @@ GameObject:
   - component: {fileID: 6011291815547145118}
   - component: {fileID: 7656154604298081037}
   - component: {fileID: 6792788060964654829}
+  - component: {fileID: 6526954322691897165}
   m_Layer: 0
   m_Name: Panel
   m_TagString: Untagged
@@ -3957,6 +3958,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &6526954322691897165
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5703789278064839195}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6206064778091597425
 GameObject:
   m_ObjectHideFlags: 0
@@ -5046,6 +5059,7 @@ GameObject:
   - component: {fileID: 3685019391495010582}
   - component: {fileID: 8015170460799302857}
   - component: {fileID: 119136448968107052}
+  - component: {fileID: 5150333164799274682}
   m_Layer: 0
   m_Name: Modal_HeroInfo
   m_TagString: Untagged
@@ -5272,6 +5286,23 @@ MonoBehaviour:
   - {fileID: 21300000, guid: dbb4f3c5efdc76f4ebd1edfa2f2b8812, type: 3}
   - {fileID: 21300000, guid: 91b44ef7ce2a32e45acfcdd312fcef6e, type: 3}
   - {fileID: 21300000, guid: edf415db589be4b43bd10d3c77f8e00e, type: 3}
+--- !u!114 &5150333164799274682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6830269695436935952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c03356dced4d8b4cbc0b3676e8b6b14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  content: {fileID: 6011291815547145118}
+  contentGroup: {fileID: 6526954322691897165}
+  duration: 0.16
+  initialScale: 0.08
+  allowCrossSceneOrigin: 1
 --- !u!1 &7166975279931442594
 GameObject:
   m_ObjectHideFlags: 0

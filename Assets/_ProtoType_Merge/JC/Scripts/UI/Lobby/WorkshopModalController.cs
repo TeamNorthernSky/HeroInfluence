@@ -89,7 +89,7 @@ public class WorkshopModalController : MonoBehaviour
         }
         if (btnHeroSelect != null)
         {
-            btnHeroSelect.onClick.AddListener(OnEquipClicked);
+            btnHeroSelect.onClick.AddListener(OnCoreActionClicked);
             if (btnHeroSelectLabel == null) btnHeroSelectLabel = btnHeroSelect.GetComponentInChildren<TextMeshProUGUI>(true);
         }
 
@@ -368,9 +368,22 @@ public class WorkshopModalController : MonoBehaviour
         requiredWorkshopLevelText.text = levelTooLow ? $"Lv.{requiredLevel}이 필요합니다" : "";
     }
 
-    /// <summary>영웅 미선택이면 「영웅 선택」 안내(비활성), 선택되면 「장착」/「장착중」.</summary>
+    /// <summary>미보유 코어는 제작, 보유 코어는 선택 영웅에게 장착.</summary>
     private void ApplyEquipButton(WorkshopManager ws, bool hasHero, int weaponIndex, bool owned)
     {
+        var view = btnHeroSelect != null ? btnHeroSelect.GetComponent<WorkshopCoreActionView>() : null;
+        if (view != null) view.SetOwned(owned);
+        if (btnHeroSelectLabel != null) btnHeroSelectLabel.gameObject.SetActive(view == null);
+        if (!owned)
+        {
+            var eco = GameManager.Instance != null ? GameManager.Instance.Economy : null;
+            bool canCraft = ws != null && ws.CanCraft(weaponIndex) && eco != null
+                && ws.GetCraftCost(weaponIndex, out _, out int money, out int crystal)
+                && eco.Has(ResourceType.Money, money) && eco.Has(ResourceType.Crystal, crystal);
+            if (btnHeroSelectLabel != null) btnHeroSelectLabel.text = "코어 제작";
+            if (btnHeroSelect != null) btnHeroSelect.interactable = canCraft;
+            return;
+        }
         if (!hasHero)
         {
             if (btnHeroSelectLabel != null) btnHeroSelectLabel.text = "영웅 선택";
@@ -384,6 +397,14 @@ public class WorkshopModalController : MonoBehaviour
     }
 
     // ─── 실행 ──────────────────────────────────────────────────
+    private void OnCoreActionClicked()
+    {
+        var ws = GameManager.Instance != null ? GameManager.Instance.Workshop : null;
+        if (ws == null || selectedCore < 0 || selectedCore >= cards.Count) return;
+        if (ws.IsOwned(selectedCore + 1)) OnEquipClicked();
+        else OnPrimaryClicked();
+    }
+
     /// <summary>주 버튼 — 미보유면 제작, 보유면 강화 1단계. 자원 차감·환불을 여기서 처리한다.</summary>
     private void OnPrimaryClicked()
     {
