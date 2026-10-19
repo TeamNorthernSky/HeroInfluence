@@ -109,6 +109,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         }
 
         eventBattle.SourceMainEventKey = ResolveSourceMainEventKey(request.SourceMainEventKey);
+        eventBattle.SourceSubEventKey = DHEventStateRepository.NormalizeKey(request.SourceSubEventKey);
         eventBattle.SetNumericResult(HostageInjuredCountKey, 0f);
 
         CombatEncounterManager encounterManager = FindFirstObjectByType<CombatEncounterManager>();
@@ -145,7 +146,10 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
 
         // Main event objects complete only on victory; defeat keeps them available for retry.
         if (context.Result == CombatResult.Victory)
+        {
             CompleteSourceMainEvent(eventBattle.SourceMainEventKey);
+            CompleteSourceSubEvent(eventBattle.SourceSubEventKey);
+        }
         ClearPendingMainEventSource(eventBattle.SourceMainEventKey);
 
         if (eventBattle.ResumeChatId <= 0)
@@ -290,6 +294,20 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
             }
 
             mainEvent.CompleteAfterEventBattleVictory();
+        }
+    }
+
+    private static void CompleteSourceSubEvent(string eventKey)
+    {
+        string key = DHEventStateRepository.NormalizeKey(eventKey);
+        if (string.IsNullOrWhiteSpace(key))
+            return;
+
+        MapProgressRepository.Instance?.MarkSubEventCompleted(key);
+        foreach (SubEventObject subEvent in FindObjectsByType<SubEventObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (string.Equals(DHEventStateRepository.NormalizeKey(subEvent.EventKey), key, StringComparison.Ordinal))
+                subEvent.CompleteAfterEventBattleVictory();
         }
     }
 

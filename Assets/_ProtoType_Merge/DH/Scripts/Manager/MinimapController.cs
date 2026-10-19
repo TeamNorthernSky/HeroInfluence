@@ -4,6 +4,32 @@ using UnityEngine.UI;
 
 public class MinimapController : MonoBehaviour
 {
+    [System.Serializable]
+    private class ZoneViewCrop
+    {
+        public string zoneId;
+        public int top;
+        public int bottom;
+        public int left;
+        public int right;
+
+        public void Apply(ref Vector2Int origin, ref Vector2Int size)
+        {
+            // Keep at least one cell on each axis even if margins exceed the zone size.
+            int cropLeft = Mathf.Clamp(left, 0, size.x - 1);
+            int cropRight = Mathf.Clamp(right, 0, size.x - cropLeft - 1);
+            int cropBottom = Mathf.Clamp(bottom, 0, size.y - 1);
+            int cropTop = Mathf.Clamp(top, 0, size.y - cropBottom - 1);
+            int padLeft = Mathf.Max(0, -left);
+            int padRight = Mathf.Max(0, -right);
+            int padBottom = Mathf.Max(0, -bottom);
+            int padTop = Mathf.Max(0, -top);
+            origin += new Vector2Int(cropLeft - padLeft, cropBottom - padBottom);
+            size += new Vector2Int(padLeft + padRight - cropLeft - cropRight,
+                padBottom + padTop - cropBottom - cropTop);
+        }
+    }
+
     [Header("References")]
     [SerializeField] private RawImage targetImage;
     [SerializeField] private RectTransform iconRoot;
@@ -30,6 +56,10 @@ public class MinimapController : MonoBehaviour
     [SerializeField] private Color visibleColor = new Color(0.22f, 0.28f, 0.24f, 1f);
     [SerializeField] private Color fallbackColor = new Color(0.22f, 0.28f, 0.24f, 1f);
     [SerializeField] private Color obstacleColor = new Color(0f, 0f, 0f, 1f);
+
+    [Header("Zone View Cropping")]
+    [Tooltip("Positive: crop cells. Negative: add black padding. Top: +Y, Bottom: -Y, Left: -X, Right: +X. First matching Zone ID wins.")]
+    [SerializeField] private List<ZoneViewCrop> zoneViewCrops = new List<ZoneViewCrop>();
 
     [Header("Strategic Objects")]
     [SerializeField] private bool showStrategicObjects = true;
@@ -69,6 +99,7 @@ public class MinimapController : MonoBehaviour
     private Vector2Int textureSize;
     private Vector2Int currentGridSize;
     private Vector2Int currentViewOrigin;
+    private RectInt currentContentBounds;
     private string currentViewZoneId = string.Empty;
     private float nextPartyIconRefreshTime;
     private readonly List<Image> strategicIconPool = new List<Image>();
@@ -134,6 +165,9 @@ public class MinimapController : MonoBehaviour
         currentViewOrigin = viewOrigin;
         currentGridSize = gridSize;
         currentViewZoneId = zoneId;
+        currentContentBounds = TryGetCurrentPartyZone(out LoadedLevelZoneData currentZone)
+            ? new RectInt(currentZone.Anchor, currentZone.Size)
+            : new RectInt(viewOrigin, gridSize);
         EnsureTexture(gridSize);
         RebuildObstacleCellCache();
         DrawCells(viewOrigin, gridSize);
@@ -193,7 +227,7 @@ public class MinimapController : MonoBehaviour
             for (int x = 0; x < gridSize.x; x++)
             {
                 Vector2Int grid = viewOrigin + new Vector2Int(x, y);
-                minimapTexture.SetPixel(x, y, GetCellColor(grid));
+                minimapTexture.SetPixel(x, y, currentContentBounds.Contains(grid) ? GetCellColor(grid) : Color.black);
             }
         }
     }
@@ -1069,6 +1103,12 @@ public class MinimapController : MonoBehaviour
         return false;
     }
 
+    public bool TryGetDisplayBounds(out Vector2Int viewOrigin, out Vector2Int gridSize)
+    {
+        ResolveReferences();
+        return TryGetMinimapView(out viewOrigin, out gridSize, out _);
+    }
+
     private bool TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int gridSize, out string zoneId)
     {
         if (TryGetCurrentPartyZone(out LoadedLevelZoneData zone))
@@ -1076,7 +1116,24 @@ public class MinimapController : MonoBehaviour
             viewOrigin = zone.Anchor;
             gridSize = zone.Size;
             zoneId = zone.ZoneId ?? string.Empty;
-            return gridSize.x > 0 && gridSize.y > 0;
+            if (gridSize.x <= 0 || gridSize.y <= 0)
+                return false;
+
+            if (zoneViewCrops != null)
+            {
+                for (int i = 0; i < zoneViewCrops.Count; i++)
+                {
+                    ZoneViewCrop crop = zoneViewCrops[i];
+                    if (crop == null || string.IsNullOrWhiteSpace(crop.zoneId) ||
+                        !string.Equals(crop.zoneId.Trim(), zoneId.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    crop.Apply(ref viewOrigin, ref gridSize);
+                    break;
+                }
+            }
+
+            return true;
         }
 
         viewOrigin = Vector2Int.zero;
@@ -1125,7 +1182,7 @@ public class MinimapController : MonoBehaviour
     private bool TryGlobalToMinimapGrid(Vector2Int globalGrid, out Vector2Int localGrid)
     {
         localGrid = globalGrid - currentViewOrigin;
-        return IsGridInMinimap(localGrid, currentGridSize);
+        return currentContentBounds.Contains(globalGrid) && IsGridInMinimap(localGrid, currentGridSize);
     }
 
     private void EnsureTexture(Vector2Int gridSize)

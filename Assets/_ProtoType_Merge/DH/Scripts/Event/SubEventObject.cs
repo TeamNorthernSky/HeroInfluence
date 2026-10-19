@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class SubEventObject : MonoBehaviour
 {
-    private const string BattleResultKey = "Flag_BattleResult";
-
     [Header("Chat")]
     [SerializeField] private string eventKey = "sub_event_001";
     [SerializeField] private int zoneId = 1;
@@ -43,6 +41,8 @@ public class SubEventObject : MonoBehaviour
     private void OnDisable()
     {
         subEventRegistry?.Unregister(this);
+        UnsubscribeEventBattleRequested();
+        DHEventEffectRuntimeManager.Instance?.ClearActiveSubEventSource(EventKey);
     }
 
     private void OnValidate()
@@ -97,6 +97,7 @@ public class SubEventObject : MonoBehaviour
         eventBattleRequestedDuringTrigger = false;
         pendingClosedCallback = closedCallback;
         SubscribeEventBattleRequested();
+        DHEventEffectRuntimeManager.EnsureInstance().SetActiveSubEventSource(EventKey);
         // Sub events are item/map-event style triggers, but may still launch event battles from chat effects.
         JC.BattleTesting.JcArnoldBattlePresentation.SetFixedOrigin(transform, ZoneId, EventKey);
         ChatModalController.Show(ZoneId, ChatId, HandleChatClosed);
@@ -108,6 +109,7 @@ public class SubEventObject : MonoBehaviour
             eventBattleRequestedDuringTrigger = false;
             pendingClosedCallback = null;
             UnsubscribeEventBattleRequested();
+            DHEventEffectRuntimeManager.Instance?.ClearActiveSubEventSource(EventKey);
             return false;
         }
 
@@ -119,10 +121,11 @@ public class SubEventObject : MonoBehaviour
         JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
         isTriggering = false;
         UnsubscribeEventBattleRequested();
+        DHEventEffectRuntimeManager.Instance?.ClearActiveSubEventSource(EventKey);
         Action<SubEventObject> closedCallback = pendingClosedCallback;
         pendingClosedCallback = null;
 
-        if (ShouldRemainAfterEventBattleDefeat())
+        if (eventBattleRequestedDuringTrigger)
         {
             eventBattleRequestedDuringTrigger = false;
             closedCallback?.Invoke(this);
@@ -151,19 +154,19 @@ public class SubEventObject : MonoBehaviour
 
     private void HandleEventBattleRequested(DHEventBattleEffectRequest request)
     {
-        eventBattleRequestedDuringTrigger = true;
+        if (request != null && string.Equals(
+                DHEventStateRepository.NormalizeKey(request.SourceSubEventKey),
+                DHEventStateRepository.NormalizeKey(EventKey), StringComparison.Ordinal))
+            eventBattleRequestedDuringTrigger = true;
     }
 
-    private bool ShouldRemainAfterEventBattleDefeat()
+    public void CompleteAfterEventBattleVictory()
     {
-        if (!eventBattleRequestedDuringTrigger)
-            return false;
+        if (!Application.isPlaying)
+            return;
 
-        // Defeated event battles leave the sub event on the map so the player can retry the route.
-        DHEventStateRepository eventStateRepository = DHEventStateRepository.Instance;
-        return eventStateRepository != null &&
-            eventStateRepository.TryGetNumericValue(BattleResultKey, out float battleResult) &&
-            Mathf.Approximately(battleResult, 0f);
+        MarkCompleted();
+        gameObject.SetActive(false);
     }
 
     private bool IsCompleted()
