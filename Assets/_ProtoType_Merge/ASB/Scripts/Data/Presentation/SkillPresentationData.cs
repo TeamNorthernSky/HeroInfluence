@@ -642,6 +642,8 @@ public enum PresentationSfxEvent
 public class PresentationEventSfx
 {
     public PresentationSfxEvent Event;
+    [Tooltip("Hit/AdditionalHit를 같은 프레임에 여러 번 받아도 매 타격마다 재생합니다.")]
+    public bool PlayPerHit;
     [Tooltip("DHAudioClipCatalog SfxClips 정식 키(예: Battle_Elec02).")]
     public string Key;
     [Min(0f)]

@@ -124,17 +124,6 @@ public class InputHandler : MonoBehaviour
         if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return;
         if (IsAutoBattleActive) return;
 
-        if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1))
-        {
-            BeginPendingAction(PendingActionType.ClassSkill);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2))
-        {
-            BeginPendingAction(PendingActionType.WeaponSkill);
-        }
-
-
 #if UNITY_EDITOR
         // 턴 스킵 단축키는 에디터 전용 디버그 기능 — 빌드에서는 컴파일되지 않는다.
         // [JC 260513] 키 4: 아무 행동 없이 턴 종료(스킵). hover/선택 상태 자동 해제.

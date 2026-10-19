@@ -91,6 +91,21 @@ public class PresentationSfxEventsTests
     }
 
     [Test]
+    public void PlayHit_PlayPerHit_PlaysEverySameFrameHitWhileOtherEntriesPlayOnce()
+    {
+        object data = CreatePresentation(("Hit", "Once", -1), ("Hit", "EveryHit", -1));
+        var entries = (IList)DataType.GetField("EventSfx").GetValue(data);
+        EntryType.GetField("PlayPerHit").SetValue(entries[1], true);
+        Component caster = CreateCaster();
+
+        PlayHit(data, caster, "Primary");
+        PlayHit(data, caster, "Primary");
+        PlayHit(data, caster, "Primary");
+
+        Assert.That(_calls, Is.EqualTo(new[] { "Once", "EveryHit", "EveryHit", "EveryHit" }));
+    }
+
+    [Test]
     public void PlayHit_DifferentCastersSameFrame_PlayEach()
     {
         object data = CreatePresentation(("Hit", "Hit_A", -1));

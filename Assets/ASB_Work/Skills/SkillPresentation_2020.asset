@@ -63,13 +63,17 @@ MonoBehaviour:
     type: 3}
   EventSfx:
   - Event: 0
-    Key: Battle_Elec02
-    DurationSeconds: 0
+    Key: Battle_Elec03
+    DurationSeconds: 0.5
     Occurrence: -1
   - Event: 1
     Key: Battle_Elec03
     DurationSeconds: 0.5
     Occurrence: -1
+  - Event: 5
+    Key: Battle_Elec02
+    DurationSeconds: 0
+    Occurrence: 1
   MovePrepare:
     Enabled: 1
     AnimationStateName: 

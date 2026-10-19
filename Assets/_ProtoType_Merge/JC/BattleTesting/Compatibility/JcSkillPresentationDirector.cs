@@ -208,7 +208,7 @@ public sealed partial class JcSkillPresentationDirector
             probe = effect.gameObject.AddComponent<ChainLightningImpactProbe>();
         }
 
-        probe.Configure(_chainLightningActionInstanceId, primaryTargetTransform, chainTargets);
+        probe.Configure(_chainLightningActionInstanceId, primaryTargetTransform, chainTargets, presentation);
         effect.Play(actor.transform, primaryTargetTransform, chainTargets);
         return true;
     }

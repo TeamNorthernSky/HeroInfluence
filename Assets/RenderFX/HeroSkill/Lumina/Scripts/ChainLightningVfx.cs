@@ -23,6 +23,7 @@ namespace JC.VFX
         [Tooltip("각 대상의 착탄 시 생성하는 독립 감전 부품입니다.")]
         [SerializeField] private LightningShock shockPartPrefab;
         public event System.Action Contacted;
+        public event System.Action ChainStarted;
 
         [Header("References")]
         [Tooltip("머즐 구체(작은 번개 구체, ShockAura 소형 재사용).")]
@@ -201,6 +202,7 @@ namespace JC.VFX
             if (main != null) main.Contacted -= onContact;
             for (float t = 0; t < chainDelay; t += EffectDeltaTime) yield return null;
             var children = new List<ChainLightningVfx> { main };
+            bool chainStarted = false;
             if (chainPartPrefab != null && chainTargets != null)
                 foreach (var next in chainTargets)
                 {
@@ -209,6 +211,7 @@ namespace JC.VFX
                     _spawned.Add(child.gameObject); children.Add(child);
                     child.PlaybackSpeed = PlaybackSpeed;
                     child.Play(target, next);
+                    if (!chainStarted) { chainStarted = true; ChainStarted?.Invoke(); }
                 }
             foreach (var child in children) while (child != null && child.IsPlaying) yield return null;
             CleanupSpawned(); IsPlaying = false; _co = null; RaiseFinished();
@@ -288,6 +291,7 @@ namespace JC.VFX
                 if (wait > 0f) yield return new WaitForSeconds(wait);
 
                 var boltCos = new List<Coroutine>();
+                bool chainStarted = false;
                 foreach (var ct in chainTargets)
                 {
                     if (ct == null) continue;
@@ -297,6 +301,7 @@ namespace JC.VFX
                     PushBolt(r, 0f, 1f);
                     r.gameObject.SetActive(true);
                     boltCos.Add(StartCoroutine(DriveBolt(r, chainDrawTime, chainHoldTime, fadeTime)));
+                    if (!chainStarted) { chainStarted = true; ChainStarted?.Invoke(); }
                 }
                 yield return new WaitForSeconds(chainDrawTime);
                 foreach (var ct in chainTargets)

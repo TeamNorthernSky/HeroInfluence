@@ -18,6 +18,8 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
     private bool checkQueued;
     private bool subscribedToEconomy;
 
+    public bool IsCheckPending => isActiveAndEnabled && conditionEventsEnabled && checkQueued;
+
     public static DHWorldEventConditionRuntimeManager EnsureInstance()
     {
         if (Instance != null)

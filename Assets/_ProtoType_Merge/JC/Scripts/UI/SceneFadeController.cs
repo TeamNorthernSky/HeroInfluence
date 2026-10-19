@@ -89,6 +89,7 @@ public class SceneFadeController : MonoBehaviour
 
     /// <summary>[KJ 261002] FadeToScene이 페이드아웃을 마치고 씬 로드를 요청 중인지. GameSceneManager 중복 페이드 방지용.</summary>
     public bool IsSceneLoadPending => pendingFadeInOnSceneLoad;
+    public bool IsTransitioning => transitioning || activeRoutine != null;
 
     private void Awake()
     {

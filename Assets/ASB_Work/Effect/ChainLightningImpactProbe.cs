@@ -8,14 +8,29 @@ using System.Collections.Generic;
             private readonly HashSet<int> _observedShockIds = new HashSet<int>();
             private readonly List<Transform> _targets = new List<Transform>();
             private int _actionInstanceId;
+            private ChainLightningVfx _effect;
+            private SkillPresentationData _presentation;
         
-            public void Configure(int actionInstanceId, Transform primaryTarget, IReadOnlyList<Transform> chainTargets)
+            public void Configure(int actionInstanceId, Transform primaryTarget, IReadOnlyList<Transform> chainTargets,
+                SkillPresentationData presentation = null)
             {
+                if (_effect != null) _effect.ChainStarted -= OnChainStarted;
+                _effect = GetComponent<ChainLightningVfx>();
+                _presentation = presentation;
+                if (_effect != null) _effect.ChainStarted += OnChainStarted;
                 _actionInstanceId = actionInstanceId;
                 _observedShockIds.Clear();
                 _targets.Clear();
                 AddTarget(primaryTarget);
                 if (chainTargets != null) foreach (Transform target in chainTargets) AddTarget(target);
+            }
+
+            // 체인 조립의 0번은 첫 번개, 1번은 추가 대상에게 뻗는 연쇄 단계다.
+            private void OnChainStarted() => PresentationSfxEvents.PlayEffectStep(_presentation, 1);
+
+            private void OnDestroy()
+            {
+                if (_effect != null) _effect.ChainStarted -= OnChainStarted;
             }
         
             private void Update()

@@ -15,22 +15,22 @@ MonoBehaviour:
   bgmClips:
   - key: BattleScene
     clip: {fileID: 8300000, guid: 12fd7c678692eb044ae113347400c8b6, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.5
     loop: 1
     allowOverlap: 0
   - key: ExploreScene
     clip: {fileID: 8300000, guid: 0079d77b88c326544b41c8297c2fac49, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.5
     loop: 1
     allowOverlap: 0
   - key: TitleScene
     clip: {fileID: 8300000, guid: fbd679038c2fcbf439f61615483edf48, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.5
     loop: 1
     allowOverlap: 0
   - key: UnionScene
     clip: {fileID: 8300000, guid: d32690b7859fdf44cb33bff685fcf2c3, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.5
     loop: 1
     allowOverlap: 0
   sfxClips:
@@ -56,17 +56,17 @@ MonoBehaviour:
     allowOverlap: 1
   - key: Battle_Beam
     clip: {fileID: 8300000, guid: 472e2acbb0523cf4b8113179946a3d0a, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.65
     loop: 0
     allowOverlap: 1
   - key: Battle_Buff
     clip: {fileID: 8300000, guid: 133ad4c4da73b424589b248c40c22118, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.76
     loop: 0
     allowOverlap: 1
   - key: Battle_Canon
     clip: {fileID: 8300000, guid: 85645c7d564c5914ea36eeb8d35ff7ba, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.73
     loop: 0
     allowOverlap: 1
   - key: Battle_Create
@@ -76,12 +76,12 @@ MonoBehaviour:
     allowOverlap: 1
   - key: Battle_Debuff
     clip: {fileID: 8300000, guid: 1faff38ae236f6248b430072b050ff48, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.6
     loop: 0
     allowOverlap: 1
   - key: Battle_Elec01
     clip: {fileID: 8300000, guid: 26877eb922bccb34f8e2512319c5827b, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.86
     loop: 0
     allowOverlap: 1
   - key: Battle_Elec02
@@ -101,12 +101,12 @@ MonoBehaviour:
     allowOverlap: 1
   - key: Battle_Fire01
     clip: {fileID: 8300000, guid: ee2710e282cfc024cbe19e92ce0685ac, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.59
     loop: 0
     allowOverlap: 1
   - key: Battle_Fire02
     clip: {fileID: 8300000, guid: 4d84718853f953447b1c6b271222bd0d, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.59
     loop: 0
     allowOverlap: 1
   - key: Battle_GunHit
@@ -126,17 +126,17 @@ MonoBehaviour:
     allowOverlap: 1
   - key: Battle_Hit01
     clip: {fileID: 8300000, guid: 89d3a9b0c49caf74a9a772d65ee55fad, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.75
     loop: 0
     allowOverlap: 1
   - key: Battle_Hit02
     clip: {fileID: 8300000, guid: ffbf29a8b02b24348a838244ee60c163, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.78
     loop: 0
     allowOverlap: 1
   - key: Battle_Hit03
     clip: {fileID: 8300000, guid: 80b224c56721fe343b05e22aafcee065, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.8
     loop: 0
     allowOverlap: 1
   - key: Battle_Hit04
@@ -146,27 +146,27 @@ MonoBehaviour:
     allowOverlap: 1
   - key: Battle_Hit05
     clip: {fileID: 8300000, guid: 08886a0839594b8468c8c7940d08d533, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.64
     loop: 0
     allowOverlap: 1
   - key: Battle_LongHit01
     clip: {fileID: 8300000, guid: 55fbabcfbe8d312438443a31202b8dff, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.37
     loop: 0
     allowOverlap: 1
   - key: Battle_LongHit02
     clip: {fileID: 8300000, guid: b734f88931ddb184db6282a559ff08ed, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.36
     loop: 0
     allowOverlap: 1
   - key: Battle_LongHit03
     clip: {fileID: 8300000, guid: 63418be6801687b4f9f80dffba9f4ff2, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.35
     loop: 0
     allowOverlap: 1
   - key: Battle_Meteor
     clip: {fileID: 8300000, guid: a01d071d5a8e4844ea77f792477c674b, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.66
     loop: 0
     allowOverlap: 1
   - key: Battle_PreSkill01
@@ -206,12 +206,12 @@ MonoBehaviour:
     allowOverlap: 1
   - key: Battle_Spin02
     clip: {fileID: 8300000, guid: d8fdb49bc2e6f7f479edd22b3a8b4b1a, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.7
     loop: 0
     allowOverlap: 1
   - key: Battle_Spinhit
     clip: {fileID: 8300000, guid: b3a1f000ab7dfd742880d0cb7a1e29fd, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.35
     loop: 0
     allowOverlap: 1
   - key: Battle_Teasing
@@ -236,7 +236,7 @@ MonoBehaviour:
     allowOverlap: 1
   - key: Button_Click
     clip: {fileID: 8300000, guid: 199856f660366934fa39e3471b89a735, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.93
     loop: 0
     allowOverlap: 1
   - key: Button_Click_Fail
@@ -246,7 +246,7 @@ MonoBehaviour:
     allowOverlap: 1
   - key: Button_Click_Sucess
     clip: {fileID: 8300000, guid: 2b109e9aeb48d2543a511b550bbb14b0, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.74
     loop: 0
     allowOverlap: 1
   - key: Button_Hover
@@ -261,6 +261,11 @@ MonoBehaviour:
     allowOverlap: 1
   - key: Explore_Move
     clip: {fileID: 8300000, guid: 8dae87ddcf9c2af408752857568504da, type: 3}
-    defaultVolume: 1
+    defaultVolume: 0.68
+    loop: 0
+    allowOverlap: 1
+  - key: Battle_Spinhit_Single
+    clip: {fileID: 8300000, guid: 2d6b4bd526e80ba4a9dd6ff3bb01fd6d, type: 3}
+    defaultVolume: 0.6
     loop: 0
     allowOverlap: 1

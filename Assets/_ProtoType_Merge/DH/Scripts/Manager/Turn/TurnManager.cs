@@ -17,14 +17,31 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private OutpostRegistry outpostRegistry;
     [SerializeField] private GateThreatController gateThreatController;
 
+    [Header("Automatic Turn End")]
+    [Tooltip("End the player turn after movement uses all move points, once interactions and combat follow-up finish.")]
+    [SerializeField] private bool autoEndTurnWhenMovePointsDepleted;
+
     private bool enemyTurnRunning;
     private Coroutine pendingEnemyTurnStartCoroutine;
+    private PartyGridMover autoEndTurnParty;
+    private PartyIdentity autoEndTurnPartyIdentity;
+    private PartyRuntime autoEndTurnPartyRuntime;
+    private CombatEncounterManager combatEncounterManager;
+    private CombatPromptService combatPromptService;
+    private bool playerMovementStarted;
+    private int automaticEndTurnReadyFrames;
 
     public bool IsEnemyTurnRunning => enemyTurnRunning;
     public bool IsPlayerTurn => !enemyTurnRunning;
 
     private void Awake()
     {
+        if (partyRegistry == null)
+            partyRegistry = FindFirstObjectByType<PartyRegistry>();
+
+        combatEncounterManager = FindFirstObjectByType<CombatEncounterManager>();
+        combatPromptService = FindFirstObjectByType<CombatPromptService>();
+
         if (enemyTurnController == null)
             enemyTurnController = FindFirstObjectByType<EnemyTurnController>();
 
@@ -61,17 +78,160 @@ public class TurnManager : MonoBehaviour
 
     public void EndPlayerTurn()
     {
-        if (DHGameEndState.IsEnding)
+        if (DHGameEndState.IsEnding || enemyTurnRunning || pendingEnemyTurnStartCoroutine != null)
             return;
+
+        ClearAutomaticEndTurn();
 
         // [JC 260615] 턴 전환 시작 → 월드 입력 차단(다음 턴 income 모달 확인 시 해제).
         // 적 턴 진행 중은 물론, 씬 전환 직후·모달 표시 전의 틈에도 탐사 오브젝트 인터랙션(본부 더블클릭 등)을 막는다.
         WorldInputGate.IsTurnResolving = true;
 
-        if (pendingEnemyTurnStartCoroutine != null)
+        pendingEnemyTurnStartCoroutine = StartCoroutine(StartEnemyTurnAfterPendingThreats());
+    }
+
+    private void LateUpdate()
+    {
+        if (DHGameStateRestoreService.IsRestoring)
+        {
+            automaticEndTurnReadyFrames = 0;
+            return;
+        }
+
+        // Tutorial has its own turn flow, including the end-turn button lesson.
+        if (gameObject.scene.name.IndexOf("Tutorial", System.StringComparison.OrdinalIgnoreCase) >= 0)
             return;
 
-        pendingEnemyTurnStartCoroutine = StartCoroutine(StartEnemyTurnAfterPendingThreats());
+        BindAutomaticEndTurnParty();
+
+        MapProgressRepository repository = MapProgressRepository.Instance;
+        if (!autoEndTurnWhenMovePointsDepleted)
+        {
+            ClearAutomaticEndTurn();
+            return;
+        }
+
+        if (repository == null || !repository.HasPendingAutomaticEndTurn)
+        {
+            automaticEndTurnReadyFrames = 0;
+            return;
+        }
+
+        if (repository.AutomaticEndTurnDay != day)
+        {
+            ClearAutomaticEndTurn();
+            return;
+        }
+
+        if (!CanExecuteAutomaticEndTurn())
+        {
+            automaticEndTurnReadyFrames = 0;
+            return;
+        }
+
+        // Allow deferred chat effects and condition-event checks to open their UI first.
+        if (++automaticEndTurnReadyFrames >= 2)
+            EndPlayerTurn();
+    }
+
+    private void OnDisable()
+    {
+        UnbindAutomaticEndTurnParty();
+        // Keep the repository reservation across combat scene changes.
+        automaticEndTurnReadyFrames = 0;
+    }
+
+    private void BindAutomaticEndTurnParty()
+    {
+        PartyGridMover nextParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        if (autoEndTurnParty == nextParty)
+            return;
+
+        UnbindAutomaticEndTurnParty();
+        autoEndTurnParty = nextParty;
+        if (autoEndTurnParty == null)
+            return;
+
+        autoEndTurnPartyIdentity = autoEndTurnParty.GetComponent<PartyIdentity>();
+        autoEndTurnPartyRuntime = autoEndTurnParty.GetComponent<PartyRuntime>();
+        autoEndTurnParty.MovementStateChanged += HandlePlayerMovementStateChanged;
+        autoEndTurnParty.MoveCompleted += HandlePlayerMoveCompleted;
+    }
+
+    private void UnbindAutomaticEndTurnParty()
+    {
+        if (autoEndTurnParty != null)
+        {
+            autoEndTurnParty.MovementStateChanged -= HandlePlayerMovementStateChanged;
+            autoEndTurnParty.MoveCompleted -= HandlePlayerMoveCompleted;
+        }
+
+        autoEndTurnParty = null;
+        autoEndTurnPartyIdentity = null;
+        autoEndTurnPartyRuntime = null;
+        playerMovementStarted = false;
+    }
+
+    private void HandlePlayerMovementStateChanged(bool moving)
+    {
+        if (moving)
+        {
+            EnemyTurnSessionRepository session = EnemyTurnSessionRepository.Instance;
+            playerMovementStarted = autoEndTurnWhenMovePointsDepleted && !enemyTurnRunning &&
+                pendingEnemyTurnStartCoroutine == null && !WorldInputGate.IsTurnResolving &&
+                (session == null || !session.ShouldResumeAfterCombat);
+        }
+    }
+
+    private void HandlePlayerMoveCompleted()
+    {
+        bool completedPlayerMovement = playerMovementStarted;
+        playerMovementStarted = false;
+        if (!completedPlayerMovement || !autoEndTurnWhenMovePointsDepleted ||
+            autoEndTurnParty == null || autoEndTurnParty.RemainingMovePoints > 0 ||
+            autoEndTurnPartyIdentity == null || enemyTurnRunning || pendingEnemyTurnStartCoroutine != null)
+            return;
+
+        MapProgressRepository.Instance?.ReserveAutomaticEndTurn(day, autoEndTurnPartyIdentity.PartyId);
+        automaticEndTurnReadyFrames = 0;
+    }
+
+    private bool CanExecuteAutomaticEndTurn()
+    {
+        if (DHGameEndState.IsEnding || enemyTurnRunning || pendingEnemyTurnStartCoroutine != null ||
+            WorldInputGate.IsTurnResolving ||
+            gameObject.scene != UnityEngine.SceneManagement.SceneManager.GetActiveScene() ||
+            autoEndTurnParty == null || autoEndTurnPartyIdentity == null || autoEndTurnParty.IsMoving ||
+            autoEndTurnPartyIdentity.PartyId != MapProgressRepository.Instance.AutomaticEndTurnPartyId)
+            return false;
+
+        EnemyTurnSessionRepository session = EnemyTurnSessionRepository.Instance;
+        if (session != null && session.ShouldResumeAfterCombat)
+            return false;
+
+        CombatContext context = CombatContext.Instance;
+        if (context != null && (context.Result != CombatResult.None || context.HasEventBattle ||
+            context.CombatParty != null || context.CombatEnemy != null))
+            return false;
+
+        if ((combatEncounterManager != null && combatEncounterManager.IsCombatActive) ||
+            (combatPromptService != null && combatPromptService.IsOpen) ||
+            (autoEndTurnPartyRuntime != null && autoEndTurnPartyRuntime.IsInputLocked) ||
+            (ChatManager.Instance != null && ChatManager.Instance.IsRunning) ||
+            ChatModalController.IsOpen || ModalManager.HasAny ||
+            (DHWorldEventRuntimeManager.Instance != null && DHWorldEventRuntimeManager.Instance.IsRunning) ||
+            (DHWorldEventConditionRuntimeManager.Instance != null && DHWorldEventConditionRuntimeManager.Instance.IsCheckPending) ||
+            (SceneFadeController.Instance != null && SceneFadeController.Instance.IsTransitioning))
+            return false;
+
+        return true;
+    }
+
+    private void ClearAutomaticEndTurn()
+    {
+        MapProgressRepository.Instance?.ClearAutomaticEndTurn();
+        playerMovementStarted = false;
+        automaticEndTurnReadyFrames = 0;
     }
 
     private IEnumerator StartEnemyTurnAfterPendingThreats()
@@ -128,6 +288,7 @@ public class TurnManager : MonoBehaviour
         if (DHGameEndState.IsEnding)
             return;
 
+        ClearAutomaticEndTurn();
         UpdateTurnStateText("Player Turn");
 
         if (partyRegistry != null)

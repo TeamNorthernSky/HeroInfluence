@@ -1168,7 +1168,7 @@ public class BattleManager : MonoBehaviour
 
         foreach (BattleCharactor defender in candidates)
         {
-            SkillData skill = defender.SelectedSkillData;
+            SkillData skill = defender.CounterSkill;
             if (!CounterattackRules.CanDefenderCounter(defender, skill))
             {
                 Debug.Log($"[Combat] {defender.UnitName} 반격 제외: 전열/상태/공격 스킬 조건 불충족 (skill={skill?.skillIndex.ToString() ?? "null"})");
