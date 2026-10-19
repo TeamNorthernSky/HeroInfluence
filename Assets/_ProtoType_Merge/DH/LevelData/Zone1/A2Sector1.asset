@@ -9346,7 +9346,6 @@ MonoBehaviour:
   - {x: 22, y: 13}
   - {x: 21, y: 13}
   - {x: 20, y: 13}
-  - {x: 19, y: 13}
   - {x: 26, y: 10}
   - {x: 26, y: 9}
   - {x: 26, y: 8}
@@ -10591,6 +10590,7 @@ MonoBehaviour:
   - {x: 47, y: 44}
   - {x: 48, y: 44}
   - {x: 49, y: 44}
+  - {x: 19, y: 13}
   itemPlacements:
   - gridPosition: {x: 7, y: 9}
     resourceType: 0
@@ -10608,9 +10608,6 @@ MonoBehaviour:
     resourceType: 0
     amount: 1000
   - gridPosition: {x: 20, y: 19}
-    resourceType: 0
-    amount: 1000
-  - gridPosition: {x: 19, y: 23}
     resourceType: 0
     amount: 1000
   - gridPosition: {x: 34, y: 35}
@@ -10676,6 +10673,12 @@ MonoBehaviour:
   - gridPosition: {x: 12, y: 23}
     resourceType: 3
     amount: 5
+  - gridPosition: {x: 16, y: 15}
+    resourceType: 3
+    amount: 5
+  - gridPosition: {x: 19, y: 23}
+    resourceType: 0
+    amount: 1000
   outpostPlacements:
   - gridPosition: {x: 32, y: 28}
     outpostType: 0
@@ -11070,9 +11073,6 @@ MonoBehaviour:
   - gridPosition: {x: 14, y: 21}
     prefabKey: Sub_2-2
   worldEventPlacements:
-  - gridPosition: {x: 16, y: 31}
-    worldEventId: R_NPC_01_001
-    eventType: 2
   - gridPosition: {x: 32, y: 7}
     worldEventId: R_NPC_01_002
     eventType: 2
@@ -11094,15 +11094,24 @@ MonoBehaviour:
   - gridPosition: {x: 25, y: 25}
     worldEventId: S_NPC_01_002
     eventType: 3
-  - gridPosition: {x: 33, y: 23}
-    worldEventId: S_NPC_01_003
-    eventType: 3
   - gridPosition: {x: 41, y: 15}
     worldEventId: S_NPC_01_004
     eventType: 3
   - gridPosition: {x: 45, y: 33}
     worldEventId: S_NPC_01_005
     eventType: 3
+  - gridPosition: {x: 33, y: 23}
+    worldEventId: R_NPC_01_004
+    eventType: 2
+  - gridPosition: {x: 15, y: 12}
+    worldEventId: C_NPC_01_005
+    eventType: 1
+  - gridPosition: {x: 16, y: 29}
+    worldEventId: C_NPC_04_006
+    eventType: 1
+  - gridPosition: {x: 16, y: 32}
+    worldEventId: R_NPC_01_001
+    eventType: 2
   gatePlacements:
   - gateId: gate_001
     firstZoneId: zone_001
