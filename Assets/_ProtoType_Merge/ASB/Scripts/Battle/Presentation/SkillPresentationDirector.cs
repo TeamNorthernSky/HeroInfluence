@@ -964,6 +964,8 @@ public sealed partial class SkillPresentationDirector
         Action onProjectile = isChainTimelineDelivery ? (Action)StartChainLightning : (Action)LaunchProjectile;
         receiver.Configure(railRouter, onImpact, onProjectile,
             playbackRange.Start, playbackRange.End);
+        receiver.ConfigureHitStopCallback(marker =>
+            _battle.VisualDirector?.RequestHitStopFromMarker(actor, target, marker.Settings));
         void OnMove(PresentationMoveMarker marker)
         {
             foreach (PlanMoveSpan span in moveSpans)
@@ -1074,7 +1076,8 @@ public sealed partial class SkillPresentationDirector
                 }
 
                 float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
-                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed);   // 전투배속 × 구간속도
+                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed *
+                    (actor.Anim != null ? actor.Anim.HitStopSpeedMultiplier : 1f));
                 holdPrevTime = director.time;
                 if (director.time >= playbackRange.End - 0.0001d)
                 {
@@ -1305,7 +1308,7 @@ public sealed partial class SkillPresentationDirector
         List<DamageContext> contexts, List<Func<BattleHitResult>> hitCallbacks, int pairCount,
         ProjectileVisualData projectileVisual, MovingAttackPlan movingAttackPlan = null,
         UnitMovementProfile movement = null, float originRotationY = 0f,
-        Vector3? movementOrigin = null, bool shouldMove = false)
+        Vector3? movementOrigin = null, bool shouldMove = false, bool shouldRotate = false)
     {
         TimelineAsset timeline = actor != null ? presentation.ResolveTimeline(actor.PresentationIndex, actor.UnitName) : null;
         if (timeline == null)
@@ -1364,10 +1367,20 @@ public sealed partial class SkillPresentationDirector
 
         Quaternion originRotation = Quaternion.Euler(0f, originRotationY, 0f);
         Vector3 meleeOrigin = movementOrigin ?? actor.transform.position;
+        bool rotateForTimeline = !meleeMovement && movingAttackPlan == null &&
+                                 (presentation.Move?.Enabled ?? true) && shouldRotate;
         if (movingAttackPlan != null)
         {
             var approach = new ActionSequenceRunner();
             EnqueueMovingAttackApproach(approach, movingAttackPlan, actor.Anim, movement, presentation.Move);
+            yield return _battle.StartCoroutine(approach.RunAll(_battle));
+            if (actor == null || actor.IsDead) yield break;
+        }
+        else if (rotateForTimeline)
+        {
+            var approach = new ActionSequenceRunner();
+            EnqueueSkillApproach(approach, actor, primaryTarget, actor.Anim, movement,
+                false, true, presentation.Move);
             yield return _battle.StartCoroutine(approach.RunAll(_battle));
             if (actor == null || actor.IsDead) yield break;
         }
@@ -1447,6 +1460,8 @@ public sealed partial class SkillPresentationDirector
         if (railRouter != null) railRouter.SuppressClipCues = true;
         Action onDelivery = sequentialHits ? null : (Action)ResolveDelivery;
         receiver.Configure(railRouter, onDelivery, onDelivery);
+        receiver.ConfigureHitStopCallback(marker =>
+            _battle.VisualDirector?.RequestHitStopFromMarker(actor, primaryTarget, marker.Settings));
         if (movingAttackSpan != null)
         {
             void OnReturn(PresentationReturnMarker marker)
@@ -1584,7 +1599,8 @@ public sealed partial class SkillPresentationDirector
                 }
 
                 float regionSpeed = PresentationTimelineSpeed.SpeedAt(timeline, director.time);
-                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed);   // 전투배속 × 구간속도
+                ApplyBattleSpeedToDirector(director, _battle.CurrentBattleSpeed * regionSpeed *
+                    (actor.Anim != null ? actor.Anim.HitStopSpeedMultiplier : 1f));
                 holdPrevTime = director.time;
                 yield return null;
             }
@@ -1635,6 +1651,13 @@ public sealed partial class SkillPresentationDirector
                 var tail = new ActionSequenceRunner();
                 EnqueueMovingAttackReturn(tail, actor.Anim, movement,
                     movingAttackPlan.OriginPosition, originRotationY, presentation.Return);
+                yield return _battle.StartCoroutine(tail.RunAll(_battle));
+            }
+            if (rotateForTimeline)
+            {
+                var tail = new ActionSequenceRunner();
+                EnqueueSkillReturn(tail, actor.Anim, movement, false, true,
+                    meleeOrigin, originRotationY, presentation.Return, keepCurrentAnimation: true);
                 yield return _battle.StartCoroutine(tail.RunAll(_battle));
             }
             actor.Anim?.PlayIdleAnimation();
@@ -2549,7 +2572,7 @@ public sealed partial class SkillPresentationDirector
                 actor, primaryTarget, skill, presentation, deliveryGate,
                 contexts, hitCallbacks, pairCount, projectileVisual,
                 movingTimelineSpan != null ? movingTimelinePlan : null, movement, originRotationY,
-                originPosition, shouldMove);
+                originPosition, shouldMove, shouldRotate);
             if (movingTimelineSpan != null)
             {
                 // Animator MovingAttack 경로와 같은 후딜: 경과=곡선 이동 구간, TotalDelay 잔여(최소 0.2초)를 기다린다.

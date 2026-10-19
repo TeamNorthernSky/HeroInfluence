@@ -30,12 +30,27 @@ MonoBehaviour:
   HitSoundId: 0
   SfxVolume: 1
   EnableHitEffect: 1
-  HitEffectId: 0
+  HitEffectId: 400019
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
+  OverrideHitStop: 0
+  HitStop:
+    Enabled: 1
+    DurationSeconds: 0.08
+    CharacterSpeed: 0.05
+    EffectSpeed: 0.25
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    SimultaneousArrivalSeconds: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -52,6 +67,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx: []
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
@@ -60,8 +76,10 @@ MonoBehaviour:
   Move:
     Enabled: 1
     UseUnitMovement: 1
+    ForceApproach: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   AttackPrepare:
     Enabled: 1
     AnimationStateName: 
@@ -74,7 +92,27 @@ MonoBehaviour:
       BlendInSeconds: 0
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
-      Cues: []
+      Cues:
+      - CueName: yulia_cast_charge
+        EffectIds: 8a1a0600
+        SoundIds: 
+        Operation: 0
+        InstanceKey: cast_charge
+        Anchor: 1
+        Socket: 1
+        Timing: 0
+        Time: 0
+        CueId: 6c1f2b7a9e4d4c0f8a3b5d2e7f9a1c40
+      - CueName: yulia_cast_charge_end
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: cast_charge
+        Anchor: 1
+        Socket: 1
+        Timing: 0
+        Time: 0
+        CueId: 6c1f2b7a9e4d4c0f8a3b5d2e7f9a1c41
     - AnimationStateName: Base Layer.ClassSkill_2
       BlendInSeconds: 0
       AdvanceOnEvent: 0
@@ -94,6 +132,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   Post:
     Enabled: 1
     AnimationStateName: 

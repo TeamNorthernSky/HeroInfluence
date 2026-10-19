@@ -102,6 +102,12 @@ public class BattleManager : MonoBehaviour
     internal BattleVisualDirector VisualDirector => _visualDirector;
     internal SkillPresentationCatalog PresentationCatalog => _presentationCatalog;
 
+    /// <summary>마커 없이 코드에서 히트스탑 연출을 요청한다.</summary>
+    public void RequestHitStop(BattleCharactor actor, BattleCharactor target, HitStopSettings settings)
+    {
+        _visualDirector?.RequestHitStop(actor, target, settings);
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

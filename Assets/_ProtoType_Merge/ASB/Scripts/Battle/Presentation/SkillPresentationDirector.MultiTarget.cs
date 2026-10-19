@@ -306,6 +306,13 @@ public sealed partial class SkillPresentationDirector
                 // can otherwise keep the previous segment's graph on some Unity versions.
                 if (s > 0) director.Stop();
                 receiver.ConfigureForPlanWithReturn(router, ResolveSlot, OnMove, OnReturn, 0d, timeline.duration);
+                receiver.ConfigureHitStopCallback(marker =>
+                {
+                    int slot = marker.TargetSlot > 0 ? marker.TargetSlot : segmentSlot;
+                    BattleCharactor hitTarget = slot > 0 && slot <= slotContexts.Count
+                        ? slotContexts[slot - 1]?.Target : null;
+                    _battle.VisualDirector?.RequestHitStopFromMarker(actor, hitTarget, marker.Settings);
+                });
                 BindTimelineToActor(director, timeline, actor);
                 director.Play();
                 director.time = 0d;
@@ -328,7 +335,8 @@ public sealed partial class SkillPresentationDirector
                             () => actor == null || actor.IsDead || interrupt != PresentationInterruptReason.None);
                     }
                     ApplyBattleSpeedToDirector(director,
-                        _battle.CurrentBattleSpeed * PresentationTimelineSpeed.SpeedAt(timeline, now));
+                        _battle.CurrentBattleSpeed * PresentationTimelineSpeed.SpeedAt(timeline, now) *
+                        (actor.Anim != null ? actor.Anim.HitStopSpeedMultiplier : 1f));
                     previousTime = now;
                     if (now >= timeline.duration - 0.0001d) break;
                     yield return null;

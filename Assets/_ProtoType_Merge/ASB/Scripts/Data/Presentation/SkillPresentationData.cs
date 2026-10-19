@@ -273,6 +273,9 @@ public class SkillPresentationData : ScriptableObject
     public bool HitEffectAtTargetRoot;
     [Tooltip("피격 VFX 재생 시간을 전투 배속에 맞춥니다. 끄면 기존 1배속 재생을 유지합니다.")]
     public bool ScaleHitEffectWithBattleSpeed;
+    [Tooltip("켜면 이 스킬의 히트스탑 설정을 사용합니다. 끄면 BattleVisualDirector 기본값을 사용합니다.")]
+    public bool OverrideHitStop;
+    public HitStopSettings HitStop = HitStopSettings.Default;
 
     [Header("Projectile Impact (Skill-specific)")]
     [Tooltip("Actual projectile presentation used by ranged offensive skills. This lives on the presentation asset, never in CSV SkillData.")]

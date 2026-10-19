@@ -39,6 +39,12 @@ public sealed class EffectFallbackRelease : MonoBehaviour
             return;
         }
 
+        // VFX Graph 재료처럼 스스로 수명을 관리하는 재료는 고정 상한을 걸면 끝이 잘린다.
+        if (instance.GetComponent<ISelfManagedEffectLifetime>() != null)
+        {
+            return;
+        }
+
         if (instance.GetComponent<EffectFallbackRelease>() != null)
         {
             return;

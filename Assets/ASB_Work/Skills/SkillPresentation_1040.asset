@@ -34,6 +34,12 @@ MonoBehaviour:
   HitEffectOffset: {x: 0, y: 0, z: 0}
   HitEffectAtTargetRoot: 0
   ScaleHitEffectWithBattleSpeed: 0
+  OverrideHitStop: 1
+  HitStop:
+    Enabled: 1
+    DurationSeconds: 0.06
+    CharacterSpeed: 0.05
+    EffectSpeed: 0.25
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6

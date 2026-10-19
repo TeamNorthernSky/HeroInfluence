@@ -82,6 +82,7 @@ namespace ASB.Work.Battle.Sequence
 
                 if (result != null)
                 {
+                    _visual?.RequestHitStopOnDamage(_contexts[i]?.Caster, result);
                     _visual?.PlayHitEffect(hitTarget, result.SkillIndex);
                     _visual?.ShowDamagePopup(result);
 

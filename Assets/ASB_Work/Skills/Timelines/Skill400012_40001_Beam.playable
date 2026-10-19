@@ -32,6 +32,23 @@ MonoBehaviour:
   m_Time: 0
   _sectionId: Attack
   _boundary: 0
+--- !u!114 &-4211546372028818447
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.02
+  _kind: 0
+  _cueName: yulia_cast_charge
+  _cueId: 6c1f2b7a9e4d4c0f8a3b5d2e7f9a1c40
+  _targetSlot: 0
 --- !u!114 &-4048053942229277254
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -332,6 +349,8 @@ MonoBehaviour:
     - {fileID: 9027312362912886320}
     - {fileID: -8458021569296360482}
     - {fileID: 7794641754209026290}
+    - {fileID: -4211546372028818447}
+    - {fileID: -347313165157334191}
 --- !u!114 &-2408549177832126337
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -354,6 +373,23 @@ MonoBehaviour:
   m_Loop: 0
   m_Version: 1
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &-347313165157334191
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.45
+  _kind: 0
+  _cueName: yulia_cast_charge_end
+  _cueId: 6c1f2b7a9e4d4c0f8a3b5d2e7f9a1c41
+  _targetSlot: 0
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

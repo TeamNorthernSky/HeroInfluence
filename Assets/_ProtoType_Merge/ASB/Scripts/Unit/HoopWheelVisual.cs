@@ -3,7 +3,9 @@ using UnityEngine;
 /// <summary>
 /// 절망의 굴렁쇠(FV40005) 임시 외형. 원본 원기둥(Model) 대신 톱니 바퀴를 만들어 띄우고 회전시킨다.
 /// <list type="bullet">
-/// <item>외형: 링 + 금속판 8개 + 보라 에너지 링 3개. 소환 시 아래에서 솟아오른 뒤 부유·회전.</item>
+/// <item>외형: 링 + 금속판 8개 + 보라 에너지 링 3개. 소환 시 아래에서 솟아오른 뒤 부유·회전.
+///   프리셋에 wheelVisualPrefab(Ultra Mega Magic Orb)이 있으면 그 프리팹으로 대신한다. 파괴도 wheelBreakPrefab이 있으면 대신한다.
+///   이때 중심 높이는 wheelVisualRadius+부유 진폭 이상으로 올려 어떤 카메라 각도에서도 바닥을 뚫지 않게 한다.</item>
 /// <item>원기둥 재등장 방지: BattleCharactor.EnableVisuals(부활·초기 상태 설정)가 Awake 때 기록한 렌더러를 다시 켜므로,
 ///   직후 발생하는 OnHpChanged에서 살아 있으면 Model 렌더러를 다시 끈다.</item>
 /// <item>사망: 바퀴를 숨기고 파괴 이펙트를 씬 루트에 생성한다(시체 제거보다 오래 남아야 한다).</item>
@@ -29,6 +31,7 @@ public sealed class HoopWheelVisual : MonoBehaviour
     [SerializeField] private HoopVfxPreset preset;
 
     private Transform _wheel;
+    private float _wheelHeight = WheelHeight;
     private Mesh _wheelMesh;
     private bool _built;
     private bool _deadVisual;
@@ -115,7 +118,7 @@ public sealed class HoopWheelVisual : MonoBehaviour
         float dt = Time.deltaTime * battleSpeed;
         _spawnElapsed += dt;
 
-        Vector3 p = Vector3.up * WheelHeight;
+        Vector3 p = Vector3.up * _wheelHeight;
         p.y += Mathf.Sin(_spawnElapsed * HoverFrequency) * preset.hoverHeight;
         p.y -= Mathf.Max(0f, 1f - _spawnElapsed / preset.summonSeconds) * SummonDropDistance;
         _wheel.localPosition = p;
@@ -174,7 +177,18 @@ public sealed class HoopWheelVisual : MonoBehaviour
     {
         if (!_built || _deadVisual) return;
         _deadVisual = true;
-        HoopVfxEffect.Spawn(preset, HoopEffectKind.WheelBreak, _wheel.position);
+        if (preset.wheelBreakPrefab != null)
+        {
+            // 씬 루트에 생성: 굴렁쇠 오브젝트는 사망 0.8초 뒤 파괴되지만 연기는 그보다 오래 남아야 한다.
+            GameObject smoke = Instantiate(preset.wheelBreakPrefab, _wheel.position, Quaternion.identity);
+            JC.VFX.VfxEffect effect = smoke.GetComponent<JC.VFX.VfxEffect>();
+            if (effect != null) effect.Play();
+            else EffectFallbackRelease.Ensure(smoke, preset.destroySeconds);
+        }
+        else
+        {
+            HoopVfxEffect.Spawn(preset, HoopEffectKind.WheelBreak, _wheel.position);
+        }
         UnitSfxProfile.Play(owner, UnitSfxEvent.Death);
         _wheel.gameObject.SetActive(false);
     }
@@ -200,9 +214,20 @@ public sealed class HoopWheelVisual : MonoBehaviour
     {
         SetModelRenderersEnabled(false);
 
+        _wheelHeight = ResolveWheelHeight(preset);
         _wheel = new GameObject("HoopWheelVisual").transform;
         _wheel.SetParent(transform, false);
-        _wheel.localPosition = Vector3.up * (WheelHeight - SummonDropDistance);
+        _wheel.localPosition = Vector3.up * (_wheelHeight - SummonDropDistance);
+
+        if (preset.wheelVisualPrefab != null)
+        {
+            // Ultra Mega 외형(Magic Orb). 부유·회전·숨김은 _wheel이 그대로 담당한다.
+            // Model 아래가 아니므로 SetModelRenderersEnabled가 VFXRenderer를 끄지 않는다.
+            Instantiate(preset.wheelVisualPrefab, _wheel, false);
+            _built = true;
+            return;
+        }
+
         _wheelMesh = CreateTorus(WheelRadius, .055f);
         _wheel.gameObject.AddComponent<MeshFilter>().sharedMesh = _wheelMesh;
         _wheel.gameObject.AddComponent<MeshRenderer>().sharedMaterial = preset.frameMaterial;
@@ -240,6 +265,16 @@ public sealed class HoopWheelVisual : MonoBehaviour
         }
 
         _built = true;
+    }
+
+    /// <summary>
+    /// 바퀴 중심 높이(루트 기준). 프리팹 외형은 카메라를 향한 판이라 수평 시점에서 반지름만큼 내려간다 →
+    /// 반지름+부유 진폭 아래로 두지 않는다. 코드 외형(반지름 0.48)은 기존 높이를 그대로 쓴다.
+    /// </summary>
+    internal static float ResolveWheelHeight(HoopVfxPreset preset)
+    {
+        if (preset == null || preset.wheelVisualPrefab == null) return WheelHeight;
+        return Mathf.Max(WheelHeight, preset.wheelVisualRadius + preset.hoverHeight);
     }
 
     private static Mesh CreateTorus(float radius, float tube)

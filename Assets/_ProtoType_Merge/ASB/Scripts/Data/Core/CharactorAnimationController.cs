@@ -31,6 +31,14 @@ public class CharactorAnimationController : MonoBehaviour
     private readonly HashSet<string> _missingStateWarned = new HashSet<string>();
 
     public float CurrentAnimSpeed { get; private set; } = 1.0f;
+    /// <summary>타격 연출에만 적용하는 배율. 전투 배속과 홀드 상태는 그대로 보존한다.</summary>
+    public float HitStopSpeedMultiplier { get; private set; } = 1f;
+
+    public void SetHitStopSpeedMultiplier(float multiplier)
+    {
+        HitStopSpeedMultiplier = Mathf.Clamp(multiplier, 0f, 1f);
+        ApplyAnimationSpeed();
+    }
 
     /// <summary>
     /// 이 컨트롤러가 구동하는 Animator. 연출 Cue 드라이버가 <b>같은</b> Animator의 상태·경과시간을 읽기 위해 노출한다.
@@ -89,7 +97,7 @@ public class CharactorAnimationController : MonoBehaviour
                 : _animator.GetCurrentAnimatorStateInfo(0).IsName(StateIdle);
         }
 
-        float speed = CurrentAnimSpeed * (isIdle ? _idleSpeedMultiplier : 1f);
+        float speed = CurrentAnimSpeed * HitStopSpeedMultiplier * (isIdle ? _idleSpeedMultiplier : 1f);
         if (!Mathf.Approximately(_animator.speed, speed))
         {
             _animator.speed = speed;
@@ -230,6 +238,7 @@ public class CharactorAnimationController : MonoBehaviour
 
     private void OnDisable()
     {
+        HitStopSpeedMultiplier = 1f;
         // 홀드 중 비활성화되면 코루틴이 멈춰 프리즈가 남을 수 있으니 상태를 정리한다.
         if (IsHolding)
         {
@@ -415,7 +424,7 @@ public class CharactorAnimationController : MonoBehaviour
                && elapsedBattleAnimTime < StateEnterWaitTimeoutSeconds)
         {
             yield return null;
-            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed;
+            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed * HitStopSpeedMultiplier;
         }
 
         AnimatorStateInfo enteredState = _animator.GetCurrentAnimatorStateInfo(0);
@@ -488,7 +497,7 @@ public class CharactorAnimationController : MonoBehaviour
             }
 
             yield return null;
-            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed;
+            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed * HitStopSpeedMultiplier;
         }
 
         LastClipWaitBattleSeconds = elapsedBattleAnimTime;
@@ -519,7 +528,7 @@ public class CharactorAnimationController : MonoBehaviour
             }
 
             yield return null;
-            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed;
+            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed * HitStopSpeedMultiplier;
         }
 
         if (!_animator.GetCurrentAnimatorStateInfo(0).IsName(stateName))
@@ -545,7 +554,7 @@ public class CharactorAnimationController : MonoBehaviour
             }
 
             yield return null;
-            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed;
+            elapsedBattleAnimTime += Time.deltaTime * CurrentAnimSpeed * HitStopSpeedMultiplier;
         }
 
         LastClipWaitBattleSeconds = elapsedBattleAnimTime;
@@ -680,6 +689,7 @@ public class CharactorAnimationController : MonoBehaviour
     public IEnumerator MoveToTarget(Transform target, float approachDistance, float duration,
         string animationStateName = null, float blendInSeconds = CrossFadeDuration)
     {
+        while (HitStopSpeedMultiplier < 0.999f) yield return null;
         if (_animator != null)
         {
             string stateName = string.IsNullOrWhiteSpace(animationStateName) ? "MoveForward" : animationStateName.Trim();
@@ -707,6 +717,7 @@ public class CharactorAnimationController : MonoBehaviour
             public IEnumerator MoveToPosition(Vector3 destination, float duration,
                 string animationStateName = null, float blendInSeconds = CrossFadeDuration)
             {
+                while (HitStopSpeedMultiplier < 0.999f) yield return null;
                 if (_animator != null)
                 {
                     string stateName = string.IsNullOrWhiteSpace(animationStateName) ? "MoveForward" : animationStateName.Trim();
@@ -729,6 +740,7 @@ public class CharactorAnimationController : MonoBehaviour
         string animationStateName = null, float blendInSeconds = CrossFadeDuration,
         bool keepCurrentAnimation = false)
     {
+        while (HitStopSpeedMultiplier < 0.999f) yield return null;
         if (_animator != null && !keepCurrentAnimation)
         {
             string stateName = string.IsNullOrWhiteSpace(animationStateName) ? "MoveReturn" : animationStateName.Trim();

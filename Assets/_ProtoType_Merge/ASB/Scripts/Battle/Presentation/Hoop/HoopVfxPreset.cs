@@ -51,4 +51,17 @@ public sealed class HoopVfxPreset : ScriptableObject
     [Min(0f)] public float stopDistance = .5f;
     [Tooltip("돌진 궤적이 남는 시간(배속 1 기준 초).")]
     [Min(.01f)] public float trailSeconds = .28f;
+
+    [Header("Ultra Mega VFX (선택 — 비우면 코드로 그린 임시 외형)")]
+    [Tooltip("바퀴 대신 띄울 외형 프리팹(Magic Orb). 부유·회전은 그대로 적용된다.")]
+    public GameObject wheelVisualPrefab;
+    [Tooltip("wheelVisualPrefab의 보이는 반지름(m, 어두운 외곽 포함). 중심을 반지름+부유 진폭 높이에 띄워 바닥을 뚫지 않게 한다. " +
+             "프리팹 스케일을 바꾸면 함께 맞출 것. 0.99 = 그리드 한 칸(3.3m)의 3/5 지름.")]
+    [Min(0f)] public float wheelVisualRadius = .99f;
+    [Tooltip("파괴 시 코드 연기·파편 대신 재생할 프리팹(Stylized Smoke).")]
+    public GameObject wheelBreakPrefab;
+    [Tooltip("돌진 중 트레일 대신 뒤쪽에 붙일 전기 아크 프리팹(ElectricArcEndpoints 필요).")]
+    public GameObject dashArcPrefab;
+    [Tooltip("아크 뒤쪽 끝점이 돌진 진행도에서 얼마나 뒤처지는지(0~1).")]
+    [Range(0f, 1f)] public float dashArcLag = .35f;
 }

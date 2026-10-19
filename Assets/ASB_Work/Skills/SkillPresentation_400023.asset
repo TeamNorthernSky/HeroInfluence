@@ -30,10 +30,16 @@ MonoBehaviour:
   HitSoundId: 0
   SfxVolume: 1
   EnableHitEffect: 1
-  HitEffectId: 0
+  HitEffectId: 400019
   HitEffectOffset: {x: 0, y: 0, z: 0}
   HitEffectAtTargetRoot: 0
   ScaleHitEffectWithBattleSpeed: 0
+  OverrideHitStop: 0
+  HitStop:
+    Enabled: 1
+    DurationSeconds: 0.08
+    CharacterSpeed: 0.05
+    EffectSpeed: 0.25
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
@@ -43,6 +49,7 @@ MonoBehaviour:
     AccelerationMultiplier: 1
     TargetOffset: {x: 0, y: 0, z: 0}
     PreserveRootFlightTime: 0
+    SimultaneousArrivalSeconds: 0
     HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
@@ -85,7 +92,27 @@ MonoBehaviour:
       BlendInSeconds: 0
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
-      Cues: []
+      Cues:
+      - CueName: yulia_cast_charge
+        EffectIds: 941a0600
+        SoundIds: 
+        Operation: 0
+        InstanceKey: cast_charge
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 6c1f2b7a9e4d4c0f8a3b5d2e7f9a1c40
+      - CueName: yulia_cast_charge_end
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: cast_charge
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 6c1f2b7a9e4d4c0f8a3b5d2e7f9a1c41
     - AnimationStateName: Base Layer.ClassSkill_2
       BlendInSeconds: 0
       AdvanceOnEvent: 0

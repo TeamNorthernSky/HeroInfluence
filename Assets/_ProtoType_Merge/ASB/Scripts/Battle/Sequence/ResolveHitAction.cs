@@ -104,6 +104,7 @@ namespace ASB.Work.Battle.Sequence
                 return;
             }
 
+            _visual?.RequestHitStopOnDamage(_actor, result);
             _visual?.PlayHitEffect(_target, result.SkillIndex, _battleSpeed);
             _visual?.ShowDamagePopup(result);
 

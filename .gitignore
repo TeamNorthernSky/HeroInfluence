@@ -188,3 +188,16 @@ Assets/_ProtoType_Merge/CLAUDE.md.meta
 # 발표 자료 출력물
 /presentation_output/
 /presentation_build/
+
+# VFX 에셋스토어 재임포트 부산물 — 설치용 패키지·문서·데모 설정, 런타임 무의존
+*.unitypackage
+*.unitypackage.meta
+/Assets/GabrielAguiarProductions/Documentation.pdf
+/Assets/GabrielAguiarProductions/Documentation.pdf.meta
+/Assets/TwoUncleVFX/Settings/
+/Assets/TwoUncleVFX/Settings.meta
+/Assets/TwoUncleVFX/ScenesURP/Hit.unity
+/Assets/TwoUncleVFX/ScenesURP/Hit.unity.meta
+# Bundle Shader Pack은 안내 txt뿐 — 실제 셰이더 팩 4종을 임포트해 공유할 때는 이 규칙 제거
+/Assets/Matthew Guz/
+/Assets/Matthew Guz.meta

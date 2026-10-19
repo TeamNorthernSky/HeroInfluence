@@ -41,18 +41,39 @@ public sealed class HoopDashPresentationSequence : IAoESkillPresentationSequence
             : FallbackWheelHeight;
 
         TrailRenderer trail = null;
+        JC.VFX.VfxEffect arc = null;
+        Transform arcTail = null;
         bool hitDelivered = false;
         try
         {
             HoopVfxEffect.Spawn(preset, HoopEffectKind.Charge, visual.WheelCenter.position);
             yield return Wait(battleManager, preset.chargeSeconds);
 
-            trail = CreateTrail(preset, home + Vector3.up * trailHeight, battleManager);
+            if (preset.dashArcPrefab != null)
+            {
+                // 트레일 대신 뒤쪽에 전기 아크: 앞 끝점은 바퀴, 뒤 끝점은 진행도를 뒤따르는 지점.
+                arcTail = new GameObject("HoopDashArcTail").transform;
+                arcTail.position = home + Vector3.up * trailHeight;
+                GameObject arcObject = UnityEngine.Object.Instantiate(preset.dashArcPrefab, arcTail.position, Quaternion.identity);
+                arc = arcObject.GetComponent<JC.VFX.VfxEffect>();
+                if (arc != null) arc.Play(visual.WheelCenter, arcTail);
+                else EffectFallbackRelease.Ensure(arcObject);
+            }
+            else
+            {
+                trail = CreateTrail(preset, home + Vector3.up * trailHeight, battleManager);
+            }
+
             float elapsed = 0f;
             while (elapsed < preset.dashSeconds && actor != null)
             {
                 elapsed += Time.deltaTime * BattleSpeed(battleManager);
-                actor.transform.position = Vector3.Lerp(home, end, Mathf.Clamp01(elapsed / preset.dashSeconds));
+                float progress = Mathf.Clamp01(elapsed / preset.dashSeconds);
+                actor.transform.position = Vector3.Lerp(home, end, progress);
+                if (arcTail != null)
+                {
+                    arcTail.position = ResolveArcTail(home, end, progress, preset.dashArcLag) + Vector3.up * trailHeight;
+                }
                 if (trail != null)
                 {
                     trail.time = preset.trailSeconds / BattleSpeed(battleManager);
@@ -61,6 +82,8 @@ public sealed class HoopDashPresentationSequence : IAoESkillPresentationSequence
                 yield return null;
             }
 
+            // 도착하면 이동을 멈추고 뒤쪽 아크를 먼저 소거한다(기획 Y09).
+            StopArc(ref arc, ref arcTail);
             yield return Wait(battleManager, preset.impactDelaySeconds);
             applyHits?.Invoke();
             hitDelivered = true;
@@ -68,6 +91,7 @@ public sealed class HoopDashPresentationSequence : IAoESkillPresentationSequence
         }
         finally
         {
+            StopArc(ref arc, ref arcTail);
             if (trail != null)
             {
                 trail.emitting = false;
@@ -99,6 +123,21 @@ public sealed class HoopDashPresentationSequence : IAoESkillPresentationSequence
         if (distance <= 1e-4f) return home;
         float travel = Mathf.Max(0f, distance - Mathf.Max(0f, stopDistance));
         return home + toTarget / distance * travel;
+    }
+
+    /// <summary>아크 뒤쪽 끝점: 돌진 진행도에서 lag만큼 뒤처진 지점(높이 제외).</summary>
+    internal static Vector3 ResolveArcTail(Vector3 home, Vector3 end, float progress, float lag)
+    {
+        return Vector3.Lerp(home, end, Mathf.Max(0f, progress - Mathf.Clamp01(lag)));
+    }
+
+    private static void StopArc(ref JC.VFX.VfxEffect arc, ref Transform arcTail)
+    {
+        if (arc != null) arc.Stop();
+        arc = null;
+        // 끝점은 아크가 우아하게 사라질 동안 남겨 둔다(ElectricArcEndpoints는 끝점이 사라지면 정지한다).
+        if (arcTail != null) UnityEngine.Object.Destroy(arcTail.gameObject, 1.5f);
+        arcTail = null;
     }
 
     private static TrailRenderer CreateTrail(HoopVfxPreset preset, Vector3 position, BattleManager battleManager)

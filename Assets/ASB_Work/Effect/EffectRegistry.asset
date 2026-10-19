@@ -73,3 +73,11 @@ MonoBehaviour:
   - Id: 400012
     Prefab: {fileID: 1485238337852503493, guid: df7b827fa3a08ba4b9ef9a0acbeb3fc3,
       type: 3}
+  - Id: 400010
+    Prefab: {fileID: 5624129214405423041, guid: 2d65ab9d6d5eee149b8607f812121a9d,
+      type: 3}
+  - Id: 400020
+    Prefab: {fileID: 6094091680699213791, guid: 681152651ec9fda4e97487d7a85b41bc,
+      type: 3}
+  - Id: 400019
+    Prefab: {fileID: 701210666644524181, guid: 3880fcfd49f541c4c838e57010c27aa9, type: 3}
