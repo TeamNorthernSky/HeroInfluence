@@ -593,7 +593,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
 
             WorldEventObject worldEvent = SpawnComponent(worldEventPrefab, grid, parent);
             if (worldEvent != null)
-                worldEvent.ApplyInitialData(placement.WorldEventId);
+                worldEvent.ApplyInitialData(placement.WorldEventId, placement.Rotation);
         }
     }
 

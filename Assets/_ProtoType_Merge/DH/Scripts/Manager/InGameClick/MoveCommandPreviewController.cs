@@ -487,6 +487,9 @@ public class MoveCommandPreviewController
         if (currentGrid == interactionGrid)
             return false;
 
+        if (gridManager.TryGetWorldEventObjectAtGrid(interactionGrid, out WorldEventObject worldEvent))
+            return worldEvent.IsInteractionCell(currentGrid);
+
         if (GridManager.GridDistance(currentGrid, interactionGrid) > 1)
             return false;
 
@@ -600,6 +603,29 @@ public class MoveCommandPreviewController
 
         if (previewInteractionTargetGrid.HasValue)
         {
+            if (gridManager.TryGetWorldEventObjectAtGrid(previewInteractionTargetGrid.Value, out WorldEventObject worldEvent)
+                && worldEvent.GetComponent<MultiGridOccupant>() is MultiGridOccupant occupant
+                && occupant.Size != Vector2Int.one)
+            {
+                var goals = new List<Vector2Int>();
+                foreach (Vector2Int cell in worldEvent.GetInteractionCells())
+                {
+                    if (IsAllowedMoveRangeSearchCell(cell)
+                        && (cell == partyGrid || gridManager.CanOccupyCell(cell, activeMover.transform)))
+                        goals.Add(cell);
+                }
+                List<Vector2Int> worldEventPath = pathfinder.FindPathToAny(partyGrid, goals,
+                    previewInteractionTargetGrid.Value, activeMover.transform, false,
+                    EnemyEncounterPathMode.BlockEncounterZones, false,
+                    MainEventInteractionPathMode.BlockInteractionCells, PreviewPathMaxVisitedNodes,
+                    activeMover.RemainingMovePoints,
+                    cell => !worldEvent.OccupiesGrid(cell) && IsAllowedMoveRangeSearchCell(cell));
+                if (worldEventPath == null || worldEventPath.Count == 0)
+                    return null;
+                destinationGrid = worldEventPath[worldEventPath.Count - 1];
+                return worldEventPath;
+            }
+
             List<Vector2Int> interactionPath = pathfinder.FindPathToAdjacent(
                 partyGrid,
                 previewInteractionTargetGrid.Value,
