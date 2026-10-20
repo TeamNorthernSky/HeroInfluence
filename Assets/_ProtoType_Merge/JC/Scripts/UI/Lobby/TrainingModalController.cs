@@ -10,7 +10,7 @@ using UnityEngine.UI;
 /// 좌측 영웅 프로필, 중앙 2분류행(공격력/생명력) × 강화단계 셀(아이콘+상태프레임).
 ///   - 카드 전체 좌클릭으로 다음 훈련 단계 선택 → 비용 표시 → 하단 [진행]으로 1단계 강화.
 ///   - 단계 우클릭 또는 단계 아이콘 외 모달 영역 클릭 → 선택 해제.
-///   - 카드 호버 시 현재 능력치와 다음 훈련 후 능력치를 비교 표시.
+///   - 선택된 카드 안에 현재 능력치와 다음 훈련 후 능력치를 비교 표시.
 /// 백엔드 = TrainingManager(영웅 BaseStats 영구 가산). 단계 수치/비용은 TrainingManager 인스펙터 값 사용.
 /// </summary>
 [DisallowMultipleComponent]
@@ -82,6 +82,7 @@ public class TrainingModalController : MonoBehaviour
     private int selectedUnitIndex = -1;
     private int selRow = -1;        // 선택된 행 인덱스
     private int selStageLevel = -1; // 선택된 도달 레벨(1~MaxTrainingLevel)
+    private int detailsRow = -1;
 
     private TrainingManager subTM;
     private EconomyManager subEco;
@@ -126,8 +127,9 @@ public class TrainingModalController : MonoBehaviour
                 foreach (var tooltip in root.GetComponentsInChildren<LobbyTooltipTrigger>(true))
                     tooltip.enabled = false;
                 var hover = root.GetComponent<TrainingCardHover>();
-                if (hover == null) hover = root.AddComponent<TrainingCardHover>();
-                hover.Bind(this, rowIndex);
+                if (hover != null) hover.enabled = false;
+                if (root.GetComponent<TrainingCardSelectionView>() == null)
+                    root.AddComponent<TrainingCardSelectionView>();
             }
             if (row.cardButton != null)
                 row.cardButton.onClick.AddListener(() => OnTrainingCardClicked(rowIndex));
@@ -227,36 +229,21 @@ public class TrainingModalController : MonoBehaviour
     {
         var training = GameManager.Instance != null ? GameManager.Instance.Training : null;
         if (training == null || selectedUnitIndex < 0 || rowIndex < 0 || rowIndex >= rows.Count) return;
+        if (rows[rowIndex] == null) return;
+        if (training.GetLevel(selectedUnitIndex, rows[rowIndex].stat) >= training.GetMaxTrainableLevel())
+        {
+            bool wasVisible = detailsRow == rowIndex;
+            ClearSelection();
+            detailsRow = wasVisible ? -1 : rowIndex;
+            Refresh();
+            return;
+        }
         OnStageCellClicked(rowIndex, training.GetLevel(selectedUnitIndex, rows[rowIndex].stat), false);
     }
 
     public void OnTrainingCardHover(int rowIndex, bool enter)
     {
-        var tooltip = SkillTooltip.Instance;
-        if (tooltip == null) return;
-        if (!enter) { tooltip.Hide(); return; }
-        var gm = GameManager.Instance;
-        var repo = PersistentUnitRepository.Instance;
-        if (gm == null || gm.Training == null || repo == null || selectedUnitIndex < 0
-            || rowIndex < 0 || rowIndex >= rows.Count
-            || !repo.TryGetUnit(selectedUnitIndex, out var unit) || unit == null) return;
-        var row = rows[rowIndex];
-        if (row == null || row.cardImage == null) return;
-        var training = gm.Training;
-        int level = training.GetLevel(selectedUnitIndex, row.stat);
-        float current = row.stat == TrainingStat.Attack ? unit.IngameStats.Atk : unit.IngameStats.HP;
-        var icon = row.categoryIcon != null ? row.categoryIcon.sprite : row.categorySprite;
-        var target = row.cardImage.rectTransform;
-        string name = StatName(row.stat);
-        if (level >= training.GetMaxTrainableLevel())
-        {
-            string reason = level >= TrainingManager.MaxTrainingLevel ? "최고 단계" : "훈련실 업그레이드 필요";
-            tooltip.ShowInfo(icon, name, $"{name} {current:0.##}\n{reason}", target);
-            return;
-        }
-        float gain = training.GetNextGain(selectedUnitIndex, row.stat);
-        tooltip.ShowCompare(icon, $"{name} 훈련 Lv.{level}", $"{name} {current:0.##}",
-            icon, $"{name} 훈련 Lv.{level + 1}", $"{name} {current:0.##} → {current + gain:0.##}\n(+{gain:0.##})", target);
+        // Kept for older TrainingCardHover components. Details now follow selection.
     }
 
     // ─── 단계 선택/해제 (핸들러 콜백) ───────────────────────────
@@ -275,16 +262,23 @@ public class TrainingModalController : MonoBehaviour
         completionMsgUntil = 0f;
         // 토글
         if (selRow == rowIndex && selStageLevel == stageLevel) ClearSelection();
-        else { selRow = rowIndex; selStageLevel = stageLevel; }
+        else { selRow = rowIndex; selStageLevel = stageLevel; detailsRow = rowIndex; }
         Refresh();
     }
 
     public void OnDeselectAreaClicked()
     {
-        if (selRow >= 0) { ClearSelection(); Refresh(); }
+        if (selRow >= 0 || detailsRow >= 0) { ClearSelection(); Refresh(); }
     }
 
-    private void ClearSelection() { selRow = -1; selStageLevel = -1; }
+    private void ClearSelection()
+    {
+        selRow = -1;
+        selStageLevel = -1;
+        detailsRow = -1;
+        foreach (var row in rows)
+            if (row?.cardImage != null) row.cardImage.GetComponent<TrainingCardSelectionView>()?.Hide();
+    }
 
     private void OnCancel() => CloseModal();
 
@@ -362,7 +356,8 @@ public class TrainingModalController : MonoBehaviour
             if (row == null) continue;
             int level = hasHero ? tm.GetLevel(selectedUnitIndex, row.stat) : 0;
             if (row.levelText != null) row.levelText.text = hasHero ? $"Lv{level}" : "Lv—";
-            if (row.cardImage != null) row.cardImage.sprite = selRow == r ? cardSelectedSprite : cardNormalSprite;
+            if (row.cardImage != null) row.cardImage.sprite = detailsRow == r ? cardSelectedSprite : cardNormalSprite;
+            RefreshCardDetails(r, row, tm, level);
             float[] gains = ToArray(row.stat == TrainingStat.Attack ? tm.AtkGainPerLevel : tm.HpGainPerLevel);
 
             if (row.stages == null) continue;
@@ -423,6 +418,28 @@ public class TrainingModalController : MonoBehaviour
                 if (!string.IsNullOrEmpty(msg)) stateInfoText.text = msg;
             }
         }
+    }
+
+    private void RefreshCardDetails(int rowIndex, StatRow row, TrainingManager training, int level)
+    {
+        var view = row.cardImage != null ? row.cardImage.GetComponent<TrainingCardSelectionView>() : null;
+        if (view == null) return;
+        var repo = PersistentUnitRepository.Instance;
+        if (detailsRow != rowIndex || repo == null || selectedUnitIndex < 0 ||
+            !repo.TryGetUnit(selectedUnitIndex, out var unit) || unit == null)
+        {
+            view.Hide();
+            return;
+        }
+        float current = row.stat == TrainingStat.Attack ? unit.IngameStats.Atk : unit.IngameStats.HP;
+        bool canImprove = level < training.GetMaxTrainableLevel();
+        string reason = !canImprove
+            ? (level >= TrainingManager.MaxTrainingLevel ? "최고 단계" : "훈련실 업그레이드 필요")
+            : null;
+        float? next = canImprove ? current + training.GetNextGain(selectedUnitIndex, row.stat) : (float?)null;
+        var icon = Sprites.UI.Status(row.stat == TrainingStat.Attack ? UIStatusIconType.ATK : UIStatusIconType.HP);
+        var font = row.levelText != null ? row.levelText.font : null;
+        view.Show(icon, font, StatName(row.stat), current, next, reason);
     }
 
     private static float[] ToArray(IReadOnlyList<float> src)

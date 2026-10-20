@@ -12,8 +12,36 @@ public class ChoiceButtonView : MonoBehaviour
 {
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text label;
+    [SerializeField] private TMP_Text indexLabel;
+    [SerializeField] private Sprite indexedSprite;
+    [SerializeField] private Sprite plainSprite;
 
     public string Text => label != null ? label.text : string.Empty;
+
+    public void SetIndex(int index)
+    {
+        bool numbered = index > 0;
+        if (indexLabel != null)
+        {
+            indexLabel.text = numbered ? index.ToString() : string.Empty;
+            indexLabel.gameObject.SetActive(numbered);
+        }
+        if (button != null)
+        {
+            button.transition = numbered ? Selectable.Transition.SpriteSwap : Selectable.Transition.ColorTint;
+            var image = button.targetGraphic as Image;
+            var sprite = numbered ? indexedSprite : plainSprite;
+            if (image != null && sprite != null)
+            {
+                image.sprite = sprite;
+                if (!numbered) image.overrideSprite = null;
+            }
+        }
+        var layout = GetComponent<VerticalLayoutGroup>();
+        if (layout != null)
+            layout.padding = new RectOffset(numbered ? 84 : 24, layout.padding.right,
+                layout.padding.top, layout.padding.bottom);
+    }
 
     /// <summary>숫자 단축키도 실제 버튼의 활성 조건과 클릭 이벤트를 사용한다.</summary>
     public void ClickFromShortcut()
@@ -39,6 +67,7 @@ public class ChoiceButtonView : MonoBehaviour
     /// <summary>버튼 문구와 클릭 동작 설정. 재사용 대비 기존 리스너 제거 후 등록.</summary>
     public void Bind(string text, Action onClick, bool interactable = true)
     {
+        SetIndex(0);
         if (label != null) label.text = text;
         if (button != null)
         {

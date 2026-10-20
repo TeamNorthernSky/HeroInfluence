@@ -95,8 +95,7 @@ public sealed class WorldEventCameraFocusController : MonoBehaviour
             if (recenterOnParty && focusedParty != null)
             {
                 cameraFollower.SetFollowTarget(focusedParty.transform);
-                cameraFollower.RecenterOnFollowTarget();
-                cameraFollower.SnapToFollowTarget();
+                cameraFollower.ReturnToFollowTargetSmooth();
             }
         }
 

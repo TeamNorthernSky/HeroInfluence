@@ -42,6 +42,59 @@ public class SettingsModalController : MonoBehaviour
         InitResolutionDropdown();
         InitScreenModeDropdown();
         InitVolumeSliders();
+        CreateAutoTurnEndToggle();
+    }
+
+    private void CreateAutoTurnEndToggle()
+    {
+        if (ControlPanel == null || ControlPanel.transform.Find("AutoTurnEndToggle") != null) return;
+        var parent = ControlPanel.transform;
+        var fontSource = ControlPanel.GetComponentInChildren<TMP_Text>(true);
+        // Fit the existing three help rows and the new setting in the same panel.
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            var row = parent.GetChild(i) as RectTransform;
+            if (row == null) continue;
+            row.anchoredPosition = new Vector2(row.anchoredPosition.x, 120f - i * 80f);
+            row.localScale = new Vector3(1f, 0.7f, 1f);
+        }
+        var root = new GameObject("AutoTurnEndToggle", typeof(RectTransform), typeof(Toggle));
+        var rect = root.GetComponent<RectTransform>();
+        rect.SetParent(parent, false);
+        rect.sizeDelta = new Vector2(1030f, 70f);
+        rect.anchoredPosition = new Vector2(0f, -120f);
+        var toggle = root.GetComponent<Toggle>();
+        var box = new GameObject("Checkbox", typeof(RectTransform), typeof(Image));
+        var boxRect = box.GetComponent<RectTransform>();
+        boxRect.SetParent(rect, false);
+        boxRect.anchorMin = boxRect.anchorMax = new Vector2(0f, 0.5f);
+        boxRect.anchoredPosition = new Vector2(40f, 0f);
+        boxRect.sizeDelta = new Vector2(36f, 36f);
+        var background = box.GetComponent<Image>();
+        background.color = new Color(0.15f, 0.3f, 0.5f);
+        var mark = new GameObject("Checkmark", typeof(RectTransform), typeof(Image));
+        var markRect = mark.GetComponent<RectTransform>();
+        markRect.SetParent(boxRect, false);
+        markRect.sizeDelta = new Vector2(24f, 24f);
+        var markImage = mark.GetComponent<Image>();
+        markImage.color = Color.cyan;
+        markImage.raycastTarget = false;
+        toggle.targetGraphic = background;
+        toggle.graphic = markImage;
+        var labelObject = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+        var labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.SetParent(rect, false);
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = new Vector2(80f, 0f);
+        labelRect.offsetMax = Vector2.zero;
+        var label = labelObject.GetComponent<TextMeshProUGUI>();
+        if (fontSource != null) label.font = fontSource.font;
+        label.text = "자동 턴 넘김 (이동력 소진 시)";
+        label.fontSize = 28f;
+        label.color = fontSource != null ? fontSource.color : Color.white;
+        label.alignment = TextAlignmentOptions.MidlineLeft;
+        root.AddComponent<AutoTurnEndSettingsToggle>();
     }
 
     private void InitResolutionDropdown()
@@ -82,6 +135,19 @@ public class SettingsModalController : MonoBehaviour
     private static void InitSlider(Slider slider, float savedValue, System.Action<float> onChanged)
     {
         if (slider == null) return;
+
+        // Keep the whole track clickable, including the unfilled portion.
+        if (slider.fillRect != null && slider.fillRect.parent is RectTransform track)
+        {
+            var trackGraphic = track.GetComponent<Graphic>();
+            if (trackGraphic == null)
+            {
+                var hitArea = track.gameObject.AddComponent<Image>();
+                hitArea.color = Color.clear;
+                trackGraphic = hitArea;
+            }
+            trackGraphic.raycastTarget = true;
+        }
 
         slider.value = savedValue;
 

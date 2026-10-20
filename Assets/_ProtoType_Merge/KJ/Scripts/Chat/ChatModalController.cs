@@ -59,6 +59,8 @@ public class ChatModalController : MonoBehaviour
     private CanvasGroup entranceGroup;
     private Tween entranceTween;
     private ChatBubbleView previousSpeakerBubble;
+    private Coroutine skipRoutine;
+    private bool skipping;
 
     /// <summary>대화 소환. 이미 떠 있으면 재활성 후 해당 대화로 재시작(중복 생성 방지).</summary>
     private bool isClosing;
@@ -212,7 +214,7 @@ public class ChatModalController : MonoBehaviour
 
     private void OpenSkipConfirm()
     {
-        if (isClosing) return;
+        if (isClosing || skipping) return;
         if (skipConfirmPopup != null) skipConfirmPopup.SetActive(true);
     }
 
@@ -231,19 +233,48 @@ public class ChatModalController : MonoBehaviour
     private void SkipChat()
     {
         CloseSkipConfirm();
-        RunChatAction(() => manager?.SkipToEnd());
+        if (skipping || manager == null || !manager.IsRunning || isClosing) return;
+        skipping = true;
+        RefreshSkipButtonState();
+        skipRoutine = StartCoroutine(PlaySkippedChatInOrder());
+    }
+
+    private IEnumerator PlaySkippedChatInOrder()
+    {
+        // Let the current bubble finish before advancing, even while the modal pauses the game.
+        for (int step = 0; step < 1000; step++)
+        {
+            yield return new WaitForSecondsRealtime(.01f);
+            if (isClosing || manager == null || !manager.IsRunning ||
+                choicesVisible || manager.IsAtFinalChat) break;
+            var previous = manager.CurrentChat;
+            RunChatAction(() => manager.Advance());
+            if (manager == null || !manager.IsRunning || choicesVisible ||
+                manager.IsAtFinalChat || manager.CurrentChat == previous) break;
+        }
+        skipping = false;
+        skipRoutine = null;
+        RefreshSkipButtonState();
+    }
+
+    private void StopSkipping()
+    {
+        if (skipRoutine != null) StopCoroutine(skipRoutine);
+        skipRoutine = null;
+        skipping = false;
     }
 
     /// <summary>[KJ 260723] 마지막 대사이거나 선택지 표시 중이면 스킵 버튼 비활성화 (매 노드 표시 후 호출).</summary>
     private void RefreshSkipButtonState()
     {
         if (skipButton == null) return;
-        bool blocked = choicesVisible || (manager != null && manager.IsAtFinalChat);
+        bool blocked = skipping || choicesVisible || (manager != null && manager.IsAtFinalChat);
         skipButton.interactable = !blocked;
     }
 
     private void Begin(int zoneId, int startChatId, Action closedCallback)
     {
+        StopSkipping();
         ClearBubbles();
         ClearChoices();
         CloseSkipConfirm();
@@ -303,6 +334,7 @@ public class ChatModalController : MonoBehaviour
 
     private void Update()
     {
+        if (skipping) return;
         if (entranceTween.isAlive || Time.frameCount == beginFrame) return;
         if (isClosing || (!waitingForRewardClose && (manager == null || !manager.IsRunning))) return;
         if (skipConfirmPopup != null && skipConfirmPopup.activeSelf) return; // 스킵 확인 중엔 진행 정지
@@ -391,6 +423,7 @@ public class ChatModalController : MonoBehaviour
 
             ChoiceButtonView view = Instantiate(choiceButtonPrefab, choiceLayout.SpawnParent);
             view.Bind(option.SelectionText, () => SelectChoice(option, view), state.IsInteractable);
+            view.SetIndex(activeChoices.Count + 1);
             activeChoices.Add(view.gameObject);
         }
 
@@ -581,6 +614,7 @@ public class ChatModalController : MonoBehaviour
         }
 
         isClosing = true;
+        StopSkipping();
 
         if (manager != null && manager.IsRunning)
         {

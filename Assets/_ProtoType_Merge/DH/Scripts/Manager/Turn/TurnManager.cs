@@ -20,6 +20,11 @@ public class TurnManager : MonoBehaviour
     [Header("Automatic Turn End")]
     [Tooltip("End the player turn after movement uses all move points, once interactions and combat follow-up finish.")]
     [SerializeField] private bool autoEndTurnWhenMovePointsDepleted;
+    public bool AutoTurnEnd
+    { 
+        get => autoEndTurnWhenMovePointsDepleted; 
+        set => autoEndTurnWhenMovePointsDepleted = value; 
+    }
 
     private bool enemyTurnRunning;
     private Coroutine pendingEnemyTurnStartCoroutine;
