@@ -7820,9 +7820,13 @@ MonoBehaviour:
   _effectRegistry: {fileID: 11400000, guid: cd76adeeba9fadc43a41cdd3f68fcd6e, type: 2}
   _defaultHitStop:
     Enabled: 1
-    DurationSeconds: 0.08
-    CharacterSpeed: 0.05
-    EffectSpeed: 0.25
+    DurationSeconds: 0.1
+    CharacterSpeed: 0
+    EffectSpeed: 0.2
+  _reactToPreventedDamage: 1
+  _enableBodyFlash: 1
+  _bodyFlashSeconds: 0.12
+  _bodyFlashStrength: 1
 --- !u!1 &624740856
 GameObject:
   m_ObjectHideFlags: 0
