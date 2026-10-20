@@ -7,11 +7,11 @@ using UnityEngine.UI;
 /// <summary>코어 선택 카드의 읽기 전용 정보. 비활성 Button에서도 호버할 수 있다.</summary>
 public sealed class CoreSelectionTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    private int core;
+    [SerializeField] private int core;
     private int unitIndex;
-    private string label;
-    private Sprite coreIcon;
-    private TMP_FontAsset font;
+    [SerializeField] private string label;
+    [SerializeField] private Sprite coreIcon;
+    [SerializeField] private TMP_FontAsset font;
     private RectTransform panel;
     private TMP_Text title, levelText, stats, description, skillName, skillDescription;
     private Image portrait, skillPortrait;

@@ -231,7 +231,7 @@ public class WorkshopModalController : MonoBehaviour
             if (c.icon != null) { var sp = CoreIcon(i); c.icon.sprite = sp; c.icon.enabled = sp != null; }
             if (c.nameText != null) c.nameText.text = CoreName(i);
             if (c.levelText != null) c.levelText.text = owned ? $"Lv.{level}" : NoValue;
-            if (c.selectedFrame != null) c.selectedFrame.SetActive(false);
+            if (c.selectedFrame != null) c.selectedFrame.SetActive(selectedCore == i);
             var cardView = c.button != null ? c.button.GetComponent<WorkshopCoreCardView>() : null;
             if (cardView != null)
                 cardView.SetEquipped(owned && hasHero && ws.GetEquippedWeaponIndex(selectedUnitIndex) == wi);

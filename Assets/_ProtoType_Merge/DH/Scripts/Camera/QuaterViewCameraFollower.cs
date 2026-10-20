@@ -84,6 +84,12 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private bool externalFocusLocked;
     private Transform externalFocusTarget;
     private Vector3 externalFocusWorldPosition;
+    private const float EventFocusMoveDuration = 0.35f;
+    private bool eventFocusMoving;
+    private bool returnToFollowAfterMove;
+    private float eventFocusElapsed;
+    private Vector3 eventFocusStart, eventFocusEnd;
+    private Quaternion eventFocusStartRotation, eventFocusEndRotation;
 
     public bool IsExternalInputLocked => externalInputLocked;
     public bool IsManualNavigationLocked => externalInputLocked || IsFollowTargetPartyMoving();
@@ -116,6 +122,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public void SnapToFollowTarget()
     {
+        eventFocusMoving = false;
         if (followTarget == null)
             return;
 
@@ -174,7 +181,32 @@ public class QuarterViewCameraFollower : MonoBehaviour
         externalFocusLocked = true;
         SetExternalInputLocked(true);
         followVelocity = Vector3.zero;
+        BeginEventFocusMove(false);
+    }
+
+    public void ReturnToFollowTargetSmooth()
+    {
+        if (followTarget == null) { UnlockExternalFocus(); return; }
+        RecenterOnFollowTarget();
+        externalFocusTarget = null;
+        externalFocusWorldPosition = FlattenFocusPosition(followTarget.position);
+        externalFocusLocked = true;
+        SetExternalInputLocked(true);
+        BeginEventFocusMove(true);
+    }
+
+    private void BeginEventFocusMove(bool returnToFollow)
+    {
+        eventFocusStart = transform.position;
+        eventFocusStartRotation = transform.rotation;
+        // Resolve the existing map boundary/zoom constraints at the destination.
         ApplyCameraPositionFromExternalFocus(true);
+        eventFocusEnd = transform.position;
+        eventFocusEndRotation = transform.rotation;
+        transform.SetPositionAndRotation(eventFocusStart, eventFocusStartRotation);
+        eventFocusElapsed = 0f;
+        returnToFollowAfterMove = returnToFollow;
+        eventFocusMoving = true;
     }
 
     public void LockExternalFocusTarget(Transform target, bool snapImmediately = true)
@@ -182,6 +214,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (target == null)
             return;
 
+        eventFocusMoving = false;
         externalFocusTarget = target;
         externalFocusWorldPosition = FlattenFocusPosition(target.position);
         externalFocusLocked = true;
@@ -194,6 +227,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public void UnlockExternalFocus(bool preserveCurrentFocus = false)
     {
+        eventFocusMoving = false;
         if (preserveCurrentFocus && externalFocusLocked)
         {
             if (externalFocusTarget != null)
@@ -249,6 +283,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void OnDisable()
     {
+        eventFocusMoving = false;
         edgeScrollVelocity = Vector3.zero;
         externalFocusLocked = false;
         externalFocusTarget = null;
@@ -258,6 +293,29 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (eventFocusMoving)
+        {
+            eventFocusElapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(eventFocusElapsed / EventFocusMoveDuration);
+            transform.SetPositionAndRotation(
+                Vector3.Lerp(eventFocusStart, eventFocusEnd, t),
+                Quaternion.Slerp(eventFocusStartRotation, eventFocusEndRotation, t));
+            if (t >= 1f)
+            {
+                eventFocusMoving = false;
+                if (returnToFollowAfterMove)
+                {
+                    smoothedFollowAnchor = FlattenFocusPosition(followTarget != null
+                        ? followTarget.position : externalFocusWorldPosition);
+                    hasSmoothedFollowAnchor = true;
+                    followVelocity = Vector3.zero;
+                    panOffset = transform.position - smoothedFollowAnchor - positionOffset;
+                    panOffset.y = 0f;
+                    UnlockExternalFocus();
+                }
+            }
+            return;
+        }
         if (externalFocusLocked)
         {
             ApplyCameraPositionFromExternalFocus(false);

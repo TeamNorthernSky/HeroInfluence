@@ -138,9 +138,9 @@ public class JcHeroInfoPanel : MonoBehaviour
 
         if (rankText != null)
         {
-            // [JC 260622] 로비/HeroInfoModal과 동일 랭크 체계(RankUtil, 성장 V6.0). 레벨 파생.
+            // 현재 성장표의 F~SSS 등급을 사용한다.
             int rankLevel = currentUnit.SourceData != null ? currentUnit.SourceData.Level : currentUnit.Level;
-            rankText.text = RankUtil.FromLevel(rankLevel);
+            rankText.text = UnitRankLookup.GetRank(rankLevel);
         }
 
         UpdateHpText(currentUnit.CurrentHp, currentUnit.MaxHp);

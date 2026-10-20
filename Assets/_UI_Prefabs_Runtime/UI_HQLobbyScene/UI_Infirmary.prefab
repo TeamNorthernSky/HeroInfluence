@@ -1991,7 +1991,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &7469057405703923265
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2448,7 +2448,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d8fedf085bb025246a76f09c20e656eb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 03324e51410e12c4582678328376d638, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3212,6 +3212,7 @@ MonoBehaviour:
   contentGroup: {fileID: 2739534605797365932}
   duration: 0.28
   initialScale: 0.08
+  allowCrossSceneOrigin: 0
 --- !u!1 &4752605871434443032
 GameObject:
   m_ObjectHideFlags: 0
@@ -3523,6 +3524,7 @@ GameObject:
   - component: {fileID: 44029950400406331}
   - component: {fileID: 3582207496287990830}
   - component: {fileID: 7480459808437324556}
+  - component: {fileID: 4903214799940908730}
   m_Layer: 0
   m_Name: BTN_HealAll
   m_TagString: Untagged
@@ -3608,7 +3610,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
+  m_Transition: 2
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
@@ -3621,7 +3623,7 @@ MonoBehaviour:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
     m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 21300000, guid: b3761de8473cb1d4ea5a855aaf21e195, type: 3}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
     m_HighlightedTrigger: Highlighted
@@ -3658,6 +3660,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de11f6c94c6b40e4b82fccc22fdce6c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &4903214799940908730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6146735937955240833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3906ac08ea6c0e94e8734d7b92e6c870, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &6157097362877191110

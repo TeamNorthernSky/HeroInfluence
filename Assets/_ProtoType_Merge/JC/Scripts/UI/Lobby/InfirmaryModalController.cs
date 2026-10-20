@@ -182,11 +182,13 @@ public class InfirmaryModalController : MonoBehaviour
         int revivableCount = 0;
         int downedCount = 0;
         int healAllTotal = 0;
+        bool needsRecovery = false;
         int healCost = gm.Infirmary.GetHealCost();
 
         foreach (int idx in units)
         {
             if (repo == null || !repo.TryGetUnit(idx, out UnitPersistentData unit) || unit == null) continue;
+            needsRecovery |= unit.CurrentHp <= 0f || unit.CurrentHp < unit.IngameStats.HP;
 
             InfirmaryUnitRow row = Instantiate(rowTemplate, content);
             row.gameObject.SetActive(true);
@@ -212,8 +214,8 @@ public class InfirmaryModalController : MonoBehaviour
         reviveAllMode = downedCount > 0;
         canHealAll = unlocked && visited && (reviveAllMode ? revivableCount > 0 : healAllAffordable);
 
-        // 실행 불가 상태도 클릭해서 사유를 확인할 수 있다. 회복은 OnHealAll에서 검사한다.
-        if (btnHealAll != null) btnHealAll.interactable = true;
+        // 전원이 건강하면 비활성화한다. 다른 실행 제한의 안내는 기존 클릭 경로를 유지한다.
+        if (btnHealAll != null) btnHealAll.interactable = needsRecovery;
         if (healAllDisabledOverlay != null) healAllDisabledOverlay.SetActive(!canHealAll);
         if (totalCostText != null) totalCostText.text = $"{(reviveAllMode ? 0 : healAllTotal)} 골드";
         if (btnHealAll != null)

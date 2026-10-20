@@ -123,7 +123,7 @@ public class LabModalController : MonoBehaviour
 
     private void Awake()
     {
-        CreateRequiredLabLevelText();
+        BindRequiredLabLevelText();
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnCancel != null) btnCancel.onClick.AddListener(OnCancel);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
@@ -369,27 +369,20 @@ public class LabModalController : MonoBehaviour
     }
 
     // ─── Refresh ────────────────────────────────────────────
-    private void CreateRequiredLabLevelText()
+    private void BindRequiredLabLevelText()
     {
-        if (requiredLabLevelText != null || costChipText == null) return;
-        var costRoot = costChipText.transform.parent as RectTransform;
-        if (costRoot == null || costRoot.parent == null) return;
-        requiredLabLevelText = Instantiate(costChipText, costRoot.parent, false);
-        requiredLabLevelText.name = "RequiredLabLevel";
-        requiredLabLevelText.text = "";
-        requiredLabLevelText.raycastTarget = false;
-        requiredLabLevelText.fontSize = 26;
-        requiredLabLevelText.enableAutoSizing = false;
-        requiredLabLevelText.alignment = TextAlignmentOptions.MidlineLeft;
-        requiredLabLevelText.color = new Color(1f, 0.35f, 0.35f);
-        var rect = requiredLabLevelText.rectTransform;
-        rect.anchorMin = rect.anchorMax = costRoot.anchorMin;
-        rect.pivot = new Vector2(0, 0.5f);
-        rect.sizeDelta = new Vector2(250, costRoot.sizeDelta.y);
-        rect.anchoredPosition = costRoot.anchoredPosition +
-            new Vector2(costRoot.sizeDelta.x * (1f - costRoot.pivot.x) + 18,
-                costRoot.sizeDelta.y * (0.5f - costRoot.pivot.y));
-        requiredLabLevelText.gameObject.SetActive(false);
+        if (requiredLabLevelText != null) return;
+        Transform searchRoot = modalRoot != null ? modalRoot.transform : transform;
+        foreach (var text in searchRoot.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (text.name != "WarningMessage" && text.name != "WarningMessageBox") continue;
+            requiredLabLevelText = text;
+            requiredLabLevelText.text = "";
+            requiredLabLevelText.color = new Color(1f, 0.35f, 0.35f);
+            requiredLabLevelText.raycastTarget = false;
+            requiredLabLevelText.gameObject.SetActive(false);
+            break;
+        }
     }
 
     private void UpdateRequiredLabLevelText(int requiredLevel, int currentLevel)
