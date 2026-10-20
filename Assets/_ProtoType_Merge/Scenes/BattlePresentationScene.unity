@@ -1353,6 +1353,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   button: {fileID: 111156015}
   battleFlowManager: {fileID: 621159268}
+  confirmationPopup: {fileID: 0}
 --- !u!114 &111156019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7795,6 +7796,7 @@ MonoBehaviour:
     visual: {fileID: 1457325141}
   descriptionTitle: {fileID: 1058972430}
   descriptionBody: {fileID: 1688924211}
+  descriptionPercentageValues: 0
   descriptionTags:
   - {fileID: 442470651}
   - {fileID: 1403146747}
@@ -10560,6 +10562,8 @@ MonoBehaviour:
   startDuration: 1
   animateTurn: 1
   verticalOffset: 150
+  playerVerticalOffset: -220
+  enemyVerticalOffset: 70
   enterDuration: 0.5
   holdDuration: 1
   exitDuration: 0.5
