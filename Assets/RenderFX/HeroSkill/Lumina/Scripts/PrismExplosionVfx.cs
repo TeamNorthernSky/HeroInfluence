@@ -15,6 +15,14 @@ namespace JC.VFX
     /// </summary>
     public class PrismExplosionVfx : VfxEffect
     {
+        public bool TryGetCameraFocus(out Vector3 position)
+        {
+            position = Vector3.zero;
+            if (flightPart != null) return flightPart.TryGetCameraFocus(out position);
+            if (!_sequencing || _unit == null || !_unit.gameObject.activeInHierarchy) return false;
+            position = _unit.position;
+            return true;
+        }
         public event System.Action<Vector3> Impacted;
         public enum PartMode { Integrated, Charge, Flight }
         [Tooltip("Integrated는 기존 전체, Charge는 생성·대기, Flight는 발사·비행 부품입니다.")]

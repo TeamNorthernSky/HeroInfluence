@@ -6,6 +6,8 @@ using TMPro;
 /// <summary>씬에 선배치한 시작/턴 안내만 표시합니다. 턴 계산과 행동 시작은 BattleFlowManager가 소유합니다.</summary>
 public class BattleTurnBanner : MonoBehaviour
 {
+    [Tooltip("아군/적군 턴 전환 배너를 표시합니다. 전투 시작 배너와 별도로 설정합니다.")]
+    [SerializeField] private bool showTurnBanner = true;
     [Tooltip("전투 시작 시 중앙에 표시할 배너입니다. 초기에는 비활성으로 배치합니다.")]
     [SerializeField] private GameObject startBanner;
     [Tooltip("유닛마다 지정한 높이로 화면 중앙을 통과할 턴 배너입니다. 초기에는 비활성으로 배치합니다.")]
@@ -89,6 +91,7 @@ public class BattleTurnBanner : MonoBehaviour
     private bool showing;
     private int dismissedFrame = -1;
     public bool BlocksInput => showing || dismissedFrame == Time.frameCount;
+    public event System.Action<bool> TurnBannerShown;
 
     public IEnumerator ShowStart(BattleFlowManager flow) => Show(flow, false, true);
     public IEnumerator ShowTurn(BattleFlowManager flow, bool isPlayer) => Show(flow, true, isPlayer);
@@ -96,6 +99,7 @@ public class BattleTurnBanner : MonoBehaviour
     private IEnumerator Show(BattleFlowManager flow, bool isTurn, bool isPlayer)
     {
         if (!isActiveAndEnabled) yield break;
+        if (isTurn && !showTurnBanner) yield break;
         var visual = isTurn ? turnBanner : startBanner;
         if (visual == null) yield break;
         Hide();
@@ -107,6 +111,7 @@ public class BattleTurnBanner : MonoBehaviour
         bool animated = isTurn && animateTurn && turnGroup != null;
         if (animated) BeginTurnMotion(isPlayer);
         else if (isTurn && turnGroup != null) turnGroup.alpha = 1;
+        if (isTurn) TurnBannerShown?.Invoke(isPlayer);
         if (inputBlocker != null) inputBlocker.SetActive(true);
         int openedFrame = Time.frameCount;
         float elapsed = 0f;

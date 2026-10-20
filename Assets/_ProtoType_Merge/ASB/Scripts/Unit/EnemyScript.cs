@@ -231,9 +231,9 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         EnemyActionType actionType = decision != null ? decision.ActionType : EnemyActionType.ClassSkill;
         SkillData highlightSkill = ResolveEnemyExecutionSkill(self, decision, actionType);
 
-        // 타겟 발판 하이라이트 표시 후 0.5초 대기
+        // 공격 대상을 배속과 무관하게 0.5초 보여준 뒤 시전하며, 실행이 끝날 때까지 표시합니다.
         flowManager?.ShowTargetHighlight(self, target, highlightSkill);
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSecondsRealtime(0.5f);
 
         switch (actionType)
         {

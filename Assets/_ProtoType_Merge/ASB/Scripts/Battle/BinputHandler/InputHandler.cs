@@ -38,6 +38,9 @@ public class InputHandler : MonoBehaviour
     [Tooltip("기존 씬의 턴 시작 자동 선택입니다. 개편 전투씬에서는 끄고 매 시전마다 스킬을 직접 선택합니다.")]
     [SerializeField] private bool selectSkillOnTurnStart = true;
 
+    [Tooltip("스킬 선택 중 UI와 공격 대상 밖의 빈 전장을 클릭하면 선택을 취소합니다.")]
+    [SerializeField] private bool cancelSelectionOnEmptyClick;
+
     [Header("Raycast")]
     [SerializeField] private Camera raycastCamera;
     [SerializeField] private float maxRayDistance = 200f;
@@ -123,6 +126,10 @@ public class InputHandler : MonoBehaviour
     {
         if (battleFlowManager != null && battleFlowManager.IsTurnPresentationPending) return;
         if (IsAutoBattleActive) return;
+        // 적 AI의 공격 대상 표시를 플레이어의 유휴 입력 정리가 지우지 않도록 합니다.
+        if (battleFlowManager != null &&
+            (battleFlowManager.CurrentUnit == null || !battleFlowManager.CurrentUnit.IsPlayer)) return;
+        if (isProcessingAction) return;
 
 #if UNITY_EDITOR
         // 턴 스킵 단축키는 에디터 전용 디버그 기능 — 빌드에서는 컴파일되지 않는다.
@@ -198,6 +205,8 @@ public class InputHandler : MonoBehaviour
         pressedTarget = overUi ? null : hoverTarget;
         pressedHostageTarget = overUi ? null : hoverHostageTarget;
         isPressArmed = pressedTarget != null || pressedHostageTarget != null;
+        if (cancelSelectionOnEmptyClick && !overUi && !isPressArmed)
+            TryCancelSkillSelection();
     }
 
     private void ReleasePress(BattleCharactor actor)
@@ -511,6 +520,11 @@ public class InputHandler : MonoBehaviour
         isProcessingAction = true;
         bool executed = false;
         SkillData requestedSkill = PendingSkill;
+        var presentationPreview = actionType == PendingActionType.ClassSkill || actionType == PendingActionType.WeaponSkill
+            ? FindFirstObjectByType<BattlePresentationPreview>() : null;
+        bool animatePreviewUi = presentationPreview != null && presentationPreview.enabled && actor != null && actor.IsPlayer;
+        if (animatePreviewUi)
+            yield return presentationPreview.HideSkillPanelBeforeCast();
 
         switch (actionType)
         {
@@ -550,7 +564,11 @@ public class InputHandler : MonoBehaviour
             Debug.LogWarning("[InputHandler] 행동 실행 실패(false 반환). 턴 대기를 유지하고 입력 상태를 초기화합니다.");
         }
 
-        if (!executed) battleFlowManager?.ReleaseFailedPlayerAction(actor);
+        if (!executed)
+        {
+            battleFlowManager?.ReleaseFailedPlayerAction(actor);
+            if (animatePreviewUi) presentationPreview.RestoreSkillPanelAfterFailedAction();
+        }
         ResetTargetingState();
         isProcessingAction = false;
     }

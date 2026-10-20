@@ -227,6 +227,7 @@ public sealed partial class SkillPresentationDirector
 
         probe.Configure(_chainLightningActionInstanceId, primaryTargetTransform, chainTargets, presentation);
         effect.Play(actor.transform, primaryTargetTransform, chainTargets);
+        UnityEngine.Object.FindFirstObjectByType<BattlePresentationPreview>()?.FollowLuminaLightning(actor, effect);
         return true;
     }
 

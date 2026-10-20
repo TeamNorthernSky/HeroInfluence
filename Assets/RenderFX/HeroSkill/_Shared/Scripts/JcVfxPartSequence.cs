@@ -28,6 +28,17 @@ namespace JC.VFX
         }
         [Tooltip("기본/강화 조립마다 독립된 부품과 호출 시간을 저장합니다.")]
         [SerializeField] private Step[] steps = Array.Empty<Step>();
+        public bool IsTargetPart(int index) => index >= 0 && index < steps.Length && steps[index] != null &&
+            (steps[index].anchor == Anchor.Target || steps[index].anchor == Anchor.PawTarget ||
+             steps[index].timing == Timing.PawArrival);
+        public bool TryGetTargetPartDelay(out float delay)
+        {
+            delay = float.PositiveInfinity;
+            for (int i = 0; i < steps.Length; i++)
+                if (IsTargetPart(i) && steps[i].prefab != null)
+                    delay = Mathf.Min(delay, ResolveDelay(steps[i]));
+            return !float.IsPositiveInfinity(delay);
+        }
         private readonly List<VfxEffect> running = new List<VfxEffect>();
         private IReadOnlyList<VfxTarget> targets;
         private int pending;
