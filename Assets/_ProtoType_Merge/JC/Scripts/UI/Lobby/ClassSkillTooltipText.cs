@@ -12,8 +12,7 @@ public static class ClassSkillTooltipText
         var cat = DHCsvTemplateCatalog.Instance;
         float v = cat != null ? cat.GetClassSkillValueAtLevel(s.NumericSkillId, level) : s.ValueLv1;
         float sub = cat != null ? cat.GetClassSkillSubValueAtLevel(s.NumericSkillId, level) : s.SubValueLv1;
-        return SkillTooltipNumbers.Build(d, "ClassSkill", v, sub, unitIndex, caster, s.Effect == 0)
-            + $"\n협회 강화 {(level <= 1 ? "기본" : "+" + (level - 1))}";
+        return SkillTooltipNumbers.Build(d, "ClassSkill", v, sub, unitIndex, caster, s.Effect == 0);
     }
 
     /// <summary>[임시 브리지 260805] ASB BattleCharactor 가 아직 SkillData 를 노출(KJ SkillButtonTooltip 소비).
@@ -27,8 +26,7 @@ public static class ClassSkillTooltipText
 
         // 카탈로그 미로드 폴백 — 행 자체 값으로 1레벨 표시
         string d = s.description ?? string.Empty;
-        return SkillTooltipNumbers.Build(d, "ClassSkill", s.skillValue, s.skillSubValue, unitIndex, caster, s.classSkillEffect == 0)
-            + $"\n협회 강화 {(level <= 1 ? "기본" : "+" + (level - 1))}";
+        return SkillTooltipNumbers.Build(d, "ClassSkill", s.skillValue, s.skillSubValue, unitIndex, caster, s.classSkillEffect == 0);
     }
     /// <summary>전투 표시용 계수 토큰만 백분율로 바꿉니다. IP·횟수·기존 숫자는 변경하지 않습니다.</summary>
     internal static string ReplaceBattleCoefficients(string description, string prefix, float value, float subValue)
