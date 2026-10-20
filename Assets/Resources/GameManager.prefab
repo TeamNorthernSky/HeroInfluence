@@ -571,9 +571,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceMax: 999999
   initialMoney: 1000
-  initialChip: 15
-  initialCrystal: 20
-  initialSupply: 15
+  initialChip: 10
+  initialCrystal: 10
+  initialSupply: 20
 --- !u!1 &8801001001001001001
 GameObject:
   m_ObjectHideFlags: 0
