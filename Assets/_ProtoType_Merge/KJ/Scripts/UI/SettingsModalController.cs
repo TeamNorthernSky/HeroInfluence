@@ -47,22 +47,23 @@ public class SettingsModalController : MonoBehaviour
 
     private void CreateAutoTurnEndToggle()
     {
-        if (ControlPanel == null || ControlPanel.transform.Find("AutoTurnEndToggle") != null) return;
+        if (ControlPanel == null || ControlPanel.GetComponentInChildren<AutoTurnEndSettingsToggle>(true) != null) return;
         var parent = ControlPanel.transform;
         var fontSource = ControlPanel.GetComponentInChildren<TMP_Text>(true);
-        // Fit the existing three help rows and the new setting in the same panel.
+        // Control rows keep their authored dimensions and placement.
         for (int i = 0; i < parent.childCount; i++)
         {
             var row = parent.GetChild(i) as RectTransform;
             if (row == null) continue;
+            if (row.name.StartsWith("ControlRow_")) continue;
             row.anchoredPosition = new Vector2(row.anchoredPosition.x, 120f - i * 80f);
             row.localScale = new Vector3(1f, 0.7f, 1f);
         }
         var root = new GameObject("AutoTurnEndToggle", typeof(RectTransform), typeof(Toggle));
         var rect = root.GetComponent<RectTransform>();
         rect.SetParent(parent, false);
-        rect.sizeDelta = new Vector2(1030f, 70f);
-        rect.anchoredPosition = new Vector2(0f, -120f);
+        rect.sizeDelta = new Vector2(1030f, 44f);
+        rect.anchoredPosition = new Vector2(0f, -220f);
         var toggle = root.GetComponent<Toggle>();
         var box = new GameObject("Checkbox", typeof(RectTransform), typeof(Image));
         var boxRect = box.GetComponent<RectTransform>();

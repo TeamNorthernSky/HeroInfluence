@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1babb448c4c2a546aec47135eb98863, type: 3}
   m_Name: SpriteLibrary
   m_EditorClassIdentifier: 
+  portraitCsvPath: Portrait_Hero_Sprite/PortraitSheet
+  unselectedPortraitPath: Portrait_Hero_Sprite/UI_profile_hero_unselected
+  defaultEnemyPortraitPath: Portrait_Enemy_Sprite/UI_profile_villian_zako
   characters:
   - heroName: "\uC544\uC774\uC5B8 \uAC78"
     profile: {fileID: 21300000, guid: 4ffbcb293ed6fc64286a5f91a2e188ca, type: 3}
@@ -23,8 +26,27 @@ MonoBehaviour:
     profile: {fileID: 21300000, guid: b35573774b6f8824299840b7bc903a2a, type: 3}
   skills: []
   weapons: []
-  profileFolder: UI_Sprite/UI_Icon/CharacterProfile_temp/
-  profileDefaultFile: character icon sample 00
+  profileFolder: Portrait_Hero_Sprite/
+  profileDefaultFile: UI_profile_hero_unselected
   skillIconPathFormat: UI_Sprite/UI_Icon/ClassSkill_temp/skill {0:00} level {1}
   skillIconVariants: 2
   weaponIconPathFormat: UI_Sprite/UI_Icon/Weapon_temp/weapon {0:00} level {1}
+  classSkillIconCsvPath: UI_Sprite/UI_Icon/HeroSkill/HeroSkillIconSheet
+  weaponIconCsvPath: Icon_Weapon_Sprite/WeaponIconSheet
+  weaponSkillIconCsvPath: Icon_WeaponSkill_Sprite/WeaponSkillIconSheet
+  resMoney: {fileID: 0}
+  resMedal: {fileID: 0}
+  resCrystal: {fileID: 0}
+  resBlock: {fileID: 0}
+  statATK: {fileID: 0}
+  statDEF: {fileID: 0}
+  statEXE: {fileID: 0}
+  statHP: {fileID: 0}
+  statIP: {fileID: 0}
+  bldgBank: {fileID: 0}
+  bldgBlockStore: {fileID: 0}
+  bldgJewelryStore: {fileID: 0}
+  bldgLibrary: {fileID: 0}
+  resourceFolder: Icon_UI_Sprite/Icon_UI_Resource_Sprite/
+  statusFolder: Icon_UI_Sprite/Icon_UI_StatusIcon_Sprite/
+  buildingFolder: Icon_UI_Sprite/Icon_UI_SpecialBuilding_Sprite/

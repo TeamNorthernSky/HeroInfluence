@@ -430,6 +430,11 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         private readonly List<TMP_Text> texts = new List<TMP_Text>();
         private int count;
         private float rowTop;
+        private float rowLeft;
+        private float lineHeight;
+        private int lineStart;
+        private bool showChance;
+        private static Sprite licenseIpIcon;
 
         public NpcPreview(Button button)
         {
@@ -440,11 +445,16 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         public void Begin(bool choice)
         {
             count = 0;
-            rowTop = LayoutButtonHeader(button, choice);
+            rowLeft = 21f;
+            lineHeight = 0f;
+            lineStart = 0;
+            showChance = choice;
+            rowTop = LayoutButtonHeader(button, false);
         }
 
         public void Add(IReadOnlyList<DHWorldEventPreviewEntry> entries, string outcome)
         {
+            bool firstInOutcome = true;
             foreach (var entry in entries)
             {
                 if (entry == null || entry.Amount == 0) continue;
@@ -472,38 +482,84 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 iconView.sprite = Icon(entry);
                 iconView.gameObject.SetActive(iconView.sprite != null);
                 textView.gameObject.SetActive(true);
-                float y = rowTop;
-                string prefix = outcome ?? (cost ? "소모" : entry.Amount < 0 ? "감소" : "보상");
-                textView.text = prefix + "  " + Name(entry.Label) + " " +
-                    (cost ? "−" : entry.Amount > 0 ? "+" : "") + entry.Amount;
+                int amount = cost ? -Mathf.Abs(entry.Amount) : entry.Amount;
+                textView.text = amount > 0 ? "+" + amount : amount.ToString();
+                if (firstInOutcome && !string.IsNullOrWhiteSpace(outcome))
+                {
+                    if (rowLeft > 21f)
+                    {
+                        CenterCurrentLine();
+                        rowTop += lineHeight + 4f;
+                        rowLeft = 21f;
+                        lineHeight = 0f;
+                    }
+                    textView.text = outcome + " " + textView.text;
+                }
+                firstInOutcome = false;
                 textView.color = cost || entry.Amount < 0 ? new Color32(185, 35, 45, 255) : new Color32(20, 70, 151, 255);
                 textView.fontSize = textView.fontSizeMax;
                 float buttonWidth = ((RectTransform)button.transform).rect.width;
                 float iconWidth = iconView.sprite != null ? 34 : 0;
-                float textWidth = Mathf.Min(textView.GetPreferredValues(textView.text).x,
-                    Mathf.Max(1, buttonWidth - 32 - iconWidth));
-                float left = (buttonWidth - iconWidth - textWidth) * 0.5f;
+                float textWidth = Mathf.Min(textView.GetPreferredValues(textView.text).x + 2f,
+                    Mathf.Max(1, buttonWidth - 42f - iconWidth));
                 float rowHeight = MeasureText(textView, textWidth, 19f, 28f);
-                PlaceButtonText(iconView.rectTransform, left, y + (rowHeight - 26f) * .5f, 26, 26);
-                PlaceButtonText(textView.rectTransform, left + iconWidth, y, textWidth, rowHeight);
-                rowTop += Mathf.Max(32f, rowHeight + 4f);
+                float itemWidth = iconWidth + textWidth;
+                if (rowLeft > 21f && rowLeft + itemWidth > buttonWidth - 21f)
+                {
+                    CenterCurrentLine();
+                    rowTop += lineHeight + 4f;
+                    rowLeft = 21f;
+                    lineHeight = 0f;
+                }
+                PlaceButtonText(iconView.rectTransform, rowLeft, rowTop + (rowHeight - 26f) * .5f, 26, 26);
+                PlaceButtonText(textView.rectTransform, rowLeft + iconWidth, rowTop, textWidth, rowHeight);
+                rowLeft += itemWidth + 16f;
+                lineHeight = Mathf.Max(lineHeight, rowHeight);
                 count++;
             }
         }
 
         public void End()
         {
+            CenterCurrentLine();
             for (int i = count; i < texts.Count; i++)
             {
                 icons[i].gameObject.SetActive(false);
                 texts[i].gameObject.SetActive(false);
             }
-            float height = Mathf.Max(110f, rowTop + 10f);
+            float bottom = rowTop + lineHeight;
+            var chance = button.transform.Find("SuccessChance")?.GetComponent<TMP_Text>();
+            if (chance != null && showChance && !string.IsNullOrWhiteSpace(chance.text))
+            {
+                chance.gameObject.SetActive(true);
+                float width = Mathf.Max(1f, ((RectTransform)button.transform).rect.width - 42f);
+                float chanceHeight = MeasureText(chance, width, 20f, 32f);
+                PlaceButtonText(chance.rectTransform, 21f, bottom + 4f, width, chanceHeight);
+                bottom += chanceHeight + 4f;
+            }
+            float height = Mathf.Max(110f, bottom + 10f);
             ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+        }
+
+        private void CenterCurrentLine()
+        {
+            if (lineStart >= count) return;
+            float width = rowLeft - 21f - 16f;
+            float shift = (((RectTransform)button.transform).rect.width - width) * .5f - 21f;
+            for (int i = lineStart; i < count; i++)
+            {
+                icons[i].rectTransform.anchoredPosition += Vector2.right * shift;
+                texts[i].rectTransform.anchoredPosition += Vector2.right * shift;
+            }
+            lineStart = count;
         }
 
         private static Sprite Icon(DHWorldEventPreviewEntry entry)
         {
+            if (entry.Group == DHWorldEventPreviewGroup.Reward &&
+                DHWorldEventCodeMap.TryGetRewardType(entry.TypeCode, out DHWorldEventRewardType reward) &&
+                DHWorldEventCodeMap.TryGetRewardResourceType(reward, out ResourceType resource))
+                return Sprites.UI.Resource(resource);
             switch (entry.Label)
             {
                 case "Money": return Sprites.UI.Resource(ResourceType.Money);
@@ -513,7 +569,9 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             }
             switch (entry.Label)
             {
-                case "CurrentIP": case "MaxIP": return Sprites.UI.Status(UIStatusIconType.IP);
+                case "CurrentIP": case "MaxIP":
+                    if (licenseIpIcon == null) licenseIpIcon = Resources.Load<Sprite>("NpcPreview/UI_icon_IP");
+                    return licenseIpIcon;
                 case "CurrentHP": case "MaxHP": return Sprites.UI.Status(UIStatusIconType.HP);
                 case "Atk": return Sprites.UI.Status(UIStatusIconType.ATK);
                 default: return null;
@@ -545,6 +603,16 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         button.interactable = enabled;
         float bottom = LayoutButtonHeader(button, false);
         ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(110f, bottom + 10f));
+        if (button.transform.name == "DeclineButton")
+        {
+            var rect = label.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(21f, 10f);
+            rect.offsetMax = new Vector2(-21f, -10f);
+            label.alignment = TextAlignmentOptions.Center;
+        }
     }
 
     private bool CanSubmit(Button button)
