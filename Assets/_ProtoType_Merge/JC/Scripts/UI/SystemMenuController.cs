@@ -17,6 +17,8 @@ public class SystemMenuController : MonoBehaviour
     [SerializeField] private Button _btnQuit;
     [SerializeField] private Button _btnSave;
 
+    private bool returningToTitle;
+
     private void Awake()
     {
         if (_btnResume != null) _btnResume.onClick.AddListener(OnClickResume);
@@ -28,6 +30,7 @@ public class SystemMenuController : MonoBehaviour
 
     private void Update()
     {
+        if (returningToTitle) return;
         var sceneName = SceneManager.GetActiveScene().name;
         if (sceneName == TitleScene) return;
 
@@ -99,6 +102,7 @@ public class SystemMenuController : MonoBehaviour
 
     public void OnClickResume()
     {
+        if (returningToTitle) return;
         if (_modal != null) _modal.SetActive(false);
         Time.timeScale = 1f;
     }
@@ -115,12 +119,31 @@ public class SystemMenuController : MonoBehaviour
 
     public void OnClickToTitle()
     {
-        if (_modal != null) _modal.SetActive(false);
-        Time.timeScale = 1f;
+        if (returningToTitle) return;
+        returningToTitle = true;
+        SceneManager.sceneLoaded += HandleTitleSceneLoaded;
+        // Keep the pausing menu open during the fade. Closing it here would let
+        // ModalPauseGate resume exploration before the title scene is loaded.
+        Time.timeScale = 0f;
         // [JC 260617] 타이틀 복귀 시 전체 영속 상태 초기화(새 게임이 첫 실행과 동일하도록).
         if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
         Debug.Log($"[SystemMenu] → {TitleScene}");
         SceneFadeController.LoadSceneWithFadeIfNeeded(TitleScene);
+    }
+
+    private void HandleTitleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != TitleScene) return;
+        SceneManager.sceneLoaded -= HandleTitleSceneLoaded;
+        returningToTitle = false;
+        if (_modal != null) _modal.SetActive(false);
+        Time.timeScale = 1f;
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= HandleTitleSceneLoaded;
+        if (returningToTitle) Time.timeScale = 1f;
     }
 
     public void OnClickQuit()
