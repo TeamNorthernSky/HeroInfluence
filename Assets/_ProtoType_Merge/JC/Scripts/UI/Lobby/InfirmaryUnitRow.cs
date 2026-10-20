@@ -50,9 +50,9 @@ public class InfirmaryUnitRow : MonoBehaviour
 
         if (nameText != null)
             nameText.text = ResolveDisplayName(unit);
-        // [KJ 260703] 랭크=레벨 파생(RankUtil, 성장 시스템 V6.0), IP=CurrentInfluence 일원화(HeroInfoModal과 동일 규약)
+        // 랭크는 현재 성장표, IP는 유닛의 CurrentInfluence를 사용한다.
         if (rankText != null)
-            rankText.text = unit != null ? $"Rank {RankUtil.FromLevel(unit.Level)}" : "-";
+            rankText.text = unit != null ? $"Rank {UnitRankLookup.GetRank(unit.Level)}" : "-";
         if (ipText != null)
             ipText.text = unit != null ? $"I.P {unit.CurrentInfluence:F0}" : "-";
         if (hpText != null)

@@ -151,6 +151,10 @@ public class MinimapCameraNavigator : MonoBehaviour, IPointerClickHandler, IBegi
 
     private bool TryGetMinimapView(out Vector2Int viewOrigin, out Vector2Int gridSize)
     {
+        MinimapController controller = minimapImage != null ? minimapImage.GetComponent<MinimapController>() : null;
+        if (controller != null)
+            return controller.TryGetDisplayBounds(out viewOrigin, out gridSize);
+
         if (TryGetCurrentPartyZone(out LoadedLevelZoneData zone))
         {
             viewOrigin = zone.Anchor;

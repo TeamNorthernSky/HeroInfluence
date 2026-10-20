@@ -54,7 +54,10 @@ public class HeroInfoModal : MonoBehaviour
     // 호버 툴팁용 슬롯 캐시
     private struct TipSlot { public RectTransform target; public Sprite sprite; public string name; public string desc; public bool has; }
     private TipSlot slotClassSkill, slotWeapon, slotWeaponSkill;
-
+    public void Start()
+    {
+        gameObject.SetActive(false);
+    }
     public void Open(int unitIndex)
     {
         if (!TryResolve(unitIndex, out UnitPersistentData unit, out DHPlayerUnitTemplate template))
@@ -132,7 +135,7 @@ public class HeroInfoModal : MonoBehaviour
         // [JC 260619] 클래스스킬/무기/무기스킬 아이콘 + 호버 툴팁
         ResolveButtons();
         // [JC 260619] 랭크 알파벳 = 레벨 파생(성장 시스템 V6.0). 매 Open 시 현재 레벨로 계산(시작/레벨업 자동 반영).
-        SetText(gradeText, RankUtil.FromLevel(unit != null ? unit.Level : 1));
+        SetText(gradeText, UnitRankLookup.GetRank(unit != null ? unit.Level : 1));
         ResolveSkillWeaponIcons(unit != null ? unit.UnitIndex : currentUnitIndex);
     }
 

@@ -56,6 +56,7 @@ public class DHEventBattleEffectRequest
     public int SourceChatId;
     public int ResumeChatId;
     public string SourceMainEventKey;
+    public string SourceSubEventKey;
 
     public DHEventBattleEffectRequest() { }
 
@@ -92,6 +93,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
 
     // Runtime-only bridge for main-event battles. The completed state is saved through MapProgressRepository.
     private string activeMainEventSourceKey = string.Empty;
+    private string activeSubEventSourceKey = string.Empty;
 
     public IReadOnlyList<DHEventEffectToken> LastParsedEffects => lastParsedEffects;
 
@@ -128,6 +130,17 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
         string normalizedKey = DHEventStateRepository.NormalizeKey(eventKey);
         if (string.Equals(activeMainEventSourceKey, normalizedKey, StringComparison.Ordinal))
             activeMainEventSourceKey = string.Empty;
+    }
+
+    public void SetActiveSubEventSource(string eventKey)
+    {
+        activeSubEventSourceKey = DHEventStateRepository.NormalizeKey(eventKey);
+    }
+
+    public void ClearActiveSubEventSource(string eventKey)
+    {
+        if (string.Equals(activeSubEventSourceKey, DHEventStateRepository.NormalizeKey(eventKey), StringComparison.Ordinal))
+            activeSubEventSourceKey = string.Empty;
     }
 
     private void Awake()
@@ -188,6 +201,7 @@ public sealed class DHEventEffectRuntimeManager : MonoBehaviour
                 DHEventBattleEffectRequest request = new DHEventBattleEffectRequest(token.payload, context);
                 if (string.IsNullOrWhiteSpace(request.SourceMainEventKey))
                     request.SourceMainEventKey = activeMainEventSourceKey;
+                request.SourceSubEventKey = activeSubEventSourceKey;
 
                 EventBattleRequested?.Invoke(request);
                 break;

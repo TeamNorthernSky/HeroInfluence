@@ -33,6 +33,8 @@ public sealed class AudioManager : MonoBehaviour
     private readonly List<AudioSource> timedSfxSources = new List<AudioSource>();
     private string currentBgmKey;
     private float currentBgmDefaultVolume = 1f;
+    private float sceneBgmFadeVolume = 1f;
+    private bool sceneBgmTransitionActive;
 
     public DHAudioClipCatalog ClipCatalog => clipCatalog;
     public string CurrentBgmKey => currentBgmKey;
@@ -234,6 +236,40 @@ public sealed class AudioManager : MonoBehaviour
             StopBgm();
     }
 
+    public void PrepareSceneBgmTransition(string sceneName)
+    {
+        sceneBgmTransitionActive = false;
+        sceneBgmFadeVolume = 1f;
+        if (playBgmOnSceneLoaded)
+        {
+            if (TryGetSceneBgmKey(sceneName, out string key))
+            {
+                // Invalid bindings keep the current track, just like PlayBgmForScene.
+                if (TryGetBgmEntry(key, out DHAudioClipEntry entry) && entry.Clip != null)
+                    sceneBgmTransitionActive = !string.Equals(currentBgmKey,
+                        DHAudioClipCatalog.NormalizeKey(key), System.StringComparison.OrdinalIgnoreCase)
+                        || bgmSource == null || !bgmSource.isPlaying;
+            }
+            else
+                sceneBgmTransitionActive = stopBgmWhenSceneHasNoBinding;
+        }
+        ApplyBgmSourceVolume();
+    }
+
+    public void UpdateSceneBgmFade(float visibility, bool completed = false)
+    {
+        if (!sceneBgmTransitionActive)
+            return;
+
+        sceneBgmFadeVolume = Mathf.Clamp01(visibility);
+        if (completed)
+        {
+            sceneBgmTransitionActive = false;
+            sceneBgmFadeVolume = 1f;
+        }
+        ApplyBgmSourceVolume();
+    }
+
     public void SetMasterVolume(float volume)
     {
         masterVolume = Mathf.Clamp01(volume);
@@ -340,7 +376,7 @@ public sealed class AudioManager : MonoBehaviour
     private void ApplyBgmSourceVolume()
     {
         if (bgmSource != null)
-            bgmSource.volume = masterVolume * bgmVolume * currentBgmDefaultVolume;
+            bgmSource.volume = masterVolume * bgmVolume * currentBgmDefaultVolume * sceneBgmFadeVolume;
     }
 
     private float GetSfxPlaybackVolume(DHAudioClipEntry entry)

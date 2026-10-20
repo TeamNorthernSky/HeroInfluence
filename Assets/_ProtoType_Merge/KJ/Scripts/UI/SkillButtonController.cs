@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -47,6 +47,10 @@ public class SkillButtonController : MonoBehaviour
     private Button hoveredSkillButton;
     private bool descriptionBattleEnded;
     private BattleCharactor displayedUnit;
+    private CanvasGroup panelInput;
+
+    private bool IsPlayerTurn => battleFlowManager != null && battleFlowManager.CurrentUnit != null &&
+        battleFlowManager.CurrentUnit.IsPlayer && !descriptionBattleEnded;
 
     private Action<bool> onToggle1;
     private Action<bool> onToggle2;
@@ -117,6 +121,7 @@ public class SkillButtonController : MonoBehaviour
 
     private void Select(PendingActionType action, int skillId = 0)
     {
+        if (!IsPlayerTurn) return;
         // 다른 스킬은 기존 선택을 먼저 비웁니다. 새 요청이 거절되면 미선택으로 남습니다.
         if (inputHandler != null && !inputHandler.TryCancelSkillSelection())
         {
@@ -131,6 +136,7 @@ public class SkillButtonController : MonoBehaviour
     /// <summary>씬의 스킬 버튼 EventTrigger에 연결합니다. 잠금·미결선 버튼의 왼쪽 클릭은 기존 선택만 취소합니다.</summary>
     public void OnUnavailableSkillClicked(BaseEventData eventData)
     {
+        if (!IsPlayerTurn) return;
         if (!(eventData is PointerEventData pointer) || pointer.button != PointerEventData.InputButton.Left) return;
         var button = pointer.pointerClick != null ? pointer.pointerClick.GetComponent<Button>() : null;
         // 활성 버튼은 기존 ToggleButton 경로에서 선택합니다. 같은 클릭을 중복 처리하지 않습니다.
@@ -143,6 +149,7 @@ public class SkillButtonController : MonoBehaviour
     {
         var unit = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
         displayedUnit = unit;
+        ApplyTurnVisibility();
         if (unit != null && unit.IsPlayer) unit.ResolveSelectedSkill();
         var connected = unit != null && unit.IsPlayer ? unit.SelectedSkillData : null;
         if (HasHeroSlots)
@@ -205,7 +212,7 @@ public class SkillButtonController : MonoBehaviour
     /// <summary>SkillButtonTooltip이 버튼의 호버만 전달합니다. 선택·장착·시전 상태는 바꾸지 않습니다.</summary>
     public void SetDescriptionHover(Button button, bool hovering)
     {
-        if (!isActiveAndEnabled || button == null) return;
+        if (!isActiveAndEnabled || button == null || !IsPlayerTurn) return;
         if (hovering) hoveredSkillButton = button;
         else if (hoveredSkillButton == button) hoveredSkillButton = null;
         RefreshDescription();
@@ -229,7 +236,8 @@ public class SkillButtonController : MonoBehaviour
         var action = inputHandler != null ? inputHandler.PendingAction : PendingActionType.None;
         SkillData skill = null;
         // 버튼 자체를 기억하고 현재 턴의 데이터를 읽어, 호버한 채 턴이 바뀌어도 이전 유닛 정보가 남지 않습니다.
-        if (hoveredSkillButton != null && hoveredSkillButton.isActiveAndEnabled && hoveredSkillButton.IsInteractable())
+        // 잠금은 실행을 제한할 뿐 설명 열람을 제한하지 않는다.
+        if (hoveredSkillButton != null && hoveredSkillButton.isActiveAndEnabled)
         {
             if (toggle2 != null && hoveredSkillButton.gameObject == toggle2.gameObject)
             {
@@ -261,19 +269,19 @@ public class SkillButtonController : MonoBehaviour
         if (unit.UsesTutorialEquipment)
         {
             // 같은 ID의 일반 전투 템플릿/협회 강화값이 전용 설명을 덮어쓰지 않도록 실제 시전 데이터를 표시합니다.
-            body = SkillTooltipNumbers.Build(skill.description,
-                action == PendingActionType.WeaponSkill ? "WeaponSkill" : "ClassSkill", skill.skillValue, skill.skillSubValue, caster: unit, attackEffect: skill.classSkillEffect == 0);
+            body = ClassSkillTooltipText.ReplaceBattleCoefficients(skill.description,
+                action == PendingActionType.WeaponSkill ? "WeaponSkill" : "ClassSkill", skill.skillValue, skill.skillSubValue);
         }
         else if (action == PendingActionType.WeaponSkill && unit.EquippedWeaponData != null)
         {
             int weaponIndex = unit.EquippedWeaponIndex > 0 ? unit.EquippedWeaponIndex : (unit.SourceData?.CurrentWeaponIndex ?? 0);
             int level = gm != null && gm.Workshop != null && unitIndex > 0 ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(weaponIndex)) : 1;
-            body = WeaponTooltipText.BuildWeaponSkillDesc(unit.EquippedWeaponData, weaponIndex, level, caster: unit);
+            body = WeaponTooltipText.BuildWeaponSkillDesc(unit.EquippedWeaponData, weaponIndex, level, percentageValues: true, caster: unit);
         }
         else
         {
             int level = gm != null && gm.Lab != null && unitIndex > 0 ? gm.Lab.GetSkillLevel(unitIndex, skill.skillIndex) : (unit.SourceData?.SkillLevel ?? 1);
-            body = ClassSkillTooltipText.BuildDesc(skill, level, caster: unit);
+            body = ClassSkillTooltipText.BuildDesc(skill, level, percentageValues: true, caster: unit);
         }
         SetDescription(skill.skillName, body, skill);
     }
@@ -283,6 +291,7 @@ public class SkillButtonController : MonoBehaviour
         var actor = battleFlowManager != null ? battleFlowManager.CurrentUnit : null;
         // 턴 팝업 중에도 이름/초상화와 같은 유닛의 스킬을 표시합니다. 입력 허용 시점은 바꾸지 않습니다.
         if (displayedUnit != actor) RefreshSkills();
+        ApplyTurnVisibility();
         if (coreVisual == null && (!HasHeroSlots || !System.Array.Exists(heroSlots, s => s != null && s.visual != null))) return;
         bool ready = actor != null && actor.IsPlayer && !actor.IsDead && !descriptionBattleEnded &&
             !battleFlowManager.IsEndingBattle && !battleFlowManager.IsActionInProgress &&
@@ -306,6 +315,35 @@ public class SkillButtonController : MonoBehaviour
                 battleFlowManager.IsPlayerActionAllowed(actor, PendingActionType.WeaponSkill, null);
             coreVisual.SetState(available, ready && toggle2 != null && toggle2.IsOn);
         }
+    }
+
+    private void ApplyTurnVisibility()
+    {
+        bool playerTurn = IsPlayerTurn;
+        if (toggle2 != null)
+        {
+            var core = toggle2.transform.parent;
+            if (core != null && core.name == "CoreSkillPanel") core.gameObject.SetActive(playerTurn);
+            else toggle2.gameObject.SetActive(playerTurn);
+            if (panelInput == null)
+            {
+                for (var parent = core; parent != null; parent = parent.parent)
+                    if (parent.name == "BottomPanel")
+                    {
+                        panelInput = parent.GetComponent<CanvasGroup>() ?? parent.gameObject.AddComponent<CanvasGroup>();
+                        break;
+                    }
+            }
+        }
+        if (HasHeroSlots)
+            foreach (var slot in heroSlots)
+                if (slot != null && slot.button != null) slot.button.gameObject.SetActive(playerTurn);
+        if (panelInput != null)
+        {
+            panelInput.interactable = playerTurn;
+            panelInput.blocksRaycasts = playerTurn;
+        }
+        if (!playerTurn) hoveredSkillButton = null;
     }
 
     private void SetDescription(string title, string body, SkillData skill)

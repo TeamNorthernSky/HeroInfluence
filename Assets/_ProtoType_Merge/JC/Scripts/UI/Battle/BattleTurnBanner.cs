@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -28,11 +28,15 @@ public class BattleTurnBanner : MonoBehaviour
     [Min(0f)] [SerializeField] private float startDuration = 1f;
 
     [Header("턴 알림 이동 — 초안")]
-    [Tooltip("턴 알림의 좌측 진입→중앙 정지→우측 퇴장을 켭니다. 전투 시작 안내에는 적용하지 않습니다.")]
+    [Tooltip("아군은 왼쪽→오른쪽, 적군은 오른쪽→왼쪽으로 이동합니다. 전투 시작 안내에는 적용하지 않습니다.")]
     [SerializeField] private bool animateTurn;
     [InspectorName("배너 세로 위치 (px)")]
     [Tooltip("화면 세로 중앙에서 배너 피봇까지의 높이입니다. 0=중앙, 양수=위, 음수=아래. Canvas 기준 픽셀이므로 Canvas Scaler 배율을 따릅니다. 턴 배너에만 적용하며 이동 중에도 높이를 조절할 수 있습니다. 기본값은 0이고 씬에 저장됩니다.")]
     [SerializeField] private float verticalOffset;
+    [Tooltip("아군 턴 알림의 중앙 기준 추가 높이(Canvas 픽셀)입니다. 음수는 아래쪽이며 씬에 저장됩니다.")]
+    [SerializeField] private float playerVerticalOffset = -220f;
+    [Tooltip("적군 턴 알림의 중앙 기준 추가 높이(Canvas 픽셀)입니다. 양수는 위쪽이며 씬에 저장됩니다.")]
+    [SerializeField] private float enemyVerticalOffset = 70f;
     [Tooltip("등장 시간(초)입니다. 이동과 선형 페이드 인을 함께 수행합니다. 0이면 즉시 중앙에 표시합니다.")]
     [Min(0)] [SerializeField] private float enterDuration = .5f;
     [Tooltip("중앙에 정지하는 시간(초)입니다. 알파는 1을 유지합니다.")]
@@ -45,7 +49,7 @@ public class BattleTurnBanner : MonoBehaviour
     [SerializeField] private AnimationCurve exitCurve = new AnimationCurve(new Keyframe(0, 0, 0, 0), new Keyframe(1, 1, 2, 2));
     [Tooltip("클릭 후 퇴장의 최대 시간(초)입니다. 기존 남은 시간이 더 짧으면 그 시간 안에 끝냅니다. 0이면 즉시 숨깁니다.")]
     [Min(0)] [SerializeField] private float clickExitDuration = .3f;
-    [Tooltip("클릭 퇴장의 이동 곡선입니다. 현재 위치에서 우측 끝으로 이동하며 기본은 선형입니다.")]
+    [Tooltip("클릭 퇴장의 이동 곡선입니다. 아군은 오른쪽 끝, 적군은 왼쪽 끝으로 이동하며 기본은 선형입니다.")]
     [SerializeField] private AnimationCurve clickExitCurve = AnimationCurve.Linear(0, 0, 1, 1);
     [Tooltip("등장 시작/퇴장 끝의 최저 알파입니다. 기본 0.1, 최대 알파는 1입니다. 클릭 퇴장은 현재 알파에서 이어집니다.")]
     [Range(0, 1)] [SerializeField] private float minimumAlpha = .1f;
@@ -103,6 +107,7 @@ public class BattleTurnBanner : MonoBehaviour
         var visual = isTurn ? turnBanner : startBanner;
         if (visual == null) yield break;
         Hide();
+        playerTurn = isPlayer;
         showing = true;
         visual.SetActive(true);
         if (isTurn && turnImage != null) turnImage.sprite = isPlayer ? playerSprite : enemySprite;
@@ -171,6 +176,7 @@ public class BattleTurnBanner : MonoBehaviour
         float halfBanner = motionRect.rect.width * Mathf.Abs(motionRect.localScale.x) * .5f;
         leftX = -halfScreen - halfBanner - offscreenMargin;
         rightX = halfScreen + halfBanner + offscreenMargin;
+        if (!isPlayer) { float entry = leftX; leftX = rightX; rightX = entry; }
         motionTime = skipTime = effectAmount = 0; skipping = false; motionPrepared = true; playerTurn = isPlayer;
         if (blurImage != null)
         {
@@ -239,7 +245,8 @@ public class BattleTurnBanner : MonoBehaviour
         var parent = rect.parent as RectTransform;
         // 전 화면 부모의 중앙을 기준으로 하며, 배너 피봇/앵커 변경에도 같은 높이를 유지합니다.
         float anchorY = Mathf.Lerp(rect.anchorMin.y, rect.anchorMax.y, rect.pivot.y);
-        position.y = verticalOffset + (parent != null ? parent.rect.height * (.5f - anchorY) : 0f);
+        position.y = verticalOffset + (playerTurn ? playerVerticalOffset : enemyVerticalOffset) +
+            (parent != null ? parent.rect.height * (.5f - anchorY) : 0f);
         rect.anchoredPosition = position;
     }
 
@@ -271,8 +278,11 @@ public class BattleTurnBanner : MonoBehaviour
             color.a *= streakOpacity * amount; image.color = color;
             image.rectTransform.sizeDelta = new Vector2(Mathf.Max(0, Mathf.Lerp(streakLength.x, streakLength.y, seed)) * amount,
                 Mathf.Max(.1f, Mathf.Lerp(streakThickness.x, streakThickness.y, 1 - seed)));
-            image.rectTransform.anchoredPosition = new Vector2(-width * .35f - seed * 35,
+            image.rectTransform.anchoredPosition = new Vector2((playerTurn ? -1f : 1f) * (width * .35f + seed * 35),
                 (Mathf.Repeat((i + 1) * .381966f, 1) * 2 - 1) * streakSpread);
+            var streakScale = image.rectTransform.localScale;
+            streakScale.x = Mathf.Abs(streakScale.x) * (playerTurn ? 1f : -1f);
+            image.rectTransform.localScale = streakScale;
         }
     }
 

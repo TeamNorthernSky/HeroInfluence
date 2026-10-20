@@ -20,6 +20,11 @@ public class TurnManager : MonoBehaviour
     [Header("Automatic Turn End")]
     [Tooltip("End the player turn after movement uses all move points, once interactions and combat follow-up finish.")]
     [SerializeField] private bool autoEndTurnWhenMovePointsDepleted;
+    public bool AutoTurnEnd
+    { 
+        get => autoEndTurnWhenMovePointsDepleted; 
+        set => autoEndTurnWhenMovePointsDepleted = value; 
+    }
 
     private bool enemyTurnRunning;
     private Coroutine pendingEnemyTurnStartCoroutine;
@@ -366,7 +371,8 @@ public class TurnManager : MonoBehaviour
         while (CombatContext.Instance != null && CombatContext.Instance.Result != CombatResult.None)
             yield return null;
 
-        while (ChatManager.Instance != null && ChatManager.Instance.IsRunning)
+        // Chat logic can finish before reward confirmation and the modal's exit animation.
+        while ((ChatManager.Instance != null && ChatManager.Instance.IsRunning) || ChatModalController.IsOpen)
             yield return null;
 
         if (DHGameEndState.IsEnding || enemyTurnRunning)
