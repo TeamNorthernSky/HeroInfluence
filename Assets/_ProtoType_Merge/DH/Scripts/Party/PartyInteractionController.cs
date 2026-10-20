@@ -160,7 +160,8 @@ public class PartyInteractionController
 
         bool isItem = gridManager.TryGetGridItemObjectAtGrid(targetInteractionGrid, out _);
         bool isEvent = allowEvents && gridManager.TryGetEventObjectAtGrid(targetInteractionGrid, out MapEventObject mapEvent);
-        bool isWorldEvent = allowEvents && gridManager.TryGetWorldEventObjectAtGrid(targetInteractionGrid, out WorldEventObject worldEvent);
+        WorldEventObject worldEvent = null;
+        bool isWorldEvent = allowEvents && gridManager.TryGetWorldEventObjectAtGrid(targetInteractionGrid, out worldEvent);
         bool isSubEvent = allowEvents && gridManager.TryGetSubEventObjectAtGrid(targetInteractionGrid, out SubEventObject subEvent);
 
         if (!isItem && !isEvent && !isWorldEvent && !isSubEvent)
@@ -168,7 +169,10 @@ public class PartyInteractionController
 
         Vector2Int currentGrid = ownerParty.GetCurrentGrid();
 
-        if (IsAdjacentOrSame(currentGrid, targetInteractionGrid) && currentGrid != targetInteractionGrid)
+        bool inInteractionRange = isWorldEvent
+            ? worldEvent.IsInteractionCell(currentGrid)
+            : IsAdjacentOrSame(currentGrid, targetInteractionGrid) && currentGrid != targetInteractionGrid;
+        if (inInteractionRange)
         {
             ownerParty.SnapToGridPosition(currentGrid);
 
@@ -313,13 +317,8 @@ public class PartyInteractionController
         }
 
         Vector2Int currentGrid = currentGridProvider != null ? currentGridProvider() : worldEventGrid;
-        if (!IsAdjacentOrSame(currentGrid, worldEventGrid))
-        {
-            IsInputLocked = false;
-            yield break;
-        }
-
-        if (!gridManager.TryGetWorldEventObjectAtGrid(worldEventGrid, out WorldEventObject worldEvent))
+        if (!gridManager.TryGetWorldEventObjectAtGrid(worldEventGrid, out WorldEventObject worldEvent)
+            || !worldEvent.IsInteractionCell(currentGrid))
         {
             IsInputLocked = false;
             yield break;

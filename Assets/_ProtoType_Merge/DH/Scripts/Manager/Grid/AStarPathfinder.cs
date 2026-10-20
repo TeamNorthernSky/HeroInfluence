@@ -171,7 +171,8 @@ public class AStarPathfinder : MonoBehaviour
         bool allowItemCells = false,
         MainEventInteractionPathMode mainEventInteractionPathMode = MainEventInteractionPathMode.Ignore,
         int maxVisitedNodes = 0,
-        int maxPathCost = -1)
+        int maxPathCost = -1,
+        System.Func<Vector2Int, bool> isAllowedSearchCell = null)
     {
         if (goals == null || goals.Count == 0)
             return null;
@@ -208,6 +209,8 @@ public class AStarPathfinder : MonoBehaviour
                     continue;
 
                 bool isTerminalGoal = ContainsGrid(goals, neighbor);
+                if (isAllowedSearchCell != null && !isAllowedSearchCell(neighbor))
+                    continue;
                 Vector2Int pathGoalForRules = isTerminalGoal ? neighbor : heuristicTarget;
                 if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                     continue;

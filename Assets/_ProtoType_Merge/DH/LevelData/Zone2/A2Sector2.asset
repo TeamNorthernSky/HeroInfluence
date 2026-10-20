@@ -13353,6 +13353,7 @@ MonoBehaviour:
   - gridPosition: {x: 7, y: 36}
     worldEventId: C_NPC_01_005
     eventType: 1
+    rotation: 90
   - gridPosition: {x: 46, y: 23}
     worldEventId: C_NPC_01_005
     eventType: 1
