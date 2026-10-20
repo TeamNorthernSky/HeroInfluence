@@ -36,10 +36,26 @@ public static class SkillTooltipCardLayout
         text.raycastTarget = false;
     }
 
-    private static void Icon(Image icon, RectTransform root, float x, float y, float size)
+    private static void Icon(Image icon, RectTransform root, float x, float y, float width, float height)
     {
         if (icon == null) return;
-        Place(icon.rectTransform, root, x, y, size, size);
+        // 마스크 안의 이미지는 유지하고, 배경·마스크·테두리 묶음을 배치합니다.
+        // ShowInfo/ShowCompare는 패널을 숨긴 상태에서 먼저 레이아웃을 갱신합니다.
+        var mask = icon.GetComponentInParent<Mask>(true);
+        var visual = mask != null ? mask.transform.parent as RectTransform : null;
+        if (visual != null && visual.name == "IconVisual")
+        {
+            Place(visual, root, x, y, width, height);
+            visual.gameObject.SetActive(icon.sprite != null);
+            var fitter = icon.GetComponent<AspectRatioFitter>();
+            if (fitter != null && icon.sprite != null)
+                fitter.aspectRatio = icon.sprite.rect.width / Mathf.Max(1f, icon.sprite.rect.height);
+        }
+        else
+        {
+            // 이전 프리팹을 사용하는 별도 테스트씬도 아이콘 표시를 유지합니다.
+            Place(icon.rectTransform, root, x, y, width, height);
+        }
         icon.gameObject.SetActive(icon.sprite != null);
         icon.enabled = icon.sprite != null;
         icon.preserveAspect = true;
@@ -68,7 +84,7 @@ public static class SkillTooltipCardLayout
         float width = Mathf.Max(400f, 500f + extraWidth);
         root.sizeDelta = new Vector2(width, width * (2f / 3f));
         HidePanelImage(oldPanel);
-        Icon(icon, root, 27f + iconDeltaX, 24f, 82f);
+        Icon(icon, root, 23.3333f + iconDeltaX, 20f, 93.3333f, 84.1667f);
         Text(name, root, 132f, 36f, width - 154f, 65f, 26f, true);
         if (name != null) name.color = Color.white;
         Text(description, root, 32f, 130f, width - 64f, root.sizeDelta.y - 148f, 23f, false);
@@ -91,7 +107,7 @@ public static class SkillTooltipCardLayout
         HidePanelImage(oldPanel);
         if (nextIcon != null) nextIcon.gameObject.SetActive(false);
         if (nextName != null) nextName.gameObject.SetActive(false);
-        Icon(icon, root, 43f, 52f, 108f);
+        Icon(icon, root, 36.4964f, 42.54f, 121.6545f, 111.82f);
         string title = name != null ? name.text : "";
         if (name != null)
             name.text = System.Text.RegularExpressions.Regex.Replace(title, @"\s+(?:기본|\+\d+|Lv\.?\s*\d+)\s*$", "");

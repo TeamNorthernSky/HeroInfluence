@@ -43,7 +43,13 @@ namespace JC.BattleTesting
             var map=all.GroupBy(r=>Path(r)).ToDictionary(g=>g.Key,g=>g.First());
             foreach(var item in JsonUtility.FromJson<Data>(layoutJson).items)
             {
-                if(!map.TryGetValue(item.path,out var r))continue;
+                // 프레임 분리 후에도 저장된 레이아웃은 이미지가 아닌 시각 묶음에 적용합니다.
+                string visualPath = item.path.EndsWith("/SkillIcon", StringComparison.Ordinal)
+                    ? item.path.Substring(0, item.path.Length - "SkillIcon".Length) + "IconVisual"
+                    : item.path.EndsWith("/PortraitArea/Portrait", StringComparison.Ordinal)
+                        ? item.path.Substring(0, item.path.Length - "Portrait".Length) + "PortraitVisual"
+                        : item.path;
+                if(!map.TryGetValue(visualPath,out var r) && !map.TryGetValue(item.path,out r))continue;
                 if(item.rect){r.anchorMin=item.anchorMin;r.anchorMax=item.anchorMax;r.pivot=item.pivot;r.anchoredPosition=item.position;r.sizeDelta=item.size;}
                 var text=r.GetComponent<TMP_Text>();
                 if(text!=null&&item.fontSize>0){text.fontSize=item.fontSize;text.enableAutoSizing=true;text.fontSizeMax=item.fontSize;text.fontSizeMin=Mathf.Max(15,item.fontSize-4);}

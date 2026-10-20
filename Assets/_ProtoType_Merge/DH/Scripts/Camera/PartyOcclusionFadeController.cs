@@ -42,6 +42,14 @@ public class PartyOcclusionFadeController : MonoBehaviour
     private readonly JcBuildingMeshOcclusion meshOcclusion = new JcBuildingMeshOcclusion();
     private float nextCheckTime;
 
+    /// <summary>보조 판정 메시 추가·제거 후 캐시만 갱신합니다. 교차 판정과 투명화 규칙은 유지합니다.</summary>
+    public void RefreshOcclusionMeshes()
+    {
+        meshOcclusion.Clear();
+        nextCheckTime = 0f;
+    }
+    private readonly List<UnitVisualMotionController> partyVisuals = new List<UnitVisualMotionController>();
+
     private void Awake()
     {
         ResolveReferences();
@@ -100,6 +108,17 @@ public class PartyOcclusionFadeController : MonoBehaviour
         AddDecorativeOccluders(from, to);
         AddFadeTargetOccluders(from, to);
 
+        // 파티 중심 한 점만 검사하면 편대의 다른 영웅을 가리는 건물 가장자리를 놓친다.
+        // 실제 영웅 위치를 추가 검사하되 메시 표면 교차 조건은 그대로 유지한다.
+        party.GetComponentsInChildren(false, partyVisuals);
+        foreach (var visual in partyVisuals)
+        {
+            if (visual == null || !visual.gameObject.activeInHierarchy) continue;
+            Vector3 focus = visual.transform.position + partyFocusOffset;
+            AddDecorativeOccluders(from, focus);
+            AddFadeTargetOccluders(from, focus);
+        }
+
         RestoreNoLongerOccluding();
         RestoreTargetsNoLongerOccluding();
 
@@ -123,6 +142,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
             DecorativeObjectPlacement decorativeObject = objects[i];
             if (decorativeObject == null || !decorativeObject.isActiveAndEnabled)
                 continue;
+            if (currentOccluders.Contains(decorativeObject)) continue;
 
             if (!decorativeObject.TryGetRenderBounds(out Bounds bounds, boundsPadding))
                 continue;
@@ -147,6 +167,7 @@ public class PartyOcclusionFadeController : MonoBehaviour
             PartyOcclusionFadeTarget target = targets[i];
             if (target == null || !target.isActiveAndEnabled)
                 continue;
+            if (currentTargetOccluders.Contains(target)) continue;
 
             if (!target.TryGetRenderBounds(out Bounds bounds, boundsPadding))
                 continue;

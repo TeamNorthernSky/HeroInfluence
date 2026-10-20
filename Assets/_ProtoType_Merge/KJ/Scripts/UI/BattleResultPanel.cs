@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -16,8 +16,9 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
     // [JC 260628] 스킬 획득 창 순차 표시용(한 번에 하나씩, 전열→후열 순)
     private readonly List<SkillSelectionPanel> skillQueue = new List<SkillSelectionPanel>();
     private int currentSkillIndex = 0;
-    public SkillSelectionPanel CurrentSkillNotice => currentSkillIndex < skillQueue.Count ? skillQueue[currentSkillIndex] : null;
-    public bool HasPendingSkillNotices => pendingSlotCount > 0;
+    private bool skillNoticesStarted;
+    public SkillSelectionPanel CurrentSkillNotice => skillNoticesStarted && currentSkillIndex < skillQueue.Count ? skillQueue[currentSkillIndex] : null;
+    public bool HasPendingSkillNotices => skillNoticesStarted && pendingSlotCount > 0;
     private Button boundAcceptButton;
     private bool accepted;
     private bool tutorialNoticeBlocked;
@@ -31,7 +32,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
     private bool presentationReady;
     private readonly List<HeroInfoResult> presentationCards = new List<HeroInfoResult>();
 
-    // [KJ 260729] 스킬 획득 창이 전부 사라진 뒤에 결과 내용을 노출한다.
+    // 결과 확인 뒤에는 내용을 숨기고, 새 결과를 Show할 때만 복원합니다.
     //   기존에는 결과 패널 위에 스킬 창이 겹쳐 떠 있었다(GetSkillParent가 결과 패널의 자식이고
     //   GetSkillBackground가 ResultBackground와 같은 1440x720 영역을 덮는 구조).
     //   숨긴 대상만 기록해 복원하므로 원래 비활성이던 노드는 건드리지 않는다.
@@ -49,6 +50,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
         pendingSlotCount = 0;
         skillQueue.Clear();
         currentSkillIndex = 0;
+        skillNoticesStarted = false;
         // [KJ 260729] 같은 인스턴스에서 재호출되어도 이전에 숨긴 노드가 남지 않게 먼저 되돌린다.
         RevealResultContent();
 
@@ -85,11 +87,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
         presentationReady = true;
         BuildSkillSlots(plan, result, view, ordered);
 
-        // [KJ 260729] 스킬 획득 창이 있으면 결과 내용을 숨겨 두고, 마지막 창이 닫힐 때 노출한다.
-        if (pendingSlotCount > 0)
-            HideResultContent(view);
-        else if (view.acceptButton != null)
-            view.acceptButton.gameObject.SetActive(true);
+        // 경험치·레벨업·IP를 보여 준 뒤 확인 입력으로 스킬 획득 안내를 시작합니다.
     }
 
     /// <summary>[KJ 260729] 스킬 슬롯 부모(및 그 조상)를 제외한 직계 자식을 숨긴다.
@@ -212,27 +210,19 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
                 pendingSlotCount++;
 
-                Button acceptButton = view.acceptButton;
+
                 slot.OnCompleted += (selectedSkillId) =>
                 {
                     // 자동 해금 안내입니다. CurrentSkillIndex를 덮어쓰지 않습니다.
-                    ActivateNextSkillSlot(); // 다음 창 팝업(현재 창은 SkillSelectionPanel이 스스로 Destroy)
-
                     pendingSlotCount--;
-                    if (pendingSlotCount <= 0)
-                    {
-                        // [KJ 260729] 마지막 스킬 창까지 처리된 뒤에 결과 내용을 노출한다.
-                        RevealResultContent();
-                        if (acceptButton != null) acceptButton.gameObject.SetActive(true);
-                    }
+                    ActivateNextSkillSlot();
+                    if (pendingSlotCount <= 0) CompleteAcceptance();
                 };
                 skillQueue.Add(slot);
             }
         }
 
-        // 첫 창만 팝업
-        if (skillQueue.Count > 0 && skillQueue[0] != null)
-            skillQueue[0].gameObject.SetActive(true);
+        // 생성만 하고 보상 표시가 끝날 때까지 비활성 상태로 둔다.
     }
 
     private void ActivateNextSkillSlot()
@@ -246,7 +236,7 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
     private bool CanAdvancePresentation()
     {
-        if (tutorialNoticeBlocked || !presentationReady || accepted || pendingSlotCount > 0 || !isActiveAndEnabled) return false;
+        if (tutorialNoticeBlocked || !presentationReady || accepted || HasPendingSkillNotices || !isActiveAndEnabled) return false;
         var view = GetComponent<BattleResultView>();
         return view != null && (view.resultContent == null || view.resultContent.activeInHierarchy);
     }
@@ -271,6 +261,9 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
             foreach (var card in presentationCards)
                 if (card != null && !card.IsIPComplete) return;
             presentationStage = PresentationStage.Complete;
+            var view = GetComponent<BattleResultView>();
+            if (view != null && view.acceptButton != null)
+                view.acceptButton.gameObject.SetActive(true);
         }
     }
 
@@ -297,7 +290,22 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
     private void Accept()
     {
-        if (tutorialNoticeBlocked || accepted || pendingSlotCount > 0) return;
+        if (tutorialNoticeBlocked || accepted || skillNoticesStarted || presentationStage != PresentationStage.Complete) return;
+        var view = GetComponent<BattleResultView>();
+        HideResultContent(view);
+        if (boundAcceptButton != null) boundAcceptButton.gameObject.SetActive(false);
+        if (pendingSlotCount > 0)
+        {
+            skillNoticesStarted = true;
+            if (CurrentSkillNotice != null) CurrentSkillNotice.gameObject.SetActive(true);
+            return;
+        }
+        CompleteAcceptance();
+    }
+
+    private void CompleteAcceptance()
+    {
+        if (accepted) return;
         accepted = true;
         // 조기 확인 시 표시만 최종값으로 정리한다. 보상 저장은 기존 OnAccepted 경로에서 한 번만 수행한다.
         foreach (var card in GetComponentsInChildren<HeroInfoResult>(true))
