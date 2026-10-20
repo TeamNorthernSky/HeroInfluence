@@ -29,7 +29,7 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
         public AdvanceCondition advance = AdvanceCondition.Click;
         [HideInInspector] // 이전 편집 저장본 호환용. 표시 문구는 sceneMessage에서 편집합니다.
         public string message;
-        [Tooltip("CountEquals에서 맞출 횟수 또는 Confirmed·CountAndConfirmed에서 허용할 확정 횟수입니다. 확정 단계의 0은 기본 실습 20회를 사용합니다.")]
+        [Tooltip("CountEquals의 목표 횟수 또는 CountAndConfirmed의 상한입니다(0이면 20). 첫 실습은 1~상한을 허용하고, Confirmed 단계는 최대 충전으로 선택한 실제 횟수를 확정합니다.")]
         public int targetCount;
         [Tooltip("Highlight Pools에서 강조할 대상의 번호(0부터). 여러 개 지정할 수 있습니다.")]
         public List<int> highlightIndices = new List<int>();

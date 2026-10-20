@@ -35,14 +35,25 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     };
     private bool Allows(PracticeInput input) => practiceInput == PracticeInput.Unrestricted || practiceInput == input ||
         (practiceInput == PracticeInput.CountAndConfirm && (input == PracticeInput.Count || input == PracticeInput.Confirm));
-    private bool MatchesPracticeCount =>
-        (practiceInput != PracticeInput.Confirm && practiceInput != PracticeInput.CountAndConfirm) || count == practiceCount;
-    private bool IsCountPractice => practiceInput == PracticeInput.Count || practiceInput == PracticeInput.CountAndConfirm;
-    private bool PracticeCountReached => IsCountPractice && count >= practiceCount;
+    private bool IsCountPractice => practiceInput == PracticeInput.CountAndConfirm;
+    // 독립 Count 실습의 main 잠금은 보존하되 첫 자유 조절 실습은 20 도달 후에도 낮출 수 있습니다.
+    private bool PracticeCountReached => practiceInput == PracticeInput.Count && count >= practiceCount;
+    // 횟수 제한은 첫 수동 실습에만 적용합니다. 이후 MAX 확정은 남은 실제 횟수를 사용합니다.
+    private bool MatchesPracticeCount => !IsCountPractice || (count >= 1 && count <= practiceCount);
+    private Image practiceLimitShade;
+    private float limitFeedbackUntil;
+    [SerializeField, Tooltip("첫 실습에서 20 초과 입력을 시도하면 표시하는 비차단 안내 패널입니다.")]
+    private GameObject practiceLimitNotice;
+    [SerializeField, Min(1f), Tooltip("상한 안내를 표시하는 시간입니다. 반복 입력하면 시간이 갱신됩니다.")]
+    private float limitNoticeDuration = 3f;
     public void SetPracticeInput(PracticeInput input, int targetCount = PracticeCount)
     {
         practiceInput = input;
         practiceCount = targetCount > 0 ? targetCount : PracticeCount;
+        if (IsCountPractice && !string.IsNullOrEmpty(SelectedKey))
+            count = Mathf.Clamp(count, 1, Mathf.Max(1, Mathf.Min(practiceCount, MaximumCount())));
+        if (!IsCountPractice) limitFeedbackUntil = 0f;
+        UpdatePracticeLimitVisual();
         Refresh();
     }
     [SerializeField] private string[] heroKeys = { "10001", "10002", "10003", "10004" };
@@ -94,10 +105,14 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         if (progressSlider != null) progressSlider.onValueChanged.RemoveListener(OnSliderChanged);
         SelectedKey = null;
         count = 0;
+        limitFeedbackUntil = 0f;
+        if (practiceLimitNotice != null) practiceLimitNotice.SetActive(false);
+        if (practiceLimitShade != null) practiceLimitShade.gameObject.SetActive(false);
     }
 
     private void Update()
     {
+        UpdatePracticeLimitVisual();
         if (Time.unscaledTime < nextRefresh) return;
         nextRefresh = Time.unscaledTime + 0.2f;
         Refresh();
@@ -136,7 +151,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     public void BeginExplanation(string key)
     {
         if (!TryGetHero(key, out var state, out _)) return;
-        // 안내의 두 차례 홍보(20 + 20)를 끝낼 수 있도록 튜토리얼 자원만 준비한다.
+        // 첫 실습(1~20) 후 남은 양을 최대 충전할 수 있도록 튜토리얼 자원만 준비한다.
         var repo = Repository;
         int requiredMoney = TutorialMaxIp * TutorialPublicityState.CostPerProgress;
         repo.SetResource(ResourceType.Money, Mathf.Max(repo.GetResource(ResourceType.Money), requiredMoney));
@@ -165,15 +180,49 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     private void OnSliderChanged(float value) => SetCount(Mathf.RoundToInt(value));
     public void SetCount(int value)
     {
-        if (!Allows(PracticeInput.Count) || PracticeCountReached)
-        {
-            Refresh();
-            return;
-        }
-        int maximum = MaximumCount();
-        if (IsCountPractice) maximum = Mathf.Min(maximum, practiceCount);
-        count = Mathf.Clamp(value, 0, maximum);
+        if (!Allows(PracticeInput.Count) || PracticeCountReached) { Refresh(); return; }
+        int maximum = IsCountPractice || practiceInput == PracticeInput.Count ? Mathf.Min(practiceCount, MaximumCount()) : MaximumCount();
+        if (IsCountPractice && value > practiceCount) limitFeedbackUntil = Time.unscaledTime + limitNoticeDuration;
+        count = ClampSelectedCount(value, maximum, IsCountPractice);
         Refresh();
+    }
+
+    private static int ClampSelectedCount(int value, int maximum, bool limitedPractice)
+        => Mathf.Clamp(value, limitedPractice && maximum > 0 ? 1 : 0, Mathf.Max(0, maximum));
+
+    // 노브의 이동 영역을 기준으로 20 위치의 오른쪽 끝부터 음영을 표시한다.
+    private void UpdatePracticeLimitVisual()
+    {
+        if (practiceLimitNotice != null)
+            practiceLimitNotice.SetActive(IsCountPractice && IsModalOpen && Time.unscaledTime < limitFeedbackUntil);
+        if (progressSlider == null) return;
+        if (IsCountPractice && practiceLimitShade == null)
+        {
+            var go = new GameObject("PracticeLimitShade", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            go.transform.SetParent(progressSlider.transform, false);
+            practiceLimitShade = go.GetComponent<Image>();
+            practiceLimitShade.raycastTarget = false;
+            practiceLimitShade.color = new Color(.32f, .34f, .38f, .55f);
+            // 노브가 마지막으로 그려지도록 음영은 슬라이더 자식의 맨 앞에 둔다.
+            go.transform.SetAsFirstSibling();
+        }
+        if (practiceLimitShade == null) return;
+        practiceLimitShade.gameObject.SetActive(IsCountPractice);
+        if (!IsCountPractice) return;
+        var sliderRect = (RectTransform)progressSlider.transform;
+        var handle = progressSlider.handleRect;
+        var travel = handle != null ? handle.parent as RectTransform : sliderRect;
+        if (travel == null) return;
+        float ratio = Mathf.InverseLerp(1f, TutorialMaxIp, practiceCount);
+        Vector3 edge = travel.TransformPoint(new Vector3(Mathf.Lerp(travel.rect.xMin, travel.rect.xMax, ratio), 0));
+        float start = sliderRect.InverseTransformPoint(edge).x;
+        if (handle != null)
+            start += Mathf.Abs(sliderRect.InverseTransformVector(handle.TransformVector(Vector3.right * handle.rect.width)).x) * .5f + 2f;
+        var rect = practiceLimitShade.rectTransform;
+        rect.anchorMin = rect.anchorMax = sliderRect.pivot;
+        rect.pivot = new Vector2(0, .5f);
+        rect.anchoredPosition = new Vector2(start, sliderRect.rect.center.y);
+        rect.sizeDelta = new Vector2(Mathf.Max(0, sliderRect.rect.xMax - start - 2f), Mathf.Max(0, sliderRect.rect.height - 4f));
     }
 
     private int MaximumCount()
@@ -208,6 +257,7 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         bool selected = TryGetHero(SelectedKey, out var state, out _);
         var budget = TutorialPublicityState.Get(repo);
         int maximum = MaximumCount();
+        if (IsCountPractice) maximum = Mathf.Min(maximum, practiceCount);
         count = Mathf.Clamp(count, 0, maximum);
         long cost = (long)count * TutorialPublicityState.CostPerProgress;
         bool affordable = cost <= repo.GetResource(ResourceType.Money);
@@ -231,8 +281,8 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         if (progressSlider != null)
         {
             progressSlider.wholeNumbers = true;
-            progressSlider.minValue = 0;
-            // 실습 목표 20과 독립적으로 0~40 눈금을 유지한다. 남은 IP/예산은 MaximumCount에서 제한한다.
+            progressSlider.minValue = IsCountPractice ? 1 : 0;
+            // 20 초과 구간은 음영 표시하고 첫 실습의 입력을 차단한다.
             progressSlider.maxValue = TutorialMaxIp;
             progressSlider.SetValueWithoutNotify(count);
             progressSlider.interactable = maximum > 0 && Allows(PracticeInput.Count) && !PracticeCountReached;

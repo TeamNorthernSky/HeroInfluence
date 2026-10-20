@@ -69,7 +69,7 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     private EventSystem pointerSystem;
     private readonly HashSet<string> warnedDescriptions = new HashSet<string>();
     private readonly HashSet<string> warnedOverflow = new HashSet<string>();
-    private static readonly Regex EnemyValue = new Regex(@"\{EnemySkill([1-5])(Sub)?Value\}");
+    private static readonly Regex EnemyValue = new Regex(@"\{EnemySkill([1-5])(Sub)?Value\}(?:[ \t]*[%％])?");
 
     private void OnEnable()
     {
@@ -186,7 +186,7 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
 
     private string BuildDescription(SkillData skill, int slot)
     {
-        return EnemyValue.Replace(skill.description ?? string.Empty, match =>
+        string description = EnemyValue.Replace(skill.description ?? string.Empty, match =>
         {
             // 다른 슬롯을 가리키는 원본은 임의 보정하지 않고 재확인 대상으로 남깁니다.
             if (int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) != slot)
@@ -198,6 +198,7 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
             float value = match.Groups[2].Success ? skill.skillSubValue : skill.skillValue;
             return (value * 100f).ToString("0.##", CultureInfo.InvariantCulture) + "%";
         });
+        return ClassSkillTooltipText.FormatBattleDescription(description);
     }
 
     private void RefreshStats()
