@@ -32,19 +32,32 @@ public class AttachedEffectBehaviour : MonoBehaviour, ISkillEffectBehaviour, ISk
 
     public void Play(SkillEffectContext ctx)
     {
-        if (ctx?.SocketTransform != null)
-        {
-            transform.SetParent(ctx.SocketTransform, false);
-            transform.localPosition = localPositionOffset;
-            transform.localRotation = Quaternion.Euler(localEulerOffset);
-            transform.localScale = ResolveAttachedScale(ctx);
-        }
+        AttachToSocket(transform, ctx, localPositionOffset, localEulerOffset, scaleMode, localScale);
 
         ParticleSystem[] particles = GetComponentsInChildren<ParticleSystem>(true);
         for (int i = 0; i < particles.Length; i++) particles[i].Play(true);
     }
 
-    private Vector3 ResolveAttachedScale(SkillEffectContext ctx)
+    /// <summary>
+    /// 소켓에 붙이고 로컬 오프셋·회전·스케일을 적용한다. 소켓이 없으면 아무것도 하지 않는다.
+    /// VFX Graph 재료(<see cref="VisualEffectGraphEffect"/>)도 같은 부착 규칙을 쓰도록 공용으로 둔다.
+    /// </summary>
+    public static void AttachToSocket(Transform target, SkillEffectContext ctx,
+        Vector3 localPositionOffset, Vector3 localEulerOffset, AttachedEffectScaleMode scaleMode, Vector3 localScale)
+    {
+        if (target == null || ctx?.SocketTransform == null)
+        {
+            return;
+        }
+
+        target.SetParent(ctx.SocketTransform, false);
+        target.localPosition = localPositionOffset;
+        target.localRotation = Quaternion.Euler(localEulerOffset);
+        target.localScale = ResolveAttachedScale(ctx, scaleMode, localScale, target);
+    }
+
+    private static Vector3 ResolveAttachedScale(SkillEffectContext ctx, AttachedEffectScaleMode scaleMode,
+        Vector3 localScale, Object logContext)
     {
         if (scaleMode == AttachedEffectScaleMode.InheritSocket || ctx?.SocketTransform == null)
         {
@@ -60,7 +73,7 @@ public class AttachedEffectBehaviour : MonoBehaviour, ISkillEffectBehaviour, ISk
             Transform visualRoot = socketHolder?.ResolveVisualRoot(ctx.Caster.transform);
             if (visualRoot == null)
             {
-                Debug.LogWarning($"[AttachedEffectBehaviour] UseVisualRoot could not resolve a visual root on '{ctx?.Caster?.name}'. World scale fallback is used.", this);
+                Debug.LogWarning($"[AttachedEffectBehaviour] UseVisualRoot could not resolve a visual root on '{ctx?.Caster?.name}'. World scale fallback is used.", logContext);
             }
             else
             {

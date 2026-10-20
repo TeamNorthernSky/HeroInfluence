@@ -14,6 +14,13 @@ public class ZoneEntryGuidanceController : MonoBehaviour
     private string activeZoneId = string.Empty;
     private string requiredHeroUnionId = string.Empty;
     private Coroutine sceneRefreshCoroutine;
+    private PartyRegistry cachedPartyRegistry;
+    private LevelZoneLayoutLoader cachedLayoutLoader;
+    private int referenceSearchFrame = -1;
+    private int zoneCheckFrame = -1;
+    private PartyGridMover zoneCheckParty;
+    private Vector2Int zoneCheckGrid;
+    private string cachedPartyZoneId = string.Empty;
 
     public static ZoneEntryGuidanceController Instance { get; private set; }
     public static bool IsActive => IsGuidanceActiveForCurrentPartyZone();
@@ -28,6 +35,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
     public static bool IsActiveOrStoredActive => IsGuidanceActiveForCurrentPartyZone() || HasStoredGuidanceForCurrentPartyZone();
 
     public bool Active { get; private set; }
+    public int RouteRevision { get; private set; }
     public string ActiveZoneId => activeZoneId;
     public string RequiredHeroUnionId => requiredHeroUnionId;
 
@@ -235,6 +243,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         IReadOnlyList<Vector2Int> savedCells = state.AllowedPathCells;
         for (int i = 0; i < savedCells.Count; i++)
             allowedPathCells.Add(savedCells[i]);
+        RouteRevision++;
 
         // Restore reuses the saved route exactly instead of recalculating around changed runtime objects.
     }
@@ -248,6 +257,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 
         for (int i = 0; i < path.Count; i++)
             allowedPathCells.Add(path[i]);
+        RouteRevision++;
 
         // Saving the exact path lets the party leave the zone and resume the same guidance later.
         if (saveProgress)
@@ -269,6 +279,7 @@ public class ZoneEntryGuidanceController : MonoBehaviour
         activeZoneId = string.Empty;
         requiredHeroUnionId = string.Empty;
         allowedPathCells.Clear();
+        RouteRevision++;
     }
 
     private bool TryBuildPathToHeroUnion(PartyGridMover party, HeroUnionUnit heroUnion, out List<Vector2Int> bestPath)
@@ -368,14 +379,37 @@ public class ZoneEntryGuidanceController : MonoBehaviour
     private static bool TryResolveCurrentPartyZoneId(out string zoneId)
     {
         zoneId = string.Empty;
+        ZoneEntryGuidanceController controller = Instance;
+        if (controller == null)
+            return false;
 
-        PartyRegistry partyRegistry = FindFirstObjectByType<PartyRegistry>();
-        PartyGridMover party = partyRegistry != null ? partyRegistry.PlayerParty : null;
+        int frame = Time.frameCount;
+        if (controller.referenceSearchFrame != frame)
+        {
+            controller.referenceSearchFrame = frame;
+            if (controller.cachedPartyRegistry == null)
+                controller.cachedPartyRegistry = FindFirstObjectByType<PartyRegistry>();
+            if (controller.cachedLayoutLoader == null)
+                controller.cachedLayoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
+        }
+
+        PartyGridMover party = controller.cachedPartyRegistry != null ? controller.cachedPartyRegistry.PlayerParty : null;
         if (party == null)
             return false;
 
-        LevelZoneLayoutLoader layoutLoader = FindFirstObjectByType<LevelZoneLayoutLoader>();
-        return TryResolveZoneId(layoutLoader, party.GetCurrentGrid(), out zoneId);
+        Vector2Int grid = party.GetCurrentGrid();
+        // Pathfinding checks many cells in one frame; resolve the party's zone only once,
+        // unless the party changes or teleports during that same frame.
+        if (controller.zoneCheckFrame != frame || controller.zoneCheckParty != party || controller.zoneCheckGrid != grid)
+        {
+            controller.zoneCheckFrame = frame;
+            controller.zoneCheckParty = party;
+            controller.zoneCheckGrid = grid;
+            TryResolveZoneId(controller.cachedLayoutLoader, grid, out controller.cachedPartyZoneId);
+        }
+
+        zoneId = controller.cachedPartyZoneId;
+        return !string.IsNullOrWhiteSpace(zoneId);
     }
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -390,6 +424,10 @@ public class ZoneEntryGuidanceController : MonoBehaviour
 
     private void QueueRefreshFromProgress()
     {
+        cachedPartyRegistry = null;
+        cachedLayoutLoader = null;
+        referenceSearchFrame = -1;
+        zoneCheckFrame = -1;
         if (!isActiveAndEnabled)
             return;
 

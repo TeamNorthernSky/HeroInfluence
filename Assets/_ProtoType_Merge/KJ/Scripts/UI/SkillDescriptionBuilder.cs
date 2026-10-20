@@ -52,7 +52,6 @@ public static class SkillDescriptionBuilder
             skill.multiTargetCount,
             skill.skillValue,
             skill.skillSubValue,
-            skill.ipCost,
             skill.description);
     }
 
@@ -70,7 +69,6 @@ public static class SkillDescriptionBuilder
             skill.MultiTargetCount,
             skill.ValueLv1,
             skill.SubValueLv1,
-            skill.IpCost,
             skill.Description);
     }
 
@@ -82,7 +80,6 @@ public static class SkillDescriptionBuilder
         int multiTargetCount,
         float value,
         float subValue,
-        int ipCost,
         string description)
     {
         var sb = new System.Text.StringBuilder();
@@ -151,10 +148,6 @@ public static class SkillDescriptionBuilder
             sb.Append(line);
             sb.Append(")");
         }
-
-        // IP 코스트
-        if (ipCost > 0)
-            sb.Append($"\nIP 소모: {ipCost}");
 
         return sb.ToString();
     }

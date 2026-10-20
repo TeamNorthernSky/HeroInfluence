@@ -61,6 +61,7 @@ public class CombatEventBattleData
     public string SourceEnemyPlacementKey;
     // 메인이벤트 전투에서 승리/패배 후 원본 이벤트 오브젝트 처리에 사용하는 EventKey.
     public string SourceMainEventKey;
+    public string SourceSubEventKey;
     public int EnemyLevel;
     // 전투씬이 돌려줘야 하는 숫자 결과값. 예: HostageInjuredCount.
     public List<DHEventNumericState> NumericResults = new List<DHEventNumericState>();

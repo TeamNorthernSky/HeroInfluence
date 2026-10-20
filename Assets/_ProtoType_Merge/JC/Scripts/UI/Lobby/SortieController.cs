@@ -96,7 +96,7 @@ public class SortieController : MonoBehaviour
     private int draggedSourceSlot = -1; // -1=로스터 출처, >=0=진형 슬롯 출처
     private int hoveredSlot = -1;
     private RectTransform ghost;
-    private TMP_Text ghostLabel;
+    private Image ghostPortrait;
     private Canvas rootCanvas;
 
     private string ExplorationScene => GameSceneManager.Instance != null ? GameSceneManager.Instance.ExplorationScene : "DHScene_3";
@@ -160,6 +160,11 @@ public class SortieController : MonoBehaviour
         if (rosterPanelRoot != null) rosterPanelRoot.gameObject.SetActive(true);
         if (sortieButtonRoot != null) sortieButtonRoot.gameObject.SetActive(true);
         CancelDrag();
+    }
+
+    private void Start()
+    {
+        gameObject.SetActive(false);
     }
 
     public void CloseModal() { if (modalRoot != null) modalRoot.SetActive(false); }
@@ -257,7 +262,7 @@ public class SortieController : MonoBehaviour
         {
             ghost.gameObject.SetActive(true);
             ghost.SetAsLastSibling();
-            if (ghostLabel != null) ghostLabel.text = ResolveHeroName(unitIndex);
+            if (ghostPortrait != null) ghostPortrait.sprite = Sprites.Portrait.HeroByUnit(unitIndex);
         }
         UpdateDrag(e);
     }
@@ -355,22 +360,11 @@ public class SortieController : MonoBehaviour
         var go = new GameObject("SortieDragGhost", typeof(RectTransform), typeof(Image));
         ghost = go.GetComponent<RectTransform>();
         ghost.SetParent(rootCanvas.transform, false);
-        ghost.sizeDelta = new Vector2(130, 44);
-        var img = go.GetComponent<Image>();
-        img.color = new Color(0.12f, 0.22f, 0.45f, 0.92f);
-        img.raycastTarget = false;
-        var tgo = new GameObject("Text", typeof(TextMeshProUGUI));
-        var trt = tgo.GetComponent<RectTransform>();
-        trt.SetParent(ghost, false);
-        trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
-        trt.offsetMin = new Vector2(4, 2); trt.offsetMax = new Vector2(-4, -2);
-        ghostLabel = tgo.GetComponent<TextMeshProUGUI>();
-        ghostLabel.fontSize = 16; ghostLabel.color = Color.white;
-        ghostLabel.alignment = TextAlignmentOptions.Center; ghostLabel.raycastTarget = false;
-        // 한글 폰트: 슬롯 라벨 폰트를 복사(없으면 기본)
-        for (int i = 0; i < slots.Count; i++)
-            if (slots[i] != null && slots[i].label != null && slots[i].label.font != null)
-            { ghostLabel.font = slots[i].label.font; break; }
+        ghost.sizeDelta = new Vector2(100, 100);
+        ghostPortrait = go.GetComponent<Image>();
+        ghostPortrait.color = new Color(1f, 1f, 1f, 0.92f);
+        ghostPortrait.preserveAspect = true;
+        ghostPortrait.raycastTarget = false;
         ghost.gameObject.SetActive(false);
     }
 

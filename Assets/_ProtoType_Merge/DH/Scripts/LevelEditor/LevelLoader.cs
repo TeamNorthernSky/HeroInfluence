@@ -448,7 +448,7 @@ public class LevelLoader : MonoBehaviour
 
             WorldEventObject worldEvent = SpawnComponent(worldEventPrefab, placement.GridPosition, parent);
             if (worldEvent != null)
-                worldEvent.ApplyInitialData(placement.WorldEventId);
+                worldEvent.ApplyInitialData(placement.WorldEventId, placement.Rotation);
         }
     }
 

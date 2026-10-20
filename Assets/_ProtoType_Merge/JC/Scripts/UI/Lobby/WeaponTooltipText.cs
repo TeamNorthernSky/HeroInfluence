@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 /// <summary>
 /// [JC 260619] 무기/무기스킬 툴팁 본문 생성(공방·HeroInfo 공용). 무기 시트 V6.0 레벨 계수 치환.
@@ -7,14 +7,14 @@ using System.Text;
 public static class WeaponTooltipText
 {
     /// <summary>무기 레벨 설명 = 무기스킬 효과(레벨 계수 치환) + 스탯 보너스. 공방 무기 호버와 동일.</summary>
-    public static string BuildWeaponLevelDesc(DHWeaponTemplate wd, int weaponIndex, int level)
+    public static string BuildWeaponLevelDesc(DHWeaponTemplate wd, int weaponIndex, int level, int unitIndex = 0)
     {
         if (wd == null) return string.Empty;
         var catalog = DHCsvTemplateCatalog.Instance;
         var sb = new StringBuilder();
 
         sb.AppendLine($"<b>[스킬] {wd.WeaponSkillName}</b>");
-        sb.Append(BuildSkillEffect(wd, weaponIndex, level, catalog));
+        sb.Append(BuildSkillEffect(wd, weaponIndex, level, catalog, unitIndex: unitIndex));
 
         if (catalog != null && catalog.TryGetWeaponBonusAtLevel(weaponIndex, level, out var st))
         {
@@ -36,46 +36,34 @@ public static class WeaponTooltipText
     }
 
     /// <summary>무기스킬만(현재 레벨 효과). HeroInfo 3번째 아이콘 B타입 툴팁용 — 이름은 ShowInfo가 별도 표시.</summary>
-    public static string BuildWeaponSkillDesc(DHWeaponTemplate wd, int weaponIndex, int level, bool percentageValues = false)
+    public static string BuildWeaponSkillDesc(DHWeaponTemplate wd, int weaponIndex, int level, bool percentageValues = false, int unitIndex = 0, BattleCharactor caster = null)
     {
         if (wd == null) return string.Empty;
         var catalog = DHCsvTemplateCatalog.Instance;
         var sb = new StringBuilder();
-        sb.Append(BuildSkillEffect(wd, weaponIndex, level, catalog, percentageValues));
+        sb.Append(BuildSkillEffect(wd, weaponIndex, level, catalog, percentageValues, unitIndex, caster));
         return sb.ToString();
     }
 
     /// <summary>[임시 브리지 260805] ASB BattleCharactor 가 아직 WeaponData 를 노출(KJ SkillButtonTooltip 소비).
     /// ASB 측 템플릿 전환이 끝나면 이 오버로드는 제거한다.</summary>
-    public static string BuildWeaponSkillDesc(WeaponData wd, int weaponIndex, int level, bool percentageValues = false)
+    public static string BuildWeaponSkillDesc(WeaponData wd, int weaponIndex, int level, bool percentageValues = false, int unitIndex = 0, BattleCharactor caster = null)
     {
         if (wd == null) return string.Empty;
         var catalog = DHCsvTemplateCatalog.Instance;
         if (catalog != null && catalog.TryGetWeaponTemplate(weaponIndex, out var template) && template != null)
-            return BuildWeaponSkillDesc(template, weaponIndex, level, percentageValues);
+            return BuildWeaponSkillDesc(template, weaponIndex, level, percentageValues, unitIndex, caster);
 
         // 카탈로그 미로드 폴백 — 행 자체 값으로 표시
         var sb = new StringBuilder();
-        string valStr = wd.WeaponSkillEffect == 0 ? $"×{wd.WeaponSkillValue:0.##}" : $"{wd.WeaponSkillValue:0.##}";
-        string subStr = wd.WeaponSkillEffect == 0 ? $"×{wd.WeaponSkillSubValue:0.##}" : $"{wd.WeaponSkillSubValue:0.##}";
-        sb.Append(percentageValues
-            ? ClassSkillTooltipText.ReplaceBattleCoefficients(wd.WeaponSkillDescription, "WeaponSkill", wd.WeaponSkillValue, wd.WeaponSkillSubValue)
-            : (wd.WeaponSkillDescription ?? string.Empty)
-            .Replace("{WeaponSkillValue}", valStr)
-            .Replace("{WeaponSkillSubValue}", subStr));
+        sb.Append(percentageValues ? ClassSkillTooltipText.ReplaceBattleCoefficients(wd.WeaponSkillDescription, "WeaponSkill", wd.WeaponSkillValue, wd.WeaponSkillSubValue) : SkillTooltipNumbers.Build(wd.WeaponSkillDescription, "WeaponSkill", wd.WeaponSkillValue, wd.WeaponSkillSubValue, unitIndex, caster, wd.WeaponSkillEffect == 0));
         return sb.ToString();
     }
 
-    private static string BuildSkillEffect(DHWeaponTemplate wd, int weaponIndex, int level, DHCsvTemplateCatalog catalog, bool percentageValues = false)
+    private static string BuildSkillEffect(DHWeaponTemplate wd, int weaponIndex, int level, DHCsvTemplateCatalog catalog, bool percentageValues = false, int unitIndex = 0, BattleCharactor caster = null)
     {
         float v = catalog != null ? catalog.GetWeaponSkillValueAtLevel(weaponIndex, level) : wd.WeaponSkillValueLv1;
         float sv = catalog != null ? catalog.GetWeaponSkillSubValueAtLevel(weaponIndex, level) : wd.WeaponSkillSubValueLv1;
-        string valStr = wd.WeaponSkillEffect == 0 ? $"×{v:0.##}" : $"{v:0.##}";
-        string subStr = wd.WeaponSkillEffect == 0 ? $"×{sv:0.##}" : $"{sv:0.##}";
-        return percentageValues
-            ? ClassSkillTooltipText.ReplaceBattleCoefficients(wd.WeaponSkillDescription, "WeaponSkill", v, sv)
-            : (wd.WeaponSkillDescription ?? string.Empty)
-            .Replace("{WeaponSkillValue}", valStr)
-            .Replace("{WeaponSkillSubValue}", subStr);
+        return percentageValues ? ClassSkillTooltipText.ReplaceBattleCoefficients(wd.WeaponSkillDescription, "WeaponSkill", v, sv) : SkillTooltipNumbers.Build(wd.WeaponSkillDescription, "WeaponSkill", v, sv, unitIndex, caster, wd.WeaponSkillEffect == 0);
     }
 }

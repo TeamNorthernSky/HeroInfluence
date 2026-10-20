@@ -48,10 +48,18 @@ namespace JC.Tutorial
         [Tooltip("초기 이동 학습이 끝난 뒤 기존 턴 종료를 허용하는 담당자입니다.")] public TutorialTurnManager turnManager;
         [Min(.1f), Tooltip("시작 목표가 한 번 점멸하고 테두리가 수렴하는 시간(초)입니다. 표시 시간 / 이 값만큼 반복하며 기본값은 3회입니다.")] public float introPulsePeriod = 2.5f / 3;
         [Header("튜토리얼 카메라 구도")]
-        [Tooltip("파티에 즉시 고정한 뒤 카메라를 이동할 화면 비율입니다. X 양수는 오른쪽, Y 음수는 아래쪽이며 배경과 목표는 반대 방향으로 보입니다. 0이면 이동하지 않습니다. 시작 안내가 닫힐 때와 크리스탈 수집 목표가 처음 표시될 때 각각 한 번 적용하며 일반 탐사에는 적용하지 않습니다.")]
+        [Tooltip("파티에 즉시 고정한 뒤 카메라를 이동할 화면 비율입니다. X 양수는 오른쪽, Y 음수는 아래쪽이며 배경과 목표는 반대 방향으로 보입니다. 0이면 이동하지 않습니다. 마우스 이동 설명을 확인한 뒤와 크리스탈 수집 목표가 처음 표시될 때 각각 한 번 적용하며 일반 탐사에는 적용하지 않습니다.")]
         public Vector2 initialCameraViewOffset = new Vector2(.04f, -.06f);
-        [Min(0), Tooltip("시작 안내 종료 및 크리스탈 수집 안내의 구도 조정에 걸리는 실제 시간(초)입니다. 0이면 즉시 적용합니다. 파티 추적·줌 설정은 유지합니다.")]
+        [Min(0), Tooltip("각 이동 실습 및 크리스탈 수집 안내의 구도 조정에 걸리는 실제 시간(초)입니다. 0이면 즉시 적용합니다. 파티 추적·줌 설정은 유지합니다.")]
         public float initialCameraMoveDuration = .6f;
+        [Tooltip("첫 이동 목표의 화면상 가로 위치를 맞출 기존 홍보 버튼입니다. 튜토리얼 씬에서만 사용합니다.")]
+        public RectTransform firstMovePublicityButton;
+        [Min(0), Tooltip("첫 이동 목표 중심을 홍보 버튼 오른쪽 끝에서 더 띄울 화면 너비 비율입니다.")]
+        public float firstMoveTargetScreenGap = .015f;
+        [Min(0), Tooltip("두 번째 이동 실습 시작 시 오른쪽으로 이동할 그리드 칸 수입니다. 실제 GridManager 셀 크기를 사용합니다.")]
+        public float secondMoveCameraCells = 2f;
+        [Min(0), Tooltip("크리스탈 수집 실습 시작 시 기존 카메라 보정에 더할 오른쪽 그리드 칸 수입니다.")]
+        public float crystalCameraCells = 2f;
         [Header("이동 안내")]
         [TextArea, Tooltip("목표를 선택하기 전에 표시하는 안내입니다.")] public string selectText = "빛나는 목표 위치를 눌러 이동 경로를 확인하세요.";
         [TextArea, Tooltip("목표 선택 후 표시하는 안내입니다.")] public string confirmText = "목표 위치를 한 번 더 누르면 이동합니다.";
@@ -74,7 +82,6 @@ namespace JC.Tutorial
         private bool showingIntro, releaseShieldPending, turnStateCaptured, originalTurnControl, originalTurnButton;
         private Button nextTurnButton;
         private Coroutine initialCameraMove;
-        private bool initialCameraMovePending;
         private bool externalPresentation;
         public int PresentationOpenedFrame { get; private set; } = -1;
         public string CurrentGuideStep { get; private set; }
@@ -99,9 +106,8 @@ namespace JC.Tutorial
             if (turnManager != null) originalTurnControl = turnManager.TurnControlEnabled;
             if (nextTurnButton != null) originalTurnButton = nextTurnButton.interactable;
             turnStateCaptured = true;
-            initialCameraMovePending = Application.isPlaying && repository != null && repository.CurrentTurn == 1 && !Seen("intro");
         }
-        private IEnumerator AdjustCameraView(bool preserveCurrentView = false, string seenKey = null)
+        private IEnumerator AdjustCameraView(bool preserveCurrentView = false, string seenKey = null, float extraCells = 0, bool alignFirstTarget = false, bool useInitialOffset = true)
         {
             try
             {
@@ -119,6 +125,26 @@ namespace JC.Tutorial
                 if (!plane.Raycast(centerRay, out float centerDistance) || !plane.Raycast(shiftedRay, out float shiftedDistance)) yield break;
                 Vector3 offset = shiftedRay.GetPoint(shiftedDistance) - centerRay.GetPoint(centerDistance);
                 offset.y = 0;
+                if (!useInitialOffset) offset = Vector3.zero;
+                if (grid != null)
+                    offset += Vector3.ProjectOnPlane(camera.transform.right, Vector3.up).normalized * grid.CellSize * extraCells;
+                if (alignFirstTarget && firstMovePublicityButton != null && movement.CurrentTargetCells.Count > 0)
+                {
+                    Vector3 target = grid.GridToWorldCenter(movement.CurrentTargetCells[0]);
+                    target.y = grid.GetCellSurfaceY(movement.CurrentTargetCells[0]);
+                    var canvas = firstMovePublicityButton.GetComponentInParent<Canvas>();
+                    var uiCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+                    var corners = new Vector3[4]; firstMovePublicityButton.GetWorldCorners(corners);
+                    float desiredX = RectTransformUtility.WorldToScreenPoint(uiCamera, corners[2]).x + camera.pixelWidth * firstMoveTargetScreenGap;
+                    Vector3 projected = camera.WorldToScreenPoint(target - offset);
+                    var targetPlane = new Plane(Vector3.up, target);
+                    var ray = camera.ScreenPointToRay(new Vector3(Mathf.Min(camera.pixelRect.xMax - 32, desiredX), projected.y, 0));
+                    if (targetPlane.Raycast(ray, out float distance)) offset += target - offset - ray.GetPoint(distance);
+                }
+                // 첫 실습은 목표 정렬이 끝난 구도에서 오른쪽 두 칸을 추가한다.
+                // 정렬 전에 더하면 목표의 화면 위치를 맞추는 계산에 상쇄된다.
+                if (alignFirstTarget && grid != null)
+                    offset += Vector3.ProjectOnPlane(camera.transform.right, Vector3.up).normalized * grid.CellSize * 2f;
                 Vector3 partyStart = party.transform.position;
                 // 크리스탈 단계는 기존 팬을 유지한다. 파티 중심으로 되돌린 뒤 이동하지 않는다.
                 Vector3 origin = preserveCurrentView ? follower.GetFocusWorldPosition() : partyStart;
@@ -296,7 +322,17 @@ namespace JC.Tutorial
                 return;
             }
             EndIntro();
+            if (movement.CurrentOrder == 1 && !Seen("mouse-move-explanation"))
+            {
+                Explain("mouse-move-explanation", "마우스로 이동", "이 게임은 마우스 왼쪽 클릭으로 이동합니다.\n빛나는 목표를 클릭해 경로를 확인하고,\n같은 목표를 한 번 더 클릭하면 이동합니다.", null, time);
+                return;
+            }
             if (moving) { ShowAction("moving", "탐사 · 이동", movingText); HideMarker(); return; }
+            if (movement.CurrentOrder >= 2 && !Seen("early-camera-explanation"))
+            {
+                Explain("early-camera-explanation", "카메라 이동", "마우스를 화면 가장자리로 옮기면 카메라가 이동합니다.\nW A S D 키로도 위·왼쪽·아래·오른쪽을 볼 수 있습니다.\n영웅의 이동은 목표 위치를 마우스로 클릭하세요.", null, time);
+                return;
+            }
             if (movement.CurrentOrder == 2 && !Seen("move-gauge-pulse") && movementGauge != null)
             {
                 if (movementGaugePulse != null) movementGaugePulse.Stop();
@@ -330,6 +366,8 @@ namespace JC.Tutorial
             if (hasTarget)
             {
                 SetQuest(movement.CurrentOrder == 1 ? "목표 위치까지 이동하세요" : "다음 목표 위치까지 이동하세요");
+                if (Application.isPlaying && movement.CurrentOrder == 2 && !Seen("second-move-camera-view") && initialCameraMove == null)
+                    initialCameraMove = StartCoroutine(AdjustCameraView(true, "second-move-camera-view", secondMoveCameraCells, false, false));
                 var target = movement.CurrentTargetCells[0]; bool selected = IsSelected(target, time);
                 string instruction = selected && time - selectedSince >= confirmDelay ? confirmText : selectText;
                 if (movement.CurrentOrder > 1 && !selected)
@@ -363,7 +401,7 @@ namespace JC.Tutorial
                 ShowAction("collect", "자원 수집", selected && time - selectedSince >= confirmDelay ? confirmText : $"표시된 {ResourceName(nearest.type)}을 수집하세요.");
                 ShowMarker(nearest.cell, time);
                 if (Application.isPlaying && nearest.type == ResourceType.Crystal && !Seen("crystal-camera-view") && initialCameraMove == null)
-                    initialCameraMove = StartCoroutine(AdjustCameraView(true, "crystal-camera-view"));
+                    initialCameraMove = StartCoroutine(AdjustCameraView(true, "crystal-camera-view", crystalCameraCells));
                 return;
             }
             var enemies = TutorialEnemyRegistry.Instance; TutorialEnemyObject enemy = null;
@@ -390,6 +428,8 @@ namespace JC.Tutorial
                 state == TutorialOutpostClaimState.HeroClaimed;
             if (claimed)
             {
+                var associationFocus = TutorialBuildingFocusTarget.Resolve(this, captureOutpost.transform,
+                    view.focusFrame != null ? view.focusFrame.rectTransform.parent as RectTransform : null);
                 if (!showingAssociationEntry)
                 {
                     foreach (var selection in FindObjectsByType<ClickSelectionController>(FindObjectsSortMode.None))
@@ -401,12 +441,14 @@ namespace JC.Tutorial
                     SetTurnAvailable(false);
                     movement.SetGuidanceTarget(this, null);
                     if (explanationKey != "association-entry-explanation")
-                        Explain("association-entry-explanation", "협회 입장", "점령한 건물을 더블클릭하여 협회에 입장할 수 있습니다.\n이 안내를 닫은 뒤, 연녹색 외곽선으로 강조된 건물을 더블클릭하세요.", null, time);
+                        Explain("association-entry-explanation", "협회 입장", "점령한 건물을 더블클릭하여 협회에 입장할 수 있습니다.\n이 안내를 닫은 뒤, 빛 테두리로 강조된 건물을 더블클릭하세요.", associationFocus, time);
                     return;
                 }
                 CurrentGuideStep = "association-entry";
-                SetShield(false); SetContinue(false); view.SetVisible(false);
-                JcBuildingSilhouetteFeature.SetTutorialHighlight(this, captureOutpost.transform, view.accent);
+                SetShield(false); SetContinue(false);
+                view.blockPanelRaycasts = false;
+                view.SetContent("협회 입장", "빛 테두리로 강조된 건물을 더블클릭하세요.");
+                view.SetVisible(true, associationFocus, JcTutorialGuideView.FocusPresentation.BorderOnly);
                 SetQuest("점령한 건물을 더블클릭하세요");
                 SetTurnAvailable(false);
                 movement.SetGuidanceTarget(this, null);
@@ -471,7 +513,8 @@ namespace JC.Tutorial
         }
         private static JcTutorialGuideView.FocusPresentation ExplanationStyle(string key)
         {
-            if (key == "camera-scroll-explanation" || key == "association-entry-explanation") return JcTutorialGuideView.FocusPresentation.DimmedExplanation;
+            if (key == "mouse-move-explanation" || key == "early-camera-explanation" || key == "resources" ||
+                key == "camera-scroll-explanation" || key == "association-entry-explanation") return JcTutorialGuideView.FocusPresentation.DimmedExplanation;
             if (key == "exhausted" || key == "move-gauge-pulse") return JcTutorialGuideView.FocusPresentation.Spotlight;
             return key != null && key.StartsWith("resource-") ? JcTutorialGuideView.FocusPresentation.ResourceBlock : JcTutorialGuideView.FocusPresentation.PointerAbove;
         }
@@ -489,7 +532,20 @@ namespace JC.Tutorial
             if (ModalManager.Top != explanationShield || releaseShieldPending) return;
             if (showingIntro) { DismissIntro(); return; }
             if (explanationKey == null) return;
-            Mark(explanationKey); explanationKey = null; explanationFocus = null;
+            string completedKey = explanationKey;
+            Mark(completedKey);
+            // 카메라 설명에서 이동력 확인까지 디밍과 입력 차단을 끊지 않는다.
+            if (completedKey == "early-camera-explanation" && movement.CurrentOrder == 2 && !Seen("move-gauge-pulse") && movementGauge != null)
+            {
+                if (movementGaugePulse != null) movementGaugePulse.Stop();
+                Explain("move-gauge-pulse", "이동력 확인", "이동하면 이동력이 소모됩니다.\n남은 이동력은 화면 아래 게이지에서 확인하세요.\n아무 곳이나 클릭하면 계속합니다.", movementGauge, Time.unscaledTime);
+                return;
+            }
+            if (completedKey == "mouse-move-explanation" && Application.isPlaying && !exiting && initialCameraMove == null)
+            {
+                initialCameraMove = StartCoroutine(AdjustCameraView(true, "first-move-camera-view", 0, true));
+            }
+            explanationKey = null; explanationFocus = null;
             SetContinue(false); view.SetVisible(false); selectedSince = -1;
             releaseShieldPending = true;
         }
@@ -497,11 +553,7 @@ namespace JC.Tutorial
         {
             Mark("intro"); showingIntro = false; SetIntroVisible(false);
             releaseShieldPending = true;
-            if (initialCameraMovePending && !exiting)
-            {
-                initialCameraMovePending = false;
-                initialCameraMove = StartCoroutine(AdjustCameraView());
-            }
+            // 첫 카메라 이동은 마우스 이동 설명을 확인한 직후에 시작한다.
         }
         private void LateUpdate() => ReleaseDismissedInput(Input.GetMouseButton(0));
         private void ReleaseDismissedInput(bool pointerHeld)
@@ -602,7 +654,7 @@ namespace JC.Tutorial
             float pulse = .5f - .5f * Mathf.Cos(phase * Mathf.PI * 2);
             if (introTitle != null)
             {
-                introTitle.text = "목표 위치까지 이동하세요";
+                introTitle.text = "마우스 클릭으로 이동합니다";
                 introTitle.alpha = Mathf.Lerp(.65f, 1, pulse);
             }
             if (introOutlines == null) return;

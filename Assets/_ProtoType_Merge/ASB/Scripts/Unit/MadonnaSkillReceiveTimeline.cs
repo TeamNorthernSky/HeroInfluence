@@ -21,6 +21,16 @@ public sealed class MadonnaSkillReceiveTimeline : MonoBehaviour
     private PresentationSignalReceiver _receiver;
     private Coroutine _speedRoutine;
     private IDisposable _flowLock;
+    private bool _receiving;
+
+    /// <summary>흡수 Timeline 재생이 시작됨(인자: 능력을 넘긴 증폭기). 흡수 VFX가 이 시점에 맞춘다.</summary>
+    public event Action<BattleCharactor> ReceiveStarted;
+    /// <summary>흡수 Timeline이 끝났거나 중단됨.</summary>
+    public event Action ReceiveEnded;
+
+    public bool IsReceiving => _receiving;
+    /// <summary>흡수 Timeline 시간(초, 속도 마커 반영). 재생 중이 아니면 0.</summary>
+    public double ReceiveTime => _receiving && _director != null ? _director.time : 0d;
 
     private void Awake()
     {
@@ -96,6 +106,8 @@ public sealed class MadonnaSkillReceiveTimeline : MonoBehaviour
         try
         {
             _director.Play();
+            _receiving = true;
+            ReceiveStarted?.Invoke(source);
             _speedRoutine = StartCoroutine(ApplyTimelineSpeed());
         }
         catch (Exception exception)
@@ -120,6 +132,7 @@ public sealed class MadonnaSkillReceiveTimeline : MonoBehaviour
         _speedRoutine = null;
         if (_receiver != null) _receiver.ClearConfig();
         ReleaseFlowLock();
+        EndReceive();
     }
 
     private void HandleTurnStarted(int roundIndex, BattleCharactor current)
@@ -138,6 +151,14 @@ public sealed class MadonnaSkillReceiveTimeline : MonoBehaviour
         if (_director != null && _director.state == PlayState.Playing) _director.Stop();
         if (_receiver != null) _receiver.ClearConfig();
         ReleaseFlowLock();
+        EndReceive();
+    }
+
+    private void EndReceive()
+    {
+        if (!_receiving) return;
+        _receiving = false;
+        ReceiveEnded?.Invoke();
     }
 
     private void ReleaseFlowLock()

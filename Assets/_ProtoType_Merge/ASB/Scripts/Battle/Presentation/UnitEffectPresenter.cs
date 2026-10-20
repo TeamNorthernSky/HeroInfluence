@@ -56,6 +56,15 @@ public static class PresentationAnchorUtil
     }
 }
 
+/// <summary>
+/// 유닛 상태에 따라 Cue 이펙트 스폰을 건너뛰게 하는 훅(예: 율리아 감금 중 손 충전 숨김).
+/// 프레젠터와 같은 오브젝트나 그 부모의 컴포넌트가 구현한다.
+/// </summary>
+public interface IPresentationEffectSpawnFilter
+{
+    bool ShouldSuppress(GameObject effectPrefab);
+}
+
 /// <summary>유닛 로컬 Cue 이펙트 라우터. 재료의 구체 종류는 알지 않고 계약만 호출한다.</summary>
 [DisallowMultipleComponent]
 public class UnitEffectPresenter : MonoBehaviour
@@ -170,7 +179,7 @@ public class UnitEffectPresenter : MonoBehaviour
         for (int i = 0; i < cue.EffectPrefabs.Count; i++)
         {
             GameObject prefab = cue.EffectPrefabs[i];
-            if (prefab == null) continue;
+            if (prefab == null || IsSuppressed(prefab)) continue;
 
             bool held = !string.IsNullOrEmpty(cue.InstanceKey);
 
@@ -221,5 +230,11 @@ public class UnitEffectPresenter : MonoBehaviour
                 instance);
             EffectFallbackRelease.Ensure(instance);
         }
+    }
+
+    private bool IsSuppressed(GameObject prefab)
+    {
+        IPresentationEffectSpawnFilter filter = GetComponentInParent<IPresentationEffectSpawnFilter>();
+        return filter != null && filter.ShouldSuppress(prefab);
     }
 }

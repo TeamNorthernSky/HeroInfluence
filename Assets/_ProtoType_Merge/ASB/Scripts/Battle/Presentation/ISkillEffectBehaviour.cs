@@ -11,3 +11,11 @@ public interface ISkillEffectHandle
     bool Signal(SkillEffectContext ctx);
     void Stop();
 }
+
+/// <summary>
+/// 재료가 자기 수명(자연 종료, 정지 후 정리)을 스스로 책임진다는 표시.
+/// <see cref="EffectFallbackRelease"/>가 고정 수명 상한을 덧붙이지 않는다.
+/// </summary>
+public interface ISelfManagedEffectLifetime
+{
+}

@@ -54,7 +54,10 @@ public class HeroInfoModal : MonoBehaviour
     // 호버 툴팁용 슬롯 캐시
     private struct TipSlot { public RectTransform target; public Sprite sprite; public string name; public string desc; public bool has; }
     private TipSlot slotClassSkill, slotWeapon, slotWeaponSkill;
-
+    public void Start()
+    {
+        gameObject.SetActive(false);
+    }
     public void Open(int unitIndex)
     {
         if (!TryResolve(unitIndex, out UnitPersistentData unit, out DHPlayerUnitTemplate template))
@@ -132,7 +135,7 @@ public class HeroInfoModal : MonoBehaviour
         // [JC 260619] 클래스스킬/무기/무기스킬 아이콘 + 호버 툴팁
         ResolveButtons();
         // [JC 260619] 랭크 알파벳 = 레벨 파생(성장 시스템 V6.0). 매 Open 시 현재 레벨로 계산(시작/레벨업 자동 반영).
-        SetText(gradeText, RankUtil.FromLevel(unit != null ? unit.Level : 1));
+        SetText(gradeText, UnitRankLookup.GetRank(unit != null ? unit.Level : 1));
         ResolveSkillWeaponIcons(unit != null ? unit.UnitIndex : currentUnitIndex);
     }
 
@@ -200,7 +203,7 @@ public class HeroInfoModal : MonoBehaviour
                 // [JC 260619] 이름 뒤 Lv.n + 설명은 계수 치환(전투 UI와 동일, ClassSkillTooltipText).
                 string csName = (sd != null && !string.IsNullOrWhiteSpace(sd.SkillName) ? sd.SkillName : "스킬") + $" Lv.{lv}";
                 slotClassSkill = MakeSlot(classSkillButton, Sprites.Icon.ClassSkill(sk, lv),
-                    csName, ClassSkillTooltipText.BuildDesc(sd, lv));
+                    csName, ClassSkillTooltipText.BuildDesc(sd, lv, unitIndex: unitIndex));
             }
         }
 
@@ -217,13 +220,13 @@ public class HeroInfoModal : MonoBehaviour
                 // 2번째(무기) 툴팁 = 공방 무기 호버와 동일(BuildWeaponLevelDesc). 이름 뒤 Lv.n(무기 레벨).
                 string wName = (wd != null && !string.IsNullOrWhiteSpace(wd.WeaponName) ? wd.WeaponName : "무기") + $" Lv.{wl}";
                 slotWeapon = MakeSlot(weaponButton, Sprites.Icon.Weapon(w, wl),
-                    wName, wd != null ? WeaponTooltipText.BuildWeaponLevelDesc(wd, w, wl) : string.Empty);
+                    wName, wd != null ? WeaponTooltipText.BuildWeaponLevelDesc(wd, w, wl, unitIndex: unitIndex) : string.Empty);
 
                 // 3번째(무기스킬) 툴팁 = B타입, 현재 무기스킬 정보만(비교 없음). 이름 뒤 Lv.n(무기 레벨).
                 // [JC 260621] 무기스킬 전용 아이콘(무기 레벨 wl 따라감). wl=1도 실사용(전용 1레벨 아이콘).
                 if (wd != null && wd.WeaponSkillIndex > 0)
                     slotWeaponSkill = MakeSlot(weaponSkillButton, Sprites.Icon.WeaponSkill(wd.WeaponSkillIndex, wl),
-                        wd.WeaponSkillName + $" Lv.{wl}", WeaponTooltipText.BuildWeaponSkillDesc(wd, w, wl));
+                        wd.WeaponSkillName + $" Lv.{wl}", WeaponTooltipText.BuildWeaponSkillDesc(wd, w, wl, unitIndex: unitIndex));
             }
         }
 

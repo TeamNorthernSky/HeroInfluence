@@ -273,6 +273,7 @@ public class LevelEditorWindow : EditorWindow
         {
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedWorldEventType"), new GUIContent("World Event Type"));
             EditorGUILayout.PropertyField(serializedController.FindProperty("selectedWorldEventId"), new GUIContent("World Event ID"));
+            EditorGUILayout.PropertyField(serializedController.FindProperty("selectedWorldEventRotation"), new GUIContent("Rotation"));
         }
 
         if (brushType == LevelEditorBrushType.EnemyGroup)
@@ -1167,7 +1168,7 @@ public class LevelEditorWindow : EditorWindow
         for (int i = 0; i < levelData.WorldEventPlacements.Count; i++)
         {
             WorldEventPlacementData placement = levelData.WorldEventPlacements[i];
-            DrawFootprint(context, BuildFootprint(GetWorldEventPrefab(context), placement.GridPosition), new Color(0.9f, 0.25f, 1f, 0.10f), new Color(0.9f, 0.25f, 1f, 0.65f));
+            DrawFootprint(context, BuildWorldEventFootprint(placement.GridPosition, placement.WorldEventId, placement.Rotation), new Color(0.9f, 0.25f, 1f, 0.10f), new Color(0.9f, 0.25f, 1f, 0.65f));
         }
 
         for (int i = 0; i < levelData.MainEventPlacements.Count; i++)
@@ -1494,7 +1495,7 @@ public class LevelEditorWindow : EditorWindow
                 context.LevelData.SetSubEvent(anchor, context.SelectedSubEventPrefabKey);
                 break;
             case LevelEditorBrushType.WorldEvent:
-                context.LevelData.SetWorldEvent(anchor, context.SelectedWorldEventId, context.SelectedWorldEventType);
+                context.LevelData.SetWorldEvent(anchor, context.SelectedWorldEventId, context.SelectedWorldEventType, context.SelectedWorldEventRotation);
                 break;
             case LevelEditorBrushType.EnemyGroup:
                 context.LevelData.SetEnemyPlacement(anchor, context.EnemyGroupKey, context.EnemyBehaviorType);
@@ -1617,6 +1618,7 @@ public class LevelEditorWindow : EditorWindow
         context.SelectedSubEventPrefabKey = controller.SelectedSubEventPrefabKey;
         context.SelectedWorldEventId = controller.SelectedWorldEventId;
         context.SelectedWorldEventType = controller.SelectedWorldEventType;
+        context.SelectedWorldEventRotation = controller.SelectedWorldEventRotation;
         context.SelectedGatePrefabKey = controller.SelectedGatePrefabKey;
         context.SelectedGateId = controller.SelectedGateId;
         context.SelectedGateFirstZoneId = controller.SelectedGateFirstZoneId;
@@ -1957,6 +1959,14 @@ public class LevelEditorWindow : EditorWindow
     {
         footprint = null;
 
+        if (context.BrushType == LevelEditorBrushType.WorldEvent)
+        {
+            if (!TryValidateWorldEventPlacement(context, out _, out reason))
+                return false;
+            footprint = BuildWorldEventFootprint(anchor, context.SelectedWorldEventId, context.SelectedWorldEventRotation);
+            return true;
+        }
+
         if (context.BrushType == LevelEditorBrushType.DecorativeObject)
         {
             if (!TryGetBrushPrefab(context, out _, out reason))
@@ -2261,7 +2271,7 @@ public class LevelEditorWindow : EditorWindow
         for (int i = 0; i < levelData.WorldEventPlacements.Count; i++)
         {
             WorldEventPlacementData placement = levelData.WorldEventPlacements[i];
-            if (FootprintsOverlap(footprint, BuildFootprint(GetWorldEventPrefab(context), placement.GridPosition)))
+            if (FootprintsOverlap(footprint, BuildWorldEventFootprint(placement.GridPosition, placement.WorldEventId, placement.Rotation)))
             {
                 reason = "WorldEvent overlaps this footprint.";
                 return true;
@@ -2422,7 +2432,7 @@ public class LevelEditorWindow : EditorWindow
         {
             WorldEventPlacementData placement = levelData.WorldEventPlacements[i];
             anchor = placement.GridPosition;
-            footprint = BuildFootprint(GetWorldEventPrefab(context), anchor);
+            footprint = BuildWorldEventFootprint(anchor, placement.WorldEventId, placement.Rotation);
             if (footprint.Contains(grid))
             {
                 label = "WorldEvent";
@@ -2638,6 +2648,19 @@ public class LevelEditorWindow : EditorWindow
         }
 
         return null;
+    }
+
+    private static List<Vector2Int> BuildWorldEventFootprint(Vector2Int anchor, string eventId, WorldEventRotation rotation)
+    {
+        DHWorldEventCatalog catalog = DHWorldEventCatalog.Instance != null
+            ? DHWorldEventCatalog.Instance : FindFirstObjectByType<DHWorldEventCatalog>();
+        int npcType = catalog != null && catalog.TryGetEvent(eventId, out DHWorldEventTemplate template)
+            && template != null ? template.NpcType : 0;
+        RectInt bounds = WorldEventObject.GetFootprintBounds(anchor, npcType, rotation);
+        var cells = new List<Vector2Int>(bounds.width * bounds.height);
+        foreach (Vector2Int cell in bounds.allPositionsWithin)
+            cells.Add(cell);
+        return cells;
     }
 
     private static GameObject GetWorldEventPrefab(LevelEditorContext context)
@@ -2955,6 +2978,7 @@ public class LevelEditorWindow : EditorWindow
         public string SelectedSubEventPrefabKey;
         public string SelectedWorldEventId;
         public DHWorldEventType SelectedWorldEventType;
+        public WorldEventRotation SelectedWorldEventRotation;
         public string SelectedGatePrefabKey;
         public string SelectedGateId;
         public string SelectedGateFirstZoneId;

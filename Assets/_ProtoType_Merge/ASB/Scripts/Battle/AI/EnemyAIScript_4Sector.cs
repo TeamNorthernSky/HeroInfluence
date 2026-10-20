@@ -209,14 +209,18 @@ namespace EnemyAI
 
     /// <summary>
     /// 율리아(40001): 예약(증폭기 능력개방)이 있으면 소켓1/2, 없으면 소켓3.
-    /// [2026-10-02 변경] 예약이 있으면 페이즈와 무관하게 예약 스킬을 쓴다(phase>=3 포함, 예약한 증폭기가 죽었어도).
-    /// 예전에는 phase>=3이면 예약을 무시하고 항상 소켓3이었다. 휴식 턴은 여전히 예약보다 우선 — 예약은 다음 스킬 턴으로 이월된다.
+    /// 1·2페이즈는 예약이 있으면 예약 스킬을 쓴다(예약한 증폭기가 죽었어도).
+    /// [2026-10-19 변경] 3페이즈(정지장 감금)는 예약과 무관하게 소켓3(굴렁쇠 소환)만 쓴다(2026-10-02의 "phase3도 예약 우선"을 대체).
+    /// 휴식 턴은 여전히 예약보다 우선 — 예약은 다음 스킬 턴으로 이월된다.
     /// 예약은 Peek만 → 스킬·타깃 확정 후 non-Skip 반환의 커밋에서만 소비(도발 이중호출 안전).
     /// 소켓1=열 광역, 소켓2=행 광역(대표 대상 1명 전달), 소켓3=소환(BossController 필요, 대상은 파이프라인 통과용).
     /// 타깃: 스킬 유효대상 ∩ validTargets 중 '무작위'(GetLowestHp 아님). 후보 없으면 예약 미소비 + Skip.
     /// </summary>
     public sealed class EAI_40001 : BaseEnemyAI
     {
+        // 정지장 감금 페이즈. 이 페이즈부터는 소켓3(굴렁쇠 소환)만 쓴다.
+        internal const int StasisPhase = 3;
+
         public override int Index => 40001;
 
         protected override EnemyActionDecision DetermineSpecificAction(
@@ -240,11 +244,12 @@ namespace EnemyAI
             BattleFlowManager flow = UnityEngine.Object.FindFirstObjectByType<BattleFlowManager>();
             int phase = bb != null ? bb.CurrentPhase : 1;
 
-            // (B) 예약 Peek만(소비 금지). [2026-10-02 변경] 예약이 있으면 페이즈와 무관하게 예약 소켓(예전: phase>=3은 항상 소켓3).
+            // (B) 예약 Peek만(소비 금지). 1·2페이즈는 예약이 있으면 예약 소켓.
+            // [2026-10-19 변경] 3페이즈(정지장 감금)는 굴렁쇠 소환(소켓3)만 쓴다. 남은 예약은 사용·소비하지 않는다.
             int socket = 3;
             int reservedSocket = 0;
             BattleCharactor reservedSource = null;
-            if (bb != null &&
+            if (phase < StasisPhase && bb != null &&
                 bb.TryPeekYuliaReservation(flow, out reservedSocket, out reservedSource))
             {
                 socket = reservedSocket;

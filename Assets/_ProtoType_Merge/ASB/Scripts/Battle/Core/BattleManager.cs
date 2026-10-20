@@ -102,6 +102,12 @@ public class BattleManager : MonoBehaviour
     internal BattleVisualDirector VisualDirector => _visualDirector;
     internal SkillPresentationCatalog PresentationCatalog => _presentationCatalog;
 
+    /// <summary>마커 없이 코드에서 히트스탑 연출을 요청한다.</summary>
+    public void RequestHitStop(BattleCharactor actor, BattleCharactor target, HitStopSettings settings)
+    {
+        _visualDirector?.RequestHitStop(actor, target, settings);
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -243,7 +249,7 @@ public class BattleManager : MonoBehaviour
 
         bool wasDeadBefore = context.Target.IsDead;
         float hpBefore = context.Target.CurrentHp;
-        float finalDamage = CombatCalculator.CalculateDamage(context);
+        float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
         context.Target.TakeDamage(finalDamage);
         float appliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
         bool isDeadAfter = context.Target.IsDead;
@@ -255,6 +261,7 @@ public class BattleManager : MonoBehaviour
             Damage = finalDamage,
             AppliedDamage = appliedDamage,
             IsCritical = context.IsCritical,
+            DamageReduced = damageReduced,
             TargetDied = isDeadAfter,
             WasDeadBefore = wasDeadBefore,
             IsDeadAfter = isDeadAfter,
@@ -279,7 +286,7 @@ public class BattleManager : MonoBehaviour
             return BattleHitResult.Empty(context.Target);
         }
 
-        float finalDamage = CombatCalculator.CalculateDamage(context);
+        float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
         float predictedHp = Mathf.Max(
             context.Target.MinimumHpAfterDamage,
             context.Target.CurrentHp - finalDamage);
@@ -290,6 +297,7 @@ public class BattleManager : MonoBehaviour
             Target = context.Target,
             Damage = finalDamage,
             IsCritical = context.IsCritical,
+            DamageReduced = damageReduced,
             TargetDied = isDeadAfterPredicted,
             WasDeadBefore = false,
             IsDeadAfter = isDeadAfterPredicted,
@@ -1206,6 +1214,7 @@ public class BattleManager : MonoBehaviour
         }
 
         Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 0.5)");
+        _visualDirector?.ShowCounterPopup(req.Defender);
 
         // 반격은 커스텀 핸들러를 무시하고 기본 데미지 경로만 사용합니다.
         // Influence 소모 없음, 데미지 계수 0.5, 반격은 반격을 유발하지 않습니다.

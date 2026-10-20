@@ -12632,9 +12632,6 @@ MonoBehaviour:
   - gridPosition: {x: 6, y: 21}
     resourceType: 0
     amount: 1000
-  - gridPosition: {x: 24, y: 19}
-    resourceType: 0
-    amount: 1000
   - gridPosition: {x: 38, y: 19}
     resourceType: 0
     amount: 1000
@@ -13341,6 +13338,28 @@ MonoBehaviour:
   - gridPosition: {x: 21, y: 3}
     worldEventId: S_NPC_04_005
     eventType: 3
+  - gridPosition: {x: 20, y: 27}
+    worldEventId: R_NPC_04_006
+    eventType: 2
+  - gridPosition: {x: 41, y: 11}
+    worldEventId: R_NPC_04_006
+    eventType: 2
+  - gridPosition: {x: 35, y: 25}
+    worldEventId: C_NPC_04_006
+    eventType: 1
+  - gridPosition: {x: 3, y: 5}
+    worldEventId: C_NPC_01_005
+    eventType: 1
+  - gridPosition: {x: 7, y: 36}
+    worldEventId: C_NPC_01_005
+    eventType: 1
+    rotation: 90
+  - gridPosition: {x: 46, y: 23}
+    worldEventId: C_NPC_01_005
+    eventType: 1
+  - gridPosition: {x: 31, y: 19}
+    worldEventId: C_NPC_04_006
+    eventType: 1
   gatePlacements:
   - gateId: gate_001
     firstZoneId: zone_001

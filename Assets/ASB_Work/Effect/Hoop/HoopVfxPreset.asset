@@ -29,3 +29,11 @@ MonoBehaviour:
   afterImpactSeconds: 0.3
   stopDistance: 0.5
   trailSeconds: 0.28
+  wheelVisualPrefab: {fileID: 3516408699533521458, guid: 095b497c8fdebd648a1f2f24f452b4ba,
+    type: 3}
+  wheelVisualRadius: 0.99
+  wheelBreakPrefab: {fileID: 8236952506926979336, guid: 14ea5394faffe344589133f221428aa1,
+    type: 3}
+  dashArcPrefab: {fileID: 2295814229495359148, guid: 5aca5efc75941d246bb4fc013e6918bd,
+    type: 3}
+  dashArcLag: 0.35

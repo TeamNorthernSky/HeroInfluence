@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using PrimeTween;
 
 /// <summary>
 /// [KJ 260714] 채팅 모달 컨트롤러 (ChatModal.prefab 루트). 프리팹 instantiate 방식 (DDOL 아님 — 대화는 원자적 세션).
@@ -54,9 +55,16 @@ public class ChatModalController : MonoBehaviour
     private bool waitingForRewardClose;
     private ChoiceButtonView briefingEndButton;
     private int briefingEndShownFrame = -1;
+    private RectTransform entranceRoot;
+    private CanvasGroup entranceGroup;
+    private Tween entranceTween;
+    private ChatBubbleView previousSpeakerBubble;
+    private Coroutine skipRoutine;
+    private bool skipping;
 
     /// <summary>대화 소환. 이미 떠 있으면 재활성 후 해당 대화로 재시작(중복 생성 방지).</summary>
     private bool isClosing;
+    private bool closeFinished;
 
     public static void Show(int startChatId)
     {
@@ -83,6 +91,11 @@ public class ChatModalController : MonoBehaviour
 
         if (current != null)
         {
+            if (current.isClosing)
+            {
+                current.onClosed += () => Show(zoneId, startChatId, onClosed);
+                return;
+            }
             if (!current.gameObject.activeSelf) current.gameObject.SetActive(true);
             current.Begin(zoneId, startChatId, onClosed);
             return;
@@ -122,6 +135,54 @@ public class ChatModalController : MonoBehaviour
         if (skipYesButton != null) skipYesButton.onClick.AddListener(SkipChat);         // 예: 선택지/끝까지 자동 진행 [KJ 260723]
         if (skipNoButton != null) skipNoButton.onClick.AddListener(CloseSkipConfirm);   // 아니오: 팝업만
         if (skipConfirmPopup != null) skipConfirmPopup.SetActive(false);
+        PrepareEntrance();
+    }
+
+    private void PrepareEntrance()
+    {
+        if (entranceRoot != null) return;
+        var children = new List<Transform>();
+        foreach (Transform child in transform)
+            if (child.name != "Dim Panel" && (skipConfirmPopup == null || child.gameObject != skipConfirmPopup))
+                children.Add(child);
+
+        var host = new GameObject("ChatEntrance", typeof(RectTransform), typeof(CanvasGroup));
+        host.layer = gameObject.layer;
+        entranceRoot = (RectTransform)host.transform;
+        entranceRoot.SetParent(transform, false);
+        entranceRoot.anchorMin = Vector2.zero;
+        entranceRoot.anchorMax = Vector2.one;
+        entranceRoot.offsetMin = entranceRoot.offsetMax = Vector2.zero;
+        foreach (var child in children) child.SetParent(entranceRoot, false);
+        entranceGroup = host.GetComponent<CanvasGroup>();
+        if (skipConfirmPopup != null) skipConfirmPopup.transform.SetAsLastSibling();
+    }
+
+    private void PlayEntrance()
+    {
+        PrepareEntrance();
+        if (entranceTween.isAlive) entranceTween.Stop();
+        Canvas.ForceUpdateCanvases();
+        float distance = Mathf.Max(((RectTransform)transform).rect.height, entranceRoot.rect.height) + 100f;
+        entranceRoot.anchoredPosition = Vector2.down * distance;
+        entranceGroup.interactable = false;
+        entranceTween = Tween.Custom(this, distance, 0f, .3f,
+            static (view, offset) => view.entranceRoot.anchoredPosition = Vector2.down * offset,
+            Ease.OutCubic, useUnscaledTime: true);
+        entranceTween.OnComplete(this, static view =>
+        {
+            view.entranceRoot.anchoredPosition = Vector2.zero;
+            view.entranceGroup.interactable = true;
+            view.beginFrame = Time.frameCount;
+        });
+    }
+
+    private void OnDisable()
+    {
+        if (entranceTween.isAlive) entranceTween.Stop();
+        if (entranceRoot != null) entranceRoot.anchoredPosition = Vector2.zero;
+        if (entranceGroup != null) entranceGroup.interactable = true;
+        if (isClosing && !closeFinished) FinishClose();
     }
 
     /// <summary>
@@ -133,6 +194,7 @@ public class ChatModalController : MonoBehaviour
     {
         if (current == null || !current.gameObject.activeInHierarchy) return false;
         if (ModalManager.Top != current.gameObject) return false; // 채팅 위에 다른 모달이 있으면 그쪽이 우선
+        if (current.isClosing || current.entranceTween.isAlive) return true;
 
         if (current.skipConfirmPopup != null && current.skipConfirmPopup.activeSelf)
         {
@@ -152,6 +214,7 @@ public class ChatModalController : MonoBehaviour
 
     private void OpenSkipConfirm()
     {
+        if (isClosing || skipping) return;
         if (skipConfirmPopup != null) skipConfirmPopup.SetActive(true);
     }
 
@@ -170,19 +233,48 @@ public class ChatModalController : MonoBehaviour
     private void SkipChat()
     {
         CloseSkipConfirm();
-        RunChatAction(() => manager?.SkipToEnd());
+        if (skipping || manager == null || !manager.IsRunning || isClosing) return;
+        skipping = true;
+        RefreshSkipButtonState();
+        skipRoutine = StartCoroutine(PlaySkippedChatInOrder());
+    }
+
+    private IEnumerator PlaySkippedChatInOrder()
+    {
+        // Let the current bubble finish before advancing, even while the modal pauses the game.
+        for (int step = 0; step < 1000; step++)
+        {
+            yield return new WaitForSecondsRealtime(.01f);
+            if (isClosing || manager == null || !manager.IsRunning ||
+                choicesVisible || manager.IsAtFinalChat) break;
+            var previous = manager.CurrentChat;
+            RunChatAction(() => manager.Advance());
+            if (manager == null || !manager.IsRunning || choicesVisible ||
+                manager.IsAtFinalChat || manager.CurrentChat == previous) break;
+        }
+        skipping = false;
+        skipRoutine = null;
+        RefreshSkipButtonState();
+    }
+
+    private void StopSkipping()
+    {
+        if (skipRoutine != null) StopCoroutine(skipRoutine);
+        skipRoutine = null;
+        skipping = false;
     }
 
     /// <summary>[KJ 260723] 마지막 대사이거나 선택지 표시 중이면 스킵 버튼 비활성화 (매 노드 표시 후 호출).</summary>
     private void RefreshSkipButtonState()
     {
         if (skipButton == null) return;
-        bool blocked = choicesVisible || (manager != null && manager.IsAtFinalChat);
+        bool blocked = skipping || choicesVisible || (manager != null && manager.IsAtFinalChat);
         skipButton.interactable = !blocked;
     }
 
     private void Begin(int zoneId, int startChatId, Action closedCallback)
     {
+        StopSkipping();
         ClearBubbles();
         ClearChoices();
         CloseSkipConfirm();
@@ -197,6 +289,7 @@ public class ChatModalController : MonoBehaviour
 
         onClosed = closedCallback;
         isClosing = false;
+        closeFinished = false;
         hasRewardResult = false;
         waitingForRewardClose = false;
         briefingEndButton = null;
@@ -217,6 +310,7 @@ public class ChatModalController : MonoBehaviour
         effectManager = DHEventEffectRuntimeManager.EnsureInstance();
         DHEventRewardRuntimeManager.EnsureInstance();
         effectManager.EffectDispatched += HandleRewardDispatched;
+        PlayEntrance();
         RunChatAction(() => manager.StartChat(zoneId, startChatId));
     }
 
@@ -240,6 +334,8 @@ public class ChatModalController : MonoBehaviour
 
     private void Update()
     {
+        if (skipping) return;
+        if (entranceTween.isAlive || Time.frameCount == beginFrame) return;
         if (isClosing || (!waitingForRewardClose && (manager == null || !manager.IsRunning))) return;
         if (skipConfirmPopup != null && skipConfirmPopup.activeSelf) return; // 스킵 확인 중엔 진행 정지
         // 팝업을 닫은 키/클릭을 뗄 때까지는 대사 진행 입력으로 받지 않는다 (실행 순서와 무관하게 차단)
@@ -327,6 +423,7 @@ public class ChatModalController : MonoBehaviour
 
             ChoiceButtonView view = Instantiate(choiceButtonPrefab, choiceLayout.SpawnParent);
             view.Bind(option.SelectionText, () => SelectChoice(option, view), state.IsInteractable);
+            view.SetIndex(activeChoices.Count + 1);
             activeChoices.Add(view.gameObject);
         }
 
@@ -397,6 +494,7 @@ public class ChatModalController : MonoBehaviour
         EventScriptCatalog catalog = EventScriptCatalog.Instance;
         if (catalog == null || !catalog.TryGetEventRewardTemplate(rewardId, out DHEventRewardTemplate reward)) return;
         ChatRewardResultView result = Instantiate(rewardResultPrefab, contentRoot);
+        previousSpeakerBubble = null;
         result.Bind(reward);
         hasRewardResult = true;
         StartCoroutine(ScrollToBottomNextFrame());
@@ -404,6 +502,7 @@ public class ChatModalController : MonoBehaviour
 
     private void SpawnChoiceHistory(string text)
     {
+        previousSpeakerBubble = null;
         if (contentRoot == null || choiceButtonPrefab == null) return;
 
         Transform header = choiceLayout != null && choiceLayout.SpawnParent != null
@@ -426,7 +525,51 @@ public class ChatModalController : MonoBehaviour
         if (bubblePrefab == null || contentRoot == null) return;
         ChatBubbleView bubble = Instantiate(bubblePrefab, contentRoot);
         bubble.Bind(chat.CharacterName, chat.MessageText, chat.ChatType, chat.CharacterProfile);
+        if (bubble.HasSameSpeaker(previousSpeakerBubble)) bubble.JoinPreviousSpeaker(previousSpeakerBubble);
+        previousSpeakerBubble = bubble;
+        if (chat.ChatType != 2) StartCoroutine(PlayBubbleSideEntrance(bubble, chat.ChatType == 1));
         StartCoroutine(ScrollToBottomNextFrame());
+    }
+
+    private IEnumerator PlayBubbleSideEntrance(ChatBubbleView bubble, bool fromRight)
+    {
+        var rect = bubble.EntranceRoot;
+        if (rect == null) yield break;
+        var group = rect.GetComponent<CanvasGroup>();
+        if (group == null) group = rect.gameObject.AddComponent<CanvasGroup>();
+        group.alpha = 0f;
+        yield return null;
+        if (bubble == null || rect == null || contentRoot == null) yield break;
+
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)bubble.transform);
+        // Reserve only the message box's space in the row. Portrait and name
+        // stay visible while the box moves independently inside its slot.
+        var slot = new GameObject("ChatBubbleSlot", typeof(RectTransform), typeof(LayoutElement));
+        slot.layer = bubble.gameObject.layer;
+        var slotRect = (RectTransform)slot.transform;
+        slotRect.SetParent(rect.parent, false);
+        slotRect.SetSiblingIndex(rect.GetSiblingIndex());
+        var layout = slot.GetComponent<LayoutElement>();
+        var boxLayout = rect.GetComponent<LayoutElement>();
+        layout.minWidth = LayoutUtility.GetMinWidth(rect);
+        layout.preferredWidth = LayoutUtility.GetPreferredWidth(rect);
+        layout.flexibleWidth = LayoutUtility.GetFlexibleWidth(rect);
+        layout.minHeight = layout.preferredHeight = Mathf.Max(rect.rect.height, LayoutUtility.GetPreferredHeight(rect));
+        if (boxLayout != null) layout.layoutPriority = boxLayout.layoutPriority;
+        rect.SetParent(slotRect, false);
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.pivot = new Vector2(.5f, .5f);
+        rect.sizeDelta = Vector2.zero;
+        rect.anchoredPosition = Vector2.zero;
+
+        var effect = rect.GetComponent<BubbleRiseEffect>();
+        if (effect == null) effect = rect.gameObject.AddComponent<BubbleRiseEffect>();
+        effect.Configure(fromRight ? BubbleRiseEffect.EntranceStyle.RightPop : BubbleRiseEffect.EntranceStyle.LeftPop,
+            .36f, 110f);
+        effect.Play(Vector2.zero);
+        LayoutRebuilder.MarkLayoutForRebuild(contentRoot);
     }
 
     private IEnumerator ScrollToBottomNextFrame()
@@ -441,6 +584,7 @@ public class ChatModalController : MonoBehaviour
 
     private void ClearBubbles()
     {
+        previousSpeakerBubble = null;
         if (contentRoot == null) return;
         for (int i = contentRoot.childCount - 1; i >= 0; i--)
             Destroy(contentRoot.GetChild(i).gameObject);
@@ -470,19 +614,48 @@ public class ChatModalController : MonoBehaviour
         }
 
         isClosing = true;
+        StopSkipping();
 
         if (manager != null && manager.IsRunning)
         {
             manager.EndChat();
         }
 
-        Action callback = onClosed;
-        onClosed = null;
-
         UnsubscribeFromManager();
         manager = null;
-        callback?.Invoke();
+        if (!isActiveAndEnabled || entranceRoot == null)
+        {
+            FinishClose();
+            return;
+        }
+        if (entranceTween.isAlive) entranceTween.Stop();
+        entranceGroup.interactable = false;
+        if (skipConfirmPopup != null) skipConfirmPopup.SetActive(false);
+        float startY = entranceRoot.anchoredPosition.y;
+        entranceTween = Tween.Custom(this, startY, 14f, .08f,
+            static (view, y) => view.entranceRoot.anchoredPosition = Vector2.up * y,
+            Ease.OutQuad, useUnscaledTime: true);
+        entranceTween.OnComplete(this, static view => view.PlayExitDrop());
+    }
+
+    private void PlayExitDrop()
+    {
+        float distance = Mathf.Max(((RectTransform)transform).rect.height, entranceRoot.rect.height) + 100f;
+        entranceTween = Tween.Custom(this, entranceRoot.anchoredPosition.y, -distance, .24f,
+            static (view, y) => view.entranceRoot.anchoredPosition = Vector2.up * y,
+            Ease.InCubic, useUnscaledTime: true);
+        entranceTween.OnComplete(this, static view => view.FinishClose());
+    }
+
+    private void FinishClose()
+    {
+        if (closeFinished) return;
+        closeFinished = true;
+        Action callback = onClosed;
+        onClosed = null;
+        if (current == this) current = null;
         Destroy(gameObject);
+        callback?.Invoke();
     }
 
     private void UnsubscribeFromManager()

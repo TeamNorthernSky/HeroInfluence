@@ -64,6 +64,7 @@ public class SceneFadeController : MonoBehaviour
         var operation = SceneManager.LoadSceneAsync(sceneName, mode);
         if (operation == null) return null;
         operation.allowSceneActivation = false;
+        AudioManager.Instance?.PrepareSceneBgmTransition(sceneName);
         fade.loadingOperation = operation;
         fade.transitioning = true;
         fade.StartCoroutine(fade.ActivateAfterFade(operation));
@@ -89,6 +90,7 @@ public class SceneFadeController : MonoBehaviour
 
     /// <summary>[KJ 261002] FadeToScene이 페이드아웃을 마치고 씬 로드를 요청 중인지. GameSceneManager 중복 페이드 방지용.</summary>
     public bool IsSceneLoadPending => pendingFadeInOnSceneLoad;
+    public bool IsTransitioning => transitioning || activeRoutine != null;
 
     private void Awake()
     {
@@ -169,6 +171,7 @@ public class SceneFadeController : MonoBehaviour
         if (fadeInDuration <= 0f) fadeInDuration = 1f;
         transitioning = true;
         EnsureOverlay();
+        AudioManager.Instance?.PrepareSceneBgmTransition(sceneName);
         StartCoroutine(FadeToSceneRoutine(sceneName, fadeOutDuration, fadeInDuration));
     }
 
@@ -224,6 +227,7 @@ public class SceneFadeController : MonoBehaviour
     private IEnumerator FadeRoutine(float from, float to, float duration, bool blockRaycast, Action onComplete, float holdDuration = 0f)
     {
         overlay.color = new Color(0f, 0f, 0f, from);
+        AudioManager.Instance?.UpdateSceneBgmFade(1f - from);
         if (holdDuration > 0f)
         {
             overlay.raycastTarget = true;
@@ -236,9 +240,11 @@ public class SceneFadeController : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             overlay.color = new Color(0f, 0f, 0f, Mathf.Lerp(from, to, t));
+            AudioManager.Instance?.UpdateSceneBgmFade(1f - overlay.color.a);
             yield return null;
         }
         overlay.color = new Color(0f, 0f, 0f, to);
+        AudioManager.Instance?.UpdateSceneBgmFade(1f - to, completed: to < 0.5f);
         overlay.raycastTarget = to > 0.5f;
         activeRoutine = null;
         onComplete?.Invoke();

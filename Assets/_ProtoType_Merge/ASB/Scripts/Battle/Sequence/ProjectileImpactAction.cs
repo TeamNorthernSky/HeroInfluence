@@ -242,6 +242,7 @@ namespace ASB.Work.Battle.Sequence
             }
 
             // 도착: 연출 훅 발화 → 전투는 즉시 진행(도착 프레임에 피해). 비주얼은 잔상 후 자체 소멸.
+            BattleManager.Instance?.VisualDirector?.RegisterProjectileImpact(instance);
             orbVisual?.BurstAt(ImpactPoint);
             chargeVisual?.HideAtImpact();
             if (_visual.HideVisualOnArrival) instance.GetComponent<JC.VFX.JcSimpleVisualPart>()?.Stop();

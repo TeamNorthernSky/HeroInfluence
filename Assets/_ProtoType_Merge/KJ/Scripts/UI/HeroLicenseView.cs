@@ -42,7 +42,7 @@ public sealed class HeroLicenseView : MonoBehaviour
         var lab = GameManager.Instance != null ? GameManager.Instance.Lab : null;
         if (lab == null || (lastUnit == index && lastLevel == unit.Level)) return;
         lastUnit = index; lastLevel = unit.Level;
-        string rank = RankUtil.FromLevel(unit.Level);
+        string rank = UnitRankLookup.GetRank(unit.Level);
         var badge = System.Array.Find(rankSprites, sprite => sprite != null && sprite.name == "UI_icon_rank" + rank);
         rankBadge.sprite = badge;
         rankBadge.color = badge != null ? Color.white : new Color32(15, 96, 224, 255);
@@ -65,8 +65,8 @@ public sealed class HeroLicenseView : MonoBehaviour
             var tip = image.GetComponent<LicenseHoverTooltip>();
             if (!tip) tip = image.gameObject.AddComponent<LicenseHoverTooltip>();
             string effect = skill.Effect == 0 ? "공격" : skill.Effect == 1 ? "회복" : "효과";
-            tip.Bind(skill.SkillName + $" Lv.{level}", ClassSkillTooltipText.BuildDesc(skill, level), image.sprite,
-                hpValue.font, false, effect + $" · IP {skill.IpCost}");
+            tip.Bind(skill.SkillName + $" Lv.{level}", ClassSkillTooltipText.BuildDesc(skill, level, unitIndex: index), image.sprite,
+                hpValue.font, false, effect);
         }
     }
     private void RefreshEquippedCore(int unitIndex)
@@ -76,7 +76,7 @@ public sealed class HeroLicenseView : MonoBehaviour
         int level = core > 0 ? Mathf.Max(1, workshop.GetWeaponLevel(core)) : 0;
         // HeroInfoModal.Open may reapply its legacy CSV icon, even for the same hero/core.
         ApplyCoreIcons(core);
-        if (lastCore == core && lastCoreLevel == level) return;
+        if (lastCore == core && lastCoreLevel == level && lastUnit == unitIndex) return;
         lastCore = core; lastCoreLevel = level;
         DHWeaponTemplate data = null;
         var catalog = DHCsvTemplateCatalog.Instance;
@@ -110,7 +110,8 @@ public sealed class HeroLicenseView : MonoBehaviour
         image.raycastTarget = true;
         var tip = image.GetComponent<CoreSelectionTooltip>();
         if (!tip) tip = image.gameObject.AddComponent<CoreSelectionTooltip>();
-        tip.Bind(core, title, core > 0 && core <= coreSprites.Length ? coreSprites[core-1] : null, hpValue.font);
+        tip.Bind(core, title, core > 0 && core <= coreSprites.Length ? coreSprites[core-1] : null, hpValue.font,
+            UnitIndexField != null ? (int)UnitIndexField.GetValue(owner) : 0);
     }
 
     private void BindStatHovers()

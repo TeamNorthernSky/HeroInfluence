@@ -121,71 +121,9 @@ public class LabModalController : MonoBehaviour
         return Sprites.Icon.ClassSkill(skillIndex, level, order);
     }
 
-    private void EnsureFifthEnhancementStage()
-    {
-        foreach (var row in rows)
-        {
-            if (row?.stages == null || row.stages.Length != 4 || row.stages[3]?.root == null) continue;
-            var source = row.stages[3];
-            var clone = Instantiate(source.root, source.root.transform.parent);
-            clone.name = source.root.name + "_Plus5";
-            var extra = new StageCell
-            {
-                root = clone,
-                frame = CloneReference(source.frame, source.root.transform, clone.transform),
-                contentIcon = CloneReference(source.contentIcon, source.root.transform, clone.transform),
-                finishedMark = CloneObject(source.finishedMark, source.root.transform, clone.transform),
-                lockMark = CloneObject(source.lockMark, source.root.transform, clone.transform),
-                clickHandler = CloneReference(source.clickHandler, source.root.transform, clone.transform),
-                tooltip = CloneReference(source.tooltip, source.root.transform, clone.transform)
-            };
-            Array.Resize(ref row.stages, 5);
-            row.stages[4] = extra;
-            // 기존 게이지가 사용하던 가로 영역 안에 기본+5개의 칸을 균등 배치합니다.
-            var first = row.firstLevelGauge != null ? row.firstLevelGauge.rectTransform : row.stages[0].root.transform as RectTransform;
-            var last = source.root.transform as RectTransform;
-            if (first != null && last != null && first.parent == last.parent && first.parent.GetComponent<LayoutGroup>() == null)
-            {
-                float left = first.anchoredPosition.x - first.rect.width * first.pivot.x;
-                float right = last.anchoredPosition.x + last.rect.width * (1f - last.pivot.x);
-                int count = row.firstLevelGauge != null ? 6 : 5;
-                float stride = (right - left) / count;
-                var rects = new List<RectTransform>();
-                if (row.firstLevelGauge != null) rects.Add(first);
-                foreach (var stage in row.stages) rects.Add(stage.root.transform as RectTransform);
-                for (int i = 0; i < rects.Count; i++)
-                {
-                    var rect = rects[i];
-                    rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(1f, stride - 2f));
-                    rect.anchoredPosition = new Vector2(left + stride * (i + rect.pivot.x), rect.anchoredPosition.y);
-                }
-            }
-        }
-    }
-
-    private static Transform CloneTransform(Transform value, Transform source, Transform clone)
-    {
-        if (value == null) return null;
-        if (value == source) return clone;
-        var names = new List<string>();
-        for (var t = value; t != null && t != source; t = t.parent) names.Insert(0, t.name);
-        return clone.Find(string.Join("/", names));
-    }
-    private static T CloneReference<T>(T value, Transform source, Transform clone) where T : Component
-    {
-        var t = value != null ? CloneTransform(value.transform, source, clone) : null;
-        return t != null ? t.GetComponent<T>() : null;
-    }
-    private static GameObject CloneObject(GameObject value, Transform source, Transform clone)
-    {
-        var t = value != null ? CloneTransform(value.transform, source, clone) : null;
-        return t != null ? t.gameObject : null;
-    }
-
     private void Awake()
     {
-        EnsureFifthEnhancementStage();
-        CreateRequiredLabLevelText();
+        BindRequiredLabLevelText();
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnCancel != null) btnCancel.onClick.AddListener(OnCancel);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(OnConfirm);
@@ -383,9 +321,9 @@ public class LabModalController : MonoBehaviour
         return cat != null ? cat.GetClassSkillSubValueAtLevel(skillIndex, level) : 0f;
     }
 
-    /// <summary>[JC 260617] 스킬 설명에 레벨별 계수 치환(효과타입별). 공격(0)=배율("1.2배"), 그 외=원문 수치.</summary>
+    /// <summary>선택 영웅의 능력치와 해당 스킬 레벨로 설명 수치를 계산한다.</summary>
     // [JC 260619] 본문은 공유 헬퍼 ClassSkillTooltipText로 이관(HeroInfo 모달과 공용).
-    private static string EffectText(DHClassSkillTemplate s, int level) => ClassSkillTooltipText.BuildDesc(s, level);
+    private string EffectText(DHClassSkillTemplate s, int level) => ClassSkillTooltipText.BuildDesc(s, level, unitIndex: selectedUnitIndex);
 
     /// <summary>행 호버 시 해당 스킬의 현재 단계와 다음 단계를 비교한다. 최고 단계/미습득은 단일 정보.</summary>
     public void OnSkillHover(int rowIndex, int stageIndex, bool enter)
@@ -431,27 +369,20 @@ public class LabModalController : MonoBehaviour
     }
 
     // ─── Refresh ────────────────────────────────────────────
-    private void CreateRequiredLabLevelText()
+    private void BindRequiredLabLevelText()
     {
-        if (requiredLabLevelText != null || costChipText == null) return;
-        var costRoot = costChipText.transform.parent as RectTransform;
-        if (costRoot == null || costRoot.parent == null) return;
-        requiredLabLevelText = Instantiate(costChipText, costRoot.parent, false);
-        requiredLabLevelText.name = "RequiredLabLevel";
-        requiredLabLevelText.text = "";
-        requiredLabLevelText.raycastTarget = false;
-        requiredLabLevelText.fontSize = 26;
-        requiredLabLevelText.enableAutoSizing = false;
-        requiredLabLevelText.alignment = TextAlignmentOptions.MidlineLeft;
-        requiredLabLevelText.color = new Color(1f, 0.35f, 0.35f);
-        var rect = requiredLabLevelText.rectTransform;
-        rect.anchorMin = rect.anchorMax = costRoot.anchorMin;
-        rect.pivot = new Vector2(0, 0.5f);
-        rect.sizeDelta = new Vector2(250, costRoot.sizeDelta.y);
-        rect.anchoredPosition = costRoot.anchoredPosition +
-            new Vector2(costRoot.sizeDelta.x * (1f - costRoot.pivot.x) + 18,
-                costRoot.sizeDelta.y * (0.5f - costRoot.pivot.y));
-        requiredLabLevelText.gameObject.SetActive(false);
+        if (requiredLabLevelText != null) return;
+        Transform searchRoot = modalRoot != null ? modalRoot.transform : transform;
+        foreach (var text in searchRoot.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (text.name != "WarningMessage" && text.name != "WarningMessageBox") continue;
+            requiredLabLevelText = text;
+            requiredLabLevelText.text = "";
+            requiredLabLevelText.color = new Color(1f, 0.35f, 0.35f);
+            requiredLabLevelText.raycastTarget = false;
+            requiredLabLevelText.gameObject.SetActive(false);
+            break;
+        }
     }
 
     private void UpdateRequiredLabLevelText(int requiredLevel, int currentLevel)
@@ -494,7 +425,7 @@ public class LabModalController : MonoBehaviour
 
             var skill = boundSkills[r];
             bool learned = lab.IsSkillLearned(selectedUnitIndex, skill);
-            int level = learned ? lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) : 1;
+            int level = learned ? lab.GetSkillLevel(selectedUnitIndex, skill.NumericSkillId) : 0;
             bool isEquipped = learned && skill.NumericSkillId == equipped;
 
             if (row.skillIcon != null) { var sp = GetSkillIcon(r, level); row.skillIcon.sprite = sp; row.skillIcon.enabled = sp != null; }

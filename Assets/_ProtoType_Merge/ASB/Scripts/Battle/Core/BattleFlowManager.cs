@@ -35,6 +35,8 @@ public class BattleFlowManager : MonoBehaviour
     [Tooltip("씬에 배치한 전투 시작/턴 안내입니다. 연결하면 안내가 닫힌 뒤 행동을 시작하며, 비워 두면 기존 흐름을 유지합니다.")]
     [SerializeField] private BattleTurnBanner turnBanner;
     private bool turnPresentationPending;
+    // 다음 유닛 턴 배너 직전에 한 번씩 재생할 연출(페이즈 전환 등). EnqueueTurnInterlude로 예약한다.
+    private readonly Queue<Func<IEnumerator>> turnInterludes = new Queue<Func<IEnumerator>>();
     //[SerializeField] private float enemyThinkSeconds = 3f;
 
     [Header("Debug")]
@@ -64,15 +66,18 @@ public class BattleFlowManager : MonoBehaviour
     private bool battleEnded;
     private bool battleEndRequested;
     private BattleResult requestedBattleResult = BattleResult.Defeat;
-    // 이번 전투의 적 그룹 키(일반 전투만). 그룹별 즉시 승리 조건 판정에 쓴다.
+    // 일반 전투의 적 그룹 키 또는 이벤트 전투의 BattleKey. 보스 처치 승리 조건에 사용한다.
     private string enemyGroupKey = string.Empty;
+    private BattleCharactor instantVictoryUnit;
 
     private readonly Dictionary<int, FlowLockRecord> flowLocks = new Dictionary<int, FlowLockRecord>();
     private readonly Dictionary<int, PlayerActionConstraintRecord> playerActionConstraints =
         new Dictionary<int, PlayerActionConstraintRecord>();
     private int nextFlowExtensionId = 1;
 
-    private bool IsBattleOver => !CheckSideAlive(true) || !CheckSideAlive(false);
+    private bool IsBattleOver => IsInstantVictoryObjectiveComplete || !CheckSideAlive(true) || !CheckSideAlive(false);
+    // OnDied 통지가 누락되더라도 보스의 사망 상태를 턴 경계에서 다시 판정한다.
+    private bool IsInstantVictoryObjectiveComplete => instantVictoryUnit != null && instantVictoryUnit.IsDead;
 
     public BattleCharactor CurrentUnit { get; private set; }
     public IReadOnlyList<BattleCharactor> Participants => participants;
@@ -156,7 +161,9 @@ public class BattleFlowManager : MonoBehaviour
         battleEnded = false;
         battleEndRequested = false;
         requestedBattleResult = BattleResult.Defeat;
-        enemyGroupKey = ResolveEnemyGroupKey();
+        enemyGroupKey = ResolveEncounterKey();
+        instantVictoryUnit = participants.FirstOrDefault(unit =>
+            unit != null && !unit.IsPlayer && IsInstantVictoryUnit(enemyGroupKey, unit.TemplateIndex));
         RefreshQueue();
 
         Debug.Log($"[BattleFlow] Initialize 완료. participants={participants.Count}, queue={turnQueue.Count}");
@@ -168,6 +175,20 @@ public class BattleFlowManager : MonoBehaviour
             StartBattleLoop();
         }
     }
+
+    /// <summary>
+    /// 다음 유닛의 턴 배너 직전에 한 번 재생할 연출을 예약합니다(페이즈 전환 등).
+    /// 피해 처리 도중처럼 연출을 바로 띄우면 안 되는 시점에 호출하고, 실제 재생은 진행 중인 행동이 끝난 뒤
+    /// 턴 경계에서 합니다. 재생 중에는 턴 배너처럼 입력을 막고, 끝나면 원래 배너를 그대로 띄웁니다.
+    /// 전투가 끝나면 재생하지 않고 버립니다.
+    /// </summary>
+    public void EnqueueTurnInterlude(Func<IEnumerator> presentation)
+    {
+        if (presentation == null || battleEnded) return;
+        turnInterludes.Enqueue(presentation);
+    }
+
+    public bool HasPendingTurnInterlude => turnInterludes.Count > 0;
 
     /// <summary>전투 흐름을 안전 지점에서 대기시키는 소유권 기반 잠금입니다.</summary>
     public IDisposable AcquireFlowLock(object owner, string reason = null)
@@ -424,17 +445,19 @@ public class BattleFlowManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 일반 전투의 적 그룹 키. 이벤트 전투는 그룹 키가 아니라 BattleKey로 스폰하므로(EnemySpawner와 같은 우선순위) 빈 값을 돌려준다.
+    /// 스폰에 사용한 전투 키. 이벤트 전투는 BattleKey, 일반 전투는 EnemyGroupKey를 사용한다.
     /// </summary>
-    private static string ResolveEnemyGroupKey()
+    private static string ResolveEncounterKey()
     {
         CombatContext context = CombatContext.Instance;
-        if (context == null || context.HasEventBattle || context.CombatEnemy == null)
+        if (context == null)
         {
             return string.Empty;
         }
 
-        return context.CombatEnemy.EnemyGroupKey;
+        return context.HasEventBattle
+            ? context.EventBattle.BattleKey
+            : context.CombatEnemy != null ? context.CombatEnemy.EnemyGroupKey : string.Empty;
     }
 
     private bool CheckSideAlive(bool isPlayer)
@@ -527,6 +550,9 @@ public class BattleFlowManager : MonoBehaviour
             // 이전 턴 입력 상태를 먼저 정리한다 (UI의 BeginPendingAction이 덮어쓰이지 않도록).
             inputHandler?.ClearSelectionState();
             Log(FormatTurnStartLog(unit));
+
+            // 페이즈 전환 등 턴 사이 연출(예약된 경우만): 배너 직전에 재생하고, 배너는 그 뒤 그대로 띄운다.
+            if (turnInterludes.Count > 0) yield return PresentTurnInterludes();
 
             // 건너뛰는 순번도 표시하되, 기존 OnTurnStarted는 행동 가능한 유닛에만 발행한다.
             if (turnBanner != null) yield return PresentTurnIntro(unit);
@@ -638,6 +664,12 @@ public class BattleFlowManager : MonoBehaviour
     private bool TryEvaluateBattleResult(out BattleResult result)
     {
         result = BattleResult.Defeat;
+
+        if (IsInstantVictoryObjectiveComplete)
+        {
+            result = BattleResult.Victory;
+            return true;
+        }
 
         if (!CheckSideAlive(false))
         {
@@ -820,6 +852,58 @@ public class BattleFlowManager : MonoBehaviour
 
         result.AddRange(acted);
         return result;
+    }
+
+    /// <summary>예약된 턴 사이 연출을 순서대로 재생합니다. 재생 중 입력은 턴 배너와 같은 방식으로 막습니다.</summary>
+    private IEnumerator PresentTurnInterludes()
+    {
+        while (turnInterludes.Count > 0 && !ShouldEndBattle())
+        {
+            Func<IEnumerator> next = turnInterludes.Dequeue();
+            IEnumerator routine = null;
+            try
+            {
+                routine = next();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
+
+            if (routine == null) continue;
+
+            turnPresentationPending = true;
+            try
+            {
+                yield return GuardInterlude(routine);
+                yield return WaitForFlowGateOrBattleEnd();
+            }
+            finally
+            {
+                turnPresentationPending = false;
+            }
+        }
+    }
+
+    // 연출 코드의 예외가 전투 루프 코루틴을 멈추지 않도록 감싼다(예외 시 그 연출만 중단).
+    private IEnumerator GuardInterlude(IEnumerator routine)
+    {
+        while (true)
+        {
+            object current;
+            try
+            {
+                if (!routine.MoveNext()) yield break;
+                current = routine.Current;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+                yield break;
+            }
+
+            yield return current;
+        }
     }
 
     /// <summary>행동 가능 이벤트와 구분된 UI 대기입니다. 기절/사망으로 건너뛸 순번도 여기서 표시합니다.</summary>
@@ -1018,6 +1102,7 @@ public class BattleFlowManager : MonoBehaviour
     {
         flowLocks.Clear();
         playerActionConstraints.Clear();
+        turnInterludes.Clear();
     }
 
     private sealed class FlowLockRecord

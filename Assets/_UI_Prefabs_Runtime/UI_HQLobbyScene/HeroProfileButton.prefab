@@ -225,6 +225,7 @@ GameObject:
   - component: {fileID: 3881549574009425346}
   - component: {fileID: 4846896266976589752}
   - component: {fileID: 674436681141175789}
+  - component: {fileID: 888458084246310134}
   m_Layer: 0
   m_Name: HeroProfileButton
   m_TagString: Untagged
@@ -407,6 +408,18 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 3c4f29ce5d4f3cd4cbe7f8251cfb13c1, type: 3}
   - {fileID: 21300000, guid: 0c4906b6d660f0c4ab11261db00dd7d5, type: 3}
   - {fileID: 21300000, guid: 1abc62750c7502f4386a4199907a5cd3, type: 3}
+--- !u!114 &888458084246310134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2413360262914123970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de11f6c94c6b40e4b82fccc22fdce6c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3432228438096448044
 GameObject:
   m_ObjectHideFlags: 0

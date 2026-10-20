@@ -62,7 +62,7 @@ MonoBehaviour:
     BlendInSeconds: 0.1
     Cues: []
   Move:
-    Enabled: 0
+    Enabled: 1
     UseUnitMovement: 1
     AnimationStateName: 
     BlendInSeconds: 0.1

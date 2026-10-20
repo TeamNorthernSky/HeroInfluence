@@ -7,19 +7,20 @@ using UnityEngine.UI;
 /// <summary>코어 선택 카드의 읽기 전용 정보. 비활성 Button에서도 호버할 수 있다.</summary>
 public sealed class CoreSelectionTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    private int core;
-    private string label;
-    private Sprite coreIcon;
-    private TMP_FontAsset font;
+    [SerializeField] private int core;
+    private int unitIndex;
+    [SerializeField] private string label;
+    [SerializeField] private Sprite coreIcon;
+    [SerializeField] private TMP_FontAsset font;
     private RectTransform panel;
     private TMP_Text title, levelText, stats, description, skillName, skillDescription;
     private Image portrait, skillPortrait;
     private static CoreSelectionTooltip visible;
     private static readonly string[] SkillIcons = { "normal", "multi", "defend", "heal", "debuff" };
 
-    public void Bind(int index, string name, Sprite icon, TMP_FontAsset textFont)
+    public void Bind(int index, string name, Sprite icon, TMP_FontAsset textFont, int heroIndex = 0)
     {
-        core = index; label = name; coreIcon = icon; font = textFont;
+        core = index; label = name; coreIcon = icon; font = textFont; unitIndex = heroIndex;
         if (panel && panel.gameObject.activeSelf) RefreshContent();
     }
     public void OnPointerEnter(PointerEventData data)
@@ -53,7 +54,7 @@ public sealed class CoreSelectionTooltip : MonoBehaviour, IPointerEnterHandler, 
         stats.text += level < WorkshopManager.MaxWeaponLevel ? "\n다음 레벨: " + Bonus(core, level + 1) : "\n최대 레벨";
         description.text = data != null ? data.WeaponDescription : "코어 정보를 불러오는 중입니다.";
         skillName.text = data != null ? data.WeaponSkillName : "코어 스킬";
-        skillDescription.text = data != null ? WeaponTooltipText.BuildWeaponSkillDesc(data, core, level) : "스킬 정보를 불러오는 중입니다.";
+        skillDescription.text = data != null ? WeaponTooltipText.BuildWeaponSkillDesc(data, core, level, unitIndex: unitIndex) : "스킬 정보를 불러오는 중입니다.";
         portrait.sprite = coreIcon;
         skillPortrait.sprite = Resources.Load<Sprite>("UI_Sprite/UI_Icon/CoreSkill/UI_icon_coreSkill_" + SkillIcons[core - 1]);
         skillPortrait.enabled = skillPortrait.sprite != null;

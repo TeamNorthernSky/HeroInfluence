@@ -26,6 +26,7 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
     private Action _onProjectile;
     private Action<PresentationMoveMarker> _onMove;
     private Action<PresentationReturnMarker> _onReturn;
+    private Action<PresentationHitStopMarker> _onHitStop;
     private double _activeStart = double.NegativeInfinity;
     private double _activeEnd = double.PositiveInfinity;
     private bool _sfxConfigured;
@@ -92,6 +93,11 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _onReturn = onReturn;
     }
 
+    public void ConfigureHitStopCallback(Action<PresentationHitStopMarker> onHitStop)
+    {
+        _onHitStop = onHitStop;
+    }
+
     public void ClearConfig()
     {
         _router = null;
@@ -100,6 +106,7 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _onProjectile = null;
         _onMove = null;
         _onReturn = null;
+        _onHitStop = null;
         _activeStart = double.NegativeInfinity;
         _activeEnd = double.PositiveInfinity;
         _sfxConfigured = false;
@@ -108,6 +115,12 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
 
     public void OnNotify(Playable origin, INotification notification, object context)
     {
+        if (notification is PresentationHitStopMarker hitStop)
+        {
+            if (hitStop.time >= _activeStart - 0.0001d && hitStop.time <= _activeEnd + 0.0001d)
+                _onHitStop?.Invoke(hitStop);
+            return;
+        }
         if (notification is PresentationSfxMarker sfx)
         {
             if (!_sfxConfigured || sfx.time < _activeStart - 0.0001d ||
