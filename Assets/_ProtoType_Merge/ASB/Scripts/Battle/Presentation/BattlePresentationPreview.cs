@@ -48,6 +48,8 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     public float shieldCameraReturnDelay = 0.35f;
     [InspectorName("원거리 적 공격 시 대상도 함께 표시")]
     public bool frameEnemyRangedTarget = true;
+    [InspectorName("블랙불릿 공격 시 대상도 함께 표시"), Tooltip("블랙불릿과 피격 대상을 함께 담고, 후열 대상이 잘리지 않도록 화각을 조절합니다.")]
+    public bool frameBlackBulletTarget = true;
     [InspectorName("원거리 공격 초점의 피격자 비중"), Range(.5f, .8f)]
     public float rangedTargetFocusWeight = 0.65f;
     [Header("루미나 투사체 연출")]
@@ -503,8 +505,10 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         attackCameraOrthoSize = previewCamera.orthographicSize;
         attackFocusActor = actor;
         attackFocusTarget = target;
-        frameRangedPair = frameEnemyRangedTarget && !actor.IsPlayer && target != null && target.IsPlayer &&
-            skill != null && !BattleManager.IsMeleeSkillRange(actor, skill);
+        frameRangedPair = target != null && skill != null &&
+            ((frameEnemyRangedTarget && !actor.IsPlayer && target.IsPlayer &&
+                !BattleManager.IsMeleeSkillRange(actor, skill)) ||
+             (frameBlackBulletTarget && actor.IsPlayer && actor.PresentationIndex == "10003" && !target.IsPlayer));
         attackZoomActive = true;
         try
         {
