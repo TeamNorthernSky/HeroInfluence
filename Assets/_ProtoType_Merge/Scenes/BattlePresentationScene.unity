@@ -2151,6 +2151,7 @@ MonoBehaviour:
     gridNumber: 0
     isPlayer: 0
   spawnOnStart: 1
+  simulationSpawnGridOrder: 66000000640000006500000001000000
 --- !u!1 &186606645
 GameObject:
   m_ObjectHideFlags: 0

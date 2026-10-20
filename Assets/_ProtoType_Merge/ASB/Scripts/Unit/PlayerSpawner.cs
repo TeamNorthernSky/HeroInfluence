@@ -28,6 +28,8 @@ public class PlayerSpawner : MonoBehaviour
     public List<SpawnRequest> debugSpawnRequests = new List<SpawnRequest>();
 
     [SerializeField] private bool spawnOnStart;
+    [Tooltip("모의 전투 아군 목록 순서에 대응하는 그리드 번호입니다. 비우면 기존 순서를 사용합니다. 0~2는 후열, 100~102는 전열입니다. 일반 전투에는 적용하지 않습니다.")]
+    [SerializeField] private int[] simulationSpawnGridOrder = Array.Empty<int>();
 
     private Transform unitParent;
     private readonly Dictionary<int, Vector3> gridSlots = new Dictionary<int, Vector3>();
@@ -311,6 +313,8 @@ public class PlayerSpawner : MonoBehaviour
 
         List<int> sortedGrids = new List<int>(gridSlots.Keys);
         sortedGrids.Sort();
+        if (simulationSpawnGridOrder != null && simulationSpawnGridOrder.Length > 0)
+            sortedGrids = new List<int>(simulationSpawnGridOrder);
         if (combatUnitIndices.Count > sortedGrids.Count)
         {
             Debug.LogError(
@@ -321,6 +325,7 @@ public class PlayerSpawner : MonoBehaviour
 
         var unitTemplates = new UnitData[combatUnitIndices.Count];
         var runtimeUnits = new UnitPersistentData[combatUnitIndices.Count];
+        var occupiedGrids = new HashSet<int>();
         for (int i = 0; i < combatUnitIndices.Count; i++)
         {
             int runtimeUnitIndex = combatUnitIndices[i];
@@ -350,6 +355,11 @@ public class PlayerSpawner : MonoBehaviour
             }
 
             int gridNumber = sortedGrids[i];
+            if (!occupiedGrids.Add(gridNumber))
+            {
+                Debug.LogError($"[PlayerSpawner] Simulation grid is assigned more than once. grid={gridNumber}", this);
+                return false;
+            }
             if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null)
             {
                 Debug.LogError($"[PlayerSpawner] Simulation grid cell is missing. grid={gridNumber}", this);
