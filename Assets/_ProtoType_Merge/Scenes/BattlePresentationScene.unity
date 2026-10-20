@@ -609,11 +609,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< Updated upstream
   hoverScale: 1.04
   hoverScaleSeconds: 0.12
-=======
->>>>>>> Stashed changes
   sharedSettings: {fileID: 918636222}
   availableEffect: {fileID: 741630105}
   selectedFrame: {fileID: 224286895}
@@ -7799,10 +7796,7 @@ MonoBehaviour:
     visual: {fileID: 1457325141}
   descriptionTitle: {fileID: 1058972430}
   descriptionBody: {fileID: 1688924211}
-<<<<<<< Updated upstream
   descriptionPercentageValues: 0
-=======
->>>>>>> Stashed changes
   descriptionTags:
   - {fileID: 442470651}
   - {fileID: 1403146747}
@@ -10556,10 +10550,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb9ca49eb3575654b8fdda10c0b1b5d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< Updated upstream
   showTurnBanner: 0
-=======
->>>>>>> Stashed changes
   startBanner: {fileID: 1024761503}
   turnBanner: {fileID: 1530314324}
   turnImage: {fileID: 1530314326}
@@ -13113,11 +13104,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< Updated upstream
   hoverScale: 1.04
   hoverScaleSeconds: 0.12
-=======
->>>>>>> Stashed changes
   sharedSettings: {fileID: 918636222}
   availableEffect: {fileID: 1092356850}
   selectedFrame: {fileID: 1952088960}
@@ -14756,7 +14744,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82642162af683574a8c09b857ae70252, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< Updated upstream
   buildTable: {fileID: 11400000, guid: dd31d174ee7ffb540ad5f67ff1083778, type: 2}
   workshopTable: {fileID: 11400000, guid: c81f273a101254b4593911891baafbca, type: 2}
   workshopEnforceTable: {fileID: 11400000, guid: a0058ca0b104c254b9b5c3dd44c9ffbe,
@@ -14767,18 +14754,6 @@ MonoBehaviour:
   promotionTable: {fileID: 11400000, guid: 5bb5ecf45bd9aea47888522b93d6fa2e, type: 2}
   trainingTable: {fileID: 11400000, guid: f82464ab27343c244b919293e85cd43f, type: 2}
   infirmaryTable: {fileID: 11400000, guid: d8639bdbc4b98784ea824db6c132c7c6, type: 2}
-=======
-  buildTable: {fileID: 11400000, guid: d5e8a78022a5418ba9e503adaa67c791, type: 2}
-  workshopTable: {fileID: 11400000, guid: 68b950514c24430681cd8df956e6ae81, type: 2}
-  workshopEnforceTable: {fileID: 11400000, guid: c1b0848ef6f544c39f69c6bd44a09d15,
-    type: 2}
-  exchangeTable: {fileID: 11400000, guid: b4485461fff244199e3bde07710971d9, type: 2}
-  labTable: {fileID: 11400000, guid: 854effc1517c430c831d154349764d2f, type: 2}
-  fundTable: {fileID: 11400000, guid: b88f005453384f9bb9fc40133ff64ed9, type: 2}
-  promotionTable: {fileID: 11400000, guid: f989183a06e2414697a04fa9666cf728, type: 2}
-  trainingTable: {fileID: 11400000, guid: 67b1c122cc2444bd9461fc2aa4037a11, type: 2}
-  infirmaryTable: {fileID: 11400000, guid: 4b79209eba244dd0ae886d376bb29172, type: 2}
->>>>>>> Stashed changes
   loadOnAwake: 1
   dontDestroyOnLoad: 1
 --- !u!114 &1009519160
@@ -17602,11 +17577,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< Updated upstream
   hoverScale: 1
   hoverScaleSeconds: 0.12
-=======
->>>>>>> Stashed changes
   sharedSettings: {fileID: 1132345259}
   availableEffect: {fileID: 0}
   selectedFrame: {fileID: 1282694045}
@@ -22140,11 +22112,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< Updated upstream
   hoverScale: 1.04
   hoverScaleSeconds: 0.12
-=======
->>>>>>> Stashed changes
   sharedSettings: {fileID: 918636222}
   availableEffect: {fileID: 1687431589}
   selectedFrame: {fileID: 761302723}
@@ -23461,11 +23430,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< Updated upstream
   hoverScale: 1.04
   hoverScaleSeconds: 0.12
-=======
->>>>>>> Stashed changes
   sharedSettings: {fileID: 918636222}
   availableEffect: {fileID: 759129870}
   selectedFrame: {fileID: 1755546252}
@@ -23967,10 +23933,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selectSkillOnTurnStart: 0
-<<<<<<< Updated upstream
   cancelSelectionOnEmptyClick: 1
-=======
->>>>>>> Stashed changes
   raycastCamera: {fileID: 1956195431}
   maxRayDistance: 200
   selectionRaycastMask:
@@ -26912,15 +26875,10 @@ MonoBehaviour:
   useTurnCamera: 0
   turnCameraTransitionSeconds: 0.75
   turnCameraMoveCurve:
-<<<<<<< Updated upstream
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-=======
-    m_Curve:
-    - time: 0
->>>>>>> Stashed changes
       value: 0
       inSlope: 2
       outSlope: 2
@@ -26928,12 +26886,8 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-<<<<<<< Updated upstream
     - serializedVersion: 3
       time: 1
-=======
-    - time: 1
->>>>>>> Stashed changes
       value: 1
       inSlope: 0
       outSlope: 0
@@ -26965,36 +26919,6 @@ MonoBehaviour:
   skillPanel: {fileID: 1463600813}
   skillPanelEntranceSeconds: 0.3
   skillCastDelay: 0.2
-<<<<<<< Updated upstream
-=======
-  savedPosition: {x: 0, y: 0, z: 0}
-  savedRotation: {x: 0, y: 0, z: 0, w: 0}
-  savedFov: 0
-  started: 0
-  flow: {fileID: 0}
-  turnBanner: {fileID: 0}
-  panelHome: {x: 0, y: 0}
-  panelDestination: {x: 0, y: 0}
-  turnCameraView: -1
-  attackZoomActive: 0
-  attackCameraPosition: {x: 0, y: 0, z: 0}
-  attackCameraRotation: {x: 0, y: 0, z: 0, w: 0}
-  attackCameraFov: 0
-  attackCameraOrthoSize: 0
-  attackFocusActor: {fileID: 0}
-  attackFocusTarget: {fileID: 0}
-  frameRangedPair: 0
-  attackZoomBaseFov: 0
-  luminaProjectile: {fileID: 0}
-  luminaLightning: {fileID: 0}
-  luminaSolarPrism: {fileID: 0}
-  luminaPrismExplosion: {fileID: 0}
-  nekoLightTarget: {fileID: 0}
-  nekoPawSequence: {fileID: 0}
-  projectileFocusLatched: 0
-  projectileFocusPoint: {x: 0, y: 0, z: 0}
-  followAttackFocus: 0
->>>>>>> Stashed changes
 --- !u!4 &1719896257
 Transform:
   m_ObjectHideFlags: 0
@@ -30194,11 +30118,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< Updated upstream
   hoverScale: 1
   hoverScaleSeconds: 0.12
-=======
->>>>>>> Stashed changes
   sharedSettings: {fileID: 1895988873}
   availableEffect: {fileID: 0}
   selectedFrame: {fileID: 1884438108}
@@ -30269,11 +30190,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b77cd4deb89ca56439bfa87b0ba4792d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< Updated upstream
   hoverScale: 1.04
   hoverScaleSeconds: 0.12
-=======
->>>>>>> Stashed changes
   sharedSettings: {fileID: 918636222}
   availableEffect: {fileID: 237374292}
   selectedFrame: {fileID: 1492584528}
