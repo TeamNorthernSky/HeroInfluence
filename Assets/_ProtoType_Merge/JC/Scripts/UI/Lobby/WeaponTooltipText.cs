@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 /// <summary>
 /// [JC 260619] 무기/무기스킬 툴팁 본문 생성(공방·HeroInfo 공용). 무기 시트 V6.0 레벨 계수 치환.
@@ -56,7 +56,7 @@ public static class WeaponTooltipText
 
         // 카탈로그 미로드 폴백 — 행 자체 값으로 표시
         var sb = new StringBuilder();
-        sb.Append(SkillTooltipNumbers.Build(wd.WeaponSkillDescription, "WeaponSkill", wd.WeaponSkillValue, wd.WeaponSkillSubValue, unitIndex, caster, wd.WeaponSkillEffect == 0));
+        sb.Append(percentageValues ? ClassSkillTooltipText.ReplaceBattleCoefficients(wd.WeaponSkillDescription, "WeaponSkill", wd.WeaponSkillValue, wd.WeaponSkillSubValue) : SkillTooltipNumbers.Build(wd.WeaponSkillDescription, "WeaponSkill", wd.WeaponSkillValue, wd.WeaponSkillSubValue, unitIndex, caster, wd.WeaponSkillEffect == 0));
         return sb.ToString();
     }
 
@@ -64,6 +64,6 @@ public static class WeaponTooltipText
     {
         float v = catalog != null ? catalog.GetWeaponSkillValueAtLevel(weaponIndex, level) : wd.WeaponSkillValueLv1;
         float sv = catalog != null ? catalog.GetWeaponSkillSubValueAtLevel(weaponIndex, level) : wd.WeaponSkillSubValueLv1;
-        return SkillTooltipNumbers.Build(wd.WeaponSkillDescription, "WeaponSkill", v, sv, unitIndex, caster, wd.WeaponSkillEffect == 0);
+        return percentageValues ? ClassSkillTooltipText.ReplaceBattleCoefficients(wd.WeaponSkillDescription, "WeaponSkill", v, sv) : SkillTooltipNumbers.Build(wd.WeaponSkillDescription, "WeaponSkill", v, sv, unitIndex, caster, wd.WeaponSkillEffect == 0);
     }
 }

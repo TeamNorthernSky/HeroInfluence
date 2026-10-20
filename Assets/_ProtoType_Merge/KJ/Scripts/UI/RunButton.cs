@@ -5,6 +5,10 @@ public class RunButton : MonoBehaviour
 {
     [SerializeField] private Button button;
     [SerializeField] private BattleFlowManager battleFlowManager;
+    [Tooltip("기존 공용 패널 스타일을 사용한 도주 확인 모달입니다. 확인에서만 도주하며 취소하면 전투를 계속합니다. 씬에 저장됩니다.")]
+    [SerializeField] private GameObject confirmationPopup;
+    private System.IDisposable confirmationLock;
+    private bool awaitingConfirmation;
 
     private void Reset()
     {
@@ -40,6 +44,7 @@ public class RunButton : MonoBehaviour
 
     private void OnDisable()
     {
+        CancelRun();
         if (button != null)
             button.onClick.RemoveListener(OnRunButtonClicked);
 
@@ -57,6 +62,7 @@ public class RunButton : MonoBehaviour
 
     private void OnBattleEnded(BattleResult result)
     {
+        CancelRun();
         if (button != null) button.interactable = false;
     }
 
@@ -68,6 +74,37 @@ public class RunButton : MonoBehaviour
             return;
         }
 
-        battleFlowManager.RequestFlee();
+        if (awaitingConfirmation || confirmationPopup == null || !CanRequestRun()) return;
+        awaitingConfirmation = true;
+        confirmationLock = battleFlowManager.AcquireFlowLock(this, "도주 확인");
+        confirmationPopup.SetActive(true);
+    }
+
+    private bool CanRequestRun() => battleFlowManager != null && !battleFlowManager.IsEndingBattle &&
+        !battleFlowManager.IsFlowBlocked && !battleFlowManager.IsActionInProgress &&
+        !battleFlowManager.IsTurnPresentationPending && battleFlowManager.CurrentUnit != null &&
+        battleFlowManager.CurrentUnit.IsPlayer &&
+        battleFlowManager.IsPlayerActionAllowed(battleFlowManager.CurrentUnit, PendingActionType.Flee, null);
+
+    public void ConfirmRun()
+    {
+        if (!awaitingConfirmation || confirmationPopup == null || !confirmationPopup.activeInHierarchy ||
+            ModalManager.Top != confirmationPopup) return;
+        CancelRun();
+        if (CanRequestRun()) battleFlowManager.RequestFlee();
+    }
+
+    public void CancelRun()
+    {
+        awaitingConfirmation = false;
+        if (confirmationPopup != null) confirmationPopup.SetActive(false);
+        confirmationLock?.Dispose();
+        confirmationLock = null;
+    }
+
+    private void Update()
+    {
+        // ESC 등 공용 모달 닫기 경로에서도 전투 잠금을 남기지 않는다.
+        if (awaitingConfirmation && (confirmationPopup == null || !confirmationPopup.activeInHierarchy)) CancelRun();
     }
 }
