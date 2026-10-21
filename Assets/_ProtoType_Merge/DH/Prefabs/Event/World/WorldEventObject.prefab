@@ -267,6 +267,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   worldEventId: 
   oneShot: 1
+  placementRotation: 0
   gridManager: {fileID: 0}
   visualRoot: {fileID: 63707399964760256}
   prefabRegistry: {fileID: 0}
