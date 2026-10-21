@@ -67,6 +67,11 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void ResetForNewGame()
     {
+        explorationEntryVersion++;
+        explorationEntryPending = false;
+        explorationEntryFailed = false;
+        initialAutoSaveRequired = true;
+        initialAutoSaveDone = false;
         currentDay = 1;
         pendingEndTurnOnExploration = false;
 
@@ -81,8 +86,6 @@ public class GameManager : MonoBehaviour
         BattleRuntimeSettings.Reset();
 
         DHGameProgressResetService.ResetDHProgress(); // DH 레포 + HQVisit + CombatContext + MapProgress + DHGameEndState
-
-        initialAutoSaveDone = false; // [KJ 260707] 다음 새 게임의 첫 로비 도착 자동 저장 재활성화
 
         UnityEngine.Debug.Log("[GameManager] ResetForNewGame — 전체 영속 상태를 첫 실행값으로 초기화");
     }
@@ -146,24 +149,71 @@ public class GameManager : MonoBehaviour
         // 무기는 유닛 생성 시 자동장착되지만 스킬은 미장착이라, 시작 시 보장한다.
         if (Lab != null) StartCoroutine(EnsureDefaultSkillsNextFrame());
 
-        // [KJ 260707] 게임 진입(세션 첫 탐사씬 도착) 시 1회 자동 저장 — day 1 "첫 턴 시작 스냅샷" 보장.
-        // 게임 시작 씬이 로비→탐사씬으로 변경(GameLoadGate 분기 제거)되어 트리거 씬도 함께 이동.
-        // 이후 턴들은 TurnManager.StartPlayerTurn의 자동 저장이 담당(수동 저장 버튼은 기획 결정으로 제거됨).
-        if (!initialAutoSaveDone && GameSceneManager.Instance != null && scene.name == GameSceneManager.Instance.ExplorationScene)
-            StartCoroutine(InitialAutoSaveAfterSeeding());
+        // 최초 저장은 sceneLoaded의 프레임 지연 대신 TurnManager의 최초 캡처 성공 통지에서 실행한다.
     }
 
     // [KJ 260707] 세션당 1회. 타이틀 복귀(ResetForNewGame) 시 리셋되어 다음 새 게임에서도 첫 스냅샷 보장.
     private bool initialAutoSaveDone;
 
-    private System.Collections.IEnumerator InitialAutoSaveAfterSeeding()
+    private bool initialAutoSaveRequired = true;
+    private bool explorationEntryPending;
+    private bool explorationEntryFailed;
+    private int explorationEntryVersion;
+    public int ExplorationEntryVersion => explorationEntryVersion;
+
+    public bool IsExplorationScene(Scene scene)
     {
-        // 유닛 시딩(씬 Start)과 기본 스킬 장착(EnsureDefaultSkillsNextFrame, 1프레임 지연) 이후로 2프레임 지연
-        yield return null;
-        yield return null;
-        if (initialAutoSaveDone) yield break;
+        string expected = GameSceneManager.Instance != null ? GameSceneManager.Instance.ExplorationScene : "DHScene";
+        return scene.IsValid() && scene.isLoaded && scene.name == expected;
+    }
+
+    /// <summary>씬 시딩/복원/방문 상태 반영이 끝나기 전 최초 캡처와 저장을 보류한다.</summary>
+    public int BeginExplorationEntry(bool isContinue)
+    {
+        explorationEntryVersion++;
+        explorationEntryPending = true;
+        explorationEntryFailed = false;
+        initialAutoSaveRequired = !isContinue;
+        initialAutoSaveDone = false;
+        return explorationEntryVersion;
+    }
+
+    public void CompleteExplorationEntry(int version)
+    {
+        if (version == explorationEntryVersion) explorationEntryPending = false;
+    }
+
+    public void CancelExplorationEntry(int version)
+    {
+        if (version != explorationEntryVersion) return;
+        explorationEntryPending = false;
+        explorationEntryFailed = true;
+    }
+
+    /// <summary>현재 진입의 준비 완료 후, 첫 스냅샷에 포함할 홍보 초기 지급을 확정한다.</summary>
+    public bool TryPrepareInitialExplorationState(int version)
+    {
+        if (version != explorationEntryVersion || explorationEntryPending || explorationEntryFailed ||
+            DHGameStateRestoreService.IsRestoring || DHTurnStartSnapshotStore.IsCaptureSuppressed)
+            return false;
+        return Publicity != null && Publicity.TryCompleteInitialGrant();
+    }
+
+    public void NotifyInitialTurnSnapshotCaptured(Scene scene, int version)
+    {
+        if (!IsExplorationScene(scene) || !TryPrepareInitialExplorationState(version)) return;
+        var snapshot = DHTurnStartSnapshotStore.Instance;
+        if (snapshot == null || !snapshot.HasSnapshot || snapshot.CapturedDay != CurrentDay) return;
+        TryCommitInitialAutoSave(SaveSlotRepository.CurrentSlot, GameSaveService.SaveToSlot);
+    }
+
+    // 저장 I/O의 성공 여부만 완료 상태에 반영한다. 실패는 완료로 기록하지 않으며 매 프레임 재시도하지 않는다.
+    private bool TryCommitInitialAutoSave(int slot, System.Func<int, bool> save)
+    {
+        if (!initialAutoSaveRequired || initialAutoSaveDone) return false;
+        if (!save(slot)) return false;
         initialAutoSaveDone = true;
-        GameSaveService.SaveToSlot(SaveSlotRepository.CurrentSlot);
+        return true;
     }
 
     private System.Collections.IEnumerator EnsureDefaultSkillsNextFrame()

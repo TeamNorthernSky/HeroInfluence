@@ -28,6 +28,16 @@ public class GameLoadGate : MonoBehaviour
     [Tooltip("DHScene 부트스트랩 후 폴링 전 추가 대기 프레임 수. PartyUnitBootstrap의 Start 호출 보장")]
     [SerializeField] private int bootstrapWaitFrames = 2;
 
+    private GameManager entryOwner;
+    private int entryVersion;
+    private bool entryPending;
+
+    private void OnDestroy()
+    {
+        if (entryPending && entryOwner != null)
+            entryOwner.CancelExplorationEntry(entryVersion);
+    }
+
     private void Start()
     {
         StartCoroutine(RunGate());
@@ -68,20 +78,42 @@ public class GameLoadGate : MonoBehaviour
             if (GameManager.Instance != null) GameManager.Instance.ResetForNewGame();
         }
 
+        entryOwner = GameManager.Instance;
+        if (entryOwner != null)
+        {
+            entryVersion = entryOwner.BeginExplorationEntry(isContinue);
+            entryPending = true;
+        }
+
         // [JC 260514] GameSceneManager Instance 경유 (fallback SceneManager).
         var op = GameSceneManager.Instance != null
             ? GameSceneManager.Instance.LoadSceneAsync(dhSceneName, LoadSceneMode.Additive)
             : SceneFadeController.LoadSceneAsyncWithFade(dhSceneName, LoadSceneMode.Additive);
         if (op == null)
         {
+            if (entryOwner != null) entryOwner.CancelExplorationEntry(entryVersion);
+            entryPending = false;
             Debug.LogError($"[GameLoadGate] {dhSceneName} 로드 실패. Build Settings 확인");
             yield break;
         }
         while (!op.isDone) yield return null;
 
+        // 이전 진입이 진행되는 동안 새 게임이 시작됐다면 이전 작업으로 새 세션을 덮어쓰지 않는다.
+        if (entryOwner != null && entryOwner.ExplorationEntryVersion != entryVersion)
+        {
+            if (restoreData != null) UnityEngine.Object.Destroy(restoreData);
+            yield break;
+        }
+
         // PartyUnitBootstrap.Start가 호출되도록 충분히 대기
         for (int i = 0; i < bootstrapWaitFrames; i++)
             yield return null;
+
+        if (entryOwner != null && entryOwner.ExplorationEntryVersion != entryVersion)
+        {
+            if (restoreData != null) UnityEngine.Object.Destroy(restoreData);
+            yield break;
+        }
 
         if (isContinue)
         {
@@ -116,6 +148,10 @@ public class GameLoadGate : MonoBehaviour
         MoveRangeController moveRangeController = FindFirstObjectByType<MoveRangeController>();
         moveRangeController?.RefreshForCurrentParty();
         moveRangeController?.RequestRefreshAfterSceneSetup();
+
+        // TurnManager는 이 준비 완료 이후 홍보 초기 지급 → 첫 스냅샷 → 최초 저장 순서로 진행한다.
+        if (entryOwner != null) entryOwner.CompleteExplorationEntry(entryVersion);
+        entryPending = false;
 
         yield return SceneManager.UnloadSceneAsync(gameObject.scene);
     }

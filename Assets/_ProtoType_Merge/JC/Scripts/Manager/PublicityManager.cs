@@ -37,6 +37,9 @@ public class PublicityManager : MonoBehaviour
     // [KJ 260706] 저장 기능(GameSaveService)용 읽기 노출
     public int LastChargeDay => lastChargeDay;
 
+    private bool initialGrantPending;
+    public bool IsInitialGrantPending => initialGrantPending;
+
     public void Initialize()
     {
         Reset();
@@ -47,11 +50,42 @@ public class PublicityManager : MonoBehaviour
     {
         var gm = GameManager.Instance;
         int level = gm != null && gm.HQ != null ? gm.HQ.GetLevel(HQDepartment.Publicity) : 0;
-        currentPool = TryGetPromotionRules(level, out var row) ? row.InfluenceChargeLimit : 0;
-        if (level >= 1 && row == null)
-            Debug.LogWarning("[PublicityManager] 홍보 초기 횟수 설정 실패: 협회 Catalog의 홍보 데이터를 확인하세요.", this);
+        currentPool = 0;
         lastChargeDay = gm != null ? gm.CurrentDay : 1;
         cachedPublicityLevel = level;
+        initialGrantPending = level >= 1;
+        // 부트/타이틀에는 카탈로그가 없을 수 있다. 본게임 준비 단계에서 지급을 완료한다.
+        if (!TryCompleteInitialGrant()) OnStateChanged?.Invoke();
+        else if (level < 1) OnStateChanged?.Invoke();
+    }
+
+    /// <summary>새 게임 초기 지급만 완료한다. 소비 후 0이나 복원된 0은 재지급하지 않는다.</summary>
+    public bool TryCompleteInitialGrant()
+    {
+        if (!initialGrantPending) return true;
+        if (DHGameStateRestoreService.IsRestoring) return false;
+        int level = GetCurrentLevel();
+        if (level < 1)
+        {
+            initialGrantPending = false;
+            return true;
+        }
+        if (!TryGetPromotionRules(level, out var row)) return false;
+
+        currentPool = row.InfluenceChargeLimit;
+        initialGrantPending = false;
+        cachedPublicityLevel = level;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    /// <summary>저장된 잔량과 충전일을 확정하고 새 게임 초기 지급을 취소한다.</summary>
+    public void RestoreState(int pool, int chargeDay)
+    {
+        currentPool = Mathf.Max(0, pool);
+        lastChargeDay = Mathf.Max(0, chargeDay);
+        initialGrantPending = false;
+        cachedPublicityLevel = GetCurrentLevel();
         OnStateChanged?.Invoke();
     }
 
@@ -66,6 +100,7 @@ public class PublicityManager : MonoBehaviour
 
     private void OnHQStateChanged()
     {
+        if (DHGameStateRestoreService.IsRestoring) return;
         var gm = GameManager.Instance;
         if (gm == null || gm.HQ == null) return;
         int level = gm.HQ.GetLevel(HQDepartment.Publicity);
@@ -79,6 +114,11 @@ public class PublicityManager : MonoBehaviour
 
     private void OnPublicityUnlocked()
     {
+        if (initialGrantPending)
+        {
+            TryCompleteInitialGrant();
+            return;
+        }
         var gm = GameManager.Instance;
         int day = gm != null ? gm.CurrentDay : 1;
         if (!TryGetPromotionRules(GetCurrentLevel(), out var row)) return;
@@ -92,6 +132,7 @@ public class PublicityManager : MonoBehaviour
     /// </summary>
     public void OnTurnAdvanced(int currentDay)
     {
+        if (!TryCompleteInitialGrant()) return;
         var gm = GameManager.Instance;
         if (gm == null || gm.HQ == null) return;
         int level = gm.HQ.GetLevel(HQDepartment.Publicity);

@@ -94,7 +94,6 @@ namespace JC.EnvironmentDetail
                             live=new Material(material){name=material.name+" (물 실시간)",hideFlags=HideFlags.HideAndDontSave};nextMaterials.Add(material,live);
                             var constrained=JcWaterFlowConstraint.Create(root,material);
                             if(constrained!=null)live.SetTexture("_FlowMap",constrained);
-                            live.SetFloat("_StreakWaterMask",constrained!=null?1:0);
                             settings.Apply(live);live.SetFloat("_UseWaterTime",1);live.SetFloat("_WaterTime",waterTime);
                         }
                         slots[i]=live;changed=true;

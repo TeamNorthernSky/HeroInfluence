@@ -161,9 +161,7 @@ public static class DHGameStateRestoreService
         if (publicity == null)
             return;
 
-        SetPrivateField(publicity, "currentPool", Mathf.Max(0, currentPool));
-        SetPrivateField(publicity, "lastChargeDay", Mathf.Max(0, lastChargeDay));
-        InvokeEvent(publicity, "OnStateChanged");
+        publicity.RestoreState(currentPool, lastChargeDay);
     }
 
     private static void RestoreTraining(TrainingManager training, IReadOnlyList<TrainingManager.TrainingEntry> savedEntries)
@@ -241,6 +239,7 @@ public static class DHGameStateRestoreService
                 entries.Add(new WorkshopManager.WeaponEntry
                 {
                     weaponIndex = entry.weaponIndex,
+                    weaponKey = entry.weaponKey,
                     instanceIndex = entry.instanceIndex
                 });
             }
