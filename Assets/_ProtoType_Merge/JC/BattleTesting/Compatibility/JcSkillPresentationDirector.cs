@@ -1265,11 +1265,7 @@ public sealed partial class JcSkillPresentationDirector
 
         if (!deliveryStarted) ResolveDelivery();
         if (deliveryRoutine != null) yield return deliveryRoutine;
-
-        for (int i = 0; i < pairCount; i++)
-        {
-            ReturnToIdleIfAlive(contexts[i]?.Target);
-        }
+        // 대상의 Hit 종료 후 Idle 복귀는 공용 CharactorAnimationController가 처리한다.
     }
 
     // 원본 함수 대응: SkillPresentationDirector.EnsureTimelineDirector (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Presentation/SkillPresentationDirector.cs)
@@ -2285,24 +2281,7 @@ public sealed partial class JcSkillPresentationDirector
 
         float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
         yield return _battle.WaitForBattleSeconds(Mathf.Max(remainingTotal, 0.2f));
-
-        for (int i = 0; i < pairCount; i++)
-        {
-            ReturnToIdleIfAlive(contexts[i]?.Target);
-        }
-    }
-
-    // 원본 함수 대응: SkillPresentationDirector.ReturnToIdleIfAlive (Assets/_ProtoType_Merge/ASB/Scripts/Battle/Presentation/SkillPresentationDirector.cs)
-
-    public static void ReturnToIdleIfAlive(BattleCharactor unit)
-    {
-        if (unit == null || unit.IsDead)
-        {
-            return;
-        }
-
-        unit.EnsureAnimationController();
-        unit.Anim?.PlayIdleAnimation();
+        // 대상의 Hit 종료 후 Idle 복귀는 공용 CharactorAnimationController가 처리한다.
     }
 
 }
