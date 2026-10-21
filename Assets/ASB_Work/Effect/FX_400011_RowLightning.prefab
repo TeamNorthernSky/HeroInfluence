@@ -49,12 +49,25 @@ MonoBehaviour:
     type: 3}
   _shockTemplate: {fileID: 5157378175598160411, guid: c912456cef5272a48b509413ed1d920c,
     type: 3}
+  _arcPrefab: {fileID: 3344644850210920253, guid: 63229072cc8349d4f83e7eb5bfd9a839,
+    type: 3}
+  _originOrbPrefab: {fileID: 0}
+  _originLeadTime: 0.12
+  _layerBoltWithArcs: 1
+  _arcThicknessScale: 0.25
   _axis: 0
   _lineCount: 3
-  _lineSpacing: 0.3
+  _lineSpacing: 0.9
   _endExtension: 0.5
+  _startExtension: -1
+  _targetSideOnly: 0
   _height: 0.8
-  _widthRatio: 0
+  _widthRatio: 0.14
+  _boltCoreWidth: 0.11
+  _boltGlowWidth: 0.68
+  _boltEmission: 0
+  _boltCoreColor: {r: 1.2, g: 0.65, b: 1.6, a: 1}
+  _boltGlowColor: {r: 0.85, g: 0.12, b: 1.8, a: 1}
   _drawTime: 0.08
   _lineStagger: 0.05
   _holdTime: 0.3

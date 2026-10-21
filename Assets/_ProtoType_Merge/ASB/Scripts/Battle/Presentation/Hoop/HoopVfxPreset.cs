@@ -55,11 +55,19 @@ public sealed class HoopVfxPreset : ScriptableObject
     [Header("Ultra Mega VFX (선택 — 비우면 코드로 그린 임시 외형)")]
     [Tooltip("바퀴 대신 띄울 외형 프리팹(Magic Orb). 부유·회전은 그대로 적용된다.")]
     public GameObject wheelVisualPrefab;
-    [Tooltip("wheelVisualPrefab의 보이는 반지름(m, 어두운 외곽 포함). 중심을 반지름+부유 진폭 높이에 띄워 바닥을 뚫지 않게 한다. " +
-             "프리팹 스케일을 바꾸면 함께 맞출 것. 0.99 = 그리드 한 칸(3.3m)의 3/5 지름.")]
-    [Min(0f)] public float wheelVisualRadius = .99f;
+    [Tooltip("wheelVisualPrefab의 보이는 반지름(m, 어두운 외곽 포함). 프리팹 스케일을 바꾸면 함께 맞출 것. " +
+             "지름 1.5m에 맞춰 CircleSize 4.5 × 프리팹 배율 1/3, 반지름 0.75m.")]
+    [Min(0f)] public float wheelVisualRadius = .75f;
+    [Tooltip("소환 시 코드 소환진(보라 링) 대신 바닥에 재생할 포털 프리팹(Portal Effects, 기획 Y07). 회전·크기는 프리팹 루트 값을 쓴다.")]
+    public GameObject summonPortalPrefab;
     [Tooltip("파괴 시 코드 연기·파편 대신 재생할 프리팹(Stylized Smoke).")]
     public GameObject wheelBreakPrefab;
+    [Tooltip("파괴 직전 구체 중심광이 한 번 커지는 시간(전투 배속 기준 초, 기획 Y10). 0이면 바로 연기. wheelVisualPrefab 사용 시에만.")]
+    [Min(0f)] public float breakFlashSeconds = .12f;
+    [Tooltip("중심광 최고점의 색 밝기 배율(VFX 노출 색 속성에 곱한다). 너무 크면 흰색으로 포화된다.")]
+    [Min(1f)] public float breakFlashIntensity = 2.5f;
+    [Tooltip("중심광 최고점의 구체 크기 배율.")]
+    [Min(1f)] public float breakFlashScale = 1.25f;
     [Tooltip("돌진 중 트레일 대신 뒤쪽에 붙일 전기 아크 프리팹(ElectricArcEndpoints 필요).")]
     public GameObject dashArcPrefab;
     [Tooltip("아크 뒤쪽 끝점이 돌진 진행도에서 얼마나 뒤처지는지(0~1).")]

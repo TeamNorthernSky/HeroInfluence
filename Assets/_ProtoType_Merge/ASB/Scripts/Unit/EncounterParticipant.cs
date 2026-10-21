@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -11,6 +13,7 @@ using UnityEngine;
 /// - 스킬 사용 확정 시 → 블랙보드에 이번 라운드 스킬 기록(보스 스킬 게이팅용).
 /// - 현재 페이즈 읽기(참여자 AI가 행동 분기).
 /// - 무력화 라운드 카운트다운 구동(자기 턴 무관, 라운드 경계 기준).
+/// - (선택) 지정 페이즈 진입 시 쓰러져 있으면 턴 사이 연출에서 즉시 부활(율리아 증폭기: 3페이즈).
 ///
 /// 의존은 단방향(이 컴포넌트 → 코어/블랙보드). 코어(BattleCharactor)는 블랙보드를 모른다.
 /// </summary>
@@ -33,6 +36,22 @@ public sealed class EncounterParticipant : MonoBehaviour
     [Min(1)] [SerializeField] private int _corpseReviveDelayRounds = 2;
     [Tooltip("부활 시 최대 HP 대비 체력 비율입니다.")]
     [Range(0.01f, 1f)] [SerializeField] private float _reviveHpRatio = 0.5f;
+
+    [Header("Immediate revival on phase entry")]
+    [Tooltip("이 페이즈로 들어올 때 쓰러져 있으면 라운드 카운트다운 없이 다음 턴 사이 연출에서 바로 부활합니다(0 = 사용 안 함). " +
+             "율리아 증폭기 = 3: 증폭기가 먼저 일어난 뒤 율리아 정지장이 나온다. 체력은 _reviveHpRatio, 다시 죽으면 기존 카운트다운.")]
+    [Min(0)] [SerializeField] private int _immediateRevivePhase;
+    [Tooltip("즉시 부활 뒤 다음 연출(율리아 정지장 등)까지 기다리는 시간(전투 배속 기준 초). 증폭기 복구 연출(A04 0.6초)이 끝나도록.")]
+    [Min(0f)] [SerializeField] private float _immediateReviveHoldSeconds = 0.7f;
+
+    /// <summary>즉시 부활 턴 사이 연출의 재생 순서. 같은 페이즈 진입의 다른 연출(정지장, 기본 0)보다 먼저.</summary>
+    public const int PhaseReviveInterludeOrder = -10;
+    /// <summary>지연 시체 제거(EnemySpawner, 0.8초)가 끝나지 않아 부활이 거절될 때 다시 시도하는 시간(초).</summary>
+    private const float PhaseReviveRetrySeconds = 1.5f;
+
+    // 같은 페이즈 진입에서 쓰러진 참여자들은 한 턴 사이 연출에서 동시에 일으킨다(기획 A04: 두 개 동시).
+    private static readonly List<EncounterParticipant> s_phaseRevivePending = new List<EncounterParticipant>();
+    private static BattleFlowManager s_phaseReviveFlow;
 
     private BattleCharactor _self;
     private BattleFlowManager _flow;
@@ -113,8 +132,83 @@ public sealed class EncounterParticipant : MonoBehaviour
     {
         if (phase >= _reviveStartPhase)
         {
+            // 즉시 부활이 실패해도(셀 점유 등) 기존 카운트다운으로 되살아나도록 먼저 무장한다.
             ArmCorpseRevivalIfNeeded();
         }
+
+        if (ShouldReviveOnPhaseEntry(phase, _immediateRevivePhase, UsesCorpseRevival,
+                _self != null && _self.IsDead, _deathGridNumber))
+        {
+            RequestPhaseRevive();
+        }
+    }
+
+    // 페이즈 전환은 피해 처리 도중에 일어나므로, 부활은 진행 중인 행동이 끝난 뒤 턴 사이 연출에서 한다.
+    private void RequestPhaseRevive()
+    {
+        BattleFlowManager flow = ResolveFlow();
+        if (flow == null) return;   // 흐름이 없으면 기존 카운트다운으로 부활한다.
+
+        s_phaseRevivePending.RemoveAll(p => p == null);
+        if (s_phaseReviveFlow != flow)
+        {
+            s_phaseRevivePending.Clear();
+            s_phaseReviveFlow = flow;
+            flow.EnqueueTurnInterlude(RunPhaseRevives, PhaseReviveInterludeOrder);
+        }
+
+        if (!s_phaseRevivePending.Contains(this)) s_phaseRevivePending.Add(this);
+    }
+
+    private static IEnumerator RunPhaseRevives()
+    {
+        var waiting = new List<EncounterParticipant>(s_phaseRevivePending);
+        s_phaseRevivePending.Clear();
+        s_phaseReviveFlow = null;
+
+        float hold = 0f;
+        for (float t = 0f; waiting.Count > 0; t += Time.deltaTime)
+        {
+            for (int i = waiting.Count - 1; i >= 0; i--)
+            {
+                EncounterParticipant participant = waiting[i];
+                if (participant == null || participant._self == null || !participant._self.IsDead)
+                {
+                    waiting.RemoveAt(i);
+                    continue;
+                }
+
+                if (!participant.TryReviveCorpse()) continue;
+                hold = Mathf.Max(hold, participant._immediateReviveHoldSeconds);
+                waiting.RemoveAt(i);
+            }
+
+            // 남은 참여자는 이미 무장된 기존 카운트다운으로 부활한다.
+            if (waiting.Count == 0 || t >= PhaseReviveRetrySeconds) break;
+            yield return null;
+        }
+
+        // 복구 연출이 끝난 뒤 다음 연출(율리아 정지장)로 넘어간다.
+        for (float t = 0f; t < hold; t += Time.deltaTime * BattleSpeed())
+        {
+            yield return null;
+        }
+    }
+
+    private static float BattleSpeed()
+    {
+        return BattleManager.Instance != null ? Mathf.Max(0.01f, BattleManager.Instance.CurrentBattleSpeed) : 1f;
+    }
+
+    /// <summary>
+    /// 페이즈 진입 즉시 부활 대상인지. 지정 페이즈로 들어왔고, 시체 부활을 쓰는 참여자가 쓰러져 있으며,
+    /// 사망 셀이 기록돼 있을 때만(셀을 모르면 부활할 곳이 없다).
+    /// </summary>
+    public static bool ShouldReviveOnPhaseEntry(int enteredPhase, int immediateRevivePhase, bool usesCorpseRevival,
+        bool isDead, int deathGridNumber)
+    {
+        return immediateRevivePhase > 0 && enteredPhase == immediateRevivePhase &&
+               usesCorpseRevival && isDead && deathGridNumber >= 0;
     }
 
     // 라운드 경계에서 무력화/시체 부활 카운트다운(자기 턴 무관).
@@ -166,19 +260,20 @@ public sealed class EncounterParticipant : MonoBehaviour
         _corpseReviveRoundsLeft = Mathf.Max(1, _corpseReviveDelayRounds);
     }
 
-    private void TryReviveCorpse()
+    private bool TryReviveCorpse()
     {
         EnemySpawner spawner = ResolveSpawner();
         if (spawner == null || !spawner.TryReviveCorpseAt(_self, _deathGridNumber, _reviveHpRatio))
         {
             // 원래 셀이 점유 중이면 0을 유지하고 다음 고유 라운드에 다시 시도한다.
-            return;
+            return false;
         }
 
         ResolveBlackboard()?.ClearParticipantDestroyed(_participantId);
         _self.ResetEnergyStack();
         _corpseReviveRoundsLeft = -1;
         _deathGridNumber = -1;
+        return true;
     }
 
     /// <summary>참여자 AI가 스킬로 non-Skip 결정을 확정하기 직전 1회 호출.</summary>

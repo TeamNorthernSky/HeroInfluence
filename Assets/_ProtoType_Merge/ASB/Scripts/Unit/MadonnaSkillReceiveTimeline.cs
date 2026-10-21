@@ -27,6 +27,11 @@ public sealed class MadonnaSkillReceiveTimeline : MonoBehaviour
     public event Action<BattleCharactor> ReceiveStarted;
     /// <summary>흡수 Timeline이 끝났거나 중단됨.</summary>
     public event Action ReceiveEnded;
+    /// <summary>
+    /// 흡수 Timeline의 Cue 마커(PresentationSignalMarker, Kind=Cue)에 도달함(인자: CueName).
+    /// 흡수 VFX의 시점은 이 마커가 정한다 — Timeline 창에서 손 동작 클립과 같이 보고 옮길 수 있다.
+    /// </summary>
+    public event Action<string> ReceiveCue;
 
     public bool IsReceiving => _receiving;
     /// <summary>흡수 Timeline 시간(초, 속도 마커 반영). 재생 중이 아니면 0.</summary>
@@ -99,8 +104,9 @@ public sealed class MadonnaSkillReceiveTimeline : MonoBehaviour
                 _director.SetGenericBinding(track, _receiver);
         }
 
-        // SFX 마커만 쓴다(Cue/Impact 콜백 없음).
+        // 스킬 연출 Cue/Impact 경로는 쓰지 않는다(SFX 마커만). Cue 마커는 ReceiveCue 이벤트로 흡수 VFX에 넘긴다.
         _receiver.Configure(null, null);
+        _receiver.ConfigureCueCallback(HandleCueMarker);
         _director.time = 0d;
         if (_flow != null) _flowLock = _flow.AcquireFlowLock(this, "마돈나 스킬 흡수");
         try
@@ -133,6 +139,12 @@ public sealed class MadonnaSkillReceiveTimeline : MonoBehaviour
         if (_receiver != null) _receiver.ClearConfig();
         ReleaseFlowLock();
         EndReceive();
+    }
+
+    private void HandleCueMarker(PresentationSignalMarker marker)
+    {
+        if (!_receiving || marker == null || string.IsNullOrEmpty(marker.CueName)) return;
+        ReceiveCue?.Invoke(marker.CueName);
     }
 
     private void HandleTurnStarted(int roundIndex, BattleCharactor current)

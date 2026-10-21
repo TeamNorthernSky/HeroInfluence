@@ -357,8 +357,9 @@ MonoBehaviour:
   handFlashPrefab: {fileID: 925166589752396310, guid: c4831fea3aacbde428452f0a6a063fdc,
     type: 3}
   handSocket: 1
-  arcStartSeconds: 0.1
-  completeSeconds: 0.667
+  glowCue: absorb_glow
+  arcCue: absorb_arc
+  completeCue: absorb_complete
   amplifierGlowWorldScale: 0.45
 --- !u!114 &2411088998492695956
 MonoBehaviour:
@@ -392,6 +393,7 @@ MonoBehaviour:
     type: 3}
   shieldHeight: 0.9
   shieldWorldScale: 1.15
+  shieldDismissSeconds: 0.3
   hitStateName: Hit
   freezeDelaySeconds: 0.2
   enterSeconds: 1.6
@@ -717,7 +719,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2045367048040646758, guid: 37e64a8b406cfcc47abecb1ce41cfc15,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6620128842367738027}
   m_SourcePrefab: {fileID: 100100000, guid: 37e64a8b406cfcc47abecb1ce41cfc15, type: 3}
 --- !u!4 &8751170259606534076 stripped
 Transform:
@@ -731,3 +737,19 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 7286312683845026273}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6620128842367738027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8754070470665505159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3368623af432b1747a4ccef36fa8c200, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  castScale: 0
+  hitScale: 0.45
+  hitSeconds: 0.8
+  blendSeconds: 0.12

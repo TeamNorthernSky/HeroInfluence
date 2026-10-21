@@ -272,6 +272,8 @@ MonoBehaviour:
   _reviveStartPhase: 2
   _corpseReviveDelayRounds: 2
   _reviveHpRatio: 0.5
+  _immediateRevivePhase: 3
+  _immediateReviveHoldSeconds: 0.7
 --- !u!1 &7706491001306831887
 GameObject:
   m_ObjectHideFlags: 0

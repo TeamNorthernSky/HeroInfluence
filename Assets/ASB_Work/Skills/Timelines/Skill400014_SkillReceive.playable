@@ -177,6 +177,8 @@ MonoBehaviour:
     m_Objects:
     - {fileID: -4484327570910256455}
     - {fileID: -396683292485776032}
+    - {fileID: 7340151190426230101}
+    - {fileID: 7340151190426230102}
 --- !u!114 &-1640904911542212147
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -203,9 +205,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: Presentation Signal Marker
   m_EditorClassIdentifier: 
-  m_Time: 0.6666666666666666
+  m_Time: 1.2
   _kind: 0
-  _cueName: 
+  _cueName: absorb_complete
   _cueId: 
   _targetSlot: 0
 --- !u!114 &11400000
@@ -423,3 +425,37 @@ MonoBehaviour:
   m_Loop: 0
   m_Version: 1
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &7340151190426230101
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: Presentation Signal Marker
+  m_EditorClassIdentifier: 
+  m_Time: 0.45
+  _kind: 0
+  _cueName: absorb_glow
+  _cueId: 
+  _targetSlot: 0
+--- !u!114 &7340151190426230102
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: Presentation Signal Marker
+  m_EditorClassIdentifier: 
+  m_Time: 0.6
+  _kind: 0
+  _cueName: absorb_arc
+  _cueId: 
+  _targetSlot: 0

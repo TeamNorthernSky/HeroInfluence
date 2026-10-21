@@ -49,10 +49,17 @@ MonoBehaviour:
     type: 3}
   _shockTemplate: {fileID: 5157378175598160411, guid: c912456cef5272a48b509413ed1d920c,
     type: 3}
+  _arcPrefab: {fileID: 3344644850210920253, guid: 63229072cc8349d4f83e7eb5bfd9a839,
+    type: 3}
+  _originOrbPrefab: {fileID: 8039992494190499324, guid: 190d29a6a6f53e646bf4faaec5753bbd,
+    type: 3}
+  _originLeadTime: 0.12
   _axis: 1
-  _lineCount: 1
-  _lineSpacing: 0.3
+  _lineCount: 2
+  _lineSpacing: 0.25
   _endExtension: 2.5
+  _startExtension: 0.5
+  _targetSideOnly: 1
   _height: 0.8
   _widthRatio: 0.6
   _drawTime: 0.08
