@@ -84,7 +84,10 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private bool externalFocusLocked;
     private Transform externalFocusTarget;
     private Vector3 externalFocusWorldPosition;
-    private const float EventFocusMoveDuration = 0.35f;
+    private const float EventFocusMoveDuration = 0.6f;
+    private bool eventZoomApplied;
+    private Vector3 preEventZoomOffset;
+    private Vector3 preEventEulerAngles;
     private bool eventFocusMoving;
     private bool returnToFollowAfterMove;
     private float eventFocusElapsed;
@@ -92,6 +95,8 @@ public class QuarterViewCameraFollower : MonoBehaviour
     private Quaternion eventFocusStartRotation, eventFocusEndRotation;
 
     public bool IsExternalInputLocked => externalInputLocked;
+    public bool IsEventZoomApplied => eventZoomApplied;
+    public event System.Action<bool> EventZoomChanged;
     public bool IsManualNavigationLocked => externalInputLocked || IsFollowTargetPartyMoving();
 
     public void SetFollowTarget(Transform target)
@@ -122,6 +127,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public void SnapToFollowTarget()
     {
+        RestoreEventZoom();
         eventFocusMoving = false;
         if (followTarget == null)
             return;
@@ -176,6 +182,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public void LockExternalFocusWorldPosition(Vector3 worldPosition)
     {
+        RestoreEventZoom();
         externalFocusTarget = null;
         externalFocusWorldPosition = new Vector3(worldPosition.x, 0f, worldPosition.z);
         externalFocusLocked = true;
@@ -186,6 +193,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public void ReturnToFollowTargetSmooth()
     {
+        RestoreEventZoom();
         if (followTarget == null) { UnlockExternalFocus(); return; }
         RecenterOnFollowTarget();
         externalFocusTarget = null;
@@ -199,6 +207,14 @@ public class QuarterViewCameraFollower : MonoBehaviour
     {
         eventFocusStart = transform.position;
         eventFocusStartRotation = transform.rotation;
+        if (!returnToFollow && !eventZoomApplied)
+        {
+            preEventZoomOffset = positionOffset;
+            preEventEulerAngles = fixedEulerAngles;
+            eventZoomApplied = true;
+            positionOffset = new Vector3(0f, 3f, -2.5f);
+            fixedEulerAngles = new Vector3(40f, 0f, 0f);
+        }
         // Resolve the existing map boundary/zoom constraints at the destination.
         ApplyCameraPositionFromExternalFocus(true);
         eventFocusEnd = transform.position;
@@ -207,6 +223,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         eventFocusElapsed = 0f;
         returnToFollowAfterMove = returnToFollow;
         eventFocusMoving = true;
+        if (!returnToFollow) EventZoomChanged?.Invoke(true);
     }
 
     public void LockExternalFocusTarget(Transform target, bool snapImmediately = true)
@@ -214,6 +231,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
         if (target == null)
             return;
 
+        RestoreEventZoom();
         eventFocusMoving = false;
         externalFocusTarget = target;
         externalFocusWorldPosition = FlattenFocusPosition(target.position);
@@ -227,6 +245,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     public void UnlockExternalFocus(bool preserveCurrentFocus = false)
     {
+        RestoreEventZoom();
         eventFocusMoving = false;
         if (preserveCurrentFocus && externalFocusLocked)
         {
@@ -239,6 +258,18 @@ public class QuarterViewCameraFollower : MonoBehaviour
         externalFocusLocked = false;
         externalFocusTarget = null;
         SetExternalInputLocked(false);
+    }
+
+    private void RestoreEventZoom()
+    {
+        bool wasApplied = eventZoomApplied;
+        if (eventZoomApplied)
+        {
+            positionOffset = preEventZoomOffset;
+            fixedEulerAngles = preEventEulerAngles;
+        }
+        eventZoomApplied = false;
+        if (wasApplied) EventZoomChanged?.Invoke(false);
     }
 
     private void Awake()
@@ -283,6 +314,7 @@ public class QuarterViewCameraFollower : MonoBehaviour
 
     private void OnDisable()
     {
+        RestoreEventZoom();
         eventFocusMoving = false;
         edgeScrollVelocity = Vector3.zero;
         externalFocusLocked = false;
@@ -297,9 +329,11 @@ public class QuarterViewCameraFollower : MonoBehaviour
         {
             eventFocusElapsed += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(eventFocusElapsed / EventFocusMoveDuration);
+            // Ease out so the camera slows to a stop as it reaches the event.
+            float easedT = 1f - Mathf.Pow(1f - t, 3f);
             transform.SetPositionAndRotation(
-                Vector3.Lerp(eventFocusStart, eventFocusEnd, t),
-                Quaternion.Slerp(eventFocusStartRotation, eventFocusEndRotation, t));
+                Vector3.Lerp(eventFocusStart, eventFocusEnd, easedT),
+                Quaternion.Slerp(eventFocusStartRotation, eventFocusEndRotation, easedT));
             if (t >= 1f)
             {
                 eventFocusMoving = false;

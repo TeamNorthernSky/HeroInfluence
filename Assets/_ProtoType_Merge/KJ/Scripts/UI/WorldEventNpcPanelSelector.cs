@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Collections;
 
 /// <summary>이벤트 ID의 카탈로그 종류에 따라 NPC 선택지 패널 하나만 표시한다.</summary>
 [DisallowMultipleComponent]
@@ -34,6 +35,89 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private static int resultConfirmedFrame = -1;
     private readonly Dictionary<Button, NpcPreview> previews = new Dictionary<Button, NpcPreview>();
     private Sprite choiceDeclineSprite;
+    private Coroutine choiceEntrance;
+    private readonly List<ChoiceEntranceItem> entranceItems = new List<ChoiceEntranceItem>();
+    private sealed class ChoiceEntranceItem
+    {
+        public RectTransform rect;
+        public Vector2 home;
+        public CanvasGroup group;
+        public float alpha;
+        public float distance;
+        public bool interactable, blocksRaycasts;
+    }
+
+    private void StopChoiceEntrance()
+    {
+        if (choiceEntrance != null) StopCoroutine(choiceEntrance);
+        choiceEntrance = null;
+        foreach (var item in entranceItems)
+        {
+            if (item.rect == null) continue;
+            item.rect.anchoredPosition = item.home;
+            item.group.alpha = item.alpha;
+            item.group.interactable = item.interactable;
+            item.group.blocksRaycasts = item.blocksRaycasts;
+        }
+        entranceItems.Clear();
+    }
+
+    private IEnumerator SlideChoices()
+    {
+        // SpeechView updates the shared bubble in LateUpdate, after the request callback.
+        yield return null;
+        var bubble = transform.Find("NpcDialogue");
+        var pop = bubble != null ? bubble.GetComponent<DialogueBubblePopEffect>() : null;
+        var typewriter = bubble != null ? bubble.GetComponent<DialogueTypewriterEffect>() : null;
+        while ((pop != null && pop.isActiveAndEnabled && pop.IsPlaying) ||
+               (typewriter != null && typewriter.isActiveAndEnabled && typewriter.IsPlaying))
+            yield return null;
+        float elapsed = 0f;
+        const float duration = .28f, stagger = .1f;
+        while (elapsed < duration + Mathf.Max(0, entranceItems.Count - 1) * stagger)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            for (int i = 0; i < entranceItems.Count; i++)
+            {
+                var item = entranceItems[i];
+                if (item.rect == null) continue;
+                float t = Mathf.Clamp01((elapsed - i * stagger) / duration);
+                float eased = 1f - Mathf.Pow(1f - t, 3f);
+                item.rect.anchoredPosition = item.home + Vector2.right * item.distance * (1f - eased);
+                item.group.alpha = item.alpha * t;
+            }
+            yield return null;
+        }
+        choiceEntrance = null;
+        StopChoiceEntrance();
+    }
+
+    private static float SlideDistance(RectTransform rect)
+    {
+        var canvas = rect.GetComponentInParent<Canvas>();
+        var canvasRect = canvas != null ? canvas.rootCanvas.transform as RectTransform : null;
+        if (canvasRect == null) return rect.rect.width + 40f;
+        var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(canvasRect, rect);
+        var world = canvasRect.TransformVector(Vector3.right * Mathf.Max(0, canvasRect.rect.xMax - bounds.min.x + 40f));
+        return Mathf.Abs(rect.parent.InverseTransformVector(world).x);
+    }
+
+    private void BeginChoiceEntrance(params Button[] buttons)
+    {
+        foreach (var button in buttons)
+        {
+            if (!button.gameObject.activeInHierarchy) continue;
+            var rect = (RectTransform)button.transform;
+            var group = button.GetComponent<CanvasGroup>();
+            if (group == null) group = button.gameObject.AddComponent<CanvasGroup>();
+            entranceItems.Add(new ChoiceEntranceItem { rect = rect, home = rect.anchoredPosition,
+                group = group, alpha = group.alpha, distance = SlideDistance(rect), interactable = group.interactable,
+                blocksRaycasts = group.blocksRaycasts });
+            group.alpha = 0f;
+            group.interactable = group.blocksRaycasts = false;
+        }
+        if (entranceItems.Count > 0) choiceEntrance = StartCoroutine(SlideChoices());
+    }
 
     // 종료로 요청이 사라진 뒤에도 같은 프레임의 ESC는 시스템 메뉴에서 사용하지 않는다.
     public static bool BlocksSystemMenuEscape
@@ -116,6 +200,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     {
         HideAll();
         if (!Application.isPlaying) return;
+        if (GetComponent<NpcDialogueHudSlide>() == null) gameObject.AddComponent<NpcDialogueHudSlide>();
         BindButtons();
 
         manager = DHWorldEventRuntimeManager.EnsureInstance();
@@ -190,6 +275,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
 
     public void HideAll()
     {
+        StopChoiceEntrance();
         displayedEventId = null;
         current = null;
         if (consumePanel != null) consumePanel.SetActive(false);
@@ -218,6 +304,12 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private void BindButtons()
     {
         if (buttonsBound) return;
+        // Keep the positions authored on the UI_Explore prefab instance.
+        foreach (var panel in new[] { consumePanel, rewardPanel, choicePanel })
+        {
+            var layout = panel.GetComponent<LayoutGroup>();
+            if (layout != null) layout.enabled = false;
+        }
         consumeProceed = consumePanel.transform.Find("ProceedButton").GetComponent<Button>();
         consumeDecline = consumePanel.transform.Find("DeclineButton").GetComponent<Button>();
         rewardProceed = rewardPanel.transform.Find("ProceedButton").GetComponent<Button>();
@@ -252,6 +344,17 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     }
 
     private void Render(DHWorldEventPresentationRequest request)
+    {
+        StopChoiceEntrance();
+        RenderContent(request);
+        if (!Application.isPlaying || !isActiveAndEnabled || request.IsWaitingFinalConfirm) return;
+        if (request.EventType == DHWorldEventType.Consume) BeginChoiceEntrance(consumeProceed, consumeDecline);
+        else if (request.EventType == DHWorldEventType.Reward) BeginChoiceEntrance(rewardProceed);
+        else if (request.EventType == DHWorldEventType.Choice)
+            BeginChoiceEntrance(choiceButtons[0], choiceButtons[1], choiceDecline);
+    }
+
+    private void RenderContent(DHWorldEventPresentationRequest request)
     {
         if (!ReferenceEquals(lastShortcutRequest, request))
         {
@@ -289,13 +392,11 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             consumeDecline.gameObject.SetActive(!confirm);
             SetButton(consumeDecline, request.DeclineText, live);
             ShowPreview(consumeProceed, request.PreviewEntries);
-            Arrange(consumePanel, consumeProceed, consumeDecline);
         }
         else if (request.EventType == DHWorldEventType.Reward)
         {
             SetButton(rewardProceed, request.ProceedText, live && request.CanProceed);
             ShowPreview(rewardProceed, request.PreviewEntries);
-            Arrange(rewardPanel, rewardProceed);
         }
         else if (request.EventType == DHWorldEventType.Choice)
         {
@@ -305,7 +406,6 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 foreach (Button button in choiceButtons) button.gameObject.SetActive(false);
                 choiceDecline.gameObject.SetActive(true);
                 SetButton(choiceDecline, "확인", live);
-                Arrange(choicePanel, choiceDecline);
                 return;
             }
             cancelId = null;
@@ -337,7 +437,6 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 choiceButtons[index].gameObject.SetActive(false);
             }
             choiceDecline.gameObject.SetActive(cancelId != null);
-            Arrange(choicePanel, choiceButtons[0], choiceButtons[1], choiceDecline);
         }
     }
 
@@ -366,20 +465,6 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         preview.Begin(false);
         preview.Add(entries, null);
         preview.End();
-    }
-
-    private static void Arrange(GameObject panel, params Button[] buttons)
-    {
-        float top = 0;
-        foreach (var button in buttons)
-        {
-            if (!button.gameObject.activeSelf) continue;
-            var rect = (RectTransform)button.transform;
-            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, 1);
-            rect.anchoredPosition = new Vector2(0, -top);
-            top += rect.sizeDelta.y + 12;
-        }
-        ((RectTransform)panel.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(0, top - 12));
     }
 
     private static float LayoutButtonHeader(Button button, bool includeChance)
@@ -617,6 +702,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
 
     private bool CanSubmit(Button button)
     {
+        if (choiceEntrance != null) return false;
         if (button == null || !button.isActiveAndEnabled || !button.interactable ||
             current == null || manager == null || !ReferenceEquals(manager.CurrentRequest, current) ||
             Time.frameCount == inputFrame) return false;
