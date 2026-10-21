@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 [ExecuteAlways]
 [RequireComponent(typeof(MultiGridOccupant))]
@@ -8,6 +9,7 @@ public sealed class WorldEventObject : MonoBehaviour
 {
     public static event Action<WorldEventObject, PartyGridMover> EventInteracted;
     private const string EditorPreviewVisualName = "__WorldEventNpcPreview";
+    private const float SpeechBubbleHeightOffset = 0.3f;
 
     [Header("World Event")]
     [SerializeField] private string worldEventId;
@@ -21,6 +23,15 @@ public sealed class WorldEventObject : MonoBehaviour
     [SerializeField] private Transform visualRoot;
     [SerializeField] private LevelPrefabRegistry prefabRegistry;
     [SerializeField] private bool spawnNpcVisualOnEnable = true;
+
+    [Header("NPC UI")]
+    [SerializeField] private Image questionIcon;
+    [SerializeField] private Transform speechBubbleRoot;
+
+    private Sprite defaultQuestionIcon;
+    private bool defaultQuestionIconCaptured;
+    private Vector3 defaultSpeechBubbleLocalPosition;
+    private bool defaultSpeechBubblePositionCaptured;
 
     private WorldEventRegistry worldEventRegistry;
     private GameObject spawnedNpcVisual;
@@ -54,6 +65,9 @@ public sealed class WorldEventObject : MonoBehaviour
         }
 
         worldEventRegistry?.Register(this);
+
+        if (Application.isPlaying && TryResolveTemplate(out DHWorldEventTemplate template))
+            ApplyQuestionIcon(template.NpcType);
 
         if (Application.isPlaying && spawnNpcVisualOnEnable)
             RequestNpcVisualRefresh();
@@ -148,11 +162,60 @@ public sealed class WorldEventObject : MonoBehaviour
         spawnedNpcVisual.transform.position += center - transform.position;
     }
 
+    private void PositionSpeechBubble()
+    {
+        if (speechBubbleRoot == null)
+            return;
+
+        if (!defaultSpeechBubblePositionCaptured)
+        {
+            defaultSpeechBubbleLocalPosition = speechBubbleRoot.localPosition;
+            defaultSpeechBubblePositionCaptured = true;
+        }
+
+        speechBubbleRoot.localPosition = defaultSpeechBubbleLocalPosition;
+        Vector3 position = speechBubbleRoot.position;
+        position.y += SpeechBubbleHeightOffset;
+        speechBubbleRoot.position = position;
+
+        MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
+        if (spawnedNpcVisual == null || occupant == null || occupant.Size == Vector2Int.one)
+            return;
+
+        bool hasBounds = false;
+        Bounds bounds = default;
+        Renderer[] renderers = spawnedNpcVisual.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (!(renderer is MeshRenderer) && !(renderer is SkinnedMeshRenderer))
+                continue;
+
+            if (hasBounds)
+                bounds.Encapsulate(renderer.bounds);
+            else
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+            }
+        }
+
+        if (!hasBounds)
+            return;
+
+        position.x = bounds.center.x;
+        position.z = bounds.center.z;
+        speechBubbleRoot.position = position;
+    }
+
     public void ApplyInitialData(string nextWorldEventId, WorldEventRotation rotation = WorldEventRotation.Degrees0)
     {
         worldEventId = string.IsNullOrWhiteSpace(nextWorldEventId) ? string.Empty : nextWorldEventId.Trim();
         placementRotation = rotation;
         ApplyFootprint(ResolvedNpcType);
+
+        if (Application.isPlaying && TryResolveTemplate(out DHWorldEventTemplate template))
+            ApplyQuestionIcon(template.NpcType);
 
         if (Application.isPlaying && spawnNpcVisualOnEnable)
             RequestNpcVisualRefresh();
@@ -201,8 +264,11 @@ public sealed class WorldEventObject : MonoBehaviour
     private void FacePartyForInteraction(PartyGridMover party)
     {
         RestoreInteractionFacing();
-        MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
-        if (party == null || spawnedNpcVisual == null || occupant == null || occupant.Size != Vector2Int.one)
+        if (party == null || spawnedNpcVisual == null || !TryResolveTemplate(out DHWorldEventTemplate template))
+            return;
+
+        LevelPrefabRegistry registry = ResolvePrefabRegistry();
+        if (registry == null || !registry.ShouldWorldEventNpcFacePartyOnInteraction(template.NpcType))
             return;
 
         Vector3 direction = party.transform.position - transform.position;
@@ -268,6 +334,7 @@ public sealed class WorldEventObject : MonoBehaviour
             return false;
 
         ApplyFootprint(template.NpcType);
+        ApplyQuestionIcon(template.NpcType);
 
         LevelPrefabRegistry registry = ResolvePrefabRegistry();
         if (registry == null || !registry.TryGetWorldEventNpcPrefab(template.NpcType, out GameObject prefab) || prefab == null)
@@ -279,7 +346,25 @@ public sealed class WorldEventObject : MonoBehaviour
 
         spawnedNpcVisual = CreateNpcVisual(prefab, root, string.Empty, HideFlags.None);
         PositionNpcVisual();
+        PositionSpeechBubble();
         return true;
+    }
+
+    private void ApplyQuestionIcon(int npcType)
+    {
+        if (questionIcon == null)
+            return;
+
+        if (!defaultQuestionIconCaptured)
+        {
+            defaultQuestionIcon = questionIcon.sprite;
+            defaultQuestionIconCaptured = true;
+        }
+
+        LevelPrefabRegistry registry = ResolvePrefabRegistry();
+        questionIcon.sprite = registry != null && registry.TryGetWorldEventNpcQuestionIcon(npcType, out Sprite icon)
+            ? icon
+            : defaultQuestionIcon;
     }
 
     private void QueueEditorNpcVisualRefresh()
@@ -329,6 +414,7 @@ public sealed class WorldEventObject : MonoBehaviour
             EditorPreviewVisualName,
             HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild);
         PositionNpcVisual();
+        PositionSpeechBubble();
     }
 
     private bool CanUseEditorPreview()

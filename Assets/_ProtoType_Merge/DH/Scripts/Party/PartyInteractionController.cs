@@ -159,10 +159,12 @@ public class PartyInteractionController
         Vector2Int targetInteractionGrid = ownerParty.TargetInteractionGrid.Value;
 
         bool isItem = gridManager.TryGetGridItemObjectAtGrid(targetInteractionGrid, out _);
-        bool isEvent = allowEvents && gridManager.TryGetEventObjectAtGrid(targetInteractionGrid, out MapEventObject mapEvent);
+        bool isEvent = !isItem && allowEvents && gridManager.TryGetEventObjectAtGrid(targetInteractionGrid, out _);
         WorldEventObject worldEvent = null;
-        bool isWorldEvent = allowEvents && gridManager.TryGetWorldEventObjectAtGrid(targetInteractionGrid, out worldEvent);
-        bool isSubEvent = allowEvents && gridManager.TryGetSubEventObjectAtGrid(targetInteractionGrid, out SubEventObject subEvent);
+        bool isWorldEvent = !isItem && !isEvent && allowEvents &&
+            gridManager.TryGetWorldEventObjectAtGrid(targetInteractionGrid, out worldEvent);
+        bool isSubEvent = !isItem && !isEvent && !isWorldEvent && allowEvents &&
+            gridManager.TryGetSubEventObjectAtGrid(targetInteractionGrid, out _);
 
         if (!isItem && !isEvent && !isWorldEvent && !isSubEvent)
             return false;
@@ -212,7 +214,7 @@ public class PartyInteractionController
 
     private bool HandleAdjacentOutpostProximity(Vector2Int enteredGrid)
     {
-        if (!TryGetOutpostAtInteractionCell(enteredGrid, out Outpost outpost))
+        if (!gridManager.TryGetOutpostAtInteractionCell(enteredGrid, out Outpost outpost))
             return false;
 
         if (!outpost.IsClaimableByPlayer)
@@ -224,7 +226,7 @@ public class PartyInteractionController
 
     private bool HandleVillainUnionProximity(Vector2Int enteredGrid)
     {
-        if (!TryGetVillainUnionAtInteractionCell(enteredGrid, out VillainUnionBase villainUnionBase))
+        if (!gridManager.TryGetVillainUnionAtInteractionCell(enteredGrid, out VillainUnionBase villainUnionBase))
             return false;
 
         CancelPendingInteraction();
@@ -471,7 +473,7 @@ public class PartyInteractionController
         }
 
         Vector2Int currentGrid = currentGridProvider != null ? currentGridProvider() : interactionGrid;
-        if (!IsOutpostInteractionCell(outpost, currentGrid))
+        if (!outpost.IsInteractionCell(currentGrid, gridManager))
         {
             IsInputLocked = false;
             yield break;
@@ -593,82 +595,6 @@ public class PartyInteractionController
         int dx = Mathf.Abs(a.x - b.x);
         int dy = Mathf.Abs(a.y - b.y);
         return dx <= 1 && dy <= 1;
-    }
-
-    private bool TryGetOutpostAtInteractionCell(Vector2Int grid, out Outpost outpost)
-    {
-        outpost = null;
-
-        Outpost[] outposts = UnityEngine.Object.FindObjectsByType<Outpost>(FindObjectsSortMode.None);
-        for (int i = 0; i < outposts.Length; i++)
-        {
-            Outpost candidate = outposts[i];
-            if (candidate == null)
-                continue;
-
-            System.Collections.Generic.IReadOnlyList<Vector2Int> interactionCells =
-                candidate.GetAdjacentInteractionCells(gridManager);
-            if (interactionCells == null)
-                continue;
-
-            for (int j = 0; j < interactionCells.Count; j++)
-            {
-                if (interactionCells[j] != grid)
-                    continue;
-
-                outpost = candidate;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private bool IsOutpostInteractionCell(Outpost outpost, Vector2Int grid)
-    {
-        if (outpost == null)
-            return false;
-
-        System.Collections.Generic.IReadOnlyList<Vector2Int> interactionCells =
-            outpost.GetAdjacentInteractionCells(gridManager);
-        if (interactionCells == null)
-            return false;
-
-        for (int i = 0; i < interactionCells.Count; i++)
-        {
-            if (interactionCells[i] == grid)
-                return true;
-        }
-
-        return false;
-    }
-
-    private static bool TryGetVillainUnionAtInteractionCell(Vector2Int grid, out VillainUnionBase villainUnionBase)
-    {
-        villainUnionBase = null;
-
-        VillainUnionBase[] bases = UnityEngine.Object.FindObjectsByType<VillainUnionBase>(FindObjectsSortMode.None);
-        for (int i = 0; i < bases.Length; i++)
-        {
-            VillainUnionBase candidate = bases[i];
-            if (candidate == null)
-                continue;
-
-            System.Collections.Generic.IReadOnlyList<Vector2Int> interactionCells = candidate.GetInteractionCells();
-            if (interactionCells == null)
-                continue;
-
-            for (int j = 0; j < interactionCells.Count; j++)
-            {
-                if (interactionCells[j] != grid)
-                    continue;
-
-                villainUnionBase = candidate;
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static bool HasPendingCombatResult()

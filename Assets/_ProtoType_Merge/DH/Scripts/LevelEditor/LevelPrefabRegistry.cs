@@ -212,6 +212,20 @@ public class LevelPrefabRegistry : MonoBehaviour
         return false;
     }
 
+    public bool TryGetWorldEventNpcQuestionIcon(int npcType, out Sprite icon)
+    {
+        if (worldEventNpcCatalog != null)
+            return worldEventNpcCatalog.TryGetQuestionIcon(npcType, out icon);
+
+        icon = null;
+        return false;
+    }
+
+    public bool ShouldWorldEventNpcFacePartyOnInteraction(int npcType)
+    {
+        return worldEventNpcCatalog != null && worldEventNpcCatalog.ShouldFacePartyOnInteraction(npcType);
+    }
+
     public bool TryGetWorldEventPrefab(out WorldEventObject prefab)
     {
         if (worldEventNpcCatalog != null && worldEventNpcCatalog.TryGetWorldEventPrefab(out prefab))
