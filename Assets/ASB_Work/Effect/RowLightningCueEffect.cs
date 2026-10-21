@@ -4,6 +4,7 @@ using ASB.Work.BattleGrid;
 using GridCellRef = ASB.Work.BattleGrid.GridCell;
 using JC.VFX;
 using UnityEngine;
+using UnityEngine.VFX;
 
 /// <summary>줄 번개를 깔 방향. 좌표 x = 전후(아군 0~1 / 적군 2~3), y = 좌우.</summary>
 public enum RowLightningAxis
@@ -17,6 +18,12 @@ public enum RowLightningAxis
 /// <summary>
 /// 율리아 줄 번개(400011 나락의 폭풍 / 400012 공멸의 궤적). 주 대상이 선 줄을 가로질러 번개 줄을 깔고,
 /// 유지한 뒤 서서히 사라진다. 2020 ChainLightningSkill의 볼트 렌더러·감전 템플릿을 복제해 쓰며 원본은 바꾸지 않는다.
+/// <para>
+/// 아크 프리팹(기획 Y05·Y06, Ultra Mega E02)이 있으면 줄마다 VFX 전기 아크를 띄운다.
+/// 선택적으로 볼트 렌더러를 겹쳐 밝은 중심선과 보라색 외곽 빛을 별도로 그린다.
+/// 아크 끝점은 긋기 시간 동안 시작점에서 끝점으로 뻗고, 유지 후 우아한 정지로 사라진다.
+/// 시작 구체(Y06 전열 구체)가 있으면 시작점에 먼저 띄운 뒤 originLeadTime 뒤에 긋기 시작한다.
+/// </para>
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
@@ -25,6 +32,9 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
     private static readonly int SeedID = Shader.PropertyToID("_Seed");
     private static readonly int OpacityID = Shader.PropertyToID("_Opacity");
     private static readonly int WidthID = Shader.PropertyToID("_Width");
+    private static readonly int CoreWidthID = Shader.PropertyToID("_CoreWidth");
+    private static readonly int GlowWidthID = Shader.PropertyToID("_GlowWidth");
+    private static readonly int EmissionID = Shader.PropertyToID("_Emission");
     private static readonly int CoreColorID = Shader.PropertyToID("_ColorCore");
     private static readonly int GlowColorID = Shader.PropertyToID("_ColorGlow");
     private static readonly int BodyColorID = Shader.PropertyToID("_ColorBody");
@@ -36,6 +46,18 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
     [Tooltip("ChainLightningSkill 프리팹의 LightningShock(대상 감전). 비우면 감전을 생략한다.")]
     [SerializeField] private LightningShock _shockTemplate;
 
+    [Header("Ultra Mega 전기 아크 (선택 — 비우면 위 볼트 렌더러)")]
+    [Tooltip("줄마다 띄울 전기 아크(VisualEffectGraphEffect + ElectricArcEndpoints, Loop).")]
+    [SerializeField] private VfxEffect _arcPrefab;
+    [Tooltip("긋기 전에 시작점에 띄울 구체(기획 Y06 전열 구체). 비우면 생략.")]
+    [SerializeField] private VfxEffect _originOrbPrefab;
+    [Tooltip("시작 구체가 뜬 뒤 긋기 시작까지의 시간.")]
+    [SerializeField, Min(0f)] private float _originLeadTime = 0.12f;
+    [Tooltip("아크 위에 2020 볼트를 겹쳐 중심선과 외곽 광을 그린다. 아크는 가지와 불꽃으로 사용한다.")]
+    [SerializeField] private bool _layerBoltWithArcs;
+    [Tooltip("아크 프리팹의 선 굵기 배율. 0이면 프리팹 설정을 유지한다.")]
+    [SerializeField, Min(0f)] private float _arcThicknessScale;
+
     [Header("배치")]
     [Tooltip("SameX = 대상과 같은 x의 좌우 한 줄, SameY = 대상과 같은 y로 아군 끝~적군 끝.")]
     [SerializeField] private RowLightningAxis _axis = RowLightningAxis.SameX;
@@ -44,10 +66,24 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
     [SerializeField, Min(0f)] private float _lineSpacing = 0.3f;
     [Tooltip("양 끝을 칸 바깥으로 늘리는 길이(각 끝 칸의 인접 칸 간격 배수). 0.5 = 끝 칸의 바깥 경계, 2.5 = 가상 칸 2개의 바깥 경계.")]
     [SerializeField, Min(0f)] private float _endExtension = 0.5f;
+    [Tooltip("시전자 쪽(시작) 끝만 따로 늘리는 길이. 음수면 _endExtension과 같다.")]
+    [SerializeField] private float _startExtension = -1f;
+    [Tooltip("주 대상 진영의 칸만 잇는다(SameY에서 의미, 기획 Y06: 대상 진영 전열 → 라인 끝). 좌표 x 0~1 아군 / 2~3 적군.")]
+    [SerializeField] private bool _targetSideOnly;
     [Tooltip("칸 바닥에서 줄까지의 높이(m).")]
     [SerializeField] private float _height = 0.8f;
     [Tooltip("줄 1개의 굵기 = 줄과 수직인 칸 간격 × 이 비율. 0이면 2020 머티리얼 굵기를 그대로 쓴다.")]
     [SerializeField, Min(0f)] private float _widthRatio;
+    [Tooltip("볼트 중심선 폭(볼트 전체 반폭에 대한 비율). 0이면 머티리얼 값.")]
+    [SerializeField, Min(0f)] private float _boltCoreWidth;
+    [Tooltip("볼트 외곽 빛 폭(볼트 전체 반폭에 대한 비율). 0이면 머티리얼 값.")]
+    [SerializeField, Min(0f)] private float _boltGlowWidth;
+    [Tooltip("볼트 발광 강도. 0이면 머티리얼 값.")]
+    [SerializeField, Min(0f)] private float _boltEmission;
+    [Tooltip("아크와 겹쳐 그리는 볼트의 밝은 중심선 색.")]
+    [SerializeField, ColorUsage(false, true)] private Color _boltCoreColor = new Color(1.2f, 0.65f, 1.6f, 1f);
+    [Tooltip("아크와 겹쳐 그리는 볼트의 보라색 외곽 빛.")]
+    [SerializeField, ColorUsage(false, true)] private Color _boltGlowColor = new Color(0.85f, 0.12f, 1.8f, 1f);
 
     [Header("시간(초, 전투 배속 반영)")]
     [SerializeField, Min(0.01f)] private float _drawTime = 0.08f;
@@ -84,7 +120,8 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
     public void Play(SkillEffectContext ctx)
     {
         _speed = ctx != null ? Mathf.Max(0.01f, ctx.PlaybackSpeed) : 1f;
-        if (_boltTemplate == null || !TryResolveRow(ctx, out Vector3 start, out Vector3 end, out float crossSpacing))
+        bool useArcs = _arcPrefab != null;
+        if ((!useArcs && _boltTemplate == null) || !TryResolveRow(ctx, out Vector3 start, out Vector3 end, out float crossSpacing))
         {
             Destroy(gameObject);
             return;
@@ -92,21 +129,151 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
 
         // 셰이더 _Width는 반폭(m)이므로 총 굵기의 절반을 넣는다.
         _halfWidth = _widthRatio > 0f ? crossSpacing * _widthRatio * 0.5f : -1f;
+        if (useArcs)
+        {
+            StartCoroutine(RunArcs(ctx, start, end));
+            return;
+        }
+
         StartCoroutine(Run(ctx, start, end));
+    }
+
+    private IEnumerator RunArcs(SkillEffectContext ctx, Vector3 start, Vector3 end)
+    {
+        Vector3 side = LineSide(start, end);
+        int count = Mathf.Max(1, _lineCount);
+
+        VfxEffect orb = null;
+        if (_originOrbPrefab != null)
+        {
+            orb = Instantiate(_originOrbPrefab, start, Quaternion.identity);
+            orb.PlaybackSpeed = _speed;
+            orb.Play();
+            yield return Wait(_originLeadTime);
+        }
+
+        // 줄마다 시작·끝 끝점을 만들고 아크를 묶는다. 끝 끝점을 시작점에서 끝점으로 옮겨 "뻗는" 모습을 낸다.
+        var heads = new Transform[count];
+        var arcs = new VfxEffect[count];
+        bool layerBolts = _layerBoltWithArcs && _boltTemplate != null;
+        var bolts = layerBolts ? new Renderer[count] : null;
+        if (layerBolts) _mpb = new MaterialPropertyBlock();
+        var from = new Vector3[count];
+        var to = new Vector3[count];
+        for (int i = 0; i < count; i++)
+        {
+            Vector3 offset = LineOffset(side, i, count, _lineSpacing);
+            from[i] = start + offset;
+            to[i] = end + offset;
+            if (layerBolts)
+            {
+                bolts[i] = Instantiate(_boltTemplate, transform);
+                AimBolt(bolts[i].transform, from[i], to[i]);
+                Push(bolts[i], 0f, 0f, i);
+                bolts[i].gameObject.SetActive(true);
+            }
+            // 끝점은 이 오브젝트 아래에 둔다 — 아크가 정지하며 사라질 때까지 남아 있다가 마지막에 같이 정리된다.
+            Transform tail = CreateEndpoint("ArcTail", from[i]);
+            heads[i] = CreateEndpoint("ArcHead", from[i]);
+            arcs[i] = Instantiate(_arcPrefab, from[i], Quaternion.identity, transform);
+            if (_arcThicknessScale > 0f && !Mathf.Approximately(_arcThicknessScale, 1f))
+                ScaleArcThickness(arcs[i], _arcThicknessScale);
+            arcs[i].PlaybackSpeed = _speed;
+            arcs[i].Play(tail, heads[i]);
+        }
+
+        float drawEnd = _lineStagger * (count - 1) + _drawTime;
+        bool shocked = false;
+        for (float t = 0f; t < drawEnd + _holdTime; t += Time.deltaTime * _speed)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                float progress = ArcDrawProgress(t, i, _lineStagger, _drawTime);
+                if (heads[i] != null) heads[i].position = Vector3.Lerp(from[i], to[i], progress);
+                if (layerBolts) Push(bolts[i], progress, t >= _lineStagger * i ? 1f : 0f, i);
+            }
+
+            if (!shocked && t >= _drawTime)
+            {
+                shocked = true;
+                PresentationSfxEvents.PlayEffectImpact(ctx?.Presentation, 0);
+                SpawnShocks(ctx);
+            }
+            yield return null;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            if (heads[i] != null) heads[i].position = to[i];
+            if (layerBolts) Push(bolts[i], 1f, 1f, i);
+            if (arcs[i] != null) arcs[i].Stop();
+        }
+        if (orb != null) orb.Stop();
+
+        // 아크는 남은 입자가 사라지면 스스로 파괴된다(VisualEffectGraphEffect). 끝점이 먼저 사라지면 아크가 즉시 멈추므로 기다린다.
+        for (float t = 0f; t < _fadeTime && (layerBolts || System.Array.Exists(arcs, arc => arc != null)); t += Time.deltaTime * _speed)
+        {
+            if (layerBolts)
+                for (int i = 0; i < count; i++) Push(bolts[i], 1f, 1f - Mathf.Clamp01(t / _fadeTime), i);
+            yield return null;
+        }
+        if (layerBolts)
+            for (int i = 0; i < count; i++)
+                if (bolts[i] != null) bolts[i].gameObject.SetActive(false);
+        while (_shocks.Exists(shock => shock != null)) yield return null;
+        Destroy(gameObject);
+    }
+
+    private static void ScaleArcThickness(VfxEffect arc, float scale)
+    {
+        foreach (VisualEffect effect in arc.GetComponentsInChildren<VisualEffect>(true))
+            if (effect.HasFloat("Thickness"))
+                effect.SetFloat("Thickness", effect.GetFloat("Thickness") * scale);
+    }
+
+    private Transform CreateEndpoint(string name, Vector3 position)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(transform, false);
+        go.transform.position = position;
+        return go.transform;
+    }
+
+    private IEnumerator Wait(float seconds)
+    {
+        for (float t = 0f; t < seconds; t += Time.deltaTime * _speed) yield return null;
+    }
+
+    /// <summary>줄 i의 긋기 진행도(0~1). 줄마다 stagger만큼 늦게 시작한다.</summary>
+    public static float ArcDrawProgress(float elapsed, int index, float stagger, float drawTime)
+    {
+        return Mathf.Clamp01((elapsed - stagger * index) / Mathf.Max(0.0001f, drawTime));
+    }
+
+    /// <summary>줄과 수직인 수평 방향. 줄이 수직이거나 길이가 없으면 오른쪽.</summary>
+    public static Vector3 LineSide(Vector3 start, Vector3 end)
+    {
+        Vector3 flat = end - start;
+        flat.y = 0f;
+        return flat.sqrMagnitude > 1e-6f ? Vector3.Cross(Vector3.up, flat.normalized) : Vector3.right;
+    }
+
+    /// <summary>count개 줄을 중앙 기준으로 spacing 간격으로 나란히 놓는 오프셋.</summary>
+    public static Vector3 LineOffset(Vector3 side, int index, int count, float spacing)
+    {
+        return side * ((index - (count - 1) * 0.5f) * spacing);
     }
 
     private IEnumerator Run(SkillEffectContext ctx, Vector3 start, Vector3 end)
     {
         _mpb = new MaterialPropertyBlock();
-        Vector3 flat = end - start;
-        flat.y = 0f;
-        Vector3 side = flat.sqrMagnitude > 1e-6f ? Vector3.Cross(Vector3.up, flat.normalized) : Vector3.right;
+        Vector3 side = LineSide(start, end);
 
         int count = Mathf.Max(1, _lineCount);
         var bolts = new Renderer[count];
         for (int i = 0; i < count; i++)
         {
-            Vector3 offset = side * ((i - (count - 1) * 0.5f) * _lineSpacing);
+            Vector3 offset = LineOffset(side, i, count, _lineSpacing);
             Renderer bolt = Instantiate(_boltTemplate, transform);
             AimBolt(bolt.transform, start + offset, end + offset);
             Push(bolt, 0f, 0f, i);
@@ -198,6 +365,7 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
             bool sameX = _axis == RowLightningAxis.SameX;
             List<Vector2Int> coords = grid.GetAllCoordsSnapshot();
             coords.RemoveAll(c => sameX ? c.x != c0.x : c.y != c0.y);
+            if (_targetSideOnly) coords.RemoveAll(c => !IsSameSide(c.x, c0.x));
             coords.Sort((a, b) => sameX ? a.y.CompareTo(b.y) : a.x.CompareTo(b.x));
             for (int i = 0; i < coords.Count; i++)
                 if (grid.TryGetCell(coords[i], out GridCellRef cell) && cell != null)
@@ -251,9 +419,16 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
         }
 
         Vector3 dir = (end - start).normalized;
-        start += -dir * (startSpacing * _endExtension) + Vector3.up * _height;
+        float startExtension = _startExtension >= 0f ? _startExtension : _endExtension;
+        start += -dir * (startSpacing * startExtension) + Vector3.up * _height;
         end += dir * (endSpacing * _endExtension) + Vector3.up * _height;
         return true;
+    }
+
+    /// <summary>두 좌표 x가 같은 진영인지(아군 0~1 / 적군 2~3).</summary>
+    public static bool IsSameSide(int x, int otherX)
+    {
+        return (x <= 1) == (otherX <= 1);
     }
 
     private static void SortFarthestPairToEnds(List<Vector3> points)
@@ -292,10 +467,14 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
         _mpb.SetFloat(SeedID, Mathf.Floor(Time.time * _flickerRate) + index * 17f);
         _mpb.SetFloat(OpacityID, opacity);
         if (_halfWidth > 0f) _mpb.SetFloat(WidthID, _halfWidth);
+        if (_boltCoreWidth > 0f) _mpb.SetFloat(CoreWidthID, _boltCoreWidth);
+        if (_boltGlowWidth > 0f) _mpb.SetFloat(GlowWidthID, _boltGlowWidth);
+        if (_boltEmission > 0f) _mpb.SetFloat(EmissionID, _boltEmission);
         if (_overrideColors)
         {
-            _mpb.SetColor(CoreColorID, _coreColor);
-            _mpb.SetColor(GlowColorID, _glowColor);
+            bool layeredArc = _layerBoltWithArcs && _arcPrefab != null;
+            _mpb.SetColor(CoreColorID, layeredArc ? _boltCoreColor : _coreColor);
+            _mpb.SetColor(GlowColorID, layeredArc ? _boltGlowColor : _glowColor);
         }
         r.SetPropertyBlock(_mpb);
     }

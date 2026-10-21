@@ -35,8 +35,20 @@ public class BattleFlowManager : MonoBehaviour
     [Tooltip("씬에 배치한 전투 시작/턴 안내입니다. 연결하면 안내가 닫힌 뒤 행동을 시작하며, 비워 두면 기존 흐름을 유지합니다.")]
     [SerializeField] private BattleTurnBanner turnBanner;
     private bool turnPresentationPending;
-    // 다음 유닛 턴 배너 직전에 한 번씩 재생할 연출(페이즈 전환 등). EnqueueTurnInterlude로 예약한다.
-    private readonly Queue<Func<IEnumerator>> turnInterludes = new Queue<Func<IEnumerator>>();
+    // 다음 유닛 턴 배너 직전에 한 번씩 재생할 연출(페이즈 전환 등). EnqueueTurnInterlude로 예약한다(order 오름차순).
+    private readonly List<TurnInterlude> turnInterludes = new List<TurnInterlude>();
+
+    private readonly struct TurnInterlude
+    {
+        public readonly int Order;
+        public readonly Func<IEnumerator> Presentation;
+
+        public TurnInterlude(int order, Func<IEnumerator> presentation)
+        {
+            Order = order;
+            Presentation = presentation;
+        }
+    }
     //[SerializeField] private float enemyThinkSeconds = 3f;
 
     [Header("Debug")]
@@ -181,11 +193,15 @@ public class BattleFlowManager : MonoBehaviour
     /// 피해 처리 도중처럼 연출을 바로 띄우면 안 되는 시점에 호출하고, 실제 재생은 진행 중인 행동이 끝난 뒤
     /// 턴 경계에서 합니다. 재생 중에는 턴 배너처럼 입력을 막고, 끝나면 원래 배너를 그대로 띄웁니다.
     /// 전투가 끝나면 재생하지 않고 버립니다.
+    /// <para>order가 작은 연출부터 재생하고, 같으면 예약한 순서대로입니다. 같은 이벤트(페이즈 전환)에서
+    /// 여러 구독자가 예약할 때 구독 순서와 무관하게 재생 순서를 고정합니다(예: 증폭기 부활 → 율리아 정지장).</para>
     /// </summary>
-    public void EnqueueTurnInterlude(Func<IEnumerator> presentation)
+    public void EnqueueTurnInterlude(Func<IEnumerator> presentation, int order = 0)
     {
         if (presentation == null || battleEnded) return;
-        turnInterludes.Enqueue(presentation);
+        int index = turnInterludes.Count;
+        while (index > 0 && turnInterludes[index - 1].Order > order) index--;
+        turnInterludes.Insert(index, new TurnInterlude(order, presentation));
     }
 
     public bool HasPendingTurnInterlude => turnInterludes.Count > 0;
@@ -859,7 +875,8 @@ public class BattleFlowManager : MonoBehaviour
     {
         while (turnInterludes.Count > 0 && !ShouldEndBattle())
         {
-            Func<IEnumerator> next = turnInterludes.Dequeue();
+            Func<IEnumerator> next = turnInterludes[0].Presentation;
+            turnInterludes.RemoveAt(0);
             IEnumerator routine = null;
             try
             {

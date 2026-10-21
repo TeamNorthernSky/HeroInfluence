@@ -6,7 +6,7 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>율리아 보스전 Ultra Mega 연출(Y02 피격 점멸, Y08·Y09·Y10 굴렁쇠, A03 증폭기 파괴) 계약.</summary>
+/// <summary>율리아 보스전 Ultra Mega 연출(Y01 손 구체, Y02 피격 점멸, Y05·Y06 줄 번개, Y07~Y10 굴렁쇠, Y11 정지장, A03·A04 증폭기) 계약.</summary>
 public sealed class YuliaBattleVfxTests
 {
     private const BindingFlags AnyStatic = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
@@ -65,11 +65,16 @@ public sealed class YuliaBattleVfxTests
         Assert.That(preset, Is.Not.Null);
         float radius = (float)preset.GetType().GetField("wheelVisualRadius").GetValue(preset);
         float hover = (float)preset.GetType().GetField("hoverHeight").GetValue(preset);
-        Assert.That(radius, Is.EqualTo(3.3f * 3f / 5f / 2f).Within(0.01f), "지름 = 그리드 한 칸(3.3m)의 3/5.");
+        var orb = (GameObject)preset.GetType().GetField("wheelVisualPrefab").GetValue(preset);
+        var effect = orb.GetComponent<UnityEngine.VFX.VisualEffect>();
+        Assert.That(effect, Is.Not.Null);
+        float visualDiameter = effect.GetFloat("CircleSize") * orb.transform.localScale.x;
+        Assert.That(visualDiameter, Is.EqualTo(1.5f).Within(.02f), "구체 지름은 1.5m여야 한다.");
+        Assert.That(radius * 2f, Is.EqualTo(visualDiameter).Within(.02f), "높이 계산 반지름과 실제 구체 크기가 일치해야 한다.");
 
         MethodInfo resolve = FindRuntimeType("HoopWheelVisual").GetMethod("ResolveWheelHeight", AnyStatic);
         float height = (float)resolve.Invoke(null, new object[] { preset });
-        Assert.That(height - hover - radius, Is.GreaterThanOrEqualTo(-0.0001f), "부유 최저점에서도 외형 아래쪽이 바닥 위에 있어야 한다.");
+        Assert.That(height - hover - radius, Is.GreaterThanOrEqualTo(.19f), "부유 최저점에서도 외형 아래쪽과 바닥 사이에 간격이 있어야 한다.");
     }
 
     [Test]
@@ -163,6 +168,200 @@ public sealed class YuliaBattleVfxTests
         SerializedProperty suppress = so.FindProperty("suppressEffectsWhileStasis");
         Assert.That(suppress.arraySize, Is.GreaterThan(0));
         Assert.That(suppress.GetArrayElementAtIndex(0).objectReferenceValue.name, Is.EqualTo("FX_400010_YuliaCastCharge"), "감금 중 손 충전을 스폰하지 않는다.");
+    }
+
+    // ----- 2026-10-19 미적용 항목 보완(Y01·Y05·Y06·Y07·Y10·Y11·A04) -----
+
+    private const string WheelUnitPath = "Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanWheel_40005.prefab";
+    private const string RowLightningPath = "Assets/ASB_Work/Effect/FX_400011_RowLightning.prefab";
+    private const string RowBeamPath = "Assets/ASB_Work/Effect/FX_400012_RowBeam.prefab";
+
+    [Test]
+    public void Stasis_ShieldShrinksAwayOnDeath()
+    {
+        MethodInfo scale = FindRuntimeType("YuliaStasisVfx").GetMethod("DismissScale", AnyStatic);
+        Assert.That((float)scale.Invoke(null, new object[] { 0f }), Is.EqualTo(1f).Within(0.0001f));
+        Assert.That((float)scale.Invoke(null, new object[] { 1f }), Is.EqualTo(0f).Within(0.0001f));
+    }
+
+    [Test]
+    public void HandOrb_ShrinksForChargeThenHit()
+    {
+        MethodInfo resolve = FindRuntimeType("YuliaHandOrbState").GetMethod("ResolveTargetScale", AnyStatic);
+        Assert.That((float)resolve.Invoke(null, new object[] { true, true, 0f, 0.45f }), Is.EqualTo(0f), "충전이 피격보다 우선한다.");
+        Assert.That((float)resolve.Invoke(null, new object[] { false, true, 0f, 0.45f }), Is.EqualTo(0.45f));
+        Assert.That((float)resolve.Invoke(null, new object[] { false, false, 0f, 0.45f }), Is.EqualTo(1f), "평소에는 원래 크기.");
+    }
+
+    [Test]
+    public void MadonnaIdleHandOrb_HasStateComponent()
+    {
+        Transform orb = AssetDatabase.LoadAssetAtPath<GameObject>(MadonnaUnitPath).GetComponentsInChildren<Transform>(true)
+            .FirstOrDefault(t => t.name == "FX_YuliaIdleHandOrb");
+        Assert.That(orb, Is.Not.Null);
+        Assert.That(orb.GetComponent(FindRuntimeType("YuliaHandOrbState")), Is.Not.Null, "시전·피격 때 손 구체를 줄인다.");
+    }
+
+    [Test]
+    public void RowArc_DrawsEachLineInTurn_AndSpreadsAroundCenter()
+    {
+        Type row = FindRuntimeType("RowLightningCueEffect");
+        MethodInfo progress = row.GetMethod("ArcDrawProgress", AnyStatic);
+        Assert.That((float)progress.Invoke(null, new object[] { 0.04f, 0, 0.05f, 0.08f }), Is.EqualTo(0.5f).Within(0.0001f));
+        Assert.That((float)progress.Invoke(null, new object[] { 0.04f, 1, 0.05f, 0.08f }), Is.EqualTo(0f), "두 번째 줄은 아직 시작 전.");
+        Assert.That((float)progress.Invoke(null, new object[] { 1f, 2, 0.05f, 0.08f }), Is.EqualTo(1f));
+
+        MethodInfo offset = row.GetMethod("LineOffset", AnyStatic);
+        Assert.That(((Vector3)offset.Invoke(null, new object[] { Vector3.right, 0, 3, 0.3f })).x, Is.EqualTo(-0.3f).Within(0.0001f));
+        Assert.That(((Vector3)offset.Invoke(null, new object[] { Vector3.right, 1, 3, 0.3f })).x, Is.EqualTo(0f).Within(0.0001f), "가운데 줄은 중심선.");
+        Assert.That(((Vector3)offset.Invoke(null, new object[] { Vector3.right, 0, 1, 0.3f })).magnitude, Is.EqualTo(0f).Within(0.0001f));
+    }
+
+    [Test]
+    public void RowBeam_KeepsOnlyTargetSideCells()
+    {
+        MethodInfo same = FindRuntimeType("RowLightningCueEffect").GetMethod("IsSameSide", AnyStatic);
+        Assert.That((bool)same.Invoke(null, new object[] { 0, 1 }), Is.True, "아군 뒷줄·앞줄.");
+        Assert.That((bool)same.Invoke(null, new object[] { 2, 3 }), Is.True);
+        Assert.That((bool)same.Invoke(null, new object[] { 1, 2 }), Is.False, "아군 앞줄과 적 앞줄은 다른 진영.");
+
+        var so = new SerializedObject(AssetDatabase.LoadAssetAtPath<GameObject>(RowBeamPath).GetComponent(FindRuntimeType("RowLightningCueEffect")));
+        Assert.That(so.FindProperty("_targetSideOnly").boolValue, Is.True, "기획 Y06: 대상 진영 전열에서 라인 끝까지.");
+    }
+
+    [TestCase(RowLightningPath, false)]
+    [TestCase(RowBeamPath, true)]
+    public void RowLightningPrefabs_UseUltraMegaArcs(string path, bool expectOriginOrb)
+    {
+        Component row = AssetDatabase.LoadAssetAtPath<GameObject>(path).GetComponent(FindRuntimeType("RowLightningCueEffect"));
+        Assert.That(row, Is.Not.Null);
+        var so = new SerializedObject(row);
+        var arc = so.FindProperty("_arcPrefab").objectReferenceValue as Component;
+        Assert.That(arc, Is.Not.Null, "아크가 비면 예전 코드 번개로 돌아간다.");
+        Assert.That(arc.GetComponent(FindRuntimeType("ElectricArcEndpoints")), Is.Not.Null);
+        Assert.That(ReadMode(arc.gameObject), Is.EqualTo("Loop"), "줄을 유지하다 Stop으로 사라진다.");
+        var orb = so.FindProperty("_originOrbPrefab").objectReferenceValue as Component;
+        Assert.That(orb != null, Is.EqualTo(expectOriginOrb), "전열 구체는 공멸의 궤적(Y06)에만.");
+        bool layerBolt = so.FindProperty("_layerBoltWithArcs").boolValue;
+        Assert.That(layerBolt, Is.EqualTo(!expectOriginOrb), "나락의 폭풍(Y05)에만 볼트 코어와 보라색 외곽 광을 겹친다.");
+        float arcScale = so.FindProperty("_arcThicknessScale").floatValue;
+        Assert.That(arcScale, Is.EqualTo(expectOriginOrb ? 0f : 0.25f).Within(0.0001f),
+            "400011만 공유 아크 프리팹의 굵기를 1/4로 줄인다.");
+        if (layerBolt)
+        {
+            Assert.That(so.FindProperty("_boltTemplate").objectReferenceValue, Is.Not.Null);
+            Assert.That(so.FindProperty("_widthRatio").floatValue, Is.EqualTo(0.14f).Within(0.0001f));
+            Color glow = so.FindProperty("_boltGlowColor").colorValue;
+            Assert.That(glow.b, Is.GreaterThan(glow.g * 3f), "외곽 광은 보라색 채도가 드러나야 한다.");
+        }
+    }
+
+    [Test]
+    public void AmplifierRevive_KeepsBottomAnchored()
+    {
+        Type type = FindRuntimeType("AmplifierOrbHealthVisual");
+        MethodInfo drop = type.GetMethod("RevealDrop", AnyStatic);
+        float radius = 0.125f;
+        foreach (float p in new[] { 0f, 0.3f, 1f })
+        {
+            float center = -(float)drop.Invoke(null, new object[] { radius, p });
+            float bottom = center - radius * p;
+            Assert.That(bottom, Is.EqualTo(-radius).Within(0.0001f), $"진행도 {p}에서도 아래 끝은 그대로.");
+        }
+
+        MethodInfo should = type.GetMethod("ShouldAnimateRevive", AnyStatic);
+        Assert.That((bool)should.Invoke(null, new object[] { true, true, 0.6f }), Is.True);
+        Assert.That((bool)should.Invoke(null, new object[] { true, false, 0.6f }), Is.False, "전투 시작(첫 활성화)은 연출하지 않는다.");
+        Assert.That((bool)should.Invoke(null, new object[] { false, true, 0.6f }), Is.False, "살아 있을 때의 체력 변화는 연출하지 않는다.");
+    }
+
+    [Test]
+    public void AmplifierModel_ReviveFlashOnlyOnRevive()
+    {
+        GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(AmplifierModelPath);
+        Component orbVisual = model.GetComponentInChildren(FindRuntimeType("AmplifierOrbHealthVisual"), true);
+        var so = new SerializedObject(orbVisual);
+        var flash = so.FindProperty("reviveFlash").objectReferenceValue as Component;
+        Assert.That(flash, Is.Not.Null);
+        Assert.That(flash.gameObject.activeSelf, Is.False, "켜 두면 전투 시작에 구체가 켜질 때도 번쩍인다.");
+        Assert.That(so.FindProperty("idleElectric").objectReferenceValue, Is.Not.Null, "다 차오른 뒤 대기 전기를 켠다.");
+    }
+
+    [Test]
+    public void HoopSummon_UsesPortalSlotInsteadOfUnitChild()
+    {
+        var preset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(HoopPresetPath);
+        var portal = (GameObject)preset.GetType().GetField("summonPortalPrefab").GetValue(preset);
+        Assert.That(portal, Is.Not.Null, "비면 코드 소환진(보라 링)이 나온다.");
+        Assert.That(ReadMode(portal), Is.EqualTo("OneShot"), "소환 뒤 링만 사라진다.");
+
+        GameObject unit = AssetDatabase.LoadAssetAtPath<GameObject>(WheelUnitPath);
+        Assert.That(unit.GetComponentsInChildren<Transform>(true).Any(t => t.name == portal.name), Is.False,
+            "유닛 자식 포털은 소환 슬롯과 겹쳐 두 번 재생된다.");
+    }
+
+    [Test]
+    public void HoopBreakFlash_BrightensColorOnly()
+    {
+        Type type = FindRuntimeType("HoopWheelVisual");
+        var scaled = (Vector4)type.GetMethod("ScaleColor", AnyStatic).Invoke(null, new object[] { new Vector4(1f, 0.5f, 2f, 0.7f), 2f });
+        Assert.That(scaled, Is.EqualTo(new Vector4(2f, 1f, 4f, 0.7f)), "알파는 유지한다.");
+
+        MethodInfo progress = type.GetMethod("BreakFlashProgress", AnyStatic);
+        Assert.That((float)progress.Invoke(null, new object[] { 0f }), Is.EqualTo(0f));
+        Assert.That((float)progress.Invoke(null, new object[] { 1f }), Is.EqualTo(1f), "끝에서 최고 밝기로 연기와 바뀐다.");
+    }
+
+    // ----- 3페이즈 진입: 쓰러진 증폭기 즉시 부활 → 율리아 정지장 -----
+
+    [Test]
+    public void Phase3_RevivesOnlyDownedCorpseParticipantsOnTargetPhase()
+    {
+        MethodInfo should = FindRuntimeType("EncounterParticipant").GetMethod("ShouldReviveOnPhaseEntry", AnyStatic);
+        Assert.That((bool)should.Invoke(null, new object[] { 3, 3, true, true, 5 }), Is.True);
+        Assert.That((bool)should.Invoke(null, new object[] { 2, 3, true, true, 5 }), Is.False, "2페이즈는 기존 카운트다운.");
+        Assert.That((bool)should.Invoke(null, new object[] { 3, 3, true, false, 5 }), Is.False, "살아 있으면 부활할 게 없다.");
+        Assert.That((bool)should.Invoke(null, new object[] { 3, 0, true, true, 5 }), Is.False, "0 = 사용 안 함.");
+        Assert.That((bool)should.Invoke(null, new object[] { 3, 3, false, true, 5 }), Is.False, "시체 부활을 안 쓰는 참여자.");
+        Assert.That((bool)should.Invoke(null, new object[] { 3, 3, true, true, -1 }), Is.False, "사망 셀을 모르면 부활할 곳이 없다.");
+    }
+
+    [TestCase("Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanAmplifier_40002.prefab")]
+    [TestCase("Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanAmplifier_40003.prefab")]
+    public void Phase3_AmplifierRevivesImmediatelyAtHalfHp(string path)
+    {
+        Type type = FindRuntimeType("EncounterParticipant");
+        var so = new SerializedObject(AssetDatabase.LoadAssetAtPath<GameObject>(path).GetComponent(type));
+        Assert.That(so.FindProperty("_immediateRevivePhase").intValue, Is.EqualTo(3));
+        Assert.That(so.FindProperty("_reviveHpRatio").floatValue, Is.EqualTo(0.5f).Within(0.0001f), "기존 시체 부활과 같은 50%.");
+        Assert.That(so.FindProperty("_corpseReviveDelayRounds").intValue, Is.EqualTo(2), "3페이즈 재사망은 기존 2라운드 규칙.");
+        Assert.That((int)type.GetField("PhaseReviveInterludeOrder").GetValue(null), Is.LessThan(0), "율리아 정지장(기본 0)보다 먼저.");
+    }
+
+    [Test]
+    public void TurnInterludes_PlayInOrderThenFifo()
+    {
+        var go = new GameObject("Flow");
+        try
+        {
+            Type flowType = FindRuntimeType("BattleFlowManager");
+            Component flow = go.AddComponent(flowType);
+            MethodInfo enqueue = flowType.GetMethod("EnqueueTurnInterlude");
+            var log = new List<string>();
+            Func<System.Collections.IEnumerator> Make(string name) => () => { log.Add(name); return null; };
+            enqueue.Invoke(flow, new object[] { Make("stasis"), 0 });
+            enqueue.Invoke(flow, new object[] { Make("revive"), -10 });
+            enqueue.Invoke(flow, new object[] { Make("other"), 0 });
+
+            var list = (System.Collections.IList)flowType.GetField("turnInterludes", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(flow);
+            foreach (object item in list)
+                ((Func<System.Collections.IEnumerator>)item.GetType().GetField("Presentation").GetValue(item))();
+            Assert.That(log, Is.EqualTo(new[] { "revive", "stasis", "other" }));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(go);
+        }
     }
 
     private static string ReadMode(GameObject prefab)

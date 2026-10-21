@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public static class GameSettings
 {
@@ -7,12 +8,37 @@ public static class GameSettings
     private const string KeyMaster      = "Settings_MasterVolume";
     private const string KeyBGM         = "Settings_BGMVolume";
     private const string KeyEffect      = "Settings_EffectVolume";
+    private const string KeyAutoTurnEnd = "Settings_AutoTurnEnd";
 
     public static float MasterVolume  => PlayerPrefs.GetFloat(KeyMaster, 1f);
     public static float BGMVolume     => PlayerPrefs.GetFloat(KeyBGM,    1f);
     public static float EffectVolume  => PlayerPrefs.GetFloat(KeyEffect,  1f);
     public static int   ResolutionIndex => PlayerPrefs.GetInt(KeyResolution, 2);
     public static bool  IsFullScreen  => PlayerPrefs.GetInt(KeyFullScreen, 1) == 1;
+    public static bool AutoTurnEnd => PlayerPrefs.GetInt(KeyAutoTurnEnd, 1) == 1;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void RegisterSceneSettings()
+    {
+        SceneManager.sceneLoaded -= ApplyAutoTurnEndToScene;
+        SceneManager.sceneLoaded += ApplyAutoTurnEndToScene;
+    }
+
+    private static void ApplyAutoTurnEndToScene(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != "DHScene_3") return;
+        foreach (var root in scene.GetRootGameObjects())
+            foreach (var manager in root.GetComponentsInChildren<TurnManager>(true))
+                manager.AutoTurnEnd = AutoTurnEnd;
+    }
+
+    public static void ApplyAutoTurnEnd(bool enabled)
+    {
+        PlayerPrefs.SetInt(KeyAutoTurnEnd, enabled ? 1 : 0);
+        PlayerPrefs.Save();
+        for (int i = 0; i < SceneManager.sceneCount; i++)
+            ApplyAutoTurnEndToScene(SceneManager.GetSceneAt(i), LoadSceneMode.Additive);
+    }
 
     public static void ApplyResolution(int index, (int width, int height)[] resolutions)
     {

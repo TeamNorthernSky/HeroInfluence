@@ -227,6 +227,7 @@ public sealed partial class SkillPresentationDirector
 
         probe.Configure(_chainLightningActionInstanceId, primaryTargetTransform, chainTargets, presentation);
         effect.Play(actor.transform, primaryTargetTransform, chainTargets);
+        UnityEngine.Object.FindFirstObjectByType<BattlePresentationPreview>()?.FollowLuminaLightning(actor, effect);
         return true;
     }
 
@@ -1669,10 +1670,9 @@ public sealed partial class SkillPresentationDirector
         if (deliveryRoutine != null) yield return deliveryRoutine;
         foreach (Coroutine sequentialRoutine in sequentialRoutines) yield return sequentialRoutine;
 
-        for (int i = 0; i < pairCount; i++)
-        {
-            ReturnToIdleIfAlive(contexts[i]?.Target);
-        }
+        // Delivery can finish as Hit starts (including during hit-stop). Let
+        // CharactorAnimationController.ReturnFromCompletedHit restore Idle after
+        // the reaction completes instead of cancelling the target's animation here.
     }
 
     private static PlayableDirector EnsureTimelineDirector(BattleCharactor actor)
@@ -2523,6 +2523,16 @@ public sealed partial class SkillPresentationDirector
             Action applyHits = CreateAoEHitApplier(actor, contexts, hitCallbacks, pairCount,
                 _battle.CurrentBattleSpeed, _battle.VisualDirector);
             yield return _battle.StartCoroutine(aoeSequence.Run(_battle, actor, primaryTarget, skill, aoeTargets, applyHits));
+
+            // Hit 상태에는 Idle 자동 전환이 없어 복귀시키지 않으면 마지막 프레임에 멈춘다.
+            // 커스텀 연출은 타격 직후 끝나므로 대상별 Hit가 끝날 때까지 동시에 기다렸다가 Idle로 돌린다.
+            var reactions = new List<Coroutine>(aoeTargets.Count);
+            foreach (BattleCharactor aoeTarget in aoeTargets)
+            {
+                reactions.Add(_battle.StartCoroutine(
+                    new WaitTargetReactionAction(aoeTarget, _battle.CurrentBattleSpeed).ExecuteRoutine(_battle)));
+            }
+            foreach (Coroutine reaction in reactions) yield return reaction;
             yield break;
         }
 
@@ -2763,22 +2773,7 @@ public sealed partial class SkillPresentationDirector
 
         float remainingTotal = Mathf.Max(0f, skill.TotalDelay - sequenceBattleElapsed);
         yield return _battle.WaitForBattleSeconds(Mathf.Max(remainingTotal, 0.2f));
-
-        for (int i = 0; i < pairCount; i++)
-        {
-            ReturnToIdleIfAlive(contexts[i]?.Target);
-        }
-    }
-
-    public static void ReturnToIdleIfAlive(BattleCharactor unit)
-    {
-        if (unit == null || unit.IsDead)
-        {
-            return;
-        }
-
-        unit.EnsureAnimationController();
-        unit.Anim?.PlayIdleAnimation();
+        // 대상의 Hit 종료 후 Idle 복귀는 CharactorAnimationController가 처리한다.
     }
 
 }

@@ -44,7 +44,10 @@ MonoBehaviour:
   m_Children: []
   m_Clips: []
   m_Markers:
-    m_Objects: []
+    m_Objects:
+    - {fileID: 7332742332848113191}
+    - {fileID: 7332742332848113192}
+    - {fileID: 7332742332848113193}
   role: 2
 --- !u!114 &-5845443012042994813
 MonoBehaviour:
@@ -339,3 +342,45 @@ MonoBehaviour:
   _cueName: 
   _cueId: 
   _targetSlot: 0
+--- !u!114 &7332742332848113191
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 177f941ed4ff84c4994e446fbde8a95d, type: 3}
+  m_Name: Presentation Speed Marker
+  m_EditorClassIdentifier:
+  m_Time: 0
+  _speed: 1.7
+--- !u!114 &7332742332848113192
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 177f941ed4ff84c4994e446fbde8a95d, type: 3}
+  m_Name: Presentation Speed Marker
+  m_EditorClassIdentifier:
+  m_Time: 0.8166666666666667
+  _speed: 1.5
+--- !u!114 &7332742332848113193
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 177f941ed4ff84c4994e446fbde8a95d, type: 3}
+  m_Name: Presentation Speed Marker
+  m_EditorClassIdentifier:
+  m_Time: 1.6
+  _speed: 1.7

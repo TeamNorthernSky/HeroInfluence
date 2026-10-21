@@ -31,7 +31,6 @@ public sealed class VisualEffectGraphEffectTests
     private static readonly string[] YuliaLightningSkills = { "400011", "400012", "400023", "400033" };
 
     private const string MadonnaUnitPath = "Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanMadonna_40001.prefab";
-    private const string WheelUnitPath = "Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanWheel_40005.prefab";
     private const string MergedRegistryPath = "Assets/RenderFX/_Seam/Data/Merged/JC_Merged_EffectRegistry.asset";
 
     [Test]
@@ -122,19 +121,14 @@ public sealed class VisualEffectGraphEffectTests
         Assert.That(orb.lossyScale.x, Is.EqualTo(0.3f).Within(0.005f), "손 소켓 스케일(200)을 상쇄한 월드 크기여야 한다.");
     }
 
-    [Test]
-    public void WheelUnit_HasSummonPortalOutsideModel()
-    {
-        // Model 아래면 HoopWheelVisual이 모델 렌더러를 끌 때 VFXRenderer도 꺼진다.
-        Transform portal = FindChild(WheelUnitPath, "FX_HoopSummonPortal");
-        Assert.That(portal.parent.name, Is.EqualTo("Unit_VillanWheel_40005"));
-    }
+    // 굴렁쇠 소환 포털은 유닛 자식이 아니라 HoopVfxPreset.summonPortalPrefab 슬롯으로 옮겼다
+    // (YuliaBattleVfxTests.HoopSummon_UsesPortalSlotInsteadOfUnitChild).
 
     [TestCase("Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanAmplifier_40002.prefab")]
     [TestCase("Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanAmplifier_40003.prefab")]
     public void AmplifierUnit_ReviveFlashReplaysWhenOrbReactivates(string unitPath)
     {
-        // 구체가 부활로 다시 켜질 때마다 재생되어야 하므로 끝나도 오브젝트를 지우면 안 된다.
+        // AmplifierOrbHealthVisual이 부활 때마다 다시 켜 재생하므로 끝나도 오브젝트를 지우면 안 된다(평소에는 꺼 둔다).
         Transform flash = FindChild(unitPath, "FX_AmplifierReviveFlash");
         Assert.That(flash.parent.name, Is.EqualTo("2010_Orb"));
         Component effect = flash.GetComponent(FindRuntimeType("VisualEffectGraphEffect"));

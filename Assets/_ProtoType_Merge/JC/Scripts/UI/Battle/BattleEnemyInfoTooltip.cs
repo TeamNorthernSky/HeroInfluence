@@ -108,6 +108,10 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
 
     private BattleCharactor FindHoveredUnit()
     {
+        // Game View 밖에서는 에디터가 무한대 포인터 좌표를 반환할 수 있습니다.
+        var pointer = Input.mousePosition;
+        if (float.IsNaN(pointer.x) || float.IsNaN(pointer.y) ||
+            float.IsInfinity(pointer.x) || float.IsInfinity(pointer.y)) return null;
         var system = EventSystem.current;
         if (system != null)
         {
@@ -116,7 +120,7 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
                 pointerSystem = system;
                 pointerData = new PointerEventData(system);
             }
-            pointerData.position = Input.mousePosition;
+            pointerData.position = pointer;
             uiHits.Clear();
             system.RaycastAll(pointerData, uiHits);
             if (uiHits.Count > 0)
@@ -129,7 +133,7 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
 
         var camera = battlefieldCamera != null ? battlefieldCamera : Camera.main;
         if (camera == null) return null;
-        var hits = Physics.RaycastAll(camera.ScreenPointToRay(Input.mousePosition), rayDistance, battlefieldMask);
+        var hits = Physics.RaycastAll(camera.ScreenPointToRay(pointer), rayDistance, battlefieldMask);
         Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
         foreach (var hit in hits)
         {

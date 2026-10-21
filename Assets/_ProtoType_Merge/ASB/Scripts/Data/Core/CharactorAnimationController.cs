@@ -21,6 +21,7 @@ public class CharactorAnimationController : MonoBehaviour
     private const float IdleSpeedVariation = 0.15f;
 
     [SerializeField] private Animator _animator;
+    private BattleCharactor _battleCharactor;
     private float _idleStartNormalizedTime;
     private float _idleStateLengthSeconds = 1f;
     private float _idleSpeedMultiplier = 1f;
@@ -80,6 +81,22 @@ public class CharactorAnimationController : MonoBehaviour
     {
         // Animator 전이와 트리거로 Idle 진입/이탈하는 경우에도 Idle 배속만 적용한다.
         ApplyAnimationSpeed();
+        ReturnFromCompletedHit();
+    }
+
+    private void ReturnFromCompletedHit()
+    {
+        if (_animator == null || !_animator.isActiveAndEnabled ||
+            _animator.runtimeAnimatorController == null || IsHolding ||
+            HitStopSpeedMultiplier < .999f || _animator.IsInTransition(0)) return;
+
+        // 일부 컨트롤러의 Hit에는 Idle 복귀 전이가 없다. 재생 속도가 복구되어도
+        // 마지막 피격 포즈가 남으므로, 끝난 Hit만 공통으로 복귀시킨다.
+        // 공격/사망 등 다른 상태로 전환 중이면 해당 연출을 그대로 유지한다.
+        AnimatorStateInfo state = _animator.GetCurrentAnimatorStateInfo(0);
+        if (state.IsName("Hit") && state.normalizedTime >= 1f &&
+            (_battleCharactor == null || !_battleCharactor.IsDead))
+            PlayIdleAnimation();
     }
 
     private void ApplyAnimationSpeed()
@@ -106,6 +123,7 @@ public class CharactorAnimationController : MonoBehaviour
 
     private void Awake()
     {
+        _battleCharactor = GetComponent<BattleCharactor>();
         // 유닛마다 고정된 시각적 위상. UnityEngine.Random을 소비하면 전투 난수 순서가 바뀔 수 있다.
         uint hash = unchecked((uint)GetInstanceID());
         unchecked

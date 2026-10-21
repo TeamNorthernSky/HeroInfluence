@@ -27,6 +27,7 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
     private Action<PresentationMoveMarker> _onMove;
     private Action<PresentationReturnMarker> _onReturn;
     private Action<PresentationHitStopMarker> _onHitStop;
+    private Action<PresentationSignalMarker> _onCue;
     private double _activeStart = double.NegativeInfinity;
     private double _activeEnd = double.PositiveInfinity;
     private bool _sfxConfigured;
@@ -98,6 +99,15 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _onHitStop = onHitStop;
     }
 
+    /// <summary>
+    /// Cue 마커를 라우터(스킬 연출 Cue) 대신/함께 직접 받는다. 스킬 연출 데이터가 없는 반응 Timeline(율리아 흡수 등)이
+    /// 시점만 마커로 정하고 그리기는 자기 컴포넌트가 맡을 때 쓴다. ClearConfig에서 해제된다.
+    /// </summary>
+    public void ConfigureCueCallback(Action<PresentationSignalMarker> onCue)
+    {
+        _onCue = onCue;
+    }
+
     public void ClearConfig()
     {
         _router = null;
@@ -107,6 +117,7 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
         _onMove = null;
         _onReturn = null;
         _onHitStop = null;
+        _onCue = null;
         _activeStart = double.NegativeInfinity;
         _activeEnd = double.PositiveInfinity;
         _sfxConfigured = false;
@@ -170,6 +181,7 @@ public class PresentationSignalReceiver : MonoBehaviour, INotificationReceiver
                 // CueId가 있으면 정확 특정(동명 충돌 없음), 없으면 CueName으로 발화.
                 if (!string.IsNullOrEmpty(marker.CueId)) _router?.PresentationCueById(marker.CueId);
                 else _router?.PresentationCueByName(marker.CueName);
+                _onCue?.Invoke(marker);
                 break;
             case PresentationSignalKind.Impact:
                 if (_onImpactSlot != null) _onImpactSlot(marker.TargetSlot);

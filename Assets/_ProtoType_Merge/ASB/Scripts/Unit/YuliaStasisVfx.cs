@@ -6,11 +6,13 @@ using UnityEngine;
 /// <para>
 /// 진입: 블랙보드가 3페이즈로 전진하면 <see cref="BattleFlowManager.EnqueueTurnInterlude"/>로 예약한다.
 /// 페이즈는 피해 처리 도중에 바뀌므로, 진행 중인 행동이 끝난 뒤 다음 턴 배너 직전에 재생된다.
+/// 같은 진입에서 쓰러진 증폭기의 즉시 부활(EncounterParticipant, order -10)이 먼저 끝난 뒤 재생된다(기본 order 0).
 /// 피격 포즈를 잠깐 재생한 뒤 그 자세로 멈추고, 몸 전체를 감싸는 보라 육각 막(Sci-Fi Shield)을 띄운다.
 /// 손 구체와 피격 점멸은 감금 동안 끄고, 손 충전(FX_400010) 같은 시전 이펙트는 스폰하지 않는다.
 /// </para>
 /// <para>
-/// 유지: 막은 전투가 끝날 때까지 남는다. 정지장 상태에서 맞으면 율리아와 막을 짧게 흔든다(피격 모션 대신).
+/// 유지: 감금 해제 조건이 없어 막은 율리아가 죽을 때까지 남는다(죽으면 줄어들며 사라진다).
+/// 정지장 상태에서 맞으면 율리아와 막을 짧게 흔든다(피격 모션 대신).
 /// 감금 중 율리아는 굴렁쇠 소환만 쓰고(EAI_40001), 그 시전 중에도 정지 포즈를 유지한다 —
 /// 다른 코드가 Animator를 다시 켜면(스킬 연출·피격 반응) 같은 프레임에 정지 포즈로 되돌린다.
 /// </para>
@@ -27,6 +29,8 @@ public sealed class YuliaStasisVfx : MonoBehaviour, IPresentationEffectSpawnFilt
     [Tooltip("막 중심의 높이(유닛 루트 기준, m). 몸 전체가 막 안에 보이도록.")]
     [SerializeField] private float shieldHeight = 0.9f;
     [SerializeField, Min(0.01f)] private float shieldWorldScale = 1.2f;
+    [Tooltip("율리아 사망 시 막이 줄어들며 사라지는 시간(전투 배속 기준 초).")]
+    [SerializeField, Min(0f)] private float shieldDismissSeconds = 0.3f;
 
     [Header("Freeze")]
     [SerializeField] private string hitStateName = "Hit";
@@ -131,6 +135,7 @@ public sealed class YuliaStasisVfx : MonoBehaviour, IPresentationEffectSpawnFilt
         }
 
         yield return Wait(freezeDelaySeconds);
+        if (_boss == null || _boss.IsDead) yield break;   // 피격 포즈 재생 중 처치됨
         Freeze();
         SetStasisObjects(true);
         SpawnShield();
@@ -205,6 +210,20 @@ public sealed class YuliaStasisVfx : MonoBehaviour, IPresentationEffectSpawnFilt
         StopShake();
         _stasis = false;
         if (_animator != null) _animator.enabled = true;
+        if (_shield != null) StartCoroutine(DismissShield(_shield));
+        _shield = null;
+    }
+
+    private IEnumerator DismissShield(GameObject pivot)
+    {
+        Vector3 scale = pivot.transform.localScale;
+        for (float t = 0f; t < shieldDismissSeconds && pivot != null; t += Time.deltaTime * BattleSpeed())
+        {
+            pivot.transform.localScale = scale * DismissScale(t / shieldDismissSeconds);
+            yield return null;
+        }
+
+        if (pivot != null) Destroy(pivot);
     }
 
     private IEnumerator Shake()
@@ -261,6 +280,12 @@ public sealed class YuliaStasisVfx : MonoBehaviour, IPresentationEffectSpawnFilt
     {
         if (!stasis || effectPrefab == null || suppressed == null) return false;
         return System.Array.IndexOf(suppressed, effectPrefab) >= 0;
+    }
+
+    /// <summary>사망 시 막 크기 배율(0~1 진행도). 1에서 0으로 부드럽게 줄어든다.</summary>
+    public static float DismissScale(float normalized)
+    {
+        return 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(normalized));
     }
 
     /// <summary>흔들림 오프셋. 끝으로 갈수록 줄어 원위치로 돌아온다(수평 흔들림).</summary>

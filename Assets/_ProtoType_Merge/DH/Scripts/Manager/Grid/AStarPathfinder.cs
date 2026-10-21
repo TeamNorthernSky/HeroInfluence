@@ -45,6 +45,7 @@ public class AStarPathfinder : MonoBehaviour
         var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
         var gScore = new Dictionary<Vector2Int, float> { [start] = 0f };
         int insertionOrder = 1;
+        Vector2Int[] directionBuffer = new Vector2Int[GridManager.Directions8.Length];
 
         while (openSet.Count > 0)
         {
@@ -59,7 +60,7 @@ public class AStarPathfinder : MonoBehaviour
             if (maxVisitedNodes > 0 && closedSet.Count >= maxVisitedNodes)
                 return null;
 
-            Vector2Int[] orderedDirections = GetOrderedDirections(current, goal);
+            Vector2Int[] orderedDirections = GetOrderedDirections(current, goal, directionBuffer);
             for (int i = 0; i < orderedDirections.Length; i++)
             {
                 Vector2Int dir = orderedDirections[i];
@@ -68,14 +69,14 @@ public class AStarPathfinder : MonoBehaviour
                 if (closedSet.Contains(neighbor))
                     continue;
 
-                if (gridManager != null && !CanEnterPathCell(neighbor, goal, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
-                    continue;
-
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
                 if (maxPathCost >= 0 && tentativeG > maxPathCost)
                     continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))
+                    continue;
+
+                if (gridManager != null && !CanEnterPathCell(neighbor, goal, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                     continue;
 
                 cameFrom[neighbor] = current;
@@ -108,6 +109,7 @@ public class AStarPathfinder : MonoBehaviour
         var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
         var gScore = new Dictionary<Vector2Int, float> { [start] = 0f };
         int insertionOrder = 1;
+        Vector2Int[] directionBuffer = new Vector2Int[GridManager.Directions8.Length];
 
         while (openSet.Count > 0)
         {
@@ -122,7 +124,7 @@ public class AStarPathfinder : MonoBehaviour
             if (maxVisitedNodes > 0 && closedSet.Count >= maxVisitedNodes)
                 return null;
 
-            Vector2Int[] orderedDirections = GetOrderedDirections(current, target);
+            Vector2Int[] orderedDirections = GetOrderedDirections(current, target, directionBuffer);
             for (int i = 0; i < orderedDirections.Length; i++)
             {
                 Vector2Int dir = orderedDirections[i];
@@ -131,16 +133,16 @@ public class AStarPathfinder : MonoBehaviour
                 if (closedSet.Contains(neighbor) || neighbor == target)
                     continue;
 
-                bool isTerminalAdjacent = IsValidAdjacentDestination(neighbor, target, isValidAdjacentCell);
-                Vector2Int pathGoalForRules = isTerminalAdjacent ? neighbor : target;
-                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
-                    continue;
-
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
                 if (maxPathCost >= 0 && tentativeG > maxPathCost)
                     continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))
+                    continue;
+
+                bool isTerminalAdjacent = IsValidAdjacentDestination(neighbor, target, isValidAdjacentCell);
+                Vector2Int pathGoalForRules = isTerminalAdjacent ? neighbor : target;
+                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                     continue;
 
                 cameFrom[neighbor] = current;
@@ -186,6 +188,7 @@ public class AStarPathfinder : MonoBehaviour
         var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
         var gScore = new Dictionary<Vector2Int, float> { [start] = 0f };
         int insertionOrder = 1;
+        Vector2Int[] directionBuffer = new Vector2Int[GridManager.Directions8.Length];
 
         while (openSet.Count > 0)
         {
@@ -200,7 +203,7 @@ public class AStarPathfinder : MonoBehaviour
             if (maxVisitedNodes > 0 && closedSet.Count >= maxVisitedNodes)
                 return null;
 
-            Vector2Int[] orderedDirections = GetOrderedDirections(current, heuristicTarget);
+            Vector2Int[] orderedDirections = GetOrderedDirections(current, heuristicTarget, directionBuffer);
             for (int i = 0; i < orderedDirections.Length; i++)
             {
                 Vector2Int neighbor = current + orderedDirections[i];
@@ -208,18 +211,18 @@ public class AStarPathfinder : MonoBehaviour
                 if (closedSet.Contains(neighbor))
                     continue;
 
-                bool isTerminalGoal = ContainsGrid(goals, neighbor);
-                if (isAllowedSearchCell != null && !isAllowedSearchCell(neighbor))
-                    continue;
-                Vector2Int pathGoalForRules = isTerminalGoal ? neighbor : heuristicTarget;
-                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
-                    continue;
-
                 float tentativeG = GetOrInfinity(gScore, current) + 1f;
                 if (maxPathCost >= 0 && tentativeG > maxPathCost)
                     continue;
 
                 if (tentativeG >= GetOrInfinity(gScore, neighbor))
+                    continue;
+
+                bool isTerminalGoal = ContainsGrid(goals, neighbor);
+                if (isAllowedSearchCell != null && !isAllowedSearchCell(neighbor))
+                    continue;
+                Vector2Int pathGoalForRules = isTerminalGoal ? neighbor : heuristicTarget;
+                if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
                     continue;
 
                 cameFrom[neighbor] = current;
@@ -270,6 +273,7 @@ public class AStarPathfinder : MonoBehaviour
         var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
         var gScore = new Dictionary<Vector2Int, float> { [start] = 0f };
         int insertionOrder = 1;
+        Vector2Int[] directionBuffer = new Vector2Int[GridManager.Directions8.Length];
 
         while (openSet.Count > 0)
         {
@@ -284,12 +288,19 @@ public class AStarPathfinder : MonoBehaviour
             if (maxVisitedNodes > 0 && closedSet.Count >= maxVisitedNodes)
                 return null;
 
-            Vector2Int[] orderedDirections = GetOrderedDirections(current, heuristicTarget);
+            Vector2Int[] orderedDirections = GetOrderedDirections(current, heuristicTarget, directionBuffer);
             for (int i = 0; i < orderedDirections.Length; i++)
             {
                 Vector2Int neighbor = current + orderedDirections[i];
 
                 if (closedSet.Contains(neighbor))
+                    continue;
+
+                float tentativeG = GetOrInfinity(gScore, current) + 1f;
+                if (maxPathCost >= 0 && tentativeG > maxPathCost)
+                    continue;
+
+                if (tentativeG >= GetOrInfinity(gScore, neighbor))
                     continue;
 
                 if (isAllowedSearchCell != null && !isAllowedSearchCell(neighbor))
@@ -298,13 +309,6 @@ public class AStarPathfinder : MonoBehaviour
                 bool isTerminal = isTerminalCell(neighbor);
                 Vector2Int pathGoalForRules = isTerminal ? neighbor : heuristicTarget;
                 if (gridManager != null && !CanEnterPathCell(neighbor, pathGoalForRules, selfTransform, ignoreVisibilityRules, enemyEncounterPathMode, allowItemCells, mainEventInteractionPathMode))
-                    continue;
-
-                float tentativeG = GetOrInfinity(gScore, current) + 1f;
-                if (maxPathCost >= 0 && tentativeG > maxPathCost)
-                    continue;
-
-                if (tentativeG >= GetOrInfinity(gScore, neighbor))
                     continue;
 
                 cameFrom[neighbor] = current;
@@ -358,9 +362,10 @@ public class AStarPathfinder : MonoBehaviour
         return gridManager.CanEnterCell(grid, goal, selfTransform, ignoreVisibilityRules, allowItemCells);
     }
 
-    private static Vector2Int[] GetOrderedDirections(Vector2Int current, Vector2Int goal)
+    private static Vector2Int[] GetOrderedDirections(Vector2Int current, Vector2Int goal, Vector2Int[] ordered)
     {
-        Vector2Int[] ordered = (Vector2Int[])GridManager.Directions8.Clone();
+        // Reset tie ordering without allocating an array for every expanded cell.
+        System.Array.Copy(GridManager.Directions8, ordered, ordered.Length);
         System.Array.Sort(ordered, (a, b) =>
         {
             Vector2Int nextA = current + a;

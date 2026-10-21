@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DataList:
   - Chat_ID: 1020010
-    Chat_Type: 2
+    Chat_Type: 1
     Char_Name: 
     Char_Profile: 
     Message_Text: "\u2026\uADF8\uB7EC\uB2C8\uAE4C. \uD611\uD68C\uAC00 \uD3ED\uBC1C\uD558\uACE0,

@@ -79,6 +79,11 @@ public class SaveSlotPanel : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        gameObject.SetActive(false);
+    }
+
     private void HandleModalStackChanged()
     {
         // ESC도 ModalManager를 통해 팝업을 숨기므로 같은 선택 취소를 적용한다.

@@ -24,19 +24,16 @@ public sealed class YuliaAbsorbVfxTests
     }
 
     [Test]
-    public void AbsorbSteps_SpawnArcThenCompleteOnceEach()
+    public void AbsorbSteps_ResolveFromCueNames()
     {
-        Type type = FindRuntimeType("YuliaAbsorbVfx");
-        MethodInfo arc = type.GetMethod("ShouldSpawnArc", AnyStatic);
-        MethodInfo complete = type.GetMethod("ShouldComplete", AnyStatic);
+        MethodInfo resolve = FindRuntimeType("YuliaAbsorbVfx").GetMethod("ResolveStep", AnyStatic);
+        object Step(string cue) => resolve.Invoke(null, new object[] { cue, "absorb_glow", "absorb_arc", "absorb_complete" });
 
-        Assert.That((bool)arc.Invoke(null, new object[] { 0.05d, 0.1f, false }), Is.False, "증광이 먼저 보이고 아크는 뒤에 이어진다.");
-        Assert.That((bool)arc.Invoke(null, new object[] { 0.1d, 0.1f, false }), Is.True);
-        Assert.That((bool)arc.Invoke(null, new object[] { 0.5d, 0.1f, true }), Is.False, "아크는 한 번만 만든다.");
-
-        Assert.That((bool)complete.Invoke(null, new object[] { 0.6d, 0.667f, false }), Is.False);
-        Assert.That((bool)complete.Invoke(null, new object[] { 0.667d, 0.667f, false }), Is.True);
-        Assert.That((bool)complete.Invoke(null, new object[] { 1.0d, 0.667f, true }), Is.False, "손빛은 한 번만 낸다.");
+        Assert.That(Step("absorb_glow").ToString(), Is.EqualTo("Glow"));
+        Assert.That(Step("absorb_arc").ToString(), Is.EqualTo("Arc"));
+        Assert.That(Step("absorb_complete").ToString(), Is.EqualTo("Complete"));
+        Assert.That(Step("").ToString(), Is.EqualTo("None"), "이름 없는 마커는 무시한다.");
+        Assert.That(Step("yulia_cast_charge").ToString(), Is.EqualTo("None"), "다른 Cue는 흡수 단계가 아니다.");
     }
 
     [Test]
@@ -57,8 +54,43 @@ public sealed class YuliaAbsorbVfxTests
                 $"{field}에 VisualEffectGraphEffect가 없으면 수명이 관리되지 않는다.");
         }
 
-        // 흡수 Timeline의 흡수 완료 Cue 마커 시각과 맞아야 한다.
-        Assert.That(so.FindProperty("completeSeconds").floatValue, Is.EqualTo(0.667f).Within(0.01f));
+        foreach (string field in new[] { "glowCue", "arcCue", "completeCue" })
+            Assert.That(so.FindProperty(field).stringValue, Is.Not.Empty, $"{field}가 비면 그 단계가 나오지 않는다.");
+    }
+
+    [Test]
+    public void ReceiveTimeline_AbsorbCuesFollowHandMotion()
+    {
+        var timeline = AssetDatabase.LoadAssetAtPath<UnityEngine.Timeline.TimelineAsset>(
+            "Assets/ASB_Work/Skills/Timelines/Skill400014_SkillReceive.playable");
+        Assert.That(timeline, Is.Not.Null);
+        var so = new SerializedObject(AssetDatabase.LoadAssetAtPath<GameObject>(MadonnaUnitPath).GetComponent(FindRuntimeType("YuliaAbsorbVfx")));
+
+        // 흡수 Timeline 알림은 Director 오브젝트의 수신기로 가므로 기본 마커 트랙(markerTrack)에 둔다.
+        Assert.That(timeline.markerTrack, Is.Not.Null);
+        var times = new Dictionary<string, float>();
+        foreach (UnityEngine.Timeline.IMarker marker in timeline.markerTrack.GetMarkers())
+        {
+            if (marker.GetType().Name != "PresentationSignalMarker") continue;
+            var kind = marker.GetType().GetProperty("Kind").GetValue(marker).ToString();
+            var cue = (string)marker.GetType().GetProperty("CueName").GetValue(marker);
+            if (kind == "Cue" && !string.IsNullOrEmpty(cue)) times[cue] = (float)marker.time;
+        }
+
+        string glowCue = so.FindProperty("glowCue").stringValue;
+        string arcCue = so.FindProperty("arcCue").stringValue;
+        string completeCue = so.FindProperty("completeCue").stringValue;
+        Assert.That(times.ContainsKey(glowCue) && times.ContainsKey(arcCue) && times.ContainsKey(completeCue), Is.True,
+            "흡수 Timeline에 증광·아크·완료 Cue 마커가 모두 있어야 한다.");
+
+        // 손 동작(Victory_NoWeapon 오른손: 0.42~0.67 올림, 0.67~1.33 유지, 1.33~ 내림)에 맞춘다:
+        // 손을 들기 시작할 때 증광 → 다 든 뒤 아크 → 내리기 전에 완료(아크 소거).
+        float glow = times[glowCue], arc = times[arcCue], complete = times[completeCue];
+        Assert.That(glow, Is.GreaterThanOrEqualTo(0.42f), "손을 들기 전(준비 동작)에 증광하지 않는다.");
+        Assert.That(arc, Is.GreaterThan(glow), "증광이 먼저 보이고 아크는 뒤에 이어진다.");
+        Assert.That(arc, Is.GreaterThanOrEqualTo(0.58f), "손이 올라간 뒤 아크.");
+        Assert.That(complete, Is.GreaterThan(arc));
+        Assert.That(complete, Is.LessThan(1.33f), "손을 내리기 전에 아크가 사라진다.");
     }
 
     [Test]

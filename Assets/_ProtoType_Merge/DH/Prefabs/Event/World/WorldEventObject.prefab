@@ -267,10 +267,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   worldEventId: 
   oneShot: 1
+  placementRotation: 0
   gridManager: {fileID: 0}
   visualRoot: {fileID: 63707399964760256}
   prefabRegistry: {fileID: 0}
   spawnNpcVisualOnEnable: 1
+  questionIcon: {fileID: 7151878872509572053}
+  speechBubbleRoot: {fileID: 3583280881388944841}
 --- !u!114 &1072723075502566594
 MonoBehaviour:
   m_ObjectHideFlags: 0

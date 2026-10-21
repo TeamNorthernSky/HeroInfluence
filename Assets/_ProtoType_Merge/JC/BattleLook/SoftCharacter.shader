@@ -4,6 +4,7 @@ Shader "JC/Battle/SoftCharacter"
  {
   _BaseMap("Base Map",2D)="white"{}
   _BaseColor("Base Color",Color)=(1,1,1,1)
+  _HitFlash("Hit Flash",Range(0,1))=0
   _EmissionMap("Emission Map",2D)="white"{}
   _EmissionColor("Emission",Color)=(0,0,0,0)
   _Cutoff("Cutoff",Range(0,1))=.5
@@ -41,7 +42,7 @@ Shader "JC/Battle/SoftCharacter"
    CBUFFER_START(UnityPerMaterial)
    float4 _BaseMap_ST,_EmissionMap_ST,_KeyDirection;
    half4 _BaseColor,_EmissionColor,_KeyTint,_FillTint;
-   float _Cutoff,_ShadeFloor,_Wrap,_ShadowStrength,_AlbedoLift,_RimStrength,_Saturation,_MoldingStrength,_MoldingSharpness;
+   float _Cutoff,_ShadeFloor,_Wrap,_ShadowStrength,_AlbedoLift,_RimStrength,_Saturation,_MoldingStrength,_MoldingSharpness,_HitFlash;
    CBUFFER_END
    struct A{float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;};
    struct V{float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;float3 normalWS:TEXCOORD1;float2 uv:TEXCOORD2;half fog:TEXCOORD3;};
@@ -68,6 +69,7 @@ Shader "JC/Battle/SoftCharacter"
     float highlight=pow(saturate(dot(n,halfVector)),max(4,_MoldingSharpness));
     color=color*(1-crease*_MoldingStrength*.4)+_KeyTint.rgb*highlight*_MoldingStrength*.22;
     color+=SAMPLE_TEXTURE2D(_EmissionMap,sampler_EmissionMap,i.uv).rgb*_EmissionColor.rgb;
+    color=lerp(color,half3(1,1,1),saturate(_HitFlash));
     return half4(MixFog(color,i.fog),albedo.a);
    }
    ENDHLSL
