@@ -1,14 +1,11 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>Shows the selected training card's comparison in its illustrated number boxes.</summary>
 [DisallowMultipleComponent]
 public sealed class TrainingCardSelectionView : MonoBehaviour
 {
     private GameObject panel;
-    private Image statIcon;
-    private TMP_Text statText;
     private TMP_Text currentText;
     private TMP_Text nextText;
     private static readonly Color Ink = new Color32(24, 20, 34, 255);
@@ -34,15 +31,6 @@ public sealed class TrainingCardSelectionView : MonoBehaviour
         if (panel == null) Build(font);
         panel.SetActive(true);
         panel.transform.SetAsLastSibling();
-        // The shared icon library can still point to the old status folder.
-        if (icon == null)
-        {
-            string status = name == "공격력" ? "ATK" : name == "생명력" ? "HP" : null;
-            if (status != null) icon = Resources.Load<Sprite>("Status/UI_icon_" + status);
-        }
-        statIcon.sprite = icon;
-        statIcon.enabled = icon != null;
-        statText.text = string.IsNullOrEmpty(reason) ? name : reason;
         currentText.text = current.ToString("0.##");
         nextText.text = next.HasValue ? next.Value.ToString("0.##") : "—";
     }
@@ -63,15 +51,6 @@ public sealed class TrainingCardSelectionView : MonoBehaviour
         root.anchorMin = Vector2.zero;
         root.anchorMax = Vector2.one;
         root.offsetMin = root.offsetMax = Vector2.zero;
-        var iconGo = new GameObject("StatIcon", typeof(RectTransform), typeof(Image));
-        iconGo.layer = gameObject.layer;
-        statIcon = iconGo.GetComponent<Image>();
-        statIcon.rectTransform.SetParent(root, false);
-        Place(statIcon.rectTransform, 20f, 119f, 32f, 32f);
-        statIcon.preserveAspect = true;
-        statIcon.raycastTarget = false;
-        statText = CreateText("StatName", font, 60f, 116f, 246f, 39f, 26f);
-        statText.alignment = TextAlignmentOptions.MidlineLeft;
         currentText = CreateText("Current", font, 37f, 166f, 101f, 46f, 32f);
         nextText = CreateText("Next", font, 190f, 166f, 101f, 46f, 32f);
     }
