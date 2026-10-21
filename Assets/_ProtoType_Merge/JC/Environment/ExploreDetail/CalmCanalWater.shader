@@ -114,20 +114,44 @@ Shader "JC/Environment/Calm Canal Water"
    }
    // 기울기는 미리 제작한 Normal map에서 읽고 두 위상의 이동을 섞습니다.
    // UV가 월드 X/Z이므로 탄젠트 X/Y를 월드 X/Z 기울기로 해석합니다.
-   float2 SampleSlope(float2 world,float time) {
+   float2 SampleSlope(float2 world,float time,float2 worldDx,float2 worldDy) {
     float2 aUV=world/(max(.2,_WaveShade.y)*8);
     float2 dUV=(world+float2(.73,-.41)*time*_Normals.w)/(max(.05,_Normals.z)*8);
     float2 bUV=(world+float2(-.37,.61)*time*_Normals.w)/(max(.05,_Normals.z)*8*1.37)+float2(.37,.73);
-    half3 a=UnpackNormal(SAMPLE_TEXTURE2D(_NormalBroad,sampler_NormalBroad,aUV));
-    half3 d=UnpackNormal(SAMPLE_TEXTURE2D(_NormalDetail,sampler_NormalDetail,dUV));
-    half3 b=UnpackNormal(SAMPLE_TEXTURE2D(_NormalDetail,sampler_NormalDetail,bUV));
+    // 셀 경계의 샘플 이동량 차이가 mip 선택에 섞이지 않도록 원래 월드 미분을 사용합니다.
+    float broadScale=max(.2,_WaveShade.y)*8,detailScale=max(.05,_Normals.z)*8;
+    half3 a=UnpackNormal(SAMPLE_TEXTURE2D_GRAD(_NormalBroad,sampler_NormalBroad,aUV,worldDx/broadScale,worldDy/broadScale));
+    half3 d=UnpackNormal(SAMPLE_TEXTURE2D_GRAD(_NormalDetail,sampler_NormalDetail,dUV,worldDx/detailScale,worldDy/detailScale));
+    half3 b=UnpackNormal(SAMPLE_TEXTURE2D_GRAD(_NormalDetail,sampler_NormalDetail,bUV,worldDx/(detailScale*1.37),worldDy/(detailScale*1.37)));
     return a.xy/max(.2,a.z)*_Normals.x*(1-saturate(_DirectionalWave.x))+(d.xy/max(.2,d.z)+b.xy/max(.2,b.z))*.5*_Normals.y;
    }
-   float2 WaterSlope(float2 world,float2 flow,float time) {
+   float2 AdvectedSlope(float2 world,float2 flow,float time,float2 worldDx,float2 worldDy) {
     float span=max(1,_WaveShade.y*2);
     float phase=frac(time*_Flow.z/span),other=frac(phase+.5);
     float blend=smoothstep(0,1,abs(phase*2-1));
-    return lerp(SampleSlope(world-flow*phase*span,time),SampleSlope(world-flow*other*span+float2(13.17,7.31),time),blend);
+    return lerp(SampleSlope(world-flow*phase*span,time,worldDx,worldDy),SampleSlope(world-flow*other*span+float2(13.17,7.31),time,worldDx,worldDy),blend);
+   }
+   float2 WaterSlope(float2 world,float time) {
+    float2 worldDx=ddx(world),worldDy=ddy(world);
+    float2 result=float2(0,0);
+    if(_FollowCanal<.5) {
+     result=AdvectedSlope(world,FlowAt(world),time,worldDx,worldDy);
+    } else {
+    // 픽셀별 방향으로 UV를 휘지 않습니다. 각 고정 셀에서는 평행이동만 하고,
+    // 네 셀에서 읽은 월드 기울기를 혼합해 합류부의 좌표 접힘을 방지합니다.
+    float grid=max(2,_WaveShade.y*2);
+    float2 cell=floor(world/grid),f=frac(world/grid);
+    f=f*f*f*(f*(f*6-15)+10);
+    float2 d00=FlowAt(cell*grid),d10=FlowAt((cell+float2(1,0))*grid);
+    float2 d01=FlowAt((cell+float2(0,1))*grid),d11=FlowAt((cell+1)*grid);
+    // 방향이 같은 직선부는 기존과 동일한 한 쌍의 위상만 샘플링합니다.
+    if(dot(d00-d10,d00-d10)+dot(d00-d01,d00-d01)+dot(d00-d11,d00-d11)<1e-8)
+     result=AdvectedSlope(world,d00,time,worldDx,worldDy);
+    else
+     result=lerp(lerp(AdvectedSlope(world,d00,time,worldDx,worldDy),AdvectedSlope(world,d10,time,worldDx,worldDy),f.x),
+                 lerp(AdvectedSlope(world,d01,time,worldDx,worldDy),AdvectedSlope(world,d11,time,worldDx,worldDy),f.x),f.y);
+    }
+    return result;
    }
    // 픽셀 안에서 노멀이 크게 변하면 로브를 넓히고 피크를 낮춰 원거리 점멸을 줄입니다.
    float WaterLightLobe(float ndh,float exponent,float variance,float softness) {
@@ -140,8 +164,7 @@ Shader "JC/Environment/Calm Canal Water"
    half4 frag(V i):SV_Target {
     clip(.5-_JcWaterReflectionPass);
     float time=(_UseWaterTime>.5?_WaterTime:_Time.y);
-    float2 flow=FlowAt(i.world.xz);
-    float2 slope=WaterSlope(i.world.xz,flow,time);
+    float2 slope=WaterSlope(i.world.xz,time);
     if(_DirectionalWave.x>.001)slope+=DirectionalSlope(i.world.xz,time)*saturate(_DirectionalWave.x);
     half3 normal=normalize(half3(slope.x,1,slope.y));
     half3 view=GetWorldSpaceNormalizeViewDir(i.world);

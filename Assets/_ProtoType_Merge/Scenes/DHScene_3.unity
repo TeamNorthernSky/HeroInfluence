@@ -22797,10 +22797,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09ad8cdb630b63b85b17bac176d97cda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  profile: {fileID: 11400000, guid: e485f30306641a38fe4b9c3f78de1477, type: 2}
+  profile: {fileID: 11400000, guid: 7651557923c4b4d449a227a0598cb5ff, type: 2}
   directionalLight: {fileID: 1102936117}
   applyOnStart: 1
   lightYawOffset: 0
+  timePreviewSettings: {fileID: 11400000, guid: 90d2ff8aa3dc50245bd0a489d973363a,
+    type: 2}
 --- !u!4 &197574232
 Transform:
   m_ObjectHideFlags: 0
@@ -50750,7 +50752,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 8707562427562813496, guid: bca0bb4df51ec7a4f88b6b33141c7c3b, type: 3}
+  - {fileID: 2100000, guid: e7a8c847f99c1c24ab747fe35be7a811, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -204654,7 +204656,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 8707562427562813496, guid: bca0bb4df51ec7a4f88b6b33141c7c3b, type: 3}
+  - {fileID: 2100000, guid: e7a8c847f99c1c24ab747fe35be7a811, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -226,9 +226,12 @@ namespace JC.EnvironmentDetail.Editor
                 if (source == null) throw new InvalidOperationException("생성 재질 누락");
                 if (block.isEmpty && copies.TryGetValue(source, out var value)) return (Material)value;
                 var copy = new Material(source) { name = source.name, hideFlags = HideFlags.None };
+                bool liveWater = copy.shader.name == "JC/Environment/Calm Canal Water";
                 for (int i = 0; i < copy.shader.GetPropertyCount(); i++)
                 {
                     string p = copy.shader.GetPropertyName(i); int id = Shader.PropertyToID(p);
+                    // 카메라별 반사 영상은 저장할 입력이 아닙니다. 표시 시 물 컨트롤러가 다시 연결합니다.
+                    if (liveWater && (p == "_PlanarReflection" || p == "_PlanarAvailable")) continue;
                     switch (copy.shader.GetPropertyType(i))
                     {
                         case ShaderPropertyType.Color: if (block.HasColor(id)) copy.SetColor(id, block.GetColor(id)); break;
@@ -239,6 +242,12 @@ namespace JC.EnvironmentDetail.Editor
                             if (block.HasTexture(id)) copy.SetTexture(id, block.GetTexture(id));
                             copy.SetTexture(id, Texture(copy.GetTexture(id))); break;
                     }
+                }
+                if (liveWater)
+                {
+                    copy.SetTexture("_PlanarReflection", null);
+                    copy.SetFloat("_PlanarAvailable", 0);
+                    copy.SetMatrix("_PlanarVP", Matrix4x4.identity);
                 }
                 if(copy.HasProperty("_UseWaterTime"))copy.SetFloat("_UseWaterTime",0);
                 AssetDatabase.CreateAsset(copy, folder + "/Material_" + next++ + ".mat");

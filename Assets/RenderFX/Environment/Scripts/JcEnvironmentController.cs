@@ -15,7 +15,7 @@ namespace JC.Env
     ///   플레이 중에는 <b>인스턴스를 만들어</b> 갱신한다(플레이 중 변경이 에셋에 스미는 사고 방지).
     /// </summary>
     [DisallowMultipleComponent]
-    public class JcEnvironmentController : MonoBehaviour
+    public partial class JcEnvironmentController : MonoBehaviour
     {
         [Tooltip("적용할 환경 프로파일(정본).")]
         [SerializeField] private JcEnvironmentProfile profile;
@@ -37,6 +37,7 @@ namespace JC.Env
         private Material _runtimeSky;
         private Material _runtimeSkySource;
         private bool _started;
+        private bool _initialTimeApplied;
         private JcEnvironmentProfile _requestedProfile;
 
         public JcEnvironmentProfile Profile { get => profile; set => profile = value; }
@@ -68,11 +69,13 @@ namespace JC.Env
 
         private void OnDisable()
         {
+            StopTimePreview();
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
         }
 
         private void OnDestroy()
         {
+            StopTimePreview();
             ReleaseRuntimeSky();
         }
 
@@ -92,6 +95,13 @@ namespace JC.Env
             // 명시 적용 프로파일을 additive 씬 왕복 후에도 복원합니다.
             if (_requestedProfile != null) Apply(_requestedProfile);
             else if (applyOnStart) ApplyNow();
+
+            // 첫 진입은 시작 시각, 씬 왕복은 마지막 시각을 적용합니다. 턴 진행은 아직 연결하지 않습니다.
+            if (Application.isPlaying && applyOnStart && CanApply && timePreviewSettings != null)
+            {
+                SetPreviewHour(_initialTimeApplied ? PreviewHour : timePreviewSettings.startHour);
+                _initialTimeApplied = IsTimePreviewActive;
+            }
         }
 
         // Additive 로드의 Start는 SetActiveScene보다 먼저 실행될 수 있다.
@@ -106,6 +116,7 @@ namespace JC.Env
         public void Apply(JcEnvironmentProfile p)
         {
             if (p == null) return;
+            StopTimePreview();
             _requestedProfile = p;
             if (!CanApply) return;
 
@@ -155,7 +166,7 @@ namespace JC.Env
         /// </summary>
         public void CaptureInto(JcEnvironmentProfile target)
         {
-            if (target == null || !CanApply) return;
+            if (target == null || !CanApply || IsTimePreviewActive) return;
 
             // ① 하늘 — 현행 재질을 정본으로 기록하고, 파라미터도 함께 읽어온다
             var m = RenderSettings.skybox;

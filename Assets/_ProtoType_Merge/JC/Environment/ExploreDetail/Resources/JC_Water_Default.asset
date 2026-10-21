@@ -44,7 +44,7 @@ MonoBehaviour:
     highlightRoughness: 0.444
     highlightSoftness: 0.756
     sparkleStrength: 1.6
-    fakeHighlightStrength: 0.22
+    fakeHighlightStrength: 0.29
     fakeHighlightColor: {r: 0.7, g: 0.85, b: 1, a: 1}
     fakeHighlightWidth: 0.112
     fakeHighlightTilt: 0.056

@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Material_285
+  m_Shader: {fileID: 4800000, guid: 6fd5608cdb332684c823b437da8ed24d, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 3000
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _FlowMap:
+        m_Texture: {fileID: 2800000, guid: faa1d5480b1bc7b458de6cb36875f49c, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalBroad:
+        m_Texture: {fileID: 2800000, guid: b1d4c7bc3cf2a2d47a5ed2f6c8d71737, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalDetail:
+        m_Texture: {fileID: 2800000, guid: e9797cd51921c6a409427a98e1cd7f7e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PlanarReflection:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _FollowCanal: 1
+    - _PlanarAvailable: 0
+    - _UseWaterTime: 0
+    - _WaterTime: 2165.5598
+    m_Colors:
+    - _BaseColor: {r: 0.21306513, g: 0.480475, b: 0.7924528, a: 1}
+    - _DirectionalWave: {r: 0, g: 5, b: 0.65, a: 4}
+    - _EdgeColor: {r: 0.42172483, g: 0.5658475, b: 0.764151, a: 1}
+    - _EdgeVariation: {r: 0.65, g: 3.5, b: 0, a: 0}
+    - _FakeHighlight: {r: 0.29, g: 0.112, b: 0.056, a: 0.238}
+    - _FakeHighlightColor: {r: 0.7, g: 0.85, b: 1, a: 1}
+    - _Flow: {r: 1, g: 0, b: 0.331, a: 0}
+    - _FlowMapBounds: {r: -1.5, g: -1.5, b: 0.008928572, a: 0.021276595}
+    - _Normals: {r: 0.503, g: 0.207, b: 0.56, a: 0.277}
+    - _Reflection: {r: 0.374, g: 0.571, b: 0.45, a: 0.012}
+    - _Specular: {r: 7.01, g: 0.444, b: 0.756, a: 1.6}
+    - _Surface: {r: 0.72, g: 0.414, b: 0, a: 0}
+    - _Transmission: {r: 0.52, g: 0.65, b: 0, a: 0}
+    - _WaveBend: {r: 0.08, g: 0, b: 0, a: 0}
+    - _WaveShade: {r: 0.455, g: 2.56, b: 0.863, a: 0}
+  m_BuildTextureStacks: []

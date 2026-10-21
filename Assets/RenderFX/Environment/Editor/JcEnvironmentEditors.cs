@@ -35,6 +35,7 @@ namespace JC.Env.EditorTools
         ///   <b>프로파일이 아니라 「지금 씬 상태」로 다시 세운다</b>(EnsureDraft) — 화면과 인스펙터가 늘 같은 것을 가리키게.
         /// </summary>
         private static readonly System.Collections.Generic.Dictionary<int, JcEnvironmentProfile> Drafts = new();
+        private static readonly System.Collections.Generic.Dictionary<int, JcEnvironmentProfile> DraftSources = new();
 
         private JcEnvironmentProfile _draft;
 
@@ -95,6 +96,15 @@ namespace JC.Env.EditorTools
         {
             int key = c.GetInstanceID();
             Drafts.TryGetValue(key, out var cached);
+            // 낮/밤 프로파일을 교체하면 이전 프로파일의 초안을 새 프로파일에 쓰지 않습니다.
+            DraftSources.TryGetValue(key, out var source);
+            if (cached != null && source != c.Profile)
+            {
+                Object.DestroyImmediate(cached);
+                Drafts.Remove(key);
+                cached = null;
+                _draft = null; _profileSO = null;
+            }
 
             // 잘못된 플래그로 만들어진 초안이 남아 있으면 편집 가능 상태로 복구
             if (cached != null && (cached.hideFlags & HideFlags.NotEditable) != 0)
@@ -110,6 +120,7 @@ namespace JC.Env.EditorTools
                 cached.hideFlags = HideFlags.DontSave;
                 cached.name = c.Profile.name;
                 Drafts[key] = cached;
+                DraftSources[key] = c.Profile;
                 _draft = null;                                  // 아래에서 SerializedObject 를 새로 문다
             }
 
@@ -136,8 +147,9 @@ namespace JC.Env.EditorTools
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
             var c = (JcEnvironmentController)target;
+            using (new EditorGUI.DisabledScope(c.IsTimePreviewActive)) DrawDefaultInspector();
+            if (JcTimePreviewEditor.Draw(c)) return;
 
             EditorGUILayout.Space(6);
 
