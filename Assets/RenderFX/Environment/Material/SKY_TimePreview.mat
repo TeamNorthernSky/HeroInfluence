@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SKY_TimePreview
+  m_Shader: {fileID: 4800000, guid: 129fa2cb8b906be4ea6b84089e154995, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _DayBase:
+        m_Texture: {fileID: 8900000, guid: a5f3b005c3c9027499cdd4988e5c5cbb, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DayCloud:
+        m_Texture: {fileID: 8900000, guid: 83a1dad52bab197418d279d3d30b29ae, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DuskBase:
+        m_Texture: {fileID: 8900000, guid: 6911cfbabe68b474788badd5ca270f34, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DuskCloud:
+        m_Texture: {fileID: 8900000, guid: 3b4920ac444089244963fae1b2461a1c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NightBase:
+        m_Texture: {fileID: 8900000, guid: 05f3df7f78e775943888afd100ab8164, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NightCloud:
+        m_Texture: {fileID: 8900000, guid: f8fc6db900ee44f428ef5ff2ddf3dee5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _CloudOffset: 0
+    - _CloudOpacity: 1
+    - _CloudSpeed: 0.2
+    - _DayExposure: 1
+    - _MoonRadius: 0.5
+    - _NightExposure: 1
+    - _Rotation: 0
+    - _SunRadius: 0.45
+    m_Colors:
+    - _MoonColor: {r: 1.5, g: 1.8, b: 2.3000002, a: 1}
+    - _MoonDirection: {r: -1, g: 0, b: 0, a: 0}
+    - _SunColor: {r: 10.000001, g: 7.0000005, b: 3.0000002, a: 1}
+    - _SunDirection: {r: 1, g: 0, b: 0, a: 0}
+    - _Weights: {r: 1, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []

@@ -18,9 +18,39 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
     private DHWorldEventPresentationRequest lastRequest;
     private bool initialized;
     private WorldEventNpcPanelSelector lastAnswerPanel;
+    private GameObject screenDialogue;
+    private TMP_Text screenMessage;
+    private DialogueBubblePopEffect screenPop;
+    private static WorldEventNpcSpeechView dialogueOwner;
 
     private void OnEnable() { initialized = false; Refresh(); }
     private void LateUpdate() { Refresh(); }
+
+    private bool EnsureScreenDialogue()
+    {
+        if (screenDialogue != null) return screenMessage != null;
+        if (answerPanel == null) return false;
+        var dialogue = answerPanel.transform.Find("NpcDialogue");
+        if (dialogue == null) return false;
+        screenDialogue = dialogue.gameObject;
+        screenPop = screenDialogue.GetComponent<DialogueBubblePopEffect>();
+        var description = screenDialogue.transform.Find("Description");
+        screenMessage = description != null ? description.GetComponentInChildren<TMP_Text>(true)
+            : screenDialogue.GetComponentInChildren<TMP_Text>(true);
+        return screenMessage != null;
+    }
+
+    private void OnDisable()
+    {
+        HideScreenDialogue();
+    }
+
+    private void HideScreenDialogue()
+    {
+        if (dialogueOwner != this) return;
+        if (screenDialogue != null) screenDialogue.SetActive(false);
+        dialogueOwner = null;
+    }
 
     public void Refresh()
     {
@@ -34,7 +64,8 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
         if (request != null && answerPanel == null)
             answerPanel = FindFirstObjectByType<WorldEventNpcPanelSelector>(FindObjectsInactive.Include);
         if (initialized && lastId == id && lastCatalog == catalog && ReferenceEquals(lastRequest, request) &&
-            lastAnswerPanel == answerPanel && (request == null || answerPanel != null)) return;
+            lastAnswerPanel == answerPanel &&
+            (request == null || (answerPanel != null && screenMessage != null))) return;
         if (answerPanel != null && (lastId != id || request == null))
             answerPanel.HideForEventId(lastId);
         initialized = catalog != null;
@@ -60,6 +91,20 @@ public sealed class WorldEventNpcSpeechView : MonoBehaviour
         else if (answerPanel != null) answerPanel.HideForEventId(id);
         if (message != null) message.text = text;
         if (questionBubble != null) questionBubble.SetActive(!interacting);
-        if (dialogueBubble != null) dialogueBubble.SetActive(interacting);
+        if (Application.isPlaying)
+        {
+            if (dialogueBubble != null) dialogueBubble.SetActive(false);
+            if (interacting && EnsureScreenDialogue())
+            {
+                bool restart = dialogueOwner != this || screenMessage.text != text;
+                bool wasActive = screenDialogue.activeSelf;
+                dialogueOwner = this;
+                screenMessage.text = text;
+                screenDialogue.SetActive(true);
+                if (wasActive && restart) screenPop?.Play();
+            }
+            else HideScreenDialogue();
+        }
+        else if (dialogueBubble != null) dialogueBubble.SetActive(interacting);
     }
 }

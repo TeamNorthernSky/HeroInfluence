@@ -36,7 +36,6 @@ public class GridManager : MonoBehaviour
     [Tooltip("이 레이어에 있는 콜라이더를 장애물로 간주합니다.")]
     [SerializeField] private LayerMask obstacleLayerMask;
     [SerializeField] private bool useLegacyObstacleColliderFallback;
-    [SerializeField] private LayerMask eventLayerMask;
     [SerializeField] private LayerMask playerLayerMask;
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private bool useLegacyEnemyColliderFallback;
@@ -331,25 +330,6 @@ public class GridManager : MonoBehaviour
             gateBlockerCells.Remove(grid);
     }
 
-    public bool HasOtherPlayer(Vector2Int grid, Transform selfTransform)
-    {
-        PartyRegistry partyRegistry = FindFirstObjectByType<PartyRegistry>();
-        PartyGridMover playerParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
-        if (playerParty == null)
-            return false;
-
-        if (selfTransform != null &&
-            (playerParty.transform == selfTransform || playerParty.transform.IsChildOf(selfTransform)))
-        {
-            return false;
-        }
-
-        if (!playerParty.gameObject.activeInHierarchy)
-            return false;
-
-        return playerParty.GetCurrentGrid() == grid;
-    }
-
     public bool HasItem(Vector2Int grid)
     {
         return TryGetGridItemObjectAtGrid(grid, out _);
@@ -554,9 +534,10 @@ public class GridManager : MonoBehaviour
         if (IsTutorialSceneActive())
             return false;
 
-        IReadOnlyList<MapEventObject> mapEvents = mapEventRegistry != null
-            ? mapEventRegistry.MapEvents
-            : FindObjectsByType<MapEventObject>(FindObjectsSortMode.None);
+        if (mapEventRegistry == null)
+            return false;
+
+        IReadOnlyList<MapEventObject> mapEvents = mapEventRegistry.MapEvents;
 
         for (int i = 0; i < mapEvents.Count; i++)
         {
@@ -566,23 +547,6 @@ public class GridManager : MonoBehaviour
 
             mapEvent = candidate;
             return true;
-        }
-
-        Vector3 center = GridToWorldCenter(grid);
-        center.y = GetLandSurfaceY() + 0.5f;
-
-        Vector3 halfExtents = new Vector3(cellSize * 0.5f * obstacleCheckFill, 0.5f, cellSize * 0.5f * obstacleCheckFill);
-        Collider[] cols = Physics.OverlapBox(center, halfExtents, Quaternion.identity, eventLayerMask);
-
-        for (int i = 0; i < cols.Length; i++)
-        {
-            Collider col = cols[i];
-            if (col == null)
-                continue;
-
-            mapEvent = col.GetComponentInParent<MapEventObject>();
-            if (mapEvent != null)
-                return true;
         }
 
         return false;
@@ -1043,15 +1007,11 @@ public class GridManager : MonoBehaviour
             if (outpost == null)
                 continue;
 
-            IReadOnlyList<Vector2Int> interactionCells = outpost.GetAdjacentInteractionCells(this);
-            for (int cellIndex = 0; cellIndex < interactionCells.Count; cellIndex++)
-            {
-                if (interactionCells[cellIndex] != grid)
-                    continue;
+            if (!outpost.IsInteractionCell(grid, this))
+                continue;
 
-                outpostGrid = outpost.GetAnchorGrid(this);
-                return true;
-            }
+            outpostGrid = outpost.GetAnchorGrid(this);
+            return true;
         }
 
         outpostGrid = grid;
@@ -1112,8 +1072,11 @@ public class GridManager : MonoBehaviour
         if (IsTutorialSceneActive())
             return false;
 
-        HeroUnionUnit[] heroUnions = FindObjectsByType<HeroUnionUnit>(FindObjectsSortMode.None);
-        for (int i = 0; i < heroUnions.Length; i++)
+        if (heroUnionRegistry == null)
+            return false;
+
+        IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry.HeroUnions;
+        for (int i = 0; i < heroUnions.Count; i++)
         {
             HeroUnionUnit candidate = heroUnions[i];
             if (candidate == null)
@@ -1123,6 +1086,52 @@ public class GridManager : MonoBehaviour
                 continue;
 
             heroUnion = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryGetOutpostAtInteractionCell(Vector2Int grid, out Outpost outpost)
+    {
+        outpost = null;
+        if (outpostRegistry == null)
+            return false;
+
+        IReadOnlyList<Outpost> outposts = outpostRegistry.Outposts;
+        for (int i = 0; i < outposts.Count; i++)
+        {
+            Outpost candidate = outposts[i];
+            if (candidate == null)
+                continue;
+
+            if (!candidate.IsInteractionCell(grid, this))
+                continue;
+
+            outpost = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryGetVillainUnionAtInteractionCell(Vector2Int grid, out VillainUnionBase villainUnionBase)
+    {
+        villainUnionBase = null;
+        if (villainUnionBaseRegistry == null)
+            return false;
+
+        IReadOnlyList<VillainUnionBase> bases = villainUnionBaseRegistry.VillainUnionBases;
+        for (int i = 0; i < bases.Count; i++)
+        {
+            VillainUnionBase candidate = bases[i];
+            if (candidate == null)
+                continue;
+
+            if (!candidate.IsAdjacentCell(grid))
+                continue;
+
+            villainUnionBase = candidate;
             return true;
         }
 
@@ -1179,9 +1188,6 @@ public class GridManager : MonoBehaviour
         if (HasObstacle(grid))
             return false;
 
-        if (HasOtherPlayer(grid, selfTransform))
-            return false;
-
         if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
             return false;
 
@@ -1215,9 +1221,6 @@ public class GridManager : MonoBehaviour
             return false;
 
         if (HasObstacle(grid))
-            return false;
-
-        if (HasOtherPlayer(grid, selfTransform))
             return false;
 
         if (!ZoneEntryGuidanceController.IsCellAllowed(grid))

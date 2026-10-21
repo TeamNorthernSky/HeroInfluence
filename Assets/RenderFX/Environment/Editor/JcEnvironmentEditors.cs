@@ -35,64 +35,49 @@ namespace JC.Env.EditorTools
         ///   <b>프로파일이 아니라 「지금 씬 상태」로 다시 세운다</b>(EnsureDraft) — 화면과 인스펙터가 늘 같은 것을 가리키게.
         /// </summary>
         private static readonly System.Collections.Generic.Dictionary<int, JcEnvironmentProfile> Drafts = new();
+        private static readonly System.Collections.Generic.Dictionary<int, JcEnvironmentProfile> DraftSources = new();
 
         private JcEnvironmentProfile _draft;
 
-        /// <summary>
-        /// 하늘 파라미터 필드 ↔ 셰이더 프로퍼티 대응.
-        /// ★스카이박스 셰이더마다 가진 프로퍼티가 다르다(Procedural은 대기 산란 계열을 갖지만 Cubemap 은 _Exposure·_Rotation·_Tint 뿐).
-        /// 컨트롤러는 <c>HasProperty</c> 가드로 없는 프로퍼티를 조용히 건너뛰므로, 인스펙터에 보이지만 실제로는
-        /// 아무 일도 하지 않는 필드가 생긴다 — 그 필드를 회색 처리해 "지금 이 하늘에서는 무효"임을 드러낸다.
-        /// 하늘 재질이 바뀌면 판정도 자동으로 따라간다(매 인스펙터 갱신마다 재판정).
-        /// </summary>
-        private static readonly (string field, string shaderProp)[] SkyParamMap =
+        // 두 인스펙터가 같은 지원 여부/읽기 전용 판정을 사용합니다.
+        internal static bool IsFieldSupported(string field, JcEnvironmentProfile p)
         {
-            ("skyTint",             "_SkyTint"),
-            ("skyGroundColor",      "_GroundColor"),
-            ("atmosphereThickness", "_AtmosphereThickness"),
-            ("skyExposure",         "_Exposure"),
-            ("sunSize",             "_SunSize"),
-            ("sunSizeConvergence",  "_SunSizeConvergence"),
-        };
+            string shaderProperty = field switch
+            {
+                "skyTint" => "_Tint",
+                "skyExposure" => "_Exposure",
+                "alignSkyToSun" or "skySunAzimuth" or "skySunElevation" => "_Rotation",
+                "skyCloudSpeed" => "_CloudSpeed",
+                "skyCloudOffset" => "_CloudOffset",
+                "skyCloudOpacity" => "_CloudOpacity",
+                _ => null
+            };
+            return shaderProperty == null ||
+                (p.skyboxMaterial != null && p.skyboxMaterial.HasProperty(shaderProperty));
+        }
 
-        /// <summary>이 필드가 지금 하늘에서 무효인가. 무효면 사유를 함께 돌려준다.</summary>
-        private static bool IsSkyParamInactive(string fieldName, JcEnvironmentProfile p, out string reason)
+        internal static bool IsFieldReadOnly(string field, JcEnvironmentProfile p)
+            => field == "skySunElevation" ||
+               ((field == "skyTint" || field == "skyExposure") && !p.driveSkyboxParams) ||
+               (field == "skySunAzimuth" && !p.alignSkyToSun);
+
+        internal static void DrawProfileFields(SerializedObject source, JcEnvironmentProfile p)
         {
-            reason = null;
-
-            // ①-b 정합 필드는 driveSkyboxParams 와 무관하다 — 하늘에 _Rotation 이 있느냐만 본다.
-            //     (HDRI 를 쓸 때 driveSkyboxParams 는 꺼 두는 것이 정석인데, 정합이 필요한 상황이 바로 그때다)
-            if (fieldName == "alignSkyToSun" || fieldName == "skySunAzimuth")
+            int hidden = 0;
+            var it = source.GetIterator();
+            bool enter = true;
+            while (it.NextVisible(enter))
             {
-                var mat = p.skyboxMaterial;
-                if (mat == null) { reason = "하늘 재질 없음"; return true; }
-                if (!mat.HasProperty("_Rotation")) { reason = $"{mat.shader.name} 미지원"; return true; }
-                if (fieldName == "skySunAzimuth" && !p.alignSkyToSun) { reason = "정합 꺼짐"; return true; }
-                return false;
+                enter = false;
+                if (it.propertyPath == "m_Script") continue;
+                if (!IsFieldSupported(it.propertyPath, p)) { hidden++; continue; }
+                bool diagnostic = it.propertyPath == "skySunElevation";
+                var label = new GUIContent(diagnostic ? "하늘 태양 고도 (실측 · 읽기 전용)" : it.displayName, it.tooltip);
+                using (new EditorGUI.DisabledScope(IsFieldReadOnly(it.propertyPath, p)))
+                    EditorGUILayout.PropertyField(it, label, true);
             }
-
-            string prop = null;
-            foreach (var e in SkyParamMap)
-                if (e.field == fieldName) { prop = e.shaderProp; break; }
-            if (prop == null) return false;          // 하늘 파라미터가 아님 — 판정 대상 아님
-
-            if (!p.driveSkyboxParams)
-            {
-                reason = "기록 꺼짐";
-                return true;
-            }
-            var m = p.skyboxMaterial;
-            if (m == null)
-            {
-                reason = "하늘 재질 없음";
-                return true;
-            }
-            if (!m.HasProperty(prop))
-            {
-                reason = $"{m.shader.name} 미지원";
-                return true;
-            }
-            return false;
+            if (hidden > 0)
+                EditorGUILayout.HelpBox($"현재 하늘에서 지원하지 않는 항목 {hidden}개를 숨겼습니다. 지원 재질을 선택하면 다시 표시됩니다.", MessageType.Info);
         }
 
         /// <summary>
@@ -111,6 +96,15 @@ namespace JC.Env.EditorTools
         {
             int key = c.GetInstanceID();
             Drafts.TryGetValue(key, out var cached);
+            // 낮/밤 프로파일을 교체하면 이전 프로파일의 초안을 새 프로파일에 쓰지 않습니다.
+            DraftSources.TryGetValue(key, out var source);
+            if (cached != null && source != c.Profile)
+            {
+                Object.DestroyImmediate(cached);
+                Drafts.Remove(key);
+                cached = null;
+                _draft = null; _profileSO = null;
+            }
 
             // 잘못된 플래그로 만들어진 초안이 남아 있으면 편집 가능 상태로 복구
             if (cached != null && (cached.hideFlags & HideFlags.NotEditable) != 0)
@@ -126,6 +120,7 @@ namespace JC.Env.EditorTools
                 cached.hideFlags = HideFlags.DontSave;
                 cached.name = c.Profile.name;
                 Drafts[key] = cached;
+                DraftSources[key] = c.Profile;
                 _draft = null;                                  // 아래에서 SerializedObject 를 새로 문다
             }
 
@@ -152,8 +147,9 @@ namespace JC.Env.EditorTools
 
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
             var c = (JcEnvironmentController)target;
+            using (new EditorGUI.DisabledScope(c.IsTimePreviewActive)) DrawDefaultInspector();
+            if (JcTimePreviewEditor.Draw(c)) return;
 
             EditorGUILayout.Space(6);
 
@@ -178,36 +174,8 @@ namespace JC.Env.EditorTools
                 _profileSO.Update();
                 EditorGUI.BeginChangeCheck();
 
-                int inactiveCount = 0;
-                string lastReason = null;
-
                 using (new EditorGUI.IndentLevelScope())
-                {
-                    var it = _profileSO.GetIterator();
-                    bool enter = true;
-                    while (it.NextVisible(enter))
-                    {
-                        enter = false;
-                        if (it.propertyPath == "m_Script") continue;
-
-                        // 현재 하늘에서 무효인 파라미터는 회색 + 사유 접미. 유효해지면 자동으로 원상 복귀한다.
-                        bool inactive = IsSkyParamInactive(it.propertyPath, _draft, out string reason);
-                        if (inactive) { inactiveCount++; lastReason = reason; }
-
-                        var label = new GUIContent(
-                            inactive ? $"{it.displayName}  ({reason})" : it.displayName,
-                            it.tooltip);
-
-                        using (new EditorGUI.DisabledScope(inactive))
-                            EditorGUILayout.PropertyField(it, label, true);
-                    }
-                }
-
-                if (inactiveCount > 0)
-                    EditorGUILayout.HelpBox(
-                        $"회색 필드 {inactiveCount}개는 지금 하늘에서 적용되지 않습니다 ({lastReason}).\n" +
-                        "하늘 재질을 바꾸거나 Drive Skybox Params 를 켜면 자동으로 다시 활성화됩니다.",
-                        MessageType.Info);
+                    DrawProfileFields(_profileSO, _draft);
 
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -298,8 +266,7 @@ namespace JC.Env.EditorTools
             {
                 EditorGUILayout.HelpBox(mat == null
                     ? "하늘 재질이 없어 정합을 쓸 수 없습니다."
-                    : $"'{mat.shader.name}' 에는 _Rotation 이 없어 정합 대상이 아닙니다.\n" +
-                      "Procedural 하늘은 태양 원반이 Sun Source 를 따라가므로 이미 정합 상태입니다.",
+                    : $"'{mat.shader.name}' 에는 _Rotation 이 없어 자동 방위 정합을 지원하지 않습니다.",
                     MessageType.None);
                 return;
             }
@@ -412,8 +379,10 @@ namespace JC.Env.EditorTools
     {
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
             var p = (JcEnvironmentProfile)target;
+            serializedObject.Update();
+            JcEnvironmentControllerEditor.DrawProfileFields(serializedObject, p);
+            serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.Space(6);
             EditorGUILayout.HelpBox(
@@ -433,6 +402,30 @@ namespace JC.Env.EditorTools
                 else Debug.LogWarning("[JcEnvironment] 씬에 JcEnvironmentController 가 없습니다 — GO 에 붙여 주세요.");
             }
             JcPresetEditorUtil.DrawSaveButton(p, wide: true);
+        }
+    }
+}
+
+namespace JC.Env.EditorTools
+{
+    // 편집 모드에서도 배경과 평면 반사가 같은 시각의 구름을 봅니다. 에셋 값은 갱신하지 않습니다.
+    [InitializeOnLoad]
+    internal static class JcSkyCloudPreviewClock
+    {
+        static double nextFrame;
+        static readonly double startTime = EditorApplication.timeSinceStartup;
+        static JcSkyCloudPreviewClock() { EditorApplication.update += Tick; }
+        static void Tick()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+            var sky = RenderSettings.skybox;
+            if (sky == null || !sky.HasProperty("_CloudSpeed") || Mathf.Abs(sky.GetFloat("_CloudSpeed")) < .0001f) return;
+            double now = EditorApplication.timeSinceStartup;
+            if (now < nextFrame) return;
+            nextFrame = now + 1.0 / 15;
+            Shader.SetGlobalFloat("_JcSkyCloudTime", (float)(now - startTime));
+            EditorApplication.QueuePlayerLoopUpdate();
+            SceneView.RepaintAll();
         }
     }
 }

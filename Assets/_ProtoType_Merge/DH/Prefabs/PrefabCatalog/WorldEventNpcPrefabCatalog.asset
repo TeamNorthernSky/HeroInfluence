@@ -18,17 +18,29 @@ MonoBehaviour:
   - npcType: 0
     prefab: {fileID: 1720866835831745556, guid: fb144cc5da02ad640b901bca0633c424,
       type: 3}
+    facePartyOnInteraction: 1
+    questionIcon: {fileID: 21300000, guid: 8fdfefd91bd065d418a2388aea2be0ed, type: 3}
   - npcType: 1
     prefab: {fileID: 3183641201039459982, guid: 61475e70bc4f2e246bf6ad1364ce493c,
       type: 3}
+    facePartyOnInteraction: 1
+    questionIcon: {fileID: 21300000, guid: 8fdfefd91bd065d418a2388aea2be0ed, type: 3}
   - npcType: 2
     prefab: {fileID: 6086658358218158458, guid: 99bab3d82d692654593e4059343bb44e,
       type: 3}
+    facePartyOnInteraction: 1
+    questionIcon: {fileID: 21300000, guid: 8fdfefd91bd065d418a2388aea2be0ed, type: 3}
   - npcType: 3
     prefab: {fileID: 5988322803893661214, guid: 4122db595955e9a49ad83c52026402eb,
       type: 3}
+    facePartyOnInteraction: 1
+    questionIcon: {fileID: 21300000, guid: 8fdfefd91bd065d418a2388aea2be0ed, type: 3}
   - npcType: 4
     prefab: {fileID: 9051235763717762277, guid: c21650bcfd2a47045974c3161ba014dd,
       type: 3}
+    facePartyOnInteraction: 0
+    questionIcon: {fileID: 21300000, guid: 25f072948f3c0554ea4e35216fea3e4d, type: 3}
   - npcType: 5
     prefab: {fileID: 766952283169611610, guid: 37ab246f0acd6c74ca3a7cbb0706b14f, type: 3}
+    facePartyOnInteraction: 0
+    questionIcon: {fileID: 21300000, guid: fdef2b4146e11ce47b65c727ceec637b, type: 3}

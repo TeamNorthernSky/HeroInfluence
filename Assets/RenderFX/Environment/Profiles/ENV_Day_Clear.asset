@@ -15,21 +15,15 @@ MonoBehaviour:
   skyboxMaterial: {fileID: 2100000, guid: 3ba3b3abd8827444a99753c3f0953832, type: 2}
   driveSkyboxParams: 1
   alignSkyToSun: 1
-  skySunAzimuth: 36.04959
-  skySunElevation: 27.083063
+  skySunAzimuth: 29.965809
+  skySunElevation: 41.40729
+  skyCloudSpeed: 0.2
+  skyCloudOffset: 0
+  skyCloudOpacity: 1
   skyTint: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  skyGroundColor: {r: 0.36899993, g: 0.34899995, b: 0.3409999, a: 1}
-  atmosphereThickness: 1
   skyExposure: 1
-  sunSize: 0.04
-  sunSizeConvergence: 5
-  ambientSource: 0
   ambientIntensity: 0.55
-  ambientSky: {r: 0.07227186, g: 0.14126332, b: 0.26635566, a: 1}
-  ambientEquator: {r: 0.37626222, g: 0.48514998, b: 0.57758063, a: 1}
-  ambientGround: {r: 0.1878208, g: 0.23074007, b: 0.19120172, a: 1}
   lightColor: {r: 1, g: 0.9199236, b: 0.9025157, a: 1}
   lightIntensity: 1.2
   lightEuler: {x: 41.500015, y: 43.599983, z: -0.000003419857}
   reflectionIntensity: 1
-  fogTint: {r: 1, g: 1, b: 1, a: 1}

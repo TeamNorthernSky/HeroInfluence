@@ -32,34 +32,36 @@ namespace JC.EnvironmentDetail
         [Range(0,1), Tooltip("작은 잔물결 기울기의 강도입니다. 0이면 잔물결만 끕니다.")] public float detailNormalStrength = .12f;
         [Range(.05f,2), Tooltip("작은 잔물결의 대략적인 간격입니다. 단위: 미터. 텍스처 한 장은 이 값의 8배 범위를 반복합니다.")] public float detailNormalSize = .28f;
         [Range(0,1), Tooltip("잔물결의 독립 이동 속도입니다. 단위: 미터/초. 0이면 독립 이동만 멈추며 수로 흐름은 유지합니다.")] public float rippleSpeed = .08f;
+        [Header("방향성 큰 물결 · 비교")]
+        [Range(0,1), Tooltip("0은 기존 큰 물결, 1은 방향성 큰 물결입니다. 기존 노멀 강도·크기와 잔물결 설정은 유지합니다.")] public float directionalWaveMix = 0f;
+        [Range(1,12), Tooltip("물결 마루의 길이 비율입니다. 높이면 긴 곡선이 이어집니다.")] public float waveElongation = 5f;
+        [Range(0,2), Tooltip("긴 물결을 휘게 하는 굴곡 강도입니다. 0이면 굴곡 없는 방향성 파형입니다.")] public float waveBendStrength = .65f;
+        [Range(.5f,12), Tooltip("굴곡 변화의 공간 크기입니다. 단위: 미터. 높으면 완만하고 큰 곡선이 됩니다.")] public float waveBendSize = 4f;
+        [Range(0,.5f), Tooltip("굴곡 형태가 변하는 속도입니다. 단위: 미터/초. 0이면 형태 변화만 멈추고 흐름 이동은 유지합니다.")] public float waveBendSpeed = .08f;
+        [Range(-90,90), Tooltip("흐름에 대한 물결 진행 각도입니다. 단위: 도. 0이면 마루가 흐름을 가로지릅니다.")] public float directionalWaveAngle = 0f;
         [Header("물결 음영")]
-        [Range(0,1), Tooltip("파란 수면의 밝은 물결과 어두운 골의 대비입니다. 0이면 음영만 끕니다. 스트레이크와 물 높이는 바뀌지 않습니다.")] public float waveShading = .3f;
+        [Range(0,1), Tooltip("파란 수면의 밝은 물결과 어두운 골의 대비입니다. 0이면 음영만 끕니다. 광원 하이라이트와 물 높이는 바뀌지 않습니다.")] public float waveShading = .3f;
         [Range(.2f,6), Tooltip("큰 물결 노멀과 음영의 대략적인 간격입니다. 단위: 미터. 텍스처 한 장은 이 값의 8배 범위를 반복합니다.")] public float waveShadeSize = 1.2f;
         [Range(.05f,1), Tooltip("물결 음영의 경계 부드러움입니다. 낮으면 선명한 색면, 높으면 완만한 음영이 됩니다.")] public float waveShadeSoftness = .65f;
-        [Header("스트레이크 흐름")]
-        [Tooltip("흐름 질감의 색입니다. 알파는 사용하지 않으며 강도로 혼합량을 조절합니다.")] public Color streakColor = new Color(.72f,.87f,.95f,1);
-        [Range(0,1), Tooltip("흐름 질감의 최대 혼합량입니다. 0이면 스트레이크만 끄며 음영과 반사는 유지합니다.")] public float streakStrength = .45f;
-        [Range(0,1), Tooltip("최대 스트레이크 강도에서 감소하는 비율입니다. 0이면 동일 강도, 0.25면 최대의 75~100%, 1이면 0~100%입니다. 길이·폭과 독립적으로 정해지며 표시 중에는 변하지 않습니다.")] public float streakStrengthVariation = .35f;
-        [Range(0,1), Tooltip("고정된 수면 내부 후보 중 표시할 비율입니다. 0이면 숨기고 1이면 모든 후보를 사용합니다. 길이와 폭을 바꿔도 후보 수는 유지됩니다.")] public float streakDensity = .55f;
-        [Range(.3f,4), Tooltip("연속된 주선의 최대 길이입니다. 단위: m. 끝은 가늘어지며 주변의 짧은 보조선은 별도로 나타났다 사라집니다.")] public float streakLength = 1.8f;
-        [Range(.03f,.4f), Tooltip("주선과 주변 보조선의 최대 가로 크기 기준입니다. 단위: m. 낮추면 주선이 가늘어지고 보조선도 가까워집니다.")] public float streakWidth = .065f;
-        [Range(0,1), Tooltip("주선마다 길이가 달라지는 정도입니다. 0이면 모두 설정 길이, 1이면 설정 길이의 25~100%입니다. 폭과 독립적으로 결정되고 이동 중에는 유지됩니다.")] public float streakLengthVariation = .65f;
-        [Range(0,1), Tooltip("주선마다 폭이 달라지는 정도입니다. 0이면 모두 설정 폭, 1이면 설정 폭의 25~100%입니다. 길이와 독립적으로 결정되고 이동 중에는 유지됩니다.")] public float streakWidthVariation = .6f;
-        [Range(0,2), Tooltip("주선 중심의 구불구불한 정도입니다. 1이면 원래 굴곡, 0.5면 절반, 2면 두 배입니다. 0이면 중심선만 펴지며 기존 두께·밝기 변화는 유지됩니다.")] public float streakBend = 1f;
-        [Range(0,1), Tooltip("최대 굽힘에서 감소하는 비율입니다. 0이면 모두 최대 굽힘, 0.5면 최대의 50~100%, 1이면 0~100%입니다. 각 주선의 굽힘은 표시 중 일정합니다.")] public float streakBendVariation = .25f;
-        [Range(.1f,5), Tooltip("생성·완전 표시·삭제를 합한 최대 수명의 계수입니다. 1은 최대 4초, 2는 최대 8초입니다. 변동폭에 따라 개별 수명이 감소하며 다음 출현 전 0.25초 공백은 제외합니다.")] public float streakHoldMultiplier = 1;
-        [Range(0,1), Tooltip("최대 유지시간에서 감소하는 비율입니다. 0이면 모두 최대 시간, 0.25면 최대의 75~100%, 1이면 0~100%입니다. 각 스트레이크의 값은 고정되며 최대값을 넘지 않습니다.")] public float streakHoldVariation = .35f;
-        [Range(0,1), Tooltip("전체 수명 중 생성과 삭제가 함께 사용하는 비율입니다. 각 과정은 절반씩 사용합니다. 0.4면 생성 20%·완전 표시 60%·삭제 20%, 1이면 생성 50%·삭제 50%로 유지 구간이 없습니다. 0이면 즉시 나타나고 사라집니다.")] public float streakTransitionRatio = .4f;
-        [Range(.02f,.3f), Tooltip("꼬리에서 머리로 진행하는 생성·삭제 경계의 부드러운 폭입니다. 주선 길이에 대한 비율이며 낮으면 또렷하고 높으면 완만합니다. 생성·삭제에 걸리는 시간은 별도 비율로 결정됩니다.")] public float streakSoftness = .06f;
-        [Range(0,1), Tooltip("수면 요철이 강한 곳에 스트레이크를 집중하는 정도입니다. 0이면 요철과 무관한 밝기이며 1이면 큰 요철에서 더 밝게 보입니다. 평평한 구간도 기본 밝기의 70%를 유지합니다. 화면의 그림자나 반사색을 검사하지 않습니다.")] public float streakWaveLink = 1;
+        [Header("광원 하이라이트")]
+        [Range(0,8), Tooltip("주광원 하이라이트의 밝기 배율입니다. 환경 반사와 독립적이며 1보다 높이면 과장합니다. 광원 방향·색·그림자는 유지하고 발광으로 대체하지 않습니다.")] public float highlightStrength = 1f;
+        [Range(0,1), Tooltip("광원 하이라이트의 폭입니다. 낮으면 좁고 선명하며 높으면 넓고 은은합니다. 환경 반사의 선명도는 바꾸지 않습니다.")] public float highlightRoughness = .32f;
+        [Range(0,1), Tooltip("광원 하이라이트 경계의 부드러움입니다. 0은 또렷한 카툰 색면, 1은 자연스러운 연속 밝기입니다.")] public float highlightSoftness = .8f;
+        [Range(0,2), Tooltip("같은 수면 노멀 위의 좁은 반짝임을 더하는 비율입니다. 0이면 넓은 하이라이트만 남습니다. 원거리에서는 자동으로 넓히고 약화해 점멸을 줄입니다.")] public float sparkleStrength = .25f;
+        [Header("연출용 하이라이트")]
+        [Range(0,3), Tooltip("카메라를 따라가는 물 전용 페이크 하이라이트 밝기입니다. 0이면 끕니다. 태양 밝기와 독립적이며 다른 오브젝트를 비추지 않습니다.")] public float fakeHighlightStrength = 0f;
+        [Tooltip("연출용 하이라이트 색입니다. 실제 주광원 색과 독립적이며 알파는 사용하지 않습니다.")] public Color fakeHighlightColor = new Color(.7f,.85f,1f,1f);
+        [Range(0,1), Tooltip("연출용 하이라이트의 폭입니다. 낮으면 가늘고 높은 값은 넓게 퍼집니다.")] public float fakeHighlightWidth = .2f;
+        [Range(0,.5f), Tooltip("카메라 쪽으로 기운 물결을 선택하는 정도입니다. 높으면 가파른 물결에서 보입니다. 큰 물결 기울기보다 너무 높이면 반짝임이 줄어듭니다.")] public float fakeHighlightTilt = .12f;
+        [Range(0,1), Tooltip("주광원 그림자 안에서 연출용 하이라이트를 줄이는 비율입니다. 0이면 그림자 무관, 1이면 주광원 그림자를 완전히 따릅니다.")] public float fakeHighlightShadow = .5f;
         [Header("움직임")]
         [Tooltip("베이크된 수로 방향 지도를 사용합니다. 끄면 아래 공통 방향을 사용합니다. 하류 기준 변경은 지형 설정에서 재베이크합니다.")] public bool followCanal = true;
         [Tooltip("수로 따라 흐름을 끈 경우의 월드 X/Z 방향입니다. (0,0)은 오른쪽으로 처리합니다.")] public Vector2 direction = Vector2.right;
         [Range(0,.5f), Tooltip("흐름 이동 속도입니다. 단위: 월드 미터/초. 0이어도 형태 변화는 별도로 움직입니다.")] public float flowSpeed = .13f;
         [Header("조명")]
-        [Range(0,1), Tooltip("주광원 그림자가 물과 스트레이크를 어둡게 하는 정도입니다. 0이면 그림자 영향이 없습니다.")] public float shadowStrength = .25f;
+        [Range(0,1), Tooltip("주광원 그림자가 물 바탕을 어둡게 하는 정도입니다. 직접광 하이라이트는 이 값과 관계없이 실제 그림자를 따릅니다.")] public float shadowStrength = .25f;
         [Header("반사 표현")]
-        [Range(0,1), Tooltip("반사가 물 바탕을 덮는 정도입니다. 스트레이크의 불투명도는 별도입니다. 0이면 반사 촬영도 멈춥니다.")] public float reflection = .65f;
+        [Range(0,1), Tooltip("반사가 물 바탕을 덮는 정도입니다. 광원 하이라이트 강도는 별도입니다. 0이면 반사 촬영도 멈춥니다.")] public float reflection = .65f;
         [Range(0,1), Tooltip("1이면 선명한 주변 풍경, 0이면 흐린 반사입니다.")] public float reflectionClarity = .85f;
         [Range(0,1), Tooltip("비스듬한 시선에서 반사가 강해지는 정도입니다. 0이면 모든 각도에서 일정합니다.")] public float reflectionFresnel = .45f;
         [Range(0,.1f), Tooltip("평면 반사 영상의 물결 왜곡입니다. 화면 UV 단위이며 0이면 영상 왜곡만 멈춥니다. 환경 반사와 광원은 수면 노멀을 계속 사용합니다.")] public float reflectionDistortion = .012f;
@@ -69,24 +71,23 @@ namespace JC.EnvironmentDetail
         [Range(1,8), Tooltip("원본 카메라가 이 횟수만큼 그려질 때마다 반사를 갱신합니다. 1이면 매번 갱신합니다.")] public int reflectionUpdateInterval = 1;
         [Tooltip("반사할 레이어입니다. 연결된 수면 자체는 자동 제외됩니다. UI는 기본 제외입니다.")] public LayerMask reflectionLayers = ~(1 << 5);
         public JcWaterSettings Copy() => JsonUtility.FromJson<JcWaterSettings>(JsonUtility.ToJson(this));
-        static Texture2D pattern, defaultBroad, defaultDetail;
-        static Texture2D Pattern => pattern != null ? pattern : (pattern = Resources.Load<Texture2D>("JC_Water_Strands"));
+        static Texture2D defaultBroad, defaultDetail;
         public void Apply(Material m)
         {
             m.renderQueue=(int)UnityEngine.Rendering.RenderQueue.Transparent;
             m.SetVector("_Transmission",new Vector4(Mathf.Clamp01(surfaceOpacity),Mathf.Clamp(depthAbsorption,0,3),0,0));
-            m.SetColor("_BaseColor", baseColor); m.SetColor("_EdgeColor", edgeColor); m.SetColor("_StreakColor", streakColor);
-            m.SetTexture("_StreakPattern", Pattern);
+            m.SetColor("_BaseColor", baseColor); m.SetColor("_EdgeColor", edgeColor);
             if(defaultBroad==null)defaultBroad=Resources.Load<Texture2D>("JC_Water_NormalBroad");
             if(defaultDetail==null)defaultDetail=Resources.Load<Texture2D>("JC_Water_NormalDetail");
             m.SetTexture("_NormalBroad",broadNormal!=null?broadNormal:defaultBroad);
             m.SetTexture("_NormalDetail",detailNormal!=null?detailNormal:defaultDetail);
             m.SetVector("_Normals",new Vector4(Mathf.Clamp01(broadNormalStrength),Mathf.Clamp01(detailNormalStrength),Mathf.Clamp(detailNormalSize,.05f,2),Mathf.Clamp01(rippleSpeed)));
+            m.SetVector("_DirectionalWave",new Vector4(Mathf.Clamp01(directionalWaveMix),Mathf.Clamp(waveElongation,1,12),Mathf.Clamp(waveBendStrength,0,2),Mathf.Clamp(waveBendSize,.5f,12)));
+            m.SetVector("_WaveBend",new Vector4(Mathf.Clamp(waveBendSpeed,0,.5f),directionalWaveAngle*Mathf.Deg2Rad,0,0));
             m.SetVector("_EdgeVariation",new Vector4(Mathf.Clamp01(edgeVariation),Mathf.Clamp(edgeVariationSize,.5f,12),0,0));
-            m.SetVector("_Streak",new Vector4(Mathf.Clamp01(streakStrength),Mathf.Clamp01(streakDensity),Mathf.Clamp(streakLength,.3f,4),Mathf.Clamp(streakWidth,.03f,.4f)));
-            m.SetVector("_StreakLifetime",new Vector4(Mathf.Clamp(streakHoldMultiplier,.1f,5),Mathf.Clamp01(streakHoldVariation),Mathf.Clamp01(streakTransitionRatio),Mathf.Clamp01(streakStrengthVariation)));
-            m.SetVector("_StreakBend",new Vector4(Mathf.Clamp(streakBend,0,2),Mathf.Clamp01(streakBendVariation),0,0));
-            m.SetVector("_StreakShape",new Vector4(Mathf.Clamp(streakSoftness,.02f,.3f),Mathf.Clamp01(streakWaveLink),Mathf.Clamp01(streakLengthVariation),Mathf.Clamp01(streakWidthVariation)));
+            m.SetColor("_FakeHighlightColor",fakeHighlightColor);
+            m.SetVector("_FakeHighlight",new Vector4(Mathf.Clamp(fakeHighlightStrength,0,3),Mathf.Clamp01(fakeHighlightWidth),Mathf.Clamp(fakeHighlightTilt,0,.5f),Mathf.Clamp01(fakeHighlightShadow)));
+            m.SetVector("_Specular",new Vector4(Mathf.Clamp(highlightStrength,0,8),Mathf.Clamp01(highlightRoughness),Mathf.Clamp01(highlightSoftness),Mathf.Clamp(sparkleStrength,0,2)));
             m.SetVector("_Surface",new Vector4(edgeColorWidth,shadowStrength,0,0));
             m.SetVector("_WaveShade", new Vector4(Mathf.Clamp01(waveShading),Mathf.Max(.2f,waveShadeSize),Mathf.Clamp(waveShadeSoftness,.05f,1),0));
             var d=direction.sqrMagnitude>.0001f?direction.normalized:Vector2.right;

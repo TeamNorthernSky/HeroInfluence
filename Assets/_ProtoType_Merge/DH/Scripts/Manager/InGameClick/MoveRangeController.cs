@@ -20,6 +20,7 @@ public class MoveRangeController : MonoBehaviour
 
     private readonly HashSet<Vector2Int> reachableCells = new HashSet<Vector2Int>();
     private readonly HashSet<Vector2Int> interactableTargetCells = new HashSet<Vector2Int>();
+    private readonly HashSet<Vector2Int> blockedCells = new HashSet<Vector2Int>();
     private readonly Queue<Vector2Int> frontier = new Queue<Vector2Int>();
     private readonly Dictionary<Vector2Int, int> costs = new Dictionary<Vector2Int, int>();
     private readonly List<LineRenderer> linePool = new List<LineRenderer>();
@@ -30,6 +31,7 @@ public class MoveRangeController : MonoBehaviour
     private Material runtimeDefaultLineMaterial;
     private Coroutine pendingDelayedRefreshCoroutine;
     private bool isMoverMoving;
+    private bool movementRefreshRequested;
 
     public bool IsMoveRangeActive => true;
 
@@ -100,6 +102,7 @@ public class MoveRangeController : MonoBehaviour
     {
         StopAllCoroutines();
         pendingDelayedRefreshCoroutine = null;
+        movementRefreshRequested = false;
         BindMover(null);
         Hide();
     }
@@ -118,13 +121,16 @@ public class MoveRangeController : MonoBehaviour
     private IEnumerator RefreshAfterSceneSetup(int frameCount)
     {
         for (int i = 0; i < frameCount; i++)
-        {
             yield return null;
-            isMoverMoving = false;
-            RefreshForCurrentParty();
-        }
 
         pendingDelayedRefreshCoroutine = null;
+        RefreshForCurrentParty();
+    }
+
+    private void LateUpdate()
+    {
+        if (movementRefreshRequested)
+            RefreshForMover(currentMover);
     }
 
     public void RefreshForCurrentParty()
@@ -188,7 +194,9 @@ public class MoveRangeController : MonoBehaviour
 
     public void RefreshForMover(PartyGridMover mover)
     {
+        movementRefreshRequested = false;
         BindMover(mover);
+        isMoverMoving = mover != null && mover.IsMoving;
 
         if (!IsMoveRangeActive || mover == null || gridManager == null)
         {
@@ -206,6 +214,9 @@ public class MoveRangeController : MonoBehaviour
 
     public bool AllowsCell(Vector2Int grid)
     {
+        // Input may query the range before this frame's LateUpdate.
+        if (movementRefreshRequested)
+            RefreshForMover(currentMover);
         return !IsMoveRangeActive || reachableCells.Contains(grid);
     }
 
@@ -222,6 +233,7 @@ public class MoveRangeController : MonoBehaviour
     {
         reachableCells.Clear();
         interactableTargetCells.Clear();
+        blockedCells.Clear();
         costs.Clear();
         frontier.Clear();
         gridLineSegments.Clear();
@@ -251,14 +263,15 @@ public class MoveRangeController : MonoBehaviour
 
     private void HandleMoverGridEntered(Vector2Int _)
     {
-        isMoverMoving = true;
-        RefreshForMover(currentMover);
+        movementRefreshRequested = true;
+        if (currentMover != null && currentMover.IsMoving)
+            Hide();
     }
 
     private void HandleMoverMoveCompleted()
     {
-        isMoverMoving = false;
-        RefreshForMover(currentMover);
+        // The final GridEntered and MoveCompleted arrive in the same frame.
+        movementRefreshRequested = true;
     }
 
     private void RebuildRange(PartyGridMover mover)
@@ -286,6 +299,9 @@ public class MoveRangeController : MonoBehaviour
                 if (costs.TryGetValue(next, out int knownCost) && knownCost <= nextCost)
                     continue;
 
+                if (interactableTargetCells.Contains(next) || blockedCells.Contains(next))
+                    continue;
+
                 if (IsInteractableTargetCell(next, mover))
                 {
                     interactableTargetCells.Add(next);
@@ -293,7 +309,10 @@ public class MoveRangeController : MonoBehaviour
                 }
 
                 if (!CanEnterMoveRangeCell(next, mover))
+                {
+                    blockedCells.Add(next);
                     continue;
+                }
 
                 costs[next] = nextCost;
                 if (reachableCells.Add(next))
@@ -314,9 +333,6 @@ public class MoveRangeController : MonoBehaviour
             return false;
 
         if (!ZoneEntryGuidanceController.IsCellAllowed(grid))
-            return false;
-
-        if (IsOtherPartyCell(grid, mover))
             return false;
 
         if (gridManager.HasOutpost(grid))
@@ -346,18 +362,6 @@ public class MoveRangeController : MonoBehaviour
             return false;
 
         return gridManager.HasMoveRangeBlockingInteractionOccupant(grid, mover != null ? mover.transform : null);
-    }
-
-    private bool IsOtherPartyCell(Vector2Int grid, PartyGridMover mover)
-    {
-        PartyGridMover playerParty = partyRegistry != null ? partyRegistry.PlayerParty : null;
-        if (playerParty == null || !playerParty.gameObject.activeInHierarchy)
-            return false;
-
-        if (mover != null && playerParty == mover)
-            return false;
-
-        return playerParty.GetCurrentGrid() == grid;
     }
 
     private void RenderRange()
