@@ -39,6 +39,7 @@ public sealed class WorldEventObject : MonoBehaviour
     private bool isTriggering;
     private Transform interactionFacingVisual;
     private Quaternion rotationBeforeInteraction;
+    private UnitVisualMotionController[] interactionPartyUnits = Array.Empty<UnitVisualMotionController>();
 #if UNITY_EDITOR
     private bool editorPreviewRefreshQueued;
 #endif
@@ -80,6 +81,7 @@ public sealed class WorldEventObject : MonoBehaviour
         worldEventRegistry?.Unregister(this);
         StopNpcVisualRetry();
         RestoreInteractionFacing();
+        RestorePartyFacing();
     }
 
     private void OnValidate()
@@ -243,12 +245,14 @@ public sealed class WorldEventObject : MonoBehaviour
 
         isTriggering = true;
         FacePartyForInteraction(party);
+        FacePartyUnitsForInteraction(party);
         EventInteracted?.Invoke(this, party);
 
         bool started = runtimeManager.TryStartEvent(this, party, () =>
         {
             isTriggering = false;
             RestoreInteractionFacing();
+            RestorePartyFacing();
             closedCallback?.Invoke(this);
         });
 
@@ -256,9 +260,44 @@ public sealed class WorldEventObject : MonoBehaviour
         {
             isTriggering = false;
             RestoreInteractionFacing();
+            RestorePartyFacing();
         }
 
         return started;
+    }
+
+    private void FacePartyUnitsForInteraction(PartyGridMover party)
+    {
+        RestorePartyFacing();
+        if (party == null)
+            return;
+
+        Vector3 target = spawnedNpcVisual != null ? spawnedNpcVisual.transform.position : transform.position;
+        Vector3 direction = target - party.transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= 0.0001f)
+            return;
+
+        float yaw = Mathf.Round(Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg / 45f) * 45f;
+        Vector3 facingDirection = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
+        interactionPartyUnits = party.GetComponentsInChildren<UnitVisualMotionController>();
+        for (int i = 0; i < interactionPartyUnits.Length; i++)
+        {
+            UnitVisualMotionController unit = interactionPartyUnits[i];
+            if (unit != null && unit.isActiveAndEnabled)
+                unit.BeginInteractionFacing(facingDirection);
+        }
+    }
+
+    private void RestorePartyFacing()
+    {
+        for (int i = 0; i < interactionPartyUnits.Length; i++)
+        {
+            if (interactionPartyUnits[i] != null)
+                interactionPartyUnits[i].EndInteractionFacing();
+        }
+
+        interactionPartyUnits = Array.Empty<UnitVisualMotionController>();
     }
 
     private void FacePartyForInteraction(PartyGridMover party)
