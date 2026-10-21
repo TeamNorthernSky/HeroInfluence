@@ -1113,7 +1113,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3910325532293073270}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6391567517105826112}
+        m_TargetAssemblyTypeName: HeroLicenseCoreSelectLauncher, Assembly-CSharp
+        m_MethodName: OpenCoreSelection
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &4343662975313690118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1688,6 +1700,7 @@ GameObject:
   - component: {fileID: 8961607537326836821}
   - component: {fileID: 5362742089019800037}
   - component: {fileID: 6514816581387362005}
+  - component: {fileID: 2795698088419748111}
   m_Layer: 0
   m_Name: EquippedCoreFrame (1)
   m_TagString: Untagged
@@ -1736,7 +1749,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1752,6 +1765,62 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2795698088419748111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2701917234968577594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 6514816581387362005}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6391567517105826112}
+        m_TargetAssemblyTypeName: HeroLicenseCoreSelectLauncher, Assembly-CSharp
+        m_MethodName: OpenCoreSelection
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &2802893915631224537
 GameObject:
   m_ObjectHideFlags: 0
@@ -1947,7 +2016,6 @@ RectTransform:
   - {fileID: 5476289813692586399}
   - {fileID: 6694012947177636729}
   - {fileID: 1578859692322123841}
-  - {fileID: 7078170026311058224}
   m_Father: {fileID: 6011291815547145118}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -3904,7 +3972,6 @@ RectTransform:
   - {fileID: 8983032748391784619}
   - {fileID: 4405492701524223620}
   - {fileID: 5096041226207317431}
-  - {fileID: 6752055071390715493}
   - {fileID: 8346671276315604963}
   - {fileID: 5433678983174765251}
   - {fileID: 4702571175063950673}
@@ -3913,6 +3980,7 @@ RectTransform:
   - {fileID: 1233211658168822170}
   - {fileID: 8218459475951538277}
   - {fileID: 554422466524366386}
+  - {fileID: 7078170026311058224}
   m_Father: {fileID: 266130176675787222}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -4002,6 +4070,7 @@ RectTransform:
   m_Children:
   - {fileID: 6613117037820450291}
   - {fileID: 6247460305344380134}
+  - {fileID: 6752055071390715493}
   m_Father: {fileID: 6011291815547145118}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
@@ -4802,13 +4871,13 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1233211658168822170}
+  m_Father: {fileID: 6011291815547145118}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 648, y: 57}
+  m_AnchoredPosition: {x: 480, y: -190}
   m_SizeDelta: {x: 630, y: 84}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &467515895366248456
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5060,6 +5129,7 @@ GameObject:
   - component: {fileID: 8015170460799302857}
   - component: {fileID: 119136448968107052}
   - component: {fileID: 5150333164799274682}
+  - component: {fileID: 6391567517105826112}
   m_Layer: 0
   m_Name: Modal_HeroInfo
   m_TagString: Untagged
@@ -5303,6 +5373,21 @@ MonoBehaviour:
   duration: 0.16
   initialScale: 0.08
   allowCrossSceneOrigin: 1
+--- !u!114 &6391567517105826112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6830269695436935952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4099362545e37f041ab1a66c1e52bf4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 3842167595219755624}
+  coreSelectionPrefab: {fileID: 4502223004494020057, guid: 7e0fe7eb3d50b56478bac82e4d1cfc4f,
+    type: 3}
 --- !u!1 &7166975279931442594
 GameObject:
   m_ObjectHideFlags: 0
@@ -5484,11 +5569,11 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1386351591803776831}
-  m_Father: {fileID: 6011291815547145118}
+  m_Father: {fileID: 4562363474227003550}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 414, y: -192}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -6, y: 10}
   m_SizeDelta: {x: 90, y: 106}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1269978583712997730
@@ -5834,7 +5919,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
-  m_Transition: 0
+  m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}

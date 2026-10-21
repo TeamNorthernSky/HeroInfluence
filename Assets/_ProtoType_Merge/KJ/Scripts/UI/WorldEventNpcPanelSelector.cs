@@ -33,6 +33,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     private bool choiceSubmitted;
     private static int resultConfirmedFrame = -1;
     private readonly Dictionary<Button, NpcPreview> previews = new Dictionary<Button, NpcPreview>();
+    private Sprite choiceDeclineSprite;
 
     // 종료로 요청이 사라진 뒤에도 같은 프레임의 ESC는 시스템 메뉴에서 사용하지 않는다.
     public static bool BlocksSystemMenuEscape
@@ -221,6 +222,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         consumeDecline = consumePanel.transform.Find("DeclineButton").GetComponent<Button>();
         rewardProceed = rewardPanel.transform.Find("ProceedButton").GetComponent<Button>();
         choiceDecline = choicePanel.transform.Find("DeclineButton").GetComponent<Button>();
+        choiceDeclineSprite = ((Image)choiceDecline.targetGraphic).sprite;
         choiceButtons = new[] {
             choicePanel.transform.Find("Choice1Button").GetComponent<Button>(),
             choicePanel.transform.Find("Choice2Button").GetComponent<Button>() };
@@ -297,6 +299,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         }
         else if (request.EventType == DHWorldEventType.Choice)
         {
+            SetChoiceConfirmationStyle(confirm);
             if (confirm)
             {
                 foreach (Button button in choiceButtons) button.gameObject.SetActive(false);
@@ -338,6 +341,15 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         }
     }
 
+    private void SetChoiceConfirmationStyle(bool confirm)
+    {
+        var image = choiceDecline.targetGraphic as Image;
+        var proceedImage = consumeProceed.targetGraphic as Image;
+        if (image == null || proceedImage == null) return;
+        image.sprite = confirm ? proceedImage.sprite : choiceDeclineSprite;
+        image.overrideSprite = null;
+    }
+
     private NpcPreview GetPreview(Button button)
     {
         if (!previews.TryGetValue(button, out var preview))
@@ -370,6 +382,45 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         ((RectTransform)panel.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(0, top - 12));
     }
 
+    private static float LayoutButtonHeader(Button button, bool includeChance)
+    {
+        float width = Mathf.Max(1f, ((RectTransform)button.transform).rect.width - 42f);
+        var label = button.transform.Find("Label").GetComponent<TMP_Text>();
+        float height = MeasureText(label, width, 24f, 44f);
+        PlaceButtonText(label.rectTransform, 21f, 10f, width, height);
+        float bottom = 10f + height + 8f;
+        var chanceTransform = button.transform.Find("SuccessChance");
+        var chance = chanceTransform != null ? chanceTransform.GetComponent<TMP_Text>() : null;
+        if (chance != null)
+        {
+            bool show = includeChance && !string.IsNullOrWhiteSpace(chance.text);
+            chance.gameObject.SetActive(show);
+            if (show)
+            {
+                float chanceHeight = MeasureText(chance, width, 20f, 32f);
+                PlaceButtonText(chance.rectTransform, 21f, bottom, width, chanceHeight);
+                bottom += chanceHeight + 8f;
+            }
+        }
+        return bottom;
+    }
+
+    private static float MeasureText(TMP_Text text, float width, float size, float minimum)
+    {
+        text.enableAutoSizing = false;
+        text.fontSize = size;
+        text.enableWordWrapping = true;
+        text.overflowMode = TextOverflowModes.Overflow;
+        return Mathf.Max(minimum, Mathf.Ceil(text.GetPreferredValues(text.text, width, Mathf.Infinity).y));
+    }
+
+    private static void PlaceButtonText(RectTransform rect, float x, float y, float width, float height)
+    {
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
+        rect.anchoredPosition = new Vector2(x, -y);
+        rect.sizeDelta = new Vector2(width, height);
+    }
+
     // Display-only rows reuse the button's font. They never receive pointer input.
     private sealed class NpcPreview
     {
@@ -379,6 +430,11 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         private readonly List<TMP_Text> texts = new List<TMP_Text>();
         private int count;
         private float rowTop;
+        private float rowLeft;
+        private float lineHeight;
+        private int lineStart;
+        private bool showChance;
+        private static Sprite licenseIpIcon;
 
         public NpcPreview(Button button)
         {
@@ -389,11 +445,16 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
         public void Begin(bool choice)
         {
             count = 0;
-            rowTop = choice ? 94 : 64;
+            rowLeft = 21f;
+            lineHeight = 0f;
+            lineStart = 0;
+            showChance = choice;
+            rowTop = LayoutButtonHeader(button, false);
         }
 
         public void Add(IReadOnlyList<DHWorldEventPreviewEntry> entries, string outcome)
         {
+            bool firstInOutcome = true;
             foreach (var entry in entries)
             {
                 if (entry == null || entry.Amount == 0) continue;
@@ -421,40 +482,84 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
                 iconView.sprite = Icon(entry);
                 iconView.gameObject.SetActive(iconView.sprite != null);
                 textView.gameObject.SetActive(true);
-                float y = rowTop + count * 32;
-                Place(iconView.rectTransform, 16, y, 26, 26);
-                Place(textView.rectTransform, 50, y, 284, 28);
-                string prefix = outcome ?? (cost ? "소모" : entry.Amount < 0 ? "감소" : "보상");
-                textView.text = prefix + "  " + Name(entry.Label) + " " +
-                    (cost ? "−" : entry.Amount > 0 ? "+" : "") + entry.Amount;
+                int amount = cost ? -Mathf.Abs(entry.Amount) : entry.Amount;
+                textView.text = amount > 0 ? "+" + amount : amount.ToString();
+                if (firstInOutcome && !string.IsNullOrWhiteSpace(outcome))
+                {
+                    if (rowLeft > 21f)
+                    {
+                        CenterCurrentLine();
+                        rowTop += lineHeight + 4f;
+                        rowLeft = 21f;
+                        lineHeight = 0f;
+                    }
+                    textView.text = outcome + " " + textView.text;
+                }
+                firstInOutcome = false;
                 textView.color = cost || entry.Amount < 0 ? new Color32(185, 35, 45, 255) : new Color32(20, 70, 151, 255);
+                textView.fontSize = textView.fontSizeMax;
+                float buttonWidth = ((RectTransform)button.transform).rect.width;
+                float iconWidth = iconView.sprite != null ? 34 : 0;
+                float textWidth = Mathf.Min(textView.GetPreferredValues(textView.text).x + 2f,
+                    Mathf.Max(1, buttonWidth - 42f - iconWidth));
+                float rowHeight = MeasureText(textView, textWidth, 19f, 28f);
+                float itemWidth = iconWidth + textWidth;
+                if (rowLeft > 21f && rowLeft + itemWidth > buttonWidth - 21f)
+                {
+                    CenterCurrentLine();
+                    rowTop += lineHeight + 4f;
+                    rowLeft = 21f;
+                    lineHeight = 0f;
+                }
+                PlaceButtonText(iconView.rectTransform, rowLeft, rowTop + (rowHeight - 26f) * .5f, 26, 26);
+                PlaceButtonText(textView.rectTransform, rowLeft + iconWidth, rowTop, textWidth, rowHeight);
+                rowLeft += itemWidth + 16f;
+                lineHeight = Mathf.Max(lineHeight, rowHeight);
                 count++;
             }
         }
 
         public void End()
         {
+            CenterCurrentLine();
             for (int i = count; i < texts.Count; i++)
             {
                 icons[i].gameObject.SetActive(false);
                 texts[i].gameObject.SetActive(false);
             }
-            float height = count == 0 ? 110 : rowTop + count * 32 + 10;
+            float bottom = rowTop + lineHeight;
+            var chance = button.transform.Find("SuccessChance")?.GetComponent<TMP_Text>();
+            if (chance != null && showChance && !string.IsNullOrWhiteSpace(chance.text))
+            {
+                chance.gameObject.SetActive(true);
+                float width = Mathf.Max(1f, ((RectTransform)button.transform).rect.width - 42f);
+                float chanceHeight = MeasureText(chance, width, 20f, 32f);
+                PlaceButtonText(chance.rectTransform, 21f, bottom + 4f, width, chanceHeight);
+                bottom += chanceHeight + 4f;
+            }
+            float height = Mathf.Max(110f, bottom + 10f);
             ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
-            Place(label.rectTransform, 21, 10, 308, count == 0 ? 76 : 44);
-            var chance = button.transform.Find("SuccessChance") as RectTransform;
-            if (chance != null) Place(chance, 21, 56, 308, 32);
         }
 
-        private static void Place(RectTransform rect, float x, float y, float width, float height)
+        private void CenterCurrentLine()
         {
-            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0, 1);
-            rect.anchoredPosition = new Vector2(x, -y);
-            rect.sizeDelta = new Vector2(width, height);
+            if (lineStart >= count) return;
+            float width = rowLeft - 21f - 16f;
+            float shift = (((RectTransform)button.transform).rect.width - width) * .5f - 21f;
+            for (int i = lineStart; i < count; i++)
+            {
+                icons[i].rectTransform.anchoredPosition += Vector2.right * shift;
+                texts[i].rectTransform.anchoredPosition += Vector2.right * shift;
+            }
+            lineStart = count;
         }
 
         private static Sprite Icon(DHWorldEventPreviewEntry entry)
         {
+            if (entry.Group == DHWorldEventPreviewGroup.Reward &&
+                DHWorldEventCodeMap.TryGetRewardType(entry.TypeCode, out DHWorldEventRewardType reward) &&
+                DHWorldEventCodeMap.TryGetRewardResourceType(reward, out ResourceType resource))
+                return Sprites.UI.Resource(resource);
             switch (entry.Label)
             {
                 case "Money": return Sprites.UI.Resource(ResourceType.Money);
@@ -464,7 +569,9 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             }
             switch (entry.Label)
             {
-                case "CurrentIP": case "MaxIP": return Sprites.UI.Status(UIStatusIconType.IP);
+                case "CurrentIP": case "MaxIP":
+                    if (licenseIpIcon == null) licenseIpIcon = Resources.Load<Sprite>("NpcPreview/UI_icon_IP");
+                    return licenseIpIcon;
                 case "CurrentHP": case "MaxHP": return Sprites.UI.Status(UIStatusIconType.HP);
                 case "Atk": return Sprites.UI.Status(UIStatusIconType.ATK);
                 default: return null;
@@ -493,10 +600,19 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     {
         var label = button.transform.Find("Label").GetComponent<TMP_Text>();
         label.text = string.IsNullOrWhiteSpace(text) ? "확인" : text;
-        label.enableAutoSizing = true;
-        label.fontSizeMin = 14;
-        label.fontSizeMax = 24;
         button.interactable = enabled;
+        float bottom = LayoutButtonHeader(button, false);
+        ((RectTransform)button.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(110f, bottom + 10f));
+        if (button.transform.name == "DeclineButton")
+        {
+            var rect = label.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(21f, 10f);
+            rect.offsetMax = new Vector2(-21f, -10f);
+            label.alignment = TextAlignmentOptions.Center;
+        }
     }
 
     private bool CanSubmit(Button button)

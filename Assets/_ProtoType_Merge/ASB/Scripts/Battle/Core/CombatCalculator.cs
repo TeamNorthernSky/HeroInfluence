@@ -40,6 +40,10 @@ namespace ASB.Work.Battle.Core
         }
 
         public static float CalculateDamage(DamageContext context)
+            => CalculateDamage(context, out _);
+
+        /// <summary>기존 피해 계산을 유지하며 감소 계수가 최종 정수 피해를 실제로 낮췄는지 함께 반환한다.</summary>
+        public static float CalculateDamage(DamageContext context, out bool damageReduced)
         {
             float atk = context.Caster.FinalStats.Atk;
             float def = context.Target.FinalStats.DEF;
@@ -65,7 +69,10 @@ namespace ASB.Work.Battle.Core
             float influence = Mathf.Max(0f, context.Caster.CurrentInfluence);
             float finalDamage = baseDamage * (100f + influence) / 100f * context.Target.SkillDamageTakenMultiplier;
             float roundedDamage = Mathf.Floor(finalDamage + 0.5f);
-            return Mathf.Max(2f, roundedDamage);
+            float damage = Mathf.Max(2f, roundedDamage);
+            float withoutReduction = baseStatDiff * multiplier * critMultiplier * (100f + influence) / 100f;
+            damageReduced = damage < Mathf.Max(2f, Mathf.Floor(withoutReduction + .5f));
+            return damage;
         }
     }
 }

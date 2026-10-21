@@ -44,6 +44,7 @@ public class LevelEditorController : MonoBehaviour
     [SerializeField] private string selectedSubEventPrefabKey;
     [SerializeField] private string selectedWorldEventId;
     [SerializeField] private DHWorldEventType selectedWorldEventType = DHWorldEventType.Consume;
+    [SerializeField] private WorldEventRotation selectedWorldEventRotation;
     [SerializeField] private string selectedGatePrefabKey = "horizon";
     [SerializeField] private string selectedGateId = "gate_001";
     [SerializeField] private string selectedGateFirstZoneId = "zone_001";
@@ -115,6 +116,7 @@ public class LevelEditorController : MonoBehaviour
     public string SelectedMainEventPrefabKey => string.IsNullOrWhiteSpace(selectedMainEventPrefabKey) ? string.Empty : selectedMainEventPrefabKey.Trim();
     public string SelectedSubEventPrefabKey => string.IsNullOrWhiteSpace(selectedSubEventPrefabKey) ? string.Empty : selectedSubEventPrefabKey.Trim();
     public string SelectedWorldEventId => string.IsNullOrWhiteSpace(selectedWorldEventId) ? string.Empty : selectedWorldEventId.Trim();
+    public WorldEventRotation SelectedWorldEventRotation => selectedWorldEventRotation;
     public DHWorldEventType SelectedWorldEventType => selectedWorldEventType == DHWorldEventType.None
         ? DHWorldEventType.Consume
         : selectedWorldEventType;
@@ -261,7 +263,7 @@ public class LevelEditorController : MonoBehaviour
                 if (string.IsNullOrWhiteSpace(SelectedWorldEventId))
                     return;
 
-                levelData.SetWorldEvent(grid, SelectedWorldEventId, SelectedWorldEventType);
+                levelData.SetWorldEvent(grid, SelectedWorldEventId, SelectedWorldEventType, SelectedWorldEventRotation);
                 break;
             case LevelEditorBrushType.GateBlocker:
                 ApplyGateBrush(grid);

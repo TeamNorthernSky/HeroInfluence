@@ -9,6 +9,7 @@ public class EnemyUnitBootstrap : MonoBehaviour
 {
     private const int MinCombatSlot = 1;
     private const int MaxCombatSlot = 6;
+    private const int MobileVisualUnitKey = 20005;
 
     private static readonly Vector3[] ExplorationUnitLocalPositions =
     {
@@ -177,6 +178,9 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (TryHandleDefeatedEnemy(mapProgressRepository, placementKey))
             return true;
 
+        if (behaviorType == EnemyBehaviorType.Mobile)
+            return InitializeMobileEnemyVisual(prefabRegistry, mapProgressRepository, placementKey, initialGrid, enemyLevel, zoneId);
+
         if (TryRestoreExistingCsvEnemy(
                 mapProgressRepository,
                 prefabRegistry,
@@ -269,6 +273,11 @@ public class EnemyUnitBootstrap : MonoBehaviour
         if (TryHandleDefeatedEnemy(mapProgressRepository, placementKey))
             return true;
 
+        if (behaviorType == EnemyBehaviorType.Mobile)
+            return InitializeMobileEnemyVisual(
+                prefabRegistry, mapProgressRepository, placementKey, initialGrid,
+                ResolveEventBattleEnemyLevel(groupData, enemyLevel), zoneKey);
+
         if (TryRestoreExistingEventBattleEnemy(
                 mapProgressRepository,
                 prefabRegistry,
@@ -297,6 +306,60 @@ public class EnemyUnitBootstrap : MonoBehaviour
             resolvedGroupKey,
             zoneKey,
             behaviorType);
+
+        hasInitialized = true;
+        return true;
+    }
+
+    private bool InitializeMobileEnemyVisual(
+        LevelPrefabRegistry prefabRegistry,
+        MapProgressRepository mapProgressRepository,
+        string placementKey,
+        Vector2Int initialGrid,
+        int enemyLevel,
+        string zoneId)
+    {
+        // The field model is independent of the group used to resolve combat.
+        if (!prefabRegistry.TryGetEnemyUnitPrefab(MobileVisualUnitKey, out EnemyUnitState unitPrefab) || unitPrefab == null)
+        {
+            Debug.LogWarning($"EnemyUnitBootstrap could not find mobile field unit prefab '{MobileVisualUnitKey}'.", this);
+            return false;
+        }
+
+        Vector2Int grid = initialGrid;
+        string groupKey = enemyIdentity.EnemyGroupKey;
+        if (mapProgressRepository != null &&
+            mapProgressRepository.TryGetEnemyState(placementKey, out EnemyWorldState worldState) &&
+            worldState != null && !string.IsNullOrWhiteSpace(worldState.EnemyId))
+        {
+            grid = worldState.Grid;
+            groupKey = worldState.PrefabKey;
+            enemyLevel = ResolveEnemyLevelForRestore(mapProgressRepository, worldState, enemyLevel);
+            if (string.IsNullOrWhiteSpace(zoneId))
+                zoneId = worldState.ZoneId;
+        }
+
+        ClearUnitStateChildren();
+        enemyComposition.EnsureSlotCount(1);
+        for (int i = 0; i < enemyComposition.UnitIndices.Length; i++)
+            enemyComposition.SetUnitIndexAt(i, -1);
+
+        EnemyUnitState unitState = Instantiate(unitPrefab, transform);
+        unitState.transform.localPosition = Vector3.zero;
+        unitState.transform.localRotation = Quaternion.identity;
+        unitState.SetUnitTemplateKey(MobileVisualUnitKey.ToString());
+        unitState.SetLevel(enemyLevel);
+        unitState.SetIncapacitated(false);
+        unitStates.Add(unitState);
+
+        string enemyId = ResolveEnemyId(mapProgressRepository, placementKey);
+        enemyIdentity.SetEnemyId(enemyId);
+        enemyIdentity.SetEnemyGroupKey(groupKey);
+        enemyUnit.InitializePersistentIdentity(enemyId);
+        enemyUnit.SnapToGridPosition(grid);
+        mapProgressRepository?.BindEnemy(
+            placementKey, enemyId, grid, enemyIdentity.PlacementSource,
+            groupKey, zoneId, EnemyBehaviorType.Mobile);
 
         hasInitialized = true;
         return true;

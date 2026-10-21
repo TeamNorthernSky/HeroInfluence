@@ -294,4 +294,6 @@ public class BattleVisualDirector : MonoBehaviour
 
         _popupPresenter?.Show(result);
     }
+
+    public void ShowCounterPopup(BattleCharactor actor) => _popupPresenter?.ShowCounter(actor);
 }

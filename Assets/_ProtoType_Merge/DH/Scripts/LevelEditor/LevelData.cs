@@ -459,14 +459,15 @@ public class LevelData : ScriptableObject
         subEventPlacements.Add(new SubEventPlacementData(grid, prefabKey));
     }
 
-    public void SetWorldEvent(Vector2Int grid, string worldEventId, DHWorldEventType eventType)
+    public void SetWorldEvent(Vector2Int grid, string worldEventId, DHWorldEventType eventType,
+        WorldEventRotation rotation = WorldEventRotation.Degrees0)
     {
         if (!IsInsideGrid(grid) || string.IsNullOrWhiteSpace(worldEventId))
             return;
 
         EnsureWorldEventPlacements();
         RemoveAllPlacementsAt(grid);
-        worldEventPlacements.Add(new WorldEventPlacementData(grid, worldEventId, eventType));
+        worldEventPlacements.Add(new WorldEventPlacementData(grid, worldEventId, eventType, rotation));
     }
 
     public void SetGatePlacement(
@@ -1087,27 +1088,41 @@ public struct SubEventPlacementData
     }
 }
 
+public enum WorldEventRotation
+{
+    Degrees0 = 0,
+    Degrees90 = 90,
+    Degrees180 = 180,
+    Degrees270 = 270
+}
+
 [Serializable]
 public struct WorldEventPlacementData
 {
     [SerializeField] private Vector2Int gridPosition;
     [SerializeField] private string worldEventId;
     [SerializeField] private DHWorldEventType eventType;
+    [SerializeField] private WorldEventRotation rotation;
 
-    public WorldEventPlacementData(Vector2Int gridPosition, string worldEventId, DHWorldEventType eventType)
+    public WorldEventPlacementData(Vector2Int gridPosition, string worldEventId, DHWorldEventType eventType,
+        WorldEventRotation rotation = WorldEventRotation.Degrees0)
     {
         this.gridPosition = gridPosition;
         this.worldEventId = string.IsNullOrWhiteSpace(worldEventId) ? string.Empty : worldEventId.Trim();
         this.eventType = eventType;
+        this.rotation = rotation;
     }
 
     public Vector2Int GridPosition => gridPosition;
     public string WorldEventId => string.IsNullOrWhiteSpace(worldEventId) ? string.Empty : worldEventId.Trim();
     public DHWorldEventType EventType => eventType;
+    public WorldEventRotation Rotation => rotation == WorldEventRotation.Degrees90
+        || rotation == WorldEventRotation.Degrees180 || rotation == WorldEventRotation.Degrees270
+            ? rotation : WorldEventRotation.Degrees0;
 
     public WorldEventPlacementData Normalized()
     {
-        return new WorldEventPlacementData(gridPosition, WorldEventId, eventType);
+        return new WorldEventPlacementData(gridPosition, WorldEventId, eventType, Rotation);
     }
 }
 

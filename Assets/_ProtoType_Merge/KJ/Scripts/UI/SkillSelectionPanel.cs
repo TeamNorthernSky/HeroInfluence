@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,7 +15,7 @@ public class SkillSelectionPanel : MonoBehaviour
     [SerializeField] private Image skillImage;
     [Tooltip("스킬을 습득한 히어로의 원형 초상화입니다.")]
     [SerializeField] private Image portraitImage;
-    [Tooltip("안내를 닫고 다음 스킬 또는 전투 결과를 표시합니다. 해금 취소 기능은 없습니다.")]
+    [Tooltip("안내를 닫고 다음 스킬을 표시하며, 마지막 확인 뒤 전투를 종료합니다. 해금 취소 기능은 없습니다.")]
     [SerializeField] private Button confirmButton;
 
     // 기존 호출 계약 유지. 알림 완료는 -1로 전달하여 이전의 단일 장착 변경을 하지 않습니다.
@@ -43,7 +43,7 @@ public class SkillSelectionPanel : MonoBehaviour
             var learned = TutorialCatalog.Instance?.GetSkillTemplate(skillId);
             if (skillNameText != null) skillNameText.text = learned != null ? learned.skillName : $"스킬 {skillId}";
             if (effectText != null) effectText.text = learned != null
-                ? ClassSkillTooltipText.ReplaceBattleCoefficients(learned.description, "ClassSkill", learned.skillValue, learned.skillSubValue)
+                ? ClassSkillTooltipText.BuildAcquisitionDescription(learned.description, learned.skillValue, learned.skillSubValue)
                 : "스킬 정보를 불러올 수 없습니다.";
             SetSprite(skillImage, Sprites.Icon.ClassSkill(skillId, 1));
             SetSprite(portraitImage, Sprites.Portrait.Hero(preview.UnitTemplateKey));
@@ -61,7 +61,7 @@ public class SkillSelectionPanel : MonoBehaviour
             float value = skill != null ? catalog.GetClassSkillValueAtLevel(skillId, level) : 0;
             float subValue = skill != null ? catalog.GetClassSkillSubValueAtLevel(skillId, level) : 0;
             effectText.text = skill != null
-                ? ClassSkillTooltipText.ReplaceBattleCoefficients(skill.Description, "ClassSkill", value, subValue)
+                ? ClassSkillTooltipText.BuildAcquisitionDescription(skill.Description, value, subValue)
                 : "스킬 정보를 불러올 수 없습니다.";
         }
         SetSprite(skillImage, Sprites.Icon.ClassSkill(skillId, level));

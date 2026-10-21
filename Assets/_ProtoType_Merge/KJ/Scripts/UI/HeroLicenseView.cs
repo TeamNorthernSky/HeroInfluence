@@ -42,7 +42,7 @@ public sealed class HeroLicenseView : MonoBehaviour
         var lab = GameManager.Instance != null ? GameManager.Instance.Lab : null;
         if (lab == null || (lastUnit == index && lastLevel == unit.Level)) return;
         lastUnit = index; lastLevel = unit.Level;
-        string rank = RankUtil.FromLevel(unit.Level);
+        string rank = UnitRankLookup.GetRank(unit.Level);
         var badge = System.Array.Find(rankSprites, sprite => sprite != null && sprite.name == "UI_icon_rank" + rank);
         rankBadge.sprite = badge;
         rankBadge.color = badge != null ? Color.white : new Color32(15, 96, 224, 255);
@@ -66,7 +66,7 @@ public sealed class HeroLicenseView : MonoBehaviour
             if (!tip) tip = image.gameObject.AddComponent<LicenseHoverTooltip>();
             string effect = skill.Effect == 0 ? "공격" : skill.Effect == 1 ? "회복" : "효과";
             tip.Bind(skill.SkillName + $" Lv.{level}", ClassSkillTooltipText.BuildDesc(skill, level, unitIndex: index), image.sprite,
-                hpValue.font, false, effect + $" · IP {skill.IpCost}");
+                hpValue.font, false, effect);
         }
     }
     private void RefreshEquippedCore(int unitIndex)

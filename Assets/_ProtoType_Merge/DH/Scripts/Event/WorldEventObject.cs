@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 
 [ExecuteAlways]
+[RequireComponent(typeof(MultiGridOccupant))]
 public sealed class WorldEventObject : MonoBehaviour
 {
     public static event Action<WorldEventObject, PartyGridMover> EventInteracted;
@@ -11,6 +12,7 @@ public sealed class WorldEventObject : MonoBehaviour
     [Header("World Event")]
     [SerializeField] private string worldEventId;
     [SerializeField] private bool oneShot = true;
+    [SerializeField] private WorldEventRotation placementRotation;
 
     [Header("Grid")]
     [SerializeField] private GridManager gridManager;
@@ -24,6 +26,8 @@ public sealed class WorldEventObject : MonoBehaviour
     private GameObject spawnedNpcVisual;
     private Coroutine npcVisualRetryCoroutine;
     private bool isTriggering;
+    private Transform interactionFacingVisual;
+    private Quaternion rotationBeforeInteraction;
 #if UNITY_EDITOR
     private bool editorPreviewRefreshQueued;
 #endif
@@ -41,6 +45,7 @@ public sealed class WorldEventObject : MonoBehaviour
     private void OnEnable()
     {
         ResolveReferences();
+        ApplyFootprint(ResolvedNpcType);
 
         if (Application.isPlaying && oneShot && IsCompleted())
         {
@@ -60,6 +65,7 @@ public sealed class WorldEventObject : MonoBehaviour
     {
         worldEventRegistry?.Unregister(this);
         StopNpcVisualRetry();
+        RestoreInteractionFacing();
     }
 
     private void OnValidate()
@@ -83,9 +89,70 @@ public sealed class WorldEventObject : MonoBehaviour
         return GetCurrentGrid(targetGridManager) == grid;
     }
 
-    public void ApplyInitialData(string nextWorldEventId)
+    public static RectInt GetFootprintBounds(Vector2Int anchor, int npcType, WorldEventRotation rotation)
+    {
+        Vector2Int second = anchor;
+        if (npcType == 4)
+        {
+            switch (rotation)
+            {
+                case WorldEventRotation.Degrees90: second += Vector2Int.right; break;
+                case WorldEventRotation.Degrees180: second += Vector2Int.down; break;
+                case WorldEventRotation.Degrees270: second += Vector2Int.left; break;
+                default: second += Vector2Int.up; break;
+            }
+        }
+        Vector2Int min = Vector2Int.Min(anchor, second);
+        return new RectInt(min, Vector2Int.Max(anchor, second) - min + Vector2Int.one);
+    }
+
+    public System.Collections.Generic.IReadOnlyList<Vector2Int> GetInteractionCells()
+    {
+        MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
+        return occupant != null ? occupant.GetAdjacentOuterCells() : Array.Empty<Vector2Int>();
+    }
+
+    public bool IsInteractionCell(Vector2Int grid)
+    {
+        MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
+        return occupant != null ? occupant.IsAdjacentOuterCell(grid)
+            : GridManager.GridDistance(grid, GetCurrentGrid()) == 1;
+    }
+
+    private void ApplyFootprint(int npcType)
+    {
+        GridManager manager = ResolveGridManager();
+        if (manager == null)
+            return;
+
+        MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
+        if (occupant == null)
+            occupant = gameObject.AddComponent<MultiGridOccupant>();
+        RectInt bounds = GetFootprintBounds(GetCurrentGrid(manager), npcType, placementRotation);
+        occupant.SetSize(bounds.size);
+        occupant.SetAnchorGrid(bounds.position);
+        // UI is a sibling of the spawned visual and must not inherit placement rotation.
+        transform.rotation = Quaternion.identity;
+    }
+
+    private void PositionNpcVisual()
+    {
+        MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
+        if (spawnedNpcVisual == null || occupant == null || ResolveGridManager() == null)
+            return;
+
+        Vector3 center = (gridManager.GridToWorldCenter(occupant.AnchorGrid)
+            + gridManager.GridToWorldCenter(occupant.AnchorGrid + occupant.Size - Vector2Int.one)) * 0.5f;
+        center.y = transform.position.y;
+        // Move only the visual; the placement anchor stays on the selected cell.
+        spawnedNpcVisual.transform.position += center - transform.position;
+    }
+
+    public void ApplyInitialData(string nextWorldEventId, WorldEventRotation rotation = WorldEventRotation.Degrees0)
     {
         worldEventId = string.IsNullOrWhiteSpace(nextWorldEventId) ? string.Empty : nextWorldEventId.Trim();
+        placementRotation = rotation;
+        ApplyFootprint(ResolvedNpcType);
 
         if (Application.isPlaying && spawnNpcVisualOnEnable)
             RequestNpcVisualRefresh();
@@ -112,18 +179,50 @@ public sealed class WorldEventObject : MonoBehaviour
             return false;
 
         isTriggering = true;
+        FacePartyForInteraction(party);
         EventInteracted?.Invoke(this, party);
 
         bool started = runtimeManager.TryStartEvent(this, party, () =>
         {
             isTriggering = false;
+            RestoreInteractionFacing();
             closedCallback?.Invoke(this);
         });
 
         if (!started)
+        {
             isTriggering = false;
+            RestoreInteractionFacing();
+        }
 
         return started;
+    }
+
+    private void FacePartyForInteraction(PartyGridMover party)
+    {
+        RestoreInteractionFacing();
+        MultiGridOccupant occupant = GetComponent<MultiGridOccupant>();
+        if (party == null || spawnedNpcVisual == null || occupant == null || occupant.Size != Vector2Int.one)
+            return;
+
+        Vector3 direction = party.transform.position - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.0001f)
+            return;
+
+        interactionFacingVisual = spawnedNpcVisual.transform;
+        rotationBeforeInteraction = interactionFacingVisual.localRotation;
+        float yaw = Mathf.Round(Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg / 45f) * 45f;
+        // Face the party directly; the idle placement correction is restored afterwards.
+        float deltaYaw = Mathf.DeltaAngle(interactionFacingVisual.eulerAngles.y, yaw);
+        interactionFacingVisual.rotation = Quaternion.AngleAxis(deltaYaw, Vector3.up) * interactionFacingVisual.rotation;
+    }
+
+    private void RestoreInteractionFacing()
+    {
+        if (interactionFacingVisual != null)
+            interactionFacingVisual.localRotation = rotationBeforeInteraction;
+        interactionFacingVisual = null;
     }
 
     [ContextMenu("Refresh NPC Visual")]
@@ -168,6 +267,8 @@ public sealed class WorldEventObject : MonoBehaviour
         if (!TryResolveTemplate(out DHWorldEventTemplate template) || template.NpcType < 0)
             return false;
 
+        ApplyFootprint(template.NpcType);
+
         LevelPrefabRegistry registry = ResolvePrefabRegistry();
         if (registry == null || !registry.TryGetWorldEventNpcPrefab(template.NpcType, out GameObject prefab) || prefab == null)
             return false;
@@ -177,6 +278,7 @@ public sealed class WorldEventObject : MonoBehaviour
         DestroyNamedChild(root, EditorPreviewVisualName);
 
         spawnedNpcVisual = CreateNpcVisual(prefab, root, string.Empty, HideFlags.None);
+        PositionNpcVisual();
         return true;
     }
 
@@ -215,6 +317,8 @@ public sealed class WorldEventObject : MonoBehaviour
         if (!TryResolveTemplate(out DHWorldEventTemplate template) || template.NpcType < 0)
             return;
 
+        ApplyFootprint(template.NpcType);
+
         LevelPrefabRegistry registry = ResolvePrefabRegistry();
         if (registry == null || !registry.TryGetWorldEventNpcPrefab(template.NpcType, out GameObject prefab) || prefab == null)
             return;
@@ -224,6 +328,7 @@ public sealed class WorldEventObject : MonoBehaviour
             root,
             EditorPreviewVisualName,
             HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild);
+        PositionNpcVisual();
     }
 
     private bool CanUseEditorPreview()
@@ -234,7 +339,7 @@ public sealed class WorldEventObject : MonoBehaviour
             && gameObject.scene.isLoaded;
     }
 
-    private static GameObject CreateNpcVisual(GameObject prefab, Transform root, string overrideName, HideFlags hideFlags)
+    private GameObject CreateNpcVisual(GameObject prefab, Transform root, string overrideName, HideFlags hideFlags)
     {
         GameObject instance = Instantiate(prefab, root);
         if (!string.IsNullOrWhiteSpace(overrideName))
@@ -242,7 +347,7 @@ public sealed class WorldEventObject : MonoBehaviour
 
         instance.hideFlags = hideFlags;
         instance.transform.localPosition = Vector3.zero;
-        instance.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+        instance.transform.localRotation = Quaternion.Euler(0f, 180f + (int)placementRotation, 0f);
         instance.transform.localScale = Vector3.one;
         return instance;
     }

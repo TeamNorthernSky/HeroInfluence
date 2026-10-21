@@ -49,8 +49,6 @@ public class SkillTooltip : MonoBehaviour
     private float tipBDescBaseH, tipCDescBaseH;
     // [JC 260619] TipB 배경/본문 원본 너비 — ShowInfo의 extraWidth로 호출처별 가감(기본 0).
     private float tipBRootBaseW, tipBDescPanelBaseW, tipBDescBaseW;
-    // [JC 260619] TipB 아이콘 원본 X — ShowInfo의 iconDeltaX로 호출처별 가감(기본 0).
-    private float tipBIconBaseX;
 
     private bool promoted;
 
@@ -65,7 +63,6 @@ public class SkillTooltip : MonoBehaviour
         if (tipBRect != null) tipBRootBaseW = tipBRect.sizeDelta.x;
         if (tipBDescPanel != null) { tipBDescBaseH = tipBDescPanel.sizeDelta.y; tipBDescPanelBaseW = tipBDescPanel.sizeDelta.x; }
         if (tipBDesc != null) tipBDescBaseW = tipBDesc.rectTransform.sizeDelta.x;
-        if (tipBIcon != null) tipBIconBaseX = tipBIcon.rectTransform.anchoredPosition.x;
         if (tipCDescPanel != null) tipCDescBaseH = tipCDescPanel.sizeDelta.y;
         Hide();
     }
@@ -124,8 +121,7 @@ public class SkillTooltip : MonoBehaviour
         if (tipBIcon != null)
         {
             tipBIcon.sprite = icon; tipBIcon.enabled = icon != null;
-            // [JC 260619] 호출처별 아이콘 X 가감(기본 0).
-            tipBIcon.rectTransform.anchoredPosition = new Vector2(tipBIconBaseX + iconDeltaX, tipBIcon.rectTransform.anchoredPosition.y);
+            // 호출처별 위치 보정은 레이아웃에서 IconVisual 전체에 적용합니다.
         }
         if (tipBName != null) tipBName.text = skillName;
         if (tipBDesc != null) { tipBDesc.gameObject.SetActive(true); tipBDesc.text = desc; }

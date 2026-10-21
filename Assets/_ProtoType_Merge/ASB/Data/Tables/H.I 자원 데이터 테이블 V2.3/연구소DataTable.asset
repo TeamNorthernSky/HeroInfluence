@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0a2aeaf4bff84b49bac8466acab9f04, type: 3}
+  m_Name: "\uC5F0\uAD6C\uC18CDataTable"
+  m_EditorClassIdentifier: 
+  DataList:
+  - required_lab_level: 1
+    upgradable_skill_group: "\ubaa8\ub4e0 \ubcf4\uc720 \uc2a4\ud0ac"
+    to_skill_level: 2
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 500
+    cost_resource_2_type: 1
+    cost_resource_2_amount: 2
+    skill_upgrade_condition: "\uc5c6\uc74c"
+    note: "\uc2a4\ud0ac\ubcc4 \uc2a4\ud0ac \uacc4\uc218\ub294 \uc804\ud22c \ud14c\uc774\ube14 \ucc38\uc870"
+  - required_lab_level: 2
+    upgradable_skill_group: "\ubaa8\ub4e0 \ubcf4\uc720 \uc2a4\ud0ac"
+    to_skill_level: 3
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 700
+    cost_resource_2_type: 1
+    cost_resource_2_amount: 4
+    skill_upgrade_condition: "\ub3d9\uc77c \uc2a4\ud0ac Lv2 \uac15\ud654 \uc644\ub8cc"
+    note: ""
+  - required_lab_level: 3
+    upgradable_skill_group: "\ubaa8\ub4e0 \ubcf4\uc720 \uc2a4\ud0ac"
+    to_skill_level: 4
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 900
+    cost_resource_2_type: 1
+    cost_resource_2_amount: 6
+    skill_upgrade_condition: "\ub3d9\uc77c \uc2a4\ud0ac Lv3 \uac15\ud654 \uc644\ub8cc"
+    note: ""
+  - required_lab_level: 4
+    upgradable_skill_group: "\ubaa8\ub4e0 \ubcf4\uc720 \uc2a4\ud0ac"
+    to_skill_level: 5
+    cost_resource_1_type: 0
+    cost_resource_1_amount: 1100
+    cost_resource_2_type: 1
+    cost_resource_2_amount: 8
+    skill_upgrade_condition: "\ub3d9\uc77c \uc2a4\ud0ac Lv4 \uac15\ud654 \uc644\ub8cc"
+    note: ""

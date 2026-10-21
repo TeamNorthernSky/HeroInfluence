@@ -229,6 +229,7 @@ GameObject:
   - component: {fileID: 63707399964760256}
   - component: {fileID: 4480877344590340288}
   - component: {fileID: 1072723075502566594}
+  - component: {fileID: 2523471165355202633}
   m_Layer: 0
   m_Name: WorldEventObject
   m_TagString: Untagged
@@ -267,7 +268,7 @@ MonoBehaviour:
   worldEventId: 
   oneShot: 1
   gridManager: {fileID: 0}
-  visualRoot: {fileID: 0}
+  visualRoot: {fileID: 63707399964760256}
   prefabRegistry: {fileID: 0}
   spawnNpcVisualOnEnable: 1
 --- !u!114 &1072723075502566594
@@ -288,6 +289,24 @@ MonoBehaviour:
   dialogueBubble: {fileID: 4509928468992753061}
   answerPanel: {fileID: 0}
   eventTypeID: 540
+--- !u!114 &2523471165355202633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2263691777699172704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77d9c7e37d507c040b8586befc7d713d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridManager: {fileID: 0}
+  anchorGrid: {x: 0, y: 0}
+  size: {x: 1, y: 1}
+  syncAnchorFromTransformOnAwake: 0
+  drawOccupiedCellsGizmo: 1
+  drawAdjacentCellsGizmo: 0
 --- !u!1 &4509928468992753061
 GameObject:
   m_ObjectHideFlags: 0

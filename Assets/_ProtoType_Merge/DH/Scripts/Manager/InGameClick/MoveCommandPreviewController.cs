@@ -35,7 +35,9 @@ public class MoveCommandPreviewController
     private JC.Tutorial.JcTutorialWorldMarker guidanceArrow;
     private JC.Indicators.JcMovementIndicatorController guidanceIndicator;
     private Vector3 guidanceWorld;
-    private float nextGuidanceRefresh;
+    private bool guidancePathCached;
+    private ZoneEntryGuidanceController guidanceSource;
+    private int guidanceRouteRevision;
     private bool showingGuidance;
 
     // 입력 가능 여부와 무관한 전체 안내. 기본 미리보기와 별도 렌더 출력을 사용한다.
@@ -52,17 +54,21 @@ public class MoveCommandPreviewController
         }
 
         Vector2Int start = hasMarkerGrid ? markerGrid : mover.GetCurrentGrid();
-        if (Time.unscaledTime >= nextGuidanceRefresh || guidanceIndicator != indicator || start != guidanceStart)
+        var source = ZoneEntryGuidanceController.Instance;
+        if (!guidancePathCached || guidanceIndicator != indicator || start != guidanceStart
+            || guidanceSource != source || guidanceRouteRevision != source.RouteRevision)
         {
             if (guidanceIndicator != indicator) HideGuidance();
             guidanceIndicator = indicator;
             guidanceStart = start;
-            nextGuidanceRefresh = Time.unscaledTime + .25f;
-            List<Vector2Int> path = BuildGuidancePath(mover, start);
+            guidanceSource = source;
+            guidanceRouteRevision = source.RouteRevision;
+            guidancePathCached = true;
+            List<Vector2Int> path = BuildGuidancePath(start);
             if (path == null || path.Count < 2)
             {
                 HideGuidance();
-                nextGuidanceRefresh = Time.unscaledTime + .25f;
+                guidancePathCached = true;
                 return;
             }
 
@@ -93,12 +99,12 @@ public class MoveCommandPreviewController
 
     private Vector2Int guidanceStart;
 
-    private List<Vector2Int> BuildGuidancePath(PartyGridMover mover, Vector2Int start)
+    private List<Vector2Int> BuildGuidancePath(Vector2Int start)
     {
         var state = MapProgressRepository.Instance?.ZoneEntryGuidanceState;
         var route = state != null && state.Active ? state.AllowedPathCells : null;
         if (route == null || route.Count == 0) return null;
-        // 안개를 밝힌 순서 있는 경로 전체를 유지한다. 아이템/이동력 절단은 기본 이동에만 적용한다.
+        // Guidance follows the stored route; moving only trims the already-travelled prefix.
         for (int i = 0; i < route.Count; i++)
         {
             if (route[i] != start) continue;
@@ -106,9 +112,7 @@ public class MoveCommandPreviewController
             for (int j = i; j < route.Count; j++) remaining.Add(route[j]);
             return remaining;
         }
-        return pathfinder.FindPath(start, route[route.Count - 1], mover.transform,
-            false, EnemyEncounterPathMode.BlockEncounterZones, true,
-            MainEventInteractionPathMode.BlockInteractionCells, PreviewPathMaxVisitedNodes);
+        return null;
     }
 
     public void HideGuidance()
@@ -116,7 +120,7 @@ public class MoveCommandPreviewController
         guidanceIndicator?.HideGuidance();
         if (guidanceArrow != null) guidanceArrow.Present(false, Vector3.zero, 1f, 0f, false);
         showingGuidance = false;
-        nextGuidanceRefresh = 0;
+        guidancePathCached = false;
     }
 
     public void Dispose()
@@ -246,7 +250,7 @@ public class MoveCommandPreviewController
         if (ZoneEntryGuidanceController.IsActive)
             path = TrimGuidancePathAtFirstItem(path, out destinationGrid);
 
-        nextGuidanceRefresh = 0;
+        guidancePathCached = false;
         Vector2Int markerDisplayGrid = previewInteractionTargetGrid.HasValue
             ? previewInteractionTargetGrid.Value
             : destinationGrid;
@@ -483,6 +487,9 @@ public class MoveCommandPreviewController
         if (currentGrid == interactionGrid)
             return false;
 
+        if (gridManager.TryGetWorldEventObjectAtGrid(interactionGrid, out WorldEventObject worldEvent))
+            return worldEvent.IsInteractionCell(currentGrid);
+
         if (GridManager.GridDistance(currentGrid, interactionGrid) > 1)
             return false;
 
@@ -596,6 +603,29 @@ public class MoveCommandPreviewController
 
         if (previewInteractionTargetGrid.HasValue)
         {
+            if (gridManager.TryGetWorldEventObjectAtGrid(previewInteractionTargetGrid.Value, out WorldEventObject worldEvent)
+                && worldEvent.GetComponent<MultiGridOccupant>() is MultiGridOccupant occupant
+                && occupant.Size != Vector2Int.one)
+            {
+                var goals = new List<Vector2Int>();
+                foreach (Vector2Int cell in worldEvent.GetInteractionCells())
+                {
+                    if (IsAllowedMoveRangeSearchCell(cell)
+                        && (cell == partyGrid || gridManager.CanOccupyCell(cell, activeMover.transform)))
+                        goals.Add(cell);
+                }
+                List<Vector2Int> worldEventPath = pathfinder.FindPathToAny(partyGrid, goals,
+                    previewInteractionTargetGrid.Value, activeMover.transform, false,
+                    EnemyEncounterPathMode.BlockEncounterZones, false,
+                    MainEventInteractionPathMode.BlockInteractionCells, PreviewPathMaxVisitedNodes,
+                    activeMover.RemainingMovePoints,
+                    cell => !worldEvent.OccupiesGrid(cell) && IsAllowedMoveRangeSearchCell(cell));
+                if (worldEventPath == null || worldEventPath.Count == 0)
+                    return null;
+                destinationGrid = worldEventPath[worldEventPath.Count - 1];
+                return worldEventPath;
+            }
+
             List<Vector2Int> interactionPath = pathfinder.FindPathToAdjacent(
                 partyGrid,
                 previewInteractionTargetGrid.Value,
