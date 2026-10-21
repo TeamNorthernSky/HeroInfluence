@@ -263,6 +263,7 @@ public sealed class DHDepartmentSnapshotSection : DHTurnStartSnapshotSection
             target.Add(new WorkshopManager.WeaponEntry
             {
                 weaponIndex = entry.weaponIndex,
+                weaponKey = entry.weaponKey,
                 instanceIndex = entry.instanceIndex
             });
         }

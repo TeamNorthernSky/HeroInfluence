@@ -396,13 +396,37 @@ public class TurnManager : MonoBehaviour
 
     private IEnumerator CaptureInitialTurnStartSnapshotAfterSceneReady()
     {
+        GameManager gameManager = GameManager.Instance;
+        int entryVersion = gameManager != null ? gameManager.ExplorationEntryVersion : 0;
         yield return null;
         yield return null;
+
+        if (gameManager != null && gameManager.IsExplorationScene(gameObject.scene))
+        {
+            float deadline = Time.realtimeSinceStartup + 15f;
+            while (true)
+            {
+                if (gameManager == null || gameManager.ExplorationEntryVersion != entryVersion ||
+                    DHGameEndState.IsEnding || enemyTurnRunning)
+                    yield break;
+                if (gameManager.TryPrepareInitialExplorationState(entryVersion))
+                    break;
+                if (Time.realtimeSinceStartup >= deadline)
+                {
+                    Debug.LogWarning("[TurnManager] 본게임 초기화가 완료되지 않아 최초 스냅샷·자동 저장을 보류합니다. 씬 준비, 복원 상태 및 협회 홍보 카탈로그를 확인하세요.", this);
+                    yield break;
+                }
+                yield return null;
+            }
+        }
 
         if (DHGameEndState.IsEnding || enemyTurnRunning)
             yield break;
 
-        DHTurnStartSnapshotStore.CaptureTurnStartSnapshot();
+        if (gameManager != null && gameManager.ExplorationEntryVersion != entryVersion)
+            yield break;
+        if (DHTurnStartSnapshotStore.CaptureTurnStartSnapshot() && gameManager != null)
+            gameManager.NotifyInitialTurnSnapshotCaptured(gameObject.scene, entryVersion);
     }
 
     private void UpdateTurnStateText(string nextText)
