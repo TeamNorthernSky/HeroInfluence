@@ -47,6 +47,17 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx:
+  - Event: 6
+    PlayPerHit: 0
+    Key: Battle_Warning
+    DurationSeconds: 0
+    Occurrence: -1
+  - Event: 0
+    PlayPerHit: 0
+    Key: Battle_GunHit
+    DurationSeconds: 0
+    Occurrence: -1
   MovePrepare:
     Enabled: 1
     AnimationStateName: 

@@ -56,6 +56,12 @@ public class CharactorAnimationController : MonoBehaviour
     /// </summary>
     public event System.Action<SkillData> SkillAnimationPlayed;
 
+    /// <summary>
+    /// 범용 연출(피격·사망·부활 등) 재생 직후 발생. (정리된 actionType, 원인 유닛 — 호출부가 모르면 null)
+    /// 유닛 전용 반응(예: 방패병 피격 넉백 <see cref="HitKnockbackMotion"/>)이 구독한다. 구독자가 없으면 기존 동작과 같다.
+    /// </summary>
+    public event System.Action<string, BattleCharactor> GenericAnimationPlayed;
+
     public bool IsHitEventReached { get; private set; }
 
     /// <summary>AniEvent_HoldBegin으로 애니가 프리즈(정지)된 상태인지. WaitHit 등 타임아웃 시계는 이 동안 멈춰야 한다.</summary>
@@ -617,7 +623,12 @@ public class CharactorAnimationController : MonoBehaviour
     }
 
     /// <summary>피격·사망·부활 등 범용 연출. Has Exit Time 영향을 받지 않도록 CrossFade로 즉시 전환합니다.</summary>
-    public void PlayGenericAnimation(string actionType)
+    public void PlayGenericAnimation(string actionType) => PlayGenericAnimation(actionType, null);
+
+    /// <summary>
+    /// <see cref="PlayGenericAnimation(string)"/>과 같고, 원인 유닛(피격이면 공격자)을 <see cref="GenericAnimationPlayed"/>로 함께 알린다.
+    /// </summary>
+    public void PlayGenericAnimation(string actionType, BattleCharactor source)
     {
         if (_animator == null || string.IsNullOrWhiteSpace(actionType))
         {
@@ -644,6 +655,8 @@ public class CharactorAnimationController : MonoBehaviour
                 _animator.CrossFade(actionType.Trim(), 0.05f, 0, 0f);
                 break;
         }
+
+        GenericAnimationPlayed?.Invoke(actionType.Trim(), source);
     }
 
     /// <summary>현재 또는 다음 전환 중인 상태가 stateName인지 확인합니다.</summary>

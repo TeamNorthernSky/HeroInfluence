@@ -63,6 +63,7 @@ MonoBehaviour:
     ForceApproach: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: Explore_Move
   AttackPrepare:
     Enabled: 1
     AnimationStateName: 
@@ -80,6 +81,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: MoveForward
     BlendInSeconds: 0.1
+    SfxKey: Explore_Move
   Post:
     Enabled: 1
     AnimationStateName: 

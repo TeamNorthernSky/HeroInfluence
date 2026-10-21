@@ -94,6 +94,19 @@ public static class PresentationSfxEvents
         }
     }
 
+    /// <summary>시전 시점(캐스트당 1회). Timeline SFX 마커가 없는 스킬이 시전음을 낼 때 쓴다.</summary>
+    public static void PlayCast(SkillPresentationData presentation)
+    {
+        List<PresentationEventSfx> entries = presentation != null ? presentation.EventSfx : null;
+        if (entries == null) return;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            PresentationEventSfx entry = entries[i];
+            if (entry != null && entry.Event == PresentationSfxEvent.Cast) PlayEntry(entry);
+        }
+    }
+
     /// <summary>조립형 VFX 부품이 실제로 시작한 순서에 맞춰 재생한다.</summary>
     public static void PlayEffectStep(SkillPresentationData presentation, int stepIndex)
     {

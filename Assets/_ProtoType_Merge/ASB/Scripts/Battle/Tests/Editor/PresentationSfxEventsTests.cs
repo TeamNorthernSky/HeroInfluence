@@ -155,6 +155,18 @@ public class PresentationSfxEventsTests
     }
 
     [Test]
+    public void PlayCast_PlaysOnlyCastEntries_EveryCall()
+    {
+        object data = CreatePresentation(("Cast", "Cast_A", -1), ("Hit", "Hit_B", -1), ("Cast", "Cast_C", -1));
+
+        PlayCast(data);
+        PlayCast(data);
+        PlayCast(null);
+
+        Assert.That(_calls, Is.EqualTo(new[] { "Cast_A", "Cast_C", "Cast_A", "Cast_C" }));
+    }
+
+    [Test]
     public void EmptyKeyOrNullPresentation_PlaysNothing()
     {
         object data = CreatePresentation(("Hit", "   ", -1), ("EffectImpact", null, -1));
@@ -212,6 +224,11 @@ public class PresentationSfxEventsTests
     private static void PlayEffectImpact(object presentation, int occurrence)
     {
         EventsType.GetMethod("PlayEffectImpact").Invoke(null, new[] { presentation, (object)occurrence });
+    }
+
+    private static void PlayCast(object presentation)
+    {
+        EventsType.GetMethod("PlayCast").Invoke(null, new[] { presentation });
     }
 
     private static Type FindType(string name)

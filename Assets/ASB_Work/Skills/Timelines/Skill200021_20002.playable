@@ -173,7 +173,8 @@ MonoBehaviour:
   m_Children: []
   m_Clips: []
   m_Markers:
-    m_Objects: []
+    m_Objects:
+    - {fileID: 7214305518630020101}
   role: 4
 --- !u!114 &-525002156093431563
 MonoBehaviour:
@@ -187,7 +188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0
+  m_Time: 0.7333333333333333
   _kind: 1
   _cueName: 
   _cueId: 
@@ -342,3 +343,18 @@ MonoBehaviour:
   m_Time: 2.4583334922790527
   _sectionId: Attack
   _boundary: 1
+--- !u!114 &7214305518630020101
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.7333333333333333
+  _sfxKey: Battle_LongHit01
+  _durationSeconds: 0

@@ -637,7 +637,9 @@ public enum PresentationSfxEvent
     Heal,
     AdditionalHeal,
     // 조립형 VFX의 부품 시작 시점. Occurrence는 0부터 시작하는 부품 인덱스다.
-    EffectStep
+    EffectStep,
+    // 시전 시점(스킬 실행 결과 적용 시작, 캐스트당 1회). Timeline 마커가 없는 스킬(드론 사격·대신 맞기 등)의 시전음.
+    Cast
 }
 
 /// <summary>Event SFX 한 줄. 키는 DHAudioClipCatalog SfxClips 정식 키.</summary>

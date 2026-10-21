@@ -127,7 +127,7 @@ namespace ASB.Work.Battle.Sequence
 
             _target.EnsureAnimationController();
             _target.Anim?.SetAnimationSpeed(_battleSpeed);
-            _target.Anim?.PlayGenericAnimation(_targetAnimTrigger);
+            _target.Anim?.PlayGenericAnimation(_targetAnimTrigger, _actor);
         }
 
         private static bool TryInstantiateTrailLine(

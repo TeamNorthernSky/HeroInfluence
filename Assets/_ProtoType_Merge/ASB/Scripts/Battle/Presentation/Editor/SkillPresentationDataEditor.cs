@@ -145,6 +145,7 @@ public class SkillPresentationDataEditor : Editor
             "Hit = 피해 확정(대상별, 같은 시전자의 동시 피격은 1회)\n" +
             "AdditionalHit = 추가 대상 피해(체인 연쇄·스플래시 등). 줄이 없으면 Hit 사용\n" +
             "EffectImpact = VFX 착탄 순간. Occurrence로 착탄 순번 지정(-1 = 매 착탄)\n" +
+            "Cast = 시전 시점(캐스트당 1회). Timeline이 없는 스킬 전용\n" +
             "시전·발사·휘두름 소리는 Timeline SFX 마커에 넣으세요. 같은 순간을 양쪽에 넣으면 두 번 울립니다.",
             MessageType.Info);
     }

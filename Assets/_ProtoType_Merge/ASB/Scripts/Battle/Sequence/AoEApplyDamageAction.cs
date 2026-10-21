@@ -99,7 +99,7 @@ namespace ASB.Work.Battle.Sequence
                 {
                     hitTarget.EnsureAnimationController();
                     hitTarget.Anim?.SetAnimationSpeed(_battleSpeed);
-                    hitTarget.Anim?.PlayGenericAnimation("Hit");
+                    hitTarget.Anim?.PlayGenericAnimation("Hit", _contexts[i]?.Caster);
                 }
             }
 

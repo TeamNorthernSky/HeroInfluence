@@ -4,9 +4,9 @@ using UnityEngine;
 namespace ASB.Work.Battle.Sequence
 {
     /// <summary>
-    /// 타겟의 Hit 또는 Die 애니메이션이 끝날 때까지 대기합니다.
-    /// - 사망: Die 클립이 끝날 때까지 대기 후 Idle 복귀 없음
-    /// - 생존: minWait 보장 후 Hit 클립 종료 시 Idle 복귀
+    /// 타겟의 Hit 또는 Die 애니메이션이 끝나거나 대기 제한에 도달할 때까지 기다립니다.
+    /// - 사망: Dead 상태를 기다리며 Idle로 복귀시키지 않습니다.
+    /// - 생존: Hit 종료 후 Idle 복귀는 CharactorAnimationController가 처리합니다.
     /// ReturnToIdleIfAlive를 대체합니다.
     /// </summary>
     public class WaitTargetReactionAction : BattleSequenceAction
@@ -44,7 +44,6 @@ namespace ASB.Work.Battle.Sequence
             else
             {
                 yield return WaitForState(anim, "Hit", _minWait, _maxWait, 0.9f);
-                _target.Anim?.PlayIdleAnimation();
             }
         }
 

@@ -5,7 +5,8 @@ public enum UnitSfxEvent
 {
     Summon,
     Death,
-    GuardSwap
+    GuardSwap,
+    GuardBlock
 }
 
 /// <summary>
@@ -21,6 +22,8 @@ public class UnitSfxProfile : MonoBehaviour
     public string DeathSfxKey;
     [Tooltip("대신 맞기 자리 교환 이동 시작 시 재생할 효과음 키(가디언 쪽에 입력).")]
     public string GuardSwapSfxKey;
+    [Tooltip("대신 맞기로 재지정된 피해를 받는 순간 재생할 효과음 키(가디언 쪽에 입력).")]
+    public string GuardBlockSfxKey;
 
     public string GetKey(UnitSfxEvent evt)
     {
@@ -29,6 +32,7 @@ public class UnitSfxProfile : MonoBehaviour
             case UnitSfxEvent.Summon: return SummonSfxKey;
             case UnitSfxEvent.Death: return DeathSfxKey;
             case UnitSfxEvent.GuardSwap: return GuardSwapSfxKey;
+            case UnitSfxEvent.GuardBlock: return GuardBlockSfxKey;
             default: return null;
         }
     }

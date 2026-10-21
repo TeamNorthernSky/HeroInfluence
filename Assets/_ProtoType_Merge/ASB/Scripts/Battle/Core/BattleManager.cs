@@ -389,6 +389,10 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
+        // 시전음(Event SFX Cast). Timeline SFX 마커가 없는 스킬(드론 사격·대신 맞기 등)도 시전 시점에 소리를 낸다.
+        if (result.Skill != null && _visualDirector != null)
+            PresentationSfxEvents.PlayCast(_visualDirector.GetPresentation(result.Skill.skillIndex));
+
         float totalDamageDealt = 0f;
         // 연출이 확정하지 못한(취소·타임아웃) 히트를 규칙 계층이 나중에 일괄 확정하기 위한 목록.
         // 연출은 확정 '시점'만 정하고 '여부'는 정하지 못한다. 각 항목은 멱등하다(두 번 호출해도 1회만 적용).
@@ -404,7 +408,10 @@ public class BattleManager : MonoBehaviour
             {
                 if (committed) return null;
                 committed = true;
+                // 대신 맞기: 살아 있는 가디언이 재지정된 피해를 받는 순간 방어음(가디언 UnitSfxProfile).
+                bool guardBlock = damageContext.RedirectedFrom != null && damageContext.Target != null && !damageContext.Target.IsDead;
                 BattleHitResult hit = CommitDamage(damageContext, predicted);
+                if (guardBlock) UnitSfxProfile.Play(damageContext.Target, UnitSfxEvent.GuardBlock);
                 result.RecordDamageResult(damageContext, hit);
                 totalDamageDealt += hit?.AppliedDamage ?? 0f;
                 return hit;
