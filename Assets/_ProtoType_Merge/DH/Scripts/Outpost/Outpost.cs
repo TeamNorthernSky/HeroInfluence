@@ -396,6 +396,17 @@ public class Outpost : MonoBehaviour
         return GetAnchorGrid(gridManager) == grid;
     }
 
+    public bool IsInteractionCell(Vector2Int grid, GridManager gridManager)
+    {
+        if (multiGridOccupant != null)
+            return multiGridOccupant.IsBottomOuterCell(grid);
+
+        Vector2Int anchorGrid = GetAnchorGrid(gridManager);
+        int dx = Mathf.Abs(grid.x - anchorGrid.x);
+        int dy = Mathf.Abs(grid.y - anchorGrid.y);
+        return dx <= 1 && dy <= 1 && (dx != 0 || dy != 0);
+    }
+
     public IReadOnlyList<Vector2Int> GetAdjacentInteractionCells(GridManager gridManager)
     {
         if (multiGridOccupant != null)

@@ -187,9 +187,6 @@ public class ClickSelectionController : MonoBehaviour
         if (gridManager.HasObstacle(clickedGrid))
             return;
 
-        if (gridManager.HasOtherPlayer(clickedGrid, activeMover.transform))
-            return;
-
         if (moveCommandPreviewController.TryConfirmMoveAtGrid(clickedGrid, activeMover))
         {
             partySelectionController.FocusActiveMover();
@@ -267,7 +264,6 @@ public class ClickSelectionController : MonoBehaviour
     private void HandleActiveMoverMoveCompleted()
     {
         moveCommandPreviewController?.HandleMoveCompleted();
-        moveRangeController?.RefreshForMover(partySelectionController != null ? partySelectionController.ActiveMover : null);
     }
 
     private void HandleEnemyTurnStateChanged(bool isEnemyTurnRunning)
