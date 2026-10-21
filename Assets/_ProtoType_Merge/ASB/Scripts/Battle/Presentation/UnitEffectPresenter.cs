@@ -69,6 +69,7 @@ public interface IPresentationEffectSpawnFilter
 [DisallowMultipleComponent]
 public class UnitEffectPresenter : MonoBehaviour
 {
+    public static event System.Action<SkillEffectContext, GameObject, string> EffectSpawned;
     private PresentationRuntimeContext _ctx;
     private PresentationRuntimeContext Ctx => _ctx != null ? _ctx : (_ctx = GetComponent<PresentationRuntimeContext>());
 
@@ -206,6 +207,7 @@ public class UnitEffectPresenter : MonoBehaviour
 
 
             instance.GetComponent<ISkillEffectBehaviour>()?.Play(effectContext);
+            EffectSpawned?.Invoke(effectContext, instance, cue.NormalizedCueName);
 
             if (!held)
             {

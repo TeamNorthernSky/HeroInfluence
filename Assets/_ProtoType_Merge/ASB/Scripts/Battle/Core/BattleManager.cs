@@ -380,7 +380,8 @@ public class BattleManager : MonoBehaviour
         ward.RemoveStatusEffect(StatusEffectType.guarded); // 재지정 시점에 1회 소비
     }
 
-    public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null)
+    public IEnumerator ApplySkillExecutionResultRoutine(SkillExecutionResult result, Action<bool> onCompleted = null,
+        Action<Action> deferCompletion = null)
     {
         if (result == null || !result.Success)
         {
@@ -841,16 +842,31 @@ public class BattleManager : MonoBehaviour
         if (counterRequests.Count > 0)
         {
             EnqueueCounterAttacks(counterRequests);
+        }
+
+        // 연출용 카메라는 원 시전자의 복귀·후딜·줌 복귀를 마친 뒤 반격을 시작한다.
+        // 사후 효과(자해/소환 포함)와 완료 통지는 기존처럼 반격 처리 뒤 실행한다.
+        void CompleteExecution()
+        {
+            result.OnPostExecution?.Invoke(totalDamageDealt);
+#if UNITY_EDITOR
+            result.LogEventTrackingSummary();
+#endif
+            onCompleted?.Invoke(true);
+        }
+        if (deferCompletion != null)
+        {
+            deferCompletion(CompleteExecution);
+            yield break;
+        }
+        if (counterRequests.Count > 0)
+        {
             // 이 루틴 자체가 연쇄 액션으로 실행 중이면 DrainFollowUps는 즉시 반환하고,
             // 방금 넣은 반격은 바깥 드레인 루프가 이어서 처리한다.
             yield return StartCoroutine(DrainFollowUps());
         }
 
-        result.OnPostExecution?.Invoke(totalDamageDealt);
-#if UNITY_EDITOR
-        result.LogEventTrackingSummary();
-#endif
-        onCompleted?.Invoke(true);
+        CompleteExecution();
     }
 
     /// <summary>
@@ -1135,7 +1151,22 @@ public class BattleManager : MonoBehaviour
             HostageFriendlyFireResolver.CaptureCollateralCells(actor, target, classSkillRow, result);
 
         bool executed = false;
-        yield return StartCoroutine(ApplySkillExecutionResultRoutine(result, success => executed = success));
+        var preview = FindFirstObjectByType<BattlePresentationPreview>();
+        bool usePreview = preview != null && preview.isActiveAndEnabled && preview.gameObject.scene == gameObject.scene;
+        Action completeExecution = null;
+        IEnumerator execution = ApplySkillExecutionResultRoutine(result, success => executed = success,
+            usePreview ? new Action<Action>(completion => completeExecution = completion) : null);
+        if (usePreview)
+        {
+            yield return StartCoroutine(preview.RunAttackWithZoom(actor, target, classSkillRow, execution));
+            if (completeExecution != null)
+            {
+                yield return StartCoroutine(DrainFollowUps());
+                completeExecution();
+            }
+        }
+        else
+            yield return StartCoroutine(execution);
 
         if (executed)
         {
@@ -1225,7 +1256,12 @@ public class BattleManager : MonoBehaviour
             SkillExecutionOptions.CounterDefault);
 
         bool executed = false;
-        yield return StartCoroutine(ApplySkillExecutionResultRoutine(result, success => executed = success));
+        IEnumerator execution = ApplySkillExecutionResultRoutine(result, success => executed = success);
+        var preview = FindFirstObjectByType<BattlePresentationPreview>();
+        if (preview != null && preview.isActiveAndEnabled && preview.gameObject.scene == gameObject.scene)
+            yield return StartCoroutine(preview.RunAttackWithZoom(req.Defender, req.OriginalCaster, req.Skill, execution));
+        else
+            yield return StartCoroutine(execution);
 
         if (!executed)
         {

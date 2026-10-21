@@ -38,6 +38,8 @@ public class SkillButtonController : MonoBehaviour
     [SerializeField] private TMP_Text descriptionTitle;
     [Tooltip("호버·선택 스킬의 설명 또는 스킬 선택 안내를 표시합니다.")]
     [SerializeField] private TMP_Text descriptionBody;
+    [Tooltip("켜면 공격력 비율로, 끄면 현재 영웅의 능력치를 적용한 수치로 설명합니다.")]
+    [SerializeField] private bool descriptionPercentageValues = true;
     [Tooltip("효과·거리·대상 순서의 태그 글자입니다. 각 글자의 부모는 개별 태그 배경이며 안내 상태에서는 숨깁니다.")]
     [SerializeField] private TMP_Text[] descriptionTags = Array.Empty<TMP_Text>();
 
@@ -276,12 +278,12 @@ public class SkillButtonController : MonoBehaviour
         {
             int weaponIndex = unit.EquippedWeaponIndex > 0 ? unit.EquippedWeaponIndex : (unit.SourceData?.CurrentWeaponIndex ?? 0);
             int level = gm != null && gm.Workshop != null && unitIndex > 0 ? Mathf.Max(1, gm.Workshop.GetWeaponLevel(weaponIndex)) : 1;
-            body = WeaponTooltipText.BuildWeaponSkillDesc(unit.EquippedWeaponData, weaponIndex, level, percentageValues: true, caster: unit);
+            body = WeaponTooltipText.BuildWeaponSkillDesc(unit.EquippedWeaponData, weaponIndex, level, percentageValues: descriptionPercentageValues, caster: unit);
         }
         else
         {
             int level = gm != null && gm.Lab != null && unitIndex > 0 ? gm.Lab.GetSkillLevel(unitIndex, skill.skillIndex) : (unit.SourceData?.SkillLevel ?? 1);
-            body = ClassSkillTooltipText.BuildDesc(skill, level, percentageValues: true, caster: unit);
+            body = ClassSkillTooltipText.BuildDesc(skill, level, percentageValues: descriptionPercentageValues, caster: unit);
         }
         SetDescription(skill.skillName, body, skill);
     }

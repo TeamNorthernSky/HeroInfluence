@@ -25,6 +25,22 @@ namespace JC.VFX
         [Tooltip("대상별 도착 시 호출할 독립 착탄 부품입니다. 비우면 기존 내장 효과를 씁니다.")]
         [SerializeField] private FlareBombImpact impactPartPrefab;
         private SolarPrismVfx flightPart;
+        public bool TryGetCameraFocus(out Vector3 position)
+        {
+            position = Vector3.zero;
+            if (flightPart != null) return flightPart.TryGetCameraFocus(out position);
+            if (!_launching) return false;
+            int count = 0;
+            foreach (var unit in _units)
+            {
+                if (!unit.launched || unit.root == null || unit.crystal == null || !unit.crystal.gameObject.activeInHierarchy) continue;
+                position += unit.root.position;
+                count++;
+            }
+            if (count == 0) return false;
+            position /= count;
+            return true;
+        }
         private IReadOnlyList<Transform> partTargets;
         private bool deferLaunch;
         public override void SetTargets(IReadOnlyList<VfxTarget> values)

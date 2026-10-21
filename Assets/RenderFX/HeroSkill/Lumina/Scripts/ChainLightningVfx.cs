@@ -24,6 +24,22 @@ namespace JC.VFX
         [SerializeField] private LightningShock shockPartPrefab;
         public event System.Action Contacted;
         public event System.Action ChainStarted;
+        private bool hasCameraFocus;
+        private Vector3 cameraFocusPoint;
+
+        public bool TryGetCameraFocus(out Vector3 position)
+        {
+            position = cameraFocusPoint;
+            if (!IsPlaying) return false;
+            for (int i = _spawned.Count - 1; i >= 0; i--)
+            {
+                if (_spawned[i] == null) continue;
+                var child = _spawned[i].GetComponent<ChainLightningVfx>();
+                if (child != null && child != this && child.TryGetCameraFocus(out position)) return true;
+            }
+            position = cameraFocusPoint;
+            return hasCameraFocus;
+        }
 
         [Header("References")]
         [Tooltip("머즐 구체(작은 번개 구체, ShockAura 소형 재사용).")]
@@ -109,6 +125,7 @@ namespace JC.VFX
         public void Play(Transform origin, Transform target, IReadOnlyList<Transform> chainTargets)
         {
             if (origin == null || target == null) return;
+            hasCameraFocus = false;
             if (_co != null) StopCoroutine(_co);
             CleanupSpawned();
             _mpb ??= new MaterialPropertyBlock();
@@ -242,6 +259,8 @@ namespace JC.VFX
             }
 
             // 본볼트: 빠르게 긋기 → 유지(플리커)
+            hasCameraFocus = true;
+            cameraFocusPoint = muzzlePos;
             if (mainBoltRenderer != null)
             {
                 AimBolt(mainBoltRenderer.transform, muzzlePos, hitPos);
@@ -252,12 +271,15 @@ namespace JC.VFX
             while (bt < (partMode == PartMode.ChainBolt ? chainDrawTime : drawTime))
             {
                 bt += EffectDeltaTime;
+                cameraFocusPoint = Vector3.Lerp(muzzlePos, hitPos,
+                    Mathf.Clamp01(bt / Mathf.Max(partMode == PartMode.ChainBolt ? chainDrawTime : drawTime, .01f)));
                 PushBolt(mainBoltRenderer, Mathf.Clamp01(bt / Mathf.Max(partMode == PartMode.ChainBolt ? chainDrawTime : drawTime, 0.01f)), 1f);
                 PushBolt(muzzleRenderer, 1f, 1f);
                 yield return null;
             }
 
             // 명중: 대상1 감전 시작
+            cameraFocusPoint = hitPos;
             SpawnShock(target);
             Contacted?.Invoke();
             float hitTime = Time.time;

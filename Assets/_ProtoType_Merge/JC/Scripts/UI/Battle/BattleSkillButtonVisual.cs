@@ -1,10 +1,18 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 /// <summary>전투 스킬 버튼의 사용 가능 효과와 선택 테두리만 표시합니다. 스킬 실행 상태는 소유하지 않습니다.</summary>
 [DisallowMultipleComponent]
-public class BattleSkillButtonVisual : MonoBehaviour
+public class BattleSkillButtonVisual : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    [Tooltip("마우스 오버 시 확대 배율입니다. 1이면 기존 크기를 유지합니다.")]
+    [Range(1f, 1.12f)] [SerializeField] private float hoverScale = 1f;
+    [Min(.01f)] [SerializeField] private float hoverScaleSeconds = .12f;
+    private Vector3 restingScale;
+    private Selectable selectable;
+    private bool hovered;
+    private float hoverBlend;
     [Tooltip("JC_BattleUI_VFX/SkillBTN_SweepGlow의 공통 설정입니다. 연결하면 아래 개별 시각 설정보다 우선합니다.")]
     [SerializeField] private BattleSkillSweepSettings sharedSettings;
     [Tooltip("출전 버튼의 스윕 셰이더를 재사용하는 사용 가능 효과입니다. 클릭을 가로채지 않는 Image를 연결합니다.")]
@@ -42,6 +50,8 @@ public class BattleSkillButtonVisual : MonoBehaviour
 
     private void Awake()
     {
+        restingScale = transform.localScale;
+        selectable = GetComponent<Selectable>();
         availableSource = availableEffect != null ? availableEffect.material : null;
         selectedSource = selectedFrame != null ? selectedFrame.material : null;
         availableInstance = CreateInstance(availableEffect, availableSource);
@@ -94,7 +104,25 @@ public class BattleSkillButtonVisual : MonoBehaviour
         }
     }
 
-    private void OnDisable() => SetState(false, false);
+    public void OnPointerEnter(PointerEventData eventData) => hovered = true;
+    public void OnPointerExit(PointerEventData eventData) => hovered = false;
+
+    private void Update()
+    {
+        if (hoverScale <= 1f) return;
+        bool canHover = (hovered || wasSelected) && (selectable == null || selectable.IsInteractable());
+        hoverBlend = Mathf.MoveTowards(hoverBlend, canHover ? 1f : 0f,
+            Time.unscaledDeltaTime / Mathf.Max(.01f, hoverScaleSeconds));
+        transform.localScale = restingScale * Mathf.Lerp(1f, hoverScale, Mathf.SmoothStep(0f, 1f, hoverBlend));
+    }
+
+    private void OnDisable()
+    {
+        SetState(false, false);
+        hovered = false;
+        hoverBlend = 0f;
+        if (hoverScale > 1f) transform.localScale = restingScale;
+    }
 
     private void UpdateOrbitPixelSize()
     {

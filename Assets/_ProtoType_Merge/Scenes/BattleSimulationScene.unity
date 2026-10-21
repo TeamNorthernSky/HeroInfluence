@@ -385,16 +385,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82642162af683574a8c09b857ae70252, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buildTable: {fileID: 11400000, guid: dd31d174ee7ffb540ad5f67ff1083778, type: 2}
-  workshopTable: {fileID: 11400000, guid: c81f273a101254b4593911891baafbca, type: 2}
-  workshopEnforceTable: {fileID: 11400000, guid: a0058ca0b104c254b9b5c3dd44c9ffbe,
+  buildTable: {fileID: 11400000, guid: d5e8a78022a5418ba9e503adaa67c791, type: 2}
+  workshopTable: {fileID: 11400000, guid: 68b950514c24430681cd8df956e6ae81, type: 2}
+  workshopEnforceTable: {fileID: 11400000, guid: c1b0848ef6f544c39f69c6bd44a09d15,
     type: 2}
-  exchangeTable: {fileID: 11400000, guid: cb5b3e7560114714b8f2392535694dd7, type: 2}
-  labTable: {fileID: 11400000, guid: b82242e3091b05b4f8739a82831799c6, type: 2}
-  fundTable: {fileID: 11400000, guid: 752bcd67da0fe9b4fb0ab3f8ad22aa82, type: 2}
-  promotionTable: {fileID: 11400000, guid: 5bb5ecf45bd9aea47888522b93d6fa2e, type: 2}
-  trainingTable: {fileID: 11400000, guid: f82464ab27343c244b919293e85cd43f, type: 2}
-  infirmaryTable: {fileID: 11400000, guid: d8639bdbc4b98784ea824db6c132c7c6, type: 2}
+  exchangeTable: {fileID: 11400000, guid: b4485461fff244199e3bde07710971d9, type: 2}
+  labTable: {fileID: 11400000, guid: 854effc1517c430c831d154349764d2f, type: 2}
+  fundTable: {fileID: 11400000, guid: b88f005453384f9bb9fc40133ff64ed9, type: 2}
+  promotionTable: {fileID: 11400000, guid: f989183a06e2414697a04fa9666cf728, type: 2}
+  trainingTable: {fileID: 11400000, guid: 67b1c122cc2444bd9461fc2aa4037a11, type: 2}
+  infirmaryTable: {fileID: 11400000, guid: 4b79209eba244dd0ae886d376bb29172, type: 2}
   loadOnAwake: 1
   dontDestroyOnLoad: 1
 --- !u!114 &1884577818

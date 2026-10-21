@@ -227,6 +227,7 @@ public sealed partial class SkillPresentationDirector
 
         probe.Configure(_chainLightningActionInstanceId, primaryTargetTransform, chainTargets, presentation);
         effect.Play(actor.transform, primaryTargetTransform, chainTargets);
+        UnityEngine.Object.FindFirstObjectByType<BattlePresentationPreview>()?.FollowLuminaLightning(actor, effect);
         return true;
     }
 
@@ -1669,10 +1670,9 @@ public sealed partial class SkillPresentationDirector
         if (deliveryRoutine != null) yield return deliveryRoutine;
         foreach (Coroutine sequentialRoutine in sequentialRoutines) yield return sequentialRoutine;
 
-        for (int i = 0; i < pairCount; i++)
-        {
-            ReturnToIdleIfAlive(contexts[i]?.Target);
-        }
+        // Delivery can finish as Hit starts (including during hit-stop). Let
+        // CharactorAnimationController.ReturnFromCompletedHit restore Idle after
+        // the reaction completes instead of cancelling the target's animation here.
     }
 
     private static PlayableDirector EnsureTimelineDirector(BattleCharactor actor)

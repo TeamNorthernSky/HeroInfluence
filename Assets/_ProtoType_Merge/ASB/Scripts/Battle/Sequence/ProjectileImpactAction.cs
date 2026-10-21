@@ -14,6 +14,9 @@ namespace ASB.Work.Battle.Sequence
     /// </summary>
     public sealed class ProjectileImpactAction : BattleSequenceAction
     {
+        public static event Action<BattleCharactor, Transform> FlightStarted;
+        public static event Action<BattleCharactor, Transform, Vector3, bool> FlightFinished;
+        private Transform cameraFlight;
         private readonly BattleCharactor _actor;
         private readonly BattleCharactor _target;
         private readonly ProjectileVisualData _visual;
@@ -175,6 +178,8 @@ namespace ASB.Work.Battle.Sequence
             orbVisual?.Show(start);
             BeginCosmetics(trails, particles);
             hook?.OnLaunched();
+            cameraFlight = tr;
+            FlightStarted?.Invoke(_actor, tr);
 
             IProjectileTrajectory trajectory = ProjectileTrajectoryFactory.Create(_visual.Trajectory);
             trajectory.Init(start, destination, _visual);
@@ -286,6 +291,11 @@ namespace ASB.Work.Battle.Sequence
 
         private void Complete(ProjectileDeliveryResult result)
         {
+            if (cameraFlight != null)
+            {
+                FlightFinished?.Invoke(_actor, cameraFlight, cameraFlight.position, result == ProjectileDeliveryResult.Arrived);
+                cameraFlight = null;
+            }
             DeliveryResult = result;
             _deliveryGate?.SetResult(result);
         }

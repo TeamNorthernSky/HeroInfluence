@@ -32,6 +32,54 @@ public class BattleVisualDirector : MonoBehaviour
     {
         Enabled = true, DurationSeconds = 0.08f, CharacterSpeed = 0.05f, EffectSpeed = 0.25f
     };
+    [Tooltip("테스트용 HP 하한으로 피해가 막혀도 명중 연출을 재생합니다.")]
+    [SerializeField] private bool _reactToPreventedDamage;
+    [Header("피격 시 몸체 점멸")]
+    [InspectorName("몸체 점멸 사용"), SerializeField] private bool _enableBodyFlash;
+    [InspectorName("점멸 시간 (초)"), Min(0.01f)] [SerializeField] private float _bodyFlashSeconds = .12f;
+    [InspectorName("흰색 강도"), Range(0f, 1f)] [SerializeField] private float _bodyFlashStrength = 1f;
+    private static readonly int HitFlashId = Shader.PropertyToID("_HitFlash");
+    private readonly Dictionary<Renderer, float> _bodyFlashes = new Dictionary<Renderer, float>();
+    private readonly List<Renderer> _finishedFlashes = new List<Renderer>();
+    private MaterialPropertyBlock _flashBlock;
+
+    private void FlashBody(BattleCharactor target)
+    {
+        if (!_enableBodyFlash || target == null || _bodyFlashSeconds <= 0f) return;
+        foreach (Renderer renderer in target.GetComponentsInChildren<Renderer>(true))
+        {
+            if (!(renderer is SkinnedMeshRenderer) && !(renderer is MeshRenderer)) continue;
+            bool supported = false;
+            foreach (Material material in renderer.sharedMaterials)
+                if (material != null && material.HasProperty(HitFlashId)) { supported = true; break; }
+            if (!supported) continue;
+            _bodyFlashes[renderer] = Time.unscaledTime + _bodyFlashSeconds;
+            SetBodyFlash(renderer, _bodyFlashStrength);
+        }
+    }
+
+    private void SetBodyFlash(Renderer renderer, float amount)
+    {
+        if (renderer == null) return;
+        if (_flashBlock == null) _flashBlock = new MaterialPropertyBlock();
+        // 다른 연출의 PropertyBlock 값과 원본 공유 재질은 유지합니다.
+        renderer.GetPropertyBlock(_flashBlock);
+        _flashBlock.SetFloat(HitFlashId, amount);
+        renderer.SetPropertyBlock(_flashBlock);
+    }
+
+    private void UpdateBodyFlashes()
+    {
+        _finishedFlashes.Clear();
+        foreach (var entry in _bodyFlashes)
+        {
+            float remaining = entry.Value - Time.unscaledTime;
+            float fade = Mathf.Clamp01(remaining / Mathf.Max(.01f, _bodyFlashSeconds * .65f));
+            SetBodyFlash(entry.Key, _bodyFlashStrength * fade);
+            if (entry.Key == null || remaining <= 0f) _finishedFlashes.Add(entry.Key);
+        }
+        foreach (Renderer renderer in _finishedFlashes) _bodyFlashes.Remove(renderer);
+    }
 
     private readonly HashSet<CharactorAnimationController> _stoppedAnimations = new HashSet<CharactorAnimationController>();
     private readonly List<HitEffectSpeed> _hitEffects = new List<HitEffectSpeed>();
@@ -88,10 +136,12 @@ public class BattleVisualDirector : MonoBehaviour
         ApplyHitEffectSpeeds();
     }
 
-    /// <summary>실제 HP 감소가 확인된 타격에만 기본값 또는 스킬별 설정을 적용한다.</summary>
+    /// <summary>명중 피해에 기본값 또는 스킬별 설정을 적용한다. HP 하한 테스트는 별도 옵션으로 허용한다.</summary>
     public void RequestHitStopOnDamage(BattleCharactor actor, BattleHitResult result)
     {
-        if (result == null || result.Target == null || result.IsHeal || result.IsMiss || result.AppliedDamage <= 0f) return;
+        if (!isActiveAndEnabled || result == null || result.Target == null || result.IsHeal || result.IsMiss ||
+            (result.AppliedDamage <= 0f && (!_reactToPreventedDamage || result.Damage <= 0f))) return;
+        FlashBody(result.Target);
         if (_lastMarkerActor == actor && _lastMarkerTarget == result.Target &&
             Time.unscaledTime - _lastMarkerTime < 0.15f) return;
         SkillPresentationData presentation = GetPresentation(result.SkillIndex);
@@ -146,6 +196,8 @@ public class BattleVisualDirector : MonoBehaviour
 
     private void OnDisable()
     {
+        foreach (Renderer renderer in _bodyFlashes.Keys) SetBodyFlash(renderer, 0f);
+        _bodyFlashes.Clear();
         if (_hitStopRoutine != null) StopCoroutine(_hitStopRoutine);
         _hitStopRoutine = null;
         RestoreHitStop();
@@ -156,6 +208,7 @@ public class BattleVisualDirector : MonoBehaviour
 
     private void Update()
     {
+        UpdateBodyFlashes();
         if (_hitStopRoutine == null)
             _hitEffects.RemoveAll(state => Time.unscaledTime - state.RegisteredAt > 0.5f);
     }
