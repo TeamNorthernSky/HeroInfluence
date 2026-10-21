@@ -26913,6 +26913,7 @@ MonoBehaviour:
   attackFocusHeight: 1.1
   shieldCameraReturnDelay: 0.35
   frameEnemyRangedTarget: 1
+  frameBlackBulletTarget: 1
   rangedTargetFocusWeight: 0.65
   followLuminaProjectile: 1
   projectileFocusSpeed: 24
