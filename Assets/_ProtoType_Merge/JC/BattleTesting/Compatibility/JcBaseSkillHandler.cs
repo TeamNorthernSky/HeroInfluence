@@ -250,7 +250,7 @@ namespace ASB.Work.Battle.SkillExecution
             else if (HeroSkillRules.IsFamily(context.Skill, 1030))
             {
                 coords = new HashSet<Vector2Int> { context.PrimaryCell.Coords };
-                if (context.PrimaryTarget.IsInFrontRow)
+                if (TargetingHelper.IsUnitInFixedFrontRow(context.PrimaryTarget))
                     coords.Add(context.PrimaryCell.Coords + new Vector2Int(context.Caster.IsPlayer ? 1 : -1, 0));
             }
             else if (context.Skill.classSkillTarget == 2 || context.Skill.skillKey == "HCS005" || context.Skill.skillKey == "HCS002")
@@ -305,12 +305,7 @@ namespace ASB.Work.Battle.SkillExecution
                 return;
             }
 
-            bool? sharedCrit = null;
-            if (context.Skill.classSkillEffect == 0)
-            {
-                var rollCtx = new DamageContext { Caster = context.Caster };
-                sharedCrit = JcCombatCalculator.RollCritical(rollCtx);
-            }
+            SharedCriticalRoll sharedCrit = context.Skill.classSkillEffect == 0 ? new SharedCriticalRoll() : null;
 
             int count = context.ResolvedTargets.Count;
             for (int i = 0; i < count; i++)
@@ -323,7 +318,13 @@ namespace ASB.Work.Battle.SkillExecution
 
                 if (context.Skill.classSkillEffect == 0)
                 {
-                    ApplyAdditionaDamage(context.Caster, target, context.Skill, count, result, sharedCrit);
+                    int firstAddedContext = result.DamageContexts.Count;
+                    ApplyAdditionaDamage(context.Caster, target, context.Skill, count, result);
+                    for (int damageIndex = firstAddedContext; damageIndex < result.DamageContexts.Count; damageIndex++)
+                    {
+                        if (result.DamageContexts[damageIndex] != null)
+                            result.DamageContexts[damageIndex].SharedCriticalRoll = sharedCrit;
+                    }
                 }
                 else if (context.Skill.classSkillEffect == 1 || context.Skill.classSkillEffect == 2)
                 {

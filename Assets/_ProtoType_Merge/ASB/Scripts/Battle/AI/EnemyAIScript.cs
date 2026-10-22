@@ -115,8 +115,8 @@ namespace EnemyAI
                     continue;
                 }
 
-                bool isFront = TargetingHelper.IsUnitInFrontRow(candidate);
-                bool isBack = TargetingHelper.IsUnitInBackRow(candidate);
+                bool isFront = TargetingHelper.IsUnitInFixedFrontRow(candidate);
+                bool isBack = TargetingHelper.IsUnitInFixedBackRow(candidate);
 
                 if (isFront)
                 {
@@ -272,7 +272,7 @@ namespace EnemyAI
             // 연격 첫 타격은 전열 우선. 파동탄은 모든 유효 대상이 같은 확률이다.
             if (skill == combo)
             {
-                List<BattleCharactor> front = candidates.Where(TargetingHelper.IsUnitInFrontRow).ToList();
+                List<BattleCharactor> front = candidates.Where(TargetingHelper.IsUnitInFixedFrontRow).ToList();
                 if (front.Count > 0) candidates = front;
             }
             if (candidates.Count == 0) return EnemyActionDecision.SkipTurn();

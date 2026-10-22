@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,18 +22,75 @@ public enum UIBuildingIconType { Bank, BlockStore, JewelryStore, Library }
 [CreateAssetMenu(fileName = "SpriteLibrary", menuName = "HeroInfluence/Sprite Library")]
 public class SpriteLibrary : ScriptableObject
 {
+    [Serializable]
+    public class SpritePathEntry
+    {
+        [Tooltip("기존 CSV/호출부의 Resources 상대 경로 키. 실제 파일 위치와 분리됩니다.")]
+        public string key;
+        public Sprite sprite;
+    }
+
+    [Header("UI 정본 참조 (_Ui_Sprites, 기존 경로 키 호환)")]
+    [SerializeField] private List<SpritePathEntry> canonicalSprites = new List<SpritePathEntry>();
+    [Header("시작 시 로드하고 유지할 공용 UI (탐사 배경·컷씬·사운드 제외)")]
+    [SerializeField] private List<Sprite> residentSprites = new List<Sprite>();
+    private Dictionary<string, Sprite> _canonicalLut;
+
+    private static string NormalizeResourceKey(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return string.Empty;
+        key = key.Trim().Replace('\\', '/');
+        return key.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+            ? key.Substring(0, key.Length - 4) : key;
+    }
+
+    /// <summary>정본 Sprite를 우선 반환한다. 미등록 키만 기존 Resources에서 찾는다.</summary>
+    public Sprite LoadSprite(string key)
+    {
+        key = NormalizeResourceKey(key);
+        if (key.Length == 0) return null;
+        EnsureCanonicalSprites();
+        if (_canonicalLut.TryGetValue(key, out var canonical)) return canonical;
+        if (!_resCache.TryGetValue(key, out var sprite))
+        {
+            sprite = Resources.Load<Sprite>(key);
+            _resCache[key] = sprite;
+        }
+        return sprite;
+    }
+
+    private void EnsureCanonicalSprites()
+    {
+        if (_canonicalLut != null) return;
+        _canonicalLut = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in canonicalSprites)
+        {
+            if (entry == null || entry.sprite == null) continue;
+            string key = NormalizeResourceKey(entry.key);
+            if (key.Length > 0) _canonicalLut[key] = entry.sprite;
+        }
+    }
+
+    /// <summary>라이브러리 로드 시 직접 참조한 공용 UI도 함께 로드된다. 정적 소유자가 수명을 유지한다.</summary>
+    public void PrepareCommonUI()
+    {
+        EnsureCanonicalSprites();
+        EnsurePortraitCsvLut();
+        EnsureCsvLut();
+        EnsureWeaponCsvLut();
+        EnsureWeaponSkillCsvLut();
+    }
+
     // ════════════════════ 공통 리소스 캐시 ════════════════════
     private readonly Dictionary<string, Sprite> _resCache = new Dictionary<string, Sprite>();
 
     private Sprite LoadRes(string path)
     {
-        if (string.IsNullOrEmpty(path)) return null;
-        if (!_resCache.TryGetValue(path, out var s)) { s = Resources.Load<Sprite>(path); _resCache[path] = s; }
-        return s;
+        return LoadSprite(path);
     }
 
     // ════════════════════ ① 포트레이트 (구 PortraitLibrary) ════════════════════
-    public enum PortraitCategory { Hero, Villain, Enemy }
+    public enum PortraitCategory { Hero, Villain, Enemy, Speaker }
 
     [Header("포트레이트 CSV (Resources TextAsset, 컬럼=Category,Id,PortraitResourcePath)")]
     [SerializeField] private string portraitCsvPath = "Portrait_Hero_Sprite/PortraitSheet";
@@ -87,6 +144,16 @@ public class SpriteLibrary : ScriptableObject
 
     /// <summary>히어로 포트레이트(키=HeroIndex 문자열, 예 "10001").</summary>
     public Sprite GetHeroPortrait(string heroKey) => GetPortrait(PortraitCategory.Hero, heroKey);
+
+    /// <summary>대화 화자명으로 등록된 초상화. 미등록이면 null로 기존 화자 폴백을 유지한다.</summary>
+    public Sprite GetSpeakerPortrait(string speaker)
+    {
+        if (string.IsNullOrWhiteSpace(speaker)) return null;
+        EnsurePortraitCsvLut();
+        string key = System.Text.RegularExpressions.Regex.Replace(speaker, @"\s+", "");
+        return _portraitCsvLut.TryGetValue(PortraitKey(PortraitCategory.Speaker, key), out var path)
+            ? LoadRes(path) : null;
+    }
 
     /// <summary>적 기본 포트레이트(범용 zako).</summary>
     public Sprite DefaultEnemy => LoadRes(defaultEnemyPortraitPath);

@@ -251,8 +251,6 @@ namespace ASB.Work.Battle.SkillExecution
                 IsCounterAttack = false,
                 DelayAfter = FirstHitDelaySeconds
             };
-            hit1.IsCritical = CombatCalculator.RollCritical(hit1);
-
             var hit2 = new DamageContext
             {
                 Caster = caster,
@@ -264,8 +262,6 @@ namespace ASB.Work.Battle.SkillExecution
                 IsCounterAttack = false,
                 DelayAfter = 0f
             };
-            hit2.IsCritical = CombatCalculator.RollCritical(hit2);
-
             return SkillExecutionResult.SuccessResult(caster, skillData)
                 .AddDamage(hit1)
                 .AddDamage(hit2);
@@ -364,7 +360,7 @@ namespace ASB.Work.Battle.SkillExecution
             foreach (BattleCharactor unit in all)
                 if (unit != null && !unit.IsDead && unit != mainTarget && unit.IsPlayer != caster.IsPlayer)
                     opponents.Add(unit);
-            List<BattleCharactor> back = opponents.FindAll(TargetingHelper.IsUnitInBackRow);
+            List<BattleCharactor> back = opponents.FindAll(TargetingHelper.IsUnitInFixedBackRow);
             List<BattleCharactor> pool = back.Count > 0 ? back : opponents;
             return pool.Count == 0 ? new List<ISkillTarget>()
                 : new List<ISkillTarget> { pool[UnityEngine.Random.Range(0, pool.Count)] };

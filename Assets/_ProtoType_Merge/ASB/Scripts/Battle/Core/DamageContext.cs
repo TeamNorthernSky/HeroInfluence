@@ -7,6 +7,12 @@ namespace ASB.Work.Battle.Core
         Additional
     }
 
+    /// <summary>광역 공격의 치명타 판정 1회를 공유한다. 경감된 대상은 이 판정을 사용하지 않는다.</summary>
+    public sealed class SharedCriticalRoll
+    {
+        public bool? Result;
+    }
+
     public class DamageContext
     {
         public BattleCharactor Caster;
@@ -19,9 +25,14 @@ namespace ASB.Work.Battle.Core
         public float SkillValue;
         public int SkillIndex;
         public bool IsCritical;
+        /// <summary>치명타 판정 결과가 확정되었는지 표시한다. 피해 예측과 확정 사이에 다시 굴리지 않는다.</summary>
+        public bool IsCriticalResolved;
+        public SharedCriticalRoll SharedCriticalRoll;
         public bool IsRangedAttack = false;
         public float BonusCritRate = 0f;
         public float TargetAvoidRateReduction = 0f;
+        /// <summary>경감 판정 결과. null=아직 판정 안 함. 한 번 정해지면 다시 굴리지 않는다.</summary>
+        public bool? IsDamageReduced;
         public bool CanTriggerCounter = false;
         public bool IsCounterAttack = false;
         // 다단 히트 연출용 대기 시간(초).

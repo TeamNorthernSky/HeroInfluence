@@ -64,4 +64,4 @@ MonoBehaviour:
     time: 0.025
     note: "1020 \uC804\uC9C4 \u2014 \uC67C\uC190 \uADA4\uC801 \uAC1C\uC2DC"
   logFire: 1
-  warnUnusedStates: 1
+  warnUnusedStates: 0

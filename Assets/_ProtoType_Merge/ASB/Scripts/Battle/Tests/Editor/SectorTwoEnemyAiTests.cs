@@ -80,6 +80,51 @@ public sealed class SectorTwoEnemyAiTests
     }
 
     [Test]
+    public void FrontFirstTargeting_UsesFixedRowsAndFallsBackWhenFrontIsEmpty()
+    {
+        Component caster = Unit("Caster", false, 2, 0, 50);
+        Component back = Unit("BackOnly", true, 0, 0, 50);
+        object skill = AddSkill(caster, 200031);
+        skill.GetType().GetField("classSkillRangeLine").SetValue(skill, 0);
+        Type targeting = FindType("TargetingHelper");
+        MethodInfo getTargets = targeting.GetMethod("GetValidTargetsForSkillData");
+
+        Assert.That(back.GetType().GetProperty("IsInFrontRow").GetValue(back), Is.True,
+            "기존 동적 진형 판정은 유지한다.");
+        Assert.That(targeting.GetMethod("IsUnitInFixedFrontRow").Invoke(null, new object[] { back }), Is.False);
+        Assert.That(targeting.GetMethod("IsUnitInFixedBackRow").Invoke(null, new object[] { back }), Is.True);
+
+        IList onlyBack = (IList)getTargets.Invoke(null, new[] { caster, skill });
+        Assert.That(onlyBack.Count, Is.EqualTo(1));
+        Assert.That(onlyBack[0], Is.SameAs(back), "고정 전열이 비면 후열로 폴백한다.");
+
+        Component front = Unit("Front", true, 1, 0, 50);
+        IList withFront = (IList)getTargets.Invoke(null, new[] { caster, skill });
+        Assert.That(withFront.Count, Is.EqualTo(1));
+        Assert.That(withFront[0], Is.SameAs(front), "고정 전열이 있으면 전열만 선택한다.");
+    }
+
+    [Test]
+    public void CasterPositionBased_BackOnlyCasterCanTargetEitherFixedRow()
+    {
+        Component caster = Unit("BackCaster", true, 0, 0, 50);
+        Component enemyFront = Unit("EnemyFront", false, 2, 0, 50);
+        Component enemyBack = Unit("EnemyBack", false, 3, 0, 50);
+        object skill = AddSkill(caster, 100011);
+        skill.GetType().GetField("classSkillRangeLine").SetValue(skill, 3);
+
+        Assert.That(caster.GetType().GetProperty("IsInFrontRow").GetValue(caster), Is.True,
+            "기존 동적 진형 판정은 유지한다.");
+        Type targeting = FindType("TargetingHelper");
+        IList targets = (IList)targeting.GetMethod("GetValidTargetsForSkillData")
+            .Invoke(null, new[] { caster, skill });
+
+        Assert.That(targets.Count, Is.EqualTo(2));
+        Assert.That(targets.Contains(enemyFront), Is.True);
+        Assert.That(targets.Contains(enemyBack), Is.True);
+    }
+
+    [Test]
     public void Factory_CreatesDedicatedAiForTurretAndReinforcedSoldier()
     {
         Type factory = FindType("EnemyAI.EnemyAIFactory");

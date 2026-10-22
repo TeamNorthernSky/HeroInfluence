@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -18,6 +19,22 @@ public static class Sprites
 
     private static SpriteLibrary _lib;
     private static SpriteLibrary _fallback;
+    private static ResourceRequest _preload;
+
+    /// <summary>기존 경로 키로 정본 UI Sprite를 조회한다. 미전환 항목은 Resources 폴백을 유지한다.</summary>
+    public static Sprite Load(string resourceKey) => Library.LoadSprite(resourceKey);
+
+    /// <summary>Boot에서 공용 UI 참조를 비동기로 준비한 뒤 게임 종료까지 보유한다.</summary>
+    public static IEnumerator PreloadCommonUI()
+    {
+        if (_lib == null)
+        {
+            if (_preload == null) _preload = Resources.LoadAsync<SpriteLibrary>(ResourcePath);
+            yield return _preload;
+            _lib = _preload.asset as SpriteLibrary;
+        }
+        Library.PrepareCommonUI();
+    }
 
     public static SpriteLibrary Library
     {
@@ -48,6 +65,17 @@ public static class Sprites
 
         /// <summary>적 포트레이트(키=적 UnitTemplateKey). 미수록/키없음 시 범용 기본(zako).</summary>
         public static Sprite Enemy(string enemyKey) => Library.GetEnemyPortrait(enemyKey);
+
+        /// <summary>전투 적의 초상화. 저장 데이터가 없는 튜토리얼·이벤트 적은 실제 템플릿 키를 사용한다.</summary>
+        public static Sprite EnemyByActor(BattleCharactor unit)
+        {
+            string key = unit != null ? unit.SourceEnemyData?.UnitTemplateKey : null;
+            if (string.IsNullOrWhiteSpace(key) && unit != null) key = unit.TemplateIndex;
+            return Enemy(key);
+        }
+
+        /// <summary>대화 화자명에 등록된 초상화. 미등록이면 null.</summary>
+        public static Sprite Speaker(string speaker) => Library.GetSpeakerPortrait(speaker);
 
         /// <summary>빌런(명명 적) 포트레이트(키=인덱스 문자열=UnitTemplateKey). 미수록/키없음 시 범용 기본(zako).</summary>
         public static Sprite Villain(string villainKey) => Library.GetVillainPortrait(villainKey);

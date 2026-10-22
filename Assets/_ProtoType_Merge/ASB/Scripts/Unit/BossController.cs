@@ -233,7 +233,21 @@ public sealed class BossController : MonoBehaviour
             return false;
         }
 
-        if (!spawner.TrySpawnUnitIfEmpty(minionEnemyId, gridNumber, out GameObject go) || go == null)
+        GameObject go;
+        bool spawned;
+        if (BattleScenarioUnitKey.Normalize(minionEnemyId) == "40005")
+        {
+            if (!TryBuildHoopStats(out StatBlock hoopStats))
+                return false;
+
+            spawned = spawner.TrySpawnUnitIfEmpty(minionEnemyId, gridNumber, hoopStats, out go);
+        }
+        else
+        {
+            spawned = spawner.TrySpawnUnitIfEmpty(minionEnemyId, gridNumber, out go);
+        }
+
+        if (!spawned || go == null)
         {
             return false; // 점유중이면 기존 유닛 보존, 실패
         }
@@ -261,6 +275,32 @@ public sealed class BossController : MonoBehaviour
             return false;
         }
 
+        return true;
+    }
+
+    private bool TryBuildHoopStats(out StatBlock stats)
+    {
+        stats = default;
+        EventScriptCatalog catalog = EventScriptCatalog.Instance;
+        if (catalog == null ||
+            !catalog.TryGetBattleEnemyUnitTemplate(2, "FV40005", out DHEventBattleUnitTemplate row) || row == null)
+        {
+            Debug.LogError("[BossController] DataStorage의 2구역 FV40005 테이블 행을 찾지 못해 굴렁쇠 소환을 중단합니다.", this);
+            return false;
+        }
+
+        int enemyLevel = CombatContext.Instance?.EventBattle?.EnemyLevel ?? 1;
+        int growthCount = Mathf.Max(0, enemyLevel - 1);
+        stats = new StatBlock(
+            hp: Mathf.Max(1, row.BaseMaxHp + row.LevelGrowthMaxHp * growthCount),
+            atk: Mathf.Max(0, row.BaseAtk + row.LevelGrowthAtk * growthCount),
+            def: Mathf.Max(0, row.BaseDef + row.LevelGrowthDef * growthCount),
+            luck: 0f,
+            speed: Mathf.Max(0, row.Speed),
+            criticalRate: Mathf.Max(0f, row.CriticalRate),
+            critMultiplier: 1.5f,
+            counterRate: Mathf.Max(0f, row.CounterRate),
+            avoidRate: Mathf.Max(0f, row.ReduceRate));
         return true;
     }
 

@@ -350,6 +350,13 @@ public class EnemySpawner : MonoBehaviour
     /// BattleCharactor/인질이 이미 있으면 스폰하지 않고 false를 반환한다.
     /// </summary>
     public bool TrySpawnUnitIfEmpty(string enemyId, int gridNumber, out GameObject spawned)
+        => TrySpawnUnitIfEmpty(enemyId, gridNumber, null, out spawned);
+
+    /// <summary>소환체 한 개의 기본 스탯만 바꾼다. 카탈로그의 공유 EnemyData는 수정하지 않는다.</summary>
+    public bool TrySpawnUnitIfEmpty(string enemyId, int gridNumber, StatBlock baseStats, out GameObject spawned)
+        => TrySpawnUnitIfEmpty(enemyId, gridNumber, (StatBlock?)baseStats, out spawned);
+
+    private bool TrySpawnUnitIfEmpty(string enemyId, int gridNumber, StatBlock? baseStatsOverride, out GameObject spawned)
     {
         spawned = null;
 
@@ -391,6 +398,25 @@ public class EnemySpawner : MonoBehaviour
         {
             Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: EnemyData를 찾지 못했습니다. enemyId='{enemyId}'");
             return false;
+        }
+
+        if (baseStatsOverride.HasValue)
+        {
+            // AI·스킬 조회에 쓰는 이름과 인덱스는 유지하고, 이번 소환체의 스탯만 교체한다.
+            data = new EnemyData
+            {
+                Index = data.Index,
+                UnitType = data.UnitType,
+                Name = data.Name,
+                baseStats = baseStatsOverride.Value,
+                levelupStats = default,
+                IsEnemyRow = data.IsEnemyRow,
+                UnitAI = data.UnitAI,
+                ExperiencePoint = data.ExperiencePoint,
+                DropItem1Index = data.DropItem1Index,
+                DropItem1Count = data.DropItem1Count,
+                DropItem1Rate = data.DropItem1Rate
+            };
         }
 
         GameObject prefab = FindPrefab(data);
@@ -591,7 +617,10 @@ public class EnemySpawner : MonoBehaviour
             enemyScript = go.AddComponent<EnemyScript>();
 
         // EnemyData.baseStats에 레벨 스탯이 반영돼 있으므로 SetLevelScaling(false) 경로로 그대로 최종 스탯이 된다.
-        enemyScript.Initialize(entry.Data);
+        if (entry.HasExplicitSkills)
+            enemyScript.InitializeWithDeferredSkillWarning(entry.Data);
+        else
+            enemyScript.Initialize(entry.Data);
         ApplyBattleBehaviorKey(battle, entry);
 
         // 명시 스킬(이벤트)이 있으면 배선. 일반 전투는 EnemyData.Index 규칙(EnemyScript)으로 기본 스킬 유도.
@@ -608,6 +637,10 @@ public class EnemySpawner : MonoBehaviour
             {
                 battle.SetClassSkillIndex(battle.availableSkills[0].skillIndex);
                 battle.ResolveSelectedSkill(false);
+            }
+            else
+            {
+                battle.ResolveSelectedSkill();
             }
         }
 

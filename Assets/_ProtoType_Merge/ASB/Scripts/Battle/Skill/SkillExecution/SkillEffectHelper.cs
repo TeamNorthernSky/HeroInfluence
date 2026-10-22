@@ -40,7 +40,11 @@ namespace ASB.Work.Battle.SkillExecution
                 CanTriggerCounter = !isAdditionalHit && !isCounterAttack && skillRange == 0 && target.IsFrontRow(),
                 IsCounterAttack = isCounterAttack
             };
-            context.IsCritical = sharedIsCritical ?? CombatCalculator.RollCritical(context);
+            if (sharedIsCritical.HasValue)
+            {
+                context.IsCritical = sharedIsCritical.Value;
+                context.IsCriticalResolved = true;
+            }
             return context;
         }
 
@@ -73,7 +77,6 @@ namespace ASB.Work.Battle.SkillExecution
                 CanTriggerCounter = !isAdditionalHit && !isCounterAttack && skillRange == 0 && target.IsFrontRow(),
                 IsCounterAttack = isCounterAttack
             };
-            context.IsCritical = CombatCalculator.RollCritical(context);
             return context;
         }
 

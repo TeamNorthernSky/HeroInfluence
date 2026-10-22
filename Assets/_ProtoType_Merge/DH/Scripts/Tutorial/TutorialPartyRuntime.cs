@@ -72,12 +72,6 @@ public class TutorialPartyRuntime : MonoBehaviour
         interactionController?.Dispose();
     }
 
-    [System.Obsolete("Tutorial parties now start with every configured unit. This method is kept only for old scene hooks.")]
-    public bool JoinUnit(string unitTemplateKey)
-    {
-        return composition != null && composition.JoinUnit(unitTemplateKey);
-    }
-
     public IReadOnlyList<string> GetJoinedUnitTemplateKeys()
     {
         return composition != null

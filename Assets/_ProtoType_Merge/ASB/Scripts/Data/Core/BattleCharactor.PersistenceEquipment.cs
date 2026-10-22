@@ -118,7 +118,7 @@ public partial class BattleCharactor
     /// 데이터 파이프라인 완료 표시. preserveInjectedEquipment가 true면 로더로 주입한 스킬/무기를
     /// RefreshAvailableSkills/Weapons로 덮어쓰지 않습니다.
     /// </summary>
-    public void MarkInitializedFromDataPipeline(bool preserveInjectedEquipment = false)
+    public void MarkInitializedFromDataPipeline(bool preserveInjectedEquipment = false, bool emitMissingSkillWarning = true)
     {
         IsPlayer = teamType == TeamType.Player;
         IsDead   = false;
@@ -133,7 +133,7 @@ public partial class BattleCharactor
         {
             RefreshAvailableSkillsForInspector(forceRefresh: true);
             RebuildClassSkillSlots();
-            ResolveSelectedSkill(true);
+            ResolveSelectedSkill(emitMissingSkillWarning);
             RefreshAvailableWeapons(forceRefresh: true);
             ResolveEquippedWeapon(true);
         }

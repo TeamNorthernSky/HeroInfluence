@@ -35,6 +35,13 @@ public static class EnemyEventEncounterService
                 DHEnemyEventEncounterRuntimeManager.Instance?.ClearPendingEncounterIfUnused();
                 onClosed?.Invoke(combatStarted);
             });
+
+        if (!ChatModalController.IsOpen)
+        {
+            DHEnemyEventEncounterRuntimeManager.Instance?.ClearPendingEncounterIfUnused();
+            return false;
+        }
+
         return true;
     }
 }

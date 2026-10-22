@@ -271,8 +271,6 @@ namespace ASB.Work.Battle.SkillExecution
                 IsCounterAttack = false,
                 DelayAfter = FirstHitDelaySeconds
             };
-            hit1.IsCritical = JcCombatCalculator.RollCritical(hit1);
-
             var hit2 = new DamageContext
             {
                 Caster = caster,
@@ -284,8 +282,6 @@ namespace ASB.Work.Battle.SkillExecution
                 IsCounterAttack = false,
                 DelayAfter = 0f
             };
-            hit2.IsCritical = JcCombatCalculator.RollCritical(hit2);
-
             return SkillExecutionResult.SuccessResult(caster, skillData)
                 .AddDamage(hit1)
                 .AddDamage(hit2);

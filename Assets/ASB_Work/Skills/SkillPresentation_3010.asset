@@ -18,7 +18,7 @@ MonoBehaviour:
   PresentationArchetype: 0
   SkillTimelines:
   - CharacterKey: 10003
-    Timeline: {fileID: 11400000, guid: 1af9ef9f5c4a0c24b8eab9c413720980, type: 2}
+    Timeline: {fileID: 11400000, guid: d222edef27a196b4fb5e8cfed1c59f64, type: 2}
     TargetCount: 0
     Segments: []
   ImpactTiming: 0
@@ -31,11 +31,26 @@ MonoBehaviour:
   SfxVolume: 1
   EnableHitEffect: 1
   HitEffectId: 0
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
+  OverrideHitStop: 0
+  HitStop:
+    Enabled: 1
+    DurationSeconds: 0.08
+    CharacterSpeed: 0.05
+    EffectSpeed: 0.25
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
     Trajectory: 1
     ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    SimultaneousArrivalSeconds: 0
+    HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
     AlignToVelocity: 1
@@ -52,6 +67,7 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx: []
   MovePrepare:
     Enabled: 1
     AnimationStateName: 
@@ -60,8 +76,10 @@ MonoBehaviour:
   Move:
     Enabled: 1
     UseUnitMovement: 1
+    ForceApproach: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -99,6 +117,7 @@ MonoBehaviour:
     Enabled: 0
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: 
   Post:
     Enabled: 1
     AnimationStateName: 

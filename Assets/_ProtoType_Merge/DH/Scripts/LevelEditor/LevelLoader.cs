@@ -315,10 +315,7 @@ public class LevelLoader : MonoBehaviour
             progressState == null)
             return;
 
-        outpost.ApplyProgressData(
-            progressState.State,
-            progressState.EnemyDefenderGroupKey,
-            progressState.DefenderEnemyId);
+        outpost.ApplyProgressData(progressState.State);
     }
 
     private void SpawnEvents()

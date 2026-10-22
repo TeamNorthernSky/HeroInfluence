@@ -98,6 +98,7 @@ public class BattleFlowManager : MonoBehaviour
     public bool IsFlowBlocked => flowLocks.Count > 0;
     public bool IsTurnPresentationPending => turnPresentationPending || (turnBanner != null && turnBanner.BlocksInput);
     public bool IsEndingBattle => ShouldEndBattle();
+    public bool IsBattleEnded => battleEnded;
 
     /// <summary>
     /// UI가 조회하는 행동 진행 상태입니다. 아군은 수동·자동 행동 점유 후 완료 통지 전,
@@ -975,6 +976,10 @@ public class BattleFlowManager : MonoBehaviour
 
     private void OnPlayerSkillActionResolved(BattleCharactor actor, BattleCharactor target)
     {
+        // 종료 확정 후 도착한 오래된 정적 이벤트는 더 이상 턴 상태를 바꿀 수 없다.
+        // 진행 중의 actor/CurrentUnit 불일치는 아래 경고로 계속 드러낸다.
+        if (battleEnded) return;
+
         if (CurrentUnit == null || actor == null)
         {
             Debug.LogWarning($"[BattleFlow] PlayerSkillActionResolved 무시: CurrentUnit={CurrentUnit?.UnitName ?? "null"}, actor={actor?.UnitName ?? "null"}");

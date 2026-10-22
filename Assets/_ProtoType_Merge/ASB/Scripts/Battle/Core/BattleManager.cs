@@ -48,8 +48,6 @@ public class BattleManager : MonoBehaviour
         public static SkillExecutionOptions Normal =>
             new SkillExecutionOptions(1f, false, true);
 
-        public static SkillExecutionOptions CounterDefault =>
-            new SkillExecutionOptions(0.5f, true, false);
     }
 
     internal readonly struct CounterAttackRequest
@@ -249,6 +247,7 @@ public class BattleManager : MonoBehaviour
 
         bool wasDeadBefore = context.Target.IsDead;
         float hpBefore = context.Target.CurrentHp;
+        CombatCalculator.ResolveHitRolls(context);
         float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
         context.Target.TakeDamage(finalDamage);
         float appliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
@@ -286,6 +285,7 @@ public class BattleManager : MonoBehaviour
             return BattleHitResult.Empty(context.Target);
         }
 
+        CombatCalculator.ResolveHitRolls(context);
         float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
         float predictedHp = Mathf.Max(
             context.Target.MinimumHpAfterDamage,
@@ -1158,14 +1158,17 @@ public class BattleManager : MonoBehaviour
             HostageFriendlyFireResolver.CaptureCollateralCells(actor, target, classSkillRow, result);
 
         bool executed = false;
-        var preview = FindFirstObjectByType<BattlePresentationPreview>();
-        bool usePreview = preview != null && preview.isActiveAndEnabled && preview.gameObject.scene == gameObject.scene;
+        var preview = BattlePresentationController.FindInScene(gameObject.scene);
+        var testPreview = preview == null ? BattlePresentationController.FindPreviewInScene(gameObject.scene) : null;
+        bool usePreview = preview != null || (testPreview != null && testPreview.isActiveAndEnabled);
         Action completeExecution = null;
         IEnumerator execution = ApplySkillExecutionResultRoutine(result, success => executed = success,
             usePreview ? new Action<Action>(completion => completeExecution = completion) : null);
         if (usePreview)
         {
-            yield return StartCoroutine(preview.RunAttackWithZoom(actor, target, classSkillRow, execution));
+            yield return StartCoroutine(preview != null
+                ? preview.RunAttackWithZoom(actor, target, classSkillRow, execution)
+                : testPreview.RunAttackWithZoom(actor, target, classSkillRow, execution));
             if (completeExecution != null)
             {
                 yield return StartCoroutine(DrainFollowUps());
@@ -1254,19 +1257,17 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 0.5)");
         _visualDirector?.ShowCounterPopup(req.Defender);
 
-        // 반격은 커스텀 핸들러를 무시하고 기본 데미지 경로만 사용합니다.
-        // Influence 소모 없음, 데미지 계수 0.5, 반격은 반격을 유발하지 않습니다.
-        SkillExecutionResult result = BuildDefaultSkillResult(
-            req.Defender,
-            req.OriginalCaster,
-            req.Skill,
-            SkillExecutionOptions.CounterDefault);
+        // 스킬은 반격 가능 여부와 연출에만 사용하고, 피해는 반격 전용 공식으로 계산한다.
+        SkillExecutionResult result = BuildCounterSkillResult(req.Defender, req.OriginalCaster, req.Skill);
 
         bool executed = false;
         IEnumerator execution = ApplySkillExecutionResultRoutine(result, success => executed = success);
-        var preview = FindFirstObjectByType<BattlePresentationPreview>();
+        var preview = BattlePresentationController.FindInScene(gameObject.scene);
+        var testPreview = preview == null ? BattlePresentationController.FindPreviewInScene(gameObject.scene) : null;
         if (preview != null && preview.isActiveAndEnabled && preview.gameObject.scene == gameObject.scene)
             yield return StartCoroutine(preview.RunAttackWithZoom(req.Defender, req.OriginalCaster, req.Skill, execution));
+        else if (testPreview != null && testPreview.isActiveAndEnabled)
+            yield return StartCoroutine(testPreview.RunAttackWithZoom(req.Defender, req.OriginalCaster, req.Skill, execution));
         else
             yield return StartCoroutine(execution);
 
@@ -1350,6 +1351,28 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    private static SkillExecutionResult BuildCounterSkillResult(
+        BattleCharactor actor,
+        BattleCharactor target,
+        SkillData skillData)
+    {
+        var context = new DamageContext
+        {
+            Caster = actor,
+            Target = target,
+            SkillIndex = skillData.skillIndex,
+            IsRangedAttack = IsRangedSkill(actor, skillData),
+            IsCritical = false,
+            IsDamageReduced = false,
+            CanTriggerCounter = false,
+            IsCounterAttack = true
+        };
+
+        return SkillExecutionResult
+            .SuccessResult(actor, skillData)
+            .AddDamage(context);
+    }
+
     private SkillExecutionResult BuildDefaultSkillResult(
         BattleCharactor actor,
         BattleCharactor target,
@@ -1391,8 +1414,6 @@ public class BattleManager : MonoBehaviour
                 && target.IsFrontRow(),
             IsCounterAttack = options.IsCounterAttack
         };
-        context.IsCritical = CombatCalculator.RollCritical(context);
-
         return SkillExecutionResult
             .SuccessResult(actor, skillData)
             .AddDamage(context);
@@ -1461,7 +1482,6 @@ public class BattleManager : MonoBehaviour
             CanTriggerCounter = false,
             IsCounterAttack = false
         };
-        context.IsCritical = CombatCalculator.RollCritical(context);
         float dealt = ApplyDamage(context)?.Damage ?? 0f;
         if (context.DelayAfter > 0f)
         {

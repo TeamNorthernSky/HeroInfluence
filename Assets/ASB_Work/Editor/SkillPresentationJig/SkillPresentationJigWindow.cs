@@ -576,7 +576,7 @@ namespace ASB.Work.EditorTools.Jig
             _selectedSection = 0;
             JigPreviewPlayback.SetFullRange();
             int cueCount = JigCuePreview.SetFiresFromTimeline(_presentation, timeline, _report);
-            _report.Add($"Runtime Timeline Cue 프리뷰 {cueCount}개를 불러왔습니다.");
+            _report.Add($"Runtime Timeline Cue/SFX 마커 프리뷰 {cueCount}개를 불러왔습니다.");
 
             GameObject preview = JigPreviewInstance.Create(_characterPrefab, out string err);
             if (preview == null)

@@ -230,19 +230,3 @@ MonoBehaviour:
     Enemy6Slot: 0
     MinLevel: 4
     MaxLevel: 4
-  - EnemyIndex: "\uC801\uAD70 \uC720\uB2DB\n\uC778\uB371\uC2A4"
-    EnemyGroupName: "\uC720\uB2DB \uADF8\uB8F9\uBA85"
-    Enemy1: "\uC720\uB2DB \uC885\uB958"
-    Enemy1Slot: 0
-    Enemy2: "\uC720\uB2DB \uC885\uB958"
-    Enemy2Slot: 0
-    Enemy3: "\uC720\uB2DB \uC885\uB958"
-    Enemy3Slot: 0
-    Enemy4: "\uC720\uB2DB \uC885\uB958"
-    Enemy4Slot: 0
-    Enemy5: "\uC720\uB2DB \uC885\uB958"
-    Enemy5Slot: 0
-    Enemy6: "\uC720\uB2DB \uC885\uB958"
-    Enemy6Slot: 0
-    MinLevel: 0
-    MaxLevel: 0
