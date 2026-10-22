@@ -591,7 +591,10 @@ public class EnemySpawner : MonoBehaviour
             enemyScript = go.AddComponent<EnemyScript>();
 
         // EnemyData.baseStats에 레벨 스탯이 반영돼 있으므로 SetLevelScaling(false) 경로로 그대로 최종 스탯이 된다.
-        enemyScript.Initialize(entry.Data);
+        if (entry.HasExplicitSkills)
+            enemyScript.InitializeWithDeferredSkillWarning(entry.Data);
+        else
+            enemyScript.Initialize(entry.Data);
         ApplyBattleBehaviorKey(battle, entry);
 
         // 명시 스킬(이벤트)이 있으면 배선. 일반 전투는 EnemyData.Index 규칙(EnemyScript)으로 기본 스킬 유도.
@@ -608,6 +611,10 @@ public class EnemySpawner : MonoBehaviour
             {
                 battle.SetClassSkillIndex(battle.availableSkills[0].skillIndex);
                 battle.ResolveSelectedSkill(false);
+            }
+            else
+            {
+                battle.ResolveSelectedSkill();
             }
         }
 

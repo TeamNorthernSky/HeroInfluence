@@ -119,6 +119,16 @@ public class InputHandler : MonoBehaviour
 
     public void ResolveAutoBattleAction(BattleCharactor actor, BattleCharactor target)
     {
+        NotifyPlayerActionResolved(actor, target);
+    }
+
+    private void NotifyPlayerActionResolved(BattleCharactor actor, BattleCharactor target)
+    {
+        // 종료 확정 후 또는 턴이 정리된 뒤 돌아온 코루틴은 완료 통지를 발행하지 않는다.
+        // 마지막 타격 직후에도 현재 턴이 살아 있으면 정상 완료를 전달해 WasSkipped를 보존한다.
+        if (battleFlowManager != null &&
+            (battleFlowManager.IsBattleEnded ||
+             (battleFlowManager.IsEndingBattle && battleFlowManager.CurrentUnit != actor))) return;
         PlayerSkillActionResolved?.Invoke(actor, target);
     }
 
@@ -265,7 +275,7 @@ public class InputHandler : MonoBehaviour
         if (battleFlowManager != null && !battleFlowManager.TryClaimPlayerAction(actor)) return;
         ResetTargetingState();
         ClearAoEPreview();
-        PlayerSkillActionResolved?.Invoke(actor, null);
+        NotifyPlayerActionResolved(actor, null);
         Debug.Log($"[InputHandler] 턴 스킵: {actor.UnitName}");
     }
 #endif
@@ -557,7 +567,7 @@ public class InputHandler : MonoBehaviour
 
         if (executed)
         {
-            PlayerSkillActionResolved?.Invoke(actor, target);
+            NotifyPlayerActionResolved(actor, target);
         }
         else
         {
@@ -698,7 +708,7 @@ public class InputHandler : MonoBehaviour
         }
 
         if (executed)
-            PlayerSkillActionResolved?.Invoke(actor, null);
+            NotifyPlayerActionResolved(actor, null);
 
         if (!executed) battleFlowManager?.ReleaseFailedPlayerAction(actor);
         ResetTargetingState();

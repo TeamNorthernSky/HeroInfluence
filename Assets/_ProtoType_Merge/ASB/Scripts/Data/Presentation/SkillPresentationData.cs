@@ -382,13 +382,15 @@ public class SkillPresentationData : ScriptableObject
         {
             return;
         }
-        ValidateCues(label, phase.AnimationStateName, phase.Cues);
+        // state 없는 MovePrepare Cue는 이동 직전에 즉시 발화한다(SkillPresentationDirector.PlayCuePhaseRoutine이 상태 게이트를 우회).
+        // AttackPrepare/Post에는 이 경로가 없어 state가 없으면 실제로 발화하지 않는다.
+        ValidateCues(label, phase.AnimationStateName, phase.Cues, firesImmediatelyWithoutState: phase is MovePreparePhase);
     }
 
-    private void ValidateCues(string label, string stateName, List<CueBinding> cues)
+    private void ValidateCues(string label, string stateName, List<CueBinding> cues, bool firesImmediatelyWithoutState = false)
     {
         bool hasCue = cues != null && cues.Count > 0;
-        if (hasCue && string.IsNullOrWhiteSpace(stateName))
+        if (hasCue && string.IsNullOrWhiteSpace(stateName) && !firesImmediatelyWithoutState)
         {
             Debug.LogWarning($"[SkillPresentation] {name}: {label}에 Cue가 있는데 AnimationStateName이 비어 Cue를 낼 클립이 없습니다.", this);
         }
@@ -433,7 +435,7 @@ public class SkillPresentationData : ScriptableObject
                 Debug.LogWarning($"[SkillPresentation] {name}: {label}.Cues[{i}] {cue.Operation}은 EffectIds를 생성하지 않습니다. 별도 Spawn Cue로 분리하세요.", this);
             }
 
-            ValidateCueTiming(label, stateName, i, cue);
+            ValidateCueTiming(label, stateName, i, cue, firesImmediatelyWithoutState);
         }
     }
 
@@ -441,7 +443,7 @@ public class SkillPresentationData : ScriptableObject
     /// 데이터 시각(Timing != ClipEvent) Cue의 경계값 검증.
     /// 클립 종료 판정이 normalizedTime 0.95에서 일어나므로(CharactorAnimationController) 그 이후는 발화가 보장되지 않는다.
     /// </summary>
-    private void ValidateCueTiming(string label, string stateName, int index, CueBinding cue)
+    private void ValidateCueTiming(string label, string stateName, int index, CueBinding cue, bool firesImmediatelyWithoutState)
     {
         if (!cue.IsDataTimed)
         {
@@ -451,6 +453,12 @@ public class SkillPresentationData : ScriptableObject
         // 데이터 시각은 "그 state가 재생되는 동안"을 기준으로 하므로 state가 없으면 해석할 수 없다.
         if (string.IsNullOrWhiteSpace(stateName))
         {
+            if (firesImmediatelyWithoutState)
+            {
+                Debug.LogWarning(
+                    $"[SkillPresentation] {name}: {label}.Cues[{index}] AnimationStateName이 비어 이동 직전에 즉시 발화하므로 Timing={cue.Timing}·Time은 무시됩니다.", this);
+                return;
+            }
             Debug.LogWarning(
                 $"[SkillPresentation] {name}: {label}.Cues[{index}] Timing={cue.Timing}인데 AnimationStateName이 비어 있어 발화하지 않습니다.", this);
             return;

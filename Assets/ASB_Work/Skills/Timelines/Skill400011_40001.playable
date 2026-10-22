@@ -1,5 +1,20 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8149610990276421288
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62dd47085fb715741b7d8a4ee9f474fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.616666666666
+  _sectionId: Attack
+  _boundary: 1
 --- !u!114 &-5713519404150487594
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -288,6 +303,8 @@ MonoBehaviour:
     - {fileID: -4484327570910256455}
     - {fileID: 5384606396987781290}
     - {fileID: -5713519404150487594}
+    - {fileID: -8149610990276421288}
+    - {fileID: 372208567738822492}
 --- !u!114 &-2408549177832126337
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -347,6 +364,23 @@ MonoBehaviour:
     m_ScenePreview: 1
   m_DurationMode: 0
   m_MarkerTrack: {fileID: -3207681794463169990}
+--- !u!114 &372208567738822492
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.45
+  _kind: 1
+  _cueName: 
+  _cueId: 
+  _targetSlot: 0
 --- !u!114 &1648313306137699768
 MonoBehaviour:
   m_ObjectHideFlags: 1

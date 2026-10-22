@@ -39,7 +39,11 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
         }
     }
 
-    public void Initialize(UnitData data = null)
+    public void Initialize(UnitData data = null) => InitializeCore(data, false);
+
+    public void InitializeWithDeferredSkillWarning(UnitData data) => InitializeCore(data, true);
+
+    private void InitializeCore(UnitData data, bool deferMissingSkillWarning)
     {
         enemyData = data;
         BattleCharactor battle = GetComponent<BattleCharactor>();
@@ -76,9 +80,9 @@ public class EnemyScript : MonoBehaviour, IUnitIdentifier
             battle.SetClassSkillIndex(combinedSkillIndex);
         }
 
-        battle.ResolveSelectedSkill();
+        battle.ResolveSelectedSkill(!deferMissingSkillWarning);
         battle.InitializeCurrentHpToMax();
-        battle.MarkInitializedFromDataPipeline();
+        battle.MarkInitializedFromDataPipeline(emitMissingSkillWarning: !deferMissingSkillWarning);
 
         EnemyData typedEnemyData = data as EnemyData;
         enemyData = typedEnemyData ?? data;
