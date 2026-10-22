@@ -425,6 +425,16 @@ public class TurnManager : MonoBehaviour
 
         if (gameManager != null && gameManager.ExplorationEntryVersion != entryVersion)
             yield break;
+
+        DHTurnStartSnapshotStore snapshot = DHTurnStartSnapshotStore.Instance;
+        int currentDay = gameManager != null ? gameManager.CurrentDay : GetDay();
+        // Scene re-entry must not replace the original turn-start state with post-combat/lobby state.
+        if (snapshot != null && snapshot.HasSnapshot && snapshot.CapturedDay == Mathf.Max(1, currentDay))
+        {
+            gameManager?.NotifyInitialTurnSnapshotCaptured(gameObject.scene, entryVersion);
+            yield break;
+        }
+
         if (DHTurnStartSnapshotStore.CaptureTurnStartSnapshot() && gameManager != null)
             gameManager.NotifyInitialTurnSnapshotCaptured(gameObject.scene, entryVersion);
     }

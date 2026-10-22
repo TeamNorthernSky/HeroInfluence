@@ -44,20 +44,6 @@ public class TutorialPartyComposition : MonoBehaviour
         ApplyVisualState();
     }
 
-    [Obsolete("Tutorial parties now start with every configured unit. This method is kept only for old scene hooks.")]
-    public bool JoinUnit(string unitTemplateKey)
-    {
-        unitTemplateKey = NormalizeKey(unitTemplateKey);
-        ApplyVisualState();
-        return !string.IsNullOrWhiteSpace(unitTemplateKey) && ContainsSlot(unitTemplateKey);
-    }
-
-    [Obsolete("Tutorial parties now start with every configured unit. This method is kept only for old scene hooks.")]
-    public void ApplyJoinedUnits(IEnumerable<string> unitTemplateKeys)
-    {
-        ApplyVisualState();
-    }
-
     public bool IsJoined(string unitTemplateKey)
     {
         unitTemplateKey = NormalizeKey(unitTemplateKey);

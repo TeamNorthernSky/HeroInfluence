@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class CombatEncounterManager : MonoBehaviour
 {
-    private const float FinalCombatClearDelaySeconds = 0.5f;
     private const int MinPartyCombatSlot = 1;
     private const int MaxPartyCombatSlot = 6;
 
@@ -90,88 +89,6 @@ public class CombatEncounterManager : MonoBehaviour
         IsCombatActive = true;
         ActiveParty = party;
         ActiveEnemy = enemy;
-        return true;
-    }
-
-    public bool BeginVillainUnionDefenderCombat(PartyGridMover party, VillainUnionBase villainUnionBase)
-    {
-        if (DHGameEndState.IsEnding)
-            return false;
-
-        if (HasPendingCombatResult())
-            return false;
-
-        if (party == null || villainUnionBase == null)
-            return false;
-
-        if (IsCombatActive)
-            return false;
-
-        if (!villainUnionBase.EnsureDefenderParty())
-            return false;
-
-        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
-        string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
-        string enemyId = villainUnionBase.DefenderEnemyId;
-        string enemyGroupKey = villainUnionBase.DefenderEnemyGroupKey;
-        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
-        string villainUnionKey = villainUnionBase.GetProgressKey(gridManager);
-
-        if (!TryRegisterCombatParticipants(
-                party,
-                partyId,
-                enemyId,
-                villainUnionKey,
-                enemyGroupKey,
-                villainUnionBase.ResolvedEnemyLevel,
-                CombatEnemySourceType.VillainUnionDefender))
-            return false;
-
-        IsCombatActive = true;
-        ActiveParty = party;
-        ActiveEnemy = null;
-
-        CombatStarted?.Invoke(party, null);
-        return true;
-    }
-
-    public bool PrepareVillainUnionDefenderCombatContext(PartyGridMover party, VillainUnionBase villainUnionBase)
-    {
-        if (DHGameEndState.IsEnding)
-            return false;
-
-        if (HasPendingCombatResult())
-            return false;
-
-        if (party == null || villainUnionBase == null)
-            return false;
-
-        if (IsCombatActive)
-            return false;
-
-        if (!villainUnionBase.EnsureDefenderParty())
-            return false;
-
-        PartyIdentity partyIdentity = party.GetComponent<PartyIdentity>();
-        string partyId = partyIdentity != null ? partyIdentity.PartyId : party.name;
-        string enemyId = villainUnionBase.DefenderEnemyId;
-        string enemyGroupKey = villainUnionBase.DefenderEnemyGroupKey;
-        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
-        string villainUnionKey = villainUnionBase.GetProgressKey(gridManager);
-
-        if (!TryRegisterCombatParticipants(
-                party,
-                partyId,
-                enemyId,
-                villainUnionKey,
-                enemyGroupKey,
-                villainUnionBase.ResolvedEnemyLevel,
-                CombatEnemySourceType.VillainUnionDefender))
-            return false;
-
-        IsCombatActive = true;
-        ActiveParty = party;
-        ActiveEnemy = null;
         return true;
     }
 
@@ -344,9 +261,6 @@ public class CombatEncounterManager : MonoBehaviour
         if (combatEnemy == null)
             return;
 
-        if (TryCompleteVillainUnionDefenderCombat(combatEnemy))
-            return;
-
         string placementKey = combatEnemy.PlacementKey;
         if (string.IsNullOrWhiteSpace(placementKey))
             placementKey = FindPlacementKeyByEnemyId(combatEnemy.EnemyId);
@@ -375,62 +289,6 @@ public class CombatEncounterManager : MonoBehaviour
         ProcessCompletedCombat(context);
         context.Clear();
         ClearCombatState();
-    }
-
-    private static bool TryCompleteVillainUnionDefenderCombat(CombatEnemyPersistentData combatEnemy)
-    {
-        if (combatEnemy == null || string.IsNullOrWhiteSpace(combatEnemy.EnemyId))
-            return false;
-
-        // TODO(remove fallback): multiple match paths cover older repository combat ids; keep until defender combat uses a single event/group key.
-        string normalizedCombatPlacementKey = MapProgressKey.NormalizeSegment(combatEnemy.PlacementKey);
-        string normalizedCombatEnemyId = MapProgressKey.NormalizeSegment(combatEnemy.EnemyId);
-        GridManager gridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
-        VillainUnionBase[] bases = FindObjectsByType<VillainUnionBase>(FindObjectsSortMode.None);
-        for (int i = 0; i < bases.Length; i++)
-        {
-            VillainUnionBase villainUnionBase = bases[i];
-            if (villainUnionBase == null)
-                continue;
-
-            string villainUnionKey = villainUnionBase.GetProgressKey(gridManager);
-            string normalizedVillainUnionKey = MapProgressKey.NormalizeSegment(villainUnionKey);
-            string expectedDefenderId = VillainUnionDefenderService.CreateDefenderEnemyId(villainUnionKey);
-            bool defenderIdMatches = !string.IsNullOrWhiteSpace(villainUnionBase.DefenderEnemyId) &&
-                string.Equals(villainUnionBase.DefenderEnemyId, combatEnemy.EnemyId, StringComparison.Ordinal);
-            bool expectedIdMatches = string.Equals(expectedDefenderId, combatEnemy.EnemyId, StringComparison.Ordinal);
-            bool placementKeyMatches = !string.IsNullOrWhiteSpace(normalizedCombatPlacementKey) &&
-                string.Equals(normalizedVillainUnionKey, normalizedCombatPlacementKey, StringComparison.Ordinal);
-
-            if (!defenderIdMatches && !expectedIdMatches && !placementKeyMatches)
-                continue;
-
-            CompleteVillainUnionVictory(combatEnemy.EnemyId);
-            return true;
-        }
-
-        if (normalizedCombatPlacementKey.StartsWith("villain_union_", StringComparison.Ordinal) ||
-            normalizedCombatEnemyId.StartsWith("villain_union_defender_", StringComparison.Ordinal))
-        {
-            CompleteVillainUnionVictory(combatEnemy.EnemyId);
-            return true;
-        }
-
-        return false;
-    }
-
-    private static void CompleteVillainUnionVictory(string enemyId)
-    {
-        VillainUnionDefenderService.RemoveDefenderParty(enemyId);
-
-        DHGameEndConditionController gameEndConditionController = FindFirstObjectByType<DHGameEndConditionController>();
-        if (gameEndConditionController != null)
-        {
-            gameEndConditionController.BeginGameClearAfterDelay(FinalCombatClearDelaySeconds);
-            return;
-        }
-
-        DHGameProgressResetService.ResetDHProgress();
     }
 
     private static void ReturnDefeatedPartyToHeroUnion(CombatPartyPersistentData combatParty)
