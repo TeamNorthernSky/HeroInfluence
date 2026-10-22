@@ -1672,14 +1672,16 @@ MonoBehaviour:
   captureOutpost: {fileID: 0}
   captureOutpostKey: tutorial_outpost:38_8
   captureEntryCell: {x: 38, y: 7}
-  cameraScrollExplanation: "\uB9C8\uC6B0\uC2A4\uB97C \uD654\uBA74 \uAC00\uC7A5\uC790\uB9AC\uB85C
-    \uC62E\uAE30\uAC70\uB098 W A S D \uD0A4\uB97C \uB204\uB974\uBA74 \uCE74\uBA54\uB77C\uAC00
-    \uC774\uB3D9\uD569\uB2C8\uB2E4.\n\uC624\uB978\uCABD\uC758 \uBE5B\uB098\uB294
-    \uBAA9\uD45C\uB97C \uCC3E\uC544\uBCF4\uC138\uC694."
-  cameraScrollPractice: "D\uD0A4 \uB610\uB294 \uD654\uBA74 \uC624\uB978\uCABD \uAC00\uC7A5\uC790\uB9AC\uC758
-    \uB9C8\uC6B0\uC2A4\uB85C \uCE74\uBA54\uB77C\uB97C \uC774\uB3D9\uD558\uC138\uC694.\n\uBE5B\uB098\uB294
-    \uBAA9\uD45C\uAC00 \uD654\uBA74 \uC548\uC5D0 \uB4E4\uC5B4\uC624\uBA74 \uBAA9\uD45C\uB97C
-    \uD074\uB9AD\uD558\uC138\uC694."
+  heroSlots: {fileID: 168806581}
+  cameraScrollExplanation: "\uD654\uBA74 \uBC16\uC5D0\uB3C4 \uC774\uB3D9\uD560 \uC218
+    \uC788\uB294 \uBAA9\uD45C\uAC00 \uC788\uC2B5\uB2C8\uB2E4.\nW A S D \uD0A4 \uB610\uB294
+    \uD654\uBA74 \uAC00\uC7A5\uC790\uB9AC\uB85C \uC9C0\uB3C4\uB97C \uC6C0\uC9C1\uC77C
+    \uC218 \uC788\uC2B5\uB2C8\uB2E4.\n\uD655\uC778 \uD6C4 \uC624\uB978\uCABD\uC758
+    \uBE5B\uB098\uB294 \uBAA9\uD45C\uB97C \uD654\uBA74 \uC911\uC559\uC73C\uB85C \uAC00\uC838\uC624\uC138\uC694."
+  cameraScrollPractice: "D\uD0A4 \uB610\uB294 \uD654\uBA74 \uC624\uB978\uCABD \uAC00\uC7A5\uC790\uB9AC\uB85C
+    \uCE74\uBA54\uB77C\uB97C \uC774\uB3D9\uD558\uC138\uC694.\n\uBE5B\uB098\uB294
+    \uBAA9\uD45C\uAC00 \uD654\uBA74 \uC911\uC559 \uAC00\uAE4C\uC774\uC5D0 \uC624\uBA74
+    \uB2E4\uC74C \uC548\uB0B4\uAC00 \uD45C\uC2DC\uB429\uB2C8\uB2E4."
   movement: {fileID: 78271651}
   grid: {fileID: 1870279752}
   parties: {fileID: 1919126566}
@@ -1720,7 +1722,7 @@ MonoBehaviour:
   movingText: "\uBAA9\uD45C \uC704\uCE58\uB85C \uC774\uB3D9 \uC911\uC785\uB2C8\uB2E4."
   exhaustedText: "\uC774\uB3D9\uB825\uC744 \uBAA8\uB450 \uC0AC\uC6A9\uD588\uC2B5\uB2C8\uB2E4.\n\uC774\uB3D9
     \uAC00\uB2A5\uD55C \uADF8\uB9AC\uB4DC\uB294 \uD30C\uD2F0\uAC00 \uC788\uB294 \uD55C
-    \uCE78\uB9CC \uD45C\uC2DC\uB429\uB2C8\uB2E4.\n\uD134 \uC885\uB8CC \uBC84\uD2BC\uC744
+    \uCE78\uB9CC \uD45C\uC2DC\uB429\uB2C8\uB2E4.\n\uD734\uC2DD \uBC84\uD2BC\uC744
     \uB20C\uB7EC \uC774\uB3D9\uB825\uC744 \uD68C\uBCF5\uD558\uC138\uC694."
   confirmDelay: 1
 --- !u!21 &103558037
@@ -4656,9 +4658,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "MAX\uB294 \uB0A8\uC740 \uD64D\uBCF4 \uD69F\uC218\uC640\n\uC601\uC6C5\uC758
-    IP \uC6A9\uB7C9\uC744 \n\uD568\uAED8 \uD655\uC778\uD569\uB2C8\uB2E4.\nMAX \uBC84\uD2BC\uC744
-    \uD074\uB9AD\uD558\uC5EC\n\uB0A8\uC740 20\uD68C\uB97C \uC124\uC815\uD558\uC138\uC694."
+  m_text: "MAX\ub294 \ub0a8\uc740 \ud64d\ubcf4 \ud69f\uc218\uc640\n\uc601\uc6c5\uc758 IP \uc6a9\ub7c9\uc744 \n\ud568\uaed8 \ud655\uc778\ud569\ub2c8\ub2e4.\nMAX \ubc84\ud2bc\uc744 \ud074\ub9ad\ud558\uc5ec\n\ub0a8\uc740 \ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\ub97c\n\ubaa8\ub450 \uc0ac\uc6a9\ud558\ub3c4\ub85d \uc124\uc815\ud558\uc138\uc694."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -10799,7 +10799,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldCamera: {fileID: 0}
-  requireDoubleClick: 0
+  requireDoubleClick: 1
   doubleClickThreshold: 0.3
   rayDistance: 1000
 --- !u!114 &530049193
@@ -20505,10 +20505,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD64D\uBCF4 1\uD68C\uC5D0\uB294 \uC790\uAE08 100\uC774 \uD544\uC694\uD558\uBA70,\n\uC601\uC6C5\uC758
-    IP\uAC00 1 \uC99D\uAC00\uD569\uB2C8\uB2E4.\n\uC774\uBC88 \uC2E4\uC2B5\uC5D0\uC11C\uB294
-    20\uD68C\uC529\n\uB450 \uBC88 \uD64D\uBCF4\uD569\uB2C8\uB2E4.\n\uC790\uAE08 2,000\uC774
-    \uD544\uC694\uD569\uB2C8\uB2E4."
+  m_text: "\ud64d\ubcf4 1\ud68c\uc5d0\ub294 \uc790\uae08 100\uc774 \ud544\uc694\ud558\uba70,\n\uc601\uc6c5\uc758 IP\uac00 1 \uc99d\uac00\ud569\ub2c8\ub2e4.\n\uc774\ubc88 \uc2e4\uc2b5\uc5d0\uc11c\ub294 \uc800\uc2a4\ud2f0\uc2a4\ub97c\n\ucd1d 40\ud68c \ud64d\ubcf4\ud569\ub2c8\ub2e4.\n\uc790\uae08 4,000\uc774 \ud544\uc694\ud569\ub2c8\ub2e4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -24388,9 +24385,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB0A8\uC740 \uD64D\uBCF4 \uD69F\uC218\uC640 IP \uC6A9\uB7C9\uC740\n\uAC01\uAC01
-    20\uC785\uB2C8\uB2E4.\nMAX \uBC84\uD2BC\uC73C\uB85C \uD604\uC7AC \uC9C4\uD589
-    \uAC00\uB2A5\uD55C\n\uCD5C\uB300 \uD69F\uC218\uB97C \uC120\uD0DD\uD574 \uBD05\uC2DC\uB2E4."
+  m_text: "\ub0a8\uc740 \ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\ub9cc\ud07c\n\ud64d\ubcf4\uac00 \uac00\ub2a5\ud569\ub2c8\ub2e4.\nMAX \ubc84\ud2bc\uc73c\ub85c \ud604\uc7ac \uc9c4\ud589 \uac00\ub2a5\ud55c\n\ucd5c\ub300 \ud69f\uc218\ub97c \uc120\ud0dd\ud574 \ubd05\uc2dc\ub2e4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -29906,8 +29901,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC800\uC2A4\uD2F0\uC2A4\uC758 IP\uAC00 \n20 \uC99D\uAC00\uD588\uC2B5\uB2C8\uB2E4.\n\uC790\uAE08
-    2,000\uACFC \uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\n20\uD68C\uAC00 \uC0AC\uC6A9\uB418\uC5C8\uC2B5\uB2C8\uB2E4."
+  m_text: "\uc800\uc2a4\ud2f0\uc2a4\uc758 IP\uac00\n\ud64d\ubcf4 \ud69f\uc218\ub9cc\ud07c \uc99d\uac00\ud588\uc2b5\ub2c8\ub2e4.\n\ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\uc640 \uc790\uae08\uc774\n\uc18c\ubaa8\ub418\uc5c8\uc2b5\ub2c8\ub2e4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -37864,10 +37858,7 @@ MonoBehaviour:
       rect: {fileID: 1506796138}
   - panelIndex: 3
     advance: 0
-    message: "\uD64D\uBCF4 1\uD68C\uC5D0\uB294 \uC790\uAE08 100\uC774 \uD544\uC694\uD558\uBA70,\n\uC601\uC6C5\uC758
-      IP\uAC00 1 \uC99D\uAC00\uD569\uB2C8\uB2E4.\n\uC774\uBC88 \uC2E4\uC2B5\uC5D0\uC11C\uB294
-      20\uD68C\uC529\n\uB450 \uBC88 \uD64D\uBCF4\uD569\uB2C8\uB2E4.\n20\uD68C\uC5D0\uB294
-      \uC790\uAE08 2,000\uC774 \uD544\uC694\uD569\uB2C8\uB2E4."
+    message: "\ud64d\ubcf4 1\ud68c\uc5d0\ub294 \uc790\uae08 100\uc774 \ud544\uc694\ud558\uba70,\n\uc601\uc6c5\uc758 IP\uac00 1 \uc99d\uac00\ud569\ub2c8\ub2e4.\n\uc774\ubc88 \uc2e4\uc2b5\uc5d0\uc11c\ub294 \uc800\uc2a4\ud2f0\uc2a4\ub97c\n\ucd1d 40\ud68c \ud64d\ubcf4\ud569\ub2c8\ub2e4.\n\uc790\uae08 4,000\uc774 \ud544\uc694\ud569\ub2c8\ub2e4."
     targetCount: 0
     highlightIndices: 
     explanationPanel: {fileID: 0}
@@ -38073,8 +38064,7 @@ MonoBehaviour:
       rect: {fileID: 1223897444}
   - panelIndex: 5
     advance: 0
-    message: "\uC800\uC2A4\uD2F0\uC2A4\uC758 IP\uAC00 20 \uC99D\uAC00\uD588\uC2B5\uB2C8\uB2E4.\n\uC790\uAE08
-      2,000\uACFC \uD64D\uBCF4 \uAC00\uB2A5 \uD69F\uC218\n20\uD68C\uAC00 \uC0AC\uC6A9\uB418\uC5C8\uC2B5\uB2C8\uB2E4."
+    message: "\uc800\uc2a4\ud2f0\uc2a4\uc758 IP\uac00\n\ud64d\ubcf4 \ud69f\uc218\ub9cc\ud07c \uc99d\uac00\ud588\uc2b5\ub2c8\ub2e4.\n\ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\uc640 \uc790\uae08\uc774\n\uc18c\ubaa8\ub418\uc5c8\uc2b5\ub2c8\ub2e4."
     targetCount: 0
     highlightIndices: 
     explanationPanel: {fileID: 0}
@@ -38171,9 +38161,7 @@ MonoBehaviour:
       rect: {fileID: 1691445151}
   - panelIndex: 6
     advance: 0
-    message: "\uB0A8\uC740 \uD64D\uBCF4 \uD69F\uC218\uC640 IP \uC6A9\uB7C9\uC740\n\uAC01\uAC01
-      20\uC785\uB2C8\uB2E4.\nMAX \uBC84\uD2BC\uC73C\uB85C \uD604\uC7AC \uC9C4\uD589
-      \uAC00\uB2A5\uD55C\n\uCD5C\uB300 \uD69F\uC218\uB97C \uC120\uD0DD\uD574 \uBD05\uC2DC\uB2E4."
+    message: "\ub0a8\uc740 \ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\ub9cc\ud07c\n\ud64d\ubcf4\uac00 \uac00\ub2a5\ud569\ub2c8\ub2e4.\nMAX \ubc84\ud2bc\uc73c\ub85c \ud604\uc7ac \uc9c4\ud589 \uac00\ub2a5\ud55c\n\ucd5c\ub300 \ud69f\uc218\ub97c \uc120\ud0dd\ud574 \ubd05\uc2dc\ub2e4."
     targetCount: 0
     highlightIndices: 
     explanationPanel: {fileID: 0}
@@ -38270,9 +38258,7 @@ MonoBehaviour:
       rect: {fileID: 1384674511}
   - panelIndex: 7
     advance: 3
-    message: "MAX\uB294 \uB0A8\uC740 \uD64D\uBCF4 \uD69F\uC218\uC640\n\uC601\uC6C5\uC758
-      IP \uC6A9\uB7C9\uC744 \uD568\uAED8 \uD655\uC778\uD569\uB2C8\uB2E4.\nMAX \uBC84\uD2BC\uC744
-      \uD074\uB9AD\uD558\uC5EC\n\uB0A8\uC740 20\uD68C\uB97C \uC124\uC815\uD558\uC138\uC694."
+    message: "MAX\ub294 \ub0a8\uc740 \ud64d\ubcf4 \ud69f\uc218\uc640\n\uc601\uc6c5\uc758 IP \uc6a9\ub7c9\uc744 \ud568\uaed8 \ud655\uc778\ud569\ub2c8\ub2e4.\nMAX \ubc84\ud2bc\uc744 \ud074\ub9ad\ud558\uc5ec\n\ub0a8\uc740 \ud64d\ubcf4 \uac00\ub2a5 \ud69f\uc218\ub97c\n\ubaa8\ub450 \uc0ac\uc6a9\ud558\ub3c4\ub85d \uc124\uc815\ud558\uc138\uc694."
     targetCount: 0
     highlightIndices: 
     explanationPanel: {fileID: 0}
@@ -47549,13 +47535,13 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1783141824}
-  - {fileID: 1731164838}
   - {fileID: 1980961854}
   - {fileID: 1107694302}
   - {fileID: 931102283}
   - {fileID: 214805332}
   - {fileID: 705127589}
   - {fileID: 190660358}
+  - {fileID: 1731164838}
   m_Father: {fileID: 101362126}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -48554,3 +48540,10 @@ SceneRoots:
   - {fileID: 1050741659}
   - {fileID: 1327263448}
   - {fileID: 1743440935}
+
+--- !u!224 &168806581 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8913083401697384048, guid: 84f1cc0a884961c419cc368e0f93fb45,
+    type: 3}
+  m_PrefabInstance: {fileID: 1004272264}
+  m_PrefabAsset: {fileID: 0}

@@ -6,8 +6,8 @@ using UnityEngine.EventSystems;
 public sealed class TutorialOutpostClickEntry : MonoBehaviour
 {
     [SerializeField] private Camera worldCamera;
-    [SerializeField] private bool requireDoubleClick;
-    [SerializeField] private float doubleClickThreshold = 0.3f;
+    [SerializeField, Tooltip("점령 건물은 연속 두 번 클릭했을 때만 협회에 진입합니다.")] private bool requireDoubleClick = true;
+    [SerializeField, Min(.1f), Tooltip("같은 건물의 두 클릭을 더블클릭으로 인정할 최대 간격(초)입니다.")] private float doubleClickThreshold = 0.3f;
     [SerializeField] private float rayDistance = 1000f;
 
     private TutorialOutpostObject outpost;
@@ -30,13 +30,13 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
             return;
 
         if (WorldInputGate.IsBlocked)
-            return;
+        { lastClickTime = -1f; return; }
 
         if (ExplorationModalEvents.MapEventModalActive)
-            return;
+        { lastClickTime = -1f; return; }
 
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
+        { lastClickTime = -1f; return; }
 
         if (!TryHitThisOutpost())
         { lastClickTime = -1f; return; }
@@ -76,7 +76,7 @@ public sealed class TutorialOutpostClickEntry : MonoBehaviour
     private bool ConsumeDoubleClick()
     {
         float now = Time.unscaledTime;
-        if (lastClickTime > 0f && now - lastClickTime <= doubleClickThreshold)
+        if (lastClickTime >= 0f && now - lastClickTime <= doubleClickThreshold)
         {
             lastClickTime = -1f;
             return true;

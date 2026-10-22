@@ -52,7 +52,7 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     [SerializeField] private SkillRow[] skills = new SkillRow[5];
     [Tooltip("스킬이 없는 빌런의 안내입니다.")]
     [SerializeField] private TMP_Text noSkills;
-    [Tooltip("마우스에서 떨어질 거리입니다. Canvas 단위이며 X는 오른쪽, Y는 위쪽이 양수입니다.")]
+    [Tooltip("적 메시 호버 시 마우스에서 떨어질 기본 거리입니다. Canvas 단위이며 턴 프레임과 겹치면 자동 이동합니다. 배지 호버는 슬롯 기준으로 배치합니다.")]
     [SerializeField] private Vector2 pointerOffset = new Vector2(22f, -18f);
     [Tooltip("화면 경계와 확보할 간격입니다. Canvas 단위이며 0이면 여백이 없습니다.")]
     [SerializeField, Min(0f)] private float edgePadding = 12f;
@@ -61,6 +61,13 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
     [Tooltip("스킬이 없을 때의 최소 배경 높이입니다. Canvas 단위입니다.")]
     [SerializeField, Min(1f)] private float minimumHeight = 252f;
 
+    [Tooltip("툴팁과 턴 프레임·강조 모델 사이의 여백입니다. Canvas 단위이며 0이면 경계에 붙습니다.")]
+    [SerializeField, Min(0f)] private float outlineClearance = 12f;
+
+    private JcBattleHoverLink hoverLink;
+    private readonly JcBattleTooltipPlacement tooltipPlacement = new JcBattleTooltipPlacement();
+    private bool hoveredTurnUI;
+    private TurnSlotUI hoveredTurnSlot;
     private BattleCharactor shownUnit;
     private bool battleEnded;
     private readonly List<RaycastResult> uiHits = new List<RaycastResult>();
@@ -73,6 +80,10 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
 
     private void OnEnable()
     {
+        hoverLink = GetComponent<JcBattleHoverLink>();
+        if (hoverLink == null) hoverLink = gameObject.AddComponent<JcBattleHoverLink>();
+        hoverLink.Initialize(battleCanvas);
+        tooltipPlacement.Initialize(battleCanvas);
         battleEnded = false;
         if (flow != null) flow.OnBattleEnded += OnBattleEnded;
         Hide();
@@ -101,6 +112,8 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
         if (ShouldHide()) { Hide(); return; }
         var target = FindHoveredUnit();
         if (target == null || target.IsPlayer || target.IsDead) { Hide(); return; }
+        hoverLink.Show(target, hoveredTurnUI, hoveredTurnSlot,
+            battlefieldCamera != null ? battlefieldCamera : Camera.main);
         if (target != shownUnit) Bind(target);
         RefreshStats();
         PlaceAtPointer(Input.mousePosition);
@@ -108,6 +121,8 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
 
     private BattleCharactor FindHoveredUnit()
     {
+        hoveredTurnUI = false;
+        hoveredTurnSlot = null;
         // Game View 밖에서는 에디터가 무한대 포인터 좌표를 반환할 수 있습니다.
         var pointer = Input.mousePosition;
         if (float.IsNaN(pointer.x) || float.IsNaN(pointer.y) ||
@@ -126,7 +141,11 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
             if (uiHits.Count > 0)
             {
                 // 메뉴·다른 UI 뒤의 필드는 호버하지 않습니다. 최상단 UI만 확인합니다.
+                hoveredTurnUI = true;
                 var slot = uiHits[0].gameObject.GetComponentInParent<TurnSlotUI>();
+                var eventCamera = uiHits[0].module != null ? uiHits[0].module.eventCamera : null;
+                if (slot != null && slot.gameObject.scene == gameObject.scene &&
+                    hoverLink.IsBadgeHit(slot, pointer, eventCamera)) hoveredTurnSlot = slot;
                 return slot != null && slot.gameObject.scene == gameObject.scene ? slot.DisplayedUnit : null;
             }
         }
@@ -216,21 +235,16 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
 
     private void PlaceAtPointer(Vector2 screenPosition)
     {
-        var canvasRect = (RectTransform)battleCanvas.transform;
-        var camera = battleCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : battleCanvas.worldCamera;
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, camera, out var point)) return;
-        var bounds = canvasRect.rect;
-        float width = panel.rect.width, height = panel.rect.height;
-        float x = point.x + pointerOffset.x, y = point.y + pointerOffset.y;
-        if (x + width > bounds.xMax - edgePadding) x = point.x - pointerOffset.x - width;
-        if (y - height < bounds.yMin + edgePadding) y = point.y - pointerOffset.y + height;
-        x = Mathf.Clamp(x, bounds.xMin + edgePadding, Mathf.Max(bounds.xMin + edgePadding, bounds.xMax - edgePadding - width));
-        y = Mathf.Clamp(y, Mathf.Min(bounds.yMax - edgePadding, bounds.yMin + edgePadding + height), bounds.yMax - edgePadding);
-        panel.anchoredPosition = new Vector2(x, y);
+        bool visible = tooltipPlacement.Place(panel, shownUnit, hoveredTurnSlot,
+            battlefieldCamera != null ? battlefieldCamera : Camera.main,
+            screenPosition, pointerOffset, edgePadding, outlineClearance,
+            hoverLink.ModelClearancePixels, hoverLink.BadgeClearance);
+        panel.gameObject.SetActive(visible);
     }
 
     private void Hide()
     {
+        if (hoverLink != null) hoverLink.Clear();
         shownUnit = null;
         if (panel != null) panel.gameObject.SetActive(false);
     }

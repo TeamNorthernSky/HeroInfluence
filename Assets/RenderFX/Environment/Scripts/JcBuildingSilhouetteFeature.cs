@@ -71,10 +71,10 @@ public sealed class JcBuildingSilhouetteFeature : ScriptableRendererFeature
             var highlight = JcBuildingSilhouetteSettings.Default;
             float pulse = .5f + .5f * Mathf.Sin(Time.unscaledTime * Mathf.PI * 2 / 1.6f);
             highlight.opacity = 0;
-            highlight.outlineColor = tutorialColor * Mathf.Lerp(1.3f, 2.2f, pulse);
+            highlight.outlineColor = Color.Lerp(tutorialColor, Color.white, pulse);
             highlight.outlineOpacity = 1;
             highlight.outlineWidthMode = JcBuildingOutlineWidthMode.ScreenPixels;
-            highlight.outlineWidth = Mathf.Lerp(3, 5, pulse);
+            highlight.outlineWidth = Mathf.Lerp(9, 15, pulse);
             tutorialMaskPass.Setup(true, highlight, renderingData.cameraData.camera);
             tutorialMaskPass.explicitRenderers = tutorialRenderers;
             tutorialMaskPass.overrideMaterial = silhouetteMaterial;

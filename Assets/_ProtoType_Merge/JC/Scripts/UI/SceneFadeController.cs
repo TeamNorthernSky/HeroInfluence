@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,6 +17,28 @@ public class SceneFadeController : MonoBehaviour
 {
     public static SceneFadeController Instance { get; private set; }
 
+    private SceneLoadingLabel loadingLabel;
+    private bool suppressCursor, cursorWasVisible, showingLoading;
+    public static bool HideCursorDuringTransition => Instance != null && Instance.suppressCursor;
+    private void SetLoading(bool value)
+    {
+        if (value && !suppressCursor) cursorWasVisible = Cursor.visible || FakeMouseCursor.HasActivePresenter;
+        suppressCursor = value;
+        showingLoading = value;
+        if (!value)
+        {
+            if (loadingLabel != null) loadingLabel.gameObject.SetActive(false);
+            Cursor.visible = cursorWasVisible;
+        }
+    }
+    private void Update()
+    {
+        if (loadingLabel != null) loadingLabel.gameObject.SetActive(showingLoading && overlay != null && overlay.color.a > .98f);
+    }
+    private void BeforeCanvasRender()
+    {
+        if (suppressCursor && Application.isFocused && JcPointerInput.Inside) Cursor.visible = false;
+    }
     private Canvas canvas;
     private Image overlay;
     private Coroutine activeRoutine;
@@ -89,6 +111,7 @@ public class SceneFadeController : MonoBehaviour
         loadingMode = mode;
         pendingFadeInDuration = inDuration > 0f ? inDuration : 1f;
         transitioning = true;
+        SetLoading(true);
         StartCoroutine(ActivateAfterFade(operation, outDuration > 0f ? outDuration : 1f));
         return operation;
     }
@@ -132,11 +155,14 @@ public class SceneFadeController : MonoBehaviour
 
     private void OnEnable()
     {
+        Canvas.willRenderCanvases += BeforeCanvasRender;
         SceneManager.sceneLoaded += OnSceneLoaded;
         SceneManager.activeSceneChanged += OnActiveSceneChanged;
     }
     private void OnDisable()
     {
+        Canvas.willRenderCanvases -= BeforeCanvasRender;
+        if (suppressCursor) SetLoading(false);
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.activeSceneChanged -= OnActiveSceneChanged;
     }
@@ -177,11 +203,16 @@ public class SceneFadeController : MonoBehaviour
         rt.anchorMax = Vector2.one;
         rt.offsetMin = Vector2.zero;
         rt.offsetMax = Vector2.zero;
+        var labelObject = new GameObject("Loading label", typeof(RectTransform), typeof(SceneLoadingLabel));
+        loadingLabel = labelObject.GetComponent<SceneLoadingLabel>();
+        loadingLabel.Initialize(canvasGo.transform);
+        labelObject.SetActive(false);
     }
 
     public Coroutine FadeOut(float duration, Action onComplete = null)
     {
         EnsureOverlay();
+        SetLoading(true);
         return StartFade(overlay.color.a, 1f, duration, true, onComplete);
     }
 
@@ -247,6 +278,7 @@ public class SceneFadeController : MonoBehaviour
         EnsureOverlay();
         overlay.color = Color.black;
         overlay.raycastTarget = true;
+        SetLoading(true);
         // sceneLoaded는 Start 이전이다. 초기 배치와 Additive 복원이 끝난 다음 화면을 연다.
         yield return null;
         if (scene.name == TmpBattleSceneFade.SceneName)
@@ -254,6 +286,28 @@ public class SceneFadeController : MonoBehaviour
         else
             yield return StartFade(1f, 0f, duration, true, null);
         entryRoutine = null;
+    }
+
+    private IEnumerator WaitForSceneReady()
+    {
+        // Start와 씬 복귀 코루틴이 실행된 뒤 실제 복원 완료를 확인한다.
+        yield return null;
+        int stableFrames = 0;
+        while (stableFrames < 2)
+        {
+            var scene = SceneManager.GetActiveScene();
+            bool ready = scene.IsValid() && scene.isLoaded && waitingForActivationHandle == 0 &&
+                (loadingOperation == null || loadingOperation.isDone) && !DHGameStateRestoreService.IsRestoring &&
+                (GameManager.Instance == null || !GameManager.Instance.IsExplorationEntryPending);
+            foreach (var party in FindObjectsByType<TutorialPartyRuntime>(FindObjectsSortMode.None))
+                if (party.gameObject.scene == scene && party.isActiveAndEnabled && !party.SceneEntryReady) ready = false;
+            foreach (var guide in FindObjectsByType<TutorialExploreUIController>(FindObjectsSortMode.None))
+                if (guide.gameObject.scene == scene && guide.isActiveAndEnabled && !guide.SceneEntryReady) ready = false;
+            stableFrames = ready ? stableFrames + 1 : 0;
+            yield return null;
+        }
+        Canvas.ForceUpdateCanvases();
+        yield return null;
     }
 
     private Coroutine StartFade(float from, float to, float duration, bool block, Action onComplete, float holdDuration = 0f)
@@ -265,12 +319,24 @@ public class SceneFadeController : MonoBehaviour
 
     private IEnumerator FadeRoutine(float from, float to, float duration, bool blockRaycast, Action onComplete, float holdDuration = 0f)
     {
+        if (to < .5f)
+        {
+            SetLoading(true);
+            overlay.color = Color.black;
+            overlay.raycastTarget = true;
+            yield return WaitForSceneReady();
+        }
         overlay.color = new Color(0f, 0f, 0f, from);
         AudioManager.Instance?.UpdateSceneBgmFade(1f - from);
         if (holdDuration > 0f)
         {
             overlay.raycastTarget = true;
             yield return new WaitForSecondsRealtime(holdDuration);
+        }
+        if (to < .5f)
+        {
+            showingLoading = false;
+            if (loadingLabel != null) loadingLabel.gameObject.SetActive(false);
         }
         overlay.raycastTarget = blockRaycast || to > 0.5f;
         float elapsed = 0f;
@@ -286,6 +352,7 @@ public class SceneFadeController : MonoBehaviour
         AudioManager.Instance?.UpdateSceneBgmFade(1f - to, completed: to < 0.5f);
         overlay.raycastTarget = to > 0.5f;
         activeRoutine = null;
+        if (to < .5f) SetLoading(false);
         onComplete?.Invoke();
     }
 }

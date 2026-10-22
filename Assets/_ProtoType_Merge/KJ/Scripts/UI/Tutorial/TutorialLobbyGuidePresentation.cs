@@ -90,6 +90,7 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
             var background = panel.GetComponent<Image>();
             if (background != null) background.enabled = false;
         }
+        view.SetSideLayout(null);
         view.SetContent("협회 안내", sourceMessages[index] != null ? sourceMessages[index].text : "");
         var card = (RectTransform)view.panel.transform;
         if (messagePositions != null && index < messagePositions.Length)
@@ -97,6 +98,7 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
         view.panel.alpha = 0;
         view.FitMessageLayout();
         var focus = focusTargets != null && index < focusTargets.Length ? focusTargets[index] : null;
+        if (focus != null && card.anchoredPosition.x > 0) view.SetSideLayout(focus, null, true);
         view.SetVisible(true, focus, JcTutorialGuideView.FocusPresentation.DimmedExplanation);
         bool final = index == panels.Length - 1;
         if (continueButton != null) continueButton.gameObject.SetActive(!final);
@@ -108,7 +110,7 @@ public sealed class TutorialLobbyGuidePresentation : MonoBehaviour
         if (continueButton != null) continueButton.onClick.RemoveListener(Advance);
         if (shieldButton != null) shieldButton.onClick.RemoveListener(Advance);
         if (!initialized) return;
-        if (view != null) view.SetVisible(false);
+        if (view != null) { view.SetSideLayout(null); view.SetVisible(false); }
         if (inputShield != null) inputShield.SetActive(false);
         if (progression != null) progression.enabled = wasProgressionEnabled;
         if (legacyMessageRoots != null)

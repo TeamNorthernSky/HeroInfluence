@@ -53,7 +53,13 @@ public sealed class TutorialExploreUIController : MonoBehaviour
             victoryReturnContext = context;
     }
 
+    public bool SceneEntryReady { get; private set; }
     private System.Collections.IEnumerator Start()
+    {
+        yield return PrepareVictoryReturn();
+        SceneEntryReady = true;
+    }
+    private System.Collections.IEnumerator PrepareVictoryReturn()
     {
         if (victoryReturnContext == null) yield break;
         var repository = TutorialProgressRepository.EnsureInstance();

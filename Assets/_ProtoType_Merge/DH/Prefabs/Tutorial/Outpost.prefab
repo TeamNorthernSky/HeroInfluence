@@ -134,7 +134,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldCamera: {fileID: 0}
-  requireDoubleClick: 0
+  requireDoubleClick: 1
   doubleClickThreshold: 0.3
   rayDistance: 1000
 --- !u!1001 &6555532117341741556
