@@ -22,6 +22,8 @@ namespace ASB.Work.Battle.Core
         public bool IsRangedAttack = false;
         public float BonusCritRate = 0f;
         public float TargetAvoidRateReduction = 0f;
+        /// <summary>경감 판정 결과. null=아직 판정 안 함. 한 번 정해지면 다시 굴리지 않는다.</summary>
+        public bool? IsDamageReduced;
         public bool CanTriggerCounter = false;
         public bool IsCounterAttack = false;
         // 다단 히트 연출용 대기 시간(초).

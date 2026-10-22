@@ -6,12 +6,13 @@ using UnityEngine.Timeline;
 
 namespace ASB.Work.EditorTools.Jig
 {
-    /// <summary>한 Cue의 지그 미리보기 발화 정보(경량 레코드). 마커 시각과 같은 시각에 수집한다.</summary>
+    /// <summary>Cue/SFX 지그 미리보기 발화 정보(경량 레코드). 마커 시각과 같은 시각에 수집한다.</summary>
     public sealed class JigCueFire
     {
         public double FireTime;
         public List<int> EffectIds;
         public List<int> SoundIds;
+        public AudioClip SfxClip;
         public SpawnAnchor Anchor;
         public UnitSocket Socket;
         public string Label;
@@ -65,51 +66,71 @@ namespace ASB.Work.EditorTools.Jig
             if (fires != null) _fires.AddRange(fires);
         }
 
-        /// <summary>실제 Runtime Timeline의 PresentationSignalMarker를 CueBinding에 연결해 프리뷰 목록을 만든다.</summary>
+        /// <summary>Runtime Timeline의 Cue와 SFX 마커를 프리뷰 발화 목록으로 만든다.</summary>
         public static int SetFiresFromTimeline(SkillPresentationData data, TimelineAsset timeline,
             List<string> report = null)
         {
             var fires = new List<JigCueFire>();
-            if (data == null || timeline == null || timeline.markerTrack == null)
+            if (timeline == null)
             {
                 SetFires(fires);
                 return 0;
             }
 
-            var bindings = new List<CueBinding>();
-            data.CollectAllCues(bindings);
-            var byId = new Dictionary<string, CueBinding>();
-            var byName = new Dictionary<string, CueBinding>(System.StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < bindings.Count; i++)
+            if (data != null && timeline.markerTrack != null)
             {
-                CueBinding cue = bindings[i];
-                if (cue == null) continue;
-                if (!string.IsNullOrEmpty(cue.CueId)) byId[cue.CueId] = cue;
-                if (!string.IsNullOrEmpty(cue.NormalizedCueName) && !byName.ContainsKey(cue.NormalizedCueName))
-                    byName.Add(cue.NormalizedCueName, cue);
-            }
-
-            foreach (IMarker raw in timeline.markerTrack.GetMarkers())
-            {
-                if (!(raw is PresentationSignalMarker marker) || marker.Kind != PresentationSignalKind.Cue) continue;
-
-                CueBinding cue = null;
-                if (!string.IsNullOrEmpty(marker.CueId)) byId.TryGetValue(marker.CueId, out cue);
-                if (cue == null && !string.IsNullOrEmpty(marker.CueName)) byName.TryGetValue(marker.CueName, out cue);
-                if (cue == null)
+                var bindings = new List<CueBinding>();
+                data.CollectAllCues(bindings);
+                var byId = new Dictionary<string, CueBinding>();
+                var byName = new Dictionary<string, CueBinding>(System.StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < bindings.Count; i++)
                 {
-                    report?.Add($"Cue Marker 연결 실패 @ {raw.time:F3}s (id='{marker.CueId}', name='{marker.CueName}')");
-                    continue;
+                    CueBinding cue = bindings[i];
+                    if (cue == null) continue;
+                    if (!string.IsNullOrEmpty(cue.CueId)) byId[cue.CueId] = cue;
+                    if (!string.IsNullOrEmpty(cue.NormalizedCueName) && !byName.ContainsKey(cue.NormalizedCueName))
+                        byName.Add(cue.NormalizedCueName, cue);
                 }
 
+                foreach (IMarker raw in timeline.markerTrack.GetMarkers())
+                {
+                    if (!(raw is PresentationSignalMarker marker) || marker.Kind != PresentationSignalKind.Cue) continue;
+
+                    CueBinding cue = null;
+                    if (!string.IsNullOrEmpty(marker.CueId)) byId.TryGetValue(marker.CueId, out cue);
+                    if (cue == null && !string.IsNullOrEmpty(marker.CueName)) byName.TryGetValue(marker.CueName, out cue);
+                    if (cue == null)
+                    {
+                        report?.Add($"Cue Marker 연결 실패 @ {raw.time:F3}s (id='{marker.CueId}', name='{marker.CueName}')");
+                        continue;
+                    }
+
+                    fires.Add(new JigCueFire
+                    {
+                        FireTime = raw.time,
+                        EffectIds = cue.EffectIds != null ? new List<int>(cue.EffectIds) : new List<int>(),
+                        SoundIds = cue.SoundIds != null ? new List<int>(cue.SoundIds) : new List<int>(),
+                        Anchor = cue.Anchor,
+                        Socket = cue.Socket,
+                        Label = cue.NormalizedCueName
+                    });
+                }
+            }
+
+            DHAudioClipCatalog catalog = AssetDatabase.LoadAssetAtPath<DHAudioClipCatalog>(
+                "Assets/_ProtoType_Merge/DH/Audio/DHAudioClipCatalog.asset");
+            foreach (PresentationSfxMarker marker in PresentationTimelineMarkers.OfType<PresentationSfxMarker>(timeline))
+            {
+                if (catalog == null || !catalog.TryGetClip(marker.SfxKey, out AudioClip clip))
+                {
+                    report?.Add($"SFX Marker 오디오 연결 실패 @ {marker.time:F3}s (key='{marker.SfxKey}')");
+                    continue;
+                }
                 fires.Add(new JigCueFire
                 {
-                    FireTime = raw.time,
-                    EffectIds = cue.EffectIds != null ? new List<int>(cue.EffectIds) : new List<int>(),
-                    SoundIds = cue.SoundIds != null ? new List<int>(cue.SoundIds) : new List<int>(),
-                    Anchor = cue.Anchor,
-                    Socket = cue.Socket,
-                    Label = cue.NormalizedCueName
+                    FireTime = marker.time,
+                    SfxClip = clip,
+                    Label = marker.SfxKey
                 });
             }
 
@@ -174,6 +195,8 @@ namespace ASB.Work.EditorTools.Jig
 
         private static void FireOne(JigCueFire f)
         {
+            if (SoundEnabled && f.SfxClip != null) PlayClip(f.SfxClip);
+
             // 사운드 — 앵커 무관(2D). Held는 수집 단계에서 이미 제외됨.
             if (false)
             {

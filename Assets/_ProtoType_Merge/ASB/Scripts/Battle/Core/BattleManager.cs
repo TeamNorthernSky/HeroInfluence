@@ -48,8 +48,6 @@ public class BattleManager : MonoBehaviour
         public static SkillExecutionOptions Normal =>
             new SkillExecutionOptions(1f, false, true);
 
-        public static SkillExecutionOptions CounterDefault =>
-            new SkillExecutionOptions(0.5f, true, false);
     }
 
     internal readonly struct CounterAttackRequest
@@ -249,6 +247,9 @@ public class BattleManager : MonoBehaviour
 
         bool wasDeadBefore = context.Target.IsDead;
         float hpBefore = context.Target.CurrentHp;
+        // 경감은 대신 맞기 재지정 이후의 최종 대상 기준으로 1회만 굴린다.
+        if (context.IsCounterAttack) context.IsDamageReduced = false;
+        else context.IsDamageReduced ??= CombatCalculator.RollDamageReduction(context);
         float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
         context.Target.TakeDamage(finalDamage);
         float appliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
@@ -286,6 +287,9 @@ public class BattleManager : MonoBehaviour
             return BattleHitResult.Empty(context.Target);
         }
 
+        // 경감은 대신 맞기 재지정 이후의 최종 대상 기준으로 1회만 굴린다.
+        if (context.IsCounterAttack) context.IsDamageReduced = false;
+        else context.IsDamageReduced ??= CombatCalculator.RollDamageReduction(context);
         float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
         float predictedHp = Mathf.Max(
             context.Target.MinimumHpAfterDamage,
@@ -1254,13 +1258,8 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"[Combat] {req.Defender.UnitName} 전열 반격 발동! (계수 0.5)");
         _visualDirector?.ShowCounterPopup(req.Defender);
 
-        // 반격은 커스텀 핸들러를 무시하고 기본 데미지 경로만 사용합니다.
-        // Influence 소모 없음, 데미지 계수 0.5, 반격은 반격을 유발하지 않습니다.
-        SkillExecutionResult result = BuildDefaultSkillResult(
-            req.Defender,
-            req.OriginalCaster,
-            req.Skill,
-            SkillExecutionOptions.CounterDefault);
+        // 스킬은 반격 가능 여부와 연출에만 사용하고, 피해는 반격 전용 공식으로 계산한다.
+        SkillExecutionResult result = BuildCounterSkillResult(req.Defender, req.OriginalCaster, req.Skill);
 
         bool executed = false;
         IEnumerator execution = ApplySkillExecutionResultRoutine(result, success => executed = success);
@@ -1348,6 +1347,28 @@ public class BattleManager : MonoBehaviour
             _currentFollowUpDepth = 0;
             _isDrainingFollowUps = false;
         }
+    }
+
+    private static SkillExecutionResult BuildCounterSkillResult(
+        BattleCharactor actor,
+        BattleCharactor target,
+        SkillData skillData)
+    {
+        var context = new DamageContext
+        {
+            Caster = actor,
+            Target = target,
+            SkillIndex = skillData.skillIndex,
+            IsRangedAttack = IsRangedSkill(actor, skillData),
+            IsCritical = false,
+            IsDamageReduced = false,
+            CanTriggerCounter = false,
+            IsCounterAttack = true
+        };
+
+        return SkillExecutionResult
+            .SuccessResult(actor, skillData)
+            .AddDamage(context);
     }
 
     private SkillExecutionResult BuildDefaultSkillResult(
