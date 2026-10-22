@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace JC.VFX.Seam
@@ -13,6 +14,10 @@ namespace JC.VFX.Seam
     /// 지정하면 Gun.001/ShootPlace가 해석돼 온다). 위치만 쓰고 부모로 삼지 않는다 —
     /// 총구 소켓 lossyScale이 1.6배, 무기 본 소켓은 200배라 자식이 되면 크기가 깨진다.
     ///
+    /// 탄착: KAimShotVfx.Impacted 순간 SkillImpactSignalBus에 착탄 신호를 낸다. 스킬 연출 데이터의
+    /// ImpactDeliveryMode가 CustomEffectImpact면 피해가 이 신호까지 기다린다(그 외 스킬은 신호를 무시).
+    /// 탄착 전에 이펙트가 꺼지면 그 자리에서 신호를 내 피해가 타임아웃까지 밀리지 않게 한다.
+    ///
     /// ASB 파일은 수정하지 않는다. 같은 인터페이스만 구현해 JC 재료를 얹는 방식.
     /// </summary>
     [RequireComponent(typeof(KAimShotVfx))]
@@ -23,15 +28,18 @@ namespace JC.VFX.Seam
 
         private KAimShotVfx _vfx;
         private bool _subscribed;
+        private SkillEffectContext _context;
+        private bool _impactPublished;
 
         private void Awake() => Resolve();
 
         private void Resolve()
         {
             if (_vfx == null) _vfx = GetComponent<KAimShotVfx>();
-            if (_vfx != null && destroyOnFinish && !_subscribed)
+            if (_vfx != null && !_subscribed)
             {
-                _vfx.OnFinished += OnVfxFinished;
+                if (destroyOnFinish) _vfx.OnFinished += OnVfxFinished;
+                _vfx.Impacted += OnVfxImpacted;
                 _subscribed = true;
             }
         }
@@ -39,6 +47,26 @@ namespace JC.VFX.Seam
         private void OnVfxFinished(VfxEffect _)
         {
             if (destroyOnFinish) Destroy(gameObject);
+        }
+
+        private void OnVfxImpacted(Vector3 impactPoint) => PublishImpact(impactPoint, true);
+
+        private void OnDisable()
+        {
+            // 탄착 전에 꺼졌다(인터럽트·정리 등): 커밋된 공격의 피해가 타임아웃까지 밀리지 않게 즉시 알린다.
+            // 실제 탄착이 아니므로 착탄음(Event SFX)은 내지 않는다.
+            if (_context != null && !_impactPublished)
+                PublishImpact(_context.TargetPosition, false);
+        }
+
+        private void PublishImpact(Vector3 position, bool playSfx)
+        {
+            if (_context == null || _impactPublished) return;
+            _impactPublished = true;
+            if (playSfx) PresentationSfxEvents.PlayEffectImpact(_context.Presentation, 0);
+            var targets = _context.Targets?.Where(u => u != null).Select(u => u.transform).ToArray()
+                          ?? System.Array.Empty<Transform>();
+            SkillImpactSignalBus.PublishImpact(new ImpactKey(_context.ActionInstanceId), position, targets);
         }
 
         public void Play(SkillEffectContext ctx)
@@ -49,6 +77,13 @@ namespace JC.VFX.Seam
                 Debug.LogWarning("[KAimShotSkillEffect] KAimShotVfx를 찾지 못했습니다.");
                 return;
             }
+
+            // 전투 Cue로 재생될 때만 착탄 신호를 낸다(ActionInstanceId 0 = 프리뷰/디버그 재생).
+            _context = ctx != null && ctx.ActionInstanceId > 0 ? ctx : null;
+            _impactPublished = false;
+
+            // 전투 배속을 따른다(발사 시점 배속 고정 — JcVfxPresentationAdapter와 같은 규약). 탄착 시각도 함께 당겨진다.
+            _vfx.PlaybackSpeed = Mathf.Max(0.01f, ctx?.PlaybackSpeed ?? 1f);
 
             // 총구 소켓: 위치만 참조한다(부모 결합 없음).
             _vfx.SetMuzzleSocket(ctx != null ? ctx.SocketTransform : null);

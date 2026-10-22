@@ -33,7 +33,7 @@ MonoBehaviour:
     Timeline: {fileID: 11400000, guid: f1babfa6667316d43ba1d956a119586f, type: 2}
     TargetCount: 0
     Segments: []
-  ImpactTiming: 0
+  ImpactTiming: 1
   AnimationStateName: 
   AnimationTriggerOverride: 
   TargetAnimationTriggerOverride: 
@@ -41,8 +41,8 @@ MonoBehaviour:
   HitDelay: 0.25
   HitSoundId: 0
   SfxVolume: 1
-  EnableHitEffect: 0
-  HitEffectId: 0
+  EnableHitEffect: 1
+  HitEffectId: 1070
   ProjectileVisual:
     Prefab: {fileID: 0}
     Speed: 6
@@ -64,6 +64,12 @@ MonoBehaviour:
   CustomImpactResolutionPolicy: 0
   CustomImpactSignalInstanceKey: 
   ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx:
+  - Event: 0
+    PlayPerHit: 0
+    Key: Battle_Hit01
+    DurationSeconds: 0
+    Occurrence: -1
   MovePrepare:
     Enabled: 0
     AnimationStateName: 
@@ -75,6 +81,7 @@ MonoBehaviour:
     ForceApproach: 1
     AnimationStateName: 
     BlendInSeconds: 0.1
+    SfxKey: Explore_Move
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 

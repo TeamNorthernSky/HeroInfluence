@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace JC.VFX
@@ -85,9 +86,15 @@ namespace JC.VFX
         /// <summary>에디터 스코프 판정용 — 이 인스턴스가 해당 프리셋을 실제로 참조하는지.</summary>
         public bool UsesPreset(KAimShotPreset p) => masterPreset != null && masterPreset == p;
 
+        /// <summary>
+        /// 탄착 순간(탄착 스타버스트 시작, 꺼져 있으면 launchDelay + travelTime) 1회 발화. 인자는 탄착 지점.
+        /// 전투 브릿지(KAimShotSkillEffect)가 받아 피해 확정 신호로 넘긴다. 총구/탄도 단독 재생에서는 발화하지 않는다.
+        /// </summary>
+        public event Action<Vector3> Impacted;
+
         /// <summary>시퀀스 전역 시계. 모든 요소의 기준.</summary>
         private float _seqT;
-        private bool _muzzleDone, _headDone, _trailDone, _impactDone, _trailBegun;
+        private bool _muzzleDone, _headDone, _trailDone, _impactDone, _trailBegun, _impactRaised;
 
         private Transform _muzzleSocket;
         private Transform _caster;
@@ -143,7 +150,7 @@ namespace JC.VFX
             trailStroke?.HideImmediate();
             IsPlaying = false;
             _seqT = 0f;
-            _muzzleDone = _headDone = _trailDone = _impactDone = false;
+            _muzzleDone = _headDone = _trailDone = _impactDone = _impactRaised = false;
             _trailBegun = false;
         }
 
@@ -188,7 +195,7 @@ namespace JC.VFX
             _seqT = 0f;
             if (segment == Segment.Flight) _seqT = launchDelay;
             if (segment == Segment.Impact) _seqT = impactBurst != null ? impactBurst.startDelay : 0f;
-            _muzzleDone = _headDone = _trailDone = _impactDone = false;
+            _muzzleDone = _headDone = _trailDone = _impactDone = _impactRaised = false;
             _trailBegun = false;
             IsPlaying = true;
             muzzleQuad?.SetVisible(false);
@@ -354,6 +361,19 @@ namespace JC.VFX
             else { impactQuad.SetVisible(false); _impactDone = true; }
         }
 
+        /// <summary>탄착 시각(시퀀스 시계). 스타버스트가 켜져 있으면 그 시작, 아니면 탄두 도착.</summary>
+        private float ImpactTime => impactBurst != null && impactBurst.enabled
+            ? impactBurst.startDelay
+            : launchDelay + travelTime;
+
+        private void RaiseImpactIfDue()
+        {
+            if (_impactRaised || (segment != Segment.All && segment != Segment.Impact)) return;
+            if (_seqT < ImpactTime) return;
+            _impactRaised = true;
+            Impacted?.Invoke(_impactPoint);
+        }
+
         private static bool Pending(KElementLife l, bool done) => l != null && l.enabled && !done;
 
         private bool AllElementsDone()
@@ -371,6 +391,7 @@ namespace JC.VFX
             if (segment == Segment.All || segment == Segment.Muzzle) UpdateMuzzle();
             if (segment == Segment.All || segment == Segment.Flight) { UpdateHead(); UpdateTrail(); }
             if (segment == Segment.All || segment == Segment.Impact) UpdateImpact();
+            RaiseImpactIfDue();
 
             if (AllElementsDone())
             {
