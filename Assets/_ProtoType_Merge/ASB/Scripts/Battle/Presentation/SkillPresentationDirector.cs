@@ -227,7 +227,9 @@ public sealed partial class SkillPresentationDirector
 
         probe.Configure(_chainLightningActionInstanceId, primaryTargetTransform, chainTargets, presentation);
         effect.Play(actor.transform, primaryTargetTransform, chainTargets);
-        UnityEngine.Object.FindFirstObjectByType<BattlePresentationPreview>()?.FollowLuminaLightning(actor, effect);
+        var cameraPresentation = BattlePresentationController.FindInScene(actor.gameObject.scene);
+        if (cameraPresentation != null) cameraPresentation.FollowLuminaLightning(actor, effect);
+        else BattlePresentationController.FindPreviewInScene(actor.gameObject.scene)?.FollowLuminaLightning(actor, effect);
         return true;
     }
 

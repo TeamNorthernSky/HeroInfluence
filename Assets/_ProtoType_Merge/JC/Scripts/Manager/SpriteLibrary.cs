@@ -33,7 +33,7 @@ public class SpriteLibrary : ScriptableObject
     }
 
     // ════════════════════ ① 포트레이트 (구 PortraitLibrary) ════════════════════
-    public enum PortraitCategory { Hero, Villain, Enemy }
+    public enum PortraitCategory { Hero, Villain, Enemy, Speaker }
 
     [Header("포트레이트 CSV (Resources TextAsset, 컬럼=Category,Id,PortraitResourcePath)")]
     [SerializeField] private string portraitCsvPath = "Portrait_Hero_Sprite/PortraitSheet";
@@ -87,6 +87,16 @@ public class SpriteLibrary : ScriptableObject
 
     /// <summary>히어로 포트레이트(키=HeroIndex 문자열, 예 "10001").</summary>
     public Sprite GetHeroPortrait(string heroKey) => GetPortrait(PortraitCategory.Hero, heroKey);
+
+    /// <summary>대화 화자명으로 등록된 초상화. 미등록이면 null로 기존 화자 폴백을 유지한다.</summary>
+    public Sprite GetSpeakerPortrait(string speaker)
+    {
+        if (string.IsNullOrWhiteSpace(speaker)) return null;
+        EnsurePortraitCsvLut();
+        string key = System.Text.RegularExpressions.Regex.Replace(speaker, @"\s+", "");
+        return _portraitCsvLut.TryGetValue(PortraitKey(PortraitCategory.Speaker, key), out var path)
+            ? LoadRes(path) : null;
+    }
 
     /// <summary>적 기본 포트레이트(범용 zako).</summary>
     public Sprite DefaultEnemy => LoadRes(defaultEnemyPortraitPath);
