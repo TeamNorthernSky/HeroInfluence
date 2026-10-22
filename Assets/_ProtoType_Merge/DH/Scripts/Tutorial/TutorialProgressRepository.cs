@@ -166,6 +166,7 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     private const string RootName = "[DH_TutorialProgressRepository]";
 
     public static TutorialProgressRepository Instance { get; private set; }
+    private static bool isQuitting;
 
     [Header("Tutorial Progress")]
     [SerializeField] private bool tutorialCompleted;
@@ -217,6 +218,13 @@ public sealed class TutorialProgressRepository : MonoBehaviour
     public event Action ProgressChanged;
     public event Action<ResourceType, int> TutorialResourceChanged;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        Instance = null;
+        isQuitting = false;
+    }
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
     {
@@ -225,19 +233,21 @@ public sealed class TutorialProgressRepository : MonoBehaviour
 
     public static TutorialProgressRepository EnsureInstance()
     {
+        if (!Application.isPlaying || isQuitting)
+            return null;
+
         if (Instance != null)
             return Instance;
 
         GameObject root = new GameObject(RootName);
-        if (Application.isPlaying)
-            DontDestroyOnLoad(root);
+        DontDestroyOnLoad(root);
 
         return root.AddComponent<TutorialProgressRepository>();
     }
 
     public static void ClearProgress()
     {
-        EnsureInstance().ResetProgress();
+        Instance?.ResetProgress();
     }
 
     private void Awake()
@@ -251,6 +261,17 @@ public sealed class TutorialProgressRepository : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         RebuildLookups();
+    }
+
+    private void OnApplicationQuit()
+    {
+        isQuitting = true;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     private void OnValidate()

@@ -235,9 +235,9 @@ public sealed class TutorialPublicityExplanationView : MonoBehaviour
 
     public void EndPractice()
     {
-        Hide();
         practicePrepared = false;
-        if (publicity != null) publicity.SetPracticeInput(TutorialPublicityController.PracticeInput.Unrestricted);
+        Hide();
+        if (publicity != null) publicity.ResetPracticeInput();
     }
 
     public bool CanAdvance => current != null && Time.frameCount > shownFrame && !awaitingRelease &&
