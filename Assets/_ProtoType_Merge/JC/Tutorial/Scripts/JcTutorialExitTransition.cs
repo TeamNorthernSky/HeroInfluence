@@ -42,12 +42,11 @@ namespace JC.Tutorial
             // 튜토리얼 전투에서 남은 빈 일반 카탈로그가 새 씬의 정상 카탈로그를
             // 중복 싱글턴으로 제거하지 않도록 Destroy 처리가 끝난 뒤 로드한다.
             yield return null;
-            var load = GameSceneManager.Instance != null ? GameSceneManager.Instance.LoadSceneAsync(destination) : SceneFadeController.LoadSceneAsyncWithFade(destination);
+            var load = SceneFadeController.LoadSceneAsyncWithFade(destination, LoadSceneMode.Single, .35f, .35f);
             if (load != null) yield return load;
-            // 새 씬의 Start 및 첫 UI 배치를 암전 안에서 마친다.
-            yield return null;
-            yield return null;
-            yield return fade.FadeIn(.35f);
+            // 공용 컨트롤러가 Start 이후 한 번만 페이드인한다. 자체 페이드 중복을 피한다.
+            if (load != null) while (fade != null && fade.IsTransitioning) yield return null;
+            else if (fade != null && !fade.IsTransitioning) yield return fade.FadeIn(.35f);
             ModalManager.Unregister(gameObject);
             Destroy(gameObject);
         }
