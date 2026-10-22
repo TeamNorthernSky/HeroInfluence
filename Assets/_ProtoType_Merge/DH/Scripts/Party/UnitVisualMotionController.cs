@@ -20,6 +20,10 @@ public class UnitVisualMotionController : MonoBehaviour
     private Quaternion targetRotation;
     private bool hasTargetRotation;
     private bool isMoving;
+    private bool interactionFacing;
+    private Quaternion rotationBeforeInteraction;
+    private Quaternion targetRotationBeforeInteraction;
+    private bool hadTargetRotationBeforeInteraction;
 
     private void Awake()
     {
@@ -54,6 +58,9 @@ public class UnitVisualMotionController : MonoBehaviour
 
     public void SetLookDirection(Vector3 worldDirection)
     {
+        if (interactionFacing)
+            return;
+
         ResolveVisualRootIfNeeded();
         if (visualRoot == null)
             return;
@@ -65,6 +72,44 @@ public class UnitVisualMotionController : MonoBehaviour
         targetRotation = Quaternion.LookRotation(worldDirection.normalized, Vector3.up) *
                          Quaternion.Euler(0f, yawOffset, 0f);
         hasTargetRotation = true;
+    }
+
+    public void BeginInteractionFacing(Vector3 worldDirection)
+    {
+        ResolveVisualRootIfNeeded();
+        worldDirection.y = 0f;
+        if (visualRoot == null || worldDirection.sqrMagnitude <= 0.0001f)
+            return;
+
+        if (!interactionFacing)
+        {
+            rotationBeforeInteraction = visualRoot.rotation;
+            targetRotationBeforeInteraction = targetRotation;
+            hadTargetRotationBeforeInteraction = hasTargetRotation;
+        }
+
+        interactionFacing = true;
+        targetRotation = Quaternion.LookRotation(worldDirection.normalized, Vector3.up) *
+                         Quaternion.Euler(0f, yawOffset, 0f);
+        hasTargetRotation = true;
+    }
+
+    public void EndInteractionFacing()
+    {
+        if (!interactionFacing)
+            return;
+
+        if (visualRoot != null)
+            visualRoot.rotation = rotationBeforeInteraction;
+
+        targetRotation = targetRotationBeforeInteraction;
+        hasTargetRotation = hadTargetRotationBeforeInteraction;
+        interactionFacing = false;
+    }
+
+    private void OnDisable()
+    {
+        EndInteractionFacing();
     }
 
     public void SetMoving(bool moving)

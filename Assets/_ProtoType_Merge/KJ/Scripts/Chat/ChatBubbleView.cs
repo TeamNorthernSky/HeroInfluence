@@ -240,6 +240,8 @@ public class ChatBubbleView : MonoBehaviour
             if (explicitPortrait != null) return explicitPortrait;
         }
         string normalized = NormalizeSpeaker(speaker);
+        var speakerPortrait = Sprites.Portrait.Speaker(normalized);
+        if (speakerPortrait != null) return speakerPortrait;
         var catalog = DHCsvTemplateCatalog.Instance;
         if (normalized.Length == 0) return null;
         if (catalog != null) foreach (var unit in catalog.GetAllPlayerUnitTemplates())

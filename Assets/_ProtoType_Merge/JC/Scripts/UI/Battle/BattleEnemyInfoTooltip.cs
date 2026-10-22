@@ -152,7 +152,7 @@ public sealed class BattleEnemyInfoTooltip : MonoBehaviour
         if (rank != null) rank.text = string.Empty;
         if (portrait != null)
         {
-            portrait.sprite = Sprites.Portrait.Enemy(unit.SourceEnemyData?.UnitTemplateKey);
+            portrait.sprite = Sprites.Portrait.EnemyByActor(unit);
             portrait.enabled = portrait.sprite != null;
         }
         string key = unit.SourceEnemyData?.UnitTemplateKey;

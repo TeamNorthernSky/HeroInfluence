@@ -1162,14 +1162,17 @@ public class BattleManager : MonoBehaviour
             HostageFriendlyFireResolver.CaptureCollateralCells(actor, target, classSkillRow, result);
 
         bool executed = false;
-        var preview = FindFirstObjectByType<BattlePresentationPreview>();
-        bool usePreview = preview != null && preview.isActiveAndEnabled && preview.gameObject.scene == gameObject.scene;
+        var preview = BattlePresentationController.FindInScene(gameObject.scene);
+        var testPreview = preview == null ? BattlePresentationController.FindPreviewInScene(gameObject.scene) : null;
+        bool usePreview = preview != null || (testPreview != null && testPreview.isActiveAndEnabled);
         Action completeExecution = null;
         IEnumerator execution = ApplySkillExecutionResultRoutine(result, success => executed = success,
             usePreview ? new Action<Action>(completion => completeExecution = completion) : null);
         if (usePreview)
         {
-            yield return StartCoroutine(preview.RunAttackWithZoom(actor, target, classSkillRow, execution));
+            yield return StartCoroutine(preview != null
+                ? preview.RunAttackWithZoom(actor, target, classSkillRow, execution)
+                : testPreview.RunAttackWithZoom(actor, target, classSkillRow, execution));
             if (completeExecution != null)
             {
                 yield return StartCoroutine(DrainFollowUps());
@@ -1263,9 +1266,12 @@ public class BattleManager : MonoBehaviour
 
         bool executed = false;
         IEnumerator execution = ApplySkillExecutionResultRoutine(result, success => executed = success);
-        var preview = FindFirstObjectByType<BattlePresentationPreview>();
+        var preview = BattlePresentationController.FindInScene(gameObject.scene);
+        var testPreview = preview == null ? BattlePresentationController.FindPreviewInScene(gameObject.scene) : null;
         if (preview != null && preview.isActiveAndEnabled && preview.gameObject.scene == gameObject.scene)
             yield return StartCoroutine(preview.RunAttackWithZoom(req.Defender, req.OriginalCaster, req.Skill, execution));
+        else if (testPreview != null && testPreview.isActiveAndEnabled)
+            yield return StartCoroutine(testPreview.RunAttackWithZoom(req.Defender, req.OriginalCaster, req.Skill, execution));
         else
             yield return StartCoroutine(execution);
 

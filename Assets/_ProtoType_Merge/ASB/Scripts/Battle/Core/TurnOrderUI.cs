@@ -45,7 +45,7 @@ public class TurnOrderUI : MonoBehaviour
             return Sprites.Portrait.Hero(unit.SourceData.UnitTemplateKey);
         // [JC 260622] 적 = PortraitLibrary Enemy(키=적 UnitTemplateKey, 미수록/키없음 시 범용 zako).
         if (!unit.IsPlayer)
-            return Sprites.Portrait.Enemy(unit.SourceEnemyData != null ? unit.SourceEnemyData.UnitTemplateKey : null);
+            return Sprites.Portrait.EnemyByActor(unit);
         return null;
     }
 

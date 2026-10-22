@@ -531,10 +531,13 @@ public class InputHandler : MonoBehaviour
         bool executed = false;
         SkillData requestedSkill = PendingSkill;
         var presentationPreview = actionType == PendingActionType.ClassSkill || actionType == PendingActionType.WeaponSkill
-            ? FindFirstObjectByType<BattlePresentationPreview>() : null;
-        bool animatePreviewUi = presentationPreview != null && presentationPreview.enabled && actor != null && actor.IsPlayer;
+            ? BattlePresentationController.FindInScene(gameObject.scene) : null;
+        var testPreview = presentationPreview == null &&
+            (actionType == PendingActionType.ClassSkill || actionType == PendingActionType.WeaponSkill)
+            ? BattlePresentationController.FindPreviewInScene(gameObject.scene) : null;
+        bool animatePreviewUi = (presentationPreview != null || (testPreview != null && testPreview.isActiveAndEnabled)) && actor != null && actor.IsPlayer;
         if (animatePreviewUi)
-            yield return presentationPreview.HideSkillPanelBeforeCast();
+            yield return presentationPreview != null ? presentationPreview.HideSkillPanelBeforeCast() : testPreview.HideSkillPanelBeforeCast();
 
         switch (actionType)
         {
@@ -577,7 +580,11 @@ public class InputHandler : MonoBehaviour
         if (!executed)
         {
             battleFlowManager?.ReleaseFailedPlayerAction(actor);
-            if (animatePreviewUi) presentationPreview.RestoreSkillPanelAfterFailedAction();
+            if (animatePreviewUi)
+            {
+                if (presentationPreview != null) presentationPreview.RestoreSkillPanelAfterFailedAction();
+                else testPreview.RestoreSkillPanelAfterFailedAction();
+            }
         }
         ResetTargetingState();
         isProcessingAction = false;
