@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8bb4199598947a286cfe2b93b72df4b, type: 3}
+  m_Name: SkillPreviewCamera
+  m_EditorClassIdentifier: 
+  viewA:
+    position: {x: 3.6699996, y: 6.46, z: -10.700001}
+    rotation: {x: 30.449745, y: 325.54932, z: 0.0000009903716}
+    fieldOfView: 60.000004
+    perspectiveStrength: 0.5
+  viewB:
+    position: {x: 7.981912, y: 6.8285604, z: 6.1162143}
+    rotation: {x: 30.150019, y: 218.19978, z: 0}
+    fieldOfView: 60.000004
+    perspectiveStrength: 0.5

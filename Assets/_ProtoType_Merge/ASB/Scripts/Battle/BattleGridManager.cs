@@ -189,12 +189,18 @@ namespace ASB.Work.BattleGrid
         /// <summary>기존 입력이 계산한 직접 선택 대상을 셀 표시로 전달합니다.</summary>
         public void SetSelectableUnits(IEnumerable<BattleCharactor> units)
         {
+            SetSelectableUnits(units, flowManager != null ? flowManager.CurrentUnit : null,
+                inputHandler != null ? inputHandler.PendingSkill : null);
+        }
+
+        /// <summary>전투 입력을 사용하지 않는 프리뷰도 같은 칸 표시 규칙을 사용합니다.</summary>
+        public void SetSelectableUnits(IEnumerable<BattleCharactor> units, BattleCharactor actor, SkillData skill)
+        {
             if (!useBattleTilePresentation) return;
             selectableCells.Clear();
             selectableSides.Clear();
             selectingTargets = true;
-            var actor = flowManager != null ? flowManager.CurrentUnit : null;
-            var kind = SkillActivationRules.Kind(actor, inputHandler != null ? inputHandler.PendingSkill : null);
+            var kind = SkillActivationRules.Kind(actor, skill);
             if (units != null)
                 foreach (var unit in units)
                 {
