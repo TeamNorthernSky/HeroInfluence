@@ -8,6 +8,7 @@ public class FakeMouseCursor : MonoBehaviour
     [Tooltip("기본 커서 이미지와 클릭 기준점을 읽을 기존 RectTransform입니다. 원본512px를 재사용하며 독립 UI Canvas에 커서를 표시합니다. 크기는 게임 렌더 높이에 비례하고 이동은 프레임률의 영향을 받습니다.")]
     [SerializeField] private RectTransform _cursorRect;
     private static FakeMouseCursor Instance;
+    public static bool HasActivePresenter => Instance != null && Instance.isActiveAndEnabled;
     private Image sourceImage;
     private bool imageWasEnabled;
     private Texture2D normalTexture;
@@ -72,7 +73,7 @@ public class FakeMouseCursor : MonoBehaviour
     {
         if (applied == -2) return;
         presentation.Release();
-        Cursor.visible = true;
+        Cursor.visible = !SceneFadeController.HideCursorDuringTransition || !JcPointerInput.Inside;
         applied = -2;
     }
     private void OnDisable()

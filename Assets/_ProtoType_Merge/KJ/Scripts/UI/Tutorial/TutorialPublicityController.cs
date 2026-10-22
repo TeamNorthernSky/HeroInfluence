@@ -56,6 +56,15 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
         UpdatePracticeLimitVisual();
         Refresh();
     }
+
+    public void ResetPracticeInput()
+    {
+        practiceInput = PracticeInput.Unrestricted;
+        practiceCount = PracticeCount;
+        limitFeedbackUntil = 0f;
+        if (practiceLimitNotice != null) practiceLimitNotice.SetActive(false);
+        if (practiceLimitShade != null) practiceLimitShade.gameObject.SetActive(false);
+    }
     [SerializeField] private string[] heroKeys = { "10001", "10002", "10003", "10004" };
     [SerializeField] private TutorialCatalog catalog;
     [SerializeField] private GameObject modalPublicityRoot;
@@ -78,10 +87,11 @@ public sealed class TutorialPublicityController : MonoBehaviour, IHeroSelectionO
     private float nextRefresh;
     private TextMeshProUGUI countCaption;
 
-    private TutorialProgressRepository Repository => TutorialProgressRepository.EnsureInstance();
+    private TutorialProgressRepository Repository => TutorialProgressRepository.Instance;
 
     private void OnEnable()
     {
+        TutorialProgressRepository.EnsureInstance();
         if (btnClose != null) btnClose.onClick.AddListener(CloseModal);
         if (btnCancel != null && btnCancel != btnClose) btnCancel.onClick.AddListener(ClearHeroSelection);
         if (btnConfirm != null) btnConfirm.onClick.AddListener(Confirm);

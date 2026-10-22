@@ -21,10 +21,10 @@ public class TurnSlotUI : MonoBehaviour
     private void Awake()
     {
         if (playerTurnSprite == null)
-            playerTurnSprite = Resources.Load<Sprite>("UI_Sprite/UI_Battle/UI_HUD_playerTurn");
+            playerTurnSprite = Sprites.Load("UI_Sprite/UI_Battle/UI_HUD_playerTurn");
 
         if (enemyTurnSprite == null)
-            enemyTurnSprite = Resources.Load<Sprite>("UI_Sprite/UI_Battle/UI_HUD_enemyTurn");
+            enemyTurnSprite = Sprites.Load("UI_Sprite/UI_Battle/UI_HUD_enemyTurn");
         
         if(Portrait != null)
         {

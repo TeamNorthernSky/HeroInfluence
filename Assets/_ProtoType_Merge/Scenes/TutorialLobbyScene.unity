@@ -3681,7 +3681,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC601\uC6C5\uB4E4\uC758 \uCF54\uC5B4\uB97C \uC81C\uC791 / \uAC15\uD654\uD569\uB2C8\uB2E4."
+  m_text: "\uC601\uC6C5\uC758 \uCF54\uC5B4\uB97C\n\uC81C\uC791 / \uAC15\uD654 \uD569\uB2C8\uB2E4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e6ec5fbc212f1194a98f50830aabd3ce, type: 2}
   m_sharedMaterial: {fileID: 5609194862512328012, guid: e6ec5fbc212f1194a98f50830aabd3ce,
@@ -5274,10 +5274,10 @@ RectTransform:
   m_Children:
   - {fileID: 285902350}
   - {fileID: 217607422}
-  - {fileID: 1833201153}
   - {fileID: 867800334}
   - {fileID: 492656459}
   - {fileID: 1115827908}
+  - {fileID: 1833201153}
   m_Father: {fileID: 269378207}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

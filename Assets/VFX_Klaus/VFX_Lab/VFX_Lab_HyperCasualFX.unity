@@ -603,6 +603,16 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 230357445039734924, guid: 7d670a384e8fc40409224650a08a6481,
         type: 3}
+      propertyPath: m_WrapMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 230357445039734924, guid: 7d670a384e8fc40409224650a08a6481,
+        type: 3}
+      propertyPath: m_InitialState
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 230357445039734924, guid: 7d670a384e8fc40409224650a08a6481,
+        type: 3}
       propertyPath: m_SceneBindings.Array.data[65].value
       value: 
       objectReference: {fileID: 365423561}

@@ -68,17 +68,17 @@ MonoBehaviour:
     BlendInSeconds: 0.02
     Cues:
     - CueName: fist_trail_on
-      EffectIds: 3c230000
+      EffectIds: 32230000
       SoundIds: 
       Operation: 0
       InstanceKey: fist_trail_r
-      Anchor: 1
-      Socket: 1
+      Anchor: 0
+      Socket: 0
       Timing: 0
       Time: 0
       CueId: 0a18a50d2c1941e8b28ba1204e15beb6
     - CueName: fist_trail_on_l
-      EffectIds: 3c230000
+      EffectIds: 
       SoundIds: 
       Operation: 0
       InstanceKey: fist_trail_l
@@ -108,12 +108,12 @@ MonoBehaviour:
       WaitForHitEvent: 0
       Cues:
       - CueName: impact
-        EffectIds: 3d230000
+        EffectIds: 3f230000
         SoundIds: 
         Operation: 0
         InstanceKey: 
-        Anchor: 1
-        Socket: 1
+        Anchor: 2
+        Socket: 0
         Timing: 0
         Time: 0
         CueId: 088ec1ea471640d3b65829642b13b3cb
@@ -123,12 +123,12 @@ MonoBehaviour:
       WaitForHitEvent: 0
       Cues:
       - CueName: impact
-        EffectIds: 3d230000
+        EffectIds: 3f230000
         SoundIds: 
         Operation: 0
         InstanceKey: 
-        Anchor: 1
-        Socket: 2
+        Anchor: 2
+        Socket: 0
         Timing: 0
         Time: 0
         CueId: 78e021600226466788ad92d7d1476f69
@@ -152,6 +152,31 @@ MonoBehaviour:
         Timing: 0
         Time: 0
         CueId: 698e6dc53e8b4e34a7909fa4620f56da
+      - CueName: return_dust_on
+        EffectIds: 33230000
+        SoundIds: 
+        Operation: 0
+        InstanceKey: return_dust
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: a34cc3519cc74b818ce80ee7bddcf65a
+      - CueName: return_dust_off
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: return_dust
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 46eecf62048a4012b915f2776c11e16d
+    - AnimationStateName: Base Layer.ClassSkill_3
+      BlendInSeconds: 0.07
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 1
+      Cues: []
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn

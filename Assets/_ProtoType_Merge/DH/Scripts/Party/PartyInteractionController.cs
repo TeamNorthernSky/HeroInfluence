@@ -110,9 +110,16 @@ public class PartyInteractionController
             return;
 
         CancelPendingInteraction();
+        IsInputLocked = true;
         if (EnemyEventEncounterService.TryOpenEncounterChat(ownerParty, enemy, HandleCombatPromptClosed))
         {
-            IsInputLocked = true;
+            return;
+        }
+
+        if (!enemy.IsStatic)
+        {
+            IsInputLocked = false;
+            Debug.LogWarning("Mobile enemy encounter chat could not be opened. Skipping combat.", enemy);
             return;
         }
 
@@ -230,16 +237,18 @@ public class PartyInteractionController
             return false;
 
         CancelPendingInteraction();
-        if (TryShowDefenderCombatChat(
+        IsInputLocked = true;
+        if (!TryShowDefenderCombatChat(
                 villainUnionBase.ZoneId,
                 villainUnionBase.DefenderCombatChatId,
-                () => BeginVillainUnionDefenderCombat(villainUnionBase)))
+                () => IsInputLocked = false) || !ChatModalController.IsOpen)
         {
-            IsInputLocked = true;
-            return true;
+            IsInputLocked = false;
+            Debug.LogWarning(
+                $"[VillainUnion] Combat chat could not be opened: zone='{villainUnionBase.ZoneId}', chatId={villainUnionBase.DefenderCombatChatId}.",
+                villainUnionBase);
         }
 
-        BeginVillainUnionDefenderCombat(villainUnionBase);
         return true;
     }
 
@@ -479,18 +488,20 @@ public class PartyInteractionController
             yield break;
         }
 
-        if (outpost.RequiresDefenderCombat)
+        if (outpost.IsEnemyClaimed)
         {
-            if (TryShowDefenderCombatChat(
+            IsInputLocked = true;
+            if (!TryShowDefenderCombatChat(
                     outpost.ZoneId,
                     outpost.DefenderCombatChatId,
-                    () => BeginOutpostDefenderCombat(outpost)))
+                    () => IsInputLocked = false) || !ChatModalController.IsOpen)
             {
-                IsInputLocked = true;
-                yield break;
+                IsInputLocked = false;
+                Debug.LogWarning(
+                    $"[Outpost] Combat chat could not be opened: zone='{outpost.ZoneId}', chatId={outpost.DefenderCombatChatId}.",
+                    outpost);
             }
 
-            BeginOutpostDefenderCombat(outpost);
             yield break;
         }
 
@@ -540,20 +551,6 @@ public class PartyInteractionController
             : normalized;
 
         return int.TryParse(numberText, out chatZoneId) && chatZoneId > 0;
-    }
-
-    private void BeginOutpostDefenderCombat(Outpost outpost)
-    {
-        bool combatStarted = combatEncounterManager != null &&
-            combatEncounterManager.BeginOutpostDefenderCombat(ownerParty, outpost);
-        IsInputLocked = combatStarted;
-    }
-
-    private void BeginVillainUnionDefenderCombat(VillainUnionBase villainUnionBase)
-    {
-        bool combatStarted = combatEncounterManager != null &&
-            combatEncounterManager.BeginVillainUnionDefenderCombat(ownerParty, villainUnionBase);
-        IsInputLocked = combatStarted;
     }
 
     private void HandleMainEventClosed(MainEventObject mainEvent)

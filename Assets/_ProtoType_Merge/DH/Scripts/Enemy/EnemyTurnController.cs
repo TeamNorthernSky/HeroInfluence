@@ -379,7 +379,7 @@ public class EnemyTurnController : MonoBehaviour
 
         bool eventEncounterClosed = false;
         bool eventEncounterStartedCombat = false;
-        // Event-spawned enemies use encounter chat first; normal combat UI remains as the fallback path.
+        // Mobile enemies enter combat only through their encounter chat.
         if (EnemyEventEncounterService.TryOpenEncounterChat(
                 party,
                 enemy,
@@ -407,31 +407,18 @@ public class EnemyTurnController : MonoBehaviour
             }
 
             Debug.LogWarning(
-                $"Enemy event encounter chat closed without starting event battle. Falling back to normal combat. Enemy='{ResolveEnemyPlacementKey(enemy)}'",
+                $"Enemy encounter chat closed without starting event battle. Skipping combat. Enemy='{ResolveEnemyPlacementKey(enemy)}'",
                 this);
 
-            if (party != null && enemy != null && IsAdjacent(party.GetCurrentGrid(), enemy.GetCurrentGrid()))
-            {
-                bool fallbackCombatStarted = combatEncounterManager.BeginCombat(party, enemy);
-                if (fallbackCombatStarted)
-                {
-                    onComplete?.Invoke(true);
-                    yield break;
-                }
-            }
-
+            interruptedByCombat = false;
+            turnSessionRepository?.MarkResumedFromCombat();
             onComplete?.Invoke(true);
             yield break;
         }
 
-        bool combatStarted = combatEncounterManager.BeginCombat(party, enemy);
-        if (!combatStarted)
-        {
-            onComplete?.Invoke(false);
-            yield break;
-        }
-
-        InterruptForCombat(enemy, remainingMovePoints);
+        Debug.LogWarning(
+            $"Enemy encounter chat could not be opened. Skipping combat. Enemy='{ResolveEnemyPlacementKey(enemy)}'",
+            this);
         onComplete?.Invoke(true);
     }
 

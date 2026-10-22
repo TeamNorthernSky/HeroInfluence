@@ -1,26 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class VillainUnionBase : MonoBehaviour
 {
     [SerializeField] private string baseId = "villain_union_base_001";
-    [FormerlySerializedAs("defenderEnemyGroupIndex")]
-    [SerializeField] private string defenderEnemyGroupKey = "FEP001";
-    [SerializeField] private string defenderEnemyId;
     [SerializeField] private string zoneId;
     [SerializeField, Min(1)] private int resolvedEnemyLevel = 1;
 
     [Header("Defender Combat Chat")]
-    // Chat id 0 keeps unfinished zones on the legacy direct-combat path.
     [SerializeField, Min(0)] private int defenderCombatChatId;
 
     [SerializeField] private GridManager gridManager;
     private VillainUnionBaseRegistry villainUnionBaseRegistry;
 
     public string BaseId => baseId;
-    public string DefenderEnemyGroupKey => NormalizeGroupKey(defenderEnemyGroupKey);
-    public string DefenderEnemyId => defenderEnemyId;
     public string ZoneId => NormalizeZoneId(zoneId);
     public int ResolvedEnemyLevel => Mathf.Max(1, resolvedEnemyLevel);
     public int DefenderCombatChatId => Mathf.Max(0, defenderCombatChatId);
@@ -113,29 +106,9 @@ public class VillainUnionBase : MonoBehaviour
         resolvedEnemyLevel = ResolveZoneEnemyLevel(ZoneId);
     }
 
-    public bool EnsureDefenderParty()
-    {
-        RefreshResolvedEnemyLevel();
-
-        if (!Application.isPlaying)
-            return false;
-
-        EnsureDefenderId();
-        bool ensured = VillainUnionDefenderService.EnsureDefenderParty(this);
-        return ensured;
-    }
-
     public string GetProgressKey(GridManager targetGridManager)
     {
         return MapProgressKey.ForVillainUnion(GetAnchorGrid());
-    }
-
-    public void SetDefenderBinding(string groupKey, string enemyId)
-    {
-        if (!string.IsNullOrWhiteSpace(groupKey))
-            defenderEnemyGroupKey = NormalizeGroupKey(groupKey);
-
-        defenderEnemyId = string.IsNullOrWhiteSpace(enemyId) ? string.Empty : enemyId;
     }
 
     private static int ResolveZoneEnemyLevel(string targetZoneId)
@@ -151,10 +124,7 @@ public class VillainUnionBase : MonoBehaviour
         return MapProgressKey.NormalizeSegment(value);
     }
 
-    private static string NormalizeGroupKey(string value)
-    {
-        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
-    }
+
     private void ResolveReferences()
     {
         if (gridManager == null)
@@ -164,133 +134,5 @@ public class VillainUnionBase : MonoBehaviour
             villainUnionBaseRegistry = FindFirstObjectByType<VillainUnionBaseRegistry>();
     }
 
-    private void EnsureDefenderId()
-    {
-        if (!string.IsNullOrWhiteSpace(defenderEnemyId))
-            return;
 
-        GridManager resolvedGridManager = Game.Grid != null ? Game.Grid : FindFirstObjectByType<GridManager>();
-        defenderEnemyId = VillainUnionDefenderService.CreateDefenderEnemyId(GetProgressKey(resolvedGridManager));
-    }
-}
-
-public static class VillainUnionDefenderService
-{
-    private const int MinCombatSlot = 1;
-    private const int MaxCombatSlot = 6;
-
-    public static string CreateDefenderEnemyId(string villainUnionKey)
-    {
-        string normalizedKey = string.IsNullOrWhiteSpace(villainUnionKey)
-            ? "unknown"
-            : MapProgressKey.NormalizeSegment(villainUnionKey);
-        return $"villain_union_defender_{normalizedKey}";
-    }
-
-    public static bool EnsureDefenderParty(VillainUnionBase villainUnionBase)
-    {
-        if (villainUnionBase == null || string.IsNullOrWhiteSpace(villainUnionBase.DefenderEnemyGroupKey))
-            return false;
-
-        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
-        DHCsvTemplateCatalog templateCatalog = DHCsvTemplateCatalog.Instance;
-        if (enemyGroupRepository == null || templateCatalog == null)
-            return false;
-
-        string enemyId = villainUnionBase.DefenderEnemyId;
-        if (string.IsNullOrWhiteSpace(enemyId))
-        {
-            GridManager gridManager = Game.Grid != null ? Game.Grid : Object.FindFirstObjectByType<GridManager>();
-            enemyId = CreateDefenderEnemyId(villainUnionBase.GetProgressKey(gridManager));
-            villainUnionBase.SetDefenderBinding(villainUnionBase.DefenderEnemyGroupKey, enemyId);
-        }
-
-        if (enemyGroupRepository.ContainsEnemy(enemyId))
-            return true;
-
-        if (!templateCatalog.TryGetEnemyGroupTemplate(villainUnionBase.DefenderEnemyGroupKey, out DHEnemyGroupTemplate groupData) ||
-            !TryBuildCsvGroupMembers(groupData, out List<CsvEnemyGroupMember> members))
-        {
-            Debug.LogWarning(
-                $"VillainUnion defender group '{villainUnionBase.DefenderEnemyGroupKey}' could not be resolved.",
-                villainUnionBase);
-            return false;
-        }
-
-        for (int i = 0; i < members.Count; i++)
-        {
-            CsvEnemyGroupMember member = members[i];
-            string templateKey = member.EnemyUnitIndex.ToString();
-            if (!templateCatalog.TryGetEnemyUnitTemplate(templateKey, out DHEnemyUnitTemplate template))
-            {
-                Debug.LogWarning(
-                    $"VillainUnion defender group '{villainUnionBase.DefenderEnemyGroupKey}' references missing enemy unit '{templateKey}'.",
-                    villainUnionBase);
-                continue;
-            }
-        }
-
-        enemyGroupRepository.RegisterOrUpdateEnemy(enemyId, System.Array.Empty<int>(), System.Array.Empty<int>());
-        villainUnionBase.SetDefenderBinding(villainUnionBase.DefenderEnemyGroupKey, enemyId);
-        return true;
-    }
-
-    public static void RemoveDefenderParty(string enemyId)
-    {
-        if (string.IsNullOrWhiteSpace(enemyId))
-            return;
-
-        EnemyGroupPersistentRepository enemyGroupRepository = EnemyGroupPersistentRepository.Instance;
-        if (enemyGroupRepository == null)
-            return;
-
-        enemyGroupRepository.RemoveEnemy(enemyId);
-    }
-
-    private static bool TryBuildCsvGroupMembers(DHEnemyGroupTemplate groupData, out List<CsvEnemyGroupMember> members)
-    {
-        members = new List<CsvEnemyGroupMember>(5);
-
-        if (groupData == null || groupData.Members == null)
-            return false;
-
-        for (int i = 0; i < groupData.Members.Count; i++)
-        {
-            DHEnemyGroupMember member = groupData.Members[i];
-            if (!TryAddCsvMember(members, member.EnemyUnitIndex, member.CombatSlot))
-                return false;
-        }
-
-        return members.Count > 0;
-    }
-
-    private static bool TryAddCsvMember(List<CsvEnemyGroupMember> members, int enemyUnitIndex, int combatSlot)
-    {
-        if (enemyUnitIndex <= 0)
-            return true;
-
-        if (combatSlot < MinCombatSlot || combatSlot > MaxCombatSlot)
-            return false;
-
-        for (int i = 0; i < members.Count; i++)
-        {
-            if (members[i].CombatSlot == combatSlot)
-                return false;
-        }
-
-        members.Add(new CsvEnemyGroupMember(enemyUnitIndex, combatSlot));
-        return true;
-    }
-
-    private readonly struct CsvEnemyGroupMember
-    {
-        public CsvEnemyGroupMember(int enemyUnitIndex, int combatSlot)
-        {
-            EnemyUnitIndex = enemyUnitIndex;
-            CombatSlot = combatSlot;
-        }
-
-        public int EnemyUnitIndex { get; }
-        public int CombatSlot { get; }
-    }
 }

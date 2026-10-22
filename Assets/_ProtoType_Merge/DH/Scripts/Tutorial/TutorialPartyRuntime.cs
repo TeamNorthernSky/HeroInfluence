@@ -17,6 +17,8 @@ public class TutorialPartyRuntime : MonoBehaviour
 
     private PartyInteractionController interactionController;
 
+    public bool SceneEntryReady { get; private set; }
+
     public PartyGridMover GridMover => gridMover;
     public TutorialPartyComposition Composition => composition;
     public bool HasAnyJoinedUnit => composition != null && composition.HasAnyJoinedUnit;
@@ -72,12 +74,6 @@ public class TutorialPartyRuntime : MonoBehaviour
         interactionController?.Dispose();
     }
 
-    [System.Obsolete("Tutorial parties now start with every configured unit. This method is kept only for old scene hooks.")]
-    public bool JoinUnit(string unitTemplateKey)
-    {
-        return composition != null && composition.JoinUnit(unitTemplateKey);
-    }
-
     public IReadOnlyList<string> GetJoinedUnitTemplateKeys()
     {
         return composition != null
@@ -102,7 +98,7 @@ public class TutorialPartyRuntime : MonoBehaviour
         TutorialProgressRepository repository = TutorialProgressRepository.Instance;
         TutorialPartyProgressState state = repository != null ? repository.PartyState : null;
         if (state == null || gridMover == null)
-            yield break;
+        { SceneEntryReady = true; yield break; }
 
         if (state.HasCurrentGrid)
             gridMover.SnapToGridPosition(state.CurrentGrid, notifyMoveCompleted: false);
@@ -111,6 +107,7 @@ public class TutorialPartyRuntime : MonoBehaviour
             gridMover.SetRemainingMovePoints(state.RemainingMovePoints);
 
         SnapCameraToParty();
+        SceneEntryReady = true;
     }
 
     private void SnapCameraToParty()

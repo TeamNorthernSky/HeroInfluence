@@ -63,6 +63,7 @@ MonoBehaviour:
   ChainLightningEffectPrefab: {fileID: 0}
   EventSfx:
   - Event: 0
+    PlayPerHit: 0
     Key: Battle_Hit03
     DurationSeconds: 0
     Occurrence: -1
@@ -72,12 +73,12 @@ MonoBehaviour:
     BlendInSeconds: 0
     Cues:
     - CueName: fist_trail_on
-      EffectIds: 0e240000
+      EffectIds: 32230000
       SoundIds: 
       Operation: 0
       InstanceKey: foot_trail
-      Anchor: 1
-      Socket: 6
+      Anchor: 0
+      Socket: 0
       Timing: 0
       Time: 0
       CueId: 2c73c55e816d494d9ff2c513ed3e5b0b
@@ -96,18 +97,18 @@ MonoBehaviour:
   Attack:
     Enabled: 1
     Beats:
-    - AnimationStateName: Base Layer.ClassSkill_3
+    - AnimationStateName: Base Layer.ClassSkill_1
       BlendInSeconds: 0.001
       AdvanceOnEvent: 0
       WaitForHitEvent: 0
       Cues:
       - CueName: impact
-        EffectIds: 1124000012240000142400001524000016240000
+        EffectIds: 3f230000
         SoundIds: 
         Operation: 0
         InstanceKey: 
-        Anchor: 1
-        Socket: 4
+        Anchor: 2
+        Socket: 0
         Timing: 0
         Time: 0
         CueId: 28853ee36a6b4a118a6d46dcfdc46cc9
@@ -121,6 +122,36 @@ MonoBehaviour:
         Timing: 0
         Time: 0
         CueId: f9027f253ca9414ab1af7ce997c04514
+      - CueName: return_dust_on
+        EffectIds: 33230000
+        SoundIds: 
+        Operation: 0
+        InstanceKey: return_dust
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: b2649f82c6f14828a7d3971077e2536a
+      - CueName: return_dust_off
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: return_dust
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: abbd517b381c459fa43d694edadd6594
+      - CueName: dust_storm
+        EffectIds: 4f230000
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 521b5fda4f1c4b7baa7632a677194f0b
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn

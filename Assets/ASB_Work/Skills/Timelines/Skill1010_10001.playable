@@ -158,7 +158,25 @@ MonoBehaviour:
       m_RotationOrder: 4
     m_MixOutCurve:
       serializedVersion: 2
-      m_Curve: []
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -299,6 +317,23 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &-5670406287443979702
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 1.0156667103767396
+  _kind: 0
+  _cueName: return_dust_off
+  _cueId: 1e852753445b4e3bb7617550e66b17c6
+  _targetSlot: 0
 --- !u!114 &-4006690118743512965
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -533,6 +568,8 @@ MonoBehaviour:
     - {fileID: -1782361587995447702}
     - {fileID: -288332725572878138}
     - {fileID: 8305601534201196958}
+    - {fileID: 8463718487881283154}
+    - {fileID: -5670406287443979702}
 --- !u!114 &4078893893579947597
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -686,8 +723,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.59
+  m_Time: 0.249
   _kind: 0
   _cueName: fist_trail_off
   _cueId: bd7d017d9f774089bd4eff1cbcc1e6d7
+  _targetSlot: 0
+--- !u!114 &8463718487881283154
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.7176666984558105
+  _kind: 0
+  _cueName: return_dust_on
+  _cueId: 8e16477cce794d4b8845a8cf4d9b3970
   _targetSlot: 0

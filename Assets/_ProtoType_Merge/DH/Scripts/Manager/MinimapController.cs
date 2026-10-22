@@ -247,7 +247,7 @@ public class MinimapController : MonoBehaviour
         Outpost[] fallbackOutposts = null;
         IReadOnlyList<Outpost> outposts = outpostRegistry != null ? outpostRegistry.Outposts : null;
         int count = outposts != null ? outposts.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = outpostRegistry == null;
 
         if (useFallback)
         {
@@ -274,7 +274,7 @@ public class MinimapController : MonoBehaviour
         HeroUnionUnit[] fallbackHeroUnions = null;
         IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry != null ? heroUnionRegistry.HeroUnions : null;
         int count = heroUnions != null ? heroUnions.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = heroUnionRegistry == null;
 
         if (useFallback)
         {
@@ -297,7 +297,7 @@ public class MinimapController : MonoBehaviour
         VillainUnionBase[] fallbackBases = null;
         IReadOnlyList<VillainUnionBase> bases = villainUnionBaseRegistry != null ? villainUnionBaseRegistry.VillainUnionBases : null;
         int count = bases != null ? bases.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = villainUnionBaseRegistry == null;
 
         if (useFallback)
         {
@@ -370,7 +370,7 @@ public class MinimapController : MonoBehaviour
         Outpost[] fallbackOutposts = null;
         IReadOnlyList<Outpost> outposts = outpostRegistry != null ? outpostRegistry.Outposts : null;
         int count = outposts != null ? outposts.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = outpostRegistry == null;
 
         if (useFallback)
         {
@@ -400,7 +400,7 @@ public class MinimapController : MonoBehaviour
         HeroUnionUnit[] fallbackHeroUnions = null;
         IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry != null ? heroUnionRegistry.HeroUnions : null;
         int count = heroUnions != null ? heroUnions.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = heroUnionRegistry == null;
 
         if (useFallback)
         {
@@ -437,7 +437,7 @@ public class MinimapController : MonoBehaviour
             ? villainUnionBaseRegistry.VillainUnionBases
             : null;
         int count = bases != null ? bases.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = villainUnionBaseRegistry == null;
 
         if (useFallback)
         {
@@ -524,7 +524,7 @@ public class MinimapController : MonoBehaviour
         Outpost[] fallbackOutposts = null;
         IReadOnlyList<Outpost> outposts = outpostRegistry != null ? outpostRegistry.Outposts : null;
         int count = outposts != null ? outposts.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = outpostRegistry == null;
 
         if (useFallback)
         {
@@ -550,7 +550,7 @@ public class MinimapController : MonoBehaviour
         MainEventObject[] fallbackEvents = null;
         IReadOnlyList<MainEventObject> mainEvents = mainEventRegistry != null ? mainEventRegistry.MainEvents : null;
         int count = mainEvents != null ? mainEvents.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = mainEventRegistry == null;
 
         if (useFallback)
         {
@@ -581,7 +581,7 @@ public class MinimapController : MonoBehaviour
         SubEventObject[] fallbackEvents = null;
         IReadOnlyList<SubEventObject> subEvents = subEventRegistry != null ? subEventRegistry.SubEvents : null;
         int count = subEvents != null ? subEvents.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = subEventRegistry == null;
 
         if (useFallback)
         {
@@ -612,7 +612,7 @@ public class MinimapController : MonoBehaviour
         EnemyGridMover[] fallbackEnemies = null;
         IReadOnlyList<EnemyGridMover> enemies = enemyRegistry != null ? enemyRegistry.Enemies : null;
         int count = enemies != null ? enemies.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = enemyRegistry == null;
 
         if (useFallback)
         {
@@ -673,7 +673,7 @@ public class MinimapController : MonoBehaviour
         HeroUnionUnit[] fallbackHeroUnions = null;
         IReadOnlyList<HeroUnionUnit> heroUnions = heroUnionRegistry != null ? heroUnionRegistry.HeroUnions : null;
         int count = heroUnions != null ? heroUnions.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = heroUnionRegistry == null;
 
         if (useFallback)
         {
@@ -701,7 +701,7 @@ public class MinimapController : MonoBehaviour
             ? villainUnionBaseRegistry.VillainUnionBases
             : null;
         int count = bases != null ? bases.Count : 0;
-        bool useFallback = count == 0;
+        bool useFallback = villainUnionBaseRegistry == null;
 
         if (useFallback)
         {

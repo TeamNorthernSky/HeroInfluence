@@ -40,7 +40,7 @@ public class MapEventPanelUI : MonoBehaviour
         string n = r switch {
             ResourceType.Money => "UI_icon_money", ResourceType.Chip => "UI_icon_medal",
             ResourceType.Crystal => "UI_icon_crystal", ResourceType.Supply => "UI_icon_block", _ => null };
-        return n != null ? Resources.Load<Sprite>("UI_Sprite/UI_HQLobby/Resources/" + n) : null;
+        return n != null ? Sprites.Load("UI_Sprite/UI_HQLobby/Resources/" + n) : null;
     }
 
     private static Sprite LoadEffectIcon(MapEventType t)
@@ -48,7 +48,7 @@ public class MapEventPanelUI : MonoBehaviour
         string n = t switch {
             MapEventType.TrainingAtk => "UI_icon_ATK", MapEventType.TrainingHp => "UI_icon_HP",
             MapEventType.Heal => "UI_icon_HP", _ => null };
-        return n != null ? Resources.Load<Sprite>("UI_Sprite/UI_Icon/Status/" + n) : null;
+        return n != null ? Sprites.Load("UI_Sprite/UI_Icon/Status/" + n) : null;
     }
 
     private static string GetEffectDisplayText(MapEventType t, int amt)

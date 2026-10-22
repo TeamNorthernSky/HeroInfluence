@@ -460,10 +460,7 @@ public class LevelZoneLayoutLoader : MonoBehaviour
             progressState == null)
             return;
 
-        outpost.ApplyProgressData(
-            progressState.State,
-            progressState.EnemyDefenderGroupKey,
-            progressState.DefenderEnemyId);
+        outpost.ApplyProgressData(progressState.State);
     }
 
     private void SpawnEvents(LevelData levelData, Vector2Int offset)

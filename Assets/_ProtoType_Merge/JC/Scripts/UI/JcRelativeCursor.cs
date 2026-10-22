@@ -73,6 +73,13 @@ public sealed class JcRelativeCursor : IDisposable
     {
         if (!active || rect == null) return;
         bool inside = JcPointerInput.Inside;
+        if (SceneFadeController.HideCursorDuringTransition)
+        {
+            image.enabled = false;
+            Cursor.visible = !inside;
+            return;
+        }
+        image.enabled = true;
         // 화면 밖에서는 스크롤 중에만 경계 표시를 유지하고 OS 커서는 계속 보이게 한다.
         if (!JcPointerInput.CanControl || (!inside && (!scrolling || JcPointerInput.ScrollDirection.sqrMagnitude < .01f)))
         { Release(); return; }
@@ -88,7 +95,7 @@ public sealed class JcRelativeCursor : IDisposable
         if (!active) return;
         active = false;
         if (image != null) image.enabled = false;
-        Cursor.visible = true;
+        Cursor.visible = !SceneFadeController.HideCursorDuringTransition || !JcPointerInput.Inside;
     }
 
     public void Dispose()
