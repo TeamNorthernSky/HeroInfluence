@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -18,6 +19,22 @@ public static class Sprites
 
     private static SpriteLibrary _lib;
     private static SpriteLibrary _fallback;
+    private static ResourceRequest _preload;
+
+    /// <summary>기존 경로 키로 정본 UI Sprite를 조회한다. 미전환 항목은 Resources 폴백을 유지한다.</summary>
+    public static Sprite Load(string resourceKey) => Library.LoadSprite(resourceKey);
+
+    /// <summary>Boot에서 공용 UI 참조를 비동기로 준비한 뒤 게임 종료까지 보유한다.</summary>
+    public static IEnumerator PreloadCommonUI()
+    {
+        if (_lib == null)
+        {
+            if (_preload == null) _preload = Resources.LoadAsync<SpriteLibrary>(ResourcePath);
+            yield return _preload;
+            _lib = _preload.asset as SpriteLibrary;
+        }
+        Library.PrepareCommonUI();
+    }
 
     public static SpriteLibrary Library
     {

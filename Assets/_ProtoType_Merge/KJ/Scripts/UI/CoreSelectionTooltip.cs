@@ -56,7 +56,7 @@ public sealed class CoreSelectionTooltip : MonoBehaviour, IPointerEnterHandler, 
         skillName.text = data != null ? data.WeaponSkillName : "코어 스킬";
         skillDescription.text = data != null ? WeaponTooltipText.BuildWeaponSkillDesc(data, core, level, unitIndex: unitIndex) : "스킬 정보를 불러오는 중입니다.";
         portrait.sprite = coreIcon;
-        skillPortrait.sprite = Resources.Load<Sprite>("UI_Sprite/UI_Icon/CoreSkill/UI_icon_coreSkill_" + SkillIcons[core - 1]);
+        skillPortrait.sprite = Sprites.Load("UI_Sprite/UI_Icon/CoreSkill/UI_icon_coreSkill_" + SkillIcons[core - 1]);
         skillPortrait.enabled = skillPortrait.sprite != null;
     }
     private static string Bonus(int index, int level)

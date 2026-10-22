@@ -10,7 +10,7 @@ namespace ASB.Work.Battle.Core
         /// <summary>HP 제한과 무력화 규칙을 반영해 실제로 감소한 HP입니다.</summary>
         public float AppliedDamage;
         public bool IsCritical;
-        /// <summary>최소 피해·반올림까지 적용한 실제 피해가 감소 계수로 줄었는지 표시용으로 전달한다.</summary>
+        /// <summary>피해 계산 시점에 후열·비치명타 타격의 확률적 50% 경감이 발동했는지 표시용으로 전달한다. 상시 보정과 스킬 피해 감소는 제외한다.</summary>
         public bool DamageReduced;
         public bool IsHeal;
         public bool IsMiss;

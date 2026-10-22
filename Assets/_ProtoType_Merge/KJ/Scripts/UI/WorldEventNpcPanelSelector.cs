@@ -655,7 +655,7 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             switch (entry.Label)
             {
                 case "CurrentIP": case "MaxIP":
-                    if (licenseIpIcon == null) licenseIpIcon = Resources.Load<Sprite>("NpcPreview/UI_icon_IP");
+                    if (licenseIpIcon == null) licenseIpIcon = Sprites.Load("NpcPreview/UI_icon_IP");
                     return licenseIpIcon;
                 case "CurrentHP": case "MaxHP": return Sprites.UI.Status(UIStatusIconType.HP);
                 case "Atk": return Sprites.UI.Status(UIStatusIconType.ATK);

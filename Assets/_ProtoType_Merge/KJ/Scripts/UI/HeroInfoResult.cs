@@ -377,7 +377,7 @@ public class HeroInfoResult : MonoBehaviour
         if (iconNumber == 2) iconNumber = 4;
         else if (iconNumber == 4) iconNumber = 2;
         string path = $"{ProfileFolder}character icon sample 0{iconNumber}";
-        Sprite sp = Resources.Load<Sprite>(path);
+        Sprite sp = Sprites.Load(path);
         Debug.Log($"[HeroInfoResult] slot={slot} iconNumber={iconNumber} path={path} sprite={(sp != null ? "OK" : "NULL")}");
         return sp;
     }

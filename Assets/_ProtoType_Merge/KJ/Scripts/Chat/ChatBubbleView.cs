@@ -222,10 +222,10 @@ public class ChatBubbleView : MonoBehaviour
     private static Sprite LoadPortrait(string key)
     {
         if (key.EndsWith(".png", System.StringComparison.OrdinalIgnoreCase)) key = key.Substring(0, key.Length - 4);
-        return Resources.Load<Sprite>(key)
-            ?? Resources.Load<Sprite>(PortraitResourceFolder + key)
-            ?? Resources.Load<Sprite>("Portrait_Enemy_Sprite/" + key)
-            ?? Resources.Load<Sprite>("UI_Sprite/UI_Chatting/" + key);
+        return Sprites.Load(key)
+            ?? Sprites.Load(PortraitResourceFolder + key)
+            ?? Sprites.Load("Portrait_Enemy_Sprite/" + key)
+            ?? Sprites.Load("UI_Sprite/UI_Chatting/" + key);
     }
 
     private static string NormalizeSpeaker(string name)
@@ -275,7 +275,7 @@ public class ChatBubbleView : MonoBehaviour
         if (!show || portraitImage == null) return;
 
         Sprite sprite = ResolveSpeakerPortrait(profileKey, speaker)
-            ?? Resources.Load<Sprite>(PortraitResourceFolder + "UI_profile_hero_unselected");
+            ?? Sprites.Load(PortraitResourceFolder + "UI_profile_hero_unselected");
 
         portraitImage.sprite = sprite;
         portraitImage.preserveAspect = true;

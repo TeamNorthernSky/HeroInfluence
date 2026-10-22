@@ -96,7 +96,7 @@ public class TrainingModalController : MonoBehaviour
     private Sprite Load(string p)
     {
         if (string.IsNullOrEmpty(p)) return null;
-        if (!cache.TryGetValue(p, out var s)) { s = Resources.Load<Sprite>(p); cache[p] = s; }
+        if (!cache.TryGetValue(p, out var s)) { s = Sprites.Load(p); cache[p] = s; }
         return s;
     }
 

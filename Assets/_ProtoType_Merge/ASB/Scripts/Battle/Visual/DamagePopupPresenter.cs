@@ -20,9 +20,9 @@ public class DamagePopupPresenter : MonoBehaviour
     [SerializeField] private Sprite _criticalIcon;
     [Tooltip("반격자 위에 표시할 기존 반격 아이콘입니다.")]
     [SerializeField] private Sprite _counterIcon;
-    [Tooltip("실제 감소가 적용된 피해에 사용하는 기존 피해 경감 아이콘입니다.")]
+    [Tooltip("후열의 비치명타 피격에서 확률적 50% 피해경감이 발동했을 때 표시합니다. 전열 보정과 스킬 피해 감소는 포함하지 않습니다.")]
     [SerializeField] private Sprite _reducedIcon;
-    [Tooltip("치명타와 경감이 동시에 적용될 때 치명타 아이콘을 추가 표시합니다.")]
+    [Tooltip("기존 프리팹 참조를 보존하는 보조 아이콘입니다. 치명타와 경감은 함께 표시하지 않으므로 비활성화합니다.")]
     [SerializeField] private Image _secondaryIcon;
 
     public void Show(BattleHitResult result)
@@ -56,7 +56,7 @@ public class DamagePopupPresenter : MonoBehaviour
             if (display._secondaryIcon != null)
             {
                 display._secondaryIcon.sprite = _criticalIcon;
-                display._secondaryIcon.enabled = result.DamageReduced && result.IsCritical && !result.IsHeal && !result.IsMiss;
+                display._secondaryIcon.enabled = false;
             }
         }
 
