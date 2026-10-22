@@ -74,6 +74,35 @@ public sealed class CounterattackRulesTests
         }
     }
 
+    [Test]
+    public void CounterDamage_IgnoresDefenseSkillAndOtherDamageModifiers()
+    {
+        Component counterAttacker = Unit("CounterAttacker", false, 2, 0);
+        Component target = Unit("Target", true, 1, 0);
+        SetFinalStat(counterAttacker, "Atk", 9f);
+        SetFinalStat(target, "DEF", 100f);
+        SetFinalStat(target, "AvoidRate", 1f);
+        counterAttacker.GetType().GetField("currentInfluence", BindingFlags.NonPublic | BindingFlags.Instance)
+            .SetValue(counterAttacker, 100f);
+
+        object context = Hit(counterAttacker, target, 1010, isRanged: true);
+        Type contextType = context.GetType();
+        contextType.GetField("IsCounterAttack").SetValue(context, true);
+        contextType.GetField("IsCritical").SetValue(context, true);
+        contextType.GetField("IsDamageReduced").SetValue(context, (bool?)true);
+        contextType.GetField("SkillValue").SetValue(context, 3f);
+
+        Type calculator = FindType("ASB.Work.Battle.Core.CombatCalculator");
+        MethodInfo calculate = calculator.GetMethod("CalculateDamage", new[] { contextType });
+        Assert.That(calculate, Is.Not.Null);
+        Assert.That((float)calculate.Invoke(null, new[] { context }), Is.EqualTo(5f),
+            "공격력 9의 반격은 4.5를 반올림해 5이며 다른 피해 계수는 무시한다.");
+
+        SetFinalStat(counterAttacker, "Atk", 1f);
+        Assert.That((float)calculate.Invoke(null, new[] { context }), Is.EqualTo(2f),
+            "반격에도 최소 피해 2를 적용한다.");
+    }
+
     [TestCase("BattleManager")]
     [TestCase("JcBattleManager")]
     public void OnlyMeleeHitsOnFixedFrontRow_CanTriggerCounter(string managerName)
@@ -154,6 +183,15 @@ public sealed class CounterattackRulesTests
     {
         object stats = unit.GetType().GetProperty("FinalStats").GetValue(unit);
         return (float)stats.GetType().GetField("CounterRate").GetValue(stats);
+    }
+
+    private static void SetFinalStat(Component unit, string statName, float value)
+    {
+        FieldInfo finalStats = unit.GetType().GetField("finalStats", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.That(finalStats, Is.Not.Null);
+        object stats = finalStats.GetValue(unit);
+        stats.GetType().GetField(statName).SetValue(stats, value);
+        finalStats.SetValue(unit, stats);
     }
 
     private static Type FindType(string name)
