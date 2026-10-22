@@ -154,7 +154,7 @@ public class HeroInfoPanel : MonoBehaviour
         // 턴 순서 UI와 같은 초상화 라이브러리를 사용합니다.
         Sprite sp;
         if (!currentUnit.IsPlayer)
-            sp = Sprites.Portrait.Enemy(currentUnit.SourceEnemyData != null ? currentUnit.SourceEnemyData.UnitTemplateKey : null);
+            sp = Sprites.Portrait.EnemyByActor(currentUnit);
         else
             sp = currentUnit.SourceData != null
                 ? Sprites.Portrait.Hero(currentUnit.SourceData.UnitTemplateKey)
