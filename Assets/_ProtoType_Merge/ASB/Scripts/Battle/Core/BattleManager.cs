@@ -247,9 +247,7 @@ public class BattleManager : MonoBehaviour
 
         bool wasDeadBefore = context.Target.IsDead;
         float hpBefore = context.Target.CurrentHp;
-        // 경감은 대신 맞기 재지정 이후의 최종 대상 기준으로 1회만 굴린다.
-        if (context.IsCounterAttack) context.IsDamageReduced = false;
-        else context.IsDamageReduced ??= CombatCalculator.RollDamageReduction(context);
+        CombatCalculator.ResolveHitRolls(context);
         float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
         context.Target.TakeDamage(finalDamage);
         float appliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
@@ -287,9 +285,7 @@ public class BattleManager : MonoBehaviour
             return BattleHitResult.Empty(context.Target);
         }
 
-        // 경감은 대신 맞기 재지정 이후의 최종 대상 기준으로 1회만 굴린다.
-        if (context.IsCounterAttack) context.IsDamageReduced = false;
-        else context.IsDamageReduced ??= CombatCalculator.RollDamageReduction(context);
+        CombatCalculator.ResolveHitRolls(context);
         float finalDamage = CombatCalculator.CalculateDamage(context, out bool damageReduced);
         float predictedHp = Mathf.Max(
             context.Target.MinimumHpAfterDamage,
@@ -1418,8 +1414,6 @@ public class BattleManager : MonoBehaviour
                 && target.IsFrontRow(),
             IsCounterAttack = options.IsCounterAttack
         };
-        context.IsCritical = CombatCalculator.RollCritical(context);
-
         return SkillExecutionResult
             .SuccessResult(actor, skillData)
             .AddDamage(context);
@@ -1488,7 +1482,6 @@ public class BattleManager : MonoBehaviour
             CanTriggerCounter = false,
             IsCounterAttack = false
         };
-        context.IsCritical = CombatCalculator.RollCritical(context);
         float dealt = ApplyDamage(context)?.Damage ?? 0f;
         if (context.DelayAfter > 0f)
         {

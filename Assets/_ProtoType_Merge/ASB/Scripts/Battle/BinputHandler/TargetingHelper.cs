@@ -184,7 +184,7 @@ public static class TargetingHelper
 
                 // 시전자가 전열이면 전열 대상만 허용(없으면 fallback 전체).
                 // 시전자가 후열이면 전열/후열 구분 없이 전체 허용.
-                bool isCasterFront = actor.IsInFrontRow;
+                bool isCasterFront = IsUnitInFixedFrontRow(actor);
                 if (!isCasterFront)
                 {
                     return baseTargets;
@@ -199,7 +199,7 @@ public static class TargetingHelper
                         continue;
                     }
 
-                    if (target.IsInFrontRow)
+                    if (IsUnitInFixedFrontRow(target))
                     {
                         frontOnly.Add(target);
                     }
@@ -217,8 +217,7 @@ public static class TargetingHelper
     }
 
     /// <summary>
-    /// 입력된 후보 중 동적 전열 유닛만 반환합니다.
-    /// 추후 "전열 우선" 타겟팅 룰의 1순위 필터로 사용합니다.
+    /// 입력된 후보 중 고정 전열 유닛만 반환합니다.
     /// </summary>
     public static List<BattleCharactor> GetFrontTargets(IEnumerable<BattleCharactor> candidates)
     {
@@ -235,7 +234,7 @@ public static class TargetingHelper
                 continue;
             }
 
-            if (IsUnitInFrontRow(unit))
+            if (IsUnitInFixedFrontRow(unit))
             {
                 result.Add(unit);
             }
@@ -245,8 +244,7 @@ public static class TargetingHelper
     }
 
     /// <summary>
-    /// 입력된 후보 중 동적 후열 유닛만 반환합니다.
-    /// 추후 "후열 우선" 타겟팅 룰의 1순위 필터로 사용합니다.
+    /// 입력된 후보 중 고정 후열 유닛만 반환합니다.
     /// </summary>
     public static List<BattleCharactor> GetBackTargets(IEnumerable<BattleCharactor> candidates)
     {
@@ -263,7 +261,7 @@ public static class TargetingHelper
                 continue;
             }
 
-            if (IsUnitInBackRow(unit))
+            if (IsUnitInFixedBackRow(unit))
             {
                 result.Add(unit);
             }
@@ -295,6 +293,28 @@ public static class TargetingHelper
         }
 
         return result;
+    }
+
+    /// <summary>타겟 선택용 고정 전열: 아군 x=1, 적군 x=2.</summary>
+    public static bool IsUnitInFixedFrontRow(BattleCharactor unit)
+    {
+        if (unit == null || unit.IsDead || !TryResolveCell(unit, out GridCellRef cell))
+        {
+            return false;
+        }
+
+        return cell.Coords.x == (unit.IsPlayer ? 1 : 2);
+    }
+
+    /// <summary>타겟 선택용 고정 후열: 아군 x=0, 적군 x=3.</summary>
+    public static bool IsUnitInFixedBackRow(BattleCharactor unit)
+    {
+        if (unit == null || unit.IsDead || !TryResolveCell(unit, out GridCellRef cell))
+        {
+            return false;
+        }
+
+        return cell.Coords.x == (unit.IsPlayer ? 0 : 3);
     }
 
     /// <summary>

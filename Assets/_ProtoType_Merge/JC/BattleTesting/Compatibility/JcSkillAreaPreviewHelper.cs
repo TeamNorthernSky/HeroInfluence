@@ -213,7 +213,7 @@ namespace ASB.Work.Battle.SkillExecution
             if (HeroSkillRules.IsFamily(skill, 1030))
             {
                 var cells = new HashSet<Vector2Int> { centerCell.Coords };
-                if (centerCell.OccupyingUnit != null && centerCell.OccupyingUnit.IsInFrontRow)
+                if (TargetingHelper.IsUnitInFixedFrontRow(centerCell.OccupyingUnit))
                     cells.Add(centerCell.Coords + new Vector2Int(centerCell.Coords.x >= 2 ? 1 : -1, 0));
                 return cells;
             }

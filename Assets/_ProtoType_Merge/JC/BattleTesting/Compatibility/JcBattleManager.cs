@@ -273,6 +273,7 @@ public class JcBattleManager : MonoBehaviour
 
         bool wasDeadBefore = context.Target.IsDead;
         float hpBefore = context.Target.CurrentHp;
+        JcCombatCalculator.ResolveHitRolls(context);
         float finalDamage = JcCombatCalculator.CalculateDamage(context) * (DamageTakenPolicy?.Invoke(context.Target) ?? 1f);
         context.Target.TakeDamage(finalDamage);
         float appliedDamage = Mathf.Max(0f, hpBefore - context.Target.CurrentHp);
@@ -285,6 +286,7 @@ public class JcBattleManager : MonoBehaviour
             Damage = finalDamage,
             AppliedDamage = appliedDamage,
             IsCritical = context.IsCritical,
+            DamageReduced = context.IsDamageReduced == true,
             TargetDied = isDeadAfter,
             WasDeadBefore = wasDeadBefore,
             IsDeadAfter = isDeadAfter,
@@ -310,6 +312,7 @@ public class JcBattleManager : MonoBehaviour
             return BattleHitResult.Empty(context.Target);
         }
 
+        JcCombatCalculator.ResolveHitRolls(context);
         float finalDamage = JcCombatCalculator.CalculateDamage(context) * (DamageTakenPolicy?.Invoke(context.Target) ?? 1f);
         float predictedHp = Mathf.Max(
             context.Target.MinimumHpAfterDamage,
@@ -321,6 +324,7 @@ public class JcBattleManager : MonoBehaviour
             Target = context.Target,
             Damage = finalDamage,
             IsCritical = context.IsCritical,
+            DamageReduced = context.IsDamageReduced == true,
             TargetDied = isDeadAfterPredicted,
             WasDeadBefore = false,
             IsDeadAfter = isDeadAfterPredicted,
@@ -1325,8 +1329,6 @@ public class JcBattleManager : MonoBehaviour
                 && target.IsFrontRow(),
             IsCounterAttack = options.IsCounterAttack
         };
-        context.IsCritical = JcCombatCalculator.RollCritical(context);
-
         return SkillExecutionResult
             .SuccessResult(actor, skillData)
             .AddDamage(context);
@@ -1404,7 +1406,6 @@ public class JcBattleManager : MonoBehaviour
             CanTriggerCounter = false,
             IsCounterAttack = false
         };
-        context.IsCritical = JcCombatCalculator.RollCritical(context);
         float dealt = ApplyDamage(context)?.Damage ?? 0f;
         if (context.DelayAfter > 0f)
         {

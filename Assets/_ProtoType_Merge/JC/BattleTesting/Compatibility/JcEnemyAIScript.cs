@@ -127,8 +127,8 @@ namespace EnemyAI
                     continue;
                 }
 
-                bool isFront = TargetingHelper.IsUnitInFrontRow(candidate);
-                bool isBack = TargetingHelper.IsUnitInBackRow(candidate);
+                bool isFront = TargetingHelper.IsUnitInFixedFrontRow(candidate);
+                bool isBack = TargetingHelper.IsUnitInFixedBackRow(candidate);
 
                 if (isFront)
                 {

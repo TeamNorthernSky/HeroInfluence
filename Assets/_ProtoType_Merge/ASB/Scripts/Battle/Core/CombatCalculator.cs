@@ -6,6 +6,7 @@ namespace ASB.Work.Battle.Core
     {
         /// <summary>경감 발동 시 받는 피해 배율.</summary>
         private const float ReducedDamageMultiplier = 0.5f;
+        private const float MaxCriticalRate = 0.7f;
 
         public static bool RollCritical(BattleCharactor caster)
         {
@@ -15,7 +16,7 @@ namespace ASB.Work.Battle.Core
             }
 
             float roll = UnityEngine.Random.Range(0f, 1f);
-            return roll < caster.FinalStats.CriticalRate;
+            return roll < Mathf.Clamp(caster.FinalStats.CriticalRate, 0f, MaxCriticalRate);
         }
 
         public static bool RollCritical(DamageContext context)
@@ -26,7 +27,7 @@ namespace ASB.Work.Battle.Core
             }
 
             float finalCritRate = context.Caster.FinalStats.CriticalRate + context.BonusCritRate;
-            finalCritRate = Mathf.Clamp(finalCritRate, 0f, 1f);
+            finalCritRate = Mathf.Clamp(finalCritRate, 0f, MaxCriticalRate);
             float roll = UnityEngine.Random.Range(0f, 1f);
             return roll < finalCritRate;
         }
@@ -42,10 +43,11 @@ namespace ASB.Work.Battle.Core
             return UnityEngine.Random.value < rate;
         }
 
-        /// <summary>대상의 경감 확률(ReduceRate → AvoidRate)로 이번 타격의 경감 발동 여부를 굴린다.</summary>
+        /// <summary>고정 후열 대상의 경감 확률(ReduceRate → AvoidRate)로 이번 타격의 경감 발동 여부를 굴린다.</summary>
         public static bool RollDamageReduction(DamageContext context)
         {
-            if (context?.Target == null)
+            if (context?.Target == null || context.IsCounterAttack ||
+                !TargetingHelper.IsUnitInFixedBackRow(context.Target))
             {
                 return false;
             }
@@ -53,6 +55,41 @@ namespace ASB.Work.Battle.Core
             float rate = Mathf.Clamp01(context.Target.FinalStats.AvoidRate - context.TargetAvoidRateReduction);
             // Random.value는 1을 포함하므로 100%는 따로 보장한다.
             return rate >= 1f || UnityEngine.Random.value < rate;
+        }
+
+        /// <summary>최종 피격 대상 기준으로 경감을 먼저 판정하고, 경감되지 않은 타격만 치명타를 판정한다.</summary>
+        public static void ResolveHitRolls(DamageContext context)
+        {
+            if (context == null) return;
+            if (context.IsCounterAttack)
+            {
+                context.IsDamageReduced = false;
+                context.IsCritical = false;
+                context.IsCriticalResolved = true;
+                return;
+            }
+
+            if (context.Target == null || !TargetingHelper.IsUnitInFixedBackRow(context.Target))
+                context.IsDamageReduced = false;
+            else
+                context.IsDamageReduced ??= RollDamageReduction(context);
+
+            if (context.IsDamageReduced == true)
+            {
+                context.IsCritical = false;
+                context.IsCriticalResolved = true;
+                return;
+            }
+
+            if (context.IsCriticalResolved) return;
+            if (context.SharedCriticalRoll != null)
+            {
+                context.SharedCriticalRoll.Result ??= RollCritical(context.Caster);
+                context.IsCritical = context.SharedCriticalRoll.Result.Value;
+            }
+            else
+                context.IsCritical = RollCritical(context);
+            context.IsCriticalResolved = true;
         }
 
         public static float CalculateDamage(DamageContext context)
@@ -75,7 +112,7 @@ namespace ASB.Work.Battle.Core
                 ? Mathf.Max(0.01f, context.SkillValue)
                 : Mathf.Max(0.01f, context.SkillMultiplier);
 
-            damageReduced = context.IsDamageReduced == true;
+            damageReduced = TargetingHelper.IsUnitInFixedBackRow(context.Target) && context.IsDamageReduced == true;
             float mitigationRate = damageReduced ? ReducedDamageMultiplier : 1f;
             if (context.Target.IsInFrontRow && context.IsRangedAttack)
             {
@@ -86,7 +123,7 @@ namespace ASB.Work.Battle.Core
                 mitigationRate *= 1.1f;
             }
 
-            float critMultiplier = context.IsCritical ? 1.5f : 1.0f;
+            float critMultiplier = context.IsCritical && !damageReduced ? 1.5f : 1.0f;
             float baseDamage = baseStatDiff * multiplier * mitigationRate * critMultiplier;
             float influence = Mathf.Max(0f, context.Caster.CurrentInfluence);
             float finalDamage = baseDamage * (100f + influence) / 100f * context.Target.SkillDamageTakenMultiplier;

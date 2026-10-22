@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.3
+  m_Time: 1.133333333333333
   _kind: 1
   _cueName: 
   _cueId: 
@@ -78,7 +78,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.02
+  m_Time: 0.8166666666666667
   _sfxKey: Battle_PreSkill02
   _durationSeconds: 0
 --- !u!114 &-6511165842454081233
@@ -239,7 +239,7 @@ MonoBehaviour:
     m_PostExtrapolationMode: 1
     m_PreExtrapolationMode: 1
     m_PostExtrapolationTime: 0
-    m_PreExtrapolationTime: 0.5666666666666667
+    m_PreExtrapolationTime: 0
     m_DisplayName: Gunplay
   - m_Version: 1
     m_Start: 2.4000000000000004
@@ -254,25 +254,7 @@ MonoBehaviour:
     m_BlendOutDuration: -1
     m_MixInCurve:
       serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 1
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
+      m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
@@ -444,7 +426,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.2
+  m_Time: 1.0666666666666667
   _sfxKey: Battle_Fire01
   _durationSeconds: 0
 --- !u!114 &6457359211434736076
@@ -459,7 +441,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.2
+  m_Time: 0.9666666666666666
   _kind: 0
   _cueName: fire
   _cueId: b15ee999e55f46bebf6ce51e7c52087d
@@ -476,7 +458,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c7f875fa59b3be4d8228d4d354e7431, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.3
+  m_Time: 0.95
   _sfxKey: Battle_GunHit
   _durationSeconds: 0
 --- !u!114 &6665343055215178116

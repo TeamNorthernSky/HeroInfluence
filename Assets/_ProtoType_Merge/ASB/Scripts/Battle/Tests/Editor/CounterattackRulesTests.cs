@@ -94,13 +94,18 @@ public sealed class CounterattackRulesTests
 
         Type calculator = FindType("ASB.Work.Battle.Core.CombatCalculator");
         MethodInfo calculate = calculator.GetMethod("CalculateDamage", new[] { contextType });
+        MethodInfo jcCalculate = FindType("ASB.Work.Battle.Core.JcCombatCalculator")
+            .GetMethod("CalculateDamage", new[] { contextType });
         Assert.That(calculate, Is.Not.Null);
+        Assert.That(jcCalculate, Is.Not.Null);
         Assert.That((float)calculate.Invoke(null, new[] { context }), Is.EqualTo(5f),
             "공격력 9의 반격은 4.5를 반올림해 5이며 다른 피해 계수는 무시한다.");
+        Assert.That((float)jcCalculate.Invoke(null, new[] { context }), Is.EqualTo(5f));
 
         SetFinalStat(counterAttacker, "Atk", 1f);
         Assert.That((float)calculate.Invoke(null, new[] { context }), Is.EqualTo(2f),
             "반격에도 최소 피해 2를 적용한다.");
+        Assert.That((float)jcCalculate.Invoke(null, new[] { context }), Is.EqualTo(2f));
     }
 
     [TestCase("BattleManager")]

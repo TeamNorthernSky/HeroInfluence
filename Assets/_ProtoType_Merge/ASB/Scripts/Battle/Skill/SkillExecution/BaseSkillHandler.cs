@@ -268,7 +268,7 @@ namespace ASB.Work.Battle.SkillExecution
                 coords = new HashSet<Vector2Int> { context.PrimaryCell.Coords };
                 // 인질 중심(PrimaryTarget 없음)은 고정 좌표로 전열 판정한다(적 전열 x==2, 아군 전열 x==1).
                 bool isFrontRow = context.PrimaryTarget != null
-                    ? context.PrimaryTarget.IsInFrontRow
+                    ? TargetingHelper.IsUnitInFixedFrontRow(context.PrimaryTarget)
                     : context.PrimaryCell.Coords.x == 1 || context.PrimaryCell.Coords.x == 2;
                 bool towardEnemySide = context.Caster != null ? context.Caster.IsPlayer : context.PrimaryCell.Coords.x >= 2;
                 if (isFrontRow)
@@ -324,12 +324,7 @@ namespace ASB.Work.Battle.SkillExecution
                 return;
             }
 
-            bool? sharedCrit = null;
-            if (context.Skill.classSkillEffect == 0)
-            {
-                var rollCtx = new DamageContext { Caster = context.Caster };
-                sharedCrit = CombatCalculator.RollCritical(rollCtx);
-            }
+            SharedCriticalRoll sharedCrit = context.Skill.classSkillEffect == 0 ? new SharedCriticalRoll() : null;
 
             int count = context.ResolvedTargets.Count;
             for (int i = 0; i < count; i++)
@@ -342,7 +337,13 @@ namespace ASB.Work.Battle.SkillExecution
 
                 if (context.Skill.classSkillEffect == 0)
                 {
-                    ApplyAdditionaDamage(context.Caster, target, context.Skill, count, result, sharedCrit);
+                    int firstAddedContext = result.DamageContexts.Count;
+                    ApplyAdditionaDamage(context.Caster, target, context.Skill, count, result);
+                    for (int damageIndex = firstAddedContext; damageIndex < result.DamageContexts.Count; damageIndex++)
+                    {
+                        if (result.DamageContexts[damageIndex] != null)
+                            result.DamageContexts[damageIndex].SharedCriticalRoll = sharedCrit;
+                    }
                 }
                 else if (context.Skill.classSkillEffect == 1 || context.Skill.classSkillEffect == 2)
                 {
