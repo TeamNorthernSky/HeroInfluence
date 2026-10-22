@@ -159,6 +159,7 @@ public class GameManager : MonoBehaviour
     private bool explorationEntryPending;
     private bool explorationEntryFailed;
     private int explorationEntryVersion;
+    public bool IsExplorationEntryPending => explorationEntryPending;
     public int ExplorationEntryVersion => explorationEntryVersion;
 
     public bool IsExplorationScene(Scene scene)

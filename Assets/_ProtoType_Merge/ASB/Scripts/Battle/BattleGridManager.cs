@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using ASB.Work.Battle.SkillExecution;
 
@@ -32,6 +32,43 @@ namespace ASB.Work.BattleGrid
         // 입력에서 확정한 직접 선택 대상의 진형만 비선택 셀 표시를 허용합니다.
         private readonly HashSet<bool> selectableSides = new HashSet<bool>();
         private bool selectingTargets;
+        private UnityEngine.Object infoHoverOwner;
+        private BattleCharactor infoHoverTarget;
+        private readonly List<Renderer> infoHoverRenderers = new List<Renderer>();
+
+        // 정보 확인용 표시입니다. 스킬 선택/범위 판정은 변경하지 않습니다.
+        public void SetInfoHover(UnityEngine.Object owner, BattleCharactor target)
+        {
+            if (owner == null) return;
+            if (target != null && (target.IsPlayer || target.IsDead || target.gameObject.scene != gameObject.scene)) target = null;
+            if (target == null && infoHoverOwner != owner) return;
+            if (infoHoverOwner == owner && infoHoverTarget == target) return;
+            infoHoverOwner = target != null ? owner : null;
+            infoHoverTarget = target;
+            RefreshTilePresentation();
+        }
+
+        private GridCell InfoHoverCell()
+        {
+            if (infoHoverOwner == null || infoHoverTarget == null || infoHoverTarget.IsDead ||
+                !infoHoverTarget.gameObject.activeInHierarchy || selectingTargets ||
+                (flowManager != null && (flowManager.IsEndingBattle || flowManager.IsActionInProgress))) return null;
+            return FindCellByUnit(infoHoverTarget);
+        }
+
+        public bool TryGetInfoHoverBounds(BattleCharactor unit, out Bounds bounds)
+        {
+            bounds = default;
+            var cell = InfoHoverCell();
+            if (unit != infoHoverTarget || cell == null) return false;
+            bool found = false;
+            // 실제 생성된 셀 표시의 Bounds를 사용하여 왕복 높이와 크기를 함께 보호합니다.
+            cell.GetComponentsInChildren(false, infoHoverRenderers);
+            foreach (var renderer in infoHoverRenderers)
+                if (renderer.enabled && renderer.gameObject.activeInHierarchy)
+                { if (!found) { bounds = renderer.bounds; found = true; } else bounds.Encapsulate(renderer.bounds); }
+            return found;
+        }
         public bool UsesBattleTilePresentation => useBattleTilePresentation;
 
         public static BattleGridManager Instance { get; private set; }
@@ -250,6 +287,7 @@ namespace ASB.Work.BattleGrid
             bool ended = flowManager != null && flowManager.IsEndingBattle;
             var current = !ended && flowManager != null ? FindCellByUnit(flowManager.CurrentUnit) : null;
             bool choosing = !ended && selectingTargets && (flowManager == null || !flowManager.IsActionInProgress);
+            var infoCell = !ended ? InfoHoverCell() : null;
             foreach (var cell in cellsByCoords.Values)
             {
                 if (cell == null) continue;
@@ -259,6 +297,7 @@ namespace ASB.Work.BattleGrid
                     if (cell == _previewMainTargetCell || _previewHighlightedCells.Contains(cell)) material = MainTargetHighlightMaterial;
                     else if (choosing) material = selectableCells.Contains(cell) ? TargetMaterial :
                         selectableSides.Contains(cell.Coords.x >= 2) ? unavailableMaterial : ClearMaterial;
+                    else if (cell == infoCell) material = MainTargetHighlightMaterial;
                     else if (cell == current) material = currentTurnMaterial;
                 }
                 cell.SetMaterial(material);

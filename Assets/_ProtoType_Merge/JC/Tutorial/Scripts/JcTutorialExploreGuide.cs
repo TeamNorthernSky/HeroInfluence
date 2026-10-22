@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -17,6 +17,8 @@ namespace JC.Tutorial
         private string captureOutpostKey = "tutorial_outpost:38_8";
         public Vector2Int captureEntryCell = new Vector2Int(38, 7);
         private bool showingAssociationEntry;
+        [Tooltip("협회 입장 안내를 배치할 때 피할 왼쪽 영웅 슬롯 영역입니다.")]
+        public RectTransform heroSlots;
         [Header("홍보 이후 화면 이동 안내")]
         [TextArea, Tooltip("홍보를 마친 뒤 디밍된 설명 창에서 한 번 안내하는 카메라 이동 방법입니다.")]
         public string cameraScrollExplanation = "화면 밖에도 이동할 수 있는 목표가 있습니다.\nW A S D 키로 지도를 위·왼쪽·아래·오른쪽으로 움직일 수 있습니다.\n확인 후 D키를 눌러 오른쪽의 목표를 찾아보세요.";
@@ -27,7 +29,7 @@ namespace JC.Tutorial
         [Tooltip("목표 위치와 지면 높이를 읽는 그리드입니다.")] public GridManager grid;
         [Tooltip("현재 플레이어 파티를 조회합니다.")] public PartyRegistry parties;
         [Tooltip("클릭으로 선택한 목적지 표식입니다.")] public Transform selectedDestination;
-        [Tooltip("이동력 소진 후 강조할 기존 턴 종료 버튼입니다.")] public RectTransform nextTurn;
+        [Tooltip("이동력 소진 후 강조할 기존 휴식 버튼입니다.")] public RectTransform nextTurn;
         [Tooltip("두 번째 이동 안내에서 강조할 화면 하단 이동력 UI입니다. 머리 위 게이지보다 우선해서 사용합니다.")] public RectTransform movementGauge;
         [Tooltip("첫 이동 완료 후 하단 이동력 UI를 3회 강조하는 씬 연출입니다.")] public JcTutorialFocusPulse movementGaugePulse;
         [Tooltip("기존 퀘스트 본문입니다. 안내 목표와 수집 진행도를 표시합니다.")] public TMP_Text quest;
@@ -64,7 +66,7 @@ namespace JC.Tutorial
         [TextArea, Tooltip("목표를 선택하기 전에 표시하는 안내입니다.")] public string selectText = "빛나는 목표 위치를 눌러 이동 경로를 확인하세요.";
         [TextArea, Tooltip("목표 선택 후 표시하는 안내입니다.")] public string confirmText = "목표 위치를 한 번 더 누르면 이동합니다.";
         [TextArea, Tooltip("파티가 실제로 이동하는 동안 표시하는 안내입니다.")] public string movingText = "목표 위치로 이동 중입니다.";
-        [TextArea, Tooltip("이동력이 0일 때 현재 셀 표시와 턴 종료를 함께 안내하는 문구입니다.")] public string exhaustedText = "이동력을 모두 사용했습니다.\n이동 가능한 그리드는 파티가 있는 한 칸만 표시됩니다.\n턴 종료 버튼을 눌러 이동력을 회복하세요.";
+        [TextArea, Tooltip("이동력이 0일 때 현재 셀 표시와 턴 종료를 함께 안내하는 문구입니다.")] public string exhaustedText = "이동력을 모두 사용했습니다.\n이동 가능한 그리드는 파티가 있는 한 칸만 표시됩니다.\n휴식 버튼을 눌러 이동력을 회복하세요.";
         [Min(0), Tooltip("목표 선택 후 재클릭 안내가 나타나는 시간(초)입니다. 0이면 즉시 표시합니다.")] public float confirmDelay = 1f;
 
         private sealed class ItemTarget
@@ -87,7 +89,7 @@ namespace JC.Tutorial
         public string CurrentGuideStep { get; private set; }
         private bool awaitingTutorialTurn;
         private int guidedTurn;
-        // 설명 차단막은 월드/스크롤 차단을 유지하고 턴 종료 버튼의 클릭만 통과시킨다.
+        // 설명 차단막은 월드/스크롤 차단을 유지하고 휴식 버튼의 클릭만 통과시킨다.
         public RectTransform AllowedInputTarget => awaitingTutorialTurn && explanationKey == null &&
             !releaseShieldPending && !WorldInputGate.IsTurnResolving && turnManager != null &&
             !turnManager.IsTurnAdvancing && turnManager.CurrentTurn == guidedTurn ? nextTurn : null;
@@ -289,6 +291,7 @@ namespace JC.Tutorial
                 if (WorldInputGate.IsTurnResolving || (turnManager != null && turnManager.IsTurnAdvancing)) return;
                 if (repository.CurrentTurn > guidedTurn && party.RemainingMovePoints > 0)
                 {
+                    if (Seen("first-combat") && !Seen("post-battle-rest")) Mark("post-battle-rest");
                     awaitingTutorialTurn = false; SetShield(false); view.SetVisible(false);
                 }
             }
@@ -349,7 +352,7 @@ namespace JC.Tutorial
                     moveRange?.RefreshForMover(party);
                 }
                 SetTurnAvailable(true);
-                SetQuest("턴 종료 버튼을 눌러 이동력을 회복하세요");
+                SetQuest("휴식 버튼을 눌러 이동력을 회복하세요");
                 ShowAction("end-turn", "이동력 소진 · 다음 턴", exhaustedText, nextTurn);
                 HideMarker();
                 return;
@@ -428,6 +431,7 @@ namespace JC.Tutorial
                 state == TutorialOutpostClaimState.HeroClaimed;
             if (claimed)
             {
+                JcBuildingSilhouetteFeature.SetTutorialHighlight(this, captureOutpost.transform, view.accent);
                 var associationFocus = TutorialBuildingFocusTarget.Resolve(this, captureOutpost.transform,
                     view.focusFrame != null ? view.focusFrame.rectTransform.parent as RectTransform : null);
                 if (!showingAssociationEntry)
@@ -436,6 +440,7 @@ namespace JC.Tutorial
                         if (selection.gameObject.scene == gameObject.scene) selection.ClearMovePreview();
                     showingAssociationEntry = true;
                 }
+                view.SetSideLayout(null);
                 if (!Seen("association-entry-explanation"))
                 {
                     SetTurnAvailable(false);
@@ -444,11 +449,12 @@ namespace JC.Tutorial
                         Explain("association-entry-explanation", "협회 입장", "점령한 건물을 더블클릭하여 협회에 입장할 수 있습니다.\n이 안내를 닫은 뒤, 빛 테두리로 강조된 건물을 더블클릭하세요.", associationFocus, time);
                     return;
                 }
+                view.SetSideLayout(associationFocus, heroSlots);
                 CurrentGuideStep = "association-entry";
                 SetShield(false); SetContinue(false);
                 view.blockPanelRaycasts = false;
                 view.SetContent("협회 입장", "빛 테두리로 강조된 건물을 더블클릭하세요.");
-                view.SetVisible(true, associationFocus, JcTutorialGuideView.FocusPresentation.BorderOnly);
+                view.SetVisible(true, associationFocus, JcTutorialGuideView.FocusPresentation.BuildingOutline);
                 SetQuest("점령한 건물을 더블클릭하세요");
                 SetTurnAvailable(false);
                 movement.SetGuidanceTarget(this, null);
@@ -456,6 +462,16 @@ namespace JC.Tutorial
                 return;
             }
             showingAssociationEntry = false;
+            view.SetSideLayout(null);
+            if (!Seen("post-battle-rest"))
+            {
+                SetTurnAvailable(true);
+                movement.SetGuidanceTarget(this, null);
+                SetQuest("휴식 버튼을 눌러 이동력을 회복하세요");
+                ShowAction("end-turn", "휴식", "휴식 버튼을 눌러 이동력을 회복한 뒤\n건물 점령을 준비하세요.", nextTurn);
+                HideMarker();
+                return;
+            }
             if (!Seen("camera-scroll-explanation"))
             {
                 SetTurnAvailable(false);
@@ -463,6 +479,8 @@ namespace JC.Tutorial
                 // 설명을 매 프레임 다시 열면 클릭을 연 프레임으로 취급하여 닫을 수 없다.
                 if (explanationKey != "camera-scroll-explanation")
                     Explain("camera-scroll-explanation", "화면 이동", cameraScrollExplanation, null, time);
+                ShowMarker(captureEntryCell, time);
+                movement.SetGuidanceTarget(this, null);
                 return;
             }
             if (!Seen("camera-scroll-practice") && !party.IsMoving)
@@ -475,7 +493,7 @@ namespace JC.Tutorial
                 if (!visible)
                 {
                     SetTurnAvailable(false);
-                    SetQuest("D키로 오른쪽 화면을 이동하여 목표를 찾으세요");
+                    SetQuest("D키로 화면을 이동하여 목표를 화면 중앙에 맞추세요");
                     ShowAction("camera-scroll-practice", "화면 이동 연습", cameraScrollPractice);
                     ShowMarker(captureEntryCell, time);
                     // 카메라는 기존 WASD 입력을 사용하고, 목표를 찾는 동안 월드 이동 선택만 막는다.
@@ -485,14 +503,22 @@ namespace JC.Tutorial
                 Mark("camera-scroll-practice");
             }
             SetTurnAvailable(true);
+            if (!Seen("capture-move-explanation"))
+            {
+                if (explanationKey != "capture-move-explanation")
+                    Explain("capture-move-explanation", "건물 점령", "표시된 목표 지점을 선택한 뒤\n한 번 더 누르면 건물 점령 전투 위치로 이동합니다.", null, time);
+                ShowMarker(captureEntryCell, time);
+                movement.SetGuidanceTarget(this, null);
+                return;
+            }
             if (party.IsMoving)
             {
                 ShowAction("capture-moving", "점령전으로 이동", movingText); HideMarker(); return;
             }
             if (party.RemainingMovePoints <= 0)
             {
-                SetQuest("턴을 종료하여 이동력을 회복하세요");
-                ShowAction("end-turn", "다음 턴", "턴 종료 버튼을 눌러 이동력을 회복한 뒤\n목표 지점으로 계속 이동하세요.", nextTurn);
+                SetQuest("휴식하여 이동력을 회복하세요");
+                ShowAction("end-turn", "다음 턴", "휴식 버튼을 눌러 이동력을 회복한 뒤\n목표 지점으로 계속 이동하세요.", nextTurn);
                 HideMarker(); return;
             }
             SetQuest("표시된 전투 진입 지점으로 이동하세요");
@@ -501,8 +527,8 @@ namespace JC.Tutorial
         }
         // 우측 퀘스트·상하 HUD에서 떨어진 영역에 목표가 들어와야 클릭 안내로 전환한다.
         internal static bool IsCaptureTargetVisible(Vector3 viewport)
-            => viewport.z > 0 && viewport.x >= .12f && viewport.x <= .78f &&
-               viewport.y >= .24f && viewport.y <= .86f;
+            => viewport.z > 0 && viewport.x >= .40f && viewport.x <= .60f &&
+               viewport.y >= .35f && viewport.y <= .65f;
 
         private RectTransform ResourceBlock(ResourceType type)
         {
@@ -513,6 +539,8 @@ namespace JC.Tutorial
         }
         private static JcTutorialGuideView.FocusPresentation ExplanationStyle(string key)
         {
+            if (key == "association-entry-explanation") return JcTutorialGuideView.FocusPresentation.BuildingExplanation;
+            if (key == "capture-move-explanation") return JcTutorialGuideView.FocusPresentation.DimmedExplanation;
             if (key == "mouse-move-explanation" || key == "early-camera-explanation" || key == "resources" ||
                 key == "camera-scroll-explanation" || key == "association-entry-explanation") return JcTutorialGuideView.FocusPresentation.DimmedExplanation;
             if (key == "exhausted" || key == "move-gauge-pulse") return JcTutorialGuideView.FocusPresentation.Spotlight;
@@ -679,7 +707,7 @@ namespace JC.Tutorial
             if (movement != null) movement.ClearGuidanceTarget(this);
             if (movementGaugePulse != null) movementGaugePulse.Stop();
             releaseShieldPending = false; showingIntro = false; awaitingTutorialTurn = false;
-            if (view != null) view.SetVisible(false);
+            if (view != null) { view.SetSideLayout(null); view.SetVisible(false); }
             HideMarker(); SetContinue(false); SetShield(false); SetIntroVisible(false); SetTurnAvailable(true);
         }
         private void OnDisable()

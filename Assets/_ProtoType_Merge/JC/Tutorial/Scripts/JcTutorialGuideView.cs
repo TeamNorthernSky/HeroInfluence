@@ -59,7 +59,7 @@ namespace JC.Tutorial
         [Tooltip("안내 패널이 마우스 입력을 받는지 정합니다. 탐사의 조작 안내 중에는 끄고 확인 설명창에서만 켭니다.")]
         public bool blockPanelRaycasts = true;
 
-        public enum FocusPresentation { PointerAbove, ResourceBlock, Spotlight, BorderOnly, DimmedExplanation }
+        public enum FocusPresentation { PointerAbove, ResourceBlock, Spotlight, BorderOnly, DimmedExplanation, BuildingOutline, BuildingExplanation }
         [System.Serializable]
         public sealed class ResourceRegion
         {
@@ -72,6 +72,62 @@ namespace JC.Tutorial
         public JcTutorialSpotlight spotlight;
         private FocusPresentation focusPresentation;
         private bool visible;
+        private RectTransform sideTarget, sideBoundary;
+        private bool sideRight, layoutCaptured;
+        private Vector2 originalSize, originalPosition;
+        private float originalMinimum;
+        public void SetSideLayout(RectTransform target, RectTransform boundary = null, bool right = false)
+        {
+            if (panel == null) return;
+            var card = (RectTransform)panel.transform;
+            if (target != null && !layoutCaptured)
+            {
+                originalSize = card.sizeDelta; originalPosition = card.anchoredPosition;
+                originalMinimum = minimumMessageHeight; layoutCaptured = true;
+            }
+            sideTarget = target; sideBoundary = boundary; sideRight = right;
+            if (target == null && layoutCaptured)
+            {
+                card.sizeDelta = originalSize; card.anchoredPosition = originalPosition;
+                minimumMessageHeight = originalMinimum; layoutCaptured = false;
+            }
+        }
+        private Rect LocalBounds(RectTransform target, RectTransform parent)
+        {
+            target.GetWorldCorners(corners);
+            var canvas = target.GetComponentInParent<Canvas>();
+            var camera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+            var dest = parent.GetComponentInParent<Canvas>();
+            var destCamera = dest != null && dest.renderMode != RenderMode.ScreenSpaceOverlay ? dest.worldCamera : null;
+            Vector2 lo = Vector2.positiveInfinity, hi = Vector2.negativeInfinity;
+            foreach (var point in corners)
+            {
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, RectTransformUtility.WorldToScreenPoint(camera, point), destCamera, out var local);
+                lo = Vector2.Min(lo, local); hi = Vector2.Max(hi, local);
+            }
+            return Rect.MinMaxRect(lo.x, lo.y, hi.x, hi.y);
+        }
+        private void ApplySideLayout()
+        {
+            if (sideTarget == null || panel == null) return;
+            var card = (RectTransform)panel.transform;
+            var parent = card.parent as RectTransform;
+            if (parent == null) return;
+            var target = LocalBounds(sideTarget, parent);
+            // 오른쪽 안내는 수렴 효과의 가장 바깥 테두리까지 피한다.
+            float gap = sideRight ? ConvergenceExpansion + focusPadding + 12 : 20;
+            float left = sideRight ? target.xMax + gap : (sideBoundary != null ? LocalBounds(sideBoundary, parent).xMax + 16 : parent.rect.xMin + parent.rect.width * .18f);
+            float right = sideRight ? parent.rect.xMax - 16 : target.xMin - gap;
+            float width = Mathf.Min(sideRight ? 460 : 400, right - left);
+            if (width < 120) return; // 화면 밖으로 밀리는 극단적인 구도에서는 기존 위치를 유지한다.
+            card.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+            minimumMessageHeight = sideRight ? 260 : 200;
+            FitMessageLayout();
+            float x = sideRight ? left : right - width;
+            float top = Mathf.Min(target.yMax, parent.rect.yMax - 100);
+            top = Mathf.Max(top, parent.rect.yMin + card.rect.height + 16);
+            card.localPosition = new Vector3(x + width * card.pivot.x, top - card.rect.height * (1-card.pivot.y), card.localPosition.z);
+        }
         [System.Serializable]
         public sealed class ContentEdit
         {
@@ -114,7 +170,7 @@ namespace JC.Tutorial
         public void SetVisible(bool value, RectTransform target = null, FocusPresentation presentation = FocusPresentation.PointerAbove)
         {
             visible = value; focus = value ? target : null; focusPresentation = presentation;
-            if (spotlight != null && (!value || (presentation != FocusPresentation.Spotlight && presentation != FocusPresentation.DimmedExplanation))) spotlight.gameObject.SetActive(false);
+            if (spotlight != null && (!value || (presentation != FocusPresentation.Spotlight && presentation != FocusPresentation.DimmedExplanation && presentation != FocusPresentation.BuildingExplanation))) spotlight.gameObject.SetActive(false);
         }
         [Min(0), Tooltip("탐사 본문이 있는 메시지 박스의 최소 높이(Canvas 단위)입니다. 긴 본문은 필요한 만큼 더 늘어납니다.")]
         public float minimumMessageHeight = 340;
@@ -135,7 +191,7 @@ namespace JC.Tutorial
             text.anchoredPosition = new Vector2(0, -top);
             text.sizeDelta = new Vector2(width, height);
         }
-        private void LateUpdate() { if (visible) FitMessageLayout(); RenderPresentation(Time.unscaledTime, Time.unscaledDeltaTime); }
+        private void LateUpdate() { if (visible) { ApplySideLayout(); FitMessageLayout(); } RenderPresentation(Time.unscaledTime, Time.unscaledDeltaTime); }
 
         // 비플레이 정적 렌더 검증에도 사용한다. 입력·게임 상태를 변경하지 않는다.
         public void RenderPresentation(float time, float delta)
@@ -145,12 +201,13 @@ namespace JC.Tutorial
                 panel.alpha = Mathf.MoveTowards(panel.alpha, visible && !suppressPanel ? 1 : 0, fadeDuration <= 0 ? 1 : Mathf.Max(0, delta) / fadeDuration);
                 panel.blocksRaycasts = visible && !suppressPanel && blockPanelRaycasts;
             }
-            bool showFocus = visible && focus != null && focus.gameObject.activeInHierarchy;
-            bool dimmed = visible && (focusPresentation == FocusPresentation.DimmedExplanation ||
+            bool building = focusPresentation == FocusPresentation.BuildingOutline || focusPresentation == FocusPresentation.BuildingExplanation;
+            bool showFocus = visible && !building && focus != null && focus.gameObject.activeInHierarchy;
+            bool dimmed = visible && (focusPresentation == FocusPresentation.DimmedExplanation || focusPresentation == FocusPresentation.BuildingExplanation ||
                 (showFocus && focusPresentation == FocusPresentation.Spotlight));
             if (spotlight != null)
             {
-                spotlight.SetTargets(!suppressPanel && panel != null ? panel.transform as RectTransform : null, focus);
+                spotlight.SetTargets(!suppressPanel && panel != null ? panel.transform as RectTransform : null, building ? null : focus);
                 spotlight.gameObject.SetActive(dimmed);
             }
             if (focusFrame == null || pointer == null) return;

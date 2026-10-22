@@ -41,9 +41,9 @@ public sealed class BattleCellBorderConfiguration
 {
     [Tooltip("노란 현재 턴 표시입니다.")] public BattleCellBorderStyle currentTurn = new BattleCellBorderStyle();
     [Tooltip("보라색 선택 가능 표시입니다.")] public BattleCellBorderStyle selectable = new BattleCellBorderStyle { mainColor = new Color(.68f,.2f,1,1) };
-    [Tooltip("빨간 확정 대상 표시입니다. 이 상태만 공통 왕복 속도의 1.5배로 움직입니다.")] public BattleCellBorderStyle confirmedArea = new BattleCellBorderStyle { mainColor = new Color(1,.12f,.1f,1) };
+    [Tooltip("빨간 확정 대상 및 정보 호버 표시입니다. 다른 상태와 같은 주기·위상으로 움직입니다.")] public BattleCellBorderStyle confirmedArea = new BattleCellBorderStyle { mainColor = new Color(1,.12f,.1f,1) };
     [Tooltip("선택 불가 표시입니다.")] public BattleCellBorderStyle unavailable = new BattleCellBorderStyle { mainColor = new Color(.13f,.14f,.16f,1), outlineColor = new Color(.2f,.22f,.25f,1), allowSweep = false, useFill = true, fillOpacity = .25f };
-    [Min(.1f), Tooltip("기본 상태가 위아래로 한 번 왕복하는 시간(초)입니다. 빨간 확정 대상은 1.5배 빠릅니다.")] public float bobPeriod = 2.4f;
+    [Min(.1f), Tooltip("모든 표시 상태가 같은 위상으로 위아래 왕복하는 시간(초)입니다.")] public float bobPeriod = 2.4f;
     [Min(0), Tooltip("기본 부유 높이에서 위아래로 움직이는 한쪽 폭입니다. 0이면 정지합니다.")] public float bobAmplitude = .04f;
     [Min(0), Tooltip("상태 변경 시 새 공통 움직임에 부드럽게 합류하는 시간(초)입니다. 0이면 즉시 맞춥니다.")] public float resyncDuration = .3f;
     [Tooltip("전체 스윕을 켭니다.")] public bool useSweep = true;

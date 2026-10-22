@@ -29,7 +29,7 @@ public sealed class BattleCellBorderWorkbenchEditor : Editor
         for(int i=0;i<styleFields.Length;i++)Draw(style,styleFields[i],styleLabels[i]);
         EditorGUILayout.Space();EditorGUILayout.LabelField("공통 상하 움직임",EditorStyles.boldLabel);
         Draw(draft,"bobPeriod","기본 왕복 주기(초)");Draw(draft,"bobAmplitude","상하 한쪽 진폭");Draw(draft,"resyncDuration","상태 전환 합류 시간(초)");
-        EditorGUILayout.LabelField("빨간 확정 대상만 1.5배 속도 · 복귀 후 공통 높이와 방향에 합류",EditorStyles.wordWrappedMiniLabel);
+        EditorGUILayout.LabelField("모든 상태가 같은 주기·위상으로 왕복 · 높이 변경 시 부드럽게 합류",EditorStyles.wordWrappedMiniLabel);
         EditorGUILayout.Space();EditorGUILayout.LabelField("공통 스윕",EditorStyles.boldLabel);
         foreach(string field in new[]{"useSweep","sweepColor","sweepIntensity","sweepWidth","sweepSoftness","sweepTilt","sweepDuration","sweepInterval","reverseSweep"})EditorGUILayout.PropertyField(draft.FindPropertyRelative(field));
         EditorGUILayout.Space();EditorGUILayout.LabelField("하단 표시의 상태 전환 검수",EditorStyles.boldLabel);

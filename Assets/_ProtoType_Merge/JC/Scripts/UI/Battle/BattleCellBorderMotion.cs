@@ -5,21 +5,20 @@ using UnityEngine;
 public sealed class BattleCellBorderMotion
 {
     private bool initialized;
-    private BattleCellVisualState state;
     private double start;
     private float frequency, amplitude, height, duration, offset, velocityOffset;
     public void Reset() => initialized = false;
 
     public float Evaluate(BattleCellVisualState next, BattleCellBorderConfiguration config, double time)
     {
-        float nextFrequency = 2f * Mathf.PI / Mathf.Max(.1f, config.bobPeriod) * (next == BattleCellVisualState.ConfirmedArea ? 1.5f : 1f);
+        float nextFrequency = 2f * Mathf.PI / Mathf.Max(.1f, config.bobPeriod);
         float nextHeight = Mathf.Max(0, config.For(next).shape.floatHeight);
         float nextAmplitude = Mathf.Min(Mathf.Max(0, config.bobAmplitude), nextHeight);
-        if (!initialized || state != next || frequency != nextFrequency || height != nextHeight || amplitude != nextAmplitude)
+        if (!initialized || frequency != nextFrequency || height != nextHeight || amplitude != nextAmplitude)
         {
             Sample(time, out float oldPosition, out float oldVelocity);
             bool hadPrevious = initialized;
-            state = next; frequency = nextFrequency; height = nextHeight; amplitude = nextAmplitude;
+            frequency = nextFrequency; height = nextHeight; amplitude = nextAmplitude;
             start = time; duration = Mathf.Max(0, config.resyncDuration); offset = velocityOffset = 0;
             Wave(time, out float target, out float targetVelocity);
             if (hadPrevious && duration > 0) { offset = oldPosition - target; velocityOffset = oldVelocity - targetVelocity; }

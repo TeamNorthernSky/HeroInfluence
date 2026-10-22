@@ -63,6 +63,8 @@ public sealed class TutorialItemObject : MonoBehaviour, IGridItemObject
             return 0f;
 
         isCollecting = true;
+        // 획득 연출은 유지하되 이동용 점유와 범위는 즉시 갱신한다.
+        FindFirstObjectByType<MoveRangeController>()?.RefreshForCurrentParty();
         TutorialProgressRepository repository = TutorialProgressRepository.EnsureInstance();
         repository?.MarkItemCollected(ItemKey);
         repository?.AddResource(resourceType, amount);
@@ -88,7 +90,7 @@ public sealed class TutorialItemObject : MonoBehaviour, IGridItemObject
 
     public bool OccupiesGrid(Vector2Int grid, GridManager gridManager)
     {
-        return GetCurrentGrid(gridManager) == grid;
+        return !isCollecting && GetCurrentGrid(gridManager) == grid;
     }
 
     public float CollectFromInteraction(Transform flyTarget)
