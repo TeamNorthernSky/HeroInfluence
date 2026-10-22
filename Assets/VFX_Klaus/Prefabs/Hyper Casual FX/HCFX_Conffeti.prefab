@@ -157,6 +157,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5448320773322436957, guid: 471004ccf4ab4b5419ae325fd17d1377,
         type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448320773322436957, guid: 471004ccf4ab4b5419ae325fd17d1377,
+        type: 3}
       propertyPath: ShapeModule.type
       value: 4
       objectReference: {fileID: 0}

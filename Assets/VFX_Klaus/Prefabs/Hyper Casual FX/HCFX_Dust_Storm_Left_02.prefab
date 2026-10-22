@@ -49,7 +49,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 0
-  looping: 0
+  looping: 1
   prewarm: 0
   playOnAwake: 1
   useUnscaledTime: 0
@@ -5054,6 +5054,11 @@ PrefabInstance:
     - target: {fileID: 3100204534734593436, guid: 8360a57df3e96ae4891574c3af8e0e4d,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3100204534734593437, guid: 8360a57df3e96ae4891574c3af8e0e4d,
+        type: 3}
+      propertyPath: looping
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3100204534734593437, guid: 8360a57df3e96ae4891574c3af8e0e4d,

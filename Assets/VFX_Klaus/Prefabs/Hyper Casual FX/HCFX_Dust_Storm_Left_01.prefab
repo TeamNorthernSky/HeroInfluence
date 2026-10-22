@@ -135,6 +135,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3100204534734593437, guid: 8360a57df3e96ae4891574c3af8e0e4d,
         type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3100204534734593437, guid: 8360a57df3e96ae4891574c3af8e0e4d,
+        type: 3}
       propertyPath: UVModule.tilesX
       value: 2
       objectReference: {fileID: 0}
