@@ -51,10 +51,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.251
+  m_Time: 0.41000000000000003
   _kind: 1
   _cueName: 
   _cueId: 
+  _targetSlot: 0
+--- !u!114 &-6063850179144761939
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.41000000000000003
+  _kind: 0
+  _cueName: dust_storm
+  _cueId: 521b5fda4f1c4b7baa7632a677194f0b
   _targetSlot: 0
 --- !u!114 &-5273929927164958458
 MonoBehaviour:
@@ -66,9 +83,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: FP_Fighter_ClassSkill_3
+  m_Name: AnimationPlayableAsset of FP_Fighter_ClassSkill_1
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: 94eb8a01a40932741a7c7997f165067b, type: 2}
+  m_Clip: {fileID: 7400000, guid: 5b1326aa58b03834784858521496fec7, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -111,6 +128,9 @@ MonoBehaviour:
     - {fileID: -2654991013180975415}
     - {fileID: 8847157272497668976}
     - {fileID: -264806270244193463}
+    - {fileID: 6727930409685204196}
+    - {fileID: 5934843447951065747}
+    - {fileID: -6063850179144761939}
 --- !u!114 &-2735438212722511774
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -147,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.5900000000000001
+  m_Time: 0.249
   _kind: 0
   _cueName: fist_trail_off
   _cueId: f9027f253ca9414ab1af7ce997c04514
@@ -239,9 +259,9 @@ MonoBehaviour:
     m_Recordable: 0
     m_PostExtrapolationMode: 1
     m_PreExtrapolationMode: 1
-    m_PostExtrapolationTime: Infinity
+    m_PostExtrapolationTime: 0.75
     m_PreExtrapolationTime: 0
-    m_DisplayName: Attack.Beats[0] (Base Layer.ClassSkill_3)
+    m_DisplayName: Attack.Beats[0] (Punch)
   - m_Version: 1
     m_Start: 0
     m_ClipIn: 0
@@ -377,7 +397,7 @@ MonoBehaviour:
     m_Recordable: 0
     m_PostExtrapolationMode: 1
     m_PreExtrapolationMode: 1
-    m_PostExtrapolationTime: 0
+    m_PostExtrapolationTime: Infinity
     m_PreExtrapolationTime: 0
     m_DisplayName: "Return (\uBCF5\uADC0)"
   m_Markers:
@@ -580,6 +600,40 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   _rotationPortion: 0.35
+--- !u!114 &5934843447951065747
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 1.0156666984558107
+  _kind: 0
+  _cueName: return_dust_off
+  _cueId: abbd517b381c459fa43d694edadd6594
+  _targetSlot: 0
+--- !u!114 &6727930409685204196
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Time: 0.7176666984558104
+  _kind: 0
+  _cueName: return_dust_on
+  _cueId: b2649f82c6f14828a7d3971077e2536a
+  _targetSlot: 0
 --- !u!114 &7781523154002734947
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -607,7 +661,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4e18040ea39fb45b18c017e7a0de7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Time: 0.3647540956735611
+  m_Time: 0.41000000000000003
   _kind: 0
   _cueName: impact
   _cueId: 28853ee36a6b4a118a6d46dcfdc46cc9
@@ -660,9 +714,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: RollBWD_Battle_InPlace_NoWeapon
+  m_Name: Justice Dash Return
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 1827226128182048838, guid: 03deb9f948c4da142b1d5034b7c552ec, type: 3}
+  m_Clip: {fileID: 1827226128182048838, guid: b0c1da580ac82e74ca446a5e95b22729, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1

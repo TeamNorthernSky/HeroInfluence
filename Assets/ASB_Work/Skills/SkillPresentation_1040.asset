@@ -30,7 +30,7 @@ MonoBehaviour:
   HitSoundId: 0
   SfxVolume: 1
   EnableHitEffect: 1
-  HitEffectId: 95030
+  HitEffectId: 0
   HitEffectOffset: {x: 0, y: 0, z: 0}
   HitEffectAtTargetRoot: 0
   ScaleHitEffectWithBattleSpeed: 0
@@ -81,6 +81,7 @@ MonoBehaviour:
     Enabled: 1
     UseUnitMovement: 1
     ForceApproach: 0
+    ApproachEffectId: 9010
     AnimationStateName: 
     BlendInSeconds: 0.1
     SfxKey: 
@@ -120,12 +121,12 @@ MonoBehaviour:
     PathSampleCount: 64
     Cues:
     - CueName: parts_crash_on
-      EffectIds: d07e0100
+      EffectIds: 32230000
       SoundIds: 
       Operation: 0
       InstanceKey: parts_crash
-      Anchor: 1
-      Socket: 1
+      Anchor: 0
+      Socket: 0
       Timing: 0
       Time: 0
       CueId: e9789f90e91c437e925e4c2fc3a5ec04
@@ -139,3 +140,23 @@ MonoBehaviour:
       Timing: 0
       Time: 0
       CueId: 2dbcfd64bf364fa6b8acd626266ce8c3
+    - CueName: return_dust_on
+      EffectIds: 33230000
+      SoundIds: 
+      Operation: 0
+      InstanceKey: return_dust
+      Anchor: 0
+      Socket: 0
+      Timing: 0
+      Time: 0
+      CueId: 85f8a1a3366a4bdcac3658fbf0ce2d91
+    - CueName: return_dust_off
+      EffectIds: 
+      SoundIds: 
+      Operation: 2
+      InstanceKey: return_dust
+      Anchor: 0
+      Socket: 0
+      Timing: 0
+      Time: 0
+      CueId: 27a12ae9a4ba4e2baa49e16942fa67e0

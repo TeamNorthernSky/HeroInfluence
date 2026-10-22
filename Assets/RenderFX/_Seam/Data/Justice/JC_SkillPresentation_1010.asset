@@ -71,8 +71,8 @@ MonoBehaviour:
       SoundIds: 
       Operation: 0
       InstanceKey: fist_trail
-      Anchor: 1
-      Socket: 1
+      Anchor: 0
+      Socket: 0
       Timing: 0
       Time: 0
       CueId: db53d5d060dc47d9870ed1418d1aca53
@@ -97,7 +97,7 @@ MonoBehaviour:
       WaitForHitEvent: 0
       Cues:
       - CueName: impact
-        EffectIds: 29230000
+        EffectIds: 
         SoundIds: 
         Operation: 0
         InstanceKey: 
@@ -116,6 +116,26 @@ MonoBehaviour:
         Timing: 0
         Time: 0
         CueId: bd7d017d9f774089bd4eff1cbcc1e6d7
+      - CueName: return_dust_on
+        EffectIds: 33230000
+        SoundIds: 
+        Operation: 0
+        InstanceKey: return_dust
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 8e16477cce794d4b8845a8cf4d9b3970
+      - CueName: return_dust_off
+        EffectIds: 
+        SoundIds: 
+        Operation: 2
+        InstanceKey: return_dust
+        Anchor: 0
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: 1e852753445b4e3bb7617550e66b17c6
   Return:
     Enabled: 1
     AnimationStateName: Base Layer.MoveReturn

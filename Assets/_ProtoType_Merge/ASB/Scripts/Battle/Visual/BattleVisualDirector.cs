@@ -34,6 +34,55 @@ public class BattleVisualDirector : MonoBehaviour
     };
     [Tooltip("테스트용 HP 하한으로 피해가 막혀도 명중 연출을 재생합니다.")]
     [SerializeField] private bool _reactToPreventedDamage;
+    [Header("공통 피격 이펙트")]
+    [InspectorName("공통 피격 이펙트 사용"), SerializeField] private bool _enableCommonHitEffect = true;
+    [Tooltip("비어 있으면 BattleEffects/HCFX_Hit_01_NoStar를 공통으로 사용합니다.")]
+    [SerializeField] private GameObject _commonHitEffect;
+    [SerializeField] private Vector3 _commonHitEffectOffset = new Vector3(0f, 1.1f, 0f);
+    [Tooltip("저스티스 강화판 스킬의 명중에만 추가 피격 이펙트를 겹칩니다.")]
+    [InspectorName("저스티스 강화 피격 이펙트 사용")]
+    [SerializeField] private bool _enableEnhancedHitEffect = true;
+    [Tooltip("비어 있으면 BattleEffects/HCFX_Hit_03_Enhanced를 사용합니다.")]
+    [SerializeField] private GameObject _enhancedHitEffect;
+    [InspectorName("저스티스 일반 피격 이펙트 사용"), SerializeField] private bool _enableJusticeNormalHitEffect = true;
+    [Tooltip("비어 있으면 색상을 수정한 BattleEffects/HCFX_Hit_03_Justice_Normal 사본을 사용합니다.")]
+    [SerializeField] private GameObject _justiceNormalHitEffect;
+
+    private void PlayJusticeHitEffect(BattleHitResult result)
+    {
+        if (result.SkillIndex / 1000 != 1 || !HeroSkillRules.IsCurrentHeroSkill(result.SkillIndex)) return;
+        GameObject prefab;
+        if (HeroSkillRules.FamilyId(result.SkillIndex) != result.SkillIndex)
+        {
+            if (!_enableEnhancedHitEffect) return;
+            if (_enhancedHitEffect == null)
+                _enhancedHitEffect = Resources.Load<GameObject>("BattleEffects/HCFX_Hit_03_Enhanced");
+            prefab = _enhancedHitEffect;
+        }
+        else
+        {
+            if (!_enableJusticeNormalHitEffect) return;
+            if (_justiceNormalHitEffect == null)
+                _justiceNormalHitEffect = Resources.Load<GameObject>("BattleEffects/HCFX_Hit_03_Justice_Normal");
+            prefab = _justiceNormalHitEffect;
+        }
+        if (prefab == null) return;
+        var instance = Instantiate(prefab,
+            result.Target.transform.position + _commonHitEffectOffset, Quaternion.identity);
+        EffectFallbackRelease.Ensure(instance);
+        TrackHitEffect(instance, true);
+    }
+
+    private void PlayCommonHitEffect(BattleCharactor target)
+    {
+        if (!_enableCommonHitEffect || target == null) return;
+        if (_commonHitEffect == null)
+            _commonHitEffect = Resources.Load<GameObject>("BattleEffects/HCFX_Hit_01_NoStar");
+        if (_commonHitEffect == null) return;
+        var instance = Instantiate(_commonHitEffect, target.transform.position + _commonHitEffectOffset, Quaternion.identity);
+        EffectFallbackRelease.Ensure(instance);
+        TrackHitEffect(instance, true);
+    }
     [Header("피격 시 몸체 점멸")]
     [InspectorName("몸체 점멸 사용"), SerializeField] private bool _enableBodyFlash;
     [InspectorName("점멸 시간 (초)"), Min(0.01f)] [SerializeField] private float _bodyFlashSeconds = .12f;
@@ -142,6 +191,8 @@ public class BattleVisualDirector : MonoBehaviour
         if (!isActiveAndEnabled || result == null || result.Target == null || result.IsHeal || result.IsMiss ||
             (result.AppliedDamage <= 0f && (!_reactToPreventedDamage || result.Damage <= 0f))) return;
         FlashBody(result.Target);
+        PlayCommonHitEffect(result.Target);
+        PlayJusticeHitEffect(result);
         if (_lastMarkerActor == actor && _lastMarkerTarget == result.Target &&
             Time.unscaledTime - _lastMarkerTime < 0.15f) return;
         SkillPresentationData presentation = GetPresentation(result.SkillIndex);

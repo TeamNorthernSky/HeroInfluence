@@ -754,8 +754,45 @@ public sealed partial class SkillPresentationDirector
 
         string stateName = movePhase?.AnimationStateName;
         float blend = movePhase != null ? Mathf.Max(0f, movePhase.BlendInSeconds) : 0.1f;
-        runner.Enqueue(new ASB.Work.Battle.Sequence.MoveToWorldPositionAction(
-            actorAnim, plan.PathPoints.Entry, movement.MoveDuration / _battle.CurrentBattleSpeed, stateName, blend));
+        var approach = new ASB.Work.Battle.Sequence.MoveToWorldPositionAction(
+            actorAnim, plan.PathPoints.Entry, movement.MoveDuration / _battle.CurrentBattleSpeed, stateName, blend);
+        GameObject effectPrefab = movePhase != null && movePhase.ApproachEffectId != 0
+            ? _battle.VisualDirector?.GetRegisteredEffect(movePhase.ApproachEffectId) : null;
+        if (effectPrefab == null)
+            runner.Enqueue(approach);
+        else
+            runner.Enqueue(new RunRoutineAction(host => RunApproachWithEffect(host, actorAnim, approach, effectPrefab)));
+    }
+
+    private IEnumerator RunApproachWithEffect(MonoBehaviour host, CharactorAnimationController actorAnim,
+        BattleSequenceAction approach, GameObject prefab)
+    {
+        var actor = actorAnim.GetComponentInParent<BattleCharactor>();
+        GameObject effect = null;
+        try
+        {
+            if (actor != null)
+            {
+                effect = UnityEngine.Object.Instantiate(prefab, actor.transform.position, actor.transform.rotation);
+                effect.GetComponent<ISkillEffectBehaviour>()?.Play(new SkillEffectContext
+                {
+                    Caster = actor,
+                    SocketTransform = actor.transform,
+                    SpawnPosition = actor.transform.position,
+                    PlaybackSpeed = _battle.CurrentBattleSpeed,
+                });
+            }
+            yield return approach.ExecuteRoutine(host);
+        }
+        finally
+        {
+            if (effect != null)
+            {
+                var handle = effect.GetComponent<ISkillEffectHandle>();
+                if (handle != null) handle.Stop();
+                else EffectFallbackRelease.Ensure(effect);
+            }
+        }
     }
 
     public static float ResolveMovingAttackIncomingBlendInSeconds(MovingAttackPlan plan)
