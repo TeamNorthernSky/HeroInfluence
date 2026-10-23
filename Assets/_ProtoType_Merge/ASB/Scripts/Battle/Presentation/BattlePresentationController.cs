@@ -60,8 +60,8 @@ public sealed class BattlePresentationController : MonoBehaviour
     [Header("루미나 투사체 연출")]
     [Tooltip("루미나 투사체와 연쇄 효과를 카메라 초점이 따라갑니다.")]
     public bool followLuminaProjectile = true;
-    [Tooltip("투사체 방향으로 카메라가 회전하는 추적 속도입니다.")]
-    [InspectorName("투사체 초점 추적 속도"), Min(1f)] public float projectileFocusSpeed = 24f;
+    [Tooltip("루미나 투사체를 향해 일정하게 회전하는 속도입니다. 낮출수록 천천히 전환합니다.")]
+    [InspectorName("투사체 초점 회전 속도 (도/초)"), Min(1f)] public float projectileFocusSpeed = 24f;
     [Tooltip("플레어 봄 시전 전 대기 시간(초)입니다. 0이면 대기하지 않습니다.")]
     [InspectorName("플레어 봄 준비 시간 (초)"), Min(0f)] public float flareBombCastDelay = 0.35f;
     [Tooltip("체인 라이트닝 시전 전 대기 시간(초)입니다. 0이면 대기하지 않습니다.")]
@@ -167,8 +167,14 @@ public sealed class BattlePresentationController : MonoBehaviour
         if (!attackZoomActive || !followAttackFocus || previewCamera == null || attackFocusActor == null) return;
         Vector3 direction = AttackFocusPosition - previewCamera.transform.position;
         if (direction.sqrMagnitude > .001f)
-            previewCamera.transform.rotation = Quaternion.Slerp(previewCamera.transform.rotation,
-                Quaternion.LookRotation(direction), 1f - Mathf.Exp(-(projectileFocusLatched ? projectileFocusSpeed : 12f) * Time.unscaledDeltaTime));
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            previewCamera.transform.rotation = projectileFocusLatched
+                ? Quaternion.RotateTowards(previewCamera.transform.rotation, targetRotation,
+                    projectileFocusSpeed * Time.unscaledDeltaTime)
+                : Quaternion.Slerp(previewCamera.transform.rotation, targetRotation,
+                    1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
+        }
         if (frameRangedPair && attackFocusTarget != null)
         {
             float neededFov = Mathf.Max(attackZoomBaseFov,
