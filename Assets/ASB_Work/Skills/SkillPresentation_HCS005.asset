@@ -1,0 +1,145 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
+  m_Name: SkillPresentation_HCS005
+  m_EditorClassIdentifier: 
+  SkillIndex: 5
+  PresentationSchemaVersion: 1
+  AnimationRail: 1
+  PresentationArchetype: 0
+  SkillTimelines:
+  - CharacterKey: 10001
+    Timeline: {fileID: 11400000, guid: 7545725463e0ab8478aae4b5aaaa7326, type: 2}
+    TargetCount: 0
+    Segments: []
+  - CharacterKey: 10002
+    Timeline: {fileID: 11400000, guid: 51d86582128530b4dabf621881ffe3ae, type: 2}
+    TargetCount: 0
+    Segments: []
+  - CharacterKey: 10003
+    Timeline: {fileID: 11400000, guid: 06d484d31c882bd4e85dd50d43bf33c6, type: 2}
+    TargetCount: 0
+    Segments: []
+  - CharacterKey: 10004
+    Timeline: {fileID: 11400000, guid: e31e85a258d697045ae9446d88337ca2, type: 2}
+    TargetCount: 0
+    Segments: []
+  ImpactTiming: 1
+  AnimationStateName: 
+  AnimationTriggerOverride: 
+  TargetAnimationTriggerOverride: 
+  UseAnimEvent: 0
+  HitDelay: 0.25
+  HitSoundId: 0
+  SfxVolume: 1
+  EnableHitEffect: 0
+  HitEffectId: 0
+  HitEffectOffset: {x: 0, y: 0, z: 0}
+  HitEffectAtTargetRoot: 0
+  ScaleHitEffectWithBattleSpeed: 0
+  OverrideHitStop: 0
+  HitStop:
+    Enabled: 1
+    DurationSeconds: 0.08
+    CharacterSpeed: 0.05
+    EffectSpeed: 0.25
+  ProjectileVisual:
+    Prefab: {fileID: 0}
+    Speed: 6
+    Trajectory: 1
+    ArcHeight: 1.2
+    Acceleration: 0
+    AccelerationMultiplier: 1
+    TargetOffset: {x: 0, y: 0, z: 0}
+    PreserveRootFlightTime: 0
+    SimultaneousArrivalSeconds: 0
+    HideVisualOnArrival: 0
+    TrailTime: 0.4
+    TrackTarget: 0
+    AlignToVelocity: 1
+    ImpactVisualLifetime: 0.3
+    ArrivalRadius: 0.2
+    TimeoutGraceSeconds: 1
+    TimeoutSeconds: 5
+    DeliveryMode: 0
+    UsePreparedCharge: 0
+    ChargeInstanceKey: 
+    TargetFormationCenter: 0
+  ImpactDeliveryMode: 0
+  CustomImpactTimeoutSeconds: 5
+  CustomImpactResolutionPolicy: 0
+  CustomImpactSignalInstanceKey: 
+  ChainLightningEffectPrefab: {fileID: 0}
+  EventSfx: []
+  MovePrepare:
+    Enabled: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+  Move:
+    Enabled: 0
+    UseUnitMovement: 1
+    ForceApproach: 0
+    ApproachEffectId: 0
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    SfxKey: 
+  AttackPrepare:
+    Enabled: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+  Attack:
+    Enabled: 1
+    Beats:
+    - AnimationStateName: 
+      BlendInSeconds: 0.1
+      AdvanceOnEvent: 0
+      WaitForHitEvent: 0
+      Cues:
+      - CueName: gem_pressure
+        EffectIds: 05770100
+        SoundIds: 
+        Operation: 0
+        InstanceKey: 
+        Anchor: 4
+        Socket: 0
+        Timing: 0
+        Time: 0
+        CueId: a77e9476f7e24b72bb75a6360303dea5
+  Return:
+    Enabled: 0
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    SfxKey: 
+  Post:
+    Enabled: 1
+    AnimationStateName: 
+    BlendInSeconds: 0.1
+    Cues: []
+    ExtraDelay: 0
+  MovingAttack:
+    Enabled: 0
+    AnimationStateName: 
+    AnimationBlendInSeconds: 0.1
+    EntryOffset: {x: -1.5, y: 0}
+    MidOffset: {x: 0, y: 0}
+    ExitOffset: {x: 1.5, y: 0}
+    PathSchemaVersion: 2
+    TopOffset: 1.5
+    BottomOffset: 1.5
+    SweepClearance: 0
+    FaceCurveTangent: 0
+    HitMode: 0
+    SingleAoEHitPathProgress: -1
+    PathSampleCount: 64
+    Cues: []

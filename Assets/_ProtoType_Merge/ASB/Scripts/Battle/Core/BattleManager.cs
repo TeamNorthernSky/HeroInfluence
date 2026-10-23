@@ -769,7 +769,9 @@ public class BattleManager : MonoBehaviour
                 if (!firstHealPresented)
                 {
                     firstHealPresented = true;
-                    SkillData healAnimSkill = SkillPresentationDirector.ResolveSkillAnimationData(SkillPresentationDirector.TryGetSkillDataForHealContext(healContext));
+                    SkillData healAnimSkill = SkillPresentationDirector.ResolveSkillAnimationData(
+                        TryGetCoreSkillPresentationData(healContext)
+                        ?? SkillPresentationDirector.TryGetSkillDataForHealContext(healContext));
                     var healQueue = new ASB.Work.Battle.Command.BattleActionQueue();
                     healQueue.Enqueue(new ASB.Work.Battle.Command.SkillActionCommand(
                         healContext.Caster,
@@ -932,15 +934,25 @@ public class BattleManager : MonoBehaviour
     /// 코어(무기) 스킬의 연출용 SkillData. 시전자의 장착 무기 스킬 번호와 일치하고 카탈로그에 그 번호의 연출이
     /// 있을 때만 무기 SkillData를 돌려준다. 그 외(클래스 스킬, 연출 없는 코어 스킬)는 null → 기존 조회 경로 그대로.
     /// </summary>
-    private SkillData TryGetCoreSkillPresentationData(DamageContext context)
+    internal SkillData TryGetCoreSkillPresentationData(DamageContext context)
     {
-        WeaponData weapon = context?.Caster != null ? context.Caster.EquippedWeaponData : null;
-        if (weapon == null || weapon.WeaponSkillIndex <= 0 || weapon.WeaponSkillIndex != context.SkillIndex)
+        return TryGetCoreSkillPresentationData(context?.Caster, context?.SkillIndex ?? 0);
+    }
+
+    private SkillData TryGetCoreSkillPresentationData(HealContext context)
+    {
+        return TryGetCoreSkillPresentationData(context?.Caster, context?.SkillIndex ?? 0);
+    }
+
+    private SkillData TryGetCoreSkillPresentationData(BattleCharactor caster, int skillIndex)
+    {
+        WeaponData weapon = caster != null ? caster.EquippedWeaponData : null;
+        if (weapon == null || weapon.WeaponSkillIndex <= 0 || weapon.WeaponSkillIndex != skillIndex)
         {
             return null;
         }
 
-        if (_presentationCatalog == null || _presentationCatalog.Get(context.SkillIndex) == null)
+        if (_presentationCatalog == null || _presentationCatalog.Get(skillIndex) == null)
         {
             return null;
         }

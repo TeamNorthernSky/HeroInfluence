@@ -81,3 +81,14 @@ MonoBehaviour:
       type: 3}
   - Id: 400019
     Prefab: {fileID: 701210666644524181, guid: 3880fcfd49f541c4c838e57010c27aa9, type: 3}
+  - Id: 96002
+    Prefab: {fileID: 6509714273369711234, guid: 78dffa79927760845b748f9ef1569fe8,
+      type: 3}
+  - Id: 96003
+    Prefab: {fileID: 820001075134500351, guid: e3df067c808fd1747be1636dcb0b803c, type: 3}
+  - Id: 96004
+    Prefab: {fileID: 6102064576482373282, guid: f70bd9cc839cde44fb491ebdc70eac0c,
+      type: 3}
+  - Id: 96005
+    Prefab: {fileID: 6062081072654796956, guid: 54d15a93f13e20a459cfdc8a3c550ae8,
+      type: 3}

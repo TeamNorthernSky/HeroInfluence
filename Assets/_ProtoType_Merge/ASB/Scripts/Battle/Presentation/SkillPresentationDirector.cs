@@ -2544,7 +2544,9 @@ public sealed partial class SkillPresentationDirector
         }
 
         BattleCharactor primaryTarget = leadContext.Target;
-        SkillData skill = ResolveSkillAnimationData(TryGetSkillDataForDamageContext(leadContext));
+        SkillData skill = ResolveSkillAnimationData(
+            _battle.TryGetCoreSkillPresentationData(leadContext)
+            ?? TryGetSkillDataForDamageContext(leadContext));
 
         // 특이 광역 스킬 커스텀 연출 탈출구(등록 없으면 no-op → 아래 기본 광역 시퀀서).
         // 연출은 1회, 피해 확정은 기존 hit callback 계약 그대로 대상마다 한 번(1회 가드).

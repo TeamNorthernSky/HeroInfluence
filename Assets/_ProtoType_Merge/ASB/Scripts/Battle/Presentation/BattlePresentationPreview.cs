@@ -89,6 +89,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     private float attackCameraFov, attackCameraOrthoSize;
     private BattleCharactor attackFocusActor;
     private BattleCharactor attackFocusTarget;
+    private bool focusDebuffTarget;
     private bool frameRangedPair;
     private float attackZoomBaseFov;
     private Transform luminaProjectile;
@@ -201,6 +202,8 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     {
         get
         {
+            if (focusDebuffTarget && attackFocusTarget != null && !attackFocusTarget.IsDead)
+                return attackFocusTarget.transform.position + Vector3.up * attackFocusHeight;
             if (focusNekoLightTarget && nekoLightTarget != null)
                 return nekoLightTarget.transform.position + Vector3.up * attackFocusHeight;
             if (followLuminaProjectile)
@@ -491,7 +494,10 @@ public sealed class BattlePresentationPreview : MonoBehaviour
     public System.Collections.IEnumerator RunAttackWithZoom(BattleCharactor actor, BattleCharactor target,
         SkillData skill, System.Collections.IEnumerator attack)
     {
-        if (useTurnCamera || !useAttackZoom || previewCamera == null || actor == null || attackZoomAmount <= 0f || attackZoomActive)
+        bool shouldFocusDebuffTarget = skill != null && skill.skillKey == "HCS005" &&
+            target != null && !target.IsDead;
+        if ((useTurnCamera && !shouldFocusDebuffTarget) || !useAttackZoom || previewCamera == null ||
+            actor == null || attackZoomAmount <= 0f || attackZoomActive)
         {
             yield return ShowSkillSpeech(actor, skill);
             yield return WaitForLuminaCast(actor, skill);
@@ -505,7 +511,8 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         attackCameraOrthoSize = previewCamera.orthographicSize;
         attackFocusActor = actor;
         attackFocusTarget = target;
-        frameRangedPair = target != null && skill != null &&
+        focusDebuffTarget = shouldFocusDebuffTarget;
+        frameRangedPair = !focusDebuffTarget && target != null && skill != null &&
             ((frameEnemyRangedTarget && !actor.IsPlayer && target.IsPlayer &&
                 !BattleManager.IsMeleeSkillRange(actor, skill)) ||
              (frameBlackBulletTarget && actor.IsPlayer && actor.PresentationIndex == "10003" && !target.IsPlayer));
@@ -592,6 +599,7 @@ public sealed class BattlePresentationPreview : MonoBehaviour
         followAttackFocus = false;
         attackFocusActor = null;
         attackFocusTarget = null;
+        focusDebuffTarget = false;
         frameRangedPair = false;
         luminaProjectile = null;
         luminaLightning = null;

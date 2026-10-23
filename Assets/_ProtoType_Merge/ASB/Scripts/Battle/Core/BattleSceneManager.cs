@@ -15,7 +15,8 @@ public class BattleSceneManager : MonoBehaviour
     private const float CueEffectWaitTimeoutSeconds = EffectFallbackRelease.DefaultFallbackSeconds + 0.5f;
     private const float DeathAnimationWaitTimeoutSeconds = 1.2f;
     private const float DeathAnimationEndThreshold = 0.95f;
-    private const float ResultPanelMaxWaitSeconds = 5f;
+    // 결과창 대기 안전장치. 연출 코루틴이 끊겨 IsSequenceRunning이 풀리지 않아도 결과창은 뜨게 한다.
+    private const float ResultPresentationSafetySeconds = 10f;
 
     [Header("Prototype Boot")]
     [Tooltip("Prototype 전용: 씬에 배치된 BattleCharactor를 그대로 초기화해 전투를 시작합니다.")]
@@ -36,6 +37,8 @@ public class BattleSceneManager : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private BattleUIManager battleUIManager;
+    [Tooltip("마지막 연출(스킬·이펙트·사망 애니)이 끝난 뒤 결과창을 띄우기 전 추가로 쉬는 시간(초).")]
+    [SerializeField, Min(0f)] private float resultPanelDelay = 1f;
 
     [Header("Scene Transition")]
     [Tooltip("Build Settings에 등록된 씬 이름(확장자 제외). 예: DHScene")]
@@ -96,12 +99,17 @@ public class BattleSceneManager : MonoBehaviour
 
     private IEnumerator PostBattleSequence(BattleResult result)
     {
-        float resultPanelDeadline = Time.realtimeSinceStartup + ResultPanelMaxWaitSeconds;
+        float resultPanelDeadline = Time.realtimeSinceStartup + ResultPresentationSafetySeconds;
         yield return WaitForActivePresentationSequence(resultPanelDeadline);
         if (Time.realtimeSinceStartup < resultPanelDeadline)
             yield return WaitForRemainingCueEffectsAndDeathAnimations(resultPanelDeadline);
         if (Time.realtimeSinceStartup >= resultPanelDeadline)
-            Debug.LogWarning($"[BattleSceneManager] Result presentation exceeded {ResultPanelMaxWaitSeconds:0.##}s. Continuing to result UI.", this);
+            Debug.LogError($"[BattleSceneManager] Result presentation did not finish within {ResultPresentationSafetySeconds:0.##}s. A presentation sequence may have been interrupted. Continuing to result UI.", this);
+
+        // 마지막 연출이 끝난 뒤 한 박자 쉬고 결과창을 띄운다(시스템 메뉴로 일시정지 중이면 같이 멈춘다).
+        if (resultPanelDelay > 0f)
+            yield return new WaitForSeconds(resultPanelDelay);
+
         hostageScenarioController?.FlushResult();
 
         CombatContext combatContext = CombatContext.Instance;
