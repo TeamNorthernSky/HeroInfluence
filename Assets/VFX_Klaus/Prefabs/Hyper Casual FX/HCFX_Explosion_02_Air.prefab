@@ -17,6 +17,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 39aff6ed9e199a041bae61b0377e111c, type: 2}
     - target: {fileID: 781814981, guid: f134c315cba9a074aaf365efc7901d8f, type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 781814981, guid: f134c315cba9a074aaf365efc7901d8f, type: 3}
       propertyPath: scalingMode
       value: 0
       objectReference: {fileID: 0}
@@ -41,6 +45,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: 263fd841b12e6624494ce37527c6ced6, type: 2}
     - target: {fileID: 1090106428, guid: f134c315cba9a074aaf365efc7901d8f, type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1090106428, guid: f134c315cba9a074aaf365efc7901d8f, type: 3}
       propertyPath: UVModule.tilesX
       value: 2
       objectReference: {fileID: 0}
@@ -56,6 +64,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 0b91fb7558802424cb6fc604b636e1c4, type: 2}
+    - target: {fileID: 1405078665, guid: f134c315cba9a074aaf365efc7901d8f, type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1405078665, guid: f134c315cba9a074aaf365efc7901d8f, type: 3}
       propertyPath: scalingMode
       value: 0
@@ -81,6 +93,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: fea739d450d136843a9a24d5e1eb8789, type: 2}
+    - target: {fileID: 2236418898177453835, guid: f134c315cba9a074aaf365efc7901d8f,
+        type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2236418898177453835, guid: f134c315cba9a074aaf365efc7901d8f,
         type: 3}
       propertyPath: UVModule.tilesX
@@ -116,6 +133,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 460f3168467028c4e8de87165b0eb3d0, type: 2}
+    - target: {fileID: 2236418900037183779, guid: f134c315cba9a074aaf365efc7901d8f,
+        type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2236418900037183779, guid: f134c315cba9a074aaf365efc7901d8f,
         type: 3}
       propertyPath: UVModule.tilesX
@@ -248,6 +270,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3113869716589236330, guid: f134c315cba9a074aaf365efc7901d8f,
         type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3113869716589236330, guid: f134c315cba9a074aaf365efc7901d8f,
+        type: 3}
       propertyPath: UVModule.tilesX
       value: 2
       objectReference: {fileID: 0}
@@ -278,6 +305,11 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 263fd841b12e6624494ce37527c6ced6, type: 2}
     - target: {fileID: 3113869716790313339, guid: f134c315cba9a074aaf365efc7901d8f,
         type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3113869716790313339, guid: f134c315cba9a074aaf365efc7901d8f,
+        type: 3}
       propertyPath: UVModule.tilesX
       value: 2
       objectReference: {fileID: 0}
@@ -295,6 +327,11 @@ PrefabInstance:
         type: 3}
       propertyPath: ShapeModule.radiusThickness
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3113869717003379900, guid: f134c315cba9a074aaf365efc7901d8f,
+        type: 3}
+      propertyPath: looping
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3113869717003379900, guid: f134c315cba9a074aaf365efc7901d8f,
         type: 3}
@@ -331,6 +368,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 7d5cb899b7d6f314d90fe1a5baabfeb5, type: 2}
+    - target: {fileID: 3764986343536921223, guid: f134c315cba9a074aaf365efc7901d8f,
+        type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3764986343536921223, guid: f134c315cba9a074aaf365efc7901d8f,
         type: 3}
       propertyPath: UVModule.tilesX
@@ -471,6 +513,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: a38ecdd71fa71d94b837bb16b6749017, type: 2}
+    - target: {fileID: 7394180079748081998, guid: f134c315cba9a074aaf365efc7901d8f,
+        type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7394180079748081998, guid: f134c315cba9a074aaf365efc7901d8f,
         type: 3}
       propertyPath: UVModule.tilesX

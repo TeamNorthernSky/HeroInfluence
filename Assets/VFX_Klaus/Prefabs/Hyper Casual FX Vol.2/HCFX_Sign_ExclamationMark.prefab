@@ -10,6 +10,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 948594716967694905, guid: 25295b2d3166469409085efff11ff458,
         type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 948594716967694905, guid: 25295b2d3166469409085efff11ff458,
+        type: 3}
       propertyPath: UVModule.tilesX
       value: 2
       objectReference: {fileID: 0}
@@ -43,6 +48,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: c5e3927e90df9dc4f97bc39785b69bfb, type: 2}
+    - target: {fileID: 948594716967694908, guid: 25295b2d3166469409085efff11ff458,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 948594717003353244, guid: 25295b2d3166469409085efff11ff458,
         type: 3}
       propertyPath: m_RootOrder
@@ -97,6 +107,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 948594717003353245, guid: 25295b2d3166469409085efff11ff458,
+        type: 3}
+      propertyPath: looping
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 948594717003353245, guid: 25295b2d3166469409085efff11ff458,
         type: 3}
@@ -235,6 +250,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 948594717202439739, guid: 25295b2d3166469409085efff11ff458,
         type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 948594717202439739, guid: 25295b2d3166469409085efff11ff458,
+        type: 3}
       propertyPath: UVModule.enabled
       value: 0
       objectReference: {fileID: 0}
@@ -268,6 +288,21 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 4914dcf33c760e34ebb84e76eeebda52, type: 2}
+    - target: {fileID: 948594717202439741, guid: 25295b2d3166469409085efff11ff458,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 948594717628490913, guid: 25295b2d3166469409085efff11ff458,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 948594717628490942, guid: 25295b2d3166469409085efff11ff458,
+        type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 948594717628490942, guid: 25295b2d3166469409085efff11ff458,
         type: 3}
       propertyPath: UVModule.tilesX
@@ -325,6 +360,11 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 263fd841b12e6624494ce37527c6ced6, type: 2}
     - target: {fileID: 948594718140446986, guid: 25295b2d3166469409085efff11ff458,
         type: 3}
+      propertyPath: looping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 948594718140446986, guid: 25295b2d3166469409085efff11ff458,
+        type: 3}
       propertyPath: UVModule.tilesX
       value: 2
       objectReference: {fileID: 0}
@@ -358,6 +398,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: c5e3927e90df9dc4f97bc39785b69bfb, type: 2}
+    - target: {fileID: 948594718140446989, guid: 25295b2d3166469409085efff11ff458,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
