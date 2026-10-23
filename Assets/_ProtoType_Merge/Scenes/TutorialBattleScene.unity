@@ -3206,19 +3206,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b67c80cd95a2d548852435a63c93bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _transitions:
-  - FromPhase: 1
-    Condition: 0
-    Threshold: 2
-    ToPhase: 2
-  - FromPhase: 1
-    Condition: 1
-    Threshold: 0.5
-    ToPhase: 3
-  - FromPhase: 2
-    Condition: 1
-    Threshold: 0.5
-    ToPhase: 3
+  _transitions: []
 --- !u!4 &186606647
 Transform:
   m_ObjectHideFlags: 0

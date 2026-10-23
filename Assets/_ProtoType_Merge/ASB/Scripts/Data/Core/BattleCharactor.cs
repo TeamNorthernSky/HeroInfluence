@@ -488,6 +488,12 @@ public partial class BattleCharactor : MonoBehaviour, IUnitIdentifier
             return;
         }
 
+        // 피해 무효 걸쇠(AddDamageImmunity) — 예: 율리아는 증폭기가 하나라도 살아 있으면 피해를 받지 않는다.
+        if (IsDamageImmune)
+        {
+            return;
+        }
+
         float damage = Mathf.Max(0f, amount);
         float minimumHp = ResolveMinimumHpAfterDamage();
         currentHp = Mathf.Max(minimumHp, currentHp - damage);
