@@ -283,9 +283,9 @@ MonoBehaviour:
   - path: Assets/_ProtoType_Merge/JC/BattleTesting/Resources/JC_BattleSurface_Default.asset
     hash: source-v1:bd0da92f3333cdcded4f1fba31bd75c2e4402ef97c0f4387b44e1352edd490a7
   - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/CanalBank.shader
-    hash: source-v1:d9afc6449844f7fde88e0be6b6a40cdc785a231d45b41109f88abb137f57b54c
+    hash: source-v1:d0399117b266dc974de6b9000deb0836ea6401e7fc93b2349a24fb70cffeb4ed
   - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Editor/JcExploreDetailBaker.cs
-    hash: source-v1:2282b4d22edbf14f3fdab5d2260556621455f3269e498539ea33e608b6fa30a1
+    hash: source-v1:b9fbb8295ec0ef1abaf12be64a4dccfa17db327b2fb81ea8a698862a1856d090
   - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Editor/JcPathEdgeAnalyzer.cs
     hash: source-v1:71b1d3a627d1461a91984207044d76301a544d482aa7c6d8962d94eecd35aad0
   - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcExploreDetailBake.cs
@@ -307,7 +307,7 @@ MonoBehaviour:
   - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcWaterFlowConstraint.cs
     hash: source-v1:162ebb5174430b4bee1a5c7d83460580707ce07926f33e618b95b062ff7549d5
   - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcWaterUnderwater.cs
-    hash: source-v1:ee2343084068b3b20f569ada5ed09e291510123a664622fe6265fd3720289911
+    hash: source-v1:c9f34217a0d9afbe8751b22334c9f0a14bbf72beb555dc5f49395eab3b3c5d50
   - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/RoadEdge.shader
     hash: source-v1:0540bac7fde5a7063f45bf8f7d1699c10c1275187b70bf71204c49cbfb317a66
   - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/RoadGrain.png
