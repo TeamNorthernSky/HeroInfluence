@@ -14,7 +14,6 @@ namespace JC.Tutorial
         private static JcTutorialBattleGuide activeGuide;
         private bool guidedActive, detailed, formation, nextPending;
         private ASB.Work.BattleGrid.BattleGridManager formationGrid;
-        private float formationPhaseStarted;
         private int guidedPhase, phaseFrame, clickDownFrame = -1;
         private BattleCharactor guidedActor, guidedEnemy;
         private BattleFlowManager guidedFlow;
@@ -175,16 +174,22 @@ namespace JC.Tutorial
         }
         private void SetGuidedPhase(int phase)
         {
+            view.SetActionHint(JcTutorialGuideView.ActionHint.None);
             guidedPhase = phase; phaseFrame = Time.frameCount; clickDownFrame = -1;
             nextPending = false; allowedPointer = null;
             string title, text;
             if (formation)
             {
-                formationPhaseStarted = Time.unscaledTime;
+                string frontColor = ColorUtility.ToHtmlStringRGB(ASB.Work.BattleGrid.BattleGridManager.TutorialFrontColor);
+                string rearColor = ColorUtility.ToHtmlStringRGB(ASB.Work.BattleGrid.BattleGridManager.TutorialRearColor);
                 string[] titles = { "전열과 후열", "반격과 피해경감", "공격 가능한 대상" };
                 string[] texts = {
-                    "전장에는 적과 가까운 ‘전열’과 그 뒤에 있는 ‘후열’이 있습니다.\n녹색 윤곽선으로 번갈아 표시되는 전열과 후열의 타일을 확인해 보세요.",
-                    "전열에서는 근거리 공격을 받고 살아남으면 반격 확률에 따라 반격합니다. 충전·휴식 중이거나 반격용 공격 스킬이 없으면 반격할 수 없습니다.\n후열에서는 경감 확률에 따라 피해 계산 배율이 50%로 줄고, 해당 타격은 치명타가 되지 않습니다. 반격 피해에는 경감이 적용되지 않습니다.",
+                    "전장에는 적과 가까운 ‘전열’과 그 뒤에 있는 ‘후열’이 있습니다.\n\n" +
+                    $"<color=#{frontColor}>녹색으로 표시된 열이 ‘<b>전열</b>’</color>\n" +
+                    $"<color=#{rearColor}>적색으로 표시된 열이 ‘<b>후열</b>’</color>\n\n" +
+                    "전열과 후열은 각각의 위치에 따른 특징을 지닙니다.",
+                    $"<color=#{frontColor}><b>전열</b></color>에서는 근거리 공격을 받고 살아남으면 반격 확률에 따라 반격합니다. 충전·휴식 중이거나 반격용 공격 스킬이 없으면 반격할 수 없습니다.\n<line-height=50%>\n</line-height>" +
+                    $"<color=#{rearColor}><b>후열</b></color>에서는 경감 확률에 따라 피해 계산 배율이 50%로 줄고, 해당 타격은 치명타가 되지 않습니다. 반격 피해에는 경감이 적용되지 않습니다.",
                     "스킬에 따라 공격할 수 있는 열과 대상이 달라집니다.\n사용할 스킬을 선택한 뒤, 바닥에 표시되는 공격 가능한 대상을 확인해 보세요." };
                 title = titles[phase]; text = texts[phase];
             }
@@ -227,8 +232,10 @@ namespace JC.Tutorial
             var canvasRect = layoutPanel.parent as RectTransform;
             float width = Mathf.Min(820, canvasRect != null ? Mathf.Max(320, canvasRect.rect.width - 64) : 820);
             float textWidth = width - 64;
-            float textHeight = Mathf.Ceil(guidedBody.GetPreferredValues(guidedBody.text, textWidth, Mathf.Infinity).y) + 8;
-            float height = Mathf.Max(300, 96 + textHeight + 80);
+            // 실제 Rect 너비·텍스트 전처리·리치 텍스트 문단 간격을 함께 반영합니다.
+            guidedBody.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, textWidth);
+            float textHeight = Mathf.Ceil(guidedBody.preferredHeight) + 8;
+            float height = Mathf.Max(FreeGuide ? 260 : 300, 96 + textHeight + (FreeGuide ? 40 : 80));
             guidedBody.rectTransform.sizeDelta = new Vector2(textWidth, textHeight);
             guidedBody.rectTransform.anchoredPosition = new Vector2(0, -96);
             layoutPanel.sizeDelta = new Vector2(width, height);
@@ -246,6 +253,8 @@ namespace JC.Tutorial
             {
                 allowedPointer = null;
                 view.SetVisible(true, null, JcTutorialGuideView.FocusPresentation.BorderOnly);
+                var skillButton = guidedSkills.FindSkillButton(IntroSkill);
+                view.SetActionHint(JcTutorialGuideView.ActionHint.ClickSkill, skillButton != null ? (RectTransform)skillButton.transform : null);
                 dim.gameObject.SetActive(false); resultShield.SetActive(false);
                 return;
             }
@@ -280,6 +289,7 @@ namespace JC.Tutorial
                 guidedPhase == 3 ? worldFocus : guidedPhase == 4 ? badge : currentTurnFocus;
             allowedPointer = guidedPhase == 3 ? worldFocus : guidedPhase == 4 ? badge : null;
             view.SetVisible(true, focus, JcTutorialGuideView.FocusPresentation.BorderOnly);
+            view.SetActionHint(guidedPhase == 3 ? JcTutorialGuideView.ActionHint.HoverEnemy : guidedPhase == 4 ? JcTutorialGuideView.ActionHint.HoverBadge : JcTutorialGuideView.ActionHint.None, focus);
             dim.SetTargets(layoutPanel, focus);
             dim.SetExtraTargets(guidedPhase == 3 || guidedPhase == 4 ? new[] { worldFocus, badge, guidedTooltip } : Array.Empty<RectTransform>());
             resultShield.SetActive(true);
@@ -303,8 +313,7 @@ namespace JC.Tutorial
         {
             allowedPointer = null;
             bool rows = guidedPhase < 2;
-            bool front = Mathf.FloorToInt((Time.unscaledTime - formationPhaseStarted) / 3f) % 2 == 0;
-            if (formationGrid != null) formationGrid.SetTutorialRows(this, rows, front);
+            if (formationGrid != null) formationGrid.SetTutorialRows(this, rows);
             view.SetVisible(true, rows ? null : profileFocus, JcTutorialGuideView.FocusPresentation.BorderOnly);
             // 안내창과 입력 차단은 유지하고, 배치 설명의 디밍은 실제 바닥 셀에서만 그립니다.
             dim.SetTargets(layoutPanel, rows ? null : profileFocus);
@@ -335,7 +344,7 @@ namespace JC.Tutorial
             if (!guidedActive) return;
             guidedActive = false; formation = false;
             view.FixedBattleOutline = false;
-            if (formationGrid != null) formationGrid.SetTutorialRows(this, false, true);
+            if (formationGrid != null) formationGrid.SetTutorialRows(this, false);
             formationGrid = null;
             if (activeGuide == this) activeGuide = null;
             actionRestriction?.Dispose(); actionRestriction = null;

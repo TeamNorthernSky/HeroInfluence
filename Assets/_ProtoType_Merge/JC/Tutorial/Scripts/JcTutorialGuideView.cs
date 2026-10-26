@@ -4,7 +4,7 @@ using UnityEngine;
 namespace JC.Tutorial
 {
     [DisallowMultipleComponent, AddComponentMenu("JC Tutorial/안내 표현 설정")]
-    public sealed class JcTutorialGuideView : MonoBehaviour
+    public sealed partial class JcTutorialGuideView : MonoBehaviour
     {
         [Header("씬 연결")]
         [Tooltip("기존 또는 신규 안내 패널입니다. 위치·크기는 이 패널의 RectTransform에서 조절합니다.")]
@@ -75,8 +75,9 @@ namespace JC.Tutorial
         private RectTransform sideTarget, sideBoundary;
         private bool sideRight, layoutCaptured;
         private Vector2 originalSize, originalPosition;
+        private Vector2 sideOffset;
         private float originalMinimum;
-        public void SetSideLayout(RectTransform target, RectTransform boundary = null, bool right = false)
+        public void SetSideLayout(RectTransform target, RectTransform boundary = null, bool right = false, Vector2 offset = default(Vector2))
         {
             if (panel == null) return;
             var card = (RectTransform)panel.transform;
@@ -85,7 +86,7 @@ namespace JC.Tutorial
                 originalSize = card.sizeDelta; originalPosition = card.anchoredPosition;
                 originalMinimum = minimumMessageHeight; layoutCaptured = true;
             }
-            sideTarget = target; sideBoundary = boundary; sideRight = right;
+            sideTarget = target; sideBoundary = boundary; sideRight = right; sideOffset = offset;
             if (target == null && layoutCaptured)
             {
                 card.sizeDelta = originalSize; card.anchoredPosition = originalPosition;
@@ -126,7 +127,7 @@ namespace JC.Tutorial
             float x = sideRight ? left : right - width;
             float top = Mathf.Min(target.yMax, parent.rect.yMax - 100);
             top = Mathf.Max(top, parent.rect.yMin + card.rect.height + 16);
-            card.localPosition = new Vector3(x + width * card.pivot.x, top - card.rect.height * (1-card.pivot.y), card.localPosition.z);
+            card.localPosition = new Vector3(x + width * card.pivot.x + sideOffset.x, top - card.rect.height * (1-card.pivot.y) + sideOffset.y, card.localPosition.z);
         }
         [System.Serializable]
         public sealed class ContentEdit
@@ -162,6 +163,7 @@ namespace JC.Tutorial
         private void Awake() { BindWordWrapping(message); if (panel != null) panel.alpha = 0; SetVisible(false); }
         public void SetContent(string title, string body)
         {
+            if (sourceTitle != title) SetActionHint(ActionHint.None);
             sourceTitle = title; sourceBody = body;
             var edit = contentEdits.Find(e => e.sourceTitle == title && e.sourceBody == body);
             if (edit != null) { title = edit.title; body = edit.body; }
@@ -170,8 +172,10 @@ namespace JC.Tutorial
         // 전투 안내만 고정 외곽선으로 표시합니다. 탐사 연출 설정은 보존합니다.
         public bool FixedBattleOutline { get; set; }
         private float? originalFocusGlow;
+        private float? originalFocusRadius;
         public void SetVisible(bool value, RectTransform target = null, FocusPresentation presentation = FocusPresentation.PointerAbove)
         {
+            if (!value) SetActionHint(ActionHint.None);
             visible = value; focus = value ? target : null; focusPresentation = presentation;
             if (spotlight != null && (!value || (presentation != FocusPresentation.Spotlight && presentation != FocusPresentation.DimmedExplanation && presentation != FocusPresentation.BuildingExplanation))) spotlight.gameObject.SetActive(false);
         }
@@ -199,6 +203,7 @@ namespace JC.Tutorial
         // 비플레이 정적 렌더 검증에도 사용한다. 입력·게임 상태를 변경하지 않는다.
         public void RenderPresentation(float time, float delta)
         {
+            RenderActionHint(time);
             if (panel != null)
             {
                 panel.alpha = Mathf.MoveTowards(panel.alpha, visible && !suppressPanel ? 1 : 0, fadeDuration <= 0 ? 1 : Mathf.Max(0, delta) / fadeDuration);
@@ -215,6 +220,8 @@ namespace JC.Tutorial
             }
             if (focusFrame == null || pointer == null) return;
             originalFocusGlow ??= focusFrame.GlowWidth;
+            originalFocusRadius ??= focusFrame.Radius;
+            focusFrame.SetRadius(FixedBattleOutline ? 0 : originalFocusRadius.Value);
             focusFrame.SetGlowWidth(FixedBattleOutline ? 0 : originalFocusGlow.Value);
             focusFrame.gameObject.SetActive(showFocus); pointer.gameObject.SetActive(showFocus);
             if(convergingOutlines!=null)foreach(var outline in convergingOutlines)if(outline!=null)outline.gameObject.SetActive(showFocus && !FixedBattleOutline);
@@ -250,7 +257,7 @@ namespace JC.Tutorial
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, RectTransformUtility.WorldToScreenPoint(targetCamera, corners[i]), overlayCamera, out local);
                 min = Vector2.Min(min, local); max = Vector2.Max(max, local);
             }
-            float padding = FixedBattleOutline ? -3 : focusPresentation == FocusPresentation.ResourceBlock ? 0 : focusPadding;
+            float padding = FixedBattleOutline ? 0 : focusPresentation == FocusPresentation.ResourceBlock ? 0 : focusPadding;
             min = Vector2.Max(min - Vector2.one * padding, parent.rect.min + Vector2.one * 2);
             max = Vector2.Min(max + Vector2.one * padding, parent.rect.max - Vector2.one * 2);
             if (max.x <= min.x || max.y <= min.y) { focusFrame.gameObject.SetActive(false); pointer.gameObject.SetActive(false); return; }
@@ -296,6 +303,7 @@ namespace JC.Tutorial
 
         private void OnDisable()
         {
+            SetActionHint(ActionHint.None);
             if (spotlight != null) spotlight.gameObject.SetActive(false);
             if (focusFrame != null) focusFrame.gameObject.SetActive(false);
             if (pointer != null) pointer.gameObject.SetActive(false);
