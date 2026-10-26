@@ -78,11 +78,25 @@ public partial class BattleCharactor
         new List<MinimumHpConstraintEntry>();
     private readonly List<RuntimeStatModifierEntry> runtimeStatModifiers =
         new List<RuntimeStatModifierEntry>();
+    private readonly List<int> damageImmunityIds = new List<int>();
     private int nextRuntimeConstraintId = 1;
 
     public float MinimumHpAfterDamage => ResolveMinimumHpAfterDamage();
     public int MinimumHpConstraintCount => minimumHpConstraints.Count;
     public int RuntimeStatModifierCount => runtimeStatModifiers.Count;
+
+    /// <summary>
+    /// 피해 무효 걸쇠가 하나라도 걸려 있는지. 걸려 있으면 공격 피해 계산이 0이 되고 TakeDamage가 HP를 줄이지 않는다.
+    /// 거는 쪽이 조건을 판단한다(예: EncounterParticipantImmunity — 율리아, 증폭기 생존 중).
+    /// </summary>
+    public bool IsDamageImmune => damageImmunityIds.Count > 0;
+
+    public IDisposable AddDamageImmunity()
+    {
+        int id = nextRuntimeConstraintId++;
+        damageImmunityIds.Add(id);
+        return new RuntimeConstraintHandle(() => damageImmunityIds.Remove(id));
+    }
 
     public IDisposable AddMinimumHpConstraint(float minimumHp, object owner = null)
     {
@@ -157,6 +171,7 @@ public partial class BattleCharactor
     {
         minimumHpConstraints.Clear();
         runtimeStatModifiers.Clear();
+        damageImmunityIds.Clear();
     }
 
     private sealed class MinimumHpConstraintEntry

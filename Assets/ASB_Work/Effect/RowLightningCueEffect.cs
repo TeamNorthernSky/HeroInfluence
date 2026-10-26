@@ -51,6 +51,9 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
     [SerializeField] private VfxEffect _arcPrefab;
     [Tooltip("긋기 전에 시작점에 띄울 구체(기획 Y06 전열 구체). 비우면 생략.")]
     [SerializeField] private VfxEffect _originOrbPrefab;
+    [Header("율리아 납품 이펙트 (기존 Cue/대상 판정 유지)")]
+    [SerializeField] private GameObject _nativeStormPrefab;
+    [SerializeField] private UliaVfx.UliaSavedEffect _nativeTrajectoryPrefab;
     [Tooltip("시작 구체가 뜬 뒤 긋기 시작까지의 시간.")]
     [SerializeField, Min(0f)] private float _originLeadTime = 0.12f;
     [Tooltip("아크 위에 2020 볼트를 겹쳐 중심선과 외곽 광을 그린다. 아크는 가지와 불꽃으로 사용한다.")]
@@ -121,7 +124,25 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
     {
         _speed = ctx != null ? Mathf.Max(0.01f, ctx.PlaybackSpeed) : 1f;
         bool useArcs = _arcPrefab != null;
-        if ((!useArcs && _boltTemplate == null) || !TryResolveRow(ctx, out Vector3 start, out Vector3 end, out float crossSpacing))
+        if (!TryResolveRow(ctx, out Vector3 start, out Vector3 end, out float crossSpacing))
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        if (_nativeStormPrefab != null)
+        {
+            StartCoroutine(RunNativeStorm(ctx, (start + end) * 0.5f - Vector3.up * _height));
+            return;
+        }
+
+        if (_nativeTrajectoryPrefab != null)
+        {
+            StartCoroutine(RunNativeTrajectory(ctx, start, end));
+            return;
+        }
+
+        if (!useArcs && _boltTemplate == null)
         {
             Destroy(gameObject);
             return;
@@ -136,6 +157,49 @@ public sealed class RowLightningCueEffect : MonoBehaviour, ISkillEffectBehaviour
         }
 
         StartCoroutine(Run(ctx, start, end));
+    }
+
+    private IEnumerator RunNativeStorm(SkillEffectContext ctx, Vector3 center)
+    {
+        GameObject strike = Instantiate(_nativeStormPrefab, center + Vector3.up * 0.02f,
+            _nativeStormPrefab.transform.rotation, transform);
+        strike.transform.localScale = _nativeStormPrefab.transform.localScale;
+        ParticleSystem[] particles = strike.GetComponentsInChildren<ParticleSystem>(true);
+        foreach (ParticleSystem ps in particles)
+        {
+            ps.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = ps.main;
+            main.loop = false;
+        }
+
+        foreach (ParticleSystem ps in particles)
+            if ((ps.transform == strike.transform || ps.name == "shot_controller" || ps.name == "hit_controller")
+                && ps.gameObject.activeInHierarchy)
+                ps.Play(false);
+
+        PresentationSfxEvents.PlayEffectImpact(ctx?.Presentation, 0);
+        SpawnShocks(ctx);
+        yield return Wait(2f);
+        while (_shocks.Exists(shock => shock != null)) yield return null;
+        Destroy(gameObject);
+    }
+
+    private IEnumerator RunNativeTrajectory(SkillEffectContext ctx, Vector3 start, Vector3 end)
+    {
+        UliaVfx.UliaSavedEffect shot = Instantiate(_nativeTrajectoryPrefab, start, Quaternion.identity, transform);
+        shot.playOnEnable = false;
+        shot.effectCamera = Camera.main;
+        shot.endTarget = null;
+        shot.localEndPoint = shot.transform.InverseTransformPoint(end);
+        // 기존 Timeline이 충전 Cue를 재생한 뒤 이 이펙트를 호출하므로 발사 시각만 맞춘다.
+        shot.trajectoryChargeSeconds = 0.01f;
+        shot.Replay();
+        yield return Wait(_drawTime);
+        PresentationSfxEvents.PlayEffectImpact(ctx?.Presentation, 0);
+        SpawnShocks(ctx);
+        yield return Wait(2f);
+        while (_shocks.Exists(shock => shock != null)) yield return null;
+        Destroy(gameObject);
     }
 
     private IEnumerator RunArcs(SkillEffectContext ctx, Vector3 start, Vector3 end)

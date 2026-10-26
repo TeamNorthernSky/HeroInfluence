@@ -11,7 +11,9 @@ using UnityEngine.VFX;
 ///   이때 중심 높이는 보이는 반지름+부유 진폭+바닥 간격 이상으로 유지한다.</item>
 /// <item>원기둥 재등장 방지: BattleCharactor.EnableVisuals(부활·초기 상태 설정)가 Awake 때 기록한 렌더러를 다시 켜므로,
 ///   직후 발생하는 OnHpChanged에서 살아 있으면 Model 렌더러를 다시 끈다.</item>
-/// <item>소환: 프리셋에 summonPortalPrefab이 있으면 코드 소환진 대신 바닥 포털을 재생한다(기획 Y07).</item>
+/// <item>소환: 프리셋에 summonPortalPrefab이 있으면 코드 소환진 대신 바닥 포털을 재생한다(기획 Y07).
+///   율리아 소환 연출(<see cref="HoopSummonCastEffect"/>)이 이 칸으로 에너지를 보내는 중이면 포털 대신 숨긴 채 기다렸다가,
+///   에너지가 터지는 순간 대기 높이에서 바로 나타나며 한 번 튄다(<see cref="RevealFromSummon"/>).</item>
 /// <item>사망: (프리팹 외형이면) 중심광을 한 번 키운 뒤 바퀴를 숨기고 파괴 이펙트를 씬 루트에 생성한다(시체 제거보다 오래 남아야 한다, 기획 Y10).</item>
 /// <item>돌진 위치 유지: 시퀀스가 <see cref="BeginDashHold"/>를 부르면 원위치를 기억한다. 반격·자해까지 끝난 뒤 발행되는
 ///   BattleManager.OnSkillResolved에서 살아 있으면 원위치로 되돌린다. 사망 시에는 그 자리를 유지하고, 부활하면 되돌린다.</item>
@@ -27,7 +29,7 @@ public sealed class HoopWheelVisual : MonoBehaviour
     private const float WheelFloorClearance = .2f;
     private const float SummonDropDistance = .7f;
     private const float SpinDegreesPerSecond = 35f;
-    private const float HoverFrequency = 2.3f;
+    private const float SummonRevealTimeoutSeconds = 4f;
     private const float PortalLift = .02f;
 
     [Tooltip("피격·사망·부활 이벤트원이자 돌진으로 움직이는 루트. 프리팹 루트의 BattleCharactor를 연결한다.")]
@@ -51,6 +53,9 @@ public sealed class HoopWheelVisual : MonoBehaviour
     private Vector3 _breakFlashBaseScale;
     private Vector3 _breakFlashBasePosition;
     private GameObject _breakEffect;
+    private bool _awaitingSummonReveal;
+    private float _awaitingSummonSince;
+    private Coroutine _summonBurst;
     private readonly List<VisualEffect> _flashEffects = new List<VisualEffect>();
     private readonly List<(VisualEffect effect, int id, Vector4 color)> _flashColors = new List<(VisualEffect, int, Vector4)>();
     private readonly List<VFXExposedProperty> _exposed = new List<VFXExposedProperty>();
@@ -80,6 +85,7 @@ public sealed class HoopWheelVisual : MonoBehaviour
         }
         SubscribeBattle(null);
         CancelBreakFlash();
+        CancelSummonBurst();
     }
 
     private void Start()
@@ -111,11 +117,70 @@ public sealed class HoopWheelVisual : MonoBehaviour
             _deadVisual = true;
             _wheel.gameObject.SetActive(false);
         }
+        else if (HoopSummonCastEffect.TryClaimSummon(this))
+        {
+            // 율리아 소환 연출의 에너지가 이 칸에서 터질 때(RevealFromSummon)까지 숨긴다.
+            _awaitingSummonReveal = true;
+            _awaitingSummonSince = Time.realtimeSinceStartup;
+            _wheel.gameObject.SetActive(false);
+        }
         else
         {
             SpawnSummon();
             UnitSfxProfile.Play(owner, UnitSfxEvent.Summon);
         }
+    }
+
+    /// <summary>율리아 소환 연출이 이 칸의 에너지를 터뜨린 순간: 대기 높이에서 바로 나타나 한 번 튄다.</summary>
+    internal void RevealFromSummon()
+    {
+        if (!_awaitingSummonReveal) return;
+        _awaitingSummonReveal = false;
+        if (!_built || _deadVisual || owner == null || owner.IsDead) return;
+
+        _spawnElapsed = preset.summonSeconds;   // 솟아오르기 없이 대기 높이에서 시작
+        _wheel.gameObject.SetActive(true);
+        // 연속 방출이 차오르길 기다리지 않도록 GPU 입자를 미리 1초 진행한다(시뮬레이션 BurstReadyOrb).
+        _wheel.GetComponentsInChildren(true, _flashEffects);
+        for (int i = 0; i < _flashEffects.Count; i++)
+        {
+            VisualEffect effect = _flashEffects[i];
+            if (effect == null || !effect.enabled) continue;
+            effect.Reinit();
+            effect.Play();
+            effect.Simulate(1f / 60f, 60);
+        }
+        UnitSfxProfile.Play(owner, UnitSfxEvent.Summon);
+        if (isActiveAndEnabled) _summonBurst = StartCoroutine(SummonBurst());
+    }
+
+    private IEnumerator SummonBurst()
+    {
+        float rise = preset.summonBurstRiseSeconds;
+        float settle = preset.summonBurstSettleSeconds;
+        for (float t = 0f; t < rise + settle; t += Time.deltaTime * BattleSpeed())
+        {
+            _wheel.localScale = Vector3.one * SummonBurstScale(t, rise, settle, preset.summonBurstPeak);
+            yield return null;
+        }
+
+        _wheel.localScale = Vector3.one;
+        _summonBurst = null;
+    }
+
+    private void CancelSummonBurst()
+    {
+        if (_summonBurst == null) return;
+        StopCoroutine(_summonBurst);
+        _summonBurst = null;
+        if (_wheel != null) _wheel.localScale = Vector3.one;
+    }
+
+    /// <summary>소환 튀김 크기 배율: rise 동안 1→peak, 이어서 settle 동안 부드럽게 1로.</summary>
+    internal static float SummonBurstScale(float elapsed, float rise, float settle, float peak)
+    {
+        if (elapsed < rise) return Mathf.Lerp(1f, peak, Mathf.Clamp01(elapsed / Mathf.Max(.0001f, rise)));
+        return Mathf.Lerp(peak, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((elapsed - rise) / Mathf.Max(.0001f, settle))));
     }
 
     private void SpawnSummon()
@@ -150,12 +215,18 @@ public sealed class HoopWheelVisual : MonoBehaviour
         }
 
         if (!_built || _deadVisual || owner == null || owner.IsDead) return;
+        if (_awaitingSummonReveal)
+        {
+            // 소환 연출이 중간에 끊겨도 영영 숨지 않게 한다.
+            if (Time.realtimeSinceStartup - _awaitingSummonSince > SummonRevealTimeoutSeconds) RevealFromSummon();
+            return;
+        }
 
         float dt = Time.deltaTime * BattleSpeed();
         _spawnElapsed += dt;
 
         Vector3 p = Vector3.up * _wheelHeight;
-        p.y += Mathf.Sin(_spawnElapsed * HoverFrequency) * preset.hoverHeight;
+        p.y += Mathf.Sin(_spawnElapsed * Mathf.PI * 2f / preset.hoverPeriodSeconds) * preset.hoverHeight;
         p.y -= Mathf.Max(0f, 1f - _spawnElapsed / preset.summonSeconds) * SummonDropDistance;
         if (preset.wheelVisualPrefab != null)
             p.y = Mathf.Max(p.y, preset.wheelVisualRadius + WheelFloorClearance);
@@ -217,10 +288,13 @@ public sealed class HoopWheelVisual : MonoBehaviour
     private void HandleDied(BattleCharactor _)
     {
         if (!_built || _deadVisual) return;
+        _awaitingSummonReveal = false;
+        CancelSummonBurst();
         _deadVisual = true;   // 이후 LateUpdate는 부유·회전을 멈춘다(중심광은 그 자리에서).
         UnitSfxProfile.Play(owner, UnitSfxEvent.Death);
         // 연기를 중심광과 같은 프레임에 시작해 두 재료가 하나의 파괴로 이어지게 한다.
-        SpawnBreakEffect();
+        // 납품 폭발은 시뮬레이션처럼 부풀기가 끝난 뒤(BreakWheel) 터진다.
+        if (preset.productionExplosionPrefab == null) SpawnBreakEffect();
         if (preset.wheelVisualPrefab != null && preset.breakFlashSeconds > 0f && isActiveAndEnabled)
         {
             _breakFlashBaseScale = _wheel.localScale;
@@ -265,6 +339,12 @@ public sealed class HoopWheelVisual : MonoBehaviour
     private void SpawnBreakEffect()
     {
         if (_breakEffect != null) return;
+        if (preset.productionExplosionPrefab != null)
+        {
+            _breakEffect = UliaVfx.VfxSpawn.Burst(preset.productionExplosionPrefab,
+                _wheel.position, .38f, null);
+            return;
+        }
         if (preset.wheelBreakPrefab != null)
         {
             // 씬 루트에 생성: 굴렁쇠 오브젝트는 사망 0.8초 뒤 파괴되지만 연기는 그보다 오래 남아야 한다.

@@ -12,20 +12,20 @@ public sealed class VisualEffectGraphEffectTests
 
     private static readonly string[] LoopCuePrefabPaths =
     {
-        "Assets/ASB_Work/Effect/Yulia/FX_400010_YuliaCastCharge.prefab",
-        "Assets/ASB_Work/Effect/Yulia/FX_400020_AmplifierCastCharge.prefab"
+        "Assets/ASB_Work/Effect/Yulia/Boss/FX_400010_YuliaCastCharge.prefab",
+        "Assets/ASB_Work/Effect/Yulia/Amplifier/FX_400020_AmplifierCastCharge.prefab"
     };
 
     private static readonly string[] PersistentPrefabPaths =
     {
-        "Assets/ASB_Work/Effect/Yulia/FX_AmplifierIdleElectric.prefab",
-        "Assets/ASB_Work/Effect/Yulia/FX_YuliaIdleHandOrb.prefab"
+        "Assets/ASB_Work/Effect/Yulia/Amplifier/FX_AmplifierIdleElectric.prefab",
+        "Assets/ASB_Work/Effect/Yulia/Boss/FX_YuliaIdleHandOrb.prefab"
     };
 
     private static readonly string[] OneShotPrefabPaths =
     {
-        "Assets/ASB_Work/Effect/Yulia/FX_400019_YuliaLightningHit.prefab",
-        "Assets/ASB_Work/Effect/Yulia/FX_HoopSummonPortal.prefab"
+        "Assets/ASB_Work/Effect/Yulia/Boss/FX_400019_YuliaLightningHit.prefab",
+        "Assets/ASB_Work/Effect/Yulia/Hoop/FX_HoopSummonPortal.prefab"
     };
 
     private static readonly string[] YuliaLightningSkills = { "400011", "400012", "400023", "400033" };

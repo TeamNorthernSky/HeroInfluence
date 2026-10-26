@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1300130013001300131
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1300130013001300132}
+  - component: {fileID: 1300130013001300133}
+  m_Layer: 0
+  m_Name: FX_400013_HoopSummonCast
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1300130013001300132
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1300130013001300131}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1300130013001300133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1300130013001300131}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 047d11ea079d48d98c02301fedbf9d4c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  orbPrefab: {fileID: 5608231744471294428, guid: c8216fd408b7f0547a38e95b088b7823,
+    type: 3}
+  ringPrefab: {fileID: 1475618779179179817, guid: 35d3b8792f929c34185022d2e97469a8,
+    type: 3}
+  gatherPrefab: {fileID: 2026266475295086964, guid: f155b514c51fb484cbc11ecf7ae4aef1,
+    type: 3}
+  splitTrailMaterial: {fileID: 2100000, guid: 9367e477a163c944c97ad0aa357cbf18, type: 2}
+  preset: {fileID: 11400000, guid: 4363b25c6bef63f42943c1fe7a8e6949, type: 2}
+  characterHeight: 2.061252
+  ringScaleByHeight: 1.12
+  gatherScaleByHeight: 0.13
+  spinGrowSeconds: 0.43
+  maxSpinSeconds: 0.9
+  spinDegreesPerSecond: 1800
+  splitTravelSeconds: 0.17
+  ringMorphSeconds: 0.083
+  ringHoldSeconds: 0.25
+  ringFadeSeconds: 0.15
+  releaseTimeoutSeconds: 2
+  gatherNativeBurstSeconds: 2.7
+  expectedReleaseSeconds: 1.5

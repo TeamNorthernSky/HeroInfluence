@@ -94,7 +94,7 @@ MonoBehaviour:
       WaitForHitEvent: 0
       Cues:
       - CueName: yulia_cast_charge
-        EffectIds: 8a1a0600
+        EffectIds: 8a1a06008d1a0600
         SoundIds: 
         Operation: 0
         InstanceKey: cast_charge

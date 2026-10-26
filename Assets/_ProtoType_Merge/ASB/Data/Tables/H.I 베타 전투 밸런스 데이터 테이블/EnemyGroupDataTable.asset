@@ -126,18 +126,18 @@ MonoBehaviour:
     MinLevel: 2
     MaxLevel: 2
   - EnemyIndex: A2FEP006
-    EnemyGroupName: "\uBA54\uC778 3-2(\uB85C\uB2C8 \uC804\uD22C / \uD0C8\uC601 \uD6C4
-      \uC870\uC6B0)"
-    Enemy1: FV20005
+    EnemyGroupName: "\uBA54\uC778 3-1(\uC2DC\uC704\uB300 \uBCF4\uD638 / \uC2DC\uC704\uB300
+      \uD6C4\uBC29 \uB300\uAE30)"
+    Enemy1: FV20001
     Enemy1Slot: 2
-    Enemy2: 
-    Enemy2Slot: 0
-    Enemy3: 
-    Enemy3Slot: 0
-    Enemy4: 
-    Enemy4Slot: 0
-    Enemy5: 
-    Enemy5Slot: 0
+    Enemy2: FV20001
+    Enemy2Slot: 4
+    Enemy3: FV20002
+    Enemy3Slot: 6
+    Enemy4: FV20003
+    Enemy4Slot: 1
+    Enemy5: FV20003
+    Enemy5Slot: 3
     Enemy6: 
     Enemy6Slot: 0
     MinLevel: 4
@@ -160,18 +160,18 @@ MonoBehaviour:
     MinLevel: 4
     MaxLevel: 4
   - EnemyIndex: A2FEP007
-    EnemyGroupName: "\uBA54\uC778 3-1(\uC2DC\uC704\uB300 \uBCF4\uD638 / \uC2DC\uC704\uB300
-      \uD6C4\uBC29 \uB300\uAE30)"
-    Enemy1: FV20001
+    EnemyGroupName: "\uBA54\uC778 3-2(\uB85C\uB2C8 \uC804\uD22C / \uD0C8\uC601 \uD6C4
+      \uC870\uC6B0)"
+    Enemy1: FV20005
     Enemy1Slot: 2
-    Enemy2: FV20001
-    Enemy2Slot: 4
-    Enemy3: FV20002
-    Enemy3Slot: 6
-    Enemy4: FV20003
-    Enemy4Slot: 1
-    Enemy5: FV20003
-    Enemy5Slot: 3
+    Enemy2: 
+    Enemy2Slot: 0
+    Enemy3: 
+    Enemy3Slot: 0
+    Enemy4: 
+    Enemy4Slot: 0
+    Enemy5: 
+    Enemy5Slot: 0
     Enemy6: 
     Enemy6Slot: 0
     MinLevel: 4

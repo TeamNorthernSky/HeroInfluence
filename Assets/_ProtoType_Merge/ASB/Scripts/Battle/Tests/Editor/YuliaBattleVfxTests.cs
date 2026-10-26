@@ -66,15 +66,19 @@ public sealed class YuliaBattleVfxTests
         float radius = (float)preset.GetType().GetField("wheelVisualRadius").GetValue(preset);
         float hover = (float)preset.GetType().GetField("hoverHeight").GetValue(preset);
         var orb = (GameObject)preset.GetType().GetField("wheelVisualPrefab").GetValue(preset);
-        var effect = orb.GetComponent<UnityEngine.VFX.VisualEffect>();
+        // 보이는 외형은 켜진 MagicOrb08 하나다(율리아 연출 시뮬레이션: 월드 배율 = 율리아 키 ÷ 5.3, 중심 = 키의 55%).
+        const float yuliaHeight = 2.061252f;
+        var effect = orb.GetComponentsInChildren<UnityEngine.VFX.VisualEffect>(true).FirstOrDefault(v => v.enabled);
         Assert.That(effect, Is.Not.Null);
-        float visualDiameter = effect.GetFloat("CircleSize") * orb.transform.localScale.x;
-        Assert.That(visualDiameter, Is.EqualTo(1.5f).Within(.02f), "구체 지름은 1.5m여야 한다.");
-        Assert.That(radius * 2f, Is.EqualTo(visualDiameter).Within(.02f), "높이 계산 반지름과 실제 구체 크기가 일치해야 한다.");
+        Assert.That(effect.transform.lossyScale.x, Is.EqualTo(yuliaHeight / 5.3f).Within(.005f), "구체 크기는 시뮬레이션과 같아야 한다.");
 
         MethodInfo resolve = FindRuntimeType("HoopWheelVisual").GetMethod("ResolveWheelHeight", AnyStatic);
         float height = (float)resolve.Invoke(null, new object[] { preset });
+        Assert.That(height, Is.EqualTo(yuliaHeight * .55f).Within(.01f), "중심 높이는 시뮬레이션과 같아야 한다.");
         Assert.That(height - hover - radius, Is.GreaterThanOrEqualTo(.19f), "부유 최저점에서도 외형 아래쪽과 바닥 사이에 간격이 있어야 한다.");
+        Renderer body = orb.GetComponentsInChildren<MeshRenderer>(true).FirstOrDefault(r => r.name == "Dense_Purple_Inner_Body");
+        Assert.That(body, Is.Not.Null, "안쪽 보라 구체가 없으면 배경이 비쳐 색이 연해진다.");
+        Assert.That(height - hover - body.transform.lossyScale.x * .5f, Is.GreaterThan(0f), "안쪽 구체도 바닥에 묻히지 않아야 한다.");
     }
 
     [Test]
@@ -103,55 +107,32 @@ public sealed class YuliaBattleVfxTests
     }
 
     [Test]
-    public void Stasis_QueuesOnlyOnFirstEntryToStasisPhaseWhileBossAlive()
+    public void Stasis_EntersOnSpawnOnlyInEncounterSceneWhileBossAlive()
     {
-        MethodInfo should = FindRuntimeType("YuliaStasisVfx").GetMethod("ShouldQueueStasis", AnyStatic);
-        Assert.That((bool)should.Invoke(null, new object[] { 3, 3, false, true }), Is.True);
-        Assert.That((bool)should.Invoke(null, new object[] { 2, 3, false, true }), Is.False, "2페이즈는 연출이 없다.");
-        Assert.That((bool)should.Invoke(null, new object[] { 3, 3, true, true }), Is.False, "한 번만 예약한다.");
-        Assert.That((bool)should.Invoke(null, new object[] { 3, 3, false, false }), Is.False, "율리아 처치(즉시 승리)면 연출하지 않는다.");
+        MethodInfo should = FindRuntimeType("YuliaStasisVfx").GetMethod("ShouldEnterStasisOnSpawn", AnyStatic);
+        Assert.That((bool)should.Invoke(null, new object[] { true, false, true }), Is.True, "페이즈 없이 등장부터 감금한다.");
+        Assert.That((bool)should.Invoke(null, new object[] { false, false, true }), Is.False, "블랙보드가 없는 씬(스킬 프리뷰 등)은 감금하지 않는다.");
+        Assert.That((bool)should.Invoke(null, new object[] { true, true, true }), Is.False, "한 번만 들어간다.");
+        Assert.That((bool)should.Invoke(null, new object[] { true, false, false }), Is.False, "율리아가 죽었으면 연출하지 않는다.");
     }
 
     [Test]
-    public void StasisShake_FadesBackToHome()
+    public void StasisShield_ShownOnlyWhileAnyAmplifierAlive()
     {
-        MethodInfo offset = FindRuntimeType("YuliaStasisVfx").GetMethod("ShakeOffset", AnyStatic);
-        var start = (Vector3)offset.Invoke(null, new object[] { 0f, 0.06f, new Vector2(1f, 0f) });
-        var end = (Vector3)offset.Invoke(null, new object[] { 1f, 0.06f, new Vector2(1f, 0f) });
-        Assert.That(start.x, Is.EqualTo(0.06f).Within(0.0001f));
-        Assert.That(start.y, Is.EqualTo(0f), "수평으로만 흔든다.");
-        Assert.That(end.magnitude, Is.EqualTo(0f).Within(0.0001f), "끝에는 원위치로 돌아온다.");
+        MethodInfo should = FindRuntimeType("YuliaStasisVfx").GetMethod("ShouldShowShield", AnyStatic);
+        Assert.That((bool)should.Invoke(null, new object[] { 2 }), Is.True);
+        Assert.That((bool)should.Invoke(null, new object[] { 1 }), Is.True, "하나라도 살아 있으면 막을 유지한다.");
+        Assert.That((bool)should.Invoke(null, new object[] { 0 }), Is.False, "전부 쓰러져 부활 대기 중이면 막을 없앤다.");
     }
 
     [Test]
-    public void Stasis_SuppressesListedEffectsOnlyWhileInStasis()
-    {
-        MethodInfo should = FindRuntimeType("YuliaStasisVfx").GetMethod("ShouldSuppressEffect", AnyStatic);
-        var charge = new GameObject("charge");
-        var other = new GameObject("other");
-        try
-        {
-            var list = new[] { charge };
-            Assert.That((bool)should.Invoke(null, new object[] { true, charge, list }), Is.True);
-            Assert.That((bool)should.Invoke(null, new object[] { false, charge, list }), Is.False, "감금 전에는 손 충전이 그대로 나온다.");
-            Assert.That((bool)should.Invoke(null, new object[] { true, other, list }), Is.False, "목록에 없는 이펙트는 막지 않는다.");
-            Assert.That((bool)should.Invoke(null, new object[] { true, charge, null }), Is.False);
-        }
-        finally
-        {
-            UnityEngine.Object.DestroyImmediate(charge);
-            UnityEngine.Object.DestroyImmediate(other);
-        }
-    }
-
-    [Test]
-    public void MadonnaUnit_HasStasisWithShieldAndStasisToggles()
+    public void MadonnaUnit_HasStasisShieldOnly()
     {
         GameObject unit = AssetDatabase.LoadAssetAtPath<GameObject>(MadonnaUnitPath);
-        Component stasis = unit.GetComponent(FindRuntimeType("YuliaStasisVfx"));
+        Type stasisType = FindRuntimeType("YuliaStasisVfx");
+        Component stasis = unit.GetComponent(stasisType);
         Assert.That(stasis, Is.Not.Null);
         var so = new SerializedObject(stasis);
-        Assert.That(so.FindProperty("stasisPhase").intValue, Is.EqualTo(3));
         var shield = so.FindProperty("shieldPrefab").objectReferenceValue as GameObject;
         Assert.That(shield, Is.Not.Null);
         // 막은 수명이 있는 VFX(5초)가 아니라 계속 유지되는 메시여야 한다.
@@ -159,22 +140,25 @@ public sealed class YuliaBattleVfxTests
         Assert.That(shield.GetComponentInChildren<Collider>(true), Is.Null, "데모 충돌체가 남으면 전투 클릭·대상 선택을 가린다.");
         Assert.That(shield.GetComponentInChildren<Rigidbody>(true), Is.Null);
 
-        SerializedProperty hide = so.FindProperty("hideWhileStasis");
-        Assert.That(hide.arraySize, Is.GreaterThan(0));
-        Assert.That(hide.GetArrayElementAtIndex(0).objectReferenceValue.name, Is.EqualTo("FX_YuliaIdleHandOrb"), "감금 중 손 구체를 끈다.");
-        SerializedProperty disable = so.FindProperty("disableWhileStasis");
-        Assert.That(disable.arraySize, Is.GreaterThan(0));
-        Assert.That(disable.GetArrayElementAtIndex(0).objectReferenceValue.GetType().Name, Is.EqualTo("UnitHitFlashVfx"), "감금 중 피격 점멸 대신 흔들림.");
-        SerializedProperty suppress = so.FindProperty("suppressEffectsWhileStasis");
-        Assert.That(suppress.arraySize, Is.GreaterThan(0));
-        Assert.That(suppress.GetArrayElementAtIndex(0).objectReferenceValue.name, Is.EqualTo("FX_400010_YuliaCastCharge"), "감금 중 손 충전을 스폰하지 않는다.");
+        // [2026-10-23 변경] 감금은 막만 띄운다. 정지 포즈·손 구체 숨김·피격 점멸 끄기·손 충전 억제·흔들림 없이 1·2페이즈처럼 나온다.
+        foreach (string removed in new[] { "hitStateName", "hideWhileStasis", "disableWhileStasis", "suppressEffectsWhileStasis", "shakeSeconds" })
+            Assert.That(so.FindProperty(removed), Is.Null, $"{removed}: 감금 중에도 애니메이션·이펙트는 평소대로 나온다.");
+        Assert.That(stasisType.GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic), Is.Null,
+            "정지 포즈로 되돌리는 LateUpdate가 없어야 한다.");
+        Assert.That(FindRuntimeType("IPresentationEffectSpawnFilter").IsAssignableFrom(stasisType), Is.False, "손 충전(FX_400010)을 막지 않는다.");
+
+        Transform orb = unit.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "FX_YuliaIdleHandOrb");
+        Assert.That(orb, Is.Not.Null);
+        Assert.That(orb.gameObject.activeSelf, Is.True, "감금 코드가 끄지 않으므로 프리팹 기본값이 켜져 있어야 손 구체가 보인다.");
+        var flash = (Behaviour)unit.GetComponent(FindRuntimeType("UnitHitFlashVfx"));
+        Assert.That(flash.enabled, Is.True, "프리팹 기본값이 켜져 있어야 피격 점멸이 나온다.");
     }
 
     // ----- 2026-10-19 미적용 항목 보완(Y01·Y05·Y06·Y07·Y10·Y11·A04) -----
 
     private const string WheelUnitPath = "Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanWheel_40005.prefab";
-    private const string RowLightningPath = "Assets/ASB_Work/Effect/FX_400011_RowLightning.prefab";
-    private const string RowBeamPath = "Assets/ASB_Work/Effect/FX_400012_RowBeam.prefab";
+    private const string RowLightningPath = "Assets/ASB_Work/Effect/Yulia/Boss/FX_400011_RowLightning.prefab";
+    private const string RowBeamPath = "Assets/ASB_Work/Effect/Yulia/Boss/FX_400012_RowBeam.prefab";
 
     [Test]
     public void Stasis_ShieldShrinksAwayOnDeath()
@@ -312,6 +296,43 @@ public sealed class YuliaBattleVfxTests
         Assert.That((float)progress.Invoke(null, new object[] { 1f }), Is.EqualTo(1f), "끝에서 최고 밝기로 연기와 바뀐다.");
     }
 
+    [Test]
+    public void HoopSummonBurst_PopsThenSettles()
+    {
+        MethodInfo scale = FindRuntimeType("HoopWheelVisual").GetMethod("SummonBurstScale", AnyStatic);
+        float At(float t) => (float)scale.Invoke(null, new object[] { t, 0.045f, 0.115f, 1.22f });
+        Assert.That(At(0f), Is.EqualTo(1f).Within(0.0001f), "나타나는 첫 프레임은 원래 크기.");
+        Assert.That(At(0.045f), Is.EqualTo(1.22f).Within(0.0001f), "0.045초에 최대로 튄다.");
+        Assert.That(At(0.1f), Is.InRange(1f, 1.22f));
+        Assert.That(At(0.16f), Is.EqualTo(1f).Within(0.0001f), "0.16초에 원래 크기로 돌아온다.");
+    }
+
+    [TestCase("Assets/ASB_Work/Effect/EffectRegistry.asset")]
+    [TestCase("Assets/RenderFX/_Seam/Data/Merged/JC_Merged_EffectRegistry.asset")]
+    public void HoopSummonCast_WiredToYuliaSummonChargeCue(string registryPath)
+    {
+        const int effectId = 400013;
+        var presentation = new SerializedObject(AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/ASB_Work/Skills/SkillPresentation_400013.asset"));
+        SerializedProperty cue = presentation.FindProperty("Attack.Beats.Array.data[0].Cues.Array.data[0]");
+        Assert.That(cue.FindPropertyRelative("CueName").stringValue, Is.EqualTo("yulia_cast_charge"));
+        SerializedProperty ids = cue.FindPropertyRelative("EffectIds");
+        Assert.That(Enumerable.Range(0, ids.arraySize).Select(i => ids.GetArrayElementAtIndex(i).intValue), Does.Contain(effectId),
+            "충전 Cue에서 소환 연출이 시작되고, 충전 종료 Cue(Stop)가 칸으로 보내는 신호가 된다.");
+
+        SerializedProperty entries = new SerializedObject(AssetDatabase.LoadAssetAtPath<ScriptableObject>(registryPath)).FindProperty("_entries");
+        GameObject prefab = Enumerable.Range(0, entries.arraySize).Select(entries.GetArrayElementAtIndex)
+            .Where(e => e.FindPropertyRelative("Id").intValue == effectId)
+            .Select(e => e.FindPropertyRelative("Prefab").objectReferenceValue as GameObject)
+            .FirstOrDefault();
+        Assert.That(prefab, Is.Not.Null, "전투 씬은 병합 레지스트리를 읽는다. 원본과 병합본 모두 있어야 재생성 후에도 유지된다.");
+
+        Component effect = prefab.GetComponent(FindRuntimeType("HoopSummonCastEffect"));
+        Assert.That(effect, Is.Not.Null);
+        var so = new SerializedObject(effect);
+        foreach (string field in new[] { "orbPrefab", "ringPrefab", "gatherPrefab", "splitTrailMaterial", "preset" })
+            Assert.That(so.FindProperty(field).objectReferenceValue, Is.Not.Null, field);
+    }
+
     // ----- 3페이즈 진입: 쓰러진 증폭기 즉시 부활 → 율리아 정지장 -----
 
     [Test]
@@ -328,14 +349,13 @@ public sealed class YuliaBattleVfxTests
 
     [TestCase("Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanAmplifier_40002.prefab")]
     [TestCase("Assets/Resources/prefab/BattlePrefab/EnemyUnit/Unit_VillanAmplifier_40003.prefab")]
-    public void Phase3_AmplifierRevivesImmediatelyAtHalfHp(string path)
+    public void Amplifier_RevivesAfterCountdownAtHalfHp_WithoutPhaseEntryRevive(string path)
     {
         Type type = FindRuntimeType("EncounterParticipant");
         var so = new SerializedObject(AssetDatabase.LoadAssetAtPath<GameObject>(path).GetComponent(type));
-        Assert.That(so.FindProperty("_immediateRevivePhase").intValue, Is.EqualTo(3));
-        Assert.That(so.FindProperty("_reviveHpRatio").floatValue, Is.EqualTo(0.5f).Within(0.0001f), "기존 시체 부활과 같은 50%.");
-        Assert.That(so.FindProperty("_corpseReviveDelayRounds").intValue, Is.EqualTo(2), "3페이즈 재사망은 기존 2라운드 규칙.");
-        Assert.That((int)type.GetField("PhaseReviveInterludeOrder").GetValue(null), Is.LessThan(0), "율리아 정지장(기본 0)보다 먼저.");
+        Assert.That(so.FindProperty("_immediateRevivePhase").intValue, Is.EqualTo(0), "율리아전 페이즈가 없어 페이즈 진입 즉시 부활은 쓰지 않는다.");
+        Assert.That(so.FindProperty("_reviveHpRatio").floatValue, Is.EqualTo(0.5f).Within(0.0001f), "시체 부활은 HP 50%.");
+        Assert.That(so.FindProperty("_corpseReviveDelayRounds").intValue, Is.EqualTo(2), "사망 후 2라운드 뒤 부활.");
     }
 
     [Test]

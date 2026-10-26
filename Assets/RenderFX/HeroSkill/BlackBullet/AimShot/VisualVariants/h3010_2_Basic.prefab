@@ -503,6 +503,10 @@ MonoBehaviour:
   - {fileID: 5769383413019338701}
   - {fileID: 3806195819030241227}
   longTrail: {fileID: 5581792461920268501}
+  useDamageHitEffect: 1
+  splitPrefab: {fileID: 0}
+  splitFraction: 0.5
+  splitScale: 0.65
 --- !u!1 &6617605537222538841
 GameObject:
   m_ObjectHideFlags: 0

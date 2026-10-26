@@ -269,10 +269,10 @@ MonoBehaviour:
   _blackboard: {fileID: 0}
   _useIncapacitation: 0
   _keepCorpseAfterDeath: 1
-  _reviveStartPhase: 2
+  _reviveStartPhase: 1
   _corpseReviveDelayRounds: 2
   _reviveHpRatio: 0.5
-  _immediateRevivePhase: 3
+  _immediateRevivePhase: 0
   _immediateReviveHoldSeconds: 0.7
 --- !u!1 &7706491001306831887
 GameObject:
@@ -517,6 +517,56 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6181626145654986074, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 419dcbb4f3d5fbe7ecc3c8235aec0585, type: 2}
+    - target: {fileID: 5213453868313099831, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: f562d3a5bd62f2f50e15720c7f8123ba, type: 2}
+    - target: {fileID: 1354659972102087699, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: e323e3696d0e351ca0d7ae1578662aae, type: 2}
+    - target: {fileID: 2503996714293667742, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 724ea0926341c6fbfdbfa44a71afdac0, type: 2}
+    - target: {fileID: 3542448368068196030, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 39ce4de61b9ef21a2e410256781bb550, type: 2}
+    - target: {fileID: 5574910272484511231, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 311ba1f69dd67b0a019c337cae5be630, type: 2}
+    - target: {fileID: 682694939608099790, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 3b1abda8041f0355dd44246895914f10, type: 2}
+    - target: {fileID: 5906142732580310682, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 5906142732580310682, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.86
+      objectReference: {fileID: 0}
+    - target: {fileID: 5906142732580310682, guid: 98dfb408f4103f94d84f58c677acb37e,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

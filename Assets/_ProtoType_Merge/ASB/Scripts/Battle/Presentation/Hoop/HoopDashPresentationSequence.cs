@@ -43,6 +43,7 @@ public sealed class HoopDashPresentationSequence : IAoESkillPresentationSequence
         TrailRenderer trail = null;
         JC.VFX.VfxEffect arc = null;
         Transform arcTail = null;
+        GameObject nativeRush = null;
         bool hitDelivered = false;
         try
         {
@@ -64,6 +65,27 @@ public sealed class HoopDashPresentationSequence : IAoESkillPresentationSequence
                 trail = CreateTrail(preset, home + Vector3.up * trailHeight, battleManager);
             }
 
+            if (preset.productionRushPrefab != null)
+            {
+                Vector3 direction = end - home;
+                if (direction.sqrMagnitude < .001f) direction = Vector3.forward;
+                nativeRush = UliaVfx.VfxSpawn.Spawn(preset.productionRushPrefab,
+                    visual.WheelCenter.position, Quaternion.LookRotation(direction.normalized), .24f);
+                // 시뮬레이션 돌진 보정: 전기 입자 2.2배, 트레일 폭 3배·최소 0.28초.
+                foreach (ParticleSystem particle in nativeRush.GetComponentsInChildren<ParticleSystem>(true))
+                {
+                    if (particle.name != "electric") continue;
+                    ParticleSystem.MainModule main = particle.main;
+                    main.startSizeMultiplier *= 2.2f;
+                }
+                foreach (TrailRenderer rushTrail in nativeRush.GetComponentsInChildren<TrailRenderer>(true))
+                {
+                    rushTrail.widthMultiplier *= 3f;
+                    rushTrail.time = Mathf.Max(rushTrail.time, .28f);
+                    rushTrail.Clear();
+                }
+            }
+
             float elapsed = 0f;
             while (elapsed < preset.dashSeconds && actor != null)
             {
@@ -79,11 +101,21 @@ public sealed class HoopDashPresentationSequence : IAoESkillPresentationSequence
                     trail.time = preset.trailSeconds / BattleSpeed(battleManager);
                     trail.transform.position = actor.transform.position + Vector3.up * trailHeight;
                 }
+                if (nativeRush != null) nativeRush.transform.position = visual.WheelCenter.position;
                 yield return null;
             }
 
             // 도착하면 이동을 멈추고 뒤쪽 아크를 먼저 소거한다(기획 Y09).
             StopArc(ref arc, ref arcTail);
+            if (nativeRush != null)
+            {
+                foreach (ParticleSystem particle in nativeRush.GetComponentsInChildren<ParticleSystem>(true))
+                    particle.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+                foreach (TrailRenderer rushTrail in nativeRush.GetComponentsInChildren<TrailRenderer>(true))
+                    rushTrail.emitting = false;
+                UnityEngine.Object.Destroy(nativeRush, .25f);
+                nativeRush = null;
+            }
             yield return Wait(battleManager, preset.impactDelaySeconds);
             applyHits?.Invoke();
             hitDelivered = true;
@@ -92,6 +124,7 @@ public sealed class HoopDashPresentationSequence : IAoESkillPresentationSequence
         finally
         {
             StopArc(ref arc, ref arcTail);
+            if (nativeRush != null) UnityEngine.Object.Destroy(nativeRush);
             if (trail != null)
             {
                 trail.emitting = false;

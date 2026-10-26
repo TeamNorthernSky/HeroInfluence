@@ -348,21 +348,15 @@ public class EnemySpawner : MonoBehaviour
     /// 점유 시 실패하는 안전 소환. 보스 런타임 소환용(구현지시서: 보스유닛_소환_창구스킬_페이즈AI §1·§4).
     /// <see cref="SpawnUnit"/>과 달리 <c>ClearGrid</c>로 기존 유닛을 파괴하지 않는다 — 대상 셀에
     /// BattleCharactor/인질이 이미 있으면 스폰하지 않고 false를 반환한다.
+    /// 데이터·스킬은 entry(<see cref="EnemySpawnPlanBuilder.TryBuildEventUnitEntry"/>)로 받고, 초기화는 계획 스폰과 같다.
     /// </summary>
-    public bool TrySpawnUnitIfEmpty(string enemyId, int gridNumber, out GameObject spawned)
-        => TrySpawnUnitIfEmpty(enemyId, gridNumber, null, out spawned);
-
-    /// <summary>소환체 한 개의 기본 스탯만 바꾼다. 카탈로그의 공유 EnemyData는 수정하지 않는다.</summary>
-    public bool TrySpawnUnitIfEmpty(string enemyId, int gridNumber, StatBlock baseStats, out GameObject spawned)
-        => TrySpawnUnitIfEmpty(enemyId, gridNumber, (StatBlock?)baseStats, out spawned);
-
-    private bool TrySpawnUnitIfEmpty(string enemyId, int gridNumber, StatBlock? baseStatsOverride, out GameObject spawned)
+    public bool TrySpawnUnitIfEmpty(EnemySpawnEntry entry, int gridNumber, out GameObject spawned)
     {
         spawned = null;
 
-        if (string.IsNullOrWhiteSpace(enemyId))
+        if (entry == null || entry.Data == null)
         {
-            Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: enemyId가 비어 있습니다. ({gameObject.name})");
+            Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: 스폰 entry가 비어 있습니다. ({gameObject.name})");
             return false;
         }
 
@@ -393,68 +387,21 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        DHCsvTemplateCatalog.Instance.TryGetEnemyTemplate(enemyId, out EnemyData data);
-        if (data == null)
-        {
-            Debug.LogError($"[EnemySpawner] TrySpawnUnitIfEmpty: EnemyData를 찾지 못했습니다. enemyId='{enemyId}'");
-            return false;
-        }
-
-        if (baseStatsOverride.HasValue)
-        {
-            // AI·스킬 조회에 쓰는 이름과 인덱스는 유지하고, 이번 소환체의 스탯만 교체한다.
-            data = new EnemyData
-            {
-                Index = data.Index,
-                UnitType = data.UnitType,
-                Name = data.Name,
-                baseStats = baseStatsOverride.Value,
-                levelupStats = default,
-                IsEnemyRow = data.IsEnemyRow,
-                UnitAI = data.UnitAI,
-                ExperiencePoint = data.ExperiencePoint,
-                DropItem1Index = data.DropItem1Index,
-                DropItem1Count = data.DropItem1Count,
-                DropItem1Rate = data.DropItem1Rate
-            };
-        }
-
-        GameObject prefab = FindPrefab(data);
+        GameObject prefab = ResolvePlanPrefab(entry);
         if (prefab == null)
         {
+            Debug.LogError(
+                $"[EnemySpawner] TrySpawnUnitIfEmpty: Prefab not found. prefabKey='{entry.PrefabKey}', index='{entry.Data.Index}'",
+                this);
             return false;
         }
 
         Quaternion facingPlayerRot = ApplyFacingPlayerRotation(worldRot);
-        var go = Instantiate(prefab, worldPos, facingPlayerRot, resolvedCell.transform);
-        go.name = $"Enemy_{data.Index}_{go.GetInstanceID()}";
-
-        foreach (var legacy in go.GetComponentsInChildren<CharactorScript>(true))
-        {
-            DestroyImmediate(legacy);
-        }
-
-        var enemyScript = go.GetComponent<EnemyScript>();
-        if (enemyScript == null)
-        {
-            enemyScript = go.AddComponent<EnemyScript>();
-        }
-        enemyScript.Initialize(data);
-
-        var battle = go.GetComponent<BattleCharactor>();
-        if (battle == null)
-        {
-            battle = go.AddComponent<BattleCharactor>();
-        }
-
-        battle.AssignToCell(resolvedCell);
-        resolvedCell.SetOccupyingUnit(battle);
-
-        spawnedByGrid[gridNumber] = go;
-        HookEnemyDeathRemoval(battle, gridNumber);
+        GameObject go = Instantiate(prefab, worldPos, facingPlayerRot, resolvedCell.transform);
+        InitializeSpawnedEntry(go, entry, resolvedCell, gridNumber);
         spawned = go;
         Debug.Log(
-            $"[EnemySpawner] 안전 소환 완료: id={enemyId}, grid={gridNumber}, Index={data.Index}, place={gameObject.name}");
+            $"[EnemySpawner] 안전 소환 완료: unit={entry.SourceUnitKey}, grid={gridNumber}, Index={entry.Data.Index}, place={gameObject.name}");
         return true;
     }
 
@@ -603,6 +550,13 @@ public class EnemySpawner : MonoBehaviour
 
         Quaternion facingPlayerRot = ApplyFacingPlayerRotation(slot.WorldRotation);
         GameObject go = Instantiate(prefab, slot.WorldPosition, facingPlayerRot, cell.transform);
+        InitializeSpawnedEntry(go, entry, cell, slot.GridNumber);
+        return go;
+    }
+
+    // 계획 스폰과 안전 소환이 공유: EnemyScript 초기화 → 동작 키 → 명시 스킬 → 셀 점유·사망 훅.
+    private void InitializeSpawnedEntry(GameObject go, EnemySpawnEntry entry, GridCellRef cell, int gridNumber)
+    {
         go.name = $"Enemy_{entry.Data.Index}_{go.GetInstanceID()}";
 
         foreach (CharactorScript legacy in go.GetComponentsInChildren<CharactorScript>(true))
@@ -646,9 +600,8 @@ public class EnemySpawner : MonoBehaviour
 
         battle.AssignToCell(cell);
         cell.SetOccupyingUnit(battle);
-        spawnedByGrid[slot.GridNumber] = go;
-        HookEnemyDeathRemoval(battle, slot.GridNumber);
-        return go;
+        spawnedByGrid[gridNumber] = go;
+        HookEnemyDeathRemoval(battle, gridNumber);
     }
 
     // 빌더가 정한 전투 동작 키를 유닛의 Timeline 조회 키로 옮긴다. PrefabKey·경로에서 추론하지 않는다.
@@ -749,6 +702,20 @@ public class EnemySpawner : MonoBehaviour
     private static Quaternion ApplyFacingPlayerRotation(Quaternion gridRotation)
     {
         return gridRotation * FacingPlayerYawOffset;
+    }
+
+    /// <summary>
+    /// 연출용 조회: 칸의 월드 위치와, 지금 소환할 수 있는 빈 칸인지(TrySpawnUnitIfEmpty와 같은 점유 기준).
+    /// 상태는 바꾸지 않는다.
+    /// </summary>
+    public bool TryGetEmptyGridPosition(int gridNumber, out Vector3 position)
+    {
+        position = default;
+        if (!hierarchyReady) return false;
+        if (!gridSlots.TryGetValue(gridNumber, out position)) return false;
+        if (!gridCellsByNumber.TryGetValue(gridNumber, out GridCellRef cell) || cell == null) return false;
+        return cell.GetComponentInChildren<BattleCharactor>(true) == null
+            && cell.GetComponentInChildren<HostageBattleActor>(true) == null;
     }
 
     /// <summary>GridCell에 대응하는 스포너의 표준 gridNumber를 반환한다.</summary>

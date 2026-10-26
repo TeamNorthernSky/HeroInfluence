@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5891585664651290457
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7877874215667320473}
+  - component: {fileID: 822733386478299580}
+  m_Layer: 0
+  m_Name: Amplifier_VFX_Rig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7877874215667320473
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5891585664651290457}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &822733386478299580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5891585664651290457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc5f2d50ff36bfa41a0c8d31ab0e7dd3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  idlePrefab: {fileID: 8251054824596030187, guid: fa86266d30fe39b4c882a7574c157323,
+    type: 3}
+  stormPrefab: {fileID: 18111134782449830, guid: 54e5ee3edfdbbbb498dfe90d94822284,
+    type: 3}
+  supplyPrefab: {fileID: 2026266475295086964, guid: 983dc6ceba5da5e469d0f34f6f5fe42d,
+    type: 3}
+  explosionPrefab: {fileID: 5749234427374420805, guid: 6c16a6fb5101851438d03f92f5853fe4,
+    type: 3}
+  smokePrefab: {fileID: 5466907450648548358, guid: 26825040afb865f43b18c53213c05512,
+    type: 3}
+  castPrefab: {fileID: 119035610808671496, guid: 5fd1fb820daea8e4eacfef31c38677b9,
+    type: 3}
+  trajectoryPrefab: {fileID: 3228044897485633166, guid: 6320e14957bc5194495ac2e1472d726f,
+    type: 3}
+  coreAnchor: {fileID: 0}
+  coreVisual: {fileID: 0}
+  coreLights: []
+  effectCamera: {fileID: 0}

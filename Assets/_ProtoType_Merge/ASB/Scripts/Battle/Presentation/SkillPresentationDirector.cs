@@ -1267,6 +1267,9 @@ public sealed partial class SkillPresentationDirector
             yield break;
         }
 
+        yield return PlayCuePhaseRoutine(actor, target, skill, presentation,
+            NextActionInstanceId(), presentation.MovePrepare, null, null);
+        if (actor == null || actor.IsDead) yield break;
         var approach = new ActionSequenceRunner();
         EnqueueMovingAttackApproach(approach, plan, actorAnim, movement, presentation.Move);
         yield return _battle.StartCoroutine(approach.RunAll(_battle));
@@ -1411,6 +1414,9 @@ public sealed partial class SkillPresentationDirector
                                  (presentation.Move?.Enabled ?? true) && shouldRotate;
         if (movingAttackPlan != null)
         {
+            yield return PlayCuePhaseRoutine(actor, primaryTarget, skill, presentation,
+                NextActionInstanceId(), presentation.MovePrepare, null, null);
+            if (actor == null || actor.IsDead) yield break;
             var approach = new ActionSequenceRunner();
             EnqueueMovingAttackApproach(approach, movingAttackPlan, actor.Anim, movement, presentation.Move);
             yield return _battle.StartCoroutine(approach.RunAll(_battle));

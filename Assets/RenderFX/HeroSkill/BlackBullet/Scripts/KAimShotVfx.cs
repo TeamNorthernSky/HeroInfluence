@@ -87,6 +87,24 @@ namespace JC.VFX
         public bool UsesPreset(KAimShotPreset p) => masterPreset != null && masterPreset == p;
         public Vector3 ShotDirection => TravelDirection();
         public Vector3 ShotOrigin => _shotOrigin;
+        public Vector3 LiveMuzzlePosition => ResolveMuzzlePosition();
+        public Vector3 TargetMeshCenter
+        {
+            get
+            {
+                if (_target == null) return _impactPoint;
+                Renderer body = null;
+                float size = 0f;
+                foreach (var renderer in _target.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                {
+                    if (renderer.sharedMesh == null) continue;
+                    float candidate = renderer.bounds.size.sqrMagnitude;
+                    if (candidate > size) { body = renderer; size = candidate; }
+                }
+                return body != null ? body.bounds.center : _impactPoint;
+            }
+        }
+
         public Vector3 BulletPosition => _headPos;
         public Vector3 ImpactPosition => _impactPoint;
         public float SequenceTime => _seqT;

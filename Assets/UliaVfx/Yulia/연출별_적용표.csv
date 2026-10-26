@@ -1,0 +1,11 @@
+﻿분류,연출,권장프리팹,호출,필수입력
+율리아,전투 대기/손 에너지,Yulia_VFX_Rig,SetIdle(true),Bind의 손 위치
+율리아,피격,Yulia_VFX_Rig,"PlayBodyHit(point,normal)",피격 월드 위치/법선
+율리아,방어막 생성,Yulia_VFX_Rig,GenerateShield(corePositions),증폭기 코어 월드 위치 배열
+율리아,굴렁쇠 시전·소환,Yulia_VFX_Rig,CastDespairRings(tilePositions),바닥 월드 위치 세 개
+율리아,굴렁쇠 대기,DespairRing_VFX,"Show(center,height)",중심/캐릭터 키
+율리아,굴렁쇠 개별 돌진,DespairRing_VFX,RushTo(end),월드 끝점
+율리아,굴렁쇠 개별 파괴,DespairRing_VFX,Explode(),대상 인스턴스
+율리아,방어막 유지,Yulia_VFX_Rig,ShowShield(),Bind의 중심/키
+율리아,방어막 피격 흡수,Yulia_VFX_Rig,HitShield(point),월드 충격 위치
+율리아,방어막 소멸,Yulia_VFX_Rig,BreakShield(point),월드 충격 위치

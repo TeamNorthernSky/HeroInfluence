@@ -20,8 +20,10 @@ public class MainEventObject : MonoBehaviour
     private MainEventRegistry mainEventRegistry;
     private bool isTriggering;
     private bool eventBattleRequestedDuringTrigger;
+    private bool waitingForPostBattleChat;
     private Action<MainEventObject> pendingClosedCallback;
 
+    public bool WaitingForPostBattleChat => waitingForPostBattleChat;
     public string EventKey => string.IsNullOrWhiteSpace(eventKey) ? name : eventKey.Trim();
     public int ZoneId => Mathf.Max(1, zoneId);
     public int ChatId => Mathf.Max(0, chatId);
@@ -39,7 +41,7 @@ public class MainEventObject : MonoBehaviour
     {
         ResolveReferences();
 
-        if (Application.isPlaying && IsCompleted())
+        if (Application.isPlaying && IsCompleted() && !waitingForPostBattleChat)
         {
             gameObject.SetActive(false);
             return;
@@ -51,6 +53,15 @@ public class MainEventObject : MonoBehaviour
     private void OnDisable()
     {
         mainEventRegistry?.Unregister(this);
+    }
+
+    private void OnDestroy()
+    {
+        UnsubscribeEventBattleRequested();
+        JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
+        DHEventEffectRuntimeManager.Instance?.ClearActiveMainEventSource(EventKey);
+        pendingClosedCallback = null;
+        isTriggering = false;
     }
 
     private void OnValidate()
@@ -104,7 +115,7 @@ public class MainEventObject : MonoBehaviour
 
     public bool TryTrigger(PartyGridMover party, Action<MainEventObject> closedCallback = null)
     {
-        if (!Application.isPlaying || isTriggering || IsCompleted())
+        if (!Application.isPlaying || isTriggering || waitingForPostBattleChat || IsCompleted())
             return false;
 
         if (ChatId <= 0)
@@ -157,6 +168,7 @@ public class MainEventObject : MonoBehaviour
 
     public void DeactivateByDisableEffect()
     {
+        waitingForPostBattleChat = false;
         if (!Application.isPlaying)
         {
             gameObject.SetActive(false);
@@ -170,6 +182,10 @@ public class MainEventObject : MonoBehaviour
 
     private void HandleChatClosed()
     {
+        // The chat UI can finish closing after its source scene has been unloaded.
+        if (this == null || !Application.isPlaying || !isTriggering)
+            return;
+
         JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
         isTriggering = false;
         UnsubscribeEventBattleRequested();
@@ -192,7 +208,7 @@ public class MainEventObject : MonoBehaviour
         closedCallback?.Invoke(this);
     }
 
-    public void CompleteAfterEventBattleVictory()
+    public void CompleteAfterEventBattleVictory(bool deferDeactivation = false)
     {
         if (!Application.isPlaying)
             return;
@@ -201,6 +217,17 @@ public class MainEventObject : MonoBehaviour
         if (!IsCompleted())
             MarkCompleted();
 
+        waitingForPostBattleChat = deferDeactivation;
+        if (!waitingForPostBattleChat)
+            gameObject.SetActive(false);
+    }
+
+    public void FinishPostBattleChat()
+    {
+        if (!waitingForPostBattleChat)
+            return;
+
+        waitingForPostBattleChat = false;
         gameObject.SetActive(false);
     }
 

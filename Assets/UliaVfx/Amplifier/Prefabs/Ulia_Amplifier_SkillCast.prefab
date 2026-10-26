@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5198684490679962319
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4589481009101160301}
+  - component: {fileID: 119035610808671496}
+  m_Layer: 0
+  m_Name: Ulia_Amplifier_SkillCast
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4589481009101160301
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5198684490679962319}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &119035610808671496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5198684490679962319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 279318656a8b569428bae44c57e1a299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectKind: 0
+  playOnEnable: 0
+  effectCamera: {fileID: 0}
+  chargePrefab: {fileID: 8251054824596030187, guid: 413ffbdb1b94a614195a6a38ee0e6593,
+    type: 3}
+  coreGlowPrefab: {fileID: 8100592046343707627, guid: e03b04562c25b35469be313701b30d93,
+    type: 3}
+  arcPrefab: {fileID: 0}
+  orbPrefab: {fileID: 0}
+  trajectoryPortalPrefab: {fileID: 0}
+  trajectoryImpactPrefab: {fileID: 0}
+  trajectoryVolumetricPortalPrefab: {fileID: 0}
+  trajectoryChargePrefab: {fileID: 0}
+  trajectoryBranchPrefab: {fileID: 0}
+  trajectoryLightningPrefab: {fileID: 0}
+  wormholeShader: {fileID: 0}
+  trajectoryCrispShader: {fileID: 0}
+  trajectoryChargeSeconds: 0.55
+  trajectoryWidthMultiplier: 1.85
+  trajectoryAfterglowSeconds: 0.1
+  chargeSeconds: 0.55
+  drawSeconds: 0.18
+  holdSeconds: 0.6
+  localEndPoint: {x: 0, y: 0, z: -12.95}
+  endTarget: {fileID: 0}

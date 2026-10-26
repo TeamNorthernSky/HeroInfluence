@@ -37,6 +37,8 @@ public sealed class HoopVfxPreset : ScriptableObject
     [Header("Idle")]
     [Tooltip("대기 부유 진폭(m). 논리 슬롯은 움직이지 않는다.")]
     [Min(0f)] public float hoverHeight = .07f;
+    [Tooltip("대기 부유 한 번 왕복 시간(전투 배속 기준 초). 율리아 연출 시뮬레이션 기준 3.8초.")]
+    [Min(.1f)] public float hoverPeriodSeconds = 3.8f;
 
     [Header("Dash")]
     [Tooltip("돌진 전 충전 대기 시간.")]
@@ -55,8 +57,8 @@ public sealed class HoopVfxPreset : ScriptableObject
     [Header("Ultra Mega VFX (선택 — 비우면 코드로 그린 임시 외형)")]
     [Tooltip("바퀴 대신 띄울 외형 프리팹(Magic Orb). 부유·회전은 그대로 적용된다.")]
     public GameObject wheelVisualPrefab;
-    [Tooltip("wheelVisualPrefab의 보이는 반지름(m, 어두운 외곽 포함). 프리팹 스케일을 바꾸면 함께 맞출 것. " +
-             "지름 1.5m에 맞춰 CircleSize 4.5 × 프리팹 배율 1/3, 반지름 0.75m.")]
+    [Tooltip("wheelVisualPrefab의 보이는 반지름(m). 프리팹 스케일을 바꾸면 함께 맞출 것. 중심 높이는 반지름+부유 진폭+0.2m 이상. " +
+             "FX_HoopOrb(MagicOrb08 월드 배율 0.389 = 율리아 키 2.06 ÷ 5.3)는 0.814 → 중심 1.134m(키의 55%, 시뮬레이션과 같음).")]
     [Min(0f)] public float wheelVisualRadius = .75f;
     [Tooltip("소환 시 코드 소환진(보라 링) 대신 바닥에 재생할 포털 프리팹(Portal Effects, 기획 Y07). 회전·크기는 프리팹 루트 값을 쓴다.")]
     public GameObject summonPortalPrefab;
@@ -70,6 +72,18 @@ public sealed class HoopVfxPreset : ScriptableObject
     [Min(1f)] public float breakFlashScale = 1.25f;
     [Tooltip("돌진 중 트레일 대신 뒤쪽에 붙일 전기 아크 프리팹(ElectricArcEndpoints 필요).")]
     public GameObject dashArcPrefab;
+    [Tooltip("납품 패키지의 굴렁쇠 돌진 입자. 기존 돌진 이동·피격 시각에 따라간다.")]
+    public GameObject productionRushPrefab;
+    [Tooltip("납품 패키지의 개별 파괴 폭발. 기존 사망 이벤트에서 재생한다.")]
+    public GameObject productionExplosionPrefab;
     [Tooltip("아크 뒤쪽 끝점이 돌진 진행도에서 얼마나 뒤처지는지(0~1).")]
     [Range(0f, 1f)] public float dashArcLag = .35f;
+
+    [Header("Summon Burst (율리아 소환 연출로 나타날 때, HoopSummonCastEffect)")]
+    [Tooltip("소환 순간 구체가 튀는 최대 크기 배율. 시뮬레이션 1.22.")]
+    [Range(1f, 1.5f)] public float summonBurstPeak = 1.22f;
+    [Tooltip("최대 크기까지 커지는 시간(전투 배속 기준 초). 시뮬레이션 0.045.")]
+    [Min(.001f)] public float summonBurstRiseSeconds = .045f;
+    [Tooltip("원래 크기로 돌아오는 시간(전투 배속 기준 초). 시뮬레이션 0.115.")]
+    [Min(.001f)] public float summonBurstSettleSeconds = .115f;
 }

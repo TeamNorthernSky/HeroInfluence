@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
 
 /// <summary>
 /// 이벤트 전투 키-빌드(EnemySpawnPlanBuilder.TryBuildFromEventBattleKey) 검증.
@@ -18,6 +21,10 @@ public sealed class EventBattlePlanBuilderTests
     private static Type BuilderType => FindRuntimeType("EnemySpawnPlanBuilder");
     private static Type SourceType => FindRuntimeType("EventBattlePlanSource");
     private static Type CatalogType => FindRuntimeType("EventScriptCatalog");
+
+    // DHScene_3 DataStorage의 2구역 이벤트 전투 유닛 테이블(굴렁쇠 소환 데이터 출처).
+    private const string BetaZone2UnitTablePath =
+        "Assets/_ProtoType_Merge/ASB/Data/Tables/H.I 베타 2구역 이벤트 전투 테이블/EnemyUnit1SectorDataTable.asset";
 
     [Test]
     public void GuardSkill_EventAndCatalogKeysResolveToSameHandler()
@@ -95,6 +102,66 @@ public sealed class EventBattlePlanBuilderTests
             "카탈로그 미로드 시 사유에 카탈로그 부재가 드러나야 한다.");
     }
 
+    [TestCase("")]
+    [TestCase("   ")]
+    public void TryBuildUnit_EmptyUnitKey_Fails(string unitKey)
+    {
+        bool success = InvokeTryBuildUnit(2, unitKey, 1, out object unit, out string error);
+
+        Assert.That(success, Is.False, "빈 UnitKey는 즉시 실패해야 한다.");
+        Assert.That(unit, Is.Null, "실패 시 유닛을 반환하면 안 된다.");
+        Assert.That(string.IsNullOrEmpty(error), Is.False, "실패 사유(error)가 채워져야 한다.");
+    }
+
+    [Test]
+    public void TryBuildEventUnitEntry_CatalogMissing_Fails()
+    {
+        if (GetCatalogInstance() != null)
+        {
+            Assert.Ignore("EventScriptCatalog.Instance가 이미 존재(DDOL 잔존) — 카탈로그 미로드 경로를 격리 검증할 수 없어 스킵.");
+            return;
+        }
+
+        bool success = InvokeTryBuildEventUnitEntry(2, "FV40005", 1, out object entry, out string error);
+
+        Assert.That(success, Is.False);
+        Assert.That(entry, Is.Null);
+        Assert.That(error, Does.Contain("EventScriptCatalog"));
+    }
+
+    // 굴렁쇠 소환은 이벤트 전투와 같은 구역 테이블(베타 2구역)에서 데이터·스킬을 만든다(4구역 카탈로그 미사용).
+    // 소환 엔트리는 숫자 키(40005)로, 테이블은 FV 키로 적혀 있어 둘 다 찾혀야 한다.
+    [TestCase("FV40005")]
+    [TestCase("40005")]
+    public void TryBuildEventUnitEntry_HoopFromBetaZone2Table(string minionKey)
+    {
+        object previous = GetCatalogInstance();
+        var host = new GameObject("EventScriptCatalog_Test");
+        try
+        {
+            CreateCatalogFixture(host, 2, BetaZone2UnitTablePath);
+
+            bool success = InvokeTryBuildEventUnitEntry(2, minionKey, 1, out object entry, out string error);
+
+            Assert.That(success, Is.True, error);
+            Assert.That(GetMember(GetMember(entry, "Data"), "Index"), Is.EqualTo("40005"));
+            Assert.That(GetMember(entry, "PrefabKey"), Is.EqualTo("40005"), "외형은 데이터 인덱스로 카탈로그에서 찾는다.");
+            Assert.That(GetMember(entry, "CombatSlot"), Is.EqualTo(0), "칸은 소환 호출자가 정한다.");
+
+            object dash = FindSkillBySlot((IEnumerable)GetMember(entry, "ExplicitSkills"), 1);
+            Assert.That(dash, Is.Not.Null, "돌진(슬롯 1) 스킬이 명시 스킬로 들어가야 한다.");
+            Assert.That(GetMember(dash, "skillIndex"), Is.EqualTo(400051), "AI(EAI_40005)가 400051로 찾는다.");
+            Assert.That(GetMember(dash, "skillKey"), Is.EqualTo("40005_1"), "실행·연출 레지스트리의 숫자 키.");
+            Assert.That(GetMember(dash, "description"), Is.Not.Empty, "툴팁이 읽는 설명이 비면 안 된다.");
+            Assert.That(GetMember(dash, "boundary"), Is.EquivalentTo(new[] { 3, 7 }), "행 전체 피해 범위는 [3,7]이다.");
+        }
+        finally
+        {
+            SetCatalogInstance(previous);
+            UnityEngine.Object.DestroyImmediate(host);
+        }
+    }
+
     /// <summary>
     /// §9-1 동등성 스냅샷(UnitKey/슬롯/레벨, HP/ATK/DEF/경험치+전투스탯, PrefabKey/SourceUnitKey,
     /// 스킬 개수·순서·전체 필드 / BE002~BE005)는
@@ -152,11 +219,88 @@ public sealed class EventBattlePlanBuilderTests
         return success;
     }
 
+    private static bool InvokeTryBuildUnit(
+        int zoneId, string unitKey, int enemyLevel, out object unit, out string error)
+    {
+        MethodInfo method = SourceType.GetMethod(
+            "TryBuildUnit", BindingFlags.Public | BindingFlags.Static);
+        Assert.That(method, Is.Not.Null, "EventBattlePlanSource.TryBuildUnit 를 찾지 못했습니다.");
+
+        object[] args = { zoneId, unitKey, enemyLevel, 0, null, null };
+        bool success = (bool)method.Invoke(null, args);
+        unit = args[4];
+        error = args[5] as string ?? string.Empty;
+        return success;
+    }
+
+    private static bool InvokeTryBuildEventUnitEntry(
+        int zoneId, string unitKey, int enemyLevel, out object entry, out string error)
+    {
+        MethodInfo method = BuilderType.GetMethod(
+            "TryBuildEventUnitEntry", BindingFlags.Public | BindingFlags.Static);
+        Assert.That(method, Is.Not.Null, "EnemySpawnPlanBuilder.TryBuildEventUnitEntry 를 찾지 못했습니다.");
+
+        object[] args = { zoneId, unitKey, enemyLevel, null, null };
+        bool success = (bool)method.Invoke(null, args);
+        entry = args[3];
+        error = args[4] as string ?? string.Empty;
+        return success;
+    }
+
+    // EditMode에서는 Awake가 돌지 않으므로 구역 하나만 채운 카탈로그를 만들고 Instance를 직접 지정한다.
+    private static void CreateCatalogFixture(GameObject host, int zoneId, string unitTablePath)
+    {
+        var unitTable = AssetDatabase.LoadAssetAtPath<ScriptableObject>(unitTablePath);
+        Assert.That(unitTable, Is.Not.Null, $"테이블 에셋을 찾지 못했습니다: {unitTablePath}");
+
+        Component catalog = host.AddComponent(CatalogType);
+        Type zoneType = FindRuntimeType("EventScriptZone");
+        object zone = Activator.CreateInstance(zoneType);
+        zoneType.GetField("zoneId").SetValue(zone, zoneId);
+        zoneType.GetField("enemyBattleUnitTable").SetValue(zone, unitTable);
+        var zones = (IList)CatalogType.GetField("zones", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(catalog);
+        zones.Add(zone);
+
+        SetCatalogInstance(catalog);
+        CatalogType.GetMethod("Reload", BindingFlags.Public | BindingFlags.Instance).Invoke(catalog, null);
+    }
+
+    private static object FindSkillBySlot(IEnumerable skills, int slot)
+    {
+        if (skills == null)
+            return null;
+
+        foreach (object skill in skills)
+        {
+            if (skill != null && (int)GetMember(skill, "slot") == slot)
+                return skill;
+        }
+
+        return null;
+    }
+
+    private static object GetMember(object target, string name)
+    {
+        Type type = target.GetType();
+        PropertyInfo property = type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
+        if (property != null)
+            return property.GetValue(target);
+
+        FieldInfo field = type.GetField(name, BindingFlags.Public | BindingFlags.Instance);
+        Assert.That(field, Is.Not.Null, $"{type.Name}.{name} 멤버를 찾지 못했습니다.");
+        return field.GetValue(target);
+    }
+
     private static object GetCatalogInstance()
     {
         PropertyInfo instanceProperty = CatalogType.GetProperty(
             "Instance", BindingFlags.Public | BindingFlags.Static);
         return instanceProperty != null ? instanceProperty.GetValue(null) : null;
+    }
+
+    private static void SetCatalogInstance(object value)
+    {
+        CatalogType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static).SetValue(null, value);
     }
 
     private static Type FindRuntimeType(string typeName)

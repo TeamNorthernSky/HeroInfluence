@@ -56,10 +56,45 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3141614895303906402}
     m_Modifications:
+    - target: {fileID: 95721435766513830, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: VelocityModule.orbitalY.scalar
+      value: -9
+      objectReference: {fileID: 0}
+    - target: {fileID: 95721435766513830, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: VelocityModule.orbitalY.minScalar
+      value: -18
+      objectReference: {fileID: 0}
+    - target: {fileID: 570383733135311288, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: VelocityModule.orbitalY.scalar
+      value: -9
+      objectReference: {fileID: 0}
+    - target: {fileID: 570383733135311288, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: VelocityModule.orbitalY.minScalar
+      value: -18
+      objectReference: {fileID: 0}
     - target: {fileID: 1030975243857146572, guid: 812aad5dba9b6fa4d9b562a365ac5502,
         type: 3}
       propertyPath: looping
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1030975243857146572, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: RotationModule.x.scalar
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1030975243857146572, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: RotationModule.y.scalar
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1030975243857146572, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: RotationModule.curve.scalar
+      value: 45.23893
       objectReference: {fileID: 0}
     - target: {fileID: 1030975243857146574, guid: 812aad5dba9b6fa4d9b562a365ac5502,
         type: 3}
@@ -94,12 +129,12 @@ PrefabInstance:
     - target: {fileID: 1030975243857146574, guid: 812aad5dba9b6fa4d9b562a365ac5502,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 1030975243857146574, guid: 812aad5dba9b6fa4d9b562a365ac5502,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 1030975243857146574, guid: 812aad5dba9b6fa4d9b562a365ac5502,
         type: 3}
@@ -130,6 +165,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: HCFX_Dust_Storm_Left_02
+      objectReference: {fileID: 0}
+    - target: {fileID: 6469333563662758681, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: RotationModule.x.scalar
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6469333563662758681, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: RotationModule.y.scalar
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6469333563662758681, guid: 812aad5dba9b6fa4d9b562a365ac5502,
+        type: 3}
+      propertyPath: RotationModule.curve.scalar
+      value: 28.274332
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

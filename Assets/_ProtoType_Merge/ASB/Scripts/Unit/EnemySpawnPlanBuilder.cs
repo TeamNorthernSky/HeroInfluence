@@ -110,6 +110,24 @@ public static class EnemySpawnPlanBuilder
         return true;
     }
 
+    /// <summary>
+    /// 이벤트 전투 유닛 하나(소환체 등)를 이벤트 키-빌드와 같은 규칙으로 entry로 만든다.
+    /// 칸은 호출자가 정하므로 CombatSlot은 0이다. 테이블에 없으면 false + error(폴백 없음).
+    /// </summary>
+    public static bool TryBuildEventUnitEntry(int zoneId, string unitKey, int enemyLevel, out EnemySpawnEntry entry, out string error)
+    {
+        entry = null;
+        if (!EventBattlePlanSource.TryBuildUnit(
+                zoneId, unitKey, enemyLevel, slot: 0,
+                out CombatEventBattleUnitData unit, out error))
+        {
+            return false;
+        }
+
+        entry = BuildEventEntry(unit);
+        return true;
+    }
+
     // CombatEventBattleUnitData 목록 → EnemySpawnEntry 목록. 이벤트 키/사전빌드 경로가 공유한다.
     // 키 경로는 EventBattlePlanSource가 상류에서 이미 검증하므로 여기서 skip이 발생하지 않는다.
     private static bool TryBuildEntriesFromUnits(
@@ -132,26 +150,7 @@ public static class EnemySpawnPlanBuilder
             if (unit == null || string.IsNullOrWhiteSpace(unit.UnitKey))
                 continue;
 
-            EnemyData spawnData = BuildEventEnemyData(unit);
-            // [2026-10-02 변경] 경로 미지정 시 옛 Monster 프리팹 하드코딩 대신 데이터 인덱스를 넘겨
-            // EnemySpawner가 BattleUnitPrefabCatalog(대표 키 + 추가 인덱스)에서 외형을 찾게 한다.
-            string prefabKey = !string.IsNullOrWhiteSpace(unit.PrefabResourcePath)
-                ? unit.PrefabResourcePath.Trim()
-                : spawnData.Index;
-
-            // 네임드 변형(예: 아놀드 200051)은 데이터 키·이름·스탯은 그대로 두고 전투 동작만 기준 유닛(20005)으로 맞춘다.
-            // 판단은 여기서만 하고, 결과는 PrefabKey·UnitAI·스킬 번호/키·BattleBehaviorKey로 명시 전달한다.
-            string battleBehaviorKey = string.Empty;
-            if (EnemyBaseUnitRules.TryGetBaseUnitKey(unit.UnitKey, out string behaviorKey))
-            {
-                battleBehaviorKey = behaviorKey;
-                prefabKey = behaviorKey;
-                // EnemyScript.ResolveAiIndex는 숫자 UnitAI를 수동 오버라이드로 우선 사용한다.
-                spawnData.UnitAI = behaviorKey;
-                RekeyEventSkills(unit.Skills, behaviorKey);
-            }
-
-            entries.Add(new EnemySpawnEntry(spawnData, unit.Slot, prefabKey, unit.Skills, unit.UnitKey, battleBehaviorKey));
+            entries.Add(BuildEventEntry(unit));
         }
 
         if (entries.Count == 0)
@@ -161,6 +160,31 @@ public static class EnemySpawnPlanBuilder
         }
 
         return true;
+    }
+
+    // 이벤트 유닛 하나 → EnemySpawnEntry. 그룹 키-빌드와 소환(TryBuildEventUnitEntry)이 같은 규칙을 쓴다.
+    private static EnemySpawnEntry BuildEventEntry(CombatEventBattleUnitData unit)
+    {
+        EnemyData spawnData = BuildEventEnemyData(unit);
+        // [2026-10-02 변경] 경로 미지정 시 옛 Monster 프리팹 하드코딩 대신 데이터 인덱스를 넘겨
+        // EnemySpawner가 BattleUnitPrefabCatalog(대표 키 + 추가 인덱스)에서 외형을 찾게 한다.
+        string prefabKey = !string.IsNullOrWhiteSpace(unit.PrefabResourcePath)
+            ? unit.PrefabResourcePath.Trim()
+            : spawnData.Index;
+
+        // 네임드 변형(예: 아놀드 200051)은 데이터 키·이름·스탯은 그대로 두고 전투 동작만 기준 유닛(20005)으로 맞춘다.
+        // 판단은 여기서만 하고, 결과는 PrefabKey·UnitAI·스킬 번호/키·BattleBehaviorKey로 명시 전달한다.
+        string battleBehaviorKey = string.Empty;
+        if (EnemyBaseUnitRules.TryGetBaseUnitKey(unit.UnitKey, out string behaviorKey))
+        {
+            battleBehaviorKey = behaviorKey;
+            prefabKey = behaviorKey;
+            // EnemyScript.ResolveAiIndex는 숫자 UnitAI를 수동 오버라이드로 우선 사용한다.
+            spawnData.UnitAI = behaviorKey;
+            RekeyEventSkills(unit.Skills, behaviorKey);
+        }
+
+        return new EnemySpawnEntry(spawnData, unit.Slot, prefabKey, unit.Skills, unit.UnitKey, battleBehaviorKey);
     }
 
     // 스킬 번호·키를 전투 동작 키 기준으로 다시 매긴다(이름·설명·수치는 유지). EventBattlePlanSource.TryBuildUnits가
