@@ -599,6 +599,7 @@ namespace JC.Tutorial
             SetShield(turnGuidance); SetContinue(false);
             view.blockPanelRaycasts = false;
             view.SetContent(title, text); view.SetVisible(true, focus, turnGuidance ? JcTutorialGuideView.FocusPresentation.Spotlight : JcTutorialGuideView.FocusPresentation.PointerAbove);
+            view.SetActionHint(step == "camera-scroll-practice" ? JcTutorialGuideView.ActionHint.ScrollRight : JcTutorialGuideView.ActionHint.None);
         }
         private void SetTurnAvailable(bool available)
         {

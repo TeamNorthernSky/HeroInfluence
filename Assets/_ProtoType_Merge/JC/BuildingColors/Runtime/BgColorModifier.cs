@@ -8,6 +8,7 @@ namespace JC.BuildingColors
     {
         [Tooltip("원본 재질·텍스처와 파츠 마스크 정의입니다. 색상 프로필과 분리되어 있습니다.")] public BgColorDefinition definition;
         [Tooltip("저장·불러오기 대상입니다. 연결 변경만으로 조정값을 덮어쓰지 않습니다.")] public BgColorProfile profile;
+        [Tooltip("전체 프리셋 안의 바리에이션 ID입니다. 비어 있으면 기존 기본 색상 조절기입니다.")] public string variantId;
         [Tooltip("현재 조정값입니다. 프로필 파일은 저장 버튼을 눌러야 변경됩니다.")] public BgPartColor[] parts;
         [Tooltip("현재 조정값에 대응하는 파츠 ID입니다. 영역 정의 확장 시 기존 값을 승계합니다.")] public string[] partIds;
         [Tooltip("이 건물만 원본 텍스처로 비교합니다. 조정값과 프로필은 유지됩니다.")] public bool showOriginal;
@@ -53,6 +54,7 @@ namespace JC.BuildingColors
             var scopedModifiers=root?root.Children:Array.Empty<BgColorModifier>();
             var found=new List<Target>();
             foreach(var r in renderers){if(!r||r.gameObject.scene!=gameObject.scene)continue;var mats=r.sharedMaterials;
+                if(root&&!root.Accepts(this,r))continue;
                 if(targetRadius>0&&!MatchesPosition(r))continue;
                 if(targetRadius<=0){bool overridden=false;foreach(var scoped in scopedModifiers)if(scoped!=this&&scoped.isActiveAndEnabled&&scoped.definition==definition&&scoped.targetRadius>0&&scoped.MatchesPosition(r)){overridden=true;break;}if(overridden)continue;}
                 for(int slot=0;slot<mats.Length;slot++){int binding=FindBinding(r,slot,mats[slot]);if(binding>=0){
@@ -120,6 +122,7 @@ namespace JC.BuildingColors
             appliedHash=hash;
         }
         void DestroyOutput(int i){if(outputs[i]){outputs[i].Release();DestroyOwned(outputs[i]);outputs[i]=null;}}
+        public void ResetTargets(){Release();}
         void Release(){RestoreTargets();for(int i=0;i<outputs.Count;i++)DestroyOutput(i);outputs.Clear();DestroyOwned(processor);processor=null;appliedHash=int.MinValue;}
         static void DestroyOwned(UnityEngine.Object o){if(!o)return;if(Application.isPlaying)Destroy(o);else DestroyImmediate(o);}
     }

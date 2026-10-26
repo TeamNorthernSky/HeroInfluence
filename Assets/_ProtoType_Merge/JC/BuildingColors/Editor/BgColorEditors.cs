@@ -20,17 +20,37 @@ namespace JC.BuildingColors.EditorTools
         {
             path=AssetDatabase.GenerateUniqueAssetPath(path);var p=ScriptableObject.CreateInstance<BgColorProfile>();p.buildingId=c.definition.buildingId;c.EnsureParts();p.parts=BgColorModifier.Copy(c.parts);p.partIds=(string[])c.definition.Ids.Clone();AssetDatabase.CreateAsset(p,path);AssetDatabase.SaveAssetIfDirty(p);Undo.RecordObject(c,"건물 색상 프로필 연결");c.profile=p;Mark(c);return p;
         }
+        static void ValidateEntries(BgColorSetEntry[] entries)
+        {
+            if(entries.Any(e=>e==null||string.IsNullOrEmpty(e.buildingId)||!BgColorDefinition.ValidValues(e.parts,e.partIds)||float.IsNaN(e.weight)||float.IsInfinity(e.weight))||entries.Select(e=>e.Key).Distinct().Count()!=entries.Length)
+                throw new InvalidOperationException("건물 종류 + 바리에이션 ID 또는 파츠 구성이 잘못되었습니다.");
+        }
         public static void SaveSet(BgColorRoot root,BgColorSetProfile profile)
         {
             if(!profile||!AssetDatabase.Contains(profile))throw new InvalidOperationException("전체 프로필을 연결하세요.");
-            Undo.RecordObject(profile,"전체 건물 색상 저장");profile.buildings=root.Children.Where(c=>c.definition).Select(c=>new BgColorSetEntry{buildingId=c.definition.buildingId,parts=BgColorModifier.Copy(c.parts),partIds=(string[])c.definition.Ids.Clone()}).ToArray();EditorUtility.SetDirty(profile);AssetDatabase.SaveAssetIfDirty(profile);
+            var children=root.Children.Where(c=>c.definition&&c.isActiveAndEnabled).ToArray();
+            if(children.Any(c=>c.targetRadius>0))throw new InvalidOperationException("위치별 조절기는 바리에이션과 고정 지정으로 옮긴 뒤 저장하세요.");
+            var entries=children.Select(c=>{c.EnsureParts();var previous=profile.buildings?.FirstOrDefault(e=>e!=null&&e.buildingId==c.definition.buildingId&&(e.variantId??string.Empty)==(c.variantId??string.Empty))??root.profile?.buildings?.FirstOrDefault(e=>e!=null&&e.buildingId==c.definition.buildingId&&(e.variantId??string.Empty)==(c.variantId??string.Empty));return new BgColorSetEntry{buildingId=c.definition.buildingId,variantId=c.variantId,displayName=previous?.displayName,weight=previous?.weight??1,parts=BgColorModifier.Copy(c.parts),partIds=(string[])c.definition.Ids.Clone()};}).ToArray();
+            ValidateEntries(entries);
+            // A scene may contain only a subset of the library. Preserve the other types and variants.
+            var retained=(profile.buildings??Array.Empty<BgColorSetEntry>()).Where(e=>e!=null&&!entries.Any(n=>n.Key==e.Key));
+            var merged=retained.Concat(entries).ToArray();ValidateEntries(merged);
+            Undo.RecordObject(profile,"전체 건물 색상 저장");profile.buildings=merged;EditorUtility.SetDirty(profile);AssetDatabase.SaveAssetIfDirty(profile);
+        }
+        public static void SaveVariant(BgColorModifier c)
+        {
+            var root=c.GetComponentInParent<BgColorRoot>();
+            if(!root||!root.profile||string.IsNullOrEmpty(c.variantId))throw new InvalidOperationException("바리에이션 전체 프로필을 연결하세요.");
+            var entry=root.profile.buildings.FirstOrDefault(e=>e.buildingId==c.definition.buildingId&&e.variantId==c.variantId);
+            if(entry==null)throw new InvalidOperationException("해당 바리에이션을 찾지 못했습니다.");
+            Undo.RecordObject(root.profile,"바리에이션 색상 저장");c.EnsureParts();entry.parts=BgColorModifier.Copy(c.parts);entry.partIds=(string[])c.definition.Ids.Clone();EditorUtility.SetDirty(root.profile);AssetDatabase.SaveAssetIfDirty(root.profile);
         }
         public static void LoadSet(BgColorRoot root)
         {
             if(!root.profile||root.profile.buildings==null)throw new InvalidOperationException("전체 프로필이 비어 있습니다.");
-            var entries=root.profile.buildings;
-            if(entries.Any(e=>e==null||!BgColorDefinition.ValidValues(e.parts,e.partIds))||entries.Select(e=>e.buildingId).Distinct().Count()!=entries.Length)throw new InvalidOperationException("전체 프로필의 건물 ID 또는 파츠 구성이 잘못되었습니다.");
-            foreach(var c in root.Children){var entry=entries.FirstOrDefault(e=>c.definition&&e.buildingId==c.definition.buildingId);if(entry==null)continue;Undo.RecordObject(c,"전체 건물 색상 불러오기");c.parts=c.definition.Remap(entry.parts,entry.partIds);c.partIds=(string[])c.definition.Ids.Clone();c.showOriginal=false;c.highlightedPart=-1;Mark(c);c.ApplyNow();}
+            var entries=root.profile.buildings;ValidateEntries(entries);
+            foreach(var c in root.Children){if(c.targetRadius>0)continue;var entry=entries.FirstOrDefault(e=>c.definition&&e.buildingId==c.definition.buildingId&&(e.variantId??string.Empty)==(c.variantId??string.Empty));if(entry==null)continue;Undo.RecordObject(c,"전체 건물 색상 불러오기");c.parts=c.definition.Remap(entry.parts,entry.partIds);c.partIds=(string[])c.definition.Ids.Clone();c.showOriginal=false;c.highlightedPart=-1;if((c.hideFlags&HideFlags.DontSave)==0&&(c.gameObject.hideFlags&HideFlags.DontSave)==0)Mark(c);}
+            root.RefreshTargets();
         }
         public static void Mark(UnityEngine.Object obj){EditorUtility.SetDirty(obj);if(obj is Component c&&!Application.isPlaying){PrefabUtility.RecordPrefabInstancePropertyModifications(c);EditorSceneManager.MarkSceneDirty(c.gameObject.scene);}SceneView.RepaintAll();EditorApplication.QueuePlayerLoopUpdate();}
         public static bool Button(string label,string tip)=>GUILayout.Button(new GUIContent(label,tip));
@@ -49,10 +69,11 @@ namespace JC.BuildingColors.EditorTools
             if(serializedObject.ApplyModifiedProperties()){BgColorStorage.Mark(c);c.Rebind();c.ApplyNow();}
             if(!c.definition){EditorGUILayout.HelpBox("건물 파츠 정의를 연결하세요.",MessageType.Info);return;}
             c.EnsureParts();
+            if(!string.IsNullOrEmpty(c.variantId))EditorGUILayout.LabelField("바리에이션",c.variantId);
             if(c.profile&&!c.CanLoad)EditorGUILayout.HelpBox("프로필의 건물 종류 또는 파츠 수가 다릅니다. 같은 건물의 프로필을 연결하거나 새 프로필로 저장하세요.",MessageType.Warning);
             EditorGUILayout.LabelField(c.definition.buildingId,EditorStyles.boldLabel);
             EditorGUILayout.LabelField("연결된 재질 슬롯",c.TargetCount.ToString());
-            if(c.TargetCount==0)EditorGUILayout.HelpBox("같은 씬의 대상 범위에서 일치하는 원본 재질을 찾지 못했습니다. 부모의 대상 범위를 확인하세요.",MessageType.Warning);
+            if(c.TargetCount==0){var owner=c.GetComponentInParent<BgColorRoot>();bool distributed=owner&&owner.distributeVariants&&string.IsNullOrEmpty(c.variantId)&&owner.Children.Any(x=>x.definition==c.definition&&!string.IsNullOrEmpty(x.variantId));EditorGUILayout.HelpBox(distributed?"이 건물 종류는 바리에이션으로 표시 중입니다. 부모 아래의 ‘색상 바리에이션 미리보기’에서 색상을 조절하세요.":"같은 씬의 대상 범위에서 일치하는 원본 재질을 찾지 못했습니다. 부모의 대상 범위를 확인하세요.",distributed?MessageType.Info:MessageType.Warning);}
             if(!string.IsNullOrEmpty(c.Status))EditorGUILayout.HelpBox(c.Status,MessageType.Error);
             if(!string.IsNullOrEmpty(c.definition.classificationNote))EditorGUILayout.HelpBox(c.definition.classificationNote,MessageType.Info);
             EditorGUI.BeginChangeCheck();bool original=EditorGUILayout.Toggle(new GUIContent("원본 비교","켜면 이 건물의 원본 텍스처를 표시합니다. 조정값과 프로필은 그대로 유지됩니다."),c.showOriginal);
@@ -61,6 +82,10 @@ namespace JC.BuildingColors.EditorTools
             for(int i=0;i<c.parts.Length;i++)DrawPart(c,i);
             EditorGUILayout.Space();
             EditorGUILayout.HelpBox("조절값은 즉시 미리보기에 반영됩니다. 아래 저장 버튼으로 색상과 토글을 프로필에 저장하세요. 씬 저장과 프로필 저장은 별개입니다.\n원본 색·명암 무시를 켠 파츠는 무늬와 텍스처 음영 없이 목표색으로 채웁니다. 씬 조명과 그림자는 유지됩니다.",MessageType.None);
+            if(!string.IsNullOrEmpty(c.variantId)){
+                if(BgColorStorage.Button("이 바리에이션을 전체 프로필에 저장","같은 바리에이션을 쓰는 두 탐사씬에 함께 반영됩니다. 고정 배치와 시드는 변경하지 않습니다."))BgColorStorage.SaveVariant(c);
+                return;
+            }
             if(c.profile)EditorGUILayout.LabelField(BgColorStorage.Equal(c.parts,c.definition.Remap(c.profile.parts,c.profile.partIds))?"프로필과 동일한 값":"● 저장하지 않은 조정값",EditorStyles.miniLabel);
             using(new EditorGUI.DisabledScope(!c.CanLoad)){
                 if(BgColorStorage.Button("프로필 불러오기","연결된 같은 건물 프로필로 현재 값을 교체합니다. 저장하지 않은 조정값은 사라집니다.")){Undo.RecordObject(c,"건물 프로필 불러오기");c.LoadProfile();BgColorStorage.Mark(c);}
@@ -109,14 +134,17 @@ namespace JC.BuildingColors.EditorTools
     {
         public override void OnInspectorGUI()
         {
-            var root=(BgColorRoot)target;serializedObject.Update();foreach(var name in new[]{"profile","targetRoot"}){var p=serializedObject.FindProperty(name);EditorGUILayout.PropertyField(p,new GUIContent(name=="profile"?"전체 색상 프로필":"대상 건물 범위",p.tooltip));}
+            var root=(BgColorRoot)target;serializedObject.Update();foreach(var name in new[]{"profile","targetRoot","distributeVariants","variantSeed","fixedVariants"}){var p=serializedObject.FindProperty(name);EditorGUILayout.PropertyField(p,new GUIContent(name=="profile"?"전체 색상 프로필":name=="targetRoot"?"대상 건물 범위":name=="distributeVariants"?"바리에이션 배분":name=="variantSeed"?"배분 시드":"고정 바리에이션",p.tooltip),true);}
             if(serializedObject.ApplyModifiedProperties()){BgColorStorage.Mark(root);root.RefreshTargets();}
-            EditorGUILayout.LabelField("건물 종류",root.Children.Length.ToString());EditorGUILayout.HelpBox("하위 건물 오브젝트를 선택해 색상을 조절하세요. 전체 프로필은 모든 건물의 현재 값을 묶어 보관하며, 개별 프로필 파일은 덮어쓰지 않습니다. 다른 씬에서는 대상 범위를 비우거나 해당 씬의 건물 부모를 지정하세요.",MessageType.Info);
+            EditorGUILayout.LabelField("색상 조절기",root.Children.Length.ToString());
+            EditorGUILayout.LabelField("공유 바리에이션 출력",root.GeneratedVariantCount.ToString());
+            if(root.distributeVariants&&BgColorStorage.Button("시드를 바꿔 색상 재배치","고정 지정은 유지하고 나머지 주택 색상을 다시 배분합니다. 건물 위치는 바뀌지 않습니다.")){Undo.RecordObject(root,"주택 색상 재배치");root.variantSeed=unchecked(root.variantSeed+1);BgColorStorage.Mark(root);root.RefreshTargets();}
+EditorGUILayout.HelpBox("‘색상 바리에이션 미리보기’의 하위 항목에서 색상을 조절하고 프로필에 저장하세요. 배분 비중은 전체 프로필의 각 바리에이션 항목에서 조절합니다. 고정 지정과 시드는 씬에, 색상은 공용 프로필에 저장됩니다. 바리에이션이 없는 건물은 기존 기본색을 유지합니다.",MessageType.Info);
             using(new EditorGUI.DisabledScope(!root.profile)){
                 if(BgColorStorage.Button("전체 프로필 불러오기","건물 ID가 일치하는 항목들의 조정값을 전체 프로필에서 불러옵니다. 개별 프로필 파일은 변경하지 않습니다."))BgColorStorage.LoadSet(root);
                 if(BgColorStorage.Button("전체 현재 값을 프로필에 저장","하위 건물들의 현재 색상값을 연결된 전체 프로필 파일에 저장합니다. 씬과 개별 프로필 파일은 저장하지 않습니다."))BgColorStorage.SaveSet(root,root.profile);
             }
-            if(BgColorStorage.Button("새 전체 프로필 저장…","현재 19종 조정값으로 새 전체 프로필을 만듭니다. 기존 파일은 덮어쓰지 않습니다.")){
+            if(BgColorStorage.Button("새 전체 프로필 저장…","현재 기본색과 바리에이션 조정값으로 새 전체 프로필을 만듭니다. 기존 파일은 덮어쓰지 않습니다.")){
                 string path=EditorUtility.SaveFilePanelInProject("전체 건물 색상 프로필","BG_ColorSet","asset","저장 위치",BgColorStorage.Folder);if(!string.IsNullOrEmpty(path)){var p=CreateInstance<BgColorSetProfile>();AssetDatabase.CreateAsset(p,AssetDatabase.GenerateUniqueAssetPath(path));BgColorStorage.SaveSet(root,p);Undo.RecordObject(root,"전체 프로필 연결");root.profile=p;BgColorStorage.Mark(root);}
             }
             if(BgColorStorage.Button("대상 건물 다시 찾기","대상 범위의 원본 재질을 기준으로 같은 종류의 모든 건물을 다시 연결합니다."))root.RefreshTargets();
