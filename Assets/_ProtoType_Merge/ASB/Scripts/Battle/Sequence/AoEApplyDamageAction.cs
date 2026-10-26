@@ -95,7 +95,8 @@ namespace ASB.Work.Battle.Sequence
                 }
 
                 // TakeDamage -> Die가 이미 Dead를 재생한 경우 Hit으로 사망 상태를 덮어쓰지 않습니다.
-                if (!hitTarget.IsDead)
+                if (!hitTarget.IsDead && (_visual == null ||
+                    _visual.ShouldPlayTargetHitAnimation(_contexts[i]?.Caster, hitTarget, result)))
                 {
                     hitTarget.EnsureAnimationController();
                     hitTarget.Anim?.SetAnimationSpeed(_battleSpeed);

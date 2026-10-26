@@ -640,6 +640,9 @@ public class CharactorAnimationController : MonoBehaviour
         switch (actionType.Trim())
         {
             case "Hit":
+                // Share the visual recoil across all units without moving their battle cell.
+                if (GetComponent<HitKnockbackMotion>() == null)
+                    gameObject.AddComponent<HitKnockbackMotion>();
                 _animator.ResetTrigger(TriggerHit);
                 _animator.CrossFade("Hit", 0.03f, 0, 0f);
                 break;

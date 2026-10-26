@@ -19,6 +19,7 @@ namespace ASB.Work.Battle.Core
         public bool IsDeadAfter;
         public bool CausedDeath;
         public int SkillIndex;
+        public string ExecutionId;
 
         public static BattleHitResult Empty(BattleCharactor target) =>
             new BattleHitResult { Target = target };
