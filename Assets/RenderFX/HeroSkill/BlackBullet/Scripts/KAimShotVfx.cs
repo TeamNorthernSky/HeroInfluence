@@ -85,6 +85,30 @@ namespace JC.VFX
 
         /// <summary>에디터 스코프 판정용 — 이 인스턴스가 해당 프리셋을 실제로 참조하는지.</summary>
         public bool UsesPreset(KAimShotPreset p) => masterPreset != null && masterPreset == p;
+        public Vector3 ShotDirection => TravelDirection();
+        public Vector3 ShotOrigin => _shotOrigin;
+        public Vector3 LiveMuzzlePosition => ResolveMuzzlePosition();
+        public Vector3 TargetMeshCenter
+        {
+            get
+            {
+                if (_target == null) return _impactPoint;
+                Renderer body = null;
+                float size = 0f;
+                foreach (var renderer in _target.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                {
+                    if (renderer.sharedMesh == null) continue;
+                    float candidate = renderer.bounds.size.sqrMagnitude;
+                    if (candidate > size) { body = renderer; size = candidate; }
+                }
+                return body != null ? body.bounds.center : _impactPoint;
+            }
+        }
+
+        public Vector3 BulletPosition => _headPos;
+        public Vector3 ImpactPosition => _impactPoint;
+        public float SequenceTime => _seqT;
+        public Segment ActiveSegment => segment;
 
         /// <summary>
         /// 탄착 순간(탄착 스타버스트 시작, 꺼져 있으면 launchDelay + travelTime) 1회 발화. 인자는 탄착 지점.
@@ -338,6 +362,13 @@ namespace JC.VFX
             {
                 trailStroke.StopEmitting();
                 trailStroke.SetFade(0f);
+                // Unity can retain one stationary head point after the tail expires.
+                // It must not keep the effect alive indefinitely.
+                if (_seqT >= launchDelay + travelTime + tailReachSeconds)
+                {
+                    trailStroke.HideImmediate();
+                    _trailDone = true;
+                }
             }
             else { trailStroke.HideImmediate(); _trailDone = true; }
         }

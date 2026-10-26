@@ -167,6 +167,9 @@ namespace JC.Tutorial
             if (edit != null) { title = edit.title; body = edit.body; }
             BindWordWrapping(message); if (heading != null && heading.text != title) heading.text = title; if (message != null && message.text != body) message.text = body;
         }
+        // 전투 안내만 고정 외곽선으로 표시합니다. 탐사 연출 설정은 보존합니다.
+        public bool FixedBattleOutline { get; set; }
+        private float? originalFocusGlow;
         public void SetVisible(bool value, RectTransform target = null, FocusPresentation presentation = FocusPresentation.PointerAbove)
         {
             visible = value; focus = value ? target : null; focusPresentation = presentation;
@@ -211,8 +214,10 @@ namespace JC.Tutorial
                 spotlight.gameObject.SetActive(dimmed);
             }
             if (focusFrame == null || pointer == null) return;
+            originalFocusGlow ??= focusFrame.GlowWidth;
+            focusFrame.SetGlowWidth(FixedBattleOutline ? 0 : originalFocusGlow.Value);
             focusFrame.gameObject.SetActive(showFocus); pointer.gameObject.SetActive(showFocus);
-            if(convergingOutlines!=null)foreach(var outline in convergingOutlines)if(outline!=null)outline.gameObject.SetActive(showFocus);
+            if(convergingOutlines!=null)foreach(var outline in convergingOutlines)if(outline!=null)outline.gameObject.SetActive(showFocus && !FixedBattleOutline);
             if (!showFocus) return;
             var parent = focusFrame.rectTransform.parent as RectTransform;
             if (parent == null) return;
@@ -245,7 +250,7 @@ namespace JC.Tutorial
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, RectTransformUtility.WorldToScreenPoint(targetCamera, corners[i]), overlayCamera, out local);
                 min = Vector2.Min(min, local); max = Vector2.Max(max, local);
             }
-            float padding = focusPresentation == FocusPresentation.ResourceBlock ? 0 : focusPadding;
+            float padding = FixedBattleOutline ? -3 : focusPresentation == FocusPresentation.ResourceBlock ? 0 : focusPadding;
             min = Vector2.Max(min - Vector2.one * padding, parent.rect.min + Vector2.one * 2);
             max = Vector2.Min(max + Vector2.one * padding, parent.rect.max - Vector2.one * 2);
             if (max.x <= min.x || max.y <= min.y) { focusFrame.gameObject.SetActive(false); pointer.gameObject.SetActive(false); return; }
@@ -253,11 +258,11 @@ namespace JC.Tutorial
             var rect = focusFrame.rectTransform;
             rect.localPosition = (min + max) * .5f;
             rect.sizeDelta = max - min;
-            focusFrame.color = new Color(accent.r, accent.g, accent.b, accent.a * Mathf.Lerp(.45f, .9f, pulse));
+            focusFrame.color = new Color(accent.r, accent.g, accent.b, accent.a * (FixedBattleOutline ? .9f : Mathf.Lerp(.45f, .9f, pulse)));
             focusFrame.SetBorderWidth(focus == centeredPointerTarget ? centeredBorderWidth : 6);
             if(convergenceTarget!=focus){convergenceTarget=focus;convergenceElapsed=0;}
             convergenceElapsed+=Mathf.Max(0,delta);
-            if(convergingOutlines!=null)for(int i=0;i<convergingOutlines.Length;i++) {
+            if(!FixedBattleOutline && convergingOutlines!=null)for(int i=0;i<convergingOutlines.Length;i++) {
                     var o=convergingOutlines[i];if(o==null)continue;
                     float cycle=Mathf.Repeat(convergenceElapsed,3);
                     o.gameObject.SetActive(cycle<2);if(cycle>=2)continue;

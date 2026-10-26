@@ -18,7 +18,10 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
     private bool checkQueued;
     private bool subscribedToEconomy;
 
-    public bool IsCheckPending => isActiveAndEnabled && conditionEventsEnabled && checkQueued;
+    private bool CanCheckConditions => conditionEventsEnabled && !DHGameEndState.IsEnding &&
+        !(DHWorldEventRuntimeManager.Instance != null && DHWorldEventRuntimeManager.Instance.ConditionEventsBlocked);
+
+    public bool IsCheckPending => isActiveAndEnabled && CanCheckConditions && checkQueued;
 
     public static DHWorldEventConditionRuntimeManager EnsureInstance()
     {
@@ -81,7 +84,7 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
 
     public void RequestCheck()
     {
-        if (!Application.isPlaying || !conditionEventsEnabled || checkQueued)
+        if (!Application.isPlaying || !isActiveAndEnabled || !CanCheckConditions || checkQueued)
             return;
 
         EnsureEconomySubscription();
@@ -89,16 +92,22 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
         StartCoroutine(CheckAfterFrame());
     }
 
+    public void CancelPendingChecks()
+    {
+        StopAllCoroutines();
+        checkQueued = false;
+    }
+
     private IEnumerator CheckAfterFrame()
     {
         yield return null;
 
-        while (conditionEventsEnabled && IsChatRunning())
+        while (CanCheckConditions && IsChatRunning())
             yield return null;
 
         checkQueued = false;
 
-        if (!conditionEventsEnabled)
+        if (!CanCheckConditions)
             yield break;
 
         TryStartFirstSatisfiedEvent();
@@ -106,7 +115,7 @@ public sealed class DHWorldEventConditionRuntimeManager : MonoBehaviour
 
     private bool TryStartFirstSatisfiedEvent()
     {
-        if (!conditionEventsEnabled)
+        if (!CanCheckConditions)
             return false;
 
         if (IsChatRunning())

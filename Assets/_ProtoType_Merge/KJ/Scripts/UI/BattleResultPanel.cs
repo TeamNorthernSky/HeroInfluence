@@ -22,6 +22,11 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
     private Button boundAcceptButton;
     private bool accepted;
     private bool tutorialNoticeBlocked;
+    private bool skipDefeatResult;
+    private CanvasGroup defeatVisibility;
+    private float previousAlpha;
+    private bool previousInteractable;
+    private bool previousBlocksRaycasts;
     public void SetTutorialNoticeBlocked(bool blocked)
     {
         tutorialNoticeBlocked = blocked;
@@ -40,6 +45,8 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
     public void Show(BattleResult result, BattleRewardPlan plan)
     {
+        RestoreDefeatVisibility();
+        skipDefeatResult = false;
         foreach (var slot in skillQueue)
             if (slot != null) { slot.gameObject.SetActive(false); Destroy(slot.gameObject); }
         accepted = false;
@@ -53,6 +60,20 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
         skillNoticesStarted = false;
         // [KJ 260729] 같은 인스턴스에서 재호출되어도 이전에 숨긴 노드가 남지 않게 먼저 되돌린다.
         RevealResultContent();
+
+        if (result == BattleResult.Defeat)
+        {
+            defeatVisibility = GetComponent<CanvasGroup>();
+            if (defeatVisibility == null) defeatVisibility = gameObject.AddComponent<CanvasGroup>();
+            previousAlpha = defeatVisibility.alpha;
+            previousInteractable = defeatVisibility.interactable;
+            previousBlocksRaycasts = defeatVisibility.blocksRaycasts;
+            defeatVisibility.alpha = 0f;
+            defeatVisibility.interactable = false;
+            defeatVisibility.blocksRaycasts = false;
+            skipDefeatResult = true;
+            return;
+        }
 
         BattleResultView view = GetComponent<BattleResultView>();
         if (view == null) return;
@@ -243,7 +264,23 @@ public class BattleResultPanel : MonoBehaviour, IPointerClickHandler
 
     private void LateUpdate()
     {
+        if (skipDefeatResult)
+        {
+            // Callers subscribe to OnAccepted after Show returns.
+            skipDefeatResult = false;
+            CompleteAcceptance();
+            return;
+        }
         if (CanAdvancePresentation()) AdvancePresentationStage();
+    }
+
+    private void RestoreDefeatVisibility()
+    {
+        if (defeatVisibility == null) return;
+        defeatVisibility.alpha = previousAlpha;
+        defeatVisibility.interactable = previousInteractable;
+        defeatVisibility.blocksRaycasts = previousBlocksRaycasts;
+        defeatVisibility = null;
     }
 
     private void AdvancePresentationStage()

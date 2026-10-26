@@ -347,11 +347,35 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
     {
         StopChoiceEntrance();
         RenderContent(request);
+        if (request.EventType == DHWorldEventType.Consume)
+            LayoutVisibleChoices(consumePanel, consumeProceed, consumeDecline);
+        else if (request.EventType == DHWorldEventType.Reward)
+            LayoutVisibleChoices(rewardPanel, rewardProceed);
+        else if (request.EventType == DHWorldEventType.Choice)
+            LayoutVisibleChoices(choicePanel, choiceButtons[0], choiceButtons[1], choiceDecline);
         if (!Application.isPlaying || !isActiveAndEnabled || request.IsWaitingFinalConfirm) return;
         if (request.EventType == DHWorldEventType.Consume) BeginChoiceEntrance(consumeProceed, consumeDecline);
         else if (request.EventType == DHWorldEventType.Reward) BeginChoiceEntrance(rewardProceed);
         else if (request.EventType == DHWorldEventType.Choice)
             BeginChoiceEntrance(choiceButtons[0], choiceButtons[1], choiceDecline);
+    }
+
+    private static void LayoutVisibleChoices(GameObject panel, params Button[] buttons)
+    {
+        const float gap = 12f;
+        float top = 0f;
+        int visible = 0;
+        foreach (var button in buttons)
+        {
+            if (button == null || !button.gameObject.activeSelf) continue;
+            var rect = (RectTransform)button.transform;
+            if (visible++ > 0) top += gap;
+            float height = rect.rect.height;
+            rect.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, top, height);
+            top += height;
+        }
+        if (visible > 0)
+            ((RectTransform)panel.transform).SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, top);
     }
 
     private void RenderContent(DHWorldEventPresentationRequest request)
@@ -378,12 +402,12 @@ public sealed class WorldEventNpcPanelSelector : MonoBehaviour
             resultShownFrame = Time.frameCount;
         }
         resultClickArea.gameObject.SetActive(waitForClick);
-        resultClickArea.interactable = live && request.EventType != DHWorldEventType.Choice;
+        resultClickArea.interactable = live;
         if (waitForClick)
         {
+            // Keep the full-screen confirmation receiver above the choice panel too.
+            // Its background otherwise consumes clicks without confirming the result.
             resultClickArea.transform.SetAsLastSibling();
-            // 선택 결과는 확인 버튼으로만 닫고, 뒤쪽 화면으로의 클릭은 계속 막는다.
-            if (request.EventType == DHWorldEventType.Choice) choicePanel.transform.SetAsLastSibling();
         }
         if (request.EventType == DHWorldEventType.Consume)
         {

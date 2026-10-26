@@ -105,6 +105,7 @@ namespace ASB.Work.Battle.SkillExecution
                 return;
             }
 
+            hitResult.ExecutionId = ExecutionId;
             resolvedHitResults.Add(hitResult);
             if (!HasEventTracking)
             {

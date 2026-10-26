@@ -158,6 +158,8 @@ public class ChatModalController : MonoBehaviour
         if (skipConfirmPopup != null) skipConfirmPopup.transform.SetAsLastSibling();
     }
 
+    public bool IsEntrancePlaying => entranceTween.isAlive;
+
     private void PlayEntrance()
     {
         PrepareEntrance();
@@ -445,17 +447,15 @@ public class ChatModalController : MonoBehaviour
     private void HandleChatEnded()
     {
         if (isClosing || waitingForRewardClose) return;
-        if (hasRewardResult && contentRoot != null && choiceButtonPrefab != null)
+        if (hasRewardResult && choiceLayout != null && choiceLayout.SpawnParent != null && choiceButtonPrefab != null)
         {
+            ClearChoices();
             waitingForRewardClose = true;
             briefingEndShownFrame = Time.frameCount;
-            var topSpace = new GameObject("BriefingEndTopSpace", typeof(RectTransform), typeof(UnityEngine.UI.LayoutElement));
-            topSpace.transform.SetParent(contentRoot, false);
-            var spaceLayout = topSpace.GetComponent<UnityEngine.UI.LayoutElement>();
-            spaceLayout.minHeight = spaceLayout.preferredHeight = 10f;
-            spaceLayout.flexibleHeight = 0f;
-            briefingEndButton = Instantiate(choiceButtonPrefab, contentRoot);
+            briefingEndButton = Instantiate(choiceButtonPrefab, choiceLayout.SpawnParent);
             briefingEndButton.Bind("브리핑 종료", Close, true);
+            activeChoices.Add(briefingEndButton.gameObject);
+            choiceLayout.PlayShow();
             if (skipButton != null) skipButton.interactable = false;
             StartCoroutine(ScrollToBottomNextFrame());
             return;
@@ -477,12 +477,16 @@ public class ChatModalController : MonoBehaviour
         RunChatAction(() => manager.Select(option));
     }
 
+    private ChatRewardResultView.ValueSnapshot rewardBefore;
+
     private void RunChatAction(Action action)
     {
         bool wasDispatching = dispatchingChatEffect;
+        var previousSnapshot = rewardBefore;
+        rewardBefore = ChatRewardResultView.ValueSnapshot.Capture();
         dispatchingChatEffect = true;
         try { action(); }
-        finally { dispatchingChatEffect = wasDispatching; }
+        finally { dispatchingChatEffect = wasDispatching; rewardBefore = previousSnapshot; }
     }
 
     private void HandleRewardDispatched(DHEventEffectToken token)
@@ -495,6 +499,7 @@ public class ChatModalController : MonoBehaviour
         if (catalog == null || !catalog.TryGetEventRewardTemplate(rewardId, out DHEventRewardTemplate reward)) return;
         ChatRewardResultView result = Instantiate(rewardResultPrefab, contentRoot);
         previousSpeakerBubble = null;
+        result.SetBeforeValues(rewardBefore);
         result.Bind(reward);
         hasRewardResult = true;
         StartCoroutine(ScrollToBottomNextFrame());

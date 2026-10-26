@@ -128,7 +128,7 @@ public class ExchangeModalController : MonoBehaviour
 
     private void OnResourceChanged(ResourceType _, int __) => Refresh();
 
-    public void CloseModal() { if (modalRoot != null) modalRoot.SetActive(false); }
+    public void CloseModal() { if (modalRoot != null) LobbyModalButtonPop.Close(modalRoot); }
 
     private void ResetSelection()
     {

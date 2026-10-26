@@ -106,7 +106,8 @@ public sealed class JcBattleHoverLink : MonoBehaviour
         float progress = Mathf.Repeat((Time.unscaledTime - hoverStart) / Mathf.Max(.2f, convergenceSeconds), 1f);
         float convergence = 1f - Mathf.SmoothStep(0, 1, progress);
         float glowAlpha = Mathf.Sin(progress * Mathf.PI);
-        SetGround(overUI && sourceSlot != null && sourceSlot.DisplayedUnit == target ? target : null);
+        bool highlightModel = !overUI || (sourceSlot != null && sourceSlot.DisplayedUnit == target);
+        SetGround(highlightModel ? target : null);
         float pulse = 0.5f + 0.5f * Mathf.Cos(Time.unscaledTime * Mathf.PI * 2f / Mathf.Max(0.2f, pulseSeconds));
         var color = outlineColor;
         color.a *= Mathf.Lerp(0.9f, 1f, pulse);
@@ -121,7 +122,7 @@ public sealed class JcBattleHoverLink : MonoBehaviour
                 pair.Value.Show(badgeColor, badgeWidth, badgePhase);
             else pair.Value.enabled = false;
         }
-        if (!overUI || sourceSlot == null || sourceSlot.DisplayedUnit != target) return;
+        if (!highlightModel) return;
         if (camera == null || modelWidth <= 0) return;
         if (modelTarget != target || modelRenderers == null)
         {

@@ -22,6 +22,9 @@ namespace JC.VFX
         [SerializeField] private PartMode partMode;
         [Tooltip("차징 부품이 발사 신호를 받으면 생성할 독립 비행 부품입니다.")]
         [SerializeField] private SolarPrismVfx flightPartPrefab;
+        [Tooltip("Wait for every summoned prism to reach full size before handing off to flight.")]
+        [SerializeField] private bool waitForSummonBeforeLaunch;
+        private Coroutine pendingLaunch;
         [Tooltip("대상별 도착 시 호출할 독립 착탄 부품입니다. 비우면 기존 내장 효과를 씁니다.")]
         [SerializeField] private FlareBombImpact impactPartPrefab;
         private SolarPrismVfx flightPart;
@@ -232,6 +235,7 @@ namespace JC.VFX
             if (origin == null) return;
             if (_mpb == null) { _mpb = new MaterialPropertyBlock(); BuildCache(); }
             StopAllCoroutines();
+            pendingLaunch = null;
             _origin = origin;
             _t = 0f;
             _charging = true;
@@ -262,6 +266,18 @@ namespace JC.VFX
         public void Launch(IReadOnlyList<Transform> targets)
         {
             if (!_charging || _launching) return;
+            if (pendingLaunch != null) return;
+            if (partMode == PartMode.Charge && flightPartPrefab != null && waitForSummonBeforeLaunch)
+            {
+                int count = Mathf.Min(unitCount, _units.Count);
+                float readyAt = summonTime + Mathf.Max(0, count - 1) * summonStagger;
+                if (_t < readyAt)
+                {
+                    pendingLaunch = StartCoroutine(LaunchAfterSummon(
+                        targets != null ? new List<Transform>(targets) : null, readyAt));
+                    return;
+                }
+            }
             if (partMode == PartMode.Charge && flightPartPrefab != null)
             {
                 flightPart = Instantiate(flightPartPrefab, transform);
@@ -290,6 +306,13 @@ namespace JC.VFX
             StartCoroutine(LaunchAll(targets));
         }
 
+        private IEnumerator LaunchAfterSummon(IReadOnlyList<Transform> targets, float readyAt)
+        {
+            while (_charging && !_launching && _t < readyAt) yield return null;
+            pendingLaunch = null;
+            if (_charging && !_launching) Launch(targets);
+        }
+
         private void ForwardImpact(Vector3 position) => Impacted?.Invoke(position);
         private void OnFlightFinished(VfxEffect effect)
         {
@@ -300,6 +323,7 @@ namespace JC.VFX
         {
             if (flightPart != null) { flightPart.OnFinished -= OnFlightFinished; flightPart.Impacted -= ForwardImpact; flightPart.Stop(); Destroy(flightPart.gameObject); flightPart = null; }
             StopAllCoroutines();
+            pendingLaunch = null;
             _charging = false;
             _launching = false;
             IsPlaying = false;

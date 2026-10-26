@@ -13,6 +13,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
     [SerializeField] private string choiceCancelText = "\uCDE8\uC18C";
 
     private bool isRunning;
+    private bool conditionEventsSuppressed;
     private WorldEventObject runningSource;
     private PartyGridMover runningParty;
     private DHWorldEventTemplate runningTemplate;
@@ -22,6 +23,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
     private DHWorldEventPresentationRequest currentRequest;
 
     public bool IsRunning => isRunning;
+    public bool ConditionEventsBlocked => conditionEventsSuppressed || DHGameEndState.IsEnding;
     public DHWorldEventPresentationRequest CurrentRequest => currentRequest;
 
     public event Action<DHWorldEventPresentationRequest> PresentationChanged;
@@ -87,7 +89,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
 
     public bool TryStartConditionEvent(DHWorldEventTemplate template, PartyGridMover party, Action closedCallback = null)
     {
-        if (isRunning || template == null || template.SourceType != DHWorldEventSourceType.Condition)
+        if (ConditionEventsBlocked || isRunning || template == null || template.SourceType != DHWorldEventSourceType.Condition)
             return false;
 
         switch (template.EventType)
@@ -286,6 +288,40 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
             return;
 
         EndCurrentEvent(false);
+    }
+
+    private void OnEnable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
+    }
+
+    public void SuspendConditionEventsForGameEnd()
+    {
+        conditionEventsSuppressed = true;
+        if (isRunning && runningTemplate != null && runningTemplate.SourceType == DHWorldEventSourceType.Condition)
+            EndCurrentEvent(false, invokeClosedCallback: false);
+    }
+
+    private void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (!conditionEventsSuppressed || DHGameEndState.IsEnding)
+            return;
+
+        // Keep the block through ending/title transitions; a new exploration session may check again.
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            if (root.GetComponentInChildren<TurnManager>(true) == null)
+                continue;
+
+            conditionEventsSuppressed = false;
+            DHWorldEventConditionRuntimeManager.Instance?.RequestCheck();
+            break;
+        }
     }
 
     private bool StartConsumeNpcEvent(
@@ -496,6 +532,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
     {
         return isRunning &&
                runningTemplate != null &&
+               (runningTemplate.SourceType != DHWorldEventSourceType.Condition || !ConditionEventsBlocked) &&
                currentRequest != null &&
                currentRequest.Step == expectedStep;
     }
@@ -521,7 +558,7 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
             MapProgressRepository.Instance?.MarkEventCompleted(runningProgressKey);
     }
 
-    private void EndCurrentEvent(bool completed)
+    private void EndCurrentEvent(bool completed, bool invokeClosedCallback = true)
     {
         DHWorldEventPresentationRequest closedRequest = currentRequest;
         Action callback = runningClosedCallback;
@@ -539,7 +576,8 @@ public sealed class DHWorldEventRuntimeManager : MonoBehaviour
             Debug.Log($"[DHWorldEventRuntime] Close world event '{closedRequest.WorldEventId}', completed={completed}.", this);
 
         PresentationClosed?.Invoke(closedRequest);
-        callback?.Invoke();
+        if (invokeClosedCallback)
+            callback?.Invoke();
     }
 
     public static string BuildProgressKey(string eventId)

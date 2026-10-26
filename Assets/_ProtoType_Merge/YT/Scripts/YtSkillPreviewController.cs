@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using Cell = ASB.Work.BattleGrid.GridCell;
 using Grid = ASB.Work.BattleGrid.BattleGridManager;
 
@@ -40,7 +41,9 @@ namespace YT.Preview
         private bool ready;
         private float repeatAt, savedSpeed;
         private string message = "프리뷰 준비 중…";
-        private GUIStyle labelStyle, titleStyle, buttonStyle;
+        private GUIStyle labelStyle, titleStyle, buttonStyle, selectedHeroStyle, selectedButtonStyle;
+        private RawImage runtimeCursorImage;
+        private readonly Vector3[] cursorCorners = new Vector3[4];
         public BattleCharactor Actor { get; private set; }
         public bool IsPlaying { get; private set; }
         public bool LastCastSucceeded { get; private set; }
@@ -340,6 +343,9 @@ namespace YT.Preview
                 labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, wordWrap = true };
                 titleStyle = new GUIStyle(labelStyle) { fontSize = 18, fontStyle = FontStyle.Bold };
                 buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = 13, wordWrap = true };
+                selectedButtonStyle = new GUIStyle(buttonStyle) { fontStyle = FontStyle.Bold };
+                selectedHeroStyle = new GUIStyle(labelStyle) { fontSize = 16, fontStyle = FontStyle.Bold };
+                selectedHeroStyle.normal.textColor = new Color(1f, .85f, .25f);
             }
             Color previous = GUI.color;
             GUI.color = new Color(.035f, .05f, .075f, .92f);
@@ -350,10 +356,18 @@ namespace YT.Preview
             GUI.enabled = ready && !IsPlaying;
             GUILayout.BeginHorizontal();
             for (int i = 0; i < 4; i++)
-                if (GUILayout.Button("F" + (i + 1) + "\n" + HeroNames[i], buttonStyle, GUILayout.Height(40))) SelectHero(10001 + i);
+            {
+                bool selected = Actor != null && HeroNumber(Actor) == i + 1;
+                Color background = GUI.backgroundColor;
+                if (selected) GUI.backgroundColor = new Color(.3f, .7f, 1f);
+                string caption = "F" + (i + 1) + (selected ? " · 선택" : "") + "\n" + HeroNames[i];
+                if (GUILayout.Button(caption, selected ? selectedButtonStyle : buttonStyle, GUILayout.Height(40)))
+                    SelectHero(10001 + i);
+                GUI.backgroundColor = background;
+            }
             GUILayout.EndHorizontal();
             GUI.enabled = true;
-            GUILayout.Label(Actor != null ? "현재: " + HeroLabel(Actor) : message, labelStyle);
+            GUILayout.Label(Actor != null ? "선택 영웅: " + HeroLabel(Actor) : message, selectedHeroStyle);
             GUILayout.Label("기본 스킬                        강화 스킬", labelStyle);
             GUI.enabled = ready && !IsPlaying;
             for (int i = 0; i < 4; i++)
@@ -376,6 +390,29 @@ namespace YT.Preview
             GUI.enabled = true;
             if (GUILayout.Button("Backspace  전체 초기화", buttonStyle)) ReloadPreview();
             GUILayout.EndArea();
+            DrawCursorAbovePanel();
+        }
+
+        // Runtime cursor canvases render behind IMGUI; redraw the same image on top.
+        private void DrawCursorAbovePanel()
+        {
+            if (Event.current.type != EventType.Repaint || Cursor.visible || !JcPointerInput.Inside) return;
+            if (runtimeCursorImage == null || !runtimeCursorImage.isActiveAndEnabled)
+                runtimeCursorImage = FindObjectsByType<RawImage>(FindObjectsSortMode.None)
+                    .FirstOrDefault(image => image.isActiveAndEnabled && image.canvas != null &&
+                        image.canvas.name == "JC Runtime Cursor");
+            if (runtimeCursorImage == null || runtimeCursorImage.texture == null) return;
+            runtimeCursorImage.rectTransform.GetWorldCorners(cursorCorners);
+            Vector2 lower = RectTransformUtility.WorldToScreenPoint(null, cursorCorners[0]);
+            Vector2 upper = RectTransformUtility.WorldToScreenPoint(null, cursorCorners[2]);
+            Rect area = new Rect(lower.x, Screen.height - upper.y, upper.x - lower.x, upper.y - lower.y);
+            Color color = GUI.color;
+            int depth = GUI.depth;
+            GUI.color = runtimeCursorImage.color;
+            GUI.depth = -10000;
+            GUI.DrawTextureWithTexCoords(area, runtimeCursorImage.texture, runtimeCursorImage.uvRect, true);
+            GUI.color = color;
+            GUI.depth = depth;
         }
 
         private void OnDisable()

@@ -5,6 +5,8 @@ public static class DHGameEndState
     public static void BeginEnding()
     {
         IsEnding = true;
+        DHWorldEventConditionRuntimeManager.Instance?.CancelPendingChecks();
+        DHWorldEventRuntimeManager.Instance?.SuspendConditionEventsForGameEnd();
     }
 
     public static void Reset()

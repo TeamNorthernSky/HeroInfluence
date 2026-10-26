@@ -20,6 +20,6 @@ public class ModalDimClickCloser : MonoBehaviour, IPointerClickHandler
         if (top == null) return;
         Modal modal = top.GetComponent<Modal>();
         if (modal != null && modal.DimClosesModal)
-            top.SetActive(false);
+            LobbyModalButtonPop.Close(top);
     }
 }

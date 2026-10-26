@@ -13,6 +13,7 @@ public class ExplorationCoreCardView : MonoBehaviour
     [SerializeField] private GameObject unavailableOverlay;
     [SerializeField] private Sprite normalSprite;
     [SerializeField] private Sprite equippedSprite;
+    [SerializeField] private Image equippedBadge;
 
     public Button Button => button;
 
@@ -29,6 +30,7 @@ public class ExplorationCoreCardView : MonoBehaviour
         icon.sprite = coreIcon;
         icon.enabled = coreIcon != null;
         background.sprite = equipped ? equippedSprite : normalSprite;
+        if (equippedBadge != null) equippedBadge.gameObject.SetActive(equipped);
         unavailableOverlay.SetActive(!available);
         button.interactable = available && canEquip && !equipped;
     }

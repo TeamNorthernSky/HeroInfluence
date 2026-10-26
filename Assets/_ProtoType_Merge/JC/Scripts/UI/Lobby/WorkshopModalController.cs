@@ -153,7 +153,7 @@ public class WorkshopModalController : MonoBehaviour
 
     public void CloseModal()
     {
-        if (modalRoot != null) modalRoot.SetActive(false);
+        if (modalRoot != null) LobbyModalButtonPop.Close(modalRoot);
     }
 
     private void OnCardClicked(int index)
