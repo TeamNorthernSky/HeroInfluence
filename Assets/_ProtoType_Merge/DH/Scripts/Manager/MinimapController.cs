@@ -651,7 +651,7 @@ public class MinimapController : MonoBehaviour
         for (int i = 0; i < gates.Length; i++)
         {
             GateRuntimeController gate = gates[i];
-            if (gate == null || !gate.isActiveAndEnabled)
+            if (gate == null || !gate.isActiveAndEnabled || !gate.IsOpen)
                 continue;
 
             gateCells.Clear();

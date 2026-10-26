@@ -14,8 +14,10 @@ public class SubEventObject : MonoBehaviour
     private SubEventRegistry subEventRegistry;
     private bool isTriggering;
     private bool eventBattleRequestedDuringTrigger;
+    private bool waitingForPostBattleChat;
     private Action<SubEventObject> pendingClosedCallback;
 
+    public bool WaitingForPostBattleChat => waitingForPostBattleChat;
     public string EventKey => string.IsNullOrWhiteSpace(eventKey) ? name : eventKey.Trim();
     public int ZoneId => Mathf.Max(1, zoneId);
     public int ChatId => Mathf.Max(0, chatId);
@@ -29,7 +31,7 @@ public class SubEventObject : MonoBehaviour
     {
         ResolveReferences();
 
-        if (Application.isPlaying && IsCompleted())
+        if (Application.isPlaying && IsCompleted() && !waitingForPostBattleChat)
         {
             gameObject.SetActive(false);
             return;
@@ -43,6 +45,15 @@ public class SubEventObject : MonoBehaviour
         subEventRegistry?.Unregister(this);
         UnsubscribeEventBattleRequested();
         DHEventEffectRuntimeManager.Instance?.ClearActiveSubEventSource(EventKey);
+    }
+
+    private void OnDestroy()
+    {
+        UnsubscribeEventBattleRequested();
+        JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
+        DHEventEffectRuntimeManager.Instance?.ClearActiveSubEventSource(EventKey);
+        pendingClosedCallback = null;
+        isTriggering = false;
     }
 
     private void OnValidate()
@@ -67,7 +78,7 @@ public class SubEventObject : MonoBehaviour
 
     public bool TryTrigger(PartyGridMover party, Action<SubEventObject> closedCallback = null)
     {
-        if (!Application.isPlaying || isTriggering || IsCompleted())
+        if (!Application.isPlaying || isTriggering || waitingForPostBattleChat || IsCompleted())
             return false;
 
         if (ChatId <= 0)
@@ -118,6 +129,10 @@ public class SubEventObject : MonoBehaviour
 
     private void HandleChatClosed()
     {
+        // The chat UI can finish closing after its source scene has been unloaded.
+        if (this == null || !Application.isPlaying || !isTriggering)
+            return;
+
         JC.BattleTesting.JcArnoldBattlePresentation.ClearFixedOrigin(transform);
         isTriggering = false;
         UnsubscribeEventBattleRequested();
@@ -160,12 +175,28 @@ public class SubEventObject : MonoBehaviour
             eventBattleRequestedDuringTrigger = true;
     }
 
-    public void CompleteAfterEventBattleVictory()
+    public void CompleteAfterEventBattleVictory(bool deferDeactivation = false)
     {
         if (!Application.isPlaying)
             return;
 
         MarkCompleted();
+        waitingForPostBattleChat = deferDeactivation;
+        if (!waitingForPostBattleChat)
+            gameObject.SetActive(false);
+    }
+
+    public void FinishPostBattleChat()
+    {
+        if (!waitingForPostBattleChat)
+            return;
+
+        DeactivateByDisableEffect();
+    }
+
+    public void DeactivateByDisableEffect()
+    {
+        waitingForPostBattleChat = false;
         gameObject.SetActive(false);
     }
 

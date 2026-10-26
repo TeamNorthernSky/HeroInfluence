@@ -144,11 +144,19 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         ApplyNumericResults(stateRepository, eventBattle);
         DHEnemyEventEncounterRuntimeManager.EnsureInstance().RegisterCompletedEventBattle(context);
 
-        // Main event objects complete only on victory; defeat keeps them available for retry.
+        string deferredMainEventKey = context.Result == CombatResult.Victory && eventBattle.ResumeChatId > 0
+            ? DHEventStateRepository.NormalizeKey(eventBattle.SourceMainEventKey)
+            : string.Empty;
+        string deferredSubEventKey = context.Result == CombatResult.Victory && eventBattle.ResumeChatId > 0
+            ? DHEventStateRepository.NormalizeKey(eventBattle.SourceSubEventKey)
+            : string.Empty;
+        UnityEngine.SceneManagement.Scene returnScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+
+        // Event objects complete only on victory; defeat keeps them available for retry.
         if (context.Result == CombatResult.Victory)
         {
-            CompleteSourceMainEvent(eventBattle.SourceMainEventKey);
-            CompleteSourceSubEvent(eventBattle.SourceSubEventKey);
+            CompleteSourceMainEvent(eventBattle.SourceMainEventKey, !string.IsNullOrWhiteSpace(deferredMainEventKey));
+            CompleteSourceSubEvent(eventBattle.SourceSubEventKey, !string.IsNullOrWhiteSpace(deferredSubEventKey));
         }
         ClearPendingMainEventSource(eventBattle.SourceMainEventKey);
 
@@ -157,12 +165,53 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
 
         if (!TryResolveResumeChatForModal(eventBattle.ZoneId, eventBattle.ResumeChatId, out int modalChatId))
         {
+            FinishDeferredEvents(deferredMainEventKey, deferredSubEventKey, returnScene);
             Debug.LogWarning(
                 $"[DHEventBattleRuntime] Event battle resume chat could not be resolved. Zone={eventBattle.ZoneId}, Chat={eventBattle.ResumeChatId}");
             return;
         }
 
-        ChatModalController.Show(eventBattle.ZoneId, modalChatId, RequestWorldEventConditionCheck);
+        ChatModalController.Show(eventBattle.ZoneId, modalChatId, () =>
+        {
+            if (!Application.isPlaying || !returnScene.IsValid() || !returnScene.isLoaded)
+                return;
+
+            FinishDeferredEvents(deferredMainEventKey, deferredSubEventKey, returnScene);
+            RequestWorldEventConditionCheck();
+        });
+
+        if (!ChatModalController.IsOpen)
+            FinishDeferredEvents(deferredMainEventKey, deferredSubEventKey, returnScene);
+    }
+
+    private static void FinishDeferredEvents(string mainEventKey, string subEventKey, UnityEngine.SceneManagement.Scene scene)
+    {
+        FinishDeferredMainEvent(mainEventKey, scene);
+        if (string.IsNullOrWhiteSpace(subEventKey))
+            return;
+
+        foreach (SubEventObject subEvent in FindObjectsByType<SubEventObject>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (subEvent != null && subEvent.gameObject.scene == scene &&
+                string.Equals(DHEventStateRepository.NormalizeKey(subEvent.EventKey), subEventKey, StringComparison.Ordinal))
+                subEvent.FinishPostBattleChat();
+        }
+    }
+
+    private static void FinishDeferredMainEvent(string eventKey, UnityEngine.SceneManagement.Scene scene)
+    {
+        if (string.IsNullOrWhiteSpace(eventKey))
+            return;
+
+        // Resolve the returned scene's object, never the pre-battle instance.
+        foreach (MainEventObject mainEvent in FindObjectsByType<MainEventObject>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (mainEvent != null && mainEvent.gameObject.scene == scene &&
+                string.Equals(DHEventStateRepository.NormalizeKey(mainEvent.EventKey), eventKey, StringComparison.Ordinal))
+                mainEvent.FinishPostBattleChat();
+        }
     }
 
     public static void AssignCurrentEventBattleSourceMainEvent(string eventKey)
@@ -267,7 +316,7 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         return string.Equals(chat.MessageText, BattleEndRelayText, StringComparison.Ordinal);
     }
 
-    private static void CompleteSourceMainEvent(string eventKey)
+    private static void CompleteSourceMainEvent(string eventKey, bool deferDeactivation = false)
     {
         string normalizedKey = DHEventStateRepository.NormalizeKey(eventKey);
         if (string.IsNullOrWhiteSpace(normalizedKey))
@@ -293,11 +342,11 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
                 continue;
             }
 
-            mainEvent.CompleteAfterEventBattleVictory();
+            mainEvent.CompleteAfterEventBattleVictory(deferDeactivation);
         }
     }
 
-    private static void CompleteSourceSubEvent(string eventKey)
+    private static void CompleteSourceSubEvent(string eventKey, bool deferDeactivation = false)
     {
         string key = DHEventStateRepository.NormalizeKey(eventKey);
         if (string.IsNullOrWhiteSpace(key))
@@ -306,8 +355,8 @@ public sealed class DHEventBattleRuntimeManager : MonoBehaviour
         MapProgressRepository.Instance?.MarkSubEventCompleted(key);
         foreach (SubEventObject subEvent in FindObjectsByType<SubEventObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            if (string.Equals(DHEventStateRepository.NormalizeKey(subEvent.EventKey), key, StringComparison.Ordinal))
-                subEvent.CompleteAfterEventBattleVictory();
+            if (subEvent != null && string.Equals(DHEventStateRepository.NormalizeKey(subEvent.EventKey), key, StringComparison.Ordinal))
+                subEvent.CompleteAfterEventBattleVictory(deferDeactivation);
         }
     }
 
