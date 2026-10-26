@@ -13,6 +13,22 @@ namespace JC.BattleTesting
         static bool Character(Transform t){for(;t!=null;t=t.parent)if(t.GetComponent<BattleCharactor>()!=null||t.GetComponent<EnemyGridMover>()!=null||t.name.StartsWith("Armature",StringComparison.OrdinalIgnoreCase))return true;return false;}
         static string Group(Transform t){for(var p=t;p!=null;p=p.parent)if(p.name.EndsWith("(Clone)",StringComparison.Ordinal))return p.GetInstanceID().ToString();return t.GetInstanceID().ToString();}
 
+        // 탐사 원본은 유지하고 전투 배경 입력에서만 차단물 외형을 제외합니다.
+        static bool Barricade(Transform transform)
+        {
+            for (var current = transform; current != null; current = current.parent)
+            {
+                var placement = current.GetComponent<DecorativeObjectPlacement>();
+                if (placement != null && string.Equals(placement.PrefabKey, "barrier", StringComparison.OrdinalIgnoreCase))
+                    return true;
+                // 게이트 내부 모델에는 배치 컴포넌트가 없는 경우도 있습니다.
+                if (string.Equals(current.name, "barrier", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(current.name, "barrier(Clone)", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
+
         // 입력 씬이 살아 있는 동안 Capture 결과를 Build에 전달합니다. 결과는 자원을 독립 소유합니다.
         public static JcDynamicBattleSource Capture(Scene scene)
         {
@@ -21,7 +37,7 @@ namespace JC.BattleTesting
             var parts=new List<JcDynamicBattleSource.Part>();var roads=new List<JcDynamicBattleSource.Road>();
             foreach(var f in scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<MeshFilter>()))
             {
-                var r=f.GetComponent<MeshRenderer>();if(r==null||!r.enabled||r.forceRenderingOff||f.sharedMesh==null||Character(f.transform))continue;
+                var r=f.GetComponent<MeshRenderer>();if(r==null||!r.enabled||r.forceRenderingOff||f.sharedMesh==null||Character(f.transform)||Barricade(f.transform))continue;
                 bool ground=Ancestor(f.transform,"Generated Tile Meshes")||Ancestor(f.transform,"JC_ExploreDetail_Visuals");
                 if(!ground&&!roots.Contains(f.transform.root.name))continue;
                 if(f.GetComponentInParent<JcDynamicBattleOutput>()!=null)continue;
