@@ -167,7 +167,9 @@ public class InteractionCellOverlayController : MonoBehaviour
             {
                 Vector2Int grid = set.Cells[i];
                 if (TrySetDesiredCell(grid, OverlayCellType.External))
+                {
                     externalDesiredCellColors[grid] = set.Color;
+                }
             }
         }
     }
@@ -412,6 +414,7 @@ public class InteractionCellOverlayController : MonoBehaviour
         Color color = type == OverlayCellType.External && externalDesiredCellColors.TryGetValue(grid, out Color externalColor)
             ? externalColor
             : GetColor(type);
+        instance.ApplyLighting(generatedMaterial);
         instance.ApplyColor(color);
     }
 
@@ -657,14 +660,15 @@ public class InteractionCellOverlayController : MonoBehaviour
             new Vector2(1f, 1f),
             new Vector2(1f, 0f)
         };
-        mesh.RecalculateNormals();
+        // 기존 양면 표시와 투명도는 유지하고, 상쇄되는 법선만 지면 위 방향으로 지정합니다.
+        mesh.normals = new[] { Vector3.up, Vector3.up, Vector3.up, Vector3.up };
         mesh.RecalculateBounds();
         return mesh;
     }
 
     private static Material CreateOverlayMaterial(Color color)
     {
-        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
         if (shader == null)
             shader = Shader.Find("Unlit/Color");
         if (shader == null)
@@ -672,7 +676,7 @@ public class InteractionCellOverlayController : MonoBehaviour
 
         Material material = new Material(shader)
         {
-            name = "Interaction Cell Overlay Material",
+            name = "Interaction Cell Overlay Lit Material",
             renderQueue = (int)RenderQueue.Transparent
         };
 
@@ -693,6 +697,17 @@ public class InteractionCellOverlayController : MonoBehaviour
         if (material.HasProperty("_Cull"))
             material.SetFloat("_Cull", (float)CullMode.Off);
 
+        // 모든 월드 셀 안내 표시가 조명과 그림자를 받도록 통일합니다.
+        material.SetFloat("_Metallic", 0f);
+        material.SetFloat("_Smoothness", 0f);
+        material.SetFloat("_SpecularHighlights", 0f);
+        material.SetFloat("_EnvironmentReflections", 0f);
+        material.SetFloat("_ReceiveShadows", 1f);
+        material.SetColor("_EmissionColor", Color.black);
+        material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+        material.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+        material.DisableKeyword("_EMISSION");
+        material.SetShaderPassEnabled("ShadowCaster", false);
         material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
         return material;
     }
@@ -709,6 +724,8 @@ public class InteractionCellOverlayController : MonoBehaviour
     {
         private readonly Renderer[] renderers;
         private readonly MaterialPropertyBlock propertyBlock;
+        private readonly Material[][] originalMaterials;
+        private Material lightingMaterial;
 
         public OverlayInstance(GameObject gameObject)
         {
@@ -717,9 +734,33 @@ public class InteractionCellOverlayController : MonoBehaviour
                 ? gameObject.GetComponentsInChildren<Renderer>(true)
                 : System.Array.Empty<Renderer>();
             propertyBlock = new MaterialPropertyBlock();
+            originalMaterials = new Material[renderers.Length][];
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                originalMaterials[i] = renderers[i].sharedMaterials;
+                renderers[i].shadowCastingMode = ShadowCastingMode.Off;
+                renderers[i].receiveShadows = true;
+            }
         }
 
         public GameObject GameObject { get; }
+
+        public void ApplyLighting(Material material)
+        {
+            if (lightingMaterial == material) return;
+            lightingMaterial = material;
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] == null) continue;
+                if (material == null) renderers[i].sharedMaterials = originalMaterials[i];
+                else
+                {
+                    var materials = new Material[originalMaterials[i].Length];
+                    for (int slot = 0; slot < materials.Length; slot++) materials[slot] = material;
+                    renderers[i].sharedMaterials = materials;
+                }
+            }
+        }
 
         public void ApplyColor(Color color)
         {
