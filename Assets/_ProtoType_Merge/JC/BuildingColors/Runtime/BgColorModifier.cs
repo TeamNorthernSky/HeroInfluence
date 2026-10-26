@@ -13,6 +13,9 @@ namespace JC.BuildingColors
         [Tooltip("이 건물만 원본 텍스처로 비교합니다. 조정값과 프로필은 유지됩니다.")] public bool showOriginal;
         [Tooltip("선택한 파츠 영역을 분홍색으로 강조합니다. -1은 일반 표시입니다. 프로필에는 저장하지 않습니다.")] public int highlightedPart=-1;
         [Tooltip("부모의 대상 범위 밖에 있는 특수 건물도 같은 씬 전체에서 찾습니다. 전용 재질이 일치하는 건물에만 적용됩니다.")] public bool searchEntireScene;
+        [Tooltip("위치별 적용 중심입니다. 반경이 0이면 기존처럼 건물 종류 전체에 적용합니다.")] public Vector3 targetWorldPosition;
+        [Tooltip("이 중심과 XZ 거리가 반경 이내인 건물만 적용합니다. 위치별 지정은 같은 조절기 그룹의 전체 설정보다 우선합니다.")] [Min(0)] public float targetRadius;
+        bool MatchesPosition(Renderer renderer) { var p=renderer.transform.position-targetWorldPosition; return p.x*p.x+p.z*p.z<=targetRadius*targetRadius; }
         sealed class Target {public Renderer renderer; public int slot,binding; public Material material; public MaterialPropertyBlock previous;}
         sealed class MeshTarget {public MeshFilter filter;public Mesh original,separated;}
         readonly List<MeshTarget> meshTargets=new List<MeshTarget>();
@@ -47,8 +50,11 @@ namespace JC.BuildingColors
             if(!definition||definition.bindings==null){Release();return;}
             var root=GetComponentInParent<BgColorRoot>();var scope=root?root.targetRoot:null;
             var renderers=searchEntireScene?AllSceneRenderers():root?root.TargetRenderers:(scope?scope.GetComponentsInChildren<Renderer>(true):AllSceneRenderers());
+            var scopedModifiers=root?root.Children:Array.Empty<BgColorModifier>();
             var found=new List<Target>();
             foreach(var r in renderers){if(!r||r.gameObject.scene!=gameObject.scene)continue;var mats=r.sharedMaterials;
+                if(targetRadius>0&&!MatchesPosition(r))continue;
+                if(targetRadius<=0){bool overridden=false;foreach(var scoped in scopedModifiers)if(scoped!=this&&scoped.isActiveAndEnabled&&scoped.definition==definition&&scoped.targetRadius>0&&scoped.MatchesPosition(r)){overridden=true;break;}if(overridden)continue;}
                 for(int slot=0;slot<mats.Length;slot++){int binding=FindBinding(r,slot,mats[slot]);if(binding>=0){
                     found.Add(new Target{renderer=r,slot=slot,binding=binding,material=definition.bindings[binding].material});
                 }

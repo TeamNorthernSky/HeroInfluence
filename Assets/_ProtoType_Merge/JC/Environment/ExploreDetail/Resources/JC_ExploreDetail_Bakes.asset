@@ -17,3 +17,7 @@ MonoBehaviour:
     current: {fileID: 11400000, guid: 8a2bcd5df0df7e142ad8b13f498b7668, type: 2}
     previousAssetPath: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/DHScene_3_0ca8da9dafe2427391b05b65b1a8f478/Bake.asset
     buildInputWarning: 
+  - scenePath: Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity
+    current: {fileID: 11400000, guid: cafb17b7a81d0554b8ce65fa120d6db8, type: 2}
+    previousAssetPath: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Baked/TutorialExploreScene_91db3e7ad89645f6bdee174b3c8dd35b/Bake.asset
+    buildInputWarning: 

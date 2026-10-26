@@ -1,0 +1,330 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c74be9a7a4d3d444b4fda993ace7b27, type: 3}
+  m_Name: Bake
+  m_EditorClassIdentifier: 
+  formatVersion: 2
+  scenePath: Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity
+  createdUtc: 2026-10-26T04:44:22.0190029Z
+  settingsSnapshot: '{"MonoBehaviour":{"m_Enabled":true,"m_EditorHideFlags":0,"m_Name":"TutorialExplore_Detail(Clone)","m_EditorClassIdentifier":"","enableDetails":true,"forceBakedOnMismatch":false,"sceneNames":["TutorialExploreScene"],"roadSurface":true,"whiteCrosswalks":true,"roundSidewalk":true,"sidewalkCurb":true,"roadsideCurb":true,"roadTexturePrefix":"Road_","sidewalkTexture":"tilemap_01","grassTexture":"tilemap_03","cornerRadius":0.2800000011920929,"curbTint":{"r":0.7200000286102295,"g":0.7200000286102295,"b":0.7200000286102295,"a":1.0},"jointWidth":0.00800000037997961,"curbBlockLength":0.5,"jointTint":{"r":0.46000000834465029,"g":0.46000000834465029,"b":0.46000000834465029,"a":1.0},"curbWidth":0.10000000149011612,"curbBevel":0.012000000104308129,"roadsideHeight":0.07999999821186066,"flatGrassCurbHeight":0.012000000104308129,"flatBoundaryTolerance":0.029999999329447748,"naturalRoadEdges":true,"soilEdgeWidth":0.09000000357627869,"pathApronLength":0.14000000059604646,"entrancePavingTint":{"r":0.5899999737739563,"g":0.5899999737739563,"b":0.5899999737739563,"a":1.0},"entranceRoadFraction":0.5,"entranceMarkerWidth":0.029999999329447748,"entranceMarkerHeight":0.024000000208616258,"soilEdgeTint":{"r":0.5199999809265137,"g":0.46000000834465029,"b":0.3199999928474426,"a":1.0},"edgeGrassTint":{"r":0.4300000071525574,"g":0.5099999904632568,"b":0.27000001072883608,"a":1.0},"roadEdgeShader":{"fileID":4800000,"guid":"4fb09a87714ca804e968987934757db5","type":3},"pathEdgeRules":[{"texture":{"fileID":2800000,"guid":"3b4255a0c8fa21646bf34a896470a7ea","type":3},"left":{"x":-1.0,"y":-1.0},"right":{"x":0.4609375,"y":0.6640625},"bottom":{"x":0.296875,"y":0.5},"top":{"x":-1.0,"y":-1.0}},{"texture":{"fileID":2800000,"guid":"99510a497f4620a41ac93b0b44ea06a9","type":3},"left":{"x":0.4609375,"y":0.6640625},"right":{"x":0.46875,"y":0.671875},"bottom":{"x":-1.0,"y":-1.0},"top":{"x":-1.0,"y":-1.0}},{"texture":{"fileID":2800000,"guid":"482eb44718305b94d8d247c882085ceb","type":3},"left":{"x":0.4609375,"y":0.671875},"right":{"x":0.4609375,"y":0.671875},"bottom":{"x":0.40625,"y":0.59375},"top":{"x":-1.0,"y":-1.0}},{"texture":{"fileID":2800000,"guid":"8200cf0f966382c45a8060cb80252d75","type":3},"left":{"x":0.4609375,"y":0.6640625},"right":{"x":-1.0,"y":-1.0},"bottom":{"x":0.5,"y":0.6953125},"top":{"x":-1.0,"y":-1.0}},{"texture":{"fileID":2800000,"guid":"d1c04804aa0a7634aab19aa1d4fc9f0a","type":3},"left":{"x":-1.0,"y":-1.0},"right":{"x":-1.0,"y":-1.0},"bottom":{"x":0.296875,"y":0.5},"top":{"x":0.3046875,"y":0.5}},{"texture":{"fileID":2800000,"guid":"824a289dd899a894b902782639b4c755","type":3},"left":{"x":-1.0,"y":-1.0},"right":{"x":0.40625,"y":0.6015625},"bottom":{"x":0.296875,"y":0.5},"top":{"x":0.296875,"y":0.5}},{"texture":{"fileID":2800000,"guid":"77fc4da13933163498927ceca3f38f26","type":3},"left":{"x":-1.0,"y":-1.0},"right":{"x":-1.0,"y":-1.0},"bottom":{"x":-1.0,"y":-1.0},"top":{"x":-1.0,"y":-1.0}},{"texture":{"fileID":2800000,"guid":"c54e68707198b114f83d1391fa2a8299","type":3},"left":{"x":0.40625,"y":0.6015625},"right":{"x":0.3984375,"y":0.609375},"bottom":{"x":0.40625,"y":0.59375},"top":{"x":0.3984375,"y":0.59375}},{"texture":{"fileID":2800000,"guid":"c8b1bc439f8afec43ae86961be5e6c7f","type":3},"left":{"x":-1.0,"y":-1.0},"right":{"x":-1.0,"y":-1.0},"bottom":{"x":0.3984375,"y":0.6015625},"top":{"x":0.3984375,"y":0.6015625}},{"texture":{"fileID":2800000,"guid":"54f5417ccce06c84db9809c79833848d","type":3},"left":{"x":0.40625,"y":0.6015625},"right":{"x":0.3984375,"y":0.609375},"bottom":{"x":-1.0,"y":-1.0},"top":{"x":-1.0,"y":-1.0}},{"texture":{"fileID":2800000,"guid":"371063d1dd1d2ac43be078118d8dd7df","type":3},"left":{"x":-1.0,"y":-1.0},"right":{"x":-1.0,"y":-1.0},"bottom":{"x":0.5,"y":0.6953125},"top":{"x":0.5,"y":0.703125}},{"texture":{"fileID":2800000,"guid":"a620dd0bd8c2c754faa946fa28fc672f","type":3},"left":{"x":0.40625,"y":0.6015625},"right":{"x":-1.0,"y":-1.0},"bottom":{"x":0.5,"y":0.703125},"top":{"x":0.5,"y":0.703125}},{"texture":{"fileID":2800000,"guid":"3d74a331d026c674c9073d2422eeda88","type":3},"left":{"x":-1.0,"y":-1.0},"right":{"x":0.328125,"y":0.53125},"bottom":{"x":-1.0,"y":-1.0},"top":{"x":0.296875,"y":0.5}},{"texture":{"fileID":2800000,"guid":"06fdbed9224712b49838e838e3b01d1b","type":3},"left":{"x":0.328125,"y":0.53125},"right":{"x":0.328125,"y":0.5390625},"bottom":{"x":-1.0,"y":-1.0},"top":{"x":-1.0,"y":-1.0}},{"texture":{"fileID":2800000,"guid":"b7f5040374aaae04c96b9947605845a0","type":3},"left":{"x":0.328125,"y":0.53125},"right":{"x":0.328125,"y":0.5390625},"bottom":{"x":-1.0,"y":-1.0},"top":{"x":0.3984375,"y":0.59375}},{"texture":{"fileID":2800000,"guid":"ac254b32b86ee0943aa3782df9f49bb1","type":3},"left":{"x":0.3359375,"y":0.53125},"right":{"x":-1.0,"y":-1.0},"bottom":{"x":-1.0,"y":-1.0},"top":{"x":0.5,"y":0.703125}},{"texture":{"fileID":2800000,"guid":"ec717cb2872bb8041a56409f63d7fa22","type":3},"left":{"x":-1.0,"y":-1.0},"right":{"x":0.4609375,"y":0.6640625},"bottom":{"x":0.296875,"y":0.5},"top":{"x":-1.0,"y":-1.0}}],"roadNormalStrength":0.25,"roadGrainStrength":0.3499999940395355,"canalBanks":true,"cartoonWater":true,"bridgeWaterPassage":true,"bridgeDeckThickness":0.10000000149011612,"waterTexture":"tilemap_02","bankWidth":0.4000000059604645,"bankCapWidth":0.07000000029802323,"bankTint":{"r":0.5699999928474426,"g":0.5899999737739563,"b":0.5799999833106995,"a":1.0},"bankPanelLength":0.800000011920929,"bankJointStrength":0.15000000596046449,"bankWetStrength":0.2199999988079071,"bankExcludedLandCells":[],"waterFlowDirection":{"x":1.0,"y":0.0},"waterShader":{"fileID":4800000,"guid":"6fd5608cdb332684c823b437da8ed24d","type":3},"bankShader":{"fileID":4800000,"guid":"b44630300158c2249ae5b88fd075a5d6","type":3},"curbMesh":{"fileID":4300000,"guid":"72bdc00136e804c4cb47af66ef22effe","type":2},"curbMaterial":{"fileID":2100000,"guid":"7d0a209a3d8e7f1469001b9430cbdc88","type":2},"roadNormal":{"fileID":2800000,"guid":"d1e58fb32b7a1524882356ba2ccaf485","type":3},"roadGrain":{"fileID":2800000,"guid":"3d3df34bca62cb646b368a6337b9b629","type":3}}}'
+  report: "ON: \uB3C4\uB85C 18, \uBCF4\uB3C4 3, \uBCF4\uB3C4 \uC5F0\uC11D 78, \uC57C\uC9C0
+    \uC5F0\uC11D 39; \uC790\uC5F0 \uACBD\uACC4 39, \uD759\uAE38 \uC785\uAD6C 0, \uBBF8\uBD84\uC11D
+    0, \uB192\uC774\uCC28 \uC81C\uC678 0; \uC218\uBA74 \uD0C0\uC77C \uC5C6\uC74C"
+  prefab: {fileID: 958485795722887597, guid: da90061b7ad612c4da61da4f609d156a, type: 3}
+  inputs:
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_Road_01[0]
+    hash: D90C300FE2C7F617711622846CE7B102310D1E3B777580B4FA57FE933BD02222
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_Road_01_FlatCube[0]
+    hash: 841198613DF13DF0BDF3C9B9D8D0B4AA2277A9CD7DC248764A02C3863CE5DBB3
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_Road_Centerline_001_FlatCube[0]
+    hash: B137DD57645E73E1894080E9BA34DB30836F5AF3F887D5E2341350B473729E60
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_Road_Centerline_002[0]
+    hash: 5CC979EF1AED83C800DEACB9960CB36FC13E3916408A3C5C2AC272A21D0444E9
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_Road_Cross_001[0]
+    hash: 5432A6FE9FEEF3381872FC786601D69390C7AAE0BB3DB841931A55FC544C8DCE
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_Road_Cross_002[0]
+    hash: 63C8C182E3EDCBC52C19C0E513E247901BDAAE9655E97BA47F5E86E41A2ACC9D
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_tilemap_01_RaisedCube[0]
+    hash: 354CE7F567A3F6AA3956F24E75CC0AB03CBE328DDADCA3C11AA2574E492A6638
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_tilemap_03[0]
+    hash: 8DFE022BE755C12601401ADCC5A38A97562B22783865CA52299CA48709B829EE
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_tilemap_03_FlatCube[0]
+    hash: FB36918BC108D52D1584F459647E8806F6B1D237375E778D0B9BA34506C35BF3
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_tilemap_04[0]
+    hash: B05215E7A256CFE90D42CEE76F225DC64C6592893DDA2CA2B083F51590F6C569
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_0_tilemap_05[0]
+    hash: F0EF8DA64A7B134545BD9BEBEB54C40850AD1573321F2C1D8FFAA5BD2C91A6F0
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_1_tilemap_03[0]
+    hash: A7D05AEF9D56BB257CCD24FEE5A8461C296FC1494E193F5E008DA5F64F885D0A
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_1_tilemap_03_FlatCube[0]
+    hash: 5E00AAA402D91D749C3CF3F21B69C6B6DF2A615FA08ED2502DACC47621018FF2
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_2_tilemap_03[0]
+    hash: FC2D117E542F46058A26418F018CE3BADB9F4F7109735E9B236557904F8E863F
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_0_2_tilemap_03_FlatCube[0]
+    hash: E4AEDF40EE54090F136C08853B91E2D6E6D1D490930C48B04CE539033137756B
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_Road_01[0]
+    hash: 60D6078336E217E8334049B841C49426C6A054F4C694A1017BE24F539BDEA9E2
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_Road_01_FlatCube[0]
+    hash: 73F6B7033B6272A14C6A2FEE92A6497773AC44F2CF9E88AA502E190973272BC9
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_Road_Centerline_001[0]
+    hash: 6238590FD07C6C51564255DE7170F41FFB3AD3FD56E4CFCA2B5921F8CA375332
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_Road_Centerline_001_FlatCube[0]
+    hash: B6E7056632B6832CDD2421A18925C4DE5AB9682AB3BE3B88A7D283DAA70D131D
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_Road_Centerline_002[0]
+    hash: 3FC4593714C68F1E45DA7A25D963BFE9A91C7E5E237394ACE995723DC6E5A4F9
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_Road_Centerline_002_FlatCube[0]
+    hash: 5BC8A6CA98F7FDD79CC4215984731D5CE285339082FE73FB34F398BF10A2D438
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_tilemap_01_RaisedCube[0]
+    hash: 43A79B771F5490BB2DE333F2458501E259274B3DDF939B42372DC67E7AD3FD96
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_tilemap_03[0]
+    hash: 0622A6D6C9335F6960E231BC84704612B47F1AA569A7C839C77E59D536E03770
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_tilemap_03_FlatCube[0]
+    hash: D455368E8FA45E7760255BBB7DC456E0C814B5FD781DCD13423CEE321316177D
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_0_tilemap_05[0]
+    hash: 67E05849EC5F395735542EDB08C1670DD0FA1AAEF8BD88147EF8DBEFDDF79C24
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_1_tilemap_03_FlatCube[0]
+    hash: 99384EC8EDE08A827F5B14DBA19DBFA07A31B985D191084180E2ADE9B5711F67
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_1_2_tilemap_03_FlatCube[0]
+    hash: 8582CC49A016D022027FE7F0838CE06D5B045E801837A7783040A3B99D5D6D09
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_0_Road_01[0]
+    hash: 9E9550A9B6BBDE39194E2DFB8CDC955984A6BE626A06BE2F7A1BE25451B1177B
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_0_Road_01_FlatCube[0]
+    hash: DB78331ADE48D32C9E76AACFFE5CEF6B0B300D75655A1A2ECC9FEEE5F3922BFB
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_0_Road_Centerline_001[0]
+    hash: 64150CAC96096647650E982503E1EE9B7D9B19212CC04D734A44C8C3FD45F8E8
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_0_Road_Centerline_002[0]
+    hash: 25852CD1C7511C1126458ED3098F9BAAA34BB4198CCB4F85A93B84E0613BA240
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_0_Road_Cross_001_FlatCube[0]
+    hash: 1969A4F4C6148A3E4DB7C00EBC4D6FE1B8C99D7778DB3B1E4AF5A8FBAD883985
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_0_Road_Cross_002_FlatCube[0]
+    hash: D173796D12030577E9C705688FA1C0760CDCE8CEAB1130EFD5FC139B96F83708
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_0_tilemap_01_RaisedCube[0]
+    hash: 5A704C3B9BADC463D257E382900F1BBC1E8EEB619219477A64871EA2B6BF1206
+    replace: 1
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_0_tilemap_03[0]
+    hash: 6349A54BFEC430B29F25C697894B97C18930C37EF6583C99F32F656894DA78B4
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_0_tilemap_03_FlatCube[0]
+    hash: AE0D40F28179ECEF31C39C8B43AF19A952391DEDDD914EBBF9EFD6BEBCFE3E55
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_1_tilemap_03_FlatCube[0]
+    hash: E94B785D912007D918CC06A79FD251C74E5928E4808CEB2443AF80FB1766296A
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_2_2_tilemap_03_FlatCube[0]
+    hash: CF19135725B6DC3E12047E76E8DF1DA0C1DC59A4648AF0999C0F7478AC89AEEE
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_3_0_tilemap_03[0]
+    hash: 1E24D79129231BCB98D1053CE7DD11482DD178EBFBE1CFE8A8E944DDEBBD003B
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_3_0_tilemap_03_FlatCube[0]
+    hash: BCF9D1CCE2F21FE192BBA1A7C7DA108417519D0C764E1E01AD921FE8BA68E1FC
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_3_1_tilemap_03_FlatCube[0]
+    hash: CF18DAD422DCCD827828AF0732CDEA88B33558BAEE34803EAFE292A3DA61FE88
+    replace: 0
+  - key: LevelEditor[0]/Generated%20Tile%20Meshes[0]/TileChunk_3_2_tilemap_03_FlatCube[0]
+    hash: 74AA46F9F86992ED381381BE32EB1BABF921A309011C80FDCC7AA8B50EED0FAF
+    replace: 0
+  dependencies:
+  - path: Assets/RenderFX/Environment/Material/M_TreeTrunk.mat
+    hash: source-v1:e1bc56775bb7244a59118ad31781750f7edca12426b3d7048e9570c786428c6d
+  - path: Assets/RenderFX/Environment/Material/M_Tree_RegionTint.mat
+    hash: source-v1:f4317b2d254a6f31017f5498f93252e95ed29e2fcbd30fbcfde782615bb8aaf7
+  - path: Assets/RenderFX/Environment/Models/Trees/Prefabs/Tree_01.prefab
+    hash: source-v1:1e8b78bd0d3adb654baff3a47942da0b3e6096450ff21a2657cbc0910db3cbc0
+  - path: Assets/RenderFX/Environment/Models/Trees/Prefabs/Tree_03.prefab
+    hash: source-v1:f8115bc67af178cfae08673218c029a3e9f51951534c3fa10efdf9819d27b3b4
+  - path: Assets/RenderFX/Environment/Models/Trees/Tree_01.fbx
+    hash: source-v1:d1f974bf152ea36a867c1ce51f5a93b87939be9ec5ea02fe2484f0a62f8d48c1
+  - path: Assets/RenderFX/Environment/Models/Trees/Tree_03.fbx
+    hash: source-v1:1edfdffecb418d7704bbbabbaa7462e75cd372a6e3cebabf850166fb6347c54b
+  - path: Assets/RenderFX/Environment/Shaders/JcRegionTintLit.shader
+    hash: source-v1:1a1a27460853025250c179b703cde7acb90f26d8d950ca73fc5985c173a9250b
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad3_01.png
+    hash: source-v1:1fa9d0a8ac4333d813e53e42b649e9d4d9f397381cba5bdf42a53263e32dec56
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_01.png
+    hash: source-v1:be1a19d9763bcbdb5b911a07e6d422b3122b622c2dfe5fc068d5108ba2c828b2
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_02-2.png
+    hash: source-v1:d55edcbd4798964bc13eaf82e0ab994a37495aa50c4964510d50b2af5cee93b1
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_02.png
+    hash: source-v1:2d8138a1c6c0aea390d0f9512fc2c0e0ae952ed01c268f7687578f48f87e581b
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_03.png
+    hash: source-v1:25a85fecdd50a0d06bc1b96b4677aa37435719bdbe195df9e78ad731fe5f23f5
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_04-2.png
+    hash: source-v1:80307721edf3790f649031f660415a0ccdaa29a33a7d157030b6effa57ee748b
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_04.png
+    hash: source-v1:2c91cf0b7b01297990b8a77b70e4d3e8d46d566158e1bf3f250f6f9a7ebbfc80
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_05-2.png
+    hash: source-v1:9e5be50a4c3687cb852872feeeb0fb65d583b5c431f81001ec5b160de96d84b3
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_05-3.png
+    hash: source-v1:ee4ab903fcd025ef05be853d655814a2b0fa69ba1a6e24855c3290bb0c161347
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_05-4.png
+    hash: source-v1:97c2645195b9bdca4c86eba967deb077f9dfd890cd9af47c69dee75bc98754a9
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_05.png
+    hash: source-v1:2e32f40f61e86622cf602e1306c93bd0b5b66df1604ceaaa50bf2790aa86d65e
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_06-2.png
+    hash: source-v1:6972d95c75eb523624b7fdfe42da51ade19433dfc84245d38176898ecc117bf6
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_06.png
+    hash: source-v1:8b3ce9272119dd2143ca339e70f7998eda3d655962bdbde26d2f6bfcbd0ee747
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_07.png
+    hash: source-v1:6ff7172e08b7cc2d51904a228930367f0cfd150d63fb4b26d52e3cdeb58accc6
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_08-2.png
+    hash: source-v1:453bf756e03aefa453716d69d76aa48bf8e4ec568c051be36611b362d61ee50e
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_08.png
+    hash: source-v1:98ecb782657fe74416e30b92be751731f67f337ce7ee28965d1c14c9352be80f
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/ParkRoad_09.png
+    hash: source-v1:8d4bc57a616c2026b6aecf16912bf62e0510a65a464f59f298918f0d289bb557
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_01.png
+    hash: source-v1:49634e9046c8891345469622ceeaf489118170b2a448287d1b5568f53be05cd8
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Centerline_001.png
+    hash: source-v1:f425ab30f0e09291485e7fed527da000fae0bab620949e0ae945c0365fe85503
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Centerline_002.png
+    hash: source-v1:72ce98607b1e268c1e870a04b9314c3f0cdb6ec717397ce6e09fdc01116f1410
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Centerline_003.png
+    hash: source-v1:607bab4d8992907702c6d039a3fe48c9483a14a1c738b8ad6f6791d97f11fd58
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Centerline_004.png
+    hash: source-v1:04fedb3ff480f6ca6650d07c045e5c22ee9b5caed218f5c8ab08bfdd8c8e1fdd
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Centerline_005.png
+    hash: source-v1:a24116f4ef01ed39f3e80923354cae741033c5f26f2571687404893569c6ef8e
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Centerline_006.png
+    hash: source-v1:3e2f336461e1af5e117c437ee3a530c1c47374c00e94b058269c54993fb4c40e
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Centerline_007.png
+    hash: source-v1:a6875127d50b61305fd82cf415c89c964bcf6038c6cd848b75e9f6e4692d243c
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Cross_001.png
+    hash: source-v1:62ec73e3f7d39776a9316581395747c53754635c0fa1398d077299e871a857b1
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Cross_002.png
+    hash: source-v1:0205d62dfa5fda21bc549a4dacd23f36950670f8ebb4005bb5e4be84792b619d
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Cross_003.png
+    hash: source-v1:2ed5e7d05fb898a02f1ecaa91f9124b31dc8fad99c031d29a23fdea9a64a83a2
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Cross_004.png
+    hash: source-v1:c5c7eea9b62d91841b4205b0eb4f4c79f11ec791348729a9a48ada5fb1f21de1
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Cross_005.png
+    hash: source-v1:b782780a15b2f5ab70b50814992492ae703a76ba4ef6c11bc085d51bd54db631
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_Cross_006.png
+    hash: source-v1:d66543b9971c24e607b853d35bdf35eee73d103e1a46b643c65de343b2b519bd
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_01.png
+    hash: source-v1:f763fd2c5569702271496dc0248853706f503930bfc23a099e88117d0e0ddd44
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_02.png
+    hash: source-v1:f96847a616f00e8b5d52db700b5a9f32887174a50719024bd6af727e7f23e147
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_03.png
+    hash: source-v1:e6ea6d5c6d59a8fb15387eb490f3e31c237135e9ce1c5337d11742087963a551
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_04.png
+    hash: source-v1:8ee306be134762d0ee0de819913babf1490a4bc2c064818b57e883bc0241bf54
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_05.png
+    hash: source-v1:daa63626633cd9f4df7ebc00b7070a3b505ddca90477fb3f6e00491d46c5ba28
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_06.png
+    hash: source-v1:c270f56a31787d374b81328e41eeb814e55713c4f849f4c2901a7207ce07e672
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_07.png
+    hash: source-v1:f04ccefff9604881407af7c8fe98fc22a932aa01618f628781ebc5a58b6bc928
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_08.png
+    hash: source-v1:20315f09ecf4227b3028bc4edf92a9fbed62967980fde51cb5ed177140b9b7d1
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_09.png
+    hash: source-v1:5c64ec3e5f82b4cab1434b700ad98039209b2e4ea1e29df066418c763a647849
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_10.png
+    hash: source-v1:7e757448e739534abbe70c421769888bc20f390338a40a62068b24db4874b5ae
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_11.png
+    hash: source-v1:d24921fc9b390f32180e5099216cd2def5d56757a80b234eb45208ceb9615fa1
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/Road_parkingLot_12.png
+    hash: source-v1:81f188e65c48b57b32a502a4fcd849d2a602d128e876cced37c7431587a6ab22
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/tilemap_01.png
+    hash: source-v1:7759289e49f913f2ce8205bfcdb41a457d02762b049e55fc853629dd46024bb7
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/tilemap_02.png
+    hash: source-v1:a0ed480504922beee45daf11f6e6ba7e302d71793c72015c1bca6dd8021d13b2
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/tilemap_03.png
+    hash: source-v1:aa45849ed5c43731ea24580cf03780c8fd7ede7b0b132ec23f60775c97f451d5
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/tilemap_04.png
+    hash: source-v1:075cf54308504cc13eb0e65b3215d9b0498511aa6454cbaffa75be1aa601d637
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/tilemap_05.png
+    hash: source-v1:67dfaced110bdb42189f48c773616f1a423cf2cf979ddc23c447be5d539b3f12
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/tilemap_06.png
+    hash: source-v1:0db76f716a4aeb6937655f92116f6514573b91d570f48502a34bf2e3ff3d6cfc
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/tilemap_07.png
+    hash: source-v1:b72fdf111a5ac139ab7d9c3461d6ba8af835e623fb446c199ff793f4472256d2
+  - path: Assets/_ProtoType_Merge/DH/AlphaAsset/Tile/tilemap_08.png
+    hash: source-v1:557121476158ed2f958607030b6868fa1b5665f26e2f3a88f79c608b48e477d2
+  - path: Assets/_ProtoType_Merge/DH/LevelData/TutorialLevelData.asset
+    hash: source-v1:e540ab6ab003820a967a0805448e97b924d77402d70a031abcb375ae4cc72a36
+  - path: Assets/_ProtoType_Merge/DH/LevelTileRegistry.asset
+    hash: source-v1:8879bf3e0288f45cd7daffca8c7f9b18d334fdd972863fc41eb158be84d320bd
+  - path: Assets/_ProtoType_Merge/DH/Resources/Tile/ObstacleTile.png
+    hash: source-v1:82f50bb9e98012b3963a10dd2dfb87a52c795f91730438849d42607c4b30033e
+  - path: Assets/_ProtoType_Merge/DH/Scripts/LevelEditor/LevelData.cs
+    hash: source-v1:18e5d82e60b720ab671e668af667fa81f4eb5dd230cdd01f908d955394f5b28e
+  - path: Assets/_ProtoType_Merge/DH/Scripts/LevelEditor/LevelTileMeshGenerator.cs
+    hash: source-v1:98ab190b664c19193e2b25f7011742010d3516a84e28d5f39ef5db939005caf9
+  - path: Assets/_ProtoType_Merge/DH/Scripts/LevelEditor/LevelTileRegistry.cs
+    hash: source-v1:08c22e929d9c66e05cbd346d3531cb7c1a4cefd26aa1e63f0fc7c84511b28465
+  - path: Assets/_ProtoType_Merge/JC/BattleTesting/JcBattleSurfaceProfile.cs
+    hash: source-v1:372569c8dae50f75c976c26fa0bfa5059afae2c2532a26f33c01a5f36bd16653
+  - path: Assets/_ProtoType_Merge/JC/BattleTesting/JcRoadMarkings.shader
+    hash: source-v1:56b47940134c7a0bbed644d10a2c0a8af7d660d0c1dd65a6f3814821992e3e8e
+  - path: Assets/_ProtoType_Merge/JC/BattleTesting/Resources/JC_BattleSurface_Default.asset
+    hash: source-v1:bd0da92f3333cdcded4f1fba31bd75c2e4402ef97c0f4387b44e1352edd490a7
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/CanalBank.shader
+    hash: source-v1:90c90a60881865b9f67445b643631b5040f608997f70bd8d391fbeee338a8afa
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Editor/JcExploreDetailBaker.cs
+    hash: source-v1:2282b4d22edbf14f3fdab5d2260556621455f3269e498539ea33e608b6fa30a1
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/Editor/JcPathEdgeAnalyzer.cs
+    hash: source-v1:71b1d3a627d1461a91984207044d76301a544d482aa7c6d8962d94eecd35aad0
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcExploreDetailBake.cs
+    hash: source-v1:2ba1feadf102212337edea7553b69249969dde1afd54fb8d9450646b670ea1de
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcExploreDetailBakeCatalog.cs
+    hash: source-v1:54015d984a7c6adc1359045c4c7f15a4f6053b2309418a2137cffade6b586643
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcExploreDetailOverlay.Baked.cs
+    hash: source-v1:9ba76a58b95163ce18c9fdaae273385d856bf7e9df463962eee851f6a7fa49cb
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcExploreDetailOverlay.RoadEdges.cs
+    hash: source-v1:ce062401f47c989f993147ce3503761c9cbc1666d55a2eac9e8c801df4457144
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcExploreDetailOverlay.WaterFlow.cs
+    hash: source-v1:df3e149ca273cc204759b2b5cfe32261933f4e7fa40c3cb54ad11f8b5fea65be
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcExploreDetailOverlay.Waterfront.cs
+    hash: source-v1:f5971f7f5ad4204a426d0239428999459b96e966b4bbe9f112069042883d53ec
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcExploreDetailOverlay.cs
+    hash: source-v1:182f2713d0bca17b5cc3588ca0f1d22a78a0e5a3ececba6d71774407d7710332
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcExploreDetailProfile.cs
+    hash: source-v1:8725a7e2053ffe328fd504071e0a73bbecf53f28cd2e46430fd79d5a82770ec9
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcWaterFlowConstraint.cs
+    hash: source-v1:162ebb5174430b4bee1a5c7d83460580707ce07926f33e618b95b062ff7549d5
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/JcWaterUnderwater.cs
+    hash: source-v1:ee2343084068b3b20f569ada5ed09e291510123a664622fe6265fd3720289911
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/RoadEdge.shader
+    hash: source-v1:0540bac7fde5a7063f45bf8f7d1699c10c1275187b70bf71204c49cbfb317a66
+  - path: Assets/_ProtoType_Merge/JC/Environment/ExploreDetail/RoadGrain.png
+    hash: source-v1:fbb6775e8747ae7369087dee74b6196c62ff5db38704159317475fb72e24606b
+  - path: Assets/_ProtoType_Merge/JC/Environment/RoadDetailKit/Materials/Concrete.mat
+    hash: source-v1:d918d05dae3d78d8e4f56fc8eac75ac12cf7388815f8afe7a460943f79315a65
+  - path: Assets/_ProtoType_Merge/JC/Environment/RoadDetailKit/Materials/Stone.mat
+    hash: source-v1:f949894b7a82f7d82dc73f3a9bff2d236d726f63046bdc6899e1585e68ad10f1
+  - path: Assets/_ProtoType_Merge/JC/Environment/RoadDetailKit/Meshes/ContinuousCurbBlock.asset
+    hash: source-v1:227b21f619ccc2b0474d43652d50f8562b8e627fc9acadce129c25f461e162d7
+  - path: Assets/_ProtoType_Merge/JC/Environment/RoadDetailKit/Meshes/Roadside_Rocks_Combined.asset
+    hash: source-v1:cf6cd5835aec4b88760cf85475ba0dfcc1f043779b3c43e26a7f9726b3a2699c
+  - path: Assets/_ProtoType_Merge/JC/Environment/RoadDetailKit/Prefabs/Roadside_Rocks.prefab
+    hash: source-v1:7cbbe72df19803b6ea795285e3e7d89742f525e0113071fb464cf777ca8a8da3
+  - path: Assets/_ProtoType_Merge/JC/Environment/RoadDetailKit/Textures/Concrete_Color.png
+    hash: source-v1:ce8445f53787f44f635b25293a4c9d1c6fdfa01fc3c9f02a9ce42fce56467a4c
+  - path: Assets/_ProtoType_Merge/JC/Environment/RoadDetailKit/Textures/Grain_Height.png
+    hash: source-v1:b73a79e01e0c8f1d694047fbdddc35a4dc0651408789ff8464d519c56dbda610
+  - path: Assets/_ProtoType_Merge/JC/Environment/RoadDetailKit/Textures/Grain_Normal.png
+    hash: source-v1:354e5485953ecfa2316e91c546ca3845cf9071ee4b38416024aa9506f60b57c2
