@@ -125,7 +125,8 @@ namespace JC.BattleTesting
                 Debug.LogError("[JC Battle] 은행 실내 배경 프리팹 연결 누락");
             }
             // 점령/본부 전투 또는 생성 실패에도 카메라와 UI는 독립적으로 적용합니다.
-            if (cameraOnly || !UsesExplorationBackground(context)) return;
+            bool tutorialOutdoor = cameraOnly && context != null && context.IsTutorial && context.TutorialBattleKey == "TUT_01";
+            if (!tutorialOutdoor && (cameraOnly || !UsesExplorationBackground(context))) return;
             JcDynamicBattleSource source = null;
             GameObject output = null;
             try
@@ -137,8 +138,19 @@ namespace JC.BattleTesting
                         e.TryGetComponent<EnemyIdentity>(out var identity) &&
                         MapProgressKey.NormalizeSegment(identity.PlacementKey) == MapProgressKey.NormalizeSegment(sourceEnemy));
 
-                var settings = ResolveBackgroundSettings(party.gameObject.scene, party.transform.position, enemy, context.EventBattle);
-                source = JcDynamicBattleGeometry.Capture(party.gameObject.scene);
+                var sourceScene = tutorialOutdoor ? SceneManager.GetActiveScene() : party.gameObject.scene;
+                JcDynamicBattleSettings settings;
+                if (tutorialOutdoor)
+                {
+                    var origin = sourceScene.GetRootGameObjects()
+                        .SelectMany(r => r.GetComponentsInChildren<TutorialEnemyObject>(true))
+                        .FirstOrDefault(e => e.TutorialBattleKey == context.TutorialBattleKey);
+                    if (origin == null) throw new InvalidOperationException("첫 튜토리얼 전투의 탐사 조우 위치 누락");
+                    settings = new JcDynamicBattleSettings { encounterPosition = origin.transform.position,
+                        enemyPosition = origin.transform.position + Vector3.right, axis = JcBattleRoadAxis.X, addBattleSurfaceDetails = false };
+                }
+                else settings = ResolveBackgroundSettings(sourceScene, party.transform.position, enemy, context.EventBattle);
+                source = JcDynamicBattleGeometry.Capture(sourceScene, tutorialOutdoor);
                 settings.source = source;
                 cameraProfile.viewA.Resolve(Vector3.zero, out var a, out _, out _);
                 cameraProfile.viewB.Resolve(Vector3.zero, out var b, out _, out _);

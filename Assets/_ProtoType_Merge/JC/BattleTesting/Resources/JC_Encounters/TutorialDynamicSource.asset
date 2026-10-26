@@ -1,0 +1,163 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5932a86c7ad34ad49bf9c527a75d48ec, type: 3}
+  m_Name: TutorialDynamicSource
+  m_EditorClassIdentifier: 
+  parts:
+  - name: Tree_03
+    group: -1052500
+    mesh: {fileID: 4300000, guid: 7b26f5193557b5a49bcc6e760c27bb57, type: 2}
+    originalMesh: {fileID: 2394812760364000289, guid: 9ff11b1630a1a1f4090d3e8d81b24b58,
+      type: 3}
+    materials:
+    - {fileID: 2100000, guid: fbd635e464b6b50428c2d1254c0955f6, type: 2}
+    - {fileID: 2100000, guid: d10735e24fa685d4b9df9e088d19ac27, type: 2}
+    matrix:
+      e00: 0.22627415
+      e01: 0
+      e02: -0.22627418
+      e03: -18.3
+      e10: 0
+      e11: 0.32
+      e12: 0
+      e13: 0.025
+      e20: 0.22627418
+      e21: 0
+      e22: 0.22627415
+      e23: 2.4
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    bounds:
+      m_Center: {x: -18.299166, y: 0.3122505, z: 2.341138}
+      m_Extent: {x: 0.38629866, y: 0.2872505, z: 0.38629866}
+    terrain: 0
+  - name: Tree_04
+    group: -1052512
+    mesh: {fileID: 4300000, guid: 97c1d88cb6b3b9142aff8a0c06992b5e, type: 2}
+    originalMesh: {fileID: 8528077478570232134, guid: 8825de68e33cf9d46805ff8530dd5da5,
+      type: 3}
+    materials:
+    - {fileID: 2100000, guid: fbd635e464b6b50428c2d1254c0955f6, type: 2}
+    - {fileID: 2100000, guid: d10735e24fa685d4b9df9e088d19ac27, type: 2}
+    matrix:
+      e00: 0.36769548
+      e01: 0
+      e02: -0.36769554
+      e03: -18
+      e10: 0
+      e11: 0.52
+      e12: 0
+      e13: 0.025
+      e20: 0.36769554
+      e21: 0
+      e22: 0.36769548
+      e23: 11.7
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    bounds:
+      m_Center: {x: -17.992249, y: 0.6351704, z: 11.590221}
+      m_Extent: {x: 0.70116204, y: 0.6101704, z: 0.70116204}
+    terrain: 0
+  - name: Tree_05
+    group: -1052524
+    mesh: {fileID: 4300000, guid: 4fffc66a55419c649bb3796d0d307bd0, type: 2}
+    originalMesh: {fileID: -6882385884760090233, guid: 19cebf170ed4c174e8fe730711ccfbd8,
+      type: 3}
+    materials:
+    - {fileID: 2100000, guid: fbd635e464b6b50428c2d1254c0955f6, type: 2}
+    - {fileID: 2100000, guid: d10735e24fa685d4b9df9e088d19ac27, type: 2}
+    matrix:
+      e00: 0.39597976
+      e01: 0
+      e02: -0.39597982
+      e03: -17.7
+      e10: 0
+      e11: 0.56
+      e12: 0
+      e13: 0.025
+      e20: 0.39597982
+      e21: 0
+      e22: 0.39597976
+      e23: 24.5
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    bounds:
+      m_Center: {x: -17.691006, y: 0.57623696, z: 24.3785}
+      m_Extent: {x: 0.6795863, y: 0.551237, z: 0.6795863}
+    terrain: 0
+  - name: Tree_01
+    group: -1052560
+    mesh: {fileID: 4300000, guid: d2a38eaff120b6746a54afab5221bdc6, type: 2}
+    originalMesh: {fileID: -4095333688218420394, guid: 0c523ef8b07d1034791645d426e2aa53,
+      type: 3}
+    materials:
+    - {fileID: 2100000, guid: fbd635e464b6b50428c2d1254c0955f6, type: 2}
+    - {fileID: 2100000, guid: d10735e24fa685d4b9df9e088d19ac27, type: 2}
+    matrix:
+      e00: 0.39597976
+      e01: 0
+      e02: -0.39597982
+      e03: -14.7
+      e10: 0
+      e11: 0.56
+      e12: 0
+      e13: 0.025
+      e20: 0.39597982
+      e21: 0
+      e22: 0.39597976
+      e23: 24.9
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    bounds:
+      m_Center: {x: -14.70143, y: 0.7034969, z: 24.758059}
+      m_Extent: {x: 0.86048174, y: 0.6784969, z: 0.8604817}
+    terrain: 0
+  - name: Tree_02
+    group: -1052596
+    mesh: {fileID: 4300000, guid: c806c1b4b2d03cf48bf551771e1cf7ae, type: 2}
+    originalMesh: {fileID: 5361116942911492146, guid: 95fab9531fce17347a9648d34f0e3833,
+      type: 3}
+    materials:
+    - {fileID: 2100000, guid: fbd635e464b6b50428c2d1254c0955f6, type: 2}
+    - {fileID: 2100000, guid: d10735e24fa685d4b9df9e088d19ac27, type: 2}
+    matrix:
+      e00: 0.39597976
+      e01: 0
+      e02: -0.39597982
+      e03: -11.7
+      e10: 0
+      e11: 0.56
+      e12: 0
+      e13: 0.025
+      e20: 0.39597982
+      e21: 0
+      e22: 0.39597976
+      e23: 24.5
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    bounds:
+      m_Center: {x: -11.683918, y: 0.5315075, z: 24.402367}
+      m_Extent: {x: 0.5859394, y: 0.5065075, z: 0.5859394}
+    terrain: 0
+  roads: []
+  roadMaterial: {fileID: 0}
+  sourceScene: Assets/_ProtoType_Merge/Scenes/TutorialExploreScene.unity
