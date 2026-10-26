@@ -28,6 +28,7 @@ public class AutoBattleController : MonoBehaviour
         get => isAutoBattle;
         set
         {
+            if (value && JC.Tutorial.JcTutorialBattleGuide.BlocksBattleControls) return;
             if (isAutoBattle == value)
             {
                 BattleRuntimeSettings.SetAutoBattle(value);

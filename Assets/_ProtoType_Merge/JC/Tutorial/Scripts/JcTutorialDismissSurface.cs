@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace JC.Tutorial
@@ -13,6 +13,8 @@ namespace JC.Tutorial
         private int pressFrame = -1;
         public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
         {
+            if (battleGuide != null && battleGuide.GuidedActive)
+                return !battleGuide.IsAllowedPointer(screenPoint);
             var target = guide != null ? guide.AllowedInputTarget : null;
             if (target == null || !target.gameObject.activeInHierarchy) return true;
             var canvas = target.GetComponentInParent<Canvas>();

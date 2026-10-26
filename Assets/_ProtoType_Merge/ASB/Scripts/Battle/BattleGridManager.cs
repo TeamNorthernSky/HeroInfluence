@@ -36,6 +36,33 @@ namespace ASB.Work.BattleGrid
         private BattleCharactor infoHoverTarget;
         private readonly List<Renderer> infoHoverRenderers = new List<Renderer>();
 
+        private UnityEngine.Object tutorialRowsOwner;
+        private bool tutorialFront;
+        private BattleCellBorderConfiguration tutorialRowStyle;
+
+        // 표시 전용 제약입니다. 대상 선택, 점유 상태와 공유 프로필은 변경하지 않습니다.
+        public void SetTutorialRows(UnityEngine.Object owner, bool visible, bool front)
+        {
+            if (owner == null || (!visible && tutorialRowsOwner != owner)) return;
+            tutorialRowsOwner = visible ? owner : null;
+            tutorialFront = front;
+            if (visible && tutorialRowStyle == null)
+            {
+                tutorialRowStyle = cellVisualSettings != null && cellVisualSettings.profile != null
+                    ? cellVisualSettings.profile.settings.Copy() : new BattleCellBorderConfiguration();
+                tutorialRowStyle.bobAmplitude = 0;
+                tutorialRowStyle.useSweep = false;
+                var lit = tutorialRowStyle.currentTurn;
+                lit.mainColor = new Color(0, 1, .22f, 1);
+                lit.outlineColor = new Color(.35f, 1, .5f, 1);
+                lit.useFill = false;
+                var dark = tutorialRowStyle.unavailable;
+                dark.mainColor = dark.outlineColor = new Color(.02f, .025f, .03f, .7f);
+                dark.useFill = true; dark.fillColor = Color.black; dark.fillOpacity = .65f;
+            }
+            RefreshTilePresentation();
+        }
+
         // 정보 확인용 표시입니다. 스킬 선택/범위 판정은 변경하지 않습니다.
         public void SetInfoHover(UnityEngine.Object owner, BattleCharactor target)
         {
@@ -291,6 +318,13 @@ namespace ASB.Work.BattleGrid
             foreach (var cell in cellsByCoords.Values)
             {
                 if (cell == null) continue;
+                if (!ended && tutorialRowsOwner != null && cellVisualSettings != null)
+                {
+                    bool lit = cell.IsFrontRow == tutorialFront;
+                    cell.SetMaterial(lit ? currentTurnMaterial : unavailableMaterial);
+                    cellVisualSettings.Apply(cell, 1f, lit ? BattleCellVisualState.CurrentTurn : BattleCellVisualState.Unavailable, tutorialRowStyle);
+                    continue;
+                }
                 Material material = ClearMaterial;
                 if (!ended)
                 {

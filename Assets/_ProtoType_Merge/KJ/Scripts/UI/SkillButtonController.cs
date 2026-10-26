@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -47,6 +47,7 @@ public class SkillButtonController : MonoBehaviour
     [SerializeField] private BattleSkillButtonVisual coreVisual;
 
     private Button hoveredSkillButton;
+    public Button HoveredSkillButton => hoveredSkillButton;
     private bool descriptionBattleEnded;
     private BattleCharactor displayedUnit;
     private CanvasGroup panelInput;
@@ -58,6 +59,13 @@ public class SkillButtonController : MonoBehaviour
     private Action<bool> onToggle2;
     private bool HasHeroSlots => heroSlots != null && heroSlots.Length > 0;
     public SkillData CurrentSkillData { get; private set; }
+
+    public Button FindSkillButton(int skillId)
+    {
+        if (heroSlots != null) foreach (var slot in heroSlots)
+            if (slot != null && slot.skill != null && slot.skill.skillIndex == skillId) return slot.button;
+        return null;
+    }
 
     private void Awake()
     {
