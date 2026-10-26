@@ -245,7 +245,7 @@ MonoBehaviour:
     EnemyName: "\uBE4C\uB7F0\uC5F0\uD569 \uAC15\uD654\uBCD1"
     EnemyConcept: "\uB300\uD615 \uCCB4\uAE09 \uC555\uBC15\uD615 \uBE4C\uB7F0"
     UnitMaxHP: 100
-    UnitATK: 6
+    UnitATK: 7
     UnitDEF: 6
     CriticalRate: 0.25
     CounterRate: 0.2
@@ -305,7 +305,7 @@ MonoBehaviour:
     EnemyConcept: "\uBE4C\uB7F0\uC5F0\uD569 \uC9C1\uC18D \uD2B9\uC218\uBD80\uB300
       UMT\uB97C \uC774\uB044\uB294 \uAC04\uBD80"
     UnitMaxHP: 100
-    UnitATK: 6
+    UnitATK: 7
     UnitDEF: 6
     CriticalRate: 0.25
     CounterRate: 0.2
@@ -364,7 +364,7 @@ MonoBehaviour:
     EnemyName: "\uB85C\uB2C8"
     EnemyConcept: "\uC544\uB180\uB4DC\uC758 \uC30D\uB465\uC774 \uB3D9\uC0DD"
     UnitMaxHP: 100
-    UnitATK: 6
+    UnitATK: 7
     UnitDEF: 6
     CriticalRate: 0.25
     CounterRate: 0.2
@@ -424,7 +424,7 @@ MonoBehaviour:
     EnemyConcept: "\uB124 \uB3C8\uC740 \uB0B4 \uAC70, \uB0B4 \uB3C8\uB3C4 \uB0B4
       \uAC70!"
     UnitMaxHP: 100
-    UnitATK: 6
+    UnitATK: 7
     UnitDEF: 6
     CriticalRate: 0.25
     CounterRate: 0.2
@@ -1136,7 +1136,7 @@ MonoBehaviour:
     EnemyName: "\uC728\uB9AC\uC544"
     EnemyConcept: "4\uAD6C\uC5ED \uCD5C\uC885\uBCF4\uC2A4"
     UnitMaxHP: 200
-    UnitATK: 12
+    UnitATK: 15
     UnitDEF: 18
     CriticalRate: 0.25
     CounterRate: 0.1
@@ -1212,7 +1212,7 @@ MonoBehaviour:
     EnemyName: "\uB098\uB77D\uC758 \uC99D\uD3ED\uAE30"
     EnemyConcept: "\uC99D\uD3ED\uAE30{\uB098\uB77D\uC758 \uD3ED\uD48D}"
     UnitMaxHP: 80
-    UnitATK: 10
+    UnitATK: 12
     UnitDEF: 15
     CriticalRate: 0.2
     CounterRate: 0
@@ -1289,7 +1289,7 @@ MonoBehaviour:
     EnemyName: "\uACF5\uBA78\uC758 \uC99D\uD3ED\uAE30"
     EnemyConcept: "\uC99D\uD3ED\uAE30{\uACF5\uBA78\uC758 \uADA4\uC801}"
     UnitMaxHP: 80
-    UnitATK: 10
+    UnitATK: 12
     UnitDEF: 15
     CriticalRate: 0.2
     CounterRate: 0
@@ -1368,7 +1368,7 @@ MonoBehaviour:
     EnemyName: "\uC728\uB9AC\uC544\uB97C \uAC00\uB454 \uC7A5\uB9C9"
     EnemyConcept: "\uC9C4 \uCD5C\uC885 \uBCF4\uC2A4"
     UnitMaxHP: 200
-    UnitATK: 10
+    UnitATK: 20
     UnitDEF: 18
     CriticalRate: 0.25
     CounterRate: 0.1
@@ -1435,7 +1435,7 @@ MonoBehaviour:
     EnemyName: "\uC808\uB9DD\uC758 \uAD74\uB801\uC1E0"
     EnemyConcept: "\uC808\uB9DD\uC758 \uAD74\uB808 \uC18C\uD658\uCCB4"
     UnitMaxHP: 10
-    UnitATK: 12
+    UnitATK: 100
     UnitDEF: 10
     CriticalRate: 0
     CounterRate: 0

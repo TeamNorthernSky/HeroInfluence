@@ -246,7 +246,7 @@ MonoBehaviour:
     EnemyConcept: "\uB300\uD615 \uCCB4\uAE09 \uC555\uBC15\uD615 \uBE4C\uB7F0"
     UnitMaxHP: 100
     UnitATK: 6
-    UnitDEF: 6
+    UnitDEF: 7
     CriticalRate: 0.25
     CounterRate: 0.2
     ReduceRate: 0.2
@@ -306,7 +306,7 @@ MonoBehaviour:
       UMT\uB97C \uC774\uB044\uB294 \uAC04\uBD80"
     UnitMaxHP: 100
     UnitATK: 6
-    UnitDEF: 6
+    UnitDEF: 7
     CriticalRate: 0.25
     CounterRate: 0.2
     ReduceRate: 0.2
@@ -365,7 +365,7 @@ MonoBehaviour:
     EnemyConcept: "\uC544\uB180\uB4DC\uC758 \uC30D\uB465\uC774 \uB3D9\uC0DD"
     UnitMaxHP: 100
     UnitATK: 6
-    UnitDEF: 6
+    UnitDEF: 7
     CriticalRate: 0.25
     CounterRate: 0.2
     ReduceRate: 0.2
@@ -424,7 +424,7 @@ MonoBehaviour:
     EnemyConcept: "\uC544\uB180\uB4DC\uC758 \uC30D\uB465\uC774 \uB3D9\uC0DD"
     UnitMaxHP: 100
     UnitATK: 6
-    UnitDEF: 6
+    UnitDEF: 7
     CriticalRate: 0.25
     CounterRate: 0.2
     ReduceRate: 0.2
