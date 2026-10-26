@@ -100,10 +100,7 @@ public static class EventBattlePlanSource
                 return false;
             }
 
-            CombatEventBattleUnitData unit = new CombatEventBattleUnitData(normalizedUnitKey, resolvedSlot, safeLevel, source);
-            ApplyLevelGrowth(unit, source, safeLevel);
-            PopulateEventBattleSkills(unit, source);
-            units.Add(unit);
+            units.Add(CreateUnit(normalizedUnitKey, resolvedSlot, safeLevel, source));
         }
 
         if (units.Count == 0)
@@ -113,6 +110,58 @@ public static class EventBattlePlanSource
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// (zoneId, unitKey, level)로 그룹 없이 유닛 하나를 빌드한다(소환체 등). 성장·스킬 규칙은 그룹 빌드와 같다.
+    /// 테이블에 없으면 false + error(폴백 없음).
+    /// </summary>
+    public static bool TryBuildUnit(
+        int zoneId,
+        string unitKey,
+        int enemyLevel,
+        int slot,
+        out CombatEventBattleUnitData unit,
+        out string error)
+    {
+        unit = null;
+        error = string.Empty;
+
+        string normalizedUnitKey = string.IsNullOrWhiteSpace(unitKey) ? string.Empty : unitKey.Trim();
+        if (string.IsNullOrEmpty(normalizedUnitKey))
+        {
+            error = "UnitKey is empty.";
+            return false;
+        }
+
+        EventScriptCatalog catalog = EventScriptCatalog.Instance;
+        if (catalog == null)
+        {
+            error = "EventScriptCatalog is not available.";
+            return false;
+        }
+
+        if (!catalog.TryGetBattleEnemyUnitTemplate(zoneId, normalizedUnitKey, out DHEventBattleUnitTemplate source) ||
+            source == null)
+        {
+            error = $"Battle enemy unit was not found. Zone={zoneId}, UnitKey={normalizedUnitKey}";
+            return false;
+        }
+
+        unit = CreateUnit(normalizedUnitKey, slot, Mathf.Max(1, enemyLevel), source);
+        return true;
+    }
+
+    private static CombatEventBattleUnitData CreateUnit(
+        string unitKey,
+        int slot,
+        int level,
+        DHEventBattleUnitTemplate source)
+    {
+        CombatEventBattleUnitData unit = new CombatEventBattleUnitData(unitKey, slot, level, source);
+        ApplyLevelGrowth(unit, source, level);
+        PopulateEventBattleSkills(unit, source);
+        return unit;
     }
 
     /// <summary>
