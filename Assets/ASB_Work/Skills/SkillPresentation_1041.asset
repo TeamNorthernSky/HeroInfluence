@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6848169743121b14184a9b5a401e8cda, type: 3}
   m_Name: SkillPresentation_1041
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   SkillIndex: 1041
   PresentationSchemaVersion: 1
   AnimationRail: 1
@@ -49,6 +49,7 @@ MonoBehaviour:
     AccelerationMultiplier: 1
     TargetOffset: {x: 0, y: 0, z: 0}
     PreserveRootFlightTime: 0
+    SimultaneousArrivalSeconds: 0
     HideVisualOnArrival: 0
     TrailTime: 0.4
     TrackTarget: 0
@@ -73,10 +74,30 @@ MonoBehaviour:
     DurationSeconds: 0
     Occurrence: -1
   MovePrepare:
-    Enabled: 0
-    AnimationStateName: 
-    BlendInSeconds: 0.1
-    Cues: []
+    Enabled: 1
+    AnimationStateName: Base Layer.JusticeCrash_Charge
+    BlendInSeconds: 0.05
+    Cues:
+    - CueName: crash_charge_on
+      EffectIds: fb7e0100
+      SoundIds:
+      Operation: 0
+      InstanceKey: crash_charge
+      Anchor: 0
+      Socket: 0
+      Timing: 0
+      Time: 0
+      CueId: cc38a7c76ee7457ca7d0444d8192cd6b
+    - CueName: crash_charge_off
+      EffectIds:
+      SoundIds:
+      Operation: 2
+      InstanceKey: crash_charge
+      Anchor: 0
+      Socket: 0
+      Timing: 0
+      Time: 0
+      CueId: 82badc9ae6d64056a8c4881aed997d54
   Move:
     Enabled: 1
     UseUnitMovement: 1
@@ -84,7 +105,7 @@ MonoBehaviour:
     ApproachEffectId: 9010
     AnimationStateName: 
     BlendInSeconds: 0.1
-    SfxKey: 
+    SfxKey:
   AttackPrepare:
     Enabled: 0
     AnimationStateName: 
@@ -97,7 +118,7 @@ MonoBehaviour:
     Enabled: 1
     AnimationStateName: Base Layer.ClassSkill_4
     BlendInSeconds: 0.1
-    SfxKey: 
+    SfxKey:
   Post:
     Enabled: 0
     AnimationStateName: 
@@ -122,7 +143,7 @@ MonoBehaviour:
     Cues:
     - CueName: parts_crash_on
       EffectIds: 32230000
-      SoundIds: 
+      SoundIds:
       Operation: 0
       InstanceKey: parts_crash
       Anchor: 0
@@ -131,8 +152,8 @@ MonoBehaviour:
       Time: 0
       CueId: e9789f90e91c437e925e4c2fc3a5ec04
     - CueName: parts_crash_off
-      EffectIds: 
-      SoundIds: 
+      EffectIds:
+      SoundIds:
       Operation: 2
       InstanceKey: parts_crash
       Anchor: 0
@@ -142,7 +163,7 @@ MonoBehaviour:
       CueId: 2dbcfd64bf364fa6b8acd626266ce8c3
     - CueName: return_dust_on
       EffectIds: 33230000
-      SoundIds: 
+      SoundIds:
       Operation: 0
       InstanceKey: return_dust
       Anchor: 0
@@ -151,8 +172,8 @@ MonoBehaviour:
       Time: 0
       CueId: 85f8a1a3366a4bdcac3658fbf0ce2d91
     - CueName: return_dust_off
-      EffectIds: 
-      SoundIds: 
+      EffectIds:
+      SoundIds:
       Operation: 2
       InstanceKey: return_dust
       Anchor: 0

@@ -699,3 +699,7 @@ MonoBehaviour:
   - {fileID: 3109394845810485713}
   - {fileID: 4916713865379746618}
   longTrail: {fileID: 8848302962669121262}
+  useDamageHitEffect: 1
+  splitPrefab: {fileID: 0}
+  splitFraction: 0.5
+  splitScale: 0.65

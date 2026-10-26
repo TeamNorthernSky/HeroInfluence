@@ -18,6 +18,7 @@ namespace ASB.Work.Battle.Sequence
         private readonly float _battleSpeed;
         private readonly BattleVisualDirector _visual;
         private readonly DamageRole _role;
+        private BattleHitResult _resolvedHit;
 
         /// <param name="targetAnimTrigger">타겟에 재생할 애니메이션 트리거. null이면 피격 애니 생략.</param>
         /// <param name="role">피해 역할. Additional이면 Event SFX의 AdditionalHit 줄을 우선 재생한다.</param>
@@ -99,6 +100,7 @@ namespace ASB.Work.Battle.Sequence
         private void ResolveDamageAndPresentation()
         {
             BattleHitResult result = _onHit?.Invoke();
+            _resolvedHit = result;
             if (result == null || ShouldSkipHitPresentation(result))
             {
                 return;
@@ -129,6 +131,8 @@ namespace ASB.Work.Battle.Sequence
             {
                 return;
             }
+
+            if (_visual != null && !_visual.ShouldPlayTargetHitAnimation(_actor, _target, _resolvedHit)) return;
 
             _target.EnsureAnimationController();
             _target.Anim?.SetAnimationSpeed(_battleSpeed);

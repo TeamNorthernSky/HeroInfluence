@@ -9441,7 +9441,6 @@ MonoBehaviour:
   - {x: 17, y: 28}
   - {x: 17, y: 27}
   - {x: 18, y: 27}
-  - {x: 19, y: 27}
   - {x: 20, y: 27}
   - {x: 21, y: 27}
   - {x: 22, y: 27}
@@ -11076,42 +11075,55 @@ MonoBehaviour:
   - gridPosition: {x: 32, y: 7}
     worldEventId: R_NPC_01_002
     eventType: 2
+    rotation: 0
   - gridPosition: {x: 24, y: 11}
     worldEventId: C_NPC_01_001
     eventType: 1
+    rotation: 0
   - gridPosition: {x: 16, y: 19}
     worldEventId: C_NPC_01_002
     eventType: 1
+    rotation: 0
   - gridPosition: {x: 8, y: 25}
     worldEventId: C_NPC_01_003
     eventType: 1
+    rotation: 0
   - gridPosition: {x: 41, y: 25}
     worldEventId: C_NPC_01_004
     eventType: 1
+    rotation: 0
   - gridPosition: {x: 37, y: 12}
     worldEventId: S_NPC_01_001
     eventType: 3
+    rotation: 0
   - gridPosition: {x: 25, y: 25}
     worldEventId: S_NPC_01_002
     eventType: 3
+    rotation: 0
   - gridPosition: {x: 41, y: 15}
     worldEventId: S_NPC_01_004
     eventType: 3
+    rotation: 0
   - gridPosition: {x: 45, y: 33}
     worldEventId: S_NPC_01_005
     eventType: 3
+    rotation: 0
   - gridPosition: {x: 33, y: 23}
     worldEventId: R_NPC_01_004
     eventType: 2
+    rotation: 0
   - gridPosition: {x: 15, y: 12}
     worldEventId: C_NPC_01_005
     eventType: 1
-  - gridPosition: {x: 16, y: 29}
-    worldEventId: C_NPC_04_006
-    eventType: 1
+    rotation: 0
   - gridPosition: {x: 16, y: 32}
     worldEventId: R_NPC_01_001
     eventType: 2
+    rotation: 0
+  - gridPosition: {x: 16, y: 29}
+    worldEventId: C_NPC_01_006
+    eventType: 1
+    rotation: 0
   gatePlacements:
   - gateId: gate_001
     firstZoneId: zone_001
