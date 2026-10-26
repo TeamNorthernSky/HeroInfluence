@@ -40,6 +40,7 @@ Shader "JC/Environment/Calm Canal Water"
    #pragma multi_compile_fragment _ _SHADOWS_SOFT
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+   #include "../CloudShadows/JcCloudShadowCommon.hlsl"
    CBUFFER_START(UnityPerMaterial)
     float4 _EdgeVariation,_Transmission;
     half4 _BaseColor,_EdgeColor,_FakeHighlightColor;float4 _FakeHighlight;float4 _Surface,_WaveShade,_Specular,_DirectionalWave,_WaveBend;
@@ -230,7 +231,7 @@ Shader "JC/Environment/Calm Canal Water"
     float3 below=ComputeWorldSpacePosition(screenUV,depth,UNITY_MATRIX_I_VP);
     float thickness=max(0,i.world.y-below.y);
     float alpha=1-(1-saturate(_Transmission.x))*exp(-thickness*max(0,_Transmission.y));
-    return half4(MixFog(color,i.fog),alpha);
+    return half4(MixFog(JcApplyCloud(color,i.world),i.fog),alpha);
    }
    ENDHLSL
   }

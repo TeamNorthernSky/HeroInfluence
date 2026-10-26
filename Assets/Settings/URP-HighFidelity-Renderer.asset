@@ -123,7 +123,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de640fe3d0db1804a85f9fc8f5cadab6, type: 3}
   m_Name: URP-HighFidelity-Renderer
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   debugShaders:
     debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7,
       type: 3}
@@ -135,7 +135,8 @@ MonoBehaviour:
   - {fileID: -925160644108482457}
   - {fileID: -7070252392523603137}
   - {fileID: -1068276522899184701}
-  m_RendererFeatureMap: 317e142500000000adc0de57c6d2eee57100b73f9b5241ea6708bebf4b2b29f33f6346a7e86ae19dc363b49229b82cf1
+  - {fileID: 200855097022727896}
+  m_RendererFeatureMap: 317e142500000000adc0de57c6d2eee57100b73f9b5241ea6708bebf4b2b29f33f6346a7e86ae19dc363b49229b82cf1d8c65d85a594c902
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -198,3 +199,17 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   m_Active: 1
   outlineShader: {fileID: 4800000, guid: b97cc4f8115c56f98fc99ee6ad6cd655, type: 3}
+--- !u!114 &200855097022727896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb309a56a990ad64ea8d32e19b377193, type: 3}
+  m_Name: JC Cloud Shadows
+  m_EditorClassIdentifier:
+  m_Active: 1
+  shadowShader: {fileID: 4800000, guid: 4eb6ab99db50ab84cae308335c0025f7, type: 3}
