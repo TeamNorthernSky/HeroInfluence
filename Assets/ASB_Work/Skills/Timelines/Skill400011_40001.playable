@@ -358,7 +358,7 @@ MonoBehaviour:
   m_Name: Presentation Speed Marker
   m_EditorClassIdentifier: 
   m_Time: 0
-  _speed: 0.5
+  _speed: 0.75
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -64,4 +64,4 @@ MonoBehaviour:
   ringFadeSeconds: 0.15
   releaseTimeoutSeconds: 2
   gatherNativeBurstSeconds: 2.7
-  expectedReleaseSeconds: 0.7
+  expectedReleaseSeconds: 1.5

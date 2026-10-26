@@ -46,6 +46,7 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
     private BattleCharactor owner;
     private Coroutine _fade;
     private Coroutine _revive;
+    private Coroutine _deathSmokeSettle;
     private Vector3 _orbScale = Vector3.one;
     private Vector3 _orbPosition;
     private bool _orbScaleCached;
@@ -98,6 +99,7 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
             FinishRevive();
         }
 
+        StopDeathSmokeSettle();
         if (_deathSmoke != null) Destroy(_deathSmoke);
         _deathSmoke = null;
 
@@ -187,6 +189,7 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
         orb.SetActive(reviveSupplyPrefab == null);
         if (_deathSmoke != null)
         {
+            StopDeathSmokeSettle();
             foreach (VisualEffect effect in _deathSmoke.GetComponentsInChildren<VisualEffect>(true)) effect.Stop();
             Destroy(_deathSmoke);
             _deathSmoke = null;
@@ -241,29 +244,77 @@ public sealed class AmplifierOrbHealthVisual : MonoBehaviour
             return;
         }
 
+        StopDeathSmokeSettle();
         if (_deathSmoke != null) Destroy(_deathSmoke);
         _deathSmoke = UliaVfx.VfxSpawn.Spawn(deathSmokePrefab, position,
             Quaternion.identity, 0.75f);
-        ConfigureWhiteSmoke(_deathSmoke);
+        ConfigureDeathSmoke(_deathSmoke);
+        _deathSmokeSettle = StartCoroutine(SettleDeathSmoke(_deathSmoke));
     }
 
-    private static void ConfigureWhiteSmoke(GameObject smoke)
+    // 납품 패키지처럼 처음에는 진하게 피우고 0.4초 뒤 잔연기로 전환한다.
+    // 밝은 HDR 보라색은 톤매핑에서 연보라로 보일 수 있어 어두운 보라색으로 제한한다.
+    private static void ConfigureDeathSmoke(GameObject smoke)
     {
+        var gradient = new Gradient();
+        gradient.SetKeys(
+            new[]
+            {
+                new GradientColorKey(new Color(.7f, .08f, .95f), 0f),
+                new GradientColorKey(new Color(.32f, .025f, .55f), .2f),
+                new GradientColorKey(new Color(.14f, .01f, .28f), .4f),
+                new GradientColorKey(new Color(.07f, .006f, .14f), .6f),
+                new GradientColorKey(new Color(.025f, .003f, .05f), .85f)
+            },
+            new[]
+            {
+                new GradientAlphaKey(0f, 0f),
+                new GradientAlphaKey(.9f, .08f),
+                new GradientAlphaKey(.75f, .4f),
+                new GradientAlphaKey(.2f, .7f),
+                new GradientAlphaKey(0f, 1f)
+            });
         foreach (VisualEffect effect in smoke.GetComponentsInChildren<VisualEffect>(true))
         {
-            if (effect.HasFloat("SmokeRate")) effect.SetFloat("SmokeRate", 2f);
-            if (effect.HasFloat("SmokeSize")) effect.SetFloat("SmokeSize", 0.65f);
-            if (effect.HasFloat("SmokeLifetime")) effect.SetFloat("SmokeLifetime", 1.6f);
+            if (!effect.enabled || !effect.gameObject.activeInHierarchy) continue;
+            if (effect.HasFloat("SmokeRate")) effect.SetFloat("SmokeRate", 4f);
+            if (effect.HasFloat("SmokeSize")) effect.SetFloat("SmokeSize", 1.05f);
+            if (effect.HasFloat("SmokeLifetime")) effect.SetFloat("SmokeLifetime", 1.15f);
             if (effect.HasVector3("SmokeVelocity"))
-                effect.SetVector3("SmokeVelocity", new Vector3(0.05f, 0.6f, 0.05f));
-            var gradient = new Gradient();
-            gradient.SetKeys(
-                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(.9f, .9f, .9f), .4f), new GradientColorKey(new Color(.75f, .75f, .75f), 1f) },
-                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(.9f, .08f), new GradientAlphaKey(.75f, .4f), new GradientAlphaKey(.2f, .7f), new GradientAlphaKey(0f, 1f) });
+                effect.SetVector3("SmokeVelocity", new Vector3(.08f, .7f, .08f));
+            if (effect.HasAnimationCurve("SmokeErosion"))
+                effect.SetAnimationCurve("SmokeErosion", new AnimationCurve(
+                    new Keyframe(0f, .9f), new Keyframe(.1f, .05f),
+                    new Keyframe(.65f, .15f), new Keyframe(1f, 1f)));
             if (effect.HasGradient("SmokeGradient")) effect.SetGradient("SmokeGradient", gradient);
             effect.Reinit();
             effect.Play();
         }
+    }
+
+    private IEnumerator SettleDeathSmoke(GameObject smoke)
+    {
+        yield return new WaitForSecondsRealtime(.4f);
+        if (smoke != null && smoke == _deathSmoke)
+        {
+            foreach (VisualEffect effect in smoke.GetComponentsInChildren<VisualEffect>(true))
+            {
+                if (!effect.enabled || !effect.gameObject.activeInHierarchy) continue;
+                if (effect.HasFloat("SmokeRate")) effect.SetFloat("SmokeRate", 2f);
+                if (effect.HasFloat("SmokeSize")) effect.SetFloat("SmokeSize", .65f);
+                if (effect.HasFloat("SmokeLifetime")) effect.SetFloat("SmokeLifetime", 1.6f);
+                if (effect.HasVector3("SmokeVelocity"))
+                    effect.SetVector3("SmokeVelocity", new Vector3(.05f, .6f, .05f));
+            }
+        }
+        _deathSmokeSettle = null;
+    }
+
+    private void StopDeathSmokeSettle()
+    {
+        if (_deathSmokeSettle == null) return;
+        StopCoroutine(_deathSmokeSettle);
+        _deathSmokeSettle = null;
     }
 
     private static float BattleSpeed()
