@@ -84,11 +84,44 @@ public class BattleVisualDirector : MonoBehaviour
         }
     }
 
-    private readonly HashSet<string> _sharedHitKeys = new HashSet<string>();
-    private readonly Queue<string> _sharedHitKeyOrder = new Queue<string>();
+    private sealed class RecentHitKeys
+    {
+        private const int Capacity = 128;
+        private readonly HashSet<string> _keys = new HashSet<string>();
+        private readonly Queue<string> _order = new Queue<string>();
 
-    private readonly HashSet<string> _hitReactionKeys = new HashSet<string>();
-    private readonly Queue<string> _hitReactionKeyOrder = new Queue<string>();
+        public bool TryAdd(string cast, BattleCharactor target)
+        {
+            string key = cast + ":" + target.GetInstanceID();
+            if (!_keys.Add(key)) return false;
+            _order.Enqueue(key);
+            while (_order.Count > Capacity) _keys.Remove(_order.Dequeue());
+            return true;
+        }
+
+        public void Clear()
+        {
+            _keys.Clear();
+            _order.Clear();
+        }
+    }
+
+    private readonly RecentHitKeys _sharedHitKeys = new RecentHitKeys();
+    private readonly RecentHitKeys _hitReactionKeys = new RecentHitKeys();
+
+    private static bool ShouldPlayFirstHit(BattleCharactor actor, BattleCharactor target,
+        BattleHitResult result, RecentHitKeys keys, PresentationRuntimeContext context = null)
+    {
+        string cast = result?.ExecutionId;
+        if (string.IsNullOrEmpty(cast))
+        {
+            if (context == null && actor != null)
+                context = actor.GetComponent<PresentationRuntimeContext>();
+            if (context == null || context.CurrentActionInstanceId == 0) return true;
+            cast = "presentation:" + context.CurrentActionInstanceId;
+        }
+        return keys.TryAdd(cast, target);
+    }
 
     public bool ShouldPlayTargetHitAnimation(BattleCharactor actor, BattleCharactor target, BattleHitResult result)
     {
@@ -96,33 +129,12 @@ public class BattleVisualDirector : MonoBehaviour
         int skillIndex = result != null && result.SkillIndex > 0 ? result.SkillIndex
             : context?.Current?.Presentation?.SkillIndex ?? 0;
         if ((skillIndex != 3030 && skillIndex != 3031) || target == null) return true;
-        string cast = result?.ExecutionId;
-        if (string.IsNullOrEmpty(cast))
-        {
-            if (context == null || context.CurrentActionInstanceId == 0) return true;
-            cast = "presentation:" + context.CurrentActionInstanceId;
-        }
-        string key = cast + ":" + target.GetInstanceID();
-        if (!_hitReactionKeys.Add(key)) return false;
-        _hitReactionKeyOrder.Enqueue(key);
-        while (_hitReactionKeyOrder.Count > 128) _hitReactionKeys.Remove(_hitReactionKeyOrder.Dequeue());
-        return true;
+        return ShouldPlayFirstHit(actor, target, result, _hitReactionKeys, context);
     }
 
     private bool ShouldPlaySharedHit(BattleCharactor actor, BattleHitResult result)
     {
-        string cast = result.ExecutionId;
-        if (string.IsNullOrEmpty(cast))
-        {
-            var context = actor != null ? actor.GetComponent<PresentationRuntimeContext>() : null;
-            if (context == null || context.CurrentActionInstanceId == 0) return true;
-            cast = "presentation:" + context.CurrentActionInstanceId;
-        }
-        string key = cast + ":" + result.Target.GetInstanceID();
-        if (!_sharedHitKeys.Add(key)) return false;
-        _sharedHitKeyOrder.Enqueue(key);
-        while (_sharedHitKeyOrder.Count > 128) _sharedHitKeys.Remove(_sharedHitKeyOrder.Dequeue());
-        return true;
+        return ShouldPlayFirstHit(actor, result.Target, result, _sharedHitKeys);
     }
 
     private void PlayCommonHitEffect(BattleCharactor target)
@@ -304,9 +316,7 @@ public class BattleVisualDirector : MonoBehaviour
     private void OnDisable()
     {
         _sharedHitKeys.Clear();
-        _sharedHitKeyOrder.Clear();
         _hitReactionKeys.Clear();
-        _hitReactionKeyOrder.Clear();
         foreach (Renderer renderer in _bodyFlashes.Keys) SetBodyFlash(renderer, 0f);
         _bodyFlashes.Clear();
         if (_hitStopRoutine != null) StopCoroutine(_hitStopRoutine);
